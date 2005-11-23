@@ -1,23 +1,19 @@
-Return-Path: <iluri@fagorautomation.es>
-Received: from correo2.sarenet.es (correo2.sarenet.es [194.30.0.12])
-	by ozlabs.org (Postfix) with ESMTP id 711F468812
+Return-Path: <rsushko@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 3FC1A687F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 03:21:12 +1100 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by correo2.sarenet.es (Postfix) with ESMTP id BF18B3689F
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Nov 2005 16:57:44 +0100 (CET)
-Message-ID: <4384921A.8010901@fagorautomation.es>
-Date: Wed, 23 Nov 2005 17:00:26 +0100
-From: Igor Luri <iluri@fagorautomation.es>
-MIME-Version: 1.0
-To: Absolut Hunter <absoluthunter@comcast.net>,
-	linuxppc-embedded@ozlabs.org
-References: <000901c5f03c$5d4e8c60$6405a8c0@absolut>
-In-Reply-To: <000901c5f03c$5d4e8c60$6405a8c0@absolut>
-Content-Type: multipart/mixed;
-	boundary=------------060106080406070009080808
-Subject: Re: USB Keyboard Support
+	Thu, 24 Nov 2005 03:29:33 +1100 (EST)
+From: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
+To: Dale Farnsworth <dale@farnsworth.org>
+In-Reply-To: <20051121174745.GA2654@xyzzy.farnsworth.org>
+References: <1132583152.11785.41.camel@mephisto.spb.rtsoft.ru>
+	<20051121174745.GA2654@xyzzy.farnsworth.org>
+Content-Type: multipart/mixed; boundary="=-ww/le5FpSMp3ReWLYh4+"
+Date: Wed, 23 Nov 2005 19:29:24 +0300
+Message-Id: <1132763364.31328.21.camel@mephisto.spb.rtsoft.ru>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 1/3] ppc32: Fix  a few issues in Yucca PCIe functionality
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,1044 +24,365 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060106080406070009080808
-Content-Type: text/plain; charset=us-ascii; format=flowed
+
+--=-ww/le5FpSMp3ReWLYh4+
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Absolut Hunter wrote:
+This is the updated Yucca PCIE patch with removed leading spaces and
+unnecessary braces
 
->Everyone,
->
->I recently got the USB device up and working under DENX Linux 2.4.25 with a
->MPC8280.
->
->We are using a Sm501 video chip and also have that working now, I was hoping
->to get the USB Keyboard system and running so I could totally run the system
->without having to use the serial port as the stdin/stdout anymore.
->
->However, I am having trouble getting any USB keyboard input to be recognized
->as the stdin or anything really.
->
->I have verified that the kernel sees the keyboard and associates the correct
->HID driver, and keyboard driver with it.  Also I have added the
->/dev/input/input0-3 files and have verified that they are receiving garbage
->when keys are pressed. i.e. via 'cat input0' and dumping the input to the
->console.
->
->Anyone know what else is required in order to setup the USB keyboard as the
->input device when using a VGA console?
->
->Thanks,
->
->-Russ
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->  
->
-Dear Russ,
+Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
 
-We have MPC5200Lite board running DENX Linux 2.4.25 with Fujitsu CoralP 
-video card.
-To have have the USB keyboard as system stdin, the only thing I have 
-done is to remove "console" args from kernel command line. I use the 
-following command lines:
+Thanks,
+Ruslan Sushko
 
-1)To have the console output on serial line and screen, and the input on 
-serial line:
+On Mon, 2005-11-21 at 10:47 -0700, Dale Farnsworth wrote:
+> On Mon, Nov 21, 2005 at 02:25:52PM +0000, Ruslan V. Sushko wrote:
+> > This patch includes following changes:
+> > 
+> > 1) Fix wrong PCIe config space address calculation for slot #3 (Using an
+> > signed integer for port numbering will cause wrong address accessing)
+> > 2) Fix the PCI bus numbering assignment. This will be an issues if more
+> > than one PCI card is inserted.
+> > 3) Add verbose error checking.
+> > 4) Remove commented or unused lines.
+> > 
+> > Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
+> 
+> There are a couple of whitespace/style problems in these 3 patches.
+> Please clean them up and re-submit.
+> 
+> > diff --git a/arch/ppc/platforms/4xx/yucca.c b/arch/ppc/platforms/4xx/yucca.c
+> > --- a/arch/ppc/platforms/4xx/yucca.c
+> > +++ b/arch/ppc/platforms/4xx/yucca.c
+> > @@ -280,12 +276,14 @@ yucca_setup_hoses(void)
+> >  				  IORESOURCE_MEM,
+> >  				  name);
+> >  
+> > -		hose->first_busno = 0;
+> > -		hose->last_busno  = 15;
+> > +		hose->first_busno = bus_no;
+> > +		hose->last_busno  = 0xFF;
+> >  		hose_type[hose->index] = HOSE_PCIE0 + i;
+> >  
+> >  		ppc440spe_setup_pcie(hose, i);
+> >  		hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
+> > +                bus_no = hose->last_busno + 1;
+> > +                printk(KERN_INFO "%s: resources allocated\n", name);
+> 
+> The above two lines have leading spaces instead of tabs.  The same
+> problem exists in several other lines added by the patches.
+> 
+> diff --git a/arch/ppc/syslib/ppc440spe_pcie.c b/arch/ppc/syslib/ppc440spe_pcie.c
+> --- a/arch/ppc/syslib/ppc440spe_pcie.c
+> +++ b/arch/ppc/syslib/ppc440spe_pcie.c
+> > @@ -157,33 +162,37 @@ int ppc440spe_init_pcie(void)
+> >  	/* Set PLL clock receiver to LVPECL */
+> >  	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) | 1 << 28);
+> >  
+> > -	check_error();
+> > -
+> > -	printk(KERN_INFO "PCIE initialization OK\n");
+> > -
+> > -	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000))
+> > -		printk(KERN_INFO "PESDR_PLLCT2 resistance calibration failed (0x%08x)\n",
+> > +	if (check_error()) {
+> > +                return -1;
+> > +        }
+> 
+> The above braces aren't needed.
+> 
+> > +
+> > +	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000)) {
+> > +		printk(KERN_INFO "PCIE: PESDR_PLLCT2 resistance calibration "
+> > +                                "failed (0x%08x)\n",
+> >  		       SDR_READ(PESDR0_PLLLCT2));
+> > +                return -1;
+> > +        }
+> >  
+> >  	/* De-assert reset of PCIe PLL, wait for lock */
+> >  	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) & ~(1 << 24));
+> >  	udelay(3);
+> > +	printk(KERN_INFO "PCIE initialization OK\n");
+> >  
+> >  	return 0;
+> >  }
+> >  
+> > -int ppc440spe_init_pcie_rootport(int port)
+> > +int ppc440spe_init_pcie_rootport(u32 port)
+> >  {
+> >  	static int core_init;
+> >  	void __iomem *utl_base;
+> > +        int attempts;
+> >  	u32 val = 0;
+> > -	int i;
+> >  
+> >  	if (!core_init) {
+> > +		if(ppc440spe_init_pcie()) {
+> > +			return -1;
+> > +                }
+> 
+> Again, the above braces are unnecessary.
+> 
+> Thanks,
+> -Dale Farnsworth
+> 
+> 
 
-root=/dev/nfs rw ip=on console=tty console=ttyS0 init=/sbin/init
-
-2) To have the console input on the USB keyboard and the output on the 
-screen:
-
-root=/dev/nfs rw ip=on init=/sbin/init
-
-I have atached our kernel configuration.
-
-Hope this helps.
-
---------------060106080406070009080808
-Content-Type: text/x-chdr;
- name="autoconf.h"
+--=-ww/le5FpSMp3ReWLYh4+
+Content-Disposition: attachment; filename=yucca_pcie_fix.patch
+Content-Type: text/x-patch; name=yucca_pcie_fix.patch; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="autoconf.h"
 
-/*
- * Automatically generated by make menuconfig: don't edit
- */
-#define AUTOCONF_INCLUDED
-#undef  CONFIG_UID16
-#undef  CONFIG_RWSEM_GENERIC_SPINLOCK
-#define CONFIG_RWSEM_XCHGADD_ALGORITHM 1
-#define CONFIG_HAVE_DEC_LOCK 1
-
-/*
- * Code maturity level options
- */
-#define CONFIG_EXPERIMENTAL 1
-#define CONFIG_ADVANCED_OPTIONS 1
-
-/*
- * Loadable module support
- */
-#define CONFIG_MODULES 1
-#undef  CONFIG_MODVERSIONS
-#define CONFIG_KMOD 1
-
-/*
- * Platform support
- */
-#define CONFIG_PPC 1
-#define CONFIG_PPC32 1
-#define CONFIG_6xx 1
-#undef  CONFIG_40x
-#undef  CONFIG_44x
-#undef  CONFIG_E500
-#undef  CONFIG_POWER3
-#undef  CONFIG_POWER4
-#undef  CONFIG_8xx
-#undef  CONFIG_8260
-#define CONFIG_PPC_STD_MMU 1
-#undef  CONFIG_ALL_PPC
-#undef  CONFIG_APUS
-#undef  CONFIG_INKA4X0
-#undef  CONFIG_WILLOW
-#undef  CONFIG_TOP5200
-#undef  CONFIG_CPCI690
-#undef  CONFIG_PCORE
-#undef  CONFIG_POWERPMC250
-#undef  CONFIG_PPMC260
-#undef  CONFIG_EV64260
-#undef  CONFIG_SPRUCE
-#undef  CONFIG_HMI1001
-#undef  CONFIG_PP01
-#undef  CONFIG_CPC45
-#undef  CONFIG_CU824
-#undef  CONFIG_PM520
-#undef  CONFIG_PUMA_A
-#undef  CONFIG_ALASKA
-#undef  CONFIG_GLACIER
-#define CONFIG_ICECUBE 1
-#undef  CONFIG_HXEB100
-#undef  CONFIG_LOPEC
-#undef  CONFIG_MCPN765
-#undef  CONFIG_MVME5100
-#undef  CONFIG_PPLUS
-#undef  CONFIG_PRPMC750
-#undef  CONFIG_PRPMC800
-#undef  CONFIG_SANDPOINT
-#undef  CONFIG_P3G4
-#undef  CONFIG_ADIR
-#undef  CONFIG_K2
-#undef  CONFIG_PAL4
-#undef  CONFIG_SL8245
-#undef  CONFIG_GEMINI
-#undef  CONFIG_TQM5200
-#undef  CONFIG_O2DNT
-#undef  CONFIG_SORCERY
-#define CONFIG_PPC_5xxx 1
-#undef  CONFIG_SMP
-#define CONFIG_RTHAL 1
-#undef  CONFIG_ALTIVEC
-#undef  CONFIG_TAU
-#define CONFIG_PPC_ISATIMER 1
-#undef  CONFIG_MPC5100
-#define CONFIG_MPC5200 1
-#define CONFIG_PPC_5xxx_PSC_CONSOLE_BAUD (115200)
-#define CONFIG_UBOOT 1
-#define CONFIG_PPC_5xxx_PSC_CONSOLE_PORT (0)
-
-/*
- * General setup
- */
-#undef  CONFIG_BIGPHYS_AREA
-#undef  CONFIG_HIGHMEM
-#undef  CONFIG_LOWMEM_SIZE_BOOL
-#undef  CONFIG_KERNEL_START_BOOL
-#undef  CONFIG_TASK_SIZE_BOOL
-#define CONFIG_HIGHMEM_START 0xfe000000
-#define CONFIG_LOWMEM_SIZE 0x30000000
-#define CONFIG_KERNEL_START 0xc0000000
-#define CONFIG_TASK_SIZE 0x80000000
-#undef  CONFIG_ISA
-#undef  CONFIG_EISA
-#undef  CONFIG_SBUS
-#undef  CONFIG_MCA
-#define CONFIG_PCI 1
-#define CONFIG_NET 1
-#define CONFIG_SYSCTL 1
-#define CONFIG_SYSVIPC 1
-#undef  CONFIG_BSD_PROCESS_ACCT
-#define CONFIG_KCORE_ELF 1
-#define CONFIG_BINFMT_ELF 1
-#define CONFIG_KERNEL_ELF 1
-#undef  CONFIG_BINFMT_MISC
-#undef  CONFIG_OOM_KILLER
-#undef  CONFIG_PCI_NAMES
-#undef  CONFIG_HOTPLUG
-#undef  CONFIG_PCMCIA
-
-/*
- * Parallel port support
- */
-#undef  CONFIG_PARPORT
-#undef  CONFIG_GEN_RTC
-#define CONFIG_PPC_RTC 1
-#undef  CONFIG_CMDLINE_BOOL
-
-/*
- * Embedded options
- */
-#undef  CONFIG_EMBEDDED
-
-/*
- * Memory Technology Devices (MTD)
- */
-#define CONFIG_MTD 1
-#undef  CONFIG_MTD_DEBUG
-#define CONFIG_MTD_PARTITIONS 1
-#undef  CONFIG_MTD_CONCAT
-#undef  CONFIG_MTD_REDBOOT_PARTS
-#undef  CONFIG_MTD_CMDLINE_PARTS
-#define CONFIG_MTD_CHAR 1
-#define CONFIG_MTD_BLOCK 1
-#undef  CONFIG_FTL
-#undef  CONFIG_NFTL
-#undef  CONFIG_INFTL
-
-/*
- * RAM/ROM/Flash chip drivers
- */
-#define CONFIG_MTD_CFI 1
-#undef  CONFIG_MTD_JEDECPROBE
-#define CONFIG_MTD_GEN_PROBE 1
-#undef  CONFIG_MTD_CFI_ADV_OPTIONS
-#define CONFIG_MTD_MAP_BANK_WIDTH_1 1
-#define CONFIG_MTD_MAP_BANK_WIDTH_2 1
-#define CONFIG_MTD_MAP_BANK_WIDTH_4 1
-#define CONFIG_MTD_CFI_I1 1
-#define CONFIG_MTD_CFI_I2 1
-#undef  CONFIG_MTD_CFI_INTELEXT
-#define CONFIG_MTD_CFI_AMDSTD 1
-#undef  CONFIG_MTD_CFI_STAA
-#define CONFIG_MTD_CFI_UTIL 1
-#undef  CONFIG_MTD_RAM
-#undef  CONFIG_MTD_ROM
-#undef  CONFIG_MTD_ABSENT
-#undef  CONFIG_MTD_OBSOLETE_CHIPS
-#undef  CONFIG_MTD_AMDSTD
-#undef  CONFIG_MTD_SHARP
-#undef  CONFIG_MTD_JEDEC
-
-/*
- * Mapping drivers for chip access
- */
-#define CONFIG_MTD_COMPLEX_MAPPINGS 1
-#undef  CONFIG_MTD_PHYSMAP
-#undef  CONFIG_MTD_PUMA_A
-#undef  CONFIG_MTD_CHESTNUT
-#undef  CONFIG_MTD_K2
-#undef  CONFIG_MTD_HXEB100
-#undef  CONFIG_MTD_PPMC260
-#undef  CONFIG_MTD_SL8245
-#undef  CONFIG_MTD_CU824
-#undef  CONFIG_MTD_CPC45
-#define CONFIG_MTD_ICECUBE 1
-#undef  CONFIG_MTD_PP01
-#undef  CONFIG_MTD_PM520
-#undef  CONFIG_MTD_TQM5200
-#undef  CONFIG_MTD_INKA4X0
-#undef  CONFIG_MTD_SORCERY
-#undef  CONFIG_MTD_HMI1001
-#undef  CONFIG_MTD_P3G4
-#undef  CONFIG_MTD_O2DNT
-#undef  CONFIG_MTD_PCI
-#undef  CONFIG_MTD_PCMCIA
-
-/*
- * Self-contained MTD device drivers
- */
-#undef  CONFIG_MTD_PMC551
-#undef  CONFIG_MTD_SLRAM
-#undef  CONFIG_MTD_MTDRAM
-#undef  CONFIG_MTD_BLKMTD
-#undef  CONFIG_MTD_DOC2000
-#undef  CONFIG_MTD_DOC2001
-#undef  CONFIG_MTD_DOC2001PLUS
-#undef  CONFIG_MTD_DOCPROBE
-#undef  CONFIG_MTD_DOCECC
-
-/*
- * NAND Flash Device Drivers
- */
-#undef  CONFIG_MTD_NAND
-#undef  CONFIG_MTD_NAND_DISKONCHIP
-#undef  CONFIG_MTD_NAND_NANDSIM
-
-/*
- * Plug and Play configuration
- */
-#undef  CONFIG_PNP
-#undef  CONFIG_ISAPNP
-
-/*
- * Block devices
- */
-#undef  CONFIG_BLK_DEV_FD
-#undef  CONFIG_BLK_DEV_XD
-#undef  CONFIG_PARIDE
-#undef  CONFIG_BLK_CPQ_DA
-#undef  CONFIG_BLK_CPQ_CISS_DA
-#undef  CONFIG_CISS_SCSI_TAPE
-#undef  CONFIG_CISS_MONITOR_THREAD
-#undef  CONFIG_BLK_DEV_DAC960
-#undef  CONFIG_BLK_DEV_UMEM
-#define CONFIG_BLK_DEV_LOOP 1
-#undef  CONFIG_BLK_DEV_NBD
-#define CONFIG_BLK_DEV_RAM 1
-#define CONFIG_BLK_DEV_RAM_SIZE (10240)
-#define CONFIG_BLK_DEV_INITRD 1
-#undef  CONFIG_BLK_STATS
-
-/*
- * Multi-device support (RAID and LVM)
- */
-#undef  CONFIG_MD
-#undef  CONFIG_BLK_DEV_MD
-#undef  CONFIG_MD_LINEAR
-#undef  CONFIG_MD_RAID0
-#undef  CONFIG_MD_RAID1
-#undef  CONFIG_MD_RAID5
-#undef  CONFIG_MD_MULTIPATH
-#undef  CONFIG_BLK_DEV_LVM
-
-/*
- * Networking options
- */
-#define CONFIG_PACKET 1
-#undef  CONFIG_PACKET_MMAP
-#undef  CONFIG_NETLINK_DEV
-#define CONFIG_NETFILTER 1
-#undef  CONFIG_NETFILTER_DEBUG
-#undef  CONFIG_FILTER
-#define CONFIG_UNIX 1
-#define CONFIG_INET 1
-#define CONFIG_IP_MULTICAST 1
-#define CONFIG_IP_ADVANCED_ROUTER 1
-#undef  CONFIG_IP_MULTIPLE_TABLES
-#undef  CONFIG_IP_ROUTE_MULTIPATH
-#undef  CONFIG_IP_ROUTE_TOS
-#undef  CONFIG_IP_ROUTE_VERBOSE
-#define CONFIG_IP_PNP 1
-#define CONFIG_IP_PNP_DHCP 1
-#undef  CONFIG_IP_PNP_BOOTP
-#undef  CONFIG_IP_PNP_RARP
-#undef  CONFIG_NET_IPIP
-#undef  CONFIG_NET_IPGRE
-#undef  CONFIG_IP_MROUTE
-#undef  CONFIG_ARPD
-#undef  CONFIG_INET_ECN
-#define CONFIG_SYN_COOKIES 1
-
-/*
- *   IP: Netfilter Configuration
- */
-#undef  CONFIG_IP_NF_CONNTRACK
-#undef  CONFIG_IP_NF_QUEUE
-#undef  CONFIG_IP_NF_IPTABLES
-#undef  CONFIG_IP_NF_ARPTABLES
-#undef  CONFIG_IP_NF_COMPAT_IPCHAINS
-#undef  CONFIG_IP_NF_COMPAT_IPFWADM
-
-/*
- *   IP: Virtual Server Configuration
- */
-#undef  CONFIG_IP_VS
-#undef  CONFIG_IPV6
-#undef  CONFIG_KHTTPD
-
-/*
- *    SCTP Configuration (EXPERIMENTAL)
- */
-#define CONFIG_IPV6_SCTP__ 1
-#undef  CONFIG_IP_SCTP
-#undef  CONFIG_ATM
-#undef  CONFIG_VLAN_8021Q
-#undef  CONFIG_IPX
-#undef  CONFIG_ATALK
-
-/*
- * Appletalk devices
- */
-#undef  CONFIG_DEV_APPLETALK
-#undef  CONFIG_DECNET
-#undef  CONFIG_BRIDGE
-#undef  CONFIG_X25
-#undef  CONFIG_LAPB
-#undef  CONFIG_LLC
-#undef  CONFIG_NET_DIVERT
-#undef  CONFIG_ECONET
-#undef  CONFIG_WAN_ROUTER
-#undef  CONFIG_NET_FASTROUTE
-#undef  CONFIG_NET_HW_FLOWCONTROL
-
-/*
- * QoS and/or fair queueing
- */
-#undef  CONFIG_NET_SCHED
-
-/*
- * Network testing
- */
-#undef  CONFIG_NET_PKTGEN
-
-/*
- * ATA/IDE/MFM/RLL support
- */
-#define CONFIG_IDE 1
-
-/*
- * IDE, ATA and ATAPI Block devices
- */
-#define CONFIG_BLK_DEV_IDE 1
-#undef  CONFIG_BLK_DEV_HD_IDE
-#undef  CONFIG_BLK_DEV_HD
-#define CONFIG_BLK_DEV_IDEDISK 1
-#define CONFIG_IDEDISK_MULTI_MODE 1
-#undef  CONFIG_IDEDISK_STROKE
-#undef  CONFIG_BLK_DEV_IDECS
-#define CONFIG_BLK_DEV_IDECD 1
-#undef  CONFIG_BLK_DEV_IDETAPE
-#undef  CONFIG_BLK_DEV_IDEFLOPPY
-#undef  CONFIG_BLK_DEV_IDESCSI
-#undef  CONFIG_IDE_TASK_IOCTL
-#undef  CONFIG_BLK_DEV_CMD640
-#undef  CONFIG_BLK_DEV_CMD640_ENHANCED
-#undef  CONFIG_BLK_DEV_ISAPNP
-#undef  CONFIG_BLK_DEV_IDEPCI
-#define CONFIG_BLK_DEV_IDE_MPC5xxx 1
-#undef  CONFIG_IDE_CHIPSETS
-#undef  CONFIG_IDEDMA_AUTO
-#undef  CONFIG_DMA_NONPCI
-#undef  CONFIG_BLK_DEV_ATARAID
-#undef  CONFIG_BLK_DEV_ATARAID_PDC
-#undef  CONFIG_BLK_DEV_ATARAID_HPT
-#undef  CONFIG_BLK_DEV_ATARAID_SII
-
-/*
- * SCSI support
- */
-#undef  CONFIG_SCSI
-
-/*
- * Fusion MPT device support
- */
-#undef  CONFIG_FUSION
-#undef  CONFIG_FUSION_BOOT
-#undef  CONFIG_FUSION_ISENSE
-#undef  CONFIG_FUSION_CTL
-#undef  CONFIG_FUSION_LAN
-
-/*
- * IEEE 1394 (FireWire) support (EXPERIMENTAL)
- */
-#undef  CONFIG_IEEE1394
-
-/*
- * I2O device support
- */
-#undef  CONFIG_I2O
-#undef  CONFIG_I2O_PCI
-#undef  CONFIG_I2O_BLOCK
-#undef  CONFIG_I2O_LAN
-#undef  CONFIG_I2O_SCSI
-#undef  CONFIG_I2O_PROC
-
-/*
- * Network device support
- */
-#define CONFIG_NETDEVICES 1
-
-/*
- * ARCnet devices
- */
-#undef  CONFIG_ARCNET
-#undef  CONFIG_DUMMY
-#undef  CONFIG_BONDING
-#undef  CONFIG_EQUALIZER
-#undef  CONFIG_TUN
-#undef  CONFIG_ETHERTAP
-
-/*
- * Ethernet (10 or 100Mbit)
- */
-#define CONFIG_NET_ETHERNET 1
-#undef  CONFIG_MACE
-#undef  CONFIG_BMAC
-#undef  CONFIG_GMAC
-#undef  CONFIG_SUNLANCE
-#undef  CONFIG_HAPPYMEAL
-#undef  CONFIG_SUNBMAC
-#undef  CONFIG_SUNQE
-#undef  CONFIG_SUNGEM
-#undef  CONFIG_NET_VENDOR_3COM
-#undef  CONFIG_LANCE
-#undef  CONFIG_NET_VENDOR_SMC
-#undef  CONFIG_NET_VENDOR_RACAL
-#undef  CONFIG_HP100
-#undef  CONFIG_NET_ISA
-#undef  CONFIG_NET_PCI
-#undef  CONFIG_NET_POCKET
-
-/*
- * Ethernet (1000 Mbit)
- */
-#undef  CONFIG_ACENIC
-#undef  CONFIG_DL2K
-#undef  CONFIG_E1000
-#undef  CONFIG_MYRI_SBUS
-#undef  CONFIG_NS83820
-#undef  CONFIG_HAMACHI
-#undef  CONFIG_YELLOWFIN
-#undef  CONFIG_R8169
-#undef  CONFIG_SK98LIN
-#undef  CONFIG_TIGON3
-#undef  CONFIG_GIANFAR
-#undef  CONFIG_GFAR_NAPI
-#undef  CONFIG_GFAR_BDSTASH
-#undef  CONFIG_GFAR_BUFSTASH
-#undef  CONFIG_FDDI
-#undef  CONFIG_NETCONSOLE
-#undef  CONFIG_HIPPI
-#undef  CONFIG_PLIP
-#undef  CONFIG_PPP
-#undef  CONFIG_SLIP
-
-/*
- * Wireless LAN (non-hamradio)
- */
-#undef  CONFIG_NET_RADIO
-
-/*
- * Token Ring devices
- */
-#undef  CONFIG_TR
-#undef  CONFIG_NET_FC
-#undef  CONFIG_RCPCI
-#undef  CONFIG_SHAPER
-
-/*
- * Wan interfaces
- */
-#undef  CONFIG_WAN
-
-/*
- * Amateur Radio support
- */
-#undef  CONFIG_HAMRADIO
-
-/*
- * IrDA (infrared) support
- */
-#undef  CONFIG_IRDA
-
-/*
- * ISDN subsystem
- */
-#undef  CONFIG_ISDN
-
-/*
- * Old CD-ROM drivers (not SCSI, not IDE)
- */
-#undef  CONFIG_CD_NO_IDESCSI
-
-/*
- * Console drivers
- */
-#undef  CONFIG_VGA_CONSOLE
-
-/*
- * Frame-buffer support
- */
-#define CONFIG_FB 1
-#define CONFIG_DUMMY_CONSOLE 1
-#undef  CONFIG_FB_VOYAGER
-#define CONFIG_FB_MB86290 1
-#undef  CONFIG_FB_RIVA
-#undef  CONFIG_FB_CLGEN
-#undef  CONFIG_FB_PM2
-#undef  CONFIG_FB_PM3
-#undef  CONFIG_FB_CYBER2000
-#undef  CONFIG_FB_CT65550
-#undef  CONFIG_FB_IMSTT
-#undef  CONFIG_FB_S3TRIO
-#undef  CONFIG_FB_VESA
-#undef  CONFIG_FB_VGA16
-#undef  CONFIG_FB_LYNX
-#undef  CONFIG_FB_SM712
-#undef  CONFIG_FB_MATROX
-#undef  CONFIG_FB_ATY
-#undef  CONFIG_FB_RADEON
-#undef  CONFIG_FB_ATY128
-#undef  CONFIG_FB_INTEL
-#undef  CONFIG_FB_SIS
-#undef  CONFIG_FB_NEOMAGIC
-#undef  CONFIG_FB_3DFX
-#undef  CONFIG_FB_VOODOO1
-#undef  CONFIG_FB_TRIDENT
-#undef  CONFIG_FB_IT8181
-#undef  CONFIG_FB_VIRTUAL
-#define CONFIG_FBCON_ADVANCED 1
-#undef  CONFIG_FBCON_MFB
-#undef  CONFIG_FBCON_CFB2
-#undef  CONFIG_FBCON_CFB4
-#undef  CONFIG_FBCON_CFB8
-#define CONFIG_FBCON_CFB16 1
-#undef  CONFIG_FBCON_CFB24
-#undef  CONFIG_FBCON_CFB32
-#undef  CONFIG_FBCON_AFB
-#undef  CONFIG_FBCON_ILBM
-#undef  CONFIG_FBCON_IPLAN2P2
-#undef  CONFIG_FBCON_IPLAN2P4
-#undef  CONFIG_FBCON_IPLAN2P8
-#undef  CONFIG_FBCON_MAC
-#undef  CONFIG_FBCON_VGA_PLANES
-#undef  CONFIG_FBCON_VGA
-#undef  CONFIG_FBCON_HGA
-#undef  CONFIG_FBCON_YUV16
-#undef  CONFIG_FBCON_FONTWIDTH8_ONLY
-#define CONFIG_FBCON_FONTS 1
-#define CONFIG_FONT_8x8 1
-#define CONFIG_FONT_8x16 1
-#undef  CONFIG_FONT_SUN8x16
-#undef  CONFIG_FONT_SUN12x22
-#undef  CONFIG_FONT_6x11
-#undef  CONFIG_FONT_PEARL_8x8
-#undef  CONFIG_FONT_ACORN_8x8
-
-/*
- * Input core support
- */
-#define CONFIG_INPUT 1
-#define CONFIG_INPUT_KEYBDEV 1
-#define CONFIG_INPUT_MOUSEDEV 1
-#define CONFIG_INPUT_MOUSEDEV_SCREEN_X (1024)
-#define CONFIG_INPUT_MOUSEDEV_SCREEN_Y (768)
-#undef  CONFIG_INPUT_JOYDEV
-#define CONFIG_INPUT_EVDEV 1
-#undef  CONFIG_INPUT_UINPUT
-
-/*
- * Macintosh device drivers
- */
-
-/*
- * Character devices
- */
-#define CONFIG_VT 1
-#define CONFIG_VT_CONSOLE 1
-#undef  CONFIG_CONSOLE_NOBLANK
-#undef  CONFIG_CONSOLE_NOCUR
-#undef  CONFIG_SERIAL
-#undef  CONFIG_SERIAL_EXTENDED
-#define CONFIG_SERIAL_NONSTANDARD 1
-#undef  CONFIG_COMPUTONE
-#undef  CONFIG_ROCKETPORT
-#undef  CONFIG_CYCLADES
-#undef  CONFIG_DIGIEPCA
-#undef  CONFIG_DIGI
-#undef  CONFIG_ESPSERIAL
-#undef  CONFIG_MOXA_INTELLIO
-#undef  CONFIG_MOXA_SMARTIO
-#undef  CONFIG_ISI
-#undef  CONFIG_SYNCLINK
-#undef  CONFIG_SYNCLINKMP
-#undef  CONFIG_N_HDLC
-#undef  CONFIG_RISCOM8
-#undef  CONFIG_SPECIALIX
-#undef  CONFIG_SX
-#undef  CONFIG_RIO
-#undef  CONFIG_STALDRV
-#undef  CONFIG_PS2MULT
-#define CONFIG_UNIX98_PTYS 1
-#define CONFIG_UNIX98_PTY_COUNT (256)
-
-/*
- * I2C support
- */
-#undef  CONFIG_I2C
-
-/*
- * SPI support
- */
-#undef  CONFIG_SPI
-
-/*
- * Mice
- */
-#undef  CONFIG_BUSMOUSE
-#undef  CONFIG_MOUSE
-
-/*
- * Joysticks
- */
-#undef  CONFIG_INPUT_GAMEPORT
-#undef  CONFIG_INPUT_NS558
-#undef  CONFIG_INPUT_LIGHTNING
-#undef  CONFIG_INPUT_PCIGAME
-#undef  CONFIG_INPUT_CS461X
-#undef  CONFIG_INPUT_EMU10K1
-#undef  CONFIG_INPUT_SERIO
-#undef  CONFIG_INPUT_SERPORT
-#undef  CONFIG_INPUT_ANALOG
-#undef  CONFIG_INPUT_A3D
-#undef  CONFIG_INPUT_ADI
-#undef  CONFIG_INPUT_COBRA
-#undef  CONFIG_INPUT_GF2K
-#undef  CONFIG_INPUT_GRIP
-#undef  CONFIG_INPUT_INTERACT
-#undef  CONFIG_INPUT_TMDC
-#undef  CONFIG_INPUT_SIDEWINDER
-#undef  CONFIG_INPUT_IFORCE_USB
-#undef  CONFIG_INPUT_IFORCE_232
-#undef  CONFIG_INPUT_WARRIOR
-#undef  CONFIG_INPUT_MAGELLAN
-#undef  CONFIG_INPUT_SPACEORB
-#undef  CONFIG_INPUT_SPACEBALL
-#undef  CONFIG_INPUT_STINGER
-#undef  CONFIG_INPUT_DB9
-#undef  CONFIG_INPUT_GAMECON
-#undef  CONFIG_INPUT_TURBOGRAFX
-#undef  CONFIG_QIC02_TAPE
-#undef  CONFIG_IPMI_HANDLER
-#undef  CONFIG_IPMI_PANIC_EVENT
-#undef  CONFIG_IPMI_DEVICE_INTERFACE
-#undef  CONFIG_IPMI_KCS
-#undef  CONFIG_IPMI_WATCHDOG
-
-/*
- * Watchdog Cards
- */
-#undef  CONFIG_WATCHDOG
-#undef  CONFIG_SCx200
-#undef  CONFIG_SCx200_GPIO
-#undef  CONFIG_AMD_PM768
-#undef  CONFIG_NVRAM
-#undef  CONFIG_RTC
-#undef  CONFIG_RTC_11_MINUTE_MODE
-#undef  CONFIG_DTLK
-#undef  CONFIG_R3964
-#undef  CONFIG_APPLICOM
-#undef  CONFIG_FLASH
-
-/*
- * Ftape, the floppy tape device driver
- */
-#undef  CONFIG_FTAPE
-#undef  CONFIG_AGP
-
-/*
- * Direct Rendering Manager (XFree86 DRI support)
- */
-#undef  CONFIG_DRM
-
-/*
- * Multimedia devices
- */
-#undef  CONFIG_VIDEO_DEV
-
-/*
- * File systems
- */
-#undef  CONFIG_QUOTA
-#undef  CONFIG_QFMT_V2
-#undef  CONFIG_AUTOFS_FS
-#undef  CONFIG_AUTOFS4_FS
-#undef  CONFIG_REISERFS_FS
-#undef  CONFIG_REISERFS_CHECK
-#undef  CONFIG_REISERFS_PROC_INFO
-#undef  CONFIG_ADFS_FS
-#undef  CONFIG_ADFS_FS_RW
-#undef  CONFIG_AFFS_FS
-#undef  CONFIG_HFS_FS
-#undef  CONFIG_HFSPLUS_FS
-#undef  CONFIG_BEFS_FS
-#undef  CONFIG_BEFS_DEBUG
-#undef  CONFIG_BFS_FS
-#define CONFIG_EXT3_FS 1
-#define CONFIG_JBD 1
-#undef  CONFIG_JBD_DEBUG
-#define CONFIG_FAT_FS 1
-#define CONFIG_MSDOS_FS 1
-#undef  CONFIG_UMSDOS_FS
-#define CONFIG_VFAT_FS 1
-#undef  CONFIG_EFS_FS
-#undef  CONFIG_JFFS_FS
-#define CONFIG_JFFS2_FS 1
-#define CONFIG_JFFS2_FS_DEBUG (0)
-#define CONFIG_JFFS2_FS_WRITEBUFFER 1
-#define CONFIG_JFFS2_ZLIB 1
-#define CONFIG_JFFS2_RTIME 1
-#undef  CONFIG_JFFS2_RUBIN
-#undef  CONFIG_JFFS2_LZO
-#undef  CONFIG_JFFS2_LZARI
-#undef  CONFIG_JFFS2_CMODE_NONE
-#define CONFIG_JFFS2_CMODE_PRIORITY 1
-#undef  CONFIG_JFFS2_CMODE_SIZE
-#define CONFIG_JFFS2_PROC 1
-#define CONFIG_CRAMFS 1
-#define CONFIG_TMPFS 1
-#define CONFIG_RAMFS 1
-#define CONFIG_ISO9660_FS 1
-#define CONFIG_JOLIET 1
-#define CONFIG_ZISOFS 1
-#undef  CONFIG_JFS_FS
-#undef  CONFIG_JFS_DEBUG
-#undef  CONFIG_JFS_STATISTICS
-#undef  CONFIG_MINIX_FS
-#undef  CONFIG_VXFS_FS
-#undef  CONFIG_NTFS_FS
-#undef  CONFIG_NTFS_RW
-#undef  CONFIG_HPFS_FS
-#define CONFIG_PROC_FS 1
-#undef  CONFIG_DEVFS_FS
-#undef  CONFIG_DEVFS_MOUNT
-#undef  CONFIG_DEVFS_DEBUG
-#define CONFIG_DEVPTS_FS 1
-#undef  CONFIG_QNX4FS_FS
-#undef  CONFIG_QNX4FS_RW
-#define CONFIG_ROMFS_FS 1
-#define CONFIG_EXT2_FS 1
-#undef  CONFIG_SYSV_FS
-#undef  CONFIG_UDF_FS
-#undef  CONFIG_UDF_RW
-#undef  CONFIG_UFS_FS
-#undef  CONFIG_UFS_FS_WRITE
-#undef  CONFIG_XFS_FS
-#undef  CONFIG_XFS_QUOTA
-#undef  CONFIG_XFS_RT
-#undef  CONFIG_XFS_TRACE
-#undef  CONFIG_XFS_DEBUG
-
-/*
- * Network File Systems
- */
-#undef  CONFIG_CODA_FS
-#undef  CONFIG_INTERMEZZO_FS
-#define CONFIG_NFS_FS 1
-#define CONFIG_NFS_V3 1
-#undef  CONFIG_NFS_DIRECTIO
-#define CONFIG_ROOT_NFS 1
-#define CONFIG_NFSD 1
-#define CONFIG_NFSD_V3 1
-#undef  CONFIG_NFSD_TCP
-#define CONFIG_SUNRPC 1
-#define CONFIG_LOCKD 1
-#define CONFIG_LOCKD_V4 1
-#undef  CONFIG_SMB_FS
-#undef  CONFIG_NCP_FS
-#undef  CONFIG_NCPFS_PACKET_SIGNING
-#undef  CONFIG_NCPFS_IOCTL_LOCKING
-#undef  CONFIG_NCPFS_STRONG
-#undef  CONFIG_NCPFS_NFS_NS
-#undef  CONFIG_NCPFS_OS2_NS
-#undef  CONFIG_NCPFS_SMALLDOS
-#undef  CONFIG_NCPFS_NLS
-#undef  CONFIG_NCPFS_EXTRAS
-#define CONFIG_ZISOFS_FS 1
-
-/*
- * Partition Types
- */
-#define CONFIG_PARTITION_ADVANCED 1
-#undef  CONFIG_ACORN_PARTITION
-#undef  CONFIG_OSF_PARTITION
-#undef  CONFIG_AMIGA_PARTITION
-#undef  CONFIG_ATARI_PARTITION
-#define CONFIG_MAC_PARTITION 1
-#define CONFIG_MSDOS_PARTITION 1
-#undef  CONFIG_BSD_DISKLABEL
-#undef  CONFIG_MINIX_SUBPARTITION
-#undef  CONFIG_SOLARIS_X86_PARTITION
-#undef  CONFIG_UNIXWARE_DISKLABEL
-#undef  CONFIG_LDM_PARTITION
-#undef  CONFIG_SGI_PARTITION
-#undef  CONFIG_ULTRIX_PARTITION
-#undef  CONFIG_SUN_PARTITION
-#undef  CONFIG_EFI_PARTITION
-#undef  CONFIG_SMB_NLS
-#define CONFIG_NLS 1
-
-/*
- * Native Language Support
- */
-#define CONFIG_NLS_DEFAULT "iso8859-1"
-#define CONFIG_NLS_CODEPAGE_437 1
-#undef  CONFIG_NLS_CODEPAGE_737
-#undef  CONFIG_NLS_CODEPAGE_775
-#define CONFIG_NLS_CODEPAGE_850 1
-#undef  CONFIG_NLS_CODEPAGE_852
-#undef  CONFIG_NLS_CODEPAGE_855
-#undef  CONFIG_NLS_CODEPAGE_857
-#undef  CONFIG_NLS_CODEPAGE_860
-#undef  CONFIG_NLS_CODEPAGE_861
-#undef  CONFIG_NLS_CODEPAGE_862
-#undef  CONFIG_NLS_CODEPAGE_863
-#undef  CONFIG_NLS_CODEPAGE_864
-#undef  CONFIG_NLS_CODEPAGE_865
-#undef  CONFIG_NLS_CODEPAGE_866
-#undef  CONFIG_NLS_CODEPAGE_869
-#undef  CONFIG_NLS_CODEPAGE_936
-#undef  CONFIG_NLS_CODEPAGE_950
-#undef  CONFIG_NLS_CODEPAGE_932
-#undef  CONFIG_NLS_CODEPAGE_949
-#undef  CONFIG_NLS_CODEPAGE_874
-#undef  CONFIG_NLS_ISO8859_8
-#undef  CONFIG_NLS_CODEPAGE_1250
-#undef  CONFIG_NLS_CODEPAGE_1251
-#define CONFIG_NLS_ISO8859_1 1
-#undef  CONFIG_NLS_ISO8859_2
-#undef  CONFIG_NLS_ISO8859_3
-#undef  CONFIG_NLS_ISO8859_4
-#undef  CONFIG_NLS_ISO8859_5
-#undef  CONFIG_NLS_ISO8859_6
-#undef  CONFIG_NLS_ISO8859_7
-#undef  CONFIG_NLS_ISO8859_9
-#undef  CONFIG_NLS_ISO8859_13
-#undef  CONFIG_NLS_ISO8859_14
-#define CONFIG_NLS_ISO8859_15 1
-#undef  CONFIG_NLS_KOI8_R
-#undef  CONFIG_NLS_KOI8_U
-#undef  CONFIG_NLS_UTF8
-
-/*
- * Sound
- */
-#undef  CONFIG_SOUND
-
-/*
- * MPC5xxx I/O Options
- */
-#define CONFIG_BESTCOMM_API 1
-#define CONFIG_PPC_5xxx_FEC 1
-#define CONFIG_USE_MDIO 1
-#undef  CONFIG_FEC_GENERIC_PHY
-#define CONFIG_FEC_LXT971 1
-#undef  CONFIG_FEC_DP83847
-#define CONFIG_PPC_5xxx_PSC 1
-#define CONFIG_PPC_5xxx_PSC_CONSOLE 1
-#define CONFIG_SERIAL_CONSOLE 1
-#undef  CONFIG_5200_I2S
-#undef  CONFIG_5200_I2S_RING
-
-/*
- * USB support
- */
-#define CONFIG_USB 1
-#undef  CONFIG_USB_DEBUG
-#define CONFIG_USB_DEVICEFS 1
-#undef  CONFIG_USB_BANDWIDTH
-#undef  CONFIG_USB_EHCI_HCD
-#undef  CONFIG_USB_UHCI
-#undef  CONFIG_USB_UHCI_ALT
-#define CONFIG_USB_OHCI 1
-#undef  CONFIG_USB_ISP1362
-#define CONFIG_USB_PPC_5xxx 1
-#undef  CONFIG_USB_SINGLEENDED
-#define CONFIG_USB_USEBOTH 1
-#define CONFIG_USB_OHCI 1
-#undef  CONFIG_USB_AUDIO
-#undef  CONFIG_USB_EMI26
-#undef  CONFIG_USB_BLUETOOTH
-#undef  CONFIG_USB_MIDI
-#undef  CONFIG_USB_STORAGE
-#undef  CONFIG_USB_STORAGE_DEBUG
-#undef  CONFIG_USB_STORAGE_DATAFAB
-#undef  CONFIG_USB_STORAGE_FREECOM
-#undef  CONFIG_USB_STORAGE_ISD200
-#undef  CONFIG_USB_STORAGE_DPCM
-#undef  CONFIG_USB_STORAGE_HP8200e
-#undef  CONFIG_USB_STORAGE_SDDR09
-#undef  CONFIG_USB_STORAGE_SDDR55
-#undef  CONFIG_USB_STORAGE_JUMPSHOT
-#undef  CONFIG_USB_ACM
-#undef  CONFIG_USB_PRINTER
-#define CONFIG_USB_HID 1
-#define CONFIG_USB_HIDINPUT 1
-#define CONFIG_USB_HIDDEV 1
-#undef  CONFIG_USB_AIPTEK
-#undef  CONFIG_USB_WACOM
-#undef  CONFIG_USB_KBTAB
-#undef  CONFIG_USB_POWERMATE
-#undef  CONFIG_USB_DC2XX
-#undef  CONFIG_USB_MDC800
-#undef  CONFIG_USB_SCANNER
-#undef  CONFIG_USB_MICROTEK
-#undef  CONFIG_USB_HPUSBSCSI
-#undef  CONFIG_USB_PEGASUS
-#undef  CONFIG_USB_RTL8150
-#undef  CONFIG_USB_KAWETH
-#undef  CONFIG_USB_CATC
-#undef  CONFIG_USB_CDCETHER
-#undef  CONFIG_USB_USBNET
-#undef  CONFIG_USB_USS720
-
-/*
- * USB Serial Converter support
- */
-#undef  CONFIG_USB_SERIAL
-#undef  CONFIG_USB_RIO500
-#undef  CONFIG_USB_AUERSWALD
-#undef  CONFIG_USB_TIGL
-#undef  CONFIG_USB_BRLVGER
-#undef  CONFIG_USB_LCD
-#undef  CONFIG_ISP1362_USB
-#undef  CONFIG_ISP1362_NETLINK
-
-/*
- * Support for USB gadgets
- */
-#undef  CONFIG_USB_GADGET
-
-/*
- * Bluetooth support
- */
-#undef  CONFIG_BLUEZ
-
-/*
- * Cryptographic options
- */
-#undef  CONFIG_CRYPTO
-
-/*
- * Library routines
- */
-#undef  CONFIG_CRC32
-#define CONFIG_ZLIB_INFLATE 1
-#define CONFIG_ZLIB_DEFLATE 1
-#undef  CONFIG_REED_SOLOMON
-
-/*
- * Kernel hacking
- */
-#define CONFIG_DEBUG_KERNEL 1
-#undef  CONFIG_MAGIC_SYSRQ
-#undef  CONFIG_DEBUG_HIGHMEM
-#undef  CONFIG_DEBUG_SLAB
-#undef  CONFIG_DEBUG_IOVIRT
-#undef  CONFIG_DEBUG_SPINLOCK
-#undef  CONFIG_DEBUG_WAITQ
-#undef  CONFIG_KGDB
-#undef  CONFIG_XMON
-#define CONFIG_BDI_SWITCH 1
-#define CONFIG_MORE_COMPILE_OPTIONS 1
-#define CONFIG_COMPILE_OPTIONS "-g -ggdb"
-#undef  CONFIG_SERIAL_TEXT_DEBUG
-#define CONFIG_LOG_BUF_SHIFT (0)
-
---------------060106080406070009080808--
+diff --git a/arch/ppc/platforms/4xx/yucca.c b/arch/ppc/platforms/4xx/yucca.c
+--- a/arch/ppc/platforms/4xx/yucca.c
++++ b/arch/ppc/platforms/4xx/yucca.c
+@@ -240,13 +240,9 @@ yucca_setup_hoses(void)
+ {
+ 	struct pci_controller *hose;
+ 	char name[20];
++	int bus_no = 0;
+ 	int i;
+ 
+-	if (0 && ppc440spe_init_pcie()) {
+-		printk(KERN_WARNING "PPC440SPe PCI Express initialization failed\n");
+-		return;
+-	}
+-
+ 	for (i = 0; i <= 2; ++i) {
+ 		if (!yucca_pcie_card_present(i))
+ 			continue;
+@@ -280,12 +276,14 @@ yucca_setup_hoses(void)
+ 				  IORESOURCE_MEM,
+ 				  name);
+ 
+-		hose->first_busno = 0;
+-		hose->last_busno  = 15;
++		hose->first_busno = bus_no;
++		hose->last_busno  = 0xFF;
+ 		hose_type[hose->index] = HOSE_PCIE0 + i;
+ 
+ 		ppc440spe_setup_pcie(hose, i);
+ 		hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
++		bus_no = hose->last_busno + 1;
++		printk(KERN_INFO "%s: resources allocated\n", name);
+ 	}
+ 
+ 	ppc_md.pci_swizzle = common_swizzle;
+diff --git a/arch/ppc/syslib/ppc440spe_pcie.c b/arch/ppc/syslib/ppc440spe_pcie.c
+--- a/arch/ppc/syslib/ppc440spe_pcie.c
++++ b/arch/ppc/syslib/ppc440spe_pcie.c
+@@ -47,8 +47,6 @@ pcie_read_config(struct pci_bus *bus, un
+ 		break;
+ 	}
+ 
+-	if (0) printk("%s: read %x(%d) @ %x\n", __func__, *val, len, offset);
+-
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+@@ -93,9 +91,10 @@ enum {
+ 	LNKW_X8			= 0x8
+ };
+ 
+-static void check_error(void)
++static int check_error(void)
+ {
+ 	u32 valPE0, valPE1, valPE2;
++	int err = 0;
+ 
+ 	/* SDR0_PEGPLLLCT1 reset */
+ 	if (!(valPE0 = SDR_READ(PESDR0_PLLLCT1) & 0x01000000)) {
+@@ -111,6 +110,7 @@ static void check_error(void)
+ 	     !(valPE1 & 0x01000000) ||
+ 	     !(valPE2 & 0x01000000)) {
+ 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rstgu error\n");
++		err = -1;
+ 	}
+ 
+ 	/* SDR0_PExRCSSET rstdl */
+@@ -118,6 +118,7 @@ static void check_error(void)
+ 	     !(valPE1 & 0x00010000) ||
+ 	     !(valPE2 & 0x00010000)) {
+ 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rstdl error\n");
++		err = -1;
+ 	}
+ 
+ 	/* SDR0_PExRCSSET rstpyn */
+@@ -132,6 +133,7 @@ static void check_error(void)
+ 	     (valPE1 & 0x10000000) ||
+ 	     (valPE2 & 0x10000000)) {
+ 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET hldplb error\n");
++		err = -1;
+ 	}
+ 
+ 	/* SDR0_PExRCSSET rdy */
+@@ -139,6 +141,7 @@ static void check_error(void)
+ 	     (valPE1 & 0x00100000) ||
+ 	     (valPE2 & 0x00100000)) {
+ 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rdy error\n");
++		err = -1;
+ 	}
+ 
+ 	/* SDR0_PExRCSSET shutdown */
+@@ -146,7 +149,9 @@ static void check_error(void)
+ 	     (valPE1 & 0x00000100) ||
+ 	     (valPE2 & 0x00000100)) {
+ 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET shutdown error\n");
++		err = -1;
+ 	}
++	return err;
+ }
+ 
+ /*
+@@ -157,33 +162,35 @@ int ppc440spe_init_pcie(void)
+ 	/* Set PLL clock receiver to LVPECL */
+ 	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) | 1 << 28);
+ 
+-	check_error();
+-
+-	printk(KERN_INFO "PCIE initialization OK\n");
++	if (check_error())
++		return -1;
+ 
+-	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000))
+-		printk(KERN_INFO "PESDR_PLLCT2 resistance calibration failed (0x%08x)\n",
++	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000)) {
++		printk(KERN_INFO "PCIE: PESDR_PLLCT2 resistance calibration "
++				"failed (0x%08x)\n",
+ 		       SDR_READ(PESDR0_PLLLCT2));
++		return -1;
++	}
+ 
+ 	/* De-assert reset of PCIe PLL, wait for lock */
+ 	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) & ~(1 << 24));
+ 	udelay(3);
++	printk(KERN_INFO "PCIE initialization OK\n");
+ 
+ 	return 0;
+ }
+ 
+-int ppc440spe_init_pcie_rootport(int port)
++int ppc440spe_init_pcie_rootport(u32 port)
+ {
+ 	static int core_init;
+ 	void __iomem *utl_base;
++	int attempts;
+ 	u32 val = 0;
+-	int i;
+ 
+ 	if (!core_init) {
++		if(ppc440spe_init_pcie())
++			return -1;
+ 		++core_init;
+-		i = ppc440spe_init_pcie();
+-		if (i)
+-			return i;
+ 	}
+ 
+ 	/*
+@@ -254,15 +261,10 @@ int ppc440spe_init_pcie_rootport(int por
+ 	case 2: val = SDR_READ(PESDR2_RCSSTS); break;
+ 	}
+ 
+-	if (!(val & (1 << 20)))
+-		printk(KERN_INFO "PCIE%d: PGRST inactive\n", port);
+-	else
+-		printk(KERN_WARNING "PGRST for PCIE%d failed %08x\n", port, val);
+-
+-	switch (port) {
+-	case 0: printk(KERN_INFO "PCIE0: LOOP %08x\n", SDR_READ(PESDR0_LOOP)); break;
+-	case 1: printk(KERN_INFO "PCIE1: LOOP %08x\n", SDR_READ(PESDR1_LOOP)); break;
+-	case 2: printk(KERN_INFO "PCIE2: LOOP %08x\n", SDR_READ(PESDR2_LOOP)); break;
++	if (val & (1 << 20)) {
++		printk(KERN_WARNING "PGRST for PCIE%d failed %08x\n",
++				port, val);
++		return -1;
+ 	}
+ 
+ 	/*
+@@ -335,44 +337,47 @@ int ppc440spe_init_pcie_rootport(int por
+ 	/*
+ 	 * Check for VC0 active and assert RDY.
+ 	 */
++
++	attempts = 10;
+ 	switch (port) {
+ 	case 0:
+-		if (!(SDR_READ(PESDR0_RCSSTS) & (1 << 16)))
+-			printk(KERN_WARNING "PCIE0: VC0 not active\n");
++		while(!(SDR_READ(PESDR0_RCSSTS) & (1 << 16))) {
++			if (!(attempts--)) {
++				printk(KERN_WARNING "PCIE0: VC0 not active\n");
++				return -1;
++			}
++			mdelay(1000);
++		}
+ 		SDR_WRITE(PESDR0_RCSSET, SDR_READ(PESDR0_RCSSET) | 1 << 20);
+ 		break;
+ 	case 1:
+-		if (!(SDR_READ(PESDR1_RCSSTS) & (1 << 16)))
+-			printk(KERN_WARNING "PCIE0: VC0 not active\n");
++		while(!(SDR_READ(PESDR1_RCSSTS) & (1 << 16))) {
++			if (!(attempts--)) {
++				printk(KERN_WARNING "PCIE1: VC0 not active\n");
++				return -1;
++			}
++			mdelay(1000);
++		}
+ 		SDR_WRITE(PESDR1_RCSSET, SDR_READ(PESDR1_RCSSET) | 1 << 20);
+ 		break;
+ 	case 2:
+-		if (!(SDR_READ(PESDR2_RCSSTS) & (1 << 16)))
+-			printk(KERN_WARNING "PCIE0: VC0 not active\n");
++		while(!(SDR_READ(PESDR2_RCSSTS) & (1 << 16))) {
++			if (!(attempts--)) {
++				printk(KERN_WARNING "PCIE2: VC0 not active\n");
++				return -1;
++			}
++			mdelay(1000);
++		}
+ 		SDR_WRITE(PESDR2_RCSSET, SDR_READ(PESDR2_RCSSET) | 1 << 20);
+ 		break;
+ 	}
+ 
+-#if 0
+-	/* Dump all config regs */
+-	for (i = 0x300; i <= 0x320; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-	for (i = 0x340; i <= 0x353; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-	for (i = 0x370; i <= 0x383; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-	for (i = 0x3a0; i <= 0x3a2; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-	for (i = 0x3c0; i <= 0x3c3; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-#endif
+-
+ 	mdelay(100);
+ 
+ 	return 0;
+ }
+ 
+-void ppc440spe_setup_pcie(struct pci_controller *hose, int port)
++void ppc440spe_setup_pcie(struct pci_controller *hose, u32 port)
+ {
+ 	void __iomem *mbase;
+ 
+diff --git a/arch/ppc/syslib/ppc440spe_pcie.h b/arch/ppc/syslib/ppc440spe_pcie.h
+--- a/arch/ppc/syslib/ppc440spe_pcie.h
++++ b/arch/ppc/syslib/ppc440spe_pcie.h
+@@ -143,7 +143,7 @@
+ #define PECFG_POM0LAH		0x384
+ 
+ int ppc440spe_init_pcie(void);
+-int ppc440spe_init_pcie_rootport(int port);
+-void ppc440spe_setup_pcie(struct pci_controller *hose, int port);
++int ppc440spe_init_pcie_rootport(u32 port);
++void ppc440spe_setup_pcie(struct pci_controller *hose, u32 port);
+ 
+ #endif /* __PPC_SYSLIB_PPC440SPE_PCIE_H */
+
+--=-ww/le5FpSMp3ReWLYh4+--
