@@ -1,21 +1,18 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 24B94687F1
+Return-Path: <dwilson@dslextreme.com>
+Received: from mail5.dslextreme.com (mail5.dslextreme.com [66.51.199.81])
+	by ozlabs.org (Postfix) with SMTP id 8F765687FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 03:14:16 +1100 (EST)
-Message-ID: <43849556.2000608@ru.mvista.com>
-Date: Wed, 23 Nov 2005 19:14:14 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-References: <437B2051.5030408@ru.mvista.com>
-	<20051117135810.GB9753@logos.cnet>	<437DE07E.6080005@ru.mvista.com>	<20051118090845.GB12765@logos.cnet>	<17283.54950.681390.749679@cargo.ozlabs.ibm.com>	<20051123091107.GA3482@logos.cnet>
-	<ACB2F36A-0A37-4EA1-9E4A-F773AD4E0D86@kernel.crashing.org>
-In-Reply-To: <ACB2F36A-0A37-4EA1-9E4A-F773AD4E0D86@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: 8xx board-specific platform stuff for fs_enet
+	Thu, 24 Nov 2005 03:15:35 +1100 (EST)
+Message-ID: <200511230816400937.2B36A589@smtp.dslextreme.com>
+In-Reply-To: <A49A0ECA-B0EB-4673-928D-0C41D0856635@kernel.crashing.org>
+References: <200511230732120750.2B0DEEED@smtp.dslextreme.com>
+	<A49A0ECA-B0EB-4673-928D-0C41D0856635@kernel.crashing.org>
+Date: Wed, 23 Nov 2005 08:16:40 -0800
+From: "Dan Wilson" <dwilson@dslextreme.com>
+To: linuxppc-embedded@ozlabs.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Subject: Re: Freescale 8541 support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,45 +23,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Nov 23, 2005, at 3:11 AM, Marcelo Tosatti wrote:
-> 
->> On Wed, Nov 23, 2005 at 01:40:38PM +1100, Paul Mackerras wrote:
->>> Marcelo Tosatti writes:
->>>
->>>> Paul, you're OK with the following definitions on asm-ppc/io.h?
->>>>
->>>> +/* access ports */
->>>> +#define setbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) 
->>>> |  (_v))
->>>> +#define clrbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) & 
->>>> ~(_v))
->>>> +
->>>> +#define setbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) 
->>>> |  (_v))
->>>> +#define clrbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) & 
->>>> ~(_v))
->>>
->>> I guess so... how many drivers need these things?
->>
->> Many.
-> 
-> Shouldn't these go into some non-arch specific location?  I hate making 
-> drivers only build on a give arch.
-> 
+On 11/23/2005 at 9:51 AM Kumar Gala wrote:
 
-Hmm, what is the worth? IIRC, in_be* stuff is defined for only ppc-specific 
-archs(ppc(64),ppc,powerpc).
+> If I'm not mistaken the Denx kernel is based on 2.6.14. This should  
+> have support for the MPC8541.  Realize that the differences between  
+> MPC8540 and MPC8541/55 are minor.  Is there something specific on  
+> MPC8541 your looking for.
+> 
 > - kumar
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
 
+Thanks for the reply!  Unfortunately, I am constrained to use the 2.4=
+ kernel by another software package that I have to use, which doesn't yet=
+ support 2.6.  It appears to me that the 8541/8555 support was put into 2.6=
+ and never back-ported to 2.4.  I'll take a look at the manuals today and=
+ compare the 8540 to the 8541: perhaps I can live with the 8540 support=
+ that does appear to be in the 2.4 kernel.  If not, hopefully the porting=
+ job won't be very difficult.
 
--- 
-Sincerely,
-Vitaly
+Thanks for your help!
+
+Dan.
