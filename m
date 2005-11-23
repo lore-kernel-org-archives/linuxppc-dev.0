@@ -2,12 +2,12 @@ Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Wed, 23 Nov 2005 17:58:13 +1100
-Message-Id: <1132729094.26560.305.camel@gaston>
+Date: Wed, 23 Nov 2005 17:59:04 +1100
+Message-Id: <1132729145.26560.307.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Add back support for booting from BootX (#2)
+Subject: [PATCH] powerpc: convert macio_asic to use prom_parse
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,774 +17,356 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ARCH=powerpc couldn't boot from BootX as it uses a "different" way of
-getting in the kernel. This patch adds the necessary trampolines,
-creating a flattened device-tree from the tree passed from MacOS, and
-initializing the btext engine early for really-early debugging.
+Converts the macio_asic core to use the new OF parsing routines instead
+of relying on the pre-parsed values in struct device_node.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Index: linux-serialfix/arch/powerpc/platforms/powermac/bootx_init.c
+
+Index: linux-serialfix/drivers/macintosh/macio_asic.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-serialfix/arch/powerpc/platforms/powermac/bootx_init.c	2005-11-23 16:54:26.000000000 +1100
-@@ -0,0 +1,547 @@
-+/*
-+ *  Early boot support code for BootX bootloader
-+ *
+--- linux-serialfix.orig/drivers/macintosh/macio_asic.c	2005-11-23 16:54:11.000000000 +1100
++++ linux-serialfix/drivers/macintosh/macio_asic.c	2005-11-23 16:54:26.000000000 +1100
+@@ -3,6 +3,13 @@
+  * a MacIO ASIC. Interface to new driver model mostly
+  * stolen from the PCI version.
+  * 
 + *  Copyright (C) 2005 Ben. Herrenschmidt (benh@kernel.crashing.org)
 + *
 + *  This program is free software; you can redistribute it and/or
 + *  modify it under the terms of the GNU General Public License
 + *  as published by the Free Software Foundation; either version
 + *  2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/kernel.h>
-+#include <linux/string.h>
-+#include <linux/init.h>
-+#include <linux/version.h>
-+#include <asm/sections.h>
-+#include <asm/prom.h>
-+#include <asm/page.h>
-+#include <asm/bootx.h>
-+#include <asm/bootinfo.h>
-+#include <asm/btext.h>
-+#include <asm/io.h>
-+
-+#undef DEBUG
-+#define SET_BOOT_BAT
-+
-+#ifdef DEBUG
-+#define DBG(fmt...) do { bootx_printf(fmt); } while(0)
-+#else
-+#define DBG(fmt...) do { } while(0)
-+#endif
-+
-+extern void __start(unsigned long r3, unsigned long r4, unsigned long r5);
-+
-+static unsigned long __initdata bootx_dt_strbase;
-+static unsigned long __initdata bootx_dt_strend;
-+static unsigned long __initdata bootx_node_chosen;
-+static boot_infos_t * __initdata bootx_info;
-+static char __initdata bootx_disp_path[256];
-+
-+/* Is boot-info compatible ? */
-+#define BOOT_INFO_IS_COMPATIBLE(bi) \
-+	((bi)->compatible_version <= BOOT_INFO_VERSION)
-+#define BOOT_INFO_IS_V2_COMPATIBLE(bi)	((bi)->version >= 2)
-+#define BOOT_INFO_IS_V4_COMPATIBLE(bi)	((bi)->version >= 4)
-+
-+#ifdef CONFIG_BOOTX_TEXT
-+static void __init bootx_printf(const char *format, ...)
++ *
+  * TODO:
+  * 
+  *  - Don't probe below media bay by default, but instead provide
+@@ -218,12 +225,14 @@ postcore_initcall(macio_bus_driver_init)
+ 
+ 
+ /**
+- * macio_release_dev - free a macio device structure when all users of it are finished.
++ * macio_release_dev - free a macio device structure when all users of it are
++ * finished.
+  * @dev: device that's been disconnected
+  *
+- * Will be called only by the device core when all users of this macio device are
+- * done. This currently means never as we don't hot remove any macio device yet,
+- * though that will happen with mediabay based devices in a later implementation.
++ * Will be called only by the device core when all users of this macio device
++ * are done. This currently means never as we don't hot remove any macio
++ * device yet, though that will happen with mediabay based devices in a later
++ * implementation.
+  */
+ static void macio_release_dev(struct device *dev)
+ {
+@@ -242,7 +251,8 @@ static void macio_release_dev(struct dev
+  * If this routine returns non-null, then the resource is completely
+  * skipped.
+  */
+-static int macio_resource_quirks(struct device_node *np, struct resource *res, int index)
++static int macio_resource_quirks(struct device_node *np, struct resource *res,
++				 int index)
+ {
+ 	if (res->flags & IORESOURCE_MEM) {
+ 		/* Grand Central has too large resource 0 on some machines */
+@@ -258,12 +268,15 @@ static int macio_resource_quirks(struct 
+ 			np->addrs[index].size = 0x100;
+ 			res->end = res->start + 0xff;
+ 		}
+-		/* ESCC parent eats child resources. We could have added a level of hierarchy,
+-		 * but I don't really feel the need for it */
++		/* ESCC parent eats child resources. We could have added a
++		 * level of hierarchy, but I don't really feel the need
++		 * for it
++		 */
+ 		if (!strcmp(np->name, "escc"))
+ 			return 1;
+ 		/* ESCC has bogus resources >= 3 */
+-		if (index >= 3 && !(strcmp(np->name, "ch-a") && strcmp(np->name, "ch-b")))
++		if (index >= 3 && !(strcmp(np->name, "ch-a") &&
++				    strcmp(np->name, "ch-b")))
+ 			return 1;
+ 		/* Media bay has too many resources, keep only first one */
+ 		if (index > 0 && !strcmp(np->name, "media-bay"))
+@@ -285,6 +298,71 @@ static int macio_resource_quirks(struct 
+ }
+ 
+ 
++static void macio_setup_interrupts(struct macio_dev *dev)
 +{
-+	const char *p, *q, *s;
-+	va_list args;
-+	unsigned long v;
++	struct device_node *np = dev->ofdev.node;
++	int i,j;
 +
-+	va_start(args, format);
-+	for (p = format; *p != 0; p = q) {
-+		for (q = p; *q != 0 && *q != '\n' && *q != '%'; ++q)
-+			;
-+		if (q > p)
-+			btext_drawtext(p, q - p);
-+		if (*q == 0)
++	/* For now, we use pre-parsed entries in the device-tree for
++	 * interrupt routing and addresses, but we should change that
++	 * to dynamically parsed entries and so get rid of most of the
++	 * clutter in struct device_node
++	 */
++	for (i = j = 0; i < np->n_intrs; i++) {
++		struct resource *res = &dev->interrupt[j];
++
++		if (j >= MACIO_DEV_COUNT_IRQS)
 +			break;
-+		if (*q == '\n') {
-+			++q;
-+			btext_flushline();
-+			btext_drawstring("\r\n");
-+			btext_flushline();
++		res->start = np->intrs[i].line;
++		res->flags = IORESOURCE_IO;
++		if (np->intrs[j].sense)
++			res->flags |= IORESOURCE_IRQ_LOWLEVEL;
++		else
++			res->flags |= IORESOURCE_IRQ_HIGHEDGE;
++		res->name = dev->ofdev.dev.bus_id;
++		if (macio_resource_quirks(np, res, i))
++			memset(res, 0, sizeof(struct resource));
++		else
++			j++;
++	}
++	dev->n_interrupts = j;
++}
++
++static void macio_setup_resources(struct macio_dev *dev,
++				  struct resource *parent_res)
++{
++	struct device_node *np = dev->ofdev.node;
++	u32 *addr;
++	u64 size;
++	int index;
++
++	for (index = 0; (addr = of_get_address(np, index, &size)) != NULL;
++	     index++) {
++		struct resource *res = &dev->resource[index];
++		if (index >= MACIO_DEV_COUNT_RESOURCES)
++			break;
++		res->start = of_translate_address(np, addr);
++		res->end = res->start + (unsigned long)size - 1;
++		res->flags = IORESOURCE_MEM;
++		res->name = dev->ofdev.dev.bus_id;
++
++		if (macio_resource_quirks(np, res, index)) {
++			memset(res, 0, sizeof(struct resource));
 +			continue;
 +		}
-+		++q;
-+		if (*q == 0)
-+			break;
-+		switch (*q) {
-+		case 's':
-+			++q;
-+			s = va_arg(args, const char *);
-+			if (s == NULL)
-+				s = "<NULL>";
-+			btext_drawstring(s);
-+			break;
-+		case 'x':
-+			++q;
-+			v = va_arg(args, unsigned long);
-+			btext_drawhex(v);
-+			break;
-+		}
-+	}
-+}
-+#else /* CONFIG_BOOTX_TEXT */
-+static void __init bootx_printf(const char *format, ...) {}
-+#endif /* CONFIG_BOOTX_TEXT */
-+
-+static void * __init bootx_early_getprop(unsigned long base,
-+					 unsigned long node,
-+					 char *prop)
-+{
-+	struct bootx_dt_node *np = (struct bootx_dt_node *)(base + node);
-+	u32 *ppp = &np->properties;
-+
-+	while(*ppp) {
-+		struct bootx_dt_prop *pp =
-+			(struct bootx_dt_prop *)(base + *ppp);
-+
-+		if (strcmp((char *)((unsigned long)pp->name + base),
-+			   prop) == 0) {
-+			return (void *)((unsigned long)pp->value + base);
-+		}
-+		ppp = &pp->next;
-+	}
-+	return NULL;
-+}
-+
-+#define dt_push_token(token, mem) \
-+	do { \
-+		*(mem) = _ALIGN_UP(*(mem),4); \
-+		*((u32 *)*(mem)) = token; \
-+		*(mem) += 4; \
-+	} while(0)
-+
-+static unsigned long __init bootx_dt_find_string(char *str)
-+{
-+	char *s, *os;
-+
-+	s = os = (char *)bootx_dt_strbase;
-+	s += 4;
-+	while (s <  (char *)bootx_dt_strend) {
-+		if (strcmp(s, str) == 0)
-+			return s - os;
-+		s += strlen(s) + 1;
-+	}
-+	return 0;
-+}
-+
-+static void __init bootx_dt_add_prop(char *name, void *data, int size,
-+				  unsigned long *mem_end)
-+{
-+	unsigned long soff = bootx_dt_find_string(name);
-+	if (data == NULL)
-+		size = 0;
-+	if (soff == 0) {
-+		bootx_printf("WARNING: Can't find string index for <%s>\n",
-+			     name);
-+		return;
-+	}
-+	if (size > 0x20000) {
-+		bootx_printf("WARNING: ignoring large property ");
-+		bootx_printf("%s length 0x%x\n", name, size);
-+		return;
-+	}
-+	dt_push_token(OF_DT_PROP, mem_end);
-+	dt_push_token(size, mem_end);
-+	dt_push_token(soff, mem_end);
-+
-+	/* push property content */
-+	if (size && data) {
-+		memcpy((void *)*mem_end, data, size);
-+		*mem_end = _ALIGN_UP(*mem_end + size, 4);
-+	}
-+}
-+
-+static void __init bootx_add_chosen_props(unsigned long base,
-+					  unsigned long *mem_end)
-+{
-+	u32 val = _MACH_Pmac;
-+
-+	bootx_dt_add_prop("linux,platform", &val, 4, mem_end);
-+
-+	if (bootx_info->kernelParamsOffset) {
-+		char *args = (char *)((unsigned long)bootx_info) +
-+			bootx_info->kernelParamsOffset;
-+		bootx_dt_add_prop("bootargs", args, strlen(args) + 1, mem_end);
-+	}
-+	if (bootx_info->ramDisk) {
-+		val = ((unsigned long)bootx_info) + bootx_info->ramDisk;
-+		bootx_dt_add_prop("linux,initrd-start", &val, 4, mem_end);
-+		val += bootx_info->ramDiskSize;
-+		bootx_dt_add_prop("linux,initrd-end", &val, 4, mem_end);
-+	}
-+	if (strlen(bootx_disp_path))
-+		bootx_dt_add_prop("linux,stdout-path", bootx_disp_path,
-+				  strlen(bootx_disp_path) + 1, mem_end);
-+}
-+
-+static void __init bootx_add_display_props(unsigned long base,
-+					   unsigned long *mem_end)
-+{
-+	bootx_dt_add_prop("linux,boot-display", NULL, 0, mem_end);
-+	bootx_dt_add_prop("linux,opened", NULL, 0, mem_end);
-+}
-+
-+static void __init bootx_dt_add_string(char *s, unsigned long *mem_end)
-+{
-+	unsigned int l = strlen(s) + 1;
-+	memcpy((void *)*mem_end, s, l);
-+	bootx_dt_strend = *mem_end = *mem_end + l;
-+}
-+
-+static void __init bootx_scan_dt_build_strings(unsigned long base,
-+					       unsigned long node,
-+					       unsigned long *mem_end)
-+{
-+	struct bootx_dt_node *np = (struct bootx_dt_node *)(base + node);
-+	u32 *cpp, *ppp = &np->properties;
-+	unsigned long soff;
-+	char *namep;
-+
-+	/* Keep refs to known nodes */
-+	namep = np->full_name ? (char *)(base + np->full_name) : NULL;
-+       	if (namep == NULL) {
-+		bootx_printf("Node without a full name !\n");
-+		namep = "";
-+	}
-+	DBG("* strings: %s\n", namep);
-+
-+	if (!strcmp(namep, "/chosen")) {
-+		DBG(" detected /chosen ! adding properties names !\n");
-+		bootx_dt_add_string("linux,platform", mem_end);
-+		bootx_dt_add_string("linux,stdout-path", mem_end);
-+		bootx_dt_add_string("linux,initrd-start", mem_end);
-+		bootx_dt_add_string("linux,initrd-end", mem_end);
-+		bootx_dt_add_string("bootargs", mem_end);
-+		bootx_node_chosen = node;
-+	}
-+	if (node == bootx_info->dispDeviceRegEntryOffset) {
-+		DBG(" detected display ! adding properties names !\n");
-+		bootx_dt_add_string("linux,boot-display", mem_end);
-+		bootx_dt_add_string("linux,opened", mem_end);
-+		strncpy(bootx_disp_path, namep, 255);
-+	}
-+
-+	/* get and store all property names */
-+	while (*ppp) {
-+		struct bootx_dt_prop *pp =
-+			(struct bootx_dt_prop *)(base + *ppp);
-+
-+		namep = pp->name ? (char *)(base + pp->name) : NULL;
-+ 		if (namep == NULL || strcmp(namep, "name") == 0)
-+ 			goto next;
-+		/* get/create string entry */
-+		soff = bootx_dt_find_string(namep);
-+		if (soff == 0)
-+			bootx_dt_add_string(namep, mem_end);
-+	next:
-+		ppp = &pp->next;
-+	}
-+
-+	/* do all our children */
-+	cpp = &np->child;
-+	while(*cpp) {
-+		np = (struct bootx_dt_node *)(base + *cpp);
-+		bootx_scan_dt_build_strings(base, *cpp, mem_end);
-+		cpp = &np->sibling;
-+	}
-+}
-+
-+static void __init bootx_scan_dt_build_struct(unsigned long base,
-+					      unsigned long node,
-+					      unsigned long *mem_end)
-+{
-+	struct bootx_dt_node *np = (struct bootx_dt_node *)(base + node);
-+	u32 *cpp, *ppp = &np->properties;
-+	char *namep, *p, *ep, *lp;
-+	int l;
-+
-+	dt_push_token(OF_DT_BEGIN_NODE, mem_end);
-+
-+	/* get the node's full name */
-+	namep = np->full_name ? (char *)(base + np->full_name) : NULL;
-+	if (namep == NULL)
-+		namep = "";
-+	l = strlen(namep);
-+
-+	DBG("* struct: %s\n", namep);
-+
-+	/* Fixup an Apple bug where they have bogus \0 chars in the
-+	 * middle of the path in some properties, and extract
-+	 * the unit name (everything after the last '/').
-+	 */
-+	memcpy((void *)*mem_end, namep, l + 1);
-+	namep = (char *)*mem_end;
-+	for (lp = p = namep, ep = namep + l; p < ep; p++) {
-+		if (*p == '/')
-+			lp = namep;
-+		else if (*p != 0)
-+			*lp++ = *p;
-+	}
-+	*lp = 0;
-+	*mem_end = _ALIGN_UP((unsigned long)lp + 1, 4);
-+
-+	/* get and store all properties */
-+	while (*ppp) {
-+		struct bootx_dt_prop *pp =
-+			(struct bootx_dt_prop *)(base + *ppp);
-+
-+		namep = pp->name ? (char *)(base + pp->name) : NULL;
-+		/* Skip "name" */
-+ 		if (namep == NULL || !strcmp(namep, "name"))
-+ 			goto next;
-+		/* Skip "bootargs" in /chosen too as we replace it */
-+		if (node == bootx_node_chosen && !strcmp(namep, "bootargs"))
-+			goto next;
-+
-+		/* push property head */
-+		bootx_dt_add_prop(namep,
-+				  pp->value ? (void *)(base + pp->value): NULL,
-+				  pp->length, mem_end);
-+	next:
-+		ppp = &pp->next;
-+	}
-+
-+	if (node == bootx_node_chosen)
-+		bootx_add_chosen_props(base, mem_end);
-+	if (node == bootx_info->dispDeviceRegEntryOffset)
-+		bootx_add_display_props(base, mem_end);
-+
-+	/* do all our children */
-+	cpp = &np->child;
-+	while(*cpp) {
-+		np = (struct bootx_dt_node *)(base + *cpp);
-+		bootx_scan_dt_build_struct(base, *cpp, mem_end);
-+		cpp = &np->sibling;
-+	}
-+
-+	dt_push_token(OF_DT_END_NODE, mem_end);
-+}
-+
-+static unsigned long __init bootx_flatten_dt(unsigned long start)
-+{
-+	boot_infos_t *bi = bootx_info;
-+	unsigned long mem_start, mem_end;
-+	struct boot_param_header *hdr;
-+	unsigned long base;
-+	u64 *rsvmap;
-+
-+	/* Start using memory after the big blob passed by BootX, get
-+	 * some space for the header
-+	 */
-+	mem_start = mem_end = _ALIGN_UP(((unsigned long)bi) + start, 4);
-+	DBG("Boot params header at: %x\n", mem_start);
-+	hdr = (struct boot_param_header *)mem_start;
-+	mem_end += sizeof(struct boot_param_header);
-+	rsvmap = (u64 *)(_ALIGN_UP(mem_end, 8));
-+	hdr->off_mem_rsvmap = ((unsigned long)rsvmap) - mem_start;
-+	mem_end = ((unsigned long)rsvmap) + 8 * sizeof(u64);
-+
-+	/* Get base of tree */
-+	base = ((unsigned long)bi) + bi->deviceTreeOffset;
-+
-+	/* Build string array */
-+	DBG("Building string array at: %x\n", mem_end);
-+	DBG("Device Tree Base=%x\n", base);
-+	bootx_dt_strbase = mem_end;
-+	mem_end += 4;
-+	bootx_dt_strend = mem_end;
-+	bootx_scan_dt_build_strings(base, 4, &mem_end);
-+	hdr->off_dt_strings = bootx_dt_strbase - mem_start;
-+	hdr->dt_strings_size = bootx_dt_strend - bootx_dt_strbase;
-+
-+	/* Build structure */
-+	mem_end = _ALIGN(mem_end, 16);
-+	DBG("Building device tree structure at: %x\n", mem_end);
-+	hdr->off_dt_struct = mem_end - mem_start;
-+	bootx_scan_dt_build_struct(base, 4, &mem_end);
-+	dt_push_token(OF_DT_END, &mem_end);
-+
-+	/* Finish header */
-+	hdr->boot_cpuid_phys = 0;
-+	hdr->magic = OF_DT_HEADER;
-+	hdr->totalsize = mem_end - mem_start;
-+	hdr->version = OF_DT_VERSION;
-+	/* Version 16 is not backward compatible */
-+	hdr->last_comp_version = 0x10;
-+
-+	/* Reserve the whole thing and copy the reserve map in, we
-+	 * also bump mem_reserve_cnt to cause further reservations to
-+	 * fail since it's too late.
-+	 */
-+	mem_end = _ALIGN(mem_end, PAGE_SIZE);
-+	DBG("End of boot params: %x\n", mem_end);
-+	rsvmap[0] = mem_start;
-+	rsvmap[1] = mem_end;
-+	rsvmap[2] = 0;
-+	rsvmap[3] = 0;
-+
-+	return (unsigned long)hdr;
-+}
-+
-+
-+#ifdef CONFIG_BOOTX_TEXT
-+static void __init btext_welcome(boot_infos_t *bi)
-+{
-+	unsigned long flags;
-+	unsigned long pvr;
-+
-+	bootx_printf("Welcome to Linux, kernel " UTS_RELEASE "\n");
-+	bootx_printf("\nlinked at        : 0x%x", KERNELBASE);
-+	bootx_printf("\nframe buffer at  : 0x%x", bi->dispDeviceBase);
-+	bootx_printf(" (phys), 0x%x", bi->logicalDisplayBase);
-+	bootx_printf(" (log)");
-+	bootx_printf("\nklimit           : 0x%x",(unsigned long)klimit);
-+	bootx_printf("\nboot_info at     : 0x%x", bi);
-+	__asm__ __volatile__ ("mfmsr %0" : "=r" (flags));
-+	bootx_printf("\nMSR              : 0x%x", flags);
-+	__asm__ __volatile__ ("mfspr %0, 287" : "=r" (pvr));
-+	bootx_printf("\nPVR              : 0x%x", pvr);
-+	pvr >>= 16;
-+	if (pvr > 1) {
-+	    __asm__ __volatile__ ("mfspr %0, 1008" : "=r" (flags));
-+	    bootx_printf("\nHID0             : 0x%x", flags);
-+	}
-+	if (pvr == 8 || pvr == 12 || pvr == 0x800c) {
-+	    __asm__ __volatile__ ("mfspr %0, 1019" : "=r" (flags));
-+	    bootx_printf("\nICTC             : 0x%x", flags);
-+	}
-+#ifdef DEBUG
-+	bootx_printf("\n\n");
-+	bootx_printf("bi->deviceTreeOffset   : 0x%x\n",
-+		     bi->deviceTreeOffset);
-+	bootx_printf("bi->deviceTreeSize     : 0x%x\n",
-+		     bi->deviceTreeSize);
-+#endif
-+	bootx_printf("\n\n");
-+}
-+#endif /* CONFIG_BOOTX_TEXT */
-+
-+void __init bootx_init(unsigned long r3, unsigned long r4)
-+{
-+	boot_infos_t *bi = (boot_infos_t *) r4;
-+	unsigned long hdr;
-+	unsigned long space;
-+	unsigned long ptr, x;
-+	char *model;
-+	unsigned long offset = reloc_offset();
-+
-+	reloc_got2(offset);
-+
-+	bootx_info = bi;
-+
-+	/* We haven't cleared any bss at this point, make sure
-+	 * what we need is initialized
-+	 */
-+	bootx_dt_strbase = bootx_dt_strend = 0;
-+	bootx_node_chosen = 0;
-+	bootx_disp_path[0] = 0;
-+
-+	if (!BOOT_INFO_IS_V2_COMPATIBLE(bi))
-+		bi->logicalDisplayBase = bi->dispDeviceBase;
-+
-+#ifdef CONFIG_BOOTX_TEXT
-+	btext_setup_display(bi->dispDeviceRect[2] - bi->dispDeviceRect[0],
-+			    bi->dispDeviceRect[3] - bi->dispDeviceRect[1],
-+			    bi->dispDeviceDepth, bi->dispDeviceRowBytes,
-+			    (unsigned long)bi->logicalDisplayBase);
-+	btext_clearscreen();
-+	btext_flushscreen();
-+#endif /* CONFIG_BOOTX_TEXT */
-+
-+	/*
-+	 * Test if boot-info is compatible.  Done only in config
-+	 * CONFIG_BOOTX_TEXT since there is nothing much we can do
-+	 * with an incompatible version, except display a message
-+	 * and eventually hang the processor...
-+	 *
-+	 * I'll try to keep enough of boot-info compatible in the
-+	 * future to always allow display of this message;
-+	 */
-+	if (!BOOT_INFO_IS_COMPATIBLE(bi)) {
-+		bootx_printf(" !!! WARNING - Incompatible version"
-+			     " of BootX !!!\n\n\n");
-+		for (;;)
-+			;
-+	}
-+	if (bi->architecture != BOOT_ARCH_PCI) {
-+		bootx_printf(" !!! WARNING - Usupported machine"
-+			     " architecture !\n");
-+		for (;;)
-+			;
-+	}
-+
-+#ifdef CONFIG_BOOTX_TEXT
-+	btext_welcome(bi);
-+#endif
-+	/* New BootX enters kernel with MMU off, i/os are not allowed
-+	 * here. This hack will have been done by the boostrap anyway.
-+	 */
-+	if (bi->version < 4) {
-+		/*
-+		 * XXX If this is an iMac, turn off the USB controller.
++		/* Currently, we consider failure as harmless, this may
++		 * change in the future, once I've found all the device
++		 * tree bugs in older machines & worked around them
 +		 */
-+		model = (char *) bootx_early_getprop(r4 + bi->deviceTreeOffset,
-+						     4, "model");
-+		if (model
-+		    && (strcmp(model, "iMac,1") == 0
-+			|| strcmp(model, "PowerMac1,1") == 0)) {
-+			bootx_printf("iMac,1 detected, shutting down USB \n");
-+			out_le32((unsigned *)0x80880008, 1);	/* XXX */
++		if (insert_resource(parent_res, res)) {
++			printk(KERN_WARNING "Can't request resource "
++			       "%d for MacIO device %s\n",
++			       index, dev->ofdev.dev.bus_id);
 +		}
 +	}
-+
-+	/* Get a pointer that points above the device tree, args, ramdisk,
-+	 * etc... to use for generating the flattened tree
-+	 */
-+	if (bi->version < 5) {
-+		space = bi->deviceTreeOffset + bi->deviceTreeSize;
-+		if (bi->ramDisk)
-+			space = bi->ramDisk + bi->ramDiskSize;
-+	} else
-+		space = bi->totalParamsSize;
-+
-+	bootx_printf("Total space used by parameters & ramdisk: %x \n", space);
-+
-+	/* New BootX will have flushed all TLBs and enters kernel with
-+	 * MMU switched OFF, so this should not be useful anymore.
-+	 */
-+	if (bi->version < 4) {
-+		bootx_printf("Touching pages...\n");
-+
-+		/*
-+		 * Touch each page to make sure the PTEs for them
-+		 * are in the hash table - the aim is to try to avoid
-+		 * getting DSI exceptions while copying the kernel image.
-+		 */
-+		for (ptr = ((unsigned long) &_stext) & PAGE_MASK;
-+		     ptr < (unsigned long)bi + space; ptr += PAGE_SIZE)
-+			x = *(volatile unsigned long *)ptr;
-+	}
-+
-+	/* Ok, now we need to generate a flattened device-tree to pass
-+	 * to the kernel
-+	 */
-+	bootx_printf("Preparing boot params...\n");
-+
-+	hdr = bootx_flatten_dt(space);
-+
-+#ifdef CONFIG_BOOTX_TEXT
-+#ifdef SET_BOOT_BAT
-+	bootx_printf("Preparing BAT...\n");
-+	btext_prepare_BAT();
-+#else
-+	btext_unmap();
-+#endif
-+#endif
-+
-+	reloc_got2(-offset);
-+
-+	__start(hdr, KERNELBASE + offset, 0);
++	dev->n_resources = index;
 +}
-Index: linux-serialfix/arch/powerpc/kernel/head_32.S
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/head_32.S	2005-11-23 16:54:25.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/head_32.S	2005-11-23 16:54:26.000000000 +1100
-@@ -125,6 +125,19 @@ __start:
- 	bl	prom_init
- 	trap
++
+ /**
+  * macio_add_one_device - Add one device from OF node to the device tree
+  * @chip: pointer to the macio_chip holding the device
+@@ -294,12 +372,13 @@ static int macio_resource_quirks(struct 
+  * When media-bay is changed to hotswap drivers, this function will
+  * be exposed to the bay driver some way...
+  */
+-static struct macio_dev * macio_add_one_device(struct macio_chip *chip, struct device *parent,
+-					       struct device_node *np, struct macio_dev *in_bay,
++static struct macio_dev * macio_add_one_device(struct macio_chip *chip,
++					       struct device *parent,
++					       struct device_node *np,
++					       struct macio_dev *in_bay,
+ 					       struct resource *parent_res)
+ {
+ 	struct macio_dev *dev;
+-	int i, j;
+ 	u32 *reg;
+ 	
+ 	if (np == NULL)
+@@ -326,7 +405,8 @@ static struct macio_dev * macio_add_one_
  
-+/*
-+ * Check for BootX signature when supporting PowerMac and branch to
-+ * appropriate trampoline if it's present
-+ */
-+#ifdef CONFIG_PPC_PMAC
-+1:	lis	r31,0x426f
-+	ori	r31,r31,0x6f58
-+	cmpw	0,r3,r31
-+	bne	1f
-+	bl	bootx_init
-+	trap
-+#endif /* CONFIG_PPC_PMAC */
+ 	/* MacIO itself has a different reg, we use it's PCI base */
+ 	if (np == chip->of_node) {
+-		sprintf(dev->ofdev.dev.bus_id, "%1d.%08lx:%.*s", chip->lbus.index,
++		sprintf(dev->ofdev.dev.bus_id, "%1d.%08lx:%.*s",
++			chip->lbus.index,
+ #ifdef CONFIG_PCI
+ 			pci_resource_start(chip->lbus.pdev, 0),
+ #else
+@@ -335,57 +415,16 @@ static struct macio_dev * macio_add_one_
+ 			MAX_NODE_NAME_SIZE, np->name);
+ 	} else {
+ 		reg = (u32 *)get_property(np, "reg", NULL);
+-		sprintf(dev->ofdev.dev.bus_id, "%1d.%08x:%.*s", chip->lbus.index,
++		sprintf(dev->ofdev.dev.bus_id, "%1d.%08x:%.*s",
++			chip->lbus.index,
+ 			reg ? *reg : 0, MAX_NODE_NAME_SIZE, np->name);
+ 	}
+ 
+-	/* For now, we use pre-parsed entries in the device-tree for
+-	 * interrupt routing and addresses, but we should change that
+-	 * to dynamically parsed entries and so get rid of most of the
+-	 * clutter in struct device_node
+-	 */
+-	for (i = j = 0; i < np->n_intrs; i++) {
+-		struct resource *res = &dev->interrupt[j];
+-
+-		if (j >= MACIO_DEV_COUNT_IRQS)
+-			break;
+-		res->start = np->intrs[i].line;
+-		res->flags = IORESOURCE_IO;
+-		if (np->intrs[j].sense)
+-			res->flags |= IORESOURCE_IRQ_LOWLEVEL;
+-		else
+-			res->flags |= IORESOURCE_IRQ_HIGHEDGE;
+-		res->name = dev->ofdev.dev.bus_id;
+-		if (macio_resource_quirks(np, res, i))
+-			memset(res, 0, sizeof(struct resource));
+-		else
+-			j++;
+-	}
+-	dev->n_interrupts = j;
+-	for (i = j = 0; i < np->n_addrs; i++) {
+-		struct resource *res = &dev->resource[j];
+-		
+-		if (j >= MACIO_DEV_COUNT_RESOURCES)
+-			break;
+-		res->start = np->addrs[i].address;
+-		res->end = np->addrs[i].address + np->addrs[i].size - 1;
+-		res->flags = IORESOURCE_MEM;
+-		res->name = dev->ofdev.dev.bus_id;
+-		if (macio_resource_quirks(np, res, i))
+-			memset(res, 0, sizeof(struct resource));
+-		else {
+-			j++;
+-			/* Currently, we consider failure as harmless, this may
+-			 * change in the future, once I've found all the device
+-			 * tree bugs in older machines & worked around them
+-			 */
+-			if (insert_resource(parent_res, res))
+-       				printk(KERN_WARNING "Can't request resource %d for MacIO"
+-				       " device %s\n", i, dev->ofdev.dev.bus_id);
+-		}
+-	}
+-	dev->n_resources = j;
++	/* Setup interrupts & resources */
++	macio_setup_interrupts(dev);
++	macio_setup_resources(dev, parent_res);
+ 
++	/* Register with core */
+ 	if (of_device_register(&dev->ofdev) != 0) {
+ 		printk(KERN_DEBUG"macio: device registration error for %s!\n",
+ 		       dev->ofdev.dev.bus_id);
+@@ -442,36 +481,42 @@ static void macio_pci_add_devices(struct
+ 
+ 	/* First scan 1st level */
+ 	for (np = NULL; (np = of_get_next_child(pnode, np)) != NULL;) {
+-		if (!macio_skip_device(np)) {
+-			of_node_get(np);
+-			mdev = macio_add_one_device(chip, &rdev->ofdev.dev, np, NULL, root_res);
+-			if (mdev == NULL)
+-				of_node_put(np);
+-			else if (strncmp(np->name, "media-bay", 9) == 0)
+-				mbdev = mdev;
+-			else if (strncmp(np->name, "escc", 4) == 0)
+-				sdev = mdev;
+-		}
++		if (macio_skip_device(np))
++			continue;
++		of_node_get(np);
++		mdev = macio_add_one_device(chip, &rdev->ofdev.dev, np, NULL,
++					    root_res);
++		if (mdev == NULL)
++			of_node_put(np);
++		else if (strncmp(np->name, "media-bay", 9) == 0)
++			mbdev = mdev;
++		else if (strncmp(np->name, "escc", 4) == 0)
++			sdev = mdev;
+ 	}
+ 
+ 	/* Add media bay devices if any */
+ 	if (mbdev)
+-		for (np = NULL; (np = of_get_next_child(mbdev->ofdev.node, np)) != NULL;)
+-			if (!macio_skip_device(np)) {
+-				of_node_get(np);
+-				if (macio_add_one_device(chip, &mbdev->ofdev.dev, np, mbdev,
+-							 root_res) == NULL)
+-					of_node_put(np);
+-			}
++		for (np = NULL; (np = of_get_next_child(mbdev->ofdev.node, np))
++			     != NULL;) {
++			if (macio_skip_device(np))
++				continue;
++			of_node_get(np);
++			if (macio_add_one_device(chip, &mbdev->ofdev.dev, np,
++						 mbdev,  root_res) == NULL)
++				of_node_put(np);
++		}
 +
- 1:	mr	r31,r3			/* save parameters */
- 	mr	r30,r4
- 	li	r24,0			/* cpu # */
-Index: linux-serialfix/arch/powerpc/platforms/powermac/Makefile
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/powermac/Makefile	2005-11-23 16:54:25.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/powermac/Makefile	2005-11-23 16:54:26.000000000 +1100
-@@ -1,3 +1,5 @@
-+CFLAGS_bootx_init.o  		+= -fPIC
-+
- obj-y				+= pic.o setup.o time.o feature.o pci.o \
- 				   sleep.o low_i2c.o cache.o
- obj-$(CONFIG_PMAC_BACKLIGHT)	+= backlight.o
-@@ -6,5 +8,6 @@ obj-$(CONFIG_CPU_FREQ_PMAC64)	+= cpufreq
- obj-$(CONFIG_NVRAM)		+= nvram.o
- # ppc64 pmac doesn't define CONFIG_NVRAM but needs nvram stuff
- obj-$(CONFIG_PPC64)		+= nvram.o
-+obj-$(CONFIG_PPC32)		+= bootx_init.o
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_PPC_MERGE)		+= udbg_scc.o udbg_adb.o
-Index: linux-serialfix/include/asm-powerpc/bootx.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-serialfix/include/asm-powerpc/bootx.h	2005-11-23 16:54:26.000000000 +1100
-@@ -0,0 +1,166 @@
-+/*
-+ * This file describes the structure passed from the BootX application
-+ * (for MacOS) when it is used to boot Linux.
-+ *
-+ * Written by Benjamin Herrenschmidt.
-+ */
-+
-+
-+#ifndef __ASM_BOOTX_H__
-+#define __ASM_BOOTX_H__
-+
-+#ifdef macintosh
-+#include <Types.h>
-+#include "linux_type_defs.h"
-+#endif
-+
-+#ifdef macintosh
-+/* All this requires PowerPC alignment */
-+#pragma options align=power
-+#endif
-+
-+/* On kernel entry:
-+ *
-+ * r3 = 0x426f6f58    ('BooX')
-+ * r4 = pointer to boot_infos
-+ * r5 = NULL
-+ *
-+ * Data and instruction translation disabled, interrupts
-+ * disabled, kernel loaded at physical 0x00000000 on PCI
-+ * machines (will be different on NuBus).
-+ */
-+
-+#define BOOT_INFO_VERSION               5
-+#define BOOT_INFO_COMPATIBLE_VERSION    1
-+
-+/* Bit in the architecture flag mask. More to be defined in
-+   future versions. Note that either BOOT_ARCH_PCI or
-+   BOOT_ARCH_NUBUS is set. The other BOOT_ARCH_NUBUS_xxx are
-+   set additionally when BOOT_ARCH_NUBUS is set.
-+ */
-+#define BOOT_ARCH_PCI                   0x00000001UL
-+#define BOOT_ARCH_NUBUS                 0x00000002UL
-+#define BOOT_ARCH_NUBUS_PDM             0x00000010UL
-+#define BOOT_ARCH_NUBUS_PERFORMA        0x00000020UL
-+#define BOOT_ARCH_NUBUS_POWERBOOK       0x00000040UL
-+
-+/*  Maximum number of ranges in phys memory map */
-+#define MAX_MEM_MAP_SIZE				26
-+
-+/* This is the format of an element in the physical memory map. Note that
-+   the map is optional and current BootX will only build it for pre-PCI
-+   machines */
-+typedef struct boot_info_map_entry
-+{
-+    __u32       physAddr;                /* Physical starting address */
-+    __u32       size;                    /* Size in bytes */
-+} boot_info_map_entry_t;
-+
-+
-+/* Here are the boot informations that are passed to the bootstrap
-+ * Note that the kernel arguments and the device tree are appended
-+ * at the end of this structure. */
-+typedef struct boot_infos
-+{
-+    /* Version of this structure */
-+    __u32       version;
-+    /* backward compatible down to version: */
-+    __u32       compatible_version;
-+
-+    /* NEW (vers. 2) this holds the current _logical_ base addr of
-+       the frame buffer (for use by early boot message) */
-+    __u8*       logicalDisplayBase;
-+
-+    /* NEW (vers. 4) Apple's machine identification */
-+    __u32       machineID;
-+
-+    /* NEW (vers. 4) Detected hw architecture */
-+    __u32       architecture;
-+
-+    /* The device tree (internal addresses relative to the beginning of the tree,
-+     * device tree offset relative to the beginning of this structure).
-+     * On pre-PCI macintosh (BOOT_ARCH_PCI bit set to 0 in architecture), this
-+     * field is 0.
-+     */
-+    __u32       deviceTreeOffset;        /* Device tree offset */
-+    __u32       deviceTreeSize;          /* Size of the device tree */
-+
-+    /* Some infos about the current MacOS display */
-+    __u32       dispDeviceRect[4];       /* left,top,right,bottom */
-+    __u32       dispDeviceDepth;         /* (8, 16 or 32) */
-+    __u8*       dispDeviceBase;          /* base address (physical) */
-+    __u32       dispDeviceRowBytes;      /* rowbytes (in bytes) */
-+    __u32       dispDeviceColorsOffset;  /* Colormap (8 bits only) or 0 (*) */
-+    /* Optional offset in the registry to the current
-+     * MacOS display. (Can be 0 when not detected) */
-+     __u32      dispDeviceRegEntryOffset;
-+
-+    /* Optional pointer to boot ramdisk (offset from this structure) */
-+    __u32       ramDisk;
-+    __u32       ramDiskSize;             /* size of ramdisk image */
-+
-+    /* Kernel command line arguments (offset from this structure) */
-+    __u32       kernelParamsOffset;
-+
-+    /* ALL BELOW NEW (vers. 4) */
-+
-+    /* This defines the physical memory. Valid with BOOT_ARCH_NUBUS flag
-+       (non-PCI) only. On PCI, memory is contiguous and it's size is in the
-+       device-tree. */
-+    boot_info_map_entry_t
-+    	        physMemoryMap[MAX_MEM_MAP_SIZE]; /* Where the phys memory is */
-+    __u32       physMemoryMapSize;               /* How many entries in map */
-+
-+
-+    /* The framebuffer size (optional, currently 0) */
-+    __u32       frameBufferSize;         /* Represents a max size, can be 0. */
-+
-+    /* NEW (vers. 5) */
-+
-+    /* Total params size (args + colormap + device tree + ramdisk) */
-+    __u32       totalParamsSize;
-+
-+} boot_infos_t;
-+
-+/* (*) The format of the colormap is 256 * 3 * 2 bytes. Each color index
-+ * is represented by 3 short words containing a 16 bits (unsigned) color
-+ * component. Later versions may contain the gamma table for direct-color
-+ * devices here.
-+ */
-+#define BOOTX_COLORTABLE_SIZE    (256UL*3UL*2UL)
-+
-+/* BootX passes the device-tree using a format that comes from earlier
-+ * ppc32 kernels. This used to match what is in prom.h, but not anymore
-+ * so we now define it here
-+ */
-+struct bootx_dt_prop {
-+	u32	name;
-+	int	length;
-+	u32	value;
-+	u32	next;
-+};
-+
-+struct bootx_dt_node {
-+	u32	unused0;
-+	u32	unused1;
-+	u32	phandle;	/* not really available */
-+	u32	unused2;
-+	u32	unused3;
-+	u32	unused4;
-+	u32	unused5;
-+	u32	full_name;
-+	u32	properties;
-+	u32	parent;
-+	u32	child;
-+	u32	sibling;
-+	u32	next;
-+	u32	allnext;
-+};
-+
-+extern void bootx_init(unsigned long r4, unsigned long phys);
-+
-+#ifdef macintosh
-+#pragma options align=reset
-+#endif
-+
-+#endif
+ 	/* Add serial ports if any */
+ 	if (sdev) {
+-		for (np = NULL; (np = of_get_next_child(sdev->ofdev.node, np)) != NULL;)
+-			if (!macio_skip_device(np)) {
+-				of_node_get(np);
+-				if (macio_add_one_device(chip, &sdev->ofdev.dev, np, NULL,
+-							 root_res) == NULL)
+-					of_node_put(np);
+-			}
++		for (np = NULL; (np = of_get_next_child(sdev->ofdev.node, np))
++			     != NULL;) {
++			if (macio_skip_device(np))
++				continue;
++			of_node_get(np);
++			if (macio_add_one_device(chip, &sdev->ofdev.dev, np,
++						 NULL, root_res) == NULL)
++				of_node_put(np);
++		}
+ 	}
+ }
+ 
+@@ -519,7 +564,8 @@ void macio_unregister_driver(struct maci
+  *	Returns 0 on success, or %EBUSY on error.  A warning
+  *	message is also printed on failure.
+  */
+-int macio_request_resource(struct macio_dev *dev, int resource_no, const char *name)
++int macio_request_resource(struct macio_dev *dev, int resource_no,
++			   const char *name)
+ {
+ 	if (macio_resource_len(dev, resource_no) == 0)
+ 		return 0;
+@@ -606,20 +652,20 @@ static int __devinit macio_pci_probe(str
+ 	if (ent->vendor != PCI_VENDOR_ID_APPLE)
+ 		return -ENODEV;
+ 
+-	/* Note regarding refcounting: We assume pci_device_to_OF_node() is ported
+-	 * to new OF APIs and returns a node with refcount incremented. This isn't
+-	 * the case today, but on the other hand ppc32 doesn't do refcounting. This
+-	 * will have to be fixed when going to ppc64. --BenH.
++	/* Note regarding refcounting: We assume pci_device_to_OF_node() is
++	 * ported to new OF APIs and returns a node with refcount incremented.
+ 	 */
+ 	np = pci_device_to_OF_node(pdev);
+ 	if (np == NULL)
+ 		return -ENODEV;
+ 
+-	/* This assumption is wrong, fix that here for now until I fix the arch */
++	/* The above assumption is wrong !!!
++	 * fix that here for now until I fix the arch code
++	 */
+ 	of_node_get(np);
+ 
+-	/* We also assume that pmac_feature will have done a get() on nodes stored
+-	 * in the macio chips array
++	/* We also assume that pmac_feature will have done a get() on nodes
++	 * stored in the macio chips array
+ 	 */
+ 	chip = macio_find(np, macio_unknown);
+        	of_node_put(np);
+@@ -639,9 +685,9 @@ static int __devinit macio_pci_probe(str
+ 
+ 	/*
+ 	 * HACK ALERT: The WallStreet PowerBook and some OHare based machines
+-	 * have 2 macio ASICs. I must probe the "main" one first or IDE ordering
+-	 * will be incorrect. So I put on "hold" the second one since it seem to
+-	 * appear first on PCI
++	 * have 2 macio ASICs. I must probe the "main" one first or IDE
++	 * ordering will be incorrect. So I put on "hold" the second one since
++	 * it seem to appear first on PCI
+ 	 */
+ 	if (chip->type == macio_gatwick || chip->type == macio_ohareII)
+ 		if (macio_chips[0].lbus.pdev == NULL) {
