@@ -1,19 +1,16 @@
-Return-Path: <jarno.manninen@tut.fi>
-Received: from kivi.ton.tut.fi (kivi.ton.tut.fi [193.166.235.14])
-	by ozlabs.org (Postfix) with ESMTP id 93753687D0
+Return-Path: <dhlii@comcast.net>
+Received: from sccrmhc11.comcast.net (sccrmhc11.comcast.net [204.127.202.55])
+	by ozlabs.org (Postfix) with ESMTP id D113F687F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 02:55:16 +1100 (EST)
-From: Jarno Manninen <jarno.manninen@tut.fi>
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 23 Nov 2005 17:55:05 +0200
-References: <000901c5f03c$5d4e8c60$6405a8c0@absolut>
-In-Reply-To: <000901c5f03c$5d4e8c60$6405a8c0@absolut>
+	Thu, 24 Nov 2005 03:00:21 +1100 (EST)
+Message-ID: <438490CC.6040205@comcast.net>
+Date: Wed, 23 Nov 2005 10:54:52 -0500
+From: "David H. Lynch Jr" <dhlii@comcast.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200511231755.05549.jarno.manninen@tut.fi>
-Cc: Absolut Hunter <absoluthunter@comcast.net>
-Subject: Re: USB Keyboard Support
+To: zjznliang <zjznliang_popo@163.com>
+Content-Type: text/plain; charset=GB2312
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Help ! 2.6.14 kernel can't bring up
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +21,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 23 November 2005 16:44, Absolut Hunter wrote:
+ I was stuck at exactly this point for over a week. Basically, at this
+point lots of things happen all at once:
+Prior to this the MMU has had a small collection of TLB's setup.
+The 6 lines of code you listed:
+change from whatever Machine Status you powered up in to the proper
+Machine status for running the kernel with memory translation and
+exception handling enabled.
+and switch from executing using physical addresses to executing using
+virtual addresses.
+and "jump" via the "rfi" from real mode to virtual mode at virtual
+address start_here.
 
-> We are using a Sm501 video chip and also have that working now, I was
-> hoping to get the USB Keyboard system and running so I could totally run
-> the system without having to use the serial port as the stdin/stdout
-> anymore.
+If you are using a LED IO port for debugging, then you MUST setup a TLB
+entry for that LED or after the rfi you will not be able to write to it.
+There should be a setup tlb block inside a CONFIG_SERIAL_TEXT_DEBUG
+block copy it, change the address to match your LED port and set a new
+index and your LED debug port should be good to go.
 
-Um. The serial port has its advantages when doing developement. If or when you 
-crash the whole system you still have the output on the terminal. :)
+In my instance, my problem turned out to be with Machine Check
+exceptions - The moment that rfi executes not only is virtual memory
+enabled - but all exception handling is turned on.
+I was able to find this my "testing" things one bit in the MSR at a
+time, until I figured out which ones could be turned on and which could not.
 
-> Anyone know what else is required in order to setup the USB keyboard as the
-> input device when using a VGA console?
 
-If you have frame buffer up and running then setting console=tty0 should be 
-enough. Depending on your system you might want to check where 
-the /dev/console points to. 
-
-- Jarno
+zjznliang wrote:
+> Hello David H. Lynch Jr.,£¡
+>
+> 	Now ,I am tracing the code in Linux 2.6.14 in head_8xx.S .
+> 	I used led to trace the procedure,and I found the block in it .
+> 	
+> 644	/* Now turn on the MMU for real! */
+> 645		li	r4,MSR_KERNEL
+> 646		lis	r3,start_kernel@h
+> 647		ori	r3,r3,start_kernel@l
+> 648		mtspr	SPRN_SRR0,r3
+> 649		mtspr	SPRN_SRR1,r4
+> 650		rfi			/* enable MMU and jump to start_kernel */
+>
+> I set the led between the 649 and 650 ,and the led was light ,
+> but when I set the led in the function start_kernel the led is not
+> light .
+>
+> I thought the function start_kernel was not jumped to .
+>
+> what do you think ?
+>   
