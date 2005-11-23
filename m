@@ -1,16 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <le_tang1@yahoo.com>
+Received: from web50607.mail.yahoo.com (web50607.mail.yahoo.com
+	[206.190.38.94]) by ozlabs.org (Postfix) with SMTP id 76964681BE
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 23 Nov 2005 16:43:53 +1100 (EST)
+Message-ID: <20051123053711.1110.qmail@web50607.mail.yahoo.com>
+Date: Tue, 22 Nov 2005 21:37:11 -0800 (PST)
+From: le tang <le_tang1@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <200511222141.18861.pantelis@embeddedalley.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17283.54950.681390.749679@cargo.ozlabs.ibm.com>
-Date: Wed, 23 Nov 2005 13:40:38 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-In-Reply-To: <20051118090845.GB12765@logos.cnet>
-References: <437B2051.5030408@ru.mvista.com> <20051117135810.GB9753@logos.cnet>
-	<437DE07E.6080005@ru.mvista.com>
-	<20051118090845.GB12765@logos.cnet>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: 8xx board-specific platform stuff for fs_enet
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Linux on MPC8541 and MPC8560
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,17 +21,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Marcelo Tosatti writes:
+Hi, 
 
-> Paul, you're OK with the following definitions on asm-ppc/io.h?
-> 
-> +/* access ports */
-> +#define setbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) |  (_v))
-> +#define clrbits32(_addr, _v) out_be32(&(_addr), in_be32(&(_addr)) & ~(_v))
-> +
-> +#define setbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) |  (_v))
-> +#define clrbits16(_addr, _v) out_be16(&(_addr), in_be16(&(_addr)) & ~(_v))
+I got questions on developing the linux on MPC8560 and
+MPC8541. 
 
-I guess so... how many drivers need these things?
+1) Which version of linux would be best suited for
+these two processors? 
 
-Paul.
+2) Can I make model these two processor accurately
+with device trees on the PSIM? 
+
+3) I have cross compiled gcc with target as
+powerpc-eabi option, and I am using
+powerpc-eabi-objdump to disassemble a pre-compiled
+code, I have tried use -M e500 options, but not sure
+if that would give a very accurate assemly listing.
+
+Okay, Thanks for your advice, 
+
+Le
+
+
+
+
+		
+__________________________________ 
+Yahoo! FareChase: Search multiple travel sites in one click.
+http://farechase.yahoo.com
