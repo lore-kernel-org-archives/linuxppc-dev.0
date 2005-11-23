@@ -3,19 +3,19 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C48D0687D5
+	by ozlabs.org (Postfix) with ESMTP id EC6E9687EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 23 Nov 2005 17:09:06 +1100 (EST)
-In-Reply-To: <20051123053711.1110.qmail@web50607.mail.yahoo.com>
-References: <20051123053711.1110.qmail@web50607.mail.yahoo.com>
+	Wed, 23 Nov 2005 18:16:08 +1100 (EST)
+In-Reply-To: <4380829E.7040804@compulab.co.il>
+References: <4380829E.7040804@compulab.co.il>
 Mime-Version: 1.0 (Apple Message framework v746.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CE4C7593-EEC8-4817-8ED8-219FAD1FE2A1@kernel.crashing.org>
+Message-Id: <F7F76A40-0B04-4884-A7A8-1A8B4F2289CA@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 23 Nov 2005 00:09:47 -0600
-To: le tang <le_tang1@yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux on MPC8541 and MPC8560
+Date: Wed, 23 Nov 2005 01:16:50 -0600
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32: smc1_lineif fix for mpc8272
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,35 +26,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Nov 22, 2005, at 11:37 PM, le tang wrote:
-
-> Hi,
->
-> I got questions on developing the linux on MPC8560 and
-> MPC8541.
->
-> 1) Which version of linux would be best suited for
-> these two processors?
-
-2.6.14 is a good starting point.  Older 2.6 kernels have support for  
-MPC8540/MPC8560, I forget when we introduced it.
-
-> 2) Can I make model these two processor accurately
-> with device trees on the PSIM?
-
-Extremely unlikely. While I think PSIM has some support for e500 I  
-dont think it handles anything close enough to boot linux.
-
-> 3) I have cross compiled gcc with target as
-> powerpc-eabi option, and I am using
-> powerpc-eabi-objdump to disassemble a pre-compiled
-> code, I have tried use -M e500 options, but not sure
-> if that would give a very accurate assemly listing.
-
-It should be. The kernel is build with -me500 being passed to the  
-assembler. for the majority of code it doesn't matter.  it will  
-mainly get proper decode of m{t,f}spr instructions and a few other  
-things.
+It this on some specific board with an MPC8272 on it?
 
 - kumar
+
+On Nov 20, 2005, at 8:05 AM, Mike Rapoport wrote:
+
+> This patch fixes the pin assignment of SMC1 for MPC8272 family
+>
+> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+>
+>
+> --  
+> Sincerely yours,
+> Mike Rapoport
+>
+>
+> diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/ 
+> serial/cpm_uart/cpm_uart_cpm2.c
+> --- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> +++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> @@ -89,11 +89,19 @@ void smc1_lineif(struct uart_cpm_port *p
+>  {
+>  	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
+>
+> +#ifdef CONFIG_8272
+> +	/* SMC1 is only on port C on 8272 */
+> +	io->iop_pparc |= 0x0c000000;
+> +	io->iop_pdirc |= 0x04000000;
+> +	io->iop_pdirc &= ~0x08000000;
+> +	io->iop_psorc &= ~0x0c000000;
+> +#else
+>  	/* SMC1 is only on port D */
+>  	io->iop_ppard |= 0x00c00000;
+>  	io->iop_pdird |= 0x00400000;
+>  	io->iop_pdird &= ~0x00800000;
+>  	io->iop_psord &= ~0x00c00000;
+> +#endif
+>
+>  	/* Wire BRG1 to SMC1 */
+>  	cpm2_immr->im_cpmux.cmx_smr &= 0x0f;
