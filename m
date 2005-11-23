@@ -1,19 +1,19 @@
 Return-Path: <rsushko@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 3FC1A687F7
+	by ozlabs.org (Postfix) with ESMTP id DF6BA687F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 03:29:33 +1100 (EST)
+	Thu, 24 Nov 2005 03:29:36 +1100 (EST)
 From: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
 To: Dale Farnsworth <dale@farnsworth.org>
 In-Reply-To: <20051121174745.GA2654@xyzzy.farnsworth.org>
 References: <1132583152.11785.41.camel@mephisto.spb.rtsoft.ru>
 	<20051121174745.GA2654@xyzzy.farnsworth.org>
-Content-Type: multipart/mixed; boundary="=-ww/le5FpSMp3ReWLYh4+"
-Date: Wed, 23 Nov 2005 19:29:24 +0300
-Message-Id: <1132763364.31328.21.camel@mephisto.spb.rtsoft.ru>
+Content-Type: multipart/mixed; boundary="=-uVHW5PbCWHOiOY83IT0H"
+Date: Wed, 23 Nov 2005 19:29:29 +0300
+Message-Id: <1132763369.31328.22.camel@mephisto.spb.rtsoft.ru>
 Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 1/3] ppc32: Fix  a few issues in Yucca PCIe functionality
+Subject: Re: [PATCH 2/3] ppc32: PCIX support for Yucca board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,14 +25,13 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---=-ww/le5FpSMp3ReWLYh4+
+--=-uVHW5PbCWHOiOY83IT0H
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-This is the updated Yucca PCIE patch with removed leading spaces and
-unnecessary braces
+This is updated Yucca PCI-X patch with removed leading spaces
 
-Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
+Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com> 
 
 Thanks,
 Ruslan Sushko
@@ -130,259 +129,297 @@ On Mon, 2005-11-21 at 10:47 -0700, Dale Farnsworth wrote:
 > 
 > 
 
---=-ww/le5FpSMp3ReWLYh4+
-Content-Disposition: attachment; filename=yucca_pcie_fix.patch
-Content-Type: text/x-patch; name=yucca_pcie_fix.patch; charset=utf-8
+--=-uVHW5PbCWHOiOY83IT0H
+Content-Disposition: attachment; filename=yucca_pcix_support.patch
+Content-Type: text/x-patch; name=yucca_pcix_support.patch; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 diff --git a/arch/ppc/platforms/4xx/yucca.c b/arch/ppc/platforms/4xx/yucca.c
 --- a/arch/ppc/platforms/4xx/yucca.c
 +++ b/arch/ppc/platforms/4xx/yucca.c
-@@ -240,13 +240,9 @@ yucca_setup_hoses(void)
+@@ -58,6 +58,25 @@ extern bd_t __res;
+ 
+ static struct ibm44x_clocks clocks __initdata;
+ 
++unsigned char ppc4xx_uic_ext_irq_cfg[] __initdata = {
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ15: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ14: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ13: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ12: PCI-X slot */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ11: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ10: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ9:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ8:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ7:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ6:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ5:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ4:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ3:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ2:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ1:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ0:  EXT */
++};
++
+ static void __init
+ yucca_calibrate_decr(void)
  {
- 	struct pci_controller *hose;
- 	char name[20];
-+	int bus_no = 0;
- 	int i;
- 
--	if (0 && ppc440spe_init_pcie()) {
--		printk(KERN_WARNING "PPC440SPe PCI Express initialization failed\n");
--		return;
--	}
--
- 	for (i = 0; i <= 2; ++i) {
- 		if (!yucca_pcie_card_present(i))
- 			continue;
-@@ -280,12 +276,14 @@ yucca_setup_hoses(void)
- 				  IORESOURCE_MEM,
- 				  name);
- 
--		hose->first_busno = 0;
--		hose->last_busno  = 15;
-+		hose->first_busno = bus_no;
-+		hose->last_busno  = 0xFF;
- 		hose_type[hose->index] = HOSE_PCIE0 + i;
- 
- 		ppc440spe_setup_pcie(hose, i);
- 		hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
-+		bus_no = hose->last_busno + 1;
-+		printk(KERN_INFO "%s: resources allocated\n", name);
- 	}
- 
- 	ppc_md.pci_swizzle = common_swizzle;
-diff --git a/arch/ppc/syslib/ppc440spe_pcie.c b/arch/ppc/syslib/ppc440spe_pcie.c
---- a/arch/ppc/syslib/ppc440spe_pcie.c
-+++ b/arch/ppc/syslib/ppc440spe_pcie.c
-@@ -47,8 +47,6 @@ pcie_read_config(struct pci_bus *bus, un
- 		break;
- 	}
- 
--	if (0) printk("%s: read %x(%d) @ %x\n", __func__, *val, len, offset);
--
- 	return PCIBIOS_SUCCESSFUL;
+@@ -80,13 +99,83 @@ yucca_show_cpuinfo(struct seq_file *m)
+ 	return 0;
  }
  
-@@ -93,9 +91,10 @@ enum {
- 	LNKW_X8			= 0x8
- };
+-static enum {
+-	HOSE_UNKNOWN,
++static void __init yucca_set_emacdata(void)
++{
++	struct ocp_def *def;
++	struct ocp_func_emac_data *emacdata;
++
++	/* Set phy_map, phy_mode, and mac_addr for the EMAC */
++	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
++	emacdata = def->additions;
++	emacdata->phy_map = 0x00000001;	/* Skip 0x00 */
++	emacdata->phy_mode = PHY_MODE_GMII;
++	memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
++}
++
++enum yucca_hoses {
+ 	HOSE_PCIX,
+ 	HOSE_PCIE0,
+ 	HOSE_PCIE1,
+-	HOSE_PCIE2
+-} hose_type[4];
++	HOSE_PCIE2,
++	HOSE_MAX
++};
++
++static enum yucca_hoses hose_type[4];
++
++#define is_pcix_hose(_hs_) ((_hs_) == HOSE_PCIX)
++#define is_pcie_hose(_hs_) (((_hs_) >= HOSE_PCIE0) && ((_hs_) <= HOSE_PCIE2))
++#define pcie_hose_num(_hs_) ((_hs_) - HOSE_PCIE0)
++
++#define PCIX_READW(offset) \
++	(readw((void *)((u32)pcix_reg_base+offset)))
++
++#define PCIX_WRITEW(value, offset) \
++	(writew(value, (void *)((u32)pcix_reg_base+offset)))
++
++#define PCIX_WRITEL(value, offset) \
++	(writel(value, (void *)((u32)pcix_reg_base+offset)))
++
++static void __init
++ppc440spe_setup_pcix(struct pci_controller *hose)
++{
++	void *pcix_reg_base;
++
++	pcix_reg_base = ioremap64(PCIX0_REG_BASE, PCIX_REG_SIZE);
++
++	/* Disable all windows */
++	PCIX_WRITEL(0, PCIX0_POM0SA);
++	PCIX_WRITEL(0, PCIX0_POM1SA);
++	PCIX_WRITEL(0, PCIX0_POM2SA);
++	PCIX_WRITEL(0, PCIX0_PIM0SA);
++	PCIX_WRITEL(0, PCIX0_PIM0SAH);
++	PCIX_WRITEL(0, PCIX0_PIM1SA);
++	PCIX_WRITEL(0, PCIX0_PIM2SA);
++	PCIX_WRITEL(0, PCIX0_PIM2SAH);
++
++	/*
++	 * Setup 512MB PLB->PCI outbound mem window
++	 * (a_n000_0000->0_n000_0000)
++	 * */
++	PCIX_WRITEL(0x0000000d, PCIX0_POM0LAH);
++	PCIX_WRITEL(hose->mem_space.start, PCIX0_POM0LAL);
++	PCIX_WRITEL(0x00000000, PCIX0_POM0PCIAH);
++	PCIX_WRITEL(hose->mem_space.start, PCIX0_POM0PCIAL);
++	PCIX_WRITEL(~(hose->mem_space.end - hose->mem_space.start) | 1 ,
++			PCIX0_POM0SA);
++
++	/* Setup 1GB PCI->PLB inbound memory window at 0, enable MSIs */
++	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAH);
++	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAL);
++	PCIX_WRITEL(0xc0000007, PCIX0_PIM0SA);
++	PCIX_WRITEL(0xffffffff, PCIX0_PIM0SAH);
++
++		/* Enable PCIX0 I/O, Mem, and Busmaster cycles */
++	PCIX_WRITEW(PCIX_READW(PCIX0_COMMAND) | PCI_COMMAND_MEMORY |
++			PCI_COMMAND_MASTER, PCIX0_COMMAND);
++
++	iounmap(pcix_reg_base);
++	eieio();
++}
  
--static void check_error(void)
-+static int check_error(void)
+ static inline int
+ yucca_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
+@@ -100,7 +189,7 @@ yucca_map_irq(struct pci_dev *dev, unsig
+ 		 *	  A   B   C   D
+ 		 */
+ 		{
+-			{ 81, -1, -1, -1 },	/* IDSEL 1 - PCIX0 Slot 0 */
++			{ 49, -1, -1, -1 },	/* IDSEL 1 - PCIX0 Slot 0 */
+ 		};
+ 		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
+ 		return PCI_IRQ_TABLE_LOOKUP;
+@@ -141,34 +230,25 @@ yucca_map_irq(struct pci_dev *dev, unsig
+ 	return -1;
+ }
+ 
+-static void __init yucca_set_emacdata(void)
+-{
+-	struct ocp_def *def;
+-	struct ocp_func_emac_data *emacdata;
+-
+-	/* Set phy_map, phy_mode, and mac_addr for the EMAC */
+-	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
+-	emacdata = def->additions;
+-	emacdata->phy_map = 0x00000001;	/* Skip 0x00 */
+-	emacdata->phy_mode = PHY_MODE_GMII;
+-	memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
+-}
+-
+ static int __init yucca_pcie_card_present(int port)
  {
- 	u32 valPE0, valPE1, valPE2;
-+	int err = 0;
+-   void __iomem *pcie_fpga_base;
+-   u16 reg;
++	void __iomem *pcie_fpga_base;
++	u16 reg;
++
++	pcie_fpga_base = ioremap64(YUCCA_FPGA_REG_BASE, YUCCA_FPGA_REG_SIZE);
++	if (!pcie_fpga_base) {
++		printk(KERN_ERR "FPGA remap filed\n");
++		return 0;
++	}
++	reg = in_be16(pcie_fpga_base + FPGA_REG1C);
++	iounmap(pcie_fpga_base);
  
- 	/* SDR0_PEGPLLLCT1 reset */
- 	if (!(valPE0 = SDR_READ(PESDR0_PLLLCT1) & 0x01000000)) {
-@@ -111,6 +110,7 @@ static void check_error(void)
- 	     !(valPE1 & 0x01000000) ||
- 	     !(valPE2 & 0x01000000)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rstgu error\n");
-+		err = -1;
- 	}
- 
- 	/* SDR0_PExRCSSET rstdl */
-@@ -118,6 +118,7 @@ static void check_error(void)
- 	     !(valPE1 & 0x00010000) ||
- 	     !(valPE2 & 0x00010000)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rstdl error\n");
-+		err = -1;
- 	}
- 
- 	/* SDR0_PExRCSSET rstpyn */
-@@ -132,6 +133,7 @@ static void check_error(void)
- 	     (valPE1 & 0x10000000) ||
- 	     (valPE2 & 0x10000000)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET hldplb error\n");
-+		err = -1;
- 	}
- 
- 	/* SDR0_PExRCSSET rdy */
-@@ -139,6 +141,7 @@ static void check_error(void)
- 	     (valPE1 & 0x00100000) ||
- 	     (valPE2 & 0x00100000)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rdy error\n");
-+		err = -1;
- 	}
- 
- 	/* SDR0_PExRCSSET shutdown */
-@@ -146,7 +149,9 @@ static void check_error(void)
- 	     (valPE1 & 0x00000100) ||
- 	     (valPE2 & 0x00000100)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET shutdown error\n");
-+		err = -1;
- 	}
-+	return err;
+-   pcie_fpga_base = ioremap64(YUCCA_FPGA_REG_BASE, YUCCA_FPGA_REG_SIZE);
+-   reg = in_be16(pcie_fpga_base + FPGA_REG1C);
+-   iounmap(pcie_fpga_base);
+-
+-   switch(port) {
+-   case 0: return !(reg & FPGA_REG1C_PE0_PRSNT);
+-   case 1: return !(reg & FPGA_REG1C_PE1_PRSNT);
+-   case 2: return !(reg & FPGA_REG1C_PE2_PRSNT);
+-   default: return 0;
+-   }
++	switch(port) {
++	case 0: return !(reg & FPGA_REG1C_PE0_PRSNT);
++	case 1: return !(reg & FPGA_REG1C_PE1_PRSNT);
++	case 2: return !(reg & FPGA_REG1C_PE2_PRSNT);
++	default: return 0;
++	}
  }
  
  /*
-@@ -157,33 +162,35 @@ int ppc440spe_init_pcie(void)
- 	/* Set PLL clock receiver to LVPECL */
- 	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) | 1 << 28);
- 
--	check_error();
--
--	printk(KERN_INFO "PCIE initialization OK\n");
-+	if (check_error())
-+		return -1;
- 
--	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000))
--		printk(KERN_INFO "PESDR_PLLCT2 resistance calibration failed (0x%08x)\n",
-+	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000)) {
-+		printk(KERN_INFO "PCIE: PESDR_PLLCT2 resistance calibration "
-+				"failed (0x%08x)\n",
- 		       SDR_READ(PESDR0_PLLLCT2));
-+		return -1;
-+	}
- 
- 	/* De-assert reset of PCIe PLL, wait for lock */
- 	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) & ~(1 << 24));
- 	udelay(3);
-+	printk(KERN_INFO "PCIE initialization OK\n");
- 
- 	return 0;
- }
- 
--int ppc440spe_init_pcie_rootport(int port)
-+int ppc440spe_init_pcie_rootport(u32 port)
+@@ -240,35 +320,44 @@ yucca_setup_hoses(void)
  {
- 	static int core_init;
- 	void __iomem *utl_base;
-+	int attempts;
- 	u32 val = 0;
+ 	struct pci_controller *hose;
+ 	char name[20];
++	enum yucca_hoses hs;
+ 	int bus_no = 0;
 -	int i;
  
- 	if (!core_init) {
-+		if(ppc440spe_init_pcie())
-+			return -1;
- 		++core_init;
--		i = ppc440spe_init_pcie();
--		if (i)
--			return i;
- 	}
- 
- 	/*
-@@ -254,15 +261,10 @@ int ppc440spe_init_pcie_rootport(int por
- 	case 2: val = SDR_READ(PESDR2_RCSSTS); break;
- 	}
- 
--	if (!(val & (1 << 20)))
--		printk(KERN_INFO "PCIE%d: PGRST inactive\n", port);
--	else
--		printk(KERN_WARNING "PGRST for PCIE%d failed %08x\n", port, val);
+-	for (i = 0; i <= 2; ++i) {
+-		if (!yucca_pcie_card_present(i))
+-			continue;
 -
--	switch (port) {
--	case 0: printk(KERN_INFO "PCIE0: LOOP %08x\n", SDR_READ(PESDR0_LOOP)); break;
--	case 1: printk(KERN_INFO "PCIE1: LOOP %08x\n", SDR_READ(PESDR1_LOOP)); break;
--	case 2: printk(KERN_INFO "PCIE2: LOOP %08x\n", SDR_READ(PESDR2_LOOP)); break;
-+	if (val & (1 << 20)) {
-+		printk(KERN_WARNING "PGRST for PCIE%d failed %08x\n",
-+				port, val);
-+		return -1;
- 	}
- 
- 	/*
-@@ -335,44 +337,47 @@ int ppc440spe_init_pcie_rootport(int por
- 	/*
- 	 * Check for VC0 active and assert RDY.
- 	 */
+-		printk(KERN_INFO "PCIE%d: card present\n", i);
+-		yucca_setup_pcie_fpga_rootpoint(i);
+-		if (ppc440spe_init_pcie_rootport(i)) {
+-			printk(KERN_WARNING "PCIE%d: initialization failed\n", i);
+-			continue;
++	for (hs = HOSE_PCIX; hs < HOSE_MAX; ++hs) {
++		if (is_pcie_hose(hs)) {
++			if (!yucca_pcie_card_present(pcie_hose_num(hs)))
++				continue;
 +
-+	attempts = 10;
- 	switch (port) {
- 	case 0:
--		if (!(SDR_READ(PESDR0_RCSSTS) & (1 << 16)))
--			printk(KERN_WARNING "PCIE0: VC0 not active\n");
-+		while(!(SDR_READ(PESDR0_RCSSTS) & (1 << 16))) {
-+			if (!(attempts--)) {
-+				printk(KERN_WARNING "PCIE0: VC0 not active\n");
-+				return -1;
++			printk(KERN_INFO "PCIE%d: card present\n",
++					pcie_hose_num(hs));
++
++			yucca_setup_pcie_fpga_rootpoint(pcie_hose_num(hs));
++			if (ppc440spe_init_pcie_rootport(pcie_hose_num(hs))) {
++				printk(KERN_ERR "PCIE%d: initialization "
++						"failed\n", pcie_hose_num(hs));
++				continue;
 +			}
-+			mdelay(1000);
+ 		}
+ 
+ 		hose = pcibios_alloc_controller();
++
+ 		if (!hose)
+ 			return;
+ 
+-		sprintf(name, "PCIE%d host bridge", i);
++		sprintf(name, "PCI%s%d host bridge",
++				is_pcix_hose(hs) ? "X" : "E",
++				is_pcie_hose(hs) ?  pcie_hose_num(hs) : 0
++				);
+ 		pci_init_resource(&hose->io_resource,
+ 				  YUCCA_PCIX_LOWER_IO,
+ 				  YUCCA_PCIX_UPPER_IO,
+ 				  IORESOURCE_IO,
+ 				  name);
+ 
+-		hose->mem_space.start = YUCCA_PCIE_LOWER_MEM +
+-			i * YUCCA_PCIE_MEM_SIZE;
++		hose->mem_space.start = YUCCA_PCIX_LOWER_MEM +
++			hs * YUCCA_PCIX_MEM_SIZE;
+ 		hose->mem_space.end   = hose->mem_space.start +
+-			YUCCA_PCIE_MEM_SIZE - 1;
++			YUCCA_PCIX_MEM_SIZE - 1;
+ 
+ 		pci_init_resource(&hose->mem_resources[0],
+ 				  hose->mem_space.start,
+@@ -278,9 +367,24 @@ yucca_setup_hoses(void)
+ 
+ 		hose->first_busno = bus_no;
+ 		hose->last_busno  = 0xFF;
+-		hose_type[hose->index] = HOSE_PCIE0 + i;
++		hose_type[hose->index] = hs;
++
++		if (is_pcix_hose(hs)) {
++			hose->io_space.start = YUCCA_PCIX_LOWER_IO;
++			hose->io_space.end = YUCCA_PCIX_UPPER_IO;
++			isa_io_base =
++				(unsigned long)
++					ioremap64(PCIX0_IO_BASE, PCIX_IO_SIZE);
++			hose->io_base_virt = (void *)isa_io_base;
++
++				ppc440spe_setup_pcix(hose);
++
++			setup_indirect_pci(hose, PCIX0_CFGA, PCIX0_CFGD);
++			hose->set_cfg_type = 1;
++		} else {
++			ppc440spe_setup_pcie(hose, pcie_hose_num(hs));
 +		}
- 		SDR_WRITE(PESDR0_RCSSET, SDR_READ(PESDR0_RCSSET) | 1 << 20);
- 		break;
- 	case 1:
--		if (!(SDR_READ(PESDR1_RCSSTS) & (1 << 16)))
--			printk(KERN_WARNING "PCIE0: VC0 not active\n");
-+		while(!(SDR_READ(PESDR1_RCSSTS) & (1 << 16))) {
-+			if (!(attempts--)) {
-+				printk(KERN_WARNING "PCIE1: VC0 not active\n");
-+				return -1;
-+			}
-+			mdelay(1000);
-+		}
- 		SDR_WRITE(PESDR1_RCSSET, SDR_READ(PESDR1_RCSSET) | 1 << 20);
- 		break;
- 	case 2:
--		if (!(SDR_READ(PESDR2_RCSSTS) & (1 << 16)))
--			printk(KERN_WARNING "PCIE0: VC0 not active\n");
-+		while(!(SDR_READ(PESDR2_RCSSTS) & (1 << 16))) {
-+			if (!(attempts--)) {
-+				printk(KERN_WARNING "PCIE2: VC0 not active\n");
-+				return -1;
-+			}
-+			mdelay(1000);
-+		}
- 		SDR_WRITE(PESDR2_RCSSET, SDR_READ(PESDR2_RCSSET) | 1 << 20);
- 		break;
- 	}
  
--#if 0
--	/* Dump all config regs */
--	for (i = 0x300; i <= 0x320; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--	for (i = 0x340; i <= 0x353; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--	for (i = 0x370; i <= 0x383; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--	for (i = 0x3a0; i <= 0x3a2; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--	for (i = 0x3c0; i <= 0x3c3; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--#endif
--
- 	mdelay(100);
+-		ppc440spe_setup_pcie(hose, i);
+ 		hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
+ 		bus_no = hose->last_busno + 1;
+ 		printk(KERN_INFO "%s: resources allocated\n", name);
+diff --git a/include/asm-ppc/ibm44x.h b/include/asm-ppc/ibm44x.h
+--- a/include/asm-ppc/ibm44x.h
++++ b/include/asm-ppc/ibm44x.h
+@@ -557,12 +557,19 @@
+ #define PCIX1_CFGD		0x1ec00004UL
+ #define PCIX2_CFGD		0x2ec00004UL
  
- 	return 0;
- }
++#if defined (CONFIG_440SPE)
++#define PCIX0_IO_BASE		0x0000000C08000000ULL
++#else
+ #define PCIX0_IO_BASE		0x0000000908000000ULL
+ #define PCIX1_IO_BASE		0x0000000908000000ULL
+ #define PCIX2_IO_BASE		0x0000000908000000ULL
++#endif
++
+ #define PCIX_IO_SIZE		0x00010000
  
--void ppc440spe_setup_pcie(struct pci_controller *hose, int port)
-+void ppc440spe_setup_pcie(struct pci_controller *hose, u32 port)
- {
- 	void __iomem *mbase;
- 
-diff --git a/arch/ppc/syslib/ppc440spe_pcie.h b/arch/ppc/syslib/ppc440spe_pcie.h
---- a/arch/ppc/syslib/ppc440spe_pcie.h
-+++ b/arch/ppc/syslib/ppc440spe_pcie.h
-@@ -143,7 +143,7 @@
- #define PECFG_POM0LAH		0x384
- 
- int ppc440spe_init_pcie(void);
--int ppc440spe_init_pcie_rootport(int port);
--void ppc440spe_setup_pcie(struct pci_controller *hose, int port);
-+int ppc440spe_init_pcie_rootport(u32 port);
-+void ppc440spe_setup_pcie(struct pci_controller *hose, u32 port);
- 
- #endif /* __PPC_SYSLIB_PPC440SPE_PCIE_H */
+-#ifdef CONFIG_440SP
++#if defined (CONFIG_440SPE)
++#define PCIX0_REG_BASE		0x0000000c0ec80000ULL
++#elif defined(CONFIG_440SP)
+ #define PCIX0_REG_BASE		0x000000090ec80000ULL
+ #else
+ #define PCIX0_REG_BASE		0x000000020ec80000ULL
 
---=-ww/le5FpSMp3ReWLYh4+--
+--=-uVHW5PbCWHOiOY83IT0H--
