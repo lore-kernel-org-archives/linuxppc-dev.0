@@ -2,12 +2,12 @@ Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Wed, 23 Nov 2005 17:57:25 +1100
-Message-Id: <1132729045.26560.303.camel@gaston>
+Date: Wed, 23 Nov 2005 17:58:13 +1100
+Message-Id: <1132729094.26560.305.camel@gaston>
 Mime-Version: 1.0
 Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Unify udbg (#2)
+Subject: [PATCH] powerpc: Add back support for booting from BootX (#2)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,2383 +17,774 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch unifies udbg for both ppc32 and ppc64 when building the
-merged achitecture. xmon now has a single "back end". The powermac udbg
-stuff gets enriched with some ADB capabilities and btext output. In
-addition, the early_init callback is now called on ppc32 as well,
-approx. in the same order as ppc64 regarding device-tree manipulations.
-The init sequences of ppc32 and ppc64 are getting closer, I'll unify
-them in a later patch.
-
-For now, you can force udbg to the scc using "sccdbg" or to btext using
-"btextdbg" on powermacs. I'll implement a cleaner way of forcing udbg
-output to something else than the autodetected OF output device in a
-later patch.
+ARCH=powerpc couldn't boot from BootX as it uses a "different" way of
+getting in the kernel. This patch adds the necessary trampolines,
+creating a flattened device-tree from the tree passed from MacOS, and
+initializing the btext engine early for really-early debugging.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
 
-Updated to match the changes in prom_parse.c
-
-Index: linux-serialfix/arch/powerpc/kernel/Makefile
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/Makefile	2005-11-23 16:54:25.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/Makefile	2005-11-23 16:54:25.000000000 +1100
-@@ -18,7 +18,7 @@ obj-y				+= vdso32/
- obj-$(CONFIG_PPC64)		+= setup_64.o binfmt_elf32.o sys_ppc32.o \
- 				   signal_64.o ptrace32.o systbl.o \
- 				   paca.o ioctl32.o cpu_setup_power4.o \
--				   firmware.o sysfs.o udbg.o idle_64.o
-+				   firmware.o sysfs.o idle_64.o
- obj-$(CONFIG_PPC64)		+= vdso64/
- obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
- obj-$(CONFIG_POWER4)		+= idle_power4.o
-@@ -45,7 +45,7 @@ extra-$(CONFIG_8xx)		:= head_8xx.o
- extra-y				+= vmlinux.lds
- 
- obj-y				+= process.o init_task.o time.o \
--				   prom.o traps.o setup-common.o
-+				   prom.o traps.o setup-common.o udbg.o
- obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o systbl.o
- obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
- obj-$(CONFIG_PPC_OF)		+= prom_init.o
-@@ -55,8 +55,7 @@ obj-$(CONFIG_6xx)		+= idle_6xx.o
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_KPROBES)		+= kprobes.o
- obj-$(CONFIG_PPC_MULTIPLATFORM) += legacy_serial.o
--obj64-$(CONFIG_PPC_MULTIPLATFORM) += udbg_16550.o
--obj64-$(CONFIG_PPC_PMAC)	+= udbg_scc.o
-+obj-$(CONFIG_PPC_MULTIPLATFORM) += udbg_16550.o
- module-$(CONFIG_PPC64)		+= module_64.o
- obj-$(CONFIG_MODULES)		+= $(module-y)
- 
-Index: linux-serialfix/arch/powerpc/kernel/udbg.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/udbg.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/udbg.c	2005-11-23 16:54:25.000000000 +1100
-@@ -16,8 +16,8 @@
- #include <linux/console.h>
- #include <asm/processor.h>
- 
--void (*udbg_putc)(unsigned char c);
--unsigned char (*udbg_getc)(void);
-+void (*udbg_putc)(char c);
-+char (*udbg_getc)(void);
- int (*udbg_getc_poll)(void);
- 
- /* udbg library, used by xmon et al */
-@@ -78,7 +78,7 @@ int udbg_read(char *buf, int buflen)
- #define UDBG_BUFSIZE 256
- void udbg_printf(const char *fmt, ...)
- {
--	unsigned char buf[UDBG_BUFSIZE];
-+	char buf[UDBG_BUFSIZE];
- 	va_list args;
- 
- 	va_start(args, fmt);
-@@ -116,6 +116,8 @@ void __init disable_early_printk(void)
- /* called by setup_system */
- void register_early_udbg_console(void)
- {
-+	if (early_console_initialized)
-+		return;
- 	early_console_initialized = 1;
- 	register_console(&udbg_console);
- }
-Index: linux-serialfix/arch/powerpc/kernel/udbg_scc.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/udbg_scc.c	2005-11-23 16:54:13.000000000 +1100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,135 +0,0 @@
--/*
-- * udbg for for zilog scc ports as found on Apple PowerMacs
-- *
-- * Copyright (C) 2001-2005 PPC 64 Team, IBM Corp
-- *
-- *      This program is free software; you can redistribute it and/or
-- *      modify it under the terms of the GNU General Public License
-- *      as published by the Free Software Foundation; either version
-- *      2 of the License, or (at your option) any later version.
-- */
--#include <linux/config.h>
--#include <linux/types.h>
--#include <asm/udbg.h>
--#include <asm/processor.h>
--#include <asm/io.h>
--#include <asm/prom.h>
--#include <asm/pmac_feature.h>
--
--extern u8 real_readb(volatile u8 __iomem  *addr);
--extern void real_writeb(u8 data, volatile u8 __iomem *addr);
--
--#define	SCC_TXRDY	4
--#define SCC_RXRDY	1
--
--static volatile u8 __iomem *sccc;
--static volatile u8 __iomem *sccd;
--
--static void udbg_scc_putc(unsigned char c)
--{
--	if (sccc) {
--		while ((in_8(sccc) & SCC_TXRDY) == 0)
--			;
--		out_8(sccd,  c);
--		if (c == '\n')
--			udbg_scc_putc('\r');
--	}
--}
--
--static int udbg_scc_getc_poll(void)
--{
--	if (sccc) {
--		if ((in_8(sccc) & SCC_RXRDY) != 0)
--			return in_8(sccd);
--		else
--			return -1;
--	}
--	return -1;
--}
--
--static unsigned char udbg_scc_getc(void)
--{
--	if (sccc) {
--		while ((in_8(sccc) & SCC_RXRDY) == 0)
--			;
--		return in_8(sccd);
--	}
--	return 0;
--}
--
--static unsigned char scc_inittab[] = {
--    13, 0,		/* set baud rate divisor */
--    12, 0,
--    14, 1,		/* baud rate gen enable, src=rtxc */
--    11, 0x50,		/* clocks = br gen */
--    5,  0xea,		/* tx 8 bits, assert DTR & RTS */
--    4,  0x46,		/* x16 clock, 1 stop */
--    3,  0xc1,		/* rx enable, 8 bits */
--};
--
--void udbg_init_scc(struct device_node *np)
--{
--	u32 *reg;
--	unsigned long addr;
--	int i, x;
--
--	if (np == NULL)
--		np = of_find_node_by_name(NULL, "escc");
--	if (np == NULL || np->parent == NULL)
--		return;
--
--	udbg_printf("found SCC...\n");
--	/* Get address within mac-io ASIC */
--	reg = (u32 *)get_property(np, "reg", NULL);
--	if (reg == NULL)
--		return;
--	addr = reg[0];
--	udbg_printf("local addr: %lx\n", addr);
--	/* Get address of mac-io PCI itself */
--	reg = (u32 *)get_property(np->parent, "assigned-addresses", NULL);
--	if (reg == NULL)
--		return;
--	addr += reg[2];
--	udbg_printf("final addr: %lx\n", addr);
--
--	/* Setup for 57600 8N1 */
--	addr += 0x20;
--	sccc = (volatile u8 * __iomem) ioremap(addr & PAGE_MASK, PAGE_SIZE) ;
--	sccc += addr & ~PAGE_MASK;
--	sccd = sccc + 0x10;
--
--	udbg_printf("ioremap result sccc: %p\n", sccc);
--	mb();
--
--	for (i = 20000; i != 0; --i)
--		x = in_8(sccc);
--	out_8(sccc, 0x09);		/* reset A or B side */
--	out_8(sccc, 0xc0);
--	for (i = 0; i < sizeof(scc_inittab); ++i)
--		out_8(sccc, scc_inittab[i]);
--
--	udbg_putc = udbg_scc_putc;
--	udbg_getc = udbg_scc_getc;
--	udbg_getc_poll = udbg_scc_getc_poll;
--
--	udbg_puts("Hello World !\n");
--}
--
--static void udbg_real_scc_putc(unsigned char c)
--{
--	while ((real_readb(sccc) & SCC_TXRDY) == 0)
--		;
--	real_writeb(c, sccd);
--	if (c == '\n')
--		udbg_real_scc_putc('\r');
--}
--
--void udbg_init_pmac_realmode(void)
--{
--	sccc = (volatile u8 __iomem *)0x80013020ul;
--	sccd = (volatile u8 __iomem *)0x80013030ul;
--
--	udbg_putc = udbg_real_scc_putc;
--	udbg_getc = NULL;
--	udbg_getc_poll = NULL;
--}
-Index: linux-serialfix/arch/powerpc/platforms/powermac/udbg_adb.c
+Index: linux-serialfix/arch/powerpc/platforms/powermac/bootx_init.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-serialfix/arch/powerpc/platforms/powermac/udbg_adb.c	2005-11-23 16:54:25.000000000 +1100
-@@ -0,0 +1,218 @@
-+#include <linux/config.h>
-+#include <linux/string.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/bitops.h>
-+#include <linux/ptrace.h>
-+#include <linux/adb.h>
-+#include <linux/pmu.h>
-+#include <linux/cuda.h>
-+#include <asm/machdep.h>
-+#include <asm/io.h>
-+#include <asm/page.h>
-+#include <asm/xmon.h>
-+#include <asm/prom.h>
-+#include <asm/bootx.h>
-+#include <asm/machdep.h>
-+#include <asm/errno.h>
-+#include <asm/pmac_feature.h>
-+#include <asm/processor.h>
-+#include <asm/delay.h>
-+#include <asm/btext.h>
-+#include <asm/time.h>
-+#include <asm/udbg.h>
-+
++++ linux-serialfix/arch/powerpc/platforms/powermac/bootx_init.c	2005-11-23 16:54:26.000000000 +1100
+@@ -0,0 +1,547 @@
 +/*
-+ * This implementation is "special", it can "patch" the current
-+ * udbg implementation and work on top of it. It must thus be
-+ * initialized last
++ *  Early boot support code for BootX bootloader
++ *
++ *  Copyright (C) 2005 Ben. Herrenschmidt (benh@kernel.crashing.org)
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
 + */
 +
-+static void (*udbg_adb_old_putc)(char c);
-+static char (*udbg_adb_old_getc)(void);
-+static int (*udbg_adb_old_getc_poll)(void);
++#include <linux/config.h>
++#include <linux/kernel.h>
++#include <linux/string.h>
++#include <linux/init.h>
++#include <linux/version.h>
++#include <asm/sections.h>
++#include <asm/prom.h>
++#include <asm/page.h>
++#include <asm/bootx.h>
++#include <asm/bootinfo.h>
++#include <asm/btext.h>
++#include <asm/io.h>
 +
-+static enum {
-+	input_adb_none,
-+	input_adb_pmu,
-+	input_adb_cuda,
-+} input_type = input_adb_none;
++#undef DEBUG
++#define SET_BOOT_BAT
 +
-+static int udbg_adb_use_btext;
++#ifdef DEBUG
++#define DBG(fmt...) do { bootx_printf(fmt); } while(0)
++#else
++#define DBG(fmt...) do { } while(0)
++#endif
 +
-+int xmon_wants_key, xmon_adb_keycode;
++extern void __start(unsigned long r3, unsigned long r4, unsigned long r5);
 +
-+static inline void udbg_adb_poll(void)
-+{
-+#ifdef CONFIG_ADB_PMU
-+	if (input_type == input_adb_pmu)
-+		pmu_poll_adb();
-+#endif /* CONFIG_ADB_PMU */
-+#ifdef CONFIG_ADB_CUDA
-+	if (input_type == input_adb_cuda)
-+		cuda_poll();
-+#endif /* CONFIG_ADB_CUDA */
-+}
++static unsigned long __initdata bootx_dt_strbase;
++static unsigned long __initdata bootx_dt_strend;
++static unsigned long __initdata bootx_node_chosen;
++static boot_infos_t * __initdata bootx_info;
++static char __initdata bootx_disp_path[256];
++
++/* Is boot-info compatible ? */
++#define BOOT_INFO_IS_COMPATIBLE(bi) \
++	((bi)->compatible_version <= BOOT_INFO_VERSION)
++#define BOOT_INFO_IS_V2_COMPATIBLE(bi)	((bi)->version >= 2)
++#define BOOT_INFO_IS_V4_COMPATIBLE(bi)	((bi)->version >= 4)
 +
 +#ifdef CONFIG_BOOTX_TEXT
-+static int xmon_adb_shiftstate;
-+
-+static unsigned char xmon_keytab[128] =
-+	"asdfhgzxcv\000bqwer"				/* 0x00 - 0x0f */
-+	"yt123465=97-80]o"				/* 0x10 - 0x1f */
-+	"u[ip\rlj'k;\\,/nm."				/* 0x20 - 0x2f */
-+	"\t `\177\0\033\0\0\0\0\0\0\0\0\0\0"		/* 0x30 - 0x3f */
-+	"\0.\0*\0+\0\0\0\0\0/\r\0-\0"			/* 0x40 - 0x4f */
-+	"\0\0000123456789\0\0\0";			/* 0x50 - 0x5f */
-+
-+static unsigned char xmon_shift_keytab[128] =
-+	"ASDFHGZXCV\000BQWER"				/* 0x00 - 0x0f */
-+	"YT!@#$^%+(&_*)}O"				/* 0x10 - 0x1f */
-+	"U{IP\rLJ\"K:|<?NM>"				/* 0x20 - 0x2f */
-+	"\t ~\177\0\033\0\0\0\0\0\0\0\0\0\0"		/* 0x30 - 0x3f */
-+	"\0.\0*\0+\0\0\0\0\0/\r\0-\0"			/* 0x40 - 0x4f */
-+	"\0\0000123456789\0\0\0";			/* 0x50 - 0x5f */
-+
-+static char udbg_adb_local_getc(void)
++static void __init bootx_printf(const char *format, ...)
 +{
-+	int k, t, on;
++	const char *p, *q, *s;
++	va_list args;
++	unsigned long v;
 +
-+	xmon_wants_key = 1;
-+	for (;;) {
-+		xmon_adb_keycode = -1;
-+		t = 0;
-+		on = 0;
-+		k = -1;
-+		do {
-+			if (--t < 0) {
-+				on = 1 - on;
-+				btext_drawchar(on? 0xdb: 0x20);
-+				btext_drawchar('\b');
-+				t = 200000;
-+			}
-+			udbg_adb_poll();
-+			if (udbg_adb_old_getc_poll)
-+				k = udbg_adb_old_getc_poll();
-+		} while (k == -1 && xmon_adb_keycode == -1);
-+		if (on)
-+			btext_drawstring(" \b");
-+		if (k != -1)
-+			return k;
-+		k = xmon_adb_keycode;
-+
-+		/* test for shift keys */
-+		if ((k & 0x7f) == 0x38 || (k & 0x7f) == 0x7b) {
-+			xmon_adb_shiftstate = (k & 0x80) == 0;
++	va_start(args, format);
++	for (p = format; *p != 0; p = q) {
++		for (q = p; *q != 0 && *q != '\n' && *q != '%'; ++q)
++			;
++		if (q > p)
++			btext_drawtext(p, q - p);
++		if (*q == 0)
++			break;
++		if (*q == '\n') {
++			++q;
++			btext_flushline();
++			btext_drawstring("\r\n");
++			btext_flushline();
 +			continue;
 +		}
-+		if (k >= 0x80)
-+			continue;	/* ignore up transitions */
-+		k = (xmon_adb_shiftstate? xmon_shift_keytab: xmon_keytab)[k];
-+		if (k != 0)
++		++q;
++		if (*q == 0)
 +			break;
++		switch (*q) {
++		case 's':
++			++q;
++			s = va_arg(args, const char *);
++			if (s == NULL)
++				s = "<NULL>";
++			btext_drawstring(s);
++			break;
++		case 'x':
++			++q;
++			v = va_arg(args, unsigned long);
++			btext_drawhex(v);
++			break;
++		}
 +	}
-+	xmon_wants_key = 0;
-+	return k;
++}
++#else /* CONFIG_BOOTX_TEXT */
++static void __init bootx_printf(const char *format, ...) {}
++#endif /* CONFIG_BOOTX_TEXT */
++
++static void * __init bootx_early_getprop(unsigned long base,
++					 unsigned long node,
++					 char *prop)
++{
++	struct bootx_dt_node *np = (struct bootx_dt_node *)(base + node);
++	u32 *ppp = &np->properties;
++
++	while(*ppp) {
++		struct bootx_dt_prop *pp =
++			(struct bootx_dt_prop *)(base + *ppp);
++
++		if (strcmp((char *)((unsigned long)pp->name + base),
++			   prop) == 0) {
++			return (void *)((unsigned long)pp->value + base);
++		}
++		ppp = &pp->next;
++	}
++	return NULL;
++}
++
++#define dt_push_token(token, mem) \
++	do { \
++		*(mem) = _ALIGN_UP(*(mem),4); \
++		*((u32 *)*(mem)) = token; \
++		*(mem) += 4; \
++	} while(0)
++
++static unsigned long __init bootx_dt_find_string(char *str)
++{
++	char *s, *os;
++
++	s = os = (char *)bootx_dt_strbase;
++	s += 4;
++	while (s <  (char *)bootx_dt_strend) {
++		if (strcmp(s, str) == 0)
++			return s - os;
++		s += strlen(s) + 1;
++	}
++	return 0;
++}
++
++static void __init bootx_dt_add_prop(char *name, void *data, int size,
++				  unsigned long *mem_end)
++{
++	unsigned long soff = bootx_dt_find_string(name);
++	if (data == NULL)
++		size = 0;
++	if (soff == 0) {
++		bootx_printf("WARNING: Can't find string index for <%s>\n",
++			     name);
++		return;
++	}
++	if (size > 0x20000) {
++		bootx_printf("WARNING: ignoring large property ");
++		bootx_printf("%s length 0x%x\n", name, size);
++		return;
++	}
++	dt_push_token(OF_DT_PROP, mem_end);
++	dt_push_token(size, mem_end);
++	dt_push_token(soff, mem_end);
++
++	/* push property content */
++	if (size && data) {
++		memcpy((void *)*mem_end, data, size);
++		*mem_end = _ALIGN_UP(*mem_end + size, 4);
++	}
++}
++
++static void __init bootx_add_chosen_props(unsigned long base,
++					  unsigned long *mem_end)
++{
++	u32 val = _MACH_Pmac;
++
++	bootx_dt_add_prop("linux,platform", &val, 4, mem_end);
++
++	if (bootx_info->kernelParamsOffset) {
++		char *args = (char *)((unsigned long)bootx_info) +
++			bootx_info->kernelParamsOffset;
++		bootx_dt_add_prop("bootargs", args, strlen(args) + 1, mem_end);
++	}
++	if (bootx_info->ramDisk) {
++		val = ((unsigned long)bootx_info) + bootx_info->ramDisk;
++		bootx_dt_add_prop("linux,initrd-start", &val, 4, mem_end);
++		val += bootx_info->ramDiskSize;
++		bootx_dt_add_prop("linux,initrd-end", &val, 4, mem_end);
++	}
++	if (strlen(bootx_disp_path))
++		bootx_dt_add_prop("linux,stdout-path", bootx_disp_path,
++				  strlen(bootx_disp_path) + 1, mem_end);
++}
++
++static void __init bootx_add_display_props(unsigned long base,
++					   unsigned long *mem_end)
++{
++	bootx_dt_add_prop("linux,boot-display", NULL, 0, mem_end);
++	bootx_dt_add_prop("linux,opened", NULL, 0, mem_end);
++}
++
++static void __init bootx_dt_add_string(char *s, unsigned long *mem_end)
++{
++	unsigned int l = strlen(s) + 1;
++	memcpy((void *)*mem_end, s, l);
++	bootx_dt_strend = *mem_end = *mem_end + l;
++}
++
++static void __init bootx_scan_dt_build_strings(unsigned long base,
++					       unsigned long node,
++					       unsigned long *mem_end)
++{
++	struct bootx_dt_node *np = (struct bootx_dt_node *)(base + node);
++	u32 *cpp, *ppp = &np->properties;
++	unsigned long soff;
++	char *namep;
++
++	/* Keep refs to known nodes */
++	namep = np->full_name ? (char *)(base + np->full_name) : NULL;
++       	if (namep == NULL) {
++		bootx_printf("Node without a full name !\n");
++		namep = "";
++	}
++	DBG("* strings: %s\n", namep);
++
++	if (!strcmp(namep, "/chosen")) {
++		DBG(" detected /chosen ! adding properties names !\n");
++		bootx_dt_add_string("linux,platform", mem_end);
++		bootx_dt_add_string("linux,stdout-path", mem_end);
++		bootx_dt_add_string("linux,initrd-start", mem_end);
++		bootx_dt_add_string("linux,initrd-end", mem_end);
++		bootx_dt_add_string("bootargs", mem_end);
++		bootx_node_chosen = node;
++	}
++	if (node == bootx_info->dispDeviceRegEntryOffset) {
++		DBG(" detected display ! adding properties names !\n");
++		bootx_dt_add_string("linux,boot-display", mem_end);
++		bootx_dt_add_string("linux,opened", mem_end);
++		strncpy(bootx_disp_path, namep, 255);
++	}
++
++	/* get and store all property names */
++	while (*ppp) {
++		struct bootx_dt_prop *pp =
++			(struct bootx_dt_prop *)(base + *ppp);
++
++		namep = pp->name ? (char *)(base + pp->name) : NULL;
++ 		if (namep == NULL || strcmp(namep, "name") == 0)
++ 			goto next;
++		/* get/create string entry */
++		soff = bootx_dt_find_string(namep);
++		if (soff == 0)
++			bootx_dt_add_string(namep, mem_end);
++	next:
++		ppp = &pp->next;
++	}
++
++	/* do all our children */
++	cpp = &np->child;
++	while(*cpp) {
++		np = (struct bootx_dt_node *)(base + *cpp);
++		bootx_scan_dt_build_strings(base, *cpp, mem_end);
++		cpp = &np->sibling;
++	}
++}
++
++static void __init bootx_scan_dt_build_struct(unsigned long base,
++					      unsigned long node,
++					      unsigned long *mem_end)
++{
++	struct bootx_dt_node *np = (struct bootx_dt_node *)(base + node);
++	u32 *cpp, *ppp = &np->properties;
++	char *namep, *p, *ep, *lp;
++	int l;
++
++	dt_push_token(OF_DT_BEGIN_NODE, mem_end);
++
++	/* get the node's full name */
++	namep = np->full_name ? (char *)(base + np->full_name) : NULL;
++	if (namep == NULL)
++		namep = "";
++	l = strlen(namep);
++
++	DBG("* struct: %s\n", namep);
++
++	/* Fixup an Apple bug where they have bogus \0 chars in the
++	 * middle of the path in some properties, and extract
++	 * the unit name (everything after the last '/').
++	 */
++	memcpy((void *)*mem_end, namep, l + 1);
++	namep = (char *)*mem_end;
++	for (lp = p = namep, ep = namep + l; p < ep; p++) {
++		if (*p == '/')
++			lp = namep;
++		else if (*p != 0)
++			*lp++ = *p;
++	}
++	*lp = 0;
++	*mem_end = _ALIGN_UP((unsigned long)lp + 1, 4);
++
++	/* get and store all properties */
++	while (*ppp) {
++		struct bootx_dt_prop *pp =
++			(struct bootx_dt_prop *)(base + *ppp);
++
++		namep = pp->name ? (char *)(base + pp->name) : NULL;
++		/* Skip "name" */
++ 		if (namep == NULL || !strcmp(namep, "name"))
++ 			goto next;
++		/* Skip "bootargs" in /chosen too as we replace it */
++		if (node == bootx_node_chosen && !strcmp(namep, "bootargs"))
++			goto next;
++
++		/* push property head */
++		bootx_dt_add_prop(namep,
++				  pp->value ? (void *)(base + pp->value): NULL,
++				  pp->length, mem_end);
++	next:
++		ppp = &pp->next;
++	}
++
++	if (node == bootx_node_chosen)
++		bootx_add_chosen_props(base, mem_end);
++	if (node == bootx_info->dispDeviceRegEntryOffset)
++		bootx_add_display_props(base, mem_end);
++
++	/* do all our children */
++	cpp = &np->child;
++	while(*cpp) {
++		np = (struct bootx_dt_node *)(base + *cpp);
++		bootx_scan_dt_build_struct(base, *cpp, mem_end);
++		cpp = &np->sibling;
++	}
++
++	dt_push_token(OF_DT_END_NODE, mem_end);
++}
++
++static unsigned long __init bootx_flatten_dt(unsigned long start)
++{
++	boot_infos_t *bi = bootx_info;
++	unsigned long mem_start, mem_end;
++	struct boot_param_header *hdr;
++	unsigned long base;
++	u64 *rsvmap;
++
++	/* Start using memory after the big blob passed by BootX, get
++	 * some space for the header
++	 */
++	mem_start = mem_end = _ALIGN_UP(((unsigned long)bi) + start, 4);
++	DBG("Boot params header at: %x\n", mem_start);
++	hdr = (struct boot_param_header *)mem_start;
++	mem_end += sizeof(struct boot_param_header);
++	rsvmap = (u64 *)(_ALIGN_UP(mem_end, 8));
++	hdr->off_mem_rsvmap = ((unsigned long)rsvmap) - mem_start;
++	mem_end = ((unsigned long)rsvmap) + 8 * sizeof(u64);
++
++	/* Get base of tree */
++	base = ((unsigned long)bi) + bi->deviceTreeOffset;
++
++	/* Build string array */
++	DBG("Building string array at: %x\n", mem_end);
++	DBG("Device Tree Base=%x\n", base);
++	bootx_dt_strbase = mem_end;
++	mem_end += 4;
++	bootx_dt_strend = mem_end;
++	bootx_scan_dt_build_strings(base, 4, &mem_end);
++	hdr->off_dt_strings = bootx_dt_strbase - mem_start;
++	hdr->dt_strings_size = bootx_dt_strend - bootx_dt_strbase;
++
++	/* Build structure */
++	mem_end = _ALIGN(mem_end, 16);
++	DBG("Building device tree structure at: %x\n", mem_end);
++	hdr->off_dt_struct = mem_end - mem_start;
++	bootx_scan_dt_build_struct(base, 4, &mem_end);
++	dt_push_token(OF_DT_END, &mem_end);
++
++	/* Finish header */
++	hdr->boot_cpuid_phys = 0;
++	hdr->magic = OF_DT_HEADER;
++	hdr->totalsize = mem_end - mem_start;
++	hdr->version = OF_DT_VERSION;
++	/* Version 16 is not backward compatible */
++	hdr->last_comp_version = 0x10;
++
++	/* Reserve the whole thing and copy the reserve map in, we
++	 * also bump mem_reserve_cnt to cause further reservations to
++	 * fail since it's too late.
++	 */
++	mem_end = _ALIGN(mem_end, PAGE_SIZE);
++	DBG("End of boot params: %x\n", mem_end);
++	rsvmap[0] = mem_start;
++	rsvmap[1] = mem_end;
++	rsvmap[2] = 0;
++	rsvmap[3] = 0;
++
++	return (unsigned long)hdr;
++}
++
++
++#ifdef CONFIG_BOOTX_TEXT
++static void __init btext_welcome(boot_infos_t *bi)
++{
++	unsigned long flags;
++	unsigned long pvr;
++
++	bootx_printf("Welcome to Linux, kernel " UTS_RELEASE "\n");
++	bootx_printf("\nlinked at        : 0x%x", KERNELBASE);
++	bootx_printf("\nframe buffer at  : 0x%x", bi->dispDeviceBase);
++	bootx_printf(" (phys), 0x%x", bi->logicalDisplayBase);
++	bootx_printf(" (log)");
++	bootx_printf("\nklimit           : 0x%x",(unsigned long)klimit);
++	bootx_printf("\nboot_info at     : 0x%x", bi);
++	__asm__ __volatile__ ("mfmsr %0" : "=r" (flags));
++	bootx_printf("\nMSR              : 0x%x", flags);
++	__asm__ __volatile__ ("mfspr %0, 287" : "=r" (pvr));
++	bootx_printf("\nPVR              : 0x%x", pvr);
++	pvr >>= 16;
++	if (pvr > 1) {
++	    __asm__ __volatile__ ("mfspr %0, 1008" : "=r" (flags));
++	    bootx_printf("\nHID0             : 0x%x", flags);
++	}
++	if (pvr == 8 || pvr == 12 || pvr == 0x800c) {
++	    __asm__ __volatile__ ("mfspr %0, 1019" : "=r" (flags));
++	    bootx_printf("\nICTC             : 0x%x", flags);
++	}
++#ifdef DEBUG
++	bootx_printf("\n\n");
++	bootx_printf("bi->deviceTreeOffset   : 0x%x\n",
++		     bi->deviceTreeOffset);
++	bootx_printf("bi->deviceTreeSize     : 0x%x\n",
++		     bi->deviceTreeSize);
++#endif
++	bootx_printf("\n\n");
 +}
 +#endif /* CONFIG_BOOTX_TEXT */
 +
-+static char udbg_adb_getc(void)
++void __init bootx_init(unsigned long r3, unsigned long r4)
 +{
-+#ifdef CONFIG_BOOTX_TEXT
-+	if (udbg_adb_use_btext && input_type != input_adb_none)
-+		return udbg_adb_local_getc();
-+#endif
-+	if (udbg_adb_old_getc)
-+		return udbg_adb_old_getc();
-+	return -1;
-+}
++	boot_infos_t *bi = (boot_infos_t *) r4;
++	unsigned long hdr;
++	unsigned long space;
++	unsigned long ptr, x;
++	char *model;
++	unsigned long offset = reloc_offset();
 +
-+/* getc_poll() is not really used, unless you have the xmon-over modem
-+ * hack that doesn't quite concern us here, thus we just poll the low level
-+ * ADB driver to prevent it from timing out and call back the original poll
-+ * routine.
-+ */
-+static int udbg_adb_getc_poll(void)
-+{
-+	udbg_adb_poll();
++	reloc_got2(offset);
 +
-+	if (udbg_adb_old_getc_poll)
-+		return udbg_adb_old_getc_poll();
-+	return -1;
-+}
++	bootx_info = bi;
 +
-+static void udbg_adb_putc(char c)
-+{
-+#ifdef CONFIG_BOOTX_TEXT
-+	if (udbg_adb_use_btext)
-+		btext_drawchar(c);
-+#endif
-+	if (udbg_adb_old_putc)
-+		return udbg_adb_old_putc(c);
-+}
-+
-+void udbg_adb_init_early(void)
-+{
-+#ifdef CONFIG_BOOTX_TEXT
-+	if (btext_find_display(1) == 0) {
-+		udbg_adb_use_btext = 1;
-+		udbg_putc = udbg_adb_putc;
-+	}
-+#endif
-+}
-+
-+int udbg_adb_init(int force_btext)
-+{
-+	struct device_node *np;
-+
-+	/* Capture existing callbacks */
-+	udbg_adb_old_putc = udbg_putc;
-+	udbg_adb_old_getc = udbg_getc;
-+	udbg_adb_old_getc_poll = udbg_getc_poll;
-+
-+	/* Check if our early init was already called */
-+	if (udbg_adb_old_putc == udbg_adb_putc ||
-+	    udbg_adb_old_putc == btext_drawchar)
-+		udbg_adb_old_putc = NULL;
-+
-+	/* Set ours as output */
-+	udbg_putc = udbg_adb_putc;
-+	udbg_getc = udbg_adb_getc;
-+	udbg_getc_poll = udbg_adb_getc_poll;
-+
-+#ifdef CONFIG_BOOTX_TEXT
-+	/* Check if we should use btext output */
-+	if (btext_find_display(force_btext) == 0)
-+		udbg_adb_use_btext = 1;
-+#endif
-+
-+	/* See if there is a keyboard in the device tree with a parent
-+	 * of type "adb". If not, we return a failure, but we keep the
-+	 * bext output set for now
++	/* We haven't cleared any bss at this point, make sure
++	 * what we need is initialized
 +	 */
-+	for (np = NULL; (np = of_find_node_by_name(np, "keyboard")) != NULL;) {
-+		struct device_node *parent = of_get_parent(np);
-+		int found = (parent && !strcmp(parent->type, "adb") == 0);
-+		of_node_put(parent);
-+		if (found)
-+			break;
-+	}
-+	if (np == NULL)
-+		return -ENODEV;
-+	of_node_put(np);
++	bootx_dt_strbase = bootx_dt_strend = 0;
++	bootx_node_chosen = 0;
++	bootx_disp_path[0] = 0;
 +
-+#ifdef CONFIG_ADB_PMU
-+	if (find_via_pmu())
-+		input_type = input_adb_pmu;
-+#endif
-+#ifdef CONFIG_ADB_CUDA
-+	if (find_via_cuda())
-+		input_type = input_adb_cuda;
-+#endif
++	if (!BOOT_INFO_IS_V2_COMPATIBLE(bi))
++		bi->logicalDisplayBase = bi->dispDeviceBase;
 +
-+	/* Same as above: nothing found, keep btext set for output */
-+	if (input_type == input_adb_none)
-+		return -ENODEV;
-+
-+	return 0;
-+}
-Index: linux-serialfix/arch/powerpc/platforms/powermac/udbg_scc.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-serialfix/arch/powerpc/platforms/powermac/udbg_scc.c	2005-11-23 16:54:25.000000000 +1100
-@@ -0,0 +1,165 @@
-+/*
-+ * udbg for for zilog scc ports as found on Apple PowerMacs
-+ *
-+ * Copyright (C) 2001-2005 PPC 64 Team, IBM Corp
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ */
-+#include <linux/config.h>
-+#include <linux/types.h>
-+#include <asm/udbg.h>
-+#include <asm/processor.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/pmac_feature.h>
-+
-+extern u8 real_readb(volatile u8 __iomem  *addr);
-+extern void real_writeb(u8 data, volatile u8 __iomem *addr);
-+
-+#define	SCC_TXRDY	4
-+#define SCC_RXRDY	1
-+
-+static volatile u8 __iomem *sccc;
-+static volatile u8 __iomem *sccd;
-+
-+static void udbg_scc_putc(char c)
-+{
-+	if (sccc) {
-+		while ((in_8(sccc) & SCC_TXRDY) == 0)
-+			;
-+		out_8(sccd,  c);
-+		if (c == '\n')
-+			udbg_scc_putc('\r');
-+	}
-+}
-+
-+static int udbg_scc_getc_poll(void)
-+{
-+	if (sccc) {
-+		if ((in_8(sccc) & SCC_RXRDY) != 0)
-+			return in_8(sccd);
-+		else
-+			return -1;
-+	}
-+	return -1;
-+}
-+
-+static char udbg_scc_getc(void)
-+{
-+	if (sccc) {
-+		while ((in_8(sccc) & SCC_RXRDY) == 0)
-+			;
-+		return in_8(sccd);
-+	}
-+	return 0;
-+}
-+
-+static unsigned char scc_inittab[] = {
-+    13, 0,		/* set baud rate divisor */
-+    12, 0,
-+    14, 1,		/* baud rate gen enable, src=rtxc */
-+    11, 0x50,		/* clocks = br gen */
-+    5,  0xea,		/* tx 8 bits, assert DTR & RTS */
-+    4,  0x46,		/* x16 clock, 1 stop */
-+    3,  0xc1,		/* rx enable, 8 bits */
-+};
-+
-+void udbg_scc_init(int force_scc)
-+{
-+	u32 *reg;
-+	unsigned long addr;
-+	struct device_node *stdout = NULL, *escc = NULL, *macio = NULL;
-+	struct device_node *ch, *ch_def = NULL, *ch_a = NULL;
-+	char *path;
-+	int i, x;
-+
-+	escc = of_find_node_by_name(NULL, "escc");
-+	if (escc == NULL)
-+		goto bail;
-+	macio = of_get_parent(escc);
-+	if (macio == NULL)
-+		goto bail;
-+	path = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
-+	if (path != NULL)
-+		stdout = of_find_node_by_path(path);
-+	for (ch = NULL; (ch = of_get_next_child(escc, ch)) != NULL;) {
-+		if (ch == stdout)
-+			ch_def = of_node_get(ch);
-+		if (strcmp(ch->name, "ch-a") == 0)
-+			ch_a = of_node_get(ch);
-+	}
-+	if (ch_def == NULL && !force_scc)
-+		goto bail;
-+
-+	ch = ch_def ? ch_def : ch_a;
-+
-+	/* Get address within mac-io ASIC */
-+	reg = (u32 *)get_property(escc, "reg", NULL);
-+	if (reg == NULL)
-+		goto bail;
-+	addr = reg[0];
-+
-+	/* Get address of mac-io PCI itself */
-+	reg = (u32 *)get_property(macio, "assigned-addresses", NULL);
-+	if (reg == NULL)
-+		goto bail;
-+	addr += reg[2];
-+
-+	/* Lock the serial port */
-+	pmac_call_feature(PMAC_FTR_SCC_ENABLE, ch,
-+			  PMAC_SCC_ASYNC | PMAC_SCC_FLAG_XMON, 1);
-+
-+
-+	/* Setup for 57600 8N1 */
-+	if (ch == ch_a)
-+		addr += 0x20;
-+	sccc = (volatile u8 * __iomem) ioremap(addr & PAGE_MASK, PAGE_SIZE) ;
-+	sccc += addr & ~PAGE_MASK;
-+	sccd = sccc + 0x10;
-+
-+	mb();
-+
-+	for (i = 20000; i != 0; --i)
-+		x = in_8(sccc);
-+	out_8(sccc, 0x09);		/* reset A or B side */
-+	out_8(sccc, 0xc0);
-+	for (i = 0; i < sizeof(scc_inittab); ++i)
-+		out_8(sccc, scc_inittab[i]);
-+
-+	udbg_putc = udbg_scc_putc;
-+	udbg_getc = udbg_scc_getc;
-+	udbg_getc_poll = udbg_scc_getc_poll;
-+
-+	udbg_puts("Hello World !\n");
-+
-+ bail:
-+	of_node_put(macio);
-+	of_node_put(escc);
-+	of_node_put(stdout);
-+	of_node_put(ch_def);
-+	of_node_put(ch_a);
-+}
-+
-+#ifdef CONFIG_PPC64
-+static void udbg_real_scc_putc(char c)
-+{
-+	while ((real_readb(sccc) & SCC_TXRDY) == 0)
-+		;
-+	real_writeb(c, sccd);
-+	if (c == '\n')
-+		udbg_real_scc_putc('\r');
-+}
-+
-+void udbg_init_pmac_realmode(void)
-+{
-+	sccc = (volatile u8 __iomem *)0x80013020ul;
-+	sccd = (volatile u8 __iomem *)0x80013030ul;
-+
-+	udbg_putc = udbg_real_scc_putc;
-+	udbg_getc = NULL;
-+	udbg_getc_poll = NULL;
-+}
-+#endif /* CONFIG_PPC64 */
-Index: linux-serialfix/arch/powerpc/Kconfig
-===================================================================
---- linux-serialfix.orig/arch/powerpc/Kconfig	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/Kconfig	2005-11-23 16:54:25.000000000 +1100
-@@ -50,7 +50,7 @@ config PPC
- 
- config EARLY_PRINTK
- 	bool
--	default y if PPC64
-+	default y
- 
- config COMPAT
- 	bool
-Index: linux-serialfix/arch/powerpc/kernel/btext.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/btext.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/btext.c	2005-11-23 16:54:25.000000000 +1100
-@@ -31,15 +31,18 @@ static void draw_byte_32(unsigned char *
- static void draw_byte_16(unsigned char *bits, unsigned int *base, int rb);
- static void draw_byte_8(unsigned char *bits, unsigned int *base, int rb);
- 
--static int g_loc_X;
--static int g_loc_Y;
--static int g_max_loc_X;
--static int g_max_loc_Y;
--
--static int dispDeviceRowBytes;
--static int dispDeviceDepth;
--static int dispDeviceRect[4];
--static unsigned char *dispDeviceBase, *logicalDisplayBase;
-+#define __force_data __attribute__((__section__(".data")))
-+
-+static int g_loc_X __force_data;
-+static int g_loc_Y __force_data;
-+static int g_max_loc_X __force_data;
-+static int g_max_loc_Y __force_data;
-+
-+static int dispDeviceRowBytes __force_data;
-+static int dispDeviceDepth  __force_data;
-+static int dispDeviceRect[4] __force_data;
-+static unsigned char *dispDeviceBase __force_data;
-+static unsigned char *logicalDisplayBase __force_data;
- 
- unsigned long disp_BAT[2] __initdata = {0, 0};
- 
-@@ -47,7 +50,7 @@ unsigned long disp_BAT[2] __initdata = {
- 
- static unsigned char vga_font[cmapsz];
- 
--int boot_text_mapped;
-+int boot_text_mapped __force_data = 0;
- int force_printk_to_btext = 0;
- 
- #ifdef CONFIG_PPC32
-@@ -66,8 +69,7 @@ int force_printk_to_btext = 0;
-  * is really badly aligned, but I didn't encounter this case
-  * yet.
-  */
--void __init
--btext_prepare_BAT(void)
-+void __init btext_prepare_BAT(void)
- {
- 	unsigned long vaddr = KERNELBASE + 0x10000000;
- 	unsigned long addr;
-@@ -95,12 +97,13 @@ btext_prepare_BAT(void)
- }
- #endif
- 
--/* This function will enable the early boot text when doing OF booting. This
-- * way, xmon output should work too
-+
-+/* This function can be used to enable the early boot text when doing
-+ * OF booting or within bootx init. It must be followed by a btext_unmap()
-+ * call before the logical address becomes unuseable
-  */
--void __init
--btext_setup_display(int width, int height, int depth, int pitch,
--		    unsigned long address)
-+void __init btext_setup_display(int width, int height, int depth, int pitch,
-+				unsigned long address)
- {
- 	g_loc_X = 0;
- 	g_loc_Y = 0;
-@@ -116,6 +119,11 @@ btext_setup_display(int width, int heigh
- 	boot_text_mapped = 1;
- }
- 
-+void __init btext_unmap(void)
-+{
-+	boot_text_mapped = 0;
-+}
-+
- /* Here's a small text engine to use during early boot
-  * or for debugging purposes
-  *
-@@ -127,7 +135,7 @@ btext_setup_display(int width, int heigh
-  *    changes.
-  */
- 
--void map_boot_text(void)
-+static void map_boot_text(void)
- {
- 	unsigned long base, offset, size;
- 	unsigned char *vbase;
-@@ -175,8 +183,9 @@ int btext_initialize(struct device_node 
- 	if (prop)
- 		address = *prop;
- 
--	/* FIXME: Add support for PCI reg properties */
--
-+	/* FIXME: Add support for PCI reg properties. Right now, only
-+	 * reliable on macs
-+	 */
- 	if (address == 0)
- 		return -EINVAL;
- 
-@@ -184,7 +193,6 @@ int btext_initialize(struct device_node 
- 	g_loc_Y = 0;
- 	g_max_loc_X = width / 8;
- 	g_max_loc_Y = height / 16;
--	logicalDisplayBase = (unsigned char *)address;
- 	dispDeviceBase = (unsigned char *)address;
- 	dispDeviceRowBytes = pitch;
- 	dispDeviceDepth = depth;
-@@ -197,7 +205,7 @@ int btext_initialize(struct device_node 
- 	return 0;
- }
- 
--void __init init_boot_display(void)
-+int __init btext_find_display(int allow_nonstdout)
- {
- 	char *name;
- 	struct device_node *np = NULL; 
-@@ -218,8 +226,8 @@ void __init init_boot_display(void)
- 	}
- 	if (np)
- 		rc = btext_initialize(np);
--	if (rc == 0)
--		return;
-+	if (rc == 0 || !allow_nonstdout)
-+		return rc;
- 
- 	for (np = NULL; (np = of_find_node_by_type(np, "display"));) {
- 		if (get_property(np, "linux,opened", NULL)) {
-@@ -228,8 +236,9 @@ void __init init_boot_display(void)
- 			printk("result: %d\n", rc);
- 		}
- 		if (rc == 0)
--			return;
-+			break;
- 	}
-+	return rc;
- }
- 
- /* Calc the base address of a given point (x,y) */
-@@ -277,44 +286,83 @@ EXPORT_SYMBOL(btext_update_display);
- 
- void btext_clearscreen(void)
- {
--	unsigned long *base	= (unsigned long *)calc_base(0, 0);
-+	unsigned int *base	= (unsigned int *)calc_base(0, 0);
- 	unsigned long width 	= ((dispDeviceRect[2] - dispDeviceRect[0]) *
--					(dispDeviceDepth >> 3)) >> 3;
-+					(dispDeviceDepth >> 3)) >> 2;
- 	int i,j;
- 
- 	for (i=0; i<(dispDeviceRect[3] - dispDeviceRect[1]); i++)
- 	{
--		unsigned long *ptr = base;
-+		unsigned int *ptr = base;
- 		for(j=width; j; --j)
- 			*(ptr++) = 0;
--		base += (dispDeviceRowBytes >> 3);
-+		base += (dispDeviceRowBytes >> 2);
-+	}
-+}
-+
-+void btext_flushscreen(void)
-+{
-+	unsigned int *base	= (unsigned int *)calc_base(0, 0);
-+	unsigned long width 	= ((dispDeviceRect[2] - dispDeviceRect[0]) *
-+					(dispDeviceDepth >> 3)) >> 2;
-+	int i,j;
-+
-+	for (i=0; i < (dispDeviceRect[3] - dispDeviceRect[1]); i++)
-+	{
-+		unsigned int *ptr = base;
-+		for(j = width; j > 0; j -= 8) {
-+			__asm__ __volatile__ ("dcbst 0,%0" :: "r" (ptr));
-+			ptr += 8;
-+		}
-+		base += (dispDeviceRowBytes >> 2);
- 	}
-+	__asm__ __volatile__ ("sync" ::: "memory");
- }
- 
-+void btext_flushline(void)
-+{
-+	unsigned int *base	= (unsigned int *)calc_base(0, g_loc_Y << 4);
-+	unsigned long width 	= ((dispDeviceRect[2] - dispDeviceRect[0]) *
-+					(dispDeviceDepth >> 3)) >> 2;
-+	int i,j;
-+
-+	for (i=0; i < 16; i++)
-+	{
-+		unsigned int *ptr = base;
-+		for(j = width; j > 0; j -= 8) {
-+			__asm__ __volatile__ ("dcbst 0,%0" :: "r" (ptr));
-+			ptr += 8;
-+		}
-+		base += (dispDeviceRowBytes >> 2);
-+	}
-+	__asm__ __volatile__ ("sync" ::: "memory");
-+}
-+
-+
- #ifndef NO_SCROLL
- static void scrollscreen(void)
- {
--	unsigned long *src     	= (unsigned long *)calc_base(0,16);
--	unsigned long *dst     	= (unsigned long *)calc_base(0,0);
-+	unsigned int *src     	= (unsigned int *)calc_base(0,16);
-+	unsigned int *dst     	= (unsigned int *)calc_base(0,0);
- 	unsigned long width    	= ((dispDeviceRect[2] - dispDeviceRect[0]) *
--				   (dispDeviceDepth >> 3)) >> 3;
-+				   (dispDeviceDepth >> 3)) >> 2;
- 	int i,j;
- 
- 	for (i=0; i<(dispDeviceRect[3] - dispDeviceRect[1] - 16); i++)
- 	{
--		unsigned long *src_ptr = src;
--		unsigned long *dst_ptr = dst;
-+		unsigned int *src_ptr = src;
-+		unsigned int *dst_ptr = dst;
- 		for(j=width; j; --j)
- 			*(dst_ptr++) = *(src_ptr++);
--		src += (dispDeviceRowBytes >> 3);
--		dst += (dispDeviceRowBytes >> 3);
-+		src += (dispDeviceRowBytes >> 2);
-+		dst += (dispDeviceRowBytes >> 2);
- 	}
- 	for (i=0; i<16; i++)
- 	{
--		unsigned long *dst_ptr = dst;
-+		unsigned int *dst_ptr = dst;
- 		for(j=width; j; --j)
- 			*(dst_ptr++) = 0;
--		dst += (dispDeviceRowBytes >> 3);
-+		dst += (dispDeviceRowBytes >> 2);
- 	}
- }
- #endif /* ndef NO_SCROLL */
-@@ -377,6 +425,14 @@ void btext_drawstring(const char *c)
- 		btext_drawchar(*c++);
- }
- 
-+void btext_drawtext(const char *c, unsigned int len)
-+{
-+	if (!boot_text_mapped)
-+		return;
-+	while (len--)
-+		btext_drawchar(*c++);
-+}
-+
- void btext_drawhex(unsigned long v)
- {
- 	char *hex_table = "0123456789abcdef";
-Index: linux-serialfix/arch/powerpc/kernel/setup_32.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/setup_32.c	2005-11-23 16:54:25.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/setup_32.c	2005-11-23 16:54:25.000000000 +1100
-@@ -40,6 +40,7 @@
- #include <asm/xmon.h>
- #include <asm/time.h>
- #include <asm/serial.h>
-+#include <asm/udbg.h>
- 
- #include "setup.h"
- 
-@@ -173,12 +174,23 @@ void __init platform_init(void)
-  */
- void __init machine_init(unsigned long dt_ptr, unsigned long phys)
- {
-+	/* If btext is enabled, we might have a BAT setup for early display,
-+	 * thus we do enable some very basic udbg output
-+	 */
 +#ifdef CONFIG_BOOTX_TEXT
-+	udbg_putc = btext_drawchar;
-+#endif
++	btext_setup_display(bi->dispDeviceRect[2] - bi->dispDeviceRect[0],
++			    bi->dispDeviceRect[3] - bi->dispDeviceRect[1],
++			    bi->dispDeviceDepth, bi->dispDeviceRowBytes,
++			    (unsigned long)bi->logicalDisplayBase);
++	btext_clearscreen();
++	btext_flushscreen();
++#endif /* CONFIG_BOOTX_TEXT */
 +
-+	/* Do some early initialization based on the flat device tree */
- 	early_init_devtree(__va(dt_ptr));
- 
-+	/* Check default command line */
- #ifdef CONFIG_CMDLINE
--	strlcpy(cmd_line, CONFIG_CMDLINE, sizeof(cmd_line));
-+	if (cmd_line[0] == 0)
-+		strlcpy(cmd_line, CONFIG_CMDLINE, sizeof(cmd_line));
- #endif /* CONFIG_CMDLINE */
- 
-+	/* Base init based on machine type */
- 	platform_init();
- 
- #ifdef CONFIG_6xx
-@@ -294,21 +306,11 @@ void __init setup_arch(char **cmdline_p)
- 
- 	smp_setup_cpu_maps();
- 
--#ifdef CONFIG_BOOTX_TEXT
--	init_boot_display();
--#endif
--
--#ifdef CONFIG_PPC_PMAC
--	/* This could be called "early setup arch", it must be done
--	 * now because xmon need it
--	 */
--	if (_machine == _MACH_Pmac)
--		pmac_feature_init();	/* New cool way */
--#endif
--
- #ifdef CONFIG_XMON_DEFAULT
- 	xmon_init(1);
- #endif
-+	/* Register early console */
-+	register_early_udbg_console();
- 
- #if defined(CONFIG_KGDB)
- 	if (ppc_md.kgdb_map_scc)
-Index: linux-serialfix/arch/powerpc/kernel/udbg_16550.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/udbg_16550.c	2005-11-23 16:54:25.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/udbg_16550.c	2005-11-23 16:54:25.000000000 +1100
-@@ -47,7 +47,7 @@ struct NS16550 {
- 
- static volatile struct NS16550 __iomem *udbg_comport;
- 
--static void udbg_550_putc(unsigned char c)
-+static void udbg_550_putc(char c)
- {
- 	if (udbg_comport) {
- 		while ((in_8(&udbg_comport->lsr) & LSR_THRE) == 0)
-@@ -69,7 +69,7 @@ static int udbg_550_getc_poll(void)
- 	return -1;
- }
- 
--static unsigned char udbg_550_getc(void)
-+static char udbg_550_getc(void)
- {
- 	if (udbg_comport) {
- 		while ((in_8(&udbg_comport->lsr) & LSR_DR) == 0)
-Index: linux-serialfix/arch/powerpc/platforms/powermac/Makefile
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/powermac/Makefile	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/powermac/Makefile	2005-11-23 16:54:25.000000000 +1100
-@@ -7,3 +7,4 @@ obj-$(CONFIG_NVRAM)		+= nvram.o
- # ppc64 pmac doesn't define CONFIG_NVRAM but needs nvram stuff
- obj-$(CONFIG_PPC64)		+= nvram.o
- obj-$(CONFIG_SMP)		+= smp.o
-+obj-$(CONFIG_PPC_MERGE)		+= udbg_scc.o udbg_adb.o
-Index: linux-serialfix/arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/powermac/setup.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/powermac/setup.c	2005-11-23 16:54:25.000000000 +1100
-@@ -76,6 +76,7 @@
- #include <asm/pmc.h>
- #include <asm/mpic.h>
- #include <asm/lmb.h>
-+#include <asm/udbg.h>
- 
- #include "pmac.h"
- 
-@@ -321,16 +322,6 @@ void __init pmac_setup_arch(void)
- 	l2cr_init();
- #endif /* CONFIG_PPC32 */
- 
--#ifdef CONFIG_PPC64
--	/* Probe motherboard chipset */
--	/* this is done earlier in setup_arch for 32-bit */
--	pmac_feature_init();
--
--	/* We can NAP */
--	powersave_nap = 1;
--	printk(KERN_INFO "Using native/NAP idle loop\n");
--#endif
--
- #ifdef CONFIG_KGDB
- 	zs_kgdb_hook(0);
- #endif
-@@ -621,13 +612,26 @@ static void __init pmac_init_early(void)
- 	 * and call ioremap
- 	 */
- 	hpte_init_native();
-+#endif
- 
--	/* Init SCC */
--	if (strstr(cmd_line, "sccdbg")) {
--		sccdbg = 1;
--		udbg_init_scc(NULL);
-+	/* Enable early btext debug if requested */
-+	if (strstr(cmd_line, "btextdbg")) {
-+		udbg_adb_init_early();
-+		register_early_udbg_console();
- 	}
- 
-+	/* Probe motherboard chipset */
-+	pmac_feature_init();
-+
-+	/* We can NAP */
-+	powersave_nap = 1;
-+	printk(KERN_INFO "Using native/NAP idle loop\n");
-+
-+	/* Initialize debug stuff */
-+	udbg_scc_init(!!strstr(cmd_line, "sccdbg"));
-+	udbg_adb_init(!!strstr(cmd_line, "btextdbg"));
-+
-+#ifdef CONFIG_PPC64
- 	/* Setup interrupt mapping options */
- 	ppc64_interrupt_controller = IC_OPEN_PIC;
- 
-@@ -637,19 +641,8 @@ static void __init pmac_init_early(void)
- 
- static void __init pmac_progress(char *s, unsigned short hex)
- {
--#ifdef CONFIG_PPC64
--	if (sccdbg) {
--		udbg_puts(s);
--		udbg_puts("\n");
--		return;
--	}
--#endif
--#ifdef CONFIG_BOOTX_TEXT
--	if (boot_text_mapped) {
--		btext_drawstring(s);
--		btext_drawchar('\n');
--	}
--#endif /* CONFIG_BOOTX_TEXT */
-+	udbg_puts(s);
-+	udbg_puts("\n");
- }
- 
- /*
-@@ -734,7 +727,8 @@ static int __init pmac_probe(int platfor
- }
- 
- #ifdef CONFIG_PPC64
--static int pmac_probe_mode(struct pci_bus *bus)
-+/* Move that to pci.c */
-+static int pmac_pci_probe_mode(struct pci_bus *bus)
- {
- 	struct device_node *node = bus->sysdata;
- 
-@@ -770,7 +764,7 @@ struct machdep_calls __initdata pmac_md 
- 	.check_legacy_ioport	= pmac_check_legacy_ioport,
- 	.progress		= pmac_progress,
- #ifdef CONFIG_PPC64
--	.pci_probe_mode		= pmac_probe_mode,
-+	.pci_probe_mode		= pmac_pci_probe_mode,
- 	.idle_loop		= native_idle,
- 	.enable_pmcs		= power4_enable_pmcs,
- #endif
-Index: linux-serialfix/arch/powerpc/xmon/Makefile
-===================================================================
---- linux-serialfix.orig/arch/powerpc/xmon/Makefile	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/xmon/Makefile	2005-11-23 16:54:25.000000000 +1100
-@@ -3,9 +3,5 @@
- ifdef CONFIG_PPC64
- EXTRA_CFLAGS += -mno-minimal-toc
- endif
--
--obj-$(CONFIG_8xx)	+= start_8xx.o
--obj-$(CONFIG_6xx)	+= start_32.o
--obj-$(CONFIG_4xx)	+= start_32.o
--obj-$(CONFIG_PPC64)	+= start_64.o
--obj-y			+= xmon.o ppc-dis.o ppc-opc.o setjmp.o nonstdio.o
-+obj-y			+= xmon.o ppc-dis.o ppc-opc.o setjmp.o start.o \
-+			   nonstdio.o
-Index: linux-serialfix/arch/powerpc/xmon/start.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-serialfix/arch/powerpc/xmon/start.c	2005-11-23 16:54:25.000000000 +1100
-@@ -0,0 +1,34 @@
-+/*
-+ * Copyright (C) 1996 Paul Mackerras.
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
-+ */
-+#include <asm/machdep.h>
-+#include <asm/udbg.h>
-+#include "nonstdio.h"
-+
-+void xmon_map_scc(void)
-+{
-+}
-+
-+int xmon_write(void *ptr, int nb)
-+{
-+	return udbg_write(ptr, nb);
-+}
-+
-+int xmon_readchar(void)
-+{
-+	if (udbg_getc)
-+		return udbg_getc();
-+	return -1;
-+}
-+
-+int xmon_read_poll(void)
-+{
-+	if (udbg_getc_poll)
-+		return udbg_getc_poll();
-+	return -1;
-+}
-Index: linux-serialfix/arch/powerpc/xmon/start_32.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/xmon/start_32.c	2005-11-23 16:54:13.000000000 +1100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,441 +0,0 @@
--/*
-- * Copyright (C) 1996 Paul Mackerras.
-- */
--#include <linux/config.h>
--#include <linux/string.h>
--#include <asm/machdep.h>
--#include <asm/io.h>
--#include <asm/page.h>
--#include <linux/adb.h>
--#include <linux/pmu.h>
--#include <linux/cuda.h>
--#include <linux/kernel.h>
--#include <linux/errno.h>
--#include <linux/bitops.h>
--#include <asm/xmon.h>
--#include <asm/prom.h>
--#include <asm/bootx.h>
--#include <asm/machdep.h>
--#include <asm/errno.h>
--#include <asm/pmac_feature.h>
--#include <asm/processor.h>
--#include <asm/delay.h>
--#include <asm/btext.h>
--#include <asm/time.h>
--#include "nonstdio.h"
--
--static volatile unsigned char __iomem *sccc, *sccd;
--unsigned int TXRDY, RXRDY, DLAB;
--
--static int use_serial;
--static int use_screen;
--static int via_modem;
--static int xmon_use_sccb;
--static struct device_node *channel_node;
--
--void buf_access(void)
--{
--	if (DLAB)
--		sccd[3] &= ~DLAB;	/* reset DLAB */
--}
--
--extern int adb_init(void);
--
--#ifdef CONFIG_PPC_CHRP
--/*
-- * This looks in the "ranges" property for the primary PCI host bridge
-- * to find the physical address of the start of PCI/ISA I/O space.
-- * It is basically a cut-down version of pci_process_bridge_OF_ranges.
-- */
--static unsigned long chrp_find_phys_io_base(void)
--{
--	struct device_node *node;
--	unsigned int *ranges;
--	unsigned long base = CHRP_ISA_IO_BASE;
--	int rlen = 0;
--	int np;
--
--	node = find_devices("isa");
--	if (node != NULL) {
--		node = node->parent;
--		if (node == NULL || node->type == NULL
--		    || strcmp(node->type, "pci") != 0)
--			node = NULL;
--	}
--	if (node == NULL)
--		node = find_devices("pci");
--	if (node == NULL)
--		return base;
--
--	ranges = (unsigned int *) get_property(node, "ranges", &rlen);
--	np = prom_n_addr_cells(node) + 5;
--	while ((rlen -= np * sizeof(unsigned int)) >= 0) {
--		if ((ranges[0] >> 24) == 1 && ranges[2] == 0) {
--			/* I/O space starting at 0, grab the phys base */
--			base = ranges[np - 3];
--			break;
--		}
--		ranges += np;
--	}
--	return base;
--}
--#endif /* CONFIG_PPC_CHRP */
--
--void xmon_map_scc(void)
--{
--#ifdef CONFIG_PPC_MULTIPLATFORM
--	volatile unsigned char __iomem *base;
--
--	if (_machine == _MACH_Pmac) {
--		struct device_node *np;
--		unsigned long addr;
--#ifdef CONFIG_BOOTX_TEXT
--		if (!use_screen && !use_serial
--		    && !machine_is_compatible("iMac")) {
--			/* see if there is a keyboard in the device tree
--			   with a parent of type "adb" */
--			for (np = find_devices("keyboard"); np; np = np->next)
--				if (np->parent && np->parent->type
--				    && strcmp(np->parent->type, "adb") == 0)
--					break;
--
--			/* needs to be hacked if xmon_printk is to be used
--			   from within find_via_pmu() */
--#ifdef CONFIG_ADB_PMU
--			if (np != NULL && boot_text_mapped && find_via_pmu())
--				use_screen = 1;
--#endif
--#ifdef CONFIG_ADB_CUDA
--			if (np != NULL && boot_text_mapped && find_via_cuda())
--				use_screen = 1;
--#endif
--		}
--		if (!use_screen && (np = find_devices("escc")) != NULL) {
--			/*
--			 * look for the device node for the serial port
--			 * we're using and see if it says it has a modem
--			 */
--			char *name = xmon_use_sccb? "ch-b": "ch-a";
--			char *slots;
--			int l;
--
--			np = np->child;
--			while (np != NULL && strcmp(np->name, name) != 0)
--				np = np->sibling;
--			if (np != NULL) {
--				/* XXX should parse this properly */
--				channel_node = np;
--				slots = get_property(np, "slot-names", &l);
--				if (slots != NULL && l >= 10
--				    && strcmp(slots+4, "Modem") == 0)
--					via_modem = 1;
--			}
--		}
--		btext_drawstring("xmon uses ");
--		if (use_screen)
--			btext_drawstring("screen and keyboard\n");
--		else {
--			if (via_modem)
--				btext_drawstring("modem on ");
--			btext_drawstring(xmon_use_sccb? "printer": "modem");
--			btext_drawstring(" port\n");
--		}
--
--#endif /* CONFIG_BOOTX_TEXT */
--
--#ifdef CHRP_ESCC
--		addr = 0xc1013020;
--#else
--		addr = 0xf3013020;
--#endif
--		TXRDY = 4;
--		RXRDY = 1;
--	
--		np = find_devices("mac-io");
--		if (np && np->n_addrs)
--			addr = np->addrs[0].address + 0x13020;
--		base = (volatile unsigned char *) ioremap(addr & PAGE_MASK, PAGE_SIZE);
--		sccc = base + (addr & ~PAGE_MASK);
--		sccd = sccc + 0x10;
--
--	} else {
--		base = (volatile unsigned char *) isa_io_base;
--
--#ifdef CONFIG_PPC_CHRP
--		if (_machine == _MACH_chrp)
--			base = (volatile unsigned char __iomem *)
--				ioremap(chrp_find_phys_io_base(), 0x1000);
--#endif
--
--		sccc = base + 0x3fd;
--		sccd = base + 0x3f8;
--		if (xmon_use_sccb) {
--			sccc -= 0x100;
--			sccd -= 0x100;
--		}
--		TXRDY = 0x20;
--		RXRDY = 1;
--		DLAB = 0x80;
--	}
--#elif defined(CONFIG_GEMINI)
--	/* should already be mapped by the kernel boot */
--	sccc = (volatile unsigned char __iomem *) 0xffeffb0d;
--	sccd = (volatile unsigned char __iomem *) 0xffeffb08;
--	TXRDY = 0x20;
--	RXRDY = 1;
--	DLAB = 0x80;
--#elif defined(CONFIG_405GP)
--	sccc = (volatile unsigned char __iomem *)0xef600305;
--	sccd = (volatile unsigned char __iomem *)0xef600300;
--	TXRDY = 0x20;
--	RXRDY = 1;
--	DLAB = 0x80;
--#endif /* platform */
--}
--
--static int scc_initialized = 0;
--
--void xmon_init_scc(void);
--extern void cuda_poll(void);
--
--static inline void do_poll_adb(void)
--{
--#ifdef CONFIG_ADB_PMU
--	if (sys_ctrler == SYS_CTRLER_PMU)
--		pmu_poll_adb();
--#endif /* CONFIG_ADB_PMU */
--#ifdef CONFIG_ADB_CUDA
--	if (sys_ctrler == SYS_CTRLER_CUDA)
--		cuda_poll();
--#endif /* CONFIG_ADB_CUDA */
--}
--
--int xmon_write(void *ptr, int nb)
--{
--	char *p = ptr;
--	int i, c, ct;
--
--#ifdef CONFIG_SMP
--	static unsigned long xmon_write_lock;
--	int lock_wait = 1000000;
--	int locked;
--
--	while ((locked = test_and_set_bit(0, &xmon_write_lock)) != 0)
--		if (--lock_wait == 0)
--			break;
--#endif
--
--#ifdef CONFIG_BOOTX_TEXT
--	if (use_screen) {
--		/* write it on the screen */
--		for (i = 0; i < nb; ++i)
--			btext_drawchar(*p++);
--		goto out;
--	}
--#endif
--	if (!scc_initialized)
--		xmon_init_scc();
--	ct = 0;
--	for (i = 0; i < nb; ++i) {
--		while ((*sccc & TXRDY) == 0)
--			do_poll_adb();
--		c = p[i];
--		if (c == '\n' && !ct) {
--			c = '\r';
--			ct = 1;
--			--i;
--		} else {
--			ct = 0;
--		}
--		buf_access();
--		*sccd = c;
--		eieio();
--	}
--
-- out:
--#ifdef CONFIG_SMP
--	if (!locked)
--		clear_bit(0, &xmon_write_lock);
--#endif
--	return nb;
--}
--
--int xmon_wants_key;
--int xmon_adb_keycode;
--
--#ifdef CONFIG_BOOTX_TEXT
--static int xmon_adb_shiftstate;
--
--static unsigned char xmon_keytab[128] =
--	"asdfhgzxcv\000bqwer"				/* 0x00 - 0x0f */
--	"yt123465=97-80]o"				/* 0x10 - 0x1f */
--	"u[ip\rlj'k;\\,/nm."				/* 0x20 - 0x2f */
--	"\t `\177\0\033\0\0\0\0\0\0\0\0\0\0"		/* 0x30 - 0x3f */
--	"\0.\0*\0+\0\0\0\0\0/\r\0-\0"			/* 0x40 - 0x4f */
--	"\0\0000123456789\0\0\0";			/* 0x50 - 0x5f */
--
--static unsigned char xmon_shift_keytab[128] =
--	"ASDFHGZXCV\000BQWER"				/* 0x00 - 0x0f */
--	"YT!@#$^%+(&_*)}O"				/* 0x10 - 0x1f */
--	"U{IP\rLJ\"K:|<?NM>"				/* 0x20 - 0x2f */
--	"\t ~\177\0\033\0\0\0\0\0\0\0\0\0\0"		/* 0x30 - 0x3f */
--	"\0.\0*\0+\0\0\0\0\0/\r\0-\0"			/* 0x40 - 0x4f */
--	"\0\0000123456789\0\0\0";			/* 0x50 - 0x5f */
--
--static int xmon_get_adb_key(void)
--{
--	int k, t, on;
--
--	xmon_wants_key = 1;
--	for (;;) {
--		xmon_adb_keycode = -1;
--		t = 0;
--		on = 0;
--		do {
--			if (--t < 0) {
--				on = 1 - on;
--				btext_drawchar(on? 0xdb: 0x20);
--				btext_drawchar('\b');
--				t = 200000;
--			}
--			do_poll_adb();
--		} while (xmon_adb_keycode == -1);
--		k = xmon_adb_keycode;
--		if (on)
--			btext_drawstring(" \b");
--
--		/* test for shift keys */
--		if ((k & 0x7f) == 0x38 || (k & 0x7f) == 0x7b) {
--			xmon_adb_shiftstate = (k & 0x80) == 0;
--			continue;
--		}
--		if (k >= 0x80)
--			continue;	/* ignore up transitions */
--		k = (xmon_adb_shiftstate? xmon_shift_keytab: xmon_keytab)[k];
--		if (k != 0)
--			break;
--	}
--	xmon_wants_key = 0;
--	return k;
--}
--#endif /* CONFIG_BOOTX_TEXT */
--
--int xmon_readchar(void)
--{
--#ifdef CONFIG_BOOTX_TEXT
--	if (use_screen)
--		return xmon_get_adb_key();
--#endif
--	if (!scc_initialized)
--		xmon_init_scc();
--	while ((*sccc & RXRDY) == 0)
--		do_poll_adb();
--	buf_access();
--	return *sccd;
--}
--
--int xmon_read_poll(void)
--{
--	if ((*sccc & RXRDY) == 0) {
--		do_poll_adb();
--		return -1;
--	}
--	buf_access();
--	return *sccd;
--}
--
--static unsigned char scc_inittab[] = {
--    13, 0,		/* set baud rate divisor */
--    12, 1,
--    14, 1,		/* baud rate gen enable, src=rtxc */
--    11, 0x50,		/* clocks = br gen */
--    5,  0xea,		/* tx 8 bits, assert DTR & RTS */
--    4,  0x46,		/* x16 clock, 1 stop */
--    3,  0xc1,		/* rx enable, 8 bits */
--};
--
--void xmon_init_scc(void)
--{
--	if ( _machine == _MACH_chrp )
--	{
--		sccd[3] = 0x83; eieio();	/* LCR = 8N1 + DLAB */
--		sccd[0] = 12; eieio();		/* DLL = 9600 baud */
--		sccd[1] = 0; eieio();
--		sccd[2] = 0; eieio();		/* FCR = 0 */
--		sccd[3] = 3; eieio();		/* LCR = 8N1 */
--		sccd[1] = 0; eieio();		/* IER = 0 */
--	}
--	else if ( _machine == _MACH_Pmac )
--	{
--		int i, x;
--		unsigned long timeout;
--
--		if (channel_node != 0)
--			pmac_call_feature(
--				PMAC_FTR_SCC_ENABLE,
--				channel_node,
--				PMAC_SCC_ASYNC | PMAC_SCC_FLAG_XMON, 1);
--			printk(KERN_INFO "Serial port locked ON by debugger !\n");
--		if (via_modem && channel_node != 0) {
--			unsigned int t0;
--
--			pmac_call_feature(
--				PMAC_FTR_MODEM_ENABLE,
--				channel_node, 0, 1);
--			printk(KERN_INFO "Modem powered up by debugger !\n");
--			t0 = get_tbl();
--			timeout = 3 * tb_ticks_per_sec;
--			if (timeout == 0)
--				/* assume 25MHz if tb_ticks_per_sec not set */
--				timeout = 75000000;
--			while (get_tbl() - t0 < timeout)
--				eieio();
--		}
--		/* use the B channel if requested */
--		if (xmon_use_sccb) {
--			sccc = (volatile unsigned char *)
--				((unsigned long)sccc & ~0x20);
--			sccd = sccc + 0x10;
--		}
--		for (i = 20000; i != 0; --i) {
--			x = *sccc; eieio();
--		}
--		*sccc = 9; eieio();		/* reset A or B side */
--		*sccc = ((unsigned long)sccc & 0x20)? 0x80: 0x40; eieio();
--		for (i = 0; i < sizeof(scc_inittab); ++i) {
--			*sccc = scc_inittab[i];
--			eieio();
--		}
--	}
--	scc_initialized = 1;
--	if (via_modem) {
--		for (;;) {
--			xmon_write("ATE1V1\r", 7);
--			if (xmon_expect("OK", 5)) {
--				xmon_write("ATA\r", 4);
--				if (xmon_expect("CONNECT", 40))
--					break;
--			}
--			xmon_write("+++", 3);
--			xmon_expect("OK", 3);
--		}
--	}
--}
--
--void xmon_enter(void)
--{
--#ifdef CONFIG_ADB_PMU
--	if (_machine == _MACH_Pmac) {
--		pmu_suspend();
--	}
--#endif
--}
--
--void xmon_leave(void)
--{
--#ifdef CONFIG_ADB_PMU
--	if (_machine == _MACH_Pmac) {
--		pmu_resume();
--	}
--#endif
--}
-Index: linux-serialfix/arch/powerpc/xmon/start_64.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/xmon/start_64.c	2005-11-23 16:54:13.000000000 +1100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,34 +0,0 @@
--/*
-- * Copyright (C) 1996 Paul Mackerras.
-- *
-- *      This program is free software; you can redistribute it and/or
-- *      modify it under the terms of the GNU General Public License
-- *      as published by the Free Software Foundation; either version
-- *      2 of the License, or (at your option) any later version.
-- */
--#include <asm/machdep.h>
--#include <asm/udbg.h>
--#include "nonstdio.h"
--
--void xmon_map_scc(void)
--{
--}
--
--int xmon_write(void *ptr, int nb)
--{
--	return udbg_write(ptr, nb);
--}
--
--int xmon_readchar(void)
--{
--	if (udbg_getc)
--		return udbg_getc();
--	return -1;
--}
--
--int xmon_read_poll(void)
--{
--	if (udbg_getc_poll)
--		return udbg_getc_poll();
--	return -1;
--}
-Index: linux-serialfix/arch/powerpc/xmon/start_8xx.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/xmon/start_8xx.c	2005-11-23 16:54:13.000000000 +1100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,44 +0,0 @@
--/*
-- * Copyright (C) 1996 Paul Mackerras.
-- * Copyright (C) 2000 Dan Malek.
-- * Quick hack of Paul's code to make XMON work on 8xx processors.  Lots
-- * of assumptions, like the SMC1 is used, it has been initialized by the
-- * loader at some point, and we can just stuff and suck bytes.
-- * We rely upon the 8xx uart driver to support us, as the interface
-- * changes between boot up and operational phases of the kernel.
-- */
--#include <linux/string.h>
--#include <asm/machdep.h>
--#include <asm/io.h>
--#include <asm/page.h>
--#include <linux/kernel.h>
--#include <asm/8xx_immap.h>
--#include <asm/mpc8xx.h>
--#include <asm/commproc.h>
--#include "nonstdio.h"
--
--extern int xmon_8xx_write(char *str, int nb);
--extern int xmon_8xx_read_poll(void);
--extern int xmon_8xx_read_char(void);
--
--void xmon_map_scc(void)
--{
--	cpmp = (cpm8xx_t *)&(((immap_t *)IMAP_ADDR)->im_cpm);
--}
--
--void xmon_init_scc(void);
--
--int xmon_write(void *ptr, int nb)
--{
--	return(xmon_8xx_write(ptr, nb));
--}
--
--int xmon_readchar(void)
--{
--	return xmon_8xx_read_char();
--}
--
--int xmon_read_poll(void)
--{
--	return(xmon_8xx_read_poll());
--}
-Index: linux-serialfix/include/asm-powerpc/btext.h
-===================================================================
---- linux-serialfix.orig/include/asm-powerpc/btext.h	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/include/asm-powerpc/btext.h	2005-11-23 16:54:25.000000000 +1100
-@@ -7,21 +7,22 @@
- #define __PPC_BTEXT_H
- #ifdef __KERNEL__
- 
--extern void btext_clearscreen(void);
--extern void btext_flushscreen(void);
--
--extern int boot_text_mapped;
--
--extern int btext_initialize(struct device_node *np);
--
--extern void map_boot_text(void);
--extern void init_boot_display(void);
-+extern int btext_find_display(int allow_nonstdout);
- extern void btext_update_display(unsigned long phys, int width, int height,
- 				 int depth, int pitch);
-+extern void btext_setup_display(int width, int height, int depth, int pitch,
-+				unsigned long address);
-+extern void btext_prepare_BAT(void);
-+extern void btext_unmap(void);
- 
- extern void btext_drawchar(char c);
- extern void btext_drawstring(const char *str);
- extern void btext_drawhex(unsigned long v);
-+extern void btext_drawtext(const char *c, unsigned int len);
-+
-+extern void btext_clearscreen(void);
-+extern void btext_flushscreen(void);
-+extern void btext_flushline(void);
- 
- #endif /* __KERNEL__ */
- #endif /* __PPC_BTEXT_H */
-Index: linux-serialfix/include/asm-powerpc/udbg.h
-===================================================================
---- linux-serialfix.orig/include/asm-powerpc/udbg.h	2005-11-23 16:54:25.000000000 +1100
-+++ linux-serialfix/include/asm-powerpc/udbg.h	2005-11-23 16:54:25.000000000 +1100
-@@ -13,8 +13,8 @@
- #include <linux/compiler.h>
- #include <linux/init.h>
- 
--extern void (*udbg_putc)(unsigned char c);
--extern unsigned char (*udbg_getc)(void);
-+extern void (*udbg_putc)(char c);
-+extern char (*udbg_getc)(void);
- extern int (*udbg_getc_poll)(void);
- 
- extern void udbg_puts(const char *s);
-@@ -30,5 +30,8 @@ extern unsigned int udbg_probe_uart_spee
- 					  unsigned int clock);
- 
- struct device_node;
--extern void udbg_init_scc(struct device_node *np);
-+extern void udbg_scc_init(int force_scc);
-+extern int udbg_adb_init(int force_btext);
-+extern void udbg_adb_init_early(void);
-+
- #endif /* _ASM_POWERPC_UDBG_H */
-Index: linux-serialfix/arch/powerpc/kernel/setup_64.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/setup_64.c	2005-11-23 16:54:25.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/setup_64.c	2005-11-23 16:54:25.000000000 +1100
-@@ -466,10 +466,6 @@ void __init setup_system(void)
- 	 */
- 	finish_device_tree();
- 
--#ifdef CONFIG_BOOTX_TEXT
--	init_boot_display();
--#endif
--
- 	/*
- 	 * Initialize xmon
- 	 */
-Index: linux-serialfix/arch/powerpc/platforms/powermac/feature.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/powermac/feature.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/powermac/feature.c	2005-11-23 16:54:25.000000000 +1100
-@@ -2596,6 +2596,8 @@ found:
-  */
- static void __init probe_uninorth(void)
- {
-+	u32 *addrp;
-+	phys_addr_t address;
- 	unsigned long actrl;
- 
- 	/* Locate core99 Uni-N */
-@@ -2605,20 +2607,23 @@ static void __init probe_uninorth(void)
- 		uninorth_node = of_find_node_by_name(NULL, "u3");
- 		uninorth_u3 = 1;
- 	}
--	if (uninorth_node && uninorth_node->n_addrs > 0) {
--		unsigned long address = uninorth_node->addrs[0].address;
--		uninorth_base = ioremap(address, 0x40000);
--		uninorth_rev = in_be32(UN_REG(UNI_N_VERSION));
--		if (uninorth_u3)
--			u3_ht = ioremap(address + U3_HT_CONFIG_BASE, 0x1000);
--	} else
--		uninorth_node = NULL;
-+	if (uninorth_node == NULL)
-+		return;
- 
--	if (!uninorth_node)
-+	addrp = (u32 *)get_property(uninorth_node, "reg", NULL);
-+	if (addrp == NULL)
-+		return;
-+	address = of_translate_address(uninorth_node, addrp);
-+	if (address == 0)
- 		return;
-+	uninorth_base = ioremap(address, 0x40000);
-+	uninorth_rev = in_be32(UN_REG(UNI_N_VERSION));
-+	if (uninorth_u3)
-+		u3_ht = ioremap(address + U3_HT_CONFIG_BASE, 0x1000);
- 
--	printk(KERN_INFO "Found %s memory controller & host bridge, revision: %d\n",
--	       uninorth_u3 ? "U3" : "UniNorth", uninorth_rev);
-+	printk(KERN_INFO "Found %s memory controller & host bridge,"
-+	       " revision: %d\n", uninorth_u3 ? "U3" : "UniNorth",
-+	       uninorth_rev);
- 	printk(KERN_INFO "Mapped at 0x%08lx\n", (unsigned long)uninorth_base);
- 
- 	/* Set the arbitrer QAck delay according to what Apple does
-@@ -2642,18 +2647,17 @@ static void __init probe_one_macio(const
- {
- 	struct device_node*	node;
- 	int			i;
--	volatile u32 __iomem *	base;
--	u32*			revp;
-+	volatile u32 __iomem	*base;
-+	u32			*addrp, *revp;
-+	phys_addr_t		addr;
-+	u64			size;
- 
--	node = find_devices(name);
--	if (!node || !node->n_addrs)
--		return;
--	if (compat)
--		do {
--			if (device_is_compatible(node, compat))
--				break;
--			node = node->next;
--		} while (node);
-+	for (node = NULL; (node = of_find_node_by_name(node, name)) != NULL;) {
-+		if (!compat)
-+			break;
-+		if (device_is_compatible(node, compat))
-+			break;
-+	}
- 	if (!node)
- 		return;
- 	for(i=0; i<MAX_MACIO_CHIPS; i++) {
-@@ -2662,14 +2666,28 @@ static void __init probe_one_macio(const
- 		if (macio_chips[i].of_node == node)
- 			return;
- 	}
-+
- 	if (i >= MAX_MACIO_CHIPS) {
- 		printk(KERN_ERR "pmac_feature: Please increase MAX_MACIO_CHIPS !\n");
- 		printk(KERN_ERR "pmac_feature: %s skipped\n", node->full_name);
- 		return;
- 	}
--	base = ioremap(node->addrs[0].address, node->addrs[0].size);
-+	addrp = of_get_pci_address(node, 0, &size);
-+	if (addrp == NULL) {
-+		printk(KERN_ERR "pmac_feature: %s: can't find base !\n",
-+		       node->full_name);
-+		return;
-+	}
-+	addr = of_translate_address(node, addrp);
-+	if (addr == 0) {
-+		printk(KERN_ERR "pmac_feature: %s, can't translate base !\n",
-+		       node->full_name);
-+		return;
-+	}
-+	base = ioremap(addr, (unsigned long)size);
- 	if (!base) {
--		printk(KERN_ERR "pmac_feature: Can't map mac-io chip !\n");
-+		printk(KERN_ERR "pmac_feature: %s, can't map mac-io chip !\n",
-+		       node->full_name);
- 		return;
- 	}
- 	if (type == macio_keylargo) {
-Index: linux-serialfix/arch/powerpc/platforms/powermac/low_i2c.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/powermac/low_i2c.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/powermac/low_i2c.c	2005-11-23 16:54:25.000000000 +1100
-@@ -36,7 +36,7 @@
- 
- #ifdef DEBUG
- #define DBG(x...) do {\
--		printk(KERN_DEBUG "KW:" x);	\
-+		printk(KERN_DEBUG "low_i2c:" x);	\
- 	} while(0)
- #else
- #define DBG(x...)
-@@ -342,7 +342,7 @@ static int keywest_low_i2c_func(struct l
- static void keywest_low_i2c_add(struct device_node *np)
- {
- 	struct low_i2c_host	*host = find_low_i2c_host(NULL);
--	u32			*psteps, *prate, steps, aoffset = 0;
-+	u32			*psteps, *prate, *addrp, steps;
- 	struct device_node	*parent;
- 
- 	if (host == NULL) {
-@@ -352,6 +352,16 @@ static void keywest_low_i2c_add(struct d
- 	}
- 	memset(host, 0, sizeof(*host));
- 
-+	/* Apple is kind enough to provide a valid AAPL,address property
-+	 * on all i2c keywest nodes so far ... we would have to fallback
-+	 * to macio parsing if that wasn't the case
-+	 */
-+	addrp = (u32 *)get_property(np, "AAPL,address", NULL);
-+	if (addrp == NULL) {
-+		printk(KERN_ERR "low_i2c: Can't find address for %s\n",
-+		       np->full_name);
-+		return;
-+	}
- 	init_MUTEX(&host->mutex);
- 	host->np = of_node_get(np);	
- 	psteps = (u32 *)get_property(np, "AAPL,address-step", NULL);
-@@ -360,12 +370,10 @@ static void keywest_low_i2c_add(struct d
- 		steps >>= 1;
- 	parent = of_get_parent(np);
- 	host->num_channels = 1;
--	if (parent && parent->name[0] == 'u') {
-+	if (parent && parent->name[0] == 'u')
- 		host->num_channels = 2;
--		aoffset = 3;
--	}
- 	/* Select interface rate */
--	host->speed = KW_I2C_MODE_100KHZ;
-+	host->speed = KW_I2C_MODE_25KHZ;
- 	prate = (u32 *)get_property(np, "AAPL,i2c-rate", NULL);
- 	if (prate) switch(*prate) {
- 	case 100:
-@@ -379,9 +387,12 @@ static void keywest_low_i2c_add(struct d
- 		break;
- 	}	
- 
-+	printk(KERN_INFO "low_i2c: Bus %s found at 0x%08x, %d channels,"
-+	       " speed = %d KHz\n",
-+	       np->full_name, *addrp, host->num_channels, prate ? *prate : 25);
-+
- 	host->mode = pmac_low_i2c_mode_std;
--	host->base = ioremap(np->addrs[0].address + aoffset,
--						np->addrs[0].size);
-+	host->base = ioremap((*addrp), 0x1000);
- 	host->func = keywest_low_i2c_func;
- }
- 
-Index: linux-serialfix/arch/powerpc/platforms/powermac/pic.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/powermac/pic.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/powermac/pic.c	2005-11-23 16:54:25.000000000 +1100
-@@ -459,7 +459,7 @@ void __init pmac_pic_init(void)
- 			mpic_setup_cascade(irqctrler2->intrs[0].line,
- 					   pmac_u3_cascade, mpic2);
- 		}
--#if defined(CONFIG_XMON) && defined(CONFIG_PPC32)
-+#ifdef CONFIG_XMON
- 		{
- 			struct device_node* pswitch;
- 			int nmi_irq;
-Index: linux-serialfix/arch/powerpc/platforms/pseries/lpar.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/platforms/pseries/lpar.c	2005-11-23 16:54:25.000000000 +1100
-+++ linux-serialfix/arch/powerpc/platforms/pseries/lpar.c	2005-11-23 16:54:25.000000000 +1100
-@@ -61,7 +61,7 @@ extern void pSeries_find_serial_port(voi
- int vtermno;	/* virtual terminal# for udbg  */
- 
- #define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
--static void udbg_hvsi_putc(unsigned char c)
-+static void udbg_hvsi_putc(char c)
- {
- 	/* packet's seqno isn't used anyways */
- 	uint8_t packet[] __ALIGNED__ = { 0xff, 5, 0, 0, c };
-@@ -112,7 +112,7 @@ static int udbg_hvsi_getc_poll(void)
- 	return ch;
- }
- 
--static unsigned char udbg_hvsi_getc(void)
-+static char udbg_hvsi_getc(void)
- {
- 	int ch;
- 	for (;;) {
-@@ -128,7 +128,7 @@ static unsigned char udbg_hvsi_getc(void
- 	}
- }
- 
--static void udbg_putcLP(unsigned char c)
-+static void udbg_putcLP(char c)
- {
- 	char buf[16];
- 	unsigned long rc;
-@@ -173,7 +173,7 @@ static int udbg_getc_pollLP(void)
- 	return ch;
- }
- 
--static unsigned char udbg_getcLP(void)
-+static char udbg_getcLP(void)
- {
- 	int ch;
- 	for (;;) {
-Index: linux-serialfix/arch/powerpc/kernel/head_32.S
-===================================================================
---- linux-serialfix.orig/arch/powerpc/kernel/head_32.S	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/kernel/head_32.S	2005-11-23 16:54:25.000000000 +1100
-@@ -153,6 +153,9 @@ __after_mmu_off:
- 	bl	flush_tlbs
- 
- 	bl	initial_bats
-+#if !defined(CONFIG_APUS) && defined(CONFIG_BOOTX_TEXT)
-+	bl	setup_disp_bat
-+#endif
- 
- /*
-  * Call setup_cpu for CPU 0 and initialize 6xx Idle
-@@ -1306,6 +1309,32 @@ initial_bats:
- 	blr
- 
- 
-+#if !defined(CONFIG_APUS) && defined(CONFIG_BOOTX_TEXT)
-+setup_disp_bat:
 +	/*
-+	 * setup the display bat prepared for us in prom.c
++	 * Test if boot-info is compatible.  Done only in config
++	 * CONFIG_BOOTX_TEXT since there is nothing much we can do
++	 * with an incompatible version, except display a message
++	 * and eventually hang the processor...
++	 *
++	 * I'll try to keep enough of boot-info compatible in the
++	 * future to always allow display of this message;
 +	 */
-+	mflr	r8
-+	bl	reloc_offset
-+	mtlr	r8
-+	addis	r8,r3,disp_BAT@ha
-+	addi	r8,r8,disp_BAT@l
-+	cmpwi	cr0,r8,0
-+	beqlr
-+	lwz	r11,0(r8)
-+	lwz	r8,4(r8)
-+	mfspr	r9,SPRN_PVR
-+	rlwinm	r9,r9,16,16,31		/* r9 = 1 for 601, 4 for 604 */
-+	cmpwi	0,r9,1
-+	beq	1f
-+	mtspr	SPRN_DBAT3L,r8
-+	mtspr	SPRN_DBAT3U,r11
-+	blr
-+1:	mtspr	SPRN_IBAT3L,r8
-+	mtspr	SPRN_IBAT3U,r11
-+	blr
-+#endif /* !defined(CONFIG_APUS) && defined(CONFIG_BOOTX_TEXT) */
++	if (!BOOT_INFO_IS_COMPATIBLE(bi)) {
++		bootx_printf(" !!! WARNING - Incompatible version"
++			     " of BootX !!!\n\n\n");
++		for (;;)
++			;
++	}
++	if (bi->architecture != BOOT_ARCH_PCI) {
++		bootx_printf(" !!! WARNING - Usupported machine"
++			     " architecture !\n");
++		for (;;)
++			;
++	}
 +
- #ifdef CONFIG_8260
- /* Jump into the system reset for the rom.
-  * We first disable the MMU, and then jump to the ROM reset address.
-Index: linux-serialfix/arch/powerpc/mm/init_32.c
-===================================================================
---- linux-serialfix.orig/arch/powerpc/mm/init_32.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/powerpc/mm/init_32.c	2005-11-23 16:54:25.000000000 +1100
-@@ -188,6 +188,11 @@ void __init MMU_init(void)
- 
- 	if (ppc_md.progress)
- 		ppc_md.progress("MMU:exit", 0x211);
-+
-+	/* From now on, btext is no longer BAT mapped if it was at all */
 +#ifdef CONFIG_BOOTX_TEXT
++	btext_welcome(bi);
++#endif
++	/* New BootX enters kernel with MMU off, i/os are not allowed
++	 * here. This hack will have been done by the boostrap anyway.
++	 */
++	if (bi->version < 4) {
++		/*
++		 * XXX If this is an iMac, turn off the USB controller.
++		 */
++		model = (char *) bootx_early_getprop(r4 + bi->deviceTreeOffset,
++						     4, "model");
++		if (model
++		    && (strcmp(model, "iMac,1") == 0
++			|| strcmp(model, "PowerMac1,1") == 0)) {
++			bootx_printf("iMac,1 detected, shutting down USB \n");
++			out_le32((unsigned *)0x80880008, 1);	/* XXX */
++		}
++	}
++
++	/* Get a pointer that points above the device tree, args, ramdisk,
++	 * etc... to use for generating the flattened tree
++	 */
++	if (bi->version < 5) {
++		space = bi->deviceTreeOffset + bi->deviceTreeSize;
++		if (bi->ramDisk)
++			space = bi->ramDisk + bi->ramDiskSize;
++	} else
++		space = bi->totalParamsSize;
++
++	bootx_printf("Total space used by parameters & ramdisk: %x \n", space);
++
++	/* New BootX will have flushed all TLBs and enters kernel with
++	 * MMU switched OFF, so this should not be useful anymore.
++	 */
++	if (bi->version < 4) {
++		bootx_printf("Touching pages...\n");
++
++		/*
++		 * Touch each page to make sure the PTEs for them
++		 * are in the hash table - the aim is to try to avoid
++		 * getting DSI exceptions while copying the kernel image.
++		 */
++		for (ptr = ((unsigned long) &_stext) & PAGE_MASK;
++		     ptr < (unsigned long)bi + space; ptr += PAGE_SIZE)
++			x = *(volatile unsigned long *)ptr;
++	}
++
++	/* Ok, now we need to generate a flattened device-tree to pass
++	 * to the kernel
++	 */
++	bootx_printf("Preparing boot params...\n");
++
++	hdr = bootx_flatten_dt(space);
++
++#ifdef CONFIG_BOOTX_TEXT
++#ifdef SET_BOOT_BAT
++	bootx_printf("Preparing BAT...\n");
++	btext_prepare_BAT();
++#else
 +	btext_unmap();
 +#endif
- }
- 
- /* This is only called until mem_init is done. */
-Index: linux-serialfix/drivers/i2c/busses/i2c-keywest.c
-===================================================================
---- linux-serialfix.orig/drivers/i2c/busses/i2c-keywest.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/drivers/i2c/busses/i2c-keywest.c	2005-11-23 16:54:25.000000000 +1100
-@@ -505,16 +505,23 @@ static int
- create_iface(struct device_node *np, struct device *dev)
- {
- 	unsigned long steps;
--	unsigned bsteps, tsize, i, nchan, addroffset;
-+	unsigned bsteps, tsize, i, nchan;
- 	struct keywest_iface* iface;
--	u32 *psteps, *prate;
-+	u32 *psteps, *prate, *addrp;
- 	int rc;
- 
--	if (np->n_intrs < 1 || np->n_addrs < 1) {
--		printk(KERN_ERR "%s: Missing interrupt or address !\n",
-+	if (np->n_intrs < 1) {
-+		printk(KERN_ERR "%s: Missing interrupt !\n",
- 		       np->full_name);
- 		return -ENODEV;
- 	}
-+	addrp = (u32 *)get_property(np, "AAPL,address", NULL);
-+	if (addrp == NULL) {
-+		printk(KERN_ERR "%s: Can't find address !\n",
-+		       np->full_name);
-+		return -ENODEV;
-+	}
++#endif
 +
- 	if (pmac_low_i2c_lock(np))
- 		return -ENODEV;
- 
-@@ -525,13 +532,10 @@ create_iface(struct device_node *np, str
- 	for (bsteps = 0; (steps & 0x01) == 0; bsteps++)
- 		steps >>= 1;
- 
--	if (np->parent->name[0] == 'u') {
-+	if (np->parent->name[0] == 'u')
- 		nchan = 2;
--		addroffset = 3;
--	} else {
--		addroffset = 0;
-+	else
- 		nchan = 1;
--	}
- 
- 	tsize = sizeof(struct keywest_iface) +
- 		(sizeof(struct keywest_chan) + 4) * nchan;
-@@ -550,8 +554,7 @@ create_iface(struct device_node *np, str
- 	iface->irq = np->intrs[0].line;
- 	iface->channels = (struct keywest_chan *)
- 		(((unsigned long)(iface + 1) + 3UL) & ~3UL);
--	iface->base = ioremap(np->addrs[0].address + addroffset,
--						np->addrs[0].size);
-+	iface->base = ioremap(*addrp, 0x1000);
- 	if (!iface->base) {
- 		printk(KERN_ERR "i2c-keywest: can't map inteface !\n");
- 		kfree(iface);
-Index: linux-serialfix/drivers/macintosh/via-cuda.c
-===================================================================
---- linux-serialfix.orig/drivers/macintosh/via-cuda.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/drivers/macintosh/via-cuda.c	2005-11-23 16:54:25.000000000 +1100
-@@ -127,39 +127,34 @@ struct adb_driver via_cuda_driver = {
- #endif /* CONFIG_ADB */
- 
- #ifdef CONFIG_PPC
--int __init
--find_via_cuda(void)
-+int __init find_via_cuda(void)
- {
--    int err;
-     struct adb_request req;
-+    phys_addr_t taddr;
-+    u32 *reg;
-+    int err;
- 
-     if (vias != 0)
- 	return 1;
--    vias = find_devices("via-cuda");
-+    vias = of_find_node_by_name(NULL, "via-cuda");
-     if (vias == 0)
- 	return 0;
--    if (vias->next != 0)
--	printk(KERN_WARNING "Warning: only using 1st via-cuda\n");
--
--#if 0
--    { int i;
--
--    printk("find_via_cuda: node = %p, addrs =", vias->node);
--    for (i = 0; i < vias->n_addrs; ++i)
--	printk(" %x(%x)", vias->addrs[i].address, vias->addrs[i].size);
--    printk(", intrs =");
--    for (i = 0; i < vias->n_intrs; ++i)
--	printk(" %x", vias->intrs[i].line);
--    printk("\n"); }
--#endif
- 
--    if (vias->n_addrs != 1 || vias->n_intrs != 1) {
--	printk(KERN_ERR "via-cuda: expecting 1 address (%d) and 1 interrupt (%d)\n",
--	       vias->n_addrs, vias->n_intrs);
--	if (vias->n_addrs < 1 || vias->n_intrs < 1)
--	    return 0;
-+    reg = (u32 *)get_property(vias, "reg", NULL);
-+    if (reg == NULL) {
-+	    printk(KERN_ERR "via-cuda: No \"reg\" property !\n");
-+	    goto fail;
-+    }
-+    taddr = of_translate_address(vias, reg);
-+    if (taddr == 0) {
-+	    printk(KERN_ERR "via-cuda: Can't translate address !\n");
-+	    goto fail;
-+    }
-+    via = ioremap(taddr, 0x2000);
-+    if (via == NULL) {
-+	    printk(KERN_ERR "via-cuda: Can't map address !\n");
-+	    goto fail;
-     }
--    via = ioremap(vias->addrs->address, 0x2000);
- 
-     cuda_state = idle;
-     sys_ctrler = SYS_CTRLER_CUDA;
-@@ -185,6 +180,11 @@ find_via_cuda(void)
- 	cuda_poll();
- 
-     return 1;
++	reloc_got2(-offset);
 +
-+ fail:
-+    of_node_put(vias);
-+    vias = NULL;
-+    return 0;
- }
- #endif /* CONFIG_PPC */
- 
-Index: linux-serialfix/drivers/macintosh/via-pmu.c
++	__start(hdr, KERNELBASE + offset, 0);
++}
+Index: linux-serialfix/arch/powerpc/kernel/head_32.S
 ===================================================================
---- linux-serialfix.orig/drivers/macintosh/via-pmu.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/drivers/macintosh/via-pmu.c	2005-11-23 16:54:25.000000000 +1100
-@@ -147,6 +147,7 @@ static struct device_node *vias;
- static int pmu_kind = PMU_UNKNOWN;
- static int pmu_fully_inited = 0;
- static int pmu_has_adb;
-+static struct device_node *gpio_node;
- static unsigned char __iomem *gpio_reg = NULL;
- static int gpio_irq = -1;
- static int gpio_irq_enabled = -1;
-@@ -295,22 +296,26 @@ static struct backlight_controller pmu_b
- };
- #endif /* CONFIG_PMAC_BACKLIGHT */
+--- linux-serialfix.orig/arch/powerpc/kernel/head_32.S	2005-11-23 16:54:25.000000000 +1100
++++ linux-serialfix/arch/powerpc/kernel/head_32.S	2005-11-23 16:54:26.000000000 +1100
+@@ -125,6 +125,19 @@ __start:
+ 	bl	prom_init
+ 	trap
  
--int
--find_via_pmu(void)
-+int __init find_via_pmu(void)
- {
-+	phys_addr_t taddr;
-+	u32 *reg;
++/*
++ * Check for BootX signature when supporting PowerMac and branch to
++ * appropriate trampoline if it's present
++ */
++#ifdef CONFIG_PPC_PMAC
++1:	lis	r31,0x426f
++	ori	r31,r31,0x6f58
++	cmpw	0,r3,r31
++	bne	1f
++	bl	bootx_init
++	trap
++#endif /* CONFIG_PPC_PMAC */
 +
- 	if (via != 0)
- 		return 1;
--	vias = find_devices("via-pmu");
--	if (vias == 0)
-+	vias = of_find_node_by_name(NULL, "via-pmu");
-+	if (vias == NULL)
- 		return 0;
--	if (vias->next != 0)
--		printk(KERN_WARNING "Warning: only using 1st via-pmu\n");
- 
--	if (vias->n_addrs < 1 || vias->n_intrs < 1) {
--		printk(KERN_ERR "via-pmu: %d addresses, %d interrupts!\n",
--		       vias->n_addrs, vias->n_intrs);
--		if (vias->n_addrs < 1 || vias->n_intrs < 1)
--			return 0;
-+	reg = (u32 *)get_property(vias, "reg", NULL);
-+	if (reg == NULL) {
-+		printk(KERN_ERR "via-pmu: No \"reg\" property !\n");
-+		goto fail;
-+	}
-+	taddr = of_translate_address(vias, reg);
-+	if (taddr == 0) {
-+		printk(KERN_ERR "via-pmu: Can't translate address !\n");
-+		goto fail;
- 	}
- 
- 	spin_lock_init(&pmu_lock);
-@@ -331,7 +336,8 @@ find_via_pmu(void)
- 		pmu_kind = PMU_HEATHROW_BASED;
- 	else if (device_is_compatible(vias->parent, "Keylargo")
- 		 || device_is_compatible(vias->parent, "K2-Keylargo")) {
--		struct device_node *gpio, *gpiop;
-+		struct device_node *gpiop;
-+		phys_addr_t gaddr = 0;
- 
- 		pmu_kind = PMU_KEYLARGO_BASED;
- 		pmu_has_adb = (find_type_devices("adb") != NULL);
-@@ -341,19 +347,24 @@ find_via_pmu(void)
- 				PMU_INT_TICK |
- 				PMU_INT_ENVIRONMENT;
- 		
--		gpiop = find_devices("gpio");
--		if (gpiop && gpiop->n_addrs) {
--			gpio_reg = ioremap(gpiop->addrs->address, 0x10);
--			gpio = find_devices("extint-gpio1");
--			if (gpio == NULL)
--				gpio = find_devices("pmu-interrupt");
--			if (gpio && gpio->parent == gpiop && gpio->n_intrs)
--				gpio_irq = gpio->intrs[0].line;
-+		gpiop = of_find_node_by_name(NULL, "gpio");
-+		if (gpiop) {
-+			reg = (u32 *)get_property(gpiop, "reg", NULL);
-+			if (reg)
-+				gaddr = of_translate_address(gpiop, reg);
-+			if (gaddr != 0)
-+				gpio_reg = ioremap(gaddr, 0x10);
- 		}
-+		if (gpio_reg == NULL)
-+			printk(KERN_ERR "via-pmu: Can't find GPIO reg !\n");
- 	} else
- 		pmu_kind = PMU_UNKNOWN;
- 
--	via = ioremap(vias->addrs->address, 0x2000);
-+	via = ioremap(taddr, 0x2000);
-+	if (via == NULL) {
-+		printk(KERN_ERR "via-pmu: Can't map address !\n");
-+		goto fail;
-+	}
- 	
- 	out_8(&via[IER], IER_CLR | 0x7f);	/* disable all intrs */
- 	out_8(&via[IFR], 0x7f);			/* clear IFR */
-@@ -371,17 +382,19 @@ find_via_pmu(void)
- 	sys_ctrler = SYS_CTRLER_PMU;
- 	
- 	return 1;
-+ fail:
-+	of_node_put(vias);
-+	vias = NULL;
-+	return 0;
- }
- 
- #ifdef CONFIG_ADB
--static int
--pmu_probe(void)
-+static int pmu_probe(void)
- {
- 	return vias == NULL? -ENODEV: 0;
- }
- 
--static int __init
--pmu_init(void)
-+static int __init pmu_init(void)
- {
- 	if (vias == NULL)
- 		return -ENODEV;
-@@ -405,7 +418,7 @@ static int __init via_pmu_start(void)
- 	bright_req_2.complete = 1;
- 	batt_req.complete = 1;
- 
--#if defined(CONFIG_PPC32) && !defined(CONFIG_PPC_MERGE)
-+#ifndef CONFIG_PPC_MERGE
- 	if (pmu_kind == PMU_KEYLARGO_BASED)
- 		openpic_set_irq_priority(vias->intrs[0].line,
- 					 OPENPIC_PRIORITY_DEFAULT + 1);
-@@ -418,10 +431,22 @@ static int __init via_pmu_start(void)
- 		return -EAGAIN;
- 	}
- 
--	if (pmu_kind == PMU_KEYLARGO_BASED && gpio_irq != -1) {
--		if (request_irq(gpio_irq, gpio1_interrupt, 0, "GPIO1 ADB", (void *)0))
--			printk(KERN_ERR "pmu: can't get irq %d (GPIO1)\n", gpio_irq);
--		gpio_irq_enabled = 1;
-+	if (pmu_kind == PMU_KEYLARGO_BASED) {
-+		gpio_node = of_find_node_by_name(NULL, "extint-gpio1");
-+		if (gpio_node == NULL)
-+			gpio_node = of_find_node_by_name(NULL,
-+							 "pmu-interrupt");
-+		if (gpio_node && gpio_node->n_intrs > 0)
-+			gpio_irq = gpio_node->intrs[0].line;
+ 1:	mr	r31,r3			/* save parameters */
+ 	mr	r30,r4
+ 	li	r24,0			/* cpu # */
+Index: linux-serialfix/arch/powerpc/platforms/powermac/Makefile
+===================================================================
+--- linux-serialfix.orig/arch/powerpc/platforms/powermac/Makefile	2005-11-23 16:54:25.000000000 +1100
++++ linux-serialfix/arch/powerpc/platforms/powermac/Makefile	2005-11-23 16:54:26.000000000 +1100
+@@ -1,3 +1,5 @@
++CFLAGS_bootx_init.o  		+= -fPIC
 +
-+		if (gpio_irq != -1) {
-+			if (request_irq(gpio_irq, gpio1_interrupt, 0,
-+					"GPIO1 ADB", (void *)0))
-+				printk(KERN_ERR "pmu: can't get irq %d"
-+				       " (GPIO1)\n", gpio_irq);
-+			else
-+				gpio_irq_enabled = 1;
-+		}
- 	}
- 
- 	/* Enable interrupts */
-@@ -1371,7 +1396,6 @@ next:
- 			}
- 			pmu_done(req);
- 		} else {
--#if defined(CONFIG_XMON) && !defined(CONFIG_PPC64)
- 			if (len == 4 && data[1] == 0x2c) {
- 				extern int xmon_wants_key, xmon_adb_keycode;
- 				if (xmon_wants_key) {
-@@ -1379,7 +1403,6 @@ next:
- 					return;
- 				}
- 			}
--#endif /* defined(CONFIG_XMON) && !defined(CONFIG_PPC64) */
- #ifdef CONFIG_ADB
- 			/*
- 			 * XXX On the [23]400 the PMU gives us an up
-Index: linux-serialfix/arch/ppc/kernel/setup.c
+ obj-y				+= pic.o setup.o time.o feature.o pci.o \
+ 				   sleep.o low_i2c.o cache.o
+ obj-$(CONFIG_PMAC_BACKLIGHT)	+= backlight.o
+@@ -6,5 +8,6 @@ obj-$(CONFIG_CPU_FREQ_PMAC64)	+= cpufreq
+ obj-$(CONFIG_NVRAM)		+= nvram.o
+ # ppc64 pmac doesn't define CONFIG_NVRAM but needs nvram stuff
+ obj-$(CONFIG_PPC64)		+= nvram.o
++obj-$(CONFIG_PPC32)		+= bootx_init.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_PPC_MERGE)		+= udbg_scc.o udbg_adb.o
+Index: linux-serialfix/include/asm-powerpc/bootx.h
 ===================================================================
---- linux-serialfix.orig/arch/ppc/kernel/setup.c	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/arch/ppc/kernel/setup.c	2005-11-23 16:54:25.000000000 +1100
-@@ -744,6 +744,9 @@ void __init setup_arch(char **cmdline_p)
- 	/* so udelay does something sensible, assume <= 1000 bogomips */
- 	loops_per_jiffy = 500000000 / HZ;
- 
-+	if (ppc_md.init_early)
-+		ppc_md.init_early();
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-serialfix/include/asm-powerpc/bootx.h	2005-11-23 16:54:26.000000000 +1100
+@@ -0,0 +1,166 @@
++/*
++ * This file describes the structure passed from the BootX application
++ * (for MacOS) when it is used to boot Linux.
++ *
++ * Written by Benjamin Herrenschmidt.
++ */
 +
- #ifdef CONFIG_PPC_MULTIPLATFORM
- 	/* This could be called "early setup arch", it must be done
- 	 * now because xmon need it
-Index: linux-serialfix/include/asm-ppc/btext.h
-===================================================================
---- linux-serialfix.orig/include/asm-ppc/btext.h	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/include/asm-ppc/btext.h	2005-11-23 16:54:25.000000000 +1100
-@@ -17,7 +17,7 @@ extern unsigned long disp_BAT[2];
- extern boot_infos_t disp_bi;
- extern int boot_text_mapped;
- 
--extern void init_boot_display(void);
-+extern void btext_init(boot_infos_t *bi);
- extern void btext_welcome(void);
- extern void btext_prepare_BAT(void);
- extern void btext_setup_display(int width, int height, int depth, int pitch,
-Index: linux-serialfix/include/asm-ppc/machdep.h
-===================================================================
---- linux-serialfix.orig/include/asm-ppc/machdep.h	2005-11-23 16:54:13.000000000 +1100
-+++ linux-serialfix/include/asm-ppc/machdep.h	2005-11-23 16:54:25.000000000 +1100
-@@ -35,8 +35,10 @@ struct machdep_calls {
- 	int		(*get_irq)(struct pt_regs *);
- 	
- 	/* A general init function, called by ppc_init in init/main.c.
--	   May be NULL. */
-+	   May be NULL. DEPRECATED ! */
- 	void		(*init)(void);
-+	/* For compatibility with merged platforms */
-+	void		(*init_early)(void);
- 
- 	void		(*restart)(char *cmd);
- 	void		(*power_off)(void);
++
++#ifndef __ASM_BOOTX_H__
++#define __ASM_BOOTX_H__
++
++#ifdef macintosh
++#include <Types.h>
++#include "linux_type_defs.h"
++#endif
++
++#ifdef macintosh
++/* All this requires PowerPC alignment */
++#pragma options align=power
++#endif
++
++/* On kernel entry:
++ *
++ * r3 = 0x426f6f58    ('BooX')
++ * r4 = pointer to boot_infos
++ * r5 = NULL
++ *
++ * Data and instruction translation disabled, interrupts
++ * disabled, kernel loaded at physical 0x00000000 on PCI
++ * machines (will be different on NuBus).
++ */
++
++#define BOOT_INFO_VERSION               5
++#define BOOT_INFO_COMPATIBLE_VERSION    1
++
++/* Bit in the architecture flag mask. More to be defined in
++   future versions. Note that either BOOT_ARCH_PCI or
++   BOOT_ARCH_NUBUS is set. The other BOOT_ARCH_NUBUS_xxx are
++   set additionally when BOOT_ARCH_NUBUS is set.
++ */
++#define BOOT_ARCH_PCI                   0x00000001UL
++#define BOOT_ARCH_NUBUS                 0x00000002UL
++#define BOOT_ARCH_NUBUS_PDM             0x00000010UL
++#define BOOT_ARCH_NUBUS_PERFORMA        0x00000020UL
++#define BOOT_ARCH_NUBUS_POWERBOOK       0x00000040UL
++
++/*  Maximum number of ranges in phys memory map */
++#define MAX_MEM_MAP_SIZE				26
++
++/* This is the format of an element in the physical memory map. Note that
++   the map is optional and current BootX will only build it for pre-PCI
++   machines */
++typedef struct boot_info_map_entry
++{
++    __u32       physAddr;                /* Physical starting address */
++    __u32       size;                    /* Size in bytes */
++} boot_info_map_entry_t;
++
++
++/* Here are the boot informations that are passed to the bootstrap
++ * Note that the kernel arguments and the device tree are appended
++ * at the end of this structure. */
++typedef struct boot_infos
++{
++    /* Version of this structure */
++    __u32       version;
++    /* backward compatible down to version: */
++    __u32       compatible_version;
++
++    /* NEW (vers. 2) this holds the current _logical_ base addr of
++       the frame buffer (for use by early boot message) */
++    __u8*       logicalDisplayBase;
++
++    /* NEW (vers. 4) Apple's machine identification */
++    __u32       machineID;
++
++    /* NEW (vers. 4) Detected hw architecture */
++    __u32       architecture;
++
++    /* The device tree (internal addresses relative to the beginning of the tree,
++     * device tree offset relative to the beginning of this structure).
++     * On pre-PCI macintosh (BOOT_ARCH_PCI bit set to 0 in architecture), this
++     * field is 0.
++     */
++    __u32       deviceTreeOffset;        /* Device tree offset */
++    __u32       deviceTreeSize;          /* Size of the device tree */
++
++    /* Some infos about the current MacOS display */
++    __u32       dispDeviceRect[4];       /* left,top,right,bottom */
++    __u32       dispDeviceDepth;         /* (8, 16 or 32) */
++    __u8*       dispDeviceBase;          /* base address (physical) */
++    __u32       dispDeviceRowBytes;      /* rowbytes (in bytes) */
++    __u32       dispDeviceColorsOffset;  /* Colormap (8 bits only) or 0 (*) */
++    /* Optional offset in the registry to the current
++     * MacOS display. (Can be 0 when not detected) */
++     __u32      dispDeviceRegEntryOffset;
++
++    /* Optional pointer to boot ramdisk (offset from this structure) */
++    __u32       ramDisk;
++    __u32       ramDiskSize;             /* size of ramdisk image */
++
++    /* Kernel command line arguments (offset from this structure) */
++    __u32       kernelParamsOffset;
++
++    /* ALL BELOW NEW (vers. 4) */
++
++    /* This defines the physical memory. Valid with BOOT_ARCH_NUBUS flag
++       (non-PCI) only. On PCI, memory is contiguous and it's size is in the
++       device-tree. */
++    boot_info_map_entry_t
++    	        physMemoryMap[MAX_MEM_MAP_SIZE]; /* Where the phys memory is */
++    __u32       physMemoryMapSize;               /* How many entries in map */
++
++
++    /* The framebuffer size (optional, currently 0) */
++    __u32       frameBufferSize;         /* Represents a max size, can be 0. */
++
++    /* NEW (vers. 5) */
++
++    /* Total params size (args + colormap + device tree + ramdisk) */
++    __u32       totalParamsSize;
++
++} boot_infos_t;
++
++/* (*) The format of the colormap is 256 * 3 * 2 bytes. Each color index
++ * is represented by 3 short words containing a 16 bits (unsigned) color
++ * component. Later versions may contain the gamma table for direct-color
++ * devices here.
++ */
++#define BOOTX_COLORTABLE_SIZE    (256UL*3UL*2UL)
++
++/* BootX passes the device-tree using a format that comes from earlier
++ * ppc32 kernels. This used to match what is in prom.h, but not anymore
++ * so we now define it here
++ */
++struct bootx_dt_prop {
++	u32	name;
++	int	length;
++	u32	value;
++	u32	next;
++};
++
++struct bootx_dt_node {
++	u32	unused0;
++	u32	unused1;
++	u32	phandle;	/* not really available */
++	u32	unused2;
++	u32	unused3;
++	u32	unused4;
++	u32	unused5;
++	u32	full_name;
++	u32	properties;
++	u32	parent;
++	u32	child;
++	u32	sibling;
++	u32	next;
++	u32	allnext;
++};
++
++extern void bootx_init(unsigned long r4, unsigned long phys);
++
++#ifdef macintosh
++#pragma options align=reset
++#endif
++
++#endif
