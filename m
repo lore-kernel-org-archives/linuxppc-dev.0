@@ -1,22 +1,18 @@
-Return-Path: <panto@intracom.gr>
-Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
-	by ozlabs.org (Postfix) with ESMTP id D871368814
+Return-Path: <Fabien.Clement@thomson.net>
+Received: from dmzraw5.extranet.tce.com (dmzraw5.extranet.tce.com
+	[157.254.234.142]) by ozlabs.org (Postfix) with ESMTP id E98AC68820
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 22:11:58 +1100 (EST)
-Received: from mailserv.intranet.gr (localhost [127.0.0.1])
-	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id jAOBKJ4J002516
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 13:20:19 +0200 (EET)
-Message-ID: <43859E04.1030609@intracom.gr>
-Date: Thu, 24 Nov 2005 13:03:32 +0200
-From: Pantelis Antoniou <panto@intracom.gr>
+	Thu, 24 Nov 2005 22:25:52 +1100 (EST)
 MIME-Version: 1.0
-To: Clement Fabien <Fabien.Clement@thomson.net>,
-	Kumar Gala <kumar.gala@freescale.com>,
-	Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: multipart/mixed; boundary="------------090309030706070501060505"
-Subject: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5F0E9.CCDE8FD2"
+Date: Thu, 24 Nov 2005 12:25:40 +0100
+Message-ID: <9C1918067C3BC14C9C351C206D8A843701F54B1D@rennsmail03.eu.thmulti.com>
+From: "Clement Fabien" <Fabien.Clement@thomson.net>
+To: "Pantelis Antoniou" <panto@intracom.gr>,
+	"Kumar Gala" <kumar.gala@freescale.com>,
+	"Marcelo Tosatti" <marcelo.tosatti@cyclades.com>,
+	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Subject: RE: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,9 +24,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------090309030706070501060505
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+
+------_=_NextPart_001_01C5F0E9.CCDE8FD2
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+Here is a patch that builds.
+
+
+-----Original Message-----
+From: Pantelis Antoniou [mailto:panto@intracom.gr]=20
+Sent: jeudi 24 novembre 2005 12:04
+To: Clement Fabien; Kumar Gala; Marcelo Tosatti; linuxppc-embedded
+Subject: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
 
 Hi all.
 
@@ -43,128 +50,57 @@ Regards
 Pantelis
 
 
---------------090309030706070501060505
-Content-Type: text/x-patch;
- name="cpm2-dpalloc.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="cpm2-dpalloc.patch"
 
-diff --git a/arch/ppc/lib/rheap.c b/arch/ppc/lib/rheap.c
---- a/arch/ppc/lib/rheap.c
-+++ b/arch/ppc/lib/rheap.c
-@@ -425,17 +425,21 @@ void *rh_detach_region(rh_info_t * info,
- 	return (void *)s;
- }
- 
--void *rh_alloc(rh_info_t * info, int size, const char *owner)
-+void *rh_alloc(rh_info_t * info, int size, int alignment, const char *owner)
- {
- 	struct list_head *l;
- 	rh_block_t *blk;
- 	rh_block_t *newblk;
- 	void *start;
- 
--	/* Validate size */
--	if (size <= 0)
-+	/* Validate size, (must be power of two) */
-+	if (size <= 0 || (alignment & (alignment - 1)) != 0)
- 		return ERR_PTR(-EINVAL);
- 
-+	/* given alignment larger that default rheap alignment */
-+	if (alignment > info->alignment)
-+		size += alignement - 1;
-+
- 	/* Align to configured alignment */
- 	size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
- 
-@@ -478,9 +482,21 @@ void *rh_alloc(rh_info_t * info, int siz
- 
- 	attach_taken_block(info, newblk);
- 
-+	/* for larger alignment return fixed up pointer  */
-+	/* this is no problem with the deallocator since */
-+	/* we scan for pointers that lie in the blocks   */
-+	if (alignment > info->alignment)
-+		start = (void *)(((unsigned long)start + alignment - 1) &
-+				~(alignment - 1));
-+
- 	return start;
- }
- 
-+void *rh_alloc(rh_info_t * info, int size, const char *owner)
-+{
-+	return rh_alloc_align(info, size, info->alignment, owner);
-+}
-+
- /* allocate at precisely the given address */
- void *rh_alloc_fixed(rh_info_t * info, void *start, int size, const char *owner)
- {
-diff --git a/arch/ppc/syslib/cpm2_common.c b/arch/ppc/syslib/cpm2_common.c
---- a/arch/ppc/syslib/cpm2_common.c
-+++ b/arch/ppc/syslib/cpm2_common.c
-@@ -148,8 +148,7 @@ uint cpm_dpalloc(uint size, uint align)
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&cpm_dpmem_lock, flags);
--	cpm_dpmem_info.alignment = align;
--	start = rh_alloc(&cpm_dpmem_info, size, "commproc");
-+	start = rh_alloc_align(&cpm_dpmem_info, size, align, "commproc");
- 	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
- 
- 	return (uint)start;
-@@ -170,13 +169,12 @@ int cpm_dpfree(uint offset)
- EXPORT_SYMBOL(cpm_dpfree);
- 
- /* not sure if this is ever needed */
--uint cpm_dpalloc_fixed(uint offset, uint size, uint align)
-+uint cpm_dpalloc_fixed(uint offset, uint size)
- {
- 	void *start;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&cpm_dpmem_lock, flags);
--	cpm_dpmem_info.alignment = align;
- 	start = rh_alloc_fixed(&cpm_dpmem_info, (void *)offset, size, "commproc");
- 	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
- 
-diff --git a/include/asm-ppc/commproc.h b/include/asm-ppc/commproc.h
---- a/include/asm-ppc/commproc.h
-+++ b/include/asm-ppc/commproc.h
-@@ -74,7 +74,7 @@ static inline long IS_DPERR(const uint o
- extern	cpm8xx_t	*cpmp;		/* Pointer to comm processor */
- extern uint cpm_dpalloc(uint size, uint align);
- extern int cpm_dpfree(uint offset);
--extern uint cpm_dpalloc_fixed(uint offset, uint size, uint align);
-+extern uint cpm_dpalloc_fixed(uint offset, uint size);
- extern void cpm_dpdump(void);
- extern void *cpm_dpram_addr(uint offset);
- extern void cpm_setbrg(uint brg, uint rate);
-diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
---- a/include/asm-ppc/cpm2.h
-+++ b/include/asm-ppc/cpm2.h
-@@ -112,7 +112,7 @@ extern		cpm_cpm2_t	*cpmp;	 /* Pointer to
- 
- extern uint cpm_dpalloc(uint size, uint align);
- extern int cpm_dpfree(uint offset);
--extern uint cpm_dpalloc_fixed(uint offset, uint size, uint align);
-+extern uint cpm_dpalloc_fixed(uint offset, uint size);
- extern void cpm_dpdump(void);
- extern void *cpm_dpram_addr(uint offset);
- extern void cpm_setbrg(uint brg, uint rate);
-diff --git a/include/asm-ppc/rheap.h b/include/asm-ppc/rheap.h
---- a/include/asm-ppc/rheap.h
-+++ b/include/asm-ppc/rheap.h
-@@ -62,6 +62,10 @@ extern int rh_attach_region(rh_info_t * 
- /* Detach a free region */
- extern void *rh_detach_region(rh_info_t * info, void *start, int size);
- 
-+/* Allocate the given size from the remote heap (with alignment) */
-+extern void *rh_alloc_align(rh_info_t * info, int size, int alignment,
-+		const char *owner);
-+
- /* Allocate the given size from the remote heap */
- extern void *rh_alloc(rh_info_t * info, int size, const char *owner);
- 
 
---------------090309030706070501060505--
+------_=_NextPart_001_01C5F0E9.CCDE8FD2
+Content-Type: application/octet-stream;
+	name="cpm2-dpalloc_compiling.patch"
+Content-Transfer-Encoding: base64
+Content-Description: cpm2-dpalloc_compiling.patch
+Content-Disposition: attachment;
+	filename="cpm2-dpalloc_compiling.patch"
+
+PyBhcmNoL3BwYy9saWIvLmJ1aWx0LWluLm8uY21kCj8gYXJjaC9wcGMvbGliLy5jaGVja3N1bS5v
+LmNtZAo/IGFyY2gvcHBjL2xpYi8uZGVjX2FuZF9sb2NrLm8uY21kCj8gYXJjaC9wcGMvbGliLy5k
+aXY2NC5vLmNtZAo/IGFyY2gvcHBjL2xpYi8ucmhlYXAuby5jbWQKPyBhcmNoL3BwYy9saWIvLnN0
+cmNhc2Uuby5jbWQKPyBhcmNoL3BwYy9saWIvLnN0cmluZy5vLmNtZAo/IGFyY2gvcHBjL2xpYi9t
+eXJoZWFwLmMKPyBhcmNoL3BwYy9saWIvcmhlYXAuZGlmZgo/IGFyY2gvcHBjL2xpYi9yaGVhcF9k
+ZWJ1Zy5jCkluZGV4OiBhcmNoL3BwYy9saWIvcmhlYXAuYwo9PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09ClJDUyBmaWxlOiAv
+aG9tZS9jb25mL3RucC9saW51eHBwYy9saW51eC9hcmNoL3BwYy9saWIvcmhlYXAuYyx2CnJldHJp
+ZXZpbmcgcmV2aXNpb24gMS4xLjEuMQpkaWZmIC1iIC11IC1yMS4xLjEuMSByaGVhcC5jCi0tLSBh
+cmNoL3BwYy9saWIvcmhlYXAuYwk2IERlYyAyMDA0IDE2OjE1OjIyIC0wMDAwCTEuMS4xLjEKKysr
+IGFyY2gvcHBjL2xpYi9yaGVhcC5jCTI0IE5vdiAyMDA1IDExOjI0OjQxIC0wMDAwCkBAIC00MjUs
+MTcgKzQyNSwyMiBAQAogCXJldHVybiAodm9pZCAqKXM7CiB9CiAKLXZvaWQgKnJoX2FsbG9jKHJo
+X2luZm9fdCAqIGluZm8sIGludCBzaXplLCBjb25zdCBjaGFyICpvd25lcikKK3ZvaWQgKnJoX2Fs
+bG9jX2FsaWduKHJoX2luZm9fdCAqIGluZm8sIGludCBzaXplLCBpbnQgYWxpZ25tZW50LCBjb25z
+dCBjaGFyICpvd25lcikKIHsKIAlzdHJ1Y3QgbGlzdF9oZWFkICpsOwogCXJoX2Jsb2NrX3QgKmJs
+azsKIAlyaF9ibG9ja190ICpuZXdibGs7CiAJdm9pZCAqc3RhcnQ7CiAKLQkvKiBWYWxpZGF0ZSBz
+aXplICovCi0JaWYgKHNpemUgPD0gMCkKKwkvKiBWYWxpZGF0ZSBzaXplLCAobXVzdCBiZSBwb3dl
+ciBvZiB0d28pICovCisgICBwcmludGsoS0VSTl9JTkZPInJoX2FsbG9jIC0gUmVxdWlyZWQgc2l6
+ZSA9ICUwNFgsIGFsaWduID0gJTA0WFxuIixzaXplLGFsaWdubWVudCk7CisJaWYgKHNpemUgPD0g
+MCB8fCAoYWxpZ25tZW50ICYgKGFsaWdubWVudCAtIDEpKSAhPSAwKQogCQlyZXR1cm4gRVJSX1BU
+UigtRUlOVkFMKTsKIAorCS8qIGdpdmVuIGFsaWdubWVudCBsYXJnZXIgdGhhdCBkZWZhdWx0IHJo
+ZWFwIGFsaWdubWVudCAqLworCWlmIChhbGlnbm1lbnQgPiBpbmZvLT5hbGlnbm1lbnQpCisJCXNp
+emUgKz0gYWxpZ25tZW50IC0gMTsKKwogCS8qIEFsaWduIHRvIGNvbmZpZ3VyZWQgYWxpZ25tZW50
+ICovCiAJc2l6ZSA9IChzaXplICsgKGluZm8tPmFsaWdubWVudCAtIDEpKSAmIH4oaW5mby0+YWxp
+Z25tZW50IC0gMSk7CiAKQEAgLTQ1Myw2ICs0NTgsOCBAQAogCWlmIChibGsgPT0gTlVMTCkKIAkJ
+cmV0dXJuIEVSUl9QVFIoLUVOT01FTSk7CiAKKyAgIHByaW50ayhLRVJOX0lORk8icmhfYWxsb2Mg
+LSBCbG9jayBzaXplID0gJTA0WCwgc3RhcnQgPSAlcFxuIixibGstPnNpemUsYmxrLT5zdGFydCk7
+CisKIAkvKiBKdXN0IGZpdHMgKi8KIAlpZiAoYmxrLT5zaXplID09IHNpemUpIHsKIAkJLyogTW92
+ZSBmcm9tIGZyZWUgbGlzdCB0byB0YWtlbiBsaXN0ICovCkBAIC00NzgsOSArNDg1LDIzIEBACiAK
+IAlhdHRhY2hfdGFrZW5fYmxvY2soaW5mbywgbmV3YmxrKTsKIAorCS8qIGZvciBsYXJnZXIgYWxp
+Z25tZW50IHJldHVybiBmaXhlZCB1cCBwb2ludGVyICAqLworCS8qIHRoaXMgaXMgbm8gcHJvYmxl
+bSB3aXRoIHRoZSBkZWFsbG9jYXRvciBzaW5jZSAqLworCS8qIHdlIHNjYW4gZm9yIHBvaW50ZXJz
+IHRoYXQgbGllIGluIHRoZSBibG9ja3MgICAqLworCWlmIChhbGlnbm1lbnQgPiBpbmZvLT5hbGln
+bm1lbnQpCisJCXN0YXJ0ID0gKHZvaWQgKikoKCh1bnNpZ25lZCBsb25nKXN0YXJ0ICsgYWxpZ25t
+ZW50IC0gMSkgJgorCQkJCX4oYWxpZ25tZW50IC0gMSkpOworCisgICBwcmludGsoS0VSTl9JTkZP
+InJoX2FsbG9jIC0gQWxsb2Mgc2l6ZSA9ICUwNFgsIHN0YXJ0ID0gJXBcbiIsc2l6ZSxzdGFydCk7
+CisKIAlyZXR1cm4gc3RhcnQ7CiB9CiAKK3ZvaWQgKnJoX2FsbG9jKHJoX2luZm9fdCAqIGluZm8s
+IGludCBzaXplLCBjb25zdCBjaGFyICpvd25lcikKK3sKKwlyZXR1cm4gcmhfYWxsb2NfYWxpZ24o
+aW5mbywgc2l6ZSwgaW5mby0+YWxpZ25tZW50LCBvd25lcik7Cit9CisKIC8qIGFsbG9jYXRlIGF0
+IHByZWNpc2VseSB0aGUgZ2l2ZW4gYWRkcmVzcyAqLwogdm9pZCAqcmhfYWxsb2NfZml4ZWQocmhf
+aW5mb190ICogaW5mbywgdm9pZCAqc3RhcnQsIGludCBzaXplLCBjb25zdCBjaGFyICpvd25lcikK
+IHsK
+
+------_=_NextPart_001_01C5F0E9.CCDE8FD2--
