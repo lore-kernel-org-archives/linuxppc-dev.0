@@ -1,19 +1,15 @@
-Return-Path: <arekm@pld-linux.org>
-Received: from outgoing.smtp.agnat.pl (outgoing.smtp.agnat.pl [193.239.44.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 885D9687DE
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2005 03:52:46 +1100 (EST)
-From: Arkadiusz Miskiewicz <arekm@pld-linux.org>
-To: linuxppc-dev@ozlabs.org
-Date: Thu, 24 Nov 2005 17:52:24 +0100
-References: <1132715288.26560.262.camel@gaston>
-In-Reply-To: <1132715288.26560.262.camel@gaston>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200511241752.25310.arekm@pld-linux.org>
-Subject: Re: [PATCH] Fix USB suspend/resume crasher
+Return-Path: <SRS0+1a4aa88343b650159535+823+infradead.org+dwmw2@baythorne.srs.infradead.org>
+From: David Woodhouse <dwmw2@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1132634960.26560.133.camel@gaston>
+References: <1132634960.26560.133.camel@gaston>
+Content-Type: text/plain
+Date: Thu, 24 Nov 2005 17:08:56 +0000
+Message-Id: <1132852136.11921.85.camel@baythorne.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: serial port discovery
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 23 November 2005 04:08, Benjamin Herrenschmidt wrote:
-> This is my latest patch against current linus -git, it closes the IRQ
-> race and makes various other OHCI & EHCI code path safer vs.
-> suspend/resume. I've been able to (finally !) successfully suspend and
-> resume various Mac models, with or without USB mouse plugged, or
-> plugging while asleep, or unplugging while asleep etc... all without a
-> crash. There are still some races here or there in the USB code, but at
-> least the main cause of crash is now fixes by this patch (access to a
-> controller that has been suspended, due to either shared interrupts or
-> other code path).
+On Tue, 2005-11-22 at 15:49 +1100, Benjamin Herrenschmidt wrote:
+> This moves the discovery of legacy serial ports to a separate file,
+> makes it common to ppc32 and ppc64, and reworks it to use the new OF
+> address translators to get to the ports early. This new version can also
+> detect some PCI serial cards using legacy chips and will probably match
+> those discovered port with the default console choice.
 
-btw. what should happen if there are drivers which do not support=20
-suspend/resume?
+This makes it deal with the fact that the Pegasos firmware reports that
+its clock frequency is zero...
 
-I'm using zd1211 wifi usb driver (which isn't state of art) from=20
-http://zd1211.ath.cx/repos/trunk rev 39 and while trying to suspend on my=20
-ibook g4 dec 2004 I'm getting this:
-http://www.t17.ds.pwr.wroc.pl/~misiek/rozne/failed-sleep.jpg
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-After that the only thing I can do is turn the thing off and turn it back o=
-n -=20
-it just hangs. It would be nice if it just refuse to suspend or got things=
-=20
-back into sane state.
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index 28ad50e..7a685ca 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -43,7 +43,10 @@ static int __init add_legacy_port(struct
+ 
+ 	/* get clock freq. if present */
+ 	clk = (u32 *)get_property(np, "clock-frequency", NULL);
+-	clock = clk ? *clk : BASE_BAUD * 16;
++	if (clk && *clk)
++		clock = *clk;
++	else
++		clock = BASE_BAUD * 16;
+ 
+ 	/* get default speed if present */
+ 	spd = (u32 *)get_property(np, "current-speed", NULL);
 
-I'm using 2.6.15rc2git3 + both patches posted in this thread.
-
-ps.
-My usual suspend is:
-
-/sbin/rmmod therm_adt746x
-/sbin/rmmod zd1211
-/sbin/rmmod usbmouse
-/sbin/rmmod usbhid
-/sbin/rmmod zd1211
-/sbin/rmmod ehci-hcd
-/sbin/rmmod ohci-hcd
-/usr/sbin/snooze
-
-(I guess that rmmod zd1211 should be enough now).
-
-=2D-=20
-Arkadiusz Mi=B6kiewicz                    PLD/Linux Team
-http://www.t17.ds.pwr.wroc.pl/~misiek/  http://ftp.pld-linux.org/
+-- 
+dwmw2
