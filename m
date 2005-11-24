@@ -1,18 +1,19 @@
-Return-Path: <Fabien.Clement@thomson.net>
-Received: from dmzraw5.extranet.tce.com (dmzraw5.extranet.tce.com
-	[157.254.234.142]) by ozlabs.org (Postfix) with ESMTP id E98AC68820
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8F03A6882D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 22:25:52 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C5F0E9.CCDE8FD2"
-Date: Thu, 24 Nov 2005 12:25:40 +0100
-Message-ID: <9C1918067C3BC14C9C351C206D8A843701F54B1D@rennsmail03.eu.thmulti.com>
-From: "Clement Fabien" <Fabien.Clement@thomson.net>
-To: "Pantelis Antoniou" <panto@intracom.gr>,
-	"Kumar Gala" <kumar.gala@freescale.com>,
-	"Marcelo Tosatti" <marcelo.tosatti@cyclades.com>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Subject: RE: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
+	Thu, 24 Nov 2005 22:28:30 +1100 (EST)
+To: pritha.bhattacharya@tcs.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 24 Nov 2005 14:20:05 +0530."
+	<OF8DE1E835.620AF9B1-ON652570C3.001D9C79-652570C3.003087C6@tcs.com>
+Date: Thu, 24 Nov 2005 12:28:27 +0100
+Sender: wd@denx.de
+Message-Id: <20051124112827.DD3F6353A49@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: 8260ADS Ethernet compilation 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,84 +24,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+In message <OF8DE1E835.620AF9B1-ON652570C3.001D9C79-652570C3.003087C6@tcs.com> you wrote:
+>
+> I have a custom board built around MPC8260ADS. I am trying to cross 
 
-------_=_NextPart_001_01C5F0E9.CCDE8FD2
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+I  understand  that  this  means  you  also  use   a   custom   board
+configuration, right?
 
-Here is a patch that builds.
+> m8260_setup.c:62: error: `bd_t' undeclared here (not in a function)
+...
+> m8260_setup.c:120: error: `binfo' undeclared (first use in this function)
+...
+> m8260_setup.c:229: error: `NR_SIU_INTS' undeclared (first use in this 
+> function)
 
+Seems your port and/or board configuration is incomplete / broken.
 
------Original Message-----
-From: Pantelis Antoniou [mailto:panto@intracom.gr]=20
-Sent: jeudi 24 novembre 2005 12:04
-To: Clement Fabien; Kumar Gala; Marcelo Tosatti; linuxppc-embedded
-Subject: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
+> 1.I understand that bd_t is a board information structure. Which is 
+> defined in linux/include/asm-ppc/ppcboot.h. Somehow it is not visible to 
+> the linux/arch/kernel/m8260_setup.c  I dont know what I may be doing 
+> wrong.
 
-Hi all.
+Bad configuration...
 
-Alignments are currently handled bogusly for cpm2.
+> 2.Similarly NR_SIU_INTS, which is defined in linux/include/asm/irq.h is 
+> also not visible.
 
-Please test.
+Bad configuration...
 
-Regards
+> 3.I did not understand what __res[ ] is. I came across somewhere that it 
+> is the residual information which the bootloader is supposed to hand over 
+> to the linux. How would that be done. I could not identify in the code 
+> where __res is populated. 
 
-Pantelis
+Use "grep"; __res points to the board information structure.
 
+Best regards,
 
+Wolfgang Denk
 
-
-------_=_NextPart_001_01C5F0E9.CCDE8FD2
-Content-Type: application/octet-stream;
-	name="cpm2-dpalloc_compiling.patch"
-Content-Transfer-Encoding: base64
-Content-Description: cpm2-dpalloc_compiling.patch
-Content-Disposition: attachment;
-	filename="cpm2-dpalloc_compiling.patch"
-
-PyBhcmNoL3BwYy9saWIvLmJ1aWx0LWluLm8uY21kCj8gYXJjaC9wcGMvbGliLy5jaGVja3N1bS5v
-LmNtZAo/IGFyY2gvcHBjL2xpYi8uZGVjX2FuZF9sb2NrLm8uY21kCj8gYXJjaC9wcGMvbGliLy5k
-aXY2NC5vLmNtZAo/IGFyY2gvcHBjL2xpYi8ucmhlYXAuby5jbWQKPyBhcmNoL3BwYy9saWIvLnN0
-cmNhc2Uuby5jbWQKPyBhcmNoL3BwYy9saWIvLnN0cmluZy5vLmNtZAo/IGFyY2gvcHBjL2xpYi9t
-eXJoZWFwLmMKPyBhcmNoL3BwYy9saWIvcmhlYXAuZGlmZgo/IGFyY2gvcHBjL2xpYi9yaGVhcF9k
-ZWJ1Zy5jCkluZGV4OiBhcmNoL3BwYy9saWIvcmhlYXAuYwo9PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09ClJDUyBmaWxlOiAv
-aG9tZS9jb25mL3RucC9saW51eHBwYy9saW51eC9hcmNoL3BwYy9saWIvcmhlYXAuYyx2CnJldHJp
-ZXZpbmcgcmV2aXNpb24gMS4xLjEuMQpkaWZmIC1iIC11IC1yMS4xLjEuMSByaGVhcC5jCi0tLSBh
-cmNoL3BwYy9saWIvcmhlYXAuYwk2IERlYyAyMDA0IDE2OjE1OjIyIC0wMDAwCTEuMS4xLjEKKysr
-IGFyY2gvcHBjL2xpYi9yaGVhcC5jCTI0IE5vdiAyMDA1IDExOjI0OjQxIC0wMDAwCkBAIC00MjUs
-MTcgKzQyNSwyMiBAQAogCXJldHVybiAodm9pZCAqKXM7CiB9CiAKLXZvaWQgKnJoX2FsbG9jKHJo
-X2luZm9fdCAqIGluZm8sIGludCBzaXplLCBjb25zdCBjaGFyICpvd25lcikKK3ZvaWQgKnJoX2Fs
-bG9jX2FsaWduKHJoX2luZm9fdCAqIGluZm8sIGludCBzaXplLCBpbnQgYWxpZ25tZW50LCBjb25z
-dCBjaGFyICpvd25lcikKIHsKIAlzdHJ1Y3QgbGlzdF9oZWFkICpsOwogCXJoX2Jsb2NrX3QgKmJs
-azsKIAlyaF9ibG9ja190ICpuZXdibGs7CiAJdm9pZCAqc3RhcnQ7CiAKLQkvKiBWYWxpZGF0ZSBz
-aXplICovCi0JaWYgKHNpemUgPD0gMCkKKwkvKiBWYWxpZGF0ZSBzaXplLCAobXVzdCBiZSBwb3dl
-ciBvZiB0d28pICovCisgICBwcmludGsoS0VSTl9JTkZPInJoX2FsbG9jIC0gUmVxdWlyZWQgc2l6
-ZSA9ICUwNFgsIGFsaWduID0gJTA0WFxuIixzaXplLGFsaWdubWVudCk7CisJaWYgKHNpemUgPD0g
-MCB8fCAoYWxpZ25tZW50ICYgKGFsaWdubWVudCAtIDEpKSAhPSAwKQogCQlyZXR1cm4gRVJSX1BU
-UigtRUlOVkFMKTsKIAorCS8qIGdpdmVuIGFsaWdubWVudCBsYXJnZXIgdGhhdCBkZWZhdWx0IHJo
-ZWFwIGFsaWdubWVudCAqLworCWlmIChhbGlnbm1lbnQgPiBpbmZvLT5hbGlnbm1lbnQpCisJCXNp
-emUgKz0gYWxpZ25tZW50IC0gMTsKKwogCS8qIEFsaWduIHRvIGNvbmZpZ3VyZWQgYWxpZ25tZW50
-ICovCiAJc2l6ZSA9IChzaXplICsgKGluZm8tPmFsaWdubWVudCAtIDEpKSAmIH4oaW5mby0+YWxp
-Z25tZW50IC0gMSk7CiAKQEAgLTQ1Myw2ICs0NTgsOCBAQAogCWlmIChibGsgPT0gTlVMTCkKIAkJ
-cmV0dXJuIEVSUl9QVFIoLUVOT01FTSk7CiAKKyAgIHByaW50ayhLRVJOX0lORk8icmhfYWxsb2Mg
-LSBCbG9jayBzaXplID0gJTA0WCwgc3RhcnQgPSAlcFxuIixibGstPnNpemUsYmxrLT5zdGFydCk7
-CisKIAkvKiBKdXN0IGZpdHMgKi8KIAlpZiAoYmxrLT5zaXplID09IHNpemUpIHsKIAkJLyogTW92
-ZSBmcm9tIGZyZWUgbGlzdCB0byB0YWtlbiBsaXN0ICovCkBAIC00NzgsOSArNDg1LDIzIEBACiAK
-IAlhdHRhY2hfdGFrZW5fYmxvY2soaW5mbywgbmV3YmxrKTsKIAorCS8qIGZvciBsYXJnZXIgYWxp
-Z25tZW50IHJldHVybiBmaXhlZCB1cCBwb2ludGVyICAqLworCS8qIHRoaXMgaXMgbm8gcHJvYmxl
-bSB3aXRoIHRoZSBkZWFsbG9jYXRvciBzaW5jZSAqLworCS8qIHdlIHNjYW4gZm9yIHBvaW50ZXJz
-IHRoYXQgbGllIGluIHRoZSBibG9ja3MgICAqLworCWlmIChhbGlnbm1lbnQgPiBpbmZvLT5hbGln
-bm1lbnQpCisJCXN0YXJ0ID0gKHZvaWQgKikoKCh1bnNpZ25lZCBsb25nKXN0YXJ0ICsgYWxpZ25t
-ZW50IC0gMSkgJgorCQkJCX4oYWxpZ25tZW50IC0gMSkpOworCisgICBwcmludGsoS0VSTl9JTkZP
-InJoX2FsbG9jIC0gQWxsb2Mgc2l6ZSA9ICUwNFgsIHN0YXJ0ID0gJXBcbiIsc2l6ZSxzdGFydCk7
-CisKIAlyZXR1cm4gc3RhcnQ7CiB9CiAKK3ZvaWQgKnJoX2FsbG9jKHJoX2luZm9fdCAqIGluZm8s
-IGludCBzaXplLCBjb25zdCBjaGFyICpvd25lcikKK3sKKwlyZXR1cm4gcmhfYWxsb2NfYWxpZ24o
-aW5mbywgc2l6ZSwgaW5mby0+YWxpZ25tZW50LCBvd25lcik7Cit9CisKIC8qIGFsbG9jYXRlIGF0
-IHByZWNpc2VseSB0aGUgZ2l2ZW4gYWRkcmVzcyAqLwogdm9pZCAqcmhfYWxsb2NfZml4ZWQocmhf
-aW5mb190ICogaW5mbywgdm9pZCAqc3RhcnQsIGludCBzaXplLCBjb25zdCBjaGFyICpvd25lcikK
-IHsK
-
-------_=_NextPart_001_01C5F0E9.CCDE8FD2--
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"The more data I punch in this card,  the lighter it becomes, and the
+lower the mailing cost."
+                     - Stan Kelly-Bootle, "The Devil's DP Dictionary"
