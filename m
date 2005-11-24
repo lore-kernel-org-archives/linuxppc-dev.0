@@ -1,19 +1,23 @@
-Return-Path: <SRS0+1a4aa88343b650159535+823+infradead.org+dwmw2@baythorne.srs.infradead.org>
-Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B6212687E7
-	for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2005 04:36:27 +1100 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: paulus@samba.org
-In-Reply-To: <1132836700.11921.58.camel@baythorne.infradead.org>
-References: <1132836700.11921.58.camel@baythorne.infradead.org>
-Content-Type: text/plain
-Date: Thu, 24 Nov 2005 17:36:20 +0000
-Message-Id: <1132853780.11921.95.camel@baythorne.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Save NVGPRS in 32-bit signal frame
+Return-Path: <rjw@sisk.pl>
+Received: from anf141.internetdsl.tpnet.pl (anf141.internetdsl.tpnet.pl
+	[83.17.87.141]) by ozlabs.org (Postfix) with ESMTP id 91F006881D
+	for <linuxppc-dev@ozlabs.org>; Fri, 25 Nov 2005 07:49:28 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 24 Nov 2005 21:50:22 +0100
+References: <1132715288.26560.262.camel@gaston>
+	<200511240122.46125.rjw@sisk.pl>
+	<1132795396.26560.382.camel@gaston>
+In-Reply-To: <1132795396.26560.382.camel@gaston>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200511242150.23205.rjw@sisk.pl>
+Cc: Andrew Morton <akpm@osdl.org>, Greg KH <greg@kroah.com>,
+	linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] Fix USB suspend/resume crasher
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2005-11-24 at 12:51 +0000, David Woodhouse wrote:
-> Somehow this one slipped through the cracks; when we ended up in
-> do_signal() on a 32-bit kernel but without having the caller-saved
-> registers into the regs, we didn't set the TIF_SAVE_NVGPRS flag to
-> ensure they got saved later.
+On Thursday, 24 of November 2005 02:23, Benjamin Herrenschmidt wrote:
+> 
+> > Unfortunately with this patch the EHCI controller in my box (Asus L5D,
+> > x86-64 kernel) does not resume from suspend.  Appended is the relevant
+> > snippet from the serial console log (EHCI is the only device using IRQ #5).
+> 
+> Hrm... let me see... You are getting an interrupt for EHCI after it has
+> been resumed, so it should work.
+> 
+>  /me double-checks the patch
+> 
+> > ehci_hcd 0000:00:02.2: lost power, restarting
+> 
+> Hrm... I can't find that line in the code...
+> 
+>  /me rechecks with david's other patches
+> 
+> Ah ... I see it. There might have been some screwup between david's
+> patch and mine.
+> 
+> Make sure that 
+> 
+>        set_bit(HCD_FLAG_HW_ACCESSIBLE, &hcd->flags);
+> 
+> Is still done before anything else in ehci_pci_resume().
 
-Oh, and if we actually set the flag, then we fairly quickly find out
-that I was a bit overzealous in copying code from entry_64.S ... :)
+Well, it's there (actually the problem occurs in vanilla 2.6.15-rc2-mm1 that
+contains the patch).  Do you mean it should go before the
 
-Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+if (readl(&ehci->regs->configured_flag) != FLAG_CF)
+		goto restart;
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 8fed953..036b71d 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -368,7 +368,7 @@ save_user_nvgprs_cont:
- 	b	6b
- 
- save_user_nvgprs:
--	ld	r8,TI_SIGFRAME(r12)
-+	lwz	r8,TI_SIGFRAME(r12)
- 
- .macro savewords start, end
-   1:	stw \start,4*(\start)(r8)
-@@ -386,11 +386,11 @@ save_user_nvgprs:
- 	
- save_user_nvgprs_fault:
- 	li	r3,11		/* SIGSEGV */
--	ld	r4,TI_TASK(r12)
-+	lwz	r4,TI_TASK(r12)
- 	bl	force_sigsegv
- 
- 	rlwinm	r12,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
--	ld	r9,TI_FLAGS(r12)
-+	lwz	r9,TI_FLAGS(r12)
- 	b	save_user_nvgprs_cont
- 	
- #ifdef SHOW_SYSCALLS
+thing?
 
--- 
-dwmw2
+> It may be worth following it with a memory barrier actually... just in case
+> (due to the absence of locks in that area).
+
+wmb()?
+
+Rafael
