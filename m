@@ -1,20 +1,23 @@
-Return-Path: <Fabien.Clement@thomson.net>
-Received: from dmzraw5.extranet.tce.com (dmzraw5.extranet.tce.com
-	[157.254.234.142]) by ozlabs.org (Postfix) with ESMTP id 8F9BD681BE
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id 4279E687FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 23:52:25 +1100 (EST)
+	Thu, 24 Nov 2005 23:53:57 +1100 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id jAOD2Iog029583
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 24 Nov 2005 15:02:19 +0200 (EET)
+Message-ID: <4385B60E.6050409@intracom.gr>
+Date: Thu, 24 Nov 2005 14:46:06 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 24 Nov 2005 13:51:46 +0100
-Message-ID: <9C1918067C3BC14C9C351C206D8A843701F7F876@rennsmail03.eu.thmulti.com>
-From: "Clement Fabien" <Fabien.Clement@thomson.net>
-To: "Clement Fabien" <Fabien.Clement@thomson.net>,
-	"Pantelis Antoniou" <panto@intracom.gr>,
-	"Kumar Gala" <kumar.gala@freescale.com>,
-	"Marcelo Tosatti" <marcelo.tosatti@cyclades.com>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Subject: RE: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
+To: Clement Fabien <Fabien.Clement@thomson.net>
+References: <9C1918067C3BC14C9C351C206D8A843701F54B1D@rennsmail03.eu.thmulti.com>
+In-Reply-To: <9C1918067C3BC14C9C351C206D8A843701F54B1D@rennsmail03.eu.thmulti.com>
+Content-Type: multipart/mixed; boundary="------------080101090103010405020105"
+Cc: Kumar Gala <kumar.gala@freescale.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,108 +28,159 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+This is a multi-part message in MIME format.
+--------------080101090103010405020105
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Some results: alignments are now respected but it seems that the method
-I took from linux 2.4 is more efficient in terms of memory consumption.
-I will provide a complete patch today with the same mechanism for
-rh_alloc_fixed.
+Clement Fabien wrote:
+> Here is a patch that builds.
+> 
+> 
+> -----Original Message-----
+> From: Pantelis Antoniou [mailto:panto@intracom.gr] 
+> Sent: jeudi 24 novembre 2005 12:04
+> To: Clement Fabien; Kumar Gala; Marcelo Tosatti; linuxppc-embedded
+> Subject: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
+> 
+> Hi all.
+> 
+> Alignments are currently handled bogusly for cpm2.
+> 
+> Please test.
+> 
+> Regards
+> 
+> Pantelis
+> 
+> 
+> 
 
-Fabien
-
-
-
-Allocation method with offset (patch from myself)
-rh_alloc - Required size =3D 0040, align =3D 0008
-rh_alloc - Block size =3D 3F80, start =3D 00000080 - Off =3D 0000
-rh_alloc - Alloc size =3D 0040, start =3D 00000080
-
-rh_alloc - Required size =3D 0008, align =3D 0010
-rh_alloc - Block size =3D 3F40, start =3D 000000c0 - Off =3D 0000
-rh_alloc - Alloc size =3D 0010, start =3D 000000c0
-
-rh_alloc - Required size =3D 1800, align =3D 0020
-rh_alloc - Block size =3D 3F30, start =3D 000000d0 - Off =3D 0010
-rh_alloc - Alloc size =3D 1810, start =3D 000000e0
-
-rh_alloc - Required size =3D 0108, align =3D 0040
-rh_alloc - Block size =3D 2720, start =3D 000018e0 - Off =3D 0020
-rh_alloc - Alloc size =3D 0160, start =3D 00001900
-
-rh_alloc - Required size =3D 0040, align =3D 0010
-rh_alloc - Block size =3D 25C0, start =3D 00001a40 - Off =3D 0000
-rh_alloc - Alloc size =3D 0040, start =3D 00001a40
-
-rh_alloc - Required size =3D 0020, align =3D 0020
-rh_alloc - Block size =3D 2580, start =3D 00001a80 - Off =3D 0000
-rh_alloc - Alloc size =3D 0020, start =3D 00001a80
-
-rh_alloc - Required size =3D 0010, align =3D 0010
-rh_alloc - Block size =3D 2560, start =3D 00001aa0 - Off =3D 0000
-rh_alloc - Alloc size =3D 0010, start =3D 00001aa0
-
-rh_alloc - Required size =3D 000C, align =3D 0040
-rh_alloc - Block size =3D 2550, start =3D 00001ab0 - Off =3D 0010
-rh_alloc - Alloc size =3D 0050, start =3D 00001ac0
+Updated patch....
 
 
-Allocation method without offset (Patch from Pantelis)
-rh_alloc - Required size =3D 0040, align =3D 0008
-rh_alloc - Block size =3D 3F80, start =3D 00000080
-rh_alloc - Alloc size =3D 0047, start =3D 00000080
+--------------080101090103010405020105
+Content-Type: text/x-patch;
+ name="cpm2-dpalloc.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cpm2-dpalloc.patch"
 
-rh_alloc - Required size =3D 0008, align =3D 0010
-rh_alloc - Block size =3D 3F39, start =3D 000000c7
-rh_alloc - Alloc size =3D 0017, start =3D 000000d0
+diff --git a/arch/ppc/lib/rheap.c b/arch/ppc/lib/rheap.c
+--- a/arch/ppc/lib/rheap.c
++++ b/arch/ppc/lib/rheap.c
+@@ -425,17 +425,21 @@ void *rh_detach_region(rh_info_t * info,
+ 	return (void *)s;
+ }
+ 
+-void *rh_alloc(rh_info_t * info, int size, const char *owner)
++void *rh_alloc_align(rh_info_t * info, int size, int alignment, const char *owner)
+ {
+ 	struct list_head *l;
+ 	rh_block_t *blk;
+ 	rh_block_t *newblk;
+ 	void *start;
+ 
+-	/* Validate size */
+-	if (size <= 0)
++	/* Validate size, (must be power of two) */
++	if (size <= 0 || (alignment & (alignment - 1)) != 0)
+ 		return ERR_PTR(-EINVAL);
+ 
++	/* given alignment larger that default rheap alignment */
++	if (alignment > info->alignment)
++		size += alignment - 1;
++
+ 	/* Align to configured alignment */
+ 	size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
+ 
+@@ -478,9 +482,21 @@ void *rh_alloc(rh_info_t * info, int siz
+ 
+ 	attach_taken_block(info, newblk);
+ 
++	/* for larger alignment return fixed up pointer  */
++	/* this is no problem with the deallocator since */
++	/* we scan for pointers that lie in the blocks   */
++	if (alignment > info->alignment)
++		start = (void *)(((unsigned long)start + alignment - 1) &
++				~(alignment - 1));
++
+ 	return start;
+ }
+ 
++void *rh_alloc(rh_info_t * info, int size, const char *owner)
++{
++	return rh_alloc_align(info, size, info->alignment, owner);
++}
++
+ /* allocate at precisely the given address */
+ void *rh_alloc_fixed(rh_info_t * info, void *start, int size, const char *owner)
+ {
+diff --git a/arch/ppc/syslib/cpm2_common.c b/arch/ppc/syslib/cpm2_common.c
+--- a/arch/ppc/syslib/cpm2_common.c
++++ b/arch/ppc/syslib/cpm2_common.c
+@@ -148,8 +148,7 @@ uint cpm_dpalloc(uint size, uint align)
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&cpm_dpmem_lock, flags);
+-	cpm_dpmem_info.alignment = align;
+-	start = rh_alloc(&cpm_dpmem_info, size, "commproc");
++	start = rh_alloc_align(&cpm_dpmem_info, size, align, "commproc");
+ 	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
+ 
+ 	return (uint)start;
+@@ -170,13 +169,12 @@ int cpm_dpfree(uint offset)
+ EXPORT_SYMBOL(cpm_dpfree);
+ 
+ /* not sure if this is ever needed */
+-uint cpm_dpalloc_fixed(uint offset, uint size, uint align)
++uint cpm_dpalloc_fixed(uint offset, uint size)
+ {
+ 	void *start;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&cpm_dpmem_lock, flags);
+-	cpm_dpmem_info.alignment = align;
+ 	start = rh_alloc_fixed(&cpm_dpmem_info, (void *)offset, size, "commproc");
+ 	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
+ 
+diff --git a/include/asm-ppc/commproc.h b/include/asm-ppc/commproc.h
+--- a/include/asm-ppc/commproc.h
++++ b/include/asm-ppc/commproc.h
+@@ -74,7 +74,7 @@ static inline long IS_DPERR(const uint o
+ extern	cpm8xx_t	*cpmp;		/* Pointer to comm processor */
+ extern uint cpm_dpalloc(uint size, uint align);
+ extern int cpm_dpfree(uint offset);
+-extern uint cpm_dpalloc_fixed(uint offset, uint size, uint align);
++extern uint cpm_dpalloc_fixed(uint offset, uint size);
+ extern void cpm_dpdump(void);
+ extern void *cpm_dpram_addr(uint offset);
+ extern void cpm_setbrg(uint brg, uint rate);
+diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
+--- a/include/asm-ppc/cpm2.h
++++ b/include/asm-ppc/cpm2.h
+@@ -112,7 +112,7 @@ extern		cpm_cpm2_t	*cpmp;	 /* Pointer to
+ 
+ extern uint cpm_dpalloc(uint size, uint align);
+ extern int cpm_dpfree(uint offset);
+-extern uint cpm_dpalloc_fixed(uint offset, uint size, uint align);
++extern uint cpm_dpalloc_fixed(uint offset, uint size);
+ extern void cpm_dpdump(void);
+ extern void *cpm_dpram_addr(uint offset);
+ extern void cpm_setbrg(uint brg, uint rate);
+diff --git a/include/asm-ppc/rheap.h b/include/asm-ppc/rheap.h
+--- a/include/asm-ppc/rheap.h
++++ b/include/asm-ppc/rheap.h
+@@ -62,6 +62,10 @@ extern int rh_attach_region(rh_info_t * 
+ /* Detach a free region */
+ extern void *rh_detach_region(rh_info_t * info, void *start, int size);
+ 
++/* Allocate the given size from the remote heap (with alignment) */
++extern void *rh_alloc_align(rh_info_t * info, int size, int alignment,
++		const char *owner);
++
+ /* Allocate the given size from the remote heap */
+ extern void *rh_alloc(rh_info_t * info, int size, const char *owner);
+ 
 
-rh_alloc - Required size =3D 1800, align =3D 0020
-rh_alloc - Block size =3D 3F22, start =3D 000000de
-rh_alloc - Alloc size =3D 181F, start =3D 000000e0
-
-rh_alloc - Required size =3D 0108, align =3D 0040
-rh_alloc - Block size =3D 2703, start =3D 000018fd
-rh_alloc - Alloc size =3D 0147, start =3D 00001900
-
-rh_alloc - Required size =3D 0040, align =3D 0010
-rh_alloc - Block size =3D 25BC, start =3D 00001a44
-rh_alloc - Alloc size =3D 004F, start =3D 00001a50
-
-rh_alloc - Required size =3D 0020, align =3D 0020
-rh_alloc - Block size =3D 256D, start =3D 00001a93
-rh_alloc - Alloc size =3D 003F, start =3D 00001aa0
-
-rh_alloc - Required size =3D 0010, align =3D 0010
-rh_alloc - Block size =3D 252E, start =3D 00001ad2
-rh_alloc - Alloc size =3D 001F, start =3D 00001ae0
-
-rh_alloc - Required size =3D 000C, align =3D 0040
-rh_alloc - Block size =3D 250F, start =3D 00001af1
-rh_alloc - Alloc size =3D 004B, start =3D 00001b00
-
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Clement
-Fabien
-Sent: jeudi 24 novembre 2005 12:26
-To: Pantelis Antoniou; Kumar Gala; Marcelo Tosatti; linuxppc-embedded
-Subject: RE: [PATCH] CPM2: Fix totally bogus alignment handing of
-dpalloc
-
-Here is a patch that builds.
-
-
------Original Message-----
-From: Pantelis Antoniou [mailto:panto@intracom.gr]=20
-Sent: jeudi 24 novembre 2005 12:04
-To: Clement Fabien; Kumar Gala; Marcelo Tosatti; linuxppc-embedded
-Subject: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
-
-Hi all.
-
-Alignments are currently handled bogusly for cpm2.
-
-Please test.
-
-Regards
-
-Pantelis
+--------------080101090103010405020105--
