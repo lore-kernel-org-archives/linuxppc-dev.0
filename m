@@ -1,16 +1,22 @@
-Return-Path: <pritha.bhattacharya@tcs.com>
-Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
-	by ozlabs.org (Postfix) with ESMTP id 102B868810
+Return-Path: <panto@intracom.gr>
+Received: from mailserv.intranet.gr (mailserv.intranet.GR [146.124.14.106])
+	by ozlabs.org (Postfix) with ESMTP id D871368814
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 24 Nov 2005 22:00:28 +1100 (EST)
-To: linuxppc-embedded@ozlabs.org
+	Thu, 24 Nov 2005 22:11:58 +1100 (EST)
+Received: from mailserv.intranet.gr (localhost [127.0.0.1])
+	by mailserv.intranet.gr (8.13.1/8.13.1) with ESMTP id jAOBKJ4J002516
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 24 Nov 2005 13:20:19 +0200 (EET)
+Message-ID: <43859E04.1030609@intracom.gr>
+Date: Thu, 24 Nov 2005 13:03:32 +0200
+From: Pantelis Antoniou <panto@intracom.gr>
 MIME-Version: 1.0
-From: pritha.bhattacharya@tcs.com
-Message-ID: <OF8DE1E835.620AF9B1-ON652570C3.001D9C79-652570C3.003087C6@tcs.com>
-Date: Thu, 24 Nov 2005 14:20:05 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 00304CC6652570C3_="
-Subject: 8260ADS Ethernet compilation
+To: Clement Fabien <Fabien.Clement@thomson.net>,
+	Kumar Gala <kumar.gala@freescale.com>,
+	Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/mixed; boundary="------------090309030706070501060505"
+Subject: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,160 +27,144 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 00304CC6652570C3_=
-Content-Type: text/plain; charset="US-ASCII"
+This is a multi-part message in MIME format.
+--------------090309030706070501060505
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Hi all.
+
+Alignments are currently handled bogusly for cpm2.
+
+Please test.
+
+Regards
+
+Pantelis
 
 
-Hi,
+--------------090309030706070501060505
+Content-Type: text/x-patch;
+ name="cpm2-dpalloc.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cpm2-dpalloc.patch"
 
-I have a custom board built around MPC8260ADS. I am trying to cross 
-compile linux 2.4.25 for ethernet on FCC1 connected to LXT971 for the 
-board. 
-Installed the toolchains from Denx site. Built linux for ppc architecture. 
-Then for ethernet, after selecting the proper options from the menuconfig, 
-while compiling the source code gives the following error:
+diff --git a/arch/ppc/lib/rheap.c b/arch/ppc/lib/rheap.c
+--- a/arch/ppc/lib/rheap.c
++++ b/arch/ppc/lib/rheap.c
+@@ -425,17 +425,21 @@ void *rh_detach_region(rh_info_t * info,
+ 	return (void *)s;
+ }
+ 
+-void *rh_alloc(rh_info_t * info, int size, const char *owner)
++void *rh_alloc(rh_info_t * info, int size, int alignment, const char *owner)
+ {
+ 	struct list_head *l;
+ 	rh_block_t *blk;
+ 	rh_block_t *newblk;
+ 	void *start;
+ 
+-	/* Validate size */
+-	if (size <= 0)
++	/* Validate size, (must be power of two) */
++	if (size <= 0 || (alignment & (alignment - 1)) != 0)
+ 		return ERR_PTR(-EINVAL);
+ 
++	/* given alignment larger that default rheap alignment */
++	if (alignment > info->alignment)
++		size += alignement - 1;
++
+ 	/* Align to configured alignment */
+ 	size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
+ 
+@@ -478,9 +482,21 @@ void *rh_alloc(rh_info_t * info, int siz
+ 
+ 	attach_taken_block(info, newblk);
+ 
++	/* for larger alignment return fixed up pointer  */
++	/* this is no problem with the deallocator since */
++	/* we scan for pointers that lie in the blocks   */
++	if (alignment > info->alignment)
++		start = (void *)(((unsigned long)start + alignment - 1) &
++				~(alignment - 1));
++
+ 	return start;
+ }
+ 
++void *rh_alloc(rh_info_t * info, int size, const char *owner)
++{
++	return rh_alloc_align(info, size, info->alignment, owner);
++}
++
+ /* allocate at precisely the given address */
+ void *rh_alloc_fixed(rh_info_t * info, void *start, int size, const char *owner)
+ {
+diff --git a/arch/ppc/syslib/cpm2_common.c b/arch/ppc/syslib/cpm2_common.c
+--- a/arch/ppc/syslib/cpm2_common.c
++++ b/arch/ppc/syslib/cpm2_common.c
+@@ -148,8 +148,7 @@ uint cpm_dpalloc(uint size, uint align)
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&cpm_dpmem_lock, flags);
+-	cpm_dpmem_info.alignment = align;
+-	start = rh_alloc(&cpm_dpmem_info, size, "commproc");
++	start = rh_alloc_align(&cpm_dpmem_info, size, align, "commproc");
+ 	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
+ 
+ 	return (uint)start;
+@@ -170,13 +169,12 @@ int cpm_dpfree(uint offset)
+ EXPORT_SYMBOL(cpm_dpfree);
+ 
+ /* not sure if this is ever needed */
+-uint cpm_dpalloc_fixed(uint offset, uint size, uint align)
++uint cpm_dpalloc_fixed(uint offset, uint size)
+ {
+ 	void *start;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&cpm_dpmem_lock, flags);
+-	cpm_dpmem_info.alignment = align;
+ 	start = rh_alloc_fixed(&cpm_dpmem_info, (void *)offset, size, "commproc");
+ 	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
+ 
+diff --git a/include/asm-ppc/commproc.h b/include/asm-ppc/commproc.h
+--- a/include/asm-ppc/commproc.h
++++ b/include/asm-ppc/commproc.h
+@@ -74,7 +74,7 @@ static inline long IS_DPERR(const uint o
+ extern	cpm8xx_t	*cpmp;		/* Pointer to comm processor */
+ extern uint cpm_dpalloc(uint size, uint align);
+ extern int cpm_dpfree(uint offset);
+-extern uint cpm_dpalloc_fixed(uint offset, uint size, uint align);
++extern uint cpm_dpalloc_fixed(uint offset, uint size);
+ extern void cpm_dpdump(void);
+ extern void *cpm_dpram_addr(uint offset);
+ extern void cpm_setbrg(uint brg, uint rate);
+diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
+--- a/include/asm-ppc/cpm2.h
++++ b/include/asm-ppc/cpm2.h
+@@ -112,7 +112,7 @@ extern		cpm_cpm2_t	*cpmp;	 /* Pointer to
+ 
+ extern uint cpm_dpalloc(uint size, uint align);
+ extern int cpm_dpfree(uint offset);
+-extern uint cpm_dpalloc_fixed(uint offset, uint size, uint align);
++extern uint cpm_dpalloc_fixed(uint offset, uint size);
+ extern void cpm_dpdump(void);
+ extern void *cpm_dpram_addr(uint offset);
+ extern void cpm_setbrg(uint brg, uint rate);
+diff --git a/include/asm-ppc/rheap.h b/include/asm-ppc/rheap.h
+--- a/include/asm-ppc/rheap.h
++++ b/include/asm-ppc/rheap.h
+@@ -62,6 +62,10 @@ extern int rh_attach_region(rh_info_t * 
+ /* Detach a free region */
+ extern void *rh_detach_region(rh_info_t * info, void *start, int size);
+ 
++/* Allocate the given size from the remote heap (with alignment) */
++extern void *rh_alloc_align(rh_info_t * info, int size, int alignment,
++		const char *owner);
++
+ /* Allocate the given size from the remote heap */
+ extern void *rh_alloc(rh_info_t * info, int size, const char *owner);
+ 
 
-m8260_setup.c:62: error: `bd_t' undeclared here (not in a function)
-m8260_setup.c:106: warning: `abort' was declared `extern' and later 
-`static'
-m8260_setup.c: In function `m8260_calibrate_decr':
-m8260_setup.c:120: error: `bd_t' undeclared (first use in this function)
-m8260_setup.c:120: error: (Each undeclared identifier is reported only 
-once
-m8260_setup.c:120: error: for each function it appears in.)
-m8260_setup.c:120: error: `binfo' undeclared (first use in this function)
-m8260_setup.c:120: error: parse error before ')' token
-m8260_setup.c: In function `m8260_restart':
-m8260_setup.c:163: error: parse error before '*' token
-m8260_setup.c:163: warning: function declaration isn't a prototype
-m8260_setup.c: In function `m8260_show_percpuinfo':
-m8260_setup.c:201: error: `bd_t' undeclared (first use in this function)
-m8260_setup.c:201: error: `bp' undeclared (first use in this function)
-m8260_setup.c:203: error: parse error before ')' token
-m8260_setup.c: In function `m8260_init_IRQ':
-m8260_setup.c:229: error: `NR_SIU_INTS' undeclared (first use in this 
-function)
-m8260_setup.c: In function `m8260_find_end_of_memory':
-m8260_setup.c:261: error: `bd_t' undeclared (first use in this function)
-m8260_setup.c:261: error: `binfo' undeclared (first use in this function)
-m8260_setup.c:264: error: parse error before ')' token
-m8260_setup.c:262: warning: unused variable `__res'
-m8260_setup.c: In function `platform_init':
-m8260_setup.c:288: error: `bd_t' undeclared (first use in this function)
-m8260_setup.c: At top level:
-m8260_setup.c:106: warning: `abort' defined but not used
-make[1]: *** [m8260_setup.o] Error 1
-make: *** [_dir_arch/ppc/kernel] Error 2
-
-
-1.I understand that bd_t is a board information structure. Which is 
-defined in linux/include/asm-ppc/ppcboot.h. Somehow it is not visible to 
-the linux/arch/kernel/m8260_setup.c  I dont know what I may be doing 
-wrong.
-
-2.Similarly NR_SIU_INTS, which is defined in linux/include/asm/irq.h is 
-also not visible.
-
-the third query is not on compilation errors:
-3.I did not understand what __res[ ] is. I came across somewhere that it 
-is the residual information which the bootloader is supposed to hand over 
-to the linux. How would that be done. I could not identify in the code 
-where __res is populated. 
-
-Would be of great help to get your suggestions.
-
-
-Thanks & Regards
-Pritha
-
-
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
---=_alternative 00304CC6652570C3_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><font size=2 face="sans-serif">Hi,</font>
-<br>
-<br><font size=2 face="sans-serif">I have a custom board built around MPC8260ADS.
-I am trying to cross compile linux 2.4.25 for ethernet on FCC1 connected
-to LXT971 for the board. </font>
-<br><font size=2 face="sans-serif">Installed the toolchains from Denx site.
-Built linux for ppc architecture. Then for ethernet, after selecting the
-proper options from the menuconfig, while compiling the source code gives
-the following error:</font>
-<br>
-<br><font size=2 face="sans-serif">m8260_setup.c:62: error: `bd_t' undeclared
-here (not in a function)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:106: warning: `abort'
-was declared `extern' and later `static'</font>
-<br><font size=2 face="sans-serif">m8260_setup.c: In function `m8260_calibrate_decr':</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:120: error: `bd_t' undeclared
-(first use in this function)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:120: error: (Each undeclared
-identifier is reported only once</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:120: error: for each function
-it appears in.)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:120: error: `binfo' undeclared
-(first use in this function)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:120: error: parse error
-before ')' token</font>
-<br><font size=2 face="sans-serif">m8260_setup.c: In function `m8260_restart':</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:163: error: parse error
-before '*' token</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:163: warning: function
-declaration isn't a prototype</font>
-<br><font size=2 face="sans-serif">m8260_setup.c: In function `m8260_show_percpuinfo':</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:201: error: `bd_t' undeclared
-(first use in this function)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:201: error: `bp' undeclared
-(first use in this function)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:203: error: parse error
-before ')' token</font>
-<br><font size=2 face="sans-serif">m8260_setup.c: In function `m8260_init_IRQ':</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:229: error: `NR_SIU_INTS'
-undeclared (first use in this function)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c: In function `m8260_find_end_of_memory':</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:261: error: `bd_t' undeclared
-(first use in this function)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:261: error: `binfo' undeclared
-(first use in this function)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:264: error: parse error
-before ')' token</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:262: warning: unused variable
-`__res'</font>
-<br><font size=2 face="sans-serif">m8260_setup.c: In function `platform_init':</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:288: error: `bd_t' undeclared
-(first use in this function)</font>
-<br><font size=2 face="sans-serif">m8260_setup.c: At top level:</font>
-<br><font size=2 face="sans-serif">m8260_setup.c:106: warning: `abort'
-defined but not used</font>
-<br><font size=2 face="sans-serif">make[1]: *** [m8260_setup.o] Error 1</font>
-<br><font size=2 face="sans-serif">make: *** [_dir_arch/ppc/kernel] Error
-2</font>
-<br>
-<br>
-<br><font size=2 face="sans-serif">1.I understand that bd_t is a board
-information structure. Which is defined in linux/include/asm-ppc/ppcboot.h.
-Somehow it is not visible to the linux/arch/kernel/m8260_setup.c &nbsp;I
-dont know what I may be doing wrong.</font>
-<br>
-<br><font size=2 face="sans-serif">2.Similarly NR_SIU_INTS, which is defined
-in linux/include/asm/irq.h is also not visible.</font>
-<br>
-<br><font size=2 face="sans-serif">the third query is not on compilation
-errors:</font>
-<br><font size=2 face="sans-serif">3.I did not understand what __res[ ]
-is. I came across somewhere that it is the residual information which the
-bootloader is supposed to hand over to the linux. How would that be done.
-I could not identify in the code where __res is populated. </font>
-<br>
-<br><font size=2 face="sans-serif">Would be of great help to get your suggestions.</font>
-<br>
-<br>
-<br><font size=2 face="sans-serif">Thanks &amp; Regards<br>
-Pritha<br>
-</font>
-<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
-</font></td></tr></table>
---=_alternative 00304CC6652570C3_=--
+--------------090309030706070501060505--
