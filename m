@@ -1,15 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
+	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id AE79A68841
+	for <linuxppc-dev@ozlabs.org>; Sat, 26 Nov 2005 02:33:50 +1100 (EST)
+Message-ID: <43872881.3010608@anagramm.de>
+Date: Fri, 25 Nov 2005 16:06:41 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17286.62984.838931.355927@cargo.ozlabs.ibm.com>
-Date: Fri, 25 Nov 2005 22:31:20 +1100
-From: Paul Mackerras <paulus@samba.org>
 To: hs@denx.de
-In-Reply-To: <AHEILKONAKAEJPHNMOPNGELJCDAA.hs@denx.de>
-References: <20051121213208.1bd0dea4.sfr@canb.auug.org.au>
-	<AHEILKONAKAEJPHNMOPNGELJCDAA.hs@denx.de>
-Cc: linuxppc-dev@ozlabs.org
-Subject: RE: [PATCH]	ppc32:	Add support for PM82x Boards
+References: <AHEILKONAKAEJPHNMOPNKEMMCDAA.hs@denx.de>
+In-Reply-To: <AHEILKONAKAEJPHNMOPNKEMMCDAA.hs@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, dwmw2@infradead.org,
+	linux-mtd@lists.infradead.org
+Subject: Re: [PATCH]	MTD:	Add support for the PM82x Boards.
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,12 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Heiko Schocher writes:
+Hello, Heiko!
 
-> Sorry, you are right. Here comes the Patch again ...
+> i made the changes in the code you suggested to me.
+> 
+> Additional changes:
+> - I now use the CFI interface (I tested it, and it seems OK
+>   to me)
 
-Your mailer still seems to be stripping whitespace from the ends of
-lines, which means git won't apply it.  Perhaps you should gzip it and
-send it to me as an attachment (or give me a URL to download it).
+Datasheets should confirm the same.
 
-Paul.
+Just in case you do the PM854 support anytime soon,
+the i128J3C150 Flash supports CFI, too, which makes
+these things also pretty simple.
+
+Best greets,
+-- 
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
