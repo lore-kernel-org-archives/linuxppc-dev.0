@@ -1,29 +1,29 @@
 Return-Path: <ihornberger@sysgo.de>
 Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id D630F681BE
+	by ozlabs.org (Postfix) with ESMTP id D898D687E9
 	for <linuxppc-embedded@ozlabs.org>;
 	Mon, 28 Nov 2005 22:25:23 +1100 (EST)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.sysgo.com (Postfix) with ESMTP id 45DCEFB85F
+	by mail.sysgo.com (Postfix) with ESMTP id 15300FB864
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Nov 2005 11:59:27 +0100 (CET)
+	Mon, 28 Nov 2005 11:59:43 +0100 (CET)
 Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id 2A569FB85F
+	by mail.sysgo.com (Postfix) with ESMTP id E4856FB864
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Nov 2005 11:59:22 +0100 (CET)
+	Mon, 28 Nov 2005 11:59:42 +0100 (CET)
 Received: from iho.sysgo.com (iho.sysgo.com [172.22.47.10])
-	by donald.sysgo.com (Postfix) with ESMTP id F10271BFDE8
+	by donald.sysgo.com (Postfix) with ESMTP id B8C8F1C260A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Nov 2005 11:59:19 +0100 (CET)
+	Mon, 28 Nov 2005 11:59:40 +0100 (CET)
 From: Ingo Hornberger <ihornberger@sysgo.de>
 To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <TMNT04vAauNjVuMhvqg000000ab@tmnt04.transmode.se>
-References: <TMNT04vAauNjVuMhvqg000000ab@tmnt04.transmode.se>
-Content-Type: text/plain
-Date: Mon, 28 Nov 2005 11:57:44 +0100
-Message-Id: <1133175465.30984.0.camel@iho.sysgo.com>
+In-Reply-To: <02AA386EB831044F8537A696BA785C7807645A@ILEX5.IL.NDS.COM>
+References: <02AA386EB831044F8537A696BA785C7807645A@ILEX5.IL.NDS.COM>
+Content-Type: multipart/mixed; boundary="=-e6X29fLpEF30+/31uZGk"
+Date: Mon, 28 Nov 2005 11:58:05 +0100
+Message-Id: <1133175485.30984.1.camel@iho.sysgo.com>
 Mime-Version: 1.0
-Subject: RE: Badness in 2.6.15-rc1 on 8xx
+Subject: Re: kernel 2.6.14 on MPC8272ADS
 Reply-To: ihornberger@sysgo.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -35,81 +35,97 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Joakim,
 
-I was recently faced with the same problem. It's right that it boots
-fine into user land. But the bad 'consistent' start address would cause
-trouble as soon as you try to initiate some dma transfer. 
+--=-e6X29fLpEF30+/31uZGk
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-It is configurable under [Advanced setup].
-I now use a value, seen on another 8xx board (it was some siemens board)
-which was 0xf0000000. It works just fine.
-As far as I understood the exact address isn't important, only that it
-is unused in the kernel.
+Hi Bracha,
 
+I assume that you're using an 8xx!?
+
+This code isn't completely updated yet, but here is a small patch which
+should be more or less working...
 
 regards,
 	Ingo
 
-On Fri, 2005-11-25 at 22:41 +0100, Joakim Tjernlund wrote:
->  > 
-> > > -----Original Message----- 
-> > > From: linuxppc-embedded-bounces@ozlabs.org 
-> > > [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of 
-> > > Joakim Tjernlund 
-> > > Sent: Freitag, 25. November 2005 14:28 
-> > > To: linuxppc-embedded@ozlabs.org 
-> > > Subject: Badness in 2.6.15-rc1 on 8xx 
-> > > 
-> > > Anyone seen this when booting 2.6.15-rc1 on 8xx? 
-> > >   Mount-cache hash table entries: 512 
-> > >   Badness in dma_alloc_init at arch/ppc/kernel/dma-mapping.c:346 
-> > >   Call trace: 
-> > >    [c00039e8] check_bug_trap+0x80/0xa8 
-> > >    [c0003c1c] program_check_exception+0x20c/0x480 
-> > >    [c00031e0] ret_from_except_full+0x0/0x4c 
-> > >    [c01b86b8] dma_alloc_init+0x40/0xcc 
-> > >    [c000225c] init+0x8c/0x288 
-> > >    [c00050ac] kernel_thread+0x44/0x60 
-> > >   NET: Registered protocol family 16 
-> > > The kernel boots just fine into user space so it seems 
-> > > harmless, but I suspect it will bite me later. 
-> > > 
-> > > Something anoying: 
-> > > Why did the new cpm_uart driver change major and minor number 
-> > > for the tty? 
-> > > As it is now I can't boot my 2.4 rootfs as init think it 
-> > > should find the console on ttyS0. 
-> > > Would be great if major and minor could be configurable. 
-> > Because it's a new driver...with a new name (ttyCPM0) and a new 
-> > device number. It shared the device number and name in 2.4 
-> > with the "standard" device driver (8250/16550), and that made 
-> > it very difficult to use both in 2.4. 
-> 
-> To me it makes more sense to let a major number represent a function, not a driver.
-> Shouldn't be that hard to make these drivers cooperate wrt. minor number.
-> 
-> To allow for easy customization one could instead do:
-> #ifndef SERIAL_CPM_MAJOR
-> #define SERIAL_CPM_MAJOR        204
-> #endif
-> #ifndef SERIAL_CPM_MINOR
-> #define SERIAL_CPM_MINOR        46
-> #endif
-> 
-> Each platform could then define major and minor as they like.
-> 
->  Jocke
->   
-> > Maybe you should use console=ttyCPM0 in your boot parameters for 2.6. 
-> > 
-> > Regards, 
-> > Torsten 
-> > > 
-> > >   Jocke 
+On Sun, 2005-11-27 at 12:22 +0200, Landau, Bracha wrote:
+> I'm trying to move to the latest kernel release from linux 2.6.13.4 on the MPC8272ADS board.
+> 2.6.13.4 works, but from 2.6.14 and up (I don't know where from 2.6.13.4 to 2.6.14 the problem starts) the kernel crashes on bootup with the message 
+> "Kernel BUG in ppc_sys_init at arch/ppc/syslib/ppc_sys_init.c:131"
+> Anyone know how to fix this problem?
 > 
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 > 
+
+--=-e6X29fLpEF30+/31uZGk
+Content-Disposition: attachment; filename=ppc_8xx_2.6.14_syslib.patch
+Content-Type: text/x-patch; name=ppc_8xx_2.6.14_syslib.patch;
+	charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+
+diff -Nurb a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
+--- a/arch/ppc/syslib/m8xx_setup.c   2005-10-28 02:02:08.000000000 +0200
++++ b/arch/ppc/syslib/m8xx_setup.c  2005-11-25 11:11:03.000000000 +0100
+@@ -82,7 +82,7 @@
+        ROOT_DEV = Root_HDA1; /* hda1 */
+ #endif
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
++#if defined(CONFIG_BLK_DEV_INITRD) || defined(CONFIG_EXTRACT_ROOTFS)
+ #if 0
+        ROOT_DEV = Root_FD0; /* floppy */
+        rd_prompt = 1;
+@@ -389,7 +389,7 @@
+        m8xx_setup_pci_ptrs();
+ #endif
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
++#if defined(CONFIG_BLK_DEV_INITRD) || defined(CONFIG_EXTRACT_ROOTFS)
+        /* take care of initrd if we have one */
+        if ( r4 )
+        {
+@@ -404,6 +404,15 @@
+                strcpy(cmd_line, (char *)(r6+KERNELBASE));
+        }
+ 
++       /* 
++        * Check if we are really on a Power QUICC CPU.
++        * Note, that we do not halt the Kernel at this point, 
++        * because we won't get any output here otherwise.
++        */
++       if( (mfspr(SPRN_PVR) >> 16) != 0x0050 )
++         printk( KERN_ERR "ERROR: %s: %d: Wrong CPU Type! (We assumed a Power QUICC CPU)\n" );
++       identify_ppc_sys_by_id(mfspr(SPRN_IMMR));
++
+        ppc_md.setup_arch               = m8xx_setup_arch;
+        ppc_md.show_percpuinfo          = m8xx_show_percpuinfo;
+        ppc_md.irq_canonicalize = NULL;
+diff -Nurb a/arch/ppc/syslib/mpc8xx_sys.c b/arch/ppc/syslib/mpc8xx_sys.c
+--- a/arch/ppc/syslib/mpc8xx_sys.c   2005-10-28 02:02:08.000000000 +0200
++++ b/arch/ppc/syslib/mpc8xx_sys.c  2005-11-25 11:11:03.000000000 +0100
+@@ -20,9 +20,16 @@
+ 
+ struct ppc_sys_spec *cur_ppc_sys_spec; 
+ struct ppc_sys_spec ppc_sys_specs[] = {
++  /* The mpc85x and 86x, all have the system ID 0x00.
++   * And as it seems that even the 885 has the ID 0x00,
++   * I assume 0x00 for all MPC8XX systems. 
++   * For other cases, you should add a new entry above the
++   * MPC8XX. You could use the first 8 bits to make
++   * a more specific match for your system.
++   */
+        {
+-               .ppc_sys_name   = "MPC86X",
+-               .mask           = 0xFFFFFFFF,
++               .ppc_sys_name   = "MPC8XX",
++               .mask           = 0x00FF0000,
+                .value          = 0x00000000,
+                .num_devices    = 2,
+                .device_list    = (enum ppc_sys_devices[])
+
+--=-e6X29fLpEF30+/31uZGk--
