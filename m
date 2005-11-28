@@ -1,19 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 62EE1687E9
-	for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2005 16:02:06 +1100 (EST)
-Date: Sun, 27 Nov 2005 21:02:02 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
+Return-Path: <SRS0+a7507532f178560193a5+827+infradead.org+dwmw2@baythorne.srs.infradead.org>
+Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 84319681BE
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2005 21:12:52 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
 To: Paul Mackerras <paulus@samba.org>
-Message-ID: <20051128050202.GA23652@gate.ebshome.net>
+In-Reply-To: <17290.28508.336476.478948@cargo.ozlabs.ibm.com>
 References: <1133016287.4044.65.camel@baythorne.infradead.org>
 	<17290.28508.336476.478948@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Mon, 28 Nov 2005 10:12:46 +0000
+Message-Id: <1133172766.31573.14.camel@baythorne.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17290.28508.336476.478948@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
+Cc: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] Make ARCH=ppc build again with new syscall path
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,19 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 28, 2005 at 01:45:48PM +1100, Paul Mackerras wrote:
->
+On Mon, 2005-11-28 at 13:45 +1100, Paul Mackerras wrote:
+> Hmmm.  If we need to do this then maybe we should just get rid of the
+> arch/ppc versions of the relevant files and make ARCH=ppc use the
+> versions from arch/powerpc.
+> 
 > What do people think?  Do we make ARCH=ppc use more and more stuff
 > from arch/powerpc, and delete the duplicates from arch/ppc, or do
 > people want to be conservative and keep arch/ppc largely unchanged?
 > (I would prefer the former, myself.)
 
-I thought initial idea was to keep arch/ppc mostly unchanged (we are in 
-"stable" series after all :), and migrate code to arch/powerpc when 
-it's ready.
+I also prefer the former, in general -- it makes it easier for people to
+port their platform from ppc to powerpc if we don't let the two diverge
+too much.
 
-Personally, the amount of PPC/PPC64 changes in 2.6 make me nervous, 
-looks like I'll stick with 2.4 longer than I thought for production.
+There's also a third option, which _encourages_ people to port their
+platform without necessarily making it easier: just let arch/ppc break.
+I'm not sure I'd necessarily advocate that one _yet_ but maybe in the
+not-so-distant future.
 
 -- 
-Eugene
+dwmw2
