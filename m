@@ -1,30 +1,20 @@
-Return-Path: <ihornberger@sysgo.de>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id D898D687E9
+Return-Path: <chris@alcor.co.uk>
+Received: from merak.alcor.co.uk (alcor.demon.co.uk [62.49.62.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0D6C768819
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Nov 2005 22:25:23 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.sysgo.com (Postfix) with ESMTP id 15300FB864
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Nov 2005 11:59:43 +0100 (CET)
-Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id E4856FB864
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Nov 2005 11:59:42 +0100 (CET)
-Received: from iho.sysgo.com (iho.sysgo.com [172.22.47.10])
-	by donald.sysgo.com (Postfix) with ESMTP id B8C8F1C260A
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Nov 2005 11:59:40 +0100 (CET)
-From: Ingo Hornberger <ihornberger@sysgo.de>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <02AA386EB831044F8537A696BA785C7807645A@ILEX5.IL.NDS.COM>
-References: <02AA386EB831044F8537A696BA785C7807645A@ILEX5.IL.NDS.COM>
-Content-Type: multipart/mixed; boundary="=-e6X29fLpEF30+/31uZGk"
-Date: Mon, 28 Nov 2005 11:58:05 +0100
-Message-Id: <1133175485.30984.1.camel@iho.sysgo.com>
-Mime-Version: 1.0
-Subject: Re: kernel 2.6.14 on MPC8272ADS
-Reply-To: ihornberger@sysgo.com
+	Mon, 28 Nov 2005 22:33:50 +1100 (EST)
+From: "Chris Down" <chris@alcor.co.uk>
+To: "'Joakim Tjernlund'" <joakim.tjernlund@transmode.se>,
+	<linuxppc-embedded@ozlabs.org>
+Date: Mon, 28 Nov 2005 11:33:44 -0000
+Message-ID: <003a01c5f40f$971ceff0$0101a8c0@sirius>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D9393FE1C7@tmnt04.transmode.se>
+Subject: RE: Badness in 2.6.15-rc1 on 8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,96 +26,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---=-e6X29fLpEF30+/31uZGk
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+-----Original Message-----
+From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se] 
+Sent: 28 November 2005 10:53
+To: Chris Down; linuxppc-embedded@ozlabs.org
+Subject: RE: Badness in 2.6.15-rc1 on 8xx
+ 
 
-Hi Bracha,
-
-I assume that you're using an 8xx!?
-
-This code isn't completely updated yet, but here is a small patch which
-should be more or less working...
-
-regards,
-	Ingo
-
-On Sun, 2005-11-27 at 12:22 +0200, Landau, Bracha wrote:
-> I'm trying to move to the latest kernel release from linux 2.6.13.4 on the MPC8272ADS board.
-> 2.6.13.4 works, but from 2.6.14 and up (I don't know where from 2.6.13.4 to 2.6.14 the problem starts) the kernel crashes on bootup with the message 
-> "Kernel BUG in ppc_sys_init at arch/ppc/syslib/ppc_sys_init.c:131"
-> Anyone know how to fix this problem?
+> Anyone seen this when booting 2.6.15-rc1 on 8xx?
+>   Mount-cache hash table entries: 512
+>   Badness in dma_alloc_init at arch/ppc/kernel/dma-mapping.c:346
+>   Call trace:
+>    [c00039e8] check_bug_trap+0x80/0xa8
+>    [c0003c1c] program_check_exception+0x20c/0x480
+>    [c00031e0] ret_from_except_full+0x0/0x4c
+>    [c01b86b8] dma_alloc_init+0x40/0xcc
+>    [c000225c] init+0x8c/0x288
+>    [c00050ac] kernel_thread+0x44/0x60
+>   NET: Registered protocol family 16
+> The kernel boots just fine into user space so it seems harmless, but I
+> suspect it will bite me later.
 > 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 > 
+> I am currently working with 2.6.15-rc1 on MPC852 and I am 
+> seeing a similar
+> problem.
+> 
+> Badness in dma_alloc_init at arch/ppc/kernel/dma-mapping.c:346
+> Call trace:
+>  [c00036f8] check_bug_trap+0xa4/0xb8
+>  [c0003f9c] program_check_exception+0x2f0/0x4c4
+>  [c0003320] ret_from_except_full+0x0/0x4c
+>  [c024c530] dma_alloc_init+0x3c/0xbc
+>  [c0002280] init+0xbc/0x25c
+>  [c000538c] kernel_thread+0x44/0x60
+> 
+> Have not had time to look at it yet, however I was not getting this on
+> 2.6.11.
+> 
+> Chris
 
---=-e6X29fLpEF30+/31uZGk
-Content-Disposition: attachment; filename=ppc_8xx_2.6.14_syslib.patch
-Content-Type: text/x-patch; name=ppc_8xx_2.6.14_syslib.patch;
-	charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+Let me guess you have IMAP_ADDR set to 0xff000000? Then you need to
+change
+CONSISTENT_START to something else(like 0xffa00000). Its somwhere in the
+Advanced setup.
 
-diff -Nurb a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
---- a/arch/ppc/syslib/m8xx_setup.c   2005-10-28 02:02:08.000000000 +0200
-+++ b/arch/ppc/syslib/m8xx_setup.c  2005-11-25 11:11:03.000000000 +0100
-@@ -82,7 +82,7 @@
-        ROOT_DEV = Root_HDA1; /* hda1 */
- #endif
+ Jocke
  
--#ifdef CONFIG_BLK_DEV_INITRD
-+#if defined(CONFIG_BLK_DEV_INITRD) || defined(CONFIG_EXTRACT_ROOTFS)
- #if 0
-        ROOT_DEV = Root_FD0; /* floppy */
-        rd_prompt = 1;
-@@ -389,7 +389,7 @@
-        m8xx_setup_pci_ptrs();
- #endif
- 
--#ifdef CONFIG_BLK_DEV_INITRD
-+#if defined(CONFIG_BLK_DEV_INITRD) || defined(CONFIG_EXTRACT_ROOTFS)
-        /* take care of initrd if we have one */
-        if ( r4 )
-        {
-@@ -404,6 +404,15 @@
-                strcpy(cmd_line, (char *)(r6+KERNELBASE));
-        }
- 
-+       /* 
-+        * Check if we are really on a Power QUICC CPU.
-+        * Note, that we do not halt the Kernel at this point, 
-+        * because we won't get any output here otherwise.
-+        */
-+       if( (mfspr(SPRN_PVR) >> 16) != 0x0050 )
-+         printk( KERN_ERR "ERROR: %s: %d: Wrong CPU Type! (We assumed a Power QUICC CPU)\n" );
-+       identify_ppc_sys_by_id(mfspr(SPRN_IMMR));
-+
-        ppc_md.setup_arch               = m8xx_setup_arch;
-        ppc_md.show_percpuinfo          = m8xx_show_percpuinfo;
-        ppc_md.irq_canonicalize = NULL;
-diff -Nurb a/arch/ppc/syslib/mpc8xx_sys.c b/arch/ppc/syslib/mpc8xx_sys.c
---- a/arch/ppc/syslib/mpc8xx_sys.c   2005-10-28 02:02:08.000000000 +0200
-+++ b/arch/ppc/syslib/mpc8xx_sys.c  2005-11-25 11:11:03.000000000 +0100
-@@ -20,9 +20,16 @@
- 
- struct ppc_sys_spec *cur_ppc_sys_spec; 
- struct ppc_sys_spec ppc_sys_specs[] = {
-+  /* The mpc85x and 86x, all have the system ID 0x00.
-+   * And as it seems that even the 885 has the ID 0x00,
-+   * I assume 0x00 for all MPC8XX systems. 
-+   * For other cases, you should add a new entry above the
-+   * MPC8XX. You could use the first 8 bits to make
-+   * a more specific match for your system.
-+   */
-        {
--               .ppc_sys_name   = "MPC86X",
--               .mask           = 0xFFFFFFFF,
-+               .ppc_sys_name   = "MPC8XX",
-+               .mask           = 0x00FF0000,
-                .value          = 0x00000000,
-                .num_devices    = 2,
-                .device_list    = (enum ppc_sys_devices[])
+You are correct I do have IMAP_ADDR set to 0xff000000 and setting
+CONSISTENT_START to 0xffa00000 solves the problem. 
 
---=-e6X29fLpEF30+/31uZGk--
+Chris
