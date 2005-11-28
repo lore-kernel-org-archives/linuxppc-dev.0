@@ -1,19 +1,17 @@
-Return-Path: <alancarbr@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.205])
-	by ozlabs.org (Postfix) with ESMTP id B727068816
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 643B468804
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Nov 2005 02:27:30 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id i11so2179917wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 28 Nov 2005 07:27:29 -0800 (PST)
-Message-ID: <dc70db7d0511280727k314faa27g5fc09c074bc28630@mail.gmail.com>
-Date: Mon, 28 Nov 2005 13:27:29 -0200
-From: Alan Carvalho <alancarbr@gmail.com>
-To: linuxppc-embedded@ozlabs.org
+	Tue, 29 Nov 2005 04:00:13 +1100 (EST)
+Message-ID: <438B379B.6090904@ru.mvista.com>
+Date: Mon, 28 Nov 2005 20:00:11 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_2315_17437247.1133191649045"
-Subject: Joystick and Lite5200
+To: BLandau@nds.com
+Content-Type: multipart/mixed; boundary="------------050206010306050402000906"
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc32: Adds MPC885ADS, MPC866ADS and MPC8272ADS-specific
+ platform stuff for fs_enet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,337 +22,1211 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_2315_17437247.1133191649045
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+This is a multi-part message in MIME format.
+--------------050206010306050402000906
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hi all,
-I am trying use Logitech WingMan Strike Force 3D on Lite5200 board. I am
-using linux-2.6.14 Denx's tree, just selecting this options:
+Added proper ppc_sys identification and fs_platform_info's for MPC 885ADS, 866ADS and 
+8272ADS. Assuming setbitsXX/clrbitsXX patch is applied.
 
-CONFIG_INPUT=3Dy
-CONFIG_INPUT_JOYDEV=3Dy
-CONFIG_INPUT_EVDEV=3Dy
-CONFIG_INPUT_EVBUG=3Dy
 
-and
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 
-CONFIG_USB_HID=3Dy
-CONFIG_USB_HIDINPUT=3Dy
-CONFIG_HID_FF=3Dy
-CONFIG_LOGITECH_FF=3Dy
+---
+Sincerely,
+Vitaly
 
-As my device ID is not listed in hid-ff.c and hid-lgff.c, then I mapped it:
 
-drivers/usb/input/hid-ff.c :
-{0x46d, 0xc285, hid_lgff_init}, // Logitech Wingman Strike Force 3d
 
-drivers/usb/input/hid-lgff.c
-{0x046d, 0xc285, ff_joystick},
-(I need do it in the PC to force feedback work fine too)
+--------------050206010306050402000906
+Content-Type: text/x-patch;
+ name="pre2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="pre2.patch"
 
-But the problem is the driver is not working correctly, if I try open
-/dev/input/event0 it return "No such device", but as you can see below
-evbug.c show correctly all joystick events.
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+index 8fa51b0..8e6fcb2 100644
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -506,6 +506,53 @@ config WINCEPT
+ 
+ endchoice
+ 
++menu "Freescale Ethernet driver platform-specific options"
++	depends on FS_ENET
++
++	config MPC8xx_SECOND_ETH
++	bool "Second Ethernet channel"
++	depends on (MPC885ADS || MPC86XADS)
++	default y
++	help
++	  This enables support for second Ethernet on MPC885ADS and MPC86xADS boards.
++	  The latter will use SCC1, for 885ADS you can select it below.
++
++	choice
++		prompt "Second Ethernet channel"
++		depends on MPC8xx_SECOND_ETH
++		default MPC8xx_SECOND_ETH_FEC2
++
++		config MPC8xx_SECOND_ETH_FEC2
++		bool "FEC2"
++		depends on MPC885ADS
++		help
++		  Enable FEC2 to serve as 2-nd Ethernet channel. Note that SMC2
++		  (often 2-nd UART) will not work if this is enabled.
++
++		config MPC8xx_SECOND_ETH_SCC1
++		bool "SCC1"
++		depends on MPC86XADS
++		select MPC8xx_SCC_ENET_FIXED
++		help
++		  Enable SCC1 to serve as 2-nd Ethernet channel. Note that SMC1
++		  (often 1-nd UART) will not work if this is enabled.
++
++		config MPC8xx_SECOND_ETH_SCC3
++		bool "SCC3"
++		depends on MPC885ADS
++		help
++		  Enable SCC3 to serve as 2-nd Ethernet channel. Note that SMC1
++		  (often 1-nd UART) will not work if this is enabled.
++
++	endchoice
++
++	config MPC8xx_SCC_ENET_FIXED
++	depends on MPC8xx_SECOND_ETH_SCC
++	default n
++	bool "Use fixed MII-less mode for SCC Ethernet"
++
++endmenu
++
+ choice
+ 	prompt "Machine Type"
+ 	depends on 6xx || POWER3 || POWER4
+diff --git a/arch/ppc/platforms/Makefile b/arch/ppc/platforms/Makefile
+index 7c5cdab..ee50b0d 100644
+--- a/arch/ppc/platforms/Makefile
++++ b/arch/ppc/platforms/Makefile
+@@ -22,6 +22,8 @@ ifeq ($(CONFIG_PPC_PMAC),y)
+ obj-$(CONFIG_NVRAM)		+= pmac_nvram.o
+ obj-$(CONFIG_CPU_FREQ_PMAC)	+= pmac_cpufreq.o
+ endif
++
++obj-$(CONFIG_ADS8272)		+= mpc8272ads_setup.o
+ obj-$(CONFIG_PMAC_BACKLIGHT)	+= pmac_backlight.o
+ obj-$(CONFIG_PREP_RESIDUAL)	+= residual.o
+ obj-$(CONFIG_PQ2ADS)		+= pq2ads.o
+@@ -45,6 +47,8 @@ obj-$(CONFIG_SBC82xx)		+= sbc82xx.o
+ obj-$(CONFIG_SPRUCE)		+= spruce.o
+ obj-$(CONFIG_LITE5200)		+= lite5200.o
+ obj-$(CONFIG_EV64360)		+= ev64360.o
++obj-$(CONFIG_MPC86XADS)		+= mpc866ads_setup.o
++obj-$(CONFIG_MPC885ADS)		+= mpc885ads_setup.o
+ 
+ ifeq ($(CONFIG_SMP),y)
+ obj-$(CONFIG_PPC_PMAC)		+= pmac_smp.o
+diff --git a/arch/ppc/platforms/fads.h b/arch/ppc/platforms/fads.h
+index a48fb8d..e1c0b1b 100644
+--- a/arch/ppc/platforms/fads.h
++++ b/arch/ppc/platforms/fads.h
+@@ -112,7 +112,7 @@
+ 
+ /* CPM Ethernet through SCC1 or SCC2 */
+ 
+-#ifdef CONFIG_SCC1_ENET		/* Probably 860 variant */
++#if defined(CONFIG_SCC1_ENET) || defined(CONFIG_MPC8xx_SECOND_ETH_SCC1)		/* Probably 860 variant */
+ /* Bits in parallel I/O port registers that have to be set/cleared
+  * to configure the pins for SCC1 use.
+  * TCLK - CLK1, RCLK - CLK2.
+diff --git a/arch/ppc/platforms/mpc8272ads_setup.c b/arch/ppc/platforms/mpc8272ads_setup.c
+new file mode 100644
+index 0000000..4f76b1b
+--- /dev/null
++++ b/arch/ppc/platforms/mpc8272ads_setup.c
+@@ -0,0 +1,253 @@
++/*
++ * arch/ppc/platforms/82xx/pq2ads_pd.c
++ *
++ * MPC82xx Board-specific PlatformDevice descriptions
++ *
++ * 2005 (c) MontaVista Software, Inc.
++ * Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/device.h>
++#include <linux/ioport.h>
++#include <linux/fs_enet_pd.h>
++
++#include <asm/io.h>
++#include <asm/mpc8260.h>
++#include <asm/cpm2.h>
++#include <asm/immap_cpm2.h>
++#include <asm/irq.h>
++#include <asm/ppc_sys.h>
++#include <asm/ppcboot.h>
++
++#include "pq2ads_pd.h"
++
++static void init_fcc1_ioports(void);
++static void init_fcc2_ioports(void);
++
++static struct fs_mii_bus_info mii_bus_info = {
++	.method                 = fsmii_bitbang,
++	.id                     = 0,
++	.i.bitbang = {
++		.mdio_port	= fsiop_portc,
++		.mdio_bit	= 18,
++		.mdc_port	= fsiop_portc,
++		.mdc_bit	= 19,
++		.delay		= 1,
++	},
++};
++
++static struct fs_platform_info mpc82xx_fcc1_pdata = {
++	.fs_no		= fsid_fcc1,
++	.cp_page	= CPM_CR_FCC1_PAGE,
++	.cp_block 	= CPM_CR_FCC1_SBLOCK,
++	.clk_trx 	= (PC_F1RXCLK | PC_F1TXCLK),
++	.clk_route	= CMX1_CLK_ROUTE,
++	.clk_mask	= CMX1_CLK_MASK,
++	.init_ioports 	= init_fcc1_ioports,
++
++	.phy_addr	= 0,
++#ifdef PHY_INTERRUPT
++	.phy_irq	= PHY_INTERRUPT,
++#else
++	.phy_irq	= -1;
++#endif
++	.mem_offset	= FCC1_MEM_OFFSET,
++	.bus_info	= &mii_bus_info,
++	.rx_ring	= 32,
++	.tx_ring	= 32,
++	.rx_copybreak	= 240,
++	.use_napi	= 0,
++	.napi_weight	= 17,
++};
++
++static struct fs_platform_info mpc82xx_fcc2_pdata = {
++	.fs_no		= fsid_fcc2,
++	.cp_page	= CPM_CR_FCC2_PAGE,
++	.cp_block 	= CPM_CR_FCC2_SBLOCK,
++	.clk_trx 	= (PC_F2RXCLK | PC_F2TXCLK),
++	.clk_route	= CMX2_CLK_ROUTE,
++	.clk_mask	= CMX2_CLK_MASK,
++	.init_ioports	= init_fcc2_ioports,
++
++	.phy_addr	= 3,
++#ifdef PHY_INTERRUPT
++	.phy_irq	= PHY_INTERRUPT,
++#else
++	.phy_irq	= -1;
++#endif
++	.mem_offset	= FCC2_MEM_OFFSET,
++	.bus_info	= &mii_bus_info,
++	.rx_ring	= 32,
++	.tx_ring	= 32,
++	.rx_copybreak	= 240,
++	.use_napi	= 0,
++	.napi_weight	= 17,
++};
++
++static void init_fcc1_ioports(void)
++{
++	struct io_port *io;
++	u32 tempval;
++	int i=0;
++	cpm2_map_t* immap = ioremap(CPM_MAP_ADDR, sizeof(cpm2_map_t));
++	u32 *bcsr = ioremap(BCSR_ADDR+4, sizeof(u32));
++
++	io = &immap->im_ioport;
++
++	/* Enable the PHY */
++	clrbits32(bcsr, BCSR1_FETHIEN);
++	setbits32(bcsr, BCSR1_FETH_RST);
++
++	/* FCC1 pins are on port A/C. */
++	/* Configure port A and C pins for FCC1 Ethernet. */
++
++	tempval = in_be32(&io->iop_pdira);
++	tempval &= ~PA1_DIRA0;
++	tempval |= PA1_DIRA1;
++	out_be32(&io->iop_pdira, tempval);
++
++	tempval = in_be32(&io->iop_psora);
++	tempval &= ~PA1_PSORA0;
++	tempval |= PA1_PSORA1;
++	out_be32(&io->iop_psora, tempval);
++
++	setbits32(&io->iop_ppara,PA1_DIRA0 | PA1_DIRA1);
++
++	/* Alter clocks */
++	tempval = PC_F1TXCLK|PC_F1RXCLK;
++
++	clrbits32(&io->iop_psorc, tempval);
++	clrbits32(&io->iop_pdirc, tempval);
++	setbits32(&io->iop_pparc, tempval);
++
++	clrbits32(&immap->im_cpmux.cmx_fcr, CMX1_CLK_MASK);
++	setbits32(&immap->im_cpmux.cmx_fcr, CMX1_CLK_ROUTE);
++	iounmap(bcsr);
++	iounmap(immap);
++}
++
++static void init_fcc2_ioports(void)
++{
++	cpm2_map_t* immap = ioremap(CPM_MAP_ADDR, sizeof(cpm2_map_t));
++	u32 *bcsr = ioremap(BCSR_ADDR+12, sizeof(u32));
++
++	struct io_port *io;
++	u32 tempval;
++
++	immap = cpm2_immr;
++
++	io = &immap->im_ioport;
++
++	/* Enable the PHY */
++	clrbits32(bcsr, BCSR3_FETHIEN2);
++	setbits32(bcsr, BCSR3_FETH2_RST);
++
++	/* FCC2 are port B/C. */
++	/* Configure port A and C pins for FCC2 Ethernet. */
++
++	tempval = in_be32(&io->iop_pdirb);
++	tempval &= ~PB2_DIRB0;
++	tempval |= PB2_DIRB1;
++	out_be32(&io->iop_pdirb, tempval);
++
++	tempval = in_be32(&io->iop_psorb);
++	tempval &= ~PB2_PSORB0;
++	tempval |= PB2_PSORB1;
++	out_be32(&io->iop_psorb, tempval);
++
++	setbits32(&io->iop_pparb,PB2_DIRB0 | PB2_DIRB1);
++
++	tempval = PC_F2RXCLK|PC_F2TXCLK;
++
++	/* Alter clocks */
++	clrbits32(&io->iop_psorc,tempval);
++	clrbits32(&io->iop_pdirc,tempval);
++	setbits32(&io->iop_pparc,tempval);
++
++	clrbits32(&immap->im_cpmux.cmx_fcr, CMX2_CLK_MASK);
++	setbits32(&immap->im_cpmux.cmx_fcr, CMX2_CLK_ROUTE);
++
++	iounmap(bcsr);
++	iounmap(immap);
++}
++
++
++static void __init mpc8272ads_fixup_enet_pdata(struct platform_device *pdev,
++					      int idx)
++{
++	bd_t* bi = (void*)__res;
++	int fs_no = fsid_fcc1+pdev->id-1;
++
++	mpc82xx_fcc1_pdata.dpram_offset = mpc82xx_fcc2_pdata.dpram_offset = (u32)cpm2_immr->im_dprambase;
++	mpc82xx_fcc1_pdata.fcc_regs_c = mpc82xx_fcc2_pdata.fcc_regs_c = (u32)cpm2_immr->im_fcc_c;
++
++	switch(fs_no) {
++		case fsid_fcc1:
++			memcpy(&mpc82xx_fcc1_pdata.macaddr,bi->bi_enetaddr,6);
++			pdev->dev.platform_data = &mpc82xx_fcc1_pdata;
++		break;
++		case fsid_fcc2:
++			memcpy(&mpc82xx_fcc2_pdata.macaddr,bi->bi_enetaddr,6);
++			mpc82xx_fcc2_pdata.macaddr[5] ^= 1;
++			pdev->dev.platform_data = &mpc82xx_fcc2_pdata;
++		break;
++	}
++}
++
++static int __init mpc8272ads_platform_notify(struct device *dev)
++{
++	static struct {
++		const char *bus_id;
++		void (*rtn) (struct platform_device * pdev, int idx);
++	} dev_map[] = {
++		{"fsl-cpm-fcc", mpc8272ads_fixup_enet_pdata},
++	};
++	struct platform_device *pdev;
++	int i, j, idx;
++	const char *s;
++	if (dev && dev->bus_id)
++		for (i = 0; i < ARRAY_SIZE(dev_map); i++) {
++			idx = -1;
++
++			if ((s = strrchr(dev->bus_id, '.')) != NULL)
++				idx = (int)simple_strtol(s + 1, NULL, 10);
++			else
++				s = dev->bus_id;
++			j = s - dev->bus_id;
++			if (!strncmp(dev->bus_id, dev_map[i].bus_id, j)) {
++				pdev =
++				    container_of(dev, struct platform_device,
++						 dev);
++				dev_map[i].rtn(pdev, idx);
++			}
++		}
++	return 0;
++}
++
++int __init mpc8272ads_init(void)
++{
++	printk(KERN_NOTICE "mpc8272ads: Init\n");
++
++	platform_notify = mpc8272ads_platform_notify;
++
++	identify_ppc_sys_by_name_and_id(BOARD_CHIP_NAME, cpm2_immr->im_memctl.memc_immr);
++
++	/*Remove stuff does not utilized platform way*/
++	ppc_sys_device_remove(MPC82xx_CPM_SCC1);
++	ppc_sys_device_remove(MPC82xx_CPM_SCC2);
++	ppc_sys_device_remove(MPC82xx_CPM_SCC3);
++	ppc_sys_device_remove(MPC82xx_CPM_SCC4);
++	ppc_sys_device_remove(MPC82xx_CPM_SMC1);
++	ppc_sys_device_remove(MPC82xx_CPM_SMC2);
++
++	return 0;
++}
++
++arch_initcall(mpc8272ads_init);
+diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
+new file mode 100644
+index 0000000..0809cf3
+--- /dev/null
++++ b/arch/ppc/platforms/mpc866ads_setup.c
+@@ -0,0 +1,283 @@
++/*arch/ppc/platforms/mpc885ads-setup.c
++ *
++ * Platform setup for the Freescale mpc885ads board
++ *
++ * Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * Copyright 2005 MontaVista Software Inc.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#include <linux/config.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/param.h>
++#include <linux/string.h>
++#include <linux/ioport.h>
++#include <linux/device.h>
++
++#include <linux/fs_enet_pd.h>
++#include <linux/mii.h>
++
++#include <asm/delay.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/page.h>
++#include <asm/processor.h>
++#include <asm/system.h>
++#include <asm/time.h>
++#include <asm/ppcboot.h>
++#include <asm/8xx_immap.h>
++#include <asm/commproc.h>
++#include <asm/ppc_sys.h>
++#include <asm/mpc8xx.h>
++
++extern unsigned char __res[];
++
++static struct fs_mii_bus_info fec_mii_bus_info = {
++	.method = fsmii_fec,
++	.id = 0,
++};
++
++static struct fs_mii_bus_info scc_mii_bus_info = {
++	.method = fsmii_fixed,
++	.id = 0,
++	.i.fixed.speed = 10,
++	.i.fixed.duplex = 0,
++};
++
++static struct fs_platform_info mpc8xx_fec_pdata[] = {
++	{
++	 .rx_ring = 128,
++	 .tx_ring = 16,
++	 .rx_copybreak = 240,
++
++	 .use_napi = 1,
++	 .napi_weight = 17,
++
++	 .phy_addr = 15,
++	 .phy_irq = -1,
++
++	 .use_rmii = 0,
++
++	 .bus_info = &fec_mii_bus_info,
++	 }
++};
++
++static struct fs_platform_info mpc8xx_scc_pdata = {
++	.rx_ring = 64,
++	.tx_ring = 8,
++	.rx_copybreak = 240,
++
++	.use_napi = 1,
++	.napi_weight = 17,
++
++	.phy_addr = -1,
++	.phy_irq = -1,
++
++	.bus_info = &scc_mii_bus_info,
++};
++
++void __init board_init(void)
++{
++	volatile cpm8xx_t *cp = cpmp;
++	unsigned *bcsr_io;
++
++	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
++
++	if (bcsr_io == NULL) {
++		printk(KERN_CRIT "Could not remap BCSR1\n");
++		return;
++	}
++#ifdef CONFIG_SERIAL_CPM_SMC1
++	cp->cp_simode &= ~(0xe0000000 >> 17);	/* brg1 */
++	clrbits32(bcsr_io,(0x80000000 >> 7));
++#else
++	setbits32(bcsr_io,(0x80000000 >> 7));
++
++	cp->cp_pbpar &= ~(0x000000c0);
++	cp->cp_pbdir |= 0x000000c0;
++	cp->cp_smc[0].smc_smcmr = 0;
++	cp->cp_smc[0].smc_smce = 0;
++#endif
++
++#ifdef CONFIG_SERIAL_CPM_SMC2
++	cp->cp_simode &= ~(0xe0000000 >> 1);
++	cp->cp_simode |= (0x20000000 >> 1);	/* brg2 */
++	clrbits32(bcsr_io,(0x80000000 >> 13));
++#else
++	clrbits32(bcsr_io,(0x80000000 >> 13));
++	cp->cp_pbpar &= ~(0x00000c00);
++	cp->cp_pbdir |= 0x00000c00;
++	cp->cp_smc[1].smc_smcmr = 0;
++	cp->cp_smc[1].smc_smce = 0;
++#endif
++	iounmap(bcsr_io);
++}
++
++static void setup_fec1_ioports(void)
++{
++	immap_t *immap = (immap_t *) IMAP_ADDR;
++
++	setbits16(&immap->im_ioport.iop_pdpar, 0x1fff);
++	setbits16(&immap->im_ioport.iop_pddir, 0x1fff);
++}
++
++static void setup_scc1_ioports(void)
++{
++	immap_t *immap = (immap_t *) IMAP_ADDR;
++	unsigned *bcsr_io;
++
++	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
++
++	if (bcsr_io == NULL) {
++		printk(KERN_CRIT "Could not remap BCSR1\n");
++		return;
++	}
++
++	/* Enable the PHY.
++	 */
++	clrbits32(bcsr_io,BCSR1_ETHEN);
++
++	/* Configure port A pins for Txd and Rxd.
++	 */
++	/* Disable receive and transmit in case EPPC-Bug started it.
++	 */
++	setbits16(&immap->im_ioport.iop_papar, PA_ENET_RXD | PA_ENET_TXD);
++	clrbits16(&immap->im_ioport.iop_padir, PA_ENET_RXD | PA_ENET_TXD);
++	clrbits16(&immap->im_ioport.iop_paodr, PA_ENET_TXD);
++
++	/* Configure port C pins to enable CLSN and RENA.
++	 */
++	clrbits16(&immap->im_ioport.iop_pcpar, PC_ENET_CLSN | PC_ENET_RENA);
++	clrbits16(&immap->im_ioport.iop_pcdir, PC_ENET_CLSN | PC_ENET_RENA);
++	setbits16(&immap->im_ioport.iop_pcso, PC_ENET_CLSN | PC_ENET_RENA);
++	/* Configure port A for TCLK and RCLK.
++	 */
++	setbits16(&immap->im_ioport.iop_papar, PA_ENET_TCLK | PA_ENET_RCLK);
++	clrbits16(&immap->im_ioport.iop_padir, PA_ENET_TCLK | PA_ENET_RCLK);
++	clrbits32(&immap->im_cpm.cp_pbpar, PB_ENET_TENA);
++	clrbits32(&immap->im_cpm.cp_pbdir, PB_ENET_TENA);
++
++	/* Configure Serial Interface clock routing.
++	 * First, clear all SCC bits to zero, then set the ones we want.
++	 */
++	clrbits32(&immap->im_cpm.cp_sicr, SICR_ENET_MASK);
++	setbits32(&immap->im_cpm.cp_sicr, SICR_ENET_CLKRT);
++
++	/* In the original SCC enet driver the following code is placed at
++	the end of the initialization */
++	setbits32(&immap->im_cpm.cp_pbpar, PB_ENET_TENA);
++	setbits32(&immap->im_cpm.cp_pbdir, PB_ENET_TENA);
++
++}
++
++static void mpc866ads_fixup_enet_pdata(struct platform_device *pdev, int fs_no)
++{
++	struct fs_platform_info *fpi = pdev->dev.platform_data;
++
++	volatile cpm8xx_t *cp;
++	bd_t *bd = (bd_t *) __res;
++	char *e;
++	int i;
++
++	/* Get pointer to Communication Processor */
++	cp = cpmp;
++	switch (fs_no) {
++	case fsid_fec1:
++		fpi = &mpc8xx_fec_pdata[0];
++		fpi->init_ioports = &setup_fec1_ioports;
++
++		break;
++	case fsid_scc1:
++		fpi = &mpc8xx_scc_pdata;
++		fpi->init_ioports = &setup_scc1_ioports;
++
++		break;
++	default:
++		break;
++	}
++
++	pdev->dev.platform_data = fpi;
++	fpi->fs_no = fs_no;
++
++	e = (unsigned char *)&bd->bi_enetaddr;
++	for (i = 0; i < 6; i++)
++		fpi->macaddr[i] = *e++;
++
++	fpi->macaddr[5 - pdev->id]++;
++
++}
++
++static void mpc866ads_fixup_fec_enet_pdata(struct platform_device *pdev,
++					   int idx)
++{
++	/* This is for FEC devices only */
++	if (strcmp(pdev->name, "fsl-cpm-fec"))
++		return;
++	mpc866ads_fixup_enet_pdata(pdev, fsid_fec1 + pdev->id - 1);
++}
++
++static void mpc866ads_fixup_scc_enet_pdata(struct platform_device *pdev,
++					   int idx)
++{
++	/* This is for SCC devices only */
++	if (strcmp(pdev->name, "fsl-cpm-scc"))
++		return;
++
++	mpc866ads_fixup_enet_pdata(pdev, fsid_scc1 + pdev->id - 1);
++}
++
++static int mpc866ads_platform_notify(struct device *dev)
++{
++	static struct {
++		const char *bus_id;
++		void (*rtn) (struct platform_device * pdev, int idx);
++	} dev_map[] = {
++		{
++		"fsl-cpm-fec", mpc866ads_fixup_fec_enet_pdata}, {
++	"fsl-cpm-scc", mpc866ads_fixup_scc_enet_pdata},};
++	struct platform_device *pdev;
++	int i, j, idx;
++	const char *s;
++	if (dev && dev->bus_id)
++		for (i = 0; i < ARRAY_SIZE(dev_map); i++) {
++			idx = -1;
++
++			if ((s = strrchr(dev->bus_id, '.')) != NULL)
++				idx = (int)simple_strtol(s + 1, NULL, 10);
++			else
++				s = dev->bus_id;
++			j = s - dev->bus_id;
++			if (!strncmp(dev->bus_id, dev_map[i].bus_id, j)) {
++				pdev =
++				    container_of(dev, struct platform_device,
++						 dev);
++				dev_map[i].rtn(pdev, idx);
++			}
++		}
++	return 0;
++}
++
++int __init mpc866ads_init(void)
++{
++	printk(KERN_NOTICE "mpc866ads: Init\n");
++
++	platform_notify = mpc866ads_platform_notify;
++
++	identify_ppc_sys_by_name(BOARD_CHIP_NAME);
++
++	ppc_sys_device_remove(MPC8xx_CPM_FEC2);
++	ppc_sys_device_remove(MPC8xx_CPM_SCC3);
++	ppc_sys_device_remove(MPC8xx_CPM_SCC2);
++	ppc_sys_device_remove(MPC8xx_CPM_SCC4);
++	ppc_sys_device_remove(MPC8xx_CPM_SMC1);
++	ppc_sys_device_remove(MPC8xx_CPM_SMC2);
++
++	return 0;
++}
++
++arch_initcall(mpc866ads_init);
+diff --git a/arch/ppc/platforms/mpc885ads_setup.c b/arch/ppc/platforms/mpc885ads_setup.c
+new file mode 100644
+index 0000000..5e72f64
+--- /dev/null
++++ b/arch/ppc/platforms/mpc885ads_setup.c
+@@ -0,0 +1,400 @@
++/*arch/ppc/platforms/mpc885ads-setup.c
++ *
++ * Platform setup for the Freescale mpc885ads board
++ *
++ * Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * Copyright 2005 MontaVista Software Inc.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#include <linux/config.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/param.h>
++#include <linux/string.h>
++#include <linux/ioport.h>
++#include <linux/device.h>
++
++#include <linux/fs_enet_pd.h>
++#include <linux/mii.h>
++
++#include <asm/delay.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/page.h>
++#include <asm/processor.h>
++#include <asm/system.h>
++#include <asm/time.h>
++#include <asm/ppcboot.h>
++#include <asm/8xx_immap.h>
++#include <asm/commproc.h>
++#include <asm/ppc_sys.h>
++
++extern unsigned char __res[];
++
++static void __init mpc885ads_scc_phy_init(char);
++
++static struct fs_mii_bus_info fec_mii_bus_info = {
++	.method = fsmii_fec,
++	.id = 0,
++};
++
++static struct fs_mii_bus_info scc_mii_bus_info = {
++#ifdef CONFIG_SCC_ENET_8xx_FIXED
++	.method = fsmii_fixed,
++#else
++	.method = fsmii_fec,
++#endif
++
++	.id = 0,
++};
++
++static struct fs_platform_info mpc8xx_fec_pdata[] = {
++	{
++	 .rx_ring = 128,
++	 .tx_ring = 16,
++	 .rx_copybreak = 240,
++
++	 .use_napi = 1,
++	 .napi_weight = 17,
++
++	 .phy_addr = 0,
++	 .phy_irq = SIU_IRQ7,
++
++	 .bus_info = &fec_mii_bus_info,
++	 }, {
++	     .rx_ring = 128,
++	     .tx_ring = 16,
++	     .rx_copybreak = 240,
++
++	     .use_napi = 1,
++	     .napi_weight = 17,
++
++	     .phy_addr = 1,
++	     .phy_irq = SIU_IRQ7,
++
++	     .bus_info = &fec_mii_bus_info,
++	     }
++};
++
++static struct fs_platform_info mpc8xx_scc_pdata = {
++	.rx_ring = 64,
++	.tx_ring = 8,
++	.rx_copybreak = 240,
++
++	.use_napi = 1,
++	.napi_weight = 17,
++
++	.phy_addr = 2,
++#ifdef CONFIG_MPC8xx_SCC_ENET_FIXED
++	.phy_irq = -1,
++#else
++	.phy_irq = SIU_IRQ7,
++#endif
++
++	.bus_info = &scc_mii_bus_info,
++};
++
++void __init board_init(void)
++{
++	volatile cpm8xx_t *cp = cpmp;
++	unsigned int *bcsr_io;
++
++#ifdef CONFIG_FS_ENET
++	immap_t *immap = (immap_t *) IMAP_ADDR;
++#endif
++	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
++
++	if (bcsr_io == NULL) {
++		printk(KERN_CRIT "Could not remap BCSR\n");
++		return;
++	}
++#ifdef CONFIG_SERIAL_CPM_SMC1
++	cp->cp_simode &= ~(0xe0000000 >> 17);	/* brg1 */
++	clrbits32(bcsr_io, BCSR1_RS232EN_1);
++#else
++	setbits32(bcsr_io,BCSR1_RS232EN_1);
++	cp->cp_smc[0].smc_smcmr = 0;
++	cp->cp_smc[0].smc_smce = 0;
++#endif
++
++#ifdef CONFIG_SERIAL_CPM_SMC2
++	cp->cp_simode &= ~(0xe0000000 >> 1);
++	cp->cp_simode |= (0x20000000 >> 1);	/* brg2 */
++	clrbits32(bcsr_io,BCSR1_RS232EN_2);
++#else
++	setbits32(bcsr_io,BCSR1_RS232EN_2);
++	cp->cp_smc[1].smc_smcmr = 0;
++	cp->cp_smc[1].smc_smce = 0;
++#endif
++	iounmap(bcsr_io);
++
++#ifdef CONFIG_FS_ENET
++	/* use MDC for MII (common) */
++	setbits16(&immap->im_ioport.iop_pdpar, 0x0080);
++	clrbits16(&immap->im_ioport.iop_pddir, 0x0080);
++#endif
++}
++
++static void setup_fec1_ioports(void)
++{
++	immap_t *immap = (immap_t *) IMAP_ADDR;
++
++	/* configure FEC1 pins  */
++	setbits16(&immap->im_ioport.iop_papar, 0xf830);
++	setbits16(&immap->im_ioport.iop_padir, 0x0830);
++	clrbits16(&immap->im_ioport.iop_padir, 0xf000);
++	setbits32(&immap->im_cpm.cp_pbpar, 0x00001001);
++
++	clrbits32(&immap->im_cpm.cp_pbdir, 0x00001001);
++	setbits16(&immap->im_ioport.iop_pcpar, 0x000c);
++	clrbits16(&immap->im_ioport.iop_pcdir, 0x000c);
++	setbits32(&immap->im_cpm.cp_pepar, 0x00000003);
++
++	setbits32(&immap->im_cpm.cp_pedir, 0x00000003);
++	clrbits32(&immap->im_cpm.cp_peso, 0x00000003);
++	clrbits32(&immap->im_cpm.cp_cptr, 0x00000100);
++}
++
++static void setup_fec2_ioports(void)
++{
++	immap_t *immap = (immap_t *) IMAP_ADDR;
++
++	/* configure FEC2 pins */
++	setbits32(&immap->im_cpm.cp_pepar, 0x0003fffc);
++	setbits32(&immap->im_cpm.cp_pedir, 0x0003fffc);
++	setbits32(&immap->im_cpm.cp_peso, 0x00037800);
++	clrbits32(&immap->im_cpm.cp_peso, 0x000087fc);
++	clrbits32(&immap->im_cpm.cp_cptr, 0x00000080);
++}
++
++static void setup_scc3_ioports(void)
++{
++	immap_t *immap = (immap_t *) IMAP_ADDR;
++	unsigned *bcsr_io;
++
++	bcsr_io = ioremap(BCSR_ADDR, BCSR_SIZE);
++
++	if (bcsr_io == NULL) {
++		printk(KERN_CRIT "Could not remap BCSR\n");
++		return;
++	}
++
++	/* Enable the PHY.
++	 */
++	setbits32(bcsr_io+4, BCSR4_ETH10_RST);
++	/* Configure port A pins for Txd and Rxd.
++	 */
++	setbits16(&immap->im_ioport.iop_papar, PA_ENET_RXD | PA_ENET_TXD);
++	clrbits16(&immap->im_ioport.iop_padir, PA_ENET_RXD | PA_ENET_TXD);
++
++	/* Configure port C pins to enable CLSN and RENA.
++	 */
++	clrbits16(&immap->im_ioport.iop_pcpar, PC_ENET_CLSN | PC_ENET_RENA);
++	clrbits16(&immap->im_ioport.iop_pcdir, PC_ENET_CLSN | PC_ENET_RENA);
++	setbits16(&immap->im_ioport.iop_pcso, PC_ENET_CLSN | PC_ENET_RENA);
++
++	/* Configure port E for TCLK and RCLK.
++	 */
++	setbits32(&immap->im_cpm.cp_pepar, PE_ENET_TCLK | PE_ENET_RCLK);
++	clrbits32(&immap->im_cpm.cp_pepar, PE_ENET_TENA);
++	clrbits32(&immap->im_cpm.cp_pedir,
++		  PE_ENET_TCLK | PE_ENET_RCLK | PE_ENET_TENA);
++	clrbits32(&immap->im_cpm.cp_peso, PE_ENET_TCLK | PE_ENET_RCLK);
++	setbits32(&immap->im_cpm.cp_peso, PE_ENET_TENA);
++
++	/* Configure Serial Interface clock routing.
++	 * First, clear all SCC bits to zero, then set the ones we want.
++	 */
++	clrbits32(&immap->im_cpm.cp_sicr, SICR_ENET_MASK);
++	setbits32(&immap->im_cpm.cp_sicr, SICR_ENET_CLKRT);
++
++	/* Disable Rx and Tx. SMC1 sshould be stopped if SCC3 eternet are used.
++	 */
++	immap->im_cpm.cp_smc[0].smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
++	/* On the MPC885ADS SCC ethernet PHY is initialized in the full duplex mode
++	 * by H/W setting after reset. SCC ethernet controller support only half duplex.
++	 * This discrepancy of modes causes a lot of carrier lost errors.
++	 */
++
++	/* In the original SCC enet driver the following code is placed at
++	   the end of the initialization */
++	setbits32(&immap->im_cpm.cp_pepar, PE_ENET_TENA);
++	clrbits32(&immap->im_cpm.cp_pedir, PE_ENET_TENA);
++	setbits32(&immap->im_cpm.cp_peso, PE_ENET_TENA);
++
++	setbits32(bcsr_io+1, BCSR1_ETHEN);
++	iounmap(bcsr_io);
++}
++
++static void mpc885ads_fixup_enet_pdata(struct platform_device *pdev, int fs_no)
++{
++	struct fs_platform_info *fpi = pdev->dev.platform_data;
++
++	volatile cpm8xx_t *cp;
++	bd_t *bd = (bd_t *) __res;
++	char *e;
++	int i;
++
++	/* Get pointer to Communication Processor */
++	cp = cpmp;
++	switch (fs_no) {
++	case fsid_fec1:
++		fpi = &mpc8xx_fec_pdata[0];
++		fpi->init_ioports = &setup_fec1_ioports;
++		break;
++	case fsid_fec2:
++		fpi = &mpc8xx_fec_pdata[1];
++		fpi->init_ioports = &setup_fec2_ioports;
++		break;
++	case fsid_scc3:
++		fpi = &mpc8xx_scc_pdata;
++		fpi->init_ioports = &setup_scc3_ioports;
++		mpc885ads_scc_phy_init(fpi->phy_addr);
++		break;
++	default:
++		break;
++	}
++
++	pdev->dev.platform_data = fpi;
++	fpi->fs_no = fs_no;
++
++	e = (unsigned char *)&bd->bi_enetaddr;
++	for (i = 0; i < 6; i++)
++		fpi->macaddr[i] = *e++;
++
++	fpi->macaddr[5 - pdev->id]++;
++
++}
++
++static void mpc885ads_fixup_fec_enet_pdata(struct platform_device *pdev,
++					   int idx)
++{
++	/* This is for FEC devices only */
++	if (!strstr(pdev->name, "fsl-cpm-fec"))
++		return;
++	mpc885ads_fixup_enet_pdata(pdev, fsid_fec1 + pdev->id - 1);
++}
++
++static void __init mpc885ads_fixup_scc_enet_pdata(struct platform_device *pdev,
++						  int idx)
++{
++	/* This is for SCC devices only */
++	if (!strstr(pdev->name, "fsl-cpm-scc"))
++		return;
++
++	mpc885ads_fixup_enet_pdata(pdev, fsid_scc1 + pdev->id - 1);
++}
++
++/* SCC ethernet controller does not have MII management channel. FEC1 MII
++ * channel is used to communicate with the 10Mbit PHY.
++ */
++
++#define MII_ECNTRL_PINMUX        0x4
++#define FEC_ECNTRL_PINMUX        0x00000004
++#define FEC_RCNTRL_MII_MODE        0x00000004
++
++/* Make MII read/write commands.
++ */
++#define mk_mii_write(REG, VAL, PHY_ADDR)    (0x50020000 | (((REG) & 0x1f) << 18) | \
++                ((VAL) & 0xffff) | ((PHY_ADDR) << 23))
++
++static void mpc885ads_scc_phy_init(char phy_addr)
++{
++	volatile immap_t *immap;
++	volatile fec_t *fecp;
++	bd_t *bd;
++
++	bd = (bd_t *) __res;
++	immap = (immap_t *) IMAP_ADDR;	/* pointer to internal registers */
++	fecp = &(immap->im_cpm.cp_fec);
++
++	/* Enable MII pins of the FEC1
++	 */
++	setbits16(&immap->im_ioport.iop_pdpar, 0x0080);
++	clrbits16(&immap->im_ioport.iop_pddir, 0x0080);
++	/* Set MII speed to 2.5 MHz
++	 */
++	out_be32(&fecp->fec_mii_speed,
++		 ((((bd->bi_intfreq + 4999999) / 2500000) / 2) & 0x3F) << 1);
++
++	/* Enable FEC pin MUX
++	 */
++	setbits32(&fecp->fec_ecntrl, MII_ECNTRL_PINMUX);
++	setbits32(&fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);
++
++	out_be32(&fecp->fec_mii_data,
++		 mk_mii_write(MII_BMCR, BMCR_ISOLATE, phy_addr));
++	udelay(100);
++	out_be32(&fecp->fec_mii_data,
++		 mk_mii_write(MII_ADVERTISE,
++			      ADVERTISE_10HALF | ADVERTISE_CSMA, phy_addr));
++	udelay(100);
++
++	/* Disable FEC MII settings
++	 */
++	clrbits32(&fecp->fec_ecntrl, MII_ECNTRL_PINMUX);
++	clrbits32(&fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);
++	out_be32(&fecp->fec_mii_speed, 0);
++}
++
++static int mpc885ads_platform_notify(struct device *dev)
++{
++	static struct {
++		const char *bus_id;
++		void (*rtn) (struct platform_device * pdev, int idx);
++	} dev_map[] = {
++		{
++		"fsl-cpm-fec", mpc885ads_fixup_fec_enet_pdata}, {
++	"fsl-cpm-scc", mpc885ads_fixup_scc_enet_pdata},};
++	struct platform_device *pdev;
++	int i, j, idx;
++	const char *s;
++	if (dev && dev->bus_id)
++		for (i = 0; i < ARRAY_SIZE(dev_map); i++) {
++			idx = -1;
++
++			if ((s = strrchr(dev->bus_id, '.')) != NULL)
++				idx = (int)simple_strtol(s + 1, NULL, 10);
++			else
++				s = dev->bus_id;
++			j = s - dev->bus_id;
++			if (!strncmp(dev->bus_id, dev_map[i].bus_id, j)) {
++				pdev =
++				    container_of(dev, struct platform_device,
++						 dev);
++				dev_map[i].rtn(pdev, idx);
++			}
++		}
++	return 0;
++}
++
++int __init mpc885ads_init(void)
++{
++	printk(KERN_NOTICE "mpc885ads: Init\n");
++
++	platform_notify = mpc885ads_platform_notify;
++
++	identify_ppc_sys_by_name(BOARD_CHIP_NAME);
++
++#ifdef CONFIG_MPC8xx_SECOND_ETH_SCC3
++	ppc_sys_device_remove(MPC8xx_CPM_FEC2);
++#endif
++#ifdef CONFIG_MPC8xx_SECOND_ETH_FEC2
++	ppc_sys_device_remove(MPC8xx_CPM_SCC3);
++#endif
++
++	ppc_sys_device_remove(MPC8xx_CPM_SCC1);
++	ppc_sys_device_remove(MPC8xx_CPM_SCC2);
++	ppc_sys_device_remove(MPC8xx_CPM_SCC4);
++	ppc_sys_device_remove(MPC8xx_CPM_SMC1);
++	ppc_sys_device_remove(MPC8xx_CPM_SMC2);
++
++	return 0;
++}
++
++arch_initcall(mpc885ads_init);
+diff --git a/arch/ppc/platforms/pq2ads.h b/arch/ppc/platforms/pq2ads.h
+index 067d9a5..6b26dd3 100644
+--- a/arch/ppc/platforms/pq2ads.h
++++ b/arch/ppc/platforms/pq2ads.h
+@@ -13,6 +13,10 @@
+ 
+ #include <asm/ppcboot.h>
+ 
++#if defined(CONFIG_ADS8272)
++#define BOARD_CHIP_NAME "8272"
++#endif
++
+ /* Memory map is configured by the PROM startup.
+  * We just map a few things we need.  The CSR is actually 4 byte-wide
+  * registers that can be accessed as 8-, 16-, or 32-bit values.
+diff --git a/arch/ppc/platforms/pq2ads_pd.h b/arch/ppc/platforms/pq2ads_pd.h
+new file mode 100644
+index 0000000..5b5e92d
+--- /dev/null
++++ b/arch/ppc/platforms/pq2ads_pd.h
+@@ -0,0 +1,114 @@
++#ifndef __PQ2ADS_PD_H
++#define __PQ2ADS_PD_H
++/*
++ * arch/ppc/platforms/82xx/pq2ads_pd.h
++ *
++ * Some defines for MPC82xx board-specific PlatformDevice descriptions
++ *
++ * 2005 (c) MontaVista Software, Inc.
++ * Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++/* FCC1 Clock Source Configuration.  These can be redefined in the board specific file.
++   Can only choose from CLK9-12 */
++
++#define F1_RXCLK	11
++#define F1_TXCLK	10
++
++/* FCC2 Clock Source Configuration.  These can be redefined in the board specific file.
++   Can only choose from CLK13-16 */
++#define F2_RXCLK	15
++#define F2_TXCLK	16
++
++/* FCC3 Clock Source Configuration.  These can be redefined in the board specific file.
++   Can only choose from CLK13-16 */
++#define F3_RXCLK	13
++#define F3_TXCLK	14
++
++/* Automatically generates register configurations */
++#define PC_CLK(x)	((uint)(1<<(x-1)))	/* FCC CLK I/O ports */
++
++#define CMXFCR_RF1CS(x)	((uint)((x-5)<<27))	/* FCC1 Receive Clock Source */
++#define CMXFCR_TF1CS(x)	((uint)((x-5)<<24))	/* FCC1 Transmit Clock Source */
++#define CMXFCR_RF2CS(x)	((uint)((x-9)<<19))	/* FCC2 Receive Clock Source */
++#define CMXFCR_TF2CS(x) ((uint)((x-9)<<16))	/* FCC2 Transmit Clock Source */
++#define CMXFCR_RF3CS(x)	((uint)((x-9)<<11))	/* FCC3 Receive Clock Source */
++#define CMXFCR_TF3CS(x) ((uint)((x-9)<<8))	/* FCC3 Transmit Clock Source */
++
++#define PC_F1RXCLK	PC_CLK(F1_RXCLK)
++#define PC_F1TXCLK	PC_CLK(F1_TXCLK)
++#define CMX1_CLK_ROUTE	(CMXFCR_RF1CS(F1_RXCLK) | CMXFCR_TF1CS(F1_TXCLK))
++#define CMX1_CLK_MASK	((uint)0xff000000)
++
++#define PC_F2RXCLK	PC_CLK(F2_RXCLK)
++#define PC_F2TXCLK	PC_CLK(F2_TXCLK)
++#define CMX2_CLK_ROUTE	(CMXFCR_RF2CS(F2_RXCLK) | CMXFCR_TF2CS(F2_TXCLK))
++#define CMX2_CLK_MASK	((uint)0x00ff0000)
++
++#define PC_F3RXCLK	PC_CLK(F3_RXCLK)
++#define PC_F3TXCLK	PC_CLK(F3_TXCLK)
++#define CMX3_CLK_ROUTE	(CMXFCR_RF3CS(F3_RXCLK) | CMXFCR_TF3CS(F3_TXCLK))
++#define CMX3_CLK_MASK	((uint)0x0000ff00)
++
++/* I/O Pin assignment for FCC1.  I don't yet know the best way to do this,
++ * but there is little variation among the choices.
++ */
++#define PA1_COL		0x00000001U
++#define PA1_CRS		0x00000002U
++#define PA1_TXER	0x00000004U
++#define PA1_TXEN	0x00000008U
++#define PA1_RXDV	0x00000010U
++#define PA1_RXER	0x00000020U
++#define PA1_TXDAT	0x00003c00U
++#define PA1_RXDAT	0x0003c000U
++#define PA1_PSORA0	(PA1_RXDAT | PA1_TXDAT)
++#define PA1_PSORA1	(PA1_COL | PA1_CRS | PA1_TXER | PA1_TXEN | \
++		PA1_RXDV | PA1_RXER)
++#define PA1_DIRA0	(PA1_RXDAT | PA1_CRS | PA1_COL | PA1_RXER | PA1_RXDV)
++#define PA1_DIRA1	(PA1_TXDAT | PA1_TXEN | PA1_TXER)
++
++
++/* I/O Pin assignment for FCC2.  I don't yet know the best way to do this,
++ * but there is little variation among the choices.
++ */
++#define PB2_TXER	0x00000001U
++#define PB2_RXDV	0x00000002U
++#define PB2_TXEN	0x00000004U
++#define PB2_RXER	0x00000008U
++#define PB2_COL		0x00000010U
++#define PB2_CRS		0x00000020U
++#define PB2_TXDAT	0x000003c0U
++#define PB2_RXDAT	0x00003c00U
++#define PB2_PSORB0	(PB2_RXDAT | PB2_TXDAT | PB2_CRS | PB2_COL | \
++		PB2_RXER | PB2_RXDV | PB2_TXER)
++#define PB2_PSORB1	(PB2_TXEN)
++#define PB2_DIRB0	(PB2_RXDAT | PB2_CRS | PB2_COL | PB2_RXER | PB2_RXDV)
++#define PB2_DIRB1	(PB2_TXDAT | PB2_TXEN | PB2_TXER)
++
++
++/* I/O Pin assignment for FCC3.  I don't yet know the best way to do this,
++ * but there is little variation among the choices.
++ */
++#define PB3_RXDV	0x00004000U
++#define PB3_RXER	0x00008000U
++#define PB3_TXER	0x00010000U
++#define PB3_TXEN	0x00020000U
++#define PB3_COL		0x00040000U
++#define PB3_CRS		0x00080000U
++#define PB3_TXDAT	0x0f000000U
++#define PB3_RXDAT	0x00f00000U
++#define PB3_PSORB0	(PB3_RXDAT | PB3_TXDAT | PB3_CRS | PB3_COL | \
++		PB3_RXER | PB3_RXDV | PB3_TXER | PB3_TXEN)
++#define PB3_PSORB1	0
++#define PB3_DIRB0	(PB3_RXDAT | PB3_CRS | PB3_COL | PB3_RXER | PB3_RXDV)
++#define PB3_DIRB1	(PB3_TXDAT | PB3_TXEN | PB3_TXER)
++
++#define FCC_MEM_OFFSET(x) (CPM_FCC_SPECIAL_BASE + (x*128))
++#define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0)
++#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(1)
++
++#endif
 
-Suggestions?
-
-Best regard,
-
-Alan
-
-/ # dmesg
-...
-usbmon: debugfs is not available
-2005 April 22 USB 1.1 'Open' Host Controller (OHCI) Driver (PPC SOC)
-block sizes: ed 64 td 64
-initializing PPC-SOC USB Controller
-ppc-soc-ohci ppc-soc-ohci: USB Host Controller
-ppc-soc-ohci ppc-soc-ohci: new USB bus registered, assigned bus number 1
-ppc-soc-ohci ppc-soc-ohci: irq 44, io mem 0xf0001000
-ppc-soc-ohci ppc-soc-ohci: resetting from state 'reset', control =3D 0x0
-ppc-soc-ohci ppc-soc-ohci: OHCI controller state
-ppc-soc-ohci ppc-soc-ohci: OHCI 1.0, NO legacy support registers
-ppc-soc-ohci ppc-soc-ohci: control 0x083 HCFS=3Doperational CBSR=3D3
-ppc-soc-ohci ppc-soc-ohci: cmdstatus 0x00000 SOC=3D0
-ppc-soc-ohci ppc-soc-ohci: intrstatus 0x00000044 RHSC SF
-ppc-soc-ohci ppc-soc-ohci: intrenable 0x8000001a MIE UE RD WDH
-ppc-soc-ohci ppc-soc-ohci: hcca frame #0005
-ppc-soc-ohci ppc-soc-ohci: roothub.a 02001202 POTPGT=3D2 NOCP NPS NDP=3D2(2=
-)
-ppc-soc-ohci ppc-soc-ohci: roothub.b 00000000 PPCM=3D0000 DR=3D0000
-ppc-soc-ohci ppc-soc-ohci: roothub.status 00008000 DRWE
-ppc-soc-ohci ppc-soc-ohci: roothub.portstatus [0] 0x00000100 PPS
-ppc-soc-ohci ppc-soc-ohci: roothub.portstatus [1] 0x00000100 PPS
-ppc-soc-ohci ppc-soc-ohci: created debug files
-usb usb1: default language 0x0409
-usb usb1: new device strings: Mfr=3D3, Product=3D2, SerialNumber=3D1
-usb usb1: Product: USB Host Controller
-usb usb1: Manufacturer: Linux 2.6.14 ohci_hcd
-usb usb1: SerialNumber: PPC-SOC USB
-usb usb1: adding 1-0:1.0 (config #1, interface 0)
-hub 1-0:1.0: usb_probe_interface
-hub 1-0:1.0: usb_probe_interface - got id
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 2 ports detected
-hub 1-0:1.0: standalone hub
-hub 1-0:1.0: ganged power switching
-hub 1-0:1.0: global over-current protection
-hub 1-0:1.0: power on to power good time: 4ms
-hub 1-0:1.0: local power source is good
-hub 1-0:1.0: no over-current condition exists
-hub 1-0:1.0: enabling power on all ports
-ohci_hcd: 2005 April 22 USB 1.1 'Open' Host Controller (OHCI) Driver (PCI)
-ohci_hcd: block sizes: ed 64 td 64
-usbcore: registered new driver usbhid
-drivers/usb/input/hid-core.c: v2.6:USB HID core driver
-hub 1-0:1.0: state 5 ports 2 chg 0000 evt 0000
-Serial: MPC52xx PSC driver
-ttyS0 at MMIO 0xf0002000 (irq =3D 39) is a MPC52xx PSC
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered
-RAMDISK driver initialized: 64 RAM disks of 4096K size 1024 blocksize
-eth0: Phy @ 0x0, type LXT971 (0x001378e2)
-Generic platform RAM MTD, (c) 2004 Simtec Electronics
-mice: PS/2 mouse device common for all mice
-NET: Registered protocol family 2
-IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-TCP established hash table entries: 4096 (order: 2, 16384 bytes)
-TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
-TCP: Hash tables configured (established 4096 bind 4096)
-TCP reno registered
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-RAMDISK: Compressed image found at block 0
-VFS: Mounted root (romfs filesystem) readonly.
-Freeing unused kernel memory: 108k init
-hub 1-0:1.0: state 5 ports 2 chg 0000 evt 0002
-ppc-soc-ohci ppc-soc-ohci: GetStatus roothub.portstatus [0] =3D 0x00010301 =
-CSC
-LSDA PPS CCS
-hub 1-0:1.0: port 1, status 0301, change 0001, 1.5 Mb/s
-hub 1-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x301
-ppc-soc-ohci ppc-soc-ohci: GetStatus roothub.portstatus [0] =3D 0x00100303
-PRSC LSDA PPS PES CCS
-usb 1-1: new low speed USB device using ppc-soc-ohci and address 2
-ppc-soc-ohci ppc-soc-ohci: GetStatus roothub.portstatus [0] =3D 0x00100303
-PRSC LSDA PPS PES CCS
-usb 1-1: skipped 1 descriptor after interface
-usb 1-1: default language 0x0409
-usb 1-1: new device strings: Mfr=3D4, Product=3D32, SerialNumber=3D0
-usb 1-1: Product: WingMan Strike Force 3D
-usb 1-1: Manufacturer: Logitech Inc.
-usb 1-1: adding 1-1:1.0 (config #1, interface 0)
-usbhid 1-1:1.0: usb_probe_interface
-usbhid 1-1:1.0: usb_probe_interface - got id
-drivers/usb/input/hid-core.c: timeout initializing reports
-
-Force feedback for Logitech force feedback devices by Johann Deneux <
-johann.deneux@it.uu.se>
-input: Logitech Inc. WingMan Strike Force 3D//class/input as input0
-evbug.c: Connected device: "Logitech Inc. WingMan Strike Force 3D",
-usb-PPC-SOC USB-1/input0
-input<7>evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 0,
-Value: 620
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 1, Value: 536
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 5, Value: 140
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 6, Value: 126
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0
-: USB HID v1.00 Joystick [Logitech Inc. WingMan Strike Force 3D] on
-usb-PPC-SOC USB-1
-hub 1-0:1.0: state 5 ports 2 chg 0000 evt 0002
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 0, Value: 619
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 5, Value: 141
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 0, Value: 618
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 0, Value: 624
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 0, Value: 618
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0
-/ # cat /dev/input/event2
-cat: /dev/input/event2: No such device
-
-------=_Part_2315_17437247.1133191649045
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi all,<br>
-I am trying use Logitech WingMan Strike Force 3D on Lite5200 board. I
-am using linux-2.6.14 Denx's tree, just selecting this options:<br>
-<br>
-CONFIG_INPUT=3Dy<br>
-CONFIG_INPUT_JOYDEV=3Dy<br>
-CONFIG_INPUT_EVDEV=3Dy<br>
-CONFIG_INPUT_EVBUG=3Dy<br>
-<br>
-and<br>
-<br>
-CONFIG_USB_HID=3Dy<br>
-CONFIG_USB_HIDINPUT=3Dy<br>
-CONFIG_HID_FF=3Dy<br>
-CONFIG_LOGITECH_FF=3Dy<br>
-<br>
-As my device ID is not listed in hid-ff.c and hid-lgff.c, then I mapped it:=
-<br>
-<p>drivers/usb/input/hid-ff.c :<br>
-{0x46d, 0xc285, hid_lgff_init}, // Logitech Wingman Strike Force 3d</p>
-
-=09
-<p>drivers/usb/input/hid-lgff.c<br>
-{0x046d, 0xc285, ff_joystick},</p>
-(I need do it in the PC to force feedback work fine too)<br>
-<br>
-But the problem is the driver is not working correctly, if I try open
-/dev/input/event0 it return &quot;No such device&quot;, but as you can see =
-below
-evbug.c show correctly all joystick events.<br>
-<br>
-Suggestions?<br>
-<br>
-Best regard,<br>
-<br>
-Alan<br>
-<br>
-/ # dmesg<br>
-...<br>
-usbmon: debugfs is not available<br>
-2005 April 22 USB 1.1 'Open' Host Controller (OHCI) Driver (PPC SOC)<br>
-block sizes: ed 64 td 64<br>
-initializing PPC-SOC USB Controller<br>
-ppc-soc-ohci ppc-soc-ohci: USB Host Controller<br>
-ppc-soc-ohci ppc-soc-ohci: new USB bus registered, assigned bus number 1<br=
->
-ppc-soc-ohci ppc-soc-ohci: irq 44, io mem 0xf0001000<br>
-ppc-soc-ohci ppc-soc-ohci: resetting from state 'reset', control =3D 0x0<br=
->
-ppc-soc-ohci ppc-soc-ohci: OHCI controller state<br>
-ppc-soc-ohci ppc-soc-ohci: OHCI 1.0, NO legacy support registers<br>
-ppc-soc-ohci ppc-soc-ohci: control 0x083 HCFS=3Doperational CBSR=3D3<br>
-ppc-soc-ohci ppc-soc-ohci: cmdstatus 0x00000 SOC=3D0<br>
-ppc-soc-ohci ppc-soc-ohci: intrstatus 0x00000044 RHSC SF<br>
-ppc-soc-ohci ppc-soc-ohci: intrenable 0x8000001a MIE UE RD WDH<br>
-ppc-soc-ohci ppc-soc-ohci: hcca frame #0005<br>
-ppc-soc-ohci ppc-soc-ohci: roothub.a 02001202 POTPGT=3D2 NOCP NPS NDP=3D2(2=
-)<br>
-ppc-soc-ohci ppc-soc-ohci: roothub.b 00000000 PPCM=3D0000 DR=3D0000<br>
-ppc-soc-ohci ppc-soc-ohci: roothub.status 00008000 DRWE<br>
-ppc-soc-ohci ppc-soc-ohci: roothub.portstatus [0] 0x00000100 PPS<br>
-ppc-soc-ohci ppc-soc-ohci: roothub.portstatus [1] 0x00000100 PPS<br>
-ppc-soc-ohci ppc-soc-ohci: created debug files<br>
-usb usb1: default language 0x0409<br>
-usb usb1: new device strings: Mfr=3D3, Product=3D2, SerialNumber=3D1<br>
-usb usb1: Product: USB Host Controller<br>
-usb usb1: Manufacturer: Linux 2.6.14 ohci_hcd<br>
-usb usb1: SerialNumber: PPC-SOC USB<br>
-usb usb1: adding 1-0:1.0 (config #1, interface 0)<br>
-hub 1-0:1.0: usb_probe_interface<br>
-hub 1-0:1.0: usb_probe_interface - got id<br>
-hub 1-0:1.0: USB hub found<br>
-hub 1-0:1.0: 2 ports detected<br>
-hub 1-0:1.0: standalone hub<br>
-hub 1-0:1.0: ganged power switching<br>
-hub 1-0:1.0: global over-current protection<br>
-hub 1-0:1.0: power on to power good time: 4ms<br>
-hub 1-0:1.0: local power source is good<br>
-hub 1-0:1.0: no over-current condition exists<br>
-hub 1-0:1.0: enabling power on all ports<br>
-ohci_hcd: 2005 April 22 USB 1.1 'Open' Host Controller (OHCI) Driver (PCI)<=
-br>
-ohci_hcd: block sizes: ed 64 td 64<br>
-usbcore: registered new driver usbhid<br>
-drivers/usb/input/hid-core.c: v2.6:USB HID core driver<br>
-hub 1-0:1.0: state 5 ports 2 chg 0000 evt 0000<br>
-Serial: MPC52xx PSC driver<br>
-ttyS0 at MMIO 0xf0002000 (irq =3D 39) is a MPC52xx PSC<br>
-io scheduler noop registered<br>
-io scheduler anticipatory registered<br>
-io scheduler deadline registered<br>
-io scheduler cfq registered<br>
-RAMDISK driver initialized: 64 RAM disks of 4096K size 1024 blocksize<br>
-eth0: Phy @ 0x0, type LXT971 (0x001378e2)<br>
-Generic platform RAM MTD, (c) 2004 Simtec Electronics<br>
-mice: PS/2 mouse device common for all mice<br>
-NET: Registered protocol family 2<br>
-IP route cache hash table entries: 1024 (order: 0, 4096 bytes)<br>
-TCP established hash table entries: 4096 (order: 2, 16384 bytes)<br>
-TCP bind hash table entries: 4096 (order: 2, 16384 bytes)<br>
-TCP: Hash tables configured (established 4096 bind 4096)<br>
-TCP reno registered<br>
-TCP bic registered<br>
-NET: Registered protocol family 1<br>
-NET: Registered protocol family 17<br>
-RAMDISK: Compressed image found at block 0<br>
-VFS: Mounted root (romfs filesystem) readonly.<br>
-Freeing unused kernel memory: 108k init<br>
-hub 1-0:1.0: state 5 ports 2 chg 0000 evt 0002<br>
-ppc-soc-ohci ppc-soc-ohci: GetStatus roothub.portstatus [0] =3D 0x00010301 =
-CSC LSDA PPS CCS<br>
-hub 1-0:1.0: port 1, status 0301, change 0001, 1.5 Mb/s<br>
-hub 1-0:1.0: debounce: port 1: total 100ms stable 100ms status 0x301<br>
-ppc-soc-ohci ppc-soc-ohci: GetStatus roothub.portstatus [0] =3D 0x00100303 =
-PRSC LSDA PPS PES CCS<br>
-usb 1-1: new low speed USB device using ppc-soc-ohci and address 2<br>
-ppc-soc-ohci ppc-soc-ohci: GetStatus roothub.portstatus [0] =3D 0x00100303 =
-PRSC LSDA PPS PES CCS<br>
-usb 1-1: skipped 1 descriptor after interface<br>
-usb 1-1: default language 0x0409<br>
-usb 1-1: new device strings: Mfr=3D4, Product=3D32, SerialNumber=3D0<br>
-usb 1-1: Product: WingMan Strike Force 3D<br>
-usb 1-1: Manufacturer: Logitech Inc.<br>
-usb 1-1: adding 1-1:1.0 (config #1, interface 0)<br>
-usbhid 1-1:1.0: usb_probe_interface<br>
-usbhid 1-1:1.0: usb_probe_interface - got id<br>
-drivers/usb/input/hid-core.c: timeout initializing reports<br>
-<br>
-Force feedback for Logitech force feedback devices by Johann Deneux &lt;<a =
-href=3D"mailto:johann.deneux@it.uu.se">johann.deneux@it.uu.se</a>&gt;<br>
-input: Logitech Inc. WingMan Strike Force 3D//class/input as input0<br>
-evbug.c: Connected device: &quot;Logitech Inc. WingMan Strike Force 3D&quot=
-;, usb-PPC-SOC USB-1/input0<br>
-input&lt;7&gt;evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code:=
- 0, Value: 620<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 1, Value: 536=
-<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 5, Value: 140=
-<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 6, Value: 126=
-<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0<b=
-r>
-: USB HID v1.00 Joystick [Logitech Inc. WingMan Strike Force 3D] on usb-PPC=
--SOC USB-1<br>
-hub 1-0:1.0: state 5 ports 2 chg 0000 evt 0002<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 0, Value: 619=
-<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0<b=
-r>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 5, Value: 141=
-<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0<b=
-r>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 0, Value: 618=
-<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0<b=
-r>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 0, Value: 624=
-<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0<b=
-r>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 3, Code: 0, Value: 618=
-<br>
-evbug.c: Event. Dev: usb-PPC-SOC USB-1/input0, Type: 0, Code: 0, Value: 0<b=
-r>
-/ # cat /dev/input/event2<br>
-cat: /dev/input/event2: No such device<br>
-<br>
-<br>
-<br>
-
-------=_Part_2315_17437247.1133191649045--
+--------------050206010306050402000906--
