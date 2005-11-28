@@ -1,14 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-Message-ID: <17290.28508.336476.478948@cargo.ozlabs.ibm.com>
-Date: Mon, 28 Nov 2005 13:45:48 +1100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Paul Mackerras <paulus@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1133016287.4044.65.camel@baythorne.infradead.org>
-References: <1133016287.4044.65.camel@baythorne.infradead.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Make ARCH=ppc build again with new syscall path
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B4283687DE
+	for <linuxppc-dev@ozlabs.org>; Mon, 28 Nov 2005 13:58:20 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17290.26688.710369.613144@cargo.ozlabs.ibm.com>
+References: <20051126113805.709ee538.pochini@shiny.it>
+	<17290.26688.710369.613144@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Mon, 28 Nov 2005 13:52:48 +1100
+Message-Id: <1133146369.7768.170.camel@gaston>
+Mime-Version: 1.0
+Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: CPU off power consumption
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,18 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse writes:
+On Mon, 2005-11-28 at 13:15 +1100, Paul Mackerras wrote:
+> Giuliano Pochini writes:
+> 
+> > Out of curiosity, what's the difference between a cpu that has never been
+> > enabled and one that has been disabled with echo 0>/sys/.../online ? It
+> > happens that when I boot with maxcpus=0 the temperature always stays low
+> > enoung that the fan never spins up. If I enable and then I immediately
+> > disable the 2nd cpu, the temperature goes a few degrees up. I have a dual
+> > G4-MDD.
+> 
+> Interesting.  A cpu that has been disabled will be in sleep mode with
+> interrupts disabled and its caches flushed.  One that has never been
+> started may possibly be held in the reset state.  The way to check
+> would be to check the state of the GPIO register that controls the
+> soft reset line of the second CPU.
 
-> This makes ARCH=ppc build in your powerpc tree again, with the new
-> syscall entry/exit path. 
+No, I think CPUs that have not been started are held in a similar sleep
+loop in ROM. I don't see right away why there would be any power
+consumption difference unless some bug causing us to never actually call
+the sleep loop ....
 
-Hmmm.  If we need to do this then maybe we should just get rid of the
-arch/ppc versions of the relevant files and make ARCH=ppc use the
-versions from arch/powerpc.
-
-What do people think?  Do we make ARCH=ppc use more and more stuff
-from arch/powerpc, and delete the duplicates from arch/ppc, or do
-people want to be conservative and keep arch/ppc largely unchanged?
-(I would prefer the former, myself.)
-
-Paul.
+Ben.
