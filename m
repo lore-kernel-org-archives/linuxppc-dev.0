@@ -1,21 +1,23 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F186968829
+Return-Path: <pantelis.antoniou@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.199])
+	by ozlabs.org (Postfix) with ESMTP id 7713168845
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Nov 2005 07:30:25 +1100 (EST)
-Date: Mon, 28 Nov 2005 12:48:00 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Message-ID: <20051128144800.GB25414@logos.cnet>
-References: <438B379B.6090904@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <438B379B.6090904@ru.mvista.com>
-Cc: BLandau@nds.com, linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] ppc32: Adds MPC885ADS,
-	MPC866ADS and MPC8272ADS-specific platform stuff for fs_enet
+	Tue, 29 Nov 2005 07:53:07 +1100 (EST)
+Received: by xproxy.gmail.com with SMTP id h29so2148751wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 28 Nov 2005 12:53:05 -0800 (PST)
+From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Date: Mon, 28 Nov 2005 23:00:54 +0200
+References: <20051128141042.GR7163@cathedrallabs.org>
+In-Reply-To: <20051128141042.GR7163@cathedrallabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200511282300.54905.pantelis.antoniou@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [RFC] add PHY support to AM79C874
+Reply-To: pantelis.antoniou@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,11 +28,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Nov 28, 2005 at 08:00:11PM +0300, Vitaly Bordug wrote:
-> Added proper ppc_sys identification and fs_platform_info's for MPC 885ADS, 
-> 866ADS and 8272ADS. Assuming setbitsXX/clrbitsXX patch is applied.
+On Monday 28 November 2005 16:10, Aristeu Sergio Rozanski Filho wrote:
+> This is a simple port from old fec driver to PHY layer to support AMD
+> AM79C874 PHY.
+> As I don't have the hardware to test this, all kinds of feedback are
+> most welcome.
+> Thanks,
+> 
+> -- 
+> Aristeu
 > 
 > 
-> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 
-Looks great now for the parts I can comment on...
+Looks fine to me...
+
+Regards
+
+Pantelis
