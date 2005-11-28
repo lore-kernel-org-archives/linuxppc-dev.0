@@ -1,16 +1,15 @@
-Return-Path: <BLandau@nds.com>
-Received: from ILEX5.IL.NDS.COM (jeru1.ndsisrael.com [192.118.34.248])
-	by ozlabs.org (Postfix) with ESMTP id B4441681BE
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15803.mail.cnb.yahoo.com (web15803.mail.cnb.yahoo.com
+	[202.165.102.83]) by ozlabs.org (Postfix) with SMTP id 55051687C7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 27 Nov 2005 21:34:30 +1100 (EST)
+	Mon, 28 Nov 2005 14:21:57 +1100 (EST)
+Message-ID: <20051128032155.18844.qmail@web15803.mail.cnb.yahoo.com>
+Date: Mon, 28 Nov 2005 11:21:55 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Sun, 27 Nov 2005 12:22:20 +0200
-Message-ID: <02AA386EB831044F8537A696BA785C7807645A@ILEX5.IL.NDS.COM>
-From: "Landau, Bracha" <BLandau@nds.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: kernel 2.6.14 on MPC8272ADS
+Content-Type: text/plain; charset=gb2312
+Subject: 8248 Reboot Puzzle
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,11 +20,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-I'm trying to move to the latest kernel release from linux 2.6.13.4 on =
-the MPC8272ADS board.
-2.6.13.4 works, but from 2.6.14 and up (I don't know where from 2.6.13.4 =
-to 2.6.14 the problem starts) the kernel crashes on bootup with the =
-message=20
-"Kernel BUG in ppc_sys_init at arch/ppc/syslib/ppc_sys_init.c:131"
-Anyone know how to fix this problem?
+I met a reboot puzzle those days. Nearly every boards
+of 20 samples had a symptom 
+that after issuing a reboot command in Linux land more
+than 10 times or so, the
+target would encounter some unexpections like hang
+after kernel uncompresing or
+reset the target when initializing USB[VT6212L] 1.1
+host controller. But I never
+see any problem if cycle power. Then I have to switch
+for a replacement method. 
+In 8248 restart function, use a GPIO to pull LOW
+POWER_RESET# to get a similar 
+result and it did solve the problem. Well, if I use
+the GPIO to pull LOW 
+HARD_RESET#, problems still existed. I use 2.4.31
+kernel.
+
+So I wonder what the problem could be according to
+your experience. Can we get
+the same result with software as POWER_RESET does? I
+also want to know more on the 
+difference among software reboot and Power On reset
+and Hard reset. I mean the
+possibble effect on target running or initialization.
+
+What I wanna to implement is a software power off and
+on operation. 
+Power-on -> waitting for power button pushing in
+u-boot -> boot the target 
+-> power off the target in Linux land by pushing the
+power button
+-> back to u-boot in a software power off state for
+next power button pressing
+-> ... 
+
+Thanks in advance for any comments/suggestion,
+
+Sam
+
+
+	
+
+	
+		
+___________________________________________________________ 
+雅虎免费G邮箱－中国第一绝无垃圾邮件骚扰超大邮箱 
+http://cn.mail.yahoo.com
