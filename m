@@ -2,16 +2,18 @@ Return-Path: <SRS0+3333510f8c06434b4596+828+infradead.org+dwmw2@baythorne.srs.in
 Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 89B2468802
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2005 11:57:34 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 0B30768842
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2005 11:57:36 +1100 (EST)
 From: David Woodhouse <dwmw2@infradead.org>
 To: linux-kernel@vger.kernel.org
+In-Reply-To: <1133225007.31573.86.camel@baythorne.infradead.org>
+References: <1133225007.31573.86.camel@baythorne.infradead.org>
 Content-Type: text/plain
-Date: Tue, 29 Nov 2005 00:57:17 +0000
-Message-Id: <1133225837.31573.110.camel@baythorne.infradead.org>
+Date: Tue, 29 Nov 2005 00:57:30 +0000
+Message-Id: <1133225850.31573.113.camel@baythorne.infradead.org>
 Mime-Version: 1.0
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, drepper@redhat.com
-Subject: [PATCH] 0/3 Add pselect/ppoll()
+Subject: [PATCH] 2/3 Add TIF_RESTORE_SIGMASK support for arch/powerpc
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +23,220 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following implementation of ppoll() and pselect() system calls
-depends on the architecture providing a TIF_RESTORE_SIGMASK flag in the
-thread_info.
+This patch implements the TIF_RESTORE_SIGMASK flag in the new
+arch/powerpc kernel, for both 32-bit and 64-bit system call paths.
 
-These system calls have to change the signal mask during their
-operation, and signal handlers must be invoked using the new, temporary
-signal mask. The old signal mask must be restored either upon successful
-exit from the system call, or upon returning from the invoked signal
-handler if the system call is interrupted. We can't simply restore the
-original signal mask and return to userspace, since the restored signal
-mask may actually block the signal which interrupted the system call.
+Mostly tested on 32-bit so far.
 
-The TIF_RESTORE_SIGMASK flag deals with this by causing the syscall exit
-path to trap into do_signal() just as TIF_SIGPENDING does, and by
-causing do_signal() to use the saved signal mask instead of the current
-signal mask when setting up the stack frame for the signal handler -- or
-by causing do_signal() to simply restore the saved signal mask in the
-case where there is no handler to be invoked.
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-The first patch implements the sys_pselect() and sys_ppoll() system
-calls, which are present only if TIF_RESTORE_SIGMASK is defined. That
-#ifdef should go away in time when all architectures have implemented
-it. The second patch implements TIF_RESTORE_SIGMASK for the PowerPC
-kernel (in the -mm tree), and the third patch then removes the
-arch-specific implementations of sys_rt_sigsuspend() and replaces them
-with generic versions using the same trick.
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 036b71d..6aa7386 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -227,7 +227,7 @@ ret_from_syscall:
+ 	MTMSRD(r10)
+ 	lwz	r9,TI_FLAGS(r12)
+ 	li	r8,-_LAST_ERRNO
+-	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_RESTOREALL)
++	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_RESTOREALL|_TIF_RESTORE_SIGMASK)
+ 	bne-	syscall_exit_work
+ 	cmplw	0,r3,r8
+ 	blt+	syscall_exit_cont
+@@ -357,7 +357,7 @@ save_user_nvgprs_cont:
+ 	lwz	r5,_MSR(r1)
+ 	andi.	r5,r5,MSR_PR
+ 	beq	ret_from_except
+-	andi.	r0,r9,_TIF_SIGPENDING
++	andi.	r0,r9,_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK
+ 	beq	ret_from_except
+ 	b	do_user_signal
+ 8:
+@@ -683,7 +683,7 @@ user_exc_return:		/* r10 contains MSR_KE
+ 	/* Check current_thread_info()->flags */
+ 	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
+ 	lwz	r9,TI_FLAGS(r9)
+-	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_RESTOREALL)
++	andi.	r0,r9,(_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_RESTOREALL|_TIF_RESTORE_SIGMASK)
+ 	bne	do_work
+ 
+ restore_user:
+@@ -917,7 +917,7 @@ recheck:
+ 	lwz	r9,TI_FLAGS(r9)
+ 	andi.	r0,r9,_TIF_NEED_RESCHED
+ 	bne-	do_resched
+-	andi.	r0,r9,_TIF_SIGPENDING
++	andi.	r0,r9,_TIF_SIGPENDING|_TIF_RESTORE_SIGMASK
+ 	beq	restore_user
+ do_user_signal:			/* r10 contains MSR_KERNEL here */
+ 	ori	r10,r10,MSR_EE
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 2eb6f54..22e592d 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -160,7 +160,7 @@ syscall_exit:
+ 	mtmsrd	r10,1
+ 	ld	r9,TI_FLAGS(r12)
+ 	li	r11,-_LAST_ERRNO
+-	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_RESTOREALL|_TIF_SAVE_NVGPRS|_TIF_NOERROR)
++	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_RESTOREALL|_TIF_SAVE_NVGPRS|_TIF_NOERROR|_TIF_RESTORE_SIGMASK)
+ 	bne-	syscall_exit_work
+ 	cmpld	r3,r11
+ 	ld	r5,_CCR(r1)
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -1177,7 +1131,7 @@ int do_signal(sigset_t *oldset, struct p
+ {
+ 	siginfo_t info;
+ 	struct k_sigaction ka;
+-	unsigned int frame, newsp;
++	unsigned int newsp;
+ 	int signr, ret;
+ 
+ #ifdef CONFIG_PPC32
+@@ -1188,11 +1142,11 @@ int do_signal(sigset_t *oldset, struct p
+ 	}
+ #endif
+ 
+-	if (!oldset)
++	if (test_thread_flag(TIF_RESTORE_SIGMASK))
++		oldset = &current->saved_sigmask;
++	else if (!oldset)
+ 		oldset = &current->blocked;
+ 
+-	newsp = frame = 0;
+-
+ 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
+ #ifdef CONFIG_PPC32
+ no_signal:
+@@ -1222,8 +1176,14 @@ no_signal:
+ 		}
+ 	}
+ 
+-	if (signr == 0)
++	if (signr == 0) {
++		/* No signal to deliver -- put the saved sigmask back */
++		if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
++			clear_thread_flag(TIF_RESTORE_SIGMASK);
++			sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
++		}
+ 		return 0;		/* no signals delivered */
++	}
+ 
+ 	if ((ka.sa.sa_flags & SA_ONSTACK) && current->sas_ss_size
+ 	    && !on_sig_stack(regs->gpr[1]))
+@@ -1256,6 +1216,10 @@ no_signal:
+ 			sigaddset(&current->blocked, signr);
+ 		recalc_sigpending();
+ 		spin_unlock_irq(&current->sighand->siglock);
++		/* A signal was successfully delivered; the saved sigmask is in
++		   its frame, and we can clear the TIF_RESTORE_SIGMASK flag */
++		if (test_thread_flag(TIF_RESTORE_SIGMASK))
++			clear_thread_flag(TIF_RESTORE_SIGMASK);
+ 	}
+ 
+ 	return ret;
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index 5462bef..7a6f0f7 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -554,11 +518,15 @@ int do_signal(sigset_t *oldset, struct p
+ 	if (test_thread_flag(TIF_32BIT))
+ 		return do_signal32(oldset, regs);
+ 
+-	if (!oldset)
++	if (test_thread_flag(TIF_RESTORE_SIGMASK))
++		oldset = &current->saved_sigmask;
++	else if (!oldset)
+ 		oldset = &current->blocked;
+ 
+ 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
+ 	if (signr > 0) {
++		int ret;
++
+ 		/* Whee!  Actually deliver the signal.  */
+ 		if (TRAP(regs) == 0x0C00)
+ 			syscall_restart(regs, &ka);
+@@ -571,7 +539,14 @@ int do_signal(sigset_t *oldset, struct p
+ 		if (current->thread.dabr)
+ 			set_dabr(current->thread.dabr);
+ 
+-		return handle_signal(signr, &ka, &info, oldset, regs);
++		ret = handle_signal(signr, &ka, &info, oldset, regs);
++
++		/* If a signal was successfully delivered, the saved sigmask is in
++		   its frame, and we can clear the TIF_RESTORE_SIGMASK flag */
++		if (ret && test_thread_flag(TIF_RESTORE_SIGMASK))
++			clear_thread_flag(TIF_RESTORE_SIGMASK);
++
++		return ret;
+ 	}
+ 
+ 	if (TRAP(regs) == 0x0C00) {	/* System Call! */
+@@ -587,6 +562,11 @@ int do_signal(sigset_t *oldset, struct p
+ 			regs->result = 0;
+ 		}
+ 	}
++	/* No signal to deliver -- put the saved sigmask back */
++	if (test_thread_flag(TIF_RESTORE_SIGMASK)) {
++		clear_thread_flag(TIF_RESTORE_SIGMASK);
++		sigprocmask(SIG_SETMASK, &current->saved_sigmask, NULL);
++	}
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
+index 989f628..70bfff2 100644
+--- a/arch/powerpc/kernel/systbl.S
++++ b/arch/powerpc/kernel/systbl.S
+@@ -321,3 +321,5 @@ SYSCALL(inotify_add_watch)
+ SYSCALL(inotify_rm_watch)
+ SYSCALL(spu_run)
+ SYSCALL(spu_create)
++COMPAT_SYS(pselect6)
++COMPAT_SYS(ppoll)	
+diff --git a/fs/compat.c b/fs/compat.c
+index 8186341..51747b9 100644
+--- a/include/asm-powerpc/thread_info.h
++++ b/include/asm-powerpc/thread_info.h
+@@ -125,6 +125,7 @@ static inline struct thread_info *curren
+ #define TIF_RESTOREALL		12	/* Restore all regs (implies NOERROR) */
+ #define TIF_SAVE_NVGPRS		13	/* Save r14-r31 in signal frame */
+ #define TIF_NOERROR		14	/* Force successful syscall return */
++#define TIF_RESTORE_SIGMASK	15	/* Restore signal mask in do_signal */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -141,10 +142,12 @@ static inline struct thread_info *curren
+ #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
+ #define _TIF_SAVE_NVGPRS	(1<<TIF_SAVE_NVGPRS)
+ #define _TIF_NOERROR		(1<<TIF_NOERROR)
++#define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
+ 
+ #define _TIF_USER_WORK_MASK	(_TIF_NOTIFY_RESUME | _TIF_SIGPENDING | \
+-				 _TIF_NEED_RESCHED | _TIF_RESTOREALL)
++				 _TIF_NEED_RESCHED | _TIF_RESTOREALL | \
++				 _TIF_RESTORE_SIGMASK)
+ #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR|_TIF_SAVE_NVGPRS)
+ 
+ #endif /* __KERNEL__ */
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index 19eaac3..a40cdff 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -298,8 +298,10 @@
+ #define __NR_inotify_rm_watch	277
+ #define __NR_spu_run		278
+ #define __NR_spu_create		279
++#define __NR_pselect6		280
++#define __NR_ppoll		281
+ 
+-#define __NR_syscalls		280
++#define __NR_syscalls		282
+ 
+ #ifdef __KERNEL__
+ #define __NR__exit __NR_exit
 
 -- 
 dwmw2
