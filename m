@@ -1,29 +1,22 @@
-Return-Path: <gil-ad@myrealbox.com>
-Received: from sa3.bezeqint.net (sa3.bezeqint.net [192.115.104.17])
-	by ozlabs.org (Postfix) with ESMTP id EAA136881C
+Return-Path: <davidkwho@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.205])
+	by ozlabs.org (Postfix) with ESMTP id CADB96881C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Nov 2005 11:40:26 +1100 (EST)
-Received: from localhost (unknown [127.0.0.1])
-	by sa3.bezeqint.net (Bezeq International SMTP out Mail Server) with
-	ESMTP id ED67733DB2 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Nov 2005 01:58:16 +0200 (IST)
-Received: from sa3.bezeqint.net ([127.0.0.1])
-	by localhost (sa3 [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 11229-09 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Nov 2005 01:58:14 +0200 (IST)
-Received: from [10.0.0.2] (unknown [82.80.62.95])
-	by sa3.bezeqint.net (Bezeq International SMTP out Mail Server) with
-	ESMTP for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Nov 2005 01:58:14 +0200 (IST)
-From: Gil Madar <gil-ad@myrealbox.com>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Date: Tue, 29 Nov 2005 01:47:05 +0200
+	Tue, 29 Nov 2005 12:06:37 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id i23so2520592wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 28 Nov 2005 17:06:36 -0800 (PST)
+Message-ID: <4dd15d180511281706q388def30r42d3452c392bc92@mail.gmail.com>
+Date: Mon, 28 Nov 2005 20:06:36 -0500
+From: David Ho <davidkwho@gmail.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20050920180758.9020C353AB3@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200511290147.05220.gil-ad@myrealbox.com>
-Subject: Problem running kernel 2.6.14 (DENX) on MPC866
-Reply-To: gil-ad@myrealbox.com
+Content-Type: text/plain; charset=ISO-8859-1
+References: <200509201117.40454.david.jander@protonic.nl>
+	<20050920180758.9020C353AB3@atlas.denx.de>
+Cc: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
+Subject: Re: Which way to store log in flash on mpc8xx?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,126 +27,86 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+Hi, just catching up on this problem as I have another unit that
+showed the same symptom.
+My system looks like this
 
-I load linux from u-boot, and manage to go all the way until the call to cpu_idle() from rest_init().
-The system claims mounts a root file system over NFS. Sniffer logs and host logs support this claim.
-If I do a while ( 1 ) printk( whatever ), just before cpu_idle(), the system continues to run.
-If I let it call cpu_idle(), the system hangs.
-If I powercycle the board, I see many occurences of exceptions in the log_buf. They all claim there has
-been an access to an invalid address as in "<4>Oops: kernel access of bad area, sig: 11".
+MPC852T
+128Mbytes SDRAM
+64Mbytes Flash
 
-The exceptions are never printed and the 'bad address' is offset 0x1C from the IMMR. The access
-is from m8xx_get_irq(). 
-Has anybody else faced similar problems?
-Note: I had to workaround the 
- ppc_md.set_rtc_time  = m8xx_set_rtc_time;
- ppc_md.get_rtc_time  = m8xx_get_rtc_time;
-initialisations in m8xx_setup.c.
-What additional modifications are needed for the MPC866?
-Is there something broken in my setup?
-Is there a need for additional information?
-As I'm doing this without an emulator, I appreciate any ideas.
+Flash partitions
+2*1.25Mbytes partitions for Kernel
+61.5Mbytes for rootfs and applications.
+Remaining 1Mbyte for U-boot, u-boot env and spare.
 
-Thanks for your time. I appreciate any response,
-Gil
+I get that same problem as well.  kernel BUG at gc.c: 139
 
-Here is a log of the run.
+I have compiled Perl, Openssl, Openssh, etc running NFS so SDRAM is
+definitely not the issue.
+
+David: have you gotten any new insights since?
+
+Regards,
+David Ho
 
 
-U-Boot 1.1.3 (Nov 22 2005 - 00:26:43)
-
-CPU:   unknown MPC86x (0x08010004) at 133 MHz: 16 kB I-Cache 8 kB D-Cache FEC present
-         *** Warning: CPU Core has Silicon Bugs -- Check the Errata ***
-Board: IDU()
-DRAM:  16 MB
-Using default environment
-
-In:    serial
-Out:   serial
-Err:   serial
-Net:   FEC ETHERNET
-Monitor Command Prompt:>setenv gatewayip 10.0.0.138;setenv ethaddr 00:01:02:03:04:05; setenv console ttyCPM0,38400n8; setenv
- ipaddr 10.0.0.4;setenv serverip 10.0.0.2;setenv hostname idu;setenv netmask 255.0.0.0; setenv rootpath /mnt/iso1
-Monitor Command Prompt:>setenv bootargs root=/dev/nfs  rw nfsroot=$(serverip):$(rootpath) console=$(console) ethaddr=$(ethad
-dr)  ip=$(ipaddr):$(serverip):$(gatewayip):$(netmask):$(hostname)::off
-Monitor Command Prompt:>tftpboot 600000 uImage
-Using FEC ETHERNET device
-TFTP from server 10.0.0.2; our IP address is 10.0.0.4
-Filename 'uImage'.
-Load address: 0x600000
-Loading: #################################################################
-         #################################################################
-         #################################################################
-         #################################################################
-         ####
-done
-Bytes transferred = 1350694 (149c26 hex)
-Monitor Command Prompt:>bootm 600000
-## Booting image at 00600000 ...
-   Image Name:   Linux-2.6.14
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1350630 Bytes =  1.3 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Current stack ends at 0x00F9DBB0 => set upper limit to 0x00800000
-## cmdline at 0x007FFF00 ... 0x007FFF90
-memstart    = 0x00000000
-memsize     = 0x01000000
-flashstart  = 0x00000000
-flashsize   = 0x00000000
-flashoffset = 0x00000000
-sramstart   = 0x00000000
-sramsize    = 0x00000000
-immr_base   = 0x0F000000
-bootflags   = 0x00000001
-intfreq     =    133 MHz
-busfreq     = 66.500 MHz
-ethaddr     = 00:01:02:03:04:05
-IP addr     = 10.0.0.4
-baudrate    =  38400 bps
-No initrd
-## Transferring control to Linux (at address 00000000) ...
-Linux version 2.6.14 (xxxx@yyyy) (gcc version 3.3.3 (DENX ELDK 3.1.1 3.3.3-10)) #44 Tue Nov 29 00:41:34 IST 2005
-Built 1 zonelists
-Kernel command line: root=/dev/nfs rw nfsroot=10.0.0.2:/mnt/iso1 console=ttyCPM0,38400n8 ethaddr=00:01:02:03:04:05 ip=10.0.0
-.4:10.0.0.2:10.0.0.138:255.0.0.0:idu::off
-PID hash table entries: 128 (order: 7, 2048 bytes)
-Decrementer Frequency = 498750000/60
-Dentry cache hash table entries: 4096 (order: 2, 16384 bytes)
-Inode-cache hash table entries: 2048 (order: 1, 8192 bytes)
-Memory: 13084k available (2364k kernel code, 656k data, 84k init, 0k highmem)
-Mount-cache hash table entries: 512
-NET: Registered protocol family 16
-NTFS driver 2.1.24 [Flags: R/W].
-JFS: nTxBlock = 102, nTxLock = 819
-Initializing Cryptographic API
-Serial: CPM driver $Revision: 0.01 $
-ttyCPM0 at MMIO 0xf000a80 (irq = 20) is a CPM UART
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered
-loop: loaded (max 8 devices)
-eth0: FEC ENET Version 0.2, FEC irq 3, addr 00:01:02:03:04:05
-NET: Registered protocol family 2
-IP route cache hash table entries: 256 (order: -2, 1024 bytes)
-TCP established hash table entries: 1024 (order: 0, 4096 bytes)
-TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
-TCP: Hash tables configured (established 1024 bind 1024)
-TCP reno registered
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-IP-Config: Complete:
-      device=eth0, addr=10.0.0.4, mask=255.0.0.0, gw=10.0.0.138,
-     host=idu, domain=, nis-domain=(none),
-     bootserver=10.0.0.2, rootserver=10.0.0.2, rootpath=
-Looking up port of RPC 100003/2 on 10.0.0.2
-Looking up port of RPC 100005/1 on 10.0.0.2
-VFS: Mounted root (nfs filesystem).
-Freeing unused kernel memory: 84k init
-
----------here the system hangs ----------------- 
+On 9/20/05, Wolfgang Denk <wd@denx.de> wrote:
+> In message <200509201117.40454.david.jander@protonic.nl> you wrote:
+> >
+> > Is there something like memtest86 for linux-ppc (i.e. written in portab=
+le C)?
+>
+> Yes, there is. Run the system with root file system mounted over NFS,
+> and then put some load on the system, like  by  compiling  the  linux
+> kernel  on  the  target.  Anything  else which adds DMA load does not
+> hurt, either. In such a situation, with a lots of  context  switches,
+> stress  on  the  memory  management  system  and having a lots of DMA
+> traffic going on you may see some memory problems. Unfortunately none
+> of the standard memory tests will catch thse, as  the  tests  usually
+> provide  only plain read / write accesses, while the problems show up
+> only in burst mode, i. e. when filling the caches and/or doing DMA.
+>
+> There is an attempt of a burst mode memory test in the  U-Boot  code,
+> but  I  have to admit that I didn't work to show the exact problem on
+> the system it was written for.
+>
+> > Hmm, but.... there is no data corruption. I have not seen one file on f=
+lash
+> > that had other data than intended, and that inspite of the GC freaking =
+out.
+>
+> Maybe there is no corruption of the data in flash. But are  you  sure
+> that  correct  data are loaded to and read from RAM? We had a similar
+> problem on a board where data got corrupted only when doing a lot  of
+> transfers flash->RAM.
+>
+> > That commit only changed 3 files, non of them directly related to jffs2=
+ code,
+>
+> This is correct.
+>
+> > and only seemed to add support for FUJITSU flash chips. What am I missi=
+ng?
+> > MTD developers say that cvs from march-2005 _is_ broken, so there must =
+be some
+>
+> Yes, of course it's broken. Like  all  computer  code.  There  are  a
+> couple  of  known  issues  (especially  with NAND flash), but I don't
+> think they could explain the type of problems you are seeing.
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+> Einstein argued that there must be simplified explanations of nature,
+> because God is not capricious or arbitrary. No  such  faith  comforts
+> the software engineer.                             - Fred Brooks, Jr.
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
