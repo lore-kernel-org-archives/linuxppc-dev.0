@@ -1,17 +1,24 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 622A06882A
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2005 00:04:11 +1100 (EST)
-Date: Tue, 29 Nov 2005 14:04:05 +0100
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Message-ID: <20051129130405.GA19793@suse.de>
+Return-Path: <ihornberger@sysgo.de>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id 209A3687DE
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2005 02:12:03 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.sysgo.com (Postfix) with ESMTP id 2515CFB85F
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2005 15:41:28 +0100 (CET)
+Received: from donald.sysgo.com (unknown [172.20.1.30])
+	by mail.sysgo.com (Postfix) with ESMTP id 123C2FB85F
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2005 15:41:28 +0100 (CET)
+Received: from iho.sysgo.com (iho.sysgo.com [172.22.47.10])
+	by donald.sysgo.com (Postfix) with ESMTP id 565AC1BA977
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2005 15:41:25 +0100 (CET)
+From: Ingo Hornberger <ihornberger@sysgo.de>
+To: linuxppc-devel list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 29 Nov 2005 15:39:47 +0100
+Message-Id: <1133275187.2664.32.camel@iho.sysgo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Subject: [PATCH] prevent stack corruption in call_prom_ret
+Subject: immap with 8xx.
+Reply-To: ihornberger@sysgo.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-Use the correct pointer to clear the memory of the return values,
-to prevent stack corruption in the callers stackframe.
+I'm currently porting an old 2.4 kernel driver to 2.6.14. I got some
+problems with the immap and idma stuff. The driver is very special and
+uses it's own dma handling, because it's too different from the default.
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+So it strongly depends on the underlying hardware. (In this case 8xx)
 
- arch/powerpc/kernel/prom_init.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+With kernel 2.4 it used the headers:
+- asm/commproc.h
+- asm/8xx_immap.h
 
-Index: linux-2.6.15-rc3-olh/arch/powerpc/kernel/prom_init.c
-===================================================================
---- linux-2.6.15-rc3-olh.orig/arch/powerpc/kernel/prom_init.c
-+++ linux-2.6.15-rc3-olh/arch/powerpc/kernel/prom_init.c
-@@ -265,7 +265,7 @@ static int __init call_prom_ret(const ch
- 	va_end(list);
- 
- 	for (i = 0; i < nret; i++)
--		rets[nargs+i] = 0;
-+		args.args[nargs+i] = 0;
- 
- 	if (enter_prom(&args, RELOC(prom_entry)) < 0)
- 		return PROM_ERROR;
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+But it seems that there was some generalization work done, which didn't
+reach the 8xx part. Particularly this means that some parts of
+'asm/commproc.h' as well as (at least) 'asm/immap_8260.h' built up a new
+header 'asm/immap_cpm2.h'.
+
+Actally I miss a file like 'asm/immap_cpm1.h'.
+If it would be the right solution to create a file like this, that's no
+problem. I only wanted to make sure that I don't do duplicated work this
+time.
+
+regards,
+	Ingo
