@@ -1,22 +1,24 @@
-Return-Path: <kernel-stuff@comcast.net>
-Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [216.148.227.85])
-	by ozlabs.org (Postfix) with ESMTP id 5B41868856
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2005 03:16:42 +1100 (EST)
-In-Reply-To: <20051129075047.GA26460@hansmi.ch>
-References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
-	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
-	<20051129000615.GA20843@hansmi.ch>
-	<68465DDA-053F-4A85-9204-549E830B2269@comcast.net>
-	<20051129075047.GA26460@hansmi.ch>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2100B419-3498-4BAF-8186-3EC06A917DF6@comcast.net>
-From: Parag Warudkar <kernel-stuff@comcast.net>
-Date: Tue, 29 Nov 2005 11:11:03 -0500
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PowerBook5,8 - TrackPad update
+Return-Path: <drow@nevyn.them.org>
+Received: from nevyn.them.org (nevyn.them.org [66.93.172.17])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AE7DB68854
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2005 03:34:08 +1100 (EST)
+Date: Tue, 29 Nov 2005 10:53:46 -0500
+From: Daniel Jacobowitz <dan@debian.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Message-ID: <20051129155346.GA25431@nevyn.them.org>
+References: <1133225007.31573.86.camel@baythorne.infradead.org>
+	<1133225852.31573.115.camel@baythorne.infradead.org>
+	<438BE48B.9060908@kolumbus.fi>
+	<1133260923.31573.131.camel@baythorne.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1133260923.31573.131.camel@baythorne.infradead.org>
+Cc: drepper@redhat.com, linuxppc-dev@ozlabs.org,
+	Mika =?iso-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
+	akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 3/3 Generic sys_rt_sigsuspend
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Nov 29, 2005 at 10:42:03AM +0000, David Woodhouse wrote:
+> I believe not. The previous versions would loop until do_signal()
+> returned non-zero; i.e. until a signal was actually delivered.
+> By returning -ERESTARTNOHAND we achieve the same effect. If there's a
+> signal delivered, that gets magically converted to -EINTR, but if
+> there's no signal delivered, the syscall gets restarted.
 
-On Nov 29, 2005, at 2:50 AM, Michael Hanselmann wrote:
-> The mouse moves, but slowly. Maybe something isn't correct yet, but it
-> works basically.
+And, crazy coincidence, I think this will fix the recently reported
+ptrace attach bug.  Right now if you ptrace a process stuck in
+sigsuspend, you can't easily force it to return to userspace.
+I'll test that if these patches are merged.
 
-Yeah, mine works like that too - but sometimes it will go left->right  
-when you moved the finger
-right->left and vice versa.
-
-> I get 256 bytes in each transfer as well, but didn't look at the bytes
-> behind 40. Maybe that'll help to make it more responsive.
-
-Nope, if yours works with 80 bytes, it only sends 80. It will still  
-work with anything > 80 but that's superfluous data.
-(E,g, Mine works even with 1024 - anything above 256 seems junk, but  
-with < 256 it dies with EOVERFLOW )
-
-Right now I have detected that byte # 13 increases when moving finger  
-along the bottom from left corner to right,
-and byte #11 changes when moved from bottom left corner to top left.  
-Gotta figure out the rest of the movement patterns
-along with how many total sensors X and Y are there and how to relate  
-the data to something to report to the input device!
-
-Hopefully Johannes will have a PowerBook with either of the 0x0214 or  
-0x0215 touchpads
-and we will make some headway!
-
-Parag
+-- 
+Daniel Jacobowitz
+CodeSourcery, LLC
