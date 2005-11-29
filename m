@@ -1,18 +1,15 @@
-Return-Path: <tharvan@inaccessnetworks.com>
-Received: from inaccessnetworks.com (node3.inaccessnetworks.com
-	[212.205.200.118]) by ozlabs.org (Postfix) with ESMTP id BF90E687F5
+Return-Path: <abutter@hotmail.com>
+Received: from hotmail.com (bay110-f8.bay110.hotmail.com [65.54.229.18])
+	by ozlabs.org (Postfix) with ESMTP id C8BDB687FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Nov 2005 22:30:33 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by inaccessnetworks.com (8.13.5/8.13.5) with ESMTP id jATBEin1001524
-	for <linuxppc-embedded@ozlabs.org>; Tue, 29 Nov 2005 13:14:44 +0200
-Date: Tue, 29 Nov 2005 13:14:42 +0200
+	Tue, 29 Nov 2005 22:48:42 +1100 (EST)
+Message-ID: <BAY110-F887C1DF4326A978907DBFAE4B0@phx.gbl>
+From: "Gao Bismar" <abutter@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
-Message-ID: <20051129111442.GB27630@inaccessnetworks.com>
+Date: Tue, 29 Nov 2005 19:31:32 +0800
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Thomas Arvanitis <tharvan@inaccessnetworks.com>
-Subject: spi on mpc82xx
+Content-Type: text/plain; charset=gb2312; format=flowed
+Subject: error when compiling glibc on cygwin
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,20 +20,175 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+I wanna complier a MPC860 crosstool on cygwin, and I use crosstool-0.38,but 
+hit on error :
 
-I was wondering what is the status for supporting spi devices with 2.6
-on an mpc82xx device (I use an mpc8275). I checked and the kernel from
-kernel.org does not include anything. Is there an spi bus
-infrastructure (like i2c) coming any time soon, where one can add
-support for specific chips, and then write a driver on top of that?
-Or a plan for these things?
+powerpc-860-linux-gnu-gcc  -nostdlib -nostartfiles -o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog 
+ -Wl,-dynamic-linker=/lib/ld.so.1   
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/csu/crt1.o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/csu/crti.o 
+`powerpc-860-linux-gnu-gcc  --print-file-name=crtbegin.o` 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog.o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_charmap.o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap.o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/linereader.o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/dummy-repertoire.o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/simple-hash.o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/xstrdup.o 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/xmalloc.o 
+ 
+-Wl,-rpath-link=/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc:/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/math:/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/elf:/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/dlfcn:/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/nss:/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/nis:/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/rt:/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/resolv:/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/crypt:/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/linuxthreads 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc_nonshared.a 
+-lgcc `powerpc-860-linux-gnu-gcc  --print-file-name=crtend.o` 
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/csu/crtn.o
 
-I found a patch for something like that, by Grant Likely, but I don't
-know whether I should go that way.
 
-I want to write a driver for controlling the micrel ks8995 ethernet
-switch through spi. Should I just go for a self contained driver?
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog.o(.text+0x424): 
+In function `main':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog.o(.text+0x498): 
+In function `main':: undefined reference to `open'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog.o(.text+0x4f8): 
+In function `main':: undefined reference to `__fxstat'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog.o(.text+0x530): 
+In function `main':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog.o(.text+0x5bc): 
+In function `main':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog.o(.text+0xb08): 
+In function `process_fd':: undefined reference to `read'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog.o(.text+0xbbc): 
+In function `process_fd':: undefined reference to `read'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog.o(.text+0x1044): 
+In function `print_known_names':: undefined reference to `isatty'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_charmap.o(.text+0x108): 
+In function `charmap_conversion':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_charmap.o(.text+0x170): 
+In function `charmap_conversion':: undefined reference to `open'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_charmap.o(.text+0x1c8): 
+In function `charmap_conversion':: undefined reference to `__fxstat'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_charmap.o(.text+0x200): 
+In function `charmap_conversion':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_charmap.o(.text+0x288): 
+In function `charmap_conversion':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_charmap.o(.text+0xa78): 
+In function `process_fd':: undefined reference to `read'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_charmap.o(.text+0xb2c): 
+In function `process_fd':: undefined reference to `read'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o(.text+0x254): 
+In function `charmap_readdir':: undefined reference to `__xstat'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o(.text+0x388): 
+In function `fopen_uncompressed':: undefined reference to `open'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o(.text+0x3a0): 
+In function `fopen_uncompressed':: undefined reference to `__fxstat'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o(.text+0x3c8): 
+In function `fopen_uncompressed':: undefined reference to `pipe'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o(.text+0x4b0): 
+In function `fopen_uncompressed':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o(.text+0x4b8): 
+In function `fopen_uncompressed':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o(.text+0x4dc): 
+In function `fopen_uncompressed':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o(.text+0x4e4): 
+In function `fopen_uncompressed':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/charmap-dir.o(.text+0x4ec): 
+In function `fopen_uncompressed':: undefined reference to `close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__dup'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `utime'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__libc_fcntl'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__write'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__getcwd'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__dup2'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__read'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__unlink'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__open'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__libc_read'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__xstat64'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__lxstat'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__chmod'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__isatty'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__statfs'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__chdir'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__readlink'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__mkdir'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__poll'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__statvfs64'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__pipe'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__libc_open'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__chown'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__xmknod'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__lseek'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `dup'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `atexit'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__lxstat64'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__ttyname_r'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__libc_lseek'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__rmdir'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__fstatfs'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__close'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__fxstat64'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__libc_write'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__fcntl'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__access'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__open64'
+/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/libc.so.6: 
+undefined reference to `__fstatvfs64'
+collect2: ld returned 1 exit status
+make[2]: *** 
+[/home/crosstool-0.38/build/powerpc-860-linux-gnu/gcc-2.95.3-glibc-2.2.3/build-glibc/iconv/iconv_prog] 
+Error 1
+make[2]: Leaving directory `/home/src/glibc-2.2.3/iconv'
+make[1]: *** [iconv/others] Error 2
+make[1]: Leaving directory `/home/src/glibc-2.2.3'
+make: *** [all] Error 2
 
-Thanks for you help,
--Thomas.
+I use google to search the solution but faild. Many people hit on this 
+error, but none solution was found.
+
+Any help would be very much appreciated.
+
+Thaks
+
+                                                                     abutter
+
+_________________________________________________________________
+√‚∑—œ¬‘ÿ MSN Explorer:   http://explorer.msn.com/lccn/  
