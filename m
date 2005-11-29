@@ -1,19 +1,17 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1C41968847
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2005 05:13:25 +1100 (EST)
-In-Reply-To: <1133275187.2664.32.camel@iho.sysgo.com>
-References: <1133275187.2664.32.camel@iho.sysgo.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f3e079332f2f66cb1898b288cf66e5c9@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 29 Nov 2005 13:13:33 -0500
-To: ihornberger@sysgo.com
-Cc: linuxppc-devel list <linuxppc-dev@ozlabs.org>
-Subject: Re: immap with 8xx.
+Return-Path: <otavio@debian.org>
+Received: from covilha.procergs.com.br (covilha.procergs.com.br
+	[200.198.128.244]) by ozlabs.org (Postfix) with ESMTP id 3ADCC687DE
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2005 05:24:14 +1100 (EST)
+From: Otavio Salvador <otavio@debian.org>
+To: linuxppc-dev@ozlabs.org
+Date: Tue, 29 Nov 2005 15:57:08 -0200
+Message-ID: <87fypf8hhn.fsf@nurf.casa>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="==-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
+Cc: debian-powerpc@lists.debian.org
+Subject: [PATCH] Export __flush_icache_range since flush_icache_range is
+	defined as inline
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--==-=-=
+Content-Type: multipart/mixed; boundary="=-=-="
 
-On Nov 29, 2005, at 9:39 AM, Ingo Hornberger wrote:
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-> But it seems that there was some generalization work done, which didn't
-> reach the 8xx part. Particularly this means that some parts of
-> 'asm/commproc.h' as well as (at least) 'asm/immap_8260.h' built up a 
-> new
-> header 'asm/immap_cpm2.h'.
+This change makes MOL work again since it need to use that specific symbol.
 
-That's because the cpm2 is used in more parts than just the 82xx,
-so we carved up the files to make it more useful.
+Signed-off-by: Otavio Salvador <otavio@debian.org>
 
-> Actally I miss a file like 'asm/immap_cpm1.h'.
 
-The 8xx is the only processor to use the CPM1, so just update
-the immap or 8xx files to accommodate the differences you may
-need.  There isn't a similar requirement to create a immap_cpm1.h
-file like there was for the CPM2.  What kind of updates do you need?
+=2D--
 
-Thanks.
+ arch/powerpc/kernel/ppc_ksyms.c |    2 +-
+ arch/ppc/kernel/ppc_ksyms.c     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-	-- Dan
+applies-to: 9253bd3b562d6c59044b6175883724f591697da4
+b634f3ccf73ca6502b1dd42f372a6ec6bea15ffb
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksym=
+s.c
+index af4d1bc..2647933 100644
+=2D-- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -167,7 +167,7 @@ EXPORT_SYMBOL(giveup_spe);
+ EXPORT_SYMBOL(__flush_icache_range);
+ #else
+ EXPORT_SYMBOL(flush_instruction_cache);
+=2DEXPORT_SYMBOL(flush_icache_range);
++EXPORT_SYMBOL(__flush_icache_range);
+ EXPORT_SYMBOL(flush_tlb_kernel_range);
+ EXPORT_SYMBOL(flush_tlb_page);
+ EXPORT_SYMBOL(_tlbie);
+diff --git a/arch/ppc/kernel/ppc_ksyms.c b/arch/ppc/kernel/ppc_ksyms.c
+index 66073f7..bb6a5c6 100644
+=2D-- a/arch/ppc/kernel/ppc_ksyms.c
++++ b/arch/ppc/kernel/ppc_ksyms.c
+@@ -184,7 +184,7 @@ EXPORT_SYMBOL(kernel_thread);
+=20
+ EXPORT_SYMBOL(flush_instruction_cache);
+ EXPORT_SYMBOL(giveup_fpu);
+=2DEXPORT_SYMBOL(flush_icache_range);
++EXPORT_SYMBOL(__flush_icache_range);
+ EXPORT_SYMBOL(flush_dcache_range);
+ EXPORT_SYMBOL(flush_icache_user_range);
+ EXPORT_SYMBOL(flush_dcache_page);
+
+=2D-=20
+        O T A V I O    S A L V A D O R
+=2D--------------------------------------------
+ E-mail: otavio@debian.org      UIN: 5906116
+ GNU/Linux User: 239058     GPG ID: 49A5F855
+ Home Page: http://www.freedom.ind.br/otavio
+=2D--------------------------------------------
+"Microsoft gives you Windows ... Linux gives
+ you the whole house."
+
+--=-=-=--
+
+--==-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+Comment: Processed by Mailcrypt 3.5.8+ <http://mailcrypt.sourceforge.net/>
+
+iD8DBQFDjJZ3LqiZQEml+FURAo9zAJ9HOKSDVsyiBGRbY4uXn/8DSfc33gCfTC/P
+YIjFbK4SGJUt5pRYp8ntpeM=
+=k8Ho
+-----END PGP MESSAGE-----
+--==-=-=--
