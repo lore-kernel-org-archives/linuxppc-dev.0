@@ -1,19 +1,15 @@
-Return-Path: <nathael.pajani@cpe.fr>
-Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.36])
-	by ozlabs.org (Postfix) with ESMTP id 957816883E
+Return-Path: <dwilson@dslextreme.com>
+Received: from mail5.dslextreme.com (mail5.dslextreme.com [66.51.199.81])
+	by ozlabs.org (Postfix) with SMTP id 9BBC268855
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Nov 2005 04:20:37 +1100 (EST)
-Received: from [192.52.109.152] (unknown [83.145.98.3])
-	by smtp-out.completel.net (Postfix) with ESMTP id D17AC28009E
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Nov 2005 18:20:34 +0100 (CET)
-Message-ID: <438C8E8E.3030306@cpe.fr>
-Date: Tue, 29 Nov 2005 18:23:26 +0100
-From: Nathael PAJANI <nathael.pajani@cpe.fr>
-MIME-Version: 1.0
+	Wed, 30 Nov 2005 07:42:57 +1100 (EST)
+Message-ID: <23fdca41e44a84e4a32634a.20051129124254.qjvyfba@www.dslextreme.com>
+Date: Tue, 29 Nov 2005 12:42:54 -0800 (PST)
+From: dwilson@dslextreme.com
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: USB on MPC8272
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Subject: MPC85xx i2c interface bug
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +20,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all!
+We have found a problem in the i2c-mpc.c file (linux 2.4 kernel).  The
+logic for the i2c transfer termination seems to have been inverted.
 
+The original function is:
 
-I have to support USB hcd for an Actis board based on a MPC8248 
-processor. I already have a 2.6.9 linux kernel running fine on it, and 
-actualy have to use it rather than a newer one.
-I'm actualy looking for existing or ongoing jobs.
+/* Perform one i2c_msg transfer.  It could be a read, or a write.
+ * This function assumes that the address byte has been sent
+ * already, and only handles the message contents */
+static int mpc_i2c_xfer_bytes(struct mpc_i2c_private* priv, struct
+i2c_msg* pm)
+{
+	volatile struct mpc_i2c *regs = priv->regs;
+	char *buf = pm->buf;
+	int len = pm->len;
+	int i;
+	int ret = 0;
 
+	if(pm->flags & I2C_M_RD) {
+		/* Change to read mode */
+		priv->write(&regs->i2ccr, 0, MPC_I2CCR_MTX);
 
-Mike Rapoport:
+		/* If there is only one byte, we need to TXAK now */
+		if(len == 1)
+			priv->write(&regs->i2ccr, 0, MPC_I2CCR_TXAK);
 
-When you say "I'm running linux 2.6.12.3 with "custom" USB host driver."
-Are you speaking of this one: "http://cpm2usb.sourceforge.net./" or another?
+		/* Do a dummy read, to initiate the first read */
+		priv->read(&regs->i2cdr);
+	}
 
+	for(i = 0; i < len; ++i) {
+		/* If this is a read, read a byte, otherwise, write a byte */
+		if(pm->flags & I2C_M_RD) {
+			/* Wait for the previous read to finish */
+			ret = wait_for_txcomplete(priv);
 
-Kumar Gala:
-On the thread "MPC8555 USB host support" you're asking:
-"Also, are you aware of Freescale's driver for this?"
+			if (ret)
+				return ret;
 
-Where is this support located? (which files or directories)
+			/* If this is the 2nd to last byte, send
+			 * the TXAK signal */
+			if(i == len - 2) {
+				priv->write(&regs->i2ccr, 0, MPC_I2CCR_TXAK);
+			}
 
+			/* If this is the last byte, send STOP */
+			if (i == len - 1)
+				mpc_i2c_stop(priv);
 
-Thanks.
+			buf[i] = priv->read(&regs->i2cdr);
 
+		} else {
+			/* Otherwise, it's a write */
+			priv->write(&regs->i2cdr, buf[i], MPC_I2C_FULLREG);
 
-PS: Thanks a lot for people who helped me when porting linux 2.6.13 to 
-the Actis board VSBX6560 whith MPC8560 processor. It's finished. (Or at 
-least, no bug reports yet :)
-How to commit a patch to the main kernel tree?
+			/* Wait for the transaction to complete */
+			ret = wait_for_txcomplete(priv);
+
+			if(ret)
+				return ret;
+
+			/* Return error if we didn't get the ack */
+			if((priv->read(&regs->i2csr) & MPC_I2CSR_RXAK)) {
+				printk(KERN_DEBUG "NO ACK!\n");
+				ret = -EREMOTEIO;
+			}
+		}
+
+		/* If there was an error, abort */
+		if(ret)
+			return ret;
+	}
+
+	return ret;
+}
+
+The problem is that the TXAK bit is set incorrectly: it should be set to a
+zero when acks are to be sent and then set to a 1 just before reading the
+next-to-last byte in the transfer (8555 Processor Reference Manual
+(MPC8555ERM rev1), section 11.3.1.3 and also Figure 11-8).
+
+Changes to the above code are thus:
+
+302c302
+<               priv->write(&regs->i2ccr, 0, MPC_I2CCR_MTX);
+---
+>               priv->write(&regs->i2ccr, 0, MPC_I2CCR_MTX | MPC_I2CCR_TXAK);
+306c306
+<                       priv->write(&regs->i2ccr, 0, MPC_I2CCR_TXAK);
+---
+>                       priv->write(&regs->i2ccr, MPC_I2CCR_TXAK,
+MPC_I2CCR_TXAK);
+324c324
+<                               priv->write(&regs->i2ccr, 0, MPC_I2CCR_TXAK);
+---
+>                               priv->write(&regs->i2ccr, MPC_I2CCR_TXAK,
+MPC_I2CCR_TXAK);
+
+Thanks,
+
+Dan.
