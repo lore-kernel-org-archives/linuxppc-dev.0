@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CBAE76884B
-	for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2005 18:50:52 +1100 (EST)
-Date: Tue, 29 Nov 2005 08:50:47 +0100
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Parag Warudkar <kernel-stuff@comcast.net>
-Message-ID: <20051129075047.GA26460@hansmi.ch>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (sipsolutions.net [66.160.135.76])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 585DD68802
+	for <linuxppc-dev@ozlabs.org>; Tue, 29 Nov 2005 21:38:26 +1100 (EST)
+Message-ID: <6935.131.234.232.48.1133260691.squirrel@secure.sipsolutions.net>
+In-Reply-To: <20051129075047.GA26460@hansmi.ch>
 References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
 	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
 	<20051129000615.GA20843@hansmi.ch>
 	<68465DDA-053F-4A85-9204-549E830B2269@comcast.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="qDbXVdCdHGoSgWSk"
-In-Reply-To: <68465DDA-053F-4A85-9204-549E830B2269@comcast.net>
+	<20051129075047.GA26460@hansmi.ch>
+Date: Tue, 29 Nov 2005 11:38:11 +0100 (CET)
+From: "Johannes Berg" <johannes@sipsolutions.net>
+To: "Michael Hanselmann" <linux-kernel@hansmi.ch>
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-15
 Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Parag Warudkar <kernel-stuff@comcast.net>
 Subject: Re: PowerBook5,8 - TrackPad update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,60 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Michael Hanselmann wrote:
+>> I haven't looked at your changes completely yet but are you saying it
+>> works? Meaning mouse moves properly?
+>
+> The mouse moves, but slowly. Maybe something isn't correct yet, but it
+> works basically.
 
---qDbXVdCdHGoSgWSk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+All this sounds almost like your touchpad is much more similar to the old
+one. I'll most likely have access to a new powerbook within the next two
+weeks, so I'll be able to take a look.
 
-Hello Parag
-
-On Tue, Nov 29, 2005 at 01:11:00AM -0500, Parag Warudkar wrote:
-> Is yours the 15" model or the 17"? Mine is 15" and the product id is =20
-> 0x0214.
-
-It's the 15" one.
-
-> I haven't looked at your changes completely yet but are you saying it
-> works? Meaning mouse moves properly?
-
-The mouse moves, but slowly. Maybe something isn't correct yet, but it
-works basically.
-
-> Also I find it strange that your model requires 80 bytes ATP_DATASIZE
-> - mine isn't happy at all with anything less than 256. The less number
-> of sensors you  defined is again a puzzle.
-
-That are points I need to investigate further.
-
-> If the format of the data is same (which looks like it is with your
-> model) then yes, but in my case the data arrives is 64 byte blocks -
-> there are 4 of them in one  transfer, each a reading on it's own.
-
-I get 256 bytes in each transfer as well, but didn't look at the bytes
-behind 40. Maybe that'll help to make it more responsive.
-
-> Hmm. More confusion.
-
-Oh yes. Why does Apple ship the basically same PowerBook with different
-Touchpads?
-
-Greets,
-Michael
-
---=20
-Gentoo Linux Developer using m0n0wall | http://hansmi.ch/
-
---qDbXVdCdHGoSgWSk
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFDjAhX6J0saEpRu+oRAomaAJ9RtINrl7BVjuMN+n9376vmz9N8lwCfUzVK
-MtXyHU/wRwh2XPtYIIr4Ae0=
-=wPid
------END PGP SIGNATURE-----
-
---qDbXVdCdHGoSgWSk--
+johannes
