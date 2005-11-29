@@ -1,25 +1,22 @@
-Return-Path: <SRS0+3333510f8c06434b4596+828+infradead.org+dwmw2@baythorne.srs.infradead.org>
-Received: from baythorne.infradead.org (baythorne.infradead.org [81.187.2.161])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CA67E6884E
-	for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2005 03:09:55 +1100 (EST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Daniel Jacobowitz <dan@debian.org>
-In-Reply-To: <20051129155346.GA25431@nevyn.them.org>
-References: <1133225007.31573.86.camel@baythorne.infradead.org>
-	<1133225852.31573.115.camel@baythorne.infradead.org>
-	<438BE48B.9060908@kolumbus.fi>
-	<1133260923.31573.131.camel@baythorne.infradead.org>
-	<20051129155346.GA25431@nevyn.them.org>
-Content-Type: text/plain
-Date: Tue, 29 Nov 2005 16:09:38 +0000
-Message-Id: <1133280578.31573.183.camel@baythorne.infradead.org>
-Mime-Version: 1.0
-Cc: drepper@redhat.com, linuxppc-dev@ozlabs.org,
-	Mika =?ISO-8859-1?Q?Penttil=E4?= <mika.penttila@kolumbus.fi>,
-	akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 3/3 Generic sys_rt_sigsuspend
+Return-Path: <kernel-stuff@comcast.net>
+Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [216.148.227.85])
+	by ozlabs.org (Postfix) with ESMTP id 5B41868856
+	for <linuxppc-dev@ozlabs.org>; Wed, 30 Nov 2005 03:16:42 +1100 (EST)
+In-Reply-To: <20051129075047.GA26460@hansmi.ch>
+References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
+	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
+	<20051129000615.GA20843@hansmi.ch>
+	<68465DDA-053F-4A85-9204-549E830B2269@comcast.net>
+	<20051129075047.GA26460@hansmi.ch>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2100B419-3498-4BAF-8186-3EC06A917DF6@comcast.net>
+From: Parag Warudkar <kernel-stuff@comcast.net>
+Date: Tue, 29 Nov 2005 11:11:03 -0500
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PowerBook5,8 - TrackPad update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,37 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2005-11-29 at 10:53 -0500, Daniel Jacobowitz wrote:
-> And, crazy coincidence, I think this will fix the recently reported
-> ptrace attach bug.  Right now if you ptrace a process stuck in
-> sigsuspend, you can't easily force it to return to userspace.
-> I'll test that if these patches are merged.
 
-That seems to be true. What I get with my patches is...
+On Nov 29, 2005, at 2:50 AM, Michael Hanselmann wrote:
+> The mouse moves, but slowly. Maybe something isn't correct yet, but it
+> works basically.
 
-# strace -p `pidof sigsusptest`
-Process 1954 attached - interrupt to quit
-rt_sigsuspend([])                       = ? ERESTARTNOHAND (To be restarted)
---- SIGALRM (Alarm clock) @ 0 (0) ---
-sigreturn()                             = ? (mask now [])
-fstat64(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(4, 64), ...}) = 0
-ioctl(1, TCGETS, {B115200 opost isig icanon echo ...}) = 0
-mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x3001f000
-write(1, "r is -1\n", 8)                = 8
-munmap(0x3001f000, 4096)                = 0
-exit_group(8)                           = ?
-Process 1954 detached
+Yeah, mine works like that too - but sometimes it will go left->right  
+when you moved the finger
+right->left and vice versa.
 
-... whereas without them I get not only a failure to attach, until
-there's a signal, but an unexplained SIGSEGV too...
+> I get 256 bytes in each transfer as well, but didn't look at the bytes
+> behind 40. Maybe that'll help to make it more responsive.
 
-# strace -p `pidof sigsusptest`
-Process 3105 attached - interrupt to quit
---- SIGALRM (Alarm clock) @ 0 (0) ---
-rt_sigsuspend([])                       = 14
-rt_sigsuspend([] <unfinished ...>
---- SIGSEGV (Segmentation fault) @ 0 (0) ---
-Process 3105 detached
+Nope, if yours works with 80 bytes, it only sends 80. It will still  
+work with anything > 80 but that's superfluous data.
+(E,g, Mine works even with 1024 - anything above 256 seems junk, but  
+with < 256 it dies with EOVERFLOW )
 
--- 
-dwmw2
+Right now I have detected that byte # 13 increases when moving finger  
+along the bottom from left corner to right,
+and byte #11 changes when moved from bottom left corner to top left.  
+Gotta figure out the rest of the movement patterns
+along with how many total sensors X and Y are there and how to relate  
+the data to something to report to the input device!
+
+Hopefully Johannes will have a PowerBook with either of the 0x0214 or  
+0x0215 touchpads
+and we will make some headway!
+
+Parag
