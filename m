@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 29B266885A
+Return-Path: <mike@compulab.co.il>
+Received: from alexmail (62-90-235-247.barak.net.il [62.90.235.247])
+	by ozlabs.org (Postfix) with ESMTP id 7FD1E6885A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 29 Nov 2005 19:10:54 +1100 (EST)
-To: Mike Rapoport <mike@compulab.co.il>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 29 Nov 2005 08:42:28 +0200."
-	<438BF854.1040408@compulab.co.il>
-Date: Tue, 29 Nov 2005 09:10:52 +0100
-Sender: wd@denx.de
-Message-Id: <20051129081052.77DA1353F54@atlas.denx.de>
+	Tue, 29 Nov 2005 19:19:37 +1100 (EST)
+Message-ID: <438C0E81.9000200@compulab.co.il>
+Date: Tue, 29 Nov 2005 10:17:05 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
+References: <20051129081052.77DA1353F54@atlas.denx.de>
+In-Reply-To: <20051129081052.77DA1353F54@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: SPI and USB on MPC8272 
+Subject: Re: SPI and USB on MPC8272
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +23,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <438BF854.1040408@compulab.co.il> you wrote:
+Wolfgang Denk wrote:
+
+>In message <438BF854.1040408@compulab.co.il> you wrote:
+>  
 >
-> I'm running linux 2.6.12.3 with "custom" USB host driver. I tried to add 
-...
-> <http://source.denx.net/cgi-bin/gitweb.cgi?p=linuxppc_2_4_devel.git;a=summary> 
+>>I'm running linux 2.6.12.3 with "custom" USB host driver. I tried to add 
+>>    
+>>
+>...
+>  
+>
+>><http://source.denx.net/cgi-bin/gitweb.cgi?p=linuxppc_2_4_devel.git;a=summary> 
+>>    
+>>
+>
+>What has our 2.4.25 source tree to do with your 2.6.12.3 kernel?
+>  
+>
 
-What has our 2.4.25 source tree to do with your 2.6.12.3 kernel?
+Dear Wolfgang,
+I've used the cpm_spi.[ch] from your 2.4.25 tree with my 2.6.12.3 
+kernel. As for the URL it sneaked it by mistake.
 
-Best regards,
+>Best regards,
+>
+>Wolfgang Denk
+>
+>  
+>
 
-Wolfgang Denk
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Lispers are among  the  best  grads  of  the  Sweep-It-Under-Someone-
-Else's-Carpet  School of Simulated Simplicity. [Was that sufficiently
-incendiary? :-)]  - Larry Wall in <1992Jan10.201804.11926@netlabs.com
+Sincerely yours,
+Mike Rapoport
+-----------------------------------------------------------------
+CompuLab Ltd.
+MALAT Bldg., Technion, Haifa, ISRAEL
+Mailing address: P.O. Box 66, Nesher 36770, ISRAEL
+Tel: 972-4-8290146
+Fax: 972-4-8325251
+Web: http://www.compulab.co.il
