@@ -1,24 +1,17 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from localhost.localdomain (83-102-235-87.broadband.corbina.ru
-	[83.102.235.87])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1FC436886F
+Return-Path: <s.maiti@tcs.com>
+Received: from InMumG01.tcs.com (inmumg01.tcs.com [219.64.33.12])
+	by ozlabs.org (Postfix) with ESMTP id 94D13687DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Nov 2005 21:22:57 +1100 (EST)
-Message-ID: <438D7935.20706@ru.mvista.com>
-Date: Wed, 30 Nov 2005 13:04:37 +0300
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Wed, 30 Nov 2005 22:24:51 +1100 (EST)
+In-Reply-To: <20051130010005.3E86868862@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: "David H. Lynch Jr" <dhlii@comcast.net>
-References: <20051125214126.15F9E6884D@ozlabs.org>	<Pine.WNT.4.61.0511291821320.3620@holyoke.labs.mot.com>
-	<438D0878.30503@comcast.net>
-In-Reply-To: <438D0878.30503@comcast.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: T Ziomek <ctz001@email.mot.com>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Is there some articles discussing how to change bare-board code
- to linux driver?
+From: s.maiti@tcs.com
+Message-ID: <OF76A9D535.865F60AE-ON652570C9.002DEA47-652570C9.002EBF8F@tcs.com>
+Date: Wed, 30 Nov 2005 14:00:37 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 002EBDC9652570C9_="
+Subject: Require info regarding the flow of uart driver in linux for mpc8260
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,34 +22,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-David H. Lynch Jr wrote:
-> Where can I find the ./drivers/net/xilinx_enet, ... etc files.
-> I can not find them in the 2.6.14.2 tree
+This is a multipart message in MIME format.
+--=_alternative 002EBDC9652570C9_=
+Content-Type: text/plain; charset="US-ASCII"
 
-They are in the linuxppc-2.4 tree. Try
-rsync -avz --delete source.mvista.com::linuxppc-2.4 <directory>
 
--- Andrei
+Hi,
+I am a fresher in device driver development. Currently I am involve in 
+developing the uart driver in linux for a custom board of mpc8260. I am 
+confused about tty and console in the code uart.c . I will be very 
+grateful if any one can clear my confusion.
+Thanks in advance, 
 
-> T Ziomek wrote:
-> 
->>>    Where can i find them?thanks.
->>
->>
->> In addition to LDD3 (for 2.6 kernels, or the freely available LDD2 for 
->> 2.4 kernels), you might want to look at some existing Linux drivers 
->> that are
->> based on "bare metal" / "no OS" drivers.  The ones I know of are for 
->> Xilinx
->> peripherals, for example (within the Linux kernel tree),
->> - ./drivers/net/xilinx_enet
->> - ./drivers/char/xilinx_uartlite
->> - ./drivers/char/xilinx_gpio
->>
->> Tom
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Souvik Maiti
+Tata Consultancy Sevices Limited
+Bengal Intelligent Park
+Bldg. - D, Plots - A2, M2 & N2
+Block - GP, Sector - V
+Saltlake Electronics Complex
+Kolkata - 700091, West Bengal
+India
+
+
+Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+--=_alternative 002EBDC9652570C9_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">Hi,</font>
+<p><font size=2 face="sans-serif">I am a fresher in device driver development.
+Currently I am involve in developing the uart driver in linux for a custom
+board of mpc8260. I am confused about <b>tty</b> and <b>console</b> in
+the code <b>uart.c</b> . I will be very grateful if any one can clear my
+confusion.</font>
+<p><font size=2 face="sans-serif">Thanks in advance, </font>
+<p><font size=2 face="sans-serif"><br>
+Souvik Maiti<br>
+Tata Consultancy Sevices Limited<br>
+Bengal Intelligent Park<br>
+Bldg. - D, Plots - A2, M2 &amp; N2<br>
+Block - GP, Sector - V<br>
+Saltlake Electronics Complex<br>
+Kolkata - 700091, West Bengal<br>
+India<br>
+</font>
+<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
+</font></td></tr></table>
+--=_alternative 002EBDC9652570C9_=--
