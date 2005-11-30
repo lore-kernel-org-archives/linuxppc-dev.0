@@ -4,18 +4,19 @@ Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "hansmi.home.forkbomb.ch",
 	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D84506884E
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2005 09:39:24 +1100 (EST)
-Date: Wed, 30 Nov 2005 23:39:17 +0100
+	by ozlabs.org (Postfix) with ESMTP id 408C468851
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Dec 2005 10:46:58 +1100 (EST)
+Date: Thu, 1 Dec 2005 00:46:53 +0100
 From: Michael Hanselmann <linux-kernel@hansmi.ch>
 To: Parag Warudkar <kernel-stuff@comcast.net>
-Message-ID: <20051130223917.GA15102@hansmi.ch>
+Message-ID: <20051130234653.GB15102@hansmi.ch>
 References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
 	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
 	<20051129000615.GA20843@hansmi.ch>
+	<20051130223917.GA15102@hansmi.ch>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="Kj7319i9nmIyA2yE"
-In-Reply-To: <20051129000615.GA20843@hansmi.ch>
+Content-Type: multipart/mixed; boundary="ADZbWkCsHQ7r3kzd"
+In-Reply-To: <20051130223917.GA15102@hansmi.ch>
 Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net,
 	debian-powerpc@lists.debian.org,
 	linux-kernel <linux-kernel@vger.kernel.org>
@@ -30,32 +31,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---Kj7319i9nmIyA2yE
+--ADZbWkCsHQ7r3kzd
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-> My changes do that definitively, but it's only a hack.
+On Wed, Nov 30, 2005 at 11:39:17PM +0100, Michael Hanselmann wrote:
+> The patch is attached for easier use.
 
-I now integrated support for the 0x0215 device into the driver of
-2.6.15-rc3, in addition to the relayfs functions.
+There was a mistake in it due to which the mouse button wouldn't work.
+Fixed in the now attached patch.
 
-It would be great to get some feedback from people who have touchpads
-handled by appletouch.c other than 0x0215.
-
-The patch is attached for easier use. If nobody speaks up, I'll submit
-this one, as it's simply required for the touchpad on the new Oct 2005
-PowerBooks (at least 15").
-
--- 
-Gentoo Linux Developer using m0n0wall | http://hansmi.ch/
-
---Kj7319i9nmIyA2yE
+--ADZbWkCsHQ7r3kzd
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: attachment;
 	filename="linux-2.6.15-rc3-appletouch-relayfs-0x0215.diff"
 
 --- linux-2.6.15-rc3/drivers/usb/input/appletouch.c.orig	2005-11-29 21:30:37.000000000 +0100
-+++ linux-2.6.15-rc3/drivers/usb/input/appletouch.c	2005-11-30 23:23:26.000000000 +0100
++++ linux-2.6.15-rc3/drivers/usb/input/appletouch.c	2005-11-30 23:40:19.000000000 +0100
 @@ -6,9 +6,19 @@
   * Copyright (C) 2005      Stelian Pop (stelian@popies.net)
   * Copyright (C) 2005      Frank Arnold (frank@scirocco-5v-turbo.de)
@@ -80,7 +72,7 @@ Content-Disposition: attachment;
  #include <linux/input.h>
  #include <linux/usb_input.h>
  
-+#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)                                                    
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
 +#include <linux/relayfs_fs.h>
 +#endif
 +
@@ -388,4 +380,4 @@ Content-Disposition: attachment;
  }
  
 
---Kj7319i9nmIyA2yE--
+--ADZbWkCsHQ7r3kzd--
