@@ -1,18 +1,24 @@
-Return-Path: <gnemas@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.195])
-	by ozlabs.org (Postfix) with ESMTP id 9C6B26884E
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from localhost.localdomain (83-102-235-87.broadband.corbina.ru
+	[83.102.235.87])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1FC436886F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Nov 2005 21:12:32 +1100 (EST)
-Received: by xproxy.gmail.com with SMTP id i27so222329wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Nov 2005 02:12:30 -0800 (PST)
-Message-ID: <8e84e0f20511300212n2cb588aevafc08aa4b82c83c0@mail.gmail.com>
-Date: Wed, 30 Nov 2005 05:12:30 -0500
-From: Gregg Nemas <gnemas@gmail.com>
-To: linuxppc-embedded@ozlabs.org
+	Wed, 30 Nov 2005 21:22:57 +1100 (EST)
+Message-ID: <438D7935.20706@ru.mvista.com>
+Date: Wed, 30 Nov 2005 13:04:37 +0300
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Setting IDE mode to PIO for compact flash
+To: "David H. Lynch Jr" <dhlii@comcast.net>
+References: <20051125214126.15F9E6884D@ozlabs.org>	<Pine.WNT.4.61.0511291821320.3620@holyoke.labs.mot.com>
+	<438D0878.30503@comcast.net>
+In-Reply-To: <438D0878.30503@comcast.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: T Ziomek <ctz001@email.mot.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Is there some articles discussing how to change bare-board code
+ to linux driver?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,19 +29,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have a compact flash connected to a PPC440GP processor in "true IDE"
-mode. The DMA signals are not connected, so the device must be used in
-PIO mode.
+David H. Lynch Jr wrote:
+> Where can I find the ./drivers/net/xilinx_enet, ... etc files.
+> I can not find them in the 2.6.14.2 tree
 
-However, when I issue hdparm -i, it indicates that the current mode is
-DMA mode mdma2, and I think this must be why I am getting "lost
-interrupt" messages. Unfortunately, when I try to set the mode to PIO
-using "hdparm -p1" or "hdparm -X9", it seems to have no effect.
+They are in the linuxppc-2.4 tree. Try
+rsync -avz --delete source.mvista.com::linuxppc-2.4 <directory>
 
-What do I need to do to get the drive to be set to use PIO?
+-- Andrei
 
-I amusing linux 2.6.12.3.
-
-Thanks.
-
-Gregg
+> T Ziomek wrote:
+> 
+>>>    Where can i find them?thanks.
+>>
+>>
+>> In addition to LDD3 (for 2.6 kernels, or the freely available LDD2 for 
+>> 2.4 kernels), you might want to look at some existing Linux drivers 
+>> that are
+>> based on "bare metal" / "no OS" drivers.  The ones I know of are for 
+>> Xilinx
+>> peripherals, for example (within the Linux kernel tree),
+>> - ./drivers/net/xilinx_enet
+>> - ./drivers/char/xilinx_uartlite
+>> - ./drivers/char/xilinx_gpio
+>>
+>> Tom
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
