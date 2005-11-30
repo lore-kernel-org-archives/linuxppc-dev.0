@@ -1,22 +1,18 @@
-Return-Path: <leinhosha@npt.nuwc.navy.mil>
-Received: from npri54mai01.npt.nuwc.navy.mil (npri54mai01.npt.nuwc.navy.mil
-	[164.223.1.100]) by ozlabs.org (Postfix) with ESMTP id EDE6D6884B
+Return-Path: <ctz001@email.mot.com>
+Received: from motgate7.mot.com (motgate7.mot.com [129.188.136.7])
+	by ozlabs.org (Postfix) with ESMTP id AAAAE68820
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Nov 2005 08:47:34 +1100 (EST)
-Received: from npri54exc22.npt.nuwc.navy.mil
-	(npri54exc22.npt.nuwc.navy.mil [129.190.72.97])
-	by npri54mai01.npt.nuwc.navy.mil (PMDF V6.2-X17 #30632)
-	with ESMTP id <QGTA08QI0MFWJC01UK@npri54mai01.npt.nuwc.navy.mil> for
-	linuxppc-embedded@ozlabs.org; Tue,
-	29 Nov 2005 15:36:26 -0500 (Eastern Standard Time)
-Date: Tue, 29 Nov 2005 15:31:51 -0500
-From: "Henry A. Leinhos" <leinhosha@npt.nuwc.navy.mil>
-To: linuxppc-embedded@ozlabs.org
-Message-id: <1133296311.8749.9.camel@kokopelli.npt.nuwc.navy.mil>
-MIME-version: 1.0
-Content-type: multipart/signed; boundary="=-e8kaLRB5RPQ88yPTATQy";
-	protocol="application/x-pkcs7-signature"; micalg=sha1
-Subject: Kernel 2.6 support for MVME5500?
+	Wed, 30 Nov 2005 11:35:32 +1100 (EST)
+Date: Tue, 29 Nov 2005 18:35:11 -0600 (Central Standard Time)
+From: T Ziomek <ctz001@email.mot.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20051125214126.15F9E6884D@ozlabs.org>
+Message-ID: <Pine.WNT.4.61.0511291821320.3620@holyoke.labs.mot.com>
+References: <20051125214126.15F9E6884D@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Subject: re: Is there some articles discussing how to change bare-board code
+ to linux driver?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,70 +23,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>    Where can i find them?thanks.
 
---=-e8kaLRB5RPQ88yPTATQy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+In addition to LDD3 (for 2.6 kernels, or the freely available LDD2 for 2.4 
+kernels), you might want to look at some existing Linux drivers that are
+based on "bare metal" / "no OS" drivers.  The ones I know of are for Xilinx
+peripherals, for example (within the Linux kernel tree),
+- ./drivers/net/xilinx_enet
+- ./drivers/char/xilinx_uartlite
+- ./drivers/char/xilinx_gpio
 
-Hi,
-
-Does anyone have any information regarding support for the Motorola
-MVME5500 SBC under kernel 2.6.x?  Motorola has 2.4.x patches on their
-website, but I can't seem to find anything for 2.6.x.
-
-Thanks,
-Henry
-
---=-e8kaLRB5RPQ88yPTATQy
-Content-Type: application/x-pkcs7-signature; name=smime.p7s
-Content-Disposition: attachment; filename=smime.p7s
-Content-Transfer-Encoding: base64
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIIVDCCBBsw
-ggOEoAMCAQICASkwDQYJKoZIhvcNAQEFBQAwYTELMAkGA1UEBhMCVVMxGDAWBgNVBAoTD1UuUy4g
-R292ZXJubWVudDEMMAoGA1UECxMDRG9EMQwwCgYDVQQLEwNQS0kxHDAaBgNVBAMTE0RvRCBDTEFT
-UyAzIFJvb3QgQ0EwHhcNMDMwNjEwMTAxMTU4WhcNMDkwNjA4MTAxMTU4WjBkMQswCQYDVQQGEwJV
-UzEYMBYGA1UEChMPVS5TLiBHb3Zlcm5tZW50MQwwCgYDVQQLEwNEb0QxDDAKBgNVBAsTA1BLSTEf
-MB0GA1UEAxMWRE9EIENMQVNTIDMgRU1BSUwgQ0EtNzCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkC
-gYEA07Co5W229Dvxs/2G5W8UTikmyOdDqJq3r/6LwhH1zjqk9l7jyduAmWW6DLz+5wX9yA67X5jF
-5KWKC8JAnzEroLtObmd3jdngE+i8pOdCmUJVmA1ypH5yObH9Hx9cploPd011sF72mnK09PktV2vT
-XlajjzdWjNzmxvP1VmQeaHkCAwEAAaOCAd4wggHaMB0GA1UdDgQWBBRft42VlopYaA+N2OFce8bn
-dtGhWTAOBgNVHQ8BAf8EBAMCAYYwDwYDVR0TAQH/BAUwAwEB/zAMBgNVHSQEBTADgAEAMB8GA1Ud
-IwQYMBaAFGycpfBcj21BjcQXO5BXwg+jzW3+MDAGA1UdIAQpMCcwCwYJYIZIAWUCAQsFMAsGCWCG
-SAFlAgELCTALBglghkgBZQIBCwowgYMGA1UdEgR8MHqGeGxkYXA6Ly9kcy0zLmMzcGtpLmNoYW1i
-LmRpc2EubWlsL2NuJTNkRG9EJTIwQ0xBU1MlMjAzJTIwUm9vdCUyMENBJTJjb3UlM2RQS0klMmNv
-dSUzZERvRCUyY28lM2RVLlMuJTIwR292ZXJubWVudCUyY2MlM2RVUzCBsAYDVR0fBIGoMIGlMIGi
-oIGfoIGchoGZbGRhcDovL2RzLTMuYzNwa2kuY2hhbWIuZGlzYS5taWwvY24lM2REb0QlMjBDTEFT
-UyUyMDMlMjBSb290JTIwQ0ElMmNvdSUzZFBLSSUyY291JTNkRG9EJTJjbyUzZFUuUy4lMjBHb3Zl
-cm5tZW50JTJjYyUzZFVTP2NlcnRpZmljYXRlcmV2b2NhdGlvbmxpc3Q7YmluYXJ5MA0GCSqGSIb3
-DQEBBQUAA4GBABaCbZz3+pfHdzp73XjTI7b8FXnQ3/4ivHOiBx+UOIgyJMQKO3ARFCLtB4DRMuje
-b32ifsjpdDubvpoVnJj5pKhWDBblMu9Fl0LoxzSGIpe6qAnhxMnp0wiBIoAxRxE4sme3r1fQ0v+r
-IIu0Dy42rtJa4rkBPfMT3Ey+YMTCTbqNMIIEMTCCA5qgAwIBAgIDAQojMA0GCSqGSIb3DQEBBQUA
-MGQxCzAJBgNVBAYTAlVTMRgwFgYDVQQKEw9VLlMuIEdvdmVybm1lbnQxDDAKBgNVBAsTA0RvRDEM
-MAoGA1UECxMDUEtJMR8wHQYDVQQDExZET0QgQ0xBU1MgMyBFTUFJTCBDQS03MB4XDTAzMTIxNjE0
-MjA0N1oXDTA2MTIxNjE0MTYxMFowdjELMAkGA1UEBhMCVVMxGDAWBgNVBAoTD1UuUy4gR292ZXJu
-bWVudDEMMAoGA1UECxMDRG9EMQwwCgYDVQQLEwNQS0kxDDAKBgNVBAsTA1VTTjEjMCEGA1UEAxMa
-TGVpbmhvcy5IZW5yeS5BLjAyMDAyMTE4MzIwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAKRU
-sTUkZFS2D9qPdAREyDOrPyqO4ndqKsv7aF84qLYsEU0RYjTDA68RQs0GRD9r4wkokCC8E1OEFUQu
-9w+mS+ymn+ZeyRX8elSxWrvG+zRprTgWMfH5JncCYRJXkHBqhCKTblw7iB/TI/n85S4yV0D2JuHd
-EuiGB+/VMPR6I8nHAgMBAAGjggHdMIIB2TAOBgNVHQ8BAf8EBAMCBsAwHwYDVR0jBBgwFoAUX7eN
-lZaKWGgPjdjhXHvG53bRoVkwHQYDVR0OBBYEFK/gCQ4czsFW0Y2eIsyAyhWnqODOMBYGA1UdIAQP
-MA0wCwYJYIZIAWUCAQsFMCEGA1UdEQQaMBiBFmhlbnJ5LmxlaW5ob3NAbmF2eS5taWwwgY8GA1Ud
-EgSBhzCBhIaBgWxkYXA6Ly9lbWFpbC1kcy0zLmMzcGtpLmNoYW1iLmRpc2EubWlsL2NuJTNkRE9E
-JTIwQ0xBU1MlMjAzJTIwRU1BSUwlMjBDQS03JTJjb3UlM2RQS0klMmNvdSUzZERvRCUyY28lM2RV
-LlMuJTIwR292ZXJubWVudCUyY2MlM2RVUzCBuQYDVR0fBIGxMIGuMIGroIGooIGlhoGibGRhcDov
-L2VtYWlsLWRzLTMuYzNwa2kuY2hhbWIuZGlzYS5taWwvY24lM2RET0QlMjBDTEFTUyUyMDMlMjBF
-TUFJTCUyMENBLTclMmNvdSUzZFBLSSUyY291JTNkRG9EJTJjbyUzZFUuUy4lMjBHb3Zlcm5tZW50
-JTJjYyUzZFVTP2NlcnRpZmljYXRlcmV2b2NhdGlvbmxpc3Q7YmluYXJ5MA0GCSqGSIb3DQEBBQUA
-A4GBAFSPm49ecl4YrdkAaKRA93kNvpP8fp+4t+v3fWy092tdjmlL4XTmcA9pXZ/3xf+TS0oAd3FO
-okZMnYqG5XhxPLRmLSKROVux66vLclRgX/UF1Ky7CwXZU5ZImzWP2tcz0Jg+cnpcLyJQod3ZcUZT
-WlSLQjLjzSjft7XUsaWVZz5dMYIBcDCCAWwCAQEwazBkMQswCQYDVQQGEwJVUzEYMBYGA1UEChMP
-VS5TLiBHb3Zlcm5tZW50MQwwCgYDVQQLEwNEb0QxDDAKBgNVBAsTA1BLSTEfMB0GA1UEAxMWRE9E
-IENMQVNTIDMgRU1BSUwgQ0EtNwIDAQojMAkGBSsOAwIaBQCgXTAYBgkqhkiG9w0BCQMxCwYJKoZI
-hvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0wNTExMjkyMDMxNTFaMCMGCSqGSIb3DQEJBDEWBBQeLut2
-/ajBvF8xD/4jcLVp1yaEODANBgkqhkiG9w0BAQEFAASBgJl+wwZDvrDTlmZ95YS3a/Oo2zQ3rGAx
-AAVlbXV/cTV07TRpPvX2H+GnY57+Df+ukz2SQyl4gyHBNCvAEn7DFq7D1K7khY70YTD7H0SsD1Jj
-WqCTmktn42Ih5aiRMD56PFMGVinrqRYs8jcs92PNhfns4fAdnLJyqrFEqAV5hhaZAAAAAAAA
-
-
---=-e8kaLRB5RPQ88yPTATQy--
+Tom
+-- 
+   /"\  ASCII Ribbon Campaign   |
+   \ /                          |   Email to user 'CTZ001'
+    X        Against HTML       |             at 'email.mot.com'
+   / \     in e-mail & news     |
