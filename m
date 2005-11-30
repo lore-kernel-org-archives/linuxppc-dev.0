@@ -1,11 +1,16 @@
-Return-Path: <zengshuai@sogou.com>
-Message-ID: <28420291.1133341297330.JavaMail.postfix@mx3.mail.sohu.com>
-Date: Wed, 30 Nov 2005 17:01:37 +0800 (CST)
-From: <zengshuai@sogou.com>
-To: <Linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="GB2312"
-Subject: Re:linuxppc-embedded help needed:kernel access of bad area
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw5.extranet.tce.com (dmzraw5.extranet.tce.com
+	[157.254.234.142]) by ozlabs.org (Postfix) with ESMTP id C9BDC6884E
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 30 Nov 2005 20:34:04 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Wed, 30 Nov 2005 10:33:25 +0100
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D042A2EFC@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: <zengshuai@sogou.com>, "ppc" <linuxppc-embedded@ozlabs.org>
+Subject: RE: linuxppc-embedded help needed:kernel access of bad area
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -16,63 +21,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-detail:
----------------------------------------------------------------------------------
-# ls
-led-app.exe   led-module.o
-# ./led-app.exe
-open led-app.exe...OK!
- Oops: kernel access of bad area, sig: 11
-NIP: C30B11B4 XER: 00000000 LR: C003A310 SP: C06B1F00 REGS: c06b1e50 TRAP: 0300
-   Not tainted
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 04500000, DSISR: 20000000
-TASK = c06b0000[201] 'led-app.exe' Last syscall: 3
-last math c06b0000 last altivec 00000000
-GPR00: C003A310 C06B1F00 C06B0000 C01A5AA0 7FFFFDE0 00000014 C01A5AC0 00000000
-GPR08: 00000000 04500000 0000000C C01A0000 30025CE8 10018B5C 00000000 00000000
-GPR16: 00000000 00000000 00000000 00000000 00009032 006B1F40 00000000 C0003E88
-GPR24: C0003BE0 00000001 10000500 7FFFFEA4 7FFFFDE0 FFFFFFEA C01A5AA0 00000014
-Call backtrace:
-10000A1C C003A310 C0003C3C 100004AC 0FEC6D74 00000000
-Segmentation fault
-#
-----------------------------------------------------------------------------------
-> -------------------
-> From: zengshuai@sogou.com 
-> To: ppc 
-> Subject: linuxppc-embedded help needed:kernel access of bad area
-> Sent: Wed Nov 30 16:18:06 CST 2005
-> 
-> > i writed a led driver for PQ2FADS(a ppc board).
-> > but i can't read/write 0x04500000 where led register addr locate in.
-> > i tested two ways to do that.
-> > first,
-> > p=0x04500000;
-> > *p=0x12;
-> > ....
-> > second,
-> > outb(0x12,0x04500000);
-> > ...
-> > two ways both didn't work.they had a some wrong:kernel access of bad area.
-> > how can i know which area is bad area or good area?
-> > and what can i do next? thanks.
-> > 
-> > ------------------------------
-> > 我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
-> > http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=linuxppc-embedded&FullName=linuxppc-embedded&Email=linuxppc-embedded%40ozlabs.org&verify=755eff4e640bdcfc57d93cbd8b0a9cb7
-> > 
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-> ------------------------------
-> 我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
-> http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=zengshuai&FullName=zengshuai&Email=zengshuai%40sogou.com&verify=9cab69a60842dbdbc5ad49cbd78e2e11
+Dear zengshuai,
 
+zengshuai@sogou.com wrote:
+> i writed a led driver for PQ2FADS(a ppc board).
+> but i can't read/write 0x04500000 where led register addr locate in.
+> i tested two ways to do that.
+> first,
+> p=3D0x04500000;
+> *p=3D0x12;
+> ....
+> second,
+> outb(0x12,0x04500000);
+> ...
+> two ways both didn't work.they had a some wrong:kernel access of bad
+area.
+> how can i know which area is bad area or good area?
+> and what can i do next? thanks.
 
-------------------------------
-我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
-http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=Linuxppc-embedded&FullName=Linuxppc-embedded&Email=Linuxppc-embedded%40ozlabs.org&verify=777667b18eda2b5dd1bbd47542afad9b
+Do yourself a favor, read a book about Linux device driver development,
+for example one listed[1] in the excellent Denx's DLUG FAQ[2].
+Getting some training on PowerPC development is a good idea too.
+[1] http://www.denx.de/wiki/view/DULG/MoreInformationBooks
+[2] http://www.denx.de/wiki/DULG/Manual
+
+Peruse also your chip data-sheet, and you will see that outb() is
+non-sense.
+
+If you are accessing the led register from kernel space, you'll find
+a solution using ioremap(). Otherwise, if you are accessing the led
+register
+from user space, this link[3] will help you, or this shorter one[4].
+You can follow this thread[5] for more information.
+
+[3]
+http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acce
+ssingPeripheralsFromUserSpace
+[4] http://tinyurl.com/6c7th
+[5] http://lists.linuxppc.org/linuxppc-embedded/200403/msg00059.html
+
+Please next time, do ourselves a favor, try some searching first
+(google,=20
+whatever). Your question is a FAQ.
+
+Regards,
+--=20
+Stephane
