@@ -3,19 +3,26 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A09116884E
+	by ozlabs.org (Postfix) with ESMTP id A15DA6884E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Nov 2005 18:03:36 +1100 (EST)
-In-Reply-To: <438D4A03.4060500@compulab.co.il>
-References: <438C8E8E.3030306@cpe.fr> <438D4A03.4060500@compulab.co.il>
+	Wed, 30 Nov 2005 18:08:37 +1100 (EST)
+In-Reply-To: <20051123120033.GA3551@logos.cnet>
+References: <437B2051.5030408@ru.mvista.com> <20051117135810.GB9753@logos.cnet>
+	<437DE07E.6080005@ru.mvista.com>
+	<20051118090845.GB12765@logos.cnet>
+	<17283.54950.681390.749679@cargo.ozlabs.ibm.com>
+	<20051123091107.GA3482@logos.cnet>
+	<ACB2F36A-0A37-4EA1-9E4A-F773AD4E0D86@kernel.crashing.org>
+	<20051123120033.GA3551@logos.cnet>
 Mime-Version: 1.0 (Apple Message framework v746.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E3409EA9-80FF-4CFF-BF39-F2DE3BA4A609@kernel.crashing.org>
+Message-Id: <6B29BC5F-3B18-4EEE-B70C-215A2C540C85@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 30 Nov 2005 01:03:32 -0600
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: linuxppc-embedded@ozlabs.org, Nathael PAJANI <nathael.pajani@cpe.fr>
-Subject: Re: USB on MPC8272
+Date: Wed, 30 Nov 2005 01:08:31 -0600
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] ppc32: 8xx board-specific platform stuff for fs_enet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +33,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Nov 30, 2005, at 12:43 AM, Mike Rapoport wrote:
-
-> Nathael PAJANI wrote:
+> Hi Kumar,
 >
->> Hi all!
->>
->>
->> I have to support USB hcd for an Actis board based on a MPC8248  
->> processor. I already have a 2.6.9 linux kernel running fine on it,  
->> and actualy have to use it rather than a newer one.
->> I'm actualy looking for existing or ongoing jobs.
+> I dont really know the policy for driver placement, but it seems that
+> it works on a case by case basis.
 >
-> Dear Nathael,
-> As far as I understand there are several drivers for the MPC8272  
-> usb host controller, and none of them is in
-> official kernel tree.
-> There's a driver in Metrowerks BSP for linux 2.6 for MPC8272 (the  
-> Freescale driver), an orignally mpc8xx driver by Brad Parker ported  
-> to linux 2.4 for MPC8272 by Pantelis Antoniou, there ought to be  
-> USB driver by ArabellaSW also.
-> My driver ("http://cpm2usb.sourceforge.net./") is a port of the  
-> Brad Parker's driver to linux 2.6 with some modifications.
+> The files in arch/ppc/8xx_io/ (which is what I think you refer to as
+> candidates for drivers/), are:
 
-And, ideally we would like to see one driver get into the linux  
-source tree that everyone is happy with.  I'm told by someone that  
-the FSL driver is suppose to have working host support "was tested/ 
-verified with keyboard/mouse/diskdrives/network".
+We have been slowly working on moving drivers out of arch/ppc and  
+into drivers/ so that subsystem maintainers could get proper review  
+of them.
+
+> 1) commproc.c
+> Basic API for dpram access. Core code.
+>
+> 2) micropatch.c
+> microcode update code/data. Core code.
+
+Well #1 & #2 aren't what I would call drivers at all.  I would  
+consider them syslib/ candidates.  Hopefully, someone will
+
+>
+> 3) cs4218.h
+> 4) cs4218_tdm.c
+>
+> cs4218 does not compile at the moment due to syntatical problems,
+> I've fixed them up and the driver compiles, but I don't know
+> if it works (patch attached).
+>
+> I would not be surprised if the driver has been broken since
+> long time ago.
+>
+> Does anyone have hardware to test it? Dan?
+>
+> Otherwise we should remove it from the tree, since its unmaintained
+> and unused.
+
+If its still good, I would guessing /drivers/audio or snd, but  
+neither seem to exist.  I wondering where sound card drivers live  
+these days.
+
+>
+> 5) enet.c
+> 6) fec.c
+>
+> The ENET/FEC network drivers are obseleted by fs_enet.
+>
+> However there are some PHY descriptions in fec.c which are missing  
+> from
+> fs_enet - we'd better make sure to have them all in the new driver
+> before removing the old one.
+
+Agreed.
+
+> Aris, would you mind looking into this?
+>
+> Once we have that we can set a deadline at Documentation/feature- 
+> removal.txt
+> if desired.
+>
+> Other than those there are no 8xx drivers in arch/ppc/ AFAIK.
+>
+> <cs42.patch>
+
+Good deal.  Are we really removing anything (except maybe cs4218)?
 
 - kumar
