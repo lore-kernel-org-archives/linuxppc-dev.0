@@ -1,16 +1,18 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw5.extranet.tce.com (dmzraw5.extranet.tce.com
-	[157.254.234.142]) by ozlabs.org (Postfix) with ESMTP id C9BDC6884E
+Return-Path: <gnemas@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.195])
+	by ozlabs.org (Postfix) with ESMTP id 9C6B26884E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 30 Nov 2005 20:34:04 +1100 (EST)
+	Wed, 30 Nov 2005 21:12:32 +1100 (EST)
+Received: by xproxy.gmail.com with SMTP id i27so222329wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 30 Nov 2005 02:12:30 -0800 (PST)
+Message-ID: <8e84e0f20511300212n2cb588aevafc08aa4b82c83c0@mail.gmail.com>
+Date: Wed, 30 Nov 2005 05:12:30 -0500
+From: Gregg Nemas <gnemas@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 30 Nov 2005 10:33:25 +0100
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D042A2EFC@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: <zengshuai@sogou.com>, "ppc" <linuxppc-embedded@ozlabs.org>
-Subject: RE: linuxppc-embedded help needed:kernel access of bad area
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Setting IDE mode to PIO for compact flash
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,49 +23,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear zengshuai,
+I have a compact flash connected to a PPC440GP processor in "true IDE"
+mode. The DMA signals are not connected, so the device must be used in
+PIO mode.
 
-zengshuai@sogou.com wrote:
-> i writed a led driver for PQ2FADS(a ppc board).
-> but i can't read/write 0x04500000 where led register addr locate in.
-> i tested two ways to do that.
-> first,
-> p=3D0x04500000;
-> *p=3D0x12;
-> ....
-> second,
-> outb(0x12,0x04500000);
-> ...
-> two ways both didn't work.they had a some wrong:kernel access of bad
-area.
-> how can i know which area is bad area or good area?
-> and what can i do next? thanks.
+However, when I issue hdparm -i, it indicates that the current mode is
+DMA mode mdma2, and I think this must be why I am getting "lost
+interrupt" messages. Unfortunately, when I try to set the mode to PIO
+using "hdparm -p1" or "hdparm -X9", it seems to have no effect.
 
-Do yourself a favor, read a book about Linux device driver development,
-for example one listed[1] in the excellent Denx's DLUG FAQ[2].
-Getting some training on PowerPC development is a good idea too.
-[1] http://www.denx.de/wiki/view/DULG/MoreInformationBooks
-[2] http://www.denx.de/wiki/DULG/Manual
+What do I need to do to get the drive to be set to use PIO?
 
-Peruse also your chip data-sheet, and you will see that outb() is
-non-sense.
+I amusing linux 2.6.12.3.
 
-If you are accessing the led register from kernel space, you'll find
-a solution using ioremap(). Otherwise, if you are accessing the led
-register
-from user space, this link[3] will help you, or this shorter one[4].
-You can follow this thread[5] for more information.
+Thanks.
 
-[3]
-http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acce
-ssingPeripheralsFromUserSpace
-[4] http://tinyurl.com/6c7th
-[5] http://lists.linuxppc.org/linuxppc-embedded/200403/msg00059.html
-
-Please next time, do ourselves a favor, try some searching first
-(google,=20
-whatever). Your question is a FAQ.
-
-Regards,
---=20
-Stephane
+Gregg
