@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 99F526884E
+Return-Path: <nathael.pajani@cpe.fr>
+Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.36])
+	by ozlabs.org (Postfix) with ESMTP id 4411668872
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Dec 2005 02:29:48 +1100 (EST)
-To: Hans Schillstrom <hans.schillstrom@pwav.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 01 Dec 2005 13:26:21 +0100."
-	<1133439981.8518.237.camel@hawk.pwav.net>
-Date: Thu, 01 Dec 2005 16:29:46 +0100
-Sender: wd@denx.de
-Message-Id: <20051201152946.E6E53353B0C@atlas.denx.de>
-Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8555 8280/8270 USB host support 
+	Fri,  2 Dec 2005 02:38:09 +1100 (EST)
+Received: from [192.52.109.152] (unknown [83.145.98.3])
+	by smtp-out.completel.net (Postfix) with ESMTP id 57A06280066
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Dec 2005 16:38:08 +0100 (CET)
+Message-ID: <438F198F.9020606@cpe.fr>
+Date: Thu, 01 Dec 2005 16:41:03 +0100
+From: Nathael PAJANI <nathael.pajani@cpe.fr>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: MPC8555 8280/8270 USB host support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +24,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1133439981.8518.237.camel@hawk.pwav.net> you wrote:
-> 
-> Don't you think u-boot should take care of clock setup
-> i.e. as much as possible of all board dependent stuff ?
+Hi
 
-No, it should not. A river should not make any assumptions about  the
-state of the hardware, but initialize everything it needs for correct
-operation itself.
+ >
+ >>
+ >>Don't you think u-boot should take care of clock setup
+ >>i.e. as much as possible of all board dependent stuff ?
+ >>
+ >>
+ >I think you're right, but then it was easier to make all these setups 
+ >in the driver itself.
+ >
 
-Best regards,
+If u-boot is the boot loader of your board (the stuff running on it 
+--before-- we see this:
 
-Wolfgang Denk
+loaded at:     00400000 005153B4
+board data at: 00513130 00513334
+relocated to:  00405090 00405294
+zimage at:     00405A85 00512099
+avail ram:     00516000 08000000
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Save yourself!  Reboot in 5 seconds!
+Linux/PPC load: rw console=ttyS0 root=/dev/nfs ip=on
+
+Uncompressing Linux...done)
+
+
+Then I would say NO
+
+
+
+
+If u-boot is this exact stuff (the files in arch/ppc/boot/simple/... 
+misc-embedded.c for example)
+
+then, yes, this is somehow better.
+But (tell me if I'm wrong) this is not really Linux code, and this 
+should be done by Linux.
+
+
+What I think should be good also is the platform files 
+(arch/ppc/platforms/....) for this is the place where all the board 
+dependant stuff stays.
+
+
+
+
+Maybe I'm completely mistaken.
+Feel free to tell me (and explain please !)
+
+Have fun.
