@@ -1,12 +1,17 @@
-Return-Path: <jbirch04@sbcglobal.net>
-Message-ID: <20051130220235.18496.qmail@web81002.mail.mud.yahoo.com>
-Date: Wed, 30 Nov 2005 14:02:35 -0800 (PST)
-From: Joe Birch <jbirch04@sbcglobal.net>
-To: Linuxppc-embedded@ozlabs.org
+Return-Path: <ctz001@email.mot.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id CE4016884B
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Dec 2005 12:06:50 +1100 (EST)
+Date: Wed, 30 Nov 2005 19:06:29 -0600 (Central Standard Time)
+From: T Ziomek <ctz001@email.mot.com>
+To: jaap.dejong@nedap.com, linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20051201010004.9B1FF68869@ozlabs.org>
+Message-ID: <Pine.WNT.4.61.0511301902100.3620@holyoke.labs.mot.com>
+References: <20051201010004.9B1FF68869@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Subject: user thread will occassionally get a mysterious floating point
-	exception
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Subject: Re: Xilinx_uartlite
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,43 +22,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+> I'm trying to get my avnet virtex4fx12 running with linux.
+> It boots, but ends with:
+>         Warning: unable to open an initial console.
+> This means /dev/console was not opened; init is running.
+> Since my board has no 16550 uart I must use xilinx_uartlite
+> Part of my configuration:
+>         +--Character devices
+>                 +--Xilinx UART Lite                     ON
+>                 +--Console on UART Lite port            ON
+> Any ideas?
 
-user thread cores occassionally because of a floating
-point exception
+/dev/console may not be tied to your UARTLite.  If you don't specify the
+console on your kernel command line, try adding something along the lines
+of "console=ttyS0,19200" to it (with the appropriate device and baud rate
+of course).
 
-when the exception occurs it usually happens on
-multiple threads, even across different processes
-and they all have the same fpscr values.
-
-As far as I can tell none of the applications are even
-enabling the fp exceptions in the fpscr.
-If fact the coredump shows the fp operation to be just
-a 64bit move like lfd.
-
-some details:
-  2.4.20 (I know i have to go to 2.6 i just can't
-right now)
-  ~300 threads
-  cpu             : 8270
-  core clock      : 450 MHz
-  CPM  clock      : 300 MHz
-  bus  clock      : 100 MHz
-  revision        : 32.19 (pvr 8082 2013)
-  bogomips        : 299.82
-
-The various fpscr that have occurred:
- 0x6002c2ed 0110 0000 0000 0010 1100 0010 1110 1101
- 0xec1642e6 1110 1100 0001 0110 0100 0010 1110 0110
- 0x7649e0ea 0111 0110 0100 1001 1110 0000 1110 1010
- 0x6009c7ba 0110 0000 0000 1001 1100 0111 1011 1010
- 0xf30c346f 1111 0011 0000 1100 0011 0100 0110 1111
- 0xe833f39d 1110 1000 0011 0011 1111 0011 1001 1101
- 0xfdb3e1e3 1111 1101 1011 0011 1110 0001 1110 0011
-
-I've put in debug to dump the thread_struct when the
-exception occurs hoping to find a corruption of the
-floating point registers but they look OK.
-
-Any help is greatly appreciated
-
-Joe 
+Tom
+-- 
+   /"\  ASCII Ribbon Campaign   |
+   \ /                          |   Email to user 'CTZ001'
+    X        Against HTML       |             at 'email.mot.com'
+   / \     in e-mail & news     |
