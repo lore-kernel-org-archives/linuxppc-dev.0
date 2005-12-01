@@ -1,19 +1,20 @@
-Return-Path: <zengshuai@sogou.com>
-Received: from sogoumx75.mail.sogou.com (unknown [61.135.132.136])
-	by ozlabs.org (Postfix) with ESMTP id 5DB50687DE
+Return-Path: <nathael.pajani@cpe.fr>
+Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.35])
+	by ozlabs.org (Postfix) with ESMTP id F24BE687DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Dec 2005 19:50:22 +1100 (EST)
-Received: from mx3.mail.sohu.com (unknown [192.168.95.78])
-	by sogoumx75.mail.sogou.com (Postfix) with ESMTP id 2365208A5CF9
+	Thu,  1 Dec 2005 22:28:02 +1100 (EST)
+Received: from [192.52.109.152] (unknown [83.145.98.3])
+	by smtp-out.completel.net (Postfix) with ESMTP id 3A28F25C064
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Dec 2005 16:49:50 +0800 (CST)
-Message-ID: <13090422.1133426263198.JavaMail.postfix@mx3.mail.sohu.com>
-Date: Thu, 1 Dec 2005 16:37:43 +0800 (CST)
-From: <zengshuai@sogou.com>
-To: "ppc" <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="GB2312"
-Subject: bus error
+	Thu,  1 Dec 2005 12:28:00 +0100 (CET)
+Message-ID: <438EDEEE.2000000@cpe.fr>
+Date: Thu, 01 Dec 2005 12:30:54 +0100
+From: Nathael PAJANI <nathael.pajani@cpe.fr>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: porting linux to new board type
+Reply-To: nathael.pajani@cpe.fr
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,45 +25,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-//test.c
-#include <stdio.h>
-#include <stdlib.h>
+Hi!
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/mman.h>
+I stepped over your message without noticing, do you still need help?
 
-int main(void)
-{
-	static volatile char *reg_mem;
-  static int axs_mem_fd = -1;
-  axs_mem_fd = open("/dev/mem", O_RDWR|O_SYNC);
-    if (axs_mem_fd < 0) {
-        perror("AXS: can't open /dev/mem");
-        return NULL;
-    }
-    /* memory map */
-  reg_mem =(volatile char*)mmap(
-      (caddr_t)reg_mem,
-      0x4,
-      PROT_READ|PROT_WRITE,
-      MAP_SHARED,
-      axs_mem_fd,
-      0x04600000
-  );
-	if(reg_mem[0]==0x10) printf("OK");
-	else printf("sorry");
-}
-host:
-ppc_6xx-gcc -o test test.c
-target:
-./test
-Bus error
+I do not have much experience yet, as I've been graduated only two month 
+ago, but my job actualy is porting linux to custom boards, and I 
+achieved my first one two weeks ago.
+So maybe I can hand out some usefull clues.
 
-need help,thanks
-
-------------------------------
-我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
-http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=linuxppc-embedded&FullName=linuxppc-embedded&Email=linuxppc-embedded%40ozlabs.org&verify=755eff4e640bdcfc57d93cbd8b0a9cb7
+Have fun :)
++++
