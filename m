@@ -1,28 +1,24 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BEFC3687DE
+Return-Path: <Hans.Schillstrom@pwav.com>
+Received: from pwave-exch.pwav.net (sendmail.pwav.com [207.105.252.30])
+	by ozlabs.org (Postfix) with ESMTP id 5A8EA68865
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Dec 2005 23:17:54 +1100 (EST)
-Date: Thu, 1 Dec 2005 10:17:11 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Message-ID: <20051201121711.GA4105@dmt.cnet>
-References: <437B2051.5030408@ru.mvista.com> <20051117135810.GB9753@logos.cnet>
-	<437DE07E.6080005@ru.mvista.com>
-	<20051118090845.GB12765@logos.cnet>
-	<17283.54950.681390.749679@cargo.ozlabs.ibm.com>
-	<20051123091107.GA3482@logos.cnet>
-	<ACB2F36A-0A37-4EA1-9E4A-F773AD4E0D86@kernel.crashing.org>
-	<20051123120033.GA3551@logos.cnet>
-	<6B29BC5F-3B18-4EEE-B70C-215A2C540C85@kernel.crashing.org>
+	Thu,  1 Dec 2005 23:39:18 +1100 (EST)
+From: Hans Schillstrom <hans.schillstrom@pwav.com>
+To: Mike Rapoport <mike@compulab.co.il>
+In-Reply-To: <43798741.5070604@compulab.co.il>
+References: <a79669360510062205v629affb9ga687078f018afae@mail.gmail.com>
+	<200510120859.12362.sr@denx.de>	<434CB71E.5000603@compulab.co.il>
+	<200510120927.56692.sr@denx.de>
+	<20051012133414.7f7e2faf.ajz@cambridgebroadband.com>
+	<4365BD71.9010507@compulab.co.il>
+	<1131960060.7748.9.camel@hawk.pwav.net>
+	<43798741.5070604@compulab.co.il>
+Content-Type: multipart/mixed; boundary="=-TPtUaLFWDhy2M8Zdqn4p"
+Message-Id: <1133439981.8518.237.camel@hawk.pwav.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6B29BC5F-3B18-4EEE-B70C-215A2C540C85@kernel.crashing.org>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] ppc32: 8xx board-specific platform stuff for fs_enet
+Date: Thu, 01 Dec 2005 13:26:21 +0100
+Cc: "'linuxppc-embedded@ozlabs.org'" <linuxppc-embedded@ozlabs.org>
+Subject: Re: MPC8555 8280/8270 USB host support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,78 +29,189 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Nov 30, 2005 at 01:08:31AM -0600, Kumar Gala wrote:
-> >Hi Kumar,
-> >
-> >I dont really know the policy for driver placement, but it seems that
-> >it works on a case by case basis.
-> >
-> >The files in arch/ppc/8xx_io/ (which is what I think you refer to as
-> >candidates for drivers/), are:
-> 
-> We have been slowly working on moving drivers out of arch/ppc and  
-> into drivers/ so that subsystem maintainers could get proper review  
-> of them.
-> 
-> >1) commproc.c
-> >Basic API for dpram access. Core code.
-> >
-> >2) micropatch.c
-> >microcode update code/data. Core code.
-> 
-> Well #1 & #2 aren't what I would call drivers at all.  I would  
-> consider them syslib/ candidates.  Hopefully, someone will 
 
-Move them there? Yeah... We can add that to the 8xx TODO list
-if its interesting. 
+--=-TPtUaLFWDhy2M8Zdqn4p
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> >3) cs4218.h
-> >4) cs4218_tdm.c
-> >
-> >cs4218 does not compile at the moment due to syntatical problems,
-> >I've fixed them up and the driver compiles, but I don't know
-> >if it works (patch attached).
-> >
-> >I would not be surprised if the driver has been broken since
-> >long time ago.
-> >
-> >Does anyone have hardware to test it? Dan?
-> >
-> >Otherwise we should remove it from the tree, since its unmaintained
-> >and unused.
+Hi Mike
+I've made some modifications due to the difference between mpc8272 and
+mpc8270. MPC8272 use SCC3 and MPC8270 use SCC4.
+Added some more clock configuration options ...
+
+I think the changes are quite generic.
+
+The driver seems to work with a 2.6.13 kernel.
+Only some basic tests is performed with
+- serial ftdi_sio to ports ttyUSB0 & ttyUSB1
+- storage i.e. some kind of "no name" usb-memory 
+- 3 1/4 floppy drive
+- Nokia hub.
+
+
+Don't you think u-boot should take care of clock setup
+i.e. as much as possible of all board dependent stuff ?
+
+
+Regards 
+Hans Schillstrom
+
+On Tue, 2005-11-15 at 07:59, Mike Rapoport wrote:
+> Hans Schillstrom wrote:
 > 
-> If its still good, I would guessing /drivers/audio or snd, but  
-> neither seem to exist.  I wondering where sound card drivers live  
-> these days.
-
-snd/ I think... Someone needs to test the driver. I think we should just
-fixup the syntactical problems and mark it as BROKEN until someone (Dan?)
-confirms it works.
-
-> >5) enet.c
-> >6) fec.c
+> >Hi Mike
+> >I'm working with a 8270 board and 2.6.12 kernel and searching for USB
+> >drivers.
 > >
-> >The ENET/FEC network drivers are obseleted by fs_enet.
+> >Could you help me finding the files ?
+> >  
 > >
-> >However there are some PHY descriptions in fec.c which are missing  
-> >from
-> >fs_enet - we'd better make sure to have them all in the new driver
-> >before removing the old one.
+> I've opened a project on the SourceForge, 
+> http://cpm2usb.sourceforge.net. The file containing patch against 
+> 2.6.12.3 can be downloaded at http://sourceforge.net/projects/cpm2usb.
 > 
-> Agreed.
+> >I can help you with the testing.
+> >What status do they have right now ?
+> >  
+> >
+> The driver was developed on MPC8272ADS, but should go as well on 8270 
+> since they have the same USB host controller AFAIK.
+> Currently, as far as I tested it works fine with full-speed single 
+> device attached through hub, but fails is there are transfers from/to 
+> several devices simultaneously.
+> As for the code itself, it's far from being perfect.
 > 
-> >Aris, would you mind looking into this?
+> >Regards 
+> >Hans
+> >  
 > >
-> >Once we have that we can set a deadline at Documentation/feature- 
-> >removal.txt
-> >if desired.
-> >
-> >Other than those there are no 8xx drivers in arch/ppc/ AFAIK.
-> >
-> ><cs42.patch>
 > 
-> Good deal.  Are we really removing anything (except maybe cs4218)?
 
-FEC certainly and cs4218 seems like a candidate. 
+--=-TPtUaLFWDhy2M8Zdqn4p
+Content-Disposition: attachment; filename=m8270usb.patch
+Content-Type: text/x-patch; name=m8270usb.patch; charset=iso-8859-1
+Content-Transfer-Encoding: base64
 
-Thanks for your comments!
+ZGlmZiAtTnJ1dyBsaW51eC0yLjYuMTMuMi9kcml2ZXJzL3VzYi9ob3N0L204Mnh4LWhjZC5jIGxp
+bnV4LTIuNi1kZXYvZHJpdmVycy91c2IvaG9zdC9tODJ4eC1oY2QuYw0KLS0tIGxpbnV4LTIuNi4x
+My4yL2RyaXZlcnMvdXNiL2hvc3QvbTgyeHgtaGNkLmMJMjAwNS0xMi0wMSAxMDo1ODo1NS4wMDAw
+MDAwMDAgKzAxMDANCisrKyBsaW51eC0yLjYtZGV2L2RyaXZlcnMvdXNiL2hvc3QvbTgyeHgtaGNk
+LmMJMjAwNS0xMi0wMSAxMjo1OToyNy4wMDAwMDAwMDAgKzAxMDANCkBAIC0xMiw2ICsxMiw5IEBA
+DQogICogR2VvcmdlIFBhbmFnZWFzIDxncGFuYUBpbnRyYWNvbS5ncj4NCiAgKiBQYW50ZWxpcyBB
+bnRvbmlvdSA8cGFudG9AaW50cmFjb20uZ3I+DQogICoNCisgKiBGaXhlcyBmb3IgTVBDODI3MC84
+MCAmIGFkYXB0aW9ucyB0byBwb3dlcnZhdmUgdGVjaG5vbG9naWVzIHJjYjgyNzAgYm9hcmQuDQor
+ICogIEhhbnMgU2NoaWxsc3Ryb20gPGhhbnMuc2NoaWxsc3Ryb21AcHdhdi5jb20+DQorICoNCiAg
+KiBkZXNpZ25lZCBmb3IgdGhlIEVtYmVkZGVkUGxhbmV0IFJQWCBsaXRlIGJvYXJkDQogICogKEMp
+IENvcHlyaWdodCAyMDAwIEVtYmVkZGVkIFBsYW5ldA0KICAqIGh0dHA6Ly93d3cuZW1iZWRkZWRw
+bGFuZXQuY29tDQpAQCAtMTEwLDYgKzExMywxNSBAQA0KDQogCSpiY3NyX3VzYiB8PSBCQ1NSX1VT
+Ql9QT1dFUjsNCiAJfQ0KKyNlbGlmIGRlZmluZWQoQ09ORklHX1JDQjgyNzApDQorICAgICAgICBo
+cC0+dXNiX2Nsb2NrID0gVVNCX0NMT0NLX1BDMjVfQ0xLNzsNCisgICAgICAgIHsNCisgICAgICAg
+ICAgdm9sYXRpbGUgY3BtMl9tYXBfdCAqaW1tYXAgPSAodm9sYXRpbGUgY3BtMl9tYXBfdCAqKUNQ
+TV9NQVBfQUREUjsNCisgICAgICAgICAgdm9sYXRpbGUgaW9wX2NwbTJfdCAqaW8gPSAmaW1tYXAt
+PmltX2lvcG9ydDsNCisNCisgICAgICAgICAgaW8tPmlvcF9wZGF0YSAmPSB+KDEgPDwgKDMxIC0g
+MikpOyAgLy8gVHVybiBvbiBwb3dlciB0dSB1c2IgZHJpdmVyDQorICAgICAgICAgIHVkZWxheSgx
+MDAwKTsNCisgICAgICAgIH0NCiAjZW5kaWYNCiAJcmV0dXJuIDA7DQogfQ0KQEAgLTE2NywyNiAr
+MTc5LDM5IEBADQogCXZvbGF0aWxlIGNwbXV4X3QgKmNtID0gJmltbWFwLT5pbV9jcG11eDsNCg0K
+IAlzd2l0Y2ggKHVzYl9jbG9jaykgew0KKyAgICAgICAgICAgICAgICBjYXNlIFVTQl9DTE9DS19Q
+QzI3X0NMSzU6DQorICAgICAgICAgICAgICAgICAgICAgICAgaW8tPmlvcF9wZGlyYyAmPSB+UENf
+Q0xLNV80OE1IejsNCisgICAgICAgICAgICAgICAgICAgICAgICBpby0+aW9wX3Bzb3JjICY9IH5Q
+Q19DTEs1XzQ4TUh6Ow0KKyAgICAgICAgICAgICAgICAgICAgICAgIGlvLT5pb3BfcHBhcmMgfD0g
+IFBDX0NMSzVfNDhNSHo7DQorICAgICAgICAgICAgICAgICAgICAgICAgY20tPmNteF9zY3IgJj0g
+flVTQl9DTVhfU0NSX01BU0s7DQorICAgICAgICAgICAgICAgICAgICAgICAgY20tPmNteF9zY3Ig
+fD0gIFVTQl9DTVhfQ0xLNTsNCisgICAgICAgICAgICAgICAgICAgICAgICBicmVhazsNCiAJCWNh
+c2UgVVNCX0NMT0NLX1BDMjZfQ0xLNjoNCiAJCQlpby0+aW9wX3BkaXJjICY9IH5QQ19DTEs2XzQ4
+TUh6Ow0KIAkJCWlvLT5pb3BfcHNvcmMgJj0gflBDX0NMSzZfNDhNSHo7DQogCQkJaW8tPmlvcF9w
+cGFyYyB8PSAgUENfQ0xLNl80OE1IejsNCi0JCQljbS0+Y214X3NjciAmPSB+MHgwMDAwZmYwMDsN
+Ci0JCQljbS0+Y214X3NjciB8PSAgMHgwMDAwM2YwMDsNCisJCQljbS0+Y214X3NjciAmPSB+VVNC
+X0NNWF9TQ1JfTUFTSzsNCisJCQljbS0+Y214X3NjciB8PSAgVVNCX0NNWF9DTEs2Ow0KKwkJCWJy
+ZWFrOw0KKyAgICAgICAgICAgICAgICBjYXNlIFVTQl9DTE9DS19QQzI1X0NMSzc6DQorICAgICAg
+ICAgICAgICAgICAgICAgICAgaW8tPmlvcF9wZGlyYyAmPSB+UENfQ0xLN180OE1IejsgICAgLy8g
+SW5wdXQgbW9kZQ0KKyAgICAgICAgICAgICAgICAgICAgICAgIGlvLT5pb3BfcHNvcmMgJj0gflBD
+X0NMSzdfNDhNSHo7ICAgIC8vIHNwZWNpYWwgb3B0aW9uDQorICAgICAgICAgICAgICAgICAgICAg
+ICAgaW8tPmlvcF9wcGFyYyB8PSAgUENfQ0xLN180OE1IejsgICAgLy8gRGVkaWNhdGVkIHBvcnQN
+CisgICAgICAgICAgICAgICAgICAgICAgICBjbS0+Y214X3NjciAmPSB+VVNCX0NNWF9TQ1JfTUFT
+SzsNCisgICAgICAgICAgICAgICAgICAgICAgICBjbS0+Y214X3NjciB8PSAgVVNCX0NNWF9DTEs3
+Ow0KIAkJCWJyZWFrOw0KIAkJY2FzZSBVU0JfQ0xPQ0tfUEMyNF9DTEs4Og0KIAkJCWlvLT5pb3Bf
+cGRpcmMgJj0gflBDX0NMSzhfNDhNSHo7DQogCQkJaW8tPmlvcF9wc29yYyAmPSB+UENfQ0xLOF80
+OE1IejsNCiAJCQlpby0+aW9wX3BwYXJjIHw9ICBQQ19DTEs4XzQ4TUh6Ow0KLQkJCWNtLT5jbXhf
+c2NyICY9IH4weDAwMDBmZjAwOw0KLQkJCWNtLT5jbXhfc2NyIHw9ICAweDAwMDAzZjAwOw0KKwkJ
+CWNtLT5jbXhfc2NyICY9IH5VU0JfQ01YX1NDUl9NQVNLOw0KKwkJCWNtLT5jbXhfc2NyIHw9ICBV
+U0JfQ01YX0NMSzg7DQogCQkJYnJlYWs7DQoNCiAJCWRlZmF1bHQ6DQogCQkJcHJpbnRrKEtFUk5f
+RVJSICJtOHh4aGNpOiBpbnZhbGlkIHVzYl9jbG9jayB2YWx1ZSAlZCFcbiIsIHVzYl9jbG9jayk7
+DQogCQkJcmV0dXJuIC0xOw0KIAl9DQotDQogCXJldHVybiAwOw0KIH0NCg0KQEAgLTMxNywxMyAr
+MzQyLDIxIEBADQogI2RlZmluZSBVU0JfTU9ERV9QSU4JKCh1aW50KSgxIDw8ICgzMSAtIDApKSkN
+CiAjZGVmaW5lIFVTQl9TUEVFRF9QSU4JKCh1aW50KSgxIDw8ICgzMSAtIDIzKSkpDQogI2RlZmlu
+ZSBVU0JfU1VTUEVORF9QSU4gKCh1aW50KSgxIDw8ICgzMSAtIDI5KSkpDQotDQotDQogCWlvLT5p
+b3BfcGRpcmMgfD0gKFVTQl9NT0RFX1BJTiB8IFVTQl9TUEVFRF9QSU4gfCBVU0JfU1VTUEVORF9Q
+SU4pOw0KIAlpby0+aW9wX3BwYXJjICY9IH4oVVNCX01PREVfUElOIHwgVVNCX1NQRUVEX1BJTiB8
+IFVTQl9TVVNQRU5EX1BJTik7DQogCWlvLT5pb3BfcGRhdGMgfD0gKFVTQl9NT0RFX1BJTiB8IFVT
+Ql9TUEVFRF9QSU4pOw0KIAlpby0+aW9wX3BvZHJjIHw9IFVTQl9NT0RFX1BJTjsNCiAJaW8tPmlv
+cF9wZGF0YyAmPSB+KFVTQl9TVVNQRU5EX1BJTik7DQorDQorI2VsaWYgZGVmaW5lZChDT05GSUdf
+UkNCODI3MCkNCisNCisjZGVmaW5lIFVTQl9NT0RFX1BJTgkoKHVpbnQpKDEgPDwgKDMxIC0gMCkp
+KQ0KKyNkZWZpbmUgVVNCX1NQRUVEX1BJTgkoKHVpbnQpKDEgPDwgKDMxIC0gNSkpKQ0KKw0KKwlp
+by0+aW9wX3BkaXJjIHw9IChVU0JfTU9ERV9QSU4gfCBVU0JfU1BFRURfUElOICk7DQorCWlvLT5p
+b3BfcHBhcmMgJj0gfihVU0JfTU9ERV9QSU4gfCBVU0JfU1BFRURfUElOICk7DQorCWlvLT5pb3Bf
+cGRhdGMgfD0gKFVTQl9NT0RFX1BJTiB8IFVTQl9TUEVFRF9QSU4pOw0KKwlpby0+aW9wX3BvZHJj
+IHw9IFVTQl9NT0RFX1BJTjsNCiAjZW5kaWYNCg0KIAltc2xlZXAoMTApOw0KZGlmZiAtTnJ1dyBs
+aW51eC0yLjYuMTMuMi9kcml2ZXJzL3VzYi9ob3N0L204Mnh4LWhjZC5oIGxpbnV4LTIuNi1kZXYv
+ZHJpdmVycy91c2IvaG9zdC9tODJ4eC1oY2QuaA0KLS0tIGxpbnV4LTIuNi4xMy4yL2RyaXZlcnMv
+dXNiL2hvc3QvbTgyeHgtaGNkLmgJMjAwNS0xMi0wMSAxMDo1ODo1NS4wMDAwMDAwMDAgKzAxMDAN
+CisrKyBsaW51eC0yLjYtZGV2L2RyaXZlcnMvdXNiL2hvc3QvbTgyeHgtaGNkLmgJMjAwNS0xMS0y
+MiAxMTowNzo0NC4wMDAwMDAwMDAgKzAxMDANCkBAIC0xNiw2ICsxNiw5IEBADQogICogKEMpIENv
+cHlyaWdodCAyMDAwIEVtYmVkZGVkIFBsYW5ldA0KICAqIGh0dHA6Ly93d3cuZW1iZWRkZWRwbGFu
+ZXQuY29tDQogICoNCisgKiBGaXhlcyBmb3IgTVBDODI3MC84MA0KKyAqICBIYW5zIFNjaGlsbHN0
+cm9tIDxoYW5zLnNjaGlsbHN0cm9tQHB3YXYuY29tPg0KKyAqDQogICovDQoNCiAjaWZuZGVmIE04
+MlhYSENJX0gNCkBAIC00Miw5ICs0NSwyMSBAQA0KICNlbmRpZg0KDQogI2lmZGVmIENPTkZJR19D
+UE0yDQorDQorI2lmZGVmIENPTkZJR19SQ0I4MjcwDQorIyBpZm5kZWYgQ09ORklHX01QQzgyNzAN
+CisjICBkZWZpbmUgQ09ORklHX01QQzgyNzAgMQ0KKyMgZW5kaWYNCisjZW5kaWYNCisNCisjaWYg
+ZGVmaW5lZChDT05GSUdfTVBDODI3MCkgfHwgZGVmaW5lZChDT05GSUdfTVBDODI4MCkNCisjZGVm
+aW5lIFVTQl9TQ0NfSURYCTMJLyogU0NDNCAqLw0KKyNkZWZpbmUgQ1BNVkVDX1VTQgkoQ1BNX0lS
+UV9PRkZTRVQgKyBDUE1WRUNfU0NDNCkNCisjZWxzZQ0KICNkZWZpbmUgVVNCX1NDQ19JRFgJMgkv
+KiBTQ0MzICovDQogI2RlZmluZSBDUE1WRUNfVVNCCShDUE1fSVJRX09GRlNFVCArIENQTVZFQ19T
+Q0MzKQ0KICNlbmRpZg0KKyNlbmRpZg0KDQogI2RlZmluZSBCRF9VU0JfVEMgICAgICAgKCh1c2hv
+cnQpMHgwNDAwKSAgICAgICAgLyogdHJhbnNtaXQgY3JjIGFmdGVyIGxhc3QgKi8NCiAjZGVmaW5l
+IEJEX1VTQl9DTkYgICAgICAoKHVzaG9ydCkweDAyMDApICAgICAgICAvKiB3YWl0IGZvciBoYW5k
+c2hha2UgKi8NCkBAIC0yMzgsNiArMjUzLDQxIEBADQogI2VuZGlmDQoNCiAjaWZkZWYgQ09ORklH
+X0NQTTINCisvKiBDbG9jayBzb3VyY2Ugc2V0dGluZyAqLw0KKyNkZWZpbmUgVVNCX0NNWF9TQ1Jf
+TUFTSyAgKCh1aW50KSgweGZmMDAwMDAwID4+IChVU0JfU0NDX0lEWDw8MykpKQ0KKyNkZWZpbmUg
+VVNCX0NNWF9DTEs1ICAgICAgKCh1aW50KSgoQ01YU0NSX1JTMUNTX0NMSzExIHwgQ01YU0NSX1RT
+MUNTX0NMSzExKSA+PiAoVVNCX1NDQ19JRFg8PDMpKSkNCisjZGVmaW5lIFVTQl9DTVhfQ0xLNiAg
+ICAgICgodWludCkoKENNWFNDUl9SUzFDU19DTEsxMiB8IENNWFNDUl9UUzFDU19DTEsxMikgPj4g
+KFVTQl9TQ0NfSURYPDwzKSkpDQorI2RlZmluZSBVU0JfQ01YX0NMSzcgICAgICAoKHVpbnQpKChD
+TVhTQ1JfUlMxQ1NfQ0xLMyB8IENNWFNDUl9UUzFDU19DTEszKSA+PiAoVVNCX1NDQ19JRFg8PDMp
+KSkNCisjZGVmaW5lIFVTQl9DTVhfQ0xLOCAgICAgICgodWludCkoKENNWFNDUl9SUzFDU19DTEs0
+IHwgQ01YU0NSX1RTMUNTX0NMSzQpID4+IChVU0JfU0NDX0lEWDw8MykpKQ0KKw0KKyNkZWZpbmUg
+UENfQ0xLNV80OE1IegkoKHVpbnQpKDEgPDwgKDMxIC0gMjcpKSkNCisjZGVmaW5lIFBDX0NMSzZf
+NDhNSHoJKCh1aW50KSgxIDw8ICgzMSAtIDI2KSkpDQorI2RlZmluZSBQQ19DTEs3XzQ4TUh6CSgo
+dWludCkoMSA8PCAoMzEgLSAyNSkpKQ0KKyNkZWZpbmUgUENfQ0xLOF80OE1IegkoKHVpbnQpKDEg
+PDwgKDMxIC0gMjQpKSkNCisNCisjaWYgZGVmaW5lZChDT05GSUdfTVBDODI3MCkgfHwgZGVmaW5l
+ZChDT05GSUdfTVBDODI4MCkNCisNCisvKiBiaXRzIGluIHBhcmFsbGVsIGkvbyBwb3J0IHJlZ2lz
+dGVycyB0aGF0IGhhdmUgdG8gYmUgY2xlYXJlZCB0byAgKi8NCisvKiBjb25maWd1cmUgdGhlIHBp
+bnMgZm9yIFNDQzQgVVNCIHVzZS4gICAgICAgICAgICAgICAgICAgICAgICAgICAgKi8NCisgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC8qIHNv
+ciBkaXIgKi8NCisgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIC8qIC0tLSAtLS0gKi8NCisjZGVmaW5lIFBEX1VTQl9SWEQgICAgICAoKHVpbnQp
+KDEgPDwgKDMxIC0gMjIpKSkJLyogIDAgICAwICAqLw0KKyNkZWZpbmUgUERfVVNCX1ROICAgICAg
+ICgodWludCkoMSA8PCAoMzEgLSAyMSkpKQkvKiAgMCAgIDEgICovDQorI2RlZmluZSBQRF9VU0Jf
+VFAgICAgICAgKCh1aW50KSgxIDw8ICgzMSAtIDIwKSkpCS8qICAwICAgMSAgKi8NCisNCisjZGVm
+aW5lIFBEX01TSwkJKFBEX1VTQl9SWEQgfCBQRF9VU0JfVE4gfCBQRF9VU0JfVFApDQorI2RlZmlu
+ZSBQRF9ESVIwCQlQRF9VU0JfUlhEDQorI2RlZmluZSBQRF9ESVIxCQkoUERfVVNCX1ROIHwgUERf
+VVNCX1RQKQ0KKw0KKyNkZWZpbmUgUENfVVNCX09FCSgodWludCkoMSA8PCAoMzEgLSAyMCkpKQkv
+KiAgMCAgIDEgICovDQorI2RlZmluZSBQQ19VU0JfUlAJKCh1aW50KSgxIDw8ICgzMSAtIDkpKSkg
+CS8qICAwICAgMCAgKi8NCisjZGVmaW5lIFBDX1VTQl9STgkoKHVpbnQpKDEgPDwgKDMxIC0gOCkp
+KSAJLyogIDAgICAwICAqLw0KKw0KKyNkZWZpbmUgUENfTVNLCQkoUENfVVNCX09FIHwgUENfVVNC
+X1JQIHwgUENfVVNCX1JOKQ0KKyNkZWZpbmUgUENfRElSMAkJKFBDX1VTQl9SUCB8IFBDX1VTQl9S
+TikNCisjZGVmaW5lIFBDX0RJUjEJCVBDX1VTQl9PRQ0KKw0KKyNlbHNlDQoNCiAvKiBiaXRzIGlu
+IHBhcmFsbGVsIGkvbyBwb3J0IHJlZ2lzdGVycyB0aGF0IGhhdmUgdG8gYmUgY2xlYXJlZCB0byAg
+Ki8NCiAvKiBjb25maWd1cmUgdGhlIHBpbnMgZm9yIFNDQzEgVVNCIHVzZS4gICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgKi8NCkBAIC0yNTksOCArMzA5LDcgQEANCiAjZGVmaW5lIFBDX0RJUjAJ
+CShQQ19VU0JfUlAgfCBQQ19VU0JfUk4pDQogI2RlZmluZSBQQ19ESVIxCQlQQ19VU0JfT0UNCg0K
+LSNkZWZpbmUgUENfQ0xLNl80OE1IegkoKHVpbnQpKDEgPDwgKDMxIC0gMjYpKSkJLyogIDAgICAw
+ICAqLw0KLSNkZWZpbmUgUENfQ0xLOF80OE1IegkoKHVpbnQpKDEgPDwgKDMxIC0gMjQpKSkJLyog
+IDAgICAwICAqLw0KKyNlbmRpZg0KDQogI2VuZGlmDQoNCkBAIC00MDksNyArNDU4LDkgQEANCiAJ
+VVNCX0NMT0NLX1BBNl9DTEsyLA0KIAlVU0JfQ0xPQ0tfQlJHMywNCiAJVVNCX0NMT0NLX0JSRzQs
+DQorICAgICAgICBVU0JfQ0xPQ0tfUEMyN19DTEs1LA0KIAlVU0JfQ0xPQ0tfUEMyNl9DTEs2LA0K
+KyAgICAgICAgVVNCX0NMT0NLX1BDMjVfQ0xLNywNCiAJVVNCX0NMT0NLX1BDMjRfQ0xLOCwNCiAJ
+VVNCX0NMT0NLX0NOVCwNCiB9Ow0K
+
+--=-TPtUaLFWDhy2M8Zdqn4p--
