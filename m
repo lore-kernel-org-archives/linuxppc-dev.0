@@ -1,17 +1,19 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id C109D68865
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 998116884E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Dec 2005 03:58:00 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Thu, 1 Dec 2005 10:45:54 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8594B5@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <zengshuai@sogou.com>
+	Fri,  2 Dec 2005 04:37:21 +1100 (EST)
+To: Nathael PAJANI <nathael.pajani@cpe.fr>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 01 Dec 2005 16:41:03 +0100."
+	<438F198F.9020606@cpe.fr>
+Date: Thu, 01 Dec 2005 18:37:18 +0100
+Sender: wd@denx.de
+Message-Id: <20051201173718.C308D353B0C@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: RE: linuxppc-embedded help needed:kernel access of bad area
+Subject: Re: MPC8555 8280/8270 USB host support 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,17 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: zengshuai@sogou.com
-> Sent: Thursday, December 01, 2005 00:52
-> #define BCSRADDR 0x04500000
+In message <438F198F.9020606@cpe.fr> you wrote:
+> 
+> If u-boot is the boot loader of your board (the stuff running on it 
+> --before-- we see this:
+> 
+> loaded at:     00400000 005153B4
+> board data at: 00513130 00513334
+> relocated to:  00405090 00405294
+> zimage at:     00405A85 00512099
+> avail ram:     00516000 08000000
 
-This address is wrong.
-It's the address the manual gives, but the bootloadre usually moves it
-because it interferes with the SDRAM when running Linux.
-Check the bootloader, or even better, if you know which ChipSelect the
-BCSR is on, read the BRn register and use that address.
+If U-Boot is your boot load, *and* you see this, than you  made  some
+serious  mistake.  U-Boot  is  supposed  to boot the "uImage" images,
+which do not issue such messages.
 
-sort of like:
-bcsr_addr =3D cpm2_immr->im_memctl.memc_br1 & 0xffff8000; // BCSR is on
-CS1 on MPC8266ADS board
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The shortest unit of time in the multiverse is the News York  Second,
+defined  as  the  period  of  time between the traffic lights turning
+green and the cab behind you honking.
+                                - Terry Pratchett, _Lords and Ladies_
