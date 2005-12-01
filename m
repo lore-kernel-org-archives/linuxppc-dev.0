@@ -1,20 +1,19 @@
-Return-Path: <jgarzik@pobox.com>
-Received: from mail.dvmed.net (mail.dvmed.net [216.237.124.58])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0B67768862
+Return-Path: <achim.machura@berghof.com>
+Received: from mail134.messagelabs.com (mail134.messagelabs.com
+	[85.158.137.35]) by ozlabs.org (Postfix) with SMTP id DB49B687DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Dec 2005 18:23:49 +1100 (EST)
-Message-ID: <438EA4FE.8010903@pobox.com>
-Date: Thu, 01 Dec 2005 02:23:42 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
+	Thu,  1 Dec 2005 19:07:34 +1100 (EST)
+From: "Achim Machura" <achim.machura@berghof.com>
+To: <zengshuai@sogou.com>
+Date: Thu, 1 Dec 2005 09:00:41 +0100
+Message-ID: <000001c5f64d$538113d0$34f1ff0a@beint.local>
 MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-References: <20051124224840.GB21929@gate.ebshome.net>
-In-Reply-To: <20051124224840.GB21929@gate.ebshome.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ibm_emac: fix graceful stop timeout handling
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <5100380.1133419921433.JavaMail.postfix@mx3.mail.sohu.com>
+Cc: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
+Subject: AW: RE: linuxppc-embedded help needed:kernel access of bad area
+Reply-To: achim.machura@berghof.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,4 +24,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-applied
+Hello,
+
+> #define BCSRADDR 0x04500000
+> 
+...
+> static int PQ2FADS_GPL_open(struct inode *inode,struct file *filp)
+> {
+> 	PQ2FADS_GPL_CSR=(PQ2FADS_BCSR*)BCSRADDR;
+
+possible you have to change physical address to logical see ioremap.
+
+achim
