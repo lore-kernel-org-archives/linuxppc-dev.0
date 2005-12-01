@@ -1,23 +1,17 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from relay03s.clb.oleane.net (relay03s.clb.oleane.net
-	[213.56.31.144]) by ozlabs.org (Postfix) with ESMTP id 7235A6885E
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 5E07168864
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Dec 2005 04:54:37 +1100 (EST)
-Received: from smtp4.clb.oleane.net (smtp4.clb.oleane.net [213.56.31.20])
-	by relay03s.clb.oleane.net with ESMTP id jB1HsWvT003139
-	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Dec 2005 18:54:35 +0100
-Received: from GEG2400 ([62.160.30.216]) (authenticated)
-	by smtp4.clb.oleane.net with ESMTP id jB1HhibN001378
-	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Dec 2005 18:43:49 +0100
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Date: Thu, 1 Dec 2005 18:47:46 +0100
-Message-ID: <000001c5f69f$580e6ae0$5201a8c0@GEG2400>
+	Fri,  2 Dec 2005 05:43:03 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: 
-Subject: PPC 32bits and big RAM mapping problem
+	charset="us-ascii"
+Date: Thu, 1 Dec 2005 12:43:02 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8594B6@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Laurent Lagrange" <lagrange@fr.oleane.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: PPC 32bits and big RAM mapping problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,52 +22,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+> -----Original Message-----
+> From: Laurent Lagrange
+> Sent: Thursday, December 01, 2005 11:48
+> To: linuxppc-embedded@ozlabs.org
+> Subject: PPC 32bits and big RAM mapping problem
 
-Hello,
+> So I'm under the impression to be cornered in my shoes.
+> Any idea, book, article, prediction would be welcome.
 
-I have a PPC board with an address width fixed to 32bits, so I can address
-4GB.
+I have 2GB of ram working on my PPC32 board.
 
-   M          M        M         M          M          M           M
-  0          0        0         0          0          1           e
- 0          2        8         c          e          e           f
- ---------------------------------------------------------------------------
----
- | Physical |        | PCI     | Kernel   | Kernel   | User      |
-Peripheral |
- | RAM      | unused | memory  | memory   | reserved | memory    | mapping
-|
- |          |        |         | kmalloc  |          | vmalloc   |
-|
- | ex 512MB |        | ex 1GB  | ex 512MB | 16MB     |           | ex 32MB
-|
- |      2GB max      | 1GB max | max ?    |          | 464MB max |
-|
- ---------------------------------------------------------------------------
----
-                              (0)                   (1)         (2)
+You have to change the following in the kernel config:
+Under Advanced Setup:
+	Set Maximum Low memory (Set to 0x40000000)
+	Set Custom Kernel config address (Set to 0xA0000000)
 
-00M stand for 0x00000000
-(0) kernel_base
-(1) vmalloc_start
-(2) vmalloc_end
-
-The exemple above shows a classical(?) mapping with a physical RAM of 512MB.
-The physical RAM can growth up to 2GB, but if the kernel maps a Kernel
-memory
-of 2GB, there is no more place for the other items. The 4GB are eated.
-
-Even with only 512MB of RAM, the kernel can't fully vmalloc it for user.
-
-I know that the kernel and drivers kmalloc in Kernel memory which has the
-full
-space but when the users wants more RAM, it is for vmallocations.
-Now when the physical RAM increases, the User memory is reduced for vmalloc.
-And I don't talk about Peripheral mappings which also reduce the User
-memory.
-
-So I'm under the impression to be cornered in my shoes.
-Any idea, book, article, prediction would be welcome.
-
-Thanks
-Laurent
+I do not remember if I had to change anything else.
