@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 998116884E
+Return-Path: <lagrange@fr.oleane.com>
+Received: from relay03s.clb.oleane.net (relay03s.clb.oleane.net
+	[213.56.31.144]) by ozlabs.org (Postfix) with ESMTP id 7235A6885E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Dec 2005 04:37:21 +1100 (EST)
-To: Nathael PAJANI <nathael.pajani@cpe.fr>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 01 Dec 2005 16:41:03 +0100."
-	<438F198F.9020606@cpe.fr>
-Date: Thu, 01 Dec 2005 18:37:18 +0100
-Sender: wd@denx.de
-Message-Id: <20051201173718.C308D353B0C@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8555 8280/8270 USB host support 
+	Fri,  2 Dec 2005 04:54:37 +1100 (EST)
+Received: from smtp4.clb.oleane.net (smtp4.clb.oleane.net [213.56.31.20])
+	by relay03s.clb.oleane.net with ESMTP id jB1HsWvT003139
+	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Dec 2005 18:54:35 +0100
+Received: from GEG2400 ([62.160.30.216]) (authenticated)
+	by smtp4.clb.oleane.net with ESMTP id jB1HhibN001378
+	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Dec 2005 18:43:49 +0100
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 1 Dec 2005 18:47:46 +0100
+Message-ID: <000001c5f69f$580e6ae0$5201a8c0@GEG2400>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: 
+Subject: PPC 32bits and big RAM mapping problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +28,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <438F198F.9020606@cpe.fr> you wrote:
-> 
-> If u-boot is the boot loader of your board (the stuff running on it 
-> --before-- we see this:
-> 
-> loaded at:     00400000 005153B4
-> board data at: 00513130 00513334
-> relocated to:  00405090 00405294
-> zimage at:     00405A85 00512099
-> avail ram:     00516000 08000000
 
-If U-Boot is your boot load, *and* you see this, than you  made  some
-serious  mistake.  U-Boot  is  supposed  to boot the "uImage" images,
-which do not issue such messages.
+Hello,
 
-Best regards,
+I have a PPC board with an address width fixed to 32bits, so I can address
+4GB.
 
-Wolfgang Denk
+   M          M        M         M          M          M           M
+  0          0        0         0          0          1           e
+ 0          2        8         c          e          e           f
+ ---------------------------------------------------------------------------
+---
+ | Physical |        | PCI     | Kernel   | Kernel   | User      |
+Peripheral |
+ | RAM      | unused | memory  | memory   | reserved | memory    | mapping
+|
+ |          |        |         | kmalloc  |          | vmalloc   |
+|
+ | ex 512MB |        | ex 1GB  | ex 512MB | 16MB     |           | ex 32MB
+|
+ |      2GB max      | 1GB max | max ?    |          | 464MB max |
+|
+ ---------------------------------------------------------------------------
+---
+                              (0)                   (1)         (2)
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The shortest unit of time in the multiverse is the News York  Second,
-defined  as  the  period  of  time between the traffic lights turning
-green and the cab behind you honking.
-                                - Terry Pratchett, _Lords and Ladies_
+00M stand for 0x00000000
+(0) kernel_base
+(1) vmalloc_start
+(2) vmalloc_end
+
+The exemple above shows a classical(?) mapping with a physical RAM of 512MB.
+The physical RAM can growth up to 2GB, but if the kernel maps a Kernel
+memory
+of 2GB, there is no more place for the other items. The 4GB are eated.
+
+Even with only 512MB of RAM, the kernel can't fully vmalloc it for user.
+
+I know that the kernel and drivers kmalloc in Kernel memory which has the
+full
+space but when the users wants more RAM, it is for vmallocations.
+Now when the physical RAM increases, the User memory is reduced for vmalloc.
+And I don't talk about Peripheral mappings which also reduce the User
+memory.
+
+So I'm under the impression to be cornered in my shoes.
+Any idea, book, article, prediction would be welcome.
+
+Thanks
+Laurent
