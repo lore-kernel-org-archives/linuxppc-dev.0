@@ -1,19 +1,17 @@
-Return-Path: <nathael.pajani@cpe.fr>
-Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.36])
-	by ozlabs.org (Postfix) with ESMTP id 4411668872
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id C109D68865
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Dec 2005 02:38:09 +1100 (EST)
-Received: from [192.52.109.152] (unknown [83.145.98.3])
-	by smtp-out.completel.net (Postfix) with ESMTP id 57A06280066
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Dec 2005 16:38:08 +0100 (CET)
-Message-ID: <438F198F.9020606@cpe.fr>
-Date: Thu, 01 Dec 2005 16:41:03 +0100
-From: Nathael PAJANI <nathael.pajani@cpe.fr>
+	Fri,  2 Dec 2005 03:58:00 +1100 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: MPC8555 8280/8270 USB host support
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 1 Dec 2005 10:45:54 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8594B5@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <zengshuai@sogou.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: RE: linuxppc-embedded help needed:kernel access of bad area
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,53 +22,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
+> -----Original Message-----
+> From: zengshuai@sogou.com
+> Sent: Thursday, December 01, 2005 00:52
+> #define BCSRADDR 0x04500000
 
- >
- >>
- >>Don't you think u-boot should take care of clock setup
- >>i.e. as much as possible of all board dependent stuff ?
- >>
- >>
- >I think you're right, but then it was easier to make all these setups 
- >in the driver itself.
- >
+This address is wrong.
+It's the address the manual gives, but the bootloadre usually moves it
+because it interferes with the SDRAM when running Linux.
+Check the bootloader, or even better, if you know which ChipSelect the
+BCSR is on, read the BRn register and use that address.
 
-If u-boot is the boot loader of your board (the stuff running on it 
---before-- we see this:
-
-loaded at:     00400000 005153B4
-board data at: 00513130 00513334
-relocated to:  00405090 00405294
-zimage at:     00405A85 00512099
-avail ram:     00516000 08000000
-
-Linux/PPC load: rw console=ttyS0 root=/dev/nfs ip=on
-
-Uncompressing Linux...done)
-
-
-Then I would say NO
-
-
-
-
-If u-boot is this exact stuff (the files in arch/ppc/boot/simple/... 
-misc-embedded.c for example)
-
-then, yes, this is somehow better.
-But (tell me if I'm wrong) this is not really Linux code, and this 
-should be done by Linux.
-
-
-What I think should be good also is the platform files 
-(arch/ppc/platforms/....) for this is the place where all the board 
-dependant stuff stays.
-
-
-
-
-Maybe I'm completely mistaken.
-Feel free to tell me (and explain please !)
-
-Have fun.
+sort of like:
+bcsr_addr =3D cpm2_immr->im_memctl.memc_br1 & 0xffff8000; // BCSR is on
+CS1 on MPC8266ADS board
