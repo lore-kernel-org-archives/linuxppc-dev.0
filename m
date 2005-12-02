@@ -1,16 +1,15 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 6120368862
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2005 19:46:05 +1100 (EST)
-Date: Fri, 2 Dec 2005 09:46:03 +0100 (MET)
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <rredondo@indra.es>
+Received: from madarrsmtp2.indra.es (unknown [213.170.46.108])
+	by ozlabs.org (Postfix) with ESMTP id 5058368802
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Dec 2005 21:41:02 +1100 (EST)
 MIME-Version: 1.0
-References: <1133481536.6100.32.camel@gaston>
-Message-ID: <4885.1133513163@www38.gmx.net>
-Content-Type: text/plain; charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
-Subject: Re: AmigaOne 2.6.x Linux kernel port
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C5F72B.E02C6080"
+Date: Fri, 2 Dec 2005 11:33:46 +0100
+Message-ID: <6A28467355D2AD478D1F51C479415AE77B47E9@MADTORMAIL.indra.es>
+From: "Redondo Garcia, Roberto" <rredondo@indra.es>
+To: <linuxppc-dev@ozlabs.org>
+Subject: back trace when a SIGSEGV
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,78 +19,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> --- Ursprüngliche Nachricht ---
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> Kopie: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-> debian-powerpc@lists.debian.org
-> Betreff: Re: AmigaOne 2.6.x Linux kernel port
-> Datum: Fri, 02 Dec 2005 10:58:55 +1100
-> 
-> (I'm moving this to the linuxppc-dev list)
-> 
-> Well, you need consistent alloc functions to really provide you with
-> non-cached memory. Fushing is not enough. Flushing is fine for dma_map
-> etc..., not for consistent alloc.
-> 
-> So in theory, you should be able to re-use the existing consistent
-> allocation functions, except that the current implementation has
-> "issues":
-Well, as far as I could understand the code, you need to define a start and
-end address for the consistent memory, but as all the memory is managed by
-the kernel, it's not possible to do this (I hope that I don't write nonsense
-here ;-) ).
+This is a multi-part message in MIME format.
 
-> The main problem I see with the implementation is that it just allocates
-> pages out of the normal kernel allocator and maps them in the
-> "consistent" virtual range without ever unmapping them from the kernel
-> linear mapping. That means that those pages end up being mapped twice:
-> cacheable and non-cacheable, which is absolutely wrong and will explode
-> in colorful ways on a number of CPUs. The pages should at least be
-> unmapped from the kernel linear (& cacheable) mapping.
-> 
-> I understand this is probably done to keep the TLB miss handler for the
-> kernel mapping as fast as possible. Unfortunately, it's also incorrect
-> if your processor is capable of any kind of prefetching accross a 4k
-> boundary.
-Well, the processor is a normal G3/G4 desktop CPU... 
+------_=_NextPart_001_01C5F72B.E02C6080
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> Then, remains the BAT mapping problem. In order to improve performances,
-> the kernel uses BATs to map the main memory (to know more about BATs,
-> look at the proccessor docs). That means that unmapping the memory from
-> the linear mapping will not work if that memory happens to be covered by
-> a BAT (there aren't even page tables entries for those pages anyway).
-> Thus, in order to be able to reliably unmap things from the linear
-> mapping (or individually change page attributes) you need to disable BAT
-> mapping of memory, either completely, or by preallocating (and thus
-> actually reserving) memory outside of the BAT mapping for use in the
-> consistent allocator.
-Okay, I think reserving memory outside of the BAT mapping, is the approach
-that is used in the arch/ppc/kernel/dma-mapping.c file. There you should
-define a consistent memory area (by it's start and end address), which is
-used for non-coherent DMA memory allocations, right? But as that isn't
-possible on the AmigaOne, we have to go the hard way.
+hello,=20
+I have a program that when it has been several hours running, it has a
+problem and falls and it produces a SIGSEGV.  I would like to know to
+how debug this error, because I do not have ulimit for generate core
+dump o examine a back trace.
+=20
+thanks
+=20
+-------------------------------------------------------------------------=
+------------------------------------------
+Este correo electr=F3nico y, en su caso, cualquier fichero anexo al mismo=
+, contiene informaci=F3n de car=E1cter confidencial exclusivamente dirigi=
+da a su destinatario o destinatarios. Queda prohibida su divulgaci=F3n, c=
+opia o distribuci=F3n a terceros sin la previa autorizaci=F3n escrita de =
+Indra. En el caso de haber recibido este correo electr=F3nico por error, =
+se ruega notificar inmediatamente esta circunstancia mediante reenv=EDo a=
+ la direcci=F3n electr=F3nica del remitente. POR FAVOR, ANTES DE IMPRIMIR=
+ ESTE CORREO ELECTR=D3NICO CONSIDERE SU APORTACI=D3N A LA CONSERVACI=D3N =
+DEL MEDIO AMBIENTE POR LA REDUCCI=D3N DE CONSUMO DE PAPEL.
 
-> However, the exception handling of the kernel is designed with the
-> assumption that it will not take hash faults in some critical locations,
-> and this assumption is correct thanks to ... the BAT mapping. You are
-> lucky though that recent kernels have been fixed to be able to recover
-> from such faults provided the instructions are still BAT mapped, so you
-> can probably hack the initialisation of the memory on ppc to not use
-> data BATs but only instruction BATs and still create the page tables for
-> the entire memory. That will allow you to implement proper unmapping of
-> pages in the consistent allocator. However, it will also impact your
-> overall performances ...
-Well, after all the performance of the AmigaOne isn't that good (but
-acceptable) due to the ArticiaS northbridge, but I think it's more important
-to fix the real problem than doing a lot of workarounds. I'm going to study
-now the processor docs, otherwise I won't understand not even a single bit
-of the kernel code. :-)
+The information in this e-mail and in any attachments is confidential and=
+ solely for the attention and use of the named addressee(s). You are here=
+by notified that any dissemination, distribution or copy of this communic=
+ation is prohibited without the prior written consent of Indra. If you ha=
+ve received this communication in error, please, notify the sender by rep=
+ly e-mail. PLEASE CONSIDER YOUR ENVIRONMENTAL RESPONSIBILITY BEFORE PRINT=
+ING THIS E-MAIL.
 
-Thanks again!
+------_=_NextPart_001_01C5F72B.E02C6080
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Gerhard
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii"=
+>
+<META content=3D"MSHTML 6.00.2900.2668" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial size=3D2>hello,=20=
 
--- 
-Lust, ein paar Euro nebenbei zu verdienen? Ohne Kosten, ohne Risiko!
-Satte Provisionen für GMX Partner: http://www.gmx.net/de/go/partner
+</FONT></SPAN></DIV>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial><FONT size=3D2>I=
+ have a=20
+program that when it has been several hours&nbsp;<SPAN=20
+class=3D637013110-02122005>running</SPAN>, it has a problem and falls and=
+ it=20
+produces a SIGSEGV.&nbsp; I would like to know to how debug this error, b=
+ecause=20
+I do not have ulimit for generate core dump<SPAN class=3D637013110-021220=
+05> o=20
+examine a back trace.</SPAN></FONT></FONT></SPAN></DIV>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial=20
+size=3D2>thanks</FONT></SPAN></DIV>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV></DIV>--------------------------------=
+-------------------------------------------------------------------------=
+----------<br>Este correo electr=F3nico y, en su caso, cualquier fichero =
+anexo al mismo, contiene informaci=F3n de car=E1cter confidencial exclusi=
+vamente dirigida a su destinatario o destinatarios. Queda prohibida su di=
+vulgaci=F3n, copia o distribuci=F3n a terceros sin la previa autorizaci=F3=
+n escrita de Indra. En el caso de haber recibido este correo electr=F3nic=
+o por error, se ruega notificar inmediatamente esta circunstancia mediant=
+e reenv=EDo a la direcci=F3n electr=F3nica del remitente. POR FAVOR, ANTE=
+S DE IMPRIMIR ESTE CORREO ELECTR=D3NICO CONSIDERE SU APORTACI=D3N A LA CO=
+NSERVACI=D3N DEL MEDIO AMBIENTE POR LA REDUCCI=D3N DE CONSUMO DE PAPEL.<b=
+r><br>The information in this e-mail and in any attachments is confidenti=
+al and solely for the attention and use of the named addressee(s). You ar=
+e hereby notified that any dissemination, distribution or copy of this co=
+mmunication is prohibited without the prior written consent of Indra. If =
+you have received this communication in error, please, notify the sender =
+by reply e-mail. PLEASE CONSIDER YOUR ENVIRONMENTAL RESPONSIBILITY BEFORE=
+ PRINTING THIS E-MAIL.</BODY></HTML>
+
+------_=_NextPart_001_01C5F72B.E02C6080--
