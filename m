@@ -1,19 +1,16 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id 39F29687DE
+Return-Path: <rredondo@indra.es>
+Received: from madarrsmtp2.indra.es (unknown [213.170.46.108])
+	by ozlabs.org (Postfix) with ESMTP id 6774568802
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Dec 2005 23:57:43 +1100 (EST)
-Message-ID: <1133531801.4390529995cfa@webmail.televes.com:443>
-Date: Fri,  2 Dec 2005 14:56:41 +0100
-From: Alex BASTOS <alebas@televes.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-References: <1133520697.4390273987a6a@webmail.televes.com:443>
-	<4390223C.8060103@ru.mvista.com>
-In-Reply-To: <4390223C.8060103@ru.mvista.com>
+	Fri,  2 Dec 2005 18:43:29 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: pq2_find_bridges hangs system
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C5F713.15559DE5"
+Date: Fri, 2 Dec 2005 08:36:16 +0100
+Message-ID: <6A28467355D2AD478D1F51C479415AE77B4592@MADTORMAIL.indra.es>
+From: "Redondo Garcia, Roberto" <rredondo@indra.es>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: SIGSEV in user mode
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,60 +21,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Vitaly,
+This is a multi-part message in MIME format.
 
-> >
-> There are 2 indirect_read_config(), one for PCI9 case, and one for not.
-> I guess you should have CONFIG_8260_PCI9 disabled.
+------_=_NextPart_001_01C5F713.15559DE5
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+hello,=20
+I have a program that when it has been several hours executing, it has a
+problem and falls and it produces a SIGSEGV.  I would like to know to
+how debug this error, because I do not have ulimit for generate core
+dump
+=20
+thanks
+=20
+-------------------------------------------------------------------------=
+------------------------------------------
+Este correo electr=F3nico y, en su caso, cualquier fichero anexo al mismo=
+, contiene informaci=F3n de car=E1cter confidencial exclusivamente dirigi=
+da a su destinatario o destinatarios. Queda prohibida su divulgaci=F3n, c=
+opia o distribuci=F3n a terceros sin la previa autorizaci=F3n escrita de =
+Indra. En el caso de haber recibido este correo electr=F3nico por error, =
+se ruega notificar inmediatamente esta circunstancia mediante reenv=EDo a=
+ la direcci=F3n electr=F3nica del remitente. POR FAVOR, ANTES DE IMPRIMIR=
+ ESTE CORREO ELECTR=D3NICO CONSIDERE SU APORTACI=D3N A LA CONSERVACI=D3N =
+DEL MEDIO AMBIENTE POR LA REDUCCI=D3N DE CONSUMO DE PAPEL.
+
+The information in this e-mail and in any attachments is confidential and=
+ solely for the attention and use of the named addressee(s). You are here=
+by notified that any dissemination, distribution or copy of this communic=
+ation is prohibited without the prior written consent of Indra. If you ha=
+ve received this communication in error, please, notify the sender by rep=
+ly e-mail. PLEASE CONSIDER YOUR ENVIRONMENTAL RESPONSIBILITY BEFORE PRINT=
+ING THIS E-MAIL.
+
+------_=_NextPart_001_01C5F713.15559DE5
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii"=
 >
-> If config seems OK, pleas submit backtrace. As long as I can see, "proper"
-> setup_indirect_pci has been moved over to arch/powerpc/sysdev/indirect_pci.c.
-> Check it it is compiled/used.
->
+<META content=3D"MSHTML 6.00.2900.2668" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial size=3D2>hello,=20=
 
-Config file seems OK to me:
+</FONT></SPAN></DIV>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial size=3D2>I have =
+a program=20
+that when it has been several hours executing, it has a problem and falls=
+ and it=20
+produces a SIGSEGV.&nbsp; I would like to know to how debug this error, b=
+ecause=20
+I do not have ulimit for generate core dump</FONT></SPAN></DIV>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial=20
+size=3D2>thanks</FONT></SPAN></DIV>
+<DIV><SPAN class=3D157352607-02122005><FONT face=3DArial=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>--------------------------------------=
+-------------------------------------------------------------------------=
+----<br>Este correo electr=F3nico y, en su caso, cualquier fichero anexo =
+al mismo, contiene informaci=F3n de car=E1cter confidencial exclusivament=
+e dirigida a su destinatario o destinatarios. Queda prohibida su divulgac=
+i=F3n, copia o distribuci=F3n a terceros sin la previa autorizaci=F3n esc=
+rita de Indra. En el caso de haber recibido este correo electr=F3nico por=
+ error, se ruega notificar inmediatamente esta circunstancia mediante ree=
+nv=EDo a la direcci=F3n electr=F3nica del remitente. POR FAVOR, ANTES DE =
+IMPRIMIR ESTE CORREO ELECTR=D3NICO CONSIDERE SU APORTACI=D3N A LA CONSERV=
+ACI=D3N DEL MEDIO AMBIENTE POR LA REDUCCI=D3N DE CONSUMO DE PAPEL.<br><br=
+>The information in this e-mail and in any attachments is confidential an=
+d solely for the attention and use of the named addressee(s). You are her=
+eby notified that any dissemination, distribution or copy of this communi=
+cation is prohibited without the prior written consent of Indra. If you h=
+ave received this communication in error, please, notify the sender by re=
+ply e-mail. PLEASE CONSIDER YOUR ENVIRONMENTAL RESPONSIBILITY BEFORE PRIN=
+TING THIS E-MAIL.</BODY></HTML>
 
-# CONFIG_CPCI690 is not set
-CONFIG_PPC_INDIRECT_PCI=y
-CONFIG_PCI=y
-CONFIG_PCI_DOMAINS=y
-CONFIG_PCI_8260=y
-# CONFIG_PCI_LEGACY_PROC is not set
-# CONFIG_PCI_DEBUG is not set
-# CONFIG_NET_PCI is not set
-
-and indirect_pci from arch/powerpc is compiled and used ...
-
-I have tested a bit more. The call trace would be:
-
-[c01db170] m8260_setup_arch
-[c01db87c] pq2_find_bridges
-[c01dbfa0] pciauto_bus_scan
-[c000a754] early_read_config_byte
-[c00c8f54] pci_bus_read_config_byte
-[c0011424] indirect_read_config
-
-I have done manually, since GDB only reports last two,
-and I couldn't get it from log_buf.
-
-(gdb) bt
-#0  indirect_read_config (bus=0x0, devfn=3223241436,
-                          offset=8, len=14, val=0x1032)
-    at arch/powerpc/sysdev/indirect_pci.c:32
-
-#1  0xc00c8fb4 in pci_bus_read_config_byte (bus=0xc01ec2dc,
-                       devfn=8, pos=14, value=0xc01d1f3a "")
-    at drivers/pci/access.c:52
-
-Now I have check indirect_read_config, and I have seen
-the call ends itself, but after that it returns to
-
-   pci_bus_read_config_dword
-
-executes some asm and then hangs.
-
-Any idea?
-
-Thanks,
-
-Alex BASTOS
+------_=_NextPart_001_01C5F713.15559DE5--
