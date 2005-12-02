@@ -1,16 +1,19 @@
-Return-Path: <kernel-stuff@comcast.net>
-Received: from sccrmhc11.comcast.net (sccrmhc11.comcast.net [63.240.77.81])
-	by ozlabs.org (Postfix) with ESMTP id 8B74868869
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Dec 2005 04:09:52 +1100 (EST)
-From: kernel-stuff@comcast.net (Parag Warudkar)
-To: Stelian Pop <stelian@popies.net>,
-	Michael Hanselmann <linux-kernel@hansmi.ch>
-Date: Fri, 02 Dec 2005 17:02:23 +0000
-Message-Id: <120220051702.24733.43907E1E000B191F0000609D220702293300009A9B9CD3040A029D0A05@comcast.net>
-Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net,
-	debian-powerpc@lists.debian.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PowerBook5,8 - TrackPad update
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AA38E687DE
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Dec 2005 09:03:36 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <4885.1133513163@www38.gmx.net>
+References: <1133481536.6100.32.camel@gaston> <4885.1133513163@www38.gmx.net>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 03 Dec 2005 08:56:30 +1100
+Message-Id: <1133560590.6100.75.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Subject: Re: AmigaOne 2.6.x Linux kernel port
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,22 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-My original patch is still work in progress and was intended as a starting point if someone was already adept with the trackpad stuff and was willing to help. 
-(Basically it was a call for help - nothing for end users ;)
+On Fri, 2005-12-02 at 09:46 +0100, Gerhard Pircher wrote:
+> > --- Ursprüngliche Nachricht ---
+> > Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > Kopie: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+> > debian-powerpc@lists.debian.org
+> > Betreff: Re: AmigaOne 2.6.x Linux kernel port
+> > Datum: Fri, 02 Dec 2005 10:58:55 +1100
+> > 
+> > (I'm moving this to the linuxppc-dev list)
+> > 
+> > Well, you need consistent alloc functions to really provide you with
+> > non-cached memory. Fushing is not enough. Flushing is fine for dma_map
+> > etc..., not for consistent alloc.
+> > 
+> > So in theory, you should be able to re-use the existing consistent
+> > allocation functions, except that the current implementation has
+> > "issues":
 
-Things that remained to be done -
+> Well, as far as I could understand the code, you need to define a start and
+> end address for the consistent memory, but as all the memory is managed by
+> the kernel, it's not possible to do this (I hope that I don't write nonsense
+> here ;-) ).
 
-Either
-1) Support for all PowerBooks in one code base (> Feb 2005)
-Or
-1) Create different versions for each one or two of them
+Nah, those are virtual addresses, they are defined in .config, the
+default ones might just work.
 
-Depending upon whether or not widely varying algorithms are needed for each variety.
+> > I understand this is probably done to keep the TLB miss handler for the
+> > kernel mapping as fast as possible. Unfortunately, it's also incorrect
+> > if your processor is capable of any kind of prefetching accross a 4k
+> > boundary.
+>
+> Well, the processor is a normal G3/G4 desktop CPU... 
 
-2) Major part - reliably working code for finger movement detection for all Oct 2005 PowerBooks (15" itself seems to come with trackpads having entirely different characteristics.) 
+I know and that's a problem.
 
-3) Possibly Dual Finger Detection for scrolling - this is optional but would be good to have.
+> Okay, I think reserving memory outside of the BAT mapping, is the approach
+> that is used in the arch/ppc/kernel/dma-mapping.c file. There you should
+> define a consistent memory area (by it's start and end address), which is
+> used for non-coherent DMA memory allocations, right? But as that isn't
+> possible on the AmigaOne, we have to go the hard way.
 
-I am working on it as time and urges permit and it will speed up only if Johannes doesn't get his PowerBook or the one he gets is 0x0216 !!
+No. This area is only used for virtual space allocation. Actual physical
+pages are picked up anywhere using the page allocator.
 
-Parag
+
+> Well, after all the performance of the AmigaOne isn't that good (but
+> acceptable) due to the ArticiaS northbridge, but I think it's more important
+> to fix the real problem than doing a lot of workarounds. I'm going to study
+> now the processor docs, otherwise I won't understand not even a single bit
+> of the kernel code. :-)
+
+The real problem is the northbridge being crap.
+
+Ben.
