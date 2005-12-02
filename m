@@ -1,18 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 605406884B
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Dec 2005 02:35:54 +1100 (EST)
-To: "Redondo Garcia, Roberto" <rredondo@indra.es>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 02 Dec 2005 11:33:46 +0100."
-	<6A28467355D2AD478D1F51C479415AE77B47E9@MADTORMAIL.indra.es>
-Date: Fri, 02 Dec 2005 16:35:52 +0100
-Sender: wd@denx.de
-Message-Id: <20051202153552.49244353A14@atlas.denx.de>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: back trace when a SIGSEGV 
+Return-Path: <kernel-stuff@comcast.net>
+Received: from sccrmhc11.comcast.net (sccrmhc11.comcast.net [63.240.77.81])
+	by ozlabs.org (Postfix) with ESMTP id 8B74868869
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Dec 2005 04:09:52 +1100 (EST)
+From: kernel-stuff@comcast.net (Parag Warudkar)
+To: Stelian Pop <stelian@popies.net>,
+	Michael Hanselmann <linux-kernel@hansmi.ch>
+Date: Fri, 02 Dec 2005 17:02:23 +0000
+Message-Id: <120220051702.24733.43907E1E000B191F0000609D220702293300009A9B9CD3040A029D0A05@comcast.net>
+Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net,
+	debian-powerpc@lists.debian.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: PowerBook5,8 - TrackPad update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <6A28467355D2AD478D1F51C479415AE77B47E9@MADTORMAIL.indra.es> you wrote:
-> 
-> I have a program that when it has been several hours running, it has a
-> problem and falls and it produces a SIGSEGV.  I would like to know to
-> how debug this error, because I do not have ulimit for generate core
-> dump o examine a back trace.
+My original patch is still work in progress and was intended as a starting point if someone was already adept with the trackpad stuff and was willing to help. 
+(Basically it was a call for help - nothing for end users ;)
 
-Run the program under control of a debugger (gdb, or - if you're on a
-resource-limited target - gdbserver).
+Things that remained to be done -
 
-Best regards,
+Either
+1) Support for all PowerBooks in one code base (> Feb 2005)
+Or
+1) Create different versions for each one or two of them
 
-Wolfgang Denk
+Depending upon whether or not widely varying algorithms are needed for each variety.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Es ist nicht genug zu wissen, man muﬂ auch anwenden; es ist nicht ge-
-nug zu wollen, man muﬂ auch tun.   -- Goethe, Maximen und Reflexionen
+2) Major part - reliably working code for finger movement detection for all Oct 2005 PowerBooks (15" itself seems to come with trackpads having entirely different characteristics.) 
+
+3) Possibly Dual Finger Detection for scrolling - this is optional but would be good to have.
+
+I am working on it as time and urges permit and it will speed up only if Johannes doesn't get his PowerBook or the one he gets is 0x0216 !!
+
+Parag
