@@ -2,19 +2,17 @@ Return-Path: <ebs@ebshome.net>
 Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 88F6168847
+	by ozlabs.org (Postfix) with ESMTP id B9F796884E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Dec 2005 19:45:43 +1100 (EST)
-Date: Fri, 2 Dec 2005 00:45:40 -0800
+	Fri,  2 Dec 2005 20:12:07 +1100 (EST)
+Date: Fri, 2 Dec 2005 01:12:05 -0800
 From: Eugene Surovegin <ebs@ebshome.net>
-To: Sam Song <samlinuxppc@yahoo.com.cn>
-Message-ID: <20051202084540.GA16031@gate.ebshome.net>
-References: <20051202062007.52513.qmail@web15804.mail.cnb.yahoo.com>
+To: Andrew Morton <akpm@osdl.org>
+Message-ID: <20051202091205.GB16031@gate.ebshome.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051202062007.52513.qmail@web15804.mail.cnb.yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Can I operate i2c device in a tasklet?
+Subject: [PATCH] ppc32: remove "jumbo" member from ocp_func_emac_data
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +23,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Dec 02, 2005 at 02:20:07PM +0800, Sam Song wrote:
-> Hi all,
-> 
-> I found that once I operated i2c bus like 
-> read from i2c device in 2.4.31 kernl in a
-> interrupt handler or tasklet, kernel panic
-> would happen. Is there any way to make it
-> in such case? I need to write sth on RTC
-> alarm register with an interrupt event.
-> 
-> ......
-> Scheduling in interrupt
-> kernel BUG at sched.c:564!
+This patch removes not needed anymore "jumbo" member from 
+ocp_func_emac_data. Jumbo frame support is handled by PPC4xx EMAC 
+driver internally now.
 
-You cannot access i2c layer from non-process context. Please, search 
-mail list archives, this matter was discussed countless number of 
-times.
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+---
 
--- 
-Eugene
+ arch/ppc/platforms/4xx/ibm440gx.c |    2 --
+ arch/ppc/platforms/4xx/ibm440sp.c |    1 -
+ include/asm-ppc/ibm_ocp.h         |    1 -
+ 3 files changed, 0 insertions(+), 4 deletions(-)
+
+diff --git a/arch/ppc/platforms/4xx/ibm440gx.c b/arch/ppc/platforms/4xx/ibm440gx.c
+index 956f45e..d24c09e 100644
+--- a/arch/ppc/platforms/4xx/ibm440gx.c
++++ b/arch/ppc/platforms/4xx/ibm440gx.c
+@@ -58,7 +58,6 @@ static struct ocp_func_emac_data ibm440g
+ 	.wol_irq        = 65,  		/* WOL interrupt number */
+ 	.mdio_idx       = -1,           /* No shared MDIO */
+ 	.tah_idx	= 0,		/* TAH device index */
+-	.jumbo		= 1,		/* Jumbo frames supported */
+ };
+ 
+ static struct ocp_func_emac_data ibm440gx_emac3_def = {
+@@ -72,7 +71,6 @@ static struct ocp_func_emac_data ibm440g
+ 	.wol_irq        = 67,  		/* WOL interrupt number */
+ 	.mdio_idx       = -1,           /* No shared MDIO */
+ 	.tah_idx	= 1,		/* TAH device index */
+-	.jumbo		= 1,		/* Jumbo frames supported */
+ };
+ OCP_SYSFS_EMAC_DATA()
+ 
+diff --git a/arch/ppc/platforms/4xx/ibm440sp.c b/arch/ppc/platforms/4xx/ibm440sp.c
+index feb17e4..71a0117 100644
+--- a/arch/ppc/platforms/4xx/ibm440sp.c
++++ b/arch/ppc/platforms/4xx/ibm440sp.c
+@@ -31,7 +31,6 @@ static struct ocp_func_emac_data ibm440s
+ 	.wol_irq        = 61,  		/* WOL interrupt number */
+ 	.mdio_idx       = -1,           /* No shared MDIO */
+ 	.tah_idx	= -1,		/* No TAH */
+-	.jumbo		= 1,		/* Jumbo frames supported */
+ };
+ OCP_SYSFS_EMAC_DATA()
+ 
+diff --git a/include/asm-ppc/ibm_ocp.h b/include/asm-ppc/ibm_ocp.h
+index 9c21de1..ddce616 100644
+--- a/include/asm-ppc/ibm_ocp.h
++++ b/include/asm-ppc/ibm_ocp.h
+@@ -63,7 +63,6 @@ struct ocp_func_emac_data {
+ 	int	wol_irq;	/* WOL interrupt */
+ 	int	mdio_idx;	/* EMAC idx of MDIO master or -1 */
+ 	int	tah_idx;	/* TAH device index or -1 */
+-	int	jumbo;		/* Jumbo frames capable flag */
+ 	int	phy_mode;	/* PHY type or configurable mode */
+ 	u8	mac_addr[6];	/* EMAC mac address */
+ 	u32	phy_map;	/* EMAC phy map */
