@@ -1,21 +1,19 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 7CAC468847
+Return-Path: <jeff@theptrgroup.com>
+Received: from mail.theptrgroup.com (unknown [209.183.211.17])
+	by ozlabs.org (Postfix) with ESMTP id 0D720687DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Dec 2005 01:55:11 +1100 (EST)
-Message-ID: <4390604D.50002@ru.mvista.com>
-Date: Fri, 02 Dec 2005 17:55:09 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: Alex BASTOS <alebas@televes.com>
-References: <1133520697.4390273987a6a@webmail.televes.com:443>
-	<4390223C.8060103@ru.mvista.com>
-	<1133531801.4390529995cfa@webmail.televes.com:443>
-	<1133534967.43905ef73521a@webmail.televes.com:443>
-In-Reply-To: <1133534967.43905ef73521a@webmail.televes.com:443>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: pq2_find_bridges hangs system
+	Sat,  3 Dec 2005 03:20:55 +1100 (EST)
+Received: from [192.168.180.201] ([132.250.144.104])
+	by mail.theptrgroup.com (8.11.6/linuxconf) with ESMTP id jB2GFp722745
+	for <linuxppc-embedded@ozlabs.org>; Fri, 2 Dec 2005 11:15:53 -0500
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain
+Date: Fri, 02 Dec 2005 11:14:23 -0500
+Message-Id: <1133540063.24853.17.camel@nighteyes.site>
+Mime-Version: 1.0
+Subject: ieee1394, Denx 3.1 (2.4.25+), PPC
+Reply-To: jeff@theptrgroup.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,49 +24,105 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Alex, 
-please probe this. If it will not help, pq2ads_setup_pci should be digged for some board specifics.
 
-Also, check if hose->set_cfg_type is 1 as done for ads8272.
+Has anybody out there gotten this combination of hardware and software
+to work?  
 
--------- Original Message --------
-Subject: [patch 01/34] ppc32: Fix incorrect PCI frequency value
-Date: Thu, 01 Dec 2005 00:51:15 -0800
-From: akpm@osdl.org
-To: torvalds@osdl.org
-CC: akpm@osdl.org, vbordug@ru.mvista.com, galak@kernel.crashing.org
+I am trying to figure out if this is a problem with my particular
+system/configuration or inherent in the current software baseline.  The
+problem is that while all software loads and runs without error, I am
+unable to detect any devices/nodes on the IEEE1394 bus.  
 
 
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-
-The time to wait after deasserting PCI_RST has been counted with incorrect
-value - this patch fixes the issue.
-
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
----
-
- arch/ppc/syslib/m82xx_pci.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletion(-)
-
-diff -puN arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value arch/ppc/syslib/m82xx_pci.c
---- devel/arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value	2005-11-30 23:58:00.000000000 -0800
-+++ devel-akpm/arch/ppc/syslib/m82xx_pci.c	2005-11-30 23:58:00.000000000 -0800
-@@ -248,7 +248,8 @@ pq2ads_setup_pci(struct pci_controller *
- 	pci_div = ( (sccr & SCCR_PCI_MODCK) ? 2 : 1) *
- 			( ( (sccr & SCCR_PCIDF_MSK) >> SCCR_PCIDF_SHIFT) + 1);
- 	freq = (uint)((2*binfo->bi_cpmfreq)/(pci_div));
--	time = (int)666666/freq;
-+	time = (int)66666666/freq;
-+
- 	/* due to PCI Local Bus spec, some devices needs to wait such a long
- 	time after RST 	deassertion. More specifically, 0.508s for 66MHz & twice more for 33 */
- 	printk("%s: The PCI bus is %d Mhz.\nWaiting %s after deasserting RST...\n",__FILE__,freq,
-_
+Thanks,
+Jeff Angielski
+The PTR Group
 
 
 
--- 
-Sincerely, 
-Vitaly
+Some details for those not faint of heart...
+
+Custom MPC826x board
+EKF CYMBAL cPCI adapter
+LACIE 250GB external HD
+
+u-boot 1.1.3
+Denx 3.1 - 2.4.25+
+Latest ieee1394 Linux 2.4 SVN snapshot from http://www.linux1394.org/
+
+Command sequence:
+
+insmod ieee1394.o
+insmod ohci1394.o
+insmod raw1394.o
+insmod sbp2.o
+testlibraw
+rescan-scsi-bus.sh
+
+
+Output in /var/log/messages
+
+ohci1394: $Rev: 1286 $ Ben Collins <bcollins@debian.org>
+ohci1394_0: Remapped memory spaces reg 0xc90a6800
+ohci1394_0: Soft reset finished
+ohci1394_0: Iso contexts reg: 000000a8 implemented: 0000000f
+ohci1394_0: 4 iso receive contexts available
+ohci1394_0: Iso contexts reg: 00000098 implemented: 000000ff
+ohci1394_0: 8 iso transmit contexts available
+ohci1394_0: GUID: 00c08802:00a41ca0
+ohci1394_0: Receive DMA ctx=0 initialized
+ohci1394_0: Receive DMA ctx=0 initialized
+ohci1394_0: Transmit DMA ctx=0 initialized
+ohci1394_0: Transmit DMA ctx=1 initialized
+ohci1394_0: OHCI-1394 1.0 (PCI): IRQ=[66]  MMIO=[bffff800-bfffffff]  Max
+Packet=[2048]
+ohci1394_0: request csr_rom address: c5d78000
+ieee1394: CSR: setting expire to 10, HZ=100
+ohci1394_0: IntEvent: 00020000
+ohci1394_0: irq_handler: Bus reset requested
+ohci1394_0: Cancel request received
+raw1394: /dev/raw1394 device initialized
+ieee1394: sbp2: sbp2_module_init
+sbp2: $Rev: 1227 $ Ben Collins <bcollins@debian.org>
+ieee1394: sbp2: Driver forced to serialize I/O (serialize_io = 1)
+raw1394:write_request called
+raw1394:write_request called
+scsi singledevice 0 0 0 0
+scsi singledevice 0 0 0 1
+scsi singledevice 0 0 0 2
+scsi singledevice 0 0 0 3
+scsi singledevice 0 0 0 4
+scsi singledevice 0 0 0 5
+scsi singledevice 0 0 0 6
+scsi singledevice 0 0 0 7
+
+
+Output from testlibraw:
+
+successfully got handle
+current generation number: 1
+1 card(s) found
+  nodes on bus:  0, card name: ohci1394
+using first card found: 0 nodes on bus, local ID is 0, IRM is 63
+
+doing transactions with custom tag handler
+
+using standard tag handler and synchronous calls
+
+testing FCP monitoring on local node
+testing config rom stuff
+get_config_rom returned 0, romsize 64, rom_version 1
+here are the first 10 quadlets:
+0. quadlet: 0x04047381
+1. quadlet: 0x31333934
+2. quadlet: 0xe000a002
+3. quadlet: 0x00c08802
+4. quadlet: 0x00a41ca0
+5. quadlet: 0x000323fb
+6. quadlet: 0x03000000
+7. quadlet: 0x81000002
+8. quadlet: 0x0c0083c0
+9. quadlet: 0x000603ab
+update_config_rom returned 0
+
+polling for leftover messages
