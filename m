@@ -1,19 +1,18 @@
-Return-Path: <pochini@denise.shiny.it>
-Received: from denise.shiny.it (denise.shiny.it [194.20.232.1])
-	by ozlabs.org (Postfix) with ESMTP id 4C7FF687DE
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Dec 2005 02:14:01 +1100 (EST)
-Date: Fri, 2 Dec 2005 16:06:19 +0100 (CET)
-From: Giuliano Pochini <pochini@denise.shiny.it>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1133146369.7768.170.camel@gaston>
-Message-ID: <Pine.LNX.4.58.0512021604360.23144@denise.shiny.it>
-References: <20051126113805.709ee538.pochini@shiny.it>
-	<17290.26688.710369.613144@cargo.ozlabs.ibm.com>
-	<1133146369.7768.170.camel@gaston>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: LinuxPPC-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: CPU off power consumption
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 605406884B
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Dec 2005 02:35:54 +1100 (EST)
+To: "Redondo Garcia, Roberto" <rredondo@indra.es>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 02 Dec 2005 11:33:46 +0100."
+	<6A28467355D2AD478D1F51C479415AE77B47E9@MADTORMAIL.indra.es>
+Date: Fri, 02 Dec 2005 16:35:52 +0100
+Sender: wd@denx.de
+Message-Id: <20051202153552.49244353A14@atlas.denx.de>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: back trace when a SIGSEGV 
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In message <6A28467355D2AD478D1F51C479415AE77B47E9@MADTORMAIL.indra.es> you wrote:
+> 
+> I have a program that when it has been several hours running, it has a
+> problem and falls and it produces a SIGSEGV.  I would like to know to
+> how debug this error, because I do not have ulimit for generate core
+> dump o examine a back trace.
 
+Run the program under control of a debugger (gdb, or - if you're on a
+resource-limited target - gdbserver).
 
-On Mon, 28 Nov 2005, Benjamin Herrenschmidt wrote:
+Best regards,
 
-> No, I think CPUs that have not been started are held in a similar sleep
-> loop in ROM. I don't see right away why there would be any power
-> consumption difference unless some bug causing us to never actually call
-> the sleep loop ....
+Wolfgang Denk
 
-Any hint on how to debug it ?  Where is the code that enables/disables the
-cpus ?  Where is the sleep loop ?
-
-
---
-Giuliano.
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Es ist nicht genug zu wissen, man muﬂ auch anwenden; es ist nicht ge-
+nug zu wollen, man muﬂ auch tun.   -- Goethe, Maximen und Reflexionen
