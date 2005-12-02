@@ -1,20 +1,20 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from smtp2.song.fi (smtp2.song.fi [194.100.2.122])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0D77568802
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 7CAC468847
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Dec 2005 01:09:40 +1100 (EST)
-Message-ID: <4390559D.3010605@iki.fi>
-Date: Fri, 02 Dec 2005 16:09:33 +0200
-From: Kalle Pokki <kalle.pokki@iki.fi>
+	Sat,  3 Dec 2005 01:55:11 +1100 (EST)
+Message-ID: <4390604D.50002@ru.mvista.com>
+Date: Fri, 02 Dec 2005 17:55:09 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
 To: Alex BASTOS <alebas@televes.com>
-References: <4390223C.8060103@ru.mvista.com>
-	<0IQV004GGIH0UG@mailstore1.hut-mail>
-In-Reply-To: <0IQV004GGIH0UG@mailstore1.hut-mail>
+References: <1133520697.4390273987a6a@webmail.televes.com:443>
+	<4390223C.8060103@ru.mvista.com>
+	<1133531801.4390529995cfa@webmail.televes.com:443>
+	<1133534967.43905ef73521a@webmail.televes.com:443>
+In-Reply-To: <1133534967.43905ef73521a@webmail.televes.com:443>
 Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 Subject: Re: pq2_find_bridges hangs system
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,25 +26,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Alex BASTOS wrote:
+Alex, 
+please probe this. If it will not help, pq2ads_setup_pci should be digged for some board specifics.
 
->The Tranfer Error makes not many sense for me, as _TEA is pulled-up.
->Maybe the oops after that is caused by the bad call return point?
->  
->
-I remember using this to prevent machine check exceptions during the PCI 
-scan. This is in the beginning of the pciauto_bus_scan() function.
+Also, check if hose->set_cfg_type is 1 as done for ads8272.
 
---- trunk/linux/arch/ppc/syslib/pci_auto.c	(revision 127)
-+++ trunk/linux/arch/ppc/syslib/pci_auto.c	(revision 128)
-@@ -382,6 +382,10 @@
- 	unsigned short vid;
- 	unsigned char header_type;
- 
+-------- Original Message --------
+Subject: [patch 01/34] ppc32: Fix incorrect PCI frequency value
+Date: Thu, 01 Dec 2005 00:51:15 -0800
+From: akpm@osdl.org
+To: torvalds@osdl.org
+CC: akpm@osdl.org, vbordug@ru.mvista.com, galak@kernel.crashing.org
+
+
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+
+The time to wait after deasserting PCI_RST has been counted with incorrect
+value - this patch fixes the issue.
+
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
+
+ arch/ppc/syslib/m82xx_pci.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
+
+diff -puN arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value arch/ppc/syslib/m82xx_pci.c
+--- devel/arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value	2005-11-30 23:58:00.000000000 -0800
++++ devel-akpm/arch/ppc/syslib/m82xx_pci.c	2005-11-30 23:58:00.000000000 -0800
+@@ -248,7 +248,8 @@ pq2ads_setup_pci(struct pci_controller *
+ 	pci_div = ( (sccr & SCCR_PCI_MODCK) ? 2 : 1) *
+ 			( ( (sccr & SCCR_PCIDF_MSK) >> SCCR_PCIDF_SHIFT) + 1);
+ 	freq = (uint)((2*binfo->bi_cpmfreq)/(pci_div));
+-	time = (int)666666/freq;
++	time = (int)66666666/freq;
 +
-+	/* must ignore machine checks during scan */
-+	*(volatile unsigned short *) 0xf0010888 &= ~0x0800;
-+
- 	/*
- 	 * Fetch our I/O and memory space upper boundaries used
- 	 * to allocated base addresses on this hose.
+ 	/* due to PCI Local Bus spec, some devices needs to wait such a long
+ 	time after RST 	deassertion. More specifically, 0.508s for 66MHz & twice more for 33 */
+ 	printk("%s: The PCI bus is %d Mhz.\nWaiting %s after deasserting RST...\n",__FILE__,freq,
+_
+
+
+
+-- 
+Sincerely, 
+Vitaly
