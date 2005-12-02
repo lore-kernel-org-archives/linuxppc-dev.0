@@ -1,21 +1,21 @@
-Return-Path: <marcelo.tosatti@cyclades.com>
-Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (67-41-70-125.roch.qwest.net [67.41.70.125])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 16D4D6884E
+	by ozlabs.org (Postfix) with ESMTP id CDCBE68847
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Dec 2005 05:24:53 +1100 (EST)
-Date: Fri, 2 Dec 2005 16:24:47 -0200
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-To: Tom Rini <trini@kernel.crashing.org>
-Message-ID: <20051202182447.GA7579@dmt.cnet>
-References: <20051117151730.GA10180@logos.cnet>
-	<20051128232738.GE7766@smtp.west.cox.net>
+	Sat,  3 Dec 2005 08:57:27 +1100 (EST)
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+In-Reply-To: <20051202080711.GA32759@obsidianresearch.com>
+References: <20051202080711.GA32759@obsidianresearch.com>
+Content-Type: text/plain
+Date: Fri, 02 Dec 2005 15:14:37 -0600
+Message-Id: <1133558077.26046.1.camel@yoda.jdub.homelinux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051128232738.GE7766@smtp.west.cox.net>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: INTERACTIVE_CONSOLE for misc-embedded.c and watchdog issue
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 2.6.15-rc4] ppc32: Fixes for non-zero PPC_MEMSTART on
+	PPC440
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,28 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Tom,
-
-On Mon, Nov 28, 2005 at 04:27:38PM -0700, Tom Rini wrote:
-> On Thu, Nov 17, 2005 at 01:17:30PM -0200, Marcelo Tosatti wrote:
+On Fri, 2005-12-02 at 01:07 -0700, Jason Gunthorpe wrote:
+> I have a custom embedded system with a 440GP derived CPU that places the
+> memory starting at 0xc0000000 which requires a non-zero PPC_MEMSTART. There
+> are a couple of places that assume PPC_MEMSTART is 0. This results in
+> various tricky crashing during booting. Most of the problems are
+> not accounting for PPC_MEMSTART during va/pa translations. My fixes
+> convert these places to use pre-existing macros instead of duplicating
+> the calculation.
 > 
-> > The following patch against misc-embedded.c adds an INTERACTIVE_CONSOLE
-> > #define to guard reading from console (causes unecessary delay in some
-> > situations).
-> > 
-> > Its an adaptation of misc.c's define, a difference being that platform
-> > headers define "NO_INTERACTIVE_CONSOLE" if required.
-> > 
-> > What do you think?
-> 
-> Please put a comment above the #ifndef stating where the define should
-> be.  But I have a feeling that's going to be somewhere under
-> arch/ppc/platforms/ or include/asm-ppc/ and I don't know if that's a
-> good idea...
+> The two items in head_4xx.S are critical, but I can't see a good way
+> to link them in without an #ifdef, or maybe a CONFIG_* symbol. The
+> alternate version of the tlb index picker will work for any platform,
+> but is based on 'random' selection of the tlb index using the timebase
+> rather than linear increment. I don't know if this is better, but it
+> is an easy way to skip the problematic memory reference.
 
-arch/ppc/platforms/ surely. You have a problem with that?
+Shouldn't your board be using head_44x.S?
 
-> I've got a vauge idea on how we can handle this a little bit more
-> cleanly, in the merge tree.
+/me is confused...
 
-How's that? Should I cancel the patch, then? 
+josh
