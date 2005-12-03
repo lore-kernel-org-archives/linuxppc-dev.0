@@ -1,19 +1,16 @@
 Return-Path: <otavio@debian.org>
 Received: from aveiro.procergs.com.br (aveiro.procergs.com.br [200.198.128.42])
-	by ozlabs.org (Postfix) with ESMTP id 3AF036884B
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Dec 2005 05:40:46 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9535C6884B
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Dec 2005 05:42:27 +1100 (EST)
 In-Reply-To: 
-Date: Sat, 3 Dec 2005 16:40:43 -0200
-Message-Id: <11336352431996-git-send-email-otavio@debian.org>
+Date: Sat, 3 Dec 2005 16:42:25 -0200
+Message-Id: <11336353453331-git-send-email-otavio@debian.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: linuxppc-dev@ozlabs.org,  akpm@osdl.org
 From: Otavio Salvador <otavio@debian.org>
-Cc: "code."@ossystems.com.br, unused@ossystems.com.br,
-	"ppc/plataforms:removed"@ossystems.com.br, from@ossystems.com.br,
-	"Subject:[PATCH]"@ossystems.com.br, variable@ossystems.com.br,
-	i@ossystems.com.br
-Subject: (no subject)
+Cc: Otavio Salvador <otavio@debian.org>
+Subject: [PATCH] ppc/plataforms: removed unused variable i from code.
 Reply-To: Otavio Salvador <otavio@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
