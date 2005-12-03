@@ -1,22 +1,18 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id 9026568802
+Return-Path: <dwilson@dslextreme.com>
+Received: from mail5.dslextreme.com (mail5.dslextreme.com [66.51.199.81])
+	by ozlabs.org (Postfix) with SMTP id 13E89687DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  4 Dec 2005 03:36:58 +1100 (EST)
-Message-ID: <1133631393.4391d7a100a42@webmail.televes.com:443>
-Date: Sat,  3 Dec 2005 18:36:33 +0100
-From: Alex BASTOS <alebas@televes.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-References: <1133520697.4390273987a6a@webmail.televes.com:443>
-	<4390223C.8060103@ru.mvista.com>
-	<1133531801.4390529995cfa@webmail.televes.com:443>
-	<1133534967.43905ef73521a@webmail.televes.com:443>
-	<4390604D.50002@ru.mvista.com>
-In-Reply-To: <4390604D.50002@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: pq2_find_bridges hangs system
+	Sun,  4 Dec 2005 04:20:57 +1100 (EST)
+Message-ID: <200512030922070781.1635A91D@smtp.dslextreme.com>
+In-Reply-To: <Pine.LNX.4.44.0511300013110.32230-100000@gate.crashing.org>
+References: <Pine.LNX.4.44.0511300013110.32230-100000@gate.crashing.org>
+Date: Sat, 03 Dec 2005 09:22:07 -0800
+From: "Dan Wilson" <dwilson@dslextreme.com>
+To: "Kumar Gala" <galak@gate.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC85xx i2c interface bug
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,74 +23,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Vitaly,
+On 11/30/2005 at 12:14 AM Kumar Gala wrote:
 
+> Dan,
+> 
+> Did you see an issue this change fixed?  If so can you provide more 
+> details.  Also, can you provide your diff as a unified diff (diff -u) so 
+> its easier to see where the changes where.
+> 
+> I'm trying to figure out if the same issue exists in the 2.6 driver (and 
+> if so, why we havent seen it)
+> 
+> thanks
+> 
+> - kumar
+> 
 
-> Alex,
-> please probe this. If it will not help, pq2ads_setup_pci should be digged for
-> some board specifics.
->
+Kumar,
 
-I'll give it a try. Unfortunately (or fortunately), i won't be in the lab for
-a week (i am on holidays). I will comment you then.
+Did my last message provide all the information you needed?  If you=
+ disagree with my proposed patch, I would greatly appreciate hearing your=
+ thoughts.  If you need anything else, please let me know.
 
+Regards,
 
-> Also, check if hose->set_cfg_type is 1 as done for ads8272.
->
-Yes, it is.
-
-
-Best regards,
-
-Alex
-
-
-> -------- Original Message --------
-> Subject: [patch 01/34] ppc32: Fix incorrect PCI frequency value
-> Date: Thu, 01 Dec 2005 00:51:15 -0800
-> From: akpm@osdl.org
-> To: torvalds@osdl.org
-> CC: akpm@osdl.org, vbordug@ru.mvista.com, galak@kernel.crashing.org
->
->
-> From: Vitaly Bordug <vbordug@ru.mvista.com>
->
-> The time to wait after deasserting PCI_RST has been counted with incorrect
-> value - this patch fixes the issue.
->
-> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Andrew Morton <akpm@osdl.org>
-> ---
->
->  arch/ppc/syslib/m82xx_pci.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletion(-)
->
-> diff -puN arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value
-> arch/ppc/syslib/m82xx_pci.c
-> ---
->
-devel/arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value	2005-11-30
-> 23:58:00.000000000 -0800
-> +++ devel-akpm/arch/ppc/syslib/m82xx_pci.c	2005-11-30 23:58:00.000000000
-> -0800
-> @@ -248,7 +248,8 @@ pq2ads_setup_pci(struct pci_controller *
->  	pci_div = ( (sccr & SCCR_PCI_MODCK) ? 2 : 1) *
->  			( ( (sccr & SCCR_PCIDF_MSK) >> SCCR_PCIDF_SHIFT) + 1);
->  	freq = (uint)((2*binfo->bi_cpmfreq)/(pci_div));
-> -	time = (int)666666/freq;
-> +	time = (int)66666666/freq;
-> +
->  	/* due to PCI Local Bus spec, some devices needs to wait such a long
->  	time after RST 	deassertion. More specifically, 0.508s for 66MHz & twice
-> more for 33 */
->  	printk("%s: The PCI bus is %d Mhz.\nWaiting %s after deasserting
-> RST...\n",__FILE__,freq,
-> _
->
->
->
-> --
-> Sincerely,
-> Vitaly
->
+Dan.
