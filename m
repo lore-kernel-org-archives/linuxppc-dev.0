@@ -1,18 +1,17 @@
-Return-Path: <ctz001@email.mot.com>
-Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
-	by ozlabs.org (Postfix) with ESMTP id F3F5568867
+Return-Path: <n_tbinh@yahoo.com>
+Received: from web30714.mail.mud.yahoo.com (web30714.mail.mud.yahoo.com
+	[68.142.201.252]) by ozlabs.org (Postfix) with SMTP id 70D9A687DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Dec 2005 12:03:17 +1100 (EST)
-Date: Fri, 2 Dec 2005 19:02:47 -0600 (Central Standard Time)
-From: T Ziomek <ctz001@email.mot.com>
-To: Jaap de Jong <jaap.dejong@nedap.com>
-In-Reply-To: <6915D0AE8B9047438F320B466AE30FDD324CCD@nvs0003.nedap.local>
-Message-ID: <Pine.WNT.4.61.0512021901220.3620@holyoke.labs.mot.com>
-References: <6915D0AE8B9047438F320B466AE30FDD324CCD@nvs0003.nedap.local>
+	Sat,  3 Dec 2005 13:20:38 +1100 (EST)
+Message-ID: <20051203021356.45878.qmail@web30714.mail.mud.yahoo.com>
+Date: Sat, 3 Dec 2005 02:13:56 +0000 (GMT)
+From: Nguyen Thanh Binh <n_tbinh@yahoo.com>
+To: "Autran, Guillaume" <gautran@mrv.com>
+In-Reply-To: <19EE6EC66973A5408FBE4CB7772F6F0A2105B5@ltnmail.xyplex.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: RE: Xilinx_uartlite
+Content-Type: text/plain; charset=iso-8859-1
+Cc: "'linuxppc-embedded@ozlabs.org '" <linuxppc-embedded@ozlabs.org>
+Subject: RE: Booting hangs after "Calibrating delay loop..."
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,17 +22,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 1 Dec 2005, Jaap de Jong wrote:
->
-> Thanks for your reply, but then I only get:
-> 	Now booting the kernel
+Hi Guillaume,
 
-Well, I never see that exact text, plus it's hard to tell much from such a
-short snippet.  Could you provide a more complete transcript of your con-
-sole output?
+Thanks for replying.
 
--- 
-   /"\  ASCII Ribbon Campaign   |
-   \ /                          |   Email to user 'CTZ001'
-    X        Against HTML       |             at 'email.mot.com'
-   / \     in e-mail & news     |
+I have did that but I did not work. I am using Monta
+Vista Linux (kernel 2.4).
+
+Best Regards,
+
+Binh
+
+
+--- "Autran, Guillaume" <gautran@mrv.com> wrote:
+
+> Hi Binh Nguyen,
+> 
+> m8xx_setup.c moved in the recent 2.6 kernels to the
+> syslib directory. I am
+> using the 2.6.14 and the external RTC works with the
+> modification I gave
+> you.
+> 
+> The only other thing different is the initialization
+> of the stamp variable
+> in time.c
+> I added the line: 'stamp = get_native_tbl();' right
+> before
+> 'last_jiffy_stamp(0) = tb_last_stamp = stamp;'
+> 
+> That's all.
+> Guillaume
+> 
+
+
+Nguy&#7877;n Thanh Bình
+
+
+	
+	
+		
+___________________________________________________________ 
+Yahoo! Messenger - NEW crystal clear PC to PC calling worldwide with voicemail http://uk.messenger.yahoo.com
