@@ -1,10 +1,10 @@
 Return-Path: <n_tbinh@yahoo.com>
-Received: from web30714.mail.mud.yahoo.com (web30714.mail.mud.yahoo.com
-	[68.142.201.252]) by ozlabs.org (Postfix) with SMTP id 70D9A687DE
+Received: from web30713.mail.mud.yahoo.com (web30713.mail.mud.yahoo.com
+	[68.142.201.251]) by ozlabs.org (Postfix) with SMTP id 6D2126886E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Dec 2005 13:20:38 +1100 (EST)
-Message-ID: <20051203021356.45878.qmail@web30714.mail.mud.yahoo.com>
-Date: Sat, 3 Dec 2005 02:13:56 +0000 (GMT)
+	Sat,  3 Dec 2005 13:21:21 +1100 (EST)
+Message-ID: <20051203021440.78824.qmail@web30713.mail.mud.yahoo.com>
+Date: Sat, 3 Dec 2005 02:14:40 +0000 (GMT)
 From: Nguyen Thanh Binh <n_tbinh@yahoo.com>
 To: "Autran, Guillaume" <gautran@mrv.com>
 In-Reply-To: <19EE6EC66973A5408FBE4CB7772F6F0A2105B5@ltnmail.xyplex.com>
@@ -27,7 +27,8 @@ Hi Guillaume,
 Thanks for replying.
 
 I have did that but I did not work. I am using Monta
-Vista Linux (kernel 2.4).
+Vista Linux (kernel 2.4) on the Memec Virtex-4 FX12 LC
+board.
 
 Best Regards,
 
