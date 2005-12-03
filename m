@@ -1,20 +1,18 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0429E6884B
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Dec 2005 05:46:54 +1100 (EST)
-Date: Sat, 3 Dec 2005 10:46:39 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Otavio Salvador <otavio@debian.org>
-Message-Id: <20051203104639.4b477dea.akpm@osdl.org>
-In-Reply-To: <11336348593561-git-send-email-otavio@debian.org>
-References: <11336348593561-git-send-email-otavio@debian.org>
+Return-Path: <otavio@debian.org>
+Received: from aveiro.procergs.com.br (aveiro.procergs.com.br [200.198.128.42])
+	by ozlabs.org (Postfix) with ESMTP id D8A256885E
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Dec 2005 06:07:08 +1100 (EST)
+In-Reply-To: 
+Date: Sat, 3 Dec 2005 17:07:06 -0200
+Message-Id: <11336368261610-git-send-email-otavio@debian.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] arch/ppc/kernel/idle.c: don't declare cpu variable in
- non-SMP kernels
+Content-Type: text/plain; charset="iso-8859-1"
+To: linuxppc-dev@ozlabs.org,  akpm@osdl.org
+From: Otavio Salvador <otavio@debian.org>
+Cc: Otavio Salvador <otavio@debian.org>
+Subject: [PATCH] include/asm-ppc/btext.h: add prototype of btext_init
+	function.
+Reply-To: Otavio Salvador <otavio@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Otavio Salvador <otavio@debian.org> wrote:
->
-> Disable declaration of cpu variable in default_idle function when
-> building non-SMP kernels.
-> 
-> --- a/arch/ppc/kernel/idle.c
-> +++ b/arch/ppc/kernel/idle.c
-> @@ -37,7 +37,9 @@
->  void default_idle(void)
->  {
->  	void (*powersave)(void);
-> +#ifdef CONFIG_SMP
->  	int cpu = smp_processor_id();
-> +#endif
->  
->  	powersave = ppc_md.power_save;
->  
+The prototype of btext_init function was missing and then caused a compile
+warning.
 
-Surely this would be better?
+---
 
---- devel/arch/ppc/kernel/idle.c~a	2005-12-03 10:45:37.000000000 -0800
-+++ devel-akpm/arch/ppc/kernel/idle.c	2005-12-03 10:46:03.000000000 -0800
-@@ -37,7 +37,6 @@
- void default_idle(void)
- {
- 	void (*powersave)(void);
--	int cpu = smp_processor_id();
+ include/asm-ppc/btext.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+applies-to: 60e8ae37378de2772b6b0768b12a49f923710152
+786b869f9cfd4c1f82fbc8b20fa8cafb9188e12f
+diff --git a/include/asm-ppc/btext.h b/include/asm-ppc/btext.h
+index ccaefab..2329331 100644
+--- a/include/asm-ppc/btext.h
++++ b/include/asm-ppc/btext.h
+@@ -18,6 +18,7 @@ extern boot_infos_t disp_bi;
+ extern int boot_text_mapped;
  
- 	powersave = ppc_md.power_save;
- 
-@@ -47,7 +46,8 @@ void default_idle(void)
- #ifdef CONFIG_SMP
- 		else {
- 			set_thread_flag(TIF_POLLING_NRFLAG);
--			while (!need_resched() && !cpu_is_offline(cpu))
-+			while (!need_resched() &&
-+					!cpu_is_offline(smp_processor_id()))
- 				barrier();
- 			clear_thread_flag(TIF_POLLING_NRFLAG);
- 		}
-_
+ extern void init_boot_display(void);
++extern void __init btext_init(boot_infos_t *bi);
+ extern void btext_welcome(void);
+ extern void btext_prepare_BAT(void);
+ extern void btext_setup_display(int width, int height, int depth, int pitch,
+---
+0.99.9k
