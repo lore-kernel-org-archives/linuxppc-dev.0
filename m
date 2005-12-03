@@ -1,17 +1,20 @@
-Return-Path: <otavio@debian.org>
-Received: from aveiro.procergs.com.br (aveiro.procergs.com.br [200.198.128.42])
-	by ozlabs.org (Postfix) with ESMTP id 9535C6884B
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Dec 2005 05:42:27 +1100 (EST)
-In-Reply-To: 
-Date: Sat, 3 Dec 2005 16:42:25 -0200
-Message-Id: <11336353453331-git-send-email-otavio@debian.org>
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0429E6884B
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Dec 2005 05:46:54 +1100 (EST)
+Date: Sat, 3 Dec 2005 10:46:39 -0800
+From: Andrew Morton <akpm@osdl.org>
+To: Otavio Salvador <otavio@debian.org>
+Message-Id: <20051203104639.4b477dea.akpm@osdl.org>
+In-Reply-To: <11336348593561-git-send-email-otavio@debian.org>
+References: <11336348593561-git-send-email-otavio@debian.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-To: linuxppc-dev@ozlabs.org,  akpm@osdl.org
-From: Otavio Salvador <otavio@debian.org>
-Cc: Otavio Salvador <otavio@debian.org>
-Subject: [PATCH] ppc/plataforms: removed unused variable i from code.
-Reply-To: Otavio Salvador <otavio@debian.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] arch/ppc/kernel/idle.c: don't declare cpu variable in
+ non-SMP kernels
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,37 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
----
+Otavio Salvador <otavio@debian.org> wrote:
+>
+> Disable declaration of cpu variable in default_idle function when
+> building non-SMP kernels.
+> 
+> --- a/arch/ppc/kernel/idle.c
+> +++ b/arch/ppc/kernel/idle.c
+> @@ -37,7 +37,9 @@
+>  void default_idle(void)
+>  {
+>  	void (*powersave)(void);
+> +#ifdef CONFIG_SMP
+>  	int cpu = smp_processor_id();
+> +#endif
+>  
+>  	powersave = ppc_md.power_save;
+>  
 
- arch/ppc/platforms/chrp_setup.c |    1 -
- arch/ppc/platforms/prep_setup.c |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
+Surely this would be better?
 
-applies-to: 8622c40782404c8fb13aa2a4dd4a7b0ebc44e896
-66697dfc757179883127a3ae53bc486320b38374
-diff --git a/arch/ppc/platforms/chrp_setup.c b/arch/ppc/platforms/chrp_setup.c
-index f1b70ab..056ac2a 100644
---- a/arch/ppc/platforms/chrp_setup.c
-+++ b/arch/ppc/platforms/chrp_setup.c
-@@ -404,7 +404,6 @@ static struct irqaction xmon_irqaction =
- void __init chrp_init_IRQ(void)
+--- devel/arch/ppc/kernel/idle.c~a	2005-12-03 10:45:37.000000000 -0800
++++ devel-akpm/arch/ppc/kernel/idle.c	2005-12-03 10:46:03.000000000 -0800
+@@ -37,7 +37,6 @@
+ void default_idle(void)
  {
- 	struct device_node *np;
--	int i;
- 	unsigned long chrp_int_ack = 0;
- 	unsigned char init_senses[NR_IRQS - NUM_8259_INTERRUPTS];
- #if defined(CONFIG_VT) && defined(CONFIG_INPUT_ADBHID) && defined(XMON)
-diff --git a/arch/ppc/platforms/prep_setup.c b/arch/ppc/platforms/prep_setup.c
-index 4415748..f4ef267 100644
---- a/arch/ppc/platforms/prep_setup.c
-+++ b/arch/ppc/platforms/prep_setup.c
-@@ -954,7 +954,6 @@ prep_calibrate_decr(void)
- static void __init
- prep_init_IRQ(void)
- {
--	int i;
- 	unsigned int pci_viddid, pci_did;
+ 	void (*powersave)(void);
+-	int cpu = smp_processor_id();
  
- 	if (OpenPIC_Addr != NULL) {
----
-0.99.9k
+ 	powersave = ppc_md.power_save;
+ 
+@@ -47,7 +46,8 @@ void default_idle(void)
+ #ifdef CONFIG_SMP
+ 		else {
+ 			set_thread_flag(TIF_POLLING_NRFLAG);
+-			while (!need_resched() && !cpu_is_offline(cpu))
++			while (!need_resched() &&
++					!cpu_is_offline(smp_processor_id()))
+ 				barrier();
+ 			clear_thread_flag(TIF_POLLING_NRFLAG);
+ 		}
+_
