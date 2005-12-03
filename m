@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C12F3687DE
+Return-Path: <alebas@televes.com>
+Received: from tvesnat.televes.com (unknown [212.163.42.137])
+	by ozlabs.org (Postfix) with ESMTP id 9026568802
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  4 Dec 2005 03:16:48 +1100 (EST)
-In-Reply-To: <7707540.1133606321114.JavaMail.postfix@mx3.mail.sohu.com>
-References: <7707540.1133606321114.JavaMail.postfix@mx3.mail.sohu.com>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=UTF-8; delsp=yes; format=flowed
-Message-Id: <6C345EC0-7B68-42E0-8BB7-146ABBBDC301@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Sat, 3 Dec 2005 10:16:50 -0600
-To: <zengshuai@sogou.com> <zengshuai@sogou.com>
-Cc: ppc <linuxppc-embedded@ozlabs.org>
-Subject: Re: mfspr r0,638. Why 638 ?
+	Sun,  4 Dec 2005 03:36:58 +1100 (EST)
+Message-ID: <1133631393.4391d7a100a42@webmail.televes.com:443>
+Date: Sat,  3 Dec 2005 18:36:33 +0100
+From: Alex BASTOS <alebas@televes.com>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+References: <1133520697.4390273987a6a@webmail.televes.com:443>
+	<4390223C.8060103@ru.mvista.com>
+	<1133531801.4390529995cfa@webmail.televes.com:443>
+	<1133534967.43905ef73521a@webmail.televes.com:443>
+	<4390604D.50002@ru.mvista.com>
+In-Reply-To: <4390604D.50002@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: pq2_find_bridges hangs system
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,76 +27,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is 8xx (PQ1) SPR.  If you look one of those user manuals you =20
-will see it.
+Vitaly,
 
-- kumar
 
-On Dec 3, 2005, at 4:38 AM, <zengshuai@sogou.com> =20
-<zengshuai@sogou.com> wrote:
+> Alex,
+> please probe this. If it will not help, pq2ads_setup_pci should be digged for
+> some board specifics.
+>
 
-> We know "mfspr r0,638" can get the IMMR.
-> But why?
-> I checked "MPC82xx Reference Manual","G2 PowerPC&#8482; Core =20
-> Reference Manual","Programming Environments Manual",
-> but I didn't find any word about that.How did the person who first =20
-> known know?
+I'll give it a try. Unfortunately (or fortunately), i won't be in the lab for
+a week (i am on holidays). I will comment you then.
+
+
+> Also, check if hose->set_cfg_type is 1 as done for ads8272.
 >
-> "G2 PowerPC&#8482; Core Reference Manual"  where is the "SPR 638"?
-> Table 3-33. Implementation-Specific SPR Encodings (mfspr)
-> Decimal spr[5?9] spr[0?4] RegisterName Access
-> 58 00001 11010 CSRR0  Supervisor
-> 59 00001 11011 CSRR1  Supervisor
-> 276 01000 10100 SPRG4  Supervisor
-> 277 01000 10101 SPRG5  Supervisor
-> 278 01000 10110 SPRG6  Supervisor
-> 279 01000 10111 SPRG7  Supervisor
-> 286 01000 11110 SVR  Supervisor
-> 309 01001 10101 IBCR  Supervisor
-> 310 01001 10110 DBCR  Supervisor
-> 311 01001 10111 MBAR  Supervisor
-> 317 01001 11101 DABR2  Supervisor
-> 560 10001 10000 IBAT4U  Supervisor
-> 561 10001 10001 IBAT4L  Supervisor
-> 562 10001 10010 IBAT5U  Supervisor
-> 563 10001 10011 IBAT5L  Supervisor
-> 564 10001 10100 IBAT6U  Supervisor
-> 565 10001 10101 IBAT6L  Supervisor
-> 566 10001 10110 IBAT7U  Supervisor
-> 567 10001 10111 IBAT7L  Supervisor
-> 568 10001 11000 DBAT4U  Supervisor
-> 569 10001 11001 DBAT4L  Supervisor
-> 570 10001 11010 DBAT5U  Supervisor
-> 571 10001 11011 DBAT5L  Supervisor
-> 572 10001 11100 DBAT6U  Supervisor
-> 573 10001 11101 DBAT6L Supervisor
-> 574 10001 11110 DBAT7U  Supervisor
-> 575 10001 11111 DBAT7L  Supervisor
-> 976 11110 10000 DMISS Supervisor
-> 977 11110 10001 DCMP Supervisor
-> 978 11110 10010 HASH1 Supervisor
-> 979 11110 10011 HASH2 Supervisor
-> 980 11110 10100 IMISS Supervisor
-> 981 11110 10101 ICMP Supervisor
-> 982 11110 10110 RPA Supervisor
-> 1008 11111 10000 HID0 Supervisor
-> 1009 11111 10001 HID1 Supervisor
-> 1010 11111 10010 IABR Supervisor
-> 1011 11111 10011 HID2 Supervisor
-> 1013 11111 10101 DABR  Supervisor
-> 1018 11111 11010 IABR2  Supervisor
+Yes, it is.
+
+
+Best regards,
+
+Alex
+
+
+> -------- Original Message --------
+> Subject: [patch 01/34] ppc32: Fix incorrect PCI frequency value
+> Date: Thu, 01 Dec 2005 00:51:15 -0800
+> From: akpm@osdl.org
+> To: torvalds@osdl.org
+> CC: akpm@osdl.org, vbordug@ru.mvista.com, galak@kernel.crashing.org
 >
-> ------------------------------
-> =E6=88=91=E7=8E=B0=E5=9C=A8=E4=BD=BF=E7=94=A8Sogou.com=E7=9A=842G=E9=82=AE=
-=E7=AE=B1=E4=BA=86=EF=BC=8C=E4=BD=A0=E4=B9=9F=E6=9D=A5=E8=AF=95=E8=AF=95=E5=
-=90=A7!
-> http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?=20
-> from=3Dsogouinvitation&s_EMAIL=3Dzengshuai%=20
-> 40sogou.com&username=3Dlinuxppc-embedded&FullName=3Dlinuxppc-=20
-> embedded&Email=3Dlinuxppc-embedded%=20
-> 40ozlabs.org&verify=3D755eff4e640bdcfc57d93cbd8b0a9cb7
 >
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> From: Vitaly Bordug <vbordug@ru.mvista.com>
+>
+> The time to wait after deasserting PCI_RST has been counted with incorrect
+> value - this patch fixes the issue.
+>
+> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Andrew Morton <akpm@osdl.org>
+> ---
+>
+>  arch/ppc/syslib/m82xx_pci.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletion(-)
+>
+> diff -puN arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value
+> arch/ppc/syslib/m82xx_pci.c
+> ---
+>
+devel/arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value	2005-11-30
+> 23:58:00.000000000 -0800
+> +++ devel-akpm/arch/ppc/syslib/m82xx_pci.c	2005-11-30 23:58:00.000000000
+> -0800
+> @@ -248,7 +248,8 @@ pq2ads_setup_pci(struct pci_controller *
+>  	pci_div = ( (sccr & SCCR_PCI_MODCK) ? 2 : 1) *
+>  			( ( (sccr & SCCR_PCIDF_MSK) >> SCCR_PCIDF_SHIFT) + 1);
+>  	freq = (uint)((2*binfo->bi_cpmfreq)/(pci_div));
+> -	time = (int)666666/freq;
+> +	time = (int)66666666/freq;
+> +
+>  	/* due to PCI Local Bus spec, some devices needs to wait such a long
+>  	time after RST 	deassertion. More specifically, 0.508s for 66MHz & twice
+> more for 33 */
+>  	printk("%s: The PCI bus is %d Mhz.\nWaiting %s after deasserting
+> RST...\n",__FILE__,freq,
+> _
+>
+>
+>
+> --
+> Sincerely,
+> Vitaly
+>
