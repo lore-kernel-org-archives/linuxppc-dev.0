@@ -1,21 +1,21 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from witte.sonytel.be (witte.sonytel.be [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id A15B46884B
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2005 08:14:21 +1100 (EST)
-Date: Sun, 4 Dec 2005 22:13:58 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonycom.com
-To: Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20051203160020.42d1da3c.akpm@osdl.org>
-Message-ID: <Pine.LNX.4.62.0512042212540.15120@pademelon.sonytel.be>
-References: <11336368261610-git-send-email-otavio@debian.org>
-	<20051203212402.GA2821@gate.ebshome.net>
-	<20051203160020.42d1da3c.akpm@osdl.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>, otavio@debian.org
-Subject: Re: [PATCH] include/asm-ppc/btext.h: add prototype of btext_init
- function.
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AE14E68802
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2005 09:21:57 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dustin Lang <dalang@cs.ubc.ca>
+In-Reply-To: <Pine.LNX.4.60.0512020612540.4326@tin.icics.ubc.ca>
+References: <6A28467355D2AD478D1F51C479415AE77B47E9@MADTORMAIL.indra.es>
+	<Pine.LNX.4.60.0512020612540.4326@tin.icics.ubc.ca>
+Content-Type: text/plain
+Date: Mon, 05 Dec 2005 09:14:36 +1100
+Message-Id: <1133734477.6100.101.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, "Redondo Garcia,
+	Roberto" <rredondo@indra.es>
+Subject: Re: back trace when a SIGSEGV
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 3 Dec 2005, Andrew Morton wrote:
-> Eugene Surovegin <ebs@ebshome.net> wrote:
-> >  > +extern void __init btext_init(boot_infos_t *bi);
-> >  >  extern void btext_welcome(void);
-> >  >  extern void btext_prepare_BAT(void);
-> >  >  extern void btext_setup_display(int width, int height, int depth, int pitch,
-> > 
-> >  "__init" should be placed between closing brace and semicolon. For 
-> >  more info, see include/linux/init.h
-> 
-> I don't think it matters much.  Often we just omit it from the declaration
-> - it's only required at the definition site
 
-IIRC, on Alpha it's needed/recommended on both, to allow the compiler to
-optimize jumps to the same section?
+> However, this mailing list is for _development_ of the linux _kernel_ on 
+> PowerPC.  Your question is not about kernel development so it doesn't 
+> belong here.  (Unless you are sure that your program is correct and 
+> somehow the kernel is unfairly giving you a segfault - which doesn't seem 
+> to be the case, based on your message.)  Find a mailing list or message 
+> board about userspace programming and ask your question there.
+>
+> .../...
 
-Gr{oetje,eeting}s,
+You don't need to play the cop on this list, nobody appointed you to
+that position.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Ben.
