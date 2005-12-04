@@ -2,19 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AE14E68802
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2005 09:21:57 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 6875B6884E
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Dec 2005 09:23:11 +1100 (EST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dustin Lang <dalang@cs.ubc.ca>
-In-Reply-To: <Pine.LNX.4.60.0512020612540.4326@tin.icics.ubc.ca>
+To: "Redondo Garcia, Roberto" <rredondo@indra.es>
+In-Reply-To: <6A28467355D2AD478D1F51C479415AE77B47E9@MADTORMAIL.indra.es>
 References: <6A28467355D2AD478D1F51C479415AE77B47E9@MADTORMAIL.indra.es>
-	<Pine.LNX.4.60.0512020612540.4326@tin.icics.ubc.ca>
 Content-Type: text/plain
-Date: Mon, 05 Dec 2005 09:14:36 +1100
-Message-Id: <1133734477.6100.101.camel@gaston>
+Date: Mon, 05 Dec 2005 09:16:02 +1100
+Message-Id: <1133734562.6100.104.camel@gaston>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, "Redondo Garcia,
-	Roberto" <rredondo@indra.es>
+Cc: linuxppc-dev@ozlabs.org
 Subject: Re: back trace when a SIGSEGV
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,17 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2005-12-02 at 11:33 +0100, Redondo Garcia, Roberto wrote:
+> hello, 
+> I have a program that when it has been several hours running, it has a
+> problem and falls and it produces a SIGSEGV.  I would like to know to
+> how debug this error, because I do not have ulimit for generate core
+> dump o examine a back trace.
 
-> However, this mailing list is for _development_ of the linux _kernel_ on 
-> PowerPC.  Your question is not about kernel development so it doesn't 
-> belong here.  (Unless you are sure that your program is correct and 
-> somehow the kernel is unfairly giving you a segfault - which doesn't seem 
-> to be the case, based on your message.)  Find a mailing list or message 
-> board about userspace programming and ask your question there.
->
-> .../...
+You can run your program under gdb, or you may want to have a look at
+tridge' junk code directory for his segv_handler bit that you can put in
+LD_PRELOAD
 
-You don't need to play the cop on this list, nobody appointed you to
-that position.
+http://www.samba.org/junkcode/#segv_handler
 
 Ben.
