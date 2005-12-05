@@ -1,26 +1,19 @@
-Return-Path: <yorksun@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id E965868802
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 9796B6886D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Dec 2005 06:39:11 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	jB5Jnb3f024922
-	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Dec 2005 12:49:37 -0700 (MST)
-Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
-	[10.64.32.10])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id jB5Jk2gB027265
-	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Dec 2005 13:46:03 -0600 (CST)
-From: York Sun <yorksun@freescale.com>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20051205132239.4a67e575.kim.phillips@freescale.com>
-References: <20051205132239.4a67e575.kim.phillips@freescale.com>
-Content-Type: text/plain
-Date: Mon, 05 Dec 2005 13:37:22 -0600
-Message-Id: <1133811442.3357.24.camel@york.somerset.freescale.net.somerset.sps.mot.com>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Fw: Anyone using CodeWarrior USB TAP?
+	Tue,  6 Dec 2005 07:35:18 +1100 (EST)
+To: Alan Carvalho <alancarbr@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 05 Dec 2005 17:30:22 -0200."
+	<dc70db7d0512051130s498f7d5fk42a0f4886c006efd@mail.gmail.com>
+Date: Mon, 05 Dec 2005 21:35:15 +0100
+Sender: wd@denx.de
+Message-Id: <20051205203515.51D4C353F5E@atlas.denx.de>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Video Card to Lite5200 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,54 +24,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Addison,
+Dear Alan,
 
-I don't know if you can receive this reply since I am not in the mailing
-list.
+in message <dc70db7d0512051130s498f7d5fk42a0f4886c006efd@mail.gmail.com> you wrote:
+>
+> I am just looking for a cheaper video card to use with Lite5200 board.
+> CoralP is very expansive, then I will use ATI Rage Mobility.
 
-The answer is that the USB TAP can work under Linux. You will need
-CodeWarrior Linux version. The current version is 2.6. Please contact
-the sales of channels where you got your board.
+Make sure that you don't need to run any (x86) BIOS code on your card
+to initialize it. This is the main issue with most graphics cards.
 
-No specific driver is required for Linux. Just kindly remind you to
-check the writing privilege of /proc/bus/usb/001/* if you not the root
-user.
+> Well, my video card is not ATI Rage Mobility M1 EVA, it has not 723
+> regulator, it use MTD3302 as regulator, do you know if I need change
+> something on the Lite5200's PCI slot to it work with this video card?
 
-York
+If your card is a true 3.3V PCI card it should be at  least  possible
+to  attach  and  test it. Chances are that it does not work (at least
+not without some amount of work).
 
+> My Lite5200 is Version 2.0, and Freescale connected some wire (small cables)
+> to PCI slot, maybe to fix some PCI problems.
 
-On Mon, 2005-12-05 at 13:22 -0600, Kim Phillips wrote:
-> York, know anything about this?  If you're subscribed, could you answer directly to the list?
-> 
-> Kim
-> 
-> Begin forwarded message:
-> 
-> Date: Mon, 5 Dec 2005 17:05:39 +0000
-> From: Addison Baldwin <addison.baldwin@gmail.com>
-> To: linuxppc-embedded@ozlabs.org
-> Subject: Anyone using CodeWarrior USB TAP?
-> 
-> 
-> Hi
-> 
-> I received a MPC8272ADS board from Freescale, and I'm trying to use a
-> CodeWarrior USB TAB that has been provided with the board. It seems that
-> such a device only works under Windows, as I didn't find a driver to make it
-> works under Linux.
-> 
-> I would like to know if anyone have got the CodeWarrior USB working under
-> Linux.
-> 
-> Thanks,
-> Addison
-> 
-> 
-> 
+You probably want to ask FS about this.
+
+> I am using linux kernel 2.6.14, downloaded from denx's web site. Linux is
+
+Note that the 5200 code in the kernel is work in progress. I  do  not
+cleaim  that it does work in any way. If you want stable code use our
+2.4.25 kernel instead.
+
+> running fine in this board, but until now I am using only serial console.
+> Now I want use a video card with it.
+
+Well, if your time is worth anything you  might  find  out  that  the
+CoralP  is the cheaper solution - or using a graphics controller that
+can be attached directly to the bus.
+
+Best regards,
+
+Wolfgang Denk
+
 -- 
-York Sun
- 
-This email, and any associated attachments have been classified as:
-[x] Freescale Semiconductor General Business
-[ ] Freescale Semiconductor Internal Use Only
-[ ] Freescale Semiconductor Confidential Proprietary
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+In general, they do what you want, unless you want consistency.
+                                    - Larry Wall in the perl man page
