@@ -1,17 +1,19 @@
-Return-Path: <jaap.dejong@nedap.com>
-Received: from smtp2.nedap.com (smtp2.nedap.com [213.160.213.92])
-	by ozlabs.org (Postfix) with ESMTP id 1679B68802
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0BEC76887D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  5 Dec 2005 22:02:30 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Mon, 5 Dec 2005 12:02:29 +0100
-Message-ID: <6915D0AE8B9047438F320B466AE30FDD324CD8@nvs0003.nedap.local>
-From: "Jaap de Jong" <jaap.dejong@nedap.com>
-To: "T Ziomek" <ctz001@email.mot.com>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Subject: RE: Xilinx_uartlite
+	Tue,  6 Dec 2005 02:35:43 +1100 (EST)
+Date: Mon, 5 Dec 2005 13:33:26 -0200
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20051205153326.GA4978@dmt.cnet>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Failure to boot v2.6.14+ on PPC8xx
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,150 +24,153 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Tom, ea,
-Found it....
-Had to use plb ddr sdram instead of the default opb ddr sdram...
-Now it works.
-Thanks!
-	Jaap
-
------Oorspronkelijk bericht-----
-Van: Jaap de Jong=20
-Verzonden: maandag 5 december 2005 08:36
-Aan: 'T Ziomek'; linuxppc-embedded
-Onderwerp: RE: Xilinx_uartlite
-
-Hi Tom,
-
-> Well, I never see that exact text, plus it's hard to tell much from
-such a short snippet. =20
-> Could you provide a more complete transcript of your console output?
-
-This is the output:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~
-loaded at:     00400000 004C91E0
-board data at: 004C6138 004C6150
-relocated to:  004052D4 004052EC
-zimage at:     004057F4 00453621
-initrd at:     00454000 004C5747
-avail ram:     004CA000 02000000
-
-Linux/PPC load: root=3D/dev/ram
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.4.20_mvl31-ml300 (jdj@jdj) (gcc version 3.3.3 (DENX ELDK
-3.1.1 3
-.3.3-10)) #25 Fri Dec 2 16:04:56 UTC 2005 Xilinx Virtex-II Pro port (C)
-2002 MontaVista Software, Inc. (source@mvista.com) On node 0 totalpages:
-8192
-zone(0): 8192 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=3D/dev/ram
-Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFF000 Calibrating delay
-loop... 299.00 BogoMIPS
-Memory: 31112k available (556k kernel code, 216k data, 36k init, 0k
-highmem) Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
-Inode cache hash table entries: 2048 (order: 2, 16384 bytes) Mount-cache
-hash table entries: 512 (order: 0, 4096 bytes) Buffer-cache hash table
-entries: 1024 (order: 0, 4096 bytes) Page-cache hash table entries: 8192
-(order: 3, 32768 bytes) POSIX conformance testing by UNIFIX Linux NET4.0
-for Linux 2.4 Based upon Swansea University Computer Society NET3.039
-LSP Revision 22 ikconfig 0.5 with /proc/ikconfig Starting kswapd
-Disabling the Out Of Memory Killer
-pty: 256 Unix98 ptys configured
-xgpio #0 at 0x40000000 mapped to 0xC3000000 xgpio #1 at 0x40020000
-mapped to 0xC3011000 RAMDISK driver initialized: 16 RAM disks of 4096K
-size 1024 blocksize
-RAMDISK: Compressed image found at block 0 Freeing initrd memory: 453k
-freed
-VFS: Mounted root (ext2 filesystem) readonly.
-Freeing unused kernel memory: 36k init
-Warning: unable to open an initial
-console.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~
-
-And there it stops.=20
-I'm affraid it is related to something else though.
-Sometimes it ends in:
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~
-EXT2-fs error (device ramdisk(1,0)): ext2_check_page: bad entry in
-directory #12
-: rec_len is smaller than minimal - offset=3D1024, inode=3D0, =
-rec_len=3D0,
-name_len=3D0 Kernel panic: No init found.  Try passing init=3D option to
-kernel.
- <0>Rebooting in 180 seconds..
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~
-
-After a rebuild without any changes to my rootfilesystem!
-How I make my image:
-
-    dd if=3D/dev/zero of=3Dramdisk.image bs=3D1k count=3D4096
-    mkfs.ext2 -F ramdisk.image
-    mount -o loop ramdisk.image mnt
-
-    sync; sync; sync; sync; sync; sync
-    umount mnt
-    fsck.ext2 -p ramdisk.image
-    gzip -9 ramdisk.image
-
-    make zImage.initrd
 
 
-Somtimes it starts up till here:
+Hi,
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~
-init started:  BusyBox v0.60.5 (2005.12.01-00:25+0000) multi-call binary
+More details on the problem reported earlier. Some change introduced
+after v2.6.14 makes the "relocate_code" relocate section of
+arch/ppc/boot/common/util.o disappear. This results in a kernel image
+with functions at util.o not being part of the relocate section,
+rendering the system unbootable.
 
-Please press Enter to activate this console.
+Follows relevant output, Debian unstable toolchain (/opt/montavista is 
+a link to the default Debian tools).
 
+marcelo@pegasos:~$ gcc -v
+Using built-in specs.
+Target: powerpc-linux-gnu Configured with: ../src/configure -v
+--enable-languages=c,c++,java,f95,objc,ada,treelang --prefix=/usr
+--enable-shared --with-system-zlib --libexecdir=/usr/lib
+--without-included-gettext --enable-threads=posix
+--enable-nls --program-suffix=-4.0 --enable-__cxa_atexit
+--enable-libstdcxx-allocator=mt --enable-clocale=gnu
+--enable-libstdcxx-debug --enable-java-gc=boehm
+--enable-java-awt=gtk-default --enable-gtk-cairo
+--with-java-home=/usr/lib/jvm/java-1.4.2-gcj-4.0-1.4.2.0/jre
+--enable-mpfr --disable-softfloat
+--enable-targets=powerpc-linux,powerpc64-linux --with-cpu=default32
+--disable-werror --enable-checking=release powerpc-linux-gnu Thread
+model: posix gcc version 4.0.2 (Debian 4.0.2-2)
 
-BusyBox v0.60.5 (2005.12.01-00:25+0000) Built-in shell (ash) Enter
-'help' for a list of built-in commands.
+marcelo@pegasos:~$ ld -v
+GNU ld version 2.16.1 Debian GNU/Linux
 
-sh: can't access tty; job control turned off # ls -l Please press Enter
-to activate this
-console.~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~~~~~~
+marcelo@pegasos:~/8xx/linux-2.6.14$
+/opt/montavista/pro/devkit/ppc/8xx/bin/ppc_8xx-gcc -m32
+-Wp,-MD,arch/ppc/boot/common/.util.o.d -nostdinc -isystem
+/usr/lib/gcc/powerpc-linux-gnu/4.0.2/include -D__KERNEL__ -Iinclude
+-include include/linux/autoconf.h -Iarch/ppc -Iarch/ppc/include
+-D__ASSEMBLY__ -Iarch/ppc -c -o arch/ppc/boot/common/util.o
+arch/ppc/boot/common/util.S
 
-But even then things are not good...
+marcelo@pegasos:~/8xx/linux-2.6.14$ readelf -a arch/ppc/boot/common/util.o 
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .text             PROGBITS        00000000 000034 000150 00  AX  0   0  1
+  [ 2] .rela.text        RELA            00000000 00061c 000018 0c     11   1  4
+  [ 3] .data             PROGBITS        00000000 000184 000004 00  WA  0   0  1
+  [ 4] .bss              NOBITS          00000000 000188 000000 00  WA  0   0  1
+  [ 5] .relocate_code    PROGBITS        00000000 000188 000048 00  AX  0   0  1
+  [ 6] .rela.relocate_co RELA            00000000 000634 00000c 0c     11   5  4
+  [ 7] .stab             PROGBITS        00000000 0001d0 000024 0c      9   0  4
+  [ 8] .rela.stab        RELA            00000000 000640 000018 0c     11   7  4
+  [ 9] .stabstr          STRTAB          00000000 0001f4 00004e 00      0   0  1
+  [10] .shstrtab         STRTAB          00000000 000242 000059 00      0   0  1
+  [11] .symtab           SYMTAB          00000000 0004a4 0000f0 10     12   9  4
+  [12] .strtab           STRTAB          00000000 000594 000088 00      0   0  1
 
-So you can think of corruption of the rootfs but everytime i have
-checked it on my linux system and nothing is wrong.=20
-So perhaps my memory is corrupt? Memory test do not reveal this.
-If you have any hints or ideas, please share them!!
+Relocation section '.rela.text' at offset 0x61c contains 2 entries:
+ Offset     Info    Type            Sym.Value  Sym. Name + Addend
+00000102  00000b06 R_PPC_ADDR16_HA   00000000   timebase_period_ns + 0
+00000106  00000b04 R_PPC_ADDR16_LO   00000000   timebase_period_ns + 0
 
-Best regards,
-	Jaap.
+Relocation section '.rela.relocate_code' at offset 0x634 contains 1 entries:
+ Offset     Info    Type            Sym.Value  Sym. Name + Addend
+00000004  00000e0a R_PPC_REL24       00000028   flush_data_cache + 0
 
+Relocation section '.rela.stab' at offset 0x640 contains 2 entries:
+ Offset     Info    Type            Sym.Value  Sym. Name + Addend
+00000014  00000d01 R_PPC_ADDR32      00000000   flush_instruction_cach + 0
+00000020  00000e01 R_PPC_ADDR32      00000028   flush_data_cache + 0
 
+There are no unwind sections in this file.
 
+Symbol table '.symtab' contains 15 entries:
+   Num:    Value  Size Type    Bind   Vis      Ndx Name
+     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND 
+     1: 00000000     0 FILE    LOCAL  DEFAULT  ABS arch/ppc/boot/common/util
+     2: 00000000     0 SECTION LOCAL  DEFAULT    1 
+     3: 00000000     0 SECTION LOCAL  DEFAULT    3 
+     4: 00000000     0 SECTION LOCAL  DEFAULT    4 
+     5: 000000fc     0 NOTYPE  LOCAL  DEFAULT    1 .udelay_not_601
+     6: 00000000     0 SECTION LOCAL  DEFAULT    5 
+     7: 00000000     0 SECTION LOCAL  DEFAULT    7 
+     8: 00000000     0 SECTION LOCAL  DEFAULT    9 
+     9: 00000000     0 NOTYPE  GLOBAL DEFAULT    1 _setup_L2CR
+    10: 00000080     0 NOTYPE  GLOBAL DEFAULT    1 _setup_L3CR
+    11: 00000000     0 NOTYPE  GLOBAL DEFAULT    3 timebase_period_ns
+    12: 000000d0     0 NOTYPE  GLOBAL DEFAULT    1 udelay
+    13: 00000000     0 NOTYPE  GLOBAL DEFAULT    5 flush_instruction_cache
+    14: 00000028     0 NOTYPE  GLOBAL DEFAULT    5 flush_data_cache
 
------Oorspronkelijk bericht-----
-Van: T Ziomek [mailto:ctz001@email.mot.com]
-Verzonden: zaterdag 3 december 2005 02:03
-Aan: Jaap de Jong
-CC: linuxppc-embedded
-Onderwerp: RE: Xilinx_uartlite
+No version information found in this file.
 
-On Thu, 1 Dec 2005, Jaap de Jong wrote:
->
-> Thanks for your reply, but then I only get:
-> 	Now booting the kernel
+marcelo@pegasos:~/8xx/linux-2.6-git-dec01$
+/opt/montavista/pro/devkit/ppc/8xx/bin/ppc_8xx-gcc -m32
+-Wp,-MD,arch/ppc/boot/common/.util.o.d -nostdinc -isystem
+/usr/lib/gcc/powerpc-linux-gnu/4.0.2/include -D__KERNEL__ -Iinclude
+-include include/linux/autoconf.h -Iarch/ppc -Iarch/ppc/include
+-D__ASSEMBLY__ -Iarch/ppc -c -o arch/ppc/boot/common/util.o
+arch/ppc/boot/common/util.S
 
-Well, I never see that exact text, plus it's hard to tell much from such
-a short snippet.  Could you provide a more complete transcript of your
-con- sole output?
+marcelo@pegasos:~/8xx/linux-2.6-git-dec01$ readelf -a arch/ppc/boot/common/util.o 
 
---=20
-   /"\  ASCII Ribbon Campaign   |
-   \ /                          |   Email to user 'CTZ001'
-    X        Against HTML       |             at 'email.mot.com'
-   / \     in e-mail & news     |
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .text             PROGBITS        00000000 000034 000198 00  AX  0   0  1
+  [ 2] .rela.text        RELA            00000000 0005f0 000024 0c     10   1  4
+  [ 3] .data             PROGBITS        00000000 0001cc 000004 00  WA  0   0  1
+  [ 4] .bss              NOBITS          00000000 0001d0 000000 00  WA  0   0  1
+  [ 5] .relocate_code    PROGBITS        00000000 0001d0 000000 00  AX  0   0  1
+  [ 6] .stab             PROGBITS        00000000 0001d0 000024 0c      8   0  4
+  [ 7] .rela.stab        RELA            00000000 000614 000018 0c     10   6  4
+  [ 8] .stabstr          STRTAB          00000000 0001f4 00004e 00      0   0  1
+  [ 9] .shstrtab         STRTAB          00000000 000242 000054 00      0   0  1
+  [10] .symtab           SYMTAB          00000000 000478 0000f0 10     11   9  4
+  [11] .strtab           STRTAB          00000000 000568 000088 00      0   0  1
+
+Relocation section '.rela.text' at offset 0x5f0 contains 3 entries:
+ Offset     Info    Type            Sym.Value  Sym. Name + Addend
+00000102  00000b06 R_PPC_ADDR16_HA   00000000   timebase_period_ns + 0
+00000106  00000b04 R_PPC_ADDR16_LO   00000000   timebase_period_ns + 0
+00000154  00000e0a R_PPC_REL24       00000178   flush_data_cache + 0
+
+Relocation section '.rela.stab' at offset 0x614 contains 2 entries:
+ Offset     Info    Type            Sym.Value  Sym. Name + Addend
+00000014  00000d01 R_PPC_ADDR32      00000150   flush_instruction_cach + 0
+00000020  00000e01 R_PPC_ADDR32      00000178   flush_data_cache + 0
+
+There are no unwind sections in this file.
+
+Symbol table '.symtab' contains 15 entries:
+   Num:    Value  Size Type    Bind   Vis      Ndx Name
+     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND 
+     1: 00000000     0 FILE    LOCAL  DEFAULT  ABS arch/ppc/boot/common/util
+     2: 00000000     0 SECTION LOCAL  DEFAULT    1 
+     3: 00000000     0 SECTION LOCAL  DEFAULT    3 
+     4: 00000000     0 SECTION LOCAL  DEFAULT    4 
+     5: 000000fc     0 NOTYPE  LOCAL  DEFAULT    1 .udelay_not_601
+     6: 00000000     0 SECTION LOCAL  DEFAULT    5 
+     7: 00000000     0 SECTION LOCAL  DEFAULT    6 
+     8: 00000000     0 SECTION LOCAL  DEFAULT    8 
+     9: 00000000     0 NOTYPE  GLOBAL DEFAULT    1 _setup_L2CR
+    10: 00000080     0 NOTYPE  GLOBAL DEFAULT    1 _setup_L3CR
+    11: 00000000     0 NOTYPE  GLOBAL DEFAULT    3 timebase_period_ns
+    12: 000000d0     0 NOTYPE  GLOBAL DEFAULT    1 udelay
+    13: 00000150     0 NOTYPE  GLOBAL DEFAULT    1 flush_instruction_cache
+    14: 00000178     0 NOTYPE  GLOBAL DEFAULT    1 flush_data_cache
+
+No version information found in this file.
