@@ -1,26 +1,16 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from asia.telenet-ops.be (asia.telenet-ops.be [195.130.137.74])
-	by ozlabs.org (Postfix) with ESMTP id 5C9E36885E
+Return-Path: <Gabe.Johnson@radisys.com>
+Received: from dcnotes.radisys.com (mail2.radisys.com [63.163.28.54])
+	by ozlabs.org (Postfix) with ESMTP id C495468872
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Dec 2005 08:21:42 +1100 (EST)
-To: Grant Likely <glikely@gmail.com>
-References: <528646bc050910003630c25dca@mail.gmail.com>
-	<87vf0wp84r.fsf@p4.48ers.dk>
-	<528646bc05091923462e07de0c@mail.gmail.com>
-	<9305ca410512050558o4778824as5a5b24a9bfeccc75@mail.gmail.com>
-	<43947034.3000402@gmail.com>
-	<9305ca410512050858s4c8f640dja71c3945cdb5762f@mail.gmail.com>
-	<43947B7E.7080204@gmail.com>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Mon, 05 Dec 2005 21:52:28 +0100
-In-Reply-To: <43947B7E.7080204@gmail.com> (Grant Likely's message of "Mon,
-	05 Dec 2005 10:40:14 -0700")
-Message-ID: <87d5kb5ks3.fsf@48ers.dk>
+	Tue,  6 Dec 2005 08:54:15 +1100 (EST)
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 1/2] Move Virtex-II Pro / ML300 port over to the
- platform bus.
+Message-ID: <OFC805197D.D7A833EA-ON862570CE.0076F10F-862570CE.00779F6A@microware.com>
+From: Gabe.Johnson@radisys.com
+Date: Mon, 5 Dec 2005 15:46:46 -0600
+Content-Type: multipart/alternative;
+	boundary="=_alternative 00779F68862570CE_="
+Subject: SPI on the MPC8541
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,13 +21,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "Grant" == Grant Likely <glikely@gmail.com> writes:
+This is a multipart message in MIME format.
+--=_alternative 00779F68862570CE_=
+Content-Type: text/plain; charset="US-ASCII"
 
- Grant> Hey, what boards do you have access to?  I'm going to lose my ML300
- Grant> shortly, but I've just got an ML403.
+This is my first time using the mailing list so hello.
 
-I don't have access to any Xilinx eval boards, but we have done quite
-some V2P/PPC based designs that I could test it on.
+I am trying to find a SPI driver.  The SPI is located in the CPM2 block on 
+a MPC8541.  I am working with the freescale MPC85xxCDS reference board. 
+Could someone point me in the right direction or let me know if I should 
+just write my own driver.  All of the SPI code I have found seems to just 
+use a serial port, parallel port or bit bang the data out a GPIO.  I want 
+a driver that uses the registers that are available to me.
 
--- 
-Bye, Peter Korsgaard
+Thanks,
+Gabe
+--=_alternative 00779F68862570CE_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">This is my first time using the mailing
+list so hello.</font>
+<br>
+<br><font size=2 face="sans-serif">I am trying to find a SPI driver. &nbsp;The
+SPI is located in the CPM2 block on a MPC8541. &nbsp;I am working with
+the freescale MPC85xxCDS reference board. &nbsp;Could someone point me
+in the right direction or let me know if I should just write my own driver.
+&nbsp;All of the SPI code I have found seems to just use a serial port,
+parallel port or bit bang the data out a GPIO. &nbsp;I want a driver that
+uses the registers that are available to me.</font>
+<br>
+<br><font size=2 face="sans-serif">Thanks,</font>
+<br><font size=2 face="sans-serif">Gabe</font>
+--=_alternative 00779F68862570CE_=--
