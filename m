@@ -1,22 +1,26 @@
-Return-Path: <pantelis.antoniou@gmail.com>
-Received: from uproxy.gmail.com (uproxy.gmail.com [66.249.92.193])
-	by ozlabs.org (Postfix) with ESMTP id 7BF4D68875
+Return-Path: <jacmet@sunsite.dk>
+Received: from asia.telenet-ops.be (asia.telenet-ops.be [195.130.137.74])
+	by ozlabs.org (Postfix) with ESMTP id 5C9E36885E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Dec 2005 08:10:50 +1100 (EST)
-Received: by uproxy.gmail.com with SMTP id m2so24979uge
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 05 Dec 2005 13:10:48 -0800 (PST)
-From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
-	Dan Malek <dan@embeddededge.com>, linuxppc-embedded@ozlabs.org,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 5 Dec 2005 23:19:01 +0200
+	Tue,  6 Dec 2005 08:21:42 +1100 (EST)
+To: Grant Likely <glikely@gmail.com>
+References: <528646bc050910003630c25dca@mail.gmail.com>
+	<87vf0wp84r.fsf@p4.48ers.dk>
+	<528646bc05091923462e07de0c@mail.gmail.com>
+	<9305ca410512050558o4778824as5a5b24a9bfeccc75@mail.gmail.com>
+	<43947034.3000402@gmail.com>
+	<9305ca410512050858s4c8f640dja71c3945cdb5762f@mail.gmail.com>
+	<43947B7E.7080204@gmail.com>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Mon, 05 Dec 2005 21:52:28 +0100
+In-Reply-To: <43947B7E.7080204@gmail.com> (Grant Likely's message of "Mon,
+	05 Dec 2005 10:40:14 -0700")
+Message-ID: <87d5kb5ks3.fsf@48ers.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200512052319.05395.pantelis.antoniou@gmail.com>
-Subject: [PATCH] STXXTC: Delete commented out code.
-Reply-To: pantelis.antoniou@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 1/2] Move Virtex-II Pro / ML300 port over to the
+ platform bus.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,116 +31,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-STXXTC: Deleted commented out code. Ugh.
+>>>>> "Grant" == Grant Likely <glikely@gmail.com> writes:
 
----
-commit 3c8f5b1e6edbe76619011e505e009aad6df0bd91
-tree eb1769cf2e0c2095a5d51d28f489e4b3aa44773c
-parent fac9bbd80d8f8ab3c6af5a417f804dbf8537c700
-author Pantelis Antoniou <pantelis.antoniou@gmail.com> Mon, 05 Dec 2005 23:15:03 +0200
-committer Pantelis Antoniou <pantelis.antoniou@gmail.com> Mon, 05 Dec 2005 23:15:03 +0200
+ Grant> Hey, what boards do you have access to?  I'm going to lose my ML300
+ Grant> shortly, but I've just got an ML403.
 
- arch/ppc/platforms/stxxtc_setup.c |   11 -------
- drivers/mtd/maps/stxxtc_nor.c     |   58 -------------------------------------
- 2 files changed, 0 insertions(+), 69 deletions(-)
+I don't have access to any Xilinx eval boards, but we have done quite
+some V2P/PPC based designs that I could test it on.
 
-diff --git a/arch/ppc/platforms/stxxtc_setup.c b/arch/ppc/platforms/stxxtc_setup.c
---- a/arch/ppc/platforms/stxxtc_setup.c
-+++ b/arch/ppc/platforms/stxxtc_setup.c
-@@ -30,17 +30,6 @@
- 
- /***********************************************************************/
- 
--#ifdef CONFIG_FW_ENV
--#include <syslib/fw_env.h>
--
--static const char *ro_vars[] = {
--	"ethaddr", "eth1addr", "adsladdr", "serial#", "usbaddr", "usb1addr", "ver", "board",
--	NULL
--};
--#endif
--
--/***********************************************************************/
--
- static spinlock_t port_spinlock;
- 
- unsigned long pin_lock(void)
-diff --git a/drivers/mtd/maps/stxxtc_nor.c b/drivers/mtd/maps/stxxtc_nor.c
---- a/drivers/mtd/maps/stxxtc_nor.c
-+++ b/drivers/mtd/maps/stxxtc_nor.c
-@@ -114,8 +114,6 @@ static struct stxxtc_nor_info info[NR_CH
- 	}
- };
- 
--#if 1
--
- int __init init_stxxtc_nor(void)
- {
- 	struct stxxtc_nor_info *ni;
-@@ -262,62 +260,6 @@ static void __exit cleanup_stxxtc_nor(vo
- 
- }
- 
--#else
--
--int __init init_stxxtc_nor(void)
--{
--	int err = 0;
--	static const char *probes[] = { "cfi_probe", NULL };
--	const char **sv, *s;
--
--	stxxtc_map.virt = (void __iomem *)ioremap(WINDOW_ADDR, WINDOW_SIZE);
--	if (!stxxtc_map.virt) {
--		printk("stxxtc_nor: Failed to ioremap\n");
--		err = -ENXIO;
--		goto out;
--	}
--	simple_map_init(&stxxtc_map);
--
--	sv = probes;
--	while ((s = *sv++) != NULL) {
--		stxxtc_mtd = do_map_probe(s, &stxxtc_map);
--		if (stxxtc_mtd != NULL)
--			break;
--	}
--
--	if (!stxxtc_mtd) {
--		printk(KERN_NOTICE "stxxtc_nor: probe failed flash device: %x at %x\n", WINDOW_SIZE, WINDOW_ADDR);
--		err = -ENXIO;
--		goto out_unmap;
--	}
--
--	stxxtc_mtd->owner = THIS_MODULE;
--	add_mtd_partitions(stxxtc_mtd, pi, NUM_PARTITIONS);
--
--	return 0;
--
--out_unmap:
--	iounmap((void *)stxxtc_map.virt);
--out:
--
--	return err;
--}
--
--static void __exit cleanup_stxxtc_nor(void)
--{
--	if (stxxtc_mtd) {
--		del_mtd_partitions(stxxtc_mtd);
--		map_destroy(stxxtc_mtd);
--		stxxtc_mtd = 0;
--	}
--	if (stxxtc_map.virt) {
--		iounmap(stxxtc_map.virt);
--		stxxtc_map.virt = 0;
--	}
--}
--
--#endif
--
- module_init(init_stxxtc_nor);
- module_exit(cleanup_stxxtc_nor);
- 
-
-
- 
-!-------------------------------------------------------------flip-
+-- 
+Bye, Peter Korsgaard
