@@ -1,22 +1,19 @@
-Return-Path: <glikely@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.200])
-	by ozlabs.org (Postfix) with ESMTP id 3C2F368883
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id AE84D6888F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Dec 2005 08:13:06 +1100 (EST)
-Received: by zproxy.gmail.com with SMTP id f1so167682nzc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 06 Dec 2005 13:13:05 -0800 (PST)
-Message-ID: <4395FED2.8000003@gmail.com>
-Date: Tue, 06 Dec 2005 14:12:50 -0700
-From: Grant Likely <glikely@gmail.com>
-MIME-Version: 1.0
-To: Rick Moleres <rick.moleres@xilinx.com>
-References: <689CB232690D8D4E97DA6C76DA098E6C017395E1@XCO-EXCHVS1.xlnx.xilinx.com>
-In-Reply-To: <689CB232690D8D4E97DA6C76DA098E6C017395E1@XCO-EXCHVS1.xlnx.xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 1/2] Move Virtex-II Pro / ML300 port over to the platform
- bus.
+	Wed,  7 Dec 2005 08:15:02 +1100 (EST)
+To: Matt Jerdonek <maj1224@yahoo.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 06 Dec 2005 08:42:12 PST."
+	<20051206164212.82779.qmail@web33505.mail.mud.yahoo.com>
+Date: Tue, 06 Dec 2005 22:14:59 +0100
+Sender: wd@denx.de
+Message-Id: <20051206211459.E8976353F54@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Denx vs kernel.org 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,111 +24,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Rick Moleres wrote:
+In message <20051206164212.82779.qmail@web33505.mail.mud.yahoo.com> you wrote:
+> I'm looking at embedding linux into a PowerPC-based
+> system.  I found the DENX website to be very helpful,
+> but I'm struggling to understand a few items:
 
->Grant,
->
->Would it be possible for me to take a closer look at the work you're
->doing in this regard?  We've been hatching some ideas around with ways
->to separate the dependency on xparamters.h/_g.c files to accommodate
->run-time configuration, but our workload and priorities haven't allowed
->us to spend much time here.
->  
->
-Certainly.  I'm getting my env cleaned up today, and I'll be sending
-patches to the mailing list shortly.
+It would be helpful if you precisely stated which of the  misc  trees
+you are talking about.
 
-Essentially what I'm doing is making any non-xilinx code get parameters
-from platform bus devices instead of xparameters.h (Things like
-processor speed, interrupts, etc).  This of course is only a first
-step.  It allows xparameters to change w/o recompiling the world.
+> 1) The source from kernel.org appears to have support
+> for the powerpc (arch/powerpc/8xx_io).  But when using
+> 'make xconfig' I cannot select PowerPC from the list
+> of processors.  Is this just a limitation on the the
+> configuration utility?
 
-Xilinx drivers are another matter since each of them include xparameters
-directly.
+Seems like you are trying to use the linux-2.6-denx tree  and  forgot
+to  pass  a "ARCH=ppc" argument to "make" (and did not set "ARCH=ppc"
+in your shell environment either).
 
->We're taking a baby step towards that by just moving _LookupConfig out
->of the main driver .c file and adding a new _Init function that takes a
->_Config structure as an argument rather than depend internally on the
->_g.c table.
->
-You're making me happy here.  :)
+> 2) What is the difference between the sources on DENX
+> and kernel.org?  Are there other places where PPC
 
->  It would be nice to know, though, that work we're doing
->won't completely conflict with work others like yourself are doing.
->  
->
-It doesn't sound like it will.  A _Config struct could be built up from
-data in the platform device (or embedded in the platform device
-itself).  Once the flattened device tree work is in, we could build up
-the whole thing from data provided by the bootloader.  No recompile
-needed at all.  :)
+We have some stuff added which was submitted as patches to  the  list
+but  not  all  of  this  has  been  accepted  for  or merged into the
+kernel.org tree yet.
 
-g.
+> linux kernel source is stored?  I'm not opposed to
+> using the DENX source, I'm just trying to understand
+> it.
 
->-----Original Message-----
->From: linuxppc-embedded-bounces@ozlabs.org
->[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Grant Likely
->Sent: Monday, December 05, 2005 9:52 AM
->To: Peter Korsgaard; linuxppc-embedded
->Subject: Re: [PATCH 1/2] Move Virtex-II Pro / ML300 port over to the
->platform bus.
->
->Peter Korsgaard wrote:
->
->  
->
->>On 9/20/05, Grant Likely <glikely@gmail.com> wrote:
->> 
->>
->>    
->>
->>>On 9/20/05, Peter Korsgaard <jacmet@sunsite.dk> wrote:
->>>   
->>>
->>>      
->>>
->>>>>>>>>" " == Grant Likely <glikely@gmail.com> writes:
->>>>>>>>>               
->>>>>>>>>
->>>>>>>>>                  
->>>>>>>>>
->>>>Hi,
->>>>
->>>>        
->>>>
->>>>>This is a large patch that moves the ML300 to the platform bus.
->>>>>It also isolates most of the linux tree from changes to the
->>>>>xparameters.h file.  Ultimately, the goal is to move everything
->>>>>over to the flattened device tree for telling the kernel about
->>>>>devices.  That way xparameters.h can go away entirely for the
->>>>>kernel proper.  (Isolated to the bootloader)
->>>>>          
->>>>>
->>>>     
->>>>
->>>>        
->>>>
->>Hi,
->>
->>Any news on submitting this to mainline?
->> 
->>
->>    
->>
->
->Yeah, I'm back working on it again after being pulled away on consulting
->priorities.  I hope to have a public git tree up soon, and I'll be
->sending patches to mainline shortly thereafter.
->
->Cheers
->g.
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
->
->  
->
+You may want to read http://penguinppc.org/kernel/
+
+> 3) I've used eCos before and I'm familiar with
+> RedBoot.  Is there a compelling reason to use U-Boot
+> over RedBoot?  For example, I think U-boot contains an
+> NFS client while RedBoot does not.  Is this important?
+
+U-Boot contains a lot more. If these features are  important  to  you
+depends on what you want to do.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The thing is, as you progress in the Craft,  you'll  learn  there  is
+another rule... When you break rules, break 'em good and hard.
+                                    - Terry Pratchett, _Wyrd Sisters_
