@@ -1,15 +1,31 @@
-Return-Path: <jdl@freescale.com>
-From: Jon Loeliger <jdl@freescale.com>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <20051206125910.9f83d230.mikey@neuling.org>
-References: <20051206125910.9f83d230.mikey@neuling.org>
-Content-Type: text/plain
-Message-Id: <1133899679.8577.82.camel@cashmere.sps.mot.com>
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 90DB968883
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Dec 2005 08:12:48 +1100 (EST)
+Date: Tue, 6 Dec 2005 22:12:42 +0100
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Andy Botting <andy@andybotting.com>
+Message-ID: <20051206211242.GA17017@hansmi.ch>
+References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
+	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
+	<20051129000615.GA20843@hansmi.ch>
+	<20051130223917.GA15102@hansmi.ch>
+	<20051130234653.GB15102@hansmi.ch>
+	<1133533712.23129.25.camel@localhost.localdomain>
+	<20051204224221.GA28218@hansmi.ch>
+	<1133840316.10415.4.camel@localhost>
 Mime-Version: 1.0
-Date: Tue, 06 Dec 2005 14:08:00 -0600
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: RFC: Rev 0.5 Booting the Linux/ppc kernel without Open Firmwa re
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1133840316.10415.4.camel@localhost>
+Cc: Stelian Pop <stelian@popies.net>, Parag Warudkar <kernel-stuff@comcast.net>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	johannes@sipsolutions.net
+Subject: Re: PowerBook5,8 - TrackPad update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,29 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2005-12-06 at 12:59, Michael Neuling wrote:
-> > dtc source code can be found at
-> > <http://ozlabs.org/~dgibson/dtc/dtc.tar.gz>
+Hello Andy
 
-And on that note, I should probably make people aware
-that the current form of this document can now be found
-as part of the DTC tree!
+On Tue, Dec 06, 2005 at 02:38:36PM +1100, Andy Botting wrote:
+> I managed to get this working on my 15" PowerBook, but the USB id for my
 
-> > WARNING: This version is still in early development stage; the
-> > resulting device-tree "blobs" have not yet been validated with the
-> > kernel. 
-> 
-> This has been done now.  We added an insert blob option to the kexec
-> tools so that a blob generated with dtc could be used by a kernel
-> booted with kexec. See:
-> 
-> http://lists.osdl.org/pipermail/fastboot/2005-October/002061.html
-> 
-> Mikey
+Thanks for testing.
 
-OK.
+> Keyboard/Trackpad is 0x0214 as opposed to the 0x0215 you have in the
+> patch. Are you going to add 0x0214 (and any others?) to this patch
+> before sending it off?
 
-So, do we want to have patches (versus the DTC version)
-sent to this list for changes to this document now too?
+Yes, I can add that one. I don't know about any other IDs that will work
+with this patch, so I can't add them.
 
-jdl
+> Also, I found that the patch didn't apply cleanly on my kernel
+> 2.6.15-rc5 kernel. I think many of the line numbers were out, so I ended
+> up patching the file manually. 
+
+A friend of mine tested it today with a fresh unpacked 2.6.15-rc15 and
+it applied cleanly.
+
+Greets,
+Michael
