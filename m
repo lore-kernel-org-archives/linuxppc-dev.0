@@ -1,17 +1,17 @@
-Return-Path: <zengshuai@sogou.com>
-Received: from sogoumx75.mail.sogou.com (unknown [61.135.132.136])
-	by ozlabs.org (Postfix) with ESMTP id 635AE6888E
+Return-Path: <rsushko@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 9C20C6884B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Dec 2005 18:07:37 +1100 (EST)
-Message-ID: <31839904.1133852113796.JavaMail.postfix@mx3.mail.sohu.com>
-Date: Tue, 6 Dec 2005 14:55:13 +0800 (CST)
-From: <zengshuai@sogou.com>
-To: "York Sun" <yorksun@freescale.com>
+	Tue,  6 Dec 2005 23:48:48 +1100 (EST)
+From: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
+To: rolandd@cisco.com
+Content-Type: multipart/mixed; boundary="=-iplLpjgzYAjfEvuZRUBY"
+Date: Tue, 06 Dec 2005 15:48:42 +0300
+Message-Id: <1133873322.16347.39.camel@mephisto.spb.rtsoft.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="GB2312"
-Cc: ppc <linuxppc-embedded@ozlabs.org>
-Subject: =?gb2312?b?u9i4tDpSZTogRnc6IEFueW9uZSB1c2luZyBDb2RlV2FycmlvciBV?=
- =?gb2312?b?U0IgVEFQPw==?=
+Cc: linuxppc-embedded@ozlabs.org
+Subject: [PATCH 1/5] ppc32: Removes dead code from original Yucca PCIE
+	initialization sequence
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,75 +22,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have a question too.
-Can we use CodeWarrior USB TAP in GDB?
-The CodeWarrior IDE is really expensive.
 
------  原文  -----
-From: York Sun 
-To: Kim Phillips 
-Cc: linuxppc-embedded@ozlabs.org 
-Subject: Re: Fw: Anyone using CodeWarrior USB TAP?
-Sent: Tue Dec 06 03:37:22 CST 2005
+--=-iplLpjgzYAjfEvuZRUBY
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> Addison,
-> 
-> I don't know if you can receive this reply since I am not in the mailing
-> list.
-> 
-> The answer is that the USB TAP can work under Linux. You will need
-> CodeWarrior Linux version. The current version is 2.6. Please contact
-> the sales of channels where you got your board.
-> 
-> No specific driver is required for Linux. Just kindly remind you to
-> check the writing privilege of /proc/bus/usb/001/* if you not the root
-> user.
-> 
-> York
-> 
-> 
-> On Mon, 2005-12-05 at 13:22 -0600, Kim Phillips wrote:
-> > York, know anything about this?  If you're subscribed, could you answer directly to the list?
-> > 
-> > Kim
-> > 
-> > Begin forwarded message:
-> > 
-> > Date: Mon, 5 Dec 2005 17:05:39 +0000
-> > From: Addison Baldwin <addison.baldwin@gmail.com>
-> > To: linuxppc-embedded@ozlabs.org
-> > Subject: Anyone using CodeWarrior USB TAP?
-> > 
-> > 
-> > Hi
-> > 
-> > I received a MPC8272ADS board from Freescale, and I'm trying to use a
-> > CodeWarrior USB TAB that has been provided with the board. It seems that
-> > such a device only works under Windows, as I didn't find a driver to make it
-> > works under Linux.
-> > 
-> > I would like to know if anyone have got the CodeWarrior USB working under
-> > Linux.
-> > 
-> > Thanks,
-> > Addison
-> > 
-> > 
-> > 
-> -- 
-> York Sun
->  
-> This email, and any associated attachments have been classified as:
-> [x] Freescale Semiconductor General Business
-> [ ] Freescale Semiconductor Internal Use Only
-> [ ] Freescale Semiconductor Confidential Proprietary
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+This patch removes dead code from PCIE initialization sequence
+
+Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
 
 
-------------------------------
-我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
-http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=&FullName=&Email=&verify=e197bd6dbd1fc7f8d6a035729df08d63
+--=-iplLpjgzYAjfEvuZRUBY
+Content-Disposition: attachment; filename=yucca_pcie_rdead_code.patch
+Content-Type: text/x-patch; name=yucca_pcie_rdead_code.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+This patch removes dead code from Yucca PCIE initialization sequence
+
+---
+commit 27304e1086e96f8110626096a75cf4783a5512bb
+tree 5d002bc97c0edcc2646ebd941a9f2b321a4777fc
+parent e4f5c82a92c2a546a16af1614114eec19120e40a
+author Ruslan V. Sushko <rsushko@ru.mvista.com> Tue, 06 Dec 2005 12:33:57 +0300
+committer Ruslan V. Sushko <rsushko@ru.mvista.com> Tue, 06 Dec 2005 12:33:57 +0300
+
+ arch/ppc/platforms/4xx/yucca.c   |    5 -----
+ arch/ppc/syslib/ppc440spe_pcie.c |   16 ----------------
+ 2 files changed, 0 insertions(+), 21 deletions(-)
+
+diff --git a/arch/ppc/platforms/4xx/yucca.c b/arch/ppc/platforms/4xx/yucca.c
+--- a/arch/ppc/platforms/4xx/yucca.c
++++ b/arch/ppc/platforms/4xx/yucca.c
+@@ -242,11 +242,6 @@ yucca_setup_hoses(void)
+ 	char name[20];
+ 	int i;
+ 
+-	if (0 && ppc440spe_init_pcie()) {
+-		printk(KERN_WARNING "PPC440SPe PCI Express initialization failed\n");
+-		return;
+-	}
+-
+ 	for (i = 0; i <= 2; ++i) {
+ 		if (!yucca_pcie_card_present(i))
+ 			continue;
+diff --git a/arch/ppc/syslib/ppc440spe_pcie.c b/arch/ppc/syslib/ppc440spe_pcie.c
+--- a/arch/ppc/syslib/ppc440spe_pcie.c
++++ b/arch/ppc/syslib/ppc440spe_pcie.c
+@@ -47,8 +47,6 @@ pcie_read_config(struct pci_bus *bus, un
+ 		break;
+ 	}
+ 
+-	if (0) printk("%s: read %x(%d) @ %x\n", __func__, *val, len, offset);
+-
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ 
+@@ -353,20 +351,6 @@ int ppc440spe_init_pcie_rootport(int por
+ 		break;
+ 	}
+ 
+-#if 0
+-	/* Dump all config regs */
+-	for (i = 0x300; i <= 0x320; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-	for (i = 0x340; i <= 0x353; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-	for (i = 0x370; i <= 0x383; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-	for (i = 0x3a0; i <= 0x3a2; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-	for (i = 0x3c0; i <= 0x3c3; ++i)
+-		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
+-#endif
+-
+ 	mdelay(100);
+ 
+ 	return 0;
+
+
+
+
+--=-iplLpjgzYAjfEvuZRUBY--
