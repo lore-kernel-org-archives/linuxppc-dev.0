@@ -1,23 +1,23 @@
 Return-Path: <yorksun@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id B9FC668870
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 42FE46887E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Dec 2005 02:20:13 +1100 (EST)
+	Wed,  7 Dec 2005 02:24:06 +1100 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	jB6GUW7U013926
-	for <linuxppc-embedded@ozlabs.org>; Tue, 6 Dec 2005 09:30:32 -0700 (MST)
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	jB6FUlac009209
+	for <linuxppc-embedded@ozlabs.org>; Tue, 6 Dec 2005 08:30:47 -0700 (MST)
 Received: from az33exm22.fsl.freescale.net (az33exm22.am.freescale.net
 	[10.64.32.10])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id jB6FNArw008753
-	for <linuxppc-embedded@ozlabs.org>; Tue, 6 Dec 2005 09:23:11 -0600 (CST)
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id jB6FR3eO009710
+	for <linuxppc-embedded@ozlabs.org>; Tue, 6 Dec 2005 09:27:04 -0600 (CST)
 From: York Sun <yorksun@freescale.com>
 To: zengshuai@sogou.com
 In-Reply-To: <31839904.1133852113796.JavaMail.postfix@mx3.mail.sohu.com>
 References: <31839904.1133852113796.JavaMail.postfix@mx3.mail.sohu.com>
 Content-Type: text/plain; charset=UTF-8
-Date: Tue, 06 Dec 2005 09:18:24 -0600
-Message-Id: <1133882304.3140.4.camel@york.somerset.freescale.net>
+Date: Tue, 06 Dec 2005 09:22:17 -0600
+Message-Id: <1133882538.3654.0.camel@york.somerset.freescale.net>
 Mime-Version: 1.0
 Cc: ppc <linuxppc-embedded@ozlabs.org>
 Subject: Re: =?utf-8?b?5Zue5aSNOlJlOg==?= Fw: Anyone using
@@ -32,7 +32,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-No, you can't. It doesn't support GDB protocol so far.
+No. It doesn't support GDB protocol.
 
 York
 
