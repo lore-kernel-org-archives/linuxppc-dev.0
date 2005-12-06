@@ -1,19 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 29EC468871
+Return-Path: <maj1224@yahoo.com>
+Received: from web33505.mail.mud.yahoo.com (web33505.mail.mud.yahoo.com
+	[68.142.206.154]) by ozlabs.org (Postfix) with SMTP id 64D9A68871
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Dec 2005 03:01:25 +1100 (EST)
-To: pantelis.antoniou@gmail.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 05 Dec 2005 21:15:43 +0200."
-	<200512052115.45858.pantelis.antoniou@gmail.com>
-Date: Tue, 06 Dec 2005 17:01:22 +0100
-Sender: wd@denx.de
-Message-Id: <20051206160122.DC581353F5E@atlas.denx.de>
-Cc: Robert Applebaum <rapplebaum@silicontkx.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Support 8xx based Silicon Turnkey XTc 
+	Wed,  7 Dec 2005 03:48:53 +1100 (EST)
+Message-ID: <20051206164212.82779.qmail@web33505.mail.mud.yahoo.com>
+Date: Tue, 6 Dec 2005 08:42:12 -0800 (PST)
+From: Matt Jerdonek <maj1224@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Denx vs kernel.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,39 +20,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Pantelis,
+I'm looking at embedding linux into a PowerPC-based
+system.  I found the DENX website to be very helpful,
+but I'm struggling to understand a few items:
 
-in message <200512052115.45858.pantelis.antoniou@gmail.com> you wrote:
-> Support of Silicon Turnkey's XTc.
+1) The source from kernel.org appears to have support
+for the powerpc (arch/powerpc/8xx_io).  But when using
+'make xconfig' I cannot select PowerPC from the list
+of processors.  Is this just a limitation on the the
+configuration utility?
 
-Ummm .. a few questions...
+2) What is the difference between the sources on DENX
+and kernel.org?  Are there other places where PPC
+linux kernel source is stored?  I'm not opposed to
+using the DENX source, I'm just trying to understand
+it.
 
->  arch/ppc/platforms/stxxtc.h       |  285 +++++++++++++
+3) I've used eCos before and I'm familiar with
+RedBoot.  Is there a compelling reason to use U-Boot
+over RedBoot?  For example, I think U-boot contains an
+NFS client while RedBoot does not.  Is this important?
 
-Here you include a lot of inlined code, but I have  problems  finding
-out  what  it  is  good  for.  For  example,  there  is  a full-blown
-bit-banging SPI driver included which is nowhere referenced.
-
-Am I missing something, or should this be cleaned up a bit?
-
->  drivers/mtd/maps/stxxtc_nor.c     |  326 +++++++++++++++
-
-I think it is not a good idea to embed spaces in the flash map names,
-as this will make it impossible  to  select  such  devices  from  the
-kernel  command  line  which  you  seem  to intend (at least you have
-CONFIG_MTD_CMDLINE_PARTS enabled in your default configuration) ?
+Thanks in advance,
+-- Matt
 
 
-And a design question: Why are  you  using  the  concatenating  (NOR)
-flash  driver?  Why don't you simply map the flashes (in U-Boot) such
-that you have one contiguous region? That would  make  flash  use  in
-U-Boot much more convenient, too.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Where would we be without rhetorical questions?
+		
+__________________________________________ 
+Yahoo! DSL – Something to write home about. 
+Just $16.99/mo. or less. 
+dsl.yahoo.com 
