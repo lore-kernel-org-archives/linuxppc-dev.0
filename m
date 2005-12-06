@@ -1,16 +1,19 @@
-Return-Path: <Gabe.Johnson@radisys.com>
-Received: from dcnotes.radisys.com (mail2.radisys.com [63.163.28.54])
-	by ozlabs.org (Postfix) with ESMTP id C495468872
+Return-Path: <msm@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 395BA68882
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Dec 2005 08:54:15 +1100 (EST)
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Message-ID: <OFC805197D.D7A833EA-ON862570CE.0076F10F-862570CE.00779F6A@microware.com>
-From: Gabe.Johnson@radisys.com
-Date: Mon, 5 Dec 2005 15:46:46 -0600
-Content-Type: multipart/alternative;
-	boundary="=_alternative 00779F68862570CE_="
-Subject: SPI on the MPC8541
+	Tue,  6 Dec 2005 16:49:42 +1100 (EST)
+From: Matthew McClintock <msm@freescale.com>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+In-Reply-To: <438B379B.6090904@ru.mvista.com>
+References: <438B379B.6090904@ru.mvista.com>
+Content-Type: text/plain
+Date: Mon, 05 Dec 2005 23:49:23 -0600
+Message-Id: <1133848163.7932.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32: Adds MPC885ADS, MPC866ADS and
+	MPC8272ADS-specific  platform stuff for fs_enet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,36 +24,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 00779F68862570CE_=
-Content-Type: text/plain; charset="US-ASCII"
+On Mon, 2005-11-28 at 10:00 -0700, Vitaly Bordug wrote:
+> +       mpc82xx_fcc1_pdata.dpram_offset =
+> mpc82xx_fcc2_pdata.dpram_offset = (u32)cpm2_immr->im_dprambase;
+> +       mpc82xx_fcc1_pdata.fcc_regs_c = mpc82xx_fcc2_pdata.fcc_regs_c
+> = (u32)cpm2_immr->im_fcc_c; 
 
-This is my first time using the mailing list so hello.
+I'm not sure if this has already been discussed, but what is stopping us
+from including this in the platform definition files along with the
+other offsets?
 
-I am trying to find a SPI driver.  The SPI is located in the CPM2 block on 
-a MPC8541.  I am working with the freescale MPC85xxCDS reference board. 
-Could someone point me in the right direction or let me know if I should 
-just write my own driver.  All of the SPI code I have found seems to just 
-use a serial port, parallel port or bit bang the data out a GPIO.  I want 
-a driver that uses the registers that are available to me.
-
-Thanks,
-Gabe
---=_alternative 00779F68862570CE_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><font size=2 face="sans-serif">This is my first time using the mailing
-list so hello.</font>
-<br>
-<br><font size=2 face="sans-serif">I am trying to find a SPI driver. &nbsp;The
-SPI is located in the CPM2 block on a MPC8541. &nbsp;I am working with
-the freescale MPC85xxCDS reference board. &nbsp;Could someone point me
-in the right direction or let me know if I should just write my own driver.
-&nbsp;All of the SPI code I have found seems to just use a serial port,
-parallel port or bit bang the data out a GPIO. &nbsp;I want a driver that
-uses the registers that are available to me.</font>
-<br>
-<br><font size=2 face="sans-serif">Thanks,</font>
-<br><font size=2 face="sans-serif">Gabe</font>
---=_alternative 00779F68862570CE_=--
+-Matthew
