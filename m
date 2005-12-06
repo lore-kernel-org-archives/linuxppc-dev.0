@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id AE84D6888F
+Return-Path: <pantelis.antoniou@gmail.com>
+Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.206])
+	by ozlabs.org (Postfix) with ESMTP id 6578C68898
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Dec 2005 08:15:02 +1100 (EST)
-To: Matt Jerdonek <maj1224@yahoo.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 06 Dec 2005 08:42:12 PST."
-	<20051206164212.82779.qmail@web33505.mail.mud.yahoo.com>
-Date: Tue, 06 Dec 2005 22:14:59 +0100
-Sender: wd@denx.de
-Message-Id: <20051206211459.E8976353F54@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Denx vs kernel.org 
+	Wed,  7 Dec 2005 08:50:21 +1100 (EST)
+Received: by nproxy.gmail.com with SMTP id m18so54714nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 06 Dec 2005 13:50:20 -0800 (PST)
+From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>,
+	Dan Malek <dan@embeddededge.com>, linuxppc-embedded@ozlabs.org
+Date: Tue, 6 Dec 2005 23:58:39 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200512062358.40123.pantelis.antoniou@gmail.com>
+Subject: [PATCH] ppc32-8xx: Skip OF tree if present.
+Reply-To: pantelis.antoniou@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,52 +26,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20051206164212.82779.qmail@web33505.mail.mud.yahoo.com> you wrote:
-> I'm looking at embedding linux into a PowerPC-based
-> system.  I found the DENX website to be very helpful,
-> but I'm struggling to understand a few items:
+Skip OF tree if present. We will deal with it properly soon.
 
-It would be helpful if you precisely stated which of the  misc  trees
-you are talking about.
+---
+commit 83f5e0be8db948f28442dd279f6472bd3367ea45
+tree 493c111da8b8b210ea3987e29c0dfaff78129d76
+parent e4f5c82a92c2a546a16af1614114eec19120e40a
+author Pantelis Antoniou <pantelis.antoniou@gmail.com> Tue, 06 Dec 2005 23:15:29 +0200
+committer Pantelis Antoniou <pantelis.antoniou@gmail.com> Tue, 06 Dec 2005 23:15:29 +0200
 
-> 1) The source from kernel.org appears to have support
-> for the powerpc (arch/powerpc/8xx_io).  But when using
-> 'make xconfig' I cannot select PowerPC from the list
-> of processors.  Is this just a limitation on the the
-> configuration utility?
+ arch/ppc/syslib/m8xx_setup.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
-Seems like you are trying to use the linux-2.6-denx tree  and  forgot
-to  pass  a "ARCH=ppc" argument to "make" (and did not set "ARCH=ppc"
-in your shell environment either).
-
-> 2) What is the difference between the sources on DENX
-> and kernel.org?  Are there other places where PPC
-
-We have some stuff added which was submitted as patches to  the  list
-but  not  all  of  this  has  been  accepted  for  or merged into the
-kernel.org tree yet.
-
-> linux kernel source is stored?  I'm not opposed to
-> using the DENX source, I'm just trying to understand
-> it.
-
-You may want to read http://penguinppc.org/kernel/
-
-> 3) I've used eCos before and I'm familiar with
-> RedBoot.  Is there a compelling reason to use U-Boot
-> over RedBoot?  For example, I think U-boot contains an
-> NFS client while RedBoot does not.  Is this important?
-
-U-Boot contains a lot more. If these features are  important  to  you
-depends on what you want to do.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The thing is, as you progress in the Craft,  you'll  learn  there  is
-another rule... When you break rules, break 'em good and hard.
-                                    - Terry Pratchett, _Wyrd Sisters_
+diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
+--- a/arch/ppc/syslib/m8xx_setup.c
++++ b/arch/ppc/syslib/m8xx_setup.c
+@@ -376,10 +376,17 @@ void __init
+ platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 		unsigned long r6, unsigned long r7)
+ {
++	bd_t *bd;
++
+ 	parse_bootinfo(find_bootinfo());
+ 
+-	if ( r3 )
+-		memcpy( (void *)__res,(void *)(r3+KERNELBASE), sizeof(bd_t) );
++	if ( r3 ) {
++		bd = (bd_t *)(r3+KERNELBASE);
++		/* skip OF tree if present */
++		if (*(u32 *)bd == 0xd00dfeed)
++			bd = (bd_t *)((char *)bd + ((u32 *)bd)[1]);
++		memcpy(__res, bd, sizeof(bd_t));
++	}
+ 
+ #ifdef CONFIG_PCI
+ 	m8xx_setup_pci_ptrs();
