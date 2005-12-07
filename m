@@ -1,18 +1,17 @@
-Return-Path: <mike@compulab.co.il>
-Received: from alexmail (62-90-235-247.barak.net.il [62.90.235.247])
-	by ozlabs.org (Postfix) with ESMTP id 3976B6884E
+Return-Path: <s.maiti@tcs.com>
+Received: from InMumG01.tcs.com (inmumg01.tcs.com [219.64.33.12])
+	by ozlabs.org (Postfix) with ESMTP id 1F55968865
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Dec 2005 20:00:57 +1100 (EST)
-Message-ID: <4396A42C.4080907@compulab.co.il>
-Date: Wed, 07 Dec 2005 10:58:20 +0200
-From: Mike Rapoport <mike@compulab.co.il>
+	Wed,  7 Dec 2005 22:50:26 +1100 (EST)
+In-Reply-To: <20051207061210.C32AD68896@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: Nathael PAJANI <nathael.pajani@cpe.fr>
-References: <20051206125102.1FC7F68888@ozlabs.org> <4395AA59.5030209@cpe.fr>
-In-Reply-To: <4395AA59.5030209@cpe.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: no IRQ from USB on MPC8248
+From: s.maiti@tcs.com
+Message-ID: <OFE97B5EA0.D9C1175E-ON652570D0.00392019-652570D0.003AB2EA@tcs.com>
+Date: Wed, 7 Dec 2005 16:11:08 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 003AB214652570D0_="
+Subject: Help needed : MCC driver for MPC8260 ADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,26 +22,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Nathael PAJANI wrote:
+This is a multipart message in MIME format.
+--=_alternative 003AB214652570D0_=
+Content-Type: text/plain; charset="US-ASCII"
 
-[snip]
 
-> which means the hub detects a device, and tries to configure it.
+Hello All,
 
-The root hub is virtual and implemented in SW. It detects the device any 
-time there's a pull-up on one of the D+ or D- lines, no matter if 
-controller is working properly or not.
+For our project we need to have a MCC driver for MPC8260 ADS board. I 
+couldn't find any driver in the linux source tree for the same. 
+Any help in this regard will be highly appreciated.
+Thanks and regards,
 
->
-> second: the device is happy to see a request and replies correctly.... 
-> but there's no interrupt fired, whether using SUI_INT_USB (==11) or 
-> the SCC3 interrupt (==42)
->
-Make sure you've adopted the following functions to your board:
-    static int board_configure(struct m8xxhci_private *hp)
-    static int setup_usb_clock(struct m8xxhci_private *hp)
-so the controller will get proper USB clock.
+Souvik Maiti
+Tata Consultancy Services Limited
+Bengal Intelligent Park
+Bldg. - D, Plots - A2, M2 & N2
+Block - GP, Sector V 
+Salt Lake Electronics Complex
+Kolkata - 700091, West Bengal
+India
+Mailto: s.maiti@tcs.com
+Website: http://www.tcs.com
 
--- 
-Sincerely yours,
-Mike Rapoport
+Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+--=_alternative 003AB214652570D0_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">Hello All,</font>
+<br>
+<br><font size=2 face="sans-serif">For our project we need to have a MCC
+driver for MPC8260 ADS board. I couldn't find any driver in the linux source
+tree for the same. </font>
+<br><font size=2 face="sans-serif">Any help in this regard will be highly
+appreciated.</font>
+<br><font size=2 face="sans-serif">Thanks and regards,</font>
+<br><font size=2 face="sans-serif"><br>
+Souvik Maiti<br>
+Tata Consultancy Services Limited<br>
+Bengal Intelligent Park<br>
+Bldg. - D, Plots - A2, M2 &amp; N2<br>
+Block - GP, Sector V <br>
+Salt Lake Electronics Complex<br>
+Kolkata - 700091, West Bengal<br>
+India<br>
+Mailto: s.maiti@tcs.com<br>
+Website: http://www.tcs.com</font>
+<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
+</font></td></tr></table>
+--=_alternative 003AB214652570D0_=--
