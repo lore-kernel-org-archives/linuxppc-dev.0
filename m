@@ -1,18 +1,16 @@
-Return-Path: <wfarnsworth@mvista.com>
-Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 7B9A368888
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53515.mail.yahoo.com (web53515.mail.yahoo.com
+	[206.190.39.70]) by ozlabs.org (Postfix) with SMTP id 5410C688A3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Dec 2005 03:54:36 +1100 (EST)
-From: Wade Farnsworth <wfarnsworth@mvista.com>
-To: Eugene Surovegin <ebs@ebshome.net>
-In-Reply-To: <1133968527.8299.50.camel@rhino.az.mvista.com>
-References: <1133968527.8299.50.camel@rhino.az.mvista.com>
-Content-Type: text/plain
-Message-Id: <1133974474.8298.74.camel@rhino.az.mvista.com>
-Mime-Version: 1.0
-Date: 07 Dec 2005 09:54:34 -0700
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Transmit timeouts on 440GX Ocotea on 10baseT-HD network
+	Thu,  8 Dec 2005 04:30:03 +1100 (EST)
+Message-ID: <20051207172321.77464.qmail@web53515.mail.yahoo.com>
+Date: Wed, 7 Dec 2005 09:23:21 -0800 (PST)
+From: roger blofeld <blofeldus@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <20051205203941.GA16695@mail.gnudd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Re: Video Card to Lite5200 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,28 +21,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2005-12-07 at 08:15, Wade Farnsworth wrote:
-> Hi Eugene,
-> 
-> I'm seeing some "NETDEV WATCHDOG: eth0: transmit timed out" messages on
-> the Ocotea when it's connected to a 10baseT hub, and it's put under
-> heavy load.  I'm using the most current 2.6 git tree.
-> 
-> This can be reproduced by ssh'ing into the Ocotea and running the
-> command "ping <host-machine> -A -s 1200", then also doing the same ping
-> command from the host to the Ocotea.  The pings will be successful for a
-> short time, then all transmits on the Ocotea will stop for a few seconds
-> (usually preceded by a few duplicate packets).  Transmits begin again
-> once the timeout occurs. /proc/net/dev doesn't report any errors, just a
-> few dropped packets.
-> 
-> Do you know what might be causing the EMAC to stop transmitting in this
-> situation?
+What is the status of the mpc5200 support? I see Sylvain's repository
+is still at 2.6.12 (5 months old).
 
-One more data point to consider:  I ran this test on an Ebony board, but
-don't encounter any timeouts.  Do you know of any 440GX-specific issues
-that might cause this?
+http://gitbits.246tnt.com/gitweb.cgi?p=linux-2.6-mpc52xx.git;a=summary
 
-Thanks again,
+The current kernel.org kernel doesn't appear to support fec/DMA. Is
+there a plan to get networking support into the mainstream kernel?
 
-Wade Farnsworth
+Thanks
+-rb
+
+--- Alessandro Rubini <rubini@gnudd.com> wrote:
+
+> 
+> > Note that the 5200 code in the kernel is work in progress. I  do 
+> not
+> > cleaim  that it does work in any way. If you want stable code use
+> our
+> > 2.4.25 kernel instead.
+> 
+> FWIW, I have your 2.6.14 happily running on the lite5200, with PCI,
+> IDE (no DMA though) and flash.
+> 
+> I can publish the patches, if anyone is interested. Until now I
+> didn't,
+> as Sylvain's work is considered the official one (but it didn't have
+> IDE last time I checked -- and I don't have bitkeeper to pull it).
+> 
+> /alessandro
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+
+
+
+		
+__________________________________________ 
+Yahoo! DSL – Something to write home about. 
+Just $16.99/mo. or less. 
+dsl.yahoo.com 
