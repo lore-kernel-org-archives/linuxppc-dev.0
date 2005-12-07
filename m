@@ -1,31 +1,15 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 90DB968883
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Dec 2005 08:12:48 +1100 (EST)
-Date: Tue, 6 Dec 2005 22:12:42 +0100
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Andy Botting <andy@andybotting.com>
-Message-ID: <20051206211242.GA17017@hansmi.ch>
-References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
-	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
-	<20051129000615.GA20843@hansmi.ch>
-	<20051130223917.GA15102@hansmi.ch>
-	<20051130234653.GB15102@hansmi.ch>
-	<1133533712.23129.25.camel@localhost.localdomain>
-	<20051204224221.GA28218@hansmi.ch>
-	<1133840316.10415.4.camel@localhost>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 7 Dec 2005 11:17:20 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Message-ID: <20051207001720.GB25533@localhost.localdomain>
+References: <1133816807.8577.50.camel@cashmere.sps.mot.com>
+	<200512062048.56131.arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1133840316.10415.4.camel@localhost>
-Cc: Stelian Pop <stelian@popies.net>, Parag Warudkar <kernel-stuff@comcast.net>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
-	johannes@sipsolutions.net
-Subject: Re: PowerBook5,8 - TrackPad update
+In-Reply-To: <200512062048.56131.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: RFC: Rev 0.5 Booting the Linux/ppc kernel without Open Firmware
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,26 +19,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Andy
+On Tue, Dec 06, 2005 at 08:48:55PM +0100, Arnd Bergmann wrote:
+> On Maandag 05 Dezember 2005 22:06, Jon Loeliger wrote:
+> > Included below is a proposed Revision 0.5 of the
+> > "Booting the Linux/ppc kernel without Open Firmware"
+> > document.  This modification primarily extends the
+> > Revision 0.4 by adding definitions for OF Nodes that
+> > cover the System-On-a-Chip features found on PPC parts.
+> > It also generalizes some earlier wording that pertained
+> > to only PPC64 parts and covers the new, merged PPC 32
+> > and 64 parts together.  Finally, minor typos, style
+> > consistency and grammar problems were corrected.
+> 
+> A few points are not clear yet, either because I don't understand the
+> document or one it references correctly or because I might have
+> different requirements:
 
-On Tue, Dec 06, 2005 at 02:38:36PM +1100, Andy Botting wrote:
-> I managed to get this working on my 15" PowerBook, but the USB id for my
+All comments below IMHO, and subject to persuasion otherwise.
 
-Thanks for testing.
+> - Do we need a way to identify the type of soc bus? There are different
+>   standards for this, e.g. PLB4 on PPC440 or the EIB on the Cell BE.
+>   My initial idea was to have different device-type properties for these,
+>   but I now think that device_type = "soc" makes sense for all of them.
+>   Maybe we could add a model or compatible property for them.
 
-> Keyboard/Trackpad is 0x0214 as opposed to the 0x0215 you have in the
-> patch. Are you going to add 0x0214 (and any others?) to this patch
-> before sending it off?
+It think it would be a good idea to have something labelling the
+specific type of SOC bus, though I'm not immediately sure where.
+"model" perhaps, if it rarely has an effect on how to operate the bus.
 
-Yes, I can add that one. I don't know about any other IDs that will work
-with this patch, so I can't add them.
+> - It does not really belong into this document, but is related anyway:
+>   how do you want to represent this in Linux? Currently, most of these
+>   would be of_platform_device, but I think it would be good to have
+>   a new bus_type for it. The advantage would be that you can see the
+>   devices in /sys/devices/soc@xxx/ even if the driver is not loaded
+>   and the driver can even be autoloaded by udev.
+>   Also, which properties should show up in sysfs? All of them or just
+>   those specified in this document or a subset of them?
 
-> Also, I found that the patch didn't apply cleanly on my kernel
-> 2.6.15-rc5 kernel. I think many of the line numbers were out, so I ended
-> up patching the file manually. 
+I concur - I believe we already have a bus_type for on-chip devices on
+4xx.
 
-A friend of mine tested it today with a fresh unpacked 2.6.15-rc15 and
-it applied cleanly.
+> - What do we do with pci root devices? They are often physically connected
+>   to the internal CPU bus, so it would make sense to represent them
+>   this way in the device tree. Should we add them to the specification
+>   here? Would it even work the expected way in Linux?
 
-Greets,
-Michael
+The host bridges should sit on the soc bus then, as you suggest (just
+as the PCI busses hang off HyperTransport on the G5).  I think you
+need to refer to the OF docs for how to represent the PCI host bridge
+and devices themselves.
+
+> - For some devices, you mandate a model property, for others you don't.
+>   Is this intentional? It might be easier to find the right device
+>   driver if the match string always contains a model name.
+
+You rarely want to match model name to find a device - generally you
+want to match either on "compatible" or "device_type", or possibly
+both.
+
+> - How would I represent nested interrupt controllers? E.g. suppose I
+>   have a Cell internal interrupt controller on one SOC bus and
+>   and an external interrupt controller on another SOC bus but have
+>   that deliver interrupts to the first one.
+
+Again, I believe this is in the OF docs - interrupt controllers have
+an interrupt-parent property IIRC, which gives the phandle of the next
+interrupt controller up the chain.
+
+> - Should it mention nested SOC buses, e.g. a PLB4 bus connected to a
+>   PLB5 bus?
+
+Yes.
+
+> - The title says 'without Open Firmware', but it should also be allowed
+>   to use the same SOC bus layout when using SLOF or some other OF
+>   implementation, right?
+
+I guess so.
+
+> - Also not new in this version, but still: Should there be support for
+>   specifying CPUs with multiple SMT threads?
+
+Umm.. maybe.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
