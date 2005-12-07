@@ -1,19 +1,25 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 791A868878
+Return-Path: <stevan@iritel.com>
+Received: from iritel.iritel.bg.ac.yu (iritel.iritel.bg.ac.yu [193.203.18.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6543668878
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Dec 2005 23:19:37 +1100 (EST)
-To: batsayan.das@tcs.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 07 Dec 2005 15:20:25 +0530."
-	<OFCBD37606.7E278616-ON652570D0.0028C041-652570D0.00360A00@tcs.com>
-Date: Wed, 07 Dec 2005 13:19:34 +0100
-Sender: wd@denx.de
-Message-Id: <20051207121934.B4959353A67@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Help required on mpc8260 kernel boot 
+	Wed,  7 Dec 2005 23:54:49 +1100 (EST)
+Received: from iritel (root@localhost)
+	by iritel.iritel.bg.ac.yu (8.13.1/8.13.1) with SMTP id jB7CnOYg029491
+	for <linuxppc-embedded@ozlabs.org>; Wed, 7 Dec 2005 13:49:24 +0100
+Received: from [193.203.19.118] (stevan [193.203.19.118])
+	by iritel.iritel.bg.ac.yu (8.13.1/8.13.1) with ESMTP id jB7CnNm6029482
+	for <linuxppc-embedded@ozlabs.org>; Wed, 7 Dec 2005 13:49:23 +0100
+From: Stevan Ignjatovic <stevan@iritel.com>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <OFE97B5EA0.D9C1175E-ON652570D0.00392019-652570D0.003AB2EA@tcs.com>
+References: <OFE97B5EA0.D9C1175E-ON652570D0.00392019-652570D0.003AB2EA@tcs.com>
+Content-Type: text/plain
+Message-Id: <1133959955.3248.1.camel@stevan.iritel.co.yu>
+Mime-Version: 1.0
+Date: Wed, 07 Dec 2005 13:52:35 +0100
+Subject: Re: Help needed : MCC driver for MPC8260 ADS
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +30,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <OFCBD37606.7E278616-ON652570D0.0028C041-652570D0.00360A00@tcs.com> you wrote:
+Start point for your MCC driver could be at 
+
+http://sourceforge.net/projects/mcc8260/
+
+On Wed, 2005-12-07 at 11:41, s.maiti@tcs.com wrote:
+> Hello All,
 > 
-> I am using customs board with MPC8260 processor. I have RAM version of 
-> U-Boot and I am able to get U-Boot prompt when I load and run u-bbot.srec 
-> by TRACE32. My memory map is as follows
+> For our project we need to have a MCC driver for MPC8260 ADS board. I
+> couldn't find any driver in the linux source tree for the same. 
+> Any help in this regard will be highly appreciated.
+> Thanks and regards,
 > 
-> SDRAM start address :0x30000000  and 128MB
-> Flash start address: 0x00000000    and 1MB
-
-One of your fellows (mail address pritha.bhattacharya@tcs.com) posted
-this before, and received pretty clear hints that your  configuration
-is not correct.
-
-Also, you continue to ignore answers from the FAQs.
-
-Please read the answers you received before, and  follow  the  advice
-given.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-panic: can't find /
+> Souvik Maiti
+> Tata Consultancy Services Limited
+> Bengal Intelligent Park
+> Bldg. - D, Plots - A2, M2 & N2
+> Block - GP, Sector V 
+> Salt Lake Electronics Complex
+> Kolkata - 700091, West Bengal
+> India
+> Mailto: s.maiti@tcs.com
+> Website: http://www.tcs.com
+> Notice: The information contained in this e-mail message and/or
+> attachments to it may contain confidential or privileged information.
+> If you are not the intended recipient, any dissemination, use, review,
+> distribution, printing or copying of the information contained in this
+> e-mail message and/or attachments to it are strictly prohibited. If
+> you have received this communication in error, please notify us by
+> reply e-mail or telephone and immediately and permanently delete the
+> message and any attachments. Thank you
+> 
+> ______________________________________________________________________
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
