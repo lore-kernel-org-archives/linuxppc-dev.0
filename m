@@ -1,22 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 232E56884E
+Return-Path: <wfarnsworth@mvista.com>
+Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
+	by ozlabs.org (Postfix) with ESMTP id 7B9A368888
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Dec 2005 03:39:07 +1100 (EST)
-In-Reply-To: <03f747f66110e0d5976c2c03a76945aa@embeddededge.com>
-References: <000a01c5fae0$98ae1150$0760120a@photon>
-	<03f747f66110e0d5976c2c03a76945aa@embeddededge.com>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7EF185E6-FD8E-4310-81EB-2BED342CEAD8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 7 Dec 2005 10:39:02 -0600
-To: Dan Malek <dan@embeddededge.com>
-Cc: HappyPhot <happyphot@gmail.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8245 with its internal UART
+	Thu,  8 Dec 2005 03:54:36 +1100 (EST)
+From: Wade Farnsworth <wfarnsworth@mvista.com>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: <1133968527.8299.50.camel@rhino.az.mvista.com>
+References: <1133968527.8299.50.camel@rhino.az.mvista.com>
+Content-Type: text/plain
+Message-Id: <1133974474.8298.74.camel@rhino.az.mvista.com>
+Mime-Version: 1.0
+Date: 07 Dec 2005 09:54:34 -0700
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Transmit timeouts on 440GX Ocotea on 10baseT-HD network
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,22 +23,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2005-12-07 at 08:15, Wade Farnsworth wrote:
+> Hi Eugene,
+> 
+> I'm seeing some "NETDEV WATCHDOG: eth0: transmit timed out" messages on
+> the Ocotea when it's connected to a 10baseT hub, and it's put under
+> heavy load.  I'm using the most current 2.6 git tree.
+> 
+> This can be reproduced by ssh'ing into the Ocotea and running the
+> command "ping <host-machine> -A -s 1200", then also doing the same ping
+> command from the host to the Ocotea.  The pings will be successful for a
+> short time, then all transmits on the Ocotea will stop for a few seconds
+> (usually preceded by a few duplicate packets).  Transmits begin again
+> once the timeout occurs. /proc/net/dev doesn't report any errors, just a
+> few dropped packets.
+> 
+> Do you know what might be causing the EMAC to stop transmitting in this
+> situation?
 
-On Dec 6, 2005, at 10:43 PM, Dan Malek wrote:
+One more data point to consider:  I ran this test on an Ebony board, but
+don't encounter any timeouts.  Do you know of any 440GX-specific issues
+that might cause this?
 
->
-> On Dec 6, 2005, at 7:44 PM, HappyPhot wrote:
->
->> Who can tell me which flatform is similar to mine ? I've tried
->> "make sandpoint_defconfig", but seems not the right one.
->
-> That's the one I would have recommended.  I don't think there
-> is any Linux platform port that uses the 8245 internal DUART,
-> at least not in the public source tree.  The DUART is actually
-> pretty easy, just use the generic 8250 driver and point the address
-> to the Embedded Utilities Block DUART.
+Thanks again,
 
-The 2.6 kernel tree has support for the DUART on 8245 Sandpoint  
-systems.  (We added it in the last few months).
-
-- kumar
+Wade Farnsworth
