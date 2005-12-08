@@ -1,18 +1,18 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 3F40468871
+	by ozlabs.org (Postfix) with ESMTP id 74F76688EE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Dec 2005 10:19:49 +1100 (EST)
-To: jimmy liu <jimmyzhmliu@yahoo.com>
+	Fri,  9 Dec 2005 10:21:05 +1100 (EST)
+To: Vitaly Bordug <vbordug@ru.mvista.com>
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 08 Dec 2005 07:19:26 PST."
-	<20051208151926.74524.qmail@web53105.mail.yahoo.com>
-Date: Fri, 09 Dec 2005 00:19:47 +0100
+In-reply-to: Your message of "Thu, 08 Dec 2005 19:05:14 +0300."
+	<439859BA.6060600@ru.mvista.com>
+Date: Fri, 09 Dec 2005 00:21:03 +0100
 Sender: wd@denx.de
-Message-Id: <20051208231947.92EB9353F77@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+Message-Id: <20051208232103.756E4353F77@atlas.denx.de>
+Cc: jimmy liu <jimmyzhmliu@yahoo.com>, linuxppc-embedded@ozlabs.org
 Subject: Re: Need help for Linux hangs 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,19 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20051208151926.74524.qmail@web53105.mail.yahoo.com> you wrote:
->
-...
->    Loading Ramdisk to 00e07000, end 00f8b96a ... OK
-> 
-> The system hangs here. I have checked in the FAQs
-> provided in the Denx's site, could not find the
-> similar case.
+Dear Vitaly,
 
-Come on. "Linux hangs after uncompressing the kernel"
-(http://www.denx.de/wiki/view/DULG/LinuxHangsAfterUncompressingKernel)
-is not a "similar case"? To me it is.
+in message <439859BA.6060600@ru.mvista.com> you wrote:
+> jimmy liu wrote:
+> > I have U-Boot running on a board similar to
+> > MPC8260ADS.
+> > bootargs=root=/dev/ram rw console=ttyS0,115200
+> try to set console=ttyCPM0,115200 in the bootargs.
+                     ^^^^^^^
+> > When I run command: bootm ff060000 ff260000, the
+> > prompt shows message:
+> > ## Booting image at ff060000 ...
+> >    Image Name:   Linux-2.4.25
+                           ^^^^^^
 
+That's bad advice.
+
+The 2.4.25 kernel will definitely NOT work with console=ttyCPM0
 
 Best regards,
 
@@ -45,4 +50,5 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Is the glass half empty, half full, or twice as large as it needs to
+Immortality consists largely of boredom.
+	-- Zefrem Cochrane, "Metamorphosis", stardate 3219.8
