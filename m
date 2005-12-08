@@ -1,23 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BD266688C2
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 74E5B68882
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Dec 2005 09:27:43 +1100 (EST)
-In-Reply-To: <20051208143149.GA14554@dmt.cnet>
-References: <20051206164212.82779.qmail@web33505.mail.mud.yahoo.com>
-	<20051206211459.E8976353F54@atlas.denx.de>
-	<20051208143149.GA14554@dmt.cnet>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <668A6AB1-1D8F-4287-950B-426A1077CB8F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Thu, 8 Dec 2005 16:27:35 -0600
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+	Fri,  9 Dec 2005 10:10:06 +1100 (EST)
+To: White <white@from-b.org>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 08 Dec 2005 06:59:07 +0100."
+	<20051208065907.26c2b1d0@White64>
+Date: Fri, 09 Dec 2005 00:10:03 +0100
+Sender: wd@denx.de
+Message-Id: <20051208231003.3C60B353F77@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Denx vs kernel.org
+Subject: Re: Video Card to Lite5200 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,12 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Hi Wolfgang,
+In message <20051208065907.26c2b1d0@White64> you wrote:
 >
-> Is there a list of your fixes anywhere? Is the linux-2.6-denx tree
-> public?
+> DMA is a problem, because the implementation from Freescale use binary
+> data, and has some dirty points. This would never be included in the
+> mainstream kernel. Sylvian has included the new DMA .. works fine for
+> FEC.
 
+...did you try this on Rev. B (like B3) silicon?
 
-http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
+What I cannot understand is why there were no attempots to co-operate
+on this with Freescale. They offered their help here on the list...
 
-- kumar
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Brain fried - Core dumped
