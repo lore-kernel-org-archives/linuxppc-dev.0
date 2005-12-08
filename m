@@ -1,16 +1,23 @@
-Return-Path: <rsushko@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 008C46887F
+Return-Path: <alancarbr@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.192])
+	by ozlabs.org (Postfix) with ESMTP id 8FF2F688D0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Dec 2005 23:34:22 +1100 (EST)
-From: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
-To: ebs@ebshome.net
-Content-Type: multipart/mixed; boundary="=-tdsJvyrRFoqmxXyo9r8q"
-Date: Thu, 08 Dec 2005 15:34:15 +0300
-Message-Id: <1134045255.28438.4.camel@mephisto.spb.rtsoft.ru>
-Mime-Version: 1.0
+	Fri,  9 Dec 2005 00:18:17 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id i2so902998wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 08 Dec 2005 05:18:16 -0800 (PST)
+Message-ID: <dc70db7d0512080518r674f4025s8e52302e0d3f4249@mail.gmail.com>
+Date: Thu, 8 Dec 2005 11:18:15 -0200
+From: Alan Carvalho <alancarbr@gmail.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20051206203343.67682353F5E@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_12655_5309769.1134047895572"
+References: <dc70db7d0512060906y7fa62c56q4c25dd5d92b2b2dd@mail.gmail.com>
+	<20051206203343.67682353F5E@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Netpoll controller support for PPC EMAC driver
+Subject: Re: Video Card to Lite5200
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,155 +28,104 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_12655_5309769.1134047895572
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
---=-tdsJvyrRFoqmxXyo9r8q
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Hi Denx,
 
-This patch adds netpoll controller support for PPC EMAC driver
+I still doing some tests with ATI Video cards, as I said before the card
+work fine on my PC.
 
-Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
+I compiled the 2.6.14 kernel to Lite5200 with /proc/pci support, then when =
+I
+execute:
 
+/ # cat /proc/pci
+PCI devices found:
+  Bus  0, device  26, function  0:
+    Class 0680: PCI device 1057:5803 (rev 0).
+      Master Capable.  Latency=3D248.
+      Non-prefetchable 32 bit memory at 0xa0000000 [0xa003ffff].
+/ #
 
+It don't list the card placed at PCI slot, on PC using "lspci -v" I see:
 
+0000:00:0c.0 VGA compatible controller: ATI Technologies Inc Rage Mobility
+P/M (rev 64) (prog-if 00 [VGA])
+        Subsystem: 1002:4c52
+        Flags: bus master, stepping, medium devsel, latency 32, IRQ 10
+        Memory at ed000000 (32-bit, non-prefetchable) [size=3D16M]
+        I/O ports at d800 [size=3D256]
+        Memory at ec800000 (32-bit, non-prefetchable) [size=3D4K]
+        Expansion ROM at 20000000 [disabled] [size=3D128K]
+        Capabilities: [5c] Power Management version 1
 
---=-tdsJvyrRFoqmxXyo9r8q
-Content-Disposition: attachment; filename=ppc_emac_napi_netpoll.patch
-Content-Type: text/x-patch; name=ppc_emac_napi_netpoll.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+What you think?
+Is it normal Linux on Lite5200 don't show the PCI card info?
 
-This patch adds netpoll controller support for PPC EMAC driver
+I am looking for an "ATI Rage XL Xpert98" because Linux kernel has support
+to initialize it without BIOS help (CONFIG_FB_ATY_XL_INIT).
+I see some post at some list from people using this board on no x86
+platform.
 
----
-commit a482261f165edb7e6af363d13ea94e8e7429f085
-tree b5bee5eb8a971c3f40867946225051e1ff320763
-parent e4f5c82a92c2a546a16af1614114eec19120e40a
-author Ruslan V. Sushko <rsushko@ru.mvista.com> Thu, 08 Dec 2005 15:22:38 +0300
-committer Ruslan V. Sushko <rsushko@ru.mvista.com> Thu, 08 Dec 2005 15:22:38 +0300
+Cheers,
 
- drivers/net/ibm_emac/ibm_emac_core.c |   42 +++++++++++++++++++++++++++++++++-
- drivers/net/ibm_emac/ibm_emac_mal.c  |   14 -----------
- drivers/net/ibm_emac/ibm_emac_mal.h  |   12 ++++++++++
- 3 files changed, 53 insertions(+), 15 deletions(-)
+Alan
 
-diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
---- a/drivers/net/ibm_emac/ibm_emac_core.c
-+++ b/drivers/net/ibm_emac/ibm_emac_core.c
-@@ -1071,8 +1071,16 @@ static int emac_start_xmit(struct sk_buf
- 	struct ocp_enet_private *dev = ndev->priv;
- 	unsigned int len = skb->len;
- 	int slot;
-+	u16 ctrl;
- 
--	u16 ctrl = EMAC_TX_CTRL_GFCS | EMAC_TX_CTRL_GP | MAL_TX_CTRL_READY |
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	if (unlikely(dev->tx_cnt == NUM_TX_BUFF)) {
-+		netif_stop_queue(ndev);
-+		return -EBUSY;
-+	}
-+#endif
-+
-+	ctrl = EMAC_TX_CTRL_GFCS | EMAC_TX_CTRL_GP | MAL_TX_CTRL_READY |
- 	    MAL_TX_CTRL_LAST | emac_tx_csum(dev, skb);
- 
- 	slot = dev->tx_slot++;
-@@ -1938,6 +1946,33 @@ static int emac_ioctl(struct net_device 
- 		return -EOPNOTSUPP;
- 	}
- }
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+void
-+poll_ctrl(struct net_device *dev)
-+{
-+	int budget = 16;
-+	struct ibm_ocp_mal *mal = ((struct ocp_enet_private*)(dev->priv))->mal;
-+	struct net_device *poll_dev = &(mal->poll_dev);
-+
-+	/* disable  MAL interrupts */
-+	mal_disable_eob_irq(mal);
-+	netif_poll_disable(poll_dev);
-+
-+	emac_poll_rx(dev->priv, budget);
-+	emac_poll_tx(dev->priv);
-+
-+	netif_poll_enable(poll_dev);
-+	/* Enable mal interrupts */
-+	mal_enable_eob_irq(mal);
-+}
-+
-+int
-+poll_fake(struct net_device *dev, int *budget)
-+{
-+	/* It will be never invoked */
-+	return 0;
-+}
-+#endif
- 
- static int __init emac_probe(struct ocp_device *ocpdev)
- {
-@@ -2188,6 +2223,11 @@ static int __init emac_probe(struct ocp_
- 	netif_carrier_off(ndev);
- 	netif_stop_queue(ndev);
- 
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	ndev->poll_controller = poll_ctrl;
-+	ndev->poll = poll_fake;
-+#endif
-+
- 	err = register_netdev(ndev);
- 	if (err) {
- 		printk(KERN_ERR "emac%d: failed to register net device (%d)!\n",
-diff --git a/drivers/net/ibm_emac/ibm_emac_mal.c b/drivers/net/ibm_emac/ibm_emac_mal.c
---- a/drivers/net/ibm_emac/ibm_emac_mal.c
-+++ b/drivers/net/ibm_emac/ibm_emac_mal.c
-@@ -155,20 +155,6 @@ void mal_poll_del(struct ibm_ocp_mal *ma
- 	local_bh_enable();
- }
- 
--/* synchronized by mal_poll() */
--static inline void mal_enable_eob_irq(struct ibm_ocp_mal *mal)
--{
--	MAL_DBG2("%d: enable_irq" NL, mal->def->index);
--	set_mal_dcrn(mal, MAL_CFG, get_mal_dcrn(mal, MAL_CFG) | MAL_CFG_EOPIE);
--}
--
--/* synchronized by __LINK_STATE_RX_SCHED bit in ndev->state */
--static inline void mal_disable_eob_irq(struct ibm_ocp_mal *mal)
--{
--	set_mal_dcrn(mal, MAL_CFG, get_mal_dcrn(mal, MAL_CFG) & ~MAL_CFG_EOPIE);
--	MAL_DBG2("%d: disable_irq" NL, mal->def->index);
--}
--
- static irqreturn_t mal_serr(int irq, void *dev_instance, struct pt_regs *regs)
- {
- 	struct ibm_ocp_mal *mal = dev_instance;
-diff --git a/drivers/net/ibm_emac/ibm_emac_mal.h b/drivers/net/ibm_emac/ibm_emac_mal.h
---- a/drivers/net/ibm_emac/ibm_emac_mal.h
-+++ b/drivers/net/ibm_emac/ibm_emac_mal.h
-@@ -216,6 +216,18 @@ static inline void set_mal_dcrn(struct i
- 	mtdcr(mal->dcrbase + reg, val);
- }
- 
-+/* synchronized by mal_poll() */
-+static inline void mal_enable_eob_irq(struct ibm_ocp_mal *mal)
-+{
-+	set_mal_dcrn(mal, MAL_CFG, get_mal_dcrn(mal, MAL_CFG) | MAL_CFG_EOPIE);
-+}
-+
-+/* synchronized by __LINK_STATE_RX_SCHED bit in ndev->state */
-+static inline void mal_disable_eob_irq(struct ibm_ocp_mal *mal)
-+{
-+	set_mal_dcrn(mal, MAL_CFG, get_mal_dcrn(mal, MAL_CFG) & ~MAL_CFG_EOPIE);
-+}
-+
- /* Register MAL devices */
- int mal_init(void) __init;
- void mal_exit(void) __exit;
+------=_Part_12655_5309769.1134047895572
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+Hi Denx,<br><br>
+I still doing some tests with ATI Video cards, as I said before the card wo=
+rk fine on my PC.<br>
+<br>
+I compiled the 2.6.14 kernel to Lite5200 with /proc/pci support, then when =
+I execute:<br>
+<br>
+/ # cat /proc/pci<br>
+PCI devices found:<br>
+&nbsp; Bus&nbsp; 0, device&nbsp; 26, function&nbsp; 0:<br>
+&nbsp;&nbsp;&nbsp; Class 0680: PCI device 1057:5803 (rev 0).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Master Capable.&nbsp; Latency=3D248.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Non-prefetchable 32 bit memory at 0xa0000000=
+ [0xa003ffff].<br>
+/ #<br>
+<br>
+It don't list the card placed at PCI slot, on PC using &quot;lspci -v&quot;=
+ I see:<br>
+<br>
+0000:00:0c.0 VGA compatible controller: ATI Technologies Inc Rage Mobility =
+P/M (rev 64) (prog-if 00 [VGA])<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Subsystem: 1002:4c52<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Flags: bus master, stepping, med=
+ium devsel, latency 32, IRQ 10<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Memory at ed000000 (32-bit, non-=
+prefetchable) [size=3D16M]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; I/O ports at d800 [size=3D256]<b=
+r>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Memory at ec800000 (32-bit, non-=
+prefetchable) [size=3D4K]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Expansion ROM at 20000000 [disab=
+led] [size=3D128K]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Capabilities: [5c] Power Managem=
+ent version 1<br>
+<br>
+What you think? <br>
+Is it normal Linux on Lite5200 don't show the PCI card info?<br>
+<br>
+I am looking for an &quot;ATI Rage XL Xpert98&quot; because Linux kernel ha=
+s
+support to initialize it without BIOS help (CONFIG_FB_ATY_XL_INIT). <br>
+I see some post at some list from people using this board on no x86 platfor=
+m.<br>
+<br>
+Cheers,<br>
+<br>
+Alan<br>
+<br>
 
-
-!-------------------------------------------------------------flip-
-
-
-
---=-tdsJvyrRFoqmxXyo9r8q--
+------=_Part_12655_5309769.1134047895572--
