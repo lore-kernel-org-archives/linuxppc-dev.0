@@ -1,22 +1,23 @@
-Return-Path: <white@from-b.org>
-Received: from aphrodite.net-build.de (aphrodite.net-build.de [212.88.135.60])
-	by ozlabs.org (Postfix) with ESMTP id 12BF5688BC
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2D6BF688BE
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Dec 2005 17:00:35 +1100 (EST)
-Received: from White64 (p54B4A731.dip0.t-ipconnect.de [84.180.167.49])
-	(authenticated)
-	by aphrodite.net-build.de (8.11.6/8.11.2) with ESMTP id jB861BR06223
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 Dec 2005 07:01:24 +0100
-Date: Thu, 8 Dec 2005 06:59:07 +0100
-From: White <white@from-b.org>
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <20051208065907.26c2b1d0@White64>
-In-Reply-To: <20051207172321.77464.qmail@web53515.mail.yahoo.com>
-References: <20051205203941.GA16695@mail.gnudd.com>
-	<20051207172321.77464.qmail@web53515.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Subject: Re: Video Card to Lite5200
+	Thu,  8 Dec 2005 18:14:02 +1100 (EST)
+In-Reply-To: <200512011430.48271.sr@denx.de>
+References: <20051130070059.28442.qmail@web50609.mail.yahoo.com>
+	<15EF7506-D65A-4FD0-9042-A5133D8B7C65@kernel.crashing.org>
+	<200512011430.48271.sr@denx.de>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <DD6BF3D1-45C9-4F47-AA10-82119C6BB993@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Thu, 8 Dec 2005 01:13:54 -0600
+To: Stefan Roese <sr@denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] ppc32: Add TQM85xx (8540/8541/8555/8560) board support
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,29 +28,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Am Wed, 7 Dec 2005 09:23:21 -0800 (PST) schrieb roger blofeld
-<blofeldus@yahoo.com> :
+On Dec 1, 2005, at 7:30 AM, Stefan Roese wrote:
 
-> What is the status of the mpc5200 support? I see Sylvain's repository
-> is still at 2.6.12 (5 months old).
-> 
-> http://gitbits.246tnt.com/gitweb.cgi?p=linux-2.6-mpc52xx.git;a=summary
-> 
-> The current kernel.org kernel doesn't appear to support fec/DMA. Is
-> there a plan to get networking support into the mainstream kernel?
-> 
-> Thanks
-> -rb
-> 
+> This patch adds support for the TQ Components TQM85xx modules.  
+> Currently the
+> modules TQM8540/8541/8555/8560 are supported.
+>
+> Signed-off-by: Stefan Roese <sr@denx.de>
+>
+> Best regards,
+> Stefan
+> <add-tqm85xx-board-support-2.patch>
 
+Had a question on this, any reason you have to hookup the rtc with an  
+late_initcall()?
 
-i think Sylvians should be update in some days. I hope.
-you can pull his rep. without problems on current 2.6.15-rc4.
-
-DMA is a problem, because the implementation from Freescale use binary
-data, and has some dirty points. This would never be included in the
-mainstream kernel. Sylvian has included the new DMA .. works fine for
-FEC.
-
-If someone get this new implementtion running with AC97 or PCI would be
-fine.
+- kumar
