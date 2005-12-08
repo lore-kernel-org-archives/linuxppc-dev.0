@@ -1,34 +1,19 @@
-Return-Path: <peter.ryser@xilinx.com>
-Received: from mail17-ash-R.bigfish.com (mail-ash.bigfish.com [206.16.192.253])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4B341688DE
+Return-Path: <rsushko@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 5F19C688C3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Dec 2005 03:38:30 +1100 (EST)
-Received: from mail17-ash.bigfish.com (localhost.localdomain [127.0.0.1])
-	by mail17-ash-R.bigfish.com (Postfix) with ESMTP id D1D6C3202FD
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Dec 2005 16:17:29 +0000 (UTC)
-Received: from newsgate.xilinx.com (gateway4.xilinx.com [149.199.60.204])
-	by mail17-ash.bigfish.com (Postfix) with ESMTP id 57F08320297
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Dec 2005 16:17:29 +0000 (UTC)
-Received: from cliff.xilinx.com (cliff [149.199.38.103])
-	by newsgate.xilinx.com (8.11.6p2/8.11.6) with ESMTP id jB8GHQe11784
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 Dec 2005 08:17:26 -0800 (PST)
-Received: from XSJ-EXCHVS1.xlnx.xilinx.com (localhost [127.0.0.1])
-	by cliff.xilinx.com (8.12.9/8.11.6) with ESMTP id jB8GHHLY021715
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 Dec 2005 08:17:26 -0800 (PST)
-Message-ID: <43985BD5.9090505@xilinx.com>
-Date: Thu, 08 Dec 2005 08:14:13 -0800
-From: Peter Ryser <peter.ryser@xilinx.com>
+	Fri,  9 Dec 2005 04:14:10 +1100 (EST)
+Message-ID: <439869CD.2040002@ru.mvista.com>
+Date: Thu, 08 Dec 2005 20:13:49 +0300
+From: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
 MIME-Version: 1.0
-To: Paulinha <gnathita@gmail.com>
-References: <259581790512070010s3be8b3cfg6cfd17d2f503b0f7@mail.gmail.com>
-In-Reply-To: <259581790512070010s3be8b3cfg6cfd17d2f503b0f7@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "John W. Linville" <linville@tuxdriver.com>
+References: <1134045255.28438.4.camel@mephisto.spb.rtsoft.ru>
+	<20051208145714.GA16049@tuxdriver.com>
+In-Reply-To: <20051208145714.GA16049@tuxdriver.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: linux 2.4 on Xilinx ml403
+Subject: Re: Netpoll controller support for PPC EMAC driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -39,51 +24,126 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Make sure your system.mss contains something like:
+Please see my answers bellow.
+John W. Linville wrote:
+> On Thu, Dec 08, 2005 at 03:34:15PM +0300, Ruslan V. Sushko wrote:
+>   
+>> This patch adds netpoll controller support for PPC EMAC driver
+>>
+>> Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
+>>     
+>
+> Patches in-line are easier to review... :-)
+>
+>   
+>> @@ -1071,8 +1071,16 @@ static int emac_start_xmit(struct sk_buf
+>>  	struct ocp_enet_private *dev = ndev->priv;
+>>  	unsigned int len = skb->len;
+>>  	int slot;
+>> +	u16 ctrl;
+>>  
+>> -	u16 ctrl = EMAC_TX_CTRL_GFCS | EMAC_TX_CTRL_GP | MAL_TX_CTRL_READY |
+>> +#ifdef CONFIG_NET_POLL_CONTROLLER
+>> +	if (unlikely(dev->tx_cnt == NUM_TX_BUFF)) {
+>> +		netif_stop_queue(ndev);
+>> +		return -EBUSY;
+>> +	}
+>> +#endif
+>>     
+>
+> Why is this necessary?
+>   
+When netpoll controller is enabled and packets are trapped bay netpoll 
+controller the netif_stop_queue function does nothing. As result the 
+packets which are queued for send may be overwritten/corrupted, because 
+CPU insert packets significantly faster then netdev send them.
+>   
+>> +
+>> +	ctrl = EMAC_TX_CTRL_GFCS | EMAC_TX_CTRL_GP | MAL_TX_CTRL_READY |
+>>  	    MAL_TX_CTRL_LAST | emac_tx_csum(dev, skb);
+>>  
+>>  	slot = dev->tx_slot++;
+>> @@ -1938,6 +1946,33 @@ static int emac_ioctl(struct net_device 
+>>  		return -EOPNOTSUPP;
+>>  	}
+>>  }
+>> +#ifdef CONFIG_NET_POLL_CONTROLLER
+>> +void
+>> +poll_ctrl(struct net_device *dev)
+>> +{
+>> +	int budget = 16;
+>> +	struct ibm_ocp_mal *mal = ((struct ocp_enet_private*)(dev->priv))->mal;
+>> +	struct net_device *poll_dev = &(mal->poll_dev);
+>> +
+>> +	/* disable  MAL interrupts */
+>> +	mal_disable_eob_irq(mal);
+>> +	netif_poll_disable(poll_dev);
+>>     
+>
+> Is the call to netif_poll_disable necessary?  Aren't NAPI and netpoll
+> aware of each other?
+>   
+In this case the device instance passed to netpoll controller 
+functionality is not the same which used by NAPI. As result conflict 
+will occurred if netpoll controller invokes polling in the time of NAPI 
+poll working. Please see my comments below.
+>   
+>> +
+>> +	emac_poll_rx(dev->priv, budget);
+>> +	emac_poll_tx(dev->priv);
+>> +
+>> +	netif_poll_enable(poll_dev);
+>> +	/* Enable mal interrupts */
+>> +	mal_enable_eob_irq(mal);
+>> +}
+>> +
+>> +int
+>> +poll_fake(struct net_device *dev, int *budget)
+>> +{
+>> +	/* It will be never invoked */
+>> +	return 0;
+>> +}
+>> +#endif
+>>     
+>
+> If it's never invoked, then why define it?
+>   
+Please see my comments bellow.
+>   
+>>  
+>>  static int __init emac_probe(struct ocp_device *ocpdev)
+>>  {
+>> @@ -2188,6 +2223,11 @@ static int __init emac_probe(struct ocp_
+>>  	netif_carrier_off(ndev);
+>>  	netif_stop_queue(ndev);
+>>  
+>> +#ifdef CONFIG_NET_POLL_CONTROLLER
+>> +	ndev->poll_controller = poll_ctrl;
+>> +	ndev->poll = poll_fake;
+>> +#endif
+>> +
+>>     
+>
+> ->poll is not related to ->poll_controller.  It is for NAPI, not
+> netpoll.
+>   
+The main idea is devices passed to netpoll controller are not the same 
+which is used for NAPI. This driver has three net_device instances. One 
+is virtual device which is used only for NAPI (for this device real NAPI 
+poll function is defined) and two others are usual devices without NAPI. 
+For each of these two devices poll handlers functions are defined 
+(emac_poll_rx and emac_poll_tx) which are invoked from NAPI device poll 
+handler. Function emac_poll_rx uses netif_receive_skb function to pass 
+skbs to high level. To pass skb to netpoll controller via 
+netif_receive_skb function the poll field must be defined:
+-------------------- cut from netif_receive_skb (net/dev.c) ----------
+if (skb->dev->poll && netpoll_rx(skb))
+return NET_RX_DROP;
+--------------------------------------------------------------------------------
+So the poll_fake function and poll field are defined and initialized 
+only to cheat netif_receive_skb function. In same time the poll_fake 
+will be never invoked because devices for whom this function is defined 
+are not NAPI devices.
 
-BEGIN OS
- PARAMETER OS_NAME = linux_mvl31
- PARAMETER OS_VER = 1.01.a
- PARAMETER PROC_INSTANCE = ppc405_0
- PARAMETER MEM_SIZE = 0x4000000
- PARAMETER PLB_CLOCK_FREQ_HZ = 100000000
- PARAMETER connected_periphs = 
-(RS232_Uart,IIC_EEPROM,SysACE_CompactFlash,Ethernet_MAC,opb_intc_0)
-END
-
-If it does not use XPS and in the menu select Platform Software 
-Settings. Use linux as Operating System and linux_mvl31_v1_01_a as the 
-MLD. The rerun the library generation. Also make sure that you have 
-enabled the interrupts for System ACE CF in the hardware.
-
-- Peter
-
-
-Paulinha wrote:
-
-> Hi all,
->
-> I have been trying to run linux 2.4.26 on Virtex 4 for a while and 
-> without success.
->
-> I am trying to implement a simple design, with an UART, SystemACE and 
-> everything interrupt driven. When I try to make bzImage, there is an 
-> error in (SysACE) adapter.c file, because XPAR_INTC_0_SYSACE_0_VEC_ID 
-> is not defined.
->
-> I have applied the patch given by Xilinx for switching from the ml300 
-> to the ml403, which copies the bsp, .config and xparameter files into 
-> the kernel.
->
-> I am stucked here, and do not know how to keep going from that.
-> Could anyone help me a little bit?
->
-> Thanks and have a good day!
->
->------------------------------------------------------------------------
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+Thank you,
+Ruslan
