@@ -1,17 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20051207001720.GB25533@localhost.localdomain>
-References: <1133816807.8577.50.camel@cashmere.sps.mot.com>
-	<200512062048.56131.arnd@arndb.de>
-	<20051207001720.GB25533@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D6B0E6A6-A7A4-4A44-B96C-D625C8C9BFA2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 7 Dec 2005 10:54:28 -0600
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: RFC: Rev 0.5 Booting the Linux/ppc kernel without Open Firmware
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17303.53564.160668.376061@cargo.ozlabs.ibm.com>
+Date: Thu, 8 Dec 2005 17:22:52 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
+Subject: patches in powerpc.git tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,121 +15,152 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Here is a list of patches currently in the powerpc.git tree that
+aren't already in Linus' tree.
 
-On Dec 6, 2005, at 6:17 PM, David Gibson wrote:
+Paul.
 
-> On Tue, Dec 06, 2005 at 08:48:55PM +0100, Arnd Bergmann wrote:
->> On Maandag 05 Dezember 2005 22:06, Jon Loeliger wrote:
->>> Included below is a proposed Revision 0.5 of the
->>> "Booting the Linux/ppc kernel without Open Firmware"
->>> document.  This modification primarily extends the
->>> Revision 0.4 by adding definitions for OF Nodes that
->>> cover the System-On-a-Chip features found on PPC parts.
->>> It also generalizes some earlier wording that pertained
->>> to only PPC64 parts and covers the new, merged PPC 32
->>> and 64 parts together.  Finally, minor typos, style
->>> consistency and grammar problems were corrected.
->>
->> A few points are not clear yet, either because I don't understand the
->> document or one it references correctly or because I might have
->> different requirements:
->
-> All comments below IMHO, and subject to persuasion otherwise.
->
->> - Do we need a way to identify the type of soc bus? There are  
->> different
->>   standards for this, e.g. PLB4 on PPC440 or the EIB on the Cell BE.
->>   My initial idea was to have different device-type properties for  
->> these,
->>   but I now think that device_type = "soc" makes sense for all of  
->> them.
->>   Maybe we could add a model or compatible property for them.
->
-> It think it would be a good idea to have something labelling the
-> specific type of SOC bus, though I'm not immediately sure where.
-> "model" perhaps, if it rarely has an effect on how to operate the bus.
+Adrian Bunk:
+      PPC_PREP: remove unneeded exports
 
-I think this should be optional since it rarely has an effect on usage.
+Andy Whitcroft:
+      powerpc: powermac adb fix dependency on btext_drawchar
+      powerpc: powermac adb fix udbg_adb_use_btext warning
+      powerpc32: clean up available memory models
+      powerpc32: fix definition of distribute_irqs
 
->> - It does not really belong into this document, but is related  
->> anyway:
->>   how do you want to represent this in Linux? Currently, most of  
->> these
->>   would be of_platform_device, but I think it would be good to have
->>   a new bus_type for it. The advantage would be that you can see the
->>   devices in /sys/devices/soc@xxx/ even if the driver is not loaded
->>   and the driver can even be autoloaded by udev.
->>   Also, which properties should show up in sysfs? All of them or just
->>   those specified in this document or a subset of them?
->
-> I concur - I believe we already have a bus_type for on-chip devices on
-> 4xx.
+Arnd Bergmann:
+      spufs: The SPU file system, base
+      spufs: cooperative scheduler support
+      spufs: Make all exports GPL-only
+      spufs: fix local store page refcounting
+      spufs: Fix oops when spufs module is not loaded
+      spufs: Turn off debugging output
+      spufs: Improved SPU preemptability.
+      spufs: Improved SPU preemptability [part 2].
+      spufs: fix mailbox polling
+      cell: add platform detection code
 
-Not, sure what the 4xx reference is but, we have be using the  
-platform bus in the kernel for "soc" connected devices.  I dont see  
-the need to invent a new bus type unless there is a specific reason to.
+Benjamin Herrenschmidt:
+      powerpc: Merge align.c (#2)
+      powerpc: Add OF address parsing code (#2)
+      powerpc: serial port discovery (#2)
+      powerpc: Unify udbg (#2)
+      powerpc: Add back support for booting from BootX (#2)
+      powerpc: convert macio_asic to use prom_parse
+      powerpc: Fix g5 build with xmon
+      powerpc: More serial probe fixes (#2)
+      powerpc: udbg updates
+      powerpc: Update OF address parsers
+      powerpc: Fix a huge page bug
+      powerpc: Remove debug code in hash path
 
->> - What do we do with pci root devices? They are often physically  
->> connected
->>   to the internal CPU bus, so it would make sense to represent them
->>   this way in the device tree. Should we add them to the  
->> specification
->>   here? Would it even work the expected way in Linux?
->
-> The host bridges should sit on the soc bus then, as you suggest (just
-> as the PCI busses hang off HyperTransport on the G5).  I think you
-> need to refer to the OF docs for how to represent the PCI host bridge
-> and devices themselves.
+David Gibson:
+      powerpc: Remove imalloc.h
+      powerpc: Make hugepage mappings respect hint addresses
+      is_aligned_hugepage_range() cleanup
+      powerpc: Remove ItLpRegSave area from the paca
+      powerpc: Remove some unneeded fields from the paca
 
-We need to provide some details on PCI nodes based on the OF docs.   
-Ben and I have talked a little about this.  Its mainly about what  
-parts of the OF spec are truly required.  We will probably add some  
-additional information that the OF spec doesnt handle for host  
-bridges setup.
+David Woodhouse:
+      syscall entry/exit revamp
+      ppc64 syscall_exit_work: call the save_nvgprs function, not its descriptor.
+      powerpc: serial port discovery: cope with broken firmware
+      Save NVGPRS in 32-bit signal frame
+      Fix code that saves NVGPRS in 32-bit signal frame
+      ppc: Make ARCH=ppc build again with new syscall path
 
->> - For some devices, you mandate a model property, for others you  
->> don't.
->>   Is this intentional? It might be easier to find the right device
->>   driver if the match string always contains a model name.
->
-> You rarely want to match model name to find a device - generally you
-> want to match either on "compatible" or "device_type", or possibly
-> both.
->
->> - How would I represent nested interrupt controllers? E.g. suppose I
->>   have a Cell internal interrupt controller on one SOC bus and
->>   and an external interrupt controller on another SOC bus but have
->>   that deliver interrupts to the first one.
->
-> Again, I believe this is in the OF docs - interrupt controllers have
-> an interrupt-parent property IIRC, which gives the phandle of the next
-> interrupt controller up the chain.
+Heiko J Schick:
+      powerpc: IBMEBUS bus support
 
-Yep, you need to check out the "Interrupt Mapping" OF spec for  
-details.  It handles describing the chaining you speak of.  However,  
-you will need to provide some "spec" for any properties of the  
-interrupt controllers that you may need.
+Hugh Dickins:
+      mm: powerpc ptlock comments
+      mm: powerpc init_mm without ptlock
 
->> - Should it mention nested SOC buses, e.g. a PLB4 bus connected to a
->>   PLB5 bus?
->
-> Yes.
+Kumar Gala:
+      powerpc: moved ipic code to arch/powerpc
+      powerpc: Add support for building uImages
+      powerpc: Fix suboptimal uImage target
 
-Is there anything special about this? are these PLB4/5 busses  
-software visible?
+linas:
+      powerpc/pseries: dlpar-add crash on null pointer deref
+      powerpc: minor cleanup of void ptr deref
 
->
->> - The title says 'without Open Firmware', but it should also be  
->> allowed
->>   to use the same SOC bus layout when using SLOF or some other OF
->>   implementation, right?
->
-> I guess so.
->
->> - Also not new in this version, but still: Should there be support  
->> for
->>   specifying CPUs with multiple SMT threads?
->
-> Umm.. maybe.
+Linas Vepstas:
+      powerpc: PCI hotplug common code elimination
+      powerpc: make pcibios_claim_one_bus available to other code
+      powerpc: migrate common PCI hotplug code
+      PCI Error Recovery: header file patch
+      powerpc: PCI Error Recovery: PPC64 core recovery routines
+      powerpc: Split out PCI address cache to its own file
+      powerpc: Add "partitionable endpoint" support
+      powerpc: remove bogus printk
+      powerpc: Remove duplicate code
+      powerpc: bugfix: fill in uninitialized field
+      powerpc: Use PE configuration address consistently
+      powerpc: set up the RTAS token just like the rest of them.
+      powerpc: Don't continue with PCI Error recovery if slot reset failed.
+      powerpc: handle multifunction PCI devices properly
+      powerpc: IOMMU: don't ioremap null addresses
+      powerpc: Save device BARs much earlier in the boot sequence
+      powerpc: get rid of per_cpu EEH counters
 
-- kumar
+Marcelo Tosatti:
+      ppc32: m8xx watchdog update
+      powerpc/8xx: Fix m8xx_wdt issues
+
+Mark Nutter:
+      spufs: switchable spu contexts
+      kernel-side context switch code for spufs
+      spufs: add spu-side context switch code
+
+Michael Ellerman:
+      powerpc: Merge kexec
+      powerpc: Propagate regs through to machine_crash_shutdown
+      powerpc: Add a is_kernel_addr() macro
+      powerpc: Separate usage of KERNELBASE and PAGE_OFFSET
+      powerpc: Add CONFIG_CRASH_DUMP
+      powerpc: Create a trampoline for the fwnmi vectors
+      powerpc: Reroute interrupts from 0 + offset to PHYSICAL_START + offset
+      powerpc: Fixups for kernel linked at 32 MB
+      powerpc: Add arch dependent basic infrastructure for Kdump.
+      powerpc: Parse crashkernel= parameter in first kernel
+      powerpc: Add arch-dependent copy_oldmem_page
+      powerpc: Add support for "linux,usable-memory" on memory nodes
+
+Michal Ostrowski:
+      powerpc/pseries: Fix TCE building with 64k pagesize
+
+Mike Kravetz:
+      Remove SPAN_OTHER_NODES config definition
+      powerpc: Minor numa memory code cleanup
+      powerpc: Minor numa memory code cleanup
+      powerpc: numa placement for dynamically added memory
+      powerpc/pseries: boot failures on numa if no memory on node
+
+Olaf Hering:
+      powerpc: correct the NR_CPUS description text
+
+Olof Johansson:
+      powerpc: remove redundant code in stab init
+
+Otavio Salvador:
+      ppc: removed unused variable i from code.
+
+Paul Mackerras:
+      powerpc: Update __NR_syscalls to account for SPU syscalls
+      ppc: remove duplicate bseip.h
+      powerpc: Fix up some compile errors in the PCI error recovery code
+      powerpc/pseries: Optimize IOMMU setup
+      ppc: Build in all three of powermac, PREP and CHRP support
+      Revert "powerpc: Minor numa memory code cleanup"
+      powerpc: Fix typo in head_64.S
+
+Stephen Rothwell:
+      powerpc: remove arch/powerpc/include hack for 64 bit
+      powerpc: cleanup iseries irq.c
+      powerpc: use end_IRQ for iseries irqs
+      powerpc: partly merge iseries do_IRQ
+      powerpc: reduce include in irq.c
+      powerpc: more iseries irq work
+      powerpc: fix for "Update OF address parsers"
