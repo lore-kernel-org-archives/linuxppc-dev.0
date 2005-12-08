@@ -1,27 +1,16 @@
-Return-Path: <dalang@cs.ubc.ca>
-Received: from mail-relay1.cs.ubc.ca (mail-relay1.cs.ubc.ca [142.103.6.79])
-	by ozlabs.org (Postfix) with ESMTP id DDFFF688C5
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Dec 2005 02:10:14 +1100 (EST)
-Date: Thu, 8 Dec 2005 07:10:04 -0800 (PST)
-From: Dustin Lang <dalang@cs.ubc.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1134038881.11760.11.camel@gaston>
-Message-ID: <Pine.LNX.4.60.0512080706390.29467@tin.icics.ubc.ca>
-References: <20051026215535.GA5713@campbell-lange.net>
-	<1133124018.7768.107.camel@gaston>
-	<87veydaftb.fsf@oedipa.disorg> <1133130209.7768.136.camel@gaston>
-	<877jatemic.fsf@oedipa.disorg> <1133132287.7768.138.camel@gaston>
-	<87oe45d0j4.fsf@oedipa.disorg> <1133142131.7768.156.camel@gaston>
-	<87ek51cycq.fsf@oedipa.disorg> <1133145863.7768.165.camel@gaston>
-	<73eb1cf90511271913k1786facev55038e567c51d19c@mail.gmail.com>
-	<1133150158.7768.177.camel@gaston> <87zmnpbe34.fsf@oedipa.disorg>
-	<1133151191.7768.183.camel@gaston> <87hd9wak4a.fsf@oedipa.disorg>
-	<1133210294.7768.190.camel@gaston>  <87bqzs5cio.fsf@oedipa.disorg>
-	<1134038881.11760.11.camel@gaston>
+Return-Path: <tjernlund@tjernlund.se>
+Received: from csmtp.b-one.net (csmtp.b-one.net [195.47.247.21])
+	by ozlabs.org (Postfix) with ESMTP id DC0496887E
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Dec 2005 10:38:10 +1100 (EST)
+From: "Tjernlund" <tjernlund@tjernlund.se>
+To: "Linuxppc-Dev" <linuxppc-dev@ozlabs.org>
+Date: Fri, 9 Dec 2005 00:07:22 +0100
+Message-ID: <000e01c5fc4c$25b17cb0$020120ac@Jocke>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Guy Yasko <gyasko@gmail.com>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: Fix boot on some 12" powerbooks, need testers on others
+Content-Type: text/plain;
+	charset="US-ASCII"
+Cc: uclibc@uclibc.org, 'Linh Dang' <linhd@nortel.com>
+Subject: Linux process ABI broken in 2.6?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,15 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Seems like ppc32 kernel pass the application entry point address
+in r7 and MSR in r8 when starting the application. The source might be
+ret_from_syscall, in entry.S: 
+	...
+	lwz	r7,_NIP(r1)
+ 	lwz	r8,_MSR(r1)
+ 	FIX_SRR1(r8, r0)
+ 	lwz	r2,GPR2(r1)
+	lwz	r1,GPR1(r1)
+	mtspr	SPRN_SRR0,r7
+	mtspr	SPRN_SRR1,r8
+	SYNC
+	RFI
+I am not convinced this is the source, but a non zero r7
+breaks static apps in uClibc.
 
-It boots on my PowerBook6,2 (12" Oct'03).
+Is this on purpose and why?
 
-Cheers,
-dstn.
+Secion 8.4.1 in
+http://refspecs.freestandards.org/LSB_3.1.0/LSB-Core-PPC32/LSB-Core-PPC32.html#PROCESSINITIALIZATION
 
-On Thu, 8 Dec 2005, Benjamin Herrenschmidt wrote:
-> This patch against 2.6.15-rc5 might help fixing boot on some recent
-> powerbooks like some 12" aluminium. However, I need urgently some
-> testers with other models of powerbooks and mac mini to tell me if it
-> causes any regression (that is before tomorrow) so it _might_ have a
-> chance to make it in 2.6.15.
+says:
+"Contrary to what is stated in the Registers part of chapter 3 of the System V Application Binary Interface PowerPC Processor
+Supplement there are no values set in registers r3, r4, r5, r6 and r7. Instead the values specified to appear in all of those
+registers except r7 are placed on the stack. The value to be placed into register r7, the termination function pointer is not passed
+to the process."
+
+How do one not pass a termination function in r7 other than setting
+r7 to zero?
+
+ Jocke
