@@ -1,18 +1,16 @@
-Return-Path: <deboraliu@tom.com>
-Received: from tom.com (smtpr4.tom.com [202.108.252.134])
-	by ozlabs.org (Postfix) with SMTP id 9AA8168890
+Return-Path: <rsushko@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 008C46887F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Dec 2005 21:26:21 +1100 (EST)
-Date: Thu, 8 Dec 2005 17:04:24 +0800
-From: "debora liu" <deboraliu@tom.com>
-To: "denx" <wd@denx.de>
+	Thu,  8 Dec 2005 23:34:22 +1100 (EST)
+From: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
+To: ebs@ebshome.net
+Content-Type: multipart/mixed; boundary="=-tdsJvyrRFoqmxXyo9r8q"
+Date: Thu, 08 Dec 2005 15:34:15 +0300
+Message-Id: <1134045255.28438.4.camel@mephisto.spb.rtsoft.ru>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="=====001_Dragon533568207641_====="
-Message-Id: <20051208102621.9AA8168890@ozlabs.org>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Subject: mpc823 SCC3 flow control bug
-Reply-To: deboraliu@tom.com
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Netpoll controller support for PPC EMAC driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,203 +21,155 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
---=====001_Dragon533568207641_=====
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+--=-tdsJvyrRFoqmxXyo9r8q
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-SGVsbG8gZGVueDoNCg0KSSBmb3VuZCBvbmUgYnVnIHdoZW4gU0NDMyBhcyBVQVJULCBteSBjcHUg
-aXMgbXBjODIzLg0KY3RzL2NkIGNvbmZpZyBhczoNCglDVFMgUEM1DQoJQ0QgIFBDNA0KDQp5b3Vy
-IEVMREstMy4xLjEgbGludXgtMi40LjI1IHVhcnQuYyBzZXQgcGNwYXIscGNzbywgcGNkaXI6DQoJ
-aW1tYXAtPmltX2lvcG9ydC5pb3BfcGNwYXIgJj0gfmlvYml0czsNCglpbW1hcC0+aW1faW9wb3J0
-LmlvcF9wY3NvIHw9ICBpb2JpdHM7DQoJaW1tYXAtPmltX2lvcG9ydC5pb3BfcGNkaXIgJj0gfmlv
-Yml0czsNCmJ1dCBNUEM4MjNVTSB0ZWxsIG1lIENEMyBhbmQgQ1RTMyBpcyBiaXQ2IGFuZCBiaXQ3
-IG9uIFBDU08gcmVnaXN0ZXIsIHNvIEkgbW9kaWZ5Og0KCWZpeF9wY3NvID0gaW9iaXRzOw0KCSNp
-ZiBkZWZpbmVkKENPTkZJR19VQVJUX0NUU19DT05UUk9MX1NDQzMpDQogIAkJZml4X3Bjc28gJj1+
-KDEgPDwgKDE1IC0gQ09ORklHX0NUUzNfUElOKSk7DQoJCWZpeF9wY3NvIHw9IDB4MDEwMDsNCgkj
-ZW5kaWYNCgkjaWYgZGVmaW5lZChDT05GSUdfVUFSVF9DRF9DT05UUk9MX1NDQzMpDQogCQlmaXhf
-cGNzbyAmPX4oMSA8PCAoMTUgLSBDT05GSUdfQ0QzX1BJTikpOw0KCQlmaXhfcGNzbyB8PSAweDAy
-MDA7DQoJI2VuZGlmDQoNCglpbW1hcC0+aW1faW9wb3J0LmlvcF9wY3BhciAmPSB+aW9iaXRzOw0K
-CWltbWFwLT5pbV9pb3BvcnQuaW9wX3Bjc28gfD0gIGZpeF9wY3NvOw0KCWltbWFwLT5pbV9pb3Bv
-cnQuaW9wX3BjZGlyICY9IH5pb2JpdHM7DQoNCk15IGJvYXJkIGhhdmUgc3VjY2VzcyBjb21tdW5p
-Y2F0aW9uIHRvIG1vZGVybSB3aXRoIFNDQzMgaGFyZCBmbG93IGNvbnRyb2wuDQoNCqGhoaGhoaGh
-oaGhoaGhoaFkZWJvcmEgbGl1DQqhoaGhoaGhoaGhoaGhoaGhZGVib3JhbGl1QHRvbS5jb20NCqGh
-oaGhoaGhoaGhoaGhoaGhoaGhMjAwNS0xMi0wOA0K
---=====001_Dragon533568207641_=====
-Content-Type: image/gif;
-	name="fox.gif"
-Content-Transfer-Encoding: base64
-Content-Disposition: FoxmailIcon;
-	filename="fox.gif"
+This patch adds netpoll controller support for PPC EMAC driver
 
-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
+Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
 
---=====001_Dragon533568207641_=====--
+
+
+
+--=-tdsJvyrRFoqmxXyo9r8q
+Content-Disposition: attachment; filename=ppc_emac_napi_netpoll.patch
+Content-Type: text/x-patch; name=ppc_emac_napi_netpoll.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+This patch adds netpoll controller support for PPC EMAC driver
+
+---
+commit a482261f165edb7e6af363d13ea94e8e7429f085
+tree b5bee5eb8a971c3f40867946225051e1ff320763
+parent e4f5c82a92c2a546a16af1614114eec19120e40a
+author Ruslan V. Sushko <rsushko@ru.mvista.com> Thu, 08 Dec 2005 15:22:38 +0300
+committer Ruslan V. Sushko <rsushko@ru.mvista.com> Thu, 08 Dec 2005 15:22:38 +0300
+
+ drivers/net/ibm_emac/ibm_emac_core.c |   42 +++++++++++++++++++++++++++++++++-
+ drivers/net/ibm_emac/ibm_emac_mal.c  |   14 -----------
+ drivers/net/ibm_emac/ibm_emac_mal.h  |   12 ++++++++++
+ 3 files changed, 53 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
+--- a/drivers/net/ibm_emac/ibm_emac_core.c
++++ b/drivers/net/ibm_emac/ibm_emac_core.c
+@@ -1071,8 +1071,16 @@ static int emac_start_xmit(struct sk_buf
+ 	struct ocp_enet_private *dev = ndev->priv;
+ 	unsigned int len = skb->len;
+ 	int slot;
++	u16 ctrl;
+ 
+-	u16 ctrl = EMAC_TX_CTRL_GFCS | EMAC_TX_CTRL_GP | MAL_TX_CTRL_READY |
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	if (unlikely(dev->tx_cnt == NUM_TX_BUFF)) {
++		netif_stop_queue(ndev);
++		return -EBUSY;
++	}
++#endif
++
++	ctrl = EMAC_TX_CTRL_GFCS | EMAC_TX_CTRL_GP | MAL_TX_CTRL_READY |
+ 	    MAL_TX_CTRL_LAST | emac_tx_csum(dev, skb);
+ 
+ 	slot = dev->tx_slot++;
+@@ -1938,6 +1946,33 @@ static int emac_ioctl(struct net_device 
+ 		return -EOPNOTSUPP;
+ 	}
+ }
++#ifdef CONFIG_NET_POLL_CONTROLLER
++void
++poll_ctrl(struct net_device *dev)
++{
++	int budget = 16;
++	struct ibm_ocp_mal *mal = ((struct ocp_enet_private*)(dev->priv))->mal;
++	struct net_device *poll_dev = &(mal->poll_dev);
++
++	/* disable  MAL interrupts */
++	mal_disable_eob_irq(mal);
++	netif_poll_disable(poll_dev);
++
++	emac_poll_rx(dev->priv, budget);
++	emac_poll_tx(dev->priv);
++
++	netif_poll_enable(poll_dev);
++	/* Enable mal interrupts */
++	mal_enable_eob_irq(mal);
++}
++
++int
++poll_fake(struct net_device *dev, int *budget)
++{
++	/* It will be never invoked */
++	return 0;
++}
++#endif
+ 
+ static int __init emac_probe(struct ocp_device *ocpdev)
+ {
+@@ -2188,6 +2223,11 @@ static int __init emac_probe(struct ocp_
+ 	netif_carrier_off(ndev);
+ 	netif_stop_queue(ndev);
+ 
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	ndev->poll_controller = poll_ctrl;
++	ndev->poll = poll_fake;
++#endif
++
+ 	err = register_netdev(ndev);
+ 	if (err) {
+ 		printk(KERN_ERR "emac%d: failed to register net device (%d)!\n",
+diff --git a/drivers/net/ibm_emac/ibm_emac_mal.c b/drivers/net/ibm_emac/ibm_emac_mal.c
+--- a/drivers/net/ibm_emac/ibm_emac_mal.c
++++ b/drivers/net/ibm_emac/ibm_emac_mal.c
+@@ -155,20 +155,6 @@ void mal_poll_del(struct ibm_ocp_mal *ma
+ 	local_bh_enable();
+ }
+ 
+-/* synchronized by mal_poll() */
+-static inline void mal_enable_eob_irq(struct ibm_ocp_mal *mal)
+-{
+-	MAL_DBG2("%d: enable_irq" NL, mal->def->index);
+-	set_mal_dcrn(mal, MAL_CFG, get_mal_dcrn(mal, MAL_CFG) | MAL_CFG_EOPIE);
+-}
+-
+-/* synchronized by __LINK_STATE_RX_SCHED bit in ndev->state */
+-static inline void mal_disable_eob_irq(struct ibm_ocp_mal *mal)
+-{
+-	set_mal_dcrn(mal, MAL_CFG, get_mal_dcrn(mal, MAL_CFG) & ~MAL_CFG_EOPIE);
+-	MAL_DBG2("%d: disable_irq" NL, mal->def->index);
+-}
+-
+ static irqreturn_t mal_serr(int irq, void *dev_instance, struct pt_regs *regs)
+ {
+ 	struct ibm_ocp_mal *mal = dev_instance;
+diff --git a/drivers/net/ibm_emac/ibm_emac_mal.h b/drivers/net/ibm_emac/ibm_emac_mal.h
+--- a/drivers/net/ibm_emac/ibm_emac_mal.h
++++ b/drivers/net/ibm_emac/ibm_emac_mal.h
+@@ -216,6 +216,18 @@ static inline void set_mal_dcrn(struct i
+ 	mtdcr(mal->dcrbase + reg, val);
+ }
+ 
++/* synchronized by mal_poll() */
++static inline void mal_enable_eob_irq(struct ibm_ocp_mal *mal)
++{
++	set_mal_dcrn(mal, MAL_CFG, get_mal_dcrn(mal, MAL_CFG) | MAL_CFG_EOPIE);
++}
++
++/* synchronized by __LINK_STATE_RX_SCHED bit in ndev->state */
++static inline void mal_disable_eob_irq(struct ibm_ocp_mal *mal)
++{
++	set_mal_dcrn(mal, MAL_CFG, get_mal_dcrn(mal, MAL_CFG) & ~MAL_CFG_EOPIE);
++}
++
+ /* Register MAL devices */
+ int mal_init(void) __init;
+ void mal_exit(void) __exit;
+
+
+
+!-------------------------------------------------------------flip-
+
+
+
+--=-tdsJvyrRFoqmxXyo9r8q--
