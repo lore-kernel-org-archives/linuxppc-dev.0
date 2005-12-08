@@ -1,20 +1,15 @@
-Return-Path: <linville@tuxdriver.com>
-Received: from ra.tuxdriver.com (ra.tuxdriver.com [24.172.12.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C52D6688B7
+Return-Path: <jimmyzhmliu@yahoo.com>
+Received: from web53105.mail.yahoo.com (web53105.mail.yahoo.com
+	[206.190.49.55]) by ozlabs.org (Postfix) with SMTP id 9BB6C688B7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Dec 2005 01:57:34 +1100 (EST)
-Date: Thu, 8 Dec 2005 09:57:18 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
-Message-ID: <20051208145714.GA16049@tuxdriver.com>
-References: <1134045255.28438.4.camel@mephisto.spb.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1134045255.28438.4.camel@mephisto.spb.rtsoft.ru>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Netpoll controller support for PPC EMAC driver
+	Fri,  9 Dec 2005 02:26:08 +1100 (EST)
+Message-ID: <20051208151926.74524.qmail@web53105.mail.yahoo.com>
+Date: Thu, 8 Dec 2005 07:19:26 -0800 (PST)
+From: jimmy liu <jimmyzhmliu@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Need help for Linux hangs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,92 +20,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 08, 2005 at 03:34:15PM +0300, Ruslan V. Sushko wrote:
-> This patch adds netpoll controller support for PPC EMAC driver
-> 
-> Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
+I have U-Boot running on a board similar to
+MPC8260ADS.
+bootargs=root=/dev/ram rw console=ttyS0,115200
+When I run command: bootm ff060000 ff260000, the
+prompt shows message:
+## Booting image at ff060000 ...
+   Image Name:   Linux-2.4.25
+   Image Type:   PowerPC Linux Kernel Image (gzip
+compressed)
+   Data Size:    621131 Bytes = 606.6 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at ff260000 ...
+   Image Name:   Simple Embedded Linux Framework
+   Image Type:   PowerPC Linux RAMDisk Image (gzip
+compressed)
+   Data Size:    1591658 Bytes = 1.5 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Loading Ramdisk to 00e07000, end 00f8b96a ... OK
 
-Patches in-line are easier to review... :-)
+The system hangs here. I have checked in the FAQs
+provided in the Denx's site, could not find the
+similar case.
 
-> @@ -1071,8 +1071,16 @@ static int emac_start_xmit(struct sk_buf
->  	struct ocp_enet_private *dev = ndev->priv;
->  	unsigned int len = skb->len;
->  	int slot;
-> +	u16 ctrl;
->  
-> -	u16 ctrl = EMAC_TX_CTRL_GFCS | EMAC_TX_CTRL_GP | MAL_TX_CTRL_READY |
-> +#ifdef CONFIG_NET_POLL_CONTROLLER
-> +	if (unlikely(dev->tx_cnt == NUM_TX_BUFF)) {
-> +		netif_stop_queue(ndev);
-> +		return -EBUSY;
-> +	}
-> +#endif
+I would appreciate any help.
 
-Why is this necessary?
+Thanks & Regards,
 
-> +
-> +	ctrl = EMAC_TX_CTRL_GFCS | EMAC_TX_CTRL_GP | MAL_TX_CTRL_READY |
->  	    MAL_TX_CTRL_LAST | emac_tx_csum(dev, skb);
->  
->  	slot = dev->tx_slot++;
-> @@ -1938,6 +1946,33 @@ static int emac_ioctl(struct net_device 
->  		return -EOPNOTSUPP;
->  	}
->  }
-> +#ifdef CONFIG_NET_POLL_CONTROLLER
-> +void
-> +poll_ctrl(struct net_device *dev)
-> +{
-> +	int budget = 16;
-> +	struct ibm_ocp_mal *mal = ((struct ocp_enet_private*)(dev->priv))->mal;
-> +	struct net_device *poll_dev = &(mal->poll_dev);
-> +
-> +	/* disable  MAL interrupts */
-> +	mal_disable_eob_irq(mal);
-> +	netif_poll_disable(poll_dev);
+Jimmy
 
-Is the call to netif_poll_disable necessary?  Aren't NAPI and netpoll
-aware of each other?
 
-> +
-> +	emac_poll_rx(dev->priv, budget);
-> +	emac_poll_tx(dev->priv);
-> +
-> +	netif_poll_enable(poll_dev);
-> +	/* Enable mal interrupts */
-> +	mal_enable_eob_irq(mal);
-> +}
-> +
-> +int
-> +poll_fake(struct net_device *dev, int *budget)
-> +{
-> +	/* It will be never invoked */
-> +	return 0;
-> +}
-> +#endif
-
-If it's never invoked, then why define it?
-
->  
->  static int __init emac_probe(struct ocp_device *ocpdev)
->  {
-> @@ -2188,6 +2223,11 @@ static int __init emac_probe(struct ocp_
->  	netif_carrier_off(ndev);
->  	netif_stop_queue(ndev);
->  
-> +#ifdef CONFIG_NET_POLL_CONTROLLER
-> +	ndev->poll_controller = poll_ctrl;
-> +	ndev->poll = poll_fake;
-> +#endif
-> +
-
-->poll is not related to ->poll_controller.  It is for NAPI, not
-netpoll.
-
-I'll defer to others to comment on the IBM EMAC manipulation code.
-It looked reasonable to me at first glance.
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
