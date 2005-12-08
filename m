@@ -1,20 +1,23 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 244ED688C7
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BD266688C2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Dec 2005 05:01:29 +1100 (EST)
-Date: Thu, 8 Dec 2005 10:01:26 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: "Ruslan V. Sushko" <rsushko@ru.mvista.com>
-Message-ID: <20051208180126.GA20921@gate.ebshome.net>
-References: <1134045255.28438.4.camel@mephisto.spb.rtsoft.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1134045255.28438.4.camel@mephisto.spb.rtsoft.ru>
+	Fri,  9 Dec 2005 09:27:43 +1100 (EST)
+In-Reply-To: <20051208143149.GA14554@dmt.cnet>
+References: <20051206164212.82779.qmail@web33505.mail.mud.yahoo.com>
+	<20051206211459.E8976353F54@atlas.denx.de>
+	<20051208143149.GA14554@dmt.cnet>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <668A6AB1-1D8F-4287-950B-426A1077CB8F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Thu, 8 Dec 2005 16:27:35 -0600
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Netpoll controller support for PPC EMAC driver
+Subject: Re: Denx vs kernel.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,20 +28,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 08, 2005 at 03:34:15PM +0300, Ruslan V. Sushko wrote:
-> This patch adds netpoll controller support for PPC EMAC driver
-> 
-> Signed-off-by: Ruslan V. Sushko <rsushko@ru.mvista.com>
+> Hi Wolfgang,
+>
+> Is there a list of your fixes anywhere? Is the linux-2.6-denx tree
+> public?
 
-NAK. Please see long discussion on netdev couple of months ago about 
-netpoll and how it is horribly broken.
 
-In short, to implement netpoll support in EMAC driver requires full 
-locking re-do (all locks must be IRQ disabling). I'm not gonna do 
-this, because it's wrong approach.
+http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
 
-If you want netpoll support, figure out a way to do this correctly, 
-without penalizing users of EMAC driver by switching to IRQ locks.
-
--- 
-Eugene
+- kumar
