@@ -1,19 +1,18 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 72EFB688BD
+	by ozlabs.org (Postfix) with SMTP id CF094688C6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Dec 2005 02:56:19 +1100 (EST)
-Message-ID: <439857A1.6060706@ru.mvista.com>
-Date: Thu, 08 Dec 2005 18:56:17 +0300
+	Fri,  9 Dec 2005 03:05:16 +1100 (EST)
+Message-ID: <439859BA.6060600@ru.mvista.com>
+Date: Thu, 08 Dec 2005 19:05:14 +0300
 From: Vitaly Bordug <vbordug@ru.mvista.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-References: <438C8E8E.3030306@cpe.fr> <438D4A03.4060500@compulab.co.il>
-	<E3409EA9-80FF-4CFF-BF39-F2DE3BA4A609@kernel.crashing.org>
-In-Reply-To: <E3409EA9-80FF-4CFF-BF39-F2DE3BA4A609@kernel.crashing.org>
+To: jimmy liu <jimmyzhmliu@yahoo.com>
+References: <20051208151926.74524.qmail@web53105.mail.yahoo.com>
+In-Reply-To: <20051208151926.74524.qmail@web53105.mail.yahoo.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Nathael PAJANI <nathael.pajani@cpe.fr>, linuxppc-embedded@ozlabs.org
-Subject: Re: USB on MPC8272
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Need help for Linux hangs
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,38 +23,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+jimmy liu wrote:
+> I have U-Boot running on a board similar to
+> MPC8260ADS.
+> bootargs=root=/dev/ram rw console=ttyS0,115200
+try to set console=ttyCPM0,115200 in the bootargs.
+> When I run command: bootm ff060000 ff260000, the
+> prompt shows message:
+> ## Booting image at ff060000 ...
+>    Image Name:   Linux-2.4.25
+>    Image Type:   PowerPC Linux Kernel Image (gzip
+> compressed)
+>    Data Size:    621131 Bytes = 606.6 kB
+>    Load Address: 00000000
+>    Entry Point:  00000000
+>    Verifying Checksum ... OK
+>    Uncompressing Kernel Image ... OK
+> ## Loading RAMDisk Image at ff260000 ...
+>    Image Name:   Simple Embedded Linux Framework
+>    Image Type:   PowerPC Linux RAMDisk Image (gzip
+> compressed)
+>    Data Size:    1591658 Bytes = 1.5 MB
+>    Load Address: 00000000
+>    Entry Point:  00000000
+>    Verifying Checksum ... OK
+>    Loading Ramdisk to 00e07000, end 00f8b96a ... OK
 > 
-> On Nov 30, 2005, at 12:43 AM, Mike Rapoport wrote:
+> The system hangs here. I have checked in the FAQs
+> provided in the Denx's site, could not find the
+> similar case.
 > 
->> Nathael PAJANI wrote:
->>
->>> Hi all!
->>>
->>>
->>> I have to support USB hcd for an Actis board based on a MPC8248 
->>> processor. I already have a 2.6.9 linux kernel running fine on it, 
->>> and actualy have to use it rather than a newer one.
->>> I'm actualy looking for existing or ongoing jobs.
->>
->> Dear Nathael,
->> As far as I understand there are several drivers for the MPC8272 usb 
->> host controller, and none of them is in
->> official kernel tree.
->> There's a driver in Metrowerks BSP for linux 2.6 for MPC8272 (the 
->> Freescale driver), an orignally mpc8xx driver by Brad Parker ported to 
->> linux 2.4 for MPC8272 by Pantelis Antoniou, there ought to be USB 
->> driver by ArabellaSW also.
->> My driver ("http://cpm2usb.sourceforge.net./") is a port of the Brad 
->> Parker's driver to linux 2.6 with some modifications.
+> I would appreciate any help.
 > 
-> And, ideally we would like to see one driver get into the linux source 
-> tree that everyone is happy with.  I'm told by someone that the FSL 
-> driver is suppose to have working host support "was tested/verified with 
-> keyboard/mouse/diskdrives/network".
+> Thanks & Regards,
 > 
-We have that FS driver rework in progress, but even now it's quite hard to estimate the finish. The result will proceed upstream, anyway, but this is long-term I afraid.
-> - kumar
+> Jimmy
+> 
+> 
+> __________________________________________________
+> Do You Yahoo!?
+> Tired of spam?  Yahoo! Mail has the best spam protection around 
+> http://mail.yahoo.com 
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
