@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A936F688B8
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Dec 2005 22:12:25 +1100 (EST)
-Date: Thu, 8 Dec 2005 12:12:20 +0100
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
+Return-Path: <dalang@cs.ubc.ca>
+Received: from mail-relay1.cs.ubc.ca (mail-relay1.cs.ubc.ca [142.103.6.79])
+	by ozlabs.org (Postfix) with ESMTP id DDFFF688C5
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Dec 2005 02:10:14 +1100 (EST)
+Date: Thu, 8 Dec 2005 07:10:04 -0800 (PST)
+From: Dustin Lang <dalang@cs.ubc.ca>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20051208111220.GA22944@hansmi.ch>
-References: <87ek51cycq.fsf@oedipa.disorg> <1133145863.7768.165.camel@gaston>
+In-Reply-To: <1134038881.11760.11.camel@gaston>
+Message-ID: <Pine.LNX.4.60.0512080706390.29467@tin.icics.ubc.ca>
+References: <20051026215535.GA5713@campbell-lange.net>
+	<1133124018.7768.107.camel@gaston>
+	<87veydaftb.fsf@oedipa.disorg> <1133130209.7768.136.camel@gaston>
+	<877jatemic.fsf@oedipa.disorg> <1133132287.7768.138.camel@gaston>
+	<87oe45d0j4.fsf@oedipa.disorg> <1133142131.7768.156.camel@gaston>
+	<87ek51cycq.fsf@oedipa.disorg> <1133145863.7768.165.camel@gaston>
 	<73eb1cf90511271913k1786facev55038e567c51d19c@mail.gmail.com>
 	<1133150158.7768.177.camel@gaston> <87zmnpbe34.fsf@oedipa.disorg>
 	<1133151191.7768.183.camel@gaston> <87hd9wak4a.fsf@oedipa.disorg>
-	<1133210294.7768.190.camel@gaston> <87bqzs5cio.fsf@oedipa.disorg>
+	<1133210294.7768.190.camel@gaston>  <87bqzs5cio.fsf@oedipa.disorg>
 	<1134038881.11760.11.camel@gaston>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
-In-Reply-To: <1134038881.11760.11.camel@gaston>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Cc: Guy Yasko <gyasko@gmail.com>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 Subject: Re: Fix boot on some 12" powerbooks, need testers on others
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -32,28 +32,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---AhhlLboLdkugWU4S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+It boots on my PowerBook6,2 (12" Oct'03).
 
-> However, I need urgently some testers with other models of powerbooks
-> and mac mini to tell me if it causes any regression [...]
+Cheers,
+dstn.
 
-Works for me on a PowerBook5,8 (15", 1.67 GHz, Oct 2005).
-
-Greets,
-Michael
-
---AhhlLboLdkugWU4S
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFDmBUU6J0saEpRu+oRAtuPAJ918CpEqWBhKgsO8iBWiAaGIUmKCwCfaCUx
-nfHQ3Z3RUv11YW7WFhobYYs=
-=Q9Il
------END PGP SIGNATURE-----
-
---AhhlLboLdkugWU4S--
+On Thu, 8 Dec 2005, Benjamin Herrenschmidt wrote:
+> This patch against 2.6.15-rc5 might help fixing boot on some recent
+> powerbooks like some 12" aluminium. However, I need urgently some
+> testers with other models of powerbooks and mac mini to tell me if it
+> causes any regression (that is before tomorrow) so it _might_ have a
+> chance to make it in 2.6.15.
