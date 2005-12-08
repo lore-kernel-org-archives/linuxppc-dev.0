@@ -1,18 +1,24 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id CF094688C6
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 84856688B6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Dec 2005 03:05:16 +1100 (EST)
-Message-ID: <439859BA.6060600@ru.mvista.com>
-Date: Thu, 08 Dec 2005 19:05:14 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-MIME-Version: 1.0
-To: jimmy liu <jimmyzhmliu@yahoo.com>
-References: <20051208151926.74524.qmail@web53105.mail.yahoo.com>
-In-Reply-To: <20051208151926.74524.qmail@web53105.mail.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Need help for Linux hangs
+	Fri,  9 Dec 2005 03:14:22 +1100 (EST)
+In-Reply-To: <439837D4.7090304@ru.mvista.com>
+References: <438B379B.6090904@ru.mvista.com>
+	<1133848163.7932.2.camel@localhost.localdomain>
+	<439837D4.7090304@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <377ECD64-43EF-423D-94BC-8EAE57319892@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Thu, 8 Dec 2005 10:14:07 -0600
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH] ppc32: Adds MPC885ADS,
+	MPC866ADS and	MPC8272ADS-specific platform stuff for fs_enet
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,55 +29,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-jimmy liu wrote:
-> I have U-Boot running on a board similar to
-> MPC8260ADS.
-> bootargs=root=/dev/ram rw console=ttyS0,115200
-try to set console=ttyCPM0,115200 in the bootargs.
-> When I run command: bootm ff060000 ff260000, the
-> prompt shows message:
-> ## Booting image at ff060000 ...
->    Image Name:   Linux-2.4.25
->    Image Type:   PowerPC Linux Kernel Image (gzip
-> compressed)
->    Data Size:    621131 Bytes = 606.6 kB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... OK
-> ## Loading RAMDisk Image at ff260000 ...
->    Image Name:   Simple Embedded Linux Framework
->    Image Type:   PowerPC Linux RAMDisk Image (gzip
-> compressed)
->    Data Size:    1591658 Bytes = 1.5 MB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Loading Ramdisk to 00e07000, end 00f8b96a ... OK
-> 
-> The system hangs here. I have checked in the FAQs
-> provided in the Denx's site, could not find the
-> similar case.
-> 
-> I would appreciate any help.
-> 
-> Thanks & Regards,
-> 
-> Jimmy
-> 
-> 
-> __________________________________________________
-> Do You Yahoo!?
-> Tired of spam?  Yahoo! Mail has the best spam protection around 
-> http://mail.yahoo.com 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
 
+On Dec 8, 2005, at 7:40 AM, Vitaly Bordug wrote:
 
--- 
-Sincerely, 
-Vitaly
+> Matt,
+> Matthew McClintock wrote:
+>> On Mon, 2005-11-28 at 10:00 -0700, Vitaly Bordug wrote:
+>>> +       mpc82xx_fcc1_pdata.dpram_offset =
+>>> mpc82xx_fcc2_pdata.dpram_offset = (u32)cpm2_immr->im_dprambase;
+>>> +       mpc82xx_fcc1_pdata.fcc_regs_c =  
+>>> mpc82xx_fcc2_pdata.fcc_regs_c
+>>> = (u32)cpm2_immr->im_fcc_c;
+>> I'm not sure if this has already been discussed, but what is  
+>> stopping us
+>> from including this in the platform definition files along with the
+>> other offsets?
+> IIRC, because these values could vary along the PQ2 family, when  
+> all the stuff in pq2_devices.c should be static and applicable to  
+> any PQ2 which does have the corresponding device.
+
+How much variation is there?  I'm not sure how or why it would be  
+different from how we handle the FEC and TSEC on 8540.
+
+- kumar
