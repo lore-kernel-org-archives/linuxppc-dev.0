@@ -1,19 +1,28 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 74F76688EE
+Return-Path: <wojciech.kromer@dgt.com.pl>
+Received: from dgt.com.pl (mail.dgt.com.pl [195.117.141.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 442BC688EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Dec 2005 10:21:05 +1100 (EST)
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 08 Dec 2005 19:05:14 +0300."
-	<439859BA.6060600@ru.mvista.com>
-Date: Fri, 09 Dec 2005 00:21:03 +0100
-Sender: wd@denx.de
-Message-Id: <20051208232103.756E4353F77@atlas.denx.de>
-Cc: jimmy liu <jimmyzhmliu@yahoo.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: Need help for Linux hangs 
+	Fri,  9 Dec 2005 21:30:42 +1100 (EST)
+Received: from mail.dgt.com.pl (localhost [127.0.0.1])
+	by dgt.com.pl (Postfix) with SMTP id A5B8B6A2C3
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  9 Dec 2005 11:30:29 +0100 (CET)
+Received: from [192.168.7.66] (proxy.dgt.com.pl [::ffff:195.117.141.11])
+	by dgt.com.pl (Postfix) with ESMTP id 3F4F86A2FB
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  9 Dec 2005 11:30:20 +0100 (CET)
+Message-ID: <43995D8E.2050500@dgt.com.pl>
+Date: Fri, 09 Dec 2005 11:33:50 +0100
+From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+References: <43817ACF.1030903@dgt.com.pl>
+	<200511211243.13519.david.jander@protonic.nl>
+In-Reply-To: <200511211243.13519.david.jander@protonic.nl>
+Content-Type: text/plain; charset=iso-8859-2; format=flowed
+Subject: Re: Strange results with changing HZ
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,31 +33,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Vitaly,
+Dnia 2005-11-21 12:43, U¿ytkownik David Jander napisa³:
 
-in message <439859BA.6060600@ru.mvista.com> you wrote:
-> jimmy liu wrote:
-> > I have U-Boot running on a board similar to
-> > MPC8260ADS.
-> > bootargs=root=/dev/ram rw console=ttyS0,115200
-> try to set console=ttyCPM0,115200 in the bootargs.
-                     ^^^^^^^
-> > When I run command: bootm ff060000 ff260000, the
-> > prompt shows message:
-> > ## Booting image at ff060000 ...
-> >    Image Name:   Linux-2.4.25
-                           ^^^^^^
+>On Monday 21 November 2005 08:44, Wojciech Kromer wrote:
+>  
+>
+>>My system is:
+>> - 2.4.25 kernel from denx.de
+>> - uclibc (gcc 3.4.2) + busybox
+>> - changed HZ to 1000
+>> - rebuild kernel only
+>>
+>>AFAIR there souldn't be any need to recompile user apps.
+>>    
+>>
+>
+>Just an uneducated guess, but are you sure uclibc doesn't depend on HZ at all?
+>Some things might be just straight syscalls, others might be implemented in 
+>userspace (inside uclibc)... for example alarm(1) programming an alarm on 
+>jiffies+1/HZ, and HZ being compiled in from kernel headers ?
+>I may just be talking rubbish though.
+>  
+>
 
-That's bad advice.
+Hmm, after recompiling whole uclibc stuff it seem to work same.
+There should be kernel problem. Sleep & select works fine, but alarm 
+works 10 times faster.
 
-The 2.4.25 kernel will definitely NOT work with console=ttyCPM0
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Immortality consists largely of boredom.
-	-- Zefrem Cochrane, "Metamorphosis", stardate 3219.8
+Anyone tries to change HZ to 1000?
