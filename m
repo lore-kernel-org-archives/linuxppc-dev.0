@@ -1,27 +1,26 @@
 Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from parcelfarce.linux.theplanet.co.uk
-	(parcelfarce.linux.theplanet.co.uk [195.92.249.252])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[212.18.232.186])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AFF97688E0
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2005 06:24:43 +1100 (EST)
-Received: from [2002:d412:e8ba::1] (helo=caramon.arm.linux.org.uk)
-	by parcelfarce.linux.theplanet.co.uk with esmtpsa
-	(TLSv1:DES-CBC3-SHA:168) (Exim 4.43) id 1ElWoG-0007Ql-Hc
-	for linuxppc-dev@ozlabs.org; Sun, 11 Dec 2005 19:24:36 +0000
-Date: Sun, 11 Dec 2005 19:21:10 +0000
+	by ozlabs.org (Postfix) with ESMTP id C4766688EA
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2005 06:44:57 +1100 (EST)
+Date: Sun, 11 Dec 2005 19:44:37 +0000
 From: Russell King <rmk+lkml@arm.linux.org.uk>
 To: Adrian Bunk <bunk@stusta.de>
-Message-ID: <20051211192109.GA22537@flint.arm.linux.org.uk>
+Message-ID: <20051211194437.GB22537@flint.arm.linux.org.uk>
 References: <20051211185212.GQ23349@stusta.de>
+	<20051211192109.GA22537@flint.arm.linux.org.uk>
+	<20051211193118.GR23349@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051211185212.GQ23349@stusta.de>
+In-Reply-To: <20051211193118.GR23349@stusta.de>
 Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-sh@m17n.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-	grundler@parisc-linux.org, matthew@wil.cx,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	lethal@linux-sh.org, kkojima@rr.iij4u.or.jp, parisc-linux@parisc-linux.org
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, grundler@parisc-linux.org,
+	matthew@wil.cx, linux-kernel@vger.kernel.org,
+	linux-mtd@lists.infradead.xn--org-boa, linuxppc-dev@ozlabs.org,
+	lethal@linux-sh.org, dwmw2@infradead.org, kkojima@rr.iij4u.or.jp,
+	parisc-linux@parisc-linux.org
 Subject: Re: [2.6 patch] defconfig's shouldn't set CONFIG_BROKEN=y
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -32,16 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 11, 2005 at 07:52:12PM +0100, Adrian Bunk wrote:
-> defconfig's shouldn't set CONFIG_BROKEN=y.
+On Sun, Dec 11, 2005 at 08:31:18PM +0100, Adrian Bunk wrote:
+> On Sun, Dec 11, 2005 at 07:21:10PM +0000, Russell King wrote:
+> > On Sun, Dec 11, 2005 at 07:52:12PM +0100, Adrian Bunk wrote:
+> > > defconfig's shouldn't set CONFIG_BROKEN=y.
+> > 
+> > NACK.  This changes other configuration options in addition, for example
+> > in collie_defconfig:
+> > 
+> > -CONFIG_MTD_OBSOLETE_CHIPS=y
+> > -# CONFIG_MTD_AMDSTD is not set
+> > -CONFIG_MTD_SHARP=y
+> > -# CONFIG_MTD_JEDEC is not set
+> 
+> That's not a problem introduced by my patch.
 
-NACK.  This changes other configuration options in addition, for example
-in collie_defconfig:
+It's a problem introduced by your patch because the resulting defconfig
+file becomes _wrong_ by your change, and other changes in the defconfig
+are thereby hidden.
 
--CONFIG_MTD_OBSOLETE_CHIPS=y
--# CONFIG_MTD_AMDSTD is not set
--CONFIG_MTD_SHARP=y
--# CONFIG_MTD_JEDEC is not set
+If you change any options in a defconfig file, and they're obviously not
+leaf options, you should check what impact they have on other options by
+running it through an "oldconfig" cycle.  That's what I just did with
+this script:
+
+#!/bin/sh -e
+alias amake='make CROSS_COMPILE=arm-linux- ARCH=arm'
+amake $1 O=../build/t >/dev/null 2>&1
+mv ../build/t/.config ../build/t/.config.orig
+sed '/CONFIG_BROKEN/d;s,^# CONFIG_CLEAN_COMPILE is not set,CONFIG_CLEAN_COMPILE=y,' < ../build/t/.config.orig > ../build/t/.config
+amake oldconfig O=../build/t >/dev/null 2>&1
+diff -u ../build/t/.config.orig ../build/t/.config
+
+Hence I discovered that disabling CONFIG_BROKEN removes the above
+options for the collie case.
+
+BTW, it might be worth using something like the above script for all
+the changes to the defconfig files in your patch so that it correctly
+updates these files.  It will also mean that any review of it is more
+meaningful because we can see the full extent of your changes.
+
+> Either the depency of MTD_OBSOLETE_CHIPS on BROKEN is correct (in which 
+> case CONFIG_MTD_OBSOLETE_CHIPS=y wouldn't bring you anything), or the 
+> dependency on BROKEN is not correct and should be corrected.
+
+That's something which collie folk need to comment on.  However, what
+I can say is that the collie_defconfig builds successfully today:
+
+http://armlinux.simtec.co.uk/kautobuild/2.6.15-rc5-git1/collie_defconfig/zimage.log
+
+so it's quite possible that the Kconfig is out of sync with reality.
 
 -- 
 Russell King
