@@ -1,20 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6B0FD688B9
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 571AA6889B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Dec 2005 05:15:01 +1100 (EST)
-Date: Mon, 12 Dec 2005 10:14:57 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
+	Tue, 13 Dec 2005 07:40:56 +1100 (EST)
 To: Simon Haynes <simon@baydel.com>
-Message-ID: <20051212181457.GA30505@gate.ebshome.net>
-References: <200512121726.34944.simon@baydel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200512121726.34944.simon@baydel.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 12 Dec 2005 17:26:34 GMT."
+	<200512121726.34944.simon@baydel.com>
+Date: Mon, 12 Dec 2005 21:40:54 +0100
+Sender: wd@denx.de
+Message-Id: <20051212204054.2A1F7353A44@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: ibm emac driver update
+Subject: Re: ibm emac driver update 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,39 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Dec 12, 2005 at 05:26:34PM +0000, Simon Haynes wrote:
+In message <200512121726.34944.simon@baydel.com> you wrote:
 > I am running a Ebony board with linux-2.6.12-rc1 and I amd having intermittent 
 > network problems. Having searched the archives it would seem that the driver
 > for the IBM EMAC is buggy ? 
-> 
-> I have tried to patch my kernel with 
-> 
-> http://kernel.ebsname.net/emac/4xx_napi_emac.diff
-> 
-> I believe this is almost a total driver re-write. Is this correct ?
-> 
-> After having a couple of problems applying the patch, Kconfig and 
-> ibm_emac_core.c. I fixed up the original code and applied the patch.
-> 
-> On compilation the build fails with missing references to kzalloc,
-> which I guess I could easily fix with kmalloc and memset. 
-> 
-> However there is also an undefined field,  dcr_base, in the ocp_func_mal_data
-> structure.  This structure appears to be defined in include/asm/ibm_ocp.h and 
-> this file does not appear to be changed by the patch. I guess this patch is 
-> for a later kernel.
-> 
+
+Patches have been posted on this list. See the archives.
+
 > Can anyone point me in the direction of a suitable patch for this kernel ?
 
-I'm not sure about 2.6.12-rc1, but you can try GIT tree/patches at 
-http://kernel.ebshome.net. 
+We have all this integrated and tested in our kernel tree. Links:
+Source Code:
+  git repository: 	http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
+  FTP Snapshot: 	ftp://ftp.denx.de/pub/linux/linux-2.6.15-rc2-2005-12-03-2208.tar.bz2
+Ready to run code for AMCC's Eval Kits:
+  U-Boot images: 	ftp://ftp.denx.de/pub/u-boot/images/amcc/
+  Linux images: 	ftp://ftp.denx.de/pub/linux/images/amcc/
+Documentation: 		http://www.denx.de/wiki/DULG/BoardSelect
 
-Hint: you can assume that in addition to emac_3-2.6-28.diff, there are 
-also emac_3-2.6-NN.diff (NN < 28) on my website which were made for 
-earlier kernel versions :).
 
-Alternatively, you can backport all relevant stuff from current 2.6 or 
-you can pay someone to do this for you.
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Eugene
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+We have found all life forms in the galaxy are  capable  of  superior
+development.
+	-- Kirk, "The Gamesters of Triskelion", stardate 3211.7
