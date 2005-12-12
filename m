@@ -1,27 +1,17 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[212.18.232.186])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C4766688EA
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2005 06:44:57 +1100 (EST)
-Date: Sun, 11 Dec 2005 19:44:37 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Adrian Bunk <bunk@stusta.de>
-Message-ID: <20051211194437.GB22537@flint.arm.linux.org.uk>
-References: <20051211185212.GQ23349@stusta.de>
-	<20051211192109.GA22537@flint.arm.linux.org.uk>
-	<20051211193118.GR23349@stusta.de>
+	by ozlabs.org (Postfix) with ESMTP id 30ADA688F3
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2005 13:15:10 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Mon, 12 Dec 2005 13:13:24 +1100
+Message-Id: <1134353605.6989.69.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051211193118.GR23349@stusta.de>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, grundler@parisc-linux.org,
-	matthew@wil.cx, linux-kernel@vger.kernel.org,
-	linux-mtd@lists.infradead.xn--org-boa, linuxppc-dev@ozlabs.org,
-	lethal@linux-sh.org, dwmw2@infradead.org, kkojima@rr.iij4u.or.jp,
-	parisc-linux@parisc-linux.org
-Subject: Re: [2.6 patch] defconfig's shouldn't set CONFIG_BROKEN=y
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Fix clock spreading setting on some powermacs
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,58 +21,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Dec 11, 2005 at 08:31:18PM +0100, Adrian Bunk wrote:
-> On Sun, Dec 11, 2005 at 07:21:10PM +0000, Russell King wrote:
-> > On Sun, Dec 11, 2005 at 07:52:12PM +0100, Adrian Bunk wrote:
-> > > defconfig's shouldn't set CONFIG_BROKEN=y.
-> > 
-> > NACK.  This changes other configuration options in addition, for example
-> > in collie_defconfig:
-> > 
-> > -CONFIG_MTD_OBSOLETE_CHIPS=y
-> > -# CONFIG_MTD_AMDSTD is not set
-> > -CONFIG_MTD_SHARP=y
-> > -# CONFIG_MTD_JEDEC is not set
-> 
-> That's not a problem introduced by my patch.
+The code that sets the clock spreading feature of the Intrepid ASIC
+must not be run on some machine models or those won't boot. This
+fixes it.
 
-It's a problem introduced by your patch because the resulting defconfig
-file becomes _wrong_ by your change, and other changes in the defconfig
-are thereby hidden.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-If you change any options in a defconfig file, and they're obviously not
-leaf options, you should check what impact they have on other options by
-running it through an "oldconfig" cycle.  That's what I just did with
-this script:
+This is 2.6.15 material.
 
-#!/bin/sh -e
-alias amake='make CROSS_COMPILE=arm-linux- ARCH=arm'
-amake $1 O=../build/t >/dev/null 2>&1
-mv ../build/t/.config ../build/t/.config.orig
-sed '/CONFIG_BROKEN/d;s,^# CONFIG_CLEAN_COMPILE is not set,CONFIG_CLEAN_COMPILE=y,' < ../build/t/.config.orig > ../build/t/.config
-amake oldconfig O=../build/t >/dev/null 2>&1
-diff -u ../build/t/.config.orig ../build/t/.config
 
-Hence I discovered that disabling CONFIG_BROKEN removes the above
-options for the collie case.
-
-BTW, it might be worth using something like the above script for all
-the changes to the defconfig files in your patch so that it correctly
-updates these files.  It will also mean that any review of it is more
-meaningful because we can see the full extent of your changes.
-
-> Either the depency of MTD_OBSOLETE_CHIPS on BROKEN is correct (in which 
-> case CONFIG_MTD_OBSOLETE_CHIPS=y wouldn't bring you anything), or the 
-> dependency on BROKEN is not correct and should be corrected.
-
-That's something which collie folk need to comment on.  However, what
-I can say is that the collie_defconfig builds successfully today:
-
-http://armlinux.simtec.co.uk/kautobuild/2.6.15-rc5-git1/collie_defconfig/zimage.log
-
-so it's quite possible that the Kconfig is out of sync with reality.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 Serial core
+Index: linux-work/arch/powerpc/platforms/powermac/feature.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/feature.c	2005-11-19 10:56:07.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/feature.c	2005-12-12 12:17:02.000000000 +1100
+@@ -1650,11 +1650,19 @@
+ 	 */
+ 
+ 	if (macio->type == macio_intrepid) {
+-		if (enable)
+-			UN_OUT(UNI_N_CLOCK_SPREADING, 2);
+-		else
+-			UN_OUT(UNI_N_CLOCK_SPREADING, 0);
+-		mdelay(40);
++		struct device_node *clock =
++			of_find_node_by_path("/uni-n@f8000000/hw-clock");
++		if (clock && get_property(clock, "platform-do-clockspreading",
++					  NULL)) {
++			printk(KERN_INFO "%sabling clock spreading on Intrepid"
++			       " ASIC\n", enable ? "En" : "Dis");
++			if (enable)
++				UN_OUT(UNI_N_CLOCK_SPREADING, 2);
++			else
++				UN_OUT(UNI_N_CLOCK_SPREADING, 0);
++			mdelay(40);
++		}
++		of_node_put(clock);
+ 	}
+ 
+ 	while (machine_is_compatible("PowerBook5,2") ||
+@@ -1724,6 +1732,9 @@
+ 			pmac_low_i2c_close(ui2c);
+ 			break;
+ 		}
++		printk(KERN_INFO "%sabling clock spreading on i2c clock chip\n",
++		       enable ? "En" : "Dis");
++
+ 		pmac_low_i2c_setmode(ui2c, pmac_low_i2c_mode_stdsub);
+ 		rc = pmac_low_i2c_xfer(ui2c, 0xd2 | pmac_low_i2c_write, 0x80, buffer, 9);
+ 		DBG("write result: %d,", rc);
+Index: linux-work/arch/ppc/platforms/pmac_feature.c
+===================================================================
+--- linux-work.orig/arch/ppc/platforms/pmac_feature.c	2005-11-14 20:32:16.000000000 +1100
++++ linux-work/arch/ppc/platforms/pmac_feature.c	2005-12-12 12:16:38.000000000 +1100
+@@ -1606,11 +1606,19 @@
+ 	 */
+ 
+ 	if (macio->type == macio_intrepid) {
+-		if (enable)
+-			UN_OUT(UNI_N_CLOCK_SPREADING, 2);
+-		else
+-			UN_OUT(UNI_N_CLOCK_SPREADING, 0);
+-		mdelay(40);
++		struct device_node *clock =
++			of_find_node_by_path("/uni-n@f8000000/hw-clock");
++		if (clock && get_property(clock, "platform-do-clockspreading",
++					  NULL)) {
++			printk(KERN_INFO "%sabling clock spreading on Intrepid"
++			       " ASIC\n", enable ? "En" : "Dis");
++			if (enable)
++				UN_OUT(UNI_N_CLOCK_SPREADING, 2);
++			else
++				UN_OUT(UNI_N_CLOCK_SPREADING, 0);
++			mdelay(40);
++		}
++		of_node_put(clock);
+ 	}
+ 
+ 	while (machine_is_compatible("PowerBook5,2") ||
+@@ -1680,6 +1688,8 @@
+ 			pmac_low_i2c_close(ui2c);
+ 			break;
+ 		}
++		printk(KERN_INFO "%sabling clock spreading on i2c clock chip\n",
++		       enable ? "En" : "Dis");
+ 		pmac_low_i2c_setmode(ui2c, pmac_low_i2c_mode_stdsub);
+ 		rc = pmac_low_i2c_xfer(ui2c, 0xd2 | pmac_low_i2c_write, 0x80, buffer, 9);
+ 		DBG("write result: %d,", rc);
