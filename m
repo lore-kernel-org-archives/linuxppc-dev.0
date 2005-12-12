@@ -1,17 +1,20 @@
 Return-Path: <deboraliu@tom.com>
-Received: from tom.com (smtpr7.tom.com [202.108.252.137])
-	by ozlabs.org (Postfix) with SMTP id C121D688D1
+Received: from tom.com (smtpr1.tom.com [202.108.255.195])
+	by ozlabs.org (Postfix) with SMTP id 449A1688C6
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 12 Dec 2005 19:22:01 +1100 (EST)
-Date: Mon, 12 Dec 2005 16:31:16 +0800
+	Mon, 12 Dec 2005 20:02:04 +1100 (EST)
+Received: from RavProxy (unknown [61.48.140.81])
+	by bjapp41 (Coremail) with SMTP id IcCpm1M1nUNhAIxR.1
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 12 Dec 2005 16:31:16 +0800 (CST)
+Date: Mon, 12 Dec 2005 16:40:37 +0800
 From: "debora liu" <deboraliu@tom.com>
-To: "Dmytro Bablinyuk" <dmytro.bablinyuk@rftechnology.com.au>
+To: "linuxppc-embedde" <Linuxppc-embedded@ozlabs.org>
 Mime-Version: 1.0
 Content-Type: multipart/mixed;
-	boundary="=====001_Dragon848023107315_====="
-Message-Id: <20051212082201.C121D688D1@ozlabs.org>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Subject: Re: Re: 82xx IRQ handling
+	boundary="=====001_Dragon380881888144_====="
+Message-Id: <20051212090204.449A1688C6@ozlabs.org>
+Subject: eldk-3.1.1 mpc823 SCC3 CTS/CD
 Reply-To: deboraliu@tom.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,79 +28,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
---=====001_Dragon848023107315_=====
+--=====001_Dragon380881888144_=====
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 
-Hello, Dmytro Bablinyuk
+Hello denx:
 
-In message <2005-12-12 14:00:46 dmytro.bablinyuk@rftechnology.com.au> you wrote:
+I found one bug when SCC3 as UART, my cpu is mpc823.
+cts/cd config as:
+	CTS PC5
+	CD  PC4
 
->
->By the way question - shall I program somewhere an edge of the IRQ or it 
->always triggers on the rising edge?
->
-IRQ_POLARITY_POSITIVE		/* high level or low->high edge */
-IRQ_POLARITY_NEGATIVE   	/* low level or high->low edge */
+your ELDK-3.1.1 linux-2.4.25 uart.c set pcpar,pcso, pcdir:
+	immap->im_ioport.iop_pcpar &= ~iobits;
+	immap->im_ioport.iop_pcso |=  iobits;
+	immap->im_ioport.iop_pcdir &= ~iobits;
+but MPC823UM tell me CD3 and CTS3 is bit6 and bit7 on PCSO register, so I modify:
+	fix_pcso = iobits;
+	#if defined(CONFIG_UART_CTS_CONTROL_SCC3)
+  		fix_pcso &=~(1 << (15 - CONFIG_CTS3_PIN));
+		fix_pcso |= 0x0100;
+	#endif
+	#if defined(CONFIG_UART_CD_CONTROL_SCC3)
+ 		fix_pcso &=~(1 << (15 - CONFIG_CD3_PIN));
+		fix_pcso |= 0x0200;
+	#endif
 
+	immap->im_ioport.iop_pcpar &= ~iobits;
+	immap->im_ioport.iop_pcso |=  fix_pcso;
+	immap->im_ioport.iop_pcdir &= ~iobits;
 
+My board have success communication to moderm with SCC3 hard flow control.
 
-you should modify OpenPIC_InitSenses, example my board:
-static u_char sc82xx_openpic_initsenses[] __initdata = {
-#if defined(CONFIG_SVM_GEMINI)
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* EPIC IRQ 0,PCI0 */
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* EPIC IRQ 1 ,PCI1*/
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),       /* EPIC IRQ 2 ,PCI2 */
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* DUART CH1  */
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),    /* DUART CH2  */
-  (IRQ_SENSE_EDGE  | IRQ_POLARITY_NEGATIVE),    /* EPIC IRQ3, PCI3 or DPRAM */
-  (IRQ_SENSE_EDGE  | IRQ_POLARITY_NEGATIVE),    /*  EPIC IRQ4, DPRAM */
-
-#elif defined (CONFIG_SVM_IT6160A)
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* EPIC IRQ 0 */
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* EPIC IRQ 1 */
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* EPIC IRQ 2,  xr16L788 chip1*/
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),      /* DUART CH1  */
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),    /* DUART CH2  */
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),    /* EPIC IRQ3, xr16L788 chip2*/
-  (IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),    /* EPIC IRQ4,spare */
-
-#else
-#error No board defined.!!!
-#endif
-};
-
-static void __init
-sc82xx_init_IRQ(void)
-{
-  OpenPIC_InitSenses = sc82xx_openpic_initsenses;
-  OpenPIC_NumInitSenses = sizeof(sc82xx_openpic_initsenses);
-
-  /*
-   * We need to tell openpic_set_sources where things actually are.
-   * mpc10x_common will setup OpenPIC_Addr at ioremap(EUMB phys base +
-   * EPIC offset (0x40000));  The EPIC IRQ Register Address Map -
-   * Interrupt Source Configuration Registers gives these numbers
-   * as offsets starting at 0x50200, we need to adjust occordinly.
-   */
-
-  openpic_set_sources(0, 3, OpenPIC_Addr + 0x10200);  /* 0=IRQ0,  1=IRQ1, 2=IRQ2  *
-  openpic_set_sources(3, 2, OpenPIC_Addr + 0x11120);  /* 3=UART0, 4=UART1         *
-  openpic_set_sources(5, 2, OpenPIC_Addr + 0x10260);  /* 5=IRQ3,  6=IRQ4          *
-
-        openpic_init (0);
-}
-
-
-
-= = = = = = = = = = = = = = = = = = = =
-				 
         debora liu
         deboraliu@tom.com
           2005-12-12
-
---=====001_Dragon848023107315_=====
+--=====001_Dragon380881888144_=====
 Content-Type: image/gif;
 	name="fox.gif"
 Content-Transfer-Encoding: base64
@@ -272,4 +239,4 @@ Nd/MmkN7OebUAQntspzLwQFYK+Z1KAIKszaISSuQb86sBQoQgJCEgJejGFj2XFAgKiECWRlUWdmz
 Qy7igX/bAkiyiKAhMzbtUk4siYCAS5dCqGlb5qWdC4QtX8KcRs0GzRd4RgodSjQCACH+PEZJTEUg
 SURFTlRJVFkNCkNyZWF0ZWQgb3IgbW9kaWZpZWQgYnkNCkVEIVNPTiAnOTYgW1hmL1VDZl0NCgA7
 
---=====001_Dragon848023107315_=====--
+--=====001_Dragon380881888144_=====--
