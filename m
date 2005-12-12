@@ -1,16 +1,26 @@
-Return-Path: <Gabe.Johnson@radisys.com>
-Received: from dcnotes.radisys.com (mail2.radisys.com [63.163.28.54])
-	by ozlabs.org (Postfix) with ESMTP id 42B8D688D1
+Return-Path: <simon@baydel.com>
+Received: from anchor-fallback-96.mail.demon.net
+	(anchor-fallback-96.mail.demon.net [194.217.242.83])
+	by ozlabs.org (Postfix) with ESMTP id 00233688A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Dec 2005 03:38:47 +1100 (EST)
+	Tue, 13 Dec 2005 05:04:35 +1100 (EST)
+Received: from anchor-post-33.mail.demon.net ([194.217.242.91]:1756 "EHLO
+	anchor-post-33.mail.demon.net") by anchor-fallback-96.mail.demon.net
+	with ESMTP id S1158340AbVLLRFe (ORCPT
+	<rfc822;linuxppc-embedded@ozlabs.org>);
+	Mon, 12 Dec 2005 17:05:34 +0000
+Received: from [80.176.67.250] (helo=baydel-adsl.demon.co.uk)
+	by anchor-post-33.mail.demon.net with esmtp (Exim 4.42)
+	id 1Elr7C-00092Q-CW
+	for linuxppc-embedded@ozlabs.org; Mon, 12 Dec 2005 17:05:31 +0000
+From: Simon Haynes <simon@baydel.com>
 To: linuxppc-embedded@ozlabs.org
+Date: Mon, 12 Dec 2005 17:26:34 +0000
 MIME-Version: 1.0
-Message-ID: <OFDEA31089.DE015378-ON862570D5.005B4F12-862570D5.005B7940@microware.com>
-From: Gabe.Johnson@radisys.com
-Date: Mon, 12 Dec 2005 10:38:44 -0600
-Content-Type: multipart/alternative;
-	boundary="=_alternative 005B7939862570D5_="
-Subject: chrdevs[] explained
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200512121726.34944.simon@baydel.com>
+Subject: ibm emac driver update 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,23 +31,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 005B7939862570D5_=
-Content-Type: text/plain; charset="US-ASCII"
+I am running a Ebony board with linux-2.6.12-rc1 and I amd having intermittent 
+network problems. Having searched the archives it would seem that the driver
+for the IBM EMAC is buggy ? 
 
-Could someone explain to me the chrdevs array found in fs/char_dev.c how 
-does that get populated and with what does it get populated?
+I have tried to patch my kernel with 
 
-Thanks,
-Gabe
---=_alternative 005B7939862570D5_=
-Content-Type: text/html; charset="US-ASCII"
+http://kernel.ebsname.net/emac/4xx_napi_emac.diff
 
+I believe this is almost a total driver re-write. Is this correct ?
 
-<br><font size=2 face="sans-serif">Could someone explain to me the chrdevs
-array found in fs/char_dev.c how does that get populated and with what
-does it get populated?</font>
-<br>
-<br><font size=2 face="sans-serif">Thanks,</font>
-<br><font size=2 face="sans-serif">Gabe</font>
---=_alternative 005B7939862570D5_=--
+After having a couple of problems applying the patch, Kconfig and 
+ibm_emac_core.c. I fixed up the original code and applied the patch.
+
+On compilation the build fails with missing references to kzalloc,
+which I guess I could easily fix with kmalloc and memset. 
+
+However there is also an undefined field,  dcr_base, in the ocp_func_mal_data
+structure.  This structure appears to be defined in include/asm/ibm_ocp.h and 
+this file does not appear to be changed by the patch. I guess this patch is 
+for a later kernel.
+
+Can anyone point me in the direction of a suitable patch for this kernel ?
+
+Many Thanks
+
+Simon.
