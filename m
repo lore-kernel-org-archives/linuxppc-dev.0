@@ -1,15 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (unknown [212.105.56.243])
+	by ozlabs.org (Postfix) with ESMTP id 27CF868882
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Dec 2005 19:09:35 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17308.60978.621250.553459@cargo.ozlabs.ibm.com>
-Date: Mon, 12 Dec 2005 14:27:46 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20051211184520.7f565283.akpm@osdl.org>
-References: <1134353605.6989.69.camel@gaston>
-	<20051211184520.7f565283.akpm@osdl.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Mon, 12 Dec 2005 09:09:33 +0100
+Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D939486EBC@tmnt04.transmode.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "Paul Mackerras" <paulus@samba.org>
 Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Fix clock spreading setting on some powermacs
+Subject: RE: Linux process ABI broken in 2.6?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,12 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton writes:
+=20
+>=20
+> Joakim Tjernlund writes:
+>=20
+> > Is it too much trouble to define r7 to always have
+> > a zero
+> > value at process startup?
+>=20
+> That's not much trouble, but what will you do for existing kernels?
+> Won't you have to do something like testing *r1 anyway?
 
-> Linus is back online now.  Paul, do you intend to send a batch to Linus? 
-> If so, please do so asap so I can merge up anything that's left over.
+No, I don't plan to do anything. I just got the first report that static
+uClibc apps dosen't work for 2.6, so if the current kernel is fixed I
+will just
+point to a newer kernel or they can patch their old kernel with the
+required 2 line fix.
 
-Yes, I have all of those patches in my powerpc-merge tree and I'll
-send him a "please pull" message once it's mirrored to kernel.org.
+ Thanks
+         Jocke
 
-Paul.
+>=20
+> Paul.
+>=20
+>=20
