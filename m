@@ -1,16 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20051213165807.GA7468@pb15.lixom.net>
-References: <1134457469.6989.189.camel@gaston>
-	<20051213165807.GA7468@pb15.lixom.net>
-Content-Type: text/plain
-Date: Wed, 14 Dec 2005 07:23:28 +1100
-Message-Id: <1134505409.6458.8.camel@gaston>
-Mime-Version: 1.0
-Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: Update MPIC workarounds
+Return-Path: <galak@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7464368888
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2005 07:49:56 +1100 (EST)
+Date: Tue, 13 Dec 2005 14:45:40 -0600 (CST)
+From: Kumar Gala <galak@gate.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.44.0512131444520.6332-100000@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Provide PCI OF functions even if we dont have true
+ OF
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,53 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2005-12-13 at 08:58 -0800, Olof Johansson wrote:
-> On Tue, Dec 13, 2005 at 06:04:29PM +1100, Benjamin Herrenschmidt wrote:
-> > From: Segher Boessenkool <segher@kernel.crashing.org>
-> > 
-> > Cleanup the MPIC IO-APIC workarounds, make them a bit more generic,
-> > smaller and faster. 
-> 
-> I really don't like all the hand-coded constants in this code. They're
-> all over the place, and there's no descriptions of what they are there
-> for. Lots of hardcoded offsets, etc. Since this is a cleanup, wouldn't
-> it be a good time to use symbolic constands and/or comment them up a
-> bit?
+If we are building an arch/powerpc kernel we dont neccesarily
+have a full OF implementation (and thus dont set CONFIG_PPC_OF)
+but can use the OF PCI functions
 
-Heh, welcome to segher world :) I'll add more comments & symbolic
-constants in the other patch that applies on top of this one.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-> > Index: linux-work/arch/powerpc/sysdev/mpic.c
-> > ===================================================================
-> > --- linux-work.orig/arch/powerpc/sysdev/mpic.c	2005-12-06 16:17:43.000000000 +1100
-> > +++ linux-work/arch/powerpc/sysdev/mpic.c	2005-12-07 13:30:45.000000000 +1100
-> > @@ -175,57 +175,57 @@ static inline int mpic_is_ht_interrupt(s
-> >  	return mpic->fixups[source_no].base != NULL;
-> >  }
-> >  
-> > +
-> >  static inline void mpic_apic_end_irq(struct mpic *mpic, unsigned int source_no)
-> >  {
-> >  	struct mpic_irq_fixup *fixup = &mpic->fixups[source_no];
-> > -	u32 tmp;
-> >  
-> >  	spin_lock(&mpic->fixup_lock);
-> > -	writeb(0x11 + 2 * fixup->irq, fixup->base);
-> > -	tmp = readl(fixup->base + 2);
-> > -	writel(tmp | 0x80000000ul, fixup->base + 2);
-> > -	/* config writes shouldn't be posted but let's be safe ... */
-> > -	(void)readl(fixup->base + 2);
-> > +	writeb(0x11 + 2 * fixup->irq, fixup->base + 2);
-> > +	writel(fixup->data, fixup->base + 4);
-> 
-> This seems like a functional change: Previous code wrote at base, new at
-> base+2?
+---
+commit 761e102769add7e86d510f7605c06f4a82575015
+tree e62bfa889a1789289e9fc031d8f883cb2291c6a4
+parent 5ce33c8a0b8087f0c554a417efb907d35892e58b
+author Kumar Gala <galak@kernel.crashing.org> Tue, 13 Dec 2005 14:40:11 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Tue, 13 Dec 2005 14:40:11 -0600
 
-Hrm... I have to double check but I think the previous code hard coded
-the bases for the 2 known APICs (incuding the +2) while the new code
-properly scans the PCI capabilities and thus gets the capability base
-instead, which is better (but needs +2 / +4). I suppose I could
-pre-offset by 2 at discovery time to avoid an addition but I'm not sure
-it's worth it.
+ arch/ppc/kernel/pci.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Ben.
+diff --git a/arch/ppc/kernel/pci.c b/arch/ppc/kernel/pci.c
+index af36400..df4b11c 100644
+--- a/arch/ppc/kernel/pci.c
++++ b/arch/ppc/kernel/pci.c
+@@ -46,7 +46,7 @@ static void pcibios_fixup_resources(stru
+ static void fixup_broken_pcnet32(struct pci_dev* dev);
+ static int reparent_resources(struct resource *parent, struct resource *res);
+ static void fixup_cpc710_pci64(struct pci_dev* dev);
+-#ifdef CONFIG_PPC_OF
++#if defined(CONFIG_PPC_OF) || defined(CONFIG_PPC_MERGE)
+ static u8* pci_to_OF_bus_map;
+ #endif
+ 
+@@ -626,7 +626,7 @@ pcibios_alloc_controller(void)
+ 	return hose;
+ }
+ 
+-#ifdef CONFIG_PPC_OF
++#if defined(CONFIG_PPC_OF) || defined(CONFIG_PPC_MERGE)
+ /*
+  * Functions below are used on OpenFirmware machines.
+  */
+@@ -1027,7 +1027,7 @@ void pcibios_make_OF_bus_map(void)
+ /* Add sysfs properties */
+ void pcibios_add_platform_entries(struct pci_dev *pdev)
+ {
+-#ifdef CONFIG_PPC_OF
++#if defined(CONFIG_PPC_OF) || defined(CONFIG_PPC_MERGE)
+ 	device_create_file(&pdev->dev, &dev_attr_devspec);
+ #endif /* CONFIG_PPC_OF */
+ }
