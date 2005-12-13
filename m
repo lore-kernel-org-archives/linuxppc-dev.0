@@ -1,20 +1,18 @@
-Return-Path: <dmytro.bablinyuk@rftechnology.com.au>
-Received: from mfep5.connect.com.au (fep5.mfe.bur.connect.com.au [203.63.86.5])
-	by ozlabs.org (Postfix) with ESMTP id 782FF688B8
+Return-Path: <zhou.yutao@zte.com.cn>
+Received: from mx4.zte.com.cn (unknown [202.103.147.155])
+	by ozlabs.org (Postfix) with SMTP id 63A6B688E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Dec 2005 12:22:36 +1100 (EST)
-Received: from [192.168.1.100] (cor11-ppp3577.hay.dsl.connect.net.au
-	[61.69.222.21])
-	by mfep5.connect.com.au (Postfix) with ESMTP id 4E7EDCCD9
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Dec 2005 12:22:34 +1100 (EST)
-Message-ID: <439E21C7.8070404@rftechnology.com.au>
-Date: Tue, 13 Dec 2005 12:20:07 +1100
-From: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
+	Tue, 13 Dec 2005 13:09:47 +1100 (EST)
+In-Reply-To: <20051212204054.2A1F7353A44@atlas.denx.de>
+To: Wolfgang Denk <wd@denx.de>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: 82xx cascaded timers
+Message-ID: <OF28902FBA.A8C2721C-ON482570D6.0009828D-482570D6.000A78E0@zte.com.cn>
+From: zhou.yutao@zte.com.cn
+Date: Tue, 13 Dec 2005 09:54:46 +0800
+Content-Type: multipart/alternative;
+	boundary="=_alternative 000A78DA482570D6_="
+Cc: linuxppc-embedded@ozlabs.org
+Subject: How to add external 16550 to TQM850L board?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,78 +23,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have the following code:
+This is a multipart message in MIME format.
+--=_alternative 000A78DA482570D6_=
+Content-Type: text/plain; charset="GB2312"
+Content-Transfer-Encoding: base64
 
-#define CPMTIMER_TGCR_GM1       0x08  /* gate mode */
-#define CPMTIMER_TGCR_FRZ1      0x04  /* freeze timer */
-#define CPMTIMER_TGCR_STP1      0x02  /* stop timer */
-#define CPMTIMER_TGCR_RST1      0x01  /* restart timer */
+SGVsbG8sDQpDb3VsZCB5b3UgdGVsbCBtZSB3aGVyZSB0byBzZXQgYmFzZSBhZGRyZXNzIGFuZCBJ
+UlEgaW4ga2VybmVsP21hYmUgaW4gDQpzZXJpYWwuYyBvciBjb3JyZWxhdGl2ZSBoZWFkIGZpbGU/
+IEkgc2VhcmNoZWQgdGhlIGxpc3QgbWFpbHMgYW5kIGZvdW5kIA0Kc29tZWJvZHkgc2FpZCB0aGVy
+ZSBhcmUgZXhwbGFuYXRpb24gaW4gREVOWCBDVlMgTEFCRUxfMjAwM18wM18xMV8yMDU1IHRvIA0K
+TEFCRUxfMjAwM18wM18xMV8yMTEwLGJ1dCBob3cgY2FuIEkgZ2V0IHRoZW0/DQoNClRoYW5rIHlv
+dSENCg0KDQoNCg0Kye7b2srQuN/Qwsf4VzEtQbawNMKlDQp0ZWw6MDc1NS0yNjUyNTY3NC04NjAy
+DQoKCgoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKgrQxc+i
+sLLIq8n5w/ejurG+08q8/rD8uqzQxc+iuelaVEXL+dPQo6wKWlRFttS4w9PKvP7TtdPQy/nT0Mio
+wPuho8frvdPK1dXf16LS4gqxo8Pco6zOtL6tt6K8/sjLyunD5tDtv8mjrLK7tcPP8sjOus612grI
+/be91+nWr7rNuPbIy824wraxvtPKvP7L+bqs0MXPorXEyKuyvwq78rK/t9aho9LUyc/J+cP3vfbK
+ytPD09q5pNf308q8/qGjCkluZm9ybWF0aW9uIFNlY3VyaXR5ICBOb3RpY2WjugpUaGUgaW5mb3Jt
+YXRpb24gY29udGFpbmVkIGluIHRoaXMgbWFpbCBpcwpzb2xlbHkgcHJvcGVydHkgb2YgIFpURSBD
+b3Jwb3JhdGlvbi4gClRoaXMgbWFpbCBjb21tdW5pY2F0aW9uIGlzIGNvbmZpZGVudGlhbC4KUmVj
+aXBpZW50cyBuYW1lZCBhYm92ZSBhcmUgb2JsaWdhdGVkIHRvCm1haW50YWluIHNlY3JlY3kgYW5k
+IGFyZSBub3QgcGVybWl0dGVkIHRvCmRpc2Nsb3NlIHRoZSBjb250ZW50cyBvZiB0aGlzIGNvbW11
+bmljYXRpb24KdG8gb3RoZXJzLgoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKgo=
+--=_alternative 000A78DA482570D6_=
+Content-Type: text/html; charset="GB2312"
+Content-Transfer-Encoding: base64
 
-#define CPMTIMER_TGCR_CAS2      0x80  /* cascade timer */
-#define CPMTIMER_TGCR_FRZ2      0x40  /* freeze timer */
-#define CPMTIMER_TGCR_STP2      0x20  /* stop timer */
-#define CPMTIMER_TGCR_RST2      0x10  /* restart timer */
-
-#define CPMTIMER_TMR_ORI        0x0010  /* output reference interrupt 
-enable */
-#define CPMTIMER_TMR_FRR        0x0008  /* free run/restart */
-#define CPMTIMER_TMR_ICLK_INT16 0x0004  /* source internal clock/16 */
-#define CPMTIMER_TMR_ICLK_INT   0x0002  /* source internal clock */
------
-[ SCENARIO 1 ]: 16bit Timer1 is triggering interrupt handler (every 
-2.25microsec no matter what value of cpmt_trr1 is ??? )
-
-    immap->im_cpmtimer.cpmt_tgcr1 &= ~(CPMTIMER_TGCR_CAS2 |
-                                       CPMTIMER_TGCR_GM1  |
-                                       CPMTIMER_TGCR_RST1 |
-                                       CPMTIMER_TGCR_FRZ1 |
-                                       CPMTIMER_TGCR_STP1);
-
-    immap->im_cpmtimer.cpmt_tmr1 =  CPMTIMER_TMR_ORI | CPMTIMER_TMR_FRR 
-| CPMTIMER_TMR_ICLK_INT16;
-
-    immap->im_cpmtimer.cpmt_trr1 = 10000;
-    immap->im_cpmtimer.cpmt_tcr1 = 0;
-    immap->im_cpmtimer.cpmt_tcn1 = 0;
-    immap->im_cpmtimer.cpmt_ter1 = 0;
-
-    request_irq(SIU_INT_TIMER1,
-                &timer_handler,
-                SA_INTERRUPT,
-                "timer_handler",
-                NULL);
-
-    /* and start timer1 */
-    immap->im_cpmtimer.cpmt_tgcr1 |= CPMTIMER_TGCR_RST1;
-
------
-[ SCENARIO 2 ]: Cascaded timers: 32bit Timer1 and Timer2 - does not work 
-- interrupt never occurs.
-
-    immap->im_cpmtimer.cpmt_tgcr1 = CPMTIMER_TGCR_CAS2 | CPMTIMER_TGCR_GM1;
-
-    immap->im_cpmtimer.cpmt_trr1 = 10000;
-    immap->im_cpmtimer.cpmt_tcr1 = 0;
-    immap->im_cpmtimer.cpmt_tcr2 = 0;
-    immap->im_cpmtimer.cpmt_tcn1 = 0;
-    immap->im_cpmtimer.cpmt_tcn2 = 0;
-    immap->im_cpmtimer.cpmt_ter1 = 0;
-    immap->im_cpmtimer.cpmt_ter2 = 0;
-
-    immap->im_cpmtimer.cpmt_tmr1 = 0;
-    immap->im_cpmtimer.cpmt_tmr2 = CPMTIMER_TMR_ORI | CPMTIMER_TMR_FRR | 
-CPMTIMER_TMR_ICLK_INT16;
-
-    request_irq(SIU_INT_TIMER2,
-                &timer_handler,
-                SA_INTERRUPT,
-                "timer_handler",
-                NULL);
-
-    immap->im_cpmtimer.cpmt_tgcr1 |= CPMTIMER_TGCR_RST1;
-
-Does anybody knows what I missed in cascaded timers initialisation 
-(Scenario2) and why when I use 16 bit timer (Scenario1) it always 
-triggers interrupt within 2.25microsec no matter what "trr1" value is?
-
-Thank you very much for any help.
+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9InNhbnMtc2VyaWYiPkhlbGxvLDwvZm9udD4NCjxicj48
+Zm9udCBzaXplPTIgZmFjZT0ic2Fucy1zZXJpZiI+Q291bGQgeW91IHRlbGwgbWUgd2hlcmUgdG8g
+c2V0IGJhc2UNCmFkZHJlc3MgYW5kIElSUSBpbiBrZXJuZWw/bWFiZSBpbiBzZXJpYWwuYyBvciBj
+b3JyZWxhdGl2ZSBoZWFkIGZpbGU/IEkNCnNlYXJjaGVkIHRoZSBsaXN0IG1haWxzIGFuZCBmb3Vu
+ZCBzb21lYm9keSBzYWlkIHRoZXJlIGFyZSBleHBsYW5hdGlvbiBpbg0KREVOWCBDVlMgTEFCRUxf
+MjAwM18wM18xMV8yMDU1IHRvICZuYnNwO0xBQkVMXzIwMDNfMDNfMTFfMjExMCxidXQgaG93IGNh
+bg0KSSBnZXQgdGhlbT88L2ZvbnQ+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9InNhbnMtc2VyaWYi
+Pjxicj4NClRoYW5rIHlvdSE8YnI+DQo8YnI+DQo8YnI+DQo8YnI+DQo8YnI+DQrJ7tvaytC439DC
+x/hXMS1BtrA0wqU8YnI+DQp0ZWw6MDc1NS0yNjUyNTY3NC04NjAyPC9mb250Pg0KPGJyPjxicj48
+YnI+CioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqPGJyPgrQ
+xc+isLLIq8n5w/ejurG+08q8/rD8uqzQxc+iuelaVEXL+dPQo6w8YnI+ClpURbbUuMPTyrz+07XT
+0Mv509DIqMD7oaPH673TytXV39ei0uI8YnI+CrGjw9yjrM60vq23orz+yMvK6cPm0O2/yaOssru1
+w8/yyM66zrXaPGJyPgrI/be91+nWr7rNuPbIy824wraxvtPKvP7L+bqs0MXPorXEyKuyvzxicj4K
+u/Kyv7fWoaPS1MnPyfnD9732ysrTw9PauaTX99PKvP6hozxicj4KSW5mb3JtYXRpb24mbmJzcDtT
+ZWN1cml0eSZuYnNwOyZuYnNwO05vdGljZaO6PGJyPgpUaGUmbmJzcDtpbmZvcm1hdGlvbiZuYnNw
+O2NvbnRhaW5lZCZuYnNwO2luJm5ic3A7dGhpcyZuYnNwO21haWwmbmJzcDtpczxicj4Kc29sZWx5
+Jm5ic3A7cHJvcGVydHkmbmJzcDtvZiZuYnNwOyZuYnNwO1pURSZuYnNwO0NvcnBvcmF0aW9uLiZu
+YnNwOzxicj4KVGhpcyZuYnNwO21haWwmbmJzcDtjb21tdW5pY2F0aW9uJm5ic3A7aXMmbmJzcDtj
+b25maWRlbnRpYWwuPGJyPgpSZWNpcGllbnRzJm5ic3A7bmFtZWQmbmJzcDthYm92ZSZuYnNwO2Fy
+ZSZuYnNwO29ibGlnYXRlZCZuYnNwO3RvPGJyPgptYWludGFpbiZuYnNwO3NlY3JlY3kmbmJzcDth
+bmQmbmJzcDthcmUmbmJzcDtub3QmbmJzcDtwZXJtaXR0ZWQmbmJzcDt0bzxicj4KZGlzY2xvc2Um
+bmJzcDt0aGUmbmJzcDtjb250ZW50cyZuYnNwO29mJm5ic3A7dGhpcyZuYnNwO2NvbW11bmljYXRp
+b248YnI+CnRvJm5ic3A7b3RoZXJzLjxicj4KKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKioqKioqKio8YnI+Cg==
+--=_alternative 000A78DA482570D6_=--
