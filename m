@@ -1,18 +1,19 @@
-Return-Path: <Simon.Richter@hogyros.de>
-Received: from kleinhenz.com (kleinhenz.com [213.239.205.196])
-	by ozlabs.org (Postfix) with ESMTP id F226268894
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2005 00:34:27 +1100 (EST)
-Message-ID: <439ECDCC.80707@hogyros.de>
-Date: Tue, 13 Dec 2005 14:34:04 +0100
-From: Simon Richter <Simon.Richter@hogyros.de>
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id 8B80B68898
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2005 01:00:01 +1100 (EST)
+Date: Tue, 13 Dec 2005 15:00:01 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Simon Richter <Simon.Richter@hogyros.de>
+Message-ID: <20051213140001.GG23349@stusta.de>
+References: <20051211185212.GQ23349@stusta.de>
+	<20051211192109.GA22537@flint.arm.linux.org.uk>
+	<20051211193118.GR23349@stusta.de>
+	<20051211194437.GB22537@flint.arm.linux.org.uk>
+	<20051213001028.GS23349@stusta.de> <439ECDCC.80707@hogyros.de>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-References: <20051211185212.GQ23349@stusta.de>	<20051211192109.GA22537@flint.arm.linux.org.uk>	<20051211193118.GR23349@stusta.de>	<20051211194437.GB22537@flint.arm.linux.org.uk>
-	<20051213001028.GS23349@stusta.de>
-In-Reply-To: <20051213001028.GS23349@stusta.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enig113C1197884926ACD3D8B3B4"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <439ECDCC.80707@hogyros.de>
 Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, grundler@parisc-linux.org,
 	matthew@wil.cx, linux-kernel@vger.kernel.org,
 	linuxppc-dev@ozlabs.org, lethal@linux-sh.org,
@@ -28,45 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig113C1197884926ACD3D8B3B4
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Dec 13, 2005 at 02:34:04PM +0100, Simon Richter wrote:
 
-Hi,
+> Hi,
 
-Adrian Bunk wrote:
+Hi Simon,
 
->>It's a problem introduced by your patch because the resulting defconfig
->>file becomes _wrong_ by your change, and other changes in the defconfig
->>are thereby hidden.
->>...
+> Adrian Bunk wrote:
+> 
+> >>It's a problem introduced by your patch because the resulting defconfig
+> >>file becomes _wrong_ by your change, and other changes in the defconfig
+> >>are thereby hidden.
+> >>...
+> 
+> >No, CONFIG_BROKEN=y in a defconfig file is a bug.
+> 
+> Indeed, but that's not the point. A defconfig file should be the result 
+> of running one of the various configuration targets; yours are 
+> hand-patched. If you run the defconfig target, it will copy the config 
+> file and run oldconfig, thus resulting in a different configuration file 
+> (because options may now be gone and hence disabled) than what was in 
+> the defconfig, and thus people may come to the wrong conclusion that if 
+> a driver is enabled in a defconfig file, it will be built.
 
-> No, CONFIG_BROKEN=y in a defconfig file is a bug.
+defconfig files are virtually never a configuration for the kernel they 
+are shipped with since they aren't updated every time some configuration 
+option is changed.
 
-Indeed, but that's not the point. A defconfig file should be the result 
-of running one of the various configuration targets; yours are 
-hand-patched. If you run the defconfig target, it will copy the config 
-file and run oldconfig, thus resulting in a different configuration file 
-(because options may now be gone and hence disabled) than what was in 
-the defconfig, and thus people may come to the wrong conclusion that if 
-a driver is enabled in a defconfig file, it will be built.
+Consider a defconfig with CONFIG_BROKEN=n, and a driver that is enabled 
+in this defconfig gets for some reason marked as broken in the Kconfig 
+file - this will give exactly the same result as the one you describe.
 
-    Simon
+>    Simon
 
---------------enig113C1197884926ACD3D8B3B4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+cu
+Adrian
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
+-- 
 
-iQCVAwUBQ57NzVYr4CN7gCINAQL+jAQAjf9uj07ZkTXInhywX9qoZN1m70XTuPxl
-h0PVv4ms9q3sf7DFwasFyyq/39FhgSlivBKS3LdYzvssMIZCQ6qsS/v2znllqRGp
-3rR2vSWjAhxnX25ekYUNYanRqSYtUBU3E9rNEDyPiKdxXfPWZd+3DzIWKHh//AdR
-syvKAqLxHhE=
-=sMLF
------END PGP SIGNATURE-----
-
---------------enig113C1197884926ACD3D8B3B4--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
