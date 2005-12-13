@@ -1,22 +1,21 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id D4FA16888B
+Return-Path: <happyphot@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.196])
+	by ozlabs.org (Postfix) with ESMTP id D82CA6886E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Dec 2005 18:19:35 +1100 (EST)
-Message-ID: <1134462241.439e8521620da@webmail.televes.com:443>
-Date: Tue, 13 Dec 2005 09:24:01 +0100
-From: Alex BASTOS <alebas@televes.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-References: <1133520697.4390273987a6a@webmail.televes.com:443>
-	<4390223C.8060103@ru.mvista.com>
-	<1133531801.4390529995cfa@webmail.televes.com:443>
-	<1133534967.43905ef73521a@webmail.televes.com:443>
-	<4390604D.50002@ru.mvista.com>
-In-Reply-To: <4390604D.50002@ru.mvista.com>
+	Tue, 13 Dec 2005 18:51:17 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id s18so1754754nze
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 12 Dec 2005 23:51:16 -0800 (PST)
+Message-ID: <003201c5ffb9$fe0d6310$0760120a@photon>
+From: "HappyPhot" <happyphot@gmail.com>
+To: <hs@denx.de>,
+	<linuxppc-embedded@ozlabs.org>
+References: <AHEILKONAKAEJPHNMOPNIEDBCEAA.hs@denx.de>
+Date: Tue, 13 Dec 2005 15:50:38 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Re: pq2_find_bridges hangs system
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Re: MPC8245 with its internal UART
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,71 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Vitaly,
+Hi,
+  I get this one "linuxppc_2_4_devel-2005-10-25-1440.tar.bz2"
+and try "make CPC45_defconfig". But it shows "No rule to make 
+target ...."
+  Did I do something wrong ?
 
-It didn't work. So I will check pq2ads_setup_pci to check if
-some board specific issue is affected.
+thank you,
+/HappyPhot
 
-I will say you if I find anything
 
-Thanks
+----- Original Message ----- 
+From: "Heiko Schocher" <hs@denx.de>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: <happyphot@gmail.com>
+Sent: Wednesday, December 07, 2005 3:36 PM
+Subject: MPC8245 with its internal UART
 
-Alex.
 
-Citando Vitaly Bordug <vbordug@ru.mvista.com>:
+Hello,
 
-> Alex,
-> please probe this. If it will not help, pq2ads_setup_pci should be digged for
-> some board specifics.
->
-> Also, check if hose->set_cfg_type is 1 as done for ads8272.
->
-> -------- Original Message --------
-> Subject: [patch 01/34] ppc32: Fix incorrect PCI frequency value
-> Date: Thu, 01 Dec 2005 00:51:15 -0800
-> From: akpm@osdl.org
-> To: torvalds@osdl.org
-> CC: akpm@osdl.org, vbordug@ru.mvista.com, galak@kernel.crashing.org
->
->
-> From: Vitaly Bordug <vbordug@ru.mvista.com>
->
-> The time to wait after deasserting PCI_RST has been counted with incorrect
-> value - this patch fixes the issue.
->
-> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> Signed-off-by: Andrew Morton <akpm@osdl.org>
-> ---
->
->  arch/ppc/syslib/m82xx_pci.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletion(-)
->
-> diff -puN arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value
-> arch/ppc/syslib/m82xx_pci.c
-> ---
->
-devel/arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value	2005-11-30
-> 23:58:00.000000000 -0800
-> +++ devel-akpm/arch/ppc/syslib/m82xx_pci.c	2005-11-30 23:58:00.000000000
-> -0800
-> @@ -248,7 +248,8 @@ pq2ads_setup_pci(struct pci_controller *
->  	pci_div = ( (sccr & SCCR_PCI_MODCK) ? 2 : 1) *
->  			( ( (sccr & SCCR_PCIDF_MSK) >> SCCR_PCIDF_SHIFT) + 1);
->  	freq = (uint)((2*binfo->bi_cpmfreq)/(pci_div));
-> -	time = (int)666666/freq;
-> +	time = (int)66666666/freq;
-> +
->  	/* due to PCI Local Bus spec, some devices needs to wait such a long
->  	time after RST 	deassertion. More specifically, 0.508s for 66MHz & twice
-> more for 33 */
->  	printk("%s: The PCI bus is %d Mhz.\nWaiting %s after deasserting
-> RST...\n",__FILE__,freq,
-> _
->
->
->
-> --
-> Sincerely,
-> Vitaly
->
+> Who can tell me which flatform is similar to mine ? I've tried
+> "make sandpoint_defconfig", but seems not the right one.
+
+If you want to use Linux 2.4.25, you can try CPC45_defconfig
+from the Denx Kernel ...
+
+Best regards,
+Heiko
