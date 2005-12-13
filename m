@@ -1,33 +1,20 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[212.18.232.186])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A7C266886E
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2005 09:02:21 +1100 (EST)
-Date: Tue, 13 Dec 2005 22:01:57 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Adrian Bunk <bunk@stusta.de>
-Message-ID: <20051213220157.GD24094@flint.arm.linux.org.uk>
-References: <20051211192109.GA22537@flint.arm.linux.org.uk>
-	<20051211193118.GR23349@stusta.de>
-	<20051211194437.GB22537@flint.arm.linux.org.uk>
-	<20051213001028.GS23349@stusta.de> <439ECDCC.80707@hogyros.de>
-	<20051213140001.GG23349@stusta.de>
-	<20051213173112.GA24094@flint.arm.linux.org.uk>
-	<20051213180551.GN23349@stusta.de>
-	<20051213200106.GC24094@flint.arm.linux.org.uk>
-	<20051213201920.GT23349@stusta.de>
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 012B66887E
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2005 09:37:08 +1100 (EST)
+Date: Tue, 13 Dec 2005 23:36:59 +0100
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: linux-kernel@vger.kernel.org
+Message-ID: <20051213223659.GB20017@hansmi.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051213201920.GT23349@stusta.de>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, grundler@parisc-linux.org,
-	matthew@wil.cx, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, lethal@linux-sh.org,
-	linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-	kkojima@rr.iij4u.or.jp, parisc-linux@parisc-linux.org
-Subject: Re: [2.6 patch] don't allow users to set CONFIG_BROKEN=y
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
+	kernel-stuff@comcast.net
+Subject: [PATCH 2.6 1/2] usb/input: Add relayfs support to appletouch driver
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,35 +24,155 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 13, 2005 at 09:19:20PM +0100, Adrian Bunk wrote:
-> On Tue, Dec 13, 2005 at 08:01:06PM +0000, Russell King wrote:
-> > That means that the original review was _worthless_.  It wasn't a
-> > review at all.
-> > 
-> > So, what I am trying to get across is the need to show the _full_ set
-> > of changes to a default configuratoin when you disable CONFIG_BROKEN,
-> > which is trivially producable if you run the script I've already posted.
-> > 
-> > You can even use that in conjunction with your present patch to produce
-> > a patch which shows _exactly_ _everything_ which changes as a result of
-> > disabling CONFIG_BROKEN.  Surely giving reviewers the _full_ story is
-> > far better than half a story, and should be something that any change
-> > to the kernel strives for.
-> > 
-> > If not, what's the point of the original change?
-> 
-> The point is that I haven't yet heard any good reason for 
-> CONFIG_BROKEN=y in a defconfig.
+This patch adds support for relayfs to the appletouch driver to make
+debugging easier.
 
-I'm sorry, I feel like I'm beating my head against a brick wall.  I
-have said everything that needs to be said, and made my position on
-this patch crystal clear.
+Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+Acked-by: Rene Nussbaumer <linux-kernel@killerfox.forkbomb.ch>  
+Acked-by: Johannes Berg <johannes@sipsolutions.net>  
+---
+diff -Npur linux-2.6.15-rc5.orig/Documentation/input/appletouch.txt linux-2.6.15-rc5/Documentation/input/appletouch.txt
+--- linux-2.6.15-rc5.orig/Documentation/input/appletouch.txt	2005-12-13 00:09:24.000000000 +0100
++++ linux-2.6.15-rc5/Documentation/input/appletouch.txt	2005-12-13 21:28:26.000000000 +0100
+@@ -77,6 +78,8 @@ full tracing (each sample is being trace
+ 		or
+ 	echo "1" > /sys/module/appletouch/parameters/debug
+ 
++To make debugging easier, the driver also supports the relayfs filesystem.
++
+ Links:
+ ------
 
-The patch to the ARM configuration files is nacked as it stands.
-Please go back and rework it along the guidelines I've pointed out
-several times in this thread and maybe then it becomes acceptable.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 Serial core
+diff -Npur linux-2.6.15-rc5.orig/drivers/usb/input/appletouch.txt linux-2.6.15-rc5/drivers/usb/input/appletouch.txt
+--- linux-2.6.15-rc5.orig/drivers/usb/input/appletouch.c	2005-12-13 00:09:24.000000000 +0100
++++ linux-2.6.15-rc5/drivers/usb/input/appletouch.c	2005-12-13 22:41:28.000000000 +0100
+@@ -6,9 +6,18 @@
+  * Copyright (C) 2005      Stelian Pop (stelian@popies.net)
+  * Copyright (C) 2005      Frank Arnold (frank@scirocco-5v-turbo.de)
+  * Copyright (C) 2005      Peter Osterlund (petero2@telia.com)
++ * Copyright (C) 2005      Parag Warudkar (parag.warudkar@gmail.com)
++ * Copyright (C) 2005      Michael Hanselmann (linux-kernel@hansmi.ch)
+  *
+  * Thanks to Alex Harper <basilisk@foobox.net> for his inputs.
+  *
++ * Nov 2005 - Parag Warudkar 
++ *  o Added ability to export data via relayfs
++ *
++ * Nov/Dec 2005 - Michael Hanselmann
++ *  o Compile relayfs support only if enabled in the kernel
++ *  o Enable relayfs only if requested by the user
++ *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+@@ -35,6 +44,10 @@
+ #include <linux/input.h>
+ #include <linux/usb_input.h>
+ 
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++#include <linux/relayfs_fs.h>
++#endif
++
+ /* Apple has powerbooks which have the keyboard with different Product IDs */
+ #define APPLE_VENDOR_ID		0x05AC
+ 
+@@ -57,6 +70,11 @@ static struct usb_device_id atp_table []
+ };
+ MODULE_DEVICE_TABLE (usb, atp_table);
+ 
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++struct rchan* rch = NULL;
++struct rchan_callbacks* rcb = NULL;
++#endif
++
+ /* size of a USB urb transfer */
+ #define ATP_DATASIZE	81
+ 
+@@ -73,6 +91,7 @@ MODULE_DEVICE_TABLE (usb, atp_table);
+ 
+ /* maximum pressure this driver will report */
+ #define ATP_PRESSURE	300
++
+ /*
+  * multiplication factor for the X and Y coordinates.
+  * We try to keep the touchpad aspect ratio while still doing only simple
+@@ -124,7 +143,7 @@ struct atp {
+ 		if (debug) printk(format, ##a);				\
+ 	} while (0)
+ 
+-MODULE_AUTHOR("Johannes Berg, Stelian Pop, Frank Arnold");
++MODULE_AUTHOR("Johannes Berg, Stelian Pop, Frank Arnold, Parag Warudkar, Michael Hanselmann");
+ MODULE_DESCRIPTION("Apple PowerBooks USB touchpad driver");
+ MODULE_LICENSE("GPL");
+ 
+@@ -132,6 +151,12 @@ static int debug = 1;
+ module_param(debug, int, 0644);
+ MODULE_PARM_DESC(debug, "Activate debugging output");
+ 
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++static int relayfs = 0;
++module_param(relayfs, int, 0644);
++MODULE_PARM_DESC(relayfs, "Activate relayfs support");
++#endif
++
+ static int atp_calculate_abs(int *xy_sensors, int nb_sensors, int fact,
+ 			     int *z, int *fingers)
+ {
+@@ -194,6 +219,13 @@ static void atp_complete(struct urb* urb
+ 		goto exit;
+ 	}
+ 
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++	/* "rch" is NULL if relayfs is not enabled */
++	if (rch && dev->data) {
++		relay_write(rch, dev->data, dev->urb->actual_length);
++	}
++#endif
++
+ 	/* reorder the sensors values */
+ 	for (i = 0; i < 8; i++) {
+ 		/* X values */
+@@ -463,11 +495,43 @@ static struct usb_driver atp_driver = {
+ 
+ static int __init atp_init(void)
+ {
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++	rcb = NULL;
++	rch = NULL;
++
++	if (relayfs) {
++		rcb = kmalloc(sizeof(struct rchan_callbacks), GFP_KERNEL);
++		if (!rcb)
++			return -ENOMEM;
++
++		rcb->subbuf_start = NULL;
++		rcb->buf_mapped = NULL;
++		rcb->buf_unmapped = NULL;
++
++		rch = relay_open("atpdata", NULL, 256, 256, NULL);
++		if (!rch) {
++			kfree(rcb);
++			return -ENOMEM;
++		}
++
++		printk("appletouch: Relayfs enabled.\n");
++	} else {
++		printk("appletouch: Relayfs disabled.\n");
++	}
++#endif
++
+ 	return usb_register(&atp_driver);
+ }
+ 
+ static void __exit atp_exit(void)
+ {
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++	if(rch)
++		relay_close(rch);
++	if(rcb)
++		kfree(rcb);
++#endif
++
+ 	usb_deregister(&atp_driver);
+ }
+ 
