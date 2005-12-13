@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id F2BB0688B7
+Return-Path: <wojciech.kromer@dgt.com.pl>
+Received: from dgt.com.pl (mail.dgt.com.pl [195.117.141.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DF958688A1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Dec 2005 19:18:15 +1100 (EST)
-To: zengshuai@sogou.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 13 Dec 2005 11:48:34 +0800."
-	<31064960.1134445714325.JavaMail.postfix@mx3.mail.sohu.com>
-Date: Tue, 13 Dec 2005 09:18:13 +0100
-Sender: wd@denx.de
-Message-Id: <20051213081813.E5175353F76@atlas.denx.de>
-Cc: ppc <linuxppc-embedded@ozlabs.org>
-Subject: Re: Can we compile them with eldk and debug them with BDI2000? 
+	Tue, 13 Dec 2005 19:27:48 +1100 (EST)
+Message-ID: <439E86DC.4010901@dgt.com.pl>
+Date: Tue, 13 Dec 2005 09:31:24 +0100
+From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed; boundary="------------030908060608010508080008"
+Subject: HZ manipulation
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,30 +22,126 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <31064960.1134445714325.JavaMail.postfix@mx3.mail.sohu.com> you wrote:
-> thanks a lot.Would you give me more inf,please?
+This is a multi-part message in MIME format.
+--------------030908060608010508080008
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I'm afraid this is off topic on this list.
+I have 2.4.25 kernel from denx.de and latest uClibc running on mpc8248.
+I'm trying to change HZ value, but still have strange results with 
+simple test
+Recompiling whole uClibc does not change the results.
 
-> There were a test.c.
-> When we use "ppc_6xx-gcc -o test test.c",we can get a "test" which can running in Linux.
-> How can we get a "test" which can running in bareboard and be debuged using the BDI2000?
-> Would you give a flag example?
+What could be wrong?
 
-See the U-Boot source code. U-Boot itself is just such a bare-silicon
-application program (a pretty complex  one,  though).  Also  see  the
-examples/ directory which contains code for several simple standalone
-applications within the U-Boot context.
+with HZ==1000:
+# 
+alarm_test                                                                    
 
-Note that you will have to understand how the linker works, and  know
-exactly what you are doing.
+alarm fired after 
+0.099092s                                                    
+slept 0.999769s
 
-Best regards,
 
-Wolfgang Denk
+with HZ==500:
+# 
+alarm_test                                                                    
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Four thousand throats may be cut in one night by a running man.
-	-- Klingon Soldier, "Day of the Dove", stardate unknown
+alarm fired after 
+0.199622s                                                    
+slept 0.999761s
+
+with HZ==100:
+# alarm_test
+alarm fired after 0.999693s
+slept 0.999760s
+
+
+- here is procesor id :
+
+... by kernel:
+# cat /proc/cpuinfo
+processor       : 0
+cpu             : 8280
+core clock      : 400 MHz
+CPM  clock      : 200 MHz
+bus  clock      : 100 MHz
+revision        : 32.20 (pvr 8082 2014)
+bogomips        : 266.24
+
+... and by u-boot:
+MPC8248 Reset Status: External Soft, External 
+Hard                             
+                                                                                
+
+MPC8248 Clock 
+Configuration                                                    
+ - Bus-to-Core Mult 4x, VCO Div 2, 60x Bus Freq  25-75 , Core Freq 
+100-300     
+ - dfbrg 1, corecnf 0x1a, busdf 3, cpmdf 1, plldf 0, pllmf 
+3                   
+ - vco_out  400000000, scc_clk  100000000, brg_clk   
+25000000                  
+ - cpu_clk  400000000, cpm_clk  200000000, bus_clk  
+100000000                  
+ - pci_clk   
+66666666                                                          
+                                                                                
+
+CPU:   MPC8248 (HiP7 Rev 14, Mask 1.0 1K50M) at 400 MHz
+
+
+- test code included
+
+
+--------------030908060608010508080008
+Content-Type: text/x-csrc;
+ name="alarm_test.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="alarm_test.c"
+
+#include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
+#include <sys/time.h>
+
+static void sighand(int sig)
+{
+}
+
+int main()
+{
+ struct timeval tv1, tv2;
+ sigset_t set;
+    
+ sigfillset(&set);
+ sigdelset(&set, SIGALRM);
+ sigdelset(&set, SIGINT);
+          
+ signal(SIGALRM, sighand);
+ gettimeofday(&tv1, NULL);
+ 
+ alarm(1);
+ sigsuspend(&set);
+ gettimeofday(&tv2, NULL);
+ 
+ tv1.tv_sec = tv2.tv_sec - tv1.tv_sec - (tv2.tv_usec < tv1.tv_usec);
+ tv1.tv_usec = tv2.tv_usec - tv1.tv_usec + (tv2.tv_usec < tv1.tv_usec) * 1000000;
+ 
+ printf("alarm fired after %ld.%06lds\n",tv1.tv_sec, tv1.tv_usec);
+
+ //--------------------
+ gettimeofday(&tv1, NULL);
+ sleep(1);
+ gettimeofday(&tv2, NULL);
+ 
+ tv1.tv_sec = tv2.tv_sec - tv1.tv_sec - (tv2.tv_usec < tv1.tv_usec);
+ tv1.tv_usec = tv2.tv_usec - tv1.tv_usec + (tv2.tv_usec < tv1.tv_usec) * 1000000;
+ 
+ printf("slept %ld.%06lds\n",tv1.tv_sec, tv1.tv_usec);
+ 
+ return 0;
+}
+
+--------------030908060608010508080008--
