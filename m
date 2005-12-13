@@ -1,19 +1,19 @@
-Return-Path: <hs@denx.de>
+Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 655916886E
+	by ozlabs.org (Postfix) with ESMTP id F2BB0688B7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Dec 2005 19:01:35 +1100 (EST)
-From: "Heiko Schocher" <hs@denx.de>
-To: "HappyPhot" <happyphot@gmail.com>
-Date: Tue, 13 Dec 2005 09:01:16 +0100
-Message-ID: <AHEILKONAKAEJPHNMOPNAEFICEAA.hs@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <003201c5ffb9$fe0d6310$0760120a@photon>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: MPC8245 with its internal UART
-Reply-To: hs@denx.de
+	Tue, 13 Dec 2005 19:18:15 +1100 (EST)
+To: zengshuai@sogou.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 13 Dec 2005 11:48:34 +0800."
+	<31064960.1134445714325.JavaMail.postfix@mx3.mail.sohu.com>
+Date: Tue, 13 Dec 2005 09:18:13 +0100
+Sender: wd@denx.de
+Message-Id: <20051213081813.E5175353F76@atlas.denx.de>
+Cc: ppc <linuxppc-embedded@ozlabs.org>
+Subject: Re: Can we compile them with eldk and debug them with BDI2000? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,16 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+In message <31064960.1134445714325.JavaMail.postfix@mx3.mail.sohu.com> you wrote:
+> thanks a lot.Would you give me more inf,please?
 
-On Tuesday, December 13, 2005 8:51 AM HappyPhot wrote:
-> Hi,
->   I get this one "linuxppc_2_4_devel-2005-10-25-1440.tar.bz2"
-> and try "make CPC45_defconfig". But it shows "No rule to make target
->   ...." Did I do something wrong ?
+I'm afraid this is off topic on this list.
 
-Try "make CPC45_config"
-It works fine on my PC ...
+> There were a test.c.
+> When we use "ppc_6xx-gcc -o test test.c",we can get a "test" which can running in Linux.
+> How can we get a "test" which can running in bareboard and be debuged using the BDI2000?
+> Would you give a flag example?
 
-Bets regards,
-Heiko
+See the U-Boot source code. U-Boot itself is just such a bare-silicon
+application program (a pretty complex  one,  though).  Also  see  the
+examples/ directory which contains code for several simple standalone
+applications within the U-Boot context.
+
+Note that you will have to understand how the linker works, and  know
+exactly what you are doing.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Four thousand throats may be cut in one night by a running man.
+	-- Klingon Soldier, "Day of the Dove", stardate unknown
