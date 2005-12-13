@@ -1,28 +1,12 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 567C068889
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2005 07:19:19 +1100 (EST)
-Date: Tue, 13 Dec 2005 21:19:20 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Simon Richter <Simon.Richter@hogyros.de>, linux-kernel@vger.kernel.org,
-	tony.luck@intel.com, linux-ia64@vger.kernel.org, matthew@wil.cx,
-	grundler@parisc-linux.org, parisc-linux@parisc-linux.org,
-	paulus@samba.org, linuxppc-dev@ozlabs.org, lethal@linux-sh.org,
-	kkojima@rr.iij4u.or.jp, dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Message-ID: <20051213201920.GT23349@stusta.de>
-References: <20051211185212.GQ23349@stusta.de>
-	<20051211192109.GA22537@flint.arm.linux.org.uk>
-	<20051211193118.GR23349@stusta.de>
-	<20051211194437.GB22537@flint.arm.linux.org.uk>
-	<20051213001028.GS23349@stusta.de> <439ECDCC.80707@hogyros.de>
-	<20051213140001.GG23349@stusta.de>
-	<20051213173112.GA24094@flint.arm.linux.org.uk>
-	<20051213180551.GN23349@stusta.de>
-	<20051213200106.GC24094@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051213200106.GC24094@flint.arm.linux.org.uk>
-Subject: Re: [2.6 patch] don't allow users to set CONFIG_BROKEN=y
+Return-Path: <gregkh@suse.de>
+To: benh@kernel.crashing.org, greg@kroah.com, gregkh@suse.de,
+	linux-pci@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
+	linuxppc64-dev@ozlabs.org, paulus@samba.org
+From: <gregkh@suse.de>
+Date: Tue, 13 Dec 2005 11:48:48 -0800
+In-Reply-To: <1134457757.6989.195.camel@gaston>
+Message-ID: <1EmG8m-7MQ-00@press.kroah.org>
+Subject: patch pci-export-pci_cfg_space_size.patch added to gregkh-2.6 tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,83 +16,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 13, 2005 at 08:01:06PM +0000, Russell King wrote:
-> On Tue, Dec 13, 2005 at 07:05:52PM +0100, Adrian Bunk wrote:
-> > On Tue, Dec 13, 2005 at 05:31:12PM +0000, Russell King wrote:
-> > > The defconfig files in arch/arm/configs are for platform configurations
-> > > and are provided by the platform maintainers as a _working_ configuration
-> > > for their platform.  They're not "defconfigs".  They got called
-> > > "defconfigs" as a result of the kbuild "cleanups".  Please don't confuse
-> > > them as such.
-> > > 
-> > > If, in order to have a working platform configuration, they deem that
-> > > CONFIG_BROKEN must be enabled, then that's the way it is.
-> > 
-> > if a working platform configuration configuration requires 
-> > CONFIG_BROKEN=y, the problem is a bug that should be fixed properly.
-> 
-> Maybe they're only broken for a small subset of platforms, and someone
-> added a BROKEN without properly considering whether it should be global
-> or not?
-> 
-> I don't disagree with the overall notion that CONFIG_BROKEN should not
-> be set _where_ _possible_.  However, if it needs to be set to get the
-> required options, then that's what needs to happen until such time that
-> the above is corrected.
 
-Where is the bug report from the person who set CONFIG_BROKEN=y in the 
-collie defconfig that the BROKEN dependency on MTD_SHARP was wrong?
+This is a note to let you know that I've just added the patch titled
 
-> However - and now to the main bug bear - how can we tell what is really
-> broken if you _just_ change the default configuration file settings for
-> CONFIG_BROKEN?  What happens is that, on review, we see a simple change.
-> We'd assume that it has little impact, and we accept that change.
-> 
-> Maybe a month or two down the line, someone whines that their platform
-> doesn't work for some reason, and it's tracked down to this and the
-> resulting fallout from disabling CONFIG_BROKEN.
+     Subject: [PATCH] PCI: Export pci_cfg_space_size
 
-The whining is the bug report the person who set the CONFIG_BROKEN=y in 
-the defconfig didn't send.
+to my gregkh-2.6 tree.  Its filename is
 
-And things would have been even worse if I had sent a patch erasing 
-MTD_SHARP from the kernel because code "both marked as obsolete and 
-BROKEN can clearly be removed" and the code was therefore completely 
-removed two months before the first person whined?
+     pci-export-pci_cfg_space_size.patch
 
-> That means that the original review was _worthless_.  It wasn't a
-> review at all.
-> 
-> So, what I am trying to get across is the need to show the _full_ set
-> of changes to a default configuratoin when you disable CONFIG_BROKEN,
-> which is trivially producable if you run the script I've already posted.
-> 
-> You can even use that in conjunction with your present patch to produce
-> a patch which shows _exactly_ _everything_ which changes as a result of
-> disabling CONFIG_BROKEN.  Surely giving reviewers the _full_ story is
-> far better than half a story, and should be something that any change
-> to the kernel strives for.
-> 
-> If not, what's the point of the original change?
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
-The point is that I haven't yet heard any good reason for 
-CONFIG_BROKEN=y in a defconfig.
+Patches currently in gregkh-2.6 which might be from benh@kernel.crashing.org are
 
-No, it's not a good reason if someone used it as a workaround instead of 
-sending a bug report that would result in a fixing of the wrong BROKEN 
-dependency.
+i2c/i2c-drop-driver-owner-and-name-04-macintosh.patch
+pci/pci-export-pci_cfg_space_size.patch
 
-Where is the bug report of the person setting CONFIG_BROKEN=y in the 
-collie defconfig that the MTD_SHARP dependency on BROKEN was wrong?
 
-> Russell King
+>From benh@kernel.crashing.org Mon Dec 12 23:16:21 2005
+Subject: [PATCH] PCI: Export pci_cfg_space_size
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>, Paul Mackerras <paulus@samba.org>
+Cc: linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>, linuxppc64-dev <linuxppc64-dev@ozlabs.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: Tue, 13 Dec 2005 18:09:16 +1100
+Message-Id: <1134457757.6989.195.camel@gaston>
 
-cu
-Adrian
+The powerpc PCI code sets up the PCI tree without doing config space
+accesses in most cases, from the firmware tree. However, it still wants
+to call pci_cfg_space_size() under some conditions, thus it needs to
+be made non-static (though I don't see a point to export it to modules).
 
--- 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/pci/probe.c |    2 +-
+ include/linux/pci.h |    1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--- gregkh-2.6.orig/drivers/pci/probe.c
++++ gregkh-2.6/drivers/pci/probe.c
+@@ -717,7 +717,7 @@ static void pci_release_dev(struct devic
+  * reading the dword at 0x100 which must either be 0 or a valid extended
+  * capability header.
+  */
+-static int pci_cfg_space_size(struct pci_dev *dev)
++int pci_cfg_space_size(struct pci_dev *dev)
+ {
+ 	int pos;
+ 	u32 status;
+--- gregkh-2.6.orig/include/linux/pci.h
++++ gregkh-2.6/include/linux/pci.h
+@@ -514,6 +514,7 @@ int pci_scan_bridge(struct pci_bus *bus,
+ 
+ void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
+ 		  void *userdata);
++int pci_cfg_space_size(struct pci_dev *dev);
+ 
+ /* kmem_cache style wrapper around pci_alloc_consistent() */
+ 
