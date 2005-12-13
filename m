@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 571AA6889B
+Return-Path: <dmytro.bablinyuk@rftechnology.com.au>
+Received: from mfep5.connect.com.au (fep5.mfe.bur.connect.com.au [203.63.86.5])
+	by ozlabs.org (Postfix) with ESMTP id 782FF688B8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Dec 2005 07:40:56 +1100 (EST)
-To: Simon Haynes <simon@baydel.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 12 Dec 2005 17:26:34 GMT."
-	<200512121726.34944.simon@baydel.com>
-Date: Mon, 12 Dec 2005 21:40:54 +0100
-Sender: wd@denx.de
-Message-Id: <20051212204054.2A1F7353A44@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: ibm emac driver update 
+	Tue, 13 Dec 2005 12:22:36 +1100 (EST)
+Received: from [192.168.1.100] (cor11-ppp3577.hay.dsl.connect.net.au
+	[61.69.222.21])
+	by mfep5.connect.com.au (Postfix) with ESMTP id 4E7EDCCD9
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 13 Dec 2005 12:22:34 +1100 (EST)
+Message-ID: <439E21C7.8070404@rftechnology.com.au>
+Date: Tue, 13 Dec 2005 12:20:07 +1100
+From: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: 82xx cascaded timers
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +25,78 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200512121726.34944.simon@baydel.com> you wrote:
-> I am running a Ebony board with linux-2.6.12-rc1 and I amd having intermittent 
-> network problems. Having searched the archives it would seem that the driver
-> for the IBM EMAC is buggy ? 
+I have the following code:
 
-Patches have been posted on this list. See the archives.
+#define CPMTIMER_TGCR_GM1       0x08  /* gate mode */
+#define CPMTIMER_TGCR_FRZ1      0x04  /* freeze timer */
+#define CPMTIMER_TGCR_STP1      0x02  /* stop timer */
+#define CPMTIMER_TGCR_RST1      0x01  /* restart timer */
 
-> Can anyone point me in the direction of a suitable patch for this kernel ?
+#define CPMTIMER_TGCR_CAS2      0x80  /* cascade timer */
+#define CPMTIMER_TGCR_FRZ2      0x40  /* freeze timer */
+#define CPMTIMER_TGCR_STP2      0x20  /* stop timer */
+#define CPMTIMER_TGCR_RST2      0x10  /* restart timer */
 
-We have all this integrated and tested in our kernel tree. Links:
-Source Code:
-  git repository: 	http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
-  FTP Snapshot: 	ftp://ftp.denx.de/pub/linux/linux-2.6.15-rc2-2005-12-03-2208.tar.bz2
-Ready to run code for AMCC's Eval Kits:
-  U-Boot images: 	ftp://ftp.denx.de/pub/u-boot/images/amcc/
-  Linux images: 	ftp://ftp.denx.de/pub/linux/images/amcc/
-Documentation: 		http://www.denx.de/wiki/DULG/BoardSelect
+#define CPMTIMER_TMR_ORI        0x0010  /* output reference interrupt 
+enable */
+#define CPMTIMER_TMR_FRR        0x0008  /* free run/restart */
+#define CPMTIMER_TMR_ICLK_INT16 0x0004  /* source internal clock/16 */
+#define CPMTIMER_TMR_ICLK_INT   0x0002  /* source internal clock */
+-----
+[ SCENARIO 1 ]: 16bit Timer1 is triggering interrupt handler (every 
+2.25microsec no matter what value of cpmt_trr1 is ??? )
 
+    immap->im_cpmtimer.cpmt_tgcr1 &= ~(CPMTIMER_TGCR_CAS2 |
+                                       CPMTIMER_TGCR_GM1  |
+                                       CPMTIMER_TGCR_RST1 |
+                                       CPMTIMER_TGCR_FRZ1 |
+                                       CPMTIMER_TGCR_STP1);
 
+    immap->im_cpmtimer.cpmt_tmr1 =  CPMTIMER_TMR_ORI | CPMTIMER_TMR_FRR 
+| CPMTIMER_TMR_ICLK_INT16;
 
-Best regards,
+    immap->im_cpmtimer.cpmt_trr1 = 10000;
+    immap->im_cpmtimer.cpmt_tcr1 = 0;
+    immap->im_cpmtimer.cpmt_tcn1 = 0;
+    immap->im_cpmtimer.cpmt_ter1 = 0;
 
-Wolfgang Denk
+    request_irq(SIU_INT_TIMER1,
+                &timer_handler,
+                SA_INTERRUPT,
+                "timer_handler",
+                NULL);
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-We have found all life forms in the galaxy are  capable  of  superior
-development.
-	-- Kirk, "The Gamesters of Triskelion", stardate 3211.7
+    /* and start timer1 */
+    immap->im_cpmtimer.cpmt_tgcr1 |= CPMTIMER_TGCR_RST1;
+
+-----
+[ SCENARIO 2 ]: Cascaded timers: 32bit Timer1 and Timer2 - does not work 
+- interrupt never occurs.
+
+    immap->im_cpmtimer.cpmt_tgcr1 = CPMTIMER_TGCR_CAS2 | CPMTIMER_TGCR_GM1;
+
+    immap->im_cpmtimer.cpmt_trr1 = 10000;
+    immap->im_cpmtimer.cpmt_tcr1 = 0;
+    immap->im_cpmtimer.cpmt_tcr2 = 0;
+    immap->im_cpmtimer.cpmt_tcn1 = 0;
+    immap->im_cpmtimer.cpmt_tcn2 = 0;
+    immap->im_cpmtimer.cpmt_ter1 = 0;
+    immap->im_cpmtimer.cpmt_ter2 = 0;
+
+    immap->im_cpmtimer.cpmt_tmr1 = 0;
+    immap->im_cpmtimer.cpmt_tmr2 = CPMTIMER_TMR_ORI | CPMTIMER_TMR_FRR | 
+CPMTIMER_TMR_ICLK_INT16;
+
+    request_irq(SIU_INT_TIMER2,
+                &timer_handler,
+                SA_INTERRUPT,
+                "timer_handler",
+                NULL);
+
+    immap->im_cpmtimer.cpmt_tgcr1 |= CPMTIMER_TGCR_RST1;
+
+Does anybody knows what I missed in cascaded timers initialisation 
+(Scenario2) and why when I use 16 bit timer (Scenario1) it always 
+triggers interrupt within 2.25microsec no matter what "trr1" value is?
+
+Thank you very much for any help.
