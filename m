@@ -1,12 +1,16 @@
-Return-Path: <gregkh@suse.de>
-To: benh@kernel.crashing.org, greg@kroah.com, gregkh@suse.de,
-	linux-pci@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
-	linuxppc64-dev@ozlabs.org, paulus@samba.org
-From: <gregkh@suse.de>
-Date: Tue, 13 Dec 2005 11:48:48 -0800
-In-Reply-To: <1134457757.6989.195.camel@gaston>
-Message-ID: <1EmG8m-7MQ-00@press.kroah.org>
-Subject: patch pci-export-pci_cfg_space_size.patch added to gregkh-2.6 tree
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20051213165807.GA7468@pb15.lixom.net>
+References: <1134457469.6989.189.camel@gaston>
+	<20051213165807.GA7468@pb15.lixom.net>
+Content-Type: text/plain
+Date: Wed, 14 Dec 2005 07:23:28 +1100
+Message-Id: <1134505409.6458.8.camel@gaston>
+Mime-Version: 1.0
+Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Update MPIC workarounds
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,62 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2005-12-13 at 08:58 -0800, Olof Johansson wrote:
+> On Tue, Dec 13, 2005 at 06:04:29PM +1100, Benjamin Herrenschmidt wrote:
+> > From: Segher Boessenkool <segher@kernel.crashing.org>
+> > 
+> > Cleanup the MPIC IO-APIC workarounds, make them a bit more generic,
+> > smaller and faster. 
+> 
+> I really don't like all the hand-coded constants in this code. They're
+> all over the place, and there's no descriptions of what they are there
+> for. Lots of hardcoded offsets, etc. Since this is a cleanup, wouldn't
+> it be a good time to use symbolic constands and/or comment them up a
+> bit?
 
-This is a note to let you know that I've just added the patch titled
+Heh, welcome to segher world :) I'll add more comments & symbolic
+constants in the other patch that applies on top of this one.
 
-     Subject: [PATCH] PCI: Export pci_cfg_space_size
+> > Index: linux-work/arch/powerpc/sysdev/mpic.c
+> > ===================================================================
+> > --- linux-work.orig/arch/powerpc/sysdev/mpic.c	2005-12-06 16:17:43.000000000 +1100
+> > +++ linux-work/arch/powerpc/sysdev/mpic.c	2005-12-07 13:30:45.000000000 +1100
+> > @@ -175,57 +175,57 @@ static inline int mpic_is_ht_interrupt(s
+> >  	return mpic->fixups[source_no].base != NULL;
+> >  }
+> >  
+> > +
+> >  static inline void mpic_apic_end_irq(struct mpic *mpic, unsigned int source_no)
+> >  {
+> >  	struct mpic_irq_fixup *fixup = &mpic->fixups[source_no];
+> > -	u32 tmp;
+> >  
+> >  	spin_lock(&mpic->fixup_lock);
+> > -	writeb(0x11 + 2 * fixup->irq, fixup->base);
+> > -	tmp = readl(fixup->base + 2);
+> > -	writel(tmp | 0x80000000ul, fixup->base + 2);
+> > -	/* config writes shouldn't be posted but let's be safe ... */
+> > -	(void)readl(fixup->base + 2);
+> > +	writeb(0x11 + 2 * fixup->irq, fixup->base + 2);
+> > +	writel(fixup->data, fixup->base + 4);
+> 
+> This seems like a functional change: Previous code wrote at base, new at
+> base+2?
 
-to my gregkh-2.6 tree.  Its filename is
+Hrm... I have to double check but I think the previous code hard coded
+the bases for the 2 known APICs (incuding the +2) while the new code
+properly scans the PCI capabilities and thus gets the capability base
+instead, which is better (but needs +2 / +4). I suppose I could
+pre-offset by 2 at discovery time to avoid an addition but I'm not sure
+it's worth it.
 
-     pci-export-pci_cfg_space_size.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-Patches currently in gregkh-2.6 which might be from benh@kernel.crashing.org are
-
-i2c/i2c-drop-driver-owner-and-name-04-macintosh.patch
-pci/pci-export-pci_cfg_space_size.patch
-
-
->From benh@kernel.crashing.org Mon Dec 12 23:16:21 2005
-Subject: [PATCH] PCI: Export pci_cfg_space_size
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>, Paul Mackerras <paulus@samba.org>
-Cc: linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>, linuxppc64-dev <linuxppc64-dev@ozlabs.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Date: Tue, 13 Dec 2005 18:09:16 +1100
-Message-Id: <1134457757.6989.195.camel@gaston>
-
-The powerpc PCI code sets up the PCI tree without doing config space
-accesses in most cases, from the firmware tree. However, it still wants
-to call pci_cfg_space_size() under some conditions, thus it needs to
-be made non-static (though I don't see a point to export it to modules).
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/pci/probe.c |    2 +-
- include/linux/pci.h |    1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
-
---- gregkh-2.6.orig/drivers/pci/probe.c
-+++ gregkh-2.6/drivers/pci/probe.c
-@@ -717,7 +717,7 @@ static void pci_release_dev(struct devic
-  * reading the dword at 0x100 which must either be 0 or a valid extended
-  * capability header.
-  */
--static int pci_cfg_space_size(struct pci_dev *dev)
-+int pci_cfg_space_size(struct pci_dev *dev)
- {
- 	int pos;
- 	u32 status;
---- gregkh-2.6.orig/include/linux/pci.h
-+++ gregkh-2.6/include/linux/pci.h
-@@ -514,6 +514,7 @@ int pci_scan_bridge(struct pci_bus *bus,
- 
- void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
- 		  void *userdata);
-+int pci_cfg_space_size(struct pci_dev *dev);
- 
- /* kmem_cache style wrapper around pci_alloc_consistent() */
- 
+Ben.
