@@ -1,25 +1,15 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 8B80B68898
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Dec 2005 01:00:01 +1100 (EST)
-Date: Tue, 13 Dec 2005 15:00:01 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Simon Richter <Simon.Richter@hogyros.de>
-Message-ID: <20051213140001.GG23349@stusta.de>
-References: <20051211185212.GQ23349@stusta.de>
-	<20051211192109.GA22537@flint.arm.linux.org.uk>
-	<20051211193118.GR23349@stusta.de>
-	<20051211194437.GB22537@flint.arm.linux.org.uk>
-	<20051213001028.GS23349@stusta.de> <439ECDCC.80707@hogyros.de>
-MIME-Version: 1.0
+Return-Path: <olof@lixom.net>
+Date: Tue, 13 Dec 2005 08:58:07 -0800
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20051213165807.GA7468@pb15.lixom.net>
+References: <1134457469.6989.189.camel@gaston>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <439ECDCC.80707@hogyros.de>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, grundler@parisc-linux.org,
-	matthew@wil.cx, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, lethal@linux-sh.org,
-	linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-	kkojima@rr.iij4u.or.jp, parisc-linux@parisc-linux.org
-Subject: Re: [2.6 patch] defconfig's shouldn't set CONFIG_BROKEN=y
+In-Reply-To: <1134457469.6989.189.camel@gaston>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Update MPIC workarounds
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Dec 13, 2005 at 02:34:04PM +0100, Simon Richter wrote:
-
-> Hi,
-
-Hi Simon,
-
-> Adrian Bunk wrote:
+On Tue, Dec 13, 2005 at 06:04:29PM +1100, Benjamin Herrenschmidt wrote:
+> From: Segher Boessenkool <segher@kernel.crashing.org>
 > 
-> >>It's a problem introduced by your patch because the resulting defconfig
-> >>file becomes _wrong_ by your change, and other changes in the defconfig
-> >>are thereby hidden.
-> >>...
-> 
-> >No, CONFIG_BROKEN=y in a defconfig file is a bug.
-> 
-> Indeed, but that's not the point. A defconfig file should be the result 
-> of running one of the various configuration targets; yours are 
-> hand-patched. If you run the defconfig target, it will copy the config 
-> file and run oldconfig, thus resulting in a different configuration file 
-> (because options may now be gone and hence disabled) than what was in 
-> the defconfig, and thus people may come to the wrong conclusion that if 
-> a driver is enabled in a defconfig file, it will be built.
+> Cleanup the MPIC IO-APIC workarounds, make them a bit more generic,
+> smaller and faster. 
 
-defconfig files are virtually never a configuration for the kernel they 
-are shipped with since they aren't updated every time some configuration 
-option is changed.
+I really don't like all the hand-coded constants in this code. They're
+all over the place, and there's no descriptions of what they are there
+for. Lots of hardcoded offsets, etc. Since this is a cleanup, wouldn't
+it be a good time to use symbolic constands and/or comment them up a
+bit?
 
-Consider a defconfig with CONFIG_BROKEN=n, and a driver that is enabled 
-in this defconfig gets for some reason marked as broken in the Kconfig 
-file - this will give exactly the same result as the one you describe.
+> Index: linux-work/arch/powerpc/sysdev/mpic.c
+> ===================================================================
+> --- linux-work.orig/arch/powerpc/sysdev/mpic.c	2005-12-06 16:17:43.000000000 +1100
+> +++ linux-work/arch/powerpc/sysdev/mpic.c	2005-12-07 13:30:45.000000000 +1100
+> @@ -175,57 +175,57 @@ static inline int mpic_is_ht_interrupt(s
+>  	return mpic->fixups[source_no].base != NULL;
+>  }
+>  
+> +
+>  static inline void mpic_apic_end_irq(struct mpic *mpic, unsigned int source_no)
+>  {
+>  	struct mpic_irq_fixup *fixup = &mpic->fixups[source_no];
+> -	u32 tmp;
+>  
+>  	spin_lock(&mpic->fixup_lock);
+> -	writeb(0x11 + 2 * fixup->irq, fixup->base);
+> -	tmp = readl(fixup->base + 2);
+> -	writel(tmp | 0x80000000ul, fixup->base + 2);
+> -	/* config writes shouldn't be posted but let's be safe ... */
+> -	(void)readl(fixup->base + 2);
+> +	writeb(0x11 + 2 * fixup->irq, fixup->base + 2);
+> +	writel(fixup->data, fixup->base + 4);
 
->    Simon
+This seems like a functional change: Previous code wrote at base, new at
+base+2?
 
-cu
-Adrian
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+-Olof
