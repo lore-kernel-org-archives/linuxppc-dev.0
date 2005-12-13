@@ -1,16 +1,22 @@
-Return-Path: <prabha.j@tcs.com>
-Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
-	by ozlabs.org (Postfix) with ESMTP id 6B82168879
+Return-Path: <alebas@televes.com>
+Received: from tvesnat.televes.com (unknown [212.163.42.137])
+	by ozlabs.org (Postfix) with ESMTP id D4FA16888B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Dec 2005 16:47:03 +1100 (EST)
-To: ppc <linuxppc-embedded@ozlabs.org>
+	Tue, 13 Dec 2005 18:19:35 +1100 (EST)
+Message-ID: <1134462241.439e8521620da@webmail.televes.com:443>
+Date: Tue, 13 Dec 2005 09:24:01 +0100
+From: Alex BASTOS <alebas@televes.com>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+References: <1133520697.4390273987a6a@webmail.televes.com:443>
+	<4390223C.8060103@ru.mvista.com>
+	<1133531801.4390529995cfa@webmail.televes.com:443>
+	<1133534967.43905ef73521a@webmail.televes.com:443>
+	<4390604D.50002@ru.mvista.com>
+In-Reply-To: <4390604D.50002@ru.mvista.com>
 MIME-Version: 1.0
-From: prabha.j@tcs.com
-Message-ID: <OF9DE214F2.0E95797E-ON652570D6.001EADA0-652570D6.001FA18E@tcs.com>
-Date: Tue, 13 Dec 2005 11:15:29 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 001FA12F652570D6_="
-Subject: help reqd
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Re: pq2_find_bridges hangs system
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,55 +27,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 001FA12F652570D6_=
-Content-Type: text/plain; charset="US-ASCII"
+Vitaly,
 
+It didn't work. So I will check pq2ads_setup_pci to check if
+some board specific issue is affected.
 
-Hi All,
-I am having custom board which is similar to MPC8260ADS board. I want to 
-port linux on this board. I am having TRACE32 debugger.
-When i put breakpoint on load_up_mmu, it won't stop at this point. It 
-shows running in the status bar and when i give  break, it goes to panic 
-symbol and it hangs there. I cannot proceed further. Then i have to reload 
-the cmm file again.
-Can any one tell me  what and where  is the problem.
-I am using Linux-2.4.25 from denx and my boards memory map is 
-SDRAM 128MB(0x00000000) and Flash 1MB(starts from 0x30000000).
-Thanks in advance.
-best regards
+I will say you if I find anything
 
-Prabha J.
-Tata Consultancy Services Limited
-Mailto: prabha.j@tcs.com
-Website: http://www.tcs.com
+Thanks
 
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
---=_alternative 001FA12F652570D6_=
-Content-Type: text/html; charset="US-ASCII"
+Alex.
 
+Citando Vitaly Bordug <vbordug@ru.mvista.com>:
 
-<br><font size=2 face="sans-serif">Hi All,</font>
-<br><font size=2 face="sans-serif">I am having custom board which is similar
-to MPC8260ADS board. I want to port linux on this board. I am having TRACE32
-debugger.</font>
-<br><font size=2 face="sans-serif">When i put breakpoint on load_up_mmu,
-it won't stop at this point. It shows running in the status bar and when
-i give &nbsp;break, it goes to panic symbol and it hangs there. I cannot
-proceed further. Then i have to reload the cmm file again.</font>
-<br><font size=2 face="sans-serif">Can any one tell me &nbsp;what and where
-&nbsp;is the problem.</font>
-<br><font size=2 face="sans-serif">I am using Linux-2.4.25 from denx and
-my boards memory map is </font>
-<br><font size=2 face="sans-serif">SDRAM 128MB(0x00000000) and Flash 1MB(starts
-from 0x30000000).</font>
-<br><font size=2 face="sans-serif">Thanks in advance.</font>
-<br><font size=2 face="sans-serif">best regards</font>
-<br><font size=2 face="sans-serif"><br>
-Prabha J.<br>
-Tata Consultancy Services Limited<br>
-Mailto: prabha.j@tcs.com<br>
-Website: http://www.tcs.com</font>
-<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
-</font></td></tr></table>
---=_alternative 001FA12F652570D6_=--
+> Alex,
+> please probe this. If it will not help, pq2ads_setup_pci should be digged for
+> some board specifics.
+>
+> Also, check if hose->set_cfg_type is 1 as done for ads8272.
+>
+> -------- Original Message --------
+> Subject: [patch 01/34] ppc32: Fix incorrect PCI frequency value
+> Date: Thu, 01 Dec 2005 00:51:15 -0800
+> From: akpm@osdl.org
+> To: torvalds@osdl.org
+> CC: akpm@osdl.org, vbordug@ru.mvista.com, galak@kernel.crashing.org
+>
+>
+> From: Vitaly Bordug <vbordug@ru.mvista.com>
+>
+> The time to wait after deasserting PCI_RST has been counted with incorrect
+> value - this patch fixes the issue.
+>
+> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Andrew Morton <akpm@osdl.org>
+> ---
+>
+>  arch/ppc/syslib/m82xx_pci.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletion(-)
+>
+> diff -puN arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value
+> arch/ppc/syslib/m82xx_pci.c
+> ---
+>
+devel/arch/ppc/syslib/m82xx_pci.c~ppc32-fix-incorrect-pci-frequency-value	2005-11-30
+> 23:58:00.000000000 -0800
+> +++ devel-akpm/arch/ppc/syslib/m82xx_pci.c	2005-11-30 23:58:00.000000000
+> -0800
+> @@ -248,7 +248,8 @@ pq2ads_setup_pci(struct pci_controller *
+>  	pci_div = ( (sccr & SCCR_PCI_MODCK) ? 2 : 1) *
+>  			( ( (sccr & SCCR_PCIDF_MSK) >> SCCR_PCIDF_SHIFT) + 1);
+>  	freq = (uint)((2*binfo->bi_cpmfreq)/(pci_div));
+> -	time = (int)666666/freq;
+> +	time = (int)66666666/freq;
+> +
+>  	/* due to PCI Local Bus spec, some devices needs to wait such a long
+>  	time after RST 	deassertion. More specifically, 0.508s for 66MHz & twice
+> more for 33 */
+>  	printk("%s: The PCI bus is %d Mhz.\nWaiting %s after deasserting
+> RST...\n",__FILE__,freq,
+> _
+>
+>
+>
+> --
+> Sincerely,
+> Vitaly
+>
