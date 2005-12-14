@@ -1,19 +1,25 @@
-Return-Path: <robbinmathew@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.193])
-	by ozlabs.org (Postfix) with ESMTP id BDCF168890
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 76F9268896
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Dec 2005 01:28:41 +1100 (EST)
-Received: by xproxy.gmail.com with SMTP id i27so92710wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Dec 2005 06:28:40 -0800 (PST)
-Message-ID: <5b74ec4d0512140628y42986bc0h2f107e788dd115b6@mail.gmail.com>
-Date: Wed, 14 Dec 2005 19:58:40 +0530
-From: Robin Mathew <robbinmathew@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_40198_13588484.1134570520102"
-Subject: 8260 ethernet driver multicast problem
+	Thu, 15 Dec 2005 01:30:41 +1100 (EST)
+In-Reply-To: <43A028DB.5090906@ru.mvista.com>
+References: <1134555662.439ff20e6e812@webmail.televes.com:443>
+	<43A0021E.7030406@ru.mvista.com>
+	<1134569602.43a0288234662@webmail.televes.com:443>
+	<43A028DB.5090906@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <386A8114-FA1C-44E2-A8F1-CF48F4AF495E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 14 Dec 2005 08:30:48 -0600
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>,
+	Alex BASTOS <alebas@televes.com>
+Subject: Re: [SOLVED] Re: pq2_find_bridges hangs system
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,68 +30,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_40198_13588484.1134570520102
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi,
-I was encountering a problem with the receipt of multicast packets from eth
-interface in 8260 platform. The issue was traced to the fcc_enet.c driver. =
-A
-stray return in the set_multicast_list function was the culprit.
+On Dec 14, 2005, at 8:14 AM, Vitaly Bordug wrote:
 
-The following is the changes that I have made-
+> Alex BASTOS wrote:
+>> Vitaly,
+>>> Maybe, but I guess more correct is to deal with USB->PCI  
+>>> dependency..
+>>> Is it really needed(I am not USB expert)?
+>> Neither am I. I guess for this Host Controler it is not needed at
+>> HW level, but I am not sure why it is still required by the SW.
+>>>> 3) I have seen that from u-boot, a reset occurs when I read  
+>>>> Internal
+>>>> Memory at offset 0x10904 (PCI CFG_DATA). From BDI, when I do the  
+>>>> same
+>>>> all PCI section on IM becomes zero. Is this a known behaviour?  
+>>>> May this
+>>>> reflect a hardware problem?
+>>>>
+>>> Sounds weird
+>> Here is the problem. The cause for this weird behaviour is that I
+>> had PCI_ARBITER_EN_  disabled. So, a HW problem at the end.
+>> I had disabled it trying to reduce power compsumption due to the PCI,
+>> as I am not going to use it. It seems it is not possible that way.
+>> Any idea how to get this done?
 
-Index: fcc_enet.c
-@@ -1488,7 +1488,6 @@
+I'm guessing you dont have anything else doing arbitration on the bus.
 
-     cep =3D (struct fcc_enet_private *)dev->priv;
-
--return;
-     /* Get pointer to FCC area in parameter RAM.
-     */
-     ep =3D (fcc_enet_t *)dev->base_addr;
-
-
-Can you please tell me whether there is any issue with setting the driver i=
-n
-multicast or promiscous mode. Was this change deliberately done or is it
-really a bug?
-
-Thanks in advance,
-Robin
-
-------=_Part_40198_13588484.1134570520102
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi,<br>
-I was encountering a problem with the receipt of multicast packets from
-eth interface in 8260 platform. The issue was traced to the fcc_enet.c
-driver. A stray return in the set_multicast_list function was the
-culprit.<br>
-<br>
-The following is the changes that I have made-<br>
-<br>
-Index: fcc_enet.c<br>
-@@ -1488,7 +1488,6 @@<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp; &nbsp;cep =3D (struct fcc_enet_private *)dev-&gt;priv;<b=
-r>
-&nbsp;<br>
--return;<br>
-&nbsp;&nbsp;&nbsp; &nbsp;/* Get pointer to FCC area in parameter RAM.<br>
-&nbsp;&nbsp;&nbsp; &nbsp;*/<br>
-&nbsp;&nbsp;&nbsp; &nbsp;ep =3D (fcc_enet_t *)dev-&gt;base_addr;<br>
-<br>
-<br>
-Can you please tell me whether there is any issue with setting the
-driver in multicast or promiscous mode. Was this change deliberately
-done or is it really a bug?<br>
-<br>
-Thanks in advance,<br>
-Robin<br>
-
-------=_Part_40198_13588484.1134570520102--
+- kumar
