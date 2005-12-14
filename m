@@ -1,15 +1,12 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C1ACD68880
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2005 08:46:03 +1100 (EST)
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17312.38814.551675.906916@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Dec 2005 09:07:26 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
 In-Reply-To: <1134569118.3875.9.camel@localhost>
 References: <1134569118.3875.9.camel@localhost>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9892D605-1B30-4094-AEEC-9DA6F3B13B05@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Date: Wed, 14 Dec 2005 15:46:08 -0600
-To: Johannes Berg <johannes@sipsolutions.net>
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: illegal instructions / irqs disabled warning
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,23 +18,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Johannes Berg writes:
 
-On Dec 14, 2005, at 08:05, Johannes Berg wrote:
->
-> Does that mean __copy_from_user_inatomic isn't actually valid to  
-> call in
-> atomic context? Or is this only so that kernel developers that use
-> powerpc see the bugs their code would have on other platforms? The  
-> magic
-> in get_user_asm thoroughly confuses me.
->
-> [Somehow I got sidetracked. I only wanted to look at implementing
-> backtrace support for oprofile...]
+> So I run across this warning: 
+> [ 2724.595549] Debug: sleeping function called from invalid context at arch/ppc/kernel/traps.c:528
+> [ 2724.595563] in_atomic():0, irqs_disabled():1
 
+Hmmm.  What kernel version is this?  I assume you are using ARCH=ppc,
+is that right?
 
-What platform is this on?  The copy from user stuff is a bit out of  
-my area of expertise, but I've got an implementation of backtrace for  
-oprofile running on 85xx.  Mostly, it's just a hacked up version of  
-the ppc64 patch that was floating around.
+> But here's the actual question:
+> static inline unsigned long __copy_from_user(void *to,
+>                 const void __user *from, unsigned long size)
+> 
+>         might_sleep();
+>         return __copy_from_user_inatomic(to, from, size);
+> 
+> 
+> Does that mean __copy_from_user_inatomic isn't actually valid to call in
+> atomic context?
 
-Andy
+No, it doesn't mean that.  However, if the page isn't in memory,
+__copy_from_user_inatomic won't try to bring it in if it has been
+called from an atomic context (i.e. preempt or interrupts disabled).
+
+The real question is why we have interrupts disabled in the illegal
+instruction handler.  There was a reason why I wanted interrupts
+disabled on entry to program_check_exception which I don't recall
+clearly at the moment, but I think program_check_exception should be
+doing a local_irq_enable() at some point (and it also shouldn't be
+trying to emulate instructions for the kernel).
+
+Paul.
