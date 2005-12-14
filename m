@@ -1,18 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (sipsolutions.net [66.160.135.76])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5BEB1688A1
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2005 01:41:26 +1100 (EST)
-In-Reply-To: <1134569118.3875.9.camel@localhost>
+	by ozlabs.org (Postfix) with ESMTP id DD6D26888B
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2005 01:49:58 +1100 (EST)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <66D10776-B8F2-48E4-9B96-CA37323B5799@kernel.crashing.org>
 References: <1134569118.3875.9.camel@localhost>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <66D10776-B8F2-48E4-9B96-CA37323B5799@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 14 Dec 2005 08:41:25 -0600
-To: Johannes Berg <johannes@sipsolutions.net>
+	<66D10776-B8F2-48E4-9B96-CA37323B5799@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-1JDDdWty+ZHnNLXkzLUq"
+Date: Wed, 14 Dec 2005 15:49:33 +0100
+Message-Id: <1134571773.3875.12.camel@localhost>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 Subject: Re: illegal instructions / irqs disabled warning
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,59 +27,67 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 14, 2005, at 8:05 AM, Johannes Berg wrote:
+--=-1JDDdWty+ZHnNLXkzLUq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> So I run across this warning:
-> [ 2724.595549] Debug: sleeping function called from invalid context  
-> at arch/ppc/kernel/traps.c:528
-> [ 2724.595563] in_atomic():0, irqs_disabled():1
-> [ 2724.595568] Call trace:
-> [ 2724.595573]  [c001fe54] __might_sleep+0xd4/0xf0
-> [ 2724.595592]  [c0005ad8] program_check_exception+0xb8/0x520
-> [ 2724.595606]  [c0004f04] ret_from_except_full+0x0/0x4c
->
-> when I wrote a program calling illegal instructions. I then checked  
-> out
-> why this happened and the cause is the might_sleep() here:
->
-> #define __get_user_check(x, ptr,  
-> size)                                  \
-> ({                                                                     
->   \
->         long __gu_err = - 
-> EFAULT;                                        \
->         unsigned long  __gu_val =  
-> 0;                                    \
->         const __typeof__(*(ptr)) __user *__gu_addr =  
-> (ptr);             \
->         might_sleep 
-> ();                                                  \
-> ...
->
-> I then figured I could use __copy_from_user_inatomic to access the
-> instruction word to fix this (as far as I can tell only the warning is
-> annoying, because the instruction already failed at that point so it
-> must be in memory, right?)
+On Wed, 2005-12-14 at 08:41 -0600, Kumar Gala wrote:
 
-Its highly likely, but not guaranteed on all systems.  In truth this  
-is most likely a bug.
+> Its highly likely, but not guaranteed on all systems.  In truth this =20
+> is most likely a bug.
 
-> But here's the actual question:
-> static inline unsigned long __copy_from_user(void *to,
->                 const void __user *from, unsigned long size)
-> {
->         might_sleep();
->         return __copy_from_user_inatomic(to, from, size);
-> }
->
-> Does that mean __copy_from_user_inatomic isn't actually valid to  
-> call in
-> atomic context? Or is this only so that kernel developers that use
-> powerpc see the bugs their code would have on other platforms? The  
-> magic
-> in get_user_asm thoroughly confuses me.
+Ok.
 
-What do you mean atomic context?  Not exactly sure what your asking  
-about.
+> > But here's the actual question:
+> > static inline unsigned long __copy_from_user(void *to,
+> >                 const void __user *from, unsigned long size)
+> > {
+> >         might_sleep();
+> >         return __copy_from_user_inatomic(to, from, size);
+> > }
+> >
+> > Does that mean __copy_from_user_inatomic isn't actually valid to =20
+> > call in
+> > atomic context? Or is this only so that kernel developers that use
+> > powerpc see the bugs their code would have on other platforms? The =20
+> > magic
+> > in get_user_asm thoroughly confuses me.
+>=20
+> What do you mean atomic context?  Not exactly sure what your asking =20
+> about.
 
-- kumar
+Well, the above code loading the instruction that faulted is called from
+the interrupt context where the kernel tries to fix it up. If that
+instruction is not in memory for whatever reason, then it shouldn't try
+to fix it up bug kill the program with SIGILL or SIGSEGV or whatever...
+This is what I came from, and tried looking into how to implement that.
+But then I ran across the code in __copy_from_user which just calls
+__copy_from_user_inatomic so I'm wondering if it is actually possible to
+safely copy data (the instruction) from user space in an interrupt.
+
+Thanks,
+johannes
+
+--=-1JDDdWty+ZHnNLXkzLUq
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (SIP Solutions)
+
+iQIVAwUAQ6Aw+6Vg1VMiehFYAQJmmw/+NCJ7OUzOUJzqA4C/K8Uc76ehFpn5y0LE
+/+WJ+Rr25Osfyh7XFJpjq6XL7IZvsbE5tO3HSacAbaDoxjcLqlZ32t5lsgggFet6
+mZCf1X4KtHhHEGQ6o9khLnevU4rvyvs1MAS8e2QjQJc4vFWnHEjZcWmyKdm66u72
+RzPU8Eq0Gk5qV5G4eNIr8sqgzf/Iks5LDr0P3kP3+kznMHBKiqVfl4i+v0dQHxM6
+BnnMyHXQH8wVwpmYd1hxoNtxz29pkhI+jLZe/imzzS1EXSDY0VcTTQ8aYBmHQUxj
+q5FwAQ/NhBLk2SBips9TgUnbVyinCYO8iQHJe23G1zyMUh7OcmVHTGKkUzBvLnKE
++tp1FYfmdQDFx3D4K4a1m3CqAAfx0bLW/C9gfjPNxcVFzpNJuQ4JTHcrddefS4by
+87b8EYB1dByA4MW4Kf0SUfV218pa4fkuZJ2CoI4tntZV5vlkAAoW83RQXp3Vmb2d
++iMX11afysyTK+dbMA5atR2uUeE+8ZWAtulP0Z1OdwkDMUo7YM/8t7u6jmGbBHRu
+ficpDuvK8jNqTkoXTtTuVs3AppANs/VfM7QZxhZAUNIAwz41oCmd3hNPgB8bM/NC
+quBQopa4SFOSVVALmx9mWncq1IQEL/DdGxWMCOHgdhfIZ25NK2rWc/G5hMom6dfM
+uXTY9DPaQ4o=
+=RrD2
+-----END PGP SIGNATURE-----
+
+--=-1JDDdWty+ZHnNLXkzLUq--
