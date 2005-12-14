@@ -1,24 +1,24 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (sipsolutions.net [66.160.135.76])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2D45768802
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2005 02:13:24 +1100 (EST)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <D5163F2D-A7C9-47E2-BE8D-E291B6C98A40@kernel.crashing.org>
-References: <1134569118.3875.9.camel@localhost>
-	<66D10776-B8F2-48E4-9B96-CA37323B5799@kernel.crashing.org>
-	<1134571773.3875.12.camel@localhost>
-	<D5163F2D-A7C9-47E2-BE8D-E291B6C98A40@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-2saK4Crrnm6WCVvYHuPv"
-Date: Wed, 14 Dec 2005 16:13:11 +0100
-Message-Id: <1134573191.3875.18.camel@localhost>
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C13E068880
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2005 08:39:28 +1100 (EST)
+Date: Wed, 14 Dec 2005 22:39:23 +0100
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Johannes Berg <johannes@sipsolutions.net>
+Message-ID: <20051214213923.GB17548@hansmi.ch>
+References: <20051213223659.GB20017@hansmi.ch>
+	<1134568620.3875.6.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: illegal instructions / irqs disabled warning
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1134568620.3875.6.camel@localhost>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
+	kernel-stuff@comcast.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6 1/2] usb/input: Add relayfs support to appletouch
+	driver
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,52 +28,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch adds support for relayfs to the appletouch driver to make
+debugging easier.
 
---=-2saK4Crrnm6WCVvYHuPv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+Acked-by: Rene Nussbaumer <linux-kernel@killerfox.forkbomb.ch>
+Acked-by: Johannes Berg <johannes@sipsolutions.net>
+---
+Updated to make the relayfs parameter readonly.
 
-On Wed, 2005-12-14 at 09:07 -0600, Kumar Gala wrote:
+diff -Npur linux-2.6.15-rc5.orig/Documentation/input/appletouch.txt linux-2.6.15-rc5/Documentation/input/appletouch.txt
+--- linux-2.6.15-rc5.orig/Documentation/input/appletouch.txt	2005-12-13 00:09:24.000000000 +0100
++++ linux-2.6.15-rc5/Documentation/input/appletouch.txt	2005-12-13 21:28:26.000000000 +0100
+@@ -77,6 +78,8 @@ full tracing (each sample is being trace
+ 		or
+ 	echo "1" > /sys/module/appletouch/parameters/debug
+ 
++To make debugging easier, the driver also supports the relayfs filesystem.
++
+ Links:
+ ------
 
-> It is, we just need to ensure that the user page we are copying from =20
-> is in memory.
-
-So in the interrupt handler we need to ensure this and then call
-__copy_from_user_inatomic instead?
-
-> But, now that I go back and look at your log message, its odd. I =20
-> didn't expect ProgramExceptions to be executed with the MSR[EE] =3D 0. =20
-> Now, I'm wondering why that is.
-
-Hm. I can tell you what I did: Something like=20
-  mtspr 940, r3
-
-in userland :)
-Not sure if it was 940, might have been one of the other registers
-reserved for performance monitoring.
-
-johannes
-
---=-2saK4Crrnm6WCVvYHuPv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (SIP Solutions)
-
-iQIVAwUAQ6A2haVg1VMiehFYAQKh+g//dFw+75BRxIT2BAshFz7AfPUZjdDtWBJ5
-9ZSiQpqiTxmawXwXVxq1FdEwSlfTx46HfqOGG05eYbt7bzRPQxER5X7gjszJ7lT/
-L/3ziML287rep7CEiFcoBQqQCyjjvAEjH+Nigk20EWGO8lCLwzn1IiF623pyZkSj
-YJscwupaFtikIAxAeO7ALt4Pp6V3kXIgNim66thJzOnIkgYROnUQN3rdWO0el9iW
-hZfD8mFzmacbAwTnNq6n646qvyzIicgwGKZrZ+FvMgvO4Ry+bUs8gdgD2Z1MEd5w
-NfFsHP50fTfPJR2C/YE6YN2Ofu0Qzne7PR59VXfzfBUrODmFp3FJMBl+xjrmP4Ac
-a1ICTfnoiCfz4d157yKRWg+x8EDklZ7xk8tSXr4ZmIrbEf6JO0sKmdDdOMrCx+u8
-qjj/yKY3KeamCwOztJcOCZ0/QP7cMGHHMBJApwTenz/8d0DxHJdVRNMIHDKKFMnp
-3G3pWfCIb1oBY+/8crvVH3jZ2ZLeolLN1D0BJSgAtLCVTUuT229uGTi/Hdz/BAF/
-amyhFoevwrfXZpto9rSfw2SsfXa8Sqmyo7CyF2ipsg8hIxTuzaCJ48pCdX51jEsA
-aEE5OblQbJqUDjcFi6SiZwYpNjULYf6xxISHdBdxkpvYHMX/6C+U78kG+dvUqNk7
-fZ2I+CATa4I=
-=eQK8
------END PGP SIGNATURE-----
-
---=-2saK4Crrnm6WCVvYHuPv--
+diff -Npur linux-2.6.15-rc5.orig/drivers/usb/input/appletouch.txt linux-2.6.15-rc5/drivers/usb/input/appletouch.txt
+--- linux-2.6.15-rc5.orig/drivers/usb/input/appletouch.c	2005-12-13 00:09:24.000000000 +0100
++++ linux-2.6.15-rc5/drivers/usb/input/appletouch.c	2005-12-13 22:41:28.000000000 +0100
+@@ -6,9 +6,18 @@
+  * Copyright (C) 2005      Stelian Pop (stelian@popies.net)
+  * Copyright (C) 2005      Frank Arnold (frank@scirocco-5v-turbo.de)
+  * Copyright (C) 2005      Peter Osterlund (petero2@telia.com)
++ * Copyright (C) 2005      Parag Warudkar (parag.warudkar@gmail.com)
++ * Copyright (C) 2005      Michael Hanselmann (linux-kernel@hansmi.ch)
+  *
+  * Thanks to Alex Harper <basilisk@foobox.net> for his inputs.
+  *
++ * Nov 2005 - Parag Warudkar 
++ *  o Added ability to export data via relayfs
++ *
++ * Nov/Dec 2005 - Michael Hanselmann
++ *  o Compile relayfs support only if enabled in the kernel
++ *  o Enable relayfs only if requested by the user
++ *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+@@ -35,6 +44,10 @@
+ #include <linux/input.h>
+ #include <linux/usb_input.h>
+ 
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++#include <linux/relayfs_fs.h>
++#endif
++
+ /* Apple has powerbooks which have the keyboard with different Product IDs */
+ #define APPLE_VENDOR_ID		0x05AC
+ 
+@@ -57,6 +70,11 @@ static struct usb_device_id atp_table []
+ };
+ MODULE_DEVICE_TABLE (usb, atp_table);
+ 
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++struct rchan* rch = NULL;
++struct rchan_callbacks* rcb = NULL;
++#endif
++
+ /* size of a USB urb transfer */
+ #define ATP_DATASIZE	81
+ 
+@@ -73,6 +91,7 @@ MODULE_DEVICE_TABLE (usb, atp_table);
+ 
+ /* maximum pressure this driver will report */
+ #define ATP_PRESSURE	300
++
+ /*
+  * multiplication factor for the X and Y coordinates.
+  * We try to keep the touchpad aspect ratio while still doing only simple
+@@ -124,7 +143,7 @@ struct atp {
+ 		if (debug) printk(format, ##a);				\
+ 	} while (0)
+ 
+-MODULE_AUTHOR("Johannes Berg, Stelian Pop, Frank Arnold");
++MODULE_AUTHOR("Johannes Berg, Stelian Pop, Frank Arnold, Parag Warudkar, Michael Hanselmann");
+ MODULE_DESCRIPTION("Apple PowerBooks USB touchpad driver");
+ MODULE_LICENSE("GPL");
+ 
+@@ -132,6 +151,12 @@ static int debug = 1;
+ module_param(debug, int, 0644);
+ MODULE_PARM_DESC(debug, "Activate debugging output");
+ 
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++static int relayfs = 0;
++module_param(relayfs, int, 0444);
++MODULE_PARM_DESC(relayfs, "Activate relayfs support");
++#endif
++
+ static int atp_calculate_abs(int *xy_sensors, int nb_sensors, int fact,
+ 			     int *z, int *fingers)
+ {
+@@ -194,6 +219,13 @@ static void atp_complete(struct urb* urb
+ 		goto exit;
+ 	}
+ 
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++	/* "rch" is NULL if relayfs is not enabled */
++	if (rch && dev->data) {
++		relay_write(rch, dev->data, dev->urb->actual_length);
++	}
++#endif
++
+ 	/* reorder the sensors values */
+ 	for (i = 0; i < 8; i++) {
+ 		/* X values */
+@@ -463,11 +495,43 @@ static struct usb_driver atp_driver = {
+ 
+ static int __init atp_init(void)
+ {
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++	rcb = NULL;
++	rch = NULL;
++
++	if (relayfs) {
++		rcb = kmalloc(sizeof(struct rchan_callbacks), GFP_KERNEL);
++		if (!rcb)
++			return -ENOMEM;
++
++		rcb->subbuf_start = NULL;
++		rcb->buf_mapped = NULL;
++		rcb->buf_unmapped = NULL;
++
++		rch = relay_open("atpdata", NULL, 256, 256, NULL);
++		if (!rch) {
++			kfree(rcb);
++			return -ENOMEM;
++		}
++
++		printk("appletouch: Relayfs enabled.\n");
++	} else {
++		printk("appletouch: Relayfs disabled.\n");
++	}
++#endif
++
+ 	return usb_register(&atp_driver);
+ }
+ 
+ static void __exit atp_exit(void)
+ {
++#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
++	if(rch)
++		relay_close(rch);
++	if(rcb)
++		kfree(rcb);
++#endif
++
+ 	usb_deregister(&atp_driver);
+ }
+ 
