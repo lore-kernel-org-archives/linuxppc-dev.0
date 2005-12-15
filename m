@@ -1,19 +1,28 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 3DC4068871
+Return-Path: <ee04d004@ee.iitm.ac.in>
+Received: from volt.ee.iitm.ac.in (unknown [203.199.213.53])
+	by ozlabs.org (Postfix) with ESMTP id 1C3F968882
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Dec 2005 20:59:57 +1100 (EST)
-Message-ID: <43A13E9B.4030208@ru.mvista.com>
-Date: Thu, 15 Dec 2005 12:59:55 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Thu, 15 Dec 2005 21:43:15 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by volt.ee.iitm.ac.in (Postfix) with ESMTP id 87528AF196
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 15 Dec 2005 15:44:37 +0530 (IST)
+Received: from volt.ee.iitm.ac.in ([127.0.0.1])
+	by localhost (volt.ee.iitm.ac.in [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 19285-01 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 15 Dec 2005 15:44:37 +0530 (IST)
+Received: from mail-rly.ee.iitm.ac.in (localhost.localdomain [127.0.0.1])
+	by volt.ee.iitm.ac.in (Postfix) with ESMTP id DC2E6AF0F0
+	for <linuxppc-embedded@ozlabs.org.>;
+	Thu, 15 Dec 2005 15:44:36 +0530 (IST)
+From: "Leena Vachhani" <ee04d004@ee.iitm.ac.in>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 15 Dec 2005 15:44:36 +0530
+Message-Id: <20051215100714.M19322@mail-rly.ee.iitm.ac.in>
 MIME-Version: 1.0
-To: Andy Fleming <afleming@freescale.com>
-References: <5b74ec4d0512140628y42986bc0h2f107e788dd115b6@mail.gmail.com>	<43A03821.6040206@intracom.gr>
-	<2750D02C-4FDE-4267-8B60-E1CECDFF55F4@freescale.com>
-In-Reply-To: <2750D02C-4FDE-4267-8B60-E1CECDFF55F4@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Robin Mathew <robbinmathew@gmail.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: 8260 ethernet driver multicast problem
+Content-Type: text/plain;
+	charset=iso-8859-1
+Subject: USB webcam driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,50 +33,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andy Fleming wrote:
-> 
-> On Dec 14, 2005, at 09:20, Pantelis Antoniou wrote:
-> 
->> Robin Mathew wrote:
->>> Hi,
->>> I was encountering a problem with the receipt of multicast packets 
->>> from eth
->>> interface in 8260 platform. The issue was traced to the fcc_enet.c 
->>> driver. A
->>> stray return in the set_multicast_list function was the culprit.
->>> The following is the changes that I have made-
->>> Index: fcc_enet.c
->>> @@ -1488,7 +1488,6 @@
->>>      cep = (struct fcc_enet_private *)dev->priv;
->>> -return;
->>>      /* Get pointer to FCC area in parameter RAM.
->>>      */
->>>      ep = (fcc_enet_t *)dev->base_addr;
->>> Can you please tell me whether there is any issue with setting the 
->>> driver in
->>> multicast or promiscous mode. Was this change deliberately done or is it
->>> really a bug?
->>> Thanks in advance,
->>> Robin
->>
->> Robin, what's the kernel version you're using?
->>
->> If you're using 2.6 there's a brand new driver you can use.
-> 
-> 
-> Has 8260 platform support been pushed out yet?
-> 
-Guess it's not in the stock so far (And I have to update ppc_sys to make the things right), but patches are available here in the list archives.
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+I am trying to compile USB webcam driver (which works fine with RH 9.0 linux
+2.4.20-8 kernel) with montavista linux for IBM PPC405 architecture. The header
+file asm/current.h is giving error as "Invalid register name for 'current'".
+Header file current.h has only one statement :
 
+register struct task_struct *current asm ("r2");
 
--- 
-Sincerely, 
-Vitaly
+I don't have any clue what is the problem in this statement. Please help me out.
+
+Thanks
+Leena Vachhani
