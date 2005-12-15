@@ -2,15 +2,15 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (sipsolutions.net [66.160.135.76])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9A38B68802
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2005 20:40:36 +1100 (EST)
-Message-ID: <4576.131.234.232.31.1134639623.squirrel@secure.sipsolutions.net>
-In-Reply-To: <9892D605-1B30-4094-AEEC-9DA6F3B13B05@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 5B5626886F
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2005 20:44:49 +1100 (EST)
+Message-ID: <4590.131.234.232.31.1134639886.squirrel@secure.sipsolutions.net>
+In-Reply-To: <17312.38814.551675.906916@cargo.ozlabs.ibm.com>
 References: <1134569118.3875.9.camel@localhost>
-	<9892D605-1B30-4094-AEEC-9DA6F3B13B05@freescale.com>
-Date: Thu, 15 Dec 2005 10:40:23 +0100 (CET)
+	<17312.38814.551675.906916@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Dec 2005 10:44:46 +0100 (CET)
 From: "Johannes Berg" <johannes@sipsolutions.net>
-To: "Andy Fleming" <afleming@freescale.com>
+To: "Paul Mackerras" <paulus@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain;charset=iso-8859-15
 Cc: linuxppc-dev@ozlabs.org
@@ -24,13 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andy Fleming wrote:
+Paul Mackerras wrote:
+>> So I run across this warning:
+>> [ 2724.595549] Debug: sleeping function called from invalid context at
+>> arch/ppc/kernel/traps.c:528
+>> [ 2724.595563] in_atomic():0, irqs_disabled():1
+>
+> Hmmm.  What kernel version is this?  I assume you are using ARCH=ppc,
+> is that right?
 
-> What platform is this on?  The copy from user stuff is a bit out of
-> my area of expertise, but I've got an implementation of backtrace for
-> oprofile running on 85xx.  Mostly, it's just a hacked up version of
-> the ppc64 patch that was floating around.
+2.6.15-rc5, IIRC (might have been rc1, I currently need to use both
+kernels depending on what I want to do), and yes, ARCH=ppc.
 
-ppc32, compiling the kernel with ARCH=ppc still.
+> No, it doesn't mean that.  However, if the page isn't in memory,
+> __copy_from_user_inatomic won't try to bring it in if it has been
+> called from an atomic context (i.e. preempt or interrupts disabled).
+
+Good, thanks. So essentially __copy_from_user has the same logic (since it
+just calls __copy_from_user_inatomic) but calls might_sleep() to show the
+developer what he's doing wrong although it won't actually hurt. Right?
+
+> The real question is why we have interrupts disabled in the illegal
+> instruction handler.  There was a reason why I wanted interrupts
+> disabled on entry to program_check_exception which I don't recall
+> clearly at the moment, but I think program_check_exception should be
+> doing a local_irq_enable() at some point (and it also shouldn't be
+> trying to emulate instructions for the kernel).
+
+I don't have the code here right now but I did have a userspace program
+that it tried to emulate (so I'm not sure if it would try to emulate
+kernel instructions). And it wouldn't emulate that instruction, my program
+died with SIGILL, but obviously it still needs to load it to see what kind
+of instruction it was.
 
 johannes
