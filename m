@@ -1,24 +1,24 @@
 Return-Path: <soumya.k.s@motorola.com>
-Received: from motgate3.mot.com (motgate3.mot.com [144.189.100.103])
-	by ozlabs.org (Postfix) with ESMTP id 21EE668802
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 731F168802
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Dec 2005 15:30:17 +1100 (EST)
-Received: from az33exr03.mot.com (az33exr03.mot.com [10.64.251.233])
-	by motgate3.mot.com (8.12.11/Motgate3) with ESMTP id jBF4lmeA017656
+	Thu, 15 Dec 2005 15:55:27 +1100 (EST)
+Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
+	by motgate8.mot.com (8.12.11/Motgate7) with ESMTP id jBF58f6w020378
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Dec 2005 21:47:48 -0700 (MST)
+	Wed, 14 Dec 2005 22:08:41 -0700 (MST)
 Received: from ZMY16EXM66.ds.mot.com (zmy16exm66.ap.mot.com [10.179.4.26])
-	by az33exr03.mot.com (8.13.1/8.13.0) with ESMTP id jBF4fXmS019842
+	by il06exr04.mot.com (8.13.1/8.13.0) with ESMTP id jBF552xD013118
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Dec 2005 22:41:34 -0600 (CST)
+	Wed, 14 Dec 2005 23:05:03 -0600 (CST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-Date: Thu, 15 Dec 2005 12:27:14 +0800
-Message-ID: <C82A9B11BE247C4E952DC733EA98DAA1C54FD9@ZMY16EXM66.ds.mot.com>
+Date: Thu, 15 Dec 2005 12:54:54 +0800
+Message-ID: <C82A9B11BE247C4E952DC733EA98DAA1C55006@ZMY16EXM66.ds.mot.com>
 From: "KS Soumya-ask067" <soumya.k.s@motorola.com>
 To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: Linuxppc-embedded Digest, Vol 16, Issue 36
+Subject: Linux dependency for PCI Window on U-Boot
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,6 +28,8 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+=20
 
 Hi,
 	Is there anything more specific that I need to do to enable my PCI =
@@ -364,7 +366,7 @@ level, but I am not sure why it is still required by the SW.
 > > 3) I have seen that from u-boot, a reset occurs when I read Internal =
 
 > > Memory at offset 0x10904 (PCI CFG_DATA). From BDI, when I do the=20
-> > same all PCI section on IM becomes zero. Is this a known behaviour?=20
+> > same all PCI section on IM becomes zero. Is this a known behaviour?
 > > May this reflect a hardware problem?
 > >
 > Sounds weird
@@ -414,7 +416,7 @@ Alex BASTOS wrote:
 >>> 3) I have seen that from u-boot, a reset occurs when I read Internal =
 
 >>> Memory at offset 0x10904 (PCI CFG_DATA). From BDI, when I do the=20
->>> same all PCI section on IM becomes zero. Is this a known behaviour?=20
+>>> same all PCI section on IM becomes zero. Is this a known behaviour?
 >>> May this reflect a hardware problem?
 >>>
 >> Sounds weird
