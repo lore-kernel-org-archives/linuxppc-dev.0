@@ -1,24 +1,19 @@
-Return-Path: <soumya.k.s@motorola.com>
-Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
-	by ozlabs.org (Postfix) with ESMTP id 731F168802
+Return-Path: <robbinmathew@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.204])
+	by ozlabs.org (Postfix) with ESMTP id 2B1156888B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Dec 2005 15:55:27 +1100 (EST)
-Received: from il06exr04.mot.com (il06exr04.mot.com [129.188.137.134])
-	by motgate8.mot.com (8.12.11/Motgate7) with ESMTP id jBF58f6w020378
+	Thu, 15 Dec 2005 16:50:50 +1100 (EST)
+Received: by xproxy.gmail.com with SMTP id i27so224152wxd
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Dec 2005 22:08:41 -0700 (MST)
-Received: from ZMY16EXM66.ds.mot.com (zmy16exm66.ap.mot.com [10.179.4.26])
-	by il06exr04.mot.com (8.13.1/8.13.0) with ESMTP id jBF552xD013118
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Dec 2005 23:05:03 -0600 (CST)
+	Wed, 14 Dec 2005 21:50:49 -0800 (PST)
+Message-ID: <5b74ec4d0512142150t217b34e2g6e0c1ef4f4441a6a@mail.gmail.com>
+Date: Thu, 15 Dec 2005 11:20:48 +0530
+From: Robin Mathew <robbinmathew@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Thu, 15 Dec 2005 12:54:54 +0800
-Message-ID: <C82A9B11BE247C4E952DC733EA98DAA1C55006@ZMY16EXM66.ds.mot.com>
-From: "KS Soumya-ask067" <soumya.k.s@motorola.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Linux dependency for PCI Window on U-Boot
+Content-Type: multipart/alternative;
+	boundary="----=_Part_1674_1537482.1134625848978"
+Subject: Re: 8260 ethernet driver multicast problem
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,523 +24,225 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
+------=_Part_1674_1537482.1134625848978
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
 Hi,
-	Is there anything more specific that I need to do to enable my PCI =
-window to 512MB? I'm using Linux kernel 2.4.20 / KO2.6.10 with MPC8540 =
-ADS defconfig and U-Boot for the same. By default, the U-Boot is =
-specifying a window of 256MB (0x80000000 - 0x8fffffff). Even if the =
-Linux specifies 512MB (0x80000000 - 0x9fffffff), I am not able to access =
-my device registers on 9f4f0000 (BAR of my device).=20
-But if I specify in U-Boot to make the PCI window as 512MB, (or if I =
-make the Linux to hold 256MB) then Im able to access my device. What =
-should I do for my kernel not to be dependent on U-Boot for the same?=20
-Any pointers would be of great help. Thank you.
-
--Soumya
-
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org =
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of =
-linuxppc-embedded-request@ozlabs.org
-Sent: Wednesday, December 14, 2005 8:01 PM
-To: linuxppc-embedded@ozlabs.org
-Subject: Linuxppc-embedded Digest, Vol 16, Issue 36
-
-Send Linuxppc-embedded mailing list submissions to
-	linuxppc-embedded@ozlabs.org
-
-To subscribe or unsubscribe via the World Wide Web, visit
-	https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-or, via email, send a message with subject or body 'help' to
-	linuxppc-embedded-request@ozlabs.org
-
-You can reach the person managing the list at
-	linuxppc-embedded-owner@ozlabs.org
-
-When replying, please edit your Subject line so it is more specific than =
-"Re: Contents of Linuxppc-embedded digest..."
-
-
-Today's Topics:
-
-   1. Re: how to define BASE_BAUD (Debora Liu)
-   2. "make xconfig" error (2.4.25 devel) (HappyPhot)
-   3. Re: MPC8245 with its internal UART (HappyPhot)
-   4. SPI driver for 82xx (Dmytro Bablinyuk)
-   5. Re: pq2_find_bridges hangs system (Alex BASTOS)
-   6. Re: pq2_find_bridges hangs system (Vitaly Bordug)
-   7. [SOLVED] Re: pq2_find_bridges hangs system  (Alex BASTOS)
-   8. Re: [SOLVED] Re: pq2_find_bridges hangs system (Vitaly Bordug)
-   9. 8260 ethernet driver multicast problem (Robin Mathew)
-  10. Re: [SOLVED] Re: pq2_find_bridges hangs system (Kumar Gala)
-
-
-----------------------------------------------------------------------
-
-Message: 1
-Date: Wed, 14 Dec 2005 09:39:32 +0800
-From: "Debora Liu" <deboralh@fel.com.cn>
-Subject: Re: how to define BASE_BAUD
-To: "HappyPhot" <happyphot@gmail.com>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Message-ID: <200512140929125.SM00772@RavProxy>
-
-Hello, HappyPhot
-
-In message <2005-12-14 01:19:49 happyphot@gmail.com> you wrote:
-
->   Can anybody tell me how to define the "BASE_BAUD" value for the=20
->"struct serial_state rs_table[]" ?
->  It seems has different value for each platform !!
-
-yes, this is different for each platform.
-see your crystal used by UART.
-
-=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1Debora Liu
-=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1deboralh@fel.com.cn
-=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A1=A12005-12-14
-
-
-
-
-------------------------------
-
-Message: 2
-Date: Wed, 14 Dec 2005 11:41:45 +0800
-From: "HappyPhot" <happyphot@gmail.com>
-Subject: "make xconfig" error (2.4.25 devel)
-To: <linuxppc-embedded@ozlabs.org>
-Message-ID: <000401c60063$3dc46040$0760120a@photon>
-Content-Type: text/plain; format=3Dflowed; charset=3D"big5";
-	reply-type=3Doriginal
-
-Hello,
-  I am trying "linuxppc_2_4_devel-2005-10-25-1440".
-The "make xconfig" seems not work. ("make menuconfig" is ok) It shows :
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-....
-./tkparse < ../arch/ppc/config.in >> kconfig.tk
-arch/ppc/8xx_io/Config.in: 312: unknown define_bool value
-make[1]: *** [kconfig.tk] Error 1
-....
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-  Does this version support "make xconfig" ?
-
-thank you,
-/HappyPhot
-
-
-
-------------------------------
-
-Message: 3
-Date: Wed, 14 Dec 2005 14:36:10 +0800
-From: "HappyPhot" <happyphot@gmail.com>
-Subject: Re: MPC8245 with its internal UART
-To: <hs@denx.de>,	<linuxppc-embedded@ozlabs.org>
-Message-ID: <005301c60078$b8dd1550$0760120a@photon>
-Content-Type: text/plain; format=3Dflowed; charset=3D"iso-8859-1";
-	reply-type=3Doriginal
-
-Hi,
-  I've tried this (CPC45_config) on Denx Kernel 2.4.25, and my serial =
-console works now. Thank you very much.
-
-  Is there any similar platform for kernel 2.6 ? (i.e. MPC8245 with its =
-internal UART )
-
-thank you,
-/HappyPhot
-
->=20
->> Who can tell me which flatform is similar to mine ? I've tried "make=20
->> sandpoint_defconfig", but seems not the right one.
->=20
-> If you want to use Linux 2.4.25, you can try CPC45_defconfig from the=20
-> Denx Kernel ...
-
-
-
-------------------------------
-
-Message: 4
-Date: Wed, 14 Dec 2005 18:13:02 +1100
-From: Dmytro Bablinyuk <dmytro.bablinyuk@rftechnology.com.au>
-Subject: SPI driver for 82xx
-To: linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Message-ID: <439FC5FE.8090703@rftechnology.com.au>
-Content-Type: text/plain; charset=3DISO-8859-1; format=3Dflowed
-
-Is anywhere available SPI driver (SPI peripheral) for 82xx for 2.6.x =
-kernel?
-I will appreciate any reference or suggestion.
-
-Thank you
-
-Dmytro
-
-
-
-------------------------------
-
-Message: 5
-Date: Wed, 14 Dec 2005 11:21:02 +0100
-From: Alex BASTOS <alebas@televes.com>
-Subject: Re: pq2_find_bridges hangs system
-To: Alex BASTOS <alebas@televes.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Message-ID: <1134555662.439ff20e6e812@webmail.televes.com:443>
-Content-Type: text/plain; charset=3DISO-8859-15
-
-Vitaly,
-
-So, I have arrived to some conclusions.
-
-1) With my previous kernel version (2.6.11) I had no problems because it =
-had CONFIG_PCI_8260 and CONFIG_PPC_INDIRECT_PCI unset.
-So I think no effective read/write operation was executed, and so that, =
-no Machine Check.
-
-In fact, this is the configuration I would prefer for my board. I have =
-to set CONFIG_PCI for enabling USB, but I don't want all the HW stuff of =
-the PCI. I can get these also with 2.6.15 if I modify Kconfig, to allow =
-me to unset PCI_8260 (and then PPC_INDIRECT_PCI) for my board.
-With that, the problem dissapears and I can boot 2.6.15.
-
-Shouldn't this (PCI_8260) be visible from xconfig for those like me who =
-wants USB (=3D> CONFIG_PCI) but don't really have any PCI device?
-
-2) Although I am using Uboot 1.1.4, it is not top of git. I have found =
-your changes to support PCI on 8272ADS for u-boot are not still applied =
-on the version i am using. So, could this be causing the problem? Is =
-there any configuration done in u-boot required by the PCI on the linux =
-kernel to boot (BR3,OR3, EMR, ...)?
-
-I should say that, on ADS, I have an older version of u-boot, 1.1.2, and =
-it boots OK.
-
-3) I have seen that from u-boot, a reset occurs when I read Internal =
-Memory at offset 0x10904 (PCI CFG_DATA). From BDI, when I do the same =
-all PCI section on IM becomes zero. Is this a known behaviour? May this =
-reflect a hardware problem?
-
-In conclusion, 1) solves my "must", a working board (without PCI).
-But I still would like to know what am I doing so wrong with this.
-
-Best regards,
-
-Alex
-
-Citando Alex BASTOS <alebas@televes.com>:
-
-> Vitaly,
->
-> It didn't work. So I will check pq2ads_setup_pci to check if some=20
-> board specific issue is affected.
->
-> I will say you if I find anything
->
-> Thanks
->
-> Alex.
->
-
-
-
-------------------------------
-
-Message: 6
-Date: Wed, 14 Dec 2005 14:29:34 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: pq2_find_bridges hangs system
-To: Alex BASTOS <alebas@televes.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Message-ID: <43A0021E.7030406@ru.mvista.com>
-Content-Type: text/plain; charset=3DISO-8859-15; format=3Dflowed
-
-Alex BASTOS wrote:
-> Vitaly,
->=20
-> So, I have arrived to some conclusions.
->=20
-> 1) With my previous kernel version (2.6.11) I had no problems because=20
-> it had CONFIG_PCI_8260 and CONFIG_PPC_INDIRECT_PCI unset.
-> So I think no effective read/write operation was executed, and so=20
-> that, no Machine Check.
->=20
-> In fact, this is the configuration I would prefer for my board. I have =
-
-> to set CONFIG_PCI for enabling USB, but I don't want all the HW stuff=20
-> of the PCI. I can get these also with 2.6.15 if I modify Kconfig, to=20
-> allow me to unset PCI_8260 (and then PPC_INDIRECT_PCI) for my board.
-> With that, the problem dissapears and I can boot 2.6.15.
->=20
-> Shouldn't this (PCI_8260) be visible from xconfig for those like me=20
-> who wants USB (=3D> CONFIG_PCI) but don't really have any PCI device?
->=20
-Maybe, but I guess more correct is to deal with USB->PCI dependency..=20
-Is it really needed(I am not USB expert)?
-> 2) Although I am using Uboot 1.1.4, it is not top of git. I have found =
-
-> your changes to support PCI on 8272ADS for u-boot are not still=20
-> applied on the version i am using. So, could this be causing the=20
-> problem? Is there any configuration done in u-boot required by the PCI =
-
-> on the linux kernel to boot (BR3,OR3, EMR, ...)?
->=20
-> I should say that, on ADS, I have an older version of u-boot, 1.1.2,=20
-> and it boots OK.
->=20
-My changes do not required for kernel to deal with PCI, that patch just =
-allows access to PCI in U-Boot. Hence I might be useful if you'll head =
-for resolving this issue which I guess unlikely to happen
-> 3) I have seen that from u-boot, a reset occurs when I read Internal=20
-> Memory at offset 0x10904 (PCI CFG_DATA). From BDI, when I do the same=20
-> all PCI section on IM becomes zero. Is this a known behaviour? May=20
-> this reflect a hardware problem?
->=20
-Sounds weird=20
-> In conclusion, 1) solves my "must", a working board (without PCI).
-> But I still would like to know what am I doing so wrong with this.
->=20
-IMHO ability to disable PCI_8260 while PCI is on might be confusing, at =
-least for upstream.
-
-
-
-> Best regards,
->=20
-> Alex
->=20
-> Citando Alex BASTOS <alebas@televes.com>:
->=20
->> Vitaly,
->>
->> It didn't work. So I will check pq2ads_setup_pci to check if some=20
->> board specific issue is affected.
->>
->> I will say you if I find anything
->>
->> Thanks
->>
->> Alex.
->>
->=20
->=20
-
-
---
-Sincerely,
-Vitaly
-
-
-------------------------------
-
-Message: 7
-Date: Wed, 14 Dec 2005 15:13:22 +0100
-From: Alex BASTOS <alebas@televes.com>
-Subject: [SOLVED] Re: pq2_find_bridges hangs system
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Message-ID: <1134569602.43a0288234662@webmail.televes.com:443>
-Content-Type: text/plain; charset=3DISO-8859-15
-
-Vitaly,
-
-> Maybe, but I guess more correct is to deal with USB->PCI dependency..
-> Is it really needed(I am not USB expert)?
-
-Neither am I. I guess for this Host Controler it is not needed at HW =
-level, but I am not sure why it is still required by the SW.
-
-
-> > 3) I have seen that from u-boot, a reset occurs when I read Internal =
-
-> > Memory at offset 0x10904 (PCI CFG_DATA). From BDI, when I do the=20
-> > same all PCI section on IM becomes zero. Is this a known behaviour?
-> > May this reflect a hardware problem?
-> >
-> Sounds weird
-
-Here is the problem. The cause for this weird behaviour is that I had =
-PCI_ARBITER_EN_  disabled. So, a HW problem at the end.
-I had disabled it trying to reduce power compsumption due to the PCI, as =
-I am not going to use it. It seems it is not possible that way.
-Any idea how to get this done?
-
-> > In conclusion, 1) solves my "must", a working board (without PCI).
-> > But I still would like to know what am I doing so wrong with this.
-> >
-> IMHO ability to disable PCI_8260 while PCI is on might be confusing,=20
-> at least for upstream.
-
-You are right.
-
-Thanks so much for your help.
-
-Best regards,
-
-Alex
-
-
-------------------------------
-
-Message: 8
-Date: Wed, 14 Dec 2005 17:14:51 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: [SOLVED] Re: pq2_find_bridges hangs system
-To: Alex BASTOS <alebas@televes.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Message-ID: <43A028DB.5090906@ru.mvista.com>
-Content-Type: text/plain; charset=3DISO-8859-15; format=3Dflowed
-
-Alex BASTOS wrote:
-> Vitaly,
->=20
->> Maybe, but I guess more correct is to deal with USB->PCI dependency..
->> Is it really needed(I am not USB expert)?
->=20
-> Neither am I. I guess for this Host Controler it is not needed at HW=20
-> level, but I am not sure why it is still required by the SW.
->=20
->=20
->>> 3) I have seen that from u-boot, a reset occurs when I read Internal =
-
->>> Memory at offset 0x10904 (PCI CFG_DATA). From BDI, when I do the=20
->>> same all PCI section on IM becomes zero. Is this a known behaviour?
->>> May this reflect a hardware problem?
->>>
->> Sounds weird
->=20
-> Here is the problem. The cause for this weird behaviour is that I had=20
-> PCI_ARBITER_EN_  disabled. So, a HW problem at the end.
-> I had disabled it trying to reduce power compsumption due to the PCI,=20
-> as I am not going to use it. It seems it is not possible that way.
-> Any idea how to get this done?
->=20
-Well, I guess the best you can do now - just use custom tree. I'll try =
-to find good solution for such a case (PCI required by deps but not hw) =
-next time I'll touch PCI.
-
->>> In conclusion, 1) solves my "must", a working board (without PCI).
->>> But I still would like to know what am I doing so wrong with this.
->>>
->> IMHO ability to disable PCI_8260 while PCI is on might be confusing,=20
->> at least for upstream.
->=20
-> You are right.
->=20
-> Thanks so much for your help.
->=20
-> Best regards,
->=20
-> Alex
->=20
->=20
-
-
---
-Sincerely,
-Vitaly
-
-
-------------------------------
-
-Message: 9
-Date: Wed, 14 Dec 2005 19:58:40 +0530
-From: Robin Mathew <robbinmathew@gmail.com>
-Subject: 8260 ethernet driver multicast problem
-To: linuxppc-embedded@ozlabs.org
-Message-ID:
-	<5b74ec4d0512140628y42986bc0h2f107e788dd115b6@mail.gmail.com>
-Content-Type: text/plain; charset=3D"iso-8859-1"
-
-Hi,
-I was encountering a problem with the receipt of multicast packets from =
-eth interface in 8260 platform. The issue was traced to the fcc_enet.c =
-driver. A stray return in the set_multicast_list function was the =
-culprit.
-
-The following is the changes that I have made-
-
-Index: fcc_enet.c
-@@ -1488,7 +1488,6 @@
-
-     cep =3D (struct fcc_enet_private *)dev->priv;
-
--return;
-     /* Get pointer to FCC area in parameter RAM.
-     */
-     ep =3D (fcc_enet_t *)dev->base_addr;
-
-
-Can you please tell me whether there is any issue with setting the =
-driver in multicast or promiscous mode. Was this change deliberately =
-done or is it really a bug?
-
-Thanks in advance,
+    I am using 2.4.20 kernel. I have checked up the latest sources in denx.
+Think the problem is fixed with the latest sources.
+Thanks
 Robin
--------------- next part --------------
-An HTML attachment was scrubbed...
-URL: =
-http://ozlabs.org/pipermail/linuxppc-embedded/attachments/20051214/af24a6=
-1a/attachment.html
 
-------------------------------
+On 12/15/05, linuxppc-embedded-request@ozlabs.org <
+linuxppc-embedded-request@ozlabs.org> wrote:
+>
+>
+>    1. Re: 8260 ethernet driver multicast problem (Pantelis Antoniou)
+>    2. Re: 8260 ethernet driver multicast problem (Andy Fleming)
+>
+>
+> ----------------------------------------------------------------------
+>
+> Message: 1
+> Date: Wed, 14 Dec 2005 17:20:01 +0200
+> From: Pantelis Antoniou <panto@intracom.gr>
+> Subject: Re: 8260 ethernet driver multicast problem
+> To: Robin Mathew <robbinmathew@gmail.com>
+> Cc: linuxppc-embedded@ozlabs.org
+> Message-ID: <43A03821.6040206@intracom.gr>
+> Content-Type: text/plain; charset=3DISO-8859-1; format=3Dflowed
+>
+> Robin Mathew wrote:
+> > Hi,
+> > I was encountering a problem with the receipt of multicast packets from
+> eth
+> > interface in 8260 platform. The issue was traced to the fcc_enet.c
+> driver. A
+> > stray return in the set_multicast_list function was the culprit.
+> >
+> > The following is the changes that I have made-
+> >
+> > Index: fcc_enet.c
+> > @@ -1488,7 +1488,6 @@
+> >
+> >      cep =3D (struct fcc_enet_private *)dev->priv;
+> >
+> > -return;
+> >      /* Get pointer to FCC area in parameter RAM.
+> >      */
+> >      ep =3D (fcc_enet_t *)dev->base_addr;
+> >
+> >
+> > Can you please tell me whether there is any issue with setting the
+> driver in
+> > multicast or promiscous mode. Was this change deliberately done or is i=
+t
+> > really a bug?
+> >
+> > Thanks in advance,
+> > Robin
+> >
+>
+> Robin, what's the kernel version you're using?
+>
+> If you're using 2.6 there's a brand new driver you can use.
+>
+> Regards
+>
+> Pantelis
+>
+>
+> ------------------------------
+>
+> Message: 2
+> Date: Wed, 14 Dec 2005 14:13:00 -0600
+> From: Andy Fleming <afleming@freescale.com>
+> Subject: Re: 8260 ethernet driver multicast problem
+> To: Pantelis Antoniou <panto@intracom.gr>
+> Cc: Robin Mathew <robbinmathew@gmail.com>,
+>         linuxppc-embedded@ozlabs.org
+> Message-ID: <2750D02C-4FDE-4267-8B60-E1CECDFF55F4@freescale.com>
+> Content-Type: text/plain; charset=3DUS-ASCII; delsp=3Dyes; format=3Dflowe=
+d
+>
+>
+> On Dec 14, 2005, at 09:20, Pantelis Antoniou wrote:
+>
+> > Robin Mathew wrote:
+> >> Hi,
+> >> I was encountering a problem with the receipt of multicast packets
+> >> from eth
+> >> interface in 8260 platform. The issue was traced to the fcc_enet.c
+> >> driver. A
+> >> stray return in the set_multicast_list function was the culprit.
+> >> The following is the changes that I have made-
+> >> Index: fcc_enet.c
+> >> @@ -1488,7 +1488,6 @@
+> >>      cep =3D (struct fcc_enet_private *)dev->priv;
+> >> -return;
+> >>      /* Get pointer to FCC area in parameter RAM.
+> >>      */
+> >>      ep =3D (fcc_enet_t *)dev->base_addr;
+> >> Can you please tell me whether there is any issue with setting the
+> >> driver in
+> >> multicast or promiscous mode. Was this change deliberately done or
+> >> is it
+> >> really a bug?
+> >> Thanks in advance,
+> >> Robin
+> >
+> > Robin, what's the kernel version you're using?
+> >
+> > If you're using 2.6 there's a brand new driver you can use.
+>
+>
+> Has 8260 platform support been pushed out yet?
+>
+>
+>
+>
+>
+> ------------------------------
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+> End of Linuxppc-embedded Digest, Vol 16, Issue 37
+> *************************************************
+>
 
-Message: 10
-Date: Wed, 14 Dec 2005 08:30:48 -0600
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [SOLVED] Re: pq2_find_bridges hangs system
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>,	Alex BASTOS
-	<alebas@televes.com>
-Message-ID: <386A8114-FA1C-44E2-A8F1-CF48F4AF495E@kernel.crashing.org>
-Content-Type: text/plain; charset=3DUS-ASCII; delsp=3Dyes; =
-format=3Dflowed
+------=_Part_1674_1537482.1134625848978
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+Hi,<br>
+&nbsp;&nbsp;&nbsp; I am using 2.4.20 kernel. I have checked up the
+latest sources in denx. Think the problem is fixed with the latest
+sources.<br>
+Thanks<br>
+Robin<br><br><div><span class=3D"gmail_quote">On 12/15/05, <b class=3D"gmai=
+l_sendername"><a href=3D"mailto:linuxppc-embedded-request@ozlabs.org">linux=
+ppc-embedded-request@ozlabs.org</a></b> &lt;<a href=3D"mailto:linuxppc-embe=
+dded-request@ozlabs.org">
+linuxppc-embedded-request@ozlabs.org</a>&gt; wrote:</span><blockquote class=
+=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin=
+: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>&nbsp;&nbsp; 1. Re: 8260 ether=
+net driver multicast problem (Pantelis Antoniou)
+<br>&nbsp;&nbsp; 2. Re: 8260 ethernet driver multicast problem (Andy Flemin=
+g)<br><br><br>-------------------------------------------------------------=
+---------<br><br>Message: 1<br>Date: Wed, 14 Dec 2005 17:20:01 +0200<br>Fro=
+m: Pantelis Antoniou &lt;
+<a href=3D"mailto:panto@intracom.gr">panto@intracom.gr</a>&gt;<br>Subject: =
+Re: 8260 ethernet driver multicast problem<br>To: Robin Mathew &lt;<a href=
+=3D"mailto:robbinmathew@gmail.com">robbinmathew@gmail.com</a>&gt;<br>Cc: <a=
+ href=3D"mailto:linuxppc-embedded@ozlabs.org">
+linuxppc-embedded@ozlabs.org</a><br>Message-ID: &lt;<a href=3D"mailto:43A03=
+821.6040206@intracom.gr">43A03821.6040206@intracom.gr</a>&gt;<br>Content-Ty=
+pe: text/plain; charset=3DISO-8859-1; format=3Dflowed<br><br>Robin Mathew w=
+rote:
+<br>&gt; Hi,<br>&gt; I was encountering a problem with the receipt of multi=
+cast packets from eth<br>&gt; interface in 8260 platform. The issue was tra=
+ced to the fcc_enet.c driver. A<br>&gt; stray return in the set_multicast_l=
+ist function was the culprit.
+<br>&gt;<br>&gt; The following is the changes that I have made-<br>&gt;<br>=
+&gt; Index: fcc_enet.c<br>&gt; @@ -1488,7 +1488,6 @@<br>&gt;<br>&gt;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cep =3D (struct fcc_enet_private *)dev-&gt;pri=
+v;<br>&gt;<br>&gt; -return;<br>
+&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/* Get pointer to FCC area in param=
+eter RAM.<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/<br>&gt;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;ep =3D (fcc_enet_t *)dev-&gt;base_addr;<br>&gt;<br>=
+&gt;<br>&gt; Can you please tell me whether there is any issue with setting=
+ the driver in
+<br>&gt; multicast or promiscous mode. Was this change deliberately done or=
+ is it<br>&gt; really a bug?<br>&gt;<br>&gt; Thanks in advance,<br>&gt; Rob=
+in<br>&gt;<br><br>Robin, what's the kernel version you're using?<br><br>
+If you're using 2.6 there's a brand new driver you can use.<br><br>Regards<=
+br><br>Pantelis<br><br><br>------------------------------<br><br>Message: 2=
+<br>Date: Wed, 14 Dec 2005 14:13:00 -0600<br>From: Andy Fleming &lt;<a href=
+=3D"mailto:afleming@freescale.com">
+afleming@freescale.com</a>&gt;<br>Subject: Re: 8260 ethernet driver multica=
+st problem<br>To: Pantelis Antoniou &lt;<a href=3D"mailto:panto@intracom.gr=
+">panto@intracom.gr</a>&gt;<br>Cc: Robin Mathew &lt;<a href=3D"mailto:robbi=
+nmathew@gmail.com">
+robbinmathew@gmail.com</a>&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;<a href=3D"mailto:linuxppc-embedded@ozlabs.org">linuxppc-embedded@o=
+zlabs.org</a><br>Message-ID: &lt;<a href=3D"mailto:2750D02C-4FDE-4267-8B60-=
+E1CECDFF55F4@freescale.com">2750D02C-4FDE-4267-8B60-E1CECDFF55F4@freescale.=
+com
+</a>&gt;<br>Content-Type: text/plain; charset=3DUS-ASCII; delsp=3Dyes; form=
+at=3Dflowed<br><br><br>On Dec 14, 2005, at 09:20, Pantelis Antoniou wrote:<=
+br><br>&gt; Robin Mathew wrote:<br>&gt;&gt; Hi,<br>&gt;&gt; I was encounter=
+ing a problem with the receipt of multicast packets
+<br>&gt;&gt; from eth<br>&gt;&gt; interface in 8260 platform. The issue was=
+ traced to the fcc_enet.c<br>&gt;&gt; driver. A<br>&gt;&gt; stray return in=
+ the set_multicast_list function was the culprit.<br>&gt;&gt; The following=
+ is the changes that I have made-
+<br>&gt;&gt; Index: fcc_enet.c<br>&gt;&gt; @@ -1488,7 +1488,6 @@<br>&gt;&gt=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cep =3D (struct fcc_enet_private *)dev=
+-&gt;priv;<br>&gt;&gt; -return;<br>&gt;&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;/* Get pointer to FCC area in parameter RAM.<br>&gt;&gt;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;*/
+<br>&gt;&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ep =3D (fcc_enet_t *)dev-&g=
+t;base_addr;<br>&gt;&gt; Can you please tell me whether there is any issue =
+with setting the<br>&gt;&gt; driver in<br>&gt;&gt; multicast or promiscous =
+mode. Was this change deliberately done or
+<br>&gt;&gt; is it<br>&gt;&gt; really a bug?<br>&gt;&gt; Thanks in advance,=
+<br>&gt;&gt; Robin<br>&gt;<br>&gt; Robin, what's the kernel version you're =
+using?<br>&gt;<br>&gt; If you're using 2.6 there's a brand new driver you c=
+an use.
+<br><br><br>Has 8260 platform support been pushed out yet?<br><br><br><br><=
+br><br>------------------------------<br><br>______________________________=
+_________________<br>Linuxppc-embedded mailing list<br><a href=3D"mailto:Li=
+nuxppc-embedded@ozlabs.org">
+Linuxppc-embedded@ozlabs.org</a><br><a href=3D"https://ozlabs.org/mailman/l=
+istinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-emb=
+edded</a><br><br>End of Linuxppc-embedded Digest, Vol 16, Issue 37<br>*****=
+********************************************
+<br></blockquote></div><br>
 
-On Dec 14, 2005, at 8:14 AM, Vitaly Bordug wrote:
-
-> Alex BASTOS wrote:
->> Vitaly,
->>> Maybe, but I guess more correct is to deal with USB->PCI=20
->>> dependency..
->>> Is it really needed(I am not USB expert)?
->> Neither am I. I guess for this Host Controler it is not needed at HW=20
->> level, but I am not sure why it is still required by the SW.
->>>> 3) I have seen that from u-boot, a reset occurs when I read=20
->>>> Internal Memory at offset 0x10904 (PCI CFG_DATA). From BDI, when I=20
->>>> do the same all PCI section on IM becomes zero. Is this a known=20
->>>> behaviour?
->>>> May this
->>>> reflect a hardware problem?
->>>>
->>> Sounds weird
->> Here is the problem. The cause for this weird behaviour is that I had =
-
->> PCI_ARBITER_EN_  disabled. So, a HW problem at the end.
->> I had disabled it trying to reduce power compsumption due to the PCI, =
-
->> as I am not going to use it. It seems it is not possible that way.
->> Any idea how to get this done?
-
-I'm guessing you dont have anything else doing arbitration on the bus.
-
-- kumar
-
-
-
-------------------------------
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-End of Linuxppc-embedded Digest, Vol 16, Issue 36
-*************************************************
+------=_Part_1674_1537482.1134625848978--
