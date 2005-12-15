@@ -1,22 +1,17 @@
-Return-Path: <Kristian-M@kristian-m.de>
-Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id 1C9DA68802
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2005 14:59:05 +1100 (EST)
-Received: from [212.227.126.221] (helo=mrvdomng.kundenserver.de)
-	by moutvdomng.kundenserver.de with esmtp (Exim 3.35 #1)
-	id 1Emk4n-0003D1-00
-	for linuxppc-dev@ozlabs.org; Thu, 15 Dec 2005 04:46:41 +0100
-Received: from 62.4.70.142.eliott-ness.com ([62.4.70.142] helo=localhost)
-	by mrvdomng.kundenserver.de with esmtp (Exim 3.35 #1)
-	id 1Emk4m-0007hS-00
-	for linuxppc-dev@ozlabs.org; Thu, 15 Dec 2005 04:46:40 +0100
-From: Kristian Mueller <Kristian-M@Kristian-M.de>
+Return-Path: <s.maiti@tcs.com>
+Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
+	by ozlabs.org (Postfix) with ESMTP id 8B5366886F
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Dec 2005 15:02:07 +1100 (EST)
+In-Reply-To: <20051215010004.87ACF6887E@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/mixed; boundary="=-SYL+LP9ziiUiuDHtMI81"
-Date: Thu, 15 Dec 2005 11:45:22 +0800
-Message-Id: <1134618322.4972.10.camel@pismo>
-Mime-Version: 1.0
-Subject: [PATCH] via-mpu: compile without Power Management support
+MIME-Version: 1.0
+From: s.maiti@tcs.com
+Message-ID: <OFA4E9F6A5.08251FD9-ON652570D8.001501BC-652570D8.0015EF72@tcs.com>
+Date: Thu, 15 Dec 2005 09:29:35 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 0015EEB0652570D8_="
+Cc: omanakuttan@tataelxsi.co.in
+Subject: Help: mcc driver for mpc8260
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +21,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-SYL+LP9ziiUiuDHtMI81
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-Don't check for sleep_in_progress if there is no 
-Power Management support.
+This is a multipart message in MIME format.
+--=_alternative 0015EEB0652570D8_=
+Content-Type: text/plain; charset="US-ASCII"
 
 
---=-SYL+LP9ziiUiuDHtMI81
-Content-Disposition: attachment; filename=pmu-without-pm.patch
-Content-Type: text/x-patch; name=pmu-without-pm.patch; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Dear all,
 
---- linux/drivers/macintosh/via-pmu.c.orig	2005-12-15 11:28:28.000000000 +0800
-+++ linux/drivers/macintosh/via-pmu.c	2005-12-15 10:04:53.000000000 +0800
-@@ -2911,8 +2911,10 @@ pmu_ioctl(struct inode * inode, struct f
- 	 * the fbdev
- 	 */
- 	case PMU_IOC_GET_BACKLIGHT:
-+#if defined(CONFIG_PM) && defined(CONFIG_PPC32)	   
- 		if (sleep_in_progress)
- 			return -EBUSY;
-+#endif /* CONFIG_PM && CONFIG_PPC32 */
- 		error = get_backlight_level();
- 		if (error < 0)
- 			return error;
-@@ -2920,8 +2922,10 @@ pmu_ioctl(struct inode * inode, struct f
- 	case PMU_IOC_SET_BACKLIGHT:
- 	{
- 		__u32 value;
-+#if defined(CONFIG_PM) && defined(CONFIG_PPC32)	   
- 		if (sleep_in_progress)
- 			return -EBUSY;
-+#endif /* CONFIG_PM && CONFIG_PPC32 */
- 		error = get_user(value, argp);
- 		if (!error)
- 			error = set_backlight_level(value);
+I have downloaded the souce code of mcc for 8260 from sourceforge website.
+I will be highly grateful to you people if you can clear my confusion 
+regarding the mcc driver for mpc8260:
 
---=-SYL+LP9ziiUiuDHtMI81--
+1) What I have to do if I want to use all 128 channels to route through 
+TDM B of mcc1? 
+2) What will be the SI RAM & SI Mode Registers contents?
+3) What will be the content of MCCF1?
+
+Thanks in advance........
+
+Souvik Maiti
+Tata Consultancy Services Limited
+Bengal Intelligent Park
+Bldg. - D, Plots - A2, M2 & N2
+Block - GP, Sector V 
+Salt Lake Electronics Complex
+Kolkata - 700091, West Bengal
+India
+Mailto: s.maiti@tcs.com
+Website: http://www.tcs.com
+
+Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+--=_alternative 0015EEB0652570D8_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">Dear all,</font>
+<br>
+<br><font size=2 face="sans-serif">I have downloaded the souce code of
+mcc for 8260 from sourceforge website.</font>
+<br><font size=2 face="sans-serif">I will be highly grateful to you people
+if you can clear my confusion regarding the mcc driver for mpc8260:</font>
+<br>
+<br><font size=2 face="sans-serif">1) What I have to do if I want to use
+all 128 channels to route through TDM B of mcc1? </font>
+<br><font size=2 face="sans-serif">2) What will be the SI RAM &amp; SI
+Mode Registers contents?</font>
+<br><font size=2 face="sans-serif">3) What will be the content of MCCF1?</font>
+<br>
+<br><font size=2 face="sans-serif">Thanks in advance........</font>
+<br><font size=2 face="sans-serif"><br>
+Souvik Maiti<br>
+Tata Consultancy Services Limited<br>
+Bengal Intelligent Park<br>
+Bldg. - D, Plots - A2, M2 &amp; N2<br>
+Block - GP, Sector V <br>
+Salt Lake Electronics Complex<br>
+Kolkata - 700091, West Bengal<br>
+India<br>
+Mailto: s.maiti@tcs.com<br>
+Website: http://www.tcs.com</font>
+<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
+</font></td></tr></table>
+--=_alternative 0015EEB0652570D8_=--
