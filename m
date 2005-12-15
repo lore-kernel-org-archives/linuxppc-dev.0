@@ -1,28 +1,19 @@
-Return-Path: <ee04d004@ee.iitm.ac.in>
-Received: from volt.ee.iitm.ac.in (unknown [203.199.213.53])
-	by ozlabs.org (Postfix) with ESMTP id 1C3F968882
+Return-Path: <zengshuai@sogou.com>
+Received: from sogoumx75.mail.sogou.com (unknown [61.135.132.136])
+	by ozlabs.org (Postfix) with ESMTP id EA93668880
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Dec 2005 21:43:15 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by volt.ee.iitm.ac.in (Postfix) with ESMTP id 87528AF196
+	Fri, 16 Dec 2005 00:21:58 +1100 (EST)
+Received: from mx3.mail.sohu.com (unknown [192.168.95.78])
+	by sogoumx75.mail.sogou.com (Postfix) with ESMTP id D0EC40656DB5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Dec 2005 15:44:37 +0530 (IST)
-Received: from volt.ee.iitm.ac.in ([127.0.0.1])
-	by localhost (volt.ee.iitm.ac.in [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 19285-01 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Dec 2005 15:44:37 +0530 (IST)
-Received: from mail-rly.ee.iitm.ac.in (localhost.localdomain [127.0.0.1])
-	by volt.ee.iitm.ac.in (Postfix) with ESMTP id DC2E6AF0F0
-	for <linuxppc-embedded@ozlabs.org.>;
-	Thu, 15 Dec 2005 15:44:36 +0530 (IST)
-From: "Leena Vachhani" <ee04d004@ee.iitm.ac.in>
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 15 Dec 2005 15:44:36 +0530
-Message-Id: <20051215100714.M19322@mail-rly.ee.iitm.ac.in>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
-Subject: USB webcam driver
+	Thu, 15 Dec 2005 20:51:23 +0800 (CST)
+Message-ID: <18160795.1134650325274.JavaMail.postfix@mx3.mail.sohu.com>
+Date: Thu, 15 Dec 2005 20:38:45 +0800 (CST)
+From: <zengshuai@sogou.com>
+To: "ppc" <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="GB2312"
+Subject: help needed:Which file is the key file in the ELF(for linux) linker?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,14 +24,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I am trying to compile USB webcam driver (which works fine with RH 9.0 linux
-2.4.20-8 kernel) with montavista linux for IBM PPC405 architecture. The header
-file asm/current.h is giving error as "Invalid register name for 'current'".
-Header file current.h has only one statement :
+//hello.c
+int main()
+{
+    int a;
+    a=1;
+}
+--------------------------
+first time:
+#gcc -c -o hello.o hello.c
+#ld -o hello.elf hello.o
+#file hello.elf
+hello.elf: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV),
+statically inked, not stripped                                                            
 
-register struct task_struct *current asm ("r2");
+second time:
+#gcc -c -o hello.o hello.c
+#ld -static hello.o /usr/lib/crt1.o /usr/lib/crti.o /usr/
+ib/crtn.o /usr/lib/gcc-lib/i386-redhat-linux/3.2.2/crtbegin.o /usr/lib/gcc-lib/
+386-redhat-linux/3.2.2/crtend.o -L/usr/lib -lc /usr/lib/gcc-lib/i386-redhat-lin
+x/3.2.2/libgcc.a -o hello.elf                                                   
+#file hello.elf
+hello.elf: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), 
+for GNU/Linx 2.2.5, statically linked, not stripped                                       
+~~~~~~~~~~~~~~~~~~
 
-I don't have any clue what is the problem in this statement. Please help me out.
+So,which file is the key file,which cause the change,from elf to linux elf?
+How to compile a ELF file using in bareboard and how to compile a ELF file 
+using in Linux really puzzles me a lot.thanks
 
-Thanks
-Leena Vachhani
+------------------------------
+我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
+http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=linuxppc-embedded&FullName=linuxppc-embedded&Email=linuxppc-embedded%40ozlabs.org&verify=755eff4e640bdcfc57d93cbd8b0a9cb7
