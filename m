@@ -1,16 +1,19 @@
-Return-Path: <prabha.j@tcs.com>
-Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
-	by ozlabs.org (Postfix) with ESMTP id 24160688B8
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id DEAA8688A1
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Dec 2005 16:29:29 +1100 (EST)
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-From: prabha.j@tcs.com
-Message-ID: <OF22452781.22D7B3D3-ON652570D9.0019E468-652570D9.001A1298@tcs.com>
-Date: Fri, 16 Dec 2005 10:14:46 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 001A1255652570D9_="
-Subject: help reqd for mpc8260 linux
+	Fri, 16 Dec 2005 21:11:04 +1100 (EST)
+To: batsayan.das@tcs.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 16 Dec 2005 10:19:53 +0530."
+	<OFB8CF31AB.E132BC0B-ON652570D9.001789DD-652570D9.001A8A99@tcs.com>
+Date: Fri, 16 Dec 2005 11:11:01 +0100
+Sender: wd@denx.de
+Message-Id: <20051216101101.7B82B353416@atlas.denx.de>
+Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Subject: Re: [U-Boot-Users] Help required to bring up kernel from U-Boot 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,103 +24,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 001A1255652570D9_=
-Content-Type: text/plain; charset="US-ASCII"
+In message <OFB8CF31AB.E132BC0B-ON652570D9.001789DD-652570D9.001A8A99@tcs.com> you wrote:
+>
+> I copied uImage to location 0x04000000 and  the Load Address=0x00000000 
+> and Entry point=0x00000000.  The bootm 0x04000000 gives the o/p 
+> "Transferring Control to Linux" and then nothing comes. Where is the 
+> wrong?
 
+This is a FAQ. Please see http://www.denx.de/wiki/DULG/Faq
 
-Hi All,
-I working on custom board(mpc8260) . Now the bootlader is working and when 
-i dowload the kernel image through u-boot it gives messages as
-"Transferring Conrol to Linux" and then nothing comes. I am using 
-Linux-2.4.25 and eldk toolkit ,both from denx.
-My boards memory map is SDRAM starts from  0 and flash starts from 
-0x30000000. and baudrate is 57600 and IMMR is 0xF000000 .
-When i was debugging in
-start_here(arch/ppc/kernel/head.S)
-It is passing the machine_init and  MMU_init functions (This i have seen 
-by putting printk and seeing it in log_buf) and then in this code 
+> 1. What are the minimum information Linux needs from U-Boot to come up 
+> properly?  In the Linux source tree we have put some printk statement and 
+> found that base address of SDRAM, size, etc are passed correctly to Linux 
+> by U-Boot. 
 
+Be careful with printk() at inappropieate places (i.e. too early).
 
-lis     r4,2f@h
-        ori     r4,r4,2f@l
-        tophys(r4,r4)
-        li      r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
-        FIX_SRR1(r3,r5)
-        mtspr   SRR0,r4
-        mtspr   SRR1,r3
-        SYNC
-        bl      MMU_init_prabha //(This is just a printk function).Till 
-here its working.
+But tell me - how where you  able  to  see  anthing  with  printk  if
+"nothing comes" as you write above ???
 
-        RFI
-If i put the printk after this funtion i am not getting anything in the 
-log_buf. I simply commented the RFI instruction then also i didn't see any 
-messages.
-Can anybody tell me what may be the problem.
-Waiting for reply.
-Thanks in advance.
-Best Regards
+> 2. Is the info passed from U-Boot is sufficient enough to make the kernel 
+> up?
 
+Yes, of course. It works on thousands of systems.
 
-Prabha J.
-Tata Consultancy Services Limited
-Mailto: prabha.j@tcs.com
-Website: http://www.tcs.com
+> 3. If not, where should I concentrate in Linux tree?
 
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
---=_alternative 001A1255652570D9_=
-Content-Type: text/html; charset="US-ASCII"
+On your changes.
 
+And please keep this off the U-Boot list. It is off topic here.
 
-<br><font size=2 face="sans-serif">Hi All,</font>
-<br><font size=2 face="sans-serif">I working on custom board(mpc8260) .
-Now the bootlader is working and when i dowload the kernel image through
-u-boot it gives messages as</font>
-<br><font size=2 face="sans-serif">&quot;Transferring Conrol to Linux&quot;
-and then nothing comes. I am using Linux-2.4.25 and eldk toolkit ,both
-from denx.</font>
-<br><font size=2 face="sans-serif">My boards memory map is SDRAM starts
-from &nbsp;0 and flash starts from 0x30000000. and baudrate is 57600 and
-IMMR is 0xF000000 .</font>
-<br><font size=2 face="sans-serif">When i was debugging in</font>
-<br><font size=2 face="sans-serif">start_here(arch/ppc/kernel/head.S)</font>
-<br><font size=2 face="sans-serif">It is passing the machine_init and &nbsp;MMU_init
-functions (This i have seen by putting printk and seeing it in log_buf)
-and then in this code </font>
-<br>
-<br>
-<br><font size=2 face="sans-serif">lis &nbsp; &nbsp; r4,2f@h</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; ori &nbsp;
-&nbsp; r4,r4,2f@l</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; tophys(r4,r4)</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; li &nbsp;
-&nbsp; &nbsp;r3,MSR_KERNEL &amp; ~(MSR_IR|MSR_DR)</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; FIX_SRR1(r3,r5)</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; mtspr &nbsp;
-SRR0,r4</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; mtspr &nbsp;
-SRR1,r3</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; SYNC</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; bl &nbsp;
-&nbsp; &nbsp;MMU_init_prabha //(This is just a printk function).Till here
-its working.</font>
-<br>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; RFI</font>
-<br><font size=2 face="sans-serif">If i put the printk after this funtion
-i am not getting anything in the log_buf. I simply commented the RFI instruction
-then also i didn't see any messages.</font>
-<br><font size=2 face="sans-serif">Can anybody tell me what may be the
-problem.</font>
-<br><font size=2 face="sans-serif">Waiting for reply.</font>
-<br><font size=2 face="sans-serif">Thanks in advance.</font>
-<br><font size=2 face="sans-serif">Best Regards</font>
-<br>
-<br><font size=2 face="sans-serif"><br>
-Prabha J.<br>
-Tata Consultancy Services Limited<br>
-Mailto: prabha.j@tcs.com<br>
-Website: http://www.tcs.com</font>
-<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
-</font></td></tr></table>
---=_alternative 001A1255652570D9_=--
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+CONSUMER NOTICE:  Because  of  the  "Uncertainty  Principle,"  It  Is
+Impossible  for  the  Consumer  to  Find  Out  at  the Same Time Both
+Precisely Where This Product Is and How Fast It Is Moving.
