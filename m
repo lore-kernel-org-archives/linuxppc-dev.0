@@ -1,20 +1,18 @@
-Return-Path: <vonbrand@laptop11.inf.utfsm.cl>
-Received: from inti.inf.utfsm.cl (inti.inf.utfsm.cl [200.1.21.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 90A03688BC
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Dec 2005 04:59:02 +1100 (EST)
-Message-Id: <200512161729.jBGHTlGR017130@laptop11.inf.utfsm.cl>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: Message from Olof Johansson <olof@lixom.net> of "Thu,
-	15 Dec 2005 11:50:17 -0800." <20051215195017.GA7195@pb15.lixom.net>
-Date: Fri, 16 Dec 2005 14:29:47 -0300
-From: Horst von Brand <vonbrand@inf.utfsm.cl>
-Cc: dtor_core@ameritech.net, kernel-stuff@comcast.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH 2.6 1/2] usb/input: Add relayfs support to appletouch
-	driver
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id E4BCE688D6
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Dec 2005 08:22:40 +1100 (EST)
+In-Reply-To: <E9EFF872-D403-437F-9B73-595D10BD71AF@kernel.crashing.org>
+References: <Pine.LNX.4.61.0512151953550.14329@ld0175-tx32.am.freescale.net>
+	<E9EFF872-D403-437F-9B73-595D10BD71AF@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C875D9FB-AA2A-4036-A132-547673071807@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Date: Fri, 16 Dec 2005 15:22:42 -0600
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] G4+ oprofile support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +22,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson <olof@lixom.net> wrote:
 
-Just saw this.
+On Dec 15, 2005, at 21:42, Kumar Gala wrote:
 
-> On Thu, Dec 15, 2005 at 12:31:08AM +0100, Michael Hanselmann wrote:
 
-> > diff -rup linux-2.6.15-rc5.orig/drivers/usb/input/appletouch.c b/drivers/usb/input/appletouch.c
-> > --- linux-2.6.15-rc5.orig/drivers/usb/input/appletouch.c	2005-12-13 22:44:24.000000000 +0100
-> > +++ b/drivers/usb/input/appletouch.c	2005-12-15 00:25:09.000000000 +0100
+>
+> Why hard code this, num_ctrs is passed in?
 
-[...]
+It's passed in, true, but only because that's the common interface.   
+There is no 7450 derivative with less than or greater than 6  
+counters.  I made it a constant to avoid the use (in the other  
+models) of a global variable.  If you look at the next function down,  
+it doesn't get num_ctrs passed in, but needs to loop, anyway.  And  
+there's another function which needs it, too.
 
-> > +#if defined(CONFIG_RELAYFS_FS) || defined(CONFIG_RELAYFS_FS_MODULE)
-> > +#include <linux/relayfs_fs.h>
-> > +#endif
 
-Why can't this be included regardless? If it does something that only makes
-sense if relayfs is in use, better have that decision inside the header
-file (least somebody just includes it and...).
--- 
-Dr. Horst H. von Brand                   User #22616 counter.li.org
-Departamento de Informatica                     Fono: +56 32 654431
-Universidad Tecnica Federico Santa Maria              +56 32 654239
-Casilla 110-V, Valparaiso, Chile                Fax:  +56 32 797513
+>
+> Does, classic include ppc64? if so you should be more explicit in  
+> the comment.
+
+ppc64 and ppc32.  All non-Freescale-book-e parts.  Would:
+
+Classic PPC parts (both 64 and 32 bit) don't support per-counter user/ 
+kernel selection
+
+be better?
+
+>
+>> +	/* Classic doesn't support per-counter user/kernel selection */
+>>  	unsigned long kernel;
+>> -#ifdef __powerpc64__
+>> -	/* We dont support per counter user/kernel selection */
+>> -#endif
+>>  	unsigned long user;
+>>  	unsigned long unit_mask;
+>>  };
+>>
+
+
+
+>
+> Are these ifdef's really worth it?
+
+
+I don't really like them, but the alternative is to define SPRN_PMC 
+[7,8] for PPC 32, which would be bogus, since PPC 32 doesn't have  
+them.  If both architectures used the same SPR numbers, that wouldn't  
+be an issue, but they don't, so I would have to make up the SPR numbers.
+
+
+>
+>> +
+>> +/* No PPC32 chip has more than 6 so far */
+>> +#ifdef CONFIG_PPC64
+>>  	case 6:
+>>  		return mfspr(SPRN_PMC7);
+>>  	case 7:
+>>  		return mfspr(SPRN_PMC8);
+>> +#endif
+>>  	default:
+>>  		return 0;
+>>  	}
+>> @@ -108,16 +117,20 @@ static inline void ctr_write(unsigned in
+>>  	case 5:
+>>  		mtspr(SPRN_PMC6, val);
+>>  		break;
+>> +
+>> +/* No PPC32 chip has more than 6, yet */
+>> +#ifdef CONFIG_PPC64
+>>  	case 6:
+>>  		mtspr(SPRN_PMC7, val);
+>>  		break;
+>>  	case 7:
+>>  		mtspr(SPRN_PMC8, val);
+>>  		break;
+>> +#endif
+>>  	default:
+>>  		break;
+>>  	}
+>>  }
+>> -#endif /* __powerpc64__ */
+>> +#endif /* !CONFIG_FSL_BOOKE */
+>
+
+
+
+> Why not move all MMCR0_ defines up ?
+>
+
+
+There are two reasons:
+1) All of these registers have different SPR numbers on 32 and 64 bit  
+classic architectures, so the SPRN definitions would have to be  
+separate anyway
+2) A number of the bit fields are different, too.  There's overlap,  
+but it seemed more readable to group the bitfield definitions with  
+the SPRNs, rather than split the #defines into three groups.  I could  
+do that, if the current solution is unacceptable, but my personal  
+opinion is that it's cleaner this way.
+
+
+>>  /* Bit definitions for MMCR0 and PMC1 / PMC2. */
+>>  #define MMCR0_PMC1_CYCLES	(1 << 7)
+>> @@ -458,7 +481,6 @@
+>>  #define MMCR0_PMC2_CYCLES	0x1
+>>  #define MMCR0_PMC2_ITLB		0x7
+>>  #define MMCR0_PMC2_LOADMISSTIME	0x5
+>> -#define MMCR0_PMXE	(1 << 26)
+>>  #endif
+
+
+Andy
