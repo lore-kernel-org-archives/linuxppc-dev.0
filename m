@@ -1,19 +1,17 @@
-Return-Path: <bennett78@digis.net>
-Received: from mercury.testsyseng.com (unknown [209.120.144.205])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8D4C268869
+Return-Path: <batsayan.das@tcs.com>
+Received: from InMumG01.tcs.com (inmumg01.tcs.com [219.64.33.12])
+	by ozlabs.org (Postfix) with ESMTP id AC8FA6884E
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Dec 2005 11:30:36 +1100 (EST)
-Message-ID: <43A2071A.3030802@digis.net>
-Date: Thu, 15 Dec 2005 17:15:22 -0700
-From: bennett78 <bennett78@digis.net>
+	Fri, 16 Dec 2005 16:06:26 +1100 (EST)
+To: u-boot-users@lists.sourceforge.net
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
+From: batsayan.das@tcs.com
+Message-ID: <OFB8CF31AB.E132BC0B-ON652570D9.001789DD-652570D9.001A8A99@tcs.com>
+Date: Fri, 16 Dec 2005 10:19:53 +0530
 Content-Type: multipart/alternative;
-	boundary="------------010408090708070709060905"
-Subject: MPC5200 ppc_md.set_rtc_time 
-Reply-To: Frank Bennett <bennett78@digis.net>
+	boundary="=_alternative 001A8A34652570D9_="
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Help required to bring up kernel from U-Boot 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,102 +22,101 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010408090708070709060905
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Hi:
-   How / when does "ppc_md.set_rtc_time" get filled
-in for Lite5200?
-
-Config for support /dev/rtc enables CONFIG_PPC_RTC
-which enable driver/char/rtc.c which mentions CMOS_WRITE
-panics the kernel!
-
-I trying to use driver/char/genrtc.c.   I can set date
-but not hwclock.
-
- > hwclock --set --date="9/22/96 16:45:05"
-gen_set_rtc_irq_bit:exit
-gen_rtc_ioctl RTC_SET_TIME 00000060
-RTC_SET_TIME: Invalid argument
-ioctl() to /dev/rtc to set the time failed.
-
-bash-2.05b# cat /proc/driver/rtc
-rtc_time        : 00:50339648:36914
-rtc_date        : -1072186980-497--1073718072
-rtc_epoch       : 1900
-alarm           : 00:00:00
-DST_enable      : no
-BCD             : yes
-24hr            : yes
-square_wave     : no
-alarm_IRQ       : no
-update_IRQ      : no  <----- how can I hook one?
-periodic_IRQ    : no
-periodic_freq   : 0
-batt_status     : okay
+This is a multipart message in MIME format.
+--=_alternative 001A8A34652570D9_=
+Content-Type: text/plain; charset="US-ASCII"
 
 
-thanks,
+Hello,
 
-*/Frank Bennett
-/*
+I am using MPC8260ADS based customs board. I have configured the memory 
+map in U-Boot as follows
+
+SDRAM : 0x00000000  (size=128 MB)
+FLASH   :  0x30000000 (size= 1MB)
+SRAM : 0xFFF00000 (size 4MB)
+
+There are also other components in the board, like  FRAMER , DSP, etc. I 
+have not initialized the memory map of those components in U-Boot. 
+I am able to get the U-Boot prompt when run by TRACE23.  I have build a 
+default MPC8260ADS kernel, the only changes I have made is in the variable 
+IMAP_ADDR , BCSR_ADDR in  arch/ppc/platforms/ads8260.h. I have put those 
+values from the already running U-Boot code. 
+
+Our TEXT_BASE=0xFFF00000
+HRCW value= "0E A2 82 05" 
+
+I copied uImage to location 0x04000000 and  the Load Address=0x00000000 
+and Entry point=0x00000000.  The bootm 0x04000000 gives the o/p 
+"Transferring Control to Linux" and then nothing comes. Where is the 
+wrong?
+
+My question is
+1. What are the minimum information Linux needs from U-Boot to come up 
+properly?  In the Linux source tree we have put some printk statement and 
+found that base address of SDRAM, size, etc are passed correctly to Linux 
+by U-Boot. 
+2. Is the info passed from U-Boot is sufficient enough to make the kernel 
+up?
+3. If not, where should I concentrate in Linux tree?
+
+Pls help.
+
+Thanks,
+Batsayan Das
+Tata Consultancy Services Limited
+Mailto: batsayan.das@tcs.com
+Website: http://www.tcs.com
+
+Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+--=_alternative 001A8A34652570D9_=
+Content-Type: text/html; charset="US-ASCII"
 
 
---------------010408090708070709060905
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-  <title></title>
-</head>
-<body bgcolor="#ffffff" text="#000000">
-Hi:<br>
-&nbsp;&nbsp; How / when does "ppc_md.set_rtc_time" get filled<br>
-in for Lite5200?<br>
+<br><font size=2 face="sans-serif">Hello,</font>
 <br>
-Config for support /dev/rtc enables CONFIG_PPC_RTC<br>
-which enable driver/char/rtc.c which mentions CMOS_WRITE<br>
-panics the kernel!<br>
+<br><font size=2 face="sans-serif">I am using MPC8260ADS based customs
+board. I have configured the memory map in U-Boot as follows</font>
 <br>
-I trying to use driver/char/genrtc.c.&nbsp;&nbsp; I can set date<br>
-but not hwclock.<br>
+<br><font size=2 face="sans-serif">SDRAM : 0x00000000 &nbsp;(size=128 MB)</font>
+<br><font size=2 face="sans-serif">FLASH &nbsp; &nbsp; &nbsp; &nbsp;:
+&nbsp;0x30000000 (size= 1MB)</font>
+<br><font size=2 face="sans-serif">SRAM : 0xFFF00000 (size 4MB)</font>
 <br>
-&gt; hwclock --set --date="9/22/96 16:45:05"<br>
-gen_set_rtc_irq_bit:exit<br>
-gen_rtc_ioctl RTC_SET_TIME 00000060<br>
-RTC_SET_TIME: Invalid argument<br>
-ioctl() to /dev/rtc to set the time failed.<br>
+<br><font size=2 face="sans-serif">There are also other components in the
+board, like &nbsp;FRAMER , DSP, etc. I have not initialized the memory
+map of those components in U-Boot. </font>
+<br><font size=2 face="sans-serif">I am able to get the U-Boot prompt when
+run by TRACE23. &nbsp;I have build a default MPC8260ADS kernel, the only
+changes I have made is in the variable IMAP_ADDR , BCSR_ADDR in &nbsp;arch/ppc/platforms/ads8260.h.
+I have put those values from the already running U-Boot code. </font>
 <br>
-bash-2.05b# cat /proc/driver/rtc<br>
-rtc_time&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 00:50339648:36914<br>
-rtc_date&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : -1072186980-497--1073718072<br>
-rtc_epoch&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 1900<br>
-alarm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 00:00:00<br>
-DST_enable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : no<br>
-BCD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : yes<br>
-24hr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : yes<br>
-square_wave&nbsp;&nbsp;&nbsp;&nbsp; : no<br>
-alarm_IRQ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : no<br>
-update_IRQ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : no&nbsp; &lt;----- how can I hook one?<br>
-periodic_IRQ&nbsp;&nbsp;&nbsp; : no<br>
-periodic_freq&nbsp;&nbsp; : 0<br>
-batt_status&nbsp;&nbsp;&nbsp;&nbsp; : okay<br>
+<br><font size=2 face="sans-serif">Our TEXT_BASE=0xFFF00000</font>
+<br><font size=2 face="sans-serif">HRCW value= &quot;0E A2 82 05&quot;
+</font>
 <br>
+<br><font size=2 face="sans-serif">I copied uImage to location 0x04000000
+and &nbsp;the Load Address=0x00000000 and Entry point=0x00000000. &nbsp;The
+bootm 0x04000000 gives the o/p &quot;Transferring Control to Linux&quot;
+and then nothing comes. Where is the wrong?</font>
+<br><font size=2 face="sans-serif"><br>
+My question is</font>
+<br><font size=2 face="sans-serif">1. What are the minimum information
+Linux needs from U-Boot to come up properly? &nbsp;In the Linux source
+tree we have put some printk statement and found that base address of SDRAM,
+size, etc are passed correctly to Linux by U-Boot. </font>
+<br><font size=2 face="sans-serif">2. Is the info passed from U-Boot is
+sufficient enough to make the kernel up?</font>
+<br><font size=2 face="sans-serif">3. If not, where should I concentrate
+in Linux tree?</font>
 <br>
-<div class="moz-signature">thanks,<br>
-<meta content="text/html;" http-equiv="Content-Type">
-<title></title>
-<pre wrap=""><b><big><font face="Times New Roman, Times, serif"><em>Frank Bennett
-</em></font></big></b>
-</pre>
-</div>
-</body>
-</html>
-
---------------010408090708070709060905--
+<br><font size=2 face="sans-serif">Pls help.</font>
+<br>
+<br><font size=2 face="sans-serif">Thanks,</font>
+<br><font size=2 face="sans-serif">Batsayan Das<br>
+Tata Consultancy Services Limited<br>
+Mailto: batsayan.das@tcs.com<br>
+Website: http://www.tcs.com</font>
+<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
+</font></td></tr></table>
+--=_alternative 001A8A34652570D9_=--
