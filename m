@@ -1,28 +1,21 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (unknown [195.144.244.147])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.varma-el.com",
-	Issuer "mail.varma-el.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2D117688A1
+Return-Path: <stefan.eletzhofer@inquant.de>
+Received: from gonzo.webpack.hosteurope.de (gonzo.webpack.hosteurope.de
+	[217.115.142.69])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 77C2F688A1
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Dec 2005 22:04:19 +1100 (EST)
-Received: from geos.varma-el.com (geos [10.0.19.228])
-	by amanaus.varma-el.com (Postfix) with ESMTP id A4FB98003
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Dec 2005 13:42:41 +0300 (MSK)
-Received: from [10.0.19.34] (wolfhouse.transas.com [10.0.19.34])
-	by geos.varma-el.com (Postfix) with ESMTP id 1E2553D80CA
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Dec 2005 13:42:41 +0300 (MSK)
-Message-ID: <43A29A21.8080102@varma-el.com>
-Date: Fri, 16 Dec 2005 13:42:41 +0300
-From: Andrey Volkov <avolkov@varma-el.com>
-MIME-Version: 1.0
+	Fri, 16 Dec 2005 22:35:18 +1100 (EST)
+From: Stefan Eletzhofer <stefan.eletzhofer@inquant.de>
 To: ML linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-References: <43A2071A.3030802@digis.net>
-In-Reply-To: <43A2071A.3030802@digis.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: MPC5200 ppc_md.set_rtc_time
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-vVLmyMjjMQ5Z6+Cj2Qpe"
+Date: Fri, 16 Dec 2005 12:16:37 +0100
+Message-Id: <1134731798.11277.10.camel@localhost>
+Mime-Version: 1.0
+Subject: MPC5200 TXRTS feature
+Reply-To: stefan.eletzhofer@inquant.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,49 +26,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Frank,
 
-bennett78 wrote:
-> Hi:
->    How / when does "ppc_md.set_rtc_time" get filled
-> in for Lite5200?
-> 
-> Config for support /dev/rtc enables CONFIG_PPC_RTC
-> which enable driver/char/rtc.c which mentions CMOS_WRITE
-> panics the kernel!
-> 
-> I trying to use driver/char/genrtc.c.   I can set date
-> but not hwclock.
-> 
->> hwclock --set --date="9/22/96 16:45:05"
-> gen_set_rtc_irq_bit:exit
-> gen_rtc_ioctl RTC_SET_TIME 00000060
-> RTC_SET_TIME: Invalid argument
-> ioctl() to /dev/rtc to set the time failed.
-> 
-> bash-2.05b# cat /proc/driver/rtc
-> rtc_time        : 00:50339648:36914
-> rtc_date        : -1072186980-497--1073718072
-> rtc_epoch       : 1900
-> alarm           : 00:00:00
-> DST_enable      : no
-> BCD             : yes
-> 24hr            : yes
-> square_wave     : no
-> alarm_IRQ       : no
-> update_IRQ      : no  <----- how can I hook one?
-> periodic_IRQ    : no
-> periodic_freq   : 0
-> batt_status     : okay
-> 
-> 
-> thanks,
-> 
-> */Frank Bennett
-> /*
-For 2.6 kernel, check arch/ppc/syslib/lite5200.c, especially
-platform_init() (at the end of file).
+--=-vVLmyMjjMQ5Z6+Cj2Qpe
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
---
-Regards
-Andrey Volkov
+Hi,
+has anyone got the "TXRTS" feature working on the Freescale MPC5200? I
+need that to use PSC6 for RS485.=20
+
+I've tried some hints I found in a thread starting here:
+http://article.gmane.org/gmane.comp.hardware.motorola.microcontrollers.cold=
+fire/6225
+but no luck, so far.
+
+I got it working by manually asserting and negating RTS through OP1/OP0,
+and waiting for the TX_FIFO_EMPTY bit, but I really want to use the
+TXRTS feature, which _should_ deassert RTS automatically one bit-time
+after the last bit is shifted out.
+
+Thanks,
+Stefan E.
+
+--=20
+Stefan Eletzhofer
+InQuant GmbH
+Bahnhofstra=C3=9Fe 11
+D-88214 Ravensburg
+http://www.inquant.de
+http://www.eletztrick.de
++49 (0) 751 35 44 112
++49 (0) 171 23 24 529 (Mobil)
++49 (0) 751 35 44 115 (FAX)
+
+--=-vVLmyMjjMQ5Z6+Cj2Qpe
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Dies ist ein digital signierter Nachrichtenteil
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQBDoqIV20PMGlcwuNARArKdAKCZg6c9WLiiCANq5Emz5qYXw7nGUgCeM/F4
+FSdAPAR0J1UaNz3lJ9vlC6U=
+=bHxu
+-----END PGP SIGNATURE-----
+
+--=-vVLmyMjjMQ5Z6+Cj2Qpe--
