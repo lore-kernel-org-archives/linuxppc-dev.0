@@ -1,17 +1,16 @@
-Return-Path: <batsayan.das@tcs.com>
-Received: from InMumG01.tcs.com (inmumg01.tcs.com [219.64.33.12])
-	by ozlabs.org (Postfix) with ESMTP id AC8FA6884E
+Return-Path: <prabha.j@tcs.com>
+Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
+	by ozlabs.org (Postfix) with ESMTP id 24160688B8
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Dec 2005 16:06:26 +1100 (EST)
-To: u-boot-users@lists.sourceforge.net
+	Fri, 16 Dec 2005 16:29:29 +1100 (EST)
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-From: batsayan.das@tcs.com
-Message-ID: <OFB8CF31AB.E132BC0B-ON652570D9.001789DD-652570D9.001A8A99@tcs.com>
-Date: Fri, 16 Dec 2005 10:19:53 +0530
+From: prabha.j@tcs.com
+Message-ID: <OF22452781.22D7B3D3-ON652570D9.0019E468-652570D9.001A1298@tcs.com>
+Date: Fri, 16 Dec 2005 10:14:46 +0530
 Content-Type: multipart/alternative;
-	boundary="=_alternative 001A8A34652570D9_="
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Help required to bring up kernel from U-Boot 
+	boundary="=_alternative 001A1255652570D9_="
+Subject: help reqd for mpc8260 linux
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,100 +22,102 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multipart message in MIME format.
---=_alternative 001A8A34652570D9_=
+--=_alternative 001A1255652570D9_=
 Content-Type: text/plain; charset="US-ASCII"
 
 
-Hello,
+Hi All,
+I working on custom board(mpc8260) . Now the bootlader is working and when 
+i dowload the kernel image through u-boot it gives messages as
+"Transferring Conrol to Linux" and then nothing comes. I am using 
+Linux-2.4.25 and eldk toolkit ,both from denx.
+My boards memory map is SDRAM starts from  0 and flash starts from 
+0x30000000. and baudrate is 57600 and IMMR is 0xF000000 .
+When i was debugging in
+start_here(arch/ppc/kernel/head.S)
+It is passing the machine_init and  MMU_init functions (This i have seen 
+by putting printk and seeing it in log_buf) and then in this code 
 
-I am using MPC8260ADS based customs board. I have configured the memory 
-map in U-Boot as follows
 
-SDRAM : 0x00000000  (size=128 MB)
-FLASH   :  0x30000000 (size= 1MB)
-SRAM : 0xFFF00000 (size 4MB)
+lis     r4,2f@h
+        ori     r4,r4,2f@l
+        tophys(r4,r4)
+        li      r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+        FIX_SRR1(r3,r5)
+        mtspr   SRR0,r4
+        mtspr   SRR1,r3
+        SYNC
+        bl      MMU_init_prabha //(This is just a printk function).Till 
+here its working.
 
-There are also other components in the board, like  FRAMER , DSP, etc. I 
-have not initialized the memory map of those components in U-Boot. 
-I am able to get the U-Boot prompt when run by TRACE23.  I have build a 
-default MPC8260ADS kernel, the only changes I have made is in the variable 
-IMAP_ADDR , BCSR_ADDR in  arch/ppc/platforms/ads8260.h. I have put those 
-values from the already running U-Boot code. 
+        RFI
+If i put the printk after this funtion i am not getting anything in the 
+log_buf. I simply commented the RFI instruction then also i didn't see any 
+messages.
+Can anybody tell me what may be the problem.
+Waiting for reply.
+Thanks in advance.
+Best Regards
 
-Our TEXT_BASE=0xFFF00000
-HRCW value= "0E A2 82 05" 
 
-I copied uImage to location 0x04000000 and  the Load Address=0x00000000 
-and Entry point=0x00000000.  The bootm 0x04000000 gives the o/p 
-"Transferring Control to Linux" and then nothing comes. Where is the 
-wrong?
-
-My question is
-1. What are the minimum information Linux needs from U-Boot to come up 
-properly?  In the Linux source tree we have put some printk statement and 
-found that base address of SDRAM, size, etc are passed correctly to Linux 
-by U-Boot. 
-2. Is the info passed from U-Boot is sufficient enough to make the kernel 
-up?
-3. If not, where should I concentrate in Linux tree?
-
-Pls help.
-
-Thanks,
-Batsayan Das
+Prabha J.
 Tata Consultancy Services Limited
-Mailto: batsayan.das@tcs.com
+Mailto: prabha.j@tcs.com
 Website: http://www.tcs.com
 
 Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
---=_alternative 001A8A34652570D9_=
+--=_alternative 001A1255652570D9_=
 Content-Type: text/html; charset="US-ASCII"
 
 
-<br><font size=2 face="sans-serif">Hello,</font>
+<br><font size=2 face="sans-serif">Hi All,</font>
+<br><font size=2 face="sans-serif">I working on custom board(mpc8260) .
+Now the bootlader is working and when i dowload the kernel image through
+u-boot it gives messages as</font>
+<br><font size=2 face="sans-serif">&quot;Transferring Conrol to Linux&quot;
+and then nothing comes. I am using Linux-2.4.25 and eldk toolkit ,both
+from denx.</font>
+<br><font size=2 face="sans-serif">My boards memory map is SDRAM starts
+from &nbsp;0 and flash starts from 0x30000000. and baudrate is 57600 and
+IMMR is 0xF000000 .</font>
+<br><font size=2 face="sans-serif">When i was debugging in</font>
+<br><font size=2 face="sans-serif">start_here(arch/ppc/kernel/head.S)</font>
+<br><font size=2 face="sans-serif">It is passing the machine_init and &nbsp;MMU_init
+functions (This i have seen by putting printk and seeing it in log_buf)
+and then in this code </font>
 <br>
-<br><font size=2 face="sans-serif">I am using MPC8260ADS based customs
-board. I have configured the memory map in U-Boot as follows</font>
 <br>
-<br><font size=2 face="sans-serif">SDRAM : 0x00000000 &nbsp;(size=128 MB)</font>
-<br><font size=2 face="sans-serif">FLASH &nbsp; &nbsp; &nbsp; &nbsp;:
-&nbsp;0x30000000 (size= 1MB)</font>
-<br><font size=2 face="sans-serif">SRAM : 0xFFF00000 (size 4MB)</font>
+<br><font size=2 face="sans-serif">lis &nbsp; &nbsp; r4,2f@h</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; ori &nbsp;
+&nbsp; r4,r4,2f@l</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; tophys(r4,r4)</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; li &nbsp;
+&nbsp; &nbsp;r3,MSR_KERNEL &amp; ~(MSR_IR|MSR_DR)</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; FIX_SRR1(r3,r5)</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; mtspr &nbsp;
+SRR0,r4</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; mtspr &nbsp;
+SRR1,r3</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; SYNC</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; bl &nbsp;
+&nbsp; &nbsp;MMU_init_prabha //(This is just a printk function).Till here
+its working.</font>
 <br>
-<br><font size=2 face="sans-serif">There are also other components in the
-board, like &nbsp;FRAMER , DSP, etc. I have not initialized the memory
-map of those components in U-Boot. </font>
-<br><font size=2 face="sans-serif">I am able to get the U-Boot prompt when
-run by TRACE23. &nbsp;I have build a default MPC8260ADS kernel, the only
-changes I have made is in the variable IMAP_ADDR , BCSR_ADDR in &nbsp;arch/ppc/platforms/ads8260.h.
-I have put those values from the already running U-Boot code. </font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; RFI</font>
+<br><font size=2 face="sans-serif">If i put the printk after this funtion
+i am not getting anything in the log_buf. I simply commented the RFI instruction
+then also i didn't see any messages.</font>
+<br><font size=2 face="sans-serif">Can anybody tell me what may be the
+problem.</font>
+<br><font size=2 face="sans-serif">Waiting for reply.</font>
+<br><font size=2 face="sans-serif">Thanks in advance.</font>
+<br><font size=2 face="sans-serif">Best Regards</font>
 <br>
-<br><font size=2 face="sans-serif">Our TEXT_BASE=0xFFF00000</font>
-<br><font size=2 face="sans-serif">HRCW value= &quot;0E A2 82 05&quot;
-</font>
-<br>
-<br><font size=2 face="sans-serif">I copied uImage to location 0x04000000
-and &nbsp;the Load Address=0x00000000 and Entry point=0x00000000. &nbsp;The
-bootm 0x04000000 gives the o/p &quot;Transferring Control to Linux&quot;
-and then nothing comes. Where is the wrong?</font>
 <br><font size=2 face="sans-serif"><br>
-My question is</font>
-<br><font size=2 face="sans-serif">1. What are the minimum information
-Linux needs from U-Boot to come up properly? &nbsp;In the Linux source
-tree we have put some printk statement and found that base address of SDRAM,
-size, etc are passed correctly to Linux by U-Boot. </font>
-<br><font size=2 face="sans-serif">2. Is the info passed from U-Boot is
-sufficient enough to make the kernel up?</font>
-<br><font size=2 face="sans-serif">3. If not, where should I concentrate
-in Linux tree?</font>
-<br>
-<br><font size=2 face="sans-serif">Pls help.</font>
-<br>
-<br><font size=2 face="sans-serif">Thanks,</font>
-<br><font size=2 face="sans-serif">Batsayan Das<br>
+Prabha J.<br>
 Tata Consultancy Services Limited<br>
-Mailto: batsayan.das@tcs.com<br>
+Mailto: prabha.j@tcs.com<br>
 Website: http://www.tcs.com</font>
 <table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
 </font></td></tr></table>
---=_alternative 001A8A34652570D9_=--
+--=_alternative 001A1255652570D9_=--
