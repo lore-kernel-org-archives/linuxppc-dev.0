@@ -1,18 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Received: from hermes.mvista.com (gateway-1237.mvista.com [12.44.186.158])
-	by ozlabs.org (Postfix) with ESMTP id 614AD688D9
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id 45565688D1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Dec 2005 09:28:10 +1100 (EST)
-Date: Fri, 16 Dec 2005 15:26:27 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Lance Ware <lware@datadesigncorp.net>
-Message-ID: <20051216222627.GB11761@mag.az.mvista.com>
-References: <000601c6028c$85eaea80$2d01a8c0@jalexander>
+	Sat, 17 Dec 2005 10:04:52 +1100 (EST)
+Date: Fri, 16 Dec 2005 16:04:50 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Message-ID: <20051216230450.GR3757@smtp.west.cox.net>
+References: <20051104180605.GA3271@logos.cnet>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <000601c6028c$85eaea80$2d01a8c0@jalexander>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: SMP on MV64460
+In-Reply-To: <20051104180605.GA3271@logos.cnet>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Required functions for relocating not part of relocate section
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,20 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Lance,
-
-On Fri, Dec 16, 2005 at 05:03:14PM -0500, Lance Ware wrote:
+On Fri, Nov 04, 2005 at 04:06:05PM -0200, Marcelo Tosatti wrote:
+> Hi Paul,
 > 
-> Hello group,
+> Recent 2.6-git (from Wednesday) tree fails to boot on 8xx due to:
+>                                                                                                                                               
+> BDI>i             
+>     Target state      : debug mode
+>     Debug entry cause : trace
+>     Current PC        : 0x005ba8e8
+> BDI>md 0x005ba8e8 
+> 005ba8e8 : 00000000 00000000 00000000 00000000  ................
+> 005ba8f8 : 00000000 00000000 00000000 00000000  ................
+> 005ba908 : 00000000 00000000 00000000 00000000  ................
+> 005ba918 : 00000000 00000000 00000000 00000000  ................
+> 005ba928 : 00000000 00000000 00000000 00000000  ................
+> ...
+> BDI>go 
+> - TARGET: stopped
+> BDI>i 
+>     Target state      : debug mode
+>     Debug entry cause : software emulation exception
+>     Current PC        : 0x005ba8e8
 > 
-> I am currently working on a board which has MV64460 linked between
-> two 7447a processors.  I wanted to know if someone has been able to get
-> the Linux 2.6 kernel working with any MV64xxx bridge.
+> Problem is that flush_instruction_cache (and flush_data_cache)
+> from boot/common/util.S are not being copied to the relocate section,
+> even though the file contains the proper entry:
 
-I think there are people out there that have made this work.  However, I
-haven't b/c I do not have access to any SMP hardware that has all of the
-necessary h/w errata implemented.
+So while I don't know why, someone else noted this problem to me
+recently, as hit on I believe the Walnut (405GP Eval), saying that
+flush_instruction_cache worked prior to relocation, but failed
+afterwards.  And if the function was put into the .data section, all was
+well (_GLOBAL changed meaning 'recently' which changed this behavior).
+No solution, but hopefully more hints..
 
-Perhaps others that have hardware will speak up?
-
-Mark
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
