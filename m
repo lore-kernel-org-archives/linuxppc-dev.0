@@ -1,18 +1,23 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 4CECC688C7
+Return-Path: <lware@datadesigncorp.net>
+Received: from pyramid-04.kattare.com (pyramid-04.kattare.com [65.212.180.79])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.kattare.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id F3458688DC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Dec 2005 07:09:08 +1100 (EST)
-Message-ID: <43A31EE1.3030101@ru.mvista.com>
-Date: Fri, 16 Dec 2005 23:09:05 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Sat, 17 Dec 2005 09:20:26 +1100 (EST)
+Received: from jalexander ([70.106.9.90]) (authenticated bits=0)
+	by pyramid-04.kattare.com (8.12.11/8.12.11) with ESMTP id
+	jBGM361h013922
+	for <linuxppc-embedded@ozlabs.org>; Fri, 16 Dec 2005 14:03:07 -0800
+Message-ID: <000601c6028c$85eaea80$2d01a8c0@jalexander>
+From: "Lance Ware" <lware@datadesigncorp.net>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 16 Dec 2005 17:03:14 -0500
 MIME-Version: 1.0
-To: Addison Baldwin <addison.baldwin@gmail.com>
-References: <af313df20512161201u39280d30kdf1ace1c4569d50a@mail.gmail.com>
-In-Reply-To: <af313df20512161201u39280d30kdf1ace1c4569d50a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Unable to open an initial console
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0003_01C60262.9A700140"
+Subject: SMP on MV64460
+Reply-To: Lance Ware <lware@datadesigncorp.net>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,35 +28,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Addison Baldwin wrote:
-> I was sucessful to port U-Boot to our 8272 board. Now I'm experiencing
-> a problem:
-> 
-> Our Kernel hangs with the message that says it was trasnferring
-> control to linux. A post morten analyzes indicated that it stopped at
-> "Unable to open an initial console" in the memory sapce where console
-> output should be out (in the sdram, like I had found somewhere in this
-> list, how to do it).
-> 
-> I have checked the bootargs values, it is ok:
-> bootargs root=/dev/ram console=ttyS0,115200
-> 
-Only for 2.4, 2.6 is different for this.
-console=ttyCPM0 should be there, and that device does have different major/minor comparing to ttyS0.
-Note that the UART has to be enabled explicitly in kernel config, for more info, search this list archives.
+This is a multi-part message in MIME format.
 
->  We also checked our "/dev" and there was a link to console, pointing
-> ttyS0. Also, ttyS0 was there too.
-> 
-> Does anyone have any idea how to fix it?
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+------=_NextPart_000_0003_01C60262.9A700140
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
--- 
-Sincerely, 
-Vitaly
+Hello group,
+
+    I am currently working on a board which has MV64460 linked between =
+two 7447a processors.  I wanted to know if someone has been able to get =
+the Linux 2.6 kernel working with any MV64xxx bridge.
+
+Thanks,
+Lance
+
+------=_NextPart_000_0003_01C60262.9A700140
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.2769" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Hello group,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>&nbsp;&nbsp;&nbsp; I am currently =
+working on a=20
+board which has MV64460 linked between two 7447a processors.&nbsp; I =
+wanted to=20
+know if someone has been able to get the Linux 2.6 kernel working with =
+any=20
+MV64xxx bridge.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Thanks,<BR>Lance</FONT></DIV>
+<DIV>&nbsp;</DIV></BODY></HTML>
+
+------=_NextPart_000_0003_01C60262.9A700140--
