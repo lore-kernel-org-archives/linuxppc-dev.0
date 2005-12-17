@@ -1,19 +1,22 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
-	by ozlabs.org (Postfix) with ESMTP id 45565688D1
+Return-Path: <ncunningham@cyclades.com>
+Received: from cunningham.myip.net.au (cust8446.nsw01.dataco.com.au
+	[203.171.93.254])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A6E596889F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Dec 2005 10:04:52 +1100 (EST)
-Date: Fri, 16 Dec 2005 16:04:50 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Message-ID: <20051216230450.GR3757@smtp.west.cox.net>
-References: <20051104180605.GA3271@logos.cnet>
+	Sat, 17 Dec 2005 16:33:42 +1100 (EST)
+From: Nigel Cunningham <ncunningham@cyclades.com>
+To: Addison Baldwin <addison.baldwin@gmail.com>
+In-Reply-To: <af313df20512161201u39280d30kdf1ace1c4569d50a@mail.gmail.com>
+References: <af313df20512161201u39280d30kdf1ace1c4569d50a@mail.gmail.com>
+Content-Type: text/plain
+Message-Id: <1134796988.21103.1636.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051104180605.GA3271@logos.cnet>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: Required functions for relocating not part of relocate section
+Date: Sat, 17 Dec 2005 15:23:08 +1000
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Unable to open an initial console
+Reply-To: ncunningham@cyclades.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +27,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Nov 04, 2005 at 04:06:05PM -0200, Marcelo Tosatti wrote:
-> Hi Paul,
-> 
-> Recent 2.6-git (from Wednesday) tree fails to boot on 8xx due to:
->                                                                                                                                               
-> BDI>i             
->     Target state      : debug mode
->     Debug entry cause : trace
->     Current PC        : 0x005ba8e8
-> BDI>md 0x005ba8e8 
-> 005ba8e8 : 00000000 00000000 00000000 00000000  ................
-> 005ba8f8 : 00000000 00000000 00000000 00000000  ................
-> 005ba908 : 00000000 00000000 00000000 00000000  ................
-> 005ba918 : 00000000 00000000 00000000 00000000  ................
-> 005ba928 : 00000000 00000000 00000000 00000000  ................
-> ...
-> BDI>go 
-> - TARGET: stopped
-> BDI>i 
->     Target state      : debug mode
->     Debug entry cause : software emulation exception
->     Current PC        : 0x005ba8e8
-> 
-> Problem is that flush_instruction_cache (and flush_data_cache)
-> from boot/common/util.S are not being copied to the relocate section,
-> even though the file contains the proper entry:
+Hi.
 
-So while I don't know why, someone else noted this problem to me
-recently, as hit on I believe the Walnut (405GP Eval), saying that
-flush_instruction_cache worked prior to relocation, but failed
-afterwards.  And if the function was put into the .data section, all was
-well (_GLOBAL changed meaning 'recently' which changed this behavior).
-No solution, but hopefully more hints..
+On Sat, 2005-12-17 at 06:01, Addison Baldwin wrote:
+> I was sucessful to port U-Boot to our 8272 board. Now I'm experiencing
+> a problem:
+> 
+> Our Kernel hangs with the message that says it was trasnferring
+> control to linux. A post morten analyzes indicated that it stopped at
+> "Unable to open an initial console" in the memory sapce where console
+> output should be out (in the sdram, like I had found somewhere in this
+> list, how to do it).
+> 
+> I have checked the bootargs values, it is ok:
+> bootargs root=/dev/ram console=ttyS0,115200
+> 
+>  We also checked our "/dev" and there was a link to console, pointing
+> ttyS0. Also, ttyS0 was there too.
 
--- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Are you using an initrd or initramfs? If so, the device node needs to
+exist on that filesystem. This message will only occur if the kernel is
+unable to open /dev/console for rw access.
+
+Hope this helps.
+
+Nigel
