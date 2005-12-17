@@ -1,24 +1,15 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A56E268802
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Dec 2005 12:19:06 +1100 (EST)
-Date: Sat, 17 Dec 2005 02:19:00 +0100
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: linux-kernel@vger.kernel.org
-Message-ID: <20051217011900.GA4134@hansmi.ch>
-References: <20051213223659.GB20017@hansmi.ch>
-	<20051213224019.GC20017@hansmi.ch>
+Return-Path: <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200512062048.56131.arnd@arndb.de>
+References: <1133816807.8577.50.camel@cashmere.sps.mot.com>
+	<200512062048.56131.arnd@arndb.de>
+Content-Type: text/plain
+Date: Sun, 18 Dec 2005 08:59:21 +1100
+Message-Id: <1134856762.6102.54.camel@gaston>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051213224019.GC20017@hansmi.ch>
-Cc: kernel-stuff@comcast.net, linuxppc-dev@ozlabs.org,
-	linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH 2.6 2/2] usb/input: Add Geyser 2 support to appletouch
-	driver
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Subject: Re: RFC: Rev 0.5 Booting the Linux/ppc kernel without Open Firmware
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,307 +19,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for the Geyser 2 touchpads used on post Oct 2005
-Apple PowerBooks to the appletouch driver.
 
-Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
-Acked-by: Rene Nussbaumer <linux-kernel@killerfox.forkbomb.ch>  
-Acked-by: Johannes Berg <johannes@sipsolutions.net>  
-Acked-by: Stelian Pop <stelian@popies.net>
----
-Rediffed without relayfs and made loops out of the manually unrolled
-assignment code.
+> - Do we need a way to identify the type of soc bus? There are different
+>   standards for this, e.g. PLB4 on PPC440 or the EIB on the Cell BE.
+>   My initial idea was to have different device-type properties for these,
+>   but I now think that device_type = "soc" makes sense for all of them.
+>   Maybe we could add a model or compatible property for them.
 
-diff -rup linux-2.6.15-rc5.orig/Documentation/input/appletouch.txt b/Documentation/input/appletouch.txt
---- linux-2.6.15-rc5.orig/Documentation/input/appletouch.txt	2005-12-13 00:09:24.000000000 +0100
-+++ b/Documentation/input/appletouch.txt	2005-12-17 02:06:27.000000000 +0100
-@@ -3,7 +3,7 @@ Apple Touchpad Driver (appletouch)
- 	Copyright (C) 2005 Stelian Pop <stelian@popies.net>
- 
- appletouch is a Linux kernel driver for the USB touchpad found on post
--February 2005 Apple Alu Powerbooks.
-+February 2005 and October 2005 Apple Aluminium Powerbooks.
- 
- This driver is derived from Johannes Berg's appletrackpad driver[1], but it has
- been improved in some areas:
-@@ -13,7 +13,8 @@ been improved in some areas:
- 
- Credits go to Johannes Berg for reverse-engineering the touchpad protocol,
- Frank Arnold for further improvements, and Alex Harper for some additional
--information about the inner workings of the touchpad sensors.
-+information about the inner workings of the touchpad sensors. Michael
-+Hanselmann added support for the October 2005 models.
- 
- Usage:
- ------
-diff -rup linux-2.6.15-rc5.orig/drivers/usb/input/appletouch.c b/drivers/usb/input/appletouch.c
---- linux-2.6.15-rc5.orig/drivers/usb/input/appletouch.c	2005-12-13 22:44:24.000000000 +0100
-+++ b/drivers/usb/input/appletouch.c	2005-12-17 02:13:02.000000000 +0100
-@@ -6,6 +6,7 @@
-  * Copyright (C) 2005      Stelian Pop (stelian@popies.net)
-  * Copyright (C) 2005      Frank Arnold (frank@scirocco-5v-turbo.de)
-  * Copyright (C) 2005      Peter Osterlund (petero2@telia.com)
-+ * Copyright (C) 2005      Michael Hanselmann (linux-kernel@hansmi.ch)
-  *
-  * Thanks to Alex Harper <basilisk@foobox.net> for his inputs.
-  *
-@@ -38,6 +39,11 @@
- /* Apple has powerbooks which have the keyboard with different Product IDs */
- #define APPLE_VENDOR_ID		0x05AC
- 
-+/* These names come from Info.plist in AppleUSBTrackpad.kext */
-+#define GEYSER_ANSI_PRODUCT_ID	0x0214
-+#define GEYSER_ISO_PRODUCT_ID	0x0215
-+#define GEYSER_JIS_PRODUCT_ID	0x0216
-+
- #define ATP_DEVICE(prod)					\
- 	.match_flags = USB_DEVICE_ID_MATCH_DEVICE |		\
- 		       USB_DEVICE_ID_MATCH_INT_CLASS |		\
-@@ -53,13 +59,17 @@ static struct usb_device_id atp_table []
- 	{ ATP_DEVICE(0x020F) },
- 	{ ATP_DEVICE(0x030A) },
- 	{ ATP_DEVICE(0x030B) },
--	{ }					/* Terminating entry */
-+
-+	/* PowerBooks Oct 2005 */
-+	{ ATP_DEVICE(GEYSER_ANSI_PRODUCT_ID) },
-+	{ ATP_DEVICE(GEYSER_ISO_PRODUCT_ID) },
-+	{ ATP_DEVICE(GEYSER_JIS_PRODUCT_ID) },
-+
-+	/* Terminating entry */
-+	{ }
- };
- MODULE_DEVICE_TABLE (usb, atp_table);
- 
--/* size of a USB urb transfer */
--#define ATP_DATASIZE	81
--
- /*
-  * number of sensors. Note that only 16 instead of 26 X (horizontal)
-  * sensors exist on 12" and 15" PowerBooks. All models have 16 Y
-@@ -108,6 +118,8 @@ struct atp {
- 	signed char		xy_old[ATP_XSENSORS + ATP_YSENSORS];
- 						/* accumulated sensors */
- 	int			xy_acc[ATP_XSENSORS + ATP_YSENSORS];
-+	int			overflowwarn;	/* overflow warning printed? */
-+	int			datalen;	/* size of an USB urb transfer */
- };
- 
- #define dbg_dump(msg, tab) \
-@@ -124,7 +136,7 @@ struct atp {
- 		if (debug) printk(format, ##a);				\
- 	} while (0)
- 
--MODULE_AUTHOR("Johannes Berg, Stelian Pop, Frank Arnold");
-+MODULE_AUTHOR("Johannes Berg, Stelian Pop, Frank Arnold, Michael Hanselmann");
- MODULE_DESCRIPTION("Apple PowerBooks USB touchpad driver");
- MODULE_LICENSE("GPL");
- 
-@@ -132,6 +144,16 @@ static int debug = 1;
- module_param(debug, int, 0644);
- MODULE_PARM_DESC(debug, "Activate debugging output");
- 
-+/* Checks if the device a Geyser 2 (ANSI, ISO, JIS) */
-+static inline int atp_is_geyser_2(struct atp *dev)
-+{
-+	int16_t productId = le16_to_cpu(dev->udev->descriptor.idProduct);
-+
-+	return (productId == GEYSER_ANSI_PRODUCT_ID) ||
-+		(productId == GEYSER_ISO_PRODUCT_ID) ||
-+		(productId == GEYSER_JIS_PRODUCT_ID);
-+}
-+
- static int atp_calculate_abs(int *xy_sensors, int nb_sensors, int fact,
- 			     int *z, int *fingers)
- {
-@@ -168,13 +190,20 @@ static inline void atp_report_fingers(st
- static void atp_complete(struct urb* urb, struct pt_regs* regs)
- {
- 	int x, y, x_z, y_z, x_f, y_f;
--	int retval, i;
-+	int retval, i, j;
- 	struct atp *dev = urb->context;
- 
- 	switch (urb->status) {
- 	case 0:
- 		/* success */
- 		break;
-+	case -EOVERFLOW:
-+		if(!dev->overflowwarn) {
-+			printk("appletouch: OVERFLOW with data "
-+				"length %d, actual length is %d\n",
-+				dev->datalen, dev->urb->actual_length);
-+			dev->overflowwarn = 1;
-+		}
- 	case -ECONNRESET:
- 	case -ENOENT:
- 	case -ESHUTDOWN:
-@@ -189,23 +218,45 @@ static void atp_complete(struct urb* urb
- 	}
- 
- 	/* drop incomplete datasets */
--	if (dev->urb->actual_length != ATP_DATASIZE) {
-+	if (dev->urb->actual_length != dev->datalen) {
- 		dprintk("appletouch: incomplete data package.\n");
- 		goto exit;
- 	}
- 
- 	/* reorder the sensors values */
--	for (i = 0; i < 8; i++) {
--		/* X values */
--		dev->xy_cur[i     ] = dev->data[5 * i +  2];
--		dev->xy_cur[i +  8] = dev->data[5 * i +  4];
--		dev->xy_cur[i + 16] = dev->data[5 * i + 42];
--		if (i < 2)
--			dev->xy_cur[i + 24] = dev->data[5 * i + 44];
--
--		/* Y values */
--		dev->xy_cur[i + 26] = dev->data[5 * i +  1];
--		dev->xy_cur[i + 34] = dev->data[5 * i +  3];
-+	if (atp_is_geyser_2(dev)) {
-+		memset(dev->xy_cur, 0, sizeof(dev->xy_cur));
-+
-+		/*
-+		 * The values are laid out like this:
-+		 * Y1, Y2, -, Y3, Y4, -, ..., X1, X2, -, X3, X4, -, ...
-+		 * '-' is an unused value.
-+		 */
-+
-+		/* read X values */
-+		for (i = 0, j = 19; i < 20; i += 2, j += 3) {
-+			dev->xy_cur[i] = dev->data[j];
-+			dev->xy_cur[i + 1] = dev->data[j + 1];
-+		}
-+
-+		/* read Y values */
-+		for (i = 0, j = 1; i < 9; i += 2, j += 3) {
-+			dev->xy_cur[ATP_XSENSORS + i] = dev->data[j];
-+			dev->xy_cur[ATP_XSENSORS + i + 1] = dev->data[j + 1];
-+		}
-+	} else {
-+		for (i = 0; i < 8; i++) {
-+			/* X values */
-+			dev->xy_cur[i     ] = dev->data[5 * i +  2];
-+			dev->xy_cur[i +  8] = dev->data[5 * i +  4];
-+			dev->xy_cur[i + 16] = dev->data[5 * i + 42];
-+			if (i < 2)
-+				dev->xy_cur[i + 24] = dev->data[5 * i + 44];
-+
-+			/* Y values */
-+			dev->xy_cur[i + 26] = dev->data[5 * i +  1];
-+			dev->xy_cur[i + 34] = dev->data[5 * i +  3];
-+		}
- 	}
- 
- 	dbg_dump("sample", dev->xy_cur);
-@@ -216,16 +267,24 @@ static void atp_complete(struct urb* urb
- 		dev->x_old = dev->y_old = -1;
- 		memcpy(dev->xy_old, dev->xy_cur, sizeof(dev->xy_old));
- 
--		/* 17" Powerbooks have 10 extra X sensors */
--		for (i = 16; i < ATP_XSENSORS; i++)
--			if (dev->xy_cur[i]) {
--				printk("appletouch: 17\" model detected.\n");
-+		/* 17" Powerbooks have extra X sensors */
-+		for (i = (atp_is_geyser_2(dev)?15:16); i < ATP_XSENSORS; i++) {
-+			if (!dev->xy_cur[i]) continue;
-+
-+			printk("appletouch: 17\" model detected.\n");
-+			if(atp_is_geyser_2(dev))
-+				input_set_abs_params(dev->input, ABS_X, 0,
-+						     (20 - 1) *
-+						     ATP_XFACT - 1,
-+						     ATP_FUZZ, 0);
-+			else
- 				input_set_abs_params(dev->input, ABS_X, 0,
- 						     (ATP_XSENSORS - 1) *
- 						     ATP_XFACT - 1,
- 						     ATP_FUZZ, 0);
--				break;
--			}
-+
-+			break;
-+		}
- 
- 		goto exit;
- 	}
-@@ -282,7 +341,8 @@ static void atp_complete(struct urb* urb
- 		memset(dev->xy_acc, 0, sizeof(dev->xy_acc));
- 	}
- 
--	input_report_key(dev->input, BTN_LEFT, !!dev->data[80]);
-+	input_report_key(dev->input, BTN_LEFT,
-+			 !!dev->data[dev->datalen - 1]);
- 
- 	input_sync(dev->input);
- 
-@@ -353,6 +413,8 @@ static int atp_probe(struct usb_interfac
- 
- 	dev->udev = udev;
- 	dev->input = input_dev;
-+	dev->overflowwarn = 0;
-+	dev->datalen = (atp_is_geyser_2(dev)?64:81);
- 
- 	dev->urb = usb_alloc_urb(0, GFP_KERNEL);
- 	if (!dev->urb) {
-@@ -360,7 +422,7 @@ static int atp_probe(struct usb_interfac
- 		goto err_free_devs;
- 	}
- 
--	dev->data = usb_buffer_alloc(dev->udev, ATP_DATASIZE, GFP_KERNEL,
-+	dev->data = usb_buffer_alloc(dev->udev, dev->datalen, GFP_KERNEL,
- 				     &dev->urb->transfer_dma);
- 	if (!dev->data) {
- 		retval = -ENOMEM;
-@@ -369,7 +431,7 @@ static int atp_probe(struct usb_interfac
- 
- 	usb_fill_int_urb(dev->urb, udev,
- 			 usb_rcvintpipe(udev, int_in_endpointAddr),
--			 dev->data, ATP_DATASIZE, atp_complete, dev, 1);
-+			 dev->data, dev->datalen, atp_complete, dev, 1);
- 
- 	usb_make_path(udev, dev->phys, sizeof(dev->phys));
- 	strlcat(dev->phys, "/input0", sizeof(dev->phys));
-@@ -385,14 +447,25 @@ static int atp_probe(struct usb_interfac
- 
- 	set_bit(EV_ABS, input_dev->evbit);
- 
--	/*
--	 * 12" and 15" Powerbooks only have 16 x sensors,
--	 * 17" models are detected later.
--	 */
--	input_set_abs_params(input_dev, ABS_X, 0,
--			     (16 - 1) * ATP_XFACT - 1, ATP_FUZZ, 0);
--	input_set_abs_params(input_dev, ABS_Y, 0,
--			     (ATP_YSENSORS - 1) * ATP_YFACT - 1, ATP_FUZZ, 0);
-+	if (atp_is_geyser_2(dev)) {
-+		/*
-+		 * Oct 2005 15" PowerBooks have 15 X sensors, 17" are detected
-+		 * later.
-+		 */
-+		input_set_abs_params(input_dev, ABS_X, 0,
-+				     ((15 - 1) * ATP_XFACT) - 1, ATP_FUZZ, 0);
-+		input_set_abs_params(input_dev, ABS_Y, 0,
-+				     ((9 - 1) * ATP_YFACT) - 1, ATP_FUZZ, 0);
-+	} else {
-+		/*
-+		 * 12" and 15" Powerbooks only have 16 x sensors,
-+		 * 17" models are detected later.
-+		 */
-+		input_set_abs_params(input_dev, ABS_X, 0,
-+				     (16 - 1) * ATP_XFACT - 1, ATP_FUZZ, 0);
-+		input_set_abs_params(input_dev, ABS_Y, 0,
-+				     (ATP_YSENSORS - 1) * ATP_YFACT - 1, ATP_FUZZ, 0);
-+	}
- 	input_set_abs_params(input_dev, ABS_PRESSURE, 0, ATP_PRESSURE, 0, 0);
- 
- 	set_bit(EV_KEY, input_dev->evbit);
-@@ -427,7 +500,7 @@ static void atp_disconnect(struct usb_in
- 		usb_kill_urb(dev->urb);
- 		input_unregister_device(dev->input);
- 		usb_free_urb(dev->urb);
--		usb_buffer_free(dev->udev, ATP_DATASIZE,
-+		usb_buffer_free(dev->udev, dev->datalen,
- 				dev->data, dev->urb->transfer_dma);
- 		kfree(dev);
- 	}
+That would be a good idea.
+
+Also, it might be useful to ass a "clock-frequency" to it for processors
+where it makes sense. One of the things we are passing from uboot
+currently is the list of clock frequencies for PLB/OPB/PCI/... we need
+to replace this with appropriate nodes and their respective
+"clock-frequency" properties
+
+> - It does not really belong into this document, but is related anyway:
+>   how do you want to represent this in Linux? Currently, most of these
+>   would be of_platform_device, but I think it would be good to have
+>   a new bus_type for it. The advantage would be that you can see the
+>   devices in /sys/devices/soc@xxx/ even if the driver is not loaded
+>   and the driver can even be autoloaded by udev.
+>   Also, which properties should show up in sysfs? All of them or just
+>   those specified in this document or a subset of them?
+
+If we go that way, we also need to have the SOC type take optionally
+part in the matching. That is, the driver matching infos should be based
+on model & compatible like OF does, thus we could recommend something
+like:
+
+ - Define a unique SOC name per SOC bus type/family, for example,
+ppc4xxPLB, etc... This goes into /soc/model.
+
+ - Optionally, use compatible for similar busses. For example, if you
+have a new rev of that PLB that is similar but has extensions called
+PLB2, you can have model be ppc4xxPLB2 and compatible containing
+ppc4xxPLB.
+
+ - Define that the "model" property of a device under /soc is of the
+form "socname,devicename"... For example, EMAC would be ppc4xxPLB,emac",
+Same rule applies with compatible (this one could be compatible, among
+others, with "ppc4xxPLB,emac" and model "ppc4xxPLB2,emac".
+
+> - What do we do with pci root devices? They are often physically connected
+>   to the internal CPU bus, so it would make sense to represent them
+>   this way in the device tree. Should we add them to the specification
+>   here? Would it even work the expected way in Linux?
+
+They are generally below the root of the tree, they don't have to
+though. Linux shouldn't care as there is no generic code to instanciate
+them, it's platform specific. I may change that in the future though but
+this isn't the case yet. The only rule is their name should be "pci"
+
+> - For some devices, you mandate a model property, for others you don't.
+>   Is this intentional? It might be easier to find the right device
+>   driver if the match string always contains a model name.
+> 
+> - How would I represent nested interrupt controllers? E.g. suppose I
+>   have a Cell internal interrupt controller on one SOC bus and
+>   and an external interrupt controller on another SOC bus but have
+>   that deliver interrupts to the first one.
+
+Read OF interrupt binding :) Typically, nodes contain either an
+interrupt-parent or a parent device with interrupt routing info (like a
+PCI bridge) which points to their actual parent controller. If it's a
+nested controller, it will itself have an interrupt parent and
+"interrupts" property to link it to its parent controller.
+
+> - Should it mention nested SOC buses, e.g. a PLB4 bus connected to a
+>   PLB5 bus?
+> 
+Do we have many of these horrors in real life ?
+
+> - The title says 'without Open Firmware', but it should also be allowed
+>   to use the same SOC bus layout when using SLOF or some other OF
+>   implementation, right?
+
+Yes, in fact, this document does cover open firmware as well. It defines
+the flattened tree format, but doesn't exclude open firmware, and then
+defines the subset of OF required by the kernel.
+
+> - Also not new in this version, but still: Should there be support for
+>   specifying CPUs with multiple SMT threads?
+
+We need to think about this... 
+
+Ben.
