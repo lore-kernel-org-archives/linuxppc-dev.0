@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 70D9D688E5
+Return-Path: <robbinmathew@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.192])
+	by ozlabs.org (Postfix) with ESMTP id 156A1688DC
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 01:44:56 +1100 (EST)
-To: zengshuai@sogou.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 18 Dec 2005 16:20:54 +0800."
-	<4440987.1134894054475.JavaMail.postfix@mx3.mail.sohu.com>
-Date: Sun, 18 Dec 2005 15:44:53 +0100
-Sender: wd@denx.de
-Message-Id: <20051218144453.68024352B33@atlas.denx.de>
-Cc: ppc <linuxppc-embedded@ozlabs.org>
-Subject: Re: eldk bug?how to fix 
+	Mon, 19 Dec 2005 02:14:28 +1100 (EST)
+Received: by xproxy.gmail.com with SMTP id i27so669768wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 18 Dec 2005 07:14:27 -0800 (PST)
+Message-ID: <5b74ec4d0512180714r178223f6ub60df08a7ef78fc9@mail.gmail.com>
+Date: Sun, 18 Dec 2005 20:44:27 +0530
+From: Robin Mathew <robbinmathew@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_2466_25750897.1134918867226"
+Subject: x86 gdb with ppc8xx gdbserver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,63 +24,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <4440987.1134894054475.JavaMail.postfix@mx3.mail.sohu.com> you wrote:
-> [root@localhost atmlz]# ppc_6xx-gcc -c -o temp atm_aalx.c         
-> atm_aalx.c: In function `main':                                   
-> atm_aalx.c:201: warning: return type of `main' is not `int'       
-> /tmp/cciJlehe.s: Assembler messages:                              
-> /tmp/cciJlehe.s:916: Error: unsupported relocation against r3     
-> /tmp/cciJlehe.s:917: Error: unsupported relocation against r3     
-> /tmp/cciJlehe.s:917: Error: unsupported relocation against r3     
-> /tmp/cciJlehe.s:918: Error: unsupported relocation against r3     
-> /tmp/cciJlehe.s:918: Error: unsupported relocation against r3     
-> /tmp/cciJlehe.s:919: Error: unsupported relocation against r3     
-> /tmp/cciJlehe.s:3655: Error: unsupported relocation against r3    
+------=_Part_2466_25750897.1134918867226
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Are you by any chance using inline  assembler  code  in  your  source
-file?  This  is  the  only  explanation  I  have,  since GCC does not
-generate "r3" references in it's assembler code.
+Hi,
+We are trying to setup gdbserver and gdb for target debugging. We were able
+to connect and debug with eldk's ppc8xx/gdb and ppc8xx gdbserver without an=
+y
+issues.
 
-It would have been a good idea if you had included your  source  code
-so we could see what you are doing...
+But I am not able to compile gdb in x86 for ppc8xx target. Can you please
+point to some source tree of gdb that can be compiled for x86 platform for
+ppc8xx target? I tried with gdb version 6.4 but it does not take
+--target=3Dppc8xx option. I think the option that I am using to compile for
+target is not right.
 
-> [root@localhost atmlz]# ppc_6xx-gcc -S -o temp.s atm_aalx.c
-> [root@localhost atmlz]# vi temp.s
-> ...................
->         stw 0,4(9)                 
-> .L36:                              
-> #APP                               
->          mfmsr r3                  
->          ori r3,r3,0x8000          
->          andi. r3,r3,0xffbf        
->          mtmsr r3                  
-> #NO_APP                            
->         lwz 11,0(1)                
-> ..............................
+Any help in this regard is greatly appreciated.
 
-I see. This is your own assembler code, not something generated  from
-C source code.
+Thanks,
+Robin
 
-> I must change those "r3" to "3" manually.
-> How to fix?
+------=_Part_2466_25750897.1134918867226
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Don't write incorrect assembler code,  or  use  the  required  header
-files (like ppc_asm.tmpl).
+Hi,<br>
+We are trying to setup gdbserver and gdb for target debugging. We were
+able to connect and debug with eldk's ppc8xx/gdb and ppc8xx gdbserver
+without any issues.<br>
+<br>
+But I am not able to compile gdb in x86 for ppc8xx target. Can you
+please point to some source tree of gdb that can be compiled for x86
+platform for ppc8xx target? I tried with gdb version 6.4 but it does
+not take --target=3Dppc8xx option. I think the option that I am using to
+compile for target is not right.<br>
+<br>
+Any help in this regard is greatly appreciated.<br>
+<br>
+Thanks,<br>
+Robin<br>
 
-And while we are at it: be careful not to try privileged instructions
-in user space.
-
-
-
-This is your own error, not a problem with ELDK.
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If I had to live my life again,  I'd  make  the  same  mistakes, only
-sooner.                                          -- Tallulah Bankhead
+------=_Part_2466_25750897.1134918867226--
