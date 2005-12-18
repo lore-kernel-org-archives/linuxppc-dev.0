@@ -1,21 +1,19 @@
-Return-Path: <bennett78@digis.net>
-Received: from mercury.testsyseng.com (unknown [209.120.144.205])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 19C23688DC
+Return-Path: <zengshuai@sogou.com>
+Received: from sogoumx75.mail.sogou.com (unknown [61.135.132.136])
+	by ozlabs.org (Postfix) with ESMTP id 10781688DC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 18 Dec 2005 05:32:44 +1100 (EST)
-Message-ID: <43A459C4.9050506@digis.net>
-Date: Sat, 17 Dec 2005 11:32:36 -0700
-From: bennett78 <bennett78@digis.net>
-MIME-Version: 1.0
-To: Michael Boutte <maboutte@pacbell.net>
-References: <43A3C9B2.6040401@pacbell.net>
-In-Reply-To: <43A3C9B2.6040401@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Building a Root Filesystem
-Reply-To: Frank Bennett <bennett78@digis.net>
+	Sun, 18 Dec 2005 19:33:47 +1100 (EST)
+Received: from mx3.mail.sohu.com (unknown [192.168.95.78])
+	by sogoumx75.mail.sogou.com (Postfix) with ESMTP id E032053411B0
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 18 Dec 2005 16:33:37 +0800 (CST)
+Message-ID: <4440987.1134894054475.JavaMail.postfix@mx3.mail.sohu.com>
+Date: Sun, 18 Dec 2005 16:20:54 +0800 (CST)
+From: <zengshuai@sogou.com>
+To: "ppc" <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="GB2312"
+Subject: eldk bug?how to fix
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,44 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Michael Boutte wrote:
+[root@localhost atmlz]# ppc_6xx-gcc -c -o temp atm_aalx.c         
+atm_aalx.c: In function `main':                                   
+atm_aalx.c:201: warning: return type of `main' is not `int'       
+/tmp/cciJlehe.s: Assembler messages:                              
+/tmp/cciJlehe.s:916: Error: unsupported relocation against r3     
+/tmp/cciJlehe.s:917: Error: unsupported relocation against r3     
+/tmp/cciJlehe.s:917: Error: unsupported relocation against r3     
+/tmp/cciJlehe.s:918: Error: unsupported relocation against r3     
+/tmp/cciJlehe.s:918: Error: unsupported relocation against r3     
+/tmp/cciJlehe.s:919: Error: unsupported relocation against r3     
+/tmp/cciJlehe.s:3655: Error: unsupported relocation against r3    
+[root@localhost atmlz]# ppc_6xx-gcc -S -o temp.s atm_aalx.c
+[root@localhost atmlz]# vi temp.s
+...................
+        stw 0,4(9)                 
+.L36:                              
+#APP                               
+         mfmsr r3                  
+         ori r3,r3,0x8000          
+         andi. r3,r3,0xffbf        
+         mtmsr r3                  
+#NO_APP                            
+        lwz 11,0(1)                
+..............................
+I must change those "r3" to "3" manually.
+How to fix?
 
-> Hi,
-> I seem to be stuck at one point in my first embedded Linux project. I 
-> built a custom MPC875 board and have figured out how to get U-Boot to 
-> compile and run. Then I learned to compile an initial Linux 2.4.25 
-> using the ELDK with a basic root filesystem via the "SELF" included in 
-> the ELDK (thank you WD and others). Now I want to build a new root 
-> filesystem with the modules included. So then I have used the "make 
-> modules" and "make ... modules_install" commands plus used the 
-> procedure in the DULG section 9.6 to unpack the ramdisk image and 
-> mount it in the /mnt/tmp/ directory.
-> That is point where I do not know what to do next. It would seem that 
-> I need to merge the modules and other items I may want to add (for 
-> example appWeb) with the simple root filesystem and re-compress it for 
-> use just like the original ramdisk image. I just do not seem to find 
-> any information on this process either in the DULG or anywhere else on 
-> the web.
-> Any help would be greatly appreciated.
-
-I'm also using Linux 2.4.25 using the ELDK and I would recommend
-getting a NFS root file system going first discussed in the following
-paper, although written for a MPC5200 is an excellent guideline:
-
-    http://emsys.denayer.wenk.be/emcam/Linux_on_MPC5200_(UK).pdf
-
-Worry about a compressed system later. There is also a script for 
-building a
-small root file system (mkrootfsdenx) from a working reference one and
-MTD is the way to go to manage your flash for F/W updates and NVdata store.
-
-happy ELDKing,
-Frank Bennett
-
->
-> Mike Boutte
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+------------------------------
+我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
+http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=linuxppc-embedded&FullName=linuxppc-embedded&Email=linuxppc-embedded%40ozlabs.org&verify=755eff4e640bdcfc57d93cbd8b0a9cb7
