@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 74BA3688E8
+Return-Path: <nathael.pajani@cpe.fr>
+Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.35])
+	by ozlabs.org (Postfix) with ESMTP id 7EBB4688F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 23:39:36 +1100 (EST)
-To: "HappyPhot" <happyphot@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 19 Dec 2005 15:15:03 +0800."
-	<000501c6046b$f1abd5a0$0760120a@photon>
-Date: Mon, 19 Dec 2005 13:39:33 +0100
-Sender: wd@denx.de
-Message-Id: <20051219123933.A9F44353A67@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Ramdisk images for test 
+	Tue, 20 Dec 2005 00:06:02 +1100 (EST)
+Received: from linuxdev.ECRIN-CROLLES (unknown [83.145.98.3])
+	by smtp-out.completel.net (Postfix) with ESMTP id CA96325C0D4
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 19 Dec 2005 14:06:00 +0100 (CET)
+Date: Mon, 19 Dec 2005 14:09:14 +0100
+From: Nathael Pajani <nathael.pajani@cpe.fr>
+To: linuxppc-embedded@ozlabs.org
+Message-Id: <20051219140914.70cb4170.nathael.pajani@cpe.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Problem loading modules
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <000501c6046b$f1abd5a0$0760120a@photon> you wrote:
->
->   I followed setion 7.6 of DULG and found got two Ramdisk images
-> for test for ppc_82xx. One is pRamdisk, another is ramdisk_image.gz.
->   Who can tell what the difference is between them ?
+Hi!=20
 
-The former is a U-Boot/PPCBoot image, the later one a raw  compressed
-ramdisk image. They contain the same data, just packaged differently.
+>I'm working with a ml403 board, porting Linux 2.4.devel on it. I got the OS
+>running, but I cannot load modules.
+>When I try "modprobe /lib/modules/<version>/kernel/net/<module.o>, I obtain
+>the error messages:
+>Note: /etc/modules.conf is more recent than
+>/lib/modules/<version>/modules.dep
+>modprobe: Can't locate module lib/modules/<version>/kernel/net/<module.o>
 
-Best regards,
+did you try with insmod ?
 
-Wolfgang Denk
+then try running depmod.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-I'm a programmer: I don't buy software, I write it.
-                                                  -- Tom Christiansen
+----=20
+Nathael PAJANI
+Ing=E9nieur CPE Lyon
+nathael.pajani@cpe.fr
