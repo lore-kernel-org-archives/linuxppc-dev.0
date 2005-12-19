@@ -1,17 +1,19 @@
-Return-Path: <nathael.pajani@cpe.fr>
-Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.35])
-	by ozlabs.org (Postfix) with ESMTP id E2B7B688D5
+Return-Path: <gnathita@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.194])
+	by ozlabs.org (Postfix) with ESMTP id 32C99688D5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 19:57:49 +1100 (EST)
-Received: from linuxdev.ECRIN-CROLLES (unknown [83.145.98.3])
-	by smtp-out.completel.net (Postfix) with ESMTP id 5D79425C7AA
+	Mon, 19 Dec 2005 20:25:39 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 71so1005195wra
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 09:57:47 +0100 (CET)
-Date: Mon, 19 Dec 2005 10:00:59 +0100
-From: Nathael Pajani <nathael.pajani@cpe.fr>
+	Mon, 19 Dec 2005 01:25:38 -0800 (PST)
+Message-ID: <259581790512190125g71398455tea4124b2e4f28d8d@mail.gmail.com>
+Date: Mon, 19 Dec 2005 10:25:37 +0100
+From: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Message-Id: <20051219085747.5D79425C7AA@smtp-out.completel.net>
-Subject: [PATCH] powerpc: CPM2 interrupt handler failure after 100,000
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_36434_1744905.1134984337986"
+Subject: Problem loading modules
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,25 +24,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- interrupts
-Message-Id: <20051219100059.5a95533f.nathael.pajani@cpe.fr>
-X-Mailer: Sylpheed version 2.0.4 (GTK+ 2.8.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
+------=_Part_36434_1744905.1134984337986
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hi!
+Hi all,
 
-Hum.. in the patch you moved from "void" to "int":
->-static void cpm2_cascade(int irq, void *dev_id, struct pt_regs *regs)
->+static int cpm2_cascade(int irq, void *dev_id, struct pt_regs *regs)
+First of all, Merry Xmas!!
 
-But should'nt it be "irqreturn_t" ?
-static irqreturn_t cpm2_cascade(int irq, void *dev_id, struct pt_regs *regs)
+I'm working with a ml403 board, porting Linux 2.4.devel on it. I got the OS
+running, but I cannot load modules.
+When I try "modprobe /lib/modules/<version>/kernel/net/<module.o>, I obtain
+the error messages:
+Note: /etc/modules.conf is more recent than
+/lib/modules/<version>/modules.dep
+modprobe: Can't locate module lib/modules/<version>/kernel/net/<module.o>
 
-+++
-Have fun :)
-----=20
-Nathael PAJANI
-Ing=E9nieur CPE Lyon
-nathael.pajani@cpe.fr
+Do you know what is going on?
+
+Thanks!!
+
+Paula Saameno
+
+------=_Part_36434_1744905.1134984337986
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi all,<br>
+<br>
+First of all, Merry Xmas!!<br>
+<br>
+I'm working with a ml403 board, porting Linux 2.4.devel on it. I got the OS=
+ running, but I cannot load modules.<br>
+When I try &quot;modprobe /lib/modules/&lt;version&gt;/kernel/net/&lt;modul=
+e.o&gt;, I obtain the error messages:<br>
+Note: /etc/modules.conf is more recent than /lib/modules/&lt;version&gt;/mo=
+dules.dep<br>
+modprobe: Can't locate module lib/modules/&lt;version&gt;/kernel/net/&lt;mo=
+dule.o&gt;<br>
+<br>
+Do you know what is going on?<br>
+<br>
+Thanks!!<br>
+<br>
+Paula Saameno<br>
+
+
+------=_Part_36434_1744905.1134984337986--
