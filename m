@@ -1,17 +1,17 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15809.mail.cnb.yahoo.com (web15809.mail.cnb.yahoo.com
-	[202.165.102.89]) by ozlabs.org (Postfix) with SMTP id 7EB0B688D5
+Return-Path: <nathael.pajani@cpe.fr>
+Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.35])
+	by ozlabs.org (Postfix) with ESMTP id E2B7B688D5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 18:27:55 +1100 (EST)
-Message-ID: <20051219072753.63682.qmail@web15809.mail.cnb.yahoo.com>
-Date: Mon, 19 Dec 2005 15:27:53 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: wilhardt@wilhardts.com
-In-Reply-To: <200512190413.jBJ4D9nd031244@ylpvm01.prodigy.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Cc: 'Lance Ware' <lware@datadesigncorp.net>, linuxppc-embedded@ozlabs.org
-Subject: RE: SMP on MV64460
+	Mon, 19 Dec 2005 19:57:49 +1100 (EST)
+Received: from linuxdev.ECRIN-CROLLES (unknown [83.145.98.3])
+	by smtp-out.completel.net (Postfix) with ESMTP id 5D79425C7AA
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 19 Dec 2005 09:57:47 +0100 (CET)
+Date: Mon, 19 Dec 2005 10:00:59 +0100
+From: Nathael Pajani <nathael.pajani@cpe.fr>
+To: linuxppc-embedded@ozlabs.org
+Message-Id: <20051219085747.5D79425C7AA@smtp-out.completel.net>
+Subject: [PATCH] powerpc: CPM2 interrupt handler failure after 100,000
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,26 +22,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-wilhardt@wilhardts.com wrote:
-> 
-> There are a few of examples of SMP using the
-> MV64460 from Curtiss Wright,
-> but I don't know of a 7447A SMP (you really
-> need a backside external cache
-> to take advantage of SMP).  The CWCEC boards
-> support 2.4 or 2.6.
-> 
->
-http://www.cwembedded.com/products/0/2/151.html/
+ interrupts
+Message-Id: <20051219100059.5a95533f.nathael.pajani@cpe.fr>
+X-Mailer: Sylpheed version 2.0.4 (GTK+ 2.8.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The above linkage is broken to me. With google, 
-I got some other info as well. I will report
-back if some improvement.
+Hi!
 
-Thanks,
+Hum.. in the patch you moved from "void" to "int":
+>-static void cpm2_cascade(int irq, void *dev_id, struct pt_regs *regs)
+>+static int cpm2_cascade(int irq, void *dev_id, struct pt_regs *regs)
 
-Sam
+But should'nt it be "irqreturn_t" ?
+static irqreturn_t cpm2_cascade(int irq, void *dev_id, struct pt_regs *regs)
 
-__________________________________________________
-∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
-http://cn.mail.yahoo.com
++++
+Have fun :)
+----=20
+Nathael PAJANI
+Ing=E9nieur CPE Lyon
+nathael.pajani@cpe.fr
