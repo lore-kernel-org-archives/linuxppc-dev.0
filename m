@@ -1,16 +1,17 @@
-Return-Path: <clemens.koller@anagramm.de>
-Received: from moutvdomng.kundenserver.de (moutvdom.kundenserver.de
-	[212.227.126.249]) by ozlabs.org (Postfix) with ESMTP id DA5A4688DA
+Return-Path: <galak@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D6F80688D6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Dec 2005 04:25:50 +1100 (EST)
-Message-ID: <43A6ED1E.20506@anagramm.de>
-Date: Mon, 19 Dec 2005 18:25:50 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-MIME-Version: 1.0
+	Tue, 20 Dec 2005 07:43:03 +1100 (EST)
+Date: Mon, 19 Dec 2005 14:38:19 -0600 (CST)
+From: Kumar Gala <galak@gate.crashing.org>
 To: Clemens Koller <clemens.koller@anagramm.de>
-References: <43A2E175.9050004@anagramm.de>
-In-Reply-To: <43A2E175.9050004@anagramm.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <43A6ED1E.20506@anagramm.de>
+Message-ID: <Pine.LNX.4.44.0512191437460.4403-100000@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: kernel 2.6.15-rc5-latest doesn't work anymore on mpc8540ads
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,40 +24,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello!
+On Mon, 19 Dec 2005, Clemens Koller wrote:
 
-Here is a little update:
-
-> I am just about to update my kernel from 2.6.13-rc7 which is working
-> fine to linus' 2.6.15-rc5-latest git on my mpc8540ads flavored board.
-> However, the kernel hangs pretty early after
+> Hello!
 > 
-> openpic: exit
+> Here is a little update:
+> 
+> > I am just about to update my kernel from 2.6.13-rc7 which is working
+> > fine to linus' 2.6.15-rc5-latest git on my mpc8540ads flavored board.
+> > However, the kernel hangs pretty early after
+> > 
+> > openpic: exit
+> 
+> openpic_init() is called by mpc85xx_ads_init_IRQ in ppc/platforms/85xx
+> 
+> ppc_md.init_IRQ=mpc85xx_ads_init_IRQ in ppc/platforms/85xx
+> 
+> ppc_md.init_IRQ() is called from powerpc/kernel/irq.c
+> 
+> init_IRQ() is  called from init/main.c:start_kernel()
+> 
+> and that seems to work fine. So, it crashes silently somewhere
+> after that point. I try to build 2.6.15-rc6-latest with kgbd support,
+> not knowing if it's supposed to work on this platform.
 
-openpic_init() is called by mpc85xx_ads_init_IRQ in ppc/platforms/85xx
+It was a guess :)
+ 
+> Are there some open issues from the ppc->powerpc migration?
 
-ppc_md.init_IRQ=mpc85xx_ads_init_IRQ in ppc/platforms/85xx
+possible, can you use git bisect to find what commit may have caused the 
+issue?
 
-ppc_md.init_IRQ() is called from powerpc/kernel/irq.c
-
-init_IRQ() is  called from init/main.c:start_kernel()
-
-and that seems to work fine. So, it crashes silently somewhere
-after that point. I try to build 2.6.15-rc6-latest with kgbd support,
-not knowing if it's supposed to work on this platform.
-
-Are there some open issues from the ppc->powerpc migration?
-
-Thanks,
--- 
-Clemens Koller
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
+- kumar
