@@ -1,19 +1,19 @@
-Return-Path: <gnathita@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.194])
-	by ozlabs.org (Postfix) with ESMTP id 32C99688D5
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 9443D688D9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 20:25:39 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 71so1005195wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 01:25:38 -0800 (PST)
-Message-ID: <259581790512190125g71398455tea4124b2e4f28d8d@mail.gmail.com>
-Date: Mon, 19 Dec 2005 10:25:37 +0100
-From: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
+	Mon, 19 Dec 2005 20:40:08 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
 To: linuxppc-embedded@ozlabs.org
+Date: Mon, 19 Dec 2005 10:39:56 +0100
+References: <821B2170E9E7F04FA38DF7EC21DE4871022BB9A9@VCAEXCH01.hq.corp.viasat.com>
+In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE4871022BB9A9@VCAEXCH01.hq.corp.viasat.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_36434_1744905.1134984337986"
-Subject: Problem loading modules
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200512191039.58149.david.jander@protonic.nl>
+Cc: "Martin, Tim" <tim.martin@viasat.com>
+Subject: Re: POSIX High Resolution Timers in LinuxPPC 2.4
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,52 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_36434_1744905.1134984337986
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Hi all,
+Hi Tim,
 
-First of all, Merry Xmas!!
+On Friday 16 December 2005 23:34, Martin, Tim wrote:
+> Could someone give me a brief history lesson on POSIX high resolution
+> timers (e.g. timer_create() function) implemented in the Linux kernel on
+> the PowerPC 405 architecture?  Specifically:
+>
+> Confirm they are in the mainline 2.6 kernel now (e.g. kernel.org)?
+>
+> Were they ever a part of the "mainline" 2.4 linuxppc kernel (e.g
+> ppc.bkbits.net)?
+>
+> If no, were they ever available as a patch? The stuff at
+> sourceforge.net/projects/high-res-timers stops at 2.4.20 and looks like it
+> was only ever working for i386, not ppc.
 
-I'm working with a ml403 board, porting Linux 2.4.devel on it. I got the OS
-running, but I cannot load modules.
-When I try "modprobe /lib/modules/<version>/kernel/net/<module.o>, I obtain
-the error messages:
-Note: /etc/modules.conf is more recent than
-/lib/modules/<version>/modules.dep
-modprobe: Can't locate module lib/modules/<version>/kernel/net/<module.o>
+I asked a related question a while back, and got no answer (yet).
+I did find this though, which you might have overlooked:
+http://prdownloads.sourceforge.net/high-res-timers/ppc-hrt-2.6.10.patch?download
 
-Do you know what is going on?
+I am equally puzzled about whether this has made it into mainstream, is about 
+to, or never will. I don't even know if it actually works.
 
-Thanks!!
+Greetings,
 
-Paula Saameno
-
-------=_Part_36434_1744905.1134984337986
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi all,<br>
-<br>
-First of all, Merry Xmas!!<br>
-<br>
-I'm working with a ml403 board, porting Linux 2.4.devel on it. I got the OS=
- running, but I cannot load modules.<br>
-When I try &quot;modprobe /lib/modules/&lt;version&gt;/kernel/net/&lt;modul=
-e.o&gt;, I obtain the error messages:<br>
-Note: /etc/modules.conf is more recent than /lib/modules/&lt;version&gt;/mo=
-dules.dep<br>
-modprobe: Can't locate module lib/modules/&lt;version&gt;/kernel/net/&lt;mo=
-dule.o&gt;<br>
-<br>
-Do you know what is going on?<br>
-<br>
-Thanks!!<br>
-<br>
-Paula Saameno<br>
-
-
-------=_Part_36434_1744905.1134984337986--
+-- 
+David Jander
+Protonic Holland.
