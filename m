@@ -1,22 +1,19 @@
-Return-Path: <addison.baldwin@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.198])
-	by ozlabs.org (Postfix) with ESMTP id A6481688D6
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 74BA3688E8
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 23:17:54 +1100 (EST)
-Received: by xproxy.gmail.com with SMTP id i27so774275wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 04:17:52 -0800 (PST)
-Message-ID: <af313df20512190417vb0cb57bm48b5a8e9b4c9db6f@mail.gmail.com>
-Date: Mon, 19 Dec 2005 12:17:52 +0000
-From: Addison Baldwin <addison.baldwin@gmail.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-In-Reply-To: <43A31EE1.3030101@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <af313df20512161201u39280d30kdf1ace1c4569d50a@mail.gmail.com>
-	<43A31EE1.3030101@ru.mvista.com>
+	Mon, 19 Dec 2005 23:39:36 +1100 (EST)
+To: "HappyPhot" <happyphot@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 19 Dec 2005 15:15:03 +0800."
+	<000501c6046b$f1abd5a0$0760120a@photon>
+Date: Mon, 19 Dec 2005 13:39:33 +0100
+Sender: wd@denx.de
+Message-Id: <20051219123933.A9F44353A67@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Unable to open an initial console
+Subject: Re: Ramdisk images for test 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,47 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thank you!
+In message <000501c6046b$f1abd5a0$0760120a@photon> you wrote:
+>
+>   I followed setion 7.6 of DULG and found got two Ramdisk images
+> for test for ppc_82xx. One is pRamdisk, another is ramdisk_image.gz.
+>   Who can tell what the difference is between them ?
 
-I had to create the /dev/ttyCPM0 and had to point /dev/console to it.
-Now the console is working fine!
+The former is a U-Boot/PPCBoot image, the later one a raw  compressed
+ramdisk image. They contain the same data, just packaged differently.
 
-Best Regards,
-Addison Baldwin
+Best regards,
 
-On 12/16/05, Vitaly Bordug <vbordug@ru.mvista.com> wrote:
-> Addison Baldwin wrote:
-> > I was sucessful to port U-Boot to our 8272 board. Now I'm experiencing
-> > a problem:
-> >
-> > Our Kernel hangs with the message that says it was trasnferring
-> > control to linux. A post morten analyzes indicated that it stopped at
-> > "Unable to open an initial console" in the memory sapce where console
-> > output should be out (in the sdram, like I had found somewhere in this
-> > list, how to do it).
-> >
-> > I have checked the bootargs values, it is ok:
-> > bootargs root=3D/dev/ram console=3DttyS0,115200
-> >
-> Only for 2.4, 2.6 is different for this.
-> console=3DttyCPM0 should be there, and that device does have different ma=
-jor/minor comparing to ttyS0.
-> Note that the UART has to be enabled explicitly in kernel config, for mor=
-e info, search this list archives.
->
-> >  We also checked our "/dev" and there was a link to console, pointing
-> > ttyS0. Also, ttyS0 was there too.
-> >
-> > Does anyone have any idea how to fix it?
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >
-> >
->
->
-> --
-> Sincerely,
-> Vitaly
->
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I'm a programmer: I don't buy software, I write it.
+                                                  -- Tom Christiansen
