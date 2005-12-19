@@ -1,16 +1,17 @@
-Return-Path: <Ian.Laurie@avnet.com>
-Received: from antispam1-outb.avnet.com (antispam1-outb.avnet.com
-	[12.9.139.194]) by ozlabs.org (Postfix) with ESMTP id AD6CA68802
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15807.mail.cnb.yahoo.com (web15807.mail.cnb.yahoo.com
+	[202.165.102.87]) by ozlabs.org (Postfix) with SMTP id 6AD216889F
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Dec 2005 10:46:38 +1100 (EST)
+	Mon, 19 Dec 2005 13:51:39 +1100 (EST)
+Message-ID: <20051219025133.54341.qmail@web15807.mail.cnb.yahoo.com>
+Date: Mon, 19 Dec 2005 10:51:33 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: Lance Ware <lware@datadesigncorp.net>
+In-Reply-To: <000601c6028c$85eaea80$2d01a8c0@jalexander>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Sun, 18 Dec 2005 16:36:35 -0700
-Message-ID: <F311526ED41F0F449EAFC93A85287CCC02A8F205@USCHD00MX15ASU.APAC.AVNET.COM>
-From: "Laurie, Ian" <Ian.Laurie@avnet.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC8272ADS stability issues
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re : SMP on MV64460
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,15 +22,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Lance Ware <lware@datadesigncorp.net> wrote:
+> I am currently working on a board which has
+> MV64460 linked between two 7447a processors.  I
+> wanted to know if someone has been able to get
+> the Linux 2.6 kernel working with any MV64xxx
+> bridge.
 
-Does anyone have any news regarding any resolution of this issue?
+I happen to have such a board, DB64460-BP, on
+hand. 
+But even 2.4 kernel has some problems with
+MV64460
+PCI part. I wonder whether there is a 2.4 version
 
-We have a board exhibiting crashes even at the U-boot level (memory
-test for example).
+support that with PCI device like VGA card. 
 
-Very interested in hearing if anyone has had some luck resolving
-the problem.
+Thanks,
 
-Ian
-ian at avnet dot com
+Sam
+
+
+__________________________________________________
+∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
+http://cn.mail.yahoo.com
