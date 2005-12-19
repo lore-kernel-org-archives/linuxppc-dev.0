@@ -1,19 +1,19 @@
-Return-Path: <galak@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5E89668802
+Return-Path: <gnathita@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.194])
+	by ozlabs.org (Postfix) with ESMTP id EA19468802
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Dec 2005 02:21:34 +1100 (EST)
-Date: Mon, 19 Dec 2005 09:16:50 -0600 (CST)
-From: Kumar Gala <galak@gate.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.44.0512190913430.28072-100000@gate.crashing.org>
+	Tue, 20 Dec 2005 03:22:11 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 71so1070671wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 19 Dec 2005 08:22:10 -0800 (PST)
+Message-ID: <259581790512190822k53a30ca9j803734367b60e17c@mail.gmail.com>
+Date: Mon, 19 Dec 2005 17:22:10 +0100
+From: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
-Subject: [PATCH][UPDATE] powerpc: CPM2 interrupt handler failure after 100,
- 000 interrupts
+Content-Type: multipart/alternative;
+	boundary="----=_Part_2194_16256121.1135009330282"
+Subject: Re: Problem loading modules
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,44 +24,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-From: Edson Seabra <Edson.Seabra@cyclades.com>
+------=_Part_2194_16256121.1135009330282
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-The CPM2 interrupt handler does not return success to the IRQ subsystem, which
-causes it to kill the IRQ line after 100,000 interrupts.
+>>Hi!
 
-Signed-off-by: Edson Seabra <Edson.Seabra@cyclades.com>
-Signed-off-by: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>>I'm working with a ml403 board, porting Linux 2.4.devel on it. I got the
+OS
+>>running, but I cannot load modules.
+>>When I try "modprobe /lib/modules/<version>/kernel/net/<module.o>, I
+obtain
+>>the error messages:
+>>Note: /etc/modules.conf is more recent than
+>>/lib/modules/<version>/modules.dep
+>>modprobe: Can't locate module lib/modules/<version>/kernel/net/<module.o>
 
----
+>did you try with insmod ?
 
-Paul: We should put this in the merge tree for linus to pick up for 
-2.6.15.  Fixed up return type to be irqreturn_t
+>then try running depmod.
 
+Yes, I tried with insmod and the error then was: "couldn't find the kernel
+version the module was compiled for"
 
-commit c211d7347a735eb5d5996433f3eef7159c3fe41a
-tree 1c14ca8d89ae7b7d989dac917f8bf87dba40b6c7
-parent 1abf7e247b676a84fbfcd47442dc44788526f2f6
-author Kumar Gala <galak@kernel.crashing.org> Mon, 19 Dec 2005 09:17:05 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Mon, 19 Dec 2005 09:17:05 -0600
+In modules.dep, the references are ok.
 
- arch/ppc/platforms/85xx/mpc85xx_cds_common.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Greetings!
 
-diff --git a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-index d8991b8..5e8cc5e 100644
---- a/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-+++ b/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-@@ -130,10 +130,11 @@ mpc85xx_cds_show_cpuinfo(struct seq_file
- }
- 
- #ifdef CONFIG_CPM2
--static void cpm2_cascade(int irq, void *dev_id, struct pt_regs *regs)
-+static irqreturn_t cpm2_cascade(int irq, void *dev_id, struct pt_regs *regs)
- {
- 	while((irq = cpm2_get_irq(regs)) >= 0)
- 		__do_IRQ(irq, regs);
-+	return IRQ_HANDLED;
- }
- 
- static struct irqaction cpm2_irqaction = {
+------=_Part_2194_16256121.1135009330282
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+&gt;&gt;Hi!<br>
+<br>
+&gt;&gt;I'm working with a ml403 board, porting Linux 2.4.devel on it. I go=
+t the OS<br>
+&gt;&gt;running, but I cannot load modules.<br>
+&gt;&gt;When I try &quot;modprobe /lib/modules/&lt;version&gt;/kernel/net/&=
+lt;module.o&gt;, I obtain<br>&gt;&gt;the error messages:<br>&gt;&gt;Note: /=
+etc/modules.conf is more recent than<br>&gt;&gt;/lib/modules/&lt;version&gt=
+;/modules.dep
+<br>&gt;&gt;modprobe: Can't locate module lib/modules/&lt;version&gt;/kerne=
+l/net/&lt;module.o&gt;<br><br>&gt;did you try with insmod ?<br><br>&gt;then=
+ try running depmod.<br>
+<br>
+Yes, I tried with insmod and the error then was: &quot;couldn't find the ke=
+rnel version the module was compiled for&quot;<br>
+<br>
+In modules.dep, the references are ok.<br>
+<br>
+Greetings!<br>
+<br>
+
+------=_Part_2194_16256121.1135009330282--
