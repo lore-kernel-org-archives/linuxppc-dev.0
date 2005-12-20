@@ -1,20 +1,26 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <tnt@246tNt.com>
+Received: from outmx012.isp.belgacom.be (outmx012.isp.belgacom.be
+	[195.238.5.70])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4F137689C8
+	by ozlabs.org (Postfix) with ESMTP id E830B689AF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Dec 2005 06:45:37 +1100 (EST)
-In-Reply-To: <20051220173730.GB6404@dmt.cnet>
-References: <20051220173730.GB6404@dmt.cnet>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <44a3dd7cc9683be6fdaac9cbab325c3f@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Tue, 20 Dec 2005 14:45:21 -0500
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: TLB preloading on 8xx
+	Wed, 21 Dec 2005 07:40:05 +1100 (EST)
+Received: from outmx012.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx012.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id jBKKdtPp021365
+	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Dec 2005 21:39:56 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <0.20051220_213752_1ebc_tnt@patchsend.246tNt.com>
+From: Sylvain Munaut <tnt@246tNt.com>
+To: Andrew Morton <akpm@osdl.org>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Date: Tue, 20 Dec 2005 21:40:00 +0100 (CET)
+Cc: Tom Rini <trini@kernel.crashing.org>, Sylvain Munaut <tnt@246tNt.com>,
+	Linux PPC Embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH 0/9] Some Freescale MPC52xx related updates
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,26 +32,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Dec 20, 2005, at 12:37 PM, Marcelo Tosatti wrote:
+Hello Andrew & all,
 
-> Sum up the costs of disabling interrupts and disabling translation, 
-> and you
-> end up with a slow dog. Damn, the TLB exceptions are indeed efficient.
 
-Like I've always said, make the TLB miss exception path very
-short and efficient.  You have to consider the total system impact
-of running this code, which includes replacing lots of cache
-lines that will affect the performance of the application.
+This set of patches contains misc updates that are in my local
+tree since sometimes now and I think they're good to go upstream.
 
-Don't be looking for "tricks" in the exception path, look for
-ways outside of that we can better structure the page tables
-so we can _remove_ code from the exception handler, not
-add to it.  What you are doing here is an attempt to do
-that, but you are executing lots more code to do this
-preload than the TLB miss exception would do.
+They've been posted separatly on the ppc mailing list at some point
+and tested by several people. So far I  received no negative feedback.
+Most are trivial compile fix, small improvements, ...
 
-Keep trying, though, this was a good idea to test :-)
 
-Thanks.
+Thanks,
 
-	-- Dan
+	Sylvain Munaut
