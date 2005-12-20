@@ -1,17 +1,17 @@
 Return-Path: <tnt@246tNt.com>
-Received: from outmx009.isp.belgacom.be (outmx009.isp.belgacom.be
-	[195.238.5.4])
+Received: from outmx007.isp.belgacom.be (outmx007.isp.belgacom.be
+	[195.238.5.234])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 398F4689AD
+	by ozlabs.org (Postfix) with ESMTP id ED489689CF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Dec 2005 07:40:42 +1100 (EST)
-Received: from outmx009.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx009.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id jBKKePEW030876
-	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Dec 2005 21:40:26 +0100
+	Wed, 21 Dec 2005 07:41:15 +1100 (EST)
+Received: from outmx007.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx007.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id jBKKf08U001347
+	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Dec 2005 21:41:03 +0100
 	(envelope-from <tnt@246tNt.com>)
-Message-ID: <1.20051220_213752_1ebc_tnt@patchsend.246tNt.com>
+Message-ID: <2.20051220_213752_1ebc_tnt@patchsend.246tNt.com>
 From: Sylvain Munaut <tnt@246tNt.com>
 To: Andrew Morton <akpm@osdl.org>
 Mime-Version: 1.0
@@ -19,10 +19,11 @@ Content-Type: text/plain;
 	charset=ISO-8859-1
 In-Reply-To: <0.20051220_213752_1ebc_tnt@patchsend.246tNt.com>
 References: <0.20051220_213752_1ebc_tnt@patchsend.246tNt.com>
-Date: Tue, 20 Dec 2005 21:40:31 +0100 (CET)
+Date: Tue, 20 Dec 2005 21:41:02 +0100 (CET)
 Cc: Tom Rini <trini@kernel.crashing.org>, Sylvain Munaut <tnt@246tNt.com>,
 	Linux PPC Embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 1/9] ppc32: Remove useless file arch/ppc/platforms/mpc5200.c
+Subject: [PATCH 2/9] ppc32/serial: Fix compiler errors with GCC 4.x in
+	mpc52xx_uart.c
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,80 +34,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-ppc32: Remove useless file arch/ppc/platforms/mpc5200.c
+ppc32/serial: Fix compiler errors with GCC 4.x in mpc52xx_uart.c
 
-That file is a left-over of the 'old' OCP model that
-should have been erased during the change to platform
-model but I forgot it ...
-
+Signed-off-by: Wolfgang Denk <wd@denx.de>
 Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 
 ---
-commit 144f9d12ec7d04b38f83a131c4e544f78d2d47b2
-tree 629ebc02993d06ff02b87e2d0effb257ef842328
-parent 48ea753075aa15699bd5fac26faa08431aaa697b
-author Sylvain Munaut <tnt@246tNt.com> Sat, 17 Dec 2005 23:03:25 +0100
-committer Sylvain Munaut <tnt@246tNt.com> Sat, 17 Dec 2005 23:03:25 +0100
+commit c83b03a94291bdd952c6b1b20ab15981456e8625
+tree 81e1121a440a4624a4cd7f112fe44fca438ee140
+parent 144f9d12ec7d04b38f83a131c4e544f78d2d47b2
+author Sylvain Munaut <tnt@246tNt.com> Sat, 17 Dec 2005 23:12:39 +0100
+committer Sylvain Munaut <tnt@246tNt.com> Sat, 17 Dec 2005 23:12:39 +0100
 
- arch/ppc/platforms/mpc5200.c |   53 ------------------------------------------
- 1 files changed, 0 insertions(+), 53 deletions(-)
+ drivers/serial/mpc52xx_uart.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/ppc/platforms/mpc5200.c b/arch/ppc/platforms/mpc5200.c
-deleted file mode 100644
-index a58db43..0000000
---- a/arch/ppc/platforms/mpc5200.c
-+++ /dev/null
-@@ -1,53 +0,0 @@
--/*
-- * arch/ppc/platforms/mpc5200.c
-- *
-- * OCP Definitions for the boards based on MPC5200 processor. Contains
-- * definitions for every common peripherals. (Mostly all but PSCs)
-- * 
-- * Maintainer : Sylvain Munaut <tnt@246tNt.com>
-- *
-- * Copyright 2004 Sylvain Munaut <tnt@246tNt.com>
-- *
-- * This file is licensed under the terms of the GNU General Public License
-- * version 2. This program is licensed "as is" without any warranty of any
-- * kind, whether express or implied.
-- */
--
--#include <asm/ocp.h>
--#include <asm/mpc52xx.h>
--
--
--static struct ocp_fs_i2c_data mpc5200_i2c_def = {
--        .flags  = FS_I2C_CLOCK_5200,
--};
--
--
--/* Here is the core_ocp struct.
-- * With all the devices common to all board. Even if port multiplexing is
-- * not setup for them (if the user don't want them, just don't select the
-- * config option). The potentially conflicting devices (like PSCs) goes in
-- * board specific file.
-- */
--struct ocp_def core_ocp[] = {
--	{
--		.vendor         = OCP_VENDOR_FREESCALE,
--		.function       = OCP_FUNC_IIC,
--		.index          = 0,
--		.paddr          = MPC52xx_I2C1,
--		.irq            = OCP_IRQ_NA,   /* MPC52xx_IRQ_I2C1 - Buggy */
--		.pm             = OCP_CPM_NA,
--		.additions      = &mpc5200_i2c_def,
--	},
--	{
--		.vendor         = OCP_VENDOR_FREESCALE,
--		.function       = OCP_FUNC_IIC,
--		.index          = 1,
--		.paddr          = MPC52xx_I2C2,
--		.irq            = OCP_IRQ_NA,   /* MPC52xx_IRQ_I2C2 - Buggy */
--		.pm             = OCP_CPM_NA,
--		.additions      = &mpc5200_i2c_def,
--	},
--	{	/* Terminating entry */
--		.vendor		= OCP_VENDOR_INVALID
--	}
--};
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index b8727d9..4dcf031 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -668,7 +668,7 @@ mpc52xx_console_setup(struct console *co
+ }
+ 
+ 
+-extern struct uart_driver mpc52xx_uart_driver;
++static struct uart_driver mpc52xx_uart_driver;
+ 
+ static struct console mpc52xx_console = {
+ 	.name	= "ttyS",
