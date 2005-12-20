@@ -1,13 +1,12 @@
 Return-Path: <galak@gate.crashing.org>
-Date: Tue, 20 Dec 2005 16:16:52 -0600 (CST)
+Date: Tue, 20 Dec 2005 16:37:07 -0600 (CST)
 From: Kumar Gala <galak@gate.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.44.0512201616270.26351-100000@gate.crashing.org>
+Message-ID: <Pine.LNX.4.44.0512201636350.26351-100000@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Add the ability to handle SOC ports in
-	legacy_serial
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: [PATCH] powerpc: added a udbg_progress
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,143 +16,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the ability to configure and initialize legacy 8250 serials
-ports on an SOC bus.  Also, fixed an issue that we would not
-configure any serial ports if "linux,stdout-path" was not found.
+Added a common udbg_progress for use by ppc_md.progress()
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
 ---
-commit adb69b3e888de037f4e58cc505443e624d498596
-tree 7be9bb626b8d2c773dd88a1d3e17a5f56995075f
-parent 8bec94b3bb35c0273fbab5a6aa477ec71a4d1fab
-author Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 16:20:09 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 16:20:09 -0600
+commit 7b69a37a4e811e72e82896ab38e6ae04542455f5
+tree 923809875e727ab5d0dd0579e45da9201dd86653
+parent adb69b3e888de037f4e58cc505443e624d498596
+author Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 16:40:09 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 16:40:09 -0600
 
- arch/powerpc/kernel/legacy_serial.c |   62 +++++++++++++++++++++++++++++------
- 1 files changed, 52 insertions(+), 10 deletions(-)
+ arch/powerpc/kernel/udbg.c              |    6 ++++++
+ arch/powerpc/platforms/powermac/setup.c |    8 +-------
+ include/asm-powerpc/udbg.h              |    1 +
+ 3 files changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index d179ec5..59164ba 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -36,7 +36,8 @@ static int legacy_serial_console = -1;
- 
- static int __init add_legacy_port(struct device_node *np, int want_index,
- 				  int iotype, phys_addr_t base,
--				  phys_addr_t taddr, unsigned long irq)
-+				  phys_addr_t taddr, unsigned long irq,
-+				  unsigned int flags)
- {
- 	u32 *clk, *spd, clock = BASE_BAUD * 16;
- 	int index;
-@@ -90,7 +91,7 @@ static int __init add_legacy_port(struct
- 	legacy_serial_ports[index].iotype = iotype;
- 	legacy_serial_ports[index].uartclk = clock;
- 	legacy_serial_ports[index].irq = irq;
--	legacy_serial_ports[index].flags = ASYNC_BOOT_AUTOCONF;
-+	legacy_serial_ports[index].flags = flags;
- 	legacy_serial_infos[index].taddr = taddr;
- 	legacy_serial_infos[index].np = of_node_get(np);
- 	legacy_serial_infos[index].clock = clock;
-@@ -107,6 +108,32 @@ static int __init add_legacy_port(struct
- 	return index;
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index 9567d94..558c1ce 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -90,6 +90,12 @@ void udbg_printf(const char *fmt, ...)
+ 	va_end(args);
  }
  
-+static int __init add_legacy_soc_port(struct device_node *np,
-+				      struct device_node *soc_dev)
++void __init udbg_progress(char *s, unsigned short hex)
 +{
-+	phys_addr_t addr;
-+	u32 *addrp;
-+	unsigned int flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST | UPF_SHARE_IRQ;
-+
-+	/* We only support ports that have a clock frequency properly
-+	 * encoded in the device-tree.
-+	 */
-+	if (get_property(np, "clock-frequency", NULL) == NULL)
-+		return -1;
-+
-+	/* Get the address */
-+	addrp = of_get_address(soc_dev, 0, NULL, NULL);
-+	if (addrp == NULL)
-+		return -1;
-+
-+	addr = of_translate_address(soc_dev, addrp);
-+
-+	/* Add port, irq will be dealt with later. We passed a translated
-+	 * IO port value. It will be fixed up later along with the irq
-+	 */
-+	return add_legacy_port(np, -1, UPIO_MEM, addr, addr, NO_IRQ, flags);
++	udbg_puts(s);
++	udbg_puts("\n");
 +}
 +
- static int __init add_legacy_isa_port(struct device_node *np,
- 				      struct device_node *isa_bridge)
- {
-@@ -137,7 +164,7 @@ static int __init add_legacy_isa_port(st
- 	taddr = of_translate_address(np, reg);
- 
- 	/* Add port, irq will be dealt with later */
--	return add_legacy_port(np, index, UPIO_PORT, reg[1], taddr, NO_IRQ);
-+	return add_legacy_port(np, index, UPIO_PORT, reg[1], taddr, NO_IRQ, UPF_BOOT_AUTOCONF);
- 
- }
- 
-@@ -204,7 +231,7 @@ static int __init add_legacy_pci_port(st
- 	/* Add port, irq will be dealt with later. We passed a translated
- 	 * IO port value. It will be fixed up later along with the irq
- 	 */
--	return add_legacy_port(np, index, iotype, base, addr, NO_IRQ);
-+	return add_legacy_port(np, index, iotype, base, addr, NO_IRQ, UPF_BOOT_AUTOCONF);
- }
- 
  /*
-@@ -218,7 +245,7 @@ static int __init add_legacy_pci_port(st
+  * Early boot console based on udbg
   */
- void __init find_legacy_serial_ports(void)
- {
--	struct device_node *np, *stdout;
-+	struct device_node *np, *stdout = NULL;
- 	char *path;
- 	int index;
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index 1daa5a0..e5a5bdb 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -639,12 +639,6 @@ static void __init pmac_init_early(void)
+ #endif
+ }
  
-@@ -226,13 +253,23 @@ void __init find_legacy_serial_ports(voi
+-static void __init pmac_progress(char *s, unsigned short hex)
+-{
+-	udbg_puts(s);
+-	udbg_puts("\n");
+-}
+-
+ /*
+  * pmac has no legacy IO, anything calling this function has to
+  * fail or bad things will happen
+@@ -763,7 +757,7 @@ struct machdep_calls __initdata pmac_md 
+ 	.calibrate_decr		= pmac_calibrate_decr,
+ 	.feature_call		= pmac_do_feature_call,
+ 	.check_legacy_ioport	= pmac_check_legacy_ioport,
+-	.progress		= pmac_progress,
++	.progress		= udbg_progress,
+ #ifdef CONFIG_PPC64
+ 	.pci_probe_mode		= pmac_pci_probe_mode,
+ 	.idle_loop		= native_idle,
+diff --git a/include/asm-powerpc/udbg.h b/include/asm-powerpc/udbg.h
+index 58cdc88..a3390b0 100644
+--- a/include/asm-powerpc/udbg.h
++++ b/include/asm-powerpc/udbg.h
+@@ -23,6 +23,7 @@ extern int udbg_read(char *buf, int bufl
  
- 	/* Now find out if one of these is out firmware console */
- 	path = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
--	if (path == NULL) {
-+	if (path != NULL) {
-+		stdout = of_find_node_by_path(path);
-+		if (stdout)
-+			DBG("stdout is %s\n", stdout->full_name);
-+	} else {
- 		DBG(" no linux,stdout-path !\n");
--		return;
- 	}
--	stdout = of_find_node_by_path(path);
--	if (stdout) {
--		DBG("stdout is %s\n", stdout->full_name);
-+
-+	/* First fill our array with SOC ports */
-+	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
-+		struct device_node *soc = of_get_parent(np);
-+		if (soc && !strcmp(soc->type, "soc")) {
-+			index = add_legacy_soc_port(np, np);
-+			if (index >= 0 && np == stdout)
-+				legacy_serial_console = index;
-+		}
-+		of_node_put(soc);
- 	}
+ extern void register_early_udbg_console(void);
+ extern void udbg_printf(const char *fmt, ...);
++extern void udbg_progress(char *s, unsigned short hex);
  
- 	/* First fill our array with ISA ports */
-@@ -437,6 +474,11 @@ static int __init check_legacy_serial_co
- 		DBG(" of_chosen is NULL !\n");
- 		return -ENODEV;
- 	}
-+
-+	if (legacy_serial_console < 0) {
-+		DBG(" legacy_serial_console not found !\n");
-+		return -ENODEV;
-+	}
- 	/* We are getting a weird phandle from OF ... */
- 	/* ... So use the full path instead */
- 	name = (char *)get_property(of_chosen, "linux,stdout-path", NULL);
+ extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
+ 			   unsigned int clock);
