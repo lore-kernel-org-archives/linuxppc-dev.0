@@ -1,23 +1,17 @@
-Return-Path: <azummo-lists@towertech.it>
-Received: from mail.towertech.it (jack.kinetikon.it [62.152.125.81])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.towertech.it",
-	Issuer "mail.towertech.it" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id DB59768926
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2005 02:07:15 +1100 (EST)
-Date: Wed, 21 Dec 2005 16:07:12 +0100
-From: Alessandro Zummo <azummo-lists@towertech.it>
-To: Simon Richter <Simon.Richter@hogyros.de>
-Message-ID: <20051221160712.2d322f42@inspiron>
-In-Reply-To: <43A94811.4010704@hogyros.de>
-References: <20051220220022.4e9ff931@inspiron>
-	<43A94811.4010704@hogyros.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
-	lm-sensors@lm-sensors.org, linux-arm-kernel@lists.arm.linux.org.uk,
-	nslu2-developers@yahoogroups.com
-Subject: Re: [RFC] RTC subsystem
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <20051221161330.1a23384b.sfr@canb.auug.org.au>
+References: <Pine.LNX.4.44.0512202045040.1835-100000@gate.crashing.org>
+	<20051221161330.1a23384b.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0D8F6A7E-0DA9-40ED-A55E-364921AE64E5@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 21 Dec 2005 09:31:19 -0600
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linuxppc64-dev@ozlabs.org, Kumar Gala <galak@gate.crashing.org>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Call find_legacy_serial_ports() if we enable
+	CONFIG_SERIAL_8250
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,44 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 Dec 2005 13:18:25 +0100
-Simon Richter <Simon.Richter@hogyros.de> wrote:
 
-> >   I've posted a proposal for a new RTC subsystem
-> >  on lkml ( http://lkml.org/lkml/2005/12/20/220 ) .
-> 
-> I agree that there is room for improvement. Do you have a specific 
-> structure in mind? Specifically,
+On Dec 20, 2005, at 11:13 PM, Stephen Rothwell wrote:
 
- Hi Simon,
-  the proposal actually had a fully-working patch attached :)
+> On Tue, 20 Dec 2005 20:45:27 -0600 (CST) Kumar Gala  
+> <galak@gate.crashing.org> wrote:
+>>
+>> In setup_arch and setup_system call find_legacy_serial_ports() if we
+>> build in support for 8250 serial ports instead of basing it on  
+>> PPC_MULTIPLATFORM.
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>>
+>> ---
+>> commit 399e10aa1c6a3ca64e8e8e8cea7289e9908cc62c
+>> tree 3e5320b8a97a37c4d010186aabf8a95e5be264b4
+>> parent 7b69a37a4e811e72e82896ab38e6ae04542455f5
+>> author Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005  
+>> 20:48:36 -0600
+>> committer Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005  
+>> 20:48:36 -0600
+>>
+>>  arch/powerpc/kernel/setup_32.c |    2 +-
+>>  arch/powerpc/kernel/setup_64.c |    2 +-
+>>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> You should probably change the Makefile as well to build  
+> legacy_serial.c
+> in the CONFIG_SERIAL_8250 case.
 
->   - which functions do you believe to be generic,
->   - how should multiple RTCs be handled,
+Good call, was meaning to update the Makefile as well.  I'll send an  
+updated patch with the Makefile change.
 
- In my code, the first rtc that register is bound
- to /proc/driver/rtc and /dev/rtc (if those interfaces
- are compiled in, as they are all selectable).
-
- The other RTCs are available thru /sys/class/rtc/rtcX
- (again, if compiled in).
-
->   - are read-only (radio controlled) RTCs taken care of?
-
- You have full control of which functions you will provide
- to the upper layer. Obivously if you try to set the
- time on a read-only rtc, you will get an error.
-
-> At present, I don't have time to help the cause, but I can provide 
-> hosting for a git tree if desired.
-
- Thanks, I'll consider it if the need arises.
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Turin, Italy
-
-  http://www.towertech.it
+- kumar
