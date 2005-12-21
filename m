@@ -1,27 +1,20 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx023.isp.belgacom.be (outmx023.isp.belgacom.be
-	[195.238.2.204])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A58CC689D6
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.varma-el.com",
+	Issuer "mail.varma-el.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A563568941
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Dec 2005 08:38:37 +1100 (EST)
-Received: from outmx023.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx023.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id jBKLcNkW023050
-	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Dec 2005 22:38:23 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <43A87974.1040009@246tNt.com>
-Date: Tue, 20 Dec 2005 22:36:52 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+	Thu, 22 Dec 2005 04:23:43 +1100 (EST)
+Message-ID: <43A98F90.9010001@varma-el.com>
+Date: Wed, 21 Dec 2005 20:23:28 +0300
+From: Andrey Volkov <avolkov@varma-el.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@gate.crashing.org>
-References: <Pine.LNX.4.44.0512201452570.26351-100000@gate.crashing.org>
-In-Reply-To: <Pine.LNX.4.44.0512201452570.26351-100000@gate.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Andrew Morton <akpm@osdl.org>, Tom Rini <trini@kernel.crashing.org>,
-	Linux PPC Embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 0/9] Some Freescale MPC52xx related updates
+To: jes@trained-monkey.org
+Content-Type: text/plain; charset=KOI8-R
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
+Subject: [RFC] genalloc != generic DEVICE memory allocator
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,38 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->>Hello Andrew & all,
->>
->>
->>This set of patches contains misc updates that are in my local
->>tree since sometimes now and I think they're good to go upstream.
->>
->>They've been posted separatly on the ppc mailing list at some point
->>and tested by several people. So far I  received no negative feedback.
->>Most are trivial compile fix, small improvements, ...
->>
->>
->>Thanks,
->>
->>	Sylvain Munaut
-> 
-> 
-> Sylvain, its been a while.
+Hello Jes and all
 
-Yes, indeed ... I'm trying to catch up.
+I try to use your allocator (gen_pool_xxx), idea of which
+is a cute nice thing. But current implementation of it is
+inappropriate for a _device_ (aka onchip, like framebuffer) memory
+allocation, by next reasons:
 
+ 1) Device memory is expensive resource by access time and/or size cost.
+    So we couldn't use (usually) this memory for the free blocks lists.
+ 2) Device memory usually have special requirement of access to it
+    (alignment/special insn). So we couldn't use part of allocated
+    blocks for some control structures (this problem solved in your
+    implementation, it's common remark)
+ 3) Obvious (IMHO) workflow of mem. allocator look like:
+ 	- at startup time, driver allocate some big
+	  (almost) static mem. chunk(s) for a control/data structures.
+        - during work of the device, driver allocate many small
+	  mem. blocks with almost identical size.
+    such behavior lead to degeneration of buddy method and
+    transform it to the first/best fit method (with long seek
+    by the free node list).
+ 4) The simple binary buddy method is far away from perfect for a device
+    due to a big internal fragmentation. Especially for a
+    network/mfd devices, for which, size of allocated data very
+    often is not a power of 2.
 
-> We have started to a powerpc.git tree that 
-> Paul is maintaining rather than forwarding patches to Andrew.
-> 
-> So you may want to let Paul know about these 52xx patches for him to queue 
-> them up in the powerpc.git tree.
+I start to modify your code to satisfy above demands,
+but firstly I wish to know your, or somebody else, opinion.
 
-I knew it ... I can't seem to get it right the first time each time I
-miss something when pushing patches ...
+Especially I will very happy if somebody have and could
+provide to all, some device specific memory usage statistics.
 
-I'll send the patch series to Paul right now.
-
-
-	Sylvain
+-- 
+Regards
+Andrey Volkov
