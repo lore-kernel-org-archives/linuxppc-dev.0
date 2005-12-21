@@ -1,16 +1,22 @@
-Return-Path: <clark@esteem.com>
-Received: from forward.hsphere.cc (forward-dummy9.hsphere.cc [216.157.144.9])
-	by ozlabs.org (Postfix) with SMTP id 30FD368952
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2005 04:09:35 +1100 (EST)
-Content-Type: text/html; charset="us-ascii"
-MIME-Version: 1.0
-From: <clark@esteem.com>
-To: linuxppc-dev@ozlabs.org, inuxppc-embedded@ozlabs.org,
-	Jeff.Fellin@rflelect.com
-Date: Wed, 21 Dec 2005 12:02:48 -0500
-Message-Id: <20051221170935.30FD368952@ozlabs.org>
-Subject: Re: Power Pc 405EP
-Reply-To: clark@esteem.com
+Return-Path: <azummo-lists@towertech.it>
+Received: from mail.towertech.it (jack.kinetikon.it [62.152.125.81])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.towertech.it",
+	Issuer "mail.towertech.it" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3DB0068936
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2005 04:40:26 +1100 (EST)
+Date: Wed, 21 Dec 2005 18:41:22 +0100
+From: Alessandro Zummo <azummo-lists@towertech.it>
+To: Simon Richter <Simon.Richter@hogyros.de>
+Message-ID: <20051221184122.5253df01@inspiron>
+In-Reply-To: <43A97CAF.50301@hogyros.de>
+References: <20051220220022.4e9ff931@inspiron> <43A94811.4010704@hogyros.de>
+	<20051221160712.2d322f42@inspiron> <43A97CAF.50301@hogyros.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, lm-sensors@lm-sensors.org,
+	linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [RFC] RTC subsystem
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,44 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-<br />We have a device that uses the 405EP. If you are familiar with portin=
-g the 405GP then its not that much more difficult. Its just a matter of fin=
-ding a tree that has support for the 405EP (several don't). We had one prob=
-lem with the serial port baud rate at a particular speed but I can't remebe=
-r exactly what. I can't look right now as I'm exiled to WinDOS doing circui=
-t board work at the moment. We are using 2.4.27 with the NAPI patch and we =
-are quite pleased with it.<br /> <br /><br /><strong>On Wed Dec 21 11:25 , =
-Jeff.Fellin@rflelect.com sent:<br /><br /></strong><blockquote style=3D"bor=
-der-left: 2px solid rgb(245, 245, 245); margin-left: 5px; margin-right: 0px=
-; padding-left: 5px; padding-right: 0px;"><br />=0D
-We currently have a product implemented on a 405GP processor, and are<br />=
-=0D
-considering<br />=0D
-changing to a 405EP processor, since we need two Ethernet ports on the<br /=
->=0D
-board. For<br />=0D
-various reasons we are using Linux-2.4-18 for our system base, with<br />=
-=0D
-busybox.<br />=0D
-<br />=0D
-If you know of any difficulty with doing a port of Linux, device drivers to=
-<br />=0D
-this platform<br />=0D
-I would appreciate your reply.<br />=0D
-<br />=0D
-Thank you<br />=0D
-Jeff Fellin<br />=0D
-RFL Electronics<br />=0D
-<a href=3D"javascript:top.opencompose('Jeff.Fellin@rflelect.com','','','')"=
->Jeff.Fellin@rflelect.com</a><br />=0D
-973 334-3100, x 327<br />=0D
-<br />=0D
-_______________________________________________<br />=0D
-Linuxppc-dev mailing list<br />=0D
-<a href=3D"javascript:top.opencompose('Linuxppc-dev@ozlabs.org','','','')">=
-Linuxppc-dev@ozlabs.org</a><br />=0D
-<a target=3D"_blank" href=3D"parse.pl?redirect=3Dhttps%3A%2F%2Fozlabs.org%2=
-Fmailman%2Flistinfo%2Flinuxppc-dev">https://ozlabs.org/mailman/listinfo/lin=
-uxppc-dev</a><br />=0D
-</blockquote>=0D
-<BR>=
+On Wed, 21 Dec 2005 17:02:55 +0100
+Simon Richter <Simon.Richter@hogyros.de> wrote:
+
+> >   the proposal actually had a fully-working patch attached :)
+> 
+> Ah, didn't see that, as I just skimmed over the web archive page you 
+> linked to, which has no link to the actual patch (or I'm too stupid to 
+> find it).
+
+ right.. the link was to 0/6 of the patchset, which is
+ actually only the introduction. real patch was in subsequent
+ messages.
+
+> >  In my code, the first rtc that register is bound
+> >  to /proc/driver/rtc and /dev/rtc (if those interfaces
+> >  are compiled in, as they are all selectable).
+> 
+> It would be good to have a way to change which clock is the "primary" 
+> one from userspace later (userspace because this is clearly site policy).
+
+ If I'm not wrong, the RTC is usually queried at bootup
+ and written to on shutdown. If NTP mode is active, 
+ it is also written every 11 minutes.
+
+ So my intention was to emulate that interface as a starting
+ point. Then we can update the userspace utilities (hwclock)
+ to let the user choose which clock he want to use.
+
+ I guess /proc/driver/rtc will be deprecated sooner or
+ later. The /dev/rtc interface only supports one clock.
+ It can either be extended to have /dev/rtcX or we
+ can extend the sysfs one to allow clock updating.
+
+ NTP mode could then be adjusted to update one or more
+ of the rtcs. Maybe each RTC could have an attribute
+ (let's say /sys/class/rtc/rtcX/ntp) which tells the
+ kernel whether to update it or not.
+  
+ This way we will not have a primary clock anymore.
+
+> >  You have full control of which functions you will provide
+> >  to the upper layer. Obivously if you try to set the
+> >  time on a read-only rtc, you will get an error.
+> 
+> Sure. I was thinking of the question which error that should be.
+
+ -EPERM ? -EACCESS? :)
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Turin, Italy
+
+  http://www.towertech.it
