@@ -1,17 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 21 Dec 2005 16:13:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@gate.crashing.org>
-Message-Id: <20051221161330.1a23384b.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.44.0512202045040.1835-100000@gate.crashing.org>
-References: <Pine.LNX.4.44.0512202045040.1835-100000@gate.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__21_Dec_2005_16_13_30_+1100_RQBU7IsOFttp6gZu"
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Call find_legacy_serial_ports() if we enable
- CONFIG_SERIAL_8250
+Return-Path: <Simon.Richter@hogyros.de>
+Received: from kleinhenz.com (kleinhenz.com [213.239.205.196])
+	by ozlabs.org (Postfix) with ESMTP id 16969688E3
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Dec 2005 23:18:49 +1100 (EST)
+Message-ID: <43A94811.4010704@hogyros.de>
+Date: Wed, 21 Dec 2005 13:18:25 +0100
+From: Simon Richter <Simon.Richter@hogyros.de>
+MIME-Version: 1.0
+To: Alessandro Zummo <azummo-lists@towertech.it>
+References: <20051220220022.4e9ff931@inspiron>
+In-Reply-To: <20051220220022.4e9ff931@inspiron>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig3156E05571BFFD516F465568"
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
+	lm-sensors@lm-sensors.org, linux-arm-kernel@lists.arm.linux.org.uk,
+	nslu2-developers@yahoogroups.com
+Subject: Re: [RFC] RTC subsystem
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__21_Dec_2005_16_13_30_+1100_RQBU7IsOFttp6gZu
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig3156E05571BFFD516F465568
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tue, 20 Dec 2005 20:45:27 -0600 (CST) Kumar Gala <galak@gate.crashing.or=
-g> wrote:
->
-> In setup_arch and setup_system call find_legacy_serial_ports() if we
-> build in support for 8250 serial ports instead of basing it on PPC_MULTIP=
-LATFORM.
->=20
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->=20
-> ---
-> commit 399e10aa1c6a3ca64e8e8e8cea7289e9908cc62c
-> tree 3e5320b8a97a37c4d010186aabf8a95e5be264b4
-> parent 7b69a37a4e811e72e82896ab38e6ae04542455f5
-> author Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 20:48:36 -=
-0600
-> committer Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 20:48:3=
-6 -0600
->=20
->  arch/powerpc/kernel/setup_32.c |    2 +-
->  arch/powerpc/kernel/setup_64.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+Hi,
 
-You should probably change the Makefile as well to build legacy_serial.c
-in the CONFIG_SERIAL_8250 case.
+Alessandro Zummo wrote:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+>   I've posted a proposal for a new RTC subsystem
+>  on lkml ( http://lkml.org/lkml/2005/12/20/220 ) .
 
---Signature=_Wed__21_Dec_2005_16_13_30_+1100_RQBU7IsOFttp6gZu
-Content-Type: application/pgp-signature
+I agree that there is room for improvement. Do you have a specific 
+structure in mind? Specifically,
+
+  - which functions do you believe to be generic,
+  - how should multiple RTCs be handled,
+  - are read-only (radio controlled) RTCs taken care of?
+
+At present, I don't have time to help the cause, but I can provide 
+hosting for a git tree if desired.
+
+    Simon
+
+--------------enig3156E05571BFFD516F465568
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.2 (GNU/Linux)
 
-iD8DBQFDqOSEFdBgD/zoJvwRAraSAJ9LpDS2U2AA8LDdU1Yi6KRid5iw/ACcCbGc
-j/w7UHaaRm3I8aqzvHr338I=
-=KrFG
+iQCUAwUBQ6lIHFYr4CN7gCINAQJBugP2LfaLZ8UmalAWaajBzRQyb6nVwhzXyJyx
+I7ozrUQTLNfO2MC42LFF2nRKf5B+91wvc+BGUsgGIFQKqcGeC5jyzGM8m0EdUzI7
+KtVryJCMTOmBDYPJRiDJ5vDJ9Q4Ubx9Gp+0jelp7tBJoi3Y4sKGkw0oGAkxa+CJV
+Cve3Lj9KDw==
+=xwcd
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__21_Dec_2005_16_13_30_+1100_RQBU7IsOFttp6gZu--
+--------------enig3156E05571BFFD516F465568--
