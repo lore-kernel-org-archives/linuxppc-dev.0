@@ -1,18 +1,13 @@
-Return-Path: <Simon.Richter@hogyros.de>
-Message-ID: <43A97CAF.50301@hogyros.de>
-Date: Wed, 21 Dec 2005 17:02:55 +0100
-From: Simon Richter <Simon.Richter@hogyros.de>
+Return-Path: <galak@gate.crashing.org>
+Date: Wed, 21 Dec 2005 09:27:13 -0600 (CST)
+From: Kumar Gala <galak@gate.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.44.0512210926390.12446-100000@gate.crashing.org>
 MIME-Version: 1.0
-To: Alessandro Zummo <azummo-lists@towertech.it>
-References: <20051220220022.4e9ff931@inspiron>	<43A94811.4010704@hogyros.de>
-	<20051221160712.2d322f42@inspiron>
-In-Reply-To: <20051221160712.2d322f42@inspiron>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enigE2BB3CC6A8421382CEC04DB6"
-Cc: linuxppc-dev@ozlabs.org, lm-sensors@lm-sensors.org,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [RFC] RTC subsystem
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: [PATCH][UPDATE] powerpc: Call find_legacy_serial_ports() if we
+ enable CONFIG_SERIAL_8250
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,49 +17,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE2BB3CC6A8421382CEC04DB6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In setup_arch and setup_system call find_legacy_serial_ports() if we
+build in support for 8250 serial ports instead of basing it on PPC_MULTIPLATFORM.
 
-Hello,
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-Alessandro Zummo wrote:
+---
+commit 27b4ecf949b83a0aa79640b2d124d65ffd4db0cd
+tree 91c52973d0469e67fd20cd38650c216e3e26755d
+parent 785912139d1f9480683e9fb359c81ce903a60fed
+author Kumar Gala <galak@kernel.crashing.org> Wed, 21 Dec 2005 09:29:51 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Wed, 21 Dec 2005 09:29:51 -0600
 
->   the proposal actually had a fully-working patch attached :)
+ arch/powerpc/kernel/Makefile   |    3 +--
+ arch/powerpc/kernel/setup_32.c |    2 +-
+ arch/powerpc/kernel/setup_64.c |    2 +-
+ 3 files changed, 3 insertions(+), 4 deletions(-)
 
-Ah, didn't see that, as I just skimmed over the web archive page you 
-linked to, which has no link to the actual patch (or I'm too stupid to 
-find it).
-
->  In my code, the first rtc that register is bound
->  to /proc/driver/rtc and /dev/rtc (if those interfaces
->  are compiled in, as they are all selectable).
-
-It would be good to have a way to change which clock is the "primary" 
-one from userspace later (userspace because this is clearly site policy).
-
->  You have full control of which functions you will provide
->  to the upper layer. Obivously if you try to set the
->  time on a read-only rtc, you will get an error.
-
-Sure. I was thinking of the question which error that should be.
-
-    Simon
-
---------------enigE2BB3CC6A8421382CEC04DB6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iQCVAwUBQ6l8slYr4CN7gCINAQJtXAP8C3tnOw0TlhAKiXYJ2v00MV0BJy2IW+DT
-jn9CPA1aT2UY2MsPhzgh1bwKX5IlDkf1tvpGxIo6TO4vRxb2luVsh8q9zUCtmvym
-tHWJhSW71W9dJMLTWWNVmmxUF14duXYrH/RAXA+25FOAGrx3CIU0xhHo3gb9+Cw2
-T7SiXEj7g/I=
-=fJSn
------END PGP SIGNATURE-----
-
---------------enigE2BB3CC6A8421382CEC04DB6--
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 5bdc5fa..a852b37 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -56,8 +56,7 @@ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+ obj-$(CONFIG_6xx)		+= idle_6xx.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_KPROBES)		+= kprobes.o
+-obj-$(CONFIG_PPC_MULTIPLATFORM) += legacy_serial.o
+-obj-$(CONFIG_PPC_MULTIPLATFORM) += udbg_16550.o
++obj-$(CONFIG_SERIAL_8250)	+= legacy_serial.o udbg_16550.o
+ module-$(CONFIG_PPC64)		+= module_64.o
+ obj-$(CONFIG_MODULES)		+= $(module-y)
+ 
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 79d434f..e5d285a 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -299,7 +299,7 @@ void __init setup_arch(char **cmdline_p)
+ 	if (ppc_md.init_early)
+ 		ppc_md.init_early();
+ 
+-#ifdef CONFIG_PPC_MULTIPLATFORM
++#ifdef CONFIG_SERIAL_8250
+ 	find_legacy_serial_ports();
+ #endif
+ 	finish_device_tree();
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 419e0b9..98e9f05 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -472,7 +472,7 @@ void __init setup_system(void)
+ 	 * hash table management for us, thus ioremap works. We do that early
+ 	 * so that further code can be debugged
+ 	 */
+-#ifdef CONFIG_PPC_MULTIPLATFORM
++#ifdef CONFIG_SERIAL_8250
+ 	find_legacy_serial_ports();
+ #endif
+ 
