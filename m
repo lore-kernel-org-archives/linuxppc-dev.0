@@ -1,17 +1,19 @@
-Return-Path: <ak@muc.de>
-Received: from mail.muc.de (colin.muc.de [193.149.48.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "", Issuer "muc.de e.V." (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E65AD688E3
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Dec 2005 23:18:45 +1100 (EST)
-Date: 21 Dec 2005 13:12:01 +0100
-Date: Wed, 21 Dec 2005 13:12:01 +0100
-From: Andi Kleen <ak@muc.de>
-To: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Message-ID: <20051221121201.GA54164@muc.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Subject: [PATCH] Don't allow CONFIG_PMAC_BACKLIGHT on pmac64
+Return-Path: <Simon.Richter@hogyros.de>
+Received: from kleinhenz.com (kleinhenz.com [213.239.205.196])
+	by ozlabs.org (Postfix) with ESMTP id A0FA268900
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2005 01:00:19 +1100 (EST)
+Message-ID: <43A95FE5.8060504@hogyros.de>
+Date: Wed, 21 Dec 2005 15:00:05 +0100
+From: Simon Richter <Simon.Richter@hogyros.de>
+MIME-Version: 1.0
+To: Andi Kleen <ak@muc.de>
+References: <20051221121201.GA54164@muc.de>
+In-Reply-To: <20051221121201.GA54164@muc.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig79CC0A6047D3C2E1F2C1F2D0"
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Don't allow CONFIG_PMAC_BACKLIGHT on pmac64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig79CC0A6047D3C2E1F2C1F2D0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-For 2.6.15rc6-git2
+Hi,
 
-Don't allow to set CONFIG_MAC_BACKLIGHT on pmac64. It won't compile.
+Andi Kleen wrote:
 
-Signed-off-by: Andi Kleen <ak@muc.de>
+> Don't allow to set CONFIG_MAC_BACKLIGHT on pmac64. It won't compile.
 
-diff -u linux-2.6.15rc6git2/drivers/macintosh/Kconfig-o linux-2.6.15rc6git2/drivers/macintosh/Kconfig
---- linux-2.6.15rc6git2/drivers/macintosh/Kconfig-o	2005-12-21 12:27:45.000000000 +0100
-+++ linux-2.6.15rc6git2/drivers/macintosh/Kconfig	2005-12-21 13:07:47.000000000 +0100
-@@ -103,7 +103,7 @@
- # on non-powerbook machines (but only on PMU based ones AFAIK)
- config PMAC_BACKLIGHT
- 	bool "Backlight control for LCD screens"
--	depends on ADB_PMU && (BROKEN || !PPC64)
-+	depends on ADB_PMU && !PPC64
- 	help
- 	  Say Y here to build in code to manage the LCD backlight on a
- 	  Macintosh PowerBook.  With this code, the backlight will be turned
+ > -	depends on ADB_PMU && (BROKEN || !PPC64)
+ > +	depends on ADB_PMU && !PPC64
+
+That's why it's marked BROKEN, perhaps?
+
+    Simon
+
+
+--------------enig79CC0A6047D3C2E1F2C1F2D0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iQCVAwUBQ6lf7FYr4CN7gCINAQLFSgP/Z17hXsLRLTEZRdc2CPUzOg7g+kHofags
+XiGhJy1E4JbqMLbCB7on/zVuwEV2t2ErWKchLpndkFjtySdDmuJStH9hr66CCI/g
+ligx5p7JrQWjKqoLXCLILGh3+LdIqB7zHwpTHpGuEnPKawo/u5Aw9M7hE6oWwfdi
+qPBEI6taawA=
+=B3aM
+-----END PGP SIGNATURE-----
+
+--------------enig79CC0A6047D3C2E1F2C1F2D0--
