@@ -1,22 +1,20 @@
-Return-Path: <azummo-lists@towertech.it>
-Received: from mail.towertech.it (jack.kinetikon.it [62.152.125.81])
+Return-Path: <ak@muc.de>
+Received: from mail.muc.de (colin.muc.de [193.149.48.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.towertech.it",
-	Issuer "mail.towertech.it" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3DB0068936
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2005 04:40:26 +1100 (EST)
-Date: Wed, 21 Dec 2005 18:41:22 +0100
-From: Alessandro Zummo <azummo-lists@towertech.it>
+	(Client CN "", Issuer "muc.de e.V." (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 178356890D
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2005 06:37:13 +1100 (EST)
+Date: 21 Dec 2005 20:37:09 +0100
+Date: Wed, 21 Dec 2005 20:37:09 +0100
+From: Andi Kleen <ak@muc.de>
 To: Simon Richter <Simon.Richter@hogyros.de>
-Message-ID: <20051221184122.5253df01@inspiron>
-In-Reply-To: <43A97CAF.50301@hogyros.de>
-References: <20051220220022.4e9ff931@inspiron> <43A94811.4010704@hogyros.de>
-	<20051221160712.2d322f42@inspiron> <43A97CAF.50301@hogyros.de>
+Message-ID: <20051221193709.GA49171@muc.de>
+References: <20051221121201.GA54164@muc.de> <43A95FE5.8060504@hogyros.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, lm-sensors@lm-sensors.org,
-	linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
-Subject: Re: [RFC] RTC subsystem
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <43A95FE5.8060504@hogyros.de>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Don't allow CONFIG_PMAC_BACKLIGHT on pmac64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,59 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 Dec 2005 17:02:55 +0100
-Simon Richter <Simon.Richter@hogyros.de> wrote:
-
-> >   the proposal actually had a fully-working patch attached :)
+On Wed, Dec 21, 2005 at 03:00:05PM +0100, Simon Richter wrote:
+> Hi,
 > 
-> Ah, didn't see that, as I just skimmed over the web archive page you 
-> linked to, which has no link to the actual patch (or I'm too stupid to 
-> find it).
-
- right.. the link was to 0/6 of the patchset, which is
- actually only the introduction. real patch was in subsequent
- messages.
-
-> >  In my code, the first rtc that register is bound
-> >  to /proc/driver/rtc and /dev/rtc (if those interfaces
-> >  are compiled in, as they are all selectable).
+> Andi Kleen wrote:
 > 
-> It would be good to have a way to change which clock is the "primary" 
-> one from userspace later (userspace because this is clearly site policy).
-
- If I'm not wrong, the RTC is usually queried at bootup
- and written to on shutdown. If NTP mode is active, 
- it is also written every 11 minutes.
-
- So my intention was to emulate that interface as a starting
- point. Then we can update the userspace utilities (hwclock)
- to let the user choose which clock he want to use.
-
- I guess /proc/driver/rtc will be deprecated sooner or
- later. The /dev/rtc interface only supports one clock.
- It can either be extended to have /dev/rtcX or we
- can extend the sysfs one to allow clock updating.
-
- NTP mode could then be adjusted to update one or more
- of the rtcs. Maybe each RTC could have an attribute
- (let's say /sys/class/rtc/rtcX/ntp) which tells the
- kernel whether to update it or not.
-  
- This way we will not have a primary clock anymore.
-
-> >  You have full control of which functions you will provide
-> >  to the upper layer. Obivously if you try to set the
-> >  time on a read-only rtc, you will get an error.
+> >Don't allow to set CONFIG_MAC_BACKLIGHT on pmac64. It won't compile.
 > 
-> Sure. I was thinking of the question which error that should be.
+> > -	depends on ADB_PMU && (BROKEN || !PPC64)
+> > +	depends on ADB_PMU && !PPC64
+> 
+> That's why it's marked BROKEN, perhaps?
 
- -EPERM ? -EACCESS? :)
+It didn't work - i could select it.
 
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Turin, Italy
-
-  http://www.towertech.it
+-Andi
