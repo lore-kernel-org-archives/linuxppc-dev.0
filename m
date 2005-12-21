@@ -1,17 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20051221161330.1a23384b.sfr@canb.auug.org.au>
-References: <Pine.LNX.4.44.0512202045040.1835-100000@gate.crashing.org>
-	<20051221161330.1a23384b.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0D8F6A7E-0DA9-40ED-A55E-364921AE64E5@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 21 Dec 2005 09:31:19 -0600
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc64-dev@ozlabs.org, Kumar Gala <galak@gate.crashing.org>,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Call find_legacy_serial_ports() if we enable
-	CONFIG_SERIAL_8250
+Return-Path: <Simon.Richter@hogyros.de>
+Message-ID: <43A97CAF.50301@hogyros.de>
+Date: Wed, 21 Dec 2005 17:02:55 +0100
+From: Simon Richter <Simon.Richter@hogyros.de>
+MIME-Version: 1.0
+To: Alessandro Zummo <azummo-lists@towertech.it>
+References: <20051220220022.4e9ff931@inspiron>	<43A94811.4010704@hogyros.de>
+	<20051221160712.2d322f42@inspiron>
+In-Reply-To: <20051221160712.2d322f42@inspiron>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enigE2BB3CC6A8421382CEC04DB6"
+Cc: linuxppc-dev@ozlabs.org, lm-sensors@lm-sensors.org,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [RFC] RTC subsystem
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE2BB3CC6A8421382CEC04DB6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Dec 20, 2005, at 11:13 PM, Stephen Rothwell wrote:
+Hello,
 
-> On Tue, 20 Dec 2005 20:45:27 -0600 (CST) Kumar Gala  
-> <galak@gate.crashing.org> wrote:
->>
->> In setup_arch and setup_system call find_legacy_serial_ports() if we
->> build in support for 8250 serial ports instead of basing it on  
->> PPC_MULTIPLATFORM.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->>
->> ---
->> commit 399e10aa1c6a3ca64e8e8e8cea7289e9908cc62c
->> tree 3e5320b8a97a37c4d010186aabf8a95e5be264b4
->> parent 7b69a37a4e811e72e82896ab38e6ae04542455f5
->> author Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005  
->> 20:48:36 -0600
->> committer Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005  
->> 20:48:36 -0600
->>
->>  arch/powerpc/kernel/setup_32.c |    2 +-
->>  arch/powerpc/kernel/setup_64.c |    2 +-
->>  2 files changed, 2 insertions(+), 2 deletions(-)
->
-> You should probably change the Makefile as well to build  
-> legacy_serial.c
-> in the CONFIG_SERIAL_8250 case.
+Alessandro Zummo wrote:
 
-Good call, was meaning to update the Makefile as well.  I'll send an  
-updated patch with the Makefile change.
+>   the proposal actually had a fully-working patch attached :)
 
-- kumar
+Ah, didn't see that, as I just skimmed over the web archive page you 
+linked to, which has no link to the actual patch (or I'm too stupid to 
+find it).
+
+>  In my code, the first rtc that register is bound
+>  to /proc/driver/rtc and /dev/rtc (if those interfaces
+>  are compiled in, as they are all selectable).
+
+It would be good to have a way to change which clock is the "primary" 
+one from userspace later (userspace because this is clearly site policy).
+
+>  You have full control of which functions you will provide
+>  to the upper layer. Obivously if you try to set the
+>  time on a read-only rtc, you will get an error.
+
+Sure. I was thinking of the question which error that should be.
+
+    Simon
+
+--------------enigE2BB3CC6A8421382CEC04DB6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iQCVAwUBQ6l8slYr4CN7gCINAQJtXAP8C3tnOw0TlhAKiXYJ2v00MV0BJy2IW+DT
+jn9CPA1aT2UY2MsPhzgh1bwKX5IlDkf1tvpGxIo6TO4vRxb2luVsh8q9zUCtmvym
+tHWJhSW71W9dJMLTWWNVmmxUF14duXYrH/RAXA+25FOAGrx3CIU0xhHo3gb9+Cw2
+T7SiXEj7g/I=
+=fJSn
+-----END PGP SIGNATURE-----
+
+--------------enigE2BB3CC6A8421382CEC04DB6--
