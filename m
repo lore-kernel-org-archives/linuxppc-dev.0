@@ -1,19 +1,23 @@
-Return-Path: <Simon.Richter@hogyros.de>
-Received: from kleinhenz.com (kleinhenz.com [213.239.205.196])
-	by ozlabs.org (Postfix) with ESMTP id A0FA268900
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2005 01:00:19 +1100 (EST)
-Message-ID: <43A95FE5.8060504@hogyros.de>
-Date: Wed, 21 Dec 2005 15:00:05 +0100
-From: Simon Richter <Simon.Richter@hogyros.de>
-MIME-Version: 1.0
-To: Andi Kleen <ak@muc.de>
-References: <20051221121201.GA54164@muc.de>
-In-Reply-To: <20051221121201.GA54164@muc.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enig79CC0A6047D3C2E1F2C1F2D0"
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Don't allow CONFIG_PMAC_BACKLIGHT on pmac64
+Return-Path: <azummo-lists@towertech.it>
+Received: from mail.towertech.it (jack.kinetikon.it [62.152.125.81])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.towertech.it",
+	Issuer "mail.towertech.it" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DB59768926
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2005 02:07:15 +1100 (EST)
+Date: Wed, 21 Dec 2005 16:07:12 +0100
+From: Alessandro Zummo <azummo-lists@towertech.it>
+To: Simon Richter <Simon.Richter@hogyros.de>
+Message-ID: <20051221160712.2d322f42@inspiron>
+In-Reply-To: <43A94811.4010704@hogyros.de>
+References: <20051220220022.4e9ff931@inspiron>
+	<43A94811.4010704@hogyros.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
+	lm-sensors@lm-sensors.org, linux-arm-kernel@lists.arm.linux.org.uk,
+	nslu2-developers@yahoogroups.com
+Subject: Re: [RFC] RTC subsystem
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig79CC0A6047D3C2E1F2C1F2D0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, 21 Dec 2005 13:18:25 +0100
+Simon Richter <Simon.Richter@hogyros.de> wrote:
 
-Hi,
+> >   I've posted a proposal for a new RTC subsystem
+> >  on lkml ( http://lkml.org/lkml/2005/12/20/220 ) .
+> 
+> I agree that there is room for improvement. Do you have a specific 
+> structure in mind? Specifically,
 
-Andi Kleen wrote:
+ Hi Simon,
+  the proposal actually had a fully-working patch attached :)
 
-> Don't allow to set CONFIG_MAC_BACKLIGHT on pmac64. It won't compile.
+>   - which functions do you believe to be generic,
+>   - how should multiple RTCs be handled,
 
- > -	depends on ADB_PMU && (BROKEN || !PPC64)
- > +	depends on ADB_PMU && !PPC64
+ In my code, the first rtc that register is bound
+ to /proc/driver/rtc and /dev/rtc (if those interfaces
+ are compiled in, as they are all selectable).
 
-That's why it's marked BROKEN, perhaps?
+ The other RTCs are available thru /sys/class/rtc/rtcX
+ (again, if compiled in).
 
-    Simon
+>   - are read-only (radio controlled) RTCs taken care of?
 
+ You have full control of which functions you will provide
+ to the upper layer. Obivously if you try to set the
+ time on a read-only rtc, you will get an error.
 
---------------enig79CC0A6047D3C2E1F2C1F2D0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> At present, I don't have time to help the cause, but I can provide 
+> hosting for a git tree if desired.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
+ Thanks, I'll consider it if the need arises.
 
-iQCVAwUBQ6lf7FYr4CN7gCINAQLFSgP/Z17hXsLRLTEZRdc2CPUzOg7g+kHofags
-XiGhJy1E4JbqMLbCB7on/zVuwEV2t2ErWKchLpndkFjtySdDmuJStH9hr66CCI/g
-ligx5p7JrQWjKqoLXCLILGh3+LdIqB7zHwpTHpGuEnPKawo/u5Aw9M7hE6oWwfdi
-qPBEI6taawA=
-=B3aM
------END PGP SIGNATURE-----
+-- 
 
---------------enig79CC0A6047D3C2E1F2C1F2D0--
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Turin, Italy
+
+  http://www.towertech.it
