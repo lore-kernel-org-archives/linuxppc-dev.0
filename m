@@ -1,17 +1,17 @@
-Return-Path: <galak@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 62D1968900
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Dec 2005 13:59:59 +1100 (EST)
-Date: Tue, 20 Dec 2005 20:55:11 -0600 (CST)
-From: Kumar Gala <galak@gate.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <Pine.LNX.4.44.0512202054490.1976-100000@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Only call prom_init of we have true OpenFirmware
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 21 Dec 2005 16:13:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@gate.crashing.org>
+Message-Id: <20051221161330.1a23384b.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.44.0512202045040.1835-100000@gate.crashing.org>
+References: <Pine.LNX.4.44.0512202045040.1835-100000@gate.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__21_Dec_2005_16_13_30_+1100_RQBU7IsOFttp6gZu"
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Call find_legacy_serial_ports() if we enable
+ CONFIG_SERIAL_8250
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +21,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We should only have prom_init built if we are CONFIG_PPC_OF. CONFIG_PPC_OF
-is intended to imply we are booted by a full Open Firmware implementation.
+--Signature=_Wed__21_Dec_2005_16_13_30_+1100_RQBU7IsOFttp6gZu
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+On Tue, 20 Dec 2005 20:45:27 -0600 (CST) Kumar Gala <galak@gate.crashing.or=
+g> wrote:
+>
+> In setup_arch and setup_system call find_legacy_serial_ports() if we
+> build in support for 8250 serial ports instead of basing it on PPC_MULTIP=
+LATFORM.
+>=20
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>=20
+> ---
+> commit 399e10aa1c6a3ca64e8e8e8cea7289e9908cc62c
+> tree 3e5320b8a97a37c4d010186aabf8a95e5be264b4
+> parent 7b69a37a4e811e72e82896ab38e6ae04542455f5
+> author Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 20:48:36 -=
+0600
+> committer Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 20:48:3=
+6 -0600
+>=20
+>  arch/powerpc/kernel/setup_32.c |    2 +-
+>  arch/powerpc/kernel/setup_64.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
----
-commit 51929bc009670733f84dc5dc48711fb3f1cb1554
-tree 9ee9a1d7c49f3ee0e5984b0834fb2daa89cca394
-parent c9b626087d0381681d5ae4132ca2ac2295f78447
-author Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 20:59:03 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Tue, 20 Dec 2005 20:59:03 -0600
+You should probably change the Makefile as well to build legacy_serial.c
+in the CONFIG_SERIAL_8250 case.
 
- arch/powerpc/kernel/head_32.S |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index bf37ef2..7c9fdd5 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -120,10 +120,12 @@ __start:
-  * because OF may have I/O devices mapped into that area
-  * (particularly on CHRP).
-  */
-+#ifdef CONFIG_PPC_OF
- 	cmpwi	0,r5,0
- 	beq	1f
- 	bl	prom_init
- 	trap
-+#endif
- 
- /*
-  * Check for BootX signature when supporting PowerMac and branch to
+--Signature=_Wed__21_Dec_2005_16_13_30_+1100_RQBU7IsOFttp6gZu
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFDqOSEFdBgD/zoJvwRAraSAJ9LpDS2U2AA8LDdU1Yi6KRid5iw/ACcCbGc
+j/w7UHaaRm3I8aqzvHr338I=
+=KrFG
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__21_Dec_2005_16_13_30_+1100_RQBU7IsOFttp6gZu--
