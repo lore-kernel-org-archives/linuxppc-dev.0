@@ -1,15 +1,20 @@
-Return-Path: <Simon.Richter@hogyros.de>
-Message-ID: <43A9E2C9.7080300@hogyros.de>
-Date: Thu, 22 Dec 2005 00:18:33 +0100
-From: Simon Richter <Simon.Richter@hogyros.de>
-MIME-Version: 1.0
-To: Alessandro Zummo <azummo-lists@towertech.it>
-References: <20051220220022.4e9ff931@inspiron>	<43A94811.4010704@hogyros.de>	<20051221160712.2d322f42@inspiron>	<43A97CAF.50301@hogyros.de>
-	<20051221184122.5253df01@inspiron>
-In-Reply-To: <20051221184122.5253df01@inspiron>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enig920050ECEE0F6B7E892C7EB0"
+Return-Path: <azummo-lists@towertech.it>
+Received: from mail.towertech.it (jack.kinetikon.it [62.152.125.81])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.towertech.it",
+	Issuer "mail.towertech.it" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4A012688FA
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Dec 2005 17:47:58 +1100 (EST)
+Date: Thu, 22 Dec 2005 07:48:50 +0100
+From: Alessandro Zummo <azummo-lists@towertech.it>
+To: Simon Richter <Simon.Richter@hogyros.de>
+Message-ID: <20051222074850.01d56f94@inspiron>
+In-Reply-To: <43A9E2C9.7080300@hogyros.de>
+References: <20051220220022.4e9ff931@inspiron> <43A94811.4010704@hogyros.de>
+	<20051221160712.2d322f42@inspiron> <43A97CAF.50301@hogyros.de>
+	<20051221184122.5253df01@inspiron> <43A9E2C9.7080300@hogyros.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, lm-sensors@lm-sensors.org,
 	linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 Subject: Re: [RFC] RTC subsystem
@@ -22,70 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig920050ECEE0F6B7E892C7EB0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Thu, 22 Dec 2005 00:18:33 +0100
+Simon Richter <Simon.Richter@hogyros.de> wrote:
 
-Hello,
+> A good ntpd will adjust the speed rather than write to the clock; the
+> ntpd shipped by most distributions can already handle multiple time sources.
 
-Alessandro Zummo schrieb:
+ Yes, but there's the kernel who writes to the clock,
+ for example http://lxr.linux.no/source/arch/arm/kernel/time.c?a=arm#L103 .
 
->>It would be good to have a way to change which clock is the "primary" 
->>one from userspace later (userspace because this is clearly site policy).
+> >  later. The /dev/rtc interface only supports one clock.
+> >  It can either be extended to have /dev/rtcX or we
+> >  can extend the sysfs one to allow clock updating.
+> 
+> /dev is the way to go IMO. As far as I've understood sysfs, it carries
+> meta information about devices and drivers only, the actual
+> communication then happens through device nodes still.
 
->  If I'm not wrong, the RTC is usually queried at bootup
->  and written to on shutdown. If NTP mode is active, 
->  it is also written every 11 minutes.
+ Ok. We can use dynamic device numbers and go for the /dev
+ interface. 
 
-A good ntpd will adjust the speed rather than write to the clock; the
-ntpd shipped by most distributions can already handle multiple time sources.
+> 
+> >  NTP mode could then be adjusted to update one or more
+> >  of the rtcs. Maybe each RTC could have an attribute
+> >  (let's say /sys/class/rtc/rtcX/ntp) which tells the
+> >  kernel whether to update it or not.
+> 
+> That's entirely a userspace thing. What the userspace needs to know from
+> the kernel is whether the clock is writable and whether its speed can be
+> adjusted.
 
-I'm thinking of the case where a computer is not attached to a network
-but needs accurate tim; in this case I'd give it a battery powered RTC
-and a time signal receiver. As most time signals are low-bandwidth, they
-may not carry full time information in each tick so it may take several
-minutes to fully synchronize. In this case I'd like to use the battery
-backed up clock first and switch later on when synchronized.
+ agreed. there are are also some variables of interest in
+ http://lxr.linux.no/source/include/linux/timex.h?a=arm#L188
+ some of them may be usefully exported in sysfs.
+ 
+ 
+-- 
 
->  I guess /proc/driver/rtc will be deprecated sooner or
->  later. The /dev/rtc interface only supports one clock.
->  It can either be extended to have /dev/rtcX or we
->  can extend the sysfs one to allow clock updating.
+ Best regards,
 
-/dev is the way to go IMO. As far as I've understood sysfs, it carries
-meta information about devices and drivers only, the actual
-communication then happens through device nodes still.
+ Alessandro Zummo,
+  Tower Technologies - Turin, Italy
 
->  NTP mode could then be adjusted to update one or more
->  of the rtcs. Maybe each RTC could have an attribute
->  (let's say /sys/class/rtc/rtcX/ntp) which tells the
->  kernel whether to update it or not.
-
-That's entirely a userspace thing. What the userspace needs to know from
-the kernel is whether the clock is writable and whether its speed can be
-adjusted.
-
->  -EPERM ? -EACCESS? :)
-
--EIO or -ENOSYS would also be possible options.
-
-   Simon
-
---------------enig920050ECEE0F6B7E892C7EB0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
-
-iQCVAwUBQ6ni31Yr4CN7gCINAQIoEAQAghXWhuqJ/nWEJ8nDbyCrXd7pA+fo1ZHD
-w7IJWzF84fMI46KjJB3lcQUybhOLfoqCqOngpW0fFh5fPm8wNwiJNPhB3tJEdOyT
-HmPOcVQrqHQ1lESEQGXG+kqors1+KViMln5AHINQHm1U7cBmYfKTbtzigkH3zryP
-U/Ia2PhAzNM=
-=WGa4
------END PGP SIGNATURE-----
-
---------------enig920050ECEE0F6B7E892C7EB0--
+  http://www.towertech.it
