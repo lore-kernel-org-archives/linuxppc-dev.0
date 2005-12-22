@@ -1,20 +1,22 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wbmler2.mail.xerox.com (wbmler2.mail.xerox.com [13.13.138.217])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "wbmler2.mail.xerox.com",
-	Issuer "wbmler2.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 234A1688E3
+Return-Path: <achim.machura@berghof.com>
+Received: from mail117.messagelabs.com (mail117.messagelabs.com
+	[195.245.231.211]) by ozlabs.org (Postfix) with SMTP id C69F568905
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Dec 2005 02:09:06 +1100 (EST)
+	Fri, 23 Dec 2005 02:36:03 +1100 (EST)
+Received: from BATEEE52 (batee-e52.be-int [10.255.241.52])
+	by pegasus.berghof.com (8.12.10/8.12.10) with SMTP id jBMFZwqg007955
+	for <linuxppc-embedded@ozlabs.org>; Thu, 22 Dec 2005 16:35:58 +0100
+From: "Achim Machura" <achim.machura@berghof.com>
+To: "'Jenkins, Clive'" <Clive.Jenkins@xerox.com>
+Date: Thu, 22 Dec 2005 16:35:51 +0100
+Message-ID: <001f01c6070d$649e8f00$34f1ff0a@beint.local>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Date: Thu, 22 Dec 2005 14:59:40 -0000
-Message-ID: <35786B99AB3FDC45A8215724617919736D91B7@gbrwgceumf01.eu.xerox.net>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: <achim.machura@berghof.com>,
-	"Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
-Subject: RE: Kernel cmdline
+In-Reply-To: <35786B99AB3FDC45A8215724617919736D91B7@gbrwgceumf01.eu.xerox.net>
+Cc: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
+Subject: AW: Kernel cmdline
+Reply-To: achim.machura@berghof.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,27 +27,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Achim Machura
-> Sent: 22 December 2005 13:48
-> To: Linuxppc-Embedded (E-Mail)
-> Subject: Kernel cmdline
->
->
-> Hello,
->
-> is the a posibility to read (parse) the cmdline in a driver, similar
-to cat
-> /proc/cmdline ?
->
-> best regards
->
-> Achim
 
-Yes. Look at:
-http://lxr.linux.no/source/init/main.c?v=3D2.6.10;a=3Dppc#L123
-Clive
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> Yes. Look at:
+> http://lxr.linux.no/source/init/main.c?v=2.6.10;a=ppc#L123
+> Clive
+
+Thanks,
+
+but this exaple seems to work only with modules staticly linked into the
+kernel.
+
+I' ve to parse the commandline in a dynamic loaded modul.
+
+Achim
