@@ -1,16 +1,25 @@
-Return-Path: <Bukhari@fzi.de>
-Received: from francis.fzi.de (francis.fzi.de [141.21.7.5])
-	by ozlabs.org (Postfix) with ESMTP id 2AA4C6890D
+Return-Path: <pantelis.antoniou@gmail.com>
+Received: from uproxy.gmail.com (uproxy.gmail.com [66.249.92.195])
+	by ozlabs.org (Postfix) with ESMTP id 016CB68914
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Dec 2005 02:56:58 +1100 (EST)
+	Fri, 23 Dec 2005 02:59:19 +1100 (EST)
+Received: by uproxy.gmail.com with SMTP id h2so99109ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 22 Dec 2005 07:59:17 -0800 (PST)
+From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 22 Dec 2005 18:09:52 +0200
+References: <43A98F90.9010001@varma-el.com> <43AAB508.7000007@intracom.gr>
+	<43AAC9E8.2060105@varma-el.com>
+In-Reply-To: <43AAC9E8.2060105@varma-el.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Thu, 22 Dec 2005 16:39:48 +0100
-Message-ID: <EE3E34EBE104B24DA5DF5DBC1EA998D5287FEF@loretta.fzi.de>
-From: "Amir Bukhari" <Bukhari@fzi.de>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC5200 Cache issue with Bestcomm
+  charset="koi8-r"
+Message-Id: <200512221809.53360.pantelis.antoniou@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, jes@trained-monkey.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [RFC] genalloc != generic DEVICE memory allocator
+Reply-To: pantelis.antoniou@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,45 +30,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sorry this question is not related to linux kernel, but I can't find any
-sources which I can find any tipps for the issue I encoured.
-I write a standalone application with TCP stack (I use lwip stack). I am
-want to enable the cache to increase performance of my application.
+>
 
-------------------------
-Here is my configuration of various registers:
+[snip]
 
-#define CORE_HID0_INIT                    0x8010C000
-#define CORE_HID2_INIT                    0x00000000
-#define CORE_IBAT0U_INIT                  0x000007FF
-#define CORE_IBAT0L_INIT                  0x00000001
+> I'm sure lib/ will be appropriate place. and something like
+> "DON'T TRY REINVENT WHEEL, TRY FIX EXISTS" in documentation/ :).
+> 
+> Now couple word about rheap: I understand why you are use static
+> alignment in allocator, but its very specialized for CPM. IMO, align
+> must be a param of xx_alloc. For ex: device may demand alignment by
+> 8 bytes, which ok until... you are try map this memory to the user
+> space (don't shoot at me, remember about framebuffer & co).
+>
 
-#define CORE_DBAT0U_INIT                  0x000007FF
-#define CORE_DBAT0L_INIT                  0x00000052
-#define CORE_DBAT1U_INIT                  0xF000000F  // for MBAR
-#define CORE_DBAT1L_INIT                  0xF000002A  // for MBAR
-#define CORE_DBAT2U_INIT                  0x40001FFF
-#define CORE_DBAT2L_INIT                  0x40000022  // for PCI
-#define CORE_DBAT3U_INIT                  0x50001FFF  //
-#define CORE_DBAT3L_INIT                  0x50000022  //
+It is trivial to align to a given alignment in a call. Please search
+the archives since this was needed for CPM2 and I've committed a patch.
 
-XLARB configuration is :
-#define XLARB_CONFIG_INIT                 0x8000A006 // snoop window is
-enabled
-#define XLARB_PRIORITY_ENABLE_INIT        0x0000000F
-#define XLARB_PRIORITY_INIT               0x11111010
-#define XLARB_SNOOP_WINDOW_INIT           0x00000019 // base address is =
-0
-and 64Mbytes length
+As for mapping user space, since rheap only deals with addresses and never
+touches the memory it's supposed to control, you can do pretty much everything.
 
-----------------
+I still don't understand what are you trying to do however.
 
-Now as soon as I enable cache the Bestcomm doesn't stop firing me a =
-ethernet
-packet receive. It doesn't stop this and this let my system hangs up. =
-When
-running the system without cache every thing work well.
+Mind explaining?
+ 
+> -- 
+> Regards
+> Andrey Volkov
+>
 
-I will be happy if someone can give me a tipp if I may missed something!
+Regards
 
--Amir
+Pantelis
