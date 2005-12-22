@@ -1,22 +1,23 @@
-Return-Path: <achim.machura@berghof.com>
-Received: from mail117.messagelabs.com (mail117.messagelabs.com
-	[195.245.231.211]) by ozlabs.org (Postfix) with SMTP id C69F568905
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.varma-el.com",
+	Issuer "mail.varma-el.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E032A68911
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Dec 2005 02:36:03 +1100 (EST)
-Received: from BATEEE52 (batee-e52.be-int [10.255.241.52])
-	by pegasus.berghof.com (8.12.10/8.12.10) with SMTP id jBMFZwqg007955
-	for <linuxppc-embedded@ozlabs.org>; Thu, 22 Dec 2005 16:35:58 +0100
-From: "Achim Machura" <achim.machura@berghof.com>
-To: "'Jenkins, Clive'" <Clive.Jenkins@xerox.com>
-Date: Thu, 22 Dec 2005 16:35:51 +0100
-Message-ID: <001f01c6070d$649e8f00$34f1ff0a@beint.local>
+	Fri, 23 Dec 2005 02:44:47 +1100 (EST)
+Message-ID: <43AAC9E8.2060105@varma-el.com>
+Date: Thu, 22 Dec 2005 18:44:40 +0300
+From: Andrey Volkov <avolkov@varma-el.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <35786B99AB3FDC45A8215724617919736D91B7@gbrwgceumf01.eu.xerox.net>
-Cc: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
-Subject: AW: Kernel cmdline
-Reply-To: achim.machura@berghof.com
+To: Pantelis Antoniou <panto@intracom.gr>
+References: <43A98F90.9010001@varma-el.com> <43AA65F4.10409@intracom.gr>
+	<43AAAEA2.8030200@varma-el.com> <43AAB508.7000007@intracom.gr>
+In-Reply-To: <43AAB508.7000007@intracom.gr>
+Content-Type: text/plain; charset=KOI8-R
+Cc: Andrew Morton <akpm@osdl.org>, jes@trained-monkey.org,
+	linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [RFC] genalloc != generic DEVICE memory allocator
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,16 +28,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Pantelis Antoniou wrote:
+> Andrey Volkov wrote:
+> 
+>> Hi Pantelis,
+>>
+>> Pantelis Antoniou wrote:
+>>
+>>> Andrey Volkov wrote:
+>>>
+> 
+> [snip]
+> 
+>>>
+>>> Hi Andrey,
+>>>
+>>> FYI, on arch/ppc/lib/rheap.c theres an implementation of a remote heap.
+>>>
+>>> It is currently used for the management of freescale's CPM1 & CPM2
+>>> internal
+>>> dual port RAM.
+>>>
+>>> Take a look, it might be what you have in mind.
+>>>
+>>> Regards
+>>>
+>>> Pantelis
+>>
+>>
+>>
+>> Thanks I missed it (and small wonder! :( ).
+>>
+>> Andrew, Is somebody count HOW MANY dev specific implementation
+>> of buddy/first-fit allocators now in kernel?
+>>
+> 
+> Yes, it is indeed messy.
+> 
+> The rheap implementation is generic enough and I believe can fit most of
+> the
+> special memory allocators needs. If you'd like I could move it somewhere
+> generic and test it.
+> 
+I'm sure lib/ will be appropriate place. and something like
+"DON'T TRY REINVENT WHEEL, TRY FIX EXISTS" in documentation/ :).
 
-> Yes. Look at:
-> http://lxr.linux.no/source/init/main.c?v=2.6.10;a=ppc#L123
-> Clive
+Now couple word about rheap: I understand why you are use static
+alignment in allocator, but its very specialized for CPM. IMO, align
+must be a param of xx_alloc. For ex: device may demand alignment by
+8 bytes, which ok until... you are try map this memory to the user
+space (don't shoot at me, remember about framebuffer & co).
 
-Thanks,
-
-but this exaple seems to work only with modules staticly linked into the
-kernel.
-
-I' ve to parse the commandline in a dynamic loaded modul.
-
-Achim
+-- 
+Regards
+Andrey Volkov
