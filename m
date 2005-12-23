@@ -1,21 +1,23 @@
-Return-Path: <jes@trained-monkey.org>
-Received: from jaguar.mkp.net (vanessarodrigues.com [192.139.46.150])
-	by ozlabs.org (Postfix) with ESMTP id D3094688DA
+Return-Path: <Prabhat_Singh@Satyam.com>
+Received: from chnmail.satyam.com (chnmail.satyam.com [210.18.90.100])
+	by ozlabs.org (Postfix) with ESMTP id 64EA5688DA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Dec 2005 21:59:25 +1100 (EST)
-Sender: jes@trained-monkey.org
-To: Andrey Volkov <avolkov@varma-el.com>
-References: <43A98F90.9010001@varma-el.com> <yq0d5jpuoqe.fsf@jaguar.mkp.net>
-	<43AAEE12.5030009@varma-el.com>
-From: Jes Sorensen <jes@trained-monkey.org>
-Date: 23 Dec 2005 05:59:23 -0500
-In-Reply-To: <43AAEE12.5030009@varma-el.com>
-Message-ID: <yq08xuculis.fsf@jaguar.mkp.net>
+	Fri, 23 Dec 2005 23:07:58 +1100 (EST)
+Received: from blr.satyam.com (blr.satyam.com [208.220.245.73])
+	by che2.satyam.com (8.12.8/8.12.8) with ESMTP id jBNBmsXU016681
+	for <linuxppc-embedded@ozlabs.org>; Fri, 23 Dec 2005 17:19:04 +0530
+Received: from Disclaimerbng.corp.satyam.ad (bng.satyam.com [172.19.57.211])
+	by blr.satyam.com (8.12.8/8.12.8) with ESMTP id jBNBhIfA004636
+	for <linuxppc-embedded@ozlabs.org>; Fri, 23 Dec 2005 17:13:19 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: [RFC] genalloc != generic DEVICE memory allocator
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C607B7.7BF9028B"
+Date: Fri, 23 Dec 2005 17:23:17 +0530
+Message-ID: <D8595042F3765A4285B848A78A2C2ED1070CAA@bsdmsg002.corp.satyam.ad>
+From: "Prabhat_Singh" <Prabhat_Singh@Satyam.com>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: Prabhat_Singh <Prabhat_Singh@satyam.com>
+Subject: Compilation Error
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,99 +28,515 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "Andrey" == Andrey Volkov <avolkov@varma-el.com> writes:
+This is a multi-part message in MIME format.
 
-Andrey> Hi Jes,
-Andrey> Jes Sorensen wrote:
->>  This really is irrelevant, the space is only used within the
->> object when it's on the free list. Ie. if all memory is handed out
->> there's no space used for this purpose.
+------_=_NextPart_001_01C607B7.7BF9028B
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Andrey> I point out 2 reasons: ACCESS TIME was first :), let take very
-Andrey> widespread case: PCI device with some onboard memory and any N
-Andrey> GHz proc. - result may be terrible: each access to device mem
-Andrey> (which usually uncached) will slowed down this super fast proc
-Andrey> to 33 MHZ, i.e same as we made busy-wait with disabled
-Andrey> interrupts after each read/write...
+Hi all,
 
-Andrey, 
+          I am building  linux-2.4.32 kernel using ELDK tool  for
+MPC8248(MPC8272 family) based target board. After configuring kernel as
+follow:
 
-As I said in my response, you need the control blocks because you are
-not allowed to directly access things on the other side of the PCI bus
-without using the readl/writel equivalent macros. It's got nothing to
-do with access speed.
+   1)Make xconfig ARCH=3Dppc
 
->>  For the case of more traditional devices, the control structures
->> will be allocated from one end of the block, the rest will be used
->> for packet descriptors which will be going in and out of the memory
->> pool on a regular basis.
+=20
 
-Andrey> This was main reason why I try to modify genalloc: I needed in
-Andrey> generic allocator for both short-live strictly aligned blocks
-Andrey> and long-live blocks with restriction by size.
+    Platform support:MPC8260 CPM support -y
 
-genalloc is perfectly adequate for that purpose. The long lived
-allocations will just be taken out first, the rest will be used for
-the short lived.
+                             MPC8272 family Support -y
 
->> In most normal cases these will all be of the same size and it
->> doesn't matter where in the memory space they were allocated.
+=20
 
-Andrey> And thats also why I consider that 'buddy' is not appropriate
-Andrey> to be 'generic' (most cases == generic, isn't is :)?): when
-Andrey> you're allocate mainly same sized blocks, 'buddy' degraded to
-Andrey> the first-fit.
+Machine type : ADS8272
 
-huh?
+=20
 
->>  I honestly don't think the majority of your demands are valid.
->> genalloc was meant to be simple, not an ultra fast at any random
->> block size allocator. So far I don't see any reason for changing to
->> the allocation algorithm into anything much more complex - doesn't
->> mean there couldn't be a reason for doing so, but I don't think you
->> have described any so far.
-Andrey> I disagree here, generic couldn't be very simple and slow,
-Andrey> because in this case simply no one will be use it, and hence
-Andrey> we'll get today's picture: reimplemented allocators in many
-Andrey> drivers.
+=20
 
-Of course it can. I will continue to claim that you are trying to turn
-it into something it doesn't need to be. The allocator I used was
-based on the allocator from the old sym2 driver, which is a perfect
-example of it being used by a device driver.
+And after saving configuration ..
 
->>  You mentioned frame buffers, but what is the kernel supposed to do
->> with those allocation wise? If you have a frame buffer console, the
->> memory is allocated once and handed to the frame buffer driver.
->> Ie. you don't need a ton of on demand allocations for that and for
->> X, the memory management is handled in the X server, not by the
->> kernel.
+=20
 
-Andrey> For video-only device this is true, but if device is a
-Andrey> multifunctional, which is frequent case in embedded systems,
-Andrey> then kernel must control of device memory
-Andrey> allocation. Currently, however, even video cards for desktops
-Andrey> become more and more multifunctional (VIVO/audio etc.).
+2)Make dep ARCH=3Dppc
 
-For multi functional devices you still often split the memory up at
-init time. Some memory is never going to be given back (like the frame
-buffer itself), other blocks are like the network packet descriptors
-in a network device.
+3)Make bzImage ARCH=3Dppc
 
->>  The only thing I think would make sense to implement is to allow
->> it to use indirect descriptor blocks for the memory it
->> manages. This is not because it's wrong to use the memory for the
->> free list, as it will only be used for this when the chunk is not
->> in use, but because access to certain types of memory isn't always
->> valid through normal direct access. Ie. if one used descriptor
->> blocks residing in normal GFP_KERNEL memory, it would be possible
->> to use the allocator to manage memory sitting on the other side of
->> a PCI bus.
-Andrey> I describe above, why we couldn't/wouldn't use onboard memory
-Andrey> for allocator specific data.
+         Now  I am getting error like this..............
 
-As I pointed out, your description wasn't valid. You are not allowed
-to directly dereference memory on the other side of a PCI bus.
+=20
 
-Regards,
-Jes
+************************************************************************
+**************************************
+
+=20
+
+m /home/sibi/vpnporting/linux-2.4.32/include/linux/blk.h:4,
+
+                 from m8260_setup.c:31:
+
+/home/sibi/vpnporting/linux-2.4.32/include/asm/mpc8260.h:32:1: warning:
+"PCI_DRAM_OFFSET" redefined
+
+In file included from
+/home/sibi/vpnporting/linux-2.4.32/include/asm/mpc8260.h:24,
+
+                 from
+/home/sibi/vpnporting/linux-2.4.32/include/asm/io.h:31,
+
+                 from
+/home/sibi/vpnporting/linux-2.4.32/include/linux/blkdev.h:11,
+
+                 from
+/home/sibi/vpnporting/linux-2.4.32/include/linux/blk.h:4,
+
+                 from m8260_setup.c:31:
+
+/home/sibi/vpnporting/linux-2.4.32/arch/ppc/platforms/pq2ads.h:85:1:
+warning: this is the location of the previous
+definitionm8260_setup.c:68: warning: `abort' was declared `extern' and
+later `static'
+
+m8260_setup.c: In function `abort':
+
+m8260_setup.c:70: error: conflicting types for `xmon'
+
+/home/sibi/vpnporting/linux-2.4.32/include/asm/system.h:49: error:
+previous declaration of `xmon'
+
+m8260_setup.c:70: warning: extern declaration of `xmon' doesn't match
+global one
+
+m8260_setup.c: In function `m8260_restart':
+
+m8260_setup.c:129: warning: passing arg 1 of `m8260_gorom' makes pointer
+from integer without a cast
+
+m8260_setup.c: In function `m8260_show_percpuinfo':
+
+m8260_setup.c:157: warning: int format, long unsigned int arg (arg 3)
+
+m8260_setup.c:157: warning: int format, long unsigned int arg (arg 4)
+
+m8260_setup.c:157: warning: int format, long unsigned int arg (arg 5)
+
+m8260_setup.c: At top level:
+
+m8260_setup.c:68: warning: `abort' defined but not used
+
+make[1]: *** [m8260_setup.o] Error 1
+
+make[1]: Leaving directory
+`/home/sibi/vpnporting/linux-2.4.32/arch/ppc/kernel'
+
+make: *** [_dir_arch/ppc/kernel] Error 2
+
+=20
+
+=20
+
+=20
+
+=20
+
+=20
+
+If anyone encountered this type of problem please through light on this.
+
+=20
+
+=20
+
+Thanks in advance=20
+
+=20
+
+Thanks & Regards
+
+Prabhat Singh
+
+SE
+
+Satyam Computer Services Ltd.
+
+=20
+
+
+
+DISCLAIMER:
+This email (including any attachments) is intended for the sole use of =
+the intended recipient/s and may contain material that is CONFIDENTIAL =
+AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
+copying or distribution or forwarding of any or all of the contents in =
+this message is STRICTLY PROHIBITED. If you are not the intended =
+recipient, please contact the sender by email and delete all copies; =
+your cooperation in this regard is appreciated.
+
+------_=_NextPart_001_01C607B7.7BF9028B
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi all,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+ I am
+building &nbsp;linux-2.4.32 kernel using ELDK tool&nbsp; for =
+MPC8248(MPC8272
+family) based target board. After configuring kernel as =
+follow:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp; 1)Make xconfig =
+ARCH=3Dppc<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp; Platform support:MPC8260 CPM =
+support &#8211;y<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+MPC8272 family Support &#8211;y<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Machine type : ADS8272<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>And after saving configuration =
+..<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>2)Make dep ARCH=3Dppc<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>3)Make bzImage =
+ARCH=3Dppc<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Now =
+&nbsp;I
+am getting error like =
+this&#8230;&#8230;&#8230;&#8230;..<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>******************************************************=
+********************************************************<o:p></o:p></span=
+></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m =
+/home/sibi/vpnporting/linux-2.4.32/include/linux/blk.h:4,<o:p></o:p></spa=
+n></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+from m8260_setup.c:31:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>/home/sibi/vpnporting/linux-2.4.32/include/asm/mpc8260=
+.h:32:1:
+warning: &quot;PCI_DRAM_OFFSET&quot; =
+redefined<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>In file included from =
+/home/sibi/vpnporting/linux-2.4.32/include/asm/mpc8260.h:24,<o:p></o:p></=
+span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+from =
+/home/sibi/vpnporting/linux-2.4.32/include/asm/io.h:31,<o:p></o:p></span>=
+</font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+from =
+/home/sibi/vpnporting/linux-2.4.32/include/linux/blkdev.h:11,<o:p></o:p><=
+/span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+from =
+/home/sibi/vpnporting/linux-2.4.32/include/linux/blk.h:4,<o:p></o:p></spa=
+n></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+from m8260_setup.c:31:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>/home/sibi/vpnporting/linux-2.4.32/arch/ppc/platforms/=
+pq2ads.h:85:1:
+warning: this is the location of the previous =
+definitionm8260_setup.c:68:
+warning: `abort' was declared `extern' and later =
+`static'<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c: In function =
+`abort':<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c:70: error: conflicting types for =
+`xmon'<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>/home/sibi/vpnporting/linux-2.4.32/include/asm/system.=
+h:49:
+error: previous declaration of `xmon'<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c:70: warning: extern declaration of =
+`xmon'
+doesn't match global one<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c: In function =
+`m8260_restart':<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c:129: warning: passing arg 1 of =
+`m8260_gorom'
+makes pointer from integer without a cast<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c: In function =
+`m8260_show_percpuinfo':<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c:157: warning: int format, long unsigned =
+int
+arg (arg 3)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c:157: warning: int format, long unsigned =
+int
+arg (arg 4)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c:157: warning: int format, long unsigned =
+int
+arg (arg 5)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c: At top =
+level:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>m8260_setup.c:68: warning: `abort' defined but not =
+used<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>make[1]: *** [m8260_setup.o] Error =
+1<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>make[1]: Leaving directory
+`/home/sibi/vpnporting/linux-2.4.32/arch/ppc/kernel'<o:p></o:p></span></f=
+ont></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>make: *** [_dir_arch/ppc/kernel] Error =
+2<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<div =
+style=3D'mso-element:para-border-div;border:none;border-bottom:dotted =
+windowtext 3.0pt;
+padding:0in 0in 1.0pt 0in'>
+
+<p class=3DMsoNormal style=3D'border:none;padding:0in'><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fo=
+nt></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>If anyone encountered this type of problem please =
+through
+light on this.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks in advance <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks &amp; Regards<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Prabhat Singh<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>SE<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Satyam Computer Services =
+Ltd.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+<p></p><p>DISCLAIMER:<br>This email (including any attachments) is =
+intended for the sole use of the intended recipient/s and may contain =
+material that is CONFIDENTIAL AND PRIVATE COMPANY INFORMATION. Any =
+review or reliance by others or copying or distribution or forwarding of =
+any or all of the contents in this message is STRICTLY PROHIBITED. If =
+you are not the intended recipient, please contact the sender by email =
+and delete all copies; your cooperation in this regard is =
+appreciated..</body>
+
+</html>
+
+------_=_NextPart_001_01C607B7.7BF9028B--
