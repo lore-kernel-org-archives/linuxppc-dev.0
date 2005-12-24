@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel@killerfox.forkbomb.ch>
-Received: from killerfox.home.forkbomb.ch (killerfox.home.forkbomb.ch
-	[213.144.146.167])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "kernreaktor.lan", Issuer "kernreaktor.lan" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3D98B688FD
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Dec 2005 22:58:39 +1100 (EST)
-Date: Sat, 24 Dec 2005 12:52:20 +0100
-From: =?utf-8?B?UmVuw6k=?= Nussbaumer <linux-kernel@killerfox.forkbomb.ch>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20051224115219.GA5993@killerfox.forkbomb.ch>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BDC32688F3
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Dec 2005 09:28:05 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20051224201753.GA26801@elf.ucw.cz>
 References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
 	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
-	<20051129000615.GA20843@hansmi.ch>
-	<20051130223917.GA15102@hansmi.ch>
+	<20051129000615.GA20843@hansmi.ch> <20051130223917.GA15102@hansmi.ch>
 	<20051130234653.GB15102@hansmi.ch>
 	<1133533712.23129.25.camel@localhost.localdomain>
 	<20051204224221.GA28218@hansmi.ch> <1135382385.4542.8.camel@gaston>
+	<20051224201753.GA26801@elf.ucw.cz>
+Content-Type: text/plain
+Date: Sun, 25 Dec 2005 09:27:51 +1100
+Message-Id: <1135463271.5611.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="TB36FDmn/VVEgNH/"
-In-Reply-To: <1135382385.4542.8.camel@gaston>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
 	debian-powerpc@lists.debian.org, Parag Warudkar <kernel-stuff@comcast.net>
 Subject: Re: PowerBook5,8 - TrackPad update
@@ -32,42 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2005-12-24 at 21:17 +0100, Pavel Machek wrote:
+> Hi!
+> 
+> > Ok, I finally received my new laptop (PowerBook5,8 15"). I tried the
+> > latest patch you posted, and while the kernel driver seem to work ok
+> > (though you can feel the lack of a proper acceleration curve), the
+> > synaptics driver in X doesn't work in any useable way. I updated the one
+> > that comes with breezy to whatever was the latest on the author web site
+> > (.44 I think) and while it detected the tracpkad, the result was soooooo
+> > slooooow that it was totally unseable. I've tried the config tool that
+> > comes with KDE for it but couldn't "boost" it to anything useful. Is
+> > that expected or is there still issues to be resolved in the driver ?
+> > I'm tempted to add some minimum support for a proper acceleration curve
+> > in the kernel driver in fact...
+> 
+> I do not think you should add it inside *kernel*. Proper acceleration
+> support really belongs to X...
 
---TB36FDmn/VVEgNH/
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+X, fbdev apps, gpm ... acceleration curves are typically done in HW,
+thus it makes sense in this case to have it in the kernel driver
+(besides, it should be fairly simple anyway) when it's in normal mode.
+When it's in raw mode for use by the synaptics X driver, if course, it's
+expected that those things are to be done by that driver.
 
-Hello
-
-On Sat, Dec 24, 2005 at 10:59:44AM +1100, Benjamin Herrenschmidt wrote:
-[...]
-> comes with KDE for it but couldn't "boost" it to anything useful. Is
-> that expected or is there still issues to be resolved in the driver ?
-> I'm tempted to add some minimum support for a proper acceleration curve
-> in the kernel driver in fact...
-
-I'd the same problem. A quick look into Xorg.0.log tells me, that the
-event device was missing. I created it manually and the acceleration and
-other feautres are working now. Maybe you've still the same problem?
-
-Ren=C3=A9
---=20
-Written on a Gentoo Linux-system by Ren=C3=A9
-http://www.forkbomb.ch
-=C2=ABDas Leben ist hart. Forkbomb ist h=C3=A4rter.=C2=BB, (c) 2004 by Fran=
-k.
-
---TB36FDmn/VVEgNH/
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFDrTZzB1CkVTVL/Z8RAq9wAKCgLDX83nhvxg1zbo+jvsB0t+RmaQCgwKOa
-aHx60ukovJfD5Sa8vLkjUmU=
-=x1IE
------END PGP SIGNATURE-----
-
---TB36FDmn/VVEgNH/--
+Ben.
