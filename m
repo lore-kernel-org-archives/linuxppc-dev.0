@@ -1,22 +1,23 @@
-Return-Path: <dtor_core@ameritech.net>
-Received: from smtp103.sbc.mail.re2.yahoo.com (smtp103.sbc.mail.re2.yahoo.com
-	[68.142.229.102]) by ozlabs.org (Postfix) with SMTP id 36370688D6
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Dec 2005 11:52:13 +1100 (EST)
-From: Dmitry Torokhov <dtor_core@ameritech.net>
+Return-Path: <pavel@ucw.cz>
+Received: from amd.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
+	by ozlabs.org (Postfix) with ESMTP id E5540688D6
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Dec 2005 07:39:44 +1100 (EST)
+Date: Sat, 24 Dec 2005 21:17:53 +0100
+From: Pavel Machek <pavel@ucw.cz>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 24 Dec 2005 19:52:09 -0500
+Message-ID: <20051224201753.GA26801@elf.ucw.cz>
 References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
-	<20051224231928.GC2183@elf.ucw.cz>
-	<1135470801.6387.1.camel@localhost.localdomain>
-In-Reply-To: <1135470801.6387.1.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200512241952.10687.dtor_core@ameritech.net>
-Cc: Parag Warudkar <kernel-stuff@comcast.net>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
-	Pavel Machek <pavel@ucw.cz>
+	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
+	<20051129000615.GA20843@hansmi.ch>
+	<20051130223917.GA15102@hansmi.ch>
+	<20051130234653.GB15102@hansmi.ch>
+	<1133533712.23129.25.camel@localhost.localdomain>
+	<20051204224221.GA28218@hansmi.ch> <1135382385.4542.8.camel@gaston>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1135382385.4542.8.camel@gaston>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org, Parag Warudkar <kernel-stuff@comcast.net>
 Subject: Re: PowerBook5,8 - TrackPad update
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,28 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 24 December 2005 19:33, Benjamin Herrenschmidt wrote:
-> 
-> > It should be doable once in gpm, all other apps can use gpm's repeater
-> > mode...
-> > 
-> > > When it's in raw mode for use by the synaptics X driver, if course, it's
-> > > expected that those things are to be done by that driver.
-> > 
-> > ...but you are right, doing it in /dev/input/mice emulation layer
-> > makes some sense. OTOH I thought we were moving away from
-> > /dev/input/mice... Its Dmitry's call I guess.
-> 
-> Heh, yes, it is. No hurry anyway, I finally got synaptics working
-> properly in X ...
-> 
-> Why would we move away from the mouse mux ? It's proven to be very
-> useful to me at least :)
->
+Hi!
 
-It is very limited - number of buttons, wheels, etc. Once X supports
-hotplugging mouse multipexor outgrows its usefullness (GPM can simply
-be restarted every time we detect new input device).
+> Ok, I finally received my new laptop (PowerBook5,8 15"). I tried the
+> latest patch you posted, and while the kernel driver seem to work ok
+> (though you can feel the lack of a proper acceleration curve), the
+> synaptics driver in X doesn't work in any useable way. I updated the one
+> that comes with breezy to whatever was the latest on the author web site
+> (.44 I think) and while it detected the tracpkad, the result was soooooo
+> slooooow that it was totally unseable. I've tried the config tool that
+> comes with KDE for it but couldn't "boost" it to anything useful. Is
+> that expected or is there still issues to be resolved in the driver ?
+> I'm tempted to add some minimum support for a proper acceleration curve
+> in the kernel driver in fact...
 
+I do not think you should add it inside *kernel*. Proper acceleration
+support really belongs to X...
+								Pavel
 -- 
-Dmitry
+Thanks, Sharp!
