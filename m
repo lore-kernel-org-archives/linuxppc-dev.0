@@ -1,26 +1,15 @@
-Return-Path: <pavel@ucw.cz>
-Received: from amd.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
-	by ozlabs.org (Postfix) with ESMTP id DB6CB68900
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Dec 2005 10:19:52 +1100 (EST)
-Date: Sun, 25 Dec 2005 00:19:28 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20051224231928.GC2183@elf.ucw.cz>
-References: <111520052143.16540.437A5680000BE8A60000409C220076369200009A9B9CD3040A029D0A05@comcast.net>
-	<70210ED5-37CA-40BC-8293-FF1DAA3E8BD5@comcast.net>
-	<20051129000615.GA20843@hansmi.ch>
-	<20051130223917.GA15102@hansmi.ch>
-	<20051130234653.GB15102@hansmi.ch>
-	<1133533712.23129.25.camel@localhost.localdomain>
-	<20051204224221.GA28218@hansmi.ch> <1135382385.4542.8.camel@gaston>
-	<20051224201753.GA26801@elf.ucw.cz>
-	<1135463271.5611.3.camel@localhost.localdomain>
+Return-Path: <ali@pctlinux.com>
+Received: from pctlinux.com (unknown [62.240.235.203])
+	by ozlabs.org (Postfix) with ESMTP id 2AAEE6892B
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Dec 2005 21:28:24 +1100 (EST)
+Date: Sun, 25 Dec 2005 10:18:30 +0000
+Message-Id: <200512251018.AA11469134@pctlinux.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1135463271.5611.3.camel@localhost.localdomain>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-	debian-powerpc@lists.debian.org, Parag Warudkar <kernel-stuff@comcast.net>
-Subject: Re: PowerBook5,8 - TrackPad update
+Content-Type: text/plain; charset=ISO-8859-1
+From: "Ali Paikan" <ali@pctlinux.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: kernel hang on 'now booting the kernel'
+Reply-To: ali@pctlinux.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,39 +19,219 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Ne 25-12-05 09:27:51, Benjamin Herrenschmidt wrote:
-> On Sat, 2005-12-24 at 21:17 +0100, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > Ok, I finally received my new laptop (PowerBook5,8 15"). I tried the
-> > > latest patch you posted, and while the kernel driver seem to work ok
-> > > (though you can feel the lack of a proper acceleration curve), the
-> > > synaptics driver in X doesn't work in any useable way. I updated the one
-> > > that comes with breezy to whatever was the latest on the author web site
-> > > (.44 I think) and while it detected the tracpkad, the result was soooooo
-> > > slooooow that it was totally unseable. I've tried the config tool that
-> > > comes with KDE for it but couldn't "boost" it to anything useful. Is
-> > > that expected or is there still issues to be resolved in the driver ?
-> > > I'm tempted to add some minimum support for a proper acceleration curve
-> > > in the kernel driver in fact...
-> > 
-> > I do not think you should add it inside *kernel*. Proper acceleration
-> > support really belongs to X...
-> 
-> X, fbdev apps, gpm ... acceleration curves are typically done in HW,
-> thus it makes sense in this case to have it in the kernel driver
-> (besides, it should be fairly simple anyway) when it's in normal
-> mode.
 
-It should be doable once in gpm, all other apps can use gpm's repeater
-mode...
+Dear Sir,
+ I am a student and I tried to install Linux on ML300 board. I need that fo=
+r
+doing my final project but I have many problems. 
 
-> When it's in raw mode for use by the synaptics X driver, if course, it's
-> expected that those things are to be done by that driver.
+I compiled the open source PowerPC kernel (linuxppc_2_4_devel) with a cross=
+ 
+compiler which I built it by Dan Kegel cross tools. Before compiling, I 
+updated xparameters_ml300.h according to my base system design from Xilinx =
+EDK.  
+Next, I tried to download kernel ELF file to board and every thing seen wel=
+l.
+But My kernel hanged up when it was going to load main kernel image with sh=
+ow 
+this message on serial console:
 
-...but you are right, doing it in /dev/input/mice emulation layer
-makes some sense. OTOH I thought we were moving away from
-/dev/input/mice... Its Dmitry's call I guess.
-								Pavel
--- 
-Thanks, Sharp!
+loaded at:     00400000 004B01E4                                
+board data at: 004AD13C 004AD154                                
+relocated to:  00405648 00405660                                
+zimage at:     00405C13 004AC65E                                
+avail ram:     004B1000 08000000                                
+
+Linux/PPC load: console=3DttyS0,9600 ip=3Doff root=3D/dev/xsysace/disc0/par=
+t3 rw
+Uncompressing Linux...done.
+Now booting the kernel
+
+I debugged the kernel and results showed memory initialized and load_kernel=
+ 
+function decompressed image into address 0x0 as well. (I can see tree NOP 
+instructions from address 0x0).
+But, I am not sure about next step in jumping to address 0x000C and running=
+ 
+the main part of kernel.
+
+I wondered more when I tried to make a Xilinx System ACE file with Impact. =
+
+It failed too with showing this fatal error:
+
+FATAL_ERROR:GuiUtilities:WinApp.c:710:$Revision - This application has 
+discovered an exceptional condition from which it cannot recover.  Process
+will terminate.  To resolve this error, please consult the Answers Database=
+
+and other online resources at http://support.xilinx.com. If you need furthe=
+r 
+assistance, please open a Webcase by clicking on the "WebCase" link at http=
+://support.xilinx.com.
+
+I don't have any problem for making system ace from other ELF files.
+Might it be for my bad compilation?
+Is my base system building for FPGA not correct?
+Where is my wrong?
+ 
+For more information I attached my all configuration and log files at end o=
+f 
+this mail.
+
+I am too great if you help me in this case and I look forward to hearing fr=
+om you. 
+Sorry my pure English!
+
+Sincerely,
+Ali Paikan
+
+
+
+Cross compiler option:
+CONFIG_TARGET=3D"powerpc-405-linux-gnu"
+CONFIG_TARGET_CFLAGS=3D"-O -mcpu=3D405"
+CONFIG_GCC_EXTRA_CONFIG=3D"--with-cpu=3D405 --enable-cxx-flags=3D-mcpu=3D40=
+5"
+CONFIG_GLIBC_EXTRA_CONFIG=3D"=97without-fp"
+
+powerpc-405-linux-gnu-objdump -h:
+zImage.:     file format elf32-powerpc
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00004798  00400000  00400000  00010000  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00095000  00405000  00405000  00015000  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          000031e0  0049a000  _u48 ?49a000  000aa000  2**2
+                  ALLOC
+  3 .note.GNU-stack 00000000  00000000  00000000  000aa000  2**0
+                  CONTENTS, READONLY
+
+
+Xparameters_ml300.h :
+/*********************************************************_u42 ?********
+*
+* CAUTION: This file is automatically generated by libgen.
+* Version: Xilinx EDK 7.1 EDK_H.10.4
+* DO NOT EDIT.
+*
+* Copyright (c) 2005 Xilinx, Inc.  All rights reserved. 
+* 
+* Description: Driver parameters
+*
+*******************************************************************/
+
+#define XPAR_XUARTLITE_NUM_INSTANCES 1
+#define XPAR_RS232_UART_1_BASEADDR 0x40600000
+#define XPAR_RS232_UART_1_HIGHADDR 0x4060FFFF
+#define XPAR_RS232_UART_1_DEVICE_ID 0
+#define XPAR_RS232_UART_1_BAUDRATE 9600
+#define XPAR_RS232_UART_1_USE_PARITY 0
+#define XPAR_RS232_UART_1_ODD_PARITY 0
+#define XPAR_RS232_UART_1_DATA_BITS 8
+
+/******************************************************************/
+
+#define XPAR_XSYSACE_MEM_WIDTH 8
+#define XPAR_XSYSACE_NUM_INSTANCES 1
+#define XPAR_SYSACE_COMPACTFLASH_BASEADDR 0x41800000
+#define XPAR_SYSACE_COMPACTFLASH_HIGHADDR 0x4180FFFF
+#define XPAR_SYSACE_COMPACTFLASH_DEVICE_ID 0
+#define XPAR_SYSACE_COMPACTFLASH_MEM_WIDTH 8
+
+/******************************************************************/
+
+#define XPAR_INTC_MAX_NUM_INTR_INPUTS 3
+#define XPAR_XINTC_HAS_IPR 1
+#define XPAR_XINTC_USE_DCR 0
+#define XPAR_XINTC_NUM_INSTANCES 1
+#define XPAR_OPB_INTC_0_BASEADDR 0x41200000
+#define XPAR_OPB_INTC_0_HIGHADDR 0x4120FFFF
+#define XPAR_OPB_INTC_0_DEVICE_ID 0
+#define XPAR_OPB_INTC_0_KIND_OF_INTR 0x00000006
+
+/******************************************************************/
+
+#define XPAR_INTC_SINGLE_BASEADDR 0x41200000
+#define XPAR_INTC_SINGLE_HIGHADDR 0x4120FFFF
+#define XPAR_INTC_SINGLE_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
+#define XPAR_SYSACE_COMPACTFLASH_SYSACE_IRQ_MASK 0X000001
+#define XPAR_OPB_INTC_0_SYSACE_COMPACTFLASH_SYSACE_IRQ_INTR 0
+#define XPAR_RS232_UART_1_INTERRUPT_MASK 0X000002
+#define XPAR_OPB_INTC_0_RS232_UART_1_INTERRUPT_INTR 1
+#define XPAR_DDR_SDRAM_32MX32_IP2INTC_IRPT_MASK 0X000004
+#define XPAR_OPB_INTC_0_DDR_SDRAM_32MX32_IP2INTC_IRPT_INTR 2
+
+/******************************************************************/
+
+#define XPAR_XDDR_NUM_INSTANCES 1
+#define XPAR_DDR_SDRAM_32MX32_ECC_BASEADDR 0xFFFFFFFF
+#define XPAR_DDR_SDRAM_32MX32_ECC_HIGHADDR 0x00000000
+#define XPAR_DDR_SDRAM_32MX32_DEVICE_ID 0
+#define XPAR_DDR_SDRAM_32MX32_INCLUDE_ECC_INTR 0
+
+/******************************************************************/
+
+#define XPAR_DDR_SDRAM_32MX32_MEM0_BASEADDR 0x00000000
+#define XPAR_DDR_SDRAM_32MX32_MEM0_HIGHADDR 0x07FFFFFF
+
+/******************************************************************/
+
+#define XPAR_PLB_BRAM_IF_CNTLR_1_BASEADDR 0xffffc000
+#define XPAR_PLB_BRAM_IF_CNTLR_1_HIGHADDR 0xffffffff
+
+/******************************************************************/
+
+#define XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ 300000000
+
+/******************************************************************/
+
+
+/******************************************************************/
+
+/* Linux Redefines */
+
+/******************************************************************/
+
+#define XPAR_UARTLITE_0_BASEADDR XPAR_RS232_UART_1_BASEADDR
+#define XPAR_UARTLITE_0_HIGHADDR XPAR_RS232_UART_1_HIGHADDR
+#define XPAR_UARTLITE_0_DEVICE_ID XPAR_RS232_UART_1_DEVICE_ID
+
+/******************************************************************/
+
+#define XPAR_SYSACE_0_BASEADDR XPAR_SYSACE_COMPACTFLASH_BASEADDR
+#define XPAR_SYSACE_0_HIGHADDR XPAR_SYSACE_COMPACTFLASH_HIGHADDR
+#define XPAR_SYSACE_0_DEVICE_ID XPAR_SYSACE_COMP8CTFLASH_DEVICE_ID
+
+/******************************************************************/
+
+#define XPAR_INTC_0_BASEADDR XPAR_OPB_INTC_0_BASEADDR
+#define XPAR_INTC_0_HIGHADDR XPAR_OPB_INTC_0_HIGHADDR
+#define XPAR_INTC_0_KIND_OF_INTR XPAR_OPB_INTC_0_KIND_OF_INTR
+#define XPAR_INTC_0_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
+
+/******************************************************************/
+
+#define XPAR_INTC_0_SYSACE_0_VEC_ID XPAR_OPB_INTC_0_SYSACE_COMPACTFLASH_SYS=
+ACE_IRQ_INTR
+#define XPAR_INTC_0_UARTLITE_0_VEC_ID XPAR_OPB_INTC_0_RS232_UART_1_INTERRUP=
+T_INTR
+#define XPAR_INTC_0_DDR_0_VEC_ID XPAR_OPB_INTC_0_DDR_SDRAM_32MX32_IP2INTC_I=
+RPT_INTR
+
+/******************************************************************/
+
+#define XPAR_PLB_CLOCK_FREQ_HZ 100000000
+#define XPAR_CORE_CLOCK_FREQ_HZ XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ
+#define XPAR_DDR_0_SIZE 8000000
+
+/******************************************************************/
+
+#define XPAR_PERSISTENT_0_IIC_0_BASEADDR 0x00000400
+#define XPAR_PERSISTENT_0_IIC_0_HIGHADDR 0x000007FF
+#define XPAR_PERSISTENT_0_IIC_0_EEPROMADDR 0xA0
+
+/******************************************************************/
+
+#define XPAR_PCI_0_CLOCK_FREQ_HZ    0
+
+/******************************************************************/
