@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2A5436891C
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Dec 2005 08:57:42 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <dtor_core@ameritech.net>
+Received: from smtp111.sbc.mail.re2.yahoo.com (smtp111.sbc.mail.re2.yahoo.com
+	[68.142.229.94]) by ozlabs.org (Postfix) with SMTP id AC45468911
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Dec 2005 15:04:37 +1100 (EST)
+From: Dmitry Torokhov <dtor_core@ameritech.net>
 To: Michael Hanselmann <linux-kernel@hansmi.ch>
-In-Reply-To: <20051225212041.GA6094@hansmi.ch>
+Date: Sun, 25 Dec 2005 23:04:30 -0500
 References: <20051225212041.GA6094@hansmi.ch>
-Content-Type: text/plain
-Date: Mon, 26 Dec 2005 08:57:23 +1100
-Message-Id: <1135547844.8365.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, linux-kernel@killerfox.forkbomb.ch
+In-Reply-To: <20051225212041.GA6094@hansmi.ch>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200512252304.32830.dtor_core@ameritech.net>
+Cc: linux-kernel@killerfox.forkbomb.ch, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Vojtech Pavlik <vojtech@suse.cz>,
+	linux-input@atrey.karlin.mff.cuni.cz
 Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple
 	PowerBooks
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,18 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2005-12-25 at 22:20 +0100, Michael Hanselmann wrote:
+On Sunday 25 December 2005 16:20, Michael Hanselmann wrote:
 > This patch adds a basic input hook support to usbhid because the quirks
 > method is outrunning the available bits. A hook for the Fn and Numlock
 > keys on Apple PowerBooks is included.
-> 
-> Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
-> Acked-by: Rene Nussbaumer <linux-kernel@killerfox.forkbomb.ch>
-> Acked-by: Johannes Berg <johannes@sipsolutions.net>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Well, we have used 11 out of 32 available bits so there still some
+reserves. My concern is that your implementation allows only one
+hook to be installed while with quirks you can have several of them
+active per device.
 
-This makes the keyboard useable on latest generations of Apple
-PowerBooks, so please apply asap :)
-
-Ben.
+As far as the hook itself - i have that feeling that it should not be
+done in kernel but via a keymap.
+ 
+-- 
+Dmitry
