@@ -1,19 +1,19 @@
-Return-Path: <zengshuai@sogou.com>
-Received: from sogoumx75.mail.sogou.com (unknown [61.135.132.136])
-	by ozlabs.org (Postfix) with ESMTP id 4F4D768938
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 26A6A68936
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Dec 2005 19:31:04 +1100 (EST)
-Received: from mx3.mail.sohu.com (unknown [192.168.95.78])
-	by sogoumx75.mail.sogou.com (Postfix) with ESMTP id E4AC800166D2
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Dec 2005 16:30:53 +0800 (CST)
-Message-ID: <19636102.1135585072674.JavaMail.postfix@mx3.mail.sohu.com>
-Date: Mon, 26 Dec 2005 16:17:52 +0800 (CST)
-From: <zengshuai@sogou.com>
-To: "ppc" <linuxppc-embedded@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="GB2312"
-Subject: BDI2000 help needed:how to driver LH28F016SC flash?
+	Mon, 26 Dec 2005 21:56:10 +1100 (EST)
+To: zengshuai@sogou.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 26 Dec 2005 16:17:52 +0800."
+	<19636102.1135585072674.JavaMail.postfix@mx3.mail.sohu.com>
+Date: Mon, 26 Dec 2005 11:56:07 +0100
+Sender: wd@denx.de
+Message-Id: <20051226105607.C9B0B353AED@atlas.denx.de>
+Cc: ppc <linuxppc-embedded@ozlabs.org>
+Subject: Re: BDI2000 help needed:how to driver LH28F016SC flash? 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,11 +24,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Our board is PQ2FADS_ZU,and we bought a BDI2000 to debug it.
-There is a LH28F016SC flash in the PQ2FADS_ZU board.
-I tested the default .cfg (for 8260ads) to driver LH28F016SC flash,but it didn't work.
-How to modify the .cfg file? thanks.
+In message <19636102.1135585072674.JavaMail.postfix@mx3.mail.sohu.com> you wrote:
+> Our board is PQ2FADS_ZU,and we bought a BDI2000 to debug it.
+...
+> How to modify the .cfg file? thanks.
 
-------------------------------
-我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
-http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=linuxppc-embedded&FullName=linuxppc-embedded&Email=linuxppc-embedded%40ozlabs.org&verify=755eff4e640bdcfc57d93cbd8b0a9cb7
+You may want to read the BDI2000 User's manual...
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+In general, they do what you want, unless you want consistency.
+                                    - Larry Wall in the perl man page
