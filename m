@@ -1,20 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 0889768932
+Return-Path: <siman@bsysjob.sharella.com>
+Received: from sharella.com (unknown [221.221.150.246])
+	by ozlabs.org (Postfix) with ESMTP id 142956893D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Dec 2005 08:19:12 +1100 (EST)
-To: "Zhang Xin-W22390" <W22390@motorola.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 26 Dec 2005 20:43:49 +0800."
-	<917BB953409D9D4E86FDD8AE553CA873214B24@zmy16exm62.ds.mot.com>
-Date: Mon, 26 Dec 2005 22:19:10 +0100
-Sender: wd@denx.de
-Message-Id: <20051226211910.2CC0A353AED@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Can I use the system call provided by uboot in an assembly
-	language program as in ppcbug?
+	Wed, 28 Dec 2005 02:27:32 +1100 (EST)
+Received: from xbh ([221.221.89.177]) by bsysjob.sharella.com (bsysjob)
+	(MDaemon.PRO.v7.1.0.R) with ESMTP id md50000032551.msg
+	for <linuxppc-embedded@ozlabs.org>; Tue, 27 Dec 2005 23:12:36 +0800
+From: "siman" <siman@bsysjob.sharella.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Tue, 27 Dec 2005 23:29:10 +0800
+Message-ID: <000c01c60afa$5d6a57f0$1200a8c0@xbh>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20051227010004.D4C7568950@ozlabs.org>
+Subject: (no subject)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,25 +25,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <917BB953409D9D4E86FDD8AE553CA873214B24@zmy16exm62.ds.mot.com> you wrote:
-> 
-> I want to call some system calls to do input/ouput in assembly language
-> program, and does uboot provide such syscall? As in PPCBUG, I can
-
-If you are running in  the  U-Boot  environment,  then  you  can  use
-standard  C programs; read about "standalone applications" - but this
-is off topic here; please  read  the  docs  and  post  any  remaining
-questions on the u-boot-users mailing list.
-
-Once you started the Linux kernel, then all of  U-Boot  is  gone  and
-dead and there is no way to call any U-Boot code any more - except by
-resetting the board.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Of course there's no reason for it, it's just our policy.
+Hi All:
+I want port Linux system to the MVME6100, I found moto has this kind of
+patch for the MOTO SBC, just like patch-2.6.6-mcg.rm01.gz file.
+Any know how and where can I download it? 
+Thank you very much.
