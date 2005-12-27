@@ -1,17 +1,19 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 8EE096893C
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 01E02688DB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Dec 2005 03:30:35 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: Wolfgang Denk <wd@denx.de>
-Date: Tue, 27 Dec 2005 17:30:28 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200512271730.28563.david.jander@protonic.nl>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Which CAN driver to port to for PPC
+	Wed, 28 Dec 2005 07:36:44 +1100 (EST)
+Date: Tue, 27 Dec 2005 12:36:41 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Jeff Garzik <jgarzik@pobox.com>
+Message-ID: <20051227203641.GA22988@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+Subject: [PATCH] PPC44x EMAC driver: disable TX status deferral in
+	half-duplex mode
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,33 +24,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Disable TX status deferral (EMACx_MR[MWSW=001]) in half-duplex mode.
+I have two reports when EMAC stops transmitting when connected to a 
+hub. TX ring debug printouts show complete mess when this happens, 
+probably hardware collision handling doesn't work quite well in this 
+mode.
 
-Hi,
+This is relevant only for SoCs with EMAC4 core (440GX, 440SP, 440SPe).
+Tested on 440GX.
 
-We have developed CAN hardware based on the Philips SJA1000 controller hooked 
-to a MPC8xx based processor board. Now we want to write driver support for 
-it. My first try was lincan-0.3.1, which seemed quite well written at first 
-glance. Porting was easy too, and the driver works fine on our board with the 
-latest kernel (2.6.14).
-But.... this driver lacks a proper way of checking the status of the CAN 
-controller from userspace :-( Not that nice after all!
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+---
 
-Then I see on the DENX website, mention of Rubini's OCAN (mostly useless to 
-us), and Peak's PCAN drivers (there is a port for MPC5200 on DENX's site). No 
-word about lincan, though.
+ ibm_emac.h      |    3 ++-
+ ibm_emac_core.c |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-The reason I suppose is, someone already figured out that lincan is not a good 
-choice for whatever reason (status reportability ??), right?
-
-Before beginning to re-invent wheels and re-discover known problems in certain 
-CAN driver architectures, could someone please point me to the right place to 
-start looking for answers (if that place exists) or just give the answer, 
-opinion or experience with one of PeakCAN, lincan, can4linux, etc...?
-
-I am again puzzeled about which way to go.
-
-Thanks for any advice,
-
--- 
-David Jander
-Protonic Holland.
+diff --git a/drivers/net/ibm_emac/ibm_emac.h b/drivers/net/ibm_emac/ibm_emac.h
+index 644edbf..c2dae60 100644
+--- a/drivers/net/ibm_emac/ibm_emac.h
++++ b/drivers/net/ibm_emac/ibm_emac.h
+@@ -110,6 +110,7 @@ struct emac_regs {
+ #define EMAC_MR1_TFS_2K			0x00080000
+ #define EMAC_MR1_TR0_MULT		0x00008000
+ #define EMAC_MR1_JPSM			0x00000000
++#define EMAC_MR1_MWSW_001		0x00000000
+ #define EMAC_MR1_BASE(opb)		(EMAC_MR1_TFS_2K | EMAC_MR1_TR0_MULT)
+ #else
+ #define EMAC_MR1_RFS_4K			0x00180000
+@@ -130,7 +131,7 @@ struct emac_regs {
+ 					 (freq) <= 83  ? EMAC_MR1_OBCI_83 : \
+ 					 (freq) <= 100 ? EMAC_MR1_OBCI_100 : EMAC_MR1_OBCI_100P)
+ #define EMAC_MR1_BASE(opb)		(EMAC_MR1_TFS_2K | EMAC_MR1_TR | \
+-					 EMAC_MR1_MWSW_001 | EMAC_MR1_OBCI(opb))
++					 EMAC_MR1_OBCI(opb))
+ #endif
+ 
+ /* EMACx_TMR0 */
+diff --git a/drivers/net/ibm_emac/ibm_emac_core.c b/drivers/net/ibm_emac/ibm_emac_core.c
+index 1da8a66..591c586 100644
+--- a/drivers/net/ibm_emac/ibm_emac_core.c
++++ b/drivers/net/ibm_emac/ibm_emac_core.c
+@@ -408,7 +408,7 @@ static int emac_configure(struct ocp_ene
+ 	/* Mode register */
+ 	r = EMAC_MR1_BASE(emac_opb_mhz()) | EMAC_MR1_VLE | EMAC_MR1_IST;
+ 	if (dev->phy.duplex == DUPLEX_FULL)
+-		r |= EMAC_MR1_FDE;
++		r |= EMAC_MR1_FDE | EMAC_MR1_MWSW_001;
+ 	dev->stop_timeout = STOP_TIMEOUT_10;
+ 	switch (dev->phy.speed) {
+ 	case SPEED_1000:
