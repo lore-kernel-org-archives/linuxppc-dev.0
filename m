@@ -1,17 +1,18 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15808.mail.cnb.yahoo.com (web15808.mail.cnb.yahoo.com
-	[202.165.102.88]) by ozlabs.org (Postfix) with SMTP id B484A688DB
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 5B840688DB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Dec 2005 21:20:33 +1100 (EST)
-Message-ID: <20051228102029.26119.qmail@web15808.mail.cnb.yahoo.com>
-Date: Wed, 28 Dec 2005 18:20:29 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: srideep.devireddy@wipro.com
-In-Reply-To: <6AD9F6A5F6E096408F0B703773355A070E700C@CHN-SNR-MBX01.wipro.com>
+	Wed, 28 Dec 2005 21:42:02 +1100 (EST)
+Message-ID: <43B26CA1.4040700@grandegger.com>
+Date: Wed, 28 Dec 2005 11:44:49 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
+To: David Jander <david.jander@protonic.nl>
+References: <200512271730.28563.david.jander@protonic.nl>
+In-Reply-To: <200512271730.28563.david.jander@protonic.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re : Linux kernel Hangs after transfer
+Subject: Re: Which CAN driver to port to for PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,23 +23,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---- srideep.devireddy@wipro.com wrote:
-...
-> log when i try to bootm 100000
+David Jander wrote:
+> Hi,
 > 
+> We have developed CAN hardware based on the Philips SJA1000 controller hooked 
+> to a MPC8xx based processor board. Now we want to write driver support for 
+> it. My first try was lincan-0.3.1, which seemed quite well written at first 
+> glance. Porting was easy too, and the driver works fine on our board with the 
+> latest kernel (2.6.14).
+> But.... this driver lacks a proper way of checking the status of the CAN 
+> controller from userspace :-( Not that nice after all!
 > 
-> Bytes transferred = 644777 (9d6a9 hex)
-> => bootm
-> ## Booting image at 00100000 ...
+> Then I see on the DENX website, mention of Rubini's OCAN (mostly useless to 
+> us), and Peak's PCAN drivers (there is a port for MPC5200 on DENX's site). No 
+> word about lincan, though.
 
-Pls try 0x200000 to boot the image.
-If didn't work, print the comandline
-which was transfered to kernel.
+We have looked for "free" CAN software/drivers for Linux already some 
+time ago, especially for embedded PowerPC processors. There are various 
+implementations out there, but only a few of them are "alive". A natural 
+choice for the SJA1000 seems to be the CAN driver from Peak Systems (see
+http://www.peak-system.com/linux/index.htm). It already supports 2.6 and 
+seems to be well maintained. Porting it to your MPC 8xx bases hardware 
+should not be to much effort. The OCAN driver is for the i82527. It's a 
+good choice if you use that CAN controller but porting to the SJA1000 
+might not be straight-forward as the API uses details of the chips hardware.
 
-Best regards,
+> 
+> The reason I suppose is, someone already figured out that lincan is not a good 
+> choice for whatever reason (status reportability ??), right?
 
-Sam
+I never tried lincan.
 
-__________________________________________________
-¸Ï¿ì×¢²áÑÅ»¢³¬´óÈÝÁ¿Ãâ·ÑÓÊÏä?
-http://cn.mail.yahoo.com
+> Before beginning to re-invent wheels and re-discover known problems in certain 
+> CAN driver architectures, could someone please point me to the right place to 
+> start looking for answers (if that place exists) or just give the answer, 
+> opinion or experience with one of PeakCAN, lincan, can4linux, etc...?
+> 
+> I am again puzzeled about which way to go.
+
+AFAIK, there is no _generic_ embedded CAN driver available which even 
+supports real-time extensions.
+
+Wolfgang.
+
+> Thanks for any advice,
+> 
