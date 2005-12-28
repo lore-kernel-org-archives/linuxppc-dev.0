@@ -1,20 +1,19 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 5F64C68802
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 91D7368942
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Dec 2005 20:00:19 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: Alessandro Rubini <rubini@gnudd.com>
-Date: Wed, 28 Dec 2005 10:00:11 +0100
-References: <200512271730.28563.david.jander@protonic.nl>
-	<20051227214949.GA8236@mail.gnudd.com>
-In-Reply-To: <20051227214949.GA8236@mail.gnudd.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200512281000.12073.david.jander@protonic.nl>
+	Wed, 28 Dec 2005 20:16:15 +1100 (EST)
+To: "HappyPhot" <happyphot@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 28 Dec 2005 13:52:36 +0800."
+	<007801c60b72$eb4988c0$0860120a@photon>
+Date: Wed, 28 Dec 2005 10:16:12 +0100
+Sender: wd@denx.de
+Message-Id: <20051228091612.B43D3353A66@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Which CAN driver to port to for PPC
+Subject: Re: Error: unknown pseudo-op: `.cfi_startproc' 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,51 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <007801c60b72$eb4988c0$0860120a@photon> you wrote:
+>
+>   I am using ELDK (2005-06-07) and linux-2.6.15-rc2-2005-12-03-2208.tar.bz2
+> to build the kernel. But there are some errors:
+> 
+> .../arch/powerpc/kernel/vdso32/gettimeofday.S: Assembler messages:
+> .../arch/powerpc/kernel/vdso32/gettimeofday.S:28: Error: unknown pseudo-op: 
+> `.cfi_startproc'
+> .../arch/powerpc/kernel/vdso32/gettimeofday.S:30: Error: unknown pseudo-op: 
+> `.cfi_register'
+> .......
+> 
+> Anybody knows what happened ? And is there any way to solve ?
 
-Hi all,
+ELDK 3.1 uses binutils-2.14; the current Linux kernel was changed  to
+use  assembler  syntax which is not supported by the GNU assembler in
+this version. See for example
+http://ozlabs.org/pipermail/linuxppc64-dev/2005-February/003179.html
 
-On Tuesday 27 December 2005 22:49, Alessandro Rubini wrote:
-> I need to port ocan to support SJA1000 on an ARM device, as a client
-> asked for it.  Also, another client asked for a 2.6 port, so all of
-> this will happen pretty soon (2-3 weeks). I don't know if that makes
-> any difference.
+I don't understand why this  was  done,  either.  Especially  as  the
+current  Linux  kernel  documentation ("Documentation/Changes") still
+claims that binutils 2.12 would be sufficient.
 
-That could of course make a difference.... eventually.
-The problem I see with Ocan is that it has a very different API than all the 
-others. I know of at least two others, which try to be compatible (or at 
-least easily portable between) with each other: lincan and can4linux. I am 
-not sure but I think they started from the same base, and somehow agreed to 
-stay API-compatible.
-Ocan's API on the other hand, seems to be tailored around the intel 
-controller, and doing little more than offering a user-space interface to the 
-chip, much in the same way as one is used to programming small 
-microcontrollers with integrated CAN periferals. I wonder how the port to 
-SJA1000 will turn out, since I believe it would have to emulate some 
-82527-specific stuff, in order to offer a compatible API.
-The advantage OCan might have, is probably better control of timing, since 
-AFAIK, one can avoid using queues, which give additional delays if the queue 
-is not empty; somehting often not wanted in real-time applications.
+You will have to update your toolchain  (i.  e.  use  ELDK  4.0)  for
+working with current 2.6 kernels.
 
-Also one difficulty in designing a good CAN driver model, is the fact that CAN 
-offers up to the link-layer in hardware, and the rest is application 
-specific, so it is hard to do much in the driver without hampering some 
-possible application. I am convinced though, that there should be a 
-chip/card-independent API to the application-programmer, and that effort 
-should be done to converge into the same direction. Programmers now really 
-have a tough time choosing, and that is as bad as having no choice at all 
-IMHO.
+Best regards,
 
-So, wouldn't it be better to try to unite forces and at least offer similar 
-API's, or even better, develop a standard linux CAN framework? I guess there 
-is little chance something like this will ever become part of the kernel, but 
-right now the situation is really awful. CAN is quite popular for embedded 
-systems, but even embedded systems developers like to write portable code.
-
-Regards,
-
-P.S.: Alessandro: I have copy of "LDD1" on my desk, and I like it a lot. 
-Thanks!
+Wolfgang Denk
 
 -- 
-David Jander
-Protonic Holland.
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+This is an unauthorized cybernetic announcement.
