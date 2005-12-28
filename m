@@ -1,21 +1,20 @@
-Return-Path: <rubini@mail.gnudd.com>
-Received: from mail.gnudd.com (adsl-203-134.38-151.net24.it [151.38.134.203])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8B0FD68947
+Return-Path: <siman@bsysjob.sharella.com>
+Received: from sharella.com (unknown [221.221.150.246])
+	by ozlabs.org (Postfix) with ESMTP id 12657688DC
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Dec 2005 08:50:03 +1100 (EST)
-Date: Tue, 27 Dec 2005 22:49:49 +0100
-From: Alessandro Rubini <rubini@gnudd.com>
-To: david.jander@protonic.nl
-Message-ID: <20051227214949.GA8236@mail.gnudd.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Sender: rubini@ar.linux.it
-In-Reply-To: <200512271730.28563.david.jander@protonic.nl>
-References: <200512271730.28563.david.jander@protonic.nl> 
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Which CAN driver to port to for PPC
+	Wed, 28 Dec 2005 12:44:10 +1100 (EST)
+Received: from xbh ([192.168.0.2]) by bsysjob.sharella.com (bsysjob)
+	(MDaemon.PRO.v7.1.0.R) with ESMTP id md50000032607.msg
+	for <linuxppc-embedded@ozlabs.org>; Wed, 28 Dec 2005 09:38:07 +0800
+From: "siman" <siman@bsysjob.sharella.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Wed, 28 Dec 2005 09:55:02 +0800
+Message-ID: <000001c60b51$c1176430$1200a8c0@xbh>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20051228010003.3F26D6894D@ozlabs.org>
+Subject: porting linux on the prpmc610 and the mvme6100
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,16 +25,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-Hello.
-
-> [...]
-> Then I see on the DENX website, mention of Rubini's OCAN (mostly
-> useless to us),
-
-I need to port ocan to support SJA1000 on an ARM device, as a client
-asked for it.  Also, another client asked for a 2.6 port, so all of
-this will happen pretty soon (2-3 weeks). I don't know if that makes
-any difference.
-
-/alessandro
+ 
+Hi all:
+I want to port Linux to the prpmc610 system and mvme6100,does any one has
+the experience for these boards?
+The prpmc610 has the ppc5bug. 
+Also I found there is file for that named "patch-2.4.25-mcg.rm01.gz ", it
+was patch for mvme6100 on the standard kernel. Who knows how can I get the
+file?
+Thanks all.
