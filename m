@@ -1,14 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp2.wanadoo.fr (smtp2.wanadoo.fr [193.252.22.29])
+	by ozlabs.org (Postfix) with ESMTP id 4CD8668949
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Dec 2005 03:52:21 +1100 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0203.wanadoo.fr (SMTP Server) with ESMTP id 85A341C001F0
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Dec 2005 17:52:18 +0100 (CET)
+Received: from pegasos (AStrasbourg-251-1-13-240.w82-126.abo.wanadoo.fr
+	[82.126.203.240])
+	by mwinf0203.wanadoo.fr (SMTP Server) with ESMTP id 4FFB21C001C4
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Dec 2005 17:52:18 +0100 (CET)
+Date: Wed, 28 Dec 2005 17:51:36 +0100
+To: Sven Luther <sven.luther@wanadoo.fr>
+Message-ID: <20051228165136.GA19559@localhost.localdomain>
+References: <20051228104813.GA12862@localhost.localdomain>
+	<20051228163829.GA19292@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17330.32574.594398.522752@cargo.ozlabs.ibm.com>
-Date: Wed, 28 Dec 2005 23:04:14 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-In-Reply-To: <43B25117.8060008@secretlab.ca>
-References: <43B25117.8060008@secretlab.ca>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: PReP fails to boot on QEMU (current git snapshot)
+In-Reply-To: <20051228163829.GA19292@localhost.localdomain>
+From: Sven Luther <sven.luther@wanadoo.fr>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: ARCH=powerpc kexec seems to be broken ...
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,14 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Grant Likely writes:
+On Wed, Dec 28, 2005 at 05:38:29PM +0100, Sven Luther wrote:
+> On Wed, Dec 28, 2005 at 11:48:13AM +0100, Sven Luther wrote:
+> > Hi, ...
+> > 
+> > I have for some time tried to build 2.6.15-rc debian kernels with
+> > ARCH=powerpc, and never quite succeeded. Thanks to Johannes Berg
+> > for helping investigating the issue.
+> > 
+> > The problem seems to be that my .config enables KEXEC, and SWSUSP,
+> > which has nasty problems with ARCH=powerpc. In a 32bit config, i get :
+> > 
+> > 00:03 < svenl> arch/ppc/kernel/built-in.o: In function `swsusp_arch_resume': multiple definition of `machine_shutdown'
+> > 00:03 < svenl> arch/powerpc/kernel/built-in.o: first defined here
+> > 
+> > Which seems to indicate that machine_shutdown is built twice, once in the
+> > arch/ppc stuff and a second time in the arch/powerpc stuff.
+> > 
+> > I have a similar problem for the 64bit case, but have not yet reached the
+> > point of the build where this happens, so i can't paste the error message
+> > here, but it was of the same kind as above if i remember well.
+> > 
+> > Johannes said :
+> > 
+> > 11:23 < johill> you enabled kexec, right?
+> > 11:24 < svenl> yeah, i did.
+> > 11:24 < svenl> is it broken for ARCH=powerpc right now ?
+> > 11:24 < johill> seems so
+> > 11:28 < johill> yeah. I don't think I can fix it, know too little about kexec
+> > 11:30 < johill> machine_shutdown should at least be moved from
+> > arch/ppc/kernel/machine_kexec.c to some file that is ARCH=ppc specific
+> > 11:31 < svenl> johill: as i understand this, i think it is already in some
+> > ARCH=ppc specific file, which is the cause of this trouble.
+> > 11:32 < johill> the way I interpret it is that the machine_kexec.c file is
+> > compiled for ARCH=powerpc too since it contains the 32bit specific
+> > implementation of kexec
+> > 11:32 < johill> but it contains a non-static machine_shutdown() function which
+> > ARCH=powerpc already moved to some non-32bit specific file
+> > 
+> > So, it would be neat to either fix it, or at least mark the option as broken
+> > on 64bit powerpc, or something such.
+> 
+> And here is the 64bit error message : 
+> 
+>   __restore_cpu_setup': multiple definition of `machine_shutdown'
+>   arch/powerpc/kernel/built-in.o: first defined here
+> 
+> I will disable KEXEC and see how it goes.
 
-> zImage.prep built from head of Linus' tree fails to boot with the error
-> below.
+Oh well, sorry for the trouble, this seams due to having CONFIG_64bit set but
+not CONFIG_PPC64, which is kind of not going to work.
 
-Did you do a parallel make (make -jN)?  There is a problem currently
-with parallel makes where it can try to use the vmlinux.gz before it's
-been fully generated.  Try deleting vmlinux and do a single-threaded
-make and see if that fixes it.
+Friendly,
 
-Paul.
+Sven Luther
