@@ -1,19 +1,17 @@
-Return-Path: <nathael.pajani@cpe.fr>
-Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.36])
-	by ozlabs.org (Postfix) with ESMTP id 5BD2C688E3
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15808.mail.cnb.yahoo.com (web15808.mail.cnb.yahoo.com
+	[202.165.102.88]) by ozlabs.org (Postfix) with SMTP id B484A688DB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Dec 2005 20:58:48 +1100 (EST)
-Received: from linuxdev.ECRIN-CROLLES (unknown [83.145.98.3])
-	by smtp-out.completel.net (Postfix) with ESMTP id 906AD280018
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Dec 2005 10:58:47 +0100 (CET)
-Date: Wed, 28 Dec 2005 11:02:19 +0100
-From: Nathael Pajani <nathael.pajani@cpe.fr>
-To: linuxppc-embedded@ozlabs.org
-Message-Id: <20051228110219.20277556.nathael.pajani@cpe.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: porting linux on the prpmc610 and the mvme6100
+	Wed, 28 Dec 2005 21:20:33 +1100 (EST)
+Message-ID: <20051228102029.26119.qmail@web15808.mail.cnb.yahoo.com>
+Date: Wed, 28 Dec 2005 18:20:29 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: srideep.devireddy@wipro.com
+In-Reply-To: <6AD9F6A5F6E096408F0B703773355A070E700C@CHN-SNR-MBX01.wipro.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=gb2312
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re : Linux kernel Hangs after transfer
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,15 +22,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hey:
-google is your friend:
-motorola.com MVME6100 linux patch
+--- srideep.devireddy@wipro.com wrote:
+...
+> log when i try to bootm 100000
+> 
+> 
+> Bytes transferred = 644777 (9d6a9 hex)
+> => bootm
+> ## Booting image at 00100000 ...
 
-https://mcg.motorola.com/cfm/templates/linux.cfm?PageID=3D705
+Pls try 0x200000 to boot the image.
+If didn't work, print the comandline
+which was transfered to kernel.
 
-Have fun once again :)
-+++
-----=20
-Nathael PAJANI
-Ing=E9nieur CPE Lyon
-nathael.pajani@cpe.fr
+Best regards,
+
+Sam
+
+__________________________________________________
+∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
+http://cn.mail.yahoo.com
