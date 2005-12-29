@@ -1,15 +1,15 @@
 Return-Path: <cpvjagadeesh@yahoo.com>
-Received: from web50406.mail.yahoo.com (web50406.mail.yahoo.com
-	[206.190.38.71]) by ozlabs.org (Postfix) with SMTP id E578A6894D
+Received: from web50405.mail.yahoo.com (web50405.mail.yahoo.com
+	[206.190.38.70]) by ozlabs.org (Postfix) with SMTP id 6814F68956
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Dec 2005 16:28:38 +1100 (EST)
-Message-ID: <20051229052837.33192.qmail@web50406.mail.yahoo.com>
-Date: Wed, 28 Dec 2005 21:28:37 -0800 (PST)
+	Thu, 29 Dec 2005 19:50:38 +1100 (EST)
+Message-ID: <20051229085036.53773.qmail@web50405.mail.yahoo.com>
+Date: Thu, 29 Dec 2005 00:50:36 -0800 (PST)
 From: venkatajagadeesh p <cpvjagadeesh@yahoo.com>
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-1883380506-1135834117=:31882"
-Subject: re: Porting Linux2.6.13 on MPC860T custom build board 
+Content-Type: multipart/mixed; boundary="0-854699733-1135846236=:52787"
+Subject: Portin Linux2.6.13 on Custom build MPC860T board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,93 +20,99 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1883380506-1135834117=:31882
-Content-Type: multipart/alternative; boundary="0-835740560-1135834117=:31882"
+--0-854699733-1135846236=:52787
+Content-Type: multipart/alternative; boundary="0-956493263-1135846236=:52787"
 
---0-835740560-1135834117=:31882
+--0-956493263-1135846236=:52787
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 
-  venkatajagadeesh p wrote:
-> 
-> Hi,
->      We are trying to port Linux-2.6.13 on Custom build MPC860T, board, 
-> We are unable to see any messages on console. We got the output given 
-> below. Please help us in porting the kernel.
-> I am attaching the config file .
->  
-> =>bootm 0x100000
-> ## Booting image at 00100000 ...
->    Image Name:   Linux-2.6.13
->    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
->    Data Size:    958189 Bytes = 935.7 kB
->    Load Address: 00000000
->    Entry Point:  00000000
->    Verifying Checksum ... OK
->    Uncompressing Kernel Image ... gunzip function called
-> OK
-> do_bootm_linux called ...do_bootm_linux  after ...part2 do_boot_linux 
-> before RAM
->  Disk image loading ...
-> No initrd
-> ## Transferring control to Linux (at address 00000000) ...
-> 
-> >Most probably, something odd with serial setup.
-> >You have enabled just all the stuff (SCC/SMC), but (on 8xx at least)
->>they can hardly live together, having alternative - conflicting IO pin configurations.
-
-   
-  We enabling only SMC2, still it is showing the same problem. In U-boot loader we have modified the default console to SMC2. We have not done any modifications to the original linux-2.6.13 code.
-   
-  I am sending config file as an attachment.
-   
-  I am sending U-boot env varibles also
+    We are trying to port Linux-2.6.13 on Custom build board, We gone through some of the threads and done those modifications for initializing the console. But it was not working.  We are sending the output data and config file.
+     
   
-=>printenv
-bootcmd=bootm;setenv bootargs root=/dev/ram rw
-bootdelay=5
-baudrate=57600
-loads_echo=1
-ethaddr=9a:52:63:15:85:25
-bootfile=uImage
-filesize=95f0a
-ipaddr=192.168.3.2
-serverip=192.168.3.6
-netdev=eth0
-netmask=255.255.255.0
-addip=setenv bootargs ${bootargs} ip=${ipaddr}:${serverip}:${gatewayip}:${netmas
-k}:${hostname}:${netdev}:off
-ramargs=setenv bootargs root=/dev/ram rw
-kernel_addr=0xfc0a0000
-ramdisk_addr=0xfc160000
-flash_ram=run ramargs addip;bootm 0xfc0a0000 0xfc160000
-net_ram=tftpboot 0x100000 uImage;tftpboot 0x400000 rambb2;run ramargs addip;boot
-m 0x100000 0x400000
-stdin=serial
-stdout=serial
-stderr=serial
-bootargs=root=/dev/ram rw
-  Environment size: 638/262140 bytes
-   
-   
+U-Boot 1.0.2 (Oct 13 2005 - 10:06:32)
+  CPU:   XPC86xxxZPnnD3 at 60 MHz: 4 kB I-Cache 4 kB D-Cache FEC present
+Board: FADS with db MPC860T rev ENG
+DRAM:  (64 MB SDRAM) unknown dramdelay (0x1) - defaulting to 70 ns64 MB
+ok1
+ok2
+functions are over
+Top of RAM usable for U-Boot at: 04000000
+Reserving 141k for U-Boot at: 03fdc000
+Reserving 640k for malloc() at: 03f3c000
+Reserving 60 Bytes for Board Info at: 03f3bfc4
+Reserving 48 Bytes for Global Data at: 03f3bf94
+Stack Pointer at: 03f3bf78
+New Stack Pointer is: 03f3bf78
+  memcopy over
+Now running in RAM - U-Boot at: 03fdc000
+FLASH:
+in flash_get_size       micron is identified ffff
+device id in flash.c 18
+device id correct
+  in flash_get_size       micron is identified 1
+device id in flash.c 18
+device id correct
+32 MB
+In:    serial
+Out:   serial
+Err:   serial
+KGDB:  [on SMC2] kgdb ready
+ready
+Net:   FEC ETHERNET
+ent into mainloop
+Hit any key to stop autoboot:  0
+=>loadb 0x100000 57600
+## Ready for binary (kermit) download to 0x00100000 at 57600 bps...
+## Total Size      = 0x000e9e5d = 958045 Bytes
+## Start Addr      = 0x00100000
+=>loadb 0x400000 57600
+## Ready for binary (kermit) download to 0x00400000 at 57600 bps...
+## Total Size      = 0x0039c124 = 3784996 Bytes
+## Start Addr      = 0x00400000
+=>bootm 0x100000 0x400000
+## Booting image at 00100000 ...
+   Image Name:   Linux-2.6.13
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    957981 Bytes = 935.5 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... gunzip function called
+OK
+do_bootm_linux called ...do_bootm_linux  after ...part2 do_boot_linux before RAM
+ Disk image loading ...
+## Loading RAMDisk Image at 00400000 ...
+   Image Name:   Ramdisk image
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    3784932 Bytes =  3.6 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+data is non zero
+   Loading Ramdisk to 03b9f000, end 03f3b0e4 ... OK
+## Transferring control to Linux (at address 00000000) ...
+
 
 
 		
 ---------------------------------
-Yahoo! Photos
- Ring in the New Year with Photo Calendars. Add photos, events, holidays, whatever.
---0-835740560-1135834117=:31882
+Yahoo! Shopping
+ Find Great Deals on Holiday Gifts at Yahoo! Shopping 
+--0-956493263-1135846236=:52787
 Content-Type: text/html; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 
-<DIV id=RTEContent>  <DIV>venkatajagadeesh p wrote:<BR>&gt;<I> <BR></I>&gt;<I> Hi,<BR></I>&gt;<I>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; We are trying to port Linux-2.6.13 on Custom build MPC860T, board, <BR></I>&gt;<I> We are unable to see any messages on console. We got the output given <BR></I>&gt;<I> below. Please help us in porting the kernel.<BR></I>&gt;<I> I am attaching the config file .<BR></I>&gt;<I>&nbsp; <BR></I>&gt;<I> =&gt;bootm 0x100000<BR></I>&gt;<I> ## Booting image at 00100000 ...<BR></I>&gt;<I>&nbsp;&nbsp;&nbsp; Image Name:&nbsp;&nbsp; Linux-2.6.13<BR></I>&gt;<I>&nbsp;&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC Linux Kernel Image (gzip compressed)<BR></I>&gt;<I>&nbsp;&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 958189 Bytes = 935.7 kB<BR></I>&gt;<I>&nbsp;&nbsp;&nbsp; Load Address: 00000000<BR></I>&gt;<I>&nbsp;&nbsp;&nbsp; Entry Point:&nbsp; 00000000<BR></I>&gt;<I>&nbsp;&nbsp;&nbsp; Verifying Checksum ... OK<BR></I>&gt;<I>&nbsp;&nbsp;&nbsp; Uncompressing Kernel Image ...
- gunzip function called<BR></I>&gt;<I> OK<BR></I>&gt;<I> do_bootm_linux called ...do_bootm_linux&nbsp; after ...part2 do_boot_linux <BR></I>&gt;<I> before RAM<BR></I>&gt;<I>&nbsp; Disk image loading ...<BR></I>&gt;<I> No initrd<BR></I>&gt;<I> ## Transferring control to Linux (at address 00000000) ...<BR></I>&gt;<I> <BR></I>&gt; &gt;Most probably, something odd with serial setup.<BR>&gt; &gt;You have enabled just all the stuff (SCC/SMC), but (on 8xx at least)<BR>&gt;&gt;they can hardly live together, having alternative - conflicting IO pin configurations.<BR></DIV>  <DIV>&nbsp;</DIV>  <DIV>We&nbsp;enabling only SMC2, still it is showing the same&nbsp;problem. In U-boot loader we have modified the default console to SMC2. We have not done any modifications to the original linux-2.6.13 code.</DIV>  <DIV>&nbsp;</DIV>  <DIV>I am sending config file as an attachment.</DIV>  <DIV>&nbsp;</DIV>  <DIV>I am sending&nbsp;U-boot env varibles also</DIV> 
- <DIV><BR>=&gt;printenv<BR>bootcmd=bootm;setenv bootargs root=/dev/ram rw<BR>bootdelay=5<BR>baudrate=57600<BR>loads_echo=1<BR>ethaddr=9a:52:63:15:85:25<BR>bootfile=uImage<BR>filesize=95f0a<BR>ipaddr=192.168.3.2<BR>serverip=192.168.3.6<BR>netdev=eth0<BR>netmask=255.255.255.0<BR>addip=setenv bootargs ${bootargs} ip=${ipaddr}:${serverip}:${gatewayip}:${netmas<BR>k}:${hostname}:${netdev}:off<BR>ramargs=setenv bootargs root=/dev/ram rw<BR>kernel_addr=0xfc0a0000<BR>ramdisk_addr=0xfc160000<BR>flash_ram=run ramargs addip;bootm 0xfc0a0000 0xfc160000<BR>net_ram=tftpboot 0x100000 uImage;tftpboot 0x400000 rambb2;run ramargs addip;boot<BR>m 0x100000 0x400000<BR>stdin=serial<BR>stdout=serial<BR>stderr=serial<BR>bootargs=root=/dev/ram rw</DIV>  <DIV>Environment size: 638/262140 bytes</DIV>  <DIV>&nbsp;</DIV>  <DIV>&nbsp;</DIV></DIV><p>
-		<hr size=1>Yahoo! Photos<br> 
-Ring in the New Year with <a href="http://us.rd.yahoo.com/mail_us/taglines/photos/*http://pg.photos.yahoo.com/ph//page?.file=calendar_splash.html&.dir=">Photo Calendars</a>. Add photos, events, holidays, whatever.
---0-835740560-1135834117=:31882--
+<DIV id=RTEContent>  <DIV id=RTEContent>&nbsp; We are trying to port Linux-2.6.13 on Custom build board, We gone through some of the threads and done those modifications for initializing the console. But it was not working.&nbsp; We are sending the output data and config file.</DIV>  <DIV id=RTEContent>&nbsp;&nbsp; </DIV>  <DIV id=RTEContent><BR>U-Boot 1.0.2 (Oct 13 2005 - 10:06:32)</DIV>  <DIV id=RTEContent>CPU:&nbsp;&nbsp; XPC86xxxZPnnD3 at 60 MHz: 4 kB I-Cache 4 kB D-Cache FEC present<BR>Board: FADS with db MPC860T rev ENG<BR>DRAM:&nbsp; (64 MB SDRAM) unknown dramdelay (0x1) - defaulting to 70 ns64 MB<BR>ok1<BR>ok2<BR>functions are over<BR>Top of RAM usable for U-Boot at: 04000000<BR>Reserving 141k for U-Boot at: 03fdc000<BR>Reserving 640k for malloc() at: 03f3c000<BR>Reserving 60 Bytes for Board Info at: 03f3bfc4<BR>Reserving 48 Bytes for Global Data at: 03f3bf94<BR>Stack Pointer at: 03f3bf78<BR>New Stack Pointer is: 03f3bf78</DIV>  <DIV id=RTEContent>memcopy over<BR>Now running
+ in RAM - U-Boot at: 03fdc000<BR>FLASH:<BR>in flash_get_size&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; micron is identified ffff<BR>device id in flash.c 18<BR>device id correct</DIV>  <DIV id=RTEContent>in flash_get_size&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; micron is identified 1<BR>device id in flash.c 18<BR>device id correct<BR>32 MB<BR>In:&nbsp;&nbsp;&nbsp; serial<BR>Out:&nbsp;&nbsp; serial<BR>Err:&nbsp;&nbsp; serial<BR>KGDB:&nbsp; [on SMC2] kgdb ready<BR>ready<BR>Net:&nbsp;&nbsp; FEC ETHERNET<BR>ent into mainloop<BR>Hit any key to stop autoboot:&nbsp; 0<BR>=&gt;loadb 0x100000 57600<BR>## Ready for binary (kermit) download to 0x00100000 at 57600 bps...<BR>## Total Size&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0x000e9e5d = 958045 Bytes<BR>## Start Addr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0x00100000<BR>=&gt;loadb 0x400000 57600<BR>## Ready for binary (kermit) download to 0x00400000 at 57600 bps...<BR>## Total Size&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0x0039c124 = 3784996 Bytes<BR>## Start
+ Addr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 0x00400000<BR>=&gt;bootm 0x100000 0x400000<BR>## Booting image at 00100000 ...<BR>&nbsp;&nbsp; Image Name:&nbsp;&nbsp; Linux-2.6.13<BR>&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC Linux Kernel Image (gzip compressed)<BR>&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 957981 Bytes = 935.5 kB<BR>&nbsp;&nbsp; Load Address: 00000000<BR>&nbsp;&nbsp; Entry Point:&nbsp; 00000000<BR>&nbsp;&nbsp; Verifying Checksum ... OK<BR>&nbsp;&nbsp; Uncompressing Kernel Image ... gunzip function called<BR>OK<BR>do_bootm_linux called ...do_bootm_linux&nbsp; after ...part2 do_boot_linux before RAM<BR>&nbsp;Disk image loading ...<BR>## Loading RAMDisk Image at 00400000 ...<BR>&nbsp;&nbsp; Image Name:&nbsp;&nbsp; Ramdisk image<BR>&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC Linux RAMDisk Image (gzip compressed)<BR>&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 3784932 Bytes =&nbsp; 3.6 MB<BR>&nbsp;&nbsp; Load Address: 00000000<BR>&nbsp;&nbsp; Entry Point:&nbsp;
+ 00000000<BR>&nbsp;&nbsp; Verifying Checksum ... OK<BR>data is non zero<BR>&nbsp;&nbsp; Loading Ramdisk to 03b9f000, end 03f3b0e4 ... OK<BR>## Transferring control to Linux (at address 00000000) ...<BR></DIV></DIV><p>
+		<hr size=1>Yahoo! Shopping<br> 
+Find Great Deals on Holiday Gifts at <a href="http://us.rd.yahoo.com/mail_us/footer/shopping/*http://shopping.yahoo.com/;_ylc=X3oDMTE2bzVzaHJtBF9TAzk1OTQ5NjM2BHNlYwNtYWlsdGFnBHNsawNob2xpZGF5LTA1 
+">Yahoo! Shopping</a> 
+--0-956493263-1135846236=:52787--
 
---0-1883380506-1135834117=:31882
+--0-854699733-1135846236=:52787
 Content-Type: text/plain; name=".config"
 Content-Description: 172188218-.config
 Content-Disposition: inline; filename=".config"
@@ -182,7 +188,7 @@ CONFIG_8xx=y
 # CONFIG_MATH_EMULATION is not set
 # CONFIG_KEXEC is not set
 # CONFIG_CPU_FREQ is not set
-# CONFIG_WANT_EARLY_SERIAL is not set
+CONFIG_WANT_EARLY_SERIAL=y
 CONFIG_EMBEDDEDBOOT=y
 CONFIG_NOT_COHERENT_CACHE=y
 
@@ -230,7 +236,7 @@ CONFIG_FLAT_NODE_MEM_MAP=y
 CONFIG_BINFMT_ELF=y
 # CONFIG_BINFMT_MISC is not set
 CONFIG_CMDLINE_BOOL=y
-CONFIG_CMDLINE="console=ttyS1,57600 console=tty1 root=/dev/ram"
+CONFIG_CMDLINE="console=ttyCPM1,57600 root=/dev/ram"
 # CONFIG_PM is not set
 CONFIG_SECCOMP=y
 CONFIG_ISA_DMA_API=y
@@ -789,4 +795,4 @@ CONFIG_LOG_BUF_SHIFT=14
 # Hardware crypto devices
 #
 
---0-1883380506-1135834117=:31882--
+--0-854699733-1135846236=:52787--
