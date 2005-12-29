@@ -1,17 +1,33 @@
-Return-Path: <samlinuxppc@yahoo.com.cn>
-Received: from web15805.mail.cnb.yahoo.com (web15805.mail.cnb.yahoo.com
-	[202.165.102.85]) by ozlabs.org (Postfix) with SMTP id 6456768910
+Return-Path: <SRS0=354RJ1=22=writeme.com=sinan@yourhostingaccount.com>
+Received: from mail18.yourhostingaccount.com (outmail.yourhostingaccount.com
+	[65.254.254.75]) by ozlabs.org (Postfix) with ESMTP id C618768964
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Dec 2005 23:54:07 +1100 (EST)
-Message-ID: <20051229125405.18967.qmail@web15805.mail.cnb.yahoo.com>
-Date: Thu, 29 Dec 2005 20:54:05 +0800 (CST)
-From: Sam Song <samlinuxppc@yahoo.com.cn>
-To: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <20051229043720.15530.qmail@web15809.mail.cnb.yahoo.com>
+	Fri, 30 Dec 2005 02:52:35 +1100 (EST)
+Received: from scan02.yourhostingaccount.com ([10.1.1.232]
+	helo=scan02.yourhostingaccount.com)
+	by mail18.yourhostingaccount.com with esmtp (Exim)
+	id 1ErzbY-0003EG-0r
+	for linuxppc-embedded@ozlabs.org; Thu, 29 Dec 2005 10:22:12 -0500
+Received: from authsmtp03.yourhostingaccount.com ([10.1.18.3] ident=exim)
+	by scan02.yourhostingaccount.com with spamscanlookuphost (Exim)
+	id 1ErzbX-0002Fp-Rk
+	for linuxppc-embedded@ozlabs.org; Thu, 29 Dec 2005 10:22:11 -0500
+Received: from authsmtp03.yourhostingaccount.com ([10.1.18.3]
+	helo=authsmtp03.yourhostingaccount.com)
+	by scan02.yourhostingaccount.com with esmtp (Exim)
+	id 1ErzbX-0002Fm-Fo
+	for linuxppc-embedded@ozlabs.org; Thu, 29 Dec 2005 10:22:11 -0500
+Message-ID: <43B3FFC4.3060802@writeme.com>
+Date: Thu, 29 Dec 2005 10:24:52 -0500
+From: Sinan Akman <sinan@writeme.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=gb2312
-Subject: Re : MPC8347 USB problem : Copying big file[>150MB] discontinuous
-	via Samba
+To: venkatajagadeesh p <cpvjagadeesh@yahoo.com>
+References: <20051229100724.60504.qmail@web50409.mail.yahoo.com>
+In-Reply-To: <20051229100724.60504.qmail@web50409.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Sender: Sinan Akman <sinan@writeme.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Porting Linux2.6.13 on MPC860T custom build board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,44 +38,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sam Song <samlinuxppc@yahoo.com.cn> wrote:
-> Hi all,
-> 
-> We met a USB performance problem on a custom
-> 8347board with 2.4.31. When copying small 
-> files no more than 100MB in size, it worked 
-> smoothly with NEC or VIA PCI card. But 
-> copying a big file like more than 150MB 
-> in size would decrease the copying
-> speed a lot. Serial console even couldn't
-> response 'ls' command. The target has a 
-> 128MB DDR RAM.
+venkatajagadeesh p wrote:
 
-Ummm, actually, 256MB DDR RAM.
+> Hi Sinan Akman
+>  
+>                 Thanks for Your suggestion, Now linux is up and 
+> booting. thanks for the community who contributed in this porting.
 
-> While the same driver with 2.4.31 worked fine
-> on a 8248 custom board. What could the 
-> problem be?
 
-Arhhhh, it was due to USB 1.1 limitation
-itself(8347 USB 2.0 driver wasn't added 
-yet when I posted it). Only on the 
-workable 8248 target with USB 1.1 driver, 
-it would have such a phenomena. There was 
-even a network error displayed. If working
-with USB 2.0, no any problem. New to me:-)
+       I am glad it worked. I guess my reply to you didn't go through to 
+linuxppc-embedded.
+You might want to post the sequence of things you tried, what worked and 
+what didn't. This
+way someone else can find it through search, assuming it wasn't in the 
+FAQ already.
 
-But Well, I don't have the guts
-to say this is a kernel's bug:-)
+    Regards
 
-> Sorry to distrub you during Christmas Time.
+    Sinan Akman
 
-OK, stay on relax, pls.
-
-Best regards,
-
-Sam
-
-__________________________________________________
-¸Ï¿ì×¢²áÑÅ»¢³¬´óÈÝÁ¿Ãâ·ÑÓÊÏä?
-http://cn.mail.yahoo.com
+>  
+> Thanks and one and all,
+> Venkata jagadish.p
+>
+> ------------------------------------------------------------------------
+> Yahoo! Photos
+> Ring in the New Year with Photo Calendars 
+> <http://us.rd.yahoo.com/mail_us/taglines/photos/*http://pg.photos.yahoo.com/ph//page?.file=calendar_splash.html&.dir=>. 
+> Add photos, events, holidays, whatever. 
