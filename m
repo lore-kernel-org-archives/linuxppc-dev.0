@@ -1,22 +1,17 @@
-Return-Path: <kiszka@rts.uni-hannover.de>
-Received: from listserv.uni-hannover.de (listserv.uni-hannover.de
-	[130.75.2.32]) by ozlabs.org (Postfix) with ESMTP id 34A7C68962
+Return-Path: <gjalt007@chello.nl>
+Received: from amsfep14-int.chello.nl (amsfep14-int.chello.nl [213.46.243.21])
+	by ozlabs.org (Postfix) with ESMTP id E70D168962
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Dec 2005 02:28:16 +1100 (EST)
-Message-ID: <43B3FCD4.2020409@rts.uni-hannover.de>
-Date: Thu, 29 Dec 2005 16:12:20 +0100
-From: Jan Kiszka <kiszka@rts.uni-hannover.de>
+	Fri, 30 Dec 2005 09:07:42 +1100 (EST)
+Message-ID: <43B459C5.1060206@chello.nl>
+Date: Thu, 29 Dec 2005 22:48:53 +0100
+From: Theo Gjaltema <gjalt007@chello.nl>
 MIME-Version: 1.0
-To: The Linux Socket CAN Framework <socket-can@pengutronix.de>
-References: <200512271730.28563.david.jander@protonic.nl>	<20051227214949.GA8236@mail.gnudd.com>	<200512281000.12073.david.jander@protonic.nl>	<43B2A902.3090008@varma-el.com>
-	<20051229134355.GH19375@pengutronix.de>
-In-Reply-To: <20051229134355.GH19375@pengutronix.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enig2B3E464D0BC71E894057116C"
-Cc: David Jander <david.jander@protonic.nl>, urs.thuermann@volkswagen.de,
-	oliver.hartkopp@volkswagen.de, linuxppc-embedded@ozlabs.org
-Subject: Re: [Socket-can] Re: Which CAN driver to port to for PPC
+To: linuxppc-embedded@ozlabs.org
+References: <4440987.1134894054475.JavaMail.postfix@mx3.mail.sohu.com>
+In-Reply-To: <4440987.1134894054475.JavaMail.postfix@mx3.mail.sohu.com>
+Content-Type: text/plain; charset=GB2312
+Subject: Re: eldk bug?how to fix
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,52 +22,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2B3E464D0BC71E894057116C
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Hmm...
+I've seen these messages before. They were gone when I compiled using
+ppc_8xx-gcc compiler of a different ELDK version.
+What version of ELDK are you using? Which gcc version?
 
-Robert Schwebel wrote:
-> ...
-> In december, we have made a synchronisation meeting with the VW people
-> who made the initial port for 2.4; they are more focussed on having
-> higher level transport protocols ontop of the "raw" socket interface we
-> currently use. During that process we have reviewed the user interface
-> with regard to their use cases, so it will have to be changed a little
-> bit before we have something which is in a state to be posted on lkml.
-> 
+Succes,
+Theo Gjaltema.
 
-Beyond the outstanding comparably minor API adjustments, we furthermore
-discussed first ideas how to define the lowest interface, i.e. the CAN
-network device layer. That should be done in a way which makes porting
-CAN low-level drivers between the standard kernel and a real-time Linux
-CAN stack trivial. That's a unique chance (compared to the situation of
-RTnet e.g.), so we should take it.
+zengshuai@sogou.com schreef:
 
-This real-time stack is to be derived from the RT-SJA1000 driver
-Wolfgang pointed at. It is already based on an abstraction layer (RTDM)
-that makes it portable across many of the various RT-Linux variant. So
-far this includes support for Xenomai and RTAI, RTLinux/GPL is planning
-to adopt RTDM as well. This means we could end up with portable CAN
-applications and drivers, RT and non-RT!
-
-As Robert said, it "just" requires some resources for implementing
-this... ;)
-
-Jan
-
---------------enig2B3E464D0BC71E894057116C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
-
-iD8DBQFDs/zUncNeS9Q0k+IRAnsSAJoDOAXT/ztDqMgYJo/rtBodqZbgYQCfZnAm
-nQMxzz9JLaa/U23osH2bfgE=
-=3Pof
------END PGP SIGNATURE-----
-
---------------enig2B3E464D0BC71E894057116C--
+>[root@localhost atmlz]# ppc_6xx-gcc -c -o temp atm_aalx.c         
+>atm_aalx.c: In function `main':                                   
+>atm_aalx.c:201: warning: return type of `main' is not `int'       
+>/tmp/cciJlehe.s: Assembler messages:                              
+>/tmp/cciJlehe.s:916: Error: unsupported relocation against r3     
+>/tmp/cciJlehe.s:917: Error: unsupported relocation against r3     
+>/tmp/cciJlehe.s:917: Error: unsupported relocation against r3     
+>/tmp/cciJlehe.s:918: Error: unsupported relocation against r3     
+>/tmp/cciJlehe.s:918: Error: unsupported relocation against r3     
+>/tmp/cciJlehe.s:919: Error: unsupported relocation against r3     
+>/tmp/cciJlehe.s:3655: Error: unsupported relocation against r3    
+>[root@localhost atmlz]# ppc_6xx-gcc -S -o temp.s atm_aalx.c
+>[root@localhost atmlz]# vi temp.s
+>...................
+>        stw 0,4(9)                 
+>.L36:                              
+>#APP                               
+>         mfmsr r3                  
+>         ori r3,r3,0x8000          
+>         andi. r3,r3,0xffbf        
+>         mtmsr r3                  
+>#NO_APP                            
+>        lwz 11,0(1)                
+>..............................
+>I must change those "r3" to "3" manually.
+>How to fix?
+>
+>------------------------------
+>我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
+>http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=linuxppc-embedded&FullName=linuxppc-embedded&Email=linuxppc-embedded%40ozlabs.org&verify=755eff4e640bdcfc57d93cbd8b0a9cb7
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>  
+>
