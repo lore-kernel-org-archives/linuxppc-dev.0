@@ -1,16 +1,20 @@
-Return-Path: <cpvjagadeesh@yahoo.com>
-Received: from web50409.mail.yahoo.com (web50409.mail.yahoo.com
-	[206.190.38.244]) by ozlabs.org (Postfix) with SMTP id 24B0D68949
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 67C7A68949
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Dec 2005 21:07:25 +1100 (EST)
-Message-ID: <20051229100724.60504.qmail@web50409.mail.yahoo.com>
-Date: Thu, 29 Dec 2005 02:07:23 -0800 (PST)
-From: venkatajagadeesh p <cpvjagadeesh@yahoo.com>
-To: Sinan Akman <sinan@writeme.com>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <43B3958E.4010002@writeme.com>
+	Thu, 29 Dec 2005 22:50:39 +1100 (EST)
+Message-ID: <43B3CE3C.3050601@grandegger.com>
+Date: Thu, 29 Dec 2005 12:53:32 +0100
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1564701718-1135850843=:59533"
-Subject: Re: Porting Linux2.6.13 on MPC860T custom build board
+To: David Jander <david.jander@protonic.nl>
+References: <200512271730.28563.david.jander@protonic.nl>
+	<43B26CA1.4040700@grandegger.com>
+	<200512281302.46210.david.jander@protonic.nl>
+In-Reply-To: <200512281302.46210.david.jander@protonic.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Which CAN driver to port to for PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,26 +25,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1564701718-1135850843=:59533
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+David Jander wrote:
+> Hi again,
+> 
+> On Wednesday 28 December 2005 11:44, Wolfgang Grandegger wrote:
+> 
+>>AFAIK, there is no _generic_ embedded CAN driver available which even
+>>supports real-time extensions.
+> 
+> 
+> Yes, lincan does. Well, it supports RTlinux and OCERA's RTlinux (GPL) 
+> modifications, which somehow reinvent ADEOS (or is it the other way around?), 
+> but since RTlinux is an option only for i386, and anyway almost dead right 
+> now, you could say it doesn't support real-time extensions.
 
-Hi Sinan Akman
-   
-                  Thanks for Your suggestion, Now linux is up and booting. thanks for the community who contributed in this porting.
-   
-  Thanks and one and all,
-  Venkata jagadish.p
+Well, ADEOS uses a different method of handling interrupts and 
+exceptions to avoid the infamous RTLinux patent. Better let's say: it 
+doesn't support really "free" real-time extensions.
 
-		
----------------------------------
-Yahoo! Photos
- Ring in the New Year with Photo Calendars. Add photos, events, holidays, whatever.
---0-1564701718-1135850843=:59533
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+> The problem of saying "Peak-CAN for SJA1000" and "OCAN for intel" is that you 
+> can basically forget about writing portable code because they are both very 
+> different.
 
-<div>Hi Sinan Akman</div>  <div>&nbsp;</div>  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Thanks for Your suggestion, Now linux is up and booting. thanks for the community who&nbsp;contributed in this porting.</div>  <div>&nbsp;</div>  <div>Thanks and one and all,</div>  <div>Venkata jagadish.p</div><p>
-		<hr size=1>Yahoo! Photos<br> 
-Ring in the New Year with <a href="http://us.rd.yahoo.com/mail_us/taglines/photos/*http://pg.photos.yahoo.com/ph//page?.file=calendar_splash.html&.dir=">Photo Calendars</a>. Add photos, events, holidays, whatever.
---0-1564701718-1135850843=:59533--
+I agree.
+
+> Maybe you should have a look at Pavel Pisa's lincan. After trying it out you 
+> might end up as confused as I am, because it doesn't look that bad at all, 
+> it's almost platform independent, supports all kernels (2.2 to latest 2.6), 
+> and supports a great amount of cards with intel and/or philips chips (yes, 
+> both of them on one card is also an option). The driver is designed with 
+> performance and throughput in mind, but I am not so sure about the API which 
+> is still a little too simple (maybe that's actually good) and doesn't support 
+> properly checking chip- or  bus-status yet. Also honorable is their effort of 
+> staying compatible with at least one other player: can4linux.
+
+In the meantime I had a closer look and it looks like the most advanced 
+in terms of portability, indeed. My experience is, that the chip- or 
+bus-status, apart from the bus-off state, is very hardware specific and 
+it's difficult to provide a generic API. Still need to dig more in 
+lincan to make a reasonable judgment, though.
+
+> Greetings, and thanks for the comments,
+> 
+> Btw, how's ELDK-4 coming along?
+
+Please ask Wolfgang Denk directly.
+
+Wolfgang.
