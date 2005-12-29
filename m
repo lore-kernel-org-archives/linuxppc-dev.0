@@ -1,21 +1,16 @@
-Return-Path: <happyphot@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.197])
-	by ozlabs.org (Postfix) with ESMTP id A99CD68958
+Return-Path: <cpvjagadeesh@yahoo.com>
+Received: from web50409.mail.yahoo.com (web50409.mail.yahoo.com
+	[206.190.38.244]) by ozlabs.org (Postfix) with SMTP id 24B0D68949
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Dec 2005 20:25:20 +1100 (EST)
-Received: by zproxy.gmail.com with SMTP id j2so1082985nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Dec 2005 01:25:17 -0800 (PST)
-Message-ID: <002e01c60c59$c8fd6470$0860120a@photon>
-From: "HappyPhot" <happyphot@gmail.com>
-To: "Wolfgang Denk" <wd@denx.de>
-References: <20051228091612.B43D3353A66@atlas.denx.de>
-Date: Thu, 29 Dec 2005 17:25:08 +0800
+	Thu, 29 Dec 2005 21:07:25 +1100 (EST)
+Message-ID: <20051229100724.60504.qmail@web50409.mail.yahoo.com>
+Date: Thu, 29 Dec 2005 02:07:23 -0800 (PST)
+From: venkatajagadeesh p <cpvjagadeesh@yahoo.com>
+To: Sinan Akman <sinan@writeme.com>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <43B3958E.4010002@writeme.com>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="ISO-8859-1";
-	reply-type=original
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Error: unknown pseudo-op: `.cfi_startproc' 
+Content-Type: multipart/alternative; boundary="0-1564701718-1135850843=:59533"
+Subject: Re: Porting Linux2.6.13 on MPC860T custom build board
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,43 +21,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> In message <007801c60b72$eb4988c0$0860120a@photon> you wrote:
->>
->>   I am using ELDK (2005-06-07) and 
->> linux-2.6.15-rc2-2005-12-03-2208.tar.bz2
->> to build the kernel. But there are some errors:
->>
->> .../arch/powerpc/kernel/vdso32/gettimeofday.S: Assembler messages:
->> .../arch/powerpc/kernel/vdso32/gettimeofday.S:28: Error: unknown 
->> pseudo-op:
->> `.cfi_startproc'
->> .../arch/powerpc/kernel/vdso32/gettimeofday.S:30: Error: unknown 
->> pseudo-op:
->> `.cfi_register'
->> .......
->>
->> Anybody knows what happened ? And is there any way to solve ?
->
-> ELDK 3.1 uses binutils-2.14; the current Linux kernel was changed  to
-> use  assembler  syntax which is not supported by the GNU assembler in
-> this version. See for example
-> http://ozlabs.org/pipermail/linuxppc64-dev/2005-February/003179.html
->
-> I don't understand why this  was  done,  either.  Especially  as  the
-> current  Linux  kernel  documentation ("Documentation/Changes") still
-> claims that binutils 2.12 would be sufficient.
->
-> You will have to update your toolchain  (i.  e.  use  ELDK  4.0)  for
-> working with current 2.6 kernels.
->
-> Best regards,
->
-> Wolfgang Denk
+--0-1564701718-1135850843=:59533
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Hi,
-  Is there any "ready to burn" iso image of ELDK 4.0 
-available for download ? I cannot find one.
+Hi Sinan Akman
+   
+                  Thanks for Your suggestion, Now linux is up and booting. thanks for the community who contributed in this porting.
+   
+  Thanks and one and all,
+  Venkata jagadish.p
 
-thank you,
-/HappyPhot   
-  
+		
+---------------------------------
+Yahoo! Photos
+ Ring in the New Year with Photo Calendars. Add photos, events, holidays, whatever.
+--0-1564701718-1135850843=:59533
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<div>Hi Sinan Akman</div>  <div>&nbsp;</div>  <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Thanks for Your suggestion, Now linux is up and booting. thanks for the community who&nbsp;contributed in this porting.</div>  <div>&nbsp;</div>  <div>Thanks and one and all,</div>  <div>Venkata jagadish.p</div><p>
+		<hr size=1>Yahoo! Photos<br> 
+Ring in the New Year with <a href="http://us.rd.yahoo.com/mail_us/taglines/photos/*http://pg.photos.yahoo.com/ph//page?.file=calendar_splash.html&.dir=">Photo Calendars</a>. Add photos, events, holidays, whatever.
+--0-1564701718-1135850843=:59533--
