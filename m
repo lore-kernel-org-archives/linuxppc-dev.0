@@ -1,19 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 67DBF6895C
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15809.mail.cnb.yahoo.com (web15809.mail.cnb.yahoo.com
+	[202.165.102.89]) by ozlabs.org (Postfix) with SMTP id D661B6894D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Dec 2005 10:24:23 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org,
- achim.machura@berghof.com
-Date: Wed, 28 Dec 2005 22:58:02 +0000
-References: <002501c60710$efc71270$34f1ff0a@beint.local>
-In-Reply-To: <002501c60710$efc71270$34f1ff0a@beint.local>
+	Thu, 29 Dec 2005 15:37:24 +1100 (EST)
+Message-ID: <20051229043720.15530.qmail@web15809.mail.cnb.yahoo.com>
+Date: Thu, 29 Dec 2005 12:37:20 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200512282258.03332.arnd@arndb.de>
-Subject: Re: AW: AW: Kernel cmdline
+Content-Type: text/plain; charset=gb2312
+Subject: MPC8347 USB problem : Copying big file[>150MB] discontinuous via
+	Samba
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,11 +21,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 22 December 2005 16:01, Achim Machura wrote:
-> i want check an argument given by the bootloader via commandline
-> 
-You should use module_param() for this, that will take care
-of both kernel and module parameters, for more information,
-see http://lwn.net/Articles/22197/.
+Hi all,
 
-	Arnd <><
+We met a USB performance problem on a custom 8347
+
+board with 2.4.31. When copying small files no 
+more than 100MB in size, it worked smoothly with 
+NEC or VIA PCI card. But copying a big file like 
+more than 150MB in size would decrease the
+copying
+speed a lot. Serial console even couldn't
+response 
+'ls' command. The target has a 128MB DDR RAM.
+
+While the same driver with 2.4.31 worked fine on
+a 
+8248 custom board. What could the problem be?
+
+Sorry to distrub you during Christmas Time.
+
+Thanks in advance,
+
+Sam
+
+
+Best regards,
+
+Sam
+
+__________________________________________________
+¸Ï¿ì×¢²áÑÅ»¢³¬´óÈÝÁ¿Ãâ·ÑÓÊÏä?
+http://cn.mail.yahoo.com
