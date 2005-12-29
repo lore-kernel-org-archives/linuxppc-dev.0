@@ -1,21 +1,17 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1776B68910
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15805.mail.cnb.yahoo.com (web15805.mail.cnb.yahoo.com
+	[202.165.102.85]) by ozlabs.org (Postfix) with SMTP id 6456768910
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Dec 2005 23:15:00 +1100 (EST)
-Message-ID: <43B3D3F2.6060708@grandegger.com>
-Date: Thu, 29 Dec 2005 13:17:54 +0100
-From: Wolfgang Grandegger <wg@grandegger.com>
+	Thu, 29 Dec 2005 23:54:07 +1100 (EST)
+Message-ID: <20051229125405.18967.qmail@web15805.mail.cnb.yahoo.com>
+Date: Thu, 29 Dec 2005 20:54:05 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+To: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20051229043720.15530.qmail@web15809.mail.cnb.yahoo.com>
 MIME-Version: 1.0
-To: Alessandro Rubini <rubini@gnudd.com>
-References: <43B2A902.3090008@varma-el.com>	<200512271730.28563.david.jander@protonic.nl>	<20051227214949.GA8236@mail.gnudd.com>	<200512281000.12073.david.jander@protonic.nl>
-	<20051228150742.GA18401@mail.gnudd.com>
-In-Reply-To: <20051228150742.GA18401@mail.gnudd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: david.jander@protonic.nl, r.schwebel@pengutronix.de,
-	socket-can@pengutronix.de, Jan Kiszka <jan.kiszka@web.de>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: Which CAN driver to port to for PPC
+Content-Type: text/plain; charset=gb2312
+Subject: Re : MPC8347 USB problem : Copying big file[>150MB] discontinuous
+	via Samba
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,27 +22,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Alessandro Rubini wrote:
->>Robert Schwebel et al have worked socket based CAN (i.e. implement CAN
->>as _net_ dev, not as char)
+Sam Song <samlinuxppc@yahoo.com.cn> wrote:
+> Hi all,
 > 
-> 
-> That's great. I've always been convinced it is the right way to go.
-> I remember I've said so to a friend in March 2002.  Unfortunately,
-> I had no time to do it the right way, due to short deadlines and
-> tight budget.  I'm happy Robert did it.
+> We met a USB performance problem on a custom
+> 8347board with 2.4.31. When copying small 
+> files no more than 100MB in size, it worked 
+> smoothly with NEC or VIA PCI card. But 
+> copying a big file like more than 150MB 
+> in size would decrease the copying
+> speed a lot. Serial console even couldn't
+> response 'ls' command. The target has a 
+> 128MB DDR RAM.
 
-FYI, there is also a RTDM/Xenomai based version of the SJA1000 
-socket-based CAN driver at 
-http://www.rts.uni-hannover.de/mitarbeiter/kiszka/rtaddon/
-As RTDM/Xenomai is avaiable for PowerPC as well, it might be an option.
+Ummm, actually, 256MB DDR RAM.
 
-Wolfgang.
+> While the same driver with 2.4.31 worked fine
+> on a 8248 custom board. What could the 
+> problem be?
 
-> /alessandro
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+Arhhhh, it was due to USB 1.1 limitation
+itself(8347 USB 2.0 driver wasn't added 
+yet when I posted it). Only on the 
+workable 8248 target with USB 1.1 driver, 
+it would have such a phenomena. There was 
+even a network error displayed. If working
+with USB 2.0, no any problem. New to me:-)
+
+But Well, I don't have the guts
+to say this is a kernel's bug:-)
+
+> Sorry to distrub you during Christmas Time.
+
+OK, stay on relax, pls.
+
+Best regards,
+
+Sam
+
+__________________________________________________
+∏œøÏ◊¢≤·—≈ª¢≥¨¥Û»›¡ø√‚∑—” œ‰?
+http://cn.mail.yahoo.com
