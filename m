@@ -2,17 +2,17 @@ Return-Path: <grant.likely@secretlab.ca>
 Received: from localhost.localdomain (S0106001346b91f0f.cg.shawcable.net
 	[68.147.210.21]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 597B868987
+	by ozlabs.org (Postfix) with ESMTP id 89AF46898A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Dec 2005 21:51:20 +1100 (EST)
+	Fri, 30 Dec 2005 21:51:23 +1100 (EST)
 In-Reply-To: <11359385973413-git-send-email-grant.likely@secretlab.ca>
 Date: Fri, 30 Dec 2005 03:29:58 -0700
-Message-Id: <11359385981911-git-send-email-grant.likely@secretlab.ca>
+Message-Id: <1135938598732-git-send-email-grant.likely@secretlab.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: mporter@kernel.crashing.org, linuxppc-embedded@ozlabs.org
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 3/8] Generalize Xilinx Virtex-II/IV support files
+Subject: [PATCH 4/8] Add Virtex-4 FX to cpu table
 Reply-To: Grant Likely <grant.likely@secretlab.ca>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,436 +24,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The PPC405 hard core is used in both the Virtex-II Pro and Virtex 4 FX
-FPGAs.  This patch cleans up the Virtex naming convention to reflect more
-than just the Virtex-II Pro.
-
-Rename files virtex-ii_pro.[ch] to virtex.[ch]
-Rename config value VIRTEX_II_PRO to XILINX_VIRTEX
+Add Virtex-4 FX to cpu table
 
 Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
 
 ---
 
- arch/ppc/platforms/4xx/Kconfig         |    2 -
- arch/ppc/platforms/4xx/Makefile        |    2 -
- arch/ppc/platforms/4xx/virtex-ii_pro.c |   60 -------------------
- arch/ppc/platforms/4xx/virtex-ii_pro.h |   99 --------------------------------
- arch/ppc/platforms/4xx/virtex.c        |   60 +++++++++++++++++++
- arch/ppc/platforms/4xx/virtex.h        |   99 ++++++++++++++++++++++++++++++++
- arch/ppc/platforms/4xx/xilinx_ml300.c  |    2 -
- arch/ppc/platforms/4xx/xilinx_ml300.h  |    2 -
- arch/ppc/syslib/Makefile               |    2 -
- 9 files changed, 164 insertions(+), 164 deletions(-)
- delete mode 100644 arch/ppc/platforms/4xx/virtex-ii_pro.c
- delete mode 100644 arch/ppc/platforms/4xx/virtex-ii_pro.h
- create mode 100644 arch/ppc/platforms/4xx/virtex.c
- create mode 100644 arch/ppc/platforms/4xx/virtex.h
+ arch/ppc/kernel/cputable.c |   13 ++++++++++++-
+ 1 files changed, 12 insertions(+), 1 deletions(-)
 
-515b355e603129ac51da756f397365703a1742fd
-diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
-index 76f4476..7711d2a 100644
---- a/arch/ppc/platforms/4xx/Kconfig
-+++ b/arch/ppc/platforms/4xx/Kconfig
-@@ -197,7 +197,7 @@ config 405GPR
- 	depends on SYCAMORE
- 	default y
- 
--config VIRTEX_II_PRO
-+config XILINX_VIRTEX
- 	bool
- 	depends on XILINX_ML300
- 	default y
-diff --git a/arch/ppc/platforms/4xx/Makefile b/arch/ppc/platforms/4xx/Makefile
-index 1dd6d7f..4db749d 100644
---- a/arch/ppc/platforms/4xx/Makefile
-+++ b/arch/ppc/platforms/4xx/Makefile
-@@ -24,4 +24,4 @@ obj-$(CONFIG_440GX)		+= ibm440gx.o
- obj-$(CONFIG_440SP)		+= ibm440sp.o
- obj-$(CONFIG_405EP)		+= ibm405ep.o
- obj-$(CONFIG_405GPR)		+= ibm405gpr.o
--obj-$(CONFIG_VIRTEX_II_PRO)	+= virtex-ii_pro.o
-+obj-$(CONFIG_XILINX_VIRTEX)	+= virtex.o
-diff --git a/arch/ppc/platforms/4xx/virtex-ii_pro.c b/arch/ppc/platforms/4xx/virtex-ii_pro.c
-deleted file mode 100644
-index 097cc9d..0000000
---- a/arch/ppc/platforms/4xx/virtex-ii_pro.c
-+++ /dev/null
-@@ -1,60 +0,0 @@
--/*
-- * arch/ppc/platforms/4xx/virtex-ii_pro.c
-- *
-- * Author: MontaVista Software, Inc.
-- *         source@mvista.com
-- *
-- * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed under the
-- * terms of the GNU General Public License version 2.  This program is licensed
-- * "as is" without any warranty of any kind, whether express or implied.
-- */
--
--#include <linux/config.h>
--#include <linux/init.h>
--#include <asm/ocp.h>
--#include "virtex-ii_pro.h"
--
--/* Have OCP take care of the serial ports. */
--struct ocp_def core_ocp[] = {
--#ifdef XPAR_UARTNS550_0_BASEADDR
--	{ .vendor	= OCP_VENDOR_XILINX,
--	  .function	= OCP_FUNC_16550,
--	  .index	= 0,
--	  .paddr	= XPAR_UARTNS550_0_BASEADDR,
--	  .irq		= XPAR_INTC_0_UARTNS550_0_VEC_ID,
--	  .pm		= OCP_CPM_NA
--	},
--#ifdef XPAR_UARTNS550_1_BASEADDR
--	{ .vendor	= OCP_VENDOR_XILINX,
--	  .function	= OCP_FUNC_16550,
--	  .index	= 1,
--	  .paddr	= XPAR_UARTNS550_1_BASEADDR,
--	  .irq		= XPAR_INTC_0_UARTNS550_1_VEC_ID,
--	  .pm		= OCP_CPM_NA
--	},
--#ifdef XPAR_UARTNS550_2_BASEADDR
--	{ .vendor	= OCP_VENDOR_XILINX,
--	  .function	= OCP_FUNC_16550,
--	  .index	= 2,
--	  .paddr	= XPAR_UARTNS550_2_BASEADDR,
--	  .irq		= XPAR_INTC_0_UARTNS550_2_VEC_ID,
--	  .pm		= OCP_CPM_NA
--	},
--#ifdef XPAR_UARTNS550_3_BASEADDR
--	{ .vendor	= OCP_VENDOR_XILINX,
--	  .function	= OCP_FUNC_16550,
--	  .index	= 3,
--	  .paddr	= XPAR_UARTNS550_3_BASEADDR,
--	  .irq		= XPAR_INTC_0_UARTNS550_3_VEC_ID,
--	  .pm		= OCP_CPM_NA
--	},
--#ifdef XPAR_UARTNS550_4_BASEADDR
--#error Edit this file to add more devices.
--#endif			/* 4 */
--#endif			/* 3 */
--#endif			/* 2 */
--#endif			/* 1 */
--#endif			/* 0 */
--	{ .vendor	= OCP_VENDOR_INVALID
--	}
--};
-diff --git a/arch/ppc/platforms/4xx/virtex-ii_pro.h b/arch/ppc/platforms/4xx/virtex-ii_pro.h
-deleted file mode 100644
-index 026130c..0000000
---- a/arch/ppc/platforms/4xx/virtex-ii_pro.h
-+++ /dev/null
-@@ -1,99 +0,0 @@
--/*
-- * arch/ppc/platforms/4xx/virtex-ii_pro.h
-- *
-- * Include file that defines the Xilinx Virtex-II Pro processor
-- *
-- * Author: MontaVista Software, Inc.
-- *         source@mvista.com
-- *
-- * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed under the
-- * terms of the GNU General Public License version 2.  This program is licensed
-- * "as is" without any warranty of any kind, whether express or implied.
-- */
--
--#ifdef __KERNEL__
--#ifndef __ASM_VIRTEXIIPRO_H__
--#define __ASM_VIRTEXIIPRO_H__
--
--#include <linux/config.h>
--#include <platforms/4xx/xparameters/xparameters.h>
--
--/* serial defines */
--
--#define RS_TABLE_SIZE  4	/* change this and add more devices below
--				   if you have more then 4 16x50 UARTs */
--
--#define BASE_BAUD		(XPAR_UARTNS550_0_CLOCK_FREQ_HZ/16)
--
--/* The serial ports in the Virtex-II Pro have each I/O byte in the
-- * LSByte of a word.  This means that iomem_reg_shift needs to be 2 to
-- * change the byte offsets into word offsets.  In addition the base
-- * addresses need to have 3 added to them to get to the LSByte.
-- */
--#define STD_UART_OP(num)						 \
--	{ 0, BASE_BAUD, 0, XPAR_INTC_0_UARTNS550_##num##_VEC_ID,	 \
--		ASYNC_BOOT_AUTOCONF,		 			 \
--		.iomem_base = (u8 *)XPAR_UARTNS550_##num##_BASEADDR + 3, \
--		.iomem_reg_shift = 2,					 \
--		.io_type = SERIAL_IO_MEM},
--
--#if defined(XPAR_INTC_0_UARTNS550_0_VEC_ID)
--#define ML300_UART0 STD_UART_OP(0)
--#else
--#define ML300_UART0
--#endif
--
--#if defined(XPAR_INTC_0_UARTNS550_1_VEC_ID)
--#define ML300_UART1 STD_UART_OP(1)
--#else
--#define ML300_UART1
--#endif
--
--#if defined(XPAR_INTC_0_UARTNS550_2_VEC_ID)
--#define ML300_UART2 STD_UART_OP(2)
--#else
--#define ML300_UART2
--#endif
--
--#if defined(XPAR_INTC_0_UARTNS550_3_VEC_ID)
--#define ML300_UART3 STD_UART_OP(3)
--#else
--#define ML300_UART3
--#endif
--
--#if defined(XPAR_INTC_0_UARTNS550_4_VEC_ID)
--#error Edit this file to add more devices.
--#elif defined(XPAR_INTC_0_UARTNS550_3_VEC_ID)
--#define NR_SER_PORTS	4
--#elif defined(XPAR_INTC_0_UARTNS550_2_VEC_ID)
--#define NR_SER_PORTS	3
--#elif defined(XPAR_INTC_0_UARTNS550_1_VEC_ID)
--#define NR_SER_PORTS	2
--#elif defined(XPAR_INTC_0_UARTNS550_0_VEC_ID)
--#define NR_SER_PORTS	1
--#else
--#define NR_SER_PORTS	0
--#endif
--
--#if defined(CONFIG_UART0_TTYS0)
--#define SERIAL_PORT_DFNS	\
--	ML300_UART0		\
--	ML300_UART1		\
--	ML300_UART2		\
--	ML300_UART3
--#endif
--
--#if defined(CONFIG_UART0_TTYS1)
--#define SERIAL_PORT_DFNS	\
--	ML300_UART1		\
--	ML300_UART0		\
--	ML300_UART2		\
--	ML300_UART3
--#endif
--
--#define DCRN_CPMFR_BASE	0
--
--#include <asm/ibm405.h>
--
--#endif				/* __ASM_VIRTEXIIPRO_H__ */
--#endif				/* __KERNEL__ */
-diff --git a/arch/ppc/platforms/4xx/virtex.c b/arch/ppc/platforms/4xx/virtex.c
-new file mode 100644
-index 0000000..1de7a27
---- /dev/null
-+++ b/arch/ppc/platforms/4xx/virtex.c
-@@ -0,0 +1,60 @@
-+/*
-+ * arch/ppc/platforms/4xx/virtex.c
-+ *
-+ * Author: MontaVista Software, Inc.
-+ *         source@mvista.com
-+ *
-+ * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed under the
-+ * terms of the GNU General Public License version 2.  This program is licensed
-+ * "as is" without any warranty of any kind, whether express or implied.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/init.h>
-+#include <asm/ocp.h>
-+#include <platform/4xx/virtex.h>
-+
-+/* Have OCP take care of the serial ports. */
-+struct ocp_def core_ocp[] = {
-+#ifdef XPAR_UARTNS550_0_BASEADDR
-+	{ .vendor	= OCP_VENDOR_XILINX,
-+	  .function	= OCP_FUNC_16550,
-+	  .index	= 0,
-+	  .paddr	= XPAR_UARTNS550_0_BASEADDR,
-+	  .irq		= XPAR_INTC_0_UARTNS550_0_VEC_ID,
-+	  .pm		= OCP_CPM_NA
+e42625e6e14442f0b315699d872ccc4cc3d4d49d
+diff --git a/arch/ppc/kernel/cputable.c b/arch/ppc/kernel/cputable.c
+index 6b76cf5..7f3faf1 100644
+--- a/arch/ppc/kernel/cputable.c
++++ b/arch/ppc/kernel/cputable.c
+@@ -859,7 +859,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.dcache_bsize		= 32,
+ 	},
+ 	{	/* Xilinx Virtex-II Pro  */
+-		.pvr_mask		= 0xffff0000,
++		.pvr_mask		= 0xfffff000,
+ 		.pvr_value		= 0x20010000,
+ 		.cpu_name		= "Virtex-II Pro",
+ 		.cpu_features		= CPU_FTR_SPLIT_ID_CACHE |
+@@ -869,6 +869,17 @@ struct cpu_spec	cpu_specs[] = {
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 	},
++	{	/* Xilinx Virtex-4  */
++		.pvr_mask		= 0xfffff000,
++		.pvr_value		= 0x20011000,
++		.cpu_name		= "Virtex-4 FX",
++		.cpu_features		= CPU_FTR_SPLIT_ID_CACHE |
++			CPU_FTR_USE_TB,
++		.cpu_user_features	= PPC_FEATURE_32 |
++			PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
 +	},
-+#ifdef XPAR_UARTNS550_1_BASEADDR
-+	{ .vendor	= OCP_VENDOR_XILINX,
-+	  .function	= OCP_FUNC_16550,
-+	  .index	= 1,
-+	  .paddr	= XPAR_UARTNS550_1_BASEADDR,
-+	  .irq		= XPAR_INTC_0_UARTNS550_1_VEC_ID,
-+	  .pm		= OCP_CPM_NA
-+	},
-+#ifdef XPAR_UARTNS550_2_BASEADDR
-+	{ .vendor	= OCP_VENDOR_XILINX,
-+	  .function	= OCP_FUNC_16550,
-+	  .index	= 2,
-+	  .paddr	= XPAR_UARTNS550_2_BASEADDR,
-+	  .irq		= XPAR_INTC_0_UARTNS550_2_VEC_ID,
-+	  .pm		= OCP_CPM_NA
-+	},
-+#ifdef XPAR_UARTNS550_3_BASEADDR
-+	{ .vendor	= OCP_VENDOR_XILINX,
-+	  .function	= OCP_FUNC_16550,
-+	  .index	= 3,
-+	  .paddr	= XPAR_UARTNS550_3_BASEADDR,
-+	  .irq		= XPAR_INTC_0_UARTNS550_3_VEC_ID,
-+	  .pm		= OCP_CPM_NA
-+	},
-+#ifdef XPAR_UARTNS550_4_BASEADDR
-+#error Edit this file to add more devices.
-+#endif			/* 4 */
-+#endif			/* 3 */
-+#endif			/* 2 */
-+#endif			/* 1 */
-+#endif			/* 0 */
-+	{ .vendor	= OCP_VENDOR_INVALID
-+	}
-+};
-diff --git a/arch/ppc/platforms/4xx/virtex.h b/arch/ppc/platforms/4xx/virtex.h
-new file mode 100644
-index 0000000..049c767
---- /dev/null
-+++ b/arch/ppc/platforms/4xx/virtex.h
-@@ -0,0 +1,99 @@
-+/*
-+ * arch/ppc/platforms/4xx/virtex.h
-+ *
-+ * Include file that defines the Xilinx Virtex-II Pro processor
-+ *
-+ * Author: MontaVista Software, Inc.
-+ *         source@mvista.com
-+ *
-+ * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed under the
-+ * terms of the GNU General Public License version 2.  This program is licensed
-+ * "as is" without any warranty of any kind, whether express or implied.
-+ */
-+
-+#ifdef __KERNEL__
-+#ifndef __ASM_VIRTEX_H__
-+#define __ASM_VIRTEX_H__
-+
-+#include <linux/config.h>
-+#include <platforms/4xx/xparameters/xparameters.h>
-+
-+/* serial defines */
-+
-+#define RS_TABLE_SIZE  4	/* change this and add more devices below
-+				   if you have more then 4 16x50 UARTs */
-+
-+#define BASE_BAUD		(XPAR_UARTNS550_0_CLOCK_FREQ_HZ/16)
-+
-+/* The serial ports in the Virtex-II Pro have each I/O byte in the
-+ * LSByte of a word.  This means that iomem_reg_shift needs to be 2 to
-+ * change the byte offsets into word offsets.  In addition the base
-+ * addresses need to have 3 added to them to get to the LSByte.
-+ */
-+#define STD_UART_OP(num)						 \
-+	{ 0, BASE_BAUD, 0, XPAR_INTC_0_UARTNS550_##num##_VEC_ID,	 \
-+		ASYNC_BOOT_AUTOCONF,		 			 \
-+		.iomem_base = (u8 *)XPAR_UARTNS550_##num##_BASEADDR + 3, \
-+		.iomem_reg_shift = 2,					 \
-+		.io_type = SERIAL_IO_MEM},
-+
-+#if defined(XPAR_INTC_0_UARTNS550_0_VEC_ID)
-+#define ML300_UART0 STD_UART_OP(0)
-+#else
-+#define ML300_UART0
-+#endif
-+
-+#if defined(XPAR_INTC_0_UARTNS550_1_VEC_ID)
-+#define ML300_UART1 STD_UART_OP(1)
-+#else
-+#define ML300_UART1
-+#endif
-+
-+#if defined(XPAR_INTC_0_UARTNS550_2_VEC_ID)
-+#define ML300_UART2 STD_UART_OP(2)
-+#else
-+#define ML300_UART2
-+#endif
-+
-+#if defined(XPAR_INTC_0_UARTNS550_3_VEC_ID)
-+#define ML300_UART3 STD_UART_OP(3)
-+#else
-+#define ML300_UART3
-+#endif
-+
-+#if defined(XPAR_INTC_0_UARTNS550_4_VEC_ID)
-+#error Edit this file to add more devices.
-+#elif defined(XPAR_INTC_0_UARTNS550_3_VEC_ID)
-+#define NR_SER_PORTS	4
-+#elif defined(XPAR_INTC_0_UARTNS550_2_VEC_ID)
-+#define NR_SER_PORTS	3
-+#elif defined(XPAR_INTC_0_UARTNS550_1_VEC_ID)
-+#define NR_SER_PORTS	2
-+#elif defined(XPAR_INTC_0_UARTNS550_0_VEC_ID)
-+#define NR_SER_PORTS	1
-+#else
-+#define NR_SER_PORTS	0
-+#endif
-+
-+#if defined(CONFIG_UART0_TTYS0)
-+#define SERIAL_PORT_DFNS	\
-+	ML300_UART0		\
-+	ML300_UART1		\
-+	ML300_UART2		\
-+	ML300_UART3
-+#endif
-+
-+#if defined(CONFIG_UART0_TTYS1)
-+#define SERIAL_PORT_DFNS	\
-+	ML300_UART1		\
-+	ML300_UART0		\
-+	ML300_UART2		\
-+	ML300_UART3
-+#endif
-+
-+#define DCRN_CPMFR_BASE	0
-+
-+#include <asm/ibm405.h>
-+
-+#endif				/* __ASM_VIRTEX_H__ */
-+#endif				/* __KERNEL__ */
-diff --git a/arch/ppc/platforms/4xx/xilinx_ml300.c b/arch/ppc/platforms/4xx/xilinx_ml300.c
-index 0b1b77d..b0de0a2 100644
---- a/arch/ppc/platforms/4xx/xilinx_ml300.c
-+++ b/arch/ppc/platforms/4xx/xilinx_ml300.c
-@@ -22,7 +22,7 @@
- #include <asm/machdep.h>
- #include <asm/ocp.h>
- 
--#include <platforms/4xx/virtex-ii_pro.h>	/* for NR_SER_PORTS */
-+#include <platforms/4xx/virtex.h>	/* for NR_SER_PORTS */
- 
- /*
-  * As an overview of how the following functions (platform_init,
-diff --git a/arch/ppc/platforms/4xx/xilinx_ml300.h b/arch/ppc/platforms/4xx/xilinx_ml300.h
-index f8c5884..8993981 100644
---- a/arch/ppc/platforms/4xx/xilinx_ml300.h
-+++ b/arch/ppc/platforms/4xx/xilinx_ml300.h
-@@ -16,7 +16,7 @@
- #define __ASM_XILINX_ML300_H__
- 
- /* ML300 has a Xilinx Virtex-II Pro processor */
--#include <platforms/4xx/virtex-ii_pro.h>
-+#include <platforms/4xx/virtex.h>
- 
- #ifndef __ASSEMBLY__
- 
-diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
-index b8d08f3..5ceb27b 100644
---- a/arch/ppc/syslib/Makefile
-+++ b/arch/ppc/syslib/Makefile
-@@ -16,7 +16,7 @@ obj-$(CONFIG_440GP)		+= ibm440gp_common.
- obj-$(CONFIG_440GX)		+= ibm440gx_common.o
- obj-$(CONFIG_440SP)		+= ibm440gx_common.o ibm440sp_common.o
- ifeq ($(CONFIG_4xx),y)
--ifeq ($(CONFIG_VIRTEX_II_PRO),y)
-+ifeq ($(CONFIG_XILINX_VIRTEX),y)
- obj-$(CONFIG_40x)		+= xilinx_pic.o
- else
- ifeq ($(CONFIG_403),y)
+ 	{	/* 405EP */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x51210000,
 -- 
 1.0.6-g58e3
