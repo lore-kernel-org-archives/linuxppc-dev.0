@@ -1,20 +1,19 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 025CA6892B
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A8C5F68962
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 31 Dec 2005 08:09:29 +1100 (EST)
-Date: Fri, 30 Dec 2005 22:10:18 +0100
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: The Linux Socket CAN Framework <socket-can@pengutronix.de>
-Message-ID: <20051230211018.GL19375@pengutronix.de>
-References: <0BC6CCCB3D723E468B124BF3115CC912361D2E@vwagwox00010.vw.vwg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <0BC6CCCB3D723E468B124BF3115CC912361D2E@vwagwox00010.vw.vwg>
-Sender: Robert Schwebel <rsc@pengutronix.de>
-Cc: linuxppc-embedded@ozlabs.org, David Jander <david.jander@protonic.nl>,
-	"Thuermann, Urs, Dr. \(K-GEFE/I\)" <urs.thuermann@volkswagen.de>
-Subject: Re: [Socket-can] Re: Which CAN driver to port to for PPC
+	Sat, 31 Dec 2005 08:13:55 +1100 (EST)
+To: Theo Gjaltema <gjalt007@chello.nl>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 29 Dec 2005 22:48:53 +0100."
+	<43B459C5.1060206@chello.nl>
+Date: Fri, 30 Dec 2005 22:13:52 +0100
+Sender: wd@denx.de
+Message-Id: <20051230211352.D73E7352597@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: eldk bug?how to fix 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,45 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Oliver, 
+In message <43B459C5.1060206@chello.nl> you wrote:
+>
+> I've seen these messages before. They were gone when I compiled using
+> ppc_8xx-gcc compiler of a different ELDK version.
+> What version of ELDK are you using? Which gcc version?
 
-On Fri, Dec 30, 2005 at 07:00:54PM +0100, Hartkopp, Oliver (K-GEFE/E)
-wrote:
-> > As Robert said, it "just" requires some resources for implementing
-> > this... ;)
-> 
-> I'm looking forward to create this CAN-HW-abstraction layer with Jan
-> and Robert, as i assume the required ressources to be melting down
-> after a initial work that is done together in the approved way. After
-> this is defined, it shall be very easy for driver developers to make
-> their CAN-HW work as netdevice / RTDM-device. So every work is just
-> done once.
+This has nothing to do with ELDK versions,  or  any  other  toolchain
+issues.
 
-Writing device drivers will be easy - Sascha has done drivers for
-SJA1000 based boards in less than a day and for completely new and
-braindamaged chips in less than a week.  
+> >[root@localhost atmlz]# ppc_6xx-gcc -c -o temp atm_aalx.c         
+> >atm_aalx.c: In function `main':                                   
+> >atm_aalx.c:201: warning: return type of `main' is not `int'       
+> >/tmp/cciJlehe.s: Assembler messages:                              
+> >/tmp/cciJlehe.s:916: Error: unsupported relocation against r3     
+...
+> >         mfmsr r3                  
+> >         ori r3,r3,0x8000          
+> >         andi. r3,r3,0xffbf        
+> >         mtmsr r3                  
 
-The _real_ work will be on the infrastructure side; to be useful for a
-wider audience the existing code has to be forward ported to the latest
-2.6 trees and it has to be ported to use modern kernel techniques; even
-our 2.6 code suffers a bit from it's history and doesn't use all the
-mechanisms the kernel offers today.
+It's a user only problem (using symbolic names like  "r3"  in  inline
+assember  statements  without  incuding  the  proper  header files to
+resolve thise names).
 
-We surely could do this, especially Marc and Sascha have quite some
-experience with CAN and the network stack, but as always the rule is
-that paying customers come first. So as long as there is nobody
-sponsoring this project we will work on it only in our sparetime. 
+Best regards,
 
-> Finally i wish you a happy new year in advance! May 2006 be the year
-> of excellent (and settled) CAN-concepts inside the Linux kernel for
-> all of us ;-)
+Wolfgang Denk
 
-Let's hope this! :-)
-
-Robert
 -- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+We fight only when there is no other choice. We prefer  the  ways  of
+peaceful contact.
+	-- Kirk, "Spectre of the Gun", stardate 4385.3
