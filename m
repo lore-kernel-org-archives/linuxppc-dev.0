@@ -2,17 +2,17 @@ Return-Path: <grant.likely@secretlab.ca>
 Received: from localhost.localdomain (S0106001346b91f0f.cg.shawcable.net
 	[68.147.210.21]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A69C868949
+	by ozlabs.org (Postfix) with ESMTP id 0A25368968
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Dec 2005 21:50:56 +1100 (EST)
+	Fri, 30 Dec 2005 21:50:59 +1100 (EST)
 In-Reply-To: <11359385973413-git-send-email-grant.likely@secretlab.ca>
 Date: Fri, 30 Dec 2005 03:29:59 -0700
-Message-Id: <11359385991901-git-send-email-grant.likely@secretlab.ca>
+Message-Id: <1135938599543-git-send-email-grant.likely@secretlab.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: mporter@kernel.crashing.org, linuxppc-embedded@ozlabs.org
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 8/8] Add support for Xilinx ML403 reference design
+Subject: [PATCH 7/8] Migrate ML300 reference design to the platform bus
 Reply-To: Grant Likely <grant.likely@secretlab.ca>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,205 +24,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add support for Xilinx ML403 reference design
+Migrate ML300 reference design to the platform bus
 
 Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
 
 ---
 
- arch/ppc/boot/simple/embed_config.c              |   41 +++++
- arch/ppc/platforms/4xx/Kconfig                   |    8 +
- arch/ppc/platforms/4xx/Makefile                  |    2 
- arch/ppc/platforms/4xx/xilinx_ml403.c            |  177 ++++++++++++++++++++++
- arch/ppc/platforms/4xx/xilinx_ml403.h            |   49 ++++++
- arch/ppc/platforms/4xx/xparameters/xparameters.h |   13 ++
- include/asm-ppc/ibm4xx.h                         |    4 
- 7 files changed, 291 insertions(+), 3 deletions(-)
- create mode 100644 arch/ppc/platforms/4xx/xilinx_ml403.c
- create mode 100644 arch/ppc/platforms/4xx/xilinx_ml403.h
+ arch/ppc/Kconfig.debug                |    2 -
+ arch/ppc/platforms/4xx/xilinx_ml300.c |   74 +++++++++++++++++++++++----------
+ arch/ppc/platforms/4xx/xilinx_ml300.h |    2 -
+ arch/ppc/syslib/Makefile              |    2 -
+ arch/ppc/syslib/xilinx_pic.c          |   10 ++--
+ 5 files changed, 60 insertions(+), 30 deletions(-)
 
-03eaaad1784a4094cecd57f3aafbfe8832742505
-diff --git a/arch/ppc/boot/simple/embed_config.c b/arch/ppc/boot/simple/embed_config.c
-index df24202..0172eb0 100644
---- a/arch/ppc/boot/simple/embed_config.c
-+++ b/arch/ppc/boot/simple/embed_config.c
-@@ -745,7 +745,7 @@ embed_config(bd_t **bdp)
- }
- #endif /* WILLOW */
+973d3c2f229847e2e8e04999c1aa07b04f4c0234
+diff --git a/arch/ppc/Kconfig.debug b/arch/ppc/Kconfig.debug
+index 61653cb..8cc75ab 100644
+--- a/arch/ppc/Kconfig.debug
++++ b/arch/ppc/Kconfig.debug
+@@ -67,7 +67,7 @@ config SERIAL_TEXT_DEBUG
  
--#ifdef CONFIG_XILINX_ML300
-+#if defined(CONFIG_XILINX_ML300)
- void
- embed_config(bd_t ** bdp)
- {
-@@ -784,6 +784,45 @@ embed_config(bd_t ** bdp)
- }
- #endif /* CONFIG_XILINX_ML300 */
- 
-+#if defined(CONFIG_XILINX_ML403)
-+void
-+embed_config(bd_t ** bdp)
-+{
-+	static const unsigned long line_size = 32;
-+	static const unsigned long congruence_classes = 256;
-+	unsigned long addr;
-+	unsigned long dccr;
-+	bd_t *bd;
-+
-+	/*
-+	 * Invalidate the data cache if the data cache is turned off.
-+	 * - The 405 core does not invalidate the data cache on power-up
-+	 *   or reset but does turn off the data cache. We cannot assume
-+	 *   that the cache contents are valid.
-+	 * - If the data cache is turned on this must have been done by
-+	 *   a bootloader and we assume that the cache contents are
-+	 *   valid.
-+	 */
-+	__asm__("mfdccr %0": "=r" (dccr));
-+	if (dccr == 0) {
-+		for (addr = 0;
-+		     addr < (congruence_classes * line_size);
-+		     addr += line_size) {
-+			__asm__("dccci 0,%0": :"b"(addr));
-+		}
-+	}
-+
-+	bd = &bdinfo;
-+	*bdp = bd;
-+	bd->bi_memsize = XPAR_PLB_DDR_0_MEM0_HIGHADDR + 1;
-+	bd->bi_intfreq = XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ;
-+	bd->bi_busfreq = XPAR_XUARTNS550_CLOCK_HZ;
-+	bd->bi_pci_busfreq = 0;
-+	timebase_period_ns = 1000000000 / bd->bi_tbfreq;
-+	/* see bi_tbfreq definition in arch/ppc/platforms/4xx/xilinx_ml300.h */
-+}
-+#endif /* CONFIG_XILINX_ML403 */
-+
- #ifdef CONFIG_IBM_OPENBIOS
- /* This could possibly work for all treeboot roms.
- */
-diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
-index 266280c..f7a5848 100644
---- a/arch/ppc/platforms/4xx/Kconfig
-+++ b/arch/ppc/platforms/4xx/Kconfig
-@@ -57,6 +57,10 @@ config XILINX_ML300
- 	help
- 	  This option enables support for the Xilinx ML300 evaluation board.
- 
-+config XILINX_ML403
-+	bool "Xilinx-ML403"
-+	help
-+	  This option enables support for the Xilinx ML403 evaluation board.
- endchoice
- 
- choice
-@@ -194,7 +198,7 @@ config 405GPR
- 
- config XILINX_VIRTEX
+ config PPC_OCP
  	bool
--	depends on XILINX_ML300
-+	depends on XILINX_ML300 || XILINX_ML403
+-	depends on IBM_OCP || XILINX_OCP
++	depends on IBM_OCP
  	default y
  
- config STB03xxx
-@@ -204,7 +208,7 @@ config STB03xxx
- 
- config EMBEDDEDBOOT
- 	bool
--	depends on EP405 || XILINX_ML300
-+	depends on EP405 || XILINX_ML300 || XILINX_ML403
- 	default y
- 
- config IBM_OPENBIOS
-diff --git a/arch/ppc/platforms/4xx/Makefile b/arch/ppc/platforms/4xx/Makefile
-index 4db749d..9dd5629 100644
---- a/arch/ppc/platforms/4xx/Makefile
-+++ b/arch/ppc/platforms/4xx/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_REDWOOD_6)		+= redwood6.o
- obj-$(CONFIG_SYCAMORE)		+= sycamore.o
- obj-$(CONFIG_WALNUT)		+= walnut.o
- obj-$(CONFIG_XILINX_ML300)	+= xilinx_ml300.o
-+obj-$(CONFIG_XILINX_ML403)	+= xilinx_ml403.o
- 
- obj-$(CONFIG_405GP)		+= ibm405gp.o
- obj-$(CONFIG_REDWOOD_5)		+= ibmstb4.o
-@@ -25,3 +26,4 @@ obj-$(CONFIG_440SP)		+= ibm440sp.o
- obj-$(CONFIG_405EP)		+= ibm405ep.o
- obj-$(CONFIG_405GPR)		+= ibm405gpr.o
- obj-$(CONFIG_XILINX_VIRTEX)	+= virtex.o
-+
-diff --git a/arch/ppc/platforms/4xx/xilinx_ml403.c b/arch/ppc/platforms/4xx/xilinx_ml403.c
-new file mode 100644
-index 0000000..4c0c7e4
---- /dev/null
-+++ b/arch/ppc/platforms/4xx/xilinx_ml403.c
-@@ -0,0 +1,177 @@
-+/*
-+ * arch/ppc/platforms/4xx/xilinx_ml403.c
-+ *
-+ * Xilinx ML403 evaluation board initialization
-+ *
-+ * Author: Grant Likely <grant.likely@secretlab.ca>
-+ *
-+ * 2005 (c) Secret Lab Technologies Ltd.
-+ * 2002-2004 (c) MontaVista Software, Inc.
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/init.h>
-+#include <linux/irq.h>
-+#include <linux/tty.h>
-+#include <linux/serial.h>
-+#include <linux/serial_core.h>
+ endmenu
+diff --git a/arch/ppc/platforms/4xx/xilinx_ml300.c b/arch/ppc/platforms/4xx/xilinx_ml300.c
+index b0de0a2..267afb5 100644
+--- a/arch/ppc/platforms/4xx/xilinx_ml300.c
++++ b/arch/ppc/platforms/4xx/xilinx_ml300.c
+@@ -17,12 +17,14 @@
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
 +#include <linux/serial_8250.h>
-+#include <linux/serialP.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
+ #include <linux/serialP.h>
+ #include <asm/io.h>
+ #include <asm/machdep.h>
+-#include <asm/ocp.h>
 +#include <asm/ppc_sys.h>
-+
+ 
+-#include <platforms/4xx/virtex.h>	/* for NR_SER_PORTS */
 +#include <syslib/gen550.h>
 +#include <platforms/4xx/xparameters/xparameters.h>
-+
-+/*
-+ * As an overview of how the following functions (platform_init,
-+ * ml403_map_io, ml403_setup_arch and ml403_init_IRQ) fit into the
-+ * kernel startup procedure, here's a call tree:
-+ *
-+ * start_here					arch/ppc/kernel/head_4xx.S
-+ *  early_init					arch/ppc/kernel/setup.c
-+ *  machine_init				arch/ppc/kernel/setup.c
-+ *    platform_init				this file
-+ *      ppc4xx_init				arch/ppc/syslib/ppc4xx_setup.c
-+ *        parse_bootinfo
-+ *          find_bootinfo
-+ *        "setup some default ppc_md pointers"
-+ *  MMU_init					arch/ppc/mm/init.c
-+ *    *ppc_md.setup_io_mappings == ml403_map_io	this file
-+ *      ppc4xx_map_io				arch/ppc/syslib/ppc4xx_setup.c
-+ *  start_kernel				init/main.c
-+ *    setup_arch				arch/ppc/kernel/setup.c
-+ * #if defined(CONFIG_KGDB)
-+ *      *ppc_md.kgdb_map_scc() == gen550_kgdb_map_scc
-+ * #endif
-+ *      *ppc_md.setup_arch == ml403_setup_arch	this file
-+ *        ppc4xx_setup_arch			arch/ppc/syslib/ppc4xx_setup.c
-+ *          ppc4xx_find_bridges			arch/ppc/syslib/ppc405_pci.c
-+ *    init_IRQ					arch/ppc/kernel/irq.c
-+ *      *ppc_md.init_IRQ == ml403_init_IRQ	this file
-+ *        ppc4xx_init_IRQ			arch/ppc/syslib/ppc4xx_setup.c
-+ *          ppc4xx_pic_init			arch/ppc/syslib/xilinx_pic.c
-+ */
-+
+ 
+ /*
+  * As an overview of how the following functions (platform_init,
+@@ -54,6 +56,22 @@
+  *          ppc4xx_pic_init			arch/ppc/syslib/xilinx_pic.c
+  */
+ 
 +/* Board specifications structures */
 +struct ppc_sys_spec *cur_ppc_sys_spec;
 +struct ppc_sys_spec ppc_sys_specs[] = {
 +	{
 +		/* Only one entry, always assume the same design */
-+		.ppc_sys_name	= "Xilinx ML403 Reference Design",
++		.ppc_sys_name	= "Xilinx ML300 Reference Design",
 +		.mask 		= 0x00000000,
 +		.value 		= 0x00000000,
 +		.num_devices	= 1,
@@ -233,35 +92,16 @@ index 0000000..4c0c7e4
 +	},
 +};
 +
-+#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
-+
-+static volatile unsigned *powerdown_base =
-+    (volatile unsigned *) XPAR_POWER_0_POWERDOWN_BASEADDR;
-+
-+static void
-+xilinx_power_off(void)
-+{
-+	local_irq_disable();
-+	out_be32(powerdown_base, XPAR_POWER_0_POWERDOWN_VALUE);
-+	while (1) ;
-+}
-+#endif
-+
-+void __init
-+ml403_map_io(void)
-+{
-+	ppc4xx_map_io();
-+
-+#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
-+	powerdown_base = ioremap((unsigned long) powerdown_base,
-+				 XPAR_POWER_0_POWERDOWN_HIGHADDR -
-+				 XPAR_POWER_0_POWERDOWN_BASEADDR + 1);
-+#endif
-+}
-+
+ #if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
+ 
+ static volatile unsigned *powerdown_base =
+@@ -80,28 +98,39 @@ ml300_map_io(void)
+ #endif
+ }
+ 
 +/* Early serial support functions */
-+static void __init
-+ml403_early_serial_init(int num, struct plat_serial8250_port *pdata)
+ static void __init
++ml300_early_serial_init(int num, struct plat_serial8250_port *pdata)
 +{
 +#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
 +	struct uart_port serial_req;
@@ -279,9 +119,27 @@ index 0000000..4c0c7e4
 +}
 +
 +void __init
-+ml403_early_serial_map(void)
-+{
-+#ifdef CONFIG_SERIAL_8250
+ ml300_early_serial_map(void)
+ {
+ #ifdef CONFIG_SERIAL_8250
+-	struct serial_state old_ports[] = { SERIAL_PORT_DFNS };
+-	struct uart_port port;
+-	int i;
+-
+-	/* Setup ioremapped serial port access */
+-	for (i = 0; i < ARRAY_SIZE(old_ports); i++ ) {
+-		memset(&port, 0, sizeof(port));
+-		port.membase = ioremap((phys_addr_t)(old_ports[i].iomem_base), 16);
+-		port.irq = old_ports[i].irq;
+-		port.uartclk = old_ports[i].baud_base * 16;
+-		port.regshift = old_ports[i].iomem_reg_shift;
+-		port.iotype = SERIAL_IO_MEM;
+-		port.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
+-		port.line = i;
+-
+-		if (early_serial_setup(&port) != 0) {
+-			printk("Early serial init of port %d failed\n", i);
+-		}
 +	struct plat_serial8250_port *pdata;
 +	int i = 0;
 +
@@ -289,144 +147,89 @@ index 0000000..4c0c7e4
 +	while(pdata && pdata->flags)
 +	{
 +		pdata->membase = ioremap(pdata->mapbase, 0x100);
-+		ml403_early_serial_init(i, pdata);
++		ml300_early_serial_init(i, pdata);
 +		pdata++;
 +		i++;
-+	}
-+#endif /* CONFIG_SERIAL_8250 */
-+}
-+
-+void __init
-+ml403_setup_arch(void)
-+{
-+	ml403_early_serial_map();
+ 	}
+ #endif /* CONFIG_SERIAL_8250 */
+ }
+@@ -109,9 +138,8 @@ ml300_early_serial_map(void)
+ void __init
+ ml300_setup_arch(void)
+ {
+-	ppc4xx_setup_arch();	/* calls ppc4xx_find_bridges() */
+-
+ 	ml300_early_serial_map();
 +	ppc4xx_setup_arch();	/* calls ppc4xx_find_bridges() */
-+
-+	/* Identify the system */
-+	printk(KERN_INFO "Xilinx ML403 Reference System (Virtex-4 FX)\n");
-+}
-+
-+/* Called after board_setup_irq from ppc4xx_init_IRQ(). */
-+void __init
-+ml403_init_irq(void)
-+{
-+	ppc4xx_init_IRQ();
-+}
-+
-+void __init
-+platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+	      unsigned long r6, unsigned long r7)
-+{
-+	ppc4xx_init(r3, r4, r5, r6, r7);
-+
+ 
+ 	/* Identify the system */
+ 	printk(KERN_INFO "Xilinx Virtex-II Pro port\n");
+@@ -131,6 +159,8 @@ platform_init(unsigned long r3, unsigned
+ {
+ 	ppc4xx_init(r3, r4, r5, r6, r7);
+ 
 +	identify_ppc_sys_by_id(mfspr(SPRN_PVR));
 +
-+	ppc_md.setup_arch = ml403_setup_arch;
-+	ppc_md.setup_io_mappings = ml403_map_io;
-+	ppc_md.init_IRQ = ml403_init_irq;
-+
-+#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
-+	ppc_md.power_off = xilinx_power_off;
-+#endif
-+
-+#ifdef CONFIG_KGDB
-+	ppc_md.early_serial_map = ml403_early_serial_map;
-+#endif
-+}
-+
-diff --git a/arch/ppc/platforms/4xx/xilinx_ml403.h b/arch/ppc/platforms/4xx/xilinx_ml403.h
-new file mode 100644
-index 0000000..4735969
---- /dev/null
-+++ b/arch/ppc/platforms/4xx/xilinx_ml403.h
-@@ -0,0 +1,49 @@
-+/*
-+ * arch/ppc/platforms/4xx/xilinx_ml403.h
-+ *
-+ * Include file that defines the Xilinx ML403 reference design
-+ *
-+ * Author: Grant Likely <grant.likely@secretlab.ca>
-+ *
-+ * 2005 (c) Secret Lab Technologies Ltd.
-+ * 2002-2004 (c) MontaVista Software, Inc.
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#ifdef __KERNEL__
-+#ifndef __ASM_XILINX_ML403_H__
-+#define __ASM_XILINX_ML403_H__
-+
-+/* ML403 has a Xilinx Virtex-4 FPGA with a PPC405 hard core */
-+#include <platforms/4xx/virtex.h>
-+
-+#ifndef __ASSEMBLY__
-+
-+#include <linux/types.h>
-+
-+typedef struct board_info {
-+	unsigned int	 bi_memsize;		/* DRAM installed, in bytes */
-+	unsigned char	 bi_enetaddr[6];	/* Local Ethernet MAC address */
-+	unsigned int	 bi_intfreq;		/* Processor speed, in Hz */
-+	unsigned int	 bi_busfreq;		/* PLB Bus speed, in Hz */
-+	unsigned int	 bi_pci_busfreq;	/* PCI Bus speed, in Hz */
-+} bd_t;
-+
-+/* Some 4xx parts use a different timebase frequency from the internal clock.
-+*/
-+#define bi_tbfreq bi_intfreq
-+
-+#endif /* !__ASSEMBLY__ */
-+
-+/* We don't need anything mapped.  Size of zero will accomplish that. */
-+#define PPC4xx_ONB_IO_PADDR	0u
-+#define PPC4xx_ONB_IO_VADDR	0u
-+#define PPC4xx_ONB_IO_SIZE	0u
-+
-+#define PPC4xx_MACHINE_NAME "Xilinx ML403 Reference Design"
-+
-+#endif /* __ASM_XILINX_ML403_H__ */
-+#endif /* __KERNEL__ */
-diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-index 26ee822..22b0088 100644
---- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
-+++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-@@ -32,6 +32,19 @@
-   #define VIRTEX_INTC_BASEADDR           XPAR_DCR_INTC_0_BASEADDR
-   #define VIRTEX_INTC_KIND_OF_INTR       XPAR_DCR_INTC_0_KIND_OF_INTR
+ 	ppc_md.setup_arch = ml300_setup_arch;
+ 	ppc_md.setup_io_mappings = ml300_map_io;
+ 	ppc_md.init_IRQ = ml300_init_irq;
+diff --git a/arch/ppc/platforms/4xx/xilinx_ml300.h b/arch/ppc/platforms/4xx/xilinx_ml300.h
+index 8993981..ae8bf13 100644
+--- a/arch/ppc/platforms/4xx/xilinx_ml300.h
++++ b/arch/ppc/platforms/4xx/xilinx_ml300.h
+@@ -41,7 +41,7 @@ typedef struct board_info {
+ #define PPC4xx_ONB_IO_VADDR	0u
+ #define PPC4xx_ONB_IO_SIZE	0u
  
-+#elif defined(CONFIG_XILINX_ML403)
-+  #include "xparameters_ml403.h"
-+
-+  /* Serial ports */
-+  #define VIRTEX_UART_0_BASEADDR  (XPAR_OPB_UART16550_0_BASEADDR + 0x1000)
-+  #define VIRTEX_UART_0_IRQ  XPAR_OPB_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR
-+  #define VIRTEX_UART_0_CLK  XPAR_XUARTNS550_CLOCK_HZ
-+
-+  /* Values for setting up interrupt controller */
-+  #define VIRTEX_XINTC_USE_DCR           XPAR_XINTC_USE_DCR
-+  #define VIRTEX_INTC_BASEADDR           XPAR_OPB_INTC_0_BASEADDR
-+  #define VIRTEX_INTC_KIND_OF_INTR       XPAR_OPB_INTC_0_KIND_OF_INTR
-+
- #else
-   /* Add other board xparameter includes here before the #else */
-   #error No *_xparameters.h file included
-diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
-index e992369..c49c462 100644
---- a/include/asm-ppc/ibm4xx.h
-+++ b/include/asm-ppc/ibm4xx.h
-@@ -51,6 +51,10 @@
- #include <platforms/4xx/xilinx_ml300.h>
+-#define PPC4xx_MACHINE_NAME "Xilinx ML300"
++#define PPC4xx_MACHINE_NAME "Xilinx ML300 Reference System"
+ 
+ #endif /* __ASM_XILINX_ML300_H__ */
+ #endif /* __KERNEL__ */
+diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
+index 5ceb27b..ad9c0a8 100644
+--- a/arch/ppc/syslib/Makefile
++++ b/arch/ppc/syslib/Makefile
+@@ -17,7 +17,7 @@ obj-$(CONFIG_440GX)		+= ibm440gx_common.
+ obj-$(CONFIG_440SP)		+= ibm440gx_common.o ibm440sp_common.o
+ ifeq ($(CONFIG_4xx),y)
+ ifeq ($(CONFIG_XILINX_VIRTEX),y)
+-obj-$(CONFIG_40x)		+= xilinx_pic.o
++obj-$(CONFIG_40x)		+= xilinx_pic.o ppc_sys.o
+ else
+ ifeq ($(CONFIG_403),y)
+ obj-$(CONFIG_40x)		+= ppc403_pic.o
+diff --git a/arch/ppc/syslib/xilinx_pic.c b/arch/ppc/syslib/xilinx_pic.c
+index 38416d7..d947610 100644
+--- a/arch/ppc/syslib/xilinx_pic.c
++++ b/arch/ppc/syslib/xilinx_pic.c
+@@ -119,14 +119,14 @@ ppc4xx_pic_init(void)
+ #error NR_IRQS > 32 not supported
  #endif
  
-+#if defined(CONFIG_XILINX_ML403)
-+#include <platforms/4xx/xilinx_ml403.h>
-+#endif
-+
- #ifndef __ASSEMBLY__
+-#if XPAR_XINTC_USE_DCR == 0
+-	intc = ioremap(XPAR_INTC_0_BASEADDR, 32);
++#if VIRTEX_XINTC_USE_DCR == 0
++	intc = ioremap(VIRTEX_INTC_BASEADDR, 32);
  
- #ifdef CONFIG_40x
+ 	printk(KERN_INFO "Xilinx INTC #0 at 0x%08lX mapped to 0x%08lX\n",
+-	       (unsigned long) XPAR_INTC_0_BASEADDR, (unsigned long) intc);
++	       (unsigned long) VIRTEX_INTC_BASEADDR, (unsigned long) intc);
+ #else
+ 	printk(KERN_INFO "Xilinx INTC #0 at 0x%08lX (DCR)\n",
+-	       (unsigned long) XPAR_INTC_0_BASEADDR);
++	       (unsigned long) VIRTEX_INTC_BASEADDR);
+ #endif
+ 
+ 	/*
+@@ -146,7 +146,7 @@ ppc4xx_pic_init(void)
+ 	for (i = 0; i < NR_IRQS; ++i) {
+ 		irq_desc[i].handler = &xilinx_intc;
+ 
+-		if (XPAR_INTC_0_KIND_OF_INTR & (0x00000001 << i))
++		if (VIRTEX_INTC_KIND_OF_INTR & (0x00000001 << i))
+ 			irq_desc[i].status &= ~IRQ_LEVEL;
+ 		else
+ 			irq_desc[i].status |= IRQ_LEVEL;
 -- 
 1.0.6-g58e3
