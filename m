@@ -1,19 +1,19 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id A8C5F68962
+	by ozlabs.org (Postfix) with ESMTP id 1391C688F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 31 Dec 2005 08:13:55 +1100 (EST)
-To: Theo Gjaltema <gjalt007@chello.nl>
+	Sat, 31 Dec 2005 08:17:12 +1100 (EST)
+To: "Kiran Kumar.A" <kiranf5@lycos.com>
 From: Wolfgang Denk <wd@denx.de>
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 29 Dec 2005 22:48:53 +0100."
-	<43B459C5.1060206@chello.nl>
-Date: Fri, 30 Dec 2005 22:13:52 +0100
+In-reply-to: Your message of "Fri, 30 Dec 2005 06:21:11 EST."
+	<20051230112111.58191CA092@ws7-4.us4.outblaze.com>
+Date: Fri, 30 Dec 2005 22:17:10 +0100
 Sender: wd@denx.de
-Message-Id: <20051230211352.D73E7352597@atlas.denx.de>
+Message-Id: <20051230211710.72899352597@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: eldk bug?how to fix 
+Subject: Re: Regarding booting 440 gr board / ibm emac driver 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <43B459C5.1060206@chello.nl> you wrote:
+In message <20051230112111.58191CA092@ws7-4.us4.outblaze.com> you wrote:
 >
-> I've seen these messages before. They were gone when I compiled using
-> ppc_8xx-gcc compiler of a different ELDK version.
-> What version of ELDK are you using? Which gcc version?
+> This is kiran here. I'm working on 440GR (Yosemite) board to boot linux-2.6
+> .13.4.
 
-This has nothing to do with ELDK versions,  or  any  other  toolchain
-issues.
+Don't use old code. Please use the current version.
 
-> >[root@localhost atmlz]# ppc_6xx-gcc -c -o temp atm_aalx.c         
-> >atm_aalx.c: In function `main':                                   
-> >atm_aalx.c:201: warning: return type of `main' is not `int'       
-> >/tmp/cciJlehe.s: Assembler messages:                              
-> >/tmp/cciJlehe.s:916: Error: unsupported relocation against r3     
-...
-> >         mfmsr r3                  
-> >         ori r3,r3,0x8000          
-> >         andi. r3,r3,0xffbf        
-> >         mtmsr r3                  
+> What could be the issue? Do we need to modify the driver for MAC address is
+> sue??
 
-It's a user only problem (using symbolic names like  "r3"  in  inline
-assember  statements  without  incuding  the  proper  header files to
-resolve thise names).
+Just use current code. You can find ready to  run  binaries  and  the
+corresponding sources (git repository) on our server:
+
+ftp://ftp.denx.de/pub/u-boot/images/amcc/yosemite/u-boot.bin
+ftp://ftp.denx.de/pub/linux/images/amcc/yosemite/uImage
+and http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
+(git tag "DENX-2005-12-03-2208" or later).
 
 Best regards,
 
@@ -55,6 +49,5 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-We fight only when there is no other choice. We prefer  the  ways  of
-peaceful contact.
-	-- Kirk, "Spectre of the Gun", stardate 4385.3
+A Puritan is someone who is deathly afraid that  someone,  somewhere,
+is having fun.
