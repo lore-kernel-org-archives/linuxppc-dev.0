@@ -1,17 +1,25 @@
-Return-Path: <gjalt007@chello.nl>
-Received: from amsfep14-int.chello.nl (amsfep14-int.chello.nl [213.46.243.21])
-	by ozlabs.org (Postfix) with ESMTP id E70D168962
+Return-Path: <kiranf5@lycos.com>
+Received: from fallback.us4.outblaze.com (fallback.us4.outblaze.com
+	[205.158.62.120]) by ozlabs.org (Postfix) with ESMTP id 5A21C68968
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Dec 2005 09:07:42 +1100 (EST)
-Message-ID: <43B459C5.1060206@chello.nl>
-Date: Thu, 29 Dec 2005 22:48:53 +0100
-From: Theo Gjaltema <gjalt007@chello.nl>
+	Fri, 30 Dec 2005 22:55:01 +1100 (EST)
+Received: from webmail-outgoing.us4.outblaze.com
+	(webmail-outgoing.us4.outblaze.com [205.158.62.67])
+	by fallback.us4.outblaze.com (Postfix) with ESMTP id E718C1C05DD1
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 30 Dec 2005 11:21:15 +0000 (GMT)
+Received: from unknown (unknown [192.168.9.180])
+	by webmail-outgoing.us4.outblaze.com (Postfix) with QMQP id
+	D341A18002B7 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 30 Dec 2005 11:21:11 +0000 (GMT)
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-References: <4440987.1134894054475.JavaMail.postfix@mx3.mail.sohu.com>
-In-Reply-To: <4440987.1134894054475.JavaMail.postfix@mx3.mail.sohu.com>
-Content-Type: text/plain; charset=GB2312
-Subject: Re: eldk bug?how to fix
+From: "Kiran Kumar.A" <kiranf5@lycos.com>
+To: benh@kernel.crashing.org
+Date: Fri, 30 Dec 2005 06:21:11 -0500
+Message-Id: <20051230112111.58191CA092@ws7-4.us4.outblaze.com>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Regarding booting 440 gr board / ibm emac driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,51 +30,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hmm...
-I've seen these messages before. They were gone when I compiled using
-ppc_8xx-gcc compiler of a different ELDK version.
-What version of ELDK are you using? Which gcc version?
+Hello Benjamin,
+This is kiran here. I'm working on 440GR (Yosemite) board to boot linux-2.6=
+.13.4.
+Everything works fine execpt for MAC address. I saw the code in arch/ppc/pl=
+atforms/4xx/yosemite.c; the code to copy the MAC addr from board info struc=
+ture seems to be in place. I am  using IBM emac driver written by you.
+Linux boots up fine and  in the booting messages , I see that the MAC addr =
+is displayed as all zeroes. Also, the ifconfig displays the MAC address as =
+all zeroes.=20=20
 
-Succes,
-Theo Gjaltema.
+Could you please throw some light on the same.=20
+What could be the issue? Do we need to modify the driver for MAC address is=
+sue??
 
-zengshuai@sogou.com schreef:
 
->[root@localhost atmlz]# ppc_6xx-gcc -c -o temp atm_aalx.c         
->atm_aalx.c: In function `main':                                   
->atm_aalx.c:201: warning: return type of `main' is not `int'       
->/tmp/cciJlehe.s: Assembler messages:                              
->/tmp/cciJlehe.s:916: Error: unsupported relocation against r3     
->/tmp/cciJlehe.s:917: Error: unsupported relocation against r3     
->/tmp/cciJlehe.s:917: Error: unsupported relocation against r3     
->/tmp/cciJlehe.s:918: Error: unsupported relocation against r3     
->/tmp/cciJlehe.s:918: Error: unsupported relocation against r3     
->/tmp/cciJlehe.s:919: Error: unsupported relocation against r3     
->/tmp/cciJlehe.s:3655: Error: unsupported relocation against r3    
->[root@localhost atmlz]# ppc_6xx-gcc -S -o temp.s atm_aalx.c
->[root@localhost atmlz]# vi temp.s
->...................
->        stw 0,4(9)                 
->.L36:                              
->#APP                               
->         mfmsr r3                  
->         ori r3,r3,0x8000          
->         andi. r3,r3,0xffbf        
->         mtmsr r3                  
->#NO_APP                            
->        lwz 11,0(1)                
->..............................
->I must change those "r3" to "3" manually.
->How to fix?
->
->------------------------------
->我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
->http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=linuxppc-embedded&FullName=linuxppc-embedded&Email=linuxppc-embedded%40ozlabs.org&verify=755eff4e640bdcfc57d93cbd8b0a9cb7
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->  
->
+regards,
+kiran
+
+
+
+--=20
+_______________________________________________
+
+Search for businesses by name, location, or phone number.  -Lycos Yellow Pa=
+ges
+
+http://r.lycos.com/r/yp_emailfooter/http://yellowpages.lycos.com/default.as=
+p?SRC=3Dlycos10
