@@ -1,20 +1,18 @@
-Return-Path: <sven.luther@wanadoo.fr>
-Received: from smtp13.wanadoo.fr (smtp13.wanadoo.fr [193.252.22.54])
-	by ozlabs.org (Postfix) with ESMTP id 373CB6892B
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Dec 2005 21:29:05 +1100 (EST)
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf1306.wanadoo.fr (SMTP Server) with ESMTP id B6A2F70000B1
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Dec 2005 11:29:02 +0100 (CET)
-Date: Fri, 30 Dec 2005 11:28:16 +0100
-To: Sebastian Heutling <sheutlin@gmx.de>
-Message-ID: <20051230102816.GB28313@localhost.localdomain>
-References: <43B40BFF.1040809@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <43B40BFF.1040809@gmx.de>
-From: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: PowerstackII Utah - PCI IRQ for IDE
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8306368949
+	for <linuxppc-dev@ozlabs.org>; Sat, 31 Dec 2005 05:18:02 +1100 (EST)
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D5FE4784-0908-4A8E-9231-D1741F5592DF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Fri, 30 Dec 2005 12:17:56 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: powerpc.git broken for ARCH=ppc
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 29, 2005 at 05:17:03PM +0100, Sebastian Heutling wrote:
-> Hello,
-> 
-> I wonder what happened to the PCI IRQ map for the PowerstackII Utah - 
-> specifically the IDE IRQ. On http://patchwork.ozlabs.org/linuxppc/ I see 
-> a patch from Sven Luther with a set IDE IRQ line 
-> (http://patchwork.ozlabs.org/linuxppc//patch?id=1082) but on current 
-> kernels it doesn't appear. Even on debian the only kernel that had a 
-> working kernel with IDE for this machine was 2.6.8 but any following 
-> kernel (up to the current 2.6.14) doesn't include any patch for IDE IRQ.
+Ben,
 
-Oh, nobody i know ever tested it, so i guess i didn't notice when it was
-removed or something. Can you file a bug report against the debian kernels,
-and confirm the IDE line works ? 
+It looks like you broke ARCH=ppc builds:
 
-BTW, the patch is not from me originally, but from Leigh brown i think.
+arch/ppc/kernel/time.c: In function `wakeup_decrementer':
+arch/ppc/kernel/time.c:125: warning: implicit declaration of function  
+`last_jiffy_stamp'
+arch/ppc/kernel/time.c:125: error: invalid lvalue in assignment
+arch/ppc/kernel/time.c: In function `timer_interrupt':
+arch/ppc/kernel/time.c:189: error: invalid lvalue in assignment
+arch/ppc/kernel/time.c: In function `time_init':
+arch/ppc/kernel/time.c:331: error: invalid lvalue in assignment
 
-Friendly,
+In asm-powerpc/hardirq.h you removed the defn of last_jiffy_stamp.   
+Suggestions on what the right fix is for arch=ppc?
 
-Sven Luther
+- kumar
