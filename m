@@ -1,22 +1,20 @@
-Return-Path: <ktdann@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.195])
-	by ozlabs.org (Postfix) with ESMTP id 9331468966
+Return-Path: <siman@bsysjob.sharella.com>
+Received: from sharella.com (unknown [221.221.147.243])
+	by ozlabs.org (Postfix) with ESMTP id 675E96892B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Dec 2005 12:44:56 +1100 (EST)
-Received: by xproxy.gmail.com with SMTP id i27so1192633wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Dec 2005 17:44:54 -0800 (PST)
-Message-ID: <9b7ca6570512291744pbc75bebl90b9d7dc5f25f427@mail.gmail.com>
-Date: Fri, 30 Dec 2005 10:44:54 +0900
-From: Daniel Ann <ktdann@gmail.com>
-To: siman <siman@bsysjob.sharella.com>
-In-Reply-To: <000d01c60ce2$a7ee1ca0$1200a8c0@xbh>
+	Fri, 30 Dec 2005 13:15:30 +1100 (EST)
+Received: from xbh ([192.168.0.2]) by bsysjob.sharella.com (bsysjob)
+	(MDaemon.PRO.v7.1.0.R) with ESMTP id md50000032889.msg
+	for <linuxppc-embedded@ozlabs.org>; Fri, 30 Dec 2005 10:09:31 +0800
+From: "siman" <siman@bsysjob.sharella.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Fri, 30 Dec 2005 10:26:26 +0800
+Message-ID: <001301c60ce8$7b4456a0$1200a8c0@xbh>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20051229205134.9F4436898E@ozlabs.org>
-	<000d01c60ce2$a7ee1ca0$1200a8c0@xbh>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8245 platform
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <20051229205134.9F4436898E@ozlabs.org>
+Subject: Migrate vxworks bsp to linux
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,25 +25,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-You should try selecting sandpoint as your platform. That's using MPC8245.
-
-Cheers,
-Dan.
-
-On 12/30/05, siman <siman@bsysjob.sharella.com> wrote:
-> Hi All:
-> Did anybody have MPC8245 patch on any kernel version? Please give me some
-> advise. Thanks.
-> I found the prpmc610(with mpc8245) could not be init by the Linux kernel.
-> Thanks.
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-
---
-Daniel
+Hi All:
+I have the prpmc610 borad(with MPC8245), I have the board's vxworks bsp, did
+anybody have experience to migrate  from the vxworks to Linux system? I
+think the main problem is initial the boards. 
+Thank all.
+Siman 
