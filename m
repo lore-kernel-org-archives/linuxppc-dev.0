@@ -1,50 +1,241 @@
-Return-Path: <sr@denx.de>
-Received: from natblindhugh.rzone.de (natblindhugh.rzone.de [81.169.145.175])
-	by ozlabs.org (Postfix) with ESMTP id 4DE3D6892B
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 31 Dec 2005 23:14:37 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Date: Sat, 31 Dec 2005 13:14:29 +0100
-References: <20051230211710.72899352597@atlas.denx.de>
-In-Reply-To: <20051230211710.72899352597@atlas.denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200512311314.30168.sr@denx.de>
-Cc: "Kiran Kumar.A" <kiranf5@lycos.com>
-Subject: Re: Regarding booting 440 gr board / ibm emac driver
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1CE286893F
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Jan 2006 10:51:45 +1100 (EST)
+Date: Sun, 1 Jan 2006 00:51:24 +0100
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Dmitry Torokhov <dtor_core@ameritech.net>
+Message-ID: <20051231235124.GA18506@hansmi.ch>
+References: <20051225212041.GA6094@hansmi.ch>
+	<200512252304.32830.dtor_core@ameritech.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200512252304.32830.dtor_core@ameritech.net>
+Cc: linux-kernel@killerfox.forkbomb.ch, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Vojtech Pavlik <vojtech@suse.cz>,
+	linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple
+	PowerBooks
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 30 December 2005 22:17, Wolfgang Denk wrote:
-> In message <20051230112111.58191CA092@ws7-4.us4.outblaze.com> you wrote:
-> > This is kiran here. I'm working on 440GR (Yosemite) board to boot
-> > linux-2.6 .13.4.
->
-> Don't use old code. Please use the current version.
->
-> > What could be the issue? Do we need to modify the driver for MAC address
-> > is sue??
->
-> Just use current code. You can find ready to  run  binaries  and  the
-> corresponding sources (git repository) on our server:
->
-> ftp://ftp.denx.de/pub/u-boot/images/amcc/yosemite/u-boot.bin
-> ftp://ftp.denx.de/pub/linux/images/amcc/yosemite/uImage
-> and http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
-> (git tag "DENX-2005-12-03-2208" or later).
+On Sun, Dec 25, 2005 at 11:04:30PM -0500, Dmitry Torokhov wrote:
+> Well, we have used 11 out of 32 available bits so there still some
+> reserves. My concern is that your implementation allows only one
+> hook to be installed while with quirks you can have several of them
+> active per device.
 
-Just a quick note, since you mentioned using 440GR (Yosemite): Yosemite is the 
-eval board for the 440EP and Yellowstone is the eval board for the 440GR. 
-Images for both boards are available at the site referenced by Wolfgang.
+Below you find an implementation using quirks:
 
-Best regards,
-Stefan
+---
+diff -rNup linux-2.6.15-rc7.orig/drivers/usb/input/hid-core.c linux-2.6.15-rc7/drivers/usb/input/hid-core.c
+--- linux-2.6.15-rc7.orig/drivers/usb/input/hid-core.c	2006-01-01 00:41:15.000000000 +0100
++++ linux-2.6.15-rc7/drivers/usb/input/hid-core.c	2005-12-31 22:39:53.000000000 +0100
+@@ -1580,6 +1580,10 @@ static struct hid_blacklist {
+ 	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
+ 	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
+ 
++	{ USB_VENDOR_ID_APPLE, 0x0214, HID_QUIRK_POWERBOOK_HAS_FN },
++	{ USB_VENDOR_ID_APPLE, 0x0215, HID_QUIRK_POWERBOOK_HAS_FN },
++	{ USB_VENDOR_ID_APPLE, 0x0216, HID_QUIRK_POWERBOOK_HAS_FN },
++
+ 	{ 0, 0 }
+ };
+ 
+diff -rNup linux-2.6.15-rc7.orig/drivers/usb/input/hid-input.c linux-2.6.15-rc7/drivers/usb/input/hid-input.c
+--- linux-2.6.15-rc7.orig/drivers/usb/input/hid-input.c	2006-01-01 00:41:15.000000000 +0100
++++ linux-2.6.15-rc7/drivers/usb/input/hid-input.c	2005-12-31 23:49:42.000000000 +0100
+@@ -63,6 +63,66 @@ static struct {
+ 	__s32 y;
+ }  hid_hat_to_axis[] = {{ 0, 0}, { 0,-1}, { 1,-1}, { 1, 0}, { 1, 1}, { 0, 1}, {-1, 1}, {-1, 0}, {-1,-1}};
+ 
++struct input_pb_translation {
++	u16 from;
++	u16 to;
++	u8 flags;
++};
++
++#define POWERBOOK_FLAG_FKEY 0x01
++
++static struct input_pb_translation powerbook_fn_keys[] = {
++	{ KEY_BACKSPACE, KEY_DELETE },
++	{ KEY_F1,	KEY_BRIGHTNESSDOWN,	POWERBOOK_FLAG_FKEY },
++	{ KEY_F2,	KEY_BRIGHTNESSUP,	POWERBOOK_FLAG_FKEY },
++	{ KEY_F3,	KEY_MUTE,		POWERBOOK_FLAG_FKEY },
++	{ KEY_F4,	KEY_VOLUMEDOWN,		POWERBOOK_FLAG_FKEY },
++	{ KEY_F5,	KEY_VOLUMEUP,		POWERBOOK_FLAG_FKEY },
++	{ KEY_F6,	KEY_NUMLOCK,		POWERBOOK_FLAG_FKEY },
++	{ KEY_F7,	KEY_SWITCHVIDEOMODE,	POWERBOOK_FLAG_FKEY },
++	{ KEY_F8,	KEY_KBDILLUMTOGGLE,	POWERBOOK_FLAG_FKEY },
++	{ KEY_F9,	KEY_KBDILLUMDOWN,	POWERBOOK_FLAG_FKEY },
++	{ KEY_F10,	KEY_KBDILLUMUP,		POWERBOOK_FLAG_FKEY },
++	{ KEY_UP,	KEY_PAGEUP },
++	{ KEY_DOWN,	KEY_PAGEDOWN },
++	{ KEY_LEFT,	KEY_HOME },
++	{ KEY_RIGHT,	KEY_END },
++	{ }
++};
++
++static struct input_pb_translation powerbook_numlock_keys[] = {
++	{ KEY_J,	KEY_KP1 },
++	{ KEY_K,	KEY_KP2 },
++	{ KEY_L,	KEY_KP3 },
++	{ KEY_U,	KEY_KP4 },
++	{ KEY_I,	KEY_KP5 },
++	{ KEY_O,	KEY_KP6 },
++	{ KEY_7,	KEY_KP7 },
++	{ KEY_8,	KEY_KP8 },
++	{ KEY_9,	KEY_KP9 },
++	{ KEY_M,	KEY_KP0 },
++	{ KEY_DOT,	KEY_KPDOT },
++	{ KEY_SLASH,	KEY_KPPLUS },
++	{ KEY_SEMICOLON, KEY_KPMINUS },
++	{ KEY_P,	KEY_KPASTERISK },
++	{ KEY_MINUS,	KEY_KPEQUAL },
++	{ KEY_0,	KEY_KPSLASH },
++	{ KEY_ENTER,	KEY_KPENTER },
++	{ }
++};
++
++static int powerbook_fkeysfirst = 1;
++module_param_named(pb_fkeysfirst, powerbook_fkeysfirst, bool, 0644);
++MODULE_PARM_DESC(powerbook_fkeysfirst, "Use fn special keys only while pressing fn");
++
++static int powerbook_enablefnkeys = 1;
++module_param_named(pb_enablefnkeys, powerbook_enablefnkeys, bool, 0644);
++MODULE_PARM_DESC(powerbook_enablefnkeys, "Enable fn special keys");
++
++static int powerbook_enablekeypad = 1;
++module_param_named(pb_enablekeypad, powerbook_enablekeypad, bool, 0644);
++MODULE_PARM_DESC(powerbook_enablekeypad, "Enable keypad keys");
++
+ #define map_abs(c)	do { usage->code = c; usage->type = EV_ABS; bit = input->absbit; max = ABS_MAX; } while (0)
+ #define map_rel(c)	do { usage->code = c; usage->type = EV_REL; bit = input->relbit; max = REL_MAX; } while (0)
+ #define map_key(c)	do { usage->code = c; usage->type = EV_KEY; bit = input->keybit; max = KEY_MAX; } while (0)
+@@ -73,6 +133,17 @@ static struct {
+ #define map_key_clear(c)	do { map_key(c); clear_bit(c, bit); } while (0)
+ #define map_ff_effect(c)	do { set_bit(c, input->ffbit); } while (0)
+ 
++static inline struct input_pb_translation *find_translation(
++	struct input_pb_translation *table, int from)
++{
++	struct input_pb_translation *trans;
++
++	/* Look for the translation */
++	for(trans = table; trans->from && !(trans->from == from); trans++);
++
++	return (trans->from?trans:NULL);
++}
++
+ static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_field *field,
+ 				     struct hid_usage *usage)
+ {
+@@ -94,7 +165,7 @@ static void hidinput_configure_usage(str
+ 
+ 	switch (usage->hid & HID_USAGE_PAGE) {
+ 
+-		case HID_UP_UNDEFINED:
++	case HID_UP_UNDEFINED:
+ 			goto ignore;
+ 
+ 		case HID_UP_KEYBOARD:
+@@ -325,7 +396,25 @@ static void hidinput_configure_usage(str
+ 
+ 			set_bit(EV_REP, input->evbit);
+ 			switch(usage->hid & HID_USAGE) {
+-				case 0x003: map_key_clear(KEY_FN);		break;
++				/* The fn key on Apple PowerBooks */
++				case 0x0003: {
++					struct input_pb_translation *trans;
++
++					map_key_clear(KEY_FN);
++
++					set_bit(KEY_FN, input->keybit);
++					set_bit(KEY_NUMLOCK, input->keybit);
++
++					/* Enable all needed keys */
++					for(trans = powerbook_fn_keys; trans->from; trans++)
++						set_bit(trans->to, input->keybit);
++
++					for(trans = powerbook_numlock_keys; trans->from; trans++)
++						set_bit(trans->to, input->keybit);
++
++					goto ignore;
++				}
++
+ 				default:    goto ignore;
+ 			}
+ 			break;
+@@ -482,6 +571,49 @@ void hidinput_hid_event(struct hid_devic
+ 		return;
+ 	}
+ 
++	if (hid->quirks & HID_QUIRK_POWERBOOK_HAS_FN) {
++		struct input_pb_translation *trans;
++
++		switch(usage->code) {
++		case KEY_FN:
++			if (value) hid->quirks |=  HID_QUIRK_POWERBOOK_FN_ON;
++			else       hid->quirks &= ~HID_QUIRK_POWERBOOK_FN_ON;
++
++			input_event(input, usage->type, usage->code, value);
++
++			return;
++		}
++
++		if (powerbook_enablefnkeys) {
++			trans = find_translation(powerbook_fn_keys, usage->code);
++
++			if (trans) {
++				int known_key;
++
++				if (trans->flags & POWERBOOK_FLAG_FKEY)
++					known_key =
++						( powerbook_fkeysfirst &&  (hid->quirks & HID_QUIRK_POWERBOOK_FN_ON)) ||
++						(!powerbook_fkeysfirst && !(hid->quirks & HID_QUIRK_POWERBOOK_FN_ON));
++				else
++					known_key = (hid->quirks & HID_QUIRK_POWERBOOK_FN_ON);
++
++				if (known_key) {
++					input_event(input, usage->type, trans->to, value);
++					return;
++				}
++			}
++		}
++
++		if (powerbook_enablekeypad && test_bit(LED_NUML, input->led)) {
++			trans = find_translation(powerbook_numlock_keys, usage->code);
++
++			if (trans)
++				input_event(input, usage->type, trans->to, value);
++
++			return;
++		}
++	}
++
+ 	if (usage->hat_min < usage->hat_max || usage->hat_dir) {
+ 		int hat_dir = usage->hat_dir;
+ 		if (!hat_dir)
+diff -rNup linux-2.6.15-rc7.orig/drivers/usb/input/hid.h linux-2.6.15-rc7/drivers/usb/input/hid.h
+--- linux-2.6.15-rc7.orig/drivers/usb/input/hid.h	2006-01-01 00:41:15.000000000 +0100
++++ linux-2.6.15-rc7/drivers/usb/input/hid.h	2005-12-31 22:39:49.000000000 +0100
+@@ -246,6 +246,9 @@ struct hid_item {
+ #define HID_QUIRK_2WHEEL_MOUSE_HACK_5		0x100
+ #define HID_QUIRK_2WHEEL_MOUSE_HACK_ON		0x200
+ #define HID_QUIRK_2WHEEL_POWERMOUSE		0x400
++#define HID_QUIRK_POWERBOOK_HAS_FN		0x0000800
++#define HID_QUIRK_POWERBOOK_FN_ON		0x0001000
++#define HID_QUIRK_POWERBOOK_NUMLOCK_ON		0x0002000
+ 
+ /*
+  * This is the global environment of the parser. This information is
