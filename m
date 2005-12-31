@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1391C688F3
+Return-Path: <grant.likely@secretlab.ca>
+Received: from outbound-mail-29.bluehost.com (outbound-mail-29.bluehost.com
+	[67.138.240.211]) by ozlabs.org (Postfix) with SMTP id 02BC968921
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 31 Dec 2005 08:17:12 +1100 (EST)
-To: "Kiran Kumar.A" <kiranf5@lycos.com>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 30 Dec 2005 06:21:11 EST."
-	<20051230112111.58191CA092@ws7-4.us4.outblaze.com>
-Date: Fri, 30 Dec 2005 22:17:10 +0100
-Sender: wd@denx.de
-Message-Id: <20051230211710.72899352597@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Regarding booting 440 gr board / ibm emac driver 
+	Sat, 31 Dec 2005 15:05:25 +1100 (EST)
+Message-ID: <43B601CC.1000102@secretlab.ca>
+Date: Fri, 30 Dec 2005 20:58:04 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+MIME-Version: 1.0
+To: "David H. Lynch Jr." <dhlii@dlasys.net>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+References: <11359385991901-git-send-email-grant.likely@secretlab.ca>
+	<43B5E37A.4020008@dlasys.net>
+In-Reply-To: <43B5E37A.4020008@dlasys.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH 8/8] Add support for Xilinx ML403 reference design
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,30 +24,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20051230112111.58191CA092@ws7-4.us4.outblaze.com> you wrote:
->
-> This is kiran here. I'm working on 440GR (Yosemite) board to boot linux-2.6
-> .13.4.
+David H. Lynch Jr. wrote:
+> 	I am working on a port of 2.6.14.5 to the Pico E-12 which is a Xilinx
+> Virtex-IV system in a CF card. It is very similar to the ML403 but with
+> alot less hardware. I would love to be able to pull a whole tree of the
+> stuff you are working on - is there a git, svn, or cvs tree that the
+> linuxppc-embedded patches are getting merged into ? and How can it be
+> accessed ?
+I don't have a public git tree at the moment for the xilinx virtex
+stuff.  I can certainly create and maintain one if there is demand.  I
+guess it depends on how many people want to colaborate on V2Pro/V4
+support.  Anyone else interested?
 
-Don't use old code. Please use the current version.
+> 	Right now I am trying to get /init to run - actually it runs but I am
+> not getting IO on the console. Anyway, I hope to put out a collection of
+> patches when I have it really working. Aside from the Pico  e-12 itself,
+> I have Uartlite drivers that are consistent with the way the rest of the
+> 2.6 serial drivers are layed out as well as a custom serial driver
+> specific to the E-12. The E-12 stuff might not make it into the
+> distribution kernel, but I would think there might be some interest in
+> the UartLite driver.
+Since the E-12 is a commercially available board, it would be useful to
+have the patches on the ML, even if they don't get applied to mainline.
 
-> What could be the issue? Do we need to modify the driver for MAC address is
-> sue??
+> 
+> 	Anyway it would be nice to work against whatever all the
+> linuxppc-embedded patches are going into.
+I'm working off the mainline linux-2.6 tree from kernel.org.  PPC
+patches are getting merged into mainline frequently.
 
-Just use current code. You can find ready to  run  binaries  and  the
-corresponding sources (git repository) on our server:
-
-ftp://ftp.denx.de/pub/u-boot/images/amcc/yosemite/u-boot.bin
-ftp://ftp.denx.de/pub/linux/images/amcc/yosemite/uImage
-and http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
-(git tag "DENX-2005-12-03-2208" or later).
-
-Best regards,
-
-Wolfgang Denk
+Cheers,
+g.
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A Puritan is someone who is deathly afraid that  someone,  somewhere,
-is having fun.
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 663-0761
