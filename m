@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4A2E68968
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Jan 2006 13:56:21 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-In-Reply-To: <20051231235124.GA18506@hansmi.ch>
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B24BE6896F
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Jan 2006 14:03:36 +1100 (EST)
+Date: Sun, 1 Jan 2006 04:03:31 +0100
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20060101030331.GA26559@hansmi.ch>
 References: <20051225212041.GA6094@hansmi.ch>
 	<200512252304.32830.dtor_core@ameritech.net>
 	<20051231235124.GA18506@hansmi.ch>
-Content-Type: text/plain
-Date: Sun, 01 Jan 2006 13:56:47 +1100
-Message-Id: <1136084207.4635.86.camel@localhost.localdomain>
+	<1136084207.4635.86.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1136084207.4635.86.camel@localhost.localdomain>
 Cc: linux-kernel@killerfox.forkbomb.ch,
 	Dmitry Torokhov <dtor_core@ameritech.net>,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
@@ -29,25 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2006-01-01 at 00:51 +0100, Michael Hanselmann wrote:
-> On Sun, Dec 25, 2005 at 11:04:30PM -0500, Dmitry Torokhov wrote:
-> > Well, we have used 11 out of 32 available bits so there still some
-> > reserves. My concern is that your implementation allows only one
-> > hook to be installed while with quirks you can have several of them
-> > active per device.
-> 
-> Below you find an implementation using quirks:
+On Sun, Jan 01, 2006 at 01:56:47PM +1100, Benjamin Herrenschmidt wrote:
+> I've been using the other patch for some time now and while it's a
+> life-saver, it does have one annoying little issue: If you press a key
+> with the Fn key down and release that key with the Fn key up, your key
+> is stuck.
 
-I've been using the other patch for some time now and while it's a
-life-saver, it does have one annoying little issue: If you press a key
-with the Fn key down and release that key with the Fn key up, your key
-is stuck. That is, the patch changes the keycode for Up & Down events
-separately based on the Fn state at the time of the event.
+I noticed something like that with the numlock key as well but didn't
+have time to fix it yet.
 
-What should be done is that when you release a key, you send the key up
-with the keycode that matches the Fn state at the time the key was
-pressed. That can easily be done using a simple bitmap that keeps track
-of the Fn state on keydown for the various keycodes.
+Other than that, have you found any keys that aren't mapped or are
+mapped incorrectly?
 
-Ben.
-  
+The new patch adds quite some code to hid-input.c, should it be
+configuratible via .config?
+
+Thanks,
+Michael
