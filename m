@@ -1,15 +1,18 @@
-Return-Path: <cpvjagadeesh@yahoo.com>
-Received: from web50407.mail.yahoo.com (web50407.mail.yahoo.com
-	[206.190.38.72]) by ozlabs.org (Postfix) with SMTP id 796C568945
+Return-Path: <happyphot@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.192])
+	by ozlabs.org (Postfix) with ESMTP id A73E868937
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 Jan 2006 22:52:43 +1100 (EST)
-Message-ID: <20060102115241.29348.qmail@web50407.mail.yahoo.com>
-Date: Mon, 2 Jan 2006 03:52:41 -0800 (PST)
-From: venkatajagadeesh p <cpvjagadeesh@yahoo.com>
-To: linuxppc-embedded@ozlabs.org
+	Tue,  3 Jan 2006 01:33:58 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id j2so1834796nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 02 Jan 2006 06:33:56 -0800 (PST)
+Message-ID: <000201c60fa9$8d5315c0$0760120a@photon>
+From: "HappyPhot" <happyphot@gmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Mon, 2 Jan 2006 22:29:25 +0800
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1247836452-1136202761=:29318"
-Subject: Cross Compiling driver for PPC
+Content-Type: text/plain; format=flowed; charset="big5"; reply-type=original
+Subject: ELDK 4.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,24 +23,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1247836452-1136202761=:29318
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Dear group,
+  Can anybody tell how to get ELDK 4.0 ?
+I seems need to go to somewhere to get the 
+source code to compile, right? Could you give
+me a way ?
 
- Hi,
-      We are trying to port a newly developed device driver for powerPC . We are unable to compile it for powerpc driver on Host platform. Please give us the way to compile the device driver
- 
-
-		
----------------------------------
-Yahoo! Shopping
- Find Great Deals on Holiday Gifts at Yahoo! Shopping 
---0-1247836452-1136202761=:29318
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<div id="RTEContent">&nbsp;Hi,<br> &nbsp;&nbsp;&nbsp;&nbsp; We are trying to port a newly developed device driver for powerPC . We are unable to compile it for powerpc driver on Host platform. Please give us the way to compile the device driver<br> </div><p>
-		<hr size=1>Yahoo! Shopping<br> 
-Find Great Deals on Holiday Gifts at <a href="http://us.rd.yahoo.com/mail_us/footer/shopping/*http://shopping.yahoo.com/;_ylc=X3oDMTE2bzVzaHJtBF9TAzk1OTQ5NjM2BHNlYwNtYWlsdGFnBHNsawNob2xpZGF5LTA1 
-">Yahoo! Shopping</a> 
---0-1247836452-1136202761=:29318--
+thank you,
+/HappyPhot
