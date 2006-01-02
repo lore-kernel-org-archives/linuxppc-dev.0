@@ -1,18 +1,15 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from outbound-mail-01.bluehost.com (outbound-mail-01.bluehost.com
-	[70.103.189.11]) by ozlabs.org (Postfix) with SMTP id 2553D68914
+Return-Path: <cpvjagadeesh@yahoo.com>
+Received: from web50407.mail.yahoo.com (web50407.mail.yahoo.com
+	[206.190.38.72]) by ozlabs.org (Postfix) with SMTP id 796C568945
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 Jan 2006 19:07:07 +1100 (EST)
-Message-ID: <43B8DD85.7010905@secretlab.ca>
-Date: Mon, 02 Jan 2006 01:00:05 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
+	Mon,  2 Jan 2006 22:52:43 +1100 (EST)
+Message-ID: <20060102115241.29348.qmail@web50407.mail.yahoo.com>
+Date: Mon, 2 Jan 2006 03:52:41 -0800 (PST)
+From: venkatajagadeesh p <cpvjagadeesh@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: Florian <linuxppc-embedded@ozlabs.org>
-References: <20060101010006.EACCA6897A@ozlabs.org>
-	<43B8DAB3.2010001@ozlabs.org>
-In-Reply-To: <43B8DAB3.2010001@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Re: [PATCH 8/8] Add support for Xilinx ML403 reference design
+Content-Type: multipart/alternative; boundary="0-1247836452-1136202761=:29318"
+Subject: Cross Compiling driver for PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,24 +20,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Florian wrote:
->> I don't have a public git tree at the moment for the xilinx virtex
->> stuff.  I can certainly create and maintain one if there is demand.  I
->> guess it depends on how many people want to colaborate on V2Pro/V4
->> support.  Anyone else interested?
-> 
-> 
-> Yes. I am also working on a Virtex-4 system with Linux.
-> Do you support also a Linux 2.4 tree?
-Sorry, no.  I'm focusing on the 2.6 stuff.  IIRC, the Denx tree is
-tracking the virtex support in 2.4.
+--0-1247836452-1136202761=:29318
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Are you strictly working on 2.4?  Or are you interested in 2.6 as well?
+ Hi,
+      We are trying to port a newly developed device driver for powerPC . We are unable to compile it for powerpc driver on Host platform. Please give us the way to compile the device driver
+ 
 
-Cheers,
-g.
+		
+---------------------------------
+Yahoo! Shopping
+ Find Great Deals on Holiday Gifts at Yahoo! Shopping 
+--0-1247836452-1136202761=:29318
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 663-0761
+<div id="RTEContent">&nbsp;Hi,<br> &nbsp;&nbsp;&nbsp;&nbsp; We are trying to port a newly developed device driver for powerPC . We are unable to compile it for powerpc driver on Host platform. Please give us the way to compile the device driver<br> </div><p>
+		<hr size=1>Yahoo! Shopping<br> 
+Find Great Deals on Holiday Gifts at <a href="http://us.rd.yahoo.com/mail_us/footer/shopping/*http://shopping.yahoo.com/;_ylc=X3oDMTE2bzVzaHJtBF9TAzk1OTQ5NjM2BHNlYwNtYWlsdGFnBHNsawNob2xpZGF5LTA1 
+">Yahoo! Shopping</a> 
+--0-1247836452-1136202761=:29318--
