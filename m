@@ -1,20 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 15E32688EE
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Jan 2006 17:08:33 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <stelian@popies.net>
+Received: from sd291.sivit.org (sd291.sivit.org [194.146.225.122])
+	by ozlabs.org (Postfix) with ESMTP id 401C468964
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Jan 2006 23:06:50 +1100 (EST)
+From: Stelian Pop <stelian@popies.net>
 To: Michael Hanselmann <linux-kernel@hansmi.ch>
-In-Reply-To: <20060101030331.GA26559@hansmi.ch>
+In-Reply-To: <20051231235124.GA18506@hansmi.ch>
 References: <20051225212041.GA6094@hansmi.ch>
 	<200512252304.32830.dtor_core@ameritech.net>
 	<20051231235124.GA18506@hansmi.ch>
-	<1136084207.4635.86.camel@localhost.localdomain>
-	<20060101030331.GA26559@hansmi.ch>
-Content-Type: text/plain
-Date: Sun, 01 Jan 2006 17:09:02 +1100
-Message-Id: <1136095742.24205.0.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Mon, 02 Jan 2006 13:06:40 +0100
+Message-Id: <1136203601.5803.17.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linux-kernel@killerfox.forkbomb.ch,
 	Dmitry Torokhov <dtor_core@ameritech.net>,
@@ -31,25 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2006-01-01 at 04:03 +0100, Michael Hanselmann wrote:
-> On Sun, Jan 01, 2006 at 01:56:47PM +1100, Benjamin Herrenschmidt wrote:
-> > I've been using the other patch for some time now and while it's a
-> > life-saver, it does have one annoying little issue: If you press a key
-> > with the Fn key down and release that key with the Fn key up, your key
-> > is stuck.
+Le dimanche 01 janvier 2006 à 00:51 +0100, Michael Hanselmann a écrit :
+> On Sun, Dec 25, 2005 at 11:04:30PM -0500, Dmitry Torokhov wrote:
+> > Well, we have used 11 out of 32 available bits so there still some
+> > reserves. My concern is that your implementation allows only one
+> > hook to be installed while with quirks you can have several of them
+> > active per device.
 > 
-> I noticed something like that with the numlock key as well but didn't
-> have time to fix it yet.
+> Below you find an implementation using quirks:
 > 
-> Other than that, have you found any keys that aren't mapped or are
-> mapped incorrectly?
+> ---
+> diff -rNup linux-2.6.15-rc7.orig/drivers/usb/input/hid-core.c linux-2.6.15-rc7/drivers/usb/input/hid-core.c
+> --- linux-2.6.15-rc7.orig/drivers/usb/input/hid-core.c	2006-01-01 00:41:15.000000000 +0100
+> +++ linux-2.6.15-rc7/drivers/usb/input/hid-core.c	2005-12-31 22:39:53.000000000 +0100
+> @@ -1580,6 +1580,10 @@ static struct hid_blacklist {
+>  	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
+>  	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
+>  
+> +	{ USB_VENDOR_ID_APPLE, 0x0214, HID_QUIRK_POWERBOOK_HAS_FN },
+> +	{ USB_VENDOR_ID_APPLE, 0x0215, HID_QUIRK_POWERBOOK_HAS_FN },
+> +	{ USB_VENDOR_ID_APPLE, 0x0216, HID_QUIRK_POWERBOOK_HAS_FN },
+> +
 
-I haven't but then I haven't tested in depth neither. Such little bugs
-if any can always be fixed later anyway.
+Works fine for me on a slightly older (jul '05) Powerbook after adding
+the following USB identifiers:
 
-> The new patch adds quite some code to hid-input.c, should it be
-> configuratible via .config?
++       { USB_VENDOR_ID_APPLE, 0x020E, HID_QUIRK_POWERBOOK_HAS_FN },
++       { USB_VENDOR_ID_APPLE, 0x020F, HID_QUIRK_POWERBOOK_HAS_FN },
++       { USB_VENDOR_ID_APPLE, 0x030A, HID_QUIRK_POWERBOOK_HAS_FN },
++       { USB_VENDOR_ID_APPLE, 0x030B, HID_QUIRK_POWERBOOK_HAS_FN },
 
-Possibly yes, since it's only useful for mac laptops...
+Mine is a 020F but the other three ones should be fine too (those are
+taken from the appletouch trackpad driver).
 
-Ben.
+Stelian.
+-- 
+Stelian Pop <stelian@popies.net>
