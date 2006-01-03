@@ -1,20 +1,18 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from outbound-mail-14.bluehost.com (outbound-mail-14.bluehost.com
-	[70.96.188.114]) by ozlabs.org (Postfix) with SMTP id B3863689A1
+Return-Path: <andreas_schmidt@ifm-electronic.com>
+Received: from mail1.ifm-electronic.com (mail1.ifm-electronic.com
+	[62.180.229.59]) by ozlabs.org (Postfix) with ESMTP id 30ACF688F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 Jan 2006 19:31:27 +1100 (EST)
-Message-ID: <43BA3639.9000209@secretlab.ca>
-Date: Tue, 03 Jan 2006 01:30:49 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
+	Tue,  3 Jan 2006 23:36:36 +1100 (EST)
+In-Reply-To: <43B9F69B.6090407@secretlab.ca>
+To: Grant Likely <grant.likely@secretlab.ca>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
-References: <259581790601030012u1ec195c2n7f42766d443548c2@mail.gmail.com>	
-	<43BA34C5.9050609@secretlab.ca>
-	<259581790601030029j6fa915f9nfb3869ad41915aa4@mail.gmail.com>
-In-Reply-To: <259581790601030029j6fa915f9nfb3869ad41915aa4@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Message-ID: <OF6AA099E7.718620CD-ONC12570EB.0042FAA2-C12570EB.004384F8@ifm-electronic.com>
+From: andreas_schmidt@ifm-electronic.com
+Date: Tue, 3 Jan 2006 13:16:23 +0100
+Content-Type: multipart/alternative;
+	boundary="=_alternative 004384F5C12570EB_="
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 8/8] Add support for Xilinx ML403 reference design
+Subject: Re: Re: Custom Driver
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,79 +23,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Paula Saameño wrote:
-> Hi Grant,
-> 
-> I´ll try the patches today and I let you know how is going.
+Dies ist eine mehrteilige Nachricht im MIME-Format.
+--=_alternative 004384F5C12570EB_=
+Content-Type: text/plain; charset="US-ASCII"
 
-BTW, 'make ml403_defconfig' should work
+>Brett McNerney wrote:
+>> I am need to create a driver to interface to custom hardware on a ml403
+>> board.  I am first trying to just create a ipif register bank and 
+access
+>> the registers from linux but am not having any luck of yet.  Has anyone
+>> successfully done this and if so explain how or supply a driver to do
+>> this and how to build it into the kernel?  I am new at this and am
+>> having great difficutly right now. 
+>> 
+>> Thanks for any help anyone can supply
+>Can you access your device from a debugger, or a no-os program (like a
+>bootloader)?  Did you call ioremap() to map the physical register
+>address into virtual memory?  Can you give more detail?
 
+I have already wrote I custom driver for Xilinx FPGA. 
+For this I have looked to already exist driver for Xilinx in Linux tree 
+and modify them for me.
+It was no problem then.
 
-> 
-> See you!
-> 
-> On 1/3/06, *Grant Likely* <grant.likely@secretlab.ca
-> <mailto:grant.likely@secretlab.ca>> wrote:
-> 
->     Paula Saameño wrote:
->     > I am working with ML403 as well. Right now, I am using a 2.4.26
->     kernel,
->     > but I would be interested in a 2.6 one, it would be great!!
->     >
->     > Happy 2006!!
->     > Paula Saameno
-> 
->     Thanks Paula.
-> 
->     Can you try the posted patches on your ML403?  It should compile and
->     boot with no problems with the reference design.  (However, I got the
->     memory size initialization wrong; add mem=64M to the kernel command
->     line)
-> 
->     I'll send a patch to fix the mem size tomorrow.
-> 
->     Thanks,
->     g.
-> 
->     >
->     > Florian wrote:
->     >>> I don't have a public git tree at the moment for the xilinx virtex
->     >>> stuff.  I can certainly create and maintain one if there is
->     demand.  I
->     >>> guess it depends on how many people want to colaborate on V2Pro/V4
->     >>> support.  Anyone else interested?
->     >>
->     >>
->     >> Yes. I am also working on a Virtex-4 system with Linux.
->     >> Do you support also a Linux 2.4 tree?
->     > Sorry, no.  I'm focusing on the 2.6 stuff.  IIRC, the Denx tree is
->     > tracking the virtex support in 2.4.
->     >
->     > Are you strictly working on 2.4?  Or are you interested in 2.6 as
->     well?
->     >
->     > Cheers,
->     > g.
->     >
->     >
->     >
->     ------------------------------------------------------------------------
->     >
->     > _______________________________________________
->     > Linuxppc-embedded mailing list
->     > Linuxppc-embedded@ozlabs.org <mailto:Linuxppc-embedded@ozlabs.org>
->     > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
->     --
->     Grant Likely, B.Sc. P.Eng.
->     Secret Lab Technologies Ltd.
->     (403) 663-0761
-> 
-> 
+g.
 
 
 -- 
 Grant Likely, B.Sc. P.Eng.
 Secret Lab Technologies Ltd.
 (403) 663-0761
+--=_alternative 004384F5C12570EB_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br>
+<br><font size=2><tt>&gt;Brett McNerney wrote:<br>
+&gt;&gt; I am need to create a driver to interface to custom hardware on
+a ml403<br>
+&gt;&gt; board. &nbsp;I am first trying to just create a ipif register
+bank and access<br>
+&gt;&gt; the registers from linux but am not having any luck of yet. &nbsp;Has
+anyone<br>
+&gt;&gt; successfully done this and if so explain how or supply a driver
+to do<br>
+&gt;&gt; this and how to build it into the kernel? &nbsp;I am new at this
+and am<br>
+&gt;&gt; having great difficutly right now. <br>
+&gt;&gt; <br>
+&gt;&gt; Thanks for any help anyone can supply<br>
+&gt;Can you access your device from a debugger, or a no-os program (like
+a<br>
+&gt;bootloader)? &nbsp;Did you call ioremap() to map the physical register<br>
+&gt;address into virtual memory? &nbsp;Can you give more detail?</tt></font>
+<br>
+<br><font size=2><tt>I have already wrote I custom driver for Xilinx FPGA.
+</tt></font>
+<br><font size=2><tt>For this I have looked to already exist driver for
+Xilinx in Linux tree and modify them for me.<br>
+It was no problem then.</tt></font>
+<br><font size=2><tt><br>
+g.<br>
+<br>
+<br>
+-- <br>
+Grant Likely, B.Sc. P.Eng.<br>
+Secret Lab Technologies Ltd.<br>
+(403) 663-0761</tt></font>
+--=_alternative 004384F5C12570EB_=--
