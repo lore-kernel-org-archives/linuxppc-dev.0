@@ -1,18 +1,18 @@
 Return-Path: <grant.likely@secretlab.ca>
-Received: from outbound-mail-25.bluehost.com (outbound-mail-25.bluehost.com
-	[70.103.189.20]) by ozlabs.org (Postfix) with SMTP id 2B1EB68990
+Received: from outbound-mail-14.bluehost.com (outbound-mail-14.bluehost.com
+	[70.96.188.114]) by ozlabs.org (Postfix) with SMTP id ADF5968959
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 Jan 2006 15:00:00 +1100 (EST)
-Message-ID: <43B9F69B.6090407@secretlab.ca>
-Date: Mon, 02 Jan 2006 20:59:23 -0700
+	Tue,  3 Jan 2006 19:08:44 +1100 (EST)
+Message-ID: <43BA30E6.6090702@secretlab.ca>
+Date: Tue, 03 Jan 2006 01:08:06 -0700
 From: Grant Likely <grant.likely@secretlab.ca>
 MIME-Version: 1.0
-To: Brett McNerney <mcnernbm@notes.udayton.edu>
-References: <000101c61017$ec64d080$0202a8c0@lilmac>
-In-Reply-To: <000101c61017$ec64d080$0202a8c0@lilmac>
+To: Florian <linuxppc-embedded@ozlabs.org>
+References: <20060103010004.85C2268979@ozlabs.org>
+	<43BA2944.5030903@ozlabs.org>
+In-Reply-To: <43BA2944.5030903@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Custom Driver
+Subject: Re: [PATCH 8/8] Add support for Xilinx ML403 reference design
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,21 +23,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Brett McNerney wrote:
-> I am need to create a driver to interface to custom hardware on a ml403
-> board.  I am first trying to just create a ipif register bank and access
-> the registers from linux but am not having any luck of yet.  Has anyone
-> successfully done this and if so explain how or supply a driver to do
-> this and how to build it into the kernel?  I am new at this and am
-> having great difficutly right now. 
+Florian wrote:
+>>> Yes. I am also working on a Virtex-4 system with Linux.
+>>> Do you support also a Linux 2.4 tree?
+>>
+>>
+>> Sorry, no.  I'm focusing on the 2.6 stuff.  IIRC, the Denx tree is
+>> tracking the virtex support in 2.4.
+>>
+>> Are you strictly working on 2.4?  Or are you interested in 2.6 as well?
 > 
-> Thanks for any help anyone can supply
-Can you access your device from a debugger, or a no-os program (like a
-bootloader)?  Did you call ioremap() to map the physical register
-address into virtual memory?  Can you give more detail?
+> 
+> I am working with the Montavista 2.4 sources.
+> 2.6 is also possible but I read 2.6 is not better than 2.4 for embedded
+> systems.
+> We didn't make a final decision so you can convince me to try 2.6.
+Nah, that sounds like to much work.  :)  Choose what works for you.  If
+2.4 has the features you need then go for it.  (just keep in mind that
+most new development it focused on 2.6)
 
 g.
-
 
 -- 
 Grant Likely, B.Sc. P.Eng.
