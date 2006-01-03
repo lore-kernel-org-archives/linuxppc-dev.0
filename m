@@ -1,21 +1,20 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from xm.dlasys.net (unknown [24.152.213.223])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A395D68914
+Return-Path: <happyphot@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.207])
+	by ozlabs.org (Postfix) with ESMTP id 1E47368910
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 Jan 2006 21:46:26 +1100 (EST)
-Message-ID: <43B6B32A.5060606@dlasys.net>
-Date: Sat, 31 Dec 2005 11:34:50 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Tue,  3 Jan 2006 13:48:16 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id z31so2310486nzd
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 02 Jan 2006 18:48:15 -0800 (PST)
+Message-ID: <00af01c61010$245773b0$0760120a@photon>
+From: "HappyPhot" <happyphot@gmail.com>
+To: "David Jander" <david.jander@protonic.nl>, <linuxppc-embedded@ozlabs.org>
+References: <000701c60fab$9fdca6a0$0760120a@photon>
+	<200601021657.35359.david.jander@protonic.nl>
+Date: Tue, 3 Jan 2006 10:48:02 +0800
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-References: <11359385991901-git-send-email-grant.likely@secretlab.ca>	<43B5E37A.4020008@dlasys.net>
-	<43B601CC.1000102@secretlab.ca>
-In-Reply-To: <43B601CC.1000102@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH 8/8] Add support for Xilinx ML403 reference design
+Content-Type: text/plain; format=flowed; charset="big5"; reply-type=original
+Subject: Re: VFS: Cannot open root device "31:03" or unknown-block(31,3)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,28 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> David H. Lynch Jr. wrote:
+> On Monday 02 January 2006 15:48, HappyPhot wrote:
+>> Hi,
+>>   I've suffered for many days and "google" almost every where.
+>> I would like to boot from the flash with jffs2 (i.e. using jffs2 as my
+>> root /) . But it alyaws shows:
+>> VFS: Cannot open root device..... (whole message is as below)
+>>
+>>   Anybody knows what may cause this ? Please help and
+>> thank you.
+>>[...]
+>
+> You omitted the interesting part of the log output, the bootarguments at 
+> the
+> very beginning. What is the value of root= ?
+> Maybe you made the typical mistake of specifying /dev/mtd3 instead
+> of /dev/mtdblock3, or you didn't compile in support for mtd access as a 
+> block
+> device?
+>
 
-> 
-> Since the E-12 is a commercially available board, it would be useful to
-> have the patches on the ML, even if they don't get applied to mainline.
+Hi, David and all,
+  I've tried root=/dev/mtdblock3, root=/dev/mtd3, root=31:03 etc.  And 
+"Caching
+block device access to MTD devices" was also selected when 'make 
+menuconfig'.
+The results were the same.
+  I use "phys_mapped_flash" and "mtdparts=phys_mapped_flash:2M(k4),2M(k6),
+4M(rd),4M(jffs2),-(User_Data)". What is the "root=" I should use ?
 
-	So at what state should things be at before posting them ?
+  Also, I am wondering how the kernel knows "/dev/mtdblock3" is in my flash 
+?
+I think I never do any setting about this....
 
-	Right now:
-		The basic E-12 stuff is complete - though it couls use some polish. It
-was based on the ML300 code, and almost certainly overlaps and conflicts
-with your ML403 work. I would be happy to reconcile them, but I would
-need to know what to work against.
-
-		I am not a git expert at this point. I am working against the 2.6.14.5
-source3 on kernel.org. There are numerous git trees what is the right one ?
-
-	
-		The serial/console drivers for the "Keyhole" - a bidirectional link
-between a Linux/Windows development host and the E-12, and the Xilinx
-UartLite are in (hopefully) late debugging, Output is probably complete,
-UartLite input needs testing, Keyhole input needs alot of work - among
-other things the host side is still only a display, so it is somewhat
-difficult to do the Linux input side.
+thank you ,
+/HappyPhot
