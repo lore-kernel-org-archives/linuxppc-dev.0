@@ -1,18 +1,12 @@
-Return-Path: <andreas_schmidt@ifm-electronic.com>
-Received: from mail1.ifm-electronic.com (mail1.ifm-electronic.com
-	[62.180.229.59]) by ozlabs.org (Postfix) with ESMTP id 30ACF688F3
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 Jan 2006 23:36:36 +1100 (EST)
-In-Reply-To: <43B9F69B.6090407@secretlab.ca>
-To: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <noe.serres@gmail.com>
+Message-ID: <f8bc181b0601030606x3b29ee28q@mail.gmail.com>
+Date: Tue, 3 Jan 2006 15:06:40 +0100
+From: =?ISO-8859-1?Q?No=E9_SERRES?= <noe.serres@gmail.com>
+To: Linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Message-ID: <OF6AA099E7.718620CD-ONC12570EB.0042FAA2-C12570EB.004384F8@ifm-electronic.com>
-From: andreas_schmidt@ifm-electronic.com
-Date: Tue, 3 Jan 2006 13:16:23 +0100
 Content-Type: multipart/alternative;
-	boundary="=_alternative 004384F5C12570EB_="
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Re: Custom Driver
+	boundary="----=_Part_31048_3624195.1136297200002"
+Subject: "argument list too long"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,71 +17,91 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dies ist eine mehrteilige Nachricht im MIME-Format.
---=_alternative 004384F5C12570EB_=
-Content-Type: text/plain; charset="US-ASCII"
+------=_Part_31048_3624195.1136297200002
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
->Brett McNerney wrote:
->> I am need to create a driver to interface to custom hardware on a ml403
->> board.  I am first trying to just create a ipif register bank and 
-access
->> the registers from linux but am not having any luck of yet.  Has anyone
->> successfully done this and if so explain how or supply a driver to do
->> this and how to build it into the kernel?  I am new at this and am
->> having great difficutly right now. 
->> 
->> Thanks for any help anyone can supply
->Can you access your device from a debugger, or a no-os program (like a
->bootloader)?  Did you call ioremap() to map the physical register
->address into virtual memory?  Can you give more detail?
+Hi,
 
-I have already wrote I custom driver for Xilinx FPGA. 
-For this I have looked to already exist driver for Xilinx in Linux tree 
-and modify them for me.
-It was no problem then.
+I'm trying to compile a kernel for an embedded-powerpc-linux application.
+As a first step/training, I followed closely the instructions of the
+document "The DENX U-Boot and Linux Guide" for a TQM8XXL board, that is to
+say:
 
-g.
+bash$ mrproper
+bash$ make TQM823L_config
+bash$ make oldconfig
+bash$ make dep
 
+After a few minutes of dependency creation, I get the following error
+"argument list too long":
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 663-0761
---=_alternative 004384F5C12570EB_=
-Content-Type: text/html; charset="US-ASCII"
+scripts/mkdep -- `find
+/usr/src/linuxppc_2_4_devel-2005-10-25-1440/include/asm
+/usr/src/linuxppc_2_4
+_devel-2005-10-25-1440/include/linux
+/usr/src/linuxppc_2_4_devel-2005-10-25-1440/include/scsi /usr/s
+rc/linuxppc_2_4_devel-2005-10-25-1440/include/net
+/usr/src/linuxppc_2_4_devel-2005-10-25-1440/includ
+e/math-emu \( -name SCCS -o -name .svn \) -prune -o -follow -name \*.h !
+-name modversions.h -print`
+ > .hdepend
+scripts/mkdep: argument list too long
+make: *** [dep-files] Error 2
 
+Can someone help me understand where that comes from?
+Does it have something to do with the fact that I work under WinXP + Cygwin=
+?
+No need to say that I am a newbie to the Linux world... help me, Wolfgang
+:-)
 
+Noe Serres
+Midi Ingenierie
+Toulouse (FR)
+
+------=_Part_31048_3624195.1136297200002
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi,<br>
 <br>
-<br><font size=2><tt>&gt;Brett McNerney wrote:<br>
-&gt;&gt; I am need to create a driver to interface to custom hardware on
-a ml403<br>
-&gt;&gt; board. &nbsp;I am first trying to just create a ipif register
-bank and access<br>
-&gt;&gt; the registers from linux but am not having any luck of yet. &nbsp;Has
-anyone<br>
-&gt;&gt; successfully done this and if so explain how or supply a driver
-to do<br>
-&gt;&gt; this and how to build it into the kernel? &nbsp;I am new at this
-and am<br>
-&gt;&gt; having great difficutly right now. <br>
-&gt;&gt; <br>
-&gt;&gt; Thanks for any help anyone can supply<br>
-&gt;Can you access your device from a debugger, or a no-os program (like
-a<br>
-&gt;bootloader)? &nbsp;Did you call ioremap() to map the physical register<br>
-&gt;address into virtual memory? &nbsp;Can you give more detail?</tt></font>
+I'm trying to compile a kernel for an embedded-powerpc-linux application.<b=
+r>
+As a first step/training, I followed closely the instructions of the
+document &quot;The DENX U-Boot and Linux Guide&quot; for a TQM8XXL board, t=
+hat is
+to say:<br>
 <br>
-<br><font size=2><tt>I have already wrote I custom driver for Xilinx FPGA.
-</tt></font>
-<br><font size=2><tt>For this I have looked to already exist driver for
-Xilinx in Linux tree and modify them for me.<br>
-It was no problem then.</tt></font>
-<br><font size=2><tt><br>
-g.<br>
+bash$ mrproper<br>
+bash$ make TQM823L_config<br>
+bash$ make oldconfig<br>
+bash$ make dep<br>
 <br>
+After a few minutes of dependency creation, I get the following error &quot=
+;argument list too long&quot;:<br>
 <br>
--- <br>
-Grant Likely, B.Sc. P.Eng.<br>
-Secret Lab Technologies Ltd.<br>
-(403) 663-0761</tt></font>
---=_alternative 004384F5C12570EB_=--
+scripts/mkdep -- `find /usr/src/linuxppc_2_4_devel-2005-10-25-1440/include/=
+asm /usr/src/linuxppc_2_4<br>
+_devel-2005-10-25-1440/include/linux /usr/src/linuxppc_2_4_devel-2005-10-25=
+-1440/include/scsi /usr/s<br>
+rc/linuxppc_2_4_devel-2005-10-25-1440/include/net /usr/src/linuxppc_2_4_dev=
+el-2005-10-25-1440/includ<br>
+e/math-emu \( -name SCCS -o -name .svn \) -prune -o -follow -name \*.h ! -n=
+ame modversions.h -print`<br>
+&nbsp;&gt; .hdepend<br>
+scripts/mkdep: argument list too long<br>
+make: *** [dep-files] Error 2<br>
+<br>
+Can someone help me understand where that comes from?<br>
+Does it have something to do with the fact that I work under WinXP + Cygwin=
+?<br>
+No need to say that I am a newbie to the Linux world... help me, Wolfgang :=
+-)<br>
+<br>
+Noe Serres<br>
+Midi Ingenierie<br>
+Toulouse (FR)
+
+------=_Part_31048_3624195.1136297200002--
