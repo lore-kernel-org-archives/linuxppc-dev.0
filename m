@@ -1,18 +1,19 @@
-Return-Path: <matthias.transier@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.195])
-	by ozlabs.org (Postfix) with ESMTP id 9FA5D688F3
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 51D95688F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Jan 2006 22:34:04 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id 69so2294112wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 04 Jan 2006 03:34:02 -0800 (PST)
-Message-ID: <b789c2e60601040333o42d64c52n@mail.gmail.com>
-Date: Wed, 4 Jan 2006 12:33:58 +0100
-From: Matthias Transier <matthias.transier@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: Segmentation fault with X.org and Coral-P drivers
+	Thu,  5 Jan 2006 02:48:14 +1100 (EST)
+To: Matthias Transier <matthias.transier@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 04 Jan 2006 12:33:58 +0100."
+	<b789c2e60601040333o42d64c52n@mail.gmail.com>
+Date: Wed, 04 Jan 2006 16:48:12 +0100
+Sender: wd@denx.de
+Message-Id: <20060104154812.24858352B1E@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Segmentation fault with X.org and Coral-P drivers 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,75 +24,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello everybody,
+Dear Matthias,
 
-I have been trying to get X.org running on a board called "Embedded
-Planet EP5200C" (it seems to be a "Freescale Lite5200") and a Fujitsu
-Coral-P (Rev 5.0). I am using the 2.4 kernel from denx.de and
-succesfully installed gentoo-ppc on nfs. The framebuffer works, I get
-a login prompt on the monitor.
+in message <b789c2e60601040333o42d64c52n@mail.gmail.com> you wrote:
+> 
+> I have been trying to get X.org running on a board called "Embedded
+> Planet EP5200C" (it seems to be a "Freescale Lite5200") and a Fujitsu
 
-Now I compiled x.org-6.8.2 (gentoo -r4) and the mb86290 driver from
-denx.de. Unfortunately, it does not work and I get a segmentation
-fault when trying to startx. strace produces the output attached
-below.
+Umm... no. Embedded Plaet and Freescale are two different  companies,
+and EP5200 and Lite5200 are two different boards.
 
-Can anybody give me a hint how to proceed?
+> Coral-P (Rev 5.0). I am using the 2.4 kernel from denx.de and
 
-Regards,
-Matthias
+Our kernel does not include any support for the EP5200 board.
 
+> succesfully installed gentoo-ppc on nfs. The framebuffer works, I get
+> a login prompt on the monitor.
+> 
+> Now I compiled x.org-6.8.2 (gentoo -r4) and the mb86290 driver from
+> denx.de. Unfortunately, it does not work and I get a segmentation
+> fault when trying to startx. strace produces the output attached
+> below.
 
-[...]
-mmap(NULL, 33554432, PROT_READ|PROT_WRITE, MAP_SHARED, 6, 0) =3D 0x30042000
-ioctl(6, FBIOGET_VSCREENINFO, 0x105dfa58) =3D 0
-ioctl(6, FBIOPUT_VSCREENINFO, 0x105df9b8) =3D 0
-ioctl(6, FBIOGET_FSCREENINFO, 0x105df974) =3D 0
-ioctl(6, FBIOGET_VSCREENINFO, 0x105df9b8) =3D 0
-ioctl(6, FBIOBLANK, 0x1)                =3D 0
-ioctl(6, FBIOPAN_DISPLAY, 0x105df9b8)   =3D 0
-write(0, "(=3D=3D) MB86290(0): Backing store d"..., 40) =3D 40
-write(0, "(II) MB86290(0): Using XFree86 A"..., 63) =3D 63
-write(0, "\tScreen to screen bit blits\n", 28) =3D 28
-write(0, "\tSolid filled rectangles\n", 25) =3D 25
-write(0, "\t8x8 mono pattern filled rectang"..., 36) =3D 36
-write(0, "\tIndirect CPU to Screen color ex"..., 40) =3D 40
-write(0, "\tSolid Lines\n", 13)         =3D 13
-write(0, "\tDashed Lines\n", 14)        =3D 14
-write(0, "(II) MB86290(0): Acceleration en"..., 38) =3D 38
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
-ioctl(6, FBIOPUTCMAP, 0x7ffff930)       =3D 0
---- SIGSEGV (Segmentation fault) @ 0 (0) ---
-rt_sigaction(SIGSEGV, {SIG_IGN}, {0x100424d0, [SEGV], SA_RESTART}, 8) =3D 0
-write(2, "\n   *** If unresolved symbols we"..., 112
-[...]
+Please read the documentation that comes with the driver:
+ftp://ftp.denx.de/pub/fujitsu/Coral-P/README.html
+
+Note that the driver was  built  and  tested  against  xfree86-4.3.0;
+don't  expect  the  binary  to  work  in  a  completely different X11
+release. You wil have to rebuild (and eventually  adapt)  the  driver
+for your environment.
+
+Feel free to contact me if you need help.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+What can it profit a man to gain the whole world and to come  to  his
+property with a gastric ulcer, a blown prostate, and bifocals?
+                                     -- John Steinbeck, _Cannery Row_
