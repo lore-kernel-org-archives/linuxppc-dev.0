@@ -1,15 +1,19 @@
-Return-Path: <wd@denx.de>
-To: stefan.eletzhofer@inquant.de
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 04 Jan 2006 14:08:05 +0100."
-	<1136380085.15908.15.camel@localhost>
-Date: Wed, 04 Jan 2006 14:36:18 +0100
-Sender: wd@denx.de
-Message-Id: <20060104133618.0020E352B1E@atlas.denx.de>
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: "argument list too long" 
+Return-Path: <nathael.pajani@cpe.fr>
+Received: from smtp-out.completel.net (smtp-out.completel.net [83.145.110.36])
+	by ozlabs.org (Postfix) with ESMTP id 37E3E689AA
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  5 Jan 2006 00:40:56 +1100 (EST)
+Received: from linuxdev.ECRIN-CROLLES (unknown [83.145.98.3])
+	by smtp-out.completel.net (Postfix) with ESMTP id D1ABC280031
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  4 Jan 2006 14:40:54 +0100 (CET)
+Date: Wed, 4 Jan 2006 14:44:40 +0100
+From: Nathael Pajani <nathael.pajani@cpe.fr>
+To: linuxppc-embedded@ozlabs.org
+Message-Id: <20060104144440.5af3d88d.nathael.pajani@cpe.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: Cross Compiling driver for PPC
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,27 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1136380085.15908.15.camel@localhost> you wrote:
-> 
-> > +	find $(FINDHPATH) \( -name SCCS -o -name .svn \) -prune -o -follow -name \*.h ! -name modversions.h -print | xargs scripts/mkdep -- > .hdepend
-> >  	scripts/mkdep -- init/*.c > .depend
-> 
-> Would'nt this overwrite .depend if xargs executes mkdep more than once?
+Hi
 
-No, why should it? The filr eredirection happens just  once,  in  the
-shell,  even before xargs gets executed. It does not matter how often
-mkdep gets called then.
+> We are trying to port a newly developed device driver for powerPC .
+> We are unable to compile it for powerpc driver on Host platform.
+> Please give us the way to compile the device driver
+=20
+You need to cross compile, which means having a ggc for powerpc in addition=
+ to the gcc you have for your developpement machine.
+I do not know whether you will find it on the net, usualy you have to recom=
+pile gcc (and "ld" and "ar" and so on, the whole gcc toolchain I think) wit=
+h specific options
 
-> I'd suggest (beware, manually hacked diff ;):
+Then you will have a powerpc-linux-gcc (for example) which will be able to =
+compile for powerpc
+then, you will have some modifications to do in the makefiles: look for thi=
+s string: "CROSS_COMPILE" and set it to "powerpc-linux-" (or whatever is th=
+e prefix for you gcc).
+I also created a ".arch" file at the base of the source tree, containing "p=
+pc" and some other modifications in makefiles, but I cannot tell you wich..=
+. and wether they are usefull. You'll have to try.
 
-I have no idea what you're trying to fix or improve with this.
+Then add "ARCH=3Dppc" option to the make command when you want to compile y=
+our kernel for powerpc.
 
-Best regards,
+Have fun.
++++
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-For every complex problem, there is a solution that is simple,  neat,
-and wrong.                                               - Mark Twain
+----=20
+Nathael PAJANI
+Ing=E9nieur CPE Lyon
+nathael.pajani@cpe.fr
