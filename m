@@ -1,17 +1,21 @@
-Return-Path: <stefan.eletzhofer@inquant.de>
-From: Stefan Eletzhofer <stefan.eletzhofer@inquant.de>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20060104133618.0020E352B1E@atlas.denx.de>
-References: <20060104133618.0020E352B1E@atlas.denx.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-2xC4ICLD1/RaHDiv9YFF"
-Date: Wed, 04 Jan 2006 14:53:54 +0100
-Message-Id: <1136382834.15908.17.camel@localhost>
-Mime-Version: 1.0
-Cc: Linuxppc-embedded@ozlabs.org
-Subject: Re: "argument list too long"
-Reply-To: stefan.eletzhofer@inquant.de
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 88A846899F
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  5 Jan 2006 02:00:54 +1100 (EST)
+In-Reply-To: <20060104110440.13a4dc16.nathael.pajani@cpe.fr>
+References: <20060104110440.13a4dc16.nathael.pajani@cpe.fr>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <521677D9-902C-4474-AF52-5474E7C35B05@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 4 Jan 2006 09:00:46 -0600
+To: Nathael Pajani <nathael.pajani@cpe.fr>
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: question about arch_initcall()
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,59 +26,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Its like any other init call.
 
---=-2xC4ICLD1/RaHDiv9YFF
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+As for order look at include/linux/init.h
 
-Am Mittwoch, den 04.01.2006, 14:36 +0100 schrieb Wolfgang Denk:
-> In message <1136380085.15908.15.camel@localhost> you wrote:
-> >=20
-> > > +	find $(FINDHPATH) \( -name SCCS -o -name .svn \) -prune -o -follow =
--name \*.h ! -name modversions.h -print | xargs scripts/mkdep -- > .hdepend
-> > >  	scripts/mkdep -- init/*.c > .depend
-> >=20
-> > Would'nt this overwrite .depend if xargs executes mkdep more than once?
->=20
-> No, why should it? The filr eredirection happens just  once,  in  the
-> shell,  even before xargs gets executed. It does not matter how often
-> mkdep gets called then.
+core_initcall() first and late_initcall() last.
 
-Gah. You're right, of course ;/=20
+There is no guarntee of the order in which functions are called =20
+inside one group.
 
->=20
-> > I'd suggest (beware, manually hacked diff ;):
->=20
-> I have no idea what you're trying to fix or improve with this.
+- kumar
 
-"problem is in front of keyboard" Oder so.
+On Jan 4, 2006, at 4:04 AM, Nathael Pajani wrote:
 
->=20
-> Best regards,
->=20
-> Wolfgang Denk
->=20
---=20
-Stefan Eletzhofer
-InQuant GmbH
-Bahnhofstra=C3=9Fe 11
-D-88214 Ravensburg
-http://www.inquant.de
-http://www.eletztrick.de
-+49 (0) 751 35 44 112
-+49 (0) 171 23 24 529 (Mobil)
-+49 (0) 751 35 44 115 (FAX)
+> Hi all
+>
+> I would like to know how this macro is used, and when is called the =20=
 
---=-2xC4ICLD1/RaHDiv9YFF
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Dies ist ein digital signierter Nachrichtenteil
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBDu9Ny20PMGlcwuNARAkJVAJ9CI3CUtUdclB+KHXx6IYE8LSdZZQCfTPLH
-sJrzwA76o6C+hGDKaz7rZ0o=
-=ZFTa
------END PGP SIGNATURE-----
-
---=-2xC4ICLD1/RaHDiv9YFF--
+> function registered with it.
+>
+> thanks for all.
+>
+>
+> ----
+> Nathael PAJANI
+> Ing=E9nieur CPE Lyon
+> nathael.pajani@cpe.fr
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
