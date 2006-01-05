@@ -1,19 +1,19 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from outbound-mail-35.bluehost.com (outbound-mail-35.bluehost.com
-	[70.96.188.155]) by ozlabs.org (Postfix) with SMTP id B7ABF689BB
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jan 2006 03:06:05 +1100 (EST)
-Message-ID: <43BD43A0.5060509@secretlab.ca>
-Date: Thu, 05 Jan 2006 09:04:48 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <nfn22894@naples.net>
+Received: from mail.naples.net (mail.naples.net [205.160.191.5])
+	by ozlabs.org (Postfix) with ESMTP id AD978689AD
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jan 2006 07:55:53 +1100 (EST)
+Received: from june (unknown [199.44.82.87])
+	by mail.naples.net (Postfix) with SMTP id DB0371236FB
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jan 2006 15:31:23 -0500 (EST)
+Message-ID: <000501c61236$f3b3ab10$647ba8c0@june>
+From: "J Bucknell" <nfn22894@naples.net>
+To: <linuxppc-dev@ozlabs.org>
+Date: Thu, 5 Jan 2006 15:31:02 -0500
 MIME-Version: 1.0
-To: Sebastian Heutling <sheutlin@gmx.de>
-References: <E1EtnU9-0008HI-I0@spohr.debian.org>	<20051230171705.32043.38767.reportbug@sengor.ath.cx>	<handler.345424.D345424.113629990832428.notifdone@bugs.debian.org>
-	<43BCFA15.5070304@gmx.de>
-In-Reply-To: <43BCFA15.5070304@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: How to build the zImage.prep was Re: Bug#345424 acknowledged
- by developer         (Bug#345424: fixed in linux-2.6 2.6.15-1)
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0002_01C6120D.097A6990"
+Subject: [PATCH 6/82] remove linux/version.h include from arch/ppc
+Reply-To: J Bucknell <nfn22894@naples.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sebastian Heutling wrote:
-> Hi Sven,
-> 
-> Before trying to build a kernel myself I tried the debian linux binary
-> image. An image for powerpc is not there yet so I used rc7. I netbooted
-> "/boot/vmlinuz-2.6.15-rc7-powerpc" and the result was that I got a lot
-> of output saying that there is something wrong. I assume the output was
-> from the firmware because the kernel usually doesn't report an endless
-> list of errors saying something about "stack exception" every now and
-> then and mostly printing zeros followed by a new line character.
-Have you tried 2.6.14?  I'm having a similar issue with PReP images
-using QEMU.  2.6.14 works, but 2.6.15 is busted.  It *might* be the same
-issue.
+This is a multi-part message in MIME format.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2005-December/020782.html
+------=_NextPart_000_0002_01C6120D.097A6990
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I was able to use git-bisect to narrow it down to 20 or so changes, but
-I didn't get any farther.
+please remove
+------=_NextPart_000_0002_01C6120D.097A6990
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-g.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.2627" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>please =
+remove</FONT></DIV></BODY></HTML>
 
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 663-0761
+------=_NextPart_000_0002_01C6120D.097A6990--
