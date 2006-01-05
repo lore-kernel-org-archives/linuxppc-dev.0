@@ -1,19 +1,16 @@
-Return-Path: <rmk+linuxppc-embedded=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[212.18.232.186])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4CBBD688DC
+Return-Path: <grant.likely@secretlab.ca>
+Received: from outbound-mail-02.bluehost.com (outbound-mail-02.bluehost.com
+	[70.103.189.12]) by ozlabs.org (Postfix) with SMTP id CE6E46899B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Jan 2006 01:36:58 +1100 (EST)
-To: LKML <linux-kernel@vger.kernel.org>
-Date: Thu, 05 Jan 2006 14:36:47 +0000
-Message-ID: <20060105142951.13.14@flint.arm.linux.org.uk>
-In-reply-to: <20060105142951.13.01@flint.arm.linux.org.uk>
-References: <20060105142951.13.01@flint.arm.linux.org.uk>
-From: Russell King <rmk@arm.linux.org.uk>
-Cc: Greg K-H <greg@kroah.com>, PPC <linuxppc-embedded@ozlabs.org>
-Subject: [CFT 14/29] Add vio_bus_type probe and remove methods
+	Fri,  6 Jan 2006 04:50:08 +1100 (EST)
+Message-ID: <43BD5C0A.3080706@secretlab.ca>
+Date: Thu, 05 Jan 2006 10:48:58 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+MIME-Version: 1.0
+To: trini@kernel.crashing.org,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH] fix ML300 zImage in 2.6.15
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,39 +21,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+2.6.15 doesn't build a bootable zImage for the ML300 because
+embed_config.o is no longer linked in.  This patch adds it back in.
 
----
- arch/powerpc/kernel/vio.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-diff -up -x BitKeeper -x ChangeSet -x SCCS -x _xlk -x *.orig -x *.rej -x .git linus/arch/powerpc/kernel/vio.c linux/arch/powerpc/kernel/vio.c
---- linus/arch/powerpc/kernel/vio.c	Wed Nov  9 19:20:14 2005
-+++ linux/arch/powerpc/kernel/vio.c	Sun Nov 13 16:14:10 2005
-@@ -76,7 +76,7 @@ static void vio_bus_shutdown(struct devi
- 	struct vio_dev *viodev = to_vio_dev(dev);
- 	struct vio_driver *viodrv = to_vio_driver(dev->driver);
- 
--	if (viodrv->shutdown)
-+	if (dev->driver && viodrv->shutdown)
- 		viodrv->shutdown(viodev);
- }
- 
-@@ -91,9 +91,6 @@ int vio_register_driver(struct vio_drive
- 
- 	/* fill in 'struct driver' fields */
- 	viodrv->driver.bus = &vio_bus_type;
--	viodrv->driver.probe = vio_bus_probe;
--	viodrv->driver.remove = vio_bus_remove;
--	viodrv->driver.shutdown = vio_bus_shutdown;
- 
- 	return driver_register(&viodrv->driver);
- }
-@@ -295,4 +292,7 @@ struct bus_type vio_bus_type = {
- 	.name = "vio",
- 	.hotplug = vio_hotplug,
- 	.match = vio_bus_match,
-+	.probe = vio_bus_probe,
-+	.remove = vio_bus_remove,
-+	.shutdown = vio_bus_shutdown,
- };
+diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
+index f3e9c53..5699659 100644
+--- a/arch/ppc/boot/simple/Makefile
++++ b/arch/ppc/boot/simple/Makefile
+@@ -188,6 +188,7 @@ OBJCOPY_ARGS                        := -O elf32-powerpc
+ boot-y                         := head.o relocate.o $(extra.o-y) $(misc-y)
+ boot-$(CONFIG_REDWOOD_5)       += embed_config.o
+ boot-$(CONFIG_REDWOOD_6)       += embed_config.o
++boot-$(CONFIG_XILINX_ML300)    += embed_config.o
+ boot-$(CONFIG_8xx)             += embed_config.o
+ boot-$(CONFIG_8260)            += embed_config.o
+ boot-$(CONFIG_BSEIP)           += iic.o
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 663-0761
