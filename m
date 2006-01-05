@@ -1,18 +1,19 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[212.18.232.186])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D96A1689BA
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jan 2006 01:39:34 +1100 (EST)
-To: LKML <linux-kernel@vger.kernel.org>
-Date: Thu, 05 Jan 2006 14:39:24 +0000
-Message-ID: <20060105142951.13.19@flint.arm.linux.org.uk>
-In-reply-to: <20060105142951.13.01@flint.arm.linux.org.uk>
-References: <20060105142951.13.01@flint.arm.linux.org.uk>
-From: Russell King <rmk@arm.linux.org.uk>
-Cc: Greg K-H <greg@kroah.com>, MAC <linuxppc-dev@ozlabs.org>
-Subject: [CFT 19/29] Add macio_bus_type probe and remove methods
+Return-Path: <grant.likely@secretlab.ca>
+Received: from outbound-mail-35.bluehost.com (outbound-mail-35.bluehost.com
+	[70.96.188.155]) by ozlabs.org (Postfix) with SMTP id B7ABF689BB
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Jan 2006 03:06:05 +1100 (EST)
+Message-ID: <43BD43A0.5060509@secretlab.ca>
+Date: Thu, 05 Jan 2006 09:04:48 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
+MIME-Version: 1.0
+To: Sebastian Heutling <sheutlin@gmx.de>
+References: <E1EtnU9-0008HI-I0@spohr.debian.org>	<20051230171705.32043.38767.reportbug@sengor.ath.cx>	<handler.345424.D345424.113629990832428.notifdone@bugs.debian.org>
+	<43BCFA15.5070304@gmx.de>
+In-Reply-To: <43BCFA15.5070304@gmx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: How to build the zImage.prep was Re: Bug#345424 acknowledged
+ by developer         (Bug#345424: fixed in linux-2.6 2.6.15-1)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Sebastian Heutling wrote:
+> Hi Sven,
+> 
+> Before trying to build a kernel myself I tried the debian linux binary
+> image. An image for powerpc is not there yet so I used rc7. I netbooted
+> "/boot/vmlinuz-2.6.15-rc7-powerpc" and the result was that I got a lot
+> of output saying that there is something wrong. I assume the output was
+> from the firmware because the kernel usually doesn't report an endless
+> list of errors saying something about "stack exception" every now and
+> then and mostly printing zeros followed by a new line character.
+Have you tried 2.6.14?  I'm having a similar issue with PReP images
+using QEMU.  2.6.14 works, but 2.6.15 is busted.  It *might* be the same
+issue.
 
----
- drivers/macintosh/macio_asic.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+http://ozlabs.org/pipermail/linuxppc-dev/2005-December/020782.html
 
-diff -up -x BitKeeper -x ChangeSet -x SCCS -x _xlk -x *.orig -x *.rej -x .git linus/drivers/macintosh/macio_asic.c linux/drivers/macintosh/macio_asic.c
---- linus/drivers/macintosh/macio_asic.c	Sun Nov  6 22:16:28 2005
-+++ linux/drivers/macintosh/macio_asic.c	Sun Nov 13 16:28:39 2005
-@@ -204,6 +204,9 @@ struct bus_type macio_bus_type = {
-        .name	= "macio",
-        .match	= macio_bus_match,
-        .hotplug = macio_hotplug,
-+       .probe	= macio_device_probe,
-+       .remove	= macio_device_remove,
-+       .shutdown = macio_device_shutdown,
-        .suspend	= macio_device_suspend,
-        .resume	= macio_device_resume,
-        .dev_attrs = macio_dev_attrs,
-@@ -487,9 +490,6 @@ int macio_register_driver(struct macio_d
- 	/* initialize common driver fields */
- 	drv->driver.name = drv->name;
- 	drv->driver.bus = &macio_bus_type;
--	drv->driver.probe = macio_device_probe;
--	drv->driver.remove = macio_device_remove;
--	drv->driver.shutdown = macio_device_shutdown;
- 
- 	/* register with core */
- 	count = driver_register(&drv->driver);
+I was able to use git-bisect to narrow it down to 20 or so changes, but
+I didn't get any farther.
+
+Cheers,
+g.
+
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 663-0761
