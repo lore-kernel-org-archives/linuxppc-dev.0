@@ -1,13 +1,13 @@
 Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Thu, 05 Jan 2006 16:47:18 +1100
-Message-Id: <1136440038.4840.55.camel@localhost.localdomain>
+Date: Thu, 05 Jan 2006 18:03:14 +1100
+Message-Id: <1136444594.4840.69.camel@localhost.localdomain>
 Mime-Version: 1.0
-Subject: [PATCH] powerpc: Add cpufreq for various G5 machines
+Subject: [PATCH] powerpc: Add cpufreq for various G5 machines (#2)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +21,33 @@ This patch uses the platform function patch posted earlier to implement
 cpu frequency switching on various G5 models. For now, this should work
 with all PowerMac7,2 and 7,3 (in addition to the code that was already
 there for iMac G5 and PowerMac9,1), that is desktop modeles with an AGP
-slot (not the newest PCI Express ones yet, that will be next).
+slot and the desktop PCI Express ones (like the Quad G5). At this point,
+the only models still not supported are the iMac G5 iSight
+(PowerMac12,1) and the Xserve G5 (RackMac3,1)
 
-I tested it on the dual 2.5 Ghz here (pulsar clock chip) but I haven't
-had a chance to test it on other models using other frequencies or other
-clock chips. It's also not hooked to the thermal control code at all
-yet, this will happen once I port therm_pm72 to the windfarm
-architecture.
+I tested it on the dual 2.5 Ghz here (pulsar clock chip) and the Quad g5
+but I haven't had a chance to test it on other models using other
+frequencies or other clock chips. It's also not hooked to the thermal
+control code at all yet, this will happen once I port therm_pm72 to the
+windfarm architecture.
 
 I didn't found a nice & clear way to "know" what the low frequency value
-is (I only know how to tell the clock chip to slew to "low speed", not
-what "low speed" really is). I think I found a way to figure it out, but
-it might not work on all models, thus you might end up with a slightly
-incorrect value when running low speed in /proc/cpuinfo, though that
-should have no other effect since the kernel doesn't rely on the CPU
-core frequency for it's timekeeping. If you want to verify, you can use
-the little hack at http://gate.crashing.org/~benh/cpufreq_g5.c which
-attempts to "measure" the cpu frequency (970 only).
-
+is on the PowerMac7,2 and 7,3 models. (I only know how to tell the clock
+chip to slew to "low speed", not what "low speed" really is).
+I think I found a way to figure it out, but it might not work on all
+models, thus you might end up with a slightly incorrect value when
+running low speed in /proc/cpuinfo, though that should have no other
+effect since the kernel doesn't rely on the CPU core frequency for it's
+timekeeping. If you want to verify, you can use the little hack at
+http://gate.crashing.org/~benh/cpufreq_g5.c which attempts to "measure"
+the cpu frequency (970 only).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
 ===================================================================
 --- linux-work.orig/arch/powerpc/platforms/powermac/cpufreq_64.c	2006-01-05 15:11:16.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c	2006-01-05 16:18:23.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c	2006-01-05 17:49:33.000000000 +1100
 @@ -28,6 +28,7 @@
  #include <asm/cputable.h>
  #include <asm/time.h>
@@ -65,46 +67,80 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
  static DECLARE_MUTEX(g5_switch_mutex);
  
  
-@@ -92,9 +97,12 @@
+@@ -92,9 +97,11 @@
  static int g5_fvt_count;			/* number of op. points */
  static int g5_fvt_cur;				/* current op. point */
  
 -/* ----------------- real hardware interface */
- 
--static void g5_switch_volt(int speed_mode)
 +/*
 + * SMU based voltage switching for Neo2 platforms
 + */
-+
+ 
+-static void g5_switch_volt(int speed_mode)
 +static void g5_smu_switch_volt(int speed_mode)
  {
  	struct smu_simple_cmd	cmd;
  
-@@ -105,26 +113,20 @@
+@@ -105,26 +112,57 @@
  	wait_for_completion(&comp);
  }
  
 -static int g5_switch_freq(int speed_mode)
+-{
+-	struct cpufreq_freqs freqs;
+-	int to;
++/*
++ * Platform function based voltage/vdnap switching for Neo2
++ */
+ 
+-	if (g5_pmode_cur == speed_mode)
+-		return 0;
++static struct pmf_function *pfunc_set_vdnap0;
++static struct pmf_function *pfunc_vdnap0_complete;
+ 
+-	down(&g5_switch_mutex);
++static void g5_vdnap_switch_volt(int speed_mode)
++{
++	struct pmf_args args;
++	u32 slew, done = 0;
++	unsigned long timeout;
++
++	slew = (speed_mode == CPUFREQ_LOW) ? 1 : 0;
++	args.count = 1;
++	args.u[0].p = &slew;
++
++	pmf_call_one(pfunc_set_vdnap0, &args);
++
++	/* It's an irq GPIO so we should be able to just block here,
++	 * I'll do that later after I've properly tested the IRQ code for
++	 * platform functions
++	 */
++	timeout = jiffies + HZ/10;
++	while(!time_after(jiffies, timeout)) {
++		args.count = 1;
++		args.u[0].p = &done;
++		pmf_call_one(pfunc_vdnap0_complete, &args);
++		if (done)
++			break;
++		msleep(1);
++	}
++	if (done == 0)
++		printk(KERN_WARNING "cpufreq: Timeout in clock slewing !\n");
++}
+ 
+-	freqs.old = g5_cpu_freqs[g5_pmode_cur].frequency;
+-	freqs.new = g5_cpu_freqs[speed_mode].frequency;
+-	freqs.cpu = 0;
+ 
+-	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
 +/*
 + * SCOM based frequency switching for 970FX rev3
 + */
 +static int g5_scom_switch_freq(int speed_mode)
- {
--	struct cpufreq_freqs freqs;
++{
 +	unsigned long flags;
- 	int to;
++	int to;
  
--	if (g5_pmode_cur == speed_mode)
--		return 0;
--
--	down(&g5_switch_mutex);
--
--	freqs.old = g5_cpu_freqs[g5_pmode_cur].frequency;
--	freqs.new = g5_cpu_freqs[speed_mode].frequency;
--	freqs.cpu = 0;
--
--	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
--
  	/* If frequency is going up, first ramp up the voltage */
  	if (speed_mode < g5_pmode_cur)
  		g5_switch_volt(speed_mode);
@@ -114,7 +150,7 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
  	/* Clear PCR high */
  	scom970_write(SCOM_PCR, 0);
  	/* Clear PCR low */
-@@ -147,6 +149,8 @@
+@@ -147,6 +185,8 @@
  		udelay(100);
  	}
  
@@ -123,7 +159,7 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
  	/* If frequency is going down, last ramp the voltage */
  	if (speed_mode > g5_pmode_cur)
  		g5_switch_volt(speed_mode);
-@@ -154,14 +158,10 @@
+@@ -154,14 +194,10 @@
  	g5_pmode_cur = speed_mode;
  	ppc_proc_freq = g5_cpu_freqs[speed_mode].frequency * 1000ul;
  
@@ -139,7 +175,7 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
  {
  	unsigned long psr = scom970_read(SCOM_PSR);
  	int i;
-@@ -173,7 +173,97 @@
+@@ -173,7 +209,104 @@
  	return i;
  }
  
@@ -200,7 +236,6 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
 +	 */
 +	timeout = jiffies + HZ/10;
 +	while(!time_after(jiffies, timeout)) {
-+		done = 0;
 +		args.count = 1;
 +		args.u[0].p = &done;
 +		pmf_call_one(pfunc_slewing_done, &args);
@@ -233,12 +268,20 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
 +}
 +
 +/*
++ * Fake voltage switching for platforms with missing support
++ */
++
++static void g5_dummy_switch_volt(int speed_mode)
++{
++}
++
++/*
 + * Common interface to the cpufreq core
 + */
  
  static int g5_cpufreq_verify(struct cpufreq_policy *policy)
  {
-@@ -183,13 +273,30 @@
+@@ -183,13 +316,30 @@
  static int g5_cpufreq_target(struct cpufreq_policy *policy,
  	unsigned int target_freq, unsigned int relation)
  {
@@ -271,7 +314,7 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
  }
  
  static unsigned int g5_cpufreq_get_speed(unsigned int cpu)
-@@ -205,6 +312,7 @@
+@@ -205,6 +355,7 @@
  	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
  	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
  	policy->cur = g5_cpu_freqs[g5_query_freq()].frequency;
@@ -279,7 +322,7 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
  	cpufreq_frequency_table_get_attr(g5_cpu_freqs, policy->cpu);
  
  	return cpufreq_frequency_table_cpuinfo(policy,
-@@ -224,19 +332,24 @@
+@@ -224,19 +375,39 @@
  };
  
  
@@ -288,28 +331,119 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
  {
  	struct device_node *cpunode;
  	unsigned int psize, ssize;
- 	struct smu_sdbp_header *shdr;
+-	struct smu_sdbp_header *shdr;
  	unsigned long max_freq;
+-	u32 *valp;
 +	char *freq_method, *volt_method;
- 	u32 *valp;
++	u32 *valp, pvr_hi;
++	int use_volts_vdnap = 0;
++	int use_volts_smu = 0;
  	int rc = -ENODEV;
  
 -	/* Look for CPU and SMU nodes */
 -	cpunode = of_find_node_by_type(NULL, "cpu");
 -	if (!cpunode) {
 -		DBG("No CPU node !\n");
++	/* Check supported platforms */
++	if (machine_is_compatible("PowerMac8,1") ||
++	    machine_is_compatible("PowerMac8,2") ||
++	    machine_is_compatible("PowerMac9,1"))
++		use_volts_smu = 1;
++	else if (machine_is_compatible("PowerMac11,2"))
++		use_volts_vdnap = 1;
++	else
++		return -ENODEV;
++
 +	/* Get first CPU node */
 +	for (cpunode = NULL;
 +	     (cpunode = of_get_next_child(cpus, cpunode)) != NULL;) {
++		u32 *reg =
++			(u32 *)get_property(cpunode, "reg", NULL);
++		if (reg == NULL || (*reg) != 0)
++			continue;
 +		if (!strcmp(cpunode->type, "cpu"))
 +			break;
 +	}
 +	if (cpunode == NULL) {
-+		printk(KERN_ERR "cpufreq: Can't find any CPU node\n");
++		printk(KERN_ERR "cpufreq: Can't find any CPU 0 node\n");
  		return -ENODEV;
  	}
  
-@@ -286,19 +399,23 @@
+@@ -246,8 +417,9 @@
+ 		DBG("No cpu-version property !\n");
+ 		goto bail_noprops;
+ 	}
+-	if (((*valp) >> 16) != 0x3c) {
+-		DBG("Wrong CPU version: %08x\n", *valp);
++	pvr_hi = (*valp) >> 16;
++	if (pvr_hi != 0x3c && pvr_hi != 0x44) {
++		printk(KERN_ERR "cpufreq: Unsupported CPU version\n");
+ 		goto bail_noprops;
+ 	}
+ 
+@@ -259,18 +431,50 @@
+ 	}
+ 	g5_pmode_max = psize / sizeof(u32) - 1;
+ 
+-	/* Look for the FVT table */
+-	shdr = smu_get_sdb_partition(SMU_SDB_FVT_ID, NULL);
+-	if (!shdr)
+-		goto bail_noprops;
+-	g5_fvt_table = (struct smu_sdbp_fvt *)&shdr[1];
+-	ssize = (shdr->len * sizeof(u32)) - sizeof(struct smu_sdbp_header);
+-	g5_fvt_count = ssize / sizeof(struct smu_sdbp_fvt);
+-	g5_fvt_cur = 0;
++	if (use_volts_smu) {
++		struct smu_sdbp_header *shdr;
+ 
+-	/* Sanity checking */
+-	if (g5_fvt_count < 1 || g5_pmode_max < 1)
+-		goto bail_noprops;
++		/* Look for the FVT table */
++		shdr = smu_get_sdb_partition(SMU_SDB_FVT_ID, NULL);
++		if (!shdr)
++			goto bail_noprops;
++		g5_fvt_table = (struct smu_sdbp_fvt *)&shdr[1];
++		ssize = (shdr->len * sizeof(u32)) -
++			sizeof(struct smu_sdbp_header);
++		g5_fvt_count = ssize / sizeof(struct smu_sdbp_fvt);
++		g5_fvt_cur = 0;
++
++		/* Sanity checking */
++		if (g5_fvt_count < 1 || g5_pmode_max < 1)
++			goto bail_noprops;
++
++		g5_switch_volt = g5_smu_switch_volt;
++		volt_method = "SMU";
++	} else if (use_volts_vdnap) {
++		struct device_node *root;
++
++		root = of_find_node_by_path("/");
++		if (root == NULL) {
++			printk(KERN_ERR "cpufreq: Can't find root of "
++			       "device tree\n");
++			goto bail_noprops;
++		}
++		pfunc_set_vdnap0 = pmf_find_function(root, "set-vdnap0");
++		pfunc_vdnap0_complete =
++			pmf_find_function(root, "slewing-done");
++		if (pfunc_set_vdnap0 == NULL ||
++		    pfunc_vdnap0_complete == NULL) {
++			printk(KERN_ERR "cpufreq: Can't find required "
++			       "platform function\n");
++			goto bail_noprops;
++		}
++
++		g5_switch_volt = g5_vdnap_switch_volt;
++		volt_method = "GPIO";
++	} else {
++		g5_switch_volt = g5_dummy_switch_volt;
++		volt_method = "none";
++	}
+ 
+ 	/*
+ 	 * From what I see, clock-frequency is always the maximal frequency.
+@@ -286,19 +490,23 @@
  	g5_cpu_freqs[0].frequency = max_freq;
  	g5_cpu_freqs[1].frequency = max_freq/2;
  
@@ -319,17 +453,17 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
 -		/* We don't support anything but 1:1 and 1:2, fixup ... */
 -		g5_pmode_cur = 1;
 +	/* Set callbacks */
-+	g5_switch_volt = g5_smu_switch_volt;
 +	g5_switch_freq = g5_scom_switch_freq;
 +	g5_query_freq = g5_scom_query_freq;
 +	freq_method = "SCOM";
-+	volt_method = "SMU";
  
  	/* Force apply current frequency to make sure everything is in
  	 * sync (voltage is right for example). Firmware may leave us with
  	 * a strange setting ...
  	 */
 -	g5_switch_freq(g5_pmode_cur);
++	g5_switch_volt(CPUFREQ_HIGH);
++	msleep(10);
 +	g5_pmode_cur = -1;
 +	g5_switch_freq(g5_query_freq());
  
@@ -339,7 +473,7 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
  	printk(KERN_INFO "Low: %d Mhz, High: %d Mhz, Cur: %d MHz\n",
  		g5_cpu_freqs[1].frequency/1000,
  		g5_cpu_freqs[0].frequency/1000,
-@@ -317,6 +434,199 @@
+@@ -317,6 +525,201 @@
  	return rc;
  }
  
@@ -477,6 +611,8 @@ Index: linux-work/arch/powerpc/platforms/powermac/cpufreq_64.c
 +	 * sync (voltage is right for example). Firmware may leave us with
 +	 * a strange setting ...
 +	 */
++	g5_switch_volt(CPUFREQ_HIGH);
++	msleep(10);
 +	g5_pmode_cur = -1;
 +	g5_switch_freq(g5_query_freq());
 +
