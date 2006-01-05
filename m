@@ -1,16 +1,17 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from outbound-mail-02.bluehost.com (outbound-mail-02.bluehost.com
-	[70.103.189.12]) by ozlabs.org (Postfix) with SMTP id CE6E46899B
+Return-Path: <mcnernbm@notes.udayton.edu>
+Received: from student03.udayton.edu (student03.udayton.edu [131.238.75.43])
+	by ozlabs.org (Postfix) with ESMTP id 2C6B767A76
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Jan 2006 04:50:08 +1100 (EST)
-Message-ID: <43BD5C0A.3080706@secretlab.ca>
-Date: Thu, 05 Jan 2006 10:48:58 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
+	Fri,  6 Jan 2006 08:15:52 +1100 (EST)
 MIME-Version: 1.0
-To: trini@kernel.crashing.org,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Subject: [PATCH] fix ML300 zImage in 2.6.15
+From: mcnernbm@notes.udayton.edu
+To: linuxppc-embedded@ozlabs.org
+Date: Thu, 5 Jan 2006 16:00:38 -0500
+Message-ID: <OF4583615F.8ED595CE-ON852570ED.00736A17-852570ED.00736A1D@notes.udayton.edu>
+MIME-Version: 1.0
+Content-Type: text/html;
+	charset=ISO-8859-1
+Subject: io.h question
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,25 +22,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-2.6.15 doesn't build a bootable zImage for the ML300 because
-embed_config.o is no longer linked in.  This patch adds it back in.
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-
-diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
-index f3e9c53..5699659 100644
---- a/arch/ppc/boot/simple/Makefile
-+++ b/arch/ppc/boot/simple/Makefile
-@@ -188,6 +188,7 @@ OBJCOPY_ARGS                        := -O elf32-powerpc
- boot-y                         := head.o relocate.o $(extra.o-y) $(misc-y)
- boot-$(CONFIG_REDWOOD_5)       += embed_config.o
- boot-$(CONFIG_REDWOOD_6)       += embed_config.o
-+boot-$(CONFIG_XILINX_ML300)    += embed_config.o
- boot-$(CONFIG_8xx)             += embed_config.o
- boot-$(CONFIG_8260)            += embed_config.o
- boot-$(CONFIG_BSEIP)           += iic.o
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 663-0761
+<FONT face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sans-serif" size=
+=3D2><div>I finally noticed out=5F8 and in=5F8 and what not are located in =
+the ppc io.h file in the kernel development download.&nbsp; But when I trie=
+d to do a io.h with in my program I added #include &lt;asm/io.h&gt;&nbsp; a=
+nd it seems to find it with not problems but it can not find the functions =
+with in that file.&nbsp; Am i missing a define I need to set or something s=
+o I can see the right files with in io.h I am compiling for a ppc405 on a x=
+ilinx virtex 4 board.</div><DIV>Thanks</DIV><DIV>Brett</DIV></FONT>=
