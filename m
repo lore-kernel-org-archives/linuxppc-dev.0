@@ -1,20 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 242BB689AC
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
+	by ozlabs.org (Postfix) with ESMTP id A95256898B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Jan 2006 00:59:25 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 5 Jan 2006 13:59:14 +0000
-References: <1136414679.3463.10.camel@nighteyes.site>
-	<200601050905.57377.david.jander@protonic.nl>
-In-Reply-To: <200601050905.57377.david.jander@protonic.nl>
+	Fri,  6 Jan 2006 02:05:51 +1100 (EST)
+Date: Thu, 5 Jan 2006 08:05:49 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Paul Janzen <pcj@linux.sez.to>
+Message-ID: <20060105150548.GC27215@smtp.west.cox.net>
+References: <oqbqyrp6zj.fsf@merlin.sez.to>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200601051359.15018.arnd@arndb.de>
-Cc: David Jander <david.jander@protonic.nl>
-Subject: Re: powerpc vs ppc build
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <oqbqyrp6zj.fsf@merlin.sez.to>
+Cc: paulus@samba.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] boot/common/util.S: Put flush_{instruction,
+	data}_cache back in .relocate_code section
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,75 +24,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 05 January 2006 08:05, David Jander wrote:
-> Looks to me like ppc and ppc64 are deprecated and "phased out" in favour of 
-> powerpc.
+On Wed, Jan 04, 2006 at 09:40:48PM -0800, Paul Janzen wrote:
 
-ppc64 is no more in 2.6.15, building the kernel on a ppc64 system
-will automatically use ARCH=powerpc.
+> In 2.6.14, we had the following definition of _GLOBAL() in
+> include/asm-ppc/processor.h:
+> 
+> #define _GLOBAL(n)\
+>         .stabs __stringify(n:F-1),N_FUN,0,0,n;\
+>         .globl n;\
+> n:
+> 
+> In 2.6.15, as part of the great powerpc merge, we moved this definition to
+> include/asm-powerpc/ppc_asm.h, where it appears (to 32-bit code) as: 
+> 
+> #define _GLOBAL(n)      \
+>         .text;          \
+>         .stabs __stringify(n:F-1),N_FUN,0,0,n;\
+>         .globl n;       \
+> n:
+> 
+> Mostly, this is fine.  However, we also have the following, in
+> arch/ppc/boot/common/util.S:
+> 
+>         .section ".relocate_code","xa"
+> [...]
+> _GLOBAL(flush_instruction_cache)
+> [...]
+> _GLOBAL(flush_data_cache)
+> [...]
+> 
+> The addition of the .text section definition in the definition of
+> _GLOBAL overrides the .relocate_code section definition.  As a result,
+> these two functions don't end up in .relocate_code, so they don't get
+> relocated correctly, and the boot fails.
+> 
+> There's another suspicious-looking usage at kernel/swsusp.S:37 that
+> someone should look into.  I did not exhaustively search the source
+> tree, though.
+> 
+> The following is the minimal patch that fixes the immediate problem.
+> I could easily be convinced that the _GLOBAL definition should be
+> modified to remove the ".text;" line either instead of, or in addition
+> to, this fix.
+> 
+> Signed-off-by: Paul Janzen <pcj@linux.sez.to>
 
-> If you look at the contents of both the include/asm-ppc and  
-> include/asm-powerpc directories over the last revisions for example, you'll 
-> see files moving from asm-ppc to asm-powerpc. Now, they are in a kind of flux 
-> still, so you'll probably find yourself doing silly things like "ln -s 
-> include/asm-powerpc/* include/asm-ppc/" to keep things working and compiling
-> nicely.
+Thanks for tracking this one down.  Paul, can you please make sure this
+gets to Linus and the stable team?  Thanks.
 
-That should never be needed. You should always be able to do both
+Acked-by: Tom Rini <trini@kernel.crashing.org>
 
-$ make ARCH=ppc randomconfig O=../obdir1 && make ARCH=ppc O=../obdir2
+> --- arch/ppc/boot/common/util.S~	2005-12-24 15:47:48.000000000 -0800
+> +++ arch/ppc/boot/common/util.S 	2006-01-04 14:07:12.000000000 -0800
+> @@ -234,7 +234,8 @@ udelay:
+>   * First, flush the data cache in case it was enabled and may be
+>   * holding instructions for copy back.
+>   */
+> -_GLOBAL(flush_instruction_cache)
+> +        .globl flush_instruction_cache
+> +flush_instruction_cache:        
+>  	mflr	r6
+>  	bl	flush_data_cache
+>  
+> @@ -279,7 +280,8 @@ _GLOBAL(flush_instruction_cache)
+>   * Flush data cache
+>   * Do this by just reading lots of stuff into the cache.
+>   */
+> -_GLOBAL(flush_data_cache)
+> +        .globl flush_data_cache
+> +flush_data_cache:       
+>  	lis	r3,cache_flush_buffer@h
+>  	ori	r3,r3,cache_flush_buffer@l
+>  	li	r4,NUM_CACHE_LINES
+> 
+> -- Paul
 
-and
-
-$ make ARCH=powerpc randomconfig O=../objdir2 && make ARCH=powerpc O=../obdir2
-
-and build successfully with that. If it doesn't, report a bug.
-
-> I do hope this is over soon.
-
-I fear it might take a somewhat longer time. AFAICS, the idea is to
-remove all platforms from ppc, one at a time, as soon as they are
-working well enough with ARCH=powerpc or are known to be unmaintained.
-At that point, the arch/ppc/ tree can be removed completely.
-
-The catch is that this needs work from each platform maintainer that
-wants his hardware to be supported in future kernels (or at least the
-information that he/she doesn't care if it gets removed).
-
-> On Wednesday 04 January 2006 23:44, Jeff Angielski wrote:
-> > Is there a summary of the differences between the ppc and powerpc builds
-> > for the 2.6 kernels?  Or something describing what the community, in
-> > general, is trying to fix/address with the different schemes - besides
-> > the merging of ppc and ppc64?
-
-I'm only a ppc64 person, so I don't know the state that the current
-51 platform types from arch/ppc/Kconfig or any of the out-of-tree
-ones are in, but if you are maintaining one of them that does not yet
-work with ARCH=powerpc, I suggest you do the following:
-
-1. If the platform is not already based on open firmware or the equivalent
-flat device tree representation, build a device tree for it, using the
-specification from http://ozlabs.org/~dgibson/dtc/ (you need to use
-git to check out the repository).
-
-2. See if there is already a platform type for your hardware present
-in arch/powerpc. Note that a powerpc platform is a lot more generic
-than a ppc machine type, so you almost never need to add a new one here.
-E.g. every board based on a 4xx should be able to use the same platform
-type. 
-The rule is that enabling support for some hardware should never force
-you to disable support for other hardware.
-
-3. Move over all device drivers that are still missing in powerpc.
-Make sure that the drivers don't contain any hardcoded assumptions
-about your hardware that may be different for other board. I/O
-addresses and such stuff should come from the device tree. Moreover,
-the driver should not touch any I/O if someone loads it on a board
-that does not have the device.
-
-4. Submit a patch series to linuxppc-dev that integrates your changes,
-following Documentation/SubmittingPatches, and mark your arch/ppc code
-as deprecated with a deadline saying at what time it will be removed
-(or remove it right away with another patch).
-
-	Arnd <><
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
