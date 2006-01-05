@@ -1,22 +1,16 @@
-Return-Path: <sheutlin@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.21])
-	by ozlabs.org (Postfix) with SMTP id 279A1688F3
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Jan 2006 23:59:48 +1100 (EST)
-Message-ID: <43BD1847.8020208@gmx.de>
-Date: Thu, 05 Jan 2006 13:59:51 +0100
-From: Sebastian Heutling <sheutlin@gmx.de>
+Return-Path: <schwab@suse.de>
+From: Andreas Schwab <schwab@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <1136439584.4840.48.camel@localhost.localdomain>
+Date: Thu, 05 Jan 2006 14:23:13 +0100
+In-Reply-To: <1136439584.4840.48.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Thu, 05 Jan 2006 16:39:44 +1100")
+Message-ID: <jeirsy4xmm.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: Sven Luther <sven.luther@wanadoo.fr>
-References: <E1EtnU9-0008HI-I0@spohr.debian.org>
-	<20051230171705.32043.38767.reportbug@sengor.ath.cx>
-	<handler.345424.D345424.113629990832428.notifdone@bugs.debian.org>
-	<43BCFA15.5070304@gmx.de>
-	<20060105110523.GA21982@localhost.localdomain>
-In-Reply-To: <20060105110523.GA21982@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: How to build the zImage.prep was Re: Bug#345424 acknowledged
- by developer         (Bug#345424: fixed in linux-2.6 2.6.15-1)
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Add PowerMac platform function interpreter
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sven Luther wrote:
-> On Thu, Jan 05, 2006 at 11:51:01AM +0100, Sebastian Heutling wrote:
-> 
->>Hi Sven,
->>
->>maybe I'm just stupid - but I am not able to get an image built that can 
-> 
-> 
-> No, you just fail to read the manual :)
-> 
-> please : man mkvmlinuz :)
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Uhm! I didn't even think about that. I was just used to that somewhere 
-under arch/ppc/ is a zImage.prep after doing a "make zImage".
-But anyway: Switching to shame mode. ;)
+> Anyway, here it is, comments welcome...
 
+To which tree is this relative?  Neither 2.6.15 nor Linus' tree matches.
 
+Andreas.
 
-Sebastian
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
