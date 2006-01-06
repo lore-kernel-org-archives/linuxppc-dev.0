@@ -1,17 +1,19 @@
-Return-Path: <mcnernbm@notes.udayton.edu>
-Received: from student03.udayton.edu (student03.udayton.edu [131.238.75.43])
-	by ozlabs.org (Postfix) with ESMTP id 2C6B767A76
+Return-Path: <zengshuai@sogou.com>
+Received: from sogoumx76.mail.sogou.com (unknown [61.135.132.136])
+	by ozlabs.org (Postfix) with ESMTP id A1ECB68910
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Jan 2006 08:15:52 +1100 (EST)
-MIME-Version: 1.0
-From: mcnernbm@notes.udayton.edu
-To: linuxppc-embedded@ozlabs.org
-Date: Thu, 5 Jan 2006 16:00:38 -0500
-Message-ID: <OF4583615F.8ED595CE-ON852570ED.00736A17-852570ED.00736A1D@notes.udayton.edu>
-MIME-Version: 1.0
-Content-Type: text/html;
-	charset=ISO-8859-1
-Subject: io.h question
+	Fri,  6 Jan 2006 19:37:25 +1100 (EST)
+Received: from mx3.mail.sohu.com (unknown [192.168.95.78])
+	by sogoumx76.mail.sogou.com (Postfix) with ESMTP id 160CE0367794
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  6 Jan 2006 16:37:18 +0800 (CST)
+Message-ID: <6251452.1136535834574.JavaMail.postfix@mx3.mail.sohu.com>
+Date: Fri, 6 Jan 2006 16:23:54 +0800 (CST)
+From: <zengshuai@sogou.com>
+To: "ppc" <linuxppc-embedded@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="GB2312"
+Subject: How to compile freescale example programs using eldk?
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,11 +24,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-<FONT face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sans-serif" size=
-=3D2><div>I finally noticed out=5F8 and in=5F8 and what not are located in =
-the ppc io.h file in the kernel development download.&nbsp; But when I trie=
-d to do a io.h with in my program I added #include &lt;asm/io.h&gt;&nbsp; a=
-nd it seems to find it with not problems but it can not find the functions =
-with in that file.&nbsp; Am i missing a define I need to set or something s=
-o I can see the right files with in io.h I am compiling for a ppc405 on a x=
-ilinx virtex 4 board.</div><DIV>Thanks</DIV><DIV>Brett</DIV></FONT>=
+I down some freescale example programs at 
+http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=MPC8260&nodeId=02VS0lDFTQJk192977
+
+Device Drivers 
+ID and Description                                   Vendor          ID      Format Size K  Rev # Availability 
+MPC8260API
+PowerQUICC II API (Drivers and Examples) 
+Includes support for PCI, AAL2, AAL5, MSP, and more(10/03/2002)   FREESCALE   zip   15785   4.0.2     
+
+Them aren't linux drvier but for bareboard. How can I compile them using eldk?
+
+------------------------------
+我现在使用Sogou.com的2G邮箱了，你也来试试吧! 
+http://mail.sogou.com/recommend/sogoumail_invite_reg1.jsp?from=sogouinvitation&s_EMAIL=zengshuai%40sogou.com&username=linuxppc-embedded&FullName=linuxppc-embedded&Email=linuxppc-embedded%40ozlabs.org&verify=755eff4e640bdcfc57d93cbd8b0a9cb7
