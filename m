@@ -1,21 +1,21 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4C84F68974
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id E06FA689B5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 Jan 2006 01:14:33 +1100 (EST)
-Date: Fri, 6 Jan 2006 13:47:35 +0000
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: batsayan.das@tcs.com
-Message-Id: <20060106134735.14fabd86.ajz@cambridgebroadband.com>
-In-Reply-To: <OF114C07C5.7CED9F64-ON652570EE.00481B82-652570EE.00489CCF@tcs.com>
-References: <OF114C07C5.7CED9F64-ON652570EE.00481B82-652570EE.00489CCF@tcs.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat,  7 Jan 2006 01:19:23 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: "HappyPhot" <happyphot@gmail.com>
+Date: Fri, 6 Jan 2006 15:19:13 +0100
+References: <000701c60fab$9fdca6a0$0760120a@photon>
+	<200601050852.45616.david.jander@protonic.nl>
+	<002e01c612ca$f7614a80$0760120a@photon>
+In-Reply-To: <002e01c612ca$f7614a80$0760120a@photon>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200601061519.14550.david.jander@protonic.nl>
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: How to enable PHY
+Subject: Re: VFS: Cannot open root device "31:03" or unknown-block(31,3)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,34 +26,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 6 Jan 2006 18:43:08 +0530
-batsayan.das@tcs.com wrote:
+On Friday 06 January 2006 15:09, HappyPhot wrote:
+> > I see you are using DENX ELDK 3.1.1 and a kernel which AFAIK is not
+> > supported
+> > by this version of ELDK. Are you sure this is supposed to work? It
+> > probably
+> > will, but I don't know what the "Sandpoint" is (it looks like a PowerPC
+> > processor of the MPC7xx series to me), so I couldn't tell.
+>
+>   Do you know where to get the infomation about which kernel version it
+> supports?
 
-> 
-> Hi,
-> 
-> I found that ADS8260 board enables PHY by the following lines of
-> code
-> 
-> #ifndef CONFIG_ADS8260
->         /* Enable the PHY.
->         */
->         *(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_FETHIEN;
->         *(volatile uint *)(BCSR_ADDR + 4) |=  BCSR1_FETH_RST;
-> #endif
-> 
-> 
-> Our board does not have BCSR. My question is how to enable PHY for
-> MPC8260 based customs board without BCSR? 
+The one that comes with that version of ELDK? Just a guess ;-)
 
-You have to take your PHY out of reset.  How to do this depends on
-your board.  On the ADS8260 the PHY reset line goes to the BCSR and
-you must write the above to BCSR register 1 to tell it to change the
-pin level.
+Greetings,
 
-On your board you may need to use GPIO, or you may need to do nothing
-at all. Read your schematics!
-
-Regards,
-
-Alex
+-- 
+David Jander
