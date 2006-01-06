@@ -1,18 +1,16 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 40385688DC
+Return-Path: <batsayan.das@tcs.com>
+Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
+	by ozlabs.org (Postfix) with ESMTP id 7067F688DC
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Jan 2006 23:04:06 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+	Sat,  7 Jan 2006 00:13:41 +1100 (EST)
 To: linuxppc-embedded@ozlabs.org
-Date: Fri, 6 Jan 2006 12:03:55 +0000
-References: <OF4583615F.8ED595CE-ON852570ED.00736A17-852570ED.00736A1D@notes.udayton.edu>
-In-Reply-To: <OF4583615F.8ED595CE-ON852570ED.00736A17-852570ED.00736A1D@notes.udayton.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200601061203.55926.arnd@arndb.de>
-Subject: Re: io.h question
+From: batsayan.das@tcs.com
+Message-ID: <OF114C07C5.7CED9F64-ON652570EE.00481B82-652570EE.00489CCF@tcs.com>
+Date: Fri, 6 Jan 2006 18:43:08 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 00489B41652570EE_="
+Subject: How to enable PHY
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,23 +21,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 05 January 2006 21:00, mcnernbm@notes.udayton.edu wrote:
-> I finally noticed out_8 and in_8 and what not are located in the
-> ppc io.h file in the kernel development download.  But when I 
-> tried to do a io.h with in my program I added #include <asm/io.h> 
-> and it seems to find it with not problems but it can not find the
-> functions with in that file.  Am i missing a define I need to set
-> or something so I can see the right files with in io.h I am
-> compiling for a ppc405 on a xilinx virtex 4 board.      
+This is a multipart message in MIME format.
+--=_alternative 00489B41652570EE_=
+Content-Type: text/plain; charset="US-ASCII"
 
-The definitions in that file are only usable from inside the kernel,
-you can not use them in a user space application.
 
-The correct way to solve your problem (which you did not explain, so
-I can only guess) would be to write a kernel device driver for
-the peripherial you want to drive, at least if it does not exist yet.
+Hi,
 
-For prototyping, you can play with mmap() on /dev/mem in a user
-application, but that is often not very reliable.
+I found that ADS8260 board enables PHY by the following lines of code
 
-	Arnd <><
+#ifndef CONFIG_ADS8260
+        /* Enable the PHY.
+        */
+        *(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_FETHIEN;
+        *(volatile uint *)(BCSR_ADDR + 4) |=  BCSR1_FETH_RST;
+#endif
+
+
+Our board does not have BCSR. My question is how to enable PHY for MPC8260 
+based customs board without BCSR? 
+
+Thanks,
+Batsayan Das
+Tata Consultancy Services Limited
+Mailto: batsayan.das@tcs.com
+Website: http://www.tcs.com
+
+Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+--=_alternative 00489B41652570EE_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">Hi,</font>
+<br>
+<br><font size=2 face="sans-serif">I found that ADS8260 board enables PHY
+by the following lines of code</font>
+<br>
+<br><font size=2 face="sans-serif">#ifndef CONFIG_ADS8260</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; /* Enable
+the PHY.</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; */</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; *(volatile
+uint *)(BCSR_ADDR + 4) &amp;= ~BCSR1_FETHIEN;</font>
+<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; *(volatile
+uint *)(BCSR_ADDR + 4) |= &nbsp;BCSR1_FETH_RST;</font>
+<br><font size=2 face="sans-serif">#endif</font>
+<br>
+<br>
+<br><font size=2 face="sans-serif">Our board does not have BCSR. My question
+is how to enable PHY for MPC8260 based customs board without BCSR? </font>
+<br>
+<br><font size=2 face="sans-serif">Thanks,<br>
+Batsayan Das<br>
+Tata Consultancy Services Limited<br>
+Mailto: batsayan.das@tcs.com<br>
+Website: http://www.tcs.com</font>
+<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
+</font></td></tr></table>
+--=_alternative 00489B41652570EE_=--
