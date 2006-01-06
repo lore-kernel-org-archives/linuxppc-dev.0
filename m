@@ -1,23 +1,21 @@
-Return-Path: <happyphot@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.205])
-	by ozlabs.org (Postfix) with ESMTP id 0899E68972
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4C84F68974
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 Jan 2006 01:10:46 +1100 (EST)
-Received: by zproxy.gmail.com with SMTP id j2so2805316nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 06 Jan 2006 06:10:45 -0800 (PST)
-Message-ID: <002e01c612ca$f7614a80$0760120a@photon>
-From: "HappyPhot" <happyphot@gmail.com>
-To: "David Jander" <david.jander@protonic.nl>
-References: <000701c60fab$9fdca6a0$0760120a@photon>
-	<200601031410.55884.david.jander@protonic.nl>
-	<004701c611a8$557dbf00$0760120a@photon>
-	<200601050852.45616.david.jander@protonic.nl>
-Date: Fri, 6 Jan 2006 22:09:53 +0800
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="UTF-8"; reply-type=original
+	Sat,  7 Jan 2006 01:14:33 +1100 (EST)
+Date: Fri, 6 Jan 2006 13:47:35 +0000
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: batsayan.das@tcs.com
+Message-Id: <20060106134735.14fabd86.ajz@cambridgebroadband.com>
+In-Reply-To: <OF114C07C5.7CED9F64-ON652570EE.00481B82-652570EE.00489CCF@tcs.com>
+References: <OF114C07C5.7CED9F64-ON652570EE.00481B82-652570EE.00489CCF@tcs.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: VFS: Cannot open root device "31:03" or unknown-block(31,3)
+Subject: Re: How to enable PHY
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,49 +26,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> in your .config:
->
->> CONFIG_JFFS2_FS=m
->
-> This is wrong. You have to choose "y", not "m" (for module).
-> This way jffs2 is compiled as a module. That means, that jffs2 filesystem 
-> will
-> not be available until the module is loaded with "insmod jffs2" of 
-> something
-> similar. That in turn means that your system has to start up first in 
-> order
-> to be able to do this, but since you can't start because your root 
-> filesystem
-> is on jffs2, you have created yourself a "chicken and egg" problem.
-> If you choose "y" then jffs2 support will be compiled into the kernel, and
-> thus be available before booting.
+On Fri, 6 Jan 2006 18:43:08 +0530
+batsayan.das@tcs.com wrote:
 
-Hi, David,
-  Yes, you are right. After changing it to 'y', the " VFS: Cannot open 
-root..."
-message was gone. I'm so happy and thank you very much.
+> 
+> Hi,
+> 
+> I found that ADS8260 board enables PHY by the following lines of
+> code
+> 
+> #ifndef CONFIG_ADS8260
+>         /* Enable the PHY.
+>         */
+>         *(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_FETHIEN;
+>         *(volatile uint *)(BCSR_ADDR + 4) |=  BCSR1_FETH_RST;
+> #endif
+> 
+> 
+> Our board does not have BCSR. My question is how to enable PHY for
+> MPC8260 based customs board without BCSR? 
 
-  Now it is another problem again. (something like: Oops: kernel access of 
-bad
-area. sig:11...).  I am going to check what happened.
+You have to take your PHY out of reset.  How to do this depends on
+your board.  On the ADS8260 the PHY reset line goes to the BCSR and
+you must write the above to BCSR register 1 to tell it to change the
+pin level.
 
->
-> In your bootlog:
->
->> Linux version 2.6.14.2 (happy@sddlinux1) (gcc version 3.3.3 (DENX ELDK 
->> 3.1.1
->> 3.3.3-10)) #29 Sun Jan 1 22:34:28 CST 2006
->> Motorola SPS Sandpoint Test Platform
->
-> I see you are using DENX ELDK 3.1.1 and a kernel which AFAIK is not 
-> supported
-> by this version of ELDK. Are you sure this is supposed to work? It 
-> probably
-> will, but I don't know what the "Sandpoint" is (it looks like a PowerPC
-> processor of the MPC7xx series to me), so I couldn't tell.
+On your board you may need to use GPIO, or you may need to do nothing
+at all. Read your schematics!
 
-  Do you know where to get the infomation about which kernel version it 
-supports?
+Regards,
 
-thank you,
-/HappyPhot
+Alex
