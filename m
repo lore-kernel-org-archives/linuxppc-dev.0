@@ -1,16 +1,18 @@
-Return-Path: <batsayan.das@tcs.com>
-Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
-	by ozlabs.org (Postfix) with ESMTP id 7067F688DC
+Return-Path: <markc@mail.com>
+Received: from relay04.roc.ny.frontiernet.net (relay04.roc.ny.frontiernet.net
+	[66.133.182.167]) by ozlabs.org (Postfix) with ESMTP id 8F94D68957
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 Jan 2006 00:13:41 +1100 (EST)
-To: linuxppc-embedded@ozlabs.org
+	Sat,  7 Jan 2006 00:59:04 +1100 (EST)
+Message-ID: <004201c612c6$ee3ede80$6601a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: <linuxppc-embedded@ozlabs.org>,
+	<batsayan.das@tcs.com>
+References: <OF114C07C5.7CED9F64-ON652570EE.00481B82-652570EE.00489CCF@tcs.com>
+Date: Fri, 6 Jan 2006 08:41:41 -0500
 MIME-Version: 1.0
-From: batsayan.das@tcs.com
-Message-ID: <OF114C07C5.7CED9F64-ON652570EE.00481B82-652570EE.00489CCF@tcs.com>
-Date: Fri, 6 Jan 2006 18:43:08 +0530
 Content-Type: multipart/alternative;
-	boundary="=_alternative 00489B41652570EE_="
-Subject: How to enable PHY
+	boundary="----=_NextPart_000_003F_01C6129D.04601910"
+Subject: Re: How to enable PHY
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,61 +23,89 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 00489B41652570EE_=
-Content-Type: text/plain; charset="US-ASCII"
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_003F_01C6129D.04601910
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
 
-Hi,
+>I found that ADS8260 board enables PHY by the following lines of code=20
+>
+>#ifndef CONFIG_ADS8260=20
+>        /* Enable the PHY.=20
+>        */=20
+>        *(volatile uint *)(BCSR_ADDR + 4) &=3D ~BCSR1_FETHIEN;=20
+>        *(volatile uint *)(BCSR_ADDR + 4) |=3D  BCSR1_FETH_RST;=20
+>#endif=20
+>
+>Our board does not have BCSR. My question is how to enable PHY for =
+MPC8260 based customs board without BCSR?=20
 
-I found that ADS8260 board enables PHY by the following lines of code
+If your board does not have the BCSR you can just leave this code out.  =
+Usually, you only need to configure which MDII=20
+interface your PHY is connected to and which IRQ it uses.  But of course =
+I don't know how your PHY is wired up on your
+custom board.
 
-#ifndef CONFIG_ADS8260
-        /* Enable the PHY.
-        */
-        *(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_FETHIEN;
-        *(volatile uint *)(BCSR_ADDR + 4) |=  BCSR1_FETH_RST;
-#endif
-
-
-Our board does not have BCSR. My question is how to enable PHY for MPC8260 
-based customs board without BCSR? 
-
-Thanks,
-Batsayan Das
-Tata Consultancy Services Limited
-Mailto: batsayan.das@tcs.com
-Website: http://www.tcs.com
-
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
---=_alternative 00489B41652570EE_=
-Content-Type: text/html; charset="US-ASCII"
+Mark Chambers
 
 
-<br><font size=2 face="sans-serif">Hi,</font>
-<br>
-<br><font size=2 face="sans-serif">I found that ADS8260 board enables PHY
-by the following lines of code</font>
-<br>
-<br><font size=2 face="sans-serif">#ifndef CONFIG_ADS8260</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; /* Enable
-the PHY.</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; */</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; *(volatile
-uint *)(BCSR_ADDR + 4) &amp;= ~BCSR1_FETHIEN;</font>
-<br><font size=2 face="sans-serif">&nbsp; &nbsp; &nbsp; &nbsp; *(volatile
-uint *)(BCSR_ADDR + 4) |= &nbsp;BCSR1_FETH_RST;</font>
-<br><font size=2 face="sans-serif">#endif</font>
-<br>
-<br>
-<br><font size=2 face="sans-serif">Our board does not have BCSR. My question
-is how to enable PHY for MPC8260 based customs board without BCSR? </font>
-<br>
-<br><font size=2 face="sans-serif">Thanks,<br>
-Batsayan Das<br>
-Tata Consultancy Services Limited<br>
-Mailto: batsayan.das@tcs.com<br>
-Website: http://www.tcs.com</font>
-<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
-</font></td></tr></table>
---=_alternative 00489B41652570EE_=--
+
+------=_NextPart_000_003F_01C6129D.04601910
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2800.1528" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff><FONT face=3DArial size=3D2></FONT>
+<DIV><FONT face=3DArial size=3D2></FONT><BR><FONT face=3Dsans-serif =
+size=3D2>&gt;I found=20
+that ADS8260 board enables PHY by the following lines of code</FONT> =
+<BR><FONT=20
+face=3DArial size=3D2>&gt;</FONT><BR><FONT face=3Dsans-serif =
+size=3D2>&gt;#ifndef=20
+CONFIG_ADS8260</FONT> <BR><FONT face=3Dsans-serif size=3D2>&gt;&nbsp; =
+&nbsp; &nbsp;=20
+&nbsp; /* Enable the PHY.</FONT> <BR><FONT face=3Dsans-serif =
+size=3D2>&gt;&nbsp;=20
+&nbsp; &nbsp; &nbsp; */</FONT> <BR><FONT face=3Dsans-serif =
+size=3D2>&gt;&nbsp;=20
+&nbsp; &nbsp; &nbsp; *(volatile uint *)(BCSR_ADDR + 4) &amp;=3D=20
+~BCSR1_FETHIEN;</FONT> <BR><FONT face=3Dsans-serif size=3D2>&gt;&nbsp; =
+&nbsp; &nbsp;=20
+&nbsp; *(volatile uint *)(BCSR_ADDR + 4) |=3D =
+&nbsp;BCSR1_FETH_RST;</FONT>=20
+<BR><FONT face=3Dsans-serif size=3D2>&gt;#endif</FONT> <BR><FONT =
+face=3DArial=20
+size=3D2>&gt;</FONT></DIV>
+<DIV><FONT face=3Dsans-serif size=3D2>&gt;Our board does not have BCSR. =
+My question=20
+is how to enable PHY for MPC8260 based customs board without BCSR? =
+</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>If your board does not have the BCSR =
+you can=20
+just&nbsp;leave this code out.&nbsp; </FONT><FONT face=3DArial=20
+size=3D2>Usually,&nbsp;</FONT><FONT face=3DArial size=3D2>you only need =
+to configure=20
+which MDII </FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>interface your PHY is&nbsp;</FONT><FONT =
+face=3DArial=20
+size=3D2>connected to and which IRQ it uses.&nbsp; But of course I don't =
+know how=20
+your PHY is wired up on your</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>custom board.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Mark Chambers</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT><FONT face=3DArial=20
+size=3D2></FONT><BR><BR>&nbsp;</DIV></BODY></HTML>
+
+------=_NextPart_000_003F_01C6129D.04601910--
