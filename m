@@ -1,19 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 6A4276890B
+Return-Path: <batsayan.das@tcs.com>
+Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
+	by ozlabs.org (Postfix) with ESMTP id 4835D68910
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  6 Jan 2006 21:13:27 +1100 (EST)
-To: zengshuai@sogou.com
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 06 Jan 2006 16:49:50 +0800."
-	<23894955.1136537390660.JavaMail.postfix@mx3.mail.sohu.com>
-Date: Fri, 06 Jan 2006 11:13:25 +0100
-Sender: wd@denx.de
-Message-Id: <20060106101325.B9FED354113@atlas.denx.de>
-Cc: ppc <linuxppc-embedded@ozlabs.org>
-Subject: Re: Help need: Porting Linux to PQ2FADS_ZU board 
+	Fri,  6 Jan 2006 22:14:23 +1100 (EST)
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+From: batsayan.das@tcs.com
+Message-ID: <OFE75E4E98.D56217BF-ON652570EE.0039B69D-652570EE.003AEEB0@tcs.com>
+Date: Fri, 6 Jan 2006 16:13:42 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 003AEE7E652570EE_="
+Subject: Help on LXT971 eth initialization
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +21,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <23894955.1136537390660.JavaMail.postfix@mx3.mail.sohu.com> you wrote:
->
-> My board is PQ2FADS_ZU.Does the ELDK not support it?
+This is a multipart message in MIME format.
+--=_alternative 003AEE7E652570EE_=
+Content-Type: text/plain; charset="US-ASCII"
 
-ELDK is, as the  name  suggests,  a  Development  Toolkit,  i.  e.  a
-toolchain. As such, it is independent from the hardware and doesn not
-support  any specific board, or, if you like, it supports all boards,
-even those that don't exist yet.
 
-What you are asking for is board support in a specific  kernel  tree.
-There  is  no  specific  support  for  the  PQ2FADS_ZU  board  in our
-linuxppc_2_4_devel  tree   (which   is   included   with   the   ELDK
-distribution). On the other hand this is a standard board which which
-is probably working fine, but we never tested or varified it.
+Hi,
 
-I guess that it is not configured for use with U-Boot.
+My MPC8260 customs board has LXT971 Ethernet chip on FCC1. I am able to 
+get the linux prompt, but I am unable to initialize ethernet. I have tried 
+different bootarg options (like setenv bootargs ip=dhcp etc)  and 
+different kernel compilation options (like from make menuconfig, Network 
+Option->enable DHCP support etc), but none enables the ethernet interface. 
 
-Best regards,
 
-Wolfgang Denk
+Any help will be appreciated.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Never give in.  Never give in.  Never. Never. Never."
-- Winston Churchill
+FYI, the ethernet is working from U-Boot. 
+
+Thanks,
+Batsayan Das
+Tata Consultancy Services Limited
+Mailto: batsayan.das@tcs.com
+Website: http://www.tcs.com
+
+Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+--=_alternative 003AEE7E652570EE_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">Hi,</font>
+<br>
+<br><font size=2 face="sans-serif">My MPC8260 customs board has LXT971
+Ethernet chip on FCC1. I am able to get the linux prompt, but I am unable
+to initialize ethernet. I have tried different bootarg options (like setenv
+bootargs ip=dhcp etc) &nbsp;and different kernel compilation options (like
+from make menuconfig, Network Option-&gt;enable DHCP support etc), but
+none enables the ethernet interface. </font>
+<br>
+<br><font size=2 face="sans-serif">Any help will be appreciated.</font>
+<br>
+<br><font size=2 face="sans-serif">FYI, the ethernet is working from U-Boot.
+</font>
+<br><font size=2 face="sans-serif"><br>
+Thanks,</font>
+<br><font size=2 face="sans-serif">Batsayan Das<br>
+Tata Consultancy Services Limited<br>
+Mailto: batsayan.das@tcs.com<br>
+Website: http://www.tcs.com</font>
+<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
+</font></td></tr></table>
+--=_alternative 003AEE7E652570EE_=--
