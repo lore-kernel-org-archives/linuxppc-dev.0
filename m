@@ -1,19 +1,15 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9DC3E689C9
+Return-Path: <maj1224@yahoo.com>
+Received: from web33501.mail.mud.yahoo.com (web33501.mail.mud.yahoo.com
+	[68.142.206.150]) by ozlabs.org (Postfix) with SMTP id C6D0B689D7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 Jan 2006 02:08:57 +1100 (EST)
-To: David Jander <david.jander@protonic.nl>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 06 Jan 2006 15:19:13 +0100."
-	<200601061519.14550.david.jander@protonic.nl>
-Date: Fri, 06 Jan 2006 16:08:54 +0100
-Sender: wd@denx.de
-Message-Id: <20060106150854.918FF353A43@atlas.denx.de>
-Cc: HappyPhot <happyphot@gmail.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: VFS: Cannot open root device "31:03" or unknown-block(31,3) 
+	Sat,  7 Jan 2006 08:19:04 +1100 (EST)
+Message-ID: <20060106211902.77247.qmail@web33501.mail.mud.yahoo.com>
+Date: Fri, 6 Jan 2006 13:19:02 -0800 (PST)
+From: Matt Jerdonek <maj1224@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Subject: Booting from RAM Disk
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,37 +20,104 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200601061519.14550.david.jander@protonic.nl> you wrote:
->
-> > > I see you are using DENX ELDK 3.1.1 and a kernel which AFAIK is not
-> > > supported
+I've got a custom 852T board, similar to an AdderII. 
+I've got the board booting linux fine using NFS.  Now
+I'm trying to get it to work stand-alone, and I can't
+get it to boot from a RAM disk.  I'm using the 2.4.25
+kernel from Denx, and the Ramdisk image from the ELDK
+(ppc_8xx/images/ramdisk.image.gz).
 
-This is a serious misunderstanding. There is no  such  thing  like  a
-specific kernel version which is supported by the ELDK.
+Below is the output I'm getting.  The "MAJ" tags
+indicate printk's that were inserted by me.  If anyone
+has a clue to what I'm doing wrong, I'd appreciate it.
 
-You don't talk about any specific version of a  C  programm  that  is
-supported by the GNU compiler either.
+Thanks,
+-- Matt
+
+loaded at:     00380000 005C1218
+board data at: 01FFFEF8 01FFFF48
+relocated to:  003852FC 0038534C
+zimage at:     00385848 00431C28
+initrd at:     00432000 005BD040
+avail ram:     005C2000 02000000
+
+Linux/PPC load: root=/dev/ram rw ip=192.168.0.6
+console=ttyS0,115200
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.4.25 (matt@debian) (gcc version 3.3.3
+(DENX ELDK 3.1.1 3.3.3-9)) #5 Fri Jan 6 13:58:44 MST
+2006
+On node 0 totalpages: 8192
+zone(0): 8192 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/ram rw ip=192.168.0.6
+console=ttyS0,115200
+Decrementer Frequency = 186624000/60
+Calibrating delay loop... 49.56 BogoMIPS
+Memory: 29164k available (1204k kernel code, 364k
+data, 56k init, 0k highmem)
+Dentry cache hash table entries: 4096 (order: 3, 32768
+bytes)
+Inode cache hash table entries: 2048 (order: 2, 16384
+bytes)
+Mount cache hash table entries: 512 (order: 0, 4096
+bytes)
+Buffer cache hash table entries: 1024 (order: 0, 4096
+bytes)
+Page-cache hash table entries: 8192 (order: 3, 32768
+bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society
+NET3.039
+Initializing RT netlink socket
+Starting kswapd
+devfs: v1.12c (20020818) Richard Gooch
+(rgooch@atnf.csiro.au)
+devfs: boot_options: 0x1
+Installing knfsd (copyright (C) 1996
+okir@monad.swb.de).
+JFFS2 version 2.2. (C) 2001-2003 Red Hat, Inc.
+CPM UART driver version 0.04
+ttyS0 at 0x0280 is on SMC1 using BRG1
+ttyS1 at 0x0200 is on SCC3 using BRG2
+pty: 256 Unix98 ptys configured
+eth0: FEC ENET Version 0.3, FEC irq 3, addr
+08:00:3e:28:7a:ba
+RAMDISK driver initialized: 16 RAM disks of 4096K size
+1024 blocksize
+loop: loaded (max 8 devices)
+PPP generic driver version 2.4.2
+PPP Deflate Compression module registered
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 2048 bind
+4096)
+IP-Config: Guessing netmask 255.255.255.0
+IP-Config: Complete:
+      device=eth0, addr=192.168.0.6,
+mask=255.255.255.0, gw=255.255.255.255,
+     host=192.168.0.6, domain=, nis-domain=(none),
+     bootserver=255.255.255.255,
+rootserver=255.255.255.255, rootpath=
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+RAMDISK: Compressed image found at block 0
+Freeing initrd memory: 1580k freed
+MAJ: initrd_load returns 1
+MAJ: In mount_root
+MAJ: devfs_make_root name = ram
+MAJ: create_dev returns 0
+MAJ: mount_block_root fs_name = jffs2
+Kernel panic: VFS: Unable to mount root fs on 01:00
+ <0>Rebooting in 180 seconds..                        
+     
 
 
-The ELDK is primarily a *toolkit* which works with  arbitrary  C  and
-C++  programs  and  with  any version of the kernel tree (at least in
-theory; very recent version s of the Linux kernel [ > 2.6.14]  cannot
-be compiled with ELDK 3.1.x any more, but this is a different issue).
-
-> >   Do you know where to get the infomation about which kernel version it
-> > supports?
-
-The ELDK supports *any* kernel version.
-
-> The one that comes with that version of ELDK? Just a guess ;-)
-
-Wrong guess.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"I've seen it. It's rubbish."          - Marvin the Paranoid Android
+		
+__________________________________________ 
+Yahoo! DSL – Something to write home about. 
+Just $16.99/mo. or less. 
+dsl.yahoo.com 
