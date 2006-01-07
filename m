@@ -1,19 +1,15 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 1DB9A68A44
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Jan 2006 19:45:30 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: Wolfgang Denk <wd@denx.de>
-Date: Mon, 9 Jan 2006 09:45:21 +0100
-References: <20060106150854.918FF353A43@atlas.denx.de>
-In-Reply-To: <20060106150854.918FF353A43@atlas.denx.de>
+Return-Path: <dhlii@dlasys.net>
+Message-ID: <43C027B0.2070409@dlasys.net>
+Date: Sat, 07 Jan 2006 15:42:24 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200601090945.22564.david.jander@protonic.nl>
-Cc: HappyPhot <happyphot@gmail.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: VFS: Cannot open root device "31:03" or unknown-block(31,3)
+To: Grant Likely <grant.likely@secretlab.ca>
+References: <20060106221601.78327.qmail@web33515.mail.mud.yahoo.com>
+	<43BF4AB8.6030003@comcast.net> <43BF5302.4030602@secretlab.ca>
+In-Reply-To: <43BF5302.4030602@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: Booting from RAM Disk
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,51 +20,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 06 January 2006 16:08, Wolfgang Denk wrote:
-> This is a serious misunderstanding. There is no  such  thing  like  a
-> specific kernel version which is supported by the ELDK.
+Grant Likely wrote:
+> David H. Lynch Jr. wrote:
+> 
+>>	initramfs does nto exist in 2.4, but despite a dearth of information it
+>>works extremely well in 2.6.
+>>
+>>	Set CONFIG_INITRAMFS=path to directory tree to build into ramdisk, and
+>>the kernel building process will take care of most evrything else.
+>>Unlike initrd, there are not two separate files, that each have to be
+>>loaded. The initial ramdisk is part of the kernel image, gets
+>>uncompressed by the kernel, and is just generally painless - except for
+>>the scarcity of documentation.
+> 
+> So... have are been able to use initramfs as a drop in replacement for
+> initrd, or did you have to jump through extra hoops?  I attempted to use
+> initramfs a few months ago, but wasn't ever able to get it to run init.
+> 
+> g.
+> 
 
-True, but not entirely.
-ELDK-3.1.1 has a glibc compiled with support of a certain version of the 
-kernel (I guess it's 2.4.xx), so newer kernels might run (because they are 
-obviously backwards compatible), but some features of 2.6 cannot be used 
-(e.g. support for the latest syscalls, different HZ, etc...)
+	I can't exactly answer that - While I have used both, The only one I
+have actually tried to put onto an embedded system is initramfs.
 
-A second issue is the boot procedure. If you are a beginner with linux, you'd 
-probably start booting from NFS root as it gets installed in the ELDK/ppc_xxx 
-directory. That probably won't work very well with latest 2.6 kernels (device 
-files missing, sysfs not mounted, shmfs has different name, etc...)
+	I normallly use Debian which puts together an initrd for you fairly easily.
+	I used Gentoo on a few systems and it uses initramfs - but it seems to
+use it in an odd configuration similair to initrd, where the Ramdisk
+image is a separate file.
 
-A third issue is the compiler issue. Some newer kernels might not compile 
-correctly anymore with older compilers.
+	I have never tried to build an initrd system.
 
-These three things are what I meant with "supported" or "not supported".
+	I like initramfs - the only problem I had putting it together was
+finding the information to do it.
 
-> The ELDK is primarily a *toolkit* which works with  arbitrary  C  and
-> C++  programs  and  with  any version of the kernel tree (at least in
-> theory; very recent version s of the Linux kernel [ > 2.6.14]  cannot
-> be compiled with ELDK 3.1.x any more, but this is a different issue).
-
-See what I mean? HappyPhot did just that: compile 2.6.14.2 with ELDK 3.1.1!!!
-
-> > >   Do you know where to get the infomation about which kernel version it
-> > > supports?
->
-> The ELDK supports *any* kernel version.
-
-Ok, let's talk about "recommended" kernel then. I would never recommend 
-someone unexperienced to start with a combination of ELDK-3.1.1 and kernel 
-2.6.xx.
-
-> > The one that comes with that version of ELDK? Just a guess ;-)
->
-> Wrong guess.
-
-But it'd still be the one with most chances of success unless there are known 
-problems with that kernel on a Sandpoint board.
-
-Greetings,
-
--- 
-David Jander
-Protonic Holland.
+	In the instance of the E12 I needed something that was wrapped into a
+single file with the kernl. The E12 already had an elf loader, but all
+it did was load elf files. It did not handle ramdisk other images etc.
+INITRAMFS provided a means to start on the E12 without having to write
+another loader.
