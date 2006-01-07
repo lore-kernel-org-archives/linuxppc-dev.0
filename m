@@ -1,16 +1,12 @@
 Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jeirsy4xmm.fsf@sykes.suse.de>
-References: <1136439584.4840.48.camel@localhost.localdomain>
-	<jeirsy4xmm.fsf@sykes.suse.de>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Fri, 06 Jan 2006 09:19:54 +1100
-Message-Id: <1136499595.4840.86.camel@localhost.localdomain>
+Date: Sat, 07 Jan 2006 11:24:30 +1100
+Message-Id: <1136593470.4840.154.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc: Add PowerMac platform function interpreter
+Subject: [PATCH] 0/5 powerpc: Platform & i2c updates & cpufreq
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,13 +16,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-01-05 at 14:23 +0100, Andreas Schwab wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > Anyway, here it is, comments welcome...
-> 
-> To which tree is this relative?  Neither 2.6.15 nor Linus' tree matches.
+Hi !
 
-powerpc.git
+This serie of patch replaces the 2 I posted recently for platform
+functions & g5 cpufreq. It's not a 100% finished job yet but it's
+getting closer.
 
 Ben.
