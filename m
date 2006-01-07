@@ -3,10 +3,10 @@ From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
 Content-Type: text/plain
-Date: Sat, 07 Jan 2006 11:35:26 +1100
-Message-Id: <1136594126.4840.167.camel@localhost.localdomain>
+Date: Sat, 07 Jan 2006 11:41:02 +1100
+Message-Id: <1136594462.4840.174.camel@localhost.localdomain>
 Mime-Version: 1.0
-Subject: [PATCH] 2/5 powerpc: Rework PowerMac i2c part 2
+Subject: [PATCH] 3/5 powerpc: Add platform functions interpreter
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,2359 +16,2338 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is the continuation of the previous patch. This one removes the old
-PowerMac i2c drivers (i2c-keywest and i2c-pmac-smu) and replaces them
-both with a single stub driver that uses the new PowerMac low i2c layer.
+This is the platform function interpreter itself along with the backends
+for UniN/U3/U4, mac-io, GPIOs and i2c. It adds the ability to execute
+those do-platform-* scripts in the device-tree (at least for most
+devices for which a backend is provided). This should replace the clock
+spreading hacks properly. It might also have an impact on all sort of
+machines since some of the scripts marked "at init" will now be executed
+on boot (or some other on sleep/wakeup), those will possibly do things
+that the kernel didn't do at all, like setting some values into some i2c
+devices (changing thermal sensor calibration or conversion rate) etc...
+Thus regression testing is MUCH welcome. Also loook for errors in dmesg.
+That's also why I've left rather verbose debugging enabled in this
+version of the patch.
 
-Now that i2c-keywest is gone, the low-i2c code is extended to support
-interrupt driver transfers. All i2c busses now appear as platform
-devices. Compatibility with existing drivers should be maintained as the
-i2c bus names have been kept identical, except for the SMU bus but in
-that later case, all users has been fixed.
-
-With that patch added, matching a device node to an i2c_adapter becomes
-trivial.
+(I do expect some Windtunnel G4s to show some errors as they have an i2c
+clock chip on the PMU bus that uses some primitives that the i2c backend
+doesn't implement yet. I really need users that have one of those
+machine to come back to me so we can get that done right, though the
+errors themselves should be harmless, I suspect the machine might not
+run at full speed).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Index: linux-work/drivers/i2c/busses/Kconfig
-===================================================================
---- linux-work.orig/drivers/i2c/busses/Kconfig	2006-01-06 19:42:48.000000000 +1100
-+++ linux-work/drivers/i2c/busses/Kconfig	2006-01-06 19:43:28.000000000 +1100
-@@ -236,27 +236,17 @@ config I2C_IXP2000
- 	  This support is also available as a module. If so, the module
- 	  will be called i2c-ixp2000.
- 
--config I2C_KEYWEST
--	tristate "Powermac Keywest I2C interface"
-+config I2C_POWERMAC
-+	tristate "Powermac I2C interface"
- 	depends on I2C && PPC_PMAC
-+	default y
- 	help
--	  This supports the use of the I2C interface in the combo-I/O
--	  chip on recent Apple machines.  Say Y if you have such a machine.
--
--	  This support is also available as a module.  If so, the module 
--	  will be called i2c-keywest.
--
--config I2C_PMAC_SMU
--	tristate "Powermac SMU I2C interface"
--	depends on I2C && PMAC_SMU
--	help
--	  This supports the use of the I2C interface in the SMU
--	  chip on recent Apple machines like the iMac G5.  It is used
--	  among others by the thermal control driver for those machines.
--	  Say Y if you have such a machine.
-+	  This exposes the various PowerMac i2c interfaces to the linux i2c
-+	  layer and to userland. It is used by various drivers on the powemac
-+	  platform, thus should generally be enabled.
- 
- 	  This support is also available as a module.  If so, the module
--	  will be called i2c-pmac-smu.
-+	  will be called i2c-powermac.
- 
- config I2C_MPC
- 	tristate "MPC107/824x/85xx/52xx"
-Index: linux-work/drivers/i2c/busses/Makefile
-===================================================================
---- linux-work.orig/drivers/i2c/busses/Makefile	2006-01-06 19:42:48.000000000 +1100
-+++ linux-work/drivers/i2c/busses/Makefile	2006-01-06 19:43:28.000000000 +1100
-@@ -19,8 +19,7 @@ obj-$(CONFIG_I2C_ISA)		+= i2c-isa.o
- obj-$(CONFIG_I2C_ITE)		+= i2c-ite.o
- obj-$(CONFIG_I2C_IXP2000)	+= i2c-ixp2000.o
- obj-$(CONFIG_I2C_IXP4XX)	+= i2c-ixp4xx.o
--obj-$(CONFIG_I2C_KEYWEST)	+= i2c-keywest.o
--obj-$(CONFIG_I2C_PMAC_SMU)	+= i2c-pmac-smu.o
-+obj-$(CONFIG_I2C_POWERMAC)	+= i2c-powermac.o
- obj-$(CONFIG_I2C_MPC)		+= i2c-mpc.o
- obj-$(CONFIG_I2C_MV64XXX)	+= i2c-mv64xxx.o
- obj-$(CONFIG_I2C_NFORCE2)	+= i2c-nforce2.o
-Index: linux-work/drivers/i2c/busses/i2c-keywest.c
-===================================================================
---- linux-work.orig/drivers/i2c/busses/i2c-keywest.c	2006-01-06 19:42:48.000000000 +1100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,754 +0,0 @@
--/*
--    i2c Support for Apple Keywest I2C Bus Controller
--
--    Copyright (c) 2001 Benjamin Herrenschmidt <benh@kernel.crashing.org>
--
--    Original work by
--    
--    Copyright (c) 2000 Philip Edelbrock <phil@stimpy.netroedge.com>
--
--    This program is free software; you can redistribute it and/or modify
--    it under the terms of the GNU General Public License as published by
--    the Free Software Foundation; either version 2 of the License, or
--    (at your option) any later version.
--
--    This program is distributed in the hope that it will be useful,
--    but WITHOUT ANY WARRANTY; without even the implied warranty of
--    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--    GNU General Public License for more details.
--
--    You should have received a copy of the GNU General Public License
--    along with this program; if not, write to the Free Software
--    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
--
--    Changes:
--
--    2001/12/13 BenH	New implementation
--    2001/12/15 BenH	Add support for "byte" and "quick"
--                        transfers. Add i2c_xfer routine.
--    2003/09/21 BenH	Rework state machine with Paulus help
--    2004/01/21 BenH	Merge in Greg KH changes, polled mode is back
--    2004/02/05 BenH	Merge 64 bits fixes from the g5 ppc64 tree
--
--    My understanding of the various modes supported by keywest are:
--
--     - Dumb mode : not implemented, probably direct tweaking of lines
--     - Standard mode : simple i2c transaction of type
--         S Addr R/W A Data A Data ... T
--     - Standard sub mode : combined 8 bit subaddr write with data read
--         S Addr R/W A SubAddr A Data A Data ... T
--     - Combined mode : Subaddress and Data sequences appended with no stop
--         S Addr R/W A SubAddr S Addr R/W A Data A Data ... T
--
--    Currently, this driver uses only Standard mode for i2c xfer, and
--    smbus byte & quick transfers ; and uses StandardSub mode for
--    other smbus transfers instead of combined as we need that for the
--    sound driver to be happy
--*/
--
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/ioport.h>
--#include <linux/pci.h>
--#include <linux/types.h>
--#include <linux/delay.h>
--#include <linux/i2c.h>
--#include <linux/init.h>
--#include <linux/mm.h>
--#include <linux/timer.h>
--#include <linux/spinlock.h>
--#include <linux/completion.h>
--#include <linux/interrupt.h>
--
--#include <asm/io.h>
--#include <asm/prom.h>
--#include <asm/machdep.h>
--#include <asm/pmac_feature.h>
--#include <asm/pmac_low_i2c.h>
--
--#include "i2c-keywest.h"
--
--#undef POLLED_MODE
--
--/* Some debug macros */
--#define WRONG_STATE(name) do {\
--		pr_debug("KW: wrong state. Got %s, state: %s (isr: %02x)\n", \
--			 name, __kw_state_names[iface->state], isr);	\
--	} while(0)
--
--#ifdef DEBUG
--static const char *__kw_state_names[] = {
--	"state_idle",
--	"state_addr",
--	"state_read",
--	"state_write",
--	"state_stop",
--	"state_dead"
--};
--#endif /* DEBUG */
--
--MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
--MODULE_DESCRIPTION("I2C driver for Apple's Keywest");
--MODULE_LICENSE("GPL");
--
--#ifdef POLLED_MODE
--/* Don't schedule, the g5 fan controller is too
-- * timing sensitive
-- */
--static u8
--wait_interrupt(struct keywest_iface* iface)
--{
--	int i;
--	u8 isr;
--	
--	for (i = 0; i < 200000; i++) {
--		isr = read_reg(reg_isr) & KW_I2C_IRQ_MASK;
--		if (isr != 0)
--			return isr;
--		udelay(10);
--	}
--	return isr;
--}
--#endif /* POLLED_MODE */
--
--static void
--do_stop(struct keywest_iface* iface, int result)
--{
--	write_reg(reg_control, KW_I2C_CTL_STOP);
--	iface->state = state_stop;
--	iface->result = result;
--}
--
--/* Main state machine for standard & standard sub mode */
--static void
--handle_interrupt(struct keywest_iface *iface, u8 isr)
--{
--	int ack;
--	
--	if (isr == 0) {
--		if (iface->state != state_stop) {
--			pr_debug("KW: Timeout !\n");
--			do_stop(iface, -EIO);
--		}
--		if (iface->state == state_stop) {
--			ack = read_reg(reg_status);
--			if (!(ack & KW_I2C_STAT_BUSY)) {
--				iface->state = state_idle;
--				write_reg(reg_ier, 0x00);
--#ifndef POLLED_MODE
--				complete(&iface->complete);
--#endif /* POLLED_MODE */
--			}
--		}
--		return;
--	}
--
--	if (isr & KW_I2C_IRQ_ADDR) {
--		ack = read_reg(reg_status);
--		if (iface->state != state_addr) {
--			write_reg(reg_isr, KW_I2C_IRQ_ADDR);
--			WRONG_STATE("KW_I2C_IRQ_ADDR"); 
--			do_stop(iface, -EIO);
--			return;
--		}
--		if ((ack & KW_I2C_STAT_LAST_AAK) == 0) {
--			iface->state = state_stop;		     
--			iface->result = -ENODEV;
--			pr_debug("KW: NAK on address\n");
--		} else {
--			/* Handle rw "quick" mode */
--			if (iface->datalen == 0) {
--				do_stop(iface, 0);
--			} else if (iface->read_write == I2C_SMBUS_READ) {
--				iface->state = state_read;
--				if (iface->datalen > 1)
--					write_reg(reg_control, KW_I2C_CTL_AAK);
--			} else {
--				iface->state = state_write;
--				write_reg(reg_data, *(iface->data++));
--				iface->datalen--;
--			}
--		}
--		write_reg(reg_isr, KW_I2C_IRQ_ADDR);
--	}
--
--	if (isr & KW_I2C_IRQ_DATA) {
--		if (iface->state == state_read) {
--			*(iface->data++) = read_reg(reg_data);
--			write_reg(reg_isr, KW_I2C_IRQ_DATA);
--			iface->datalen--;
--			if (iface->datalen == 0)
--				iface->state = state_stop;
--			else if (iface->datalen == 1)
--				write_reg(reg_control, 0);
--		} else if (iface->state == state_write) {
--			/* Check ack status */
--			ack = read_reg(reg_status);
--			if ((ack & KW_I2C_STAT_LAST_AAK) == 0) {
--				pr_debug("KW: nack on data write (%x): %x\n",
--				    iface->data[-1], ack);
--				do_stop(iface, -EIO);
--			} else if (iface->datalen) {
--				write_reg(reg_data, *(iface->data++));
--				iface->datalen--;
--			} else {
--				write_reg(reg_control, KW_I2C_CTL_STOP);
--				iface->state = state_stop;
--				iface->result = 0;
--			}
--			write_reg(reg_isr, KW_I2C_IRQ_DATA);
--		} else {
--			write_reg(reg_isr, KW_I2C_IRQ_DATA);
--			WRONG_STATE("KW_I2C_IRQ_DATA"); 
--			if (iface->state != state_stop)
--				do_stop(iface, -EIO);
--		}
--	}
--
--	if (isr & KW_I2C_IRQ_STOP) {
--		write_reg(reg_isr, KW_I2C_IRQ_STOP);
--		if (iface->state != state_stop) {
--			WRONG_STATE("KW_I2C_IRQ_STOP");
--			iface->result = -EIO;
--		}
--		iface->state = state_idle;
--		write_reg(reg_ier, 0x00);
--#ifndef POLLED_MODE
--		complete(&iface->complete);
--#endif /* POLLED_MODE */			
--	}
--
--	if (isr & KW_I2C_IRQ_START)
--		write_reg(reg_isr, KW_I2C_IRQ_START);
--}
--
--#ifndef POLLED_MODE
--
--/* Interrupt handler */
--static irqreturn_t
--keywest_irq(int irq, void *dev_id, struct pt_regs *regs)
--{
--	struct keywest_iface *iface = (struct keywest_iface *)dev_id;
--	unsigned long flags;
--
--	spin_lock_irqsave(&iface->lock, flags);
--	del_timer(&iface->timeout_timer);
--	handle_interrupt(iface, read_reg(reg_isr));
--	if (iface->state != state_idle) {
--		iface->timeout_timer.expires = jiffies + POLL_TIMEOUT;
--		add_timer(&iface->timeout_timer);
--	}
--	spin_unlock_irqrestore(&iface->lock, flags);
--	return IRQ_HANDLED;
--}
--
--static void
--keywest_timeout(unsigned long data)
--{
--	struct keywest_iface *iface = (struct keywest_iface *)data;
--	unsigned long flags;
--
--	pr_debug("timeout !\n");
--	spin_lock_irqsave(&iface->lock, flags);
--	handle_interrupt(iface, read_reg(reg_isr));
--	if (iface->state != state_idle) {
--		iface->timeout_timer.expires = jiffies + POLL_TIMEOUT;
--		add_timer(&iface->timeout_timer);
--	}
--	spin_unlock_irqrestore(&iface->lock, flags);
--}
--
--#endif /* POLLED_MODE */
--
--/*
-- * SMBUS-type transfer entrypoint
-- */
--static s32
--keywest_smbus_xfer(	struct i2c_adapter*	adap,
--			u16			addr,
--			unsigned short		flags,
--			char			read_write,
--			u8			command,
--			int			size,
--			union i2c_smbus_data*	data)
--{
--	struct keywest_chan* chan = i2c_get_adapdata(adap);
--	struct keywest_iface* iface = chan->iface;
--	int len;
--	u8* buffer;
--	u16 cur_word;
--	int rc = 0;
--
--	if (iface->state == state_dead)
--		return -ENXIO;
--		
--	/* Prepare datas & select mode */
--	iface->cur_mode &= ~KW_I2C_MODE_MODE_MASK;
--	switch (size) {
--        case I2C_SMBUS_QUICK:
--	    	len = 0;
--	    	buffer = NULL;
--	    	iface->cur_mode |= KW_I2C_MODE_STANDARD;
--	    	break;
--        case I2C_SMBUS_BYTE:
--	    	len = 1;
--	    	buffer = &data->byte;
--	    	iface->cur_mode |= KW_I2C_MODE_STANDARD;
--	    	break;
--        case I2C_SMBUS_BYTE_DATA:
--	    	len = 1;
--	    	buffer = &data->byte;
--	    	iface->cur_mode |= KW_I2C_MODE_STANDARDSUB;
--	    	break;
--        case I2C_SMBUS_WORD_DATA:
--	    	len = 2;
--	    	cur_word = cpu_to_le16(data->word);
--	    	buffer = (u8 *)&cur_word;
--	    	iface->cur_mode |= KW_I2C_MODE_STANDARDSUB;
--		break;
--        case I2C_SMBUS_BLOCK_DATA:
--	    	len = data->block[0];
--	    	buffer = &data->block[1];
--	    	iface->cur_mode |= KW_I2C_MODE_STANDARDSUB;
--		break;
--        default:
--	    	return -1;
--	}
--
--	/* Turn a standardsub read into a combined mode access */
-- 	if (read_write == I2C_SMBUS_READ
-- 	    && (iface->cur_mode & KW_I2C_MODE_MODE_MASK) == KW_I2C_MODE_STANDARDSUB) {
-- 		iface->cur_mode &= ~KW_I2C_MODE_MODE_MASK;
-- 		iface->cur_mode |= KW_I2C_MODE_COMBINED;
-- 	}
--
--	/* Original driver had this limitation */
--	if (len > 32)
--		len = 32;
--
--	if (pmac_low_i2c_lock(iface->node))
--		return -ENXIO;
--
--	pr_debug("chan: %d, addr: 0x%x, transfer len: %d, read: %d\n",
--		chan->chan_no, addr, len, read_write == I2C_SMBUS_READ);
--
--	iface->data = buffer;
--	iface->datalen = len;
--	iface->state = state_addr;
--	iface->result = 0;
--	iface->read_write = read_write;
--	
--	/* Setup channel & clear pending irqs */
--	write_reg(reg_isr, read_reg(reg_isr));
--	write_reg(reg_mode, iface->cur_mode | (chan->chan_no << 4));
--	write_reg(reg_status, 0);
--
--	/* Set up address and r/w bit */
--	write_reg(reg_addr,
--		(addr << 1) | ((read_write == I2C_SMBUS_READ) ? 0x01 : 0x00));
--
--	/* Set up the sub address */
--	if ((iface->cur_mode & KW_I2C_MODE_MODE_MASK) == KW_I2C_MODE_STANDARDSUB
--	    || (iface->cur_mode & KW_I2C_MODE_MODE_MASK) == KW_I2C_MODE_COMBINED)
--		write_reg(reg_subaddr, command);
--
--#ifndef POLLED_MODE
--	/* Arm timeout */
--	iface->timeout_timer.expires = jiffies + POLL_TIMEOUT;
--	add_timer(&iface->timeout_timer);
--#endif
--
--	/* Start sending address & enable interrupt*/
--	write_reg(reg_control, KW_I2C_CTL_XADDR);
--	write_reg(reg_ier, KW_I2C_IRQ_MASK);
--
--#ifdef POLLED_MODE
--	pr_debug("using polled mode...\n");
--	/* State machine, to turn into an interrupt handler */
--	while(iface->state != state_idle) {
--		unsigned long flags;
--
--		u8 isr = wait_interrupt(iface);
--		spin_lock_irqsave(&iface->lock, flags);
--		handle_interrupt(iface, isr);
--		spin_unlock_irqrestore(&iface->lock, flags);
--	}
--#else /* POLLED_MODE */
--	pr_debug("using interrupt mode...\n");
--	wait_for_completion(&iface->complete);	
--#endif /* POLLED_MODE */	
--
--	rc = iface->result;	
--	pr_debug("transfer done, result: %d\n", rc);
--
--	if (rc == 0 && size == I2C_SMBUS_WORD_DATA && read_write == I2C_SMBUS_READ)
--	    	data->word = le16_to_cpu(cur_word);
--	
--	/* Release sem */
--	pmac_low_i2c_unlock(iface->node);
--	
--	return rc;
--}
--
--/*
-- * Generic i2c master transfer entrypoint
-- */
--static int
--keywest_xfer(	struct i2c_adapter *adap,
--		struct i2c_msg *msgs, 
--		int num)
--{
--	struct keywest_chan* chan = i2c_get_adapdata(adap);
--	struct keywest_iface* iface = chan->iface;
--	struct i2c_msg *pmsg;
--	int i, completed;
--	int rc = 0;
--
--	if (iface->state == state_dead)
--		return -ENXIO;
--
--	if (pmac_low_i2c_lock(iface->node))
--		return -ENXIO;
--
--	/* Set adapter to standard mode */
--	iface->cur_mode &= ~KW_I2C_MODE_MODE_MASK;
--	iface->cur_mode |= KW_I2C_MODE_STANDARD;
--
--	completed = 0;
--	for (i = 0; rc >= 0 && i < num;) {
--		u8 addr;
--		
--		pmsg = &msgs[i++];
--		addr = pmsg->addr;
--		if (pmsg->flags & I2C_M_TEN) {
--			printk(KERN_ERR "i2c-keywest: 10 bits addr not supported !\n");
--			rc = -EINVAL;
--			break;
--		}
--		pr_debug("xfer: chan: %d, doing %s %d bytes to 0x%02x - %d of %d messages\n",
--		     chan->chan_no,
--		     pmsg->flags & I2C_M_RD ? "read" : "write",
--                     pmsg->len, addr, i, num);
--    
--		/* Setup channel & clear pending irqs */
--		write_reg(reg_mode, iface->cur_mode | (chan->chan_no << 4));
--		write_reg(reg_isr, read_reg(reg_isr));
--		write_reg(reg_status, 0);
--		
--		iface->data = pmsg->buf;
--		iface->datalen = pmsg->len;
--		iface->state = state_addr;
--		iface->result = 0;
--		if (pmsg->flags & I2C_M_RD)
--			iface->read_write = I2C_SMBUS_READ;
--		else
--			iface->read_write = I2C_SMBUS_WRITE;
--
--		/* Set up address and r/w bit */
--		if (pmsg->flags & I2C_M_REV_DIR_ADDR)
--			addr ^= 1;		
--		write_reg(reg_addr,
--			(addr << 1) |
--			((iface->read_write == I2C_SMBUS_READ) ? 0x01 : 0x00));
--
--#ifndef POLLED_MODE
--		/* Arm timeout */
--		iface->timeout_timer.expires = jiffies + POLL_TIMEOUT;
--		add_timer(&iface->timeout_timer);
--#endif
--
--		/* Start sending address & enable interrupt*/
--		write_reg(reg_ier, KW_I2C_IRQ_MASK);
--		write_reg(reg_control, KW_I2C_CTL_XADDR);
--
--#ifdef POLLED_MODE
--		pr_debug("using polled mode...\n");
--		/* State machine, to turn into an interrupt handler */
--		while(iface->state != state_idle) {
--			u8 isr = wait_interrupt(iface);
--			handle_interrupt(iface, isr);
--		}
--#else /* POLLED_MODE */
--		pr_debug("using interrupt mode...\n");
--		wait_for_completion(&iface->complete);	
--#endif /* POLLED_MODE */	
--
--		rc = iface->result;
--		if (rc == 0)
--			completed++;
--		pr_debug("transfer done, result: %d\n", rc);
--	}
--
--	/* Release sem */
--	pmac_low_i2c_unlock(iface->node);
--
--	return completed;
--}
--
--static u32
--keywest_func(struct i2c_adapter * adapter)
--{
--	return I2C_FUNC_SMBUS_QUICK | I2C_FUNC_SMBUS_BYTE |
--	       I2C_FUNC_SMBUS_BYTE_DATA | I2C_FUNC_SMBUS_WORD_DATA |
--	       I2C_FUNC_SMBUS_BLOCK_DATA;
--}
--
--/* For now, we only handle combined mode (smbus) */
--static struct i2c_algorithm keywest_algorithm = {
--	.smbus_xfer	= keywest_smbus_xfer,
--	.master_xfer	= keywest_xfer,
--	.functionality	= keywest_func,
--};
--
--
--static int
--create_iface(struct device_node *np, struct device *dev)
--{
--	unsigned long steps;
--	unsigned bsteps, tsize, i, nchan;
--	struct keywest_iface* iface;
--	u32 *psteps, *prate, *addrp;
--	int rc;
--
--	if (np->n_intrs < 1) {
--		printk(KERN_ERR "%s: Missing interrupt !\n",
--		       np->full_name);
--		return -ENODEV;
--	}
--	addrp = (u32 *)get_property(np, "AAPL,address", NULL);
--	if (addrp == NULL) {
--		printk(KERN_ERR "%s: Can't find address !\n",
--		       np->full_name);
--		return -ENODEV;
--	}
--
--	if (pmac_low_i2c_lock(np))
--		return -ENODEV;
--
--	psteps = (u32 *)get_property(np, "AAPL,address-step", NULL);
--	steps = psteps ? (*psteps) : 0x10;
--
--	/* Hrm... maybe we can be smarter here */
--	for (bsteps = 0; (steps & 0x01) == 0; bsteps++)
--		steps >>= 1;
--
--	if (np->parent->name[0] == 'u')
--		nchan = 2;
--	else
--		nchan = 1;
--
--	tsize = sizeof(struct keywest_iface) +
--		(sizeof(struct keywest_chan) + 4) * nchan;
--	iface = kzalloc(tsize, GFP_KERNEL);
--	if (iface == NULL) {
--		printk(KERN_ERR "i2c-keywest: can't allocate inteface !\n");
--		pmac_low_i2c_unlock(np);
--		return -ENOMEM;
--	}
--	spin_lock_init(&iface->lock);
--	init_completion(&iface->complete);
--	iface->node = of_node_get(np);
--	iface->bsteps = bsteps;
--	iface->chan_count = nchan;
--	iface->state = state_idle;
--	iface->irq = np->intrs[0].line;
--	iface->channels = (struct keywest_chan *)
--		(((unsigned long)(iface + 1) + 3UL) & ~3UL);
--	iface->base = ioremap(*addrp, 0x1000);
--	if (!iface->base) {
--		printk(KERN_ERR "i2c-keywest: can't map inteface !\n");
--		kfree(iface);
--		pmac_low_i2c_unlock(np);
--		return -ENOMEM;
--	}
--
--#ifndef POLLED_MODE
--	init_timer(&iface->timeout_timer);
--	iface->timeout_timer.function = keywest_timeout;
--	iface->timeout_timer.data = (unsigned long)iface;
--#endif
--
--	/* Select interface rate */
--	iface->cur_mode = KW_I2C_MODE_100KHZ;
--	prate = (u32 *)get_property(np, "AAPL,i2c-rate", NULL);
--	if (prate) switch(*prate) {
--	case 100:
--		iface->cur_mode = KW_I2C_MODE_100KHZ;
--		break;
--	case 50:
--		iface->cur_mode = KW_I2C_MODE_50KHZ;
--		break;
--	case 25:
--		iface->cur_mode = KW_I2C_MODE_25KHZ;
--		break;
--	default:
--		printk(KERN_WARNING "i2c-keywest: unknown rate %ldKhz, using 100KHz\n",
--		       (long)*prate);
--	}
--	
--	/* Select standard mode by default */
--	iface->cur_mode |= KW_I2C_MODE_STANDARD;
--	
--	/* Write mode */
--	write_reg(reg_mode, iface->cur_mode);
--	
--	/* Switch interrupts off & clear them*/
--	write_reg(reg_ier, 0x00);
--	write_reg(reg_isr, KW_I2C_IRQ_MASK);
--
--#ifndef POLLED_MODE
--	/* Request chip interrupt */	
--	rc = request_irq(iface->irq, keywest_irq, SA_INTERRUPT, "keywest i2c", iface);
--	if (rc) {
--		printk(KERN_ERR "i2c-keywest: can't get IRQ %d !\n", iface->irq);
--		iounmap(iface->base);
--		kfree(iface);
--		pmac_low_i2c_unlock(np);
--		return -ENODEV;
--	}
--#endif /* POLLED_MODE */
--
--	pmac_low_i2c_unlock(np);
--	dev_set_drvdata(dev, iface);
--	
--	for (i=0; i<nchan; i++) {
--		struct keywest_chan* chan = &iface->channels[i];
--		
--		sprintf(chan->adapter.name, "%s %d", np->parent->name, i);
--		chan->iface = iface;
--		chan->chan_no = i;
--		chan->adapter.algo = &keywest_algorithm;
--		chan->adapter.algo_data = NULL;
--		chan->adapter.client_register = NULL;
--		chan->adapter.client_unregister = NULL;
--		i2c_set_adapdata(&chan->adapter, chan);
--		chan->adapter.dev.parent = dev;
--
--		rc = i2c_add_adapter(&chan->adapter);
--		if (rc) {
--			printk("i2c-keywest.c: Adapter %s registration failed\n",
--				chan->adapter.name);
--			i2c_set_adapdata(&chan->adapter, NULL);
--		}
--	}
--
--	printk(KERN_INFO "Found KeyWest i2c on \"%s\", %d channel%s, stepping: %d bits\n",
--		np->parent->name, nchan, nchan > 1 ? "s" : "", bsteps);
--		
--	return 0;
--}
--
--static int
--dispose_iface(struct device *dev)
--{
--	struct keywest_iface *iface = dev_get_drvdata(dev);
--	int i, rc;
--	
--	/* Make sure we stop all activity */
--	if (pmac_low_i2c_lock(iface->node))
--		return -ENODEV;
--
--#ifndef POLLED_MODE
--	spin_lock_irq(&iface->lock);
--	while (iface->state != state_idle) {
--		spin_unlock_irq(&iface->lock);
--		msleep(100);
--		spin_lock_irq(&iface->lock);
--	}
--#endif /* POLLED_MODE */
--	iface->state = state_dead;
--#ifndef POLLED_MODE
--	spin_unlock_irq(&iface->lock);
--	free_irq(iface->irq, iface);
--#endif /* POLLED_MODE */
--
--	pmac_low_i2c_unlock(iface->node);
--
--	/* Release all channels */
--	for (i=0; i<iface->chan_count; i++) {
--		struct keywest_chan* chan = &iface->channels[i];
--		if (i2c_get_adapdata(&chan->adapter) == NULL)
--			continue;
--		rc = i2c_del_adapter(&chan->adapter);
--		i2c_set_adapdata(&chan->adapter, NULL);
--		/* We aren't that prepared to deal with this... */
--		if (rc)
--			printk("i2c-keywest.c: i2c_del_adapter failed, that's bad !\n");
--	}
--	iounmap(iface->base);
--	dev_set_drvdata(dev, NULL);
--	of_node_put(iface->node);
--	kfree(iface);
--
--	return 0;
--}
--
--static int
--create_iface_macio(struct macio_dev* dev, const struct of_device_id *match)
--{
--	return create_iface(dev->ofdev.node, &dev->ofdev.dev);
--}
--
--static int
--dispose_iface_macio(struct macio_dev* dev)
--{
--	return dispose_iface(&dev->ofdev.dev);
--}
--
--static int
--create_iface_of_platform(struct of_device* dev, const struct of_device_id *match)
--{
--	return create_iface(dev->node, &dev->dev);
--}
--
--static int
--dispose_iface_of_platform(struct of_device* dev)
--{
--	return dispose_iface(&dev->dev);
--}
--
--static struct of_device_id i2c_keywest_match[] = 
--{
--	{
--	.type		= "i2c",
--	.compatible	= "keywest"
--	},
--	{},
--};
--
--static struct macio_driver i2c_keywest_macio_driver = 
--{
--	.owner		= THIS_MODULE,
--	.name 		= "i2c-keywest",
--	.match_table	= i2c_keywest_match,
--	.probe		= create_iface_macio,
--	.remove		= dispose_iface_macio
--};
--
--static struct of_platform_driver i2c_keywest_of_platform_driver = 
--{
--	.owner		= THIS_MODULE,
--	.name 		= "i2c-keywest",
--	.match_table	= i2c_keywest_match,
--	.probe		= create_iface_of_platform,
--	.remove		= dispose_iface_of_platform
--};
--
--static int __init
--i2c_keywest_init(void)
--{
--	of_register_driver(&i2c_keywest_of_platform_driver);
--	macio_register_driver(&i2c_keywest_macio_driver);
--
--	return 0;
--}
--
--static void __exit
--i2c_keywest_cleanup(void)
--{
--	of_unregister_driver(&i2c_keywest_of_platform_driver);
--	macio_unregister_driver(&i2c_keywest_macio_driver);
--}
--
--module_init(i2c_keywest_init);
--module_exit(i2c_keywest_cleanup);
-Index: linux-work/drivers/i2c/busses/i2c-keywest.h
-===================================================================
---- linux-work.orig/drivers/i2c/busses/i2c-keywest.h	2006-01-06 19:42:48.000000000 +1100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,108 +0,0 @@
--#ifndef __I2C_KEYWEST_H__
--#define __I2C_KEYWEST_H__
--
--/* The Tumbler audio equalizer can be really slow sometimes */
--#define POLL_TIMEOUT		(2*HZ)
--
--/* Register indices */
--typedef enum {
--	reg_mode = 0,
--	reg_control,
--	reg_status,
--	reg_isr,
--	reg_ier,
--	reg_addr,
--	reg_subaddr,
--	reg_data
--} reg_t;
--
--
--/* Mode register */
--#define KW_I2C_MODE_100KHZ	0x00
--#define KW_I2C_MODE_50KHZ	0x01
--#define KW_I2C_MODE_25KHZ	0x02
--#define KW_I2C_MODE_DUMB	0x00
--#define KW_I2C_MODE_STANDARD	0x04
--#define KW_I2C_MODE_STANDARDSUB	0x08
--#define KW_I2C_MODE_COMBINED	0x0C
--#define KW_I2C_MODE_MODE_MASK	0x0C
--#define KW_I2C_MODE_CHAN_MASK	0xF0
--
--/* Control register */
--#define KW_I2C_CTL_AAK		0x01
--#define KW_I2C_CTL_XADDR	0x02
--#define KW_I2C_CTL_STOP		0x04
--#define KW_I2C_CTL_START	0x08
--
--/* Status register */
--#define KW_I2C_STAT_BUSY	0x01
--#define KW_I2C_STAT_LAST_AAK	0x02
--#define KW_I2C_STAT_LAST_RW	0x04
--#define KW_I2C_STAT_SDA		0x08
--#define KW_I2C_STAT_SCL		0x10
--
--/* IER & ISR registers */
--#define KW_I2C_IRQ_DATA		0x01
--#define KW_I2C_IRQ_ADDR		0x02
--#define KW_I2C_IRQ_STOP		0x04
--#define KW_I2C_IRQ_START	0x08
--#define KW_I2C_IRQ_MASK		0x0F
--
--/* Physical interface */
--struct keywest_iface
--{
--	struct device_node	*node;
--	void __iomem *		base;
--	unsigned		bsteps;
--	int			irq;
--	spinlock_t		lock;
--	struct keywest_chan	*channels;
--	unsigned		chan_count;
--	u8			cur_mode;
--	char			read_write;
--	u8			*data;
--	unsigned		datalen;
--	int			state;
--	int			result;
--	struct timer_list	timeout_timer;
--	struct completion	complete;
--};
--
--enum {
--	state_idle,
--	state_addr,
--	state_read,
--	state_write,
--	state_stop,
--	state_dead
--};
--
--/* Channel on an interface */
--struct keywest_chan
--{
--	struct i2c_adapter	adapter;
--	struct keywest_iface*	iface;
--	unsigned		chan_no;
--};
--
--/* Register access */
--
--static inline u8 __read_reg(struct keywest_iface *iface, reg_t reg)
--{
--	return in_8(iface->base
--		+ (((unsigned)reg) << iface->bsteps));
--}
--
--static inline void __write_reg(struct keywest_iface *iface, reg_t reg, u8 val)
--{
--	out_8(iface->base
--		+ (((unsigned)reg) << iface->bsteps), val);
--	(void)__read_reg(iface, reg_subaddr);
--}
--
--#define write_reg(reg, val)	__write_reg(iface, reg, val) 
--#define read_reg(reg)		__read_reg(iface, reg) 
--
--
--
--#endif /* __I2C_KEYWEST_H__ */
-Index: linux-work/drivers/i2c/busses/i2c-pmac-smu.c
-===================================================================
---- linux-work.orig/drivers/i2c/busses/i2c-pmac-smu.c	2006-01-06 19:42:48.000000000 +1100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,324 +0,0 @@
--/*
--    i2c Support for Apple SMU Controller
--
--    Copyright (c) 2005 Benjamin Herrenschmidt, IBM Corp.
--                       <benh@kernel.crashing.org>
--
--    This program is free software; you can redistribute it and/or modify
--    it under the terms of the GNU General Public License as published by
--    the Free Software Foundation; either version 2 of the License, or
--    (at your option) any later version.
--
--    This program is distributed in the hope that it will be useful,
--    but WITHOUT ANY WARRANTY; without even the implied warranty of
--    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--    GNU General Public License for more details.
--
--    You should have received a copy of the GNU General Public License
--    along with this program; if not, write to the Free Software
--    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
--
--*/
--
--#include <linux/config.h>
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/types.h>
--#include <linux/i2c.h>
--#include <linux/init.h>
--#include <linux/completion.h>
--#include <linux/device.h>
--#include <asm/prom.h>
--#include <asm/of_device.h>
--#include <asm/smu.h>
--
--static int probe;
--
--MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
--MODULE_DESCRIPTION("I2C driver for Apple's SMU");
--MODULE_LICENSE("GPL");
--module_param(probe, bool, 0);
--
--
--/* Physical interface */
--struct smu_iface
--{
--	struct i2c_adapter	adapter;
--	struct completion	complete;
--	u32			busid;
--};
--
--static void smu_i2c_done(struct smu_i2c_cmd *cmd, void *misc)
--{
--	struct smu_iface	*iface = misc;
--	complete(&iface->complete);
--}
--
--/*
-- * SMBUS-type transfer entrypoint
-- */
--static s32 smu_smbus_xfer(	struct i2c_adapter*	adap,
--				u16			addr,
--				unsigned short		flags,
--				char			read_write,
--				u8			command,
--				int			size,
--				union i2c_smbus_data*	data)
--{
--	struct smu_iface	*iface = i2c_get_adapdata(adap);
--	struct smu_i2c_cmd	cmd;
--	int			rc = 0;
--	int			read = (read_write == I2C_SMBUS_READ);
--
--	cmd.info.bus = iface->busid;
--	cmd.info.devaddr = (addr << 1) | (read ? 0x01 : 0x00);
--
--	/* Prepare datas & select mode */
--	switch (size) {
--        case I2C_SMBUS_QUICK:
--		cmd.info.type = SMU_I2C_TRANSFER_SIMPLE;
--		cmd.info.datalen = 0;
--	    	break;
--        case I2C_SMBUS_BYTE:
--		cmd.info.type = SMU_I2C_TRANSFER_SIMPLE;
--		cmd.info.datalen = 1;
--		if (!read)
--			cmd.info.data[0] = data->byte;
--	    	break;
--        case I2C_SMBUS_BYTE_DATA:
--		cmd.info.type = SMU_I2C_TRANSFER_STDSUB;
--		cmd.info.datalen = 1;
--		cmd.info.sublen = 1;
--		cmd.info.subaddr[0] = command;
--		cmd.info.subaddr[1] = 0;
--		cmd.info.subaddr[2] = 0;
--		if (!read)
--			cmd.info.data[0] = data->byte;
--	    	break;
--        case I2C_SMBUS_WORD_DATA:
--		cmd.info.type = SMU_I2C_TRANSFER_STDSUB;
--		cmd.info.datalen = 2;
--		cmd.info.sublen = 1;
--		cmd.info.subaddr[0] = command;
--		cmd.info.subaddr[1] = 0;
--		cmd.info.subaddr[2] = 0;
--		if (!read) {
--			cmd.info.data[0] = data->word & 0xff;
--			cmd.info.data[1] = (data->word >> 8) & 0xff;
--		}
--		break;
--	/* Note that these are broken vs. the expected smbus API where
--	 * on reads, the lenght is actually returned from the function,
--	 * but I think the current API makes no sense and I don't want
--	 * any driver that I haven't verified for correctness to go
--	 * anywhere near a pmac i2c bus anyway ...
--	 */
--        case I2C_SMBUS_BLOCK_DATA:
--		cmd.info.type = SMU_I2C_TRANSFER_STDSUB;
--		cmd.info.datalen = data->block[0] + 1;
--		if (cmd.info.datalen > (SMU_I2C_WRITE_MAX + 1))
--			return -EINVAL;
--		if (!read)
--			memcpy(cmd.info.data, data->block, cmd.info.datalen);
--		cmd.info.sublen = 1;
--		cmd.info.subaddr[0] = command;
--		cmd.info.subaddr[1] = 0;
--		cmd.info.subaddr[2] = 0;
--		break;
--	case I2C_SMBUS_I2C_BLOCK_DATA:
--		cmd.info.type = SMU_I2C_TRANSFER_STDSUB;
--		cmd.info.datalen = data->block[0];
--		if (cmd.info.datalen > 7)
--			return -EINVAL;
--		if (!read)
--			memcpy(cmd.info.data, &data->block[1],
--			       cmd.info.datalen);
--		cmd.info.sublen = 1;
--		cmd.info.subaddr[0] = command;
--		cmd.info.subaddr[1] = 0;
--		cmd.info.subaddr[2] = 0;
--		break;
--
--        default:
--	    	return -EINVAL;
--	}
--
--	/* Turn a standardsub read into a combined mode access */
-- 	if (read_write == I2C_SMBUS_READ &&
--	    cmd.info.type == SMU_I2C_TRANSFER_STDSUB)
--		cmd.info.type = SMU_I2C_TRANSFER_COMBINED;
--
--	/* Finish filling command and submit it */
--	cmd.done = smu_i2c_done;
--	cmd.misc = iface;
--	rc = smu_queue_i2c(&cmd);
--	if (rc < 0)
--		return rc;
--	wait_for_completion(&iface->complete);
--	rc = cmd.status;
--
--	if (!read || rc < 0)
--		return rc;
--
--	switch (size) {
--        case I2C_SMBUS_BYTE:
--        case I2C_SMBUS_BYTE_DATA:
--		data->byte = cmd.info.data[0];
--	    	break;
--        case I2C_SMBUS_WORD_DATA:
--		data->word = ((u16)cmd.info.data[1]) << 8;
--		data->word |= cmd.info.data[0];
--		break;
--	/* Note that these are broken vs. the expected smbus API where
--	 * on reads, the lenght is actually returned from the function,
--	 * but I think the current API makes no sense and I don't want
--	 * any driver that I haven't verified for correctness to go
--	 * anywhere near a pmac i2c bus anyway ...
--	 */
--        case I2C_SMBUS_BLOCK_DATA:
--	case I2C_SMBUS_I2C_BLOCK_DATA:
--		memcpy(&data->block[0], cmd.info.data, cmd.info.datalen);
--		break;
--	}
--
--	return rc;
--}
--
--static u32
--smu_smbus_func(struct i2c_adapter * adapter)
--{
--	return I2C_FUNC_SMBUS_QUICK | I2C_FUNC_SMBUS_BYTE |
--	       I2C_FUNC_SMBUS_BYTE_DATA | I2C_FUNC_SMBUS_WORD_DATA |
--	       I2C_FUNC_SMBUS_BLOCK_DATA;
--}
--
--/* For now, we only handle combined mode (smbus) */
--static struct i2c_algorithm smu_algorithm = {
--	.smbus_xfer	= smu_smbus_xfer,
--	.functionality	= smu_smbus_func,
--};
--
--static int create_iface(struct device_node *np, struct device *dev)
--{
--	struct smu_iface* iface;
--	u32 *reg, busid;
--	int rc;
--
--	reg = (u32 *)get_property(np, "reg", NULL);
--	if (reg == NULL) {
--		printk(KERN_ERR "i2c-pmac-smu: can't find bus number !\n");
--		return -ENXIO;
--	}
--	busid = *reg;
--
--	iface = kzalloc(sizeof(struct smu_iface), GFP_KERNEL);
--	if (iface == NULL) {
--		printk(KERN_ERR "i2c-pmac-smu: can't allocate inteface !\n");
--		return -ENOMEM;
--	}
--	init_completion(&iface->complete);
--	iface->busid = busid;
--
--	dev_set_drvdata(dev, iface);
--
--	sprintf(iface->adapter.name, "smu-i2c-%02x", busid);
--	iface->adapter.algo = &smu_algorithm;
--	iface->adapter.algo_data = NULL;
--	iface->adapter.client_register = NULL;
--	iface->adapter.client_unregister = NULL;
--	i2c_set_adapdata(&iface->adapter, iface);
--	iface->adapter.dev.parent = dev;
--
--	rc = i2c_add_adapter(&iface->adapter);
--	if (rc) {
--		printk(KERN_ERR "i2c-pamc-smu.c: Adapter %s registration "
--		       "failed\n", iface->adapter.name);
--		i2c_set_adapdata(&iface->adapter, NULL);
--	}
--
--	if (probe) {
--		unsigned char addr;
--		printk("Probe: ");
--		for (addr = 0x00; addr <= 0x7f; addr++) {
--			if (i2c_smbus_xfer(&iface->adapter,addr,
--					   0,0,0,I2C_SMBUS_QUICK,NULL) >= 0)
--				printk("%02x ", addr);
--		}
--		printk("\n");
--	}
--
--	printk(KERN_INFO "SMU i2c bus %x registered\n", busid);
--
--	return 0;
--}
--
--static int dispose_iface(struct device *dev)
--{
--	struct smu_iface *iface = dev_get_drvdata(dev);
--	int rc;
--
--	rc = i2c_del_adapter(&iface->adapter);
--	i2c_set_adapdata(&iface->adapter, NULL);
--	/* We aren't that prepared to deal with this... */
--	if (rc)
--		printk("i2c-pmac-smu.c: Failed to remove bus %s !\n",
--		       iface->adapter.name);
--	dev_set_drvdata(dev, NULL);
--	kfree(iface);
--
--	return 0;
--}
--
--
--static int create_iface_of_platform(struct of_device* dev,
--				    const struct of_device_id *match)
--{
--	struct device_node *node = dev->node;
--
--	if (device_is_compatible(node, "smu-i2c") ||
--	    (node->parent != NULL &&
--	     device_is_compatible(node->parent, "smu-i2c-control")))
--		return create_iface(node, &dev->dev);
--	return -ENODEV;
--}
--
--
--static int dispose_iface_of_platform(struct of_device* dev)
--{
--	return dispose_iface(&dev->dev);
--}
--
--
--static struct of_device_id i2c_smu_match[] =
--{
--	{
--		.compatible	= "smu-i2c",
--	},
--	{
--		.compatible	= "i2c-bus",
--	},
--	{},
--};
--static struct of_platform_driver i2c_smu_of_platform_driver =
--{
--	.name 		= "i2c-smu",
--	.match_table	= i2c_smu_match,
--	.probe		= create_iface_of_platform,
--	.remove		= dispose_iface_of_platform
--};
--
--
--static int __init i2c_pmac_smu_init(void)
--{
--	of_register_driver(&i2c_smu_of_platform_driver);
--	return 0;
--}
--
--
--static void __exit i2c_pmac_smu_cleanup(void)
--{
--	of_unregister_driver(&i2c_smu_of_platform_driver);
--}
--
--module_init(i2c_pmac_smu_init);
--module_exit(i2c_pmac_smu_cleanup);
-Index: linux-work/drivers/i2c/busses/i2c-powermac.c
+Index: linux-work/include/asm-powerpc/pmac_pfunc.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-work/drivers/i2c/busses/i2c-powermac.c	2006-01-07 10:53:57.000000000 +1100
-@@ -0,0 +1,290 @@
-+/*
-+    i2c Support for Apple SMU Controller
++++ linux-work/include/asm-powerpc/pmac_pfunc.h	2006-01-07 10:54:03.000000000 +1100
+@@ -0,0 +1,253 @@
++#ifndef __PMAC_PFUNC_H__
++#define __PMAC_PFUNC_H__
 +
-+    Copyright (c) 2005 Benjamin Herrenschmidt, IBM Corp.
-+                       <benh@kernel.crashing.org>
-+
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; either version 2 of the License, or
-+    (at your option) any later version.
-+
-+    This program is distributed in the hope that it will be useful,
-+    but WITHOUT ANY WARRANTY; without even the implied warranty of
-+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+    GNU General Public License for more details.
-+
-+    You should have received a copy of the GNU General Public License
-+    along with this program; if not, write to the Free Software
-+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+
-+*/
-+
-+#include <linux/config.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
 +#include <linux/types.h>
-+#include <linux/i2c.h>
-+#include <linux/init.h>
-+#include <linux/completion.h>
-+#include <linux/device.h>
-+#include <linux/platform_device.h>
-+#include <asm/prom.h>
-+#include <asm/pmac_low_i2c.h>
++#include <linux/list.h>
 +
-+MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
-+MODULE_DESCRIPTION("I2C driver for Apple PowerMac");
-+MODULE_LICENSE("GPL");
-+
-+/*
-+ * SMBUS-type transfer entrypoint
-+ */
-+static s32 i2c_powermac_smbus_xfer(	struct i2c_adapter*	adap,
-+					u16			addr,
-+					unsigned short		flags,
-+					char			read_write,
-+					u8			command,
-+					int			size,
-+					union i2c_smbus_data*	data)
-+{
-+	struct pmac_i2c_bus	*bus = i2c_get_adapdata(adap);
-+	int			rc = 0;
-+	int			read = (read_write == I2C_SMBUS_READ);
-+	int			addrdir = (addr << 1) | read;
-+	u8			local[2];
-+
-+	rc = pmac_i2c_open(bus, 0);
-+	if (rc)
-+		return rc;
-+
-+	switch (size) {
-+        case I2C_SMBUS_QUICK:
-+		rc = pmac_i2c_setmode(bus, pmac_i2c_mode_std);
-+		if (rc)
-+			goto bail;
-+		rc = pmac_i2c_xfer(bus, addrdir, 0, 0, NULL, 0);
-+	    	break;
-+        case I2C_SMBUS_BYTE:
-+		rc = pmac_i2c_setmode(bus, pmac_i2c_mode_std);
-+		if (rc)
-+			goto bail;
-+		rc = pmac_i2c_xfer(bus, addrdir, 0, 0, &data->byte, 1);
-+	    	break;
-+        case I2C_SMBUS_BYTE_DATA:
-+		rc = pmac_i2c_setmode(bus, read ?
-+				      pmac_i2c_mode_combined :
-+				      pmac_i2c_mode_stdsub);
-+		if (rc)
-+			goto bail;
-+		rc = pmac_i2c_xfer(bus, addrdir, 1, command, &data->byte, 1);
-+	    	break;
-+        case I2C_SMBUS_WORD_DATA:
-+		rc = pmac_i2c_setmode(bus, read ?
-+				      pmac_i2c_mode_combined :
-+				      pmac_i2c_mode_stdsub);
-+		if (rc)
-+			goto bail;
-+		if (!read) {
-+			local[0] = data->word & 0xff;
-+			local[1] = (data->word >> 8) & 0xff;
-+		}
-+		rc = pmac_i2c_xfer(bus, addrdir, 1, command, local, 2);
-+		if (rc == 0 && read) {
-+			data->word = ((u16)local[1]) << 8;
-+			data->word |= local[0];
-+		}
-+	    	break;
-+
-+	/* Note that these are broken vs. the expected smbus API where
-+	 * on reads, the lenght is actually returned from the function,
-+	 * but I think the current API makes no sense and I don't want
-+	 * any driver that I haven't verified for correctness to go
-+	 * anywhere near a pmac i2c bus anyway ...
-+	 *
-+	 * I'm also not completely sure what kind of phases to do between
-+	 * the actual command and the data (what I am _supposed_ to do that
-+	 * is). For now, I assume writes are a single stream and reads have
-+	 * a repeat start/addr phase (but not stop in between)
-+	 */
-+        case I2C_SMBUS_BLOCK_DATA:
-+		rc = pmac_i2c_setmode(bus, read ?
-+				      pmac_i2c_mode_combined :
-+				      pmac_i2c_mode_stdsub);
-+		if (rc)
-+			goto bail;
-+		rc = pmac_i2c_xfer(bus, addrdir, 1, command, data->block,
-+				   data->block[0] + 1);
-+
-+		break;
-+	case I2C_SMBUS_I2C_BLOCK_DATA:
-+		rc = pmac_i2c_setmode(bus, read ?
-+				      pmac_i2c_mode_combined :
-+				      pmac_i2c_mode_stdsub);
-+		if (rc)
-+			goto bail;
-+		rc = pmac_i2c_xfer(bus, addrdir, 1, command,
-+				   read ? data->block : &data->block[1],
-+				   data->block[0]);
-+		break;
-+
-+        default:
-+	    	rc = -EINVAL;
-+	}
-+ bail:
-+	pmac_i2c_close(bus);
-+	return rc;
-+}
++/* Flags in command lists */
++#define PMF_FLAGS_ON_INIT		0x80000000u
++#define PMF_FLGAS_ON_TERM		0x40000000u
++#define PMF_FLAGS_ON_SLEEP		0x20000000u
++#define PMF_FLAGS_ON_WAKE		0x10000000u
++#define PMF_FLAGS_ON_DEMAND		0x08000000u
++#define PMF_FLAGS_INT_GEN		0x04000000u
++#define PMF_FLAGS_HIGH_SPEED		0x02000000u
++#define PMF_FLAGS_LOW_SPEED		0x01000000u
++#define PMF_FLAGS_SIDE_EFFECTS		0x00800000u
 +
 +/*
-+ * Generic i2c master transfer entrypoint. This driver only support single
-+ * messages (for "lame i2c" transfers). Anything else should use the smbus
-+ * entry point
++ * Arguments to a platform function call.
++ *
++ * NOTE: By convention, pointer arguments point to an u32
 + */
-+static int i2c_powermac_master_xfer(	struct i2c_adapter *adap,
-+					struct i2c_msg *msgs,
-+					int num)
-+{
-+	struct pmac_i2c_bus	*bus = i2c_get_adapdata(adap);
-+	int			rc = 0;
-+	int			read;
-+	int			addrdir;
++struct pmf_args {
++	union {
++		u32 v;
++		u32 *p;
++	} u[4];
++	unsigned int count;
++};
 +
-+	if (num != 1)
-+		return -EINVAL;
-+	if (msgs->flags & I2C_M_TEN)
-+		return -EINVAL;
-+	read = (msgs->flags & I2C_M_RD) != 0;
-+	addrdir = (msgs->addr << 1) | read;
-+	if (msgs->flags & I2C_M_REV_DIR_ADDR)
-+		addrdir ^= 1;
++/*
++ * A driver capable of interpreting commands provides a handlers
++ * structure filled with whatever handlers are implemented by this
++ * driver. Non implemented handlers are left NULL.
++ *
++ * PMF_STD_ARGS are the same arguments that are passed to the parser
++ * and that gets passed back to the various handlers.
++ *
++ * Interpreting a given function always start with a begin() call which
++ * returns an instance data to be passed around subsequent calls, and
++ * ends with an end() call. This allows the low level driver to implement
++ * locking policy or per-function instance data.
++ *
++ * For interrupt capable functions, irq_enable() is called when a client
++ * registers, and irq_disable() is called when the last client unregisters
++ * Note that irq_enable & irq_disable are called within a semaphore held
++ * by the core, thus you should not try to register yourself to some other
++ * pmf interrupt during those calls.
++ */
 +
-+	rc = pmac_i2c_open(bus, 0);
-+	if (rc)
-+		return rc;
-+	rc = pmac_i2c_setmode(bus, pmac_i2c_mode_std);
-+	if (rc)
-+		goto bail;
-+	rc = pmac_i2c_xfer(bus, addrdir, 0, 0, msgs->buf, msgs->len);
-+ bail:
-+	pmac_i2c_close(bus);
-+	return rc < 0 ? rc : msgs->len;
-+}
++#define PMF_STD_ARGS	struct pmf_function *func, void *instdata, \
++		        struct pmf_args *args
 +
-+static u32 i2c_powermac_func(struct i2c_adapter * adapter)
-+{
-+	return I2C_FUNC_SMBUS_QUICK | I2C_FUNC_SMBUS_BYTE |
-+		I2C_FUNC_SMBUS_BYTE_DATA | I2C_FUNC_SMBUS_WORD_DATA |
-+		I2C_FUNC_SMBUS_BLOCK_DATA | I2C_FUNC_I2C;
-+}
++struct pmf_function;
 +
-+/* For now, we only handle smbus */
-+static struct i2c_algorithm i2c_powermac_algorithm = {
-+	.smbus_xfer	= i2c_powermac_smbus_xfer,
-+	.master_xfer	= i2c_powermac_master_xfer,
-+	.functionality	= i2c_powermac_func,
++struct pmf_handlers {
++	void * (*begin)(struct pmf_function *func, struct pmf_args *args);
++	void (*end)(struct pmf_function *func, void *instdata);
++
++	int (*irq_enable)(struct pmf_function *func);
++	int (*irq_disable)(struct pmf_function *func);
++
++	int (*write_gpio)(PMF_STD_ARGS, u8 value, u8 mask);
++	int (*read_gpio)(PMF_STD_ARGS, u8 mask, int rshift, u8 xor);
++
++	int (*write_reg32)(PMF_STD_ARGS, u32 offset, u32 value, u32 mask);
++	int (*read_reg32)(PMF_STD_ARGS, u32 offset);
++	int (*write_reg16)(PMF_STD_ARGS, u32 offset, u16 value, u16 mask);
++	int (*read_reg16)(PMF_STD_ARGS, u32 offset);
++	int (*write_reg8)(PMF_STD_ARGS, u32 offset, u8 value, u8 mask);
++	int (*read_reg8)(PMF_STD_ARGS, u32 offset);
++
++	int (*delay)(PMF_STD_ARGS, u32 duration);
++
++	int (*wait_reg32)(PMF_STD_ARGS, u32 offset, u32 value, u32 mask);
++	int (*wait_reg16)(PMF_STD_ARGS, u32 offset, u16 value, u16 mask);
++	int (*wait_reg8)(PMF_STD_ARGS, u32 offset, u8 value, u8 mask);
++
++	int (*read_i2c)(PMF_STD_ARGS, u32 len);
++	int (*write_i2c)(PMF_STD_ARGS, u32 len, const u8 *data);
++	int (*rmw_i2c)(PMF_STD_ARGS, u32 masklen, u32 valuelen, u32 totallen,
++		       const u8 *maskdata, const u8 *valuedata);
++
++	int (*read_cfg)(PMF_STD_ARGS, u32 offset, u32 len);
++	int (*write_cfg)(PMF_STD_ARGS, u32 offset, u32 len, const u8 *data);
++	int (*rmw_cfg)(PMF_STD_ARGS, u32 offset, u32 masklen, u32 valuelen,
++		       u32 totallen, const u8 *maskdata, const u8 *valuedata);
++
++	int (*read_i2c_sub)(PMF_STD_ARGS, u8 subaddr, u32 len);
++	int (*write_i2c_sub)(PMF_STD_ARGS, u8 subaddr, u32 len, const u8 *data);
++	int (*set_i2c_mode)(PMF_STD_ARGS, int mode);
++	int (*rmw_i2c_sub)(PMF_STD_ARGS, u8 subaddr, u32 masklen, u32 valuelen,
++			   u32 totallen, const u8 *maskdata,
++			   const u8 *valuedata);
++
++	int (*read_reg32_msrx)(PMF_STD_ARGS, u32 offset, u32 mask, u32 shift,
++			       u32 xor);
++	int (*read_reg16_msrx)(PMF_STD_ARGS, u32 offset, u32 mask, u32 shift,
++			       u32 xor);
++	int (*read_reg8_msrx)(PMF_STD_ARGS, u32 offset, u32 mask, u32 shift,
++			      u32 xor);
++
++	int (*write_reg32_slm)(PMF_STD_ARGS, u32 offset, u32 shift, u32 mask);
++	int (*write_reg16_slm)(PMF_STD_ARGS, u32 offset, u32 shift, u32 mask);
++	int (*write_reg8_slm)(PMF_STD_ARGS, u32 offset, u32 shift, u32 mask);
++
++	int (*mask_and_compare)(PMF_STD_ARGS, u32 len, const u8 *maskdata,
++				const u8 *valuedata);
++
++	struct module *owner;
 +};
 +
 +
-+static int i2c_powermac_remove(struct device *dev)
-+{
-+	struct i2c_adapter	*adapter = dev_get_drvdata(dev);
-+	struct pmac_i2c_bus	*bus = i2c_get_adapdata(adapter);
-+	int			rc;
++/*
++ * Drivers who expose platform functions register at init time, this
++ * causes the platform functions for that device node to be parsed in
++ * advance and associated with the device. The data structures are
++ * partially public so a driver can walk the list of platform functions
++ * and eventually inspect the flags
++ */
++struct pmf_device;
 +
-+	rc = i2c_del_adapter(adapter);
-+	pmac_i2c_detach_adapter(bus, adapter);
-+	i2c_set_adapdata(adapter, NULL);
-+	/* We aren't that prepared to deal with this... */
-+	if (rc)
-+		printk("i2c-powermac.c: Failed to remove bus %s !\n",
-+		       adapter->name);
-+	dev_set_drvdata(dev, NULL);
-+	kfree(adapter);
++struct pmf_function {
++	/* All functions for a given driver are linked */
++	struct list_head	link;
 +
-+	return 0;
-+}
++	/* Function node & driver data */
++	struct device_node	*node;
++	void			*driver_data;
 +
++	/* For internal use by core */
++	struct pmf_device	*dev;
 +
-+static int i2c_powermac_probe(struct device *dev)
-+{
-+	struct pmac_i2c_bus *bus = dev->platform_data;
-+	struct device_node *parent = NULL;
-+	struct i2c_adapter *adapter;
-+	char name[32], *basename;
-+	int rc;
-+
-+	if (bus == NULL)
-+		return -EINVAL;
-+
-+	/* Ok, now we need to make up a name for the interface that will
-+	 * match what we used to do in the past, that is basically the
-+	 * controller's parent device node for keywest. PMU didn't have a
-+	 * naming convention and SMU has a different one
++	/* The name is the "xxx" in "platform-do-xxx", this is how
++	 * platform functions are identified by this code. Some functions
++	 * only operate for a given target, in which case the phandle is
++	 * here (or 0 if the filter doesn't apply)
 +	 */
-+	switch(pmac_i2c_get_type(bus)) {
-+	case pmac_i2c_bus_keywest:
-+		parent = of_get_parent(pmac_i2c_get_controller(bus));
-+		if (parent == NULL)
-+			return -EINVAL;
-+		basename = parent->name;
-+		break;
-+	case pmac_i2c_bus_pmu:
-+		basename = "pmu";
-+		break;
-+	case pmac_i2c_bus_smu:
-+		/* This is not what we used to do but I'm fixing drivers at
-+		 * the same time as this change
-+		 */
-+		basename = "smu";
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	snprintf(name, 32, "%s %d", basename, pmac_i2c_get_channel(bus));
-+	of_node_put(parent);
++	const char		*name;
++	u32			phandle;
 +
-+	adapter = kzalloc(sizeof(struct i2c_adapter), GFP_KERNEL);
-+	if (adapter == NULL) {
-+		printk(KERN_ERR "i2c-powermac: can't allocate inteface !\n");
-+		return -ENOMEM;
-+	}
-+	dev_set_drvdata(dev, adapter);
-+	strcpy(adapter->name, name);
-+	adapter->algo = &i2c_powermac_algorithm;
-+	i2c_set_adapdata(adapter, bus);
-+	adapter->dev.parent = dev;
-+	pmac_i2c_attach_adapter(bus, adapter);
-+	rc = i2c_add_adapter(adapter);
-+	if (rc) {
-+		printk(KERN_ERR "i2c-powermac: Adapter %s registration "
-+		       "failed\n", name);
-+		i2c_set_adapdata(adapter, NULL);
-+		pmac_i2c_detach_adapter(bus, adapter);
-+	}
++	/* The flags for that function. You can have several functions
++	 * with the same name and different flag
++	 */
++	u32			flags;
 +
-+	printk(KERN_INFO "PowerMac i2c bus %s registered\n", name);
-+	return rc;
-+}
++	/* The actual tokenized function blob */
++	const void		*data;
++	unsigned int		length;
 +
++	/* Interrupt clients */
++	struct list_head	irq_clients;
 +
-+static struct device_driver i2c_powermac_driver = {
-+	.name = "i2c-powermac",
-+	.bus = &platform_bus_type,
-+	.probe = i2c_powermac_probe,
-+	.remove = i2c_powermac_remove,
++	/* Refcounting */
++	struct kref		ref;
 +};
 +
-+static int __init i2c_powermac_init(void)
-+{
-+	driver_register(&i2c_powermac_driver);
-+	return 0;
-+}
++/*
++ * For platform functions that are interrupts, one can register
++ * irq_client structures. You canNOT use the same structure twice
++ * as it contains a link member. Also, the callback is called with
++ * a spinlock held, you must not call back into any of the pmf_* functions
++ * from within that callback
++ */
++struct pmf_irq_client {
++	void			(*handler)(void *data);
++	void			*data;
++	struct module		*owner;
++	struct list_head	link;
++};
 +
 +
-+static void __exit i2c_powermac_cleanup(void)
-+{
-+	driver_unregister(&i2c_powermac_driver);
-+}
++/*
++ * Register/Unregister a function-capable driver and its handlers
++ */
++extern int pmf_register_driver(struct device_node *np,
++			      struct pmf_handlers *handlers,
++			      void *driverdata);
 +
-+module_init(i2c_powermac_init);
-+module_exit(i2c_powermac_cleanup);
-Index: linux-work/arch/powerpc/platforms/powermac/low_i2c.c
++extern void pmf_unregister_driver(struct device_node *np);
++
++
++/*
++ * Register/Unregister interrupt clients
++ */
++extern int pmf_register_irq_client(struct device_node *np,
++				   const char *name,
++				   struct pmf_irq_client *client);
++
++extern void pmf_unregister_irq_client(struct device_node *np,
++				      const char *name,
++				      struct pmf_irq_client *client);
++
++/*
++ * Called by the handlers when an irq happens
++ */
++extern void pmf_do_irq(struct pmf_function *func);
++
++
++/*
++ * Low level call to platform functions.
++ *
++ * The phandle can filter on the target object for functions that have
++ * multiple targets, the flags allow you to restrict the call to a given
++ * combination of flags.
++ *
++ * The args array contains as many arguments as is required by the function,
++ * this is dependent on the function you are calling, unfortunately Apple
++ * mecanism provides no way to encode that so you have to get it right at
++ * the call site. Some functions require no args, in which case, you can
++ * pass NULL.
++ *
++ * You can also pass NULL to the name. This will match any function that has
++ * the appropriate combination of flags & phandle or you can pass 0 to the
++ * phandle to match any
++ */
++extern int pmf_do_functions(struct device_node *np, const char *name,
++			    u32 phandle, u32 flags, struct pmf_args *args);
++
++
++
++/*
++ * High level call to a platform function.
++ *
++ * This one looks for the platform-xxx first so you should call it to the
++ * actual target if any. It will fallback to platform-do-xxx if it can't
++ * find one. It will also exclusively target functions that have
++ * the "OnDemand" flag.
++ */
++
++extern int pmf_call_function(struct device_node *target, const char *name,
++			     struct pmf_args *args);
++
++
++/*
++ * For low latency interrupt usage, you can lookup for on-demand functions
++ * using the functions below
++ */
++
++extern struct pmf_function *pmf_find_function(struct device_node *target,
++					      const char *name);
++
++extern struct pmf_function * pmf_get_function(struct pmf_function *func);
++extern void pmf_put_function(struct pmf_function *func);
++
++extern int pmf_call_one(struct pmf_function *func, struct pmf_args *args);
++
++
++/* Suspend/resume code called by via-pmu directly for now */
++extern void pmac_pfunc_base_suspend(void);
++extern void pmac_pfunc_base_resume(void);
++
++#endif /* __PMAC_PFUNC_H__ */
+Index: linux-work/arch/powerpc/platforms/powermac/Makefile
 ===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/low_i2c.c	2006-01-06 19:43:21.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/powermac/low_i2c.c	2006-01-07 10:53:21.000000000 +1100
-@@ -39,6 +39,10 @@
- #include <linux/pmu.h>
- #include <linux/delay.h>
- #include <linux/completion.h>
-+#include <linux/platform_device.h>
-+#include <linux/interrupt.h>
-+#include <linux/completion.h>
-+#include <linux/timer.h>
- #include <asm/keylargo.h>
- #include <asm/uninorth.h>
- #include <asm/io.h>
-@@ -63,6 +67,9 @@
- #define DBG_LOW(x...)
- #endif
+--- linux-work.orig/arch/powerpc/platforms/powermac/Makefile	2006-01-07 10:53:21.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/Makefile	2006-01-07 10:54:03.000000000 +1100
+@@ -1,7 +1,8 @@
+ CFLAGS_bootx_init.o  		+= -fPIC
  
-+
-+static int pmac_i2c_force_poll = 1;
-+
- /*
-  * A bus structure. Each bus in the system has such a structure associated.
-  */
-@@ -80,6 +87,7 @@ struct pmac_i2c_bus
- 	struct semaphore	sem;
- 	int			opened;
- 	int			polled;		/* open mode */
-+	struct platform_device	*platform_dev;
+ obj-y				+= pic.o setup.o time.o feature.o pci.o \
+-				   sleep.o low_i2c.o cache.o
++				   sleep.o low_i2c.o cache.o pfunc_core.o \
++				   pfunc_base.o
+ obj-$(CONFIG_PMAC_BACKLIGHT)	+= backlight.o
+ obj-$(CONFIG_CPU_FREQ_PMAC)	+= cpufreq_32.o
+ obj-$(CONFIG_CPU_FREQ_PMAC64)	+= cpufreq_64.o
+Index: linux-work/arch/powerpc/platforms/powermac/feature.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/feature.c	2006-01-07 10:53:21.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/feature.c	2006-01-07 10:54:03.000000000 +1100
+@@ -58,12 +58,11 @@ extern int powersave_lowspeed;
+ extern int powersave_nap;
+ extern struct device_node *k2_skiplist[2];
  
- 	/* ops */
- 	int (*open)(struct pmac_i2c_bus *bus);
-@@ -101,6 +109,16 @@ struct pmac_i2c_host_kw
- 	void __iomem		*base;		/* register base address */
- 	int			bsteps;		/* register stepping */
- 	int			speed;		/* speed */
-+	int			irq;
-+	u8			*data;
-+	unsigned		len;
-+	int			state;
-+	int			rw;
-+	int			polled;
-+	int			result;
-+	struct completion	complete;
-+	spinlock_t		lock;
-+	struct timer_list	timeout_timer;
- };
- 
- /* Register indices */
-@@ -115,6 +133,8 @@ typedef enum {
- 	reg_data
- } reg_t;
- 
-+/* The Tumbler audio equalizer can be really slow sometimes */
-+#define KW_POLL_TIMEOUT		(2*HZ)
- 
- /* Mode register */
- #define KW_I2C_MODE_100KHZ	0x00
-@@ -158,8 +178,9 @@ enum {
- };
- 
- #define WRONG_STATE(name) do {\
--		printk(KERN_DEBUG "KW: wrong state. Got %s, state: %s (isr: %02x)\n", \
--		       name, __kw_state_names[state], isr); \
-+		printk(KERN_DEBUG "KW: wrong state. Got %s, state: %s " \
-+		       "(isr: %02x)\n",	\
-+		       name, __kw_state_names[host->state], isr); \
- 	} while(0)
- 
- static const char *__kw_state_names[] = {
-@@ -171,23 +192,22 @@ static const char *__kw_state_names[] = 
- 	"state_dead"
- };
- 
--static inline u8 __kw_read_reg(struct pmac_i2c_bus *bus, reg_t reg)
-+static inline u8 __kw_read_reg(struct pmac_i2c_host_kw *host, reg_t reg)
- {
--	struct pmac_i2c_host_kw *host = bus->hostdata;
- 	return readb(host->base + (((unsigned int)reg) << host->bsteps));
- }
- 
--static inline void __kw_write_reg(struct pmac_i2c_bus *bus, reg_t reg, u8 val)
-+static inline void __kw_write_reg(struct pmac_i2c_host_kw *host,
-+				  reg_t reg, u8 val)
- {
--	struct pmac_i2c_host_kw *host = bus->hostdata;
- 	writeb(val, host->base + (((unsigned)reg) << host->bsteps));
--	(void)__kw_read_reg(bus, reg_subaddr);
-+	(void)__kw_read_reg(host, reg_subaddr);
- }
- 
--#define kw_write_reg(reg, val)	__kw_write_reg(bus, reg, val)
--#define kw_read_reg(reg)	__kw_read_reg(bus, reg)
-+#define kw_write_reg(reg, val)	__kw_write_reg(host, reg, val)
-+#define kw_read_reg(reg)	__kw_read_reg(host, reg)
- 
--static u8 kw_i2c_wait_interrupt(struct pmac_i2c_bus* bus)
-+static u8 kw_i2c_wait_interrupt(struct pmac_i2c_host_kw *host)
- {
- 	int i, j;
- 	u8 isr;
-@@ -201,8 +221,8 @@ static u8 kw_i2c_wait_interrupt(struct p
- 		 * on udelay nor schedule when in polled mode !
- 		 * For now, just use a bogus loop....
- 		 */
--		if (bus->polled) {
--			for (j = 1; j < 1000000; j++)
-+		if (host->polled) {
-+			for (j = 1; j < 100000; j++)
- 				mb();
- 		} else
- 			msleep(1);
-@@ -210,86 +230,99 @@ static u8 kw_i2c_wait_interrupt(struct p
- 	return isr;
- }
- 
--static int kw_i2c_handle_interrupt(struct pmac_i2c_bus *bus, int state, int rw,
--				   int *rc, u8 **data, int *len, u8 isr)
-+static void kw_i2c_handle_interrupt(struct pmac_i2c_host_kw *host, u8 isr)
- {
- 	u8 ack;
- 
- 	DBG_LOW("kw_handle_interrupt(%s, isr: %x)\n",
--		__kw_state_names[state], isr);
-+		__kw_state_names[host->state], isr);
-+
-+	if (host->state == state_idle) {
-+		printk(KERN_WARNING "low_i2c: Keywest got an out of state"
-+		       " interrupt, ignoring\n");
-+		kw_write_reg(reg_isr, isr);
-+		return;
-+	}
- 
- 	if (isr == 0) {
--		if (state != state_stop) {
-+		if (host->state != state_stop) {
- 			DBG_LOW("KW: Timeout !\n");
--			*rc = -EIO;
-+			host->result = -EIO;
- 			goto stop;
- 		}
--		if (state == state_stop) {
-+		if (host->state == state_stop) {
- 			ack = kw_read_reg(reg_status);
--			if (!(ack & KW_I2C_STAT_BUSY)) {
--				state = state_idle;
--				kw_write_reg(reg_ier, 0x00);
--			}
-+			if (ack & KW_I2C_STAT_BUSY)
-+				kw_write_reg(reg_status, 0);
-+			host->state = state_idle;
-+			kw_write_reg(reg_ier, 0x00);
-+			if (!host->polled)
-+				complete(&host->complete);
- 		}
--		return state;
-+		return;
- 	}
- 
- 	if (isr & KW_I2C_IRQ_ADDR) {
- 		ack = kw_read_reg(reg_status);
--		if (state != state_addr) {
-+		if (host->state != state_addr) {
- 			kw_write_reg(reg_isr, KW_I2C_IRQ_ADDR);
- 			WRONG_STATE("KW_I2C_IRQ_ADDR"); 
--			*rc = -EIO;
-+			host->result = -EIO;
- 			goto stop;
- 		}
- 		if ((ack & KW_I2C_STAT_LAST_AAK) == 0) {
--			*rc = -ENODEV;
-+			host->result = -ENODEV;
- 			DBG_LOW("KW: NAK on address\n");
--			return state_stop;		     
-+			host->state = state_stop;
-+			return;
- 		} else {
--			if (rw) {
--				state = state_read;
--				if (*len > 1)
-+			if (host->len == 0) {
-+				kw_write_reg(reg_isr, KW_I2C_IRQ_ADDR);
-+				goto stop;
-+			}
-+			if (host->rw) {
-+				host->state = state_read;
-+				if (host->len > 1)
- 					kw_write_reg(reg_control,
- 						     KW_I2C_CTL_AAK);
- 			} else {
--				state = state_write;
--				kw_write_reg(reg_data, **data);
--				(*data)++; (*len)--;
-+				host->state = state_write;
-+				kw_write_reg(reg_data, *(host->data++));
-+				host->len--;
- 			}
- 		}
- 		kw_write_reg(reg_isr, KW_I2C_IRQ_ADDR);
- 	}
- 
- 	if (isr & KW_I2C_IRQ_DATA) {
--		if (state == state_read) {
--			**data = kw_read_reg(reg_data);
--			(*data)++; (*len)--;
-+		if (host->state == state_read) {
-+			*(host->data++) = kw_read_reg(reg_data);
-+			host->len--;
- 			kw_write_reg(reg_isr, KW_I2C_IRQ_DATA);
--			if ((*len) == 0)
--				state = state_stop;
--			else if ((*len) == 1)
-+			if (host->len == 0)
-+				host->state = state_stop;
-+			else if (host->len == 1)
- 				kw_write_reg(reg_control, 0);
--		} else if (state == state_write) {
-+		} else if (host->state == state_write) {
- 			ack = kw_read_reg(reg_status);
- 			if ((ack & KW_I2C_STAT_LAST_AAK) == 0) {
- 				DBG_LOW("KW: nack on data write\n");
--				*rc = -EIO;
-+				host->result = -EIO;
- 				goto stop;
--			} else if (*len) {
--				kw_write_reg(reg_data, **data);
--				(*data)++; (*len)--;
-+			} else if (host->len) {
-+				kw_write_reg(reg_data, *(host->data++));
-+				host->len--;
- 			} else {
- 				kw_write_reg(reg_control, KW_I2C_CTL_STOP);
--				state = state_stop;
--				*rc = 0;
-+				host->state = state_stop;
-+				host->result = 0;
- 			}
- 			kw_write_reg(reg_isr, KW_I2C_IRQ_DATA);
- 		} else {
- 			kw_write_reg(reg_isr, KW_I2C_IRQ_DATA);
- 			WRONG_STATE("KW_I2C_IRQ_DATA"); 
--			if (state != state_stop) {
--				*rc = -EIO;
-+			if (host->state != state_stop) {
-+				host->result = -EIO;
- 				goto stop;
- 			}
- 		}
-@@ -297,21 +330,54 @@ static int kw_i2c_handle_interrupt(struc
- 
- 	if (isr & KW_I2C_IRQ_STOP) {
- 		kw_write_reg(reg_isr, KW_I2C_IRQ_STOP);
--		if (state != state_stop) {
-+		if (host->state != state_stop) {
- 			WRONG_STATE("KW_I2C_IRQ_STOP");
--			*rc = -EIO;
-+			host->result = -EIO;
- 		}
--		return state_idle;
-+		host->state = state_idle;
-+		if (!host->polled)
-+			complete(&host->complete);
- 	}
- 
- 	if (isr & KW_I2C_IRQ_START)
- 		kw_write_reg(reg_isr, KW_I2C_IRQ_START);
- 
--	return state;
 -
-+	return;
-  stop:
- 	kw_write_reg(reg_control, KW_I2C_CTL_STOP);	
--	return state_stop;
-+	host->state = state_stop;
-+	return;
-+}
+ /*
+  * We use a single global lock to protect accesses. Each driver has
+  * to take care of its own locking
+  */
+-static DEFINE_SPINLOCK(feature_lock);
++DEFINE_SPINLOCK(feature_lock);
+ 
+ #define LOCK(flags)	spin_lock_irqsave(&feature_lock, flags);
+ #define UNLOCK(flags)	spin_unlock_irqrestore(&feature_lock, flags);
+@@ -106,22 +105,12 @@ static const char *macio_names[] =
+ };
+ 
+ 
++struct device_node *uninorth_node;
++u32 __iomem *uninorth_base;
+ 
+-/*
+- * Uninorth reg. access. Note that Uni-N regs are big endian
+- */
+-
+-#define UN_REG(r)	(uninorth_base + ((r) >> 2))
+-#define UN_IN(r)	(in_be32(UN_REG(r)))
+-#define UN_OUT(r,v)	(out_be32(UN_REG(r), (v)))
+-#define UN_BIS(r,v)	(UN_OUT((r), UN_IN(r) | (v)))
+-#define UN_BIC(r,v)	(UN_OUT((r), UN_IN(r) & ~(v)))
+-
+-static struct device_node *uninorth_node;
+-static u32 __iomem *uninorth_base;
+ static u32 uninorth_rev;
+ static int uninorth_maj;
+-static void __iomem *u3_ht;
++static void __iomem *u3_ht_base;
+ 
+ /*
+  * For each motherboard family, we have a table of functions pointers
+@@ -1560,8 +1549,10 @@ void g5_phy_disable_cpu1(void)
+ 
+ #ifndef CONFIG_POWER4
+ 
+-static void
+-keylargo_shutdown(struct macio_chip *macio, int sleep_mode)
 +
-+/* Interrupt handler */
-+static irqreturn_t kw_i2c_irq(int irq, void *dev_id, struct pt_regs *regs)
++#ifdef CONFIG_PM
++
++static void keylargo_shutdown(struct macio_chip *macio, int sleep_mode)
+ {
+ 	u32 temp;
+ 
+@@ -1614,8 +1605,7 @@ keylargo_shutdown(struct macio_chip *mac
+ 	(void)MACIO_IN32(KEYLARGO_FCR0); mdelay(1);
+ }
+ 
+-static void
+-pangea_shutdown(struct macio_chip *macio, int sleep_mode)
++static void pangea_shutdown(struct macio_chip *macio, int sleep_mode)
+ {
+ 	u32 temp;
+ 
+@@ -1648,8 +1638,7 @@ pangea_shutdown(struct macio_chip *macio
+ 	(void)MACIO_IN32(KEYLARGO_FCR0); mdelay(1);
+ }
+ 
+-static void
+-intrepid_shutdown(struct macio_chip *macio, int sleep_mode)
++static void intrepid_shutdown(struct macio_chip *macio, int sleep_mode)
+ {
+ 	u32 temp;
+ 
+@@ -1833,6 +1822,8 @@ core99_wake_up(void)
+ 	return 0;
+ }
+ 
++#endif /* CONFIG_PM */
++
+ static long
+ core99_sleep_state(struct device_node *node, long param, long value)
+ {
+@@ -1854,10 +1845,13 @@ core99_sleep_state(struct device_node *n
+ 	if ((pmac_mb.board_flags & PMAC_MB_CAN_SLEEP) == 0)
+ 		return -EPERM;
+ 
++#ifdef CONFIG_PM
+ 	if (value == 1)
+ 		return core99_sleep();
+ 	else if (value == 0)
+ 		return core99_wake_up();
++
++#endif /* CONFIG_PM */
+ 	return 0;
+ }
+ 
+@@ -1981,7 +1975,9 @@ static struct feature_table_entry core99
+ 	{ PMAC_FTR_USB_ENABLE,		core99_usb_enable },
+ 	{ PMAC_FTR_1394_ENABLE,		core99_firewire_enable },
+ 	{ PMAC_FTR_1394_CABLE_POWER,	core99_firewire_cable_power },
++#ifdef CONFIG_PM
+ 	{ PMAC_FTR_SLEEP_STATE,		core99_sleep_state },
++#endif
+ #ifdef CONFIG_SMP
+ 	{ PMAC_FTR_RESET_CPU,		core99_reset_cpu },
+ #endif /* CONFIG_SMP */
+@@ -2572,7 +2568,7 @@ static void __init probe_uninorth(void)
+ 	uninorth_base = ioremap(address, 0x40000);
+ 	uninorth_rev = in_be32(UN_REG(UNI_N_VERSION));
+ 	if (uninorth_maj == 3 || uninorth_maj == 4)
+-		u3_ht = ioremap(address + U3_HT_CONFIG_BASE, 0x1000);
++		u3_ht_base = ioremap(address + U3_HT_CONFIG_BASE, 0x1000);
+ 
+ 	printk(KERN_INFO "Found %s memory controller & host bridge"
+ 	       " @ 0x%08x revision: 0x%02x\n", uninorth_maj == 3 ? "U3" :
+@@ -2921,9 +2917,9 @@ void __init pmac_check_ht_link(void)
+ 	u8	px_bus, px_devfn;
+ 	struct pci_controller *px_hose;
+ 
+-	(void)in_be32(u3_ht + U3_HT_LINK_COMMAND);
+-	ucfg = cfg = in_be32(u3_ht + U3_HT_LINK_CONFIG);
+-	ufreq = freq = in_be32(u3_ht + U3_HT_LINK_FREQ);
++	(void)in_be32(u3_ht_base + U3_HT_LINK_COMMAND);
++	ucfg = cfg = in_be32(u3_ht_base + U3_HT_LINK_CONFIG);
++	ufreq = freq = in_be32(u3_ht_base + U3_HT_LINK_FREQ);
+ 	dump_HT_speeds("U3 HyperTransport", cfg, freq);
+ 
+ 	pcix_node = of_find_compatible_node(NULL, "pci", "pci-x");
+Index: linux-work/arch/powerpc/platforms/powermac/pfunc_base.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/platforms/powermac/pfunc_base.c	2006-01-07 10:54:03.000000000 +1100
+@@ -0,0 +1,405 @@
++#include <linux/config.h>
++#include <linux/types.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/kernel.h>
++#include <linux/interrupt.h>
++#include <linux/spinlock.h>
++
++#include <asm/pmac_feature.h>
++#include <asm/pmac_pfunc.h>
++
++#define DBG(fmt...)	printk(fmt)
++
++static irqreturn_t macio_gpio_irq(int irq, void *data, struct pt_regs *regs)
 +{
-+	struct pmac_i2c_host_kw *host = dev_id;
-+	unsigned long flags;
++	pmf_do_irq(data);
 +
-+	spin_lock_irqsave(&host->lock, flags);
-+	del_timer(&host->timeout_timer);
-+	kw_i2c_handle_interrupt(host, kw_read_reg(reg_isr));
-+	if (host->state != state_idle) {
-+		host->timeout_timer.expires = jiffies + KW_POLL_TIMEOUT;
-+		add_timer(&host->timeout_timer);
-+	}
-+	spin_unlock_irqrestore(&host->lock, flags);
 +	return IRQ_HANDLED;
 +}
 +
-+static void kw_i2c_timeout(unsigned long data)
++static int macio_do_gpio_irq_enable(struct pmf_function *func)
 +{
-+	struct pmac_i2c_host_kw *host = (struct pmac_i2c_host_kw *)data;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&host->lock, flags);
-+	kw_i2c_handle_interrupt(host, kw_read_reg(reg_isr));
-+	if (host->state != state_idle) {
-+		host->timeout_timer.expires = jiffies + KW_POLL_TIMEOUT;
-+		add_timer(&host->timeout_timer);
-+	}
-+	spin_unlock_irqrestore(&host->lock, flags);
- }
- 
- static int kw_i2c_open(struct pmac_i2c_bus *bus)
-@@ -332,8 +398,7 @@ static int kw_i2c_xfer(struct pmac_i2c_b
- {
- 	struct pmac_i2c_host_kw *host = bus->hostdata;
- 	u8 mode_reg = host->speed;
--	int state = state_addr;
--	int rc = 0;
-+	int use_irq = host->irq != NO_IRQ && !bus->polled;
- 
- 	/* Setup mode & subaddress if any */
- 	switch(bus->mode) {
-@@ -371,18 +436,50 @@ static int kw_i2c_xfer(struct pmac_i2c_b
- 	    || (mode_reg & KW_I2C_MODE_MODE_MASK) == KW_I2C_MODE_COMBINED)
- 		kw_write_reg(reg_subaddr, subaddr);
- 
--	/* Start sending address & disable interrupt*/
--	kw_write_reg(reg_ier, 0 /*KW_I2C_IRQ_MASK*/);
-+	/* Prepare for async operations */
-+	host->data = data;
-+	host->len = len;
-+	host->state = state_addr;
-+	host->result = 0;
-+	host->rw = (addrdir & 1);
-+	host->polled = bus->polled;
-+
-+	/* Enable interrupt if not using polled mode and interrupt is
-+	 * available
-+	 */
-+	if (use_irq) {
-+		/* Clear completion */
-+		INIT_COMPLETION(host->complete);
-+		/* Ack stale interrupts */
-+		kw_write_reg(reg_isr, kw_read_reg(reg_isr));
-+		/* Arm timeout */
-+		host->timeout_timer.expires = jiffies + KW_POLL_TIMEOUT;
-+		add_timer(&host->timeout_timer);
-+		/* Enable emission */
-+		kw_write_reg(reg_ier, KW_I2C_IRQ_MASK);
-+	}
-+
-+	/* Start sending address */
- 	kw_write_reg(reg_control, KW_I2C_CTL_XADDR);
- 
--	/* State machine, to turn into an interrupt handler in the future */
--	while(state != state_idle) {
--		u8 isr = kw_i2c_wait_interrupt(bus);
--		state = kw_i2c_handle_interrupt(bus, state, addrdir & 1, &rc,
--						&data, &len, isr);
-+	/* Wait for completion */
-+	if (use_irq)
-+		wait_for_completion(&host->complete);
-+	else {
-+		while(host->state != state_idle) {
-+			unsigned long flags;
-+
-+			u8 isr = kw_i2c_wait_interrupt(host);
-+			spin_lock_irqsave(&host->lock, flags);
-+			kw_i2c_handle_interrupt(host, isr);
-+			spin_unlock_irqrestore(&host->lock, flags);
-+		}
- 	}
- 
--	return rc;
-+	/* Disable emission */
-+	kw_write_reg(reg_ier, 0);
-+
-+	return host->result;
- }
- 
- static struct pmac_i2c_host_kw *__init kw_i2c_host_init(struct device_node *np)
-@@ -409,6 +506,12 @@ static struct pmac_i2c_host_kw *__init k
- 		return NULL;
- 	}
- 	init_MUTEX(&host->mutex);
-+	init_completion(&host->complete);
-+	spin_lock_init(&host->lock);
-+	init_timer(&host->timeout_timer);
-+	host->timeout_timer.function = kw_i2c_timeout;
-+	host->timeout_timer.data = (unsigned long)host;
-+
- 	psteps = (u32 *)get_property(np, "AAPL,address-step", NULL);
- 	steps = psteps ? (*psteps) : 0x10;
- 	for (host->bsteps = 0; (steps & 0x01) == 0; host->bsteps++)
-@@ -427,9 +530,28 @@ static struct pmac_i2c_host_kw *__init k
- 		host->speed = KW_I2C_MODE_25KHZ;
- 		break;
- 	}	
-+	if (np->n_intrs > 0)
-+		host->irq = np->intrs[0].line;
-+	else
-+		host->irq = NO_IRQ;
- 
--	printk(KERN_INFO "KeyWest i2c @0x%08x %s\n", *addrp, np->full_name);
- 	host->base = ioremap((*addrp), 0x1000);
-+	if (host->base == NULL) {
-+		printk(KERN_ERR "low_i2c: Can't map registers for %s\n",
-+		       np->full_name);
-+		kfree(host);
-+		return NULL;
-+	}
-+
-+	/* Make sure IRA is disabled */
-+	kw_write_reg(reg_ier, 0);
-+
-+	/* Request chip interrupt */
-+	if (request_irq(host->irq, kw_i2c_irq, SA_SHIRQ, "keywest i2c", host))
-+		host->irq = NO_IRQ;
-+
-+	printk(KERN_INFO "KeyWest i2c @0x%08x irq %d %s\n",
-+	       *addrp, host->irq, np->full_name);
- 
- 	return host;
- }
-@@ -591,7 +713,7 @@ static int pmu_i2c_xfer(struct pmac_i2c_
- 		req->nbytes = sizeof(struct pmu_i2c_hdr) + 1;
- 		req->done = pmu_i2c_complete;
- 		req->arg = &comp;
--		if (!read) {
-+		if (!read && len) {
- 			memcpy(hdr->data, data, len);
- 			req->nbytes += len;
- 		}
-@@ -637,7 +759,8 @@ static int pmu_i2c_xfer(struct pmac_i2c_
- 				       " bytes, expected %d !\n", rlen, len);
- 				return -EIO;
- 			}
--			memcpy(data, &req->reply[1], len);
-+			if (len)
-+				memcpy(data, &req->reply[1], len);
- 			return 0;
- 		}
- 	}
-@@ -713,6 +836,10 @@ static int smu_i2c_xfer(struct pmac_i2c_
- 	int read = addrdir & 1;
- 	int rc = 0;
- 
-+	if ((read && len > SMU_I2C_READ_MAX) ||
-+	    ((!read) && len > SMU_I2C_WRITE_MAX))
++	if (func->node->n_intrs < 1)
 +		return -EINVAL;
 +
- 	memset(cmd, 0, sizeof(struct smu_i2c_cmd));
- 	cmd->info.bus = bus->channel;
- 	cmd->info.devaddr = addrdir;
-@@ -740,7 +867,7 @@ static int smu_i2c_xfer(struct pmac_i2c_
- 	default:
- 		return -EINVAL;
- 	}
--	if (!read)
-+	if (!read && len)
- 		memcpy(cmd->info.data, data, len);
- 
- 	init_completion(&comp);
-@@ -752,7 +879,7 @@ static int smu_i2c_xfer(struct pmac_i2c_
- 	wait_for_completion(&comp);
- 	rc = cmd->status;
- 
--	if (read)
-+	if (read && len)
- 		memcpy(data, cmd->info.data, len);
- 	return rc < 0 ? rc : 0;
- }
-@@ -767,7 +894,7 @@ static void __init smu_i2c_probe(void)
- 	if (!smu_present())
- 		return;
- 
--	controller = of_find_node_by_name(NULL, "smu_i2c_control");
-+	controller = of_find_node_by_name(NULL, "smu-i2c-control");
- 	if (controller == NULL)
- 		controller = of_find_node_by_name(NULL, "smu");
- 	if (controller == NULL)
-@@ -884,6 +1011,13 @@ int pmac_i2c_get_flags(struct pmac_i2c_b
- }
- EXPORT_SYMBOL_GPL(pmac_i2c_get_flags);
- 
-+int pmac_i2c_get_channel(struct pmac_i2c_bus *bus)
-+{
-+	return bus->channel;
++	return request_irq(func->node->intrs[0].line, macio_gpio_irq, 0,
++			   func->node->name, func);
 +}
-+EXPORT_SYMBOL_GPL(pmac_i2c_get_channel);
 +
-+
- void pmac_i2c_attach_adapter(struct pmac_i2c_bus *bus,
- 			     struct i2c_adapter *adapter)
- {
-@@ -906,6 +1040,17 @@ struct i2c_adapter *pmac_i2c_get_adapter
- }
- EXPORT_SYMBOL_GPL(pmac_i2c_get_adapter);
- 
-+struct pmac_i2c_bus *pmac_i2c_adapter_to_bus(struct i2c_adapter *adapter)
++static int macio_do_gpio_irq_disable(struct pmf_function *func)
 +{
-+	struct pmac_i2c_bus *bus;
++	if (func->node->n_intrs < 1)
++		return -EINVAL;
 +
-+	list_for_each_entry(bus, &pmac_i2c_busses, link)
-+		if (bus->adapter == adapter)
-+			return bus;
-+	return NULL;
++	free_irq(func->node->intrs[0].line, func);
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(pmac_i2c_adapter_to_bus);
 +
- extern int pmac_i2c_match_adapter(struct device_node *dev,
- 				  struct i2c_adapter *adapter)
- {
-@@ -956,7 +1101,7 @@ int pmac_i2c_open(struct pmac_i2c_bus *b
- 	int rc;
- 
- 	down(&bus->sem);
--	bus->polled = polled;
-+	bus->polled = polled || pmac_i2c_force_poll;
- 	bus->opened = 1;
- 	bus->mode = pmac_i2c_mode_std;
- 	if (bus->open && (rc = bus->open(bus)) != 0) {
-@@ -1034,14 +1179,43 @@ int __init pmac_i2c_init(void)
- 	kw_i2c_probe();
- 
- #ifdef CONFIG_ADB_PMU
-+	/* Probe PMU i2c busses */
- 	pmu_i2c_probe();
- #endif
- 
- #ifdef CONFIG_PMAC_SMU
-+	/* Probe SMU i2c busses */
- 	smu_i2c_probe();
- #endif
--
- 	return 0;
- }
- arch_initcall(pmac_i2c_init);
- 
-+/* Since pmac_i2c_init can be called too early for the platform device
-+ * registration, we need to do it at a later time. In our case, subsys
-+ * happens to fit well, though I agree it's a bit of a hack...
-+ */
-+static int __init pmac_i2c_create_platform_devices(void)
++static int macio_do_gpio_write(PMF_STD_ARGS, u8 value, u8 mask)
 +{
-+	struct pmac_i2c_bus *bus;
-+	int i = 0;
++	u8 __iomem *addr = (u8 __iomem *)func->driver_data;
++	unsigned long flags;
++	u8 tmp;
 +
-+	/* In the case where we are initialized from smp_init(), we must
-+	 * not use the timer (and thus the irq). It's safe from now on
-+	 * though
-+	 */
-+	pmac_i2c_force_poll = 0;
++	/* Check polarity */
++	if (args && args->count && !args->u[0].v)
++		value = ~value;
 +
-+	/* Create platform devices */
-+	list_for_each_entry(bus, &pmac_i2c_busses, link) {
-+		bus->platform_dev =
-+			platform_device_alloc("i2c-powermac", i++);
-+		if (bus->platform_dev == NULL)
-+			return -ENOMEM;
-+		bus->platform_dev->dev.platform_data = bus;
-+		platform_device_add(bus->platform_dev);
-+	}
++	/* Toggle the GPIO */
++	spin_lock_irqsave(&feature_lock, flags);
++	tmp = readb(addr);
++	tmp = (tmp & ~mask) | (value & mask);
++	DBG("Do write 0x%02x to GPIO %s (%p)\n",
++	    tmp, func->node->full_name, addr);
++	writeb(tmp, addr);
++	spin_unlock_irqrestore(&feature_lock, flags);
 +
 +	return 0;
 +}
-+subsys_initcall(pmac_i2c_create_platform_devices);
-Index: linux-work/include/asm-powerpc/pmac_low_i2c.h
++
++static int macio_do_gpio_read(PMF_STD_ARGS, u8 mask, int rshift, u8 xor)
++{
++	u8 __iomem *addr = (u8 __iomem *)func->driver_data;
++	u32 value;
++
++	/* Check if we have room for reply */
++	if (args == NULL || args->count == 0 || args->u[0].p == NULL)
++		return -EINVAL;
++
++	value = readb(addr);
++	*args->u[0].p = ((value & mask) >> rshift) ^ xor;
++
++	return 0;
++}
++
++static int macio_do_delay(PMF_STD_ARGS, u32 duration)
++{
++	/* assume we can sleep ! */
++	msleep((duration + 999) / 1000);
++	return 0;
++}
++
++static struct pmf_handlers macio_gpio_handlers = {
++	.irq_enable	= macio_do_gpio_irq_enable,
++	.irq_disable	= macio_do_gpio_irq_disable,
++	.write_gpio	= macio_do_gpio_write,
++	.read_gpio	= macio_do_gpio_read,
++	.delay		= macio_do_delay,
++};
++
++static void macio_gpio_init_one(struct macio_chip *macio)
++{
++	struct device_node *gparent, *gp;
++
++	/*
++	 * Find the "gpio" parent node
++	 */
++
++	for (gparent = NULL;
++	     (gparent = of_get_next_child(macio->of_node, gparent)) != NULL;)
++		if (strcmp(gparent->name, "gpio") == 0)
++			break;
++	if (gparent == NULL)
++		return;
++
++	DBG("Installing GPIO functions for macio %s\n",
++	    macio->of_node->full_name);
++
++	/*
++	 * Ok, got one, we dont need anything special to track them down, so
++	 * we just create them all
++	 */
++	for (gp = NULL; (gp = of_get_next_child(gparent, gp)) != NULL;) {
++		u32 *reg = (u32 *)get_property(gp, "reg", NULL);
++		unsigned long offset;
++		if (reg == NULL)
++			continue;
++		offset = *reg;
++		/* Deal with old style device-tree. We can safely hard code the
++		 * offset for now too even if it's a bit gross ...
++		 */
++		if (offset < 0x50)
++			offset += 0x50;
++		offset += (unsigned long)macio->base;
++		pmf_register_driver(gp, &macio_gpio_handlers, (void *)offset);
++	}
++
++	DBG("Calling initial GPIO functions for macio %s\n",
++	    macio->of_node->full_name);
++
++	/* And now we run all the init ones */
++	for (gp = NULL; (gp = of_get_next_child(gparent, gp)) != NULL;)
++		pmf_do_functions(gp, NULL, 0, PMF_FLAGS_ON_INIT, NULL);
++
++	/* Note: We do not at this point implement the "at sleep" or "at wake"
++	 * functions. I yet to find any for GPIOs anyway
++	 */
++}
++
++static int macio_do_write_reg32(PMF_STD_ARGS, u32 offset, u32 value, u32 mask)
++{
++	struct macio_chip *macio = func->driver_data;
++	unsigned long flags;
++
++	spin_lock_irqsave(&feature_lock, flags);
++	MACIO_OUT32(offset, (MACIO_IN32(offset) & ~mask) | (value & mask));
++	spin_unlock_irqrestore(&feature_lock, flags);
++	return 0;
++}
++
++static int macio_do_read_reg32(PMF_STD_ARGS, u32 offset)
++{
++	struct macio_chip *macio = func->driver_data;
++
++	/* Check if we have room for reply */
++	if (args == NULL || args->count == 0 || args->u[0].p == NULL)
++		return -EINVAL;
++
++	*args->u[0].p = MACIO_IN32(offset);
++	return 0;
++}
++
++static int macio_do_write_reg8(PMF_STD_ARGS, u32 offset, u8 value, u8 mask)
++{
++	struct macio_chip *macio = func->driver_data;
++	unsigned long flags;
++
++	spin_lock_irqsave(&feature_lock, flags);
++	MACIO_OUT8(offset, (MACIO_IN8(offset) & ~mask) | (value & mask));
++	spin_unlock_irqrestore(&feature_lock, flags);
++	return 0;
++}
++
++static int macio_do_read_reg8(PMF_STD_ARGS, u32 offset)
++{
++	struct macio_chip *macio = func->driver_data;
++
++	/* Check if we have room for reply */
++	if (args == NULL || args->count == 0 || args->u[0].p == NULL)
++		return -EINVAL;
++
++	*((u8 *)(args->u[0].p)) = MACIO_IN8(offset);
++	return 0;
++}
++
++static int macio_do_read_reg32_msrx(PMF_STD_ARGS, u32 offset, u32 mask,
++				    u32 shift, u32 xor)
++{
++	struct macio_chip *macio = func->driver_data;
++
++	/* Check if we have room for reply */
++	if (args == NULL || args->count == 0 || args->u[0].p == NULL)
++		return -EINVAL;
++
++	*args->u[0].p = ((MACIO_IN32(offset) & mask) >> shift) ^ xor;
++	return 0;
++}
++
++static int macio_do_read_reg8_msrx(PMF_STD_ARGS, u32 offset, u32 mask,
++				   u32 shift, u32 xor)
++{
++	struct macio_chip *macio = func->driver_data;
++
++	/* Check if we have room for reply */
++	if (args == NULL || args->count == 0 || args->u[0].p == NULL)
++		return -EINVAL;
++
++	*((u8 *)(args->u[0].p)) = ((MACIO_IN8(offset) & mask) >> shift) ^ xor;
++	return 0;
++}
++
++static int macio_do_write_reg32_slm(PMF_STD_ARGS, u32 offset, u32 shift,
++				    u32 mask)
++{
++	struct macio_chip *macio = func->driver_data;
++	unsigned long flags;
++	u32 tmp, val;
++
++	/* Check args */
++	if (args == NULL || args->count == 0)
++		return -EINVAL;
++
++	spin_lock_irqsave(&feature_lock, flags);
++	tmp = MACIO_IN32(offset);
++	val = args->u[0].v << shift;
++	tmp = (tmp & ~mask) | (val & mask);
++	MACIO_OUT32(offset, tmp);
++	spin_unlock_irqrestore(&feature_lock, flags);
++	return 0;
++}
++
++static int macio_do_write_reg8_slm(PMF_STD_ARGS, u32 offset, u32 shift,
++				   u32 mask)
++{
++	struct macio_chip *macio = func->driver_data;
++	unsigned long flags;
++	u32 tmp, val;
++
++	/* Check args */
++	if (args == NULL || args->count == 0)
++		return -EINVAL;
++
++	spin_lock_irqsave(&feature_lock, flags);
++	tmp = MACIO_IN8(offset);
++	val = args->u[0].v << shift;
++	tmp = (tmp & ~mask) | (val & mask);
++	MACIO_OUT8(offset, tmp);
++	spin_unlock_irqrestore(&feature_lock, flags);
++	return 0;
++}
++
++static struct pmf_handlers macio_mmio_handlers = {
++	.write_reg32		= macio_do_write_reg32,
++	.read_reg32		= macio_do_read_reg32,
++	.write_reg8		= macio_do_write_reg8,
++	.read_reg32		= macio_do_read_reg8,
++	.read_reg32_msrx	= macio_do_read_reg32_msrx,
++	.read_reg8_msrx		= macio_do_read_reg8_msrx,
++	.write_reg32_slm	= macio_do_write_reg32_slm,
++	.write_reg8_slm		= macio_do_write_reg8_slm,
++	.delay			= macio_do_delay,
++};
++
++static void macio_mmio_init_one(struct macio_chip *macio)
++{
++	DBG("Installing MMIO functions for macio %s\n",
++	    macio->of_node->full_name);
++
++	pmf_register_driver(macio->of_node, &macio_mmio_handlers, macio);
++}
++
++static struct device_node *unin_hwclock;
++
++static int unin_do_write_reg32(PMF_STD_ARGS, u32 offset, u32 value, u32 mask)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&feature_lock, flags);
++	/* This is fairly bogus in darwin, but it should work for our needs
++	 * implemeted that way:
++	 */
++	UN_OUT(offset, (UN_IN(offset) & ~mask) | (value & mask));
++	spin_unlock_irqrestore(&feature_lock, flags);
++	return 0;
++}
++
++
++static struct pmf_handlers unin_mmio_handlers = {
++	.write_reg32		= unin_do_write_reg32,
++	.delay			= macio_do_delay,
++};
++
++static void uninorth_install_pfunc(void)
++{
++	struct device_node *np;
++
++	DBG("Installing functions for UniN %s\n",
++	    uninorth_node->full_name);
++
++	/*
++	 * Install handlers for the bridge itself
++	 */
++	pmf_register_driver(uninorth_node, &unin_mmio_handlers, NULL);
++	pmf_do_functions(uninorth_node, NULL, 0, PMF_FLAGS_ON_INIT, NULL);
++
++
++	/*
++	 * Install handlers for the hwclock child if any
++	 */
++	for (np = NULL; (np = of_get_next_child(uninorth_node, np)) != NULL;)
++		if (strcmp(np->name, "hw-clock") == 0) {
++			unin_hwclock = np;
++			break;
++		}
++	if (unin_hwclock) {
++		DBG("Installing functions for UniN clock %s\n",
++		    unin_hwclock->full_name);
++		pmf_register_driver(unin_hwclock, &unin_mmio_handlers, NULL);
++		pmf_do_functions(unin_hwclock, NULL, 0, PMF_FLAGS_ON_INIT,
++				 NULL);
++	}
++}
++
++/* We export this as the SMP code might init us early */
++int __init pmac_pfunc_base_install(void)
++{
++	static int pfbase_inited;
++	int i;
++
++	if (pfbase_inited)
++		return 0;
++	pfbase_inited = 1;
++
++
++	DBG("Installing base platform functions...\n");
++
++	/*
++	 * Locate mac-io chips and install handlers
++	 */
++	for (i = 0 ; i < MAX_MACIO_CHIPS; i++) {
++		if (macio_chips[i].of_node) {
++			macio_mmio_init_one(&macio_chips[i]);
++			macio_gpio_init_one(&macio_chips[i]);
++		}
++	}
++
++	/*
++	 * Install handlers for northbridge and direct mapped hwclock
++	 * if any. We do not implement the config space access callback
++	 * which is only ever used for functions that we do not call in
++	 * the current driver (enabling/disabling cells in U2, mostly used
++	 * to restore the PCI settings, we do that differently)
++	 */
++	if (uninorth_node && uninorth_base)
++		uninorth_install_pfunc();
++
++	DBG("All base functions installed\n");
++
++	return 0;
++}
++
++arch_initcall(pmac_pfunc_base_install);
++
++#ifdef CONFIG_PM
++
++/* Those can be called by pmac_feature. Ultimately, I should use a sysdev
++ * or a device, but for now, that's good enough until I sort out some
++ * ordering issues. Also, we do not bother with GPIOs, as so far I yet have
++ * to see a case where a GPIO function has the on-suspend or on-resume bit
++ */
++void pmac_pfunc_base_suspend(void)
++{
++	int i;
++
++	for (i = 0 ; i < MAX_MACIO_CHIPS; i++) {
++		if (macio_chips[i].of_node)
++			pmf_do_functions(macio_chips[i].of_node, NULL, 0,
++					 PMF_FLAGS_ON_SLEEP, NULL);
++	}
++	if (uninorth_node)
++		pmf_do_functions(uninorth_node, NULL, 0,
++				 PMF_FLAGS_ON_SLEEP, NULL);
++	if (unin_hwclock)
++		pmf_do_functions(unin_hwclock, NULL, 0,
++				 PMF_FLAGS_ON_SLEEP, NULL);
++}
++
++void pmac_pfunc_base_resume(void)
++{
++	int i;
++
++	if (unin_hwclock)
++		pmf_do_functions(unin_hwclock, NULL, 0,
++				 PMF_FLAGS_ON_WAKE, NULL);
++	if (uninorth_node)
++		pmf_do_functions(uninorth_node, NULL, 0,
++				 PMF_FLAGS_ON_WAKE, NULL);
++	for (i = 0 ; i < MAX_MACIO_CHIPS; i++) {
++		if (macio_chips[i].of_node)
++			pmf_do_functions(macio_chips[i].of_node, NULL, 0,
++					 PMF_FLAGS_ON_WAKE, NULL);
++	}
++}
++
++#endif /* CONFIG_PM */
+Index: linux-work/arch/powerpc/platforms/powermac/pfunc_core.c
 ===================================================================
---- linux-work.orig/include/asm-powerpc/pmac_low_i2c.h	2006-01-06 19:42:48.000000000 +1100
-+++ linux-work/include/asm-powerpc/pmac_low_i2c.h	2006-01-07 10:53:21.000000000 +1100
-@@ -70,6 +70,7 @@ extern struct device_node *pmac_i2c_get_
- extern struct device_node *pmac_i2c_get_bus_node(struct pmac_i2c_bus *bus);
- extern int pmac_i2c_get_type(struct pmac_i2c_bus *bus);
- extern int pmac_i2c_get_flags(struct pmac_i2c_bus *bus);
-+extern int pmac_i2c_get_channel(struct pmac_i2c_bus *bus);
- 
- /* i2c layer adapter attach/detach */
- extern void pmac_i2c_attach_adapter(struct pmac_i2c_bus *bus,
-@@ -77,6 +78,7 @@ extern void pmac_i2c_attach_adapter(stru
- extern void pmac_i2c_detach_adapter(struct pmac_i2c_bus *bus,
- 				    struct i2c_adapter *adapter);
- extern struct i2c_adapter *pmac_i2c_get_adapter(struct pmac_i2c_bus *bus);
-+extern struct pmac_i2c_bus *pmac_i2c_adapter_to_bus(struct i2c_adapter *adapter);
- 
- /* March a device or bus with an i2c adapter structure, to be used by drivers
-  * to match device-tree nodes with i2c adapters during adapter discovery
-Index: linux-work/drivers/macintosh/smu.c
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-work/arch/powerpc/platforms/powermac/pfunc_core.c	2006-01-07 10:54:03.000000000 +1100
+@@ -0,0 +1,989 @@
++/*
++ *
++ * FIXME: Properly make this race free with refcounting etc...
++ *
++ * FIXME: LOCKING !!!
++ */
++
++#include <linux/config.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/kernel.h>
++#include <linux/spinlock.h>
++#include <linux/module.h>
++
++#include <asm/semaphore.h>
++#include <asm/prom.h>
++#include <asm/pmac_pfunc.h>
++
++/* Debug */
++#define LOG_PARSE(fmt...)
++#define LOG_ERROR(fmt...)	printk(fmt)
++#define LOG_BLOB(t,b,c)
++#define DBG(fmt...)		printk(fmt)
++
++/* Command numbers */
++#define PMF_CMD_LIST			0
++#define PMF_CMD_WRITE_GPIO		1
++#define PMF_CMD_READ_GPIO		2
++#define PMF_CMD_WRITE_REG32		3
++#define PMF_CMD_READ_REG32		4
++#define PMF_CMD_WRITE_REG16		5
++#define PMF_CMD_READ_REG16		6
++#define PMF_CMD_WRITE_REG8		7
++#define PMF_CMD_READ_REG8		8
++#define PMF_CMD_DELAY			9
++#define PMF_CMD_WAIT_REG32		10
++#define PMF_CMD_WAIT_REG16		11
++#define PMF_CMD_WAIT_REG8		12
++#define PMF_CMD_READ_I2C		13
++#define PMF_CMD_WRITE_I2C		14
++#define PMF_CMD_RMW_I2C			15
++#define PMF_CMD_GEN_I2C			16
++#define PMF_CMD_SHIFT_BYTES_RIGHT	17
++#define PMF_CMD_SHIFT_BYTES_LEFT	18
++#define PMF_CMD_READ_CFG		19
++#define PMF_CMD_WRITE_CFG		20
++#define PMF_CMD_RMW_CFG			21
++#define PMF_CMD_READ_I2C_SUBADDR	22
++#define PMF_CMD_WRITE_I2C_SUBADDR	23
++#define PMF_CMD_SET_I2C_MODE		24
++#define PMF_CMD_RMW_I2C_SUBADDR		25
++#define PMF_CMD_READ_REG32_MASK_SHR_XOR	26
++#define PMF_CMD_READ_REG16_MASK_SHR_XOR	27
++#define PMF_CMD_READ_REG8_MASK_SHR_XOR	28
++#define PMF_CMD_WRITE_REG32_SHL_MASK	29
++#define PMF_CMD_WRITE_REG16_SHL_MASK	30
++#define PMF_CMD_WRITE_REG8_SHL_MASK	31
++#define PMF_CMD_MASK_AND_COMPARE	32
++#define PMF_CMD_COUNT			33
++
++/* This structure holds the state of the parser while walking through
++ * a function definition
++ */
++struct pmf_cmd {
++	const void		*cmdptr;
++	const void		*cmdend;
++	struct pmf_function	*func;
++	void			*instdata;
++	struct pmf_args		*args;
++	int			error;
++};
++
++#if 0
++/* Debug output */
++static void print_blob(const char *title, const void *blob, int bytes)
++{
++	printk("%s", title);
++	while(bytes--) {
++		printk("%02x ", *((u8 *)blob));
++		blob += 1;
++	}
++	printk("\n");
++}
++#endif
++
++/*
++ * Parser helpers
++ */
++
++static u32 pmf_next32(struct pmf_cmd *cmd)
++{
++	u32 value;
++	if ((cmd->cmdend - cmd->cmdptr) < 4) {
++		cmd->error = 1;
++		return 0;
++	}
++	value = *((u32 *)cmd->cmdptr);
++	cmd->cmdptr += 4;
++	return value;
++}
++
++static const void* pmf_next_blob(struct pmf_cmd *cmd, int count)
++{
++	const void *value;
++	if ((cmd->cmdend - cmd->cmdptr) < count) {
++		cmd->error = 1;
++		return NULL;
++	}
++	value = cmd->cmdptr;
++	cmd->cmdptr += count;
++	return value;
++}
++
++/*
++ * Individual command parsers
++ */
++
++#define PMF_PARSE_CALL(name, cmd, handlers, p...) \
++	do { \
++		if (cmd->error) \
++			return -ENXIO; \
++		if (handlers == NULL) \
++			return 0; \
++		if (handlers->name)				      \
++			return handlers->name(cmd->func, cmd->instdata, \
++					      cmd->args, p);	      \
++		return -1; \
++	} while(0) \
++
++
++static int pmf_parser_write_gpio(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u8 value = (u8)pmf_next32(cmd);
++	u8 mask = (u8)pmf_next32(cmd);
++
++	LOG_PARSE("pmf: write_gpio(value: %02x, mask: %02x)\n", value, mask);
++
++	PMF_PARSE_CALL(write_gpio, cmd, h, value, mask);
++}
++
++static int pmf_parser_read_gpio(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u8 mask = (u8)pmf_next32(cmd);
++	int rshift = (int)pmf_next32(cmd);
++	u8 xor = (u8)pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_gpio(mask: %02x, rshift: %d, xor: %02x)\n",
++		  mask, rshift, xor);
++
++	PMF_PARSE_CALL(read_gpio, cmd, h, mask, rshift, xor);
++}
++
++static int pmf_parser_write_reg32(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 value = pmf_next32(cmd);
++	u32 mask = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: write_reg32(offset: %08x, value: %08x, mask: %08x)\n",
++		  offset, value, mask);
++
++	PMF_PARSE_CALL(write_reg32, cmd, h, offset, value, mask);
++}
++
++static int pmf_parser_read_reg32(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_reg32(offset: %08x)\n", offset);
++
++	PMF_PARSE_CALL(read_reg32, cmd, h, offset);
++}
++
++
++static int pmf_parser_write_reg16(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u16 value = (u16)pmf_next32(cmd);
++	u16 mask = (u16)pmf_next32(cmd);
++
++	LOG_PARSE("pmf: write_reg16(offset: %08x, value: %04x, mask: %04x)\n",
++		  offset, value, mask);
++
++	PMF_PARSE_CALL(write_reg16, cmd, h, offset, value, mask);
++}
++
++static int pmf_parser_read_reg16(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_reg16(offset: %08x)\n", offset);
++
++	PMF_PARSE_CALL(read_reg16, cmd, h, offset);
++}
++
++
++static int pmf_parser_write_reg8(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u8 value = (u16)pmf_next32(cmd);
++	u8 mask = (u16)pmf_next32(cmd);
++
++	LOG_PARSE("pmf: write_reg8(offset: %08x, value: %02x, mask: %02x)\n",
++		  offset, value, mask);
++
++	PMF_PARSE_CALL(write_reg8, cmd, h, offset, value, mask);
++}
++
++static int pmf_parser_read_reg8(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_reg8(offset: %08x)\n", offset);
++
++	PMF_PARSE_CALL(read_reg8, cmd, h, offset);
++}
++
++static int pmf_parser_delay(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 duration = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: delay(duration: %d us)\n", duration);
++
++	PMF_PARSE_CALL(delay, cmd, h, duration);
++}
++
++static int pmf_parser_wait_reg32(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 value = pmf_next32(cmd);
++	u32 mask = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: wait_reg32(offset: %08x, comp_value: %08x,mask: %08x)\n",
++		  offset, value, mask);
++
++	PMF_PARSE_CALL(wait_reg32, cmd, h, offset, value, mask);
++}
++
++static int pmf_parser_wait_reg16(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u16 value = (u16)pmf_next32(cmd);
++	u16 mask = (u16)pmf_next32(cmd);
++
++	LOG_PARSE("pmf: wait_reg16(offset: %08x, comp_value: %04x,mask: %04x)\n",
++		  offset, value, mask);
++
++	PMF_PARSE_CALL(wait_reg16, cmd, h, offset, value, mask);
++}
++
++static int pmf_parser_wait_reg8(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u8 value = (u8)pmf_next32(cmd);
++	u8 mask = (u8)pmf_next32(cmd);
++
++	LOG_PARSE("pmf: wait_reg8(offset: %08x, comp_value: %02x,mask: %02x)\n",
++		  offset, value, mask);
++
++	PMF_PARSE_CALL(wait_reg8, cmd, h, offset, value, mask);
++}
++
++static int pmf_parser_read_i2c(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 bytes = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_i2c(bytes: %ud)\n", bytes);
++
++	PMF_PARSE_CALL(read_i2c, cmd, h, bytes);
++}
++
++static int pmf_parser_write_i2c(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 bytes = pmf_next32(cmd);
++	const void *blob = pmf_next_blob(cmd, bytes);
++
++	LOG_PARSE("pmf: write_i2c(bytes: %ud) ...\n", bytes);
++	LOG_BLOB("pmf:   data: \n", blob, bytes);
++
++	PMF_PARSE_CALL(write_i2c, cmd, h, bytes, blob);
++}
++
++
++static int pmf_parser_rmw_i2c(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 maskbytes = pmf_next32(cmd);
++	u32 valuesbytes = pmf_next32(cmd);
++	u32 totalbytes = pmf_next32(cmd);
++	const void *maskblob = pmf_next_blob(cmd, maskbytes);
++	const void *valuesblob = pmf_next_blob(cmd, valuesbytes);
++
++	LOG_PARSE("pmf: rmw_i2c(maskbytes: %ud, valuebytes: %ud, "
++		  "totalbytes: %d) ...\n",
++		  maskbytes, valuesbytes, totalbytes);
++	LOG_BLOB("pmf:   mask data: \n", maskblob, maskbytes);
++	LOG_BLOB("pmf:   values data: \n", valuesblob, valuesbytes);
++
++	PMF_PARSE_CALL(rmw_i2c, cmd, h, maskbytes, valuesbytes, totalbytes,
++		       maskblob, valuesblob);
++}
++
++static int pmf_parser_read_cfg(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 bytes = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_cfg(offset: %x, bytes: %ud)\n", offset, bytes);
++
++	PMF_PARSE_CALL(read_cfg, cmd, h, offset, bytes);
++}
++
++
++static int pmf_parser_write_cfg(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 bytes = pmf_next32(cmd);
++	const void *blob = pmf_next_blob(cmd, bytes);
++
++	LOG_PARSE("pmf: write_cfg(offset: %x, bytes: %ud)\n", offset, bytes);
++	LOG_BLOB("pmf:   data: \n", blob, bytes);
++
++	PMF_PARSE_CALL(write_cfg, cmd, h, offset, bytes, blob);
++}
++
++static int pmf_parser_rmw_cfg(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 maskbytes = pmf_next32(cmd);
++	u32 valuesbytes = pmf_next32(cmd);
++	u32 totalbytes = pmf_next32(cmd);
++	const void *maskblob = pmf_next_blob(cmd, maskbytes);
++	const void *valuesblob = pmf_next_blob(cmd, valuesbytes);
++
++	LOG_PARSE("pmf: rmw_cfg(maskbytes: %ud, valuebytes: %ud,"
++		  " totalbytes: %d) ...\n",
++		  maskbytes, valuesbytes, totalbytes);
++	LOG_BLOB("pmf:   mask data: \n", maskblob, maskbytes);
++	LOG_BLOB("pmf:   values data: \n", valuesblob, valuesbytes);
++
++	PMF_PARSE_CALL(rmw_cfg, cmd, h, offset, maskbytes, valuesbytes,
++		       totalbytes, maskblob, valuesblob);
++}
++
++
++static int pmf_parser_read_i2c_sub(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u8 subaddr = (u8)pmf_next32(cmd);
++	u32 bytes = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_i2c_sub(subaddr: %x, bytes: %ud)\n",
++		  subaddr, bytes);
++
++	PMF_PARSE_CALL(read_i2c_sub, cmd, h, subaddr, bytes);
++}
++
++static int pmf_parser_write_i2c_sub(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u8 subaddr = (u8)pmf_next32(cmd);
++	u32 bytes = pmf_next32(cmd);
++	const void *blob = pmf_next_blob(cmd, bytes);
++
++	LOG_PARSE("pmf: write_i2c_sub(subaddr: %x, bytes: %ud) ...\n",
++		  subaddr, bytes);
++	LOG_BLOB("pmf:   data: \n", blob, bytes);
++
++	PMF_PARSE_CALL(write_i2c_sub, cmd, h, subaddr, bytes, blob);
++}
++
++static int pmf_parser_set_i2c_mode(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u32 mode = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: set_i2c_mode(mode: %d)\n", mode);
++
++	PMF_PARSE_CALL(set_i2c_mode, cmd, h, mode);
++}
++
++
++static int pmf_parser_rmw_i2c_sub(struct pmf_cmd *cmd, struct pmf_handlers *h)
++{
++	u8 subaddr = (u8)pmf_next32(cmd);
++	u32 maskbytes = pmf_next32(cmd);
++	u32 valuesbytes = pmf_next32(cmd);
++	u32 totalbytes = pmf_next32(cmd);
++	const void *maskblob = pmf_next_blob(cmd, maskbytes);
++	const void *valuesblob = pmf_next_blob(cmd, valuesbytes);
++
++	LOG_PARSE("pmf: rmw_i2c_sub(subaddr: %x, maskbytes: %ud, valuebytes: %ud"
++		  ", totalbytes: %d) ...\n",
++		  subaddr, maskbytes, valuesbytes, totalbytes);
++	LOG_BLOB("pmf:   mask data: \n", maskblob, maskbytes);
++	LOG_BLOB("pmf:   values data: \n", valuesblob, valuesbytes);
++
++	PMF_PARSE_CALL(rmw_i2c_sub, cmd, h, subaddr, maskbytes, valuesbytes,
++		       totalbytes, maskblob, valuesblob);
++}
++
++static int pmf_parser_read_reg32_msrx(struct pmf_cmd *cmd,
++				      struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 mask = pmf_next32(cmd);
++	u32 shift = pmf_next32(cmd);
++	u32 xor = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_reg32_msrx(offset: %x, mask: %x, shift: %x,"
++		  " xor: %x\n", offset, mask, shift, xor);
++
++	PMF_PARSE_CALL(read_reg32_msrx, cmd, h, offset, mask, shift, xor);
++}
++
++static int pmf_parser_read_reg16_msrx(struct pmf_cmd *cmd,
++				      struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 mask = pmf_next32(cmd);
++	u32 shift = pmf_next32(cmd);
++	u32 xor = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_reg16_msrx(offset: %x, mask: %x, shift: %x,"
++		  " xor: %x\n", offset, mask, shift, xor);
++
++	PMF_PARSE_CALL(read_reg16_msrx, cmd, h, offset, mask, shift, xor);
++}
++static int pmf_parser_read_reg8_msrx(struct pmf_cmd *cmd,
++				     struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 mask = pmf_next32(cmd);
++	u32 shift = pmf_next32(cmd);
++	u32 xor = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: read_reg8_msrx(offset: %x, mask: %x, shift: %x,"
++		  " xor: %x\n", offset, mask, shift, xor);
++
++	PMF_PARSE_CALL(read_reg8_msrx, cmd, h, offset, mask, shift, xor);
++}
++
++static int pmf_parser_write_reg32_slm(struct pmf_cmd *cmd,
++				      struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 shift = pmf_next32(cmd);
++	u32 mask = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: write_reg32_slm(offset: %x, shift: %x, mask: %x\n",
++		  offset, shift, mask);
++
++	PMF_PARSE_CALL(write_reg32_slm, cmd, h, offset, shift, mask);
++}
++
++static int pmf_parser_write_reg16_slm(struct pmf_cmd *cmd,
++				      struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 shift = pmf_next32(cmd);
++	u32 mask = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: write_reg16_slm(offset: %x, shift: %x, mask: %x\n",
++		  offset, shift, mask);
++
++	PMF_PARSE_CALL(write_reg16_slm, cmd, h, offset, shift, mask);
++}
++
++static int pmf_parser_write_reg8_slm(struct pmf_cmd *cmd,
++				     struct pmf_handlers *h)
++{
++	u32 offset = pmf_next32(cmd);
++	u32 shift = pmf_next32(cmd);
++	u32 mask = pmf_next32(cmd);
++
++	LOG_PARSE("pmf: write_reg8_slm(offset: %x, shift: %x, mask: %x\n",
++		  offset, shift, mask);
++
++	PMF_PARSE_CALL(write_reg8_slm, cmd, h, offset, shift, mask);
++}
++
++static int pmf_parser_mask_and_compare(struct pmf_cmd *cmd,
++				       struct pmf_handlers *h)
++{
++	u32 bytes = pmf_next32(cmd);
++	const void *maskblob = pmf_next_blob(cmd, bytes);
++	const void *valuesblob = pmf_next_blob(cmd, bytes);
++
++	LOG_PARSE("pmf: mask_and_compare(length: %ud ...\n", bytes);
++	LOG_BLOB("pmf:   mask data: \n", maskblob, bytes);
++	LOG_BLOB("pmf:   values data: \n", valuesblob, bytes);
++
++	PMF_PARSE_CALL(mask_and_compare, cmd, h,
++		       bytes, maskblob, valuesblob);
++}
++
++
++typedef int (*pmf_cmd_parser_t)(struct pmf_cmd *cmd, struct pmf_handlers *h);
++
++static pmf_cmd_parser_t pmf_parsers[PMF_CMD_COUNT] =
++{
++	NULL,
++	pmf_parser_write_gpio,
++	pmf_parser_read_gpio,
++	pmf_parser_write_reg32,
++	pmf_parser_read_reg32,
++	pmf_parser_write_reg16,
++	pmf_parser_read_reg16,
++	pmf_parser_write_reg8,
++	pmf_parser_read_reg8,
++	pmf_parser_delay,
++	pmf_parser_wait_reg32,
++	pmf_parser_wait_reg16,
++	pmf_parser_wait_reg8,
++	pmf_parser_read_i2c,
++	pmf_parser_write_i2c,
++	pmf_parser_rmw_i2c,
++	NULL, /* Bogus command */
++	NULL, /* Shift bytes right: NYI */
++	NULL, /* Shift bytes left: NYI */
++	pmf_parser_read_cfg,
++	pmf_parser_write_cfg,
++	pmf_parser_rmw_cfg,
++	pmf_parser_read_i2c_sub,
++	pmf_parser_write_i2c_sub,
++	pmf_parser_set_i2c_mode,
++	pmf_parser_rmw_i2c_sub,
++	pmf_parser_read_reg32_msrx,
++	pmf_parser_read_reg16_msrx,
++	pmf_parser_read_reg8_msrx,
++	pmf_parser_write_reg32_slm,
++	pmf_parser_write_reg16_slm,
++	pmf_parser_write_reg8_slm,
++	pmf_parser_mask_and_compare,
++};
++
++struct pmf_device {
++	struct list_head	link;
++	struct device_node	*node;
++	struct pmf_handlers	*handlers;
++	struct list_head	functions;
++	struct kref		ref;
++};
++
++static LIST_HEAD(pmf_devices);
++static spinlock_t pmf_lock = SPIN_LOCK_UNLOCKED;
++
++static void pmf_release_device(struct kref *kref)
++{
++	struct pmf_device *dev = container_of(kref, struct pmf_device, ref);
++	kfree(dev);
++}
++
++static inline void pmf_put_device(struct pmf_device *dev)
++{
++	kref_put(&dev->ref, pmf_release_device);
++}
++
++static inline struct pmf_device *pmf_get_device(struct pmf_device *dev)
++{
++	kref_get(&dev->ref);
++	return dev;
++}
++
++static inline struct pmf_device *pmf_find_device(struct device_node *np)
++{
++	struct pmf_device *dev;
++
++	list_for_each_entry(dev, &pmf_devices, link) {
++		if (dev->node == np)
++			return pmf_get_device(dev);
++	}
++	return NULL;
++}
++
++static int pmf_parse_one(struct pmf_function *func,
++			 struct pmf_handlers *handlers,
++			 void *instdata, struct pmf_args *args)
++{
++	struct pmf_cmd cmd;
++	u32 ccode;
++	int count, rc;
++
++	cmd.cmdptr		= func->data;
++	cmd.cmdend		= func->data + func->length;
++	cmd.func       		= func;
++	cmd.instdata		= instdata;
++	cmd.args		= args;
++	cmd.error		= 0;
++
++	LOG_PARSE("pmf: func %s, %d bytes, %s...\n",
++		  func->name, func->length,
++		  handlers ? "executing" : "parsing");
++
++	/* One subcommand to parse for now */
++	count = 1;
++
++	while(count-- && cmd.cmdptr < cmd.cmdend) {
++		/* Get opcode */
++		ccode = pmf_next32(&cmd);
++		/* Check if we are hitting a command list, fetch new count */
++		if (ccode == 0) {
++			count = pmf_next32(&cmd) - 1;
++			ccode = pmf_next32(&cmd);
++		}
++		if (cmd.error) {
++			LOG_ERROR("pmf: parse error, not enough data\n");
++			return -ENXIO;
++		}
++		if (ccode >= PMF_CMD_COUNT) {
++			LOG_ERROR("pmf: command code %d unknown !\n", ccode);
++			return -ENXIO;
++		}
++		if (pmf_parsers[ccode] == NULL) {
++			LOG_ERROR("pmf: no parser for command %d !\n", ccode);
++			return -ENXIO;
++		}
++		rc = pmf_parsers[ccode](&cmd, handlers);
++		if (rc != 0) {
++			LOG_ERROR("pmf: parser for command %d returned"
++				  " error %d\n", ccode, rc);
++			return rc;
++		}
++	}
++
++	/* We are doing an initial parse pass, we need to adjust the size */
++	if (handlers == NULL)
++		func->length = cmd.cmdptr - func->data;
++
++	return 0;
++}
++
++static int pmf_add_function_prop(struct pmf_device *dev, void *driverdata,
++				 const char *name, u32 *data,
++				 unsigned int length)
++{
++	int count = 0;
++	struct pmf_function *func = NULL;
++
++	DBG("pmf: Adding functions for platform-do-%s\n", name);
++
++	while (length >= 12) {
++		/* Allocate a structure */
++		func = kzalloc(sizeof(struct pmf_function), GFP_KERNEL);
++		if (func == NULL)
++			goto bail;
++		kref_init(&func->ref);
++		INIT_LIST_HEAD(&func->irq_clients);
++		func->node = dev->node;
++		func->driver_data = driverdata;
++		func->name = name;
++		func->phandle = data[0];
++		func->flags = data[1];
++		data += 2;
++		length -= 8;
++		func->data = data;
++		func->length = length;
++		func->dev = dev;
++		DBG("pmf: idx %d: flags=%08x, phandle=%08x "
++		    " %d bytes remaining, parsing...\n",
++		    count+1, func->flags, func->phandle, length);
++		if (pmf_parse_one(func, NULL, NULL, NULL)) {
++			kfree(func);
++			goto bail;
++		}
++		length -= func->length;
++		data = (u32 *)(((u8 *)data) + func->length);
++		list_add(&func->link, &dev->functions);
++		pmf_get_device(dev);
++		count++;
++	}
++ bail:
++	DBG("pmf: Added %d functions\n", count);
++
++	return count;
++}
++
++static int pmf_add_functions(struct pmf_device *dev, void *driverdata)
++{
++	struct property *pp;
++#define PP_PREFIX "platform-do-"
++	const int plen = strlen(PP_PREFIX);
++	int count = 0;
++
++	for (pp = dev->node->properties; pp != 0; pp = pp->next) {
++		char *name;
++		if (strncmp(pp->name, PP_PREFIX, plen) != 0)
++			continue;
++		name = pp->name + plen;
++		if (strlen(name) && pp->length >= 12)
++			count += pmf_add_function_prop(dev, driverdata, name,
++						       (u32 *)pp->value,
++						       pp->length);
++	}
++	return count;
++}
++
++
++int pmf_register_driver(struct device_node *np,
++			struct pmf_handlers *handlers,
++			void *driverdata)
++{
++	struct pmf_device *dev;
++	unsigned long flags;
++	int rc = 0;
++
++	if (handlers == NULL)
++		return -EINVAL;
++
++	DBG("pmf: registering driver for node %s\n", np->full_name);
++
++	spin_lock_irqsave(&pmf_lock, flags);
++	dev = pmf_find_device(np);
++	spin_unlock_irqrestore(&pmf_lock, flags);
++	if (dev != NULL) {
++		DBG("pmf: already there !\n");
++		pmf_put_device(dev);
++		return -EBUSY;
++	}
++
++	dev = kzalloc(sizeof(struct pmf_device), GFP_KERNEL);
++	if (dev == NULL) {
++		DBG("pmf: no memory !\n");
++		return -ENOMEM;
++	}
++	kref_init(&dev->ref);
++	dev->node = of_node_get(np);
++	dev->handlers = handlers;
++	INIT_LIST_HEAD(&dev->functions);
++
++	rc = pmf_add_functions(dev, driverdata);
++	if (rc == 0) {
++		DBG("pmf: no functions, disposing.. \n");
++		of_node_put(np);
++		kfree(dev);
++		return -ENODEV;
++	}
++
++	spin_lock_irqsave(&pmf_lock, flags);
++	list_add(&dev->link, &pmf_devices);
++	spin_unlock_irqrestore(&pmf_lock, flags);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pmf_register_driver);
++
++struct pmf_function *pmf_get_function(struct pmf_function *func)
++{
++	if (!try_module_get(func->dev->handlers->owner))
++		return NULL;
++	kref_get(&func->ref);
++	return func;
++}
++EXPORT_SYMBOL_GPL(pmf_get_function);
++
++static void pmf_release_function(struct kref *kref)
++{
++	struct pmf_function *func =
++		container_of(kref, struct pmf_function, ref);
++	pmf_put_device(func->dev);
++	kfree(func);
++}
++
++static inline void __pmf_put_function(struct pmf_function *func)
++{
++	kref_put(&func->ref, pmf_release_function);
++}
++
++void pmf_put_function(struct pmf_function *func)
++{
++	if (func == NULL)
++		return;
++	module_put(func->dev->handlers->owner);
++	__pmf_put_function(func);
++}
++EXPORT_SYMBOL_GPL(pmf_put_function);
++
++void pmf_unregister_driver(struct device_node *np)
++{
++	struct pmf_device *dev;
++	unsigned long flags;
++
++	DBG("pmf: unregistering driver for node %s\n", np->full_name);
++
++	spin_lock_irqsave(&pmf_lock, flags);
++	dev = pmf_find_device(np);
++	if (dev == NULL) {
++		DBG("pmf: not such driver !\n");
++		spin_unlock_irqrestore(&pmf_lock, flags);
++		return;
++	}
++	list_del(&dev->link);
++
++	while(!list_empty(&dev->functions)) {
++		struct pmf_function *func =
++			list_entry(dev->functions.next, typeof(*func), link);
++		list_del(&func->link);
++		__pmf_put_function(func);
++	}
++
++	pmf_put_device(dev);
++	spin_unlock_irqrestore(&pmf_lock, flags);
++}
++EXPORT_SYMBOL_GPL(pmf_unregister_driver);
++
++struct pmf_function *__pmf_find_function(struct device_node *target,
++					 const char *name, u32 flags)
++{
++	struct device_node *actor = of_node_get(target);
++	struct pmf_device *dev;
++	struct pmf_function *func, *result = NULL;
++	char fname[64];
++	u32 *prop, ph;
++
++	/*
++	 * Look for a "platform-*" function reference. If we can't find
++	 * one, then we fallback to a direct call attempt
++	 */
++	snprintf(fname, 63, "platform-%s", name);
++	prop = (u32 *)get_property(target, fname, NULL);
++	if (prop == NULL)
++		goto find_it;
++	ph = *prop;
++	if (ph == 0)
++		goto find_it;
++
++	/*
++	 * Ok, now try to find the actor. If we can't find it, we fail,
++	 * there is no point in falling back there
++	 */
++	of_node_put(actor);
++	actor = of_find_node_by_phandle(ph);
++	if (actor == NULL)
++		return NULL;
++ find_it:
++	dev = pmf_find_device(actor);
++	if (dev == NULL)
++		return NULL;
++
++	list_for_each_entry(func, &dev->functions, link) {
++		if (name && strcmp(name, func->name))
++			continue;
++		if (func->phandle && target->node != func->phandle)
++			continue;
++		if ((func->flags & flags) == 0)
++			continue;
++		result = func;
++		break;
++	}
++	of_node_put(actor);
++	pmf_put_device(dev);
++	return result;
++}
++
++
++int pmf_register_irq_client(struct device_node *target,
++			    const char *name,
++			    struct pmf_irq_client *client)
++{
++	struct pmf_function *func;
++	unsigned long flags;
++
++	spin_lock_irqsave(&pmf_lock, flags);
++	func = __pmf_find_function(target, name, PMF_FLAGS_INT_GEN);
++	if (func == NULL) {
++		spin_unlock_irqrestore(&pmf_lock, flags);
++		return -ENODEV;
++	}
++	list_add(&client->link, &func->irq_clients);
++	spin_unlock_irqrestore(&pmf_lock, flags);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pmf_register_irq_client);
++
++void pmf_unregister_irq_client(struct device_node *np,
++			      const char *name,
++			      struct pmf_irq_client *client)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&pmf_lock, flags);
++	list_del(&client->link);
++	spin_unlock_irqrestore(&pmf_lock, flags);
++}
++EXPORT_SYMBOL_GPL(pmf_unregister_irq_client);
++
++
++void pmf_do_irq(struct pmf_function *func)
++{
++	unsigned long flags;
++	struct pmf_irq_client *client;
++
++	/* For now, using a spinlock over the whole function. Can be made
++	 * to drop the lock using 2 lists if necessary
++	 */
++	spin_lock_irqsave(&pmf_lock, flags);
++	list_for_each_entry(client, &func->irq_clients, link) {
++		if (!try_module_get(client->owner))
++			continue;
++		client->handler(client->data);
++		module_put(client->owner);
++	}
++	spin_unlock_irqrestore(&pmf_lock, flags);
++}
++EXPORT_SYMBOL_GPL(pmf_do_irq);
++
++
++int pmf_call_one(struct pmf_function *func, struct pmf_args *args)
++{
++	struct pmf_device *dev = func->dev;
++	void *instdata = NULL;
++	int rc = 0;
++
++	DBG(" ** pmf_call_one(%s/%s) **\n", dev->node->full_name, func->name);
++
++	if (dev->handlers->begin)
++		instdata = dev->handlers->begin(func, args);
++	rc = pmf_parse_one(func, dev->handlers, instdata, args);
++	if (dev->handlers->end)
++		dev->handlers->end(func, instdata);
++
++	return rc;
++}
++EXPORT_SYMBOL_GPL(pmf_call_one);
++
++int pmf_do_functions(struct device_node *np, const char *name,
++		     u32 phandle, u32 fflags, struct pmf_args *args)
++{
++	struct pmf_device *dev;
++	struct pmf_function *func, *tmp;
++	unsigned long flags;
++	int rc = -ENODEV;
++
++	spin_lock_irqsave(&pmf_lock, flags);
++
++	dev = pmf_find_device(np);
++	if (dev == NULL) {
++		spin_unlock_irqrestore(&pmf_lock, flags);
++		return -ENODEV;
++	}
++	list_for_each_entry_safe(func, tmp, &dev->functions, link) {
++		if (name && strcmp(name, func->name))
++			continue;
++		if (phandle && func->phandle && phandle != func->phandle)
++			continue;
++		if ((func->flags & fflags) == 0)
++			continue;
++		if (pmf_get_function(func) == NULL)
++			continue;
++		spin_unlock_irqrestore(&pmf_lock, flags);
++		rc = pmf_call_one(func, args);
++		pmf_put_function(func);
++		spin_lock_irqsave(&pmf_lock, flags);
++	}
++	pmf_put_device(dev);
++	spin_unlock_irqrestore(&pmf_lock, flags);
++
++	return rc;
++}
++EXPORT_SYMBOL_GPL(pmf_do_functions);
++
++
++struct pmf_function *pmf_find_function(struct device_node *target,
++				       const char *name)
++{
++	struct pmf_function *func;
++	unsigned long flags;
++
++	spin_lock_irqsave(&pmf_lock, flags);
++	func = __pmf_find_function(target, name, PMF_FLAGS_ON_DEMAND);
++	if (func)
++		func = pmf_get_function(func);
++	spin_unlock_irqrestore(&pmf_lock, flags);
++	return func;
++}
++EXPORT_SYMBOL_GPL(pmf_find_function);
++
++int pmf_call_function(struct device_node *target, const char *name,
++		      struct pmf_args *args)
++{
++	struct pmf_function *func = pmf_find_function(target, name);
++	int rc;
++
++	if (func == NULL)
++		return -ENODEV;
++
++	rc = pmf_call_one(func, args);
++	pmf_put_function(func);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(pmf_call_function);
++
+Index: linux-work/include/asm-powerpc/pmac_feature.h
 ===================================================================
---- linux-work.orig/drivers/macintosh/smu.c	2006-01-06 19:42:48.000000000 +1100
-+++ linux-work/drivers/macintosh/smu.c	2006-01-06 19:43:28.000000000 +1100
-@@ -584,34 +584,14 @@ core_initcall(smu_late_init);
-  * sysfs visibility
+--- linux-work.orig/include/asm-powerpc/pmac_feature.h	2006-01-07 10:53:21.000000000 +1100
++++ linux-work/include/asm-powerpc/pmac_feature.h	2006-01-07 10:54:03.000000000 +1100
+@@ -374,5 +374,24 @@ extern struct macio_chip* macio_find(str
+ #define MACIO_IN8(r)		(in_8(MACIO_FCR8(macio,r)))
+ #define MACIO_OUT8(r,v)		(out_8(MACIO_FCR8(macio,r), (v)))
+ 
++/*
++ * Those are exported by pmac feature for internal use by arch code
++ * only like the platform function callbacks, do not use directly in drivers
++ */
++extern spinlock_t feature_lock;
++extern struct device_node *uninorth_node;
++extern u32 __iomem *uninorth_base;
++
++/*
++ * Uninorth reg. access. Note that Uni-N regs are big endian
++ */
++
++#define UN_REG(r)	(uninorth_base + ((r) >> 2))
++#define UN_IN(r)	(in_be32(UN_REG(r)))
++#define UN_OUT(r,v)	(out_be32(UN_REG(r), (v)))
++#define UN_BIS(r,v)	(UN_OUT((r), UN_IN(r) | (v)))
++#define UN_BIC(r,v)	(UN_OUT((r), UN_IN(r) & ~(v)))
++
++
+ #endif /* __PPC_ASM_PMAC_FEATURE_H */
+ #endif /* __KERNEL__ */
+Index: linux-work/arch/powerpc/platforms/powermac/smp.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/smp.c	2006-01-07 10:53:21.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/smp.c	2006-01-07 10:54:03.000000000 +1100
+@@ -52,8 +52,9 @@
+ #include <asm/cacheflush.h>
+ #include <asm/keylargo.h>
+ #include <asm/pmac_low_i2c.h>
++#include <asm/pmac_pfunc.h>
+ 
+-#undef DEBUG
++#define DEBUG
+ 
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
+@@ -62,6 +63,7 @@
+ #endif
+ 
+ extern void __secondary_start_pmac_0(void);
++extern int pmac_pfunc_base_install(void);
+ 
+ #ifdef CONFIG_PPC32
+ 
+@@ -602,11 +604,29 @@ static void __init smp_core99_setup_i2c_
+ 	pmac_tb_clock_chip_host = NULL;
+ }
+ 
+-#endif /* CONFIG_PPC64 */
+ 
+ 
+ /*
+- * SMP G4 and newer G5 use a GPIO to enable/disable the timebase.
++ * Newer G5s uses a platform function
++ */
++
++static void smp_core99_pfunc_tb_freeze(int freeze)
++{
++	struct device_node *cpus;
++	struct pmf_args args;
++
++	cpus = of_find_node_by_path("/cpus");
++	BUG_ON(cpus == NULL);
++	args.count = 1;
++	args.u[0].v = !freeze;
++	pmf_call_function(cpus, "cpu-timebase", &args);
++	of_node_put(cpus);
++}
++
++#else /* CONFIG_PPC64 */
++
++/*
++ * SMP G4 use a GPIO to enable/disable the timebase.
   */
  
--static void smu_create_i2c(struct device_node *np)
--{
--	char name[32];
--	u32 *reg = (u32 *)get_property(np, "reg", NULL);
--
--	if (reg != NULL) {
--		sprintf(name, "smu-i2c-%02x", *reg);
--		of_platform_device_create(np, name, &smu->of_dev->dev);
--	}
--}
--
- static void smu_expose_childs(void *unused)
- {
--	struct device_node *np, *gp;
-+	struct device_node *np;
- 
--	for (np = NULL; (np = of_get_next_child(smu->of_node, np)) != NULL;) {
--		if (device_is_compatible(np, "smu-i2c-control")) {
--			gp = NULL;
--			while ((gp = of_get_next_child(np, gp)) != NULL)
--				if (device_is_compatible(gp, "i2c-bus"))
--					smu_create_i2c(gp);
--		} else if (device_is_compatible(np, "smu-i2c"))
--			smu_create_i2c(np);
-+	for (np = NULL; (np = of_get_next_child(smu->of_node, np)) != NULL;)
- 		if (device_is_compatible(np, "smu-sensors"))
- 			of_platform_device_create(np, "smu-sensors",
- 						  &smu->of_dev->dev);
--	}
--
+ static unsigned int core99_tb_gpio;	/* Timebase freeze GPIO */
+@@ -620,6 +640,9 @@ static void smp_core99_gpio_tb_freeze(in
+ 	pmac_call_feature(PMAC_FTR_READ_GPIO, NULL, core99_tb_gpio, 0);
  }
  
- static DECLARE_WORK(smu_expose_childs_work, smu_expose_childs, NULL);
-Index: linux-work/drivers/macintosh/windfarm_lm75_sensor.c
-===================================================================
---- linux-work.orig/drivers/macintosh/windfarm_lm75_sensor.c	2006-01-06 19:42:48.000000000 +1100
-+++ linux-work/drivers/macintosh/windfarm_lm75_sensor.c	2006-01-06 19:43:28.000000000 +1100
-@@ -21,6 +21,7 @@
- #include <asm/io.h>
- #include <asm/system.h>
- #include <asm/sections.h>
-+#include <asm/pmac_low_i2c.h>
++
++#endif /* !CONFIG_PPC64 */
++
+ /* L2 and L3 cache settings to pass from CPU0 to CPU1 on G4 cpus */
+ volatile static long int core99_l2_cache;
+ volatile static long int core99_l3_cache;
+@@ -665,19 +688,15 @@ static void __init smp_core99_setup(int 
+ 	    machine_is_compatible("RackMac3,1"))
+ 		smp_core99_setup_i2c_hwsync(ncpus);
  
- #include "windfarm.h"
- 
-@@ -157,53 +158,21 @@ static struct wf_lm75_sensor *wf_lm75_cr
- 
- static int wf_lm75_attach(struct i2c_adapter *adapter)
- {
--	u8 bus_id;
--	struct device_node *smu, *bus, *dev;
+-	/* GPIO based HW sync on recent G5s */
++	/* pfunc based HW sync on recent G5s */
+ 	if (pmac_tb_freeze == NULL) {
+-		struct device_node *np =
+-			of_find_node_by_name(NULL, "timebase-enable");
+-		u32 *reg = (u32 *)get_property(np, "reg", NULL);
 -
--	/* We currently only deal with LM75's hanging off the SMU
--	 * i2c busses. If we extend that driver to other/older
--	 * machines, we should split this function into SMU-i2c,
--	 * keywest-i2c, PMU-i2c, ...
--	 */
-+	struct device_node *busnode, *dev;
-+	struct pmac_i2c_bus *bus;
- 
- 	DBG("wf_lm75: adapter %s detected\n", adapter->name);
- 
--	if (strncmp(adapter->name, "smu-i2c-", 8) != 0)
--		return 0;
--	smu = of_find_node_by_type(NULL, "smu");
--	if (smu == NULL)
--		return 0;
--
--	/* Look for the bus in the device-tree */
--	bus_id = (u8)simple_strtoul(adapter->name + 8, NULL, 16);
--
--	DBG("wf_lm75: bus ID is %x\n", bus_id);
--
--	/* Look for sensors subdir */
--	for (bus = NULL;
--	     (bus = of_get_next_child(smu, bus)) != NULL;) {
--		u32 *reg;
--
--		if (strcmp(bus->name, "i2c"))
--			continue;
--		reg = (u32 *)get_property(bus, "reg", NULL);
--		if (reg == NULL)
--			continue;
--		if (bus_id == *reg)
--			break;
--	}
--	of_node_put(smu);
--	if (bus == NULL) {
--		printk(KERN_WARNING "windfarm: SMU i2c bus 0x%x not found"
--		       " in device-tree !\n", bus_id);
--		return 0;
--	}
-+	bus = pmac_i2c_adapter_to_bus(adapter);
-+	if (bus == NULL)
-+		return -ENODEV;
-+	busnode = pmac_i2c_get_bus_node(bus);
- 
- 	DBG("wf_lm75: bus found, looking for device...\n");
- 
- 	/* Now look for lm75(s) in there */
- 	for (dev = NULL;
--	     (dev = of_get_next_child(bus, dev)) != NULL;) {
-+	     (dev = of_get_next_child(busnode, dev)) != NULL;) {
- 		const char *loc =
- 			get_property(dev, "hwsensor-location", NULL);
- 		u32 *reg = (u32 *)get_property(dev, "reg", NULL);
-@@ -217,9 +186,6 @@ static int wf_lm75_attach(struct i2c_ada
- 		else if (device_is_compatible(dev, "ds1775"))
- 			wf_lm75_create(adapter, *reg, 1, loc);
+-		if (np && reg && !strcmp(np->type, "gpio")) {
+-			core99_tb_gpio = *reg;
+-			if (core99_tb_gpio < 0x50)
+-				core99_tb_gpio += 0x50;
+-			pmac_tb_freeze = smp_core99_gpio_tb_freeze;
++		struct device_node *cpus =
++			of_find_node_by_path("/cpus");
++		if (cpus &&
++		    get_property(cpus, "platform-cpu-timebase", NULL)) {
++			pmac_tb_freeze = smp_core99_pfunc_tb_freeze;
+ 			printk(KERN_INFO "Processor timebase sync using"
+-			       " GPIO 0x%02x\n", core99_tb_gpio);
++			       " platform function\n");
+ 		}
  	}
--
--	of_node_put(bus);
--
+ 
+@@ -746,6 +765,7 @@ static int __init smp_core99_probe(void)
+ 	/* We need to perform some early initialisations before we can start
+ 	 * setting up SMP as we are running before initcalls
+ 	 */
++	pmac_pfunc_base_install();
+ 	pmac_i2c_init();
+ 
+ 	/* Setup various bits like timebase sync method, ability to nap, ... */
+Index: linux-work/arch/powerpc/platforms/powermac/low_i2c.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/low_i2c.c	2006-01-07 10:53:21.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/low_i2c.c	2006-01-07 10:54:03.000000000 +1100
+@@ -49,6 +49,7 @@
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+ #include <asm/smu.h>
++#include <asm/pmac_pfunc.h>
+ #include <asm/pmac_low_i2c.h>
+ 
+ #ifdef DEBUG
+@@ -1162,9 +1163,291 @@ int pmac_i2c_xfer(struct pmac_i2c_bus *b
+ }
+ EXPORT_SYMBOL_GPL(pmac_i2c_xfer);
+ 
++/* some quirks for platform function decoding */
++enum {
++	pmac_i2c_quirk_invmask = 0x00000001u,
++};
++
++static void pmac_i2c_devscan(void (*callback)(struct device_node *dev,
++					      int quirks))
++{
++	struct pmac_i2c_bus *bus;
++	struct device_node *np;
++	static struct whitelist_ent {
++		char *name;
++		char *compatible;
++		int quirks;
++	} whitelist[] = {
++		/* XXX Study device-tree's & apple drivers are get the quirks
++		 * right !
++		 */
++		{ "i2c-hwclock", NULL, pmac_i2c_quirk_invmask },
++		{ "i2c-cpu-voltage", NULL, 0},
++		{  "temp-monitor", NULL, 0 },
++		{  "supply-monitor", NULL, 0 },
++		{ NULL, NULL, 0 },
++	};
++
++	/* Only some devices need to have platform functions instanciated
++	 * here. For now, we have a table. Others, like 9554 i2c GPIOs used
++	 * on Xserve, if we ever do a driver for them, will use their own
++	 * platform function instance
++	 */
++	list_for_each_entry(bus, &pmac_i2c_busses, link) {
++		for (np = NULL;
++		     (np = of_get_next_child(bus->busnode, np)) != NULL;) {
++			struct whitelist_ent *p;
++			/* If multibus, check if device is on that bus */
++			if (bus->flags & pmac_i2c_multibus)
++				if (bus != pmac_i2c_find_bus(np))
++					continue;
++			for (p = whitelist; p->name != NULL; p++) {
++				if (strcmp(np->name, p->name))
++					continue;
++				if (p->compatible &&
++				    !device_is_compatible(np, p->compatible))
++					continue;
++				callback(np, p->quirks);
++				break;
++			}
++		}
++	}
++}
++
++#define MAX_I2C_DATA	64
++
++struct pmac_i2c_pf_inst
++{
++	struct pmac_i2c_bus	*bus;
++	u8			addr;
++	u8			buffer[MAX_I2C_DATA];
++	u8			scratch[MAX_I2C_DATA];
++	int			bytes;
++	int			quirks;
++};
++
++static void* pmac_i2c_do_begin(struct pmf_function *func, struct pmf_args *args)
++{
++	struct pmac_i2c_pf_inst *inst;
++	struct pmac_i2c_bus	*bus;
++
++	bus = pmac_i2c_find_bus(func->node);
++	if (bus == NULL) {
++		printk(KERN_ERR "low_i2c: Can't find bus for %s (pfunc)\n",
++		       func->node->full_name);
++		return NULL;
++	}
++	if (pmac_i2c_open(bus, 0)) {
++		printk(KERN_ERR "low_i2c: Can't open i2c bus for %s (pfunc)\n",
++		       func->node->full_name);
++		return NULL;
++	}
++
++	/* XXX might need GFP_ATOMIC when called during the suspend process,
++	 * but then, there are already lots of issues with suspending when
++	 * near OOM that need to be resolved, the allocator itself should
++	 * probably make GFP_NOIO implicit during suspend
++	 */
++	inst = kzalloc(sizeof(struct pmac_i2c_pf_inst), GFP_KERNEL);
++	if (inst == NULL) {
++		pmac_i2c_close(bus);
++		return NULL;
++	}
++	inst->bus = bus;
++	inst->addr = pmac_i2c_get_dev_addr(func->node);
++	inst->quirks = (int)(long)func->driver_data;
++	return inst;
++}
++
++static void pmac_i2c_do_end(struct pmf_function *func, void *instdata)
++{
++	struct pmac_i2c_pf_inst *inst = instdata;
++
++	if (inst == NULL)
++		return;
++	pmac_i2c_close(inst->bus);
++	if (inst)
++		kfree(inst);
++}
++
++static int pmac_i2c_do_read(PMF_STD_ARGS, u32 len)
++{
++	struct pmac_i2c_pf_inst *inst = instdata;
++
++	inst->bytes = len;
++	return pmac_i2c_xfer(inst->bus, inst->addr | pmac_i2c_read, 0, 0,
++			     inst->buffer, len);
++}
++
++static int pmac_i2c_do_write(PMF_STD_ARGS, u32 len, const u8 *data)
++{
++	struct pmac_i2c_pf_inst *inst = instdata;
++
++	return pmac_i2c_xfer(inst->bus, inst->addr | pmac_i2c_write, 0, 0,
++			     (u8 *)data, len);
++}
++
++/* This function is used to do the masking & OR'ing for the "rmw" type
++ * callbacks. Ze should apply the mask and OR in the values in the
++ * buffer before writing back. The problem is that it seems that
++ * various darwin drivers implement the mask/or differently, thus
++ * we need to check the quirks first
++ */
++static void pmac_i2c_do_apply_rmw(struct pmac_i2c_pf_inst *inst,
++				  u32 len, const u8 *mask, const u8 *val)
++{
++	int i;
++
++	if (inst->quirks & pmac_i2c_quirk_invmask) {
++		for (i = 0; i < len; i ++)
++			inst->scratch[i] = (inst->buffer[i] & mask[i]) | val[i];
++	} else {
++		for (i = 0; i < len; i ++)
++			inst->scratch[i] = (inst->buffer[i] & ~mask[i])
++				| (val[i] & mask[i]);
++	}
++}
++
++static int pmac_i2c_do_rmw(PMF_STD_ARGS, u32 masklen, u32 valuelen,
++			   u32 totallen, const u8 *maskdata,
++			   const u8 *valuedata)
++{
++	struct pmac_i2c_pf_inst *inst = instdata;
++
++	if (masklen > inst->bytes || valuelen > inst->bytes ||
++	    totallen > inst->bytes || valuelen > masklen)
++		return -EINVAL;
++
++	pmac_i2c_do_apply_rmw(inst, masklen, maskdata, valuedata);
++
++	return pmac_i2c_xfer(inst->bus, inst->addr | pmac_i2c_write, 0, 0,
++			     inst->scratch, totallen);
++}
++
++static int pmac_i2c_do_read_sub(PMF_STD_ARGS, u8 subaddr, u32 len)
++{
++	struct pmac_i2c_pf_inst *inst = instdata;
++
++	inst->bytes = len;
++	return pmac_i2c_xfer(inst->bus, inst->addr | pmac_i2c_read, 1, subaddr,
++			     inst->buffer, len);
++}
++
++static int pmac_i2c_do_write_sub(PMF_STD_ARGS, u8 subaddr, u32 len,
++				     const u8 *data)
++{
++	struct pmac_i2c_pf_inst *inst = instdata;
++
++	return pmac_i2c_xfer(inst->bus, inst->addr | pmac_i2c_write, 1,
++			     subaddr, (u8 *)data, len);
++}
++
++static int pmac_i2c_do_set_mode(PMF_STD_ARGS, int mode)
++{
++	struct pmac_i2c_pf_inst *inst = instdata;
++
++	return pmac_i2c_setmode(inst->bus, mode);
++}
++
++static int pmac_i2c_do_rmw_sub(PMF_STD_ARGS, u8 subaddr, u32 masklen,
++			       u32 valuelen, u32 totallen, const u8 *maskdata,
++			       const u8 *valuedata)
++{
++	struct pmac_i2c_pf_inst *inst = instdata;
++
++	if (masklen > inst->bytes || valuelen > inst->bytes ||
++	    totallen > inst->bytes || valuelen > masklen)
++		return -EINVAL;
++
++	pmac_i2c_do_apply_rmw(inst, masklen, maskdata, valuedata);
++
++	return pmac_i2c_xfer(inst->bus, inst->addr | pmac_i2c_write, 1,
++			     subaddr, inst->scratch, totallen);
++}
++
++static int pmac_i2c_do_mask_and_comp(PMF_STD_ARGS, u32 len,
++				     const u8 *maskdata,
++				     const u8 *valuedata)
++{
++	struct pmac_i2c_pf_inst *inst = instdata;
++	int i, match;
++
++	/* Get return value pointer, it's assumed to be a u32 */
++	if (!args || !args->count || !args->u[0].p)
++		return -EINVAL;
++
++	/* Check buffer */
++	if (len > inst->bytes)
++		return -EINVAL;
++
++	for (i = 0, match = 1; match && i < len; i ++)
++		if ((inst->buffer[i] & maskdata[i]) != valuedata[i])
++			match = 0;
++	*args->u[0].p = match;
++	return 0;
++}
++
++static int pmac_i2c_do_delay(PMF_STD_ARGS, u32 duration)
++{
++	msleep((duration + 999) / 1000);
++	return 0;
++}
++
++
++static struct pmf_handlers pmac_i2c_pfunc_handlers = {
++	.begin			= pmac_i2c_do_begin,
++	.end			= pmac_i2c_do_end,
++	.read_i2c		= pmac_i2c_do_read,
++	.write_i2c		= pmac_i2c_do_write,
++	.rmw_i2c		= pmac_i2c_do_rmw,
++	.read_i2c_sub		= pmac_i2c_do_read_sub,
++	.write_i2c_sub		= pmac_i2c_do_write_sub,
++	.rmw_i2c_sub		= pmac_i2c_do_rmw_sub,
++	.set_i2c_mode		= pmac_i2c_do_set_mode,
++	.mask_and_compare	= pmac_i2c_do_mask_and_comp,
++	.delay			= pmac_i2c_do_delay,
++};
++
++static void __init pmac_i2c_dev_create(struct device_node *np, int quirks)
++{
++	DBG("dev_create(%s)\n", np->full_name);
++
++	pmf_register_driver(np, &pmac_i2c_pfunc_handlers,
++			    (void *)(long)quirks);
++}
++
++static void __init pmac_i2c_dev_init(struct device_node *np, int quirks)
++{
++	DBG("dev_create(%s)\n", np->full_name);
++
++	pmf_do_functions(np, NULL, 0, PMF_FLAGS_ON_INIT, NULL);
++}
++
++static void pmac_i2c_dev_suspend(struct device_node *np, int quirks)
++{
++	DBG("dev_suspend(%s)\n", np->full_name);
++	pmf_do_functions(np, NULL, 0, PMF_FLAGS_ON_SLEEP, NULL);
++}
++
++static void pmac_i2c_dev_resume(struct device_node *np, int quirks)
++{
++	DBG("dev_resume(%s)\n", np->full_name);
++	pmf_do_functions(np, NULL, 0, PMF_FLAGS_ON_WAKE, NULL);
++}
++
++void pmac_pfunc_i2c_suspend(void)
++{
++	pmac_i2c_devscan(pmac_i2c_dev_suspend);
++}
++
++void pmac_pfunc_i2c_resume(void)
++{
++	pmac_i2c_devscan(pmac_i2c_dev_resume);
++}
++
+ /*
+- * Initialize us: probe all i2c busses on the machine and instantiate
+- * busses.
++ * Initialize us: probe all i2c busses on the machine, instantiate
++ * busses and platform functions as needed.
+  */
+ /* This is non-static as it might be called early by smp code */
+ int __init pmac_i2c_init(void)
+@@ -1187,6 +1470,10 @@ int __init pmac_i2c_init(void)
+ 	/* Probe SMU i2c busses */
+ 	smu_i2c_probe();
+ #endif
++
++	/* Now add plaform functions for some known devices */
++	pmac_i2c_devscan(pmac_i2c_dev_create);
++
  	return 0;
  }
+ arch_initcall(pmac_i2c_init);
+@@ -1216,6 +1503,9 @@ static int __init pmac_i2c_create_platfo
+ 		platform_device_add(bus->platform_dev);
+ 	}
  
-Index: linux-work/drivers/macintosh/Kconfig
++	/* Now call platform "init" functions */
++	pmac_i2c_devscan(pmac_i2c_dev_init);
++
+ 	return 0;
+ }
+ subsys_initcall(pmac_i2c_create_platform_devices);
+Index: linux-work/drivers/macintosh/via-pmu.c
 ===================================================================
---- linux-work.orig/drivers/macintosh/Kconfig	2006-01-06 19:42:48.000000000 +1100
-+++ linux-work/drivers/macintosh/Kconfig	2006-01-07 10:53:19.000000000 +1100
-@@ -149,14 +149,14 @@ config MAC_EMUMOUSEBTN
+--- linux-work.orig/drivers/macintosh/via-pmu.c	2006-01-07 10:53:21.000000000 +1100
++++ linux-work/drivers/macintosh/via-pmu.c	2006-01-07 10:54:03.000000000 +1100
+@@ -55,6 +55,8 @@
+ #include <asm/sections.h>
+ #include <asm/irq.h>
+ #include <asm/pmac_feature.h>
++#include <asm/pmac_pfunc.h>
++#include <asm/pmac_low_i2c.h>
+ #include <asm/uaccess.h>
+ #include <asm/mmu_context.h>
+ #include <asm/cputable.h>
+@@ -2105,6 +2107,10 @@ pmac_suspend_devices(void)
+ 		return -EBUSY;
+ 	}
  
- config THERM_WINDTUNNEL
- 	tristate "Support for thermal management on Windtunnel G4s"
--	depends on I2C && I2C_KEYWEST && PPC_PMAC && !PPC_PMAC64
-+	depends on I2C && I2C_POWERMAC && PPC_PMAC && !PPC_PMAC64
- 	help
- 	  This driver provides some thermostat and fan control for the desktop
- 	  G4 "Windtunnel"
++	/* Call platform functions marked "on sleep" */
++	pmac_pfunc_i2c_suspend();
++	pmac_pfunc_base_suspend();
++
+ 	/* Stop preemption */
+ 	preempt_disable();
  
- config THERM_ADT746X
- 	tristate "Support for thermal mgmnt on laptops with ADT 746x chipset"
--	depends on I2C && I2C_KEYWEST && PPC_PMAC && !PPC_PMAC64
-+	depends on I2C && I2C_POWERMAC && PPC_PMAC && !PPC_PMAC64
- 	help
- 	  This driver provides some thermostat and fan control for the
-           iBook G4, and the ATI based aluminium PowerBooks, allowing slighlty
-@@ -164,7 +164,7 @@ config THERM_ADT746X
+@@ -2175,6 +2181,10 @@ pmac_wakeup_devices(void)
+ 	mdelay(10);
+ 	preempt_enable();
  
- config THERM_PM72
- 	tristate "Support for thermal management on PowerMac G5"
--	depends on I2C && I2C_KEYWEST && PPC_PMAC64
-+	depends on I2C && I2C_POWERMAC && PPC_PMAC64
- 	help
- 	  This driver provides thermostat and fan control for the desktop
- 	  G5 machines. 
-@@ -175,14 +175,14 @@ config WINDFARM
- config WINDFARM_PM81
- 	tristate "Support for thermal management on iMac G5"
- 	depends on WINDFARM && I2C && CPU_FREQ_PMAC64 && PMAC_SMU
--	select I2C_PMAC_SMU
-+	select I2C_POWERMAC
- 	help
- 	  This driver provides thermal control for the iMacG5
++	/* Call platform functions marked "on wake" */
++	pmac_pfunc_base_resume();
++	pmac_pfunc_i2c_resume();
++
+ 	/* Resume devices */
+ 	device_resume();
  
- config WINDFARM_PM91
- 	tristate "Support for thermal management on PowerMac9,1"
- 	depends on WINDFARM && I2C && CPU_FREQ_PMAC64 && PMAC_SMU
--	select I2C_PMAC_SMU
-+	select I2C_POWERMAC
- 	help
- 	  This driver provides thermal control for the PowerMac9,1
-           which is the recent (SMU based) single CPU desktop G5
-Index: linux-work/arch/powerpc/platforms/powermac/setup.c
+Index: linux-work/include/asm-powerpc/pmac_low_i2c.h
 ===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/setup.c	2006-01-06 19:42:48.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/powermac/setup.c	2006-01-06 19:43:28.000000000 +1100
-@@ -656,7 +656,7 @@ static int pmac_check_legacy_ioport(unsi
+--- linux-work.orig/include/asm-powerpc/pmac_low_i2c.h	2006-01-07 10:53:21.000000000 +1100
++++ linux-work/include/asm-powerpc/pmac_low_i2c.h	2006-01-07 10:54:03.000000000 +1100
+@@ -99,6 +99,9 @@ extern int pmac_i2c_setmode(struct pmac_
+ extern int pmac_i2c_xfer(struct pmac_i2c_bus *bus, u8 addrdir, int subsize,
+ 			 u32 subaddr, u8 *data,  int len);
  
- static int __init pmac_declare_of_platform_devices(void)
- {
--	struct device_node *np, *npp;
-+	struct device_node *np;
++/* Suspend/resume code called by via-pmu directly for now */
++extern void pmac_pfunc_i2c_suspend(void);
++extern void pmac_pfunc_i2c_resume(void);
  
- 	np = of_find_node_by_name(NULL, "valkyrie");
- 	if (np)
-@@ -664,22 +664,6 @@ static int __init pmac_declare_of_platfo
- 	np = of_find_node_by_name(NULL, "platinum");
- 	if (np)
- 		of_platform_device_create(np, "platinum", NULL);
--	npp = of_find_node_by_name(NULL, "uni-n");
--	if (npp == NULL)
--		npp = of_find_node_by_name(NULL, "u3");
--	if (npp == NULL)
--		npp = of_find_node_by_name(NULL, "u4");
--	if (npp) {
--		for (np = NULL; (np = of_get_next_child(npp, np)) != NULL;) {
--			if (strncmp(np->name, "i2c", 3) == 0) {
--				of_platform_device_create(np, "uni-n-i2c",
--							  NULL);
--				of_node_put(np);
--				break;
--			}
--		}
--		of_node_put(npp);
--	}
-         np = of_find_node_by_type(NULL, "smu");
-         if (np) {
- 		of_platform_device_create(np, "smu", NULL);
+ #endif /* __KERNEL__ */
+ #endif /* __PMAC_LOW_I2C_H__ */
