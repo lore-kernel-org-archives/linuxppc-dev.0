@@ -1,16 +1,12 @@
 Return-Path: <benh@kernel.crashing.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jemzi8umx2.fsf@sykes.suse.de>
-References: <1136593470.4840.154.camel@localhost.localdomain>
-	<jemzi8umx2.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Sun, 08 Jan 2006 09:09:01 +1100
-Message-Id: <1136671741.30123.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Re: [PATCH] 0/5 powerpc: Platform & i2c updates & cpufreq
+Content-Type: text/plain
+Date: Sun, 08 Jan 2006 15:52:36 +1100
+Message-Id: <1136695956.30123.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+Subject: [PATCH] powerpc: Fix PowerMac sound i2c
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,19 +16,160 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-01-07 at 15:34 +0100, Andreas Schwab wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > This serie of patch replaces the 2 I posted recently for platform
-> > functions & g5 cpufreq. It's not a 100% finished job yet but it's
-> > getting closer.
-> 
-> The patch appears to break ALSA on PowerMac Dual 1.8GHz.  The volume
-> control is going wild, and I'm getting distorted sound.
+My patch reworking the PowerMac i2c code break the sound drivers as they
+used to rely on some broken behaviour of i2c-keywest that is gone now.
+This patch should fix them (tested on a g5 with alsa only). It might
+also fix an oops if the alsa driver hits an unsupported chip.
 
-Ok, I think it's the sound driver's i2c code relied on a bug in
-i2c-keywest that has been fixed by the new i2c driver.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I'll post a fix later today.
-
-Ben.
+Index: linux-work/sound/ppc/tumbler.c
+===================================================================
+--- linux-work.orig/sound/ppc/tumbler.c	2005-11-24 17:19:14.000000000 +1100
++++ linux-work/sound/ppc/tumbler.c	2006-01-08 15:18:09.000000000 +1100
+@@ -137,6 +137,22 @@ static int send_init_client(pmac_keywest
+ 	return 0;
+ }
+ 
++static int tumbler_write_block(struct i2c_client *client, u8 reg, int len,
++			       u8 *values)
++{
++        union i2c_smbus_data data;
++        int err;
++
++        data.block[0] = len;
++	memcpy(&data.block[1], values, len);
++        err = i2c_smbus_xfer(client->adapter, client->addr, client->flags,
++                             I2C_SMBUS_WRITE, reg, I2C_SMBUS_I2C_BLOCK_DATA,
++                             &data);
++        return err;
++}
++
++
++
+ 
+ static int tumbler_init_client(pmac_keywest_t *i2c)
+ {
+@@ -239,8 +255,7 @@ static int tumbler_set_master_volume(pma
+ 	block[4] = (right_vol >> 8)  & 0xff;
+ 	block[5] = (right_vol >> 0)  & 0xff;
+   
+-	if (i2c_smbus_write_block_data(mix->i2c.client, TAS_REG_VOL,
+-				       6, block) < 0) {
++	if (tumbler_write_block(mix->i2c.client, TAS_REG_VOL, 6, block) < 0) {
+ 		snd_printk("failed to set volume \n");
+ 		return -EINVAL;
+ 	}
+@@ -340,8 +355,7 @@ static int tumbler_set_drc(pmac_tumbler_
+ 		val[1] = 0;
+ 	}
+ 
+-	if (i2c_smbus_write_block_data(mix->i2c.client, TAS_REG_DRC,
+-				       2, val) < 0) {
++	if (tumbler_write_block(mix->i2c.client, TAS_REG_DRC, 2, val) < 0) {
+ 		snd_printk("failed to set DRC\n");
+ 		return -EINVAL;
+ 	}
+@@ -376,8 +390,7 @@ static int snapper_set_drc(pmac_tumbler_
+ 	val[4] = 0x60;
+ 	val[5] = 0xa0;
+ 
+-	if (i2c_smbus_write_block_data(mix->i2c.client, TAS_REG_DRC,
+-				       6, val) < 0) {
++	if (tumbler_write_block(mix->i2c.client, TAS_REG_DRC, 6, val) < 0) {
+ 		snd_printk("failed to set DRC\n");
+ 		return -EINVAL;
+ 	}
+@@ -481,8 +494,8 @@ static int tumbler_set_mono_volume(pmac_
+ 	vol = info->table[vol];
+ 	for (i = 0; i < info->bytes; i++)
+ 		block[i] = (vol >> ((info->bytes - i - 1) * 8)) & 0xff;
+-	if (i2c_smbus_write_block_data(mix->i2c.client, info->reg,
+-				       info->bytes, block) < 0) {
++	if (tumbler_write_block(mix->i2c.client, info->reg,
++				  info->bytes, block) < 0) {
+ 		snd_printk("failed to set mono volume %d\n", info->index);
+ 		return -EINVAL;
+ 	}
+@@ -611,7 +624,7 @@ static int snapper_set_mix_vol1(pmac_tum
+ 		for (j = 0; j < 3; j++)
+ 			block[i * 3 + j] = (vol >> ((2 - j) * 8)) & 0xff;
+ 	}
+-	if (i2c_smbus_write_block_data(mix->i2c.client, reg, 9, block) < 0) {
++	if (tumbler_write_block(mix->i2c.client, reg, 9, block) < 0) {
+ 		snd_printk("failed to set mono volume %d\n", reg);
+ 		return -EINVAL;
+ 	}
+Index: linux-work/sound/oss/dmasound/tas_common.h
+===================================================================
+--- linux-work.orig/sound/oss/dmasound/tas_common.h	2005-11-24 17:19:14.000000000 +1100
++++ linux-work/sound/oss/dmasound/tas_common.h	2006-01-08 15:33:29.000000000 +1100
+@@ -157,6 +157,21 @@ tas_mono_to_stereo(uint mono)
+ 	return mono | (mono<<8);
+ }
+ 
++static int tas_write_block(struct i2c_client *client, u8 reg, int len, u8 *vals)
++{
++        union i2c_smbus_data data;
++        int err;
++
++        data.block[0] = len;
++	memcpy(&data.block[1], vals, len);
++        err = i2c_smbus_xfer(client->adapter, client->addr, client->flags,
++                             I2C_SMBUS_WRITE, reg, I2C_SMBUS_I2C_BLOCK_DATA,
++                             &data);
++        return err;
++}
++
++
++
+ /*
+  * Todo: make these functions a bit more efficient !
+  */
+@@ -178,10 +193,8 @@ tas_write_register(	struct tas_data_t *s
+ 	if (write_mode & WRITE_SHADOW)
+ 		memcpy(self->shadow[reg_num],data,reg_width);
+ 	if (write_mode & WRITE_HW) {
+-		rc=i2c_smbus_write_block_data(self->client,
+-					      reg_num,
+-					      reg_width,
+-					      data);
++		rc = tas_write_block(self->client, reg_num,
++				     reg_width, data);
+ 		if (rc < 0) {
+ 			printk("tas: I2C block write failed \n");  
+ 			return rc; 
+@@ -199,10 +212,8 @@ tas_sync_register(	struct tas_data_t *se
+ 
+ 	if (reg_width==0 || self==NULL)
+ 		return -EINVAL;
+-	rc=i2c_smbus_write_block_data(self->client,
+-				      reg_num,
+-				      reg_width,
+-				      self->shadow[reg_num]);
++	rc = tas_write_block(self->client, reg_num,
++			     reg_width, self->shadow[reg_num]);
+ 	if (rc < 0) {
+ 		printk("tas: I2C block write failed \n");
+ 		return rc;
+Index: linux-work/sound/ppc/pmac.c
+===================================================================
+--- linux-work.orig/sound/ppc/pmac.c	2005-12-19 16:13:48.000000000 +1100
++++ linux-work/sound/ppc/pmac.c	2006-01-08 15:37:10.000000000 +1100
+@@ -74,7 +74,7 @@ static int snd_pmac_dbdma_alloc(pmac_t *
+ 
+ static void snd_pmac_dbdma_free(pmac_t *chip, pmac_dbdma_t *rec)
+ {
+-	if (rec) {
++	if (rec->space) {
+ 		unsigned int rsize = sizeof(struct dbdma_cmd) * (rec->size + 1);
+ 
+ 		dma_free_coherent(&chip->pdev->dev, rsize, rec->space, rec->dma_base);
+@@ -895,6 +895,7 @@ static int __init snd_pmac_detect(pmac_t
+ 	chip->can_capture = 1;
+ 	chip->num_freqs = ARRAY_SIZE(awacs_freqs);
+ 	chip->freq_table = awacs_freqs;
++	chip->pdev = NULL;
+ 
+ 	chip->control_mask = MASK_IEPC | MASK_IEE | 0x11; /* default */
+ 
