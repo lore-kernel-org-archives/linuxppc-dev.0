@@ -1,16 +1,21 @@
-Return-Path: <chinafeng2008@163.com>
-Received: from 163.com (m12-12.163.com [220.181.12.12])
-	by ozlabs.org (Postfix) with SMTP id 69DF167A76
+Return-Path: <grant.likely@secretlab.ca>
+Received: from localhost.localdomain (S0106001346b91f0f.cg.shawcable.net
+	[68.147.210.21]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4BF2C689DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Jan 2006 17:05:25 +1100 (EST)
-Date: Mon, 9 Jan 2006 12:34:11 +0800
-From: "feng" <chinafeng2008@163.com>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+	Mon,  9 Jan 2006 19:33:07 +1100 (EST)
+In-Reply-To: <11367955793438-git-send-email-grant.likely@secretlab.ca>
+Date: Mon, 9 Jan 2006 01:32:59 -0700
+Message-Id: <1136795579724-git-send-email-grant.likely@secretlab.ca>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Message-Id: <43C1FD20.0B92A5.24585>
-Subject: FEC       CONFIG_FEC_PACKETHOOK
+Content-Type: text/plain; charset="iso-8859-1"
+To: glikely@gmail.com, mporter@kernel.crashing.org,
+	linuxppc-embedded@ozlabs.org, gnathita@gmail.com, dhlii@dlasys.net
+From: grant.likely@secretlab.ca
+Subject: [PATCH 01/10] Move xparameters.h into xilinx virtex device specific
+	path
+Reply-To: grant.likely@secretlab.ca
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,13 +26,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+xparameters should not be needed by anything but virtex platform code.
+Move it from include/asm-ppc/ to platforms/4xx/xparameters/
 
-DQpIZWxsbyxldmVyeWJvYnkNCg0KICAgICAgICAganVzdCBsb29rZWQgaW50byB0aGUgOHh4IGZl
-Yy5jIHNvdXJjZXMgb2YgMi40LjE4IHRyZWUgYW5kIGRpc2NvdmVyZWQgdGhlcmUNCiAgICAgIGlz
-IGEgQ09ORklHX0ZFQ19QQUNLRVRIT09LIG9wdGlvbi4gQ291bGRudCBmaW5kIGFueSBmdXJ0aGVy
-IGluZm9ybWF0aW9uDQogICAgICBhYm91dCBpdCwgbm90IGV2ZW4gdGhlIGluY2x1ZGVkIGxpbnV4
-L3BrdGhvb2suaCBmaWxlLiBIYXMgYW55b25lIG1vcmUNCiAgICAgIGluZm9ybWF0aW9uIHdoYXQg
-dGhpcyBpcyBmb3I/IA0KDQogICAgICBUaGFua3MgZm9yIGFueSBpbmZvcm1hdGlvbiwNCiAgICAg
-IEJlc3QgcmVncmFkcw0KDQqhoaGhoaGhoaGhoaGhoaGhIFJpY2hhcmQNCqGhoaGhoaGhoaGhoaGh
-oaEgY2hpbmFmZW5nMjAwOEAxNjMuY29tDQqhoaGhoaGhoaGhoaGhoaGhoaGhoTIwMDYtMDEtMDcN
-Cg==
+This is preparing for work to remove xparameters from the dependancy tree
+for most c files.  xparam changes should not cause a recompile of the world.
+Instead, drivers should get device info from the platform bus (populated
+by the boot code)
+
+Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
+
+---
+
+ arch/ppc/platforms/4xx/virtex-ii_pro.h           |    2 +-
+ arch/ppc/platforms/4xx/xparameters/xparameters.h |   18 ++++++++++++++++++
+ arch/ppc/syslib/xilinx_pic.c                     |    2 +-
+ include/asm-ppc/xparameters.h                    |   18 ------------------
+ 4 files changed, 20 insertions(+), 20 deletions(-)
+ create mode 100644 arch/ppc/platforms/4xx/xparameters/xparameters.h
+ delete mode 100644 include/asm-ppc/xparameters.h
+
+b1415bdd1572c849313b4cb67b38ab725ca31c4e
+diff --git a/arch/ppc/platforms/4xx/virtex-ii_pro.h b/arch/ppc/platforms/4xx/virtex-ii_pro.h
+index 9014c48..026130c 100644
+--- a/arch/ppc/platforms/4xx/virtex-ii_pro.h
++++ b/arch/ppc/platforms/4xx/virtex-ii_pro.h
+@@ -16,7 +16,7 @@
+ #define __ASM_VIRTEXIIPRO_H__
+ 
+ #include <linux/config.h>
+-#include <asm/xparameters.h>
++#include <platforms/4xx/xparameters/xparameters.h>
+ 
+ /* serial defines */
+ 
+diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+new file mode 100644
+index 0000000..fe4eac6
+--- /dev/null
++++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+@@ -0,0 +1,18 @@
++/*
++ * include/asm-ppc/xparameters.h
++ *
++ * This file includes the correct xparameters.h for the CONFIG'ed board
++ *
++ * Author: MontaVista Software, Inc.
++ *         source@mvista.com
++ *
++ * 2004 (c) MontaVista Software, Inc.  This file is licensed under the terms
++ * of the GNU General Public License version 2.  This program is licensed
++ * "as is" without any warranty of any kind, whether express or implied.
++ */
++
++#include <linux/config.h>
++
++#if defined(CONFIG_XILINX_ML300)
++#include <platforms/4xx/xparameters/xparameters_ml300.h>
++#endif
+diff --git a/arch/ppc/syslib/xilinx_pic.c b/arch/ppc/syslib/xilinx_pic.c
+index 47f04c7..848fb51 100644
+--- a/arch/ppc/syslib/xilinx_pic.c
++++ b/arch/ppc/syslib/xilinx_pic.c
+@@ -15,7 +15,7 @@
+ #include <linux/init.h>
+ #include <linux/irq.h>
+ #include <asm/io.h>
+-#include <asm/xparameters.h>
++#include <platforms/4xx/xparameters/xparameters.h>
+ #include <asm/ibm4xx.h>
+ #include <asm/machdep.h>
+ 
+diff --git a/include/asm-ppc/xparameters.h b/include/asm-ppc/xparameters.h
+deleted file mode 100644
+index fe4eac6..0000000
+--- a/include/asm-ppc/xparameters.h
++++ /dev/null
+@@ -1,18 +0,0 @@
+-/*
+- * include/asm-ppc/xparameters.h
+- *
+- * This file includes the correct xparameters.h for the CONFIG'ed board
+- *
+- * Author: MontaVista Software, Inc.
+- *         source@mvista.com
+- *
+- * 2004 (c) MontaVista Software, Inc.  This file is licensed under the terms
+- * of the GNU General Public License version 2.  This program is licensed
+- * "as is" without any warranty of any kind, whether express or implied.
+- */
+-
+-#include <linux/config.h>
+-
+-#if defined(CONFIG_XILINX_ML300)
+-#include <platforms/4xx/xparameters/xparameters_ml300.h>
+-#endif
+-- 
+1.0.6-g58e3
