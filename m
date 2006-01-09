@@ -1,21 +1,19 @@
-Return-Path: <kalle.pokki@iki.fi>
-Received: from smtp1.song.fi (smtp1.song.fi [194.100.2.121])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1CE7568A4E
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 704EA68A51
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Jan 2006 23:41:45 +1100 (EST)
-Received: from [194.100.64.94] (host94.eke.fi [194.100.64.94])
-	by smtp1.song.fi (Postfix) with ESMTP id 53CEB5F795
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Jan 2006 14:31:03 +0200 (EET)
-Message-ID: <43C25787.4010204@iki.fi>
-Date: Mon, 09 Jan 2006 14:31:03 +0200
-From: Kalle Pokki <kalle.pokki@iki.fi>
-MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Badness in dma_alloc_init
+	Tue, 10 Jan 2006 00:06:00 +1100 (EST)
+To: David Jander <david.jander@protonic.nl>
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 09 Jan 2006 09:45:21 +0100."
+	<200601090945.22564.david.jander@protonic.nl>
+Date: Mon, 09 Jan 2006 14:05:58 +0100
+Sender: wd@denx.de
+Message-Id: <20060109130558.9257A353A66@atlas.denx.de>
+Cc: HappyPhot <happyphot@gmail.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: VFS: Cannot open root device "31:03" or unknown-block(31,3) 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,34 +24,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+In message <200601090945.22564.david.jander@protonic.nl> you wrote:
+>
+> ELDK-3.1.1 has a glibc compiled with support of a certain version of the 
+> kernel (I guess it's 2.4.xx), so newer kernels might run (because they are 
 
-I'm having some trouble with the DMA allocation using Linux 2.6.14-rc2 + 
-some platform modifications. Namely, the dma_alloc_coherent() function 
-returns bogus virtual addresses causing machine check exceptions. At 
-boot, the kernel complains there is something wrong, but I cannot figure 
-out how to fix it. CONFIG_CONSISTENT_START is at its default value, 
-0xff100000. Any hints where to look further?
+They do run.
 
-Oh, this is a custom 8xx board. Has the support for DMA in 8xx been 
-unstable at the time of pre-2.6.14?
+> obviously backwards compatible), but some features of 2.6 cannot be used 
+> (e.g. support for the latest syscalls, different HZ, etc...)
 
-Linux version 2.6.14-rc2 (kp@host32.eke.fi) (gcc version 4.0.0 (DENX 
-ELDK 4.0 4.
-0.0)) #1 Mon Jan 9 12:53:41 EET 2006
-Built 1 zonelists
-Kernel command line: root=/dev/mtdblock1 ro console=ttyCPM0,115200
-PID hash table entries: 256 (order: 8, 4096 bytes)
-Decrementer Frequency = 247500000/60
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Memory: 30268k available (1608k kernel code, 376k data, 100k init, 0k 
-highmem)
-Mount-cache hash table entries: 512
-Badness in dma_alloc_init at arch/ppc/kernel/dma-mapping.c:348
-Call trace: [c0003670]  [c0003f24]  [c0003320]  [c01e2ad0]  [c000228c]  
-[c000551
-c]
+You can also change HZ if you like.
 
-... followed by otherwise good startup.
+> A second issue is the boot procedure. If you are a beginner with linux, you'd 
+> probably start booting from NFS root as it gets installed in the ELDK/ppc_xxx 
+> directory. That probably won't work very well with latest 2.6 kernels (device 
+> files missing, sysfs not mounted, shmfs has different name, etc...)
+
+You can (mis-) configre  a  2.4  kernel  too.  Using  a  sane  kernel
+configuration  ther  ewill  be  no  problems. We have been using ELDK
+3.1.1 for a long time ourself developing 2.6 kernel code.
+
+> > C++  programs  and  with  any version of the kernel tree (at least in
+> > theory; very recent version s of the Linux kernel [ > 2.6.14]  cannot
+> > be compiled with ELDK 3.1.x any more, but this is a different issue).
+> 
+> See what I mean? HappyPhot did just that: compile 2.6.14.2 with ELDK 3.1.1!!!
+
+I wrote "> 2.6.14"; 2.6.14.2 is just a branch off 2.6.14 and is  fine
+AFAICT.
+
+> > The ELDK supports *any* kernel version.
+> 
+> Ok, let's talk about "recommended" kernel then. I would never recommend 
+
+There is no recommended kernel version. On contrary,  we  take  great
+efforts  to keep the ELDK independent of speicfic kernelk versions as
+far as possible.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Quantum particles: The dreams that stuff is made of.
