@@ -2,19 +2,18 @@ Return-Path: <grant.likely@secretlab.ca>
 Received: from localhost.localdomain (S0106001346b91f0f.cg.shawcable.net
 	[68.147.210.21]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4E559689E1
+	by ozlabs.org (Postfix) with ESMTP id 96413689E9
 	for <linuxppc-embedded@ozlabs.org>;
 	Mon,  9 Jan 2006 19:33:07 +1100 (EST)
 In-Reply-To: <11367955793438-git-send-email-grant.likely@secretlab.ca>
 Date: Mon, 9 Jan 2006 01:33:00 -0700
-Message-Id: <11367955801988-git-send-email-grant.likely@secretlab.ca>
+Message-Id: <11367955802295-git-send-email-grant.likely@secretlab.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: glikely@gmail.com, mporter@kernel.crashing.org,
 	linuxppc-embedded@ozlabs.org, gnathita@gmail.com, dhlii@dlasys.net
 From: grant.likely@secretlab.ca
-Subject: [PATCH 03/10] Migrate Xilinx Vertex support from the OCP bus to the
-	platfom bus.
+Subject: [PATCH 06/10] Add xparameters file for Xilinx ML403 reference design
 Reply-To: grant.likely@secretlab.ca
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,361 +25,173 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This patch only deals with the serial port definitions as there is no
-support for any other xilinx IP cores in the kernel tree at the moment.
-
-Board specific configuration moved out of virtex.[ch] and into the
-xparameters.h wrapper.
-
-Board specific XPAR values now get bound to common defines with a 'VIRTEX_'
-prefix.  That way, xparameters_*.h files may be vastly different, but they
-can be wired up to use the same infrastructure.
-
-This also prepares for the transition to the flattened device tree model.
-When the bootloader provides a device tree generated from an xparameters.h
-files, the kernel will no longer need xparameters/*.  The platform bus will
-get populated with data from the device tree, and the device drivers will
-be automatically connected to the devices.  Only the bootloader (or
-ppcboot) will need xparameters directly.
-
 Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
 
 ---
 
- arch/ppc/boot/common/ns16550.c                   |    3 +
- arch/ppc/boot/simple/embed_config.c              |    3 +
- arch/ppc/platforms/4xx/Kconfig                   |    5 -
- arch/ppc/platforms/4xx/virtex.c                  |   98 +++++++++++-----------
- arch/ppc/platforms/4xx/virtex.h                  |   88 +++-----------------
- arch/ppc/platforms/4xx/xparameters/xparameters.h |   37 ++++++++
- include/asm-ppc/ppc_sys.h                        |    2 
- 7 files changed, 103 insertions(+), 133 deletions(-)
+ .../platforms/4xx/xparameters/xparameters_ml403.h  |  153 +++++++++++++++++++++++
+ 1 files changed, 153 insertions(+), 0 deletions(-)
+ create mode 100644 arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h
 
-8b2afec870997aa04027fefab80819b058891195
-diff --git a/arch/ppc/boot/common/ns16550.c b/arch/ppc/boot/common/ns16550.c
-index 26818bb..4f00c93 100644
---- a/arch/ppc/boot/common/ns16550.c
-+++ b/arch/ppc/boot/common/ns16550.c
-@@ -8,6 +8,9 @@
- #include <linux/serial_reg.h>
- #include <asm/serial.h>
- 
-+#if defined(CONFIG_XILINX_VIRTEX)
-+#include <platforms/4xx/xparameters/xparameters.h>
-+#endif
- #include "nonstdio.h"
- #include "serial.h"
- 
-diff --git a/arch/ppc/boot/simple/embed_config.c b/arch/ppc/boot/simple/embed_config.c
-index 491a691..df24202 100644
---- a/arch/ppc/boot/simple/embed_config.c
-+++ b/arch/ppc/boot/simple/embed_config.c
-@@ -21,6 +21,9 @@
- #ifdef CONFIG_40x
- #include <asm/io.h>
- #endif
-+#ifdef CONFIG_XILINX_VIRTEX
-+#include <platforms/4xx/xparameters/xparameters.h>
-+#endif
- extern unsigned long timebase_period_ns;
- 
- /* For those boards that don't provide one.
-diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
-index 73d9bef..cbb90fc 100644
---- a/arch/ppc/platforms/4xx/Kconfig
-+++ b/arch/ppc/platforms/4xx/Kconfig
-@@ -172,11 +172,6 @@ config IBM_OCP
- 	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || YUCCA || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
- 	default y
- 
--config XILINX_OCP
--	bool
--	depends on XILINX_ML300
--	default y
--
- config IBM_EMAC4
- 	bool
- 	depends on 440GX || 440SP || 440SPE
-diff --git a/arch/ppc/platforms/4xx/virtex.c b/arch/ppc/platforms/4xx/virtex.c
-index 1de7a27..27685f3 100644
---- a/arch/ppc/platforms/4xx/virtex.c
-+++ b/arch/ppc/platforms/4xx/virtex.c
-@@ -1,60 +1,58 @@
- /*
-  * arch/ppc/platforms/4xx/virtex.c
-  *
-- * Author: MontaVista Software, Inc.
-- *         source@mvista.com
-+ * Virtex-II Pro & Virtex-4 FX common infrastructure
-  *
-- * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed under the
-- * terms of the GNU General Public License version 2.  This program is licensed
-- * "as is" without any warranty of any kind, whether express or implied.
-+ * Maintainer: Grant Likely <grant.likely@secretlab.ca>
-+ *
-+ * Copyright 2005 Secret Lab Technologies Ltd.
-+ * Copyright 2005 General Dynamics Canada Ltd.
-+ * Copyright 2005 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-  */
- 
--#include <linux/config.h>
- #include <linux/init.h>
--#include <asm/ocp.h>
--#include <platform/4xx/virtex.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/serial_8250.h>
-+#include <asm/ppc_sys.h>
-+#include <platforms/4xx/virtex.h>
-+#include <platforms/4xx/xparameters/xparameters.h>
- 
--/* Have OCP take care of the serial ports. */
--struct ocp_def core_ocp[] = {
--#ifdef XPAR_UARTNS550_0_BASEADDR
--	{ .vendor	= OCP_VENDOR_XILINX,
--	  .function	= OCP_FUNC_16550,
--	  .index	= 0,
--	  .paddr	= XPAR_UARTNS550_0_BASEADDR,
--	  .irq		= XPAR_INTC_0_UARTNS550_0_VEC_ID,
--	  .pm		= OCP_CPM_NA
--	},
--#ifdef XPAR_UARTNS550_1_BASEADDR
--	{ .vendor	= OCP_VENDOR_XILINX,
--	  .function	= OCP_FUNC_16550,
--	  .index	= 1,
--	  .paddr	= XPAR_UARTNS550_1_BASEADDR,
--	  .irq		= XPAR_INTC_0_UARTNS550_1_VEC_ID,
--	  .pm		= OCP_CPM_NA
--	},
--#ifdef XPAR_UARTNS550_2_BASEADDR
--	{ .vendor	= OCP_VENDOR_XILINX,
--	  .function	= OCP_FUNC_16550,
--	  .index	= 2,
--	  .paddr	= XPAR_UARTNS550_2_BASEADDR,
--	  .irq		= XPAR_INTC_0_UARTNS550_2_VEC_ID,
--	  .pm		= OCP_CPM_NA
--	},
--#ifdef XPAR_UARTNS550_3_BASEADDR
--	{ .vendor	= OCP_VENDOR_XILINX,
--	  .function	= OCP_FUNC_16550,
--	  .index	= 3,
--	  .paddr	= XPAR_UARTNS550_3_BASEADDR,
--	  .irq		= XPAR_INTC_0_UARTNS550_3_VEC_ID,
--	  .pm		= OCP_CPM_NA
--	},
--#ifdef XPAR_UARTNS550_4_BASEADDR
--#error Edit this file to add more devices.
--#endif			/* 4 */
--#endif			/* 3 */
--#endif			/* 2 */
--#endif			/* 1 */
--#endif			/* 0 */
--	{ .vendor	= OCP_VENDOR_INVALID
-+#define VIRTEX_UART(num) { \
-+		.mapbase  = VIRTEX_UART_##num##_BASEADDR + 3, \
-+		.irq	  = VIRTEX_UART_##num##_IRQ, \
-+		.iotype	  = UPIO_MEM, \
-+		.uartclk  = VIRTEX_UART_##num##_CLK, \
-+		.flags	  = UPF_BOOT_AUTOCONF, \
-+		.regshift = 2, \
- 	}
+eb36da1d3ac7f931342c95ad753220ed2aec1a8e
+diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h b/arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h
+new file mode 100644
+index 0000000..9c2e0e8
+--- /dev/null
++++ b/arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h
+@@ -0,0 +1,153 @@
 +
-+struct plat_serial8250_port serial_platform_data[] = {
-+#ifdef VIRTEX_UART_0_BASEADDR
-+	VIRTEX_UART(0),
-+#endif
-+#ifdef VIRTEX_UART_1_BASEADDR
-+	VIRTEX_UART(1),
-+#endif
-+#ifdef VIRTEX_UART_2_BASEADDR
-+	VIRTEX_UART(2),
-+#endif
-+#ifdef VIRTEX_UART_3_BASEADDR
-+	VIRTEX_UART(3),
-+#endif
-+	{ }, /* terminated by empty record */
- };
++/*******************************************************************
++*
++* CAUTION: This file is automatically generated by libgen.
++* Version: Xilinx EDK 7.1.2 EDK_H.12.5.1
++* DO NOT EDIT.
++*
++* Copyright (c) 2005 Xilinx, Inc.  All rights reserved. 
++* 
++* Description: Driver parameters
++*
++*******************************************************************/
 +
-+struct platform_device ppc_sys_platform_devices[] = {
-+	[VIRTEX_UART] = {
-+		.name		= "serial8250",
-+		.id		= 0,
-+		.dev.platform_data = serial_platform_data,
-+	},
-+};
++#define STDIN_BASEADDRESS 0xA0000000
++#define STDOUT_BASEADDRESS 0xA0000000
 +
-diff --git a/arch/ppc/platforms/4xx/virtex.h b/arch/ppc/platforms/4xx/virtex.h
-index 049c767..1a01b81 100644
---- a/arch/ppc/platforms/4xx/virtex.h
-+++ b/arch/ppc/platforms/4xx/virtex.h
-@@ -15,85 +15,21 @@
- #ifndef __ASM_VIRTEX_H__
- #define __ASM_VIRTEX_H__
- 
--#include <linux/config.h>
--#include <platforms/4xx/xparameters/xparameters.h>
--
- /* serial defines */
- 
--#define RS_TABLE_SIZE  4	/* change this and add more devices below
--				   if you have more then 4 16x50 UARTs */
--
--#define BASE_BAUD		(XPAR_UARTNS550_0_CLOCK_FREQ_HZ/16)
--
--/* The serial ports in the Virtex-II Pro have each I/O byte in the
-- * LSByte of a word.  This means that iomem_reg_shift needs to be 2 to
-- * change the byte offsets into word offsets.  In addition the base
-- * addresses need to have 3 added to them to get to the LSByte.
-- */
--#define STD_UART_OP(num)						 \
--	{ 0, BASE_BAUD, 0, XPAR_INTC_0_UARTNS550_##num##_VEC_ID,	 \
--		ASYNC_BOOT_AUTOCONF,		 			 \
--		.iomem_base = (u8 *)XPAR_UARTNS550_##num##_BASEADDR + 3, \
--		.iomem_reg_shift = 2,					 \
--		.io_type = SERIAL_IO_MEM},
--
--#if defined(XPAR_INTC_0_UARTNS550_0_VEC_ID)
--#define ML300_UART0 STD_UART_OP(0)
--#else
--#define ML300_UART0
--#endif
--
--#if defined(XPAR_INTC_0_UARTNS550_1_VEC_ID)
--#define ML300_UART1 STD_UART_OP(1)
--#else
--#define ML300_UART1
--#endif
--
--#if defined(XPAR_INTC_0_UARTNS550_2_VEC_ID)
--#define ML300_UART2 STD_UART_OP(2)
--#else
--#define ML300_UART2
--#endif
--
--#if defined(XPAR_INTC_0_UARTNS550_3_VEC_ID)
--#define ML300_UART3 STD_UART_OP(3)
--#else
--#define ML300_UART3
--#endif
--
--#if defined(XPAR_INTC_0_UARTNS550_4_VEC_ID)
--#error Edit this file to add more devices.
--#elif defined(XPAR_INTC_0_UARTNS550_3_VEC_ID)
--#define NR_SER_PORTS	4
--#elif defined(XPAR_INTC_0_UARTNS550_2_VEC_ID)
--#define NR_SER_PORTS	3
--#elif defined(XPAR_INTC_0_UARTNS550_1_VEC_ID)
--#define NR_SER_PORTS	2
--#elif defined(XPAR_INTC_0_UARTNS550_0_VEC_ID)
--#define NR_SER_PORTS	1
--#else
--#define NR_SER_PORTS	0
--#endif
--
--#if defined(CONFIG_UART0_TTYS0)
--#define SERIAL_PORT_DFNS	\
--	ML300_UART0		\
--	ML300_UART1		\
--	ML300_UART2		\
--	ML300_UART3
--#endif
--
--#if defined(CONFIG_UART0_TTYS1)
--#define SERIAL_PORT_DFNS	\
--	ML300_UART1		\
--	ML300_UART0		\
--	ML300_UART2		\
--	ML300_UART3
--#endif
--
--#define DCRN_CPMFR_BASE	0
--
- #include <asm/ibm405.h>
- 
-+/* Ugly, ugly, ugly! BASE_BAUD defined here to keep 8250.c happy. */
-+#if !defined(BASE_BAUD)
-+ #define BASE_BAUD		(0) /* dummy value; not used */
-+#endif
-+  
-+/* Device type enumeration for platform bus definitions */
-+#ifndef __ASSEMBLY__
-+enum ppc_sys_devices {
-+	VIRTEX_UART,
-+};
-+#endif
-+  
- #endif				/* __ASM_VIRTEX_H__ */
- #endif				/* __KERNEL__ */
-diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-index fe4eac6..26ee822 100644
---- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
-+++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-@@ -1,7 +1,8 @@
- /*
-  * include/asm-ppc/xparameters.h
-  *
-- * This file includes the correct xparameters.h for the CONFIG'ed board
-+ * This file includes the correct xparameters.h for the CONFIG'ed board plus
-+ * fixups to translate board specific XPAR values to a common set of names
-  *
-  * Author: MontaVista Software, Inc.
-  *         source@mvista.com
-@@ -14,5 +15,37 @@
- #include <linux/config.h>
- 
- #if defined(CONFIG_XILINX_ML300)
--#include <platforms/4xx/xparameters/xparameters_ml300.h>
-+  #include "xparameters_ml300.h"
++/******************************************************************/
 +
-+  /* Serial ports; 0x1000 is added to base addr because 16550 IP core has
-+   * an offset between base address and the standard registers. */
-+  #define VIRTEX_UART_0_BASEADDR  (XPAR_OPB_UART16550_0_BASEADDR + 0x1000)
-+  #define VIRTEX_UART_0_IRQ  XPAR_DCR_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR
-+  #define VIRTEX_UART_0_CLK  XPAR_XUARTNS550_CLOCK_HZ
++#define XPAR_PLB_BRAM_IF_CNTLR_0_BASEADDR 0xFFFF0000
++#define XPAR_PLB_BRAM_IF_CNTLR_0_HIGHADDR 0xFFFFFFFF
 +
-+  #define VIRTEX_UART_1_BASEADDR  (XPAR_OPB_UART16550_1_BASEADDR + 0x1000)
-+  #define VIRTEX_UART_1_IRQ  XPAR_DCR_INTC_0_OPB_UART16550_1_IP2INTC_IRPT_INTR
-+  #define VIRTEX_UART_1_CLK  XPAR_XUARTNS550_CLOCK_HZ
++/******************************************************************/
 +
-+  /* Values for setting up interrupt controller */
-+  #define VIRTEX_XINTC_USE_DCR           XPAR_XINTC_USE_DCR
-+  #define VIRTEX_INTC_BASEADDR           XPAR_DCR_INTC_0_BASEADDR
-+  #define VIRTEX_INTC_KIND_OF_INTR       XPAR_DCR_INTC_0_KIND_OF_INTR
++#define XPAR_OPB_EMC_0_MEM0_BASEADDR 0x20000000
++#define XPAR_OPB_EMC_0_MEM0_HIGHADDR 0x200FFFFF
++#define XPAR_OPB_EMC_0_MEM1_BASEADDR 0x28000000
++#define XPAR_OPB_EMC_0_MEM1_HIGHADDR 0x287FFFFF
++#define XPAR_OPB_AC97_CONTROLLER_REF_0_BASEADDR 0xA6000000
++#define XPAR_OPB_AC97_CONTROLLER_REF_0_HIGHADDR 0xA60000FF
++#define XPAR_OPB_EMC_USB_0_MEM0_BASEADDR 0xA5000000
++#define XPAR_OPB_EMC_USB_0_MEM0_HIGHADDR 0xA50000FF
++#define XPAR_PLB_DDR_0_MEM0_BASEADDR 0x00000000
++#define XPAR_PLB_DDR_0_MEM0_HIGHADDR 0x0FFFFFFF
 +
-+#else
-+  /* Add other board xparameter includes here before the #else */
-+  #error No *_xparameters.h file included
-+#endif
++/******************************************************************/
 +
-+#ifndef SERIAL_PORT_DFNS
-+  /* zImage serial port definitions */
-+  #define RS_TABLE_SIZE        1
-+  #define SERIAL_PORT_DFNS {                                 \
-+        .baud_base       = VIRTEX_UART_0_CLK/16,             \
-+        .irq             = VIRTEX_UART_0_IRQ,                \
-+        .flags           = ASYNC_BOOT_AUTOCONF,              \
-+        .iomem_base      = (u8 *)VIRTEX_UART_0_BASEADDR + 3, \
-+        .iomem_reg_shift = 2,                                \
-+        .io_type         = SERIAL_IO_MEM,                    \
-+  },
- #endif
-diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
-index 83d8c77..bdc4dde 100644
---- a/include/asm-ppc/ppc_sys.h
-+++ b/include/asm-ppc/ppc_sys.h
-@@ -33,6 +33,8 @@
- #include <asm/mpc52xx.h>
- #elif defined(CONFIG_MPC10X_BRIDGE)
- #include <asm/mpc10x.h>
-+#elif defined(CONFIG_XILINX_VIRTEX)
-+#include <platforms/4xx/virtex.h>
- #else
- #error "need definition of ppc_sys_devices"
- #endif
++#define XPAR_XEMAC_NUM_INSTANCES 1
++#define XPAR_OPB_ETHERNET_0_BASEADDR 0x60000000
++#define XPAR_OPB_ETHERNET_0_HIGHADDR 0x60003FFF
++#define XPAR_OPB_ETHERNET_0_DEVICE_ID 0
++#define XPAR_OPB_ETHERNET_0_ERR_COUNT_EXIST 1
++#define XPAR_OPB_ETHERNET_0_DMA_PRESENT 1
++#define XPAR_OPB_ETHERNET_0_MII_EXIST 1
++#define XPAR_OPB_ETHERNET_0_CAM_EXIST 0
++#define XPAR_OPB_ETHERNET_0_JUMBO_EXIST 0
++
++/******************************************************************/
++
++#define XPAR_XUARTNS550_NUM_INSTANCES 1
++#define XPAR_XUARTNS550_CLOCK_HZ 100000000
++#define XPAR_OPB_UART16550_0_BASEADDR 0xA0000000
++#define XPAR_OPB_UART16550_0_HIGHADDR 0xA0001FFF
++#define XPAR_OPB_UART16550_0_DEVICE_ID 0
++
++/******************************************************************/
++
++#define XPAR_XGPIO_NUM_INSTANCES 3
++#define XPAR_OPB_GPIO_0_BASEADDR 0x90000000
++#define XPAR_OPB_GPIO_0_HIGHADDR 0x900001FF
++#define XPAR_OPB_GPIO_0_DEVICE_ID 0
++#define XPAR_OPB_GPIO_0_INTERRUPT_PRESENT 0
++#define XPAR_OPB_GPIO_0_IS_DUAL 1
++#define XPAR_OPB_GPIO_EXP_HDR_0_BASEADDR 0x90001000
++#define XPAR_OPB_GPIO_EXP_HDR_0_HIGHADDR 0x900011FF
++#define XPAR_OPB_GPIO_EXP_HDR_0_DEVICE_ID 1
++#define XPAR_OPB_GPIO_EXP_HDR_0_INTERRUPT_PRESENT 0
++#define XPAR_OPB_GPIO_EXP_HDR_0_IS_DUAL 1
++#define XPAR_OPB_GPIO_CHAR_LCD_0_BASEADDR 0x90002000
++#define XPAR_OPB_GPIO_CHAR_LCD_0_HIGHADDR 0x900021FF
++#define XPAR_OPB_GPIO_CHAR_LCD_0_DEVICE_ID 2
++#define XPAR_OPB_GPIO_CHAR_LCD_0_INTERRUPT_PRESENT 0
++#define XPAR_OPB_GPIO_CHAR_LCD_0_IS_DUAL 0
++
++/******************************************************************/
++
++#define XPAR_XPS2_NUM_INSTANCES 2
++#define XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_0 0
++#define XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_0 0xA9000000
++#define XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_0 (0xA9000000+0x3F)
++#define XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_1 1
++#define XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_1 (0xA9000000+0x1000)
++#define XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_1 (0xA9000000+0x103F)
++
++/******************************************************************/
++
++#define XPAR_XIIC_NUM_INSTANCES 1
++#define XPAR_OPB_IIC_0_BASEADDR 0xA8000000
++#define XPAR_OPB_IIC_0_HIGHADDR 0xA80001FF
++#define XPAR_OPB_IIC_0_DEVICE_ID 0
++#define XPAR_OPB_IIC_0_TEN_BIT_ADR 0
++#define XPAR_OPB_IIC_0_GPO_WIDTH 1
++
++/******************************************************************/
++
++#define XPAR_INTC_MAX_NUM_INTR_INPUTS 10
++#define XPAR_XINTC_HAS_IPR 1
++#define XPAR_XINTC_USE_DCR 0
++#define XPAR_XINTC_NUM_INSTANCES 1
++#define XPAR_OPB_INTC_0_BASEADDR 0xD1000FC0
++#define XPAR_OPB_INTC_0_HIGHADDR 0xD1000FDF
++#define XPAR_OPB_INTC_0_DEVICE_ID 0
++#define XPAR_OPB_INTC_0_KIND_OF_INTR 0x00000000
++
++/******************************************************************/
++
++#define XPAR_INTC_SINGLE_BASEADDR 0xD1000FC0
++#define XPAR_INTC_SINGLE_HIGHADDR 0xD1000FDF
++#define XPAR_INTC_SINGLE_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
++#define XPAR_OPB_ETHERNET_0_IP2INTC_IRPT_MASK 0X000001
++#define XPAR_OPB_INTC_0_OPB_ETHERNET_0_IP2INTC_IRPT_INTR 0
++#define XPAR_SYSTEM_USB_HPI_INT_MASK 0X000002
++#define XPAR_OPB_INTC_0_SYSTEM_USB_HPI_INT_INTR 1
++#define XPAR_MISC_LOGIC_0_PHY_MII_INT_MASK 0X000004
++#define XPAR_OPB_INTC_0_MISC_LOGIC_0_PHY_MII_INT_INTR 2
++#define XPAR_OPB_SYSACE_0_SYSACE_IRQ_MASK 0X000008
++#define XPAR_OPB_INTC_0_OPB_SYSACE_0_SYSACE_IRQ_INTR 3
++#define XPAR_OPB_AC97_CONTROLLER_REF_0_RECORD_INTERRUPT_MASK 0X000010
++#define XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_0_RECORD_INTERRUPT_INTR 4
++#define XPAR_OPB_AC97_CONTROLLER_REF_0_PLAYBACK_INTERRUPT_MASK 0X000020
++#define XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_0_PLAYBACK_INTERRUPT_INTR 5
++#define XPAR_OPB_IIC_0_IP2INTC_IRPT_MASK 0X000040
++#define XPAR_OPB_INTC_0_OPB_IIC_0_IP2INTC_IRPT_INTR 6
++#define XPAR_OPB_PS2_DUAL_REF_0_SYS_INTR2_MASK 0X000080
++#define XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR2_INTR 7
++#define XPAR_OPB_PS2_DUAL_REF_0_SYS_INTR1_MASK 0X000100
++#define XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR1_INTR 8
++#define XPAR_OPB_UART16550_0_IP2INTC_IRPT_MASK 0X000200
++#define XPAR_OPB_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR 9
++
++/******************************************************************/
++
++#define XPAR_XTFT_NUM_INSTANCES 1
++#define XPAR_PLB_TFT_CNTLR_REF_0_DCR_BASEADDR 0xD0000200
++#define XPAR_PLB_TFT_CNTLR_REF_0_DCR_HIGHADDR 0xD0000207
++#define XPAR_PLB_TFT_CNTLR_REF_0_DEVICE_ID 0
++
++/******************************************************************/
++
++#define XPAR_XSYSACE_MEM_WIDTH 16
++#define XPAR_XSYSACE_NUM_INSTANCES 1
++#define XPAR_OPB_SYSACE_0_BASEADDR 0xCF000000
++#define XPAR_OPB_SYSACE_0_HIGHADDR 0xCF0001FF
++#define XPAR_OPB_SYSACE_0_DEVICE_ID 0
++#define XPAR_OPB_SYSACE_0_MEM_WIDTH 16
++
++/******************************************************************/
++
++#define XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ 300000000
++
++/******************************************************************/
++
++#define XILFATFS_MAXFILES 5
++#define XILFATFS_BUFCACHE_SIZE 10240
 -- 
 1.0.6-g58e3
