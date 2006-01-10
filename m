@@ -1,20 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id DFA4B68778
+Return-Path: <vbordug@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 04BAE689C8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Jan 2006 19:23:07 +1100 (EST)
-To: "Jonathan Qiang" <jonathan@haliplex.com.au>
-From: Wolfgang Denk <wd@denx.de>
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 10 Jan 2006 14:06:18 +1100."
-	<32A7B31E4005134E8BA805EBAAFB9DCD9C7A1C@hellskitchen.haliplex.com.au>
-Date: Tue, 10 Jan 2006 09:23:04 +0100
-Sender: wd@denx.de
-Message-Id: <20060110082304.019AA352B1E@atlas.denx.de>
+	Tue, 10 Jan 2006 20:32:14 +1100 (EST)
+Message-ID: <43C37F1B.8000201@ru.mvista.com>
+Date: Tue, 10 Jan 2006 12:32:11 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+MIME-Version: 1.0
+To: Jonathan Qiang <jonathan@haliplex.com.au>
+References: <32A7B31E4005134E8BA805EBAAFB9DCD9C7A1C@hellskitchen.haliplex.com.au>
+In-Reply-To: <32A7B31E4005134E8BA805EBAAFB9DCD9C7A1C@hellskitchen.haliplex.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 Subject: Re: [Problem] linux 2.6.14 kernel hang up after the uImage
-	uncompressed successfully
+ uncompressed successfully
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,25 +24,111 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <32A7B31E4005134E8BA805EBAAFB9DCD9C7A1C@hellskitchen.haliplex.com.au> you wrote:
+Jonathan Qiang wrote:
+> Hi,
 > 
-> I am doing booting linux kernel 2.6.14.5 from kernel.org on a kind of
-> embedded ppc board, where the chip mpc8272 has been settled.
-> But  after u-boot(1.1.4) finished booting itself and uncompressed the
-> uImage(2.6.14.5 based). the kernel can not boot
-> Successfully. It stop somewhere. the script is below: 
+>  
+> 
+> I am doing booting linux kernel 2.6.14.5 from kernel.org on a kind of 
+> *embedded ppc board, where the chip mpc8272 has been settled.*
+> 
+> *But  after u-boot(1.1.4) finished booting itself and uncompressed the 
+> uImage(2.6.14.5 based). the kernel can not boot*
+> 
+This looks like odd or incomplete bootargs. Please search the list for relevant issues,
+the likewise questions has been answered several times by me at least.
 
-Read a FAQ: http://www.denx.de/wiki/view/DULG/FaqLinux
+> *Successfully. It stop somewhere. the script is below: *
+> 
+> * *
+> 
+> * *
+> 
+> U-Boot 1.1.4 (Jan  3 2006 - 15:00:41)
+> 
+>  
+> 
+> MPC8272 Reset Status: Check Stop, External Soft, External Hard
+> 
+>  
+> 
+> MPC8272 Clock Configuration
+> 
+>  - Bus-to-Core Mult 5x, VCO Div 2, 60x Bus Freq  20-60 , Core Freq 100-300
+> 
+>  - dfbrg 1, corecnf 0x1b, busdf 7, cpmdf 1, plldf 0, pllmf 7
+> 
+>  - vco_out  528000000, scc_clk  132000000, brg_clk   33000000
+> 
+>  - cpu_clk  330000000, cpm_clk  264000000, bus_clk   66000000
+> 
+>  - pci_clk   22000000
+> 
+>  
+> 
+> CPU:   MPC8272 (HiP7 Rev 14, Mask 1.0 1K50M) at 330 MHz
+> 
+> I2C:   ready
+> 
+> DRAM:  SDRAM configuration:
+> 
+>         Refresh rate = 47, CAS latency = 3, Using Page Based Interleave
+> 
+>         Total size: 32 MB
+> 
+> FLASH Dectected: FLASH MFP, new id is 0x0089, Device ID is 0x8922
+> 
+> 32 MB
+> 
+> In:    serial
+> 
+> Out:   serial
+> 
+> Err:   serial
+> 
+> Ethos version: ac21 (DEVID:ac2, DEVVER:1, MFGVER: 1)
+> 
+> CFG_CMXFCR_VALUE=0x00370000, CFG_CMXFCR_MASK=0x007F0000
+> 
+> Net:   FCC2 ETHERNET
+> 
+> Hit any key to stop autoboot:  0
+> 
+> Using FCC2 ETHERNET device
+> 
+> ## Booting image at 00200000 ...
+> 
+>    Image Name:   Linux-2.6.14.5
+> 
+>    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+> 
+>    Data Size:    750080 Bytes = 732.5 kB
+> 
+>    Load Address: 00000000
+> 
+>    Entry Point:  00000000
+> 
+>    Verifying Checksum ... OK
+> 
+>    Uncompressing Kernel Image ... OK
+> 
+>  
+> 
+> Then I have tried to use BDI2000 to debug the kernel, It seems that the 
+> kernel can passed on console_init function. But still no message came 
+> out even printk(KERN_NOTICE);  and printk(linux_banner);
+> 
+>  
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-Try a port mortem dump of the log buffer area.
-
-Best regards,
-
-Wolfgang Denk
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"A fractal is by definition a set for which the Hausdorff Besicovitch
-dimension strictly exceeds the topological dimension."
-- Mandelbrot, _The Fractal Geometry of Nature_
+Sincerely, 
+Vitaly
