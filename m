@@ -1,13 +1,18 @@
-Return-Path: <r26191@freescale.com>
-Message-ID: <3140C9D90FB6D911ABD7000F206DC92603D6DE49@zhk08exm40.ap.freescale.net>
-From: Ho Jeffrey-r26191 <r26191@freescale.com>
-To: "'hubert.loewenguth'" <hubert.loewenguth@thales-bm.com>,
-	Linuxppc-embedded@ozlabs.org
-Date: Tue, 10 Jan 2006 10:26:59 +0800
+Return-Path: <jonathan@haliplex.com.au>
+Received: from hellskitchen.haliplex.com.au
+	(dsl-202-45-109-210.VIC.netspace.net.au [202.45.109.210])
+	by ozlabs.org (Postfix) with ESMTP id 1DE18689AC
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 10 Jan 2006 14:15:18 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6158D.558EC2E7"
-Subject: RE: mpc8260 fcc enet transmit time out
+	boundary="----_=_NextPart_001_01C61592.D3BD1288"
+Date: Tue, 10 Jan 2006 14:06:18 +1100
+Message-ID: <32A7B31E4005134E8BA805EBAAFB9DCD9C7A1C@hellskitchen.haliplex.com.au>
+From: "Jonathan Qiang" <jonathan@haliplex.com.au>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: [Problem] linux 2.6.14 kernel hang up after the uImage uncompressed
+	successfully
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,341 +23,480 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C6158D.558EC2E7
-Content-Type: text/plain
+------_=_NextPart_001_01C61592.D3BD1288
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-On MPC8560 port of linuxppc-2.4, on the Gianfar driver for TSEC and FEC, there is a mode call phy polling mode can be enable.
- 
-In one of our hw, we are using realtek 10/100phy which don't have interrupt as well.
-We config that phy to use the polling mode in Gianfar. We can do plug and unplug with no problem.
-My suggetsion is to check how that driver do the polling and use it with your fcc_enet.
+Hi,
+=20
+I am doing booting linux kernel 2.6.14.5 from kernel.org on a kind of
+embedded ppc board, where the chip mpc8272 has been settled.
+But  after u-boot(1.1.4) finished booting itself and uncompressed the
+uImage(2.6.14.5 based). the kernel can not boot
+Successfully. It stop somewhere. the script is below:=20
+=20
+=20
+U-Boot 1.1.4 (Jan  3 2006 - 15:00:41)
+=20
+MPC8272 Reset Status: Check Stop, External Soft, External Hard
+=20
+MPC8272 Clock Configuration
+ - Bus-to-Core Mult 5x, VCO Div 2, 60x Bus Freq  20-60 , Core Freq
+100-300
+ - dfbrg 1, corecnf 0x1b, busdf 7, cpmdf 1, plldf 0, pllmf 7
+ - vco_out  528000000, scc_clk  132000000, brg_clk   33000000
+ - cpu_clk  330000000, cpm_clk  264000000, bus_clk   66000000
+ - pci_clk   22000000
+=20
+CPU:   MPC8272 (HiP7 Rev 14, Mask 1.0 1K50M) at 330 MHz
+I2C:   ready
+DRAM:  SDRAM configuration:
+        Refresh rate =3D 47, CAS latency =3D 3, Using Page Based =
+Interleave
+        Total size: 32 MB
+FLASH Dectected: FLASH MFP, new id is 0x0089, Device ID is 0x8922
+32 MB
+In:    serial
+Out:   serial
+Err:   serial
+Ethos version: ac21 (DEVID:ac2, DEVVER:1, MFGVER: 1)
+CFG_CMXFCR_VALUE=3D0x00370000, CFG_CMXFCR_MASK=3D0x007F0000
+Net:   FCC2 ETHERNET
+Hit any key to stop autoboot:  0
+Using FCC2 ETHERNET device
+## Booting image at 00200000 ...
+   Image Name:   Linux-2.6.14.5
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    750080 Bytes =3D 732.5 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK=20
+=20
+Then I have tried to use BDI2000 to debug the kernel, It seems that the
+kernel can passed on console_init function. But still no message came
+out even printk(KERN_NOTICE);  and printk(linux_banner);=20
+=20
 
-Regards, 
-Jeffrey Ho 
-Freescale Semiconductor HK Ltd 
-Tel: 852-26668050 
+------_=_NextPart_001_01C61592.D3BD1288
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
- 
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DProgId content=3DWord.Document>
+<meta name=3DGenerator content=3D"Microsoft Word 10">
+<meta name=3DOriginator content=3D"Microsoft Word 10">
+<link rel=3DFile-List href=3D"cid:filelist.xml@01C615EF.067C8A30">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"time"/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"date"/>
+<!--[if gte mso 9]><xml>
+ <o:OfficeDocumentSettings>
+  <o:DoNotRelyOnCSS/>
+ </o:OfficeDocumentSettings>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:DocumentKind>DocumentEmail</w:DocumentKind>
+  <w:EnvelopeVis/>
+  <w:Compatibility>
+   <w:BreakWrappedTables/>
+   <w:SnapToGridInCell/>
+   <w:WrapTextWithPunct/>
+   <w:UseAsianBreakRules/>
+   <w:UseFELayout/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:SimSun;
+	panose-1:2 1 6 0 3 1 1 1 1 1;
+	mso-font-alt:\5B8B\4F53;
+	mso-font-charset:134;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:3 135135232 16 0 262145 0;}
+@font-face
+	{font-family:"\@SimSun";
+	panose-1:2 1 6 0 3 1 1 1 1 1;
+	mso-font-charset:134;
+	mso-generic-font-family:auto;
+	mso-font-pitch:variable;
+	mso-font-signature:3 135135232 16 0 262145 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:SimSun;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	mso-style-noshow:yes;
+	mso-ansi-font-size:10.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;
+	color:windowtext;}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	mso-header-margin:35.4pt;
+	mso-footer-margin:35.4pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */=20
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]-->
+</head>
 
-  _____  
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple =
+style=3D'tab-interval:36.0pt'>
 
-From: linuxppc-embedded-bounces@ozlabs.org [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of hubert.loewenguth
-Sent: Tuesday, January 10, 2006 1:27 AM
-To: Linuxppc-embedded@ozlabs.org
-Subject: mpc8260 fcc enet transmit time out
+<div class=3DSection1>
 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi,<o:p></o:p></span></font></p>
 
-hi the community.
-I have already posted a question about my problem but it seems that nobody has encounter the same matter.
-So I have made numerous tests and researches and seeing that I still have not succeed in solving it, I try again tyo send you my bug.
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
 
-I use a MPC8260 with linux 2.4.20.
-The problem is with the fcc_enet driver.
-I have no MII phy interrupt line with my LXT971 Phy in front of the powerpc.
-Seeing that I have no interrupt line, I have configured the driver to be in half duplex, and the LXT971 too.
-I'm sure that the driver is in half-duplex mode an the LXT971 too, and the auto-negociation is ok.
-Everything works fine, but, if I do successive plugs/unplugs during important data transfert, The driver enter into an infinite loop:
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am doing booting <span class=3DSpellE>linux</span> =
+kernel 2.6.14.5
+from kernel.org on a kind of </span></font><b><font color=3Dblack><span
+style=3D'color:black;font-weight:bold'>embedded <span =
+class=3DSpellE>ppc</span>
+board, where the chip mpc8272 has been =
+settled.<o:p></o:p></span></font></b></p>
 
-# NETDEV WATCHDOG: eth0: transmit timed out
-eth0: transmit timed out.
- Ring data dump: cur_tx c019f748 tx_free 0 cur_rx c019f690.
- Tx @base c019f708 :
-1c00 055c 011cd06a
-5c00 003b 011cd86a
-...
-1c00 055c 011d486a
-3c00 05ea 011d406a
- Rx @base c019f608 :
-9c00 0040 01f3e000
-9c00 0040 01f3e800
-...
-9c00 0040 01f3d000
-bc00 0040 01f2f800
-NETDEV WATCHDOG: eth0: transmit timed out
-eth0: transmit timed out.
- Ring data dump: cur_tx c019f748 tx_free 0 cur_rx c019f698.
- Tx @base c019f708 :
-1c00 055c 011cd06a
-5c00 003b 011cd86a
-1c00 05ea 011ce06a
-.....
+<p class=3DMsoNormal><b><font size=3D3 color=3Dblack face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:black;font-weight:bold'>But <span
+style=3D'mso-spacerun:yes'>&nbsp;</span>after u-boot(1.1.4) finished =
+booting itself
+and uncompressed the <span class=3DSpellE>uImage</span>(2.6.14.5 based). =
+the
+kernel can not boot<o:p></o:p></span></font></b></p>
 
-I have found, on the linux-embended forum, a personn who has the same problem:
-http://ozlabs.org/pipermail/linuxppc-embedded/2001-December/005714.html <http://ozlabs.org/pipermail/linuxppc-embedded/2001-December/005714.html> 
-But I'm sure about my pin connections ans so the reponse to this personn doesn't solve my problem
+<p class=3DMsoNormal><b><font size=3D3 color=3Dblack face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:black;font-weight:bold'>Successfully. It =
+stop
+somewhere. the script is below: <o:p></o:p></span></font></b></p>
 
-More interresting this one :
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016539.html <http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016539.html> 
-This personn seems to have the same troubleshouting than me .
-He has tried to apply the patch provided by freescale, but it doesn't seem to correct it.
+<p class=3DMsoNormal><b><font size=3D3 color=3Dblack face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:black;font-weight:bold'><o:p>&nbsp;</o:p>=
+</span></font></b></p>
 
-So I have had just a little piece of trace in order to see when this infernal loop appear.
-I have added some trace in the fcc_enet_start_xmit .
-has you know, after some kind of transmit errors, the transmitter need to be restarted, and so I have added some traces to see when it is restarted
+<p class=3DMsoNormal><b><font size=3D3 color=3Dblack face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:black;font-weight:bold'><o:p>&nbsp;</o:p>=
+</span></font></b></p>
 
-    /* Some transmit errors cause the transmitter to shut
-         * down.  We now issue a restart transmit.  Since the
-         * errors close the BD and update the pointers, the restart
-         * _should_ pick up without having to reset any of our
-         * pointers either.  Also, To workaround 8260 device erratum 
-         * CPM37, we must disable and then re-enable the transmitter
-         * following a Late Collision, Underrun, or Retry Limit error.
-         */
-    
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>U-Boot 1.1.4 (</span></font><st1:date Month=3D"1" =
+Day=3D"3"
+Year=3D"2006"><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:
+ Arial'>Jan<span style=3D'mso-spacerun:yes'>&nbsp; </span>3 =
+2006</span></font></st1:date><font
+size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial'> - </span></font><st1:time
+Hour=3D"15" Minute=3D"0"><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+ font-family:Arial'>15:00:41</span></font></st1:time><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial'>)<o:p></o:p></span></font></=
+p>
 
-# UNDERRUN ! ==> RESTART
-CARRIER LOST !
-CARRIER LOST !
- UNDERRUN ! ==> RESTART
-CARRIER LOST !
-CARRIER LOST !
-UNDERRUN ! ==> RESTART
-UNDERRUN ! ==> RESTART
-CARRIER LOST !
-........
-CARRIER LOST !
-CARRIER LOST !
-UNDERRUN ! ==> RESTART
-CARRIER LOST !
-CARRIER LOST !
-CARRIER LOST !
-CARRIER LOST !
-CARRIER LOST !
-CARRIER LOST !
-CARRIER LOST !
-UNDERRUN ! ==> RESTART
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
 
-NETDEV WATCHDOG: eth0: transmit timed out
-eth0: transmit timed out.
- Ring data dump: cur_tx c019f778 tx_free 0 cur_rx c019f690.
- Tx @base c019f708 :
-1c02 055c 012cd86a
-9c00 05ea 012cd06a
-9c00 05ea 012f706a
-9c00 05ea 012cf06a
-9c00 05ea 012cf86a
-9c00 05ea 0118506a
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>MPC8272 Reset Status: Check Stop, External Soft, =
+External
+Hard<o:p></o:p></span></font></p>
 
-Some personns have said me to try with 2.6 drivers but it's exactly the same problem. 
-( even if I'm a little bit surprised to see that with the  2.6 version drivers seems to be uncompatible with boards wich use MDIO without PHY
-interrupt.the #define PHY_INTERRUPT condition of the 2.4 drivers version has
-disapeared => with this new drivers you can't use MDIO without PHY interrupt !!
-it was possible in the 2.4 version.
-- seeing that the "fep->link" value is enabled only on a PHY interrupt .
-I can't have this condition OK without PHY interrupt.
- "fep->link" can be asserted in the mii_parse_sr function, but has it is
-indicated in the comment in the drivers :
-"/* Somehow does the 971 tell me that the link is down
- * the first read after power-up.
- * read here to get a valid value in ack_int */"
-That's true, the LXT 971A tell that the link is down, and seeing that I
-have no interrupt, the fep->link is never asserted again.
-So, I have commented the first lines of the fcc_enet_start_xmit function
-which verify the value of fep->link.
-I have added a #ifdef PHY_INTERRUPT condition before installing the ISR
-for this interrupt.
-And thanks to that, I have been able to test the new driver 2.6 .
-But unfortunetly this doesn't solve my problem.)
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
 
-So 2.6 driver is not the solution of my problem.
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>MPC8272 Clock =
+Configuration<o:p></o:p></span></font></p>
 
-I'm asking myself if this can be due to CPM21, or CPM22, or CPM119 known bugs on mpc8260 ?
-(see http://www.freescale.com/files/32bit/doc/data_sheet/MPC8260CE.pdf <http://www.freescale.com/files/32bit/doc/data_sheet/MPC8260CE.pdf>  ) but I don't think so.
-Perhaps, I imagine that in fact the MPC8260 transmitter doesn't restart correctly ?
-        (Also, To workaround 8260 device erratum 
-         * CPM37, we must disable and then re-enable the transmitter
-         * following a Late Collision, Underrun, or Retry Limit error)
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;</span>- =
+Bus-to-Core <span
+class=3DSpellE>Mult</span> 5x, VCO Div 2, 60x Bus Freq<span
+style=3D'mso-spacerun:yes'>&nbsp; </span>20-60 , Core Freq =
+100-300<o:p></o:p></span></font></p>
 
-Is there anybody having encounter the same problem?
-Is there anybody having done some test of  numerous plug/unplug  during important data transfert with a half-duplex connection on mpc8260?
-Is there anybody having an idea to help me ?
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;</span>- <span
+class=3DSpellE>dfbrg</span> 1, <span class=3DSpellE>corecnf</span> 0x1b, =
+<span
+class=3DSpellE>busdf</span> 7, <span class=3DSpellE>cpmdf</span> 1, =
+<span
+class=3DSpellE>plldf</span> 0, <span class=3DSpellE>pllmf</span> =
+7<o:p></o:p></span></font></p>
 
-Thanks to the community for any help, I'm really desepareted here
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;</span>- <span
+class=3DSpellE>vco_out</span><span style=3D'mso-spacerun:yes'>&nbsp;
+</span>528000000, <span class=3DSpellE>scc_clk</span><span
+style=3D'mso-spacerun:yes'>&nbsp; </span>132000000, <span =
+class=3DSpellE>brg_clk</span><span
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>33000000<o:p></o:p></span></font></p>
 
-(PS : sorry for my bad english)
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;</span>- <span
+class=3DSpellE>cpu_clk</span><span style=3D'mso-spacerun:yes'>&nbsp;
+</span>330000000, <span class=3DSpellE>cpm_clk</span><span
+style=3D'mso-spacerun:yes'>&nbsp; </span>264000000, <span =
+class=3DSpellE>bus_clk</span><span
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>66000000<o:p></o:p></span></font></p>
 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;</span>- <span
+class=3DSpellE>pci_clk</span><span =
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;
+</span>22000000<o:p></o:p></span></font></p>
 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>CPU:<span style=3D'mso-spacerun:yes'>&nbsp;&nbsp;
+</span>MPC8272 (HiP7 Rev 14, Mask 1.0 1K50M) at 330 =
+MHz<o:p></o:p></span></font></p>
 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I2C:<span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>ready<o:p></o:p></span></font></p>
 
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>DRAM:<span style=3D'mso-spacerun:yes'>&nbsp; =
+</span>SDRAM
+configuration:<o:p></o:p></span></font></p>
 
-------_=_NextPart_001_01C6158D.558EC2E7
-Content-Type: text/html
-Content-Transfer-Encoding: base64
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span>Refresh rate =3D 47, CAS latency =3D 3, Using Page Based =
+Interleave<o:p></o:p></span></font></p>
 
-PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
-L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgSFRUUC1FUVVJVj0iQ29udGVudC1UeXBlIiBDT05U
-RU5UPSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9VVMtQVNDSUkiPg0KDQoNCjxNRVRBIGNvbnRlbnQ9Ik1T
-SFRNTCA2LjAwLjI4MDAuMTUyOCIgbmFtZT1HRU5FUkFUT1I+PC9IRUFEPg0KPEJPRFkgdGV4dD0j
-MDAwMDAwIGJnQ29sb3I9I2ZmZmZmZj4NCjxESVYgZGlyPWx0ciBhbGlnbj1sZWZ0PjxTUEFOIGNs
-YXNzPTU3OTA5MjQwMi0xMDAxMjAwNj48Rk9OVCBmYWNlPSYjMjYwMzI7JiMzMjA0ODsmIzI2MTI2
-OyYjMzk2MzY7IA0KY29sb3I9IzAwMDBmZiBzaXplPTI+T24gTVBDODU2MCBwb3J0IG9mIGxpbnV4
-cHBjLTIuNCwgb24gdGhlIEdpYW5mYXIgZHJpdmVyIGZvciANClRTRUMgYW5kIEZFQywgdGhlcmUg
-aXMgYSBtb2RlIGNhbGwgcGh5IHBvbGxpbmcgbW9kZSBjYW4gYmUgDQplbmFibGUuPC9GT05UPjwv
-U1BBTj48L0RJVj4NCjxESVYgZGlyPWx0ciBhbGlnbj1sZWZ0PjxTUEFOIGNsYXNzPTU3OTA5MjQw
-Mi0xMDAxMjAwNj48Rk9OVCBmYWNlPSYjMjYwMzI7JiMzMjA0ODsmIzI2MTI2OyYjMzk2MzY7IA0K
-Y29sb3I9IzAwMDBmZiBzaXplPTI+PC9GT05UPjwvU1BBTj4mbmJzcDs8L0RJVj4NCjxESVYgZGly
-PWx0ciBhbGlnbj1sZWZ0PjxTUEFOIGNsYXNzPTU3OTA5MjQwMi0xMDAxMjAwNj48Rk9OVCBmYWNl
-PSYjMjYwMzI7JiMzMjA0ODsmIzI2MTI2OyYjMzk2MzY7IA0KY29sb3I9IzAwMDBmZiBzaXplPTI+
-SW4gb25lIG9mIG91ciBodywgd2UgYXJlIHVzaW5nIHJlYWx0ZWsgMTAvMTAwcGh5IHdoaWNoIA0K
-ZG9uJ3QgaGF2ZSBpbnRlcnJ1cHQgYXMgd2VsbC48L0ZPTlQ+PC9TUEFOPjwvRElWPg0KPERJViBk
-aXI9bHRyIGFsaWduPWxlZnQ+PFNQQU4gY2xhc3M9NTc5MDkyNDAyLTEwMDEyMDA2PjxGT05UIGZh
-Y2U9JiMyNjAzMjsmIzMyMDQ4OyYjMjYxMjY7JiMzOTYzNjsgDQpjb2xvcj0jMDAwMGZmIHNpemU9
-Mj5XZSBjb25maWcgdGhhdCBwaHkgdG8gdXNlIHRoZSBwb2xsaW5nIG1vZGUgaW4gR2lhbmZhci4g
-V2UgDQpjYW4gZG8gcGx1ZyBhbmQgdW5wbHVnIHdpdGggbm8gcHJvYmxlbS48L0ZPTlQ+PC9TUEFO
-PjwvRElWPg0KPERJVj48U1BBTiBjbGFzcz01NzkwOTI0MDItMTAwMTIwMDY+PEZPTlQgZmFjZT0m
-IzI2MDMyOyYjMzIwNDg7JiMyNjEyNjsmIzM5NjM2OyBjb2xvcj0jMDAwMGZmIHNpemU9Mj5NeSAN
-CnN1Z2dldHNpb24gaXMgdG8gY2hlY2sgaG93IHRoYXQgZHJpdmVyIGRvIHRoZSBwb2xsaW5nIGFu
-ZCB1c2UgaXQgd2l0aCB5b3VyIA0KZmNjX2VuZXQuPC9GT05UPjwvU1BBTj48L0RJVj48IS0tIENv
-bnZlcnRlZCBmcm9tIHRleHQvcnRmIGZvcm1hdCAtLT4NCjxQPjxTUEFOIGxhbmc9ZW4tdXM+PEZP
-TlQgZmFjZT1BcmlhbCBzaXplPTI+UmVnYXJkcyw8L0ZPTlQ+PC9TUEFOPiA8QlI+PFNQQU4gDQps
-YW5nPWVuLXVzPjxGT05UIGZhY2U9QXJpYWwgc2l6ZT0yPkplZmZyZXkgSG88L0ZPTlQ+PC9TUEFO
-PiA8QlI+PFNQQU4gDQpsYW5nPWVuLXVzPjxGT05UIGZhY2U9QXJpYWwgc2l6ZT0yPkZyZWVzY2Fs
-ZSBTZW1pY29uZHVjdG9yIEhLIEx0ZDwvRk9OVD48L1NQQU4+IA0KPEJSPjxTUEFOIGxhbmc9ZW4t
-dXM+PEZPTlQgZmFjZT1BcmlhbCBzaXplPTI+VGVsOiANCjg1Mi0yNjY2ODA1MDwvRk9OVD48L1NQ
-QU4+PFNQQU4gbGFuZz16aC1oaz48L1NQQU4+IDwvUD4NCjxESVY+Jm5ic3A7PC9ESVY+PEJSPg0K
-PEJMT0NLUVVPVEUgDQpzdHlsZT0iUEFERElORy1MRUZUOiA1cHg7IE1BUkdJTi1MRUZUOiA1cHg7
-IEJPUkRFUi1MRUZUOiAjMDAwMGZmIDJweCBzb2xpZDsgTUFSR0lOLVJJR0hUOiAwcHgiPg0KICA8
-RElWIGNsYXNzPU91dGxvb2tNZXNzYWdlSGVhZGVyIGxhbmc9ZW4tdXMgZGlyPWx0ciBhbGlnbj1s
-ZWZ0Pg0KICA8SFIgdGFiSW5kZXg9LTE+DQogIDxGT05UIGZhY2U9VGFob21hIHNpemU9Mj48Qj5G
-cm9tOjwvQj4gbGludXhwcGMtZW1iZWRkZWQtYm91bmNlc0BvemxhYnMub3JnIA0KICBbbWFpbHRv
-OmxpbnV4cHBjLWVtYmVkZGVkLWJvdW5jZXNAb3psYWJzLm9yZ10gPEI+T24gQmVoYWxmIE9mIA0K
-ICA8L0I+aHViZXJ0LmxvZXdlbmd1dGg8QlI+PEI+U2VudDo8L0I+IFR1ZXNkYXksIEphbnVhcnkg
-MTAsIDIwMDYgMToyNyANCiAgQU08QlI+PEI+VG86PC9CPiBMaW51eHBwYy1lbWJlZGRlZEBvemxh
-YnMub3JnPEJSPjxCPlN1YmplY3Q6PC9CPiBtcGM4MjYwIGZjYyANCiAgZW5ldCB0cmFuc21pdCB0
-aW1lIG91dDxCUj48L0ZPTlQ+PEJSPjwvRElWPg0KICA8RElWPjwvRElWPmhpIHRoZSBjb21tdW5p
-dHkuPEJSPkkgaGF2ZSBhbHJlYWR5IHBvc3RlZCBhIHF1ZXN0aW9uIGFib3V0IG15IA0KICBwcm9i
-bGVtIGJ1dCBpdCBzZWVtcyB0aGF0IG5vYm9keSBoYXMgZW5jb3VudGVyIHRoZSBzYW1lIG1hdHRl
-ci48QlI+U28gSSBoYXZlIA0KICBtYWRlIG51bWVyb3VzIHRlc3RzIGFuZCByZXNlYXJjaGVzIGFu
-ZCBzZWVpbmcgdGhhdCBJIHN0aWxsIGhhdmUgbm90IHN1Y2NlZWQgaW4gDQogIHNvbHZpbmcgaXQs
-IEkgdHJ5IGFnYWluIHR5byBzZW5kIHlvdSBteSBidWcuPEJSPjxCUj5JIHVzZSBhIE1QQzgyNjAg
-d2l0aCBsaW51eCANCiAgMi40LjIwLjxCUj5UaGUgcHJvYmxlbSBpcyB3aXRoIHRoZSBmY2NfZW5l
-dCBkcml2ZXIuPEJSPkkgaGF2ZSBubyBNSUkgcGh5IA0KICBpbnRlcnJ1cHQgbGluZSB3aXRoIG15
-IExYVDk3MSBQaHkgaW4gZnJvbnQgb2YgdGhlIHBvd2VycGMuPEJSPlNlZWluZyB0aGF0IEkgDQog
-IGhhdmUgbm8gaW50ZXJydXB0IGxpbmUsIEkgaGF2ZSBjb25maWd1cmVkIHRoZSBkcml2ZXIgdG8g
-YmUgaW4gaGFsZiBkdXBsZXgsIGFuZCANCiAgdGhlIExYVDk3MSB0b28uPEJSPkknbSBzdXJlIHRo
-YXQgdGhlIGRyaXZlciBpcyBpbiBoYWxmLWR1cGxleCBtb2RlIGFuIHRoZSANCiAgTFhUOTcxIHRv
-bywgYW5kIHRoZSBhdXRvLW5lZ29jaWF0aW9uIGlzIG9rLjxCUj5FdmVyeXRoaW5nIHdvcmtzIGZp
-bmUsIGJ1dCwgaWYgDQogIEkgZG8gc3VjY2Vzc2l2ZSBwbHVncy91bnBsdWdzIGR1cmluZyBpbXBv
-cnRhbnQgZGF0YSB0cmFuc2ZlcnQsIFRoZSBkcml2ZXIgDQogIGVudGVyIGludG8gYW4gaW5maW5p
-dGUgbG9vcDo8QlI+PEJSPjxJPjxTTUFMTD4jIE5FVERFViBXQVRDSERPRzogZXRoMDogDQogIHRy
-YW5zbWl0IHRpbWVkIG91dDxCUj5ldGgwOiB0cmFuc21pdCB0aW1lZCBvdXQuPEJSPiZuYnNwO1Jp
-bmcgZGF0YSBkdW1wOiANCiAgY3VyX3R4IGMwMTlmNzQ4IHR4X2ZyZWUgMCBjdXJfcnggYzAxOWY2
-OTAuPEJSPiZuYnNwO1R4IEBiYXNlIGMwMTlmNzA4IA0KICA6PEJSPjFjMDAgMDU1YyAwMTFjZDA2
-YTxCUj41YzAwIDAwM2IgMDExY2Q4NmE8QlI+Li4uPEJSPjFjMDAgMDU1YyANCiAgMDExZDQ4NmE8
-QlI+M2MwMCAwNWVhIDAxMWQ0MDZhPEJSPiZuYnNwO1J4IEBiYXNlIGMwMTlmNjA4IDo8QlI+OWMw
-MCAwMDQwIA0KICAwMWYzZTAwMDxCUj45YzAwIDAwNDAgMDFmM2U4MDA8QlI+Li4uPEJSPjljMDAg
-MDA0MCAwMWYzZDAwMDxCUj5iYzAwIDAwNDAgDQogIDAxZjJmODAwPEJSPk5FVERFViBXQVRDSERP
-RzogZXRoMDogdHJhbnNtaXQgdGltZWQgb3V0PEJSPmV0aDA6IHRyYW5zbWl0IHRpbWVkIA0KICBv
-dXQuPEJSPiZuYnNwO1JpbmcgZGF0YSBkdW1wOiBjdXJfdHggYzAxOWY3NDggdHhfZnJlZSAwIGN1
-cl9yeCANCiAgYzAxOWY2OTguPEJSPiZuYnNwO1R4IEBiYXNlIGMwMTlmNzA4IDo8QlI+MWMwMCAw
-NTVjIDAxMWNkMDZhPEJSPjVjMDAgMDAzYiANCiAgMDExY2Q4NmE8QlI+MWMwMCAwNWVhIDAxMWNl
-MDZhPEJSPi4uLi4uPEJSPjxCUj48L1NNQUxMPjwvST5JIGhhdmUgZm91bmQsIG9uIA0KICB0aGUg
-bGludXgtZW1iZW5kZWQgZm9ydW0sIGEgcGVyc29ubiB3aG8gaGFzIHRoZSBzYW1lIHByb2JsZW06
-PEJSPjxGT05UIA0KICBjb2xvcj0jMzMzM2ZmPjxBIGNsYXNzPW1vei10eHQtbGluay1mcmVldGV4
-dCANCiAgaHJlZj0iaHR0cDovL296bGFicy5vcmcvcGlwZXJtYWlsL2xpbnV4cHBjLWVtYmVkZGVk
-LzIwMDEtRGVjZW1iZXIvMDA1NzE0Lmh0bWwiPmh0dHA6Ly9vemxhYnMub3JnL3BpcGVybWFpbC9s
-aW51eHBwYy1lbWJlZGRlZC8yMDAxLURlY2VtYmVyLzAwNTcxNC5odG1sPC9BPjwvRk9OVD48QlI+
-QnV0IA0KICBJJ20gc3VyZSBhYm91dCBteSBwaW4gY29ubmVjdGlvbnMgYW5zIHNvIHRoZSByZXBv
-bnNlIHRvIHRoaXMgcGVyc29ubiBkb2Vzbid0IA0KICBzb2x2ZSBteSBwcm9ibGVtPEJSPjxCUj5N
-b3JlIGludGVycmVzdGluZyB0aGlzIG9uZSA6PEJSPjxGT05UIGNvbG9yPSMzMzMzZmY+PEEgDQog
-IGNsYXNzPW1vei10eHQtbGluay1mcmVldGV4dCANCiAgaHJlZj0iaHR0cDovL296bGFicy5vcmcv
-cGlwZXJtYWlsL2xpbnV4cHBjLWVtYmVkZGVkLzIwMDUtSmFudWFyeS8wMTY1MzkuaHRtbCI+aHR0
-cDovL296bGFicy5vcmcvcGlwZXJtYWlsL2xpbnV4cHBjLWVtYmVkZGVkLzIwMDUtSmFudWFyeS8w
-MTY1MzkuaHRtbDwvQT48L0ZPTlQ+PEJSPlRoaXMgDQogIHBlcnNvbm4gc2VlbXMgdG8gaGF2ZSB0
-aGUgc2FtZSB0cm91Ymxlc2hvdXRpbmcgdGhhbiBtZSAuPEJSPkhlIGhhcyB0cmllZCB0byANCiAg
-YXBwbHkgdGhlIHBhdGNoIHByb3ZpZGVkIGJ5IGZyZWVzY2FsZSwgYnV0IGl0IGRvZXNuJ3Qgc2Vl
-bSB0byBjb3JyZWN0IA0KICBpdC48QlI+PEk+PFNNQUxMPjxCUj48L1NNQUxMPjwvST5TbyBJIGhh
-dmUgaGFkIGp1c3QgYSBsaXR0bGUgcGllY2Ugb2YgdHJhY2UgaW4gDQogIG9yZGVyIHRvIHNlZSB3
-aGVuIHRoaXMgaW5mZXJuYWwgbG9vcCBhcHBlYXIuPEJSPkkgaGF2ZSBhZGRlZCBzb21lIHRyYWNl
-IGluIHRoZSANCiAgZmNjX2VuZXRfc3RhcnRfeG1pdCAuPEJSPmhhcyB5b3Uga25vdywgYWZ0ZXIg
-c29tZSBraW5kIG9mIHRyYW5zbWl0IGVycm9ycywgdGhlIA0KICB0cmFuc21pdHRlciBuZWVkIHRv
-IGJlIHJlc3RhcnRlZCwgYW5kIHNvIEkgaGF2ZSBhZGRlZCBzb21lIHRyYWNlcyB0byBzZWUgd2hl
-biANCiAgaXQgaXMgcmVzdGFydGVkPEJSPjxCUj4mbmJzcDsmbmJzcDsmbmJzcDsgLyogU29tZSB0
-cmFuc21pdCBlcnJvcnMgY2F1c2UgdGhlIA0KICB0cmFuc21pdHRlciB0byBzaHV0PEJSPiZuYnNw
-OyZuYnNwOyZuYnNwOyAmbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7KiANCiAgZG93bi4mbmJzcDsg
-V2Ugbm93IGlzc3VlIGEgcmVzdGFydCB0cmFuc21pdC4mbmJzcDsgU2luY2UgDQogIHRoZTxCUj4m
-bmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwOyogZXJyb3JzIGNsb3Nl
-IHRoZSBCRCBhbmQgDQogIHVwZGF0ZSB0aGUgcG9pbnRlcnMsIHRoZSByZXN0YXJ0PEJSPiZuYnNw
-OyZuYnNwOyZuYnNwOyAmbmJzcDsmbmJzcDsmbmJzcDsgDQogICZuYnNwOyogX3Nob3VsZF8gcGlj
-ayB1cCB3aXRob3V0IGhhdmluZyB0byByZXNldCBhbnkgb2YgDQogIG91cjxCUj4mbmJzcDsmbmJz
-cDsmbmJzcDsgJm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwOyogcG9pbnRlcnMgZWl0aGVyLiZuYnNw
-OyANCiAgQWxzbywgVG8gd29ya2Fyb3VuZCA4MjYwIGRldmljZSBlcnJhdHVtIDxCUj4mbmJzcDsm
-bmJzcDsmbmJzcDsgDQogICZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDsqIENQTTM3LCB3ZSBtdXN0
-IGRpc2FibGUgYW5kIHRoZW4gcmUtZW5hYmxlIHRoZSANCiAgdHJhbnNtaXR0ZXI8QlI+Jm5ic3A7
-Jm5ic3A7Jm5ic3A7ICZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDsqIGZvbGxvd2luZyBhIExhdGUg
-DQogIENvbGxpc2lvbiwgVW5kZXJydW4sIG9yIFJldHJ5IExpbWl0IGVycm9yLjxCUj4mbmJzcDsm
-bmJzcDsmbmJzcDsgDQogICZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDsqLzxCUj4mbmJzcDsmbmJz
-cDsmbmJzcDsgDQogIDxCUj48QlI+PFNNQUxMPjxCSUc+PFNNQUxMPjxCSUc+PEZPTlQgDQogIGNv
-bG9yPSMwMDAwMDA+PFNNQUxMPiM8L1NNQUxMPjwvRk9OVD48L0JJRz48L1NNQUxMPjwvQklHPjwv
-U01BTEw+PFNNQUxMPjxCSUc+PFNNQUxMPjxCSUc+PEZPTlQgDQogIGNvbG9yPSMwMDAwMDA+PFNN
-QUxMPiBVTkRFUlJVTiAhID09Jmd0OyBSRVNUQVJUPEJSPkNBUlJJRVIgTE9TVCAhPEJSPkNBUlJJ
-RVIgDQogIExPU1QgDQogICE8QlI+PC9TTUFMTD48L0ZPTlQ+PC9CSUc+PC9TTUFMTD48L0JJRz48
-L1NNQUxMPjxTTUFMTD48QklHPjxTTUFMTD48QklHPjxGT05UIA0KICBjb2xvcj0jMDAwMDAwPjxT
-TUFMTD4mbmJzcDtVTkRFUlJVTiAhID09Jmd0OyBSRVNUQVJUPEJSPkNBUlJJRVIgTE9TVCANCiAg
-ITxCUj5DQVJSSUVSIExPU1QgITxCUj5VTkRFUlJVTiAhID09Jmd0OyBSRVNUQVJUPEJSPlVOREVS
-UlVOICEgPT0mZ3Q7IA0KICBSRVNUQVJUPEJSPkNBUlJJRVIgTE9TVCAhPEJSPi4uLi4uLi4uPEJS
-PkNBUlJJRVIgTE9TVCAhPEJSPkNBUlJJRVIgTE9TVCANCiAgITxCUj5VTkRFUlJVTiAhID09Jmd0
-OyBSRVNUQVJUPEJSPkNBUlJJRVIgTE9TVCAhPEJSPkNBUlJJRVIgTE9TVCAhPEJSPkNBUlJJRVIg
-DQogIExPU1QgITxCUj5DQVJSSUVSIExPU1QgITxCUj5DQVJSSUVSIExPU1QgITxCUj5DQVJSSUVS
-IExPU1QgITxCUj5DQVJSSUVSIExPU1QgDQogICE8QlI+VU5ERVJSVU4gISA9PSZndDsgUkVTVEFS
-VDxCUj48ST48QlI+TjwvST5FVERFViBXQVRDSERPRzogZXRoMDogdHJhbnNtaXQgDQogIHRpbWVk
-IG91dDxCUj5ldGgwOiB0cmFuc21pdCB0aW1lZCBvdXQuPEJSPiZuYnNwO1JpbmcgZGF0YSBkdW1w
-OiBjdXJfdHggDQogIGMwMTlmNzc4IHR4X2ZyZWUgMCBjdXJfcnggYzAxOWY2OTAuPEJSPiZuYnNw
-O1R4IEBiYXNlIGMwMTlmNzA4IDo8QlI+MWMwMiAwNTVjIA0KICAwMTJjZDg2YTxCUj45YzAwIDA1
-ZWEgMDEyY2QwNmE8QlI+OWMwMCAwNWVhIDAxMmY3MDZhPEJSPjljMDAgMDVlYSANCiAgMDEyY2Yw
-NmE8QlI+OWMwMCAwNWVhIDAxMmNmODZhPEJSPjljMDAgMDVlYSANCiAgMDExODUwNmE8L1NNQUxM
-PjwvRk9OVD48L0JJRz48L1NNQUxMPjwvQklHPjwvU01BTEw+PEJSPjxJPjxTTUFMTD48QlI+PC9T
-TUFMTD48L0k+U29tZSANCiAgcGVyc29ubnMgaGF2ZSBzYWlkIG1lIHRvIHRyeSB3aXRoIDIuNiBk
-cml2ZXJzIGJ1dCBpdCdzIGV4YWN0bHkgdGhlIHNhbWUgDQogIHByb2JsZW0uIDxCUj4oIGV2ZW4g
-aWYgSSdtIGEgbGl0dGxlIGJpdCBzdXJwcmlzZWQgdG8gc2VlIHRoYXQgd2l0aCB0aGUmbmJzcDsg
-DQogIDIuNiB2ZXJzaW9uIGRyaXZlcnMgc2VlbXMgdG8gYmUgdW5jb21wYXRpYmxlIHdpdGggYm9h
-cmRzIHdpY2ggdXNlIE1ESU8gd2l0aG91dCANCiAgUEhZPEJSPmludGVycnVwdC50aGUgI2RlZmlu
-ZSBQSFlfSU5URVJSVVBUIGNvbmRpdGlvbiBvZiB0aGUgMi40IGRyaXZlcnMgDQogIHZlcnNpb24g
-aGFzPEJSPmRpc2FwZWFyZWQgPSZndDsgd2l0aCB0aGlzIG5ldyBkcml2ZXJzIHlvdSBjYW4ndCB1
-c2UgTURJTyANCiAgd2l0aG91dCBQSFkgaW50ZXJydXB0ICEhPEJSPml0IHdhcyBwb3NzaWJsZSBp
-biB0aGUgMi40IHZlcnNpb24uPEJSPi0gc2VlaW5nIA0KICB0aGF0IHRoZSAiZmVwLSZndDtsaW5r
-IiB2YWx1ZSBpcyBlbmFibGVkIG9ubHkgb24gYSBQSFkgaW50ZXJydXB0IC48QlI+SSBjYW4ndCAN
-CiAgaGF2ZSB0aGlzIGNvbmRpdGlvbiBPSyB3aXRob3V0IFBIWSBpbnRlcnJ1cHQuPEJSPiZuYnNw
-OyJmZXAtJmd0O2xpbmsiIGNhbiBiZSANCiAgYXNzZXJ0ZWQgaW4gdGhlIG1paV9wYXJzZV9zciBm
-dW5jdGlvbiwgYnV0IGhhcyBpdCBpczxCUj5pbmRpY2F0ZWQgaW4gdGhlIA0KICBjb21tZW50IGlu
-IHRoZSBkcml2ZXJzIDo8QlI+Ii8qIFNvbWVob3cgZG9lcyB0aGUgOTcxIHRlbGwgbWUgdGhhdCB0
-aGUgbGluayBpcyANCiAgZG93bjxCUj4mbmJzcDsqIHRoZSBmaXJzdCByZWFkIGFmdGVyIHBvd2Vy
-LXVwLjxCUj4mbmJzcDsqIHJlYWQgaGVyZSB0byBnZXQgYSANCiAgdmFsaWQgdmFsdWUgaW4gYWNr
-X2ludCAqLyI8QlI+VGhhdCdzIHRydWUsIHRoZSBMWFQgOTcxQSB0ZWxsIHRoYXQgdGhlIGxpbmsg
-aXMgDQogIGRvd24sIGFuZCBzZWVpbmcgdGhhdCBJPEJSPmhhdmUgbm8gaW50ZXJydXB0LCB0aGUg
-ZmVwLSZndDtsaW5rIGlzIG5ldmVyIA0KICBhc3NlcnRlZCBhZ2Fpbi48QlI+U28sIEkgaGF2ZSBj
-b21tZW50ZWQgdGhlIGZpcnN0IGxpbmVzIG9mIHRoZSANCiAgZmNjX2VuZXRfc3RhcnRfeG1pdCBm
-dW5jdGlvbjxCUj53aGljaCB2ZXJpZnkgdGhlIHZhbHVlIG9mIGZlcC0mZ3Q7bGluay48QlI+SSAN
-CiAgaGF2ZSBhZGRlZCBhICNpZmRlZiBQSFlfSU5URVJSVVBUIGNvbmRpdGlvbiBiZWZvcmUgaW5z
-dGFsbGluZyB0aGUgSVNSPEJSPmZvciANCiAgdGhpcyBpbnRlcnJ1cHQuPEJSPkFuZCB0aGFua3Mg
-dG8gdGhhdCwgSSBoYXZlIGJlZW4gYWJsZSB0byB0ZXN0IHRoZSBuZXcgZHJpdmVyIA0KICAyLjYg
-LjxCUj5CdXQgdW5mb3J0dW5ldGx5IHRoaXMgZG9lc24ndCBzb2x2ZSBteSBwcm9ibGVtLik8QlI+
-PEJSPlNvIDIuNiBkcml2ZXIgDQogIGlzIG5vdCB0aGUgc29sdXRpb24gb2YgbXkgcHJvYmxlbS48
-QlI+PEJSPkknbSBhc2tpbmcgbXlzZWxmIGlmIHRoaXMgY2FuIGJlIGR1ZSANCiAgdG8gQ1BNMjEs
-IG9yIENQTTIyLCBvciBDUE0xMTkga25vd24gYnVncyBvbiBtcGM4MjYwID88QlI+KHNlZSA8QSAN
-CiAgY2xhc3M9bW96LXR4dC1saW5rLWZyZWV0ZXh0IA0KICBocmVmPSJodHRwOi8vd3d3LmZyZWVz
-Y2FsZS5jb20vZmlsZXMvMzJiaXQvZG9jL2RhdGFfc2hlZXQvTVBDODI2MENFLnBkZiI+aHR0cDov
-L3d3dy5mcmVlc2NhbGUuY29tL2ZpbGVzLzMyYml0L2RvYy9kYXRhX3NoZWV0L01QQzgyNjBDRS5w
-ZGY8L0E+IA0KICApIGJ1dCBJIGRvbid0IHRoaW5rIHNvLjxCUj5QZXJoYXBzLCBJIGltYWdpbmUg
-dGhhdCBpbiBmYWN0IHRoZSBNUEM4MjYwIA0KICB0cmFuc21pdHRlciBkb2Vzbid0IHJlc3RhcnQg
-Y29ycmVjdGx5ID88QlI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IA0KICAmbmJzcDsmbmJzcDsmbmJzcDsg
-KEFsc28sIFRvIHdvcmthcm91bmQgODI2MCBkZXZpY2UgZXJyYXR1bSANCiAgPEJSPiZuYnNwOyZu
-YnNwOyZuYnNwOyAmbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7KiBDUE0zNywgd2UgbXVzdCBkaXNh
-YmxlIGFuZCANCiAgdGhlbiByZS1lbmFibGUgdGhlIHRyYW5zbWl0dGVyPEJSPiZuYnNwOyZuYnNw
-OyZuYnNwOyAmbmJzcDsmbmJzcDsmbmJzcDsgDQogICZuYnNwOyogZm9sbG93aW5nIGEgTGF0ZSBD
-b2xsaXNpb24sIFVuZGVycnVuLCBvciBSZXRyeSBMaW1pdCBlcnJvcik8QlI+PEJSPklzIA0KICB0
-aGVyZSBhbnlib2R5IGhhdmluZyBlbmNvdW50ZXIgdGhlIHNhbWUgcHJvYmxlbT88QlI+SXMgdGhl
-cmUgYW55Ym9keSBoYXZpbmcgDQogIGRvbmUgc29tZSB0ZXN0IG9mJm5ic3A7IG51bWVyb3VzIHBs
-dWcvdW5wbHVnJm5ic3A7IGR1cmluZyBpbXBvcnRhbnQgZGF0YSANCiAgdHJhbnNmZXJ0IHdpdGgg
-YSBoYWxmLWR1cGxleCBjb25uZWN0aW9uIG9uIG1wYzgyNjA/PEJSPklzIHRoZXJlIGFueWJvZHkg
-aGF2aW5nIA0KICBhbiBpZGVhIHRvIGhlbHAgbWUgPzxCUj48QlI+VGhhbmtzIHRvIHRoZSBjb21t
-dW5pdHkgZm9yIGFueSBoZWxwLCBJJ20gcmVhbGx5IA0KICBkZXNlcGFyZXRlZCBoZXJlPEJSPjxC
-Uj4oUFMgOiBzb3JyeSBmb3IgbXkgYmFkIA0KZW5nbGlzaCk8QlI+PEJSPjxCUj48QlI+PC9CTE9D
-S1FVT1RFPjwvQk9EWT48L0hUTUw+DQo=
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span>Total size: 32 MB<o:p></o:p></span></font></p>
 
-------_=_NextPart_001_01C6158D.558EC2E7--
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>FLASH <span class=3DSpellE>Dectected</span>: FLASH =
+MFP, new id
+is 0x0089, Device ID is 0x8922<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>32 MB<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>In:<span =
+style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;
+</span>serial<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Out:<span style=3D'mso-spacerun:yes'>&nbsp;&nbsp;
+</span>serial<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Err:<span style=3D'mso-spacerun:yes'>&nbsp;&nbsp;
+</span>serial<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Ethos version: ac21 (DEVID:ac2, DEVVER:1, MFGVER: =
+1)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>CFG_CMXFCR_VALUE=3D0x00370000, =
+CFG_CMXFCR_MASK=3D0x007F0000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Net:<span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>FCC2
+ETHERNET<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hit any key to stop <span =
+class=3DSpellE>autoboot</span>:<span
+style=3D'mso-spacerun:yes'>&nbsp; </span>0<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Using FCC2 ETHERNET =
+device<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>## Booting image at 00200000 =
+...<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>Image
+Name:<span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>Linux-2.6.14.5<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>Image
+Type:<span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; </span>PowerPC Linux =
+Kernel
+Image (<span class=3DSpellE>gzip</span> =
+compressed)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>Data
+Size:<span style=3D'mso-spacerun:yes'>&nbsp;&nbsp;&nbsp; </span>750080 =
+Bytes =3D
+732.5 <span class=3DSpellE>kB</span><o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>Load
+Address: 00000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>Entry
+Point:<span style=3D'mso-spacerun:yes'>&nbsp; =
+</span>00000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp; =
+</span>Verifying
+Checksum ... OK<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><span style=3D'mso-spacerun:yes'>&nbsp;&nbsp;
+</span>Uncompressing Kernel Image ... OK <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Then I have tried to use BDI2000 to debug the kernel, =
+It
+seems that the kernel can passed on <span =
+class=3DSpellE>console_init</span>
+function. But still no message came out even <span =
+class=3DSpellE>printk</span>(KERN_NOTICE);<span
+style=3D'mso-tab-count:1'>&nbsp; </span>and <span =
+class=3DSpellE>printk</span>(<span
+class=3DSpellE>linux_banner</span>); <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+=00
+------_=_NextPart_001_01C61592.D3BD1288--
