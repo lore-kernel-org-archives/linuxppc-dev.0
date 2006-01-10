@@ -1,19 +1,29 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 29817689BE
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 10:35:05 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Date: Wed, 11 Jan 2006 00:34:58 +0100
-References: <200601091916.k09JGMJY004116@hera.kernel.org>
-	<20060110221313.GA24246@suse.de>
-In-Reply-To: <20060110221313.GA24246@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200601110034.58911.arnd@arndb.de>
-Cc: arndb@de.ibm.com, Olaf Hering <olh@suse.de>
-Subject: Re: [PATCH] powerpc: fix large nvram access
+Return-Path: <serue@us.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D211B689E1
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 08:20:27 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id k0ALKLwn027187
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jan 2006 16:20:21 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VERS6.8) with ESMTP id
+	k0ALKLu1116076
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jan 2006 16:20:21 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k0ALKL6w007778
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jan 2006 16:20:21 -0500
+Date: Tue, 10 Jan 2006 15:20:20 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Message-ID: <20060110212020.GB10837@sergelap.austin.ibm.com>
+References: <20060107052221.61d0b600.akpm@osdl.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060107052221.61d0b600.akpm@osdl.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: 2.6.15-mm2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,118 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Dienstag, 10. Januar 2006 23:13 schrieb Olaf Hering:
->  On Mon, Jan 09, Linux Kernel Mailing List wrote:
-> > tree da8f883f72d08f9534e9eca3bba662413b9bd865
-> > parent d52771fce4e774fa786097d34412a057d487c697
-> > author Arnd Bergmann <arnd@arndb.de> Fri, 09 Dec 2005 19:21:44 +0100
-> > committer Paul Mackerras <paulus@samba.org> Mon, 09 Jan 2006 14:53:31
-> > +1100
-> >
-> > [PATCH] powerpc: fix large nvram access
-> >
-> > /dev/nvram uses the user-provided read/write size
-> > for kmalloc, which fails, if a large number is passed.
-> > This will always use a single page at most, which
-> > can be expected to succeed.
-> >
-> > Signed-off-by: Arnd Bergmann <arndb@de.ibm.com>
-> > Signed-off-by: Paul Mackerras <paulus@samba.org>
-> >
-> >  arch/powerpc/kernel/nvram_64.c |  114
-> > +++++++++++++++++++----------------------
->
-> this change breaks my nvsetenv binary on JS20.
->
+Quoting Andrew Morton (akpm@osdl.org):
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.15/2.6.15-mm2/
 
-I think this has uncovered a bug that has been in nvsetenv for a long time.
+With both this and 2.6.15-mm1, but not with 2.6.15, I get the following
+error:
 
-> open("/dev/nvram", O_RDONLY)            = 3
-> read(3, "P\347\0\34of-config\0\0\0", 16) = 16
-> lseek(3, 432, SEEK_CUR)                 = 448
-> read(3, "p\375\2\0common\0\0\0\0\0\0", 16) = 16
-> read(3, "ibm,fw-phandle-enable?=false\0lit"..., 8176) = 4096
+mm/built-in.o(*ABS*+0x39c3c7ac): In function `__crc___handle_mm_fault':
+slab.c: multiple definition of `__crc___handle_mm_fault'
+make: *** [.tmp_vmlinux1] Error 1
 
-This is where my patch changed the behavior of the driver. It used to return all the data in one chunk, now it returns 4096 bytes at most.
+The culprit appears to be that there are two places where
+__handle_mm_fault is EXPORT_SYMBOL_GPLed.  The following trivial patch
+fixes it for me.
 
-> dup(2)                                  = 4
-> fcntl64(4, F_GETFL)                     = 0x2 (flags O_RDWR)
-> fstat64(4, {st_mode=S_IFCHR|0600, st_rdev=makedev(5, 1), ...}) = 0
-> ioctl(4, TCGETS, {B38400 opost isig icanon echo ...}) = 0
-> mmap(NULL, 131072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xf7fc0000 
-> _llseek(4, 0, 0xffd63fd8, SEEK_CUR)     = -1 ESPIPE 
-> (Illegal seek) 
-> write(4, "Error reading /dev/nvram: Succes"..., 34Error reading  /dev/nvram: Success ) = 34
-> close(4)                                = 0
-> munmap(0xf7fc0000, 131072)              = 0
-> exit_group(1)                           = ?
-> (none):/#
+Signed-off-by: Serge Hallyn <serue@us.ibm.com>
 
-And then it got here:
-
-|    if (lseek(nvfd, NVSTART, 0) < 0
-|        || read(nvfd, &nvbuf, NVSIZE) != NVSIZE) {
-|        perror("Error reading /dev/nvram");
-|        exit(EXIT_FAILURE);
-|    }
-
-I'm pretty sure that the failing _llseek is part of the perror 
-implementation and not the real problem, as we were first thinking.
-
-The problem is that nvsetenv bails out on a short read, while according 
-to the man page, "It is not an error if this number is smaller than the
-number of bytes requested". Of course, character devices often differ
-in their behavior from what is in the man pages for file I/O.
-
-I'd suggest we change both ends: nvsetenv should really be able to deal
-with a short read, and we can double the size of the kmalloc buffer
-for the kernel implementation. Please test the patch below.
-
----
-
-Subject: powerpc: fix nvsetenv regression with fixed nvram read/write
-
-reading from /dev/nvram was recently fixed to not try to allocate the
-user-defined amount of kernel memory. This broke the nvsetenv tool
-which relied on never getting short reads from /dev/nvram.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index fd7db8d..8da6e57 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -34,6 +34,15 @@
+Index: linux-2.6.15/arch/powerpc/kernel/ppc_ksyms.c
+===================================================================
+--- linux-2.6.15.orig/arch/powerpc/kernel/ppc_ksyms.c	2006-01-10 04:59:11.000000000 -0600
++++ linux-2.6.15/arch/powerpc/kernel/ppc_ksyms.c	2006-01-10 09:07:40.000000000 -0600
+@@ -240,8 +240,6 @@ EXPORT_SYMBOL(next_mmu_context);
+ EXPORT_SYMBOL(set_context);
+ #endif
  
- #undef DEBUG_NVRAM
- 
-+/*
-+ * Old nvsetenv versions expect us to be able to return 8kb
-+ * of data in a single read, so use that as a limit for short
-+ * reads.
-+ * We can't simply use the requested size because large
-+ * kmalloc allocations often fail.
-+ */
-+#define NVRAM_ALLOC_SIZE 8192
-+
- static int nvram_scan_partitions(void);
- static int nvram_setup_partition(void);
- static int nvram_create_os_partition(void);
-@@ -94,7 +103,7 @@ static ssize_t dev_nvram_read(struct fil
- 		goto out;
- 
- 	count = min_t(size_t, count, size - *ppos);
--	count = min(count, PAGE_SIZE);
-+	count = min(count, NVRAM_ALLOC_SIZE);
- 
- 	ret = -ENOMEM;
- 	tmp = kmalloc(count, GFP_KERNEL);
-@@ -131,7 +140,7 @@ static ssize_t dev_nvram_write(struct fi
- 		goto out;
- 
- 	count = min_t(size_t, count, size - *ppos);
--	count = min(count, PAGE_SIZE);
-+	count = min(count, NVRAM_ALLOC_SIZE);
- 
- 	ret = -ENOMEM;
- 	tmp = kmalloc(count, GFP_KERNEL);
+-EXPORT_SYMBOL_GPL(__handle_mm_fault);
+-
+ #ifdef CONFIG_PPC_STD_MMU_32
+ extern long mol_trampoline;
+ EXPORT_SYMBOL(mol_trampoline); /* For MOL */
+
+
+thanks,
+-serge
