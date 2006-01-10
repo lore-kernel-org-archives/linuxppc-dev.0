@@ -1,17 +1,13 @@
-Return-Path: <lcsquare2@yahoo.com.hk>
-Received: from web53712.mail.yahoo.com (web53712.mail.yahoo.com
-	[206.190.39.61]) by ozlabs.org (Postfix) with SMTP id 455D067A76
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Jan 2006 12:39:48 +1100 (EST)
-Message-ID: <20060110013947.66617.qmail@web53712.mail.yahoo.com>
-Date: Tue, 10 Jan 2006 09:39:47 +0800 (CST)
-From: Lo Chun Chung <lcsquare2@yahoo.com.hk>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-In-Reply-To: <43C2A6DD.5020202@ru.mvista.com>
+Return-Path: <r26191@freescale.com>
+Message-ID: <3140C9D90FB6D911ABD7000F206DC92603D6DE49@zhk08exm40.ap.freescale.net>
+From: Ho Jeffrey-r26191 <r26191@freescale.com>
+To: "'hubert.loewenguth'" <hubert.loewenguth@thales-bm.com>,
+	Linuxppc-embedded@ozlabs.org
+Date: Tue, 10 Jan 2006 10:26:59 +0800
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-2110968413-1136857187=:64055"
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Re: Enable a PCMCIA Bluetooth card in custom MPC860 system
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6158D.558EC2E7"
+Subject: RE: mpc8260 fcc enet transmit time out
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,158 +18,341 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-2110968413-1136857187=:64055
-Content-Type: text/plain; charset=big5
-Content-Transfer-Encoding: 8bit
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-Thanks for your hint. But the file is just for Linux Kernel Version 2.6, is this also OK for me? (I am using a 2.4 kernel)
-   
-  But I doubt that same technique can be applied since the Bluetooth should only be enabled when I loaded the pcmcia drivers (pcmcia_core.o, m8xx_pcmcia.o and ds.o), so .... 
-   
-  how can I pre-set some settings during boot-time that I have not yet insert the pcmcia modules into the kernel?
-   
-  Also the last thing is, since there is not "hotplug" in my system and resources allocation is different from standard PCs, so I cannot let my embedded system to auto-detect a standard uart has been added during the PCMCIA bluetooth card is plugged in (while standard PC will)
-   
-  or can anybody tell me that how can I realize hotplug in my system? (is this can be worked out?)
-   
-  Thanks
+------_=_NextPart_001_01C6158D.558EC2E7
+Content-Type: text/plain
 
-Vitaly Bordug <vbordug@ru.mvista.com> 說：
-  Lo Chun Chung wrote:
-> Dear all,
-> 
-> I am a student from Hong Kong. Now I am doing a project about enabling a 
-> Bluetooth PCMCIA card (Billionton PCBTC1A-B) in a custom MPC860PC.
-> 
-> (The custom MPC860 system is constructed by a MPC860 Processor Card and 
-> a custom made PCB to adding a PCMCIA interface to the processor Card.)
-> 
-> Now my stage is: the LINUX (Linux Kernel 2.4.25 from ELDK 3.1 for 
-> powerpc) can recognise the card by cardctl, and here are the screen dump:
-> 
-> / # cardctl ident
-> Socket 0:
-> product info: "PCMCIA", "Bluetooth Card", "", ""
-> manfid: 0x0279, 0x950b
-> function: 2 (serial)
-> / # cardctl status
-> Socket 0:
-> 5V 16-bit PC Card
-> function 0: [ready], [bat dead], [bat low]
-> / # cardctl info
-> PRODID_1="PCMCIA"
-> PRODID_2="Bluetooth Card"
-> PRODID_3=""
-> PRODID_4=""
-> MANFID=0279,950b
-> FUNCID=2
-> / # cardct! l config
-> Socket 0:
-> Vcc 5.0V Vpp1 5.0V Vpp2 5.0V
-> 
-> but after I load all the modules needed (should be these?)
-> 
-> / # lsmod
-> Module Size Used by Not tainted
-> hci_uart 14836 0 (unused)
-> l2cap 22956 0 (unused)
-> bluez 43856 0 [hci_uart l2cap]
-> ds 8060 0
-> m8xx_pcmcia 5164 1
-> pcmcia_core 39520 0 [ds m8xx_pcmcia]
-> 
-> my bluetooth still cannot get working ...
-> 
-> then I try to insert "serial_cs" as my bluetooth card is a uart base 
-> card. but some message given out:
-> 
-> / # insmod serial_cs
-> Using /lib/modules/2.4.25/serial_cs.o
-> insmod: unresolved symbol unregister_serial
-> insmod: unresolved symbol register_serial
-> 
-> so I realize that I should also insert "serial.o" into the linux, but 
-> crashes ...
-> 
-> / # insmod serial
-> Using /lib/modules/2.4.25/serial.o
-> Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ enabled
-> Machine check in kernel mode.
-> Caused by (from SRR1=1032): Transfer error ack signal
-> ! Oops: machine check, sig: 7
-> NIP: C3040078 XER: 00000000 LR: C3044724 SP: C1CC1D60 REGS: c1cc1cb0 
-> TRAP: 0200 No
-> t tainted
-> MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = c1cc0000[33] 'busybox' Last syscall: 128
-> last math 00000000 last altivec 00000000
-> GPR00: 00000000 C1CC1D60 C1CC0000 C1CC1D70 00000004 00000001 00000B4B 
-> C015378B
-> GPR08: 00000000 800003FC 00000003 C1CC1C70 C0170000 10084438 00000000 
-> 00000000
-> GPR16: 00000000 00000000 00000000 00000000 00009032 1016EDB0 C1D3A000 
-> C1CC1EA0
-> GPR24: C1F6B760 00000006 C304973C C1CC1D70 C3040000 00000000 00000000 
-> C3046348
-> Call backtrace:
-> C3044718 C3045188 C0012440 C00043BC 10080000 10021DF0 100238CC
-> 1000457C 100041A0 1000436C 1000457C 100041A0 0FE70EF4 00000000
-> 
-> I only knows when i insert the serial.o, this driver will try to access 
-> the standard uart which is not available in my system (my system only 
-> has one uart by SMC1), then the system will crash eac! h time the 
-> driver wants to access the registers does not available ...
-> 
-> The project deadline is near ... so I ask here ...
-> 
-> can anyone helps me or give me some clues?
-> 
-You should take a look for instance how 8349 does this job (arch/ppc/syslib/ppc83xx_setup.c) - it also has "standard" UART, but some stuff needs to be set up
-prior to serial.o. Of course that is not complete solution for your case, just a hint...
-> Thanks all
-> 
-> 
-> 
-> 
-> Best regards,
-> Chung
-> 
-> _______________________________________
-> YM - 離線訊息
-> 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何 
-> 說話都冇走失。
-> http://messenger.yahoo.com.hk
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+On MPC8560 port of linuxppc-2.4, on the Gianfar driver for TSEC and FEC, there is a mode call phy polling mode can be enable.
+ 
+In one of our hw, we are using realtek 10/100phy which don't have interrupt as well.
+We config that phy to use the polling mode in Gianfar. We can do plug and unplug with no problem.
+My suggetsion is to check how that driver do the polling and use it with your fcc_enet.
+
+Regards, 
+Jeffrey Ho 
+Freescale Semiconductor HK Ltd 
+Tel: 852-26668050 
+
+ 
 
 
--- 
-Sincerely, 
-Vitaly
-  
+  _____  
+
+From: linuxppc-embedded-bounces@ozlabs.org [mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of hubert.loewenguth
+Sent: Tuesday, January 10, 2006 1:27 AM
+To: Linuxppc-embedded@ozlabs.org
+Subject: mpc8260 fcc enet transmit time out
+
+
+hi the community.
+I have already posted a question about my problem but it seems that nobody has encounter the same matter.
+So I have made numerous tests and researches and seeing that I still have not succeed in solving it, I try again tyo send you my bug.
+
+I use a MPC8260 with linux 2.4.20.
+The problem is with the fcc_enet driver.
+I have no MII phy interrupt line with my LXT971 Phy in front of the powerpc.
+Seeing that I have no interrupt line, I have configured the driver to be in half duplex, and the LXT971 too.
+I'm sure that the driver is in half-duplex mode an the LXT971 too, and the auto-negociation is ok.
+Everything works fine, but, if I do successive plugs/unplugs during important data transfert, The driver enter into an infinite loop:
+
+# NETDEV WATCHDOG: eth0: transmit timed out
+eth0: transmit timed out.
+ Ring data dump: cur_tx c019f748 tx_free 0 cur_rx c019f690.
+ Tx @base c019f708 :
+1c00 055c 011cd06a
+5c00 003b 011cd86a
+...
+1c00 055c 011d486a
+3c00 05ea 011d406a
+ Rx @base c019f608 :
+9c00 0040 01f3e000
+9c00 0040 01f3e800
+...
+9c00 0040 01f3d000
+bc00 0040 01f2f800
+NETDEV WATCHDOG: eth0: transmit timed out
+eth0: transmit timed out.
+ Ring data dump: cur_tx c019f748 tx_free 0 cur_rx c019f698.
+ Tx @base c019f708 :
+1c00 055c 011cd06a
+5c00 003b 011cd86a
+1c00 05ea 011ce06a
+.....
+
+I have found, on the linux-embended forum, a personn who has the same problem:
+http://ozlabs.org/pipermail/linuxppc-embedded/2001-December/005714.html <http://ozlabs.org/pipermail/linuxppc-embedded/2001-December/005714.html> 
+But I'm sure about my pin connections ans so the reponse to this personn doesn't solve my problem
+
+More interresting this one :
+http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016539.html <http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016539.html> 
+This personn seems to have the same troubleshouting than me .
+He has tried to apply the patch provided by freescale, but it doesn't seem to correct it.
+
+So I have had just a little piece of trace in order to see when this infernal loop appear.
+I have added some trace in the fcc_enet_start_xmit .
+has you know, after some kind of transmit errors, the transmitter need to be restarted, and so I have added some traces to see when it is restarted
+
+    /* Some transmit errors cause the transmitter to shut
+         * down.  We now issue a restart transmit.  Since the
+         * errors close the BD and update the pointers, the restart
+         * _should_ pick up without having to reset any of our
+         * pointers either.  Also, To workaround 8260 device erratum 
+         * CPM37, we must disable and then re-enable the transmitter
+         * following a Late Collision, Underrun, or Retry Limit error.
+         */
+    
+
+# UNDERRUN ! ==> RESTART
+CARRIER LOST !
+CARRIER LOST !
+ UNDERRUN ! ==> RESTART
+CARRIER LOST !
+CARRIER LOST !
+UNDERRUN ! ==> RESTART
+UNDERRUN ! ==> RESTART
+CARRIER LOST !
+........
+CARRIER LOST !
+CARRIER LOST !
+UNDERRUN ! ==> RESTART
+CARRIER LOST !
+CARRIER LOST !
+CARRIER LOST !
+CARRIER LOST !
+CARRIER LOST !
+CARRIER LOST !
+CARRIER LOST !
+UNDERRUN ! ==> RESTART
+
+NETDEV WATCHDOG: eth0: transmit timed out
+eth0: transmit timed out.
+ Ring data dump: cur_tx c019f778 tx_free 0 cur_rx c019f690.
+ Tx @base c019f708 :
+1c02 055c 012cd86a
+9c00 05ea 012cd06a
+9c00 05ea 012f706a
+9c00 05ea 012cf06a
+9c00 05ea 012cf86a
+9c00 05ea 0118506a
+
+Some personns have said me to try with 2.6 drivers but it's exactly the same problem. 
+( even if I'm a little bit surprised to see that with the  2.6 version drivers seems to be uncompatible with boards wich use MDIO without PHY
+interrupt.the #define PHY_INTERRUPT condition of the 2.4 drivers version has
+disapeared => with this new drivers you can't use MDIO without PHY interrupt !!
+it was possible in the 2.4 version.
+- seeing that the "fep->link" value is enabled only on a PHY interrupt .
+I can't have this condition OK without PHY interrupt.
+ "fep->link" can be asserted in the mii_parse_sr function, but has it is
+indicated in the comment in the drivers :
+"/* Somehow does the 971 tell me that the link is down
+ * the first read after power-up.
+ * read here to get a valid value in ack_int */"
+That's true, the LXT 971A tell that the link is down, and seeing that I
+have no interrupt, the fep->link is never asserted again.
+So, I have commented the first lines of the fcc_enet_start_xmit function
+which verify the value of fep->link.
+I have added a #ifdef PHY_INTERRUPT condition before installing the ISR
+for this interrupt.
+And thanks to that, I have been able to test the new driver 2.6 .
+But unfortunetly this doesn't solve my problem.)
+
+So 2.6 driver is not the solution of my problem.
+
+I'm asking myself if this can be due to CPM21, or CPM22, or CPM119 known bugs on mpc8260 ?
+(see http://www.freescale.com/files/32bit/doc/data_sheet/MPC8260CE.pdf <http://www.freescale.com/files/32bit/doc/data_sheet/MPC8260CE.pdf>  ) but I don't think so.
+Perhaps, I imagine that in fact the MPC8260 transmitter doesn't restart correctly ?
+        (Also, To workaround 8260 device erratum 
+         * CPM37, we must disable and then re-enable the transmitter
+         * following a Late Collision, Underrun, or Retry Limit error)
+
+Is there anybody having encounter the same problem?
+Is there anybody having done some test of  numerous plug/unplug  during important data transfert with a half-duplex connection on mpc8260?
+Is there anybody having an idea to help me ?
+
+Thanks to the community for any help, I'm really desepareted here
+
+(PS : sorry for my bad english)
 
 
 
-Best regards,
-Chung
-_______________________________________
- YM - 離線訊息
- 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。
- http://messenger.yahoo.com.hk
---0-2110968413-1136857187=:64055
-Content-Type: text/html; charset=big5
-Content-Transfer-Encoding: 8bit
 
-<DIV>Thanks for your hint. But the file is just for Linux Kernel Version 2.6, is this also OK for me? (I am using a 2.4 kernel)</DIV>  <DIV>&nbsp;</DIV>  <DIV>But I doubt that same technique can be applied since the Bluetooth should only be enabled when I loaded the pcmcia drivers (pcmcia_core.o, m8xx_pcmcia.o and ds.o), so .... </DIV>  <DIV>&nbsp;</DIV>  <DIV>how can I pre-set some settings during boot-time that I have not yet insert the pcmcia modules into the kernel?</DIV>  <DIV>&nbsp;</DIV>  <DIV>Also the last thing is, since there is not "hotplug" in my system and resources allocation is different from standard PCs, so I cannot let my embedded system to auto-detect a standard uart has been added during the PCMCIA bluetooth card is plugged in (while standard PC will)</DIV>  <DIV>&nbsp;</DIV>  <DIV>or can anybody tell me that how can I realize hotplug in my system? (is this can be worked out?)</DIV>  <DIV>&nbsp;</DIV>  <DIV>Thanks<BR><BR><B><I>Vitaly Bordug
- &lt;vbordug@ru.mvista.com&gt;</I></B> 說：</DIV>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">Lo Chun Chung wrote:<BR>&gt; Dear all,<BR>&gt; <BR>&gt; I am a student from Hong Kong. Now I am doing a project about enabling a <BR>&gt; Bluetooth PCMCIA card (Billionton PCBTC1A-B) in a custom MPC860PC.<BR>&gt; <BR>&gt; (The custom MPC860 system is constructed by a MPC860 Processor Card and <BR>&gt; a custom made PCB to adding a PCMCIA interface to the processor Card.)<BR>&gt; <BR>&gt; Now my stage is: the LINUX (Linux Kernel 2.4.25 from ELDK 3.1 for <BR>&gt; powerpc) can recognise the card by cardctl, and here are the screen dump:<BR>&gt; <BR>&gt; / # cardctl ident<BR>&gt; Socket 0:<BR>&gt; product info: "PCMCIA", "Bluetooth Card", "", ""<BR>&gt; manfid: 0x0279, 0x950b<BR>&gt; function: 2 (serial)<BR>&gt; / # cardctl status<BR>&gt; Socket 0:<BR>&gt; 5V 16-bit PC Card<BR>&gt; function 0: [ready], [bat dead], [bat low]<BR>&gt; / #
- cardctl info<BR>&gt; PRODID_1="PCMCIA"<BR>&gt; PRODID_2="Bluetooth Card"<BR>&gt; PRODID_3=""<BR>&gt; PRODID_4=""<BR>&gt; MANFID=0279,950b<BR>&gt; FUNCID=2<BR>&gt; / # cardct! l config<BR>&gt; Socket 0:<BR>&gt; Vcc 5.0V Vpp1 5.0V Vpp2 5.0V<BR>&gt; <BR>&gt; but after I load all the modules needed (should be these?)<BR>&gt; <BR>&gt; / # lsmod<BR>&gt; Module Size Used by Not tainted<BR>&gt; hci_uart 14836 0 (unused)<BR>&gt; l2cap 22956 0 (unused)<BR>&gt; bluez 43856 0 [hci_uart l2cap]<BR>&gt; ds 8060 0<BR>&gt; m8xx_pcmcia 5164 1<BR>&gt; pcmcia_core 39520 0 [ds m8xx_pcmcia]<BR>&gt; <BR>&gt; my bluetooth still cannot get working ...<BR>&gt; <BR>&gt; then I try to insert "serial_cs" as my bluetooth card is a uart base <BR>&gt; card. but some message given out:<BR>&gt; <BR>&gt; / # insmod serial_cs<BR>&gt; Using /lib/modules/2.4.25/serial_cs.o<BR>&gt; insmod: unresolved symbol unregister_serial<BR>&gt; insmod: unresolved symbol register_serial<BR>&gt; <BR>&gt; so I realize that I should
- also insert "serial.o" into the linux, but <BR>&gt; crashes ...<BR>&gt; <BR>&gt; / # insmod serial<BR>&gt; Using /lib/modules/2.4.25/serial.o<BR>&gt; Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ enabled<BR>&gt; Machine check in kernel mode.<BR>&gt; Caused by (from SRR1=1032): Transfer error ack signal<BR>&gt; ! Oops: machine check, sig: 7<BR>&gt; NIP: C3040078 XER: 00000000 LR: C3044724 SP: C1CC1D60 REGS: c1cc1cb0 <BR>&gt; TRAP: 0200 No<BR>&gt; t tainted<BR>&gt; MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11<BR>&gt; TASK = c1cc0000[33] 'busybox' Last syscall: 128<BR>&gt; last math 00000000 last altivec 00000000<BR>&gt; GPR00: 00000000 C1CC1D60 C1CC0000 C1CC1D70 00000004 00000001 00000B4B <BR>&gt; C015378B<BR>&gt; GPR08: 00000000 800003FC 00000003 C1CC1C70 C0170000 10084438 00000000 <BR>&gt; 00000000<BR>&gt; GPR16: 00000000 00000000 00000000 00000000 00009032 1016EDB0 C1D3A000 <BR>&gt; C1CC1EA0<BR>&gt; GPR24: C1F6B760 00000006 C304973C C1CC1D70 C3040000
- 00000000 00000000 <BR>&gt; C3046348<BR>&gt; Call backtrace:<BR>&gt; C3044718 C3045188 C0012440 C00043BC 10080000 10021DF0 100238CC<BR>&gt; 1000457C 100041A0 1000436C 1000457C 100041A0 0FE70EF4 00000000<BR>&gt; <BR>&gt; I only knows when i insert the serial.o, this driver will try to access <BR>&gt; the standard uart which is not available in my system (my system only <BR>&gt; has one uart by SMC1), then the system will crash eac! h time the <BR>&gt; driver wants to access the registers does not available ...<BR>&gt; <BR>&gt; The project deadline is near ... so I ask here ...<BR>&gt; <BR>&gt; can anyone helps me or give me some clues?<BR>&gt; <BR>You should take a look for instance how 8349 does this job (arch/ppc/syslib/ppc83xx_setup.c) - it also has "standard" UART, but some stuff needs to be set up<BR>prior to serial.o. Of course that is not complete solution for your case, just a hint...<BR>&gt; Thanks all<BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; Best regards,<BR>&gt;
- Chung<BR>&gt; <BR>&gt; _______________________________________<BR>&gt; YM - 離線訊息<BR>&gt; 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何 <BR>&gt; 說話都冇走失。<BR>&gt; http://messenger.yahoo.com.hk<BR>&gt; <BR>&gt; <BR>&gt; ------------------------------------------------------------------------<BR>&gt; <BR>&gt; _______________________________________________<BR>&gt; Linuxppc-embedded mailing list<BR>&gt; Linuxppc-embedded@ozlabs.org<BR>&gt; https://ozlabs.org/mailman/listinfo/linuxppc-embedded<BR><BR><BR>-- <BR>Sincerely, <BR>Vitaly<BR></BLOCKQUOTE>  <DIV><BR></DIV><BR><BR>Best regards,<br>Chung<p>_______________________________________<br> YM - 離線訊息<br> 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。<br> http://messenger.yahoo.com.hk
---0-2110968413-1136857187=:64055--
+
+
+------_=_NextPart_001_01C6158D.558EC2E7
+Content-Type: text/html
+Content-Transfer-Encoding: base64
+
+PCFET0NUWVBFIEhUTUwgUFVCTElDICItLy9XM0MvL0RURCBIVE1MIDQuMCBUcmFuc2l0aW9uYWwv
+L0VOIj4NCjxIVE1MPjxIRUFEPg0KPE1FVEEgSFRUUC1FUVVJVj0iQ29udGVudC1UeXBlIiBDT05U
+RU5UPSJ0ZXh0L2h0bWw7IGNoYXJzZXQ9VVMtQVNDSUkiPg0KDQoNCjxNRVRBIGNvbnRlbnQ9Ik1T
+SFRNTCA2LjAwLjI4MDAuMTUyOCIgbmFtZT1HRU5FUkFUT1I+PC9IRUFEPg0KPEJPRFkgdGV4dD0j
+MDAwMDAwIGJnQ29sb3I9I2ZmZmZmZj4NCjxESVYgZGlyPWx0ciBhbGlnbj1sZWZ0PjxTUEFOIGNs
+YXNzPTU3OTA5MjQwMi0xMDAxMjAwNj48Rk9OVCBmYWNlPSYjMjYwMzI7JiMzMjA0ODsmIzI2MTI2
+OyYjMzk2MzY7IA0KY29sb3I9IzAwMDBmZiBzaXplPTI+T24gTVBDODU2MCBwb3J0IG9mIGxpbnV4
+cHBjLTIuNCwgb24gdGhlIEdpYW5mYXIgZHJpdmVyIGZvciANClRTRUMgYW5kIEZFQywgdGhlcmUg
+aXMgYSBtb2RlIGNhbGwgcGh5IHBvbGxpbmcgbW9kZSBjYW4gYmUgDQplbmFibGUuPC9GT05UPjwv
+U1BBTj48L0RJVj4NCjxESVYgZGlyPWx0ciBhbGlnbj1sZWZ0PjxTUEFOIGNsYXNzPTU3OTA5MjQw
+Mi0xMDAxMjAwNj48Rk9OVCBmYWNlPSYjMjYwMzI7JiMzMjA0ODsmIzI2MTI2OyYjMzk2MzY7IA0K
+Y29sb3I9IzAwMDBmZiBzaXplPTI+PC9GT05UPjwvU1BBTj4mbmJzcDs8L0RJVj4NCjxESVYgZGly
+PWx0ciBhbGlnbj1sZWZ0PjxTUEFOIGNsYXNzPTU3OTA5MjQwMi0xMDAxMjAwNj48Rk9OVCBmYWNl
+PSYjMjYwMzI7JiMzMjA0ODsmIzI2MTI2OyYjMzk2MzY7IA0KY29sb3I9IzAwMDBmZiBzaXplPTI+
+SW4gb25lIG9mIG91ciBodywgd2UgYXJlIHVzaW5nIHJlYWx0ZWsgMTAvMTAwcGh5IHdoaWNoIA0K
+ZG9uJ3QgaGF2ZSBpbnRlcnJ1cHQgYXMgd2VsbC48L0ZPTlQ+PC9TUEFOPjwvRElWPg0KPERJViBk
+aXI9bHRyIGFsaWduPWxlZnQ+PFNQQU4gY2xhc3M9NTc5MDkyNDAyLTEwMDEyMDA2PjxGT05UIGZh
+Y2U9JiMyNjAzMjsmIzMyMDQ4OyYjMjYxMjY7JiMzOTYzNjsgDQpjb2xvcj0jMDAwMGZmIHNpemU9
+Mj5XZSBjb25maWcgdGhhdCBwaHkgdG8gdXNlIHRoZSBwb2xsaW5nIG1vZGUgaW4gR2lhbmZhci4g
+V2UgDQpjYW4gZG8gcGx1ZyBhbmQgdW5wbHVnIHdpdGggbm8gcHJvYmxlbS48L0ZPTlQ+PC9TUEFO
+PjwvRElWPg0KPERJVj48U1BBTiBjbGFzcz01NzkwOTI0MDItMTAwMTIwMDY+PEZPTlQgZmFjZT0m
+IzI2MDMyOyYjMzIwNDg7JiMyNjEyNjsmIzM5NjM2OyBjb2xvcj0jMDAwMGZmIHNpemU9Mj5NeSAN
+CnN1Z2dldHNpb24gaXMgdG8gY2hlY2sgaG93IHRoYXQgZHJpdmVyIGRvIHRoZSBwb2xsaW5nIGFu
+ZCB1c2UgaXQgd2l0aCB5b3VyIA0KZmNjX2VuZXQuPC9GT05UPjwvU1BBTj48L0RJVj48IS0tIENv
+bnZlcnRlZCBmcm9tIHRleHQvcnRmIGZvcm1hdCAtLT4NCjxQPjxTUEFOIGxhbmc9ZW4tdXM+PEZP
+TlQgZmFjZT1BcmlhbCBzaXplPTI+UmVnYXJkcyw8L0ZPTlQ+PC9TUEFOPiA8QlI+PFNQQU4gDQps
+YW5nPWVuLXVzPjxGT05UIGZhY2U9QXJpYWwgc2l6ZT0yPkplZmZyZXkgSG88L0ZPTlQ+PC9TUEFO
+PiA8QlI+PFNQQU4gDQpsYW5nPWVuLXVzPjxGT05UIGZhY2U9QXJpYWwgc2l6ZT0yPkZyZWVzY2Fs
+ZSBTZW1pY29uZHVjdG9yIEhLIEx0ZDwvRk9OVD48L1NQQU4+IA0KPEJSPjxTUEFOIGxhbmc9ZW4t
+dXM+PEZPTlQgZmFjZT1BcmlhbCBzaXplPTI+VGVsOiANCjg1Mi0yNjY2ODA1MDwvRk9OVD48L1NQ
+QU4+PFNQQU4gbGFuZz16aC1oaz48L1NQQU4+IDwvUD4NCjxESVY+Jm5ic3A7PC9ESVY+PEJSPg0K
+PEJMT0NLUVVPVEUgDQpzdHlsZT0iUEFERElORy1MRUZUOiA1cHg7IE1BUkdJTi1MRUZUOiA1cHg7
+IEJPUkRFUi1MRUZUOiAjMDAwMGZmIDJweCBzb2xpZDsgTUFSR0lOLVJJR0hUOiAwcHgiPg0KICA8
+RElWIGNsYXNzPU91dGxvb2tNZXNzYWdlSGVhZGVyIGxhbmc9ZW4tdXMgZGlyPWx0ciBhbGlnbj1s
+ZWZ0Pg0KICA8SFIgdGFiSW5kZXg9LTE+DQogIDxGT05UIGZhY2U9VGFob21hIHNpemU9Mj48Qj5G
+cm9tOjwvQj4gbGludXhwcGMtZW1iZWRkZWQtYm91bmNlc0BvemxhYnMub3JnIA0KICBbbWFpbHRv
+OmxpbnV4cHBjLWVtYmVkZGVkLWJvdW5jZXNAb3psYWJzLm9yZ10gPEI+T24gQmVoYWxmIE9mIA0K
+ICA8L0I+aHViZXJ0LmxvZXdlbmd1dGg8QlI+PEI+U2VudDo8L0I+IFR1ZXNkYXksIEphbnVhcnkg
+MTAsIDIwMDYgMToyNyANCiAgQU08QlI+PEI+VG86PC9CPiBMaW51eHBwYy1lbWJlZGRlZEBvemxh
+YnMub3JnPEJSPjxCPlN1YmplY3Q6PC9CPiBtcGM4MjYwIGZjYyANCiAgZW5ldCB0cmFuc21pdCB0
+aW1lIG91dDxCUj48L0ZPTlQ+PEJSPjwvRElWPg0KICA8RElWPjwvRElWPmhpIHRoZSBjb21tdW5p
+dHkuPEJSPkkgaGF2ZSBhbHJlYWR5IHBvc3RlZCBhIHF1ZXN0aW9uIGFib3V0IG15IA0KICBwcm9i
+bGVtIGJ1dCBpdCBzZWVtcyB0aGF0IG5vYm9keSBoYXMgZW5jb3VudGVyIHRoZSBzYW1lIG1hdHRl
+ci48QlI+U28gSSBoYXZlIA0KICBtYWRlIG51bWVyb3VzIHRlc3RzIGFuZCByZXNlYXJjaGVzIGFu
+ZCBzZWVpbmcgdGhhdCBJIHN0aWxsIGhhdmUgbm90IHN1Y2NlZWQgaW4gDQogIHNvbHZpbmcgaXQs
+IEkgdHJ5IGFnYWluIHR5byBzZW5kIHlvdSBteSBidWcuPEJSPjxCUj5JIHVzZSBhIE1QQzgyNjAg
+d2l0aCBsaW51eCANCiAgMi40LjIwLjxCUj5UaGUgcHJvYmxlbSBpcyB3aXRoIHRoZSBmY2NfZW5l
+dCBkcml2ZXIuPEJSPkkgaGF2ZSBubyBNSUkgcGh5IA0KICBpbnRlcnJ1cHQgbGluZSB3aXRoIG15
+IExYVDk3MSBQaHkgaW4gZnJvbnQgb2YgdGhlIHBvd2VycGMuPEJSPlNlZWluZyB0aGF0IEkgDQog
+IGhhdmUgbm8gaW50ZXJydXB0IGxpbmUsIEkgaGF2ZSBjb25maWd1cmVkIHRoZSBkcml2ZXIgdG8g
+YmUgaW4gaGFsZiBkdXBsZXgsIGFuZCANCiAgdGhlIExYVDk3MSB0b28uPEJSPkknbSBzdXJlIHRo
+YXQgdGhlIGRyaXZlciBpcyBpbiBoYWxmLWR1cGxleCBtb2RlIGFuIHRoZSANCiAgTFhUOTcxIHRv
+bywgYW5kIHRoZSBhdXRvLW5lZ29jaWF0aW9uIGlzIG9rLjxCUj5FdmVyeXRoaW5nIHdvcmtzIGZp
+bmUsIGJ1dCwgaWYgDQogIEkgZG8gc3VjY2Vzc2l2ZSBwbHVncy91bnBsdWdzIGR1cmluZyBpbXBv
+cnRhbnQgZGF0YSB0cmFuc2ZlcnQsIFRoZSBkcml2ZXIgDQogIGVudGVyIGludG8gYW4gaW5maW5p
+dGUgbG9vcDo8QlI+PEJSPjxJPjxTTUFMTD4jIE5FVERFViBXQVRDSERPRzogZXRoMDogDQogIHRy
+YW5zbWl0IHRpbWVkIG91dDxCUj5ldGgwOiB0cmFuc21pdCB0aW1lZCBvdXQuPEJSPiZuYnNwO1Jp
+bmcgZGF0YSBkdW1wOiANCiAgY3VyX3R4IGMwMTlmNzQ4IHR4X2ZyZWUgMCBjdXJfcnggYzAxOWY2
+OTAuPEJSPiZuYnNwO1R4IEBiYXNlIGMwMTlmNzA4IA0KICA6PEJSPjFjMDAgMDU1YyAwMTFjZDA2
+YTxCUj41YzAwIDAwM2IgMDExY2Q4NmE8QlI+Li4uPEJSPjFjMDAgMDU1YyANCiAgMDExZDQ4NmE8
+QlI+M2MwMCAwNWVhIDAxMWQ0MDZhPEJSPiZuYnNwO1J4IEBiYXNlIGMwMTlmNjA4IDo8QlI+OWMw
+MCAwMDQwIA0KICAwMWYzZTAwMDxCUj45YzAwIDAwNDAgMDFmM2U4MDA8QlI+Li4uPEJSPjljMDAg
+MDA0MCAwMWYzZDAwMDxCUj5iYzAwIDAwNDAgDQogIDAxZjJmODAwPEJSPk5FVERFViBXQVRDSERP
+RzogZXRoMDogdHJhbnNtaXQgdGltZWQgb3V0PEJSPmV0aDA6IHRyYW5zbWl0IHRpbWVkIA0KICBv
+dXQuPEJSPiZuYnNwO1JpbmcgZGF0YSBkdW1wOiBjdXJfdHggYzAxOWY3NDggdHhfZnJlZSAwIGN1
+cl9yeCANCiAgYzAxOWY2OTguPEJSPiZuYnNwO1R4IEBiYXNlIGMwMTlmNzA4IDo8QlI+MWMwMCAw
+NTVjIDAxMWNkMDZhPEJSPjVjMDAgMDAzYiANCiAgMDExY2Q4NmE8QlI+MWMwMCAwNWVhIDAxMWNl
+MDZhPEJSPi4uLi4uPEJSPjxCUj48L1NNQUxMPjwvST5JIGhhdmUgZm91bmQsIG9uIA0KICB0aGUg
+bGludXgtZW1iZW5kZWQgZm9ydW0sIGEgcGVyc29ubiB3aG8gaGFzIHRoZSBzYW1lIHByb2JsZW06
+PEJSPjxGT05UIA0KICBjb2xvcj0jMzMzM2ZmPjxBIGNsYXNzPW1vei10eHQtbGluay1mcmVldGV4
+dCANCiAgaHJlZj0iaHR0cDovL296bGFicy5vcmcvcGlwZXJtYWlsL2xpbnV4cHBjLWVtYmVkZGVk
+LzIwMDEtRGVjZW1iZXIvMDA1NzE0Lmh0bWwiPmh0dHA6Ly9vemxhYnMub3JnL3BpcGVybWFpbC9s
+aW51eHBwYy1lbWJlZGRlZC8yMDAxLURlY2VtYmVyLzAwNTcxNC5odG1sPC9BPjwvRk9OVD48QlI+
+QnV0IA0KICBJJ20gc3VyZSBhYm91dCBteSBwaW4gY29ubmVjdGlvbnMgYW5zIHNvIHRoZSByZXBv
+bnNlIHRvIHRoaXMgcGVyc29ubiBkb2Vzbid0IA0KICBzb2x2ZSBteSBwcm9ibGVtPEJSPjxCUj5N
+b3JlIGludGVycmVzdGluZyB0aGlzIG9uZSA6PEJSPjxGT05UIGNvbG9yPSMzMzMzZmY+PEEgDQog
+IGNsYXNzPW1vei10eHQtbGluay1mcmVldGV4dCANCiAgaHJlZj0iaHR0cDovL296bGFicy5vcmcv
+cGlwZXJtYWlsL2xpbnV4cHBjLWVtYmVkZGVkLzIwMDUtSmFudWFyeS8wMTY1MzkuaHRtbCI+aHR0
+cDovL296bGFicy5vcmcvcGlwZXJtYWlsL2xpbnV4cHBjLWVtYmVkZGVkLzIwMDUtSmFudWFyeS8w
+MTY1MzkuaHRtbDwvQT48L0ZPTlQ+PEJSPlRoaXMgDQogIHBlcnNvbm4gc2VlbXMgdG8gaGF2ZSB0
+aGUgc2FtZSB0cm91Ymxlc2hvdXRpbmcgdGhhbiBtZSAuPEJSPkhlIGhhcyB0cmllZCB0byANCiAg
+YXBwbHkgdGhlIHBhdGNoIHByb3ZpZGVkIGJ5IGZyZWVzY2FsZSwgYnV0IGl0IGRvZXNuJ3Qgc2Vl
+bSB0byBjb3JyZWN0IA0KICBpdC48QlI+PEk+PFNNQUxMPjxCUj48L1NNQUxMPjwvST5TbyBJIGhh
+dmUgaGFkIGp1c3QgYSBsaXR0bGUgcGllY2Ugb2YgdHJhY2UgaW4gDQogIG9yZGVyIHRvIHNlZSB3
+aGVuIHRoaXMgaW5mZXJuYWwgbG9vcCBhcHBlYXIuPEJSPkkgaGF2ZSBhZGRlZCBzb21lIHRyYWNl
+IGluIHRoZSANCiAgZmNjX2VuZXRfc3RhcnRfeG1pdCAuPEJSPmhhcyB5b3Uga25vdywgYWZ0ZXIg
+c29tZSBraW5kIG9mIHRyYW5zbWl0IGVycm9ycywgdGhlIA0KICB0cmFuc21pdHRlciBuZWVkIHRv
+IGJlIHJlc3RhcnRlZCwgYW5kIHNvIEkgaGF2ZSBhZGRlZCBzb21lIHRyYWNlcyB0byBzZWUgd2hl
+biANCiAgaXQgaXMgcmVzdGFydGVkPEJSPjxCUj4mbmJzcDsmbmJzcDsmbmJzcDsgLyogU29tZSB0
+cmFuc21pdCBlcnJvcnMgY2F1c2UgdGhlIA0KICB0cmFuc21pdHRlciB0byBzaHV0PEJSPiZuYnNw
+OyZuYnNwOyZuYnNwOyAmbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7KiANCiAgZG93bi4mbmJzcDsg
+V2Ugbm93IGlzc3VlIGEgcmVzdGFydCB0cmFuc21pdC4mbmJzcDsgU2luY2UgDQogIHRoZTxCUj4m
+bmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwOyogZXJyb3JzIGNsb3Nl
+IHRoZSBCRCBhbmQgDQogIHVwZGF0ZSB0aGUgcG9pbnRlcnMsIHRoZSByZXN0YXJ0PEJSPiZuYnNw
+OyZuYnNwOyZuYnNwOyAmbmJzcDsmbmJzcDsmbmJzcDsgDQogICZuYnNwOyogX3Nob3VsZF8gcGlj
+ayB1cCB3aXRob3V0IGhhdmluZyB0byByZXNldCBhbnkgb2YgDQogIG91cjxCUj4mbmJzcDsmbmJz
+cDsmbmJzcDsgJm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwOyogcG9pbnRlcnMgZWl0aGVyLiZuYnNw
+OyANCiAgQWxzbywgVG8gd29ya2Fyb3VuZCA4MjYwIGRldmljZSBlcnJhdHVtIDxCUj4mbmJzcDsm
+bmJzcDsmbmJzcDsgDQogICZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDsqIENQTTM3LCB3ZSBtdXN0
+IGRpc2FibGUgYW5kIHRoZW4gcmUtZW5hYmxlIHRoZSANCiAgdHJhbnNtaXR0ZXI8QlI+Jm5ic3A7
+Jm5ic3A7Jm5ic3A7ICZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDsqIGZvbGxvd2luZyBhIExhdGUg
+DQogIENvbGxpc2lvbiwgVW5kZXJydW4sIG9yIFJldHJ5IExpbWl0IGVycm9yLjxCUj4mbmJzcDsm
+bmJzcDsmbmJzcDsgDQogICZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDsqLzxCUj4mbmJzcDsmbmJz
+cDsmbmJzcDsgDQogIDxCUj48QlI+PFNNQUxMPjxCSUc+PFNNQUxMPjxCSUc+PEZPTlQgDQogIGNv
+bG9yPSMwMDAwMDA+PFNNQUxMPiM8L1NNQUxMPjwvRk9OVD48L0JJRz48L1NNQUxMPjwvQklHPjwv
+U01BTEw+PFNNQUxMPjxCSUc+PFNNQUxMPjxCSUc+PEZPTlQgDQogIGNvbG9yPSMwMDAwMDA+PFNN
+QUxMPiBVTkRFUlJVTiAhID09Jmd0OyBSRVNUQVJUPEJSPkNBUlJJRVIgTE9TVCAhPEJSPkNBUlJJ
+RVIgDQogIExPU1QgDQogICE8QlI+PC9TTUFMTD48L0ZPTlQ+PC9CSUc+PC9TTUFMTD48L0JJRz48
+L1NNQUxMPjxTTUFMTD48QklHPjxTTUFMTD48QklHPjxGT05UIA0KICBjb2xvcj0jMDAwMDAwPjxT
+TUFMTD4mbmJzcDtVTkRFUlJVTiAhID09Jmd0OyBSRVNUQVJUPEJSPkNBUlJJRVIgTE9TVCANCiAg
+ITxCUj5DQVJSSUVSIExPU1QgITxCUj5VTkRFUlJVTiAhID09Jmd0OyBSRVNUQVJUPEJSPlVOREVS
+UlVOICEgPT0mZ3Q7IA0KICBSRVNUQVJUPEJSPkNBUlJJRVIgTE9TVCAhPEJSPi4uLi4uLi4uPEJS
+PkNBUlJJRVIgTE9TVCAhPEJSPkNBUlJJRVIgTE9TVCANCiAgITxCUj5VTkRFUlJVTiAhID09Jmd0
+OyBSRVNUQVJUPEJSPkNBUlJJRVIgTE9TVCAhPEJSPkNBUlJJRVIgTE9TVCAhPEJSPkNBUlJJRVIg
+DQogIExPU1QgITxCUj5DQVJSSUVSIExPU1QgITxCUj5DQVJSSUVSIExPU1QgITxCUj5DQVJSSUVS
+IExPU1QgITxCUj5DQVJSSUVSIExPU1QgDQogICE8QlI+VU5ERVJSVU4gISA9PSZndDsgUkVTVEFS
+VDxCUj48ST48QlI+TjwvST5FVERFViBXQVRDSERPRzogZXRoMDogdHJhbnNtaXQgDQogIHRpbWVk
+IG91dDxCUj5ldGgwOiB0cmFuc21pdCB0aW1lZCBvdXQuPEJSPiZuYnNwO1JpbmcgZGF0YSBkdW1w
+OiBjdXJfdHggDQogIGMwMTlmNzc4IHR4X2ZyZWUgMCBjdXJfcnggYzAxOWY2OTAuPEJSPiZuYnNw
+O1R4IEBiYXNlIGMwMTlmNzA4IDo8QlI+MWMwMiAwNTVjIA0KICAwMTJjZDg2YTxCUj45YzAwIDA1
+ZWEgMDEyY2QwNmE8QlI+OWMwMCAwNWVhIDAxMmY3MDZhPEJSPjljMDAgMDVlYSANCiAgMDEyY2Yw
+NmE8QlI+OWMwMCAwNWVhIDAxMmNmODZhPEJSPjljMDAgMDVlYSANCiAgMDExODUwNmE8L1NNQUxM
+PjwvRk9OVD48L0JJRz48L1NNQUxMPjwvQklHPjwvU01BTEw+PEJSPjxJPjxTTUFMTD48QlI+PC9T
+TUFMTD48L0k+U29tZSANCiAgcGVyc29ubnMgaGF2ZSBzYWlkIG1lIHRvIHRyeSB3aXRoIDIuNiBk
+cml2ZXJzIGJ1dCBpdCdzIGV4YWN0bHkgdGhlIHNhbWUgDQogIHByb2JsZW0uIDxCUj4oIGV2ZW4g
+aWYgSSdtIGEgbGl0dGxlIGJpdCBzdXJwcmlzZWQgdG8gc2VlIHRoYXQgd2l0aCB0aGUmbmJzcDsg
+DQogIDIuNiB2ZXJzaW9uIGRyaXZlcnMgc2VlbXMgdG8gYmUgdW5jb21wYXRpYmxlIHdpdGggYm9h
+cmRzIHdpY2ggdXNlIE1ESU8gd2l0aG91dCANCiAgUEhZPEJSPmludGVycnVwdC50aGUgI2RlZmlu
+ZSBQSFlfSU5URVJSVVBUIGNvbmRpdGlvbiBvZiB0aGUgMi40IGRyaXZlcnMgDQogIHZlcnNpb24g
+aGFzPEJSPmRpc2FwZWFyZWQgPSZndDsgd2l0aCB0aGlzIG5ldyBkcml2ZXJzIHlvdSBjYW4ndCB1
+c2UgTURJTyANCiAgd2l0aG91dCBQSFkgaW50ZXJydXB0ICEhPEJSPml0IHdhcyBwb3NzaWJsZSBp
+biB0aGUgMi40IHZlcnNpb24uPEJSPi0gc2VlaW5nIA0KICB0aGF0IHRoZSAiZmVwLSZndDtsaW5r
+IiB2YWx1ZSBpcyBlbmFibGVkIG9ubHkgb24gYSBQSFkgaW50ZXJydXB0IC48QlI+SSBjYW4ndCAN
+CiAgaGF2ZSB0aGlzIGNvbmRpdGlvbiBPSyB3aXRob3V0IFBIWSBpbnRlcnJ1cHQuPEJSPiZuYnNw
+OyJmZXAtJmd0O2xpbmsiIGNhbiBiZSANCiAgYXNzZXJ0ZWQgaW4gdGhlIG1paV9wYXJzZV9zciBm
+dW5jdGlvbiwgYnV0IGhhcyBpdCBpczxCUj5pbmRpY2F0ZWQgaW4gdGhlIA0KICBjb21tZW50IGlu
+IHRoZSBkcml2ZXJzIDo8QlI+Ii8qIFNvbWVob3cgZG9lcyB0aGUgOTcxIHRlbGwgbWUgdGhhdCB0
+aGUgbGluayBpcyANCiAgZG93bjxCUj4mbmJzcDsqIHRoZSBmaXJzdCByZWFkIGFmdGVyIHBvd2Vy
+LXVwLjxCUj4mbmJzcDsqIHJlYWQgaGVyZSB0byBnZXQgYSANCiAgdmFsaWQgdmFsdWUgaW4gYWNr
+X2ludCAqLyI8QlI+VGhhdCdzIHRydWUsIHRoZSBMWFQgOTcxQSB0ZWxsIHRoYXQgdGhlIGxpbmsg
+aXMgDQogIGRvd24sIGFuZCBzZWVpbmcgdGhhdCBJPEJSPmhhdmUgbm8gaW50ZXJydXB0LCB0aGUg
+ZmVwLSZndDtsaW5rIGlzIG5ldmVyIA0KICBhc3NlcnRlZCBhZ2Fpbi48QlI+U28sIEkgaGF2ZSBj
+b21tZW50ZWQgdGhlIGZpcnN0IGxpbmVzIG9mIHRoZSANCiAgZmNjX2VuZXRfc3RhcnRfeG1pdCBm
+dW5jdGlvbjxCUj53aGljaCB2ZXJpZnkgdGhlIHZhbHVlIG9mIGZlcC0mZ3Q7bGluay48QlI+SSAN
+CiAgaGF2ZSBhZGRlZCBhICNpZmRlZiBQSFlfSU5URVJSVVBUIGNvbmRpdGlvbiBiZWZvcmUgaW5z
+dGFsbGluZyB0aGUgSVNSPEJSPmZvciANCiAgdGhpcyBpbnRlcnJ1cHQuPEJSPkFuZCB0aGFua3Mg
+dG8gdGhhdCwgSSBoYXZlIGJlZW4gYWJsZSB0byB0ZXN0IHRoZSBuZXcgZHJpdmVyIA0KICAyLjYg
+LjxCUj5CdXQgdW5mb3J0dW5ldGx5IHRoaXMgZG9lc24ndCBzb2x2ZSBteSBwcm9ibGVtLik8QlI+
+PEJSPlNvIDIuNiBkcml2ZXIgDQogIGlzIG5vdCB0aGUgc29sdXRpb24gb2YgbXkgcHJvYmxlbS48
+QlI+PEJSPkknbSBhc2tpbmcgbXlzZWxmIGlmIHRoaXMgY2FuIGJlIGR1ZSANCiAgdG8gQ1BNMjEs
+IG9yIENQTTIyLCBvciBDUE0xMTkga25vd24gYnVncyBvbiBtcGM4MjYwID88QlI+KHNlZSA8QSAN
+CiAgY2xhc3M9bW96LXR4dC1saW5rLWZyZWV0ZXh0IA0KICBocmVmPSJodHRwOi8vd3d3LmZyZWVz
+Y2FsZS5jb20vZmlsZXMvMzJiaXQvZG9jL2RhdGFfc2hlZXQvTVBDODI2MENFLnBkZiI+aHR0cDov
+L3d3dy5mcmVlc2NhbGUuY29tL2ZpbGVzLzMyYml0L2RvYy9kYXRhX3NoZWV0L01QQzgyNjBDRS5w
+ZGY8L0E+IA0KICApIGJ1dCBJIGRvbid0IHRoaW5rIHNvLjxCUj5QZXJoYXBzLCBJIGltYWdpbmUg
+dGhhdCBpbiBmYWN0IHRoZSBNUEM4MjYwIA0KICB0cmFuc21pdHRlciBkb2Vzbid0IHJlc3RhcnQg
+Y29ycmVjdGx5ID88QlI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IA0KICAmbmJzcDsmbmJzcDsmbmJzcDsg
+KEFsc28sIFRvIHdvcmthcm91bmQgODI2MCBkZXZpY2UgZXJyYXR1bSANCiAgPEJSPiZuYnNwOyZu
+YnNwOyZuYnNwOyAmbmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7KiBDUE0zNywgd2UgbXVzdCBkaXNh
+YmxlIGFuZCANCiAgdGhlbiByZS1lbmFibGUgdGhlIHRyYW5zbWl0dGVyPEJSPiZuYnNwOyZuYnNw
+OyZuYnNwOyAmbmJzcDsmbmJzcDsmbmJzcDsgDQogICZuYnNwOyogZm9sbG93aW5nIGEgTGF0ZSBD
+b2xsaXNpb24sIFVuZGVycnVuLCBvciBSZXRyeSBMaW1pdCBlcnJvcik8QlI+PEJSPklzIA0KICB0
+aGVyZSBhbnlib2R5IGhhdmluZyBlbmNvdW50ZXIgdGhlIHNhbWUgcHJvYmxlbT88QlI+SXMgdGhl
+cmUgYW55Ym9keSBoYXZpbmcgDQogIGRvbmUgc29tZSB0ZXN0IG9mJm5ic3A7IG51bWVyb3VzIHBs
+dWcvdW5wbHVnJm5ic3A7IGR1cmluZyBpbXBvcnRhbnQgZGF0YSANCiAgdHJhbnNmZXJ0IHdpdGgg
+YSBoYWxmLWR1cGxleCBjb25uZWN0aW9uIG9uIG1wYzgyNjA/PEJSPklzIHRoZXJlIGFueWJvZHkg
+aGF2aW5nIA0KICBhbiBpZGVhIHRvIGhlbHAgbWUgPzxCUj48QlI+VGhhbmtzIHRvIHRoZSBjb21t
+dW5pdHkgZm9yIGFueSBoZWxwLCBJJ20gcmVhbGx5IA0KICBkZXNlcGFyZXRlZCBoZXJlPEJSPjxC
+Uj4oUFMgOiBzb3JyeSBmb3IgbXkgYmFkIA0KZW5nbGlzaCk8QlI+PEJSPjxCUj48QlI+PC9CTE9D
+S1FVT1RFPjwvQk9EWT48L0hUTUw+DQo=
+
+------_=_NextPart_001_01C6158D.558EC2E7--
