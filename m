@@ -1,21 +1,18 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 53BDB689AD
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 10:22:30 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Olaf Hering <olh@suse.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 29817689BE
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 10:35:05 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Date: Wed, 11 Jan 2006 00:34:58 +0100
 References: <200601091916.k09JGMJY004116@hera.kernel.org>
 	<20060110221313.GA24246@suse.de>
-Date: Wed, 11 Jan 2006 00:22:25 +0100
-In-Reply-To: <20060110221313.GA24246@suse.de> (Olaf Hering's message of "Tue,
-	10 Jan 2006 23:13:14 +0100")
-Message-ID: <jed5izmzwu.fsf@sykes.suse.de>
+In-Reply-To: <20060110221313.GA24246@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, arndb@de.ibm.com
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200601110034.58911.arnd@arndb.de>
+Cc: arndb@de.ibm.com, Olaf Hering <olh@suse.de>
 Subject: Re: [PATCH] powerpc: fix large nvram access
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,19 +23,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering <olh@suse.de> writes:
-
+Am Dienstag, 10. Januar 2006 23:13 schrieb Olaf Hering:
+>  On Mon, Jan 09, Linux Kernel Mailing List wrote:
+> > tree da8f883f72d08f9534e9eca3bba662413b9bd865
+> > parent d52771fce4e774fa786097d34412a057d487c697
+> > author Arnd Bergmann <arnd@arndb.de> Fri, 09 Dec 2005 19:21:44 +0100
+> > committer Paul Mackerras <paulus@samba.org> Mon, 09 Jan 2006 14:53:31
+> > +1100
+> >
+> > [PATCH] powerpc: fix large nvram access
+> >
+> > /dev/nvram uses the user-provided read/write size
+> > for kmalloc, which fails, if a large number is passed.
+> > This will always use a single page at most, which
+> > can be expected to succeed.
+> >
+> > Signed-off-by: Arnd Bergmann <arndb@de.ibm.com>
+> > Signed-off-by: Paul Mackerras <paulus@samba.org>
+> >
+> >  arch/powerpc/kernel/nvram_64.c |  114
+> > +++++++++++++++++++----------------------
+>
 > this change breaks my nvsetenv binary on JS20.
 >
-> (none):/# mount proc ; nvsetenv
-> Error reading /dev/nvram: Success
 
-It was broken to begin with.
+I think this has uncovered a bug that has been in nvsetenv for a long time.
 
-Andreas.
+> open("/dev/nvram", O_RDONLY)            = 3
+> read(3, "P\347\0\34of-config\0\0\0", 16) = 16
+> lseek(3, 432, SEEK_CUR)                 = 448
+> read(3, "p\375\2\0common\0\0\0\0\0\0", 16) = 16
+> read(3, "ibm,fw-phandle-enable?=false\0lit"..., 8176) = 4096
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+This is where my patch changed the behavior of the driver. It used to return all the data in one chunk, now it returns 4096 bytes at most.
+
+> dup(2)                                  = 4
+> fcntl64(4, F_GETFL)                     = 0x2 (flags O_RDWR)
+> fstat64(4, {st_mode=S_IFCHR|0600, st_rdev=makedev(5, 1), ...}) = 0
+> ioctl(4, TCGETS, {B38400 opost isig icanon echo ...}) = 0
+> mmap(NULL, 131072, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xf7fc0000 
+> _llseek(4, 0, 0xffd63fd8, SEEK_CUR)     = -1 ESPIPE 
+> (Illegal seek) 
+> write(4, "Error reading /dev/nvram: Succes"..., 34Error reading  /dev/nvram: Success ) = 34
+> close(4)                                = 0
+> munmap(0xf7fc0000, 131072)              = 0
+> exit_group(1)                           = ?
+> (none):/#
+
+And then it got here:
+
+|    if (lseek(nvfd, NVSTART, 0) < 0
+|        || read(nvfd, &nvbuf, NVSIZE) != NVSIZE) {
+|        perror("Error reading /dev/nvram");
+|        exit(EXIT_FAILURE);
+|    }
+
+I'm pretty sure that the failing _llseek is part of the perror 
+implementation and not the real problem, as we were first thinking.
+
+The problem is that nvsetenv bails out on a short read, while according 
+to the man page, "It is not an error if this number is smaller than the
+number of bytes requested". Of course, character devices often differ
+in their behavior from what is in the man pages for file I/O.
+
+I'd suggest we change both ends: nvsetenv should really be able to deal
+with a short read, and we can double the size of the kmalloc buffer
+for the kernel implementation. Please test the patch below.
+
+---
+
+Subject: powerpc: fix nvsetenv regression with fixed nvram read/write
+
+reading from /dev/nvram was recently fixed to not try to allocate the
+user-defined amount of kernel memory. This broke the nvsetenv tool
+which relied on never getting short reads from /dev/nvram.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+index fd7db8d..8da6e57 100644
+--- a/arch/powerpc/kernel/nvram_64.c
++++ b/arch/powerpc/kernel/nvram_64.c
+@@ -34,6 +34,15 @@
+ 
+ #undef DEBUG_NVRAM
+ 
++/*
++ * Old nvsetenv versions expect us to be able to return 8kb
++ * of data in a single read, so use that as a limit for short
++ * reads.
++ * We can't simply use the requested size because large
++ * kmalloc allocations often fail.
++ */
++#define NVRAM_ALLOC_SIZE 8192
++
+ static int nvram_scan_partitions(void);
+ static int nvram_setup_partition(void);
+ static int nvram_create_os_partition(void);
+@@ -94,7 +103,7 @@ static ssize_t dev_nvram_read(struct fil
+ 		goto out;
+ 
+ 	count = min_t(size_t, count, size - *ppos);
+-	count = min(count, PAGE_SIZE);
++	count = min(count, NVRAM_ALLOC_SIZE);
+ 
+ 	ret = -ENOMEM;
+ 	tmp = kmalloc(count, GFP_KERNEL);
+@@ -131,7 +140,7 @@ static ssize_t dev_nvram_write(struct fi
+ 		goto out;
+ 
+ 	count = min_t(size_t, count, size - *ppos);
+-	count = min(count, PAGE_SIZE);
++	count = min(count, NVRAM_ALLOC_SIZE);
+ 
+ 	ret = -ENOMEM;
+ 	tmp = kmalloc(count, GFP_KERNEL);
