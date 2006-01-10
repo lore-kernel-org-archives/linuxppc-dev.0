@@ -1,22 +1,17 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.205])
-	by ozlabs.org (Postfix) with ESMTP id 3B2FD6890B
+Return-Path: <lcsquare2@yahoo.com.hk>
+Received: from web53712.mail.yahoo.com (web53712.mail.yahoo.com
+	[206.190.39.61]) by ozlabs.org (Postfix) with SMTP id 455D067A76
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Jan 2006 05:45:47 +1100 (EST)
-Received: by nproxy.gmail.com with SMTP id p46so1692222nfa
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 09 Jan 2006 10:45:45 -0800 (PST)
-Message-ID: <c3d0340b0601091045y5eac88d3m644f3fc79fd9f6a4@mail.gmail.com>
-Date: Mon, 9 Jan 2006 10:45:45 -0800
-From: Shawn Jin <shawnxjin@gmail.com>
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-In-Reply-To: <43BC57E7.40408@dlasys.net>
+	Tue, 10 Jan 2006 12:39:48 +1100 (EST)
+Message-ID: <20060110013947.66617.qmail@web53712.mail.yahoo.com>
+Date: Tue, 10 Jan 2006 09:39:47 +0800 (CST)
+From: Lo Chun Chung <lcsquare2@yahoo.com.hk>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+In-Reply-To: <43C2A6DD.5020202@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20051208231947.92EB9353F77@atlas.denx.de>
-	<43BC57E7.40408@dlasys.net>
+Content-Type: multipart/alternative; boundary="0-2110968413-1136857187=:64055"
 Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: RESEND:Problems starting /init
+Subject: Re: Re: Enable a PCMCIA Bluetooth card in custom MPC860 system
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,21 +22,158 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->         But I can not get busybox to output a thing either run as /init o=
-r run
-> as /bin/sh.
->
->         I have aslo tried /bin/sash - no output.
->         I have even cross compiled sash - with all kinds of "I am here"
-> debugging scattered through main(), If I runn it on a powerbook, I get
-> what I expect. If I run it as /bin/sh on the e12 I get no output.
->
->
->         Does anyone even have any ideas what I can look at ?
+--0-2110968413-1136857187=:64055
+Content-Type: text/plain; charset=big5
+Content-Transfer-Encoding: 8bit
 
-Another thing you may try is to make sure the UART works correctly
-with interrupt mode. So set some breakpoints in UART's IRS to see what
-happens.
+Thanks for your hint. But the file is just for Linux Kernel Version 2.6, is this also OK for me? (I am using a 2.4 kernel)
+   
+  But I doubt that same technique can be applied since the Bluetooth should only be enabled when I loaded the pcmcia drivers (pcmcia_core.o, m8xx_pcmcia.o and ds.o), so .... 
+   
+  how can I pre-set some settings during boot-time that I have not yet insert the pcmcia modules into the kernel?
+   
+  Also the last thing is, since there is not "hotplug" in my system and resources allocation is different from standard PCs, so I cannot let my embedded system to auto-detect a standard uart has been added during the PCMCIA bluetooth card is plugged in (while standard PC will)
+   
+  or can anybody tell me that how can I realize hotplug in my system? (is this can be worked out?)
+   
+  Thanks
 
-Regards,
--Shawn.
+Vitaly Bordug <vbordug@ru.mvista.com> 說：
+  Lo Chun Chung wrote:
+> Dear all,
+> 
+> I am a student from Hong Kong. Now I am doing a project about enabling a 
+> Bluetooth PCMCIA card (Billionton PCBTC1A-B) in a custom MPC860PC.
+> 
+> (The custom MPC860 system is constructed by a MPC860 Processor Card and 
+> a custom made PCB to adding a PCMCIA interface to the processor Card.)
+> 
+> Now my stage is: the LINUX (Linux Kernel 2.4.25 from ELDK 3.1 for 
+> powerpc) can recognise the card by cardctl, and here are the screen dump:
+> 
+> / # cardctl ident
+> Socket 0:
+> product info: "PCMCIA", "Bluetooth Card", "", ""
+> manfid: 0x0279, 0x950b
+> function: 2 (serial)
+> / # cardctl status
+> Socket 0:
+> 5V 16-bit PC Card
+> function 0: [ready], [bat dead], [bat low]
+> / # cardctl info
+> PRODID_1="PCMCIA"
+> PRODID_2="Bluetooth Card"
+> PRODID_3=""
+> PRODID_4=""
+> MANFID=0279,950b
+> FUNCID=2
+> / # cardct! l config
+> Socket 0:
+> Vcc 5.0V Vpp1 5.0V Vpp2 5.0V
+> 
+> but after I load all the modules needed (should be these?)
+> 
+> / # lsmod
+> Module Size Used by Not tainted
+> hci_uart 14836 0 (unused)
+> l2cap 22956 0 (unused)
+> bluez 43856 0 [hci_uart l2cap]
+> ds 8060 0
+> m8xx_pcmcia 5164 1
+> pcmcia_core 39520 0 [ds m8xx_pcmcia]
+> 
+> my bluetooth still cannot get working ...
+> 
+> then I try to insert "serial_cs" as my bluetooth card is a uart base 
+> card. but some message given out:
+> 
+> / # insmod serial_cs
+> Using /lib/modules/2.4.25/serial_cs.o
+> insmod: unresolved symbol unregister_serial
+> insmod: unresolved symbol register_serial
+> 
+> so I realize that I should also insert "serial.o" into the linux, but 
+> crashes ...
+> 
+> / # insmod serial
+> Using /lib/modules/2.4.25/serial.o
+> Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ enabled
+> Machine check in kernel mode.
+> Caused by (from SRR1=1032): Transfer error ack signal
+> ! Oops: machine check, sig: 7
+> NIP: C3040078 XER: 00000000 LR: C3044724 SP: C1CC1D60 REGS: c1cc1cb0 
+> TRAP: 0200 No
+> t tainted
+> MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> TASK = c1cc0000[33] 'busybox' Last syscall: 128
+> last math 00000000 last altivec 00000000
+> GPR00: 00000000 C1CC1D60 C1CC0000 C1CC1D70 00000004 00000001 00000B4B 
+> C015378B
+> GPR08: 00000000 800003FC 00000003 C1CC1C70 C0170000 10084438 00000000 
+> 00000000
+> GPR16: 00000000 00000000 00000000 00000000 00009032 1016EDB0 C1D3A000 
+> C1CC1EA0
+> GPR24: C1F6B760 00000006 C304973C C1CC1D70 C3040000 00000000 00000000 
+> C3046348
+> Call backtrace:
+> C3044718 C3045188 C0012440 C00043BC 10080000 10021DF0 100238CC
+> 1000457C 100041A0 1000436C 1000457C 100041A0 0FE70EF4 00000000
+> 
+> I only knows when i insert the serial.o, this driver will try to access 
+> the standard uart which is not available in my system (my system only 
+> has one uart by SMC1), then the system will crash eac! h time the 
+> driver wants to access the registers does not available ...
+> 
+> The project deadline is near ... so I ask here ...
+> 
+> can anyone helps me or give me some clues?
+> 
+You should take a look for instance how 8349 does this job (arch/ppc/syslib/ppc83xx_setup.c) - it also has "standard" UART, but some stuff needs to be set up
+prior to serial.o. Of course that is not complete solution for your case, just a hint...
+> Thanks all
+> 
+> 
+> 
+> 
+> Best regards,
+> Chung
+> 
+> _______________________________________
+> YM - 離線訊息
+> 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何 
+> 說話都冇走失。
+> http://messenger.yahoo.com.hk
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+-- 
+Sincerely, 
+Vitaly
+  
+
+
+
+Best regards,
+Chung
+_______________________________________
+ YM - 離線訊息
+ 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。
+ http://messenger.yahoo.com.hk
+--0-2110968413-1136857187=:64055
+Content-Type: text/html; charset=big5
+Content-Transfer-Encoding: 8bit
+
+<DIV>Thanks for your hint. But the file is just for Linux Kernel Version 2.6, is this also OK for me? (I am using a 2.4 kernel)</DIV>  <DIV>&nbsp;</DIV>  <DIV>But I doubt that same technique can be applied since the Bluetooth should only be enabled when I loaded the pcmcia drivers (pcmcia_core.o, m8xx_pcmcia.o and ds.o), so .... </DIV>  <DIV>&nbsp;</DIV>  <DIV>how can I pre-set some settings during boot-time that I have not yet insert the pcmcia modules into the kernel?</DIV>  <DIV>&nbsp;</DIV>  <DIV>Also the last thing is, since there is not "hotplug" in my system and resources allocation is different from standard PCs, so I cannot let my embedded system to auto-detect a standard uart has been added during the PCMCIA bluetooth card is plugged in (while standard PC will)</DIV>  <DIV>&nbsp;</DIV>  <DIV>or can anybody tell me that how can I realize hotplug in my system? (is this can be worked out?)</DIV>  <DIV>&nbsp;</DIV>  <DIV>Thanks<BR><BR><B><I>Vitaly Bordug
+ &lt;vbordug@ru.mvista.com&gt;</I></B> 說：</DIV>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">Lo Chun Chung wrote:<BR>&gt; Dear all,<BR>&gt; <BR>&gt; I am a student from Hong Kong. Now I am doing a project about enabling a <BR>&gt; Bluetooth PCMCIA card (Billionton PCBTC1A-B) in a custom MPC860PC.<BR>&gt; <BR>&gt; (The custom MPC860 system is constructed by a MPC860 Processor Card and <BR>&gt; a custom made PCB to adding a PCMCIA interface to the processor Card.)<BR>&gt; <BR>&gt; Now my stage is: the LINUX (Linux Kernel 2.4.25 from ELDK 3.1 for <BR>&gt; powerpc) can recognise the card by cardctl, and here are the screen dump:<BR>&gt; <BR>&gt; / # cardctl ident<BR>&gt; Socket 0:<BR>&gt; product info: "PCMCIA", "Bluetooth Card", "", ""<BR>&gt; manfid: 0x0279, 0x950b<BR>&gt; function: 2 (serial)<BR>&gt; / # cardctl status<BR>&gt; Socket 0:<BR>&gt; 5V 16-bit PC Card<BR>&gt; function 0: [ready], [bat dead], [bat low]<BR>&gt; / #
+ cardctl info<BR>&gt; PRODID_1="PCMCIA"<BR>&gt; PRODID_2="Bluetooth Card"<BR>&gt; PRODID_3=""<BR>&gt; PRODID_4=""<BR>&gt; MANFID=0279,950b<BR>&gt; FUNCID=2<BR>&gt; / # cardct! l config<BR>&gt; Socket 0:<BR>&gt; Vcc 5.0V Vpp1 5.0V Vpp2 5.0V<BR>&gt; <BR>&gt; but after I load all the modules needed (should be these?)<BR>&gt; <BR>&gt; / # lsmod<BR>&gt; Module Size Used by Not tainted<BR>&gt; hci_uart 14836 0 (unused)<BR>&gt; l2cap 22956 0 (unused)<BR>&gt; bluez 43856 0 [hci_uart l2cap]<BR>&gt; ds 8060 0<BR>&gt; m8xx_pcmcia 5164 1<BR>&gt; pcmcia_core 39520 0 [ds m8xx_pcmcia]<BR>&gt; <BR>&gt; my bluetooth still cannot get working ...<BR>&gt; <BR>&gt; then I try to insert "serial_cs" as my bluetooth card is a uart base <BR>&gt; card. but some message given out:<BR>&gt; <BR>&gt; / # insmod serial_cs<BR>&gt; Using /lib/modules/2.4.25/serial_cs.o<BR>&gt; insmod: unresolved symbol unregister_serial<BR>&gt; insmod: unresolved symbol register_serial<BR>&gt; <BR>&gt; so I realize that I should
+ also insert "serial.o" into the linux, but <BR>&gt; crashes ...<BR>&gt; <BR>&gt; / # insmod serial<BR>&gt; Using /lib/modules/2.4.25/serial.o<BR>&gt; Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ enabled<BR>&gt; Machine check in kernel mode.<BR>&gt; Caused by (from SRR1=1032): Transfer error ack signal<BR>&gt; ! Oops: machine check, sig: 7<BR>&gt; NIP: C3040078 XER: 00000000 LR: C3044724 SP: C1CC1D60 REGS: c1cc1cb0 <BR>&gt; TRAP: 0200 No<BR>&gt; t tainted<BR>&gt; MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11<BR>&gt; TASK = c1cc0000[33] 'busybox' Last syscall: 128<BR>&gt; last math 00000000 last altivec 00000000<BR>&gt; GPR00: 00000000 C1CC1D60 C1CC0000 C1CC1D70 00000004 00000001 00000B4B <BR>&gt; C015378B<BR>&gt; GPR08: 00000000 800003FC 00000003 C1CC1C70 C0170000 10084438 00000000 <BR>&gt; 00000000<BR>&gt; GPR16: 00000000 00000000 00000000 00000000 00009032 1016EDB0 C1D3A000 <BR>&gt; C1CC1EA0<BR>&gt; GPR24: C1F6B760 00000006 C304973C C1CC1D70 C3040000
+ 00000000 00000000 <BR>&gt; C3046348<BR>&gt; Call backtrace:<BR>&gt; C3044718 C3045188 C0012440 C00043BC 10080000 10021DF0 100238CC<BR>&gt; 1000457C 100041A0 1000436C 1000457C 100041A0 0FE70EF4 00000000<BR>&gt; <BR>&gt; I only knows when i insert the serial.o, this driver will try to access <BR>&gt; the standard uart which is not available in my system (my system only <BR>&gt; has one uart by SMC1), then the system will crash eac! h time the <BR>&gt; driver wants to access the registers does not available ...<BR>&gt; <BR>&gt; The project deadline is near ... so I ask here ...<BR>&gt; <BR>&gt; can anyone helps me or give me some clues?<BR>&gt; <BR>You should take a look for instance how 8349 does this job (arch/ppc/syslib/ppc83xx_setup.c) - it also has "standard" UART, but some stuff needs to be set up<BR>prior to serial.o. Of course that is not complete solution for your case, just a hint...<BR>&gt; Thanks all<BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; <BR>&gt; Best regards,<BR>&gt;
+ Chung<BR>&gt; <BR>&gt; _______________________________________<BR>&gt; YM - 離線訊息<BR>&gt; 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何 <BR>&gt; 說話都冇走失。<BR>&gt; http://messenger.yahoo.com.hk<BR>&gt; <BR>&gt; <BR>&gt; ------------------------------------------------------------------------<BR>&gt; <BR>&gt; _______________________________________________<BR>&gt; Linuxppc-embedded mailing list<BR>&gt; Linuxppc-embedded@ozlabs.org<BR>&gt; https://ozlabs.org/mailman/listinfo/linuxppc-embedded<BR><BR><BR>-- <BR>Sincerely, <BR>Vitaly<BR></BLOCKQUOTE>  <DIV><BR></DIV><BR><BR>Best regards,<br>Chung<p>_______________________________________<br> YM - 離線訊息<br> 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。<br> http://messenger.yahoo.com.hk
+--0-2110968413-1136857187=:64055--
