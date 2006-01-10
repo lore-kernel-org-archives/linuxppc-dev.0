@@ -1,26 +1,20 @@
-Return-Path: <otavio.sugeno@siemens.com>
-Received: from chekov.siemens.com.br (chekov.siemens.com.br [200.186.153.37])
-	by ozlabs.org (Postfix) with ESMTP id 85BDA689BD
+Return-Path: <siman@bsysjob.sharella.com>
+Received: from sharella.com (unknown [221.221.159.70])
+	by ozlabs.org (Postfix) with ESMTP id 72A5D689E8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Jan 2006 21:19:06 +1100 (EST)
-Received: from sao0021x.siemens.com.br (exchange-cluster [200.186.153.35])
-	by chekov.siemens.com.br (Postfix) with ESMTP id 74B9E169B2A
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Jan 2006 07:56:15 -0200 (BRST)
-Received: from sao1100a.ww101.siemens.net ([129.214.31.218])
-	by sao0021x.siemens.com.br (8.12.10/8.9.3) with ESMTP id k0AA1eCE064619
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Jan 2006 08:01:41 -0200 (BRST)
+	Tue, 10 Jan 2006 23:03:38 +1100 (EST)
+Received: from xbh ([192.168.0.2]) by bsysjob.sharella.com (bsysjob)
+	(MDaemon.PRO.v7.1.0.R) with ESMTP id md50000033995.msg
+	for <linuxppc-embedded@ozlabs.org>; Tue, 10 Jan 2006 19:49:14 +0800
+From: "siman" <siman@bsysjob.sharella.com>
+To: <linuxppc-embedded@ozlabs.org>
+Date: Tue, 10 Jan 2006 20:06:37 +0800
+Message-ID: <000001c615de$58f01590$1200a8c0@xbh>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C615CC.181B3773"
-Date: Tue, 10 Jan 2006 07:56:13 -0200
-Message-ID: <BE0C32DB15562D419477AFD8378515E8266EED@SAO1014V.ww101.siemens.net>
-From: "Sugeno, Otavio Isamu" <otavio.sugeno@siemens.com>
-To: "Jonathan Qiang" <jonathan@haliplex.com.au>
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RES: [Problem] linux 2.6.14 kernel hang up after the uImage
-	uncompressedsuccessfully
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0001_01C61621.6714DC30"
+In-Reply-To: <20060110082311.B29B1689DF@ozlabs.org>
+Subject: port linux to prpmc610  kernel-2.4.25 with MVME2100 patch
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,512 +27,208 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C615CC.181B3773
+------=_NextPart_000_0001_01C61621.6714DC30
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Hi.
-I suggest you check the bd_info structure, if they are the same at =
-u-boot and linux kernel.=20
-See also the link below, it is always a good source to solve problems:
-=20
-http://www.denx.de/wiki/bin/view/DULG/LinuxHangsAfterUncompressingKernel
-=20
-If it is the bd_info is ok, so probably your problem is with some =
-configuration in you board or something that it is not working properly.
-Try to compile a linux kernel only with basic features that you need, =
-for example, serial and ethernet and check what happens.
-=20
-=20
-Otavio I. Sugeno
-Information & Communication
-Com EN PSY DA
-Phone: +55 41 341-5883
-Fax: +55 41 341-5594
-email: otavio.sugeno@siemens.com
-Siemens Brasil 2005 * 100 ANOS
-=20
-=20
+Hi All:
+I still work for port the Linux to the prpmc610 board. I get the MVME2100
+patch on the kernel-2.4.25, so I port base it, because the MVME2100 have the
+MPC8240 CPU  similar  the MPC8245, they all have 603e core.
 
-________________________________
+I use the light a LED on the prpmc610 to trace the kernel code. I start at
+the "head's",  I found it will be dead on CPU initial. The detail
+information is dead on the file "cpu_setup_6xx.S" function below:
 
-De: linuxppc-embedded-bounces@ozlabs.org =
-[mailto:linuxppc-embedded-bounces@ozlabs.org] Em nome de Jonathan Qiang
-Enviada em: ter=E7a-feira, 10 de janeiro de 2006 01:06
-Para: linuxppc-embedded@ozlabs.org
-Assunto: [Problem] linux 2.6.14 kernel hang up after the uImage =
-uncompressedsuccessfully
+setup_common_caches:
+	mfspr	r11,HID0
+	andi.	r0,r11,HID0_DCE
+	ori	r11,r11,HID0_ICE|HID0_DCE
+	ori	r8,r11,HID0_ICFI
+	bne	1f			/* don't invalidate the D-cache */
+	ori	r8,r8,HID0_DCI		/* unless it wasn't enabled */
+1:	sync
+	mtspr	HID0,r8			/* enable and invalidate caches */
+	sync
+	mtspr	HID0,r11		/* enable caches */
+	sync
+	isync
+	blr
 
+it will be dead on the 	"mtspr	HID0,r8			/* enable and
+invalidate caches */" ,
+ 
+who has any experience for this, Please tell me, Thank you so much.
+The attached is MVME2100 patch file. 
+Any very good man may tell me why dead?
 
-Hi,
-=20
-I am doing booting linux kernel 2.6.14.5 from kernel.org on a kind of =
-embedded ppc board, where the chip mpc8272 has been settled.
-But  after u-boot(1.1.4) finished booting itself and uncompressed the =
-uImage(2.6.14.5 based). the kernel can not boot
-Successfully. It stop somewhere. the script is below:=20
-=20
-=20
-U-Boot 1.1.4 (Jan  3 2006 - 15:00:41)
-=20
-MPC8272 Reset Status: Check Stop, External Soft, External Hard
-=20
-MPC8272 Clock Configuration
- - Bus-to-Core Mult 5x, VCO Div 2, 60x Bus Freq  20-60 , Core Freq =
-100-300
- - dfbrg 1, corecnf 0x1b, busdf 7, cpmdf 1, plldf 0, pllmf 7
- - vco_out  528000000, scc_clk  132000000, brg_clk   33000000
- - cpu_clk  330000000, cpm_clk  264000000, bus_clk   66000000
- - pci_clk   22000000
-=20
-CPU:   MPC8272 (HiP7 Rev 14, Mask 1.0 1K50M) at 330 MHz
-I2C:   ready
-DRAM:  SDRAM configuration:
-        Refresh rate =3D 47, CAS latency =3D 3, Using Page Based =
-Interleave
-        Total size: 32 MB
-FLASH Dectected: FLASH MFP, new id is 0x0089, Device ID is 0x8922
-32 MB
-In:    serial
-Out:   serial
-Err:   serial
-Ethos version: ac21 (DEVID:ac2, DEVVER:1, MFGVER: 1)
-CFG_CMXFCR_VALUE=3D0x00370000, CFG_CMXFCR_MASK=3D0x007F0000
-Net:   FCC2 ETHERNET
-Hit any key to stop autoboot:  0
-Using FCC2 ETHERNET device
-## Booting image at 00200000 ...
-   Image Name:   Linux-2.6.14.5
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    750080 Bytes =3D 732.5 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK=20
-=20
-Then I have tried to use BDI2000 to debug the kernel, It seems that the =
-kernel can passed on console_init function. But still no message came =
-out even printk(KERN_NOTICE);  and printk(linux_banner);=20
-=20
+------=_NextPart_000_0001_01C61621.6714DC30
+Content-Type: application/octet-stream; name="mvme2100-linux-2.4.25.patch.bz2"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="mvme2100-linux-2.4.25.patch.bz2"
 
-------_=_NextPart_001_01C615CC.181B3773
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+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
+XckU4UJDNCPBtA==
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML xmlns=3D"http://www.w3.org/TR/REC-html40" xmlns:o =3D=20
-"urn:schemas-microsoft-com:office:office" xmlns:w =3D=20
-"urn:schemas-microsoft-com:office:word" xmlns:st1 =3D=20
-"urn:schemas-microsoft-com:office:smarttags"><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3DWord.Document name=3DProgId>
-<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR>
-<META content=3D"Microsoft Word 10" name=3DOriginator><LINK=20
-href=3D"cid:filelist.xml@01C615EF.067C8A30" =
-rel=3DFile-List><o:SmartTagType=20
-name=3D"time"=20
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"></o:SmartTagT=
-ype><o:SmartTagType=20
-name=3D"date"=20
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"></o:SmartTagT=
-ype><!--[if gte mso 9]><xml>
- <o:OfficeDocumentSettings>
-  <o:DoNotRelyOnCSS/>
- </o:OfficeDocumentSettings>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:SpellingState>Clean</w:SpellingState>
-  <w:DocumentKind>DocumentEmail</w:DocumentKind>
-  <w:EnvelopeVis/>
-  <w:Compatibility>
-   <w:BreakWrappedTables/>
-   <w:SnapToGridInCell/>
-   <w:WrapTextWithPunct/>
-   <w:UseAsianBreakRules/>
-   <w:UseFELayout/>
-  </w:Compatibility>
-  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
- </w:WordDocument>
-</xml><![endif]--><!--[if !mso]>
-<STYLE>st1\:* {
-	BEHAVIOR: url(#default#ieooui)
-}
-</STYLE>
-<![endif]-->
-<STYLE>@font-face {
-	font-family: SimSun;
-}
-@font-face {
-	font-family: @SimSun;
-}
-@page Section1 {size: 612.0pt 792.0pt; margin: 72.0pt 90.0pt 72.0pt =
-90.0pt; mso-header-margin: 35.4pt; mso-footer-margin: 35.4pt; =
-mso-paper-source: 0; }
-P.MsoNormal {
-	FONT-SIZE: 12pt; MARGIN: 0cm 0cm 0pt; FONT-FAMILY: "Times New Roman"; =
-mso-style-parent: ""; mso-pagination: widow-orphan; =
-mso-fareast-font-family: SimSun
-}
-LI.MsoNormal {
-	FONT-SIZE: 12pt; MARGIN: 0cm 0cm 0pt; FONT-FAMILY: "Times New Roman"; =
-mso-style-parent: ""; mso-pagination: widow-orphan; =
-mso-fareast-font-family: SimSun
-}
-DIV.MsoNormal {
-	FONT-SIZE: 12pt; MARGIN: 0cm 0cm 0pt; FONT-FAMILY: "Times New Roman"; =
-mso-style-parent: ""; mso-pagination: widow-orphan; =
-mso-fareast-font-family: SimSun
-}
-A:link {
-	COLOR: blue; TEXT-DECORATION: underline; text-underline: single
-}
-SPAN.MsoHyperlink {
-	COLOR: blue; TEXT-DECORATION: underline; text-underline: single
-}
-A:visited {
-	COLOR: purple; TEXT-DECORATION: underline; text-underline: single
-}
-SPAN.MsoHyperlinkFollowed {
-	COLOR: purple; TEXT-DECORATION: underline; text-underline: single
-}
-SPAN.EmailStyle17 {
-	COLOR: windowtext; FONT-FAMILY: Arial; mso-style-type: =
-personal-compose; mso-style-noshow: yes; mso-ansi-font-size: 10.0pt; =
-mso-bidi-font-size: 10.0pt; mso-ascii-font-family: Arial; =
-mso-hansi-font-family: Arial; mso-bidi-font-family: Arial
-}
-SPAN.SpellE {
-	mso-style-name: ""; mso-spl-e: yes
-}
-DIV.Section1 {
-	page: Section1
-}
-</STYLE>
-<!--[if gte mso 10]>
-<style>
- /* Style Definitions */=20
- table.MsoNormalTable
-	{mso-style-name:"Table Normal";
-	mso-tstyle-rowband-size:0;
-	mso-tstyle-colband-size:0;
-	mso-style-noshow:yes;
-	mso-style-parent:"";
-	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
-	mso-para-margin:0cm;
-	mso-para-margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Times New Roman";}
-</style>
-<![endif]--></HEAD>
-<BODY lang=3DEN-US style=3D"tab-interval: 36.0pt" vLink=3Dpurple =
-link=3Dblue>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
-size=3D2><SPAN=20
-class=3D846075009-10012006>Hi.</SPAN></FONT></DIV>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
-size=3D2><SPAN=20
-class=3D846075009-10012006>I suggest you check the bd_info structure, if =
-they are=20
-the same at u-boot and linux kernel. </SPAN></FONT></DIV>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
-size=3D2><SPAN=20
-class=3D846075009-10012006>See also the link below, it is always a good =
-source to=20
-solve problems:</SPAN></FONT></DIV>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
-size=3D2><SPAN=20
-class=3D846075009-10012006></SPAN></FONT>&nbsp;</DIV>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
-size=3D2><SPAN=20
-class=3D846075009-10012006><A=20
-href=3D"http://www.denx.de/wiki/bin/view/DULG/LinuxHangsAfterUncompressin=
-gKernel">http://www.denx.de/wiki/bin/view/DULG/LinuxHangsAfterUncompressi=
-ngKernel</A></SPAN></FONT></DIV>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
-size=3D2><SPAN=20
-class=3D846075009-10012006></SPAN></FONT>&nbsp;</DIV>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
-size=3D2><SPAN=20
-class=3D846075009-10012006>If it is the bd_info is ok, so probably your =
-problem is=20
-with some configuration in you board or something that it is not working =
-
-properly.</SPAN></FONT></DIV>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
-size=3D2><SPAN=20
-class=3D846075009-10012006>Try to compile a linux kernel only with basic =
-features=20
-that you need, for example, serial and ethernet and check what=20
-happens.</SPAN></FONT></DIV>
-<DIV dir=3Dltr align=3Dleft><FONT face=3DArial color=3D#0000ff =
-size=3D2><SPAN=20
-class=3D846075009-10012006></SPAN></FONT>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<P class=3DMsoAutoSig align=3Dleft><SPAN lang=3DPT-BR=20
-style=3D"FONT-SIZE: 10pt; mso-ansi-language: PT-BR">Otavio I.=20
-Sugeno<BR></SPAN><SPAN lang=3DPT-BR=20
-style=3D"FONT-SIZE: 10pt; mso-ansi-language: PT-BR">Information &amp;=20
-Communication<BR></SPAN><SPAN lang=3DPT-BR=20
-style=3D"FONT-SIZE: 10pt; mso-ansi-language: PT-BR">Com EN PSY =
-DA<BR></SPAN><SPAN=20
-lang=3DPT-BR style=3D"FONT-SIZE: 10pt; mso-ansi-language: PT-BR">Phone: =
-+55 41=20
-341-5883<BR></SPAN><SPAN lang=3DPT-BR=20
-style=3D"FONT-SIZE: 10pt; mso-ansi-language: PT-BR">Fax: +55 41=20
-341-5594<BR></SPAN><SPAN lang=3DPT-BR=20
-style=3D"FONT-SIZE: 10pt; mso-ansi-language: PT-BR">email: <A=20
-href=3D"mailto:otavio.sugeno@siemens.com">otavio.sugeno@siemens.com</A><B=
-R></SPAN><SPAN=20
-lang=3DPT-BR style=3D"FONT-SIZE: 10pt; mso-ansi-language: PT-BR"><FONT=20
-face=3DTim><SPAN lang=3DPT-BR style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial">Siemens=20
-Brasil 2005 </SPAN><B><SPAN lang=3DPT-BR=20
-style=3D"FONT-WEIGHT: bold; FONT-SIZE: 10pt; FONT-FAMILY: Arial">=95 100 =
-
-ANOS<BR></SPAN></B></FONT></SPAN><FONT face=3D"Times New Roman"><SPAN =
-lang=3DPT-BR=20
-style=3D"FONT-SIZE: 10pt; mso-ansi-language: =
-PT-BR"><o:p>&nbsp;</o:p></SPAN></FONT></P>
-<DIV>&nbsp;</DIV><BR>
-<DIV class=3DOutlookMessageHeader lang=3Dpt-br dir=3Dltr align=3Dleft>
-<HR tabIndex=3D-1>
-<FONT face=3DTahoma size=3D2><B>De:</B> =
-linuxppc-embedded-bounces@ozlabs.org=20
-[mailto:linuxppc-embedded-bounces@ozlabs.org] <B>Em nome de </B>Jonathan =
-
-Qiang<BR><B>Enviada em:</B> ter=E7a-feira, 10 de janeiro de 2006=20
-01:06<BR><B>Para:</B> linuxppc-embedded@ozlabs.org<BR><B>Assunto:</B> =
-[Problem]=20
-linux 2.6.14 kernel hang up after the uImage=20
-uncompressedsuccessfully<BR></FONT><BR></DIV>
-<DIV></DIV>
-<DIV class=3DSection1>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial">Hi,<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">I am doing booting <SPAN=20
-class=3DSpellE>linux</SPAN> kernel 2.6.14.5 from kernel.org on a kind of =
-
-</SPAN></FONT><B><FONT color=3Dblack><SPAN=20
-style=3D"FONT-WEIGHT: bold; COLOR: black">embedded <SPAN =
-class=3DSpellE>ppc</SPAN>=20
-board, where the chip mpc8272 has been =
-settled.<o:p></o:p></SPAN></FONT></B></P>
-<P class=3DMsoNormal><B><FONT face=3D"Times New Roman" color=3Dblack =
-size=3D3><SPAN=20
-style=3D"FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black">But <SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;</SPAN>after u-boot(1.1.4) finished =
-booting=20
-itself and uncompressed the <SPAN class=3DSpellE>uImage</SPAN>(2.6.14.5 =
-based).=20
-the kernel can not boot<o:p></o:p></SPAN></FONT></B></P>
-<P class=3DMsoNormal><B><FONT face=3D"Times New Roman" color=3Dblack =
-size=3D3><SPAN=20
-style=3D"FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: black">Successfully. =
-It stop=20
-somewhere. the script is below: <o:p></o:p></SPAN></FONT></B></P>
-<P class=3DMsoNormal><B><FONT face=3D"Times New Roman" color=3Dblack =
-size=3D3><SPAN=20
-style=3D"FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: =
-black"><o:p>&nbsp;</o:p></SPAN></FONT></B></P>
-<P class=3DMsoNormal><B><FONT face=3D"Times New Roman" color=3Dblack =
-size=3D3><SPAN=20
-style=3D"FONT-WEIGHT: bold; FONT-SIZE: 12pt; COLOR: =
-black"><o:p>&nbsp;</o:p></SPAN></FONT></B></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">U-Boot 1.1.4=20
-(</SPAN></FONT><st1:date Year=3D"2006" Day=3D"3" Month=3D"1"><FONT =
-face=3DArial=20
-size=3D2><SPAN style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Jan<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp; </SPAN>3 =
-2006</SPAN></FONT></st1:date><FONT=20
-face=3DArial size=3D2><SPAN style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial"> -=20
-</SPAN></FONT><st1:time Minute=3D"0" Hour=3D"15"><FONT face=3DArial =
-size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial">15:00:41</SPAN></FONT></st1:time><FONT=20
-face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial">)<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">MPC8272 Reset Status: =
-Check Stop,=20
-External Soft, External Hard<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">MPC8272 Clock=20
-Configuration<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;</SPAN>- Bus-to-Core <SPAN=20
-class=3DSpellE>Mult</SPAN> 5x, VCO Div 2, 60x Bus Freq<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp; </SPAN>20-60 , Core Freq=20
-100-300<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;</SPAN>- <SPAN =
-class=3DSpellE>dfbrg</SPAN> 1,=20
-<SPAN class=3DSpellE>corecnf</SPAN> 0x1b, <SPAN =
-class=3DSpellE>busdf</SPAN> 7, <SPAN=20
-class=3DSpellE>cpmdf</SPAN> 1, <SPAN class=3DSpellE>plldf</SPAN> 0, =
-<SPAN=20
-class=3DSpellE>pllmf</SPAN> 7<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;</SPAN>- <SPAN =
-class=3DSpellE>vco_out</SPAN><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp; </SPAN>528000000, <SPAN=20
-class=3DSpellE>scc_clk</SPAN><SPAN style=3D"mso-spacerun: yes">&nbsp;=20
-</SPAN>132000000, <SPAN class=3DSpellE>brg_clk</SPAN><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;=20
-</SPAN>33000000<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;</SPAN>- <SPAN =
-class=3DSpellE>cpu_clk</SPAN><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp; </SPAN>330000000, <SPAN=20
-class=3DSpellE>cpm_clk</SPAN><SPAN style=3D"mso-spacerun: yes">&nbsp;=20
-</SPAN>264000000, <SPAN class=3DSpellE>bus_clk</SPAN><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;=20
-</SPAN>66000000<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;</SPAN>- <SPAN =
-class=3DSpellE>pci_clk</SPAN><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;=20
-</SPAN>22000000<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">CPU:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>MPC8272 (HiP7 Rev 14, =
-Mask 1.0=20
-1K50M) at 330 MHz<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">I2C:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; =
-</SPAN>ready<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">DRAM:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp; </SPAN>SDRAM=20
-configuration:<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
-</SPAN>Refresh rate =3D 47, CAS latency =3D 3, Using Page Based=20
-Interleave<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
-</SPAN>Total size: 32 MB<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">FLASH <SPAN=20
-class=3DSpellE>Dectected</SPAN>: FLASH MFP, new id is 0x0089, Device ID =
-is=20
-0x8922<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">32 =
-MB<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">In:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;&nbsp;=20
-</SPAN>serial<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Out:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;=20
-</SPAN>serial<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Err:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;=20
-</SPAN>serial<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Ethos version: ac21 =
-(DEVID:ac2,=20
-DEVVER:1, MFGVER: 1)<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial">CFG_CMXFCR_VALUE=3D0x00370000,=20
-CFG_CMXFCR_MASK=3D0x007F0000<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Net:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>FCC2=20
-ETHERNET<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Hit any key to stop <SPAN=20
-class=3DSpellE>autoboot</SPAN>:<SPAN style=3D"mso-spacerun: yes">&nbsp;=20
-</SPAN>0<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Using FCC2 ETHERNET=20
-device<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">## Booting image at =
-00200000=20
-...<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>Image Name:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;=20
-</SPAN>Linux-2.6.14.5<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>Image Type:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>PowerPC Linux Kernel =
-Image (<SPAN=20
-class=3DSpellE>gzip</SPAN> compressed)<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>Data Size:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp;&nbsp; </SPAN>750080 Bytes =3D =
-732.5 <SPAN=20
-class=3DSpellE>kB</SPAN><o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>Load Address:=20
-00000000<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>Entry Point:<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp; =
-</SPAN>00000000<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>Verifying Checksum ...=20
-OK<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial"><SPAN=20
-style=3D"mso-spacerun: yes">&nbsp;&nbsp; </SPAN>Uncompressing Kernel =
-Image ... OK=20
-<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: Arial">Then I have tried to use =
-BDI2000 to=20
-debug the kernel, It seems that the kernel can passed on <SPAN=20
-class=3DSpellE>console_init</SPAN> function. But still no message came =
-out even=20
-<SPAN class=3DSpellE>printk</SPAN>(KERN_NOTICE);<SPAN=20
-style=3D"mso-tab-count: 1">&nbsp; </SPAN>and <SPAN=20
-class=3DSpellE>printk</SPAN>(<SPAN class=3DSpellE>linux_banner</SPAN>);=20
-<o:p></o:p></SPAN></FONT></P>
-<P class=3DMsoNormal><FONT face=3DArial size=3D2><SPAN=20
-style=3D"FONT-SIZE: 10pt; FONT-FAMILY: =
-Arial"><o:p>&nbsp;</o:p></SPAN></FONT></P></DIV></BODY></HTML>
-
-------_=_NextPart_001_01C615CC.181B3773--
+------=_NextPart_000_0001_01C61621.6714DC30--
