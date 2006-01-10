@@ -1,13 +1,20 @@
-Return-Path: <atul.sabharwal@exgate.tek.com>
+Return-Path: <happa@wmlab.csie.ncu.edu.tw>
+Received: from wmlab.csie.ncu.edu.tw (wmlab.csie.ncu.edu.tw [140.115.155.134])
+	by ozlabs.org (Postfix) with ESMTP id CBF92689AC
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 10 Jan 2006 20:30:42 +1100 (EST)
+Received: from 140.115.155.134 (localhost.csie.ncu.edu.tw [127.0.0.1])
+	by wmlab.csie.ncu.edu.tw (Postfix) with SMTP id 069741100F0
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 10 Jan 2006 16:58:08 +0800 (CST)
+From: happa@wmlab.csie.ncu.edu.tw
+To: linuxppc-embedded@ozlabs.org
+Date: Tue, 10 Jan 2006 16:58:08 +0800(CST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6158E.F9181673"
-Date: Mon, 9 Jan 2006 18:39:23 -0800
-Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F2018663C9@us-bv-m23.global.tektronix.net>
-From: <atul.sabharwal@exgate.tek.com>
-To: <r26191@freescale.com>, <hubert.loewenguth@thales-bm.com>,
-	<Linuxppc-embedded@ozlabs.org>
-Subject: RE: mpc8260 fec enet transmit time out
+Content-Type: multipart/mixed;
+	boundary="--43C3772000000F8B@wmlab.csie.ncu.edu.tw"
+Message-Id: <20060110085808.069741100F0@wmlab.csie.ncu.edu.tw>
+Subject: Exceptin occurs after execute activate_mm()
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,728 +25,120 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+----43C3772000000F8B@wmlab.csie.ncu.edu.tw
+Content-Type: text/plain; Charset=Big5;
+Content-Transfer-Encoding: 8bit
+
+Hi,
+I am booting my linux kernel via NFS.
+
+Here is my environment:
+CPU:Motorola ppc8245
+Linux version 2.6.14 
+gcc version 3.3.3 (DENX ELDK 3.1.1 3.3.3-9)
+
+The root file system is mounted via NFS, than it start to call "run_init_process("/sbin/init")".
+After do this, the following error message will dump.
+Oops: kernel access of bad area, sig: 11 [#2]
+NIP: 00153884 LR: 0003AC7C SP: 00581390 REGS: 005812e0 TRAP: 0300    Not tainted
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 11000F5A, DSISR: 08000000
+TASK = 0057f730[1] 'init' THREAD: 00580000
+Last syscall: 11
+GPR00: 11000F5A 00581390 0057F730 00000003 00586000 00581420 00581460 0000000A
+GPR08: 00274000 11000F00 00000000 00290000 0057F900 50482121 10016DB4 10016DB4
+GPR16: 00000000 0A3421AD 00000000 00000801 00000074 00000000 0000007C 005D2AA0
+GPR24: 00581420 00581420 00000003 00000003 00274060 00000000 00586000 005D2AA0
+NIP [00153884] ipg_interrupt_handler+0x1c/0x114
+LR [0003ac7c] __do_IRQ+0x164/0x214
+Call trace:
+ [0003ac7c] __do_IRQ+0x164/0x214
+ [00006280] do_IRQ+0x3c/0x9c
+ [00005050] ret_from_except+0x0/0x14
+ [00005328] die+0x94/0x98
+ [0000e6cc] bad_page_fault+0x48/0x5c
+ [00004e30] handle_page_fault+0x7c/0x80
+ [001797e8] __alloc_skb+0x64/0x12c
+ [0018f9d0] qdisc_restart+0x100/0x1fc
+ [00180a04] dev_queue_xmit+0x10c/0x258
+ [0019eda4] ip_output+0x238/0x2a0
+ [0019e82c] ip_push_pending_frames+0x334/0x438
+ [001be790] udp_push_pending_frames+0x1dc/0x200
+ [001bd78c] udp_sendmsg+0x528/0x600
+ [001c6168] inet_sendmsg+0xb4/0xc8
+ [00173510] sock_sendmsg+0xac/0xcc
+Kernel panic - not syncing: Aiee, killing interrupt handler!
+ <0>Rebooting in 180 seconds..
+
+>From dump messages I ckeck the source code in function "ipg_interrupt_handler+0x1c/0x114", the exception 
+is cause by access PCI memory space of my NIC device, but this access is fine before run_init_process("/sbin/init")
+is called.
+Here is my NIC device logical and physical mappping. 
+The physical base address of this NIC is assign to 0xbffcff00 
+The virtual memory is map to 0x11000F00
+
+
+I also trace call stack for run_init_process("/sbin/init").
+   
+run_init_process("/sbin/init")
+   |
+   v
+...wait until the file got from NFS .....     
+   |
+   v 
+ load_elf_binary()
+   |
+   v
+ flush_old_exec()
+   |
+   v
+ exec_mmap()
+   |
+   v
+ activate_mm() ---> After this function is called, to access PCI memory space of my NIC device the excepton will occur.
+                    
+I have also check "Segment Regiser" of mpc8245.
+Before the activate_mm() called the "Segment Regiser" is list as follow:
+SR0  : 20000000
+SR1  : 20000111
+SR2  : 20000222
+SR3  : 20000333
+SR4  : 20000444
+SR5  : 20000555
+SR6  : 20000666
+SR7  : 20000777
+SR8  : 20000888
+SR9  : 20000999
+SR10 : 20000AAA
+SR11 : 20000BBB
+SR12 : 20000CCC
+SR13 : 20000DDD
+SR14 : 20000EEE
+SR15 : 20000FFF
+                       
+After the activate_mm() called the "Segment Regiser" is list as follow:
+SR0  : 60003810
+SR1  : 60003921
+SR2  : 60003A32
+SR3  : 60003B43
+SR4  : 60003C45
+SR5  : 60003D65
+SR6  : 60003E76
+SR7  : 60003F87
+SR8  : 20000888
+SR9  : 20000999
+SR10 : 20000AAA
+SR11 : 20000BBB
+SR12 : 20000CCC
+SR13 : 20000DDD
+SR14 : 20000EEE
+SR15 : 20000FFF
 
-------_=_NextPart_001_01C6158E.F9181673
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+I think the memory translate have problem after call "activate_mm()".      
 
-How do you know that the FEC MAC & PHY are connected correctly?  Check
-the CLK's generated by the PHY.
+Is my MMU setting have problems, or someone would tell me which setting or configure I need to check?
 
-Any signal issues (with a scope) ?  Can you read/write the Phy registers
-using the MDIO channel? =20
+/Wen
 
-=20
 
-Check the link register in the Phy if it gives any false link status?
-Also, the driver might have auto switching
-
-Of Ethernet interfaces or might have a timeout and stop any
-transmit/receive which is causing the lockup.
-
-Force the driver to re-initialize after a timeout might be a workaround.
-
-=20
-
---
-
-Atul
-
-=20
-
-________________________________
-
-From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Ho
-Jeffrey-r26191
-Sent: Monday, January 09, 2006 6:27 PM
-To: 'hubert.loewenguth'; Linuxppc-embedded@ozlabs.org
-Subject: RE: mpc8260 fcc enet transmit time out
-
-=20
-
-On MPC8560 port of linuxppc-2.4, on the Gianfar driver for TSEC and FEC,
-there is a mode call phy polling mode can be enable.
-
-=20
-
-In one of our hw, we are using realtek 10/100phy which don't have
-interrupt as well.
-
-We config that phy to use the polling mode in Gianfar. We can do plug
-and unplug with no problem.
-
-My suggetsion is to check how that driver do the polling and use it with
-your fcc_enet.
-
-Regards,=20
-Jeffrey Ho=20
-Freescale Semiconductor HK Ltd=20
-Tel: 852-26668050=20
-
-=20
-
-	=20
-
-=09
-________________________________
-
-
-	From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of
-hubert.loewenguth
-	Sent: Tuesday, January 10, 2006 1:27 AM
-	To: Linuxppc-embedded@ozlabs.org
-	Subject: mpc8260 fcc enet transmit time out
-
-	hi the community.
-	I have already posted a question about my problem but it seems
-that nobody has encounter the same matter.
-	So I have made numerous tests and researches and seeing that I
-still have not succeed in solving it, I try again tyo send you my bug.
-=09
-	I use a MPC8260 with linux 2.4.20.
-	The problem is with the fcc_enet driver.
-	I have no MII phy interrupt line with my LXT971 Phy in front of
-the powerpc.
-	Seeing that I have no interrupt line, I have configured the
-driver to be in half duplex, and the LXT971 too.
-	I'm sure that the driver is in half-duplex mode an the LXT971
-too, and the auto-negociation is ok.
-	Everything works fine, but, if I do successive plugs/unplugs
-during important data transfert, The driver enter into an infinite loop:
-=09
-	# NETDEV WATCHDOG: eth0: transmit timed out
-	eth0: transmit timed out.
-	 Ring data dump: cur_tx c019f748 tx_free 0 cur_rx c019f690.
-	 Tx @base c019f708 :
-	1c00 055c 011cd06a
-	5c00 003b 011cd86a
-	...
-	1c00 055c 011d486a
-	3c00 05ea 011d406a
-	 Rx @base c019f608 :
-	9c00 0040 01f3e000
-	9c00 0040 01f3e800
-	...
-	9c00 0040 01f3d000
-	bc00 0040 01f2f800
-	NETDEV WATCHDOG: eth0: transmit timed out
-	eth0: transmit timed out.
-	 Ring data dump: cur_tx c019f748 tx_free 0 cur_rx c019f698.
-	 Tx @base c019f708 :
-	1c00 055c 011cd06a
-	5c00 003b 011cd86a
-	1c00 05ea 011ce06a
-	.....
-=09
-	I have found, on the linux-embended forum, a personn who has the
-same problem:
-=09
-http://ozlabs.org/pipermail/linuxppc-embedded/2001-December/005714.html
-	But I'm sure about my pin connections ans so the reponse to this
-personn doesn't solve my problem
-=09
-	More interresting this one :
-=09
-http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016539.html
-	This personn seems to have the same troubleshouting than me .
-	He has tried to apply the patch provided by freescale, but it
-doesn't seem to correct it.
-=09
-	So I have had just a little piece of trace in order to see when
-this infernal loop appear.
-	I have added some trace in the fcc_enet_start_xmit .
-	has you know, after some kind of transmit errors, the
-transmitter need to be restarted, and so I have added some traces to see
-when it is restarted
-=09
-	    /* Some transmit errors cause the transmitter to shut
-	         * down.  We now issue a restart transmit.  Since the
-	         * errors close the BD and update the pointers, the
-restart
-	         * _should_ pick up without having to reset any of our
-	         * pointers either.  Also, To workaround 8260 device
-erratum=20
-	         * CPM37, we must disable and then re-enable the
-transmitter
-	         * following a Late Collision, Underrun, or Retry Limit
-error.
-	         */
-	   =20
-=09
-	# UNDERRUN ! =3D=3D> RESTART
-	CARRIER LOST !
-	CARRIER LOST !
-	 UNDERRUN ! =3D=3D> RESTART
-	CARRIER LOST !
-	CARRIER LOST !
-	UNDERRUN ! =3D=3D> RESTART
-	UNDERRUN ! =3D=3D> RESTART
-	CARRIER LOST !
-	........
-	CARRIER LOST !
-	CARRIER LOST !
-	UNDERRUN ! =3D=3D> RESTART
-	CARRIER LOST !
-	CARRIER LOST !
-	CARRIER LOST !
-	CARRIER LOST !
-	CARRIER LOST !
-	CARRIER LOST !
-	CARRIER LOST !
-	UNDERRUN ! =3D=3D> RESTART
-=09
-	NETDEV WATCHDOG: eth0: transmit timed out
-	eth0: transmit timed out.
-	 Ring data dump: cur_tx c019f778 tx_free 0 cur_rx c019f690.
-	 Tx @base c019f708 :
-	1c02 055c 012cd86a
-	9c00 05ea 012cd06a
-	9c00 05ea 012f706a
-	9c00 05ea 012cf06a
-	9c00 05ea 012cf86a
-	9c00 05ea 0118506a
-=09
-	Some personns have said me to try with 2.6 drivers but it's
-exactly the same problem.=20
-	( even if I'm a little bit surprised to see that with the  2.6
-version drivers seems to be uncompatible with boards wich use MDIO
-without PHY
-	interrupt.the #define PHY_INTERRUPT condition of the 2.4 drivers
-version has
-	disapeared =3D> with this new drivers you can't use MDIO without
-PHY interrupt !!
-	it was possible in the 2.4 version.
-	- seeing that the "fep->link" value is enabled only on a PHY
-interrupt .
-	I can't have this condition OK without PHY interrupt.
-	 "fep->link" can be asserted in the mii_parse_sr function, but
-has it is
-	indicated in the comment in the drivers :
-	"/* Somehow does the 971 tell me that the link is down
-	 * the first read after power-up.
-	 * read here to get a valid value in ack_int */"
-	That's true, the LXT 971A tell that the link is down, and seeing
-that I
-	have no interrupt, the fep->link is never asserted again.
-	So, I have commented the first lines of the fcc_enet_start_xmit
-function
-	which verify the value of fep->link.
-	I have added a #ifdef PHY_INTERRUPT condition before installing
-the ISR
-	for this interrupt.
-	And thanks to that, I have been able to test the new driver 2.6
-.
-	But unfortunetly this doesn't solve my problem.)
-=09
-	So 2.6 driver is not the solution of my problem.
-=09
-	I'm asking myself if this can be due to CPM21, or CPM22, or
-CPM119 known bugs on mpc8260 ?
-	(see
-http://www.freescale.com/files/32bit/doc/data_sheet/MPC8260CE.pdf ) but
-I don't think so.
-	Perhaps, I imagine that in fact the MPC8260 transmitter doesn't
-restart correctly ?
-	        (Also, To workaround 8260 device erratum=20
-	         * CPM37, we must disable and then re-enable the
-transmitter
-	         * following a Late Collision, Underrun, or Retry Limit
-error)
-=09
-	Is there anybody having encounter the same problem?
-	Is there anybody having done some test of  numerous plug/unplug
-during important data transfert with a half-duplex connection on
-mpc8260?
-	Is there anybody having an idea to help me ?
-=09
-	Thanks to the community for any help, I'm really desepareted
-here
-=09
-	(PS : sorry for my bad english)
-=09
-=09
-=09
-
-
-------_=_NextPart_001_01C6158E.F9181673
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<!--[if !mso]>
-<style>
-v\:* {behavior:url(#default#VML);}
-o\:* {behavior:url(#default#VML);}
-w\:* {behavior:url(#default#VML);}
-.shape {behavior:url(#default#VML);}
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:PMingLiU;
-	panose-1:2 1 6 1 0 1 1 1 1 1;}
-@font-face
-	{font-family:Tahoma;
-	panose-1:2 11 6 4 3 5 4 4 2 4;}
-@font-face
-	{font-family:"\@PMingLiU";
-	panose-1:0 0 0 0 0 0 0 0 0 0;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	color:black;}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:blue;
-	text-decoration:underline;}
-p
-	{mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	color:black;}
-span.EmailStyle18
-	{mso-style-type:personal-reply;
-	font-family:Arial;
-	color:navy;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body bgcolor=3Dwhite lang=3DEN-US link=3Dblue vlink=3Dblue>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>How do you know that the FEC MAC =
-&amp; PHY
-are connected correctly?&nbsp; Check the CLK&#8217;s generated by the =
-PHY.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Any signal issues (with a scope) =
-?&nbsp; Can
-you read/write the Phy registers using the MDIO channel?&nbsp; =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Check the link register in the Phy =
-if it
-gives any false link status?&nbsp; Also, the driver might have auto =
-switching<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Of Ethernet interfaces or might =
-have a
-timeout and stop any transmit/receive which is causing the =
-lockup.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Force the driver to re-initialize =
-after a
-timeout might be a workaround.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>--<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Atul<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<div>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-color=3Dblack face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;color:windowtext'>
-
-<hr size=3D3 width=3D"100%" align=3Dcenter tabindex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal><b><font size=3D2 color=3Dblack face=3DTahoma><span
-style=3D'font-size:10.0pt;font-family:Tahoma;color:windowtext;font-weight=
-:bold'>From:</span></font></b><font
-size=3D2 color=3Dblack face=3DTahoma><span =
-style=3D'font-size:10.0pt;font-family:Tahoma;
-color:windowtext'> linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] <b><span =
-style=3D'font-weight:bold'>On
-Behalf Of </span></b>Ho Jeffrey-r26191<br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Monday, January 09, =
-2006
-6:27 PM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b> 'hubert.loewenguth';
-Linuxppc-embedded@ozlabs.org<br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> RE: mpc8260 fcc =
-enet
-transmit time out</span></font><font color=3Dblack><span =
-style=3D'color:windowtext'><o:p></o:p></span></font></p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New =
-Roman"><span
-style=3D'font-size:12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dblue face=3DPMingLiU><span
-style=3D'font-size:10.0pt;font-family:PMingLiU;color:blue'>On MPC8560 =
-port of
-linuxppc-2.4, on the Gianfar driver for TSEC and FEC, there is a mode =
-call phy
-polling mode can be enable.</span></font><o:p></o:p></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New =
-Roman"><span
-style=3D'font-size:12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dblue face=3DPMingLiU><span
-style=3D'font-size:10.0pt;font-family:PMingLiU;color:blue'>In one of our =
-hw, we
-are using realtek 10/100phy which don't have interrupt as =
-well.</span></font><o:p></o:p></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dblue face=3DPMingLiU><span
-style=3D'font-size:10.0pt;font-family:PMingLiU;color:blue'>We config =
-that phy to
-use the polling mode in Gianfar. We can do plug and unplug with no =
-problem.</span></font><o:p></o:p></p>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dblue face=3DPMingLiU><span
-style=3D'font-size:10.0pt;font-family:PMingLiU;color:blue'>My suggetsion =
-is to
-check how that driver do the polling and use it with your =
-fcc_enet.</span></font><o:p></o:p></p>
-
-</div>
-
-<p><font size=3D2 color=3Dblack face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><!-- Converted from text/rtf format =
--->Regards,</span></font>
-<br>
-<font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Jeffrey
-Ho</span></font> <br>
-<font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Freescale
-Semiconductor HK Ltd</span></font> <br>
-<font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>Tel:
-852-26668050</span></font> <o:p></o:p></p>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New =
-Roman"><span
-style=3D'font-size:12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-</div>
-
-<blockquote style=3D'border:none;border-left:solid blue =
-1.0pt;padding:0in 0in 0in 3.0pt;
-margin-left:2.5pt;margin-top:5.0pt;margin-right:0in;margin-bottom:5.0pt'>=
-
-
-<p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New =
-Roman"><span
-style=3D'font-size:12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-color=3Dblack face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
-
-<hr size=3D3 width=3D"100%" align=3Dcenter tabIndex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal style=3D'margin-bottom:12.0pt'><b><font size=3D2 =
-color=3Dblack
-face=3DTahoma><span =
-style=3D'font-size:10.0pt;font-family:Tahoma;font-weight:bold'>From:</spa=
-n></font></b><font
-size=3D2 face=3DTahoma><span =
-style=3D'font-size:10.0pt;font-family:Tahoma'>
-linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] <b><span =
-style=3D'font-weight:bold'>On
-Behalf Of </span></b>hubert.loewenguth<br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Tuesday, January =
-10, 2006
-1:27 AM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b> =
-Linuxppc-embedded@ozlabs.org<br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> mpc8260 fcc enet =
-transmit
-time out</span></font><o:p></o:p></p>
-
-<p class=3DMsoNormal style=3D'margin-bottom:12.0pt'><font size=3D3 =
-color=3Dblack
-face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>hi the =
-community.<br>
-I have already posted a question about my problem but it seems that =
-nobody has
-encounter the same matter.<br>
-So I have made numerous tests and researches and seeing that I still =
-have not
-succeed in solving it, I try again tyo send you my bug.<br>
-<br>
-I use a MPC8260 with linux 2.4.20.<br>
-The problem is with the fcc_enet driver.<br>
-I have no MII phy interrupt line with my LXT971 Phy in front of the =
-powerpc.<br>
-Seeing that I have no interrupt line, I have configured the driver to be =
-in
-half duplex, and the LXT971 too.<br>
-I'm sure that the driver is in half-duplex mode an the LXT971 too, and =
-the
-auto-negociation is ok.<br>
-Everything works fine, but, if I do successive plugs/unplugs during =
-important
-data transfert, The driver enter into an infinite loop:<br>
-<br>
-</span></font><i><font size=3D2><span =
-style=3D'font-size:10.0pt;font-style:italic'>#
-NETDEV WATCHDOG: eth0: transmit timed out<br>
-eth0: transmit timed out.<br>
-&nbsp;Ring data dump: cur_tx c019f748 tx_free 0 cur_rx c019f690.<br>
-&nbsp;Tx @base c019f708 :<br>
-1c00 055c 011cd06a<br>
-5c00 003b 011cd86a<br>
-...<br>
-1c00 055c 011d486a<br>
-3c00 05ea 011d406a<br>
-&nbsp;Rx @base c019f608 :<br>
-9c00 0040 01f3e000<br>
-9c00 0040 01f3e800<br>
-...<br>
-9c00 0040 01f3d000<br>
-bc00 0040 01f2f800<br>
-NETDEV WATCHDOG: eth0: transmit timed out<br>
-eth0: transmit timed out.<br>
-&nbsp;Ring data dump: cur_tx c019f748 tx_free 0 cur_rx c019f698.<br>
-&nbsp;Tx @base c019f708 :<br>
-1c00 055c 011cd06a<br>
-5c00 003b 011cd86a<br>
-1c00 05ea 011ce06a<br>
-.....<br>
-<br>
-</span></font></i>I have found, on the linux-embended forum, a personn =
-who has
-the same problem:<br>
-<font color=3D"#3333ff"><span style=3D'color:#3333FF'><a
-href=3D"http://ozlabs.org/pipermail/linuxppc-embedded/2001-December/00571=
-4.html">http://ozlabs.org/pipermail/linuxppc-embedded/2001-December/00571=
-4.html</a></span></font><br>
-But I'm sure about my pin connections ans so the reponse to this personn
-doesn't solve my problem<br>
-<br>
-More interresting this one :<br>
-<font color=3D"#3333ff"><span style=3D'color:#3333FF'><a
-href=3D"http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016539=
-.html">http://ozlabs.org/pipermail/linuxppc-embedded/2005-January/016539.=
-html</a></span></font><br>
-This personn seems to have the same troubleshouting than me .<br>
-He has tried to apply the patch provided by freescale, but it doesn't =
-seem to
-correct it.<br>
-<i><font size=3D2><span =
-style=3D'font-size:10.0pt;font-style:italic'><br>
-</span></font></i>So I have had just a little piece of trace in order to =
-see
-when this infernal loop appear.<br>
-I have added some trace in the fcc_enet_start_xmit .<br>
-has you know, after some kind of transmit errors, the transmitter need =
-to be
-restarted, and so I have added some traces to see when it is =
-restarted<br>
-<br>
-&nbsp;&nbsp;&nbsp; /* Some transmit errors cause the transmitter to =
-shut<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;* down.&nbsp; We now issue a
-restart transmit.&nbsp; Since the<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;* errors close the BD and =
-update
-the pointers, the restart<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;* _should_ pick up without =
-having
-to reset any of our<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;* pointers either.&nbsp; =
-Also, To
-workaround 8260 device erratum <br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;* CPM37, we must disable and =
-then
-re-enable the transmitter<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;* following a Late =
-Collision,
-Underrun, or Retry Limit error.<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;*/<br>
-&nbsp;&nbsp;&nbsp; <br>
-<br>
-<font size=3D2><span style=3D'font-size:10.0pt'># UNDERRUN ! =3D=3D&gt; =
-RESTART<br>
-CARRIER LOST !<br>
-CARRIER LOST !<br>
-&nbsp;UNDERRUN ! =3D=3D&gt; RESTART<br>
-CARRIER LOST !<br>
-CARRIER LOST !<br>
-UNDERRUN ! =3D=3D&gt; RESTART<br>
-UNDERRUN ! =3D=3D&gt; RESTART<br>
-CARRIER LOST !<br>
-........<br>
-CARRIER LOST !<br>
-CARRIER LOST !<br>
-UNDERRUN ! =3D=3D&gt; RESTART<br>
-CARRIER LOST !<br>
-CARRIER LOST !<br>
-CARRIER LOST !<br>
-CARRIER LOST !<br>
-CARRIER LOST !<br>
-CARRIER LOST !<br>
-CARRIER LOST !<br>
-UNDERRUN ! =3D=3D&gt; RESTART<br>
-<i><span style=3D'font-style:italic'><br>
-N</span></i>ETDEV WATCHDOG: eth0: transmit timed out<br>
-eth0: transmit timed out.<br>
-&nbsp;Ring data dump: cur_tx c019f778 tx_free 0 cur_rx c019f690.<br>
-&nbsp;Tx @base c019f708 :<br>
-1c02 055c 012cd86a<br>
-9c00 05ea 012cd06a<br>
-9c00 05ea 012f706a<br>
-9c00 05ea 012cf06a<br>
-9c00 05ea 012cf86a<br>
-9c00 05ea 0118506a</span></font><br>
-<i><font size=3D2><span =
-style=3D'font-size:10.0pt;font-style:italic'><br>
-</span></font></i>Some personns have said me to try with 2.6 drivers but =
-it's
-exactly the same problem. <br>
-( even if I'm a little bit surprised to see that with the&nbsp; 2.6 =
-version
-drivers seems to be uncompatible with boards wich use MDIO without =
-PHY<br>
-interrupt.the #define PHY_INTERRUPT condition of the 2.4 drivers version =
-has<br>
-disapeared =3D&gt; with this new drivers you can't use MDIO without PHY =
-interrupt
-!!<br>
-it was possible in the 2.4 version.<br>
-- seeing that the &quot;fep-&gt;link&quot; value is enabled only on a =
-PHY
-interrupt .<br>
-I can't have this condition OK without PHY interrupt.<br>
-&nbsp;&quot;fep-&gt;link&quot; can be asserted in the mii_parse_sr =
-function,
-but has it is<br>
-indicated in the comment in the drivers :<br>
-&quot;/* Somehow does the 971 tell me that the link is down<br>
-&nbsp;* the first read after power-up.<br>
-&nbsp;* read here to get a valid value in ack_int */&quot;<br>
-That's true, the LXT 971A tell that the link is down, and seeing that =
-I<br>
-have no interrupt, the fep-&gt;link is never asserted again.<br>
-So, I have commented the first lines of the fcc_enet_start_xmit =
-function<br>
-which verify the value of fep-&gt;link.<br>
-I have added a #ifdef PHY_INTERRUPT condition before installing the =
-ISR<br>
-for this interrupt.<br>
-And thanks to that, I have been able to test the new driver 2.6 .<br>
-But unfortunetly this doesn't solve my problem.)<br>
-<br>
-So 2.6 driver is not the solution of my problem.<br>
-<br>
-I'm asking myself if this can be due to CPM21, or CPM22, or CPM119 known =
-bugs
-on mpc8260 ?<br>
-(see <a =
-href=3D"http://www.freescale.com/files/32bit/doc/data_sheet/MPC8260CE.pdf=
-">http://www.freescale.com/files/32bit/doc/data_sheet/MPC8260CE.pdf</a>
-) but I don't think so.<br>
-Perhaps, I imagine that in fact the MPC8260 transmitter doesn't restart
-correctly ?<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; (Also, To workaround 8260 device =
-erratum <br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;* CPM37, we must disable and =
-then
-re-enable the transmitter<br>
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;* following a Late =
-Collision,
-Underrun, or Retry Limit error)<br>
-<br>
-Is there anybody having encounter the same problem?<br>
-Is there anybody having done some test of&nbsp; numerous =
-plug/unplug&nbsp;
-during important data transfert with a half-duplex connection on =
-mpc8260?<br>
-Is there anybody having an idea to help me ?<br>
-<br>
-Thanks to the community for any help, I'm really desepareted here<br>
-<br>
-(PS : sorry for my bad english)<br>
-<br>
-<br>
-<o:p></o:p></p>
-
-</blockquote>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C6158E.F9181673--
+----43C3772000000F8B@wmlab.csie.ncu.edu.tw--
