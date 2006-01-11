@@ -1,14 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <17348.37558.434652.697604@cargo.ozlabs.ibm.com>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BB05C689DF
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 18:17:15 +1100 (EST)
+Date: Tue, 10 Jan 2006 23:10:32 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20060111071032.GA28843@gate.ebshome.net>
 References: <17348.35120.840409.283964@cargo.ozlabs.ibm.com>
 	<Pine.LNX.4.44.0601102238530.15824-100000@gate.crashing.org>
 	<17348.37558.434652.697604@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AE3F00FD-6A4C-4A21-9075-2F0FE8BCB83E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Wed, 11 Jan 2006 00:10:02 -0600
-To: Paul Mackerras <paulus@samba.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17348.37558.434652.697604@cargo.ozlabs.ibm.com>
 Cc: linuxppc64-dev@ozlabs.org, Kumar Gala <galak@gate.crashing.org>,
 	sjmunroe@us.ibm.com, linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] implement AT_PLATFORM for powerpc
@@ -21,28 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jan 10, 2006, at 11:08 PM, Paul Mackerras wrote:
-
-> Kumar Gala writes:
->
->> We should probably add two new AT_PLATFORM: "ppc8548" and "ppc5554".
->> "ppc8548" should be used for e500v2, and "ppc5554" for "e200z6".
->
-> How different are they in user-level ISA or in instruction scheduling
-> requirements?
-
-8548 adds embedded double precision instructions.  e200/e500 are  
-hugely different from a scheduling point of view.
-
->> You aren't seeting PPC_FEATURE_BOOKE for anything.  We need to be  
->> a little
->> careful since 'isel' isn't implemented in the very first 440's.
->
+On Wed, Jan 11, 2006 at 04:08:06PM +1100, Paul Mackerras wrote:
 > Oops, I must have sent the wrong version of the patch.  Do we know
 > which 440s have or don't have isel?
 
-Not 100% sure, hopefully Matt Porter or someone else a bit more  
-familiar with the 440's will chime in.
+I checked 44x user manuals I have:
 
-- k
+440GP doesn't have isel
+440GX, 440EP, 440SP, 440SPe, 440GR have it.
+
+-- 
+Eugene
