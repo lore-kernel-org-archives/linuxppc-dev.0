@@ -1,30 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <linville@tuxdriver.com>
+Received: from ra.tuxdriver.com (ra.tuxdriver.com [24.172.12.4])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E0ADE689AD
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 08:54:23 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-In-Reply-To: <20060111214351.GF6617@hansmi.ch>
-References: <20051225212041.GA6094@hansmi.ch>
-	<200512252304.32830.dtor_core@ameritech.net>
-	<1135575997.14160.4.camel@localhost.localdomain>
-	<d120d5000601111307x451db79aqf88725e7ecec79d2@mail.gmail.com>
-	<20060111212056.GC6617@hansmi.ch>
-	<1137015258.5138.20.camel@localhost.localdomain>
-	<20060111213805.GE6617@hansmi.ch>
-	<1137015669.5138.22.camel@localhost.localdomain>
-	<20060111214351.GF6617@hansmi.ch>
-Content-Type: text/plain
-Date: Thu, 12 Jan 2006 08:54:09 +1100
-Message-Id: <1137016449.5138.36.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 51030689D0
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 09:03:49 +1100 (EST)
+Date: Wed, 11 Jan 2006 16:52:21 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Gerhard Pircher <gerhard_stamer@gmx.net>
+Message-ID: <20060111215218.GF27985@tuxdriver.com>
+References: <6063.1137013232@www88.gmx.net>
 Mime-Version: 1.0
-Cc: linux-kernel@killerfox.forkbomb.ch, dtor_core@ameritech.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Vojtech Pavlik <vojtech@suse.cz>, linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple
-	PowerBooks
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6063.1137013232@www88.gmx.net>
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,22 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-01-11 at 22:43 +0100, Michael Hanselmann wrote:
-> On Thu, Jan 12, 2006 at 08:41:08AM +1100, Benjamin Herrenschmidt wrote:
-> > > Johannes Berg told me he wants to use the fn key alone to switch the
-> > > keyboard layout or something. For such uses, the pb_enablefn is there.
-> 
-> Sorry, actually it's called pb_disablefn now.
-> 
-> > What does it do ? Just send a keycode ? That should be unconditionnal.
-> > The Fn key should change a keycode always. I don't see why you would
-> > that to be off.
-> 
-> No, if that parameter is disabled, it translates key combinations like
-> Fn+F1 to KEY_BRIGHTNESSUP. If it's enabled, it only sends KEY_FN.
+On Wed, Jan 11, 2006 at 10:00:32PM +0100, Gerhard Pircher wrote:
 
-But that should be the full translation no ? I don't see why you are
-splitting in translating the special keys and translating the rest of
-the keyboard...
+> David Bentam and I are trying to get a AGPGART driver working for the
+> AmigaOne and the Pegasos1. The driver detects the aperture size of the
+> ArticiaS AGP bridge, but fails at the ioremap() function in the generic GATT
+> table create function. Does the PowerPC platform behaves differently for the
+> mapping of address location for AGP operation than the x86 platform? Is it
+> possible to use a mask to relocate the AGP address space to a specific
+> location?
 
-Ben.
+It probably wouldn't hurt to include the source (or a url pointing
+to it)... :-)
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
