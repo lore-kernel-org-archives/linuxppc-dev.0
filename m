@@ -1,29 +1,21 @@
-Return-Path: <serue@us.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D211B689E1
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 08:20:27 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id k0ALKLwn027187
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jan 2006 16:20:21 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VERS6.8) with ESMTP id
-	k0ALKLu1116076
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jan 2006 16:20:21 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k0ALKL6w007778
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Jan 2006 16:20:21 -0500
-Date: Tue, 10 Jan 2006 15:20:20 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-Message-ID: <20060110212020.GB10837@sergelap.austin.ibm.com>
-References: <20060107052221.61d0b600.akpm@osdl.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9E929689E6
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 12:56:16 +1100 (EST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: gregkh@suse.de
+In-Reply-To: <1EwCY8-1zu-00@press.kroah.org>
+References: <1EwCY8-1zu-00@press.kroah.org>
+Content-Type: text/plain
+Date: Wed, 11 Jan 2006 12:55:14 +1100
+Message-Id: <1136944515.5333.0.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060107052221.61d0b600.akpm@osdl.org>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: 2.6.15-mm2
+Cc: greg@kroah.com, rmk+kernel@arm.linux.org.uk, rmk@arm.linux.org.uk,
+	linuxppc-dev@ozlabs.org
+Subject: Re: patch add-macio_bus_type-probe-and-remove-methods.patch added
+	to gregkh-2.6 tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,37 +25,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Quoting Andrew Morton (akpm@osdl.org):
+On Mon, 2006-01-09 at 22:00 -0800, gregkh@suse.de wrote:
+> This is a note to let you know that I've just added the patch titled
 > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.15/2.6.15-mm2/
+>      Subject: [CFT 19/29] Add macio_bus_type probe and remove methods
+> 
+> to my gregkh-2.6 tree.  Its filename is
+> 
+>      add-macio_bus_type-probe-and-remove-methods.patch
+> 
+> This tree can be found at 
+>     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+> 
+> 
+> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-With both this and 2.6.15-mm1, but not with 2.6.15, I get the following
-error:
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-mm/built-in.o(*ABS*+0x39c3c7ac): In function `__crc___handle_mm_fault':
-slab.c: multiple definition of `__crc___handle_mm_fault'
-make: *** [.tmp_vmlinux1] Error 1
-
-The culprit appears to be that there are two places where
-__handle_mm_fault is EXPORT_SYMBOL_GPLed.  The following trivial patch
-fixes it for me.
-
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-
-Index: linux-2.6.15/arch/powerpc/kernel/ppc_ksyms.c
-===================================================================
---- linux-2.6.15.orig/arch/powerpc/kernel/ppc_ksyms.c	2006-01-10 04:59:11.000000000 -0600
-+++ linux-2.6.15/arch/powerpc/kernel/ppc_ksyms.c	2006-01-10 09:07:40.000000000 -0600
-@@ -240,8 +240,6 @@ EXPORT_SYMBOL(next_mmu_context);
- EXPORT_SYMBOL(set_context);
- #endif
- 
--EXPORT_SYMBOL_GPL(__handle_mm_fault);
--
- #ifdef CONFIG_PPC_STD_MMU_32
- extern long mol_trampoline;
- EXPORT_SYMBOL(mol_trampoline); /* For MOL */
-
-
-thanks,
--serge
+> ---
+>  drivers/macintosh/macio_asic.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> --- gregkh-2.6.orig/drivers/macintosh/macio_asic.c
+> +++ gregkh-2.6/drivers/macintosh/macio_asic.c
+> @@ -204,6 +204,9 @@ struct bus_type macio_bus_type = {
+>         .name	= "macio",
+>         .match	= macio_bus_match,
+>         .uevent = macio_uevent,
+> +       .probe	= macio_device_probe,
+> +       .remove	= macio_device_remove,
+> +       .shutdown = macio_device_shutdown,
+>         .suspend	= macio_device_suspend,
+>         .resume	= macio_device_resume,
+>         .dev_attrs = macio_dev_attrs,
+> @@ -487,9 +490,6 @@ int macio_register_driver(struct macio_d
+>  	/* initialize common driver fields */
+>  	drv->driver.name = drv->name;
+>  	drv->driver.bus = &macio_bus_type;
+> -	drv->driver.probe = macio_device_probe;
+> -	drv->driver.remove = macio_device_remove;
+> -	drv->driver.shutdown = macio_device_shutdown;
+>  
+>  	/* register with core */
+>  	count = driver_register(&drv->driver);
+> 
+> 
+> Patches currently in gregkh-2.6 which might be from rmk@arm.linux.org.uk are
+> 
+> driver/add-bttv-sub-bus_type-probe-and-remove-methods.patch
+> driver/add-bus_type-probe-remove-shutdown-methods..patch
+> driver/add-ccwgroup_bus_type-probe-and-remove-methods.patch
+> driver/add-dio_bus_type-probe-and-remove-methods.patch
+> driver/add-ecard_bus_type-probe-remove-shutdown-methods.patch
+> driver/add-gameport-bus_type-probe-and-remove-methods.patch
+> driver/add-i2c_bus_type-probe-and-remove-methods.patch
+> driver/add-ide_bus_type-probe-and-remove-methods.patch
+> driver/add-locomo-bus_type-probe-remove-methods.patch
+> driver/add-logic-module-bus_type-probe-remove-methods.patch
+> driver/add-macio_bus_type-probe-and-remove-methods.patch
+> driver/add-mcp-bus_type-probe-and-remove-methods.patch
+> driver/add-mmc_bus_type-probe-and-remove-methods.patch
+> driver/add-ocp_bus_type-probe-and-remove-methods.patch
+> driver/add-of_platform_bus_type-probe-and-remove-methods.patch
+> driver/add-parisc_bus_type-probe-and-remove-methods.patch
+> driver/add-pci_bus_type-probe-and-remove-methods.patch
+> driver/add-pcmcia_bus_type-probe-and-remove-methods.patch
+> driver/add-pnp_bus_type-probe-and-remove-methods.patch
+> driver/add-pseudo-lld-bus_type-probe-and-remove-methods.patch
+> driver/add-rio_bus_type-probe-and-remove-methods.patch
+> driver/add-sa1111-bus_type-probe-remove-methods.patch
+> driver/add-serio-bus_type-probe-and-remove-methods.patch
+> driver/add-sh_bus_type-probe-and-remove-methods.patch
+> driver/add-superhyway_bus_type-probe-and-remove-methods.patch
+> driver/add-tiocx-bus_type-probe-remove-methods.patch
+> driver/add-usb_serial_bus_type-probe-and-remove-methods.patch
+> driver/add-vio_bus_type-probe-and-remove-methods.patch
+> driver/add-zorro_bus_type-probe-and-remove-methods.patch
+> driver/remove-usb-gadget-generic-driver-methods.patch
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
