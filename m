@@ -1,20 +1,18 @@
-Return-Path: <happa@wmlab.csie.ncu.edu.tw>
-Received: from wmlab.csie.ncu.edu.tw (wmlab.csie.ncu.edu.tw [140.115.155.134])
-	by ozlabs.org (Postfix) with ESMTP id 0762868A29
+Return-Path: <powerpc440@googlemail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.206])
+	by ozlabs.org (Postfix) with ESMTP id 2973C68A40
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jan 2006 21:26:22 +1100 (EST)
-Received: from 140.115.155.134 (localhost.csie.ncu.edu.tw [127.0.0.1])
-	by wmlab.csie.ncu.edu.tw (Postfix) with SMTP id 0F9251100F2
+	Thu, 12 Jan 2006 00:41:09 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id s1so161791nze
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jan 2006 18:26:18 +0800 (CST)
-From: happa@wmlab.csie.ncu.edu.tw
-To: linuxppc-embedded@ozlabs.org
-Date: Wed, 11 Jan 2006 18:26:18 +0800(CST)
+	Wed, 11 Jan 2006 05:41:08 -0800 (PST)
+Message-ID: <43C50B97.3060504@googlemail.com>
+Date: Wed, 11 Jan 2006 14:43:51 +0100
+From: powerpc440 <powerpc440@googlemail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="--43C4DD4A0000CBBE@wmlab.csie.ncu.edu.tw"
-Message-Id: <20060111102618.0F9251100F2@wmlab.csie.ncu.edu.tw>
-Subject: About MMU setting in MPC8245
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Memory and register adresses on PCI graphic chip.
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,48 +23,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-----43C4DD4A0000CBBE@wmlab.csie.ncu.edu.tw
-Content-Type: text/plain; Charset=Big5;
-Content-Transfer-Encoding: 8bit
-
 Hi,
-Sorry, I have very basic question about PPC MMU setting.
 
-In "http://www.denx.de/wiki/PPCEmbedded/Kernel#BOOTLOADER",
-chapter 10.2. Memory Map, I get the following information.
- 
-"The bootloader is responsible for configuring the memory map before jumping to the Linux kernel."
+I have custom board based on Ocotea - PPC440GX with Graphic chip (Radeon 
+M6) on it. I need to initialise the registers and the memory of the chip 
+upon booting. Now I comunicate with the board thru serial interface, and 
+u-boot 1.1.2 + linux 2.6.12 both working wery well up to the video.
+The PCI memory is mapped on 0x80000000 in u-boot configuration. How can 
+I understand where are the memory and register base adresses of the 
+graphic chip?
 
-Is anyone know what memory map should be done in bootloader? 
-If I'm using ICE to load linux kernel, what kind of CPU registers need be configured first?
-Is IBAT/DBAT and Segment register need be set?
+This is part from u-boot splash screen:
 
-I have set the following registers before loading kernel via ICE.
-Did I miss something else?
-(The target CPU is MPC8245)
-offset   register 
--------  -----------------------------------
-0x0C     Cache Line Size 
-0x04     PCI Command Register 
-0xA8     Processor interface configuration 1     
-0xAC     Processor interface configuration 2  
-0x80     Memory starting address register1
-0x84     Memory starting address register2
-0x88     Extended memory starting addressregister1
-0x8C     Extended memory starting addressregister2
-0x90     Memory ending address register1
-0x94     Memory ending address register2
-0x98     Extended memory ending address register1
-0x9C     Extended memory ending address register2
-0xA0     Memory bank enable register
-0xD0     Extended ROM configuration register 1
-0xD4     Extended ROM configuration register 2
-0xD8     Extended ROM configuration register 3
-0xDC     Extended ROM configuration register 4
-0xF0     MCCR1
-0xF4     MCCR2
-0xF8     MCCR3
-0xFC     MCCR4
+Board: HIMA 440GX Board
+        VCO: 1000 MHz
+        CPU: 500 MHz
+        PLB: 166 MHz
+        OPB: 83 MHz
+        EPB: 83 MHz
+I2C:   ready
+DRAM:  512 MB
+FLASH: portwidth=4 chipwidth=2
+found 1 erase regions
+64 MB
+*** Warning - bad CRC, using default environment
 
-Would anyone give me some references about MMU setting? 
-----43C4DD4A0000CBBE@wmlab.csie.ncu.edu.tw--
+PCI:   Bus Dev VenId DevId Class Int
+        00  01  1131  1561  0c03  00
+        00  01  1131  1561  0c03  00
+        00  01  1131  1562  0c03  00
+        00  02  1002  4c59  0300  ff                   < --------------  
+The Radeon M6 chip
+        00  03  1013  6005  0401  00
+        00  04  1095  3114  0180  00
+In:    serial
+Out:   serial
+Err:   serial
+Net:   pfc1: 4
+Konfiguration 4
+---------------------------------------------
+This information i can obtain from the /proc after linux loading: :
+
+#lspci -vv
+............................
+00:02.0 Class 0300: 1002:4c59
+        Subsystem: 1002:4c59
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
+ParErr- Stepping+ SERR- FastB2B-
+        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
+<TAbort- <MAbort- >SERR- <PERR-
+        Latency: 128 (2000ns min), cache line size 08
+        Interrupt: pin A routed to IRQ 25
+        Region 0: Memory at f0000000 (32-bit, prefetchable) [size=128M]
+        Region 1: I/O ports at ff00 [size=256]
+        Region 2: Memory at efff0000 (32-bit, non-prefetchable) [size=64K]
+        Expansion ROM at <unassigned> [disabled] [size=128K]
+        Capabilities: [50] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA 
+PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+
+Thanks a lot!
+Zhivko
