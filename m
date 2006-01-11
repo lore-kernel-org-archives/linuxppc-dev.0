@@ -1,14 +1,25 @@
-Return-Path: <dan@embeddededge.com>
-In-Reply-To: <17348.60119.801379.127209@cargo.ozlabs.ibm.com>
-References: <17348.60119.801379.127209@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <76faf56ea70a1f2fe254367cda836c5f@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Date: Wed, 11 Jan 2006 10:24:57 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: powerpc.git tree
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id 96EEA681B4
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 08:07:39 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id s1so273777nze
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 13:07:38 -0800 (PST)
+Message-ID: <d120d5000601111307x451db79aqf88725e7ecec79d2@mail.gmail.com>
+Date: Wed, 11 Jan 2006 16:07:37 -0500
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1135575997.14160.4.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20051225212041.GA6094@hansmi.ch>
+	<200512252304.32830.dtor_core@ameritech.net>
+	<1135575997.14160.4.camel@localhost.localdomain>
+Cc: linux-kernel@killerfox.forkbomb.ch, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Vojtech Pavlik <vojtech@suse.cz>,
+	linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple
+	PowerBooks
+Reply-To: dtor_core@ameritech.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,17 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 12/26/05, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Sun, 2005-12-25 at 23:04 -0500, Dmitry Torokhov wrote:
+>
+> > As far as the hook itself - i have that feeling that it should not be
+> > done in kernel but via a keymap.
+>
+> While I understand your feeling, it's a bit annoying in this specific
+> case because previous models did this in hardware and all mac keymaps
+> already account for that. Knowing how nasty it has been to get mac
+> keymaps updated and in a good shape, and to get distros to properly get
+> them, it makes a lot of sense to have this small hook in the kernel that
+> makes the USB keyboard behave exactly like the older ADB couterparts.
+>
 
-On Jan 11, 2006, at 6:24 AM, Paul Mackerras wrote:
+Ok, I am looking at the patch again, and I have a question - do we
+really need these 3 module parameters? If the goal is to be compatible
+with older keyboards then shouldn't we stick to one behavior?
 
-> If that would cause people serious heartburn, I can instead abandon
-> the powerpc.git tree and start a new development tree
-> (powerpc-devel.git perhaps).
-
- From past experience, creating another tree, especially something
-called "devel" only caused more problems :-)  Please, just do what
-you think is best for the powerpc.git tree and we'll just move forward.
-
-Thanks.
-
-	-- Dan
+--
+Dmitry
