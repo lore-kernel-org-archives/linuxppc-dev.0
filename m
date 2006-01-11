@@ -1,26 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C3EDF689D5
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 10:42:04 +1100 (EST)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-In-Reply-To: <20060111232651.GI6617@hansmi.ch>
-References: <20051225212041.GA6094@hansmi.ch>
-	<200512252304.32830.dtor_core@ameritech.net>
-	<1135575997.14160.4.camel@localhost.localdomain>
-	<d120d5000601111307x451db79aqf88725e7ecec79d2@mail.gmail.com>
-	<20060111232651.GI6617@hansmi.ch>
-Content-Type: text/plain
-Date: Thu, 12 Jan 2006 10:41:40 +1100
-Message-Id: <1137022900.5138.66.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linux-kernel@killerfox.forkbomb.ch, dtor_core@ameritech.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Vojtech Pavlik <vojtech@suse.cz>, linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple
-	PowerBooks
+Return-Path: <galak@gate.crashing.org>
+Date: Wed, 11 Jan 2006 17:57:13 -0600 (CST)
+From: Kumar Gala <galak@gate.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.44.0601111716090.4407-100000@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fixed memory reserve map layout
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,60 +16,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-01-12 at 00:26 +0100, Michael Hanselmann wrote:
+powerpc: Fixed memory reserve map layout
 
->   * This is the global environment of the parser. This information is
-> @@ -431,6 +433,14 @@ struct hid_device {							/* device repo
->  	void (*ff_exit)(struct hid_device*);                            /* Called by hid_exit_ff(hid) */
->  	int (*ff_event)(struct hid_device *hid, struct input_dev *input,
->  			unsigned int type, unsigned int code, int value);
-> +
-> +#ifdef CONFIG_USB_HIDINPUT_POWERBOOK
-> +	/* We do this here because it's only relevant for the
-> +	 * USB devices, not for all input_dev's.
-> +	 */
-> +	unsigned long pb_fn[NBITS(KEY_MAX)];
-> +	unsigned long pb_numlock[NBITS(KEY_MAX)];
-> +#endif
->  };
+The memory reserve map is suppose to be a pair of 64-bit integers
+to represent each region.  On ppc32 the code was treating the
+pair as two 32-bit integers.  Additional the prom_init code was
+producing the wrong layout on ppc32.
 
-I don't understand the comment above ? You are adding this to all struct
-hid_device ? There can be only one of those keyboards plugged at one
-point in time, I don't think there is any problem having the above
-static in the driver rather than in the hid_device structure.
+Added a simple check to try to provide backwards compatibility.
 
-  .../...
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
->  
-> +	if ((hid->quirks & HID_QUIRK_POWERBOOK_HAS_FN) &&
-> +	    hidinput_pb_event(hid, input, usage, value)) {
-> +		return;
-> +	}
-> +
+---
+commit dc15eeb7325279bf9e5b49f79567fa0886cd8c31
+tree e724bd9d855d5f2a71720742c7ec279609c1aaaa
+parent aa30a75885b935a7f09a1312e792f96cc338e505
+author Kumar Gala <galak@kernel.crashing.org> Wed, 11 Jan 2006 18:02:36 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Wed, 11 Jan 2006 18:02:36 -0600
 
-Dimitry might disagree but it's generally considered bad taste to have
-{ and } for a single statement :)
+ arch/powerpc/kernel/prom.c      |   28 ++++++++++++++++++++++++----
+ arch/powerpc/kernel/prom_init.c |    8 ++++----
+ 2 files changed, 28 insertions(+), 8 deletions(-)
 
->  	if (usage->hat_min < usage->hat_max || usage->hat_dir) {
->  		int hat_dir = usage->hat_dir;
->  		if (!hat_dir)
-> diff -upr linux-2.6.15.orig/drivers/usb/input/Kconfig linux-2.6.15/drivers/usb/input/Kconfig
-> --- linux-2.6.15.orig/drivers/usb/input/Kconfig	2006-01-11 23:59:40.000000000 +0100
-> +++ linux-2.6.15/drivers/usb/input/Kconfig	2006-01-08 11:53:35.000000000 +0100
-> @@ -37,6 +37,16 @@ config USB_HIDINPUT
->  
->  	  If unsure, say Y.
->  
-> +config USB_HIDINPUT_POWERBOOK
-> +	bool "Enable support for iBook/PowerBook special keys"
-> +	default n
-> +	depends on USB_HIDINPUT
-> +	help
-> +	  Say Y here if you want support for the special keys (Fn, Numlock) on
-> +	  Apple iBooks and PowerBooks.
-> +
-> +	  If unsure, say N.
-> +
->  config HID_FF
->  	bool "Force feedback support (EXPERIMENTAL)"
->  	depends on USB_HIDINPUT && EXPERIMENTAL
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 34ab0da..02e2115 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -1100,17 +1100,37 @@ static int __init early_init_dt_scan_mem
+ 
+ static void __init early_reserve_mem(void)
+ {
+-	unsigned long base, size;
+-	unsigned long *reserve_map;
++	u64 base, size;
++	u64 *reserve_map;
+ 
+-	reserve_map = (unsigned long *)(((unsigned long)initial_boot_params) +
++	reserve_map = (u64 *)(((unsigned long)initial_boot_params) +
+ 					initial_boot_params->off_mem_rsvmap);
++#ifdef CONFIG_PPC32
++	/* 
++	 * Handle the case where we might be booting from an old kexec
++	 * image that setup the mem_rsvmap as pairs of 32-bit values
++	 */
++	if (*reserve_map > 0xffffffffull) {
++		u32 base_32, size_32;
++		u32 *reserve_map_32 = (u32 *)reserve_map;
++
++		while (1) {
++			base_32 = *(reserve_map_32++);
++			size_32 = *(reserve_map_32++);
++			if (size_32 == 0)
++				break;
++			DBG("reserving: %lx -> %lx\n", base_32, size_32);
++			lmb_reserve(base_32, size_32);
++		}
++		return;
++	}
++#endif
+ 	while (1) {
+ 		base = *(reserve_map++);
+ 		size = *(reserve_map++);
+ 		if (size == 0)
+ 			break;
+-		DBG("reserving: %lx -> %lx\n", base, size);
++		DBG("reserving: %llx -> %llx\n", base, size);
+ 		lmb_reserve(base, size);
+ 	}
+ 
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index e381f2f..d963a12 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -137,8 +137,8 @@ struct prom_t {
+ };
+ 
+ struct mem_map_entry {
+-	unsigned long	base;
+-	unsigned long	size;
++	u64	base;
++	u64	size;
+ };
+ 
+ typedef u32 cell_t;
+@@ -897,9 +897,9 @@ static unsigned long __init prom_next_ce
+  * If problems seem to show up, it would be a good start to track
+  * them down.
+  */
+-static void reserve_mem(unsigned long base, unsigned long size)
++static void reserve_mem(u64 base, u64 size)
+ {
+-	unsigned long top = base + size;
++	u64 top = base + size;
+ 	unsigned long cnt = RELOC(mem_reserve_cnt);
+ 
+ 	if (size == 0)
