@@ -1,14 +1,29 @@
-Return-Path: <gerhard_stamer@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.21])
-	by ozlabs.org (Postfix) with SMTP id 05628689C5
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 08:07:14 +1100 (EST)
-Date: Wed, 11 Jan 2006 22:00:32 +0100 (MET)
-From: "Gerhard Pircher" <gerhard_stamer@gmx.net>
-To: linuxppc-dev@ozlabs.org,debian-powerpc@lists.debian.org
-MIME-Version: 1.0
-Message-ID: <6063.1137013232@www88.gmx.net>
-Content-Type: text/plain; charset="us-ascii"
-Subject: AGPGART driver for ArticiaS - ioremap() problem
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A638B689C5
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 08:38:10 +1100 (EST)
+Date: Wed, 11 Jan 2006 22:38:05 +0100
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <20060111213805.GE6617@hansmi.ch>
+References: <20051225212041.GA6094@hansmi.ch>
+	<200512252304.32830.dtor_core@ameritech.net>
+	<1135575997.14160.4.camel@localhost.localdomain>
+	<d120d5000601111307x451db79aqf88725e7ecec79d2@mail.gmail.com>
+	<20060111212056.GC6617@hansmi.ch>
+	<1137015258.5138.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1137015258.5138.20.camel@localhost.localdomain>
+Cc: linux-kernel@killerfox.forkbomb.ch, dtor_core@ameritech.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Vojtech Pavlik <vojtech@suse.cz>, linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple
+	PowerBooks
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,20 +33,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Jan 12, 2006 at 08:34:17AM +1100, Benjamin Herrenschmidt wrote:
+> Yeah, but the question is why 3 ? I think one (on/off) is enough. Do you
+> have any case where people actually change the other ones ?
 
-David Bentam and I are trying to get a AGPGART driver working for the
-AmigaOne and the Pegasos1. The driver detects the aperture size of the
-ArticiaS AGP bridge, but fails at the ioremap() function in the generic GATT
-table create function. Does the PowerPC platform behaves differently for the
-mapping of address location for AGP operation than the x86 platform? Is it
-possible to use a mask to relocate the AGP address space to a specific
-location?
+Johannes Berg told me he wants to use the fn key alone to switch the
+keyboard layout or something. For such uses, the pb_enablefn is there.
+pb_fkeyslast is to emulate the behaviour of KBDMode from pbbuttonsd.
+The last one, pb_disablekeypad could left out. It doesn't add much code
+and might be used by some people, too.
 
-regards,
-
-Gerhard Pircher
-
--- 
-Telefonieren Sie schon oder sparen Sie noch?
-NEU: GMX Phone_Flat http://www.gmx.net/de/go/telefonie
+Greets,
+Michael
