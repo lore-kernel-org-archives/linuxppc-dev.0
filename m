@@ -1,21 +1,11 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 45CBA689FC
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 21:25:49 +1100 (EST)
-Date: Wed, 11 Jan 2006 11:25:40 +0100
-From: Olaf Hering <olh@suse.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Message-ID: <20060111102540.GA11688@suse.de>
-References: <200601091916.k09JGMJY004116@hera.kernel.org>
-	<20060110221313.GA24246@suse.de> <200601110034.58911.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <200601110034.58911.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: fix large nvram access
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17348.60119.801379.127209@cargo.ozlabs.ibm.com>
+Date: Wed, 11 Jan 2006 22:24:07 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: powerpc.git tree
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +15,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Wed, Jan 11, Arnd Bergmann wrote:
+All of the patches in the powerpc.git tree have now been either sent
+upstream to Linus' tree, or reverted.
 
-> Am Dienstag, 10. Januar 2006 23:13 schrieb Olaf Hering:
-> >  On Mon, Jan 09, Linux Kernel Mailing List wrote:
-> > > tree da8f883f72d08f9534e9eca3bba662413b9bd865
-> > > parent d52771fce4e774fa786097d34412a057d487c697
-> > > author Arnd Bergmann <arnd@arndb.de> Fri, 09 Dec 2005 19:21:44 +0100
-> > > committer Paul Mackerras <paulus@samba.org> Mon, 09 Jan 2006 14:53:31
-> > > +1100
-> > >
-> > > [PATCH] powerpc: fix large nvram access
-> > >
-> > > /dev/nvram uses the user-provided read/write size
-> > > for kmalloc, which fails, if a large number is passed.
-> > > This will always use a single page at most, which
-> > > can be expected to succeed.
-> > >
-> > > Signed-off-by: Arnd Bergmann <arndb@de.ibm.com>
-> > > Signed-off-by: Paul Mackerras <paulus@samba.org>
-> > >
-> > >  arch/powerpc/kernel/nvram_64.c |  114
-> > > +++++++++++++++++++----------------------
-> >
-> > this change breaks my nvsetenv binary on JS20.
-> >
-> 
-> I think this has uncovered a bug that has been in nvsetenv for a long time.
+For various reasons I didn't just ask Linus to pull the powerpc.git
+tree, but instead cherry-picked the commits into the powerpc-merge.git
+tree and asked Linus to pull that.  That means that there are now
+commits in the powerpc.git tree that are superseded by commits in
+Linus' tree.
 
-Yeah. Dont bother, I will fix that tool.
+In future I'd like to be able to ask Linus to pull the powerpc.git
+tree, without cluttering up his tree with those superseded commits.
+That means I need to reset the powerpc.git tree to be the same as
+Linus' tree now.
 
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+That means that anyone who is following the powerpc.git tree by doing
+pulls periodically will need to reset their tree too.  Otherwise each
+pull will do an unnecessary merge.
+
+If that would cause people serious heartburn, I can instead abandon
+the powerpc.git tree and start a new development tree
+(powerpc-devel.git perhaps).
+
+Comments?
+
+Paul.
