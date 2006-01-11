@@ -1,14 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17348.59371.543311.793437@cargo.ozlabs.ibm.com>
-Date: Wed, 11 Jan 2006 22:11:39 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Heikki Lindholm <holindho@cs.helsinki.fi>
-In-Reply-To: <43BC15A9.7010009@cs.helsinki.fi>
-References: <43BC15A9.7010009@cs.helsinki.fi>
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
-Subject: Re: restore_user_regs and fpu
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A022668A3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 23:20:29 +1100 (EST)
+Date: Wed, 11 Jan 2006 13:20:20 +0100
+From: Olaf Hering <olh@suse.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Message-ID: <20060111122020.GA14790@suse.de>
+References: <200601091916.k09JGMJY004116@hera.kernel.org>
+	<20060110221313.GA24246@suse.de> <200601110034.58911.arnd@arndb.de>
+	<20060111102540.GA11688@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20060111102540.GA11688@suse.de>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: fix large nvram access
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,152 +26,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Heikki Lindholm writes:
+ On Wed, Jan 11, Olaf Hering wrote:
 
-> I haven't really confirmed this can happen, but I was wondering whether 
-> the following would be possible. Looking at restore_user_regs in 
-> ppc/kernel/signal_32.c and assuming:
-> * last_task_used_math == current, eg. a signal handler used fpu
-> * fpu state is still what the sig handler left there
-> If after the fpu state is restored to current->thread.fpr (copy_user) 
-> somebody preempts this task and uses fpu, wouldn't it cause the fpu 
-> state (of the sig handler) to be saved to 
-> last_task_used_math->thread.fpr overwriting the just restored state. 
-> Should the last_task_used_math nullifying, etc. be moved to the front of 
-> the function instead, or am I overlooking something?
+> > I think this has uncovered a bug that has been in nvsetenv for a long time.
 
-I think you are correct, and that the same problem exists for 64-bit
-processes.  This patch should fix it.  Can anyone see any problem with
-this patch?
+I made this change.
 
-Paul.
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 105d560..913f906 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -201,13 +201,13 @@ int dump_spe(struct pt_regs *regs, elf_v
- }
- #endif /* CONFIG_SPE */
- 
-+#ifndef CONFIG_SMP
- /*
-  * If we are doing lazy switching of CPU state (FP, altivec or SPE),
-  * and the current task has some state, discard it.
-  */
--static inline void discard_lazy_cpu_state(void)
-+void discard_lazy_cpu_state(void)
+Index: pmac-utils-2.1/nvsetenv.c
+===================================================================
+--- pmac-utils-2.1.orig/nvsetenv.c
++++ pmac-utils-2.1/nvsetenv.c
+@@ -110,12 +110,21 @@ int nvcsum( void )
+ static void nvload( int nvfd )
  {
--#ifndef CONFIG_SMP
- 	preempt_disable();
- 	if (last_task_used_math == current)
- 		last_task_used_math = NULL;
-@@ -220,8 +220,8 @@ static inline void discard_lazy_cpu_stat
- 		last_task_used_spe = NULL;
- #endif
- 	preempt_enable();
--#endif /* CONFIG_SMP */
- }
-+#endif /* CONFIG_SMP */
+     int s;
++    ssize_t r, toread = 0;
++    char *buf = (char *)&nvbuf;
  
- int set_dabr(unsigned long dabr)
+-    if (lseek(nvfd, NVSTART, 0) < 0
+-	|| read(nvfd, &nvbuf, NVSIZE) != NVSIZE) {
+-	perror("Error reading /dev/nvram");
++    if ((off_t)-1 == lseek(nvfd, NVSTART, 0)) {
++	perror("Error seeking /dev/nvram");
+ 	exit(EXIT_FAILURE);
+     }
++    do {
++	r = read(nvfd, buf + toread, NVSIZE - toread);
++	if (r < 0) {
++		perror("Error reading /dev/nvram");
++		exit(EXIT_FAILURE);
++	}
++	toread += r;
++    } while (toread < NVSIZE && r);
+     if (nvbuf.nv.magic != NVMAGIC)
+ 	(void) fprintf(stderr, "Warning: Bad magic number %x\n",
+ 			 nvbuf.nv.magic);
+@@ -127,11 +136,21 @@ static void nvload( int nvfd )
+ 
+ static void nvstore(int nvfd)
  {
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index d3f0b6d..177bba7 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -497,6 +497,15 @@ static long restore_user_regs(struct pt_
- 	if (err)
- 		return 1;
- 
-+	/*
-+	 * Do this before updating the thread state in
-+	 * current->thread.fpr/vr/evr.  That way, if we get preempted
-+	 * and another task grabs the FPU/Altivec/SPE, it won't be
-+	 * tempted to save the current CPU state into the thread_struct
-+	 * and corrupt what we are writing there.
-+	 */
-+	discard_lazy_cpu_state();
-+
- 	/* force the process to reload the FP registers from
- 	   current->thread when it next does FP instructions */
- 	regs->msr &= ~(MSR_FP | MSR_FE0 | MSR_FE1);
-@@ -538,18 +547,6 @@ static long restore_user_regs(struct pt_
- 		return 1;
- #endif /* CONFIG_SPE */
- 
--#ifndef CONFIG_SMP
--	preempt_disable();
--	if (last_task_used_math == current)
--		last_task_used_math = NULL;
--	if (last_task_used_altivec == current)
--		last_task_used_altivec = NULL;
--#ifdef CONFIG_SPE
--	if (last_task_used_spe == current)
--		last_task_used_spe = NULL;
--#endif
--	preempt_enable();
--#endif
- 	return 0;
+-    if (lseek(nvfd, NVSTART, 0) < 0
+-	|| write(nvfd, &nvbuf, NVSIZE) != NVSIZE) {
+-	perror("Error writing /dev/nvram");
++    char *p = (char *)&nvbuf;
++    size_t count = 0;
++    off_t w;
++    if (lseek(nvfd, NVSTART, 0) < 0) {
++	perror("Error seeking /dev/nvram");
+ 	exit(EXIT_FAILURE);
+     }
++    do {
++	w = write(nvfd, p + count, NVSIZE - count);
++	if (w < 0) {
++		perror("Error writing /dev/nvram");
++		exit(EXIT_FAILURE);
++	}
++	count += w;
++   } while (count < NVSIZE);
  }
  
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 5462bef..7b9d999 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -207,10 +207,20 @@ static long restore_sigcontext(struct pt
+ void nvunpack( void )
+Index: pmac-utils-2.1/nwnvsetenv.c
+===================================================================
+--- pmac-utils-2.1.orig/nwnvsetenv.c
++++ pmac-utils-2.1/nwnvsetenv.c
+@@ -88,15 +88,20 @@ int nvscan(int nvfd, chrp_header* chrph,
+ static char* nvload( int nvfd , int nvsize)
+ {
+     char* nvbuf = malloc(nvsize);
++    ssize_t r, toread = 0;
  
- 	if (!sig)
- 		regs->gpr[13] = save_r13;
--	err |= __copy_from_user(&current->thread.fpr, &sc->fp_regs, FP_REGS_SIZE);
- 	if (set != NULL)
- 		err |=  __get_user(set->sig[0], &sc->oldmask);
+     if (!nvbuf) {
+ 	perror("Error allocating buffer");
+ 	exit(EXIT_FAILURE);
+     }
+-    if (read(nvfd, nvbuf, nvsize) != nvsize) {
+-	perror("Error reading /dev/nvram");
+-	exit(EXIT_FAILURE);
+-    }
++    do {
++	r = read(nvfd, nvbuf + toread, nvsize - toread);
++	if (r < 0) {
++		perror("Error reading /dev/nvram");
++		exit(EXIT_FAILURE);
++	}
++	toread += r;
++    } while (toread < nvsize && r);
+     return nvbuf;
+ }
  
-+	/*
-+	 * Do this before updating the thread state in
-+	 * current->thread.fpr/vr.  That way, if we get preempted
-+	 * and another task grabs the FPU/Altivec, it won't be
-+	 * tempted to save the current CPU state into the thread_struct
-+	 * and corrupt what we are writing there.
-+	 */
-+	discard_lazy_cpu_state();
-+
-+	err |= __copy_from_user(&current->thread.fpr, &sc->fp_regs, FP_REGS_SIZE);
-+
- #ifdef CONFIG_ALTIVEC
- 	err |= __get_user(v_regs, &sc->v_regs);
- 	err |= __get_user(msr, &sc->gp_regs[PT_MSR]);
-@@ -229,14 +239,6 @@ static long restore_sigcontext(struct pt
- 		current->thread.vrsave = 0;
- #endif /* CONFIG_ALTIVEC */
+@@ -182,6 +187,7 @@ print_var(char* nvbuf, int nvsize, char*
+ 	printf("%s\n",buf);
+ }
  
--#ifndef CONFIG_SMP
--	preempt_disable();
--	if (last_task_used_math == current)
--		last_task_used_math = NULL;
--	if (last_task_used_altivec == current)
--		last_task_used_altivec = NULL;
--	preempt_enable();
--#endif
- 	/* Force reload of FP/VEC */
- 	regs->msr &= ~(MSR_FP | MSR_FE0 | MSR_FE1 | MSR_VEC);
++#if 0
+ /* This fucntion is not used here, it is left
+    her for the curious */
  
-diff --git a/include/asm-powerpc/system.h b/include/asm-powerpc/system.h
-index 0c58e32..4c88830 100644
---- a/include/asm-powerpc/system.h
-+++ b/include/asm-powerpc/system.h
-@@ -133,6 +133,14 @@ extern int fix_alignment(struct pt_regs 
- extern void cvt_fd(float *from, double *to, struct thread_struct *thread);
- extern void cvt_df(double *from, float *to, struct thread_struct *thread);
- 
-+#ifndef CONFIG_SMP
-+extern void discard_lazy_cpu_state(void);
-+#else
-+static inline void discard_lazy_cpu_state(void)
-+{
-+}
+@@ -197,26 +203,28 @@ unsigned short chrp_checksum(chrp_header
+ 	sum = (sum & 0xFF) + (sum>>8);
+     return sum;
+ }                                                                                                 
 +#endif
-+
- #ifdef CONFIG_ALTIVEC
- extern void flush_altivec_to_thread(struct task_struct *);
- #else
+ 
+ static void
+ nvstore(int nvfd, chrp_header* chrph, char* nvbuf, int nvstart, int nvsize)
+ {
+     // mmh, the checksum is calculated for the header only
+     // since we did not modify the header we can just ignore it.
+-    ssize_t written;
+-    ssize_t seek =  nvstart + sizeof(chrp_header);
+-    written = lseek(nvfd, seek, SEEK_SET);
+-    if (written != seek)
+-    {
++    size_t count = 0;
++    off_t w, seek =  nvstart + sizeof(chrp_header);
++    w = lseek(nvfd, seek, SEEK_SET);
++    if (w != seek) {
+     	fprintf(stderr,"Error seeking /dev/nvram\n");
+ 	exit(EXIT_FAILURE);
+     }
+-    written = write(nvfd, nvbuf, nvsize);
+-    if (written != nvsize)
+-    {
+-    	fprintf(stderr,"Error writing /dev/nvram %x %x\n", nvsize, seek);
+-	exit(EXIT_FAILURE);
+-    }
++    do {
++	w = write(nvfd, nvbuf + count, nvsize - count);
++	if (w < 0) {
++		perror("Error writing /dev/nvram");
++		exit(EXIT_FAILURE);
++	}
++	count += w;
++   } while (count < (size_t)nvsize);
+ }
+ 
+ /* print / set the New World NVRAM */
+
+-- 
+short story of a lazy sysadmin:
+ alias appserv=wotan
