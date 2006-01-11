@@ -1,16 +1,15 @@
-Return-Path: <mcnernbm@notes.udayton.edu>
-Received: from student03.udayton.edu (student03.udayton.edu [131.238.75.43])
-	by ozlabs.org (Postfix) with ESMTP id 4FBCC68947
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Jan 2006 06:12:43 +1100 (EST)
-MIME-Version: 1.0
-From: mcnernbm@notes.udayton.edu
-To: Andrei Konovalov <akonovalov@ru.mvista.com>
-Date: Wed, 11 Jan 2006 14:12:41 -0500
-Message-ID: <OF63C4F778.2266A353-ON852570F3.00698805-852570F3.00698810@notes.udayton.edu>
-Content-Type: multipart/mixed; boundary="=_mixed 0069880A852570F3_="
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Linux question
+Return-Path: <wd@denx.de>
+To: batsayan.das@tcs.com
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 11 Jan 2006 13:03:02 +0530."
+	<OFDC66830E.1EDE14C4-ON652570F3.00265CDF-652570F3.00297A66@tcs.com>
+Date: Wed, 11 Jan 2006 21:34:34 +0100
+Sender: wd@denx.de
+Message-Id: <20060111203434.1D928352B1E@atlas.denx.de>
+Cc: Linuxppc-embedded@ozlabs.org
+Subject: Re: Ethernet not initialized: Help req 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,161 +20,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=_mixed 0069880A852570F3_=
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-Content-Type: text/html;
-	charset=ISO-8859-1
+In message <OFDC66830E.1EDE14C4-ON652570F3.00265CDF-652570F3.00297A66@tcs.com> you wrote:
+> 
+> In our MPC8260 based customs board the CLK9 is for transmit and CLK10 is 
+> for receive. The ELDK tree uses  CLK12 is receive, CLK11 is transmit and 
 
-<FONT face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sans-serif" size=
-=3D2><div>I am trying to write to the sdram but am not 100% sure if I can d=
-irectly write to it with out doing a ioremap or not.&nbsp; I am working wit=
-h a xilinx ml403 board and have a program we are writing that accepts a poi=
-nter to the sdram address that contains the data the program needs.&nbsp; D=
-o I need to do ioremap(xilinx base address, size) and then just use that ad=
-dress pointer I received to pull the data out?</div><DIV>&nbsp;</DIV><DIV>O=
-r do I need to manipulate the address I receive I beleive the address I wil=
-l receive will be the physical sdram address linux sees.&nbsp; But not sure=
- if i need to set anything else to do read and writes to it.&nbsp;</DIV><DI=
-V>&nbsp;</DIV><DIV>Any help or if anyone has an example code of reading and=
- writing to an sdram I would greatly appreciate it.</DIV><DIV>&nbsp;</DIV><=
-DIV>Attached is the code I wrote using ioremap that seems to work but it se=
-ems to be that I might just be writing to the hardware registers in the xil=
-inx ddr controller.</DIV><DIV>&nbsp;</DIV><DIV>All the io to my custom hard=
-ware was tested and works fine with the ioremap function in the cpp file at=
-tached but again I feel I am writing to the hardware registers in the ddr c=
-ontroller and not the actual sdram.&nbsp; But I may be wrong just want to v=
-erify. </DIV><DIV>&nbsp;</DIV><DIV>Thanks<BR>Brett</DIV></FONT>
---=_mixed 0069880A852570F3_=
-Content-Type: application/octet-stream; name="my_adder.cpp"
-Content-Disposition: attachment; filename="my_adder.cpp"
-Content-Transfer-Encoding: base64
+This is not correct. The ELDK does not do this. The  ELDK  is  not  a
+Linux source tree.
 
-I2luY2x1ZGUgPHN0ZGlvLmg+DQojaW5jbHVkZSA8c3RkbGliLmg+DQoNCiNpbmNsdWRlIDxzeXMv
-dHlwZXMuaD4NCiNpbmNsdWRlIDxzeXMvc3RhdC5oPg0KI2luY2x1ZGUgPGZjbnRsLmg+DQojaW5j
-bHVkZSA8dW5pc3RkLmg+DQojaW5jbHVkZSA8c3lzL21tYW4uaD4KI2luY2x1ZGUgIm15X2lvLmgi
-CiNpbmNsdWRlICJBbGdvcml0aG1UZXN0VGltZVN0YW1wL05hdGl2ZVRpbWVTdGFtcC5oIgoNCg0K
-dm9sYXRpbGUgdW5zaWduZWQgbG9uZyAqIGlvcmVtYXAodW5zaWduZWQgbG9uZyBwaHlzYWRkciwg
-dW5zaWduZWQgc2l6ZSkNCnsNCiAgICBzdGF0aWMgaW50IGF4c19tZW1fZmQgPSAtMTsNCiAgICB1
-bnNpZ25lZCBsb25nIHBhZ2VfYWRkciwgb2ZzX2FkZHIsIHJlZywgcGdtYXNrOw0KICAgIHZvaWQq
-IHJlZ19tZW0gPSBOVUxMOw0KDQogICAgLyoNCiAgICAgKiBsb29rcyBsaWtlIG1tYXAgd2FudHMg
-YWxpZ25lZCBhZGRyZXNzZXM/DQogICAgICovDQogICAgcGdtYXNrID0gZ2V0cGFnZXNpemUoKS0x
-Ow0KICAgIHBhZ2VfYWRkciA9IHBoeXNhZGRyICYgfnBnbWFzazsNCiAgICBvZnNfYWRkciAgPSBw
-aHlzYWRkciAmIHBnbWFzazsNCg0KICAgIC8qDQogICAgICogRG9uJ3QgZm9yZ2V0IE9fU1lOQywg
-ZXNwLiBpZiBhZGRyZXNzIGlzIGluIFJBTSByZWdpb24uDQogICAgICogTm90ZTogaWYgeW91IGRv
-IGtub3cgeW91J2xsIGFjY2VzcyBpbiBSZWFkIE9ubHkgbW9kZSwNCiAgICAgKiAgICBwYXNzIE9f
-UkRPTkxZIHRvIG9wZW4sIGFuZCBQUk9UX1JFQUQgb25seSB0byBtbWFwDQogICAgICovDQogICAg
-aWYgKGF4c19tZW1fZmQgPT0gLTEpIHsNCiAgICAgICAgYXhzX21lbV9mZCA9IG9wZW4oIi9kZXYv
-bWVtIiwgT19SRFdSfE9fU1lOQyk7DQogICAgICAgIGlmIChheHNfbWVtX2ZkIDwgMCkgew0KICAg
-ICAgICAgICAgICAgIHBlcnJvcigiQVhTOiBjYW4ndCBvcGVuIC9kZXYvbWVtIik7DQogICAgICAg
-ICAgICAgICAgcmV0dXJuIE5VTEw7DQogICAgICAgfQ0KICAgIH0NCg0KICAgIC8qIG1lbW9yeSBt
-YXAgKi8NCiAgICByZWdfbWVtID0gbW1hcCgNCiAgICAgICAgKGNhZGRyX3QpcmVnX21lbSwNCiAg
-ICAgICAgc2l6ZStvZnNfYWRkciwNCiAgICAgICAgUFJPVF9SRUFEfFBST1RfV1JJVEUsDQogICAg
-ICAgIE1BUF9TSEFSRUQsDQogICAgICAgIGF4c19tZW1fZmQsDQogICAgICAgIHBhZ2VfYWRkcg0K
-ICAgICk7DQogICAgaWYgKHJlZ19tZW0gPT0gTUFQX0ZBSUxFRCkgew0KICAgICAgICBwZXJyb3Io
-IkFYUzogbW1hcCBlcnJvciIpOw0KICAgICAgICBjbG9zZShheHNfbWVtX2ZkKTsNCiAgICAgICAg
-cmV0dXJuIE5VTEw7DQogICAgfQ0KDQogICAgcmVnID0gKHVuc2lnbmVkIGxvbmcgKXJlZ19tZW0g
-KyBvZnNfYWRkcjsNCiAgICByZXR1cm4gKHZvbGF0aWxlIHVuc2lnbmVkIGxvbmcJICopcmVnOw0K
-fQ0KDQppbnQgaW91bm1hcCh2b2xhdGlsZSB2b2lkICpzdGFydCwgc2l6ZV90IGxlbmd0aCkNCnsN
-CiAgICB1bnNpZ25lZCBsb25nIG9mc19hZGRyOw0KICAgIG9mc19hZGRyID0gKHVuc2lnbmVkIGxv
-bmcpc3RhcnQgJiAoZ2V0cGFnZXNpemUoKS0xKTsNCg0KICAgIC8qIGRvIHNvbWUgY2xlYW51cCB3
-aGVuIHlvdSdyZSBkb25lIHdpdGggaXQgKi8NCiAgIHJldHVybiBtdW5tYXAoKGxvbmcqKXN0YXJ0
-LW9mc19hZGRyLCBsZW5ndGgrb2ZzX2FkZHIpOw0KfQoNCmludCBtYWluKHZvaWQpIHsKCXVuc2ln
-bmVkIGE7Cgl1bnNpZ25lZCBiOwoJdW5zaWduZWQgc2RfYTsKCXVuc2lnbmVkIHNkX2I7Cgl1bnNp
-Z25lZCBhMTsKCXVuc2lnbmVkIGIxOwoJdW5zaWduZWQgc3VtOwoJdW5zaWduZWQgc3VtMjsKCXVu
-c2lnbmVkIGZsYWc7Cgl1bnNpZ25lZCBmbGFnX2FmdGVyOwoJdW5zaWduZWQgbG9uZyByZWcwX2xv
-d2VyOwoJdW5zaWduZWQgbG9uZyByZWcwX3VwcGVyOwoJdW5zaWduZWQgbG9uZyByZWcxX2xvd2Vy
-OwoJdW5zaWduZWQgbG9uZyByZWcxX3VwcGVyOwoJdW5zaWduZWQgbG9uZyByZWcyX2xvd2VyOwoJ
-dW5zaWduZWQgbG9uZyByZWcyX3VwcGVyOwoJdW5zaWduZWQgbG9uZyAqcjBfbG93ZXI7Cgl1bnNp
-Z25lZCBsb25nICpyMF91cHBlcjsKCXVuc2lnbmVkIGxvbmcgKnIxX2xvd2VyOwoJdW5zaWduZWQg
-bG9uZyAqcjFfdXBwZXI7Cgl1bnNpZ25lZCBsb25nICpyMl9sb3dlcjsKCXVuc2lnbmVkIGxvbmcg
-KnIyX3VwcGVyOwoJdW5zaWduZWQgbG9uZyB0ZW1wX3Q7CQoJdW5zaWduZWQgbG9uZyBhX3BvaW50
-OwoJdW5zaWduZWQgbG9uZyBiX3BvaW50OwoJdW5zaWduZWQgbG9uZyAqYV9wb2ludGVyOwoJdW5z
-aWduZWQgbG9uZyAqYl9wb2ludGVyOwoJTmF0aXZlVGltZVN0YW1wIFRTOwoKCXByaW50ZigiaW5w
-dXQgbnVtYmVyIDE6ICIpOw0KCXNjYW5mKCIldSIsICZzZF9hKTsKCXByaW50ZigiaW5wdXQgbnVt
-YmVyIDI6ICIpOw0KCXNjYW5mKCIldSIsICZzZF9iKTsKCgl2b2xhdGlsZSB1bnNpZ25lZCBsb25n
-ICp0ID0gaW9yZW1hcCgweDAwMDAwMDAwLCA2NzEwODg2NCk7IAoJCWlmKCF0KQoJCWV4aXQoMSk7
-Cgl0ZW1wX3QgPSByZWludGVycHJldF9jYXN0IDx1bnNpZ25lZCBsb25nPiAodCk7CglhX3BvaW50
-ID0gdGVtcF90ICsgMjAwOwoJYl9wb2ludAk9IHRlbXBfdCArIDQwMDsKCWFfcG9pbnRlciA9IHJl
-aW50ZXJwcmV0X2Nhc3QgPHVuc2lnbmVkIGxvbmcgKj4gKGFfcG9pbnQpOwoJYl9wb2ludGVyID0g
-cmVpbnRlcnByZXRfY2FzdCA8dW5zaWduZWQgbG9uZyAqPiAoYl9wb2ludCk7CglvdXRfbGUzMihh
-X3BvaW50ZXIsc2RfYSk7CglwcmludGYoIldyaXRpbmcgUmVnIDAgTG93ZXJcbiIpOwoJb3V0X2xl
-MzIoYl9wb2ludGVyLHNkX2IgKTsKCXByaW50ZigiV3JpdGluZyBSZWcgMCBVcHBlclxuIik7CgkK
-CWEgPSBpbl9sZTMyKGFfcG9pbnRlcik7CglwcmludGYoIkE6ICV1XG4iICwgYSk7CgliID0gaW5f
-bGUzMihiX3BvaW50ZXIpOwoJcHJpbnRmKCJCOiAldVxuIiwgYik7Cglpb3VubWFwKHQsNjcxMDg4
-NjQpOwoKCglUUy5Jbml0KDEsNS4wKTsKCglUUy5SZWNvcmRUaW1lKDEpOwoJDQl2b2xhdGlsZSB1
-bnNpZ25lZCBsb25nICpwID0gaW9yZW1hcCgweEM5QzAwMDAwLCAyNTYpOwoJCWlmKCFwKQoJCWV4
-aXQoMSk7CgoJcmVnMF9sb3dlciA9IHJlaW50ZXJwcmV0X2Nhc3QgPHVuc2lnbmVkIGxvbmc+IChw
-KTsKCXIwX2xvd2VyID0gcmVpbnRlcnByZXRfY2FzdCA8dW5zaWduZWQgbG9uZyAqPiAocmVnMF9s
-b3dlcik7CglyZWcwX3VwcGVyID0gcmVnMF9sb3dlciArIDQ7CglyMF91cHBlciA9IHJlaW50ZXJw
-cmV0X2Nhc3QgPHVuc2lnbmVkIGxvbmcgKj4gKHJlZzBfdXBwZXIpOwoJcmVnMV9sb3dlciA9IHJl
-ZzBfbG93ZXIgKyA4OwoJcjFfbG93ZXIgPSByZWludGVycHJldF9jYXN0IDx1bnNpZ25lZCBsb25n
-ICo+IChyZWcxX2xvd2VyKTsKCXJlZzFfdXBwZXIgPSByZWcwX2xvd2VyICsgMTI7CglyMV91cHBl
-ciA9IHJlaW50ZXJwcmV0X2Nhc3QgPHVuc2lnbmVkIGxvbmcgKj4gKHJlZzFfdXBwZXIpOwoJcmVn
-Ml9sb3dlciA9IHJlZzBfbG93ZXIgKyAxNjsKCXIyX2xvd2VyID0gcmVpbnRlcnByZXRfY2FzdCA8
-dW5zaWduZWQgbG9uZyAqPiAocmVnMl9sb3dlcik7CglyZWcyX3VwcGVyID0gcmVnMF9sb3dlciAr
-IDIwOwoJcjJfdXBwZXIgPSByZWludGVycHJldF9jYXN0IDx1bnNpZ25lZCBsb25nICo+IChyZWcy
-X3VwcGVyKTsKCQoJb3V0X2xlMzIocjBfbG93ZXIsYSk7CglwcmludGYoIldyaXRpbmcgUmVnIDAg
-TG93ZXJcbiIpOwoJb3V0X2xlMzIocjBfdXBwZXIsYiApOwoJcHJpbnRmKCJXcml0aW5nIFJlZyAw
-IFVwcGVyXG4iKTsKCQoJYTEgPSBpbl9sZTMyKHIwX2xvd2VyKTsKCXByaW50ZigiUmVnMTogJXVc
-biIgLCBhMSk7CgliMSA9IGluX2xlMzIocjBfdXBwZXIpOwoJcHJpbnRmKCJSZWcyOiAldVxuIiwg
-YjEpOwoJCglvdXRfbGUzMihyMl9sb3dlciwxKTsKCXdoaWxlIChmbGFnICE9IDEpCgl7ZmxhZyA9
-IGluX2xlMzIocjJfbG93ZXIpO30KCQoJc3VtID0gaW5fbGUzMihyMV9sb3dlcik7CglwcmludGYo
-IlN1bSA9ICV1XG4iLCBzdW0pOwoKCW91dF9sZTMyKHIyX2xvd2VyLDApOwoJZmxhZ19hZnRlcj0g
-aW5fbGUzMihyMV91cHBlcik7CglwcmludGYoIkZsYWcgQWZ0ZXI9ICV1XG4iLCBmbGFnX2FmdGVy
-KTsKCQ0KCWlvdW5tYXAocCwyNTYpOwoJVFMuUmVjb3JkVGltZSgxKTsKCQoJVFMuUmVjb3JkVGlt
-ZSgxKTsKCXN1bTIgPSBhICsgYjsKCXByaW50ZigiU3VtIFVzaW5nIE5vIEhhcmR3YXJlOiAldVxu
-Iiwgc3VtMik7CglUUy5SZWNvcmRUaW1lKDEpOwoJcHJpbnRmKCJFbmQiKTsKCVRTLk91dHB1dExv
-Z1JlY29yZHMoKTsNCglyZXR1cm4gMDsNCn0K
+Also, this setting is hardware dependent and differs  from  board  to
+board.
 
+> We got CLK9  and CLK10 from U-Boot tree and set those varables, but 
+> ethernet does not work. 
 
---=_mixed 0069880A852570F3_=
-Content-Type: application/octet-stream; name="my_io.h"
-Content-Disposition: attachment; filename="my_io.h"
-Content-Transfer-Encoding: base64
+Then   probably   other   changes   /   initializations   (port   pin
+configurations) are needed as well.
 
-I2luY2x1ZGUgPHN0ZGlvLmg+DQojaW5jbHVkZSA8c3RkbGliLmg+DQoNCiNpbmNsdWRlIDxzeXMv
-dHlwZXMuaD4NCiNpbmNsdWRlIDxzeXMvc3RhdC5oPg0KI2luY2x1ZGUgPGZjbnRsLmg+DQojaW5j
-bHVkZSA8dW5pc3RkLmg+DQojaW5jbHVkZSA8c3lzL21tYW4uaD4KCnR5cGVkZWYgdW5zaWduZWQg
-Y2hhciBteTg7CnR5cGVkZWYgdW5zaWduZWQgc2hvcnQgbXkxNjsKdHlwZWRlZiB1bnNpZ25lZCBs
-b25nIG15MzI7CgojZGVmaW5lIHJlYWRiKGFkZHIpIGluXzgoKHZvbGF0aWxlIG15OCAqKShhZGRy
-KSkKI2RlZmluZSB3cml0ZWIoYixhZGRyKSBvdXRfOCgodm9sYXRpbGUgbXk4ICopKGFkZHIpLCAo
-YikpCiNkZWZpbmUgcmVhZHcoYWRkcikgaW5fbGUxNigodm9sYXRpbGUgbXl1MTYgKikoYWRkcikp
-CiNkZWZpbmUgcmVhZGwoYWRkcikgaW5fbGUzMigodm9sYXRpbGUgbXkzMiAqKShhZGRyKSkKI2Rl
-ZmluZSB3cml0ZXcoYixhZGRyKSBvdXRfbGUxNigodm9sYXRpbGUgbXkxNiAqKShhZGRyKSwoYikp
-CiNkZWZpbmUgd3JpdGVsKGIsYWRkcikgb3V0X2xlMzIoKHZvbGF0aWxlIG15MzIgKikoYWRkciks
-KGIpKQoKZXh0ZXJuIGlubGluZSBpbnQgaW5fOCh2b2xhdGlsZSB1bnNpZ25lZCBjaGFyICphZGRy
-KQp7CglpbnQgcmV0OwoKCV9fYXNtX18gX192b2xhdGlsZV9fKAoJCSJsYnolVTElWDEgJTAsJTE7
-XG4iCgkJInR3aSAwLCUwLDA7XG4iCgkJImlzeW5jIiA6ICI9ciIgKHJldCkgOiAibSIgKCphZGRy
-KSk7CglyZXR1cm4gcmV0Owp9CgpleHRlcm4gaW5saW5lIHZvaWQgb3V0Xzgodm9sYXRpbGUgdW5z
-aWduZWQgY2hhciAqYWRkciwgaW50IHZhbCkKewoJX19hc21fXyBfX3ZvbGF0aWxlX18oInN0YiVV
-MCVYMCAlMSwlMDsgZWllaW8iIDogIj1tIiAoKmFkZHIpIDogInIiICh2YWwpKTsKfQoKZXh0ZXJu
-IGlubGluZSBpbnQgaW5fbGUxNih2b2xhdGlsZSB1bnNpZ25lZCBzaG9ydCAqYWRkcikKewoJaW50
-IHJldDsKCglfX2FzbV9fIF9fdm9sYXRpbGVfXygibGhicnggJTAsMCwlMTtcbiIKCQkJICAgICAi
-dHdpIDAsJTAsMDtcbiIKCQkJICAgICAiaXN5bmMiIDogIj1yIiAocmV0KSA6CgkJCSAgICAgICJy
-IiAoYWRkciksICJtIiAoKmFkZHIpKTsKCXJldHVybiByZXQ7Cn0KCmV4dGVybiBpbmxpbmUgaW50
-IGluX2JlMTYodm9sYXRpbGUgdW5zaWduZWQgc2hvcnQgKmFkZHIpCnsKCWludCByZXQ7CgoJX19h
-c21fXyBfX3ZvbGF0aWxlX18oImxoeiVVMSVYMSAlMCwlMTtcbiIKCQkJICAgICAidHdpIDAsJTAs
-MDtcbiIKCQkJICAgICAiaXN5bmMiIDogIj1yIiAocmV0KSA6ICJtIiAoKmFkZHIpKTsKCXJldHVy
-biByZXQ7Cn0KCmV4dGVybiBpbmxpbmUgdm9pZCBvdXRfbGUxNih2b2xhdGlsZSB1bnNpZ25lZCBz
-aG9ydCAqYWRkciwgaW50IHZhbCkKewoJX19hc21fXyBfX3ZvbGF0aWxlX18oInN0aGJyeCAlMSww
-LCUyOyBlaWVpbyIgOiAiPW0iICgqYWRkcikgOgoJCQkgICAgICAiciIgKHZhbCksICJyIiAoYWRk
-cikpOwp9CgpleHRlcm4gaW5saW5lIHZvaWQgb3V0X2JlMTYodm9sYXRpbGUgdW5zaWduZWQgc2hv
-cnQgKmFkZHIsIGludCB2YWwpCnsKCV9fYXNtX18gX192b2xhdGlsZV9fKCJzdGglVTAlWDAgJTEs
-JTA7IGVpZWlvIiA6ICI9bSIgKCphZGRyKSA6ICJyIiAodmFsKSk7Cn0KCmV4dGVybiBpbmxpbmUg
-dW5zaWduZWQgaW5fbGUzMih2b2xhdGlsZSB1bnNpZ25lZCBsb25nICphZGRyKQp7Cgl1bnNpZ25l
-ZCByZXQ7CgoJX19hc21fXyBfX3ZvbGF0aWxlX18oImx3YnJ4ICUwLDAsJTE7XG4iCgkJCSAgICAg
-InR3aSAwLCUwLDA7XG4iCgkJCSAgICAgImlzeW5jIiA6ICI9ciIgKHJldCkgOgoJCQkgICAgICJy
-IiAoYWRkciksICJtIiAoKmFkZHIpKTsKCXJldHVybiByZXQ7Cn0KCmV4dGVybiBpbmxpbmUgdW5z
-aWduZWQgaW5fYmUzMih2b2xhdGlsZSB1bnNpZ25lZCBsb25nICphZGRyKQp7Cgl1bnNpZ25lZCBy
-ZXQ7CgoJX19hc21fXyBfX3ZvbGF0aWxlX18oImx3eiVVMSVYMSAlMCwlMTtcbiIKCQkJICAgICAi
-dHdpIDAsJTAsMDtcbiIKCQkJICAgICAiaXN5bmMiIDogIj1yIiAocmV0KSA6ICJtIiAoKmFkZHIp
-KTsKCXJldHVybiByZXQ7Cn0KCmV4dGVybiBpbmxpbmUgdm9pZCBvdXRfbGUzMih2b2xhdGlsZSB1
-bnNpZ25lZCBsb25nICphZGRyLCBpbnQgdmFsKQp7CglfX2FzbV9fIF9fdm9sYXRpbGVfXygic3R3
-YnJ4ICUxLDAsJTI7IGVpZWlvIiA6ICI9bSIgKCphZGRyKSA6CgkJCSAgICAgInIiICh2YWwpLCAi
-ciIgKGFkZHIpKTsKfQoKZXh0ZXJuIGlubGluZSB2b2lkIG91dF9iZTMyKHZvbGF0aWxlIHVuc2ln
-bmVkIGxvbmcgKmFkZHIsIGludCB2YWwpCnsKCV9fYXNtX18gX192b2xhdGlsZV9fKCJzdHclVTAl
-WDAgJTEsJTA7IGVpZWlvIiA6ICI9bSIgKCphZGRyKSA6ICJyIiAodmFsKSk7Cn0K
+> My question is what value shall I use for CLK9 and CLK10? 
 
+This idepends on your hardware. Study the schematics.
 
---=_mixed 0069880A852570F3_=--
+> What else setting we need to change to make Ethernet work?
+
+Compare U-Boot code and other board definitions.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A secure program has to be robust: it  must  be  able  to  deal  with
+conditions  that "can't happen", whether user input, program error or
+library/etc. This is basic damage  control.  Buffer  overflow  errors
+have nothing to do with security, but everything with stupidity.
+                 -- Wietse Venema in <5cnqm3$8r9@spike.porcupine.org>
