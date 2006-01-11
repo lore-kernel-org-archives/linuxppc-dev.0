@@ -1,21 +1,12 @@
-Return-Path: <peter.ryser@xilinx.com>
-Received: from outbound1-ash-R.bigfish.com (outbound-ash.frontbridge.com
-	[206.16.192.249])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2DE91688DC
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Jan 2006 09:11:59 +1100 (EST)
-Message-ID: <43C430E2.60905@xilinx.com>
-Date: Tue, 10 Jan 2006 14:10:42 -0800
-From: Peter Ryser <peter.ryser@xilinx.com>
+Return-Path: <batsayan.das@tcs.com>
+To: Linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
-References: <259581790601100820s42d1a311ye40bfcf4ba6c9bd5@mail.gmail.com>
-In-Reply-To: <259581790601100820s42d1a311ye40bfcf4ba6c9bd5@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Error: Three ML403 boards
+From: batsayan.das@tcs.com
+Message-ID: <OFDC66830E.1EDE14C4-ON652570F3.00265CDF-652570F3.00297A66@tcs.com>
+Date: Wed, 11 Jan 2006 13:03:02 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 00297A21652570F3_="
+Subject: Ethernet not initialized: Help req
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,43 +17,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Paula,
-
-please verify that you are not running into the problem described in=20
-Xilinx Answer Record 22179=20
-(http://www.xilinx.com/xlnx/xil_ans_display.jsp?iLanguageID=3D1&iCountryI=
-D=3D1&getPagePath=3D22179).
-
-- Peter
+This is a multipart message in MIME format.
+--=_alternative 00297A21652570F3_=
+Content-Type: text/plain; charset="US-ASCII"
 
 
-Paula Saame=F1o wrote:
+Hello,
 
-> Hello,
->
-> I have 3 Xilinx ML403 boards. I have implemented a 2.4 kernel with a=20
-> basic configuration, with network support, systemACE, IIC... and it=20
-> works perfectly in one of them.
->
-> However, when I put the ACE card, without making any change, in other=20
-> ML403 board, it does not work. The .ace file is loaded ok but then the=20
-> network leds (6 leds) start blinking and nothing else happens.
->
-> I have tried with two ML403 different boards, and I have no idea of=20
-> where the problem is. They should work in the same way, don't they?
->
-> Any help would be great.
->
-> Also, I am trying to load a 2.6 kernel, but I am still on the way. I=20
-> will let you know if I get it working.
->
-> Thanks a lot!
-> Paula
->
->------------------------------------------------------------------------
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+In our MPC8260 based customs board the CLK9 is for transmit and CLK10 is 
+for receive. The ELDK tree uses  CLK12 is receive, CLK11 is transmit and 
+the corresponding values defined in as.
+
+/* CLK12 is receive, CLK11 is transmit.  These are board specific.
+*/
+#define PC_F1RXCLK      ((uint)0x00000800)
+#define PC_F1TXCLK      ((uint)0x00000400)
+
+
+We got CLK9  and CLK10 from U-Boot tree and set those varables, but 
+ethernet does not work. 
+
+We are using LXT971 on FCC1, and setting MII_MDIO and MII_MDCK to our 
+board specific value detects LXT971 correctly. Here is the log 
+
+****LOG*****
+GOT FCC IRQ 32
+
+GOT MII IRQ 25
+
+eth0: FCC1 ENET Version 0.4, 00:0B:17:00:00:00
+
+eth0: Phy @ 0x0, type LXT971 (0x001378e2)
+***************8
+
+My question is what value shall I use for CLK9 and CLK10? 
+What else setting we need to change to make Ethernet work?
+
+Pls help.
+
+Thanks,
+Batsayan Das
+
+
+Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+--=_alternative 00297A21652570F3_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">Hello,</font>
+<br>
+<br><font size=2 face="sans-serif">In our MPC8260 based customs board the
+CLK9 is for transmit and CLK10 is for receive. The ELDK tree uses &nbsp;CLK12
+is receive, CLK11 is transmit and the corresponding values defined in as.</font>
+<br>
+<br><font size=2 face="sans-serif">/* CLK12 is receive, CLK11 is transmit.
+&nbsp;These are board specific.</font>
+<br><font size=2 face="sans-serif">*/</font>
+<br><font size=2 face="sans-serif">#define PC_F1RXCLK &nbsp; &nbsp; &nbsp;((uint)0x00000800)</font>
+<br><font size=2 face="sans-serif">#define PC_F1TXCLK &nbsp; &nbsp; &nbsp;((uint)0x00000400)</font>
+<br>
+<br>
+<br><font size=2 face="sans-serif">We got CLK9 &nbsp;and CLK10 from U-Boot
+tree and set those varables, but ethernet does not work. </font>
+<br>
+<br><font size=2 face="sans-serif">We are using LXT971 on FCC1, and setting
+MII_MDIO and MII_MDCK to our board specific value detects LXT971 correctly.
+Here is the log </font>
+<br>
+<br><font size=2 face="sans-serif">****LOG*****</font>
+<br><font size=2 face="Courier New">GOT FCC IRQ 32</font>
+<br>
+<br><font size=2 face="Courier New">GOT MII IRQ 25</font>
+<br>
+<br><font size=2 face="Courier New">eth0: FCC1 ENET Version 0.4, 00:0B:17:00:00:00</font>
+<br>
+<br><font size=2 face="Courier New">eth0: Phy @ 0x0, type LXT971 (0x001378e2)</font>
+<br><font size=2 face="sans-serif">***************8</font>
+<br>
+<br><font size=2 face="sans-serif">My question is what value shall I use
+for CLK9 and CLK10? </font>
+<br><font size=2 face="sans-serif">What else setting we need to change
+to make Ethernet work?</font>
+<br>
+<br><font size=2 face="sans-serif">Pls help.</font>
+<br>
+<br><font size=2 face="sans-serif">Thanks,</font>
+<br><font size=2 face="sans-serif">Batsayan Das<br>
+</font>
+<table><tr><td bgcolor=#ffffff><font color=#000000>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you<br>
+</font></td></tr></table>
+--=_alternative 00297A21652570F3_=--
