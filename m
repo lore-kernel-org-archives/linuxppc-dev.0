@@ -1,21 +1,13 @@
-Return-Path: <apw@shadowen.org>
-Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hellhawk.shadowen.org",
-	Issuer "hellhawk.shadowen.org" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D7A5968A78
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2006 03:02:23 +1100 (EST)
-Message-ID: <43C67B3F.3080301@shadowen.org>
-Date: Thu, 12 Jan 2006 15:52:31 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-References: <20060112144437.GA15923@shadowen.org>
-	<65FBDB60-D4A5-40DF-BA73-AB6388A9368B@kernel.crashing.org>
-In-Reply-To: <65FBDB60-D4A5-40DF-BA73-AB6388A9368B@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc oprofile G4 clashes with wacom driver
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id 3C214681B8
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2006 06:09:03 +1100 (EST)
+Date: 12 Jan 2006 19:09:00 -0000
+Message-ID: <20060112190900.23594.qmail@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+To: pegasos@frokaschwei.de, linuxppc-dev@ozlabs.org
+In-Reply-To: <200601121329.11693@mail.frokaschwei.de>
+Subject: Re: mv643xx_eth.c: Multicast and IPv6 support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +17,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+In article <200601121329.11693@mail.frokaschwei.de>
+pegasos@frokaschwei.de writes:
+> currently, the driver mv643xx_eth.c doesn't support receiving of multicast and 
+> sending of IPv6 packets.
+> I found a piece of code in the u-boot bootloader which supports multicast 
+> receiving and did some cut and paste. Now receiving multicast packets works 
+> for me.
+> To be able to send IPv6 packets I had to remove the NETIF_F_HW_CSUM flag. 
+> Hardware checksumming for IPv4 should continue to work because of the 
+> NETIF_F_IP_CSUM flag.
+> 
+> I attach a diff against 2.6.15.
 
-> How about a different prefix than POT_.  POT_ doesn't make me think  of
-> PPC oprofile at all.  How about PPC_OPROFILE_ or POWERPC_OPROFILE_
+Thanks.  On December 28th, I posted a patch to netdev@vger.kernel.org that
+adds multicast support to the mv643xx driver.  I'll ping jgarzik
+about it.
 
-Paul?  I am ambivalent about the prefix, and it can be trivially changed
-to any that you feel approriate.
+The IPv6 changes look good.  Would you please re-submit these without
+the multicast changes and with a Signed-off-by line?
 
--apw
+-Dale
