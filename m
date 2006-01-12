@@ -1,17 +1,17 @@
-Return-Path: <pegasos@frokaschwei.de>
-Received: from frokaschwei.de (frokaschwei.de [213.203.244.18])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <apw@shadowen.org>
+Received: from localhost.localdomain (81-178-99-45.dsl.pipex.com
+	[81.178.99.45]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0CDCF689F5
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 23:58:48 +1100 (EST)
-From: Wolfram Joost <pegasos@frokaschwei.de>
-To: linuxppc-dev@ozlabs.org
-Date: Thu, 12 Jan 2006 13:29:11 +0100
+	by ozlabs.org (Postfix) with ESMTP id 5DAA668A61
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2006 02:11:26 +1100 (EST)
+Date: Thu, 12 Jan 2006 14:44:37 +0000
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <20060112144437.GA15923@shadowen.org>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_XukxDvfUaCFiVxy"
-Message-Id: <200601121329.11693@mail.frokaschwei.de>
-Subject: mv643xx_eth.c: Multicast and IPv6 support
+Content-Type: text/plain; charset=us-ascii
+From: Andy Whitcroft <apw@shadowen.org>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc oprofile G4 clashes with wacom driver
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,288 +21,312 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_XukxDvfUaCFiVxy
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+powerpc: oprofile G4 clashes with wacom driver
 
-Hello,
+In 2.6.15-git6 a change was commited in the oprofile support in
+the powerpc architecture.  It introduced the powerpc_oprofile_type
+which contains the define G4.  This causes a name clash with the
+existing wacom usb tablet driver.
 
-currently, the driver mv643xx_eth.c doesn't support receiving of multicast and 
-sending of IPv6 packets.
-I found a piece of code in the u-boot bootloader which supports multicast 
-receiving and did some cut and paste. Now receiving multicast packets works 
-for me.
-To be able to send IPv6 packets I had to remove the NETIF_F_HW_CSUM flag. 
-Hardware checksumming for IPv4 should continue to work because of the 
-NETIF_F_IP_CSUM flag.
+      CC [M]  drivers/usb/input/wacom.o
+    drivers/usb/input/wacom.c:98: error: conflicting types for `G4'
+    include/asm/cputable.h:37: error: previous declaration of `G4'
+      CC [M]  drivers/usb/mon/mon_text.o
+    make[3]: *** [drivers/usb/input/wacom.o] Error 1
+    make[2]: *** [drivers/usb/input] Error 2
 
-I attach a diff against 2.6.15.
+The elements of an enum declared in global scope are effectivly
+global identifiers themselves.  As such we need to ensure the names
+are unique.  This patch updates the later oprofile support to use
+unique names.
 
-Does anyone know how to get documentation for the marvell mv643xx-family?
-
-Regards
- Wolfram
-
---Boundary-00=_XukxDvfUaCFiVxy
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="mv643xx_eth.c.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="mv643xx_eth.c.diff"
-
-diff -Naurp linux-2.6.15/drivers/net/mv643xx_eth.c linux-2.6.15.patched/drivers/net/mv643xx_eth.c
---- linux-2.6.15/drivers/net/mv643xx_eth.c	2006-01-03 04:21:10.000000000 +0100
-+++ linux-2.6.15.patched/drivers/net/mv643xx_eth.c	2006-01-11 19:57:42.000000000 +0100
-@@ -89,6 +89,7 @@ static int mv643xx_poll(struct net_devic
- static void ethernet_phy_set(unsigned int eth_port_num, int phy_addr);
- static int ethernet_phy_detect(unsigned int eth_port_num);
- static struct ethtool_ops mv643xx_ethtool_ops;
-+static u8 mv643xx_eth_calc_mc_hash(u8 *addr);
- 
- static char mv643xx_driver_name[] = "mv643xx_eth";
- static char mv643xx_driver_version[] = "1.0";
-@@ -250,9 +251,115 @@ static void mv643xx_eth_update_mac_addre
- }
- 
- /*
-+ * mv643xx_eth_calc_mc_hash
-+ *
-+ * calculate multicast hash
-+ *
-+ * Input : pointer to mac address
-+ * Output : hash value
-+ */
-+static u8 mv643xx_eth_calc_mc_hash(u8 *p_addr)
-+{
-+	unsigned mac_h;
-+	unsigned mac_l;
-+	u8 crc_result = 0;
-+	unsigned mac_array[48];
-+	unsigned crc[8];
-+	unsigned i;
-+
-+	/* Calculate CRC-8 out of the given address */
-+	mac_h = (p_addr[0] << 8) | (p_addr[1]);
-+	mac_l = (p_addr[2] << 24) | (p_addr[3] << 16) |
-+		(p_addr[4] << 8) | (p_addr[5] << 0);
-+
-+	for (i = 0; i < 32; i++)
-+		mac_array[i] = (mac_l >> i) & 0x1;
-+	for (i = 32; i < 48; i++)
-+		mac_array[i] = (mac_h >> (i - 32)) & 0x1;
-+
-+
-+	crc[0] = mac_array[45] ^ mac_array[43] ^ mac_array[40] ^
-+		mac_array[39] ^ mac_array[35] ^ mac_array[34] ^
-+		mac_array[31] ^ mac_array[30] ^ mac_array[28] ^
-+		mac_array[23] ^ mac_array[21] ^ mac_array[19] ^
-+		mac_array[18] ^ mac_array[16] ^ mac_array[14] ^
-+		mac_array[12] ^ mac_array[8] ^ mac_array[7] ^
-+		mac_array[6] ^ mac_array[0];
-+
-+	crc[1] = mac_array[46] ^ mac_array[45] ^ mac_array[44] ^
-+		mac_array[43] ^ mac_array[41] ^ mac_array[39] ^
-+		mac_array[36] ^ mac_array[34] ^ mac_array[32] ^
-+		mac_array[30] ^ mac_array[29] ^ mac_array[28] ^
-+		mac_array[24] ^ mac_array[23] ^ mac_array[22] ^
-+		mac_array[21] ^ mac_array[20] ^ mac_array[18] ^
-+		mac_array[17] ^ mac_array[16] ^ mac_array[15] ^
-+		mac_array[14] ^ mac_array[13] ^ mac_array[12] ^
-+		mac_array[9] ^ mac_array[6] ^ mac_array[1] ^
-+		mac_array[0];
-+
-+	crc[2] = mac_array[47] ^ mac_array[46] ^ mac_array[44] ^
-+		mac_array[43] ^ mac_array[42] ^ mac_array[39] ^
-+		mac_array[37] ^ mac_array[34] ^ mac_array[33] ^
-+		mac_array[29] ^ mac_array[28] ^ mac_array[25] ^
-+		mac_array[24] ^ mac_array[22] ^ mac_array[17] ^
-+		mac_array[15] ^ mac_array[13] ^ mac_array[12] ^
-+		mac_array[10] ^ mac_array[8] ^ mac_array[6] ^
-+		mac_array[2] ^ mac_array[1] ^ mac_array[0];
-+
-+	crc[3] = mac_array[47] ^ mac_array[45] ^ mac_array[44] ^
-+		mac_array[43] ^ mac_array[40] ^ mac_array[38] ^
-+		mac_array[35] ^ mac_array[34] ^ mac_array[30] ^
-+		mac_array[29] ^ mac_array[26] ^ mac_array[25] ^
-+		mac_array[23] ^ mac_array[18] ^ mac_array[16] ^
-+		mac_array[14] ^ mac_array[13] ^ mac_array[11] ^
-+		mac_array[9] ^ mac_array[7] ^ mac_array[3] ^
-+		mac_array[2] ^ mac_array[1];
-+
-+	crc[4] = mac_array[46] ^ mac_array[45] ^ mac_array[44] ^
-+		mac_array[41] ^ mac_array[39] ^ mac_array[36] ^
-+		mac_array[35] ^ mac_array[31] ^ mac_array[30] ^
-+		mac_array[27] ^ mac_array[26] ^ mac_array[24] ^
-+		mac_array[19] ^ mac_array[17] ^ mac_array[15] ^
-+		mac_array[14] ^ mac_array[12] ^ mac_array[10] ^
-+		mac_array[8] ^ mac_array[4] ^ mac_array[3] ^
-+		mac_array[2];
-+
-+	crc[5] = mac_array[47] ^ mac_array[46] ^ mac_array[45] ^
-+		mac_array[42] ^ mac_array[40] ^ mac_array[37] ^
-+		mac_array[36] ^ mac_array[32] ^ mac_array[31] ^
-+		mac_array[28] ^ mac_array[27] ^ mac_array[25] ^
-+		mac_array[20] ^ mac_array[18] ^ mac_array[16] ^
-+		mac_array[15] ^ mac_array[13] ^ mac_array[11] ^
-+		mac_array[9] ^ mac_array[5] ^ mac_array[4] ^
-+		mac_array[3];
-+
-+	crc[6] = mac_array[47] ^ mac_array[46] ^ mac_array[43] ^
-+		mac_array[41] ^ mac_array[38] ^ mac_array[37] ^
-+		mac_array[33] ^ mac_array[32] ^ mac_array[29] ^
-+		mac_array[28] ^ mac_array[26] ^ mac_array[21] ^
-+		mac_array[19] ^ mac_array[17] ^ mac_array[16] ^
-+		mac_array[14] ^ mac_array[12] ^ mac_array[10] ^
-+		mac_array[6] ^ mac_array[5] ^ mac_array[4];
-+
-+	crc[7] = mac_array[47] ^ mac_array[44] ^ mac_array[42] ^
-+		mac_array[39] ^ mac_array[38] ^ mac_array[34] ^
-+		mac_array[33] ^ mac_array[30] ^ mac_array[29] ^
-+		mac_array[27] ^ mac_array[22] ^ mac_array[20] ^
-+		mac_array[18] ^ mac_array[17] ^ mac_array[15] ^
-+		mac_array[13] ^ mac_array[11] ^ mac_array[7] ^
-+		mac_array[6] ^ mac_array[5];
-+
-+	for (i = 0; i < 8; i++)
-+		crc_result = crc_result | (crc[i] << i);
-+
-+	return crc_result;
-+}
-+
-+/*
-  * mv643xx_eth_set_rx_mode
-  *
-  * Change from promiscuos to regular rx mode
-+ * maintain multicast tables
-  *
-  * Input :	pointer to ethernet interface network device structure
-  * Output :	N/A
-@@ -260,13 +367,64 @@ static void mv643xx_eth_update_mac_addre
- static void mv643xx_eth_set_rx_mode(struct net_device *dev)
- {
- 	struct mv643xx_private *mp = netdev_priv(dev);
-+	struct dev_mc_list *mc_list = dev->mc_list;
-+	u32 multicast_table[64];
-+	unsigned table_index;
-+	unsigned reg_index;
- 
-+	/* promiscuous mode */
- 	if (dev->flags & IFF_PROMISC)
- 		mp->port_config |= (u32) MV643XX_ETH_UNICAST_PROMISCUOUS_MODE;
- 	else
- 		mp->port_config &= ~(u32) MV643XX_ETH_UNICAST_PROMISCUOUS_MODE;
- 
- 	mv_write(MV643XX_ETH_PORT_CONFIG_REG(mp->port_num), mp->port_config);
-+
-+	/* multicast */
-+	if (dev->flags & IFF_ALLMULTI) {
-+		for (table_index = 0; table_index <= 0xFC; table_index += 4) {
-+			printk(KERN_INFO "IFF_ALLMULTI!\n");
-+			mv_write((MV643XX_ETH_DA_FILTER_SPECIAL_MULTICAST_TABLE_BASE(mp->port_num) +
-+				  table_index), 0x01010101);
-+			mv_write((MV643XX_ETH_DA_FILTER_OTHER_MULTICAST_TABLE_BASE(mp->port_num) +
-+				  table_index), 0x01010101);
-+		}
-+	} else {
-+		/* special multicast table */
-+		memset(multicast_table,0,sizeof(multicast_table));
-+		for (mc_list = dev->mc_list; mc_list; mc_list = mc_list->next) {
-+			if ( (mc_list->dmi_addr[0] == 0x01) &&
-+				 (mc_list->dmi_addr[1] == 0x00) &&
-+				 (mc_list->dmi_addr[2] == 0x5E) &&
-+				 (mc_list->dmi_addr[3] == 0x00) &&
-+				 (mc_list->dmi_addr[4] == 0x00) ) {
-+
-+				table_index = mc_list->dmi_addr[5] / 4;
-+				reg_index = 8 * ( mc_list->dmi_addr[5] & 0x03 );
-+				multicast_table[table_index] |= 0x01 << reg_index;
-+			}
-+		}
-+		for (table_index = 0; table_index <=0xFC; table_index +=4)
-+				mv_write((MV643XX_ETH_DA_FILTER_SPECIAL_MULTICAST_TABLE_BASE(mp->port_num) +
-+						  table_index), multicast_table[table_index / 4]);
-+		/* other multicast table */
-+		memset(multicast_table,0,sizeof(multicast_table));
-+		for (mc_list = dev->mc_list; mc_list; mc_list = mc_list->next) {
-+			if ( (mc_list->dmi_addr[0] != 0x01) ||
-+				 (mc_list->dmi_addr[1] != 0x00) ||
-+				 (mc_list->dmi_addr[2] != 0x5E) ||
-+				 (mc_list->dmi_addr[3] != 0x00) ||
-+				 (mc_list->dmi_addr[4] != 0x00) ) {
-+
-+				table_index = mv643xx_eth_calc_mc_hash(mc_list->dmi_addr);
-+				reg_index = 8 * (table_index & 0x03);
-+				multicast_table[table_index / 4] |= 0x01 << reg_index;
-+			}
-+		}
-+		for (table_index = 0; table_index <=0xFC; table_index +=4)
-+				mv_write((MV643XX_ETH_DA_FILTER_OTHER_MULTICAST_TABLE_BASE(mp->port_num) +
-+						  table_index), multicast_table[table_index / 4]);
-+	}
- }
- 
- /*
-@@ -1150,7 +1308,6 @@ linear:
- 					   5 << ETH_TX_IHL_SHIFT;
- 			pkt_info.l4i_chk = 0;
- 		} else {
--
- 			pkt_info.cmd_sts = ETH_TX_ENABLE_INTERRUPT |
- 					   ETH_TX_FIRST_DESC |
- 					   ETH_TX_LAST_DESC |
-@@ -1158,14 +1315,16 @@ linear:
- 					   ETH_GEN_IP_V_4_CHECKSUM |
- 					   skb->nh.iph->ihl << ETH_TX_IHL_SHIFT;
- 			/* CPU already calculated pseudo header checksum. */
--			if (skb->nh.iph->protocol == IPPROTO_UDP) {
-+			if ( (skb->protocol == ETH_P_IP) &&
-+				 (skb->nh.iph->protocol == IPPROTO_UDP) ) {
- 				pkt_info.cmd_sts |= ETH_UDP_FRAME;
- 				pkt_info.l4i_chk = skb->h.uh->check;
--			} else if (skb->nh.iph->protocol == IPPROTO_TCP)
-+			} else if ( (skb->protocol == ETH_P_IP) &&
-+				 (skb->nh.iph->protocol == IPPROTO_TCP) )
- 				pkt_info.l4i_chk = skb->h.th->check;
- 			else {
- 				printk(KERN_ERR
--					"%s: chksum proto != TCP or UDP\n",
-+					"%s: chksum proto != IPv4 TCP or UDP\n",
- 					dev->name);
- 				spin_unlock_irqrestore(&mp->lock, flags);
- 				return 1;
-@@ -1221,14 +1380,19 @@ linear:
- 					   ETH_GEN_IP_V_4_CHECKSUM |
- 					   skb->nh.iph->ihl << ETH_TX_IHL_SHIFT;
- 			/* CPU already calculated pseudo header checksum. */
--			if (skb->nh.iph->protocol == IPPROTO_UDP) {
-+
-+
-+
-+			if ( (skb->protocol == ETH_P_IP) &&
-+				 (skb->nh.iph->protocol == IPPROTO_UDP) ) {
- 				pkt_info.cmd_sts |= ETH_UDP_FRAME;
- 				pkt_info.l4i_chk = skb->h.uh->check;
--			} else if (skb->nh.iph->protocol == IPPROTO_TCP)
-+			} else if ( (skb->protocol == ETH_P_IP) &&
-+				 (skb->nh.iph->protocol == IPPROTO_TCP) ) 
- 				pkt_info.l4i_chk = skb->h.th->check;
- 			else {
- 				printk(KERN_ERR
--					"%s: chksum proto != TCP or UDP\n",
-+					"%s: chksum proto != IPv4 TCP or UDP\n",
- 					dev->name);
- 				spin_unlock_irqrestore(&mp->lock, flags);
- 				return 1;
-@@ -1441,7 +1605,7 @@ static int mv643xx_eth_probe(struct plat
- 	 * Zero copy can only work if we use Discovery II memory. Else, we will
- 	 * have to map the buffers to ISA memory which is only 16 MB
- 	 */
--	dev->features = NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_HW_CSUM;
-+	dev->features = NETIF_F_SG | NETIF_F_IP_CSUM;
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ arch/powerpc/kernel/cputable.c |   52 ++++++++++++++++++++---------------------
+ arch/powerpc/oprofile/common.c |    8 +++---
+ include/asm-powerpc/cputable.h |   10 +++----
+ 3 files changed, 35 insertions(+), 35 deletions(-)
+diff -upN reference/arch/powerpc/kernel/cputable.c current/arch/powerpc/kernel/cputable.c
+--- reference/arch/powerpc/kernel/cputable.c
++++ current/arch/powerpc/kernel/cputable.c
+@@ -79,7 +79,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_power3,
+ 		.oprofile_cpu_type	= "ppc64/power3",
+-		.oprofile_type		= RS64,
++		.oprofile_type		= POT_RS64,
+ 	},
+ 	{	/* Power3+ */
+ 		.pvr_mask		= 0xffff0000,
+@@ -92,7 +92,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_power3,
+ 		.oprofile_cpu_type	= "ppc64/power3",
+-		.oprofile_type		= RS64,
++		.oprofile_type		= POT_RS64,
+ 	},
+ 	{	/* Northstar */
+ 		.pvr_mask		= 0xffff0000,
+@@ -105,7 +105,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_power3,
+ 		.oprofile_cpu_type	= "ppc64/rs64",
+-		.oprofile_type		= RS64,
++		.oprofile_type		= POT_RS64,
+ 	},
+ 	{	/* Pulsar */
+ 		.pvr_mask		= 0xffff0000,
+@@ -118,7 +118,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_power3,
+ 		.oprofile_cpu_type	= "ppc64/rs64",
+-		.oprofile_type		= RS64,
++		.oprofile_type		= POT_RS64,
+ 	},
+ 	{	/* I-star */
+ 		.pvr_mask		= 0xffff0000,
+@@ -131,7 +131,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_power3,
+ 		.oprofile_cpu_type	= "ppc64/rs64",
+-		.oprofile_type		= RS64,
++		.oprofile_type		= POT_RS64,
+ 	},
+ 	{	/* S-star */
+ 		.pvr_mask		= 0xffff0000,
+@@ -144,7 +144,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_power3,
+ 		.oprofile_cpu_type	= "ppc64/rs64",
+-		.oprofile_type		= RS64,
++		.oprofile_type		= POT_RS64,
+ 	},
+ 	{	/* Power4 */
+ 		.pvr_mask		= 0xffff0000,
+@@ -157,7 +157,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_power4,
+ 		.oprofile_cpu_type	= "ppc64/power4",
+-		.oprofile_type		= POWER4,
++		.oprofile_type		= POT_POWER4,
+ 	},
+ 	{	/* Power4+ */
+ 		.pvr_mask		= 0xffff0000,
+@@ -170,7 +170,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_power4,
+ 		.oprofile_cpu_type	= "ppc64/power4",
+-		.oprofile_type		= POWER4,
++		.oprofile_type		= POT_POWER4,
+ 	},
+ 	{	/* PPC970 */
+ 		.pvr_mask		= 0xffff0000,
+@@ -184,7 +184,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+-		.oprofile_type		= POWER4,
++		.oprofile_type		= POT_POWER4,
+ 	},
+ #endif /* CONFIG_PPC64 */
+ #if defined(CONFIG_PPC64) || defined(CONFIG_POWER4)
+@@ -204,7 +204,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+-		.oprofile_type		= POWER4,
++		.oprofile_type		= POT_POWER4,
+ 	},
+ #endif /* defined(CONFIG_PPC64) || defined(CONFIG_POWER4) */
+ #ifdef CONFIG_PPC64
+@@ -219,7 +219,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.dcache_bsize		= 128,
+ 		.cpu_setup		= __setup_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+-		.oprofile_type		= POWER4,
++		.oprofile_type		= POT_POWER4,
+ 	},
+ 	{	/* Power5 GR */
+ 		.pvr_mask		= 0xffff0000,
+@@ -232,7 +232,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_power4,
+ 		.oprofile_cpu_type	= "ppc64/power5",
+-		.oprofile_type		= POWER4,
++		.oprofile_type		= POT_POWER4,
+ 	},
+ 	{	/* Power5 GS */
+ 		.pvr_mask		= 0xffff0000,
+@@ -245,7 +245,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_power4,
+ 		.oprofile_cpu_type	= "ppc64/power5+",
+-		.oprofile_type		= POWER4,
++		.oprofile_type		= POT_POWER4,
+ 	},
+ 	{	/* Cell Broadband Engine */
+ 		.pvr_mask		= 0xffff0000,
+@@ -521,7 +521,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7450 2.1 */
+ 		.pvr_mask		= 0xffffffff,
+@@ -534,7 +534,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7450 2.3 and newer */
+ 		.pvr_mask		= 0xffff0000,
+@@ -547,7 +547,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7455 rev 1.x */
+ 		.pvr_mask		= 0xffffff00,
+@@ -560,7 +560,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7455 rev 2.0 */
+ 		.pvr_mask		= 0xffffffff,
+@@ -573,7 +573,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7455 others */
+ 		.pvr_mask		= 0xffff0000,
+@@ -586,7 +586,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7447/7457 Rev 1.0 */
+ 		.pvr_mask		= 0xffffffff,
+@@ -599,7 +599,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7447/7457 Rev 1.1 */
+ 		.pvr_mask		= 0xffffffff,
+@@ -612,7 +612,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7447/7457 Rev 1.2 and later */
+ 		.pvr_mask		= 0xffff0000,
+@@ -625,7 +625,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7447A */
+ 		.pvr_mask		= 0xffff0000,
+@@ -638,7 +638,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 7448 */
+ 		.pvr_mask		= 0xffff0000,
+@@ -651,7 +651,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.num_pmcs		= 6,
+ 		.cpu_setup		= __setup_cpu_745x,
+ 		.oprofile_cpu_type      = "ppc/7450",
+-		.oprofile_type		= G4,
++		.oprofile_type		= POT_G4,
+ 	},
+ 	{	/* 82xx (8240, 8245, 8260 are all 603e cores) */
+ 		.pvr_mask		= 0x7fff0000,
+@@ -976,7 +976,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.dcache_bsize		= 32,
+ 		.num_pmcs		= 4,
+ 		.oprofile_cpu_type	= "ppc/e500",
+-		.oprofile_type		= BOOKE,
++		.oprofile_type		= POT_BOOKE,
+ 	},
+ 	{	/* e500v2 */
+ 		.pvr_mask		= 0xffff0000,
+@@ -991,7 +991,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.dcache_bsize		= 32,
+ 		.num_pmcs		= 4,
+ 		.oprofile_cpu_type	= "ppc/e500",
+-		.oprofile_type		= BOOKE,
++		.oprofile_type		= POT_BOOKE,
+ 	},
  #endif
+ #if !CLASSIC_PPC
+diff -upN reference/arch/powerpc/oprofile/common.c current/arch/powerpc/oprofile/common.c
+--- reference/arch/powerpc/oprofile/common.c
++++ current/arch/powerpc/oprofile/common.c
+@@ -140,19 +140,19 @@ int __init oprofile_arch_init(struct opr
+ 
+ 	switch (cur_cpu_spec->oprofile_type) {
+ #ifdef CONFIG_PPC64
+-		case RS64:
++		case POT_RS64:
+ 			model = &op_model_rs64;
+ 			break;
+-		case POWER4:
++		case POT_POWER4:
+ 			model = &op_model_power4;
+ 			break;
+ #else
+-		case G4:
++		case POT_G4:
+ 			model = &op_model_7450;
+ 			break;
  #endif
-
---Boundary-00=_XukxDvfUaCFiVxy--
+ #ifdef CONFIG_FSL_BOOKE
+-		case BOOKE:
++		case POT_BOOKE:
+ 			model = &op_model_fsl_booke;
+ 			break;
+ #endif
+diff -upN reference/include/asm-powerpc/cputable.h current/include/asm-powerpc/cputable.h
+--- reference/include/asm-powerpc/cputable.h
++++ current/include/asm-powerpc/cputable.h
+@@ -31,11 +31,11 @@ struct cpu_spec;
+ typedef	void (*cpu_setup_t)(unsigned long offset, struct cpu_spec* spec);
+ 
+ enum powerpc_oprofile_type {
+-	INVALID = 0,
+-	RS64 = 1,
+-	POWER4 = 2,
+-	G4 = 3,
+-	BOOKE = 4,
++	POT_INVALID = 0,
++	POT_RS64 = 1,
++	POT_POWER4 = 2,
++	POT_G4 = 3,
++	POT_BOOKE = 4,
+ };
+ 
+ struct cpu_spec {
