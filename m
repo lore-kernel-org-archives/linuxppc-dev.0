@@ -1,20 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CD5F268A66
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2006 02:16:14 +1100 (EST)
-In-Reply-To: <20060112144437.GA15923@shadowen.org>
-References: <20060112144437.GA15923@shadowen.org>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <65FBDB60-D4A5-40DF-BA73-AB6388A9368B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Thu, 12 Jan 2006 09:16:07 -0600
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc oprofile G4 clashes with wacom driver
+Return-Path: <cedric.pradalier@free.fr>
+Received: from qsrv02sl.mx.bigpond.com (qsrv02sl.mx.bigpond.com
+	[144.140.93.182]) by ozlabs.org (Postfix) with ESMTP id 6FBCA689C8
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2006 00:18:50 +1100 (EST)
+Date: Thu, 12 Jan 2006 21:52:00 +1000
+From: Cedric Pradalier <cedric.pradalier@free.fr>
+To: linuxppc-dev@ozlabs.org
+Message-Id: <20060112215200.680a8cc1.cedric.pradalier@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Subject: Fw:   therm_adm103x: inquiry
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,329 +18,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Jan 12, 2006, at 8:44 AM, Andy Whitcroft wrote:
 
-> powerpc: oprofile G4 clashes with wacom driver
->
-> In 2.6.15-git6 a change was commited in the oprofile support in
-> the powerpc architecture.  It introduced the powerpc_oprofile_type
-> which contains the define G4.  This causes a name clash with the
-> existing wacom usb tablet driver.
->
->       CC [M]  drivers/usb/input/wacom.o
->     drivers/usb/input/wacom.c:98: error: conflicting types for `G4'
->     include/asm/cputable.h:37: error: previous declaration of `G4'
->       CC [M]  drivers/usb/mon/mon_text.o
->     make[3]: *** [drivers/usb/input/wacom.o] Error 1
->     make[2]: *** [drivers/usb/input] Error 2
->
-> The elements of an enum declared in global scope are effectivly
-> global identifiers themselves.  As such we need to ensure the names
-> are unique.  This patch updates the later oprofile support to use
-> unique names.
->
-> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 
-How about a different prefix than POT_.  POT_ doesn't make me think  
-of PPC oprofile at all.  How about PPC_OPROFILE_ or POWERPC_OPROFILE_
+Begin forwarded message:
 
-- kumar
+Date: Thu, 12 Jan 2006 21:34:14 +1100
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Cedric Pradalier <cedric.pradalier@free.fr>
+Subject: Re: therm_adm103x: inquiry
 
-> ---
->  arch/powerpc/kernel/cputable.c |   52 +++++++++++++++++++ 
-> +---------------------
->  arch/powerpc/oprofile/common.c |    8 +++---
->  include/asm-powerpc/cputable.h |   10 +++----
->  3 files changed, 35 insertions(+), 35 deletions(-)
-> diff -upN reference/arch/powerpc/kernel/cputable.c current/arch/ 
-> powerpc/kernel/cputable.c
-> --- reference/arch/powerpc/kernel/cputable.c
-> +++ current/arch/powerpc/kernel/cputable.c
-> @@ -79,7 +79,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_power3,
->  		.oprofile_cpu_type	= "ppc64/power3",
-> -		.oprofile_type		= RS64,
-> +		.oprofile_type		= POT_RS64,
->  	},
->  	{	/* Power3+ */
->  		.pvr_mask		= 0xffff0000,
-> @@ -92,7 +92,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_power3,
->  		.oprofile_cpu_type	= "ppc64/power3",
-> -		.oprofile_type		= RS64,
-> +		.oprofile_type		= POT_RS64,
->  	},
->  	{	/* Northstar */
->  		.pvr_mask		= 0xffff0000,
-> @@ -105,7 +105,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_power3,
->  		.oprofile_cpu_type	= "ppc64/rs64",
-> -		.oprofile_type		= RS64,
-> +		.oprofile_type		= POT_RS64,
->  	},
->  	{	/* Pulsar */
->  		.pvr_mask		= 0xffff0000,
-> @@ -118,7 +118,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_power3,
->  		.oprofile_cpu_type	= "ppc64/rs64",
-> -		.oprofile_type		= RS64,
-> +		.oprofile_type		= POT_RS64,
->  	},
->  	{	/* I-star */
->  		.pvr_mask		= 0xffff0000,
-> @@ -131,7 +131,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_power3,
->  		.oprofile_cpu_type	= "ppc64/rs64",
-> -		.oprofile_type		= RS64,
-> +		.oprofile_type		= POT_RS64,
->  	},
->  	{	/* S-star */
->  		.pvr_mask		= 0xffff0000,
-> @@ -144,7 +144,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_power3,
->  		.oprofile_cpu_type	= "ppc64/rs64",
-> -		.oprofile_type		= RS64,
-> +		.oprofile_type		= POT_RS64,
->  	},
->  	{	/* Power4 */
->  		.pvr_mask		= 0xffff0000,
-> @@ -157,7 +157,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_power4,
->  		.oprofile_cpu_type	= "ppc64/power4",
-> -		.oprofile_type		= POWER4,
-> +		.oprofile_type		= POT_POWER4,
->  	},
->  	{	/* Power4+ */
->  		.pvr_mask		= 0xffff0000,
-> @@ -170,7 +170,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_power4,
->  		.oprofile_cpu_type	= "ppc64/power4",
-> -		.oprofile_type		= POWER4,
-> +		.oprofile_type		= POT_POWER4,
->  	},
->  	{	/* PPC970 */
->  		.pvr_mask		= 0xffff0000,
-> @@ -184,7 +184,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_ppc970,
->  		.oprofile_cpu_type	= "ppc64/970",
-> -		.oprofile_type		= POWER4,
-> +		.oprofile_type		= POT_POWER4,
->  	},
->  #endif /* CONFIG_PPC64 */
->  #if defined(CONFIG_PPC64) || defined(CONFIG_POWER4)
-> @@ -204,7 +204,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 8,
->  		.cpu_setup		= __setup_cpu_ppc970,
->  		.oprofile_cpu_type	= "ppc64/970",
-> -		.oprofile_type		= POWER4,
-> +		.oprofile_type		= POT_POWER4,
->  	},
->  #endif /* defined(CONFIG_PPC64) || defined(CONFIG_POWER4) */
->  #ifdef CONFIG_PPC64
-> @@ -219,7 +219,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.dcache_bsize		= 128,
->  		.cpu_setup		= __setup_cpu_ppc970,
->  		.oprofile_cpu_type	= "ppc64/970",
-> -		.oprofile_type		= POWER4,
-> +		.oprofile_type		= POT_POWER4,
->  	},
->  	{	/* Power5 GR */
->  		.pvr_mask		= 0xffff0000,
-> @@ -232,7 +232,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_power4,
->  		.oprofile_cpu_type	= "ppc64/power5",
-> -		.oprofile_type		= POWER4,
-> +		.oprofile_type		= POT_POWER4,
->  	},
->  	{	/* Power5 GS */
->  		.pvr_mask		= 0xffff0000,
-> @@ -245,7 +245,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_power4,
->  		.oprofile_cpu_type	= "ppc64/power5+",
-> -		.oprofile_type		= POWER4,
-> +		.oprofile_type		= POT_POWER4,
->  	},
->  	{	/* Cell Broadband Engine */
->  		.pvr_mask		= 0xffff0000,
-> @@ -521,7 +521,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7450 2.1 */
->  		.pvr_mask		= 0xffffffff,
-> @@ -534,7 +534,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7450 2.3 and newer */
->  		.pvr_mask		= 0xffff0000,
-> @@ -547,7 +547,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7455 rev 1.x */
->  		.pvr_mask		= 0xffffff00,
-> @@ -560,7 +560,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7455 rev 2.0 */
->  		.pvr_mask		= 0xffffffff,
-> @@ -573,7 +573,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7455 others */
->  		.pvr_mask		= 0xffff0000,
-> @@ -586,7 +586,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7447/7457 Rev 1.0 */
->  		.pvr_mask		= 0xffffffff,
-> @@ -599,7 +599,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7447/7457 Rev 1.1 */
->  		.pvr_mask		= 0xffffffff,
-> @@ -612,7 +612,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7447/7457 Rev 1.2 and later */
->  		.pvr_mask		= 0xffff0000,
-> @@ -625,7 +625,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7447A */
->  		.pvr_mask		= 0xffff0000,
-> @@ -638,7 +638,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 7448 */
->  		.pvr_mask		= 0xffff0000,
-> @@ -651,7 +651,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.num_pmcs		= 6,
->  		.cpu_setup		= __setup_cpu_745x,
->  		.oprofile_cpu_type      = "ppc/7450",
-> -		.oprofile_type		= G4,
-> +		.oprofile_type		= POT_G4,
->  	},
->  	{	/* 82xx (8240, 8245, 8260 are all 603e cores) */
->  		.pvr_mask		= 0x7fff0000,
-> @@ -976,7 +976,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.dcache_bsize		= 32,
->  		.num_pmcs		= 4,
->  		.oprofile_cpu_type	= "ppc/e500",
-> -		.oprofile_type		= BOOKE,
-> +		.oprofile_type		= POT_BOOKE,
->  	},
->  	{	/* e500v2 */
->  		.pvr_mask		= 0xffff0000,
-> @@ -991,7 +991,7 @@ struct cpu_spec	cpu_specs[] = {
->  		.dcache_bsize		= 32,
->  		.num_pmcs		= 4,
->  		.oprofile_cpu_type	= "ppc/e500",
-> -		.oprofile_type		= BOOKE,
-> +		.oprofile_type		= POT_BOOKE,
->  	},
->  #endif
->  #if !CLASSIC_PPC
-> diff -upN reference/arch/powerpc/oprofile/common.c current/arch/ 
-> powerpc/oprofile/common.c
-> --- reference/arch/powerpc/oprofile/common.c
-> +++ current/arch/powerpc/oprofile/common.c
-> @@ -140,19 +140,19 @@ int __init oprofile_arch_init(struct opr
+
 >
->  	switch (cur_cpu_spec->oprofile_type) {
->  #ifdef CONFIG_PPC64
-> -		case RS64:
-> +		case POT_RS64:
->  			model = &op_model_rs64;
->  			break;
-> -		case POWER4:
-> +		case POT_POWER4:
->  			model = &op_model_power4;
->  			break;
->  #else
-> -		case G4:
-> +		case POT_G4:
->  			model = &op_model_7450;
->  			break;
->  #endif
->  #ifdef CONFIG_FSL_BOOKE
-> -		case BOOKE:
-> +		case POT_BOOKE:
->  			model = &op_model_fsl_booke;
->  			break;
->  #endif
-> diff -upN reference/include/asm-powerpc/cputable.h current/include/ 
-> asm-powerpc/cputable.h
-> --- reference/include/asm-powerpc/cputable.h
-> +++ current/include/asm-powerpc/cputable.h
-> @@ -31,11 +31,11 @@ struct cpu_spec;
->  typedef	void (*cpu_setup_t)(unsigned long offset, struct cpu_spec*  
-> spec);
+>> So practically, what should I do? What should I sent to who?
 >
->  enum powerpc_oprofile_type {
-> -	INVALID = 0,
-> -	RS64 = 1,
-> -	POWER4 = 2,
-> -	G4 = 3,
-> -	BOOKE = 4,
-> +	POT_INVALID = 0,
-> +	POT_RS64 = 1,
-> +	POT_POWER4 = 2,
-> +	POT_G4 = 3,
-> +	POT_BOOKE = 4,
->  };
+>linuxppc-dev@ozlabs.org CC me & paulus :)
 >
->  struct cpu_spec {
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>Ben.
+>
+>
+
+Hi
+
+I'm the author of the therm_adm103x module, used to control
+and display the fan management information on ibook G3, rev
+2.2 (at least), available since 2.6.4.
+
+Currently, the module is available as a patch or as a
+binary module linked with current debian testing kernel:
+http://cedric.pradalier.free.fr/ibook2
+
+As far as I can see, this module seems mature enough for
+inclusion in official kernel.
+
+A tested patch against 2.6.14 is available at:
+http://cedric.pradalier.free.fr/ibook2/adm103x-2.6.14.diff.gz
+
+I've not tested it yet for 2.6.15. 
+
+Some details, from the link site above:
+
+The module provides and sysfs access to the adm103x fan
+control parameters. For instance
+
+	  #cat /sys/device/temperatures/info? 
+	  T:51°C S:56°C R:10°C  <-- sensor 0
+	  T:48°C S:76°C R:10°C  <-- sensor 1
+	  #echo "56 10" > /sys/device/temperatures/info0 
+
+make the fan starts at 56 degrees and accelerate
+progressively till max at 66 degrees (56 + 10), on the
+sensor 0.
+
+To see if thermal control is done by the chips that this
+module can manage, just check that
+	#cat /proc/device-tree/uni-n/i2c/fan/device_type
+returns adm1030 or adm1031.
+
+-- 
+Cedric
