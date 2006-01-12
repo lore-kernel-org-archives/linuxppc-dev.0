@@ -1,17 +1,23 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32201.mail.mud.yahoo.com (web32201.mail.mud.yahoo.com
-	[68.142.207.132]) by ozlabs.org (Postfix) with SMTP id AA20E689FC
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 16:00:25 +1100 (EST)
-Message-ID: <20060112045343.14107.qmail@web32201.mail.mud.yahoo.com>
-Date: Wed, 11 Jan 2006 20:53:43 -0800 (PST)
-From: Frank <frannk_m1@yahoo.com>
-To: andrew.l.bomber@maxtek.com, linuxppc-dev@ozlabs.org
-In-Reply-To: <7E11C792A1D81242B9BFFC8355D4979387F6F9@us-bv-m23.global.tektronix.net>
+Return-Path: <andrew.l.bomber@maxtek.com>
+Received: from igate.tek.com (igate.tek.com [192.65.41.20])
+	by ozlabs.org (Postfix) with ESMTP id B12CD689AD
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 16:22:51 +1100 (EST)
+Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
+	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k0C0pYtT023660
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 16:51:34 -0800 (PST)
+Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
+	[128.181.2.45])
+	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k0C0pXdp022330
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 16:51:33 -0800 (PST)
+From: andrew.l.bomber@maxtek.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C61712.53711936"
+Date: Wed, 11 Jan 2006 16:51:30 -0800
+Message-ID: <7E11C792A1D81242B9BFFC8355D4979387F6F5@us-bv-m23.global.tektronix.net>
+To: <linuxppc-dev@ozlabs.org>
 Cc: mullenp@pdx.edu
-Subject: Re: Linux 2.4.21 Embedded PPC 405 on Xilinx Virtex II pro is
-	glacially slow
+Subject: Linux 2.4.21 Embedded PPC 405 on Xilinx Virtex II pro is glaciarly
+	slow
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,138 +27,151 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C61712.53711936
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_002_01C61712.53711936"
 
 
---- andrew.l.bomber@maxtek.com wrote:
+------_=_NextPart_002_01C61712.53711936
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-> Hello,
-> 
-> I am running 2.4.21 on an embedded PPC 405 system, 125 MHz
-> clock, 32 MB
-> SDRAM. It currently only has a UART and ttys00 is its console.
-> It is
-> running the busy box monolithic binaries.  It is so slow that
-> I have to
-> be cautious not to overrun the 16 byte UART 16550 input
-> buffer. Has
-> anyone run into this problem before? Any ideas what might
-> cause this or
-> how to troubleshoot it. I am kind of new to Linux and PPC.
->  <<hypertermCaptureBBprompt.txt>> 
-> Thanks,
-> 
-> Andrew
-> 
-> > 
-> loaded at:     00400000 005EA1E4                              
->  
-> board data at: 005E713C 005E7154                              
->  
-> relocated to:  00405624 0040563C                              
->  
-> zimage at:     00405B44 00456755                              
->  
-> initrd at:     00457000 005E68E3                              
->  
-> avail ram:     005EB000 02000000                              
->  
-> 
-> Linux/PPC load: console=ttyS0,115200 root=/dev/ram0           
->                                        
-> Uncompressing Linux...done.                           
-> Now booting the kernel                      
-> id mach(): done               
-> MMU:enter         
-> MMU:hw init           
-> MMU:mapin         
-> MMU:mapin_ram done                  
-> MMU:setio         
-> MMU:exit        
-> Linux version 2.4.26 (pm@mars) (gcc version 3.3.3 (DENX ELDK
-> 3.1.1 3.3.3-9)) #9                                            
->                                   
-> Sun Jan 8 16:42:35 PST 2006                           
-> setup_arch: enter                 
-> setup_arch: bootmem                   
-> Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc.
-> (source@mvista.com)                                           
->                                     
-> 
-> arch: exit          
-> On node 0 totalpages: 8192                          
-> zone(0): 8192 pages.                    
-> zone(1): 0 pages.                 
-> zone(2): 0 pages.                 
-> Kernel command line: console=ttyS0,115200 root=/dev/ram0      
->                                                  
-> Xilinx INTC #0 at 0x81010000 mapped to 0xFDFFE000             
->                                    
-> Calibrating delay loop... 399.76 BogoMIPS                     
->                    
-> Memory: 29948k available (596k kernel code, 196k data, 36k
-> init, 0k highmem)                                             
->                               
-> Dentry cache hash table entries: 4096 (order: 3, 32768 bytes) 
->                                                            
-> Inode cache hash table entries: 2048 (order: 2, 16384 bytes)  
->                                                          
-> Mount cache hash table entries: 512 (order: 0, 4096 bytes)    
->                                                      
-> Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)  
->                                                          
-> Page-cache hash table entries: 8192 (order: 3,                
->                               
-> POSIX conformance testing by UNIFIX                           
->        
-> 
-> Linux NET4.0 for Linux 2.4
-> Based upon Swansea University Computer Society NET3.039
-> Starting kswapd
-> Serial driver version 5.05c (2001-07-08) with no serial
-> options enabled
-> ttyS00 at 0xfdfff003 (irq = 31) is a 16550A
-> RAMDISK driver initialized: 16 RAM disks of 4096K size 1024
-> blocksize
-> loop: loaded (max 8 devices)
-> RAMDISK: Compressed image found at block 0
-> Freeing initrd memory: 1598k freed
-> VFS: Mounted root (ext2 filesystem) readonly.
-> Freeing unused kernel memory: 36k init
-> 
-> 
-> BusyBox v0.60.5 (2005.03.07-10:03+0000) Built-in shell (msh)
-> Enter 'help' for a list of built-in commands.
-> 
-> # killall xinetd
-> # ls
-> bin   dev   etc   ftp   home  lib   proc  sbin  tmp   usr  
-> var
-> # ttyS: 1 input overrun(s)
-> wch
-> # echo "hello worrld"
-> hello worrld
-> #ps
->   PID TTY     Uid        Size State Command
->     1         root       1832   S   init       
->     2         root          0   S   [keventd]
->     3         root          0   S   [ksoftirqd_CPU0]
->     4         root          0   S   [kswapd]
->     5         root          0   S   [bdflush]
->     6         root          0   S   [kupdated]
->    15 ttyS0   root       1880   S   -sh 
->    19 ttyS0   root       1940   R   ps 
-> # top -b -n 1
-> top: not found>
-_______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Hello,
 
-You might try cat'ing /proc/interrupts and see if something else
-is sharing your uart interrupt...
+I am running 2.4.21 on an embedded PPC 405 system, 125 MHz clock, 32 MB
+SDRAM. It currently only has a UART and ttys00 is its console. It is
+running the busy box monolithic binaries.  It is so slow that I have to
+be cautious not to overrun the 16 byte UART 16550 input buffer. Has
+anyone run into this problem before? Any ideas what might cause this or
+how to troubleshoot it. I am kind of new to Linux and PPC.
+ <<hypertermCaptureBBprompt.txt>>=20
+Thanks,
+
+Andrew
 
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+------_=_NextPart_002_01C61712.53711936
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7226.0">
+<TITLE>Linux 2.4.21 Embedded PPC 405 on Xilinx Virtex II pro is =
+glaciarly slow</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><SPAN LANG=3D"en-us"><FONT COLOR=3D"#0000FF" SIZE=3D2 =
+FACE=3D"Arial">Hello,</FONT></SPAN>
+</P>
+
+<P><SPAN LANG=3D"en-us"><FONT COLOR=3D"#0000FF" SIZE=3D2 =
+FACE=3D"Arial">I am running 2.4.21 on an embedded PPC 405 system, 125 =
+MHz clock, 32 MB SDRAM. It currently only has a UART and ttys00 is its =
+console. It is running the busy box monolithic binaries.&nbsp; It is so =
+slow that I have to be cautious not to overrun the 16 byte UART 16550 =
+input buffer. Has anyone run into this problem before? Any ideas what =
+might cause this or how to troubleshoot it. I am kind of new to Linux =
+and PPC.</FONT></SPAN></P>
+
+<P><SPAN LANG=3D"en-us"><FONT FACE=3D"Arial" SIZE=3D2 COLOR=3D"#000000"> =
+&lt;&lt;hypertermCaptureBBprompt.txt&gt;&gt; </FONT></SPAN>
+
+<BR><SPAN LANG=3D"en-us"><FONT COLOR=3D"#0000FF" SIZE=3D2 =
+FACE=3D"Arial">Thanks,</FONT></SPAN>
+</P>
+
+<P><SPAN LANG=3D"en-us"><FONT COLOR=3D"#0000FF" SIZE=3D2 =
+FACE=3D"Arial">Andrew</FONT></SPAN>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_002_01C61712.53711936--
+
+------_=_NextPart_001_01C61712.53711936
+Content-Type: text/plain;
+	name="hypertermCaptureBBprompt.txt"
+Content-Transfer-Encoding: base64
+Content-Description: hypertermCaptureBBprompt.txt
+Content-Disposition: attachment;
+	filename="hypertermCaptureBBprompt.txt"
+
+DQpsb2FkZWQgYXQ6ICAgICAwMDQwMDAwMCAwMDVFQTFFNCAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgDQpib2FyZCBkYXRhIGF0OiAwMDVFNzEzQyAwMDVFNzE1NCAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgDQpyZWxvY2F0ZWQgdG86ICAwMDQwNTYyNCAwMDQwNTYzQyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgDQp6aW1hZ2UgYXQ6ICAgICAwMDQwNUI0NCAwMDQ1
+Njc1NSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQppbml0cmQgYXQ6ICAgICAwMDQ1
+NzAwMCAwMDVFNjhFMyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQphdmFpbCByYW06
+ICAgICAwMDVFQjAwMCAwMjAwMDAwMCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQoN
+CkxpbnV4L1BQQyBsb2FkOiBjb25zb2xlPXR0eVMwLDExNTIwMCByb290PS9kZXYvcmFtMCAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KVW5jb21wcmVz
+c2luZyBMaW51eC4uLmRvbmUuICAgICAgICAgICAgICAgICAgICAgICAgICAgDQpOb3cgYm9vdGlu
+ZyB0aGUga2VybmVsICAgICAgICAgICAgICAgICAgICAgIA0KaWQgbWFjaCgpOiBkb25lICAgICAg
+ICAgICAgICAgDQpNTVU6ZW50ZXIgICAgICAgICANCk1NVTpodyBpbml0ICAgICAgICAgICANCk1N
+VTptYXBpbiAgICAgICAgIA0KTU1VOm1hcGluX3JhbSBkb25lICAgICAgICAgICAgICAgICAgDQpN
+TVU6c2V0aW8gICAgICAgICANCk1NVTpleGl0ICAgICAgICANCkxpbnV4IHZlcnNpb24gMi40LjI2
+IChwbUBtYXJzKSAoZ2NjIHZlcnNpb24gMy4zLjMgKERFTlggRUxESyAzLjEuMSAzLjMuMy05KSkg
+IzkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgDQpTdW4gSmFuIDggMTY6NDI6MzUgUFNUIDIwMDYgICAg
+ICAgICAgICAgICAgICAgICAgICAgICANCnNldHVwX2FyY2g6IGVudGVyICAgICAgICAgICAgICAg
+ICANCnNldHVwX2FyY2g6IGJvb3RtZW0gICAgICAgICAgICAgICAgICAgDQpYaWxpbnggVmlydGV4
+LUlJIFBybyBwb3J0IChDKSAyMDAyIE1vbnRhVmlzdGEgU29mdHdhcmUsIEluYy4gKHNvdXJjZUBt
+dmlzdGEuY29tKSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQoNCmFyY2g6IGV4aXQgICAgICAgICAg
+DQpPbiBub2RlIDAgdG90YWxwYWdlczogODE5MiAgICAgICAgICAgICAgICAgICAgICAgICAgDQp6
+b25lKDApOiA4MTkyIHBhZ2VzLiAgICAgICAgICAgICAgICAgICAgDQp6b25lKDEpOiAwIHBhZ2Vz
+LiAgICAgICAgICAgICAgICAgDQp6b25lKDIpOiAwIHBhZ2VzLiAgICAgICAgICAgICAgICAgDQpL
+ZXJuZWwgY29tbWFuZCBsaW5lOiBjb25zb2xlPXR0eVMwLDExNTIwMCByb290PS9kZXYvcmFtMCAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQpY
+aWxpbnggSU5UQyAjMCBhdCAweDgxMDEwMDAwIG1hcHBlZCB0byAweEZERkZFMDAwICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KQ2FsaWJyYXRpbmcgZGVs
+YXkgbG9vcC4uLiAzOTkuNzYgQm9nb01JUFMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIA0KTWVtb3J5OiAyOTk0OGsgYXZhaWxhYmxlICg1OTZrIGtlcm5lbCBjb2RlLCAx
+OTZrIGRhdGEsIDM2ayBpbml0LCAwayBoaWdobWVtKSAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCkRlbnRy
+eSBjYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDQwOTYgKG9yZGVyOiAzLCAzMjc2OCBieXRlcykg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgDQpJbm9kZSBjYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDIwNDggKG9yZGVyOiAyLCAxNjM4
+NCBieXRlcykgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICANCk1vdW50IGNhY2hlIGhhc2ggdGFibGUgZW50cmllczogNTEyIChvcmRlcjog
+MCwgNDA5NiBieXRlcykgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgDQpCdWZmZXIgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAxMDI0IChv
+cmRlcjogMCwgNDA5NiBieXRlcykgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICANClBhZ2UtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiA4
+MTkyIChvcmRlcjogMywgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIA0KUE9TSVggY29uZm9ybWFuY2UgdGVzdGluZyBieSBVTklGSVggICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIA0KDQpMaW51eCBORVQ0LjAgZm9yIExpbnV4IDIuNA0KQmFzZWQg
+dXBvbiBTd2Fuc2VhIFVuaXZlcnNpdHkgQ29tcHV0ZXIgU29jaWV0eSBORVQzLjAzOQ0KU3RhcnRp
+bmcga3N3YXBkDQpTZXJpYWwgZHJpdmVyIHZlcnNpb24gNS4wNWMgKDIwMDEtMDctMDgpIHdpdGgg
+bm8gc2VyaWFsIG9wdGlvbnMgZW5hYmxlZA0KdHR5UzAwIGF0IDB4ZmRmZmYwMDMgKGlycSA9IDMx
+KSBpcyBhIDE2NTUwQQ0KUkFNRElTSyBkcml2ZXIgaW5pdGlhbGl6ZWQ6IDE2IFJBTSBkaXNrcyBv
+ZiA0MDk2SyBzaXplIDEwMjQgYmxvY2tzaXplDQpsb29wOiBsb2FkZWQgKG1heCA4IGRldmljZXMp
+DQpSQU1ESVNLOiBDb21wcmVzc2VkIGltYWdlIGZvdW5kIGF0IGJsb2NrIDANCkZyZWVpbmcgaW5p
+dHJkIG1lbW9yeTogMTU5OGsgZnJlZWQNClZGUzogTW91bnRlZCByb290IChleHQyIGZpbGVzeXN0
+ZW0pIHJlYWRvbmx5Lg0KRnJlZWluZyB1bnVzZWQga2VybmVsIG1lbW9yeTogMzZrIGluaXQNCg0K
+DQpCdXN5Qm94IHYwLjYwLjUgKDIwMDUuMDMuMDctMTA6MDMrMDAwMCkgQnVpbHQtaW4gc2hlbGwg
+KG1zaCkNCkVudGVyICdoZWxwJyBmb3IgYSBsaXN0IG9mIGJ1aWx0LWluIGNvbW1hbmRzLg0KDQoj
+IGtpbGxhbGwgeGluZXRkDQojIGxzDQpiaW4gICBkZXYgICBldGMgICBmdHAgICBob21lICBsaWIg
+ICBwcm9jICBzYmluICB0bXAgICB1c3IgICB2YXINCiMgdHR5UzogMSBpbnB1dCBvdmVycnVuKHMp
+DQp3Y2gNCiMgZWNobyAiaGVsbG8gd29ycmxkIg0KaGVsbG8gd29ycmxkDQojcHMNCiAgUElEIFRU
+WSAgICAgVWlkICAgICAgICBTaXplIFN0YXRlIENvbW1hbmQNCiAgICAxICAgICAgICAgcm9vdCAg
+ICAgICAxODMyICAgUyAgIGluaXQgICAgICAgDQogICAgMiAgICAgICAgIHJvb3QgICAgICAgICAg
+MCAgIFMgICBba2V2ZW50ZF0NCiAgICAzICAgICAgICAgcm9vdCAgICAgICAgICAwICAgUyAgIFtr
+c29mdGlycWRfQ1BVMF0NCiAgICA0ICAgICAgICAgcm9vdCAgICAgICAgICAwICAgUyAgIFtrc3dh
+cGRdDQogICAgNSAgICAgICAgIHJvb3QgICAgICAgICAgMCAgIFMgICBbYmRmbHVzaF0NCiAgICA2
+ICAgICAgICAgcm9vdCAgICAgICAgICAwICAgUyAgIFtrdXBkYXRlZF0NCiAgIDE1IHR0eVMwICAg
+cm9vdCAgICAgICAxODgwICAgUyAgIC1zaCANCiAgIDE5IHR0eVMwICAgcm9vdCAgICAgICAxOTQw
+ICAgUiAgIHBzIA0KIyB0b3AgLWIgLW4gMQ0KdG9wOiBub3QgZm91bmQ=
+
+------_=_NextPart_001_01C61712.53711936--
