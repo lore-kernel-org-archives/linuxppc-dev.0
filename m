@@ -1,20 +1,19 @@
 Return-Path: <akonovalov@ru.mvista.com>
 Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 99A836893F
+	by ozlabs.org (Postfix) with SMTP id 42837689C7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jan 2006 04:32:23 +1100 (EST)
-Message-ID: <43C691C2.9090607@ru.mvista.com>
-Date: Thu, 12 Jan 2006 20:28:34 +0300
+	Fri, 13 Jan 2006 04:33:09 +1100 (EST)
+Message-ID: <43C691F1.2010409@ru.mvista.com>
+Date: Thu, 12 Jan 2006 20:29:21 +0300
 From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
 To: grant.likely@secretlab.ca
-References: <1136795579525-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <1136795579525-git-send-email-grant.likely@secretlab.ca>
+References: <11367955811900-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <11367955811900-git-send-email-grant.likely@secretlab.ca>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: glikely@gmail.com, dhlii@dlasys.net, gnathita@gmail.com,
 	linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 02/10] Make Virtex-II Pro support generic for all Virtex
- devices
+Subject: Re: [PATCH 08/10] ML300 & ML403 need embed_config.o linked in
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,43 +25,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 grant.likely@secretlab.ca wrote:
-> The PPC405 hard core is used in both the Virtex-II Pro and Virtex 4 FX
-> FPGAs.  This patch cleans up the Virtex naming convention to reflect more
-> than just the Virtex-II Pro.
-> 
-> Rename files virtex-ii_pro.[ch] to virtex.[ch]
-> Rename config value VIRTEX_II_PRO to XILINX_VIRTEX
-> 
 > Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
 > 
 > ---
-
-Here is a misprint:
 > 
-...
-> diff --git a/arch/ppc/platforms/4xx/virtex.c b/arch/ppc/platforms/4xx/virtex.c
-> new file mode 100644
-> index 0000000..1de7a27
-> --- /dev/null
-> +++ b/arch/ppc/platforms/4xx/virtex.c
-> @@ -0,0 +1,60 @@
-> +/*
-> + * arch/ppc/platforms/4xx/virtex.c
-> + *
-> + * Author: MontaVista Software, Inc.
-> + *         source@mvista.com
-> + *
-> + * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed under the
-> + * terms of the GNU General Public License version 2.  This program is licensed
-> + * "as is" without any warranty of any kind, whether express or implied.
-> + */
-> +
-> +#include <linux/config.h>
-> +#include <linux/init.h>
-> +#include <asm/ocp.h>
-> +#include <platform/4xx/virtex.h>
+>  arch/ppc/boot/simple/Makefile |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> a39144d5708c207f58964000baf56fa9cfb18628
+> diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
+> index f3e9c53..7abd772 100644
+> --- a/arch/ppc/boot/simple/Makefile
+> +++ b/arch/ppc/boot/simple/Makefile
+> @@ -188,6 +188,8 @@ OBJCOPY_ARGS			:= -O elf32-powerpc
+>  boot-y				:= head.o relocate.o $(extra.o-y) $(misc-y)
+>  boot-$(CONFIG_REDWOOD_5)	+= embed_config.o
+>  boot-$(CONFIG_REDWOOD_6)	+= embed_config.o
+> +boot-$(CONFIG_XILINX_ML300)	+= embed_config.o
+> +boot-$(CONFIG_XILINX_ML403)	+= embed_config.o
+>  boot-$(CONFIG_8xx)		+= embed_config.o
+>  boot-$(CONFIG_8260)		+= embed_config.o
+>  boot-$(CONFIG_BSEIP)		+= iic.o
 
-Should be
-#include <platforms/4xx/virtex.h>
-
-Otherwise tested OK on ML300
+Tested OK on ML300.
