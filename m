@@ -1,20 +1,20 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
-	by ozlabs.org (Postfix) with ESMTP id EAC45689FE
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 285F6681B4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jan 2006 02:41:32 +1100 (EST)
-Date: Thu, 12 Jan 2006 08:31:26 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Message-ID: <20060112083125.A14293@cox.net>
-References: <20051229204040.GA9751@dmt.cnet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20051229204040.GA9751@dmt.cnet>;
-	from marcelo.tosatti@cyclades.com on Thu, Dec 29, 2005 at
-	06:40:40PM -0200
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Re: [PATCH] powerpc: generalize PPC44x_PIN_SIZE
+	Fri, 13 Jan 2006 04:29:55 +1100 (EST)
+Message-ID: <43C69130.2040409@ru.mvista.com>
+Date: Thu, 12 Jan 2006 20:26:08 +0300
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
+MIME-Version: 1.0
+To: grant.likely@secretlab.ca
+References: <1136795579724-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1136795579724-git-send-email-grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: glikely@gmail.com, dhlii@dlasys.net, gnathita@gmail.com,
+	linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 01/10] Move xparameters.h into xilinx virtex device
+ specific path
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,18 +25,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Dec 29, 2005 at 06:40:40PM -0200, Marcelo Tosatti wrote:
+grant.likely@secretlab.ca wrote:
+> xparameters should not be needed by anything but virtex platform code.
+> Move it from include/asm-ppc/ to platforms/4xx/xparameters/
 > 
-> Hi, 
+> This is preparing for work to remove xparameters from the dependancy tree
+> for most c files.  xparam changes should not cause a recompile of the world.
+> Instead, drivers should get device info from the platform bus (populated
+> by the boot code)
 > 
-> The following patch generalizes PPC44x_PIN_SIZE by changing it to
-> PPC_PIN_SIZE, which can be defined by any board to automatically adjust
-> VMALLOC_START, avoiding conflicts with pinned virtual space.
-> 
-> Also define it for 8xx.
-> 
-> Matt, please review.
+> Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
 
-ACK, looks good to me.
 
--Matt
+Tested on ML300: OK
