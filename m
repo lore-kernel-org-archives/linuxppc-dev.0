@@ -1,29 +1,22 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 855A5689F1
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 11:08:35 +1100 (EST)
-Date: Thu, 12 Jan 2006 01:08:30 +0100
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <20060112000830.GB10142@hansmi.ch>
-References: <20051225212041.GA6094@hansmi.ch>
-	<200512252304.32830.dtor_core@ameritech.net>
-	<1135575997.14160.4.camel@localhost.localdomain>
-	<d120d5000601111307x451db79aqf88725e7ecec79d2@mail.gmail.com>
-	<20060111232651.GI6617@hansmi.ch>
-	<1137022900.5138.66.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1137022900.5138.66.camel@localhost.localdomain>
-Cc: linux-kernel@killerfox.forkbomb.ch, dtor_core@ameritech.net,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Vojtech Pavlik <vojtech@suse.cz>, linux-input@atrey.karlin.mff.cuni.cz
-Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple
-	PowerBooks
+Return-Path: <andrew.l.bomber@maxtek.com>
+Received: from igate.tek.com (igate.tek.com [192.65.41.20])
+	by ozlabs.org (Postfix) with ESMTP id 68193689E1
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Jan 2006 13:03:56 +1100 (EST)
+Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
+	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k0C23ttT006216
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 18:03:55 -0800 (PST)
+Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
+	[128.181.2.45])
+	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k0C23sdp017883
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Jan 2006 18:03:55 -0800 (PST)
+From: andrew.l.bomber@maxtek.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Date: Wed, 11 Jan 2006 18:03:53 -0800
+Message-ID: <7E11C792A1D81242B9BFFC8355D4979387F6F7@us-bv-m23.global.tektronix.net>
+To: <ali@pctlinux.com>, <linuxppc-dev@ozlabs.org>
+Subject: RE: kernel hang on 'now booting the kernel'
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,263 +26,257 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 12, 2006 at 10:41:40AM +1100, Benjamin Herrenschmidt wrote:
-> I don't understand the comment above ? You are adding this to all struct
-> hid_device ? There can be only one of those keyboards plugged at one
-> point in time, I don't think there is any problem having the above
-> static in the driver rather than in the hid_device structure.
+Ali,
 
-While I don't agree on that, I still modified the patch.
+What is likely happening is that Linux's logical address space is not
+configured appropriately. The MMU configuration is the first or Second
+thing to happen after zImage boots into the Kernel.
 
-This patch implements support for the fn key on Apple PowerBooks using
-USB based keyboards.
+I had the same problem for a custom board with a Xilinx Virtex 2 Pro.
+The problem was that I edited the .config file without running
+menuconfig and that I changed KERNELBASE. Don't change KERNELBASE
+because if you do it will screw up Linux's logical address space. Second
+always run make menuconfig before make dep and make zImage because
+menuconfig alters a number of lower level files according to your
+configuration. Also make sure that you copy the BSP into the kernel
+source tree otherwise Linux will be writing to the wrong address when
+trying to output to stdout.
 
-Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
-Acked-by: Rene Nussbaumer <linux-kernel@killerfox.forkbomb.ch>
-Acked-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Regards,
 
----
-diff -upr linux-2.6.15.orig/drivers/usb/input/hid-core.c linux-2.6.15/drivers/usb/input/hid-core.c
---- linux-2.6.15.orig/drivers/usb/input/hid-core.c	2006-01-11 23:59:40.000000000 +0100
-+++ linux-2.6.15/drivers/usb/input/hid-core.c	2006-01-08 11:53:36.000000000 +0100
-@@ -1580,6 +1580,14 @@ static struct hid_blacklist {
- 	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
- 	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
- 
-+	{ USB_VENDOR_ID_APPLE, 0x020E, HID_QUIRK_POWERBOOK_HAS_FN },
-+	{ USB_VENDOR_ID_APPLE, 0x020F, HID_QUIRK_POWERBOOK_HAS_FN },
-+	{ USB_VENDOR_ID_APPLE, 0x0214, HID_QUIRK_POWERBOOK_HAS_FN },
-+	{ USB_VENDOR_ID_APPLE, 0x0215, HID_QUIRK_POWERBOOK_HAS_FN },
-+	{ USB_VENDOR_ID_APPLE, 0x0216, HID_QUIRK_POWERBOOK_HAS_FN },
-+	{ USB_VENDOR_ID_APPLE, 0x030A, HID_QUIRK_POWERBOOK_HAS_FN },
-+	{ USB_VENDOR_ID_APPLE, 0x030B, HID_QUIRK_POWERBOOK_HAS_FN },
-+
- 	{ 0, 0 }
- };
- 
-diff -upr linux-2.6.15.orig/drivers/usb/input/hid.h linux-2.6.15/drivers/usb/input/hid.h
---- linux-2.6.15.orig/drivers/usb/input/hid.h	2006-01-11 23:59:40.000000000 +0100
-+++ linux-2.6.15/drivers/usb/input/hid.h	2006-01-12 00:56:22.000000000 +0100
-@@ -246,6 +246,8 @@ struct hid_item {
- #define HID_QUIRK_2WHEEL_MOUSE_HACK_5		0x100
- #define HID_QUIRK_2WHEEL_MOUSE_HACK_ON		0x200
- #define HID_QUIRK_2WHEEL_POWERMOUSE		0x400
-+#define HID_QUIRK_POWERBOOK_HAS_FN		0x00000800
-+#define HID_QUIRK_POWERBOOK_FN_ON		0x00001000
- 
- /*
-  * This is the global environment of the parser. This information is
-diff -upr linux-2.6.15.orig/drivers/usb/input/hid-input.c linux-2.6.15/drivers/usb/input/hid-input.c
---- linux-2.6.15.orig/drivers/usb/input/hid-input.c	2006-01-11 23:59:40.000000000 +0100
-+++ linux-2.6.15/drivers/usb/input/hid-input.c	2006-01-12 01:06:46.000000000 +0100
-@@ -63,6 +63,68 @@ static struct {
- 	__s32 y;
- }  hid_hat_to_axis[] = {{ 0, 0}, { 0,-1}, { 1,-1}, { 1, 0}, { 1, 1}, { 0, 1}, {-1, 1}, {-1, 0}, {-1,-1}};
- 
-+struct hidinput_key_translation {
-+	u16 from;
-+	u16 to;
-+	u8 flags;
-+};
-+
-+#ifdef CONFIG_USB_HIDINPUT_POWERBOOK
-+
-+#define POWERBOOK_FLAG_FKEY 0x01
-+
-+static struct hidinput_key_translation powerbook_fn_keys[] = {
-+	{ KEY_BACKSPACE, KEY_DELETE },
-+	{ KEY_F1,	KEY_BRIGHTNESSDOWN,	POWERBOOK_FLAG_FKEY },
-+	{ KEY_F2,	KEY_BRIGHTNESSUP,	POWERBOOK_FLAG_FKEY },
-+	{ KEY_F3,	KEY_MUTE,		POWERBOOK_FLAG_FKEY },
-+	{ KEY_F4,	KEY_VOLUMEDOWN,		POWERBOOK_FLAG_FKEY },
-+	{ KEY_F5,	KEY_VOLUMEUP,		POWERBOOK_FLAG_FKEY },
-+	{ KEY_F6,	KEY_NUMLOCK,		POWERBOOK_FLAG_FKEY },
-+	{ KEY_F7,	KEY_SWITCHVIDEOMODE,	POWERBOOK_FLAG_FKEY },
-+	{ KEY_F8,	KEY_KBDILLUMTOGGLE,	POWERBOOK_FLAG_FKEY },
-+	{ KEY_F9,	KEY_KBDILLUMDOWN,	POWERBOOK_FLAG_FKEY },
-+	{ KEY_F10,	KEY_KBDILLUMUP,		POWERBOOK_FLAG_FKEY },
-+	{ KEY_UP,	KEY_PAGEUP },
-+	{ KEY_DOWN,	KEY_PAGEDOWN },
-+	{ KEY_LEFT,	KEY_HOME },
-+	{ KEY_RIGHT,	KEY_END },
-+	{ }
-+};
-+
-+static struct hidinput_key_translation powerbook_numlock_keys[] = {
-+	{ KEY_J,	KEY_KP1 },
-+	{ KEY_K,	KEY_KP2 },
-+	{ KEY_L,	KEY_KP3 },
-+	{ KEY_U,	KEY_KP4 },
-+	{ KEY_I,	KEY_KP5 },
-+	{ KEY_O,	KEY_KP6 },
-+	{ KEY_7,	KEY_KP7 },
-+	{ KEY_8,	KEY_KP8 },
-+	{ KEY_9,	KEY_KP9 },
-+	{ KEY_M,	KEY_KP0 },
-+	{ KEY_DOT,	KEY_KPDOT },
-+	{ KEY_SLASH,	KEY_KPPLUS },
-+	{ KEY_SEMICOLON, KEY_KPMINUS },
-+	{ KEY_P,	KEY_KPASTERISK },
-+	{ KEY_MINUS,	KEY_KPEQUAL },
-+	{ KEY_0,	KEY_KPSLASH },
-+	{ KEY_F6,	KEY_NUMLOCK },
-+	{ KEY_KPENTER,	KEY_KPENTER },
-+	{ KEY_BACKSPACE, KEY_BACKSPACE },
-+	{ }
-+};
-+
-+static unsigned long usbhid_pb_fn[NBITS(KEY_MAX)];
-+static unsigned long usbhid_pb_numlock[NBITS(KEY_MAX)];
-+
-+static int usbhid_pb_fnmode = 1;
-+module_param_named(pb_fnmode, usbhid_pb_fnmode, int, 0644);
-+MODULE_PARM_DESC(usbhid_pb_fnmode,
-+	"Mode of fn key on PowerBooks (0 = disabled, "
-+	"1 = fkeyslast, 2 = fkeysfirst)");
-+#endif
-+
- #define map_abs(c)	do { usage->code = c; usage->type = EV_ABS; bit = input->absbit; max = ABS_MAX; } while (0)
- #define map_rel(c)	do { usage->code = c; usage->type = EV_REL; bit = input->relbit; max = REL_MAX; } while (0)
- #define map_key(c)	do { usage->code = c; usage->type = EV_KEY; bit = input->keybit; max = KEY_MAX; } while (0)
-@@ -73,6 +135,80 @@ static struct {
- #define map_key_clear(c)	do { map_key(c); clear_bit(c, bit); } while (0)
- #define map_ff_effect(c)	do { set_bit(c, input->ffbit); } while (0)
- 
-+static inline struct hidinput_key_translation *find_translation(
-+	struct hidinput_key_translation *table, u16 from)
-+{
-+	struct hidinput_key_translation *trans;
-+
-+	/* Look for the translation */
-+	for(trans = table; trans->from && (trans->from != from); trans++);
-+
-+	return (trans->from?trans:NULL);
-+}
-+
-+static int hidinput_pb_event(struct hid_device *hid, struct input_dev *input,
-+	struct hid_usage *usage, __s32 value)
-+{
-+#ifdef CONFIG_USB_HIDINPUT_POWERBOOK
-+	struct hidinput_key_translation *trans;
-+
-+	if (usage->code == KEY_FN) {
-+		if (value) hid->quirks |=  HID_QUIRK_POWERBOOK_FN_ON;
-+		else       hid->quirks &= ~HID_QUIRK_POWERBOOK_FN_ON;
-+
-+		input_event(input, usage->type, usage->code, value);
-+
-+		return 1;
-+	}
-+
-+	if (usbhid_pb_fnmode) {
-+		int try_translate, do_translate;
-+
-+		trans = find_translation(powerbook_fn_keys, usage->code);
-+		if (trans) {
-+			if (test_bit(usage->code, usbhid_pb_fn))
-+				do_translate = 1;
-+			else if (trans->flags & POWERBOOK_FLAG_FKEY)
-+				do_translate =
-+					(usbhid_pb_fnmode == 2 &&  (hid->quirks & HID_QUIRK_POWERBOOK_FN_ON)) ||
-+					(usbhid_pb_fnmode == 1 && !(hid->quirks & HID_QUIRK_POWERBOOK_FN_ON));
-+			else
-+				do_translate = (hid->quirks & HID_QUIRK_POWERBOOK_FN_ON);
-+
-+			if (do_translate) {
-+				if (value)
-+					set_bit(usage->code, usbhid_pb_fn);
-+				else
-+					clear_bit(usage->code, usbhid_pb_fn);
-+
-+				input_event(input, usage->type, trans->to, value);
-+
-+				return 1;
-+			}
-+		}
-+
-+		try_translate = test_bit(usage->code, usbhid_pb_numlock)?1:
-+				test_bit(LED_NUML, input->led);
-+		if (try_translate) {
-+			trans = find_translation(powerbook_numlock_keys, usage->code);
-+
-+			if (trans) {
-+				if (value)
-+					set_bit(usage->code, usbhid_pb_numlock);
-+				else
-+					clear_bit(usage->code, usbhid_pb_numlock);
-+
-+				input_event(input, usage->type, trans->to, value);
-+			}
-+
-+			return 1;
-+		}
-+	}
-+#endif
-+
-+	return 0;
-+}
-+
- static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_field *field,
- 				     struct hid_usage *usage)
- {
-@@ -325,7 +461,27 @@ static void hidinput_configure_usage(str
- 
- 			set_bit(EV_REP, input->evbit);
- 			switch(usage->hid & HID_USAGE) {
--				case 0x003: map_key_clear(KEY_FN);		break;
-+#ifdef CONFIG_USB_HIDINPUT_POWERBOOK
-+				/* The fn key on Apple PowerBooks */
-+				case 0x0003: {
-+					struct hidinput_key_translation *trans;
-+
-+					map_key_clear(KEY_FN);
-+
-+					set_bit(KEY_FN, input->keybit);
-+					set_bit(KEY_NUMLOCK, input->keybit);
-+
-+					/* Enable all needed keys */
-+					for(trans = powerbook_fn_keys; trans->from; trans++)
-+						set_bit(trans->to, input->keybit);
-+
-+					for(trans = powerbook_numlock_keys; trans->from; trans++)
-+						set_bit(trans->to, input->keybit);
-+
-+					goto ignore;
-+				}
-+#endif
-+
- 				default:    goto ignore;
- 			}
- 			break;
-@@ -482,6 +638,10 @@ void hidinput_hid_event(struct hid_devic
- 		return;
- 	}
- 
-+	if ((hid->quirks & HID_QUIRK_POWERBOOK_HAS_FN) &&
-+	    hidinput_pb_event(hid, input, usage, value))
-+		return;
-+
- 	if (usage->hat_min < usage->hat_max || usage->hat_dir) {
- 		int hat_dir = usage->hat_dir;
- 		if (!hat_dir)
-diff -upr linux-2.6.15.orig/drivers/usb/input/Kconfig linux-2.6.15/drivers/usb/input/Kconfig
---- linux-2.6.15.orig/drivers/usb/input/Kconfig	2006-01-11 23:59:40.000000000 +0100
-+++ linux-2.6.15/drivers/usb/input/Kconfig	2006-01-08 11:53:35.000000000 +0100
-@@ -37,6 +37,16 @@ config USB_HIDINPUT
- 
- 	  If unsure, say Y.
- 
-+config USB_HIDINPUT_POWERBOOK
-+	bool "Enable support for iBook/PowerBook special keys"
-+	default n
-+	depends on USB_HIDINPUT
-+	help
-+	  Say Y here if you want support for the special keys (Fn, Numlock) on
-+	  Apple iBooks and PowerBooks.
-+
-+	  If unsure, say N.
-+
- config HID_FF
- 	bool "Force feedback support (EXPERIMENTAL)"
- 	depends on USB_HIDINPUT && EXPERIMENTAL
+Andrew
+
+-----Original Message-----
+From: linuxppc-dev-bounces@ozlabs.org
+[mailto:linuxppc-dev-bounces@ozlabs.org] On Behalf Of Ali Paikan
+Sent: Sunday, December 25, 2005 2:19 AM
+To: linuxppc-dev@ozlabs.org
+Subject: kernel hang on 'now booting the kernel'
+
+
+
+Dear Sir,
+ I am a student and I tried to install Linux on ML300 board. I need that
+for
+doing my final project but I have many problems.=20
+
+I compiled the open source PowerPC kernel (linuxppc_2_4_devel) with a
+cross=20
+compiler which I built it by Dan Kegel cross tools. Before compiling, I=20
+updated xparameters_ml300.h according to my base system design from
+Xilinx EDK. =20
+Next, I tried to download kernel ELF file to board and every thing seen
+well.
+But My kernel hanged up when it was going to load main kernel image with
+show=20
+this message on serial console:
+
+loaded at:     00400000 004B01E4                               =20
+board data at: 004AD13C 004AD154                               =20
+relocated to:  00405648 00405660                               =20
+zimage at:     00405C13 004AC65E                               =20
+avail ram:     004B1000 08000000                               =20
+
+Linux/PPC load: console=3DttyS0,9600 ip=3Doff =
+root=3D/dev/xsysace/disc0/part3
+rw
+Uncompressing Linux...done.
+Now booting the kernel
+
+I debugged the kernel and results showed memory initialized and
+load_kernel=20
+function decompressed image into address 0x0 as well. (I can see tree
+NOP=20
+instructions from address 0x0).
+But, I am not sure about next step in jumping to address 0x000C and
+running=20
+the main part of kernel.
+
+I wondered more when I tried to make a Xilinx System ACE file with
+Impact.=20
+It failed too with showing this fatal error:
+
+FATAL_ERROR:GuiUtilities:WinApp.c:710:$Revision - This application has=20
+discovered an exceptional condition from which it cannot recover.
+Process
+will terminate.  To resolve this error, please consult the Answers
+Database
+and other online resources at http://support.xilinx.com. If you need
+further=20
+assistance, please open a Webcase by clicking on the "WebCase" link at
+http://support.xilinx.com.
+
+I don't have any problem for making system ace from other ELF files.
+Might it be for my bad compilation?
+Is my base system building for FPGA not correct?
+Where is my wrong?
+=20
+For more information I attached my all configuration and log files at
+end of=20
+this mail.
+
+I am too great if you help me in this case and I look forward to hearing
+from you.=20
+Sorry my pure English!
+
+Sincerely,
+Ali Paikan
+
+
+
+Cross compiler option:
+CONFIG_TARGET=3D"powerpc-405-linux-gnu"
+CONFIG_TARGET_CFLAGS=3D"-O -mcpu=3D405"
+CONFIG_GCC_EXTRA_CONFIG=3D"--with-cpu=3D405 =
+--enable-cxx-flags=3D-mcpu=3D405"
+CONFIG_GLIBC_EXTRA_CONFIG=3D"-without-fp"
+
+powerpc-405-linux-gnu-objdump -h:
+zImage.:     file format elf32-powerpc
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00004798  00400000  00400000  00010000  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00095000  00405000  00405000  00015000  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          000031e0  0049a000  _u48 ?49a000  000aa000  2**2
+                  ALLOC
+  3 .note.GNU-stack 00000000  00000000  00000000  000aa000  2**0
+                  CONTENTS, READONLY
+
+
+Xparameters_ml300.h :
+/*********************************************************_u42 ?********
+*
+* CAUTION: This file is automatically generated by libgen.
+* Version: Xilinx EDK 7.1 EDK_H.10.4
+* DO NOT EDIT.
+*
+* Copyright (c) 2005 Xilinx, Inc.  All rights reserved.=20
+*=20
+* Description: Driver parameters
+*
+*******************************************************************/
+
+#define XPAR_XUARTLITE_NUM_INSTANCES 1
+#define XPAR_RS232_UART_1_BASEADDR 0x40600000
+#define XPAR_RS232_UART_1_HIGHADDR 0x4060FFFF
+#define XPAR_RS232_UART_1_DEVICE_ID 0
+#define XPAR_RS232_UART_1_BAUDRATE 9600
+#define XPAR_RS232_UART_1_USE_PARITY 0
+#define XPAR_RS232_UART_1_ODD_PARITY 0
+#define XPAR_RS232_UART_1_DATA_BITS 8
+
+/******************************************************************/
+
+#define XPAR_XSYSACE_MEM_WIDTH 8
+#define XPAR_XSYSACE_NUM_INSTANCES 1
+#define XPAR_SYSACE_COMPACTFLASH_BASEADDR 0x41800000
+#define XPAR_SYSACE_COMPACTFLASH_HIGHADDR 0x4180FFFF
+#define XPAR_SYSACE_COMPACTFLASH_DEVICE_ID 0
+#define XPAR_SYSACE_COMPACTFLASH_MEM_WIDTH 8
+
+/******************************************************************/
+
+#define XPAR_INTC_MAX_NUM_INTR_INPUTS 3
+#define XPAR_XINTC_HAS_IPR 1
+#define XPAR_XINTC_USE_DCR 0
+#define XPAR_XINTC_NUM_INSTANCES 1
+#define XPAR_OPB_INTC_0_BASEADDR 0x41200000
+#define XPAR_OPB_INTC_0_HIGHADDR 0x4120FFFF
+#define XPAR_OPB_INTC_0_DEVICE_ID 0
+#define XPAR_OPB_INTC_0_KIND_OF_INTR 0x00000006
+
+/******************************************************************/
+
+#define XPAR_INTC_SINGLE_BASEADDR 0x41200000
+#define XPAR_INTC_SINGLE_HIGHADDR 0x4120FFFF
+#define XPAR_INTC_SINGLE_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
+#define XPAR_SYSACE_COMPACTFLASH_SYSACE_IRQ_MASK 0X000001
+#define XPAR_OPB_INTC_0_SYSACE_COMPACTFLASH_SYSACE_IRQ_INTR 0
+#define XPAR_RS232_UART_1_INTERRUPT_MASK 0X000002
+#define XPAR_OPB_INTC_0_RS232_UART_1_INTERRUPT_INTR 1
+#define XPAR_DDR_SDRAM_32MX32_IP2INTC_IRPT_MASK 0X000004
+#define XPAR_OPB_INTC_0_DDR_SDRAM_32MX32_IP2INTC_IRPT_INTR 2
+
+/******************************************************************/
+
+#define XPAR_XDDR_NUM_INSTANCES 1
+#define XPAR_DDR_SDRAM_32MX32_ECC_BASEADDR 0xFFFFFFFF
+#define XPAR_DDR_SDRAM_32MX32_ECC_HIGHADDR 0x00000000
+#define XPAR_DDR_SDRAM_32MX32_DEVICE_ID 0
+#define XPAR_DDR_SDRAM_32MX32_INCLUDE_ECC_INTR 0
+
+/******************************************************************/
+
+#define XPAR_DDR_SDRAM_32MX32_MEM0_BASEADDR 0x00000000
+#define XPAR_DDR_SDRAM_32MX32_MEM0_HIGHADDR 0x07FFFFFF
+
+/******************************************************************/
+
+#define XPAR_PLB_BRAM_IF_CNTLR_1_BASEADDR 0xffffc000
+#define XPAR_PLB_BRAM_IF_CNTLR_1_HIGHADDR 0xffffffff
+
+/******************************************************************/
+
+#define XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ 300000000
+
+/******************************************************************/
+
+
+/******************************************************************/
+
+/* Linux Redefines */
+
+/******************************************************************/
+
+#define XPAR_UARTLITE_0_BASEADDR XPAR_RS232_UART_1_BASEADDR
+#define XPAR_UARTLITE_0_HIGHADDR XPAR_RS232_UART_1_HIGHADDR
+#define XPAR_UARTLITE_0_DEVICE_ID XPAR_RS232_UART_1_DEVICE_ID
+
+/******************************************************************/
+
+#define XPAR_SYSACE_0_BASEADDR XPAR_SYSACE_COMPACTFLASH_BASEADDR
+#define XPAR_SYSACE_0_HIGHADDR XPAR_SYSACE_COMPACTFLASH_HIGHADDR
+#define XPAR_SYSACE_0_DEVICE_ID XPAR_SYSACE_COMP8CTFLASH_DEVICE_ID
+
+/******************************************************************/
+
+#define XPAR_INTC_0_BASEADDR XPAR_OPB_INTC_0_BASEADDR
+#define XPAR_INTC_0_HIGHADDR XPAR_OPB_INTC_0_HIGHADDR
+#define XPAR_INTC_0_KIND_OF_INTR XPAR_OPB_INTC_0_KIND_OF_INTR
+#define XPAR_INTC_0_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
+
+/******************************************************************/
+
+#define XPAR_INTC_0_SYSACE_0_VEC_ID
+XPAR_OPB_INTC_0_SYSACE_COMPACTFLASH_SYSACE_IRQ_INTR
+#define XPAR_INTC_0_UARTLITE_0_VEC_ID
+XPAR_OPB_INTC_0_RS232_UART_1_INTERRUPT_INTR
+#define XPAR_INTC_0_DDR_0_VEC_ID
+XPAR_OPB_INTC_0_DDR_SDRAM_32MX32_IP2INTC_IRPT_INTR
+
+/******************************************************************/
+
+#define XPAR_PLB_CLOCK_FREQ_HZ 100000000
+#define XPAR_CORE_CLOCK_FREQ_HZ XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ
+#define XPAR_DDR_0_SIZE 8000000
+
+/******************************************************************/
+
+#define XPAR_PERSISTENT_0_IIC_0_BASEADDR 0x00000400
+#define XPAR_PERSISTENT_0_IIC_0_HIGHADDR 0x000007FF
+#define XPAR_PERSISTENT_0_IIC_0_EEPROMADDR 0xA0
+
+/******************************************************************/
+
+#define XPAR_PCI_0_CLOCK_FREQ_HZ    0
+
+/******************************************************************/
+
+
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
