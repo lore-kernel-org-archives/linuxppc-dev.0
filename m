@@ -1,16 +1,18 @@
-Return-Path: <s.maiti@tcs.com>
-Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
-	by ozlabs.org (Postfix) with ESMTP id E9B14689AE
+Return-Path: <tsawyer+linuxppc@sandburst.com>
+Received: from sandmail.sandburst.com (sandmail.sandburst.com [216.57.132.42])
+	by ozlabs.org (Postfix) with ESMTP id 575AA68916
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jan 2006 22:10:46 +1100 (EST)
-To: linuxppc-embedded@ozlabs.org
-Subject: Help MCC driver
+	Sat, 14 Jan 2006 00:58:39 +1100 (EST)
+Message-ID: <43C7AA6D.5060206@sandburst.com>
+Date: Fri, 13 Jan 2006 08:26:05 -0500
+From: "Travis B. Sawyer" <tsawyer+linuxppc@sandburst.com>
 MIME-Version: 1.0
-From: s.maiti@tcs.com
-Message-ID: <OFD1D6CF62.4D4D88C6-ON652570F5.003CB8F7-652570F5.003D1DFE@tcs.com>
-Date: Fri, 13 Jan 2006 16:37:33 +0530
-Content-Type: text/plain;
-	charset=US-ASCII
+To: David Hawkins <dwh@ovro.caltech.edu>
+Subject: Re: Suggestions for a PPC440 board?
+References: <43C7051D.8000001@ovro.caltech.edu>
+In-Reply-To: <43C7051D.8000001@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,18 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+David Hawkins wrote:
 
-Hi everybody,
+>Hi all,
+>
+>I'm evaluating the Yosemite 440EP board at the moment,
+>with the intention of using it on custom compactPCI
+>boards. I've got a few questions to ask the group, but
+>I'll leave those for another email.
+>  
+>
+<Snip>
 
-Can any one suggest where to put MCC driver (Obtained from Sourceforge) in 
-the linux tree so that  I am able to include the driver in kernel image?
-Any help will be highly helpful.
+>So, I might not follow this
+>route. Alternatively, I could use a PMC, or PrPMC
+>board, and develop the drivers that way, eg.
+>
+>Extreme Engineering    Xpedite1000/1  440GX
+>Artisyn Technologies   PmPPC          440GP
+>
+>So - anyone have a favorite?
+>  
+>
+David:
 
-Thanks in advance.
+I've already done the Das u-boot port for the Xpedite1k, and its released.
 
-Souvik Maiti
-Tata Consultancy Services Limited
-Mailto: s.maiti@tcs.com
-Website: http://www.tcs.com
+If that makes it any easier for you to decided.
 
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+Granted the port was done for monarch mode, not non-monarch, but it 
+should be simple
+enough to change that.
+
+-travis
