@@ -1,16 +1,17 @@
-Return-Path: <anton@ozlabs.org>
-Date: Fri, 13 Jan 2006 23:05:44 +1100
-From: Anton Blanchard <anton@samba.org>
+Return-Path: <apw@shadowen.org>
+Received: from localhost.localdomain (81-179-252-66.dsl.pipex.com
+	[81.179.252.66]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 370776893D
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jan 2006 00:11:29 +1100 (EST)
+Date: Fri, 13 Jan 2006 12:35:49 +0000
 To: Paul Mackerras <paulus@samba.org>
 Subject: [PATCH] powerpc oprofile G4 clashes with wacom driver
-Message-ID: <20060113120543.GF26421@krispykreme>
-References: <20060112144437.GA15923@shadowen.org>
-	<65FBDB60-D4A5-40DF-BA73-AB6388A9368B@kernel.crashing.org>
-	<43C67B3F.3080301@shadowen.org>
-	<17351.28313.858572.825928@cargo.ozlabs.ibm.com>
+Message-ID: <20060113123549.GA27087@shadowen.org>
+References: <17351.28313.858572.825928@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17351.28313.858572.825928@cargo.ozlabs.ibm.com>
+From: Andy Whitcroft <apw@shadowen.org>
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,26 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+powerpc: oprofile G4 clashes with wacom driver
 
-> I think there needs to be a prefix, but I have no idea what POT_ would
-> be (oh, I guess it's Powerpc Oprofile Type, I suppose).  Something
-> like PPC_OPROFILE_ would be better, if it's not too long.
+In 2.6.15-git6 a change was commited in the oprofile support in
+the powerpc architecture.  It introduced the powerpc_oprofile_type
+which contains the define G4.  This causes a name clash with the
+existing wacom usb tablet driver.
 
-Makes sense. How does this look? Only built on powerpc-64 so far.
+      CC [M]  drivers/usb/input/wacom.o
+    drivers/usb/input/wacom.c:98: error: conflicting types for `G4'
+    include/asm/cputable.h:37: error: previous declaration of `G4'
+      CC [M]  drivers/usb/mon/mon_text.o
+    make[3]: *** [drivers/usb/input/wacom.o] Error 1
+    make[2]: *** [drivers/usb/input] Error 2
 
-Anton
+The elements of an enum declared in global scope are effectivly
+global identifiers themselves.  As such we need to ensure the names
+are unique.  This patch updates the later oprofile support to use
+unique names.
 
---
-
-Rename powerpc_oprofile_type enum, the old names were way too generic.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 ---
-
-Index: build/arch/powerpc/kernel/cputable.c
-===================================================================
---- build.orig/arch/powerpc/kernel/cputable.c	2006-01-10 13:53:24.000000000 +1100
-+++ build/arch/powerpc/kernel/cputable.c	2006-01-13 22:39:38.000000000 +1100
+ arch/powerpc/kernel/cputable.c |   52 ++++++++++++++++++++---------------------
+ arch/powerpc/oprofile/common.c |    8 +++---
+ include/asm-powerpc/cputable.h |   10 +++----
+ 3 files changed, 35 insertions(+), 35 deletions(-)
+diff -upN reference/arch/powerpc/kernel/cputable.c current/arch/powerpc/kernel/cputable.c
+--- reference/arch/powerpc/kernel/cputable.c
++++ current/arch/powerpc/kernel/cputable.c
 @@ -79,7 +79,7 @@ struct cpu_spec	cpu_specs[] = {
  		.num_pmcs		= 8,
  		.cpu_setup		= __setup_cpu_power3,
@@ -275,10 +284,9 @@ Index: build/arch/powerpc/kernel/cputable.c
  	},
  #endif
  #if !CLASSIC_PPC
-Index: build/arch/powerpc/oprofile/common.c
-===================================================================
---- build.orig/arch/powerpc/oprofile/common.c	2006-01-10 13:53:24.000000000 +1100
-+++ build/arch/powerpc/oprofile/common.c	2006-01-13 22:39:57.000000000 +1100
+diff -upN reference/arch/powerpc/oprofile/common.c current/arch/powerpc/oprofile/common.c
+--- reference/arch/powerpc/oprofile/common.c
++++ current/arch/powerpc/oprofile/common.c
 @@ -140,19 +140,19 @@ int __init oprofile_arch_init(struct opr
  
  	switch (cur_cpu_spec->oprofile_type) {
@@ -303,10 +311,9 @@ Index: build/arch/powerpc/oprofile/common.c
  			model = &op_model_fsl_booke;
  			break;
  #endif
-Index: build/include/asm-powerpc/cputable.h
-===================================================================
---- build.orig/include/asm-powerpc/cputable.h	2006-01-10 13:53:25.000000000 +1100
-+++ build/include/asm-powerpc/cputable.h	2006-01-13 22:40:23.000000000 +1100
+diff -upN reference/include/asm-powerpc/cputable.h current/include/asm-powerpc/cputable.h
+--- reference/include/asm-powerpc/cputable.h
++++ current/include/asm-powerpc/cputable.h
 @@ -31,11 +31,11 @@ struct cpu_spec;
  typedef	void (*cpu_setup_t)(unsigned long offset, struct cpu_spec* spec);
  
