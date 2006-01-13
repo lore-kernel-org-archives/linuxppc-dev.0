@@ -1,17 +1,16 @@
 Return-Path: <jacmet@sunsite.dk>
-Received: from europa.telenet-ops.be (europa.telenet-ops.be [195.130.137.75])
-	by ozlabs.org (Postfix) with ESMTP id 738EB68A1F
+Received: from asia.telenet-ops.be (asia.telenet-ops.be [195.130.137.74])
+	by ozlabs.org (Postfix) with ESMTP id 2B68D68A25
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jan 2006 05:39:18 +1100 (EST)
+	Sat, 14 Jan 2006 05:44:39 +1100 (EST)
 To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 03/10] Migrate Xilinx Vertex support from the OCP bus to
-	the platfom bus.
-References: <11367955801988-git-send-email-grant.likely@secretlab.ca>
+Subject: Re: [PATCH 00/10] Xilinx Virtex-* updates
+References: <11367955793438-git-send-email-grant.likely@secretlab.ca>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Fri, 13 Jan 2006 19:20:47 +0100
-In-Reply-To: <11367955801988-git-send-email-grant.likely@secretlab.ca> (grant
-	likely's message of "Mon, 9 Jan 2006 01:33:00 -0700")
-Message-ID: <87lkxkq9a8.fsf@48ers.dk>
+Date: Fri, 13 Jan 2006 19:17:51 +0100
+In-Reply-To: <11367955793438-git-send-email-grant.likely@secretlab.ca> (grant
+	likely's message of "Mon, 9 Jan 2006 01:32:59 -0700")
+Message-ID: <87u0c8q9f4.fsf@48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: glikely@gmail.com, dhlii@dlasys.net, gnathita@gmail.com,
@@ -28,12 +27,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 >>>>> "grant" == grant likely <grant.likely@secretlab.ca> writes:
 
- grant> +#else
- grant> +  /* Add other board xparameter includes here before the #else */
- grant> +  #error No *_xparameters.h file included
- grant> +#endif
+ grant> Here's a repost of my Xilinx ML300 and ML403 patches with a few
+ grant> cleanups, a bit of patch reordering, and rebased to 2.6.15.
 
-Nitpit, but this should be #error No xparameters_*.h file included.
+Nice, ..
+
+ grant> I've tested on an ML403
+ grant> Can someone test on an ML300?  (I no longer have one)
+
+Works fine here on a ML300-alike board.
 
 -- 
 Bye, Peter Korsgaard
