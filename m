@@ -1,26 +1,16 @@
-Return-Path: <vojtech@suse.cz>
-Received: from mail.suse.cz (styx.suse.cz [82.119.242.94])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A1616688D6
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2006 18:47:34 +1100 (EST)
-Date: Fri, 13 Jan 2006 08:47:49 +0100
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple PowerBooks
-Message-ID: <20060113074749.GA7103@midnight.suse.cz>
-References: <20051225212041.GA6094@hansmi.ch>
-	<1137022900.5138.66.camel@localhost.localdomain>
-	<20060112000830.GB10142@hansmi.ch>
-	<200601122312.05210.dtor_core@ameritech.net>
-	<20060113065302.GA3458@hansmi.ch>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060113065302.GA3458@hansmi.ch>
-Cc: linux-kernel@killerfox.forkbomb.ch,
-	Dmitry Torokhov <dtor_core@ameritech.net>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-input@atrey.karlin.mff.cuni.cz
+Message-ID: <17351.28313.858572.825928@cargo.ozlabs.ibm.com>
+Date: Fri, 13 Jan 2006 20:10:49 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] powerpc oprofile G4 clashes with wacom driver
+In-Reply-To: <43C67B3F.3080301@shadowen.org>
+References: <20060112144437.GA15923@shadowen.org>
+	<65FBDB60-D4A5-40DF-BA73-AB6388A9368B@kernel.crashing.org>
+	<43C67B3F.3080301@shadowen.org>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,58 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 13, 2006 at 07:53:02AM +0100, Michael Hanselmann wrote:
- 
-> It indeed is. Fixed.
+Andy Whitcroft writes:
 
-It gets better all the time. ;)
+> Paul?  I am ambivalent about the prefix, and it can be trivially changed
+> to any that you feel approriate.
 
-> New patch:
-> 
-> This patch implements support for the fn key on Apple PowerBooks using
-> USB based keyboards.
-> 
-> Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
-> Acked-by: Rene Nussbaumer <linux-kernel@killerfox.forkbomb.ch>
-> Acked-by: Johannes Berg <johannes@sipsolutions.net>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> ---
+I think there needs to be a prefix, but I have no idea what POT_ would
+be (oh, I guess it's Powerpc Oprofile Type, I suppose).  Something
+like PPC_OPROFILE_ would be better, if it's not too long.
 
-> @@ -325,7 +459,27 @@ static void hidinput_configure_usage(str
->  
->  			set_bit(EV_REP, input->evbit);
->  			switch(usage->hid & HID_USAGE) {
-> -				case 0x003: map_key_clear(KEY_FN);		break;
-> +#ifdef CONFIG_USB_HIDINPUT_POWERBOOK
-> +				/* The fn key on Apple PowerBooks */
-> +				case 0x0003: {
-> +					struct hidinput_key_translation *trans;
-> +
-> +					map_key_clear(KEY_FN);
-> +
-> +					set_bit(KEY_FN, input->keybit);
-
-The set_bit(KEY_FN, input->keybit) is superfluous here, right?
-map_key_clear(KEY_FN); will take care of that further down.
-
-> +					set_bit(KEY_NUMLOCK, input->keybit);
-> +
-> +					/* Enable all needed keys */
-> +					for(trans = powerbook_fn_keys; trans->from; trans++)
-> +						set_bit(trans->to, input->keybit);
-> +
-> +					for(trans = powerbook_numlock_keys; trans->from; trans++)
-> +						set_bit(trans->to, input->keybit);
-> +
-> +					goto ignore;
-> +				}
-> +#endif
-> +
->  				default:    goto ignore;
->  			}
->  			break;
-
--- 
-Vojtech Pavlik
-SuSE Labs, SuSE CR
+Paul.
