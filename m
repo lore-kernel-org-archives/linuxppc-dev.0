@@ -1,16 +1,22 @@
-Return-Path: <mjoshi_blr@yahoo.com>
-Received: from web34701.mail.mud.yahoo.com (web34701.mail.mud.yahoo.com
-	[209.191.68.150]) by ozlabs.org (Postfix) with SMTP id 8D007689C3
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 10A0E689DA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jan 2006 03:38:39 +1100 (EST)
-Message-ID: <20060113163157.81578.qmail@web34701.mail.mud.yahoo.com>
-Date: Fri, 13 Jan 2006 08:31:57 -0800 (PST)
-From: Manish Joshi <mjoshi_blr@yahoo.com>
-Subject: Re: Help MCC driver
-To: s.maiti@tcs.com, linuxppc-embedded@ozlabs.org
-In-Reply-To: <OFD1D6CF62.4D4D88C6-ON652570F5.003CB8F7-652570F5.003D1DFE@tcs.com>
+	Sat, 14 Jan 2006 03:51:35 +1100 (EST)
+Message-ID: <43C7DA97.30505@ovro.caltech.edu>
+Date: Fri, 13 Jan 2006 08:51:35 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-2033875337-1137169917=:71527"
+To: "Travis B. Sawyer" <tsawyer+linuxppc@sandburst.com>
+Subject: Re: Suggestions for a PPC440 board?
+References: <43C7051D.8000001@ovro.caltech.edu>
+	<43C7AA6D.5060206@sandburst.com>
+In-Reply-To: <43C7AA6D.5060206@sandburst.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,49 +27,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-2033875337-1137169917=:71527
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
 
-This can be compiled as a kernel module and you can insert it using 'insmod' command. You will have to use MPC8260/ppc specific toolchain.
-   
-  Thanks,
-  Manish
+> I've already done the Das u-boot port for the Xpedite1k, and its released.
+> 
+> If that makes it any easier for you to decided.
+> 
+> Granted the port was done for monarch mode, not non-monarch, but it 
+> should be simple
+> enough to change that.
 
-s.maiti@tcs.com wrote:
-  
-Hi everybody,
+Hey Travis,
 
-Can any one suggest where to put MCC driver (Obtained from Sourceforge) in 
-the linux tree so that I am able to include the driver in kernel image?
-Any help will be highly helpful.
+Yeah, that'll definitely help. Do you recall how much you paid for
+the board? I'll get a quote.
 
-Thanks in advance.
-
-Souvik Maiti
-Tata Consultancy Services Limited
-Mailto: s.maiti@tcs.com
-Website: http://www.tcs.com
-
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information. If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited. If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments. Thank you
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-  
-
-
-			
----------------------------------
-Yahoo! Photos
- Got holiday prints? See all the ways to get quality prints in your hands ASAP.
---0-2033875337-1137169917=:71527
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<DIV>This can be compiled as a kernel module and you can insert it using 'insmod' command. You will have to use MPC8260/ppc specific toolchain.</DIV>  <DIV>&nbsp;</DIV>  <DIV>Thanks,</DIV>  <DIV>Manish<BR><BR><B><I>s.maiti@tcs.com</I></B> wrote:</DIV>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid"><BR>Hi everybody,<BR><BR>Can any one suggest where to put MCC driver (Obtained from Sourceforge) in <BR>the linux tree so that I am able to include the driver in kernel image?<BR>Any help will be highly helpful.<BR><BR>Thanks in advance.<BR><BR>Souvik Maiti<BR>Tata Consultancy Services Limited<BR>Mailto: s.maiti@tcs.com<BR>Website: http://www.tcs.com<BR><BR>Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information. If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail
- message and/or attachments to it are strictly prohibited. If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments. Thank you<BR>_______________________________________________<BR>Linuxppc-embedded mailing list<BR>Linuxppc-embedded@ozlabs.org<BR>https://ozlabs.org/mailman/listinfo/linuxppc-embedded<BR></BLOCKQUOTE>  <DIV><BR></DIV><p>
-	
-		<hr size=1>Yahoo! Photos<br> 
-Got holiday prints? <a href="http://us.rd.yahoo.com/mail_us/taglines/holidayprints/*http://pa.yahoo.com/*http://us.rd.yahoo.com/mail_us/taglines/photos/evt=38089/*http://pg.photos.yahoo.com/ph//print_splash">See all the ways</a> to get quality prints in your hands ASAP.
---0-2033875337-1137169917=:71527--
+Dave
