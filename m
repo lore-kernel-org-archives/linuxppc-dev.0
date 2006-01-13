@@ -1,29 +1,17 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 01B39689C0
+Return-Path: <s.maiti@tcs.com>
+Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
+	by ozlabs.org (Postfix) with ESMTP id D404168916
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Jan 2006 18:05:21 +1100 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1ExIH5-0000DY-Av
-	for linuxppc-embedded@ozlabs.org; Fri, 13 Jan 2006 07:18:59 +0100
-Received: from dsl-202-45-109-210.vic.netspace.net.au ([202.45.109.210])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Fri, 13 Jan 2006 07:18:59 +0100
-Received: from ronkbox-news by dsl-202-45-109-210.vic.netspace.net.au with
-	local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Fri, 13 Jan 2006 07:18:59 +0100
+	Fri, 13 Jan 2006 22:07:13 +1100 (EST)
+In-Reply-To: <20060112152232.73EDB68A88@ozlabs.org>
 To: linuxppc-embedded@ozlabs.org
-From: Ron Kellam <ronkbox-news@yahoo.com>
-Subject: Re: Can ELDK 3.1.1 compile Linux 2.6 Kernel?
-Date: Fri, 13 Jan 2006 17:18:39 +1100
-Message-ID: <98hes19r3jn7dfv2jmr9r5qenprqfltg5k@4ax.com>
-References: <20060111083657.77699.qmail@web53707.mail.yahoo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@sea.gmane.org>
+Subject: Help: MCC driver for mpc8260
+MIME-Version: 1.0
+From: s.maiti@tcs.com
+Message-ID: <OF0F28BD37.56BC61E8-ON652570F5.003C16BA-652570F5.003C9E86@tcs.com>
+Date: Fri, 13 Jan 2006 16:32:08 +0530
+Content-Type: text/plain;
+	charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,13 +22,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have the DENX 2.6.14 kernel quite happily compiling using ELDK
-3.1.1, and it runs fine.  My platform is a custom MPC8247 (ppc) system
-with serial, ethernet, I2C & SPI drivers all working fine under
-2.6.14.
 
-I had no luck compiling any of the 2.6.15rcX or 2.6.denx trees under
-ELDK 3.1.1 - same compile probs as yours.
+Hi all,
 
-Regards,
-Ron
+I got a Linux kernel device driver for the MCC from souceforge. One 
+problem I am facing is that I am unable to compile the code. There is some 
+problem with Rule.make. 
+
+Please Help me.
+
+Thanks and regards,
+Souvik Maiti
+Tata Consultancy Services Limited
+Mailto: s.maiti@tcs.com
+Website: http://www.tcs.com
+
+Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
