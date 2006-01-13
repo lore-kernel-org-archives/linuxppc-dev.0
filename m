@@ -1,18 +1,28 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id DA9CA689D7
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2006 12:19:26 +1100 (EST)
-To: "Kabir Ahsan-r9aahw" <Ahsan.Kabir@freescale.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: init does not run on 405GP system 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 12 Jan 2006 15:51:57 MST."
-	<351763BE49AC8743AFCCF925821FF6BE04A503@az33exm22.fsl.freescale.net>
-Date: Fri, 13 Jan 2006 02:19:24 +0100
-Sender: wd@denx.de
-Message-Id: <20060113011924.1C149353CCD@atlas.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 86619689C8
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Jan 2006 12:53:49 +1100 (EST)
+Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple PowerBooks
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
+In-Reply-To: <20060112233951.GA31258@hansmi.ch>
+References: <20051225212041.GA6094@hansmi.ch>
+	<200512252304.32830.dtor_core@ameritech.net>
+	<1135575997.14160.4.camel@localhost.localdomain>
+	<d120d5000601111307x451db79aqf88725e7ecec79d2@mail.gmail.com>
+	<20060111232651.GI6617@hansmi.ch>
+	<1137022900.5138.66.camel@localhost.localdomain>
+	<20060112090733.GA7627@midnight.suse.cz>
+	<20060112233951.GA31258@hansmi.ch>
+Content-Type: text/plain
+Date: Fri, 13 Jan 2006 12:53:23 +1100
+Message-Id: <1137117204.4862.0.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-kernel@killerfox.forkbomb.ch, dtor_core@ameritech.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Vojtech Pavlik <vojtech@suse.cz>, linux-input@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <351763BE49AC8743AFCCF925821FF6BE04A503@az33exm22.fsl.freescale.net> you wrote:
+On Fri, 2006-01-13 at 00:39 +0100, Michael Hanselmann wrote:
+> On Thu, Jan 12, 2006 at 10:07:33AM +0100, Vojtech Pavlik wrote:
+> > I think having it in struct hid_device is safer. We might want to
+> > dynamically allocate only for PowerBook keyboards, though, to save
+> > memory.
 > 
-> I found this thread on the web. The reason I am writing is that I am
-> also seeing some problem with my /sbin/init. Can you elaborate on the
-> solution? You mentioned that "The On Chip Memory was mapped to an
-> address below 0x8000'0000 - what we didn't know was that this is a
-> _virtual_ address, because the OCM is not simply located "behind" the
-> MMU."=20
-> What do you mean by OCM? What do you mean by address below 0x80000000?
+> These two arrays take 128 Bytes. I don't think it's possible to write
+> the code to allocate and set them in such short code. Beside of that, it
+> would affect more code than only hid-input.c, at least hid-core.c would
+> need modifications, too.
+> 
+> Benjamin Herrenschmidt had the idea of a private field which each device
+> can use for its own purposes. That's a task for another patch, tough.
+> 
+> This patch implements support for the fn key on Apple PowerBooks using
+> USB based keyboards.
 
-OCM = On Chip Memory (this should be obvious from the previous text).
+Dimitri, I think the patch is good enough now and should go in for
+2.6.16.
 
-And address "below 0x80000000" is  one  in  the  address  range  from
-0x0000 up to and including 0x7FFFFFFF (this should be obvious, too).
-
-> So you had to redefine your MMU definition to get through this error?
-
-No, just fix your memory map.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The use of anthropomorphic terminology when  dealing  with  computing
-systems is a symptom of professional immaturity.   -- Edsger Dijkstra
+Thanks !
+Ben.
