@@ -1,16 +1,16 @@
 Return-Path: <jacmet@sunsite.dk>
-Received: from asia.telenet-ops.be (asia.telenet-ops.be [195.130.137.74])
-	by ozlabs.org (Postfix) with ESMTP id 2B68D68A25
+Received: from hoboe2bl1.telenet-ops.be (hoboe2bl1.telenet-ops.be
+	[195.130.137.73]) by ozlabs.org (Postfix) with ESMTP id B207E68A58
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jan 2006 05:44:39 +1100 (EST)
+	Sat, 14 Jan 2006 05:48:58 +1100 (EST)
 To: grant.likely@secretlab.ca
-Subject: Re: [PATCH 00/10] Xilinx Virtex-* updates
-References: <11367955793438-git-send-email-grant.likely@secretlab.ca>
+Subject: Re: [PATCH 08/10] ML300 & ML403 need embed_config.o linked in
+References: <11367955811900-git-send-email-grant.likely@secretlab.ca>
 From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Fri, 13 Jan 2006 19:17:51 +0100
-In-Reply-To: <11367955793438-git-send-email-grant.likely@secretlab.ca> (grant
-	likely's message of "Mon, 9 Jan 2006 01:32:59 -0700")
-Message-ID: <87u0c8q9f4.fsf@48ers.dk>
+Date: Fri, 13 Jan 2006 19:18:57 +0100
+In-Reply-To: <11367955811900-git-send-email-grant.likely@secretlab.ca> (grant
+	likely's message of "Mon, 9 Jan 2006 01:33:01 -0700")
+Message-ID: <87psmwq9da.fsf@48ers.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: glikely@gmail.com, dhlii@dlasys.net, gnathita@gmail.com,
@@ -27,15 +27,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 >>>>> "grant" == grant likely <grant.likely@secretlab.ca> writes:
 
- grant> Here's a repost of my Xilinx ML300 and ML403 patches with a few
- grant> cleanups, a bit of patch reordering, and rebased to 2.6.15.
+ grant> +boot-$(CONFIG_XILINX_ML300)	+= embed_config.o
+ grant> +boot-$(CONFIG_XILINX_ML403)	+= embed_config.o
 
-Nice, ..
-
- grant> I've tested on an ML403
- grant> Can someone test on an ML300?  (I no longer have one)
-
-Works fine here on a ML300-alike board.
+Notice that the ML300 line already is in mainline and pending for
+2.6.15.1.
 
 -- 
 Bye, Peter Korsgaard
