@@ -1,19 +1,21 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from outbound-mail-32.bluehost.com (outbound-mail-32.bluehost.com
-	[70.96.188.152]) by ozlabs.org (Postfix) with SMTP id E0DD368A11
+Return-Path: <jacmet@sunsite.dk>
+Received: from europa.telenet-ops.be (europa.telenet-ops.be [195.130.137.75])
+	by ozlabs.org (Postfix) with ESMTP id 738EB68A1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jan 2006 05:35:09 +1100 (EST)
-Message-ID: <43C7F2C9.8040204@secretlab.ca>
-Date: Fri, 13 Jan 2006 11:34:49 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
+	Sat, 14 Jan 2006 05:39:18 +1100 (EST)
+To: grant.likely@secretlab.ca
+Subject: Re: [PATCH 03/10] Migrate Xilinx Vertex support from the OCP bus to
+	the platfom bus.
+References: <11367955801988-git-send-email-grant.likely@secretlab.ca>
+From: Peter Korsgaard <jacmet@sunsite.dk>
+Date: Fri, 13 Jan 2006 19:20:47 +0100
+In-Reply-To: <11367955801988-git-send-email-grant.likely@secretlab.ca> (grant
+	likely's message of "Mon, 9 Jan 2006 01:33:00 -0700")
+Message-ID: <87lkxkq9a8.fsf@48ers.dk>
 MIME-Version: 1.0
-To: Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [PATCH 08/10] ML300 & ML403 need embed_config.o linked in
-References: <11367955811900-git-send-email-grant.likely@secretlab.ca>
-	<87psmwq9da.fsf@48ers.dk>
-In-Reply-To: <87psmwq9da.fsf@48ers.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: dhlii@dlasys.net, gnathita@gmail.com, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: glikely@gmail.com, dhlii@dlasys.net, gnathita@gmail.com,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +26,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Peter Korsgaard wrote:
+>>>>> "grant" == grant likely <grant.likely@secretlab.ca> writes:
 
->>>>>>"grant" == grant likely <grant.likely@secretlab.ca> writes:
->>>>>>            
->>>>>>
->
-> grant> +boot-$(CONFIG_XILINX_ML300)	+= embed_config.o
-> grant> +boot-$(CONFIG_XILINX_ML403)	+= embed_config.o
->
->Notice that the ML300 line already is in mainline and pending for
->2.6.15.1.
->
->  
->
-Good to know; we were just discussing if this was the case on #mklinux
+ grant> +#else
+ grant> +  /* Add other board xparameter includes here before the #else */
+ grant> +  #error No *_xparameters.h file included
+ grant> +#endif
 
-Thanks
+Nitpit, but this should be #error No xparameters_*.h file included.
 
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 663-0761
+Bye, Peter Korsgaard
