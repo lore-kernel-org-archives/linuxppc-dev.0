@@ -1,26 +1,21 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A59C8689F8
+Return-Path: <grant.likely@secretlab.ca>
+Received: from outbound-mail-32.bluehost.com (outbound-mail-32.bluehost.com
+	[70.96.188.152]) by ozlabs.org (Postfix) with SMTP id 4FCAA689C8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jan 2006 04:27:59 +1100 (EST)
-Received: from ovro.ovro.caltech.edu
-	(IDENT:U2FsdGVkX1+ZcsnlGyJqGxXwlsAsHgza5ARHNTSOX/U@ovro.ovro.caltech.edu
-	[192.100.16.2])
-	by ovro.ovro.caltech.edu (8.13.1/8.13.1) with SMTP id k0DHRuTt032548
-	for <linuxppc-embedded@ozlabs.org>; Fri, 13 Jan 2006 09:27:56 -0800
-Message-ID: <43C7E320.6050608@ovro.caltech.edu>
-Date: Fri, 13 Jan 2006 09:28:00 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Sat, 14 Jan 2006 04:52:48 +1100 (EST)
+Message-ID: <43C7E8DD.2010200@secretlab.ca>
+Date: Fri, 13 Jan 2006 10:52:29 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Artesyn PM/PPC 750 U-Boot/Linux support? Datasheet?
-References: <43C7051D.8000001@ovro.caltech.edu>	<43C7AA6D.5060206@sandburst.com>	<43C7DA97.30505@ovro.caltech.edu>
-	<43C7DD1D.20804@ovro.caltech.edu>
-In-Reply-To: <43C7DD1D.20804@ovro.caltech.edu>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+Subject: Re: [PATCH 02/10] Make Virtex-II Pro support generic for all Virtex
+	devices
+References: <1136795579525-git-send-email-grant.likely@secretlab.ca>
+	<43C691C2.9090607@ru.mvista.com>
+In-Reply-To: <43C691C2.9090607@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: glikely@gmail.com, dhlii@dlasys.net, gnathita@gmail.com,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,10 +26,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Andrei Konovalov wrote:
+> grant.likely@secretlab.ca wrote:
+> 
+>> The PPC405 hard core is used in both the Virtex-II Pro and Virtex 4 FX
+>> FPGAs.  This patch cleans up the Virtex naming convention to reflect more
+>> than just the Virtex-II Pro.
+>>
+>> Rename files virtex-ii_pro.[ch] to virtex.[ch]
+>> Rename config value VIRTEX_II_PRO to XILINX_VIRTEX
+>>
+>> Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
+>>
+>> ---
+> 
+> 
+> Here is a misprint:
+> 
+>>
+> ...
+> 
+>> diff --git a/arch/ppc/platforms/4xx/virtex.c 
+>> b/arch/ppc/platforms/4xx/virtex.c
+>> new file mode 100644
+>> index 0000000..1de7a27
+>> --- /dev/null
+>> +++ b/arch/ppc/platforms/4xx/virtex.c
+>> @@ -0,0 +1,60 @@
+>> +/*
+>> + * arch/ppc/platforms/4xx/virtex.c
+>> + *
+>> + * Author: MontaVista Software, Inc.
+>> + *         source@mvista.com
+>> + *
+>> + * 2002-2004 (c) MontaVista Software, Inc.  This file is licensed 
+>> under the
+>> + * terms of the GNU General Public License version 2.  This program 
+>> is licensed
+>> + * "as is" without any warranty of any kind, whether express or implied.
+>> + */
+>> +
+>> +#include <linux/config.h>
+>> +#include <linux/init.h>
+>> +#include <asm/ocp.h>
+>> +#include <platform/4xx/virtex.h>
+> 
+> 
+> Should be
+> #include <platforms/4xx/virtex.h>
+oops, the 's' got added in one of the later patches.  Don't know how I 
+managed that.
 
-> also if anyone has the datasheet for this board
+Thanks
 
-Artesyn just sent me the PDF, so if anyone needs it,
-feel free to ask.
 
-Dave
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 663-0761
