@@ -1,17 +1,18 @@
-Return-Path: <tsawyer+linuxppc@sandburst.com>
-Received: from sandmail.sandburst.com (sandmail.sandburst.com [216.57.132.42])
-	by ozlabs.org (Postfix) with ESMTP id 575AA68916
+Return-Path: <mathieu.deschamps@com2gether.net>
+Received: from mail.libertysurf.net (mx-out.libertysurf.net [213.36.80.91])
+	by ozlabs.org (Postfix) with ESMTP id 85C39681BB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jan 2006 00:58:39 +1100 (EST)
-Message-ID: <43C7AA6D.5060206@sandburst.com>
-Date: Fri, 13 Jan 2006 08:26:05 -0500
-From: "Travis B. Sawyer" <tsawyer+linuxppc@sandburst.com>
+	Sat, 14 Jan 2006 03:05:36 +1100 (EST)
+From: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
+To: s.maiti@tcs.com
+Subject: Re: Help MCC driver
+Date: Fri, 13 Jan 2006 16:57:49 +0100
+References: <OFD1D6CF62.4D4D88C6-ON652570F5.003CB8F7-652570F5.003D1DFE@tcs.com>
+In-Reply-To: <OFD1D6CF62.4D4D88C6-ON652570F5.003CB8F7-652570F5.003D1DFE@tcs.com>
 MIME-Version: 1.0
-To: David Hawkins <dwh@ovro.caltech.edu>
-Subject: Re: Suggestions for a PPC440 board?
-References: <43C7051D.8000001@ovro.caltech.edu>
-In-Reply-To: <43C7051D.8000001@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200601131657.49856.mathieu.deschamps@com2gether.net>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,36 +24,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-David Hawkins wrote:
-
->Hi all,
+On Friday 13 January 2006 12:07, s.maiti@tcs.com wrote:
+> Hi everybody,
 >
->I'm evaluating the Yosemite 440EP board at the moment,
->with the intention of using it on custom compactPCI
->boards. I've got a few questions to ask the group, but
->I'll leave those for another email.
->  
+> Can any one suggest where to put MCC driver (Obtained from Sourceforge) in
+> the linux tree so that  I am able to include the driver in kernel image?
+> Any help will be highly helpful.
 >
-<Snip>
-
->So, I might not follow this
->route. Alternatively, I could use a PMC, or PrPMC
->board, and develop the drivers that way, eg.
+> Thanks in advance.
 >
->Extreme Engineering    Xpedite1000/1  440GX
->Artisyn Technologies   PmPPC          440GP
+> Souvik Maiti
+> Tata Consultancy Services Limited
+> Mailto: s.maiti@tcs.com
+> Website: http://www.tcs.com
 >
->So - anyone have a favorite?
->  
->
-David:
+> Notice: The information contained in this e-mail message and/or attachments
+> to it may contain confidential or privileged information.   If you are not
+> the intended recipient, any dissemination, use, review, distribution,
+> printing or copying of the information contained in this e-mail message
+> and/or attachments to it are strictly prohibited.   If you have received
+> this communication in error, please notify us by reply e-mail or telephone
+> and immediately and permanently delete the message and any attachments. 
+> Thank you _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-I've already done the Das u-boot port for the Xpedite1k, and its released.
+Did you realized that your "legal" notice is just in complete contradiction 
+with maillist exchange principle since no one is your peculiar recipient ? 
 
-If that makes it any easier for you to decided.
+And please tell me, where's is that privileged information you claim to 
+protect on a public forum ?
 
-Granted the port was done for monarch mode, not non-monarch, but it 
-should be simple
-enough to change that.
+mathdesc.
 
--travis
+---------------
+Legal Notice :
+Indeed I have received this mail in error, I do notify you that fact, I will 
+delete any traces of it, PROVIDED YOU no longer deliver *at least* to ME your 
+"legal" spam. Thanks.
+----------------
