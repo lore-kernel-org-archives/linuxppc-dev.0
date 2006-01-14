@@ -1,25 +1,19 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3E18D68A89
+Return-Path: <grant.likely@secretlab.ca>
+Received: from outbound-mail-07.bluehost.com (outbound-mail-07.bluehost.com
+	[67.138.240.207]) by ozlabs.org (Postfix) with SMTP id 0E9396893D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jan 2006 15:37:38 +1100 (EST)
-Received: from ovro.ovro.caltech.edu
-	(IDENT:U2FsdGVkX19ZDLnaDix7z7VOKuSyoOjbAiqOI0EVeOI@ovro.ovro.caltech.edu
-	[192.100.16.2])
-	by ovro.ovro.caltech.edu (8.13.1/8.13.1) with SMTP id k0E4bZJx017635
-	for <linuxppc-embedded@ozlabs.org>; Fri, 13 Jan 2006 20:37:35 -0800
-Message-ID: <43C88013.40800@ovro.caltech.edu>
-Date: Fri, 13 Jan 2006 20:37:39 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Sat, 14 Jan 2006 20:55:08 +1100 (EST)
+Message-ID: <43C8CA74.3000407@secretlab.ca>
+Date: Sat, 14 Jan 2006 02:55:00 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: PPC440EP/Yosemite PCI misbehavior
-References: <43C7292B.2060003@ovro.caltech.edu>
-In-Reply-To: <43C7292B.2060003@ovro.caltech.edu>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+Subject: ML300 & ML403 patches
+References: <1136795579724-git-send-email-grant.likely@secretlab.ca>
+	<43C69130.2040409@ru.mvista.com>
+In-Reply-To: <43C69130.2040409@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,34 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Andrei,
 
-Hi all,
+After a conversation with Matt today, I've rebased my current patch 
+(with typo fixes) and submitted it again to be included for 2.6.16-rc1.  
+It does not have the changes that we talked about, but the changes are 
+pretty low impact and can be handled as bug fixes & cleanup during the 
+.16 stablization period.
 
-Travis Sawyer sent me a snipped of his mmap code, and there
-was an important difference relative to mine:
+Also, this give us a decent baseline to make changes from in the .17 
+timeframe.
 
-pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE | _PAGE_GUARDED;
+Cheers,
+g.
 
-With the addition of these two flags, the caching of the
-PCI memory space has gone! Yeah!! (The flags aren't defined for
-x86 pages, hence I'd never seen them).
 
-Thanks Travis!
 
-Now CPU reads and writes use PCI memory-read and PCI memory-write
-commands. The CPU does not appear to use burst-transactions to
-the pre-fetchable memory region. This is results in lower
-performance, but its consistent with what an x86 does.
-
-I'll go and play with the 440EP DMA controller and see if I can get
-that to burst to the PCI bus.
-
-> access to PCI I/O space causes a machine check exception.
-
-I still get this in 2.6.15, but Wolfgang Denx indicated that
-they'd tested PCI I/O pretty thoroughly, so I'm inclined to
-believe that its my driver that is at fault. I'll do a little
-more digging on that one.
-
-Cheers
-Dave
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 663-0761
