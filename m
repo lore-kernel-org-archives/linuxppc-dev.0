@@ -1,20 +1,12 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id 95B5B68A1E
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jan 2006 13:08:18 +1100 (EST)
-Date: Sat, 14 Jan 2006 03:08:16 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Jes Sorensen <jes@trained-monkey.org>
-Subject: [2.6 patch] remove unused tmp_buf_sem's
-Message-ID: <20060114020816.GW29663@stusta.de>
-References: <17348.61824.49889.569928@jaguar.mkp.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17348.61824.49889.569928@jaguar.mkp.net>
-Cc: akpm@osdl.org, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-	linux-usb-devel@lists.sourceforge.net, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	torvalds@osdl.org, R.E.Wolff@BitWizard.nl
+Message-ID: <17352.29004.496555.416396@cargo.ozlabs.ibm.com>
+Date: Sat, 14 Jan 2006 14:34:36 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Recognize /chaos bridge on old pmacs as PCI
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,187 +16,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 11, 2006 at 06:52:32AM -0500, Jes Sorensen wrote:
-> 
-> Remove unsued semaphore declaration.
-> 
-> Signed-off-by: Jes Sorensen <jes@sgi.com>
-> 
-> ----
-> 
->  arch/ia64/hp/sim/simserial.c |    1 -
->  1 files changed, 1 deletion(-)
-> 
-> Index: linux-2.6.15-rc7-quilt/arch/ia64/hp/sim/simserial.c
-> ===================================================================
-> --- linux-2.6.15-rc7-quilt.orig/arch/ia64/hp/sim/simserial.c
-> +++ linux-2.6.15-rc7-quilt/arch/ia64/hp/sim/simserial.c
-> @@ -107,7 +107,6 @@
->  static struct console *console;
->  
->  static unsigned char *tmp_buf;
-> -static DECLARE_MUTEX(tmp_buf_sem);
->...
+The first generation of PCI powermacs had a host bridge called /chaos
+which was for all intents and purposes a PCI host bridge, but has a
+device_type of "vci" in the device tree (presumably it's not really
+PCI at the hardware level or something).
 
-There are even more of them...
+The OF parsing stuff in arch/powerpc/kernel/prom_parse.c currently
+doesn't recognize it as a PCI bridge, which means that controlfb.c
+can't get its device addresses.
 
-Patch below.
+This makes prom_parse.c recognize a device_type of "vci" as indicating
+a PCI host bridge.  With this, controlfb works again.
 
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-tmp_buf_sem sems to be a common name for something completely unused...
-
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
 
- arch/ia64/hp/sim/simserial.c  |    1 -
- arch/ppc/4xx_io/serial_sicc.c |    1 -
- drivers/char/amiserial.c      |    1 -
- drivers/char/esp.c            |    1 -
- drivers/char/generic_serial.c |    1 -
- drivers/char/riscom8.c        |    1 -
- drivers/char/serial167.c      |    1 -
- drivers/char/specialix.c      |    3 ---
- drivers/char/synclink.c       |    1 -
- drivers/sbus/char/aurora.c    |    1 -
- drivers/serial/68328serial.c  |    1 -
- drivers/usb/serial/pl2303.c   |    2 --
- 12 files changed, 15 deletions(-)
-
---- linux-2.6.15-mm3-full/arch/ia64/hp/sim/simserial.c.old	2006-01-13 15:22:27.000000000 +0100
-+++ linux-2.6.15-mm3-full/arch/ia64/hp/sim/simserial.c	2006-01-13 15:22:47.000000000 +0100
-@@ -103,7 +103,6 @@
- static struct console *console;
+diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
+index 309ae1d..a8099c8 100644
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -113,7 +113,8 @@ static unsigned int of_bus_default_get_f
  
- static unsigned char *tmp_buf;
--static DECLARE_MUTEX(tmp_buf_sem);
+ static int of_bus_pci_match(struct device_node *np)
+ {
+-	return !strcmp(np->type, "pci");
++	/* "vci" is for the /chaos bridge on 1st-gen PCI powermacs */
++	return !strcmp(np->type, "pci") || !strcmp(np->type, "vci");
+ }
  
- extern struct console *console_drivers; /* from kernel/printk.c */
- 
---- linux-2.6.15-mm3-full/arch/ppc/4xx_io/serial_sicc.c.old	2006-01-13 15:22:56.000000000 +0100
-+++ linux-2.6.15-mm3-full/arch/ppc/4xx_io/serial_sicc.c	2006-01-13 15:23:02.000000000 +0100
-@@ -215,7 +215,6 @@
-  * memory if large numbers of serial ports are open.
-  */
- static u_char *tmp_buf;
--static DECLARE_MUTEX(tmp_buf_sem);
- 
- #define HIGH_BITS_OFFSET    ((sizeof(long)-sizeof(int))*8)
- 
---- linux-2.6.15-mm3-full/drivers/char/amiserial.c.old	2006-01-13 15:23:14.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/char/amiserial.c	2006-01-13 15:23:16.000000000 +0100
-@@ -123,7 +123,6 @@
-  * memory if large numbers of serial ports are open.
-  */
- static unsigned char *tmp_buf;
--static DECLARE_MUTEX(tmp_buf_sem);
- 
- #include <asm/uaccess.h>
- 
---- linux-2.6.15-mm3-full/drivers/char/esp.c.old	2006-01-13 15:23:25.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/char/esp.c	2006-01-13 15:23:28.000000000 +0100
-@@ -160,7 +160,6 @@
-  * memory if large numbers of serial ports are open.
-  */
- static unsigned char *tmp_buf;
--static DECLARE_MUTEX(tmp_buf_sem);
- 
- static inline int serial_paranoia_check(struct esp_struct *info,
- 					char *name, const char *routine)
---- linux-2.6.15-mm3-full/drivers/char/generic_serial.c.old	2006-01-13 15:23:36.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/char/generic_serial.c	2006-01-13 15:23:39.000000000 +0100
-@@ -34,7 +34,6 @@
- #define DEBUG 
- 
- static char *                  tmp_buf; 
--static DECLARE_MUTEX(tmp_buf_sem);
- 
- static int gs_debug;
- 
---- linux-2.6.15-mm3-full/drivers/char/riscom8.c.old	2006-01-13 15:23:47.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/char/riscom8.c	2006-01-13 15:24:04.000000000 +0100
-@@ -82,7 +82,6 @@
- static struct riscom_board * IRQ_to_board[16];
- static struct tty_driver *riscom_driver;
- static unsigned char * tmp_buf;
--static DECLARE_MUTEX(tmp_buf_sem);
- 
- static unsigned long baud_table[] =  {
- 	0, 50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800,
---- linux-2.6.15-mm3-full/drivers/char/serial167.c.old	2006-01-13 15:24:42.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/char/serial167.c	2006-01-13 15:24:45.000000000 +0100
-@@ -129,7 +129,6 @@
-  * memory if large numbers of serial ports are open.
-  */
- static unsigned char *tmp_buf = 0;
--DECLARE_MUTEX(tmp_buf_sem);
- 
- /*
-  * This is used to look up the divisor speeds and the timeouts
---- linux-2.6.15-mm3-full/drivers/char/specialix.c.old	2006-01-13 15:24:53.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/char/specialix.c	2006-01-13 15:24:58.000000000 +0100
-@@ -184,7 +184,6 @@
- 
- static struct tty_driver *specialix_driver;
- static unsigned char * tmp_buf;
--static DECLARE_MUTEX(tmp_buf_sem);
- 
- static unsigned long baud_table[] =  {
- 	0, 50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800,
-@@ -2556,8 +2555,6 @@
- 
- 	func_enter();
- 
--	init_MUTEX(&tmp_buf_sem); /* Init de the semaphore - pvdl */
--
- 	if (iobase[0] || iobase[1] || iobase[2] || iobase[3]) {
- 		for(i = 0; i < SX_NBOARD; i++) {
- 			sx_board[i].base = iobase[i];
---- linux-2.6.15-mm3-full/drivers/char/synclink.c.old	2006-01-13 15:25:05.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/char/synclink.c	2006-01-13 15:25:18.000000000 +0100
-@@ -951,7 +951,6 @@
-  * memory if large numbers of serial ports are open.
-  */
- static unsigned char *tmp_buf;
--static DECLARE_MUTEX(tmp_buf_sem);
- 
- static inline int mgsl_paranoia_check(struct mgsl_struct *info,
- 					char *name, const char *routine)
---- linux-2.6.15-mm3-full/drivers/sbus/char/aurora.c.old	2006-01-13 15:25:33.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/sbus/char/aurora.c	2006-01-13 15:25:39.000000000 +0100
-@@ -92,7 +92,6 @@
- 
- /* no longer used. static struct Aurora_board * IRQ_to_board[16] = { NULL, } ;*/
- static unsigned char * tmp_buf = NULL;
--static DECLARE_MUTEX(tmp_buf_sem);
- 
- DECLARE_TASK_QUEUE(tq_aurora);
- 
---- linux-2.6.15-mm3-full/drivers/serial/68328serial.c.old	2006-01-13 15:25:50.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/serial/68328serial.c	2006-01-13 15:25:59.000000000 +0100
-@@ -141,7 +141,6 @@
-  * memory if large numbers of serial ports are open.
-  */
- static unsigned char tmp_buf[SERIAL_XMIT_SIZE]; /* This is cheating */
--DECLARE_MUTEX(tmp_buf_sem);
- 
- static inline int serial_paranoia_check(struct m68k_serial *info,
- 					char *name, const char *routine)
---- linux-2.6.15-mm3-full/drivers/usb/serial/pl2303.c.old	2006-01-13 15:26:10.000000000 +0100
-+++ linux-2.6.15-mm3-full/drivers/usb/serial/pl2303.c	2006-01-13 15:26:17.000000000 +0100
-@@ -43,8 +43,6 @@
- #define PL2303_BUF_SIZE		1024
- #define PL2303_TMP_BUF_SIZE	1024
- 
--static DECLARE_MUTEX(pl2303_tmp_buf_sem);
--
- struct pl2303_buf {
- 	unsigned int	buf_size;
- 	char		*buf_buf;
+ static void of_bus_pci_count_cells(struct device_node *np,
