@@ -1,13 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Update pmac32_defconfig
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Sat, 14 Jan 2006 16:46:47 +1100
-Message-Id: <1137217608.4854.40.camel@localhost.localdomain>
+Return-Path: <vojtech@suse.cz>
+Received: from mail.suse.cz (styx.suse.cz [82.119.242.94])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3ED5568A30
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jan 2006 21:41:27 +1100 (EST)
+Date: Sat, 14 Jan 2006 11:41:41 +0100
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: Dmitry Torokhov <dtor_core@ameritech.net>
+Subject: Re: [PATCH/RFC?] usb/input: Add support for fn key on Apple PowerBooks
+Message-ID: <20060114104141.GA15946@midnight.suse.cz>
+References: <20051225212041.GA6094@hansmi.ch>
+	<20060113074749.GA7103@midnight.suse.cz>
+	<20060113220252.GA1516@hansmi.ch>
+	<200601132358.33861.dtor_core@ameritech.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200601132358.33861.dtor_core@ameritech.net>
+Cc: linux-kernel@killerfox.forkbomb.ch, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, linux-input@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,360 +27,341 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Index: linux-work/arch/powerpc/configs/pmac32_defconfig
-===================================================================
---- linux-work.orig/arch/powerpc/configs/pmac32_defconfig	2006-01-14 14:43:22.000000000 +1100
-+++ linux-work/arch/powerpc/configs/pmac32_defconfig	2006-01-14 16:45:22.000000000 +1100
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.15-rc5
--# Tue Dec 13 17:24:05 2005
-+# Linux kernel version: 2.6.15
-+# Sat Jan 14 16:26:08 2006
- #
- # CONFIG_PPC64 is not set
- CONFIG_PPC32=y
-@@ -15,11 +15,15 @@ CONFIG_EARLY_PRINTK=y
- CONFIG_GENERIC_NVRAM=y
- CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
- CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-+CONFIG_PPC_OF=y
-+# CONFIG_PPC_UDBG_16550 is not set
-+# CONFIG_CRASH_DUMP is not set
-+# CONFIG_GENERIC_TBSYNC is not set
- 
- #
- # Processor support
- #
--CONFIG_6xx=y
-+CONFIG_CLASSIC32=y
- # CONFIG_PPC_52xx is not set
- # CONFIG_PPC_82xx is not set
- # CONFIG_PPC_83xx is not set
-@@ -28,6 +32,7 @@ CONFIG_6xx=y
- # CONFIG_8xx is not set
- # CONFIG_E200 is not set
- # CONFIG_E500 is not set
-+CONFIG_6xx=y
- CONFIG_PPC_FPU=y
- CONFIG_ALTIVEC=y
- CONFIG_PPC_STD_MMU=y
-@@ -53,17 +58,18 @@ CONFIG_POSIX_MQUEUE=y
- # CONFIG_BSD_PROCESS_ACCT is not set
- CONFIG_SYSCTL=y
- # CONFIG_AUDIT is not set
--CONFIG_HOTPLUG=y
--CONFIG_KOBJECT_UEVENT=y
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_INITRAMFS_SOURCE=""
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
- # CONFIG_EMBEDDED is not set
- CONFIG_KALLSYMS=y
- # CONFIG_KALLSYMS_ALL is not set
- # CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_HOTPLUG=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_EPOLL=y
-@@ -72,8 +78,10 @@ CONFIG_CC_ALIGN_FUNCTIONS=0
- CONFIG_CC_ALIGN_LABELS=0
- CONFIG_CC_ALIGN_LOOPS=0
- CONFIG_CC_ALIGN_JUMPS=0
-+CONFIG_SLAB=y
- # CONFIG_TINY_SHMEM is not set
- CONFIG_BASE_SMALL=0
-+# CONFIG_SLOB is not set
- 
- #
- # Loadable module support
-@@ -113,13 +121,10 @@ CONFIG_PPC_MULTIPLATFORM=y
- # CONFIG_APUS is not set
- # CONFIG_PPC_CHRP is not set
- CONFIG_PPC_PMAC=y
--CONFIG_PPC_OF=y
- CONFIG_MPIC=y
- # CONFIG_PPC_RTAS is not set
- # CONFIG_MMIO_NVRAM is not set
--# CONFIG_CRASH_DUMP is not set
- CONFIG_PPC_MPC106=y
--# CONFIG_GENERIC_TBSYNC is not set
- CONFIG_CPU_FREQ=y
- CONFIG_CPU_FREQ_TABLE=y
- # CONFIG_CPU_FREQ_DEBUG is not set
-@@ -195,6 +200,11 @@ CONFIG_CARDBUS=y
- # PC-card bridges
- #
- CONFIG_YENTA=m
-+CONFIG_YENTA_O2=y
-+CONFIG_YENTA_RICOH=y
-+CONFIG_YENTA_TI=y
-+CONFIG_YENTA_ENE_TUNE=y
-+CONFIG_YENTA_TOSHIBA=y
- # CONFIG_PD6729 is not set
- # CONFIG_I82092 is not set
- CONFIG_PCCARD_NONSTATIC=m
-@@ -464,7 +474,7 @@ CONFIG_IEEE80211_CRYPT_TKIP=m
- #
- # CONFIG_STANDALONE is not set
- CONFIG_PREVENT_FIRMWARE_BUILD=y
--CONFIG_FW_LOADER=m
-+CONFIG_FW_LOADER=y
- # CONFIG_DEBUG_DRIVER is not set
- 
- #
-@@ -491,7 +501,7 @@ CONFIG_PROC_EVENTS=y
- # Block devices
- #
- # CONFIG_BLK_DEV_FD is not set
--CONFIG_MAC_FLOPPY=y
-+CONFIG_MAC_FLOPPY=m
- # CONFIG_BLK_CPQ_DA is not set
- # CONFIG_BLK_CPQ_CISS_DA is not set
- # CONFIG_BLK_DEV_DAC960 is not set
-@@ -603,7 +613,7 @@ CONFIG_SCSI_CONSTANTS=y
- # SCSI Transport Attributes
- #
- CONFIG_SCSI_SPI_ATTRS=y
--# CONFIG_SCSI_FC_ATTRS is not set
-+CONFIG_SCSI_FC_ATTRS=y
- # CONFIG_SCSI_ISCSI_ATTRS is not set
- # CONFIG_SCSI_SAS_ATTRS is not set
- 
-@@ -645,12 +655,7 @@ CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
- # CONFIG_SCSI_QLOGIC_FC is not set
- # CONFIG_SCSI_QLOGIC_1280 is not set
- CONFIG_SCSI_QLA2XXX=y
--# CONFIG_SCSI_QLA21XX is not set
--# CONFIG_SCSI_QLA22XX is not set
--# CONFIG_SCSI_QLA2300 is not set
--# CONFIG_SCSI_QLA2322 is not set
--# CONFIG_SCSI_QLA6312 is not set
--# CONFIG_SCSI_QLA24XX is not set
-+# CONFIG_SCSI_QLA2XXX_EMBEDDED_FIRMWARE is not set
- # CONFIG_SCSI_LPFC is not set
- # CONFIG_SCSI_DC395x is not set
- # CONFIG_SCSI_DC390T is not set
-@@ -658,7 +663,7 @@ CONFIG_SCSI_QLA2XXX=y
- # CONFIG_SCSI_DEBUG is not set
- CONFIG_SCSI_MESH=y
- CONFIG_SCSI_MESH_SYNC_RATE=5
--CONFIG_SCSI_MESH_RESET_DELAY_MS=1000
-+CONFIG_SCSI_MESH_RESET_DELAY_MS=4000
- CONFIG_SCSI_MAC53C94=y
- 
- #
-@@ -727,7 +732,6 @@ CONFIG_IEEE1394_SBP2=m
- CONFIG_IEEE1394_ETH1394=m
- CONFIG_IEEE1394_DV1394=m
- CONFIG_IEEE1394_RAWIO=m
--# CONFIG_IEEE1394_CMP is not set
- 
- #
- # I2O device support
-@@ -740,7 +744,7 @@ CONFIG_IEEE1394_RAWIO=m
- CONFIG_ADB=y
- CONFIG_ADB_CUDA=y
- CONFIG_ADB_PMU=y
--CONFIG_PMAC_APM_EMU=y
-+CONFIG_PMAC_APM_EMU=m
- CONFIG_PMAC_MEDIABAY=y
- CONFIG_PMAC_BACKLIGHT=y
- CONFIG_INPUT_ADBHID=y
-@@ -819,6 +823,7 @@ CONFIG_PCNET32=y
- # CONFIG_R8169 is not set
- # CONFIG_SIS190 is not set
- # CONFIG_SKGE is not set
-+# CONFIG_SKY2 is not set
- # CONFIG_SK98LIN is not set
- # CONFIG_VIA_VELOCITY is not set
- # CONFIG_TIGON3 is not set
-@@ -978,14 +983,14 @@ CONFIG_HW_CONSOLE=y
- CONFIG_SERIAL_8250=m
- # CONFIG_SERIAL_8250_CS is not set
- CONFIG_SERIAL_8250_NR_UARTS=4
-+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
- # CONFIG_SERIAL_8250_EXTENDED is not set
- 
- #
- # Non-8250 serial port support
- #
- CONFIG_SERIAL_CORE=m
--# CONFIG_SERIAL_PMACZILOG is not set
--# CONFIG_SERIAL_JSM is not set
-+CONFIG_SERIAL_PMACZILOG=m
- CONFIG_UNIX98_PTYS=y
- CONFIG_LEGACY_PTYS=y
- CONFIG_LEGACY_PTY_COUNT=256
-@@ -1058,7 +1063,7 @@ CONFIG_I2C_ALGOBIT=y
- # CONFIG_I2C_I801 is not set
- # CONFIG_I2C_I810 is not set
- # CONFIG_I2C_PIIX4 is not set
--CONFIG_I2C_KEYWEST=m
-+CONFIG_I2C_POWERMAC=y
- # CONFIG_I2C_MPC is not set
- # CONFIG_I2C_NFORCE2 is not set
- # CONFIG_I2C_PARPORT_LIGHT is not set
-@@ -1160,7 +1165,6 @@ CONFIG_FB_ATY128=y
- CONFIG_FB_ATY=y
- CONFIG_FB_ATY_CT=y
- # CONFIG_FB_ATY_GENERIC_LCD is not set
--# CONFIG_FB_ATY_XL_INIT is not set
- CONFIG_FB_ATY_GX=y
- # CONFIG_FB_SAVAGE is not set
- # CONFIG_FB_SIS is not set
-@@ -1169,7 +1173,6 @@ CONFIG_FB_ATY_GX=y
- CONFIG_FB_3DFX=y
- # CONFIG_FB_3DFX_ACCEL is not set
- # CONFIG_FB_VOODOO1 is not set
--# CONFIG_FB_CYBLA is not set
- # CONFIG_FB_TRIDENT is not set
- # CONFIG_FB_VIRTUAL is not set
- 
-@@ -1214,9 +1217,10 @@ CONFIG_SND_OSSEMUL=y
- CONFIG_SND_MIXER_OSS=m
- CONFIG_SND_PCM_OSS=m
- CONFIG_SND_SEQUENCER_OSS=y
-+# CONFIG_SND_DYNAMIC_MINORS is not set
-+CONFIG_SND_SUPPORT_OLD_API=y
- # CONFIG_SND_VERBOSE_PRINTK is not set
- # CONFIG_SND_DEBUG is not set
--CONFIG_SND_GENERIC_DRIVER=y
- 
- #
- # Generic devices
-@@ -1230,6 +1234,8 @@ CONFIG_SND_DUMMY=m
- #
- # PCI devices
- #
-+# CONFIG_SND_AD1889 is not set
-+# CONFIG_SND_ALS4000 is not set
- # CONFIG_SND_ALI5451 is not set
- # CONFIG_SND_ATIIXP is not set
- # CONFIG_SND_ATIIXP_MODEM is not set
-@@ -1238,45 +1244,44 @@ CONFIG_SND_DUMMY=m
- # CONFIG_SND_AU8830 is not set
- # CONFIG_SND_AZT3328 is not set
- # CONFIG_SND_BT87X is not set
--# CONFIG_SND_CS46XX is not set
-+# CONFIG_SND_CA0106 is not set
-+# CONFIG_SND_CMIPCI is not set
- # CONFIG_SND_CS4281 is not set
-+# CONFIG_SND_CS46XX is not set
- # CONFIG_SND_EMU10K1 is not set
- # CONFIG_SND_EMU10K1X is not set
--# CONFIG_SND_CA0106 is not set
--# CONFIG_SND_KORG1212 is not set
--# CONFIG_SND_MIXART is not set
--# CONFIG_SND_NM256 is not set
--# CONFIG_SND_RME32 is not set
--# CONFIG_SND_RME96 is not set
--# CONFIG_SND_RME9652 is not set
--# CONFIG_SND_HDSP is not set
--# CONFIG_SND_HDSPM is not set
--# CONFIG_SND_TRIDENT is not set
--# CONFIG_SND_YMFPCI is not set
--# CONFIG_SND_AD1889 is not set
--# CONFIG_SND_ALS4000 is not set
--# CONFIG_SND_CMIPCI is not set
- # CONFIG_SND_ENS1370 is not set
- # CONFIG_SND_ENS1371 is not set
- # CONFIG_SND_ES1938 is not set
- # CONFIG_SND_ES1968 is not set
--# CONFIG_SND_MAESTRO3 is not set
- # CONFIG_SND_FM801 is not set
-+# CONFIG_SND_HDA_INTEL is not set
-+# CONFIG_SND_HDSP is not set
-+# CONFIG_SND_HDSPM is not set
- # CONFIG_SND_ICE1712 is not set
- # CONFIG_SND_ICE1724 is not set
- # CONFIG_SND_INTEL8X0 is not set
- # CONFIG_SND_INTEL8X0M is not set
-+# CONFIG_SND_KORG1212 is not set
-+# CONFIG_SND_MAESTRO3 is not set
-+# CONFIG_SND_MIXART is not set
-+# CONFIG_SND_NM256 is not set
-+# CONFIG_SND_PCXHR is not set
-+# CONFIG_SND_RME32 is not set
-+# CONFIG_SND_RME96 is not set
-+# CONFIG_SND_RME9652 is not set
- # CONFIG_SND_SONICVIBES is not set
-+# CONFIG_SND_TRIDENT is not set
- # CONFIG_SND_VIA82XX is not set
- # CONFIG_SND_VIA82XX_MODEM is not set
- # CONFIG_SND_VX222 is not set
--# CONFIG_SND_HDA_INTEL is not set
-+# CONFIG_SND_YMFPCI is not set
- 
- #
- # ALSA PowerMac devices
- #
- CONFIG_SND_POWERMAC=m
--# CONFIG_SND_POWERMAC_AUTO_DRC is not set
-+CONFIG_SND_POWERMAC_AUTO_DRC=y
- 
- #
- # USB devices
-@@ -1336,6 +1341,7 @@ CONFIG_USB_PRINTER=m
- # may also be needed; see USB_STORAGE Help for more information
- #
- # CONFIG_USB_STORAGE is not set
-+# CONFIG_USB_LIBUSUAL is not set
- 
- #
- # USB Input Devices
-@@ -1355,6 +1361,7 @@ CONFIG_USB_HIDINPUT=y
- # CONFIG_USB_YEALINK is not set
- # CONFIG_USB_XPAD is not set
- # CONFIG_USB_ATI_REMOTE is not set
-+# CONFIG_USB_ATI_REMOTE2 is not set
- # CONFIG_USB_KEYSPAN_REMOTE is not set
- CONFIG_USB_APPLETOUCH=y
- 
-@@ -1501,6 +1508,7 @@ CONFIG_FS_MBCACHE=y
- # CONFIG_JFS_FS is not set
- # CONFIG_FS_POSIX_ACL is not set
- # CONFIG_XFS_FS is not set
-+# CONFIG_OCFS2_FS is not set
- # CONFIG_MINIX_FS is not set
- # CONFIG_ROMFS_FS is not set
- CONFIG_INOTIFY=y
-@@ -1540,6 +1548,7 @@ CONFIG_TMPFS=y
- # CONFIG_HUGETLB_PAGE is not set
- CONFIG_RAMFS=y
- CONFIG_RELAYFS_FS=m
-+# CONFIG_CONFIGFS_FS is not set
- 
- #
- # Miscellaneous filesystems
-@@ -1670,12 +1679,13 @@ CONFIG_OPROFILE=y
- # Kernel hacking
- #
- # CONFIG_PRINTK_TIME is not set
--CONFIG_DEBUG_KERNEL=y
- # CONFIG_MAGIC_SYSRQ is not set
-+CONFIG_DEBUG_KERNEL=y
- CONFIG_LOG_BUF_SHIFT=14
- CONFIG_DETECT_SOFTLOCKUP=y
- # CONFIG_SCHEDSTATS is not set
- # CONFIG_DEBUG_SLAB is not set
-+# CONFIG_DEBUG_MUTEXES is not set
- # CONFIG_DEBUG_SPINLOCK is not set
- # CONFIG_DEBUG_SPINLOCK_SLEEP is not set
- # CONFIG_DEBUG_KOBJECT is not set
-@@ -1688,6 +1698,11 @@ CONFIG_XMON=y
- CONFIG_XMON_DEFAULT=y
- # CONFIG_BDI_SWITCH is not set
- CONFIG_BOOTX_TEXT=y
-+# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
-+# CONFIG_PPC_EARLY_DEBUG_G5 is not set
-+# CONFIG_PPC_EARLY_DEBUG_RTAS is not set
-+# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
-+# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
- 
- #
- # Security options
+On Fri, Jan 13, 2006 at 11:58:33PM -0500, Dmitry Torokhov wrote:
+> On Friday 13 January 2006 17:02, Michael Hanselmann wrote:
+> > -                               case 0x003: map_key_clear(KEY_FN);              break;
+> > +#ifdef CONFIG_USB_HIDINPUT_POWERBOOK
+> > +                               /* The fn key on Apple PowerBooks */
+> > +                               case 0x0003: {
+> > +                                       struct hidinput_key_translation *trans;
+> > +
+> > +                                       map_key_clear(KEY_FN);
+> > +                                       set_bit(KEY_NUMLOCK, input->keybit);
+> > +
+> 
+> One little thing - I think that we should report FN key even if PowerBook
+> support is disabled. Can I solicit input on the patch below (I also rearranged
+> teh code slightly)? 
+
+Looks fine. We might want to skip adding the keys to the bitmap if the
+support is compiled in, but disabled, but then it wouldn't be possible
+to enable it at runtime.
+
+> 
+> -- 
+> Dmitry
+> 
+> From: Michael Hanselmann <linux-kernel@hansmi.ch>
+> 
+> Input: HID - add support for fn key on Apple PowerBooks
+> 
+> This patch implements support for the fn key on Apple PowerBooks using
+> USB based keyboards and makes them behave like their ADB counterparts.
+> 
+> Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+> Acked-by: Rene Nussbaumer <linux-kernel@killerfox.forkbomb.ch>
+> Acked-by: Johannes Berg <johannes@sipsolutions.net>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> ---
+> 
+>  drivers/usb/input/Kconfig     |   10 ++
+>  drivers/usb/input/hid-core.c  |    8 ++
+>  drivers/usb/input/hid-input.c |  166 +++++++++++++++++++++++++++++++++++++++++-
+>  drivers/usb/input/hid.h       |   31 ++++---
+>  4 files changed, 201 insertions(+), 14 deletions(-)
+> 
+> Index: work/drivers/usb/input/hid-core.c
+> ===================================================================
+> --- work.orig/drivers/usb/input/hid-core.c
+> +++ work/drivers/usb/input/hid-core.c
+> @@ -1585,6 +1585,14 @@ static const struct hid_blacklist {
+>  
+>  	{ USB_VENDOR_ID_CHERRY, USB_DEVICE_ID_CHERRY_CYMOTION, HID_QUIRK_CYMOTION },
+>  
+> +	{ USB_VENDOR_ID_APPLE, 0x020E, HID_QUIRK_POWERBOOK_HAS_FN },
+> +	{ USB_VENDOR_ID_APPLE, 0x020F, HID_QUIRK_POWERBOOK_HAS_FN },
+> +	{ USB_VENDOR_ID_APPLE, 0x0214, HID_QUIRK_POWERBOOK_HAS_FN },
+> +	{ USB_VENDOR_ID_APPLE, 0x0215, HID_QUIRK_POWERBOOK_HAS_FN },
+> +	{ USB_VENDOR_ID_APPLE, 0x0216, HID_QUIRK_POWERBOOK_HAS_FN },
+> +	{ USB_VENDOR_ID_APPLE, 0x030A, HID_QUIRK_POWERBOOK_HAS_FN },
+> +	{ USB_VENDOR_ID_APPLE, 0x030B, HID_QUIRK_POWERBOOK_HAS_FN },
+> +
+>  	{ 0, 0 }
+>  };
+>  
+> Index: work/drivers/usb/input/hid.h
+> ===================================================================
+> --- work.orig/drivers/usb/input/hid.h
+> +++ work/drivers/usb/input/hid.h
+> @@ -235,18 +235,20 @@ struct hid_item {
+>   * HID device quirks.
+>   */
+>  
+> -#define HID_QUIRK_INVERT			0x001
+> -#define HID_QUIRK_NOTOUCH			0x002
+> -#define HID_QUIRK_IGNORE			0x004
+> -#define HID_QUIRK_NOGET				0x008
+> -#define HID_QUIRK_HIDDEV			0x010
+> -#define HID_QUIRK_BADPAD			0x020
+> -#define HID_QUIRK_MULTI_INPUT			0x040
+> -#define HID_QUIRK_2WHEEL_MOUSE_HACK_7		0x080
+> -#define HID_QUIRK_2WHEEL_MOUSE_HACK_5		0x100
+> -#define HID_QUIRK_2WHEEL_MOUSE_HACK_ON		0x200
+> -#define HID_QUIRK_2WHEEL_POWERMOUSE		0x400
+> -#define HID_QUIRK_CYMOTION			0x800
+> +#define HID_QUIRK_INVERT			0x00000001
+> +#define HID_QUIRK_NOTOUCH			0x00000002
+> +#define HID_QUIRK_IGNORE			0x00000004
+> +#define HID_QUIRK_NOGET				0x00000008
+> +#define HID_QUIRK_HIDDEV			0x00000010
+> +#define HID_QUIRK_BADPAD			0x00000020
+> +#define HID_QUIRK_MULTI_INPUT			0x00000040
+> +#define HID_QUIRK_2WHEEL_MOUSE_HACK_7		0x00000080
+> +#define HID_QUIRK_2WHEEL_MOUSE_HACK_5		0x00000100
+> +#define HID_QUIRK_2WHEEL_MOUSE_HACK_ON		0x00000200
+> +#define HID_QUIRK_2WHEEL_POWERMOUSE		0x00000400
+> +#define HID_QUIRK_CYMOTION			0x00000800
+> +#define HID_QUIRK_POWERBOOK_HAS_FN		0x00001000
+> +#define HID_QUIRK_POWERBOOK_FN_ON		0x00002000
+>  
+>  /*
+>   * This is the global environment of the parser. This information is
+> @@ -432,6 +434,11 @@ struct hid_device {							/* device repo
+>  	void (*ff_exit)(struct hid_device*);                            /* Called by hid_exit_ff(hid) */
+>  	int (*ff_event)(struct hid_device *hid, struct input_dev *input,
+>  			unsigned int type, unsigned int code, int value);
+> +
+> +#ifdef CONFIG_USB_HIDINPUT_POWERBOOK
+> +	unsigned long pb_pressed_fn[NBITS(KEY_MAX)];
+> +	unsigned long pb_pressed_numlock[NBITS(KEY_MAX)];
+> +#endif
+>  };
+>  
+>  #define HID_GLOBAL_STACK_SIZE 4
+> Index: work/drivers/usb/input/hid-input.c
+> ===================================================================
+> --- work.orig/drivers/usb/input/hid-input.c
+> +++ work/drivers/usb/input/hid-input.c
+> @@ -73,6 +73,160 @@ static const struct {
+>  #define map_key_clear(c)	do { map_key(c); clear_bit(c, bit); } while (0)
+>  #define map_ff_effect(c)	do { set_bit(c, input->ffbit); } while (0)
+>  
+> +#ifdef CONFIG_USB_HIDINPUT_POWERBOOK
+> +
+> +struct hidinput_key_translation {
+> +	u16 from;
+> +	u16 to;
+> +	u8 flags;
+> +};
+> +
+> +#define POWERBOOK_FLAG_FKEY 0x01
+> +
+> +static struct hidinput_key_translation powerbook_fn_keys[] = {
+> +	{ KEY_BACKSPACE, KEY_DELETE },
+> +	{ KEY_F1,	KEY_BRIGHTNESSDOWN,	POWERBOOK_FLAG_FKEY },
+> +	{ KEY_F2,	KEY_BRIGHTNESSUP,	POWERBOOK_FLAG_FKEY },
+> +	{ KEY_F3,	KEY_MUTE,		POWERBOOK_FLAG_FKEY },
+> +	{ KEY_F4,	KEY_VOLUMEDOWN,		POWERBOOK_FLAG_FKEY },
+> +	{ KEY_F5,	KEY_VOLUMEUP,		POWERBOOK_FLAG_FKEY },
+> +	{ KEY_F6,	KEY_NUMLOCK,		POWERBOOK_FLAG_FKEY },
+> +	{ KEY_F7,	KEY_SWITCHVIDEOMODE,	POWERBOOK_FLAG_FKEY },
+> +	{ KEY_F8,	KEY_KBDILLUMTOGGLE,	POWERBOOK_FLAG_FKEY },
+> +	{ KEY_F9,	KEY_KBDILLUMDOWN,	POWERBOOK_FLAG_FKEY },
+> +	{ KEY_F10,	KEY_KBDILLUMUP,		POWERBOOK_FLAG_FKEY },
+> +	{ KEY_UP,	KEY_PAGEUP },
+> +	{ KEY_DOWN,	KEY_PAGEDOWN },
+> +	{ KEY_LEFT,	KEY_HOME },
+> +	{ KEY_RIGHT,	KEY_END },
+> +	{ }
+> +};
+> +
+> +static struct hidinput_key_translation powerbook_numlock_keys[] = {
+> +	{ KEY_J,	KEY_KP1 },
+> +	{ KEY_K,	KEY_KP2 },
+> +	{ KEY_L,	KEY_KP3 },
+> +	{ KEY_U,	KEY_KP4 },
+> +	{ KEY_I,	KEY_KP5 },
+> +	{ KEY_O,	KEY_KP6 },
+> +	{ KEY_7,	KEY_KP7 },
+> +	{ KEY_8,	KEY_KP8 },
+> +	{ KEY_9,	KEY_KP9 },
+> +	{ KEY_M,	KEY_KP0 },
+> +	{ KEY_DOT,	KEY_KPDOT },
+> +	{ KEY_SLASH,	KEY_KPPLUS },
+> +	{ KEY_SEMICOLON, KEY_KPMINUS },
+> +	{ KEY_P,	KEY_KPASTERISK },
+> +	{ KEY_MINUS,	KEY_KPEQUAL },
+> +	{ KEY_0,	KEY_KPSLASH },
+> +	{ KEY_F6,	KEY_NUMLOCK },
+> +	{ KEY_KPENTER,	KEY_KPENTER },
+> +	{ KEY_BACKSPACE, KEY_BACKSPACE },
+> +	{ }
+> +};
+> +
+> +static int usbhid_pb_fnmode = 1;
+> +module_param_named(pb_fnmode, usbhid_pb_fnmode, int, 0644);
+> +MODULE_PARM_DESC(pb_fnmode,
+> +	"Mode of fn key on PowerBooks (0 = disabled, 1 = fkeyslast, 2 = fkeysfirst)");
+> +
+> +static struct hidinput_key_translation *find_translation(struct hidinput_key_translation *table, u16 from)
+> +{
+> +	struct hidinput_key_translation *trans;
+> +
+> +	/* Look for the translation */
+> +	for (trans = table; trans->from; trans++)
+> +		if (trans->from == from)
+> +			return trans;
+> +
+> +	return NULL;
+> +}
+> +
+> +static int hidinput_pb_event(struct hid_device *hid, struct input_dev *input,
+> +			     struct hid_usage *usage, __s32 value)
+> +{
+> +	struct hidinput_key_translation *trans;
+> +
+> +	if (usage->code == KEY_FN) {
+> +		if (value) hid->quirks |=  HID_QUIRK_POWERBOOK_FN_ON;
+> +		else       hid->quirks &= ~HID_QUIRK_POWERBOOK_FN_ON;
+> +
+> +		input_event(input, usage->type, usage->code, value);
+> +
+> +		return 1;
+> +	}
+> +
+> +	if (usbhid_pb_fnmode) {
+> +		int do_translate;
+> +
+> +		trans = find_translation(powerbook_fn_keys, usage->code);
+> +		if (trans) {
+> +			if (test_bit(usage->code, hid->pb_pressed_fn))
+> +				do_translate = 1;
+> +			else if (trans->flags & POWERBOOK_FLAG_FKEY)
+> +				do_translate =
+> +					(usbhid_pb_fnmode == 2 &&  (hid->quirks & HID_QUIRK_POWERBOOK_FN_ON)) ||
+> +					(usbhid_pb_fnmode == 1 && !(hid->quirks & HID_QUIRK_POWERBOOK_FN_ON));
+> +			else
+> +				do_translate = (hid->quirks & HID_QUIRK_POWERBOOK_FN_ON);
+> +
+> +			if (do_translate) {
+> +				if (value)
+> +					set_bit(usage->code, hid->pb_pressed_fn);
+> +				else
+> +					clear_bit(usage->code, hid->pb_pressed_fn);
+> +
+> +				input_event(input, usage->type, trans->to, value);
+> +
+> +				return 1;
+> +			}
+> +		}
+> +
+> +		if (test_bit(usage->code, hid->pb_pressed_numlock) ||
+> +		    test_bit(LED_NUML, input->led)) {
+> +			trans = find_translation(powerbook_numlock_keys, usage->code);
+> +
+> +			if (trans) {
+> +				if (value)
+> +					set_bit(usage->code, hid->pb_pressed_numlock);
+> +				else
+> +					clear_bit(usage->code, hid->pb_pressed_numlock);
+> +
+> +				input_event(input, usage->type, trans->to, value);
+> +			}
+> +
+> +			return 1;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static void hidinput_pb_setup(struct input_dev *input)
+> +{
+> +	struct hidinput_key_translation *trans;
+> +
+> +	set_bit(KEY_NUMLOCK, input->keybit);
+> +
+> +	/* Enable all needed keys */
+> +	for (trans = powerbook_fn_keys; trans->from; trans++)
+> +		set_bit(trans->to, input->keybit);
+> +
+> +	for (trans = powerbook_numlock_keys; trans->from; trans++)
+> +		set_bit(trans->to, input->keybit);
+> +}
+> +#else
+> +static inline int hidinput_pb_event(struct hid_device *hid, struct input_dev *input,
+> +				    struct hid_usage *usage, __s32 value)
+> +{
+> +	return 0;
+> +}
+> +
+> +static inline void hidinput_pb_setup(struct input_dev *input)
+> +{
+> +}
+> +#endif
+> +
+>  static void hidinput_configure_usage(struct hid_input *hidinput, struct hid_field *field,
+>  				     struct hid_usage *usage)
+>  {
+> @@ -336,7 +490,12 @@ static void hidinput_configure_usage(str
+>  
+>  			set_bit(EV_REP, input->evbit);
+>  			switch(usage->hid & HID_USAGE) {
+> -				case 0x003: map_key_clear(KEY_FN);		break;
+> +				case 0x003:
+> +					/* The fn key on Apple PowerBooks */
+> +					map_key_clear(KEY_FN);
+> +					hidinput_pb_setup(input);
+> +					break;
+> +
+>  				default:    goto ignore;
+>  			}
+>  			break;
+> @@ -493,6 +652,9 @@ void hidinput_hid_event(struct hid_devic
+>  		return;
+>  	}
+>  
+> +	if ((hid->quirks & HID_QUIRK_POWERBOOK_HAS_FN) && hidinput_pb_event(hid, input, usage, value))
+> +		return;
+> +
+>  	if (usage->hat_min < usage->hat_max || usage->hat_dir) {
+>  		int hat_dir = usage->hat_dir;
+>  		if (!hat_dir)
+> @@ -535,7 +697,7 @@ void hidinput_hid_event(struct hid_devic
+>  		return;
+>  	}
+>  
+> -	if((usage->type == EV_KEY) && (usage->code == 0)) /* Key 0 is "unassigned", not KEY_UNKNOWN */
+> +	if ((usage->type == EV_KEY) && (usage->code == 0)) /* Key 0 is "unassigned", not KEY_UNKNOWN */
+>  		return;
+>  
+>  	input_event(input, usage->type, usage->code, value);
+> Index: work/drivers/usb/input/Kconfig
+> ===================================================================
+> --- work.orig/drivers/usb/input/Kconfig
+> +++ work/drivers/usb/input/Kconfig
+> @@ -37,6 +37,16 @@ config USB_HIDINPUT
+>  
+>  	  If unsure, say Y.
+>  
+> +config USB_HIDINPUT_POWERBOOK
+> +	bool "Enable support for iBook/PowerBook special keys"
+> +	default n
+> +	depends on USB_HIDINPUT
+> +	help
+> +	  Say Y here if you want support for the special keys (Fn, Numlock) on
+> +	  Apple iBooks and PowerBooks.
+> +
+> +	  If unsure, say N.
+> +
+>  config HID_FF
+>  	bool "Force feedback support (EXPERIMENTAL)"
+>  	depends on USB_HIDINPUT && EXPERIMENTAL
+> 
+> 
+
+-- 
+Vojtech Pavlik
+SuSE Labs, SuSE CR
