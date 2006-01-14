@@ -1,12 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <greg@kroah.org>
+Received: from aria.kroah.org (c-24-22-115-24.hsd1.or.comcast.net
+	[24.22.115.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C6C00689E8
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Jan 2006 15:19:13 +1100 (EST)
+Date: Fri, 13 Jan 2006 19:49:03 -0800
+From: Greg KH <gregkh@suse.de>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [2.6 patch] remove unused tmp_buf_sem's
+Message-ID: <20060114034903.GA23074@suse.de>
+References: <17348.61824.49889.569928@jaguar.mkp.net>
+	<20060114020816.GW29663@stusta.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17352.29004.496555.416396@cargo.ozlabs.ibm.com>
-Date: Sat, 14 Jan 2006 14:34:36 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: benh@kernel.crashing.org
-Subject: [PATCH] powerpc: Recognize /chaos bridge on old pmacs as PCI
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20060114020816.GW29663@stusta.de>
+Cc: akpm@osdl.org, Jes Sorensen <jes@trained-monkey.org>, tony.luck@intel.com,
+	linux-ia64@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	torvalds@osdl.org, R.E.Wolff@BitWizard.nl
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,32 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The first generation of PCI powermacs had a host bridge called /chaos
-which was for all intents and purposes a PCI host bridge, but has a
-device_type of "vci" in the device tree (presumably it's not really
-PCI at the hardware level or something).
+On Sat, Jan 14, 2006 at 03:08:16AM +0100, Adrian Bunk wrote:
+> <--  snip  -->
+> 
+> 
+> tmp_buf_sem sems to be a common name for something completely unused...
+> 
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
+> 
+>  arch/ia64/hp/sim/simserial.c  |    1 -
+>  arch/ppc/4xx_io/serial_sicc.c |    1 -
+>  drivers/char/amiserial.c      |    1 -
+>  drivers/char/esp.c            |    1 -
+>  drivers/char/generic_serial.c |    1 -
+>  drivers/char/riscom8.c        |    1 -
+>  drivers/char/serial167.c      |    1 -
+>  drivers/char/specialix.c      |    3 ---
+>  drivers/char/synclink.c       |    1 -
+>  drivers/sbus/char/aurora.c    |    1 -
+>  drivers/serial/68328serial.c  |    1 -
+>  drivers/usb/serial/pl2303.c   |    2 --
+>  12 files changed, 15 deletions(-)
 
-The OF parsing stuff in arch/powerpc/kernel/prom_parse.c currently
-doesn't recognize it as a PCI bridge, which means that controlfb.c
-can't get its device addresses.
-
-This makes prom_parse.c recognize a device_type of "vci" as indicating
-a PCI host bridge.  With this, controlfb works again.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-
-diff --git a/arch/powerpc/kernel/prom_parse.c b/arch/powerpc/kernel/prom_parse.c
-index 309ae1d..a8099c8 100644
---- a/arch/powerpc/kernel/prom_parse.c
-+++ b/arch/powerpc/kernel/prom_parse.c
-@@ -113,7 +113,8 @@ static unsigned int of_bus_default_get_f
- 
- static int of_bus_pci_match(struct device_node *np)
- {
--	return !strcmp(np->type, "pci");
-+	/* "vci" is for the /chaos bridge on 1st-gen PCI powermacs */
-+	return !strcmp(np->type, "pci") || !strcmp(np->type, "vci");
- }
- 
- static void of_bus_pci_count_cells(struct device_node *np,
+usb portion is:
+  Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
