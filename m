@@ -1,18 +1,25 @@
-Return-Path: <s.maiti@tcs.com>
-Received: from INKOLG01.tcs.com (inkolg01.tcs.com [203.197.96.54])
-	by ozlabs.org (Postfix) with ESMTP id 680E668A8A
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3E18D68A89
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Jan 2006 14:30:04 +1100 (EST)
-In-Reply-To: <20060112152232.73EDB68A88@ozlabs.org>
+	Sat, 14 Jan 2006 15:37:38 +1100 (EST)
+Received: from ovro.ovro.caltech.edu
+	(IDENT:U2FsdGVkX19ZDLnaDix7z7VOKuSyoOjbAiqOI0EVeOI@ovro.ovro.caltech.edu
+	[192.100.16.2])
+	by ovro.ovro.caltech.edu (8.13.1/8.13.1) with SMTP id k0E4bZJx017635
+	for <linuxppc-embedded@ozlabs.org>; Fri, 13 Jan 2006 20:37:35 -0800
+Message-ID: <43C88013.40800@ovro.caltech.edu>
+Date: Fri, 13 Jan 2006 20:37:39 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Subject: Help: MCC driver for mpc8260
-To: <linuxppc-embedded@ozlabs.org>
-Sender: s.maiti@tcs.com
-Message-ID: <OFC2882216.D4FB4D90-ON652570F6.00006CA2-652570F6.0013398D@tcs.com>
-Date: Sat, 14 Jan 2006 08:59:59 +0530
-Content-Type: text/plain;
-	charset=us-ascii
-From: s.maiti@tcs.com
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: PPC440EP/Yosemite PCI misbehavior
+References: <43C7292B.2060003@ovro.caltech.edu>
+In-Reply-To: <43C7292B.2060003@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +31,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-
 Hi all,
 
-I got a Linux kernel device driver for the MCC from souceforge. One 
-problem I am facing is that I am unable to compile the code. There is some 
-problem with Rule.make. 
+Travis Sawyer sent me a snipped of his mmap code, and there
+was an important difference relative to mine:
 
-Please Help me.
+pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE | _PAGE_GUARDED;
 
-Thanks and regards,
-Souvik Maiti
-Tata Consultancy Services Limited
-Mailto: s.maiti@tcs.com
-Website: http://www.tcs.com
+With the addition of these two flags, the caching of the
+PCI memory space has gone! Yeah!! (The flags aren't defined for
+x86 pages, hence I'd never seen them).
 
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Thanks Travis!
 
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+Now CPU reads and writes use PCI memory-read and PCI memory-write
+commands. The CPU does not appear to use burst-transactions to
+the pre-fetchable memory region. This is results in lower
+performance, but its consistent with what an x86 does.
+
+I'll go and play with the 440EP DMA controller and see if I can get
+that to burst to the PCI bus.
+
+> access to PCI I/O space causes a machine check exception.
+
+I still get this in 2.6.15, but Wolfgang Denx indicated that
+they'd tested PCI I/O pretty thoroughly, so I'm inclined to
+believe that its my driver that is at fault. I'll do a little
+more digging on that one.
+
+Cheers
+Dave
