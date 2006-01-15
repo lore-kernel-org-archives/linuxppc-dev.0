@@ -1,18 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20060115071533.GA932@pb15.lixom.net>
-References: <Pine.LNX.4.44.0601131118350.19371-100000@gate.crashing.org>
-	<20060114192158.GS2491@pb15.lixom.net>
-	<20060114234754.GB29766@gate.ebshome.net>
-	<20060115071533.GA932@pb15.lixom.net>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D052E975-D089-43A0-A834-6FFF518D603D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add FSL SOC library and setup code
-Date: Sun, 15 Jan 2006 01:31:18 -0600
-To: Olof Johansson <olof@lixom.net>
-Cc: Kumar Gala <galak@gate.crashing.org>, linuxppc-embedded@ozlabs.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E1F23689C0
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2006 03:17:36 +1100 (EST)
+Subject: Re: [linux-usb-devel] Re: [2.6 patch] remove unused tmp_buf_sem's
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <gregkh@suse.de>
+In-Reply-To: <20060114034903.GA23074@suse.de>
+References: <17348.61824.49889.569928@jaguar.mkp.net>
+	<20060114020816.GW29663@stusta.de>  <20060114034903.GA23074@suse.de>
+Content-Type: text/plain
+Date: Sun, 15 Jan 2006 15:46:16 +0000
+Message-Id: <1137339976.2350.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: akpm@osdl.org, Jes Sorensen <jes@trained-monkey.org>, tony.luck@intel.com,
+	linux-ia64@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
+	linuxppc-dev@ozlabs.org, torvalds@osdl.org, R.E.Wolff@BitWizard.nl
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,27 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Gwe, 2006-01-13 at 19:49 -0800, Greg KH wrote:
+> On Sat, Jan 14, 2006 at 03:08:16AM +0100, Adrian Bunk wrote:
+> > <--  snip  -->
+> > 
+> > 
+> > tmp_buf_sem sems to be a common name for something completely unused...
 
-On Jan 15, 2006, at 1:15 AM, Olof Johansson wrote:
 
-> On Sat, Jan 14, 2006 at 03:47:54PM -0800, Eugene Surovegin wrote:
->> On Sat, Jan 14, 2006 at 01:21:58PM -0600, Olof Johansson wrote:
->>>> +
->>>> +static phys_addr_t immrbase = -1;
->>>
->>> What does immr mean? Maybe a short comment would be good.
->>
->> IMHO, this is not needed because _everybody_ who is working
->> with these chips know what IMMR means. And there cannot be _any_
->> confusion about it. Let's not add useless comments.
->
-> I haven't been exposed much yet to embedded 32-bit PPC, I thought at
-> first that it was something chip-specific, not an architected feature
-> common across the families. I agree, it doesn't really need further
-> explanation in this case.
+That would be correct. The old tty driver layer used to call ->write
+from both kernel and user contexts according to a flag. Drivers then all
+ended up with the same code copying it into a tmp buffer and using a
+locking semaphore. 
 
-To be clear its a system level architecture feature on Freescale  
-SOCs.  It goes by a few different names (immrbar, ccsrbar, eumbar),  
-but the purpose is the same.
+Linus took out that code and arranged that ->write always got a kernel
+buffer so the remainders should indeed go.
 
-- kumar
+Alan
