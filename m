@@ -1,19 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2289C689F1
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2006 08:48:41 +1100 (EST)
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.21])
+	by ozlabs.org (Postfix) with SMTP id A25F7689FE
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2006 10:10:17 +1100 (EST)
+Date: Mon, 16 Jan 2006 00:10:15 +0100 (MET)
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="========GMXBoundary130391137366615"
 Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <19351.1137053713@www55.gmx.net>
-References: <1137041067.7774.25.camel@localhost.localdomain>
-	<19351.1137053713@www55.gmx.net>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 16 Jan 2006 08:48:28 +1100
-Message-Id: <1137361708.4823.8.camel@localhost.localdomain>
-Mime-Version: 1.0
+Message-ID: <13039.1137366615@www38.gmx.net>
 Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,28 +19,319 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a MIME encapsulated multipart message -
+please use a MIME-compliant e-mail program to open it.
 
-> Please take a look at the end of my previous mail, where I included the
-> debug messages of the driver and the driver code itself. The log shows that
-> the physical address is mapped (IMHO) to the PCI memory range (>
-> 0x0c0000000). Is this correct? Shouldn't it be mapped to the system memory
-> address range?
+Dies ist eine mehrteilige Nachricht im MIME-Format -
+bitte verwenden Sie zum Lesen ein MIME-konformes Mailprogramm.
 
-I don't understand. I would need to now more about what the bridge
-actually does to get any sense out of that.
+--========GMXBoundary130391137366615
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-> The aperture size is 4MB, page_order should be 1 and num_entries = 1024.
+> --- Ursprüngliche Nachricht ---
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> Kopie: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+> Betreff: Re: AGPGART driver for ArticiaS - ioremap() problem
+> Datum: Mon, 16 Jan 2006 08:48:28 +1100
 > 
-> Hope this helps!? :-)
-> 
-> Thanks!
-> 
-> Regards,
-> 
-> Gerhard
-> 
-> -- 
-> DSL-Aktion wegen groÃŸer Nachfrage bis 28.2.2006 verlÃ¤ngert:
-> GMX DSL-Flatrate 1 Jahr kostenlos* http://www.gmx.net/de/go/dsl
-> 
-> 
+> I don't understand. I would need to now more about what
+> the bridge actually does to get any sense out of that.
+
+Thanks for answering! It's hard to explain for me what the code does, but I
+will try.
+
+I included a cleaned-up version of the AGPGART driver code for the ArticiaS
+(AmigaOne/Pegasos1). As mentioned, the driver is based on the VIA AGPGART
+driver and uses the agp_generic_create_gatt_table() and
+agp_generic_free_gatt_table() functions (well, I copied and renamed this
+functions to insert debug code).
+
+Actually at least the bridge does everthing right until now (IMHO :-). The
+bridge is detected and also the aperture size is read out correctly from the
+registers. After that, the agp_backend_initialize() function in
+drivers/cahr/agp/backend.c calls the create_gatt_table() function of the
+driver (articias_create_gatt_table). Based on the detected aperture size and
+its definitions, this function allocates pages for the GATT table
+(alloc_gatt_pages). The function then tries to map this pages with
+ioremap_nocache(virt_to_gatt(table, (PAGE_SIZE * (1 << page_order))). But
+ioremap_nocache() cannot remap the pages, because the following code snipped
+in __ioremap (arch/ppc/mm/pgtable.c) is trigged:
+
+/*
+ * Don't allow anybody to remap normal RAM that we're using.
+ * mem_init() sets high_memory so only do the check after that.
+ */
+if ( mem_init_done && (p < virt_to_phys(high_memory)) )
+{
+	printk("__ioremap(): phys addr "PHYS_FMT" is RAM lr %p\n", p,
+	       __builtin_return_address(0));
+	return NULL;
+}
+
+As it can be seen in the following log, the table address (0xde200000 ->
+virt_to_gart(table) = 0x1e200000) is lower than the maximum amount of memory
+0x20000000 (512MB) and therefore __ioremap() does not remap the pages.
+
+Debuglog:
+
+agpgart: [ARTICIAS] articias_fetch_size()
+agpgart: [ARTICIAS] * non masked temp = 0x6
+agpgart: [ARTICIAS] * aperature size loop index #0
+agpgart: [ARTICIAS] * values[0].size_value = 1
+agpgart: [ARTICIAS] * aperature size loop index #1
+agpgart: [ARTICIAS] * values[1].size_value = 2
+agpgart: [ARTICIAS] * aperature size loop index #2
+agpgart: [ARTICIAS] * values[2].size_value = 3
+agpgart: [ARTICIAS] * aperature size loop index #3
+agpgart: [ARTICIAS] * values[3].size_value = 4
+agpgart: [ARTICIAS] * aperature size loop index #4
+agpgart: [ARTICIAS] * values[4].size_value = 5
+agpgart: [ARTICIAS] * aperature size loop index #5
+agpgart: [ARTICIAS] * values[5].size_value = 6
+agpgart: [ARTICIAS] * masked temp = 0x6
+agpgart: [ARTICIAS] * values[5].size = 128  (128MB aperture size)
+agpgart: [ARTICIAS] * current_size->size = 128
+agpgart: [ARTICIAS] * current_size->page_order = 5
+agpgart: [ARTICIAS] * current_size->num_entries = 32768
+agpgart: [ARTICIAS] * current_size->size_value = 6
+agpgart: [ARTICIAS] articias_create_gatt_table()
+agpgart: [ARTICIAS] * table address = 0xde200000
+agpgart: [ARTICIAS] * table end address = 0xde21ffff
+agpgart: [ARTICIAS] * page = 0xc09c4400
+agpgart: [ARTICIAS] * gatt_table_real = 0xde200000
+agpgart: [ARTICIAS] * agp_gatt_table = 0xde200000
+agpgart: [ARTICIAS] * virt_to_gart(table) = 0x1e200000
+__ioremap() debug: addr = 0x1e200000
+__ioremap() debug: phys addr = 0x1e200000
+__ioremap() debug: size = 0x20000
+__ioremap() debug: Highmem check
+__ioremap() debug: high_memory = 0xe0000000
+__ioremap() debug: virt_to_phys(high_memory) = 0x20000000
+__ioremap(): phys addr 1e200000 is RAM lr c000f210
+agpgart: [ARTICIAS] * gatt_table_real = 0x0
+agpgart: unable to get memory for graphics translation table.
+agpgart: agp_backend_initialize() failed.
+agpgart-articias: probe of 0000:00:00.0 failed with error -12
+
+How can I achieve it that ioremap_nocache() can map the pages or that
+alloc_gatt_pages() returns valid pages for the GATT table?
+
+Thanks again!
+
+Regards,
+
+Gerhard
+
+-- 
+Lust, ein paar Euro nebenbei zu verdienen? Ohne Kosten, ohne Risiko!
+Satte Provisionen für GMX Partner: http://www.gmx.net/de/go/partner
+--========GMXBoundary130391137366615
+Content-Type: text/x-csrc; name="articias-agp.c"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="articias-agp.c"
+
+LyoKICogQXJ0aWNpYVMgQUdQR0FSVCByb3V0aW5lcy4KICovCgojaW5jbHVkZSA8bGludXgvdHlw
+ZXMuaD4KI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgojaW5jbHVkZSA8bGludXgvcGFnZW1hcC5o
+PgojaW5jbHVkZSA8bGludXgvcGNpLmg+CiNpbmNsdWRlIDxhc20vcGNpLWJyaWRnZS5oPgojaW5j
+bHVkZSA8bGludXgvaW5pdC5oPgojaW5jbHVkZSA8bGludXgvYWdwX2JhY2tlbmQuaD4KI2luY2x1
+ZGUgImFncC5oIgoKc3RhdGljIHN0cnVjdCBwY2lfZGV2aWNlX2lkIGFncF9hcnRpY2lhc19wY2lf
+dGFibGVbXTsKCl9fdTMyICphZ3BfZ2F0dF90YWJsZTsKCiNkZWZpbmUgQVJUSUNJQVNfQUdQX0VO
+CQkweDQ5CS8qIGJpdCAwIC0+IEFHUCBlbmFibGUgKi8KI2RlZmluZSBBUlRJQ0lBU19HQVJUX0VO
+CTB4NTgJLyogYml0IDYgLT4gR0FSVCBlbmFibGUgKi8KI2RlZmluZSBBUlRJQ0lBU19BUFNJWkUJ
+CTB4NTkJLyogYml0cyAyOjAgc2V0IHNpemUgKi8KI2RlZmluZSBBUlRJQ0lBU19BUEJBU0UJCTB4
+NTkJLyogVExCIGFkZHJlc3MgQmFzZSBbMzE6MTJdKi8KI2RlZmluZSBBUlRJQ0lBU19HQVRUQkFT
+RQkweDEwCS8qIEdBUlQgYmFzZSBhZGRyZXNzIHJlZ2lzdGVyICovCiNkZWZpbmUgQVJUSUNJQVNf
+VExCX0JBU0UJMHg1QQkvKiBiaXRzIDE2OjMxIG9mIFRMQiBiYXNlIGFkZHJlc3MgKi8KI2RlZmlu
+ZSBBUlRJQ0lBU19HQVRUX01BU0sJMHhGRkZGRjAwMAojZGVmaW5lIEFSVElDSUFTX1NJWkVfTUFT
+SwkweDA3CS8qIE1hc2sgYXBlcnR1cmUgc2l6ZSBiaXRzLiAqLwoKc3RhdGljIGludCBhcnRpY2lh
+c19mZXRjaF9zaXplKHZvaWQpCnsKCWludCBpOwoJdTggdGVtcDsKCXN0cnVjdCBhcGVyX3NpemVf
+aW5mb184ICp2YWx1ZXM7CgoJdmFsdWVzID0gQV9TSVpFXzgoYWdwX2JyaWRnZS0+ZHJpdmVyLT5h
+cGVydHVyZV9zaXplcyk7CglwY2lfcmVhZF9jb25maWdfYnl0ZShhZ3BfYnJpZGdlLT5kZXYsIEFS
+VElDSUFTX0FQU0laRSwgJnRlbXApOwoKCS8qIE1hc2sgdGhlIEdBUlQvQXBlcnR1cmUgc2l6ZSBz
+ZWxlY3Rpb24gYml0cy4gKi8KCXRlbXAgPSB0ZW1wICYgQVJUSUNJQVNfU0laRV9NQVNLOwoKCWZv
+ciAoaSA9IDA7IGkgPCBhZ3BfYnJpZGdlLT5kcml2ZXItPm51bV9hcGVydHVyZV9zaXplczsgaSsr
+KSB7CgoJCWlmICh0ZW1wID09IHZhbHVlc1tpXS5zaXplX3ZhbHVlKSB7CgkJCWFncF9icmlkZ2Ut
+PnByZXZpb3VzX3NpemUgPQoJCQkgICAgYWdwX2JyaWRnZS0+Y3VycmVudF9zaXplID0gKHZvaWQg
+KikgKHZhbHVlcyArIGkpOwoJCQkvKiBHZXJpOiBXYXMgPCh2b2lkICopICh2YWx1ZXMpPiBiZWZv
+cmUsIGJ1dCB0aGF0CgkJCSAqIGRpZG4ndCBtYWtlIHNlbnNlIHRvIG1lIT8gT3RoZXJ3aXNlIGl0
+IHdvdWxkIGFsd2F5cwoJCQkgKiBwb2ludCB0byB0aGUgc2FtZSB2YWx1ZSEKCQkJICovCgkJCWFn
+cF9icmlkZ2UtPmFwZXJ0dXJlX3NpemVfaWR4ID0gaTsKCgkJCXJldHVybiB2YWx1ZXNbaV0uc2l6
+ZTsKCQl9Cgl9CgoJcHJpbnRrKEtFUk5fRVJSIFBGWCAiVW5rbm93biBhcGVydHVyZSBzaXplIGZy
+b20gQUdQIGJyaWRnZSAoMHgleClcbiIsIHRlbXApOwoKCXJldHVybiAwOwp9CgpzdGF0aWMgaW50
+IGFydGljaWFzX2NvbmZpZ3VyZSh2b2lkKQp7Cgl1MzIgdGVtcCA9IDA7Cgl1MTYgc2hpZnQxNiA9
+IDA7Cgl1OCBzaGlmdDggPSAwOwoJc3RydWN0IGFwZXJfc2l6ZV9pbmZvXzggKmN1cnJlbnRfc2l6
+ZTsKCgkvKiBHZXQgY3VycmVudCBhcGVydHVyZSBzaXplICovCgljdXJyZW50X3NpemUgPSBBX1NJ
+WkVfOChhZ3BfYnJpZGdlLT5jdXJyZW50X3NpemUpOwoKCXRlbXAgPSAodTMyKSBhZ3BfYnJpZGdl
+LT5nYXR0X3RhYmxlX3JlYWw7CgkvKiBHZXQgdXBwZXIgd29yZCBmcm9tIGR3b3JkLiBOb3RlIHRo
+YXQgdGhlIEFydGljaWFTIHNob3VsZCBoYXZlIDIwCgkgKiBiaXRzIGZvciB0aGUgVExCIGJhc2Ug
+YWRkcmVzcy4gT3RoZXJ3aXNlIHRoZSBQQ0kgd3JpdGUgY29uZmlnIGNvZGUKCSAqIGZvciB0aGUg
+YXBlcnR1cmUgc2l6ZSBiZWxvdyBkb2Vzbid0IG1ha2Ugc2Vuc2UhPwoJICovCglzaGlmdDE2ID0g
+KHUxNikgKHRlbXA+PjE2KTsKCglwY2lfd3JpdGVfY29uZmlnX3dvcmQoYWdwX2JyaWRnZS0+ZGV2
+LCBBUlRJQ0lBU19UTEJfQkFTRSwgc2hpZnQxNik7CgoJLyogR2V0IHRoZSBieXRlIDEgZnJvbSBk
+d29yZCBhbmQgbWFzayBpdCBvdXQgd2l0aCB0aGUgYXBlcnR1cmUgc2l6ZS4gKi8KCXNoaWZ0OCA9
+ICh1OCkgKHRlbXA+PjgpOwoJc2hpZnQ4ICY9IH4oQVJUSUNJQVNfU0laRV9NQVNLKTsKCXNoaWZ0
+OCB8PSBjdXJyZW50X3NpemUtPnNpemVfdmFsdWU7CglwY2lfd3JpdGVfY29uZmlnX2J5dGUoYWdw
+X2JyaWRnZS0+ZGV2LCBBUlRJQ0lBU19BUEJBU0UsIHNoaWZ0OCk7CgoJLyogR2V0IGFkZHJlc3Mg
+dG8gbWFwIHRvbyAqLwoJcGNpX3JlYWRfY29uZmlnX2R3b3JkKGFncF9icmlkZ2UtPmRldiwgQVJU
+SUNJQVNfR0FUVEJBU0UsICh2b2lkICopJnRlbXApOwoJdGVtcCA9IHRlbXAgJiBBUlRJQ0lBU19H
+QVRUX01BU0s7CgoJYWdwX2JyaWRnZS0+Z2FydF9idXNfYWRkciA9IHRlbXA7CgoJLyogR0FSVCBj
+b250cm9sIHJlZ2lzdGVyICovCgkvKiBFbmFibGUgR0FSVCBhbmQgYnVzIGNvbmN1cnJlbmN5ICov
+CglwY2lfd3JpdGVfY29uZmlnX2J5dGUoYWdwX2JyaWRnZS0+ZGV2LCBBUlRJQ0lBU19HQVJUX0VO
+LCAweDQxKTsKCS8qIEVuYWJsZSBBR1Agb3BlcmF0aW9uICovCglwY2lfd3JpdGVfY29uZmlnX2J5
+dGUoYWdwX2JyaWRnZS0+ZGV2LCBBUlRJQ0lBU19BR1BfRU4sIDB4MDEpOwoKCXJldHVybiAwOwp9
+CgppbnQgYXJ0aWNpYXNfY3JlYXRlX2dhdHRfdGFibGUoc3RydWN0IGFncF9icmlkZ2VfZGF0YSAq
+YnJpZGdlKQp7CgljaGFyICp0YWJsZTsKCWNoYXIgKnRhYmxlX2VuZDsKCWludCBzaXplOwoJaW50
+IHBhZ2Vfb3JkZXI7CglpbnQgbnVtX2VudHJpZXM7CglpbnQgaTsKCXZvaWQgKnRlbXA7CglzdHJ1
+Y3QgcGFnZSAqcGFnZTsKCgkvKiBUaGUgZ2VuZXJpYyByb3V0aW5lcyBjYW4ndCBoYW5kbGUgMiBs
+ZXZlbCBnYXR0J3MgKi8KCWlmIChicmlkZ2UtPmRyaXZlci0+c2l6ZV90eXBlID09IExWTDJfQVBF
+Ul9TSVpFKQoJCXJldHVybiAtRUlOVkFMOwoKCXRhYmxlID0gTlVMTDsKCWkgPSBicmlkZ2UtPmFw
+ZXJ0dXJlX3NpemVfaWR4OwoJdGVtcCA9IGJyaWRnZS0+Y3VycmVudF9zaXplOwoJc2l6ZSA9IHBh
+Z2Vfb3JkZXIgPSBudW1fZW50cmllcyA9IDA7CgoJaWYgKGJyaWRnZS0+ZHJpdmVyLT5zaXplX3R5
+cGUgIT0gRklYRURfQVBFUl9TSVpFKSB7CgkJZG8gewoJCQlzd2l0Y2ggKGJyaWRnZS0+ZHJpdmVy
+LT5zaXplX3R5cGUpIHsKCQkJY2FzZSBVOF9BUEVSX1NJWkU6CgkJCQlzaXplID0gQV9TSVpFXzgo
+dGVtcCktPnNpemU7CgkJCQlwYWdlX29yZGVyID0KCQkJCSAgICBBX1NJWkVfOCh0ZW1wKS0+cGFn
+ZV9vcmRlcjsKCQkJCW51bV9lbnRyaWVzID0KCQkJCSAgICBBX1NJWkVfOCh0ZW1wKS0+bnVtX2Vu
+dHJpZXM7CgkJCQlicmVhazsKCQkJY2FzZSBVMTZfQVBFUl9TSVpFOgoJCQkJc2l6ZSA9IEFfU0la
+RV8xNih0ZW1wKS0+c2l6ZTsKCQkJCXBhZ2Vfb3JkZXIgPSBBX1NJWkVfMTYodGVtcCktPnBhZ2Vf
+b3JkZXI7CgkJCQludW1fZW50cmllcyA9IEFfU0laRV8xNih0ZW1wKS0+bnVtX2VudHJpZXM7CgkJ
+CQlicmVhazsKCQkJY2FzZSBVMzJfQVBFUl9TSVpFOgoJCQkJc2l6ZSA9IEFfU0laRV8zMih0ZW1w
+KS0+c2l6ZTsKCQkJCXBhZ2Vfb3JkZXIgPSBBX1NJWkVfMzIodGVtcCktPnBhZ2Vfb3JkZXI7CgkJ
+CQludW1fZW50cmllcyA9IEFfU0laRV8zMih0ZW1wKS0+bnVtX2VudHJpZXM7CgkJCQlicmVhazsK
+CQkJCS8qIFRoaXMgY2FzZSB3aWxsIG5ldmVyIHJlYWxseSBoYXBwZW4uICovCgkJCWNhc2UgRklY
+RURfQVBFUl9TSVpFOgoJCQljYXNlIExWTDJfQVBFUl9TSVpFOgoJCQlkZWZhdWx0OgoJCQkJc2l6
+ZSA9IHBhZ2Vfb3JkZXIgPSBudW1fZW50cmllcyA9IDA7CgkJCQlicmVhazsKCQkJfQoKCQkJdGFi
+bGUgPSBhbGxvY19nYXR0X3BhZ2VzKHBhZ2Vfb3JkZXIpOwoKCQkJaWYgKHRhYmxlID09IE5VTEwp
+IHsKCQkJCWkrKzsKCQkJCXN3aXRjaCAoYnJpZGdlLT5kcml2ZXItPnNpemVfdHlwZSkgewoJCQkJ
+Y2FzZSBVOF9BUEVSX1NJWkU6CgkJCQkJYnJpZGdlLT5jdXJyZW50X3NpemUgPSBBX0lEWDgoYnJp
+ZGdlKTsKCQkJCQlicmVhazsKCQkJCWNhc2UgVTE2X0FQRVJfU0laRToKCQkJCQlicmlkZ2UtPmN1
+cnJlbnRfc2l6ZSA9IEFfSURYMTYoYnJpZGdlKTsKCQkJCQlicmVhazsKCQkJCWNhc2UgVTMyX0FQ
+RVJfU0laRToKCQkJCQlicmlkZ2UtPmN1cnJlbnRfc2l6ZSA9IEFfSURYMzIoYnJpZGdlKTsKCQkJ
+CQlicmVhazsKCQkJCQkvKiBUaGlzIGNhc2Ugd2lsbCBuZXZlciByZWFsbHkgaGFwcGVuLiAqLwoJ
+CQkJY2FzZSBGSVhFRF9BUEVSX1NJWkU6CgkJCQljYXNlIExWTDJfQVBFUl9TSVpFOgoJCQkJZGVm
+YXVsdDoKCQkJCQlicmlkZ2UtPmN1cnJlbnRfc2l6ZSA9CgkJCQkJICAgIGJyaWRnZS0+Y3VycmVu
+dF9zaXplOwoJCQkJCWJyZWFrOwoJCQkJfQoJCQkJdGVtcCA9IGJyaWRnZS0+Y3VycmVudF9zaXpl
+OwoJCQl9IGVsc2UgewoJCQkJYnJpZGdlLT5hcGVydHVyZV9zaXplX2lkeCA9IGk7CgkJCX0KCQl9
+IHdoaWxlICghdGFibGUgJiYgKGkgPCBicmlkZ2UtPmRyaXZlci0+bnVtX2FwZXJ0dXJlX3NpemVz
+KSk7Cgl9IGVsc2UgewoJCXNpemUgPSAoKHN0cnVjdCBhcGVyX3NpemVfaW5mb19maXhlZCAqKSB0
+ZW1wKS0+c2l6ZTsKCQlwYWdlX29yZGVyID0gKChzdHJ1Y3QgYXBlcl9zaXplX2luZm9fZml4ZWQg
+KikgdGVtcCktPnBhZ2Vfb3JkZXI7CgkJbnVtX2VudHJpZXMgPSAoKHN0cnVjdCBhcGVyX3NpemVf
+aW5mb19maXhlZCAqKSB0ZW1wKS0+bnVtX2VudHJpZXM7CgkJdGFibGUgPSBhbGxvY19nYXR0X3Bh
+Z2VzKHBhZ2Vfb3JkZXIpOwoJfQoKCWlmICh0YWJsZSA9PSBOVUxMKQoJCXJldHVybiAtRU5PTUVN
+OwoKCXRhYmxlX2VuZCA9IHRhYmxlICsgKChQQUdFX1NJWkUgKiAoMSA8PCBwYWdlX29yZGVyKSkg
+LSAxKTsKCglmb3IgKHBhZ2UgPSB2aXJ0X3RvX3BhZ2UodGFibGUpOyBwYWdlIDw9IHZpcnRfdG9f
+cGFnZSh0YWJsZV9lbmQpOyBwYWdlKyspCgkJU2V0UGFnZVJlc2VydmVkKHBhZ2UpOwoKCWJyaWRn
+ZS0+Z2F0dF90YWJsZV9yZWFsID0gKHUzMiAqKSB0YWJsZTsKCWFncF9nYXR0X3RhYmxlID0gKHZv
+aWQgKikgdGFibGU7CgoJYnJpZGdlLT5kcml2ZXItPmNhY2hlX2ZsdXNoKCk7CglicmlkZ2UtPmdh
+dHRfdGFibGUgPSBpb3JlbWFwX25vY2FjaGUodmlydF90b19nYXJ0KHRhYmxlKSwKCQkJCQkoUEFH
+RV9TSVpFICogKDEgPDwgcGFnZV9vcmRlcikpKTsKCWJyaWRnZS0+ZHJpdmVyLT5jYWNoZV9mbHVz
+aCgpOwoKCWlmIChicmlkZ2UtPmdhdHRfdGFibGUgPT0gTlVMTCkgewoJCWZvciAocGFnZSA9IHZp
+cnRfdG9fcGFnZSh0YWJsZSk7IHBhZ2UgPD0gdmlydF90b19wYWdlKHRhYmxlX2VuZCk7IHBhZ2Ur
+KykKCQkJQ2xlYXJQYWdlUmVzZXJ2ZWQocGFnZSk7CgoJCWZyZWVfZ2F0dF9wYWdlcyh0YWJsZSwg
+cGFnZV9vcmRlcik7CgoJCXJldHVybiAtRU5PTUVNOwoJfQoJYnJpZGdlLT5nYXR0X2J1c19hZGRy
+ID0gdmlydF90b19nYXJ0KGJyaWRnZS0+Z2F0dF90YWJsZV9yZWFsKTsKCgkvKiBBSzogYm9ndXMs
+IHNob3VsZCBlbmNvZGUgYWRkcmVzc2VzID4gNEdCICovCglmb3IgKGkgPSAwOyBpIDwgbnVtX2Vu
+dHJpZXM7IGkrKykgewoJCXdyaXRlbChicmlkZ2UtPnNjcmF0Y2hfcGFnZSwgYnJpZGdlLT5nYXR0
+X3RhYmxlK2kpOwoJCXJlYWRsKGJyaWRnZS0+Z2F0dF90YWJsZStpKTsJLyogUENJIFBvc3Rpbmcu
+ICovCgl9CgoJcmV0dXJuIDA7Cn0KCmludCBhcnRpY2lhc19mcmVlX2dhdHRfdGFibGUoc3RydWN0
+IGFncF9icmlkZ2VfZGF0YSAqYnJpZGdlKQp7CglpbnQgcGFnZV9vcmRlcjsKCWNoYXIgKnRhYmxl
+LCAqdGFibGVfZW5kOwoJdm9pZCAqdGVtcDsKCXN0cnVjdCBwYWdlICpwYWdlOwoKCXRlbXAgPSBi
+cmlkZ2UtPmN1cnJlbnRfc2l6ZTsKCglzd2l0Y2ggKGJyaWRnZS0+ZHJpdmVyLT5zaXplX3R5cGUp
+IHsKCWNhc2UgVThfQVBFUl9TSVpFOgoJCXBhZ2Vfb3JkZXIgPSBBX1NJWkVfOCh0ZW1wKS0+cGFn
+ZV9vcmRlcjsKCQlicmVhazsKCWNhc2UgVTE2X0FQRVJfU0laRToKCQlwYWdlX29yZGVyID0gQV9T
+SVpFXzE2KHRlbXApLT5wYWdlX29yZGVyOwoJCWJyZWFrOwoJY2FzZSBVMzJfQVBFUl9TSVpFOgoJ
+CXBhZ2Vfb3JkZXIgPSBBX1NJWkVfMzIodGVtcCktPnBhZ2Vfb3JkZXI7CgkJYnJlYWs7CgljYXNl
+IEZJWEVEX0FQRVJfU0laRToKCQlwYWdlX29yZGVyID0gQV9TSVpFX0ZJWCh0ZW1wKS0+cGFnZV9v
+cmRlcjsKCQlicmVhazsKCWNhc2UgTFZMMl9BUEVSX1NJWkU6CgkJLyogVGhlIGdlbmVyaWMgcm91
+dGluZXMgY2FuJ3QgZGVhbCB3aXRoIDIgbGV2ZWwgZ2F0dCdzICovCgkJcmV0dXJuIC1FSU5WQUw7
+CgkJYnJlYWs7CglkZWZhdWx0OgoJCXBhZ2Vfb3JkZXIgPSAwOwoJCWJyZWFrOwoJfQoKCS8qIERv
+IG5vdCB3b3JyeSBhYm91dCBmcmVlaW5nIG1lbW9yeSwgYmVjYXVzZSBpZiB0aGlzIGlzCgkgKiBj
+YWxsZWQsIHRoZW4gYWxsIGFncCBtZW1vcnkgaXMgZGVhbGxvY2F0ZWQgYW5kIHJlbW92ZWQKCSAq
+IGZyb20gdGhlIHRhYmxlLiAqLwoKCWlvdW5tYXAoYnJpZGdlLT5nYXR0X3RhYmxlKTsKCXRhYmxl
+ID0gKGNoYXIgKikgYnJpZGdlLT5nYXR0X3RhYmxlX3JlYWw7Cgl0YWJsZV9lbmQgPSB0YWJsZSAr
+ICgoUEFHRV9TSVpFICogKDEgPDwgcGFnZV9vcmRlcikpIC0gMSk7CgoJZm9yIChwYWdlID0gdmly
+dF90b19wYWdlKHRhYmxlKTsgcGFnZSA8PSB2aXJ0X3RvX3BhZ2UodGFibGVfZW5kKTsgcGFnZSsr
+KQoJCUNsZWFyUGFnZVJlc2VydmVkKHBhZ2UpOwoKCWZyZWVfZ2F0dF9wYWdlcyhicmlkZ2UtPmdh
+dHRfdGFibGVfcmVhbCwgcGFnZV9vcmRlcik7CgoJYWdwX2dhdHRfdGFibGUgPSBOVUxMOwoJYnJp
+ZGdlLT5nYXR0X3RhYmxlID0gTlVMTDsKCWJyaWRnZS0+Z2F0dF90YWJsZV9yZWFsID0gTlVMTDsK
+CWJyaWRnZS0+Z2F0dF9idXNfYWRkciA9IDA7CgoJcmV0dXJuIDA7Cn0KCiNlbmRpZgoKc3RhdGlj
+IHZvaWQgYXJ0aWNpYXNfY2xlYW51cCh2b2lkKQp7CglzdHJ1Y3QgYXBlcl9zaXplX2luZm9fOCAq
+cHJldmlvdXNfc2l6ZTsKCglwcmV2aW91c19zaXplID0gQV9TSVpFXzgoYWdwX2JyaWRnZS0+cHJl
+dmlvdXNfc2l6ZSk7CglwY2lfd3JpdGVfY29uZmlnX2J5dGUoYWdwX2JyaWRnZS0+ZGV2LCBBUlRJ
+Q0lBU19BUFNJWkUsCgkJCSAgICAgIHByZXZpb3VzX3NpemUtPnNpemVfdmFsdWUpOwp9CgpzdGF0
+aWMgdm9pZCBhcnRpY2lhc190bGJmbHVzaChzdHJ1Y3QgYWdwX21lbW9yeSAqbWVtKQp7Cgl1OCB0
+ZW1wOwoKCXBjaV9yZWFkX2NvbmZpZ19ieXRlKGFncF9icmlkZ2UtPmRldiwgQVJUSUNJQVNfR0FS
+VF9FTiwgJnRlbXApOwoJcGNpX3dyaXRlX2NvbmZpZ19ieXRlKGFncF9icmlkZ2UtPmRldiwgQVJU
+SUNJQVNfR0FSVF9FTiwgKHRlbXAgfCAweDgwKSk7CglwY2lfd3JpdGVfY29uZmlnX2J5dGUoYWdw
+X2JyaWRnZS0+ZGV2LCBBUlRJQ0lBU19HQVJUX0VOLCAodGVtcCAmIDB4N0YpKTsKCglyZXR1cm47
+Cn0KCnN0YXRpYyBzdHJ1Y3QgYXBlcl9zaXplX2luZm9fOCBhcnRpY2lhc19nZW5lcmljX3NpemVz
+WzddID0KewoJLyogc2l6ZSwgbnVtX2VudHJpZXMsIHBhZ2Vfb3JkZXIsIHNpemVfdmFsdWUgKi8K
+CXs0LCAxMDI0LCAxLCAxfSwKCXs4LCAyMDQ4LCAxLCAyfSwKCXsxNiwgNDA5NiwgMiwgM30sCgl7
+MzIsIDgxOTIsIDMsIDR9LAoJezY0LCAxNjM4NCwgNCwgNX0sCgl7MTI4LCAzMjc2OCwgNSwgNn0s
+Cgl7MjU2LCA2NTUzNiwgNiwgN30sCn07CgpzdGF0aWMgc3RydWN0IGFncF9icmlkZ2VfZHJpdmVy
+IGFydGljaWFzX2RyaXZlciA9IHsKCS5vd25lcgkJCT0gVEhJU19NT0RVTEUsCgkuYXBlcnR1cmVf
+c2l6ZXMJCT0gYXJ0aWNpYXNfZ2VuZXJpY19zaXplcywKCS5zaXplX3R5cGUJCT0gVThfQVBFUl9T
+SVpFLAoJLm51bV9hcGVydHVyZV9zaXplcwk9IDcsCgkuY29uZmlndXJlCQk9IGFydGljaWFzX2Nv
+bmZpZ3VyZSwKCS5mZXRjaF9zaXplCQk9IGFydGljaWFzX2ZldGNoX3NpemUsCgkuY2xlYW51cAkJ
+PSBhcnRpY2lhc19jbGVhbnVwLAoJLnRsYl9mbHVzaAkJPSBhcnRpY2lhc190bGJmbHVzaCwKCS5t
+YXNrX21lbW9yeQkJPSBhZ3BfZ2VuZXJpY19tYXNrX21lbW9yeSwKCS5tYXNrcwkJCT0gTlVMTCwK
+CS5hZ3BfZW5hYmxlCQk9IGFncF9nZW5lcmljX2VuYWJsZSwKCS5jYWNoZV9mbHVzaAkJPSBnbG9i
+YWxfY2FjaGVfZmx1c2gsCgkuY3JlYXRlX2dhdHRfdGFibGUJPSBhcnRpY2lhc19jcmVhdGVfZ2F0
+dF90YWJsZSwKCS5mcmVlX2dhdHRfdGFibGUJPSBhcnRpY2lhc19mcmVlX2dhdHRfdGFibGUsCgku
+aW5zZXJ0X21lbW9yeQkJPSBhZ3BfZ2VuZXJpY19pbnNlcnRfbWVtb3J5LAoJLnJlbW92ZV9tZW1v
+cnkJCT0gYWdwX2dlbmVyaWNfcmVtb3ZlX21lbW9yeSwKCS5hbGxvY19ieV90eXBlCQk9IGFncF9n
+ZW5lcmljX2FsbG9jX2J5X3R5cGUsCgkuZnJlZV9ieV90eXBlCQk9IGFncF9nZW5lcmljX2ZyZWVf
+YnlfdHlwZSwKCS5hZ3BfYWxsb2NfcGFnZQkJPSBhZ3BfZ2VuZXJpY19hbGxvY19wYWdlLAoJLmFn
+cF9kZXN0cm95X3BhZ2UJPSBhZ3BfZ2VuZXJpY19kZXN0cm95X3BhZ2UsCn07CgpzdGF0aWMgc3Ry
+dWN0IGFncF9kZXZpY2VfaWRzIGFydGljaWFzX2FncF9kZXZpY2VfaWRzW10gX19kZXZpbml0ZGF0
+YSA9CnsKCXsKCQkuZGV2aWNlX2lkCT0gUENJX0RFVklDRV9JRF9NQUlfQVJUSUNJQVMsCgkJLmNo
+aXBzZXRfbmFtZQk9ICJBcnRpY2lhUyIsCgl9LAoKCXsgfSwgLyogZHVtbXkgZmluYWwgZW50cnks
+IGFsd2F5cyBwcmVzZW50ICovCn07CgpzdGF0aWMgaW50IF9fZGV2aW5pdCBhZ3BfYXJ0aWNpYXNf
+cHJvYmUoc3RydWN0IHBjaV9kZXYgKnBkZXYsCgkJCQkgICBjb25zdCBzdHJ1Y3QgcGNpX2Rldmlj
+ZV9pZCAqZW50KQp7CglzdHJ1Y3QgYWdwX2RldmljZV9pZHMgKmRldnMgPSBhcnRpY2lhc19hZ3Bf
+ZGV2aWNlX2lkczsKCXN0cnVjdCBhZ3BfYnJpZGdlX2RhdGEgKmJyaWRnZTsKCWludCBqID0gMDsK
+CXU4IGNhcF9wdHI7CgoJY2FwX3B0ciA9IHBjaV9maW5kX2NhcGFiaWxpdHkocGRldiwgUENJX0NB
+UF9JRF9BR1ApOwoJaWYgKCFjYXBfcHRyKQoJCXJldHVybiAtRU5PREVWOwoKCWogPSBlbnQgLSBh
+Z3BfYXJ0aWNpYXNfcGNpX3RhYmxlOwoJcHJpbnRrIChLRVJOX0lORk8gUEZYICJEZXRlY3RlZCBN
+QUkgJXMgY2hpcHNldFxuIiwgZGV2c1tqXS5jaGlwc2V0X25hbWUpOwoKCWJyaWRnZSA9IGFncF9h
+bGxvY19icmlkZ2UoKTsKCWlmICghYnJpZGdlKQoJCXJldHVybiAtRU5PTUVNOwoKI2lmZGVmICBB
+UlRJQ0lBU19ERUJVRwoJLyogR2VyaTogUHJpbnQgYWxsIEFHUCByZWxldmFudCByZWdpc3RlcnMg
+b2YgdGhlIEFydGljaWFTLiAqLwoJYXJ0aWNpYXNfcHJpbnRfYWdwX3JlZ2lzdGVyKHBkZXYpOwoj
+ZW5kaWYKCglicmlkZ2UtPmRldiA9IHBkZXY7CglicmlkZ2UtPmNhcG5keCA9IGNhcF9wdHI7Cgli
+cmlkZ2UtPmRyaXZlciA9ICZhcnRpY2lhc19kcml2ZXI7CgoJLyogU2V0IGEgaGlnaGVyIGFwZXJ0
+dXJlIHNpemUhIE5vdyBpdCBzaG91bGQgYmUgMTI4TUIuICovCglwY2lfd3JpdGVfY29uZmlnX2J5
+dGUocGRldiwgQVJUSUNJQVNfQVBTSVpFLCAweDA2KTsKCglyZXR1cm4gYWdwX2FkZF9icmlkZ2Uo
+YnJpZGdlKTsKfQoKc3RhdGljIHZvaWQgX19kZXZleGl0IGFncF9hcnRpY2lhc19yZW1vdmUoc3Ry
+dWN0IHBjaV9kZXYgKnBkZXYpCnsKCXN0cnVjdCBhZ3BfYnJpZGdlX2RhdGEgKmJyaWRnZSA9IHBj
+aV9nZXRfZHJ2ZGF0YShwZGV2KTsKCglhZ3BfcmVtb3ZlX2JyaWRnZShicmlkZ2UpOwoJYWdwX3B1
+dF9icmlkZ2UoYnJpZGdlKTsKfQoKI2lmZGVmIENPTkZJR19QTQoKc3RhdGljIGludCBhZ3BfYXJ0
+aWNpYXNfc3VzcGVuZChzdHJ1Y3QgcGNpX2RldiAqcGRldiwgcG1fbWVzc2FnZV90IHN0YXRlKQp7
+CglwY2lfc2F2ZV9zdGF0ZSAocGRldik7CglwY2lfc2V0X3Bvd2VyX3N0YXRlIChwZGV2LCBQQ0lf
+RDNob3QpOwoKCXJldHVybiAwOwp9CgpzdGF0aWMgaW50IGFncF9hcnRpY2lhc19yZXN1bWUoc3Ry
+dWN0IHBjaV9kZXYgKnBkZXYpCnsKCXN0cnVjdCBhZ3BfYnJpZGdlX2RhdGEgKmJyaWRnZSA9IHBj
+aV9nZXRfZHJ2ZGF0YShwZGV2KTsKCglwY2lfc2V0X3Bvd2VyX3N0YXRlIChwZGV2LCBQQ0lfRDAp
+OwoJcGNpX3Jlc3RvcmVfc3RhdGUocGRldik7CgoJaWYgKGJyaWRnZS0+ZHJpdmVyID09ICZhcnRp
+Y2lhc19kcml2ZXIpCgkJcmV0dXJuIGFydGljaWFzX2NvbmZpZ3VyZSgpOwoKCXJldHVybiAwOwp9
+CgojZW5kaWYgLyogQ09ORklHX1BNICovCgovKiBtdXN0IGJlIHRoZSBzYW1lIG9yZGVyIGFzIG5h
+bWUgdGFibGUgYWJvdmUgKi8Kc3RhdGljIHN0cnVjdCBwY2lfZGV2aWNlX2lkIGFncF9hcnRpY2lh
+c19wY2lfdGFibGVbXSA9IHsKI2RlZmluZSBJRCh4KSBcCgl7CQkJCQkJXAoJLmNsYXNzCQk9IChQ
+Q0lfQ0xBU1NfQlJJREdFX0hPU1QgPDwgOCksCVwKCS5jbGFzc19tYXNrCT0gfjAsCQkJCVwKCS52
+ZW5kb3IJCT0gUENJX1ZFTkRPUl9JRF9NQUksCQlcCgkuZGV2aWNlCQk9IHgsCQkJCVwKCS5zdWJ2
+ZW5kb3IJPSBQQ0lfQU5ZX0lELAkJCVwKCS5zdWJkZXZpY2UJPSBQQ0lfQU5ZX0lELAkJCVwKCX0K
+CUlEKFBDSV9ERVZJQ0VfSURfTUFJX0FSVElDSUFTKSwKCXsgfQp9OwoKTU9EVUxFX0RFVklDRV9U
+QUJMRShwY2ksIGFncF9hcnRpY2lhc19wY2lfdGFibGUpOwoKc3RhdGljIHN0cnVjdCBwY2lfZHJp
+dmVyIGFncF9hcnRpY2lhc19wY2lfZHJpdmVyID0gewoJLm5hbWUJCT0gImFncGdhcnQtYXJ0aWNp
+YXMiLAoJLmlkX3RhYmxlCT0gYWdwX2FydGljaWFzX3BjaV90YWJsZSwKCS5wcm9iZQkJPSBhZ3Bf
+YXJ0aWNpYXNfcHJvYmUsCgkucmVtb3ZlCQk9IGFncF9hcnRpY2lhc19yZW1vdmUsCiNpZmRlZiBD
+T05GSUdfUE0KCS5zdXNwZW5kCT0gYWdwX2FydGljaWFzX3N1c3BlbmQsCgkucmVzdW1lCQk9IGFn
+cF9hcnRpY2lhc19yZXN1bWUsCiNlbmRpZgp9OwoKc3RhdGljIGludCBfX2luaXQgYWdwX2FydGlj
+aWFzX2luaXQodm9pZCkKewoJaWYgKGFncF9vZmYpCgl7CgkJcmV0dXJuIC1FSU5WQUw7Cgl9CgoJ
+cmV0dXJuIHBjaV9yZWdpc3Rlcl9kcml2ZXIoJmFncF9hcnRpY2lhc19wY2lfZHJpdmVyKTsKfQoK
+c3RhdGljIHZvaWQgX19leGl0IGFncF9hcnRpY2lhc19jbGVhbnVwKHZvaWQpCnsKCXBjaV91bnJl
+Z2lzdGVyX2RyaXZlcigmYWdwX2FydGljaWFzX3BjaV9kcml2ZXIpOwp9Cgptb2R1bGVfaW5pdChh
+Z3BfYXJ0aWNpYXNfaW5pdCk7Cm1vZHVsZV9leGl0KGFncF9hcnRpY2lhc19jbGVhbnVwKTsKCk1P
+RFVMRV9MSUNFTlNFKCJHUEwiKTsKTU9EVUxFX0FVVEhPUigiRGF2ZSBKb25lcyA8ZGF2ZWpAY29k
+ZW1vbmtleS5vcmcudWs+Iik7Cg==
+
+--========GMXBoundary130391137366615--
