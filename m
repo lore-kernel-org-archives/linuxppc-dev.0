@@ -1,21 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1A977681BD
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Jan 2006 10:47:57 +1100 (EST)
-Date: Sat, 14 Jan 2006 15:47:54 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] powerpc: Add FSL SOC library and setup code
-Message-ID: <20060114234754.GB29766@gate.ebshome.net>
-References: <Pine.LNX.4.44.0601131118350.19371-100000@gate.crashing.org>
-	<20060114192158.GS2491@pb15.lixom.net>
+Return-Path: <olof@lixom.net>
+Date: Sat, 14 Jan 2006 18:42:22 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Better machine descriptions and kill magic
+	numbers
+Message-ID: <20060115004221.GU2491@pb15.lixom.net>
+References: <1137217531.4854.39.camel@localhost.localdomain>
+	<20060114184040.GR2491@pb15.lixom.net>
+	<1137272686.4855.17.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060114192158.GS2491@pb15.lixom.net>
-Cc: Kumar Gala <galak@gate.crashing.org>, linuxppc-embedded@ozlabs.org,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <1137272686.4855.17.camel@localhost.localdomain>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jan 14, 2006 at 01:21:58PM -0600, Olof Johansson wrote:
-> > +
-> > +static phys_addr_t immrbase = -1;
+On Sun, Jan 15, 2006 at 08:04:46AM +1100, Benjamin Herrenschmidt wrote:
 > 
-> What does immr mean? Maybe a short comment would be good.
+> > Because of this, I suggest keeping the mach_ part in the syntax, i.e,
+> > to use:
+> > 
+> > machine_is(mach_powermac) instead, and not do preprocessor mangling of
+> > the label name. The same would go for define_machine().
+> > 
+> > It would seem to make some sense to keep the platform types looking
+> > like defines (i.e. MACH_POWERMAC instead of mach_powermac) to keep it
+> > consistent with the CPU and firmware feature testing, but the way it's
+> > implemented that doesn't make much sense. That's a bit of a shame.
+> 
+> I'm not sure about these ... I'm definitely not fan of going uppercase (and
+> it makes no sense vs. the implementation as it's not macros). I also don't
 
-IMHO, this is not needed because _everybody_ who is working 
-with these chips know what IMMR means. And there cannot be _any_ 
-confusion about it. Let's not add useless comments.
+Yeah, that's what I meant with doesn't make sense in this case. I was
+just thinking out loud.
 
-We don't add comments describing what MMU, PTE, PCI and IOMMU means, 
-do we? Any chip specific code has tons of strange abbreviations 
-which might be puzzling for anybody who isn't familiar with this chip 
-but are quite clear for anybody who are.
+> get your problem with grep... the "mach_" construct is totally invisible,
+> so people wouldn't grep for it, but for "powermac" alone.
+> 
+> Or do you mean a grep on "powermac" might return too many things unrelated ?
+> 
+> It should be easy enough in this case to grep for machine_is(powermac) instead
+> then, after all, that's the only possible use...
 
--- 
-Eugene
+One drawback is that source navigation tools like tags and cscope probably
+won't find it, and the base strings are quite generic (powermac, cbe/cell,
+etc). A stringbased grep will, sure.
+
+> > In the probe loop, ppc_md is copied over for each probe, that seems
+> > wasteful. 
+> 
+> I changed that from the old way indeed to allow the probe() function to
+> override things in ppc_md.
+> 
+> > Shouldn't the probe routines use and modify their own
+> > machdep_calls instead of ppc_md, so the copying can be done only once,
+> > after a match is found?
+> 
+> I don't like modifying their own machdep calls because the name of the
+> structure is hidden. In general, I prefer that things continue to only
+> access ppc_md. and not their own machine structure that goes away. That
+> means that the code "patching" it can be moved away etc... without
+> special case instead of having a special case in probe() that has to
+> reference the machine specific copy...
+
+Ok.
+
+> I doubt the memcpy per machine at boot will cause any kind of
+> significant performance issue ...
+
+Yeah, that's why I said it seemed wasteful, not that it'd be a
+performance issue.
