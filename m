@@ -1,15 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <olof@lixom.net>
+Date: Sun, 15 Jan 2006 01:15:33 -0600
+To: Eugene Surovegin <ebs@ebshome.net>
+Subject: Re: [PATCH] powerpc: Add FSL SOC library and setup code
+Message-ID: <20060115071533.GA932@pb15.lixom.net>
+References: <Pine.LNX.4.44.0601131118350.19371-100000@gate.crashing.org>
+	<20060114192158.GS2491@pb15.lixom.net>
+	<20060114234754.GB29766@gate.ebshome.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17353.59069.640198.595911@cargo.ozlabs.ibm.com>
-Date: Sun, 15 Jan 2006 17:07:57 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: will schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: powerpc.git tree
-In-Reply-To: <43C55852.2060703@vnet.ibm.com>
-References: <17348.60119.801379.127209@cargo.ozlabs.ibm.com>
-	<43C55852.2060703@vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+In-Reply-To: <20060114234754.GB29766@gate.ebshome.net>
+From: Olof Johansson <olof@lixom.net>
+Cc: Kumar Gala <galak@gate.crashing.org>, linuxppc-embedded@ozlabs.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-will schmidt writes:
-
-> Paul Mackerras wrote:
+On Sat, Jan 14, 2006 at 03:47:54PM -0800, Eugene Surovegin wrote:
+> On Sat, Jan 14, 2006 at 01:21:58PM -0600, Olof Johansson wrote:
+> > > +
+> > > +static phys_addr_t immrbase = -1;
 > > 
-> > That means that anyone who is following the powerpc.git tree by doing
-> > pulls periodically will need to reset their tree too.  Otherwise each
-> > pull will do an unnecessary merge.
+> > What does immr mean? Maybe a short comment would be good.
 > 
-> Hi Paul,
-> 
->    By reset, do you mean to delete the local tree and pull a fresh
->    one, or something fancier? 
+> IMHO, this is not needed because _everybody_ who is working 
+> with these chips know what IMMR means. And there cannot be _any_ 
+> confusion about it. Let's not add useless comments.
 
-The powerpc.git tree is now identical to Linus' tree as of a day or so
-ago.  There are several ways you can reset your tree:
+I haven't been exposed much yet to embedded 32-bit PPC, I thought at
+first that it was something chip-specific, not an architected feature
+common across the families. I agree, it doesn't really need further
+explanation in this case.
 
-- make a fresh clone of Linus' tree, and make its .git/remotes/powerpc
-  point at the powerpc.git tree on kernel.org, or
 
-- do "git fetch -f powerpc" (substitute whatever remote name you use
-  for the powerpc.git tree) (according to Stephen Rothwell), or
-
-- do a pull as you would normally do, then throw away the merge and
-  the extra objects by doing:
-	git reset --hard FETCH_HEAD
-	git prune
-
-- or you can delete the local tree and do a fresh clone.
-
-I will start putting stuff in powerpc.git in the next day or so.
-
-Paul.
+-Olof
