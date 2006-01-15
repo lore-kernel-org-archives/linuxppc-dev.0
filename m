@@ -1,23 +1,20 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E1F23689C0
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2006 03:17:36 +1100 (EST)
-Subject: Re: [linux-usb-devel] Re: [2.6 patch] remove unused tmp_buf_sem's
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg KH <gregkh@suse.de>
-In-Reply-To: <20060114034903.GA23074@suse.de>
-References: <17348.61824.49889.569928@jaguar.mkp.net>
-	<20060114020816.GW29663@stusta.de>  <20060114034903.GA23074@suse.de>
-Content-Type: text/plain
-Date: Sun, 15 Jan 2006 15:46:16 +0000
-Message-Id: <1137339976.2350.2.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 2289C689F1
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2006 08:48:41 +1100 (EST)
+Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <19351.1137053713@www55.gmx.net>
+References: <1137041067.7774.25.camel@localhost.localdomain>
+	<19351.1137053713@www55.gmx.net>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 16 Jan 2006 08:48:28 +1100
+Message-Id: <1137361708.4823.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: akpm@osdl.org, Jes Sorensen <jes@trained-monkey.org>, tony.luck@intel.com,
-	linux-ia64@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
-	linuxppc-dev@ozlabs.org, torvalds@osdl.org, R.E.Wolff@BitWizard.nl
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Gwe, 2006-01-13 at 19:49 -0800, Greg KH wrote:
-> On Sat, Jan 14, 2006 at 03:08:16AM +0100, Adrian Bunk wrote:
-> > <--  snip  -->
-> > 
-> > 
-> > tmp_buf_sem sems to be a common name for something completely unused...
 
+> Please take a look at the end of my previous mail, where I included the
+> debug messages of the driver and the driver code itself. The log shows that
+> the physical address is mapped (IMHO) to the PCI memory range (>
+> 0x0c0000000). Is this correct? Shouldn't it be mapped to the system memory
+> address range?
 
-That would be correct. The old tty driver layer used to call ->write
-from both kernel and user contexts according to a flag. Drivers then all
-ended up with the same code copying it into a tmp buffer and using a
-locking semaphore. 
+I don't understand. I would need to now more about what the bridge
+actually does to get any sense out of that.
 
-Linus took out that code and arranged that ->write always got a kernel
-buffer so the remainders should indeed go.
-
-Alan
+> The aperture size is 4MB, page_order should be 1 and num_entries = 1024.
+> 
+> Hope this helps!? :-)
+> 
+> Thanks!
+> 
+> Regards,
+> 
+> Gerhard
+> 
+> -- 
+> DSL-Aktion wegen großer Nachfrage bis 28.2.2006 verlängert:
+> GMX DSL-Flatrate 1 Jahr kostenlos* http://www.gmx.net/de/go/dsl
+> 
+> 
