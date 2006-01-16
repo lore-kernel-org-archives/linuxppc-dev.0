@@ -1,15 +1,24 @@
-Return-Path: <wd@denx.de>
-To: "jeanwelly" <jeanwelly@126.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: How to check which CPU we are using? PPC? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sun, 15 Jan 2006 23:07:53 +0800."
-	<43CA7AF1.11609B.03655>
-Date: Sun, 15 Jan 2006 18:19:49 +0100
-Sender: wd@denx.de
-Message-Id: <20060115171949.2EB36353AB0@atlas.denx.de>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+Return-Path: <dhlii@dlasys.net>
+Received: from xm.dlasys.net (unknown [24.152.213.223])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 08DBB68A25
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 16 Jan 2006 16:31:06 +1100 (EST)
+Received: from [206.223.20.50] (port=49187)
+	by xm.dlasys.net with esmtp (Exim 4.60 #1 (Debian))
+	id 1Eyj2L-0002iM-QJ
+	for <linuxppc-embedded@ozlabs.org>; Tue, 17 Jan 2006 00:05:41 -0500
+Message-ID: <43CB2EAB.7080307@dlasys.net>
+Date: Mon, 16 Jan 2006 00:27:07 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: [PATCH 00/10] Xilinx Virtex-* updates
+References: <11367955793438-git-send-email-grant.likely@secretlab.ca>
+	<87u0c8q9f4.fsf@48ers.dk>
+In-Reply-To: <87u0c8q9f4.fsf@48ers.dk>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,27 +29,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <43CA7AF1.11609B.03655> you wrote:
-> SG93IHRvIGNoZWNrIHdoaWNoIENQVSB3ZSBhcmUgdXNpbmc/IEFueSBtZXRob2RzPw0KDQoJDQpU
-> aGFua3MhDQoNCqGhoaGhoaGhoaGhoaGhoaFqZWFud2VsbHkNCqGhoaGhoaGhoaGhoaGhoaFqZWFu
-> d2VsbHlAMTI2LmNvbQ0KoaGhoaGhoaGhoaGhoaGhoaGhoaEyMDA2LTAxLTE1DQpfX19fX19fX19f
-> X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1lbWJlZGRlZCBt
-> YWlsaW5nIGxpc3QKTGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZwpodHRwczovL296bGFicy5v
-> cmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZA==
+I merged your ml403 changes into my copy of the kernel.org linux-2.6 git
+ repository, and I am working to adapt my Pico E12-Virtex-4 port to work
+with them. I have mostly succeeded, but I am still working through a few
+rough spots.
 
-Please fix your mailer. Don't use base64 encsding. Post  plain  text,
-please.
-
-> How to check which CPU we are using? Any methods?
-
-Check the print on the processor? Check the documentation? Check  the
-schematics?
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Use C++ to confuse your enemies; use C to produce stable code.
+Peter Korsgaard wrote:
+>>>>>>"grant" == grant likely <grant.likely@secretlab.ca> writes:
+> 
+> 
+>  grant> Here's a repost of my Xilinx ML300 and ML403 patches with a few
+>  grant> cleanups, a bit of patch reordering, and rebased to 2.6.15.
+> 
+> Nice, ..
+> 
+>  grant> I've tested on an ML403
+>  grant> Can someone test on an ML300?  (I no longer have one)
+> 
+> Works fine here on a ML300-alike board.
+> 
