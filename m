@@ -1,18 +1,32 @@
-Return-Path: <galak@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ARNDB@de.ibm.com>
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8C9926891D
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2006 04:00:04 +1100 (EST)
-Date: Mon, 16 Jan 2006 10:53:22 -0600 (CST)
-From: Kumar Gala <galak@gate.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH][UPDATE] powerpc: Add CONFIG_DEFAULT_UIMAGE to build a uImage
-	by default for a board
-Message-ID: <Pine.LNX.4.44.0601161052560.30647-100000@gate.crashing.org>
+	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CCE6D68A1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2006 03:09:59 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate2.de.ibm.com (8.12.10/8.12.10) with ESMTP id k0GCkaI5121750
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2006 12:46:44 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VERS6.8) with ESMTP
+	id k0GCjKp8193078
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2006 13:45:20 +0100
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k0GCjKY4016299
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2006 13:45:20 +0100
+In-Reply-To: <20060116121157.GA7171@suse.de>
+Subject: Re: [PATCH] fix spider compilation
+To: Olaf Hering <olh@suse.de>
+Message-ID: <OFB9B4EF24.E1169CA8-ONC12570F8.0044F4E5-C12570F8.00461122@de.ibm.com>
+From: Arnd Bergmann <ARNDB@de.ibm.com>
+Date: Mon, 16 Jan 2006 13:45:19 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, jgarzik@pobox.com,
+	Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,48 +36,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Embedded boards that u-boot require a kernel image in the uImage format.
-This allows a given board to specify it wants a uImage built by default.
+Olaf Hering <olh@suse.de> wrote on 01/16/2006 01:11:57 PM:
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>
+> linux-2.6.15/drivers/net/spider_net.c: In function
+> `spider_net_set_txdescr_cmdstat':
+> linux-2.6.15/drivers/net/spider_net.c:890: error: `IPPROTO_TCP'
+> undeclared (first use in this function)
+> linux-2.6.15/drivers/net/spider_net.c:890: error: (Each undeclared
+> identifier is reported only once
+> linux-2.6.15/drivers/net/spider_net.c:890: error: for each function
+> it appears in.)
+> linux-2.6.15/drivers/net/spider_net.c:892: error: `IPPROTO_UDP'
+> undeclared (first use in this function)
+>
+> Signed-off-by: Olaf Hering <olh@suse.de>
 
----
-commit dc9904232f13395c8aa3a46a3cce759c82c03278
-tree 7f2d49a2bfffdfb5eaae3693fb749a1243a94c1c
-parent 7ba6450ca6461a19638f963af152e0b5ab00ef15
-author Kumar Gala <galak@kernel.crashing.org> Mon, 16 Jan 2006 10:58:51 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Mon, 16 Jan 2006 10:58:51 -0600
 
- arch/powerpc/Kconfig  |    6 ++++++
- arch/powerpc/Makefile |    1 +
- 2 files changed, 7 insertions(+), 0 deletions(-)
+Thanks. I already submitted the same patch to Jeff Garzik,
+but had a problem with a quilt bug that caused another patch
+in the series to fail.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index df338c5..80d114a 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -83,6 +83,12 @@ config GENERIC_TBSYNC
- 	default y if PPC32 && SMP
- 	default n
- 
-+config DEFAULT_UIMAGE
-+	bool
-+	help
-+	  Used to allow a board to specify it wants a uImage built by default
-+	default n
-+
- menu "Processor support"
- choice
- 	prompt "Processor Type"
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 44dd82b..15fc3e9 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -142,6 +142,7 @@ drivers-$(CONFIG_OPROFILE)	+= arch/power
- # Default to zImage, override when needed
- defaultimage-y			:= zImage
- defaultimage-$(CONFIG_PPC_ISERIES) := vmlinux
-+defaultimage-$(CONFIG_DEFAULT_UIMAGE) := uImage
- KBUILD_IMAGE := $(defaultimage-y)
- all: $(KBUILD_IMAGE)
- 
+Jeff, did you get the '[RESEND 2]' patches for spidernet?
+Sorry for messing this up twice before, but I'm pretty
+sure that I fixed up the diff now and the contents are
+somewhat important, at least the compile fix.
+
+      Arnd <><
+
+>  drivers/net/spider_net.c |    1 +
+>  1 files changed, 1 insertion(+)
+>
+> Index: linux-2.6.15/drivers/net/spider_net.c
+> ===================================================================
+> --- linux-2.6.15.orig/drivers/net/spider_net.c
+> +++ linux-2.6.15/drivers/net/spider_net.c
+> @@ -33,6 +33,7 @@
+>  #include <linux/init.h>
+>  #include <linux/ioport.h>
+>  #include <linux/ip.h>
+> +#include <linux/in.h>
+>  #include <linux/kernel.h>
+>  #include <linux/mii.h>
+>  #include <linux/module.h>
