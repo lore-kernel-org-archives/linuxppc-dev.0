@@ -1,17 +1,24 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <hollis@penguinppc.org>
+Received: from fall-curlleaf.atl.sa.earthlink.net
+	(fall-curlleaf.atl.sa.earthlink.net [207.69.195.105])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 00B8768A1B
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Jan 2006 23:12:51 +1100 (EST)
-Date: Mon, 16 Jan 2006 13:12:44 +0100
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] drop linuxppc64-dev
-Message-ID: <20060116121244.GB7171@suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AFD8368A42
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2006 03:03:29 +1100 (EST)
+Received: from pop-savannah.atl.sa.earthlink.net ([207.69.195.69])
+	by fall-curlleaf.atl.sa.earthlink.net with esmtp (Exim 4.34)
+	id 1EyWee-00016J-HM
+	for linuxppc-dev@ozlabs.org; Mon, 16 Jan 2006 10:52:24 -0500
+Subject: Re: [PATCH] drop linuxppc64-dev
+From: Hollis Blanchard <hollis@penguinppc.org>
+To: Olaf Hering <olh@suse.de>
+In-Reply-To: <20060116121244.GB7171@suse.de>
+References: <20060116121244.GB7171@suse.de>
+Content-Type: text/plain
+Date: Mon, 16 Jan 2006 09:52:11 -0600
+Message-Id: <1137426731.22151.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2006-01-16 at 13:12 +0100, Olaf Hering wrote:
+> Everything is merged into arch/powerpc now.
+> Stop cross-posting.
 
-Everything is merged into arch/powerpc now.
-Stop cross-posting.
+> --- linux-2.6.15-olh.orig/MAINTAINERS
+> +++ linux-2.6.15-olh/MAINTAINERS
+> @@ -527,7 +527,7 @@ S:   Supported
+>  BROADBAND PROCESSOR ARCHITECTURE
+>  P:     Arnd Bergmann
+>  M:     arnd@arndb.de
+> -L:     linuxppc64-dev@ozlabs.org
+> +L:     linuxppc-dev@ozlabs.org
+>  W:     http://linuxppc64.org
+>  S:     Supported
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+Are you suggesting that nobody should ever use linuxppc64-dev now? If
+so, patching MAINTAINERS doesn't seem like the right way to enforce
+that.
 
- Documentation/powerpc/hvcs.txt |    2 +-
- MAINTAINERS                    |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Do we want to think about merging the mailing lists? Both seem fairly
+high-volume right now (compare
+http://ozlabs.org/pipermail/linuxppc64-dev/ and
+http://ozlabs.org/pipermail/linuxppc-dev/). linuxppc-embedded is
+separate. There are certainly lots of emails and patches that are common
+to both 32- and 64-bit, though...
 
-Index: linux-2.6.15-olh/Documentation/powerpc/hvcs.txt
-===================================================================
---- linux-2.6.15-olh.orig/Documentation/powerpc/hvcs.txt
-+++ linux-2.6.15-olh/Documentation/powerpc/hvcs.txt
-@@ -560,7 +560,7 @@ The proper channel for reporting bugs is
- distribution company that provided your OS or by posting issues to the
- ppc64 development mailing list at:
- 
--linuxppc64-dev@lists.linuxppc.org
-+linuxppc-dev@ozlabs.org
- 
- This request is to provide a documented and searchable public exchange
- of the problems and solutions surrounding this driver for the benefit of
-Index: linux-2.6.15-olh/MAINTAINERS
-===================================================================
---- linux-2.6.15-olh.orig/MAINTAINERS
-+++ linux-2.6.15-olh/MAINTAINERS
-@@ -527,7 +527,7 @@ S:   Supported
- BROADBAND PROCESSOR ARCHITECTURE
- P:	Arnd Bergmann
- M:	arnd@arndb.de
--L:	linuxppc64-dev@ozlabs.org
-+L:	linuxppc-dev@ozlabs.org
- W:	http://linuxppc64.org
- S:	Supported
- 
-@@ -1606,7 +1606,7 @@ P:	Anton Blanchard
- M:	anton@samba.org
- M:	anton@au.ibm.com
- W:	http://linuxppc64.org
--L:	linuxppc64-dev@ozlabs.org
-+L:	linuxppc-dev@ozlabs.org
- S:	Supported
- 
- LINUX SECURITY MODULE (LSM) FRAMEWORK
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+The subscriber lists don't overlap 100%, but the difference might be
+small enough not to matter to many people.
+
+-Hollis
