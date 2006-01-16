@@ -1,23 +1,20 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from fall-curlleaf.atl.sa.earthlink.net
-	(fall-curlleaf.atl.sa.earthlink.net [207.69.195.105])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AFD8368A42
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2006 03:03:29 +1100 (EST)
-Received: from pop-savannah.atl.sa.earthlink.net ([207.69.195.69])
-	by fall-curlleaf.atl.sa.earthlink.net with esmtp (Exim 4.34)
-	id 1EyWee-00016J-HM
-	for linuxppc-dev@ozlabs.org; Mon, 16 Jan 2006 10:52:24 -0500
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A89F968A5A
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2006 03:30:40 +1100 (EST)
+Date: Mon, 16 Jan 2006 17:30:35 +0100
+From: Olaf Hering <olh@suse.de>
+To: Hollis Blanchard <hollis@penguinppc.org>
 Subject: Re: [PATCH] drop linuxppc64-dev
-From: Hollis Blanchard <hollis@penguinppc.org>
-To: Olaf Hering <olh@suse.de>
-In-Reply-To: <20060116121244.GB7171@suse.de>
+Message-ID: <20060116163035.GA13973@suse.de>
 References: <20060116121244.GB7171@suse.de>
-Content-Type: text/plain
-Date: Mon, 16 Jan 2006 09:52:11 -0600
-Message-Id: <1137426731.22151.8.camel@localhost.localdomain>
+	<1137426731.22151.8.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1137426731.22151.8.camel@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,33 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-01-16 at 13:12 +0100, Olaf Hering wrote:
-> Everything is merged into arch/powerpc now.
-> Stop cross-posting.
+ On Mon, Jan 16, Hollis Blanchard wrote:
 
-> --- linux-2.6.15-olh.orig/MAINTAINERS
-> +++ linux-2.6.15-olh/MAINTAINERS
-> @@ -527,7 +527,7 @@ S:   Supported
->  BROADBAND PROCESSOR ARCHITECTURE
->  P:     Arnd Bergmann
->  M:     arnd@arndb.de
-> -L:     linuxppc64-dev@ozlabs.org
-> +L:     linuxppc-dev@ozlabs.org
->  W:     http://linuxppc64.org
->  S:     Supported
+> Are you suggesting that nobody should ever use linuxppc64-dev now? If
+> so, patching MAINTAINERS doesn't seem like the right way to enforce
+> that.
 
-Are you suggesting that nobody should ever use linuxppc64-dev now? If
-so, patching MAINTAINERS doesn't seem like the right way to enforce
-that.
+It felt like a good starting point for this kind of discussion. :-)
 
-Do we want to think about merging the mailing lists? Both seem fairly
-high-volume right now (compare
-http://ozlabs.org/pipermail/linuxppc64-dev/ and
-http://ozlabs.org/pipermail/linuxppc-dev/). linuxppc-embedded is
-separate. There are certainly lots of emails and patches that are common
-to both 32- and 64-bit, though...
-
-The subscriber lists don't overlap 100%, but the difference might be
-small enough not to matter to many people.
-
--Hollis
+-- 
+short story of a lazy sysadmin:
+ alias appserv=wotan
