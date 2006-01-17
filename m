@@ -1,15 +1,15 @@
 Return-Path: <jotken@softadvances.com>
 Received: from smtpauth07.mail.atl.earthlink.net
 	(smtpauth07.mail.atl.earthlink.net [209.86.89.67])
-	by ozlabs.org (Postfix) with ESMTP id 60AA96893D
+	by ozlabs.org (Postfix) with ESMTP id E5D7968916
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Jan 2006 11:46:41 +1100 (EST)
-Message-ID: <43CC3E01.6020208@softadvances.com>
-Date: Mon, 16 Jan 2006 18:44:49 -0600
+	Tue, 17 Jan 2006 11:58:52 +1100 (EST)
+Message-ID: <43CC3CD6.2080505@softadvances.com>
+Date: Mon, 16 Jan 2006 18:39:50 -0600
 From: John Otken <jotken@softadvances.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: [Patch 2/3] Add Yosemite Platform defconfig
+Subject: [Patch 1/3] Support AMCC Yosemite 440EP and Yellowstone 440GR (v3)
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,1075 +21,686 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add Yosemite Platform (AMCC 440EP) defconfig
+This updated patch adds support for AMCC 440EP Yosemite
+and 440GR Yellowstone evaluation boards.
+
+I tested it against the 2.6.15 kernel on both boards using
+gcc 4.0.0 (ELDK 4.0).
+
+The Yosemite platform files are based on Wade Farnsworth's
+Bamboo code.  There is only a single board name macro that
+depends on CONFIG_YOSEMITE vs CONFIG_YELLOWSTONE so I
+didn't create an otherwise identical yellowstone.c/h.
+
+The defconfig files are in parts 2 and 3.
+
+This patch supersedes "Patch: [PATCH 1/3] Support AMCC
+Yosemite 440EP and Yellowstone 440GR (v2)" from 9-03:
+http://patchwork.ozlabs.org/linuxppc/patch?id=2240
+
+This patch has Stefan Roese's YOSEMITE_PCI_IO_BASE bug fix.
+
+440EP USB support requires Wade Farnsworth's patches:
+
+Sep19  W Farnsworth  Add support for the AMCC 440EP to the
+                      PowerPC OHCI USB host driver
+Sep19  W Farnsworth  Add support for the USB Device interfaces
+                      on the AMCC 440EP
+Sep20  W Farnsworth  Add support for USB to 440EP platform files
+http://patchwork.ozlabs.org/linuxppc//patch?id=2481
+
+Comments are welcome.
 
 Signed-off-by: John Otken <jotken@softadvances.com>
 
 
 
-diff -uprN a/arch/ppc/configs/yosemite_defconfig c/arch/ppc/configs/yosemite_defconfig
---- a/arch/ppc/configs/yosemite_defconfig	1969-12-31 17:00:00.000000000 -0700
-+++ c/arch/ppc/configs/yosemite_defconfig	2006-01-15 07:56:29.000000000 -0600
-@@ -0,0 +1,1062 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.15
-+# Sun Jan 15 07:48:26 2006
-+#
-+CONFIG_MMU=y
-+CONFIG_GENERIC_HARDIRQS=y
-+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_PPC=y
-+CONFIG_PPC32=y
-+CONFIG_GENERIC_NVRAM=y
-+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-+
-+#
-+# Code maturity level options
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_CLEAN_COMPILE=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+
-+#
-+# General setup
-+#
-+CONFIG_LOCALVERSION=""
-+CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SWAP=y
-+CONFIG_SYSVIPC=y
-+# CONFIG_POSIX_MQUEUE is not set
-+# CONFIG_BSD_PROCESS_ACCT is not set
-+CONFIG_SYSCTL=y
-+# CONFIG_AUDIT is not set
-+# CONFIG_HOTPLUG is not set
-+CONFIG_KOBJECT_UEVENT=y
-+# CONFIG_IKCONFIG is not set
-+CONFIG_INITRAMFS_SOURCE=""
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_EMBEDDED=y
-+CONFIG_KALLSYMS=y
-+# CONFIG_KALLSYMS_ALL is not set
-+# CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_BASE_FULL=y
-+CONFIG_FUTEX=y
-+CONFIG_EPOLL=y
-+CONFIG_SHMEM=y
-+CONFIG_CC_ALIGN_FUNCTIONS=0
-+CONFIG_CC_ALIGN_LABELS=0
-+CONFIG_CC_ALIGN_LOOPS=0
-+CONFIG_CC_ALIGN_JUMPS=0
-+# CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
-+
-+#
-+# Loadable module support
-+#
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+# CONFIG_MODULE_FORCE_UNLOAD is not set
-+CONFIG_OBSOLETE_MODPARM=y
-+# CONFIG_MODVERSIONS is not set
-+# CONFIG_MODULE_SRCVERSION_ALL is not set
-+CONFIG_KMOD=y
-+
-+#
-+# Block layer
-+#
-+# CONFIG_LBD is not set
-+
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_DEADLINE is not set
-+# CONFIG_DEFAULT_CFQ is not set
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="anticipatory"
-+
-+#
-+# Processor
-+#
-+# CONFIG_6xx is not set
-+# CONFIG_40x is not set
-+CONFIG_44x=y
-+# CONFIG_POWER3 is not set
-+# CONFIG_POWER4 is not set
-+# CONFIG_8xx is not set
-+# CONFIG_E200 is not set
-+# CONFIG_E500 is not set
-+CONFIG_PPC_FPU=y
-+CONFIG_BOOKE=y
-+CONFIG_PTE_64BIT=y
-+CONFIG_PHYS_64BIT=y
-+# CONFIG_MATH_EMULATION is not set
-+# CONFIG_KEXEC is not set
-+# CONFIG_CPU_FREQ is not set
-+CONFIG_4xx=y
-+CONFIG_WANT_EARLY_SERIAL=y
-+
-+#
-+# IBM 4xx options
-+#
-+# CONFIG_BAMBOO is not set
-+# CONFIG_EBONY is not set
-+# CONFIG_LUAN is not set
-+# CONFIG_YUCCA is not set
-+# CONFIG_OCOTEA is not set
-+# CONFIG_YELLOWSTONE is not set
-+CONFIG_YOSEMITE=y
-+CONFIG_440EP=y
-+CONFIG_440=y
-+CONFIG_440_FPU=y
-+CONFIG_IBM440EP_ERR42=y
-+CONFIG_IBM_OCP=y
-+# CONFIG_PPC4xx_DMA is not set
-+CONFIG_PPC_GEN550=y
-+CONFIG_NOT_COHERENT_CACHE=y
-+
-+#
-+# Platform options
-+#
-+# CONFIG_PC_KEYBOARD is not set
-+# CONFIG_HIGHMEM is not set
-+# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+# CONFIG_PREEMPT is not set
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+# CONFIG_SPARSEMEM_STATIC is not set
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+CONFIG_BINFMT_ELF=y
-+# CONFIG_BINFMT_MISC is not set
-+CONFIG_CMDLINE_BOOL=y
-+CONFIG_CMDLINE="ip=on"
-+CONFIG_SECCOMP=y
-+CONFIG_ISA_DMA_API=y
-+
-+#
-+# Bus options
-+#
-+# CONFIG_PPC_I8259 is not set
-+CONFIG_PPC_INDIRECT_PCI=y
-+CONFIG_PCI=y
-+CONFIG_PCI_DOMAINS=y
-+# CONFIG_PCI_LEGACY_PROC is not set
-+# CONFIG_PCI_DEBUG is not set
-+
-+#
-+# PCCARD (PCMCIA/CardBus) support
-+#
-+# CONFIG_PCCARD is not set
-+
-+#
-+# Advanced setup
-+#
-+# CONFIG_ADVANCED_OPTIONS is not set
-+
-+#
-+# Default settings for advanced configuration options are used
-+#
-+CONFIG_HIGHMEM_START=0xfe000000
-+CONFIG_LOWMEM_SIZE=0x30000000
-+CONFIG_KERNEL_START=0xc0000000
-+CONFIG_TASK_SIZE=0x80000000
-+CONFIG_CONSISTENT_START=0xff100000
-+CONFIG_CONSISTENT_SIZE=0x00200000
-+CONFIG_BOOT_LOAD=0x01000000
-+
-+#
-+# Networking
-+#
-+CONFIG_NET=y
-+
-+#
-+# Networking options
-+#
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+# CONFIG_IP_MULTICAST is not set
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_PNP_DHCP=y
-+# CONFIG_IP_PNP_BOOTP is not set
-+# CONFIG_IP_PNP_RARP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_ARPD is not set
-+# CONFIG_SYN_COOKIES is not set
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_TUNNEL is not set
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_BIC=y
-+
-+#
-+# IP: Virtual Server Configuration
-+#
-+# CONFIG_IP_VS is not set
-+# CONFIG_IPV6 is not set
-+CONFIG_NETFILTER=y
-+# CONFIG_NETFILTER_DEBUG is not set
-+
-+#
-+# Core Netfilter Configuration
-+#
-+# CONFIG_NETFILTER_NETLINK is not set
-+# CONFIG_NF_CONNTRACK is not set
-+
-+#
-+# IP: Netfilter Configuration
-+#
-+# CONFIG_IP_NF_CONNTRACK is not set
-+# CONFIG_IP_NF_QUEUE is not set
-+# CONFIG_IP_NF_IPTABLES is not set
-+# CONFIG_IP_NF_ARPTABLES is not set
-+
-+#
-+# DCCP Configuration (EXPERIMENTAL)
-+#
-+# CONFIG_IP_DCCP is not set
-+
-+#
-+# SCTP Configuration (EXPERIMENTAL)
-+#
-+# CONFIG_IP_SCTP is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_NET_DIVERT is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+
-+#
-+# QoS and/or fair queueing
-+#
-+# CONFIG_NET_SCHED is not set
-+
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_IEEE80211 is not set
-+
-+#
-+# Device Drivers
-+#
-+
-+#
-+# Generic Driver Options
-+#
-+# CONFIG_STANDALONE is not set
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+# CONFIG_FW_LOADER is not set
-+# CONFIG_DEBUG_DRIVER is not set
-+
-+#
-+# Connector - unified userspace <-> kernelspace linker
-+#
-+# CONFIG_CONNECTOR is not set
-+
-+#
-+# Memory Technology Devices (MTD)
-+#
-+# CONFIG_MTD is not set
-+
-+#
-+# Parallel port support
-+#
-+# CONFIG_PARPORT is not set
-+
-+#
-+# Plug and Play support
-+#
-+
-+#
-+# Block devices
-+#
-+# CONFIG_BLK_DEV_FD is not set
-+# CONFIG_BLK_CPQ_DA is not set
-+# CONFIG_BLK_CPQ_CISS_DA is not set
-+# CONFIG_BLK_DEV_DAC960 is not set
-+# CONFIG_BLK_DEV_UMEM is not set
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+# CONFIG_BLK_DEV_LOOP is not set
-+# CONFIG_BLK_DEV_NBD is not set
-+# CONFIG_BLK_DEV_SX8 is not set
-+# CONFIG_BLK_DEV_UB is not set
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BLK_DEV_RAM_COUNT=16
-+CONFIG_BLK_DEV_RAM_SIZE=4096
-+CONFIG_BLK_DEV_INITRD=y
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+
-+#
-+# ATA/ATAPI/MFM/RLL support
-+#
-+CONFIG_IDE=y
-+CONFIG_BLK_DEV_IDE=y
-+
-+#
-+# Please see Documentation/ide.txt for help/info on IDE drives
-+#
-+# CONFIG_BLK_DEV_IDE_SATA is not set
-+CONFIG_BLK_DEV_IDEDISK=y
-+# CONFIG_IDEDISK_MULTI_MODE is not set
-+# CONFIG_BLK_DEV_IDECD is not set
-+# CONFIG_BLK_DEV_IDETAPE is not set
-+# CONFIG_BLK_DEV_IDEFLOPPY is not set
-+# CONFIG_BLK_DEV_IDESCSI is not set
-+# CONFIG_IDE_TASK_IOCTL is not set
-+
-+#
-+# IDE chipset support/bugfixes
-+#
-+CONFIG_IDE_GENERIC=y
-+CONFIG_BLK_DEV_IDEPCI=y
-+# CONFIG_IDEPCI_SHARE_IRQ is not set
-+# CONFIG_BLK_DEV_OFFBOARD is not set
-+# CONFIG_BLK_DEV_GENERIC is not set
-+# CONFIG_BLK_DEV_OPTI621 is not set
-+# CONFIG_BLK_DEV_SL82C105 is not set
-+CONFIG_BLK_DEV_IDEDMA_PCI=y
-+# CONFIG_BLK_DEV_IDEDMA_FORCED is not set
-+# CONFIG_IDEDMA_PCI_AUTO is not set
-+# CONFIG_BLK_DEV_AEC62XX is not set
-+# CONFIG_BLK_DEV_ALI15X3 is not set
-+# CONFIG_BLK_DEV_AMD74XX is not set
-+CONFIG_BLK_DEV_CMD64X=y
-+# CONFIG_BLK_DEV_TRIFLEX is not set
-+# CONFIG_BLK_DEV_CY82C693 is not set
-+# CONFIG_BLK_DEV_CS5520 is not set
-+# CONFIG_BLK_DEV_CS5530 is not set
-+# CONFIG_BLK_DEV_HPT34X is not set
-+# CONFIG_BLK_DEV_HPT366 is not set
-+# CONFIG_BLK_DEV_SC1200 is not set
-+# CONFIG_BLK_DEV_PIIX is not set
-+# CONFIG_BLK_DEV_IT821X is not set
-+# CONFIG_BLK_DEV_NS87415 is not set
-+# CONFIG_BLK_DEV_PDC202XX_OLD is not set
-+# CONFIG_BLK_DEV_PDC202XX_NEW is not set
-+# CONFIG_BLK_DEV_SVWKS is not set
-+# CONFIG_BLK_DEV_SIIMAGE is not set
-+# CONFIG_BLK_DEV_SLC90E66 is not set
-+# CONFIG_BLK_DEV_TRM290 is not set
-+# CONFIG_BLK_DEV_VIA82CXXX is not set
-+# CONFIG_IDE_ARM is not set
-+CONFIG_BLK_DEV_IDEDMA=y
-+# CONFIG_IDEDMA_IVB is not set
-+# CONFIG_IDEDMA_AUTO is not set
-+# CONFIG_BLK_DEV_HD is not set
-+
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+CONFIG_SCSI=y
-+CONFIG_SCSI_PROC_FS=y
-+
-+#
-+# SCSI support type (disk, tape, CD-ROM)
-+#
-+CONFIG_BLK_DEV_SD=y
-+# CONFIG_CHR_DEV_ST is not set
-+# CONFIG_CHR_DEV_OSST is not set
-+# CONFIG_BLK_DEV_SR is not set
-+# CONFIG_CHR_DEV_SG is not set
-+# CONFIG_CHR_DEV_SCH is not set
-+
-+#
-+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
-+#
-+# CONFIG_SCSI_MULTI_LUN is not set
-+# CONFIG_SCSI_CONSTANTS is not set
-+# CONFIG_SCSI_LOGGING is not set
-+
-+#
-+# SCSI Transport Attributes
-+#
-+CONFIG_SCSI_SPI_ATTRS=y
-+# CONFIG_SCSI_FC_ATTRS is not set
-+# CONFIG_SCSI_ISCSI_ATTRS is not set
-+# CONFIG_SCSI_SAS_ATTRS is not set
-+
-+#
-+# SCSI low-level drivers
-+#
-+# CONFIG_ISCSI_TCP is not set
-+# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
-+# CONFIG_SCSI_3W_9XXX is not set
-+# CONFIG_SCSI_ACARD is not set
-+# CONFIG_SCSI_AACRAID is not set
-+# CONFIG_SCSI_AIC7XXX is not set
-+# CONFIG_SCSI_AIC7XXX_OLD is not set
-+# CONFIG_SCSI_AIC79XX is not set
-+# CONFIG_SCSI_DPT_I2O is not set
-+# CONFIG_MEGARAID_NEWGEN is not set
-+# CONFIG_MEGARAID_LEGACY is not set
-+# CONFIG_MEGARAID_SAS is not set
-+# CONFIG_SCSI_SATA is not set
-+# CONFIG_SCSI_BUSLOGIC is not set
-+# CONFIG_SCSI_DMX3191D is not set
-+# CONFIG_SCSI_EATA is not set
-+# CONFIG_SCSI_FUTURE_DOMAIN is not set
-+# CONFIG_SCSI_GDTH is not set
-+# CONFIG_SCSI_IPS is not set
-+# CONFIG_SCSI_INITIO is not set
-+# CONFIG_SCSI_INIA100 is not set
-+CONFIG_SCSI_SYM53C8XX_2=y
-+CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=1
-+CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=16
-+CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
-+# CONFIG_SCSI_SYM53C8XX_IOMAPPED is not set
-+# CONFIG_SCSI_IPR is not set
-+# CONFIG_SCSI_QLOGIC_FC is not set
-+# CONFIG_SCSI_QLOGIC_1280 is not set
-+CONFIG_SCSI_QLA2XXX=y
-+# CONFIG_SCSI_QLA21XX is not set
-+# CONFIG_SCSI_QLA22XX is not set
-+# CONFIG_SCSI_QLA2300 is not set
-+# CONFIG_SCSI_QLA2322 is not set
-+# CONFIG_SCSI_QLA6312 is not set
-+# CONFIG_SCSI_QLA24XX is not set
-+# CONFIG_SCSI_LPFC is not set
-+# CONFIG_SCSI_DC395x is not set
-+# CONFIG_SCSI_DC390T is not set
-+# CONFIG_SCSI_NSP32 is not set
-+# CONFIG_SCSI_DEBUG is not set
-+
-+#
-+# Multi-device support (RAID and LVM)
-+#
-+# CONFIG_MD is not set
-+
-+#
-+# Fusion MPT device support
-+#
-+# CONFIG_FUSION is not set
-+# CONFIG_FUSION_SPI is not set
-+# CONFIG_FUSION_FC is not set
-+# CONFIG_FUSION_SAS is not set
-+
-+#
-+# IEEE 1394 (FireWire) support
-+#
-+# CONFIG_IEEE1394 is not set
-+
-+#
-+# I2O device support
-+#
-+# CONFIG_I2O is not set
-+
-+#
-+# Macintosh device drivers
-+#
-+# CONFIG_WINDFARM is not set
-+
-+#
-+# Network device support
-+#
-+CONFIG_NETDEVICES=y
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+
-+#
-+# ARCnet devices
-+#
-+# CONFIG_ARCNET is not set
-+
-+#
-+# PHY device support
-+#
-+# CONFIG_PHYLIB is not set
-+
-+#
-+# Ethernet (10 or 100Mbit)
-+#
-+CONFIG_NET_ETHERNET=y
-+CONFIG_MII=y
-+# CONFIG_HAPPYMEAL is not set
-+# CONFIG_SUNGEM is not set
-+# CONFIG_CASSINI is not set
-+# CONFIG_NET_VENDOR_3COM is not set
-+
-+#
-+# Tulip family network device support
-+#
-+# CONFIG_NET_TULIP is not set
-+# CONFIG_HP100 is not set
-+CONFIG_IBM_EMAC=y
-+CONFIG_IBM_EMAC_RXB=64
-+CONFIG_IBM_EMAC_TXB=8
-+CONFIG_IBM_EMAC_POLL_WEIGHT=32
-+CONFIG_IBM_EMAC_RX_COPY_THRESHOLD=256
-+CONFIG_IBM_EMAC_RX_SKB_HEADROOM=0
-+# CONFIG_IBM_EMAC_PHY_RX_CLK_FIX is not set
-+# CONFIG_IBM_EMAC_DEBUG is not set
-+CONFIG_IBM_EMAC_ZMII=y
-+CONFIG_NET_PCI=y
-+# CONFIG_PCNET32 is not set
-+# CONFIG_AMD8111_ETH is not set
-+# CONFIG_ADAPTEC_STARFIRE is not set
-+# CONFIG_B44 is not set
-+# CONFIG_FORCEDETH is not set
-+# CONFIG_DGRS is not set
-+# CONFIG_EEPRO100 is not set
-+# CONFIG_E100 is not set
-+# CONFIG_FEALNX is not set
-+# CONFIG_NATSEMI is not set
-+# CONFIG_NE2K_PCI is not set
-+# CONFIG_8139CP is not set
-+CONFIG_8139TOO=y
-+# CONFIG_8139TOO_PIO is not set
-+# CONFIG_8139TOO_TUNE_TWISTER is not set
-+# CONFIG_8139TOO_8129 is not set
-+# CONFIG_8139_OLD_RX_RESET is not set
-+# CONFIG_SIS900 is not set
-+# CONFIG_EPIC100 is not set
-+# CONFIG_SUNDANCE is not set
-+# CONFIG_TLAN is not set
-+# CONFIG_VIA_RHINE is not set
-+
-+#
-+# Ethernet (1000 Mbit)
-+#
-+# CONFIG_ACENIC is not set
-+# CONFIG_DL2K is not set
-+# CONFIG_E1000 is not set
-+# CONFIG_NS83820 is not set
-+# CONFIG_HAMACHI is not set
-+# CONFIG_YELLOWFIN is not set
-+# CONFIG_R8169 is not set
-+# CONFIG_SIS190 is not set
-+# CONFIG_SKGE is not set
-+# CONFIG_SK98LIN is not set
-+# CONFIG_VIA_VELOCITY is not set
-+# CONFIG_TIGON3 is not set
-+# CONFIG_BNX2 is not set
-+
-+#
-+# Ethernet (10000 Mbit)
-+#
-+# CONFIG_CHELSIO_T1 is not set
-+# CONFIG_IXGB is not set
-+# CONFIG_S2IO is not set
-+
-+#
-+# Token Ring devices
-+#
-+# CONFIG_TR is not set
-+
-+#
-+# Wireless LAN (non-hamradio)
-+#
-+# CONFIG_NET_RADIO is not set
-+
-+#
-+# Wan interfaces
-+#
-+# CONFIG_WAN is not set
-+# CONFIG_FDDI is not set
-+# CONFIG_HIPPI is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_NET_FC is not set
-+# CONFIG_SHAPER is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+
-+#
-+# ISDN subsystem
-+#
-+# CONFIG_ISDN is not set
-+
-+#
-+# Telephony Support
-+#
-+# CONFIG_PHONE is not set
-+
-+#
-+# Input device support
-+#
-+# CONFIG_INPUT is not set
-+
-+#
-+# Hardware I/O ports
-+#
-+CONFIG_SERIO=y
-+# CONFIG_SERIO_I8042 is not set
-+# CONFIG_SERIO_SERPORT is not set
-+# CONFIG_SERIO_PCIPS2 is not set
-+# CONFIG_SERIO_LIBPS2 is not set
-+# CONFIG_SERIO_RAW is not set
-+# CONFIG_GAMEPORT is not set
-+
-+#
-+# Character devices
-+#
-+# CONFIG_VT is not set
-+# CONFIG_SERIAL_NONSTANDARD is not set
-+
-+#
-+# Serial drivers
-+#
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_SERIAL_8250_NR_UARTS=4
-+CONFIG_SERIAL_8250_EXTENDED=y
-+# CONFIG_SERIAL_8250_MANY_PORTS is not set
-+CONFIG_SERIAL_8250_SHARE_IRQ=y
-+# CONFIG_SERIAL_8250_DETECT_IRQ is not set
-+# CONFIG_SERIAL_8250_RSA is not set
-+
-+#
-+# Non-8250 serial port support
-+#
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+# CONFIG_SERIAL_JSM is not set
-+CONFIG_UNIX98_PTYS=y
-+CONFIG_LEGACY_PTYS=y
-+CONFIG_LEGACY_PTY_COUNT=256
-+
-+#
-+# IPMI
-+#
-+# CONFIG_IPMI_HANDLER is not set
-+
-+#
-+# Watchdog Cards
-+#
-+# CONFIG_WATCHDOG is not set
-+# CONFIG_NVRAM is not set
-+# CONFIG_GEN_RTC is not set
-+# CONFIG_DTLK is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_APPLICOM is not set
-+
-+#
-+# Ftape, the floppy tape device driver
-+#
-+# CONFIG_AGP is not set
-+# CONFIG_DRM is not set
-+# CONFIG_RAW_DRIVER is not set
-+
-+#
-+# TPM devices
-+#
-+# CONFIG_TCG_TPM is not set
-+# CONFIG_TELCLOCK is not set
-+
-+#
-+# I2C support
-+#
-+# CONFIG_I2C is not set
-+
-+#
-+# Dallas's 1-wire bus
-+#
-+# CONFIG_W1 is not set
-+
-+#
-+# Hardware Monitoring support
-+#
-+CONFIG_HWMON=y
-+# CONFIG_HWMON_VID is not set
-+# CONFIG_HWMON_DEBUG_CHIP is not set
-+
-+#
-+# Misc devices
-+#
-+
-+#
-+# Multimedia Capabilities Port drivers
-+#
-+
-+#
-+# Multimedia devices
-+#
-+# CONFIG_VIDEO_DEV is not set
-+
-+#
-+# Digital Video Broadcasting Devices
-+#
-+# CONFIG_DVB is not set
-+
-+#
-+# Graphics support
-+#
-+# CONFIG_FB is not set
-+
-+#
-+# Sound
-+#
-+# CONFIG_SOUND is not set
-+
-+#
-+# USB support
-+#
-+CONFIG_USB_ARCH_HAS_HCD=y
-+CONFIG_USB_ARCH_HAS_OHCI=y
-+CONFIG_USB=y
-+# CONFIG_USB_DEBUG is not set
-+
-+#
-+# Miscellaneous USB options
-+#
-+# CONFIG_USB_DEVICEFS is not set
-+# CONFIG_USB_BANDWIDTH is not set
-+# CONFIG_USB_DYNAMIC_MINORS is not set
-+# CONFIG_USB_OTG is not set
-+
-+#
-+# USB Host Controller Drivers
-+#
-+# CONFIG_USB_EHCI_HCD is not set
-+# CONFIG_USB_ISP116X_HCD is not set
-+CONFIG_USB_OHCI_HCD=y
-+# CONFIG_USB_OHCI_BIG_ENDIAN is not set
-+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-+# CONFIG_USB_UHCI_HCD is not set
-+# CONFIG_USB_SL811_HCD is not set
-+
-+#
-+# USB Device Class drivers
-+#
-+# CONFIG_USB_ACM is not set
-+# CONFIG_USB_PRINTER is not set
-+
-+#
-+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-+#
-+
-+#
-+# may also be needed; see USB_STORAGE Help for more information
-+#
-+CONFIG_USB_STORAGE=y
-+# CONFIG_USB_STORAGE_DEBUG is not set
-+# CONFIG_USB_STORAGE_DATAFAB is not set
-+# CONFIG_USB_STORAGE_FREECOM is not set
-+# CONFIG_USB_STORAGE_ISD200 is not set
-+# CONFIG_USB_STORAGE_DPCM is not set
-+# CONFIG_USB_STORAGE_USBAT is not set
-+# CONFIG_USB_STORAGE_SDDR09 is not set
-+# CONFIG_USB_STORAGE_SDDR55 is not set
-+# CONFIG_USB_STORAGE_JUMPSHOT is not set
-+
-+#
-+# USB Input Devices
-+#
-+# CONFIG_USB_HID is not set
-+
-+#
-+# USB HID Boot Protocol drivers
-+#
-+
-+#
-+# USB Imaging devices
-+#
-+# CONFIG_USB_MDC800 is not set
-+# CONFIG_USB_MICROTEK is not set
-+
-+#
-+# USB Multimedia devices
-+#
-+# CONFIG_USB_DABUSB is not set
-+
-+#
-+# Video4Linux support is needed for USB Multimedia device support
-+#
-+
-+#
-+# USB Network Adapters
-+#
-+# CONFIG_USB_CATC is not set
-+# CONFIG_USB_KAWETH is not set
-+CONFIG_USB_PEGASUS=y
-+# CONFIG_USB_RTL8150 is not set
-+# CONFIG_USB_USBNET is not set
-+CONFIG_USB_MON=y
-+
-+#
-+# USB port drivers
-+#
-+
-+#
-+# USB Serial Converter support
-+#
-+# CONFIG_USB_SERIAL is not set
-+
-+#
-+# USB Miscellaneous drivers
-+#
-+# CONFIG_USB_EMI62 is not set
-+# CONFIG_USB_EMI26 is not set
-+# CONFIG_USB_AUERSWALD is not set
-+# CONFIG_USB_RIO500 is not set
-+# CONFIG_USB_LEGOTOWER is not set
-+# CONFIG_USB_LCD is not set
-+# CONFIG_USB_LED is not set
-+# CONFIG_USB_CYTHERM is not set
-+# CONFIG_USB_PHIDGETKIT is not set
-+# CONFIG_USB_PHIDGETSERVO is not set
-+# CONFIG_USB_IDMOUSE is not set
-+# CONFIG_USB_LD is not set
-+
-+#
-+# USB DSL modem support
-+#
-+
-+#
-+# USB Gadget Support
-+#
-+CONFIG_USB_GADGET=y
-+# CONFIG_USB_GADGET_DEBUG_FILES is not set
-+CONFIG_USB_GADGET_SELECTED=y
-+CONFIG_USB_GADGET_NET2280=y
-+CONFIG_USB_NET2280=y
-+# CONFIG_USB_GADGET_PXA2XX is not set
-+# CONFIG_USB_GADGET_GOKU is not set
-+# CONFIG_USB_GADGET_LH7A40X is not set
-+# CONFIG_USB_GADGET_OMAP is not set
-+# CONFIG_USB_GADGET_DUMMY_HCD is not set
-+CONFIG_USB_GADGET_DUALSPEED=y
-+CONFIG_USB_ZERO=y
-+# CONFIG_USB_ETH is not set
-+# CONFIG_USB_GADGETFS is not set
-+# CONFIG_USB_FILE_STORAGE is not set
-+# CONFIG_USB_G_SERIAL is not set
-+
-+#
-+# MMC/SD Card support
-+#
-+# CONFIG_MMC is not set
-+
-+#
-+# InfiniBand support
-+#
-+# CONFIG_INFINIBAND is not set
-+
-+#
-+# SN Devices
-+#
-+
-+#
-+# File systems
-+#
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT2_FS_XATTR is not set
-+# CONFIG_EXT2_FS_XIP is not set
-+# CONFIG_EXT3_FS is not set
-+# CONFIG_JBD is not set
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+# CONFIG_XFS_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+CONFIG_INOTIFY=y
-+# CONFIG_QUOTA is not set
-+CONFIG_DNOTIFY=y
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
-+
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+# CONFIG_ISO9660_FS is not set
-+# CONFIG_UDF_FS is not set
-+
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+CONFIG_FAT_FS=y
-+CONFIG_MSDOS_FS=y
-+CONFIG_VFAT_FS=y
-+CONFIG_FAT_DEFAULT_CODEPAGE=437
-+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
-+# CONFIG_NTFS_FS is not set
-+
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+# CONFIG_HUGETLB_PAGE is not set
-+CONFIG_RAMFS=y
-+# CONFIG_RELAYFS_FS is not set
-+
-+#
-+# Miscellaneous filesystems
-+#
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+# CONFIG_CRAMFS is not set
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+
-+#
-+# Network File Systems
-+#
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+# CONFIG_NFS_V3_ACL is not set
-+# CONFIG_NFS_V4 is not set
-+# CONFIG_NFS_DIRECTIO is not set
-+# CONFIG_NFSD is not set
-+CONFIG_ROOT_NFS=y
-+CONFIG_LOCKD=y
-+CONFIG_LOCKD_V4=y
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=y
-+# CONFIG_RPCSEC_GSS_KRB5 is not set
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+# CONFIG_CIFS is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
-+# CONFIG_9P_FS is not set
-+
-+#
-+# Partition Types
-+#
-+# CONFIG_PARTITION_ADVANCED is not set
-+CONFIG_MSDOS_PARTITION=y
-+
-+#
-+# Native Language Support
-+#
-+CONFIG_NLS=y
-+CONFIG_NLS_DEFAULT="iso8859-1"
-+CONFIG_NLS_CODEPAGE_437=y
-+# CONFIG_NLS_CODEPAGE_737 is not set
-+# CONFIG_NLS_CODEPAGE_775 is not set
-+# CONFIG_NLS_CODEPAGE_850 is not set
-+# CONFIG_NLS_CODEPAGE_852 is not set
-+# CONFIG_NLS_CODEPAGE_855 is not set
-+# CONFIG_NLS_CODEPAGE_857 is not set
-+# CONFIG_NLS_CODEPAGE_860 is not set
-+# CONFIG_NLS_CODEPAGE_861 is not set
-+# CONFIG_NLS_CODEPAGE_862 is not set
-+# CONFIG_NLS_CODEPAGE_863 is not set
-+# CONFIG_NLS_CODEPAGE_864 is not set
-+# CONFIG_NLS_CODEPAGE_865 is not set
-+# CONFIG_NLS_CODEPAGE_866 is not set
-+# CONFIG_NLS_CODEPAGE_869 is not set
-+# CONFIG_NLS_CODEPAGE_936 is not set
-+# CONFIG_NLS_CODEPAGE_950 is not set
-+# CONFIG_NLS_CODEPAGE_932 is not set
-+# CONFIG_NLS_CODEPAGE_949 is not set
-+# CONFIG_NLS_CODEPAGE_874 is not set
-+# CONFIG_NLS_ISO8859_8 is not set
-+# CONFIG_NLS_CODEPAGE_1250 is not set
-+# CONFIG_NLS_CODEPAGE_1251 is not set
-+# CONFIG_NLS_ASCII is not set
-+CONFIG_NLS_ISO8859_1=y
-+# CONFIG_NLS_ISO8859_2 is not set
-+# CONFIG_NLS_ISO8859_3 is not set
-+# CONFIG_NLS_ISO8859_4 is not set
-+# CONFIG_NLS_ISO8859_5 is not set
-+# CONFIG_NLS_ISO8859_6 is not set
-+# CONFIG_NLS_ISO8859_7 is not set
-+# CONFIG_NLS_ISO8859_9 is not set
-+# CONFIG_NLS_ISO8859_13 is not set
-+# CONFIG_NLS_ISO8859_14 is not set
-+# CONFIG_NLS_ISO8859_15 is not set
-+# CONFIG_NLS_KOI8_R is not set
-+# CONFIG_NLS_KOI8_U is not set
-+# CONFIG_NLS_UTF8 is not set
-+
-+#
-+# Library routines
-+#
-+# CONFIG_CRC_CCITT is not set
-+# CONFIG_CRC16 is not set
-+CONFIG_CRC32=y
-+# CONFIG_LIBCRC32C is not set
-+# CONFIG_PROFILING is not set
-+
-+#
-+# Kernel hacking
-+#
-+# CONFIG_PRINTK_TIME is not set
-+CONFIG_DEBUG_KERNEL=y
-+CONFIG_MAGIC_SYSRQ=y
-+CONFIG_LOG_BUF_SHIFT=14
-+CONFIG_DETECT_SOFTLOCKUP=y
-+# CONFIG_SCHEDSTATS is not set
-+# CONFIG_DEBUG_SLAB is not set
-+# CONFIG_DEBUG_SPINLOCK is not set
-+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-+# CONFIG_DEBUG_KOBJECT is not set
-+CONFIG_DEBUG_INFO=y
-+# CONFIG_DEBUG_FS is not set
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_RCU_TORTURE_TEST is not set
-+# CONFIG_KGDB is not set
-+# CONFIG_XMON is not set
-+CONFIG_BDI_SWITCH=y
-+# CONFIG_SERIAL_TEXT_DEBUG is not set
-+CONFIG_PPC_OCP=y
-+
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+
-+#
-+# Cryptographic options
-+#
-+# CONFIG_CRYPTO is not set
-+
-+#
-+# Hardware crypto devices
-+#
+diff -uprN a/arch/ppc/platforms/4xx/Kconfig c/arch/ppc/platforms/4xx/Kconfig
+--- a/arch/ppc/platforms/4xx/Kconfig	2006-01-02 21:21:10.000000000 -0600
++++ c/arch/ppc/platforms/4xx/Kconfig	2006-01-16 11:23:57.679417517 -0600
+@@ -94,6 +94,18 @@ config OCOTEA
+  	help
+  	  This option enables support for the IBM PPC440GX evaluation board.
+
++config YELLOWSTONE
++	bool "Yellowstone"
++	select WANT_EARLY_SERIAL
++	help
++	  This option enables support for the AMCC PPC440GR evaluation board.
++
++config YOSEMITE
++	bool "Yosemite"
++	select WANT_EARLY_SERIAL
++	help
++	  This option enables support for the AMCC PPC440EP evaluation board.
++
+  endchoice
+
+  config EP405PC
+@@ -111,7 +123,7 @@ config NP405H
+
+  config 440EP
+  	bool
+-	depends on BAMBOO
++	depends on BAMBOO || YOSEMITE
+  	select PPC_FPU
+  	default y
+
+@@ -120,6 +132,11 @@ config 440GP
+  	depends on EBONY
+  	default y
+
++config 440GR
++	bool
++	depends on YELLOWSTONE
++	default y
++
+  config 440GX
+  	bool
+  	depends on OCOTEA
+@@ -137,7 +154,7 @@ config 440SPE
+
+  config 440
+  	bool
+-	depends on 440GP || 440SP || 440SPE || 440EP
++	depends on 440GP || 440SP || 440SPE || 440EP || 440GR
+  	default y
+
+  config 440A
+@@ -147,7 +164,7 @@ config 440A
+
+  config IBM440EP_ERR42
+  	bool
+-	depends on 440EP
++	depends on 440EP || 440GR
+  	default y
+
+  # All 405-based cores up until the 405GPR and 405EP have this errata.
+@@ -169,7 +186,7 @@ config BOOKE
+
+  config IBM_OCP
+  	bool
+-	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || YUCCA || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
++	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || YUCCA || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT || YELLOWSTONE || YOSEMITE
+  	default y
+
+  config XILINX_OCP
+diff -uprN a/arch/ppc/platforms/4xx/Makefile c/arch/ppc/platforms/4xx/Makefile
+--- a/arch/ppc/platforms/4xx/Makefile	2006-01-02 21:21:10.000000000 -0600
++++ c/arch/ppc/platforms/4xx/Makefile	2006-01-13 10:09:21.000000000 -0600
+@@ -14,12 +14,15 @@ obj-$(CONFIG_REDWOOD_6)		+= redwood6.o
+  obj-$(CONFIG_SYCAMORE)		+= sycamore.o
+  obj-$(CONFIG_WALNUT)		+= walnut.o
+  obj-$(CONFIG_XILINX_ML300)	+= xilinx_ml300.o
++obj-$(CONFIG_YELLOWSTONE)	+= yosemite.o
++obj-$(CONFIG_YOSEMITE)		+= yosemite.o
+
+  obj-$(CONFIG_405GP)		+= ibm405gp.o
+  obj-$(CONFIG_REDWOOD_5)		+= ibmstb4.o
+  obj-$(CONFIG_NP405H)		+= ibmnp405h.o
+  obj-$(CONFIG_REDWOOD_6)		+= ibmstbx25.o
+  obj-$(CONFIG_440EP)		+= ibm440ep.o
++obj-$(CONFIG_440GR)		+= ibm440ep.o
+  obj-$(CONFIG_440GP)		+= ibm440gp.o
+  obj-$(CONFIG_440GX)		+= ibm440gx.o
+  obj-$(CONFIG_440SP)		+= ibm440sp.o
+diff -uprN a/arch/ppc/platforms/4xx/yosemite.c c/arch/ppc/platforms/4xx/yosemite.c
+--- a/arch/ppc/platforms/4xx/yosemite.c	1969-12-31 17:00:00.000000000 -0700
++++ c/arch/ppc/platforms/4xx/yosemite.c	2006-01-15 12:17:15.000000000 -0600
+@@ -0,0 +1,351 @@
++/*
++ * arch/ppc/platforms/4xx/yosemite.c
++ *
++ * Yosemite and Yellowstone board specific routines
++ *
++ * Wade Farnsworth <wfarnsworth@mvista.com>
++ * Copyright 2004 MontaVista Software Inc.
++ *
++ * John Otken <jotken@softadvances.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/config.h>
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/pci.h>
++#include <linux/types.h>
++#include <linux/delay.h>
++#include <linux/initrd.h>
++#include <linux/irq.h>
++#include <linux/root_dev.h>
++#include <linux/tty.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
++
++#include <asm/machdep.h>
++#include <asm/ocp.h>
++#include <asm/bootinfo.h>
++#include <asm/ppcboot.h>
++
++#include <syslib/ibm440gx_common.h>
++
++/*
++ * The AMCC Yosemite and Yellowstones boards share the same PC board.
++ * The Yosemite has a 440EP and USB support.  The Yellowstone has a
++ * 440GR and no USB hardware.  The 440EP and 440GR have the same PVR.
++ */
++#ifdef CONFIG_YELLOWSTONE
++#define BOARDNAME  "440GR Yellowstone"
++#else
++#define BOARDNAME  "440EP Yosemite"
++#endif
++
++
++extern bd_t __res;
++
++static struct ibm44x_clocks clocks __initdata;
++
++
++/*
++ * Yosemite external IRQ triggering/polarity settings
++ */
++unsigned char ppc4xx_uic_ext_irq_cfg[] __initdata = {
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ0: ETH0 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ1: ETH1 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ2: PCI_INTA */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ3: STTM_ALERT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ4: GPIO44 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ5: GND */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ6: GPIO45 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ7: GPIO46 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ8: GPIO47 */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE), /* IRQ9: GPIO48 */
++};
++
++
++static void __init
++yosemite_calibrate_decr(void)
++{
++	unsigned int freq;
++
++	if (mfspr(SPRN_CCR1) & CCR1_TCS)
++		freq = YOSEMITE_TMRCLK;
++	else
++		freq = clocks.cpu;
++
++	ibm44x_calibrate_decr(freq);
++}
++
++static int
++yosemite_show_cpuinfo(struct seq_file *m)
++{
++	seq_printf(m, "vendor\t\t: AMCC\n");
++	seq_printf(m, "machine\t\t: PPC" BOARDNAME "\n");
++
++	return 0;
++}
++
++static inline int
++yosemite_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
++{
++	static char pci_irq_table[][4] =
++	/*
++	 *	PCI IDSEL/INTPIN->INTLINE
++	 * 	   A   B   C   D
++	 */
++	{
++		{ 25, 25, 25, 25 },	/* IDSEL 1 - PCI Slot 0 */
++	};
++
++	const long min_idsel = 12, max_idsel = 12, irqs_per_slot = 4;
++	return PCI_IRQ_TABLE_LOOKUP;
++}
++
++static void __init yosemite_set_emacdata(void)
++{
++	struct ocp_def *def;
++	struct ocp_func_emac_data *emacdata;
++
++	/* Set mac_addr and phy mode for each EMAC */
++
++	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
++	emacdata = def->additions;
++	memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
++	emacdata->phy_mode = PHY_MODE_RMII;
++
++	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 1);
++	emacdata = def->additions;
++	memcpy(emacdata->mac_addr, __res.bi_enet1addr, 6);
++	emacdata->phy_mode = PHY_MODE_RMII;
++}
++
++static int
++yosemite_exclude_device(unsigned char bus, unsigned char devfn)
++{
++	return (bus == 0 && devfn == 0);
++}
++
++#define PCI_READW(offset) \
++        (readw((void *)((u32)pci_reg_base+offset)))
++
++#define PCI_WRITEW(value, offset) \
++	(writew(value, (void *)((u32)pci_reg_base+offset)))
++
++#define PCI_WRITEL(value, offset) \
++	(writel(value, (void *)((u32)pci_reg_base+offset)))
++
++static void __init
++yosemite_setup_pci(void)
++{
++	void *pci_reg_base;
++	unsigned long memory_size;
++	memory_size = ppc_md.find_end_of_memory();
++
++	pci_reg_base = ioremap64(YOSEMITE_PCIL0_BASE, YOSEMITE_PCIL0_SIZE);
++
++	/* Enable PCI I/O, Mem, and Busmaster cycles */
++	PCI_WRITEW(PCI_READW(PCI_COMMAND) |
++		   PCI_COMMAND_MEMORY |
++		   PCI_COMMAND_MASTER, PCI_COMMAND);
++
++	/* Disable region first */
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM0MA);
++
++	/* PLB starting addr: 0x00000000A0000000 */
++	PCI_WRITEL(YOSEMITE_PCI_PHY_MEM_BASE, YOSEMITE_PCIL0_PMM0LA);
++
++	/* PCI start addr, 0xA0000000 (PCI Address) */
++	PCI_WRITEL(YOSEMITE_PCI_MEM_BASE, YOSEMITE_PCIL0_PMM0PCILA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM0PCIHA);
++
++	/* Enable no pre-fetch, enable region */
++	PCI_WRITEL(((0xffffffff -
++		     (YOSEMITE_PCI_UPPER_MEM - YOSEMITE_PCI_MEM_BASE)) | 0x01),
++		      YOSEMITE_PCIL0_PMM0MA);
++
++	/* Disable region one */
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1MA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1LA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1PCILA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1PCIHA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM1MA);
++
++	/* Disable region two */
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2MA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2LA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2PCILA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2PCIHA);
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PMM2MA);
++
++	/* Now configure the PCI->PLB windows, we only use PTM1
++	 *
++	 * For Inbound flow, set the window size to all available memory
++	 * This is required because if size is smaller,
++	 * then Eth/PCI DD would fail as PCI card not able to access
++	 * the memory allocated by DD.
++	 */
++
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PTM1MS);	/* disabled region 1 */
++	PCI_WRITEL(0, YOSEMITE_PCIL0_PTM1LA);	/* begin of address map */
++
++	memory_size = 1 << fls(memory_size - 1);
++
++	/* Size low + Enabled */
++	PCI_WRITEL((0xffffffff - (memory_size - 1)) | 0x1, YOSEMITE_PCIL0_PTM1MS);
++
++	eieio();
++	iounmap(pci_reg_base);
++}
++
++static void __init
++yosemite_setup_hose(void)
++{
++	unsigned int bar_response, bar;
++	struct pci_controller *hose;
++
++	yosemite_setup_pci();
++
++	hose = pcibios_alloc_controller();
++
++	if (!hose)
++		return;
++
++	hose->first_busno = 0;
++	hose->last_busno = 0xff;
++
++	hose->pci_mem_offset = YOSEMITE_PCI_MEM_OFFSET;
++
++	pci_init_resource(&hose->io_resource,
++			  YOSEMITE_PCI_LOWER_IO,
++			  YOSEMITE_PCI_UPPER_IO,
++			  IORESOURCE_IO,
++			  "PCI host bridge");
++
++	pci_init_resource(&hose->mem_resources[0],
++			  YOSEMITE_PCI_LOWER_MEM,
++			  YOSEMITE_PCI_UPPER_MEM,
++			  IORESOURCE_MEM,
++			  "PCI host bridge");
++
++	ppc_md.pci_exclude_device = yosemite_exclude_device;
++
++	hose->io_space.start = YOSEMITE_PCI_LOWER_IO;
++	hose->io_space.end = YOSEMITE_PCI_UPPER_IO;
++	hose->mem_space.start = YOSEMITE_PCI_LOWER_MEM;
++	hose->mem_space.end = YOSEMITE_PCI_UPPER_MEM;
++	isa_io_base =
++		(unsigned long)ioremap64(YOSEMITE_PCI_IO_BASE, YOSEMITE_PCI_IO_SIZE);
++	hose->io_base_virt = (void *)isa_io_base;
++
++	setup_indirect_pci(hose,
++			   YOSEMITE_PCI_CFGA_PLB32,
++			   YOSEMITE_PCI_CFGD_PLB32);
++	hose->set_cfg_type = 1;
++
++	/* Zero config bars */
++	for (bar = PCI_BASE_ADDRESS_1; bar <= PCI_BASE_ADDRESS_2; bar += 4) {
++		early_write_config_dword(hose, hose->first_busno,
++					 PCI_FUNC(hose->first_busno), bar,
++					 0x00000000);
++		early_read_config_dword(hose, hose->first_busno,
++					PCI_FUNC(hose->first_busno), bar,
++					&bar_response);
++	}
++
++	hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
++
++	ppc_md.pci_swizzle = common_swizzle;
++	ppc_md.pci_map_irq = yosemite_map_irq;
++}
++
++static void __init
++yosemite_early_serial_map(void)
++{
++	struct uart_port port;
++
++	/* Setup ioremapped serial port access */
++	memset(&port, 0, sizeof(port));
++	port.membase = ioremap64(PPC440EP_UART0_ADDR, 8);
++	port.irq = 0;
++	port.uartclk = clocks.uart0;
++	port.regshift = 0;
++	port.iotype = SERIAL_IO_MEM;
++	port.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST;
++	port.line = 0;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 0 failed\n");
++	}
++
++#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++	/* Configure debug serial access */
++	gen550_init(0, &port);
++#endif
++
++	port.membase = ioremap64(PPC440EP_UART1_ADDR, 8);
++	port.irq = 1;
++	port.uartclk = clocks.uart1;
++	port.line = 1;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 1 failed\n");
++	}
++
++#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++	/* Configure debug serial access */
++	gen550_init(1, &port);
++#endif
++}
++
++static void __init
++yosemite_setup_arch(void)
++{
++	yosemite_set_emacdata();
++
++	ibm440gx_get_clocks(&clocks, YOSEMITE_SYSCLK, 6 * 1843200);
++	ocp_sys_info.opb_bus_freq = clocks.opb;
++
++	/* init to some ~sane value until calibrate_delay() runs */
++        loops_per_jiffy = 50000000/HZ;
++
++	/* Setup PCI host bridge */
++	yosemite_setup_hose();
++
++#ifdef CONFIG_BLK_DEV_INITRD
++	if (initrd_start)
++		ROOT_DEV = Root_RAM0;
++	else
++#endif
++#ifdef CONFIG_ROOT_NFS
++		ROOT_DEV = Root_NFS;
++#else
++		ROOT_DEV = Root_HDA1;
++#endif
++
++	yosemite_early_serial_map();
++
++	/* Identify the system */
++	printk( "AMCC PowerPC " BOARDNAME " Platform\n" );
++}
++
++void __init platform_init(unsigned long r3, unsigned long r4,
++			  unsigned long r5, unsigned long r6, unsigned long r7)
++{
++	ibm44x_platform_init(r3, r4, r5, r6, r7);
++
++	ppc_md.setup_arch = yosemite_setup_arch;
++	ppc_md.show_cpuinfo = yosemite_show_cpuinfo;
++	ppc_md.get_irq = NULL;		/* Set in ppc4xx_pic_init() */
++
++	ppc_md.calibrate_decr = yosemite_calibrate_decr;
++
++#ifdef CONFIG_KGDB
++	ppc_md.early_serial_map = yosemite_early_serial_map;
++#endif
++}
+diff -uprN a/arch/ppc/platforms/4xx/yosemite.h c/arch/ppc/platforms/4xx/yosemite.h
+--- a/arch/ppc/platforms/4xx/yosemite.h	1969-12-31 17:00:00.000000000 -0700
++++ c/arch/ppc/platforms/4xx/yosemite.h	2006-01-15 07:38:56.000000000 -0600
+@@ -0,0 +1,86 @@
++/*
++ * arch/ppc/platforms/4xx/yosemite.h
++ *
++ * Yosemite and Yellowstone board definitions
++ *
++ * Wade Farnsworth <wfarnsworth@mvista.com>
++ * Copyright 2004 MontaVista Software Inc.
++ *
++ * John Otken <jotken@softadvances.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifdef __KERNEL__
++#ifndef __ASM_YOSEMITE_H__
++#define __ASM_YOSEMITE_H__
++
++#include <linux/config.h>
++#include <platforms/4xx/ibm440ep.h>
++
++/* Default clock rate */
++#define YOSEMITE_TMRCLK			50000000
++#define YOSEMITE_SYSCLK			66666666
++
++/*
++ * Serial port defines
++ */
++#define RS_TABLE_SIZE			2
++
++#define UART0_IO_BASE			0xEF600300
++#define UART1_IO_BASE			0xEF600400
++
++#define BASE_BAUD			33177600/3/16
++#define UART0_INT			0
++#define UART1_INT			1
++
++#define STD_UART_OP(num)					\
++	{ 0, BASE_BAUD, 0, UART##num##_INT,			\
++		(ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST),	\
++		iomem_base: UART##num##_IO_BASE,		\
++		io_type: SERIAL_IO_MEM},
++
++#define SERIAL_PORT_DFNS	\
++	STD_UART_OP(0)		\
++	STD_UART_OP(1)
++
++/* PCI support */
++#define YOSEMITE_PCI_CFGA_PLB32		0xeec00000
++#define YOSEMITE_PCI_CFGD_PLB32		0xeec00004
++
++#define YOSEMITE_PCI_IO_BASE		0x00000000e8000000ULL
++#define YOSEMITE_PCI_IO_SIZE		0x00010000
++#define YOSEMITE_PCI_MEM_OFFSET		0x00000000
++#define YOSEMITE_PCI_PHY_MEM_BASE	0x00000000a0000000ULL
++
++#define YOSEMITE_PCI_LOWER_IO		0x00000000
++#define YOSEMITE_PCI_UPPER_IO		0x0000ffff
++#define YOSEMITE_PCI_LOWER_MEM		0xa0000000
++#define YOSEMITE_PCI_UPPER_MEM		0xafffffff
++#define YOSEMITE_PCI_MEM_BASE		0xa0000000
++
++#define YOSEMITE_PCIL0_BASE		0x00000000ef400000ULL
++#define YOSEMITE_PCIL0_SIZE		0x40
++
++#define YOSEMITE_PCIL0_PMM0LA		0x000
++#define YOSEMITE_PCIL0_PMM0MA		0x004
++#define YOSEMITE_PCIL0_PMM0PCILA	0x008
++#define YOSEMITE_PCIL0_PMM0PCIHA	0x00C
++#define YOSEMITE_PCIL0_PMM1LA		0x010
++#define YOSEMITE_PCIL0_PMM1MA		0x014
++#define YOSEMITE_PCIL0_PMM1PCILA	0x018
++#define YOSEMITE_PCIL0_PMM1PCIHA	0x01C
++#define YOSEMITE_PCIL0_PMM2LA		0x020
++#define YOSEMITE_PCIL0_PMM2MA		0x024
++#define YOSEMITE_PCIL0_PMM2PCILA	0x028
++#define YOSEMITE_PCIL0_PMM2PCIHA	0x02C
++#define YOSEMITE_PCIL0_PTM1MS		0x030
++#define YOSEMITE_PCIL0_PTM1LA		0x034
++#define YOSEMITE_PCIL0_PTM2MS		0x038
++#define YOSEMITE_PCIL0_PTM2LA		0x03C
++
++#endif                          /* __ASM_YOSEMITE_H__ */
++#endif                          /* __KERNEL__ */
+diff -uprN a/arch/ppc/syslib/ibm440gx_common.c c/arch/ppc/syslib/ibm440gx_common.c
+--- a/arch/ppc/syslib/ibm440gx_common.c	2006-01-02 21:21:10.000000000 -0600
++++ c/arch/ppc/syslib/ibm440gx_common.c	2006-01-13 10:09:21.000000000 -0600
+@@ -34,7 +34,7 @@ void __init ibm440gx_get_clocks(struct i
+  	u32 plld  = CPR_READ(DCRN_CPR_PLLD);
+  	u32 uart0 = SDR_READ(DCRN_SDR_UART0);
+  	u32 uart1 = SDR_READ(DCRN_SDR_UART1);
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  	u32 uart2 = SDR_READ(DCRN_SDR_UART2);
+  	u32 uart3 = SDR_READ(DCRN_SDR_UART3);
+  #endif
+@@ -100,7 +100,7 @@ bypass:
+  		p->uart1 = ser_clk;
+  	else
+  		p->uart1 = p->plb / __fix_zero(uart1 & 0xff, 256);
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  	if (uart2 & 0x00800000)
+  		p->uart2 = ser_clk;
+  	else
+diff -uprN a/arch/ppc/syslib/ibm44x_common.h c/arch/ppc/syslib/ibm44x_common.h
+--- a/arch/ppc/syslib/ibm44x_common.h	2006-01-02 21:21:10.000000000 -0600
++++ c/arch/ppc/syslib/ibm44x_common.h	2006-01-13 10:09:21.000000000 -0600
+@@ -29,7 +29,7 @@ struct ibm44x_clocks {
+  	unsigned int ebc;	/* PerClk */
+  	unsigned int uart0;
+  	unsigned int uart1;
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  	unsigned int uart2;
+  	unsigned int uart3;
+  #endif
+diff -uprN a/arch/ppc/syslib/Makefile c/arch/ppc/syslib/Makefile
+--- a/arch/ppc/syslib/Makefile	2006-01-02 21:21:10.000000000 -0600
++++ c/arch/ppc/syslib/Makefile	2006-01-13 10:09:21.000000000 -0600
+@@ -12,6 +12,7 @@ obj-$(CONFIG_PPC_OCP)		+= ocp.o
+  obj-$(CONFIG_IBM_OCP)		+= ibm_ocp.o
+  obj-$(CONFIG_44x)		+= ibm44x_common.o
+  obj-$(CONFIG_440EP)		+= ibm440gx_common.o
++obj-$(CONFIG_440GR)		+= ibm440gx_common.o
+  obj-$(CONFIG_440GP)		+= ibm440gp_common.o
+  obj-$(CONFIG_440GX)		+= ibm440gx_common.o
+  obj-$(CONFIG_440SP)		+= ibm440gx_common.o ibm440sp_common.o
+@@ -74,6 +75,8 @@ obj-$(CONFIG_SANDPOINT)		+= pci_auto.o t
+  obj-$(CONFIG_SBC82xx)		+= todc_time.o
+  obj-$(CONFIG_SPRUCE)		+= cpc700_pic.o pci_auto.o \
+  				   todc_time.o
++obj-$(CONFIG_YELLOWSTONE)	+= pci_auto.o
++obj-$(CONFIG_YOSEMITE)		+= pci_auto.o
+  obj-$(CONFIG_8260)		+= m8260_setup.o pq2_devices.o pq2_sys.o \
+  				   ppc_sys.o
+  obj-$(CONFIG_PCI_8260)		+= m82xx_pci.o pci_auto.o
+diff -uprN a/include/asm-ppc/ibm44x.h c/include/asm-ppc/ibm44x.h
+--- a/include/asm-ppc/ibm44x.h	2006-01-02 21:21:10.000000000 -0600
++++ c/include/asm-ppc/ibm44x.h	2006-01-13 10:09:21.000000000 -0600
+@@ -44,7 +44,7 @@
+  #elif defined(CONFIG_440SPE)
+  #define UART0_PHYS_ERPN		4
+  #define UART0_PHYS_IO_BASE	0xf0000200
+-#elif defined(CONFIG_440EP)
++#elif defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define UART0_PHYS_IO_BASE	0xe0000000
+  #else
+  #define UART0_PHYS_ERPN		1
+@@ -69,7 +69,7 @@
+  #define	PPC44x_PCICFG_PAGE	0x0000000c00000000ULL
+  #define	PPC44x_PCIIO_PAGE	PPC44x_PCICFG_PAGE
+  #define	PPC44x_PCIMEM_PAGE	0x0000000d00000000ULL
+-#elif defined(CONFIG_440EP)
++#elif defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define PPC44x_IO_PAGE		0x0000000000000000ULL
+  #define PPC44x_PCICFG_PAGE	0x0000000000000000ULL
+  #define PPC44x_PCIIO_PAGE	PPC44x_PCICFG_PAGE
+@@ -95,7 +95,7 @@
+  #define PPC44x_PCI2CFG_HI	0x2ec00007UL
+  #define PPC44x_PCIMEM_LO	0x80000000UL
+  #define PPC44x_PCIMEM_HI	0xdfffffffUL
+-#elif defined(CONFIG_440EP)
++#elif defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define PPC44x_IO_LO		0xef500000UL
+  #define PPC44x_IO_HI		0xefffffffUL
+  #define PPC44x_PCI0CFG_LO	0xeec00000UL
+@@ -179,7 +179,7 @@
+  #define DCRN_SDR_UART0		0x0120
+  #define DCRN_SDR_UART1		0x0121
+
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define DCRN_SDR_UART2		0x0122
+  #define DCRN_SDR_UART3		0x0123
+  #define DCRN_SDR_CUST0		0x4000
+@@ -202,7 +202,7 @@
+  #define DCRNCAP_DMA_SG		1	/* have DMA scatter/gather capability */
+  #define DCRN_MAL_BASE		0x180
+
+-#ifdef CONFIG_440EP
++#if defined(CONFIG_440EP) || defined(CONFIG_440GR)
+  #define DCRN_DMA2P40_BASE	0x300
+  #define DCRN_DMA2P41_BASE	0x308
+  #define DCRN_DMA2P42_BASE	0x310
+diff -uprN a/include/asm-ppc/ibm4xx.h c/include/asm-ppc/ibm4xx.h
+--- a/include/asm-ppc/ibm4xx.h	2006-01-02 21:21:10.000000000 -0600
++++ c/include/asm-ppc/ibm4xx.h	2006-01-13 10:09:21.000000000 -0600
+@@ -105,6 +105,10 @@ void ppc4xx_init(unsigned long r3, unsig
+  #include <platforms/4xx/ocotea.h>
+  #endif
+
++#if defined(CONFIG_YELLOWSTONE) || defined(CONFIG_YOSEMITE)
++#include <platforms/4xx/yosemite.h>
++#endif
++
+  #ifndef __ASSEMBLY__
+  #ifdef CONFIG_40x
+  /*
