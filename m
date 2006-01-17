@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 11AC3681B8
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2006 08:24:42 +1100 (EST)
-Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <2557.1137487077@www21.gmx.net>
-References: <1137453496.4823.61.camel@localhost.localdomain>
-	<2557.1137487077@www21.gmx.net>
-Content-Type: text/plain
-Date: Wed, 18 Jan 2006 08:24:31 +1100
-Message-Id: <1137533072.4823.92.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Return-Path: <markc@mail.com>
+Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
+	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 2C643681B8
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2006 07:59:21 +1100 (EST)
+Message-ID: <004f01c61ba4$f77c41e0$6401a8c0@chuck2>
+From: "Mark Chambers" <markc@mail.com>
+To: =?iso-8859-1?Q?Jose_Fran=E7a_\=28Ext=5FGTBC\=29?=
+	<Jose.Franca.Ext@siemens.com>, <linuxppc-dev@ozlabs.org>
+References: <16FD2D70D281D44F9BFCF6ACF9B6117102AF6570@lisi053a.siemens.pt>
+Subject: Re: Linux-2.4.31 porting 
+Date: Tue, 17 Jan 2006 15:31:09 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,44 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linux-2.4.31 porting
 
-> That's the problem: we don't have the datasheet for the ArticiaS. :-( 
-> But the driver initializes correctly with the Uninorth code now and with the
-> DRI/DRM code changed. (The code in drm_vm.c checks for Apple's PCI vendor
-> ID. Therefore I just added a check for MAI's PCI vendor ID.) But the X
-> server freezes after the login screen is displayed (IIRC the mouse still
-> works, but the keyboard is dead!?).
+>Hello u all!
+>        Have you already ported a linux-2.4.31 to be used on a PPC mpc8272
+(or anyone from the family) based board?
+>        The problem that I have is that i don't have console. As far as i
+could debug, the kernel stucks on my_console_write (in
+arch/ppc/cpm2_io/uart.c), waiting >for transmitter fifo to empty (line
+2298 - "while (bdp->cbd_sc & BD_SC_READY)").
+>        Any suggestions will be highly welcomed!
 
-That check is only necessary because Apple bridge puts the AGP aperture
-at bus address 0. This is probably not the case for you. You may not
-have that right. Check what you put in agp_bridge->gart_bus_addr
+I have used 2.4.24 running on an mpc8247 based board.  My board uses SMC1,
+SCC3 and SCC4 for tty,
+(console on SCC4) so I had to edit the configuration in uart.c, but no other
+changes.  You probably have
+a configuration mis-match, maybe your parallel port pins are not getting set
+up right.
 
-> BTW: A "agp_special_page" is reserved in init.c. Is this page necessary for
-> the DRI/DRM drivers to work with the Uninorth driver? I enabled this code
-> snipped for the AmigaONE too to be on the safe side. :-)
+By the way, 2.4.24 put FCC ethernet tables in reserved memory, but I think
+that was fixed by 2.4.31.
+Check that you have CONFIG_8272 in your .config file to be sure.
 
-It's, I think, still used by the r128 one, but it's not a very good
-workaround.
+Also, I worked from CONFIG_ADS8260 and I couldn't make a bit of sense of the
+PCI implementation.
+I think the mpc8266ads_pci.c implementation assumes some setup from the
+bootloader. I'll be glad to share
+what I did (though I'm not very sure of it) if you run into the same
+problem.
 
-> There may be another problem: it seems that it is not possible to flush the 
-> TLB cache of the ArticiaS with a specific register setting. At least MAI
-> didn't specify a bit for this purpose in the code. I have to do some reverse
-> engineering here. :-)
-
-Hrm... You definitely need a way to flush it
-
-> >  - The AGP aperture itself. The main issue there is wether your chipset
-> > makes the AGP aperture visible to the CPU or not. The Apple UniNorth one
-> > doesn't for example, it;'s only visible to the graphic chip. That is why
-> > the uninorth driver sets cant_use_aperture to 1. That forces the DRM to
-> > generate AGP mappings by using the real memory pages and putting them
-> > together into a virtual mapping instead of doing a direct mapping of the
-> > AGP aperture on the bus. Most x86 chipsets however _can_, thus a simple
-> > remapping of pages is enough.
-
-> Good question! How would I have to modify the Uninorth driver to use a
-> direct mapping of the AGP aperture on the bus?
-
-Don't set cant_use_aperture to 1 :)
-
-Ben.
+Mark Chambers
