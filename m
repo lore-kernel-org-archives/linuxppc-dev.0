@@ -1,15 +1,15 @@
 Return-Path: <jotken@softadvances.com>
 Received: from smtpauth07.mail.atl.earthlink.net
 	(smtpauth07.mail.atl.earthlink.net [209.86.89.67])
-	by ozlabs.org (Postfix) with ESMTP id 413F7681BB
+	by ozlabs.org (Postfix) with ESMTP id 60AA96893D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Jan 2006 11:45:35 +1100 (EST)
-Message-ID: <43CC3E37.4040707@softadvances.com>
-Date: Mon, 16 Jan 2006 18:45:43 -0600
+	Tue, 17 Jan 2006 11:46:41 +1100 (EST)
+Message-ID: <43CC3E01.6020208@softadvances.com>
+Date: Mon, 16 Jan 2006 18:44:49 -0600
 From: John Otken <jotken@softadvances.com>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: [Patch 3/3] Add Yellowstone Platform defconfig
+Subject: [Patch 2/3] Add Yosemite Platform defconfig
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,20 +21,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add Yellowstone Platform (AMCC 440GR) defconfig
+Add Yosemite Platform (AMCC 440EP) defconfig
 
 Signed-off-by: John Otken <jotken@softadvances.com>
 
 
 
-diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowstone_defconfig
---- a/arch/ppc/configs/yellowstone_defconfig	1969-12-31 17:00:00.000000000 -0700
-+++ c/arch/ppc/configs/yellowstone_defconfig	2006-01-15 08:03:11.000000000 -0600
-@@ -0,0 +1,824 @@
+diff -uprN a/arch/ppc/configs/yosemite_defconfig c/arch/ppc/configs/yosemite_defconfig
+--- a/arch/ppc/configs/yosemite_defconfig	1969-12-31 17:00:00.000000000 -0700
++++ c/arch/ppc/configs/yosemite_defconfig	2006-01-15 07:56:29.000000000 -0600
+@@ -0,0 +1,1062 @@
 +#
 +# Automatically generated make config: don't edit
 +# Linux kernel version: 2.6.15
-+# Sun Jan 15 07:57:26 2006
++# Sun Jan 15 07:48:26 2006
 +#
 +CONFIG_MMU=y
 +CONFIG_GENERIC_HARDIRQS=y
@@ -145,10 +145,11 @@ diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowsto
 +# CONFIG_LUAN is not set
 +# CONFIG_YUCCA is not set
 +# CONFIG_OCOTEA is not set
-+CONFIG_YELLOWSTONE=y
-+# CONFIG_YOSEMITE is not set
-+CONFIG_440GR=y
++# CONFIG_YELLOWSTONE is not set
++CONFIG_YOSEMITE=y
++CONFIG_440EP=y
 +CONFIG_440=y
++CONFIG_440_FPU=y
 +CONFIG_IBM440EP_ERR42=y
 +CONFIG_IBM_OCP=y
 +# CONFIG_PPC4xx_DMA is not set
@@ -347,6 +348,7 @@ diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowsto
 +# CONFIG_BLK_DEV_LOOP is not set
 +# CONFIG_BLK_DEV_NBD is not set
 +# CONFIG_BLK_DEV_SX8 is not set
++# CONFIG_BLK_DEV_UB is not set
 +CONFIG_BLK_DEV_RAM=y
 +CONFIG_BLK_DEV_RAM_COUNT=16
 +CONFIG_BLK_DEV_RAM_SIZE=4096
@@ -369,6 +371,7 @@ diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowsto
 +# CONFIG_BLK_DEV_IDECD is not set
 +# CONFIG_BLK_DEV_IDETAPE is not set
 +# CONFIG_BLK_DEV_IDEFLOPPY is not set
++# CONFIG_BLK_DEV_IDESCSI is not set
 +# CONFIG_IDE_TASK_IOCTL is not set
 +
 +#
@@ -415,7 +418,78 @@ diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowsto
 +# SCSI device support
 +#
 +# CONFIG_RAID_ATTRS is not set
-+# CONFIG_SCSI is not set
++CONFIG_SCSI=y
++CONFIG_SCSI_PROC_FS=y
++
++#
++# SCSI support type (disk, tape, CD-ROM)
++#
++CONFIG_BLK_DEV_SD=y
++# CONFIG_CHR_DEV_ST is not set
++# CONFIG_CHR_DEV_OSST is not set
++# CONFIG_BLK_DEV_SR is not set
++# CONFIG_CHR_DEV_SG is not set
++# CONFIG_CHR_DEV_SCH is not set
++
++#
++# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
++#
++# CONFIG_SCSI_MULTI_LUN is not set
++# CONFIG_SCSI_CONSTANTS is not set
++# CONFIG_SCSI_LOGGING is not set
++
++#
++# SCSI Transport Attributes
++#
++CONFIG_SCSI_SPI_ATTRS=y
++# CONFIG_SCSI_FC_ATTRS is not set
++# CONFIG_SCSI_ISCSI_ATTRS is not set
++# CONFIG_SCSI_SAS_ATTRS is not set
++
++#
++# SCSI low-level drivers
++#
++# CONFIG_ISCSI_TCP is not set
++# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
++# CONFIG_SCSI_3W_9XXX is not set
++# CONFIG_SCSI_ACARD is not set
++# CONFIG_SCSI_AACRAID is not set
++# CONFIG_SCSI_AIC7XXX is not set
++# CONFIG_SCSI_AIC7XXX_OLD is not set
++# CONFIG_SCSI_AIC79XX is not set
++# CONFIG_SCSI_DPT_I2O is not set
++# CONFIG_MEGARAID_NEWGEN is not set
++# CONFIG_MEGARAID_LEGACY is not set
++# CONFIG_MEGARAID_SAS is not set
++# CONFIG_SCSI_SATA is not set
++# CONFIG_SCSI_BUSLOGIC is not set
++# CONFIG_SCSI_DMX3191D is not set
++# CONFIG_SCSI_EATA is not set
++# CONFIG_SCSI_FUTURE_DOMAIN is not set
++# CONFIG_SCSI_GDTH is not set
++# CONFIG_SCSI_IPS is not set
++# CONFIG_SCSI_INITIO is not set
++# CONFIG_SCSI_INIA100 is not set
++CONFIG_SCSI_SYM53C8XX_2=y
++CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=1
++CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=16
++CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
++# CONFIG_SCSI_SYM53C8XX_IOMAPPED is not set
++# CONFIG_SCSI_IPR is not set
++# CONFIG_SCSI_QLOGIC_FC is not set
++# CONFIG_SCSI_QLOGIC_1280 is not set
++CONFIG_SCSI_QLA2XXX=y
++# CONFIG_SCSI_QLA21XX is not set
++# CONFIG_SCSI_QLA22XX is not set
++# CONFIG_SCSI_QLA2300 is not set
++# CONFIG_SCSI_QLA2322 is not set
++# CONFIG_SCSI_QLA6312 is not set
++# CONFIG_SCSI_QLA24XX is not set
++# CONFIG_SCSI_LPFC is not set
++# CONFIG_SCSI_DC395x is not set
++# CONFIG_SCSI_DC390T is not set
++# CONFIG_SCSI_NSP32 is not set
++# CONFIG_SCSI_DEBUG is not set
 +
 +#
 +# Multi-device support (RAID and LVM)
@@ -426,6 +500,9 @@ diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowsto
 +# Fusion MPT device support
 +#
 +# CONFIG_FUSION is not set
++# CONFIG_FUSION_SPI is not set
++# CONFIG_FUSION_FC is not set
++# CONFIG_FUSION_SAS is not set
 +
 +#
 +# IEEE 1394 (FireWire) support
@@ -551,6 +628,7 @@ diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowsto
 +# CONFIG_HIPPI is not set
 +# CONFIG_PPP is not set
 +# CONFIG_SLIP is not set
++# CONFIG_NET_FC is not set
 +# CONFIG_SHAPER is not set
 +# CONFIG_NETCONSOLE is not set
 +# CONFIG_NETPOLL is not set
@@ -688,16 +766,134 @@ diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowsto
 +#
 +CONFIG_USB_ARCH_HAS_HCD=y
 +CONFIG_USB_ARCH_HAS_OHCI=y
-+# CONFIG_USB is not set
++CONFIG_USB=y
++# CONFIG_USB_DEBUG is not set
++
++#
++# Miscellaneous USB options
++#
++# CONFIG_USB_DEVICEFS is not set
++# CONFIG_USB_BANDWIDTH is not set
++# CONFIG_USB_DYNAMIC_MINORS is not set
++# CONFIG_USB_OTG is not set
++
++#
++# USB Host Controller Drivers
++#
++# CONFIG_USB_EHCI_HCD is not set
++# CONFIG_USB_ISP116X_HCD is not set
++CONFIG_USB_OHCI_HCD=y
++# CONFIG_USB_OHCI_BIG_ENDIAN is not set
++CONFIG_USB_OHCI_LITTLE_ENDIAN=y
++# CONFIG_USB_UHCI_HCD is not set
++# CONFIG_USB_SL811_HCD is not set
++
++#
++# USB Device Class drivers
++#
++# CONFIG_USB_ACM is not set
++# CONFIG_USB_PRINTER is not set
 +
 +#
 +# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
 +#
 +
 +#
++# may also be needed; see USB_STORAGE Help for more information
++#
++CONFIG_USB_STORAGE=y
++# CONFIG_USB_STORAGE_DEBUG is not set
++# CONFIG_USB_STORAGE_DATAFAB is not set
++# CONFIG_USB_STORAGE_FREECOM is not set
++# CONFIG_USB_STORAGE_ISD200 is not set
++# CONFIG_USB_STORAGE_DPCM is not set
++# CONFIG_USB_STORAGE_USBAT is not set
++# CONFIG_USB_STORAGE_SDDR09 is not set
++# CONFIG_USB_STORAGE_SDDR55 is not set
++# CONFIG_USB_STORAGE_JUMPSHOT is not set
++
++#
++# USB Input Devices
++#
++# CONFIG_USB_HID is not set
++
++#
++# USB HID Boot Protocol drivers
++#
++
++#
++# USB Imaging devices
++#
++# CONFIG_USB_MDC800 is not set
++# CONFIG_USB_MICROTEK is not set
++
++#
++# USB Multimedia devices
++#
++# CONFIG_USB_DABUSB is not set
++
++#
++# Video4Linux support is needed for USB Multimedia device support
++#
++
++#
++# USB Network Adapters
++#
++# CONFIG_USB_CATC is not set
++# CONFIG_USB_KAWETH is not set
++CONFIG_USB_PEGASUS=y
++# CONFIG_USB_RTL8150 is not set
++# CONFIG_USB_USBNET is not set
++CONFIG_USB_MON=y
++
++#
++# USB port drivers
++#
++
++#
++# USB Serial Converter support
++#
++# CONFIG_USB_SERIAL is not set
++
++#
++# USB Miscellaneous drivers
++#
++# CONFIG_USB_EMI62 is not set
++# CONFIG_USB_EMI26 is not set
++# CONFIG_USB_AUERSWALD is not set
++# CONFIG_USB_RIO500 is not set
++# CONFIG_USB_LEGOTOWER is not set
++# CONFIG_USB_LCD is not set
++# CONFIG_USB_LED is not set
++# CONFIG_USB_CYTHERM is not set
++# CONFIG_USB_PHIDGETKIT is not set
++# CONFIG_USB_PHIDGETSERVO is not set
++# CONFIG_USB_IDMOUSE is not set
++# CONFIG_USB_LD is not set
++
++#
++# USB DSL modem support
++#
++
++#
 +# USB Gadget Support
 +#
-+# CONFIG_USB_GADGET is not set
++CONFIG_USB_GADGET=y
++# CONFIG_USB_GADGET_DEBUG_FILES is not set
++CONFIG_USB_GADGET_SELECTED=y
++CONFIG_USB_GADGET_NET2280=y
++CONFIG_USB_NET2280=y
++# CONFIG_USB_GADGET_PXA2XX is not set
++# CONFIG_USB_GADGET_GOKU is not set
++# CONFIG_USB_GADGET_LH7A40X is not set
++# CONFIG_USB_GADGET_OMAP is not set
++# CONFIG_USB_GADGET_DUMMY_HCD is not set
++CONFIG_USB_GADGET_DUALSPEED=y
++CONFIG_USB_ZERO=y
++# CONFIG_USB_ETH is not set
++# CONFIG_USB_GADGETFS is not set
++# CONFIG_USB_FILE_STORAGE is not set
++# CONFIG_USB_G_SERIAL is not set
 +
 +#
 +# MMC/SD Card support
@@ -743,8 +939,11 @@ diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowsto
 +#
 +# DOS/FAT/NT Filesystems
 +#
-+# CONFIG_MSDOS_FS is not set
-+# CONFIG_VFAT_FS is not set
++CONFIG_FAT_FS=y
++CONFIG_MSDOS_FS=y
++CONFIG_VFAT_FS=y
++CONFIG_FAT_DEFAULT_CODEPAGE=437
++CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
 +# CONFIG_NTFS_FS is not set
 +
 +#
@@ -807,7 +1006,46 @@ diff -uprN a/arch/ppc/configs/yellowstone_defconfig c/arch/ppc/configs/yellowsto
 +#
 +# Native Language Support
 +#
-+# CONFIG_NLS is not set
++CONFIG_NLS=y
++CONFIG_NLS_DEFAULT="iso8859-1"
++CONFIG_NLS_CODEPAGE_437=y
++# CONFIG_NLS_CODEPAGE_737 is not set
++# CONFIG_NLS_CODEPAGE_775 is not set
++# CONFIG_NLS_CODEPAGE_850 is not set
++# CONFIG_NLS_CODEPAGE_852 is not set
++# CONFIG_NLS_CODEPAGE_855 is not set
++# CONFIG_NLS_CODEPAGE_857 is not set
++# CONFIG_NLS_CODEPAGE_860 is not set
++# CONFIG_NLS_CODEPAGE_861 is not set
++# CONFIG_NLS_CODEPAGE_862 is not set
++# CONFIG_NLS_CODEPAGE_863 is not set
++# CONFIG_NLS_CODEPAGE_864 is not set
++# CONFIG_NLS_CODEPAGE_865 is not set
++# CONFIG_NLS_CODEPAGE_866 is not set
++# CONFIG_NLS_CODEPAGE_869 is not set
++# CONFIG_NLS_CODEPAGE_936 is not set
++# CONFIG_NLS_CODEPAGE_950 is not set
++# CONFIG_NLS_CODEPAGE_932 is not set
++# CONFIG_NLS_CODEPAGE_949 is not set
++# CONFIG_NLS_CODEPAGE_874 is not set
++# CONFIG_NLS_ISO8859_8 is not set
++# CONFIG_NLS_CODEPAGE_1250 is not set
++# CONFIG_NLS_CODEPAGE_1251 is not set
++# CONFIG_NLS_ASCII is not set
++CONFIG_NLS_ISO8859_1=y
++# CONFIG_NLS_ISO8859_2 is not set
++# CONFIG_NLS_ISO8859_3 is not set
++# CONFIG_NLS_ISO8859_4 is not set
++# CONFIG_NLS_ISO8859_5 is not set
++# CONFIG_NLS_ISO8859_6 is not set
++# CONFIG_NLS_ISO8859_7 is not set
++# CONFIG_NLS_ISO8859_9 is not set
++# CONFIG_NLS_ISO8859_13 is not set
++# CONFIG_NLS_ISO8859_14 is not set
++# CONFIG_NLS_ISO8859_15 is not set
++# CONFIG_NLS_KOI8_R is not set
++# CONFIG_NLS_KOI8_U is not set
++# CONFIG_NLS_UTF8 is not set
 +
 +#
 +# Library routines
