@@ -1,21 +1,19 @@
-Return-Path: <peter.ryser@xilinx.com>
-Received: from outbound1-kan-R.bigfish.com (outbound-kan.frontbridge.com
-	[63.161.60.23])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BFF43689DE
+Return-Path: <grant.likely@secretlab.ca>
+Received: from outbound-mail-06.bluehost.com (outbound-mail-06.bluehost.com
+	[67.138.240.206]) by ozlabs.org (Postfix) with SMTP id 9319E68926
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Jan 2006 04:07:15 +1100 (EST)
-Message-ID: <43CD240C.2050907@xilinx.com>
-Date: Tue, 17 Jan 2006 09:06:20 -0800
-From: Peter Ryser <peter.ryser@xilinx.com>
+	Wed, 18 Jan 2006 04:30:47 +1100 (EST)
+Message-ID: <43CD29B4.5070607@secretlab.ca>
+Date: Tue, 17 Jan 2006 10:30:28 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
+To: Peter Ryser <peter.ryser@xilinx.com>
 Subject: Re: [PATCH 00/10] Updated ML300 & ML403 patches
 References: <20060114094658.GA12639@secretlab.ca>
 	<43CC5453.3060702@xilinx.com> <43CC9F35.8010305@secretlab.ca>
 	<43CCE89B.8050603@xilinx.com> <43CD1021.7080205@secretlab.ca>
-In-Reply-To: <43CD1021.7080205@secretlab.ca>
+	<43CD240C.2050907@xilinx.com>
+In-Reply-To: <43CD240C.2050907@xilinx.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Andrei Konovalov <akonovalov@mvista.com>, Grant Likely <grant@secretlab.ca>,
 	Rick Moleres <Rick.Moleres@xilinx.com>,
@@ -30,59 +28,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Peter Ryser wrote:
+> 
+>> I don't understand what you mean.  It sounds like your suggesting I do 
+>> exactly opposite what you're arguing; hand modify one of the 
+>> xparameters_*.h files.  Are you saying that edk can't generate Linux 
+>> redefines for the ml403 at the moment? 
+> 
+> 
+> Yes, it can. It looks they are not present in the xparameters_ml403.h 
+> that you submitted as part of your patch. I'll send you the 
+> automatically generated file in a seperate email.
 
-> I don't understand what you mean.  It sounds like your suggesting I do 
-> exactly opposite what you're arguing; hand modify one of the 
-> xparameters_*.h files.  Are you saying that edk can't generate Linux 
-> redefines for the ml403 at the moment? 
+okay good; I misunderstood what you were saying.  I pulled 
+xparameters_ml403.h out of the ref design w/ the standalone bsp.  I just 
+haven't bothered trying to generating the Linux bsp yet.
 
-Yes, it can. It looks they are not present in the xparameters_ml403.h 
-that you submitted as part of your patch. I'll send you the 
-automatically generated file in a seperate email.
+> 
+>> I do *not* think I should replace the edk-generated 
+>> xparameters_ml403.h with a hacked xparameters_ml300.h file.  I'd 
+>> rather use the generated _ml403 file and change the infrastructure 
+>> when the Linux redefines are ready. 
+> 
+> 
+> See above. BTW, I'm not sure how familiar you are with the process in 
+> EDK. Let me know if I can help you step through it.
 
-> I do *not* think I should replace the edk-generated 
-> xparameters_ml403.h with a hacked xparameters_ml300.h file.  I'd 
-> rather use the generated _ml403 file and change the infrastructure 
-> when the Linux redefines are ready. 
+okay, I'll ping you when I've got questions.
 
-See above. BTW, I'm not sure how familiar you are with the process in 
-EDK. Let me know if I can help you step through it.
+>> I understand that it's not *recommended*; I'm just saying it's not 
+>> always *reality*  :p 
+> 
+> 
+> Yeah, that's true for user projects. However, I hope that we can get the 
+> default included in the Linux 2.6 kernel right.
 
->> That's not a recommended flow. It's very easy to create an EDK design 
->> with the proper settings and since it is very likely that things 
->> change during the design process of the FPGA the small investment 
->> into making the proper settings in the tool will save a lot of time 
->> in the end.
->
->
-> I understand that it's not *recommended*; I'm just saying it's not 
-> always *reality*  :p 
+yes, definately
 
-Yeah, that's true for user projects. However, I hope that we can get the 
-default included in the Linux 2.6 kernel right.
+> 
+>> Yes; but I already said that I'll change the patch to use the Xilinx 
+>> redefines.  My argument is simply that *if* changes are required, 
+>> there is a way for the user to do it.  In the normal (recommended) 
+>> case; nothing will need to be done.  (think Larry Wall's quote: "easy 
+>> things easy; hard things possible)
+>>
+>> When it is needed; the fixups will be in xparameters.h; not 
+>> xparameters_*.h; and they'll be for a specific port.  The fixups will 
+>> only need to be done once per project (most likely). 
+> 
+> 
+> I'm not sure that I follow your argument here.
 
-> Yes; but I already said that I'll change the patch to use the Xilinx 
-> redefines.  My argument is simply that *if* changes are required, 
-> there is a way for the user to do it.  In the normal (recommended) 
-> case; nothing will need to be done.  (think Larry Wall's quote: "easy 
-> things easy; hard things possible)
->
-> When it is needed; the fixups will be in xparameters.h; not 
-> xparameters_*.h; and they'll be for a specific port.  The fixups will 
-> only need to be done once per project (most likely). 
+I'll compose my answer in code; watch for patches.  :)
 
-I'm not sure that I follow your argument here.
+btw, once Linus closes the 2.6.16 merge window, it looks like we may be 
+able to use the powerpc.git tree for tracking these changes.
 
-> My point is that the Linux redefines are useful to more than just 
-> Linux ports.  Don't you think standalone apps could also benefit from 
-> a sane-set of defines for peripherals?  In other words; shouldn't the 
-> Linux redefines be always available (and called something more generic)? 
+Cheers,
+g.
 
-I see what you mean and I tend to agree.
-
-> okay, I'll change the patch to use those names. 
-
-Great. Thanks.
-
-
-- Peter
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 663-0761
