@@ -1,16 +1,15 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.21])
-	by ozlabs.org (Postfix) with SMTP id 8A86E689AE
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2006 19:37:58 +1100 (EST)
-Date: Tue, 17 Jan 2006 09:37:57 +0100 (MET)
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <rredondo@indra.es>
+Received: from mailhost1.indra.es (unknown [213.170.46.108])
+	by ozlabs.org (Postfix) with ESMTP id AB631689E0
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2006 21:37:05 +1100 (EST)
 MIME-Version: 1.0
-References: <1137453496.4823.61.camel@localhost.localdomain>
-Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
-Message-ID: <2557.1137487077@www21.gmx.net>
-Content-Type: text/plain; charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: back trace when a SIGSEGV
+Date: Tue, 17 Jan 2006 11:29:50 +0100
+Message-ID: <6A28467355D2AD478D1F51C479415AE79BFAD4@MADTORMAIL.indra.es>
+From: "Redondo Garcia, Roberto" <rredondo@indra.es>
+Cc: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,63 +19,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> --- Ursprüngliche Nachricht ---
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> Kopie: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
-> Betreff: Re: AGPGART driver for ArticiaS - ioremap() problem
-> Datum: Tue, 17 Jan 2006 10:18:15 +1100
-> 
-> > Ah, okay. So at least the approach to use the Uninorth code was a step
-> > in the right direction. But that requires changes in the DRI and X
-> > server code, right?
-> 
-> Not you shouldn't... there are 2 different things here. One is how you
-> access the GART table itself. One is how you access the AGP memory (the
-> memory that is bound to the GART).
-> 
-> I'm not 100% sure what of the 2 above cases triggered an error with
-> ioremap, I'm not sure what approach should be used, because i don't know
-> what your chipset does.
-That's the problem: we don't have the datasheet for the ArticiaS. :-( 
-But the driver initializes correctly with the Uninorth code now and with the
-DRI/DRM code changed. (The code in drm_vm.c checks for Apple's PCI vendor
-ID. Therefore I just added a check for MAI's PCI vendor ID.) But the X
-server freezes after the login screen is displayed (IIRC the mouse still
-works, but the keyboard is dead!?).
+my final solution has been to capture signal SIGSEGV in my own program
+with a signal handler: =20
 
-BTW: A "agp_special_page" is reserved in init.c. Is this page necessary for
-the DRI/DRM drivers to work with the Uninorth driver? I enabled this code
-snipped for the AmigaONE too to be on the safe side. :-)
+signal(SIGSEGV, to segv_handler; =20
 
-> I would need more infos about the hw there. But the basic idea is:
-> 
->  - For the GART table, you don't need to ioremap it (which is generally
-> a way to have it non-cacheable I suppose). You can just flush cache
-> entries after populating them (see uninorth_insert_memory(), it flushes
-> first the pages that are being inserted in the GART as AGP memory is not
-> cacheable neither, and at the end of the function, flushes the GART
-> entry proper).
-There may be another problem: it seems that it is not possible to flush the 
-TLB cache of the ArticiaS with a specific register setting. At least MAI
-didn't specify a bit for this purpose in the code. I have to do some reverse
-engineering here. :-)
+and after generate backtrace in my program with the functions
+"backtrace()" and "backtrace_symbols()" and write it to file. =20
 
->  - The AGP aperture itself. The main issue there is wether your chipset
-> makes the AGP aperture visible to the CPU or not. The Apple UniNorth one
-> doesn't for example, it;'s only visible to the graphic chip. That is why
-> the uninorth driver sets cant_use_aperture to 1. That forces the DRM to
-> generate AGP mappings by using the real memory pages and putting them
-> together into a virtual mapping instead of doing a direct mapping of the
-> AGP aperture on the bus. Most x86 chipsets however _can_, thus a simple
-> remapping of pages is enough.
-Good question! How would I have to modify the Uninorth driver to use a
-direct mapping of the AGP aperture on the bus?
+Thanks
 
-Thanks!
+example to generate backtrace: =20
+http://www.delorie.com/gnu/docs/glibc/libc_665.html=20
 
-Gerhard
+-----Mensaje original-----
+De: Dustin Lang [mailto:dalang@cs.ubc.ca]=20
+Enviado el: viernes, 02 de diciembre de 2005 15:28
+Para: Redondo Garcia, Roberto
+CC: linuxppc-dev
+Asunto: Re: back trace when a SIGSEGV
 
--- 
-DSL-Aktion wegen großer Nachfrage bis 28.2.2006 verlängert:
-GMX DSL-Flatrate 1 Jahr kostenlos* http://www.gmx.net/de/go/dsl
+
+Hi,
+
+SIGSEGV (also known as a "segmentation fault" or "segfault") usually
+means your program is doing something wrong like trying to dereference a
+null pointer.  (ie, int* x =3D NULL; *x =3D 42;).  To track this down, yo=
+u
+can use "gdb" (the gnu debugger) - gnu.org.  Another option is
+"valgrind" - valgrind.org - there is a PowerPC port (thanks, Paul!).
+
+However, this mailing list is for _development_ of the linux _kernel_ on
+PowerPC.  Your question is not about kernel development so it doesn't
+belong here.  (Unless you are sure that your program is correct and
+somehow the kernel is unfairly giving you a segfault - which doesn't
+seem to be the case, based on your message.)  Find a mailing list or
+message board about userspace programming and ask your question there.
+
+Also, you should learn how to write a bug report.  Go to google.com,
+type in "how to write a bug report", and read the first ten results.
+(For
+example: What program are you running?  Something you wrote?  What OS
+are you using?  Why do you think the SIGSEGV is something caused by
+someone else's code and not your own?  Why does it matter how long the
+program runs before it crashes?  Why didn't you type "debug" into google
+and see what came up?  (GDB is number 6!  Come on, get with it!))
+
+Happy debugging!
+dustin.
+
+> hello,
+> I have a program that when it has been several hours running, it has a
+
+> problem and falls and it produces a SIGSEGV.  I would like to know to=20=
+
+> how debug this error, because I do not have ulimit for generate core=20=
+
+> dump o examine a back trace.
+>
+> thanks
+-------------------------------------------------------------------------=
+------------------------------------------
+Este correo electr=F3nico y, en su caso, cualquier fichero anexo al mismo=
+, contiene informaci=F3n de car=E1cter confidencial exclusivamente dirigi=
+da a su destinatario o destinatarios. Queda prohibida su divulgaci=F3n, c=
+opia o distribuci=F3n a terceros sin la previa autorizaci=F3n escrita de =
+Indra. En el caso de haber recibido este correo electr=F3nico por error, =
+se ruega notificar inmediatamente esta circunstancia mediante reenv=EDo a=
+ la direcci=F3n electr=F3nica del remitente. POR FAVOR, ANTES DE IMPRIMIR=
+ ESTE CORREO ELECTR=D3NICO CONSIDERE SU APORTACI=D3N A LA CONSERVACI=D3N =
+DEL MEDIO AMBIENTE POR LA REDUCCI=D3N DE CONSUMO DE PAPEL.
+
+The information in this e-mail and in any attachments is confidential and=
+ solely for the attention and use of the named addressee(s). You are here=
+by notified that any dissemination, distribution or copy of this communic=
+ation is prohibited without the prior written consent of Indra. If you ha=
+ve received this communication in error, please, notify the sender by rep=
+ly e-mail. PLEASE CONSIDER YOUR ENVIRONMENTAL RESPONSIBILITY BEFORE PRINT=
+ING THIS E-MAIL.
