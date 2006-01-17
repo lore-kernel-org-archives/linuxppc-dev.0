@@ -1,18 +1,26 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id E6CEF688E6
+Return-Path: <Tom.Ziomek@motorola.com>
+Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
+	by ozlabs.org (Postfix) with ESMTP id 8ECB46891D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Jan 2006 07:08:23 +1100 (EST)
-Date: Tue, 17 Jan 2006 23:08:21 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Jose =?UTF-8?B?RnJhbsOnYQ==?= (Ext_GTBC) <Jose.Franca.Ext@siemens.com>
-Subject: Re: Linux-2.4.31 porting
-Message-ID: <20060117230821.78c7f822@vitb.dev.rtsoft.ru>
-In-Reply-To: <16FD2D70D281D44F9BFCF6ACF9B6117102AF6570@lisi053a.siemens.pt>
-References: <16FD2D70D281D44F9BFCF6ACF9B6117102AF6570@lisi053a.siemens.pt>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 18 Jan 2006 07:14:03 +1100 (EST)
+Received: from il06exr03.mot.com (il06exr03.mot.com [129.188.137.133])
+	by motgate8.mot.com (8.12.11/Motgate7) with ESMTP id k0HKSBDs021363
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 17 Jan 2006 13:28:11 -0700 (MST)
+Received: from de01exm60.ds.mot.com (de01exm60.am.mot.com [10.176.8.105])
+	by il06exr03.mot.com (8.13.1/8.13.0) with ESMTP id k0HKRSXl004142
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 17 Jan 2006 14:27:28 -0600 (CST)
+Date: Tue, 17 Jan 2006 14:12:28 -0600 (Central Standard Time)
+From: T Ziomek <ctz001@email.mot.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 00/10] Updated ML300 & ML403 patches
+In-Reply-To: <mailman.134.1137523561.17753.linuxppc-embedded@ozlabs.org>
+Message-ID: <Pine.WNT.4.61.0601171341520.2664@holyoke.labs.mot.com>
+References: <mailman.134.1137523561.17753.linuxppc-embedded@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: tomz <CTZ001@email.mot.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,25 +31,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 17 Jan 2006 19:33:21 -0000
-Jose França (Ext_GTBC) <Jose.Franca.Ext@siemens.com> wrote:
+Here's another lurker poking his head up...
 
-> Hello u all!
+Grant Likely wrote:
 > 
-> 	Have you already ported a linux-2.4.31 to be used on a PPC mpc8272 (or anyone from the family) based board?
-> 	The problem that I have is that i don't have console. As far as i could debug, the kernel stucks on my_console_write (in arch/ppc/cpm2_io/uart.c), waiting for transmitter fifo to empty (line 2298 - "while (bdp->cbd_sc & BD_SC_READY)").
-> 	Any suggestions will be highly welcomed!
+> John Bonesio wrote:
+> > Hello,
+> >
+> > I work in the Xilinx software group.
+> >
+> > I'm replying to this email thread because Grant suggested there be a GIT
+> > tree for Virtex specific changes.
 > 
+> I was told today that we may be able to use Paul's linuxppc tree.  I'm
+> going to ask him later today.
+
+Probably a newbie question...my understanding is that kernel.org is the
+preferred repository for PPC-specific code these days, correct?  So the a-
+bove is referring to Xilinx-specific PPC code?  From what I can see on LXR
+and kernel.org neither has any Xilinx-related code...
+
+> > I am wondering if the open source community would prefer or see a
+> > benefit to Xilinx owning/hosting the source trees (CVS or GIT or
+> > whatever) for our drivers, and in particular the Linux adapter drivers.
+> > If we did this we would provide a web site with the information along
+> > with instructions on how to submit changes.
+> >
+> > We are exploring this idea and wanted to know what others thought of
+> > this.
 > 
+> Let's just keep things on the mailing list; it's the natural place to
+> discuss issues.  If the traffic gets too high, we can do something
+> different.
 
-Better use 2.6 as 8272 is definitely OK there (and it was in 2.4 but I've almost forgotten issues in 2.4)
+Re keeping discussion on linuxppc-embedded, sure.  Re the hosting of source
+trees, I'd definitely like to see Xilinx take that on if the stuff dis-
+cussed above doesn't come to pass.  We need to have a relatively stable,
+long-term primary source for such code.
 
-> 
-> Thanks for reading!
-> Best regards,
-> Filipe.
-
-
+Tom Ziomek
 -- 
-Sincerely, 
-Vitaly
+   /"\  ASCII Ribbon Campaign   |
+   \ /                          |   Email to user 'CTZ001'
+    X        Against HTML       |             at 'email.mot.com'
+   / \     in e-mail & news     |
