@@ -1,18 +1,25 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from outbound-mail-39.bluehost.com (outbound-mail-39.bluehost.com
-	[70.98.111.193]) by ozlabs.org (Postfix) with SMTP id 09DE868916
+Return-Path: <peter.ryser@xilinx.com>
+Received: from outbound1-kan-R.bigfish.com (outbound-kan.frontbridge.com
+	[63.161.60.23])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BFF43689DE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Jan 2006 03:49:17 +1100 (EST)
-Message-ID: <43CD2003.3020903@secretlab.ca>
-Date: Tue, 17 Jan 2006 09:49:07 -0700
-From: Grant Likely <grant.likely@secretlab.ca>
+	Wed, 18 Jan 2006 04:07:15 +1100 (EST)
+Message-ID: <43CD240C.2050907@xilinx.com>
+Date: Tue, 17 Jan 2006 09:06:20 -0800
+From: Peter Ryser <peter.ryser@xilinx.com>
 MIME-Version: 1.0
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: General GIT MO question
-References: <43CB3127.7060107@dlasys.net>
-In-Reply-To: <43CB3127.7060107@dlasys.net>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 00/10] Updated ML300 & ML403 patches
+References: <20060114094658.GA12639@secretlab.ca>
+	<43CC5453.3060702@xilinx.com> <43CC9F35.8010305@secretlab.ca>
+	<43CCE89B.8050603@xilinx.com> <43CD1021.7080205@secretlab.ca>
+In-Reply-To: <43CD1021.7080205@secretlab.ca>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Cc: Andrei Konovalov <akonovalov@mvista.com>, Grant Likely <grant@secretlab.ca>,
+	Rick Moleres <Rick.Moleres@xilinx.com>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,74 +30,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-David H. Lynch Jr. wrote:
-> 	I appreciate you feedback on the E12/UartLite stuff I posted earlier.
-no problem
 
-> 
-> 	I have gotten sufficiently compitent with git that I can use it as a
-> source code manager.
-> 	But despite perusing through a fairly significant amount of git docs, I
-> have not really grasped how to get from how I work to what seems to be
-> the norm for patch subimissions.
-Heh, your tracking the same path of pain that I went through 2 months
-ago.  :)
+> I don't understand what you mean.  It sounds like your suggesting I do 
+> exactly opposite what you're arguing; hand modify one of the 
+> xparameters_*.h files.  Are you saying that edk can't generate Linux 
+> redefines for the ml403 at the moment? 
 
-> 
-> 	Fixing a bug or adding a small feature is one thing. You have a base,
-> and and end result and a simple diff. But I am porting to a whole new
-> board, adding support for two new serial drivers, and adding boot to
-> init serial IO support - all at once, as well as dealing with bugs and
-> mis-steps along the way.
-> 
-> 	I can figure out how to get git to do alot of nice things, but I can
-> not figure out how to get it to produce a nice modularized set of
-> patches that includes only those things relevant for kernel submission.
-Here's what I do, assuming that my changes are in the 'master' branch,
-and 'master' is based off of 'origin'.  BTW, I also use the cogito with git.
+Yes, it can. It looks they are not present in the xparameters_ml403.h 
+that you submitted as part of your patch. I'll send you the 
+automatically generated file in a seperate email.
 
-1. create a new branch 'cleanup' off of origin so it doesn't have any of
-my patches in it.
-$ git branch cleanup origin
-$ git checkout origin
+> I do *not* think I should replace the edk-generated 
+> xparameters_ml403.h with a hacked xparameters_ml300.h file.  I'd 
+> rather use the generated _ml403 file and change the infrastructure 
+> when the Linux redefines are ready. 
 
-2. get a list of all my patches; I use 'cg log' and look for the sha1
-'commit' tags.
-$ cg log master
-p
-3a. start 'cherry-picking' my patches one-by-one from 'master' to
-'cleanup'.  Feel free to use this to reorder patches
-$ git cherry-pick -r <first-commit-sha1>
-$ git cherry-pick -r <second-commit-sha1>
-$ git cherry-pick -r <third-commit-sha1>
+See above. BTW, I'm not sure how familiar you are with the process in 
+EDK. Let me know if I can help you step through it.
 
-3b. If I want to modify the patch before committing; I use the -n flag
-to only apply the changes; clean up the change, then commit it with the
--c flag.  Also do this if a patch conflicts.
-$ git cherry-pick -r -n <messy-commit-sha1>
-$ <edit stuff>
-$ cg commit -c <messy-commit-sha1>   # Use the original change message
+>> That's not a recommended flow. It's very easy to create an EDK design 
+>> with the proper settings and since it is very likely that things 
+>> change during the design process of the FPGA the small investment 
+>> into making the proper settings in the tool will save a lot of time 
+>> in the end.
+>
+>
+> I understand that it's not *recommended*; I'm just saying it's not 
+> always *reality*  :p 
 
-3c. Cherry picking works for merging patches too
-$ git cherry-pick -r -n <partial-patch1>
-$ git cherry-pick -r -n <partial-patch2>
-$ git cherry-pick -r -n <partial-patch3>
-$ cg commit
+Yeah, that's true for user projects. However, I hope that we can get the 
+default included in the Linux 2.6 kernel right.
 
-4. generate patch files for submission to the mailing list
-$ git-format-patch -o <output dir> origin cleanup
+> Yes; but I already said that I'll change the patch to use the Xilinx 
+> redefines.  My argument is simply that *if* changes are required, 
+> there is a way for the user to do it.  In the normal (recommended) 
+> case; nothing will need to be done.  (think Larry Wall's quote: "easy 
+> things easy; hard things possible)
+>
+> When it is needed; the fixups will be in xparameters.h; not 
+> xparameters_*.h; and they'll be for a specific port.  The fixups will 
+> only need to be done once per project (most likely). 
 
-5. (optional) make 'cleanup' the new 'master
-$ git branch -f master cleanup
-$ git checkout master
+I'm not sure that I follow your argument here.
 
-> 
-> 	I am looking for a clue here. How do you produce a clean set of
-> granular patches including only what you want and not the all the steps
-> and mis-steps along the way ?
+> My point is that the Linux redefines are useful to more than just 
+> Linux ports.  Don't you think standalone apps could also benefit from 
+> a sane-set of defines for peripherals?  In other words; shouldn't the 
+> Linux redefines be always available (and called something more generic)? 
+
+I see what you mean and I tend to agree.
+
+> okay, I'll change the patch to use those names. 
+
+Great. Thanks.
 
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 663-0761
+- Peter
