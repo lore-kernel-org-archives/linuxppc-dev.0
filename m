@@ -1,15 +1,13 @@
-Return-Path: <rredondo@indra.es>
-Received: from mailhost1.indra.es (unknown [213.170.46.108])
-	by ozlabs.org (Postfix) with ESMTP id AB631689E0
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Jan 2006 21:37:05 +1100 (EST)
+Return-Path: <Jose.Franca.Ext@siemens.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: back trace when a SIGSEGV
-Date: Tue, 17 Jan 2006 11:29:50 +0100
-Message-ID: <6A28467355D2AD478D1F51C479415AE79BFAD4@MADTORMAIL.indra.es>
-From: "Redondo Garcia, Roberto" <rredondo@indra.es>
-Cc: "linuxppc-dev" <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C61B9C.DFF0B982"
+Subject: Linux-2.4.31 porting 
+Date: Tue, 17 Jan 2006 19:33:21 -0000
+Message-ID: <16FD2D70D281D44F9BFCF6ACF9B6117102AF6570@lisi053a.siemens.pt>
+From: =?iso-8859-1?Q?Jose_Fran=E7a_=28Ext=5FGTBC=29?=
+	<Jose.Franca.Ext@siemens.com>
+To: <linuxppc-dev@ozlabs.org>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,81 +17,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-my final solution has been to capture signal SIGSEGV in my own program
-with a signal handler: =20
+This is a multi-part message in MIME format.
 
-signal(SIGSEGV, to segv_handler; =20
+------_=_NextPart_001_01C61B9C.DFF0B982
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-and after generate backtrace in my program with the functions
-"backtrace()" and "backtrace_symbols()" and write it to file. =20
+Hello u all!
 
-Thanks
-
-example to generate backtrace: =20
-http://www.delorie.com/gnu/docs/glibc/libc_665.html=20
-
------Mensaje original-----
-De: Dustin Lang [mailto:dalang@cs.ubc.ca]=20
-Enviado el: viernes, 02 de diciembre de 2005 15:28
-Para: Redondo Garcia, Roberto
-CC: linuxppc-dev
-Asunto: Re: back trace when a SIGSEGV
+	Have you already ported a linux-2.4.31 to be used on a PPC mpc8272 (or =
+anyone from the family) based board?
+	The problem that I have is that i don't have console. As far as i could =
+debug, the kernel stucks on my_console_write (in =
+arch/ppc/cpm2_io/uart.c), waiting for transmitter fifo to empty (line =
+2298 - "while (bdp->cbd_sc & BD_SC_READY)").
+	Any suggestions will be highly welcomed!
 
 
-Hi,
 
-SIGSEGV (also known as a "segmentation fault" or "segfault") usually
-means your program is doing something wrong like trying to dereference a
-null pointer.  (ie, int* x =3D NULL; *x =3D 42;).  To track this down, yo=
-u
-can use "gdb" (the gnu debugger) - gnu.org.  Another option is
-"valgrind" - valgrind.org - there is a PowerPC port (thanks, Paul!).
+Thanks for reading!
+Best regards,
+Filipe.
 
-However, this mailing list is for _development_ of the linux _kernel_ on
-PowerPC.  Your question is not about kernel development so it doesn't
-belong here.  (Unless you are sure that your program is correct and
-somehow the kernel is unfairly giving you a segfault - which doesn't
-seem to be the case, based on your message.)  Find a mailing list or
-message board about userspace programming and ask your question there.
+------_=_NextPart_001_01C61B9C.DFF0B982
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Also, you should learn how to write a bug report.  Go to google.com,
-type in "how to write a bug report", and read the first ten results.
-(For
-example: What program are you running?  Something you wrote?  What OS
-are you using?  Why do you think the SIGSEGV is something caused by
-someone else's code and not your own?  Why does it matter how long the
-program runs before it crashes?  Why didn't you type "debug" into google
-and see what came up?  (GDB is number 6!  Come on, get with it!))
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.0.6487.1">
+<TITLE>Linux-2.4.31 porting </TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
 
-Happy debugging!
-dustin.
+<P><FONT SIZE=3D2 FACE=3D"Courier New">Hello u all!</FONT>
+</P>
 
-> hello,
-> I have a program that when it has been several hours running, it has a
+<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2 =
+FACE=3D"Courier New">Have you already ported a linux-2.4.31 to be used =
+on a PPC mpc8272 (or anyone from the family) based board?</FONT>
 
-> problem and falls and it produces a SIGSEGV.  I would like to know to=20=
+<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2 =
+FACE=3D"Courier New">The problem that I have is that i don't have =
+console. As far as i could debug, the kernel stucks on my_console_write =
+(in arch/ppc/cpm2_io/uart.c), waiting for transmitter fifo to empty =
+(line 2298 - &quot;while (bdp-&gt;cbd_sc &amp; =
+BD_SC_READY)&quot;).</FONT></P>
 
-> how debug this error, because I do not have ulimit for generate core=20=
+<P>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <FONT SIZE=3D2 =
+FACE=3D"Courier New">Any suggestions will be highly welcomed!</FONT>
+</P>
+<BR>
+<BR>
 
-> dump o examine a back trace.
->
-> thanks
--------------------------------------------------------------------------=
-------------------------------------------
-Este correo electr=F3nico y, en su caso, cualquier fichero anexo al mismo=
-, contiene informaci=F3n de car=E1cter confidencial exclusivamente dirigi=
-da a su destinatario o destinatarios. Queda prohibida su divulgaci=F3n, c=
-opia o distribuci=F3n a terceros sin la previa autorizaci=F3n escrita de =
-Indra. En el caso de haber recibido este correo electr=F3nico por error, =
-se ruega notificar inmediatamente esta circunstancia mediante reenv=EDo a=
- la direcci=F3n electr=F3nica del remitente. POR FAVOR, ANTES DE IMPRIMIR=
- ESTE CORREO ELECTR=D3NICO CONSIDERE SU APORTACI=D3N A LA CONSERVACI=D3N =
-DEL MEDIO AMBIENTE POR LA REDUCCI=D3N DE CONSUMO DE PAPEL.
+<P><FONT SIZE=3D2 FACE=3D"Courier New">Thanks for reading!</FONT>
 
-The information in this e-mail and in any attachments is confidential and=
- solely for the attention and use of the named addressee(s). You are here=
-by notified that any dissemination, distribution or copy of this communic=
-ation is prohibited without the prior written consent of Indra. If you ha=
-ve received this communication in error, please, notify the sender by rep=
-ly e-mail. PLEASE CONSIDER YOUR ENVIRONMENTAL RESPONSIBILITY BEFORE PRINT=
-ING THIS E-MAIL.
+<BR><FONT SIZE=3D2 FACE=3D"Courier New">Best regards,</FONT>
+
+<BR><FONT SIZE=3D2 FACE=3D"Courier New">Filipe.</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C61B9C.DFF0B982--
