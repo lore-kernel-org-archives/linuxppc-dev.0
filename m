@@ -1,17 +1,18 @@
-Return-Path: <markc@mail.com>
-Received: from relay02.roc.ny.frontiernet.net (relay02.roc.ny.frontiernet.net
-	[66.133.182.165]) by ozlabs.org (Postfix) with ESMTP id 2C643681B8
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2006 07:59:21 +1100 (EST)
-Message-ID: <004f01c61ba4$f77c41e0$6401a8c0@chuck2>
-From: "Mark Chambers" <markc@mail.com>
-To: =?iso-8859-1?Q?Jose_Fran=E7a_\=28Ext=5FGTBC\=29?=
-	<Jose.Franca.Ext@siemens.com>, <linuxppc-dev@ozlabs.org>
-References: <16FD2D70D281D44F9BFCF6ACF9B6117102AF6570@lisi053a.siemens.pt>
-Subject: Re: Linux-2.4.31 porting 
-Date: Tue, 17 Jan 2006 15:31:09 -0500
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Return-Path: <frank@scirocco-5v-turbo.de>
+Received: from hermes.frankfurt.de.velia.net (hermes.frankfurt.de.velia.net
+	[85.195.64.15]) by ozlabs.org (Postfix) with ESMTP id 3919D681BB
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2006 21:53:35 +1100 (EST)
+Received: from p213.54.136.194.tisdip.tiscali.de ([213.54.136.194])
+	by hermes.frankfurt.de.velia.net with esmtpa (Exim 4.50)
+	id 1EzAXd-0008Mz-Ht
+	for linuxppc-dev@ozlabs.org; Wed, 18 Jan 2006 11:27:49 +0100
+Subject: Feedback: Support for fn key on Apple PowerBooks
+From: Frank Arnold <frank@scirocco-5v-turbo.de>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 18 Jan 2006 11:27:43 +0100
+Message-Id: <1137580063.3466.134.camel@localhost>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,33 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linux-2.4.31 porting
+Hi,
 
->Hello u all!
->        Have you already ported a linux-2.4.31 to be used on a PPC mpc8272
-(or anyone from the family) based board?
->        The problem that I have is that i don't have console. As far as i
-could debug, the kernel stucks on my_console_write (in
-arch/ppc/cpm2_io/uart.c), waiting >for transmitter fifo to empty (line
-2298 - "while (bdp->cbd_sc & BD_SC_READY)").
->        Any suggestions will be highly welcomed!
+finally this patch seems to have made it into recent Fedora Rawhide
+kernel. Thanks for your work.
 
-I have used 2.4.24 running on an mpc8247 based board.  My board uses SMC1,
-SCC3 and SCC4 for tty,
-(console on SCC4) so I had to edit the configuration in uart.c, but no other
-changes.  You probably have
-a configuration mis-match, maybe your parallel port pins are not getting set
-up right.
+I have some trouble with it. Actually, the mapping of function keys F1
+to F10 seems to be inverse. I have to press fn + function key to get a
+plain function key event. Pressing a function key only gives me those
+fancy new keycodes for brightness, mute, and so on. Page up, Page down,
+Home, and End are working like expected.
 
-By the way, 2.4.24 put FCC ethernet tables in reserved memory, but I think
-that was fixed by 2.4.31.
-Check that you have CONFIG_8272 in your .config file to be sure.
+My system: PowerBook5,6 (vendor id 0x020F)
+Kernel: 2.6.15-1.1858_FC5, as per Changelog 2.6.15-git12
 
-Also, I worked from CONFIG_ADS8260 and I couldn't make a bit of sense of the
-PCI implementation.
-I think the mpc8266ads_pci.c implementation assumes some setup from the
-bootloader. I'll be glad to share
-what I did (though I'm not very sure of it) if you run into the same
-problem.
-
-Mark Chambers
+-- Frank
