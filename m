@@ -1,20 +1,16 @@
-Return-Path: <apgo@patchbomb.org>
-Received: from mail22.bluewin.ch (mail22.bluewin.ch [195.186.19.66])
-	by ozlabs.org (Postfix) with ESMTP id 4E6F3688E6
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 06:17:04 +1100 (EST)
-Date: Wed, 18 Jan 2006 13:53:57 -0500
-To: Hollis Blanchard <hollis@penguinppc.org>
-Subject: [PATCH] powerpc: replace linuxppc64.org references with
-	penguinppc.org/ppc64/
-Message-ID: <20060118185357.GA32191@krypton>
-References: <20060116121244.GB7171@suse.de> <20060118110905.GA23678@krypton>
-	<20060118120715.GB19765@suse.de>
-	<1137599288.10689.2.camel@localhost.localdomain>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.21])
+	by ozlabs.org (Postfix) with SMTP id B2ECC681BD
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 06:41:03 +1100 (EST)
+Date: Wed, 18 Jan 2006 20:40:54 +0100 (MET)
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1137599288.10689.2.camel@localhost.localdomain>
-From: apgo@patchbomb.org (Arthur Othieno)
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olh@suse.de>
+References: <1137533072.4823.92.camel@localhost.localdomain>
+Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
+Message-ID: <14295.1137613254@www12.gmx.net>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,57 +20,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 18, 2006 at 09:48:08AM -0600, Hollis Blanchard wrote:
-> On Wed, 2006-01-18 at 13:07 +0100, Olaf Hering wrote:
-> >  On Wed, Jan 18, Arthur Othieno wrote:
-> > 
-> > > What about the s/linuxppc64\.org/penguinppc\.org/g case? Or is
-> > > penguinppc64.org preferable? Or am I just taking it too far? ;)
-> > 
-> > They are redirected on DNS or HTTP level.
+> > That's the problem: we don't have the datasheet for the ArticiaS. :-( 
+> > But the driver initializes correctly with the Uninorth code now and
+> > with the DRI/DRM code changed. (The code in drm_vm.c checks for Apple's
+> > PCI vendor ID. Therefore I just added a check for MAI's PCI vendor ID.)
+> > But the X server freezes after the login screen is displayed (IIRC the
+> > mouse still works, but the keyboard is dead!?).
 > 
-> HTTP level, but that doesn't answer his question.
+> That check is only necessary because Apple bridge puts the AGP aperture
+> at bus address 0. This is probably not the case for you. You may not
+> have that right. Check what you put in agp_bridge->gart_bus_addr
+Hmm, I'm not sure what value agp_bridge->gart_bus_addr should have. The BIOS
+doesn't setup it and the VIA AGPGART driver even reads it out from the
+northbridge's registers! Where does the value for agp_bridge->gart_bus_addr
+come from? For now it is set to 0x0, which would require the modification in
+drm_vm.c!?
+
+> > >  - The AGP aperture itself. The main issue there is wether your
+> > > chipset makes the AGP aperture visible to the CPU or not. The Apple
+> > > UniNorth one doesn't for example, it;'s only visible to the graphic
+> > > chip. That is why the uninorth driver sets cant_use_aperture to 1.
+> > > That forces the DRM to generate AGP mappings by using the real memory 
+> > > pages and putting them together into a virtual mapping instead of
+> > > doing a direct mapping of the AGP aperture on the bus. Most x86
+> > > chipsets however _can_, thus a simple remapping of pages is enough.
 > 
-> As the maintainer of that site, I would prefer to remove the
-> linuxppc64.org reference.
- 
-[PATCH] powerpc: replace linuxppc64.org references with penguinppc.org/ppc64/
+> > Good question! How would I have to modify the Uninorth driver to use a
+> > direct mapping of the AGP aperture on the bus?
+> 
+> Don't set cant_use_aperture to 1 :)
+:) The driver seems to work better with cant_use_aperture set to 1, so I
+leave it as it is. BTW: What's the meaning of needs_scratch_page?
 
-http://www.penguinppc.org/ppc64/ is the canonical URL for all things ppc64.
-http://linuxppc64.org is just a redirect so update all references accordingly.
+Thanks for your support!
 
-Signed-off-by: Arthur Othieno <apgo@patchbomb.org>
+Gerhard
 
----
-
-Depends on Olaf's: [PATCH] drop linuxppc64-dev
-
-
- MAINTAINERS |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-07edae4fcd285140c92dc32229043af1429196ce
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3283304..18dcfb3 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -535,7 +535,7 @@ BROADBAND PROCESSOR ARCHITECTURE
- P:	Arnd Bergmann
- M:	arnd@arndb.de
- L:	linuxppc-dev@ozlabs.org
--W:	http://linuxppc64.org
-+W:	http://www.penguinppc.org/ppc64/
- S:	Supported
- 
- BTTV VIDEO4LINUX DRIVER
-@@ -1608,7 +1608,7 @@ M:	paulus@au.ibm.com
- P:	Anton Blanchard
- M:	anton@samba.org
- M:	anton@au.ibm.com
--W:	http://linuxppc64.org
-+W:	http://www.penguinppc.org/ppc64/
- L:	linuxppc-dev@ozlabs.org
- S:	Supported
- 
 -- 
-1.0.0b
+10 GB Mailbox, 100 FreeSMS/Monat http://www.gmx.net/de/go/topmail
++++ GMX - die erste Adresse für Mail, Message, More +++
