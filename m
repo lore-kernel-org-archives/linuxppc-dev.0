@@ -1,18 +1,18 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "aun.it.uu.se",
-	Issuer "Uppsala University CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 56827688D6
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 01:14:27 +1100 (EST)
-From: Mikael Pettersson <mikpe@user.it.uu.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17358.19458.555996.684819@alkaid.it.uu.se>
-Date: Wed, 18 Jan 2006 15:09:06 +0100
-To: linuxppc-dev@ozlabs.org, netfilter-devel@lists.netfilter.org,
-	linux-kernel@vger.kernel.org
-Subject: 2.6.16-rc1: iptables broken on ppc32?
+Return-Path: <frank@scirocco-5v-turbo.de>
+Received: from hermes.frankfurt.de.velia.net (hermes.frankfurt.de.velia.net
+	[85.195.64.15]) by ozlabs.org (Postfix) with ESMTP id 76756689DA
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 01:30:41 +1100 (EST)
+Subject: Re: Feedback: Support for fn key on Apple PowerBooks
+From: Frank Arnold <frank@scirocco-5v-turbo.de>
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
+In-Reply-To: <20060118112049.GA32634@hansmi.ch>
+References: <1137580063.3466.134.camel@localhost>
+	<20060118112049.GA32634@hansmi.ch>
+Content-Type: text/plain
+Date: Wed, 18 Jan 2006 15:30:33 +0100
+Message-Id: <1137594633.3466.151.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-When trying out kernel 2.6.16-rc1 on a ppc32 box (G4 eMac),
-the kernel refused to load my /etc/sysconfig/iptables. strace
-on /sbin/iptables-restore shows that the kernel returns EINVAL
-instead of accepting the configuration:
+Am Mittwoch, den 18.01.2006, 12:20 +0100 schrieb Michael Hanselmann:
+> On Wed, Jan 18, 2006 at 11:27:43AM +0100, Frank Arnold wrote:
+> > I have some trouble with it. Actually, the mapping of function keys F1
+> > to F10 seems to be inverse. I have to press fn + function key to get a
+> > plain function key event. Pressing a function key only gives me those
+> > fancy new keycodes for brightness, mute, and so on. Page up, Page down,
+> > Home, and End are working like expected.
+> 
+> Mac OS X behaviour (default):
+> echo 1 > /sys/modules/usbhid/parameters/pb_fnmode
 
-setsockopt(3, SOL_IP, 0x40 /* IP_??? */, "filter\0\214\0p\0\230\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 1664) = -1 EINVAL (Invalid argument)
+Thank you, now I've got it.
 
-The exact same configuration is accepted and works on an x86 box
-also running 2.6.16-rc1, and of course the configuration worked
-in all kernels up to and including 2.6.15 on the ppc32 box.
+I never really used Mac OS X and didn't know about this behavior.
+Personally I would prefer fkeysfirst as default setting. It's much more
+sane on Linux because function keys are frequently used in different
+applications. I nearly break my fingers when trying to get to the GNOME
+main menu with fkeyslast.
 
-A much simplified /etc/sysconfig/iptables that fails on ppc32 but
-works on x86 is the following:
+Anyway, perhaps I'm biased. I can live with both, now that I know where
+to set it.
 
-*filter
-:INPUT ACCEPT [0:0]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [0:0]
-:RH-Firewall-1-INPUT - [0:0]
--A INPUT -j RH-Firewall-1-INPUT
--A FORWARD -j RH-Firewall-1-INPUT
--A RH-Firewall-1-INPUT -i lo -j ACCEPT
--A RH-Firewall-1-INPUT -i eth0 -j ACCEPT
-COMMIT
-
-My 2.6.16-rc1 kernel configuration includes
-CONFIG_NETFILTER_XTABLES=m
-CONFIG_NETFILTER_XT_MATCH_STATE=m
-CONFIG_IP_NF_CONNTRACK=m
-CONFIG_IP_NF_IPTABLES=m
-CONFIG_IP_NF_FILTER=m
-CONFIG_IP_NF_TARGET_REJECT=m
-
-and the iptable_filter, ip_tables, and x_tables modules were all loaded,
-just like they were on the working x86 box.
-
-User-space on the ppc32 box is YDL 4.0 with iptables-1.2.9-2.3.1.
-
-/Mikael
+Frank
