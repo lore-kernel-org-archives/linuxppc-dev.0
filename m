@@ -1,17 +1,22 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
-	[66.111.4.28]) by ozlabs.org (Postfix) with ESMTP id 30A786893D
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 03:06:30 +1100 (EST)
-Subject: Re: [PATCH] drop linuxppc64-dev
-From: Hollis Blanchard <hollis@penguinppc.org>
-To: Olaf Hering <olh@suse.de>
-In-Reply-To: <20060118120715.GB19765@suse.de>
-References: <20060116121244.GB7171@suse.de> <20060118110905.GA23678@krypton>
-	<20060118120715.GB19765@suse.de>
-Content-Type: text/plain
-Date: Wed, 18 Jan 2006 09:48:08 -0600
-Message-Id: <1137599288.10689.2.camel@localhost.localdomain>
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1F846688E6
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 06:10:17 +1100 (EST)
+Date: Wed, 18 Jan 2006 20:10:12 +0100
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Frank Arnold <frank@scirocco-5v-turbo.de>
+Subject: Re: Feedback: Support for fn key on Apple PowerBooks
+Message-ID: <20060118191012.GA7919@hansmi.ch>
+References: <1137580063.3466.134.camel@localhost>
+	<20060118112049.GA32634@hansmi.ch>
+	<1137594633.3466.151.camel@localhost>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1137594633.3466.151.camel@localhost>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,17 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-01-18 at 13:07 +0100, Olaf Hering wrote:
->  On Wed, Jan 18, Arthur Othieno wrote:
-> 
-> > What about the s/linuxppc64\.org/penguinppc\.org/g case? Or is
-> > penguinppc64.org preferable? Or am I just taking it too far? ;)
-> 
-> They are redirected on DNS or HTTP level.
+On Wed, Jan 18, 2006 at 03:30:33PM +0100, Frank Arnold wrote:
+> Anyway, perhaps I'm biased. I can live with both, now that I know where
+> to set it.
 
-HTTP level, but that doesn't answer his question.
+You can also pass the usbhid.pb_fnmode parameter when loading the
+kernel. For example, append="video=radeonfb usbhid.pb_fnmode=2" with
+yaboot.
 
-As the maintainer of that site, I would prefer to remove the
-linuxppc64.org reference.
+Greets,
+Michael
 
--Hollis
+-- 
+Gentoo Linux developer, http://hansmi.ch/, http://forkbomb.ch/
