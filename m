@@ -1,22 +1,18 @@
-Return-Path: <laforge@netfilter.org>
-Received: from ganesha.gnumonks.org (ganesha.gnumonks.org [213.95.27.120])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 09861689E0
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 02:21:12 +1100 (EST)
-Date: Wed, 18 Jan 2006 16:01:58 +0100
-From: Harald Welte <laforge@netfilter.org>
-To: Mikael Pettersson <mikpe@user.it.uu.se>
-Subject: Re: 2.6.16-rc1: iptables broken on ppc32?
-Message-ID: <20060118150158.GL4603@sunbeam.de.gnumonks.org>
-References: <17358.19458.555996.684819@alkaid.it.uu.se>
+Return-Path: <hollis@penguinppc.org>
+Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
+	[66.111.4.28]) by ozlabs.org (Postfix) with ESMTP id 30A786893D
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 03:06:30 +1100 (EST)
+Subject: Re: [PATCH] drop linuxppc64-dev
+From: Hollis Blanchard <hollis@penguinppc.org>
+To: Olaf Hering <olh@suse.de>
+In-Reply-To: <20060118120715.GB19765@suse.de>
+References: <20060116121244.GB7171@suse.de> <20060118110905.GA23678@krypton>
+	<20060118120715.GB19765@suse.de>
+Content-Type: text/plain
+Date: Wed, 18 Jan 2006 09:48:08 -0600
+Message-Id: <1137599288.10689.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gvF4niNJ+uBMJnEh"
-In-Reply-To: <17358.19458.555996.684819@alkaid.it.uu.se>
-Cc: linuxppc-dev@ozlabs.org, netfilter-devel@lists.netfilter.org,
-	linux-kernel@vger.kernel.org
-Reply-To: netfilter-devel@lists.netfilter.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2006-01-18 at 13:07 +0100, Olaf Hering wrote:
+>  On Wed, Jan 18, Arthur Othieno wrote:
+> 
+> > What about the s/linuxppc64\.org/penguinppc\.org/g case? Or is
+> > penguinppc64.org preferable? Or am I just taking it too far? ;)
+> 
+> They are redirected on DNS or HTTP level.
 
---gvF4niNJ+uBMJnEh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+HTTP level, but that doesn't answer his question.
 
-On Wed, Jan 18, 2006 at 03:09:06PM +0100, Mikael Pettersson wrote:
-> When trying out kernel 2.6.16-rc1 on a ppc32 box (G4 eMac),
-> the kernel refused to load my /etc/sysconfig/iptables. strace
-> on /sbin/iptables-restore shows that the kernel returns EINVAL
-> instead of accepting the configuration:
+As the maintainer of that site, I would prefer to remove the
+linuxppc64.org reference.
 
-thanks for letting us know, you might have catched a very important bug.
-
-We've introduced a number of changes (x_tables) that haven't received
-testing on all architectures yet.
-
-I will try to reproduce the bug on my debian ppc box here.
-
-This is not meant as a fix, but you might try it to narrow down the
-problem:  Try recompiling iptables on your own, and report back whether
-that works or not.
-
-Please Follow-up-to netfilter-devel@lists.netfilter.org
-
---=20
-- Harald Welte <laforge@netfilter.org>                 http://netfilter.org/
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D
-  "Fragmentation is like classful addressing -- an interesting early
-   architectural error that shows how much experimentation was going
-   on while IP was being designed."                    -- Paul Vixie
-
---gvF4niNJ+uBMJnEh
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFDzlhmXaXGVTD0i/8RAuxWAKCJEYDaJKIY62DJFMie5Xjc1MWGSQCcD87x
-XWvW1z5qr4aJQ31RxIdj4Zg=
-=f1wE
------END PGP SIGNATURE-----
-
---gvF4niNJ+uBMJnEh--
+-Hollis
