@@ -1,20 +1,20 @@
-Return-Path: <pantelis@embeddedalley.com>
-Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
-	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id 4DA60689D7
+Return-Path: <grant.likely@secretlab.ca>
+Received: from outbound-mail-33.bluehost.com (outbound-mail-33.bluehost.com
+	[70.96.188.153]) by ozlabs.org (Postfix) with SMTP id DFCB3681BD
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Jan 2006 18:55:38 +1100 (EST)
-From: Pantelis Antoniou <pantelis@embeddedalley.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Question about SCC Ethernet driver
-Date: Wed, 18 Jan 2006 09:52:03 +0200
-References: <20060118012837.70518.qmail@web32113.mail.mud.yahoo.com>
-	<f1e571d3a8b8813c95659dea615cace9@embeddededge.com>
-In-Reply-To: <f1e571d3a8b8813c95659dea615cace9@embeddededge.com>
+	Thu, 19 Jan 2006 06:41:47 +1100 (EST)
+Message-ID: <43CE99ED.4010905@secretlab.ca>
+Date: Wed, 18 Jan 2006 12:41:33 -0700
+From: Grant Likely <grant.likely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-7"
-Message-Id: <200601180952.04344.pantelis@embeddedalley.com>
-Reply-To: pantelis@embeddedalley.com
+To: Andrey Volkov <avolkov@varma-el.com>
+Subject: Re: General GIT MO question
+References: <43CB3127.7060107@dlasys.net> <43CD2003.3020903@secretlab.ca>
+	<43CE3475.9040406@varma-el.com>
+In-Reply-To: <43CE3475.9040406@varma-el.com>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Cc: "David H. Lynch Jr." <dhlii@dlasys.net>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,39 +25,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 18 January 2006 04:04, Dan Malek wrote:
->=20
-> On Jan 17, 2006, at 8:28 PM, David Tao wrote:
->=20
-> > Present MPC8260 SCC Ethernet driver supports=A0one 10M Ethernet port fo=
-r=20
-> > SCC1 or SCC2.
->=20
-> Not any more.  Take a look at drivers/net/fs_enet in the 2.6 kernels.
-> I'm sure Pantelis will have more information when he reads this.
->=20
+Andrey Volkov wrote:
+> Grant Likely wrote:
+> 
+>>David H. Lynch Jr. wrote:
+>>>	I am looking for a clue here. How do you produce a clean set of
+>>>granular patches including only what you want and not the all the steps
+>>>and mis-steps along the way ?
+>>
+>>
+> 
+> Or use stg (http://www.procode.org/stgit/),
+> steps 1-2 you could made by
+>  stg new
+> steps 3 trough 5 by :
+>  stg refresh/stg export
 
-The current driver (fs_enet) can handle enets on every SCC. Nobody has
-tested this configuration yet however.
+cool!  I need to try that
 
-> > 1. Is it possible to=A0implement 7 Ethernet ports (3 FCCs and 4 SCCs) o=
-n=20
-> > a MPC8270? I didn't see any hardware restriction on this. Performance=20
-> > may be an issue?=A0
->=20
-> Depends what you want to do with the data in the CPU core and the
-> clock speeds you have chosen.  The CPM can handle the data traffic on
-> the wires if you run it over 133 MHz.
->
+Thanks,
+g.
 
-Your main problem will be dual port RAM conflicts with other peripheral.
-In theory CPM can handle it.
-
-> Thanks.
->=20
-> 	-- Dan
->=20
-
-Regards
-
-Pantelis
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 663-0761
