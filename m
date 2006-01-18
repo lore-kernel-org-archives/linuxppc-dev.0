@@ -1,16 +1,19 @@
-Return-Path: <apgo@patchbomb.org>
-Received: from mail15.bluewin.ch (mail15.bluewin.ch [195.186.18.63])
-	by ozlabs.org (Postfix) with ESMTP id 726BB6893D
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2006 22:32:48 +1100 (EST)
-Date: Wed, 18 Jan 2006 06:09:05 -0500
-To: Olaf Hering <olh@suse.de>
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 049E36891D
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2006 23:07:21 +1100 (EST)
+Date: Wed, 18 Jan 2006 13:07:15 +0100
+From: Olaf Hering <olh@suse.de>
+To: Arthur Othieno <apgo@patchbomb.org>
 Subject: Re: [PATCH] drop linuxppc64-dev
-Message-ID: <20060118110905.GA23678@krypton>
-References: <20060116121244.GB7171@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060116121244.GB7171@suse.de>
-From: apgo@patchbomb.org (Arthur Othieno)
+Message-ID: <20060118120715.GB19765@suse.de>
+References: <20060116121244.GB7171@suse.de> <20060118110905.GA23678@krypton>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20060118110905.GA23678@krypton>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,41 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 16, 2006 at 01:12:44PM +0100, Olaf Hering wrote:
-> 
-> Everything is merged into arch/powerpc now.
-> Stop cross-posting.
-> 
-> Signed-off-by: Olaf Hering <olh@suse.de>
-> 
->  Documentation/powerpc/hvcs.txt |    2 +-
->  MAINTAINERS                    |    4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
+ On Wed, Jan 18, Arthur Othieno wrote:
 
-[snip]
+> What about the s/linuxppc64\.org/penguinppc\.org/g case? Or is
+> penguinppc64.org preferable? Or am I just taking it too far? ;)
 
-> Index: linux-2.6.15-olh/MAINTAINERS
-> ===================================================================
-> --- linux-2.6.15-olh.orig/MAINTAINERS
-> +++ linux-2.6.15-olh/MAINTAINERS
-> @@ -527,7 +527,7 @@ S:   Supported
->  BROADBAND PROCESSOR ARCHITECTURE
->  P:	Arnd Bergmann
->  M:	arnd@arndb.de
-> -L:	linuxppc64-dev@ozlabs.org
-> +L:	linuxppc-dev@ozlabs.org
->  W:	http://linuxppc64.org
->  S:	Supported
->  
-> @@ -1606,7 +1606,7 @@ P:	Anton Blanchard
->  M:	anton@samba.org
->  M:	anton@au.ibm.com
->  W:	http://linuxppc64.org
-> -L:	linuxppc64-dev@ozlabs.org
-> +L:	linuxppc-dev@ozlabs.org
->  S:	Supported
->  
->  LINUX SECURITY MODULE (LSM) FRAMEWORK
+They are redirected on DNS or HTTP level.
 
-What about the s/linuxppc64\.org/penguinppc\.org/g case? Or is
-penguinppc64.org preferable? Or am I just taking it too far? ;)
+-- 
+short story of a lazy sysadmin:
+ alias appserv=wotan
