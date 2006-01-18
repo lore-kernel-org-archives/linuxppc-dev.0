@@ -1,12 +1,22 @@
-Return-Path: <bgill@freescale.com>
-Date: Wed, 18 Jan 2006 09:20:58 -0600 (CST)
-From: Becky Bruce <bgill@freescale.com>
-To: david@gibson.dropbear.id.au
-Subject: [PATCH] dtc: add bus-frequency prop to SOC node
-Message-ID: <Pine.LNX.4.61.0601180917080.11236@cde-tx32-ldt329.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <laforge@netfilter.org>
+Received: from ganesha.gnumonks.org (ganesha.gnumonks.org [213.95.27.120])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 09861689E0
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 02:21:12 +1100 (EST)
+Date: Wed, 18 Jan 2006 16:01:58 +0100
+From: Harald Welte <laforge@netfilter.org>
+To: Mikael Pettersson <mikpe@user.it.uu.se>
+Subject: Re: 2.6.16-rc1: iptables broken on ppc32?
+Message-ID: <20060118150158.GL4603@sunbeam.de.gnumonks.org>
+References: <17358.19458.555996.684819@alkaid.it.uu.se>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="gvF4niNJ+uBMJnEh"
+In-Reply-To: <17358.19458.555996.684819@alkaid.it.uu.se>
+Cc: linuxppc-dev@ozlabs.org, netfilter-devel@lists.netfilter.org,
+	linux-kernel@vger.kernel.org
+Reply-To: netfilter-devel@lists.netfilter.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,57 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Updated SOC node definition in documentation to include bus-frequency
-property. Also extended mdio example to match specification.
 
-Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+--gvF4niNJ+uBMJnEh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
----
-commit d7c0e0c8f51ac5023d92cdcf539f0ecea8a94e43
-tree c66c0f8066d695e220a265cfdfbe6e508c5f3925
-parent f192a7ae0ba797478920b7980159e0b2047b45f1
-author Becky Bruce <becky.bruce@freescale.com> Wed, 18 Jan 2006 09:16:14 -0600
-committer Becky Bruce <becky.bruce@freescale.com> Wed, 18 Jan 2006 09:16:14 -0600
+On Wed, Jan 18, 2006 at 03:09:06PM +0100, Mikael Pettersson wrote:
+> When trying out kernel 2.6.16-rc1 on a ppc32 box (G4 eMac),
+> the kernel refused to load my /etc/sysconfig/iptables. strace
+> on /sbin/iptables-restore shows that the kernel returns EINVAL
+> instead of accepting the configuration:
 
- Documentation/booting-without-of.txt |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+thanks for letting us know, you might have catched a very important bug.
 
-diff --git a/Documentation/booting-without-of.txt b/Documentation/booting-without-of.txt
-index 60d5b7a..39aa3c1 100644
---- a/Documentation/booting-without-of.txt
-+++ b/Documentation/booting-without-of.txt
-@@ -880,6 +880,9 @@ address which can extend beyond that lim
-     - device_type : Should be "soc"
-     - ranges : Should be defined as specified in 1) to describe the
-       translation of SOC addresses for memory mapped SOC registers.  
-+    - bus-frequency: Contains the bus frequency for the SOC node.
-+      Typically, the value of this field is filled in by the boot
-+      loader. 
- 
-   Recommended properties:
- 
-@@ -919,6 +922,7 @@ SOC.   
- 		device_type = "soc";
- 		ranges = <00000000 e0000000 00100000>
- 		reg = <e0000000 00003000>;
-+		bus-frequency = <0>;
- 	}
- 
- 
-@@ -1170,6 +1174,8 @@ platforms are moved over to use the flat
- 
- 	mdio@24520 {
- 		reg = <24520 20>;
-+		device_type = "mdio"; 
-+		compatible = "gianfar";
- 
- 		ethernet-phy@0 {
- 			......
-@@ -1317,6 +1323,7 @@ not necessary as they are usually the sa
- 		device_type = "soc";
- 		ranges = <00000000 e0000000 00100000>
- 		reg = <e0000000 00003000>;
-+		bus-frequency = <0>;
- 
- 		mdio@24520 {
- 			reg = <24520 20>;
+We've introduced a number of changes (x_tables) that haven't received
+testing on all architectures yet.
+
+I will try to reproduce the bug on my debian ppc box here.
+
+This is not meant as a fix, but you might try it to narrow down the
+problem:  Try recompiling iptables on your own, and report back whether
+that works or not.
+
+Please Follow-up-to netfilter-devel@lists.netfilter.org
+
+--=20
+- Harald Welte <laforge@netfilter.org>                 http://netfilter.org/
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
+  "Fragmentation is like classful addressing -- an interesting early
+   architectural error that shows how much experimentation was going
+   on while IP was being designed."                    -- Paul Vixie
+
+--gvF4niNJ+uBMJnEh
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFDzlhmXaXGVTD0i/8RAuxWAKCJEYDaJKIY62DJFMie5Xjc1MWGSQCcD87x
+XWvW1z5qr4aJQ31RxIdj4Zg=
+=f1wE
+-----END PGP SIGNATURE-----
+
+--gvF4niNJ+uBMJnEh--
