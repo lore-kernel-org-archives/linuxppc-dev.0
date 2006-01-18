@@ -1,9 +1,17 @@
 Return-Path: <bcollins@ubuntu.com>
-Date: Wed, 18 Jan 2006 19:28:04 -0500
+Received: from a34-mta01.direcway.com (a34-mta01.direcpc.com [66.82.4.90])
+	by ozlabs.org (Postfix) with ESMTP id 11BD7689E0
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 11:47:06 +1100 (EST)
+Received: from mail.phunnypharm.org
+	(dpc67142247022.direcpc.com [67.142.247.22]) by a34-mta01.direcway.com
+	(iPlanet Messaging Server 5.2 HotFix 2.05 (built Mar  3 2005))
+	with ESMTP id <0ITB00F3OBEBFB@a34-mta01.direcway.com> for
+	linuxppc-dev@ozlabs.org; Wed, 18 Jan 2006 18:47:04 -0500 (EST)
+Date: Wed, 18 Jan 2006 18:46:45 -0500
 From: Ben Collins <bcollins@ubuntu.com>
-Subject: RFC: [PATCH Upated]: snd-pmac-gpio interfaces for snd-powermac
-To: Linuxppc-dev@ozlabs.org
-Message-id: <1137630485.4425.2.camel@grayson>
+Subject: RFC: [PATCH] snd-pmac-gpio interface
+To: linuxppc-dev@ozlabs.org
+Message-id: <1137628005.6239.59.camel@grayson>
 MIME-version: 1.0
 Content-type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -15,8 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This corrects a problem in the tumbler and toonie conversion. Also fixes
-a small naming change requested by BenH in snd-pmac-gpio.c
+Attached are the patches I've come up with for a central snd-pmac-gpio
+interface (for toonie and tumbler). This was BenH's suggestion.
+
+It uses platform functions, but falls back on direct gpio. I had to
+guess some of the tumbler/toonie consolidation for direct gpio fallback,
+and I can't test tumbler.
+
+Anyway, the first patch adds the snd-pmac-gpio.[ch] to the build. The
+second and third patches are toonie and tumbler conversions to this
+interface.
+
+BenH, these patches are against 2.6.15, and so depend on the patches I
+sent you previously to backport the pmac_pfunc interfaces. They should
+apply and work with current 2.6.16-git without those patches.
+
+I've tested the toonie on my G4 PB 17" (PowerBook5,9). You'll need to
+add 0x54 to the toonie list in pmac.c for that to work (BenH, you might
+want to just do that one-liner by hand, but I can send an actual diff if
+you need). I still have an issue with toonie on this PB, in that it
+doesn't work initially until I cause a headphone/lineout interrupt
+(plug/unplug headphones). I might have fixed this in the below patch,
+but I haven't rebooted to see if it comes up correctly or not.
+
 
 diff -urN linux-2.6/sound/ppc/Makefile linux-source-2.6.15-2.6.15/sound/ppc/Makefile
 --- linux-2.6/sound/ppc/Makefile	2006-01-17 20:19:28.000000000 -0500
@@ -33,7 +62,7 @@ diff -urN linux-2.6/sound/ppc/Makefile linux-source-2.6.15-2.6.15/sound/ppc/Make
  obj-$(CONFIG_SND_POWERMAC) += snd-powermac.o
 diff -urN linux-2.6/sound/ppc/snd-pmac-gpio.c linux-source-2.6.15-2.6.15/sound/ppc/snd-pmac-gpio.c
 --- linux-2.6/sound/ppc/snd-pmac-gpio.c	1969-12-31 19:00:00.000000000 -0500
-+++ linux-source-2.6.15-2.6.15/sound/ppc/snd-pmac-gpio.c	2006-01-18 19:08:17.000000000 -0500
++++ linux-source-2.6.15-2.6.15/sound/ppc/snd-pmac-gpio.c	2006-01-18 17:56:26.000000000 -0500
 @@ -0,0 +1,248 @@
 +/*
 + * Copyright (c) 2005 by Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -84,8 +113,8 @@ diff -urN linux-2.6/sound/ppc/snd-pmac-gpio.c linux-source-2.6.15-2.6.15/sound/p
 +	return pfunc;
 +}
 +
-+static struct device_node *find_audio_gpio(const char *name,
-+					   const char *altname)
++static struct device_node *find_audio_device(const char *name,
++					     const char *altname)
 +{
 +	struct device_node *np;
 +
@@ -111,7 +140,7 @@ diff -urN linux-2.6/sound/ppc/snd-pmac-gpio.c linux-source-2.6.15-2.6.15/sound/p
 +	struct device_node *np;
 +	u32 *base, addr;
 +
-+	if (!(np = find_audio_gpio(name, altname)))
++	if (!(np = find_audio_device(name, altname)))
 +		return -ENODEV;
 +
 +	base = (u32 *)get_property(np, "AAPL,address", NULL);
@@ -354,7 +383,7 @@ diff -urN linux-2.6/sound/ppc/snd-pmac-gpio.h linux-source-2.6.15-2.6.15/sound/p
 
 diff -urN linux-2.6/sound/ppc/toonie.c linux-source-2.6.15-2.6.15/sound/ppc/toonie.c
 --- linux-2.6/sound/ppc/toonie.c	2006-01-17 20:19:28.000000000 -0500
-+++ linux-source-2.6.15-2.6.15/sound/ppc/toonie.c	2006-01-18 19:18:33.000000000 -0500
++++ linux-source-2.6.15-2.6.15/sound/ppc/toonie.c	2006-01-18 18:07:50.000000000 -0500
 @@ -31,7 +31,9 @@
  #include <asm/irq.h>
  #include <asm/machdep.h>
@@ -401,30 +430,27 @@ diff -urN linux-2.6/sound/ppc/toonie.c linux-source-2.6.15-2.6.15/sound/ppc/toon
 -#define tumbler_gpio_free(gp) /* NOP */
 -
 -static void write_audio_gpio(struct pmac_gpio *gp, int active)
--{
++static void toonie_reset_audio(pmac_t *chip)
+ {
 -	if (! gp->addr)
 -		return;
 -	active = active ? gp->active_val : gp->inactive_val;
 -	do_gpio_write(gp, active);
 -	DBG("(I) gpio %x write %d\n", gp->addr, active);
 -}
--
--static int check_audio_gpio(struct pmac_gpio *gp)
-+static void toonie_reset_audio(pmac_t *chip)
- {
--	int ret;
 +	snd_pmac_gpio_t gpio;
  
--	if (! gp->addr)
--		return 0;
+-static int check_audio_gpio(struct pmac_gpio *gp)
+-{
+-	int ret;
 +	if (snd_pmac_get_gpio("audio-hw-reset", "hw-reset", &gpio))
 +		return;
  
--	ret = do_gpio_read(gp);
+-	if (! gp->addr)
+-		return 0;
 +	DBG("(I) codec normal reset !\n");
  
--	return (ret & 0xd) == (gp->active_val & 0xd);
--}
+-	ret = do_gpio_read(gp);
 +	snd_pmac_write_gpio(&gpio, 0);
 +	msleep(200);
 +	snd_pmac_write_gpio(&gpio, 1);
@@ -432,6 +458,9 @@ diff -urN linux-2.6/sound/ppc/toonie.c linux-source-2.6.15-2.6.15/sound/ppc/toon
 +	snd_pmac_write_gpio(&gpio, 0);
 +	msleep(100);
  
+-	return (ret & 0xd) == (gp->active_val & 0xd);
+-}
+-
 -static int read_audio_gpio(struct pmac_gpio *gp)
 -{
 -	int ret;
@@ -482,7 +511,7 @@ diff -urN linux-2.6/sound/ppc/toonie.c linux-source-2.6.15-2.6.15/sound/ppc/toon
 -	val = ! check_audio_gpio(gp);
 -	if (val != ucontrol->value.integer.value[0]) {
 -		write_audio_gpio(gp, ! ucontrol->value.integer.value[0]);
-+	if (!snd_pmac_gpio_internal_state(gp) != ucontrol->value.integer.value[0]) {
++	if (snd_pmac_gpio_internal_state(gp) != ucontrol->value.integer.value[0]) {
 +		snd_pmac_write_gpio(gp, ! ucontrol->value.integer.value[0]);
  		return 1;
  	}
@@ -677,13 +706,15 @@ diff -urN linux-2.6/sound/ppc/toonie.c linux-source-2.6.15-2.6.15/sound/ppc/toon
  
  	strcpy(chip->card->mixername, "PowerMac Toonie");
  
-@@ -362,18 +270,18 @@
+@@ -362,18 +270,24 @@
  
  	INIT_WORK(&mix->detect_work, toonie_detect_handler, (void *)chip);
  
 -	if (mix->hp_detect_irq >= 0) {
 +	if (!snd_pmac_get_gpio("headphone-detect", "lineout-detect",
 +			       &mix->hp_detect_gpio)) {
++		u32 val;
++
  		snd_pmac_add_automute(chip);
  
  		chip->detect_headphone = toonie_detect_headphone;
@@ -693,11 +724,16 @@ diff -urN linux-2.6/sound/ppc/toonie.c linux-source-2.6.15-2.6.15/sound/ppc/toon
 -		if (request_irq(mix->hp_detect_irq, toonie_hp_intr, 0,
 -				"Sound Headphone Detection", chip) < 0)
 -			mix->hp_detect_irq = -1;
+-	}
 +		snd_pmac_request_irq(&mix->hp_detect_gpio, toonie_hp_intr, chip);
- 	}
- 
-+	toonie_reset_audio(chip);
 +
++		/* Activate headphone status interrupts */
++		snd_pmac_read_gpio(&mix->hp_detect_gpio, &val);
++		snd_pmac_write_gpio(&mix->hp_detect_gpio, val | 0x80);
++		}
++
++	toonie_reset_audio(chip);
+ 
  	return 0;
  }
 -
@@ -705,7 +741,7 @@ diff -urN linux-2.6/sound/ppc/toonie.c linux-source-2.6.15-2.6.15/sound/ppc/toon
 
 diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tumbler.c
 --- linux-2.6/sound/ppc/tumbler.c	2006-01-17 20:19:28.000000000 -0500
-+++ linux-source-2.6.15-2.6.15/sound/ppc/tumbler.c	2006-01-18 19:19:00.000000000 -0500
++++ linux-source-2.6.15-2.6.15/sound/ppc/tumbler.c	2006-01-18 17:57:56.000000000 -0500
 @@ -37,7 +37,9 @@
  #include <asm/irq.h>
  #include <asm/machdep.h>
@@ -793,50 +829,52 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  
  /*
   * update master volume
-@@ -680,7 +635,8 @@
+@@ -680,7 +635,9 @@
  {
  	pmac_t *chip = snd_kcontrol_chip(kcontrol);
  	pmac_tumbler_t *mix;
 -	pmac_gpio_t *gp;
 +	snd_pmac_gpio_t *gp;
++	int cur;
 +
  	if (! (mix = chip->mixer_data))
  		return -ENODEV;
  	switch(kcontrol->private_value) {
-@@ -695,7 +651,8 @@
+@@ -695,7 +652,9 @@
  	}
  	if (gp == NULL)
  		return -EINVAL;
 -	ucontrol->value.integer.value[0] = !check_audio_gpio(gp);
 +
-+	ucontrol->value.integer.value[0] = !snd_pmac_gpio_internal_state(gp);
++	snd_pmac_read_gpio(gp, &cur);
++	ucontrol->value.integer.value[0] = !cur;
  	return 0;
  }
  
-@@ -703,8 +660,7 @@
+@@ -703,7 +662,7 @@
  {
  	pmac_t *chip = snd_kcontrol_chip(kcontrol);
  	pmac_tumbler_t *mix;
 -	pmac_gpio_t *gp;
--	int val;
 +	snd_pmac_gpio_t *gp;
+ 	int val;
  #ifdef PMAC_SUPPORT_AUTOMUTE
  	if (chip->update_automute && chip->auto_mute)
- 		return 0; /* don't touch in the auto-mute mode */
-@@ -723,9 +679,9 @@
+@@ -723,9 +682,11 @@
  	}
  	if (gp == NULL)
  		return -EINVAL;
 -	val = ! check_audio_gpio(gp);
--	if (val != ucontrol->value.integer.value[0]) {
--		write_audio_gpio(gp, ! ucontrol->value.integer.value[0]);
 +
-+	if (!snd_pmac_gpio_internal_state(gp) != ucontrol->value.integer.value[0]) {
++	snd_pmac_read_gpio(gp, &val);
++	val = !val;
+ 	if (val != ucontrol->value.integer.value[0]) {
+-		write_audio_gpio(gp, ! ucontrol->value.integer.value[0]);
 +		snd_pmac_write_gpio(gp, ! ucontrol->value.integer.value[0]);
  		return 1;
  	}
  	return 0;
-@@ -893,7 +849,7 @@
+@@ -893,7 +854,7 @@
  	int detect = 0;
  
  	if (mix->hp_detect.addr)
@@ -845,7 +883,7 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  	return detect;
  }
  
-@@ -903,14 +859,14 @@
+@@ -903,14 +864,17 @@
  	int detect = 0;
  
  	if (mix->line_detect.addr)
@@ -859,30 +897,15 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  {
 -	if (check_audio_gpio(gp) != val) {
 -		write_audio_gpio(gp, val);
-+	if (snd_pmac_gpio_internal_state(gp) != val) {
++	int cur;
++	snd_pmac_read_gpio(gp, &cur);
++
++	if (cur != val) {
 +		snd_pmac_write_gpio(gp, val);
  		if (do_notify)
  			snd_ctl_notify(chip->card, SNDRV_CTL_EVENT_MASK_VALUE,
  				       &sw->id);
-@@ -941,7 +897,7 @@
- 		if (headphone)
- 			check_mute(chip, &mix->hp_mute, 0, mix->auto_mute_notify,
- 				   chip->master_sw_ctl);
--		if (lineout && mix->line_mute.addr != 0)
-+		if (lineout && snd_pmac_gpio_valid(&mix->line_mute))
- 			check_mute(chip, &mix->line_mute, 0, mix->auto_mute_notify,
- 				   chip->lineout_sw_ctl);
- 		if (mix->anded_reset)
-@@ -956,7 +912,7 @@
- 			msleep(10);
- 		check_mute(chip, &mix->hp_mute, 1, mix->auto_mute_notify,
- 			   chip->master_sw_ctl);
--		if (mix->line_mute.addr != 0)
-+		if (snd_pmac_gpio_valid(&mix->line_mute))
- 			check_mute(chip, &mix->line_mute, 1, mix->auto_mute_notify,
- 				   chip->lineout_sw_ctl);
- 	}
-@@ -993,111 +949,11 @@
+@@ -993,111 +957,11 @@
  
  
  /* interrupt - headphone plug changed */
@@ -996,7 +1019,7 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  }
  
  /* reset audio */
-@@ -1107,23 +963,23 @@
+@@ -1107,23 +971,23 @@
  
  	if (mix->anded_reset) {
  		DBG("(I) codec anded reset !\n");
@@ -1029,7 +1052,7 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  		msleep(100);
  	}
  }
-@@ -1134,10 +990,6 @@
+@@ -1134,10 +998,6 @@
  {
  	pmac_tumbler_t *mix = chip->mixer_data;
  
@@ -1040,7 +1063,7 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  	mix->save_master_switch[0] = mix->master_switch[0];
  	mix->save_master_switch[1] = mix->master_switch[1];
  	mix->save_master_vol[0] = mix->master_vol[0];
-@@ -1145,18 +997,32 @@
+@@ -1145,18 +1005,18 @@
  	mix->master_switch[0] = mix->master_switch[1] = 0;
  	tumbler_set_master_volume(mix);
  	if (!mix->anded_reset) {
@@ -1061,38 +1084,27 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  	} else
 -		write_audio_gpio(&mix->audio_reset, 1);
 +		snd_pmac_write_gpio(&mix->audio_reset, 1);
-+}
-+
-+static void activate_status_interrupts(snd_pmac_gpio_t *gp)
-+{
-+	int val;
-+
-+	/* XXX: This is broken with platform functions. We can't write a a
-+	 * read function, and this will actuall fail (oops). */
-+	return;
-+
-+	if (snd_pmac_gpio_valid(gp)) {
-+		snd_pmac_read_gpio(gp, &val);
-+		snd_pmac_write_gpio(gp, val | 0x80);
-+	}
  }
  
  /* resume mixer */
-@@ -1194,69 +1060,34 @@
+@@ -1194,69 +1054,39 @@
  	tumbler_set_master_volume(mix);
  	if (chip->update_automute)
  		chip->update_automute(chip, 0);
 -	if (mix->headphone_irq >= 0) {
 -		unsigned char val;
++	if (snd_pmac_gpio_valid(&mix->hp_detect)) {
++		int val;
  
 -		enable_irq(mix->headphone_irq);
--		/* activate headphone status interrupts */
+ 		/* activate headphone status interrupts */
 -		val = do_gpio_read(&mix->hp_detect);
 -		do_gpio_write(&mix->hp_detect, val | 0x80);
--	}
++		snd_pmac_read_gpio(&mix->hp_detect, &val);
++		snd_pmac_write_gpio(&mix->hp_detect, val | 0x80);
+ 	}
 -	if (mix->lineout_irq >= 0)
 -		enable_irq(mix->lineout_irq);
-+	activate_status_interrupts(&mix->hp_detect);
  }
  #endif
  
@@ -1163,7 +1175,7 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  }
  
  static void tumbler_cleanup(pmac_t *chip)
-@@ -1265,15 +1096,14 @@
+@@ -1265,15 +1095,14 @@
  	if (! mix)
  		return;
  
@@ -1186,7 +1198,7 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  	kfree(mix);
  	chip->mixer_data = NULL;
  }
-@@ -1296,7 +1126,6 @@
+@@ -1296,7 +1125,6 @@
  	if (! mix)
  		return -ENOMEM;
  	memset(mix, 0, sizeof(*mix));
@@ -1194,16 +1206,7 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  
  	chip->mixer_data = mix;
  	chip->mixer_free = tumbler_cleanup;
-@@ -1367,7 +1196,7 @@
- 	chip->speaker_sw_ctl = snd_ctl_new1(&tumbler_speaker_sw, chip);
- 	if ((err = snd_ctl_add(chip->card, chip->speaker_sw_ctl)) < 0)
- 		return err;
--	if (mix->line_mute.addr != 0) {
-+	if (snd_pmac_gpio_valid(&mix->line_mute)) {
- 		chip->lineout_sw_ctl = snd_ctl_new1(&tumbler_lineout_sw, chip);
- 		if ((err = snd_ctl_add(chip->card, chip->lineout_sw_ctl)) < 0)
- 			return err;
-@@ -1395,7 +1224,7 @@
+@@ -1395,7 +1223,7 @@
  	INIT_WORK(&device_change, device_change_handler, (void *)chip);
  
  #ifdef PMAC_SUPPORT_AUTOMUTE
@@ -1212,7 +1215,7 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
  	    && (err = snd_pmac_add_automute(chip)) < 0)
  		return err;
  	chip->detect_headphone = tumbler_detect_headphone;
-@@ -1403,23 +1232,15 @@
+@@ -1403,23 +1231,25 @@
  	tumbler_update_automute(chip, 0); /* update the status only */
  
  	/* activate headphone status interrupts */
@@ -1221,25 +1224,38 @@ diff -urN linux-2.6/sound/ppc/tumbler.c linux-source-2.6.15-2.6.15/sound/ppc/tum
 -		if ((err = request_irq(mix->headphone_irq, headphone_intr, 0,
 -				       "Sound Headphone Detection", chip)) < 0)
 +  	if (snd_pmac_gpio_valid(&mix->hp_detect)) {
++		u32 val;
++
 +		if (snd_pmac_request_irq(&mix->hp_detect, headphone_intr, chip) < 0)
  			return 0;
--		/* activate headphone status interrupts */
++
+ 		/* activate headphone status interrupts */
 -		val = do_gpio_read(&mix->hp_detect);
 -		do_gpio_write(&mix->hp_detect, val | 0x80);
--	}
++		snd_pmac_read_gpio(&mix->hp_detect, &val);
++		snd_pmac_write_gpio(&mix->hp_detect, val | 0x80);
+ 	}
 -  	if (mix->lineout_irq >= 0) {
 -		unsigned char val;
 -		if ((err = request_irq(mix->lineout_irq, headphone_intr, 0,
 -				       "Sound Lineout Detection", chip)) < 0)
-+		activate_status_interrupts(&mix->hp_detect);
-+	}
 +  	if (snd_pmac_gpio_valid(&mix->line_detect)) {
++		u32 val;
++
 +		if (snd_pmac_request_irq(&mix->line_detect, headphone_intr, chip) < 0)
  			return 0;
--		/* activate headphone status interrupts */
++
+ 		/* activate headphone status interrupts */
 -		val = do_gpio_read(&mix->line_detect);
 -		do_gpio_write(&mix->line_detect, val | 0x80);
-+		activate_status_interrupts(&mix->line_detect);
++		snd_pmac_read_gpio(&mix->line_detect, &val);
++		snd_pmac_write_gpio(&mix->line_detect, val | 0x80);
  	}
  #endif
  
+
+
+--
+Ben Collins
+Kernel Developer
+Ubuntu Linux
