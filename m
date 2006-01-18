@@ -1,21 +1,16 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 539BD689D8
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2006 22:20:55 +1100 (EST)
-Date: Wed, 18 Jan 2006 12:20:49 +0100
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Frank Arnold <frank@scirocco-5v-turbo.de>
-Subject: Re: Feedback: Support for fn key on Apple PowerBooks
-Message-ID: <20060118112049.GA32634@hansmi.ch>
-References: <1137580063.3466.134.camel@localhost>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
-In-Reply-To: <1137580063.3466.134.camel@localhost>
+Return-Path: <apgo@patchbomb.org>
+Received: from mail15.bluewin.ch (mail15.bluewin.ch [195.186.18.63])
+	by ozlabs.org (Postfix) with ESMTP id 726BB6893D
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Jan 2006 22:32:48 +1100 (EST)
+Date: Wed, 18 Jan 2006 06:09:05 -0500
+To: Olaf Hering <olh@suse.de>
+Subject: Re: [PATCH] drop linuxppc64-dev
+Message-ID: <20060118110905.GA23678@krypton>
+References: <20060116121244.GB7171@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060116121244.GB7171@suse.de>
+From: apgo@patchbomb.org (Arthur Othieno)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,49 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Jan 16, 2006 at 01:12:44PM +0100, Olaf Hering wrote:
+> 
+> Everything is merged into arch/powerpc now.
+> Stop cross-posting.
+> 
+> Signed-off-by: Olaf Hering <olh@suse.de>
+> 
+>  Documentation/powerpc/hvcs.txt |    2 +-
+>  MAINTAINERS                    |    4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[snip]
 
-On Wed, Jan 18, 2006 at 11:27:43AM +0100, Frank Arnold wrote:
-> I have some trouble with it. Actually, the mapping of function keys F1
-> to F10 seems to be inverse. I have to press fn + function key to get a
-> plain function key event. Pressing a function key only gives me those
-> fancy new keycodes for brightness, mute, and so on. Page up, Page down,
-> Home, and End are working like expected.
+> Index: linux-2.6.15-olh/MAINTAINERS
+> ===================================================================
+> --- linux-2.6.15-olh.orig/MAINTAINERS
+> +++ linux-2.6.15-olh/MAINTAINERS
+> @@ -527,7 +527,7 @@ S:   Supported
+>  BROADBAND PROCESSOR ARCHITECTURE
+>  P:	Arnd Bergmann
+>  M:	arnd@arndb.de
+> -L:	linuxppc64-dev@ozlabs.org
+> +L:	linuxppc-dev@ozlabs.org
+>  W:	http://linuxppc64.org
+>  S:	Supported
+>  
+> @@ -1606,7 +1606,7 @@ P:	Anton Blanchard
+>  M:	anton@samba.org
+>  M:	anton@au.ibm.com
+>  W:	http://linuxppc64.org
+> -L:	linuxppc64-dev@ozlabs.org
+> +L:	linuxppc-dev@ozlabs.org
+>  S:	Supported
+>  
+>  LINUX SECURITY MODULE (LSM) FRAMEWORK
 
-Mac OS X behaviour (default):
-echo 1 > /sys/modules/usbhid/parameters/pb_fnmode
-
-F keys first:
-echo 2 > /sys/modules/usbhid/parameters/pb_fnmode
-
-Disable special keys completly, but report Fn to userland:
-echo 0 > /sys/modules/usbhid/parameters/pb_fnmode
-
-You could have been able to find that out easily by looking at the
-source code.
-
-Greets,
-Michael
-
---=20
-Gentoo Linux developer, http://hansmi.ch/, http://forkbomb.ch/
-"Besides, I think [Slackware] sounds better than 'Microsoft,' don't you?"
-(By Patrick Volkerding)
-
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFDziSR6J0saEpRu+oRAt7yAKCFGTlkwHiHJVWXxGqnctzI56tncACfXeuR
-RFqxHaldegP6ruSBlVWJTRc=
-=V9oX
------END PGP SIGNATURE-----
-
---fdj2RfSjLxBAspz7--
+What about the s/linuxppc64\.org/penguinppc\.org/g case? Or is
+penguinppc64.org preferable? Or am I just taking it too far? ;)
