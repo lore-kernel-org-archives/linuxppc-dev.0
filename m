@@ -1,14 +1,14 @@
 Return-Path: <grant@secretlab.ca>
 Received: from localhost.secretlab.ca (S0106001346b91f0f.cg.shawcable.net
-	[68.147.210.21]) by ozlabs.org (Postfix) with ESMTP id 49CE968A2D
+	[68.147.210.21]) by ozlabs.org (Postfix) with ESMTP id EB8F568A37
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Jan 2006 19:13:38 +1100 (EST)
-Date: Thu, 19 Jan 2006 01:13:37 -0700
+	Thu, 19 Jan 2006 19:13:45 +1100 (EST)
+Date: Thu, 19 Jan 2006 01:13:45 -0700
 From: "Grant C. Likely" <grant.likely@secretlab.ca>
 To: linuxppc-embedded@ozlabs.org, akonovalov@ru.mvista.com,
 	peter.ryser@xilinx.com
-Subject: [PATCH 8/9] Add support for Xilinx ML403 reference design
-Message-ID: <20060119081337.GA24929@weasley-twins.secretlab.ca>
+Subject: [PATCH 9/9] Add ML403 defconfig
+Message-ID: <20060119081345.GA24934@weasley-twins.secretlab.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -21,400 +21,760 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Includes fix for Xilinx silicon errata 213
-
 Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
 
 ---
 
- arch/ppc/boot/simple/Makefile                    |    1 
- arch/ppc/boot/simple/embed_config.c              |    4 
- arch/ppc/boot/simple/head.S                      |    7 +
- arch/ppc/platforms/4xx/Kconfig                   |   13 +-
- arch/ppc/platforms/4xx/Makefile                  |    2 
- arch/ppc/platforms/4xx/xilinx_ml403.c            |  177 ++++++++++++++++++++++
- arch/ppc/platforms/4xx/xilinx_ml403.h            |   49 ++++++
- arch/ppc/platforms/4xx/xparameters/xparameters.h |    2 
- include/asm-ppc/ibm4xx.h                         |    4 
- 9 files changed, 255 insertions(+), 4 deletions(-)
- create mode 100644 arch/ppc/platforms/4xx/xilinx_ml403.c
- create mode 100644 arch/ppc/platforms/4xx/xilinx_ml403.h
+ arch/ppc/configs/ml403_defconfig |  740 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 740 insertions(+), 0 deletions(-)
+ create mode 100644 arch/ppc/configs/ml403_defconfig
 
-a6b31a88ce3340c144db41fe6e6805c80f108924
-diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
-index 9533f8d..28be01b 100644
---- a/arch/ppc/boot/simple/Makefile
-+++ b/arch/ppc/boot/simple/Makefile
-@@ -192,6 +192,7 @@ boot-$(CONFIG_8xx)		+= embed_config.o
- boot-$(CONFIG_8260)		+= embed_config.o
- boot-$(CONFIG_EP405)		+= embed_config.o
- boot-$(CONFIG_XILINX_ML300)	+= embed_config.o
-+boot-$(CONFIG_XILINX_ML403)	+= embed_config.o
- boot-$(CONFIG_BSEIP)		+= iic.o
- boot-$(CONFIG_MBX)		+= iic.o pci.o qspan_pci.o
- boot-$(CONFIG_MV64X60)		+= misc-mv64x60.o
-diff --git a/arch/ppc/boot/simple/embed_config.c b/arch/ppc/boot/simple/embed_config.c
-index df24202..3a51b10 100644
---- a/arch/ppc/boot/simple/embed_config.c
-+++ b/arch/ppc/boot/simple/embed_config.c
-@@ -745,7 +745,7 @@ embed_config(bd_t **bdp)
- }
- #endif /* WILLOW */
- 
--#ifdef CONFIG_XILINX_ML300
-+#if defined(CONFIG_XILINX_ML300) || defined(CONFIG_XILINX_ML403)
- void
- embed_config(bd_t ** bdp)
- {
-@@ -782,7 +782,7 @@ embed_config(bd_t ** bdp)
- 	timebase_period_ns = 1000000000 / bd->bi_tbfreq;
- 	/* see bi_tbfreq definition in arch/ppc/platforms/4xx/xilinx_ml300.h */
- }
--#endif /* CONFIG_XILINX_ML300 */
-+#endif /* CONFIG_XILINX_ML300 || CONFIG_XILINX_ML403 */
- 
- #ifdef CONFIG_IBM_OPENBIOS
- /* This could possibly work for all treeboot roms.
-diff --git a/arch/ppc/boot/simple/head.S b/arch/ppc/boot/simple/head.S
-index 5e4adc2..119b9dc 100644
---- a/arch/ppc/boot/simple/head.S
-+++ b/arch/ppc/boot/simple/head.S
-@@ -65,6 +65,13 @@ start_:
- 			 */
- #endif
- 
-+#if defined(CONFIG_XILINX_VIRTEX_4_FX)
-+	/* PPC errata 213: only for Virtex-4 FX */
-+	mfccr0  0
-+	oris    0,0,0x50000000@h
-+	mtccr0  0
-+#endif
-+
- 	mflr	r3	/* Save our actual starting address. */
- 
- 	/* The following functions we call must not modify r3 or r4.....
-diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
-index 057c7c2..174ddbc 100644
---- a/arch/ppc/platforms/4xx/Kconfig
-+++ b/arch/ppc/platforms/4xx/Kconfig
-@@ -57,6 +57,10 @@ config XILINX_ML300
- 	help
- 	  This option enables support for the Xilinx ML300 evaluation board.
- 
-+config XILINX_ML403
-+	bool "Xilinx-ML403"
-+	help
-+	  This option enables support for the Xilinx ML403 evaluation board.
- endchoice
- 
- choice
-@@ -208,9 +212,14 @@ config XILINX_VIRTEX_II_PRO
- 	depends on XILINX_ML300
- 	default y
- 
-+config XILINX_VIRTEX_4_FX
-+	bool
-+	depends on XILINX_ML403
-+	default y
-+
- config XILINX_VIRTEX
- 	bool
--	depends on XILINX_VIRTEX_II_PRO
-+	depends on XILINX_VIRTEX_II_PRO || XILINX_VIRTEX_4_FX
- 	default y
- 
- config STB03xxx
-@@ -220,7 +229,7 @@ config STB03xxx
- 
- config EMBEDDEDBOOT
- 	bool
--	depends on EP405 || XILINX_ML300
-+	depends on EP405 || XILINX_ML300 || XILINX_ML403
- 	default y
- 
- config IBM_OPENBIOS
-diff --git a/arch/ppc/platforms/4xx/Makefile b/arch/ppc/platforms/4xx/Makefile
-index be4163c..a04a0d0 100644
---- a/arch/ppc/platforms/4xx/Makefile
-+++ b/arch/ppc/platforms/4xx/Makefile
-@@ -14,6 +14,7 @@ obj-$(CONFIG_REDWOOD_6)		+= redwood6.o
- obj-$(CONFIG_SYCAMORE)		+= sycamore.o
- obj-$(CONFIG_WALNUT)		+= walnut.o
- obj-$(CONFIG_XILINX_ML300)	+= xilinx_ml300.o
-+obj-$(CONFIG_XILINX_ML403)	+= xilinx_ml403.o
- 
- obj-$(CONFIG_405GP)		+= ibm405gp.o
- obj-$(CONFIG_REDWOOD_5)		+= ibmstb4.o
-@@ -27,3 +28,4 @@ obj-$(CONFIG_440SPE)		+= ppc440spe.o
- obj-$(CONFIG_405EP)		+= ibm405ep.o
- obj-$(CONFIG_405GPR)		+= ibm405gpr.o
- obj-$(CONFIG_XILINX_VIRTEX)	+= virtex.o
-+
-diff --git a/arch/ppc/platforms/4xx/xilinx_ml403.c b/arch/ppc/platforms/4xx/xilinx_ml403.c
+d570284978524cdb73425c46df21073d7e66b8f3
+diff --git a/arch/ppc/configs/ml403_defconfig b/arch/ppc/configs/ml403_defconfig
 new file mode 100644
-index 0000000..4c0c7e4
+index 0000000..fafd251
 --- /dev/null
-+++ b/arch/ppc/platforms/4xx/xilinx_ml403.c
-@@ -0,0 +1,177 @@
-+/*
-+ * arch/ppc/platforms/4xx/xilinx_ml403.c
-+ *
-+ * Xilinx ML403 evaluation board initialization
-+ *
-+ * Author: Grant Likely <grant.likely@secretlab.ca>
-+ *
-+ * 2005 (c) Secret Lab Technologies Ltd.
-+ * 2002-2004 (c) MontaVista Software, Inc.
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
++++ b/arch/ppc/configs/ml403_defconfig
+@@ -0,0 +1,740 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.16-rc1
++# Wed Jan 18 01:11:41 2006
++#
++CONFIG_MMU=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_PPC=y
++CONFIG_PPC32=y
++CONFIG_GENERIC_NVRAM=y
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
 +
-+#include <linux/config.h>
-+#include <linux/init.h>
-+#include <linux/irq.h>
-+#include <linux/tty.h>
-+#include <linux/serial.h>
-+#include <linux/serial_core.h>
-+#include <linux/serial_8250.h>
-+#include <linux/serialP.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/ppc_sys.h>
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_CLEAN_COMPILE=y
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
 +
-+#include <syslib/gen550.h>
-+#include <platforms/4xx/xparameters/xparameters.h>
++#
++# General setup
++#
++CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION_AUTO=y
++# CONFIG_SWAP is not set
++CONFIG_SYSVIPC=y
++# CONFIG_POSIX_MQUEUE is not set
++CONFIG_BSD_PROCESS_ACCT=y
++CONFIG_BSD_PROCESS_ACCT_V3=y
++CONFIG_SYSCTL=y
++# CONFIG_AUDIT is not set
++# CONFIG_IKCONFIG is not set
++CONFIG_INITRAMFS_SOURCE=""
++CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++# CONFIG_EMBEDDED is not set
++CONFIG_KALLSYMS=y
++# CONFIG_KALLSYMS_ALL is not set
++# CONFIG_KALLSYMS_EXTRA_PASS is not set
++CONFIG_HOTPLUG=y
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_SHMEM=y
++CONFIG_CC_ALIGN_FUNCTIONS=0
++CONFIG_CC_ALIGN_LABELS=0
++CONFIG_CC_ALIGN_LOOPS=0
++CONFIG_CC_ALIGN_JUMPS=0
++CONFIG_SLAB=y
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
++# CONFIG_SLOB is not set
 +
-+/*
-+ * As an overview of how the following functions (platform_init,
-+ * ml403_map_io, ml403_setup_arch and ml403_init_IRQ) fit into the
-+ * kernel startup procedure, here's a call tree:
-+ *
-+ * start_here					arch/ppc/kernel/head_4xx.S
-+ *  early_init					arch/ppc/kernel/setup.c
-+ *  machine_init				arch/ppc/kernel/setup.c
-+ *    platform_init				this file
-+ *      ppc4xx_init				arch/ppc/syslib/ppc4xx_setup.c
-+ *        parse_bootinfo
-+ *          find_bootinfo
-+ *        "setup some default ppc_md pointers"
-+ *  MMU_init					arch/ppc/mm/init.c
-+ *    *ppc_md.setup_io_mappings == ml403_map_io	this file
-+ *      ppc4xx_map_io				arch/ppc/syslib/ppc4xx_setup.c
-+ *  start_kernel				init/main.c
-+ *    setup_arch				arch/ppc/kernel/setup.c
-+ * #if defined(CONFIG_KGDB)
-+ *      *ppc_md.kgdb_map_scc() == gen550_kgdb_map_scc
-+ * #endif
-+ *      *ppc_md.setup_arch == ml403_setup_arch	this file
-+ *        ppc4xx_setup_arch			arch/ppc/syslib/ppc4xx_setup.c
-+ *          ppc4xx_find_bridges			arch/ppc/syslib/ppc405_pci.c
-+ *    init_IRQ					arch/ppc/kernel/irq.c
-+ *      *ppc_md.init_IRQ == ml403_init_IRQ	this file
-+ *        ppc4xx_init_IRQ			arch/ppc/syslib/ppc4xx_setup.c
-+ *          ppc4xx_pic_init			arch/ppc/syslib/xilinx_pic.c
-+ */
++#
++# Loadable module support
++#
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_FORCE_UNLOAD=y
++CONFIG_OBSOLETE_MODPARM=y
++CONFIG_MODVERSIONS=y
++CONFIG_MODULE_SRCVERSION_ALL=y
++CONFIG_KMOD=y
 +
-+/* Board specifications structures */
-+struct ppc_sys_spec *cur_ppc_sys_spec;
-+struct ppc_sys_spec ppc_sys_specs[] = {
-+	{
-+		/* Only one entry, always assume the same design */
-+		.ppc_sys_name	= "Xilinx ML403 Reference Design",
-+		.mask 		= 0x00000000,
-+		.value 		= 0x00000000,
-+		.num_devices	= 1,
-+		.device_list	= (enum ppc_sys_devices[])
-+		{
-+			VIRTEX_UART,
-+		},
-+	},
-+};
++#
++# Block layer
++#
++CONFIG_LBD=y
 +
-+#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_DEADLINE is not set
++# CONFIG_DEFAULT_CFQ is not set
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="anticipatory"
 +
-+static volatile unsigned *powerdown_base =
-+    (volatile unsigned *) XPAR_POWER_0_POWERDOWN_BASEADDR;
++#
++# Processor
++#
++# CONFIG_6xx is not set
++CONFIG_40x=y
++# CONFIG_44x is not set
++# CONFIG_POWER3 is not set
++# CONFIG_8xx is not set
++# CONFIG_E200 is not set
++# CONFIG_E500 is not set
++# CONFIG_MATH_EMULATION is not set
++# CONFIG_KEXEC is not set
++# CONFIG_CPU_FREQ is not set
++CONFIG_4xx=y
++# CONFIG_WANT_EARLY_SERIAL is not set
 +
-+static void
-+xilinx_power_off(void)
-+{
-+	local_irq_disable();
-+	out_be32(powerdown_base, XPAR_POWER_0_POWERDOWN_VALUE);
-+	while (1) ;
-+}
-+#endif
++#
++# IBM 4xx options
++#
++# CONFIG_BUBINGA is not set
++# CONFIG_CPCI405 is not set
++# CONFIG_EP405 is not set
++# CONFIG_REDWOOD_5 is not set
++# CONFIG_REDWOOD_6 is not set
++# CONFIG_SYCAMORE is not set
++# CONFIG_WALNUT is not set
++# CONFIG_XILINX_ML300 is not set
++CONFIG_XILINX_ML403=y
++CONFIG_IBM405_ERR77=y
++CONFIG_IBM405_ERR51=y
++CONFIG_XILINX_VIRTEX=y
++CONFIG_EMBEDDEDBOOT=y
++# CONFIG_PPC4xx_DMA is not set
++CONFIG_PPC_GEN550=y
++CONFIG_UART0_TTYS0=y
++# CONFIG_UART0_TTYS1 is not set
++CONFIG_NOT_COHERENT_CACHE=y
 +
-+void __init
-+ml403_map_io(void)
-+{
-+	ppc4xx_map_io();
++#
++# Platform options
++#
++# CONFIG_PC_KEYBOARD is not set
++# CONFIG_HIGHMEM is not set
++# CONFIG_HZ_100 is not set
++CONFIG_HZ_250=y
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=250
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++CONFIG_SPLIT_PTLOCK_CPUS=4
++CONFIG_BINFMT_ELF=y
++# CONFIG_BINFMT_MISC is not set
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE="console=ttyS0,9600"
++# CONFIG_PM is not set
++# CONFIG_SOFTWARE_SUSPEND is not set
++CONFIG_SECCOMP=y
++CONFIG_ISA_DMA_API=y
 +
-+#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
-+	powerdown_base = ioremap((unsigned long) powerdown_base,
-+				 XPAR_POWER_0_POWERDOWN_HIGHADDR -
-+				 XPAR_POWER_0_POWERDOWN_BASEADDR + 1);
-+#endif
-+}
++#
++# Bus options
++#
++# CONFIG_PPC_I8259 is not set
++# CONFIG_PCI is not set
++# CONFIG_PCI_DOMAINS is not set
 +
-+/* Early serial support functions */
-+static void __init
-+ml403_early_serial_init(int num, struct plat_serial8250_port *pdata)
-+{
-+#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
-+	struct uart_port serial_req;
++#
++# PCCARD (PCMCIA/CardBus) support
++#
++# CONFIG_PCCARD is not set
 +
-+	memset(&serial_req, 0, sizeof(serial_req));
-+	serial_req.mapbase	= pdata->mapbase;
-+	serial_req.membase	= pdata->membase;
-+	serial_req.irq		= pdata->irq;
-+	serial_req.uartclk	= pdata->uartclk;
-+	serial_req.regshift	= pdata->regshift;
-+	serial_req.iotype	= pdata->iotype;
-+	serial_req.flags	= pdata->flags;
-+	gen550_init(num, &serial_req);
-+#endif
-+}
++#
++# Advanced setup
++#
++# CONFIG_ADVANCED_OPTIONS is not set
 +
-+void __init
-+ml403_early_serial_map(void)
-+{
-+#ifdef CONFIG_SERIAL_8250
-+	struct plat_serial8250_port *pdata;
-+	int i = 0;
++#
++# Default settings for advanced configuration options are used
++#
++CONFIG_HIGHMEM_START=0xfe000000
++CONFIG_LOWMEM_SIZE=0x30000000
++CONFIG_KERNEL_START=0xc0000000
++CONFIG_TASK_SIZE=0x80000000
++CONFIG_CONSISTENT_START=0xff100000
++CONFIG_CONSISTENT_SIZE=0x00200000
++CONFIG_BOOT_LOAD=0x00400000
 +
-+	pdata = (struct plat_serial8250_port *) ppc_sys_get_pdata(VIRTEX_UART);
-+	while(pdata && pdata->flags)
-+	{
-+		pdata->membase = ioremap(pdata->mapbase, 0x100);
-+		ml403_early_serial_init(i, pdata);
-+		pdata++;
-+		i++;
-+	}
-+#endif /* CONFIG_SERIAL_8250 */
-+}
++#
++# Networking
++#
++CONFIG_NET=y
 +
-+void __init
-+ml403_setup_arch(void)
-+{
-+	ml403_early_serial_map();
-+	ppc4xx_setup_arch();	/* calls ppc4xx_find_bridges() */
++#
++# Networking options
++#
++CONFIG_PACKET=y
++CONFIG_PACKET_MMAP=y
++CONFIG_UNIX=y
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++# CONFIG_IP_MULTICAST is not set
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++# CONFIG_IP_PNP_BOOTP is not set
++# CONFIG_IP_PNP_RARP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_ARPD is not set
++# CONFIG_SYN_COOKIES is not set
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_TUNNEL is not set
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_BIC=y
++# CONFIG_IPV6 is not set
++# CONFIG_NETFILTER is not set
 +
-+	/* Identify the system */
-+	printk(KERN_INFO "Xilinx ML403 Reference System (Virtex-4 FX)\n");
-+}
++#
++# DCCP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_DCCP is not set
 +
-+/* Called after board_setup_irq from ppc4xx_init_IRQ(). */
-+void __init
-+ml403_init_irq(void)
-+{
-+	ppc4xx_init_IRQ();
-+}
++#
++# SCTP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_SCTP is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
 +
-+void __init
-+platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+	      unsigned long r6, unsigned long r7)
-+{
-+	ppc4xx_init(r3, r4, r5, r6, r7);
++#
++# TIPC Configuration (EXPERIMENTAL)
++#
++# CONFIG_TIPC is not set
++# CONFIG_NET_DIVERT is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
 +
-+	identify_ppc_sys_by_id(mfspr(SPRN_PVR));
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
 +
-+	ppc_md.setup_arch = ml403_setup_arch;
-+	ppc_md.setup_io_mappings = ml403_map_io;
-+	ppc_md.init_IRQ = ml403_init_irq;
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_IEEE80211 is not set
 +
-+#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
-+	ppc_md.power_off = xilinx_power_off;
-+#endif
++#
++# Device Drivers
++#
 +
-+#ifdef CONFIG_KGDB
-+	ppc_md.early_serial_map = ml403_early_serial_map;
-+#endif
-+}
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++# CONFIG_FW_LOADER is not set
++# CONFIG_DEBUG_DRIVER is not set
 +
-diff --git a/arch/ppc/platforms/4xx/xilinx_ml403.h b/arch/ppc/platforms/4xx/xilinx_ml403.h
-new file mode 100644
-index 0000000..4735969
---- /dev/null
-+++ b/arch/ppc/platforms/4xx/xilinx_ml403.h
-@@ -0,0 +1,49 @@
-+/*
-+ * arch/ppc/platforms/4xx/xilinx_ml403.h
-+ *
-+ * Include file that defines the Xilinx ML403 reference design
-+ *
-+ * Author: Grant Likely <grant.likely@secretlab.ca>
-+ *
-+ * 2005 (c) Secret Lab Technologies Ltd.
-+ * 2002-2004 (c) MontaVista Software, Inc.
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2.  This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
++#
++# Connector - unified userspace <-> kernelspace linker
++#
++# CONFIG_CONNECTOR is not set
 +
-+#ifdef __KERNEL__
-+#ifndef __ASM_XILINX_ML403_H__
-+#define __ASM_XILINX_ML403_H__
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
 +
-+/* ML403 has a Xilinx Virtex-4 FPGA with a PPC405 hard core */
-+#include <platforms/4xx/virtex.h>
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
 +
-+#ifndef __ASSEMBLY__
++#
++# Plug and Play support
++#
 +
-+#include <linux/types.h>
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++# CONFIG_BLK_DEV_LOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=65536
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
 +
-+typedef struct board_info {
-+	unsigned int	 bi_memsize;		/* DRAM installed, in bytes */
-+	unsigned char	 bi_enetaddr[6];	/* Local Ethernet MAC address */
-+	unsigned int	 bi_intfreq;		/* Processor speed, in Hz */
-+	unsigned int	 bi_busfreq;		/* PLB Bus speed, in Hz */
-+	unsigned int	 bi_pci_busfreq;	/* PCI Bus speed, in Hz */
-+} bd_t;
++#
++# ATA/ATAPI/MFM/RLL support
++#
++# CONFIG_IDE is not set
 +
-+/* Some 4xx parts use a different timebase frequency from the internal clock.
-+*/
-+#define bi_tbfreq bi_intfreq
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++# CONFIG_SCSI is not set
 +
-+#endif /* !__ASSEMBLY__ */
++#
++# Multi-device support (RAID and LVM)
++#
++# CONFIG_MD is not set
 +
-+/* We don't need anything mapped.  Size of zero will accomplish that. */
-+#define PPC4xx_ONB_IO_PADDR	0u
-+#define PPC4xx_ONB_IO_VADDR	0u
-+#define PPC4xx_ONB_IO_SIZE	0u
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
 +
-+#define PPC4xx_MACHINE_NAME "Xilinx ML403 Reference Design"
++#
++# IEEE 1394 (FireWire) support
++#
 +
-+#endif /* __ASM_XILINX_ML403_H__ */
-+#endif /* __KERNEL__ */
-diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-index 7b73043..4cf21f2 100644
---- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
-+++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-@@ -16,6 +16,8 @@
- 
- #if defined(CONFIG_XILINX_ML300)
-   #include "xparameters_ml300.h"
-+#elif defined(CONFIG_XILINX_ML403)
-+  #include "xparameters_ml403.h"
- #else
-   /* Add other board xparameter includes here before the #else */
-   #error No xparameters_*.h file included
-diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
-index 6c28ae7..38f9971 100644
---- a/include/asm-ppc/ibm4xx.h
-+++ b/include/asm-ppc/ibm4xx.h
-@@ -51,6 +51,10 @@
- #include <platforms/4xx/xilinx_ml300.h>
- #endif
- 
-+#if defined(CONFIG_XILINX_ML403)
-+#include <platforms/4xx/xilinx_ml403.h>
-+#endif
++#
++# I2O device support
++#
 +
- #ifndef __ASSEMBLY__
- 
- #ifdef CONFIG_40x
++#
++# Macintosh device drivers
++#
++# CONFIG_WINDFARM is not set
++
++#
++# Network device support
++#
++CONFIG_NETDEVICES=y
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++CONFIG_TUN=y
++
++#
++# PHY device support
++#
++
++#
++# Ethernet (10 or 100Mbit)
++#
++# CONFIG_NET_ETHERNET is not set
++# CONFIG_IBM_EMAC is not set
++
++#
++# Ethernet (1000 Mbit)
++#
++
++#
++# Ethernet (10000 Mbit)
++#
++
++#
++# Token Ring devices
++#
++
++#
++# Wireless LAN (non-hamradio)
++#
++# CONFIG_NET_RADIO is not set
++
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_SHAPER is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Telephony Support
++#
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++
++#
++# Userland interfaces
++#
++CONFIG_INPUT_MOUSEDEV=y
++# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
++CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
++CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_TSDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
++
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++CONFIG_VT=y
++CONFIG_VT_CONSOLE=y
++CONFIG_HW_CONSOLE=y
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_NR_UARTS=4
++CONFIG_SERIAL_8250_RUNTIME_UARTS=4
++# CONFIG_SERIAL_8250_EXTENDED is not set
++
++#
++# Non-8250 serial port support
++#
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++CONFIG_UNIX98_PTYS=y
++# CONFIG_LEGACY_PTYS is not set
++
++#
++# IPMI
++#
++# CONFIG_IPMI_HANDLER is not set
++
++#
++# Watchdog Cards
++#
++# CONFIG_WATCHDOG is not set
++# CONFIG_NVRAM is not set
++# CONFIG_GEN_RTC is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++
++#
++# Ftape, the floppy tape device driver
++#
++# CONFIG_AGP is not set
++# CONFIG_RAW_DRIVER is not set
++
++#
++# TPM devices
++#
++# CONFIG_TCG_TPM is not set
++# CONFIG_TELCLOCK is not set
++
++#
++# I2C support
++#
++# CONFIG_I2C is not set
++
++#
++# SPI support
++#
++# CONFIG_SPI is not set
++# CONFIG_SPI_MASTER is not set
++
++#
++# Dallas's 1-wire bus
++#
++# CONFIG_W1 is not set
++
++#
++# Hardware Monitoring support
++#
++# CONFIG_HWMON is not set
++# CONFIG_HWMON_VID is not set
++
++#
++# Misc devices
++#
++
++#
++# Multimedia Capabilities Port drivers
++#
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Digital Video Broadcasting Devices
++#
++# CONFIG_DVB is not set
++
++#
++# Graphics support
++#
++# CONFIG_FB is not set
++
++#
++# Console display driver support
++#
++CONFIG_DUMMY_CONSOLE=y
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# USB support
++#
++# CONFIG_USB_ARCH_HAS_HCD is not set
++# CONFIG_USB_ARCH_HAS_OHCI is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++
++#
++# USB Gadget Support
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# MMC/SD Card support
++#
++# CONFIG_MMC is not set
++
++#
++# InfiniBand support
++#
++
++#
++# SN Devices
++#
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++# CONFIG_EXT2_FS_XATTR is not set
++# CONFIG_EXT2_FS_XIP is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_OCFS2_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_ROMFS_FS is not set
++CONFIG_INOTIFY=y
++# CONFIG_QUOTA is not set
++CONFIG_DNOTIFY=y
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++CONFIG_FAT_FS=y
++CONFIG_MSDOS_FS=y
++CONFIG_VFAT_FS=y
++CONFIG_FAT_DEFAULT_CODEPAGE=437
++CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_SYSFS=y
++CONFIG_TMPFS=y
++# CONFIG_HUGETLB_PAGE is not set
++CONFIG_RAMFS=y
++# CONFIG_RELAYFS_FS is not set
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_CRAMFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Network File Systems
++#
++# CONFIG_NFS_FS is not set
++# CONFIG_NFSD is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++# CONFIG_9P_FS is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=y
++
++#
++# Native Language Support
++#
++CONFIG_NLS=y
++CONFIG_NLS_DEFAULT="iso8859-1"
++CONFIG_NLS_CODEPAGE_437=y
++# CONFIG_NLS_CODEPAGE_737 is not set
++# CONFIG_NLS_CODEPAGE_775 is not set
++# CONFIG_NLS_CODEPAGE_850 is not set
++# CONFIG_NLS_CODEPAGE_852 is not set
++# CONFIG_NLS_CODEPAGE_855 is not set
++# CONFIG_NLS_CODEPAGE_857 is not set
++# CONFIG_NLS_CODEPAGE_860 is not set
++# CONFIG_NLS_CODEPAGE_861 is not set
++# CONFIG_NLS_CODEPAGE_862 is not set
++# CONFIG_NLS_CODEPAGE_863 is not set
++# CONFIG_NLS_CODEPAGE_864 is not set
++# CONFIG_NLS_CODEPAGE_865 is not set
++# CONFIG_NLS_CODEPAGE_866 is not set
++# CONFIG_NLS_CODEPAGE_869 is not set
++# CONFIG_NLS_CODEPAGE_936 is not set
++# CONFIG_NLS_CODEPAGE_950 is not set
++# CONFIG_NLS_CODEPAGE_932 is not set
++# CONFIG_NLS_CODEPAGE_949 is not set
++# CONFIG_NLS_CODEPAGE_874 is not set
++# CONFIG_NLS_ISO8859_8 is not set
++# CONFIG_NLS_CODEPAGE_1250 is not set
++# CONFIG_NLS_CODEPAGE_1251 is not set
++CONFIG_NLS_ASCII=y
++CONFIG_NLS_ISO8859_1=y
++# CONFIG_NLS_ISO8859_2 is not set
++# CONFIG_NLS_ISO8859_3 is not set
++# CONFIG_NLS_ISO8859_4 is not set
++# CONFIG_NLS_ISO8859_5 is not set
++# CONFIG_NLS_ISO8859_6 is not set
++# CONFIG_NLS_ISO8859_7 is not set
++# CONFIG_NLS_ISO8859_9 is not set
++# CONFIG_NLS_ISO8859_13 is not set
++# CONFIG_NLS_ISO8859_14 is not set
++# CONFIG_NLS_ISO8859_15 is not set
++# CONFIG_NLS_KOI8_R is not set
++# CONFIG_NLS_KOI8_U is not set
++CONFIG_NLS_UTF8=y
++
++#
++# IBM 40x options
++#
++
++#
++# Library routines
++#
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++CONFIG_CRC32=y
++# CONFIG_LIBCRC32C is not set
++# CONFIG_PROFILING is not set
++
++#
++# Kernel hacking
++#
++CONFIG_PRINTK_TIME=y
++CONFIG_MAGIC_SYSRQ=y
++CONFIG_DEBUG_KERNEL=y
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_DETECT_SOFTLOCKUP=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_DEBUG_SLAB is not set
++CONFIG_DEBUG_MUTEXES=y
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_KOBJECT is not set
++CONFIG_DEBUG_INFO=y
++# CONFIG_DEBUG_FS is not set
++# CONFIG_DEBUG_VM is not set
++CONFIG_FORCED_INLINING=y
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_KGDB is not set
++CONFIG_XMON=y
++# CONFIG_BDI_SWITCH is not set
++# CONFIG_SERIAL_TEXT_DEBUG is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++
++#
++# Cryptographic options
++#
++# CONFIG_CRYPTO is not set
++
++#
++# Hardware crypto devices
++#
 -- 
 1.1.GIT
