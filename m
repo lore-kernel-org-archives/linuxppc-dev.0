@@ -1,14 +1,14 @@
 Return-Path: <grant@secretlab.ca>
 Received: from localhost.secretlab.ca (S0106001346b91f0f.cg.shawcable.net
-	[68.147.210.21]) by ozlabs.org (Postfix) with ESMTP id 81D3C689C0
+	[68.147.210.21]) by ozlabs.org (Postfix) with ESMTP id 49CE968A2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 19 Jan 2006 19:13:29 +1100 (EST)
-Date: Thu, 19 Jan 2006 01:13:28 -0700
+	Thu, 19 Jan 2006 19:13:38 +1100 (EST)
+Date: Thu, 19 Jan 2006 01:13:37 -0700
 From: "Grant C. Likely" <grant.likely@secretlab.ca>
 To: linuxppc-embedded@ozlabs.org, akonovalov@ru.mvista.com,
 	peter.ryser@xilinx.com
-Subject: [PATCH 7/9] Add xparameters file for Xilinx ML403 reference design
-Message-ID: <20060119081328.GA24924@weasley-twins.secretlab.ca>
+Subject: [PATCH 8/9] Add support for Xilinx ML403 reference design
+Message-ID: <20060119081337.GA24929@weasley-twins.secretlab.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -21,263 +21,400 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Includes fix for Xilinx silicon errata 213
+
 Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
 
 ---
 
- .../platforms/4xx/xparameters/xparameters_ml403.h  |  243 +++++++++++++++++++++++
- 1 files changed, 243 insertions(+), 0 deletions(-)
- create mode 100644 arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h
+ arch/ppc/boot/simple/Makefile                    |    1 
+ arch/ppc/boot/simple/embed_config.c              |    4 
+ arch/ppc/boot/simple/head.S                      |    7 +
+ arch/ppc/platforms/4xx/Kconfig                   |   13 +-
+ arch/ppc/platforms/4xx/Makefile                  |    2 
+ arch/ppc/platforms/4xx/xilinx_ml403.c            |  177 ++++++++++++++++++++++
+ arch/ppc/platforms/4xx/xilinx_ml403.h            |   49 ++++++
+ arch/ppc/platforms/4xx/xparameters/xparameters.h |    2 
+ include/asm-ppc/ibm4xx.h                         |    4 
+ 9 files changed, 255 insertions(+), 4 deletions(-)
+ create mode 100644 arch/ppc/platforms/4xx/xilinx_ml403.c
+ create mode 100644 arch/ppc/platforms/4xx/xilinx_ml403.h
 
-1190987bee66ba9b6957d3806c0d6f20df51ea0d
-diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h b/arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h
+a6b31a88ce3340c144db41fe6e6805c80f108924
+diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
+index 9533f8d..28be01b 100644
+--- a/arch/ppc/boot/simple/Makefile
++++ b/arch/ppc/boot/simple/Makefile
+@@ -192,6 +192,7 @@ boot-$(CONFIG_8xx)		+= embed_config.o
+ boot-$(CONFIG_8260)		+= embed_config.o
+ boot-$(CONFIG_EP405)		+= embed_config.o
+ boot-$(CONFIG_XILINX_ML300)	+= embed_config.o
++boot-$(CONFIG_XILINX_ML403)	+= embed_config.o
+ boot-$(CONFIG_BSEIP)		+= iic.o
+ boot-$(CONFIG_MBX)		+= iic.o pci.o qspan_pci.o
+ boot-$(CONFIG_MV64X60)		+= misc-mv64x60.o
+diff --git a/arch/ppc/boot/simple/embed_config.c b/arch/ppc/boot/simple/embed_config.c
+index df24202..3a51b10 100644
+--- a/arch/ppc/boot/simple/embed_config.c
++++ b/arch/ppc/boot/simple/embed_config.c
+@@ -745,7 +745,7 @@ embed_config(bd_t **bdp)
+ }
+ #endif /* WILLOW */
+ 
+-#ifdef CONFIG_XILINX_ML300
++#if defined(CONFIG_XILINX_ML300) || defined(CONFIG_XILINX_ML403)
+ void
+ embed_config(bd_t ** bdp)
+ {
+@@ -782,7 +782,7 @@ embed_config(bd_t ** bdp)
+ 	timebase_period_ns = 1000000000 / bd->bi_tbfreq;
+ 	/* see bi_tbfreq definition in arch/ppc/platforms/4xx/xilinx_ml300.h */
+ }
+-#endif /* CONFIG_XILINX_ML300 */
++#endif /* CONFIG_XILINX_ML300 || CONFIG_XILINX_ML403 */
+ 
+ #ifdef CONFIG_IBM_OPENBIOS
+ /* This could possibly work for all treeboot roms.
+diff --git a/arch/ppc/boot/simple/head.S b/arch/ppc/boot/simple/head.S
+index 5e4adc2..119b9dc 100644
+--- a/arch/ppc/boot/simple/head.S
++++ b/arch/ppc/boot/simple/head.S
+@@ -65,6 +65,13 @@ start_:
+ 			 */
+ #endif
+ 
++#if defined(CONFIG_XILINX_VIRTEX_4_FX)
++	/* PPC errata 213: only for Virtex-4 FX */
++	mfccr0  0
++	oris    0,0,0x50000000@h
++	mtccr0  0
++#endif
++
+ 	mflr	r3	/* Save our actual starting address. */
+ 
+ 	/* The following functions we call must not modify r3 or r4.....
+diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
+index 057c7c2..174ddbc 100644
+--- a/arch/ppc/platforms/4xx/Kconfig
++++ b/arch/ppc/platforms/4xx/Kconfig
+@@ -57,6 +57,10 @@ config XILINX_ML300
+ 	help
+ 	  This option enables support for the Xilinx ML300 evaluation board.
+ 
++config XILINX_ML403
++	bool "Xilinx-ML403"
++	help
++	  This option enables support for the Xilinx ML403 evaluation board.
+ endchoice
+ 
+ choice
+@@ -208,9 +212,14 @@ config XILINX_VIRTEX_II_PRO
+ 	depends on XILINX_ML300
+ 	default y
+ 
++config XILINX_VIRTEX_4_FX
++	bool
++	depends on XILINX_ML403
++	default y
++
+ config XILINX_VIRTEX
+ 	bool
+-	depends on XILINX_VIRTEX_II_PRO
++	depends on XILINX_VIRTEX_II_PRO || XILINX_VIRTEX_4_FX
+ 	default y
+ 
+ config STB03xxx
+@@ -220,7 +229,7 @@ config STB03xxx
+ 
+ config EMBEDDEDBOOT
+ 	bool
+-	depends on EP405 || XILINX_ML300
++	depends on EP405 || XILINX_ML300 || XILINX_ML403
+ 	default y
+ 
+ config IBM_OPENBIOS
+diff --git a/arch/ppc/platforms/4xx/Makefile b/arch/ppc/platforms/4xx/Makefile
+index be4163c..a04a0d0 100644
+--- a/arch/ppc/platforms/4xx/Makefile
++++ b/arch/ppc/platforms/4xx/Makefile
+@@ -14,6 +14,7 @@ obj-$(CONFIG_REDWOOD_6)		+= redwood6.o
+ obj-$(CONFIG_SYCAMORE)		+= sycamore.o
+ obj-$(CONFIG_WALNUT)		+= walnut.o
+ obj-$(CONFIG_XILINX_ML300)	+= xilinx_ml300.o
++obj-$(CONFIG_XILINX_ML403)	+= xilinx_ml403.o
+ 
+ obj-$(CONFIG_405GP)		+= ibm405gp.o
+ obj-$(CONFIG_REDWOOD_5)		+= ibmstb4.o
+@@ -27,3 +28,4 @@ obj-$(CONFIG_440SPE)		+= ppc440spe.o
+ obj-$(CONFIG_405EP)		+= ibm405ep.o
+ obj-$(CONFIG_405GPR)		+= ibm405gpr.o
+ obj-$(CONFIG_XILINX_VIRTEX)	+= virtex.o
++
+diff --git a/arch/ppc/platforms/4xx/xilinx_ml403.c b/arch/ppc/platforms/4xx/xilinx_ml403.c
 new file mode 100644
-index 0000000..5cacdcb
+index 0000000..4c0c7e4
 --- /dev/null
-+++ b/arch/ppc/platforms/4xx/xparameters/xparameters_ml403.h
-@@ -0,0 +1,243 @@
++++ b/arch/ppc/platforms/4xx/xilinx_ml403.c
+@@ -0,0 +1,177 @@
++/*
++ * arch/ppc/platforms/4xx/xilinx_ml403.c
++ *
++ * Xilinx ML403 evaluation board initialization
++ *
++ * Author: Grant Likely <grant.likely@secretlab.ca>
++ *
++ * 2005 (c) Secret Lab Technologies Ltd.
++ * 2002-2004 (c) MontaVista Software, Inc.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
 +
-+/*******************************************************************
-+*
-+* CAUTION: This file is automatically generated by libgen.
-+* Version: Xilinx EDK 7.1.2 EDK_H.12.5.1
-+* DO NOT EDIT.
-+*
-+* Copyright (c) 2005 Xilinx, Inc.  All rights reserved. 
-+* 
-+* Description: Driver parameters
-+*
-+*******************************************************************/
++#include <linux/config.h>
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/tty.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
++#include <linux/serial_8250.h>
++#include <linux/serialP.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/ppc_sys.h>
 +
-+#define XPAR_PLB_BRAM_IF_CNTLR_0_BASEADDR 0xFFFF0000
-+#define XPAR_PLB_BRAM_IF_CNTLR_0_HIGHADDR 0xFFFFFFFF
++#include <syslib/gen550.h>
++#include <platforms/4xx/xparameters/xparameters.h>
 +
-+/******************************************************************/
++/*
++ * As an overview of how the following functions (platform_init,
++ * ml403_map_io, ml403_setup_arch and ml403_init_IRQ) fit into the
++ * kernel startup procedure, here's a call tree:
++ *
++ * start_here					arch/ppc/kernel/head_4xx.S
++ *  early_init					arch/ppc/kernel/setup.c
++ *  machine_init				arch/ppc/kernel/setup.c
++ *    platform_init				this file
++ *      ppc4xx_init				arch/ppc/syslib/ppc4xx_setup.c
++ *        parse_bootinfo
++ *          find_bootinfo
++ *        "setup some default ppc_md pointers"
++ *  MMU_init					arch/ppc/mm/init.c
++ *    *ppc_md.setup_io_mappings == ml403_map_io	this file
++ *      ppc4xx_map_io				arch/ppc/syslib/ppc4xx_setup.c
++ *  start_kernel				init/main.c
++ *    setup_arch				arch/ppc/kernel/setup.c
++ * #if defined(CONFIG_KGDB)
++ *      *ppc_md.kgdb_map_scc() == gen550_kgdb_map_scc
++ * #endif
++ *      *ppc_md.setup_arch == ml403_setup_arch	this file
++ *        ppc4xx_setup_arch			arch/ppc/syslib/ppc4xx_setup.c
++ *          ppc4xx_find_bridges			arch/ppc/syslib/ppc405_pci.c
++ *    init_IRQ					arch/ppc/kernel/irq.c
++ *      *ppc_md.init_IRQ == ml403_init_IRQ	this file
++ *        ppc4xx_init_IRQ			arch/ppc/syslib/ppc4xx_setup.c
++ *          ppc4xx_pic_init			arch/ppc/syslib/xilinx_pic.c
++ */
 +
-+#define XPAR_OPB_EMC_0_MEM0_BASEADDR 0x20000000
-+#define XPAR_OPB_EMC_0_MEM0_HIGHADDR 0x200FFFFF
-+#define XPAR_OPB_EMC_0_MEM1_BASEADDR 0x28000000
-+#define XPAR_OPB_EMC_0_MEM1_HIGHADDR 0x287FFFFF
-+#define XPAR_OPB_AC97_CONTROLLER_REF_0_BASEADDR 0xA6000000
-+#define XPAR_OPB_AC97_CONTROLLER_REF_0_HIGHADDR 0xA60000FF
-+#define XPAR_OPB_EMC_USB_0_MEM0_BASEADDR 0xA5000000
-+#define XPAR_OPB_EMC_USB_0_MEM0_HIGHADDR 0xA50000FF
-+#define XPAR_PLB_DDR_0_MEM0_BASEADDR 0x00000000
-+#define XPAR_PLB_DDR_0_MEM0_HIGHADDR 0x0FFFFFFF
++/* Board specifications structures */
++struct ppc_sys_spec *cur_ppc_sys_spec;
++struct ppc_sys_spec ppc_sys_specs[] = {
++	{
++		/* Only one entry, always assume the same design */
++		.ppc_sys_name	= "Xilinx ML403 Reference Design",
++		.mask 		= 0x00000000,
++		.value 		= 0x00000000,
++		.num_devices	= 1,
++		.device_list	= (enum ppc_sys_devices[])
++		{
++			VIRTEX_UART,
++		},
++	},
++};
 +
-+/******************************************************************/
++#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
 +
-+#define XPAR_XEMAC_NUM_INSTANCES 1
-+#define XPAR_OPB_ETHERNET_0_BASEADDR 0x60000000
-+#define XPAR_OPB_ETHERNET_0_HIGHADDR 0x60003FFF
-+#define XPAR_OPB_ETHERNET_0_DEVICE_ID 0
-+#define XPAR_OPB_ETHERNET_0_ERR_COUNT_EXIST 1
-+#define XPAR_OPB_ETHERNET_0_DMA_PRESENT 1
-+#define XPAR_OPB_ETHERNET_0_MII_EXIST 1
++static volatile unsigned *powerdown_base =
++    (volatile unsigned *) XPAR_POWER_0_POWERDOWN_BASEADDR;
 +
-+/******************************************************************/
++static void
++xilinx_power_off(void)
++{
++	local_irq_disable();
++	out_be32(powerdown_base, XPAR_POWER_0_POWERDOWN_VALUE);
++	while (1) ;
++}
++#endif
 +
-+#define XPAR_XUARTNS550_NUM_INSTANCES 1
-+#define XPAR_XUARTNS550_CLOCK_HZ 100000000
-+#define XPAR_OPB_UART16550_0_BASEADDR 0xA0000000
-+#define XPAR_OPB_UART16550_0_HIGHADDR 0xA0001FFF
-+#define XPAR_OPB_UART16550_0_DEVICE_ID 0
++void __init
++ml403_map_io(void)
++{
++	ppc4xx_map_io();
 +
-+/******************************************************************/
++#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
++	powerdown_base = ioremap((unsigned long) powerdown_base,
++				 XPAR_POWER_0_POWERDOWN_HIGHADDR -
++				 XPAR_POWER_0_POWERDOWN_BASEADDR + 1);
++#endif
++}
 +
-+#define XPAR_XGPIO_NUM_INSTANCES 3
-+#define XPAR_OPB_GPIO_0_BASEADDR 0x90000000
-+#define XPAR_OPB_GPIO_0_HIGHADDR 0x900001FF
-+#define XPAR_OPB_GPIO_0_DEVICE_ID 0
-+#define XPAR_OPB_GPIO_0_INTERRUPT_PRESENT 0
-+#define XPAR_OPB_GPIO_0_IS_DUAL 1
-+#define XPAR_OPB_GPIO_EXP_HDR_0_BASEADDR 0x90001000
-+#define XPAR_OPB_GPIO_EXP_HDR_0_HIGHADDR 0x900011FF
-+#define XPAR_OPB_GPIO_EXP_HDR_0_DEVICE_ID 1
-+#define XPAR_OPB_GPIO_EXP_HDR_0_INTERRUPT_PRESENT 0
-+#define XPAR_OPB_GPIO_EXP_HDR_0_IS_DUAL 1
-+#define XPAR_OPB_GPIO_CHAR_LCD_0_BASEADDR 0x90002000
-+#define XPAR_OPB_GPIO_CHAR_LCD_0_HIGHADDR 0x900021FF
-+#define XPAR_OPB_GPIO_CHAR_LCD_0_DEVICE_ID 2
-+#define XPAR_OPB_GPIO_CHAR_LCD_0_INTERRUPT_PRESENT 0
-+#define XPAR_OPB_GPIO_CHAR_LCD_0_IS_DUAL 0
++/* Early serial support functions */
++static void __init
++ml403_early_serial_init(int num, struct plat_serial8250_port *pdata)
++{
++#if defined(CONFIG_SERIAL_TEXT_DEBUG) || defined(CONFIG_KGDB)
++	struct uart_port serial_req;
 +
-+/******************************************************************/
++	memset(&serial_req, 0, sizeof(serial_req));
++	serial_req.mapbase	= pdata->mapbase;
++	serial_req.membase	= pdata->membase;
++	serial_req.irq		= pdata->irq;
++	serial_req.uartclk	= pdata->uartclk;
++	serial_req.regshift	= pdata->regshift;
++	serial_req.iotype	= pdata->iotype;
++	serial_req.flags	= pdata->flags;
++	gen550_init(num, &serial_req);
++#endif
++}
 +
-+#define XPAR_XPS2_NUM_INSTANCES 2
-+#define XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_0 0
-+#define XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_0 0xA9000000
-+#define XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_0 (0xA9000000+0x3F)
-+#define XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_1 1
-+#define XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_1 (0xA9000000+0x1000)
-+#define XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_1 (0xA9000000+0x103F)
++void __init
++ml403_early_serial_map(void)
++{
++#ifdef CONFIG_SERIAL_8250
++	struct plat_serial8250_port *pdata;
++	int i = 0;
 +
-+/******************************************************************/
++	pdata = (struct plat_serial8250_port *) ppc_sys_get_pdata(VIRTEX_UART);
++	while(pdata && pdata->flags)
++	{
++		pdata->membase = ioremap(pdata->mapbase, 0x100);
++		ml403_early_serial_init(i, pdata);
++		pdata++;
++		i++;
++	}
++#endif /* CONFIG_SERIAL_8250 */
++}
 +
-+#define XPAR_XIIC_NUM_INSTANCES 1
-+#define XPAR_OPB_IIC_0_BASEADDR 0xA8000000
-+#define XPAR_OPB_IIC_0_HIGHADDR 0xA80001FF
-+#define XPAR_OPB_IIC_0_DEVICE_ID 0
-+#define XPAR_OPB_IIC_0_TEN_BIT_ADR 0
-+#define XPAR_OPB_IIC_0_GPO_WIDTH 1
++void __init
++ml403_setup_arch(void)
++{
++	ml403_early_serial_map();
++	ppc4xx_setup_arch();	/* calls ppc4xx_find_bridges() */
 +
-+/******************************************************************/
++	/* Identify the system */
++	printk(KERN_INFO "Xilinx ML403 Reference System (Virtex-4 FX)\n");
++}
 +
-+#define XPAR_INTC_MAX_NUM_INTR_INPUTS 10
-+#define XPAR_XINTC_HAS_IPR 1
-+#define XPAR_XINTC_USE_DCR 0
-+#define XPAR_XINTC_NUM_INSTANCES 1
-+#define XPAR_OPB_INTC_0_BASEADDR 0xD1000FC0
-+#define XPAR_OPB_INTC_0_HIGHADDR 0xD1000FDF
-+#define XPAR_OPB_INTC_0_DEVICE_ID 0
-+#define XPAR_OPB_INTC_0_KIND_OF_INTR 0x00000000
++/* Called after board_setup_irq from ppc4xx_init_IRQ(). */
++void __init
++ml403_init_irq(void)
++{
++	ppc4xx_init_IRQ();
++}
 +
-+/******************************************************************/
++void __init
++platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
++	      unsigned long r6, unsigned long r7)
++{
++	ppc4xx_init(r3, r4, r5, r6, r7);
 +
-+#define XPAR_INTC_SINGLE_BASEADDR 0xD1000FC0
-+#define XPAR_INTC_SINGLE_HIGHADDR 0xD1000FDF
-+#define XPAR_INTC_SINGLE_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
-+#define XPAR_OPB_ETHERNET_0_IP2INTC_IRPT_MASK 0X000001
-+#define XPAR_OPB_INTC_0_OPB_ETHERNET_0_IP2INTC_IRPT_INTR 0
-+#define XPAR_SYSTEM_USB_HPI_INT_MASK 0X000002
-+#define XPAR_OPB_INTC_0_SYSTEM_USB_HPI_INT_INTR 1
-+#define XPAR_MISC_LOGIC_0_PHY_MII_INT_MASK 0X000004
-+#define XPAR_OPB_INTC_0_MISC_LOGIC_0_PHY_MII_INT_INTR 2
-+#define XPAR_OPB_SYSACE_0_SYSACE_IRQ_MASK 0X000008
-+#define XPAR_OPB_INTC_0_OPB_SYSACE_0_SYSACE_IRQ_INTR 3
-+#define XPAR_OPB_AC97_CONTROLLER_REF_0_RECORD_INTERRUPT_MASK 0X000010
-+#define XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_0_RECORD_INTERRUPT_INTR 4
-+#define XPAR_OPB_AC97_CONTROLLER_REF_0_PLAYBACK_INTERRUPT_MASK 0X000020
-+#define XPAR_OPB_INTC_0_OPB_AC97_CONTROLLER_REF_0_PLAYBACK_INTERRUPT_INTR 5
-+#define XPAR_OPB_IIC_0_IP2INTC_IRPT_MASK 0X000040
-+#define XPAR_OPB_INTC_0_OPB_IIC_0_IP2INTC_IRPT_INTR 6
-+#define XPAR_OPB_PS2_DUAL_REF_0_SYS_INTR2_MASK 0X000080
-+#define XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR2_INTR 7
-+#define XPAR_OPB_PS2_DUAL_REF_0_SYS_INTR1_MASK 0X000100
-+#define XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR1_INTR 8
-+#define XPAR_OPB_UART16550_0_IP2INTC_IRPT_MASK 0X000200
-+#define XPAR_OPB_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR 9
++	identify_ppc_sys_by_id(mfspr(SPRN_PVR));
 +
-+/******************************************************************/
++	ppc_md.setup_arch = ml403_setup_arch;
++	ppc_md.setup_io_mappings = ml403_map_io;
++	ppc_md.init_IRQ = ml403_init_irq;
 +
-+#define XPAR_XTFT_NUM_INSTANCES 1
-+#define XPAR_PLB_TFT_CNTLR_REF_0_DCR_BASEADDR 0xD0000200
-+#define XPAR_PLB_TFT_CNTLR_REF_0_DCR_HIGHADDR 0xD0000207
-+#define XPAR_PLB_TFT_CNTLR_REF_0_DEVICE_ID 0
++#if defined(XPAR_POWER_0_POWERDOWN_BASEADDR)
++	ppc_md.power_off = xilinx_power_off;
++#endif
 +
-+/******************************************************************/
++#ifdef CONFIG_KGDB
++	ppc_md.early_serial_map = ml403_early_serial_map;
++#endif
++}
 +
-+#define XPAR_XSYSACE_MEM_WIDTH 16
-+#define XPAR_XSYSACE_NUM_INSTANCES 1
-+#define XPAR_OPB_SYSACE_0_BASEADDR 0xCF000000
-+#define XPAR_OPB_SYSACE_0_HIGHADDR 0xCF0001FF
-+#define XPAR_OPB_SYSACE_0_DEVICE_ID 0
-+#define XPAR_OPB_SYSACE_0_MEM_WIDTH 16
+diff --git a/arch/ppc/platforms/4xx/xilinx_ml403.h b/arch/ppc/platforms/4xx/xilinx_ml403.h
+new file mode 100644
+index 0000000..4735969
+--- /dev/null
++++ b/arch/ppc/platforms/4xx/xilinx_ml403.h
+@@ -0,0 +1,49 @@
++/*
++ * arch/ppc/platforms/4xx/xilinx_ml403.h
++ *
++ * Include file that defines the Xilinx ML403 reference design
++ *
++ * Author: Grant Likely <grant.likely@secretlab.ca>
++ *
++ * 2005 (c) Secret Lab Technologies Ltd.
++ * 2002-2004 (c) MontaVista Software, Inc.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
 +
-+/******************************************************************/
++#ifdef __KERNEL__
++#ifndef __ASM_XILINX_ML403_H__
++#define __ASM_XILINX_ML403_H__
 +
-+#define XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ 300000000
++/* ML403 has a Xilinx Virtex-4 FPGA with a PPC405 hard core */
++#include <platforms/4xx/virtex.h>
 +
-+/******************************************************************/
++#ifndef __ASSEMBLY__
 +
++#include <linux/types.h>
 +
-+/******************************************************************/
++typedef struct board_info {
++	unsigned int	 bi_memsize;		/* DRAM installed, in bytes */
++	unsigned char	 bi_enetaddr[6];	/* Local Ethernet MAC address */
++	unsigned int	 bi_intfreq;		/* Processor speed, in Hz */
++	unsigned int	 bi_busfreq;		/* PLB Bus speed, in Hz */
++	unsigned int	 bi_pci_busfreq;	/* PCI Bus speed, in Hz */
++} bd_t;
 +
-+/* Linux Redefines */
++/* Some 4xx parts use a different timebase frequency from the internal clock.
++*/
++#define bi_tbfreq bi_intfreq
 +
-+/******************************************************************/
++#endif /* !__ASSEMBLY__ */
 +
-+#define XPAR_UARTNS550_0_BASEADDR (XPAR_OPB_UART16550_0_BASEADDR+0x1000)
-+#define XPAR_UARTNS550_0_HIGHADDR XPAR_OPB_UART16550_0_HIGHADDR
-+#define XPAR_UARTNS550_0_CLOCK_FREQ_HZ XPAR_XUARTNS550_CLOCK_HZ
-+#define XPAR_UARTNS550_0_DEVICE_ID XPAR_OPB_UART16550_0_DEVICE_ID
++/* We don't need anything mapped.  Size of zero will accomplish that. */
++#define PPC4xx_ONB_IO_PADDR	0u
++#define PPC4xx_ONB_IO_VADDR	0u
++#define PPC4xx_ONB_IO_SIZE	0u
 +
-+/******************************************************************/
++#define PPC4xx_MACHINE_NAME "Xilinx ML403 Reference Design"
 +
-+#define XPAR_INTC_0_BASEADDR XPAR_OPB_INTC_0_BASEADDR
-+#define XPAR_INTC_0_HIGHADDR XPAR_OPB_INTC_0_HIGHADDR
-+#define XPAR_INTC_0_KIND_OF_INTR XPAR_OPB_INTC_0_KIND_OF_INTR
-+#define XPAR_INTC_0_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
++#endif /* __ASM_XILINX_ML403_H__ */
++#endif /* __KERNEL__ */
+diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+index 7b73043..4cf21f2 100644
+--- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
++++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
+@@ -16,6 +16,8 @@
+ 
+ #if defined(CONFIG_XILINX_ML300)
+   #include "xparameters_ml300.h"
++#elif defined(CONFIG_XILINX_ML403)
++  #include "xparameters_ml403.h"
+ #else
+   /* Add other board xparameter includes here before the #else */
+   #error No xparameters_*.h file included
+diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
+index 6c28ae7..38f9971 100644
+--- a/include/asm-ppc/ibm4xx.h
++++ b/include/asm-ppc/ibm4xx.h
+@@ -51,6 +51,10 @@
+ #include <platforms/4xx/xilinx_ml300.h>
+ #endif
+ 
++#if defined(CONFIG_XILINX_ML403)
++#include <platforms/4xx/xilinx_ml403.h>
++#endif
 +
-+/******************************************************************/
-+
-+#define XPAR_INTC_0_EMAC_0_VEC_ID XPAR_OPB_INTC_0_OPB_ETHERNET_0_IP2INTC_IRPT_INTR
-+#define XPAR_INTC_0_SYSACE_0_VEC_ID XPAR_OPB_INTC_0_OPB_SYSACE_0_SYSACE_IRQ_INTR
-+#define XPAR_INTC_0_IIC_0_VEC_ID XPAR_OPB_INTC_0_OPB_IIC_0_IP2INTC_IRPT_INTR
-+#define XPAR_INTC_0_PS2_1_VEC_ID XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR2_INTR
-+#define XPAR_INTC_0_PS2_0_VEC_ID XPAR_OPB_INTC_0_OPB_PS2_DUAL_REF_0_SYS_INTR1_INTR
-+#define XPAR_INTC_0_UARTNS550_0_VEC_ID XPAR_OPB_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR
-+
-+/******************************************************************/
-+
-+#define XPAR_TFT_0_BASEADDR XPAR_PLB_TFT_CNTLR_REF_0_DCR_BASEADDR
-+
-+/******************************************************************/
-+
-+#define XPAR_EMAC_0_BASEADDR XPAR_OPB_ETHERNET_0_BASEADDR
-+#define XPAR_EMAC_0_HIGHADDR XPAR_OPB_ETHERNET_0_HIGHADDR
-+#define XPAR_EMAC_0_DMA_PRESENT XPAR_OPB_ETHERNET_0_DMA_PRESENT
-+#define XPAR_EMAC_0_MII_EXIST XPAR_OPB_ETHERNET_0_MII_EXIST
-+#define XPAR_EMAC_0_ERR_COUNT_EXIST XPAR_OPB_ETHERNET_0_ERR_COUNT_EXIST
-+#define XPAR_EMAC_0_DEVICE_ID XPAR_OPB_ETHERNET_0_DEVICE_ID
-+
-+/******************************************************************/
-+
-+#define XPAR_GPIO_0_BASEADDR XPAR_OPB_GPIO_0_BASEADDR_0
-+#define XPAR_GPIO_0_HIGHADDR XPAR_OPB_GPIO_0_HIGHADDR_0
-+#define XPAR_GPIO_0_DEVICE_ID XPAR_OPB_GPIO_0_DEVICE_ID_0
-+#define XPAR_GPIO_1_BASEADDR XPAR_OPB_GPIO_0_BASEADDR_1
-+#define XPAR_GPIO_1_HIGHADDR XPAR_OPB_GPIO_0_HIGHADDR_1
-+#define XPAR_GPIO_1_DEVICE_ID XPAR_OPB_GPIO_0_DEVICE_ID_1
-+#define XPAR_GPIO_2_BASEADDR XPAR_OPB_GPIO_EXP_HDR_0_BASEADDR_0
-+#define XPAR_GPIO_2_HIGHADDR XPAR_OPB_GPIO_EXP_HDR_0_HIGHADDR_0
-+#define XPAR_GPIO_2_DEVICE_ID XPAR_OPB_GPIO_EXP_HDR_0_DEVICE_ID_0
-+#define XPAR_GPIO_3_BASEADDR XPAR_OPB_GPIO_EXP_HDR_0_BASEADDR_1
-+#define XPAR_GPIO_3_HIGHADDR XPAR_OPB_GPIO_EXP_HDR_0_HIGHADDR_1
-+#define XPAR_GPIO_3_DEVICE_ID XPAR_OPB_GPIO_EXP_HDR_0_DEVICE_ID_1
-+#define XPAR_GPIO_4_BASEADDR XPAR_OPB_GPIO_CHAR_LCD_0_BASEADDR
-+#define XPAR_GPIO_4_HIGHADDR XPAR_OPB_GPIO_CHAR_LCD_0_HIGHADDR
-+#define XPAR_GPIO_4_DEVICE_ID XPAR_OPB_GPIO_CHAR_LCD_0_DEVICE_ID
-+
-+/******************************************************************/
-+
-+#define XPAR_PS2_0_BASEADDR XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_0
-+#define XPAR_PS2_0_HIGHADDR XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_0
-+#define XPAR_PS2_0_DEVICE_ID XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_0
-+#define XPAR_PS2_1_BASEADDR XPAR_OPB_PS2_DUAL_REF_0_BASEADDR_1
-+#define XPAR_PS2_1_HIGHADDR XPAR_OPB_PS2_DUAL_REF_0_HIGHADDR_1
-+#define XPAR_PS2_1_DEVICE_ID XPAR_OPB_PS2_DUAL_REF_0_DEVICE_ID_1
-+
-+/******************************************************************/
-+
-+#define XPAR_SYSACE_0_BASEADDR XPAR_OPB_SYSACE_0_BASEADDR
-+#define XPAR_SYSACE_0_HIGHADDR XPAR_OPB_SYSACE_0_HIGHADDR
-+#define XPAR_SYSACE_0_DEVICE_ID XPAR_OPB_SYSACE_0_DEVICE_ID
-+
-+/******************************************************************/
-+
-+#define XPAR_IIC_0_BASEADDR XPAR_OPB_IIC_0_BASEADDR
-+#define XPAR_IIC_0_HIGHADDR XPAR_OPB_IIC_0_HIGHADDR
-+#define XPAR_IIC_0_TEN_BIT_ADR XPAR_OPB_IIC_0_TEN_BIT_ADR
-+#define XPAR_IIC_0_DEVICE_ID XPAR_OPB_IIC_0_DEVICE_ID
-+
-+/******************************************************************/
-+
-+#define XPAR_PLB_CLOCK_FREQ_HZ 100000000
-+#define XPAR_CORE_CLOCK_FREQ_HZ XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ
-+#define XPAR_DDR_0_SIZE 0x4000000
-+
-+/******************************************************************/
-+
-+#define XPAR_PERSISTENT_0_IIC_0_BASEADDR 0x00000400
-+#define XPAR_PERSISTENT_0_IIC_0_HIGHADDR 0x000007FF
-+#define XPAR_PERSISTENT_0_IIC_0_EEPROMADDR 0xA0
-+
-+/******************************************************************/
-+
-+#define XPAR_PCI_0_CLOCK_FREQ_HZ    0
-+
-+/******************************************************************/
-+
+ #ifndef __ASSEMBLY__
+ 
+ #ifdef CONFIG_40x
 -- 
 1.1.GIT
