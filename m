@@ -1,14 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 19 Jan 2006 12:29:25 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Becky Bruce <bgill@freescale.com>
-Subject: Re: [PATCH] dtc: add bus-frequency prop to SOC node
-Message-ID: <20060119012925.GL23219@localhost.localdomain>
-References: <Pine.LNX.4.61.0601180917080.11236@cde-tx32-ldt329.sps.mot.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.61.0601180917080.11236@cde-tx32-ldt329.sps.mot.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.21])
+	by ozlabs.org (Postfix) with SMTP id B444368A38
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Jan 2006 19:50:45 +1100 (EST)
+Date: Thu, 19 Jan 2006 09:50:43 +0100 (MET)
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+MIME-Version: 1.0
+References: <1137625752.4823.157.camel@localhost.localdomain>
+Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
+Message-ID: <11282.1137660643@www31.gmx.net>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,21 +20,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 18, 2006 at 09:20:58AM -0600, Becky Bruce wrote:
-> Updated SOC node definition in documentation to include bus-frequency
-> property. Also extended mdio example to match specification.
+> > Hmm, I'm not sure what value agp_bridge->gart_bus_addr should have. The
+> > BIOS doesn't setup it and the VIA AGPGART driver even reads it out from
+> > the northbridge's registers! Where does the value for
+> > agp_bridge->gart_bus_addr come from? For now it is set to 0x0, which
+> > would require the modification in drm_vm.c!?
 > 
-> Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+> Well... this is where you AGP aperture will be in bus space.. you'd
+> rather know what to do with it to do a driver...
+I'm afraid so. :)
 
-Looks sane enough to me, but I don't think I'm the right person to be
-assessing changes to this document merely because it's hosted in the
-dtc git tree for now.  I'll apply if I get an Ack from Paulus or BenH.
+> > :) The driver seems to work better with cant_use_aperture set to 1, so
+> > I leave it as it is. BTW: What's the meaning of needs_scratch_page?
+> 
+> Well, set to 1 would mean the aperture isn't accessible on the CPU
+> space. It might seem to work better either because indeed that is the
+> case... or simply because you put it in a wrong place (ie 0 !) There
+> must be a chipset register somewhere that tells you where the aperture
+> is no ?
+I set the AGP aperture base register and agp_bridge->gart_bus_addr to
+0x01000000 (>=16MB) (trial and error :-) and it seems to work with
+cant_use_aperture=1 (and without the modification in drm_vm.c). Even the X
+server maps all the data to this address and displays a login screen.
+Unfortunately it always freezes in. I guess this is due to the missing GART
+flush functionality. So I have to get this working first.
 
-Had a brief chat to Paulus - we might look at moving this document to
-Documentation/ in the kernel tree, arguably a better place for it.
+Thanks!
+
+Gerhard
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Lust, ein paar Euro nebenbei zu verdienen? Ohne Kosten, ohne Risiko!
+Satte Provisionen für GMX Partner: http://www.gmx.net/de/go/partner
