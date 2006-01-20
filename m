@@ -1,22 +1,25 @@
-Return-Path: <stelian@popies.net>
-Received: from sd291.sivit.org (sd291.sivit.org [194.146.225.122])
-	by ozlabs.org (Postfix) with ESMTP id 4812368A14
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jan 2006 03:37:54 +1100 (EST)
-Subject: Re: [PATCH] sound/ppc/pmac.c typo.
-From: Stelian Pop <stelian@popies.net>
-To: Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <s5h3bjisw6x.wl%tiwai@suse.de>
-References: <1137753338.5050.8.camel@localhost.localdomain>
-	<s5hpsmn7y0l.wl%tiwai@suse.de>
-	<1137772472.14920.9.camel@localhost.localdomain>
-	<s5hek3251ez.wl%tiwai@suse.de>
-	<1137773366.14920.16.camel@localhost.localdomain>
-	<s5h3bjisw6x.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Fri, 20 Jan 2006 17:37:49 +0100
-Message-Id: <1137775070.14079.4.camel@localhost.localdomain>
+Return-Path: <laforge@netfilter.org>
+Received: from ganesha.gnumonks.org (ganesha.gnumonks.org [213.95.27.120])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7A8FA68A23
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jan 2006 04:28:22 +1100 (EST)
+Date: Fri, 20 Jan 2006 18:28:11 +0100
+From: Harald Welte <laforge@netfilter.org>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] x_tables: fix alignment on [at least] ppc32
+Message-ID: <20060120172811.GO4603@sunbeam.de.gnumonks.org>
+References: <17358.19458.555996.684819@alkaid.it.uu.se>
+	<20060118150158.GL4603@sunbeam.de.gnumonks.org>
+	<20060120004512.GT4603@sunbeam.de.gnumonks.org>
+	<20060119.165635.104653932.davem@davemloft.net>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="KOBxLkMFRQI9H+bc"
+In-Reply-To: <20060119.165635.104653932.davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, netfilter-devel@lists.netfilter.org,
+	Jiri Slaby <xslaby@fi.muni.cz>, linux-kernel@vger.kernel.org,
+	mikpe@user.it.uu.se
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,45 +29,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Le vendredi 20 janvier 2006 à 17:25 +0100, Takashi Iwai a écrit :
 
-> > > > BTW, is it a hardware or a configuration issue the fact that I'm unable
-> > > > to mix several alsa streams ?
-> > > 
-> > > Did you install alsa-lib 1.0.11rc2, too?  It should work with dmix as
-> > > default.
-> > 
-> > This is an ubuntu breezy ppc distribution, and it seems that the package
-> > is called libasound2, and it is based on alsa-lib 1.0.9-2.
-> 
-> 1.0.9 doesn't use dmix as default.
+--KOBxLkMFRQI9H+bc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, using 1.0.11rc2 works with dmix indeed.
+On Thu, Jan 19, 2006 at 04:56:35PM -0800, David S. Miller wrote:
+> > [NETFILTER] x_tables: Fix XT_ALIGN() macro on [at least] ppc32
+> > [...]
+> > The fix is an ugly kludge, but it has been tested to solve the problem.=
+ Yet
+> > another reason to move away from the current {ip,ip6,arp,eb}tables like
+> > data structures.
+> >=20
+> > Signed-off-by: Harald Welte <laforge@netfilter.org>
+>=20
+> Harald, I'm going to modify this to just use u_int64_t as that
+> should be totally sufficient.
+>
+> It is the largest type, and will produce the desired results without
+> the silly structure.
 
-Aplay works correctly. So does xine.
+Sorry dave, as I just learned, it isn't.   As reported by Jiri Slaby
+<xslaby@fi.muni.cz>, Linus' tree now breaks on i386 :(
 
-However mplayer seems to have problems with this version of the library:
+Interestingly, on i386:
 
-[...]
-Building audio filter chain for 22050Hz/1ch/u8 -> 0Hz/0ch/s8...
-alsa-init: 1 soundcard found, using: default
-alsa: 22050 Hz/1 channels/1 bpf/8192 bytes buffer/Unsigned 8 bit
-AO: [alsa] 22050Hz 1ch u8 (1 bps)
-Building audio filter chain for 22050Hz/1ch/u8 -> 22050Hz/1ch/u8...
-Video: no video
-Starting playback...
-alsa-space: xrun of at least 0.006 msecs. resetting stream
-alsa-space: xrun of at least 0.006 msecs. resetting stream
-alsa-space: xrun of at least 0.006 msecs. resetting stream
-alsa-space: xrun of at least 0.005 msecs. resetting stream
-alsa-space: xrun of at least 0.009 msecs. resetting stream
-alsa-space: xrun of at least 0.006 msecs. resetting stream
-alsa-space: xrun of at least 0.004 msecs. resetting stream
-alsa-space: xrun of at least 0.005 msecs. resetting stream
-alsa-space: xrun of at least 0.005 msecs. resetting stream
+__alignof__(struct _xt_align)	4
+__alignof__(u_int64_t)		8
+__alignof__(void *)		4
 
-But it could be mplayer's fault at this point.
+whereas on ppc:
 
-Stelian.
--- 
-Stelian Pop <stelian@popies.net>
+__alignof__(struct _xt_align)	8
+__alignof__(u_int64_t)		8
+__alignof__(void *)		4
+
+So your assumption that __alignof__(u_int64_t) =3D=3D __alignof__(struct xt=
+_align)
+doesn't hold true for all archs.
+
+I would therefore recommend applying my unmodified patch, and hope that
+it then works on all archs simultaneously.
+
+> Some malloc() implementations use "long double" to figure out the
+> largest type size and alignment requirements any C type might have
+> on the machine.  But there is no reason to use that here.
+
+Our main problem is that we have to stay compatible with old userspace
+programs that had a different definition for what has now become
+XT_ALIGN().  So independent what might be the best solution from an
+alignment point of view, we must match what old userspace thinks.
+
+Yes, this all sucks.  And yes, we will see a new interface this year.
+Promised.
+
+Cheers,
+	Harald.
+
+--=20
+- Harald Welte <laforge@netfilter.org>                 http://netfilter.org/
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
+  "Fragmentation is like classful addressing -- an interesting early
+   architectural error that shows how much experimentation was going
+   on while IP was being designed."                    -- Paul Vixie
+
+--KOBxLkMFRQI9H+bc
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFD0R2rXaXGVTD0i/8RAmlFAKCvc74CiV6R/7Dz4X+Ak3/eLE0zbQCghxGa
+jefK0vhDAk9RS0WIS9dxw8o=
+=wKFS
+-----END PGP SIGNATURE-----
+
+--KOBxLkMFRQI9H+bc--
