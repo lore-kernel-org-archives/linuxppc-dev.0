@@ -1,25 +1,26 @@
 Return-Path: <atul.sabharwal@exgate.tek.com>
 Received: from igate.tek.com (igate.tek.com [192.65.41.20])
-	by ozlabs.org (Postfix) with ESMTP id 7ACB768A22
+	by ozlabs.org (Postfix) with ESMTP id E84B768A23
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jan 2006 04:56:09 +1100 (EST)
+	Sat, 21 Jan 2006 04:59:30 +1100 (EST)
 Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
-	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k0KHu8tT012052
+	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k0KHxTtT012703
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jan 2006 09:56:08 -0800 (PST)
+	Fri, 20 Jan 2006 09:59:29 -0800 (PST)
 Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
 	[128.181.2.45])
-	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k0KHu8SA000304
+	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k0KHxTSA001821
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jan 2006 09:56:08 -0800 (PST)
+	Fri, 20 Jan 2006 09:59:29 -0800 (PST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C61DEA.C8361522"
+	boundary="----_=_NextPart_001_01C61DEB.3FCDCDDE"
 Subject: RE: u-boot debugging
-Date: Fri, 20 Jan 2006 09:56:45 -0800
-Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201AC2CC0@us-bv-m23.global.tektronix.net>
+Date: Fri, 20 Jan 2006 10:00:06 -0800
+Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201AC2CC1@us-bv-m23.global.tektronix.net>
 From: <atul.sabharwal@exgate.tek.com>
-To: <mustafa.cayir@bte.mam.gov.tr>, <linuxppc-embedded@ozlabs.org>
+To: <atul.sabharwal@exgate.tek.com>, <mustafa.cayir@bte.mam.gov.tr>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,10 +33,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C61DEA.C8361522
+------_=_NextPart_001_01C61DEB.3FCDCDDE
 Content-Type: text/plain;
 	charset="iso-8859-9"
 Content-Transfer-Encoding: quoted-printable
+
+My best guess is the PowerTap Pro supports code tracing from a trace =
+buffer on the board or processor... Not sure if
+
+you can sample the processor instruction stream over the JTAG chain as =
+its too slow.  You could use a logic analyzer
+
+or an in-circuit emulator to capture all signals.  The power pc has a =
+SIU to pass the instruction stream for a logic analyzer
+
+to use...
+
+=20
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Atul Sabharwal
+
+c/o Azad. Inc.
+
+503-962-9395
+
+________________________________
+
+From: Sabharwal, Atul=20
+Sent: Friday, January 20, 2006 9:57 AM
+To: 'Mustafa =C7ay=FDr'; linuxppc-embedded@ozlabs.org
+Subject: RE: u-boot debugging
+
+=20
 
 BDI works but PowerTap Pro from Metrowerks is better.  The debug =
 interface is windows based and more user friendly than
@@ -82,7 +113,7 @@ possible?
 thanks
 
 
-------_=_NextPart_001_01C61DEA.C8361522
+------_=_NextPart_001_01C61DEB.3FCDCDDE
 Content-Type: text/html;
 	charset="iso-8859-9"
 Content-Transfer-Encoding: quoted-printable
@@ -123,6 +154,10 @@ a:visited, span.MsoHyperlinkFollowed
 	{color:purple;
 	text-decoration:underline;}
 span.EmailStyle17
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:navy;}
+span.EmailStyle18
 	{mso-style-type:personal-reply;
 	font-family:Arial;
 	color:navy;}
@@ -147,24 +182,110 @@ div.Section1
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>BDI works but PowerTap Pro from =
-Metrowerks
-is better.=A0 The debug interface is windows based and more user =
-friendly than<o:p></o:p></span></font></p>
+10.0pt;font-family:Arial;color:navy'>My best guess is the PowerTap Pro =
+supports
+code tracing from a trace buffer on the board or processor&#8230; Not =
+sure if<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Ddd on Linux.=A0 Take your pick as =
-a
+10.0pt;font-family:Arial;color:navy'>you can sample the processor =
+instruction stream
+over the JTAG chain as its too slow.=A0 You could use a logic =
+analyzer<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>or an in-circuit emulator to =
+capture all
+signals.=A0 The power pc has a SIU to pass the instruction stream for a =
+logic
+analyzer<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>to =
+use&#8230;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
+~~~~~</span></font><font
+color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Atul Sabharwal</span></font><font
+color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>c/o Azad. Inc.</span></font><font
+color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>503-962-9395</span></font><o:p></o:p=
+></p>
+
+</div>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
+
+<hr size=3D3 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> =
+Sabharwal, Atul <br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Friday, January 20, =
+2006
+9:57 AM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> 'Mustafa =C7ay=FDr';
+linuxppc-embedded@ozlabs.org<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> RE: u-boot =
+debugging</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>BDI works but PowerTap Pro from =
+Metrowerks
+is better.&nbsp; The debug interface is windows based and more user =
+friendly
+than<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Ddd on Linux.&nbsp; Take your pick =
+as a
 commercial product would be better than an opensource product till it =
-has been
-perfected<o:p></o:p></span></font></p>
+has been perfected<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
 10.0pt;font-family:Arial;color:navy'>(i.e. customized, all bugs fixed =
 and
-usability issues resolved).=A0 And no service from the community on =
+usability issues resolved).&nbsp; And no service from the community on
 occasion.<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
@@ -215,10 +336,10 @@ style=3D'font-size:10.0pt;
 font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
 size=3D2
 face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'>
-linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] <b><span =
-style=3D'font-weight:bold'>On
-Behalf Of </span></b>Mustafa =C7ayir<br>
+linuxppc-embedded-bounces@ozlabs.org =
+[mailto:linuxppc-embedded-bounces@ozlabs.org]
+<b><span style=3D'font-weight:bold'>On Behalf Of </span></b>Mustafa =
+=C7ayir<br>
 <b><span style=3D'font-weight:bold'>Sent:</span></b> Thursday, January =
 19, 2006
 10:51 PM<br>
@@ -283,4 +404,4 @@ font-family:Arial'>thanks</span></font><o:p></o:p></p>
 
 </html>
 
-------_=_NextPart_001_01C61DEA.C8361522--
+------_=_NextPart_001_01C61DEB.3FCDCDDE--
