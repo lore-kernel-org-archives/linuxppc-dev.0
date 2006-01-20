@@ -1,23 +1,23 @@
 Return-Path: <atul.sabharwal@exgate.tek.com>
 Received: from igate.tek.com (igate.tek.com [192.65.41.20])
-	by ozlabs.org (Postfix) with ESMTP id E84B768A23
+	by ozlabs.org (Postfix) with ESMTP id 1F21D68A38
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jan 2006 04:59:30 +1100 (EST)
+	Sat, 21 Jan 2006 05:05:32 +1100 (EST)
 Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
-	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k0KHxTtT012703
+	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k0KI5WtT014148
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jan 2006 09:59:29 -0800 (PST)
+	Fri, 20 Jan 2006 10:05:32 -0800 (PST)
 Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
 	[128.181.2.45])
-	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k0KHxTSA001821
+	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k0KI5VSA004547
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jan 2006 09:59:29 -0800 (PST)
+	Fri, 20 Jan 2006 10:05:31 -0800 (PST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C61DEB.3FCDCDDE"
+	boundary="----_=_NextPart_001_01C61DEC.16C648F6"
 Subject: RE: u-boot debugging
-Date: Fri, 20 Jan 2006 10:00:06 -0800
-Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201AC2CC1@us-bv-m23.global.tektronix.net>
+Date: Fri, 20 Jan 2006 10:06:06 -0800
+Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201AC2CC8@us-bv-m23.global.tektronix.net>
 From: <atul.sabharwal@exgate.tek.com>
 To: <atul.sabharwal@exgate.tek.com>, <mustafa.cayir@bte.mam.gov.tr>,
 	<linuxppc-embedded@ozlabs.org>
@@ -33,10 +33,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C61DEB.3FCDCDDE
+------_=_NextPart_001_01C61DEC.16C648F6
 Content-Type: text/plain;
 	charset="iso-8859-9"
 Content-Transfer-Encoding: quoted-printable
+
+Besides, the BDI has only a 10Mbps Ethernet interface.  It might be =
+enough for simple debug operation but they should
+
+Have put a 100Mbps link to put it on a shared network.  For an isolated =
+network configuration, it should suffice...
+
+=20
+
+The Metrowerks debugger is USB 2.0 based, so on a isolated network and =
+faster data throughput for easy symbol/code
+
+cross referencing.
+
+=20
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Atul Sabharwal
+
+c/o Azad. Inc.
+
+503-962-9395
+
+________________________________
+
+From: Sabharwal, Atul=20
+Sent: Friday, January 20, 2006 10:00 AM
+To: Sabharwal, Atul; 'Mustafa =C7ay=FDr'; 'linuxppc-embedded@ozlabs.org'
+Subject: RE: u-boot debugging
+
+=20
 
 My best guess is the PowerTap Pro supports code tracing from a trace =
 buffer on the board or processor... Not sure if
@@ -113,7 +145,7 @@ possible?
 thanks
 
 
-------_=_NextPart_001_01C61DEB.3FCDCDDE
+------_=_NextPart_001_01C61DEC.16C648F6
 Content-Type: text/html;
 	charset="iso-8859-9"
 Content-Transfer-Encoding: quoted-printable
@@ -158,6 +190,10 @@ span.EmailStyle17
 	font-family:Arial;
 	color:navy;}
 span.EmailStyle18
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:navy;}
+span.EmailStyle19
 	{mso-style-type:personal-reply;
 	font-family:Arial;
 	color:navy;}
@@ -182,6 +218,96 @@ div.Section1
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Besides, the BDI has only a 10Mbps =
+Ethernet
+interface.=A0 It might be enough for simple debug operation but they =
+should<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Have put a 100Mbps link to put it =
+on a
+shared network.=A0 For an isolated network configuration, it should =
+suffice&#8230;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>The Metrowerks debugger is USB 2.0 =
+based,
+so on a isolated network and faster data throughput for easy =
+symbol/code<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>cross =
+referencing.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
+~~~~~</span></font><font
+color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Atul Sabharwal</span></font><font
+color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>c/o Azad. Inc.</span></font><font
+color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>503-962-9395</span></font><o:p></o:p=
+></p>
+
+</div>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
+
+<hr size=3D3 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> =
+Sabharwal, Atul <br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Friday, January 20, =
+2006
+10:00 AM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> Sabharwal, Atul; =
+'Mustafa
+=C7ay=FDr'; 'linuxppc-embedded@ozlabs.org'<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> RE: u-boot =
+debugging</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
 10.0pt;font-family:Arial;color:navy'>My best guess is the PowerTap Pro =
 supports
 code tracing from a trace buffer on the board or processor&#8230; Not =
@@ -190,17 +316,17 @@ sure if<o:p></o:p></span></font></p>
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
 10.0pt;font-family:Arial;color:navy'>you can sample the processor =
-instruction stream
-over the JTAG chain as its too slow.=A0 You could use a logic =
+instruction
+stream over the JTAG chain as its too slow.&nbsp; You could use a logic
 analyzer<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
 10.0pt;font-family:Arial;color:navy'>or an in-circuit emulator to =
 capture all
-signals.=A0 The power pc has a SIU to pass the instruction stream for a =
-logic
-analyzer<o:p></o:p></span></font></p>
+signals.&nbsp; The power pc has a SIU to pass the instruction stream for =
+a
+logic analyzer<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
@@ -375,9 +501,8 @@ style=3D'font-size:
 <p class=3DMsoNormal><font size=3D2 face=3DArial><span =
 style=3D'font-size:10.0pt;
 font-family:Arial'>Which tool must i use to debuggin u-boot codes. =
-BDI2000 or
-windriver visionclick, which one do you prefer? is step by step code =
-tracing
+BDI2000 or windriver
+visionclick, which one do you prefer? is step by step code tracing =
 possible?</span></font><o:p></o:p></p>
 
 </div>
@@ -404,4 +529,4 @@ font-family:Arial'>thanks</span></font><o:p></o:p></p>
 
 </html>
 
-------_=_NextPart_001_01C61DEB.3FCDCDDE--
+------_=_NextPart_001_01C61DEC.16C648F6--
