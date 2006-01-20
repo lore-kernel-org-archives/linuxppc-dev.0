@@ -1,23 +1,23 @@
 Return-Path: <atul.sabharwal@exgate.tek.com>
 Received: from igate.tek.com (igate.tek.com [192.65.41.20])
-	by ozlabs.org (Postfix) with ESMTP id 1F21D68A38
+	by ozlabs.org (Postfix) with ESMTP id 9FED768A39
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jan 2006 05:05:32 +1100 (EST)
+	Sat, 21 Jan 2006 05:12:50 +1100 (EST)
 Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
-	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k0KI5WtT014148
+	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k0KICntT015860
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jan 2006 10:05:32 -0800 (PST)
+	Fri, 20 Jan 2006 10:12:49 -0800 (PST)
 Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
 	[128.181.2.45])
-	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k0KI5VSA004547
+	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k0KICnSA008115
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jan 2006 10:05:31 -0800 (PST)
+	Fri, 20 Jan 2006 10:12:49 -0800 (PST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C61DEC.16C648F6"
+	boundary="----_=_NextPart_001_01C61DED.1E33D7E2"
 Subject: RE: u-boot debugging
-Date: Fri, 20 Jan 2006 10:06:06 -0800
-Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201AC2CC8@us-bv-m23.global.tektronix.net>
+Date: Fri, 20 Jan 2006 10:13:28 -0800
+Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201AC2CCB@us-bv-m23.global.tektronix.net>
 From: <atul.sabharwal@exgate.tek.com>
 To: <atul.sabharwal@exgate.tek.com>, <mustafa.cayir@bte.mam.gov.tr>,
 	<linuxppc-embedded@ozlabs.org>
@@ -33,10 +33,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C61DEC.16C648F6
+------_=_NextPart_001_01C61DED.1E33D7E2
 Content-Type: text/plain;
 	charset="iso-8859-9"
 Content-Transfer-Encoding: quoted-printable
+
+I hope this gives the answer to make a better pick between BDI and =
+Metrowerks...  And this is not off topic
+
+As the debugger is not only for u-boot but debugging the kernel on this =
+architecture...
+
+=20
+
+--
+
+Atul
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ P.S:  Our destiny is in our hands... And yes, necessity is mother of =
+invention!!
+
+________________________________
+
+From: Sabharwal, Atul=20
+Sent: Friday, January 20, 2006 10:06 AM
+To: Sabharwal, Atul; 'Mustafa =C7ay=FDr'; 'linuxppc-embedded@ozlabs.org'
+Subject: RE: u-boot debugging
+
+=20
 
 Besides, the BDI has only a 10Mbps Ethernet interface.  It might be =
 enough for simple debug operation but they should
@@ -145,7 +171,7 @@ possible?
 thanks
 
 
-------_=_NextPart_001_01C61DEC.16C648F6
+------_=_NextPart_001_01C61DED.1E33D7E2
 Content-Type: text/html;
 	charset="iso-8859-9"
 Content-Transfer-Encoding: quoted-printable
@@ -194,6 +220,10 @@ span.EmailStyle18
 	font-family:Arial;
 	color:navy;}
 span.EmailStyle19
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:navy;}
+span.EmailStyle20
 	{mso-style-type:personal-reply;
 	font-family:Arial;
 	color:navy;}
@@ -218,16 +248,93 @@ div.Section1
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Besides, the BDI has only a 10Mbps =
-Ethernet
-interface.=A0 It might be enough for simple debug operation but they =
-should<o:p></o:p></span></font></p>
+10.0pt;font-family:Arial;color:navy'>I hope this gives the answer to =
+make a
+better pick between BDI and Metrowerks&#8230;=A0 And this is not off =
+topic<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>As the debugger is not only for =
+u-boot but
+debugging the kernel on this =
+architecture&#8230;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>--<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Atul<o:p></o:p></span></font></p>
+
+<div>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
+~~~~~</span></font><font
+color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:navy'>&nbsp;</span></font><font size=3D2
+color=3Dnavy face=3DArial><span =
+style=3D'font-size:10.0pt;font-family:Arial;
+color:navy'>P.S:&nbsp; Our destiny is in our hands... And yes, necessity =
+is
+mother of invention!!</span></font><font color=3Dnavy><span =
+style=3D'color:navy'><o:p></o:p></span></font></p>
+
+</div>
+
+<div>
+
+<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
+size=3D3
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
+
+<hr size=3D3 width=3D"100%" align=3Dcenter tabindex=3D-1>
+
+</span></font></div>
+
+<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
+style=3D'font-size:10.0pt;
+font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
+size=3D2
+face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> =
+Sabharwal, Atul <br>
+<b><span style=3D'font-weight:bold'>Sent:</span></b> Friday, January 20, =
+2006
+10:06 AM<br>
+<b><span style=3D'font-weight:bold'>To:</span></b> Sabharwal, Atul; =
+'Mustafa
+=C7ay=FDr'; 'linuxppc-embedded@ozlabs.org'<br>
+<b><span style=3D'font-weight:bold'>Subject:</span></b> RE: u-boot =
+debugging</span></font><o:p></o:p></p>
+
+</div>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>Besides, the BDI has only a 10Mbps
+Ethernet interface.&nbsp; It might be enough for simple debug operation =
+but
+they should<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
 10.0pt;font-family:Arial;color:navy'>Have put a 100Mbps link to put it =
 on a
-shared network.=A0 For an isolated network configuration, it should =
+shared network.&nbsp; For an isolated network configuration, it should
 suffice&#8230;<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
@@ -405,7 +512,8 @@ style=3D'font-size:
 10.0pt;font-family:Arial;color:navy'>Ddd on Linux.&nbsp; Take your pick =
 as a
 commercial product would be better than an opensource product till it =
-has been perfected<o:p></o:p></span></font></p>
+has been
+perfected<o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
 style=3D'font-size:
@@ -462,10 +570,10 @@ style=3D'font-size:10.0pt;
 font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
 size=3D2
 face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'>
-linuxppc-embedded-bounces@ozlabs.org =
-[mailto:linuxppc-embedded-bounces@ozlabs.org]
-<b><span style=3D'font-weight:bold'>On Behalf Of </span></b>Mustafa =
-=C7ayir<br>
+linuxppc-embedded-bounces@ozlabs.org
+[mailto:linuxppc-embedded-bounces@ozlabs.org] <b><span =
+style=3D'font-weight:bold'>On
+Behalf Of </span></b>Mustafa =C7ayir<br>
 <b><span style=3D'font-weight:bold'>Sent:</span></b> Thursday, January =
 19, 2006
 10:51 PM<br>
@@ -501,8 +609,9 @@ style=3D'font-size:
 <p class=3DMsoNormal><font size=3D2 face=3DArial><span =
 style=3D'font-size:10.0pt;
 font-family:Arial'>Which tool must i use to debuggin u-boot codes. =
-BDI2000 or windriver
-visionclick, which one do you prefer? is step by step code tracing =
+BDI2000 or
+windriver visionclick, which one do you prefer? is step by step code =
+tracing
 possible?</span></font><o:p></o:p></p>
 
 </div>
@@ -529,4 +638,4 @@ font-family:Arial'>thanks</span></font><o:p></o:p></p>
 
 </html>
 
-------_=_NextPart_001_01C61DEC.16C648F6--
+------_=_NextPart_001_01C61DED.1E33D7E2--
