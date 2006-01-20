@@ -1,25 +1,20 @@
-Return-Path: <laforge@netfilter.org>
-Received: from ganesha.gnumonks.org (ganesha.gnumonks.org [213.95.27.120])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7A8FA68A23
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jan 2006 04:28:22 +1100 (EST)
-Date: Fri, 20 Jan 2006 18:28:11 +0100
-From: Harald Welte <laforge@netfilter.org>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] x_tables: fix alignment on [at least] ppc32
-Message-ID: <20060120172811.GO4603@sunbeam.de.gnumonks.org>
-References: <17358.19458.555996.684819@alkaid.it.uu.se>
-	<20060118150158.GL4603@sunbeam.de.gnumonks.org>
-	<20060120004512.GT4603@sunbeam.de.gnumonks.org>
-	<20060119.165635.104653932.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="KOBxLkMFRQI9H+bc"
-In-Reply-To: <20060119.165635.104653932.davem@davemloft.net>
-Cc: linuxppc-dev@ozlabs.org, netfilter-devel@lists.netfilter.org,
-	Jiri Slaby <xslaby@fi.muni.cz>, linux-kernel@vger.kernel.org,
-	mikpe@user.it.uu.se
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id A72B968A3D
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jan 2006 06:04:19 +1100 (EST)
+Date: Fri, 20 Jan 2006 20:04:15 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+	alsa-devel@alsa-project.org
+Subject: Re: [Alsa-devel] RFC: OSS driver removal,
+	a slightly different approach
+Message-ID: <20060120190415.GM19398@stusta.de>
+References: <20060119174600.GT19398@stusta.de>
+	<20060120115443.GA16582@palantir8>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060120115443.GA16582@palantir8>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,85 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Jan 20, 2006 at 11:54:43AM +0000, Martin Habets wrote:
 
---KOBxLkMFRQI9H+bc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> It seems to me we can already get rid of sound/oss/dmasound now.
+> I cannot find anything refering to it anymore, and the ALSA powermac
+> driver is being maintained.
 
-On Thu, Jan 19, 2006 at 04:56:35PM -0800, David S. Miller wrote:
-> > [NETFILTER] x_tables: Fix XT_ALIGN() macro on [at least] ppc32
-> > [...]
-> > The fix is an ugly kludge, but it has been tested to solve the problem.=
- Yet
-> > another reason to move away from the current {ip,ip6,arp,eb}tables like
-> > data structures.
-> >=20
-> > Signed-off-by: Harald Welte <laforge@netfilter.org>
->=20
-> Harald, I'm going to modify this to just use u_int64_t as that
-> should be totally sufficient.
->
-> It is the largest type, and will produce the desired results without
-> the silly structure.
+You are correct that I forgot to add the dmasound drivers to my list, 
+but I don't think we can get rid of all of them since I doubt the ALSA 
+powermac driver was able to drive m68k hardware.
 
-Sorry dave, as I just learned, it isn't.   As reported by Jiri Slaby
-<xslaby@fi.muni.cz>, Linus' tree now breaks on i386 :(
+Can someone from the ppc developers drop me a small note whether 
+SND_POWERMAC completely replaces DMASOUND_PMAC?
 
-Interestingly, on i386:
+> Martin
 
-__alignof__(struct _xt_align)	4
-__alignof__(u_int64_t)		8
-__alignof__(void *)		4
+TIA
+Adrian
 
-whereas on ppc:
+-- 
 
-__alignof__(struct _xt_align)	8
-__alignof__(u_int64_t)		8
-__alignof__(void *)		4
-
-So your assumption that __alignof__(u_int64_t) =3D=3D __alignof__(struct xt=
-_align)
-doesn't hold true for all archs.
-
-I would therefore recommend applying my unmodified patch, and hope that
-it then works on all archs simultaneously.
-
-> Some malloc() implementations use "long double" to figure out the
-> largest type size and alignment requirements any C type might have
-> on the machine.  But there is no reason to use that here.
-
-Our main problem is that we have to stay compatible with old userspace
-programs that had a different definition for what has now become
-XT_ALIGN().  So independent what might be the best solution from an
-alignment point of view, we must match what old userspace thinks.
-
-Yes, this all sucks.  And yes, we will see a new interface this year.
-Promised.
-
-Cheers,
-	Harald.
-
---=20
-- Harald Welte <laforge@netfilter.org>                 http://netfilter.org/
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D
-  "Fragmentation is like classful addressing -- an interesting early
-   architectural error that shows how much experimentation was going
-   on while IP was being designed."                    -- Paul Vixie
-
---KOBxLkMFRQI9H+bc
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFD0R2rXaXGVTD0i/8RAmlFAKCvc74CiV6R/7Dz4X+Ak3/eLE0zbQCghxGa
-jefK0vhDAk9RS0WIS9dxw8o=
-=wKFS
------END PGP SIGNATURE-----
-
---KOBxLkMFRQI9H+bc--
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
