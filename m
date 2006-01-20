@@ -1,20 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <laforge@netfilter.org>
+Received: from ganesha.gnumonks.org (ganesha.gnumonks.org [213.95.27.120])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 49F8A68A03
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jan 2006 09:09:27 +1100 (EST)
-Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gerhard Pircher <gerhard_pircher@gmx.net>
-In-Reply-To: <15255.1137667967@www31.gmx.net>
-References: <1137664796.4823.214.camel@localhost.localdomain>
-	<15255.1137667967@www31.gmx.net>
-Content-Type: text/plain
-Date: Fri, 20 Jan 2006 09:09:13 +1100
-Message-Id: <1137708554.12998.31.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id C4EE768926
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Jan 2006 11:45:22 +1100 (EST)
+Date: Fri, 20 Jan 2006 01:45:12 +0100
+From: Harald Welte <laforge@netfilter.org>
+To: netfilter-devel@lists.netfilter.org,
+	Mikael Pettersson <mikpe@user.it.uu.se>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] x_tables: fix alignment on [at least] ppc32 (was Re:
+	2.6.16-rc1: iptables broken on ppc32?)
+Message-ID: <20060120004512.GT4603@sunbeam.de.gnumonks.org>
+References: <17358.19458.555996.684819@alkaid.it.uu.se>
+	<20060118150158.GL4603@sunbeam.de.gnumonks.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="3dbUQUznexwzCA76"
+In-Reply-To: <20060118150158.GL4603@sunbeam.de.gnumonks.org>
+Cc: David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +28,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-01-19 at 11:52 +0100, Gerhard Pircher wrote:
-> > > I set the AGP aperture base register and agp_bridge->gart_bus_addr to
-> > > 0x01000000 (>=16MB) (trial and error :-) and it seems to work with
-> > > cant_use_aperture=1 
-> > 
-> > Makes sense, since this value is right in the middle of your RAM :) What
-> > does the firmware sets the base register too ?
-> I did a readout of all AGP related registers and the base register was set
-> to 0x0, so the firmware doesn't set it up at all.
-> 
-> > Can't you try to allocate some resource in the PCI area that isn't
-> > already occupied instead ?
-> I though the GART base address should be in memory space!?
 
-Euh... I was talking about the aperture base, not the GART base... (One
-is the address one the bus where the AGP area will be visible, the other
-is where the GART will be in memory, that is the table that contains the
-mapping between AGP pages and memory pages).
+--3dbUQUznexwzCA76
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Sorry for this dumb question: how can I allocate a resource in the PCI area?
-> I'm not yet familiar with the whole Linux PCI/MM API. :) With something like
-> pci_alloc_consistent()?
+Hi,
 
-Nope... look at drivers/pci/setup-res.c how it does for allocating new
-resources for PCI devices.
+the patch below fixes the problem on ppc32. Dave: Please apply.
 
-> > (and without the modification in drm_vm.c). Even the X
-> > > server maps all the data to this address and displays a login screen.
-> > > Unfortunately it always freezes in. I guess this is due to the missing
-> > > GART flush functionality. So I have to get this working first.
-> > 
-> > Yah, that would be pretty bad...
-> Indeed! :)
-> 
-> Gerhard
-> 
+[NETFILTER] x_tables: Fix XT_ALIGN() macro on [at least] ppc32
+
+To keep backwards compatibility with old iptables userspace programs,
+the new XT_ALIGN macro always has to return the same value as IPT_ALIGN,
+IP6T_ALIGN or ARPT_ALIGN in previous kernels.
+
+However, in those kernels the macro was defined in dependency to the
+respective layer3 specifi data structures, which we can no longer do with
+x_tables.
+
+The fix is an ugly kludge, but it has been tested to solve the problem. Yet
+another reason to move away from the current {ip,ip6,arp,eb}tables like
+data structures.
+
+Signed-off-by: Harald Welte <laforge@netfilter.org>
+
+---
+commit 470faeb379560fe877b685ca69be6a7e4f0e91ed
+tree 5732ecd9bcab28469805752514e5c57ba26189a1
+parent 44718bbfa186d58477163418d37df173aa2dd079
+author Harald Welte <laforge@netfilter.org> Fri, 20 Jan 2006 01:44:24 +0100
+committer Harald Welte <laforge@netfilter.org> Fri, 20 Jan 2006 01:44:24 +0=
+100
+
+ include/linux/netfilter/x_tables.h |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/netfilter/x_tables.h b/include/linux/netfilter/x=
+_tables.h
+index 472f048..65f9cd8 100644
+--- a/include/linux/netfilter/x_tables.h
++++ b/include/linux/netfilter/x_tables.h
+@@ -19,7 +19,20 @@ struct xt_get_revision
+ /* For standard target */
+ #define XT_RETURN (-NF_REPEAT - 1)
+=20
+-#define XT_ALIGN(s) (((s) + (__alignof__(void *)-1)) & ~(__alignof__(void =
+*)-1))
++/* this is a dummy structure to find out the alignment requirement for a s=
+truct
++ * containing all the fundamental data types that are used in ipt_entry, i=
+p6t_entry
++ * and arpt_entry.  This sucks, and it is a hack.  It will be my personal =
+pleasure
++ * to remove it -HW */
++struct _xt_align
++{
++	u_int8_t u8;
++	u_int16_t u16;
++	u_int32_t u32;
++	u_int64_t u64;
++};
++
++#define XT_ALIGN(s) (((s) + (__alignof__(struct _xt_align)-1)) 	\
++			& ~(__alignof__(struct _xt_align)-1))
+=20
+ /* Standard return verdict, or do jump. */
+ #define XT_STANDARD_TARGET ""
+--=20
+- Harald Welte <laforge@netfilter.org>                 http://netfilter.org/
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D
+  "Fragmentation is like classful addressing -- an interesting early
+   architectural error that shows how much experimentation was going
+   on while IP was being designed."                    -- Paul Vixie
+
+--3dbUQUznexwzCA76
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2 (GNU/Linux)
+
+iD8DBQFD0DKYXaXGVTD0i/8RAnN8AKCFuYk8Prm7iTKkLsYbsTFzakhpHACfQgXC
+u5UIFPe4Gcp0dsQWa0IdDQQ=
+=kJLR
+-----END PGP SIGNATURE-----
+
+--3dbUQUznexwzCA76--
