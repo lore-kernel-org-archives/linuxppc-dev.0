@@ -1,26 +1,18 @@
-Return-Path: <atul.sabharwal@exgate.tek.com>
-Received: from igate.tek.com (igate.tek.com [192.65.41.20])
-	by ozlabs.org (Postfix) with ESMTP id 9FED768A39
+Return-Path: <rvinson@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 2B7FE68A23
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jan 2006 05:12:50 +1100 (EST)
-Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
-	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k0KICntT015860
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jan 2006 10:12:49 -0800 (PST)
-Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
-	[128.181.2.45])
-	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k0KICnSA008115
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Jan 2006 10:12:49 -0800 (PST)
+	Sat, 21 Jan 2006 05:50:57 +1100 (EST)
+Received: from [10.50.1.108] (rvinson@linuxbox.az.mvista.com [10.50.1.108])
+	by zipcode.az.mvista.com (8.9.3/8.9.3) with ESMTP id LAA15213
+	for <linuxppc-embedded@ozlabs.org>; Fri, 20 Jan 2006 11:46:47 -0700
+Message-ID: <43D12F99.7090608@mvista.com>
+Date: Fri, 20 Jan 2006 11:44:41 -0700
+From: Randy Vinson <rvinson@mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C61DED.1E33D7E2"
-Subject: RE: u-boot debugging
-Date: Fri, 20 Jan 2006 10:13:28 -0800
-Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201AC2CCB@us-bv-m23.global.tektronix.net>
-From: <atul.sabharwal@exgate.tek.com>
-To: <atul.sabharwal@exgate.tek.com>, <mustafa.cayir@bte.mam.gov.tr>,
-	<linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] Add support for Freescale 83xx Host Mode USB
+Content-Type: multipart/mixed; boundary="------------000504020408060703090102"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,610 +24,327 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
+--------------000504020408060703090102
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-------_=_NextPart_001_01C61DED.1E33D7E2
+Greetings,
+   The following patch was supposed to have been sent to 
+linuxppc-embedded, but ended up on linuxppc-dev (address auto-completion 
+goof). So... Here it is as promised.
+
+
+
+Greetings,
+     I've attached a patch (based on 2.6.16-rc1) which adds Host mode
+support for the Dual-Role(DR) and Multi-Port-Host (MPH) USB controllers
+found in the Freescale 8349. Note that this patch only provides the
+platform-specific code that sets up the external hardware and pin
+configuration. The actual DR and MPH controller driver is being posted
+on the linux-usb-devel mailing list.
+
+     Using a Freescale 8349CDS reference board, the DR controller was
+successfully tested using a USB 2.0 high speed FLASH drive, a USB 1.1
+full speed 4-port hub and a Siemens SpeedStream USB to Ethernet adapter.
+The MPH controller has been successfully tested with a USB 2.0 high
+speed FLASH drive. Attempts to run USB 1.1 devices with the MPH
+controller have proven unsuccessful.
+
+
+           Randy Vinson
+           MontaVista Software
+
+--------------000504020408060703090102
 Content-Type: text/plain;
-	charset="iso-8859-9"
-Content-Transfer-Encoding: quoted-printable
-
-I hope this gives the answer to make a better pick between BDI and =
-Metrowerks...  And this is not off topic
-
-As the debugger is not only for u-boot but debugging the kernel on this =
-architecture...
-
-=20
-
---
-
-Atul
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
- P.S:  Our destiny is in our hands... And yes, necessity is mother of =
-invention!!
-
-________________________________
-
-From: Sabharwal, Atul=20
-Sent: Friday, January 20, 2006 10:06 AM
-To: Sabharwal, Atul; 'Mustafa =C7ay=FDr'; 'linuxppc-embedded@ozlabs.org'
-Subject: RE: u-boot debugging
-
-=20
-
-Besides, the BDI has only a 10Mbps Ethernet interface.  It might be =
-enough for simple debug operation but they should
-
-Have put a 100Mbps link to put it on a shared network.  For an isolated =
-network configuration, it should suffice...
-
-=20
-
-The Metrowerks debugger is USB 2.0 based, so on a isolated network and =
-faster data throughput for easy symbol/code
-
-cross referencing.
-
-=20
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Atul Sabharwal
-
-c/o Azad. Inc.
-
-503-962-9395
-
-________________________________
-
-From: Sabharwal, Atul=20
-Sent: Friday, January 20, 2006 10:00 AM
-To: Sabharwal, Atul; 'Mustafa =C7ay=FDr'; 'linuxppc-embedded@ozlabs.org'
-Subject: RE: u-boot debugging
-
-=20
-
-My best guess is the PowerTap Pro supports code tracing from a trace =
-buffer on the board or processor... Not sure if
-
-you can sample the processor instruction stream over the JTAG chain as =
-its too slow.  You could use a logic analyzer
-
-or an in-circuit emulator to capture all signals.  The power pc has a =
-SIU to pass the instruction stream for a logic analyzer
-
-to use...
-
-=20
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Atul Sabharwal
-
-c/o Azad. Inc.
-
-503-962-9395
-
-________________________________
-
-From: Sabharwal, Atul=20
-Sent: Friday, January 20, 2006 9:57 AM
-To: 'Mustafa =C7ay=FDr'; linuxppc-embedded@ozlabs.org
-Subject: RE: u-boot debugging
-
-=20
-
-BDI works but PowerTap Pro from Metrowerks is better.  The debug =
-interface is windows based and more user friendly than
-
-Ddd on Linux.  Take your pick as a commercial product would be better =
-than an opensource product till it has been perfected
-
-(i.e. customized, all bugs fixed and usability issues resolved).  And no =
-service from the community on occasion.
-
-=20
-
-=20
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Atul Sabharwal
-
-c/o Azad. Inc.
-
-503-962-9395
-
-________________________________
-
-From: linuxppc-embedded-bounces@ozlabs.org =
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Mustafa =
-=C7ayir
-Sent: Thursday, January 19, 2006 10:51 PM
-To: linuxppc-embedded@ozlabs.org
-Subject: u-boot debugging
-
-=20
-
-Hi,
-
-=20
-
-Which tool must i use to debuggin u-boot codes. BDI2000 or windriver =
-visionclick, which one do you prefer? is step by step code tracing =
-possible?
-
-=20
-
-thanks
-
-
-------_=_NextPart_001_01C61DED.1E33D7E2
-Content-Type: text/html;
-	charset="iso-8859-9"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-9">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<!--[if !mso]>
-<style>
-v\:* {behavior:url(#default#VML);}
-o\:* {behavior:url(#default#VML);}
-w\:* {behavior:url(#default#VML);}
-.shape {behavior:url(#default#VML);}
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Tahoma;
-	panose-1:2 11 6 4 3 5 4 4 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal;
-	font-family:Arial;
-	color:navy;}
-span.EmailStyle18
-	{mso-style-type:personal;
-	font-family:Arial;
-	color:navy;}
-span.EmailStyle19
-	{mso-style-type:personal;
-	font-family:Arial;
-	color:navy;}
-span.EmailStyle20
-	{mso-style-type:personal-reply;
-	font-family:Arial;
-	color:navy;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body bgcolor=3Dsilver lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>I hope this gives the answer to =
-make a
-better pick between BDI and Metrowerks&#8230;=A0 And this is not off =
-topic<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>As the debugger is not only for =
-u-boot but
-debugging the kernel on this =
-architecture&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>--<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Atul<o:p></o:p></span></font></p>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
-~~~~~</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 color=3Dnavy face=3D"Times New =
-Roman"><span
-style=3D'font-size:12.0pt;color:navy'>&nbsp;</span></font><font size=3D2
-color=3Dnavy face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial;
-color:navy'>P.S:&nbsp; Our destiny is in our hands... And yes, necessity =
-is
-mother of invention!!</span></font><font color=3Dnavy><span =
-style=3D'color:navy'><o:p></o:p></span></font></p>
-
-</div>
-
-<div>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
-
-<hr size=3D3 width=3D"100%" align=3Dcenter tabindex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
-style=3D'font-size:10.0pt;
-font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
-size=3D2
-face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> =
-Sabharwal, Atul <br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Friday, January 20, =
-2006
-10:06 AM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b> Sabharwal, Atul; =
-'Mustafa
-=C7ay=FDr'; 'linuxppc-embedded@ozlabs.org'<br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> RE: u-boot =
-debugging</span></font><o:p></o:p></p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Besides, the BDI has only a 10Mbps
-Ethernet interface.&nbsp; It might be enough for simple debug operation =
-but
-they should<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Have put a 100Mbps link to put it =
-on a
-shared network.&nbsp; For an isolated network configuration, it should
-suffice&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>The Metrowerks debugger is USB 2.0 =
-based,
-so on a isolated network and faster data throughput for easy =
-symbol/code<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>cross =
-referencing.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
-~~~~~</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Atul Sabharwal</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>c/o Azad. Inc.</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>503-962-9395</span></font><o:p></o:p=
-></p>
-
-</div>
-
-<div>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
-
-<hr size=3D3 width=3D"100%" align=3Dcenter tabindex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
-style=3D'font-size:10.0pt;
-font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
-size=3D2
-face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> =
-Sabharwal, Atul <br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Friday, January 20, =
-2006
-10:00 AM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b> Sabharwal, Atul; =
-'Mustafa
-=C7ay=FDr'; 'linuxppc-embedded@ozlabs.org'<br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> RE: u-boot =
-debugging</span></font><o:p></o:p></p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>My best guess is the PowerTap Pro =
-supports
-code tracing from a trace buffer on the board or processor&#8230; Not =
-sure if<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>you can sample the processor =
-instruction
-stream over the JTAG chain as its too slow.&nbsp; You could use a logic
-analyzer<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>or an in-circuit emulator to =
-capture all
-signals.&nbsp; The power pc has a SIU to pass the instruction stream for =
-a
-logic analyzer<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>to =
-use&#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
-~~~~~</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Atul Sabharwal</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>c/o Azad. Inc.</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>503-962-9395</span></font><o:p></o:p=
-></p>
-
-</div>
-
-<div>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
-
-<hr size=3D3 width=3D"100%" align=3Dcenter tabindex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
-style=3D'font-size:10.0pt;
-font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
-size=3D2
-face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> =
-Sabharwal, Atul <br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Friday, January 20, =
-2006
-9:57 AM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b> 'Mustafa =C7ay=FDr';
-linuxppc-embedded@ozlabs.org<br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> RE: u-boot =
-debugging</span></font><o:p></o:p></p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>BDI works but PowerTap Pro from =
-Metrowerks
-is better.&nbsp; The debug interface is windows based and more user =
-friendly
-than<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Ddd on Linux.&nbsp; Take your pick =
-as a
-commercial product would be better than an opensource product till it =
-has been
-perfected<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>(i.e. customized, all bugs fixed =
-and
-usability issues resolved).&nbsp; And no service from the community on
-occasion.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~=
-~~~~~</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Atul Sabharwal</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>c/o Azad. Inc.</span></font><font
-color=3Dnavy><span style=3D'color:navy'><o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>503-962-9395</span></font><o:p></o:p=
-></p>
-
-</div>
-
-<div>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
-
-<hr size=3D3 width=3D"100%" align=3Dcenter tabindex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
-style=3D'font-size:10.0pt;
-font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
-size=3D2
-face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'>
-linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] <b><span =
-style=3D'font-weight:bold'>On
-Behalf Of </span></b>Mustafa =C7ayir<br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Thursday, January =
-19, 2006
-10:51 PM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b> =
-linuxppc-embedded@ozlabs.org<br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> u-boot =
-debugging</span></font><o:p></o:p></p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi,</span></font><o:p></o:p></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Which tool must i use to debuggin u-boot codes. =
-BDI2000 or
-windriver visionclick, which one do you prefer? is step by step code =
-tracing
-possible?</span></font><o:p></o:p></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>&nbsp;<o:p></o:p></span></font></p>
-
-</div>
-
-<div>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>thanks</span></font><o:p></o:p></p>
-
-</div>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C61DED.1E33D7E2--
+ name="8349_usb_platform.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="8349_usb_platform.patch"
+
+Adding platform support for the 834x Host Mode USB controller.
+
+This patch provides the platform-specific hardware setup required by the
+83xx Host Mode USB controller on the Freescale 8349CDS reference system.
+
+Signed-off-by: Randy Vinson <rvinson@mvista.com>
+
+---
+commit 30b1d2d35237f0367aeceb1bc9f62c9fdc46dbff
+tree 64af0c1897f30bb1adb72ecbb6f4c4d0ef619639
+parent 2581e186c343cd26802279bd80e420307037fbc6
+author Randy Vinson <rvinson@linuxbox.(none)> Tue, 17 Jan 2006 16:32:23 -0700
+committer Randy Vinson <rvinson@linuxbox.(none)> Tue, 17 Jan 2006 16:32:23 -0700
+
+ arch/ppc/Kconfig                      |    2 +
+ arch/ppc/platforms/83xx/Kconfig       |   28 +++++++++
+ arch/ppc/platforms/83xx/mpc834x_sys.c |  100 +++++++++++++++++++++++++++++++++
+ arch/ppc/platforms/83xx/mpc834x_sys.h |    3 +
+ arch/ppc/syslib/mpc83xx_devices.c     |   16 +++++
+ include/asm-ppc/mpc83xx.h             |   17 ++++++
+ 6 files changed, 166 insertions(+), 0 deletions(-)
+
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+index 11899f0..b33b0eb 100644
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -681,6 +681,8 @@ config EV64360
+ 	  platform.
+ endchoice
+ 
++source arch/ppc/platforms/83xx/Kconfig
++
+ config PQ2ADS
+ 	bool
+ 	depends on ADS8272
+diff --git a/arch/ppc/platforms/83xx/Kconfig b/arch/ppc/platforms/83xx/Kconfig
+new file mode 100644
+index 0000000..90bc67a
+--- /dev/null
++++ b/arch/ppc/platforms/83xx/Kconfig
+@@ -0,0 +1,28 @@
++config 834x_USB_SUPPORT
++	bool "834x USB Support"
++	depends on MPC834x_SYS
++	default y
++	---help---
++	  Enables support for the USB controllers on the MPC834x chip. The 834x
++	  reference board is wired for only one USB port. That port may be
++	  used by either the MPH or DR USB controller.
++	  Requires USB Host EHCI support.
++	  If unsure, say Y.
++choice
++	prompt "834x USB Controller Selection"
++	depends on 834x_USB_SUPPORT
++	default 834x_DR_USB_SUPPORT
++
++config 834x_DR_USB_SUPPORT
++	bool "DR Controller"
++	select USB_EHCI_ROOT_HUB_TT
++	---help---
++	  Select if using the Dual-Role (DR) USB controller.
++
++config 834x_MPH_USB_SUPPORT
++	bool "MPH Controller"
++	---help---
++	  Select if using the Multi-Port-Host (MPH) USB controller.
++
++endchoice
++
+diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
+index 012e1e6..6f23909 100644
+--- a/arch/ppc/platforms/83xx/mpc834x_sys.c
++++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
+@@ -11,6 +11,9 @@
+  * under  the terms of  the GNU General  Public License as published by the
+  * Free Software Foundation;  either version 2 of the  License, or (at your
+  * option) any later version.
++ *
++ * USB setup added by Randy Vinson <rvinson@mvista.com> based on code from
++ * Hunter Wu.
+  */
+ 
+ #include <linux/config.h>
+@@ -93,6 +96,99 @@ mpc83xx_exclude_device(u_char bus, u_cha
+ }
+ #endif /* CONFIG_PCI */
+ 
++/*
++ * Configure the on-chip USB controller. The MPC834xCDS only supports the
++ * second USB interface (port 1). This code sets up the hardware and then
++ * lets the platform driver take over device setup.
++ */
++
++#ifdef CONFIG_834x_USB_SUPPORT
++void mpc834x_board_init(void)
++{
++	unsigned char __iomem *bcsr;
++	volatile unsigned char *bcsr5_p;
++
++	/*
++	 * if SYS board is plug into PIB board,
++	 * force to use the PHY on SYS board
++	 * */
++	bcsr = ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
++	bcsr5_p = bcsr + BCSR5_OFF;
++	if ( (*bcsr5_p & BCSR5_INT_USB) == 0 )
++		*bcsr5_p = (*bcsr5_p | BCSR5_INT_USB);
++	iounmap(bcsr);
++}
++
++void mpc834x_usb_clk_cfg(void)
++{
++	unsigned long sccr;
++	volatile unsigned long *p;
++
++	p = (volatile unsigned long *)(VIRT_IMMRBAR + MPC83XX_SCCR_OFFS); /* SCCR */
++	sccr = *p;
++
++	sccr |= MPC83XX_SCCR_USB_MPHCM_11 | MPC83XX_SCCR_USB_DRCM_11;
++
++	*p = sccr;
++}
++
++static void mpc834x_usb_pin_cfg(struct fsl_usb2_platform_data *pdata)
++{
++	unsigned long sicrl;
++	volatile unsigned long *p;
++
++	p = (volatile unsigned long *)(VIRT_IMMRBAR + MPC83XX_SICRL_OFFS); /* SCCR */
++	sicrl = *p;
++
++	/* set both ports to MPH mode */
++	sicrl &= ~(MPC83XX_SICRL_USB0 | MPC83XX_SICRL_USB1);
++
++	if (pdata->operating_mode == FSL_USB2_DR_HOST) {
++		if (pdata->phy_mode == FSL_USB2_PHY_UTMI_WIDE) {
++			/* UTMI WIDE combines both ports into a single 16-bit port */
++			sicrl |= MPC83XX_SICRL_USB0 | MPC83XX_SICRL_USB1;
++		}
++		else {
++			if (pdata->port_enables & FSL_USB2_PORT0_ENABLED)
++				sicrl |= MPC83XX_SICRL_USB0;
++		}
++	}
++	*p = sicrl;
++}
++
++static void __init
++mpc834x_usb_init(void)
++{
++	struct fsl_usb2_platform_data *pdata;
++
++#ifdef CONFIG_834x_DR_USB_SUPPORT
++	ppc_sys_device_remove(MPC83xx_USB2_MPH);
++	pdata = (struct fsl_usb2_platform_data *) ppc_sys_get_pdata(MPC83xx_USB2_DR);
++
++	if (pdata) {
++		pdata->phy_mode = FSL_USB2_PHY_ULPI;
++		pdata->operating_mode = FSL_USB2_DR_HOST;
++		pdata->port_enables = FSL_USB2_PORT0_ENABLED;
++	}
++
++#elif defined(CONFIG_834x_MPH_USB_SUPPORT)
++	ppc_sys_device_remove(MPC83xx_USB2_DR);
++	pdata = (struct fsl_usb2_platform_data *) ppc_sys_get_pdata(MPC83xx_USB2_MPH);
++
++	if (pdata) {
++		pdata->phy_mode = FSL_USB2_PHY_ULPI;
++		pdata->operating_mode = FSL_USB2_MPH_HOST;
++		pdata->port_enables = FSL_USB2_PORT0_ENABLED;
++	}
++
++#endif
++	mpc834x_usb_pin_cfg(pdata);
++	mpc834x_board_init();
++	mpc834x_usb_clk_cfg();
++	return;
++}
++#endif /* CONFIG_834x_USB_SUPPORT */
++
+ /* ************************************************************************
+  *
+  * Setup the architecture
+@@ -144,6 +240,10 @@ mpc834x_sys_setup_arch(void)
+ 		memcpy(pdata->mac_addr, binfo->bi_enet1addr, 6);
+ 	}
+ 
++#ifdef CONFIG_834x_USB_SUPPORT
++	mpc834x_usb_init();
++#endif
++
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	if (initrd_start)
+ 		ROOT_DEV = Root_RAM0;
+diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.h b/arch/ppc/platforms/83xx/mpc834x_sys.h
+index 2e514d3..fab3762 100644
+--- a/arch/ppc/platforms/83xx/mpc834x_sys.h
++++ b/arch/ppc/platforms/83xx/mpc834x_sys.h
+@@ -27,6 +27,9 @@
+ #define BCSR_PHYS_ADDR		((uint)0xf8000000)
+ #define BCSR_SIZE		((uint)(128 * 1024))
+ 
++#define BCSR5_OFF		0x05
++#define BCSR5_INT_USB		0x02
++
+ #define BCSR_MISC_REG2_OFF	0x07
+ #define BCSR_MISC_REG2_PORESET	0x01
+ 
+diff --git a/arch/ppc/syslib/mpc83xx_devices.c b/arch/ppc/syslib/mpc83xx_devices.c
+index f9b95de..916926c 100644
+--- a/arch/ppc/syslib/mpc83xx_devices.c
++++ b/arch/ppc/syslib/mpc83xx_devices.c
+@@ -23,6 +23,8 @@
+ #include <asm/ppc_sys.h>
+ #include <asm/machdep.h>
+ 
++static u64 mpc83xx_dma_mask = 0xffffffffULL;
++
+ /* We use offsets for IORESOURCE_MEM since we do not know at compile time
+  * what IMMRBAR is, will get fixed up by mach_mpc83xx_fixup
+  */
+@@ -50,6 +52,14 @@ static struct fsl_i2c_platform_data mpc8
+ 	.device_flags = FSL_I2C_DEV_SEPARATE_DFSRR,
+ };
+ 
++/* Placeholder to be filled in by board code */
++static struct fsl_usb2_platform_data mpc83xx_fsl_dr_pdata = { 
++};
++
++/* Placeholder to be filled in by board code */
++static struct fsl_usb2_platform_data mpc83xx_fsl_mph_pdata = {
++};
++
+ static struct plat_serial8250_port serial_platform_data[] = {
+ 	[0] = {
+ 		.mapbase	= 0x4500,
+@@ -190,7 +200,10 @@ struct platform_device ppc_sys_platform_
+ 	[MPC83xx_USB2_DR] = {
+ 		.name = "fsl-usb2-dr",
+ 		.id	= 1,
++		.dev.platform_data = &mpc83xx_fsl_dr_pdata,
+ 		.num_resources	 = 2,
++		.dev.dma_mask	= &mpc83xx_dma_mask,
++		.dev.coherent_dma_mask = 0xffffffffULL,
+ 		.resource = (struct resource[]) {
+ 			{
+ 				.start	= 0x23000,
+@@ -208,6 +221,9 @@ struct platform_device ppc_sys_platform_
+ 		.name = "fsl-usb2-mph",
+ 		.id	= 1,
+ 		.num_resources	 = 2,
++		.dev.platform_data = &mpc83xx_fsl_mph_pdata,
++		.dev.dma_mask	= &mpc83xx_dma_mask,
++		.dev.coherent_dma_mask = 0xffffffffULL,
+ 		.resource = (struct resource[]) {
+ 			{
+ 				.start	= 0x22000,
+diff --git a/include/asm-ppc/mpc83xx.h b/include/asm-ppc/mpc83xx.h
+index 7cdf60f..cd2baf7 100644
+--- a/include/asm-ppc/mpc83xx.h
++++ b/include/asm-ppc/mpc83xx.h
+@@ -95,6 +95,23 @@ extern unsigned char __res[];
+ 
+ #define MPC83xx_CCSRBAR_SIZE	(1024*1024)
+ 
++#define MPC83XX_SCCR_OFFS          0xA08
++#define MPC83XX_SCCR_USB_MPHCM_11  0x00c00000
++#define MPC83XX_SCCR_USB_MPHCM_01  0x00400000
++#define MPC83XX_SCCR_USB_MPHCM_10  0x00800000
++#define MPC83XX_SCCR_USB_DRCM_11   0x00300000
++#define MPC83XX_SCCR_USB_DRCM_01   0x00100000
++#define MPC83XX_SCCR_USB_DRCM_10   0x00200000
++
++/* system i/o configuration register low */
++#define MPC83XX_SICRL_OFFS         0x114
++#define MPC83XX_SICRL_USB0         0x40000000
++#define MPC83XX_SICRL_USB1         0x20000000
++
++/* system i/o configuration register high */
++#define MPC83XX_SICRH_OFFS         0x118
++#define MPC83XX_SICRH_USB_UTMI     0x00020000
++
+ /* Let modules/drivers get at immrbar (physical) */
+ extern phys_addr_t immrbar;
+ 
+
+--------------000504020408060703090102--
