@@ -1,19 +1,30 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1C38C689AE
+Return-Path: <wim@iguana.be>
+Received: from outmx028.isp.belgacom.be (outmx028.isp.belgacom.be
+	[195.238.5.49])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 17E00689D5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jan 2006 00:40:25 +1100 (EST)
-To: =?iso-8859-9?Q?Mustafa_=C7ay=FDr?= <mustafa.cayir@bte.mam.gov.tr>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: u-boot debugging 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 20 Jan 2006 08:51:04 +0200."
-	<008501c61d8d$e35ff9f0$9e01120a@bilisim.local>
-Date: Fri, 20 Jan 2006 14:40:23 +0100
-Sender: wd@denx.de
-Message-Id: <20060120134023.57E2F353A3F@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 20 Jan 2006 22:56:08 +1100 (EST)
+Received: from outmx028.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx028.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id k0KBtr0k011362
+	for <linuxppc-embedded@ozlabs.org>; Fri, 20 Jan 2006 12:55:54 +0100
+	(envelope-from <wim@iguana.be>)
+Date: Fri, 20 Jan 2006 12:55:43 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] powerpc: remove useless spinlock from mpc83xx watchdog
+Message-ID: <20060120115543.GA6174@infomag.infomag.iguana.be>
+References: <Pine.LNX.4.44.0601190057130.8484-100000@gate.crashing.org>
+	<1137664156.8471.16.camel@localhost.localdomain>
+	<20060119164811.GB4418@dmt.cnet>
+	<1137708739.8471.69.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1137708739.8471.69.camel@localhost.localdomain>
+Cc: Andrew Morton <akpm@osdl.org>, Kumar Gala <galak@gate.crashing.org>,
+	linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,41 +35,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <008501c61d8d$e35ff9f0$9e01120a@bilisim.local> you wrote:
+All,
+
+> On Iau, 2006-01-19 at 14:48 -0200, Marcelo Tosatti wrote:
+> > On Thu, Jan 19, 2006 at 09:49:16AM +0000, Alan Cox wrote:
+> > > 
+> > > 	f = open("/dev/watchdog", O_RDWR);
+> > > 	fork();
+> > > 	while(1) {
+> > > 		write(f, "Boing", 5);
+> > > 	}
+> > 
+> > Oops.
+> > 
+> > At least 50% of the watchdog drivers rely solely on the "wdt_is_open"
+> > atomic variable and are broken with respect to synchronization.
 > 
-> Which tool must i use to debuggin u-boot codes. BDI2000 or windriver
-> visionclick, which one do you prefer? is step by step code tracing
-> possible?
+> What an excellent janitors project
 
-I know that the  BDI2000  works  fine,  and  some  people  have  been
-successfully   using   the  vision*  tools,  too  (often  after  some
-struggeling).
+I'll have a look at it from a global point of view.
 
-My personal tool of choice is the BDi2000.
-
-Use the tool you know best...
-
-And yes, single stepping is possible if your tool allows it.
-
-
-Note that this question is off topic on this list;  you  should  post
-such questions on the U-Boot mailing list. But please ntoe that...
-
-> Content-Type: text/html;
-> 	charsetÿso-8859-9"
-> Content-Transfer-Encoding: quoted-printable
-> 
-> <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-
-...HTML code is strictly forbidden there!
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-If programming was easy, they wouldn't need something as  complicated
-as a human being to do it, now would they?
-                       - L. Wall & R. L. Schwartz, _Programming Perl_
+Greetings,
+Wim.
