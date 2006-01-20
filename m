@@ -1,24 +1,20 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F080D689F9
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jan 2006 08:29:23 +1100 (EST)
-Date: Fri, 20 Jan 2006 22:29:17 +0100
-From: Olaf Hering <olh@suse.de>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [Alsa-devel] RFC: OSS driver removal,
-	a slightly different approach
-Message-ID: <20060120212917.GA14405@suse.de>
-References: <20060119174600.GT19398@stusta.de>
-	<20060120115443.GA16582@palantir8>
-	<20060120190415.GM19398@stusta.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 16FFA689FD
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Jan 2006 10:00:26 +1100 (EST)
+Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <17310.1137755798@www009.gmx.net>
+References: <1137708554.12998.31.camel@localhost.localdomain>
+	<17310.1137755798@www009.gmx.net>
+Content-Type: text/plain
+Date: Sat, 21 Jan 2006 10:00:16 +1100
+Message-Id: <1137798016.12998.49.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20060120190415.GM19398@stusta.de>
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Fri, Jan 20, Adrian Bunk wrote:
+On Fri, 2006-01-20 at 12:16 +0100, Gerhard Pircher wrote:
 
- 
-> Can someone from the ppc developers drop me a small note whether 
-> SND_POWERMAC completely replaces DMASOUND_PMAC?
+> > Nope... look at drivers/pci/setup-res.c how it does for allocating new
+> > resources for PCI devices.
+> I guess you mean something like this code snipped from the efficeon-agp.c
+> source code (with pci_assign_resource()):
 
-It doesnt. Some tumbler models work only after one plug/unplug cycle of
-the headphone. early powerbooks report/handle the mute settings
-incorrectly. there are likely more bugs.
+Something around those lines... you will probably need to use lower
+level routines, not pci_* as the AGP aperture isn't generally a BAR.
 
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+> BTW: I took a look at the PCI resources list of the AmigaOne and found out
+> that the resources of the AGP graphic card are allocated to bus 0 (PCI
+> only). IMHO their allocation should be assigned to bus 1 (AGP) (at least
+> this is the case on x86!?), so I think this should be fixed. Is my
+> assumption correct?
+
+Hrm... sounds weird, can you send me the output of lspci -vv,
+cat /proc/iomem and cat /prop/ioports ?
+
+Ben.
