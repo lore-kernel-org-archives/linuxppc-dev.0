@@ -1,14 +1,12 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <bharthik2004@yahoo.com>
+Message-ID: <20060120063052.52505.qmail@web50008.mail.yahoo.com>
+Date: Thu, 19 Jan 2006 22:30:52 -0800 (PST)
+From: bharathi kandimalla <bharthik2004@yahoo.com>
+Subject: serial driver for MPC860T  in linux 2.6.13
+To: Linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17360.28562.420811.304052@cargo.ozlabs.ibm.com>
-Date: Fri, 20 Jan 2006 16:05:22 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: [PATCH] PPC32 CPM_UART: update to utilize the new TTY flip API
-In-Reply-To: <20060115154409.1627.95041.stgit@vitb.dev.rtsoft.ru>
-References: <20060115154409.1627.95041.stgit@vitb.dev.rtsoft.ru>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-702085885-1137738652=:51579"
+Cc: jagadish <jagadish@india.advinfo.net>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,11 +17,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Vitaly Bordug writes:
+--0-702085885-1137738652=:51579
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-> This replaces old direct usage of tty->flip stuff with relative flip API
-> calls.
+  Hi
+   We are able to port the linux 2.6 in our target board.As the 
+MPC860T has 4 SCC  ports and two SMC ports.I want to up all the SMC and SCC
+ ports.When I am selecting all the options in the kernel configuration
+ It is getting hanged.
+ I did n't see any mknod in the code
+  how can I know  ttyCPM2 is for SMC2.At the time of ramdisk building I have created the the softlink to ttyCPM2 ->console
+   ttyCPM1 is for SMC1  like that
+   and they mentioned only major number is 204 minor number is 46
+    As we  want to use 6 ports.We want 6 minor numbers
+   
+   when I am selectind SMC  and all  SCC' s  the o.s is up in the target board( as the program did not have any portpin configuartions for the SCC's)
+   when I am selecting SMC1 and SMC2 it is getting hanged
+  
+ regards
+  Bharathi
 
-Could I have a Signed-off-by line from you for it please?
 
-Paul.
+
+			
+---------------------------------
+Yahoo! Photos
+ Got holiday prints? See all the ways to get quality prints in your hands ASAP.
+--0-702085885-1137738652=:51579
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<DIV id=RTEContent>  <DIV>Hi<BR>&nbsp;&nbsp; We are able to port the linux 2.6 in our target board.As the <BR>MPC860T has 4 SCC&nbsp; ports and two SMC ports.I want to up all the SMC and SCC<BR>&nbsp;ports.When I am selecting all the options in the kernel configuration<BR>&nbsp;It is getting hanged.<BR>&nbsp;I did n't see any mknod in the code<BR>&nbsp; how can I know&nbsp; ttyCPM2 is for SMC2.At the time of ramdisk building I&nbsp;have created the the softlink to&nbsp;ttyCPM2&nbsp;-&gt;console<BR>&nbsp;&nbsp;&nbsp;ttyCPM1 is for SMC1&nbsp; like that<BR>&nbsp;&nbsp;&nbsp;and they mentioned only major number is 204 minor number is 46</DIV>  <DIV>&nbsp; As we&nbsp; want to use 6 ports.We want 6 minor numbers</DIV>  <DIV>&nbsp;</DIV>  <DIV>&nbsp;when I am selectind SMC  and all&nbsp; SCC' s&nbsp; the&nbsp;o.s is up in the target board( as&nbsp;the program did not have any portpin configuartions for the SCC's)</DIV>  <DIV>&nbsp;when I am selecting SMC1 and SMC2 it is getting hanged</DIV>
+  <DIV><BR>&nbsp;regards</DIV>  <DIV>Bharathi<BR></DIV></DIV><p>
+	
+		<hr size=1>Yahoo! Photos<br> 
+Got holiday prints? <a href="http://us.rd.yahoo.com/mail_us/taglines/holidayprints/*http://pa.yahoo.com/*http://us.rd.yahoo.com/mail_us/taglines/photos/evt=38089/*http://pg.photos.yahoo.com/ph//print_splash">See all the ways</a> to get quality prints in your hands ASAP.
+--0-702085885-1137738652=:51579--
