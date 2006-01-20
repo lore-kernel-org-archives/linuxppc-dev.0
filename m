@@ -1,15 +1,19 @@
 Return-Path: <wd@denx.de>
-To: "feng" <chinafeng2008@163.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 1C38C689AE
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 21 Jan 2006 00:40:25 +1100 (EST)
+To: =?iso-8859-9?Q?Mustafa_=C7ay=FDr?= <mustafa.cayir@bte.mam.gov.tr>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: FEC ERROR 
+Subject: Re: u-boot debugging 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 20 Jan 2006 12:14:16 +0800."
-	<43D06E4F.15E79E.30255>
-Date: Fri, 20 Jan 2006 14:37:43 +0100
+In-reply-to: Your message of "Fri, 20 Jan 2006 08:51:04 +0200."
+	<008501c61d8d$e35ff9f0$9e01120a@bilisim.local>
+Date: Fri, 20 Jan 2006 14:40:23 +0100
 Sender: wd@denx.de
-Message-Id: <20060120133743.BD42E353A3F@atlas.denx.de>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+Message-Id: <20060120134023.57E2F353A3F@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,11 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <43D06E4F.15E79E.30255> you wrote:
+In message <008501c61d8d$e35ff9f0$9e01120a@bilisim.local> you wrote:
 > 
-> sometimes,  My PowerPC(852T) get the following message:
+> Which tool must i use to debuggin u-boot codes. BDI2000 or windriver
+> visionclick, which one do you prefer? is step by step code tracing
+> possible?
 
-And your kernel version is ... ???
+I know that the  BDI2000  works  fine,  and  some  people  have  been
+successfully   using   the  vision*  tools,  too  (often  after  some
+struggeling).
+
+My personal tool of choice is the BDi2000.
+
+Use the tool you know best...
+
+And yes, single stepping is possible if your tool allows it.
+
+
+Note that this question is off topic on this list;  you  should  post
+such questions on the U-Boot mailing list. But please ntoe that...
+
+> Content-Type: text/html;
+> 	charsetÿso-8859-9"
+> Content-Transfer-Encoding: quoted-printable
+> 
+> <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+...HTML code is strictly forbidden there!
 
 Best regards,
 
@@ -33,4 +59,6 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Lots of folks confuse bad management with destiny.   -- Frank Hubbard
+If programming was easy, they wouldn't need something as  complicated
+as a human being to do it, now would they?
+                       - L. Wall & R. L. Schwartz, _Programming Perl_
