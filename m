@@ -1,19 +1,23 @@
-Return-Path: <iamatul@comcast.net>
-Received: from sccrmhc12.comcast.net (sccrmhc12.comcast.net [204.127.202.56])
-	by ozlabs.org (Postfix) with ESMTP id 1ECD468A00
+Return-Path: <glenn@aoi-industries.com>
+Received: from vms040pub.verizon.net (vms040pub.verizon.net [206.46.252.40])
+	by ozlabs.org (Postfix) with ESMTP id B526A689C0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Jan 2006 17:39:09 +1100 (EST)
-Message-ID: <005301c61e54$aadb1b10$02c0650a@ATULSPC>
-From: "Atul Sabharwal" <iamatul@comcast.net>
-To: "Wolfgang Denk" <wd@denx.de>,
-	<iamatul@comcast.net>
-References: <20060120194612.14F60353A3F@atlas.denx.de>
-Subject: Re: u-boot debugging 
-Date: Fri, 20 Jan 2006 22:34:00 -0800
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 22 Jan 2006 02:20:05 +1100 (EST)
+Received: from [192.168.0.2] ([68.163.235.71])
+	by vms040.mailsrvcs.net (Sun Java System Messaging Server 6.2-4.02
+	(built Sep
+	9 2005)) with ESMTPA id <0ITG00JIY55EK4B3@vms040.mailsrvcs.net> for
+	linuxppc-embedded@ozlabs.org; Sat, 21 Jan 2006 08:20:02 -0600 (CST)
+Date: Sat, 21 Jan 2006 09:20:01 -0500
+From: Glenn Burkhardt <glenn@aoi-industries.com>
+Subject: RE: u-boot debugging
+In-reply-to: <mailman.3.1137805202.13229.linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
+Message-id: <200601210920.01703.glenn@aoi-industries.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+References: <mailman.3.1137805202.13229.linuxppc-embedded@ozlabs.org>
+Cc: atul.sabharwal@exgate.tek.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +28,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-You have a conflict of interest as you are just pissed with Metrowerks
-as they are your competitors.  Open source is about free speech and
-not for people with vested interests.  You seem to be one of the guys
-with vested interest.
+On Friday 20 January 2006 08:00 pm, Atul Sabharwal wrote:
+> First learn to communicate in English. I can give you 25 Us cents as I
+> cannot afford 1 Mark. You are not work even a Mark.
 
-You cannot repress people and tell them *oxymorons* or ninkampoops...
-If you do the cost benefit analysis between BDI and Metrowerks debugger,
-its the same.  And their UI is better than ddd and works with a BDI also.
-So, if you consider all aspects, its a better product.
-
-And opensource is used all over the globe including the Asian subcontinent.
-And there are still sites which use hubs as people dont have the excess 
-money
-to throw away on legacy products.  Just sitting in your small cube does not 
-give
-insight to global technology trends...
-
-Ciao,
-
-Atul
+The complete lack of civility in this remark is inexcusable in a public forum.  
+Herr Denk has provided an incredibly valuable service to the community, and 
+deserves more respect than this.
