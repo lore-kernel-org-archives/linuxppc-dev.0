@@ -1,15 +1,17 @@
-Return-Path: <cedric.pradalier@inrialpes.fr>
-Date: Sun, 22 Jan 2006 18:11:26 +1000
-From: Cedric Pradalier <cedric.pradalier@inrialpes.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 001/001] PMAC HD runtime blinking control
-Message-Id: <20060122181126.357df500.cedric.pradalier@inrialpes.fr>
-In-Reply-To: <1137898193.12998.83.camel@localhost.localdomain>
-References: <20060122121907.792abc72.cedric.pradalier@free.fr>
-	<1137898193.12998.83.camel@localhost.localdomain>
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 44C4F689FD
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jan 2006 08:19:11 +1100 (EST)
+Date: Sun, 22 Jan 2006 22:19:02 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] cleanup pmac_newworld variable usage
+Message-ID: <20060122211902.GA27709@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,47 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-According to Benjamin Herrenschmidt, on Sun, 22 Jan 2006
-13:49:53 +1100, 
->On Sun, 2006-01-22 at 12:19 +1000, Cedric Pradalier wrote:
->> Hi,
->> 
->> I've finally spend the time to mend the patch for control of
->> the HD led blinking at runtime. This is a patch against
->> 2.6.15
->> 
->> The sysfs entry is attached to the PCI device and to the
->> MACIO device if available. I think that was what Ben was
->> asking for:
->
->Heh, nice :) Almost ! It would be better if it was attached to the sysfs
->node of the ide interface, you can find it in the HWIF array after
->probe, but I won't be too much of a pain about that for now :)
->
 
-Yep, now I remember, that was what you where asking for.
-Can you give me an idea of the sysfs path you're expecting?
-Is it in 
-bus/ide/..., 
-bus/pci/drivers/ide-pmac,
-bus/pci/drivers/ide-disk
-devices/pci0001:10/0001:10:17.0/0.80000000:mac-io/0.0001f000:ata-4/ide0
+remove extern declarations of pmac_newworld
+move pmac_newworld to bss
+if there is any "interrupt-controller" device, then it is newworld.
 
-I would guess on the latter. 
-For now I'm using the pmif->mdev->ofdev.dev as attachment
-device, which brings me into 0.0001f000:ata-4
-What in pmif can brings me to the ide0? pmif->node? Or one
-of its siblings?
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-In ide_hwif_t, I'm using the pci_dev. Where in the pci_dev
-can I find ide0? or is it somewhere else in ide_hwif_t?
+ arch/powerpc/kernel/ppc_ksyms.c         |    1 -
+ arch/powerpc/platforms/powermac/setup.c |    8 ++++----
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-For the HWIF array, I guess you're talking about ide_hwifs.
-How do I identify the interface itself there?
-
-Hmm, plenty of questions. I hope at least one is relevant
-for this problem...
-
-Thanks
---
-Cedric
+Index: linux-2.6.16-rc1-olh/arch/powerpc/kernel/ppc_ksyms.c
+===================================================================
+--- linux-2.6.16-rc1-olh.orig/arch/powerpc/kernel/ppc_ksyms.c
++++ linux-2.6.16-rc1-olh/arch/powerpc/kernel/ppc_ksyms.c
+@@ -57,7 +57,6 @@ extern void machine_check_exception(stru
+ extern void alignment_exception(struct pt_regs *regs);
+ extern void program_check_exception(struct pt_regs *regs);
+ extern void single_step_exception(struct pt_regs *regs);
+-extern int pmac_newworld;
+ extern int sys_sigreturn(struct pt_regs *regs);
+ 
+ EXPORT_SYMBOL(clear_pages);
+Index: linux-2.6.16-rc1-olh/arch/powerpc/platforms/powermac/setup.c
+===================================================================
+--- linux-2.6.16-rc1-olh.orig/arch/powerpc/platforms/powermac/setup.c
++++ linux-2.6.16-rc1-olh/arch/powerpc/platforms/powermac/setup.c
+@@ -88,11 +88,10 @@ int ppc_override_l2cr = 0;
+ int ppc_override_l2cr_value;
+ int has_l2cache = 0;
+ 
+-int pmac_newworld = 1;
++int pmac_newworld;
+ 
+ static int current_root_goodness = -1;
+ 
+-extern int pmac_newworld;
+ extern struct machdep_calls pmac_md;
+ 
+ #define DEFAULT_ROOT_DEVICE Root_SDA1	/* sda1 - slightly silly choice */
+@@ -310,9 +309,10 @@ static void __init pmac_setup_arch(void)
+ 	for (ic = NULL; (ic = of_find_all_nodes(ic)) != NULL; )
+ 		if (get_property(ic, "interrupt-controller", NULL))
+ 			break;
+-	pmac_newworld = (ic != NULL);
+-	if (ic)
++	if (ic) {
++		pmac_newworld = 1;
+ 		of_node_put(ic);
++	}
+ 
+ 	/* Lookup PCI hosts */
+ 	pmac_pci_init();
+-- 
+short story of a lazy sysadmin:
+ alias appserv=wotan
