@@ -1,9 +1,9 @@
 Return-Path: <bcollins@ubuntu.com>
-Date: Sat, 21 Jan 2006 23:40:48 -0500
+Date: Sat, 21 Jan 2006 23:43:22 -0500
 From: Ben Collins <bcollins@ubuntu.com>
-Subject: [PATCH] Enable irq's for platform functions.
+Subject: [PATCH] Check for altname == NULL in snd-pmac-gpio.c
 To: Linuxppc-dev@ozlabs.org
-Message-id: <1137904849.5871.11.camel@grayson>
+Message-id: <1137905002.5871.15.camel@grayson>
 MIME-version: 1.0
 Content-type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -15,74 +15,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch makes the platform function interrupt functions actually
-work. Calls irq_enable() for the first in the list, and irq_disable()
-for the last.
+Since callers don't have to pass altname, snd-pmac-gpio.c should have
+been checking for NULL, and it wasn't.
 
-Added *func to struct irq_client so the the user can pass just that to
-pmf_unregister_irq_client().
+Also, fixes the pmf_unregister_irq_client() call to match the previous
+patch.
 
 Signed-off-by: Ben Collins <bcollins@ubuntu.com>
 
-diff --git a/arch/powerpc/platforms/powermac/pfunc_core.c b/arch/powerpc/platforms/powermac/pfunc_core.c
-index 76d037c..51b3601 100644
---- a/arch/powerpc/platforms/powermac/pfunc_core.c
-+++ b/arch/powerpc/platforms/powermac/pfunc_core.c
-@@ -869,21 +869,28 @@ int pmf_register_irq_client(struct devic
- 		spin_unlock_irqrestore(&pmf_lock, flags);
- 		return -ENODEV;
- 	}
-+	if (list_empty(&func->irq_clients))
-+		func->dev->handlers->irq_enable(func);
- 	list_add(&client->link, &func->irq_clients);
-+	client->func = func;
- 	spin_unlock_irqrestore(&pmf_lock, flags);
+diff --git a/sound/ppc/snd-pmac-gpio.c b/sound/ppc/snd-pmac-gpio.c
+index 25ef5e9..480e1ca 100644
+--- a/sound/ppc/snd-pmac-gpio.c
++++ b/sound/ppc/snd-pmac-gpio.c
+@@ -41,7 +41,7 @@ static struct pmf_function *get_audio_pf
+ 		return NULL;
  
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(pmf_register_irq_client);
+ 	pfunc = pmf_find_function(np, name);
+-	if (pfunc == NULL && altname != NULL)
++	if (pfunc == NULL && altname)
+ 		pfunc = pmf_find_function(np, altname);
  
--void pmf_unregister_irq_client(struct device_node *np,
--			      const char *name,
--			      struct pmf_irq_client *client)
-+void pmf_unregister_irq_client(struct pmf_irq_client *client)
+ 	return pfunc;
+@@ -58,10 +58,10 @@ static struct device_node *find_audio_gp
+ 	for (np = np->child; np; np = np->sibling) {
+ 		char *property = get_property(np, "audio-gpio", NULL);
+ 		if (property && (strcmp(property, name) == 0 ||
+-		    strcmp(property, altname) == 0))
++		    (altname && strcmp(property, altname) == 0)))
+ 			break;
+ 		if (device_is_compatible(np, name) ||
+-		    device_is_compatible(np, altname))
++		    (altname && device_is_compatible(np, altname)))
+ 			break;
+         }
+ 
+@@ -136,11 +136,7 @@ void snd_pmac_free_gpio(snd_pmac_gpio_t 
  {
-+	struct pmf_function *func = client->func;
- 	unsigned long flags;
+ 	if (gp->pfunc != NULL) {
+ 		if (gp->irq_client.owner == THIS_MODULE) {
+-			/* XXX: pmf_unregister_irq_client doesn't use its
+-			 * first two arguments. We only need to send it
+-			 * the irq_client. WATCH FOR THIS CHANGING!
+-			 */
+-			pmf_unregister_irq_client(NULL, NULL, &gp->irq_client);
++			pmf_unregister_irq_client(&gp->irq_client);
+ 			gp->irq_client.owner = NULL;
+ 		}
  
-+	BUG_ON(func == NULL);
-+
- 	spin_lock_irqsave(&pmf_lock, flags);
-+	client->func = NULL;
- 	list_del(&client->link);
-+	if (list_empty(&func->irq_clients))
-+		func->dev->handlers->irq_disable(func);
- 	spin_unlock_irqrestore(&pmf_lock, flags);
- }
- EXPORT_SYMBOL_GPL(pmf_unregister_irq_client);
-diff --git a/include/asm-powerpc/pmac_pfunc.h b/include/asm-powerpc/pmac_pfunc.h
-index d6d9a4d..e4594d5 100644
---- a/include/asm-powerpc/pmac_pfunc.h
-+++ b/include/asm-powerpc/pmac_pfunc.h
-@@ -168,6 +168,7 @@ struct pmf_irq_client {
- 	void			*data;
- 	struct module		*owner;
- 	struct list_head	link;
-+	struct pmf_function	*func;
- };
+@@ -233,7 +229,7 @@ int snd_pmac_request_irq(snd_pmac_gpio_t
  
- 
-@@ -188,9 +189,7 @@ extern int pmf_register_irq_client(struc
- 				   const char *name,
- 				   struct pmf_irq_client *client);
- 
--extern void pmf_unregister_irq_client(struct device_node *np,
--				      const char *name,
--				      struct pmf_irq_client *client);
-+extern void pmf_unregister_irq_client(struct pmf_irq_client *client);
- 
- /*
-  * Called by the handlers when an irq happens
+ 		if ((np = find_devices("i2s-a"))) {
+ 			ret = pmf_register_irq_client(np, gp->name, &gp->irq_client);
+-			if (ret < 0)
++			if (ret < 0 && gp->altname)
+ 				ret = pmf_register_irq_client(np, gp->altname, &gp->irq_client);
+ 		}
+ 		if (ret < 0)
 
 
 -- 
