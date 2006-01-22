@@ -1,22 +1,16 @@
-Return-Path: <glenn@aoi-industries.com>
-Received: from vms040pub.verizon.net (vms040pub.verizon.net [206.46.252.40])
-	by ozlabs.org (Postfix) with ESMTP id B526A689C0
+Return-Path: <frannk_m1@yahoo.com>
+Received: from web32215.mail.mud.yahoo.com (web32215.mail.mud.yahoo.com
+	[68.142.207.146]) by ozlabs.org (Postfix) with SMTP id 94C5768A12
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 Jan 2006 02:20:05 +1100 (EST)
-Received: from [192.168.0.2] ([68.163.235.71])
-	by vms040.mailsrvcs.net (Sun Java System Messaging Server 6.2-4.02
-	(built Sep
-	9 2005)) with ESMTPA id <0ITG00JIY55EK4B3@vms040.mailsrvcs.net> for
-	linuxppc-embedded@ozlabs.org; Sat, 21 Jan 2006 08:20:02 -0600 (CST)
-Date: Sat, 21 Jan 2006 09:20:01 -0500
-From: Glenn Burkhardt <glenn@aoi-industries.com>
+	Sun, 22 Jan 2006 19:35:31 +1100 (EST)
+Message-ID: <20060122082849.66877.qmail@web32215.mail.mud.yahoo.com>
+Date: Sun, 22 Jan 2006 00:28:49 -0800 (PST)
+From: Frank <frannk_m1@yahoo.com>
 Subject: RE: u-boot debugging
-In-reply-to: <mailman.3.1137805202.13229.linuxppc-embedded@ozlabs.org>
-To: linuxppc-embedded@ozlabs.org
-Message-id: <200601210920.01703.glenn@aoi-industries.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-References: <mailman.3.1137805202.13229.linuxppc-embedded@ozlabs.org>
+To: Glenn Burkhardt <glenn@aoi-industries.com>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <200601210920.01703.glenn@aoi-industries.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Cc: atul.sabharwal@exgate.tek.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,10 +22,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 20 January 2006 08:00 pm, Atul Sabharwal wrote:
-> First learn to communicate in English. I can give you 25 Us cents as I
-> cannot afford 1 Mark. You are not work even a Mark.
+--- Glenn BurkBurkhardtenglenn-aoiustries.com> wrote:
 
-The complete lack of civility in this remark is inexcusable in a public forum.  
-Herr Denk has provided an incredibly valuable service to the community, and 
-deserves more respect than this.
+> On Friday 20 January 2006 08:00 pm, AtulAtulhSabharwalte:
+> > First learn to communicate in English. I can give you 25 Us
+> cents as I
+> > cannot afford 1 Mark. You are not work even a Mark.
+> 
+> The complete lack of civility in this remark is inexcusable in
+> a public forum.  
+> Herr DenkDenk provided an incredibly valuable service to the
+> community, and 
+> deserves more respect than this.
+
+
+I agree whole heartily Glenn...
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
