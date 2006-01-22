@@ -1,17 +1,20 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 44C4F689FD
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jan 2006 08:19:11 +1100 (EST)
-Date: Sun, 22 Jan 2006 22:19:02 +0100
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] cleanup pmac_newworld variable usage
-Message-ID: <20060122211902.GA27709@suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5CB3C68A02
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Jan 2006 08:59:16 +1100 (EST)
+Subject: Re: [PATCH 001/001] PMAC HD runtime blinking control
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arkadiusz Miskiewicz <arekm@pld-linux.org>
+In-Reply-To: <200601221256.25685.arekm@pld-linux.org>
+References: <20060122121907.792abc72.cedric.pradalier@free.fr>
+	<200601221256.25685.arekm@pld-linux.org>
+Content-Type: text/plain
+Date: Mon, 23 Jan 2006 08:59:21 +1100
+Message-Id: <1137967161.4907.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,59 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 2006-01-22 at 12:56 +0100, Arkadiusz Miskiewicz wrote:
+> On Sunday 22 January 2006 03:19, Cedric Pradalier wrote:
+> > Hi,
+> >
+> > I've finally spend the time to mend the patch for control of
+> > the HD led blinking at runtime. This is a patch against
+> > 2.6.15
+> 
+> I wonder if it's also possible to disable blinking when laptop sleeps?
 
-remove extern declarations of pmac_newworld
-move pmac_newworld to bss
-if there is any "interrupt-controller" device, then it is newworld.
+Not that I know.. this is entirely done by the PMU.
 
-Signed-off-by: Olaf Hering <olh@suse.de>
-
- arch/powerpc/kernel/ppc_ksyms.c         |    1 -
- arch/powerpc/platforms/powermac/setup.c |    8 ++++----
- 2 files changed, 4 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.16-rc1-olh/arch/powerpc/kernel/ppc_ksyms.c
-===================================================================
---- linux-2.6.16-rc1-olh.orig/arch/powerpc/kernel/ppc_ksyms.c
-+++ linux-2.6.16-rc1-olh/arch/powerpc/kernel/ppc_ksyms.c
-@@ -57,7 +57,6 @@ extern void machine_check_exception(stru
- extern void alignment_exception(struct pt_regs *regs);
- extern void program_check_exception(struct pt_regs *regs);
- extern void single_step_exception(struct pt_regs *regs);
--extern int pmac_newworld;
- extern int sys_sigreturn(struct pt_regs *regs);
- 
- EXPORT_SYMBOL(clear_pages);
-Index: linux-2.6.16-rc1-olh/arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- linux-2.6.16-rc1-olh.orig/arch/powerpc/platforms/powermac/setup.c
-+++ linux-2.6.16-rc1-olh/arch/powerpc/platforms/powermac/setup.c
-@@ -88,11 +88,10 @@ int ppc_override_l2cr = 0;
- int ppc_override_l2cr_value;
- int has_l2cache = 0;
- 
--int pmac_newworld = 1;
-+int pmac_newworld;
- 
- static int current_root_goodness = -1;
- 
--extern int pmac_newworld;
- extern struct machdep_calls pmac_md;
- 
- #define DEFAULT_ROOT_DEVICE Root_SDA1	/* sda1 - slightly silly choice */
-@@ -310,9 +309,10 @@ static void __init pmac_setup_arch(void)
- 	for (ic = NULL; (ic = of_find_all_nodes(ic)) != NULL; )
- 		if (get_property(ic, "interrupt-controller", NULL))
- 			break;
--	pmac_newworld = (ic != NULL);
--	if (ic)
-+	if (ic) {
-+		pmac_newworld = 1;
- 		of_node_put(ic);
-+	}
- 
- 	/* Lookup PCI hosts */
- 	pmac_pci_init();
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+Ben.
