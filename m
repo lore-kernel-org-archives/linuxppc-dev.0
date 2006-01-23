@@ -1,31 +1,18 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx016.isp.belgacom.be (outmx016.isp.belgacom.be
-	[195.238.4.115])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 453F86891D
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id CFAF1681BD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jan 2006 03:25:12 +1100 (EST)
-Received: from outmx016.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx016.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k0NGOxUP017322
-	for <linuxppc-embedded@ozlabs.org>; Mon, 23 Jan 2006 17:25:00 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx016.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k0NGOwXI017304
-	for <linuxppc-embedded@ozlabs.org>; Mon, 23 Jan 2006 17:24:58 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: linuxppc-embedded@ozlabs.org
-Subject: Trouble with SMC serial port in ppc/boot/simple on Embedded Planet
-	8248 board
-Date: Mon, 23 Jan 2006 17:24:54 +0100
+	Tue, 24 Jan 2006 04:28:38 +1100 (EST)
+Message-ID: <43D5130E.2020404@ru.mvista.com>
+Date: Mon, 23 Jan 2006 20:31:58 +0300
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200601231724.54616.laurent.pinchart@tbox.biz>
+To: "Grant C. Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 4/9] Migrate ML300 reference design to the platform bus
+References: <20060119081303.GA24908@weasley-twins.secretlab.ca>
+In-Reply-To: <20060119081303.GA24908@weasley-twins.secretlab.ca>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,64 +23,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+Hi Grant,
 
-I'm trying to port the Linux kernel (2.6.15.1) to the Embedded Planet 8248 
-board. The board has a proprietary boot loader and uses SMC1 has a serial 
-console.
+Grant C. Likely wrote:
+> Signed-off-by: Grant C. Likely <grant.likely@secretlab.ca>
+> 
+> ---
+> 
+>  arch/ppc/Kconfig.debug                |    2 -
+>  arch/ppc/platforms/4xx/xilinx_ml300.c |   74 +++++++++++++++++++++++----------
+>  arch/ppc/platforms/4xx/xilinx_ml300.h |    2 -
+>  arch/ppc/syslib/Makefile              |    2 -
+>  4 files changed, 55 insertions(+), 25 deletions(-)
 
-After some work (2.6.15.1 has a nasty bug related to relocation which has been 
-fixed in the git tree), I have been able to load and start the kernel image.
+<snip>
 
-Unfortunately, the early serial output is lost. Here is the kernel boot 
-messages I get with 2.6.15.1 :
+> +/* Board specifications structures */
+> +struct ppc_sys_spec *cur_ppc_sys_spec;
+> +struct ppc_sys_spec ppc_sys_specs[] = {
+> +	{
+> +		/* Only one entry, always assume the same design */
+> +		.ppc_sys_name	= "Xilinx ML300 Reference Design",
+> +		.mask 		= 0x00000000,
+> +		.value 		= 0x00000000,
 
------------------------------------------------------------------------------
-Embedded Planet EP8248 PowerPC port
-Built 1 zonelists
-Kernel command line: console=ttyCPM0,9600n8 root=/dev/ram0 rw
-PID hash table entries: 4096 (order: 12, 65536 bytes)
-Warning: real time clock seems stuck!
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-Memory: 777088k available (1520k kernel code, 440k data, 96k init, 0k highmem)
-Mount-cache hash table entries: 512
-NET: Registered protocol family 16
------------------------------------------------------------------------------
+"Always assume the same design" could be a considerable limitation
+for the Virtex FPGAs.
 
-And here is the same with the modified 2.6.10-pre3 kernel shipped with the 
-board:
+<snip>
 
------------------------------------------------------------------------------
-loaded at:     00200000 002D01E8
-relocated to:  00400000 004D01E8
-board data at: 004CE12C 004CE168
-relocated to:  0040509C 004050D8
-zimage at:     00405A31 004CD2C4
-avail ram:     004D1000 01000000
+> @@ -131,6 +159,8 @@ platform_init(unsigned long r3, unsigned
+>  {
+>  	ppc4xx_init(r3, r4, r5, r6, r7);
+>  
+> +	identify_ppc_sys_by_id(mfspr(SPRN_PVR));
 
-Linux/PPC load: console=ttyCPM0,9600n8 root=/dev/ram0 rw
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.6.10-rc3 (laurent@pclaurent) (gcc version 3.4.1) #5 Thu Jan 19 
-15:25:42 CET 2006
-Embedded Planet EP8248 PowerPC port
-Built 1 zonelists
-[...]
------------------------------------------------------------------------------
+This is OK for the single ppc_sys_specs[] case, but in general
+I am not sure using PVR to identify the system makes much sense
+in case of Virtex FPGAs. IIRC, for the mpc8xxx Freescale SOCs PVR
+gives enough information to determine what on-chip peripherals are
+present (but not how multi-function peripherals like SCC are configured).
+In case of Xilinx the situation is worse: depending on the bitstream
+loaded into the FPGA, the same chip (the same PVR) and the board
+can have several sets of on-chip peripherals which could be completely
+different from each other. And knowing the PVR value alone puts no limitation
+on what peripherals could get into the FPGA (unless e.g. a Virtex-4 specific
+hardware block is used by an IP - like in case of TEMAC).
 
-Early boot messages (printed with puts in ppc/boot/simple/misc-embedded.c) are 
-lost.
 
-I compared the Embedded Planet kernel with the 2.6.10-rc3 from kernel.org, 
-haven't seen any big change related to the SMC serial port. Embedded Planet 
-uses BRGC7 instead of BRGC1 for SMC1, but that didn't work better for me.
+What do you think?
 
-I of course enabled the RS232 transceivers in the board control and status 
-registers (BCSR).
 
-Could anyone give me any pointer to where I should look at ?
+So far I've used a fairly dumb code like:
 
-Thanks in advance,
+   static int __init xilinx_platform_init(void)
+   {
+   #ifdef XPAR_EMAC_0_BASEADDR
+         memcpy(xemac_0_pdata.mac_addr, __res.bi_enetaddr, 6);
+         platform_device_register(&xilinx_emac_0_device);
+   #endif /* XPAR_EMAC_0_BASEADDR */
 
-Laurent Pinchart
+   #ifdef XPAR_TEMAC_0_BASEADDR
+         memcpy(xtemac_0_pdata.mac_addr, __res.bi_enetaddr, 6);
+         platform_device_register(&xilinx_temac_0_device);
+   #endif /* XPAR_TEMAC_0_BASEADDR */
+
+   #ifdef XPAR_TFT_0_BASEADDR
+         platform_device_register(&xilinx_lcd_0_device);
+   #endif /* XPAR_TFT_0_BASEADDR */
+
+   #ifdef XPAR_GPIO_0_BASEADDR
+         platform_device_register(&xilinx_gpio_0_device);
+   #endif /* XPAR_GPIO_0_BASEADDR */
+   #ifdef XPAR_GPIO_1_BASEADDR
+         platform_device_register(&xilinx_gpio_1_device);
+   #endif /* XPAR_GPIO_1_BASEADDR */
+
+   #ifdef XPAR_PS2_0_BASEADDR
+         platform_device_register(&xilinx_ps2_0_device);
+   #endif /* XPAR_PS2_0_BASEADDR */
+   #ifdef XPAR_PS2_1_BASEADDR
+         platform_device_register(&xilinx_ps2_1_device);
+   #endif /* XPAR_PS2_1_BASEADDR */
+
+	return 0;
+   }
+
+- to associate the devices to the drivers (the drivers
+call driver_register() from their module_init function).
+This helps me holding all that ugly stuff in one file
+(this single file can be used by multiple boards),
+and should make it easier to switch to something using
+the flattened device tree parsing when the OF DT comes
+into play.
+
+Probably using ppc_sys infrastructure now has some advantages,
+but they are not evident to me.
+
+
+Thanks,
+Andrei
