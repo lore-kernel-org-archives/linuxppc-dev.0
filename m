@@ -1,17 +1,16 @@
-Return-Path: <cedric.pradalier@inrialpes.fr>
-Date: Tue, 24 Jan 2006 07:31:33 +1000
-From: Cedric Pradalier <cedric.pradalier@inrialpes.fr>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.21])
+	by ozlabs.org (Postfix) with SMTP id AB6B6681BD
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jan 2006 09:12:10 +1100 (EST)
+Date: Mon, 23 Jan 2006 23:12:07 +0100 (MET)
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 001/001 Updated] PMAC HD runtime blinking control
-Message-Id: <20060124073133.5cab0e93.cedric.pradalier@inrialpes.fr>
-In-Reply-To: <1138024037.4907.24.camel@localhost.localdomain>
-References: <20060122121907.792abc72.cedric.pradalier@free.fr>
-	<1137898193.12998.83.camel@localhost.localdomain>
-	<20060123233823.3f0dbad5.cedric.pradalier@inrialpes.fr>
-	<1138024037.4907.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+References: <1137883724.12998.74.camel@localhost.localdomain>
+Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
+Message-ID: <29335.1138054327@www080.gmx.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,32 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-According to Benjamin Herrenschmidt, on Tue, 24 Jan 2006
-00:47:16 +1100, 
->> The key I could not understand was that hwif->gendev is
->> only initialised in the probe. So I had to move the
->> device creation after that.
->> 
->> Currently, it is blinking by default. Should it be that
->> way? I guess so, since it is activated by a kernel config
->> option. It is easy to change if required.
->
->Yes. In fact, by enabled default for ATA disks and by disabled for ATAPI
->would make sense...
+> --- Ursprüngliche Nachricht ---
+> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> Kopie: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+> Betreff: Re: AGPGART driver for ArticiaS - ioremap() problem
+> Datum: Sun, 22 Jan 2006 09:48:44 +1100
+> 
+> On Sat, 2006-01-21 at 02:59 +0100, Gerhard Pircher wrote:
+> 
+> > Yes, I see. :( The code mostly allocates the resources for the AGPGART
+> > driver beyond the real memory space, thus preventing the X server to
+> > work. Sometimes the resource is also mapped to where the resource of
+> > the graphic card resides (address 0x88000000, compare with the included 
+> > iomem file).
+> 
+> The AGP aperture should generally be located "outside" of those spaces.
+> That is above RAM and in some place where no device already resides...
+> It can be made to overlap RAM but that isn't a good idea (that's what
+> happens on Macs though due to a bug in the Apple chipset).
+Ahh, so the AGP aperture should not be within the memory space and any other
+PCI/IO address range. Slowly but surely I become confused. ;-)
 
-How do I tell the difference?. There is a 'kind' in pmif,
-and also a atapi_dma flag in hwif. Which is more sensible?
+> I don't see anything related to AGP in your output... you didn't post
+> the lspci as root thus it's missing all the useful infos ;)
+I included a new lspci output log. :-) (now done as root)
 
->
->Also, we should think a bit about the file name... "blinking_led" isn't
->terrific for something that will end up in a non-ppc specific location.
->Or maybe on the contrary it's good ... what about "activity_led"
->rather ?
->
+> Also, the AGP base isn't generally a PCI BAR of the bridge... it is one
+> in your case ?
+I'm afraid I can't answer this question (you know, we have no datasheet for
+the ArticiaS yet). From what I can see in the log, there is an unassigned
+memory region (type 0, should be <4GB I guess). Could this affect AGP
+operation? 
 
-I'm open to any suggestion. I'll wait a bit to see if
-someone else has a comment, then I'll change to
-"activity_led". 
+Gerhard
 
---
-Cedric
+-- 
+Lust, ein paar Euro nebenbei zu verdienen? Ohne Kosten, ohne Risiko!
+Satte Provisionen für GMX Partner: http://www.gmx.net/de/go/partner
