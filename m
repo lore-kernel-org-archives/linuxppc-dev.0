@@ -1,20 +1,18 @@
-Return-Path: <gnathita@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.207])
-	by ozlabs.org (Postfix) with ESMTP id C6DCA6891D
+Return-Path: <alebas@televes.com>
+Received: from tvesnat.televes.com (unknown [212.163.42.137])
+	by ozlabs.org (Postfix) with ESMTP id 89CE968A1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Jan 2006 18:54:53 +1100 (EST)
-Received: by wproxy.gmail.com with SMTP id i27so808488wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 Jan 2006 23:54:51 -0800 (PST)
-Message-ID: <259581790601222348p6afe2922o1d8a01fc35bc67da@mail.gmail.com>
-Date: Mon, 23 Jan 2006 08:48:04 +0100
-From: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
-To: 20060122082849.66877.qmail@web32215.mail.mud.yahoo.com,
-	linuxppc-embedded@ozlabs.org
-Subject: RE: u-boot debugging
+	Mon, 23 Jan 2006 19:17:53 +1100 (EST)
+Message-ID: <1138008308.43d4a0f44fbe3@webmail.televes.com:443>
+Date: Mon, 23 Jan 2006 10:25:08 +0100
+From: Alexandre BASTOS <alebas@televes.com>
+To: atul.sabharwal@exgate.tek.com
+Subject: RE: u-boot debugging 
+References: <4A062D477D842B4C8FC48EA5AF2D41F201AC2CF4@us-bv-m23.global.tektronix.net>
+In-Reply-To: <4A062D477D842B4C8FC48EA5AF2D41F201AC2CF4@us-bv-m23.global.tektronix.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_32117_32502322.1138002484700"
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,20 +23,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_32117_32502322.1138002484700
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-I do as well, Glenn... He gave me so much help in my learning and he only
-deserves good comments!!
+> First learn to communicate in English. I can give you 25 Us cents as I
+> cannot afford 1 Mark. You are not work even a Mark.
+>
 
-------=_Part_32117_32502322.1138002484700
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+What in the hell is this. Please, there are some here who don't speak
+a perfect english but try to use it as a common language to exchange.
+I feel also offended about this.
 
-I do as well, Glenn... He gave me so much help in my learning and he only d=
-eserves good comments!!<br>
+And please, read something apart from user manuals ... mark is no longer
+the german currency. Euro, ... you know?
 
-------=_Part_32117_32502322.1138002484700--
+Un saudo
+Alex Bastos
