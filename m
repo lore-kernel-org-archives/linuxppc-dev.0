@@ -1,15 +1,17 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.21])
-	by ozlabs.org (Postfix) with SMTP id 00D3D6891D
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jan 2006 09:15:41 +1100 (EST)
-Date: Mon, 23 Jan 2006 23:15:39 +0100 (MET)
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <galak@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5E109681BD
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Jan 2006 10:05:18 +1100 (EST)
+Date: Mon, 23 Jan 2006 16:58:04 -0600 (CST)
+From: Kumar Gala <galak@gate.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: cleaned up fsl_soc.c
+Message-ID: <Pine.LNX.4.44.0601231657380.19842-100000@gate.crashing.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="========GMXBoundary37841138054539"
-Subject: Re: AGPGART driver for ArticiaS - ioremap() problem
-Message-ID: <3784.1138054539@www080.gmx.net>
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,210 +21,353 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a MIME encapsulated multipart message -
-please use a MIME-compliant e-mail program to open it.
+Cleaned up fsl_soc.c based on comments from Olof Johansson.  Ran through
+Lindent, and split gfar_mdio init into its own function.
 
-Dies ist eine mehrteilige Nachricht im MIME-Format -
-bitte verwenden Sie zum Lesen ein MIME-konformes Mailprogramm.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
---========GMXBoundary37841138054539
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+---
+commit 9a8e139654ff5807b5b8fc3f73e9d118f22a3947
+tree 04fed9acbcb1565682808ac49946898ddc18a153
+parent b87359141569cb0fb0fad4ba6fed7de04ec22af9
+author Kumar Gala <galak@kernel.crashing.org> Mon, 23 Jan 2006 17:04:23 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Mon, 23 Jan 2006 17:04:23 -0600
 
-Forgot to include the lspci log. So here it comes. Sorry! 
+ arch/powerpc/sysdev/fsl_soc.c |  152 +++++++++++++++++++++++++----------------
+ 1 files changed, 94 insertions(+), 58 deletions(-)
 
-Gerhard
-
--- 
-Lust, ein paar Euro nebenbei zu verdienen? Ohne Kosten, ohne Risiko!
-Satte Provisionen für GMX Partner: http://www.gmx.net/de/go/partner
---========GMXBoundary37841138054539
-Content-Type: text/x-log; name="lspci.log"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="lspci.log"
-
-MDAwMDowMDowMC4wIEhvc3QgYnJpZGdlOiBNYWkgTG9naWMgSW5jb3Jwb3JhdGVkIEFydGljaWEg
-UyBIb3N0IEJyaWRnZSAocmV2IDAxKQoJQ29udHJvbDogSS9PLSBNZW0rIEJ1c01hc3RlcisgU3Bl
-Y0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIy
-Qi0KCVN0YXR1czogQ2FwKyA2Nk1IeisgVURGLSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1tZWRp
-dW0gPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydCsgPlNFUlItIDxQRVJSLQoJTGF0ZW5jeTogMzIK
-CUludGVycnVwdDogcGluIEEgcm91dGVkIHRvIElSUSAwCglSZWdpb24gMDogTWVtb3J5IGF0IDx1
-bmFzc2lnbmVkPiAoMzItYml0LCBwcmVmZXRjaGFibGUpCglDYXBhYmlsaXRpZXM6IFs0MF0gQUdQ
-IHZlcnNpb24gMS4wCgkJU3RhdHVzOiBSUT0xNiBJc28tIEFycVN6PTAgQ2FsPTAgU0JBKyBJVEFD
-b2gtIEdBUlQ2NC0gSFRyYW5zLSA2NGJpdC0gRlctIEFHUDMtIFJhdGU9eDEseDIseDQKCQlDb21t
-YW5kOiBSUT0xIEFycVN6PTAgQ2FsPTAgU0JBLSBBR1AtIEdBUlQ2NC0gNjRiaXQtIEZXLSBSYXRl
-PTxub25lPgoKMDAwMDowMDowMS4wIFBDSSBicmlkZ2U6IE1haSBMb2dpYyBJbmNvcnBvcmF0ZWQg
-QXJ0aWNpYSBTIFBDSSBCcmlkZ2UgKHByb2ctaWYgMDAgW05vcm1hbCBkZWNvZGVdKQoJQ29udHJv
-bDogSS9PKyBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0gUGFy
-RXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0KCVN0YXR1czogQ2FwLSA2Nk1IeisgVURGLSBG
-YXN0QjJCLSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5T
-RVJSLSA8UEVSUi0KCUxhdGVuY3k6IDMyCglCdXM6IHByaW1hcnk9MDAsIHNlY29uZGFyeT0wMSwg
-c3Vib3JkaW5hdGU9MDEsIHNlYy1sYXRlbmN5PTAKCSEhISBVbmtub3duIEkvTyByYW5nZSB0eXBl
-cyAyMS8yMAoJTWVtb3J5IGJlaGluZCBicmlkZ2U6IDg4MDAwMDAwLTg4MGZmZmZmCglQcmVmZXRj
-aGFibGUgbWVtb3J5IGJlaGluZCBicmlkZ2U6IDgwMDAwMDAwLTg3ZmZmZmZmCglCcmlkZ2VDdGw6
-IFBhcml0eS0gU0VSUi0gTm9JU0ErIFZHQSsgTUFib3J0LSA+UmVzZXQtIEZhc3RCMkItCgowMDAw
-OjAwOjA2LjAgRXRoZXJuZXQgY29udHJvbGxlcjogM0NvbSBDb3Jwb3JhdGlvbiAzYzkwNUMtVFgv
-VFgtTSBbVG9ybmFkb10gKHJldiA3OCkKCVN1YnN5c3RlbTogM0NvbSBDb3Jwb3JhdGlvbiAzQzkw
-NUMtVFggRmFzdCBFdGhlcmxpbmsgZm9yIFBDIE1hbmFnZW1lbnQgTklDCglDb250cm9sOiBJL08r
-IE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0
-ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLQoJU3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RCMkIt
-IFBhckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0g
-PFBFUlItCglMYXRlbmN5OiA4ICgyNTAwbnMgbWluLCAyNTAwbnMgbWF4KSwgQ2FjaGUgTGluZSBT
-aXplOiAweDA4ICgzMiBieXRlcykKCUludGVycnVwdDogcGluIEEgcm91dGVkIHRvIElSUSA3CglS
-ZWdpb24gMDogSS9PIHBvcnRzIGF0IGZlODAyMDAwIFtzaXplPTEyOF0KCVJlZ2lvbiAxOiBNZW1v
-cnkgYXQgOTgxMDAwMDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9MTI4XQoJQ2Fw
-YWJpbGl0aWVzOiBbZGNdIFBvd2VyIE1hbmFnZW1lbnQgdmVyc2lvbiAyCgkJRmxhZ3M6IFBNRUNs
-ay0gRFNJLSBEMSsgRDIrIEF1eEN1cnJlbnQ9MG1BIFBNRShEMCssRDErLEQyKyxEM2hvdCssRDNj
-b2xkKykKCQlTdGF0dXM6IEQwIFBNRS1FbmFibGUtIERTZWw9MCBEU2NhbGU9MiBQTUUtCgowMDAw
-OjAwOjA3LjAgSVNBIGJyaWRnZTogVklBIFRlY2hub2xvZ2llcywgSW5jLiBWVDgyQzY4NiBbQXBv
-bGxvIFN1cGVyIFNvdXRoXSAocmV2IDQwKQoJQ29udHJvbDogSS9PKyBNZW0rIEJ1c01hc3Rlcisg
-U3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0gUGFyRXJyLSBTdGVwcGluZysgU0VSUi0gRmFz
-dEIyQi0KCVN0YXR1czogQ2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1t
-ZWRpdW0gPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLQoJTGF0ZW5jeTog
-MAoJQ2FwYWJpbGl0aWVzOiBbYzBdIFBvd2VyIE1hbmFnZW1lbnQgdmVyc2lvbiAyCgkJRmxhZ3M6
-IFBNRUNsay0gRFNJLSBEMS0gRDItIEF1eEN1cnJlbnQ9MG1BIFBNRShEMC0sRDEtLEQyLSxEM2hv
-dC0sRDNjb2xkLSkKCQlTdGF0dXM6IEQwIFBNRS1FbmFibGUtIERTZWw9MCBEU2NhbGU9MCBQTUUt
-CgowMDAwOjAwOjA3LjEgSURFIGludGVyZmFjZTogVklBIFRlY2hub2xvZ2llcywgSW5jLiBWVDgy
-QzU4NkEvQi9WVDgyQzY4Ni9BL0IvVlQ4MjN4L0EvQyBQSVBDIEJ1cyBNYXN0ZXIgSURFIChyZXYg
-MDYpIChwcm9nLWlmIDhhIFtNYXN0ZXIgU2VjUCBQcmlQXSkKCUNvbnRyb2w6IEkvTysgTWVtKyBC
-dXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmct
-IFNFUlItIEZhc3RCMkItCglTdGF0dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQisgUGFyRXJy
-LSBERVZTRUw9bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0K
-CUxhdGVuY3k6IDE2CglSZWdpb24gNDogSS9PIHBvcnRzIGF0IGZlMDBjYzAwIFtzaXplPTE2XQoJ
-Q2FwYWJpbGl0aWVzOiBbYzBdIFBvd2VyIE1hbmFnZW1lbnQgdmVyc2lvbiAyCgkJRmxhZ3M6IFBN
-RUNsay0gRFNJLSBEMS0gRDItIEF1eEN1cnJlbnQ9MG1BIFBNRShEMC0sRDEtLEQyLSxEM2hvdC0s
-RDNjb2xkLSkKCQlTdGF0dXM6IEQwIFBNRS1FbmFibGUtIERTZWw9MCBEU2NhbGU9MCBQTUUtCgow
-MDAwOjAwOjA3LjIgVVNCIENvbnRyb2xsZXI6IFZJQSBUZWNobm9sb2dpZXMsIEluYy4gVlQ4Mnh4
-eHh4IFVIQ0kgVVNCIDEuMSBDb250cm9sbGVyIChyZXYgMWEpIChwcm9nLWlmIDAwIFtVSENJXSkK
-CVN1YnN5c3RlbTogVklBIFRlY2hub2xvZ2llcywgSW5jLiAoV3JvbmcgSUQpIFVTQiBDb250cm9s
-bGVyCglDb250cm9sOiBJL08rIE1lbS0gQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZH
-QVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSKyBGYXN0QjJCKwoJU3RhdHVzOiBDYXArIDY2
-TUh6LSBVREYtIEZhc3RCMkItIFBhckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0LSA8VEFib3J0
-LSA8TUFib3J0LSA+U0VSUi0gPFBFUlItCglMYXRlbmN5OiAzMSwgQ2FjaGUgTGluZSBTaXplOiAw
-eDA4ICgzMiBieXRlcykKCUludGVycnVwdDogcGluIEQgcm91dGVkIHRvIElSUSA1CglSZWdpb24g
-NDogSS9PIHBvcnRzIGF0IGZlODAyMDgwIFtzaXplPTMyXQoJQ2FwYWJpbGl0aWVzOiBbODBdIFBv
-d2VyIE1hbmFnZW1lbnQgdmVyc2lvbiAyCgkJRmxhZ3M6IFBNRUNsay0gRFNJLSBEMS0gRDItIEF1
-eEN1cnJlbnQ9MG1BIFBNRShEMC0sRDEtLEQyLSxEM2hvdC0sRDNjb2xkLSkKCQlTdGF0dXM6IEQw
-IFBNRS1FbmFibGUtIERTZWw9MCBEU2NhbGU9MCBQTUUtCgowMDAwOjAwOjA3LjMgVVNCIENvbnRy
-b2xsZXI6IFZJQSBUZWNobm9sb2dpZXMsIEluYy4gVlQ4Mnh4eHh4IFVIQ0kgVVNCIDEuMSBDb250
-cm9sbGVyIChyZXYgMWEpIChwcm9nLWlmIDAwIFtVSENJXSkKCVN1YnN5c3RlbTogVklBIFRlY2hu
-b2xvZ2llcywgSW5jLiAoV3JvbmcgSUQpIFVTQiBDb250cm9sbGVyCglDb250cm9sOiBJL08rIE1l
-bS0gQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBw
-aW5nLSBTRVJSKyBGYXN0QjJCKwoJU3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RCMkItIFBh
-ckVyci0gREVWU0VMPW1lZGl1bSA+VEFib3J0LSA8VEFib3J0LSA8TUFib3J0LSA+U0VSUi0gPFBF
-UlItCglMYXRlbmN5OiAzMSwgQ2FjaGUgTGluZSBTaXplOiAweDA4ICgzMiBieXRlcykKCUludGVy
-cnVwdDogcGluIEQgcm91dGVkIHRvIElSUSA1CglSZWdpb24gNDogSS9PIHBvcnRzIGF0IGZlODAy
-MGEwIFtzaXplPTMyXQoJQ2FwYWJpbGl0aWVzOiBbODBdIFBvd2VyIE1hbmFnZW1lbnQgdmVyc2lv
-biAyCgkJRmxhZ3M6IFBNRUNsay0gRFNJLSBEMS0gRDItIEF1eEN1cnJlbnQ9MG1BIFBNRShEMC0s
-RDEtLEQyLSxEM2hvdC0sRDNjb2xkLSkKCQlTdGF0dXM6IEQwIFBNRS1FbmFibGUtIERTZWw9MCBE
-U2NhbGU9MCBQTUUtCgowMDAwOjAwOjA3LjQgTm9uLVZHQSB1bmNsYXNzaWZpZWQgZGV2aWNlOiBW
-SUEgVGVjaG5vbG9naWVzLCBJbmMuIFZUODJDNjg2IFtBcG9sbG8gU3VwZXIgQUNQSV0gKHJldiA0
-MCkKCUNvbnRyb2w6IEkvTy0gTWVtLSBCdXNNYXN0ZXItIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdB
-U25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItCglTdGF0dXM6IENhcCsgNjZN
-SHotIFVERi0gRmFzdEIyQisgUGFyRXJyLSBERVZTRUw9bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQt
-IDxNQWJvcnQtID5TRVJSLSA8UEVSUi0KCUNhcGFiaWxpdGllczogWzY4XSBQb3dlciBNYW5hZ2Vt
-ZW50IHZlcnNpb24gMgoJCUZsYWdzOiBQTUVDbGstIERTSS0gRDEtIEQyLSBBdXhDdXJyZW50PTBt
-QSBQTUUoRDAtLEQxLSxEMi0sRDNob3QtLEQzY29sZC0pCgkJU3RhdHVzOiBEMCBQTUUtRW5hYmxl
-LSBEU2VsPTAgRFNjYWxlPTAgUE1FLQoKMDAwMDowMDowNy41IE11bHRpbWVkaWEgYXVkaW8gY29u
-dHJvbGxlcjogVklBIFRlY2hub2xvZ2llcywgSW5jLiBWVDgyQzY4NiBBQzk3IEF1ZGlvIENvbnRy
-b2xsZXIgKHJldiA1MCkKCUNvbnRyb2w6IEkvTysgTWVtLSBCdXNNYXN0ZXItIFNwZWNDeWNsZS0g
-TWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItCglTdGF0
-dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9bWVkaXVtID5UQWJv
-cnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0KCUludGVycnVwdDogcGluIEMgcm91
-dGVkIHRvIElSUSAxMQoJUmVnaW9uIDA6IEkvTyBwb3J0cyBhdCBmZTgwMjEwMCBbc2l6ZT0yNTZd
-CglSZWdpb24gMTogSS9PIHBvcnRzIGF0IGZlODAyMjAwIFtzaXplPTRdCglSZWdpb24gMjogSS9P
-IHBvcnRzIGF0IGZlODAyMjA0IFtzaXplPTRdCglDYXBhYmlsaXRpZXM6IFtjMF0gUG93ZXIgTWFu
-YWdlbWVudCB2ZXJzaW9uIDIKCQlGbGFnczogUE1FQ2xrLSBEU0ktIEQxLSBEMi0gQXV4Q3VycmVu
-dD0wbUEgUE1FKEQwLSxEMS0sRDItLEQzaG90LSxEM2NvbGQtKQoJCVN0YXR1czogRDAgUE1FLUVu
-YWJsZS0gRFNlbD0wIERTY2FsZT0wIFBNRS0KCjAwMDA6MDA6MDcuNiBDb21tdW5pY2F0aW9uIGNv
-bnRyb2xsZXI6IFZJQSBUZWNobm9sb2dpZXMsIEluYy4gSW50ZWwgNTM3IFtBQzk3IE1vZGVtXSAo
-cmV2IDMwKQoJQ29udHJvbDogSS9PKyBNZW0tIEJ1c01hc3Rlci0gU3BlY0N5Y2xlLSBNZW1XSU5W
-LSBWR0FTbm9vcC0gUGFyRXJyLSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0KCVN0YXR1czogQ2Fw
-KyA2Nk1Iei0gVURGLSBGYXN0QjJCLSBQYXJFcnItIERFVlNFTD1tZWRpdW0gPlRBYm9ydC0gPFRB
-Ym9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLQoJSW50ZXJydXB0OiBwaW4gQyByb3V0ZWQgdG8g
-SVJRIDExCglSZWdpb24gMDogSS9PIHBvcnRzIGF0IGZlODAyMzAwIFtzaXplPTI1Nl0KCUNhcGFi
-aWxpdGllczogW2QwXSBQb3dlciBNYW5hZ2VtZW50IHZlcnNpb24gMgoJCUZsYWdzOiBQTUVDbGst
-IERTSS0gRDEtIEQyLSBBdXhDdXJyZW50PTBtQSBQTUUoRDAtLEQxLSxEMi0sRDNob3QtLEQzY29s
-ZC0pCgkJU3RhdHVzOiBEMCBQTUUtRW5hYmxlLSBEU2VsPTAgRFNjYWxlPTAgUE1FLQoKMDAwMDow
-MDowOS4wIE11bHRpbWVkaWEgYXVkaW8gY29udHJvbGxlcjogQ3JlYXRpdmUgTGFicyBTQiBMaXZl
-ISBFTVUxMGsxIChyZXYgMGEpCglTdWJzeXN0ZW06IENyZWF0aXZlIExhYnM6IFVua25vd24gZGV2
-aWNlIDgwNjcKCUNvbnRyb2w6IEkvTysgTWVtLSBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lO
-Vi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItCglTdGF0dXM6IENh
-cCsgNjZNSHotIFVERi0gRmFzdEIyQisgUGFyRXJyLSBERVZTRUw9bWVkaXVtID5UQWJvcnQtIDxU
-QWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0KCUxhdGVuY3k6IDEyOCAoNTAwbnMgbWluLCA1
-MDAwbnMgbWF4KQoJSW50ZXJydXB0OiBwaW4gQSByb3V0ZWQgdG8gSVJRIDEwCglSZWdpb24gMDog
-SS9PIHBvcnRzIGF0IGZlODAyNDAwIFtzaXplPTMyXQoJQ2FwYWJpbGl0aWVzOiBbZGNdIFBvd2Vy
-IE1hbmFnZW1lbnQgdmVyc2lvbiAxCgkJRmxhZ3M6IFBNRUNsay0gRFNJLSBEMSsgRDIrIEF1eEN1
-cnJlbnQ9MG1BIFBNRShEMC0sRDEtLEQyLSxEM2hvdC0sRDNjb2xkLSkKCQlTdGF0dXM6IEQwIFBN
-RS1FbmFibGUtIERTZWw9MCBEU2NhbGU9MCBQTUUtCgowMDAwOjAwOjA5LjEgSW5wdXQgZGV2aWNl
-IGNvbnRyb2xsZXI6IENyZWF0aXZlIExhYnMgU0IgTGl2ZSEgTUlESS9HYW1lIFBvcnQgKHJldiAw
-YSkKCVN1YnN5c3RlbTogQ3JlYXRpdmUgTGFicyBHYW1lcG9ydCBKb3lzdGljawoJQ29udHJvbDog
-SS9PKyBNZW0tIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9vcC0gUGFyRXJy
-LSBTdGVwcGluZy0gU0VSUi0gRmFzdEIyQi0KCVN0YXR1czogQ2FwKyA2Nk1Iei0gVURGLSBGYXN0
-QjJCKyBQYXJFcnItIERFVlNFTD1tZWRpdW0gPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNF
-UlItIDxQRVJSLQoJTGF0ZW5jeTogMTI4CglSZWdpb24gMDogSS9PIHBvcnRzIGF0IGZlODAyNDIw
-IFtzaXplPThdCglDYXBhYmlsaXRpZXM6IFtkY10gUG93ZXIgTWFuYWdlbWVudCB2ZXJzaW9uIDEK
-CQlGbGFnczogUE1FQ2xrLSBEU0ktIEQxKyBEMisgQXV4Q3VycmVudD0wbUEgUE1FKEQwLSxEMS0s
-RDItLEQzaG90LSxEM2NvbGQtKQoJCVN0YXR1czogRDAgUE1FLUVuYWJsZS0gRFNlbD0wIERTY2Fs
-ZT0wIFBNRS0KCjAwMDA6MDE6MDAuMCBWR0EgY29tcGF0aWJsZSBjb250cm9sbGVyOiBBVEkgVGVj
-aG5vbG9naWVzIEluYyBSVjI4MCBbUmFkZW9uIDkyMDBdIChyZXYgMDEpIChwcm9nLWlmIDAwIFtW
-R0FdKQoJU3Vic3lzdGVtOiBQQyBQYXJ0bmVyIExpbWl0ZWQ6IFVua25vd24gZGV2aWNlIDdjMTMK
-CUNvbnRyb2w6IEkvTysgTWVtKyBCdXNNYXN0ZXIrIFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25v
-b3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZhc3RCMkItCglTdGF0dXM6IENhcCsgNjZNSHor
-IFVERi0gRmFzdEIyQisgUGFyRXJyLSBERVZTRUw9bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxN
-QWJvcnQtID5TRVJSLSA8UEVSUi0KCUxhdGVuY3k6IDAgKDIwMDBucyBtaW4pCglJbnRlcnJ1cHQ6
-IHBpbiBBIHJvdXRlZCB0byBJUlEgMTEKCVJlZ2lvbiAwOiBNZW1vcnkgYXQgODAwMDAwMDAgKDMy
-LWJpdCwgcHJlZmV0Y2hhYmxlKSBbc2l6ZT0xMjhNXQoJUmVnaW9uIDE6IEkvTyBwb3J0cyBhdCBm
-ZTAwMjAwMCBbc2l6ZT0yNTZdCglSZWdpb24gMjogTWVtb3J5IGF0IDg4MDAwMDAwICgzMi1iaXQs
-IG5vbi1wcmVmZXRjaGFibGUpIFtzaXplPTY0S10KCUV4cGFuc2lvbiBST00gYXQgODgwMjAwMDAg
-W2Rpc2FibGVkXSBbc2l6ZT0xMjhLXQoJQ2FwYWJpbGl0aWVzOiBbNThdIEFHUCB2ZXJzaW9uIDIu
-MAoJCVN0YXR1czogUlE9ODAgSXNvLSBBcnFTej0wIENhbD0wIFNCQSsgSVRBQ29oLSBHQVJUNjQt
-IEhUcmFucy0gNjRiaXQtIEZXKyBBR1AzLSBSYXRlPXgxLHgyCgkJQ29tbWFuZDogUlE9MSBBcnFT
-ej0wIENhbD0wIFNCQSsgQUdQLSBHQVJUNjQtIDY0Yml0LSBGVy0gUmF0ZT08bm9uZT4KCUNhcGFi
-aWxpdGllczogWzUwXSBQb3dlciBNYW5hZ2VtZW50IHZlcnNpb24gMgoJCUZsYWdzOiBQTUVDbGst
-IERTSS0gRDErIEQyKyBBdXhDdXJyZW50PTBtQSBQTUUoRDAtLEQxLSxEMi0sRDNob3QtLEQzY29s
-ZC0pCgkJU3RhdHVzOiBEMCBQTUUtRW5hYmxlLSBEU2VsPTAgRFNjYWxlPTAgUE1FLQoKMDAwMDow
-MTowMC4xIERpc3BsYXkgY29udHJvbGxlcjogQVRJIFRlY2hub2xvZ2llcyBJbmMgUlYyODAgW1Jh
-ZGVvbiA5MjAwXSAoU2Vjb25kYXJ5KSAocmV2IDAxKQoJU3Vic3lzdGVtOiBQQyBQYXJ0bmVyIExp
-bWl0ZWQ6IFVua25vd24gZGV2aWNlIDdjMTIKCUNvbnRyb2w6IEkvTy0gTWVtKyBCdXNNYXN0ZXIr
-IFNwZWNDeWNsZS0gTWVtV0lOVi0gVkdBU25vb3AtIFBhckVyci0gU3RlcHBpbmctIFNFUlItIEZh
-c3RCMkItCglTdGF0dXM6IENhcCsgNjZNSHorIFVERi0gRmFzdEIyQisgUGFyRXJyLSBERVZTRUw9
-bWVkaXVtID5UQWJvcnQtIDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0KCUxhdGVuY3k6
-IDEyOCAoMjAwMG5zIG1pbiksIENhY2hlIExpbmUgU2l6ZTogMHgwOCAoMzIgYnl0ZXMpCglSZWdp
-b24gMDogTWVtb3J5IGF0IDg4MDAwMDAwICgzMi1iaXQsIHByZWZldGNoYWJsZSkKCVJlZ2lvbiAx
-OiBNZW1vcnkgYXQgODgwMTAwMDAgKDMyLWJpdCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9NjRL
-XQoJQ2FwYWJpbGl0aWVzOiBbNTBdIFBvd2VyIE1hbmFnZW1lbnQgdmVyc2lvbiAyCgkJRmxhZ3M6
-IFBNRUNsay0gRFNJLSBEMSsgRDIrIEF1eEN1cnJlbnQ9MG1BIFBNRShEMC0sRDEtLEQyLSxEM2hv
-dC0sRDNjb2xkLSkKCQlTdGF0dXM6IEQwIFBNRS1FbmFibGUtIERTZWw9MCBEU2NhbGU9MCBQTUUt
-Cgo4MDAwMDAwMC1lZmZmZmZmZiA6IFBDSSBob3N0IGJyaWRnZQogIDgwMDAwMDAwLTg3ZmZmZmZm
-IDogUENJIEJ1cyAjMDEKICAgIDgwMDAwMDAwLTg3ZmZmZmZmIDogMDAwMDowMTowMC4wCiAgICAg
-IDgwMDAwMDAwLTg3ZmZmZmZmIDogcmFkZW9uZmIgZnJhbWVidWZmZXIKICA4ODAwMDAwMC04ODBm
-ZmZmZiA6IFBDSSBCdXMgIzAxCiAgICA4ODAwMDAwMC04ODAwZmZmZiA6IDAwMDA6MDE6MDAuMAog
-ICAgICA4ODAwMDAwMC04ODAwZmZmZiA6IHJhZGVvbmZiIG1taW8KICAgIDg4MDEwMDAwLTg4MDFm
-ZmZmIDogMDAwMDowMTowMC4xCiAgICA4ODAyMDAwMC04ODAzZmZmZiA6IDAwMDA6MDE6MDAuMAog
-IDk4MTAwMDAwLTk4MTAwMDdmIDogMDAwMDowMDowNi4wCgowMDAwMDAwMC0wMGJmZmZmZiA6IFBD
-SSBob3N0IGJyaWRnZQogIDAwMDAwMDAwLTAwMDAwMDFmIDogZG1hMQogIDAwMDAwMDIwLTAwMDAw
-MDIxIDogODI1OSAobWFzdGVyKQogIDAwMDAwMDQwLTAwMDAwMDVmIDogdGltZXIKICAwMDAwMDA2
-MC0wMDAwMDA2ZiA6IGk4MDQyCiAgMDAwMDAwODAtMDAwMDAwOGYgOiBkbWEgcGFnZSByZWcKICAw
-MDAwMDBhMC0wMDAwMDBhMSA6IDgyNTkgKHNsYXZlKQogIDAwMDAwMGMwLTAwMDAwMGRmIDogZG1h
-MgogIDAwMDAwMTcwLTAwMDAwMTc3IDogaWRlMQogIDAwMDAwMWYwLTAwMDAwMWY3IDogaWRlMAog
-IDAwMDAwMjc4LTAwMDAwMjdhIDogcGFycG9ydDIKICAwMDAwMDI3Yi0wMDAwMDI3ZiA6IHBhcnBv
-cnQyCiAgMDAwMDAyZjgtMDAwMDAyZmYgOiBzZXJpYWwKICAwMDAwMDM3Ni0wMDAwMDM3NiA6IGlk
-ZTEKICAwMDAwMDM3OC0wMDAwMDM3YSA6IHBhcnBvcnQwCiAgMDAwMDAzYmMtMDAwMDAzYmUgOiBw
-YXJwb3J0MQogIDAwMDAwM2MwLTAwMDAwM2RmIDogdmdhKwogIDAwMDAwM2U4LTAwMDAwM2VmIDog
-c2VyaWFsCiAgMDAwMDAzZjYtMDAwMDAzZjYgOiBpZGUwCiAgMDAwMDAzZjgtMDAwMDAzZmYgOiBz
-ZXJpYWwKICAwMDAwMDRkMC0wMDAwMDRkMSA6IDgyNTkgZWRnZSBjb250cm9sCiAgMDAwMDIwMDAt
-MDAwMDJmZmYgOiBQQ0kgQnVzICMwMQogICAgMDAwMDIwMDAtMDAwMDIwZmYgOiAwMDAwOjAxOjAw
-LjAKICAwMDAwY2MwMC0wMDAwY2MwZiA6IDAwMDA6MDA6MDcuMQogICAgMDAwMGNjMDAtMDAwMGNj
-MDcgOiBpZGUwCiAgICAwMDAwY2MwOC0wMDAwY2MwZiA6IGlkZTEKICAwMDgwMjAwMC0wMDgwMjA3
-ZiA6IDAwMDA6MDA6MDYuMAogICAgMDA4MDIwMDAtMDA4MDIwN2YgOiAwMDAwOjAwOjA2LjAKICAw
-MDgwMjA4MC0wMDgwMjA5ZiA6IDAwMDA6MDA6MDcuMgogICAgMDA4MDIwODAtMDA4MDIwOWYgOiB1
-aGNpX2hjZAogIDAwODAyMGEwLTAwODAyMGJmIDogMDAwMDowMDowNy4zCiAgICAwMDgwMjBhMC0w
-MDgwMjBiZiA6IHVoY2lfaGNkCiAgMDA4MDIxMDAtMDA4MDIxZmYgOiAwMDAwOjAwOjA3LjUKICAw
-MDgwMjIwMC0wMDgwMjIwMyA6IDAwMDA6MDA6MDcuNQogIDAwODAyMjA0LTAwODAyMjA3IDogMDAw
-MDowMDowNy41CiAgMDA4MDIzMDAtMDA4MDIzZmYgOiAwMDAwOjAwOjA3LjYKICAwMDgwMjQwMC0w
-MDgwMjQxZiA6IDAwMDA6MDA6MDkuMAogICAgMDA4MDI0MDAtMDA4MDI0MWYgOiBFTVUxMEsxCiAg
-MDA4MDI0MjAtMDA4MDI0MjcgOiAwMDAwOjAwOjA5LjEKICAgIDAwODAyNDIwLTAwODAyNDI3IDog
-ZW11MTBrMS1ncAo=
-
---========GMXBoundary37841138054539--
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 064c9de..e0887d5 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -40,7 +40,7 @@ phys_addr_t get_immrbase(void)
+ 		return immrbase;
+ 
+ 	soc = of_find_node_by_type(NULL, "soc");
+-	if (soc != 0) {
++	if (soc) {
+ 		unsigned int size;
+ 		void *prop = get_property(soc, "reg", &size);
+ 		immrbase = of_translate_address(soc, prop);
+@@ -49,21 +49,20 @@ phys_addr_t get_immrbase(void)
+ 
+ 	return immrbase;
+ }
+-EXPORT_SYMBOL(get_immrbase);
+ 
+-static const char * gfar_tx_intr = "tx";
+-static const char * gfar_rx_intr = "rx";
+-static const char * gfar_err_intr = "error";
++EXPORT_SYMBOL(get_immrbase);
+ 
+-static int __init gfar_of_init(void)
++static int __init gfar_mdio_of_init(void)
+ {
+ 	struct device_node *np;
+ 	unsigned int i;
+-	struct platform_device *mdio_dev, *gfar_dev;
++	struct platform_device *mdio_dev;
+ 	struct resource res;
+ 	int ret;
+ 
+-	for (np = NULL, i = 0; (np = of_find_compatible_node(np, "mdio", "gianfar")) != NULL; i++) {
++	for (np = NULL, i = 0;
++	     (np = of_find_compatible_node(np, "mdio", "gianfar")) != NULL;
++	     i++) {
+ 		int k;
+ 		struct device_node *child = NULL;
+ 		struct gianfar_mdio_data mdio_data;
+@@ -73,12 +72,14 @@ static int __init gfar_of_init(void)
+ 
+ 		ret = of_address_to_resource(np, 0, &res);
+ 		if (ret)
+-			goto mdio_err;
++			goto err;
+ 
+-		mdio_dev = platform_device_register_simple("fsl-gianfar_mdio", res.start, &res, 1);
++		mdio_dev =
++		    platform_device_register_simple("fsl-gianfar_mdio",
++						    res.start, &res, 1);
+ 		if (IS_ERR(mdio_dev)) {
+ 			ret = PTR_ERR(mdio_dev);
+-			goto mdio_err;
++			goto err;
+ 		}
+ 
+ 		for (k = 0; k < 32; k++)
+@@ -86,17 +87,44 @@ static int __init gfar_of_init(void)
+ 
+ 		while ((child = of_get_next_child(np, child)) != NULL) {
+ 			if (child->n_intrs) {
+-				u32 *id = (u32 *) get_property(child, "reg", NULL);
++				u32 *id =
++				    (u32 *) get_property(child, "reg", NULL);
+ 				mdio_data.irq[*id] = child->intrs[0].line;
+ 			}
+ 		}
+ 
+-		ret = platform_device_add_data(mdio_dev, &mdio_data, sizeof(struct gianfar_mdio_data));
++		ret =
++		    platform_device_add_data(mdio_dev, &mdio_data,
++					     sizeof(struct gianfar_mdio_data));
+ 		if (ret)
+-			goto mdio_unreg;
++			goto unreg;
+ 	}
+ 
+-	for (np = NULL, i = 0; (np = of_find_compatible_node(np, "network", "gianfar")) != NULL; i++) {
++	return 0;
++
++unreg:
++	platform_device_unregister(mdio_dev);
++err:
++	return ret;
++}
++
++arch_initcall(gfar_mdio_of_init);
++
++static const char *gfar_tx_intr = "tx";
++static const char *gfar_rx_intr = "rx";
++static const char *gfar_err_intr = "error";
++
++static int __init gfar_of_init(void)
++{
++	struct device_node *np;
++	unsigned int i;
++	struct platform_device *gfar_dev;
++	struct resource res;
++	int ret;
++
++	for (np = NULL, i = 0;
++	     (np = of_find_compatible_node(np, "network", "gianfar")) != NULL;
++	     i++) {
+ 		struct resource r[4];
+ 		struct device_node *phy, *mdio;
+ 		struct gianfar_platform_data gfar_data;
+@@ -110,7 +138,7 @@ static int __init gfar_of_init(void)
+ 
+ 		ret = of_address_to_resource(np, 0, &r[0]);
+ 		if (ret)
+-			goto gfar_err;
++			goto err;
+ 
+ 		r[1].start = np->intrs[0].line;
+ 		r[1].end = np->intrs[0].line;
+@@ -133,11 +161,13 @@ static int __init gfar_of_init(void)
+ 			r[3].flags = IORESOURCE_IRQ;
+ 		}
+ 
+-		gfar_dev = platform_device_register_simple("fsl-gianfar", i, &r[0], np->n_intrs + 1);
++		gfar_dev =
++		    platform_device_register_simple("fsl-gianfar", i, &r[0],
++						    np->n_intrs + 1);
+ 
+ 		if (IS_ERR(gfar_dev)) {
+ 			ret = PTR_ERR(gfar_dev);
+-			goto gfar_err;
++			goto err;
+ 		}
+ 
+ 		mac_addr = get_property(np, "address", NULL);
+@@ -145,26 +175,26 @@ static int __init gfar_of_init(void)
+ 
+ 		if (model && !strcasecmp(model, "TSEC"))
+ 			gfar_data.device_flags =
+-				FSL_GIANFAR_DEV_HAS_GIGABIT |
+-				FSL_GIANFAR_DEV_HAS_COALESCE |
+-				FSL_GIANFAR_DEV_HAS_RMON |
+-				FSL_GIANFAR_DEV_HAS_MULTI_INTR;
++			    FSL_GIANFAR_DEV_HAS_GIGABIT |
++			    FSL_GIANFAR_DEV_HAS_COALESCE |
++			    FSL_GIANFAR_DEV_HAS_RMON |
++			    FSL_GIANFAR_DEV_HAS_MULTI_INTR;
+ 		if (model && !strcasecmp(model, "eTSEC"))
+ 			gfar_data.device_flags =
+-				FSL_GIANFAR_DEV_HAS_GIGABIT |
+-				FSL_GIANFAR_DEV_HAS_COALESCE |
+-				FSL_GIANFAR_DEV_HAS_RMON |
+-				FSL_GIANFAR_DEV_HAS_MULTI_INTR |
+-				FSL_GIANFAR_DEV_HAS_CSUM |
+-				FSL_GIANFAR_DEV_HAS_VLAN |
+-				FSL_GIANFAR_DEV_HAS_EXTENDED_HASH;
++			    FSL_GIANFAR_DEV_HAS_GIGABIT |
++			    FSL_GIANFAR_DEV_HAS_COALESCE |
++			    FSL_GIANFAR_DEV_HAS_RMON |
++			    FSL_GIANFAR_DEV_HAS_MULTI_INTR |
++			    FSL_GIANFAR_DEV_HAS_CSUM |
++			    FSL_GIANFAR_DEV_HAS_VLAN |
++			    FSL_GIANFAR_DEV_HAS_EXTENDED_HASH;
+ 
+ 		ph = (phandle *) get_property(np, "phy-handle", NULL);
+ 		phy = of_find_node_by_phandle(*ph);
+ 
+ 		if (phy == NULL) {
+ 			ret = -ENODEV;
+-			goto gfar_unreg;
++			goto unreg;
+ 		}
+ 
+ 		mdio = of_get_parent(phy);
+@@ -174,7 +204,7 @@ static int __init gfar_of_init(void)
+ 		if (ret) {
+ 			of_node_put(phy);
+ 			of_node_put(mdio);
+-			goto gfar_unreg;
++			goto unreg;
+ 		}
+ 
+ 		gfar_data.phy_id = *id;
+@@ -183,23 +213,22 @@ static int __init gfar_of_init(void)
+ 		of_node_put(phy);
+ 		of_node_put(mdio);
+ 
+-		ret = platform_device_add_data(gfar_dev, &gfar_data, sizeof(struct gianfar_platform_data));
++		ret =
++		    platform_device_add_data(gfar_dev, &gfar_data,
++					     sizeof(struct
++						    gianfar_platform_data));
+ 		if (ret)
+-			goto gfar_unreg;
++			goto unreg;
+ 	}
+ 
+ 	return 0;
+ 
+-mdio_unreg:
+-	platform_device_unregister(mdio_dev);
+-mdio_err:
+-	return ret;
+-
+-gfar_unreg:
++unreg:
+ 	platform_device_unregister(gfar_dev);
+-gfar_err:
++err:
+ 	return ret;
+ }
++
+ arch_initcall(gfar_of_init);
+ 
+ static int __init fsl_i2c_of_init(void)
+@@ -209,17 +238,19 @@ static int __init fsl_i2c_of_init(void)
+ 	struct platform_device *i2c_dev;
+ 	int ret;
+ 
+-	for (np = NULL, i = 0; (np = of_find_compatible_node(np, "i2c", "fsl-i2c")) != NULL; i++) {
++	for (np = NULL, i = 0;
++	     (np = of_find_compatible_node(np, "i2c", "fsl-i2c")) != NULL;
++	     i++) {
+ 		struct resource r[2];
+ 		struct fsl_i2c_platform_data i2c_data;
+-		unsigned char * flags = NULL;
++		unsigned char *flags = NULL;
+ 
+ 		memset(&r, 0, sizeof(r));
+ 		memset(&i2c_data, 0, sizeof(i2c_data));
+ 
+ 		ret = of_address_to_resource(np, 0, &r[0]);
+ 		if (ret)
+-			goto i2c_err;
++			goto err;
+ 
+ 		r[1].start = np->intrs[0].line;
+ 		r[1].end = np->intrs[0].line;
+@@ -228,7 +259,7 @@ static int __init fsl_i2c_of_init(void)
+ 		i2c_dev = platform_device_register_simple("fsl-i2c", i, r, 2);
+ 		if (IS_ERR(i2c_dev)) {
+ 			ret = PTR_ERR(i2c_dev);
+-			goto i2c_err;
++			goto err;
+ 		}
+ 
+ 		i2c_data.device_flags = 0;
+@@ -240,18 +271,22 @@ static int __init fsl_i2c_of_init(void)
+ 		if (flags)
+ 			i2c_data.device_flags |= FSL_I2C_DEV_CLOCK_5200;
+ 
+-		ret = platform_device_add_data(i2c_dev, &i2c_data, sizeof(struct fsl_i2c_platform_data));
++		ret =
++		    platform_device_add_data(i2c_dev, &i2c_data,
++					     sizeof(struct
++						    fsl_i2c_platform_data));
+ 		if (ret)
+-			goto i2c_unreg;
++			goto unreg;
+ 	}
+ 
+ 	return 0;
+ 
+-i2c_unreg:
++unreg:
+ 	platform_device_unregister(i2c_dev);
+-i2c_err:
++err:
+ 	return ret;
+ }
++
+ arch_initcall(fsl_i2c_of_init);
+ 
+ #ifdef CONFIG_PPC_83xx
+@@ -267,51 +302,52 @@ static int __init mpc83xx_wdt_init(void)
+ 
+ 	if (!np) {
+ 		ret = -ENODEV;
+-		goto mpc83xx_wdt_nodev;
++		goto nodev;
+ 	}
+ 
+ 	soc = of_find_node_by_type(NULL, "soc");
+ 
+ 	if (!soc) {
+ 		ret = -ENODEV;
+-		goto mpc83xx_wdt_nosoc;
++		goto nosoc;
+ 	}
+ 
+ 	freq = (unsigned int *)get_property(soc, "bus-frequency", NULL);
+ 	if (!freq) {
+ 		ret = -ENODEV;
+-		goto mpc83xx_wdt_err;
++		goto err;
+ 	}
+ 
+ 	memset(&r, 0, sizeof(r));
+ 
+ 	ret = of_address_to_resource(np, 0, &r);
+ 	if (ret)
+-		goto mpc83xx_wdt_err;
++		goto err;
+ 
+ 	dev = platform_device_register_simple("mpc83xx_wdt", 0, &r, 1);
+ 	if (IS_ERR(dev)) {
+ 		ret = PTR_ERR(dev);
+-		goto mpc83xx_wdt_err;
++		goto err;
+ 	}
+ 
+ 	ret = platform_device_add_data(dev, freq, sizeof(int));
+ 	if (ret)
+-		goto mpc83xx_wdt_unreg;
++		goto unreg;
+ 
+ 	of_node_put(soc);
+ 	of_node_put(np);
+ 
+ 	return 0;
+ 
+-mpc83xx_wdt_unreg:
++unreg:
+ 	platform_device_unregister(dev);
+-mpc83xx_wdt_err:
++err:
+ 	of_node_put(soc);
+-mpc83xx_wdt_nosoc:
++nosoc:
+ 	of_node_put(np);
+-mpc83xx_wdt_nodev:
++nodev:
+ 	return ret;
+ }
++
+ arch_initcall(mpc83xx_wdt_init);
+ #endif
