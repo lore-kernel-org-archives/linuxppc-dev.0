@@ -1,15 +1,20 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32201.mail.mud.yahoo.com (web32201.mail.mud.yahoo.com
-	[68.142.207.132]) by ozlabs.org (Postfix) with SMTP id EEC19689C0
+Return-Path: <gnathita@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.207])
+	by ozlabs.org (Postfix) with ESMTP id C6DCA6891D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Jan 2006 15:24:15 +1100 (EST)
-Message-ID: <20060123042413.806.qmail@web32201.mail.mud.yahoo.com>
-Date: Sun, 22 Jan 2006 20:24:13 -0800 (PST)
-From: Frank <frannk_m1@yahoo.com>
-Subject: 2.4.x vs 2.6.x performance
-To: linuxppc-embedded@ozlabs.org
+	Mon, 23 Jan 2006 18:54:53 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id i27so808488wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 22 Jan 2006 23:54:51 -0800 (PST)
+Message-ID: <259581790601222348p6afe2922o1d8a01fc35bc67da@mail.gmail.com>
+Date: Mon, 23 Jan 2006 08:48:04 +0100
+From: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
+To: 20060122082849.66877.qmail@web32215.mail.mud.yahoo.com,
+	linuxppc-embedded@ozlabs.org
+Subject: RE: u-boot debugging
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/alternative;
+	boundary="----=_Part_32117_32502322.1138002484700"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,15 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I remember reading a while back that the 2.6 kernel is
-considerably slower then the 2.4 kernel (Wolfgang Denx). Has
-anybody taken any performance measurements on a later kernel
-version to see if the above still hods true?
+------=_Part_32117_32502322.1138002484700
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I'm thinking about moving to 2.6 since a lot of open source
-projects have stopped suporting the 2.4 kernel.
+I do as well, Glenn... He gave me so much help in my learning and he only
+deserves good comments!!
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+------=_Part_32117_32502322.1138002484700
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+I do as well, Glenn... He gave me so much help in my learning and he only d=
+eserves good comments!!<br>
+
+------=_Part_32117_32502322.1138002484700--
