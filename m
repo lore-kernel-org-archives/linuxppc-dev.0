@@ -1,18 +1,31 @@
-Return-Path: <allanjos@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.196])
-	by ozlabs.org (Postfix) with ESMTP id 37B24689AE
+Return-Path: <laurent.pinchart@tbox.biz>
+Received: from outmx016.isp.belgacom.be (outmx016.isp.belgacom.be
+	[195.238.4.115])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 453F86891D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jan 2006 02:15:38 +1100 (EST)
-Received: by zproxy.gmail.com with SMTP id z31so791035nzd
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Jan 2006 07:15:37 -0800 (PST)
-Message-ID: <7a2435710601230715j435d19d2we80b77e5ca5508d8@mail.gmail.com>
-Date: Mon, 23 Jan 2006 11:15:37 -0400
-From: Moloko Vellocet <allanjos@gmail.com>
+	Tue, 24 Jan 2006 03:25:12 +1100 (EST)
+Received: from outmx016.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx016.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id k0NGOxUP017322
+	for <linuxppc-embedded@ozlabs.org>; Mon, 23 Jan 2006 17:25:00 +0100
+	(envelope-from <laurent.pinchart@tbox.biz>)
+Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
+	[194.78.198.49])
+	by outmx016.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id k0NGOwXI017304
+	for <linuxppc-embedded@ozlabs.org>; Mon, 23 Jan 2006 17:24:58 +0100
+	(envelope-from <laurent.pinchart@tbox.biz>)
+From: Laurent Pinchart <laurent.pinchart@tbox.biz>
 To: linuxppc-embedded@ozlabs.org
-Subject: Registers read-only
+Subject: Trouble with SMC serial port in ppc/boot/simple on Embedded Planet
+	8248 board
+Date: Mon, 23 Jan 2006 17:24:54 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200601231724.54616.laurent.pinchart@tbox.biz>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,85 +36,64 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, I'm writing a driver to manage the serial communication in a
-MPC5200 board, but the interrupt I don't have obtained the call to
-interrupt routine, I've configured the registers in the initialization
-code as the following:
+Hi everybody,
 
-#define REG_MBAR     MPC5xxx_MBAR
-#define REG_BASE_PSC MPC5xxx_PSC3
-#define REG_CR       (REG_BASE_PSC + 0x08)
-#define REG_RXTX     (REG_BASE_PSC + 0x0C)
-#define REG_IMR      (REG_BASE_PSC + 0x14)
-#define REG_SICR     (REG_BASE_PSC + 0x40)
-#define REG_RFALARM  (REG_BASE_PSC + 0x6E)
-#define REG_TFALARM  (REG_BASE_PSC + 0x8E)
+I'm trying to port the Linux kernel (2.6.15.1) to the Embedded Planet 8248 
+board. The board has a proprietary boot loader and uses SMC1 has a serial 
+console.
 
-outb(0x0A, REG_CR);
-wmb();
-printk("REG_CR=3D%x\n", inb(REG_CR));
-rmb();
-outb(0x221000, REG_SICR);
-wmb();
-printk("REG_SICR=3D%x\n", inb(REG_SICR));
-rmb();
-outb(0x0004, REG_RFALARM);
-wmb();
-printk("REG_RFALARM=3D%x\n", inb(REG_RFALARM));
-rmb();
-outb(0x0004, REG_TFALARM);
-wmb();
-printk("REG_TFALARM=3D%x\n", inb(REG_TFALARM));
-rmb();
-outb(0x00000300, REG_IMR);
-wmb();
-printk("REG_IMR=3D%x\n", inb(REG_IMR));
-rmb();
+After some work (2.6.15.1 has a nasty bug related to relocation which has been 
+fixed in the git tree), I have been able to load and start the kernel image.
 
-I'm getting always:
-REG_CR=3D0
-REG_SICR=3D0
-REG_RFALARM=3D0
-REG_TFALARM=3D0
-REG_IMR=3D0
+Unfortunately, the early serial output is lost. Here is the kernel boot 
+messages I get with 2.6.15.1 :
 
-I have to configure 'port config' register doing a 'or' with the
-actual value in the register, but I can't get the values contained in
-the registers. Are the register write-only.
+-----------------------------------------------------------------------------
+Embedded Planet EP8248 PowerPC port
+Built 1 zonelists
+Kernel command line: console=ttyCPM0,9600n8 root=/dev/ram0 rw
+PID hash table entries: 4096 (order: 12, 65536 bytes)
+Warning: real time clock seems stuck!
+Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+Memory: 777088k available (1520k kernel code, 440k data, 96k init, 0k highmem)
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+-----------------------------------------------------------------------------
 
-I've registered the following interrupts:
-if ((err =3D request_irq(MPC5xxx_IR_RX_IRQ,  /*RX_IRQ_NUMBER,*/
- interrupt_handler,
- SA_INTERRUPT,
- DEVICE_NAME,
- NULL)) < 0)
- goto fail_rx_req_irq;
+And here is the same with the modified 2.6.10-pre3 kernel shipped with the 
+board:
 
-if ((err =3D request_irq(MPC5xxx_IR_TX_IRQ,  /*TX_IRQ_NUMBER,*/
- interrupt_handler_tx,
- SA_INTERRUPT,
- DEVICE_NAME,
- NULL)) < 0)
- goto fail_tx_req_irq;
+-----------------------------------------------------------------------------
+loaded at:     00200000 002D01E8
+relocated to:  00400000 004D01E8
+board data at: 004CE12C 004CE168
+relocated to:  0040509C 004050D8
+zimage at:     00405A31 004CD2C4
+avail ram:     004D1000 01000000
 
-But the interrupts are not activated when I execute a ioctl to the
-board the interrupt handler are not called.
+Linux/PPC load: console=ttyCPM0,9600n8 root=/dev/ram0 rw
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.6.10-rc3 (laurent@pclaurent) (gcc version 3.4.1) #5 Thu Jan 19 
+15:25:42 CET 2006
+Embedded Planet EP8248 PowerPC port
+Built 1 zonelists
+[...]
+-----------------------------------------------------------------------------
 
-Does anyone know the problem with this code?
+Early boot messages (printed with puts in ppc/boot/simple/misc-embedded.c) are 
+lost.
 
+I compared the Embedded Planet kernel with the 2.6.10-rc3 from kernel.org, 
+haven't seen any big change related to the SMC serial port. Embedded Planet 
+uses BRGC7 instead of BRGC1 for SMC1, but that didn't work better for me.
 
+I of course enabled the RS232 transceivers in the board control and status 
+registers (BCSR).
 
---
-_______________________________
-Allann J. O. Silva
-Genius Instituto de Tecnologia
-Tel.:+55 (92) 3614-6586
-www.genius.org.br
-_______________________________
-"I received the fundamentals of my education in school, but that was
-not enough. My real education, the superstructure, the details, the
-true architecture, I got out of the public library. For an
-impoverished child whose family could not afford to buy books, the
-library was the open door to wonder and achievement, and I can never
-be sufficiently grateful that I had the wit to charge through that
-door and make the most of it." (from I. Asimov, 1994)
+Could anyone give me any pointer to where I should look at ?
+
+Thanks in advance,
+
+Laurent Pinchart
