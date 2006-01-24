@@ -1,20 +1,31 @@
-Return-Path: <iluri@fagorautomation.es>
-Received: from smtp2.sarenet.es (orhi.sarenet.es [192.148.167.5])
-	by ozlabs.org (Postfix) with ESMTP id A79416891D
+Return-Path: <laurent.pinchart@tbox.biz>
+Received: from outmx008.isp.belgacom.be (outmx008.isp.belgacom.be
+	[195.238.5.235])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 76C57681BD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jan 2006 19:25:20 +1100 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by smtp2.sarenet.es (Postfix) with ESMTP id B317372E9
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jan 2006 08:59:48 +0100 (CET)
+	Tue, 24 Jan 2006 19:26:33 +1100 (EST)
+Received: from outmx008.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx008.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id k0O8QM8A030230
+	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Jan 2006 09:26:22 +0100
+	(envelope-from <laurent.pinchart@tbox.biz>)
+Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
+	[194.78.198.49])
+	by outmx008.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id k0O8QGq4030145
+	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Jan 2006 09:26:17 +0100
+	(envelope-from <laurent.pinchart@tbox.biz>)
+From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+To: linuxppc-embedded@ozlabs.org
+Subject: Trouble with SMC serial port in ppc/boot/simple on Embedded Planet
+	8248 board
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C620BC.252987E9"
-Subject: Linux kernel and u-boot debugging with Eclipse IDE
-Date: Tue, 24 Jan 2006 08:59:46 +0100
-Message-ID: <918EB199DDDFFA42BEA2EB3A1C6021F399AFAD@correo.fagorautomation.net>
-From: "IGOR LURI" <iluri@fagorautomation.es>
-To: <linuxppc-embedded@ozlabs.org>
+Date: Tue, 24 Jan 2006 09:26:14 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200601240926.14408.laurent.pinchart@tbox.biz>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,83 +36,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi everybody,
 
-------_=_NextPart_001_01C620BC.252987E9
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+(First of all, this is a repost of a mail I sent yesterday for which I haven't 
+received a copy from the mailing list and which does not appear in the 
+archives. If the mail hasn't been dropped, sorry for the duplicate).
 
-Hi all,
+I'm trying to port the Linux kernel (2.6.15.1) to the Embedded Planet 8248 
+board. The board has a proprietary boot loader and uses SMC1 has a serial 
+console.
 
-We have a MPC5200Lite board running Linux 2.4.25 and u-boot 1.1.4. We =
-are able to debug Linux kernel and U-boot using DDD/GDB and BDI2000, and =
-we are trying to use Eclipse IDE (with CDT plugin) / BDI2000 to develop =
-and debug software.
+After some work (2.6.15.1 has a nasty bug related to relocation which has been 
+fixed in the git tree), I have been able to load and start the kernel image.
 
-Eclipse works well to remote debugging aplications over ethernet,  =
-however, we are not able to debug Linux kernel or u-boot using Eclipse. =
-When it stops in the first breakpoint, I can=B4t view some variables and =
-stepping into a function, it shows another. It  seems that Eclipse has =
-problems with Linux kernel and u-boot symbols.
+Unfortunately, the early serial output is lost. Here is the kernel boot 
+messages I get with 2.6.15.1 :
 
-Someone uses Eclipse and BDI2000 to debug Linux kernel and u-boot?=20
+-----------------------------------------------------------------------------
+Embedded Planet EP8248 PowerPC port
+Built 1 zonelists
+Kernel command line: console=ttyCPM0,9600n8 root=/dev/ram0 rw
+PID hash table entries: 4096 (order: 12, 65536 bytes)
+Warning: real time clock seems stuck!
+Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
+Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
+Memory: 777088k available (1520k kernel code, 440k data, 96k init, 0k highmem)
+Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+-----------------------------------------------------------------------------
 
+And here is the same with the modified 2.6.10-pre3 kernel shipped with the 
+board:
 
+-----------------------------------------------------------------------------
+loaded at:     00200000 002D01E8
+relocated to:  00400000 004D01E8
+board data at: 004CE12C 004CE168
+relocated to:  0040509C 004050D8
+zimage at:     00405A31 004CD2C4
+avail ram:     004D1000 01000000
 
-Igor Luri
-R&D Software Department
-Fagor Automation S. Coop.
+Linux/PPC load: console=ttyCPM0,9600n8 root=/dev/ram0 rw
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.6.10-rc3 (laurent@pclaurent) (gcc version 3.4.1) #5 Thu Jan 19 
+15:25:42 CET 2006
+Embedded Planet EP8248 PowerPC port
+Built 1 zonelists
+[...]
+-----------------------------------------------------------------------------
 
+Early boot messages (printed with puts in ppc/boot/simple/misc-embedded.c) are 
+lost.
 
+I compared the Embedded Planet kernel with the 2.6.10-rc3 from kernel.org, 
+haven't seen any big change related to the SMC serial port. Embedded Planet 
+uses BRGC7 instead of BRGC1 for SMC1, but that didn't work better for me.
 
-------_=_NextPart_001_01C620BC.252987E9
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+I of course enabled the RS232 transceivers in the board control and status 
+registers (BCSR).
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7232.36">
-<TITLE>Linux kernel and u-boot debugging with Eclipse IDE</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
+Could anyone give me any pointer to where I should look at ?
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">Hi all,</FONT>
-</P>
+Thanks in advance,
 
-<P><FONT SIZE=3D2 FACE=3D"Arial">We have a MPC5200Lite board running =
-Linux 2.4.25 and u-boot 1.1.4. We are able to debug Linux kernel and =
-U-boot using DDD/GDB and BDI2000, and we are trying to use Eclipse IDE =
-(with CDT plugin) / BDI2000 to develop and debug software.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Eclipse works well to remote debugging =
-aplications over ethernet,&nbsp; however, we are not able to debug Linux =
-kernel or u-boot using Eclipse. When it stops in the first breakpoint, I =
-can=B4t view some variables and stepping into a function, it shows =
-another. It&nbsp; seems that Eclipse has problems with Linux kernel and =
-u-boot symbols.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Someone uses Eclipse and BDI2000 to =
-debug Linux kernel and u-boot? </FONT>
-</P>
-<BR>
-<BR>
-
-<P><B><FONT SIZE=3D2 FACE=3D"Arial">Igor Luri</FONT></B>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">R&amp;D Software =
-Department</FONT><B></B>
-
-<BR><B><FONT FACE=3D"Arial">Fagor Automation S. Coop.</FONT></B>
-</P>
-<BR>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C620BC.252987E9--
+Laurent Pinchart
