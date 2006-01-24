@@ -1,31 +1,25 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx008.isp.belgacom.be (outmx008.isp.belgacom.be
-	[195.238.5.235])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 76C57681BD
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6E289681BD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jan 2006 19:26:33 +1100 (EST)
-Received: from outmx008.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx008.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k0O8QM8A030230
-	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Jan 2006 09:26:22 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx008.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k0O8QGq4030145
-	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Jan 2006 09:26:17 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: linuxppc-embedded@ozlabs.org
-Subject: Trouble with SMC serial port in ppc/boot/simple on Embedded Planet
-	8248 board
+	Wed, 25 Jan 2006 05:08:20 +1100 (EST)
+Received: from ovro.ovro.caltech.edu
+	(IDENT:U2FsdGVkX18WW7hvIbKS3NlNAYi3Jsv2NxJzGi8ubcg@ovro.ovro.caltech.edu
+	[192.100.16.2])
+	by ovro.ovro.caltech.edu (8.13.1/8.13.1) with SMTP id k0OI8Hat000782
+	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Jan 2006 10:08:17 -0800
+Message-ID: <43D66D06.9090904@ovro.caltech.edu>
+Date: Tue, 24 Jan 2006 10:08:06 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Date: Tue, 24 Jan 2006 09:26:14 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200601240926.14408.laurent.pinchart@tbox.biz>
+To: linuxppc-embedded@ozlabs.org
+Subject: Yosemite/440EP why are readl()/ioread32() setup to read little-endian?
+References: <43CC3E37.4040707@softadvances.com>
+In-Reply-To: <43CC3E37.4040707@softadvances.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,68 +30,129 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+Hi all,
 
-(First of all, this is a repost of a mail I sent yesterday for which I haven't 
-received a copy from the mailing list and which does not appear in the 
-archives. If the mail hasn't been dropped, sorry for the duplicate).
+I was writing a simple driver to test IRQ handling on the
+AMCC Yosemite board. The board has an 8x2 header with several
+GPIO pins, a number of which can be configured as IRQ inputs.
 
-I'm trying to port the Linux kernel (2.6.15.1) to the Embedded Planet 8248 
-board. The board has a proprietary boot loader and uses SMC1 has a serial 
-console.
+I plan to setup GPIO46 as output, and GPIO47 as input, and
+select IRQ8 on that pin.
 
-After some work (2.6.15.1 has a nasty bug related to relocation which has been 
-fixed in the git tree), I have been able to load and start the kernel image.
+The GPIO46 and GPIO47 are configured via the GPIO1 registers
+at 0xEF600C00. U-Boot can be used to read the register values:
 
-Unfortunately, the early serial output is lost. Here is the kernel boot 
-messages I get with 2.6.15.1 :
+=> md ef600c00 b
+ef600c00: 00000000 c2000000 50080000 00000000    ........P.......
+ef600c10: 00000000 00000000 00000000 3ffcfffd    ............?...
+ef600c20: 00000000 00000000 00000000    ............
 
------------------------------------------------------------------------------
-Embedded Planet EP8248 PowerPC port
-Built 1 zonelists
-Kernel command line: console=ttyCPM0,9600n8 root=/dev/ram0 rw
-PID hash table entries: 4096 (order: 12, 65536 bytes)
-Warning: real time clock seems stuck!
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-Memory: 777088k available (1520k kernel code, 440k data, 96k init, 0k highmem)
-Mount-cache hash table entries: 512
-NET: Registered protocol family 16
------------------------------------------------------------------------------
+=> md ef600c30 6
+ef600c30: 00000400 00000000 00010000 00000000    ................
+ef600c40: 00000000 00000000    ........
+=>
 
-And here is the same with the modified 2.6.10-pre3 kernel shipped with the 
-board:
+So
 
------------------------------------------------------------------------------
-loaded at:     00200000 002D01E8
-relocated to:  00400000 004D01E8
-board data at: 004CE12C 004CE168
-relocated to:  0040509C 004050D8
-zimage at:     00405A31 004CD2C4
-avail ram:     004D1000 01000000
+ef600c00  GPIO1_OR    = 00000000
+ef600c04  GPIO1_TCR   = c2000000
+ef600c30  GPIO1_ISR1L = 00000400
 
-Linux/PPC load: console=ttyCPM0,9600n8 root=/dev/ram0 rw
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.6.10-rc3 (laurent@pclaurent) (gcc version 3.4.1) #5 Thu Jan 19 
-15:25:42 CET 2006
-Embedded Planet EP8248 PowerPC port
-Built 1 zonelists
-[...]
------------------------------------------------------------------------------
+However, if I read those same registers back under Linux,
+using the driver code pasted at the end of this message
+I get:
 
-Early boot messages (printed with puts in ppc/boot/simple/misc-embedded.c) are 
-lost.
+# insmod yosemite_gpio.ko
+- remap the GPIO registers
+- remapped to address 0xD1008C00
 
-I compared the Embedded Planet kernel with the 2.6.10-rc3 from kernel.org, 
-haven't seen any big change related to the SMC serial port. Embedded Planet 
-uses BRGC7 instead of BRGC1 for SMC1, but that didn't work better for me.
+- Read some GPIO1 registers using readl()
+- GPIO1_OR    = 0x00000000
+- GPIO1_TCR   = 0x000000C2
+- GPIO1_ISR1L = 0x00040000
 
-I of course enabled the RS232 transceivers in the board control and status 
-registers (BCSR).
+- Read some GPIO1 registers using ioread32()
+- GPIO1_OR    = 0x00000000
+- GPIO1_TCR   = 0x000000C2
+- GPIO1_ISR1L = 0x00040000
 
-Could anyone give me any pointer to where I should look at ?
+- Read some GPIO1 registers using an integer pointer
+- GPIO1_OR    = 0x00000000
+- GPIO1_TCR   = 0xC2000000
+- GPIO1_ISR1L = 0x00000400
 
-Thanks in advance,
+readl() and ioread32() read the registers in little-endian format!
 
-Laurent Pinchart
+Looking at asm-ppc/io.h
+
+  - ioread32() is just a readl()
+  - line 180 (2.6.13) has readl() as in_le32()
+    (the code is the same in the 2.6.15-denx kernel too)
+
+So, this explains why the data is read in little-endian format,
+but not why this was done.
+
+If the processor was reading from the PCI bus, then sure, I
+could understand why this might be used, but even then, that
+should be up to the user, eg. by using cpu_to_le32 etc.
+
+Should I just be using pointers for remapped processor
+registers, and only use readl(), ioread32(), etc, on external
+memory?
+
+I know this is just a big-endian/little-endian issue, I'm
+really just asking for the driver writing 'best practices'
+in this regard.
+
+Looking forward to enlightenment :)
+
+Cheers
+Dave
+
+
+
+
+
+--------------------------driver code----------------------------
+
+/* yosemite_gpio.c */
+
+#include <linux/module.h>   /* kernel modules                    */
+#include <asm/io.h>         /* ioremap64(), iounmap(), readl()   */
+
+static unsigned long long base = 0x0EF600C00; // 36-bit address
+static unsigned int size = 0x44;
+static char *kernel;
+
+static int __init simple_init(void)
+{
+	int *p;
+	
+	/* Get the GPIO control registers */
+	printk(" - remap the GPIO registers\n");
+	kernel = ioremap64(base, size);
+	printk(" - remapped to address 0x%.8X\n", (int)kernel);
+
+	printk(" - Read some GPIO1 registers using readl()\n");
+	printk(" - GPIO1_OR    = 0x%.8X\n", readl(kernel));
+	printk(" - GPIO1_TCR   = 0x%.8X\n", readl(kernel+0x04));
+	printk(" - GPIO1_ISR1L = 0x%.8X\n", readl(kernel+0x30));
+
+	printk(" - Read some GPIO1 registers using ioread32()\n");
+	printk(" - GPIO1_OR    = 0x%.8X\n", ioread32(kernel));
+	printk(" - GPIO1_TCR   = 0x%.8X\n", ioread32(kernel+0x04));
+	printk(" - GPIO1_ISR1L = 0x%.8X\n", ioread32(kernel+0x30));
+	
+	p = (int *)kernel;
+	printk(" - Read some GPIO1 registers using an integer pointer\n");
+	printk(" - GPIO1_OR    = 0x%.8X\n", p[0]);
+	printk(" - GPIO1_TCR   = 0x%.8X\n", p[1]);
+	printk(" - GPIO1_ISR1L = 0x%.8X\n", p[12]);
+	
+	/* Don't load */
+	iounmap(kernel);
+	return -EINVAL;
+	
+}
+module_init(simple_init);
+MODULE_LICENSE("GPL");
