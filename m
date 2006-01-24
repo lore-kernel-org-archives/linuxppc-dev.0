@@ -1,17 +1,20 @@
-Return-Path: <s.maiti@tcs.com>
-Received: from InMumG01.tcs.com (inmumg01.tcs.com [219.64.33.12])
-	by ozlabs.org (Postfix) with ESMTP id 6BBAD6891D
+Return-Path: <iluri@fagorautomation.es>
+Received: from smtp2.sarenet.es (orhi.sarenet.es [192.148.167.5])
+	by ozlabs.org (Postfix) with ESMTP id A79416891D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Jan 2006 16:32:45 +1100 (EST)
-In-Reply-To: <mailman.166.1137617278.17753.linuxppc-embedded@ozlabs.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: MCC Driver
+	Tue, 24 Jan 2006 19:25:20 +1100 (EST)
+Received: from ntvir (unknown [212.81.206.17])
+	by smtp2.sarenet.es (Postfix) with ESMTP id B317372E9
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 24 Jan 2006 08:59:48 +0100 (CET)
 MIME-Version: 1.0
-From: s.maiti@tcs.com
-Message-ID: <OF63C55A2C.95D34E1B-ON65257100.0017139F-65257100.001CEB5F@tcs.com>
-Date: Tue, 24 Jan 2006 10:45:54 +0530
-Content-Type: text/plain;
-	charset=US-ASCII
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C620BC.252987E9"
+Subject: Linux kernel and u-boot debugging with Eclipse IDE
+Date: Tue, 24 Jan 2006 08:59:46 +0100
+Message-ID: <918EB199DDDFFA42BEA2EB3A1C6021F399AFAD@correo.fagorautomation.net>
+From: "IGOR LURI" <iluri@fagorautomation.es>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,20 +25,83 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-In the MCC driver as in www.sourceforge.com there is no information of 
-clock routing and I/O routing. It is commented that ""clock routing and 
-I/O routing supposed done in fec001a_setup.c."" I am using Linux-2.4.25 
-and couldn't find the file. 
-I will be highly grateful if anyone can help me with the information that 
-where should I look for the corresponding file in  Linux-2.4.25 so that i 
-can provide the information's or we have to include those information's in 
-the driver.
+------_=_NextPart_001_01C620BC.252987E9
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks and regards,
-Souvik Maiti
-Tata Consultancy Services Limited
-Mailto: s.maiti@tcs.com
-Website: http://www.tcs.com
+Hi all,
 
-Notice: The information contained in this e-mail message and/or attachments to it may contain confidential or privileged information.   If you are not the intended recipient, any dissemination, use, review, distribution, printing or copying of the information contained in this e-mail message and/or attachments to it are strictly prohibited.   If you have received this communication in error, please notify us by reply e-mail or telephone and immediately and permanently delete the message and any attachments.  Thank you
+We have a MPC5200Lite board running Linux 2.4.25 and u-boot 1.1.4. We =
+are able to debug Linux kernel and U-boot using DDD/GDB and BDI2000, and =
+we are trying to use Eclipse IDE (with CDT plugin) / BDI2000 to develop =
+and debug software.
+
+Eclipse works well to remote debugging aplications over ethernet,  =
+however, we are not able to debug Linux kernel or u-boot using Eclipse. =
+When it stops in the first breakpoint, I can=B4t view some variables and =
+stepping into a function, it shows another. It  seems that Eclipse has =
+problems with Linux kernel and u-boot symbols.
+
+Someone uses Eclipse and BDI2000 to debug Linux kernel and u-boot?=20
+
+
+
+Igor Luri
+R&D Software Department
+Fagor Automation S. Coop.
+
+
+
+------_=_NextPart_001_01C620BC.252987E9
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7232.36">
+<TITLE>Linux kernel and u-boot debugging with Eclipse IDE</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Hi all,</FONT>
+</P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">We have a MPC5200Lite board running =
+Linux 2.4.25 and u-boot 1.1.4. We are able to debug Linux kernel and =
+U-boot using DDD/GDB and BDI2000, and we are trying to use Eclipse IDE =
+(with CDT plugin) / BDI2000 to develop and debug software.</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Eclipse works well to remote debugging =
+aplications over ethernet,&nbsp; however, we are not able to debug Linux =
+kernel or u-boot using Eclipse. When it stops in the first breakpoint, I =
+can=B4t view some variables and stepping into a function, it shows =
+another. It&nbsp; seems that Eclipse has problems with Linux kernel and =
+u-boot symbols.</FONT></P>
+
+<P><FONT SIZE=3D2 FACE=3D"Arial">Someone uses Eclipse and BDI2000 to =
+debug Linux kernel and u-boot? </FONT>
+</P>
+<BR>
+<BR>
+
+<P><B><FONT SIZE=3D2 FACE=3D"Arial">Igor Luri</FONT></B>
+
+<BR><FONT SIZE=3D2 FACE=3D"Arial">R&amp;D Software =
+Department</FONT><B></B>
+
+<BR><B><FONT FACE=3D"Arial">Fagor Automation S. Coop.</FONT></B>
+</P>
+<BR>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C620BC.252987E9--
