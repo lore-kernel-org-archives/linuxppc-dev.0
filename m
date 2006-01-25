@@ -1,24 +1,17 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id EF38C68A62
+Return-Path: <carlos@kenati.com>
+Received: from mail.kenati.com (unknown [69.90.147.196])
+	by ozlabs.org (Postfix) with ESMTP id 0F1B068A6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jan 2006 07:13:22 +1100 (EST)
-Date: Wed, 25 Jan 2006 12:13:20 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: David Hawkins <dwh@ovro.caltech.edu>
-Subject: Re: Yosemite/440EP is there a global interrupt enable mask?
-Message-ID: <20060125201320.GB19460@gate.ebshome.net>
-References: <43CC3E37.4040707@softadvances.com>
-	<43D66D06.9090904@ovro.caltech.edu>
-	<43D67AF6.6070403@ovro.caltech.edu> <200601251128.05370.sr@denx.de>
-	<43D7C3C6.8020709@ovro.caltech.edu>
-	<20060125185518.GB7425@gate.ebshome.net>
-	<43D7D5A1.70704@ovro.caltech.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <43D7D5A1.70704@ovro.caltech.edu>
+	Thu, 26 Jan 2006 07:30:36 +1100 (EST)
+Message-ID: <43D7DC34.8050604@kenati.com>
+Date: Wed, 25 Jan 2006 12:14:44 -0800
+From: Carlos Munoz <carlos@kenati.com>
+MIME-Version: 1.0
+To: Frank <frannk_m1@yahoo.com>
+Subject: Re: 2.4.x vs 2.6.x performance
+References: <20060123042413.806.qmail@web32201.mail.mud.yahoo.com>
+In-Reply-To: <20060123042413.806.qmail@web32201.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -30,78 +23,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 25, 2006 at 11:46:41AM -0800, David Hawkins wrote:
-> Hi Eugene,
-> 
-> >>Now while looking at some of the other drivers, I noticed the use
-> >>of the following syntax:
-> >>
-> >>  unsigned long flags;
-> >>  local_irq_save(flags);
-> >>
-> >>  ... mfdcr, mtdcr, etc operations ...
-> >>
-> >>  local_irq_restore(flags);
-> >>
-> >>which is treating the operations on the DCRs as a critical section.
-> >>
-> >>I should probably be doing the same when I enable the external IRQs
-> >>and modify the GPIO registers.
-> >
-> >You have to use locks if you access GPIO registers, because other bits 
-> >can be used by other device drivers, although there is no drivers in 
-> >the official tree which use GPIO (I have tons of them in my private 
-> >tree and I added global "gpio_lock" to serialize GPIO access).
-> 
-> What kind of global lock; a spinlock?
+Frank wrote:
 
-yes, spinlock.
+>I remember reading a while back that the 2.6 kernel is
+>considerably slower then the 2.4 kernel (Wolfgang Denx). Has
+>anybody taken any performance measurements on a later kernel
+>version to see if the above still hods true?
+>
+>I'm thinking about moving to 2.6 since a lot of open source
+>projects have stopped suporting the 2.4 kernel.
+>
+>__________________________________________________
+>Do You Yahoo!?
+>Tired of spam?  Yahoo! Mail has the best spam protection around 
+>http://mail.yahoo.com 
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>  
+>
+Hi Frank,
 
-> What is the advantage of say using the gpio_lock, rather than
-> the irq_save/restore sequence above - which is what is used in
-> the emac and usb code?
+While at my previous company we tried to move to the 2.6 kernel (can't 
+remember the version, however it was a little over a year ago) from the 
+2.4.20 kernel. The 2.6 kernel could not keep up with our stress tests, 
+not even close. Unfortunately, I don't have any hard data. We spent 
+about 2 weeks trying to figure out why  the performance degradation. 
+However, since there was no real need to use the 2.6 kernel other than 
+for better performance, and due to other pressing projects, management 
+decided to put on hold the upgrade to 2.6, and as far as I know they are 
+still on the 2.4 kernel. A lot has changed on 2.6 since then, so maybe 
+the performance is better now. You can always compare them both and post 
+your results.
 
-emac doesn't use GPIO registers :). Also, if there is no IRQ code 
-accesses GPIO registers, you don't need IRQ disabling lock, and 
-spin_lock effectively becomes just a preemption lock. Personally, I use 
-spinlocks just out of habit, I think it's a good style, even if you 
-know your chip doesn't support SMP (but some day might :).
+Thanks,
 
-> >DCRs are a little different, there are separate DCR for different 
-> >peripherals, so generally, you don't have to use locks, because those 
-> >DCR accesses are implicitly bound to particular device anyway and 
-> >device "owns" them.
-> 
-> Right, but I was accessing the DCR for the UIC status register,
-> which, I assume, is also used by the Linux IRQ handling subsystem.
 
-DO NOT access UIC registers directly. DO NOT.
-
-> Well, ok perhaps that is not a good example, I have not tested
-> whether the IRQ handler in the example code I posted needs to
-> clear the UIC1_SR bit, or whether the Linux IRQ handling code
-> already takes care of it. I suspect the latter, since the IRQ
-> could be shared, and Linux needs to go through and call all
-> handlers on that IRQ line.
-> 
-> But in a debug context of reading those registers, I would
-> expect some form of lock holding would be recommended.
-> Do you happen to know if the Linux IRQ handling code uses a
-> lock?
-
-4xx IRQ code takes care of all this. You don't need to mess with UIC 
-registers. 4xx PIC code doesn't use locks because it's being called 
-from special context (IRQs disabled), 4xx doesn't support SMP and PIC 
-code "owns" those DCRs.
-
-> I'm just learning, so feel free to enlighten me.
-> 
-> What drivers do you have in your 'private' tree that you might
-> be willing to share?
-
-Nothing that can be of interest for a general public. They are 
-board-specific (lots of bit-banging SPI stuff). All other drivers I 
-wrote are already in public tree.
-
--- 
-Eugene
+Carlos Munoz
