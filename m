@@ -1,15 +1,28 @@
-Return-Path: <lcsquare2@yahoo.com.hk>
-Received: from web53711.mail.yahoo.com (web53711.mail.yahoo.com
-	[206.190.39.60]) by ozlabs.org (Postfix) with SMTP id 4FE8868A87
+Return-Path: <laurent.pinchart@tbox.biz>
+Received: from outmx006.isp.belgacom.be (outmx006.isp.belgacom.be
+	[195.238.4.99])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A63B568A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jan 2006 03:04:30 +1100 (EST)
-Message-ID: <20060125160429.19231.qmail@web53711.mail.yahoo.com>
-Date: Thu, 26 Jan 2006 00:04:29 +0800 (CST)
-From: Lo Chun Chung <lcsquare2@yahoo.com.hk>
-Subject: Enable Billionton PCMCIA Bluetooth in MPC860 system (again)
-To: linuxppc-embedded@ozlabs.org
+	Thu, 26 Jan 2006 03:10:11 +1100 (EST)
+Received: from outmx006.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx006.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id k0PGA3xo022830
+	for <linuxppc-embedded@ozlabs.org>; Wed, 25 Jan 2006 17:10:03 +0100
+	(envelope-from <laurent.pinchart@tbox.biz>)
+From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+To: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
+Subject: Re: Trouble with SMC serial port in ppc/boot/simple on Embedded
+	Planet8248 board
+Date: Wed, 25 Jan 2006 17:09:56 +0100
+References: <1628E43D99629C46988BE46087A3FBB942B7F8@ep-01.EmbeddedPlanet.local>
+In-Reply-To: <1628E43D99629C46988BE46087A3FBB942B7F8@ep-01.EmbeddedPlanet.local>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1215934682-1138205069=:94293"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200601251709.56877.laurent.pinchart@tbox.biz>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,43 +33,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1215934682-1138205069=:94293
-Content-Type: text/plain; charset=big5
-Content-Transfer-Encoding: 8bit
+> > I'm trying to port the Linux kernel (2.6.15.1) to the
+> > Embedded Planet 8248 board. The board has a proprietary boot
+> > loader and uses SMC1 has a serial console.
+>
+> Do you have SCC1 enabled also?  In arch/ppc/boot/simple/m8260_tty.c you
+> will see that if SCC1 is enabled the early text tries to print to it,
+> even if SMC1 is selected as the console in the config.  That was about
+> the only trick to do to get the early text.
 
-Dear all,
+I commented that line to fix the problem, and I was thinking about either a 
+configuration option (CONFIG_SERIAL_CONSOLE_SCCx and 
+CONFIG_SERIAL_CONSOLE_SMCx) or a macro in the platform-specifix header file 
+to override that. Any comment ?
 
-  Hi again, I have asked a same question here before (http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021617.html), now I have some discoveries ... but I still do not know how to solve.
-   
-  (My system is a MPC860 Processor Card, plus a custom made PCB to provide a PCMCIA interface, now the latest progress is I can use PCMCIA WLAN cards in this system without any problem. But my main target is use a PCMCIA Bluetooth card ... )
-   
-  I have noticed when I load up the "serial.o", function "rs_init" must be executed, inside this function call, a function "autoconfig" will be called.
-   
-  My problem is due to this "autoconfig", it will try to parse a standard uart to determine what is its model. But my case is my standard uart is a PCMCIA Bluetooth Card.
-   
-  I can simply comment out the function "rs_init" to let the "serial.o" do not run this function. But later when I load the module "serial_cs", many problems happened. (seems "rs_init" will initialize other things that I have not done ...)
-   
-  Since "serial_cs" (the pcmcia uart driver) needs two function calls in "serial.o" (they are: resgister_serial() and unregister_serial() ), so I really need load up "serial.o" before I  can load up "serial_cs.o"
-   
-  So my problem is, how can I setup such driver in MPC860 environment with a PCMCIA ? 
-   
-  Thanks all~
-  
-Best regards,
-Chung
-
-
-
-Best regards,
-Chung
-_______________________________________
- YM - 離線訊息
- 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。
- http://messenger.yahoo.com.hk
---0-1215934682-1138205069=:94293
-Content-Type: text/html; charset=big5
-Content-Transfer-Encoding: 8bit
-
-<DIV>Dear all,<BR></DIV>  <DIV>Hi again, I have asked a same question here before (<A href="http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021617.html">http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021617.html</A>), now I have some discoveries ... but I still do not know how to solve.</DIV>  <DIV>&nbsp;</DIV>  <DIV>(My system is a MPC860 Processor Card, plus a custom made PCB to provide a PCMCIA interface, now the latest progress is I can use PCMCIA WLAN cards in this system without any problem. But my main target is use a PCMCIA Bluetooth card ... )</DIV>  <DIV>&nbsp;</DIV>  <DIV>I have noticed when&nbsp;I load up the "serial.o", function "rs_init" must be executed, inside this function call, a function "autoconfig" will be called.</DIV>  <DIV>&nbsp;</DIV>  <DIV>My problem is due to this "autoconfig", it will try to parse a standard uart to determine what is its model. But my case is my standard uart is a PCMCIA Bluetooth Card.</DIV>  <DIV>&nbsp;</DIV> 
- <DIV>I can simply comment out the function "rs_init" to let the "serial.o" do not run this function. But later when I load the module "serial_cs", many problems happened. (seems "rs_init" will initialize other things that I have not done ...)</DIV>  <DIV>&nbsp;</DIV>  <DIV>Since "serial_cs" (the pcmcia uart driver) needs two function calls in "serial.o" (they are: resgister_serial() and unregister_serial() ), so I really need load up "serial.o" before I&nbsp; can load up "serial_cs.o"</DIV>  <DIV>&nbsp;</DIV>  <DIV>So my problem is, how can I setup such driver in MPC860 environment with a PCMCIA ? </DIV>  <DIV>&nbsp;</DIV>  <DIV>Thanks all~</DIV>  <DIV><BR>Best regards,<BR>Chung<BR></DIV><BR><BR>Best regards,<br>Chung<p>_______________________________________<br> YM - 離線訊息<br> 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。<br> http://messenger.yahoo.com.hk
---0-1215934682-1138205069=:94293--
+Laurent Pinchart
