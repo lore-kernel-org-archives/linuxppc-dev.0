@@ -1,16 +1,28 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32207.mail.mud.yahoo.com (web32207.mail.mud.yahoo.com
-	[68.142.207.138]) by ozlabs.org (Postfix) with SMTP id 5DDD268A78
+Return-Path: <laurent.pinchart@tbox.biz>
+Received: from outmx024.isp.belgacom.be (outmx024.isp.belgacom.be
+	[195.238.4.128])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8C65568A83
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jan 2006 02:55:49 +1100 (EST)
-Message-ID: <20060125155547.83082.qmail@web32207.mail.mud.yahoo.com>
-Date: Wed, 25 Jan 2006 07:55:47 -0800 (PST)
-From: Frank <frannk_m1@yahoo.com>
-Subject: Re: 2.4.x vs 2.6.x performance
+	Thu, 26 Jan 2006 03:02:48 +1100 (EST)
+Received: from outmx024.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx024.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id k0PG2aQc006082
+	for <linuxppc-embedded@ozlabs.org>; Wed, 25 Jan 2006 17:02:36 +0100
+	(envelope-from <laurent.pinchart@tbox.biz>)
+From: Laurent Pinchart <laurent.pinchart@tbox.biz>
 To: Dan Malek <dan@embeddedalley.com>
-In-Reply-To: <c8c05211d33576b79dee80725822322b@embeddedalley.com>
+Subject: Re: [RFC] arch/ppc/boot/simple/embed_boot.c : Merging all keyvals
+	parsing code
+Date: Wed, 25 Jan 2006 17:02:20 +0100
+References: <200601251215.10816.laurent.pinchart@tbox.biz>
+	<bc2424c0c5f69931784ea76791f8ee39@embeddedalley.com>
+In-Reply-To: <bc2424c0c5f69931784ea76791f8ee39@embeddedalley.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200601251702.20332.laurent.pinchart@tbox.biz>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,42 +34,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---- Dan MaleMalekn@daneembeddedalley> wrote:
+> > Should I submit a patch, or leave the code as it is ?
+>
+> Port Das U-Boot.
 
-> 
-> On Jan 22, 2006, at 8:24 PM, Frank wrote:
-> 
-> > I remember reading a while back that the 2.6 kernel is
-> > considerably slower
-> 
-> I wouldn't say "considerably" slower, but there are some
-> performance differences.  It's most evident on the
-> smaller, slower processors, like the 8xx, but we have
-> taken steps to alleviate that.  The problem is 2.6 is just
-> bigger with more stuff in it.  You want the new features,
-> you have to pay for that somewhere.  I think it would
-> help if the kernel was a little more configurable for
-> embedded systems.  It seems there is just too much
-> stuff in a basic kernel that I wish could be stripped out.
-> 
-> > I'm thinking about moving to 2.6 since a lot of open source
-> > projects have stopped suposuporting 2.4 kernel.
-> 
-> You know, this is a "community effort", not "when are you
-> going to fix it for me" :-)  Use 2.6, measure it using your
-> application, and submit updates that improve it. Some of
-> us have already done quite a bit, so do your part, too.
-> 
-> Thanks.
-> 
-> 	-- Dan
+Of course, that's another solution. We will use Das U-Boot for our custom 
+design.
 
-I wasn't implying problems with 2.6 kernel would preclude me
-from using it and fixing problems. I just wanted to know what to
-expect so I can adjust my schedule accordingly
-Thanks for the reply...
+What I wanted to do here is completely different. As the board comes with a 
+proprietary boot loader, I thought it would be interesting for future users 
+to have the board supported in the vanilla kernel, like many other boards 
+are. Is that a mistake ?
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+Laurent Pinchart
