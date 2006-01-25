@@ -1,20 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 001/001 Updated again] PMAC HD runtime blinking control
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Cedric Pradalier <cedric.pradalier@inrialpes.fr>
-In-Reply-To: <20060124222513.48ef0276.cedric.pradalier@inrialpes.fr>
-References: <20060122121907.792abc72.cedric.pradalier@free.fr>
-	<1137898193.12998.83.camel@localhost.localdomain>
-	<20060123233823.3f0dbad5.cedric.pradalier@inrialpes.fr>
-	<1138024037.4907.24.camel@localhost.localdomain>
-	<20060124073133.5cab0e93.cedric.pradalier@inrialpes.fr>
-	<1138057827.4907.30.camel@localhost.localdomain>
-	<20060124222513.48ef0276.cedric.pradalier@inrialpes.fr>
-Content-Type: text/plain
-Date: Wed, 25 Jan 2006 10:14:51 +1100
-Message-Id: <1138144492.4907.69.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <bgholikh@cisco.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C62144.5D4046C5"
+Subject: Help: FCC driver does not handle IPV6 multicast packet
+Date: Tue, 24 Jan 2006 16:14:53 -0800
+Message-ID: <F795765B112E7344AF36AA911279641584984E@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
+To: <linuxppc-embedded@ozlabs.org>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,154 +16,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-01-24 at 22:25 +1000, Cedric Pradalier wrote:
-> According to Benjamin Herrenschmidt, on Tue, 24 Jan 2006
-> 10:10:26 +1100, 
-> >On Tue, 2006-01-24 at 07:31 +1000, Cedric Pradalier wrote:
-> >> >
-> >> >Yes. In fact, by enabled default for ATA disks and by disabled for ATAPI
-> >> >would make sense...
-> >> 
-> >> How do I tell the difference?. There is a 'kind' in pmif,
-> >> and also a atapi_dma flag in hwif. Which is more sensible?
-> >
-> >You need to check drive->media ... Which is a bit annoying since it mans
-> >it's per drive, not per-HWIF... you may want to move your sysfs entry
-> >down one more level :) (Each HWIF has an array of 2 drives, though check
-> >drive->present before expecting a useful struct device there)
-> >
-> 
-> Well in this case, I'll let this part waiting for now. 
-> I don't think there will be enough real users of this minor
-> thing to justify putting any more efforts for now.
-> 
-> I think the practical solution is to disable the led by
-> default. The few user who will want it will be able to add
-> either ide_core.blink to their boot parameter or make a
-> small init.d script to put 1 into the sysfs entry.
-> 
-> That's the way I've implemented it, and  I've changed the
-> name into activity_led.
+This is a multi-part message in MIME format.
 
-I'll have a look into making it work he way I want :) Then I'll submit
-it.
+------_=_NextPart_001_01C62144.5D4046C5
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Ben.
+HI All,
+Our custom board is based on PPC 8541 running Linux 2.6.11.
+We have NO issue if FCC is operating in 100 Mbs. However, if we
+configure the interface  in 10 Mbs we see the following behavior:
+If IPV6 is enabled, as soon as the FCC network interface is plumbed
+through "ifconfig" system call, we observe the CPU load increases to 90
+percent=20
+and most of the load is related to softirq process. A traceroute command
+on the interface displays an IPV6 multicast packet continuously getting
+transmitted.
+If we bring the interface down through the ifconfig, we do not observe
+the problem
+no longer. The strange thing is we do not observe this behavior if the
+interface
+is plumbed 100 Mbs.
+We need to root cause this and have no idea what to look for, any idea
+greatly
+appreciated.
+=20
+Many thanks in advance,
+Bizhan
 
-> pradalier@localhost:~$ find /sys/ -name activity_led
-> /sys/devices/pci0001:10/0001:10:17.0/0.80000000:mac-io/0.0001f000:ata-4/ide0/activity_led
-> 
-> This is the updated version of the patch. I, for one, will
-> consider it stable now.
-> 
-> signed-off-by: Cedric Pradalier <cedric.pradalier@free.fr>
-> ---
-> --- drivers/ide/ppc/pmac.c.orig	2006-01-03 13:21:10.000000000 +1000
-> +++ drivers/ide/ppc/pmac.c	2006-01-24 21:18:36.000000000 +1000
-> @@ -36,6 +36,11 @@
->  #include <linux/pmu.h>
->  #include <linux/scatterlist.h>
->  
-> +#ifdef CONFIG_BLK_DEV_IDE_PMAC_BLINK
-> +#include <linux/device.h>
-> +#include <asm/of_device.h>
-> +#endif
-> +
->  #include <asm/prom.h>
->  #include <asm/io.h>
->  #include <asm/dbdma.h>
-> @@ -427,6 +432,15 @@ static void pmac_ide_kauai_selectproc(id
->  
->  #ifdef CONFIG_BLK_DEV_IDE_PMAC_BLINK
->  
-> +MODULE_AUTHOR("Paul Mackerras & Ben. Herrenschmidt");
-> +MODULE_DESCRIPTION("Support for IDE interfaces on PowerMacs");
-> +MODULE_LICENSE("GPL");
-> +
-> +static int activity_led = 0;
-> +module_param_named(blink,activity_led, bool, 0666);
-> +MODULE_PARM_DESC(blink,"Enable/Disable activity led [Default: disabled]");
-> +
-> +
->  /* Set to 50ms minimum led-on time (also used to limit frequency
->   * of requests sent to the PMU
->   */
-> @@ -437,8 +451,7 @@ static spinlock_t pmu_blink_lock;
->  static unsigned long pmu_blink_stoptime;
->  static int pmu_blink_ledstate;
->  static struct timer_list pmu_blink_timer;
-> -static int pmu_ide_blink_enabled;
-> -
-> +static int pmu_ide_blink_enabled = 0;
->  
->  static void
->  pmu_hd_blink_timeout(unsigned long data)
-> @@ -468,6 +481,8 @@ static void
->  pmu_hd_kick_blink(void *data, int rw)
->  {
->  	unsigned long flags;
-> +	if (!activity_led)
-> +		return;
->  	
->  	pmu_blink_stoptime = jiffies + PMU_HD_BLINK_TIME;
->  	wmb();
-> @@ -483,6 +498,26 @@ pmu_hd_kick_blink(void *data, int rw)
->  	spin_unlock_irqrestore(&pmu_blink_lock, flags);
->  }
->  
-> +static ssize_t show_activity_led_enable(struct device *dev, struct device_attribute *attr, char *buf)\
-> +{  
-> +	return sprintf(buf, "%c\n", activity_led?'1':'0'); 
-> +}
-> +
-> +static ssize_t set_activity_led_enable(struct device *dev, struct device_attribute *attr, 
-> +		const char *buf, size_t count)
-> +{
-> +	int blink=0;
-> +	if (sscanf (buf, "%d", &blink) != 1)
-> +		return -EINVAL;
-> +	activity_led = (blink != 0);
-> +	printk(KERN_INFO "pmac blinking led initialized (blink %s)\n",
-> +			activity_led?"enabled":"disabled");
-> +	return count;
-> +}
-> +
-> +static DEVICE_ATTR (activity_led, S_IRUGO | S_IWUSR, 
-> +		show_activity_led_enable, set_activity_led_enable);
-> +
->  static int
->  pmu_hd_blink_init(void)
->  {
-> @@ -516,6 +551,9 @@ pmu_hd_blink_init(void)
->  	init_timer(&pmu_blink_timer);
->  	pmu_blink_timer.function = pmu_hd_blink_timeout;
->  
-> +	printk(KERN_INFO "pmac blinking led initialized (blink %s)\n",
-> +			activity_led?"enabled":"disabled");
-> +
->  	return 1;
->  }
->  
-> @@ -1271,7 +1309,7 @@ static int
->  pmac_ide_setup_device(pmac_ide_hwif_t *pmif, ide_hwif_t *hwif)
->  {
->  	struct device_node *np = pmif->node;
-> -	int *bidp, i;
-> +	int *bidp;
->  
->  	pmif->cable_80 = 0;
->  	pmif->broken_dma = pmif->broken_dma_warn = 0;
-> @@ -1401,6 +1439,12 @@ pmac_ide_setup_device(pmac_ide_hwif_t *p
->  	/* We probe the hwif now */
->  	probe_hwif_init(hwif);
->  
-> +#ifdef CONFIG_BLK_DEV_IDE_PMAC_BLINK
-> +	/* We wait till here to have the gendev initialized in hwif */
-> +	device_create_file (&hwif->gendev, &dev_attr_activity_led);
-> +#endif
-> +
-> +
->  	return 0;
->  }
->  
+------_=_NextPart_001_01C62144.5D4046C5
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006>HI=20
+All,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006>Our =
+custom board is=20
+based on PPC 8541 running Linux 2.6.11.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006>We =
+have&nbsp;NO=20
+issue if FCC is operating in 100 Mbs. However, if we</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D263335823-24012006>configure the=20
+interface &nbsp;in 10 Mbs we see the following =
+behavior:</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006><FONT =
+size=3D2>If IPV6=20
+is enabled, as soon as the FCC network interface is=20
+plumbed</FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006><FONT =
+size=3D2>through=20
+"ifconfig" system call, </FONT></SPAN></FONT><FONT face=3DArial =
+size=3D2><SPAN=20
+class=3D263335823-24012006><FONT size=3D2>we&nbsp;observe the CPU load =
+increases to=20
+90 percent </FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006><FONT =
+size=3D2>and=20
+most of the load is&nbsp;related to&nbsp;softirq process. A traceroute=20
+command</FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006><FONT =
+size=3D2>on the=20
+interface displays an IPV6 multicast packet continuously getting=20
+transmitted.</FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006>If we =
+bring the=20
+interface down through the ifconfig, we do not observe the=20
+problem</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006>no =
+longer. The=20
+strange thing is we do not observe this behavior if the=20
+interface</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006>is =
+plumbed 100=20
+Mbs.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D263335823-24012006></SPAN></FONT><FONT=20
+face=3DArial size=3D2><SPAN class=3D263335823-24012006><FONT size=3D2>We =
+need to root=20
+cause this and have no idea what to look for, any idea=20
+greatly</FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006><FONT=20
+size=3D2>appreciated.</FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006><FONT=20
+size=3D2></FONT></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006><FONT =
+size=3D2>Many=20
+thanks in advance,</FONT></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D263335823-24012006><FONT=20
+size=3D2>Bizhan</DIV></FONT></SPAN></FONT></BODY></HTML>
+
+------_=_NextPart_001_01C62144.5D4046C5--
