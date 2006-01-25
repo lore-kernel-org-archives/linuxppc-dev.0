@@ -1,20 +1,23 @@
-Return-Path: <sr@denx.de>
-Received: from natsluvver.rzone.de (natsluvver.rzone.de [81.169.145.176])
-	by ozlabs.org (Postfix) with ESMTP id 22F6568A45
+Return-Path: <tlopez@aotek.es>
+Received: from smtp2.sarenet.es (orhi.sarenet.es [192.148.167.5])
+	by ozlabs.org (Postfix) with ESMTP id DA27468AA2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Jan 2006 21:28:11 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Yosemite/440EP is there a global interrupt enable mask?
-Date: Wed, 25 Jan 2006 11:28:05 +0100
-References: <43CC3E37.4040707@softadvances.com>
-	<43D66D06.9090904@ovro.caltech.edu>
-	<43D67AF6.6070403@ovro.caltech.edu>
-In-Reply-To: <43D67AF6.6070403@ovro.caltech.edu>
+	Wed, 25 Jan 2006 21:48:31 +1100 (EST)
+Received: from ntvir (unknown [212.81.206.17])
+	by smtp2.sarenet.es (Postfix) with ESMTP id 533B76AEB
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 25 Jan 2006 11:23:46 +0100 (CET)
+Message-ID: <43D751F8.9060204@aotek.es>
+Date: Wed, 25 Jan 2006 11:24:56 +0100
+From: Txema Lopez <tlopez@aotek.es>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200601251128.05370.sr@denx.de>
+To: Sylvain Munaut <tnt@246tNt.com>
+Subject: Re: [PATCH] Add support for lite5200b board.
+References: <43D65FE3.6080501@freescale.com> <43D66F54.8000404@246tNt.com>
+In-Reply-To: <43D66F54.8000404@246tNt.com>
+Content-Type: multipart/mixed;
+	boundary=------------040508050407030806050808
+Cc: John Rigby <jrigby@freescale.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,42 +28,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi David,
+This is a multi-part message in MIME format.
+--------------040508050407030806050808
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Tuesday 24 January 2006 20:07, David Hawkins wrote:
-> I'm writing a simple driver to test IRQ handling on the
-> AMCC Yosemite board. The board has an 8x2 header with several
-> GPIO pins, a number of which can be configured as IRQ inputs.
+Hi ,
+
+Sylvain Munaut wrote:
+
+>Hi John,
 >
-> I have setup GPIO46 as output, and GPIO47 as input, and
-> selected IRQ8 on that pin.
-
-OK. So far good.
-
-<snip>
-
-> So, is there a kernel wide interrupt enable mask that I really
-> should be using? Or, an interrupt enable API? I initially
-> thought that when I registered an interrupt using
-> request_irq() that the kernel would go off an enable the
-> requested IRQ, but this test shows that it did not.
-
-Yes, the request_irq() should enable the requested IRQ. You seem to have used 
-the wrong IRQ number though. Please see below.
-
-> #include <linux/module.h>   /* kernel modules                    */
-> #include <linux/interrupt.h>/* request_irq(), etc                */
-> #include <asm/io.h>         /* ioremap64(), iounmap(), readl()   */
+>John Rigby wrote:
+>  
 >
-> static char *name = "yosemite_irq";
-> static unsigned long long base = 0x0EF600C00; // 36-bit address
-> static unsigned int size = 0x44;
-> static char *kernel;
-> static int irq = 8;
+>>Sylvain,
+>>
+>>Here is an updated patch for the liteb board.
+>>
+>>John
+>>    
+>>
+>
+>  
+>
+We have a Lite5200b and are very interesting in this point.
 
-You are using the "External IRQ 8". This results in IRQ number 19 of the 2nd 
-interrupt controller of the 440ep. So please try (19+32) as the IRQ number 
-upon requesting the interrupt.
+For wich kernel version is this patch?
 
-Best regards,
-Stefan
+>Looks good. But two comments :
+>
+> * Isn't a modif to the arch/ppc/platform/Makefile missing ?
+> * What's the "cs-1" you turn on there :
+>
+>  
+>
+>> 
+>>+#ifdef CONFIG_LITE5200B
+>>+	/* turn on cs1 */
+>>+	port_config |= 0x80000000;
+>>+#endif
+>>    
+>>
+>
+>  
+>
+What fix this ?
+
+>	I couldn't find the schema / real-doc of the Lite5200b,
+>is this available somewhere on-line ?
+>
+>
+>
+>  
+>
+Sylvain, I don't know if there are some Lite5200b doc on line, but I 
+have the schematics and could send to you or to anyone who want it.
+
+>	Sylvain
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>  
+>
+
+
+--------------040508050407030806050808
+Content-Type: text/x-vcard; charset=utf-8;
+ name="tlopez.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="tlopez.vcf"
+
+begin:vcard
+fn:Jose Maria Lopez
+n:Lopez;Jose Maria
+org:Fagor Automation S. Coop.
+adr:;;San Andres 19. Apdo. 144;Arrasate-Mondragon;;20500;Spain
+email;internet:tlopez@aotek.es
+title:Sotware engineer
+tel;work:(34) 943719200
+tel;fax:(34) 943791712 
+x-mozilla-html:FALSE
+url:http://www.fagorautomation.es
+version:2.1
+end:vcard
+
+
+--------------040508050407030806050808--
