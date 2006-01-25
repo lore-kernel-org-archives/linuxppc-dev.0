@@ -1,19 +1,15 @@
-Return-Path: <pantelis@embeddedalley.com>
-Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
-	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id B66DF68A79
+Return-Path: <lcsquare2@yahoo.com.hk>
+Received: from web53711.mail.yahoo.com (web53711.mail.yahoo.com
+	[206.190.39.60]) by ozlabs.org (Postfix) with SMTP id 5508668A83
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jan 2006 03:16:51 +1100 (EST)
-From: Pantelis Antoniou <pantelis@embeddedalley.com>
+	Thu, 26 Jan 2006 03:56:10 +1100 (EST)
+Message-ID: <20060125165608.41029.qmail@web53711.mail.yahoo.com>
+Date: Thu, 26 Jan 2006 00:56:08 +0800 (CST)
+From: Lo Chun Chung <lcsquare2@yahoo.com.hk>
+Subject: Re: Enable Billionton PCMCIA Bluetooth in MPC860 system (again)
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Misunderstanding with function cpm_dpalloc in Linux 2.6.x
-Date: Wed, 25 Jan 2006 18:14:16 +0200
-References: <000001c621b5$f8e45ab0$5201a8c0@GEG2400>
-In-Reply-To: <000001c621b5$f8e45ab0$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_ZP61DtYafqDk9lI"
-Message-Id: <200601251814.17331.pantelis@embeddedalley.com>
-Reply-To: pantelis@embeddedalley.com
+Content-Type: multipart/alternative; boundary="0-747958843-1138208168=:39949"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,182 +20,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_ZP61DtYafqDk9lI
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+--0-747958843-1138208168=:39949
+Content-Type: text/plain; charset=big5
+Content-Transfer-Encoding: 8bit
 
-On Wednesday 25 January 2006 15:48, Laurent Lagrange wrote:
-> 
-> Hello,
-> 
-> I work on MPC boards with Linux 2.6.9 and I have a problem with the
-> cpm_dpalloc function.
-> 
-> In the file cpm2_common.c the function "uint cpm_dpalloc(uint size, uint
-> align)" is intended
-> to allocate a piece of memory in the dpram. This piece of memory has at
-> least "size" bytes
-> and I beleived that the returned address should be aligned on "align" bytes.
-> 
-> This function calls "void *rh_alloc(rh_info_t * info, int size, const char
-> *owner)" from rheap.c file.
-> In this function the alignment is only used to calculate the right size with
-> the formula :
-> size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
-> It seems to be right but the alignment is not used to retreive an aligned
-> start address.
-> 
-> So if I do the following sequential calls, I have the following results :
-> cpm_dpalloc(16, 8)	-> 	0XC0		-> right aligned
-> cpm_dpalloc(64, 64)	-> 	0XD0		-> wrong aligned -> must be 0x100
-> cpm_dpalloc(16, 8)	-> 	0X110		-> right aligned but wrong to use
-> cpm_dpalloc(24, 8)	-> 	0X1200		-> right aligned but wrong to use
-> 
-> I can have the wanted values if instead of size, I try to allocate (size +
-> align - 1) bytes
-> but I don't think it is the solution.
-> 
-> Perhaps, I don't understand the allocation theory.
-> Any idea ?
-> 
-> Thanks all
-> Laurent
-> 
-> 
+I also found a such message here: http://ozlabs.org/pipermail/linuxppc-embedded/2000-May/001402.html
+   
+  it says:
+   
+  "... The 8250/16550 driver (serial.c) probes at init-time which will cause
+problems. .... "
+   
+  I want to know are there anyone fixed this problem? 
+  
+Thanks all.
+   
+  Best regards,
+  Lo Chun Chung
+  
+Lo Chun Chung <lcsquare2@yahoo.com.hk> 說：
+    Dear all,
 
-Laurent Hi,
+  Hi again, I have asked a same question here before (http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021617.html), now I have some discoveries ... but I still do not know how to solve.
+   
+  (My system is a MPC860 Processor Card, plus a custom made PCB to provide a PCMCIA interface, now the latest progress is I can use PCMCIA WLAN cards in this system without any problem. But my main target is use a PCMCIA Bluetooth card ... )
+   
+  I have noticed when I load up the "serial.o", function "rs_init" must be executed, inside this function call, a function "autoconfig" will be called.
+   
+  My problem is due to this "autoconfig", it will try to parse a standard uart to determine what is its model. But my case is my standard uart is a PCMCIA Bluetooth Card.
+   
+  I can simply comment out the function "rs_init" to let the "serial.o" do not run this function. But later when I load the module "serial_cs", many problems happened. (seems "rs_init" will initialize other things that I have not done ...)
+   
+  Since "serial_cs" (the pcmcia uart driver) needs two function calls in "serial.o" (they are: resgister_serial() and unregister_serial() ), so I really need load up "serial.o" before I  can load up "serial_cs.o"
+   
+  So my problem is, how can I setup such driver in MPC860 environment with a PCMCIA ? 
+   
+  Thanks all~
+  
+Best regards,
+Chung
 
-Yes this is a know bug. This patch fixes it.
 
-Marcelo, please apply - we have this hanging for quite a while.
 
-Pantelis
+Best regards,
+Chung  _______________________________________
+YM - 離線訊息
+就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。
+http://messenger.yahoo.com.hk
+  
 
---Boundary-00=_ZP61DtYafqDk9lI
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="cpm2-dpalloc.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="cpm2-dpalloc.patch"
 
-diff --git a/arch/ppc/lib/rheap.c b/arch/ppc/lib/rheap.c
---- a/arch/ppc/lib/rheap.c
-+++ b/arch/ppc/lib/rheap.c
-@@ -425,17 +425,21 @@ void *rh_detach_region(rh_info_t * info,
- 	return (void *)s;
- }
- 
--void *rh_alloc(rh_info_t * info, int size, const char *owner)
-+void *rh_alloc_align(rh_info_t * info, int size, int alignment, const char *owner)
- {
- 	struct list_head *l;
- 	rh_block_t *blk;
- 	rh_block_t *newblk;
- 	void *start;
- 
--	/* Validate size */
--	if (size <= 0)
-+	/* Validate size, (must be power of two) */
-+	if (size <= 0 || (alignment & (alignment - 1)) != 0)
- 		return ERR_PTR(-EINVAL);
- 
-+	/* given alignment larger that default rheap alignment */
-+	if (alignment > info->alignment)
-+		size += alignment - 1;
-+
- 	/* Align to configured alignment */
- 	size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
- 
-@@ -478,9 +482,21 @@ void *rh_alloc(rh_info_t * info, int siz
- 
- 	attach_taken_block(info, newblk);
- 
-+	/* for larger alignment return fixed up pointer  */
-+	/* this is no problem with the deallocator since */
-+	/* we scan for pointers that lie in the blocks   */
-+	if (alignment > info->alignment)
-+		start = (void *)(((unsigned long)start + alignment - 1) &
-+				~(alignment - 1));
-+
- 	return start;
- }
- 
-+void *rh_alloc(rh_info_t * info, int size, const char *owner)
-+{
-+	return rh_alloc_align(info, size, info->alignment, owner);
-+}
-+
- /* allocate at precisely the given address */
- void *rh_alloc_fixed(rh_info_t * info, void *start, int size, const char *owner)
- {
-diff --git a/arch/ppc/syslib/cpm2_common.c b/arch/ppc/syslib/cpm2_common.c
---- a/arch/ppc/syslib/cpm2_common.c
-+++ b/arch/ppc/syslib/cpm2_common.c
-@@ -148,8 +148,7 @@ uint cpm_dpalloc(uint size, uint align)
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&cpm_dpmem_lock, flags);
--	cpm_dpmem_info.alignment = align;
--	start = rh_alloc(&cpm_dpmem_info, size, "commproc");
-+	start = rh_alloc_align(&cpm_dpmem_info, size, align, "commproc");
- 	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
- 
- 	return (uint)start;
-@@ -170,13 +169,12 @@ int cpm_dpfree(uint offset)
- EXPORT_SYMBOL(cpm_dpfree);
- 
- /* not sure if this is ever needed */
--uint cpm_dpalloc_fixed(uint offset, uint size, uint align)
-+uint cpm_dpalloc_fixed(uint offset, uint size)
- {
- 	void *start;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&cpm_dpmem_lock, flags);
--	cpm_dpmem_info.alignment = align;
- 	start = rh_alloc_fixed(&cpm_dpmem_info, (void *)offset, size, "commproc");
- 	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
- 
-diff --git a/include/asm-ppc/commproc.h b/include/asm-ppc/commproc.h
---- a/include/asm-ppc/commproc.h
-+++ b/include/asm-ppc/commproc.h
-@@ -74,7 +74,7 @@ static inline long IS_DPERR(const uint o
- extern	cpm8xx_t	*cpmp;		/* Pointer to comm processor */
- extern uint cpm_dpalloc(uint size, uint align);
- extern int cpm_dpfree(uint offset);
--extern uint cpm_dpalloc_fixed(uint offset, uint size, uint align);
-+extern uint cpm_dpalloc_fixed(uint offset, uint size);
- extern void cpm_dpdump(void);
- extern void *cpm_dpram_addr(uint offset);
- extern void cpm_setbrg(uint brg, uint rate);
-diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
---- a/include/asm-ppc/cpm2.h
-+++ b/include/asm-ppc/cpm2.h
-@@ -112,7 +112,7 @@ extern		cpm_cpm2_t	*cpmp;	 /* Pointer to
- 
- extern uint cpm_dpalloc(uint size, uint align);
- extern int cpm_dpfree(uint offset);
--extern uint cpm_dpalloc_fixed(uint offset, uint size, uint align);
-+extern uint cpm_dpalloc_fixed(uint offset, uint size);
- extern void cpm_dpdump(void);
- extern void *cpm_dpram_addr(uint offset);
- extern void cpm_setbrg(uint brg, uint rate);
-diff --git a/include/asm-ppc/rheap.h b/include/asm-ppc/rheap.h
---- a/include/asm-ppc/rheap.h
-+++ b/include/asm-ppc/rheap.h
-@@ -62,6 +62,10 @@ extern int rh_attach_region(rh_info_t * 
- /* Detach a free region */
- extern void *rh_detach_region(rh_info_t * info, void *start, int size);
- 
-+/* Allocate the given size from the remote heap (with alignment) */
-+extern void *rh_alloc_align(rh_info_t * info, int size, int alignment,
-+		const char *owner);
-+
- /* Allocate the given size from the remote heap */
- extern void *rh_alloc(rh_info_t * info, int size, const char *owner);
- 
+_______________________________________
+ YM - 離線訊息
+ 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。
+ http://messenger.yahoo.com.hk
+--0-747958843-1138208168=:39949
+Content-Type: text/html; charset=big5
+Content-Transfer-Encoding: 8bit
 
---Boundary-00=_ZP61DtYafqDk9lI--
+<DIV>I also found a such message here: <A href="http://ozlabs.org/pipermail/linuxppc-embedded/2000-May/001402.html">http://ozlabs.org/pipermail/linuxppc-embedded/2000-May/001402.html</A></DIV>  <DIV>&nbsp;</DIV>  <DIV>it says:</DIV>  <DIV>&nbsp;</DIV>  <DIV>"... The 8250/16550 driver (serial.c) probes at init-time which will cause<BR>problems. .... "</DIV>  <DIV>&nbsp;</DIV>  <DIV>I want to know are there anyone fixed this problem? </DIV>  <DIV><BR>Thanks all.</DIV>  <DIV>&nbsp;</DIV>  <DIV>Best regards,</DIV>  <DIV>Lo Chun Chung</DIV>  <DIV><BR><B><I>Lo Chun Chung &lt;lcsquare2@yahoo.com.hk&gt;</I></B> 說：</DIV>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">  <DIV>Dear all,<BR></DIV>  <DIV>Hi again, I have asked a same question here before (<A href="http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021617.html">http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021617.html</A>), now I have some discoveries ...
+ but I still do not know how to solve.</DIV>  <DIV>&nbsp;</DIV>  <DIV>(My system is a MPC860 Processor Card, plus a custom made PCB to provide a PCMCIA interface, now the latest progress is I can use PCMCIA WLAN cards in this system without any problem. But my main target is use a PCMCIA Bluetooth card ... )</DIV>  <DIV>&nbsp;</DIV>  <DIV>I have noticed when&nbsp;I load up the "serial.o", function "rs_init" must be executed, inside this function call, a function "autoconfig" will be called.</DIV>  <DIV>&nbsp;</DIV>  <DIV>My problem is due to this "autoconfig", it will try to parse a standard uart to determine what is its model. But my case is my standard uart is a PCMCIA Bluetooth Card.</DIV>  <DIV>&nbsp;</DIV>  <DIV>I can simply comment out the function "rs_init" to let the "serial.o" do not run this function. But later when I load the module "serial_cs", many problems happened. (seems "rs_init" will initialize other things that I have not done ...)</DIV>  <DIV>&nbsp;</DIV> 
+ <DIV>Since "serial_cs" (the pcmcia uart driver) needs two function calls in "serial.o" (they are: resgister_serial() and unregister_serial() ), so I really need load up "serial.o" before I&nbsp; can load up "serial_cs.o"</DIV>  <DIV>&nbsp;</DIV>  <DIV>So my problem is, how can I setup such driver in MPC860 environment with a PCMCIA ? </DIV>  <DIV>&nbsp;</DIV>  <DIV>Thanks all~</DIV>  <DIV><BR>Best regards,<BR>Chung<BR></DIV><BR><BR>Best regards,<BR>Chung  <div>_______________________________________<BR>YM - 離線訊息<BR>就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。<BR>http://messenger.yahoo.com.hk</div></BLOCKQUOTE>  <DIV><BR></DIV><p>_______________________________________<br> YM - 離線訊息<br> 就算你沒有上網，你的朋友仍可以留下訊息給你，當你上網時就能立即看到，任何說話都冇走失。<br> http://messenger.yahoo.com.hk
+--0-747958843-1138208168=:39949--
