@@ -1,31 +1,19 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx011.isp.belgacom.be (outmx011.isp.belgacom.be
-	[195.238.5.3])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5E96168A88
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id D75BE68AAD
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Jan 2006 22:15:30 +1100 (EST)
-Received: from outmx011.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx011.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k0PBFK9j025776
-	for <linuxppc-embedded@ozlabs.org>; Wed, 25 Jan 2006 12:15:21 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx011.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k0PBFDiZ025694
-	for <linuxppc-embedded@ozlabs.org>; Wed, 25 Jan 2006 12:15:15 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: linuxppc-embedded@ozlabs.org
-Subject: [RFC] arch/ppc/boot/simple/embed_boot.c : Merging all keyvals parsing
-	code
-Date: Wed, 25 Jan 2006 12:15:10 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200601251215.10816.laurent.pinchart@tbox.biz>
+	Wed, 25 Jan 2006 22:42:50 +1100 (EST)
+To: "IGOR LURI" <iluri@fagorautomation.es>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Linux kernel and u-boot debugging with Eclipse IDE 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 24 Jan 2006 08:59:46 +0100."
+	<918EB199DDDFFA42BEA2EB3A1C6021F399AFAD@correo.fagorautomation.net>
+Date: Wed, 25 Jan 2006 12:42:47 +0100
+Sender: wd@denx.de
+Message-Id: <20060125114247.C9D6E352584@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,18 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+In message <918EB199DDDFFA42BEA2EB3A1C6021F399AFAD@correo.fagorautomation.net> you wrote:
+> 
+> We have a MPC5200Lite board running Linux 2.4.25 and u-boot 1.1.4. We
+> are able to debug Linux kernel and U-boot using DDD/GDB and BDI2000, and
+> we are trying to use Eclipse IDE (with CDT plugin) / BDI2000 to develop
+> and debug software.
 
-the Embedded Planet boards boot loader pass a string containing key/value 
-pairs to the Linux loader code. That string is parsed in 
-arch/ppc/simple/embed_boot.c.
+Are you sure that U-Boot and Kernel debugging works fine with GDB? So
+is this a rev. B CPU then? If not, please read the errata!
 
-The current implementation duplicates the parsing code once for each supported 
-board. As I'm adding support for a new EP board (EP8248), I was wondering if 
-it would be worth merging all those parsers together. This would reduce the 
-source code size, but would be pointless at runtime as only one board support 
-code is compiled in the kernel anyway.
+> Eclipse works well to remote debugging aplications over ethernet,
+> however, we are not able to debug Linux kernel or u-boot using Eclipse.
+> When it stops in the first breakpoint, I can´t view some variables and
+> stepping into a function, it shows another. It  seems that Eclipse has
+> problems with Linux kernel and u-boot symbols.
 
-Should I submit a patch, or leave the code as it is ?
+My guess is that what you see is the effects of  the  chip  errata  -
+please read the errata sheet.
 
-Laurent Pinchart
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Perfection is reached, not when there is no longer anything  to  add,
+but when there is no longer anything to take away.
+                                           - Antoine de Saint-Exupery
