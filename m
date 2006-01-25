@@ -1,23 +1,18 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from relay02s.clb.oleane.net (relay02s.clb.oleane.net
-	[213.56.31.143]) by ozlabs.org (Postfix) with ESMTP id E00EF68A1B
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp101.biz.mail.mud.yahoo.com (smtp101.biz.mail.mud.yahoo.com
+	[68.142.200.236]) by ozlabs.org (Postfix) with SMTP id 7C87468A00
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jan 2006 00:57:12 +1100 (EST)
-Received: from smtp9.clb.oleane.net (smtp9.clb.oleane.net [213.56.31.31])
-	by relay02s.clb.oleane.net with ESMTP id k0PDpOvn024757
-	for <linuxppc-embedded@ozlabs.org>; Wed, 25 Jan 2006 14:51:43 +0100
-Received: from GEG2400 ([194.3.133.184]) (authenticated)
-	by smtp9.clb.oleane.net with ESMTP id k0PDgtL5004658
-	for <linuxppc-embedded@ozlabs.org>; Wed, 25 Jan 2006 14:43:00 +0100
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Misunderstanding with function cpm_dpalloc in Linux 2.6.x
-Date: Wed, 25 Jan 2006 14:48:05 +0100
-Message-ID: <000001c621b5$f8e45ab0$5201a8c0@GEG2400>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: 
+	Thu, 26 Jan 2006 02:52:15 +1100 (EST)
+In-Reply-To: <20060123042413.806.qmail@web32201.mail.mud.yahoo.com>
+References: <20060123042413.806.qmail@web32201.mail.mud.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c8c05211d33576b79dee80725822322b@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: 2.4.x vs 2.6.x performance
+Date: Wed, 25 Jan 2006 07:45:38 -0800
+To: Frank <frannk_m1@yahoo.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,37 +24,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hello,
+On Jan 22, 2006, at 8:24 PM, Frank wrote:
 
-I work on MPC boards with Linux 2.6.9 and I have a problem with the
-cpm_dpalloc function.
+> I remember reading a while back that the 2.6 kernel is
+> considerably slower
 
-In the file cpm2_common.c the function "uint cpm_dpalloc(uint size, uint
-align)" is intended
-to allocate a piece of memory in the dpram. This piece of memory has at
-least "size" bytes
-and I beleived that the returned address should be aligned on "align" bytes.
+I wouldn't say "considerably" slower, but there are some
+performance differences.  It's most evident on the
+smaller, slower processors, like the 8xx, but we have
+taken steps to alleviate that.  The problem is 2.6 is just
+bigger with more stuff in it.  You want the new features,
+you have to pay for that somewhere.  I think it would
+help if the kernel was a little more configurable for
+embedded systems.  It seems there is just too much
+stuff in a basic kernel that I wish could be stripped out.
 
-This function calls "void *rh_alloc(rh_info_t * info, int size, const char
-*owner)" from rheap.c file.
-In this function the alignment is only used to calculate the right size with
-the formula :
-size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
-It seems to be right but the alignment is not used to retreive an aligned
-start address.
+> I'm thinking about moving to 2.6 since a lot of open source
+> projects have stopped suporting the 2.4 kernel.
 
-So if I do the following sequential calls, I have the following results :
-cpm_dpalloc(16, 8)	-> 	0XC0		-> right aligned
-cpm_dpalloc(64, 64)	-> 	0XD0		-> wrong aligned -> must be 0x100
-cpm_dpalloc(16, 8)	-> 	0X110		-> right aligned but wrong to use
-cpm_dpalloc(24, 8)	-> 	0X1200		-> right aligned but wrong to use
+You know, this is a "community effort", not "when are you
+going to fix it for me" :-)  Use 2.6, measure it using your
+application, and submit updates that improve it. Some of
+us have already done quite a bit, so do your part, too.
 
-I can have the wanted values if instead of size, I try to allocate (size +
-align - 1) bytes
-but I don't think it is the solution.
+Thanks.
 
-Perhaps, I don't understand the allocation theory.
-Any idea ?
-
-Thanks all
-Laurent
+	-- Dan
