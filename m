@@ -1,20 +1,20 @@
 Return-Path: <sr@denx.de>
 Received: from natsluvver.rzone.de (natsluvver.rzone.de [81.169.145.176])
-	by ozlabs.org (Postfix) with ESMTP id B2938689F3
+	by ozlabs.org (Postfix) with ESMTP id 22F6568A45
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Jan 2006 20:58:05 +1100 (EST)
+	Wed, 25 Jan 2006 21:28:11 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Yosemite/440EP why are readl()/ioread32() setup to read
-	little-endian?
-Date: Wed, 25 Jan 2006 10:57:47 +0100
+Subject: Re: Yosemite/440EP is there a global interrupt enable mask?
+Date: Wed, 25 Jan 2006 11:28:05 +0100
 References: <43CC3E37.4040707@softadvances.com>
 	<43D66D06.9090904@ovro.caltech.edu>
-In-Reply-To: <43D66D06.9090904@ovro.caltech.edu>
+	<43D67AF6.6070403@ovro.caltech.edu>
+In-Reply-To: <43D67AF6.6070403@ovro.caltech.edu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200601251057.47619.sr@denx.de>
+Message-Id: <200601251128.05370.sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,26 +27,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi David,
 
-On Tuesday 24 January 2006 19:08, David Hawkins wrote:
-> readl() and ioread32() read the registers in little-endian format!
+On Tuesday 24 January 2006 20:07, David Hawkins wrote:
+> I'm writing a simple driver to test IRQ handling on the
+> AMCC Yosemite board. The board has an 8x2 header with several
+> GPIO pins, a number of which can be configured as IRQ inputs.
+>
+> I have setup GPIO46 as output, and GPIO47 as input, and
+> selected IRQ8 on that pin.
 
-Correct. That's how it is implemented on all platforms. Think for example of 
-an pci device driver. Using these IO functions, the driver will become 
-platform independent, running without modifications on little- and big-endian 
-machines.
+OK. So far good.
 
-> If the processor was reading from the PCI bus, then sure, I
-> could understand why this might be used, but even then, that
-> should be up to the user, eg. by using cpu_to_le32 etc.
+<snip>
 
-No. Please see above.
+> So, is there a kernel wide interrupt enable mask that I really
+> should be using? Or, an interrupt enable API? I initially
+> thought that when I registered an interrupt using
+> request_irq() that the kernel would go off an enable the
+> requested IRQ, but this test shows that it did not.
 
-> Should I just be using pointers for remapped processor
-> registers, and only use readl(), ioread32(), etc, on external
-> memory?
+Yes, the request_irq() should enable the requested IRQ. You seem to have used 
+the wrong IRQ number though. Please see below.
 
-That's how I do it. Only use readl() and friends for pci spaces (or other 
-little endian memory mapped areas).
+> #include <linux/module.h>   /* kernel modules                    */
+> #include <linux/interrupt.h>/* request_irq(), etc                */
+> #include <asm/io.h>         /* ioremap64(), iounmap(), readl()   */
+>
+> static char *name = "yosemite_irq";
+> static unsigned long long base = 0x0EF600C00; // 36-bit address
+> static unsigned int size = 0x44;
+> static char *kernel;
+> static int irq = 8;
+
+You are using the "External IRQ 8". This results in IRQ number 19 of the 2nd 
+interrupt controller of the 440ep. So please try (19+32) as the IRQ number 
+upon requesting the interrupt.
 
 Best regards,
 Stefan
