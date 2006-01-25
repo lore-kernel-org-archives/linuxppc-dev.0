@@ -1,16 +1,20 @@
-Return-Path: <frannk_m1@yahoo.com>
-Received: from web32207.mail.mud.yahoo.com (web32207.mail.mud.yahoo.com
-	[68.142.207.138]) by ozlabs.org (Postfix) with SMTP id 2519A68A67
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from hera.kernel.org (hera.kernel.org [140.211.167.34])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6197668A86
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jan 2006 10:46:27 +1100 (EST)
-Message-ID: <20060125234626.20242.qmail@web32207.mail.mud.yahoo.com>
-Date: Wed, 25 Jan 2006 15:46:26 -0800 (PST)
-From: Frank <frannk_m1@yahoo.com>
-Subject: Re: 2.4.x vs 2.6.x performance
-To: Carlos Munoz <carlos@kenati.com>
-In-Reply-To: <43D7DC34.8050604@kenati.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 26 Jan 2006 11:45:05 +1100 (EST)
+Date: Wed, 25 Jan 2006 10:19:59 -0600
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: Randy Vinson <rvinson@mvista.com>
+Subject: Re: [PATCH] Updated Patch to add support for Freescale 83xx Host Mode
+	USB
+Message-ID: <20060125161959.GC4390@dmt.cnet>
+References: <43D56DE5.5040004@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <43D56DE5.5040004@mvista.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,63 +26,137 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-
---- Carlos Munoz <carlos@kenati.com> wrote:
-
-> Frank wrote:
+On Mon, Jan 23, 2006 at 04:59:33PM -0700, Randy Vinson wrote:
+> Greetings,
+>     I've attached an updated patch (based on 2.6.16-rc1) which adds 
+> Host mode support for the Dual-Role(DR) and Multi-Port-Host (MPH) USB 
+> controllers found in the Freescale 8349. The update was to reconcile the 
+> port numbering scheme such that it matches the 8349 documentation. Since 
+> my previous patch has not yet gone upstream, the maintainer requested a 
+> fresh patch.
 > 
-> >I remember reading a while back that the 2.6 kernel is
-> >considerably slower then the 2.4 kernel (Wolfgang Denx). Has
-> >anybody taken any performance measurements on a later kernel
-> >version to see if the above still hods true?
-> >
-> >I'm thinking about moving to 2.6 since a lot of open source
-> >projects have stopped suporting the 2.4 kernel.
-> >
-> >__________________________________________________
-> >Do You Yahoo!?
-> >Tired of spam?  Yahoo! Mail has the best spam protection
-> around 
-> >http://mail.yahoo.com 
-> >_______________________________________________
-> >Linuxppc-embedded mailing list
-> >Linuxppc-embedded@ozlabs.org
-> >https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> >  
-> >
-> Hi Frank,
+>  Note that this patch only provides the platform-specific code that 
+> sets up the external hardware and pin configuration. The actual DR and 
+> MPH controller driver was posted on the linux-usb-devel mailing list.
 > 
-> While at my previous company we tried to move to the 2.6
-> kernel (can't 
-> remember the version, however it was a little over a year ago)
-> from the 
-> 2.4.20 kernel. The 2.6 kernel could not keep up with our
-> stress tests, 
-> not even close. Unfortunately, I don't have any hard data. We
-> spent 
-> about 2 weeks trying to figure out why  the performance
-> degradation. 
-> However, since there was no real need to use the 2.6 kernel
-> other than 
-> for better performance, and due to other pressing projects,
-> management 
-> decided to put on hold the upgrade to 2.6, and as far as I
-> know they are 
-> still on the 2.4 kernel. A lot has changed on 2.6 since then,
-> so maybe 
-> the performance is better now. You can always compare them
-> both and post 
-> your results.
+>     Using a Freescale 8349CDS reference board, the DR and MPH 
+> controllers have been successfully tested using a USB 2.0 high speed 
+> FLASH drive, a USB 1.1 full speed 4-port hub and a Siemens SpeedStream 
+> USB to Ethernet adapter (assuming the previous 8349 driver updates 
+> posted to linux-usb-devel have been applied).
 > 
-> Thanks,
-> 
-> 
-> Carlos Munoz
+>           Randy Vinson
+>           MontaVista Software
 
-Thanks, I let eneryone know what i find out...
+> Adding platform support for the 834x Host Mode USB controller.
+> 
+> This patch provides the platform-specific hardware setup required by the
+> 83xx Host Mode USB controller on the Freescale 8349CDS reference system.
+> 
+> Signed-off-by: Randy Vinson <rvinson@mvista.com>
+> 
+> ---
+> commit 30caa62b0e433b466b0880efa32375359b6e4fea
+> tree e9bacf15ad1a58f6f15a343a2b5f233affec0ca1
+> parent a3d36ef38dcdcbbc7e1860f2f92569145524b1d5
+> author Randy Vinson <rvinson@linuxbox.(none)> Mon, 23 Jan 2006 16:46:39 -0700
+> committer Randy Vinson <rvinson@linuxbox.(none)> Mon, 23 Jan 2006 16:46:39 -0700
+> 
+>  arch/ppc/Kconfig                      |    2 +
+>  arch/ppc/platforms/83xx/Kconfig       |   28 +++++++++
+>  arch/ppc/platforms/83xx/mpc834x_sys.c |  100 +++++++++++++++++++++++++++++++++
+>  arch/ppc/platforms/83xx/mpc834x_sys.h |    3 +
+>  arch/ppc/syslib/mpc83xx_devices.c     |   16 +++++
+>  include/asm-ppc/mpc83xx.h             |   17 ++++++
+>  6 files changed, 166 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+> index 11899f0..b33b0eb 100644
+> --- a/arch/ppc/Kconfig
+> +++ b/arch/ppc/Kconfig
+> @@ -681,6 +681,8 @@ config EV64360
+>  	  platform.
+>  endchoice
+>  
+> +source arch/ppc/platforms/83xx/Kconfig
+> +
+>  config PQ2ADS
+>  	bool
+>  	depends on ADS8272
+> diff --git a/arch/ppc/platforms/83xx/Kconfig b/arch/ppc/platforms/83xx/Kconfig
+> new file mode 100644
+> index 0000000..90bc67a
+> --- /dev/null
+> +++ b/arch/ppc/platforms/83xx/Kconfig
+> @@ -0,0 +1,28 @@
+> +config 834x_USB_SUPPORT
+> +	bool "834x USB Support"
+> +	depends on MPC834x_SYS
+> +	default y
+> +	---help---
+> +	  Enables support for the USB controllers on the MPC834x chip. The 834x
+> +	  reference board is wired for only one USB port. That port may be
+> +	  used by either the MPH or DR USB controller.
+> +	  Requires USB Host EHCI support.
+> +	  If unsure, say Y.
+> +choice
+> +	prompt "834x USB Controller Selection"
+> +	depends on 834x_USB_SUPPORT
+> +	default 834x_DR_USB_SUPPORT
+> +
+> +config 834x_DR_USB_SUPPORT
+> +	bool "DR Controller"
+> +	select USB_EHCI_ROOT_HUB_TT
+> +	---help---
+> +	  Select if using the Dual-Role (DR) USB controller.
+> +
+> +config 834x_MPH_USB_SUPPORT
+> +	bool "MPH Controller"
+> +	---help---
+> +	  Select if using the Multi-Port-Host (MPH) USB controller.
+> +
+> +endchoice
+> +
+> diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.c b/arch/ppc/platforms/83xx/mpc834x_sys.c
+> index 012e1e6..319661e 100644
+> --- a/arch/ppc/platforms/83xx/mpc834x_sys.c
+> +++ b/arch/ppc/platforms/83xx/mpc834x_sys.c
+> @@ -11,6 +11,9 @@
+>   * under  the terms of  the GNU General  Public License as published by the
+>   * Free Software Foundation;  either version 2 of the  License, or (at your
+>   * option) any later version.
+> + *
+> + * USB setup added by Randy Vinson <rvinson@mvista.com> based on code from
+> + * Hunter Wu.
+>   */
+>  
+>  #include <linux/config.h>
+> @@ -93,6 +96,99 @@ mpc83xx_exclude_device(u_char bus, u_cha
+>  }
+>  #endif /* CONFIG_PCI */
+>  
+> +/*
+> + * Configure the on-chip USB controller. The MPC834xCDS only supports the
+> + * second USB interface (port 1). This code sets up the hardware and then
+> + * lets the platform driver take over device setup.
+> + */
+> +
+> +#ifdef CONFIG_834x_USB_SUPPORT
+> +void mpc834x_board_init(void)
+> +{
+> +	unsigned char __iomem *bcsr;
+> +	volatile unsigned char *bcsr5_p;
+> +
+> +	/*
+> +	 * if SYS board is plug into PIB board,
+> +	 * force to use the PHY on SYS board
+> +	 * */
+> +	bcsr = ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
+> +	bcsr5_p = bcsr + BCSR5_OFF;
+> +	if ( (*bcsr5_p & BCSR5_INT_USB) == 0 )
+> +		*bcsr5_p = (*bcsr5_p | BCSR5_INT_USB);
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+Randy, 
+
+Can you please use in/out io accessors instead of direct memory references
+to ? 
