@@ -1,18 +1,24 @@
-Return-Path: <solca@guug.org>
-Received: from guug.org (guug.galileo.edu [168.234.203.30])
-	by ozlabs.org (Postfix) with ESMTP id 1D05368A75
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3DF4368A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Jan 2006 06:08:14 +1100 (EST)
-Date: Wed, 25 Jan 2006 12:41:38 -0600
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: 2.4.x vs 2.6.x performance
-Message-ID: <20060125184138.GA12874@guug.org>
-References: <20060123042413.806.qmail@web32201.mail.mud.yahoo.com>
-	<c8c05211d33576b79dee80725822322b@embeddedalley.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <c8c05211d33576b79dee80725822322b@embeddedalley.com>
-From: Otto Solares <solca@guug.org>
+	Thu, 26 Jan 2006 06:38:31 +1100 (EST)
+Message-ID: <43D7D334.3070709@ovro.caltech.edu>
+Date: Wed, 25 Jan 2006 11:36:20 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
+MIME-Version: 1.0
+To: Eugene Surovegin <ebs@ebshome.net>
+Subject: Re: Yosemite/440EP why are readl()/ioread32() setup to read
+	little-endian?
+References: <43CC3E37.4040707@softadvances.com>
+	<43D66D06.9090904@ovro.caltech.edu> <200601251057.47619.sr@denx.de>
+	<43D7C2EF.5060508@ovro.caltech.edu>
+	<20060125185131.GA7425@gate.ebshome.net>
+In-Reply-To: <20060125185131.GA7425@gate.ebshome.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,19 +30,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 25, 2006 at 07:45:38AM -0800, Dan Malek wrote:
-> I wouldn't say "considerably" slower, but there are some
-> performance differences.  It's most evident on the
-> smaller, slower processors, like the 8xx, but we have
-> taken steps to alleviate that.  The problem is 2.6 is just
-> bigger with more stuff in it.  You want the new features,
-> you have to pay for that somewhere.  I think it would
-> help if the kernel was a little more configurable for
-> embedded systems.  It seems there is just too much
-> stuff in a basic kernel that I wish could be stripped out.
+Hi Eugene,
 
-Many things can be stripped out with LinuxTiny patches:
+> 
+> use in_/out_ accessors, not pointers. Look at other 4xx drivers (i2c, 
+> emac)
+> 
+> Also, you don't have worry about this code being non-portable, because 
+> every chip has it's own GPIO impl anyway.
+> 
 
-http://www.selenic.com/linux-tiny/
+Thanks for the feedback.
 
--otto
+I haven't looked for it yet, but do you know if there is a driver
+for the Yosemite board I2C temperature sensor already written?
+
+If its not, that might be a nice little exercise for me.
+
+Thanks,
+Dave
