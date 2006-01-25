@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id D75BE68AAD
+Return-Path: <lagrange@fr.oleane.com>
+Received: from relay02s.clb.oleane.net (relay02s.clb.oleane.net
+	[213.56.31.143]) by ozlabs.org (Postfix) with ESMTP id E00EF68A1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Jan 2006 22:42:50 +1100 (EST)
-To: "IGOR LURI" <iluri@fagorautomation.es>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Linux kernel and u-boot debugging with Eclipse IDE 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 24 Jan 2006 08:59:46 +0100."
-	<918EB199DDDFFA42BEA2EB3A1C6021F399AFAD@correo.fagorautomation.net>
-Date: Wed, 25 Jan 2006 12:42:47 +0100
-Sender: wd@denx.de
-Message-Id: <20060125114247.C9D6E352584@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 26 Jan 2006 00:57:12 +1100 (EST)
+Received: from smtp9.clb.oleane.net (smtp9.clb.oleane.net [213.56.31.31])
+	by relay02s.clb.oleane.net with ESMTP id k0PDpOvn024757
+	for <linuxppc-embedded@ozlabs.org>; Wed, 25 Jan 2006 14:51:43 +0100
+Received: from GEG2400 ([194.3.133.184]) (authenticated)
+	by smtp9.clb.oleane.net with ESMTP id k0PDgtL5004658
+	for <linuxppc-embedded@ozlabs.org>; Wed, 25 Jan 2006 14:43:00 +0100
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Misunderstanding with function cpm_dpalloc in Linux 2.6.x
+Date: Wed, 25 Jan 2006 14:48:05 +0100
+Message-ID: <000001c621b5$f8e45ab0$5201a8c0@GEG2400>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +28,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <918EB199DDDFFA42BEA2EB3A1C6021F399AFAD@correo.fagorautomation.net> you wrote:
-> 
-> We have a MPC5200Lite board running Linux 2.4.25 and u-boot 1.1.4. We
-> are able to debug Linux kernel and U-boot using DDD/GDB and BDI2000, and
-> we are trying to use Eclipse IDE (with CDT plugin) / BDI2000 to develop
-> and debug software.
 
-Are you sure that U-Boot and Kernel debugging works fine with GDB? So
-is this a rev. B CPU then? If not, please read the errata!
+Hello,
 
-> Eclipse works well to remote debugging aplications over ethernet,
-> however, we are not able to debug Linux kernel or u-boot using Eclipse.
-> When it stops in the first breakpoint, I can´t view some variables and
-> stepping into a function, it shows another. It  seems that Eclipse has
-> problems with Linux kernel and u-boot symbols.
+I work on MPC boards with Linux 2.6.9 and I have a problem with the
+cpm_dpalloc function.
 
-My guess is that what you see is the effects of  the  chip  errata  -
-please read the errata sheet.
+In the file cpm2_common.c the function "uint cpm_dpalloc(uint size, uint
+align)" is intended
+to allocate a piece of memory in the dpram. This piece of memory has at
+least "size" bytes
+and I beleived that the returned address should be aligned on "align" bytes.
 
-Best regards,
+This function calls "void *rh_alloc(rh_info_t * info, int size, const char
+*owner)" from rheap.c file.
+In this function the alignment is only used to calculate the right size with
+the formula :
+size = (size + (info->alignment - 1)) & ~(info->alignment - 1);
+It seems to be right but the alignment is not used to retreive an aligned
+start address.
 
-Wolfgang Denk
+So if I do the following sequential calls, I have the following results :
+cpm_dpalloc(16, 8)	-> 	0XC0		-> right aligned
+cpm_dpalloc(64, 64)	-> 	0XD0		-> wrong aligned -> must be 0x100
+cpm_dpalloc(16, 8)	-> 	0X110		-> right aligned but wrong to use
+cpm_dpalloc(24, 8)	-> 	0X1200		-> right aligned but wrong to use
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Perfection is reached, not when there is no longer anything  to  add,
-but when there is no longer anything to take away.
-                                           - Antoine de Saint-Exupery
+I can have the wanted values if instead of size, I try to allocate (size +
+align - 1) bytes
+but I don't think it is the solution.
+
+Perhaps, I don't understand the allocation theory.
+Any idea ?
+
+Thanks all
+Laurent
