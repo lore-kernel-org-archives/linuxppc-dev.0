@@ -1,32 +1,24 @@
 Return-Path: <mita@miraclelinux.com>
 Received: from mail01.miraclelinux.com (ns.miraclelinux.com [219.118.163.66])
-	by ozlabs.org (Postfix) with ESMTP id 401F068AD3
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 13:13:13 +1100 (EST)
-Date: Thu, 26 Jan 2006 11:13:18 +0900
-To: Keith Owens <kaos@sgi.com>
-Subject: Re: [PATCH 3/6] C-language equivalents of include/asm-*/bitops.h
-Message-ID: <20060126021318.GB6648@miraclelinux.com>
-References: <20060125113206.GD18584@miraclelinux.com>
-	<24086.1138190083@ocs3.ocs.com.au>
+	by ozlabs.org (Postfix) with ESMTP id 177CA68A8D
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 14:49:58 +1100 (EST)
+Date: Thu, 26 Jan 2006 12:50:04 +0900
+To: "Chen, Kenneth W" <kenneth.w.chen@intel.com>
+Subject: Re: [PATCH 5/6] fix warning on test_ti_thread_flag()
+Message-ID: <20060126035004.GA11543@miraclelinux.com>
+References: <Pine.LNX.4.62.0601251814350.19174@pademelon.sonytel.be>
+	<200601252002.k0PK2Mg31276@unix-os.sc.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <24086.1138190083@ocs3.ocs.com.au>
+In-Reply-To: <200601252002.k0PK2Mg31276@unix-os.sc.intel.com>
 From: mita@miraclelinux.com (Akinobu Mita)
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	Ian Molton <spyro@f2s.com>, Andi Kleen <ak@suse.de>,
-	David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
-	Greg Ungerer <gerg@uclinux.org>, sparclinux@vger.kernel.org,
-	Miles Bader <uclinux-v850@lsi.nec.co.jp>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Hirokazu Takata <takata@linux-m32r.org>, linuxsh-dev@lists.sourceforge.net,
-	Linus Torvalds <torvalds@osdl.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Richard Henderson <rth@twiddle.net>,
-	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
-	ultralinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-kernel@vger.kernel.org,
-	linuxsh-shmedia-dev@lists.sourceforge.net, linux390@de.ibm.com,
-	Russell King <rmk@arm.linux.org.uk>, parisc-linux@parisc-linux.org
+Cc: linux-m68k@vger.kernel.org, linux-ia64@vger.kernel.org,
+	ultralinux@vger.kernel.org,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Andi Kleen <ak@suse.de>, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	'Geert Uytterhoeven' <geert@linux-m68k.org>,
+	sparclinux@vger.kernel.org, linux390@de.ibm.com,
+	linuxsh-dev@lists.sourceforge.net, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,42 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 25, 2006 at 10:54:43PM +1100, Keith Owens wrote:
-> Be very, very careful about using these generic *_bit() routines if the
-> architecture supports non-maskable interrupts.
+On Wed, Jan 25, 2006 at 12:02:21PM -0800, Chen, Kenneth W wrote:
+> Geert Uytterhoeven wrote on Wednesday, January 25, 2006 9:19 AM
+> > > I don't think you need to change the flags size.
+> > 
+> > Passing a pointer to a 32-bit entity to a function that takes a
+> > pointer to a 64-bit entity is a classical endianness bug. So it's
+> > better to change it, before people copy the code to a big endian
+> > platform.
 > 
-> NMI events can occur at any time, including when interrupts have been
-> disabled by *_irqsave().  So you can get NMI events occurring while a
-> *_bit fucntion is holding a spin lock.  If the NMI handler also wants
-> to do bit manipulation (and they do) then you can get a deadlock
-> between the original caller of *_bit() and the NMI handler.
+> Well, x86-64 and linux-ia64 both use little endian.  I don't
+> understand why you are barking at us with big endian issue.
 > 
-> Doing any work that requires spinlocks in an NMI handler is just asking
-> for deadlock problems.  The generic *_bit() routines add a hidden
-> spinlock behind what was previously a safe operation.  I would even say
-> that any arch that supports any type of NMI event _must_ define its own
-> bit routines that do not rely on your _atomic_spin_lock_irqsave() and
-> its hash of spinlocks.
 
-At least cris and parisc are using similar *_bit function on SMP.
-I will add your advise in comment.
+I can fix this without changing the flags size for those architectures.
 
---- ./include/asm-generic/bitops.h.orig	2006-01-26 10:56:00.000000000 +0900
-+++ ./include/asm-generic/bitops.h	2006-01-26 11:01:28.000000000 +0900
-@@ -50,6 +50,16 @@ extern raw_spinlock_t __atomic_hash[ATOM
-  * C language equivalents written by Theodore Ts'o, 9/26/92
-  */
- 
-+/*
-+ * NMI events can occur at any time, including when interrupts have been
-+ * disabled by *_irqsave().  So you can get NMI events occurring while a
-+ * *_bit fucntion is holding a spin lock.  If the NMI handler also wants
-+ * to do bit manipulation (and they do) then you can get a deadlock
-+ * between the original caller of *_bit() and the NMI handler.
-+ *
-+ * by Keith Owens
-+ */
-+
- static __inline__ void set_bit(int nr, volatile unsigned long *addr)
- {
- 	unsigned long mask = BITOP_MASK(nr);
+1. Introduce *_le_bit() bit operations which takes void *addr
+   (already I have these functions in the scope of
+    HAVE_ARCH_EXT2_NON_ATOMIC_BITOPS in my patch)
+
+2. Change flags to __u8 flags[4] or __u8 flags[8] for each architectures.
+
+3. Use *_le_bit() in include/linux/thread_info.h
