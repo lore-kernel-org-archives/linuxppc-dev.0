@@ -1,37 +1,18 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[212.18.232.186])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8F69D68A3D
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 19:56:16 +1100 (EST)
-Date: Thu, 26 Jan 2006 08:55:41 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Akinobu Mita <mita@miraclelinux.com>, linux-kernel@vger.kernel.org,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Ian Molton <spyro@f2s.com>, dev-etrax@axis.com,
-	David Howells <dhowells@redhat.com>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Linus Torvalds <torvalds@osdl.org>, linux-ia64@vger.kernel.org,
-	Hirokazu Takata <takata@linux-m32r.org>,
-	linux-m68k@lists.linux-m68k.org, Greg Ungerer <gerg@uclinux.org>,
-	linux-mips@linux-mips.org, parisc-linux@parisc-linux.org,
-	linuxppc-dev@ozlabs.org, linux390@de.ibm.com,
-	linuxsh-dev@lists.sourceforge.net,
-	linuxsh-shmedia-dev@lists.sourceforge.net,
-	sparclinux@vger.kernel.org, ultralinux@vger.kernel.org,
-	Miles Bader <uclinux-v850@lsi.nec.co.jp>, Andi Kleen <ak@suse.de>,
-	Chris Zankel <chris@zankel.net>
-Subject: Re: [PATCH 3/6] C-language equivalents of include/asm-*/bitops.h
-Message-ID: <20060126085540.GA15377@flint.arm.linux.org.uk>
-References: <20060125112625.GA18584@miraclelinux.com>
-	<20060125113206.GD18584@miraclelinux.com>
-	<20060125200250.GA26443@flint.arm.linux.org.uk>
-	<20060126000618.GA5592@twiddle.net>
+Return-Path: <adobriyan@gmail.com>
+Received: from uproxy.gmail.com (uproxy.gmail.com [66.249.92.203])
+	by ozlabs.org (Postfix) with ESMTP id C053668AA5
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 21:32:18 +1100 (EST)
+Received: by uproxy.gmail.com with SMTP id h2so119095ugf
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 02:32:14 -0800 (PST)
+Date: Thu, 26 Jan 2006 13:50:01 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] Remove arch/ppc/syslib/ppc4xx_pm.c
+Message-ID: <20060126105001.GA9288@mipter.zuzino.mipt.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060126000618.GA5592@twiddle.net>
-Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen@coderock.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,22 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 25, 2006 at 04:06:18PM -0800, Richard Henderson wrote:
-> On Wed, Jan 25, 2006 at 08:02:50PM +0000, Russell King wrote:
-> > > +	s = 16; if (word << 16 != 0) s = 0; b += s; word >>= s;
-> > > +	s =  8; if (word << 24 != 0) s = 0; b += s; word >>= s;
-> > > +	s =  4; if (word << 28 != 0) s = 0; b += s; word >>= s;
-> ...
-> > Basically, shifts which depend on a variable are more expensive than
-> > constant-based shifts.
-> 
-> Actually, they're all constant shifts.  Just written stupidly.
+From: Domen Puncer <domen@coderock.org>
 
-Unfortunately that's not correct.  You do not appear to have checked
-the compiler output like I did - this code does _not_ generate
-constant shifts.
+Remove nowhere referenced file ("grep ppc4xx_pm -r ." didn't find anything).
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 Serial core
+Signed-off-by: Domen Puncer <domen@coderock.org>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
+
+ arch/ppc/syslib/ppc4xx_pm.c |   47 --------------------------------------------
+ 1 file changed, 47 deletions(-)
+
+--- a/arch/ppc/syslib/ppc4xx_pm.c
++++ b/arch/ppc/syslib/ppc4xx_pm.c
+@@ -1,47 +0,0 @@
+-/*
+- * Author: Armin Kuster <akuster@mvista.com>
+- *
+- * 2002 (c) MontaVista, Software, Inc.  This file is licensed under
+- * the terms of the GNU General Public License version 2.  This program
+- * is licensed "as is" without any warranty of any kind, whether express
+- * or implied.
+- *
+- * This an attempt to get Power Management going for the IBM 4xx processor.
+- * This was derived from the ppc4xx._setup.c file
+- */
+-
+-#include <linux/config.h>
+-#include <linux/init.h>
+-
+-#include <asm/ibm4xx.h>
+-
+-void __init
+-ppc4xx_pm_init(void)
+-{
+-
+-	unsigned int value = 0;
+-
+-	/* turn off unused hardware to save power */
+-#ifdef CONFIG_405GP
+-	value |= CPM_DCP;	/* CodePack */
+-#endif
+-
+-#if !defined(CONFIG_IBM_OCP_GPIO)
+-	value |= CPM_GPIO0;
+-#endif
+-
+-#if !defined(CONFIG_PPC405_I2C_ADAP)
+-	value |= CPM_IIC0;
+-#ifdef CONFIG_STB03xxx
+-	value |= CPM_IIC1;
+-#endif
+-#endif
+-
+-
+-#if !defined(CONFIG_405_DMA)
+-	value |= CPM_DMA;
+-#endif
+-
+-	mtdcr(DCRN_CPMFR, value);
+-
+-}
