@@ -1,31 +1,31 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
-	[216.27.180.168]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <rth@twiddle.net>
+Received: from are.twiddle.net (are.twiddle.net [64.81.246.98])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3965A68AC4
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 11:05:20 +1100 (EST)
-Date: Wed, 25 Jan 2006 16:04:30 -0800 (PST)
-Message-Id: <20060125.160430.94334986.davem@davemloft.net>
-To: paulus@samba.org
-Subject: Re: [PATCH 5/6] fix warning on test_ti_thread_flag()
-From: "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <17367.64370.844350.972910@cargo.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 2279D68AD0
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 11:59:17 +1100 (EST)
+Date: Wed, 25 Jan 2006 16:06:18 -0800
+From: Richard Henderson <rth@twiddle.net>
+To: Akinobu Mita <mita@miraclelinux.com>, linux-kernel@vger.kernel.org,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Ian Molton <spyro@f2s.com>,
+	dev-etrax@axis.com, David Howells <dhowells@redhat.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Linus Torvalds <torvalds@osdl.org>, linux-ia64@vger.kernel.org,
+	Hirokazu Takata <takata@linux-m32r.org>, linux-m68k@vger.kernel.org,
+	Greg Ungerer <gerg@uclinux.org>, linux-mips@linux-mips.org,
+	parisc-linux@parisc-linux.org, linuxppc-dev@ozlabs.org,
+	linux390@de.ibm.com, linuxsh-dev@lists.sourceforge.net,
+	linuxsh-shmedia-dev@lists.sourceforge.net, sparclinux@vger.kernel.org,
+	ultralinux@vger.kernel.org, Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+	Andi Kleen <ak@suse.de>, Chris Zankel <chris@zankel.net>
+Subject: Re: [PATCH 3/6] C-language equivalents of include/asm-*/bitops.h
+Message-ID: <20060126000618.GA5592@twiddle.net>
 References: <20060125112625.GA18584@miraclelinux.com>
-	<20060125113446.GF18584@miraclelinux.com>
-	<17367.64370.844350.972910@cargo.ozlabs.ibm.com>
+	<20060125113206.GD18584@miraclelinux.com>
+	<20060125200250.GA26443@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org, spyro@f2s.com,
-	ak@suse.de, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
-	gerg@uclinux.org, sparclinux@vger.kernel.org,
-	uclinux-v850@lsi.nec.co.jp, ysato@users.sourceforge.jp,
-	takata@linux-m32r.org, linuxsh-dev@lists.sourceforge.net,
-	torvalds@osdl.org, ink@jurassic.park.msu.ru, rth@twiddle.net,
-	mita@miraclelinux.com, chris@zankel.net, dev-etrax@axis.com,
-	ultralinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-kernel@vger.kernel.org,
-	linuxsh-shmedia-dev@lists.sourceforge.net, linux390@de.ibm.com,
-	rmk@arm.linux.org.uk, parisc-linux@parisc-linux.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060125200250.GA26443@flint.arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,20 +35,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Thu, 26 Jan 2006 09:28:02 +1100
+On Wed, Jan 25, 2006 at 08:02:50PM +0000, Russell King wrote:
+> > +	s = 16; if (word << 16 != 0) s = 0; b += s; word >>= s;
+> > +	s =  8; if (word << 24 != 0) s = 0; b += s; word >>= s;
+> > +	s =  4; if (word << 28 != 0) s = 0; b += s; word >>= s;
+...
+> Basically, shifts which depend on a variable are more expensive than
+> constant-based shifts.
 
-> Akinobu Mita writes:
-> 
-> > If the arechitecture is
-> > - BITS_PER_LONG == 64
-> > - struct thread_info.flag 32 is bits
-> > - second argument of test_bit() was void *
-> > 
-> > Then compiler print error message on test_ti_thread_flags()
-> > in include/linux/thread_info.h
-> 
-> And correctly so.  The correct fix is to make thread_info.flag an
-> unsigned long.  This patch is NAKed.
+Actually, they're all constant shifts.  Just written stupidly.
 
-I agree.
+
+r~
