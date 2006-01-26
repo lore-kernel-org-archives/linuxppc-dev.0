@@ -3,23 +3,19 @@ Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
 	[212.18.232.186])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C6CBD68A94
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jan 2006 03:40:58 +1100 (EST)
-Date: Thu, 26 Jan 2006 16:40:21 +0000
+	by ozlabs.org (Postfix) with ESMTP id 4263C68A8F
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jan 2006 03:48:17 +1100 (EST)
+Date: Thu, 26 Jan 2006 16:47:45 +0000
 From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Grant Grundler <grundler@parisc-linux.org>
-Subject: Re: [parisc-linux] Re: [PATCH 3/6] C-language equivalents of
-	include/asm-*/bitops.h
-Message-ID: <20060126164020.GA27222@flint.arm.linux.org.uk>
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH 1/6] {set,clear,test}_bit() related cleanup
+Message-ID: <20060126164744.GB27222@flint.arm.linux.org.uk>
 References: <20060125112625.GA18584@miraclelinux.com>
-	<20060125113206.GD18584@miraclelinux.com>
-	<20060125200250.GA26443@flint.arm.linux.org.uk>
-	<20060126000618.GA5592@twiddle.net>
-	<20060126085540.GA15377@flint.arm.linux.org.uk>
-	<20060126161849.GA13632@colo.lackof.org>
+	<20060125112857.GB18584@miraclelinux.com>
+	<20060126161426.GA1709@elf.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060126161849.GA13632@colo.lackof.org>
+In-Reply-To: <20060126161426.GA1709@elf.ucw.cz>
 Sender: Russell King <rmk@arm.linux.org.uk>
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
 	Ian Molton <spyro@f2s.com>, Andi Kleen <ak@suse.de>,
@@ -31,7 +27,7 @@ Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
 	linuxsh-shmedia-dev@lists.sourceforge.net,
 	Linus Torvalds <torvalds@osdl.org>,
 	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Akinobu Mita <mita@miraclelinux.com>,
+	Richard Henderson <rth@twiddle.net>, Akinobu Mita <mita@miraclelinux.com>,
 	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
 	ultralinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
 	linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net,
@@ -45,164 +41,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 26, 2006 at 09:18:49AM -0700, Grant Grundler wrote:
-> On Thu, Jan 26, 2006 at 08:55:41AM +0000, Russell King wrote:
-> > Unfortunately that's not correct.  You do not appear to have checked
-> > the compiler output like I did - this code does _not_ generate
-> > constant shifts.
+On Thu, Jan 26, 2006 at 05:14:27PM +0100, Pavel Machek wrote:
+> > Index: 2.6-git/include/asm-x86_64/mmu_context.h
+> > ===================================================================
+> > --- 2.6-git.orig/include/asm-x86_64/mmu_context.h	2006-01-25 19:07:15.000000000 +0900
+> > +++ 2.6-git/include/asm-x86_64/mmu_context.h	2006-01-25 19:13:59.000000000 +0900
+> > @@ -34,12 +34,12 @@
+> >  	unsigned cpu = smp_processor_id();
+> >  	if (likely(prev != next)) {
+> >  		/* stop flush ipis for the previous mm */
+> > -		clear_bit(cpu, &prev->cpu_vm_mask);
+> > +		cpu_clear(cpu, prev->cpu_vm_mask);
+> >  #ifdef CONFIG_SMP
+> >  		write_pda(mmu_state, TLBSTATE_OK);
+> >  		write_pda(active_mm, next);
+> >  #endif
+> > -		set_bit(cpu, &next->cpu_vm_mask);
+> > +		cpu_set(cpu, next->cpu_vm_mask);
+> >  		load_cr3(next->pgd);
+> >  
+> >  		if (unlikely(next->context.ldt != prev->context.ldt)) 
 > 
-> Russell,
-> By "written stupidly", I thought Richard meant they could have
-> used constants instead of "s".  e.g.:
-> 	if (word << 16 == 0) { b += 16; word >>= 16); }
-> 	if (word << 24 == 0) { b +=  8; word >>=  8); }
-> 	if (word << 28 == 0) { b +=  4; word >>=  4); }
-> 
-> But I prefer what Edgar Toernig suggested.
+> cpu_set sounds *very* ambiguous. We have thing called cpusets, for
+> example. I'd not guess that is set_bit in cpu endianity (is it?).
 
-Ok, I can see I'm going to lose this, but what the hell.
+That's a problem for the cpusets folk - cpu_set predates them by a
+fair time - it's part of the cpumask API.  See include/linux/cpumask.h
 
-Firstly though, an out of line function call on ARM clobbers six out
-of 11 CPU registers.
-
-Let's compare the implementations, which are:
-
-int toernig_ffs(unsigned long word)
-{
-    int bit = 0;
-    word &= -word; // only keep the lsb.
-    if (word & 0xffff0000) bit |= 16;
-    if (word & 0xff00ff00) bit |=  8;
-    if (word & 0xf0f0f0f0) bit |=  4;
-    if (word & 0xcccccccc) bit |=  2;
-    if (word & 0xaaaaaaaa) bit |=  1;
-    return bit;
-}
-
-toernig_ffs:
-        rsb     r3, r0, #0
-        and     r0, r0, r3
-        mov     r3, r0, lsr #16
-        bic     r2, r0, #16711680
-        str     lr, [sp, #-4]!
-        mov     r3, r3, asl #16
-        ldr     lr, .L7
-        ldr     r1, .L7+4
-        ldr     ip, .L7+8
-        cmp     r3, #0
-        bic     r2, r2, #255
-        and     lr, r0, lr
-        and     r1, r0, r1
-        and     ip, r0, ip
-        movne   r0, #16
-        moveq   r0, #0
-        cmp     r2, #0
-        orrne   r0, r0, #8
-        cmp     r1, #0
-        orrne   r0, r0, #4
-        cmp     ip, #0
-        orrne   r0, r0, #2
-        cmp     lr, #0
-        orrne   r0, r0, #1
-        ldr     pc, [sp], #4
-.L8:
-        .align  2
-.L7:
-        .word   -1431655766
-        .word   -252645136
-        .word   -858993460
-
-25 instructions.  3 words of additional data.  5 registers.  0 register
-based shifts.
-
-I feel that this is far too expensive to sanely inline - at least three
-words of additional data for a use in a function, and has a high register
-usage comparable to that of an out of line function.
-
-int mita_ffs(unsigned long word)
-{
-     int b = 0, s;
-     s = 16; if (word << 16 != 0) s = 0; b += s; word >>= s;
-     s =  8; if (word << 24 != 0) s = 0; b += s; word >>= s;
-     s =  4; if (word << 28 != 0) s = 0; b += s; word >>= s;
-     s =  2; if (word << 30 != 0) s = 0; b += s; word >>= s;
-     s =  1; if (word << 31 != 0) s = 0; b += s;
-     return b;
-}
-
-mita_ffs:
-        movs    r1, r0, asl #16
-        moveq   r2, #16
-        movne   r2, #0
-        mov     r0, r0, lsr r2		@ register-based shift
-        mov     r3, r2
-        movs    r2, r0, asl #24
-        moveq   r2, #8
-        movne   r2, #0
-        mov     r0, r0, lsr r2		@ register-based shift
-        movs    r1, r0, asl #28
-        add     r3, r3, r2
-        moveq   r2, #4
-        movne   r2, #0
-        mov     r0, r0, lsr r2		@ register-based shift
-        movs    r1, r0, asl #30
-        add     r3, r3, r2
-        moveq   r2, #2
-        movne   r2, #0
-        mov     r0, r0, lsr r2		@ register-based shift
-        tst     r0, #1
-        add     r3, r3, r2
-        moveq   r2, #1
-        movne   r2, #0
-        add     r3, r3, r2
-        mov     r0, r3
-        mov     pc, lr
-
-26 instructions.  4 registers used.  4 unconditional register-based
-shifts (expensive).
-
-Better, but uses inefficient register based shifts (which can take twice
-as many cycles as non-register based shifts depending on the CPU).  Still
-has a high usage on CPU registers though.  Could possibly be a candidate
-for inlining.
-
-int arm_ffs(unsigned long word)
-{
-     int k = 31;
-     if (word & 0x0000ffff) { k -= 16; word <<= 16; }
-     if (word & 0x00ff0000) { k -= 8;  word <<= 8;  }
-     if (word & 0x0f000000) { k -= 4;  word <<= 4;  }
-     if (word & 0x30000000) { k -= 2;  word <<= 2;  }
-     if (word & 0x40000000) { k -= 1; }
-     return k;
-}
-
-arm_ffs:
-        mov     r3, r0, asl #16
-        mov     r3, r3, lsr #16
-        cmp     r3, #0
-        movne   r0, r0, asl #16
-        mov     r3, #31
-        movne   r3, #15
-        tst     r0, #16711680
-        movne   r0, r0, asl #8
-        subne   r3, r3, #8
-        tst     r0, #251658240
-        movne   r0, r0, asl #4
-        subne   r3, r3, #4
-        tst     r0, #805306368
-        movne   r0, r0, asl #2
-        subne   r3, r3, #2
-        tst     r0, #1073741824
-        subne   r3, r3, #1
-        mov     r0, r3
-        mov     pc, lr
-
-19 instructions.  2 registers.  0 register based shifts.  More reasonable
-for inlining.
-
-Clearly the smallest of the lot with the smallest register pressure,
-being the best candidate out of the lot, whether we inline it or not.
+Also, since cpu_vm_mask is a cpumask_t, the above change to me looks
+like a bug fix in its own right.
 
 -- 
 Russell King
