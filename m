@@ -1,18 +1,32 @@
-Return-Path: <adobriyan@gmail.com>
-Received: from uproxy.gmail.com (uproxy.gmail.com [66.249.92.203])
-	by ozlabs.org (Postfix) with ESMTP id C053668AA5
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 21:32:18 +1100 (EST)
-Received: by uproxy.gmail.com with SMTP id h2so119095ugf
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 02:32:14 -0800 (PST)
-Date: Thu, 26 Jan 2006 13:50:01 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@osdl.org>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] Remove arch/ppc/syslib/ppc4xx_pm.c
-Message-ID: <20060126105001.GA9288@mipter.zuzino.mipt.ru>
+Return-Path: <pavel@ucw.cz>
+Received: from amd.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
+	by ozlabs.org (Postfix) with ESMTP id AF68768A9A
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jan 2006 03:14:44 +1100 (EST)
+Date: Thu, 26 Jan 2006 17:14:27 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Akinobu Mita <mita@miraclelinux.com>
+Subject: Re: [PATCH 1/6] {set,clear,test}_bit() related cleanup
+Message-ID: <20060126161426.GA1709@elf.ucw.cz>
+References: <20060125112625.GA18584@miraclelinux.com>
+	<20060125112857.GB18584@miraclelinux.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Domen Puncer <domen@coderock.org>,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <20060125112857.GB18584@miraclelinux.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+	Ian Molton <spyro@f2s.com>, Andi Kleen <ak@suse.de>,
+	David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
+	Greg Ungerer <gerg@uclinux.org>, sparclinux@vger.kernel.org,
+	Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Hirokazu Takata <takata@linux-m32r.org>, linuxsh-dev@lists.sourceforge.net,
+	Linus Torvalds <torvalds@osdl.org>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Richard Henderson <rth@twiddle.net>,
+	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
+	ultralinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+	linux-kernel@vger.kernel.org,
+	linuxsh-shmedia-dev@lists.sourceforge.net, linux390@de.ibm.com,
+	Russell King <rmk@arm.linux.org.uk>, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,64 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Domen Puncer <domen@coderock.org>
+Hi!
 
-Remove nowhere referenced file ("grep ppc4xx_pm -r ." didn't find anything).
+> While working on these patch set, I found several possible cleanup
+> on x86-64 and ia64.
 
-Signed-off-by: Domen Puncer <domen@coderock.org>
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+It is probably not your fault, but...
 
- arch/ppc/syslib/ppc4xx_pm.c |   47 --------------------------------------------
- 1 file changed, 47 deletions(-)
+> Index: 2.6-git/include/asm-x86_64/mmu_context.h
+> ===================================================================
+> --- 2.6-git.orig/include/asm-x86_64/mmu_context.h	2006-01-25 19:07:15.000000000 +0900
+> +++ 2.6-git/include/asm-x86_64/mmu_context.h	2006-01-25 19:13:59.000000000 +0900
+> @@ -34,12 +34,12 @@
+>  	unsigned cpu = smp_processor_id();
+>  	if (likely(prev != next)) {
+>  		/* stop flush ipis for the previous mm */
+> -		clear_bit(cpu, &prev->cpu_vm_mask);
+> +		cpu_clear(cpu, prev->cpu_vm_mask);
+>  #ifdef CONFIG_SMP
+>  		write_pda(mmu_state, TLBSTATE_OK);
+>  		write_pda(active_mm, next);
+>  #endif
+> -		set_bit(cpu, &next->cpu_vm_mask);
+> +		cpu_set(cpu, next->cpu_vm_mask);
+>  		load_cr3(next->pgd);
+>  
+>  		if (unlikely(next->context.ldt != prev->context.ldt)) 
 
---- a/arch/ppc/syslib/ppc4xx_pm.c
-+++ b/arch/ppc/syslib/ppc4xx_pm.c
-@@ -1,47 +0,0 @@
--/*
-- * Author: Armin Kuster <akuster@mvista.com>
-- *
-- * 2002 (c) MontaVista, Software, Inc.  This file is licensed under
-- * the terms of the GNU General Public License version 2.  This program
-- * is licensed "as is" without any warranty of any kind, whether express
-- * or implied.
-- *
-- * This an attempt to get Power Management going for the IBM 4xx processor.
-- * This was derived from the ppc4xx._setup.c file
-- */
--
--#include <linux/config.h>
--#include <linux/init.h>
--
--#include <asm/ibm4xx.h>
--
--void __init
--ppc4xx_pm_init(void)
--{
--
--	unsigned int value = 0;
--
--	/* turn off unused hardware to save power */
--#ifdef CONFIG_405GP
--	value |= CPM_DCP;	/* CodePack */
--#endif
--
--#if !defined(CONFIG_IBM_OCP_GPIO)
--	value |= CPM_GPIO0;
--#endif
--
--#if !defined(CONFIG_PPC405_I2C_ADAP)
--	value |= CPM_IIC0;
--#ifdef CONFIG_STB03xxx
--	value |= CPM_IIC1;
--#endif
--#endif
--
--
--#if !defined(CONFIG_405_DMA)
--	value |= CPM_DMA;
--#endif
--
--	mtdcr(DCRN_CPMFR, value);
--
--}
+cpu_set sounds *very* ambiguous. We have thing called cpusets, for
+example. I'd not guess that is set_bit in cpu endianity (is it?).
+
+								Pavel
+-- 
+Thanks, Sharp!
