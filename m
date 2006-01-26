@@ -1,36 +1,37 @@
-Return-Path: <spyro@f2s.com>
-Received: from outmail.freedom2surf.net (outmail1.freedom2surf.net
-	[194.106.33.237])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[212.18.232.186])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6A400689FD
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 19:08:40 +1100 (EST)
-Message-ID: <43D808EE.9040906@f2s.com>
-Date: Wed, 25 Jan 2006 23:25:34 +0000
-From: Ian Molton <spyro@f2s.com>
-MIME-Version: 1.0
-To: Russell King <rmk+lkml@arm.linux.org.uk>
+	by ozlabs.org (Postfix) with ESMTP id 8F69D68A3D
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Jan 2006 19:56:16 +1100 (EST)
+Date: Thu, 26 Jan 2006 08:55:41 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Akinobu Mita <mita@miraclelinux.com>, linux-kernel@vger.kernel.org,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Ian Molton <spyro@f2s.com>, dev-etrax@axis.com,
+	David Howells <dhowells@redhat.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Linus Torvalds <torvalds@osdl.org>, linux-ia64@vger.kernel.org,
+	Hirokazu Takata <takata@linux-m32r.org>,
+	linux-m68k@lists.linux-m68k.org, Greg Ungerer <gerg@uclinux.org>,
+	linux-mips@linux-mips.org, parisc-linux@parisc-linux.org,
+	linuxppc-dev@ozlabs.org, linux390@de.ibm.com,
+	linuxsh-dev@lists.sourceforge.net,
+	linuxsh-shmedia-dev@lists.sourceforge.net,
+	sparclinux@vger.kernel.org, ultralinux@vger.kernel.org,
+	Miles Bader <uclinux-v850@lsi.nec.co.jp>, Andi Kleen <ak@suse.de>,
+	Chris Zankel <chris@zankel.net>
 Subject: Re: [PATCH 3/6] C-language equivalents of include/asm-*/bitops.h
+Message-ID: <20060126085540.GA15377@flint.arm.linux.org.uk>
 References: <20060125112625.GA18584@miraclelinux.com>
 	<20060125113206.GD18584@miraclelinux.com>
 	<20060125200250.GA26443@flint.arm.linux.org.uk>
-In-Reply-To: <20060125200250.GA26443@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
-	linux-ia64@vger.kernel.org, Andi Kleen <ak@suse.de>,
-	David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
-	Greg Ungerer <gerg@uclinux.org>, sparclinux@vger.kernel.org,
-	Miles Bader <uclinux-v850@lsi.nec.co.jp>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Hirokazu Takata <takata@linux-m32r.org>,
-	linuxsh-shmedia-dev@lists.sourceforge.net,
-	Linus Torvalds <torvalds@osdl.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Richard Henderson <rth@twiddle.net>, Akinobu Mita <mita@miraclelinux.com>,
-	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
-	ultralinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxsh-dev@lists.sourceforge.net, linux390@de.ibm.com,
-	parisc-linux@parisc-linux.org
+	<20060126000618.GA5592@twiddle.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060126000618.GA5592@twiddle.net>
+Sender: Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,12 +41,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Russell King wrote:
-
-> This code generates more expensive shifts than our (ARMs) existing C
-> version.  This is a backward step.
+On Wed, Jan 25, 2006 at 04:06:18PM -0800, Richard Henderson wrote:
+> On Wed, Jan 25, 2006 at 08:02:50PM +0000, Russell King wrote:
+> > > +	s = 16; if (word << 16 != 0) s = 0; b += s; word >>= s;
+> > > +	s =  8; if (word << 24 != 0) s = 0; b += s; word >>= s;
+> > > +	s =  4; if (word << 28 != 0) s = 0; b += s; word >>= s;
+> ...
+> > Basically, shifts which depend on a variable are more expensive than
+> > constant-based shifts.
 > 
-> Basically, shifts which depend on a variable are more expensive than
-> constant-based shifts.
+> Actually, they're all constant shifts.  Just written stupidly.
 
-arm26 will have the same problem here.
+Unfortunately that's not correct.  You do not appear to have checked
+the compiler output like I did - this code does _not_ generate
+constant shifts.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 Serial core
