@@ -1,18 +1,24 @@
-Return-Path: <Fabien.Clement@thomson.net>
-Received: from dmzraw4.extranet.thmulti.com (dmzraw4.extranet.thmulti.com
-	[141.11.234.72]) by ozlabs.org (Postfix) with ESMTP id 6F50D681BD
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0F8D867EC8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Jan 2006 05:30:08 +1100 (EST)
+	Sat, 28 Jan 2006 10:31:41 +1100 (EST)
+Message-ID: <43DAACCA.10603@ovro.caltech.edu>
+Date: Fri, 27 Jan 2006 15:29:14 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
-Date: Fri, 27 Jan 2006 19:09:35 +0100
-Message-ID: <9C1918067C3BC14C9C351C206D8A843701F54C02@rennsmail03.eu.thmulti.com>
-From: "Clement Fabien" <Fabien.Clement@thomson.net>
-To: "Pantelis Antoniou" <panto@intracom.gr>, <galak@kernel.crashing.org>,
-	"Marcelo Tosatti" <marcelo.tosatti@cyclades.com>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: Yosemite/440EP why are readl()/ioread32() setup to read
+	little-endian?
+References: <43CC3E37.4040707@softadvances.com>
+	<20060125185131.GA7425@gate.ebshome.net>
+	<43D7D334.3070709@ovro.caltech.edu> <200601261120.48251.sr@denx.de>
+In-Reply-To: <200601261120.48251.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,29 +29,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Pantelis
 
-What is the status for this patch - I did not see any approval in the
-list.
+Hey Stefan,
 
-For me it's ok and in "production" (except that I don't like the loss of
-space but I can live with it)
+ >>readl() and ioread32() read the registers in little-endian format!
+ >
+ > Correct. That's how it is implemented on all platforms. Think for
+ > example of an pci device driver. Using these IO functions, the
+ > driver will become platform independent, running without
+ > modifications on little- and big-endian machines.
 
-Regards
-Fabien
+I just stumbled across the section in Rubini 3rd Ed that mislead
+me into believing that the readl()/writel() were machine endianness
+dependent, i.e., LE on x86, BE on PPC.
 
------Original Message-----
-From: Pantelis Antoniou [mailto:panto@intracom.gr]=20
-Sent: jeudi 24 novembre 2005 12:04
-To: Clement Fabien; Kumar Gala; Marcelo Tosatti; linuxppc-embedded
-Subject: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
+p453 of his book has a PCI DMA example, where he uses the
+cpu_to_le32() macros inside calls writel().
 
-Hi all.
+However, since these functions are internally implemented to
+perform LE operations, this example appears to be incorrect.
 
-Alignments are currently handled bogusly for cpm2.
+Would you agree?
 
-Please test.
+I just checked the Oreilly web site for errata's and this is not
+listed. If you agree that the example is incorrect, then I'll
+submit an errata.
 
-Regards
-
-Pantelis
+Dave
