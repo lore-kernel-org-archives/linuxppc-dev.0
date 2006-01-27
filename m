@@ -1,19 +1,18 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id D30B468926
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 4814468A21
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 Jan 2006 20:43:00 +1100 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Qt,  forks and threads = segmentation faults?
-Date: Mon, 30 Jan 2006 10:42:52 +0100
-References: <000301c623a2$13b98fc0$6405a8c0@absolut>
-In-Reply-To: <000301c623a2$13b98fc0$6405a8c0@absolut>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200601301042.53254.david.jander@protonic.nl>
-Cc: Russell McGuire <rmcguire@uwbt.com>
+	Mon, 30 Jan 2006 21:54:40 +1100 (EST)
+Date: Fri, 27 Jan 2006 16:37:20 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Jose =?UTF-8?B?RnJhbsOnYQ==?= (Ext_GTBC) <Jose.Franca.Ext@siemens.com>
+Subject: Re: HELP! Memory mapping and address space doubts
+Message-ID: <20060127163720.0f671eaa@vitb.ru.mvista.com>
+In-Reply-To: <16FD2D70D281D44F9BFCF6ACF9B6117102AF731A@lisi053a.siemens.pt>
+References: <16FD2D70D281D44F9BFCF6ACF9B6117102AF731A@lisi053a.siemens.pt>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,48 +23,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Jose,
+Can you please be a bit more specific in targets you want to achieve?
 
-Hi Russell,
+An example how to setup br/or and use the device could be found as a part of PQ2 PCI support,
+where interrupt controller is implemented as a CPLD device (arch/ppc/syslib/m82xx_pci.{c,h}).
 
-On Saturday 28 January 2006 01:30, Russell McGuire wrote:
-> This is a more general question, and if anyone knows of a more specialized
-> list this should be posted to, I'd be happy to do so...
->
-> Small picture of hardware:
-> DENX Linux 2.4.25 / PowerPC MPC8280 / 32 MBs of RAM
->
-> I am using QT Embedded for a small GUI that does BSD sockets, also using
-> DENX's SM501 video driver. Everything is quite stable, recently I added a
-> additional process to the application using fork() for the listening
-> 'accept' call for the sockets.
->
-> After many tests I decided that due to the nature of the fork() command and
-> the GUI half of the program, that this was a large waste of memory, as I
-> was duplicating the entire GUI system. So I started looking alternatives,
-> and have landed at the 'pthread' library.
 
-It shouldn't be a waste of memory, since Linux uses copy-on-write for memory 
-pages. That means, although it looks like your child process wates a lot of 
-memory (same initial VSS size as parent), it actually shares its memory with 
-the parent until the child starts modifying memory contents (write fault 
-occurs). At that moment the page being written to is copied, and the write 
-access succeeds on the copied page. So fork() is nowadays quite efficient in 
-linux systems..... exactly as efficient as creating a thread.
+On Thu, 26 Jan 2006 14:04:49 -0000
+Jose França (Ext_GTBC) <Jose.Franca.Ext@siemens.com> wrote:
 
-> However, now I have lots of segmentation faults, particularly when I send a
-> message using QT's postEvent commands back to the main thread.
+> Hello u all!
+> 
+> 	I need to clarify some aspects of the memory management in ppc linux and i hope that you could help me.
+> 	Lets imagine we have a mpc8272 based board with 3 devices A, B and C.In the bootloader (in my case, i use u-boot), i configured the BRx and Orx so that A has base address X, B has base address Y and C has base address Z. My first doubt arrises here: what address should i use? Being SDRAM base address 0x00000000 and kernel base address 0xC0000000, where will i put these devices mapped on? Above 0xC0000000 or in between the end of physical memory and 0xC0000000? Do i really need to configure the BAT registers in u boot?
+> 	In linux 2.4 kernel, we have ppc_md.setup_io_mappings to map address blocks into the BAT registers... As i observed in the kernel source tree examples, we must map CPM (why?). And what about the other devices A, B and C? How will i setup them in this case and what addresses i can use? Above 0xC0000000 or in between the end of physical memory and 0xC0000000? Is the SDRAM included?
+> 
+> 	Thanks in advance to all contributions! All of them will be most welcomed!
+> 
+> 
+> 
+> 
+> 
+> Best regards,
+> Filipe
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
 
-Eeek. You might want to compile QT with thread support compiled in (don't know 
-if that helps though).
-Anyway, it is probably a better idea to stick with fork() (see above).
-
-> I was curious if anyone had any better idea of a more stable or perhaps a
-> suggestion on why I am able to only get about 30 seconds of run time out of
-> the app using pthread, verses fork() seems to be much stabler.
-
-Use fork().
-
-Greetings,
 
 -- 
-David Jander
+Sincerely, 
+Vitaly
