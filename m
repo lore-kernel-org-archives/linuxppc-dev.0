@@ -1,17 +1,19 @@
-Return-Path: <Martin.Krause@tqs.de>
-Received: from mail.tqs.de (mail.tqs.de [62.157.136.17])
-	by ozlabs.org (Postfix) with ESMTP id D025468A8F
+Return-Path: <gnathita@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.198])
+	by ozlabs.org (Postfix) with ESMTP id 5F2AD689D9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Jan 2006 19:49:23 +1100 (EST)
+	Fri, 27 Jan 2006 23:01:15 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id j2so556132nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 27 Jan 2006 04:01:14 -0800 (PST)
+Message-ID: <259581790601270401g279663c9k1472c4e8b2bd5406@mail.gmail.com>
+Date: Fri, 27 Jan 2006 13:01:13 +0100
+From: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 00/10] Updated ML300 & ML403 patches
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: mpc82xx USB host driver
-Date: Fri, 27 Jan 2006 09:22:32 +0100
-Message-ID: <47F3F98010FF784EBEE6526EAAB078D1C05FC4@tq-mailsrv.tq-net.de>
-From: "Martin Krause" <Martin.Krause@tqs.de>
-To: "Dubb, Benjamin" <Benjamin.Dubb@ipc.com>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_47841_31968152.1138363273796"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,18 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Ben,
+------=_Part_47841_31968152.1138363273796
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-linuxppc-embedded-bounces@ozlabs.org wrote on Thursday, January 26,
-2006 6:55 PM:=20
-> I'm unable to find a 2.4 usb host driver for the pq3/pq2. Can someone
-> post a patch here or point me to it, please.=20
-> Thanks,
+Hi!
 
-The cpm2usb project might be what you are looking for:
-http://cpm2usb.sourceforge.net
+I have tested the patches on the git kernel 2.6 and the reference design fo=
+r
+the ml403, and it boot sucessfully. Thanks for the support!
 
-But I'm not sure if the driver runs on Linux 2.4, though.
+Have any of you tried to mount the root fs via NFS? I haven't been able to.
+I think that, as long as there is no driver for the Xilinx EMAC yet, I
+cannot do it, can I?
 
-Regards,
-Martin
+Thanks one more time!
+Paula
+
+------=_Part_47841_31968152.1138363273796
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hi!<br>
+<br>
+I have tested the patches on the git kernel 2.6 and the reference
+design for the ml403, and it boot sucessfully. Thanks for the support!<br>
+<br>
+Have any of you tried to mount the root fs via NFS? I haven't been able
+to. I think that, as long as there is no driver for the Xilinx EMAC
+yet, I cannot do it, can I?<br>
+<br>
+Thanks one more time!<br>
+Paula<br>
+<br>
+<br>
+<br>
+
+------=_Part_47841_31968152.1138363273796--
