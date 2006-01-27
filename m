@@ -1,27 +1,16 @@
-Return-Path: <dave@hiauly1.hia.nrc.ca>
-Received: from hiauly1.hia.nrc.ca (hiauly1.hia.nrc.ca [132.246.100.193])
-	by ozlabs.org (Postfix) with ESMTP id 57C7468AA8
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jan 2006 12:03:19 +1100 (EST)
-Message-Id: <200601270028.k0R0STBB021468@hiauly1.hia.nrc.ca>
-Subject: Re: [parisc-linux] Re: [PATCH 3/6] C-language equivalents of
-To: grundler@parisc-linux.org (Grant Grundler)
-Date: Thu, 26 Jan 2006 19:28:29 -0500 (EST)
-From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
-In-Reply-To: <20060126230443.GC13632@colo.lackof.org> from "Grant Grundler" at
-	Jan 26, 2006 04:04:43 pm
+Return-Path: <vroopcha@mcw.edu>
+Received: from ms-smtp-01.rdc-kc.rr.com (ms-smtp-01.rdc-kc.rr.com
+	[24.94.166.115]) by ozlabs.org (Postfix) with ESMTP id D76D668A92
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Jan 2006 16:24:35 +1100 (EST)
+Date: Thu, 26 Jan 2006 23:24:02 -0600 (CST)
+From: vinai <vroopcha@mcw.edu>
+To: Debian PowerPC List <debian-powerpc@lists.debian.org>,
+	"LinuxPPC Developers' List" <linuxppc-dev@ozlabs.org>
+Subject: ivtv 0.4.2 driver works on powerpc !!
+Message-ID: <Pine.OSX.4.62.0601262228470.3234@romy.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
-	linux-ia64@vger.kernel.org, spyro@f2s.com, ak@suse.de,
-	dhowells@redhat.com, linuxppc-dev@ozlabs.org, gerg@uclinux.org,
-	sparclinux@vger.kernel.org, uclinux-v850@lsi.nec.co.jp,
-	ysato@users.sourceforge.jp, takata@linux-m32r.org,
-	linuxsh-shmedia-dev@lists.sourceforge.net,
-	grundler@parisc-linux.org, torvalds@osdl.org,
-	ink@jurassic.park.msu.ru, mita@miraclelinux.com,
-	chris@zankel.net, dev-etrax@axis.com, ultralinux@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net,
-	linux390@de.ibm.com, parisc-linux@parisc-linux.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: ivtv-devel@ivtvdriver.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,25 +20,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Yeah, about the same for parisc.
-> 
-> > Clearly the smallest of the lot with the smallest register pressure,
-> > being the best candidate out of the lot, whether we inline it or not.
-> 
-> Agreed. But I expect parisc will have to continue using it's asm
-> sequence and ignore the generic version. AFAIK, the compiler isn't that
-> good with instruction nullification and I have other issues I'd
-> rather work on.
+Hi Folks,
 
-I looked at the assembler code generated on parisc with 4.1.0 (prerelease).
-The toernig code is definitely inferior.  The mita sequence is four
-instructions longer than the arm sequence, but it didn't have any branches.
-The arm sequence has four branches.  Thus, it's not clear to me which
-would perform better in the real world.  There were no nullified instructions
-generated for any of the sequences.  However, neither is as good as the
-handcraft asm sequence currently being used.
+Don't know if this has been made widely known, but I thought I's share
+the last couple of days worth of experimenting.
 
-Dave
--- 
-J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
-National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
+The setup - a PowerMac 8500, running "stock" Debian testing except for
+my own kernel compiled from the 2.6.15.1 sources from kernel.org.  The
+machine has 1 G RAM, 200 MHz 604e PowerPC CPU and a Firmtek SATA drive
+controller running a 36 G 10K WD Raptor drive, and the capture device
+under testing is a Hauppage 350 PCI card.
+
+In my kernel .config file, I have video4linux and I2C support enabled,
+as per the instructions on the ivtv web site.  I built and used only
+hardware modules from the ivtv 0.4.2 sources.  I grabbed the firmware
+and installed it, again per instructions.
+
+If I do:
+
+     cat /dev/video0 > test.mpg
+
+after a reboot, the hardware won't respond.  However, if I remove the
+ivtv module then do a modprobe of that module again, the above command 
+will work.  "modprobe"-ing without "rmmod"-ing did not allow the card
+to function.
+
+I was able to capture about 20 s of video, with no noticeable dropped
+frames, even on this slow machine.  This machine can't even play the
+captured clips, but transfer to another machine gave me a valid and
+playable MPEG-2 file.  I plan to do some more testing over the next
+few days, and see if I can get this to actually work predictably...
+
+Cheers, and thanks to all whose work and efforts made this happen !!
+
+cheers
+vinai
