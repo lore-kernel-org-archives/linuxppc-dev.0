@@ -1,18 +1,18 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from outbound-mail-06.bluehost.com (outbound-mail-06.bluehost.com
-	[67.138.240.206]) by ozlabs.org (Postfix) with SMTP id EA61A68A10
+Return-Path: <Fabien.Clement@thomson.net>
+Received: from dmzraw4.extranet.thmulti.com (dmzraw4.extranet.thmulti.com
+	[141.11.234.72]) by ozlabs.org (Postfix) with ESMTP id 6F50D681BD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Jan 2006 03:37:23 +1100 (EST)
-In-Reply-To: <259581790601270401g279663c9k1472c4e8b2bd5406@mail.gmail.com>
-References: <259581790601270401g279663c9k1472c4e8b2bd5406@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <A1577D91-D5B1-4637-B84A-3DEBFC8E47C8@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 00/10] Updated ML300 & ML403 patches
-Date: Fri, 27 Jan 2006 09:37:21 -0700
-To: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 28 Jan 2006 05:30:08 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
+Date: Fri, 27 Jan 2006 19:09:35 +0100
+Message-ID: <9C1918067C3BC14C9C351C206D8A843701F54C02@rennsmail03.eu.thmulti.com>
+From: "Clement Fabien" <Fabien.Clement@thomson.net>
+To: "Pantelis Antoniou" <panto@intracom.gr>, <galak@kernel.crashing.org>,
+	"Marcelo Tosatti" <marcelo.tosatti@cyclades.com>,
+	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,23 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello Pantelis
 
-On 27-Jan-06, at 5:01 AM, Paula Saame=F1o wrote:
+What is the status for this patch - I did not see any approval in the
+list.
 
-> Hi!
->
-> I have tested the patches on the git kernel 2.6 and the reference =20
-> design for the ml403, and it boot sucessfully. Thanks for the support!
->
-> Have any of you tried to mount the root fs via NFS? I haven't been =20
-> able to. I think that, as long as there is no driver for the Xilinx =20=
+For me it's ok and in "production" (except that I don't like the loss of
+space but I can live with it)
 
-> EMAC yet, I cannot do it, can I?
-That's right.  I've ported the 2.4 EMAC driver to 2.6, but I don't =20
-have permission from my client to release it yet.  I think MontaVista =20=
+Regards
+Fabien
 
-is also working on an updated driver; you could ping them
+-----Original Message-----
+From: Pantelis Antoniou [mailto:panto@intracom.gr]=20
+Sent: jeudi 24 novembre 2005 12:04
+To: Clement Fabien; Kumar Gala; Marcelo Tosatti; linuxppc-embedded
+Subject: [PATCH] CPM2: Fix totally bogus alignment handing of dpalloc
 
->
-> Thanks one more time!
-No problem.
+Hi all.
+
+Alignments are currently handled bogusly for cpm2.
+
+Please test.
+
+Regards
+
+Pantelis
