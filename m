@@ -1,16 +1,15 @@
-Return-Path: <jonathan@haliplex.com.au>
-Received: from hellskitchen.haliplex.com.au
-	(dsl-202-45-109-210.VIC.netspace.net.au [202.45.109.210])
-	by ozlabs.org (Postfix) with ESMTP id 4C2E668A9F
+Return-Path: <cwardman@sbir.com>
+Received: from PANDORA.Askani.sbir.com (mail.sbir.com [64.136.136.27])
+	by ozlabs.org (Postfix) with ESMTP id 17E4068A9A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Jan 2006 11:45:40 +1100 (EST)
+	Fri, 27 Jan 2006 13:23:00 +1100 (EST)
+Subject: kernel access of bad area
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C622DA.FE85FF40"
-Subject: Question on  USB gadget device driver for mpc 8272 on linux 2.6.14.
-Date: Fri, 27 Jan 2006 11:45:39 +1100
-Message-ID: <32A7B31E4005134E8BA805EBAAFB9DCD9C7A20@hellskitchen.haliplex.com.au>
-From: "Jonathan Qiang" <jonathan@haliplex.com.au>
+	boundary="----_=_NextPart_001_01C622E6.C2DD66F0"
+Date: Thu, 26 Jan 2006 18:09:52 -0800
+Message-ID: <72B3A11AD6E92B4FB11A00617D49FFEA8C12D8@PANDORA.Askani.sbir.com>
+From: "Chris Wardman" <cwardman@sbir.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,185 +23,229 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C622DA.FE85FF40
+------_=_NextPart_001_01C622E6.C2DD66F0
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Hi, all
-=20
-Currently, I am doing on the USB gadget device driver for mpc8272, I
-already got some packets on interruption route when my board in which
-mpc82xx settled connect to Host.
-But the SOF is always generated as the first interruption source. When
-plugged USB cable in HOST, the USB controller will be set to reset
-(USBER is [0x308]), and after reset, the interruption source event
-changes its status to [0x108], which means running on IDLE and SOF.  Why
-It is not IN token?
-I already disabled Frame timer when I probe the USB gadget controller.=20
+I'm working on getting a MPC885 to interface with an onboard CPLD.  I've
+successfully talked to the CPLD from our diagnostic application and I
+know that it works at the locations that I specified in the IMMR. I know
+that when linux loads that the IMMR still has the settings. However,
+when I try to do a read from the address I get the following error:
 
-------_=_NextPart_001_01C622DA.FE85FF40
+=20
+
+Oops: kernel access of bad area, sig: 11
+
+NIP: C00BDED8 XER: 8000FF40 LR: C00BDCE0 SP: C1C81E30 REGS: c1c81d80
+TRAP: 0300
+
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+
+DAR: F4000002, DSISR: 00000129
+
+TASK =3D c1c80000[19] 'acc2test' Last syscall: 54
+
+last math 00000000 last altivec 00000000
+
+GPR00: 00000001 C1C81E30 C1C80000 FFFFFFFA C1C81E38 20004C0A 7FFFFE6C
+3000B8A8
+
+GPR08: 10000560 F4000002 00000001 00000000 538D6C93 10018688 00000000
+40000000
+
+GPR16: 00000000 00000000 00000001 00000000 00009032 01C81E80 00000000
+C0002838
+
+GPR24: C0002560 10000560 30024E9C 00000003 C015C198 C015C1C4 7FFFFE6C
+20004C0A
+
+Call backtrace:
+
+C003D81C C0042AA4 C00025BC 100106E8 10000494 0FECED14 00000000
+
+SIGSEGV
+
+=20
+
+It appears it is dying in the memory manager because of a bad page
+fault.=20
+
+Does anyone have any suggestion as how to fix this?
+
+=20
+
+Thanx,=20
+
+-Chris
+
+=20
+
+
+------_=_NextPart_001_01C622E6.C2DD66F0
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+<html>
 
 <head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
 charset=3Dus-ascii">
-<meta name=3DProgId content=3DWord.Document>
-<meta name=3DGenerator content=3D"Microsoft Word 10">
-<meta name=3DOriginator content=3D"Microsoft Word 10">
-<link rel=3DFile-List href=3D"cid:filelist.xml@01C62337.31EA7420">
-<!--[if gte mso 9]><xml>
- <o:OfficeDocumentSettings>
-  <o:DoNotRelyOnCSS/>
- </o:OfficeDocumentSettings>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:SpellingState>Clean</w:SpellingState>
-  <w:GrammarState>Clean</w:GrammarState>
-  <w:DocumentKind>DocumentEmail</w:DocumentKind>
-  <w:EnvelopeVis/>
-  <w:Compatibility>
-   <w:BreakWrappedTables/>
-   <w:SnapToGridInCell/>
-   <w:WrapTextWithPunct/>
-   <w:UseAsianBreakRules/>
-   <w:UseFELayout/>
-  </w:Compatibility>
-  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
- </w:WordDocument>
-</xml><![endif]-->
+
+
+<meta name=3DGenerator content=3D"Microsoft Word 10 (filtered)">
+
 <style>
 <!--
- /* Font Definitions */
- @font-face
-	{font-family:SimSun;
-	panose-1:2 1 6 0 3 1 1 1 1 1;
-	mso-font-alt:\5B8B\4F53;
-	mso-font-charset:134;
-	mso-generic-font-family:auto;
-	mso-font-pitch:variable;
-	mso-font-signature:3 135135232 16 0 262145 0;}
-@font-face
-	{font-family:"\@SimSun";
-	panose-1:2 1 6 0 3 1 1 1 1 1;
-	mso-font-charset:134;
-	mso-generic-font-family:auto;
-	mso-font-pitch:variable;
-	mso-font-signature:3 135135232 16 0 262145 0;}
  /* Style Definitions */
  p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0cm;
+	{margin:0in;
 	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
 	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:SimSun;}
+	font-family:"Times New Roman";}
 a:link, span.MsoHyperlink
 	{color:blue;
-	text-decoration:underline;
-	text-underline:single;}
+	text-decoration:underline;}
 a:visited, span.MsoHyperlinkFollowed
 	{color:purple;
-	text-decoration:underline;
-	text-underline:single;}
+	text-decoration:underline;}
 span.EmailStyle17
-	{mso-style-type:personal-compose;
-	mso-style-noshow:yes;
-	mso-ansi-font-size:10.0pt;
-	mso-bidi-font-size:10.0pt;
-	font-family:Arial;
-	mso-ascii-font-family:Arial;
-	mso-hansi-font-family:Arial;
-	mso-bidi-font-family:Arial;
+	{font-family:Arial;
 	color:windowtext;}
-span.SpellE
-	{mso-style-name:"";
-	mso-spl-e:yes;}
-span.GramE
-	{mso-style-name:"";
-	mso-gram-e:yes;}
 @page Section1
-	{size:612.0pt 792.0pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;
-	mso-header-margin:35.4pt;
-	mso-footer-margin:35.4pt;
-	mso-paper-source:0;}
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
 div.Section1
 	{page:Section1;}
 -->
 </style>
-<!--[if gte mso 10]>
-<style>
- /* Style Definitions */=20
- table.MsoNormalTable
-	{mso-style-name:"Table Normal";
-	mso-tstyle-rowband-size:0;
-	mso-tstyle-colband-size:0;
-	mso-style-noshow:yes;
-	mso-style-parent:"";
-	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
-	mso-para-margin:0cm;
-	mso-para-margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:10.0pt;
-	font-family:"Times New Roman";}
-</style>
-<![endif]-->
+
 </head>
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple =
-style=3D'tab-interval:36.0pt'>
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
 <div class=3DSection1>
 
 <p class=3DMsoNormal><font size=3D2 face=3DArial><span =
 style=3D'font-size:10.0pt;
-font-family:Arial'>Hi, all<o:p></o:p></span></font></p>
+font-family:Arial'>I&#8217;m working on getting a MPC885 to interface =
+with an
+onboard CPLD. &nbsp;I&#8217;ve successfully talked to the CPLD from our
+diagnostic application and I know that it works at the locations that I
+specified in the IMMR. I know that when linux loads that the IMMR still =
+has the
+settings. However, when I try to do a read from the address I get the =
+following
+error:</span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 face=3DArial><span =
 style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+font-family:Arial'>&nbsp;</span></font></p>
 
 <p class=3DMsoNormal><font size=3D2 face=3DArial><span =
 style=3D'font-size:10.0pt;
-font-family:Arial'>Currently, I am doing on the USB gadget device driver =
-for
-mpc8272, I already got some packets on interruption route when my board =
-in
-which mpc82xx settled connect to Host.<o:p></o:p></span></font></p>
+font-family:Arial'>Oops: kernel access of bad area, sig: =
+11</span></font></p>
 
-<p class=3DMsoNormal =
-style=3D'mso-layout-grid-align:none;text-autospace:none'><font
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>But the SOF
-is always generated as the first interruption source. When plugged USB =
-cable in
-HOST, the USB controller will be set to reset (USBER is [0x308]), and =
-after
-reset, the interruption source event changes its status to [0x108], =
-which means
-running on IDLE and SOF. <span =
-style=3D'mso-spacerun:yes'>&nbsp;</span>Why <span
-class=3DGramE>It</span> is not IN token?<o:p></o:p></span></font></p>
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>NIP: C00BDED8 XER: 8000FF40 LR: C00BDCE0 SP: C1C81E30 =
+REGS:
+c1c81d80 TRAP: 0300</span></font></p>
 
-<p class=3DMsoNormal =
-style=3D'mso-layout-grid-align:none;text-autospace:none'><font
-size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>I already disabled
-Frame timer when I probe the USB gadget controller. =
-<o:p></o:p></span></font></p>
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: =
+11</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>DAR: F4000002, DSISR: 00000129</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>TASK =3D c1c80000[19] 'acc2test' Last syscall: =
+54</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>last math 00000000 last altivec =
+00000000</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>GPR00: 00000001 C1C81E30 C1C80000 FFFFFFFA C1C81E38 =
+20004C0A
+7FFFFE6C 3000B8A8</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>GPR08: 10000560 F4000002 00000001 00000000 538D6C93 =
+10018688
+00000000 40000000</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>GPR16: 00000000 00000000 00000001 00000000 00009032 =
+01C81E80
+00000000 C0002838</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>GPR24: C0002560 10000560 30024E9C 00000003 C015C198 =
+C015C1C4
+7FFFFE6C 20004C0A</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Call backtrace:</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>C003D81C C0042AA4 C00025BC 100106E8 10000494 0FECED14
+00000000</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>SIGSEGV</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>It appears it is dying in the memory manager because =
+of a
+bad page fault. </span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Does anyone have any suggestion as how to fix =
+this?</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanx, </span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-Chris</span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>&nbsp;</span></font></p>
 
 </div>
 
 </body>
 
 </html>
-=00
-------_=_NextPart_001_01C622DA.FE85FF40--
+
+------_=_NextPart_001_01C622E6.C2DD66F0--
