@@ -1,24 +1,21 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0F8D867EC8
+Return-Path: <rmcguire@uwbt.com>
+Received: from mail19a.g19.rapidsite.net (mail19a.dulles19-verio.com
+	[204.202.242.24]) by ozlabs.org (Postfix) with SMTP id 9E598689D9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Jan 2006 10:31:41 +1100 (EST)
-Message-ID: <43DAACCA.10603@ovro.caltech.edu>
-Date: Fri, 27 Jan 2006 15:29:14 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Sat, 28 Jan 2006 11:37:31 +1100 (EST)
+Received: from mx33.stngva01.us.mxservers.net (204.202.242.74)
+	by mail19a.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
+	4-0124218249 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 27 Jan 2006 19:30:50 -0500 (EST)
+From: "Russell McGuire" <rmcguire@uwbt.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Qt,  forks and threads = segmentation faults?
+Date: Fri, 27 Jan 2006 16:30:42 -0800
+Message-ID: <000301c623a2$13b98fc0$6405a8c0@absolut>
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: Yosemite/440EP why are readl()/ioread32() setup to read
-	little-endian?
-References: <43CC3E37.4040707@softadvances.com>
-	<20060125185131.GA7425@gate.ebshome.net>
-	<43D7D334.3070709@ovro.caltech.edu> <200601261120.48251.sr@denx.de>
-In-Reply-To: <200601261120.48251.sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <mailman.126.1138386609.857.linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,30 +26,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Everyone,
 
-Hey Stefan,
+This is a more general question, and if anyone knows of a more specialized
+list this should be posted to, I'd be happy to do so...
 
- >>readl() and ioread32() read the registers in little-endian format!
- >
- > Correct. That's how it is implemented on all platforms. Think for
- > example of an pci device driver. Using these IO functions, the
- > driver will become platform independent, running without
- > modifications on little- and big-endian machines.
+Small picture of hardware:
+DENX Linux 2.4.25 / PowerPC MPC8280 / 32 MBs of RAM
 
-I just stumbled across the section in Rubini 3rd Ed that mislead
-me into believing that the readl()/writel() were machine endianness
-dependent, i.e., LE on x86, BE on PPC.
+I am using QT Embedded for a small GUI that does BSD sockets, also using
+DENX's SM501 video driver. Everything is quite stable, recently I added a
+additional process to the application using fork() for the listening
+'accept' call for the sockets.
 
-p453 of his book has a PCI DMA example, where he uses the
-cpu_to_le32() macros inside calls writel().
+After many tests I decided that due to the nature of the fork() command and
+the GUI half of the program, that this was a large waste of memory, as I was
+duplicating the entire GUI system. So I started looking alternatives, and
+have landed at the 'pthread' library.
 
-However, since these functions are internally implemented to
-perform LE operations, this example appears to be incorrect.
+However, now I have lots of segmentation faults, particularly when I send a
+message using QT's postEvent commands back to the main thread.
 
-Would you agree?
+I was curious if anyone had any better idea of a more stable or perhaps a
+suggestion on why I am able to only get about 30 seconds of run time out of
+the app using pthread, verses fork() seems to be much stabler. 
 
-I just checked the Oreilly web site for errata's and this is not
-listed. If you agree that the example is incorrect, then I'll
-submit an errata.
-
-Dave
+-Russ
