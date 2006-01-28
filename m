@@ -1,21 +1,18 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19a.g19.rapidsite.net (mail19a.dulles19-verio.com
-	[204.202.242.24]) by ozlabs.org (Postfix) with SMTP id 9E598689D9
+Return-Path: <allanjos@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.196])
+	by ozlabs.org (Postfix) with ESMTP id A54AB68A7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Jan 2006 11:37:31 +1100 (EST)
-Received: from mx33.stngva01.us.mxservers.net (204.202.242.74)
-	by mail19a.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
-	4-0124218249 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Jan 2006 19:30:50 -0500 (EST)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Qt,  forks and threads = segmentation faults?
-Date: Fri, 27 Jan 2006 16:30:42 -0800
-Message-ID: <000301c623a2$13b98fc0$6405a8c0@absolut>
+	Sun, 29 Jan 2006 10:02:53 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id z31so828954nzd
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 28 Jan 2006 15:02:51 -0800 (PST)
+Message-ID: <7a2435710601281502k2b302ea2mfa73033fe7062a32@mail.gmail.com>
+Date: Sat, 28 Jan 2006 19:02:51 -0400
+From: Moloko Vellocet <allanjos@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: MPC5200 - Problem with PSC mode
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <mailman.126.1138386609.857.linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,29 +23,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Everyone,
+Hi, I'm configuring a MPC5200 in PSC3 mode to communicate with a
+telephony board that send information to the MPC5200 continuously. In
+the osciloscope I see the signals comming via RX pin, but when I read
+RX buffer it doesn't contain anything and when I write in the TX
+buffer the flags show that buffer is not empty, but in the osciloscope
+I don't see any signal in TX pin. I can't enable the interrupt mode
+too.
 
-This is a more general question, and if anyone knows of a more specialized
-list this should be posted to, I'd be happy to do so...
+Can anyone help me?
 
-Small picture of hardware:
-DENX Linux 2.4.25 / PowerPC MPC8280 / 32 MBs of RAM
+Part of the configuration code:
 
-I am using QT Embedded for a small GUI that does BSD sockets, also using
-DENX's SM501 video driver. Everything is quite stable, recently I added a
-additional process to the application using fork() for the listening
-'accept' call for the sockets.
+out_8(&psc->command, MPC5xxx_PSC_TX_DISABLE | MPC5xxx_PSC_RX_DISABLE);
 
-After many tests I decided that due to the nature of the fork() command and
-the GUI half of the program, that this was a large waste of memory, as I was
-duplicating the entire GUI system. So I started looking alternatives, and
-have landed at the 'pthread' library.
+val32 =3D in_be32(&gpio->port_config);
+val32 &=3D ~0x700;
+val32 |=3D 0x600;
+out_be32(&gpio->port_config, val32);
 
-However, now I have lots of segmentation faults, particularly when I send a
-message using QT's postEvent commands back to the main thread.
+out_8(&psc->command, MPC5xxx_PSC_RST_RX |
+         MPC5xxx_PSC_RST_TX |
+         MPC5xxx_PSC_SEL_MODE_REG_1 |
+         MPC5xxx_PSC_RST_ERR_STAT);
 
-I was curious if anyone had any better idea of a more stable or perhaps a
-suggestion on why I am able to only get about 30 seconds of run time out of
-the app using pthread, verses fork() seems to be much stabler. 
+out_be16(&psc->mpc5xxx_psc_imr, 0);
 
--Russ
+out_be16(&psc->rfalarm, 0x0004);
+
+out_be16(&psc->tfalarm, 0x0004);
+
+out_be32(&psc->sicr, 0x221000);
+
+out_8(&psc->command, MPC5xxx_PSC_RST_RX |
+         MPC5xxx_PSC_RST_TX |
+         MPC5xxx_PSC_SEL_MODE_REG_1 |
+         MPC5xxx_PSC_RST_ERR_STAT);
+
+spin_lock_irqsave(&mpc5xxx_serial_lock, my_flags);
+
+val16 =3D in_be16(&psc->mpc5xxx_psc_imr);
+
+val16 =3D MPC5xxx_PSC_IMR_TXRDY | MPC5xxx_PSC_IMR_RXRDY;
+
+out_be16(&psc->mpc5xxx_psc_imr, val16);
+
+spin_unlock_irqrestore(&mpc5xxx_serial_lock, my_flags);
+
+out_8(&psc->command, MPC5xxx_PSC_RX_ENABLE | MPC5xxx_PSC_TX_ENABLE);
+
+
+So.. with this I tried to read the RX and write in TX buffer.
+
+
+
+
+Thank you.
+
+
+
+
+--
+_______________________________
+Allann J. O. Silva
+
+"I received the fundamentals of my education in school, but that was
+not enough. My real education, the superstructure, the details, the
+true architecture, I got out of the public library. For an
+impoverished child whose family could not afford to buy books, the
+library was the open door to wonder and achievement, and I can never
+be sufficiently grateful that I had the wit to charge through that
+door and make the most of it." (from I. Asimov, 1994)
