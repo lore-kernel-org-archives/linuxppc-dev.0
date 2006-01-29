@@ -1,20 +1,20 @@
 Return-Path: <dibacco@inwind.it>
-Received: from smtp8.libero.it (smtp8.libero.it [193.70.192.92])
-	by ozlabs.org (Postfix) with ESMTP id CBEE368A7B
+Received: from smtp2.libero.it (smtp2.libero.it [193.70.192.52])
+	by ozlabs.org (Postfix) with ESMTP id 2B8FD68A84
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 Jan 2006 07:42:40 +1100 (EST)
-Received: from localhost (172.16.1.8) by smtp8.libero.it (7.0.027-DD01)
-	id 439D91AB03A5BAAE for linuxppc-embedded@ozlabs.org;
-	Sun, 29 Jan 2006 21:34:18 +0100
+	Mon, 30 Jan 2006 07:44:52 +1100 (EST)
+Received: from localhost (172.16.1.77) by smtp2.libero.it (7.0.027-DD01)
+	id 439D90690378860E for linuxppc-embedded@ozlabs.org;
+	Sun, 29 Jan 2006 21:36:17 +0100
 Received: from smtp1.libero.it ([172.16.1.96])
-	by localhost (asav9.libero.it [193.70.192.87]) (amavisd-new, port 10024)
-	with ESMTP id 10979-15-8 for <linuxppc-embedded@ozlabs.org>;
-	Sun, 29 Jan 2006 21:34:18 +0100 (CET)
+	by localhost (asav19.libero.it [193.70.193.6]) (amavisd-new, port 10024)
+	with ESMTP id 05583-18-2 for <linuxppc-embedded@ozlabs.org>;
+	Sun, 29 Jan 2006 21:36:16 +0100 (CET)
 Received: from libero.it (172.16.1.87) by smtp1.libero.it (7.0.027-DD01)
-	id 431C3A4201807292 for linuxppc-embedded@ozlabs.org;
-	Sun, 29 Jan 2006 21:34:18 +0100
-Date: Sun, 29 Jan 2006 21:34:17 +0100
-Message-Id: <ITVFT5$D7FAA0BB780EC8B8F02A50A5AB92E2E0@libero.it>
+	id 431C3A4201807339 for linuxppc-embedded@ozlabs.org;
+	Sun, 29 Jan 2006 21:36:16 +0100
+Date: Sun, 29 Jan 2006 21:36:16 +0100
+Message-Id: <ITVFWG$4348B6817725503C985E8AE1EC093B8E@libero.it>
 Subject: MPC875 porting
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
