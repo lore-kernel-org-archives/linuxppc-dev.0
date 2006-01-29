@@ -1,18 +1,25 @@
-Return-Path: <allanjos@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.196])
-	by ozlabs.org (Postfix) with ESMTP id A54AB68A7A
+Return-Path: <dibacco@inwind.it>
+Received: from smtp8.libero.it (smtp8.libero.it [193.70.192.92])
+	by ozlabs.org (Postfix) with ESMTP id CBEE368A7B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 29 Jan 2006 10:02:53 +1100 (EST)
-Received: by zproxy.gmail.com with SMTP id z31so828954nzd
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Jan 2006 15:02:51 -0800 (PST)
-Message-ID: <7a2435710601281502k2b302ea2mfa73033fe7062a32@mail.gmail.com>
-Date: Sat, 28 Jan 2006 19:02:51 -0400
-From: Moloko Vellocet <allanjos@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: MPC5200 - Problem with PSC mode
+	Mon, 30 Jan 2006 07:42:40 +1100 (EST)
+Received: from localhost (172.16.1.8) by smtp8.libero.it (7.0.027-DD01)
+	id 439D91AB03A5BAAE for linuxppc-embedded@ozlabs.org;
+	Sun, 29 Jan 2006 21:34:18 +0100
+Received: from smtp1.libero.it ([172.16.1.96])
+	by localhost (asav9.libero.it [193.70.192.87]) (amavisd-new, port 10024)
+	with ESMTP id 10979-15-8 for <linuxppc-embedded@ozlabs.org>;
+	Sun, 29 Jan 2006 21:34:18 +0100 (CET)
+Received: from libero.it (172.16.1.87) by smtp1.libero.it (7.0.027-DD01)
+	id 431C3A4201807292 for linuxppc-embedded@ozlabs.org;
+	Sun, 29 Jan 2006 21:34:18 +0100
+Date: Sun, 29 Jan 2006 21:34:17 +0100
+Message-Id: <ITVFT5$D7FAA0BB780EC8B8F02A50A5AB92E2E0@libero.it>
+Subject: MPC875 porting
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+From: "dibacco\@inwind\.it" <dibacco@inwind.it>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,74 +30,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, I'm configuring a MPC5200 in PSC3 mode to communicate with a
-telephony board that send information to the MPC5200 continuously. In
-the osciloscope I see the signals comming via RX pin, but when I read
-RX buffer it doesn't contain anything and when I write in the TX
-buffer the flags show that buffer is not empty, but in the osciloscope
-I don't see any signal in TX pin. I can't enable the interrupt mode
-too.
+I have a custom board with a MPC875 and two ethernet ports. I think I nee=
+d to modify the enet.c to have two ethernet ports working. What happens i=
+f I define both
+CONFIG_SCC1_ENET and CONFIG_SCC2_ENET ? I saw in enet.c the following cod=
+e:
 
-Can anyone help me?
+#if defined(CONFIG_SCC3_ENET)
+#define CPM_CR_ENET	CPM_CR_CH_SCC3
+#define PROFF_ENET	PROFF_SCC3
+#define SCC_ENET	2		/* Index, not number! */
+#define CPMVEC_ENET	CPMVEC_SCC3
+#elif defined(CONFIG_SCC2_ENET)
+#define CPM_CR_ENET	CPM_CR_CH_SCC2
+#define PROFF_ENET	PROFF_SCC2
+#define SCC_ENET	1		/* Index, not number! */
+#define CPMVEC_ENET	CPMVEC_SCC2
+#elif defined(CONFIG_SCC1_ENET)
+#define CPM_CR_ENET	CPM_CR_CH_SCC1
+#define PROFF_ENET	PROFF_SCC1
+#define SCC_ENET	0		/* Index, not number! */
+#define CPMVEC_ENET	CPMVEC_SCC1
+#else
+#error CONFIG_SCCx_ENET not defined
+#endif
 
-Part of the configuration code:
+The point is that there is and elif here, only the SCC1 will work then, I=
+'m confused!
 
-out_8(&psc->command, MPC5xxx_PSC_TX_DISABLE | MPC5xxx_PSC_RX_DISABLE);
+Thank you for your help!
 
-val32 =3D in_be32(&gpio->port_config);
-val32 &=3D ~0x700;
-val32 |=3D 0x600;
-out_be32(&gpio->port_config, val32);
-
-out_8(&psc->command, MPC5xxx_PSC_RST_RX |
-         MPC5xxx_PSC_RST_TX |
-         MPC5xxx_PSC_SEL_MODE_REG_1 |
-         MPC5xxx_PSC_RST_ERR_STAT);
-
-out_be16(&psc->mpc5xxx_psc_imr, 0);
-
-out_be16(&psc->rfalarm, 0x0004);
-
-out_be16(&psc->tfalarm, 0x0004);
-
-out_be32(&psc->sicr, 0x221000);
-
-out_8(&psc->command, MPC5xxx_PSC_RST_RX |
-         MPC5xxx_PSC_RST_TX |
-         MPC5xxx_PSC_SEL_MODE_REG_1 |
-         MPC5xxx_PSC_RST_ERR_STAT);
-
-spin_lock_irqsave(&mpc5xxx_serial_lock, my_flags);
-
-val16 =3D in_be16(&psc->mpc5xxx_psc_imr);
-
-val16 =3D MPC5xxx_PSC_IMR_TXRDY | MPC5xxx_PSC_IMR_RXRDY;
-
-out_be16(&psc->mpc5xxx_psc_imr, val16);
-
-spin_unlock_irqrestore(&mpc5xxx_serial_lock, my_flags);
-
-out_8(&psc->command, MPC5xxx_PSC_RX_ENABLE | MPC5xxx_PSC_TX_ENABLE);
-
-
-So.. with this I tried to read the RX and write in TX buffer.
-
-
-
-
-Thank you.
-
-
-
-
---
-_______________________________
-Allann J. O. Silva
-
-"I received the fundamentals of my education in school, but that was
-not enough. My real education, the superstructure, the details, the
-true architecture, I got out of the public library. For an
-impoverished child whose family could not afford to buy books, the
-library was the open door to wonder and achievement, and I can never
-be sufficiently grateful that I had the wit to charge through that
-door and make the most of it." (from I. Asimov, 1994)
+Bye.
