@@ -1,17 +1,21 @@
-Return-Path: <nzeitler@osii.com>
-Received: from osiemail.osii.com (mail.osii.com [207.67.97.196])
-	by ozlabs.org (Postfix) with ESMTP id 73529689AE
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao11.cox.net (fed1rmmtao11.cox.net [68.230.241.28])
+	by ozlabs.org (Postfix) with ESMTP id 70EF1689FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Jan 2006 01:31:03 +1100 (EST)
+	Tue, 31 Jan 2006 04:28:52 +1100 (EST)
+Date: Mon, 30 Jan 2006 10:28:51 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
+Subject: Re: [RFC] arch/ppc/boot/simple/embed_boot.c : Merging all keyvals
+	parsing code
+Message-ID: <20060130172851.GF22672@smtp.west.cox.net>
+References: <200601251215.10816.laurent.pinchart@tbox.biz>
+	<bc2424c0c5f69931784ea76791f8ee39@embeddedalley.com>
+	<200601251702.20332.laurent.pinchart@tbox.biz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: MPC5200 - Problem with PSC mode
-Date: Mon, 30 Jan 2006 08:18:56 -0600
-Message-ID: <7492B3D3325B424399725C8A03926A3E2592C2@osiemail.osii.com>
-From: "Zeitler, Nathan" <nzeitler@osii.com>
-To: <allanjos@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200601251702.20332.laurent.pinchart@tbox.biz>
+Cc: Dan Malek <dan@embeddedalley.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,24 +26,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Allann,
+On Wed, Jan 25, 2006 at 05:02:20PM +0100, Laurent Pinchart wrote:
+> > > Should I submit a patch, or leave the code as it is ?
+> >
+> > Port Das U-Boot.
+> 
+> Of course, that's another solution. We will use Das U-Boot for our custom 
+> design.
+> 
+> What I wanted to do here is completely different. As the board comes with a 
+> proprietary boot loader, I thought it would be interesting for future users 
+> to have the board supported in the vanilla kernel, like many other boards 
+> are. Is that a mistake ?
 
-> out_8(&psc->command, MPC5xxx_PSC_RST_RX |
->          MPC5xxx_PSC_RST_TX |
->          MPC5xxx_PSC_SEL_MODE_REG_1 |
->          MPC5xxx_PSC_RST_ERR_STAT);
+No, that's good.  If you can cleanly merge the existing parsing code, by
+all means please do so.  Thanks.
 
-It looks like you're trying to do too many things at once here. =20
-ORing SEL_MODE_REG_1 and RST_ERR_STAT together=20
-forms a completely different command in the Command=20
-register.  You may want to break that into two lines of code. =20
-Give that a try!
-
-Open Systems International, Inc.=20
-Nathan Zeitler
-Hardware Engineer
-3600 Holly Lane North, Suite 40
-Minneapolis, MN 55447-1286
-Phone: 763 551 0559
-Fax: 763 551 0750
-E-mail: nzeitler@osii.com
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
