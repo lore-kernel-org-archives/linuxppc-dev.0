@@ -1,18 +1,17 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id BF91968A0F
+Return-Path: <nzeitler@osii.com>
+Received: from osiemail.osii.com (mail.osii.com [207.67.97.196])
+	by ozlabs.org (Postfix) with ESMTP id 73529689AE
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Jan 2006 00:53:36 +1100 (EST)
-Date: Mon, 30 Jan 2006 16:53:29 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: "dibacco@inwind.it" <dibacco@inwind.it>
-Subject: Re: fs_enet not found in eldk
-Message-ID: <20060130165329.09778c3b@vitb.ru.mvista.com>
-In-Reply-To: <ITWPNB$B571EC0EB15ACFD4C526E970D2B502FF@libero.it>
-References: <ITWPNB$B571EC0EB15ACFD4C526E970D2B502FF@libero.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Tue, 31 Jan 2006 01:31:03 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: MPC5200 - Problem with PSC mode
+Date: Mon, 30 Jan 2006 08:18:56 -0600
+Message-ID: <7492B3D3325B424399725C8A03926A3E2592C2@osiemail.osii.com>
+From: "Zeitler, Nathan" <nzeitler@osii.com>
+To: <allanjos@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,18 +22,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 30 Jan 2006 14:04:23 +0100
-"dibacco@inwind.it" <dibacco@inwind.it> wrote:
+Hi Allann,
 
-> I downloaded the latest kernel from denx.de but I cannot find fs_enet driver!
-> Is it available for kernel 2.4?
-> 
-> Thank you.
-> 
-No, It is just available for 2.6 (and 2.6 denx tree does have it of course). 
+> out_8(&psc->command, MPC5xxx_PSC_RST_RX |
+>          MPC5xxx_PSC_RST_TX |
+>          MPC5xxx_PSC_SEL_MODE_REG_1 |
+>          MPC5xxx_PSC_RST_ERR_STAT);
 
+It looks like you're trying to do too many things at once here. =20
+ORing SEL_MODE_REG_1 and RST_ERR_STAT together=20
+forms a completely different command in the Command=20
+register.  You may want to break that into two lines of code. =20
+Give that a try!
 
-
--- 
-Sincerely, 
-Vitaly
+Open Systems International, Inc.=20
+Nathan Zeitler
+Hardware Engineer
+3600 Holly Lane North, Suite 40
+Minneapolis, MN 55447-1286
+Phone: 763 551 0559
+Fax: 763 551 0750
+E-mail: nzeitler@osii.com
