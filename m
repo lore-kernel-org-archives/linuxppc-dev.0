@@ -1,38 +1,29 @@
-Return-Path: <sdbrady@ntlworld.com>
-Received: from petasus.png.intel.com (petasus.png.intel.com [192.198.147.99])
-	by ozlabs.org (Postfix) with ESMTP id D466968A6C
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Jan 2006 20:50:33 +1100 (EST)
-Date: Sun, 29 Jan 2006 07:12:42 +0000
-From: Stuart Brady <sdbrady@ntlworld.com>
-To: Grant Grundler <grundler@parisc-linux.org>,
-	Akinobu Mita <mita@miraclelinux.com>, linux-kernel@vger.kernel.org,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Ian Molton <spyro@f2s.com>,
-	dev-etrax@axis.com, David Howells <dhowells@redhat.com>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Linus Torvalds <torvalds@osdl.org>, linux-ia64@vger.kernel.org,
-	Hirokazu Takata <takata@linux-m32r.org>, linux-m68k@vger.kernel.org,
-	Greg Ungerer <gerg@uclinux.org>, linux-mips@linux-mips.org,
-	parisc-linux@parisc-linux.org, linuxppc-dev@ozlabs.org,
-	linux390@de.ibm.com, linuxsh-dev@lists.sourceforge.net,
-	linuxsh-shmedia-dev@lists.sourceforge.net, sparclinux@vger.kernel.org,
-	ultralinux@vger.kernel.org, Miles Bader <uclinux-v850@lsi.nec.co.jp>,
-	Andi Kleen <ak@suse.de>, Chris Zankel <chris@zankel.net>
-Subject: Re: [parisc-linux] Re: [PATCH 3/6] C-language equivalents of
-	include/asm-*/bitops.h
-Message-ID: <20060129071242.GA24624@miranda.arrow>
+Return-Path: <mita@miraclelinux.com>
+Received: from mail01.miraclelinux.com (ns.miraclelinux.com [219.118.163.66])
+	by ozlabs.org (Postfix) with ESMTP id 85E9568AC4
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jan 2006 14:15:26 +1100 (EST)
+Date: Mon, 30 Jan 2006 12:15:22 +0900
+To: Hirokazu Takata <takata@linux-m32r.org>
+Subject: Re: [PATCH 4/6] use include/asm-generic/bitops for each architecture
+Message-ID: <20060130031522.GA6897@miraclelinux.com>
 References: <20060125112625.GA18584@miraclelinux.com>
-	<20060125113206.GD18584@miraclelinux.com>
-	<20060125200250.GA26443@flint.arm.linux.org.uk>
-	<20060126000618.GA5592@twiddle.net>
-	<20060126085540.GA15377@flint.arm.linux.org.uk>
-	<20060126161849.GA13632@colo.lackof.org>
-	<20060126164020.GA27222@flint.arm.linux.org.uk>
-	<20060126230443.GC13632@colo.lackof.org>
-	<20060126230353.GC27222@flint.arm.linux.org.uk>
+	<20060125113336.GE18584@miraclelinux.com>
+	<20060126014934.GA6648@miraclelinux.com>
+	<20060127.220401.356433243.takata.hirokazu@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060126230353.GC27222@flint.arm.linux.org.uk>
-Sender: linux-ia64-owner@vger.kernel.org
+In-Reply-To: <20060127.220401.356433243.takata.hirokazu@renesas.com>
+From: mita@miraclelinux.com (Akinobu Mita)
+Cc: akpm@osdl.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+	spyro@f2s.com, ak@suse.de, dhowells@redhat.com,
+	linuxppc-dev@ozlabs.org, gerg@uclinux.org,
+	sparclinux@vger.kernel.org, uclinux-v850@lsi.nec.co.jp,
+	ysato@users.sourceforge.jp, linuxsh-dev@lists.sourceforge.net,
+	torvalds@osdl.org, ink@jurassic.park.msu.ru, rth@twiddle.net,
+	chris@zankel.net, dev-etrax@axis.com, ultralinux@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org,
+	linuxsh-shmedia-dev@lists.sourceforge.net, linux390@de.ibm.com,
+	rmk@arm.linux.org.uk, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,73 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 26, 2006 at 11:03:54PM +0000, Russell King wrote:
-> Me too - already solved this problem once.  However, I'd rather not
-> needlessly take a step backwards in the name of generic bitops.
+On Fri, Jan 27, 2006 at 10:04:01PM +0900, Hirokazu Takata wrote:
 
-Indeed.  However, I think we can actually improve bitops for some
-architectures.  Here's what I've found so far:
+> compile and boot test on m32r: OK
 
-Versions of Alpha, ARM, MIPS, PowerPC and SPARC have bit counting
-instructions which we're using in most cases.  I may have missed some:
+Thanks.
 
-  Alpha may have:
-    ctlz, CounT Leading Zeros
-    cttz, CounT Trailing Zeros
+> Code size became a little bigger...  ;-)
+> 
+> $ size linux-2.6.16-rc1*/vmlinux
+>    text    data     bss     dec     hex filename
+> 1768030  124412  721632 2614074  27e33a linux-2.6.16-rc1.bitops/vmlinux
+> 1755010  124412  721632 2601054  27b05e linux-2.6.16-rc1.org/vmlinux
 
-  ARM (since v5) has:
-    clz, Count Leading Zeros
-
-  MIPS may have:
-    clz, Count Leading Zeros
-    clo, Count Leading Ones
-
-  PowerPC has:
-    cntlz[wd], CouNT Leading Zeros (for Word/Double-word)
-
-  SPARC v9 has:
-    popc, POPulation Count
-
-PA-RISC has none.  I've not checked any others.
-
-The Alpha, ARM and PowerPC functions look fine to me.
-
-On MIPS, fls() and flz() should probably use CLO.  Curiously, MIPS is
-the only arch with a flz() function.
-
-On SPARC, the implementation of ffz() appears to be "cheese", and the
-proposed generic versions would be better.  ffs() looks quite generic,
-and fls() uses the linux/bitops.h implementation.
-
-There are versions of hweight*() for sparc64 which use POPC when
-ULTRA_HAS_POPULATION_COUNT is defined, but AFAICS, it's never defined.
-
-The SPARC v9 arch manual recommends using popc(x ^ ~-x) for functions
-like ffs().  ffz() would return ffs(~x).
-
-I've had an idea for fls():
-
-static inline int fls(unsigned long x)
-{
-	x |= x >> 1;
-	x |= x >> 2;
-	x |= x >> 4;
-	x |= x >> 8;
-	x |= x >> 16;
-	return popc(x);
-}
-
-I'm not sure how that compares to the generic fls(), but I suspect it's
-quite a bit faster.  Unfortunately, I don't have any MIPS or SPARC v9
-hardware to test this on.
-
-I'm not sure if this is of any use:
-
-static inline int __ffs(unsigned long x)
-{
-	return (int)hweight_long(x ^ ~-x) - 1;
-}
-
-The idea being that the generic hweight_long has no branches.
--- 
-Stuart Brady
+The only difference I can find is __ffs()/ffz().
+As Russel King clealy pointed out, it will generate larger code
+than before.
