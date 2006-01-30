@@ -1,19 +1,44 @@
-Return-Path: <Simon.Richter@hogyros.de>
-Received: from kleinhenz.com (kleinhenz.com [213.239.205.196])
-	by ozlabs.org (Postfix) with ESMTP id 5A4EE68A02
-	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jan 2006 01:09:28 +1100 (EST)
-Message-ID: <43DE181D.7040204@hogyros.de>
-Date: Mon, 30 Jan 2006 14:43:57 +0100
-From: Simon Richter <Simon.Richter@hogyros.de>
-MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
-Subject: Re: [PATCH] remove check for ELF offset in powerpc bootimage
-References: <20060130132803.GA31263@suse.de>
-In-Reply-To: <20060130132803.GA31263@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enig828BBCB03BDA577BCDEC9CB4"
-Cc: linuxppc-dev@ozlabs.org, Alan Modra <amodra@bigpond.net.au>
+Return-Path: <ralf@linux-mips.org>
+Received: from bacchus.net.dhis.org (unknown [194.74.144.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1EBB168A00
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jan 2006 05:01:23 +1100 (EST)
+Date: Mon, 30 Jan 2006 17:06:47 +0000
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Stuart Brady <sdbrady@ntlworld.com>
+Subject: Re: [parisc-linux] Re: [PATCH 3/6] C-language equivalents of
+	include/asm-*/bitops.h
+Message-ID: <20060130170647.GC3816@linux-mips.org>
+References: <20060125112625.GA18584@miraclelinux.com>
+	<20060125113206.GD18584@miraclelinux.com>
+	<20060125200250.GA26443@flint.arm.linux.org.uk>
+	<20060126000618.GA5592@twiddle.net>
+	<20060126085540.GA15377@flint.arm.linux.org.uk>
+	<20060126161849.GA13632@colo.lackof.org>
+	<20060126164020.GA27222@flint.arm.linux.org.uk>
+	<20060126230443.GC13632@colo.lackof.org>
+	<20060126230353.GC27222@flint.arm.linux.org.uk>
+	<20060129071242.GA24624@miranda.arrow>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060129071242.GA24624@miranda.arrow>
+Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
+	linux-ia64@vger.kernel.org, Ian Molton <spyro@f2s.com>,
+	Andi Kleen <ak@suse.de>, David Howells <dhowells@redhat.com>,
+	linuxppc-dev@ozlabs.org, Greg Ungerer <gerg@uclinux.org>,
+	sparclinux@vger.kernel.org, Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Hirokazu Takata <takata@linux-m32r.org>,
+	linuxsh-shmedia-dev@lists.sourceforge.net,
+	Grant Grundler <grundler@parisc-linux.org>,
+	Linus Torvalds <torvalds@osdl.org>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Akinobu Mita <mita@miraclelinux.com>,
+	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
+	ultralinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxsh-dev@lists.sourceforge.net, linux390@de.ibm.com,
+	parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +48,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig828BBCB03BDA577BCDEC9CB4
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Sun, Jan 29, 2006 at 07:12:42AM +0000, Stuart Brady wrote:
 
-Hi,
+> On MIPS, fls() and flz() should probably use CLO.
 
-Olaf Hering wrote:
+It actually uses clz.
 
-> Is this check really needed, are there PT_LOAD sections with offset
-> zero (either zImage or vmlinux)? I see an offset which is always 64k.
+> Curiously, MIPS is the only arch with a flz() function.
 
-Sure, an offset of zero is completely legal (obviously, the start 
-address would then be different from the load address of that segment).
+No longer.  The fls implementation was based on flz and fls was the only
+user of flz.  So I cleaned that, once I commit flz will be gone.  Not
+only a cleanup but also a minor optimization.
 
-Without context, I would say this loop is used to find some loadable 
-segment that does not include the ELF header. I cannot think of any 
-application for that, as it is certainly acceptable to merge LOAD 
-segments, and the segment it is looking for could have been merged with 
-the segment that includes the header.
-
-If the current linker scripts specify that loading the header is 
-unneeded, this means that all LOAD headers will have nonzero offsets. 
-But I wouldn't count on that forever.[1]
-
-    Simon
-
-[1] the Amiga bootloader, for example, assumes that all segments are to 
-be loaded, so things broke badly on APUS when the ldscript did not 
-remove the .note.gnu-stack section, which has a VMA of zero as it is 
-never loaded anyway. So depending on things being a particular way is 
-bad. :-)
-
---------------enig828BBCB03BDA577BCDEC9CB4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iQCVAwUBQ94YH1Yr4CN7gCINAQJz9gP+Le52BFj7hseQbqSzVj6IbaZ0WXOr1UvY
-RxbrKKfzoSnTKHSVteKAsIXL8XTImvUV7WlkDiAf62MmxrNNaQ8GkKYxQ+iBxtZC
-/9S56p55M44MybUD63EaOrFYV640WWMYSE2qFpER0g9TXBXVI6gASWhpgnTxQtG4
-mhT6poO4oqc=
-=U5h1
------END PGP SIGNATURE-----
-
---------------enig828BBCB03BDA577BCDEC9CB4--
+  Ralf
