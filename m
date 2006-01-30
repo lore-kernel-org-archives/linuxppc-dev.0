@@ -1,19 +1,19 @@
-Return-Path: <jcrigby@gmail.com>
-Message-ID: <4b73d43f0601301317j562233b6kc81b8e8f844c6bd1@mail.gmail.com>
-Date: Mon, 30 Jan 2006 14:17:32 -0700
-From: John Rigby <jcrigby@gmail.com>
-To: Sylvain Munaut <tnt@246tnt.com>
-Subject: Re: [PATCH] Add support for lite5200b board.
-In-Reply-To: <43DE772E.90805@246tNt.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <43D65FE3.6080501@freescale.com> <43D66F54.8000404@246tNt.com>
-	<43D751F8.9060204@aotek.es> <43D807E0.1090206@246tNt.com>
-	<4b73d43f0601261329n73971003n9217374a1cc2db6f@mail.gmail.com>
-	<43DD3FFC.3040608@246tNt.com>
-	<4b73d43f0601301052n5cd032a5vb8c6f4d664966dc1@mail.gmail.com>
-	<43DE772E.90805@246tNt.com>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8CCEB68A20
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 31 Jan 2006 08:56:57 +1100 (EST)
+To: "dibacco\@inwind\.it" <dibacco@inwind.it>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: fs_enet not found in eldk 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 30 Jan 2006 14:04:23 +0100."
+	<ITWPNB$B571EC0EB15ACFD4C526E970D2B502FF@libero.it>
+Date: Mon, 30 Jan 2006 22:56:54 +0100
+Sender: wd@denx.de
+Message-Id: <20060130215654.BC4B13535F4@atlas.denx.de>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,77 +24,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks, I had tried stripping off the http: and adding the .git but
-not just adding the .git.
+In message <ITWPNB$B571EC0EB15ACFD4C526E970D2B502FF@libero.it> you wrote:
+> I downloaded the latest kernel from denx.de but I cannot find fs_enet driver!
+> Is it available for kernel 2.4?
 
+No. That's 2.6 code.
 
-On 1/30/06, Sylvain Munaut <tnt@246tnt.com> wrote:
-> Ooops,
->
-> git clone http://gitbits.246tnt.com/gitbits/linux-2.6-mpc52xx.git
->
-> (notice the previously missing .git at the end)
->
->
->         Sylvain
->
-> John Rigby wrote:
-> > I tried:
-> > git clone http://gitbits.246tnt.com/gitbits/linux-2.6-mpc52xx
-> > and got:
-> > defaulting to local storage area
-> > Cannot get remote repository information.
-> > Perhaps git-update-server-info needs to be run there?
-> >
-> >
-> >
-> > On 1/29/06, Sylvain Munaut <tnt@246tnt.com> wrote:
-> >
-> >>John Rigby wrote:
-> >>
-> >>>
-> >>>On 1/25/06, *Sylvain Munaut* <tnt@246tnt.com <mailto:tnt@246tnt.com>> =
-wrote:
-> >>>
-> >>>
-> >>>
-> >>>    Should apply fine on vanilla. My suggestion for now is take vanill=
-a,
-> >>>    apply this patch, then the 2-3 patch from Andrey for BestComm and =
-stuff.
-> >>>
-> >>>
-> >>>I was working on getting bestcomm and fec working, but forward porting
-> >>>my old 2.6.10 code to current is turning out to be more difficult than=
- I
-> >>>expected.
-> >>>If you already have working code then I'll stop working on them.
-> >>>
-> >>>Where are these patches?  I'm new to this list so I don't have much
-> >>>history.
-> >>>Would I find these patches in the archive?
-> >>
-> >>Checkout (with git)
-> >>
-> >>http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx
-> >>
-> >>then apply
-> >>
-> >>http://gitbits.246tNt.com/patches/bcomm-to-split.diff
-> >>
-> >> (I haven't cleanly splitted it up yet and right now I must go, so it's
-> >>probably gonna be in the git tree this week, under the 'bestcomm' head =
-;)
-> >>
-> >>
-> >>Please report if it works fine on your board (both lite5200 and
-> >>lite5200b reports are welcome). I only did quick tests.
-> >>
-> >>
-> >>
-> >>        Sylvain
-> >>
-> >
-> >
->
->
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+To know how another being, another creature feels -  that  is  impos-
+sible.                  - Terry Pratchett, _The Dark Side of the Sun_
