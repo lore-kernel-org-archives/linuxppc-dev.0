@@ -1,16 +1,20 @@
-Return-Path: <nzeitler@osii.com>
-Received: from osiemail.osii.com (mail.osii.com [207.67.97.196])
-	by ozlabs.org (Postfix) with ESMTP id 7816868A5E
+Return-Path: <Jose.Franca.Ext@siemens.com>
+Received: from relay2.siemens.pt (relay-pt1.siemens.pt [194.145.62.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7699668A1E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Jan 2006 09:34:28 +1100 (EST)
+	Tue, 31 Jan 2006 10:29:47 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: Re: MPC5200 - Problem with PSC mode
-Date: Mon, 30 Jan 2006 16:34:27 -0600
-Message-ID: <7492B3D3325B424399725C8A03926A3E2592C7@osiemail.osii.com>
-From: "Zeitler, Nathan" <nzeitler@osii.com>
-To: <linuxppc-embedded@ozlabs.org>
+	charset="utf-8"
+Subject: RE: HELP! Memory mapping and address space doubts
+Date: Mon, 30 Jan 2006 23:29:36 -0000
+Message-ID: <16FD2D70D281D44F9BFCF6ACF9B6117102AD0EED@lisi053a.siemens.pt>
+From: =?utf-8?Q?Jose_Fran=C3=A7a_=28Ext=5FGTBC=29?=
+	<Jose.Franca.Ext@siemens.com>
+To: "Vitaly Bordug" <vbordug@ru.mvista.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,34 +25,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Allann,
-
-Hmm, yes.  In addition, these lines looks suspect:
-
-> val32 =3D in_be32(&gpio->port_config);
-> val32 &=3D ~0x700;
-> val32 |=3D 0x600;
-> out_be32(&gpio->port_config, val32);
-
-I don't have the register's header file in front of me, but I'm
-pretty sure this refers to MBAR+0xb00.  If that's the case,=20
-you seem to be configuring the port to be in CODEC mode=20
-and not UART mode.  Try this instead:
-
-val32 =3D in_be32(&gpio->port_config);
-val32 &=3D ~0xf00;
-val32 |=3D 0x400;
-out_be32(&gpio->port_config, val32);
-
-You may want to refer to the MPC5200 manual.  Page 15-43
-has a nice sequence you can go through to configure a port
-to be a UART.
-
-Open Systems International, Inc.=20
-Nathan Zeitler
-Hardware Engineer
-3600 Holly Lane North, Suite 40
-Minneapolis, MN 55447-1286
-Phone: 763 551 0559
-Fax: 763 551 0750
-E-mail: nzeitler@osii.com
+Vml0YWx5LA0KIA0KICAgICBJJ20gdXNpbmcgYSBsaW51eCAyLjQuMzEga2VybmVsLiBJbiB0aGUg
+cHJlc2VudCBzaXR1YXRpb24gSSBoYXZlIEJSeC9PUnggd2VsbCBjb25maWd1cmVkIGFuZCBpIGNh
+biBib290IHUtYm9vdCBub3JtYWxseSBhbmQgd2l0aG91dCBwcm9ibGVtcy4gSSBoYXZlIGEgZmxh
+c2ggZXByb20gd2l0aCBiYXNlIGFkZHJlc3MgMHhEMDAwMDAwMCBhbmQgYSBGUEdBIGluIDB4RTAw
+MDAwMDAuIEluIGxpbnV4LCBpIGhhdmUgdGhlIG10ZCBkcml2ZXIgc2ltaWxhciB0byB0aGUgcnB4
+bGl0ZSBib2FyZC4gY2ZpX3Byb2JlIGRvZXNuJ3QgZmluZCBteSBmbGFzaCBlcHJvbS4gTXkgY29s
+bGVhZ3VlIGRldmVsb3BwZWQgYW4gZnBnYSBkcml2ZXIsIGJ1dCBoZSBjYW4ndCBhY2Nlc3MgaXQg
+ZWl0aGVyLi4uIEl0IHNlZW0ncyB0aGF0IGFsbCB0aGUgYWRkcmVzc2VzIHRoYXQgd2UgdHJ5IHRv
+IGFjY2VzcyBhcmUgYWxsIG1peGVkLXVwLiBJbiBwcGNfbWQubWFwX2lvLCBpJ20gZG9pbmcgaW9f
+YmxvY2tfbWFwcGluZyBmb3IgdGhlIENQTSAoZnJvbSAweGYwMDAwMDAwIHRvIHRoZSBlbmQgb2Yg
+bWVtb3J5KSAsIDB4ODAwMDAwMDAgYW5kIDB4YTAwMDAwMDAgZm9yIFBDSSBhZGRyZXNzIHNwYWNl
+LCBib3RoIHdpdGggMjU2TUIgb2YgbGVuZ3RoLiBXZSBhcmUgYSBiaXQgbG9zdC4uLiBJdCBzZWVt
+cyB0aGF0IHdlIGZvcmdvdCBzb21ldGhpbmcgdG8gZG8uIENhbiB5b3UgaGVscCBtZSBvbiB0aGlz
+Pw0KIA0KIA0KQmVzdCByZWdhcmRzLA0KRmlsaXBlLg0KDQoJLS0tLS1NZW5zYWdlbSBvcmlnaW5h
+bC0tLS0tIA0KCURlOiBsaW51eHBwYy1lbWJlZGRlZC1ib3VuY2VzQG96bGFicy5vcmcgZW0gbm9t
+ZSBkZSBWaXRhbHkgQm9yZHVnIA0KCUVudmlhZGE6IHNleCAyNy0wMS0yMDA2IDEzOjM3IA0KCVBh
+cmE6IEpvc2UgRnJhbsOnYSAoRXh0X0dUQkMpIA0KCUNjOiBsaW51eHBwYy1lbWJlZGRlZEBvemxh
+YnMub3JnIA0KCUFzc3VudG86IFJlOiBIRUxQISBNZW1vcnkgbWFwcGluZyBhbmQgYWRkcmVzcyBz
+cGFjZSBkb3VidHMNCgkNCgkNCg0KCUpvc2UsDQoJQ2FuIHlvdSBwbGVhc2UgYmUgYSBiaXQgbW9y
+ZSBzcGVjaWZpYyBpbiB0YXJnZXRzIHlvdSB3YW50IHRvIGFjaGlldmU/DQoJDQoJQW4gZXhhbXBs
+ZSBob3cgdG8gc2V0dXAgYnIvb3IgYW5kIHVzZSB0aGUgZGV2aWNlIGNvdWxkIGJlIGZvdW5kIGFz
+IGEgcGFydCBvZiBQUTIgUENJIHN1cHBvcnQsDQoJd2hlcmUgaW50ZXJydXB0IGNvbnRyb2xsZXIg
+aXMgaW1wbGVtZW50ZWQgYXMgYSBDUExEIGRldmljZSAoYXJjaC9wcGMvc3lzbGliL204Mnh4X3Bj
+aS57YyxofSkuDQoJDQoJDQoJT24gVGh1LCAyNiBKYW4gMjAwNiAxNDowNDo0OSAtMDAwMA0KCUpv
+c2UgRnJhbsOnYSAoRXh0X0dUQkMpIDxKb3NlLkZyYW5jYS5FeHRAc2llbWVucy5jb20+IHdyb3Rl
+Og0KCQ0KCT4gSGVsbG8gdSBhbGwhDQoJPg0KCT4gICAgICAgSSBuZWVkIHRvIGNsYXJpZnkgc29t
+ZSBhc3BlY3RzIG9mIHRoZSBtZW1vcnkgbWFuYWdlbWVudCBpbiBwcGMgbGludXggYW5kIGkgaG9w
+ZSB0aGF0IHlvdSBjb3VsZCBoZWxwIG1lLg0KCT4gICAgICAgTGV0cyBpbWFnaW5lIHdlIGhhdmUg
+YSBtcGM4MjcyIGJhc2VkIGJvYXJkIHdpdGggMyBkZXZpY2VzIEEsIEIgYW5kIEMuSW4gdGhlIGJv
+b3Rsb2FkZXIgKGluIG15IGNhc2UsIGkgdXNlIHUtYm9vdCksIGkgY29uZmlndXJlZCB0aGUgQlJ4
+IGFuZCBPcnggc28gdGhhdCBBIGhhcyBiYXNlIGFkZHJlc3MgWCwgQiBoYXMgYmFzZSBhZGRyZXNz
+IFkgYW5kIEMgaGFzIGJhc2UgYWRkcmVzcyBaLiBNeSBmaXJzdCBkb3VidCBhcnJpc2VzIGhlcmU6
+IHdoYXQgYWRkcmVzcyBzaG91bGQgaSB1c2U/IEJlaW5nIFNEUkFNIGJhc2UgYWRkcmVzcyAweDAw
+MDAwMDAwIGFuZCBrZXJuZWwgYmFzZSBhZGRyZXNzIDB4QzAwMDAwMDAsIHdoZXJlIHdpbGwgaSBw
+dXQgdGhlc2UgZGV2aWNlcyBtYXBwZWQgb24/IEFib3ZlIDB4QzAwMDAwMDAgb3IgaW4gYmV0d2Vl
+biB0aGUgZW5kIG9mIHBoeXNpY2FsIG1lbW9yeSBhbmQgMHhDMDAwMDAwMD8gRG8gaSByZWFsbHkg
+bmVlZCB0byBjb25maWd1cmUgdGhlIEJBVCByZWdpc3RlcnMgaW4gdSBib290Pw0KCT4gICAgICAg
+SW4gbGludXggMi40IGtlcm5lbCwgd2UgaGF2ZSBwcGNfbWQuc2V0dXBfaW9fbWFwcGluZ3MgdG8g
+bWFwIGFkZHJlc3MgYmxvY2tzIGludG8gdGhlIEJBVCByZWdpc3RlcnMuLi4gQXMgaSBvYnNlcnZl
+ZCBpbiB0aGUga2VybmVsIHNvdXJjZSB0cmVlIGV4YW1wbGVzLCB3ZSBtdXN0IG1hcCBDUE0gKHdo
+eT8pLiBBbmQgd2hhdCBhYm91dCB0aGUgb3RoZXIgZGV2aWNlcyBBLCBCIGFuZCBDPyBIb3cgd2ls
+bCBpIHNldHVwIHRoZW0gaW4gdGhpcyBjYXNlIGFuZCB3aGF0IGFkZHJlc3NlcyBpIGNhbiB1c2U/
+IEFib3ZlIDB4QzAwMDAwMDAgb3IgaW4gYmV0d2VlbiB0aGUgZW5kIG9mIHBoeXNpY2FsIG1lbW9y
+eSBhbmQgMHhDMDAwMDAwMD8gSXMgdGhlIFNEUkFNIGluY2x1ZGVkPw0KCT4NCgk+ICAgICAgIFRo
+YW5rcyBpbiBhZHZhbmNlIHRvIGFsbCBjb250cmlidXRpb25zISBBbGwgb2YgdGhlbSB3aWxsIGJl
+IG1vc3Qgd2VsY29tZWQhDQoJPg0KCT4NCgk+DQoJPg0KCT4NCgk+IEJlc3QgcmVnYXJkcywNCgk+
+IEZpbGlwZQ0KCT4NCgk+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fDQoJPiBMaW51eHBwYy1lbWJlZGRlZCBtYWlsaW5nIGxpc3QNCgk+IExpbnV4cHBjLWVt
+YmVkZGVkQG96bGFicy5vcmcNCgk+IGh0dHBzOi8vb3psYWJzLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2xpbnV4cHBjLWVtYmVkZGVkDQoJPg0KCT4NCgkNCgkNCgktLQ0KCVNpbmNlcmVseSwNCglWaXRh
+bHkNCglfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KCUxp
+bnV4cHBjLWVtYmVkZGVkIG1haWxpbmcgbGlzdA0KCUxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5v
+cmcNCglodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRl
+ZCANCg0K
