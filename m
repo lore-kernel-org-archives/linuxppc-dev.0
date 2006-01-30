@@ -1,32 +1,18 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (dsl027-180-168.sfo1.dsl.speakeasy.net
-	[216.27.180.168]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C0C0F68ACE
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Jan 2006 15:03:41 +1100 (EST)
-Date: Sun, 29 Jan 2006 20:03:35 -0800 (PST)
-Message-Id: <20060129.200335.69237695.davem@davemloft.net>
-To: sdbrady@ntlworld.com
-Subject: Re: [parisc-linux] Re: [PATCH 3/6] C-language equivalents of
-	include/asm-*/bitops.h
-From: "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20060129071242.GA24624@miranda.arrow>
-References: <20060126230443.GC13632@colo.lackof.org>
-	<20060126230353.GC27222@flint.arm.linux.org.uk>
-	<20060129071242.GA24624@miranda.arrow>
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BA58F68A0F
+	for <linuxppc-dev@ozlabs.org>; Tue, 31 Jan 2006 00:28:10 +1100 (EST)
+Date: Mon, 30 Jan 2006 14:28:03 +0100
+From: Olaf Hering <olh@suse.de>
+To: Alan Modra <amodra@bigpond.net.au>,
+	Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] remove check for ELF offset in powerpc bootimage
+Message-ID: <20060130132803.GA31263@suse.de>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org, spyro@f2s.com,
-	ak@suse.de, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
-	gerg@uclinux.org, sparclinux@vger.kernel.org,
-	uclinux-v850@lsi.nec.co.jp, ysato@users.sourceforge.jp,
-	takata@linux-m32r.org, linuxsh-shmedia-dev@lists.sourceforge.net,
-	grundler@parisc-linux.org, torvalds@osdl.org,
-	ink@jurassic.park.msu.ru, mita@miraclelinux.com,
-	chris@zankel.net, dev-etrax@axis.com, ultralinux@vger.kernel.org,
-	linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org,
-	linuxsh-dev@lists.sourceforge.net, linux390@de.ibm.com,
-	parisc-linux@parisc-linux.org
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,11 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Stuart Brady <sdbrady@ntlworld.com>
-Date: Sun, 29 Jan 2006 07:12:42 +0000
 
-> There are versions of hweight*() for sparc64 which use POPC when
-> ULTRA_HAS_POPULATION_COUNT is defined, but AFAICS, it's never defined.
+Is this check really needed, are there PT_LOAD sections with offset
+zero (either zImage or vmlinux)? I see an offset which is always 64k.
 
-That's right, the problem here is that no chips actually implement
-the instruction in hardware, it is software emulated, ie. useless :-)
+
+
+
+Do not check for offset, it is always set.
+
+Signed-off-by: Olaf Hering <olh@suse.de>
+
+ arch/powerpc/boot/main.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.16-rc1-olh/arch/powerpc/boot/main.c
+===================================================================
+--- linux-2.6.16-rc1-olh.orig/arch/powerpc/boot/main.c
++++ linux-2.6.16-rc1-olh/arch/powerpc/boot/main.c
+@@ -152,7 +152,7 @@ static int is_elf64(void *hdr)
+ 	elf64ph = (Elf64_Phdr *)((unsigned long)elf64 +
+ 				 (unsigned long)elf64->e_phoff);
+ 	for (i = 0; i < (unsigned int)elf64->e_phnum; i++, elf64ph++)
+-		if (elf64ph->p_type == PT_LOAD && elf64ph->p_offset != 0)
++		if (elf64ph->p_type == PT_LOAD)
+ 			break;
+ 	if (i >= (unsigned int)elf64->e_phnum)
+ 		return 0;
+@@ -193,7 +193,7 @@ static int is_elf32(void *hdr)
+ 	elf32 = (Elf32_Ehdr *)elfheader;
+ 	elf32ph = (Elf32_Phdr *) ((unsigned long)elf32 + elf32->e_phoff);
+ 	for (i = 0; i < elf32->e_phnum; i++, elf32ph++)
+-		if (elf32ph->p_type == PT_LOAD && elf32ph->p_offset != 0)
++		if (elf32ph->p_type == PT_LOAD)
+ 			break;
+ 	if (i >= elf32->e_phnum)
+ 		return 0;
+-- 
+short story of a lazy sysadmin:
+ alias appserv=wotan
