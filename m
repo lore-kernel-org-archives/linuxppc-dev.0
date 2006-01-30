@@ -1,19 +1,26 @@
-Return-Path: <mike@compulab.co.il>
-Received: from alexmail (62-90-235-247.barak.net.il [62.90.235.247])
-	by ozlabs.org (Postfix) with ESMTP id 278C068A22
+Return-Path: <dibacco@inwind.it>
+Received: from smtp6.libero.it (smtp6.libero.it [193.70.192.59])
+	by ozlabs.org (Postfix) with ESMTP id 6474168A14
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 Jan 2006 22:39:56 +1100 (EST)
-Message-ID: <43DDF76D.1070501@compulab.co.il>
-Date: Mon, 30 Jan 2006 13:24:29 +0200
-From: Mike Rapoport <mike@compulab.co.il>
+	Tue, 31 Jan 2006 00:04:25 +1100 (EST)
+Received: from localhost (172.16.1.19) by smtp6.libero.it (7.0.027-DD01)
+	id 439D919303B0CCA2 for linuxppc-embedded@ozlabs.org;
+	Mon, 30 Jan 2006 14:04:23 +0100
+Received: from smtp20.libero.it ([172.16.1.77])
+	by localhost (asav13.libero.it [193.70.192.96]) (amavisd-new,
+	port 10024)
+	with ESMTP id 01923-01-22 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 30 Jan 2006 14:04:23 +0100 (CET)
+Received: from libero.it (172.16.1.101) by smtp20.libero.it (7.0.027-DD01)
+	id 431C3BFF017AB036 for linuxppc-embedded@ozlabs.org;
+	Mon, 30 Jan 2006 14:04:23 +0100
+Date: Mon, 30 Jan 2006 14:04:23 +0100
+Message-Id: <ITWPNB$B571EC0EB15ACFD4C526E970D2B502FF@libero.it>
+Subject: fs_enet not found in eldk
 MIME-Version: 1.0
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: Question on USB gadget device driver for mpc 8272 on linux	2.6.14.
-References: <32A7B31E4005134E8BA805EBAAFB9DCD9C7A20@hellskitchen.haliplex.com.au>
-	<20060127154323.40e9404e@vitb.ru.mvista.com>
-In-Reply-To: <20060127154323.40e9404e@vitb.ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-1
+From: "dibacco\@inwind\.it" <dibacco@inwind.it>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,39 +31,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Vitaly,
-Can you send me this patch?
+I downloaded the latest kernel from denx.de but I cannot find fs_enet dri=
+ver!
+Is it available for kernel 2.4?
 
-
-Vitaly Bordug wrote:
-
->Jonathan,
->
->I have implemented the PQ2 usb-serial functionality a while ago, but the code needs a lot of cleanup, which is sometimes very tricky due to the tight timings required by this device. If you are interested, I can try to find the patch...
->
->On Fri, 27 Jan 2006 11:45:39 +1100
->"Jonathan Qiang" <jonathan@haliplex.com.au> wrote:
->
->  
->
->>Hi, all
->> 
->>Currently, I am doing on the USB gadget device driver for mpc8272, I
->>already got some packets on interruption route when my board in which
->>mpc82xx settled connect to Host.
->>But the SOF is always generated as the first interruption source. When
->>plugged USB cable in HOST, the USB controller will be set to reset
->>(USBER is [0x308]), and after reset, the interruption source event
->>changes its status to [0x108], which means running on IDLE and SOF.  Why
->>It is not IN token?
->>I already disabled Frame timer when I probe the USB gadget controller. 
->>    
->>
->
->
->  
->
-
--- 
-Sincerely yours,
-Mike Rapoport
+Thank you.
