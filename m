@@ -1,28 +1,17 @@
-Return-Path: <peter.fercher@scs.ch>
-Received: from mail.scs.ch (mail.scs.ch [212.203.110.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25D0368A15
+Return-Path: <Martin.Krause@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [62.157.136.17])
+	by ozlabs.org (Postfix) with ESMTP id D9F3268A20
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Jan 2006 23:20:17 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.scs.ch (8.12.11/8.12.11) with ESMTP id k0VCKCWA021352
-	for <linuxppc-embedded@ozlabs.org>; Tue, 31 Jan 2006 13:20:12 +0100
-Received: from mail.scs.ch ([127.0.0.1])
-	by localhost (mail.scs.ch [127.0.0.1]) (amavisd-new,
-	port 10024) with LMTP id 20141-07 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Jan 2006 13:20:09 +0100 (CET)
-Received: from gull ([172.18.1.78])
-	by mail.scs.ch (8.12.11/8.12.11) with ESMTP id k0VCK3AV021337
-	for <linuxppc-embedded@ozlabs.org>; Tue, 31 Jan 2006 13:20:03 +0100
-From: "Peter Fercher" <peter.fercher@scs.ch>
-To: "'linux-ppc-embedded'" <linuxppc-embedded@ozlabs.org>
-Subject: devboards
-Date: Tue, 31 Jan 2006 13:19:58 +0100
-Message-ID: <000201c62660$a9f01fc0$4e0112ac@scsad.scs.ch>
+	Tue, 31 Jan 2006 23:36:19 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
+	charset="iso-8859-1"
+Subject: RE: devboards
+Date: Tue, 31 Jan 2006 13:36:25 +0100
+Message-ID: <47F3F98010FF784EBEE6526EAAB078D1C05FDC@tq-mailsrv.tq-net.de>
+From: "Martin Krause" <Martin.Krause@tqs.de>
+To: "Peter Fercher" <peter.fercher@scs.ch>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,8 +22,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi there,
+Hi Peter,
 
-does anybody know where to get a nice MPC8548 devboard/devkit from ?
+linuxppc-embedded-bounces@ozlabs.org wrote on Tuesday, January 31, 2006
+1:20 PM:=20
+> hi there,
+>=20
+> does anybody know where to get a nice MPC8548 devboard/devkit from ?
 
-cheers, peter
+I think TQ-Components (www.tqc.de) is working on a TQM8548 module +=20
+development kit. But I don't think it already will be announced on=20
+their homepage. Please contact them directly for more detailed=20
+information.
+
+Regards,
+Martin
