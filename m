@@ -1,16 +1,22 @@
-Return-Path: <mustafa.cayir@bte.mam.gov.tr>
-Received: from itri.bte.mam.gov.tr (bte.mam.gov.tr [193.140.75.15])
-	by ozlabs.org (Postfix) with ESMTP id 7E7E468A21
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao03.cox.net (fed1rmmtao03.cox.net [68.230.241.36])
+	by ozlabs.org (Postfix) with ESMTP id DAB8568A1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Feb 2006 00:28:20 +1100 (EST)
-Message-ID: <000e01c62669$f7c3be60$9e01120a@bilisim.local>
-From: =?iso-8859-9?Q?Mustafa_=C7ay=FDr?= <mustafa.cayir@bte.mam.gov.tr>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Entry Point Address
-Date: Tue, 31 Jan 2006 15:26:39 +0200
+	Wed,  1 Feb 2006 01:24:35 +1100 (EST)
+Date: Tue, 31 Jan 2006 07:24:34 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
+Subject: Re: [RFC] arch/ppc/boot/simple/embed_boot.c : Merging all keyvals
+	parsing code
+Message-ID: <20060131142433.GN22672@smtp.west.cox.net>
+References: <200601251215.10816.laurent.pinchart@tbox.biz>
+	<200601251702.20332.laurent.pinchart@tbox.biz>
+	<20060130172851.GF22672@smtp.west.cox.net>
+	<200601310947.32463.laurent.pinchart@tbox.biz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-9"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200601310947.32463.laurent.pinchart@tbox.biz>
+Cc: Dan Malek <dan@embeddedalley.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,14 +27,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-=20
-does entry point adress defined uboot image header correspond to adress =
-of which function in linux kernel ?
+On Tue, Jan 31, 2006 at 09:47:32AM +0100, Laurent Pinchart wrote:
+> > No, that's good.  If you can cleanly merge the existing parsing code, by
+> > all means please do so.  Thanks.
+> 
+> Ok I will. On which kernel tree should I base my patches on ?
 
-file :/common/cmd_bootm.c=20
-function : do_bootm_linux
-     kernel =3D (void (*)(bd_t *, ulong, ulong, ulong, =
-ulong))hdr->ih_ep;
+I would suggest either Linus' current git tree or 2.6.16-rc1 if you don't
+use git.  But please bear in mind that since this is a new feature (a new
+board) it won't be submitted to Linus' tree until 2.6.17-rc1 opens up (and
+if in that time, it becomes much easier to put this board under arch/powerpc
+it should be done under there, instead).
 
-Thanks,
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
