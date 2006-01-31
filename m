@@ -1,30 +1,25 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx024.isp.belgacom.be (outmx024.isp.belgacom.be
-	[195.238.4.128])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E1A39689D9
+Return-Path: <dibacco@inwind.it>
+Received: from smtp4.libero.it (smtp4.libero.it [193.70.192.54])
+	by ozlabs.org (Postfix) with ESMTP id 8B74E68A10
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 31 Jan 2006 19:47:48 +1100 (EST)
-Received: from outmx024.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx024.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k0V8lfD5007624
-	for <linuxppc-embedded@ozlabs.org>; Tue, 31 Jan 2006 09:47:42 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: Tom Rini <trini@kernel.crashing.org>
-Subject: Re: [RFC] arch/ppc/boot/simple/embed_boot.c : Merging all keyvals
-	parsing code
-Date: Tue, 31 Jan 2006 09:47:32 +0100
-References: <200601251215.10816.laurent.pinchart@tbox.biz>
-	<200601251702.20332.laurent.pinchart@tbox.biz>
-	<20060130172851.GF22672@smtp.west.cox.net>
-In-Reply-To: <20060130172851.GF22672@smtp.west.cox.net>
+	Tue, 31 Jan 2006 21:43:37 +1100 (EST)
+Received: from localhost (172.16.1.74) by smtp4.libero.it (7.0.027-DD01)
+	id 439D910603C3F899 for linuxppc-embedded@ozlabs.org;
+	Tue, 31 Jan 2006 11:43:31 +0100
+Received: from smtp3.libero.it ([172.16.1.53])
+	by localhost (asav16.libero.it [193.70.193.3]) (amavisd-new, port 10024)
+	with ESMTP id 28112-04-5 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 31 Jan 2006 11:43:30 +0100 (CET)
+Received: from libero.it (172.16.1.111) by smtp3.libero.it (7.0.027-DD01)
+	id 431C39E00183B1F1 for linuxppc-embedded@ozlabs.org;
+	Tue, 31 Jan 2006 11:43:30 +0100
+Date: Tue, 31 Jan 2006 11:43:30 +0100
+Message-Id: <ITYDSI$4F4F62D0FA98B587B7D4335807D29D19@libero.it>
+Subject: SPI flash kernel 2.4 driver
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200601310947.32463.laurent.pinchart@tbox.biz>
-Cc: Dan Malek <dan@embeddedalley.com>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+From: "dibacco\@inwind\.it" <dibacco@inwind.it>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,9 +30,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> No, that's good.  If you can cleanly merge the existing parsing code, by
-> all means please do so.  Thanks.
+Hi all,
 
-Ok I will. On which kernel tree should I base my patches on ?
+do you know if is there a "spi flash" driver included in 2.4 kernel?
+I have an AT45DB081D (8 MBit Atmel chip) on a MPC875 spi bus.
 
-Laurent Pinchart
+Sincerely,
+Antonio Di Bacco.
