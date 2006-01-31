@@ -1,23 +1,22 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 67A4C68A1F
+Return-Path: <embeddedxilinx@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id 77F18681BD
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Feb 2006 07:40:30 +1100 (EST)
-Subject: Re: [RFC] arch/ppc/boot/simple/embed_boot.c : Merging all keyvals
-	parsing code
-From: Jon Loeliger <jdl@freescale.com>
-To: Peter Korsgaard <jacmet@sunsite.dk>
-In-Reply-To: <87slr4b0lf.fsf@48ers.dk>
-References: <200601251215.10816.laurent.pinchart@tbox.biz>
-	<200601251702.20332.laurent.pinchart@tbox.biz>
-	<20060130172851.GF22672@smtp.west.cox.net>
-	<200601310947.32463.laurent.pinchart@tbox.biz>
-	<20060131142433.GN22672@smtp.west.cox.net>  <87slr4b0lf.fsf@48ers.dk>
-Content-Type: text/plain
-Message-Id: <1138740025.24410.57.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Date: Tue, 31 Jan 2006 14:40:26 -0600
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Wed,  1 Feb 2006 08:07:53 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id z6so1491859nzd
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 31 Jan 2006 13:07:51 -0800 (PST)
+Message-ID: <e4619cf30601311307p598085b2g1c7b8e3583e20196@mail.gmail.com>
+Date: Tue, 31 Jan 2006 14:07:51 -0700
+From: David Summers <embeddedxilinx@gmail.com>
+To: Frank Bennett <bennett78@digis.net>
+Subject: Re: Getting started with Xilinx V4 PPC?
+In-Reply-To: <43DE76DE.2080306@digis.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <e4619cf30601301111u269d7842j42a8ef88623cfdf8@mail.gmail.com>
+	<43DE76DE.2080306@digis.net>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,51 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-01-31 at 14:31, Peter Korsgaard wrote:
-> >>>>> "Tom" == Tom Rini <trini@kernel.crashing.org> writes:
-> 
->  Tom> I would suggest either Linus' current git tree or 2.6.16-rc1 if
->  Tom> you don't use git.  But please bear in mind that since this is a
->  Tom> new feature (a new board) it won't be submitted to Linus' tree
->  Tom> until 2.6.17-rc1 opens up (and if in that time, it becomes much
->  Tom> easier to put this board under arch/powerpc it should be done
->  Tom> under there, instead).
-> 
-> I only recently moved from 2.4 to 2.6, so this may be a FAQ, but a
-> quick googling around didn't find anything.
-> 
-> What is this arch/ppc -> arch/powerpc about? Some kind of
-> consolidation of ppc and ppc64?
+> Interesting dev board.  What is the low volume price/power consumption
+> is for the Virtex-4?
 
-Exactly.
 
-> What's the reason behind it
+The price for a Virtex 4 FX12 FPGA  (10K flip flops, 648Kb Block RAM,
+1 PPC405 core, dual 10/100/1G ethernet MACs, etc)  close to $200 each.
+ Expensive if all you need is a processor, but I already have a lot of
+custom interface logic in the FPGA so adding a few $$ extra for the
+PPC core isn't a problem.  I also have the luxury of extremely small
+production volumes, so component cost is dwarfed by the cost of
+development.
 
-Eliminate duplicate code.  Share good code.
-Improved modularity.  Leverage.  All the Good Stuff (tm).
-Eliminate the bd_t mess.  You know.
 
-> and what kind of time frame are we talking about?
+Power is going to depend on what you put into the FPGA and how fast
+you clock it.  Xilinx quotes 0.45mW/Mhz for the PPC only.  That equals
+135mW at 300 Mhz.  My design will probably top out at 2W for the FPGA.
 
-In progress now.  All of the PPC64 ports are now officially
-part of the "powerpc" arch.  There are two published PPC32
-ports (MPC8349SYS and MPC8540ADS) that have been posted to
-the list as being "merged" into the powerpc arch.  They are
-still evolving a bit, though.
+>
+> If you are a C coder then I assume you would use Verilog I hope....VHDL i=
+s
+> for ADA programmers!
 
->  Is it related to the bd_t ->
-> flattened OF tree change?
+I use both, but this project will be in VHDL.  VHDL has some nice
+features and seems to actually be gaining strength over Verilog.
 
-Yes.  New World Order says all arch/powerpc ports will 
-use a common flat dev tree interface from boot loaders
-unless honest OF is available.  The bd_t is obsolete.
-
-> Could someone post a few pointers to more information? 
-
-Read the "booting without open firmware" spec recently
-patched from the DTC code tree to the linux doc directory
-on the PPC64 list by Dave Gibson.
-
-Read the Device Tree Compiler code itself too.
-
-jdl
+-David
