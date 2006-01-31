@@ -1,19 +1,19 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9DE0168A22
+	by ozlabs.org (Postfix) with ESMTP id 9C9BD68A5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Feb 2006 08:11:58 +1100 (EST)
-To: "dibacco\@inwind\.it" <dibacco@inwind.it>
+	Wed,  1 Feb 2006 08:13:20 +1100 (EST)
+To: =?iso-8859-9?Q?Mustafa_=C7ay=FDr?= <mustafa.cayir@bte.mam.gov.tr>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: SPI flash kernel 2.4 driver 
+Subject: Re: Entry Point Address 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 31 Jan 2006 11:43:30 +0100."
-	<ITYDSI$4F4F62D0FA98B587B7D4335807D29D19@libero.it>
-Date: Tue, 31 Jan 2006 22:11:55 +0100
+In-reply-to: Your message of "Tue, 31 Jan 2006 15:26:39 +0200."
+	<000e01c62669$f7c3be60$9e01120a@bilisim.local>
+Date: Tue, 31 Jan 2006 22:13:19 +0100
 Sender: wd@denx.de
-Message-Id: <20060131211155.BF9193535E8@atlas.denx.de>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Message-Id: <20060131211319.086153535E8@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,13 +24,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <ITYDSI$4F4F62D0FA98B587B7D4335807D29D19@libero.it> you wrote:
-> 
-> do you know if is there a "spi flash" driver included in 2.4 kernel?
-> I have an AT45DB081D (8 MBit Atmel chip) on a MPC875 spi bus.
+In message <000e01c62669$f7c3be60$9e01120a@bilisim.local> you wrote:
+>  
+> does entry point adress defined uboot image header correspond to adress of which function in linux kernel ?
 
-The Katix SPI framework  is  integrated  with  our  2.4  kernel;  see
-drivers/spi
+It corresponds to the kernel's entry point, "_start".
 
 Best regards,
 
@@ -39,4 +37,5 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-What was sliced bread the greatest thing since?
+Cigarette, n.: A fire at one end, a fool at the other, and a  bit  of
+tobacco in between.
