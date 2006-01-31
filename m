@@ -1,48 +1,34 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mustafa.cayir@bte.mam.gov.tr>
+Received: from itri.bte.mam.gov.tr (bte.mam.gov.tr [193.140.75.15])
+	by ozlabs.org (Postfix) with ESMTP id 7E7E468A21
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  1 Feb 2006 00:28:20 +1100 (EST)
+Message-ID: <000e01c62669$f7c3be60$9e01120a@bilisim.local>
+From: =?iso-8859-9?Q?Mustafa_=C7ay=FDr?= <mustafa.cayir@bte.mam.gov.tr>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Entry Point Address
+Date: Tue, 31 Jan 2006 15:26:39 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17412.15183.885850.557891@cargo.ozlabs.ibm.com>
-Date: Tue, 28 Feb 2006 23:00:15 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: please pull powerpc-merge.git
-Cc: linuxppc-dev@ozlabs.org
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Content-Type: text/plain;
+	charset="iso-8859-9"
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Hi,
+=20
+does entry point adress defined uboot image header correspond to adress =
+of which function in linux kernel ?
 
-Please do a pull from
-
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
-
-Just four small bugfixes this time.
+file :/common/cmd_bootm.c=20
+function : do_bootm_linux
+     kernel =3D (void (*)(bd_t *, ulong, ulong, ulong, =
+ulong))hdr->ih_ep;
 
 Thanks,
-Paul.
-
-Benjamin Herrenschmidt:
-      powerpc: vdso 64bits gettimeofday bug
-
-John Rose:
-      powerpc: fix dynamic PCI probe regression
-
-Michael Ellerman:
-      powerpc/iseries: Fix double phys_to_abs bug in htab_bolt_mapping
-
-Olaf Hering:
-      powerpc: fix NULL pointer in handle_eeh_events
-
- arch/powerpc/kernel/vdso64/gettimeofday.S   |    4 ++-
- arch/powerpc/mm/hash_utils_64.c             |    2 +-
- arch/powerpc/platforms/pseries/eeh.c        |   14 +++++++++++
- arch/powerpc/platforms/pseries/eeh_driver.c |    2 +-
- arch/powerpc/platforms/pseries/pci_dlpar.c  |   36 +++++++++++++++------------
- include/asm-powerpc/eeh.h                   |    7 +++--
- 6 files changed, 42 insertions(+), 23 deletions(-)
