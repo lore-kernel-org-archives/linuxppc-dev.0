@@ -3,11 +3,11 @@ Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "sabrina.ovro.caltech.edu",
 	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6961968A10
+	by ozlabs.org (Postfix) with ESMTP id 7B7A268A2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Feb 2006 04:51:52 +1100 (EST)
-Message-ID: <43E0F5A8.4000604@ovro.caltech.edu>
-Date: Wed, 01 Feb 2006 09:53:44 -0800
+	Thu,  2 Feb 2006 05:02:21 +1100 (EST)
+Message-ID: <43E0F81F.4050005@ovro.caltech.edu>
+Date: Wed, 01 Feb 2006 10:04:15 -0800
 From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
 To: Matt Porter <mporter@kernel.crashing.org>
@@ -17,7 +17,7 @@ References: <35786B99AB3FDC45A8215724617919736D9217@gbrwgceumf01.eu.xerox.net>
 	<43E0E9A7.4040508@ovro.caltech.edu> <20060201104405.C16064@cox.net>
 In-Reply-To: <20060201104405.C16064@cox.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org, "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,35 +28,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Matt,
 
-> The book implicitly focuses on x86 driver developers, that's
-> why you don't get an explicit statement about this...
-> "everything" is PCI in that world.
-> 
-> read*/write* and ioread*/iowrite* generate outbound little
-> endian cycles on ALL arches, period.  They are intended
-> only for PCI use and have generic names only because of
-> the assumption that "all the world is a PC".
-> 
-> Now, what it takes to to generate outbound little endian cycles
-> varies. On some arches, it's just a store (native LE) on
-> other arches, it's a reversed store (PPC), others still configure
-> their PCI bridge hardware to do byte swapping in hardware (typically
-> if their arch doesn't have a simple byte-swapping store like PPC).
-> 
-> The example you cite on pg. 453 of Rubini looks broken for BE
-> systems. It works on LE systems since cpu_to_le32() does nothing
-> and writel is a simply dereference. That's pure luck. On PPC,
-> for example, that would write a big endian bus_addr to the fictitious
-> PCI device which is not what they want.
+In the same vein as the readl()/writel() question, what
+are the assumptions regarding memcpy_toio and memcpy_fromio?
 
-Great! An authoritive answer!
+If the memcpy_to/fromio operations are intended only
+for access to PCI devices, then they should also inherently
+perform little-endianness conversion. For the test driver
+I was working on, I did *not* find this the case, eg.
+I implemented the test driver read() and write() using the
+memcpy_to/fromio calls, and the data transfers occur
+in big-endian (well, 'native' mode, since I also test the
+same test driver with the PCI adapter in an x86 system).
 
-Re: endianness, even cooler on the 440EP, in your mmap()
-implementation you can set the _PAGE_ENDIAN flag, and
-user-space will see the PCI device in little endian
-format. Fun stuff!
+If memcpy_to/fromio can be used in a more general context,
+then I can see why they operate in native mode.
 
-Thanks Matt.
+Just looking for enlightenment.
 
+Cheers
 Dave
