@@ -1,24 +1,20 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6C40A68A3E
+Return-Path: <Clive.Jenkins@xerox.com>
+Received: from wvmler2.mail.xerox.com (wvmler2.mail.xerox.com [13.8.138.217])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "wvmler2.mail.xerox.com",
+	Issuer "wvmler2.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 7B553689FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Feb 2006 05:18:44 +1100 (EST)
-Message-ID: <43E0FBFA.10103@ovro.caltech.edu>
-Date: Wed, 01 Feb 2006 10:20:42 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Thu,  2 Feb 2006 05:36:09 +1100 (EST)
 MIME-Version: 1.0
-To: Eugene Surovegin <ebs@ebshome.net>
-Subject: Re: Yosemite/440EP why are readl()/ioread32() setup to
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Yosemite/440EP why are readl()/ioread32() setup to
 	readlittle-endian?
-References: <35786B99AB3FDC45A8215724617919736D9217@gbrwgceumf01.eu.xerox.net>
-	<43E0E9A7.4040508@ovro.caltech.edu> <20060201104405.C16064@cox.net>
-	<43E0F81F.4050005@ovro.caltech.edu>
-	<20060201181106.GA24138@gate.ebshome.net>
-In-Reply-To: <20060201181106.GA24138@gate.ebshome.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Wed, 1 Feb 2006 18:35:05 -0000
+Message-ID: <35786B99AB3FDC45A8215724617919736D921B@gbrwgceumf01.eu.xerox.net>
+From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+To: "David Hawkins" <dwh@ovro.caltech.edu>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -30,46 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Eugene Surovegin wrote:
-> On Wed, Feb 01, 2006 at 10:04:15AM -0800, David Hawkins wrote:
-> 
->>Matt,
->>
->>In the same vein as the readl()/writel() question, what
->>are the assumptions regarding memcpy_toio and memcpy_fromio?
->>
->>If the memcpy_to/fromio operations are intended only
->>for access to PCI devices, then they should also inherently
->>perform little-endianness conversion. For the test driver
->>I was working on, I did *not* find this the case, eg.
->>I implemented the test driver read() and write() using the
->>memcpy_to/fromio calls, and the data transfers occur
->>in big-endian (well, 'native' mode, since I also test the
->>same test driver with the PCI adapter in an x86 system).
->>
->>If memcpy_to/fromio can be used in a more general context,
->>then I can see why they operate in native mode.
->>
->>Just looking for enlightenment.
-> 
-> 
-> This commands IIRC are intended for copying chunk of _bytes_. There 
-> are no issues with endianess for bytes, e.g. they work just like 
-> ordinary memcpy.
-> 
+>>>p453 of his book has a PCI DMA example, where he uses the
+>>>cpu_to_le32() macros inside calls writel().
 
-True, good point.
+>>>However, since these functions are internally implemented to
+>>>perform LE operations, this example appears to be incorrect.
 
-I quite often implement a 'control' device to read/write/mmap PCI
-device registers. In that case, the registers are usually 32-bit, so
-if I wanted endian neutrality, I could either let the user-space
-app determine the endianness and act accordingly, or force the
-user-space app to always see little-endian registers by replacing
-memcpy_to/fromio calls with a loop over read;/writel, and in mmap
-making sure to set the _PAGE_ENDIAN flag. Of course, making mmap
-endian-neutral depends on the 440EP page flags, which say an
-ARM might not have.
+>>>Would you agree?
+=20
+>> No, I think it is correct.
 
-Thanks for the valuable feedback guys.
+I said this without looking up the example you cited.
+I agree now, the example is incorrect; and yes, file a bug
+report at oreilly!
 
-Dave
+I think, from memory, that elsewhere in the book Rubini does
+say that readl()... are for the PCI bus, but cross-arch issues
+are only addressed in certain sections.
+
+I always find out exactly what these macros do on the arch
+I am using, then I know where I stand. I find LXR (Google it if
+you don't know it) good for browsing the source of vanilla
+kernels. After finding out how and where it is done, I then
+double check the relevant files of the actual kernel I am using.
+
+ppc implementations of readl, writel, cpu_to_le32 use the byte-
+reversed load/store word instructions.
+
+Clive
