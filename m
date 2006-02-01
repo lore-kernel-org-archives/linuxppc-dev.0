@@ -1,23 +1,14 @@
 Return-Path: <mita@miraclelinux.com>
 Received: from mail01.miraclelinux.com (ns.miraclelinux.com [219.118.163.66])
-	by ozlabs.org (Postfix) with ESMTP id 5FEBC68A20
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Feb 2006 20:03:25 +1100 (EST)
-Message-Id: <20060201090322.422243000@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 94B6868A3A
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Feb 2006 20:03:35 +1100 (EST)
+Message-Id: <20060201090333.565332000@localhost.localdomain>
 References: <20060201090224.536581000@localhost.localdomain>
-Date: Wed, 01 Feb 2006 18:02:30 +0900
+Date: Wed, 01 Feb 2006 18:02:55 +0900
 From: Akinobu Mita <mita@miraclelinux.com>
 To: linux-kernel@vger.kernel.org
-Subject: [patch 06/44] generic __{, test_and_}{set, clear,
-	change}_bit() and test_bit()
-Cc: Akinobu Mita <mita@miraclelinux.com>, linux-mips@linux-mips.org,
-	dev-etrax@axis.com, linux-ia64@vger.kernel.org,
-	ultralinux@vger.kernel.org, Ian Molton <spyro@f2s.com>,
-	Hirokazu Takata <takata@linux-m32r.org>,
-	linuxsh-shmedia-dev@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	linuxsh-dev@lists.sourceforge.net, sparclinux@vger.kernel.org,
-	Chris Zankel <chris@zankel.net>, parisc-linux@parisc-linux.org,
-	Russell King <rmk@arm.linux.org.uk>, Richard Henderson <rth@twiddle.net>
+Subject: [patch 31/44] powerpc: use generic bitops
+Cc: Akinobu Mita <mita@miraclelinux.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,140 +18,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch introduces the C-language equivalents of the functions below:
-
-void __set_bit(int nr, volatile unsigned long *addr);
-void __clear_bit(int nr, volatile unsigned long *addr);
-void __change_bit(int nr, volatile unsigned long *addr);
-int __test_and_set_bit(int nr, volatile unsigned long *addr);
-int __test_and_clear_bit(int nr, volatile unsigned long *addr);
-int __test_and_change_bit(int nr, volatile unsigned long *addr);
-int test_bit(int nr, const volatile unsigned long *addr);
-
-In include/asm-generic/bitops/non-atomic.h
-
-This code largely copied from:
-asm-powerpc/bitops.h
+- remove __{,test_and_}{set,clear,change}_bit() and test_bit()
+- remove generic_fls64()
+- remove generic_hweight{64,32,16,8}()
+- remove sched_find_first_bit()
 
 Signed-off-by: Akinobu Mita <mita@miraclelinux.com>
- include/asm-generic/bitops/non-atomic.h |  111 ++++++++++++++++++++++++++++++++
- 1 files changed, 111 insertions(+)
+ include/asm-powerpc/bitops.h |  105 +------------------------------------------
+ 1 files changed, 4 insertions(+), 101 deletions(-)
 
-Index: 2.6-git/include/asm-generic/bitops/non-atomic.h
+Index: 2.6-git/include/asm-powerpc/bitops.h
 ===================================================================
---- /dev/null
-+++ 2.6-git/include/asm-generic/bitops/non-atomic.h
-@@ -0,0 +1,111 @@
-+#ifndef _ASM_GENERIC_BITOPS_NON_ATOMIC_H_
-+#define _ASM_GENERIC_BITOPS_NON_ATOMIC_H_
-+
-+#include <asm/types.h>
-+
-+#define BITOP_MASK(nr)		(1UL << ((nr) % BITS_PER_LONG))
-+#define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
-+
-+/**
-+ * __set_bit - Set a bit in memory
-+ * @nr: the bit to set
-+ * @addr: the address to start counting from
-+ *
-+ * Unlike set_bit(), this function is non-atomic and may be reordered.
-+ * If it's called on the same region of memory simultaneously, the effect
-+ * may be that only one operation succeeds.
-+ */
-+static __inline__ void __set_bit(int nr, volatile unsigned long *addr)
-+{
-+	unsigned long mask = BITOP_MASK(nr);
-+	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-+
-+	*p  |= mask;
-+}
-+
-+static __inline__ void __clear_bit(int nr, volatile unsigned long *addr)
-+{
-+	unsigned long mask = BITOP_MASK(nr);
-+	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-+
-+	*p &= ~mask;
-+}
-+
-+/**
-+ * __change_bit - Toggle a bit in memory
-+ * @nr: the bit to change
-+ * @addr: the address to start counting from
-+ *
-+ * Unlike change_bit(), this function is non-atomic and may be reordered.
-+ * If it's called on the same region of memory simultaneously, the effect
-+ * may be that only one operation succeeds.
-+ */
-+static __inline__ void __change_bit(int nr, volatile unsigned long *addr)
-+{
-+	unsigned long mask = BITOP_MASK(nr);
-+	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-+
-+	*p ^= mask;
-+}
-+
-+/**
-+ * __test_and_set_bit - Set a bit and return its old value
-+ * @nr: Bit to set
-+ * @addr: Address to count from
-+ *
-+ * This operation is non-atomic and can be reordered.  
-+ * If two examples of this operation race, one can appear to succeed
-+ * but actually fail.  You must protect multiple accesses with a lock.
-+ */
-+static __inline__ int __test_and_set_bit(int nr, volatile unsigned long *addr)
-+{
-+	unsigned long mask = BITOP_MASK(nr);
-+	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-+	unsigned long old = *p;
-+
-+	*p = old | mask;
-+	return (old & mask) != 0;
-+}
-+
-+/**
-+ * __test_and_clear_bit - Clear a bit and return its old value
-+ * @nr: Bit to clear
-+ * @addr: Address to count from
-+ *
-+ * This operation is non-atomic and can be reordered.  
-+ * If two examples of this operation race, one can appear to succeed
-+ * but actually fail.  You must protect multiple accesses with a lock.
-+ */
-+static __inline__ int __test_and_clear_bit(int nr, volatile unsigned long *addr)
-+{
-+	unsigned long mask = BITOP_MASK(nr);
-+	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-+	unsigned long old = *p;
-+
-+	*p = old & ~mask;
-+	return (old & mask) != 0;
-+}
-+
-+/* WARNING: non atomic and it can be reordered! */
-+static __inline__ int __test_and_change_bit(int nr,
-+					    volatile unsigned long *addr)
-+{
-+	unsigned long mask = BITOP_MASK(nr);
-+	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
-+	unsigned long old = *p;
-+
-+	*p = old ^ mask;
-+	return (old & mask) != 0;
-+}
-+
-+/**
-+ * test_bit - Determine whether a bit is set
-+ * @nr: bit number to test
-+ * @addr: Address to start counting from
-+ */
-+static __inline__ int test_bit(int nr, __const__ volatile unsigned long *addr)
-+{
-+	return 1UL & (addr[BITOP_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
-+}
-+
-+#endif /* _ASM_GENERIC_BITOPS_NON_ATOMIC_H_ */
+--- 2.6-git.orig/include/asm-powerpc/bitops.h
++++ 2.6-git/include/asm-powerpc/bitops.h
+@@ -184,72 +184,7 @@ static __inline__ void set_bits(unsigned
+ 	: "cc");
+ }
+ 
+-/* Non-atomic versions */
+-static __inline__ int test_bit(unsigned long nr,
+-			       __const__ volatile unsigned long *addr)
+-{
+-	return 1UL & (addr[BITOP_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
+-}
+-
+-static __inline__ void __set_bit(unsigned long nr,
+-				 volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	*p  |= mask;
+-}
+-
+-static __inline__ void __clear_bit(unsigned long nr,
+-				   volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	*p &= ~mask;
+-}
+-
+-static __inline__ void __change_bit(unsigned long nr,
+-				    volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	*p ^= mask;
+-}
+-
+-static __inline__ int __test_and_set_bit(unsigned long nr,
+-					 volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-	unsigned long old = *p;
+-
+-	*p = old | mask;
+-	return (old & mask) != 0;
+-}
+-
+-static __inline__ int __test_and_clear_bit(unsigned long nr,
+-					   volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-	unsigned long old = *p;
+-
+-	*p = old & ~mask;
+-	return (old & mask) != 0;
+-}
+-
+-static __inline__ int __test_and_change_bit(unsigned long nr,
+-					    volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-	unsigned long old = *p;
+-
+-	*p = old ^ mask;
+-	return (old & mask) != 0;
+-}
++#include <asm-generic/bitops/non-atomic.h>
+ 
+ /*
+  * Return the zero-based bit position (LE, not IBM bit numbering) of
+@@ -310,16 +245,9 @@ static __inline__ int fls(unsigned int x
+ 	asm ("cntlzw %0,%1" : "=r" (lz) : "r" (x));
+ 	return 32 - lz;
+ }
+-#define fls64(x)   generic_fls64(x)
++#include <asm-generic/bitops/fls64.h>
+ 
+-/*
+- * hweightN: returns the hamming weight (i.e. the number
+- * of bits set) of a N-bit word
+- */
+-#define hweight64(x) generic_hweight64(x)
+-#define hweight32(x) generic_hweight32(x)
+-#define hweight16(x) generic_hweight16(x)
+-#define hweight8(x) generic_hweight8(x)
++#include <asm-generic/bitops/hweight.h>
+ 
+ #define find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
+ unsigned long find_next_zero_bit(const unsigned long *addr,
+@@ -397,32 +325,7 @@ unsigned long find_next_zero_le_bit(cons
+ #define minix_find_first_zero_bit(addr,size) \
+ 	find_first_zero_le_bit((unsigned long *)addr, size)
+ 
+-/*
+- * Every architecture must define this function. It's the fastest
+- * way of searching a 140-bit bitmap where the first 100 bits are
+- * unlikely to be set. It's guaranteed that at least one of the 140
+- * bits is cleared.
+- */
+-static inline int sched_find_first_bit(const unsigned long *b)
+-{
+-#ifdef CONFIG_PPC64
+-	if (unlikely(b[0]))
+-		return __ffs(b[0]);
+-	if (unlikely(b[1]))
+-		return __ffs(b[1]) + 64;
+-	return __ffs(b[2]) + 128;
+-#else
+-	if (unlikely(b[0]))
+-		return __ffs(b[0]);
+-	if (unlikely(b[1]))
+-		return __ffs(b[1]) + 32;
+-	if (unlikely(b[2]))
+-		return __ffs(b[2]) + 64;
+-	if (b[3])
+-		return __ffs(b[3]) + 96;
+-	return __ffs(b[4]) + 128;
+-#endif
+-}
++#include <asm-generic/bitops/sched.h>
+ 
+ #endif /* __KERNEL__ */
+ 
 
 --
