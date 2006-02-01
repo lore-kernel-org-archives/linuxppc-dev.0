@@ -1,14 +1,27 @@
 Return-Path: <mita@miraclelinux.com>
 Received: from mail01.miraclelinux.com (ns.miraclelinux.com [219.118.163.66])
-	by ozlabs.org (Postfix) with ESMTP id 94B6868A3A
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Feb 2006 20:03:35 +1100 (EST)
-Message-Id: <20060201090333.565332000@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 0BCBA68A21
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Feb 2006 20:03:26 +1100 (EST)
+Message-Id: <20060201090323.294297000@localhost.localdomain>
 References: <20060201090224.536581000@localhost.localdomain>
-Date: Wed, 01 Feb 2006 18:02:55 +0900
+Date: Wed, 01 Feb 2006 18:02:34 +0900
 From: Akinobu Mita <mita@miraclelinux.com>
 To: linux-kernel@vger.kernel.org
-Subject: [patch 31/44] powerpc: use generic bitops
-Cc: Akinobu Mita <mita@miraclelinux.com>, linuxppc-dev@ozlabs.org
+Subject: [patch 10/44] generic fls64()
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+	Ian Molton <spyro@f2s.com>, David Howells <dhowells@redhat.com>,
+	linuxppc-dev@ozlabs.org, Greg Ungerer <gerg@uclinux.org>,
+	sparclinux@vger.kernel.org, Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+	Linus Torvalds <torvalds@osdl.org>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Hirokazu Takata <takata@linux-m32r.org>,
+	linuxsh-shmedia-dev@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Richard Henderson <rth@twiddle.net>, Akinobu Mita <mita@miraclelinux.com>,
+	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
+	ultralinux@vger.kernel.org, Andi Kleen <ak@suse.de>,
+	linuxsh-dev@lists.sourceforge.net, linux390@de.ibm.com,
+	Russell King <rmk@arm.linux.org.uk>, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,145 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-- remove __{,test_and_}{set,clear,change}_bit() and test_bit()
-- remove generic_fls64()
-- remove generic_hweight{64,32,16,8}()
-- remove sched_find_first_bit()
+This patch introduces the C-language equivalent of the function:
+int fls64(__u64 x);
+
+In include/asm-generic/bitops/fls64.h
+
+This code largely copied from:
+include/linux/bitops.h
 
 Signed-off-by: Akinobu Mita <mita@miraclelinux.com>
- include/asm-powerpc/bitops.h |  105 +------------------------------------------
- 1 files changed, 4 insertions(+), 101 deletions(-)
+ include/asm-generic/bitops/fls64.h |   12 ++++++++++++
+ 1 files changed, 12 insertions(+)
 
-Index: 2.6-git/include/asm-powerpc/bitops.h
+Index: 2.6-git/include/asm-generic/bitops/fls64.h
 ===================================================================
---- 2.6-git.orig/include/asm-powerpc/bitops.h
-+++ 2.6-git/include/asm-powerpc/bitops.h
-@@ -184,72 +184,7 @@ static __inline__ void set_bits(unsigned
- 	: "cc");
- }
- 
--/* Non-atomic versions */
--static __inline__ int test_bit(unsigned long nr,
--			       __const__ volatile unsigned long *addr)
--{
--	return 1UL & (addr[BITOP_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
--}
--
--static __inline__ void __set_bit(unsigned long nr,
--				 volatile unsigned long *addr)
--{
--	unsigned long mask = BITOP_MASK(nr);
--	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
--
--	*p  |= mask;
--}
--
--static __inline__ void __clear_bit(unsigned long nr,
--				   volatile unsigned long *addr)
--{
--	unsigned long mask = BITOP_MASK(nr);
--	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
--
--	*p &= ~mask;
--}
--
--static __inline__ void __change_bit(unsigned long nr,
--				    volatile unsigned long *addr)
--{
--	unsigned long mask = BITOP_MASK(nr);
--	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
--
--	*p ^= mask;
--}
--
--static __inline__ int __test_and_set_bit(unsigned long nr,
--					 volatile unsigned long *addr)
--{
--	unsigned long mask = BITOP_MASK(nr);
--	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
--	unsigned long old = *p;
--
--	*p = old | mask;
--	return (old & mask) != 0;
--}
--
--static __inline__ int __test_and_clear_bit(unsigned long nr,
--					   volatile unsigned long *addr)
--{
--	unsigned long mask = BITOP_MASK(nr);
--	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
--	unsigned long old = *p;
--
--	*p = old & ~mask;
--	return (old & mask) != 0;
--}
--
--static __inline__ int __test_and_change_bit(unsigned long nr,
--					    volatile unsigned long *addr)
--{
--	unsigned long mask = BITOP_MASK(nr);
--	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
--	unsigned long old = *p;
--
--	*p = old ^ mask;
--	return (old & mask) != 0;
--}
-+#include <asm-generic/bitops/non-atomic.h>
- 
- /*
-  * Return the zero-based bit position (LE, not IBM bit numbering) of
-@@ -310,16 +245,9 @@ static __inline__ int fls(unsigned int x
- 	asm ("cntlzw %0,%1" : "=r" (lz) : "r" (x));
- 	return 32 - lz;
- }
--#define fls64(x)   generic_fls64(x)
-+#include <asm-generic/bitops/fls64.h>
- 
--/*
-- * hweightN: returns the hamming weight (i.e. the number
-- * of bits set) of a N-bit word
-- */
--#define hweight64(x) generic_hweight64(x)
--#define hweight32(x) generic_hweight32(x)
--#define hweight16(x) generic_hweight16(x)
--#define hweight8(x) generic_hweight8(x)
-+#include <asm-generic/bitops/hweight.h>
- 
- #define find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
- unsigned long find_next_zero_bit(const unsigned long *addr,
-@@ -397,32 +325,7 @@ unsigned long find_next_zero_le_bit(cons
- #define minix_find_first_zero_bit(addr,size) \
- 	find_first_zero_le_bit((unsigned long *)addr, size)
- 
--/*
-- * Every architecture must define this function. It's the fastest
-- * way of searching a 140-bit bitmap where the first 100 bits are
-- * unlikely to be set. It's guaranteed that at least one of the 140
-- * bits is cleared.
-- */
--static inline int sched_find_first_bit(const unsigned long *b)
--{
--#ifdef CONFIG_PPC64
--	if (unlikely(b[0]))
--		return __ffs(b[0]);
--	if (unlikely(b[1]))
--		return __ffs(b[1]) + 64;
--	return __ffs(b[2]) + 128;
--#else
--	if (unlikely(b[0]))
--		return __ffs(b[0]);
--	if (unlikely(b[1]))
--		return __ffs(b[1]) + 32;
--	if (unlikely(b[2]))
--		return __ffs(b[2]) + 64;
--	if (b[3])
--		return __ffs(b[3]) + 96;
--	return __ffs(b[4]) + 128;
--#endif
--}
-+#include <asm-generic/bitops/sched.h>
- 
- #endif /* __KERNEL__ */
- 
+--- /dev/null
++++ 2.6-git/include/asm-generic/bitops/fls64.h
+@@ -0,0 +1,12 @@
++#ifndef _ASM_GENERIC_BITOPS_FLS64_H_
++#define _ASM_GENERIC_BITOPS_FLS64_H_
++
++static inline int fls64(__u64 x)
++{
++	__u32 h = x >> 32;
++	if (h)
++		return fls(x) + 32;
++	return fls(x);
++}
++
++#endif /* _ASM_GENERIC_BITOPS_FLS64_H_ */
 
 --
