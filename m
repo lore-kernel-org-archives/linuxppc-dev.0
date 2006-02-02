@@ -1,30 +1,18 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx010.isp.belgacom.be (outmx010.isp.belgacom.be
-	[195.238.5.233])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 450F968A46
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 3B6FF68A72
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Feb 2006 00:58:39 +1100 (EST)
-Received: from outmx010.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx010.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k12DwP8c029343
-	for <linuxppc-embedded@ozlabs.org>; Thu, 2 Feb 2006 14:58:26 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx010.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k12DwOxg029330
-	for <linuxppc-embedded@ozlabs.org>; Thu, 2 Feb 2006 14:58:24 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: linuxppc-embedded@ozlabs.org
-Subject: Accessing the CPM2 on an MPC82xx : CPM_MAP_ADDR or cpm2_immr ?
-Date: Thu, 2 Feb 2006 14:58:26 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200602021458.26623.laurent.pinchart@tbox.biz>
+	Fri,  3 Feb 2006 01:08:01 +1100 (EST)
+Date: Thu, 2 Feb 2006 17:07:53 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
+Subject: Re: Accessing the CPM2 on an MPC82xx : CPM_MAP_ADDR or cpm2_immr ?
+Message-ID: <20060202170753.2a805189@vitb.ru.mvista.com>
+In-Reply-To: <200602021458.26623.laurent.pinchart@tbox.biz>
+References: <200602021458.26623.laurent.pinchart@tbox.biz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,13 +23,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+On Thu, 2 Feb 2006 14:58:26 +0100
+Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
 
-I noticed that the CPM2 module is accessed both through CPM_MAP_ADDR (physical 
-address) and cpm2_immr (ioremap()ed address). For instance, the fec_enet 
-driver configures the IO ports using (cpm2_map_t*)CPM_MAP_ADDR.
+> Hi everybody,
+> 
+> I noticed that the CPM2 module is accessed both through CPM_MAP_ADDR (physical 
+> address) and cpm2_immr (ioremap()ed address). For instance, the fec_enet 
+> driver configures the IO ports using (cpm2_map_t*)CPM_MAP_ADDR.
+> 
 
-What's the correct way to access the CPM2 module ? Does ioremap() map 
-CPM_MAP_ADDR to itself so that both ways are correct ?
+Mentioned driver is deprecated. 
+> What's the correct way to access the CPM2 module ? Does ioremap() map 
+> CPM_MAP_ADDR to itself so that both ways are correct ?
+> 
 
-Laurent Pinchart
+Even direct cpm2_immr usage is not a good thing, but I cannot tell more without knowing your concerns. Can you please describe what you are planning to implement, prolly we can advice how to do that proper way.
+
+
+> Laurent Pinchart
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
+
+
+-- 
+Sincerely, 
+Vitaly
