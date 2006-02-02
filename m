@@ -1,22 +1,15 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D88C468A3A
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id 2BD4E68A00
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Feb 2006 05:55:40 +1100 (EST)
-In-Reply-To: <200602021642.49282.laurent.pinchart@tbox.biz>
-References: <200602021458.26623.laurent.pinchart@tbox.biz>
-	<20060202170753.2a805189@vitb.ru.mvista.com>
-	<200602021642.49282.laurent.pinchart@tbox.biz>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <f23a702cbd0fc2910162c5cf25e30abe@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: Accessing the CPM2 on an MPC82xx : CPM_MAP_ADDR or cpm2_immr ?
-Date: Thu, 2 Feb 2006 13:55:36 -0500
-To: Laurent Pinchart <laurent.pinchart@tbox.biz>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri,  3 Feb 2006 06:37:35 +1100 (EST)
+Date: 2 Feb 2006 19:37:34 -0000
+Message-ID: <20060202193734.22145.qmail@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] Add fec support for mpc52xx
+In-Reply-To: <43E24DA6.9@freescale.com>
+Cc: Sylvain Munaut <tnt@246tNt.com>, John Rigby <jrigby@freescale.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,28 +20,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In article <43E24DA6.9@freescale.com> John Rigby wrote:
+> Adds fec support, requires bestcom patch.  Applies to Sylvains git tree.
 
-On Feb 2, 2006, at 10:42 AM, Laurent Pinchart wrote:
+Hmm, I thought that fec support was already in Sylvain's git tree.
 
-> The new fs_enet driver internally maps CPM_MAP_ADDR. Should every 
-> driver
-> create an internal CPM mapping ?
+I'm sure Sylvain intended it to be there.
 
-Yes, they should.  All drivers should do the ioremap() and stash the
-pointer internally.
+>From http://ozlabs.org/pipermail/linuxppc-embedded/2005-June/018887.html:
+> Date: Sun, 19 Jun 2005 00:15:32 +0200
+> From: Sylvain Munaut <tnt@246tNt.com>
+> 
+> Following the obvious demand for it :
+> 
+> rsync://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.git
+> http://gitbits.246tNt.com/gitweb.cgi?p=linux-2.6-mpc52xx.git;a=summary
+> 
+> Hopefully the server is setup correctly ...
+> It's not _heavily_ tested but it seems to works fine in the few test I
+> made.
+> 
+> What in there :
+>  - I2C patches that are already sent upstream but not yet in Linus tree
+>  - Change of the mpc52xx uart device name and device ids to a range in
+>    the low density serial port major. Also it's now named ttyPSC? so
+>    you need to update you kernel command line (else you won't see any
+>    console). Note that the ids and names choosed are NOT YET OFFICIAL,
+>    I just included it in this release because some people were seeing
+>    conflict with the other ids. So the name and ids may change ...
+>  - Some other patches that will soon be sent upstream, just waiting
+>    for you to test see if it has any negative impact.
+>  - FEC and BestComm rewrite from Dale, with some improvement. For eg,
+>    the FEC task now handle misaligment so the manual alignment code
+>    has been removed, ...
 
-> .... Why was the old fec_enet driver able to
-> access the CPM through CPM_MAP_ADDR without ioremap()ing it first ?
+I hope Sylvain can resurrect the 2.6 FEC code that he, I and others
+worked on.
 
-Because that's a long left over "performance hack" from many
-years ago when I first implemented the 8xx software.  The IMMR used
-to be mapped to a well known virtual address, the board initialization
-did this early, and everyone (ab)used it.  This was way back in the 
-2.0/2.1
-days when it was acceptable to do such things :-)  Due to the CPM2 now
-being used on may different Freescale parts, and mapped in various
-ways, the internal mapping should be done by every driver.
-
-Thanks.
-
-	-- Dan
+-Dale
