@@ -1,19 +1,30 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 424F568A5B
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AA7DC68A02
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Feb 2006 07:13:08 +1100 (EST)
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: opening the serial port from userspace application 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 02 Feb 2006 14:45:20 +0300."
-	<20060202144520.3422129b@vitb.ru.mvista.com>
-Date: Thu, 02 Feb 2006 21:13:06 +0100
-Sender: wd@denx.de
-Message-Id: <20060202201306.4212D3535EA@atlas.denx.de>
-Cc: bharathi kandimalla <bharthik2004@yahoo.com>, linuxppc-embedded@ozlabs.org
+	Fri,  3 Feb 2006 09:26:48 +1100 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1F4muZ-0006NJ-1x
+	for linuxppc-embedded@ozlabs.org; Thu, 02 Feb 2006 23:26:43 +0100
+Received: from dsl-202-45-109-210.vic.netspace.net.au ([202.45.109.210])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 02 Feb 2006 23:26:43 +0100
+Received: from ronkbox-news by dsl-202-45-109-210.vic.netspace.net.au with
+	local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 02 Feb 2006 23:26:43 +0100
+To: linuxppc-embedded@ozlabs.org
+From: Ron Kellam <ronkbox-news@yahoo.com>
+Subject: Re: SPI flash kernel 2.4 driver
+Date: Fri, 03 Feb 2006 09:26:15 +1100
+Message-ID: <aj15u1dmpp9adens0ja7e9ciec8qo9379f@4ax.com>
+References: <ITYDSI$4F4F62D0FA98B587B7D4335807D29D19@libero.it>
+	<20060131211155.BF9193535E8@atlas.denx.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +35,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20060202144520.3422129b@vitb.ru.mvista.com> you wrote:
->
-> >From what I can see, you have misconfigured something. Dunno for certain, but 860T 
-> might have 2 UARTs, when you have at least 4 enabled. Please enable in the kernel configuration only those which exist on your board.
+On Tue, 31 Jan 2006 22:11:55 +0100, Wolfgang Denk <wd@denx.de> wrote:
 
-You can have up to 6 UART ports on a 860 (2 x SMC + 4 x SCC).
+>The Katix SPI framework  is  integrated  with  our  2.4  kernel;  see
+>drivers/spi
 
-Best regards,
+It might be integrated, but it's seriously broken.  IIRC, the whole
+chip select mechanism is not working, and the code still has a lot of
+I2Cisms about it.
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Don't tell me how hard you work.  Tell me how much you get done.
-                                                     -- James J. Ling
+Regards,
+Ron
