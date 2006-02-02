@@ -1,32 +1,19 @@
-Return-Path: <mita@miraclelinux.com>
-Received: from mail01.miraclelinux.com (ns.miraclelinux.com [219.118.163.66])
-	by ozlabs.org (Postfix) with ESMTP id E9132681BD
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2006 12:27:38 +1100 (EST)
-Date: Fri, 3 Feb 2006 10:27:35 +0900
-To: Rune Torgersen <runet@innovsys.com>
-Subject: [PATCH] fix generic_fls64()
-Message-ID: <20060203012735.GA21567@miraclelinux.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B859547@ismail.innsys.innovsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859547@ismail.innsys.innovsys.com>
-From: mita@miraclelinux.com (Akinobu Mita)
-Cc: akpm@osdl.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	Stephen Hemminger <shemminger@osdl.org>,
-	Ian Molton <spyro@f2s.com>, Andi Kleen <ak@suse.de>,
-	David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
-	Greg Ungerer <gerg@uclinux.org>, sparclinux@vger.kernel.org,
-	Miles Bader <uclinux-v850@lsi.nec.co.jp>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Hirokazu Takata <takata@linux-m32r.org>, linuxsh-dev@lists.sourceforge.net,
-	Linus Torvalds <torvalds@osdl.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Richard Henderson <rth@twiddle.net>,
-	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
-	ultralinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-kernel@vger.kernel.org,
-	linuxsh-shmedia-dev@lists.sourceforge.net, linux390@de.ibm.com,
-	Russell King <rmk@arm.linux.org.uk>, parisc-linux@parisc-linux.org
+Return-Path: <geoffrey.levand@am.sony.com>
+Received: from mail8.fw-sd.sony.com (mail8.fw-sd.sony.com [160.33.66.75])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CF37968A3F
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2006 13:28:40 +1100 (EST)
+Message-ID: <43E298BC.4000108@am.sony.com>
+Date: Thu, 02 Feb 2006 15:41:48 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: Add missing vmlinux.bin target
+References: <Pine.LNX.4.44.0511231242510.4183-100000@gate.crashing.org>
+In-Reply-To: <Pine.LNX.4.44.0511231242510.4183-100000@gate.crashing.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Kumar Gala <galak@gate.crashing.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,26 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Noticed by Rune Torgersen.
+With this patch 'make vmlinux.bin' works.  This is needed by
+some embedded platforms.  Kumar already added the routines
+to actually build the image in arch/powerpc/boot/Makefile.
 
-fix generic_fls64().
-tcp_cubic is using fls64().
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-Signed-off-by: Akinobu Mita <mita@miraclelinux.com>
+--
 
- include/linux/bitops.h |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
 
-Index: 2.6-git/include/linux/bitops.h
+Index: powerpc-merge.git/arch/powerpc/Makefile
 ===================================================================
---- 2.6-git.orig/include/linux/bitops.h
-+++ 2.6-git/include/linux/bitops.h
-@@ -81,7 +81,7 @@ static inline int generic_fls64(__u64 x)
- {
- 	__u32 h = x >> 32;
- 	if (h)
--		return fls(x) + 32;
-+		return fls(h) + 32;
- 	return fls(x);
- }
- 
+--- powerpc-merge.git.orig/arch/powerpc/Makefile	2006-02-02 15:23:03.000000000 -0800
++++ powerpc-merge.git/arch/powerpc/Makefile	2006-02-02 15:23:53.000000000 -0800
+@@ -147,7 +147,7 @@
+
+ CPPFLAGS_vmlinux.lds	:= -Upowerpc
+
+-BOOT_TARGETS = zImage zImage.initrd znetboot znetboot.initrd vmlinux.sm uImage
++BOOT_TARGETS = zImage zImage.initrd znetboot znetboot.initrd vmlinux.sm uImage vmlinux.bin
+
+ .PHONY: $(BOOT_TARGETS)
