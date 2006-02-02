@@ -1,22 +1,17 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao09.cox.net (fed1rmmtao09.cox.net [68.230.241.30])
-	by ozlabs.org (Postfix) with ESMTP id 2F26C68926
+Return-Path: <bharthik2004@yahoo.com>
+Received: from web50010.mail.yahoo.com (web50010.mail.yahoo.com
+	[206.190.38.25]) by ozlabs.org (Postfix) with SMTP id C58E768A46
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Feb 2006 14:07:24 +1100 (EST)
-Date: Wed, 1 Feb 2006 20:07:21 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Yosemite/440EP why are readl()/ioread32() setup to
-	readlittle-endian?
-Message-ID: <20060201200721.E16064@cox.net>
-References: <87wtgeeq8o.fsf@48ers.dk>
-	<Pine.LNX.4.44.0602011851490.22854-100000@gate.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.44.0602011851490.22854-100000@gate.crashing.org>;
-	from galak@kernel.crashing.org on Wed, Feb 01, 2006 at 06:54:09PM
-	-0600
-Cc: linuxppc-embedded@ozlabs.org, "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+	Thu,  2 Feb 2006 16:57:04 +1100 (EST)
+Message-ID: <20060202055703.37247.qmail@web50010.mail.yahoo.com>
+Date: Wed, 1 Feb 2006 21:57:03 -0800 (PST)
+From: bharathi kandimalla <bharthik2004@yahoo.com>
+Subject: problem  with writing data to serialdriver form userspace
+To: jagadish <jagadish@india.advinfo.net>,
+	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>,
+	ram krishna <v-ramman@microsoft.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-965849843-1138859823=:33914"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,25 +22,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 01, 2006 at 06:54:09PM -0600, Kumar Gala wrote:
-> On Wed, 1 Feb 2006, Peter Korsgaard wrote:
-> 
-> > >>>>> "Matt" == Matt Porter <mporter@kernel.crashing.org> writes:
-> > 
-> >  Matt> read*/write* and ioread*/iowrite* generate outbound little
-> >  Matt> endian cycles on ALL arches, period.  They are intended
-> >  Matt> only for PCI use and have generic names only because of
-> >  Matt> the assumption that "all the world is a PC".
-> > 
-> > What is the preferred way of accessing non-PCI devices then? Direct
-> > pointer access?
-> 
-> No direct pointer access is bad. On PPC You can use
-> in_be{8,16,32}/out_be{8,16,32}
+--0-965849843-1138859823=:33914
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Ack. Also, it should be pointed out that there are countless
-examples of PPC drivers where this is done properly. 4xx, 83xx,
-85xx, etc. on-chip peripherals all do this since they are
-naturally BE registers.
+ 
+Hi
+I am able to  use the serialport uart drivers  for the custom board with mpc860T 
+ which are available in the kernel 2.6.13  
+I am getting bootup messages like this
+  ttyCPM0 at MMIO 0xfb000a80 (irq = 20) is a CPM UART
+ttyCPM1 at MMIO 0xfb000a90 (irq = 19) is a CPM UART
+ttyCPM2 at MMIO 0xfb000a00 (irq = 46) is a CPM UART
+ttyCPM3 at MMIO 0xfb000a20 (irq = 45) is a CPM UART  
+   And after getting prompt
+cd /proc/dev/     
+cat drivers
+/dev/tty             /dev/tty        5       0 system:/dev/tty
+/dev/console         /dev/console    5       1 system:console
+/dev/ptmx            /dev/ptmx       5       2 system
+ttyCPM               /dev/ttyCPM   204 46-49 serial
+pty_slave            /dev/pts      136 0-1048575 pty:slave
+pty_master           /dev/ptm      128 0-1048575 pty:master 
+  I am  using mknod command 
+mknod /dev/ttyCPM0 c 204 46
+mknod /dev/ttyCPM1 c 204 47
+mknod /dev/ttyCPM2 c 204 48
+mknod /dev/ttyCPM3 c 204 49  
+  even I am not able to open the device from the user space application
+  I want to write some data from the user space into the
+application
+But I am not able to open the device
+  please help me out
+regards
+bharathi 
+                                                                 
+  
+ 
 
--Matt
+			
+---------------------------------
+ Yahoo! Autos. Looking for a sweet ride? Get pricing, reviews, & more on new and used cars.
+--0-965849843-1138859823=:33914
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<DIV id=RTEContent>&nbsp;<BR>Hi<BR>I am able to&nbsp; use the serialport uart drivers&nbsp; for the custom board with mpc860T <BR>&nbsp;which are available in the kernel 2.6.13&nbsp; <BR>I am getting bootup messages like this</DIV>  <DIV id=RTEContent>ttyCPM0 at MMIO 0xfb000a80 (irq = 20) is a CPM UART<BR>ttyCPM1 at MMIO 0xfb000a90 (irq = 19) is a CPM UART<BR>ttyCPM2 at MMIO 0xfb000a00 (irq = 46) is a CPM UART<BR>ttyCPM3 at MMIO 0xfb000a20 (irq = 45) is a CPM UART&nbsp; </DIV>  <DIV id=RTEContent>&nbsp;And after getting prompt<BR>cd /proc/dev/&nbsp;&nbsp;&nbsp;&nbsp; <BR>cat drivers<BR>/dev/tty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /dev/tty&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0 system:/dev/tty<BR>/dev/console&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /dev/console&nbsp;&nbsp;&nbsp; 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1
+ system:console<BR>/dev/ptmx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /dev/ptmx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 system<BR>ttyCPM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /dev/ttyCPM&nbsp;&nbsp; 204 46-49 serial<BR>pty_slave&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /dev/pts&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 136 0-1048575 pty:slave<BR>pty_master&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /dev/ptm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 128 0-1048575 pty:master </DIV>  <DIV id=RTEContent>I am&nbsp; using mknod command <BR>mknod /dev/ttyCPM0 c 204 46<BR>mknod /dev/ttyCPM1 c 204 47<BR>mknod /dev/ttyCPM2 c 204 48<BR>mknod /dev/ttyCPM3 c 204 49&nbsp; <BR>&nbsp; even I am not able to open the device from the user space application</DIV>  <DIV id=RTEContent>I want to write some data from the user space into the<BR>application<BR>But I am not able to open
+ the device</DIV>  <DIV id=RTEContent>please help me out<BR>regards<BR>bharathi <BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </DIV>  <DIV id=RTEContent><BR>&nbsp;</DIV><p>
+	
+		<hr size=1> <a href="http://us.rd.yahoo.com/evt=38381/ ylc=X3oDMTEzcGlrdGY5BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDMWF1dG9z/*http://autos.yahoo.com/index.html ">Yahoo! Autos</a>. Looking for a sweet ride? Get pricing, reviews, & more on new and used cars.
+--0-965849843-1138859823=:33914--
