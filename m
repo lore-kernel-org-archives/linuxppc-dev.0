@@ -2,13 +2,13 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B38BE68A7B
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2006 06:58:41 +1100 (EST)
-Date: Thu, 2 Feb 2006 13:50:44 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTP id 4D9ED68A8B
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2006 06:59:07 +1100 (EST)
+Date: Thu, 2 Feb 2006 13:51:10 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Cleanup MPC83xx platform support
-Message-ID: <Pine.LNX.4.44.0602021349480.13198-100000@gate.crashing.org>
+Subject: [PATCH] powerpc: Lindent platforms/83xx
+Message-ID: <Pine.LNX.4.44.0602021350450.13198-100000@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
@@ -21,239 +21,168 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Moved some code around so its usable by more systems than just
-the MPC834x SYS.
+Ran arch/powerpc/platforms/83xx through Lindent
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
 ---
-commit 3a37a9fa1aa28844651449eda0c31485ad202b01
-tree 30998d96fa22fbab7517be304fc004ba02377181
-parent 7ddda6a6630d95f800fbf848b00bd1d685c9bba4
-author Kumar Gala <galak@kernel.crashing.org> Thu, 02 Feb 2006 13:16:20 -0600
-committer Kumar Gala <galak@kernel.crashing.org> Thu, 02 Feb 2006 13:16:20 -0600
+commit 07128b4c47be22093a6c4a1972bae78994e2d11c
+tree 0f81fd48006d8b92598cd23d89ab07910756711a
+parent 3a37a9fa1aa28844651449eda0c31485ad202b01
+author Kumar Gala <galak@kernel.crashing.org> Thu, 02 Feb 2006 13:48:35 -0600
+committer Kumar Gala <galak@kernel.crashing.org> Thu, 02 Feb 2006 13:48:35 -0600
 
- arch/powerpc/platforms/83xx/Makefile      |    4 ++
- arch/powerpc/platforms/83xx/misc.c        |   55 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/83xx/mpc834x_sys.c |   58 -----------------------------
- arch/powerpc/platforms/83xx/mpc83xx.h     |    3 ++
- arch/powerpc/platforms/83xx/pci.c         |   13 +++++--
- 5 files changed, 71 insertions(+), 62 deletions(-)
+ arch/powerpc/platforms/83xx/mpc834x_sys.c |   31 +++++++++++++----------------
+ arch/powerpc/platforms/83xx/mpc834x_sys.h |    2 +-
+ arch/powerpc/platforms/83xx/mpc83xx.h     |    2 +-
+ arch/powerpc/platforms/83xx/pci.c         |    8 ++++---
+ 4 files changed, 20 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/platforms/83xx/Makefile
-index 9d8b28e..5c72367 100644
---- a/arch/powerpc/platforms/83xx/Makefile
-+++ b/arch/powerpc/platforms/83xx/Makefile
-@@ -1,4 +1,6 @@
- #
- # Makefile for the PowerPC 83xx linux kernel.
- #
--obj-$(CONFIG_MPC834x_SYS)	+= mpc834x_sys.o pci.o
-+obj-y				:= misc.o
-+obj-$(CONFIG_PCI)		+= pci.o
-+obj-$(CONFIG_MPC834x_SYS)	+= mpc834x_sys.o
-diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
-new file mode 100644
-index 0000000..0eb3d99
---- /dev/null
-+++ b/arch/powerpc/platforms/83xx/misc.c
-@@ -0,0 +1,55 @@
-+/*
-+ * misc setup functions for MPC83xx
-+ *
-+ * Maintainer: Kumar Gala <galak@kernel.crashing.org>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+
-+#include <asm/io.h>
-+#include <asm/hw_irq.h>
-+#include <sysdev/fsl_soc.h>
-+
-+#include "mpc83xx.h"
-+
-+void mpc83xx_restart(char *cmd)
-+{
-+#define RST_OFFSET	0x00000900
-+#define RST_PROT_REG	0x00000018
-+#define RST_CTRL_REG	0x0000001c
-+	__be32 __iomem *reg;
-+
-+	/* map reset register space */
-+	reg = ioremap(get_immrbase() + 0x900, 0xff);
-+
-+	local_irq_disable();
-+
-+	/* enable software reset "RSTE" */
-+	out_be32(reg + (RST_PROT_REG >> 2), 0x52535445);
-+
-+	/* set software hard reset */
-+	out_be32(reg + (RST_CTRL_REG >> 2), 0x52535445);
-+	for (;;) ;
-+}
-+
-+long __init mpc83xx_time_init(void)
-+{
-+#define SPCR_OFFSET	0x00000110
-+#define SPCR_TBEN	0x00400000
-+	__be32 __iomem *spcr = ioremap(get_immrbase() + SPCR_OFFSET, 4);
-+	__be32 tmp;
-+
-+	tmp = in_be32(spcr);
-+	out_be32(spcr, tmp | SPCR_TBEN);
-+
-+	iounmap(spcr);
-+
-+	return 0;
-+}
 diff --git a/arch/powerpc/platforms/83xx/mpc834x_sys.c b/arch/powerpc/platforms/83xx/mpc834x_sys.c
-index 2098dd0..7d5a278 100644
+index 7d5a278..7c18b4c 100644
 --- a/arch/powerpc/platforms/83xx/mpc834x_sys.c
 +++ b/arch/powerpc/platforms/83xx/mpc834x_sys.c
-@@ -24,22 +24,15 @@
- #include <linux/delay.h>
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
--#include <linux/module.h>
--#include <linux/fsl_devices.h>
- 
- #include <asm/system.h>
--#include <asm/pgtable.h>
--#include <asm/page.h>
- #include <asm/atomic.h>
- #include <asm/time.h>
- #include <asm/io.h>
- #include <asm/machdep.h>
- #include <asm/ipic.h>
- #include <asm/bootinfo.h>
--#include <asm/pci-bridge.h>
--#include <asm/mpc83xx.h>
- #include <asm/irq.h>
--#include <mm/mmu_decl.h>
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <sysdev/fsl_soc.h>
-@@ -52,8 +45,6 @@ unsigned long isa_mem_base = 0;
- #endif
- 
- #ifdef CONFIG_PCI
--extern int mpc83xx_pci2_busno;
--
- static int
- mpc83xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
- {
-@@ -78,17 +69,6 @@ mpc83xx_map_irq(struct pci_dev *dev, uns
+@@ -69,15 +69,14 @@ mpc83xx_map_irq(struct pci_dev *dev, uns
  	const long min_idsel = 0x11, max_idsel = 0x20, irqs_per_slot = 4;
  	return PCI_IRQ_TABLE_LOOKUP;
  }
--
--static int
--mpc83xx_exclude_device(u_char bus, u_char devfn)
--{
--	if (bus == 0 && PCI_SLOT(devfn) == 0)
--		return PCIBIOS_DEVICE_NOT_FOUND;
--	if (mpc83xx_pci2_busno)
--		if (bus == (mpc83xx_pci2_busno) && PCI_SLOT(devfn) == 0)
--			return PCIBIOS_DEVICE_NOT_FOUND;
--	return PCIBIOS_SUCCESSFUL;
--}
- #endif /* CONFIG_PCI */
+-#endif /* CONFIG_PCI */
++#endif				/* CONFIG_PCI */
  
  /* ************************************************************************
-@@ -180,42 +160,6 @@ mpc834x_rtc_hookup(void)
- late_initcall(mpc834x_rtc_hookup);
+  *
+  * Setup the architecture
+  *
+  */
+-static void __init
+-mpc834x_sys_setup_arch(void)
++static void __init mpc834x_sys_setup_arch(void)
+ {
+ 	struct device_node *np;
+ 
+@@ -86,14 +85,14 @@ mpc834x_sys_setup_arch(void)
+ 
+ 	np = of_find_node_by_type(NULL, "cpu");
+ 	if (np != 0) {
+-		unsigned int *fp = (int *) get_property(np, "clock-frequency", NULL);
++		unsigned int *fp =
++		    (int *)get_property(np, "clock-frequency", NULL);
+ 		if (fp != 0)
+ 			loops_per_jiffy = *fp / HZ;
+ 		else
+ 			loops_per_jiffy = 50000000 / HZ;
+ 		of_node_put(np);
+ 	}
+-
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+ 		add_bridge(np);
+@@ -104,14 +103,13 @@ mpc834x_sys_setup_arch(void)
  #endif
  
--static void
--mpc83xx_restart(char *cmd)
--{
--#define RST_OFFSET	0x00000900
--#define RST_PROT_REG	0x00000018
--#define RST_CTRL_REG	0x0000001c
--	__be32 __iomem *reg;
--
--	// map reset register space
--	reg = ioremap(get_immrbase() + 0x900, 0xff);
--
--	local_irq_disable();
--
--	/* enable software reset "RSTE" */
--	out_be32(reg + (RST_PROT_REG >> 2), 0x52535445);
--
--	/* set software hard reset */
--	out_be32(reg + (RST_CTRL_REG >> 2), 0x52535445);
--	for(;;);
--}
--
--static long __init
--mpc83xx_time_init(void)
--{
--#define SPCR_OFFSET	0x00000110
--#define SPCR_TBEN	0x00400000
--	__be32 __iomem *spcr = ioremap(get_immrbase() + SPCR_OFFSET, 4);
--	__be32 tmp;
--
--	tmp = in_be32(spcr);
--	out_be32(spcr, tmp|SPCR_TBEN);
--
--	iounmap(spcr);
--
--	return 0;
--}
- void __init
- platform_init(void)
- {
-@@ -239,5 +183,3 @@ platform_init(void)
- 
- 	return;
+ #ifdef  CONFIG_ROOT_NFS
+-		ROOT_DEV = Root_NFS;
++	ROOT_DEV = Root_NFS;
+ #else
+-		ROOT_DEV = Root_HDA1;
++	ROOT_DEV = Root_HDA1;
+ #endif
  }
--
--
-diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
-index ce9e66a..228d5c4 100644
---- a/arch/powerpc/platforms/83xx/mpc83xx.h
-+++ b/arch/powerpc/platforms/83xx/mpc83xx.h
-@@ -10,5 +10,8 @@
-  */
  
- extern int add_bridge(struct device_node *dev);
-+extern int mpc83xx_exclude_device(u_char bus, u_char devfn);
-+extern void mpc83xx_restart(char *cmd);
-+extern long mpc83xx_time_init(void);
- 
- #endif /* __MPC83XX_H__ */
-diff --git a/arch/powerpc/platforms/83xx/pci.c b/arch/powerpc/platforms/83xx/pci.c
-index 469cdac..70e28fc 100644
---- a/arch/powerpc/platforms/83xx/pci.c
-+++ b/arch/powerpc/platforms/83xx/pci.c
-@@ -36,7 +36,16 @@
- 
- int mpc83xx_pci2_busno;
- 
--#ifdef CONFIG_PCI
-+int mpc83xx_exclude_device(u_char bus, u_char devfn)
-+{
-+	if (bus == 0 && PCI_SLOT(devfn) == 0)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+	if (mpc83xx_pci2_busno)
-+		if (bus == (mpc83xx_pci2_busno) && PCI_SLOT(devfn) == 0)
-+			return PCIBIOS_DEVICE_NOT_FOUND;
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
- int __init add_bridge(struct device_node *dev)
+-void __init
+-mpc834x_sys_init_IRQ(void)
++void __init mpc834x_sys_init_IRQ(void)
  {
- 	int len;
-@@ -95,5 +104,3 @@ int __init add_bridge(struct device_node
+ 	u8 senses[8] = {
+ 		0,			/* EXT 0 */
+@@ -140,28 +138,27 @@ mpc834x_sys_init_IRQ(void)
+ }
+ 
+ #if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
+-extern ulong	ds1374_get_rtc_time(void);
+-extern int	ds1374_set_rtc_time(ulong);
++extern ulong ds1374_get_rtc_time(void);
++extern int ds1374_set_rtc_time(ulong);
+ 
+-static int __init
+-mpc834x_rtc_hookup(void)
++static int __init mpc834x_rtc_hookup(void)
+ {
+-	struct timespec	tv;
++	struct timespec tv;
+ 
+ 	ppc_md.get_rtc_time = ds1374_get_rtc_time;
+ 	ppc_md.set_rtc_time = ds1374_set_rtc_time;
+ 
+ 	tv.tv_nsec = 0;
+-	tv.tv_sec = (ppc_md.get_rtc_time)();
++	tv.tv_sec = (ppc_md.get_rtc_time) ();
+ 	do_settimeofday(&tv);
  
  	return 0;
  }
--
--#endif
++
+ late_initcall(mpc834x_rtc_hookup);
+ #endif
+ 
+-void __init
+-platform_init(void)
++void __init platform_init(void)
+ {
+ 	/* setup the PowerPC module struct */
+ 	ppc_md.setup_arch = mpc834x_sys_setup_arch;
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_sys.h b/arch/powerpc/platforms/83xx/mpc834x_sys.h
+index e4ca39f..fedecb7 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_sys.h
++++ b/arch/powerpc/platforms/83xx/mpc834x_sys.h
+@@ -20,4 +20,4 @@
+ #define PIRQC	MPC83xx_IRQ_EXT6
+ #define PIRQD	MPC83xx_IRQ_EXT7
+ 
+-#endif                /* __MACH_MPC83XX_SYS_H__ */
++#endif				/* __MACH_MPC83XX_SYS_H__ */
+diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
+index 228d5c4..01cae10 100644
+--- a/arch/powerpc/platforms/83xx/mpc83xx.h
++++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -14,4 +14,4 @@ extern int mpc83xx_exclude_device(u_char
+ extern void mpc83xx_restart(char *cmd);
+ extern long mpc83xx_time_init(void);
+ 
+-#endif /* __MPC83XX_H__ */
++#endif				/* __MPC83XX_H__ */
+diff --git a/arch/powerpc/platforms/83xx/pci.c b/arch/powerpc/platforms/83xx/pci.c
+index 70e28fc..16f7d3b 100644
+--- a/arch/powerpc/platforms/83xx/pci.c
++++ b/arch/powerpc/platforms/83xx/pci.c
+@@ -61,7 +61,7 @@ int __init add_bridge(struct device_node
+ 	has_address = (of_address_to_resource(dev, 0, &rsrc) == 0);
+ 
+ 	/* Get bus range if any */
+-	bus_range = (int *) get_property(dev, "bus-range", &len);
++	bus_range = (int *)get_property(dev, "bus-range", &len);
+ 	if (bus_range == NULL || len < 2 * sizeof(int)) {
+ 		printk(KERN_WARNING "Can't get bus-range for %s, assume"
+ 		       " bus 0\n", dev->full_name);
+@@ -83,7 +83,7 @@ int __init add_bridge(struct device_node
+ 	if ((rsrc.start & 0xfffff) == 0x8500) {
+ 		setup_indirect_pci(hose, immr + 0x8300, immr + 0x8304);
+ 	}
+-	/* PCI 2*/
++	/* PCI 2 */
+ 	if ((rsrc.start & 0xfffff) == 0x8600) {
+ 		setup_indirect_pci(hose, immr + 0x8380, immr + 0x8384);
+ 		primary = 0;
+@@ -93,10 +93,10 @@ int __init add_bridge(struct device_node
+ 
+ 	printk(KERN_INFO "Found MPC83xx PCI host bridge at 0x%08lx. "
+ 	       "Firmware bus number: %d->%d\n",
+-		rsrc.start, hose->first_busno, hose->last_busno);
++	       rsrc.start, hose->first_busno, hose->last_busno);
+ 
+ 	DBG(" ->Hose at 0x%p, cfg_addr=0x%p,cfg_data=0x%p\n",
+-		hose, hose->cfg_addr, hose->cfg_data);
++	    hose, hose->cfg_addr, hose->cfg_data);
+ 
+ 	/* Interpret the "ranges" property */
+ 	/* This also maps the I/O region and sets isa_io/mem_base */
