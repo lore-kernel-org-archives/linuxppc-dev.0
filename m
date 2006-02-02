@@ -1,18 +1,22 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 3B6FF68A72
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao10.cox.net (fed1rmmtao10.cox.net [68.230.241.29])
+	by ozlabs.org (Postfix) with ESMTP id 9374868A14
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  3 Feb 2006 01:08:01 +1100 (EST)
-Date: Thu, 2 Feb 2006 17:07:53 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Laurent Pinchart <laurent.pinchart@tbox.biz>
-Subject: Re: Accessing the CPM2 on an MPC82xx : CPM_MAP_ADDR or cpm2_immr ?
-Message-ID: <20060202170753.2a805189@vitb.ru.mvista.com>
-In-Reply-To: <200602021458.26623.laurent.pinchart@tbox.biz>
-References: <200602021458.26623.laurent.pinchart@tbox.biz>
+	Fri,  3 Feb 2006 01:22:04 +1100 (EST)
+Date: Thu, 2 Feb 2006 07:21:58 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: Yosemite/440EP why are readl()/ioread32() setup to
+	readlittle-endian?
+Message-ID: <20060202072158.A27740@cox.net>
+References: <87wtgeeq8o.fsf@48ers.dk>
+	<Pine.LNX.4.44.0602011851490.22854-100000@gate.crashing.org>
+	<9305ca410602020009r4946d874qc52c2b27f715370f@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9305ca410602020009r4946d874qc52c2b27f715370f@mail.gmail.com>;
+	from jacmet@sunsite.dk on Thu, Feb 02, 2006 at 09:09:17AM +0100
+Cc: linuxppc-embedded@ozlabs.org, "Jenkins, Clive" <Clive.Jenkins@xerox.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,33 +27,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2 Feb 2006 14:58:26 +0100
-Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
-
-> Hi everybody,
+On Thu, Feb 02, 2006 at 09:09:17AM +0100, Peter Korsgaard wrote:
+> On 2/2/06, Kumar Gala <galak@kernel.crashing.org> wrote:
+> > > What is the preferred way of accessing non-PCI devices then? Direct
+> > > pointer access?
+> >
+> > No direct pointer access is bad. On PPC You can use
+> > in_be{8,16,32}/out_be{8,16,32}
 > 
-> I noticed that the CPM2 module is accessed both through CPM_MAP_ADDR (physical 
-> address) and cpm2_immr (ioremap()ed address). For instance, the fec_enet 
-> driver configures the IO ports using (cpm2_map_t*)CPM_MAP_ADDR.
-> 
+> What about arch independent drivers? Are there any generic approach
+> for this or do you have to stick to ugly #ifdefs to decide between
+> in_be32/inl ?
 
-Mentioned driver is deprecated. 
-> What's the correct way to access the CPM2 module ? Does ioremap() map 
-> CPM_MAP_ADDR to itself so that both ways are correct ?
-> 
+ioread*be()/iowrite*be() can be used for this. Since the generic
+big endian accessors became a standard thing a little while back,
+all the PPC on-chip drivers should move to that. It's just a matter
+of time.
 
-Even direct cpm2_immr usage is not a good thing, but I cannot tell more without knowing your concerns. Can you please describe what you are planning to implement, prolly we can advice how to do that proper way.
-
-
-> Laurent Pinchart
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
-
--- 
-Sincerely, 
-Vitaly
+-Matt
