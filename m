@@ -1,20 +1,17 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wbmler3.mail.xerox.com (wbmler3.mail.xerox.com [13.13.138.218])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "wbmler3.mail.xerox.com",
-	Issuer "wbmler3.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7DDDA68A73
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 47EA468A73
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  2 Feb 2006 22:28:09 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Yosemite/440EP why are readl()/ioread32()
-	setuptoreadlittle-endian?
-Date: Thu, 2 Feb 2006 11:26:22 -0000
-Message-ID: <35786B99AB3FDC45A8215724617919736D921E@gbrwgceumf01.eu.xerox.net>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "Eugene Surovegin" <ebs@ebshome.net>
+	Thu,  2 Feb 2006 22:45:23 +1100 (EST)
+Date: Thu, 2 Feb 2006 14:45:20 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: bharathi kandimalla <bharthik2004@yahoo.com>
+Subject: Re: opening the serial port from userspace application
+Message-ID: <20060202144520.3422129b@vitb.ru.mvista.com>
+In-Reply-To: <20060201082419.53038.qmail@web50010.mail.yahoo.com>
+References: <20060201082419.53038.qmail@web50010.mail.yahoo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,92 +23,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm not sure all this fuss is justified in response to:
+On Wed, 1 Feb 2006 00:24:19 -0800 (PST)
+bharathi kandimalla <bharthik2004@yahoo.com> wrote:
 
-> What is the preferred way of accessing non-PCI devices then?
-> Direct pointer access?
-> Bye, Peter Korsgaard
+> Hi
+> I am able to  use the serialport uart drivers  for the custom board with =
+mpc860T=20
+>  which are available in the kernel 2.6.13 =20
+> I am getting bootup messages like this
+>   ttyCPM0 at MMIO 0xfb000a80 (irq =3D 20) is a CPM UART
+> ttyCPM1 at MMIO 0xfb000a90 (irq =3D 19) is a CPM UART
+> ttyCPM2 at MMIO 0xfb000a00 (irq =3D 46) is a CPM UART
+> ttyCPM3 at MMIO 0xfb000a20 (irq =3D 45) is a CPM UART =20
 
-Regardless of what standards or hardware might exist, I would be
-happy if Linux provided alternatives to readl()... that converted
-between big-endian and cpu-endian, so that I could write in my
-driver, for example:
+=46rom what I can see, you have misconfigured something. Dunno for certain, b=
+ut 860T=20
+might have 2 UARTs, when you have at least 4 enabled. Please enable in the =
+kernel configuration only those which exist on your board.
 
-static inline my_readl(...)
-{
-#if (my interconnect is PCI or other little-endian)
-    return(readl(...));
-#else
-    return(readl_be(...));
-#endif
-}
-
-That must make my driver more portable in future circumstances.
-
-Clive
-
-
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Eugene
-Surovegin
-Sent: 02 February 2006 10:44
-To: Jenkins, Clive
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Yosemite/440EP why are readl()/ioread32()
-setuptoreadlittle-endian?
-
-
-On Thu, Feb 02, 2006 at 10:28:05AM -0000, Jenkins, Clive wrote:
-> And what about direct connection to the local bus of the processor
-chip?
-
-What about it? It's _chip_ specific. And the way your "generic" stuff=20
-will be connected to it will be chip or even design specific (yeah, hw=20
-guys sometime wire it in some weird way). I fail to see how you can=20
-have _generic_ I/O accessors for this case.
-
+>    And after getting prompt
+> cd /proc/dev/    =20
+> cat drivers
+> /dev/tty             /dev/tty        5       0 system:/dev/tty
+> /dev/console         /dev/console    5       1 system:console
+> /dev/ptmx            /dev/ptmx       5       2 system
+> ttyCPM               /dev/ttyCPM   204 46-49 serial
+> pty_slave            /dev/pts      136 0-1048575 pty:slave
+> pty_master           /dev/ptm      128 0-1048575 pty:master=20
+>   I am  using mknod command=20
+> mknod /dev/ttyCPM0 c 204 46=20
+>     ln -sf  console ttyCPM0=20
+> mknod /dev/ttyCPM1 c 204 47
+> mknod /dev/ttyCPM2 c 204 48
+> mknod /dev/ttyCPM3 c 204 49 =20
+>   even I am not able to open the device from the user space application
+>   I want to write some data from the user space into the
+> application
+> But I am not able to open the device
+>   please help me out
+> regards
+> Bharathi=20
+>                                                                 =20
+>  =20
 > =20
-> > So basically, you have no _real_ life examples, so I'm wondering why
-
-> > people need this "arch-independent" non-PCI I/O accessors for=20
-> > something which doesn't exist.
 >=20
-> I could draft a design of such an example, and I could realise that
-> design
-> by building it. But I don't want to spend the time and money doing it.
-> Neither do I want to spend time researching _real_ examples.
-> It is much easier to allow for obvious possibilities that _could_
-exist
-> and probably will exist if they don't already, than searching the
-world.
+> 	=09
+> ---------------------------------
+> =20
+>  What are the most popular cars? Find out at Yahoo! Autos=20
 
-It's not as easy as you might think :). It must be=20
-arch/bus/device/board specific in the general case.=20
-
-You can try _specifying_ semantics for such generic accessors and=20
-_then_ we can discuss this and I will very likely give you _real_=20
-world examples when they will not work.
-
-> Why be PCI-centric now, when we have experienced no end of problems
-> because Linux was x86-centric in the past?
-
-Well, until there is another _standard_ bus which is used on=20
-different archs, having _generic_ cross-arch I/O accessors doesn't=20
-make any sense.
-
-I don't understand your point about not being PCI specific. It's of no=20
-relevance what you or I think about PCI and x86. I have ported several=20
-"standard" bus drivers to chip specific interconnects (MIPS and PPC)=20
-and in every case code was bus or even board specific. I'm pretty much=20
-aware about problems and solutions. But this is not what is being=20
-discussed here. Until there is _standard_ for such interconnects (like=20
-PCI) everything else is just wishful thinking.
 
 --=20
-Eugene
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Sincerely,=20
+Vitaly
