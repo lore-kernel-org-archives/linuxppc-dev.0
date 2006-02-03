@@ -1,23 +1,20 @@
-Return-Path: <atul.sabharwal@exgate.tek.com>
-Received: from igate.tek.com (igate.tek.com [192.65.41.20])
-	by ozlabs.org (Postfix) with ESMTP id E58CE68A2E
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7367268A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Feb 2006 07:45:45 +1100 (EST)
-Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
-	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k13KjhtT010781
-	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Feb 2006 12:45:43 -0800 (PST)
-Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
-	[128.181.2.45])
-	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k13KjhSC027420
-	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Feb 2006 12:45:43 -0800 (PST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Gdb with MPC85xx
-Date: Fri, 3 Feb 2006 12:46:24 -0800
-Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201AC366C@us-bv-m23.global.tektronix.net>
-From: <atul.sabharwal@exgate.tek.com>
-To: <fabidi@ultsol.com>, <linuxppc-embedded@ozlabs.org>
+	Sat,  4 Feb 2006 08:05:09 +1100 (EST)
+In-Reply-To: <4A062D477D842B4C8FC48EA5AF2D41F201AC366C@us-bv-m23.global.tektronix.net>
+References: <4A062D477D842B4C8FC48EA5AF2D41F201AC366C@us-bv-m23.global.tektronix.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6b2b0e6794ab02c3ff9d1b4aefed920e@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: Gdb with MPC85xx
+Date: Fri, 3 Feb 2006 16:05:01 -0500
+To: <atul.sabharwal@exgate.tek.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,49 +25,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-To the best of my knowledge, I had could single step but not run to a
-breakpoint in the initial u-boot code on PPC8540( an E500 core based)
-system
-Esp. in the code in start.S.  I had a problem where the flash was busted
-and
-The start.S was running from a DDR2 memory at 600+MHz rate.  So, I had
-to lock the TLB and define LAW for the DDR memory in BDI so that we
-could run entire u-boot, kernel, ramdisk from RAM. =20
 
-It seemed like a BDI bug to me unless the processor is designed to
-always boot from a slow deviceflash or eeprom) till the initialization
-sequence is=20
-Completed.  Did not try extensive debug with it, so not sure. If it
-helps.
+On Feb 3, 2006, at 3:46 PM, <atul.sabharwal@exgate.tek.com> wrote:
 
---
-Atul
------Original Message-----
-From: linuxppc-embedded-bounces@ozlabs.org
-[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Fahd Abidi
-Sent: Friday, February 03, 2006 10:41 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: Gdb with MPC85xx
+> To the best of my knowledge, I had could single step but not run to a
+> breakpoint in the initial u-boot code on PPC8540( an E500 core based)
 
-Hello,
+This is a problem with many processors and has been discussed
+at length too often.  The quick response is that various initialization
+code in both boot roms and Linux will disable/reset or otherwise
+mess up debug registers the BDI has configured for it's use.  So,
+it isn't the fault of the BDI2000, you may have to temporarily disable
+or modify the code under test in such a way to not do this.  There are
+several tricky places to debug code, that are completely inaccessible
+without the use of the BDI2000, but that also require some common
+sense and minor environment changes to properly debug.  The e500
+core (and Book-E in general) significantly complicated the ability
+to debug in some modes of development, so you are most
+likely to see problems with these processors than others.
 
-I am wondering if someone here is using GDB to debug code on an 85xx
-platform with the BDI. I have been running into several issues with GDB
-5.x and 6.x where the E500 core does not seem to either step properly to
-the next line of code in the kernel or uboot or gets lost altogether.
-Each version of GDB seems to have its own set of bugs. If someone has
-been using a version of GDB that works pretty well then let me know what
-version it is and I can try and download it and build it and see if it
-behaves better.
+Thanks.
 
-This is probably more of a tools question then a Linux question, I'm
-hoping I can get an answer anyway.
-
-Thanks,
-
-Fahd
-=20
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+	-- Dan
