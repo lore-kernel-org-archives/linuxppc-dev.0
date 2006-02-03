@@ -1,19 +1,33 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Received: from mail8.fw-sd.sony.com (mail8.fw-sd.sony.com [160.33.66.75])
+Return-Path: <grundler@lackof.org>
+Received: from colo.lackof.org (colo.lackof.org [198.49.126.79])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CF37968A3F
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2006 13:28:40 +1100 (EST)
-Message-ID: <43E298BC.4000108@am.sony.com>
-Date: Thu, 02 Feb 2006 15:41:48 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Add missing vmlinux.bin target
-References: <Pine.LNX.4.44.0511231242510.4183-100000@gate.crashing.org>
-In-Reply-To: <Pine.LNX.4.44.0511231242510.4183-100000@gate.crashing.org>
-Content-Type: text/plain; charset=US-ASCII
-Cc: Kumar Gala <galak@gate.crashing.org>, linuxppc-dev@ozlabs.org
+	(Client CN "mail.lackof.org", Issuer "ca.lackof.org" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B876668A5A
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2006 14:48:42 +1100 (EST)
+Date: Thu, 2 Feb 2006 20:58:22 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Akinobu Mita <mita@miraclelinux.com>
+Subject: Re: [parisc-linux] [patch 12/44] generic sched_find_first_bit()
+Message-ID: <20060203035822.GA12539@colo.lackof.org>
+References: <20060201090224.536581000@localhost.localdomain>
+	<20060201090325.497639000@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060201090325.497639000@localhost.localdomain>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+	Ian Molton <spyro@f2s.com>, Andi Kleen <ak@suse.de>,
+	David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
+	Greg Ungerer <gerg@uclinux.org>, sparclinux@vger.kernel.org,
+	Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Hirokazu Takata <takata@linux-m32r.org>,
+	linuxsh-shmedia-dev@lists.sourceforge.net,
+	Linus Torvalds <torvalds@osdl.org>,
+	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
+	ultralinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+	linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net,
+	linux390@de.ibm.com, Russell King <rmk@arm.linux.org.uk>,
+	parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +37,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With this patch 'make vmlinux.bin' works.  This is needed by
-some embedded platforms.  Kumar already added the routines
-to actually build the image in arch/powerpc/boot/Makefile.
+On Wed, Feb 01, 2006 at 06:02:36PM +0900, Akinobu Mita wrote:
+> This patch introduces the C-language equivalent of the function:
+> int sched_find_first_bit(const unsigned long *b);
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Akinobu, would you prefer this is a slightly cleaner way?
+(Not compile tested)
 
---
+static inline int sched_find_first_bit(const unsigned long *b)
+{
+	if (unlikely(b[0]))
+		return __ffs(b[0]);
+	if (unlikely(b[1]))
+		return __ffs(b[1]) + BITS_PER_LONG;
+#if BITS_PER_LONG == 32
+	if (unlikely(b[2]))
+		return __ffs(b[2]) + 64;
+	if (b[3])
+		return __ffs(b[3]) + 96;
+#endif
+	return __ffs(b[128/BITS_PER_LONG]) + 128;
+}
 
+If BITS_PER_LONG isn't defined, the link step will fail and point
+at a some unknown .o as the offender. But it's the responsibility
+of the header file to make sure it's including the BITS_PER_LONG
+definition, not the code that calls sched_find_first_bit().
 
-Index: powerpc-merge.git/arch/powerpc/Makefile
-===================================================================
---- powerpc-merge.git.orig/arch/powerpc/Makefile	2006-02-02 15:23:03.000000000 -0800
-+++ powerpc-merge.git/arch/powerpc/Makefile	2006-02-02 15:23:53.000000000 -0800
-@@ -147,7 +147,7 @@
-
- CPPFLAGS_vmlinux.lds	:= -Upowerpc
-
--BOOT_TARGETS = zImage zImage.initrd znetboot znetboot.initrd vmlinux.sm uImage
-+BOOT_TARGETS = zImage zImage.initrd znetboot znetboot.initrd vmlinux.sm uImage vmlinux.bin
-
- .PHONY: $(BOOT_TARGETS)
+hth,
+grant
