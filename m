@@ -1,19 +1,20 @@
 Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx2.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 73F22681B8
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Feb 2006 22:45:01 +1100 (EST)
-Date: Sat, 4 Feb 2006 12:44:56 +0100
+	by ozlabs.org (Postfix) with ESMTP id A65BF68A3B
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Feb 2006 22:55:46 +1100 (EST)
+Date: Sat, 4 Feb 2006 12:55:41 +0100
 From: Olaf Hering <olh@suse.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] remove pointer/integer confusion in of_find_node_by_name
-Message-ID: <20060204114456.GA19392@suse.de>
-References: <20060204093456.GA15051@suse.de>
+To: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackeras <paulus@samba.org>
+Subject: [PATCH] add refcounting to setup_peg2 and of_get_pci_address
+Message-ID: <20060204115541.GB19392@suse.de>
+References: <20060118151840.GA24381@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20060204093456.GA15051@suse.de>
+In-Reply-To: <20060118151840.GA24381@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +24,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-remove pointer/integer confusion
+
+setup_peg2 must do some refcounting.
+of_get_pci_address may need to drop the node
+
+	Pegasos l2cr : L2 cache was not active, activating
+	PCI bus 0 controlled by pci at 80000000
+	Badness in kref_get at /home/olaf/kernel/olh/ppc64/linux-2.6.16-rc2-olh/lib/kref.c:32
+	Call Trace:
+	[C037BD00] [C0007934] show_stack+0x5c/0x184 (unreliable)
+	[C037BD30] [C000E068] program_check_exception+0x184/0x584
+	[C037BD90] [C000F5F0] ret_from_except_full+0x0/0x4c
+	--- Exception: 700 at kref_get+0xc/0x24
+	    LR = of_node_get+0x24/0x3c
+	[C037BE50] [C004FD94] __pte_alloc_kernel+0x64/0x80 (unreliable)
+	[C037BE70] [C000CA18] of_get_parent+0x34/0x58
+	[C037BE90] [C0009B18] of_get_address+0x24/0x174
+	[C037BED0] [C000A108] of_address_to_resource+0x24/0x68
+	[C037BF00] [C038B128] chrp_find_bridges+0x114/0x470
+	[C037BF90] [C038AE48] chrp_setup_arch+0x1fc/0x32c
+	[C037BFB0] [C03849B0] setup_arch+0x144/0x188
+	[C037BFD0] [C037C45C] start_kernel+0x34/0x1a8
+	[C037BFF0] [000037A0] 0x37a0
+	Badness in kref_get at /home/olaf/kernel/olh/ppc64/linux-2.6.16-rc2-olh/lib/kref.c:32
+	Call Trace:
+	[C037BC90] [C0007934] show_stack+0x5c/0x184 (unreliable)
+	[C037BCC0] [C000E068] program_check_exception+0x184/0x584
+	[C037BD20] [C000F5F0] ret_from_except_full+0x0/0x4c
+	--- Exception: 700 at kref_get+0xc/0x24
+	    LR = of_node_get+0x24/0x3c
+	[C037BDE0] [00000000] 0x0 (unreliable)
+	[C037BE00] [C000CA18] of_get_parent+0x34/0x58
+	[C037BE20] [C0009CE8] of_translate_address+0x2c/0x2fc
+	[C037BEA0] [C0009FE8] __of_address_to_resource+0x30/0xc4
+	[C037BED0] [C000A130] of_address_to_resource+0x4c/0x68
+	[C037BF00] [C038B128] chrp_find_bridges+0x114/0x470
+	[C037BF90] [C038AE48] chrp_setup_arch+0x1fc/0x32c
+	[C037BFB0] [C03849B0] setup_arch+0x144/0x188
+	[C037BFD0] [C037C45C] start_kernel+0x34/0x1a8
+	[C037BFF0] [000037A0] 0x37a0
+	PCI bus 0 controlled by pci at c0000000
+	Top of RAM: 0x10000000, Total RAM: 0x10000000
+
 
 Signed-off-by: Olaf Hering <olh@suse.de>
 
- arch/powerpc/kernel/prom.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/prom_parse.c  |    4 +++-
+ arch/powerpc/platforms/chrp/pci.c |    2 ++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.16-rc2-olh/arch/powerpc/kernel/prom.c
+Index: linux-2.6.16-rc2-olh/arch/powerpc/kernel/prom_parse.c
 ===================================================================
---- linux-2.6.16-rc2-olh.orig/arch/powerpc/kernel/prom.c
-+++ linux-2.6.16-rc2-olh/arch/powerpc/kernel/prom.c
-@@ -1398,8 +1398,8 @@ struct device_node *of_find_node_by_name
+--- linux-2.6.16-rc2-olh.orig/arch/powerpc/kernel/prom_parse.c
++++ linux-2.6.16-rc2-olh/arch/powerpc/kernel/prom_parse.c
+@@ -465,8 +465,10 @@ u32 *of_get_pci_address(struct device_no
+ 	if (parent == NULL)
+ 		return NULL;
+ 	bus = of_match_bus(parent);
+-	if (strcmp(bus->name, "pci"))
++	if (strcmp(bus->name, "pci")) {
++		of_node_put(parent);
+ 		return NULL;
++	}
+ 	bus->count_cells(dev, &na, &ns);
+ 	of_node_put(parent);
+ 	if (!OF_CHECK_COUNTS(na, ns))
+Index: linux-2.6.16-rc2-olh/arch/powerpc/platforms/chrp/pci.c
+===================================================================
+--- linux-2.6.16-rc2-olh.orig/arch/powerpc/platforms/chrp/pci.c
++++ linux-2.6.16-rc2-olh/arch/powerpc/platforms/chrp/pci.c
+@@ -204,9 +204,11 @@ static void __init setup_peg2(struct pci
+ 	struct device_node *root = find_path_device("/");
+ 	struct device_node *rtas;
  
- 	read_lock(&devtree_lock);
- 	np = from ? from->allnext : allnodes;
--	for (; np != 0; np = np->allnext)
--		if (np->name != 0 && strcasecmp(np->name, name) == 0
-+	for (; np != NULL; np = np->allnext)
-+		if (np->name != NULL && strcasecmp(np->name, name) == 0
- 		    && of_node_get(np))
- 			break;
- 	if (from)
++	of_node_get(root);
+ 	rtas = of_find_node_by_name (root, "rtas");
+ 	if (rtas) {
+ 		hose->ops = &rtas_pci_ops;
++		of_node_put(rtas);
+ 	} else {
+ 		printk ("RTAS supporting Pegasos OF not found, please upgrade"
+ 			" your firmware\n");
+
+
 -- 
 short story of a lazy sysadmin:
  alias appserv=wotan
