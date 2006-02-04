@@ -1,33 +1,17 @@
-Return-Path: <Eckhardt@satorlaser.com>
-Received: from vMIMEsweeper.dps.local (mail.domino-uk.com [193.131.116.193])
-	by ozlabs.org (Postfix) with ESMTP id 53715689F3
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Feb 2006 19:43:35 +1100 (EST)
-From: Ulrich Eckhardt <eckhardt@satorlaser.com>
-To: Akinobu Mita <mita@miraclelinux.com>
-Subject: Re: [patch 14/44] generic hweight{64,32,16,8}()
-Date: Fri, 3 Feb 2006 09:31:42 +0100
-References: <20060201090224.536581000@localhost.localdomain>
-	<20060201090325.905071000@localhost.localdomain>
-In-Reply-To: <20060201090325.905071000@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200602030931.43686.eckhardt@satorlaser.com>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	Ian Molton <spyro@f2s.com>, Andi Kleen <ak@suse.de>,
-	David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
-	Greg Ungerer <gerg@uclinux.org>, sparclinux@vger.kernel.org,
-	Miles Bader <uclinux-v850@lsi.nec.co.jp>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Hirokazu Takata <takata@linux-m32r.org>, linuxsh-dev@lists.sourceforge.net,
-	Linus Torvalds <torvalds@osdl.org>,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Richard Henderson <rth@twiddle.net>,
-	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
-	ultralinux@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-	linux-kernel@vger.kernel.org,
-	linuxsh-shmedia-dev@lists.sourceforge.net, linux390@de.ibm.com,
-	Russell King <rmk@arm.linux.org.uk>, parisc-linux@parisc-linux.org
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5658E68A31
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Feb 2006 20:35:02 +1100 (EST)
+Date: Sat, 4 Feb 2006 10:34:56 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] remove pointer/integer confusion in generic_calibrate_decr
+Message-ID: <20060204093456.GA15051@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,33 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 01 February 2006 10:02, Akinobu Mita wrote:
-> unsigned int hweight32(unsigned int w);
-> unsigned int hweight16(unsigned int w);
-> unsigned int hweight8(unsigned int w);
-> unsigned long hweight64(__u64 w);
 
-IMHO, this should use explicitly sized integers like __u8, __u16 etc, unless 
-there are stringent reasons like better register use - which is hard to tell 
-for generic C code. Also, why on earth is the returntype for hweight64 a 
-long?
+remove pointer/integer confusion
 
-> +static inline unsigned int hweight32(unsigned int w)
-> +{
-> +        unsigned int res = (w & 0x55555555) + ((w >> 1) & 0x55555555);
-> +        res = (res & 0x33333333) + ((res >> 2) & 0x33333333);
-[...]
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-Why not use unsigned constants here?
+ arch/powerpc/kernel/time.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-> +static inline unsigned long hweight64(__u64 w)
-> +{
-[..]
-> +	u64 res;
-> +	res = (w & 0x5555555555555555ul) + ((w >> 1) & 0x5555555555555555ul);
-
-Why not use initialisation here, too?
-
-just my 2c
-
-Uli
+Index: linux-2.6.16-rc2-olh/arch/powerpc/kernel/time.c
+===================================================================
+--- linux-2.6.16-rc2-olh.orig/arch/powerpc/kernel/time.c
++++ linux-2.6.16-rc2-olh/arch/powerpc/kernel/time.c
+@@ -612,10 +612,10 @@ void __init generic_calibrate_decr(void)
+ 
+ 	ppc_tb_freq = DEFAULT_TB_FREQ;		/* hardcoded default */
+ 	node_found = 0;
+-	if (cpu != 0) {
++	if (cpu) {
+ 		fp = (unsigned int *)get_property(cpu, "timebase-frequency",
+ 						  NULL);
+-		if (fp != 0) {
++		if (fp) {
+ 			node_found = 1;
+ 			ppc_tb_freq = *fp;
+ 		}
+@@ -626,10 +626,10 @@ void __init generic_calibrate_decr(void)
+ 
+ 	ppc_proc_freq = DEFAULT_PROC_FREQ;
+ 	node_found = 0;
+-	if (cpu != 0) {
++	if (cpu) {
+ 		fp = (unsigned int *)get_property(cpu, "clock-frequency",
+ 						  NULL);
+-		if (fp != 0) {
++		if (fp) {
+ 			node_found = 1;
+ 			ppc_proc_freq = *fp;
+ 		}
+-- 
+short story of a lazy sysadmin:
+ alias appserv=wotan
