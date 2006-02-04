@@ -1,17 +1,16 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8794768A60
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Feb 2006 23:33:51 +1100 (EST)
-Date: Sat, 4 Feb 2006 13:33:46 +0100
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] fix compile warning in udbg_init_maple_realmode
-Message-ID: <20060204123346.GA20490@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <paul@briny.ondioline.org>
+From: Paul Collins <paul@briny.ondioline.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix PowerMac sound i2c
+References: <1136695956.30123.44.camel@localhost.localdomain>
+Date: Sat, 04 Feb 2006 18:26:16 +0000
+In-Reply-To: <1136695956.30123.44.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Sun, 08 Jan 2006 15:52:36 +1100")
+Message-ID: <87y80rkmk7.fsf@briny.internal.ondioline.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +20,174 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Ben,
 
-arch/powerpc/kernel/udbg_16550.c: In function `udbg_init_maple_realmode':
-arch/powerpc/kernel/udbg_16550.c:162: warning: assignment from incompatible pointer type
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+> My patch reworking the PowerMac i2c code break the sound drivers as they
+> used to rely on some broken behaviour of i2c-keywest that is gone now.
+> This patch should fix them (tested on a g5 with alsa only). It might
+> also fix an oops if the alsa driver hits an unsupported chip.
 
- arch/powerpc/kernel/udbg_16550.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+Applied Linus's current git tree, this patch makes ALSA sound on my
+PowerBook5,4 work again.  The second patch does not work because the
+i2c wrapper (I assume that's what i2c_smbus_write_i2c_block_data is)
+has apparently not yet returned.
 
-Index: linux-2.6.16-rc2-olh/arch/powerpc/kernel/udbg_16550.c
-===================================================================
---- linux-2.6.16-rc2-olh.orig/arch/powerpc/kernel/udbg_16550.c
-+++ linux-2.6.16-rc2-olh/arch/powerpc/kernel/udbg_16550.c
-@@ -144,7 +144,7 @@ unsigned int udbg_probe_uart_speed(void 
- }
- 
- #ifdef CONFIG_PPC_MAPLE
--void udbg_maple_real_putc(unsigned char c)
-+void udbg_maple_real_putc(char c)
- {
- 	if (udbg_comport) {
- 		while ((real_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
+It would be nice to have this fix in 2.6.16 if possible.
+
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>
+> Index: linux-work/sound/ppc/tumbler.c
+> ===================================================================
+> --- linux-work.orig/sound/ppc/tumbler.c	2005-11-24 17:19:14.000000000 +1100
+> +++ linux-work/sound/ppc/tumbler.c	2006-01-08 15:18:09.000000000 +1100
+> @@ -137,6 +137,22 @@ static int send_init_client(pmac_keywest
+>  	return 0;
+>  }
+>  
+> +static int tumbler_write_block(struct i2c_client *client, u8 reg, int len,
+> +			       u8 *values)
+> +{
+> +        union i2c_smbus_data data;
+> +        int err;
+> +
+> +        data.block[0] = len;
+> +	memcpy(&data.block[1], values, len);
+> +        err = i2c_smbus_xfer(client->adapter, client->addr, client->flags,
+> +                             I2C_SMBUS_WRITE, reg, I2C_SMBUS_I2C_BLOCK_DATA,
+> +                             &data);
+> +        return err;
+> +}
+> +
+> +
+> +
+>  
+>  static int tumbler_init_client(pmac_keywest_t *i2c)
+>  {
+> @@ -239,8 +255,7 @@ static int tumbler_set_master_volume(pma
+>  	block[4] = (right_vol >> 8)  & 0xff;
+>  	block[5] = (right_vol >> 0)  & 0xff;
+>    
+> -	if (i2c_smbus_write_block_data(mix->i2c.client, TAS_REG_VOL,
+> -				       6, block) < 0) {
+> +	if (tumbler_write_block(mix->i2c.client, TAS_REG_VOL, 6, block) < 0) {
+>  		snd_printk("failed to set volume \n");
+>  		return -EINVAL;
+>  	}
+> @@ -340,8 +355,7 @@ static int tumbler_set_drc(pmac_tumbler_
+>  		val[1] = 0;
+>  	}
+>  
+> -	if (i2c_smbus_write_block_data(mix->i2c.client, TAS_REG_DRC,
+> -				       2, val) < 0) {
+> +	if (tumbler_write_block(mix->i2c.client, TAS_REG_DRC, 2, val) < 0) {
+>  		snd_printk("failed to set DRC\n");
+>  		return -EINVAL;
+>  	}
+> @@ -376,8 +390,7 @@ static int snapper_set_drc(pmac_tumbler_
+>  	val[4] = 0x60;
+>  	val[5] = 0xa0;
+>  
+> -	if (i2c_smbus_write_block_data(mix->i2c.client, TAS_REG_DRC,
+> -				       6, val) < 0) {
+> +	if (tumbler_write_block(mix->i2c.client, TAS_REG_DRC, 6, val) < 0) {
+>  		snd_printk("failed to set DRC\n");
+>  		return -EINVAL;
+>  	}
+> @@ -481,8 +494,8 @@ static int tumbler_set_mono_volume(pmac_
+>  	vol = info->table[vol];
+>  	for (i = 0; i < info->bytes; i++)
+>  		block[i] = (vol >> ((info->bytes - i - 1) * 8)) & 0xff;
+> -	if (i2c_smbus_write_block_data(mix->i2c.client, info->reg,
+> -				       info->bytes, block) < 0) {
+> +	if (tumbler_write_block(mix->i2c.client, info->reg,
+> +				  info->bytes, block) < 0) {
+>  		snd_printk("failed to set mono volume %d\n", info->index);
+>  		return -EINVAL;
+>  	}
+> @@ -611,7 +624,7 @@ static int snapper_set_mix_vol1(pmac_tum
+>  		for (j = 0; j < 3; j++)
+>  			block[i * 3 + j] = (vol >> ((2 - j) * 8)) & 0xff;
+>  	}
+> -	if (i2c_smbus_write_block_data(mix->i2c.client, reg, 9, block) < 0) {
+> +	if (tumbler_write_block(mix->i2c.client, reg, 9, block) < 0) {
+>  		snd_printk("failed to set mono volume %d\n", reg);
+>  		return -EINVAL;
+>  	}
+> Index: linux-work/sound/oss/dmasound/tas_common.h
+> ===================================================================
+> --- linux-work.orig/sound/oss/dmasound/tas_common.h	2005-11-24 17:19:14.000000000 +1100
+> +++ linux-work/sound/oss/dmasound/tas_common.h	2006-01-08 15:33:29.000000000 +1100
+> @@ -157,6 +157,21 @@ tas_mono_to_stereo(uint mono)
+>  	return mono | (mono<<8);
+>  }
+>  
+> +static int tas_write_block(struct i2c_client *client, u8 reg, int len, u8 *vals)
+> +{
+> +        union i2c_smbus_data data;
+> +        int err;
+> +
+> +        data.block[0] = len;
+> +	memcpy(&data.block[1], vals, len);
+> +        err = i2c_smbus_xfer(client->adapter, client->addr, client->flags,
+> +                             I2C_SMBUS_WRITE, reg, I2C_SMBUS_I2C_BLOCK_DATA,
+> +                             &data);
+> +        return err;
+> +}
+> +
+> +
+> +
+>  /*
+>   * Todo: make these functions a bit more efficient !
+>   */
+> @@ -178,10 +193,8 @@ tas_write_register(	struct tas_data_t *s
+>  	if (write_mode & WRITE_SHADOW)
+>  		memcpy(self->shadow[reg_num],data,reg_width);
+>  	if (write_mode & WRITE_HW) {
+> -		rc=i2c_smbus_write_block_data(self->client,
+> -					      reg_num,
+> -					      reg_width,
+> -					      data);
+> +		rc = tas_write_block(self->client, reg_num,
+> +				     reg_width, data);
+>  		if (rc < 0) {
+>  			printk("tas: I2C block write failed \n");  
+>  			return rc; 
+> @@ -199,10 +212,8 @@ tas_sync_register(	struct tas_data_t *se
+>  
+>  	if (reg_width==0 || self==NULL)
+>  		return -EINVAL;
+> -	rc=i2c_smbus_write_block_data(self->client,
+> -				      reg_num,
+> -				      reg_width,
+> -				      self->shadow[reg_num]);
+> +	rc = tas_write_block(self->client, reg_num,
+> +			     reg_width, self->shadow[reg_num]);
+>  	if (rc < 0) {
+>  		printk("tas: I2C block write failed \n");
+>  		return rc;
+> Index: linux-work/sound/ppc/pmac.c
+> ===================================================================
+> --- linux-work.orig/sound/ppc/pmac.c	2005-12-19 16:13:48.000000000 +1100
+> +++ linux-work/sound/ppc/pmac.c	2006-01-08 15:37:10.000000000 +1100
+> @@ -74,7 +74,7 @@ static int snd_pmac_dbdma_alloc(pmac_t *
+>  
+>  static void snd_pmac_dbdma_free(pmac_t *chip, pmac_dbdma_t *rec)
+>  {
+> -	if (rec) {
+> +	if (rec->space) {
+>  		unsigned int rsize = sizeof(struct dbdma_cmd) * (rec->size + 1);
+>  
+>  		dma_free_coherent(&chip->pdev->dev, rsize, rec->space, rec->dma_base);
+> @@ -895,6 +895,7 @@ static int __init snd_pmac_detect(pmac_t
+>  	chip->can_capture = 1;
+>  	chip->num_freqs = ARRAY_SIZE(awacs_freqs);
+>  	chip->freq_table = awacs_freqs;
+> +	chip->pdev = NULL;
+>  
+>  	chip->control_mask = MASK_IEPC | MASK_IEE | 0x11; /* default */
+>  
+
 -- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+Dag vijandelijk luchtschip de huismeester is dood
