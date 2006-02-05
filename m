@@ -1,17 +1,18 @@
-Return-Path: <mike@compulab.co.il>
-Received: from alexmail (62-90-235-247.barak.net.il [62.90.235.247])
-	by ozlabs.org (Postfix) with ESMTP id 48F7468A1F
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 34A4B689AE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Feb 2006 19:42:41 +1100 (EST)
-Message-ID: <43E5BAE8.9000507@compulab.co.il>
-Date: Sun, 05 Feb 2006 10:44:24 +0200
-From: Mike Rapoport <mike@compulab.co.il>
-MIME-Version: 1.0
-To: Laurent Pinchart <laurent.pinchart@tbox.biz>
-Subject: Re: CPM2 USB driver & MPC8248
-References: <200602031210.12603.laurent.pinchart@tbox.biz>
-In-Reply-To: <200602031210.12603.laurent.pinchart@tbox.biz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun,  5 Feb 2006 21:40:00 +1100 (EST)
+To: David Hawkins <dwh@ovro.caltech.edu>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Yosemite/440EP PLB4 vs PLB3 DMA to PCI issue 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 04 Feb 2006 20:41:38 PST."
+	<43E58202.8020000@ovro.caltech.edu>
+Date: Sun, 05 Feb 2006 11:39:58 +0100
+Sender: wd@denx.de
+Message-Id: <20060205103958.284003535FD@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,43 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Laurent,
+In message <43E58202.8020000@ovro.caltech.edu> you wrote:
+> 
+> MRM/MRL commands. I'll do that next. I just figured I'd
+> post these results now, so that others reading this
+> list might comment (Stefan from Denx comes to mind :))
 
-[snip]
+He's on vacation; he will be back on Monday, but certainly needs some
+time to catch up. Please stay tuned.
 
->When I connect a USB 2.0 Mass Storage device, initialization fails when trying 
->to fetch the string descriptors. Here's what USBMon produces (I decoded the 
->USB transactions with the device).
->  
->
-[snip]
+Best regards,
 
-I had similar problems with mass storage devices (disk-on-key). I've 
-tried to find out what was causing them but I hadn't much success with it.
-I think that problem might be in driver performance because it is very 
-far from optimal.
-Another thing that may cause problems is how storage devices treat SOF 
-packets, but I'm not USB expert enough to be sure about that.
-
->As you can see, the devices sends its device and configuration descriptors, 
->but something goes wrong with the string descriptors. I modified the core USB 
->code to request 0x40 bytes (which is the value of bMaxPacketSize0) or even 
->0x20 bytes, but the same problem occurs (same USBMon traces with 0xff 
->replaced by 0x40).
->
->Could you help me ? Kernel coding is not a problem, so I can make experiments 
->if you point me to some direction. I'm also quite familiar with the USB specs 
->down to the various types of transfers (control, interrupt, bulk and 
->isochronous) but not with the lower-level protocol (frames, tokens, ...). I 
->can learn if needed.
->
->Laurent Pinchart
->
->
->
->  
->
+Wolfgang Denk
 
 -- 
-Sincerely yours,
-Mike Rapoport
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Artificial Intelligence is the study of how to  make  real  computers
+act like the ones in movies.
