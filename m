@@ -1,16 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix PowerMac sound i2c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Collins <paul@briny.ondioline.org>
-In-Reply-To: <87y80rkmk7.fsf@briny.internal.ondioline.org>
-References: <1136695956.30123.44.camel@localhost.localdomain>
-	<87y80rkmk7.fsf@briny.internal.ondioline.org>
-Content-Type: text/plain
-Date: Sun, 05 Feb 2006 09:56:02 +1100
-Message-Id: <1139093763.5634.3.camel@localhost.localdomain>
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[212.18.232.186])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1925D689C0
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Feb 2006 11:01:50 +1100 (EST)
+Date: Sun, 5 Feb 2006 00:01:36 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Hirokazu Takata <takata@linux-m32r.org>
+Subject: Re: [CFT] Don't use ASYNC_* nor SERIAL_IO_* with serial_core
+Message-ID: <20060205000136.GF24887@flint.arm.linux.org.uk>
+References: <20060121211407.GA19984@dyn-67.arm.linux.org.uk>
+	<20060202102721.GE5034@flint.arm.linux.org.uk>
+	<20060202.231033.1059963967.takata.hirokazu@renesas.com>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060202.231033.1059963967.takata.hirokazu@renesas.com>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: pfg@sgi.com, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,25 +28,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-02-04 at 18:26 +0000, Paul Collins wrote:
-> Hi Ben,
-> 
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > My patch reworking the PowerMac i2c code break the sound drivers as they
-> > used to rely on some broken behaviour of i2c-keywest that is gone now.
-> > This patch should fix them (tested on a g5 with alsa only). It might
-> > also fix an oops if the alsa driver hits an unsupported chip.
-> 
-> Applied Linus's current git tree, this patch makes ALSA sound on my
-> PowerBook5,4 work again.  The second patch does not work because the
-> i2c wrapper (I assume that's what i2c_smbus_write_i2c_block_data is)
-> has apparently not yet returned.
-> 
-> It would be nice to have this fix in 2.6.16 if possible.
+On Thu, Feb 02, 2006 at 11:10:33PM +0900, Hirokazu Takata wrote:
+> On m32r,
+>   compile and boot test: OK
 
-The second patch is the one that should go in, but it relies on an i2c
-fix (undoing some Bunk damage) that is still staging in Greg tree... I
-don't know what's up with that, I'll ask around.
+Is that an Acked-by ?
 
-Ben.
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 Serial core
