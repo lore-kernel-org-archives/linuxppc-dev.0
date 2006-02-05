@@ -1,25 +1,19 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 22B7B689F9
+Return-Path: <jaf@lcsaudio.com>
+Received: from lcsaudio.com (lcsaudio.com [66.160.193.223])
+	by ozlabs.org (Postfix) with SMTP id 3D7E068A15
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Feb 2006 10:45:19 +1100 (EST)
-Received: from ovro.ovro.caltech.edu
-	(IDENT:U2FsdGVkX181irXo8nzIo+mn08pGNdTPCvWh6z3wL9g@ovro.ovro.caltech.edu
-	[192.100.16.2])
-	by ovro.ovro.caltech.edu (8.13.1/8.13.1) with SMTP id k15NjDKw005240
-	for <linuxppc-embedded@ozlabs.org>; Sun, 5 Feb 2006 15:45:15 -0800
-Message-ID: <43E68E85.3080100@ovro.caltech.edu>
-Date: Sun, 05 Feb 2006 15:47:17 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
+	Mon,  6 Feb 2006 06:55:16 +1100 (EST)
+Received: from jeremy.lcsaudio.com ([24.75.158.194]) by lcsaudio.com for
+	<linuxppc-embedded@ozlabs.org>; Sun, 5 Feb 2006 11:41:21 -0800
+From: Jeremy Friesner <jaf@lcsaudio.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Yosemite/440EP PLB4 vs PLB3 DMA to PCI issue
-References: <20060205103958.284003535FD@atlas.denx.de>
-In-Reply-To: <20060205103958.284003535FD@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Floating point math in kernel interrupt -- am I doing this right?
+Date: Sun, 5 Feb 2006 11:40:51 -0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200602051140.51759.jaf@lcsaudio.com>
+Cc: jeffk@lcsaudio.com, Stephen Noftall <stephenn@lcsaudio.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,56 +24,76 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> In message <43E58202.8020000@ovro.caltech.edu> you wrote:
-> 
->>MRM/MRL commands. I'll do that next. I just figured I'd
->>post these results now, so that others reading this
->>list might comment (Stefan from Denx comes to mind :))
-> 
-> 
-> He's on vacation; he will be back on Monday, but certainly needs some
-> time to catch up. Please stay tuned.
+Hi all,
 
-No rush, I just wanted to get the question on the list.
+Can someone who is well-versed in PowerPC kernel issues give me some advice?
 
-I took a look at the 440EP user manual, and I haven't been
-able to explain the PLB4 DMA controller observations.
+First, a bit of background:  I'm working on an audio mixing/playback engine that runs on an embedded PowerPC chip (82xx) using the 2.4.23 kernel.  The audio output format is 48kHz floating point, and the mixing is done inside an interrupt routine that runs 6000 times per second, and calculates 8 samples per interrupt.
 
-Here's what I've got so far;
+In order to do the necessary floating point math, without corrupting the state of any other processes that might be using the FPU, the interrupt routine first saves the state of the FPU registers to the stack, then does the math, then restores FPU registers again, before returning.
 
-p595: PLB-to-PCI transaction handling
-    Shows the two situations where the PCI bridge will
-    generate memory-read-line (MRL) and memory-read-multiple (MRM)
+In general this seems to work fine, i.e. I get the audio output I expect and user processes aren't effected.  However, I've noticed that every so often I will get a kernel oops and my userland application will crash.  The oops looks like this:
 
-p646: has comments on PCI Memory to SDRAM DMA Transfer
-    and SDRAM to PCI memory DMA transfer. The figures
-    for those comments are further on.
+<4>Oops: kernel access of bad area, sig: 11
+<4>NIP: C001D408 XER: 20000000 LR: C001D3E0 SP: C6091E30 REGS: c6091d80 TRAP: 0300    Not tainted
+<4>MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+<4>DAR: 3FE8228D, DSISR: 20000000
+<4>TASK = c6090000[118] 'wtrxd' Last syscall: 178
+<4>last math c6054000 last altivec 00000000
+<4>GPR00: 0000001F C6091E30 C6090000 00000020 C6090398 C6055DE8 C017AB4C 00000000
+<4>GPR08: 408CC599 3FE8228D 0000001F 00000000 84022884 10510E98 105800BC 308259E8
+<4>GPR16: 1057302C 1058006C 00000000 00000000 00009032 06091F40 00000000 C0005DE8
+<4>GPR24: C0005B40 00000020 00008000 00000000 C6091F50 C6091F20 C6091E78 00000020
+<4>Call backtrace:
+<4>00000400 C0009AB8 C0009CC0 C0009060 C0005B9C 0FC1BBA4 0FEF51D0
+<4>0FEF6F58 0FEF3C3C 10366F34 10365C64 103572A0 103895D8 0FEF37EC
+<4>0FCCDE2C
 
-    The figures for the PCI read transactions on p663 and p691
-    show the PCI command MRL (Eh) being generated on the PCI
-    bus, and PCI data bursts occurring in lengths of 32-bytes.
+The frequency of the 'oops' occurrences appears to be proportional to the amount of code that is present in the FPU-enabled section of the interrupt routine.  If I enable all of the mixing code, they appear every 10-20 minutes.  If I disable all of the mixing code except the saving and restoring of the FPU registers, they only occur about once every 6-12 hours.  If I disable the saving and restoring of the FPU registers entirely, they don't seem to occur at all (at least within the bounds of my testing so far -- 15+ hours).
 
-These figures confirm what was observed with the PLB3 DMA
-controller. Since the figures show the reads and the writes
-on the PLB bus, and do not comment on the PLB bridge,
-I can only assume that the figures assume the DMA controller
-in use is the PLB3 DMA controller.
+So my question is, is there some minor detail that my FPU-state-save/restore code is missing, that would cause these sort of symptoms?  I just enough about kernel/assembly/PowerPC issues to be dangerous, so I thought maybe there was something obvious that I am missing.  The relevant code is shown below.
 
-As to the PLB4 DMA controller observation of reads to PCI
-causing the PCI read command to toggle between MRL and MRM,
-I've no idea ... from p595 the transactions are considered
-a burst read (MRM), then a burst read of 8-words (MRL),
-then repeating. Since each read results in a PCI read burst of
-length 32-bytes, there's clearly nothing different between
-them on the PCI bus. But perhaps the transaction looks
-different on the 440EP internal buses.
+Many thanks for any help or hints you can provide,
 
-The test transfers were to a page-aligned block of SDRAM,
-so I don't think the transactions are generating any alignment
-issues.
+Jeremy Friesner
 
-(I hope you had a nice vacation Stefan!)
+--------------- begin code snippet ----------------------
+[... in interrupt routine...]
+   uint32 saved_msr;
+   uint32 saved_fpr[32*2];  // temp storage space for the current floating point registers
 
-Cheers
-Dave
+   /* Set up floating point enabled mode -- NO FLOATING POINT OPS ALLOWED ABOVE THIS POINT! */
+   {
+      // Save existing MSR
+      uint32 msr;
+      __asm__ __volatile__ ("mfmsr %0" : "=r" (msr) : );
+      saved_msr = msr;
+
+      // Enable floating point
+      msr |= MSR_FP;
+      msr &= ~(MSR_FE0 | MSR_FE1);
+      __asm__ __volatile__ ("mtmsr %0\n\tisync" : : "r" (msr));
+
+      /* Save the floating point registers that the mix code uses, so that we won't screw up the user process */
+#define SAVE_FPR(x) {uint32 * saveTo = &saved_fpr[x*2]; __asm__ __volatile__ ("stfd " #x ", 0(%0)\n" : : "b" (saveTo));}
+      SAVE_FPR(0);  SAVE_FPR(1);  SAVE_FPR(2); SAVE_FPR(3);  SAVE_FPR(4); 
+      SAVE_FPR(5);  SAVE_FPR(6);  SAVE_FPR(7); SAVE_FPR(8);  SAVE_FPR(9);  
+      SAVE_FPR(10); SAVE_FPR(11); SAVE_FPR(12); SAVE_FPR(13);
+      /* Note that I only save/restore the first 13 FP registers, since gcc's generated code doesn't use the other ones anyway(!) */
+   }
+
+   [... the actual mixing routine is called here.  I compile the mix function in a separate file, without the -msoft-float flag ...]
+   [... but note that I get crashes even if I comment out the call to the mixing routine, which suggests the problem is somewhere else...]
+   DoMixing();
+
+   /* Exit floating point enabled mode -- NO FLOATING POINT OPS ALLOWED BELOW THIS POINT! */
+   {
+      /* Restore the FP registers back to their original state */
+#define RESTORE_FPR(x) {uint32 * restoreFrom = &saved_fpr[x*2]; __asm__ __volatile__ ("lfd  " #x ", 0(%0)\n" : : "b" (restoreFrom));}
+      RESTORE_FPR(0);  RESTORE_FPR(1);  RESTORE_FPR(2); RESTORE_FPR(3);  RESTORE_FPR(4);  
+      RESTORE_FPR(5);  RESTORE_FPR(6);  RESTORE_FPR(7); RESTORE_FPR(8);  RESTORE_FPR(9);  
+      RESTORE_FPR(10); RESTORE_FPR(11); RESTORE_FPR(12); RESTORE_FPR(13);
+
+      /* Restore MSR */
+      __asm__ __volatile__ ("mtmsr %0\n" "isync" : : "r" (saved_msr));
+   }
