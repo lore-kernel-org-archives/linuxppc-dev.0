@@ -1,19 +1,19 @@
-Return-Path: <jaf@lcsaudio.com>
-Received: from elasmtp-mealy.atl.sa.earthlink.net
-	(elasmtp-mealy.atl.sa.earthlink.net [209.86.89.69])
-	by ozlabs.org (Postfix) with ESMTP id F373B67EC8
+Return-Path: <sr@denx.de>
+Received: from natipslore.rzone.de (natipslore.rzone.de [81.169.145.179])
+	by ozlabs.org (Postfix) with ESMTP id E011268A0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Feb 2006 04:03:52 +1100 (EST)
-In-Reply-To: <3c13d56389dfcf9f45ca87167295e933@embeddedalley.com>
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: Floating point math in kernel interrupt -- am I doing this right?
-	(repost)
-From: "Jeremy Friesner" <jaf@lcsaudio.com>
-Date: Mon, 06 Feb 2006 08:55:22 PST (-0800)
-Message-Id: <1644783017-BeMail@jeremy.lcsaudio.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  7 Feb 2006 05:31:36 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Yosemite/440EP PLB4 vs PLB3 DMA to PCI issue
+Date: Mon, 6 Feb 2006 19:31:24 +0100
+References: <20060205103958.284003535FD@atlas.denx.de>
+	<43E68E85.3080100@ovro.caltech.edu>
+In-Reply-To: <43E68E85.3080100@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200602061931.25370.sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,44 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> 
-> On Feb 5, 2006, at 9:29 PM, Jeremy Friesner wrote:
-> 
-> > ....   and the mixing is done inside an
-> > interrupt routine that runs 6000 times per second, and calculates 8 
-> > samples
-> > per interrupt.
-> 
-> Bad news.  No Floating Point allowed in the kernel.
+Hi David,
 
-I'm aware of that rule, and also why -- because the Linux kernel doesn't want to have to save and restore the state of the floating point registers on every context switch.  I'm also aware that it is nonetheless possible to use floating point in the kernel if you are careful to manually save and restore the proper state yourself, and that in fact floating point is sometimes used in the kernel as a means of doing 64-bit writes, as mentioned here:
+I never used DMA on 440EP/GP till now so I just noticed the two different 
+PLB's and their DMA controllers. Never seen this on any 4xx PPC so far. I 
+suspect that the PLB4 is integrated mainly because of the USB interface.
 
-http://www.tldp.org/LDP/cpg/html/x295.html
+On Monday 06 February 2006 00:47, David Hawkins wrote:
+> I took a look at the 440EP user manual, and I haven't been
+> able to explain the PLB4 DMA controller observations.
+>
+> Here's what I've got so far;
+>
+> p595: PLB-to-PCI transaction handling
+>     Shows the two situations where the PCI bridge will
+>     generate memory-read-line (MRL) and memory-read-multiple (MRM)
 
-So it seems to me that it is possible to do floating point in the kernel, if you are careful to save and restore the proper context/state before and afterwards.  But if it isn't, can you explain to me why it can't be made to work=3F
- 
-> > In order to do the necessary floating point math, without corrupting 
-> > the state
-> > of any other processes that might be using the FPU, the interrupt 
-> > routine
-> > first saves the state of the FPU registers to the stack, then does the 
-> > math,
-> > then restores FPU registers again, before returning.
-> 
-> Not on 82xx.  All floating point is done in hardware.
+What version of the user manual are you referring to? Could you please give 
+the pages for the current manual (Revision 1.18).
 
-Right; it is the hardware registers' state that I am saving to the stack, and then restoring afterwards.
- 
-> > So my question is, is there some minor detail that my 
-> > FPU-state-save/restore
-> > code is missing, that would cause these sort of symptoms=3F
-> 
-> Just get all of this out of the kernel.  If you used the standard ALSA
-> drivers and framework, lots of mixing features are available to you.
-> If you need some custom mixing, just write a plug-in to do it.
-> Your data rates are so low they don't justify making any hacks
-> like this.
+<snip>
 
-I suppose that is an option, but I'd rather understand why my hack isn't working before I give up and redesign my application, which is already working the way I want it to, 99.9999% of the time.
+> (I hope you had a nice vacation Stefan!)
 
-Jeremy
+Thanks. Very nice. One week of sunshine in the snow. :-)
+
+Ciao,
+Stefan
