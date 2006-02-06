@@ -1,22 +1,19 @@
-Return-Path: <roger.larsson@norran.net>
-Received: from mail.skekraft.net (ns.skekraft.net [213.199.96.131])
-	by ozlabs.org (Postfix) with ESMTP id EC13968926
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
+	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id 6BA49689D9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Feb 2006 20:02:58 +1100 (EST)
-Received: from icd.localnet (131.net95.skekraft.net [213.199.95.131])
-	by mail.skekraft.net (Postfix) with ESMTP id CDF77A403A
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Feb 2006 09:41:08 +0100 (CET)
-From: Roger Larsson <roger.larsson@norran.net>
-To: linuxppc-embedded@ozlabs.org
+	Mon,  6 Feb 2006 23:34:24 +1100 (EST)
+In-Reply-To: <200602051829.47824.jaf@lcsaudio.com>
+References: <200602051829.47824.jaf@lcsaudio.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3c13d56389dfcf9f45ca87167295e933@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
 Subject: Re: Floating point math in kernel interrupt -- am I doing this right?
-Date: Mon, 6 Feb 2006 09:41:07 +0100
-References: <200602051140.51759.jaf@lcsaudio.com>
-In-Reply-To: <200602051140.51759.jaf@lcsaudio.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200602060941.07567.roger.larsson@norran.net>
+	(repost)
+Date: Mon, 6 Feb 2006 07:27:43 -0500
+To: Jeremy Friesner <jaf@lcsaudio.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,22 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On s=F6ndag 05 februari 2006 20.40, Jeremy Friesner wrote:
-> If I disable the saving and restoring of the FPU registers=20
-> entirely, they don't seem to occur at all (at least within the bounds of =
-my
-> testing so far -- 15+ hours).
-Is this with full mix?
 
-Then I would really suspect the save/restore code.
-Saving and restoring floating point state can be very tricky.
-Do try to find an example in the manual (or possibly in the kernel itself -=
-=20
-context switch code)
+On Feb 5, 2006, at 9:29 PM, Jeremy Friesner wrote:
 
-Until this works reliably there is no point in looking for other error=20
-sources.  You could also try to add code inside the save-resore that destro=
-ys=20
-all of the floating point registers to be able to spot errors.
+> ....   and the mixing is done inside an
+> interrupt routine that runs 6000 times per second, and calculates 8 
+> samples
+> per interrupt.
 
-/RogerL
+Bad news.  No Floating Point allowed in the kernel.
+
+> In order to do the necessary floating point math, without corrupting 
+> the state
+> of any other processes that might be using the FPU, the interrupt 
+> routine
+> first saves the state of the FPU registers to the stack, then does the 
+> math,
+> then restores FPU registers again, before returning.
+
+Not on 82xx.  All floating point is done in hardware.
+
+> ....  The oops
+> looks like this:
+
+These aren't helpful without some supporting information, like
+symbols, or learn to use ksymoops.
+
+> So my question is, is there some minor detail that my 
+> FPU-state-save/restore
+> code is missing, that would cause these sort of symptoms?
+
+Just get all of this out of the kernel.  If you used the standard ALSA
+drivers and framework, lots of mixing features are available to you.
+If you need some custom mixing, just write a plug-in to do it.
+Your data rates are so low they don't justify making any hacks
+like this.
+
+Thanks.
+
+	-- Dan
