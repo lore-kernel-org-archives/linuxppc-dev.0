@@ -1,24 +1,33 @@
-Return-Path: <takata@linux-m32r.org>
-Received: from mail04.idc.renesas.com (mail.renesas.com [202.234.163.13])
-	by ozlabs.org (Postfix) with ESMTP id 6752868A0F
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Feb 2006 12:34:49 +1100 (EST)
-Received: from mail04.idc.renesas.com ([127.0.0.1])
-	by mail04.idc.renesas.com. (SMSSMTP 4.1.9.35) with SMTP id
-	M2006020610344704681
-	for <linuxppc-dev@ozlabs.org>; Mon, 06 Feb 2006 10:34:47 +0900
-Date: Mon, 06 Feb 2006 10:34:43 +0900 (JST)
-Message-Id: <20060206.103443.608416320.takata.hirokazu@renesas.com>
-To: rmk+lkml@arm.linux.org.uk
-Subject: Re: [CFT] Don't use ASYNC_* nor SERIAL_IO_* with serial_core
-From: Hirokazu Takata <takata@linux-m32r.org>
-In-Reply-To: <20060205000136.GF24887@flint.arm.linux.org.uk>
-References: <20060202102721.GE5034@flint.arm.linux.org.uk>
-	<20060202.231033.1059963967.takata.hirokazu@renesas.com>
-	<20060205000136.GF24887@flint.arm.linux.org.uk>
+Return-Path: <mita@miraclelinux.com>
+Received: from mail01.miraclelinux.com (ns.miraclelinux.com [219.118.163.66])
+	by ozlabs.org (Postfix) with ESMTP id BE304689F9
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Feb 2006 22:53:00 +1100 (EST)
+Date: Mon, 6 Feb 2006 20:52:57 +0900
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: [patch 14/44] generic hweight{64,32,16,8}()
+Message-ID: <20060206115257.GB11836@miraclelinux.com>
+References: <20060201090224.536581000@localhost.localdomain>
+	<20060201090325.905071000@localhost.localdomain>
+	<20060202012637.GA25093@iram.es>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: pfg@sgi.com, linux-mips@linux-mips.org, takata@linux-m32r.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060202012637.GA25093@iram.es>
+From: mita@miraclelinux.com (Akinobu Mita)
+Cc: linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
+	linux-ia64@vger.kernel.org, Ian Molton <spyro@f2s.com>,
+	Balbir Singh <bsingharora@gmail.com>, Andi Kleen <ak@suse.de>,
+	David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
+	Greg Ungerer <gerg@uclinux.org>, sparclinux@vger.kernel.org,
+	Miles Bader <uclinux-v850@lsi.nec.co.jp>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Hirokazu Takata <takata@linux-m32r.org>, linuxsh-dev@lists.sourceforge.net,
+	Linus Torvalds <torvalds@osdl.org>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux@horizon.com,
+	Richard Henderson <rth@twiddle.net>,
+	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
+	ultralinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxsh-shmedia-dev@lists.sourceforge.net, linux390@de.ibm.com,
+	Russell King <rmk@arm.linux.org.uk>, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +37,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [CFT] Don't use ASYNC_* nor SERIAL_IO_* with serial_core
-Date: Sun, 05 Feb 2006 00:01:36 +0000
-> On Thu, Feb 02, 2006 at 11:10:33PM +0900, Hirokazu Takata wrote:
-> > On m32r,
-> >   compile and boot test: OK
+On Thu, Feb 02, 2006 at 02:26:38AM +0100, Gabriel Paubert wrote:
 > 
-> Is that an Acked-by ?
+> The first step can be implemented slightly better:
 > 
-> -- 
-> Russell King
->  Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
->  maintainer of:  2.6 Serial core
+> unsigned int res = w-((w>>1)&0x55555555);
 > 
 
-Yes.
+Yes. I've got many advices about hweight speedup.
 
-Acked-by: Hirokazu Takata <takata@linux-m32r.org>
 
-Thanks,
---
-Hirokazu Takata <takata@linux-m32r.org>
-Linux/M32R Project:  http://www.linux-m32r.org/
+static unsigned int hweight32(unsigned int w)
+{
+        unsigned int res = w - ((w >> 1) & 0x55555555);
+        res = (res & 0x33333333) + ((res >> 2) & 0x33333333);
+        res = (res + (res >> 4)) & 0x0F0F0F0F;
+        res = res + (res >> 8);
+        return (res + (res >> 16)) & 0x000000FF;
+}
+
+static unsigned int hweight16(unsigned int w)
+{
+        unsigned int res = w - ((w >> 1) & 0x5555);
+        res = (res & 0x3333) + ((res >> 2) & 0x3333);
+        res = (res + (res >> 4)) & 0x0F0F;
+        return (res + (res >> 8)) & 0x00FF;
+}
+
+static unsigned int hweight8(unsigned int w)
+{
+        unsigned int res = w - ((w >> 1) & 0x55);
+        res = (res & 0x33) + ((res >> 2) & 0x33);
+        return (res + (res >> 4)) & 0x0F;
+}
+
+static unsigned long hweight64(__u64 w)
+{
+#if BITS_PER_LONG < 64
+	return hweight32((unsigned int)(w >> 32)) +
+				hweight32((unsigned int)w);
+#else
+	__u64 res = w - ((w >> 1) & 0x5555555555555555ul);
+	res = (res & 0x3333333333333333ul) + ((res >> 2) & 0x3333333333333333ul);
+	res = (res + (res >> 4)) & 0x0F0F0F0F0F0F0F0Ful;
+	res = res + (res >> 8);
+	res = res + (res >> 16);
+	return (res + (res >> 32)) & 0x00000000000000FFul;
+#endif
+}
