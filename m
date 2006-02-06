@@ -1,18 +1,11 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E3F4267EC8
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Feb 2006 23:10:18 +1100 (EST)
-Date: Mon, 6 Feb 2006 13:10:13 +0100
-From: Olaf Hering <olh@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] make powerbook_sleep_grackle static
-Message-ID: <20060206121013.GA27981@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <bgill@freescale.com>
+Date: Mon, 6 Feb 2006 14:26:31 -0600 (CST)
+From: Becky Bruce <bgill@freescale.com>
+To: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Subject: [PATCH] documentation: add bus-frequency property to SOC node
+Message-ID: <Pine.LNX.4.61.0602061423450.18645@cde-tx32-ldt329.sps.mot.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +15,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-powerbook_sleep_grackle is only called inside via-pmu,
-from pmu_ioctl()
+Updated SOC node definition in documentation to include bus-frequency
+property. Also extended mdio example to match specification.
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
+Signed-off-by: Kumar Gala <galak@gate.crashing.org>
+
 ---
- drivers/macintosh/via-pmu.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+commit 3441bf59c7e1dc3823f9be57838a2536c78f6f8f
+tree 2901a0e19418f1fe904ff0d041c630b3af048961
+parent 66c490c9b00c52cd0f1e088ad689c9148e46f49e
+author Becky Bruce <becky.bruce@freescale.com> Thu, 02 Feb 2006 15:41:11 -0600
+committer Becky Bruce <becky.bruce@freescale.com> Thu, 02 Feb 2006 15:41:11 -0600
 
-Index: linux-2.6.15/drivers/macintosh/via-pmu.c
-===================================================================
---- linux-2.6.15.orig/drivers/macintosh/via-pmu.c
-+++ linux-2.6.15/drivers/macintosh/via-pmu.c
-@@ -2200,8 +2200,7 @@ pmac_wakeup_devices(void)
- #define	GRACKLE_NAP	(1<<4)
- #define	GRACKLE_SLEEP	(1<<3)
+ Documentation/powerpc/booting-without-of.txt |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 1284498..54e5f9b 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -880,6 +880,10 @@ address which can extend beyond that lim
+     - device_type : Should be "soc"
+     - ranges : Should be defined as specified in 1) to describe the
+       translation of SOC addresses for memory mapped SOC registers.
++    - bus-frequency: Contains the bus frequency for the SOC node.
++      Typically, the value of this field is filled in by the boot
++      loader. 
++
  
--int
--powerbook_sleep_grackle(void)
-+static int powerbook_sleep_grackle(void)
- {
- 	unsigned long save_l2cr;
- 	unsigned short pmcr1;
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+   Recommended properties:
+ 
+@@ -919,6 +923,7 @@ SOC.
+ 		device_type = "soc";
+ 		ranges = <00000000 e0000000 00100000>
+ 		reg = <e0000000 00003000>;
++		bus-frequency = <0>;
+ 	}
+ 
+ 
+@@ -1170,6 +1175,8 @@ platforms are moved over to use the flat
+ 
+ 	mdio@24520 {
+ 		reg = <24520 20>;
++		device_type = "mdio"; 
++		compatible = "gianfar";
+ 
+ 		ethernet-phy@0 {
+ 			......
+@@ -1317,6 +1324,7 @@ not necessary as they are usually the sa
+ 		device_type = "soc";
+ 		ranges = <00000000 e0000000 00100000>
+ 		reg = <e0000000 00003000>;
++		bus-frequency = <0>;
+ 
+ 		mdio@24520 {
+ 			reg = <24520 20>;
