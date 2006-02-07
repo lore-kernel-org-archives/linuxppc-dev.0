@@ -1,22 +1,16 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C2A506891D
+Return-Path: <David_Antliff@stratexnet.com>
+Received: from exchwenz03.wenz.global.vpn (unknown [202.27.34.1])
+	by ozlabs.org (Postfix) with ESMTP id 1EB16681B8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Feb 2006 06:07:27 +1100 (EST)
-Message-ID: <43E79EDD.9010702@ovro.caltech.edu>
-Date: Mon, 06 Feb 2006 11:09:17 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Tue,  7 Feb 2006 14:11:38 +1100 (EST)
 MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: Yosemite/440EP PLB4 vs PLB3 DMA to PCI issue
-References: <20060205103958.284003535FD@atlas.denx.de>
-	<43E68E85.3080100@ovro.caltech.edu> <200602061931.25370.sr@denx.de>
-In-Reply-To: <200602061931.25370.sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C62B92.82F12665"
+Subject: List etiquette
+Date: Tue, 7 Feb 2006 15:59:28 +1300
+Message-ID: <1139281168.26360.20.camel@theoden.middle_earth>
+From: "David Antliff" <David_Antliff@stratexnet.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,45 +21,79 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Stefan,
+This is a multi-part message in MIME format.
 
-> I never used DMA on 440EP/GP till now so I just noticed the two different 
-> PLB's and their DMA controllers. Never seen this on any 4xx PPC so far. I 
-> suspect that the PLB4 is integrated mainly because of the USB interface.
+------_=_NextPart_001_01C62B92.82F12665
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-That sounds about right. In my app I won't be using USB, and since the 
-PLB4 DMA controller has larger DMA buffers, I thought it might have an
-edge over the PLB3 controller.
+Hello,
 
-> What version of the user manual are you referring to? Could you please give 
-> the pages for the current manual (Revision 1.18).
+I'm a new subscriber to this list and looking to ask a specific question
+shortly. However I would like to bring two things up based on this page:
 
-Oh, sorry, I was looking at the version 1.14 manual. I've just
-downloaded the 1.18 manual. Whoa! The 1.14 manual has 1696 pages,
-whereas the 1.18 manual has only 794 - I hope that means things
-have got simpler ;)
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-(nope, looks like the 440 core just got moved into another document)
+1. The list rules and posting guidelines URLs are out of service:
 
-Anyways, here are the v1.18 page references;
+ - http://lists.linuxppc.org/rules.html
+ - http://lists.linuxppc.org/guidelines.html
 
-v1.18 p365-6 has the PLB-to-PCI Transaction Handling section
-       showing the cases where MRL and MRM will be used.
+2. There is a recommendation to look for answers to questions in the
+list archives. There does not seem to be any way to search these, except
+with Google site: syntax. Am I missing something here?
 
-v1.18 p407 has the PCI Memory to SDRAM DMA transfer section
-       with comments and forward references to the timing
-       diagram pages.
+Regards,
+David
 
->>(I hope you had a nice vacation Stefan!)
-> 
-> Thanks. Very nice. One week of sunshine in the snow. :-)
+------_=_NextPart_001_01C62B92.82F12665
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I hope that means you got some nice snowboarding or skiing!
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7226.0">
+<TITLE>List etiquette</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
 
-We have a fun mountain just up the road;
-http://www.mammothmountain.com/
+<P><FONT SIZE=3D2>Hello,<BR>
+<BR>
+I'm a new subscriber to this list and looking to ask a specific =
+question<BR>
+shortly. However I would like to bring two things up based on this =
+page:<BR>
+<BR>
+<A =
+HREF=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://oz=
+labs.org/mailman/listinfo/linuxppc-embedded</A><BR>
+<BR>
+1. The list rules and posting guidelines URLs are out of service:<BR>
+<BR>
+&nbsp;- <A =
+HREF=3D"http://lists.linuxppc.org/rules.html">http://lists.linuxppc.org/r=
+ules.html</A><BR>
+&nbsp;- <A =
+HREF=3D"http://lists.linuxppc.org/guidelines.html">http://lists.linuxppc.=
+org/guidelines.html</A><BR>
+<BR>
+2. There is a recommendation to look for answers to questions in the<BR>
+list archives. There does not seem to be any way to search these, =
+except<BR>
+with Google site: syntax. Am I missing something here?<BR>
+<BR>
+Regards,<BR>
+David<BR>
+</FONT>
+</P>
 
-Feel free to come and visit if you are in California anytime!
-
-Cheers
-Dave
+</BODY>
+</HTML>
+------_=_NextPart_001_01C62B92.82F12665--
