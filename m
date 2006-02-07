@@ -1,16 +1,15 @@
 Return-Path: <David_Antliff@stratexnet.com>
 Received: from exchwenz03.wenz.global.vpn (unknown [202.27.34.1])
-	by ozlabs.org (Postfix) with ESMTP id 1EB16681B8
+	by ozlabs.org (Postfix) with ESMTP id 21FF268926
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Feb 2006 14:11:38 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C62B92.82F12665"
-Subject: List etiquette
-Date: Tue, 7 Feb 2006 15:59:28 +1300
-Message-ID: <1139281168.26360.20.camel@theoden.middle_earth>
-From: "David Antliff" <David_Antliff@stratexnet.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Tue,  7 Feb 2006 14:33:16 +1100 (EST)
+Subject: Common Flash Interface v1.4 and MTD support in Linux-2.4.4 kernel
+From: David Antliff <David_Antliff@stratexnet.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 07 Feb 2006 16:33:15 +1300
+Message-Id: <1139283195.26357.50.camel@theoden.middle_earth>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,79 +20,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C62B92.82F12665
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
 Hello,
 
-I'm a new subscriber to this list and looking to ask a specific question
-shortly. However I would like to bring two things up based on this page:
 
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Just to be clear, this email is related to work that I do for a
+commercial enterprise, however I am writing on behalf of myself.
 
-1. The list rules and posting guidelines URLs are out of service:
 
- - http://lists.linuxppc.org/rules.html
- - http://lists.linuxppc.org/guidelines.html
+I am working on an MPC852 embedded platform based on the Denx
+Linux-2.4.4 port.
 
-2. There is a recommendation to look for answers to questions in the
-list archives. There does not seem to be any way to search these, except
-with Google site: syntax. Am I missing something here?
+We have an existing device with a fixed-flash (AMD-type) conforming to
+CFI (Common Flash Interface) version 1.2. Linux-2.4.4 supports this
+device when used by the Memory Tech Device Driver (MTD). This device has
+a single region ('plane'?) or at least constant geometry across the
+device. MTD in 2.4.4 has no problems dividing this up into a bunch of
+block devices (partitions for read-only filesystems).
 
-Regards,
-David
+A newer version has a different flash chip - an Intel P30 flash with
+multiple regions - it has two types of geometries as it is configured
+for 'boot' operation. It also conforms to CFI version 1.4. Unfortunately
+the Linux-2.4.4 MTD driver rejects this as unsupported based on CFI
+version and hard-coding it in "kinda" works - the partition devices are
+readable but the driver complains bitterly about non-alignment with
+erase blocks. I suspect the driver is picking up parameters from the
+first region (which covers the first set of blocks) and trying to use
+this across the device. One thing I don't understand yet - as the first
+region uses block sizes that are an integer division of those in the
+second region I'm not sure why the boundaries don't align when I am
+using the 2nd-region block size to define the partition boundaries.
 
-------_=_NextPart_001_01C62B92.82F12665
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7226.0">
-<TITLE>List etiquette</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
+What I am looking for is some advice please - what do you think is the
+best course of action in this situation? 
 
-<P><FONT SIZE=3D2>Hello,<BR>
-<BR>
-I'm a new subscriber to this list and looking to ask a specific =
-question<BR>
-shortly. However I would like to bring two things up based on this =
-page:<BR>
-<BR>
-<A =
-HREF=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://oz=
-labs.org/mailman/listinfo/linuxppc-embedded</A><BR>
-<BR>
-1. The list rules and posting guidelines URLs are out of service:<BR>
-<BR>
-&nbsp;- <A =
-HREF=3D"http://lists.linuxppc.org/rules.html">http://lists.linuxppc.org/r=
-ules.html</A><BR>
-&nbsp;- <A =
-HREF=3D"http://lists.linuxppc.org/guidelines.html">http://lists.linuxppc.=
-org/guidelines.html</A><BR>
-<BR>
-2. There is a recommendation to look for answers to questions in the<BR>
-list archives. There does not seem to be any way to search these, =
-except<BR>
-with Google site: syntax. Am I missing something here?<BR>
-<BR>
-Regards,<BR>
-David<BR>
-</FONT>
-</P>
+There will be others but so far I am considering:
 
-</BODY>
-</HTML>
-------_=_NextPart_001_01C62B92.82F12665--
+1. back-port the CFI code from a newer 2.4 kernel to support CFI v1.4.
+ - does anybody know the state of MTD in later versions? What would be a
+good version to source from?
+
+2. integrate code found here and try and understand how it works:
+http://lists.infradead.org/pipermail/linux-mtd/2001-November/003645.html
+
+3. unfortunately upgrading the entire kernel is not an option at this
+stage, unless absolutely necessary.
+
+
+What would you suggest? Yes, I am happy for a 'quick fix' but if there
+isn't one or it's too risky I am willing to invest the time in doing it
+right.
+
+
+Thank you,
+
+David Antliff
+Stratex Networks Ltd.
+New Zealand
