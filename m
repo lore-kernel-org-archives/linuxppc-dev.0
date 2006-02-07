@@ -1,15 +1,18 @@
-Return-Path: <David_Antliff@stratexnet.com>
-Received: from exchwenz03.wenz.global.vpn (unknown [202.27.34.1])
-	by ozlabs.org (Postfix) with ESMTP id 21FF268926
+Return-Path: <Sylvain.Joyeau@thomson.net>
+Received: from dmzraw3.extranet.thmulti.com (dmzraw3.extranet.thmulti.com
+	[141.11.234.71]) by ozlabs.org (Postfix) with ESMTP id 06978689D9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Feb 2006 14:33:16 +1100 (EST)
-Subject: Common Flash Interface v1.4 and MTD support in Linux-2.4.4 kernel
-From: David Antliff <David_Antliff@stratexnet.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Tue, 07 Feb 2006 16:33:15 +1300
-Message-Id: <1139283195.26357.50.camel@theoden.middle_earth>
-Mime-Version: 1.0
+	Tue,  7 Feb 2006 18:44:36 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Floating point math in kernel interrupt -- am I doing this
+	right?(repost)
+Date: Tue, 7 Feb 2006 08:20:18 +0100
+Message-ID: <9C1918067C3BC14C9C351C206D8A8437035273E4@rennsmail03.eu.thmulti.com>
+From: "Joyeau Sylvain" <Sylvain.Joyeau@thomson.net>
+To: "Jeremy Friesner" <jaf@lcsaudio.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,60 +23,91 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Jeremy,
 
+What about kernel stack overflow ?
+You mention that the occurrence of the crash is proportional to the =
+amount of embraced code, which generally use more stack space too... but =
+you aren't very accurate about the call context of your DoMix() =
+function: it can be called depth enough to tickle the interrupted thread =
+control block and issue indirect spurious behavior is userland.
+Hope this help.
 
-Just to be clear, this email is related to work that I do for a
-commercial enterprise, however I am writing on behalf of myself.
+--
+sj
 
-
-I am working on an MPC852 embedded platform based on the Denx
-Linux-2.4.4 port.
-
-We have an existing device with a fixed-flash (AMD-type) conforming to
-CFI (Common Flash Interface) version 1.2. Linux-2.4.4 supports this
-device when used by the Memory Tech Device Driver (MTD). This device has
-a single region ('plane'?) or at least constant geometry across the
-device. MTD in 2.4.4 has no problems dividing this up into a bunch of
-block devices (partitions for read-only filesystems).
-
-A newer version has a different flash chip - an Intel P30 flash with
-multiple regions - it has two types of geometries as it is configured
-for 'boot' operation. It also conforms to CFI version 1.4. Unfortunately
-the Linux-2.4.4 MTD driver rejects this as unsupported based on CFI
-version and hard-coding it in "kinda" works - the partition devices are
-readable but the driver complains bitterly about non-alignment with
-erase blocks. I suspect the driver is picking up parameters from the
-first region (which covers the first set of blocks) and trying to use
-this across the device. One thing I don't understand yet - as the first
-region uses block sizes that are an integer division of those in the
-second region I'm not sure why the boundaries don't align when I am
-using the 2nd-region block size to define the partition boundaries.
-
-
-What I am looking for is some advice please - what do you think is the
-best course of action in this situation? 
-
-There will be others but so far I am considering:
-
-1. back-port the CFI code from a newer 2.4 kernel to support CFI v1.4.
- - does anybody know the state of MTD in later versions? What would be a
-good version to source from?
-
-2. integrate code found here and try and understand how it works:
-http://lists.infradead.org/pipermail/linux-mtd/2001-November/003645.html
-
-3. unfortunately upgrading the entire kernel is not an option at this
-stage, unless absolutely necessary.
-
-
-What would you suggest? Yes, I am happy for a 'quick fix' but if there
-isn't one or it's too risky I am willing to invest the time in doing it
-right.
-
-
-Thank you,
-
-David Antliff
-Stratex Networks Ltd.
-New Zealand
+> -----Original Message-----
+> From: linuxppc-embedded-bounces@ozlabs.org =
+[mailto:linuxppc-embedded-bounces@ozlabs.org] On Behalf Of Jeremy =
+Friesner
+> Sent: lundi 6 f=E9vrier 2006 17:55
+> To: Dan Malek
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: Floating point math in kernel interrupt -- am I doing =
+this right?(repost)
+>=20
+> >
+> > On Feb 5, 2006, at 9:29 PM, Jeremy Friesner wrote:
+> >
+> > > ....   and the mixing is done inside an
+> > > interrupt routine that runs 6000 times per second, and calculates =
+8
+> > > samples
+> > > per interrupt.
+> >
+> > Bad news.  No Floating Point allowed in the kernel.
+>=20
+> I'm aware of that rule, and also why -- because the Linux kernel =
+doesn't want to have to save and restore the state of the
+> floating point registers on every context switch.  I'm also aware that =
+it is nonetheless possible to use floating point in
+> the kernel if you are careful to manually save and restore the proper =
+state yourself, and that in fact floating point is
+> sometimes used in the kernel as a means of doing 64-bit writes, as =
+mentioned here:
+>=20
+> http://www.tldp.org/LDP/cpg/html/x295.html
+>=20
+> So it seems to me that it is possible to do floating point in the =
+kernel, if you are careful to save and restore the proper
+> context/state before and afterwards.  But if it isn't, can you explain =
+to me why it can't be made to work?
+>=20
+> > > In order to do the necessary floating point math, without =
+corrupting
+> > > the state
+> > > of any other processes that might be using the FPU, the interrupt
+> > > routine
+> > > first saves the state of the FPU registers to the stack, then does =
+the
+> > > math,
+> > > then restores FPU registers again, before returning.
+> >
+> > Not on 82xx.  All floating point is done in hardware.
+>=20
+> Right; it is the hardware registers' state that I am saving to the =
+stack, and then restoring afterwards.
+>=20
+> > > So my question is, is there some minor detail that my
+> > > FPU-state-save/restore
+> > > code is missing, that would cause these sort of symptoms?
+> >
+> > Just get all of this out of the kernel.  If you used the standard =
+ALSA
+> > drivers and framework, lots of mixing features are available to you.
+> > If you need some custom mixing, just write a plug-in to do it.
+> > Your data rates are so low they don't justify making any hacks
+> > like this.
+>=20
+> I suppose that is an option, but I'd rather understand why my hack =
+isn't working before I give up and redesign my
+> application, which is already working the way I want it to, 99.9999% =
+of the time.
+>=20
+> Jeremy
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
