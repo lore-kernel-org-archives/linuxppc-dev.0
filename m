@@ -1,22 +1,18 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B629768A1E
+Return-Path: <David_Antliff@stratexnet.com>
+Received: from exchwenz03.wenz.global.vpn (unknown [202.27.34.1])
+	by ozlabs.org (Postfix) with ESMTP id CCBC868A7A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 09:28:34 +1100 (EST)
-Message-ID: <43E91ED1.2090400@ovro.caltech.edu>
-Date: Tue, 07 Feb 2006 14:27:29 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Artesyn Processor PMC 'Host Bridge' has no IRQ assigned?
-References: <43C7051D.8000001@ovro.caltech.edu>	<43C7AA6D.5060206@sandburst.com>	<43C7DA97.30505@ovro.caltech.edu>
-	<43C7DD1D.20804@ovro.caltech.edu>
-In-Reply-To: <43C7DD1D.20804@ovro.caltech.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "Travis B. Sawyer" <tsawyer@sandburst.com>
+	Wed,  8 Feb 2006 09:46:06 +1100 (EST)
+Subject: Re: Common Flash Interface v1.4 and MTD support in Linux-2.4.4 kernel
+From: David Antliff <David_Antliff@stratexnet.com>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20060207210421.57015352659@atlas.denx.de>
+References: <20060207210421.57015352659@atlas.denx.de>
+Content-Type: text/plain
+Date: Wed, 08 Feb 2006 11:46:05 +1300
+Message-Id: <1139352365.6285.6.camel@theoden.middle_earth>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,48 +23,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2006-02-07 at 22:04 +0100, Wolfgang Denk wrote:
+> In message <1139309578.32218.7.camel@yoda.jdub.homelinux.org> you wrote:
+> >
+> > > What would you suggest? Yes, I am happy for a 'quick fix' but if there
+> > > isn't one or it's too risky I am willing to invest the time in doing it
+> > > right.
+> > 
+> > 'quick fix' is to pull the changes from cfi_cmdset_0001.c in MTD CVS
+> > back into your kernel.  But I'm not sure how quick that will be given
+> > that your kernel is very very old.
+> 
+> It's not quick at all, and the  ancient  2.4.4  MTD  code  has  other
+> problems  at  all.  Swithing to a newer kernel version is very likely
+> less trouble.
 
-Hi all,
+Josh & Wolfgang, I appreciate your replies - thank you. 
 
-I mentioned a few weeks back that I had found some
-Artesyn PrPMC boards on eBay for about $50 ea.
-I purchased a couple of the boards, I have booted
-one on a PMC site on a x86 compact PCI host CPU board.
+FYI, we have decided to investigate writing a simple block device driver
+for this device to get our development back on track with an eventual
+goal of upgrading the kernel when time and resources permit. 
 
- From the x86 host, if I perform lspci on the
-board, its recognized as a 'Host Bridge';
+MTD is not crucial to our project, it just made a previous task easier
+and this current one harder! :)
 
-# lspci -s 02:03.0 -vv
-02:03.0 Host bridge: Artesyn Communication Products PM/PPC (rev 01)
-         Subsystem: Unknown device 00f9:1014
-         Control: I/O- Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- 
-ParErr- Stepping- SERR+ FastB2B-
-         Status: Cap- 66Mhz- UDF- FastB2B- ParErr- DEVSEL=medium 
- >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-         Region 1: Memory at f4000000 (32-bit, prefetchable) [size=64M]
-         Region 2: Memory at f0700000 (32-bit, prefetchable) [size=4K]
+Thanks again,
 
-What appears strange to me is that there is no IRQ assigned.
-How then would one write a driver on the PMC board that
-could interrupt the x86 Host CPU??
-
-I haven't used PrPMC boards before, so perhaps this
-is normal.
-
-Travis, you mentioned you'd used this board before. Do you
-recall if this 'feature' is configurable, i.e., can I enable
-an interrupt. I'll also take a look in the IBM CPC700 bridge
-data sheet and see if I can see anything in there.
-
-I checked the mode of the PMC board using the monitor program.
-It says its in non-Monarch mode, so it is correctly configuring
-itself as a PCI peripheral.
-
-My objective for the board is to put U-Boot on it (Travis mentioned
-the Artesyn board is supported), boot Linux, and then write
-drivers for communicating over PCI to an x86 host (much as
-I plan to do with the 440EP processor).
-
-Anyway, comments welcome!
-
-Dave
+David Antliff
