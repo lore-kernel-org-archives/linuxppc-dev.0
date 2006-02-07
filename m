@@ -1,29 +1,21 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx009.isp.belgacom.be (outmx009.isp.belgacom.be
-	[195.238.5.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A8F47689F3
+Return-Path: <rmcguire@uwbt.com>
+Received: from mail19c.g19.rapidsite.net (mail19c.dulles19-verio.com
+	[204.202.242.56]) by ozlabs.org (Postfix) with SMTP id 763A0689AE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 01:34:10 +1100 (EST)
-Received: from outmx009.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx009.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k17EXtH5016643
-	for <linuxppc-embedded@ozlabs.org>; Tue, 7 Feb 2006 15:33:56 +0100
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: Mike Rapoport <mike@compulab.co.il>
-Subject: Re: CPM2 USB driver & MPC8248
-Date: Tue, 7 Feb 2006 15:33:58 +0100
-References: <200602031210.12603.laurent.pinchart@tbox.biz>
-	<200602071414.28551.laurent.pinchart@tbox.biz>
-	<43E8ACB3.6030401@compulab.co.il>
-In-Reply-To: <43E8ACB3.6030401@compulab.co.il>
+	Wed,  8 Feb 2006 06:21:21 +1100 (EST)
+Received: from mx32.stngva01.us.mxservers.net (204.202.242.10)
+	by mail19c.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id 4-08496964
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  7 Feb 2006 14:21:18 -0500 (EST)
+From: "Russell McGuire" <rmcguire@uwbt.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Voyager Video support color depths?
+Date: Tue, 7 Feb 2006 11:20:50 -0800
+Message-ID: <002b01c62c1b$a0152fc0$6405a8c0@absolut>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200602071533.58965.laurent.pinchart@tbox.biz>
-Cc: linuxppc-embedded@ozlabs.org
+	charset="us-ascii"
+In-Reply-To: <mailman.294.1139321937.857.linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,57 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> The driver development is stalled and I don't know when I'll be able to
-> continue working on it.
+Everyone,
 
-Bad news, but I do understand. Please inform me when you will resume working 
-on the driver, so that I can inform you of the progress I will have made (if 
-any).
+I had a question about the various video support that has been tested with
+the 2.4.25 DENX Kernel.
 
-> >What are the major performance issues ?
->
-> One of the issues in this driver is redunduncy between qe end ep
-> structures and as a consequence a lot of uneeded code that make cross
-> updates.
-> I didn't run profiling, so I can't tell better.
+To date I have had pretty good luck with by making sure I have compiled the
+kernel with the Voyager.h file set at 32 BPP mode.
 
-Ok.
+For speed optimization I wanted to cut it back to 16 BPP mode, however I
+couldn't hardly get it to boot the machine after I did this change by
+changing '#define SCREEN_BPP 16'. Most attempts the kernel would lock up
+before a login prompt was available. When I tried SCREEN_BPP at 8 then it
+booted fine, however QT/Embedded had terrible colors.
 
-> >I noticed that the driver uses the MPC82xx packet level interface.
-> >Why don't you use the transaction level interface ?
->
-> The original driver I've started with used packet level. I thought on
-> switching to transaction level, but I hadn't time for it because of
-> other projects pressure.
+I was wondering if I should be looking for the trouble in some other code,
+or perhaps hardware, or if this is a known bug in the SM501 / Voyager
+driver, or perhaps the linux frame buffer driver.
 
-Do you think it would be worth it, or are there any issue which you are aware 
-of that would make it difficult/impractical/impossible/useless ?
+Thanks all,
 
-> >That might explain why some devices don't even respond to the first
-> > request. I noticed that, on my EP8248 board, the controller only sends
-> > 990 SOF packets per second (or rather 990 SOF interrupts are generated).
-> > I might have a time base problem somewhere, as I computed the number of
-> > interrupts per second with a simple
-> >
-> >cat /proc/driver/m8xxhci_privateh > sof.1 && sleep 300 &&
-> >cat /proc/driver/m8xxhci_privateh > sof.2
->
-> I'm not sure such measurements are correct, since you sleep not exatly
-> 300 seconds. I haven't measured how many SOF interrupts I get, but I
-> think you maybe right.
-> It may happen that during transmit or recieve the interrupts are off and
-> SOF packets are not sent.
-
-My bad, this was caused by the boot loader passing 66000000Hz instead of 
-66666666Hz to Linux as the bus frequency. This is fixed now, and I get 1000 
-SOF interrupts per second.
-
-> >Do you have the same problem ? I'll see if I can get my hands on a USB
-> >protocol analyzer.
->
-> Good luck, I'll try to help but unfotunately I'm very much busy with
-> other projects now.
-
-Thanks for your help already.
-
-Laurent Pinchart
+-Russ
