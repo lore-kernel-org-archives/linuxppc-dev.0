@@ -1,22 +1,21 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BE98C68A00
-	for <linuxppc-dev@ozlabs.org>; Tue,  7 Feb 2006 21:58:34 +1100 (EST)
-Date: Tue, 7 Feb 2006 11:58:28 +0100
-From: Olaf Hering <olh@suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E3F2E68A1F
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2006 01:28:58 +1100 (EST)
+In-Reply-To: <17384.30426.76075.491857@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.61.0601311746250.18350@cde-tx32-ldt329.sps.mot.com>
+	<17384.30426.76075.491857@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0298A03B-4A0D-48CE-B941-EB3D0CEA9606@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix Kernel FP unavail exception for BookE
+Date: Tue, 7 Feb 2006 08:28:50 -0600
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] missing refcounting of of_find_node_by_name users
-Message-ID: <20060207105828.GA30948@suse.de>
-References: <20060118151840.GA24381@suse.de> <20060204115541.GB19392@suse.de>
-	<20060204122013.GA20324@suse.de>
-	<17384.31565.896220.384684@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <17384.31565.896220.384684@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, galak@gate.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Tue, Feb 07, Paul Mackeras wrote:
 
-> This one isn't necessary, since np is NULL by the time we get out of
-> the loop.  Same applies to the other places in this file that this
-> patch affects.
+On Feb 7, 2006, at 4:30 AM, Paul Mackerras wrote:
 
-Ok.
+> Becky Bruce writes:
+>
+>> powerpc: Correct BookE FP unavailable exception
+>
+> ...
+>
+>> diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/ 
+>> kernel/head_booke.h
+>
+> Ummm... which tree has head_booke.h?
 
-> > Index: linux-2.6.16-rc2-olh/arch/powerpc/platforms/powermac/pci.c
-> > ===================================================================
-> > --- linux-2.6.16-rc2-olh.orig/arch/powerpc/platforms/powermac/pci.c
-> > +++ linux-2.6.16-rc2-olh/arch/powerpc/platforms/powermac/pci.c
-> > @@ -695,6 +695,7 @@ static void __init fixup_nec_usb2(void)
-> >  				nec->intrs[0].line);
-> >  		}
-> >  	}
-> > +	of_put_node(nec);
-> 
-> Once again, nec is NULL by the time we get here.  And of_put_node
-> doesn't exist. :(  Did you compile-test this?
+powerpc.git should have it.  If not this is an issue that should be  
+fixed.
 
-Only with a pegasos only config, which doesnt cover these files.
+Becky, is this change also needed for arch/ppc?  If so can you fixup  
+arch/ppc/kernel/head_booke.h and provide patch that duplicates  
+head_booke.h in arch/powerpc/kernel if its not there.
 
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+- k
