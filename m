@@ -1,18 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 41A05681B8
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2006 02:10:49 +1100 (EST)
+Return-Path: <Becky.Bruce@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 7A45B681B8
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2006 03:34:59 +1100 (EST)
+In-Reply-To: <0298A03B-4A0D-48CE-B941-EB3D0CEA9606@kernel.crashing.org>
+References: <Pine.LNX.4.61.0601311746250.18350@cde-tx32-ldt329.sps.mot.com>
+	<17384.30426.76075.491857@cargo.ozlabs.ibm.com>
+	<0298A03B-4A0D-48CE-B941-EB3D0CEA9606@kernel.crashing.org>
 Mime-Version: 1.0 (Apple Message framework v746.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1651B3F8-87C2-4A6E-8D66-BF24B3AB83D9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Lost patches in powerpc.git
-Date: Tue, 7 Feb 2006 09:10:44 -0600
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Message-Id: <5F1B7DEF-3AB6-4A7B-A5EB-AEF24348E556@freescale.com>
+From: Becky Bruce <Becky.Bruce@freescale.com>
+Subject: Re: [PATCH] powerpc: Fix Kernel FP unavail exception for BookE
+Date: Tue, 7 Feb 2006 10:35:25 -0600
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, galak@gate.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
 
-It appears in your last merge of patches into powerpc.git you lost  
-some patches.  This is my best attempt at listing out the patches you  
-lost:
+On Feb 7, 2006, at 8:28 AM, Kumar Gala wrote:
 
-     [PATCH] PPC32 8xx: support for the physmapped flash on m8xx
-     [PATCH] powerpc: generalize PPC44x_PIN_SIZE
-     [PATCH] powerpc: Add CONFIG_DEFAULT_UIMAGE to build a uImage by  
-default for a board
-     [PATCH] ppc32 8xx: Added setbitsXX/clrbitsXX macro for read- 
-modify-write operations
-     [PATCH] powerpc: Updated Initial MPC8540 ADS port with OF Flat Dev
+>
+> On Feb 7, 2006, at 4:30 AM, Paul Mackerras wrote:
+>
+>> Becky Bruce writes:
+>>
+>>> powerpc: Correct BookE FP unavailable exception
+>>
+>> ...
+>>
+>>> diff --git a/arch/powerpc/kernel/head_booke.h b/arch/powerpc/ 
+>>> kernel/head_booke.h
+>>
+>> Ummm... which tree has head_booke.h?
+>
+> powerpc.git should have it.  If not this is an issue that should be  
+> fixed.
 
-- kumar
+
+>
+> Becky, is this change also needed for arch/ppc?  If so can you  
+> fixup arch/ppc/kernel/head_booke.h and provide patch that  
+> duplicates head_booke.h in arch/powerpc/kernel if its not there.
+
+No change needed there - it was correct in arch/ppc, just not in arch/ 
+powerpc.  The 8540 patch was based on a slightly older copy of the  
+file that didn't have this change and we didn't catch the problem in  
+testing because the FPU isn't enabled for 8540.  I discovered this  
+later.
+
+The 8540 flat tree support patch added this file to arch/powerpc/ 
+kernel.  As you pointed out in a different mail, this patch has  
+disappeared from the tree recently.
+
+-B
