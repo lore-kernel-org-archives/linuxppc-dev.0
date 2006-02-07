@@ -1,17 +1,19 @@
-Return-Path: <David_Antliff@stratexnet.com>
-Received: from exchwenz03.wenz.global.vpn (unknown [202.27.34.1])
-	by ozlabs.org (Postfix) with ESMTP id CCBC868A7A
+Return-Path: <tsawyer+linuxppc@sandburst.com>
+Received: from sandmail.sandburst.com (sandmail.sandburst.com [216.57.132.42])
+	by ozlabs.org (Postfix) with ESMTP id 0FF5168926
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 09:46:06 +1100 (EST)
-Subject: Re: Common Flash Interface v1.4 and MTD support in Linux-2.4.4 kernel
-From: David Antliff <David_Antliff@stratexnet.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20060207210421.57015352659@atlas.denx.de>
-References: <20060207210421.57015352659@atlas.denx.de>
-Content-Type: text/plain
-Date: Wed, 08 Feb 2006 11:46:05 +1300
-Message-Id: <1139352365.6285.6.camel@theoden.middle_earth>
-Mime-Version: 1.0
+	Wed,  8 Feb 2006 09:56:06 +1100 (EST)
+Message-ID: <43E92584.1000007@sandburst.com>
+Date: Tue, 07 Feb 2006 17:56:04 -0500
+From: "Travis B. Sawyer" <tsawyer+linuxppc@sandburst.com>
+MIME-Version: 1.0
+To: David Hawkins <dwh@ovro.caltech.edu>
+Subject: Re: Artesyn Processor PMC 'Host Bridge' has no IRQ assigned?
+References: <43C7051D.8000001@ovro.caltech.edu>	<43C7AA6D.5060206@sandburst.com>	<43C7DA97.30505@ovro.caltech.edu>
+	<43C7DD1D.20804@ovro.caltech.edu>
+	<43E91ED1.2090400@ovro.caltech.edu>
+In-Reply-To: <43E91ED1.2090400@ovro.caltech.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,30 +25,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-02-07 at 22:04 +0100, Wolfgang Denk wrote:
-> In message <1139309578.32218.7.camel@yoda.jdub.homelinux.org> you wrote:
-> >
-> > > What would you suggest? Yes, I am happy for a 'quick fix' but if there
-> > > isn't one or it's too risky I am willing to invest the time in doing it
-> > > right.
-> > 
-> > 'quick fix' is to pull the changes from cfi_cmdset_0001.c in MTD CVS
-> > back into your kernel.  But I'm not sure how quick that will be given
-> > that your kernel is very very old.
-> 
-> It's not quick at all, and the  ancient  2.4.4  MTD  code  has  other
-> problems  at  all.  Swithing to a newer kernel version is very likely
-> less trouble.
+David Hawkins wrote:
 
-Josh & Wolfgang, I appreciate your replies - thank you. 
+> What appears strange to me is that there is no IRQ assigned.
+>
+Ouch.
 
-FYI, we have decided to investigate writing a simple block device driver
-for this device to get our development back on track with an eventual
-goal of upgrading the kernel when time and resources permit. 
+> I haven't used PrPMC boards before, so perhaps this
+> is normal.
+>
+> Travis, you mentioned you'd used this board before. Do you
+> recall if this 'feature' is configurable, i.e., can I enable
+> an interrupt. I'll also take a look in the IBM CPC700 bridge
+> data sheet and see if I can see anything in there.
+>
+It's been a couple of years since I've had to mess with the ArtPrPMC board.
+There is, IIRC, there is a doorbell register in the CPC700, but I don't 
+have the spec
+handy.  My last use of the prpmc was with vxworks and shared memory 
+messaging
+using a doorbell.
 
-MTD is not crucial to our project, it just made a previous task easier
-and this current one harder! :)
+> I checked the mode of the PMC board using the monitor program.
+> It says its in non-Monarch mode, so it is correctly configuring
+> itself as a PCI peripheral.
+>
+> My objective for the board is to put U-Boot on it (Travis mentioned
+> the Artesyn board is supported), boot Linux, and then write
+> drivers for communicating over PCI to an x86 host (much as
+> I plan to do with the 440EP processor).
+>
+Umm... I recall stating the XPEDITE1000 from X-ES was supported by u-boot
+(I'll have to submit another patch to Wolfgang as they(XES) changed some 
+stuff wrt
+flash write protect, I've also moved the env from the cramped i2c eeprom 
+(bad) to
+the intel flash).
 
-Thanks again,
+I'd have to check the u-boot source for PrPMC support, as I haven't run 
+u-boot on it.
 
-David Antliff
+Best Regards, and good luck!
+-travis
