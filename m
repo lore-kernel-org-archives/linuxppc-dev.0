@@ -1,15 +1,15 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20060207105643.GA22234@lst.de>
+In-Reply-To: <200602071445.45805.jk@ozlabs.org>
 References: <17384.5875.790692.127762@cargo.ozlabs.ibm.com>
-	<20060207105643.GA22234@lst.de>
+	<200602071445.45805.jk@ozlabs.org>
 Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B21A08E2-3D64-45B8-8319-872B1C1D31BC@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6FED97E8-FD6B-4CEC-983F-5CA149A50E79@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: merge these lists?
-Date: Tue, 7 Feb 2006 08:35:23 -0600
-To: Christoph Hellwig <hch@lst.de>
-Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
+Date: Tue, 7 Feb 2006 08:36:35 -0600
+To: Jeremy Kerr <jk@ozlabs.org>
+Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,21 +20,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 7, 2006, at 4:56 AM, Christoph Hellwig wrote:
+On Feb 6, 2006, at 9:45 PM, Jeremy Kerr wrote:
 
-> On Tue, Feb 07, 2006 at 02:41:39PM +1100, Paul Mackerras wrote:
->> A lot of messages seem to get cross-posted to both linuxppc-dev and
->> linuxppc64-dev these days, since we are all working in the one tree.
->> Rather than having to cross-post, I propose that we create a single
->> powerpc-dev@ozlabs.org list to replace linuxppc-dev and
->> linuxppc64-dev.  (The linuxppc-embedded list would continue as at
->> present.)
+> Paul,
 >
-> Why not just kill linuxppc64-dev and leave linuxppc-dev?  Probably not
-> worth to remove the well-known and widely used address just for the
-> sake of it.
+>> If we do this, we would set up the new list with the union of the
+>> subscribers of the old lists, and make emails sent to linuxppc-dev
+>> and linuxppc64-dev go to the new list, so it should be painless.
+>>
+>> Thoughts? Comments? Objections?
+>
+> How about the patchwork lists? Should I look at merging those too?
 
-I agree.  Let's just kill linuxppc64-dev and direct people at  
-linuxppc-dev.
+Hmm, how about a merged patchwork starting after 2.6.16?
 
 - kumar
