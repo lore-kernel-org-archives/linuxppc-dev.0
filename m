@@ -1,18 +1,21 @@
-Return-Path: <Sylvain.Joyeau@thomson.net>
-Received: from dmzraw3.extranet.thmulti.com (dmzraw3.extranet.thmulti.com
-	[141.11.234.71]) by ozlabs.org (Postfix) with ESMTP id 06978689D9
+Return-Path: <jonandia@aotek.es>
+Received: from sollube.sarenet.es (mx1.sarenet.es [194.30.0.37])
+	by ozlabs.org (Postfix) with ESMTP id A6D4C689C0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Feb 2006 18:44:36 +1100 (EST)
+	Tue,  7 Feb 2006 21:02:57 +1100 (EST)
+Received: from ntvir (unknown [212.81.206.17])
+	by sollube.sarenet.es (Postfix) with ESMTP id ED4D21332
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  7 Feb 2006 10:44:24 +0100 (CET)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Floating point math in kernel interrupt -- am I doing this
-	right?(repost)
-Date: Tue, 7 Feb 2006 08:20:18 +0100
-Message-ID: <9C1918067C3BC14C9C351C206D8A8437035273E4@rennsmail03.eu.thmulti.com>
-From: "Joyeau Sylvain" <Sylvain.Joyeau@thomson.net>
-To: "Jeremy Friesner" <jaf@lcsaudio.com>
-Cc: linuxppc-embedded@ozlabs.org
+	charset=iso-8859-1
+Subject: RE: Floating point math in kernel interrupt -- am I doing
+	thisright?(repost)
+Date: Tue, 7 Feb 2006 10:44:22 +0100
+Message-ID: <918EB199DDDFFA42BEA2EB3A1C6021F387464F@correo.fagorautomation.net>
+From: "Josu Onandia" <jonandia@aotek.es>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,6 +25,29 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Hi,
+
+In the RTAI scheduler there are routines (save_fpenv, restore_fpenv) =
+that are very similar to your functions. I'd suggest to look in more =
+detail if there are any subtle difference.
+
+I think also that Sylvain can be right about the stack, so it could be a =
+good idea to place saved_fpr in static storage, not in the stack.
+
+My 2 cents
+
+Josu
+
+-----Mensaje original-----
+De: linuxppc-embedded-bounces@ozlabs.org
+[mailto:linuxppc-embedded-bounces@ozlabs.org]En nombre de Joyeau Sylvain
+Enviado el: martes, 07 de febrero de 2006 8:20
+Para: Jeremy Friesner
+CC: linuxppc-embedded@ozlabs.org
+Asunto: RE: Floating point math in kernel interrupt -- am I doing
+thisright?(repost)
+
 
 Jeremy,
 
@@ -111,3 +137,9 @@ of the time.
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
