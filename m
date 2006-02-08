@@ -1,15 +1,16 @@
-Return-Path: <jimmyzhmliu@yahoo.com>
-Received: from web53107.mail.yahoo.com (web53107.mail.yahoo.com
-	[206.190.49.57]) by ozlabs.org (Postfix) with SMTP id B07CF68A8C
+Return-Path: <greg.buhler@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id E965F68A92
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Feb 2006 07:10:20 +1100 (EST)
-Message-ID: <20060208200339.5103.qmail@web53107.mail.yahoo.com>
-Date: Wed, 8 Feb 2006 12:03:39 -0800 (PST)
-From: jimmy liu <jimmyzhmliu@yahoo.com>
-Subject: Need help using JFFS2 as Root Filesystem
-To: linuxppc-embedded@ozlabs.org
+	Thu,  9 Feb 2006 08:05:20 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C62CF1.AA4D0591"
+Subject: Example PPC-4xx DMA scatter/gather usage
+Date: Wed, 8 Feb 2006 12:53:25 -0800
+Message-ID: <68997D3094017740BB875EB2A425A6EA02C1C11D@VCAEXCH01.hq.corp.viasat.com>
+From: "Buhler, Greg" <greg.buhler@viasat.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,116 +21,148 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-To all,
+This is a multi-part message in MIME format.
 
-I need help for my Embedded Linux System. When I use
-Ramdisk as the root filesystem, it works fine. When I
-change to JFFS2 as the root filesystem, I got the
-following message:
+------_=_NextPart_001_01C62CF1.AA4D0591
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-=> bootm ff100000
-## Booting image at ff100000 ...
-   Image Name:   Linux-2.4.25
-   Image Type:   PowerPC Linux Kernel Image (gzip
-compressed)
-   Data Size:    830399 Bytes = 810.9 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-Memory BAT mapping: BAT2=16Mb, BAT3=0Mb, residual: 0Mb
-Linux version 2.4.25 (root@localhost.localdomain) (gcc
-version 3.3.3 (DENX ELDK6
-On node 0 totalpages: 4096
-zone(0): 4096 pages.
-zone(1): 0 pages.
-zone(2): 0 pages.
-Kernel command line: root=/dev/mtdblock0
-rootfstype=jffs2
-Warning: real time clock seems stuck!
-Calibrating delay loop... 111.00 BogoMIPS
-Memory: 14252k available (1312k kernel code, 384k
-data, 224k init, 0k highmem)
-Dentry cache hash table entries: 2048 (order: 2, 16384
-bytes)
-Inode cache hash table entries: 1024 (order: 1, 8192
-bytes)
-Mount cache hash table entries: 512 (order: 0, 4096
-bytes)
-Buffer cache hash table entries: 1024 (order: 0, 4096
-bytes)
-Page-cache hash table entries: 4096 (order: 2, 16384
-bytes)
-POSIX conformance testing by UNIFIX
-PCI: Probing PCI hardware
-Memory resource not set for host bridge 0
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society
-NET3.039
-Initializing RT netlink socket
-Starting kswapd
-Journalled Block Device driver loaded
-devfs: v1.12c (20020818) Richard Gooch
-(rgooch@atnf.csiro.au)
-devfs: boot_options: 0x1
-Installing knfsd (copyright (C) 1996
-okir@monad.swb.de).
-JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
-i2c-core.o: i2c core module version 2.6.1 (20010830)
-i2c-dev.o: i2c /dev entries driver module version
-2.6.1 (20010830)
-i2c-algo-8260.o: i2c mpc8260 algorithm module
-CPM UART driver version 0.01
-ttyS0 on SMC1 at 0x0000, BRG7
-ttyS1 on SMC2 at 0x0040, BRG8
-ttyS2 on SCC1 at 0x8000, BRG1
-ttyS3 on SCC2 at 0x8100, BRG2
-Generic RTC Driver v1.07
-eth0: FCC1 ENET Version 0.4, 00:08:02:06:00:00
-eth1: FCC2 ENET Version 0.4, 00:08:02:46:00:00
-eth2: FCC3 ENET Version 0.4, 00:08:02:26:00:00
-physmap flash device: d00000 at ff300000
-phys_mapped_flash: Found 1 x16 devices at 0x0 in
-16-bit bank
- Intel/Sharp Extended Query Table at 0x0031
-Using buffer write method
-cfi_cmdset_0001: Erase suspend on write enabled
-NET4: Linux TCP/IP 1.0 for NET4.0
-IP Protocols: ICMP, UDP, TCP, IGMP
-IP: routing cache hash table of 512 buckets, 4Kbytes
-TCP: Hash tables configured (established 1024 bind
-2048)
-NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-Oops: kernel access of bad area, sig: 11
-NIP: C00AA878 XER: 20000000 LR: C00AA01C SP: C0233CC0
-REGS: c0233c10 TRAP: 0300d
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00000000, DSISR: 20000000
-TASK = c0232000[1] 'swapper' Last syscall: 120
-last math 00000000 last altivec 00000000
-GPR00: 00000400 C0233CC0 C0232000 C02AA4E4 C03CB380
-00020000 00000000 C03C0000
-GPR08: 00D00000 C0238C00 00000000 C00AA164 82002028
-00008800 00000000 0000005A
-GPR16: 00000000 00000068 C0150000 C0150000 C0150000
-C0150000 00CFFFFF 00000000
-GPR24: 00D00000 00020000 00000000 C03CB380 00000000
-C03CB380 C02AA4E4 00000000
-Call backtrace:
-C00AAEBC C00AA01C C00AD954 C00AE134 C00AFEAC C00B04C0
-C003E83C
-C003EC38 C00538C0 C0053C40 C0054178 C0003C98 C00039D8
-C0006798
-Kernel panic: Attempted to kill init!
- <0>Rebooting in 180 seconds..
+Does anyone have any example code they could provide me that shows
+correct usage of the Linux 2.6.x PPC-4xx scatter/gather DMA
+functionality? None of the mainline kernel tree sources or module
+sources seem to use this functionality.=20
 
-Could somebody help me figure out what is the problem.
+I am working on a driver that runs on an embedded PPC-405gp running
+linux 2.4.21.  The driver relies extensively on the PPC's DMA controller
+using all 4 channels simultaneously.  After some research I determined
+that the version of the dma code that was in 2.4.21 had been
+significantly modified in more recent kernel trees. As a result I have
+merged in the 2.6.x version of this code, but am running into some
+trouble with sg transfers.  Specifically, after setting up an sgl the
+way I used to with the 2.4.21 kernel, and then kicking off the transfer,
+nothing seems to get transferred. When I attempt to remove sg elements
+from the sgl, the kernel complains saying that I'm trying to remove an
+element from an already empty sgl.
 
-Thanks.
+Any help, advice, or examples would be greatly appreciated. Thanks.
+______________________
+Greg Buhler
+Embedded INFOSEC Systems
+Network Systems Group
+ViaSat, Inc
+760.476.2699
+greg.buhler@viasat.com
 
-Jimmy
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+------_=_NextPart_001_01C62CF1.AA4D0591
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7232.68">
+<TITLE>Example PPC-4xx DMA scatter/gather usage</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Does =
+anyone have any example code they could provide me that shows correct =
+usage of the Linux 2.6.x PPC-4xx scatter/</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial">ga</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">ther DMA =
+functionality?</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Arial">None of the mainline =
+kernel tree sources or module sources seem to use this =
+functionality.</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"> </SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">I am =
+working on a driver that runs</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial"> on an embedded PPC-405gp running linux =
+2.4.21</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">.&nbsp; The driver relies =
+extensively on the PPC</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">&#8217;</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial">s DMA controller</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
+FACE=3D"Arial">using</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Arial">all 4 channels =
+simultaneously.</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial"></FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us">&nbsp;<FONT SIZE=3D2 =
+FACE=3D"Arial"></FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Arial">After some research I =
+determined that the version of the</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
+FACE=3D"Arial">dma</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial"> code that was in 2.4.21 =
+had been significantly modified in more recent kernel trees. As a result =
+I have merged in the 2.6.x version of this code, but am running into =
+some trouble with sg transfers.</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial">&nbsp; Specifically, after setting up =
+a</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT =
+SIZE=3D2 FACE=3D"Arial">n</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial"> sgl</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial"> the way I used to with the 2.4.21 kernel, and then =
+kicking off the transfer, nothing seems to get</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
+FACE=3D"Arial">transferred</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial">.</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial"> When I attempt to remove =
+sg elements from the sgl, the kernel complains saying that =
+I</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT =
+SIZE=3D2 FACE=3D"Arial">&#8217;</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial">m trying to remove an element from an already empty =
+sgl.</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Any =
+help, advice, or examples would be greatly appreciated. =
+Thanks.</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us"></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"></SPAN><A NAME=3D""><SPAN =
+LANG=3D"en-us"><FONT COLOR=3D"#808080" SIZE=3D2 =
+FACE=3D"Arial">______________________</FONT></SPAN></A><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
+
+<P ALIGN=3DLEFT><B><SPAN LANG=3D"en-us"><FONT COLOR=3D"#000080" SIZE=3D2 =
+FACE=3D"Arial">Greg Buhler</FONT></SPAN></B><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
+
+<P ALIGN=3DLEFT><I><SPAN LANG=3D"en-us"><FONT COLOR=3D"#000080" SIZE=3D2 =
+FACE=3D"Arial">Embedded INFOSEC Systems</FONT></SPAN></I><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
+
+<P ALIGN=3DLEFT><I><SPAN LANG=3D"en-us"><FONT COLOR=3D"#000080" SIZE=3D2 =
+FACE=3D"Arial">Network Systems Group</FONT></SPAN></I><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
+
+<P ALIGN=3DLEFT><I><SPAN LANG=3D"en-us"><FONT COLOR=3D"#000080" SIZE=3D2 =
+FACE=3D"Arial">ViaSat, Inc</FONT></SPAN></I><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT COLOR=3D"#000080" SIZE=3D2 =
+FACE=3D"Arial">760.476.2699</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT COLOR=3D"#000080" SIZE=3D2 =
+FACE=3D"Arial">greg.buhler@viasat.com</FONT></SPAN><SPAN =
+LANG=3D"en-us"></SPAN></P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C62CF1.AA4D0591--
