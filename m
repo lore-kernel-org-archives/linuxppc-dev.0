@@ -1,22 +1,21 @@
-Return-Path: <pauleaton@earthlink.net>
-Received: from smtpauth07.mail.atl.earthlink.net
-	(smtpauth07.mail.atl.earthlink.net [209.86.89.67])
-	by ozlabs.org (Postfix) with ESMTP id ED92768A7D
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1A4B068A84
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Feb 2006 07:25:31 +1100 (EST)
-Received: from [24.181.178.78] (helo=paulsnotebook)
-	by smtpauth07.mail.atl.earthlink.net with asmtp (Exim 4.34)
-	id 1F6vkK-00056z-DT
-	for linuxppc-embedded@ozlabs.org; Wed, 08 Feb 2006 15:17:00 -0500
-Message-ID: <001301c62cec$9aa02b90$6701a8c0@paulsnotebook>
-From: "Paul  Eaton" <pauleaton@earthlink.net>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC8248 DPRAM linker script
-Date: Wed, 8 Feb 2006 15:16:46 -0500
+	Thu,  9 Feb 2006 08:34:29 +1100 (EST)
+Message-ID: <43EA634F.5040004@ovro.caltech.edu>
+Date: Wed, 08 Feb 2006 13:31:59 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0010_01C62CC2.ACC81870"
-Reply-To: Paul  Eaton <pauleaton@earthlink.net>
+To: "Buhler, Greg" <greg.buhler@viasat.com>
+Subject: Re: Example PPC-4xx DMA scatter/gather usage
+References: <68997D3094017740BB875EB2A425A6EA02C1C11D@VCAEXCH01.hq.corp.viasat.com>
+In-Reply-To: <68997D3094017740BB875EB2A425A6EA02C1C11D@VCAEXCH01.hq.corp.viasat.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,71 +26,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Buhler, Greg wrote:
+> Does anyone have any example code they could provide me that shows 
+> correct usage of the Linux 2.6.x PPC-4xx scatter/gather DMA 
+> functionality? None of the mainline kernel tree sources or module 
+> sources seem to use this functionality.
+> 
+> I am working on a driver that runs on an embedded PPC-405gp running 
+> linux 2.4.21.  The driver relies extensively on the PPC’s DMA controller 
+> using all 4 channels simultaneously.  After some research I determined 
+> that the version of the dma code that was in 2.4.21 had been 
+> significantly modified in more recent kernel trees. As a result I have 
+> merged in the 2.6.x version of this code, but am running into some 
+> trouble with sg transfers.  Specifically, after setting up an sgl the 
+> way I used to with the 2.4.21 kernel, and then kicking off the transfer, 
+> nothing seems to get transferred. When I attempt to remove sg elements 
+> from the sgl, the kernel complains saying that I’m trying to remove an 
+> element from an already empty sgl.
+> 
+> Any help, advice, or examples would be greatly appreciated. Thanks.
 
-------=_NextPart_000_0010_01C62CC2.ACC81870
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hey Greg,
 
-Hi,
+I haven't tried to use any of the kernel source for DMA control.
+I started by writing a simple driver that provides a page of
+SDRAM (basically copied the nopage driver from Rubini's 3rd Ed).
+Then wrote another driver that provided access to the DCRs.
+Using the DCR driver and page driver, I manually loaded the
+DMA controller DCRs and triggered transfers.
 
-=20
+I know its not something that you'd use in real-life, but
+it allowed me to manually think-out what needs to be done
+for DMA transfers, and allowed me to control when the transfer
+occurred, so that I could capture PCI bus transactions.
+It wouldn't take too much to manually setup an S-G DMA with
+a couple of smaller-than-a-page transfers.
 
-I am looking for a Linker Script that would be permit me to run a small =
-program entirely in the DPRAM region of a MPC8248. Also, which compiler =
-and linker flags do I need for my PC hosted GNU PPC Cross-compiler?  My =
-own attempt, results in the Stack being steered outside of  DPRAM. Could =
-anyone please assist?
+Let me know if you want the code, for the SDRAM page driver,
+and DCRs driver and I'll email it to you.
 
-=20
+Once you have the DMA S-G programming interface confirmed, then go
+back to the DMA API and see if that conforms to the requirements.
+I need to finish some single DMA benchmarks using the manual
+method (to check the EBC performance), and then I'll start
+looking at the proper way to use DMA within kernel drivers.
 
-Thanks,
+Please send updates to the list on your progress.
 
-Paul
-
-------=_NextPart_000_0010_01C62CC2.ACC81870
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>
-<P class=3DMsoNormal style=3D"MARGIN: 0in 0in 0pt"><FONT face=3D"Times =
-New Roman"=20
-size=3D3>Hi,</FONT></P>
-<P class=3DMsoNormal style=3D"MARGIN: 0in 0in 0pt"><?xml:namespace =
-prefix =3D o ns =3D=20
-"urn:schemas-microsoft-com:office:office" /><o:p><FONT face=3D"Times New =
-Roman"=20
-size=3D3>&nbsp;</FONT></o:p></P>
-<P class=3DMsoNormal style=3D"MARGIN: 0in 0in 0pt"><FONT face=3D"Times =
-New Roman"=20
-size=3D3>I am looking for a Linker Script that would be permit me to run =
-a small=20
-program entirely in the DPRAM region of a MPC8248. Also, which compiler =
-and=20
-linker flags do I need for my PC hosted GNU PPC Cross-compiler?<SPAN=20
-style=3D"mso-spacerun: yes">&nbsp; </SPAN>My own attempt, results in the =
-Stack=20
-being steered outside of<SPAN style=3D"mso-spacerun: yes">&nbsp; =
-</SPAN>DPRAM.=20
-Could anyone please assist?</FONT></P>
-<P class=3DMsoNormal style=3D"MARGIN: 0in 0in 0pt"><o:p><FONT =
-face=3D"Times New Roman"=20
-size=3D3>&nbsp;</FONT></o:p></P>
-<P class=3DMsoNormal style=3D"MARGIN: 0in 0in 0pt"><FONT face=3D"Times =
-New Roman"=20
-size=3D3>Thanks,</FONT></P>
-<P class=3DMsoNormal style=3D"MARGIN: 0in 0in 0pt"><FONT face=3D"Times =
-New Roman"=20
-size=3D3>Paul</FONT></P></FONT></DIV></BODY></HTML>
-
-------=_NextPart_000_0010_01C62CC2.ACC81870--
+Cheers
+Dave
