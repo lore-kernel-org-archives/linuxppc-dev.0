@@ -1,15 +1,16 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
-	by ozlabs.org (Postfix) with ESMTP id A4A0E68A78
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2006 17:18:07 +1100 (EST)
-Message-ID: <43E98D7B.2000401@jp.fujitsu.com>
-Date: Wed, 08 Feb 2006 15:19:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] unify pfn_to_page take 2 [17/25] ppc funcs
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Thermal control for dual core G5s
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0602072206290.2458@g5.osdl.org>
+References: <1139377372.8187.16.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0602072206290.2458@g5.osdl.org>
+Content-Type: text/plain
+Date: Wed, 08 Feb 2006 17:38:51 +1100
+Message-Id: <1139380731.5003.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,21 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ppc can use generic funcs.
+On Tue, 2006-02-07 at 22:07 -0800, Linus Torvalds wrote:
+> 
+> On Wed, 8 Feb 2006, Benjamin Herrenschmidt wrote:
+> >
+> > This patch adds a windfarm module, windfarm_pm112, for the dual core G5s
+> > (both 2 and 4 core models), keeping the machine from getting into
+> > vacuum-cleaner mode ;)
+> 
+> This seems to introduce a new warning..
+> 
+>   arch/powerpc/platforms/83xx/Kconfig:10:
+> 	warning: 'select' used by config symbol 'MPC834x_SYS' refer to undefined symbol 'DEFAULT_UIMAGE'
 
-Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Former is not mine...
 
-Index: test-layout-free-zone/include/asm-ppc/page.h
-===================================================================
---- test-layout-free-zone.orig/include/asm-ppc/page.h
-+++ test-layout-free-zone/include/asm-ppc/page.h
-@@ -148,9 +148,7 @@ extern int page_is_ram(unsigned long pfn
+>   drivers/macintosh/Kconfig:193:
+> 	warning: 'select' used by config symbol 'WINDFARM_PM112' refer to undefined symbol 'I2C_PMAC_SMU'
 
-  #define __pa(x) ___pa((unsigned long)(x))
-  #define __va(x) ((void *)(___va((unsigned long)(x))))
--
--#define pfn_to_page(pfn)	(mem_map + ((pfn) - PPC_PGSTART))
--#define page_to_pfn(page)	((unsigned long)((page) - mem_map) + PPC_PGSTART)
-+#define ARCH_PFN_OFFSET		PPC_PGSTART
-  #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
-  #define page_to_virt(page)	__va(page_to_pfn(page) << PAGE_SHIFT)
+Ok, looks like I forgot to update the Kconfig for the new i2c driver, it
+should select I2C_POWERMAC instead. Do you want a new patch or can you
+just fix it there ?
+
+Ben.
