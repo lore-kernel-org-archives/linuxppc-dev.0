@@ -1,19 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CC45F68A8E
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2006 15:04:50 +1100 (EST)
-In-Reply-To: <Pine.LNX.4.61.0602072127510.3872@cde-tx32-ldt329.sps.mot.com>
-References: <Pine.LNX.4.61.0602072127510.3872@cde-tx32-ldt329.sps.mot.com>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D0C7D30F-B6CE-43EC-84BC-36A584B168BF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: lindent 85xx platform code
-Date: Tue, 7 Feb 2006 22:04:45 -0600
-To: Becky Bruce <bgill@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17385.28412.412453.697990@cargo.ozlabs.ibm.com>
+Date: Wed, 8 Feb 2006 15:09:32 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: please pull powerpc-merge.git
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,45 +16,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->  /*
->   * Internal interrupts are all Level Sensitive, and Positive Polarity
->   *
-> @@ -47,28 +46,27 @@ unsigned long isa_mem_base = 0;
->   */
->  static u_char mpc85xx_ads_openpic_initsenses[] __initdata = {
->  	MPC85XX_INTERNAL_IRQ_SENSES,
-> -	0x0,						/* External  0: */
-> +	0x0,			/* External  0: */
->  #if defined(CONFIG_PCI)
->  	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 1: PCI slot 0 */
->  	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 2: PCI slot 1 */
->  	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 3: PCI slot 2 */
->  	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* Ext 4: PCI slot 3 */
->  #else
-> -	0x0,				/* External  1: */
-> -	0x0,				/* External  2: */
-> -	0x0,				/* External  3: */
-> -	0x0,				/* External  4: */
-> +	0x0,			/* External  1: */
-> +	0x0,			/* External  2: */
-> +	0x0,			/* External  3: */
-> +	0x0,			/* External  4: */
->  #endif
->  	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 5: PHY */
-> -	0x0,				/* External  6: */
-> +	0x0,			/* External  6: */
->  	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 7: PHY */
-> -	0x0,				/* External  8: */
-> -	0x0,				/* External  9: */
-> -	0x0,				/* External 10: */
-> -	0x0,				/* External 11: */
-> +	0x0,			/* External  8: */
-> +	0x0,			/* External  9: */
-> +	0x0,			/* External 10: */
-> +	0x0,			/* External 11: */
->  };
+Linus,
 
-Can you fix the tabs so the comments line up again.  Lindent does  
-this I dont really care for it.
+Please do a pull from
 
-- k
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
+
+Log and diffstat follow.
+
+Thanks,
+Paul.
+
+Becky Bruce:
+      documentation/powerpc: add bus-frequency property to SOC node
+
+Dave C Boutcher:
+      powerpc: return correct rtas status from ibm,suspend-me
+      powerpc: prod all processors after ibm,suspend-me
+      powerpc: remove useless call to touch_softlockup_watchdog
+
+David Gibson:
+      powerpc: Cleanup, consolidating icache dirtying logic
+
+Geoff Levand:
+      powerpc: Fix spufs initialization sequence.
+
+Ingo Molnar:
+      sem2mutex: drivers/macintosh/windfarm_core.c
+
+Jake Moilanen:
+      powerpc: IOMMU SG paranoia
+
+Jesper Juhl:
+      Don't check pointer for NULL before passing it to kfree [arch/powerpc/kernel/rtas_flash.c]
+
+Marcelo Tosatti:
+      powerpc/8xx: last two 8MB D-TLB entries are incorrectly set
+
+Michael Ellerman:
+      powerpc: Don't allocate zero bytes in finish_device_tree()
+      powerpc: Make sure we don't create empty lmb regions
+      powerpc: Refuse to boot a kdump kernel via OF
+      powerpc: Fix !SMP build of rtas.c
+      powerpc: Don't overwrite flat device tree with kdump kernel
+      powerpc: Don't use toc in decrementer_iSeries_masked
+
+Michael Neuling:
+      powerpc: hypervisor check in pseries_kexec_cpu_down
+
+Nathan Lynch:
+      powerpc: avoid timer interrupt replay effect when onlining cpu
+
+Olaf Hering:
+      powerpc: remove pointer/integer confusion in generic_calibrate_decr
+      powerpc: restore clock speed in /proc/cpuinfo
+      powerpc: remove pointer/integer confusion in of_find_node_by_name
+      powerpc: add refcounting to setup_peg2 and of_get_pci_address
+      powerpc: fix compile warning in udbg_init_maple_realmode
+
+Paul Mackerras:
+      powerpc/64: Fix bug in setting floating-point exception mode
+
+ Documentation/powerpc/booting-without-of.txt |    8 ++++
+ arch/powerpc/kernel/fpu.S                    |    2 -
+ arch/powerpc/kernel/head_64.S                |    5 +-
+ arch/powerpc/kernel/iommu.c                  |    9 +++-
+ arch/powerpc/kernel/prom.c                   |   38 +++++++++++++++++--
+ arch/powerpc/kernel/prom_init.c              |    4 ++
+ arch/powerpc/kernel/prom_parse.c             |    4 +-
+ arch/powerpc/kernel/rtas.c                   |   12 +++---
+ arch/powerpc/kernel/rtas_flash.c             |    3 -
+ arch/powerpc/kernel/setup_64.c               |    3 +
+ arch/powerpc/kernel/smp.c                    |    3 +
+ arch/powerpc/kernel/time.c                   |    8 ++--
+ arch/powerpc/kernel/udbg_16550.c             |    2 -
+ arch/powerpc/mm/lmb.c                        |    4 ++
+ arch/powerpc/mm/mem.c                        |   14 +------
+ arch/powerpc/platforms/cell/Makefile         |    2 -
+ arch/powerpc/platforms/chrp/chrp.h           |    1 
+ arch/powerpc/platforms/chrp/pci.c            |    2 +
+ arch/powerpc/platforms/chrp/setup.c          |    2 -
+ arch/powerpc/platforms/chrp/time.c           |   21 ----------
+ arch/powerpc/platforms/pseries/setup.c       |    2 -
+ arch/ppc/kernel/head_8xx.S                   |    7 ++-
+ drivers/macintosh/windfarm_core.c            |   53 +++++++++++++-------------
+ include/asm-powerpc/prom.h                   |    2 +
+ 24 files changed, 123 insertions(+), 88 deletions(-)
