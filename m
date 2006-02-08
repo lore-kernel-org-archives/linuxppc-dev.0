@@ -1,15 +1,20 @@
-Return-Path: <torvalds@osdl.org>
-Date: Tue, 7 Feb 2006 22:07:30 -0800 (PST)
-From: Linus Torvalds <torvalds@osdl.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Thermal control for dual core G5s
-In-Reply-To: <1139377372.8187.16.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0602072206290.2458@g5.osdl.org>
-References: <1139377372.8187.16.camel@localhost.localdomain>
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
+	by ozlabs.org (Postfix) with ESMTP id 22C1268A87
+	for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2006 16:47:45 +1100 (EST)
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+	by fgwmail8.fujitsu.co.jp (Fujitsu Gateway)
+	with ESMTP id k185lhrs017527 for <linuxppc-dev@ozlabs.org>;
+	Wed, 8 Feb 2006 14:47:43 +0900
+	(envelope-from kamezawa.hiroyu@jp.fujitsu.com)
+Message-ID: <43E9863C.1080700@jp.fujitsu.com>
+Date: Wed, 08 Feb 2006 14:48:44 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linuxppc64-dev <linuxppc64-dev@ozlabs.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: PATCH] unify pfn_to_page take 2 [4/25] powerpc funcs
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+It looks powerpc doesn't have DISCONTIGMEM config.
+Just replace FLATMEM ver.
 
+Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-On Wed, 8 Feb 2006, Benjamin Herrenschmidt wrote:
->
-> This patch adds a windfarm module, windfarm_pm112, for the dual core G5s
-> (both 2 and 4 core models), keeping the machine from getting into
-> vacuum-cleaner mode ;)
+Index: test-layout-free-zone/include/asm-powerpc/page.h
+===================================================================
+--- test-layout-free-zone.orig/include/asm-powerpc/page.h
++++ test-layout-free-zone/include/asm-powerpc/page.h
+@@ -69,8 +69,6 @@
+  #endif
 
-This seems to introduce a new warning..
-
-  arch/powerpc/platforms/83xx/Kconfig:10:
-	warning: 'select' used by config symbol 'MPC834x_SYS' refer to undefined symbol 'DEFAULT_UIMAGE'
-
-  drivers/macintosh/Kconfig:193:
-	warning: 'select' used by config symbol 'WINDFARM_PM112' refer to undefined symbol 'I2C_PMAC_SMU'
-
-
-Hmm?
-
-		Linus
+  #ifdef CONFIG_FLATMEM
+-#define pfn_to_page(pfn)	(mem_map + (pfn))
+-#define page_to_pfn(page)	((unsigned long)((page) - mem_map))
+  #define pfn_valid(pfn)		((pfn) < max_mapnr)
+  #endif
