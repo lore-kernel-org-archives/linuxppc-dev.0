@@ -1,21 +1,16 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7A39568A92
-	for <linuxppc-dev@ozlabs.org>; Wed,  8 Feb 2006 23:40:50 +1100 (EST)
-Date: Wed, 8 Feb 2006 13:40:45 +0100
-From: Olaf Hering <olh@suse.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: asm-powerpc/highmem.h missing
-Message-ID: <20060208124045.GA14370@suse.de>
-References: <20060208093439.GA9240@suse.de>
-	<20060208211600.28252f22.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20060208211600.28252f22.sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <Pine.LNX.4.64.0602072206290.2458@g5.osdl.org>
+References: <1139377372.8187.16.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0602072206290.2458@g5.osdl.org>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <87E547D2-A8FC-4A89-89A4-60313C9647B0@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Thermal control for dual core G5s
+Date: Wed, 8 Feb 2006 08:52:33 -0600
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc64-dev <linuxppc64-dev@ozlabs.org>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,30 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Wed, Feb 08, Stephen Rothwell wrote:
 
-> On Wed, 8 Feb 2006 10:34:39 +0100 Olaf Hering <olh@suse.de> wrote:
-> >
-> > 
-> > Why was asm-ppc/highmem.h not migrated? linux/highmem.h and pagemap.h wants it.
-> 
-> I guess it was not migrated because it is only required for CONFIG_HIGHMEM
-> and, of course, ppc64 does not need HIGHMEM and presumably noone has tried
-> to build with CONFIG_HIGHMEM set in ARCH=powerpc until now.
+On Feb 8, 2006, at 12:07 AM, Linus Torvalds wrote:
 
-zaptel wants it as well, via netdevice.h/skbuff.h. I wonder why 32bit
-compiles anyway, given the many users of linux/highmem.h. Looking...
+>
+>
+> On Wed, 8 Feb 2006, Benjamin Herrenschmidt wrote:
+>>
+>> This patch adds a windfarm module, windfarm_pm112, for the dual  
+>> core G5s
+>> (both 2 and 4 core models), keeping the machine from getting into
+>> vacuum-cleaner mode ;)
+>
+> This seems to introduce a new warning..
+>
+>   arch/powerpc/platforms/83xx/Kconfig:10:
+> 	warning: 'select' used by config symbol 'MPC834x_SYS' refer to  
+> undefined symbol 'DEFAULT_UIMAGE'
 
+That's my fault.  Paul did push a simple build system update.  I'll  
+ask him to do so.
 
+http://ozlabs.org/pipermail/linuxppc-dev/2006-January/020980.html
 
-
-Argh, still these hacks:
-
-lrwxrwxrwx  1 olaf users 64 2006-02-04 13:16 arch/powerpc/include/asm ->
-/home/olaf/kernel/olh/ppc64/linux-2.6.16-rc2-olh/include/asm-ppc/
-
-So better move it over quick.
-
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+- kumar
