@@ -1,19 +1,15 @@
-Return-Path: <Martin.Krause@tqs.de>
-Received: from mail.tqs.de (mail.tqs.de [62.157.136.17])
-	by ozlabs.org (Postfix) with ESMTP id 8123D68A78
+Return-Path: <bkartal@aselsan.com.tr>
+Received: from turunc.aselsan.com.tr (mail.aselsan.com.tr [212.50.56.228])
+	by ozlabs.org (Postfix) with ESMTP id 5932268AA3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 20:29:23 +1100 (EST)
-Received: from tq-mailsrv.tq-net.de (tq-mailsrv.tqs.de [172.20.1.2])
-	by mail.tqs.de (Postfix) with ESMTP id 2C1DA2605
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 10:29:24 +0100 (CET)
+	Wed,  8 Feb 2006 20:30:19 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Voyager Video support color depths?
-Date: Wed, 8 Feb 2006 10:29:33 +0100
-Message-ID: <47F3F98010FF784EBEE6526EAAB078D1C06003@tq-mailsrv.tq-net.de>
-From: "Martin Krause" <Martin.Krause@tqs.de>
+	charset="ISO-8859-9"
+Subject: powerCore 6750 nfs mount problem
+Date: Wed, 8 Feb 2006 11:15:41 +0200
+Message-ID: <C379193B17749F4BA82ABF87E7DCB6A62CF0D0@papatyaint.aselsan.com.tr>
+From: "Bora KARTAL" <bkartal@aselsan.com.tr>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,39 +21,66 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Russ,
+Hi,
 
-linuxppc-embedded-bounces@ozlabs.org wrote on :
-> I had a question about the various video support that has been tested
-> with the 2.4.25 DENX Kernel.
->=20
-> To date I have had pretty good luck with by making sure I have
-> compiled the kernel with the Voyager.h file set at 32 BPP mode.
->=20
-> For speed optimization I wanted to cut it back to 16 BPP mode,
-> however I couldn't hardly get it to boot the machine after I did this
-> change by changing '#define SCREEN_BPP 16'. Most attempts the kernel
+I am trying to run linuxppc 2.4.20 with a nfs mounted root file system on=
+=20a Force powerCore 6750 board with the following command-line options:
 
-You are using an old driver. Please try the current top of git one.
+CONFIG_CMDLINE=3D"root=3D/dev/nfs nfsroot=3D15.20.11.58:/root/Linux/Monta=
+Vista/opt/montavista/pro/devkit/ppc/7xx/target/ ip=3D15.20.8.204:15.20.11=
+.58:15.20.0.0:255.255.0.0:test1:eth0:off"
 
-The driver now supports kernel parameters. To set the color depth during
-booting you could use for example:
+I am giving a static IP to my target board so have no need to run DHCP cl=
+ient on my target board.
 
-video=3Dvoyager:bpp=3D16
+My problem is:
 
-> would lock up before a login prompt was available. When I tried
-> SCREEN_BPP at 8 then it booted fine, however QT/Embedded had terrible
-> colors.
+The target can not mount to my server Linux machine and gives the followi=
+ng error:
 
-Support for 8 bpp mode should be improved in the current driver.
+Looking up port of RPC 100003/2 on 15.20.11.58
 
-> I was wondering if I should be looking for the trouble in some other
-> code, or perhaps hardware, or if this is a known bug in the SM501 /
-> Voyager driver, or perhaps the linux frame buffer driver.
+NETDEV WATCHDOG: eth0: transmit timed out
 
-How is your SM501 connected to your CPU? Which board are you using?
-The default configuration of the driver assumes tht the SM501 is
-connected via the SH4-Interface, not PCI.
+NETDEV WATCHDOG: eth0: transmit timed out
 
-Regards,
-Martin
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+I checked the nfs server at my host Linux and it is working properly. Any=
+body can help?=20
+
+Thanks,
+
+Bora
+
+######################################################################
+Dikkat:
+
+Bu elektronik posta mesaji kisisel ve ozeldir. Eger size=20
+gonderilmediyse lutfen gondericiyi bilgilendirip mesaji siliniz.=20
+Firmamiza gelen ve giden mesajlar virus taramasindan gecirilmekte,=20
+guvenlik nedeni ile kontrol edilerek saklanmaktadir. Mesajdaki=20
+gorusler ve bakis acisi gondericiye ait olup Aselsan A.S. resmi=20
+gorusu olmak zorunda degildir.
+
+######################################################################
+Attention:=20
+
+This e-mail message is privileged and confidential. If you are=20
+not the intended recipient please delete the message and notify=20
+the sender. E-mails to and from the company are monitored for=20
+operational reasons and in accordance with lawful business practices.=20
+Any views or opinions presented are solely those of the author and=20
+do not necessarily represent the views of the company.
+
+######################################################################
