@@ -1,22 +1,20 @@
-Return-Path: <jaf@lcsaudio.com>
-Received: from smtpauth01.mail.atl.earthlink.net
-	(smtpauth01.mail.atl.earthlink.net [209.86.89.61])
-	by ozlabs.org (Postfix) with ESMTP id 8A69368A00
+Return-Path: <Martin.Krause@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [62.157.136.17])
+	by ozlabs.org (Postfix) with ESMTP id 8123D68A78
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 19:32:24 +1100 (EST)
-Received: from [4.232.75.165] (helo=smtpauth.earthlink.net)
-	by smtpauth01.mail.atl.earthlink.net with asmtp (Exim 4.34)
-	id 1F6kkP-00083H-PL
-	for linuxppc-embedded@ozlabs.org; Wed, 08 Feb 2006 03:32:22 -0500
-In-Reply-To: <mailman.294.1139321937.857.linuxppc-embedded@ozlabs.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: RE: Floating point math in kernel interrupt -- am I doing this
-	right?(repost)
-From: "Jeremy Friesner" <jaf@lcsaudio.com>
-Date: Wed, 08 Feb 2006 00:32:12 PST (-0800)
-Message-Id: <1193761678-BeMail@jeremy.lcsaudio.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+	Wed,  8 Feb 2006 20:29:23 +1100 (EST)
+Received: from tq-mailsrv.tq-net.de (tq-mailsrv.tqs.de [172.20.1.2])
+	by mail.tqs.de (Postfix) with ESMTP id 2C1DA2605
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  8 Feb 2006 10:29:24 +0100 (CET)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Voyager Video support color depths?
+Date: Wed, 8 Feb 2006 10:29:33 +0100
+Message-ID: <47F3F98010FF784EBEE6526EAAB078D1C06003@tq-mailsrv.tq-net.de>
+From: "Martin Krause" <Martin.Krause@tqs.de>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,58 +25,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi Russ,
 
-I figured out what was wrong with my FPU save/restore code:  I was neglecting to save and restore the state of the FPSCR register.  Thanks to all who helped me figure it out!
+linuxppc-embedded-bounces@ozlabs.org wrote on :
+> I had a question about the various video support that has been tested
+> with the 2.4.25 DENX Kernel.
+>=20
+> To date I have had pretty good luck with by making sure I have
+> compiled the kernel with the Voyager.h file set at 32 BPP mode.
+>=20
+> For speed optimization I wanted to cut it back to 16 BPP mode,
+> however I couldn't hardly get it to boot the machine after I did this
+> change by changing '#define SCREEN_BPP 16'. Most attempts the kernel
 
-For the sake of the list archives, I've pasted my fixed FP save/restore routines below.
+You are using an old driver. Please try the current top of git one.
 
--Jeremy
+The driver now supports kernel parameters. To set the color depth during
+booting you could use for example:
 
----------------------- snip -------------------------------
+video=3Dvoyager:bpp=3D16
 
-/* macros to save and restore floating point register state */
-# define SAVE=5FFPR(x)    {=5F=5Fasm=5F=5F =5F=5Fvolatile=5F=5F ("stfd " #x ", " #x "*8(%0)\n" : : "b" (saved=5Ffpr));}
-# define RESTORE=5FFPR(x) {=5F=5Fasm=5F=5F =5F=5Fvolatile=5F=5F ("lfd  " #x ", " #x "*8(%0)\n" : : "b" (saved=5Ffpr));}    
+> would lock up before a login prompt was available. When I tried
+> SCREEN_BPP at 8 then it booted fine, however QT/Embedded had terrible
+> colors.
 
-/* Set up floating-point-enabled-mode */
-uint32 saved=5Fmsr;        /* space for the MSR register (32 bits) */
-uint32 saved=5Ffpscr[1*2]; /* space for the FPSCR register (64 bits) */
-uint32 saved=5Ffpr[14*2];  /* space for the 14 floating point registers I'll use (64 bits each) */
-{
-   uint32 msr;
+Support for 8 bpp mode should be improved in the current driver.
 
-   /* Save existing MSR for later */
-   =5F=5Fasm=5F=5F =5F=5Fvolatile=5F=5F ("mfmsr %0" : "=3Dr" (msr) : );
-   saved=5Fmsr =3D msr;
+> I was wondering if I should be looking for the trouble in some other
+> code, or perhaps hardware, or if this is a known bug in the SM501 /
+> Voyager driver, or perhaps the linux frame buffer driver.
 
-   /* Enable floating point */
-   msr |=3D MSR=5FFP;
-   msr &=3D ~(MSR=5FFE0 | MSR=5FFE1);
-   =5F=5Fasm=5F=5F =5F=5Fvolatile=5F=5F ("mtmsr %0\n\tisync" : : "r" (msr));
+How is your SM501 connected to your CPU? Which board are you using?
+The default configuration of the driver assumes tht the SM501 is
+connected via the SH4-Interface, not PCI.
 
-   /* Save the floating point registers that will be used, so that we won't screw up user processes */
-   SAVE=5FFPR(0);  SAVE=5FFPR(1);  SAVE=5FFPR(2);  SAVE=5FFPR(3);  SAVE=5FFPR(4);
-   SAVE=5FFPR(5);  SAVE=5FFPR(6);  SAVE=5FFPR(7);  SAVE=5FFPR(8);  SAVE=5FFPR(9);
-   SAVE=5FFPR(10); SAVE=5FFPR(11); SAVE=5FFPR(12); SAVE=5FFPR(13);
-
-   /* Save existing FPSCR, by first retrieving it into FPR0, then storing FPR0 to the stack */
-   =5F=5Fasm=5F=5F =5F=5Fvolatile=5F=5F ("mffs 0\n\tstfd 0, 0(%0)\n" : : "b" (saved=5Ffpscr));
-}                
-
-DoFloatingPointMathHere();
-
-/* End floating-point-enabled-mode */
-{
-   /* Restore FPSCR, by first loading it into FPR0, then calling mtfsf to put it back into the register */
-   =5F=5Fasm=5F=5F =5F=5Fvolatile=5F=5F ("lfd 0, 0(%0)\n\tmtfsf 0xFF,0" : : "b" (saved=5Ffpscr));
-
-   /* Restore the FP registers that may have been munged */
-   RESTORE=5FFPR(0);  RESTORE=5FFPR(1);  RESTORE=5FFPR(2);  RESTORE=5FFPR(3);  RESTORE=5FFPR(4);
-   RESTORE=5FFPR(5);  RESTORE=5FFPR(6);  RESTORE=5FFPR(7);  RESTORE=5FFPR(8);  RESTORE=5FFPR(9);
-   RESTORE=5FFPR(10); RESTORE=5FFPR(11); RESTORE=5FFPR(12); RESTORE=5FFPR(13);
-
-   /* Restore MSR */
-   =5F=5Fasm=5F=5F =5F=5Fvolatile=5F=5F ("mtmsr %0\n" "isync" : : "r" (saved=5Fmsr));
-}
- 
+Regards,
+Martin
