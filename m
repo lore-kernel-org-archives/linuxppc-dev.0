@@ -1,16 +1,14 @@
-Return-Path: <bkartal@aselsan.com.tr>
-Received: from turunc.aselsan.com.tr (mail.aselsan.com.tr [212.50.56.228])
-	by ozlabs.org (Postfix) with ESMTP id 5932268AA3
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 20:30:19 +1100 (EST)
-MIME-Version: 1.0
+Return-Path: <jeanwelly@126.com>
+Date: Wed, 8 Feb 2006 21:04:49 +0800
+From: "jeanwelly" <jeanwelly@126.com>
+To: "Wolfgang Denk" <wd@denx.de>
+References: <20060115171949.2EB36353AB0@atlas.denx.de>
+Subject: Re: Re: How to check which CPU we are using? PPC?
+Message-ID: <200602081225331876279@126.com>
+Mime-Version: 1.0
 Content-Type: text/plain;
-	charset="ISO-8859-9"
-Subject: powerCore 6750 nfs mount problem
-Date: Wed, 8 Feb 2006 11:15:41 +0200
-Message-ID: <C379193B17749F4BA82ABF87E7DCB6A62CF0D0@papatyaint.aselsan.com.tr>
-From: "Bora KARTAL" <bkartal@aselsan.com.tr>
-To: <linuxppc-embedded@ozlabs.org>
+	charset="gb2312"
+Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,66 +19,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-I am trying to run linuxppc 2.4.20 with a nfs mounted root file system on=
-=20a Force powerCore 6750 board with the following command-line options:
-
-CONFIG_CMDLINE=3D"root=3D/dev/nfs nfsroot=3D15.20.11.58:/root/Linux/Monta=
-Vista/opt/montavista/pro/devkit/ppc/7xx/target/ ip=3D15.20.8.204:15.20.11=
-.58:15.20.0.0:255.255.0.0:test1:eth0:off"
-
-I am giving a static IP to my target board so have no need to run DHCP cl=
-ient on my target board.
-
-My problem is:
-
-The target can not mount to my server Linux machine and gives the followi=
-ng error:
-
-Looking up port of RPC 100003/2 on 15.20.11.58
-
-NETDEV WATCHDOG: eth0: transmit timed out
-
-NETDEV WATCHDOG: eth0: transmit timed out
-
-NETDEV WATCHDOG: eth0: transmit timed out
-
-NETDEV WATCHDOG: eth0: transmit timed out
-
-NETDEV WATCHDOG: eth0: transmit timed out
-
-NETDEV WATCHDOG: eth0: transmit timed out
-
-NETDEV WATCHDOG: eth0: transmit timed out
-
-NETDEV WATCHDOG: eth0: transmit timed out
-
-I checked the nfs server at my host Linux and it is working properly. Any=
-body can help?=20
-
-Thanks,
-
-Bora
-
-######################################################################
-Dikkat:
-
-Bu elektronik posta mesaji kisisel ve ozeldir. Eger size=20
-gonderilmediyse lutfen gondericiyi bilgilendirip mesaji siliniz.=20
-Firmamiza gelen ve giden mesajlar virus taramasindan gecirilmekte,=20
-guvenlik nedeni ile kontrol edilerek saklanmaktadir. Mesajdaki=20
-gorusler ve bakis acisi gondericiye ait olup Aselsan A.S. resmi=20
-gorusu olmak zorunda degildir.
-
-######################################################################
-Attention:=20
-
-This e-mail message is privileged and confidential. If you are=20
-not the intended recipient please delete the message and notify=20
-the sender. E-mails to and from the company are monitored for=20
-operational reasons and in accordance with lawful business practices.=20
-Any views or opinions presented are solely those of the author and=20
-do not necessarily represent the views of the company.
-
-######################################################################
+SGksDQpBY3V0YWxseSBJIGFtIGFza2luZyAiQXJlIHRoZXJlIGFueSBjb21tYW5kIHRoYXQgb3Mg
+b3IgQlNQIHByb3ZpZGVkIGluIHNoZWxsIHRvIHByaW50IHRoZSBDUFUgaW5mb3JtYXRpb24/Ii4g
+DQpUaGFua3MgYSBsb3QhDQoNCgkNCg0KPT09PT09PSAyMDA2LTAxLTE2IDAxOjE5OjUyIMT61NrA
+tNDF1tDQtLXAo7o9PT09PT09DQoNCj4NCj5JbiBtZXNzYWdlIDw0M0NBN0FGMS4xMTYwOUIuMDM2
+NTU+IHlvdSB3cm90ZToNCj4+IFNHOTNJSFJ2SUdOb1pXTnJJSGRvYVdOb0lFTlFWU0IzWlNCaGNt
+VWdkWE5wYm1jL0lFRnVlU0J0WlhSb2IyUnpQdzBLRFFvSkRRcFUNCj4+IGFHRnVhM01oRFFvTkNx
+R2hvYUdob2FHaG9hR2hvYUdob2FGcVpXRnVkMlZzYkhrTkNxR2hvYUdob2FHaG9hR2hvYUdob2FG
+cVpXRnUNCj4+IGQyVnNiSGxBTVRJMkxtTnZiUTBLb2FHaG9hR2hvYUdob2FHaG9hR2hvYUdob2FF
+eU1EQTJMVEF4TFRFMURRcGZYMTlmWDE5ZlgxOWYNCj4+IFgxOWZYMTlmWDE5ZlgxOWZYMTlmWDE5
+ZlgxOWZYMTlmWDE5ZlgxOWZYMTlmWDE5Zlh3cE1hVzUxZUhCd1l5MWxiV0psWkdSbFpDQnQNCj4+
+IFlXbHNhVzVuSUd4cGMzUUtUR2x1ZFhod2NHTXRaVzFpWldSa1pXUkFiM3BzWVdKekxtOXlad3Bv
+ZEhSd2N6b3ZMMjk2YkdGaWN5NXYNCj4+IGNtY3ZiV0ZwYkcxaGJpOXNhWE4wYVc1bWJ5OXNhVzUx
+ZUhCd1l5MWxiV0psWkdSbFpBPT0NCj4NCj5QbGVhc2UgZml4IHlvdXIgbWFpbGVyLiBEb24ndCB1
+c2UgYmFzZTY0IGVuY3NkaW5nLiBQb3N0ICBwbGFpbiAgdGV4dCwNCj5wbGVhc2UuDQo+DQo+PiBI
+b3cgdG8gY2hlY2sgd2hpY2ggQ1BVIHdlIGFyZSB1c2luZz8gQW55IG1ldGhvZHM/DQo+DQo+Q2hl
+Y2sgdGhlIHByaW50IG9uIHRoZSBwcm9jZXNzb3I/IENoZWNrIHRoZSBkb2N1bWVudGF0aW9uPyBD
+aGVjayAgdGhlDQo+c2NoZW1hdGljcz8NCj4NCj5CZXN0IHJlZ2FyZHMsDQo+DQo+V29sZmdhbmcg
+RGVuaw0KPg0KPi0tIA0KPlNvZnR3YXJlIEVuZ2luZWVyaW5nOiAgRW1iZWRkZWQgYW5kIFJlYWx0
+aW1lIFN5c3RlbXMsICBFbWJlZGRlZCBMaW51eA0KPlBob25lOiAoKzQ5KS04MTQyLTY2OTg5LTEw
+IEZheDogKCs0OSktODE0Mi02Njk4OS04MCBFbWFpbDogd2RAZGVueC5kZQ0KPlVzZSBDKysgdG8g
+Y29uZnVzZSB5b3VyIGVuZW1pZXM7IHVzZSBDIHRvIHByb2R1Y2Ugc3RhYmxlIGNvZGUuDQo+DQo+
+Lg0KDQo9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0NCgkJCQ0KDQqhoaGh
+oaGhoaGhoaGhoaGh1sINCsDxo6ENCiANCgkJCQkgDQqhoaGhoaGhoaGhoaGhoaGhamVhbndlbGx5
+DQqhoaGhoaGhoaGhoaGhoaGhamVhbndlbGx5QDEyNi5jb20NCqGhoaGhoaGhoaGhoaGhoaGhoaGh
+MjAwNi0wMi0wOA0KDQo=
