@@ -1,31 +1,20 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 7200268A1F
+Return-Path: <sr@denx.de>
+Received: from natfrord.rzone.de (natfrord.rzone.de [81.169.145.161])
+	by ozlabs.org (Postfix) with ESMTP id 5FCB368AB3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Feb 2006 01:02:13 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id 6D1AA29ECA
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 15:00:31 +0100 (CET)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 30554-02 for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 15:00:29 +0100 (CET)
-Received: from linux.local (linux.prtnl [192.168.1.97])
-	by protonic.prtnl (Postfix) with ESMTP id 36BEF29EC9
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Feb 2006 15:00:29 +0100 (CET)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: How to check which CPU we are using? PPC?
-Date: Wed, 8 Feb 2006 15:02:02 +0100
-References: <20060115171949.2EB36353AB0@atlas.denx.de>
-	<200602081225331876279@126.com>
-In-Reply-To: <200602081225331876279@126.com>
+	Thu,  9 Feb 2006 02:38:57 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: David Hawkins <dwh@ovro.caltech.edu>
+Subject: Re: Yosemite/440EP PLB4 vs PLB3 DMA to PCI issue
+Date: Wed, 8 Feb 2006 16:38:25 +0100
+References: <20060205103958.284003535FD@atlas.denx.de>
+	<200602061931.25370.sr@denx.de> <43E79EDD.9010702@ovro.caltech.edu>
+In-Reply-To: <43E79EDD.9010702@ovro.caltech.edu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="gb2312"
-Message-Id: <200602081502.02174.david.jander@protonic.nl>
+  charset="iso-8859-1"
+Message-Id: <200602081638.25905.sr@denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,16 +25,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 08 February 2006 14:04, jeanwelly wrote:
-> Hi,
-> Acutally I am asking "Are there any command that os or BSP provided in
-> shell to print the CPU information?". Thanks a lot!
+Hi David,
 
-One guess: cat /proc/cpuinfo
+On Monday 06 February 2006 20:09, David Hawkins wrote:
+> Anyways, here are the v1.18 page references;
+>
+> v1.18 p365-6 has the PLB-to-PCI Transaction Handling section
+>        showing the cases where MRL and MRM will be used.
+>
+> v1.18 p407 has the PCI Memory to SDRAM DMA transfer section
+>        with comments and forward references to the timing
+>        diagram pages.
 
-Will that be it?
+Thanks. I have to admit that my only advice to you is, to send these questions 
+to the AMCC support. This seems to be a hardware related question/problem. 
+Sorry.
 
-Geetings,
+Please keep me informed when you get an explanation for this PLB4 DMA 
+behaviour.
 
--- 
-David Jander
+> >>(I hope you had a nice vacation Stefan!)
+> >
+> > Thanks. Very nice. One week of sunshine in the snow. :-)
+>
+> I hope that means you got some nice snowboarding or skiing!
+
+Yes, skiing! And a little Apres-Ski of course! ;-)
+
+> We have a fun mountain just up the road;
+> http://www.mammothmountain.com/
+>
+> Feel free to come and visit if you are in California anytime!
+
+Thanks for the invitation. But our 9 month's old daughter will not "allow" us 
+to make such a long trips in the next few years, I am afraid! :-(
+
+Best regards,
+Stefan
