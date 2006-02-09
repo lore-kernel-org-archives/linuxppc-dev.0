@@ -1,16 +1,19 @@
-Return-Path: <s.egbert@sbcglobal.net>
-Received: from smtp112.sbc.mail.mud.yahoo.com (smtp112.sbc.mail.mud.yahoo.com
-	[68.142.198.211]) by ozlabs.org (Postfix) with SMTP id D1CE267A59
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 5D6B667A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Feb 2006 18:56:35 +1100 (EST)
-Message-ID: <43EAF5EC.7050204@sbcglobal.net>
-Date: Wed, 08 Feb 2006 23:57:32 -0800
-From: "S. Egbert" <s.egbert@sbcglobal.net>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH 00/10] Updated ML300 & ML403 patches
-References: 43CC5453.3060702@xilinx.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu,  9 Feb 2006 20:07:45 +1100 (EST)
+To: "S. Egbert" <s.egbert@sbcglobal.net>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: eldk bug?how to fix 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 08 Feb 2006 23:35:14 PST."
+	<43EAF0B2.2070902@sbcglobal.net>
+Date: Thu, 09 Feb 2006 10:07:43 +0100
+Sender: wd@denx.de
+Message-Id: <20060209090743.4ABD5353B88@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,25 +24,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> > Really, this isn't statically defined anyway.  The bootloader
-> > (u-boot or zImage) passes the memory size into the kernel; and in
-> > fact the kernel command line; or the board setup code can restrict
-> > the amount of mem used by the kernel.  XPAR_MEM_* isn't used by the
-> > kernel proper at all.
-> >
-> > - Peter
+In message <43EAF0B2.2070902@sbcglobal.net> you wrote:
 >
-> Thanks for the comments.
->
-> Another issue we need to discuss is if/how to support the xilinx
-> generated BSP in the kernel proper; but I'll leave that for a
-> different email.
->
-> If there's enough interest; I'll setup another git tree for the virtex
-> specific patches.
+>     # export CROSS_COMPILE=ppc_8xx-  (DENK gcc 3.3.3)
+> or
+>     # export CROSS_COMPILE=powerpc-linux-  (GNU gcc)
 
-I, for one, am interested in helping with the Virtex specific patches.
-Is there a URL for this?  git://?
+Ummm.... the compiler included with the ELDK is GNU gcc, too.
 
+Best regards,
 
-S. Egbert
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+An expert is a person who avoids the small errors while  sweeping  on
+to the grand fallacy.
