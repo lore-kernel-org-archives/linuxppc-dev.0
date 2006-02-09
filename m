@@ -1,15 +1,15 @@
 Return-Path: <s.egbert@sbcglobal.net>
-Received: from smtp107.sbc.mail.mud.yahoo.com (smtp107.sbc.mail.mud.yahoo.com
-	[68.142.198.206]) by ozlabs.org (Postfix) with SMTP id 1D4E0679E1
+Received: from smtp112.sbc.mail.mud.yahoo.com (smtp112.sbc.mail.mud.yahoo.com
+	[68.142.198.211]) by ozlabs.org (Postfix) with SMTP id D1CE267A59
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Feb 2006 18:34:16 +1100 (EST)
-Message-ID: <43EAF0B2.2070902@sbcglobal.net>
-Date: Wed, 08 Feb 2006 23:35:14 -0800
+	Thu,  9 Feb 2006 18:56:35 +1100 (EST)
+Message-ID: <43EAF5EC.7050204@sbcglobal.net>
+Date: Wed, 08 Feb 2006 23:57:32 -0800
 From: "S. Egbert" <s.egbert@sbcglobal.net>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: eldk bug?how to fix 
-References: 43B459C5.1060206@chello.nl
+Subject: [PATCH 00/10] Updated ML300 & ML403 patches
+References: 43CC5453.3060702@xilinx.com
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,48 +21,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> In message <43B459C5.1060206 at chello.nl> you wrote:
+> > Really, this isn't statically defined anyway.  The bootloader
+> > (u-boot or zImage) passes the memory size into the kernel; and in
+> > fact the kernel command line; or the board setup code can restrict
+> > the amount of mem used by the kernel.  XPAR_MEM_* isn't used by the
+> > kernel proper at all.
 > >
-> > I've seen these messages before. They were gone when I compiled > using
-> > ppc_8xx-gcc compiler of a different ELDK version.
-> > What version of ELDK are you using? Which gcc version?
+> > - Peter
 >
-> This has nothing to do with ELDK versions,  or  any  other  toolchain
-> issues.
+> Thanks for the comments.
 >
-> > >[root at localhost atmlz]# ppc_6xx-gcc -c -o temp atm_aalx.c
-> > >atm_aalx.c: In function `main':
-> > >atm_aalx.c:201: warning: return type of `main' is not `int'
-> > >/tmp/cciJlehe.s: Assembler messages:
-> > >/tmp/cciJlehe.s:916: Error: unsupported relocation against r3
-> ...
-> > >         mfmsr r3
-> > >         ori r3,r3,0x8000
-> > >         andi. r3,r3,0xffbf
-> > >         mtmsr r3
+> Another issue we need to discuss is if/how to support the xilinx
+> generated BSP in the kernel proper; but I'll leave that for a
+> different email.
 >
-> It's a user only problem (using symbolic names like  "r3"  in  inline
-> assember  statements  without  incuding  the  proper  header files to
-> resolve thise names).
+> If there's enough interest; I'll setup another git tree for the virtex
+> specific patches.
 
-I had that exact same problem, ESPECIALLY when pulling in a fresh kernel
-tree from kernel.org.
-
-Fixed it by defining the CROSS_COMPILE environment variable or modifying
-the Makefile's CROSS_COMPILE to the correct file prefix name, in your
-case, it is probaly either
-
-    # export CROSS_COMPILE=ppc_8xx-  (DENK gcc 3.3.3)
-or
-    # export CROSS_COMPILE=powerpc-linux-  (GNU gcc)
-
-Check your PATH... make sure its picking up the right version...
-
-  # whereis ppc_8xx-gcc
-
-  # ppc_8xx-gcc --version
-or
-  # powerpc-linux-gcc --version
+I, for one, am interested in helping with the Virtex specific patches.
+Is there a URL for this?  git://?
 
 
 S. Egbert
