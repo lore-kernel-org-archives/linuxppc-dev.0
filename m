@@ -1,23 +1,23 @@
-Return-Path: <eliorr@albatronics.com>
-Received: from mtaout2.012.net.il (mtaout2.012.net.il [84.95.2.4])
-	by ozlabs.org (Postfix) with ESMTP id 9D976679FC
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id AC58367A45
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Feb 2006 06:45:16 +1100 (EST)
-Received: from dellbptvkjx2wf ([80.178.241.42])
-	by i_mtaout2.012.net.il (HyperSendmail v2004.12)
-	with ESMTPA id <0IUF0040LPKQ6PK0@i_mtaout2.012.net.il> for
-	linuxppc-embedded@ozlabs.org; Thu, 09 Feb 2006 21:17:15 +0200 (IST)
-Date: Thu, 09 Feb 2006 21:15:09 +0200
-From: Eli Orr <eliorr@albatronics.com>
-Subject: Linux MontaVista Fujitsu CoralP SDL - Please help
-To: alebas@televes.com, markc@mail.com, afleming@freescale.com,
-	kumar.gala@freescale.com, robin.gilks@tait.co.nz, ebs@ebshome.net,
-	mporter@kernel.crashing.org, linuxppc-embedded@ozlabs.org,
-	bora.sahin@ttnet.net.tr, mgreer@mvista.com, jjboor@aimsys.nl
-Message-id: <0IUF0040OPKQ6PK0@i_mtaout2.012.net.il>
-MIME-version: 1.0
-Content-type: multipart/alternative;
-	boundary="Boundary_(ID_eMNmExvdWzAwmcE7EC42Wg)"
+	Fri, 10 Feb 2006 11:00:42 +1100 (EST)
+Received: from [192.100.16.36] (kiwi.ovro.caltech.edu [192.100.16.36])
+	by ovro.ovro.caltech.edu (8.13.1/8.13.1) with ESMTP id k1A00cgi020080
+	for <linuxppc-embedded@ozlabs.org>; Thu, 9 Feb 2006 16:00:38 -0800
+Message-ID: <43EBD715.4020303@ovro.caltech.edu>
+Date: Thu, 09 Feb 2006 15:58:13 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: Yosemite/440EP 'issues' as a PCI target
+References: <20060209003459.0ED30352564@atlas.denx.de>
+In-Reply-To: <20060209003459.0ED30352564@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,177 +28,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
---Boundary_(ID_eMNmExvdWzAwmcE7EC42Wg)
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
+Hi all,
 
-Dear Experts, 
+I'm evaluating the 440EP for use as the control processor
+on a PCI peripheral. Today I have been looking at what I
+can use for processor-to-processor communications over
+the PCI bus. The boards will be used in existing
+equipment that does not have ethernet in the backplane.
 
-I was goggling around and found you listed as people who somehow related to
-Fujitsu CoralP.
+It appears that the 440EP has very limited options for
+interrupt-based communications over the PCI bus.
 
-I need help to find a source code /  object for:
+Lets assume the following basic host-to-host protocol
+(interrupt-based handshake).
 
-Fujitsu CoralP SDL for Linux MontaVista 3.1 Kernel 2.6.x
+1) PCI system slot machine 'host' has all the IRQs routed
+    to it. This will be an x86-based machine.
+    The host interrupts the device when it wants to
+    send it data, or when it wants to send an acknowledge.
 
- 
+2) PCI device slot; a 440EP based board.
+    The device interrupts the host when it wants
+    to send it data, or when it wants to send an
+    acknowledge.
 
-Best Regards,  
+If the 440EP board wants to interrupt the host, it can
+generate an interrupt by writing to the PCI Interrupt
+Control/Status Register, PCIC0_ICS, with only 1 bit
+available for interrupt generation (i.e., there is
+no concept of a mailbox or doorbell register, just a bit)
+(see p388 of the v1.18 manual).
 
-Eli Orr
+Now what if the host wants to interrupt the 440EP.
+Errr, there is no register defined for this purpose.
+The UIC chapter, p220-222 v1.18 manual indicates
+all the interrupt bits. Sure there are a couple of
+PCI source interrupts, one for writes to the PCI
+configuration-space command register (so can't really
+use that), and another for power-management events.
 
-Mobile : +972 54 737 9604 
- <mailto:EliOrr@Albatronics.com> EliOrr@Albatronics.com 
+Have I missed something?
 
-Your Developments Partner 
- <http://www.albatronics.com/> www.Albatronics.com 
+I'll have an FPGA/CPLD on the external bus, so I guess
+I can implement a mailbox/doorbell register in that
+and then have that register trigger an external interrupt
+on the 440EP. The 440EP PCI target BARs will then need
+to be setup to decode to the EBC decode range.
+Sounds like a hack ... (even more of a hack is to
+loop back a GPIO onto an EXTINT and setup the target
+decode to cover the GPIO registers, and the x86 can
+toggle a GPIO directly).
 
- 
+Of course if I have a few unused peripherals I might
+be able to cause them to generate an interrupt. But
+that gets tricky since in a lot of cases, as device
+interrupts are often controlled via DCRs.
 
+I realize that some of the other devices have I2O messaging
+units (440GX and 440SP), so are more suited to PCI comms
+applications. However, I require the hardware FPU on
+the 440EP. From the selector guide, its only the 440EP
+and 440EPx that contain the FPU.
 
---Boundary_(ID_eMNmExvdWzAwmcE7EC42Wg)
-Content-type: text/html; charset=us-ascii
-Content-transfer-encoding: 7BIT
-
-<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:st1="urn:schemas-microsoft-com:office:smarttags" xmlns="http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=us-ascii">
-<meta name=Generator content="Microsoft Word 11 (filtered medium)">
-<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
- name="place" downloadurl="http://www.5iantlavalamp.com/"/>
-<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
- name="City" downloadurl="http://www.5iamas-microsoft-com:office:smarttags"/>
-<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
- name="PersonName" downloadurl="http://www.microsoft.com"/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Batang;
-	panose-1:2 3 6 0 0 1 1 1 1 1;}
-@font-face
-	{font-family:"\@Batang";
-	panose-1:0 0 0 0 0 0 0 0 0 0;}
-@font-face
-	{font-family:"Arial Narrow";
-	panose-1:2 11 5 6 2 2 2 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext="edit" spidmax="1028" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext="edit">
-  <o:idmap v:ext="edit" data="1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=EN-US link=blue vlink=purple>
-
-<div class=Section1>
-
-<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
-font-family:Arial'>Dear Experts, <o:p></o:p></span></font></p>
-
-<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
-font-family:Arial'>I was goggling around and found you listed as people who
-somehow related to Fujitsu CoralP.<br>
-<br>
-I need help to find a source code /&nbsp; object for:<o:p></o:p></span></font></p>
-
-<p class=MsoNormal><font size=2 face=Arial><span style='font-size:10.0pt;
-font-family:Arial'>Fujitsu CoralP SDL for Linux MontaVista 3.1 Kernel 2.6.x<o:p></o:p></span></font></p>
-
-<div>
-
-<p class=MsoNormal><font size=2 face=Arial><span lang=DE style='font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto'><font
-size=2 face=Arial><span style='font-size:10.0pt;font-family:Arial'>Best
-Regards,&nbsp;</span></font>&nbsp;<font size=2 face=Arial><span
-style='font-size:10.0pt;font-family:Arial'><o:p></o:p></span></font></p>
-
-<div>
-
-<p class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto'><st1:PersonName
-ProductID="Eli Orr" w:st="on"><strong><b><font size=2 face="Arial Narrow"><span
- style='font-size:10.0pt;font-family:"Arial Narrow"'>Eli Orr</span></font></b></strong></st1:PersonName><strong><b><font
-face="Arial Narrow"><span style='font-family:"Arial Narrow"'><o:p></o:p></span></font></b></strong></p>
-
-</div>
-
-<div>
-
-<p class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto'><st1:City
-w:st="on"><st1:place w:st="on"><strong><b><font size=2 face="Arial Narrow"><span
-  style='font-size:10.0pt;font-family:"Arial Narrow"'>Mobile</span></font></b></strong></st1:place></st1:City><strong><b><font
-size=2 face=Arial><span style='font-size:10.0pt;font-family:Arial'> : +972 54
-737 9604 </span></font></b></strong><b><font size=2 face=Arial><span
-style='font-size:10.0pt;font-family:Arial;font-weight:bold'><br>
-</span></font></b><strong><b><font size=2 face=Arial><span lang=NO-BOK
-style='font-size:10.0pt;font-family:Arial'><a
-href="mailto:EliOrr@Albatronics.com" title="mailto:EliOrr@Albatronics.com"><span
-lang=EN-US><span title="mailto:EliOrr@Albatronics.com">EliOrr@Albatronics.co</span><span
-lang=EN-US>m</span></span></a></span></font></b></strong><strong><b><font
-size=2 face=Arial><span lang=NO-BOK style='font-size:10.0pt;font-family:Arial'>
-</span></font></b></strong><strong><b><font size=2 face=Arial><span
-style='font-size:10.0pt;font-family:Arial'><o:p></o:p></span></font></b></strong></p>
-
-</div>
-
-<div>
-
-<p class=MsoNormal style='mso-margin-top-alt:auto;mso-margin-bottom-alt:auto'><strong><b><font
-size=2 face=Arial><span style='font-size:10.0pt;font-family:Arial'>Your
-Developments Partner </span></font></b></strong><b><font size=2 face=Arial><span
-style='font-size:10.0pt;font-family:Arial;font-weight:bold'><br>
-</span></font></b><strong><b><font size=2 face=Arial><span lang=NO-BOK
-style='font-size:10.0pt;font-family:Arial'><a href="http://www.albatronics.com/"
-title="http://www.Albatronics.com"><span lang=EN-US><span
-title="http://www.Albatronics.com">www.Albatronics.co</span><span lang=EN-US>m</span></span></a></span></font></b></strong><strong><b><font
-size=2 face=Arial><span lang=NO-BOK style='font-size:10.0pt;font-family:Arial'>
-</span></font></b></strong><o:p></o:p></p>
-
-</div>
-
-</div>
-
-<p class=MsoNormal><font size=3 face="Times New Roman"><span style='font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
---Boundary_(ID_eMNmExvdWzAwmcE7EC42Wg)--
+Any comments on this?
+Dave
