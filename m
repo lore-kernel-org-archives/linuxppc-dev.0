@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 5D6B667A2E
+Return-Path: <SRS0+b3fc5e5600ceb32088cd+900+infradead.org+dwmw2@canuck.srs.infradead.org>
+Received: from canuck.infradead.org (canuck.infradead.org [205.233.218.70])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AB37667A06
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Feb 2006 20:07:45 +1100 (EST)
-To: "S. Egbert" <s.egbert@sbcglobal.net>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: eldk bug?how to fix 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 08 Feb 2006 23:35:14 PST."
-	<43EAF0B2.2070902@sbcglobal.net>
-Date: Thu, 09 Feb 2006 10:07:43 +0100
-Sender: wd@denx.de
-Message-Id: <20060209090743.4ABD5353B88@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu,  9 Feb 2006 22:04:32 +1100 (EST)
+Subject: Re: Common Flash Interface v1.4 and MTD support in Linux-2.4.4 kernel
+From: David Woodhouse <dwmw2@infradead.org>
+To: Josh Boyer <jwboyer@jdub.homelinux.org>
+In-Reply-To: <1139309578.32218.7.camel@yoda.jdub.homelinux.org>
+References: <1139283195.26357.50.camel@theoden.middle_earth>
+	<1139309578.32218.7.camel@yoda.jdub.homelinux.org>
+Content-Type: text/plain
+Date: Thu, 09 Feb 2006 11:04:19 +0000
+Message-Id: <1139483059.4183.48.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: David Antliff <David_Antliff@stratexnet.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +26,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <43EAF0B2.2070902@sbcglobal.net> you wrote:
->
->     # export CROSS_COMPILE=ppc_8xx-  (DENK gcc 3.3.3)
-> or
->     # export CROSS_COMPILE=powerpc-linux-  (GNU gcc)
+On Tue, 2006-02-07 at 05:52 -0500, Josh Boyer wrote:
+> To note, 2.4.4 is ancient.  And this whole question would be better
+> asked on the MTD mailing list.
 
-Ummm.... the compiler included with the ELDK is GNU gcc, too.
-
-Best regards,
-
-Wolfgang Denk
+No, really it wouldn't. Don't bother asking about 2.4 on the MTD list.
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-An expert is a person who avoids the small errors while  sweeping  on
-to the grand fallacy.
+dwmw2
