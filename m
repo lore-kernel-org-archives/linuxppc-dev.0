@@ -1,20 +1,24 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 425D767A0E
+Return-Path: <bennett78@digis.net>
+Received: from ORML003.digis.net (orml003.digis.net [208.187.239.98])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BC29867A73
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Feb 2006 12:17:52 +1100 (EST)
-To: Dan Malek <dan@embeddedalley.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Linux MontaVista Fujitsu CoralP SDL - Please help 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 09 Feb 2006 19:24:20 EST."
-	<4ed3a66fe66b3d155bd7e98500c463a9@embeddedalley.com>
-Date: Fri, 10 Feb 2006 02:17:50 +0100
-Sender: wd@denx.de
-Message-Id: <20060210011750.85501352564@atlas.denx.de>
-Cc: kumar.gala@freescale.com, linuxppc-embedded@ozlabs.org,
-	Eli Orr <eliorr@albatronics.com>, alebas@televes.com
+	Fri, 10 Feb 2006 13:49:07 +1100 (EST)
+Message-ID: <43EBF6CB.4000803@digis.net>
+Date: Thu, 09 Feb 2006 19:13:31 -0700
+From: Frank Bennett <bennett78@digis.net>
+MIME-Version: 1.0
+To: David Summers <embeddedxilinx@gmail.com>
+Subject: Re: Getting started with Xilinx V4 PPC?
+References: <e4619cf30601301111u269d7842j42a8ef88623cfdf8@mail.gmail.com>	<43DF4D6F.6090402@dlasys.net>
+	<e4619cf30601311317j10900b5dvf953011f97ae0c50@mail.gmail.com>
+In-Reply-To: <e4619cf30601311317j10900b5dvf953011f97ae0c50@mail.gmail.com>
+Content-Type: multipart/alternative;
+	boundary="------------060209020206060101050709"
+Cc: "David H. Lynch Jr." <dhlii@dlasys.net>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Reply-To: bennett78@digis.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,19 +29,535 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <4ed3a66fe66b3d155bd7e98500c463a9@embeddedalley.com> you wrote:
-> 
-> Well, I think Wolfgang Denk gets all of the credit for originally
-> writing the software. ...
+This is a multi-part message in MIME format.
+--------------060209020206060101050709
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Not me personally. It was the excellent engineers in our team...
+David Summers wrote:
+> Thanks for all of the great advice.
+>
+>
+> I think my plan is to stick with the 2.4 kernel for now until I run
+> into a compelling reason to switch to 2.6.  It sounds like the 2.6
+> support is getting very close to maturity and if I get some free time
+> I would love to pitch in and help.
+>
+>
+> Is anyone out there using JFFS2 on a NAND flash device in 2.4?  If
+> this works in 2.4 then I should be OK.  My dev board only has 4MB of
+> NOR flash so this is one part of the processor subsystem that I cannot
+> test.
+>   
+Per my previous response: I had some trouble with MTD/JFFS2 until I 
+picked up to the DENX cvs
+version of  linuxppc_2_4_devel (just the MTD part) which added a few 
+additional flash parts and is
+working well for me under 2.4.25 (on Lite5200, MPC5200)
 
-Best regards,
+What about the following dev brd? Anybody porting here?
+    http://www.nuhorizons.com/products/xilinx/v4/ml403/index.html
+for $100 or so more?  Looks like it might have NAND flash.
 
-Wolfgang Denk
+Anybody got a power measurement for a configured ML403 dev board running
+PPC/Linux, flash, DDR, Ethernet,etc?
+
+Also why not put the extternal PHY controller (Serdes, collision detect, 
+5b4, etc) on the FPGA?
+Should then only need external magnetics & a RJ45
+
+-Frank Bennett
+> -David Summers
+>
+>
+> On 1/31/06, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
+>   
+>> David;
+>>
+>> I just completed a port of 2.6 to the Pico E-12 which is a Xilinx
+>> Virtex-4 with very little hardware.
+>>
+>> I had the advantage of a system that already had a elf loader (not
+>> U-Boot), but not a Linux loader.
+>> If I could load Linux as an elf file then I did not need another loader.
+>> In the end I had to make some very trivial modifications to Pico's
+>> loader to pass a board information structure. But otherwise the decision
+>> to use the existing loader saved me having to port u-boot.
+>>
+>> I also chose to boot into a ramdisk. Using the existing loader precluded
+>> having the ramdisk as a separate file.
+>> the intramfs feature of 2.6 allowed me to wrap the ramdisk into the same
+>> file as the kernel. Documentation on initramfs is spartan, and somewhat
+>> opaque. The good news was that despite the documentation initramfs
+>> proved trivially easy to use.
+>>
+>> After that I took the 2.6 kernel source, and litterally went through
+>> looking for all references to the xilinx ml300.
+>> Wherever there was an ml300 specific file I created an new one for the
+>> pico_e12. Wherever there was an ml300 configuration option I created a
+>> PICO_E12 one.
+>>
+>> The E-12 had substatnitially less hardware than the ml300 (or the ml403)
+>> so mostly I just ended up ripping code out of my private version of the
+>> ml300 code that was transmuting into the pico_e12 code.
+>>
+>> The next obstacle I bumped into was that the e-12 had two devices
+>> suitable for a console - a highspeed fifo interface to a host
+>> development system called the keyhole port, and the xilinx uartlite
+>> serial port. Neither are supported in 2.6. I looked at the Xilinx
+>> Uartlite 2.4 driver and it was coded substantially different from other
+>> serial drivers. I decided not to try to port it to 2.6. I started from
+>> scratch using the 8250 code as a base. I picked the 8250 because:
+>> It must be the most heavily used linux serial driver and therefore I
+>> hoped the most uptodate and well debugged.
+>> The 8250 had boot through console IO support. Most other serial devices
+>> require getting fairly far into the boot process before you get any output.
+>>
+>> The really early IO proved fairly simple. Implimenting xxxx_dbg.c and
+>> xxxx_tty.c for both the uartlite and the keyhole was fairly trivial.
+>>
+>> Additionally the keyhole port had a "debug" feature where if you output
+>> a single 32 bit word to one of the fifo ports it would be displayed in
+>> hex on the host. As this could be done in an assembler macro that proved
+>> indispensiable early on.
+>>
+>> I was stalled for about 3 weeks trying to get the sucker into virtual
+>> mode. In the end I had to disable Machine Check exceptions to make the
+>> transition to virtual mode. Pico claims there is not a hardware problem,
+>> but if I do nto disable machine checks on the e-12 it will never make
+>> the tansition to virtual mode.
+>>
+>> The full serial driver for the Uartlite (and Keyhole) proved more
+>> daunting than anything else. In some ways the 8250 proved a bad choice
+>> as a template there as there are more permutations, busses, etc
+>> associated with the 8250 than anything else. I ended up stripping out
+>> huge hunks of code. Eventually, I used the m32r_sio as a simpler
+>> template. The driver was much simpler, and it had the critical features
+>> I needed - both interupt driven and polled IO support - some
+>> implimentations of the E12 do not include a PIC. The serial drivers took
+>> much longer than the whole rest of the port combined - including the
+>> machine check detour.
+>>
+>> Just as I was finishing up the E12 port, Grant posted a set of patches
+>> for the ml403. There were some fundimental differences at a fairly low
+>> level between Grant's approach and mine. And I think Grant's Virtex-4
+>> code appears to reflect more of the direction things are going, so I am
+>> in the process of remodeling my port for the E12 on his for the ml403.
+>> But I have not completed that.
+>>
+>> Absent the machine check issue and having to write serial drivers thus
+>> was atmost 2 weeks work.
+>>
+>>
+>> BTW while you appear to be a hardware guy with alot of software
+>> experience, I am a software guy with alot of hardware experience.
+>>
+>>
+>> The E-12 has flash, but it uses a proprietary flash file system, and
+>> using it would have required writing a filesystem driver - which I would
+>> be happy to do if I got paid for it. Write performance on flash can be
+>> extremely slow. If you are recording a significant amount of data in
+>> realtime, you may want to skip the flash and just use a ramdisk. However
+>> the ramdisk will not survive the system loosing power - which might be
+>> an issue in a rocket.
+>>
+>> If you are going to start with the 2.6 Kernel, I would get git. use it
+>> to DL Linus's current 2.6 git repository, adn apply all of Grant's ml403
+>> patches from the mailing list to it.
+>> Then I would start an approach somewhat similar to what I described
+>> above - except using Grant's ml403 as the base to create your own board
+>> spec from instead of the ml300 that I used.
+>> How tightly constrained are you for gates in the FPGA ?
+>> If you are not tight, use the Xilinx 16550 serial IP and then you can
+>> use standard Kernel 8250 dirvers (making Grant's patches work with
+>> Uartlite is one of the things I am having trouble with) It would be my
+>> guess that if you use the 16550 serial IP, you may be able to use
+>> Grant's ml403 stuff asis.
+>>
+>>
+>>
+>>
+>>
+>> David Summers wrote:
+>>
+>>     
+>>> I am starting a new project where I need to have a flash file system
+>>> and an ethenet interface (HTTP and FTP).  The project is a solar
+>>> physics experiment that will be launched on a sub-orbital rocket
+>>> flight this fall.  The idea is that the experiment will write data
+>>> files to the flash file system while in flight, and then I can
+>>> download the data using ethernet after the experiment returns to
+>>> earth.
+>>>
+>>> I think that Linux is the way to go for this project because of the
+>>> JFFS2 filesystem and the strong networking support.  The only problem
+>>> is that I am totally new to embedded linux.
+>>>
+>>> I am prototyping my system on an Avnet FX12 development board ( Specs
+>>> here: http://tinyurl.com/4gfdv ) which is pretty similar to the Xilinx
+>>> ML403 board except with less memory and no SystemACE slot.
+>>>
+>>> I will eventually build my own custom board with the same Xilinx
+>>> Virtex 4 FX12 FPGA and additional flash memory and some custom
+>>> interface hardware. My background is primarily as a hardware designer,
+>>> and I am very confortable with the FPGA part of this project.   I am
+>>> comfortable as a Linux user, and I am a pretty good C coder (for a
+>>> hardware guy anyway :).  I have never built a linux system (embedded
+>>> or desktop) before, and I need some help getting started with embedded
+>>> linux.
+>>>
+>>> I have already found the following websites which have been a big help so far:
+>>>
+>>> http://www.klingauf.de/v2p/index.phtml
+>>> http://splish.ee.byu.edu/projects/LinuxFPGA/configuring.htm
+>>> http://www.crhc.uiuc.edu/IMPACT/gsrc/hardwarelab/docs/kernel-HOWTO.html#toc1
+>>>
+>>> I have a few questions that I hope someone can help me with:
+>>>
+>>> 1. What is the best linux distribution to start out with?  I am
+>>> currently working with the 2.4 kernel code from
+>>> ppc.bkbits.net/linuxppc_2_4_devel, but I'm not sure that this version
+>>> be being updated.  (MontaVista also seems to be making it rather
+>>> difficult to download their free Linux Preview Kit, so I wouldn't mind
+>>> finding another distribution)    Does the DENX distribution have good
+>>> PPC support?  Are there any others that I should look at, or should I
+>>> just download the kernel source directly from kernel.org?
+>>>
+>>>
+>>> 2. kernel 2.4 or 2.6?
+>>>
+>>> It is my understanding that the latest version of MTD and JFFS2 have
+>>> dropped support for kernel 2.4.  I would like to use JFFS2 on a NAND
+>>> flash device, so it seems like I should use 2.6.  (Can I use JFFS2 on
+>>> a NAND device with kernel v 2.4?)
+>>>
+>>> Being a complete newbie, am I biting off more that I can handle by
+>>> trying to use 2.6?
+>>>
+>>> I have been lurking on the mailing list for a while, and I know that
+>>> there are several people working on 2.6.x patches for the Xilinx
+>>> virtex 4 parts.  Could someone point me to a list of the patches that
+>>> I need to get me started?  I think that the ML403 patches should work
+>>> with my board, but I don't know which ones I need to download.
+>>>
+>>>
+>>> Thank you for your help,
+>>>
+>>> David Summers
+>>> University of Colorado
+>>> _______________________________________________
+>>> Linuxppc-embedded mailing list
+>>> Linuxppc-embedded@ozlabs.org
+>>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>>
+>>>
+>>>
+>>>       
+>> --
+>> Dave Lynch                                              DLA Systems
+>> Software Development:                                Embedded Linux
+>> 717.627.3770    dhlii@dlasys.net         http://www.dlasys.net:8888
+>>
+>>
+>>     
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>   
+
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Only a fool fights in a burning house.
-	-- Kank the Klingon, "Day of the Dove", stardate unknown
+
+*/Frank Bennett
+CEO/*
+
+Mathegraphics,LLC
+613 Bentley Pl
+Fort Collins,CO 80526
+970-229-9269 (hm) 970-402-9269 (cell)
+www.mathegraphics.com <http://www.mathegraphics.com>
+bennett78@digis.net <mailto:bennett78@digis.net>
+
+
+--------------060209020206060101050709
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+David Summers wrote:
+<blockquote
+ cite="mide4619cf30601311317j10900b5dvf953011f97ae0c50@mail.gmail.com"
+ type="cite">
+  <pre wrap="">Thanks for all of the great advice.
+
+
+I think my plan is to stick with the 2.4 kernel for now until I run
+into a compelling reason to switch to 2.6.  It sounds like the 2.6
+support is getting very close to maturity and if I get some free time
+I would love to pitch in and help.
+
+
+Is anyone out there using JFFS2 on a NAND flash device in 2.4?  If
+this works in 2.4 then I should be OK.  My dev board only has 4MB of
+NOR flash so this is one part of the processor subsystem that I cannot
+test.
+  </pre>
+</blockquote>
+Per my previous response: I had some trouble with MTD/JFFS2 until I
+picked up to the DENX cvs <br>
+version
+of&nbsp; linuxppc_2_4_devel (just the MTD part) which added a few additional
+flash parts and is <br>
+working well for me under 2.4.25 (on Lite5200, MPC5200)<br>
+<br>
+What about the following dev brd? Anybody porting here?<br>
+&nbsp;&nbsp;&nbsp;<a
+ href="http://www.nuhorizons.com/products/xilinx/v4/ml403/index.html">
+http://www.nuhorizons.com/products/xilinx/v4/ml403/index.html</a><br>
+for $100 or so more?&nbsp; Looks like it might have NAND flash.<br>
+<br>
+Anybody got a power measurement for a configured ML403 dev board running<br>
+PPC/Linux, flash, DDR, Ethernet,etc? <br>
+<br>
+Also why not put the extternal PHY controller (Serdes, collision
+detect, 5b4, etc) on the FPGA?<br>
+Should then only need external magnetics &amp; a RJ45<br>
+<br>
+-Frank Bennett<br>
+<blockquote
+ cite="mide4619cf30601311317j10900b5dvf953011f97ae0c50@mail.gmail.com"
+ type="cite">
+  <pre wrap="">
+-David Summers
+
+
+On 1/31/06, David H. Lynch Jr. <a class="moz-txt-link-rfc2396E" href="mailto:dhlii@dlasys.net">&lt;dhlii@dlasys.net&gt;</a> wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">David;
+
+I just completed a port of 2.6 to the Pico E-12 which is a Xilinx
+Virtex-4 with very little hardware.
+
+I had the advantage of a system that already had a elf loader (not
+U-Boot), but not a Linux loader.
+If I could load Linux as an elf file then I did not need another loader.
+In the end I had to make some very trivial modifications to Pico's
+loader to pass a board information structure. But otherwise the decision
+to use the existing loader saved me having to port u-boot.
+
+I also chose to boot into a ramdisk. Using the existing loader precluded
+having the ramdisk as a separate file.
+the intramfs feature of 2.6 allowed me to wrap the ramdisk into the same
+file as the kernel. Documentation on initramfs is spartan, and somewhat
+opaque. The good news was that despite the documentation initramfs
+proved trivially easy to use.
+
+After that I took the 2.6 kernel source, and litterally went through
+looking for all references to the xilinx ml300.
+Wherever there was an ml300 specific file I created an new one for the
+pico_e12. Wherever there was an ml300 configuration option I created a
+PICO_E12 one.
+
+The E-12 had substatnitially less hardware than the ml300 (or the ml403)
+so mostly I just ended up ripping code out of my private version of the
+ml300 code that was transmuting into the pico_e12 code.
+
+The next obstacle I bumped into was that the e-12 had two devices
+suitable for a console - a highspeed fifo interface to a host
+development system called the keyhole port, and the xilinx uartlite
+serial port. Neither are supported in 2.6. I looked at the Xilinx
+Uartlite 2.4 driver and it was coded substantially different from other
+serial drivers. I decided not to try to port it to 2.6. I started from
+scratch using the 8250 code as a base. I picked the 8250 because:
+It must be the most heavily used linux serial driver and therefore I
+hoped the most uptodate and well debugged.
+The 8250 had boot through console IO support. Most other serial devices
+require getting fairly far into the boot process before you get any output.
+
+The really early IO proved fairly simple. Implimenting xxxx_dbg.c and
+xxxx_tty.c for both the uartlite and the keyhole was fairly trivial.
+
+Additionally the keyhole port had a "debug" feature where if you output
+a single 32 bit word to one of the fifo ports it would be displayed in
+hex on the host. As this could be done in an assembler macro that proved
+indispensiable early on.
+
+I was stalled for about 3 weeks trying to get the sucker into virtual
+mode. In the end I had to disable Machine Check exceptions to make the
+transition to virtual mode. Pico claims there is not a hardware problem,
+but if I do nto disable machine checks on the e-12 it will never make
+the tansition to virtual mode.
+
+The full serial driver for the Uartlite (and Keyhole) proved more
+daunting than anything else. In some ways the 8250 proved a bad choice
+as a template there as there are more permutations, busses, etc
+associated with the 8250 than anything else. I ended up stripping out
+huge hunks of code. Eventually, I used the m32r_sio as a simpler
+template. The driver was much simpler, and it had the critical features
+I needed - both interupt driven and polled IO support - some
+implimentations of the E12 do not include a PIC. The serial drivers took
+much longer than the whole rest of the port combined - including the
+machine check detour.
+
+Just as I was finishing up the E12 port, Grant posted a set of patches
+for the ml403. There were some fundimental differences at a fairly low
+level between Grant's approach and mine. And I think Grant's Virtex-4
+code appears to reflect more of the direction things are going, so I am
+in the process of remodeling my port for the E12 on his for the ml403.
+But I have not completed that.
+
+Absent the machine check issue and having to write serial drivers thus
+was atmost 2 weeks work.
+
+
+BTW while you appear to be a hardware guy with alot of software
+experience, I am a software guy with alot of hardware experience.
+
+
+The E-12 has flash, but it uses a proprietary flash file system, and
+using it would have required writing a filesystem driver - which I would
+be happy to do if I got paid for it. Write performance on flash can be
+extremely slow. If you are recording a significant amount of data in
+realtime, you may want to skip the flash and just use a ramdisk. However
+the ramdisk will not survive the system loosing power - which might be
+an issue in a rocket.
+
+If you are going to start with the 2.6 Kernel, I would get git. use it
+to DL Linus's current 2.6 git repository, adn apply all of Grant's ml403
+patches from the mailing list to it.
+Then I would start an approach somewhat similar to what I described
+above - except using Grant's ml403 as the base to create your own board
+spec from instead of the ml300 that I used.
+How tightly constrained are you for gates in the FPGA ?
+If you are not tight, use the Xilinx 16550 serial IP and then you can
+use standard Kernel 8250 dirvers (making Grant's patches work with
+Uartlite is one of the things I am having trouble with) It would be my
+guess that if you use the 16550 serial IP, you may be able to use
+Grant's ml403 stuff asis.
+
+
+
+
+
+David Summers wrote:
+
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">I am starting a new project where I need to have a flash file system
+and an ethenet interface (HTTP and FTP).  The project is a solar
+physics experiment that will be launched on a sub-orbital rocket
+flight this fall.  The idea is that the experiment will write data
+files to the flash file system while in flight, and then I can
+download the data using ethernet after the experiment returns to
+earth.
+
+I think that Linux is the way to go for this project because of the
+JFFS2 filesystem and the strong networking support.  The only problem
+is that I am totally new to embedded linux.
+
+I am prototyping my system on an Avnet FX12 development board ( Specs
+here: <a class="moz-txt-link-freetext" href="http://tinyurl.com/4gfdv">http://tinyurl.com/4gfdv</a> ) which is pretty similar to the Xilinx
+ML403 board except with less memory and no SystemACE slot.
+
+I will eventually build my own custom board with the same Xilinx
+Virtex 4 FX12 FPGA and additional flash memory and some custom
+interface hardware. My background is primarily as a hardware designer,
+and I am very confortable with the FPGA part of this project.   I am
+comfortable as a Linux user, and I am a pretty good C coder (for a
+hardware guy anyway :).  I have never built a linux system (embedded
+or desktop) before, and I need some help getting started with embedded
+linux.
+
+I have already found the following websites which have been a big help so far:
+
+<a class="moz-txt-link-freetext" href="http://www.klingauf.de/v2p/index.phtml">http://www.klingauf.de/v2p/index.phtml</a>
+<a class="moz-txt-link-freetext" href="http://splish.ee.byu.edu/projects/LinuxFPGA/configuring.htm">http://splish.ee.byu.edu/projects/LinuxFPGA/configuring.htm</a>
+<a class="moz-txt-link-freetext" href="http://www.crhc.uiuc.edu/IMPACT/gsrc/hardwarelab/docs/kernel-HOWTO.html#toc1">http://www.crhc.uiuc.edu/IMPACT/gsrc/hardwarelab/docs/kernel-HOWTO.html#toc1</a>
+
+I have a few questions that I hope someone can help me with:
+
+1. What is the best linux distribution to start out with?  I am
+currently working with the 2.4 kernel code from
+ppc.bkbits.net/linuxppc_2_4_devel, but I'm not sure that this version
+be being updated.  (MontaVista also seems to be making it rather
+difficult to download their free Linux Preview Kit, so I wouldn't mind
+finding another distribution)    Does the DENX distribution have good
+PPC support?  Are there any others that I should look at, or should I
+just download the kernel source directly from kernel.org?
+
+
+2. kernel 2.4 or 2.6?
+
+It is my understanding that the latest version of MTD and JFFS2 have
+dropped support for kernel 2.4.  I would like to use JFFS2 on a NAND
+flash device, so it seems like I should use 2.6.  (Can I use JFFS2 on
+a NAND device with kernel v 2.4?)
+
+Being a complete newbie, am I biting off more that I can handle by
+trying to use 2.6?
+
+I have been lurking on the mailing list for a while, and I know that
+there are several people working on 2.6.x patches for the Xilinx
+virtex 4 parts.  Could someone point me to a list of the patches that
+I need to get me started?  I think that the ML403 patches should work
+with my board, but I don't know which ones I need to download.
+
+
+Thank you for your help,
+
+David Summers
+University of Colorado
+_______________________________________________
+Linuxppc-embedded mailing list
+<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
+<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a>
+
+
+
+      </pre>
+    </blockquote>
+    <pre wrap="">--
+Dave Lynch                                              DLA Systems
+Software Development:                                Embedded Linux
+717.627.3770    <a class="moz-txt-link-abbreviated" href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a>         <a class="moz-txt-link-freetext" href="http://www.dlasys.net:8888">http://www.dlasys.net:8888</a>
+
+
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->_______________________________________________
+Linuxppc-embedded mailing list
+<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded@ozlabs.org</a>
+<a class="moz-txt-link-freetext" href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a>
+
+  </pre>
+</blockquote>
+<br>
+<br>
+<div class="moz-signature">-- <br>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<title>sign</title>
+<meta content="Frank Bennett" name="author">
+<pre wrap=""><b><big><font face="Times New Roman, Times, serif"><em>Frank Bennett
+CEO</em></font></big></b>
+
+Mathegraphics,LLC
+613 Bentley Pl
+Fort Collins,CO 80526
+970-229-9269 (hm) 970-402-9269 (cell)
+<a href="http://www.mathegraphics.com">www.mathegraphics.com</a>
+<span style="text-decoration: underline;"><a
+ href="mailto:bennett78@digis.net">bennett78@digis.net</a>
+</span></pre>
+</div>
+</body>
+</html>
+
+--------------060209020206060101050709--
