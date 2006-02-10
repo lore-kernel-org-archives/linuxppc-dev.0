@@ -1,22 +1,19 @@
-Return-Path: <white@from-b.org>
-Received: from aphrodite.net-build.de (aphrodite.net-build.de [212.88.135.60])
-	by ozlabs.org (Postfix) with ESMTP id 3EACE679FA
+Return-Path: <gnathita@gmail.com>
+Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.204])
+	by ozlabs.org (Postfix) with ESMTP id 072F067A63
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Feb 2006 17:08:05 +1100 (EST)
-Received: from White64 (p54B4AE0D.dip0.t-ipconnect.de [84.180.174.13])
-	(authenticated)
-	by aphrodite.net-build.de (8.11.6/8.11.2) with ESMTP id k1A5W5917364
-	for <linuxppc-embedded@ozlabs.org>; Fri, 10 Feb 2006 06:32:20 +0100
-Date: Fri, 10 Feb 2006 06:28:13 +0100
-From: White <white@from-b.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux MontaVista Fujitsu CoralP SDL - Please help
-Message-ID: <20060210062813.2feca6cb@White64>
-In-Reply-To: <20060210011750.85501352564@atlas.denx.de>
-References: <4ed3a66fe66b3d155bd7e98500c463a9@embeddedalley.com>
-	<20060210011750.85501352564@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 10 Feb 2006 18:47:51 +1100 (EST)
+Received: by wproxy.gmail.com with SMTP id 69so480768wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 09 Feb 2006 23:47:50 -0800 (PST)
+Message-ID: <259581790602092347m5f61bd27j170763176ee6cf6e@mail.gmail.com>
+Date: Fri, 10 Feb 2006 08:47:49 +0100
+From: =?ISO-8859-1?Q?Paula_Saame=F1o?= <gnathita@gmail.com>
+To: linuxppc-embedded@ozlabs.org, bennett78@digis.net
+Subject: Re: Getting started with Xilinx V4 PPC?
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_11181_15866610.1139557669957"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,38 +24,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_11181_15866610.1139557669957
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-The ALT Software Company provides additional Support (not cheap) ,
-Driver and so on, for Coral P / Coral PA and the Rest of this Family.
+Hi!!
 
-The Coral P is a very tricky G-Processor. If you found the Bugs it has,
-you can get much Power out of it.
+I am using ML403 right now and everything works fine with the
+linuxppc_2_4_devel. My basic design has a simple UART, DDR, Ethernet, IIC
+and XSysAce.
+I haven't measured the power consumption yet, but I will soon. I'll let you
+know when I do it.
 
-But last time, i looked at the Denx CoralP Driver, it was only used as
-an big Framebuffer with some Bitblitting Hardware Support.
+I thought about using the internal FPGA MAC as a complete PHY. For Ethernet
+over fiber it's ok, but for Ethernet over copper, we should implement the
+collision detector, serder... "manually" and I don't think we had enough
+space in the FPGA (XC4VFX12), since the actual design uses the 85% of
+slices.
+Maybe with a bigger FPGA we could do the complete design "inside".
 
-Is this always correct? Please correct me if i'm wrong.
+Have a good weekend!
+Paula
 
-Am Fri, 10 Feb 2006 02:17:50 +0100 schrieb Wolfgang Denk <wd@denx.de> :
+------=_Part_11181_15866610.1139557669957
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> In message <4ed3a66fe66b3d155bd7e98500c463a9@embeddedalley.com> you wrote:
-> > 
-> > Well, I think Wolfgang Denk gets all of the credit for originally
-> > writing the software. ...
-> 
-> Not me personally. It was the excellent engineers in our team...
-> 
-> Best regards,
-> 
-> Wolfgang Denk
-> 
-> -- 
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-> Only a fool fights in a burning house.
-> 	-- Kank the Klingon, "Day of the Dove", stardate unknown
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+<br>
+Hi!!<br>
+<br>
+I am using ML403 right now and everything works fine with the
+linuxppc_2_4_devel. My basic design has a simple UART, DDR, Ethernet,
+IIC and XSysAce.<br>
+I haven't measured the power consumption yet, but I will soon. I'll let you=
+ know when I do it.<br>
+<br>
+I thought about using the internal FPGA MAC as a complete PHY. For
+Ethernet over fiber it's ok, but for Ethernet over copper, we should
+implement the collision detector, serder... &quot;manually&quot; and I don'=
+t
+think we had enough space in the FPGA (XC4VFX12), since the actual
+design uses the 85% of slices.<br>
+Maybe with a bigger FPGA we could do the complete design &quot;inside&quot;=
+.<br>
+<br>
+Have a good weekend!<br>
+Paula<br>
+<br>
+
+------=_Part_11181_15866610.1139557669957--
