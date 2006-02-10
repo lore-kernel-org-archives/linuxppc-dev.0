@@ -1,19 +1,16 @@
-Return-Path: <sr@denx.de>
-Received: from natnoddy.rzone.de (natnoddy.rzone.de [81.169.145.166])
-	by ozlabs.org (Postfix) with ESMTP id 4575567B2A
+Return-Path: <bkartal@aselsan.com.tr>
+Received: from turunc.aselsan.com.tr (mail.aselsan.com.tr [212.50.56.228])
+	by ozlabs.org (Postfix) with ESMTP id 2C16E67B30
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Feb 2006 18:48:16 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Yosemite/440EP 'issues' as a PCI target
-Date: Fri, 10 Feb 2006 08:47:53 +0100
-References: <20060209003459.0ED30352564@atlas.denx.de>
-	<43EBD715.4020303@ovro.caltech.edu>
-In-Reply-To: <43EBD715.4020303@ovro.caltech.edu>
+	Fri, 10 Feb 2006 19:04:20 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200602100847.54363.sr@denx.de>
+	charset="ISO-8859-9"
+Subject: YNT: powerCore 6750 nfs mount problem
+Date: Fri, 10 Feb 2006 10:03:15 +0200
+Message-ID: <C379193B17749F4BA82ABF87E7DCB6A62CF0D2@papatyaint.aselsan.com.tr>
+From: "Bora KARTAL" <bkartal@aselsan.com.tr>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,44 +22,129 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 Hi David,
+Unfortunately I am not using u-boot. I think this is not a physical link =
+problem. Becouse in the bootup phase it gets the the lsp via ftp correctl=
+y. But I thought that this errror is somehow board specific, because when=
+=20I tried the same configuration with another target board (Motorolla MV=
+ME5100) it successfully mount to the root file system. =20
 
-On Friday 10 February 2006 00:58, David Hawkins wrote:
-> Now what if the host wants to interrupt the 440EP.
-> Errr, there is no register defined for this purpose.
-> The UIC chapter, p220-222 v1.18 manual indicates
-> all the interrupt bits. Sure there are a couple of
-> PCI source interrupts, one for writes to the PCI
-> configuration-space command register (so can't really
-> use that),
+________________________________
 
-You could use it but I wouldn't recommend it.
+Kimden: linuxppc-embedded-bounces@ozlabs.org bu ki=FEinin yerine: Hunter,=
+=20David
+G=F6nderilmi=FE: Per 09.02.2006 16:44
+Kime: linuxppc-embedded@ozlabs.org
+Konu: RE: powerCore 6750 nfs mount problem
 
-> and another for power-management events. 
->
-> Have I missed something?
 
-No. This sounds pretty much like the 405GP(r) which also lacks this 
-host-to-target interrupt facility.
 
-> I'll have an FPGA/CPLD on the external bus, so I guess
-> I can implement a mailbox/doorbell register in that
-> and then have that register trigger an external interrupt
-> on the 440EP. The 440EP PCI target BARs will then need
-> to be setup to decode to the EBC decode range.
-> Sounds like a hack ... (even more of a hack is to
-> loop back a GPIO onto an EXTINT and setup the target
-> decode to cover the GPIO registers, and the x86 can
-> toggle a GPIO directly).
+Bora,
 
-Yes, those are the choices available. If the CPU doesn't offer such features 
-directly, I wouldn't even call those solutions a "hack". ;-)
+> NETDEV WATCHDOG: eth0: transmit timed out
 
-> Of course if I have a few unused peripherals I might
-> be able to cause them to generate an interrupt. But
-> that gets tricky since in a lot of cases, as device
-> interrupts are often controlled via DCRs.
+This usually means the Ethernet driver's transmitter is stuck.  Did it
+initialize correctly?  Did the PHY go link up?
 
-I wouldn't go this way.
+How does network behave in your bootloader?  (Hopefully you're using
+U-Boot. :)
 
-Best regards,
-Stefan
+-Dave
+
+-----Original Message-----
+Date: Wed, 8 Feb 2006 11:15:41 +0200
+From: "Bora KARTAL" <bkartal@aselsan.com.tr>
+Subject: powerCore 6750 nfs mount problem
+To: <linuxppc-embedded@ozlabs.org>
+Message-ID:
+=20     =20
+<C379193B17749F4BA82ABF87E7DCB6A62CF0D0@papatyaint.aselsan.com.tr>
+Content-Type: text/plain;       charset=3D"ISO-8859-9"
+
+Hi,
+
+I am trying to run linuxppc 2.4.20 with a nfs mounted root file system
+on a Force powerCore 6750 board with the following command-line options:
+
+CONFIG_CMDLINE=3D"root=3D/dev/nfs
+nfsroot=3D15.20.11.58:/root/Linux/MontaVista/opt/montavista/pro/devkit/pp=
+c
+/7xx/target/
+ip=3D15.20.8.204:15.20.11.58:15.20.0.0:255.255.0.0:test1:eth0:off"
+
+I am giving a static IP to my target board so have no need to run DHCP
+client on my target board.
+
+My problem is:
+
+The target can not mount to my server Linux machine and gives the
+following error:
+
+Looking up port of RPC 100003/2 on 15.20.11.58
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+NETDEV WATCHDOG: eth0: transmit timed out
+
+I checked the nfs server at my host Linux and it is working properly.
+Anybody can help?
+
+Thanks,
+
+Bora
+
+
+
+DISCLAIMER:
+Important Notice *************************************************
+This e-mail may contain information that is confidential, privileged or o=
+therwise protected from disclosure. If you are not an intended recipient =
+of this e-mail, do not duplicate or redistribute it by any means. Please =
+delete it and any attachments and notify the sender that you have receive=
+d it in error. Unintended recipients are prohibited from taking action on=
+=20the basis of information in this e-mail.E-mail messages may contain co=
+mputer viruses or other defects, may not be accurately replicated on othe=
+r systems, or may be intercepted, deleted or interfered with without the =
+knowledge of the sender or the intended recipient. If you are not comfort=
+able with the risks associated with e-mail messages, you may decide not t=
+o use e-mail to communicate with IPC. IPC reserves the right, to the exte=
+nt and under circumstances permitted by applicable law, to retain, monito=
+r and intercept e-mail messages to and from its systems.
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+######################################################################
+Dikkat:
+
+Bu elektronik posta mesaji kisisel ve ozeldir. Eger size=20
+gonderilmediyse lutfen gondericiyi bilgilendirip mesaji siliniz.=20
+Firmamiza gelen ve giden mesajlar virus taramasindan gecirilmekte,=20
+guvenlik nedeni ile kontrol edilerek saklanmaktadir. Mesajdaki=20
+gorusler ve bakis acisi gondericiye ait olup Aselsan A.S. resmi=20
+gorusu olmak zorunda degildir.
+
+######################################################################
+Attention:=20
+
+This e-mail message is privileged and confidential. If you are=20
+not the intended recipient please delete the message and notify=20
+the sender. E-mails to and from the company are monitored for=20
+operational reasons and in accordance with lawful business practices.=20
+Any views or opinions presented are solely those of the author and=20
+do not necessarily represent the views of the company.
+
+######################################################################
