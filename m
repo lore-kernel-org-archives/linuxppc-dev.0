@@ -1,17 +1,21 @@
-Return-Path: <a.llano@usyscom.com>
-Received: from correo.ziv.es (eu31-237.clientes.euskaltel.es [212.55.31.237])
-	by ozlabs.org (Postfix) with ESMTP id C3CF467B46
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EEBB467B42
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 04:32:23 +1100 (EST)
-Subject: Stability of MPC5200 FEC
-From: "Asier Llano Palacios" <a.llano@ziv.es>
-To: <linuxppc-embedded@ozlabs.org>
-Content-Type: text/plain;
-	charset="ISO-8859-15"
-Date: Fri, 10 Feb 2006 18:20:10 +0100
-Message-ID: <1139592010.14894.22.camel@localhost.localdomain>
+	Sat, 11 Feb 2006 04:40:40 +1100 (EST)
+Message-ID: <43ECCF7C.9070701@ovro.caltech.edu>
+Date: Fri, 10 Feb 2006 09:38:04 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Cc: Sylvain Munaut <tnt@246tNt.com>, John Rigby <jrigby@freescale.com>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: Yosemite/440EP 'issues' as a PCI target
+References: <20060210173133.964B53525CC@atlas.denx.de>
+In-Reply-To: <20060210173133.964B53525CC@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,56 +26,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We are working with MPC5200 cpu.=20
-We've been using it since early 2.6 kernel versions.
-We're currently quite stabilished with the version of the kernel Sylvain
-had before the Platform Device rework. But the problem is that we are
-experiencing that the FEC stops working after a long uptime.
+>>Of course there is also the option of finding another
+>>PowerPC that matches my requirements;
+> 
+> ...
+> 
+> MPC834x comes to mind. But I have to admit that we never tried  using
+> this as a PCI device yet...
+> 
 
-So, do you think that the current git version is more stable than the
-one we are using? Do you think that there is anything that could stop us
-upgrading to the latest version?
+Thanks Wolfgang, I'll take a look at the user manual.
 
-The problem is that we have a custom board, with some custom devices, so
-it is not so easy to upgrade. We need to know that a new version, is
-more stable than the previous one, before we upgrade. As soon as we
-upgrade, we can help if we find any problem.
+Regarding PowerPC devices that can be (uselessly) configured
+as PCI agents/targets/peripherals;
 
-Thank you,
-Asier Llano
+  - the Artesyn PMC board I got from eBay contains the
+    IBM CPC700 bridge - it can never generate PCI interrupts
+    as a target (non-monarch mode).
 
---=20
-Asier Llano Palacios
-ZIV I+D Smart Energy Networks
-Dpto. Ingenier=EDa de Desarrollo.
+  - the MPC5200 PowerPC, can also be configured as a target,
+    but will never generate PCI interrupts.
 
-ZIV, Aplicaciones y Tecnolog=EDa.
-Parque Tecnol=F3gico, 210
-48170 ZAMUDIO (Bizkaia)
+Gee, who knew. I didn't :)
 
-E-mail: a.llano@ziv.es
-Tlfno: (+34)944037400=20
-=20
------------------------------------------ PLEASE NOTE =
--------------------------------------------
-This message, along with any attachments, may be confidential or legally =
-privileged.=20
-It is intended only for the named person(s), who is/are the only =
-authorized recipients.
-If this message has reached you in error, kindly destroy it without =
-review and notify the sender immediately.
-Thank you for your help.
-=B5SysCom uses virus scanning software but excludes any liability for =
-viruses contained in any attachment.
-=20
------------------------------------- ROGAMOS LEA ESTE TEXTO =
--------------------------------
-Este mensaje y sus anexos pueden contener informaci=F3n confidencial y/o =
-con derecho legal.=20
-Est=E1 dirigido =FAnicamente a la/s persona/s o entidad/es rese=F1adas =
-como =FAnico destinatario autorizado.
-Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
-revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
-Gracias por su colaboraci=F3n. =20
-=B5SysCom utiliza software antivirus, pero no se hace responsable de los =
-virus contenidos en los ficheros anexos.
+Dave
