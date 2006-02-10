@@ -1,18 +1,22 @@
-Return-Path: <jrigby@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id BD828679E9
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9443367B6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 05:20:07 +1100 (EST)
-Message-ID: <43ECD9C8.3070003@freescale.com>
-Date: Fri, 10 Feb 2006 11:22:00 -0700
-From: John Rigby <jrigby@freescale.com>
+	Sat, 11 Feb 2006 05:22:44 +1100 (EST)
+Message-ID: <43ECD918.1050202@ovro.caltech.edu>
+Date: Fri, 10 Feb 2006 10:19:04 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-To: Asier Llano Palacios <a.llano@ziv.es>
-Subject: Re: Stability of MPC5200 FEC
-References: <1139592010.14894.22.camel@localhost.localdomain>
-In-Reply-To: <1139592010.14894.22.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Cc: Sylvain Munaut <tnt@246tNt.com>, linuxppc-embedded@ozlabs.org
+To: Mark Chambers <markc@mail.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: Yosemite/440EP 'issues' as a PCI target
+References: <20060209003459.0ED30352564@atlas.denx.de><43EBD715.4020303@ovro.caltech.edu>
+	<200602100847.54363.sr@denx.de> <43ECC7CE.1010409@ovro.caltech.edu>
+	<001701c62e6c$09c48ea0$6401a8c0@CHUCK2>
+In-Reply-To: <001701c62e6c$09c48ea0$6401a8c0@CHUCK2>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,30 +27,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Do you have a lite5200 board that exhibits the same bad FEC behavior.  
-If so you could try the new
-version on it and see if things improve.
+Hi Mark,
 
+> Some unsolicited brainstorming
 
-Asier Llano Palacios wrote:
+Brainstorm away!
 
->We are working with MPC5200 cpu. 
->We've been using it since early 2.6 kernel versions.
->We're currently quite stabilished with the version of the kernel Sylvain
->had before the Platform Device rework. But the problem is that we are
->experiencing that the FEC stops working after a long uptime.
->
->So, do you think that the current git version is more stable than the
->one we are using? Do you think that there is anything that could stop us
->upgrading to the latest version?
->
->The problem is that we have a custom board, with some custom devices, so
->it is not so easy to upgrade. We need to know that a new version, is
->more stable than the previous one, before we upgrade. As soon as we
->upgrade, we can help if we find any problem.
->
->Thank you,
->Asier Llano
->
->  
->
+> if you go with a QUICC based processor you could bring 
+> the data into SDRAM via a serial port. That gets you DMA
+> and some extra buffer management help from the co-processor.
+
+Ooooh I like it.
+
+> Some extra logic in the FPGA (but less pins), but you've got
+> a lot of flexibility in what you can do with SCCs or I2C.
+
+But do I have the bandwidth? (I'll look in the data book).
+
+> I'm currently working on an MPC8247 based design, btw.
+> It has a PC104+ header and is directly connected to a 
+> T.I. 6205 (which, at $10, is a lot of crunch for the buck).
+
+But the you have to program it with Code Composer and
+the horrid TI DSP tools. Yeah, ok I've got the older
+C31 version, not the newer 6x-based DSPs. I'm trying
+to move the system to Linux, so that others round
+here can 'share the burden'. I'm designing the boards,
+drivers, and host software (ACE/C++) at the moment.
+I need a break! :)
+
+I want to avoid spending $20k on the TI tools and an
+emulator ... hey, call me cheap.
+
+However, I like the SCC idea. They sound very similar
+to the multi-processor links on the Analog Devices
+SHARC DSPs.
+
+More reading :)
+
+Dave
