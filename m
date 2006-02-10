@@ -1,23 +1,25 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7FF7F67A01
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Feb 2006 01:44:45 +1100 (EST)
-Date: Thu, 9 Feb 2006 15:44:39 +0100
-From: Olaf Hering <olh@suse.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: asm-powerpc/highmem.h missing
-Message-ID: <20060209144439.GA31578@suse.de>
-References: <20060208093439.GA9240@suse.de>
-	<20060208211600.28252f22.sfr@canb.auug.org.au>
-	<20060208124045.GA14370@suse.de>
-	<335AACC0-4227-4D0F-9B4B-2B89F1368ECB@kernel.crashing.org>
+Return-Path: <pnasrat@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 87619679EF
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Feb 2006 13:28:59 +1100 (EST)
+Received: from int-mx1.corp.redhat.com (int-mx1.corp.redhat.com
+	[172.16.52.254])
+	by mx1.redhat.com (8.12.11/8.12.11) with ESMTP id k1A2Swam026400
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Feb 2006 21:28:58 -0500
+Received: from mail.boston.redhat.com (mail.boston.redhat.com [172.16.76.12])
+	by int-mx1.corp.redhat.com (8.11.6/8.11.6) with ESMTP id k1A2Sv104579
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Feb 2006 21:28:57 -0500
+Received: from vpn83-127.boston.redhat.com (vpn83-127.boston.redhat.com
+	[172.16.83.127])
+	by mail.boston.redhat.com (8.12.8/8.12.8) with ESMTP id k1A2SvQo008222
+	for <linuxppc-dev@ozlabs.org>; Thu, 9 Feb 2006 21:28:57 -0500
+Subject: yaboot 1.3.14 release candidate 1
+From: Paul Nasrat <pnasrat@redhat.com>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Thu, 09 Feb 2006 21:28:58 -0500
+Message-Id: <1139538538.3638.14.camel@enki.eridu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <335AACC0-4227-4D0F-9B4B-2B89F1368ECB@kernel.crashing.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,13 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Wed, Feb 08, Kumar Gala wrote:
+It's been some time in the making but I'd like to put out what is on
+HEAD for people to test. Key features are improved netbooting on IBM
+pSeries machines (Nathan Lynch), Amiga partition support (Sven Luther),
+Software RAID support on IBM pSeries machines (Dustin Kirkland), plus
+many small fixups. Thanks to all the contributors involved. It should be
+listed in the snapshot section at http://yaboot.ozlabs.org/
 
-> You do realize there are a slew of headers in include/asm-ppc/ that  
-> we use in the arch/powerpc builds for ppc32.
+c955afa8188dcb927db09cb30e82cef0c00dbedb  yaboot-1.3.14rc1.tar.gz
 
-Yes, I just realized that I have to patch both asm/io.h files. ARGH!
+Most of the stuff is already in a variety of distributions, but I'd
+invite wider testing.
 
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+Thanks to ozlabs for putting up the hosting at short notice when
+penguinppc.org had hardware issues.
+
+Paul
