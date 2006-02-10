@@ -3,22 +3,21 @@ Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "sabrina.ovro.caltech.edu",
 	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5B09367B58
+	by ozlabs.org (Postfix) with ESMTP id 5207A67B58
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 05:00:51 +1100 (EST)
-Received: from [192.100.16.36] (kiwi.ovro.caltech.edu [192.100.16.36])
-	by ovro.ovro.caltech.edu (8.13.1/8.13.1) with ESMTP id k1AI0mHV011097
-	for <linuxppc-embedded@ozlabs.org>; Fri, 10 Feb 2006 10:00:48 -0800
-Message-ID: <43ECD43F.5090809@ovro.caltech.edu>
-Date: Fri, 10 Feb 2006 09:58:23 -0800
+	Sat, 11 Feb 2006 05:14:05 +1100 (EST)
+Message-ID: <43ECD753.5000105@ovro.caltech.edu>
+Date: Fri, 10 Feb 2006 10:11:31 -0800
 From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
+To: Stefan Roese <sr@denx.de>
 Subject: Re: Yosemite/440EP 'issues' as a PCI target
-References: <20060210173133.964B53525CC@atlas.denx.de>
-	<43ECCF7C.9070701@ovro.caltech.edu>
-In-Reply-To: <43ECCF7C.9070701@ovro.caltech.edu>
+References: <20060209003459.0ED30352564@atlas.denx.de>
+	<200602100847.54363.sr@denx.de> <43ECC7CE.1010409@ovro.caltech.edu>
+	<200602101859.24830.sr@denx.de>
+In-Reply-To: <200602101859.24830.sr@denx.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,36 +29,51 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hey Travis,
 
- >> Not great, so any suggestions for whats better?
- >>
- > Everyone uses them because they're easy and just work. Sometimes
- > you may need to tweak the setup eeprom, but in general they just work.
- > We use a pericom 7300 (can't remember and working from home
- > today), that is quite nice.  Not an issue with it at all. HW
- > guy just plunked it down and it worked.  They have an eval board to.
+>>There's actually an additional issue with the 440EP
+>>for my application. I'll be using it in a 5V PCI
+>>environment (due to the reuse of the existing host
+>>CPUs).
+> 
+> Autsch! Those must be pretty old CPU's! Is this standard desktop PCI or 
+> CompactPCI or PMC?
 
-I was going to take a look around TIs site, I'd forgotten Pericom
-makes bridges too, I'll read the data book.
+They're not too old ... but at $2k a piece, you don't want
+to just throw them away.
 
- > ... I've not had a need to use it, my work is 90% PCI
- > (forwarding engine, queueing engine, etc) for 10G ethernet, so
- > FPU stuff is very rare, and not time critical (used for setting
- > up policing/rate limiting etc). Basically, set it and forget it
- > calculations.
+The CPUs are Force Computers 735AR2 devices. They contain
+a Force Sentinel PCI-to-PCI bridge. The bridges can operate
+at 3.3V or 5V, but they decided to hardwire them for 5V
+operation to implement hot-swap.
 
-I figured that was probably the case - and the reason the majority
-of the embedded processors are sans-FPU. I didn't want to use a
-TI DSP again, there's just no 'community spirit' like with Linux.
+The other newer CPUs are Trenton CPLEs.
+http://www.trentontechnology.com/products/singleboards/5932.php4
 
-So, I'll take a look at the PowerQUICC that Wolfgang mentioned, and
-see if I want to change to that processor, another look at the ColdFire
-(I have an MCF5485 eval board), and a look at the bridge data sheets
-and see where that leaves me.
+The system uses cPCI crates. In some cases 21152 bridges are
+used to make larger backplanes, in other cases SBS bridges
+containing 21152's are used to link crates.
 
-Personally, I want to stay with the PowerPC, the developer mailing
-list is great!
+>>Since the 440EP is not 5V tolerant, I figured 
+>>I would add clamps or buffers to the board design.
+> 
+> I would be careful here, since you easily can violate the pci
+> specs. Do you  have other pci devices on this pci bus?
 
-Thanks,
+Yeah, I'd make sure that I had others check my work. However,
+the 21555 would take care of it, and the only PCI bus
+on the board would be the one between the 440EP and the
+bridge.
+
+> Just use newer host CPU's! ;-)
+
+Ah, the words of a true engineer :)
+
+Of course the project manager wouldn't appreciate me doing that.
+
+However, its not totally out of the question ... $50 per 21555
+and 20 per crate, thats $1000, about half the price of
+a CPU. But of course, without the I20 unit on the 440EP,
+I might need the 21555 anyway.
+
+Cheers
 Dave
