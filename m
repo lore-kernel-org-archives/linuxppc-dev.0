@@ -1,22 +1,18 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4D53B67B38
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 638C667B47
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 04:29:00 +1100 (EST)
-Message-ID: <43ECCCC5.3000405@ovro.caltech.edu>
-Date: Fri, 10 Feb 2006 09:26:29 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Andrew Armitage <andrew@varisys.co.uk>
-Subject: Re: Yosemite/440EP 'issues' as a PCI target
-References: <20060209003459.0ED30352564@atlas.denx.de>	<43EBD715.4020303@ovro.caltech.edu>
-	<200602100847.54363.sr@denx.de> <43ECC7CE.1010409@ovro.caltech.edu>
-	<43ECCB4D.9080602@varisys.co.uk>
-In-Reply-To: <43ECCB4D.9080602@varisys.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 11 Feb 2006 04:31:35 +1100 (EST)
+To: David Hawkins <dwh@ovro.caltech.edu>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Yosemite/440EP 'issues' as a PCI target 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 10 Feb 2006 09:05:18 PST."
+	<43ECC7CE.1010409@ovro.caltech.edu>
+Date: Fri, 10 Feb 2006 18:31:33 +0100
+Sender: wd@denx.de
+Message-Id: <20060210173133.964B53525CC@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,12 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> We've used the 21555 on a couple of our designs (mated to a 7457/107 
-> pair) and have never had too many problems with them.  The messaging 
-> unit has been very helpful.
-> 
-> Just my $0.02,
+Dear David,
 
-Hey Andrew,
-Thanks!
-Dave
+in message <43ECC7CE.1010409@ovro.caltech.edu> you wrote:
+> 
+> Of course there is also the option of finding another
+> PowerPC that matches my requirements;
+...
+
+MPC834x comes to mind. But I have to admit that we never tried  using
+this as a PCI device yet...
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I can type faster than I can move a  mouse,  so  I  find  menu-driven
+drawing packages time consuming and frustrating.      - W. R. Stevens
