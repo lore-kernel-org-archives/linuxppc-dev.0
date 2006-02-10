@@ -1,19 +1,19 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id EEBB467B42
+Return-Path: <andrew@varisys.co.uk>
+Received: from sammy.varisys.co.uk (secure.varisys.co.uk [81.187.198.36])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8B9B8679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 04:40:40 +1100 (EST)
-Message-ID: <43ECCF7C.9070701@ovro.caltech.edu>
-Date: Fri, 10 Feb 2006 09:38:04 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Sat, 11 Feb 2006 04:55:23 +1100 (EST)
+Message-ID: <43ECCB4D.9080602@varisys.co.uk>
+Date: Fri, 10 Feb 2006 17:20:13 +0000
+From: Andrew Armitage <andrew@varisys.co.uk>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
+To: David Hawkins <dwh@ovro.caltech.edu>
 Subject: Re: Yosemite/440EP 'issues' as a PCI target
-References: <20060210173133.964B53525CC@atlas.denx.de>
-In-Reply-To: <20060210173133.964B53525CC@atlas.denx.de>
+References: <20060209003459.0ED30352564@atlas.denx.de>	<43EBD715.4020303@ovro.caltech.edu>
+	<200602100847.54363.sr@denx.de> <43ECC7CE.1010409@ovro.caltech.edu>
+In-Reply-To: <43ECC7CE.1010409@ovro.caltech.edu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,27 +26,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>Of course there is also the option of finding another
->>PowerPC that matches my requirements;
+Hi David,
+
+> However, given the meager host-to-host communications
+> features, I think I would be better off putting an
+> Intel 21555 non-transparent bridge on the board.
+> That will provide 5V tolerance, and a full set of
+> messaging unit and I2O facilities. All for $50-80
+> or so according to the single-piece pricing from
+> Digikey. I'm not so happy to need to add another
+> chip, but if the 440EP passes all the other
+> benchmark requirements, then it seems the least
+> painful way to proceed.
 > 
-> ...
-> 
-> MPC834x comes to mind. But I have to admit that we never tried  using
-> this as a PCI device yet...
-> 
+> Has anyone reading this list had good or bad experiences
+> with the Intel 21555 or perhaps some of the PLX offers,
+> eg. PCI 6254?
 
-Thanks Wolfgang, I'll take a look at the user manual.
+We've used the 21555 on a couple of our designs (mated to a 7457/107 
+pair) and have never had too many problems with them.  The messaging 
+unit has been very helpful.
 
-Regarding PowerPC devices that can be (uselessly) configured
-as PCI agents/targets/peripherals;
+Just my $0.02,
 
-  - the Artesyn PMC board I got from eBay contains the
-    IBM CPC700 bridge - it can never generate PCI interrupts
-    as a target (non-monarch mode).
-
-  - the MPC5200 PowerPC, can also be configured as a target,
-    but will never generate PCI interrupts.
-
-Gee, who knew. I didn't :)
-
-Dave
+Andrew
