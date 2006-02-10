@@ -1,24 +1,12 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[212.18.232.186])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6DFAD67B23
-	for <linuxppc-dev@ozlabs.org>; Sat, 11 Feb 2006 08:52:18 +1100 (EST)
-Date: Fri, 10 Feb 2006 21:52:06 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pat Gefre <pfg@sgi.com>
-Subject: Re: [CFT] Don't use ASYNC_* nor SERIAL_IO_* with serial_core
-Message-ID: <20060210215206.GB30777@flint.arm.linux.org.uk>
-References: <20060121211407.GA19984@dyn-67.arm.linux.org.uk>
-	<20060210084445.GA1947@flint.arm.linux.org.uk>
-	<200602101457.45847.pfg@sgi.com>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200602101457.45847.pfg@sgi.com>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-mips@linux-mips.org, Linux Kernel List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+Message-ID: <17389.5168.84286.477133@cargo.ozlabs.ibm.com>
+Date: Sat, 11 Feb 2006 09:31:12 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: please pull powerpc-merge.git
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +16,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 10, 2006 at 02:57:45PM -0600, Pat Gefre wrote:
-> Yeah this is something I should've fixed up... thanks
-> 
-> Acked-by: pfg@sgi.com
+Linus,
 
-Thanks, applied.
+Please do a pull from
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 Serial core
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
+
+Just 4 commits this time.  Log and diffstat follow.
+
+Thanks,
+Paul.
+
+Becky Bruce:
+      powerpc: Add FSL USB node to documentation
+
+JANAK DESAI:
+      powerpc: unshare system call registration
+
+Kumar Gala:
+      powerpc: Add CONFIG_DEFAULT_UIMAGE for embedded boards
+
+Paul Mackerras:
+      ppc: Use the system call table from arch/powerpc/kernel/systbl.S
+
+ Documentation/powerpc/booting-without-of.txt |   60 +++++-
+ arch/powerpc/Kconfig                         |    6 +
+ arch/powerpc/Makefile                        |    1 
+ arch/powerpc/kernel/Makefile                 |    6 -
+ arch/powerpc/kernel/systbl.S                 |    3 
+ arch/ppc/kernel/misc.S                       |  283 --------------------------
+ include/asm-powerpc/unistd.h                 |    3 
+ 7 files changed, 72 insertions(+), 290 deletions(-)
