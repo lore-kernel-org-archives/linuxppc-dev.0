@@ -1,19 +1,19 @@
 Return-Path: <sr@denx.de>
 Received: from natnoddy.rzone.de (natnoddy.rzone.de [81.169.145.166])
-	by ozlabs.org (Postfix) with ESMTP id 6D96467B36
+	by ozlabs.org (Postfix) with ESMTP id 1B62D67B5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 19:06:30 +1100 (EST)
+	Sat, 11 Feb 2006 19:21:43 +1100 (EST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: Yosemite/440EP 'issues' as a PCI target
-Date: Sat, 11 Feb 2006 09:06:05 +0100
-References: <20060209003459.0ED30352564@atlas.denx.de>
-	<200602101859.24830.sr@denx.de> <43ECD753.5000105@ovro.caltech.edu>
-In-Reply-To: <43ECD753.5000105@ovro.caltech.edu>
+Date: Sat, 11 Feb 2006 09:21:32 +0100
+References: <20060210173133.964B53525CC@atlas.denx.de>
+	<43ED7E1E.2030700@ovro.caltech.edu>
+In-Reply-To: <43ED7E1E.2030700@ovro.caltech.edu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200602110906.05547.sr@denx.de>
+Message-Id: <200602110921.33245.sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,22 +26,36 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi David,
 
-On Friday 10 February 2006 19:11, David Hawkins wrote:
-> > Just use newer host CPU's! ;-)
->
-> Ah, the words of a true engineer :)
->
-> Of course the project manager wouldn't appreciate me doing that.
->
-> However, its not totally out of the question ... $50 per 21555
-> and 20 per crate, thats $1000, about half the price of
-> a CPU. But of course, without the I20 unit on the 440EP,
-> I might need the 21555 anyway.
+On Saturday 11 February 2006 07:03, David Hawkins wrote:
+> Indeed you were correct. The MPC834x series meets my requirements.
+> It is also a 3.3V PCI device, so I'm checking into whether
+> the Trenton CPUs I can use as host CPUs use a 3.3V PCI interface.
+> If that is the case, then I'll move the Force CPUs into another
+> system, and I'll just define the cPCI bus in the correlator
+> system as 3.3V-only.
 
-Do you really need this I2O unit? You could easily create some message 
-ringbuffers, one in the 440EP's SDRAM for the host-to-440 messages and one in 
-the host-cpu SDRAM for the 440-to-host messages. This way, all messages will 
-be transferred using pci writes.
+Ahhh. ;-)
+
+> The potential advantages of the MPC834x over the 440EP are;
+>
+>    - it has doorbell registers and mailboxes for PCI
+>      host-to-host comms (though does not have an I2O interface)
+>
+>    - its DDR-SDRAM controller can run faster than the 440EP
+>
+>    - its external local bus is wider and faster than
+>      the 440EP
+>
+>    - but I think the MPC834x internal buses are slower than
+>      the 440EP CoreConnect buses, so I'll need to benchmark
+>      to compare the two.
+>
+>    - it exists! I can find them on distributors web sites
+>      (can't say the same for the 440EP yet!)
+
+Hmmm. The 440EP is around for quite a while. I would be surprised if you 
+couldn't buy those parts right now. But I have to admit, I never tried to. I 
+would contact my AMCC distributor for availability...
 
 Best regards,
 Stefan
