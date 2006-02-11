@@ -1,22 +1,16 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8F5AD67B49
+Return-Path: <bharthik2004@yahoo.com>
+Received: from web50003.mail.yahoo.com (web50003.mail.yahoo.com
+	[206.190.38.18]) by ozlabs.org (Postfix) with SMTP id F256367B3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 17:09:03 +1100 (EST)
-Message-ID: <43ED7EE9.8040501@ovro.caltech.edu>
-Date: Fri, 10 Feb 2006 22:06:33 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Sat, 11 Feb 2006 17:37:47 +1100 (EST)
+Message-ID: <20060211063745.23407.qmail@web50003.mail.yahoo.com>
+Date: Fri, 10 Feb 2006 22:37:45 -0800 (PST)
+From: bharathi kandimalla <bharthik2004@yahoo.com>
+Subject: accessing serial port  of  MPC860T 
+To: jagadish <jagadish@india.advinfo.net>,
+	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-To: Mark Chambers <markc@mail.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: Yosemite/440EP 'issues' as a PCI target
-References: <20060209003459.0ED30352564@atlas.denx.de><43EBD715.4020303@ovro.caltech.edu>
-	<200602100847.54363.sr@denx.de> <43ECC7CE.1010409@ovro.caltech.edu>
-	<001701c62e6c$09c48ea0$6401a8c0@CHUCK2>
-In-Reply-To: <001701c62e6c$09c48ea0$6401a8c0@CHUCK2>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/alternative; boundary="0-338671634-1139639865=:22932"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,26 +21,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--0-338671634-1139639865=:22932
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Hi Mark,
+             
+Hi
+  I am able to open the scc2 port from the user space application
+but I am not able to write to the device.
+I think write function is not implemented correctly 
+even if I wrote code for  write function in the file 
+cpm_uart_cpm1.c it is effecting console  port
+  As the code comes from the linux 2.6.13  for the 
+Mpc860T  works correctly? /or it requires some modifications to work properly 
+ If the port (SMC2 OR SCC1 OR SMC] is configured as the CONSOLE  it is working fine     
+  best regards
+BHARATHI
+   
 
-> I'm currently working on an MPC8247 based design, btw.
-> It has a PC104+ header and is directly connected to a
-> T.I. 6205 (which, at $10, is a lot of crunch for the buck).
+			
+---------------------------------
+ Yahoo! Mail
+ Use Photomail to share photos without annoying attachments.
+--0-338671634-1139639865=:22932
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-I took a look at the MPC8727 family.
-
-The CPM runs at 200MHz max, and the SSCs can clock at
-1/4 that, so only 50MHz; 50MHz/8-bits = 6MB/s.
-They're too slow to move 132MB/s.
-
-There is only two external buses too, and no
-external bus to memory DMA, since they are the
-same bus.
-
-Also, the MPC834x series exists, and beats it out
-performance wise.
-
-Thanks for the pointer though!
-
-Dave
+<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <BR>Hi</div>  <div>I am able to open the scc2 port from the user space application<BR>but I am not able to write to the device.<BR>I think write function is not implemented correctly <BR>even if I wrote code for&nbsp; write function in the file <BR>cpm_uart_cpm1.c it is effecting console&nbsp; port</div>  <div>As the code comes from the linux 2.6.13&nbsp; for the <BR>Mpc860T&nbsp; works correctly? /or it requires some modifications to work properly <BR>&nbsp;If the port (SMC2 OR SCC1 OR SMC] is configured as the CONSOLE&nbsp; it is working fine&nbsp;&nbsp;&nbsp;&nbsp; </div>  <div>best regards<BR>BHARATHI</div>  <div>&nbsp;</div><p>
+	
+		<hr size=1> Yahoo! Mail<br> 
+<a href="http://us.rd.yahoo.com/mail_us/taglines/pmall2/*http://photomail.mail.yahoo.com">Use Photomail</a> to share photos without annoying attachments.
+--0-338671634-1139639865=:22932--
