@@ -1,18 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A44DA67BA3
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id AB38067B7E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 11:32:31 +1100 (EST)
-Date: Fri, 10 Feb 2006 18:23:58 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
+	Sat, 11 Feb 2006 12:12:40 +1100 (EST)
 To: atul.sabharwal@exgate.tek.com
-Subject: RE: kernel startup
-In-Reply-To: <4A062D477D842B4C8FC48EA5AF2D41F201BA2089@us-bv-m23.global.tektronix.net>
-Message-ID: <Pine.LNX.4.44.0602101823290.31619-100000@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: kernel startup 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 10 Feb 2006 16:10:32 PST."
+	<4A062D477D842B4C8FC48EA5AF2D41F201BA2084@us-bv-m23.global.tektronix.net>
+Date: Sat, 11 Feb 2006 02:12:37 +0100
+Sender: wd@denx.de
+Message-Id: <20060211011238.051C13525CC@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,31 +24,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 10 Feb 2006 atul.sabharwal@exgate.tek.com wrote:
+In message <4A062D477D842B4C8FC48EA5AF2D41F201BA2084@us-bv-m23.global.tektronix.net> you wrote:
+> Since I have set IIP to 1, reset vector is at 0xfff00100.  IMMR is
+> 0x00f00000. So, putting RAM at address 0x0 allows only 15MB of RAM
+> at address 0x0 (ISA style). 
 
-> >>I'm not that familiar with 8xx, but can't you move IMMR?
-> 
-> Not much choice with IMMR as it can be 0x0 or 0x00f00000 or 0xFF000000
-> Or 0xFFF00000.  
-> 
-> Flash is from 0xfe000000 thru 0xffffffff.  Now on POR,
-> Processor goes to offset 0x100 on CS0.  So, if IMMR is overlapping with
-> flash, it might not boot.
-> 
-> On 870, it seems that reset value for BR0/OR0 is undefined.
-> Data fetch goes on CS0 and then in cpu_init_f BR0 & OR0
-> Are remapped.  So, I could put flash at a non-standard address like
-> 0xDE000000 and move IMMR to 0xFF000000.
-> 
-> The problem this creates is that I can set IIP to 0 or 1. So, exception
-> Vector prefix can be 0 or 0xfff.  Since no flash at 0xfff00000 base 
-> Address I cannot have any exceptions in my code till the u-boot code
-> has relocated to RAM.  Which should be acceptable as what can I do
-> if there is exception so early in the system. 
-> 
-> Unless there is a better design ?
+Please do yourself a favour and read some docs and FAQ's first.  With
+a  low mapping ogf the IMMR like 0x00f00000 you will never be able to
+run Linux.
 
-It sounds like you should move this discussion to the u-boot list since it 
-has very little to do with the kernel.
+And as mentioned before: the whole memory map is just software. If  it
+doesn't fit your needs just change it.
 
-- k
+> As memory and internal processor registers would conflict, I would have
+
+Then CHANGE it! It's just a few bits in some registers.
+
+> a memory hole.  Hence, the logical choice of putting RAM at a different
+
+This is not a logical choice, but just another error.
+
+> location. So, if MMU allows shadowing (which I have not read), it could
+> solve my problem.
+
+Please forget it. Just fix your memory map.
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Why don't you have a Linux partition installed so you can be  working
+in  a  programmer-friendly environment instead of a keep-gates'-bank-
+account-happy one? :-)                            -- Tom Christiansen
