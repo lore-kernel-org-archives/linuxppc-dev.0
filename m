@@ -1,18 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9B5EF67B99
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 7D11E67BA2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 11:12:03 +1100 (EST)
-Date: Fri, 10 Feb 2006 18:03:27 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
+	Sat, 11 Feb 2006 11:12:07 +1100 (EST)
 To: atul.sabharwal@exgate.tek.com
-Subject: RE: kernel startup
-In-Reply-To: <4A062D477D842B4C8FC48EA5AF2D41F201BA2084@us-bv-m23.global.tektronix.net>
-Message-ID: <Pine.LNX.4.44.0602101802590.31619-100000@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: kernel startup 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 10 Feb 2006 16:02:24 PST."
+	<4A062D477D842B4C8FC48EA5AF2D41F201BA2081@us-bv-m23.global.tektronix.net>
+Date: Sat, 11 Feb 2006 01:12:04 +0100
+Sender: wd@denx.de
+Message-Id: <20060211001204.294113535F1@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,12 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 10 Feb 2006 atul.sabharwal@exgate.tek.com wrote:
+In message <4A062D477D842B4C8FC48EA5AF2D41F201BA2081@us-bv-m23.global.tektronix.net> you wrote:
+> 
+> I am using PPC 870 and u-boot 1.1.2.  Which architecture should I look
+> for as a reference example.  On my system, the RAM is not at address 0x0 but at
+> 0x10000000. Since the exception table does not take full 32 bit address,
 
-> Since I have set IIP to 1, reset vector is at 0xfff00100.  IMMR is
-> 0x00f00000. So, putting RAM at address 0x0 allows only 15MB of RAM
-> at address 0x0 (ISA style). 
+The phrase "the RAM is at address 0x10000000" is bogus.
 
-I'm not that familiar with 8xx, but can't you move IMMR?
+The RAM "is" where you map it. The mapping is done in  software.  The
+software is implementing your design.
 
-- kumar
+In other words, your design is broken when you put the RAM at such  a
+strange adress instead of the natural location, starting from 0x0000.
+
+> I am not sure how to tell the processor about the relocated location.
+
+You don't; just fix your memory map.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+If God had a beard, he'd be a UNIX programmer.
