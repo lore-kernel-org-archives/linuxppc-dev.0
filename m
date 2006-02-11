@@ -1,18 +1,25 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 8FEC767B90
+Return-Path: <atul.sabharwal@exgate.tek.com>
+Received: from igate.tek.com (igate.tek.com [192.65.41.20])
+	by ozlabs.org (Postfix) with ESMTP id CFB4167B73
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 12:20:29 +1100 (EST)
-To: atul.sabharwal@exgate.tek.com
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: kernel startup 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 10 Feb 2006 16:28:28 PST."
-	<4A062D477D842B4C8FC48EA5AF2D41F201BA2089@us-bv-m23.global.tektronix.net>
-Date: Sat, 11 Feb 2006 02:20:27 +0100
-Sender: wd@denx.de
-Message-Id: <20060211012027.DD9C8353B42@atlas.denx.de>
+	Sat, 11 Feb 2006 12:40:02 +1100 (EST)
+Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
+	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k1B1e2tT011732
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 10 Feb 2006 17:40:02 -0800 (PST)
+Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
+	[128.181.2.45])
+	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k1B1e1xW017478
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 10 Feb 2006 17:40:01 -0800 (PST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: kernel startup 
+Date: Fri, 10 Feb 2006 17:40:44 -0800
+Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201BA209A@us-bv-m23.global.tektronix.net>
+From: <atul.sabharwal@exgate.tek.com>
+To: <wd@denx.de>, <galak@kernel.crashing.org>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,48 +31,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <4A062D477D842B4C8FC48EA5AF2D41F201BA2089@us-bv-m23.global.tektronix.net> you wrote:
-> 
-> Not much choice with IMMR as it can be 0x0 or 0x00f00000 or 0xFF000000
-> Or 0xFFF00000.  
+> I'm not that familiar with 8xx, but can't you move IMMR?
 
-Initially. But you can change it.
+Of course you can.
 
-> Flash is from 0xfe000000 thru 0xffffffff.  Now on POR,
-> Processor goes to offset 0x100 on CS0.  So, if IMMR is overlapping with
-> flash, it might not boot.
+That's correct but on 8540, it did not work.  I was using u-boot
+And BDI had mapped it to 0xe0000000 and u-boot had mapped it to
+0x40000000. So, it was a problem as serial interface did not work.
 
-Just fix your memory map.
+It was easier to keep IMMR value same in the BDI configuration and the
+processor. Just did not find it necessary to relocate it.
 
-> On 870, it seems that reset value for BR0/OR0 is undefined.
-
-Please RTFM. The steps how the processor  comes  up  from  reset  are
-documented  in  great  detail.  Especially  the  handling of the boot
-device chip select.
-
-> Data fetch goes on CS0 and then in cpu_init_f BR0 & OR0
-> Are remapped.  So, I could put flash at a non-standard address like
-> 0xDE000000 and move IMMR to 0xFF000000.
-
-There is no such thing as a "non-standard" address, as  there  is  no
-"standard" address either.
-
-> The problem this creates is that I can set IIP to 0 or 1. So, exception
-> Vector prefix can be 0 or 0xfff.  Since no flash at 0xfff00000 base 
-> Address I cannot have any exceptions in my code till the u-boot code
-> has relocated to RAM.  Which should be acceptable as what can I do
-> if there is exception so early in the system. 
-
-In most cases it is useful to configure a system for low-boot, i.  e.
-let  it  start  at  0x0100.  Then  just set up your memory map as you
-like...
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-You don't need a weatherman to know which way the wind blows.
-                                                          - Bob Dylan
+Most of the time, it's a question between conceptual and factual(does it
+work ?).
+--
+Atul
