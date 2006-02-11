@@ -1,20 +1,25 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E5F9867B2A
+Return-Path: <dibacco@inwind.it>
+Received: from smtp4.libero.it (smtp4.libero.it [193.70.192.54])
+	by ozlabs.org (Postfix) with ESMTP id 577E167B2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 12 Feb 2006 03:08:28 +1100 (EST)
-To: Sylvain Munaut <tnt@246tNt.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Stability of MPC5200 FEC 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 11 Feb 2006 16:28:26 +0100."
-	<43EE029A.5040504@246tNt.com>
-Date: Sat, 11 Feb 2006 17:08:25 +0100
-Sender: wd@denx.de
-Message-Id: <20060211160825.DBDCA35262C@atlas.denx.de>
-Cc: Asier Llano Palacios <a.llano@ziv.es>, John Rigby <jrigby@freescale.com>,
-	linuxppc-embedded@ozlabs.org
+	Sun, 12 Feb 2006 03:51:11 +1100 (EST)
+Received: from localhost (172.16.1.202) by smtp4.libero.it (7.0.027-DD01)
+	id 43E2149B00D54FE0 for linuxppc-embedded@ozlabs.org;
+	Sat, 11 Feb 2006 17:51:09 +0100
+Received: from smtp0.libero.it ([172.16.1.204])
+	by localhost (asav16.libero.it [193.70.193.3]) (amavisd-new, port 10024)
+	with ESMTP id 28000-18-4 for <linuxppc-embedded@ozlabs.org>;
+	Sat, 11 Feb 2006 17:51:08 +0100 (CET)
+Received: from libero.it (172.16.1.237) by smtp0.libero.it (7.0.027-DD01)
+	id 439064B400B43E52 for linuxppc-embedded@ozlabs.org;
+	Sat, 11 Feb 2006 17:51:08 +0100
+Date: Sat, 11 Feb 2006 17:51:08 +0100
+Message-Id: <IUJ858$C1F6D8106A36F0F6CCFEC4D03BD42B33@libero.it>
+Subject: MBX AMD AM29F080 flash not recognized
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+From: "dibacco\@inwind\.it" <dibacco@inwind.it>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,35 +30,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <43EE029A.5040504@246tNt.com> you wrote:
->
-> > had before the Platform Device rework. But the problem is that we are
-> > experiencing that the FEC stops working after a long uptime.
-> 
-> Did you ever observe that behavior on a lite5200 ?
-> What is 'long uptime' and do you have sustained transfer during that
-> period ? (To try reproduice the problem).
+Hi,
 
-This is a well-known problem,  I'm  afraid.  To  trigger  it,  it  is
-usually  (*)  sufficient to transfer a large file (700 MB or so) over
-FTP to the target. Note that I've  encountered  the  problem  in  the
-context of the 2.4 kernel.
+on my MBX board I have two flashes: AM29F040 called bootrom and four chip=
+s of AM29F080 (each one 8 Mbit for a total of 4MB).
 
-(*) In some cases you can run several such transfers in a row without
-problem. Power-cycling the board will bring it back to "normal" mode.
+The kernel (from DENX) doesn't find the AM29F080. I added the following i=
+n amd_flash.c to support AM29F040 (a friend of mine told me)
 
-It's probably Bestcomm related. See  the  previous  discussions  with
-Freescale about known issues with the 2.6 Bestcomm code.
+#define AM29F040	0x00A4
 
-> Also, what are the 'symptoms' ? (anything in dmesg ?)
+and also:
 
-No, nothing.
+{
+                mfr_id: MANUFACTURER_AMD,
+		dev_id: AM29F040,
+		name: "AMD AMD29F040",
+		size: 0x00080000,
+		numeraseregions: 1,
+		regions: {
+	          { offset: 0x000000, erasesize: 0x10000, numblocks: 8 },
+		}
+},
 
-Best regards,
+in the amd_flash_info table.
 
-Wolfgang Denk
+For AM29F080 I don't know what to add and if to add something is ok !?!?!=
+?!?
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Like winter snow on summer lawn, time past is time gone.
+Someone knows?
+
+Furthermore, how can I specify that there are 4 chips of AM29F080?
+
+The kernel will handle this automatically?
+
+Bye,
+Antonio.
