@@ -1,26 +1,19 @@
-Return-Path: <atul.sabharwal@exgate.tek.com>
-Received: from igate.tek.com (igate.tek.com [192.65.41.20])
-	by ozlabs.org (Postfix) with ESMTP id 75FDD67B53
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 6DFF467A58
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 11:01:43 +1100 (EST)
-Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
-	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k1B01gtT027855
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Feb 2006 16:01:42 -0800 (PST)
-Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
-	[128.181.2.45])
-	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k1B01gxW018429
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Feb 2006 16:01:42 -0800 (PST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: kernel startup
-Date: Fri, 10 Feb 2006 16:02:24 -0800
-Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201BA2081@us-bv-m23.global.tektronix.net>
-From: <atul.sabharwal@exgate.tek.com>
-To: <galak@kernel.crashing.org>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 11 Feb 2006 11:06:38 +1100 (EST)
+To: Kumar Gala <galak@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: kernel startup 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 10 Feb 2006 17:32:13 CST."
+	<Pine.LNX.4.44.0602101730210.31619-100000@gate.crashing.org>
+Date: Sat, 11 Feb 2006 01:06:36 +0100
+Sender: wd@denx.de
+Message-Id: <20060211000636.E2C943535F1@atlas.denx.de>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,23 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <Pine.LNX.4.44.0602101730210.31619-100000@gate.crashing.org> you wrote:
+> 
+> > What does it mean that the load address is 0x00000000? 
+> 
+> its the address u-boot's going to jump to and start executing kernel code 
+> from.
 
+No. U-Boot will load (copy) the image to the load address  but  start
+executing  kernel  code  at  the  entry  point  address  which may be
+different.
 
->>I'm not sure what sub-arch we are talking about, but some do have the
-MMU=20
-on.
+Best regards,
 
-I am using PPC 870 and u-boot 1.1.2.  Which architecture should I look
-for as a reference example.  On my system, the RAM is not at address 0x0
-but at
-0x10000000. Since the exception table does not take full 32 bit address,
-I am not sure how to tell the processor about the relocated location.
+Wolfgang Denk
 
-On this custom board with 870, is it necessary to have RAM at address
-0x0
-(or shadow it) or the 870 supports configuration for different base
-addresses for memory. =20
-
-Thanks,
-
-Atul
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"Am besten betrachten Sie Fehlermeldungen als eine  Art  Psycho-Test,
+mit  dem  herausgefunden  werden soll, wie belastbar Sie sind."
+ - Dr. R. Wonneberger, Kompaktführer LaTeX, Kap. 1.6: Fehlermeldungen
