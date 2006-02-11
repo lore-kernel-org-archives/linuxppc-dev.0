@@ -1,19 +1,26 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id EFD2F67B31
+Return-Path: <tnt@246tNt.com>
+Received: from outmx028.isp.belgacom.be (outmx028.isp.belgacom.be
+	[195.238.5.49])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0257467A04
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 12 Feb 2006 00:03:35 +1100 (EST)
-To: David Hawkins <dwh@ovro.caltech.edu>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Yosemite/440EP 'issues' as a PCI target 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 10 Feb 2006 22:03:10 PST."
-	<43ED7E1E.2030700@ovro.caltech.edu>
-Date: Sat, 11 Feb 2006 14:03:32 +0100
-Sender: wd@denx.de
-Message-Id: <20060211130332.4581235262C@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 12 Feb 2006 02:27:56 +1100 (EST)
+Received: from outmx028.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx028.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id k1BFRbKE018209
+	for <linuxppc-embedded@ozlabs.org>; Sat, 11 Feb 2006 16:27:42 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <43EE029A.5040504@246tNt.com>
+Date: Sat, 11 Feb 2006 16:28:26 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Asier Llano Palacios <a.llano@ziv.es>
+Subject: Re: Stability of MPC5200 FEC
+References: <1139592010.14894.22.camel@localhost.localdomain>
+In-Reply-To: <1139592010.14894.22.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: John Rigby <jrigby@freescale.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +31,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <43ED7E1E.2030700@ovro.caltech.edu> you wrote:
-> 
-> What MPC834x development kit are you using? What would you recommend?
+Asier Llano Palacios wrote:
+> We are working with MPC5200 cpu. 
+> We've been using it since early 2.6 kernel versions.
+> We're currently quite stabilished with the version of the kernel Sylvain
+> had before the Platform Device rework. But the problem is that we are
+> experiencing that the FEC stops working after a long uptime.
 
-We use (*) the TQM834x modules (with a STK83xx/85xx starter kit).
+Did you ever observe that behavior on a lite5200 ?
+What is 'long uptime' and do you have sustained transfer during that
+period ? (To try reproduice the problem).
 
-(*) "use" means that we ported U-Boot and Linux for it.
+Also, what are the 'symptoms' ? (anything in dmesg ?)
 
->   - I'd like to get a board in a PCI or cPCI-form factor, since
->     I could use it as a PCI agent/peripheral
+> So, do you think that the current git version is more stable than the
+> one we are using? Do you think that there is anything that could stop us
+> upgrading to the latest version?
 
-Both PCI and cPSI are present on the STK83xx board.
+Doubtfull, I haven't touched the FEC code much except to remove the
+aligment code (newer bestcomm microcode doesn't require alignement of
+the skb). It should be reworked to use the generic phy code and remove
+some "bugs" (like the fact when we down the interface, we stop the task
+but not deactivate the MAC IIRC, which cause warning in dmesg).
 
->   - I'd really like to get access to the external bus
->     too.
+You can send me the driver/net/fec_mpc52xx and arch/ppc/syslib/bestcomm
+you're using, I'll tell you if there was major changes.
 
-Available on headers, too
+> The problem is that we have a custom board, with some custom devices, so
+> it is not so easy to upgrade. We need to know that a new version, is
+> more stable than the previous one, before we upgrade. As soon as we
+> upgrade, we can help if we find any problem.
 
-Feel free to contact me for details.
 
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-To know how another being, another creature feels -  that  is  impos-
-sible.                  - Terry Pratchett, _The Dark Side of the Sun_
+Sylvain
