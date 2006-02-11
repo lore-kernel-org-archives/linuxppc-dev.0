@@ -1,15 +1,19 @@
-Return-Path: <bharthik2004@yahoo.com>
-Received: from web50008.mail.yahoo.com (web50008.mail.yahoo.com
-	[206.190.38.23]) by ozlabs.org (Postfix) with SMTP id 6278267B56
+Return-Path: <sr@denx.de>
+Received: from natnoddy.rzone.de (natnoddy.rzone.de [81.169.145.166])
+	by ozlabs.org (Postfix) with ESMTP id 6D96467B36
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 17:49:00 +1100 (EST)
-Message-ID: <20060211064858.27351.qmail@web50008.mail.yahoo.com>
-Date: Fri, 10 Feb 2006 22:48:58 -0800 (PST)
-From: bharathi kandimalla <bharthik2004@yahoo.com>
-Subject: linux 2.6.13 URL
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Sat, 11 Feb 2006 19:06:30 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Yosemite/440EP 'issues' as a PCI target
+Date: Sat, 11 Feb 2006 09:06:05 +0100
+References: <20060209003459.0ED30352564@atlas.denx.de>
+	<200602101859.24830.sr@denx.de> <43ECD753.5000105@ovro.caltech.edu>
+In-Reply-To: <43ECD753.5000105@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1936385324-1139640538=:26254"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200602110906.05547.sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,35 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1936385324-1139640538=:26254
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Hi David,
 
-Hi
- I want to download the linux 2.6.13  as I am using it  
- But I did not find it source code at 
- http://www.kernel.org/ 
- As I have find all other different versions 2.6,15
- 2.6.16 ..
- where can I download linux 2.6.13?
-   will you please give me the URL?
-  best regards
-  Bharathi
-   
-   
-   
+On Friday 10 February 2006 19:11, David Hawkins wrote:
+> > Just use newer host CPU's! ;-)
+>
+> Ah, the words of a true engineer :)
+>
+> Of course the project manager wouldn't appreciate me doing that.
+>
+> However, its not totally out of the question ... $50 per 21555
+> and 20 per crate, thats $1000, about half the price of
+> a CPU. But of course, without the I20 unit on the 440EP,
+> I might need the 21555 anyway.
 
+Do you really need this I2O unit? You could easily create some message 
+ringbuffers, one in the 440EP's SDRAM for the host-to-440 messages and one in 
+the host-cpu SDRAM for the 440-to-host messages. This way, all messages will 
+be transferred using pci writes.
 
-			
----------------------------------
- Yahoo! Mail
- Use Photomail to share photos without annoying attachments.
---0-1936385324-1139640538=:26254
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<div>Hi<BR>&nbsp;I want to download the linux 2.6.13&nbsp; as I am using it&nbsp; <BR>&nbsp;But I did not find it source code at <BR>&nbsp;<A href="http://www.kernel.org/">http://www.kernel.org/</A> <BR>&nbsp;As I have find all other different versions 2.6,15<BR>&nbsp;2.6.16 ..<BR>&nbsp;where can I download linux 2.6.13?</div>  <div>&nbsp;will you please give me the URL?</div>  <div>best regards</div>  <div>Bharathi</div>  <div>&nbsp;</div>  <div>&nbsp;</div>  <div>&nbsp;<BR></div><p>
-	
-		<hr size=1> Yahoo! Mail<br> 
-<a href="http://us.rd.yahoo.com/mail_us/taglines/pmall2/*http://photomail.mail.yahoo.com">Use Photomail</a> to share photos without annoying attachments.
---0-1936385324-1139640538=:26254--
+Best regards,
+Stefan
