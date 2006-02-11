@@ -1,19 +1,19 @@
-Return-Path: <sr@denx.de>
-Received: from natnoddy.rzone.de (natnoddy.rzone.de [81.169.145.166])
-	by ozlabs.org (Postfix) with ESMTP id 1B62D67B5B
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id BE1A7679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 19:21:43 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Yosemite/440EP 'issues' as a PCI target
-Date: Sat, 11 Feb 2006 09:21:32 +0100
-References: <20060210173133.964B53525CC@atlas.denx.de>
-	<43ED7E1E.2030700@ovro.caltech.edu>
-In-Reply-To: <43ED7E1E.2030700@ovro.caltech.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200602110921.33245.sr@denx.de>
+	Sat, 11 Feb 2006 23:59:04 +1100 (EST)
+To: atul.sabharwal@exgate.tek.com
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: kernel startup 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 10 Feb 2006 17:47:12 PST."
+	<4A062D477D842B4C8FC48EA5AF2D41F201BA209B@us-bv-m23.global.tektronix.net>
+Date: Sat, 11 Feb 2006 13:59:01 +0100
+Sender: wd@denx.de
+Message-Id: <20060211125901.BD9C935262C@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,38 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi David,
+In message <4A062D477D842B4C8FC48EA5AF2D41F201BA209B@us-bv-m23.global.tektronix.net> you wrote:
+> >>Please do yourself a favour and read some docs and FAQ's first.  With
+> >>a  low mapping ogf the IMMR like 0x00f00000 you will never be able to
+> >>run Linux.
+> 
+> I know that the processor does not allow setting up a base address for the
+> exception vectors. In this situation, it would never be able to handle
 
-On Saturday 11 February 2006 07:03, David Hawkins wrote:
-> Indeed you were correct. The MPC834x series meets my requirements.
-> It is also a 3.3V PCI device, so I'm checking into whether
-> the Trenton CPUs I can use as host CPUs use a 3.3V PCI interface.
-> If that is the case, then I'll move the Force CPUs into another
-> system, and I'll just define the cPCI bus in the correlator
-> system as 3.3V-only.
+This has nothing to do with that. Please *read* the FAQ!
 
-Ahhh. ;-)
+> Just don't know if this is feasible so scrambling for any other docs. I
+> have the instruction reference and development manual.
 
-> The potential advantages of the MPC834x over the 440EP are;
->
->    - it has doorbell registers and mailboxes for PCI
->      host-to-host comms (though does not have an I2O interface)
->
->    - its DDR-SDRAM controller can run faster than the 440EP
->
->    - its external local bus is wider and faster than
->      the 440EP
->
->    - but I think the MPC834x internal buses are slower than
->      the 440EP CoreConnect buses, so I'll need to benchmark
->      to compare the two.
->
->    - it exists! I can find them on distributors web sites
->      (can't say the same for the 440EP yet!)
+You can reinvent the wheel, or  read  the  documented  experience  of
+others who went the same way long time ago.
 
-Hmmm. The 440EP is around for quite a while. I would be surprised if you 
-couldn't buy those parts right now. But I have to admit, I never tried to. I 
-would contact my AMCC distributor for availability...
 
 Best regards,
-Stefan
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The perversity of nature is nowhere better demonstrated by  the  fact
+that,  when  exposed to the same atmosphere, bread becomes hard while
+crackers become soft.
