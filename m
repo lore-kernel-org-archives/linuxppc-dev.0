@@ -1,25 +1,23 @@
-Return-Path: <dibacco@inwind.it>
-Received: from smtp4.libero.it (smtp4.libero.it [193.70.192.54])
-	by ozlabs.org (Postfix) with ESMTP id 577E167B2A
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DBDE5679F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 12 Feb 2006 03:51:11 +1100 (EST)
-Received: from localhost (172.16.1.202) by smtp4.libero.it (7.0.027-DD01)
-	id 43E2149B00D54FE0 for linuxppc-embedded@ozlabs.org;
-	Sat, 11 Feb 2006 17:51:09 +0100
-Received: from smtp0.libero.it ([172.16.1.204])
-	by localhost (asav16.libero.it [193.70.193.3]) (amavisd-new, port 10024)
-	with ESMTP id 28000-18-4 for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Feb 2006 17:51:08 +0100 (CET)
-Received: from libero.it (172.16.1.237) by smtp0.libero.it (7.0.027-DD01)
-	id 439064B400B43E52 for linuxppc-embedded@ozlabs.org;
-	Sat, 11 Feb 2006 17:51:08 +0100
-Date: Sat, 11 Feb 2006 17:51:08 +0100
-Message-Id: <IUJ858$C1F6D8106A36F0F6CCFEC4D03BD42B33@libero.it>
-Subject: MBX AMD AM29F080 flash not recognized
+	Sun, 12 Feb 2006 05:08:55 +1100 (EST)
+Message-ID: <43EE279E.6070609@ovro.caltech.edu>
+Date: Sat, 11 Feb 2006 10:06:22 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: "dibacco\@inwind\.it" <dibacco@inwind.it>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: Yosemite/440EP 'issues' as a PCI target
+References: <20060209003459.0ED30352564@atlas.denx.de>
+	<200602101859.24830.sr@denx.de> <43ECD753.5000105@ovro.caltech.edu>
+	<200602110906.05547.sr@denx.de>
+In-Reply-To: <200602110906.05547.sr@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,39 +28,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-on my MBX board I have two flashes: AM29F040 called bootrom and four chip=
-s of AM29F080 (each one 8 Mbit for a total of 4MB).
 
-The kernel (from DENX) doesn't find the AM29F080. I added the following i=
-n amd_flash.c to support AM29F040 (a friend of mine told me)
+>>However, its not totally out of the question ... $50 per 21555
+>>and 20 per crate, thats $1000, about half the price of
+>>a CPU. But of course, without the I20 unit on the 440EP,
+>>I might need the 21555 anyway.
+> 
+> 
+> Do you really need this I2O unit? You could easily create some message 
+> ringbuffers, one in the 440EP's SDRAM for the host-to-440 messages and one in 
+> the host-cpu SDRAM for the 440-to-host messages. This way, all messages will 
+> be transferred using pci writes.
 
-#define AM29F040	0x00A4
+Hi Stefan,
 
-and also:
+Nope, I can always work with the 440EP. I was just disappointed
+to find that the 440EP had no way for an external host to
+generate an interrupt (without coming up with the work-arounds
+I suggested). I don't have the part designed into a board, I'm
+merely  evaluating it. So, I wanted to see what else was out
+there with a similar set of features; the MPC834x has them.
 
-{
-                mfr_id: MANUFACTURER_AMD,
-		dev_id: AM29F040,
-		name: "AMD AMD29F040",
-		size: 0x00080000,
-		numeraseregions: 1,
-		regions: {
-	          { offset: 0x000000, erasesize: 0x10000, numblocks: 8 },
-		}
-},
+So, now I have two possible processors to evaluate :)
 
-in the amd_flash_info table.
+I'll finish the other tests I want to do with the 440EP, get
+myself a MPC834x and repeat the same tests with it (which
+shouldn't take too long, since it'll be a repeat of the
+440 tests).
 
-For AM29F080 I don't know what to add and if to add something is ok !?!?!=
-?!?
+The MPC834x does have features to make communications between a
+host and a target (PCI 'agent') work much nicer than the 440EP.
+It also appears to have a faster local bus. I haven't had time
+to benchmark, or estimate from timing diagrams, the performance
+of the 440EP external memory bus, but there is a chance that
+it will fail to meet my spec.
 
-Someone knows?
+I wouldn't consider the 440EP work to be wasted. Its been a good
+learning experience, and mainly I've just been working on this
+stuff in the evenings and weekends to see whether the processor
+will work. This was my first experience with PowerPC processors,
+so its all good fun!
 
-Furthermore, how can I specify that there are 4 chips of AM29F080?
-
-The kernel will handle this automatically?
-
-Bye,
-Antonio.
+Cheers
+Dave
