@@ -1,22 +1,20 @@
-Return-Path: <bcollins@ubuntu.com>
-Received: from a34-mta02.direcway.com (a34-mta02.direcpc.com [66.82.4.91])
-	by ozlabs.org (Postfix) with ESMTP id CBC75679E1
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Feb 2006 09:47:16 +1100 (EST)
-Received: from mail.phunnypharm.org
-	(dpc67142247022.direcpc.com [67.142.247.22]) by a34-mta02.direcway.com
-	(iPlanet Messaging Server 5.2 HotFix 1.25 (built Mar  3 2004))
-	with ESMTP id <0IUL00FIXJAKIS@a34-mta02.direcway.com> for
-	linuxppc-dev@ozlabs.org; Sun, 12 Feb 2006 17:47:13 -0500 (EST)
-Date: Sun, 12 Feb 2006 17:46:50 -0500
-From: Ben Collins <bcollins@ubuntu.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 620C5679EB
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Feb 2006 10:28:42 +1100 (EST)
 Subject: Re: [PPC,SOUND] Fix audio gpio state detection
-In-reply-to: <1139783738.5247.54.camel@localhost.localdomain>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-id: <1139784411.25288.11.camel@grayson>
-MIME-version: 1.0
-Content-type: text/plain
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ben Collins <bcollins@ubuntu.com>
+In-Reply-To: <1139784411.25288.11.camel@grayson>
 References: <jehd7527wq.fsf@sykes.suse.de>
 	<1139783738.5247.54.camel@localhost.localdomain>
+	<1139784411.25288.11.camel@grayson>
+Content-Type: text/plain
+Date: Mon, 13 Feb 2006 10:27:29 +1100
+Message-Id: <1139786849.27829.0.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: alsa-devel@alsa-project.org, Ben Collins <ben.collins@ubuntu.com>,
 	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,19 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-02-13 at 09:35 +1100, Benjamin Herrenschmidt wrote:
-> Can you sync with the patches Ben Collins is doing on this as well ?
+On Sun, 2006-02-12 at 17:46 -0500, Ben Collins wrote:
+> On Mon, 2006-02-13 at 09:35 +1100, Benjamin Herrenschmidt wrote:
+> > Can you sync with the patches Ben Collins is doing on this as well ?
+> > 
+> > Ben, what is your status ? Are you feeding those through upstream the
+> > alsa folks ? Or waiting for me to do something ? :)
+> > 
+> > The above, if it appear to works well enough might be worth merging
+> > now ...
 > 
-> Ben, what is your status ? Are you feeding those through upstream the
-> alsa folks ? Or waiting for me to do something ? :)
-> 
-> The above, if it appear to works well enough might be worth merging
-> now ...
+> I haven't synced because I've been waiting for some kind of go ahead
+> from you. I can rediff against 2.6.16-git and send them to alsa, CC ppc
+> list.
 
-I haven't synced because I've been waiting for some kind of go ahead
-from you. I can rediff against 2.6.16-git and send them to alsa, CC ppc
-list.
+Please, do so !
 
--- 
-Ben Collins
-Kernel Developer - Ubuntu Linux
+Thanks,
+Ben.
