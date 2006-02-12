@@ -1,17 +1,25 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0FB74679F9
+Return-Path: <dibacco@inwind.it>
+Received: from smtp6.libero.it (smtp6.libero.it [193.70.192.59])
+	by ozlabs.org (Postfix) with ESMTP id 4BBCA679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 12 Feb 2006 11:32:56 +1100 (EST)
-Date: Sat, 11 Feb 2006 16:32:53 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: linuxppc-embedded@ozlabs.org
-Subject: CONFIG_DEBUG_SLAB and non-cache coherent CPUs
-Message-ID: <20060212003253.GA32060@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 13 Feb 2006 04:47:17 +1100 (EST)
+Received: from localhost (172.16.1.206) by smtp6.libero.it (7.0.027-DD01)
+	id 43E2251900D46FE6 for linuxppc-embedded@ozlabs.org;
+	Sun, 12 Feb 2006 18:47:15 +0100
+Received: from smtp3.libero.it ([172.16.1.53])
+	by localhost (asav20.libero.it [193.70.193.7]) (amavisd-new, port 10024)
+	with ESMTP id 04738-15-15 for <linuxppc-embedded@ozlabs.org>;
+	Sun, 12 Feb 2006 18:47:15 +0100 (CET)
+Received: from libero.it (172.16.1.236) by smtp3.libero.it (7.0.027-DD01)
+	id 431C39E001A5D1BE for linuxppc-embedded@ozlabs.org;
+	Sun, 12 Feb 2006 18:47:15 +0100
+Date: Sun, 12 Feb 2006 18:47:15 +0100
+Message-Id: <IUL5ER$96FFE4CFF38D6FFE5A07D5798F74338C@libero.it>
+Subject: system tick in PPC
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+From: "dibacco\@inwind\.it" <dibacco@inwind.it>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,35 +30,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
+Someone knows how the jiffies is incremented in PPC?
+Using PIT, Decrementer or what?
 
-I just wanted to let people on this list know that turning slab 
-debugging may cause slab corruption on non-coherent cache CPUs (4xx, 
-8xx).
-
-The reason for this is that usually drivers which use DMA assume 
-L1 cache line alignment for buffers (e.g. returned from alloc_skb). 
-Unfortunately, with slab debugging enabled this is no longer the case, 
-and during cache invalidates we corrupt slab cache (or at least slab 
-poison markers).
-
-I tried to define ARCH_KMALLOC_MINALIGN and/or ARCH_SLAB_MINALIGN but 
-it didn't work (and even if it did, it'd effectively disabled slab 
-debugging anyway).
-
-I don't understand why slab debugging feature has to change allocation 
-alignment, as it can be obviously implemented without breaking this 
-alignment. Probably the reason is the usual one - nobody cares/cared 
-about non-coherent cache CPUs and saving couple of bytes was more 
-important :).
-
-Anyway, I made a hack for my EMAC driver:
-
- http://kernel.ebshome.net/emac_slab_debug.diff 
-
-which helps with this problem, although other drivers may experience 
-the same problem when used on 4xx/8xx with slab debugging enabled. In 
-fact, 3COM 905 driver crashed Ocotea in this configuration too.
-
--- 
-Eugene
+Thanks,
+Antonio.
