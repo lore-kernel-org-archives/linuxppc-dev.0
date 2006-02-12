@@ -1,23 +1,17 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0924867AA0
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0FB74679F9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 12 Feb 2006 06:02:36 +1100 (EST)
-Message-ID: <43EE3433.9000006@ovro.caltech.edu>
-Date: Sat, 11 Feb 2006 11:00:03 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Stefan Roese <sr@denx.de>
-Subject: Re: Yosemite/440EP 'issues' as a PCI target
-References: <20060209003459.0ED30352564@atlas.denx.de>
-	<200602101859.24830.sr@denx.de> <43ECD753.5000105@ovro.caltech.edu>
-	<200602110906.05547.sr@denx.de>
-In-Reply-To: <200602110906.05547.sr@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 12 Feb 2006 11:32:56 +1100 (EST)
+Date: Sat, 11 Feb 2006 16:32:53 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: CONFIG_DEBUG_SLAB and non-cache coherent CPUs
+Message-ID: <20060212003253.GA32060@gate.ebshome.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,41 +22,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi!
 
+I just wanted to let people on this list know that turning slab 
+debugging may cause slab corruption on non-coherent cache CPUs (4xx, 
+8xx).
 
-> Do you really need this I2O unit? You could easily create some message 
-> ringbuffers, one in the 440EP's SDRAM for the host-to-440 messages and one in 
-> the host-cpu SDRAM for the 440-to-host messages. This way, all messages will 
-> be transferred using pci writes.
+The reason for this is that usually drivers which use DMA assume 
+L1 cache line alignment for buffers (e.g. returned from alloc_skb). 
+Unfortunately, with slab debugging enabled this is no longer the case, 
+and during cache invalidates we corrupt slab cache (or at least slab 
+poison markers).
 
-Actually, its not the I2O unit I want, really just the doorbell
-registers in the messaging unit. The MPC834x's seem to have
-dropped the I2O units in that the 8272-family appears to
-have, but they have the messaging unit registers.
+I tried to define ARCH_KMALLOC_MINALIGN and/or ARCH_SLAB_MINALIGN but 
+it didn't work (and even if it did, it'd effectively disabled slab 
+debugging anyway).
 
-I plan to create something like the ring-buffers scheme you
-mention. And of course, you don't need an I2O unit to
-implement it. However, you do need to be able to interrupt
-the 440 from the host - which was the original issue.
-But, there is a work-around :)
+I don't understand why slab debugging feature has to change allocation 
+alignment, as it can be obviously implemented without breaking this 
+alignment. Probably the reason is the usual one - nobody cares/cared 
+about non-coherent cache CPUs and saving couple of bytes was more 
+important :).
 
-BTW, even with this scheme you really want to use DMA on
-the adapter board for transfers in either direction, i.e.,
-use the peripheral for both DMA read and write.
+Anyway, I made a hack for my EMAC driver:
 
-Unless of course you want to turn your 1GHz x86 host processor
-into a 1MHz CPU. Check out the following performance tests
-that I did between the current boards and an x86 host:
+ http://kernel.ebshome.net/emac_slab_debug.diff 
 
-http://www.ovro.caltech.edu/~dwh/correlator/pdf/pci_performance.pdf
+which helps with this problem, although other drivers may experience 
+the same problem when used on 4xx/8xx with slab debugging enabled. In 
+fact, 3COM 905 driver crashed Ocotea in this configuration too.
 
-The boards use a PLX-9054 bridge and can DMA between themselves
-at 118MB/s. However, the DMA through bridges, and DMA to/from host
-bandwidth is less due to burst capabilites (or lack thereof) of
-the bridges. CPU reads/writes by the host were dismal; look
-at p19-26.
-
-Of course, if I had used a PowerPC host I'm sure I would
-have been fine!
-
-Dave
+-- 
+Eugene
