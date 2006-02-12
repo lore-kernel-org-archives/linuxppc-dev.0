@@ -1,19 +1,23 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 48B23679F3
+Return-Path: <dibacco@inwind.it>
+Received: from smtp5.libero.it (smtp5.libero.it [193.70.192.55])
+	by ozlabs.org (Postfix) with ESMTP id AD03B679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 13 Feb 2006 05:33:33 +1100 (EST)
-Date: Sun, 12 Feb 2006 10:33:30 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: "dibacco@inwind.it" <dibacco@inwind.it>
-Subject: Re: system tick in PPC
-Message-ID: <20060212183330.GB32060@gate.ebshome.net>
-References: <IUL5ER$96FFE4CFF38D6FFE5A07D5798F74338C@libero.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <IUL5ER$96FFE4CFF38D6FFE5A07D5798F74338C@libero.it>
+	Mon, 13 Feb 2006 07:17:49 +1100 (EST)
+Received: from localhost (172.16.1.84) by smtp5.libero.it (7.0.027-DD01)
+	id 43E222B600E16862 for linuxppc-embedded@ozlabs.org;
+	Sun, 12 Feb 2006 21:17:47 +0100
+Received: from smtp1.libero.it ([172.16.1.224])
+	by localhost (asav5.libero.it [193.70.192.154]) (amavisd-new,
+	port 10024)
+	with ESMTP id 10671-01-4 for <linuxppc-embedded@ozlabs.org>;
+	Sun, 12 Feb 2006 21:17:46 +0100 (CET)
+Date: Sun, 12 Feb 2006 21:17:46 +0100
+Message-Id: <IULCDM$BABECCECA1AD7F3553D47D5BCC878B75@libero.it>
+Subject: Re:MBX AMD AM29F080 flash not recognized
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+From: "dibacco\@inwind\.it" <dibacco@inwind.it>
+To: "dibacco" <dibacco@inwind.it>
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,16 +29,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Feb 12, 2006 at 06:47:15PM +0100, dibacco@inwind.it wrote:
-> Someone knows how the jiffies is incremented in PPC?
-> Using PIT, Decrementer or what?
+Sorry, the problem was that I didn't configure the Interleave 4, and the =
+MBX use 4 chips of AM29F080.
 
-I think you should be looking at include/asm-powerpc/time.h, 
-set_dec() & get_dec() functions. 
 
-timer_interrupt() uses set_dec().
 
-In short, usually PPC uses decrementer, but some sub-archs are special.
+---------- Initial Header -----------
 
--- 
-Eugene
+>From      : linuxppc-embedded-bounces@ozlabs.org
+To          : "linuxppc-embedded" linuxppc-embedded@ozlabs.org
+Cc          : 
+Date      : Sat, 11 Feb 2006 17:51:08 +0100
+Subject : MBX AMD AM29F080 flash not recognized
+
+
+
+
+
+
+
+> Hi,
+> 
+> on my MBX board I have two flashes: AM29F040 called bootrom and four ch=
+ips of AM29F080 (each one 8 Mbit for a total of 4MB).
+> 
+> The kernel (from DENX) doesn't find the AM29F080. I added the following=
+ in amd_flash.c to support AM29F040 (a friend of mine told me)
+> 
+> #define AM29F040	0x00A4
+> 
+> and also:
+> 
+> {
+>                 mfr_id: MANUFACTURER_AMD,
+> 		dev_id: AM29F040,
+> 		name: "AMD AMD29F040",
+> 		size: 0x00080000,
+> 		numeraseregions: 1,
+> 		regions: {
+> 	          { offset: 0x000000, erasesize: 0x10000, numblocks: 8 },
+> 		}
+> },
+> 
+> in the amd_flash_info table.
+> 
+> For AM29F080 I don't know what to add and if to add something is ok !?!=
+?!?!?
+> 
+> Someone knows?
+> 
+> Furthermore, how can I specify that there are 4 chips of AM29F080?
+> 
+> The kernel will handle this automatically?
+> 
+> Bye,
+> Antonio.
+> 
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
