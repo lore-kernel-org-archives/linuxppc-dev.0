@@ -1,12 +1,15 @@
-Return-Path: <linuxppcdev@lists.qbjnet.com>
-Received: from kunk.qbjnet.com (ddsl1-28.ddsl.mr.net [137.192.135.28])
-	by ozlabs.org (Postfix) with SMTP id C0C2F679EA
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Feb 2006 08:08:04 +1100 (EST)
-Date: 12 Feb 2006 21:01:23 -0000
-Message-ID: <20060212210123.24360.qmail@kunk.qbjnet.com>
-From: Bob Brose <linuxppcdev@lists.qbjnet.com>
-To: linuxppc-dev@ozlabs.org
-Subject: PReP PCI resource allocations
+Return-Path: <mgreer@mvista.com>
+Date: Mon, 13 Feb 2006 11:03:20 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Flattened device tree for Pegasos
+Message-ID: <20060213180320.GB4530@mag.az.mvista.com>
+References: <Pine.LNX.4.44.0602101844150.31619-100000@gate.crashing.org>
+	<1139782333.5247.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1139782333.5247.44.camel@localhost.localdomain>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,45 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a 7248-133 43p. I had a lot of trouble with the early 2.6
-kernels on this prep machine however 2.6.14.7 runs well (the
-vga console driver even works now). There is one thing I noticed
-different from 2.4.32 involving PCI resources. On 2.6.14.7 I get...
+On Mon, Feb 13, 2006 at 09:12:12AM +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2006-02-10 at 18:46 -0600, Kumar Gala wrote:
+> > On Fri, 10 Feb 2006, Mark A. Greer wrote:
+> > 
+> > > If anyone happens to have a Pegasos running the merged powerpc kernel
+> > > handy, I would greatly appreciate a dump of flattened device tree that
+> > > it uses.
+> > 
+> > We really need to put OF tree's somewhere that people can get to, maybe 
+> > penguinppc.org.
+> > 
+> > Ben, Segher, Paul:
+> > 
+> > You guys have either access to HW or tree dump's already.  Would you be 
+> > willing to share them?
+> 
+> There is an unresolved issue about what is the (c) for those
+> device-tree, especially since the Apple ones may contain driver blobs...
 
-Total memory = 192MB; using 512kB for hash table (at c0300000)
-Linux version 2.6.14.7 (root@oldbb) (gcc version 4.0.3 20051201 (prerelease)
-(Debian 4.0.2-5)) #4 Fri Feb 10 13:27:45 CST 2006
-PReP architecture
-IBM planar ID: f7
-...
-PCI: Probing PCI hardware
-Setting PCI interrupts for a "IBM 7248, PowerSeries 830/850 (Carolina)"
-PCI: Cannot allocate resource region 0 of device 0000:00:0c.0
-PCI: Cannot allocate resource region 1 of device 0000:00:0c.0
-PCI: Cannot allocate resource region 0 of device 0000:00:10.0
+Is that still an issue for the flattened dev tree version(s)?
 
-The regions correspond to:
-Region 0: I/O ports at 80001020 [size=32] of the builtin pcnet32 ethernet.
-Region 1: Memory at c0800100 (32-bit, non-prefetchable) [size=32] pcnet32..
-Region 0: I/O ports at 80001400 [size=256] of the Symbios Logic 53c810 scsi.
+I'd still like a flattened dev tree for the pegasos if that's legal. :)
 
-Both the ethernet and scsi work fine though..
-
-2.4.32 remaps these...
-Linux version 2.4.32 (root@oldbb) (gcc version 2.95.4 20011002
-(Debian prerelease)) #2 Tue Feb 7 12:30:21 CST 2006
-PReP architecture
-IBM planar ID: 000000f7
-...
-PCI: Cannot allocate resource region 0 of device 00:0c.0
-PCI: Cannot allocate resource region 0 of device 00:10.0
-PCI: moved device 00:0c.0 resource 0 (101) to 1020
-PCI: moved device 00:0c.0 resource 1 (200) to 0
-PCI: moved device 00:10.0 resource 0 (101) to 1400
-
-Is this important??
-
-2.6.15 BTW doesn't work at all. I need to hook up a serial console to
-see if I can figure out what is going on...
-
-Bob
+Mark
