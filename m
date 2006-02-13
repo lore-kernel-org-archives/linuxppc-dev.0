@@ -1,18 +1,19 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 59214679EB
+Return-Path: <allanjos@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.199])
+	by ozlabs.org (Postfix) with ESMTP id 3171D679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Feb 2006 03:14:30 +1100 (EST)
-In-Reply-To: <43F08EF7.3060109@dgt.com.pl>
-References: <43F08EF7.3060109@dgt.com.pl>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0744a8b48857d469b3d4ceff6f7fd40f@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: arch/ppc/82xx_io/uart.c bug found
-Date: Mon, 13 Feb 2006 11:14:16 -0500
-To: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 14 Feb 2006 05:39:04 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id n29so1146338nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 13 Feb 2006 10:39:03 -0800 (PST)
+Message-ID: <7a2435710602131039s79d8a6e1tbf5a30d0052a3ac8@mail.gmail.com>
+Date: Mon, 13 Feb 2006 14:39:01 -0400
+From: Moloko Vellocet <allanjos@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: unsubscribe
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_2245_9147500.1139855941239"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,20 +24,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_2245_9147500.1139855941239
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Feb 13, 2006, at 8:51 AM, Wojciech Kromer wrote:
+unsubscribe
 
-> here is orignal uart.c
+------=_Part_2245_9147500.1139855941239
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Three things....
+unsubscribe
 
-One, this code is obsolete and isn't used any more.
-Two, it's not a bug, just a feature enhancement.
-Three, if you want us to actually do something about
-this I need a real patch against an up to date
-public source tree and indication it was actually
-tested on some platform.
-
-Thanks.
-
-	-- Dan
+------=_Part_2245_9147500.1139855941239--
