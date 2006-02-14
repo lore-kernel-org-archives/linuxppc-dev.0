@@ -1,16 +1,24 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id 01CC667B5F
+Return-Path: <egoforth@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.198])
+	by ozlabs.org (Postfix) with ESMTP id EC7F267B1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Feb 2006 06:07:03 +1100 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Tue, 14 Feb 2006 12:07:00 -0700
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] ppc32: handle Book E debug exceptions on kernel stack
-Message-ID: <20060214190700.GB17822@xyzzy.farnsworth.org>
+	Wed, 15 Feb 2006 08:47:15 +1100 (EST)
+Received: by xproxy.gmail.com with SMTP id r21so1018067wxc
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Feb 2006 13:47:14 -0800 (PST)
+Message-ID: <75b39f010602141347q7e50227bn6f989112fcbfcbd0@mail.gmail.com>
+Date: Tue, 14 Feb 2006 16:47:13 -0500
+From: Ed Goforth <egoforth@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: 440gx GPIO
+In-Reply-To: <75b39f010602140910v39bc60dcxeba0acb6065a4bbd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <43F168A3.4020808@gmail.com>
+	<20060214065934.GA12465@gate.ebshome.net>
+	<75b39f010602140548u18f30145tf2ddf529467b2605@mail.gmail.com>
+	<20060214170140.GB12465@gate.ebshome.net>
+	<75b39f010602140910v39bc60dcxeba0acb6065a4bbd@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,78 +29,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-From: Dale Farnsworth <dale@farnsworth.org>
+On 2/14/06, Ed Goforth <egoforth@gmail.com> wrote:
+> On 2/14/06, Eugene Surovegin <ebs@ebshome.net> wrote:
+> > On Tue, Feb 14, 2006 at 08:48:56AM -0500, Ed Goforth wrote:
+> > > I posted the original from home, and didn't have the contents of the
+> > > config register.  It is
+> > > cfg     0x00103e00
+> > > Which I interpret as having bit 11 set: "1 Enable GPIO11 as GPIO11"
+> > > from the manual.
+> > >
+> > > I originally tried to call ioremap64(PPC440GX_GPIO0_ADDR,) directly, =
+but got
+> > > "unresolved symbol ioremap64".  From inspection of ioremap(), the
+> > > fixup for 0x40000700 translates to 0x140000700, and I get the same
+> > > values in my code as I see from a "/proc/ocotea/gpio".
+> > >
+> > > Is my approach valid?
+> >
+> > It seems to be.
+>
+> At least I've got that. :)
+>
+> >
+> > Try writing the same GPIO output register value as you read from it
+> > (without clearing bit 11). Also, try changing some other GPIO bit
+> > (e.g. one which is not connected in your design). Maybe board hangs
+> > exactly because you set GPIO bit 11 low :).
+>
+> I have successfully written back the same values that were read from
+> it.  I will try your suggestion about fiddling with other GPIO bits
+> that we aren't (supposed to be) using.
 
-On PPC Book E processsors, we currently handle debug
-exceptions on the critical exception stack (debug stack
-for E200).  This causes problems with the kgdb single
-step handler, which calls smp_processor_id() and spin_lock(),
-which reference current_thread_info(), which only works when
-we are on the kernel stack.
+Well, I was able to manipulate GPIO9, GPIO10 and GPIO12.  It's time to
+turn it over to the hardware people.
 
-We address this by switching to the kernel stack early while
-handling debug exceptions.  Note that the entry values of r10
-and r11 are still saved on the critical exception (or debug) stack.
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> >
+> > Also, connect scope to that GPIO pin and see what is really going on.
+> >
+> > --
+> > Eugene
+> >
 
----
+Thanks for your feedback & suggestions.
 
-This is low level code and needs careful review.
-I've only tested it on mpc8548cds.
-
-I didn't find the corresponding code in arch/powerpc,
-so I assume Book E support hasn't been merged yet.
-
- arch/ppc/kernel/head_booke.h |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/arch/ppc/kernel/head_booke.h b/arch/ppc/kernel/head_booke.h
-index f3d274c..a5eec51 100644
---- a/arch/ppc/kernel/head_booke.h
-+++ b/arch/ppc/kernel/head_booke.h
-@@ -92,7 +92,8 @@
-  * registers as the normal prolog above. Instead we use a portion of the
-  * critical/machine check exception stack at low physical addresses.
-  */
--#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0, exc_level_srr1) \
-+#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0,		     \
-+				   exc_level_srr1, kernel_sp_reg)	     \
- 	mtspr	exc_level##_SPRG,r8;					     \
- 	BOOKE_LOAD_EXC_LEVEL_STACK(exc_level);/* r8 points to the exc_level stack*/ \
- 	stw	r10,GPR10-INT_FRAME_SIZE(r8);				     \
-@@ -100,7 +101,7 @@
- 	mfcr	r10;			/* save CR in r10 for now	   */\
- 	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
- 	andi.	r11,r11,MSR_PR;						     \
--	mr	r11,r8;							     \
-+	mr	r11,kernel_sp_reg;					     \
- 	mfspr	r8,exc_level##_SPRG;					     \
- 	beq	1f;							     \
- 	/* COMING FROM USER MODE */					     \
-@@ -128,11 +129,13 @@
- 	SAVE_2GPRS(7, r11)
- 
- #define CRITICAL_EXCEPTION_PROLOG \
--		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1)
-+		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1, r8)
-+#define CRITICAL_EXCEPTION_ON_KERNEL_STACK_PROLOG \
-+		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1, r1)
- #define DEBUG_EXCEPTION_PROLOG \
--		EXC_LEVEL_EXCEPTION_PROLOG(DEBUG, SPRN_DSRR0, SPRN_DSRR1)
-+		EXC_LEVEL_EXCEPTION_PROLOG(DEBUG, SPRN_DSRR0, SPRN_DSRR1, r1)
- #define MCHECK_EXCEPTION_PROLOG \
--		EXC_LEVEL_EXCEPTION_PROLOG(MCHECK, SPRN_MCSRR0, SPRN_MCSRR1)
-+		EXC_LEVEL_EXCEPTION_PROLOG(MCHECK, SPRN_MCSRR0, SPRN_MCSRR1, r8)
- 
- /*
-  * Exception vectors.
-@@ -268,7 +271,7 @@ label:
- #else
- #define DEBUG_EXCEPTION							      \
- 	START_EXCEPTION(Debug);						      \
--	CRITICAL_EXCEPTION_PROLOG;					      \
-+	CRITICAL_EXCEPTION_ON_KERNEL_STACK_PROLOG;			      \
- 									      \
- 	/*								      \
- 	 * If there is a single step or branch-taken exception in an	      \
+Ed
