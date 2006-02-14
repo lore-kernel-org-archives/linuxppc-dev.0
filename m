@@ -1,21 +1,15 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19c.g19.rapidsite.net (mail19c.dulles19-verio.com
-	[204.202.242.56]) by ozlabs.org (Postfix) with SMTP id 2CD20679F7
+Return-Path: <egoforth@gmail.com>
+Received: from rwcrmhc11.comcast.net (rwcrmhc11.comcast.net [216.148.227.151])
+	by ozlabs.org (Postfix) with ESMTP id F1B9A67A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Feb 2006 15:02:27 +1100 (EST)
-Received: from mx32.stngva01.us.mxservers.net (204.202.242.10)
-	by mail19c.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
-	4-0532349744 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 13 Feb 2006 23:02:25 -0500 (EST)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: 82xx_io UART BRG's vs BUS CLK
-Date: Mon, 13 Feb 2006 20:02:17 -0800
-Message-ID: <000e01c6311b$72e535e0$6405a8c0@absolut>
+	Tue, 14 Feb 2006 16:30:44 +1100 (EST)
+Message-ID: <43F168A3.4020808@gmail.com>
+Date: Tue, 14 Feb 2006 00:20:35 -0500
+From: Ed Goforth <egoforth@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <mailman.1.1139818094.16671.linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: 440gx GPIO
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,29 +20,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Anyone,
+I am struggling with a problem and I hope someone can give me some
+pointers.  We have a custom board with a 440gx.  I need to drive GPIO11
+low.  The best as I can tell from the docs, I need to set bit 11 of the
+TCR to 1 and bit 11 of the OR to 0 to do this.  I'm using kernel
+2.4.18-timesys-4.0
 
-Recently I found that the value I was passing to Linux for the BUS CLK
-frequency was incorrect. Previously I was passing in from U-boot (66 * 1000
-* 1000) 66Mhz, it had been brought up this can cause incorrect SOF
-transmission rates with the 82xx USB driver, so after measuring our 'exact'
-clock, I made the adjustment to ( 66,666,666 Hz ) 66.66Mhz .
+Here's what I've tried:
 
-Hoping this would correct the issue, however now I cannot run the serial
-console baud rate (on SMC2) any higher than 115200 without corruption,
-however 57600 works on. This worked great before I changed the U-boot BUS
-clock to the correct value.
+Prior to making an calls, the values of the registers are:
+or      0x00101000
+tcr     0x00101700
+odr     0x00000000
+ir      0xeffff820
 
-I did some math on the BRG calculations and with 66Mhz the BRG divisor is
-17.8 I am assuming 17 gets written, and with 66.666Mhz then its 18.02 so
-thus 18 probably gets written. Should perhaps a constant minus 1 be added to
-the code?
 
-Using:
-U-boot 1.1.2
-DENX Linux 2.4.25
+(from ibm440gx.h)
+#define PPC440GX_GPIO0_ADDR  0x0000000140000700
 
-Is anyone aware of similar issues, or are there bug fixes past the 2.4.25
-Kernel for this?
 
--Russ
+Attempt one: write the bit directly:
+
+  volatile gpio_t *gpio;
+  volatile u32 or_reg;
+
+  gpio = (gpio_t *) ioremap_nocache(0x40000700,
+                                    sizeof(gpio_t));
+
+  or_reg = gpio->or;
+  or_reg &= 0x00100000;
+  gpio->or = or_reg;
+
+
+Attempt two: use the accessor routine:
+  extern int ibm_gpio_out(__u32 device, __u32 mask, __u32 data);
+
+  rc = ibm_gpio_out(0, 0x00100000, 0);
+
+
+With either approach, I can read the registers fine.  But as soon as I
+either modify gpio->or or call ibm_gpio_out(), the board hangs hard.
+
+Any hints would be greatly appreciated.  On-list replies are fine; I am
+a subscriber.
+
+Thanks,
+Ed
