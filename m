@@ -1,18 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AA6DB67B55
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id 6C39267B61
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Feb 2006 09:06:52 +1100 (EST)
-Date: Tue, 14 Feb 2006 15:57:58 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Dale Farnsworth <dale@farnsworth.org>
+	Wed, 15 Feb 2006 09:36:51 +1100 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Tue, 14 Feb 2006 15:36:50 -0700
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] ppc32: handle Book E debug exceptions on kernel stack
-In-Reply-To: <20060214190700.GB17822@xyzzy.farnsworth.org>
-Message-ID: <Pine.LNX.4.44.0602141556200.2609-100000@gate.crashing.org>
+Message-ID: <20060214223649.GA2542@xyzzy.farnsworth.org>
+References: <20060214190700.GB17822@xyzzy.farnsworth.org>
+	<Pine.LNX.4.44.0602141556200.2609-100000@gate.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.44.0602141556200.2609-100000@gate.crashing.org>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,89 +24,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Let me look at this a little, however, I'm amused by the 
-smp_processor_id() usage on 8548.  Its a single core SoC, so any reason 
-SMP is turned on in your kernel?
+On Tue, Feb 14, 2006 at 03:57:58PM -0600, Kumar Gala wrote:
+> Let me look at this a little, however, I'm amused by the 
 
-Not, that your patch, isn't needed for a SMP Book-E, just wondering.
+Thanks.
 
-- k 
+> smp_processor_id() usage on 8548.  Its a single core SoC, so any reason 
+> SMP is turned on in your kernel?
 
-On Tue, 14 Feb 2006, Dale Farnsworth wrote:
+I haven't turned on SMP in my 8548 kernel.
 
-> From: Dale Farnsworth <dale@farnsworth.org>
+The kgdb singlestep code calls smp_processor_id() even on UP.
+It doesn't really need to call it on UP, but smp_processor_id()
+still should work.  I would have preferred seeing #ifdef
+CONFIG_SMP scattered throughout that code, but it's not my code.
+Anyway, the smp_processor_id() calls happen to return the
+correct value on UP, even on the critical exception stack,
+since that stack area is initialized to 0.
+
+The issue I actually hit is that for CONFIG_PREEMPT, the calls
+to spin_lock() and spin_unlock() increment and decrement
+current_thread_info()->preempt_count. This breaks things
+when the preempt_count goes negative.
+
+> Not, that your patch, isn't needed for a SMP Book-E, just wondering.
+
+Yes, I'm looking forward to trying out a dual-core processor.
+
+-Dale
+
+> On Tue, 14 Feb 2006, Dale Farnsworth wrote:
 > 
-> On PPC Book E processsors, we currently handle debug
-> exceptions on the critical exception stack (debug stack
-> for E200).  This causes problems with the kgdb single
-> step handler, which calls smp_processor_id() and spin_lock(),
-> which reference current_thread_info(), which only works when
-> we are on the kernel stack.
-> 
-> We address this by switching to the kernel stack early while
-> handling debug exceptions.  Note that the entry values of r10
-> and r11 are still saved on the critical exception (or debug) stack.
-> 
-> Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-> 
-> ---
-> 
-> This is low level code and needs careful review.
-> I've only tested it on mpc8548cds.
-> 
-> I didn't find the corresponding code in arch/powerpc,
-> so I assume Book E support hasn't been merged yet.
-> 
->  arch/ppc/kernel/head_booke.h |   15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/ppc/kernel/head_booke.h b/arch/ppc/kernel/head_booke.h
-> index f3d274c..a5eec51 100644
-> --- a/arch/ppc/kernel/head_booke.h
-> +++ b/arch/ppc/kernel/head_booke.h
-> @@ -92,7 +92,8 @@
->   * registers as the normal prolog above. Instead we use a portion of the
->   * critical/machine check exception stack at low physical addresses.
->   */
-> -#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0, exc_level_srr1) \
-> +#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0,		     \
-> +				   exc_level_srr1, kernel_sp_reg)	     \
->  	mtspr	exc_level##_SPRG,r8;					     \
->  	BOOKE_LOAD_EXC_LEVEL_STACK(exc_level);/* r8 points to the exc_level stack*/ \
->  	stw	r10,GPR10-INT_FRAME_SIZE(r8);				     \
-> @@ -100,7 +101,7 @@
->  	mfcr	r10;			/* save CR in r10 for now	   */\
->  	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
->  	andi.	r11,r11,MSR_PR;						     \
-> -	mr	r11,r8;							     \
-> +	mr	r11,kernel_sp_reg;					     \
->  	mfspr	r8,exc_level##_SPRG;					     \
->  	beq	1f;							     \
->  	/* COMING FROM USER MODE */					     \
-> @@ -128,11 +129,13 @@
->  	SAVE_2GPRS(7, r11)
->  
->  #define CRITICAL_EXCEPTION_PROLOG \
-> -		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1)
-> +		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1, r8)
-> +#define CRITICAL_EXCEPTION_ON_KERNEL_STACK_PROLOG \
-> +		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1, r1)
->  #define DEBUG_EXCEPTION_PROLOG \
-> -		EXC_LEVEL_EXCEPTION_PROLOG(DEBUG, SPRN_DSRR0, SPRN_DSRR1)
-> +		EXC_LEVEL_EXCEPTION_PROLOG(DEBUG, SPRN_DSRR0, SPRN_DSRR1, r1)
->  #define MCHECK_EXCEPTION_PROLOG \
-> -		EXC_LEVEL_EXCEPTION_PROLOG(MCHECK, SPRN_MCSRR0, SPRN_MCSRR1)
-> +		EXC_LEVEL_EXCEPTION_PROLOG(MCHECK, SPRN_MCSRR0, SPRN_MCSRR1, r8)
->  
->  /*
->   * Exception vectors.
-> @@ -268,7 +271,7 @@ label:
->  #else
->  #define DEBUG_EXCEPTION							      \
->  	START_EXCEPTION(Debug);						      \
-> -	CRITICAL_EXCEPTION_PROLOG;					      \
-> +	CRITICAL_EXCEPTION_ON_KERNEL_STACK_PROLOG;			      \
->  									      \
->  	/*								      \
->  	 * If there is a single step or branch-taken exception in an	      \
-> 
+> > From: Dale Farnsworth <dale@farnsworth.org>
+> > 
+> > On PPC Book E processsors, we currently handle debug
+> > exceptions on the critical exception stack (debug stack
+> > for E200).  This causes problems with the kgdb single
+> > step handler, which calls smp_processor_id() and spin_lock(),
+> > which reference current_thread_info(), which only works when
+> > we are on the kernel stack.
+> > 
+> > We address this by switching to the kernel stack early while
+> > handling debug exceptions.  Note that the entry values of r10
+> > and r11 are still saved on the critical exception (or debug) stack.
+> > 
+> > Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
