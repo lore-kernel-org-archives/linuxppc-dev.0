@@ -1,20 +1,15 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8F20967A40
+Return-Path: <eberhard.stoll@berghof.com>
+Received: from mail117.messagelabs.com (mail117.messagelabs.com
+	[195.245.231.211]) by ozlabs.org (Postfix) with SMTP id 80E07679FF
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Feb 2006 17:59:37 +1100 (EST)
-Date: Mon, 13 Feb 2006 22:59:34 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Ed Goforth <egoforth@gmail.com>
-Subject: Re: 440gx GPIO
-Message-ID: <20060214065934.GA12465@gate.ebshome.net>
-References: <43F168A3.4020808@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <43F168A3.4020808@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 14 Feb 2006 19:07:26 +1100 (EST)
+Message-ID: <43F18E21.7030200@berghof.com>
+Date: Tue, 14 Feb 2006 09:00:33 +0100
+From: Eberhard Stoll <eberhard.stoll@berghof.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: SD/MMC card driver?
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,17 +20,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 14, 2006 at 12:20:35AM -0500, Ed Goforth wrote:
-> I am struggling with a problem and I hope someone can give me some
-> pointers.  We have a custom board with a 440gx.  I need to drive GPIO11
-> low.  The best as I can tell from the docs, I need to set bit 11 of the
-> TCR to 1 and bit 11 of the OR to 0 to do this.
+Hi,
+I've got a mpc5200 based board with a SD card socket connected to PSC2. 
+I'd like to use this SD Card as a block device, but didn't find any 
+driver for SD/MMC Cards in kernel 2.4 (denx 2.4.15). So my question is:
+Are there any drivers for linux & SD/MMC Cards attached to a spi 
+interface (e.g. mpc5200)?
 
-Check that this pin is enabled as GPIO not as a function pin 
-(SDR0_PFC0 register).
-
-Also, just to be sure that you remapped GPIO registers correctly, use 
-ioremap64 with full physical address (not just low 32 bits).
-
--- 
-Eugene
+thanks in advance!
+Eberhard
