@@ -1,19 +1,21 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wvmler2.mail.xerox.com (wvmler2.mail.xerox.com [13.8.138.217])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "wvmler2.mail.xerox.com",
-	Issuer "wvmler2.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E1A52679E9
+Return-Path: <egoforth@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.205])
+	by ozlabs.org (Postfix) with ESMTP id A634767A41
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Feb 2006 22:25:08 +1100 (EST)
+	Wed, 15 Feb 2006 00:48:58 +1100 (EST)
+Received: by xproxy.gmail.com with SMTP id s13so789446wxc
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Feb 2006 05:48:56 -0800 (PST)
+Message-ID: <75b39f010602140548u18f30145tf2ddf529467b2605@mail.gmail.com>
+Date: Tue, 14 Feb 2006 08:48:56 -0500
+From: Ed Goforth <egoforth@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: 440gx GPIO
+In-Reply-To: <20060214065934.GA12465@gate.ebshome.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 82xx_io UART BRG's vs BUS CLK
-Date: Tue, 14 Feb 2006 11:23:51 -0000
-Message-ID: <35786B99AB3FDC45A8215724617919736D9236@gbrwgceumf01.eu.xerox.net>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "Russell McGuire" <rmcguire@uwbt.com>, <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <43F168A3.4020808@gmail.com>
+	<20060214065934.GA12465@gate.ebshome.net>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,44 +26,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> I did some math on the BRG calculations and with 66Mhz the BRG divisor
-is
-> 17.8 I am assuming 17 gets written, and with 66.666Mhz then its 18.02
-so
-> thus 18 probably gets written. Should perhaps a constant minus 1 be
-added to
-> the code?
+I posted the original from home, and didn't have the contents of the
+config register.  It is
+cfg     0x00103e00
+Which I interpret as having bit 11 set: "1 Enable GPIO11 as GPIO11"
+from the manual.
 
-> Using:
-> U-boot 1.1.2
-> DENX Linux 2.4.25
+I originally tried to call ioremap64(PPC440GX_GPIO0_ADDR,) directly, but go=
+t
+"unresolved symbol ioremap64".  From inspection of ioremap(), the
+fixup for 0x40000700 translates to 0x140000700, and I get the same
+values in my code as I see from a "/proc/ocotea/gpio".
 
-> Is anyone aware of similar issues, or are there bug fixes past the
-2.4.25
-> Kernel for this?
+Is my approach valid?
 
-> -Russ
+Thanks,
+Ed
 
-Hi Russ
-
-I am not familiar with your hardware, nor have I checked the code that
-calculated the Baud rate divisor.
-
-I would advise against "adding a constant -1", in favour of rounding
-to the nearest integer. From your figures:
-
-  divisor =3D clock / (baudrate * 32)
-
-To get a rounded result using real numbers:
-
-  divisor =3D integer_part_of((clock / (baudrate * 32)) + 1/2)
-
-Using integer arithmetic, you can code this in C as:
-
-  divisor =3D ((clock / baudrate /16) + 1) >> 1;
-
-I would check whether or not the code is doing this, or the equivalent,
-and if not, change it. If the code is doing this, the divisor should be
-18 in both cases.
-
-Clive
+On 2/14/06, Eugene Surovegin <ebs@ebshome.net> wrote:
+> On Tue, Feb 14, 2006 at 12:20:35AM -0500, Ed Goforth wrote:
+> > I am struggling with a problem and I hope someone can give me some
+> > pointers.  We have a custom board with a 440gx.  I need to drive GPIO11
+> > low.  The best as I can tell from the docs, I need to set bit 11 of the
+> > TCR to 1 and bit 11 of the OR to 0 to do this.
+>
+> Check that this pin is enabled as GPIO not as a function pin
+> (SDR0_PFC0 register).
+>
+> Also, just to be sure that you remapped GPIO registers correctly, use
+> ioremap64 with full physical address (not just low 32 bits).
+>
+> --
+> Eugene
+>
+>
