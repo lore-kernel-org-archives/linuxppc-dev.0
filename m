@@ -1,15 +1,19 @@
-Return-Path: <eberhard.stoll@berghof.com>
-Received: from mail117.messagelabs.com (mail117.messagelabs.com
-	[195.245.231.211]) by ozlabs.org (Postfix) with SMTP id 80E07679FF
+Return-Path: <Clive.Jenkins@xerox.com>
+Received: from wvmler2.mail.xerox.com (wvmler2.mail.xerox.com [13.8.138.217])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "wvmler2.mail.xerox.com",
+	Issuer "wvmler2.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E1A52679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Feb 2006 19:07:26 +1100 (EST)
-Message-ID: <43F18E21.7030200@berghof.com>
-Date: Tue, 14 Feb 2006 09:00:33 +0100
-From: Eberhard Stoll <eberhard.stoll@berghof.com>
+	Tue, 14 Feb 2006 22:25:08 +1100 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: SD/MMC card driver?
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: 82xx_io UART BRG's vs BUS CLK
+Date: Tue, 14 Feb 2006 11:23:51 -0000
+Message-ID: <35786B99AB3FDC45A8215724617919736D9236@gbrwgceumf01.eu.xerox.net>
+From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+To: "Russell McGuire" <rmcguire@uwbt.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,12 +24,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-I've got a mpc5200 based board with a SD card socket connected to PSC2. 
-I'd like to use this SD Card as a block device, but didn't find any 
-driver for SD/MMC Cards in kernel 2.4 (denx 2.4.15). So my question is:
-Are there any drivers for linux & SD/MMC Cards attached to a spi 
-interface (e.g. mpc5200)?
+> I did some math on the BRG calculations and with 66Mhz the BRG divisor
+is
+> 17.8 I am assuming 17 gets written, and with 66.666Mhz then its 18.02
+so
+> thus 18 probably gets written. Should perhaps a constant minus 1 be
+added to
+> the code?
 
-thanks in advance!
-Eberhard
+> Using:
+> U-boot 1.1.2
+> DENX Linux 2.4.25
+
+> Is anyone aware of similar issues, or are there bug fixes past the
+2.4.25
+> Kernel for this?
+
+> -Russ
+
+Hi Russ
+
+I am not familiar with your hardware, nor have I checked the code that
+calculated the Baud rate divisor.
+
+I would advise against "adding a constant -1", in favour of rounding
+to the nearest integer. From your figures:
+
+  divisor =3D clock / (baudrate * 32)
+
+To get a rounded result using real numbers:
+
+  divisor =3D integer_part_of((clock / (baudrate * 32)) + 1/2)
+
+Using integer arithmetic, you can code this in C as:
+
+  divisor =3D ((clock / baudrate /16) + 1) >> 1;
+
+I would check whether or not the code is doing this, or the equivalent,
+and if not, change it. If the code is doing this, the divisor should be
+18 in both cases.
+
+Clive
