@@ -1,19 +1,21 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 32ECD67B27
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 55F5567B32
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Feb 2006 03:50:55 +1100 (EST)
-Date: Tue, 14 Feb 2006 19:42:34 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-Subject: Re: Gianfar is slower than fcc_enet on MPC8541 ???
-Message-ID: <20060214194234.792429fe@vitb.ru.mvista.com>
-In-Reply-To: <449c76a00602140817k4cf1af22w6d6c930a9d847ba@mail.gmail.com>
-References: <449c76a00602140728g3a9eb46sd70f23b894c4b96@mail.gmail.com>
-	<000201c63181$cf2c3180$5201a8c0@GEG2400>
-	<449c76a00602140817k4cf1af22w6d6c930a9d847ba@mail.gmail.com>
+	Wed, 15 Feb 2006 04:01:43 +1100 (EST)
+Date: Tue, 14 Feb 2006 09:01:40 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Ed Goforth <egoforth@gmail.com>
+Subject: Re: 440gx GPIO
+Message-ID: <20060214170140.GB12465@gate.ebshome.net>
+References: <43F168A3.4020808@gmail.com>
+	<20060214065934.GA12465@gate.ebshome.net>
+	<75b39f010602140548u18f30145tf2ddf529467b2605@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <75b39f010602140548u18f30145tf2ddf529467b2605@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,108 +27,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Laurent, 
-btw, have you gived netperf test a try? 
-It is a commonly-used tool to measure network performance, and has dozens of settings to test...
-
-On Tue, 14 Feb 2006 11:17:46 -0500
-Pantelis Antoniou <pantelis.antoniou@gmail.com> wrote:
-
-> Can you provide some more information?
+On Tue, Feb 14, 2006 at 08:48:56AM -0500, Ed Goforth wrote:
+> I posted the original from home, and didn't have the contents of the
+> config register.  It is
+> cfg     0x00103e00
+> Which I interpret as having bit 11 set: "1 Enable GPIO11 as GPIO11"
+> from the manual.
 > 
-> Actual timings, and a tcpdump fragment?
+> I originally tried to call ioremap64(PPC440GX_GPIO0_ADDR,) directly, but got
+> "unresolved symbol ioremap64".  From inspection of ioremap(), the
+> fixup for 0x40000700 translates to 0x140000700, and I get the same
+> values in my code as I see from a "/proc/ocotea/gpio".
 > 
-> On 2/14/06, Laurent Lagrange <lagrange@fr.oleane.com> wrote:
-> >
-> > Hi Pantelis,
-> >
-> > Thanks for the express reply.
-> >
-> > I know that what I say seems incredible. But I don't understand what NAPI
-> > does.
-> > My measure is very simple. I display a message on the client when 1000
-> > exchanges are done.
-> > I already check the ifconfig stats on the board after some seconds.
-> > The measures seems the same with or without NAPI.
-> >
-> > More details ?
-> > Thanks again
-> > Laurent
-> >
-> >
-> >
-> > -----Message d'origine-----
-> > *De :* Pantelis Antoniou [mailto:pantelis.antoniou@gmail.com]
-> > *Envoyé :* mar. 14 février 2006 16:29
-> > *À :* Laurent Lagrange
-> > *Cc :* linuxppc-embedded@ozlabs.org
-> > *Objet :* Re: Gianfar is slower than fcc_enet on MPC8541 ???
-> >
-> > Hi Laurent,
-> >
-> > I found that pretty hard to believe.
-> >
-> > What are you measuring exactly?
-> >
-> > Speed of replies? If so it's explainable since the TSECs use
-> > NAPI.
-> >
-> > Regards
-> >
-> > Pantelis
-> >
-> > On 2/14/06, Laurent Lagrange <lagrange@fr.oleane.com> wrote:
-> > >
-> > >
-> > > Hello,
-> > >
-> > > I work on a cutom MPC8541 board with Linux 2.6.9.
-> > > The kernel activates the L1 cache (instructions and data)
-> > > and the L2 cache (entirely used as cache and not as sram).
-> > >
-> > > I configure
-> > > 1 FCC (FCC1),
-> > > 2 TSECs with or without NAPI (no effect) but without stashing in L2
-> > > sram.
-> > > All PHYs are automatically configured in 100MB full duplex.
-> > >
-> > >         eth0: Gianfar Ethernet Controller Version 1.1, 00:10:cd:48:48:e0
-> > >         eth0: Running with NAPI disabled
-> > >         eth0: 64/64 RX/TX BD ring size
-> > >         eth1: Gianfar Ethernet Controller Version 1.1, 00:10:cd:48:48:e1
-> > >         eth1: Running with NAPI disabled
-> > >         eth1: 64/64 RX/TX BD ring size
-> > >         eth2: FCC ENET Version custom, 00:10:cd:48:48:e2
-> > >
-> > > Then I launch 3 simple TCP servers, one on each ports.
-> > >
-> > > From remote machines I runs 3 TCP clients.
-> > > The client sends messages of 1000 bytes,
-> > > The server receives and echoes the message
-> > > The client receives the echoed message, check the content
-> > > and sends a new message again.
-> > >
-> > > The result is that the 2 TSECs are 2 times slower than the FCC.
-> > >
-> > > If I run a "top" application on the board, I use less than 10% of the
-> > > CPU
-> > > Each port consumes about 1/3 of the CPU.
-> > >
-> > > Any idea on how to configure the gianfar driver ?
-> > >
-> > > Thanks
-> > > Laurent
-> > >
-> > >
-> > > _______________________________________________
-> > > Linuxppc-embedded mailing list
-> > > Linuxppc-embedded@ozlabs.org
-> > > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> > >
-> >
-> >
+> Is my approach valid?
 
+It seems to be.
+
+Try writing the same GPIO output register value as you read from it 
+(without clearing bit 11). Also, try changing some other GPIO bit 
+(e.g. one which is not connected in your design). Maybe board hangs 
+exactly because you set GPIO bit 11 low :).
+
+Also, connect scope to that GPIO pin and see what is really going on. 
 
 -- 
-Sincerely, 
-Vitaly
+Eugene
