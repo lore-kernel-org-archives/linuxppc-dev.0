@@ -1,19 +1,21 @@
-Return-Path: <bgholikh@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id EDEF3679F0
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 11:53:54 +1100 (EST)
-Received: from xbh-sjc-231.amer.cisco.com (xbh-sjc-231.cisco.com
-	[128.107.191.100])
-	by sj-core-5.cisco.com (8.12.10/8.12.6) with ESMTP id k1E0rojv011074
-	for <linuxppc-dev@ozlabs.org>; Mon, 13 Feb 2006 16:53:51 -0800 (PST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C63101.1E48E9FF"
-Subject: How to access uboot environment variables from Linux?
-Date: Mon, 13 Feb 2006 16:53:49 -0800
-Message-ID: <F795765B112E7344AF36AA9112796415019ECCF1@xmb-sjc-212.amer.cisco.com>
-From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <mita@miraclelinux.com>
+Received: from mail01.miraclelinux.com (ns.miraclelinux.com [219.118.163.66])
+	by ozlabs.org (Postfix) with ESMTP id 1490A679E9
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 16:04:48 +1100 (EST)
+Message-Id: <20060214050443.068971000@localhost.localdomain>
+References: <20060214050351.252615000@localhost.localdomain>
+Date: Tue, 14 Feb 2006 14:03:58 +0900
+From: Akinobu Mita <mita@miraclelinux.com>
+To: linux-kernel@vger.kernel.org
+Subject: [patch 07/47] generic __{, test_and_}{set, clear,
+	change}_bit() and test_bit()
+Cc: akpm@osdl.org, linux-mips@linux-mips.org, dev-etrax@axis.com,
+	ultralinux@vger.kernel.org, Ian Molton <spyro@f2s.com>,
+	Hirokazu Takata <takata@linux-m32r.org>,
+	Akinobu Mita <mita@miraclelinux.com>, linuxppc-dev@ozlabs.org,
+	linuxsh-dev@lists.sourceforge.net, sparclinux@vger.kernel.org,
+	Chris Zankel <chris@zankel.net>, linuxsh-shmedia-dev@lists.sourceforge.net,
+	Russell King <rmk@arm.linux.org.uk>, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,48 +25,140 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+This patch introduces the C-language equivalents of the functions below:
 
-------_=_NextPart_001_01C63101.1E48E9FF
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+void __set_bit(int nr, volatile unsigned long *addr);
+void __clear_bit(int nr, volatile unsigned long *addr);
+void __change_bit(int nr, volatile unsigned long *addr);
+int __test_and_set_bit(int nr, volatile unsigned long *addr);
+int __test_and_clear_bit(int nr, volatile unsigned long *addr);
+int __test_and_change_bit(int nr, volatile unsigned long *addr);
+int test_bit(int nr, const volatile unsigned long *addr);
 
-All,
-How could I access the uboot environment variables from Linux? For
-example I would like to access the "serverip"
-and change that to a different ip address during run time.
-=20
-Many thanks in advance,
-Bizhan
+In include/asm-generic/bitops/non-atomic.h
 
-------_=_NextPart_001_01C63101.1E48E9FF
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+This code largely copied from:
+asm-powerpc/bitops.h
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D504305000-14022006>All,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D504305000-14022006>How =
-could I access=20
-the uboot environment variables from Linux? For example I would like to =
-access=20
-the "serverip"</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D504305000-14022006>and =
-change that to a=20
-different ip address during run time.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D504305000-14022006></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D504305000-14022006>Many =
-thanks in=20
-advance,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D504305000-14022006>Bizhan</SPAN></FONT></DIV></BODY></HTML>
+Signed-off-by: Akinobu Mita <mita@miraclelinux.com>
+ include/asm-generic/bitops/non-atomic.h |  111 ++++++++++++++++++++++++++++++++
+ 1 files changed, 111 insertions(+)
 
-------_=_NextPart_001_01C63101.1E48E9FF--
+Index: 2.6-rc/include/asm-generic/bitops/non-atomic.h
+===================================================================
+--- /dev/null
++++ 2.6-rc/include/asm-generic/bitops/non-atomic.h
+@@ -0,0 +1,111 @@
++#ifndef _ASM_GENERIC_BITOPS_NON_ATOMIC_H_
++#define _ASM_GENERIC_BITOPS_NON_ATOMIC_H_
++
++#include <asm/types.h>
++
++#define BITOP_MASK(nr)		(1UL << ((nr) % BITS_PER_LONG))
++#define BITOP_WORD(nr)		((nr) / BITS_PER_LONG)
++
++/**
++ * __set_bit - Set a bit in memory
++ * @nr: the bit to set
++ * @addr: the address to start counting from
++ *
++ * Unlike set_bit(), this function is non-atomic and may be reordered.
++ * If it's called on the same region of memory simultaneously, the effect
++ * may be that only one operation succeeds.
++ */
++static inline void __set_bit(int nr, volatile unsigned long *addr)
++{
++	unsigned long mask = BITOP_MASK(nr);
++	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
++
++	*p  |= mask;
++}
++
++static inline void __clear_bit(int nr, volatile unsigned long *addr)
++{
++	unsigned long mask = BITOP_MASK(nr);
++	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
++
++	*p &= ~mask;
++}
++
++/**
++ * __change_bit - Toggle a bit in memory
++ * @nr: the bit to change
++ * @addr: the address to start counting from
++ *
++ * Unlike change_bit(), this function is non-atomic and may be reordered.
++ * If it's called on the same region of memory simultaneously, the effect
++ * may be that only one operation succeeds.
++ */
++static inline void __change_bit(int nr, volatile unsigned long *addr)
++{
++	unsigned long mask = BITOP_MASK(nr);
++	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
++
++	*p ^= mask;
++}
++
++/**
++ * __test_and_set_bit - Set a bit and return its old value
++ * @nr: Bit to set
++ * @addr: Address to count from
++ *
++ * This operation is non-atomic and can be reordered.  
++ * If two examples of this operation race, one can appear to succeed
++ * but actually fail.  You must protect multiple accesses with a lock.
++ */
++static inline int __test_and_set_bit(int nr, volatile unsigned long *addr)
++{
++	unsigned long mask = BITOP_MASK(nr);
++	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
++	unsigned long old = *p;
++
++	*p = old | mask;
++	return (old & mask) != 0;
++}
++
++/**
++ * __test_and_clear_bit - Clear a bit and return its old value
++ * @nr: Bit to clear
++ * @addr: Address to count from
++ *
++ * This operation is non-atomic and can be reordered.  
++ * If two examples of this operation race, one can appear to succeed
++ * but actually fail.  You must protect multiple accesses with a lock.
++ */
++static inline int __test_and_clear_bit(int nr, volatile unsigned long *addr)
++{
++	unsigned long mask = BITOP_MASK(nr);
++	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
++	unsigned long old = *p;
++
++	*p = old & ~mask;
++	return (old & mask) != 0;
++}
++
++/* WARNING: non atomic and it can be reordered! */
++static inline int __test_and_change_bit(int nr,
++					    volatile unsigned long *addr)
++{
++	unsigned long mask = BITOP_MASK(nr);
++	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
++	unsigned long old = *p;
++
++	*p = old ^ mask;
++	return (old & mask) != 0;
++}
++
++/**
++ * test_bit - Determine whether a bit is set
++ * @nr: bit number to test
++ * @addr: Address to start counting from
++ */
++static inline int test_bit(int nr, const volatile unsigned long *addr)
++{
++	return 1UL & (addr[BITOP_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
++}
++
++#endif /* _ASM_GENERIC_BITOPS_NON_ATOMIC_H_ */
+
+--
