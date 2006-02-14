@@ -1,19 +1,22 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wvmler1.mail.xerox.com (wvmler1.mail.xerox.com [13.8.138.216])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "wvmler1.mail.xerox.com",
-	Issuer "wvmler1.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D95D667A40
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 22:29:18 +1100 (EST)
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 93DD967A59
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 22:31:21 +1100 (EST)
+Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 2146770C65
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 12:31:19 +0100 (CET)
+Received: from embluxa7e0291e (213-163-18-146.vnet.hu [213.163.18.146])
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id C77C9B8656
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 12:31:18 +0100 (CET)
+From: "Heiko Schocher" <hs@denx.de>
+To: <linuxppc-dev@ozlabs.org>
+Subject: How to access uboot environment variables from Linux?
+Date: Tue, 14 Feb 2006 12:31:19 +0100
+Message-ID: <AHEILKONAKAEJPHNMOPNGEFICFAA.hs@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: How to access uboot environment variables from Linux?
-Date: Tue, 14 Feb 2006 10:56:27 -0000
-Message-ID: <35786B99AB3FDC45A8215724617919736D9235@gbrwgceumf01.eu.xerox.net>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: <atul.sabharwal@exgate.tek.com>, <bgholikh@cisco.com>,
-	<linuxppc-dev@ozlabs.org>
+	charset="iso-8859-1"
+Reply-To: hs@denx.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,50 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Have you not discovered internet search engines?
-If you paste the original question ("How could I access the uboot
-environment variables from Linux?") into Google, you get the answer as
-the first result:
-http://www.denx.de/wiki/view/DULG/HowCanIAccessUBootEnvironmentVariables
-InLinux
+Hello Bizhan,
 
-[Continuing the current style of top-posting. Sorry]
-Clive
-=20
------Original Message-----
-From: linuxppc-dev-bounces+clive.jenkins=3Dxerox.com@ozlabs.org
-[mailto:linuxppc-dev-bounces+clive.jenkins=3Dxerox.com@ozlabs.org] On
-Behalf Of atul.sabharwal@exgate.tek.com
-Sent: 14 February 2006 01:09
-To: bgholikh@cisco.com; linuxppc-dev@ozlabs.org
-Subject: RE: How to access uboot environment variables from Linux?
+> How could I access the uboot environment variables from Linux? For
+> example I would like to access the "serverip"
 
+have a look at
 
-I think you will have to write a program to access and decode u-boot
-environment setup format in linux.
-If you come across some open source app for this, plz. share with me. It
-should be a standard method
-but typically a small optimization if you want your main code to be
-independent of the boot loader
-your are using or if you have common code base which works across
-multiple processors/multiple loaders.
-=20
---
-Atul
+http://www.denx.de/wiki/view/DULG/HowCanIAccessUBootEnvironmentVariablesInLinux
 
+Best regards,
 
-
-From: linuxppc-dev-bounces+atul.sabharwal=3Dtek.com@ozlabs.org
-[mailto:linuxppc-dev-bounces+atul.sabharwal=3Dtek.com@ozlabs.org] On
-Behalf Of Bizhan Gholikhamseh (bgholikh)
-Sent: Monday, February 13, 2006 4:54 PM
-To: linuxppc-dev@ozlabs.org
-Subject: How to access uboot environment variables from Linux?
-=20
-All,
-How could I access the uboot environment variables from Linux? For
-example I would like to access the "serverip"
-and change that to a different ip address during run time.
-=20
-Many thanks in advance,
-Bizhan
+Heiko
