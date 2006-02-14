@@ -1,24 +1,26 @@
-Return-Path: <egoforth@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.198])
-	by ozlabs.org (Postfix) with ESMTP id EC7F267B1F
+Return-Path: <dibacco@inwind.it>
+Received: from smtp4.libero.it (smtp4.libero.it [193.70.192.54])
+	by ozlabs.org (Postfix) with ESMTP id 7A2C067B2B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Feb 2006 08:47:15 +1100 (EST)
-Received: by xproxy.gmail.com with SMTP id r21so1018067wxc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Feb 2006 13:47:14 -0800 (PST)
-Message-ID: <75b39f010602141347q7e50227bn6f989112fcbfcbd0@mail.gmail.com>
-Date: Tue, 14 Feb 2006 16:47:13 -0500
-From: Ed Goforth <egoforth@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: 440gx GPIO
-In-Reply-To: <75b39f010602140910v39bc60dcxeba0acb6065a4bbd@mail.gmail.com>
+	Wed, 15 Feb 2006 08:58:08 +1100 (EST)
+Received: from localhost (172.16.1.210) by smtp4.libero.it (7.0.027-DD01)
+	id 43F225B200029922 for linuxppc-embedded@ozlabs.org;
+	Tue, 14 Feb 2006 22:58:06 +0100
+Received: from smtp20.libero.it ([172.16.1.76])
+	by localhost (asav23.libero.it [193.70.193.10]) (amavisd-new,
+	port 10024)
+	with ESMTP id 25184-15-7 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Feb 2006 22:58:05 +0100 (CET)
+Received: from libero.it (172.16.1.218) by smtp20.libero.it (7.0.027-DD01)
+	id 431C3BFF01A523F0 for linuxppc-embedded@ozlabs.org;
+	Tue, 14 Feb 2006 22:58:05 +0100
+Date: Tue, 14 Feb 2006 22:58:05 +0100
+Message-Id: <IUP6CT$AB62363556CBF94AF9C57C018B7462E3@libero.it>
+Subject: no sys folder under /proc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <43F168A3.4020808@gmail.com>
-	<20060214065934.GA12465@gate.ebshome.net>
-	<75b39f010602140548u18f30145tf2ddf529467b2605@mail.gmail.com>
-	<20060214170140.GB12465@gate.ebshome.net>
-	<75b39f010602140910v39bc60dcxeba0acb6065a4bbd@mail.gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
+From: "dibacco\@inwind\.it" <dibacco@inwind.it>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,48 +31,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 2/14/06, Ed Goforth <egoforth@gmail.com> wrote:
-> On 2/14/06, Eugene Surovegin <ebs@ebshome.net> wrote:
-> > On Tue, Feb 14, 2006 at 08:48:56AM -0500, Ed Goforth wrote:
-> > > I posted the original from home, and didn't have the contents of the
-> > > config register.  It is
-> > > cfg     0x00103e00
-> > > Which I interpret as having bit 11 set: "1 Enable GPIO11 as GPIO11"
-> > > from the manual.
-> > >
-> > > I originally tried to call ioremap64(PPC440GX_GPIO0_ADDR,) directly, =
-but got
-> > > "unresolved symbol ioremap64".  From inspection of ioremap(), the
-> > > fixup for 0x40000700 translates to 0x140000700, and I get the same
-> > > values in my code as I see from a "/proc/ocotea/gpio".
-> > >
-> > > Is my approach valid?
-> >
-> > It seems to be.
->
-> At least I've got that. :)
->
-> >
-> > Try writing the same GPIO output register value as you read from it
-> > (without clearing bit 11). Also, try changing some other GPIO bit
-> > (e.g. one which is not connected in your design). Maybe board hangs
-> > exactly because you set GPIO bit 11 low :).
->
-> I have successfully written back the same values that were read from
-> it.  I will try your suggestion about fiddling with other GPIO bits
-> that we aren't (supposed to be) using.
+Hi,
 
-Well, I was able to manipulate GPIO9, GPIO10 and GPIO12.  It's time to
-turn it over to the hardware people.
+I don't find the directory sys under /proc. Someone knows why?
+Furthermore, printk from a driver are not found in /var/log/messages, wha=
+t could be missing?
 
-
-> >
-> > Also, connect scope to that GPIO pin and see what is really going on.
-> >
-> > --
-> > Eugene
-> >
-
-Thanks for your feedback & suggestions.
-
-Ed
+Bye,
+Antonio.
