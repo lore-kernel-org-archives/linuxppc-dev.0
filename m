@@ -1,17 +1,25 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id DBD2567B4A
+Return-Path: <atul.sabharwal@exgate.tek.com>
+Received: from igate.tek.com (igate.tek.com [192.65.41.20])
+	by ozlabs.org (Postfix) with ESMTP id C62C867B35
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Feb 2006 04:37:05 +1100 (EST)
-In-Reply-To: <000001c6317b$148162c0$5201a8c0@GEG2400>
-References: <000001c6317b$148162c0$5201a8c0@GEG2400>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <83375DC1-33DA-401B-9E6A-D0C1A9A273D7@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: Gianfar is slower  than fcc_enet on MPC8541 ???
-Date: Tue, 14 Feb 2006 11:36:54 -0600
-To: Laurent Lagrange <lagrange@fr.oleane.com>
+	Wed, 15 Feb 2006 05:25:59 +1100 (EST)
+Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
+	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k1EIPvtT014405
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Feb 2006 10:25:58 -0800 (PST)
+Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
+	[128.181.2.45])
+	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k1EIPvHE026217
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Feb 2006 10:25:57 -0800 (PST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: u-boot relocate_code routine...
+Date: Tue, 14 Feb 2006 10:26:40 -0800
+Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201BA2242@us-bv-m23.global.tektronix.net>
+From: <atul.sabharwal@exgate.tek.com>
+To: <wd@denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,71 +31,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-My guess is that you are measuring latency.  By default, interrupt  
-coalescing is on, and used to be set to very poor default values.  In  
-drivers/net/gianfar.h, change the defaults to look like this:
+>>You can reinvent the wheel, or  read  the  documented  experience  of
+>>others who went the same way long time ago.
 
-#define DEFAULT_TX_COALESCE 1
-#define DEFAULT_TXCOUNT 16
-#define DEFAULT_TXTIME  4
+I don't prefer re-inventing unless it adds some real value.  I had
+mentioned the same thing to the design team and changing the memory map
+solved the problem.
 
-#define DEFAULT_RX_COALESCE 1
-#define DEFAULT_RXCOUNT 16
-#define DEFAULT_RXTIME  4
+My hypothesis is that there still is a bug in relocate_code routine as
+if I comment out trap_init routine which relocates the exception vectors
+from flash to ram (in this case 0x10000000), the processor dies.  With
+I-cache Off, and trap_init/interrupt_enable commented, it runs to u-boot
+prompt.
+With I-cache On, it dies 100% in this code.
 
-The problem was that the timeout was quite long, so a small number of  
-packets would have to wait a whole millisecond (or more!) to get  
-processed.  While it wouldn't affect bandwidth tests, which send many  
-packets, it would affect a simple test like ping.
+Putting memory to 0x0 solves the problem and I am able to enable
+trap_init & interrupt enable. Also, can turn I-cache on but seems to be
+some cache problem as without BDI, it dies 100% but with BDI connected,
+it runs with
+Some fpga errors. =20
 
-If you don't feel like recompiling the kernel, you can use ethtool to  
-change the timeout values.
+If you get a chance, you could review the relocate_code routine if it
+handles all input data values. I am new to PPC assembly, so if this was
+written in C/as, it would have been lot simpler.  That is not important
+but handling all data values seems to be a bug.
 
+Best Regards,
 
-On Feb 14, 2006, at 09:26, Laurent Lagrange wrote:
-
->
-> Hello,
->
-> I work on a cutom MPC8541 board with Linux 2.6.9.
-> The kernel activates the L1 cache (instructions and data)
-> and the L2 cache (entirely used as cache and not as sram).
->
-> I configure
-> 1 FCC (FCC1),
-> 2 TSECs with or without NAPI (no effect) but without stashing in L2  
-> sram.
-> All PHYs are automatically configured in 100MB full duplex.
->
-> 	eth0: Gianfar Ethernet Controller Version 1.1, 00:10:cd:48:48:e0
-> 	eth0: Running with NAPI disabled
-> 	eth0: 64/64 RX/TX BD ring size
-> 	eth1: Gianfar Ethernet Controller Version 1.1, 00:10:cd:48:48:e1
-> 	eth1: Running with NAPI disabled
-> 	eth1: 64/64 RX/TX BD ring size
-> 	eth2: FCC ENET Version custom, 00:10:cd:48:48:e2
->
-> Then I launch 3 simple TCP servers, one on each ports.
->
->> From remote machines I runs 3 TCP clients.
-> The client sends messages of 1000 bytes,
-> The server receives and echoes the message
-> The client receives the echoed message, check the content
-> and sends a new message again.
->
-> The result is that the 2 TSECs are 2 times slower than the FCC.
->
-> If I run a "top" application on the board, I use less than 10% of  
-> the CPU
-> Each port consumes about 1/3 of the CPU.
->
-> Any idea on how to configure the gianfar driver ?
->
-> Thanks
-> Laurent
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Atul
