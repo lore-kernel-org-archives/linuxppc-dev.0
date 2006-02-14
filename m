@@ -1,21 +1,20 @@
-Return-Path: <egoforth@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.205])
-	by ozlabs.org (Postfix) with ESMTP id A634767A41
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp3.clb.oleane.net (smtp3.clb.oleane.net [213.56.31.19])
+	by ozlabs.org (Postfix) with ESMTP id A9AFA67A58
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Feb 2006 00:48:58 +1100 (EST)
-Received: by xproxy.gmail.com with SMTP id s13so789446wxc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Feb 2006 05:48:56 -0800 (PST)
-Message-ID: <75b39f010602140548u18f30145tf2ddf529467b2605@mail.gmail.com>
-Date: Tue, 14 Feb 2006 08:48:56 -0500
-From: Ed Goforth <egoforth@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: 440gx GPIO
-In-Reply-To: <20060214065934.GA12465@gate.ebshome.net>
+	Wed, 15 Feb 2006 02:21:22 +1100 (EST)
+Received: from GEG2400 ([194.3.133.184]) (authenticated)
+	by smtp3.clb.oleane.net with ESMTP id k1EFLFev027110
+	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Feb 2006 16:21:20 +0100
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Gianfar is slower  than fcc_enet on MPC8541 ???
+Date: Tue, 14 Feb 2006 16:26:48 +0100
+Message-ID: <000001c6317b$148162c0$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <43F168A3.4020808@gmail.com>
-	<20060214065934.GA12465@gate.ebshome.net>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: 
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,37 +25,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I posted the original from home, and didn't have the contents of the
-config register.  It is
-cfg     0x00103e00
-Which I interpret as having bit 11 set: "1 Enable GPIO11 as GPIO11"
-from the manual.
 
-I originally tried to call ioremap64(PPC440GX_GPIO0_ADDR,) directly, but go=
-t
-"unresolved symbol ioremap64".  From inspection of ioremap(), the
-fixup for 0x40000700 translates to 0x140000700, and I get the same
-values in my code as I see from a "/proc/ocotea/gpio".
+Hello,
 
-Is my approach valid?
+I work on a cutom MPC8541 board with Linux 2.6.9.
+The kernel activates the L1 cache (instructions and data)
+and the L2 cache (entirely used as cache and not as sram).
 
-Thanks,
-Ed
+I configure 
+1 FCC (FCC1),
+2 TSECs with or without NAPI (no effect) but without stashing in L2 sram.
+All PHYs are automatically configured in 100MB full duplex.
 
-On 2/14/06, Eugene Surovegin <ebs@ebshome.net> wrote:
-> On Tue, Feb 14, 2006 at 12:20:35AM -0500, Ed Goforth wrote:
-> > I am struggling with a problem and I hope someone can give me some
-> > pointers.  We have a custom board with a 440gx.  I need to drive GPIO11
-> > low.  The best as I can tell from the docs, I need to set bit 11 of the
-> > TCR to 1 and bit 11 of the OR to 0 to do this.
->
-> Check that this pin is enabled as GPIO not as a function pin
-> (SDR0_PFC0 register).
->
-> Also, just to be sure that you remapped GPIO registers correctly, use
-> ioremap64 with full physical address (not just low 32 bits).
->
-> --
-> Eugene
->
->
+	eth0: Gianfar Ethernet Controller Version 1.1, 00:10:cd:48:48:e0
+	eth0: Running with NAPI disabled
+	eth0: 64/64 RX/TX BD ring size
+	eth1: Gianfar Ethernet Controller Version 1.1, 00:10:cd:48:48:e1
+	eth1: Running with NAPI disabled
+	eth1: 64/64 RX/TX BD ring size
+	eth2: FCC ENET Version custom, 00:10:cd:48:48:e2
+
+Then I launch 3 simple TCP servers, one on each ports.
+
+>From remote machines I runs 3 TCP clients.
+The client sends messages of 1000 bytes, 
+The server receives and echoes the message
+The client receives the echoed message, check the content
+and sends a new message again.
+
+The result is that the 2 TSECs are 2 times slower than the FCC.
+
+If I run a "top" application on the board, I use less than 10% of the CPU
+Each port consumes about 1/3 of the CPU.
+
+Any idea on how to configure the gianfar driver ?
+
+Thanks
+Laurent
+ 
