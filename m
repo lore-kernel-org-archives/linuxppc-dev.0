@@ -1,24 +1,26 @@
 Return-Path: <mita@miraclelinux.com>
 Received: from mail01.miraclelinux.com (ns.miraclelinux.com [219.118.163.66])
-	by ozlabs.org (Postfix) with ESMTP id 2763F67A59
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 16:05:09 +1100 (EST)
-Message-Id: <20060214050444.235416000@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 8632167A2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 16:05:10 +1100 (EST)
+Message-Id: <20060214050443.852246000@localhost.localdomain>
 References: <20060214050351.252615000@localhost.localdomain>
-Date: Tue, 14 Feb 2006 14:04:04 +0900
+Date: Tue, 14 Feb 2006 14:04:02 +0900
 From: Akinobu Mita <mita@miraclelinux.com>
 To: linux-kernel@vger.kernel.org
-Subject: [patch 13/47] generic sched_find_first_bit()
+Subject: [patch 11/47] generic fls64()
 Cc: akpm@osdl.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	Ian Molton <spyro@f2s.com>, David Howells <dhowells@redhat.com>,
-	linuxppc-dev@ozlabs.org, Greg Ungerer <gerg@uclinux.org>,
-	sparclinux@vger.kernel.org, Miles Bader <uclinux-v850@lsi.nec.co.jp>,
-	Linus Torvalds <torvalds@osdl.org>,
+	Ian Molton <spyro@f2s.com>, Andi Kleen <ak@suse.de>,
+	David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
+	Greg Ungerer <gerg@uclinux.org>, sparclinux@vger.kernel.org,
+	Miles Bader <uclinux-v850@lsi.nec.co.jp>,
 	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Hirokazu Takata <takata@linux-m32r.org>, linuxsh-dev@lists.sourceforge.net,
-	linux-m68k@lists.linux-m68k.org, Akinobu Mita <mita@miraclelinux.com>,
+	Hirokazu Takata <takata@linux-m32r.org>,
+	linuxsh-shmedia-dev@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Richard Henderson <rth@twiddle.net>, Akinobu Mita <mita@miraclelinux.com>,
 	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
-	ultralinux@vger.kernel.org, Andi Kleen <ak@suse.de>,
-	linuxsh-shmedia-dev@lists.sourceforge.net, linux390@de.ibm.com,
+	ultralinux@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
+	linuxsh-dev@lists.sourceforge.net, linux390@de.ibm.com,
 	Russell King <rmk@arm.linux.org.uk>, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,57 +32,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This patch introduces the C-language equivalent of the function:
-int sched_find_first_bit(const unsigned long *b);
+int fls64(__u64 x);
 
-In include/asm-generic/bitops/sched.h
+In include/asm-generic/bitops/fls64.h
 
 This code largely copied from:
-include/asm-powerpc/bitops.h
+include/linux/bitops.h
 
 Signed-off-by: Akinobu Mita <mita@miraclelinux.com>
- include/asm-generic/bitops/sched.h |   36 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 36 insertions(+)
+ include/asm-generic/bitops/fls64.h |   12 ++++++++++++
+ 1 files changed, 12 insertions(+)
 
-Index: 2.6-rc/include/asm-generic/bitops/sched.h
+Index: 2.6-rc/include/asm-generic/bitops/fls64.h
 ===================================================================
 --- /dev/null
-+++ 2.6-rc/include/asm-generic/bitops/sched.h
-@@ -0,0 +1,36 @@
-+#ifndef _ASM_GENERIC_BITOPS_SCHED_H_
-+#define _ASM_GENERIC_BITOPS_SCHED_H_
++++ 2.6-rc/include/asm-generic/bitops/fls64.h
+@@ -0,0 +1,12 @@
++#ifndef _ASM_GENERIC_BITOPS_FLS64_H_
++#define _ASM_GENERIC_BITOPS_FLS64_H_
 +
-+#include <linux/compiler.h>	/* unlikely() */
-+#include <asm/types.h>
-+
-+/*
-+ * Every architecture must define this function. It's the fastest
-+ * way of searching a 140-bit bitmap where the first 100 bits are
-+ * unlikely to be set. It's guaranteed that at least one of the 140
-+ * bits is cleared.
-+ */
-+static inline int sched_find_first_bit(const unsigned long *b)
++static inline int fls64(__u64 x)
 +{
-+#if BITS_PER_LONG == 64
-+	if (unlikely(b[0]))
-+		return __ffs(b[0]);
-+	if (unlikely(b[1]))
-+		return __ffs(b[1]) + 64;
-+	return __ffs(b[2]) + 128;
-+#elif BITS_PER_LONG == 32
-+	if (unlikely(b[0]))
-+		return __ffs(b[0]);
-+	if (unlikely(b[1]))
-+		return __ffs(b[1]) + 32;
-+	if (unlikely(b[2]))
-+		return __ffs(b[2]) + 64;
-+	if (b[3])
-+		return __ffs(b[3]) + 96;
-+	return __ffs(b[4]) + 128;
-+#else
-+#error BITS_PER_LONG not defined
-+#endif
++	__u32 h = x >> 32;
++	if (h)
++		return fls(h) + 32;
++	return fls(x);
 +}
 +
-+#endif /* _ASM_GENERIC_BITOPS_SCHED_H_ */
++#endif /* _ASM_GENERIC_BITOPS_FLS64_H_ */
 
 --
