@@ -1,27 +1,15 @@
 Return-Path: <mita@miraclelinux.com>
 Received: from mail01.miraclelinux.com (ns.miraclelinux.com [219.118.163.66])
-	by ozlabs.org (Postfix) with ESMTP id 7E158679FF
-	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 16:05:05 +1100 (EST)
-Message-Id: <20060214050444.599668000@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 38EAF67A0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 14 Feb 2006 16:05:10 +1100 (EST)
+Message-Id: <20060214050447.881160000@localhost.localdomain>
 References: <20060214050351.252615000@localhost.localdomain>
-Date: Tue, 14 Feb 2006 14:04:06 +0900
+Date: Tue, 14 Feb 2006 14:04:23 +0900
 From: Akinobu Mita <mita@miraclelinux.com>
 To: linux-kernel@vger.kernel.org
-Subject: [patch 15/47] generic hweight{64,32,16,8}()
-Cc: akpm@osdl.org, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
-	Ian Molton <spyro@f2s.com>, Andi Kleen <ak@suse.de>,
-	David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
-	Greg Ungerer <gerg@uclinux.org>, sparclinux@vger.kernel.org,
-	Miles Bader <uclinux-v850@lsi.nec.co.jp>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	Hirokazu Takata <takata@linux-m32r.org>,
-	linuxsh-shmedia-dev@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
-	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-	Richard Henderson <rth@twiddle.net>, Akinobu Mita <mita@miraclelinux.com>,
-	Chris Zankel <chris@zankel.net>, dev-etrax@axis.com,
-	ultralinux@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-	linuxsh-dev@lists.sourceforge.net, linux390@de.ibm.com,
-	Russell King <rmk@arm.linux.org.uk>, parisc-linux@parisc-linux.org
+Subject: [patch 32/47] powerpc: use generic bitops
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org,
+	Akinobu Mita <mita@miraclelinux.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,109 +19,161 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-This patch introduces the C-language equivalents of the functions below:
-
-unsigned int hweight32(unsigned int w);
-unsigned int hweight16(unsigned int w);
-unsigned int hweight8(unsigned int w);
-unsigned long hweight64(__u64 w);
-
-In include/asm-generic/bitops/hweight.h
-
-This code largely copied from:
-include/linux/bitops.h
+- remove __{,test_and_}{set,clear,change}_bit() and test_bit()
+- remove generic_fls64()
+- remove generic_hweight{64,32,16,8}()
+- remove sched_find_first_bit()
 
 Signed-off-by: Akinobu Mita <mita@miraclelinux.com>
- include/asm-generic/bitops/hweight.h |    9 +++++
- lib/Makefile                         |    1 
- lib/hweight.c                        |   54 +++++++++++++++++++++++++++++++++++
- 3 files changed, 64 insertions(+)
+ arch/powerpc/Kconfig         |    4 +
+ include/asm-powerpc/bitops.h |  105 +------------------------------------------
+ 2 files changed, 8 insertions(+), 101 deletions(-)
 
-Index: 2.6-rc/include/asm-generic/bitops/hweight.h
+Index: 2.6-rc/include/asm-powerpc/bitops.h
 ===================================================================
---- /dev/null
-+++ 2.6-rc/include/asm-generic/bitops/hweight.h
-@@ -0,0 +1,9 @@
-+#ifndef _ASM_GENERIC_BITOPS_HWEIGHT_H_
-+#define _ASM_GENERIC_BITOPS_HWEIGHT_H_
-+
-+extern unsigned int hweight32(unsigned int w);
-+extern unsigned int hweight16(unsigned int w);
-+extern unsigned int hweight8(unsigned int w);
-+extern unsigned long hweight64(__u64 w);
-+
-+#endif /* _ASM_GENERIC_BITOPS_HWEIGHT_H_ */
-Index: 2.6-rc/lib/Makefile
-===================================================================
---- 2.6-rc.orig/lib/Makefile
-+++ 2.6-rc/lib/Makefile
-@@ -21,6 +21,7 @@ lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += 
- lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem.o
- lib-$(CONFIG_SEMAPHORE_SLEEPERS) += semaphore-sleepers.o
- lib-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
-+lib-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
- obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
- obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
+--- 2.6-rc.orig/include/asm-powerpc/bitops.h
++++ 2.6-rc/include/asm-powerpc/bitops.h
+@@ -184,72 +184,7 @@ static __inline__ void set_bits(unsigned
+ 	: "cc");
+ }
  
-Index: 2.6-rc/lib/hweight.c
+-/* Non-atomic versions */
+-static __inline__ int test_bit(unsigned long nr,
+-			       __const__ volatile unsigned long *addr)
+-{
+-	return 1UL & (addr[BITOP_WORD(nr)] >> (nr & (BITS_PER_LONG-1)));
+-}
+-
+-static __inline__ void __set_bit(unsigned long nr,
+-				 volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	*p  |= mask;
+-}
+-
+-static __inline__ void __clear_bit(unsigned long nr,
+-				   volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	*p &= ~mask;
+-}
+-
+-static __inline__ void __change_bit(unsigned long nr,
+-				    volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-
+-	*p ^= mask;
+-}
+-
+-static __inline__ int __test_and_set_bit(unsigned long nr,
+-					 volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-	unsigned long old = *p;
+-
+-	*p = old | mask;
+-	return (old & mask) != 0;
+-}
+-
+-static __inline__ int __test_and_clear_bit(unsigned long nr,
+-					   volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-	unsigned long old = *p;
+-
+-	*p = old & ~mask;
+-	return (old & mask) != 0;
+-}
+-
+-static __inline__ int __test_and_change_bit(unsigned long nr,
+-					    volatile unsigned long *addr)
+-{
+-	unsigned long mask = BITOP_MASK(nr);
+-	unsigned long *p = ((unsigned long *)addr) + BITOP_WORD(nr);
+-	unsigned long old = *p;
+-
+-	*p = old ^ mask;
+-	return (old & mask) != 0;
+-}
++#include <asm-generic/bitops/non-atomic.h>
+ 
+ /*
+  * Return the zero-based bit position (LE, not IBM bit numbering) of
+@@ -310,16 +245,9 @@ static __inline__ int fls(unsigned int x
+ 	asm ("cntlzw %0,%1" : "=r" (lz) : "r" (x));
+ 	return 32 - lz;
+ }
+-#define fls64(x)   generic_fls64(x)
++#include <asm-generic/bitops/fls64.h>
+ 
+-/*
+- * hweightN: returns the hamming weight (i.e. the number
+- * of bits set) of a N-bit word
+- */
+-#define hweight64(x) generic_hweight64(x)
+-#define hweight32(x) generic_hweight32(x)
+-#define hweight16(x) generic_hweight16(x)
+-#define hweight8(x) generic_hweight8(x)
++#include <asm-generic/bitops/hweight.h>
+ 
+ #define find_first_zero_bit(addr, size) find_next_zero_bit((addr), (size), 0)
+ unsigned long find_next_zero_bit(const unsigned long *addr,
+@@ -397,32 +325,7 @@ unsigned long find_next_zero_le_bit(cons
+ #define minix_find_first_zero_bit(addr,size) \
+ 	find_first_zero_le_bit((unsigned long *)addr, size)
+ 
+-/*
+- * Every architecture must define this function. It's the fastest
+- * way of searching a 140-bit bitmap where the first 100 bits are
+- * unlikely to be set. It's guaranteed that at least one of the 140
+- * bits is cleared.
+- */
+-static inline int sched_find_first_bit(const unsigned long *b)
+-{
+-#ifdef CONFIG_PPC64
+-	if (unlikely(b[0]))
+-		return __ffs(b[0]);
+-	if (unlikely(b[1]))
+-		return __ffs(b[1]) + 64;
+-	return __ffs(b[2]) + 128;
+-#else
+-	if (unlikely(b[0]))
+-		return __ffs(b[0]);
+-	if (unlikely(b[1]))
+-		return __ffs(b[1]) + 32;
+-	if (unlikely(b[2]))
+-		return __ffs(b[2]) + 64;
+-	if (b[3])
+-		return __ffs(b[3]) + 96;
+-	return __ffs(b[4]) + 128;
+-#endif
+-}
++#include <asm-generic/bitops/sched.h>
+ 
+ #endif /* __KERNEL__ */
+ 
+Index: 2.6-rc/arch/powerpc/Kconfig
 ===================================================================
---- /dev/null
-+++ 2.6-rc/lib/hweight.c
-@@ -0,0 +1,54 @@
-+#include <linux/module.h>
-+#include <asm/types.h>
+--- 2.6-rc.orig/arch/powerpc/Kconfig
++++ 2.6-rc/arch/powerpc/Kconfig
+@@ -37,6 +37,10 @@ config RWSEM_XCHGADD_ALGORITHM
+ 	bool
+ 	default y
+ 
++config GENERIC_HWEIGHT
++	bool
++	default y
 +
-+/**
-+ * hweightN - returns the hamming weight of a N-bit word
-+ * @x: the word to weigh
-+ *
-+ * The Hamming Weight of a number is the total number of bits set in it.
-+ */
-+
-+unsigned int hweight32(unsigned int w)
-+{
-+	unsigned int res = (w & 0x55555555) + ((w >> 1) & 0x55555555);
-+	res = (res & 0x33333333) + ((res >> 2) & 0x33333333);
-+	res = (res & 0x0F0F0F0F) + ((res >> 4) & 0x0F0F0F0F);
-+	res = (res & 0x00FF00FF) + ((res >> 8) & 0x00FF00FF);
-+	return (res & 0x0000FFFF) + ((res >> 16) & 0x0000FFFF);
-+}
-+EXPORT_SYMBOL(hweight32);
-+
-+unsigned int hweight16(unsigned int w)
-+{
-+	unsigned int res = (w & 0x5555) + ((w >> 1) & 0x5555);
-+	res = (res & 0x3333) + ((res >> 2) & 0x3333);
-+	res = (res & 0x0F0F) + ((res >> 4) & 0x0F0F);
-+	return (res & 0x00FF) + ((res >> 8) & 0x00FF);
-+}
-+EXPORT_SYMBOL(hweight16);
-+
-+unsigned int hweight8(unsigned int w)
-+{
-+	unsigned int res = (w & 0x55) + ((w >> 1) & 0x55);
-+	res = (res & 0x33) + ((res >> 2) & 0x33);
-+	return (res & 0x0F) + ((res >> 4) & 0x0F);
-+}
-+EXPORT_SYMBOL(hweight8);
-+
-+unsigned long hweight64(__u64 w)
-+{
-+#if BITS_PER_LONG == 32
-+	return hweight32((unsigned int)(w >> 32)) + hweight32((unsigned int)w);
-+#elif BITS_PER_LONG == 64
-+	u64 res;
-+	res = (w & 0x5555555555555555ul) + ((w >> 1) & 0x5555555555555555ul);
-+	res = (res & 0x3333333333333333ul) + ((res >> 2) & 0x3333333333333333ul);
-+	res = (res & 0x0F0F0F0F0F0F0F0Ful) + ((res >> 4) & 0x0F0F0F0F0F0F0F0Ful);
-+	res = (res & 0x00FF00FF00FF00FFul) + ((res >> 8) & 0x00FF00FF00FF00FFul);
-+	res = (res & 0x0000FFFF0000FFFFul) + ((res >> 16) & 0x0000FFFF0000FFFFul);
-+	return (res & 0x00000000FFFFFFFFul) + ((res >> 32) & 0x00000000FFFFFFFFul);
-+#else
-+#error BITS_PER_LONG not defined
-+#endif
-+}
-+EXPORT_SYMBOL(hweight64);
+ config GENERIC_CALIBRATE_DELAY
+ 	bool
+ 	default y
 
 --
