@@ -1,16 +1,26 @@
 Return-Path: <dibacco@inwind.it>
-Received: from smtp3.libero.it (smtp3.libero.it [193.70.192.127])
-	by ozlabs.org (Postfix) with ESMTP id 79B11679EA
+Received: from smtp6.libero.it (smtp6.libero.it [193.70.192.59])
+	by ozlabs.org (Postfix) with ESMTP id D47D0679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Feb 2006 07:28:50 +1100 (EST)
-Date: Wed, 15 Feb 2006 21:28:46 +0100
-Message-Id: <IUQWVY$B006F7B9910C94EEDFBBC88B525DC8D9@libero.it>
-Subject: Re: no sys folder under /proc
+	Thu, 16 Feb 2006 08:38:15 +1100 (EST)
+Received: from localhost (172.16.1.79) by smtp6.libero.it (7.0.027-DD01)
+	id 43F225FD001D59F3 for linuxppc-embedded@ozlabs.org;
+	Wed, 15 Feb 2006 22:38:13 +0100
+Received: from smtp0.libero.it ([172.16.1.204])
+	by localhost (asav1.libero.it [193.70.192.150]) (amavisd-new,
+	port 10024)
+	with ESMTP id 05848-08-9 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 15 Feb 2006 22:38:13 +0100 (CET)
+Received: from libero.it (172.16.1.239) by smtp0.libero.it (7.0.027-DD01)
+	id 439064B400BFFCF5 for linuxppc-embedded@ozlabs.org;
+	Wed, 15 Feb 2006 22:38:13 +0100
+Date: Wed, 15 Feb 2006 22:38:13 +0100
+Message-Id: <IUR03P$6A233DC5B9B1BF9E2C2513D5DCA9D9EB@libero.it>
+Subject: no printk messages in /var/log/messages
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 From: "dibacco\@inwind\.it" <dibacco@inwind.it>
-To: "galak" <galak@kernel.crashing.org>,
-	"linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,36 +31,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I discovered that "klogd" is not running. This could be a problem. Is it =
-mandatorty to run it to see kernel messages? 
+Hi,
 
-Thank you for your help,
-bye.
+I'm running klogd and syslogd from BusyBox 1.1.0. Some messages are logge=
+d to /var/log/messages but no kernel messages. I'm printing KERN_ERR but =
+also KERN_EMERG and nothing seen!?!?! If I do cat /proc/kmsg it hangs but=
+ nothing print.
 
----------- Initial Header -----------
-
->From      : "Kumar Gala" galak@kernel.crashing.org
-To          : "dibacco@inwind.it" dibacco@inwind.it
-Cc          : 
-Date      : Wed, 15 Feb 2006 12:39:12 -0600 (CST)
-Subject : Re: no sys folder under /proc
-
-
-
-
-
-
-
-> On Wed, 15 Feb 2006, dibacco@inwind.it wrote:
-> 
-> > Syslogd is running and it is logging things like the start of busybox=
- for example. The printk doesn't appear in the "messages" file.
-> > 
-> 
-> Does it appear in dmesg?
-> 
-> You may need to config syslogd to capture the data.
-> 
-> - kumar
-> 
-> 
+Bye,
+Antonio.
