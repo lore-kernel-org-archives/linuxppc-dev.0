@@ -1,18 +1,17 @@
-Return-Path: <pnasrat@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 4443D679F4
-	for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2006 03:43:18 +1100 (EST)
-Subject: Re: yaboot 1.3.14 release candidate 1
-From: Paul Nasrat <pnasrat@redhat.com>
-To: Ben Collins <bcollins@ubuntu.com>
-In-Reply-To: <1139581305.5851.7.camel@grayson>
-References: <1139538538.3638.14.camel@enki.eridu>
-	<1139581305.5851.7.camel@grayson>
-Content-Type: text/plain
-Date: Wed, 15 Feb 2006 11:43:15 -0500
-Message-Id: <1140021795.2824.12.camel@enki.eridu>
+Return-Path: <michel@daenzer.net>
+Received: from darkcity.gna.ch (darkcity.gna.ch [195.226.6.9])
+	by ozlabs.org (Postfix) with ESMTP id E801B679F6
+	for <linuxppc-dev@ozlabs.org>; Thu, 16 Feb 2006 04:35:50 +1100 (EST)
+Subject: Re: 8272ads:PCI prefetchable mem access problem
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+To: Anil Dhonde <adhonde@yahoo.com>
+In-Reply-To: <20060215145954.43697.qmail@web30711.mail.mud.yahoo.com>
+References: <20060215145954.43697.qmail@web30711.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 15 Feb 2006 18:04:19 +0100
+Message-Id: <1140023059.27426.16.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-02-10 at 09:21 -0500, Ben Collins wrote:
+On Wed, 2006-02-15 at 06:59 -0800, Anil Dhonde wrote:
+>=20
+> We have plugged an ATI Radeon video card into a PCI
+> slot on our powerpc 8272ads evaluation board. The
+> linux kernel 2.6.15 comes up, detects the card on the
+> bus, rolls in the ATI Radeon framebuffer driver as it
+> should. All register/PCI config space access is fine.
 
-> Not sure if you have anything like this in your tree at the moment, but
-> here's a patch we use for Ubuntu. It's based in part on code in silo (I
-> maintain silo upstream). Since the two are very close in code, this made
-> sense :). Silo allows you to add an arch in the image stanza like:
+So does radeonfb work, or is that part of the problem?
 
-No, thanks for passing this on to me it looks sane, I'll test a little
-then probably commit.  Currently I've been doing this on macs with an
-ofboot script checking 64-bit, but this is probably better.
+Note that radeonfb doesn't do the low-level card initialization normally
+done by the on-card ROM, (how?) does your evaluation board do that?
 
-Paul
+
+--=20
+Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
+er
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
