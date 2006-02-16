@@ -1,21 +1,20 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0B07F679FB
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6DC39679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Feb 2006 11:01:54 +1100 (EST)
-Message-ID: <43F3C0D2.3000207@ovro.caltech.edu>
-Date: Wed, 15 Feb 2006 16:01:22 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: PowerQUICC II Pro MPC8349E-MDS Linux 2.6 support
-References: <Pine.LNX.4.44.0602151743030.450-100000@gate.crashing.org>
-In-Reply-To: <Pine.LNX.4.44.0602151743030.450-100000@gate.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 16 Feb 2006 15:49:51 +1100 (EST)
+Date: Wed, 15 Feb 2006 20:49:48 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: ????????? <lonsn@163.com>
+Subject: Re: Re: Gigabit ethernet support of ppc440gx in 2.6 and 2.4
+Message-ID: <20060216044948.GA23150@gate.ebshome.net>
+References: <43F402AC.026BD0.10674>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <43F402AC.026BD0.10674>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,38 +25,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> ... for the MPC8349E-MDS board?
-> 
-> Yes, Freescale names the board four different things durings its 
-> development (ADS, SYS, MDS, ok maybe only three :)
+On Thu, Feb 16, 2006 at 12:45:15PM +0800, ????????? wrote:
+> Does the TCP/IP Acceleration Hardware of 440GX have been supported 
+> in official 2.6 kernel?
+> How about the CPU utilization when you get 900+Mb/s? Since we want 
+> to do something such as simple datas codec at the same time.
 
-Ok, great.
+My driver (both 2.4 and 2.6) supports TCP/UDP checksum offload. No TSO 
+yet.
 
->>In the Denx source, there is modified versions for the
->>TQM board, but I wasn't sure what platform the original
->>files were targeted for. 
-> 
-> Not sure, I follow.  The MPC834x MDS was the first 834x system supported.
+I don't remember exact CPU load numbers, but it was less than 20% for 
+TX case (Ocotea was transmitting data).
 
-Sorry, my fault, I wasn't clear.
-
-I was just referring to the fact that in addition to your
-source, the Denx tree also has the work they are doing on
-the TQM board that contains an 8349E.
-
-> However, if you are looking at 834x, I recommend you grab my u-boot tree 
-> from kernel.org since it has support for booting the kernel with a flat 
-> device tree.  From 2.6.16, all future 83xx work will be done in 
-> arch/powerpc which requires a flat dev tree to boot.
-
-Ok.
-
-The reason I was asking, was that I want to benchmark an 8349E
-based system. Wolfgang Denx mentioned the TQM system, so I took
-a look in the Denx tree, and saw that their work was based
-on yours. I assumed your work was for a Freescale reference board,
-but didn't know which.
-
-Thanks for the clarification.
-
-Dave
+-- 
+Eugene
