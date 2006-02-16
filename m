@@ -1,25 +1,22 @@
-Return-Path: <dibacco@inwind.it>
-Received: from smtp4.libero.it (smtp4.libero.it [193.70.192.54])
-	by ozlabs.org (Postfix) with ESMTP id 2C7A867A3C
+Return-Path: <Phil.Nitschke@avalon.com.au>
+Received: from camden.avalon.com.au (unknown [150.101.131.13])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 27892679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Feb 2006 06:22:13 +1100 (EST)
-Received: from localhost (172.16.1.177) by smtp4.libero.it (7.0.027-DD01)
-	id 43F225B200357374 for linuxppc-embedded@ozlabs.org;
-	Thu, 16 Feb 2006 20:22:11 +0100
-Received: from smtp3.libero.it ([172.16.1.53])
-	by localhost (asav0.libero.it [193.70.192.9]) (amavisd-new, port 10024)
-	with ESMTP id 19230-04 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Feb 2006 20:22:10 +0100 (CET)
-Received: from libero.it (172.16.1.209) by smtp3.libero.it (7.0.027-DD01)
-	id 431C39E001B3C49E for linuxppc-embedded@ozlabs.org;
-	Thu, 16 Feb 2006 20:22:10 +0100
-Date: Thu, 16 Feb 2006 20:22:10 +0100
-Message-Id: <IUSOGY$EDAD32EDF530E25E2E505216932C8F6D@libero.it>
-Subject: PEMICRO CABLEPPC and GDB
+	Fri, 17 Feb 2006 09:20:01 +1100 (EST)
+From: Phil Nitschke <Phil.Nitschke@avalon.com.au>
+To: "Buhler, Greg" <greg.buhler@viasat.com>
+Subject: Re: scatter/gather DMA and cache coherency
+References: <68997D3094017740BB875EB2A425A6EA02E46197@VCAEXCH01.hq.corp.viasat.com>
+Date: Fri, 17 Feb 2006 08:49:50 +1030
+In-Reply-To: <68997D3094017740BB875EB2A425A6EA02E46197@VCAEXCH01.hq.corp.viasat.com>
+	(Greg Buhler's message of "Thu, 16 Feb 2006 10:23:20 -0800")
+Message-ID: <kw3bijdjzt.fsf@lamorak.int.avalon.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-From: "dibacco\@inwind\.it" <dibacco@inwind.it>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: Phil.Nitschke@avalon.com.au
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,8 +27,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have bought a P&E MICRO CABLEPPC (parallel bdm wiggler). Someone was su=
-ccessful using it with Linux? Is there a driver for linux? 
+>>>>> "GB" == Buhler, Greg <greg.buhler@viasat.com> writes:
 
-Bye,
-Antonio.
+  GB> Phil, If the third party DMA driver is not proprietary send it
+  GB> over and I'd be happy to take a look at it for you. 
+
+I don't think I can, due to this in the code:
+
+========================================================================
+/*
+Copyright Notice:
+  This computer software is proprietary to VMETRO. The use of this software
+  is governed by a licensing agreement. VMETRO retains all rights under
+  the copyright laws of the United States of America and other countries.
+  This software may not be furnished or disclosed to any third party and
+  may not be copied or reproduced by any means, electronic, mechanical, or
+  otherwise, in whole or in part, without specific authorization in writing
+  from VMETRO.
+ 
+    Copyright (c) 1996-2005 by VMETRO, ASA.  All Rights Reserved.
+*/
+
+[snip]
+
+/* Set the right GPL license to avoid warrnings then loading the driver */
+MODULE_LICENSE("GPL");
+========================================================================
+
+Can you have a GPL driver where the source is copyright?
+
+Thanks for the offer, Greg.
+
+-- 
+Phil
