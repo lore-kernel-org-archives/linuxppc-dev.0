@@ -1,18 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B19A567A2E
+	(Client CN "sabrina.ovro.caltech.edu",
+	Issuer "sabrina.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0B07F679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Feb 2006 10:54:25 +1100 (EST)
-Date: Wed, 15 Feb 2006 17:45:25 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Hawkins <dwh@ovro.caltech.edu>
-Subject: Re: PowerQUICC II Pro MPC8349E-MDS Linux 2.6 support
-In-Reply-To: <43F3BE4A.7070603@ovro.caltech.edu>
-Message-ID: <Pine.LNX.4.44.0602151743030.450-100000@gate.crashing.org>
+	Thu, 16 Feb 2006 11:01:54 +1100 (EST)
+Message-ID: <43F3C0D2.3000207@ovro.caltech.edu>
+Date: Wed, 15 Feb 2006 16:01:22 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: PowerQUICC II Pro MPC8349E-MDS Linux 2.6 support
+References: <Pine.LNX.4.44.0602151743030.450-100000@gate.crashing.org>
+In-Reply-To: <Pine.LNX.4.44.0602151743030.450-100000@gate.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,32 +26,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 15 Feb 2006, David Hawkins wrote:
-
+>> ... for the MPC8349E-MDS board?
 > 
-> Hi Kumar,
+> Yes, Freescale names the board four different things durings its 
+> development (ADS, SYS, MDS, ok maybe only three :)
+
+Ok, great.
+
+>>In the Denx source, there is modified versions for the
+>>TQM board, but I wasn't sure what platform the original
+>>files were targeted for. 
 > 
-> I saw your email earlier, so figured you were listening in
-> on the PPC group at the moment.
-> 
-> In the recent 2.6 kernel source, you authored the file:
-> 
-> arch/ppc/platforms/83xx/mpc834x_sys.h and .c
-> 
-> are these files for the MPC8349E-MDS board?
+> Not sure, I follow.  The MPC834x MDS was the first 834x system supported.
 
-Yes, Freescale names the board four different things durings its 
-development (ADS, SYS, MDS, ok maybe only three :)
+Sorry, my fault, I wasn't clear.
 
-> In the Denx source, there is modified versions for the
-> TQM board, but I wasn't sure what platform the original
-> files were targeted for.
+I was just referring to the fact that in addition to your
+source, the Denx tree also has the work they are doing on
+the TQM board that contains an 8349E.
 
-Not sure, I follow.  The MPC834x MDS was the first 834x system supported.
+> However, if you are looking at 834x, I recommend you grab my u-boot tree 
+> from kernel.org since it has support for booting the kernel with a flat 
+> device tree.  From 2.6.16, all future 83xx work will be done in 
+> arch/powerpc which requires a flat dev tree to boot.
 
-However, if you are looking at 834x, I recommend you grab my u-boot tree 
-from kernel.org since it has support for booting the kernel with a flat 
-device tree.  From 2.6.16, all future 83xx work will be done in 
-arch/powerpc which requires a flat dev tree to boot.
+Ok.
 
-- kumar
+The reason I was asking, was that I want to benchmark an 8349E
+based system. Wolfgang Denx mentioned the TQM system, so I took
+a look in the Denx tree, and saw that their work was based
+on yours. I assumed your work was for a Freescale reference board,
+but didn't know which.
+
+Thanks for the clarification.
+
+Dave
