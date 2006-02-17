@@ -1,18 +1,22 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 3DB6367A0E
-	for <linuxppc-dev@ozlabs.org>; Fri, 17 Feb 2006 10:53:38 +1100 (EST)
-To: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: How to access uboot environment variables from Linux? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 13 Feb 2006 16:53:49 PST."
-	<F795765B112E7344AF36AA9112796415019ECCF1@xmb-sjc-212.amer.cisco.com>
-Date: Fri, 17 Feb 2006 00:53:35 +0100
-Sender: wd@denx.de
-Message-Id: <20060216235336.26677353A86@atlas.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <bunk@stusta.de>
+Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with SMTP id CDF81679EA
+	for <linuxppc-dev@ozlabs.org>; Sat, 18 Feb 2006 10:14:46 +1100 (EST)
+Date: Sat, 18 Feb 2006 00:14:44 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Subject: 2.6.16-rc4: known regressions
+Message-ID: <20060217231444.GM4422@stusta.de>
+References: <Pine.LNX.4.64.0602171438050.916@g5.osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0602171438050.916@g5.osdl.org>
+Cc: len.brown@intel.com, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-acpi@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
+	Meelis Roos <mroos@linux.ee>, gregkh@suse.de,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org, linux-input@atrey.karlin.mff.cuni.cz,
+	Sanjoy Mahajan <sanjoy@mrao.cam.ac.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <F795765B112E7344AF36AA9112796415019ECCF1@xmb-sjc-212.amer.cisco.com> you wrote:
-> 
-> How could I access the uboot environment variables from Linux? For
+This email lists some known regressions in 2.6.16-rc4 compared to 2.6.15.
 
-This question is off topic here; you should ask  such  stuff  on  the
-u-boot-uswers mailing list instead.
+If you find your name in the Cc header, you are either submitter of one 
+of the bugs, maintainer of an affectected subsystem or driver, a patch 
+of you was declared guilty for a breakage or I'm considering you in any 
+other way possibly involved with one or more of these issues.
 
-> example I would like to access the "serverip"
-> and change that to a different ip address during run time.
 
-You should also read the FAQ's before posting. See here:
-http://www.denx.de/wiki/view/DULG/HowCanIAccessUBootEnvironmentVariablesInLinux
+Subject    : gnome-volume-manager broken on powerpc since 2.6.16-rc1
+References : http://bugzilla.kernel.org/show_bug.cgi?id=6021
+Submitter  : John Stultz <johnstul@us.ibm.com>
+Status     : still present in -git two days ago
 
-Best regards,
 
-Wolfgang Denk
+Subject    : S3 sleep hangs the second time - 600X
+References : http://bugzilla.kernel.org/show_bug.cgi?id=5989
+Submitter  : Sanjoy Mahajan <sanjoy@mrao.cam.ac.uk>
+Status     : problematic commit identified,
+             further discussion is in the bug
+
+Subject    : psmouse starts losing sync in 2.6.16-rc2
+References : http://lkml.org/lkml/2006/2/5/50
+Submitter  : Meelis Roos <mroos@linux.ee>
+Handled-By : Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Status     : Dmitry: Working on various manifestations of this one.
+                     At worst we will have to disable resync by default
+                     before 2.6.16 final is out and continue in 2.6.17 cycle.
+
+
+
+cu
+Adrian
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Our business is run on trust.  We trust you will pay in advance.
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
