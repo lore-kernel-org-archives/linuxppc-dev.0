@@ -1,17 +1,17 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 96389679F7
+Return-Path: <grant.likely@secretlab.ca>
+Received: from outbound-mail-11.bluehost.com (outbound-mail-11.bluehost.com
+	[70.96.188.111]) by ozlabs.org (Postfix) with SMTP id AA9F3679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Feb 2006 21:24:37 +1100 (EST)
-Message-ID: <43F5A4DC.8020709@ru.mvista.com>
-Date: Fri, 17 Feb 2006 13:26:36 +0300
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: Eric L <dasani8888@hotmail.com>
-Subject: Re: SMP support for PPC405 on Virtex-II Pro
-References: <BAY107-F69111A53C2803D9C08539DFFB0@phx.gbl>
-In-Reply-To: <BAY107-F69111A53C2803D9C08539DFFB0@phx.gbl>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+	Sat, 18 Feb 2006 02:22:57 +1100 (EST)
+In-Reply-To: <001301c633a5$b4cde290$9e01120a@bilisim.local>
+References: <001301c633a5$b4cde290$9e01120a@bilisim.local>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=MACINTOSH; delsp=yes; format=flowed
+Message-Id: <8FFF2005-2052-42FA-B72B-78EA690B97D7@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Instruction Set Simulator
+Date: Fri, 17 Feb 2006 08:22:55 -0700
+To: =?MACINTOSH?Q?Mustafa_=82ay=F5r?= <mustafa.cayir@bte.mam.gov.tr>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,32 +23,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Eric L wrote:
+Take a look at QEMU
+
+g.
+
+On 17-Feb-06, at 2:37 AM, Mustafa =82ay=F5r wrote:
+
 > Hi all,
-> 
-> I know MontaVista has commercial kernels for this feature.
-
-I could be missing something, but AFAIK MontaVista doesn't support SMP 
-for Virtex-II Pro or Virtex-4.
-
-Best regards,
-Andrei
-
-> I also know PPC405 doesn't implement cache coherency.
-> Anyhow, is there an open kernel that has SMP support for
-> PPC405 cores? Does anyone have a suggestions on getting
-> dual PPC405 cores to work under Linux other than having two
-> copies of kernels running? Thanks plenty!
-> 
-> -Eric
-> 
-> _________________________________________________________________
-> Don’t just search. Find. Check out the new MSN Search! 
-> http://search.msn.click-url.com/go/onm00200636ave/direct/01/
-> 
-> 
-> ------------------------------------------------------------------------
-> 
+>
+> Can you provide some information about PowerPC simulators? Which =20
+> one is best?
+>
+> Best Regards
+>
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
