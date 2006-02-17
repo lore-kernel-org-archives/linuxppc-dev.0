@@ -1,20 +1,16 @@
-Return-Path: <mgreer@mvista.com>
-Received: from hermes.mvista.com (unknown [63.81.120.158])
-	by ozlabs.org (Postfix) with ESMTP id C582B679E0
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 9A11F679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Feb 2006 05:12:47 +1100 (EST)
-Date: Fri, 17 Feb 2006 11:12:37 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Phil Nitschke <Phil.Nitschke@avalon.com.au>
-Subject: Re: scatter/gather DMA and cache coherency
-Message-ID: <20060217181237.GG16247@mag.az.mvista.com>
-References: <kw4q2zg45r.fsf@lamorak.int.avalon.com.au>
-	<20060216174655.GC16848@mag.az.mvista.com>
-	<kwaccqbwyw.fsf@lamorak.int.avalon.com.au>
-Mime-Version: 1.0
+	Sat, 18 Feb 2006 06:00:37 +1100 (EST)
+Date: Fri, 17 Feb 2006 14:00:34 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH 2.6.16rc2] SBC82xx - replace NR_SIU_INTS with NR_CPM_INTS
+Message-ID: <20060217190033.GB30822@windriver.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <kwaccqbwyw.fsf@lamorak.int.avalon.com.au>
-Cc: linuxppc-embedded@ozlabs.org
+Cc: p_gortmaker@yahoo.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,78 +21,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Phil,
 
-On Fri, Feb 17, 2006 at 11:52:31AM +1030, Phil Nitschke wrote:
-> >>>>> "MAG" == Mark A Greer <mgreer@mvista.com> writes:
+The SBC82xx was left out of the removal/replacement of NR_SIU_INTS.
 
-<snip>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
->   MAG> It would have been useful if you had given the actual hardware
->   MAG> you're using.
-> 
-> Processor: http://www.artesyncp.com/products/PmPPC7448.html
 
-Okay but since its a ppmc module, the motherboard its installed on would
-be useful info too.  Don't worry about it now, more for future reference.
 
->   MAG> For the record, don't assume that this is Artesyn's fault.
->   MAG> Artesyn says that the erratum workaround is impractical and they
->   MAG> may be right.  I don't know, I just write software...
-> 
-> I don't know either.  I don't have a problem with Artesyn; they've
-> always been nice to me ;-)  Here's what one of their engineers had to
-> say on the topic:
-> 
->   Artesyn> I stated in a previous email that our boards must have the
->   Artesyn> CONFIG_NOT_COHERENT_CACHE option turned on.  This is because
->   Artesyn> or our history with the Discovery family of bridges.
->   Artesyn> Initially it was reported that the hardware cache coherency
->   Artesyn> (snooping) was known to be not functional.  Then at a later
->   Artesyn> date when it was supposed to be fixed, we found that it was
->   Artesyn> not completely dependable so Artesyn has taken a stance to
->   Artesyn> not trust snooping on the Discovery chips and to always use
->   Artesyn> software cache coherency methods.
-
-Yep.  I didn't mean to implicate Artesyn.  Marvell bridges [so far] have
-all had problems with coherency so I definitely believe what's written
-above.
-
->   >> So if I understand my situation correctly, the device driver must
->   >> use software-enforced coherency to avoid data corruption.  Is this
->   >> correct?
-> 
->   MAG> It looks like Eugene is guiding you on this.  Listen to him.  I
->   MAG> will add that you should align your buffers on cacheline
->   MAG> boundaries and make the allocation sizes multiples of the
->   MAG> cacheline size otherwise you could have other data sharing the
->   MAG> first and/or last cacheline of your buffers and mess up your
->   MAG> software cache mgmt.
-> 
-> It might well be that the third party driver isn't enforcing the
-> cacheline boundary alignment.
-
-If it isn't, then you have a bug and it will bite you.
-
-> Artesyn tell me that "it is stated in the
-> MV64460 Users Manual that when interfacing cache coherent DRAM or
-> integrated SRAM, the maximum write burst size must be set to 32 bytes".
-
-Yes, but you [should] have coherency off so this isn't an issue for you.
-
-> So I guess this is that cacheline size?
-
-Correct, the cacheline size of the 7448 is 32 bytes.
-
-> Anyway, we don't see any
-> corruption when the DMA buffer size is 32 bytes, but we do see it for 24
-> bytes, 36 bytes, etc.
-
-This sounds like what I was referring to.  Do you see the problem?
-
-If you have some other data in the same cacheline as your buffers
-(or buffer descriptors) then whenever that other data is read/written
-you have the potential for it to screw up the manual cache mgmt you
-*thought* you did for your buffers/buf desc's.
-
-Mark
+diff -ur orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c
+--- orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c	2006-01-02 22:21:10.000000000 -0500
++++ linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c	2006-02-07 16:22:28.000000000 -0500
+@@ -74,7 +74,7 @@
+ {
+ 	unsigned long flags;
+ 
+-	irq_nr -= NR_SIU_INTS;
++	irq_nr -= NR_CPM_INTS;
+ 
+ 	spin_lock_irqsave(&sbc82xx_i8259_lock, flags);
+ 	sbc82xx_i8259_mask |= 1 << irq_nr;
+@@ -88,7 +88,7 @@
+ {
+ 	unsigned long flags;
+ 
+-	irq_nr -= NR_SIU_INTS;
++	irq_nr -= NR_CPM_INTS;
+ 
+ 	spin_lock_irqsave(&sbc82xx_i8259_lock, flags);
+ 	sbc82xx_i8259_mask |= 1 << irq_nr;
+@@ -100,7 +100,7 @@
+ {
+ 	unsigned long flags;
+ 
+-	irq_nr -= NR_SIU_INTS;
++	irq_nr -= NR_CPM_INTS;
+ 
+ 	spin_lock_irqsave(&sbc82xx_i8259_lock, flags);
+ 	sbc82xx_i8259_mask &= ~(1 << irq_nr);
+@@ -142,7 +142,7 @@
+ 			return IRQ_HANDLED;
+ 		}
+ 	}
+-	__do_IRQ(NR_SIU_INTS + irq, regs);
++	__do_IRQ(NR_CPM_INTS + irq, regs);
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -173,7 +173,7 @@
+ 	}
+ 	
+ 	/* Set up the interrupt handlers for the i8259 IRQs */
+-	for (i = NR_SIU_INTS; i < NR_SIU_INTS + 8; i++) {
++	for (i = NR_CPM_INTS; i < NR_CPM_INTS + 8; i++) {
+                 irq_desc[i].handler = &sbc82xx_i8259_ic;
+ 		irq_desc[i].status |= IRQ_LEVEL;
+ 	}
+diff -ur orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h
+--- orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h	2006-01-02 22:21:10.000000000 -0500
++++ linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h	2006-02-07 14:48:03.000000000 -0500
+@@ -24,13 +24,14 @@
+ 
+ #define BOOTROM_RESTART_ADDR      ((uint)0x40000104)
+ 
+-#define SBC82xx_PC_IRQA (NR_SIU_INTS+0)
+-#define SBC82xx_PC_IRQB (NR_SIU_INTS+1)
+-#define SBC82xx_MPC185_IRQ (NR_SIU_INTS+2)
+-#define SBC82xx_ATM_IRQ (NR_SIU_INTS+3)
+-#define SBC82xx_PIRQA (NR_SIU_INTS+4)
+-#define SBC82xx_PIRQB (NR_SIU_INTS+5)
+-#define SBC82xx_PIRQC (NR_SIU_INTS+6)
+-#define SBC82xx_PIRQD (NR_SIU_INTS+7)
++#define SBC82xx_PC_IRQA		(NR_CPM_INTS+0)
++#define SBC82xx_PC_IRQB		(NR_CPM_INTS+1)
++#define SBC82xx_MPC185_IRQ	(NR_CPM_INTS+2)
++#define SBC82xx_ATM_IRQ		(NR_CPM_INTS+3)
++
++#define SBC82xx_PIRQA		(NR_CPM_INTS+4)
++#define SBC82xx_PIRQB		(NR_CPM_INTS+5)
++#define SBC82xx_PIRQC		(NR_CPM_INTS+6)
++#define SBC82xx_PIRQD		(NR_CPM_INTS+7)
+ 
+ #endif /* __PPC_SBC82xx_H__ */
