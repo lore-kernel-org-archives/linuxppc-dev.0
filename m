@@ -1,23 +1,20 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from xm.dlasys.net (unknown [24.152.213.223])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 28249679F0
+Return-Path: <jeanwelly@126.com>
+Received: from 126.com (m15-111.126.com [220.181.15.111])
+	by ozlabs.org (Postfix) with SMTP id 59FB7679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Feb 2006 19:30:01 +1100 (EST)
-Received: from [206.223.20.50] (port=59424)
-	by xm.dlasys.net with esmtp (Exim 4.60 #1 (Debian))
-	id 1FANIu-0004Wt-Fp
-	for <linuxppc-embedded@ozlabs.org>; Sat, 18 Feb 2006 03:18:56 -0500
-Message-ID: <43F6D8A3.3030907@dlasys.net>
-Date: Sat, 18 Feb 2006 03:19:47 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Instruction Set Simulator
+	Sun, 19 Feb 2006 01:21:41 +1100 (EST)
+Date: Sat, 18 Feb 2006 21:48:17 +0800
+From: "=?utf-8?B?amVhbndlbGx5?=" <jeanwelly@126.com>
+To: "=?utf-8?B?RGF2aWQgSC4gTHluY2ggSnIu?=" <dhlii@dlasys.net>,
+	"=?utf-8?B?bGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw==?="
+	<linuxppc-embedded@ozlabs.org>
 References: <001301c633a5$b4cde290$9e01120a@bilisim.local>
-In-Reply-To: <001301c633a5$b4cde290$9e01120a@bilisim.local>
-Content-Type: text/plain; charset=UTF-8
+	<43F6D8A3.3030907@dlasys.net>
+Subject: =?utf-8?B?UmU6IFJlOiBJbnN0cnVjdGlvbiBTZXQgU2ltdWxhdG9y?=
+Message-ID: <200602182148070938125@126.com>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,46 +26,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-I looked at PearPC running on an X86 and was able to get Debian ppc
-Linux installed on it.
-
-I was looking to use it as a pseudo native platform to do crossplatform
-development.
-The performance was slow. But otherwise it was interesting.
-Eventually I bought a powerbook off eBay cheap.
-
-Most of the time I use cross tools, but now and then it is useful to
-have a running
-PPC based system to sanity check what you are trying to do on the
-embedded system you are developing for.
-Of cource the closer it is to the platform you are developing for the
-better.
-I thought about modifying PearPc to emulate my hardware, but it looked
-too much like wark and no one was paying for it. The idea is still
-somewhat intriguing. developing for an embedded system on a software
-emulator for that system. Yes, I know that is not an new idea.
-
-
-
-
-Mustafa Çayır wrote:
-
->Hi all,
->
->Can you provide some information about PowerPC simulators? Which one is best? 
->
->Best Regards
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->  
->
-
--- 
-Dave Lynch 						DLA Systems
-Software Development:  				     Embedded Linux
-717.627.3770 	     dhlii@dlasys.net 	      http://www.dlasys.net
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+SGksICBBbGwNClNlZW1zICBQZWFyUEMgIGlzICBiaWcgIHBhY2thZ2UsICBpcyAgdGhlcmUgIGFu
+eSAgc21hbGwgIG9uZSAgYXMgIHNpbXVsYXRvciAgd2hpY2ggIGNhbiAgYmUgIHVzZSAgaW4gIExp
+bnV4ICBvciAgV2luPyAgVGhhbmsgIHlvdSEgDQoNCi0tLS0tLS0tLS0tLS0tLS0tLS0NCg0KPg0K
+PkkgIGxvb2tlZCAgYXQgIFBlYXJQQyAgcnVubmluZyAgb24gIGFuICBYODYgIGFuZCAgd2FzICBh
+YmxlICB0byAgZ2V0ICBEZWJpYW4gIHBwYw0KPkxpbnV4ICBpbnN0YWxsZWQgIG9uICBpdC4NCj4N
+Cj5JICB3YXMgIGxvb2tpbmcgIHRvICB1c2UgIGl0ICBhcyAgYSAgcHNldWRvICBuYXRpdmUgIHBs
+YXRmb3JtICB0byAgZG8gIGNyb3NzcGxhdGZvcm0NCj5kZXZlbG9wbWVudC4NCj5UaGUgIHBlcmZv
+cm1hbmNlICB3YXMgIHNsb3cuICBCdXQgIG90aGVyd2lzZSAgaXQgIHdhcyAgaW50ZXJlc3Rpbmcu
+DQo+RXZlbnR1YWxseSAgSSAgYm91Z2h0ICBhICBwb3dlcmJvb2sgIG9mZiAgZUJheSAgY2hlYXAu
+DQo+DQo+TW9zdCAgb2YgIHRoZSAgdGltZSAgSSAgdXNlICBjcm9zcyAgdG9vbHMsICBidXQgIG5v
+dyAgYW5kICB0aGVuICBpdCAgaXMgIHVzZWZ1bCAgdG8NCj5oYXZlICBhICBydW5uaW5nDQo+UFBD
+ICBiYXNlZCAgc3lzdGVtICB0byAgc2FuaXR5ICBjaGVjayAgd2hhdCAgeW91ICBhcmUgIHRyeWlu
+ZyAgdG8gIGRvICBvbiAgdGhlDQo+ZW1iZWRkZWQgIHN5c3RlbSAgeW91ICBhcmUgIGRldmVsb3Bp
+bmcgIGZvci4NCj5PZiAgY291cmNlICB0aGUgIGNsb3NlciAgaXQgIGlzICB0byAgdGhlICBwbGF0
+Zm9ybSAgeW91ICBhcmUgIGRldmVsb3BpbmcgIGZvciAgdGhlDQo+YmV0dGVyLg0KPkkgIHRob3Vn
+aHQgIGFib3V0ICBtb2RpZnlpbmcgIFBlYXJQYyAgdG8gIGVtdWxhdGUgIG15ICBoYXJkd2FyZSwg
+IGJ1dCAgaXQgIGxvb2tlZA0KPnRvbyAgbXVjaCAgbGlrZSAgd2FyayAgYW5kICBubyAgb25lICB3
+YXMgIHBheWluZyAgZm9yICBpdC4gIFRoZSAgaWRlYSAgaXMgIHN0aWxsDQo+c29tZXdoYXQgIGlu
+dHJpZ3VpbmcuICBkZXZlbG9waW5nICBmb3IgIGFuICBlbWJlZGRlZCAgc3lzdGVtICBvbiAgYSAg
+c29mdHdhcmUNCj5lbXVsYXRvciAgZm9yICB0aGF0ICBzeXN0ZW0uICBZZXMsICBJICBrbm93ICB0
+aGF0ICBpcyAgbm90ICBhbiAgbmV3ICBpZGVhLg0KPg0KPg0KPg0KPg0KPk11c3RhZmEgIMOHYXnE
+sXIgIHdyb3RlOg0KPg0KPiA+SGkgIGFsbCwNCj4gPg0KPiA+Q2FuICB5b3UgIHByb3ZpZGUgIHNv
+bWUgIGluZm9ybWF0aW9uICBhYm91dCAgUG93ZXJQQyAgc2ltdWxhdG9ycz8gIFdoaWNoICBvbmUg
+IGlzICBiZXN0PyAgDQo+ID4NCj4gPkJlc3QgIFJlZ2FyZHMNCj4gPg0KPiA+X19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCj4gPkxpbnV4cHBjLWVtYmVkZGVk
+ICBtYWlsaW5nICBsaXN0DQo+ID5MaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQo+ID5odHRw
+czovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZA0KPiA+DQo+
+ID4gICAgDQo+ID4NCj4NCj4tLSAgDQo+RGF2ZSAgTHluY2ggICBETEEgIFN5c3RlbXMNCj5Tb2Z0
+d2FyZSAgRGV2ZWxvcG1lbnQ6ICAgICAgICAgICAgICBFbWJlZGRlZCAgTGludXgNCj43MTcuNjI3
+LjM3NzAgICAgICAgICAgICBkaGxpaUBkbGFzeXMubmV0ICAgICAgICAgICAgICBodHRwOi8vd3d3
+LmRsYXN5cy5uZXQNCj5PdmVyICAyNSAgeWVhcnMnICBleHBlcmllbmNlICBpbiAgcGxhdGZvcm1z
+LCAgbGFuZ3VhZ2VzLCAgYW5kICB0ZWNobm9sb2dpZXMgIHRvbyAgbnVtZXJvdXMgIHRvICBsaXN0
+Lg0KPg0KPl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+
+TGludXhwcGMtZW1iZWRkZWQgIG1haWxpbmcgIGxpc3QNCj5MaW51eHBwYy1lbWJlZGRlZEBvemxh
+YnMub3JnDQo+aHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1i
+ZWRkZWQNCg0KPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAg
+PSAgPSAgPSAgPQ0KDQrjgIDjgIDjgIDjgIDjgIDjgIDjgIDjgIDoh7QNCuekvO+8gQ0KDQoNCuOA
+gOOAgOOAgOOAgOOAgOOAgOOAgOOAgGplYW53ZWxseQ0K44CA44CA44CA44CA44CA44CA44CA44CA
+amVhbndlbGx5QDEyNi5jb20NCuOAgOOAgOOAgOOAgOOAgOOAgOOAgOOAgOOAgOOAgDIwMDYtMDIt
+MTgNCg==
