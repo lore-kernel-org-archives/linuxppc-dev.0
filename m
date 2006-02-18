@@ -1,20 +1,16 @@
-Return-Path: <jeanwelly@126.com>
-Received: from 126.com (m15-111.126.com [220.181.15.111])
-	by ozlabs.org (Postfix) with SMTP id 59FB7679E1
+Return-Path: <Horst.KRONSTORFER@frequentis.com>
+Received: from webmail.frequentis.com (webmail.frequentis.com [213.47.210.151])
+	by ozlabs.org (Postfix) with ESMTP id A1996679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 19 Feb 2006 01:21:41 +1100 (EST)
-Date: Sat, 18 Feb 2006 21:48:17 +0800
-From: "=?utf-8?B?amVhbndlbGx5?=" <jeanwelly@126.com>
-To: "=?utf-8?B?RGF2aWQgSC4gTHluY2ggSnIu?=" <dhlii@dlasys.net>,
-	"=?utf-8?B?bGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw==?="
-	<linuxppc-embedded@ozlabs.org>
-References: <001301c633a5$b4cde290$9e01120a@bilisim.local>
-	<43F6D8A3.3030907@dlasys.net>
-Subject: =?utf-8?B?UmU6IFJlOiBJbnN0cnVjdGlvbiBTZXQgU2ltdWxhdG9y?=
-Message-ID: <200602182148070938125@126.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
+	Sat, 18 Feb 2006 21:26:34 +1100 (EST)
+Subject: [PATCH] Fix BCSR_SIZE for MPC834xSYS
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C63474.13781EC9"
+Date: Sat, 18 Feb 2006 11:13:08 +0100
+Message-ID: <C5BA91F04186584EB68FD42BB4993E6B5615B5@FRQWOLEX01.frequentis.frq>
+From: "KRONSTORFER Horst" <Horst.KRONSTORFER@frequentis.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,44 +21,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-SGksICBBbGwNClNlZW1zICBQZWFyUEMgIGlzICBiaWcgIHBhY2thZ2UsICBpcyAgdGhlcmUgIGFu
-eSAgc21hbGwgIG9uZSAgYXMgIHNpbXVsYXRvciAgd2hpY2ggIGNhbiAgYmUgIHVzZSAgaW4gIExp
-bnV4ICBvciAgV2luPyAgVGhhbmsgIHlvdSEgDQoNCi0tLS0tLS0tLS0tLS0tLS0tLS0NCg0KPg0K
-PkkgIGxvb2tlZCAgYXQgIFBlYXJQQyAgcnVubmluZyAgb24gIGFuICBYODYgIGFuZCAgd2FzICBh
-YmxlICB0byAgZ2V0ICBEZWJpYW4gIHBwYw0KPkxpbnV4ICBpbnN0YWxsZWQgIG9uICBpdC4NCj4N
-Cj5JICB3YXMgIGxvb2tpbmcgIHRvICB1c2UgIGl0ICBhcyAgYSAgcHNldWRvICBuYXRpdmUgIHBs
-YXRmb3JtICB0byAgZG8gIGNyb3NzcGxhdGZvcm0NCj5kZXZlbG9wbWVudC4NCj5UaGUgIHBlcmZv
-cm1hbmNlICB3YXMgIHNsb3cuICBCdXQgIG90aGVyd2lzZSAgaXQgIHdhcyAgaW50ZXJlc3Rpbmcu
-DQo+RXZlbnR1YWxseSAgSSAgYm91Z2h0ICBhICBwb3dlcmJvb2sgIG9mZiAgZUJheSAgY2hlYXAu
-DQo+DQo+TW9zdCAgb2YgIHRoZSAgdGltZSAgSSAgdXNlICBjcm9zcyAgdG9vbHMsICBidXQgIG5v
-dyAgYW5kICB0aGVuICBpdCAgaXMgIHVzZWZ1bCAgdG8NCj5oYXZlICBhICBydW5uaW5nDQo+UFBD
-ICBiYXNlZCAgc3lzdGVtICB0byAgc2FuaXR5ICBjaGVjayAgd2hhdCAgeW91ICBhcmUgIHRyeWlu
-ZyAgdG8gIGRvICBvbiAgdGhlDQo+ZW1iZWRkZWQgIHN5c3RlbSAgeW91ICBhcmUgIGRldmVsb3Bp
-bmcgIGZvci4NCj5PZiAgY291cmNlICB0aGUgIGNsb3NlciAgaXQgIGlzICB0byAgdGhlICBwbGF0
-Zm9ybSAgeW91ICBhcmUgIGRldmVsb3BpbmcgIGZvciAgdGhlDQo+YmV0dGVyLg0KPkkgIHRob3Vn
-aHQgIGFib3V0ICBtb2RpZnlpbmcgIFBlYXJQYyAgdG8gIGVtdWxhdGUgIG15ICBoYXJkd2FyZSwg
-IGJ1dCAgaXQgIGxvb2tlZA0KPnRvbyAgbXVjaCAgbGlrZSAgd2FyayAgYW5kICBubyAgb25lICB3
-YXMgIHBheWluZyAgZm9yICBpdC4gIFRoZSAgaWRlYSAgaXMgIHN0aWxsDQo+c29tZXdoYXQgIGlu
-dHJpZ3VpbmcuICBkZXZlbG9waW5nICBmb3IgIGFuICBlbWJlZGRlZCAgc3lzdGVtICBvbiAgYSAg
-c29mdHdhcmUNCj5lbXVsYXRvciAgZm9yICB0aGF0ICBzeXN0ZW0uICBZZXMsICBJICBrbm93ICB0
-aGF0ICBpcyAgbm90ICBhbiAgbmV3ICBpZGVhLg0KPg0KPg0KPg0KPg0KPk11c3RhZmEgIMOHYXnE
-sXIgIHdyb3RlOg0KPg0KPiA+SGkgIGFsbCwNCj4gPg0KPiA+Q2FuICB5b3UgIHByb3ZpZGUgIHNv
-bWUgIGluZm9ybWF0aW9uICBhYm91dCAgUG93ZXJQQyAgc2ltdWxhdG9ycz8gIFdoaWNoICBvbmUg
-IGlzICBiZXN0PyAgDQo+ID4NCj4gPkJlc3QgIFJlZ2FyZHMNCj4gPg0KPiA+X19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCj4gPkxpbnV4cHBjLWVtYmVkZGVk
-ICBtYWlsaW5nICBsaXN0DQo+ID5MaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQo+ID5odHRw
-czovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eHBwYy1lbWJlZGRlZA0KPiA+DQo+
-ID4gICAgDQo+ID4NCj4NCj4tLSAgDQo+RGF2ZSAgTHluY2ggICBETEEgIFN5c3RlbXMNCj5Tb2Z0
-d2FyZSAgRGV2ZWxvcG1lbnQ6ICAgICAgICAgICAgICBFbWJlZGRlZCAgTGludXgNCj43MTcuNjI3
-LjM3NzAgICAgICAgICAgICBkaGxpaUBkbGFzeXMubmV0ICAgICAgICAgICAgICBodHRwOi8vd3d3
-LmRsYXN5cy5uZXQNCj5PdmVyICAyNSAgeWVhcnMnICBleHBlcmllbmNlICBpbiAgcGxhdGZvcm1z
-LCAgbGFuZ3VhZ2VzLCAgYW5kICB0ZWNobm9sb2dpZXMgIHRvbyAgbnVtZXJvdXMgIHRvICBsaXN0
-Lg0KPg0KPl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+
-TGludXhwcGMtZW1iZWRkZWQgIG1haWxpbmcgIGxpc3QNCj5MaW51eHBwYy1lbWJlZGRlZEBvemxh
-YnMub3JnDQo+aHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1i
-ZWRkZWQNCg0KPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAgPSAg
-PSAgPSAgPSAgPQ0KDQrjgIDjgIDjgIDjgIDjgIDjgIDjgIDjgIDoh7QNCuekvO+8gQ0KDQoNCuOA
-gOOAgOOAgOOAgOOAgOOAgOOAgOOAgGplYW53ZWxseQ0K44CA44CA44CA44CA44CA44CA44CA44CA
-amVhbndlbGx5QDEyNi5jb20NCuOAgOOAgOOAgOOAgOOAgOOAgOOAgOOAgOOAgOOAgDIwMDYtMDIt
-MTgNCg==
+------_=_NextPart_001_01C63474.13781EC9
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+hi!
+
+according to the 'MPC8349E MDS Processor Board User Manual Rev. 1.6 =
+12/2005'
+(table 3-1, p. 28) the size of the BCSR mapping is 32kb.
+
+Signed-off-by: Horst Kronstorfer <hkronsto@frequentis.com>
+
+ arch/ppc/platforms/83xx/mpc834x_sys.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.h
+b/arch/ppc/platforms/83xx/mpc
+834x_sys.h
+index aa86c22..6727bbd 100644
+--- a/arch/ppc/platforms/83xx/mpc834x_sys.h
++++ b/arch/ppc/platforms/83xx/mpc834x_sys.h
+@@ -23,7 +23,7 @@
+ #define VIRT_IMMRBAR           ((uint)0xfe000000)
+=20
+ #define BCSR_PHYS_ADDR         ((uint)0xf8000000)
+-#define BCSR_SIZE              ((uint)(128 * 1024))
++#define BCSR_SIZE              ((uint)(32 * 1024))
+=20
+ #define BCSR_MISC_REG2_OFF     0x07
+ #define BCSR_MISC_REG2_PORESET 0x01
+
+-h
+
+
+------_=_NextPart_001_01C63474.13781EC9
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7638.1">
+<TITLE>[PATCH] Fix BCSR_SIZE for MPC834xSYS</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>hi!<BR>
+<BR>
+according to the 'MPC8349E MDS Processor Board User Manual Rev. 1.6 =
+12/2005'<BR>
+(table 3-1, p. 28) the size of the BCSR mapping is 32kb.<BR>
+<BR>
+Signed-off-by: Horst Kronstorfer &lt;hkronsto@frequentis.com&gt;<BR>
+<BR>
+&nbsp;arch/ppc/platforms/83xx/mpc834x_sys.h |&nbsp;&nbsp;&nbsp; 2 +-<BR>
+&nbsp;1 files changed, 1 insertions(+), 1 deletions(-)<BR>
+<BR>
+diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.h =
+b/arch/ppc/platforms/83xx/mpc<BR>
+834x_sys.h<BR>
+index aa86c22..6727bbd 100644<BR>
+--- a/arch/ppc/platforms/83xx/mpc834x_sys.h<BR>
++++ b/arch/ppc/platforms/83xx/mpc834x_sys.h<BR>
+@@ -23,7 +23,7 @@<BR>
+&nbsp;#define =
+VIRT_IMMRBAR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+((uint)0xfe000000)<BR>
+<BR>
+&nbsp;#define =
+BCSR_PHYS_ADDR&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+((uint)0xf8000000)<BR>
+-#define =
+BCSR_SIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp; ((uint)(128 * 1024))<BR>
++#define =
+BCSR_SIZE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp; ((uint)(32 * 1024))<BR>
+<BR>
+&nbsp;#define BCSR_MISC_REG2_OFF&nbsp;&nbsp;&nbsp;&nbsp; 0x07<BR>
+&nbsp;#define BCSR_MISC_REG2_PORESET 0x01<BR>
+<BR>
+-h<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C63474.13781EC9--
