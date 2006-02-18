@@ -1,16 +1,23 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id 38627679F2
+Return-Path: <dhlii@dlasys.net>
+Received: from xm.dlasys.net (unknown [24.152.213.223])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 28249679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Feb 2006 10:37:35 +1100 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Fri, 17 Feb 2006 16:37:33 -0700
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: ppc32: mpc85xx: set pcibios_fixup only #ifdef CONFIG_PCI
-Message-ID: <20060217233733.GA30701@xyzzy.farnsworth.org>
+	Sat, 18 Feb 2006 19:30:01 +1100 (EST)
+Received: from [206.223.20.50] (port=59424)
+	by xm.dlasys.net with esmtp (Exim 4.60 #1 (Debian))
+	id 1FANIu-0004Wt-Fp
+	for <linuxppc-embedded@ozlabs.org>; Sat, 18 Feb 2006 03:18:56 -0500
+Message-ID: <43F6D8A3.3030907@dlasys.net>
+Date: Sat, 18 Feb 2006 03:19:47 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Instruction Set Simulator
+References: <001301c633a5$b4cde290$9e01120a@bilisim.local>
+In-Reply-To: <001301c633a5$b4cde290$9e01120a@bilisim.local>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,35 +28,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-From: Dale Farnsworth <dale@farnsworth.org>
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
----
+I looked at PearPC running on an X86 and was able to get Debian ppc
+Linux installed on it.
 
- arch/ppc/platforms/85xx/mpc85xx_cds_common.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+I was looking to use it as a pseudo native platform to do crossplatform
+development.
+The performance was slow. But otherwise it was interesting.
+Eventually I bought a powerbook off eBay cheap.
 
-Index: linux-2.6.10/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-===================================================================
---- linux-2.6.10.orig/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-+++ linux-2.6.10/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
-@@ -456,9 +456,6 @@ mpc85xx_cds_setup_arch(void)
- 	mtspr(SPRN_DBCR0, (DBCR0_IDM));
- 	mtspr(SPRN_DBSR, 0xffffffff);
- #endif
--
-- 	/* VIA IDE configuration */
--         ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
-  
- #ifdef CONFIG_CPM2
- 	cpm2_reset();
-@@ -480,6 +477,9 @@ mpc85xx_cds_setup_arch(void)
-         loops_per_jiffy = freq / HZ;
- 
- #ifdef CONFIG_PCI
-+ 	/* VIA IDE configuration */
-+         ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
-+
-         /* setup PCI host bridges */
-         mpc85xx_setup_hose();
- #endif
+Most of the time I use cross tools, but now and then it is useful to
+have a running
+PPC based system to sanity check what you are trying to do on the
+embedded system you are developing for.
+Of cource the closer it is to the platform you are developing for the
+better.
+I thought about modifying PearPc to emulate my hardware, but it looked
+too much like wark and no one was paying for it. The idea is still
+somewhat intriguing. developing for an embedded system on a software
+emulator for that system. Yes, I know that is not an new idea.
+
+
+
+
+Mustafa Çayır wrote:
+
+>Hi all,
+>
+>Can you provide some information about PowerPC simulators? Which one is best? 
+>
+>Best Regards
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>  
+>
+
+-- 
+Dave Lynch 						DLA Systems
+Software Development:  				     Embedded Linux
+717.627.3770 	     dhlii@dlasys.net 	      http://www.dlasys.net
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
