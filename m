@@ -1,18 +1,16 @@
-Return-Path: <markc@mail.com>
-Received: from smtp1.us4.outblaze.com (smtp1.us4.outblaze.com [205.158.62.78])
-	by ozlabs.org (Postfix) with SMTP id 937C5679E6
+Return-Path: <s.egbert@sbcglobal.net>
+Received: from smtp103.sbc.mail.mud.yahoo.com (smtp103.sbc.mail.mud.yahoo.com
+	[68.142.198.202]) by ozlabs.org (Postfix) with SMTP id 92424679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 19 Feb 2006 11:15:05 +1100 (EST)
-Message-ID: <001301c634cd$c2989f40$6401a8c0@CHUCK2>
-From: "Mark Chambers" <markc@mail.com>
-To: "jeanwelly" <jeanwelly@126.com>,
-	<linuxppc-embedded@ozlabs.org>
-References: <001301c633a5$b4cde290$9e01120a@bilisim.local><43F6D8A3.3030907@dlasys.net>
-	<200602182148070938125@126.com>
-Subject: Re: Re: Instruction Set Simulator
-Date: Sat, 18 Feb 2006 15:56:14 -0500
+	Sun, 19 Feb 2006 12:32:15 +1100 (EST)
+Message-ID: <43F7CB11.5000202@sbcglobal.net>
+Date: Sat, 18 Feb 2006 17:34:09 -0800
+From: "S. Egbert" <s.egbert@sbcglobal.net>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="utf-8"; reply-type=original
+To: linuxppc-embedded@ozlabs.org
+Subject: Virtex-4 TEMAC device driver available?
+References: 93579fec0601170146h5363e65bt410276b8b696588f@mail.gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,13 +21,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Dear Kashiwagi-San,
 
+I noticed in your posting over at linuxppc-embedded in Jan 2006 about a
+Xilinx demo code for the TEMAC driver.
 
-> Hi,  All
-> Seems  PearPC  is  big  package,  is  there  any  small  one  as 
-> simulator  which  can  be  use  in  Linux  or  Win?  Thank  you!
->
+So, I pulled the
+http://www.xilinx.co.jp/ise/embedded/EDK/71i/mpmc_7_1_2.zip file and
+browsed it.
 
-I've never tried it myself, but isn't there 'target sim' under gdb?
+Do you know where one can get a patch for Linux 2.4?
 
-Mark C. 
+Thank you,
+
+Steve Egbert
+
+-- 
+-----BEGIN GEEK CODE BLOCK-----
+Version: 3.12
+GAT d- s++: !a C+++ UL++++ P+++ L+++ E W+++ N+ o++ K+++ w--
+O- M+ V- PS PE++ Y+ PGP++ t++ 5++ X++ R tv- b++ DI+ D+
+G++ e* h++ r+++ z
+------END GEEK CODE BLOCK------
+GPG Public Key: http://www.egbert.net/pgp
