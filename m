@@ -1,15 +1,15 @@
 Return-Path: <s.egbert@sbcglobal.net>
-Received: from smtp103.sbc.mail.mud.yahoo.com (smtp103.sbc.mail.mud.yahoo.com
-	[68.142.198.202]) by ozlabs.org (Postfix) with SMTP id 92424679EF
+Received: from smtp101.sbc.mail.mud.yahoo.com (smtp101.sbc.mail.mud.yahoo.com
+	[68.142.198.200]) by ozlabs.org (Postfix) with SMTP id 556D4679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 19 Feb 2006 12:32:15 +1100 (EST)
-Message-ID: <43F7CB11.5000202@sbcglobal.net>
-Date: Sat, 18 Feb 2006 17:34:09 -0800
+	Sun, 19 Feb 2006 12:34:34 +1100 (EST)
+Message-ID: <43F7CB99.8030409@sbcglobal.net>
+Date: Sat, 18 Feb 2006 17:36:25 -0800
 From: "S. Egbert" <s.egbert@sbcglobal.net>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
 Subject: Virtex-4 TEMAC device driver available?
-References: 93579fec0601170146h5363e65bt410276b8b696588f@mail.gmail.com
+References: JX2006011720543423.44411640@co-nss.co.jp
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,21 +21,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Kashiwagi-San,
+Dear Mr. Lynch,
 
-I noticed in your posting over at linuxppc-embedded in Jan 2006 about a
-Xilinx demo code for the TEMAC driver.
+I noticed your posting on Linux PPC embedded news list in Jan 2006 about
+the TEMAC driver for Linux.
 
-So, I pulled the
-http://www.xilinx.co.jp/ise/embedded/EDK/71i/mpmc_7_1_2.zip file and
+So, I pulled a copy of Xilinx driver
+(http://www.xilinx.co.jp/ise/embedded/EDK/71i/mpmc_7_1_2.zip) and
 browsed it.
 
-Do you know where one can get a patch for Linux 2.4?
+Did you have any luck thus far with the Linux 2.4 patch?
 
-Thank you,
+Coordially,
 
+Steve
+---
 Steve Egbert
-
 -- 
 -----BEGIN GEEK CODE BLOCK-----
 Version: 3.12
