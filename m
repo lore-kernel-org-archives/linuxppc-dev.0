@@ -1,17 +1,22 @@
-Return-Path: <hans.schillstrom@commet.se>
-Received: from proxy.commet.se (unknown [213.204.187.35])
-	by ozlabs.org (Postfix) with ESMTP id 4D435679F0
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2006 23:22:29 +1100 (EST)
-Received: from skalman.commet.se (unknown [172.23.1.1])
-	by proxy.commet.se (Postfix) with ESMTP id 8FF851F2AB
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2006 12:56:32 +0100 (CET)
-Subject: Broken pcmcia on m8xx.
-From: Hans Schillstrom <hans@commet.se>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Mon, 20 Feb 2006 12:24:40 +0100
-Message-Id: <1140434681.2801.45.camel@localhost.localdomain>
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 557FC679FF
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Feb 2006 05:39:42 +1100 (EST)
+Received: from Relay1.suse.de (mail2.suse.de [195.135.221.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mx1.suse.de (Postfix) with ESMTP id E59D1E250
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2006 19:39:36 +0100 (CET)
+Date: Mon, 20 Feb 2006 19:39:36 +0100
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] change compat shmget size arg to signed
+Message-ID: <20060220183936.GA31091@suse.de>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,94 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello
-I'm trying to get a flash disk working with 2.6.15 kernel 
-on a TQM860L board.( With 2.4.25 it works perfect.)
 
-I added a printk in ide-probe.c to see the result from IDE_SELECT_REG
-and it was 0xff ...
-Does any one has an idea where to start searching or knows what is
-wrong ? 
+change second arg (the 'size') to signed to handle a size of -1.
+ltp test shmget02 fails. This patch fixes it.
+Oddly, we see the failure only on a POWER4 LPAR with 4.6G ram.
 
-Added some printouts from u-boot, linux 2.4.25 and 2.6.15
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-/Hans
+ arch/powerpc/kernel/sys_ppc32.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-U-BOOT Startup message:
-=======================
-PCMCIA: 3.3V card found: SanDisk SDP 5/3 0.6
-            Fixed Disk Card
-            IDE interface
-            [silicon] [unique] [single] [sleep] [standby] [idle] [low
-power]
-Bus 0: OK
-  Device 0: Model: SanDisk SDCFB-1024 Firm: Rev 0.00 Ser#: X0406
-20050813225551
-            Type: Removable Hard Disk
-            Capacity: 977.4 MB = 0.9 GB (2001888 x 512)
-
-Kernel 2.4.25 Startup:
-======================
-Uniform Multi-Platform E-IDE driver Revision: 7.00beta4-2.4
-ide: Assuming 50MHz system bus speed for PIO modes; override with
-idebus=xx
-PCMCIA slot B: phys mem e0000000...ec000000 (size 0c000000)
-Card ID: SanDisk SDP 5/3 0.6
- Fixed Disk Card
- IDE interface
- [silicon] [unique] [single] [sleep] [standby] [idle] [low power]
-Probing IDE interface ide0...
-hda: probing with STATUS(0x50) instead of ALTSTATUS(0xf6)
-hda: SanDisk SDCFB-1024, CFA DISK drive
-hdb: probing with STATUS(0x50) instead of ALTSTATUS(0xf6)
-hdb: probing with STATUS(0x50) instead of ALTSTATUS(0xf6)
-hdb: probing with STATUS(0x50) instead of ALTSTATUS(0xf6)
-hdb: probing with STATUS(0x50) instead of ALTSTATUS(0xf6)
-ide0 at 0x460df320-0x460df327,0x420df106 on irq 13
-hda: attached ide-disk driver.
-hda: 2001888 sectors (1025 MB) w/1KiB Cache, CHS=1986/16/63
-Partition check:
- hda: [PTBL] [993/32/63] hda1
-TQM8xxL Bank 0: Found 2 x16 devices at 0x400000 in 32-bit mode
-
-
-Kernel 2.6.15 startup:
-========================
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 50MHz system bus speed for PIO modes; override with
-idebus=xx
-init_hwif_default()
-PCMCIA slot B: phys mem e0000000...ec000000 (size 0c000000)
-Card ID: SanDisk SDP 5/3 0.6
- Fixed Disk Card
- IDE interface
- [silicon] [unique] [single] [sleep] [standby] [idle] [low power]
-probing for hda: present=0, media=32, probetype=ATA
-do_probe(ret:255)
-
-
-Here is the my small modification of do_probe.
-
-
-static int do_probe (ide_drive_t *drive, u8 cmd)
-{
-...
-	/* needed for some systems
-	 * (e.g. crw9624 as drive0 with disk as slave)
-	 */
-	ide_delay_50ms();
-	SELECT_DRIVE(drive);
-	ide_delay_50ms();
-	printk("do_probe(inb:%d)\n",hwif->INB(IDE_SELECT_REG));
-	if (hwif->INB(IDE_SELECT_REG) != drive->select.all && !drive->present)
-{
-		if (drive->select.b.unit != 0) {
-			/* exit with drive0 selected */
-			SELECT_DRIVE(&hwif->drives[0]);
-			/* allow BUSY_STAT to assert & clear */
-			ide_delay_50ms();
-		}
-		/* no i/f present: mmm.. this should be a 4 -ml */
-		return 3;
-	}
-...
+Index: linux-2.6.16-rc4-olh/arch/powerpc/kernel/sys_ppc32.c
+===================================================================
+--- linux-2.6.16-rc4-olh.orig/arch/powerpc/kernel/sys_ppc32.c
++++ linux-2.6.16-rc4-olh/arch/powerpc/kernel/sys_ppc32.c
+@@ -429,7 +429,7 @@ long compat_sys_ipc(u32 call, u32 first,
+ 		return sys_shmdt(compat_ptr(ptr));
+ 	case SHMGET:
+ 		/* sign extend key_t */
+-		return sys_shmget((int)first, second, third);
++		return sys_shmget((int)first, (int)second, third);
+ 	case SHMCTL:
+ 		/* sign extend shmid */
+ 		return compat_sys_shmctl((int)first, second, compat_ptr(ptr));
