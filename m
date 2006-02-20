@@ -1,14 +1,14 @@
 Return-Path: <bkartal@aselsan.com.tr>
 Received: from turunc.aselsan.com.tr (mail.aselsan.com.tr [212.50.56.228])
-	by ozlabs.org (Postfix) with ESMTP id 8F11F679F3
+	by ozlabs.org (Postfix) with ESMTP id EBE8867A5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Feb 2006 00:38:45 +1100 (EST)
+	Tue, 21 Feb 2006 00:39:58 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-9"
-Subject: 
-Date: Mon, 20 Feb 2006 15:39:14 +0200
-Message-ID: <C379193B17749F4BA82ABF87E7DCB6A62CF0D3@papatyaint.aselsan.com.tr>
+Subject: MVME5100  Exception: Program (Illegal Instruction)
+Date: Mon, 20 Feb 2006 15:39:35 +0200
+Message-ID: <C379193B17749F4BA82ABF87E7DCB6A62CF0D4@papatyaint.aselsan.com.tr>
 From: "Bora KARTAL" <bkartal@aselsan.com.tr>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -21,6 +21,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+=20
 Hi,
 
 I am trying to run linuxppc 2.4.20 with a nfs mounted root file system on=
