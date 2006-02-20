@@ -1,15 +1,19 @@
-Return-Path: <bkartal@aselsan.com.tr>
-Received: from turunc.aselsan.com.tr (mail.aselsan.com.tr [212.50.56.228])
-	by ozlabs.org (Postfix) with ESMTP id EBE8867A5B
+Return-Path: <Bjorn.Ostby@combitech.se>
+Received: from ms-101.aerotechtelub.se (ms-101.aerotechtelub.se
+	[192.176.33.163]) by ozlabs.org (Postfix) with ESMTP id 9575267A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Feb 2006 00:39:58 +1100 (EST)
+	Tue, 21 Feb 2006 00:47:30 +1100 (EST)
+Received: from ratatosk.combitechsystems.com (unverified) by
+	ms-101.aerotechtelub.se (Clearswift SMTPRS 5.2.3) with ESMTP id
+	<T76944d7320c0b021a3824@ms-101.aerotechtelub.se> for
+	<linuxppc-embedded@ozlabs.org>; Mon, 20 Feb 2006 14:37:24 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-9"
-Subject: MVME5100  Exception: Program (Illegal Instruction)
-Date: Mon, 20 Feb 2006 15:39:35 +0200
-Message-ID: <C379193B17749F4BA82ABF87E7DCB6A62CF0D4@papatyaint.aselsan.com.tr>
-From: "Bora KARTAL" <bkartal@aselsan.com.tr>
+	charset="iso-8859-1"
+Subject: SCCx UART status on 8xx
+Date: Mon, 20 Feb 2006 14:37:23 +0100
+Message-ID: <004B1D7A5257174C9044A1B7BD0E60ED0178CC4F@ratatosk.combitechsystems.com>
+From: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitech.se>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -21,69 +25,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-=20
-Hi,
+Hello,
+I'm messing with a mpc823e based board trying to enable the SCC3 UART. =
+I'm using the 2.4.25 denx linux_ppc kernel and I've got SMC1 for console =
+and SMC2 up and running but I'm in desperate need of another rs232 port =
+(which is on SCC3 on my board).=20
+Reading quite a lot of old posts on this mailing list got me confused =
+whether the SCCx UART support in the kernel is ready to be used on 8xx =
+or if there will take a large amount of hacking to get things going =
+(reading the header of 8xx_io/uart.c got me wondering even more).
+Current situation is that I have enabled the SCC3 UART in the kernel, =
+set the correct CTS, RTS and CD signal options and finally disabled the =
+SPI which (on my board at least) can override the UART on the third SCC =
+port. During boot up I get the standard output:
 
-I am trying to run linuxppc 2.4.20 with a nfs mounted root file system on=
-=20a Motorolla MVME5100 board with a PowerPC 7410 processor. When I used =
-the default kernel =FDmage sh=FDpped with MontaVista Linux development ki=
-t, it boots up and works fine. But when I build up a custom kernel I am g=
-etting the following exception during bootup.
+>ttyS0 at 0x0280 is on SMC1 using BRG1
+>ttyS1 at 0x0380 is on SMC2 using BRG2
+>ttyS2 at 0x0200 is on SCC3 using BRG3
 
-=20
+Writing to ttyS0 and ttyS1 works fine (the result pop up in the =
+receiving terminal) but when trying ttyS2 nothing happens. I've checked =
+the Tx signal and it appears as if data is sent (the signal gets noisy =
+when starting the write procedure). I may also add that restaring the =
+write application causes the kernel to hang (for ttyS2 only of course).
 
-Residual-Data Located at: $1FE9077C
+I've read some posts saying that Linux don't init other uart ports than =
+the console port and that is the potential problem here, but it is =
+unclear if this statement is true or not. I can also add to the problem =
+description that my SMC2 port works fine for writing, but reading just =
+hangs in the read() call. So, can anyone confirm any status on the SMCx =
+and SCCx UART drivers for 2.4?
 
-Exception: Program (Illegal Instruction)
-
-SRR0 =3D00005000 SRR1 =3D00083040 Vector-Offset =3D00700
-
-IP =3D00005000 MSR =3D00003040 CR =3D00000000 FPSCR =3D00000000
-
-R0 =3D00000000 R1 =3D1FE00000 R2 =3D00000000 R3 =3D1FE9077C
-
-R4 =3D00005000 R5 =3D00000000 R6 =3D00000000 R7 =3D00000000
-
-R8 =3D00000000 R9 =3D00000000 R10 =3D00000000 R11 =3D00000000
-
-R12 =3D00000000 R13 =3D00000000 R14 =3D00000000 R15 =3D00000000
-
-R16 =3D00000000 R17 =3D00000000 R18 =3D00000000 R19 =3D00000000
-
-R20 =3D00000000 R21 =3D00000000 R22 =3D00000000 R23 =3D00000000
-
-R24 =3D00000000 R25 =3D00000000 R26 =3D00000000 R27 =3D00000000
-
-R28 =3D00000000 R29 =3D00000000 R30 =3D00000000 R31 =3D00000000
-
-SPR0 =3D00000000 SPR1 =3D00000000 SPR8 =3D00000000 SPR9 =3D00000000
-
-00005000 7F454C46 WORD $7F454C46
-
-Anybody can help?
-
-Thanks,
-
-Bora
-
-######################################################################
-Dikkat:
-
-Bu elektronik posta mesaji kisisel ve ozeldir. Eger size=20
-gonderilmediyse lutfen gondericiyi bilgilendirip mesaji siliniz.=20
-Firmamiza gelen ve giden mesajlar virus taramasindan gecirilmekte,=20
-guvenlik nedeni ile kontrol edilerek saklanmaktadir. Mesajdaki=20
-gorusler ve bakis acisi gondericiye ait olup Aselsan A.S. resmi=20
-gorusu olmak zorunda degildir.
-
-######################################################################
-Attention:=20
-
-This e-mail message is privileged and confidential. If you are=20
-not the intended recipient please delete the message and notify=20
-the sender. E-mails to and from the company are monitored for=20
-operational reasons and in accordance with lawful business practices.=20
-Any views or opinions presented are solely those of the author and=20
-do not necessarily represent the views of the company.
-
-######################################################################
+Best regards,
+Bjorn ostby
