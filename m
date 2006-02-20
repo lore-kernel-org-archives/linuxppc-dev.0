@@ -1,19 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9DF08679E1
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Feb 2006 11:17:50 +1100 (EST)
-Subject: [PATCH] powermac: Fix loss of ethernet PHY on sleep
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain
-Date: Mon, 20 Feb 2006 11:17:30 +1100
-Message-Id: <1140394650.32374.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17401.23749.905383.876251@cargo.ozlabs.ibm.com>
+Date: Mon, 20 Feb 2006 17:08:05 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: please pull powerpc-merge.git
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,52 +16,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some recent PowerBook models tend to lose the ethernet PHY on
-suspend/resume. It -seems- that they use a combo ethernet-firewire PHY
-chip and the firewire PHY seems to die the same way when that happens.
-Not trying to toggle the firewire cable power appears to fix it. So this
-patch disables changes to the firewire cable power control GPIO on those
-models. Please apply for 2.6.16.
+Linus,
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Please do a pull from
 
-Index: linux-work/arch/powerpc/platforms/powermac/feature.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/feature.c	2006-02-20 11:10:07.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/powermac/feature.c	2006-02-20 11:13:25.000000000 +1100
-@@ -1648,10 +1648,10 @@
- 		  KL0_SCC_CELL_ENABLE);
- 
- 	MACIO_BIC(KEYLARGO_FCR1,
--		  /*KL1_USB2_CELL_ENABLE |*/
- 		KL1_I2S0_CELL_ENABLE | KL1_I2S0_CLK_ENABLE_BIT |
- 		KL1_I2S0_ENABLE | KL1_I2S1_CELL_ENABLE |
--		KL1_I2S1_CLK_ENABLE_BIT | KL1_I2S1_ENABLE);
-+		KL1_I2S1_CLK_ENABLE_BIT | KL1_I2S1_ENABLE |
-+		KL1_EIDE0_ENABLE);
- 	if (pmac_mb.board_flags & PMAC_MB_MOBILE)
- 		MACIO_BIC(KEYLARGO_FCR1, KL1_UIDE_RESET_N);
- 
-@@ -2185,7 +2185,7 @@
- 	},
- 	{	"PowerMac10,1",			"Mac mini",
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
--		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER,
-+		PMAC_MB_MAY_SLEEP,
- 	},
- 	{	"iMac,1",			"iMac (first generation)",
- 		PMAC_TYPE_ORIG_IMAC,		paddington_features,
-@@ -2297,11 +2297,11 @@
- 	},
- 	{	"PowerBook5,8",			"PowerBook G4 15\"",
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
--		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
-+		PMAC_MB_MAY_SLEEP  | PMAC_MB_MOBILE,
- 	},
- 	{	"PowerBook5,9",			"PowerBook G4 17\"",
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
--		PMAC_MB_MAY_SLEEP | PMAC_MB_HAS_FW_POWER | PMAC_MB_MOBILE,
-+		PMAC_MB_MAY_SLEEP | PMAC_MB_MOBILE,
- 	},
- 	{	"PowerBook6,1",			"PowerBook G4 12\"",
- 		PMAC_TYPE_UNKNOWN_INTREPID,	intrepid_features,
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
+
+There are 6 commits there with some bug fixes that should go in
+2.6.16, including a fix for the xtime vs gettimeofday drift that uses
+the current_tick_length() function that was recently added.
+
+Thanks,
+Paul.
+
+Michael Ellerman:
+      powerpc: Don't start secondary CPUs in a UP && KEXEC kernel
+      powerpc: Make UP -> SMP kexec work again
+      powerpc: Fix bug in spinup of renumbered secondary threads
+
+Olaf Hering:
+      powerpc: remove duplicate exports
+
+Olof Johansson:
+      powerpc: Fix OOPS in lparcfg on G5
+
+Paul Mackerras:
+      powerpc: Keep xtime and gettimeofday in sync
+
+ arch/powerpc/kernel/head_64.S        |    4 
+ arch/powerpc/kernel/lparcfg.c        |    6 -
+ arch/powerpc/kernel/ppc_ksyms.c      |   16 --
+ arch/powerpc/kernel/setup_64.c       |    4 
+ arch/powerpc/kernel/sys_ppc32.c      |    4 
+ arch/powerpc/kernel/time.c           |  282 ++++++++++++----------------------
+ arch/powerpc/platforms/pseries/smp.c |    2 
+ arch/ppc/kernel/ppc_ksyms.c          |    8 -
+ arch/ppc/xmon/start.c                |   15 --
+ include/asm-ppc/machdep.h            |   13 --
+ 10 files changed, 108 insertions(+), 246 deletions(-)
