@@ -1,19 +1,16 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wvmler2.mail.xerox.com (wvmler2.mail.xerox.com [13.8.138.217])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "wvmler2.mail.xerox.com",
-	Issuer "wvmler2.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8E985679E1
+Return-Path: <bkartal@aselsan.com.tr>
+Received: from turunc.aselsan.com.tr (mail.aselsan.com.tr [212.50.56.228])
+	by ozlabs.org (Postfix) with ESMTP id 8F11F679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Feb 2006 00:34:11 +1100 (EST)
+	Tue, 21 Feb 2006 00:38:45 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: 82xx_io UART BRG's vs BUS CLK
-Date: Mon, 20 Feb 2006 13:32:21 -0000
-Message-ID: <35786B99AB3FDC45A8215724617919736D9240@gbrwgceumf01.eu.xerox.net>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "Russell McGuire" <rmcguire@uwbt.com>, <linuxppc-embedded@ozlabs.org>
+	charset="iso-8859-9"
+Subject: 
+Date: Mon, 20 Feb 2006 15:39:14 +0200
+Message-ID: <C379193B17749F4BA82ABF87E7DCB6A62CF0D3@papatyaint.aselsan.com.tr>
+From: "Bora KARTAL" <bkartal@aselsan.com.tr>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,130 +21,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Russ
-In fact the CD field of the hardware register needs to be
-programmed with (divisor - 1), so in a sense you were right
-about "adding a constant -1"! But it still needs the rounding
-I suggested.
-The Denx code combines the rounding and decrementing.
-Clive
+Hi,
 
------Original Message-----
-From: Russell McGuire [mailto:rmcguire@uwbt.com]=20
-Sent: 20 February 2006 12:22
-To: Jenkins, Clive; linuxppc-embedded@ozlabs.org
-Subject: RE: 82xx_io UART BRG's vs BUS CLK
+I am trying to run linuxppc 2.4.20 with a nfs mounted root file system on=
+=20a Motorolla MVME5100 board with a PowerPC 7410 processor. When I used =
+the default kernel =FDmage sh=FDpped with MontaVista Linux development ki=
+t, it boots up and works fine. But when I build up a custom kernel I am g=
+etting the following exception during bootup.
 
-
-Everyone,
-
-Found a bug in the Linux 2.4.25 -> 2.4.26 and perhaps newer PPC kernels.
-
-However, thanks for the U-boot tree, as it already had the fix. Thanks
-to
-those who had hinted at something like this already. I have tested this
-out
-and it works good for me on a MPC8280, with U-boot 1.1.2 and DENX Linux
-2.4.25.
-
-I don't have a patch file but the change is real simple if someone would
-like to provide one.
-
-/linux/arch/ppc/8260_io/commproc.c there is this bit of code.
---------------------------------------
-/* This function is used by UARTS, or anything else that uses a 16x
- * oversampled clock.  */
- void cpm2_setbrg(uint brg, uint rate)
- {
-         volatile uint   *bp;
 =20
-         /* This is good enough to get SMCs running.....
-         */
-         if (brg < 4) {
-                 bp =3D (uint *)&cpm2_immr->im_brgc1;
-         }
-         else {
-                 bp =3D (uint *)&cpm2_immr->im_brgc5;
-                 brg -=3D 4;
-         }
-         bp +=3D brg;
-         *bp =3D ((BRG_UART_CLK / rate) << 1) | CPM_BRG_EN;
- }
-----------------------------------------
-I recently put the correct frequency in U-boot to pass to linux, i.e.
-66,666,666Mhz instead of 66,000,000Mhz. And this broke the BRG setups
-and I
-could no longer run 115200 Baudrate.
 
-So after looking around, I found that the Uboot 1.1.2 and newer code
-already
-has a modified version of this code, and that it works correctly. Thanks
-DENX!
+Residual-Data Located at: $1FE9077C
 
-See correct code below: note the cd--
--------------------------------------------------
-void m8260_cpm_setbrg(uint brg, uint rate)
-{
-	volatile uint	*bp;
-	uint cd =3D BRG_UART_CLK / rate;
-	if ((BRG_UART_CLK % rate) < (rate / 2))
-		cd--;
-	if (brg < 4) {
-		bp =3D (uint *)&immr->im_brgc1;
-	}
-	else {
-		bp =3D (uint *)&immr->im_brgc5;
-		brg -=3D 4;
-	}
-	bp +=3D brg;
-	*bp =3D (cd << 1) | CPM_BRG_EN; =20
-}
-----------------------------------------------------
+Exception: Program (Illegal Instruction)
 
------Original Message-----
-From: Jenkins, Clive [mailto:Clive.Jenkins@xerox.com]=20
-Sent: Tuesday, February 14, 2006 3:24 AM
-To: Russell McGuire; linuxppc-embedded@ozlabs.org
-Subject: RE: 82xx_io UART BRG's vs BUS CLK
+SRR0 =3D00005000 SRR1 =3D00083040 Vector-Offset =3D00700
 
-> I did some math on the BRG calculations and with 66Mhz the BRG divisor
-is
-> 17.8 I am assuming 17 gets written, and with 66.666Mhz then its 18.02
-so
-> thus 18 probably gets written. Should perhaps a constant minus 1 be
-added to
-> the code?
+IP =3D00005000 MSR =3D00003040 CR =3D00000000 FPSCR =3D00000000
 
-> Using:
-> U-boot 1.1.2
-> DENX Linux 2.4.25
+R0 =3D00000000 R1 =3D1FE00000 R2 =3D00000000 R3 =3D1FE9077C
 
-> Is anyone aware of similar issues, or are there bug fixes past the
-2.4.25
-> Kernel for this?
+R4 =3D00005000 R5 =3D00000000 R6 =3D00000000 R7 =3D00000000
 
-> -Russ
+R8 =3D00000000 R9 =3D00000000 R10 =3D00000000 R11 =3D00000000
 
-Hi Russ
+R12 =3D00000000 R13 =3D00000000 R14 =3D00000000 R15 =3D00000000
 
-I am not familiar with your hardware, nor have I checked the code that
-calculated the Baud rate divisor.
+R16 =3D00000000 R17 =3D00000000 R18 =3D00000000 R19 =3D00000000
 
-I would advise against "adding a constant -1", in favour of rounding
-to the nearest integer. From your figures:
+R20 =3D00000000 R21 =3D00000000 R22 =3D00000000 R23 =3D00000000
 
-  divisor =3D clock / (baudrate * 32)
+R24 =3D00000000 R25 =3D00000000 R26 =3D00000000 R27 =3D00000000
 
-To get a rounded result using real numbers:
+R28 =3D00000000 R29 =3D00000000 R30 =3D00000000 R31 =3D00000000
 
-  divisor =3D integer_part_of((clock / (baudrate * 32)) + 1/2)
+SPR0 =3D00000000 SPR1 =3D00000000 SPR8 =3D00000000 SPR9 =3D00000000
 
-Using integer arithmetic, you can code this in C as:
+00005000 7F454C46 WORD $7F454C46
 
-  divisor =3D ((clock / baudrate /16) + 1) >> 1;
+Anybody can help?
 
-I would check whether or not the code is doing this, or the equivalent,
-and if not, change it. If the code is doing this, the divisor should be
-18 in both cases.
+Thanks,
 
-Clive
+Bora
+
+######################################################################
+Dikkat:
+
+Bu elektronik posta mesaji kisisel ve ozeldir. Eger size=20
+gonderilmediyse lutfen gondericiyi bilgilendirip mesaji siliniz.=20
+Firmamiza gelen ve giden mesajlar virus taramasindan gecirilmekte,=20
+guvenlik nedeni ile kontrol edilerek saklanmaktadir. Mesajdaki=20
+gorusler ve bakis acisi gondericiye ait olup Aselsan A.S. resmi=20
+gorusu olmak zorunda degildir.
+
+######################################################################
+Attention:=20
+
+This e-mail message is privileged and confidential. If you are=20
+not the intended recipient please delete the message and notify=20
+the sender. E-mails to and from the company are monitored for=20
+operational reasons and in accordance with lawful business practices.=20
+Any views or opinions presented are solely those of the author and=20
+do not necessarily represent the views of the company.
+
+######################################################################
