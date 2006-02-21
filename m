@@ -1,17 +1,20 @@
-Return-Path: <Bjorn.Ostby@combitech.se>
-Received: from ms-101.aerotechtelub.se (ms-101.aerotechtelub.se
-	[192.176.33.163]) by ozlabs.org (Postfix) with ESMTP id CD6F4679F4
+Return-Path: <mathieu.deschamps@com2gether.net>
+Received: from mail.libertysurf.net (mx-out.libertysurf.net [213.36.80.91])
+	by ozlabs.org (Postfix) with ESMTP id 9F8CA679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Feb 2006 22:01:34 +1100 (EST)
+	Wed, 22 Feb 2006 03:43:39 +1100 (EST)
+From: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
+To: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
+Subject: Re: Uart on cpm2_io (was: Using modem signal in cpm2 uart for MPC8270)
+Date: Tue, 21 Feb 2006 17:44:03 +0100
+References: <200602210954.51248.mathieu.deschamps@com2gether.net>
+	<43FADB46.6030109@dgt.com.pl>
+In-Reply-To: <43FADB46.6030109@dgt.com.pl>
 MIME-Version: 1.0
+Message-Id: <200602211743.19539.mathieu.deschamps@com2gether.net>
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: SCCx UART status on 8xx
-Date: Tue, 21 Feb 2006 12:01:33 +0100
-Message-ID: <004B1D7A5257174C9044A1B7BD0E60ED0178CC54@ratatosk.combitechsystems.com>
-From: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitech.se>
-To: "Aristeu Sergio Rozanski Filho" <aris@mandriva.com>
-Cc: fbl@conectiva.com.br, linuxppc-embedded@ozlabs.org
+  charset="utf-8"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,69 +25,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all again,
-
------Original Message-----
-From: Aristeu Sergio Rozanski Filho [mailto:aris@mandriva.com]=20
-Sent: den 20 februari 2006 15:19
-To: Bj=F6rn =D6stby
-Cc: linuxppc-embedded@ozlabs.org; marcelo.tosatti@cyclades.com; =
-fbl@conectiva.com.br
-Subject: Re: SCCx UART status on 8xx
-
-
-On Mon, Feb 20, 2006 at 02:37:23PM +0100, Bj=F6rn =D6stby wrote:
-> Hello,
-> I'm messing with a mpc823e based board trying to enable the SCC3 UART. =
-
-> I'm using the 2.4.25 denx linux_ppc kernel and I've got SMC1 for =
-console and SMC2 up and running but I'm in desperate need of another =
-rs232 port (which is on SCC3 on my board).
-> Reading quite a lot of old posts on this mailing list got me confused =
-whether the SCCx UART support in the kernel is ready to be used on 8xx =
-or if there will take a large amount of hacking to get things going =
-(reading the header of 8xx_io/uart.c got me wondering even more).
-> Current situation is that I have enabled the SCC3 UART in the kernel, =
-set the correct CTS, RTS and CD signal options and finally disabled the =
-SPI which (on my board at least) can override the UART on the third SCC =
-port. During boot up I get the standard output:
->=20
-> >ttyS0 at 0x0280 is on SMC1 using BRG1
-> >ttyS1 at 0x0380 is on SMC2 using BRG2
-> >ttyS2 at 0x0200 is on SCC3 using BRG3
->=20
-> Writing to ttyS0 and ttyS1 works fine (the result pop up in the=20
-> receiving terminal) but when trying ttyS2 nothing happens. I've=20
-> checked the Tx signal and it appears as if data is sent (the signal=20
-> gets noisy when starting the write procedure). I may also add that=20
-> restaring the write application causes the kernel to hang (for ttyS2=20
-> only of course).
->=20
-> I've read some posts saying that Linux don't init other uart ports=20
-> than the console port and that is the potential problem here, but it =
-is unclear if this >>
->statement is true or not. I can also add to the problem description =
-that my SMC2 port works >fine for writing, but reading just hangs in the =
-read() call. So, can anyone confirm any >
->status on the SMCx and SCCx UART drivers for 2.4?
-
->please try the two attached patches. the first one configures each SCC =
-to one BRG. the second one, makes use always of dpram memory. we're =
-working on a decent fix.
->Marcelo: if you find the first one ok, you may apply it, but don't =
-apply the second
+On Tuesday 21 February 2006 10:20, Wojciech Kromer wrote:
+> Dnia 2006-02-21 09:58, U=C5=BCytkownik Mathieu Deschamps napisa=C5=82:
+> > Hello,
+> >
+> > Sorry to come with this UART issue again but I had no answer and no
+> > better idea but asking people who knows 82xx uart well, people who
+> > designed it.
+> >
+> > My issue about this uart could be approched elseway : why is there a
+> > modem_control conditionnal compilation option when PQ2 SCCs
+> > (in normal operation mode which is default) take care of CTS,CD signals
+> > (Chap 20-8 GSMR_L register DIAG MPC8280 PQ2 Ref. Manual ) ?
+> >
+> > I fell like that is clearly a design-time choice matter that I need to
+> > clarify.
+> >
+> > And simply :
+> > Is this version is known to be broken when activating this option ?
 >
->--=20
->Aristeu
+> Do not know what this option is, probably for disabling code from
+> another driver.
+> With latest CVS version from denx.de you have only to enable CTS/RTS..
+> signals in menuconfig.
+> (And read my prior post if you're using SCC4 with SCC_CONSOLE)
 >
+>
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-I would like to thank everyone who has given input to the discussion. =
-Unfortunately the problems remain. I have not been able to try the =
-patches since I reckon they are for Linux 2.6 specific while I'm using =
-the 2.4 kernel (could be good to have in for future projects though). I =
-did however triy remove the CTS, RTS and CD signal from the config as =
-suggested which stopped the kernel from hanging. Might be a step in the =
-right direction.
+Thanks for your reply,
 
-Best regards,
-Bjorn Ostby
+<> Do not know what this option is, probably for disabling code from
+<> another driver.
+=2E..or rather to enable it...(default is disabled). Allthesame :=20
+
+Now it's clear it has historical reason and that I should not meddle with i=
+t=20
+in getting it enable. I guess it may be used for non-PQ2 or rather for non=
+=20
+dedicated pins assignement capable cpu in order to implement thoses signals
+handling.
+
+About SCC4 my version includes that code you spoke about in your prior=20
+posts, but I'll use SCC4 as usb and not as console. Thus maybe this
+turned nouse and has vanished in your version and that's why it's call a=20
+"feature enhancement" yet. =20
+
+
+Best Regards,
+
+=20
+Mathieu Deschamps
+Com2gether Design Center
+Electronic and Embedded Engineering Services
+www.com2gether.net=20
