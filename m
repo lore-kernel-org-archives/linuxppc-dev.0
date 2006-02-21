@@ -1,21 +1,15 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A402D679F8
+Return-Path: <k_shivanii@yahoo.com>
+Received: from web32111.mail.mud.yahoo.com (web32111.mail.mud.yahoo.com
+	[68.142.207.125]) by ozlabs.org (Postfix) with SMTP id B66D8679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 21 Feb 2006 07:44:03 +1100 (EST)
-In-Reply-To: <20060220201504.C5289353C11@atlas.denx.de>
-References: <20060220201504.C5289353C11@atlas.denx.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <80a18d524ef11e64f291f6b0d4f877f8@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: SCCx UART status on 8xx 
-Date: Mon, 20 Feb 2006 15:43:51 -0500
-To: Wolfgang Denk <wd@denx.de>
-Cc: =?ISO-8859-1?Q?Bj=F6rn_=D6stby?= <Bjorn.Ostby@combitech.se>,
-	linuxppc-embedded@ozlabs.org
+	Tue, 21 Feb 2006 14:19:10 +1100 (EST)
+Message-ID: <20060221031228.63233.qmail@web32111.mail.mud.yahoo.com>
+Date: Mon, 20 Feb 2006 19:12:28 -0800 (PST)
+From: shivani kirubanandan <k_shivanii@yahoo.com>
+Subject: hello error during kernel compilation of ml300 powerpc405 plzz help
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,18 +21,78 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 20, 2006, at 3:15 PM, Wolfgang Denk wrote:
+hello ,
+i encountered this error while tryin to compile a
+ml300 xilinx specific powerpc405 kernel...plz help me
+out!
 
-> All UARTS (up to 2 x SMC + 4 x SCC, depending on CPU  model)  can  be
-> used with our tree, including hardware handshake.
 
-Except that you have to be careful about BRG allocation.  At most,
-the 8xx will have 4 BRGs, some only have 2.  There have been various
-implementations to work with this, some forced the BRGs to be
-multiply mapped (where more than one UART had to run at the same rate)
-while others silently returned errors and the UARTs were non-functional
-although appeared for use.
+make[1]: Leaving directory
+`/home/shivani/downloads/linux-2.4.26/arch/ppc/4xx_io'
+/opt/crosstool/gcc-3.3.2-glibc-2.3.2/powerpc-405-linux-gnu/bin/powerpc-405-linux-gnu-ld
+-T arch/ppc/vmlinux.lds -Ttext 0xc0000000 -Bstatic
+arch/ppc/kernel/head_4xx.o init/main.o init/version.o
+init/do_mounts.o \
+        --start-group \
+        arch/ppc/kernel/kernel.o
+arch/ppc/platforms/platform.o arch/ppc/mm/mm.o
+arch/ppc/lib/lib.o kernel/kernel.o mm/mm.o fs/fs.o
+ipc/ipc.o \
+         drivers/char/char.o drivers/block/block.o
+drivers/misc/misc.o drivers/net/net.o
+drivers/ide/idedriver.o drivers/scsi/scsidrv.o
+drivers/cdrom/driver.o drivers/pci/driver.o
+drivers/net/wireless/wireless_net.o
+drivers/macintosh/macintosh.o drivers/video/video.o
+drivers/usb/usbdrv.o drivers/media/media.o
+drivers/input/inputdrv.o arch/ppc/4xx_io/4xx_io.o \
+        net/network.o \
+        /home/shivani/downloads/linux-2.4.26/lib/lib.a
+\
+        --end-group \
+        -o vmlinux
+drivers/char/char.o(.text+0x1d824): In function
+`handle_kbd_event':
+: undefined reference to `x8042_read_status'
+drivers/char/char.o(.text+0x1d844): In function
+`handle_kbd_event':
+: undefined reference to `x8042_read_input'
+drivers/char/char.o(.text+0x1d860): In function
+`handle_kbd_event':
+: undefined reference to `x8042_read_status'
+drivers/char/char.o(.text+0x1dc64): In function
+`kbd_write_command_w':
+: undefined reference to `x8042_write_command'
+drivers/char/char.o(.text+0x1dcb0): In function
+`kbd_write_output_w':
+: undefined reference to `x8042_write_output'
+drivers/char/char.o(.text+0x1dd68): In function
+`panic_blink':
+: undefined reference to `x8042_read_status'
+drivers/char/char.o(.text+0x1dd8c): In function
+`panic_blink':
+: undefined reference to `x8042_write_output'
+drivers/char/char.o(.text+0x1ddb0): In function
+`panic_blink':
+: undefined reference to `x8042_read_status'
+drivers/char/char.o(.text+0x1ddec): In function
+`panic_blink':
+: undefined reference to `x8042_write_output'
+drivers/char/char.o(.text.init+0x1604): In function
+`kbd_read_data':
+: undefined reference to `x8042_read_status'
+drivers/char/char.o(.text.init+0x162c): In function
+`kbd_read_data':
+: undefined reference to `x8042_read_input'
+make: *** [vmlinux] Error 1
 
-Thanks.
 
-	-- Dan
+
+cheers
+shivani
+
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
