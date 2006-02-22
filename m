@@ -1,15 +1,19 @@
-Return-Path: <k_shivanii@yahoo.com>
-Received: from web32102.mail.mud.yahoo.com (web32102.mail.mud.yahoo.com
-	[68.142.207.116]) by ozlabs.org (Postfix) with SMTP id 71BC6679F7
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id C5E81679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Feb 2006 20:28:45 +1100 (EST)
-Message-ID: <20060222092843.64199.qmail@web32102.mail.mud.yahoo.com>
-Date: Wed, 22 Feb 2006 01:28:43 -0800 (PST)
-From: shivani kirubanandan <k_shivanii@yahoo.com>
-Subject: hi problem during kernel compilation
-To: linuxppc-embedded@ozlabs.org
+	Thu, 23 Feb 2006 01:03:50 +1100 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Wed, 22 Feb 2006 07:03:47 -0700
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: ppc32: mpc85xx: set pcibios_fixup only #ifdef CONFIG_PCI
+Message-ID: <20060222140347.GA7359@xyzzy.farnsworth.org>
+References: <20060217233733.GA30701@xyzzy.farnsworth.org>
+	<Pine.LNX.4.44.0602212343400.2878-100000@gate.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.44.0602212343400.2878-100000@gate.crashing.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,33 +24,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hello all,
+On Tue, Feb 21, 2006 at 11:44:15PM -0600, Kumar Gala wrote:
+> On Fri, 17 Feb 2006, Dale Farnsworth wrote:
+> 
+> > From: Dale Farnsworth <dale@farnsworth.org>
+> > 
+> > Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> > ---
+> 
+> This change is already in the kernel tree.
+> 
+> - kumar
 
-i have encountered this error during kernel
-compilation FYI the kernel version is 2.4.26 
-powerpc405 and ml300 board specific
-plz help me out 
-wen i run make zImage
+Indeed it is.  Sorry for the noise.
 
-mv zvmlinux ../images/zImage.
-mv zvmlinux ../images/zImage.elf
-mv: can't stat source zvmlinux
-make[2]: *** [zImage] Error 1
-make[2]: Leaving directory
-`/home/shivani/downloads/linux-2.4.26/arch/ppc/boot/simple'
-make[1]: *** [zImage] Error 2
-make[1]: Leaving directory
-`/home/shivani/downloads/linux-2.4.26/arch/ppc/boot'
-make: *** [zImage] Error 2
+-Dale
 
-
-
-
-thanks in advance
-
-shivani
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+> >  arch/ppc/platforms/85xx/mpc85xx_cds_common.c |    6 +++---
+> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> > 
+> > Index: linux-2.6.10/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
+> > ===================================================================
+> > --- linux-2.6.10.orig/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
+> > +++ linux-2.6.10/arch/ppc/platforms/85xx/mpc85xx_cds_common.c
+> > @@ -456,9 +456,6 @@ mpc85xx_cds_setup_arch(void)
+> >  	mtspr(SPRN_DBCR0, (DBCR0_IDM));
+> >  	mtspr(SPRN_DBSR, 0xffffffff);
+> >  #endif
+> > -
+> > - 	/* VIA IDE configuration */
+> > -         ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
+> >   
+> >  #ifdef CONFIG_CPM2
+> >  	cpm2_reset();
+> > @@ -480,6 +477,9 @@ mpc85xx_cds_setup_arch(void)
+> >          loops_per_jiffy = freq / HZ;
+> >  
+> >  #ifdef CONFIG_PCI
+> > + 	/* VIA IDE configuration */
+> > +         ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
+> > +
+> >          /* setup PCI host bridges */
+> >          mpc85xx_setup_hose();
+> >  #endif
+> > 
