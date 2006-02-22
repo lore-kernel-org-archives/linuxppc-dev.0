@@ -1,15 +1,17 @@
-Return-Path: <sfr@ozlabs.org>
-Date: Wed, 22 Feb 2006 15:04:26 +1100
-From: Stephen Rothwell <sfr@ozlabs.org>
-To: ppc64-dev <linuxppc64-dev@ozlabs.org>
-Subject: Yahoo addresses delayed
-Message-Id: <20060222150426.755ceb91.sfr@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__22_Feb_2006_15_04_26_+1100_jPr2Ueu5LYs9ei4i"
-Cc: rhype@ozlabs.org, ppc-dev <linuxppc-dev@ozlabs.org>,
-	k42-discussion@ozlabs.org, ppc-embedded <linuxppc-embedded@ozlabs.org>
+Return-Path: <pacman@shell.TheWorld.com>
+Received: from TheWorld.com (pcls2.std.com [192.74.137.142])
+	by ozlabs.org (Postfix) with ESMTP id 89244679F2
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2006 18:20:06 +1100 (EST)
+From: Alan Curry <pacman@TheWorld.com>
+Message-Id: <200602220642.BAA1170849@shell.TheWorld.com>
+Subject: Re: [PATCH] powerpc: fix altivec_unavailable_exception Oopses
+To: galak@kernel.crashing.org (Kumar Gala)
+Date: Wed, 22 Feb 2006 01:42:37 -0500 (EST)
+In-Reply-To: <4A2CF403-20CC-4AE9-B955-9BA2E92A5474@kernel.crashing.org> from
+	"Kumar Gala" at Feb 21, 2006 06:52:16 PM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__22_Feb_2006_15_04_26_+1100_jPr2Ueu5LYs9ei4i
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Kumar Gala writes the following:
+>
+>Would you mine providing a patch for arch/ppc/kernel/head.S and  
+>adding a signed-off-by line.
 
-Hi all,
+OK, combined patch... applies clean to 2.6.16-rc4, applies with fuzz to
+2.6.15.4, both compiled and tested. Patch prevents Oopsing of
+CONFIG_ALTIVEC=n kernel by user executing altivec instruction in both cases.
 
-This is just an email to let you all know that if you are subscribed to
-any of these lists using a Yahoo email address, your copies of posts will
-be delayed as someone has reported ozlabs.org to Yahoo as a spam site!
+Signed-off-by: Alan Curry <pacman@TheWorld.com>
 
-As fas as I know there has been no (or very little) spam through these
-lists as they are set to member post only.  If you do see spam on these
-lists, please report it to abuse@ozlabs.org (and not Yahoo or spamcop etc)
-so that we can try to fix the problem.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@ozlabs.org
-
---Signature=_Wed__22_Feb_2006_15_04_26_+1100_jPr2Ueu5LYs9ei4i
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFD++LKFdBgD/zoJvwRAso9AJ9kZOWJ0yJz3G3VQWKCW3jzUtANGACfW/Fo
-sCNblwut4EaZE5vdzioN6tQ=
-=aETA
------END PGP SIGNATURE-----
-
---Signature=_Wed__22_Feb_2006_15_04_26_+1100_jPr2Ueu5LYs9ei4i--
+--- arch/ppc/kernel/head.S.orig	2006-02-21 20:58:08.000000000 -0500
++++ arch/ppc/kernel/head.S	2006-02-21 20:58:11.000000000 -0500
+@@ -751,6 +751,7 @@ AltiVecUnavailable:
+ #ifdef CONFIG_ALTIVEC
+ 	bne	load_up_altivec		/* if from user, just load it up */
+ #endif /* CONFIG_ALTIVEC */
++	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_EE_LITE(0xf20, altivec_unavailable_exception)
+ 
+ #ifdef CONFIG_PPC64BRIDGE
+--- arch/powerpc/kernel/head_32.S.orig	2006-02-21 15:58:18.000000000 -0500
++++ arch/powerpc/kernel/head_32.S	2006-02-21 15:59:23.000000000 -0500
+@@ -714,6 +714,7 @@ AltiVecUnavailable:
+ #ifdef CONFIG_ALTIVEC
+ 	bne	load_up_altivec		/* if from user, just load it up */
+ #endif /* CONFIG_ALTIVEC */
++	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	EXC_XFER_EE_LITE(0xf20, altivec_unavailable_exception)
+ 
+ PerformanceMonitor:
