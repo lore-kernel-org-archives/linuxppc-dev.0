@@ -1,16 +1,13 @@
-Return-Path: <pacman@shell.TheWorld.com>
-Received: from TheWorld.com (pcls2.std.com [192.74.137.142])
-	by ozlabs.org (Postfix) with ESMTP id 89244679F2
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Feb 2006 18:20:06 +1100 (EST)
-From: Alan Curry <pacman@TheWorld.com>
-Message-Id: <200602220642.BAA1170849@shell.TheWorld.com>
-Subject: Re: [PATCH] powerpc: fix altivec_unavailable_exception Oopses
-To: galak@kernel.crashing.org (Kumar Gala)
-Date: Wed, 22 Feb 2006 01:42:37 -0500 (EST)
-In-Reply-To: <4A2CF403-20CC-4AE9-B955-9BA2E92A5474@kernel.crashing.org> from
-	"Kumar Gala" at Feb 21, 2006 06:52:16 PM
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Message-ID: <17404.20246.361572.784670@cargo.ozlabs.ibm.com>
+Date: Wed, 22 Feb 2006 22:46:30 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Alan Curry <pacman@TheWorld.com>
+Subject: Re: [PATCH] powerpc: fix altivec_unavailable_exception Oopses
+In-Reply-To: <200602212339.SAA1138491@shell.TheWorld.com>
+References: <200602212339.SAA1138491@shell.TheWorld.com>
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,34 +18,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes the following:
->
->Would you mine providing a patch for arch/ppc/kernel/head.S and  
->adding a signed-off-by line.
+Alan Curry writes:
 
-OK, combined patch... applies clean to 2.6.16-rc4, applies with fuzz to
-2.6.15.4, both compiled and tested. Patch prevents Oopsing of
-CONFIG_ALTIVEC=n kernel by user executing altivec instruction in both cases.
+> altivec_unavailable_exception is called without setting r3... it looks like
+> the r3 that actually gets passed in as struct pt_regs *regs is the
+> undisturbed value of r3 at the time the altivec instruction was encountered.
 
-Signed-off-by: Alan Curry <pacman@TheWorld.com>
+Nice catch!
 
---- arch/ppc/kernel/head.S.orig	2006-02-21 20:58:08.000000000 -0500
-+++ arch/ppc/kernel/head.S	2006-02-21 20:58:11.000000000 -0500
-@@ -751,6 +751,7 @@ AltiVecUnavailable:
- #ifdef CONFIG_ALTIVEC
- 	bne	load_up_altivec		/* if from user, just load it up */
- #endif /* CONFIG_ALTIVEC */
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_EE_LITE(0xf20, altivec_unavailable_exception)
- 
- #ifdef CONFIG_PPC64BRIDGE
---- arch/powerpc/kernel/head_32.S.orig	2006-02-21 15:58:18.000000000 -0500
-+++ arch/powerpc/kernel/head_32.S	2006-02-21 15:59:23.000000000 -0500
-@@ -714,6 +714,7 @@ AltiVecUnavailable:
- #ifdef CONFIG_ALTIVEC
- 	bne	load_up_altivec		/* if from user, just load it up */
- #endif /* CONFIG_ALTIVEC */
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	EXC_XFER_EE_LITE(0xf20, altivec_unavailable_exception)
- 
- PerformanceMonitor:
+Thanks,
+Paul.
