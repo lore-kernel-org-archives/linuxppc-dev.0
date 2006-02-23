@@ -1,19 +1,17 @@
-Return-Path: <marty.wedepohl@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.201])
-	by ozlabs.org (Postfix) with ESMTP id B92D4679A6
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp6.clb.oleane.net (smtp6.clb.oleane.net [213.56.31.26])
+	by ozlabs.org (Postfix) with ESMTP id A19E667A06
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Feb 2006 04:10:47 +1100 (EST)
-Received: by xproxy.gmail.com with SMTP id i28so78371wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Feb 2006 09:10:45 -0800 (PST)
-Message-ID: <1f82ba6e0602230910g4b432352s1547681b0c88058d@mail.gmail.com>
-Date: Thu, 23 Feb 2006 10:10:45 -0700
-From: "Marty @ GMail" <marty.wedepohl@gmail.com>
-To: tnt@246tNt.com, lijianggan@pmail.ntu.edu.sg, linuxppc-embedded@ozlabs.org
-Subject: Re: boot failure on lite5200b board
+	Fri, 24 Feb 2006 04:23:07 +1100 (EST)
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: RE: Gianfar is slower  than fcc_enet on MPC8541 ???
+Date: Thu, 23 Feb 2006 18:28:40 +0100
+Message-ID: <000001c6389e$980f0ff0$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Reply-To: marty.wedepohl@shaw.ca
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <000701c6389b$49e30960$5201a8c0@GEG2400>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,80 +22,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206IFN5bHZhaW4gTXVuYXV0IFttYWls
-dG86dG50QDI0NnROdC5jb21dCj4gU2VudDogVGh1IDIvMjMvMjAwNiAxNTozOAo+IFRvOiAjTEkg
-SklBTkdHQU4jCj4gQ2M6IGxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmcKPiBTdWJqZWN0OiBS
-ZTogYm9vdCBmYWlsdXJlIG9uIGxpdGU1MjAwYiBib2FyZAo+Cj4gI0xJIEpJQU5HR0FOIyB3cm90
-ZToKPiA+IEhlbGxvIGFsbCwKPiA+Cj4gPiBGb3IgbXkgZW5kLW9mLXN0dWR5IHByb2plY3QsIEkg
-YW0gd29ya2luZyBvbiBhbiBlbWJlZGRlZCBzeXN0ZW0gd2l0aAo+ID4gcmVmZXJlbmNlIG9mIGZy
-ZWVzY2FsZSdzIGxpdGU1MjAwYiByZWZlcmVuY2UgYm9hcmQuIEkgd2FzIHRyeWluZyB0byBib290
-Cj4gPiBMaW51eCAyLjYuMTUgb24gdGhlIGJvYXJkICh3aXRoIHRoZSBmZWMgYW5kIGJlc3Rjb21t
-IGNvcnJlY3RlZCkuIGhvd2V2ZXIKPiA+IHRoZSBib290aW5nIHdhcyBzdHVjayBhdCB0aGUgZm9s
-bG93aW5nIHN0YWdlOgo+Cj4gSW4gYWRkaXRpb24gdG8gd2hhdCBoYXMgYWxyZWFkeSBiZWVuIHNh
-aWQgKHVzZSBhIGhpZ2hlciBhZGRyZXNzIGZvciB0aGUKPiBpbWFnZSBhbmQgZG9uJ3QgZm9yZ2V0
-IGNvbnNvbGU9dHR5UFNDMCBpbiBrZXJuZWwgY29tbWFuZCBsaW5lKSwgbWFrZQo+IHN1cmUgeW91
-IHVzZSB0aGUga2VybmVsIGZyb20gbXkgZ2l0IHRyZWUsIGl0IGNvbnRhaW5zIGEgZmV3IHBhdGNo
-ZXMgZnJvbQo+IEpvaG4gUmlnYnkgdG8gYWRkIHN1cHBvcnQgZm9yIHRoZSBsaXRlNTIwMGIuCj4K
-PiBQbGVhc2UgcmVwb3J0IGlmIGl0IHdvcmtzLCBJJ3ZlIG5vdCBiZWVuIGFibGUgdG8gdGVzdCB0
-aG9zZSBteXNlbGYgc2luY2UKPiBpJ20gc3RpbGwgb24gbGl0ZTUyMDAuCj4KPgo+IAlTeWx2YWlu
-CgoKClRoZSBwcm9ibGVtIG1pZ2h0IGJlIGluIHRoZSBVLUJvb3QgZW52aXJvbm1lbnQgdmFyaWFi
-bGVzClNlZSBtaW5lIGJlbG93LgoKTk9URToKdGhhdCB0aGUgYm9vdF9jbWQgZXhlY3V0ZXMgdGhl
-IGNvbW1hbmQgcnVuIG5ldF9uZnMgYW5kCnRoYXQgdGhlIG5ldF9uZnMgdGZ0cCdzIHRoZSBrZXJu
-ZWwsIHRoZW4gZXhlY3V0cyB0aGUgcnVuIHNldGNvbnNvbGUKbmZzYXJncyBhZGRpcCBiZWZvcmUg
-aXQgYm9vdHMgdGhlIGtlcm5lbAoKSG9wZSB0aGF0IGhlbHBzCgpNYXJ0aW4KCgoKClUtQm9vdCAx
-LjEuNCAoRmViIDIyIDIwMDYgLSAxNDo0MjowNSkKCkNQVTogICBNUEM1MjAwIHYyLjIgYXQgNDYy
-IE1IegogICAgICAgQnVzIDEzMiBNSHosIElQQiAxMzIgTUh6LCBQQ0kgMzMgTUh6CkJvYXJkOiBG
-cmVlc2NhbGUgTVBDNTIwMCAoTGl0ZTUyMDBCKQpJMkM6ICAgODUga0h6LCByZWFkeQpEUkFNOiAg
-MjU2IE1CCkZMQVNIOiAzMiBNQgpQQ0k6ICAgQnVzIERldiBWZW5JZCBEZXZJZCBDbGFzcyBJbnQK
-ICAgICAgICAwMCAgMWEgIDEwNTcgIDU4MDkgIDA2ODAgIDAwCkluOiAgICBzZXJpYWwKT3V0OiAg
-IHNlcmlhbApFcnI6ICAgc2VyaWFsCk5ldDogICBGRUMgRVRIRVJORVQKSURFOiAgIEJ1cyAwOiBP
-SwogIERldmljZSAwOiBub3QgYXZhaWxhYmxlCiAgRGV2aWNlIDE6IG5vdCBhdmFpbGFibGUKClR5
-cGUgInJ1biBmbGFzaF9uZnMiIHRvIG1vdW50IHJvb3QgZmlsZXN5c3RlbSBvdmVyIE5GUwoKSGl0
-IGFueSBrZXkgdG8gc3RvcCBhdXRvYm9vdDogIDAKPT4gcHJpbnRlbnYKYm9vdGNtZD1ydW4gbmV0
-X25mcwpib290ZGVsYXk9NQpiYXVkcmF0ZT0xMTUyMDAKcHJlYm9vdD1lY2hvO2VjaG8gVHlwZSAi
-cnVuIGZsYXNoX25mcyIgdG8gbW91bnQgcm9vdCBmaWxlc3lzdGVtIG92ZXIgTkZTO2VjaG8KYmF1
-ZHJhdGU9MTE1MjAwCm5ldGRldj1ldGgwCmFkZGlwPXNldGVudiBib290YXJncyAkKGJvb3Rhcmdz
-KQppcD0kKGlwYWRkcik6JChzZXJ2ZXJpcCk6JChnYXRld2F5aXApOiQobmV0bWFzayk6JChob3N0
-bmFtZSk6JChuZXRkZXYpOm9mZgpwYW5pNWV0aGFjdD1GRUMgRVRIRVJORVQKc2VydmVyaXA9MTky
-LjE2OC4xMDAuMzMKZ2F0ZXdheWlwPTE5Mi4xNjguMTAwLjEKbmV0bWFzaz0yNTUuMjU1LjI1NS4w
-CnJvb3RwYXRoPS9vcHQvZWxkay9wcGNfNnh4CmlwYWRkcj0xOTIuMTY4LjEwMC4yOQpyYW1hcmdz
-PXNldGVudiBib290YXJncyByb290PS9kZXYvcmFtIHJ3Cm5ldF9uZnM9dGZ0cCAyMDAwMDAgJChi
-b290ZmlsZSk7cnVuIHNldGNvbnNvbGUgbmZzYXJncyBhZGRpcDtib290bQpzZXRjb25zb2xlPXNl
-dGVudiBib290YXJncyAkKGNvbnNvbGUpCm5mc2FyZ3M9c2V0ZW52IGJvb3RhcmdzICQoYm9vdGFy
-Z3MpIHJvb3Q9L2Rldi9uZnMgcncKbmZzcm9vdD0kKHNlcnZlcmlwKTokKHJvb3QpYm9vdGZpbGU9
-TVBDNTIwMC91SW1hZ2UKaG9zdG5hbWU9d2VlZHdoYWNrZXIKYm9vdGRlbGF5PTUKY29uc29sZT1j
-b25zb2xlPXR0eVBTQzAsMTE1MjAwbjggY29uc29sZT10dHkxCmZsYXNoX25mcz1ydW4gc2V0Y29u
-c29sZSBuZnNhcmdzIGFkZGlwO2Jvb3RtCmF1dG9sb2FkPW5vCmV0aGFkZHI9MDA6MDQ6OWY6MDA6
-Mjc6MzUKc3RkaW49c2VyaWFsCnN0ZG91dD1zZXJpYWwKc3RkZXJyPXNlcmlhbAoKRW52aXJvbm1l
-bnQgc2l6ZTogODY4LzY1NTMyIGJ5dGVzCj0+IGJvb3QKVXNpbmcgRkVDIEVUSEVSTkVUIGRldmlj
-ZQpURlRQIGZyb20gc2VydmVyIDE5Mi4xNjguMTAwLjMzOyBvdXIgSVAgYWRkcmVzcyBpcyAxOTIu
-MTY4LjEwMC4yOQpGaWxlbmFtZSAnTVBDNTIwMC91SW1hZ2UnLgpMb2FkIGFkZHJlc3M6IDB4MjAw
-MDAwCkxvYWRpbmc6ICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwpk
-b25lCkJ5dGVzIHRyYW5zZmVycmVkID0gOTg2NDcyIChmMGQ2OCBoZXgpCiMjIEJvb3RpbmcgaW1h
-Z2UgYXQgMDAyMDAwMDAgLi4uCiAgIEltYWdlIE5hbWU6ICAgTGludXgtMi42LjE2LXJjMS1nYWY0
-Zjc1ZmQtZGlydHkKICAgSW1hZ2UgVHlwZTogICBQb3dlclBDIExpbnV4IEtlcm5lbCBJbWFnZSAo
-Z3ppcCBjb21wcmVzc2VkKQogICBEYXRhIFNpemU6ICAgIDk4NjQwOCBCeXRlcyA9IDk2My4zIGtC
-CiAgIExvYWQgQWRkcmVzczogMDAwMDAwMDAKICAgRW50cnkgUG9pbnQ6ICAwMDAwMDAwMAogICBW
-ZXJpZnlpbmcgQ2hlY2tzdW0gLi4uIE9LCiAgIFVuY29tcHJlc3NpbmcgS2VybmVsIEltYWdlIC4u
-LiBPSwppZCBtYWNoKCk6IGRvbmUKTU1VOmVudGVyCk1NVTpodyBpbml0Ck1NVTptYXBpbgpNTVU6
-c2V0aW8KTU1VOmV4aXQKc2V0dXBfYXJjaDogZW50ZXIKc2V0dXBfYXJjaDogYm9vdG1lbQphcmNo
-OiBleGl0CkxpbnV4IHZlcnNpb24gMi42LjE2LXJjMS1nYWY0Zjc1ZmQtZGlydHkgKHdlZGVwb2hs
-QHVidW50dSkgKGdjYwp2ZXJzaW9uIDQuMC4wICg2QnVpbHQgMSB6b25lbGlzdHMKS2VybmVsIGNv
-bW1hbmQgbGluZTogY29uc29sZT10dHlQU0MwLDExNTIwMG44IGNvbnNvbGU9dHR5MQpyb290PS9k
-ZXYvbmZzIHJ3IG5mc3hQSUQgaGFzaCB0YWJsZSBlbnRyaWVzOiAyMDQ4IChvcmRlcjogMTEsIDMy
-NzY4CmJ5dGVzKQpDb25zb2xlOiBjb2xvdXIgZHVtbXkgZGV2aWNlIDgweDI1CkRlbnRyeSBjYWNo
-ZSBoYXNoIHRhYmxlIGVudHJpZXM6IDY1NTM2IChvcmRlcjogNiwgMjYyMTQ0IGJ5dGVzKQpJbm9k
-ZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDMyNzY4IChvcmRlcjogNSwgMTMxMDcyIGJ5dGVz
-KQpNZW1vcnk6IDI1NzUzNmsgYXZhaWxhYmxlICgxNTA0ayBrZXJuZWwgY29kZSwgNDk2ayBkYXRh
-LCA5NmsgaW5pdCwgMGsgaGlnaG1lbSkKTW91bnQtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiA1
-MTIKTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAxNgoKUENJOiBQcm9iaW5nIFBDSSBo
-YXJkd2FyZQppbyBzY2hlZHVsZXIgbm9vcCByZWdpc3RlcmVkCmlvIHNjaGVkdWxlciBhbnRpY2lw
-YXRvcnkgcmVnaXN0ZXJlZCAoZGVmYXVsdCkKaW8gc2NoZWR1bGVyIGRlYWRsaW5lIHJlZ2lzdGVy
-ZWQKaW8gc2NoZWR1bGVyIGNmcSByZWdpc3RlcmVkClNlcmlhbDogTVBDNTJ4eCBQU0MgZHJpdmVy
-CnR0eVBTQzAgYXQgTU1JTyAweGYwMDAyMDAwIChpcnEgPSA0MCkgaXMgYSBNUEM1Mnh4IFBTQwpS
-QU1ESVNLIGRyaXZlciBpbml0aWFsaXplZDogMTYgUkFNIGRpc2tzIG9mIDQwOTZLIHNpemUgMTAy
-NCBibG9ja3NpemUKbWljZTogUFMvMiBtb3VzZSBkZXZpY2UgY29tbW9uIGZvciBhbGwgbWljZQpO
-RVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDIK
+Hi everybody,
+
+Sorry to reply so late. I was out of office.
+
+I tried the below Andy's idea. It works fine.
+It is my TCP clients which now slow the traffic.
+
+But I don't know why the default timeouts are so high.
+If the traffic is high, the timeout does not fire.
+If the traffic is low, the timeout seems too long (???).
+
+Thanks all for your ideas and works.
+Best regards
+Laurent
+
+
+> De la part de Andy Fleming
+> Envoye : mar. 14 fevrier 2006 18:37
+> A : Laurent Lagrange
+> Cc : linuxppc-embedded@ozlabs.org
+> Objet : Re: Gianfar is slower than fcc_enet on MPC8541 ???
+> 
+> My guess is that you are measuring latency.  By default, interrupt  
+> coalescing is on, and used to be set to very poor default 
+> values.  In drivers/net/gianfar.h, change the defaults to look like this:
+> 
+> #define DEFAULT_TX_COALESCE 1
+> #define DEFAULT_TXCOUNT 16
+> #define DEFAULT_TXTIME  4
+> 
+> #define DEFAULT_RX_COALESCE 1
+> #define DEFAULT_RXCOUNT 16
+> #define DEFAULT_RXTIME  4
+> 
+> The problem was that the timeout was quite long, so a small number of  
+> packets would have to wait a whole millisecond (or more!) to get  
+> processed.  While it wouldn't affect bandwidth tests, which send many  
+> packets, it would affect a simple test like ping.
+> 
+> If you don't feel like recompiling the kernel, you can use ethtool to  
+> change the timeout values.
+ 
