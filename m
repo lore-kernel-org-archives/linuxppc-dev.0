@@ -1,12 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17405.42237.285728.981952@cargo.ozlabs.ibm.com>
-Date: Thu, 23 Feb 2006 23:05:17 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: please pull powerpc-merge.git
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <SRS0+eb7ae25f47855baec100+914+infradead.org+dwmw2@canuck.srs.infradead.org>
+Received: from canuck.infradead.org (canuck.infradead.org [205.233.218.70])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6F287679FF
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2006 04:22:04 +1100 (EST)
+Subject: Re: yaboot 1.3.14 release candidate 1
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Nasrat <pnasrat@redhat.com>
+In-Reply-To: <1139538538.3638.14.camel@enki.eridu>
+References: <1139538538.3638.14.camel@enki.eridu>
+Content-Type: text/plain
+Date: Thu, 23 Feb 2006 17:21:56 +0000
+Message-Id: <1140715316.22730.21.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,81 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Thu, 2006-02-09 at 21:28 -0500, Paul Nasrat wrote:
+> Amiga partition support (Sven Luther),
 
-Please do a pull from
+Does this still have an off-by-one bug in the partition numbering which
+coincidentally matches a similar bug in the Pegasos OpenFirmware? If so,
+we should fix it before any proper release.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
-
-There are 15 commits there: fixes for various bugs and a performance
-regression, plus a defconfig update.
-
-Thanks,
-Paul.
-
-Alan Curry:
-      powerpc: fix altivec_unavailable_exception Oopses
-
-Anton Blanchard:
-      powerpc: Fix runlatch performance issues
-      powerpc64: remove broken/bitrotted HMT support
-
-Haren Myneni:
-      powerpc: Trivial fix to set the proper timeout value for kdump
-
-Kelly Daly:
-      powerpc: disable OProfile for iSeries
-
-Kumar Gala:
-      powerpc: Enable coherency for all pages on 83xx to fix PCI data corruption
-
-Michael Ellerman:
-      powerpc: Initialise hvlpevent_queue.lock correctly
-      powerpc: Only calculate htab_size in one place for kexec
-
-Michal Ostrowski:
-      Fix race condition in hvc console.
-
-Olaf Hering:
-      powerpc: change compat shmget size arg to signed
-      ppc: fix adb breakage in xmon
-
-Olof Johansson:
-      powerpc: Update {g5,pseries,ppc64}_defconfig
-
-R Sharada:
-      powerpc64: fix spinlock recursion in native_hpte_clear
-
-Segher Boessenkool:
-      powerpc: Fix some MPIC + HT APIC buglets
-      powerpc: Don't re-assign PCI resources on Maple
-
- arch/powerpc/configs/g5_defconfig         |  174 ++++++++++--------------
- arch/powerpc/configs/ppc64_defconfig      |  173 ++++++++++--------------
- arch/powerpc/configs/pseries_defconfig    |  127 ++++++-----------
- arch/powerpc/kernel/crash.c               |    4 -
- arch/powerpc/kernel/head_32.S             |    1 
- arch/powerpc/kernel/head_64.S             |  109 +--------------
- arch/powerpc/kernel/machine_kexec_64.c    |   10 -
- arch/powerpc/kernel/process.c             |   32 ++++
- arch/powerpc/kernel/prom_init.c           |   38 -----
- arch/powerpc/kernel/sys_ppc32.c           |    2 
- arch/powerpc/mm/hash_native_64.c          |    7 +
- arch/powerpc/mm/hash_utils_64.c           |    3 
- arch/powerpc/oprofile/Kconfig             |    1 
- arch/powerpc/platforms/iseries/lpevents.c |    2 
- arch/powerpc/platforms/iseries/setup.c    |    1 
- arch/powerpc/platforms/maple/pci.c        |    4 -
- arch/powerpc/platforms/pseries/Kconfig    |    7 -
- arch/powerpc/sysdev/mpic.c                |    9 +
- arch/ppc/kernel/head.S                    |    1 
- arch/ppc/xmon/adb.c                       |  212 -----------------------------
- arch/ppc/xmon/start.c                     |  169 -----------------------
- arch/ppc/xmon/xmon.c                      |  108 ---------------
- drivers/char/hvc_console.c                |    8 +
- include/asm-powerpc/cputable.h            |    9 +
- include/asm-powerpc/mmu.h                 |    1 
- include/asm-powerpc/reg.h                 |   33 -----
- include/asm-powerpc/thread_info.h         |    4 -
- 27 files changed, 275 insertions(+), 974 deletions(-)
- delete mode 100644 arch/ppc/xmon/adb.c
+-- 
+dwmw2
