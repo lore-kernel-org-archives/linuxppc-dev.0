@@ -1,18 +1,25 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 6DCFA679E2
+Return-Path: <dibacco@inwind.it>
+Received: from smtp1.libero.it (smtp1.libero.it [193.70.192.51])
+	by ozlabs.org (Postfix) with ESMTP id 4BDCF67A06
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Feb 2006 07:08:29 +1100 (EST)
-In-Reply-To: <000001c6389e$980f0ff0$5201a8c0@GEG2400>
-References: <000001c6389e$980f0ff0$5201a8c0@GEG2400>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9A05AF34-3A14-4D64-9EDF-81D7C3C315FE@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: Gianfar is slower  than fcc_enet on MPC8541 ???
-Date: Thu, 23 Feb 2006 14:08:19 -0600
-To: Laurent Lagrange <lagrange@fr.oleane.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 24 Feb 2006 08:54:48 +1100 (EST)
+Received: from localhost (172.16.1.209) by smtp1.libero.it (7.0.027-DD01)
+	id 43E0E17C01E83C11 for linuxppc-embedded@ozlabs.org;
+	Thu, 23 Feb 2006 22:54:44 +0100
+Received: from smtp3.libero.it ([172.16.1.53])
+	by localhost (asav22.libero.it [193.70.193.9]) (amavisd-new, port 10024)
+	with ESMTP id 21143-06-7 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 23 Feb 2006 22:54:44 +0100 (CET)
+Received: from libero.it (172.16.1.214) by smtp3.libero.it (7.0.027-DD01)
+	id 431C39E001C8EC67 for linuxppc-embedded@ozlabs.org;
+	Thu, 23 Feb 2006 22:54:44 +0100
+Date: Thu, 23 Feb 2006 22:54:44 +0100
+Message-Id: <IV5U78$180EB77EBEE4B7FA75E82AA727A7FFA2@libero.it>
+Subject: Looping SPIMISO and SPIMOSI pins
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+From: "dibacco\@inwind\.it" <dibacco@inwind.it>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,22 +30,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+What could happen if I loop SPIMISO and SPIMOSI on my board expansion con=
+nector? I think I should receive the messages I send on the SPI bus. SPI =
+is  
+full duplex?
 
-On Feb 23, 2006, at 11:28, Laurent Lagrange wrote:
-
-> Hi everybody,
->
-> I tried the below Andy's idea. It works fine.
-> It is my TCP clients which now slow the traffic.
->
-> But I don't know why the default timeouts are so high.
-> If the traffic is high, the timeout does not fire.
-> If the traffic is low, the timeout seems too long (???).
-
-The answer there is simple: stupidity!  :)  I just didn't carefully  
-test the values for performance when I chose them.  I probably also  
-did the math wrong, because I was more concerned about seeing if it  
-worked at all.  It's also possible it got set that way to see a  
-measurable difference to prove it was working, and then got left as  
-the default.  Rest assured, there was not a deliberate reason.  We  
-submitted a patch once this performance issue was discovered.
+Best regards,
+Antonio.
