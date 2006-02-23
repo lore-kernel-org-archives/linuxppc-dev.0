@@ -1,18 +1,13 @@
-Return-Path: <sr@denx.de>
-Received: from natnoddy.rzone.de (natnoddy.rzone.de [81.169.145.166])
-	by ozlabs.org (Postfix) with ESMTP id 336E867A39
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 23 Feb 2006 05:02:03 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: u-boot 1.1.4 using two fecs
-Date: Wed, 22 Feb 2006 19:01:51 +0100
-References: <IV3O7I$AE8FCD5B4D0B827DBEFFF524E0D45F85@libero.it>
-In-Reply-To: <IV3O7I$AE8FCD5B4D0B827DBEFFF524E0D45F85@libero.it>
+Return-Path: <galak@kernel.crashing.org>
+Date: Wed, 22 Feb 2006 22:19:54 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] ppc32: handle Book E debug exceptions on kernel stack
+In-Reply-To: <20060214190700.GB17822@xyzzy.farnsworth.org>
+Message-ID: <Pine.LNX.4.44.0602222217220.28948-100000@gate.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200602221901.51833.sr@denx.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: David Gibson <david@gibson.dropbear.id.au>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,17 +18,89 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Antonio,
+On Tue, 14 Feb 2006, Dale Farnsworth wrote:
 
-On Wednesday, 22. February 2006 18:50, dibacco@inwind.it wrote:
-> Is it possible in your opinion to use both the fecs on a board in the
-> u-boot? I read something saying only one can be the active one.
+> From: Dale Farnsworth <dale@farnsworth.org>
+> 
+> On PPC Book E processsors, we currently handle debug
+> exceptions on the critical exception stack (debug stack
+> for E200).  This causes problems with the kgdb single
+> step handler, which calls smp_processor_id() and spin_lock(),
+> which reference current_thread_info(), which only works when
+> we are on the kernel stack.
+> 
+> We address this by switching to the kernel stack early while
+> handling debug exceptions.  Note that the entry values of r10
+> and r11 are still saved on the critical exception (or debug) stack.
+> 
+> Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+> 
 
-a) You're on the wrong list. Please ask again on the U-Boot list
+Paul,
 
-b) What hardware (CPU, board, etc) are you referring to? A lot of
-   Frescale CPU's have FEC's. So please be more specific when asking
-   on the U-Boot list.
+We were wondering if you or David remember why a specific critical
+exception stack was added in the 40x port from 2.4 to 2.6?
 
-Best regards,
-Stefan
+- kumar
+
+> ---
+> 
+> This is low level code and needs careful review.
+> I've only tested it on mpc8548cds.
+> 
+> I didn't find the corresponding code in arch/powerpc,
+> so I assume Book E support hasn't been merged yet.
+> 
+>  arch/ppc/kernel/head_booke.h |   15 +++++++++------
+>  1 file changed, 9 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/ppc/kernel/head_booke.h b/arch/ppc/kernel/head_booke.h
+> index f3d274c..a5eec51 100644
+> --- a/arch/ppc/kernel/head_booke.h
+> +++ b/arch/ppc/kernel/head_booke.h
+> @@ -92,7 +92,8 @@
+>   * registers as the normal prolog above. Instead we use a portion of the
+>   * critical/machine check exception stack at low physical addresses.
+>   */
+> -#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0, exc_level_srr1) \
+> +#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0,		     \
+> +				   exc_level_srr1, kernel_sp_reg)	     \
+>  	mtspr	exc_level##_SPRG,r8;					     \
+>  	BOOKE_LOAD_EXC_LEVEL_STACK(exc_level);/* r8 points to the exc_level stack*/ \
+>  	stw	r10,GPR10-INT_FRAME_SIZE(r8);				     \
+> @@ -100,7 +101,7 @@
+>  	mfcr	r10;			/* save CR in r10 for now	   */\
+>  	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
+>  	andi.	r11,r11,MSR_PR;						     \
+> -	mr	r11,r8;							     \
+> +	mr	r11,kernel_sp_reg;					     \
+>  	mfspr	r8,exc_level##_SPRG;					     \
+>  	beq	1f;							     \
+>  	/* COMING FROM USER MODE */					     \
+> @@ -128,11 +129,13 @@
+>  	SAVE_2GPRS(7, r11)
+>  
+>  #define CRITICAL_EXCEPTION_PROLOG \
+> -		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1)
+> +		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1, r8)
+> +#define CRITICAL_EXCEPTION_ON_KERNEL_STACK_PROLOG \
+> +		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1, r1)
+>  #define DEBUG_EXCEPTION_PROLOG \
+> -		EXC_LEVEL_EXCEPTION_PROLOG(DEBUG, SPRN_DSRR0, SPRN_DSRR1)
+> +		EXC_LEVEL_EXCEPTION_PROLOG(DEBUG, SPRN_DSRR0, SPRN_DSRR1, r1)
+>  #define MCHECK_EXCEPTION_PROLOG \
+> -		EXC_LEVEL_EXCEPTION_PROLOG(MCHECK, SPRN_MCSRR0, SPRN_MCSRR1)
+> +		EXC_LEVEL_EXCEPTION_PROLOG(MCHECK, SPRN_MCSRR0, SPRN_MCSRR1, r8)
+>  
+>  /*
+>   * Exception vectors.
+> @@ -268,7 +271,7 @@ label:
+>  #else
+>  #define DEBUG_EXCEPTION							      \
+>  	START_EXCEPTION(Debug);						      \
+> -	CRITICAL_EXCEPTION_PROLOG;					      \
+> +	CRITICAL_EXCEPTION_ON_KERNEL_STACK_PROLOG;			      \
+>  									      \
+>  	/*								      \
+>  	 * If there is a single step or branch-taken exception in an	      \
+> 
