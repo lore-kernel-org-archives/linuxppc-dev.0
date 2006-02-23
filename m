@@ -1,23 +1,12 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 57A9C679F5
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Feb 2006 15:22:15 +1100 (EST)
-In-Reply-To: <200602222129.31700.mbuesch@freenet.de>
-References: <200602222129.31700.mbuesch@freenet.de>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7A04DCF5-C5CF-46E2-A133-A7743BD83B17@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: PowerPC: Sleeping function called from invalid context at
-	emulate_instruction()
-Date: Wed, 22 Feb 2006 22:22:17 -0600
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Michael Buesch <mbuesch@freenet.de>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17405.42237.285728.981952@cargo.ozlabs.ibm.com>
+Date: Thu, 23 Feb 2006 23:05:17 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: please pull powerpc-merge.git
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +16,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Linus,
 
-On Feb 22, 2006, at 2:29 PM, Michael Buesch wrote:
+Please do a pull from
 
-> Hi,
->
-> On a powerPC 32bit, I got the following debugging assertion failure:
->
-> [  733.209827] Debug: sleeping function called from invalid context  
-> at arch/powerpc/kernel/traps.c:697
-> [  733.210682] in_atomic():0, irqs_disabled():1
-> [  733.211347] Call Trace:
-> [  733.211969] [D6023EB0] [C0007F84] show_stack+0x58/0x174  
-> (unreliable)
-> [  733.212765] [D6023EE0] [C0022C34] __might_sleep+0xbc/0xd0
-> [  733.213523] [D6023EF0] [C000D158] program_check_exception 
-> +0x1d8/0x4fc
-> [  733.214309] [D6023F40] [C000E744] ret_from_except_full+0x0/0x4c
-> [  733.215076] --- Exception: 700 at 0x102a7100
-> [  733.215785]     LR = 0xdb9ef04
->
-> It is caused by the line
-> if (get_user(instword, (u32 __user *)(regs->nip)))
-> in arch/powerpc/kernel/traps.c:emulate_instruction()
->
-> I am not sure, if this is an indication for a bug, or just false  
-> alarm.
-> In case of false alarm, the debugging message should be made quiet
-> somehow, though.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
 
-Paul,
+There are 15 commits there: fixes for various bugs and a performance
+regression, plus a defconfig update.
 
-Last time this was brought up we left it wondering why you had made  
-program_check_exception() run with interrupts disabled.  Any further  
-ideas on that one?
+Thanks,
+Paul.
 
-- kumar
+Alan Curry:
+      powerpc: fix altivec_unavailable_exception Oopses
+
+Anton Blanchard:
+      powerpc: Fix runlatch performance issues
+      powerpc64: remove broken/bitrotted HMT support
+
+Haren Myneni:
+      powerpc: Trivial fix to set the proper timeout value for kdump
+
+Kelly Daly:
+      powerpc: disable OProfile for iSeries
+
+Kumar Gala:
+      powerpc: Enable coherency for all pages on 83xx to fix PCI data corruption
+
+Michael Ellerman:
+      powerpc: Initialise hvlpevent_queue.lock correctly
+      powerpc: Only calculate htab_size in one place for kexec
+
+Michal Ostrowski:
+      Fix race condition in hvc console.
+
+Olaf Hering:
+      powerpc: change compat shmget size arg to signed
+      ppc: fix adb breakage in xmon
+
+Olof Johansson:
+      powerpc: Update {g5,pseries,ppc64}_defconfig
+
+R Sharada:
+      powerpc64: fix spinlock recursion in native_hpte_clear
+
+Segher Boessenkool:
+      powerpc: Fix some MPIC + HT APIC buglets
+      powerpc: Don't re-assign PCI resources on Maple
+
+ arch/powerpc/configs/g5_defconfig         |  174 ++++++++++--------------
+ arch/powerpc/configs/ppc64_defconfig      |  173 ++++++++++--------------
+ arch/powerpc/configs/pseries_defconfig    |  127 ++++++-----------
+ arch/powerpc/kernel/crash.c               |    4 -
+ arch/powerpc/kernel/head_32.S             |    1 
+ arch/powerpc/kernel/head_64.S             |  109 +--------------
+ arch/powerpc/kernel/machine_kexec_64.c    |   10 -
+ arch/powerpc/kernel/process.c             |   32 ++++
+ arch/powerpc/kernel/prom_init.c           |   38 -----
+ arch/powerpc/kernel/sys_ppc32.c           |    2 
+ arch/powerpc/mm/hash_native_64.c          |    7 +
+ arch/powerpc/mm/hash_utils_64.c           |    3 
+ arch/powerpc/oprofile/Kconfig             |    1 
+ arch/powerpc/platforms/iseries/lpevents.c |    2 
+ arch/powerpc/platforms/iseries/setup.c    |    1 
+ arch/powerpc/platforms/maple/pci.c        |    4 -
+ arch/powerpc/platforms/pseries/Kconfig    |    7 -
+ arch/powerpc/sysdev/mpic.c                |    9 +
+ arch/ppc/kernel/head.S                    |    1 
+ arch/ppc/xmon/adb.c                       |  212 -----------------------------
+ arch/ppc/xmon/start.c                     |  169 -----------------------
+ arch/ppc/xmon/xmon.c                      |  108 ---------------
+ drivers/char/hvc_console.c                |    8 +
+ include/asm-powerpc/cputable.h            |    9 +
+ include/asm-powerpc/mmu.h                 |    1 
+ include/asm-powerpc/reg.h                 |   33 -----
+ include/asm-powerpc/thread_info.h         |    4 -
+ 27 files changed, 275 insertions(+), 974 deletions(-)
+ delete mode 100644 arch/ppc/xmon/adb.c
