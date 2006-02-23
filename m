@@ -1,13 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Date: Wed, 22 Feb 2006 22:19:54 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] ppc32: handle Book E debug exceptions on kernel stack
-In-Reply-To: <20060214190700.GB17822@xyzzy.farnsworth.org>
-Message-ID: <Pine.LNX.4.44.0602222217220.28948-100000@gate.crashing.org>
+Return-Path: <tnt@246tNt.com>
+Received: from outmx024.isp.belgacom.be (outmx024.isp.belgacom.be
+	[195.238.4.128])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5C153679E0
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 23 Feb 2006 18:37:09 +1100 (EST)
+Received: from outmx024.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx024.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
+	ESMTP id k1N7awar018086
+	for <linuxppc-embedded@ozlabs.org>; Thu, 23 Feb 2006 08:36:58 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <43FD6669.9090405@246tNt.com>
+Date: Thu, 23 Feb 2006 08:38:17 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: David Gibson <david@gibson.dropbear.id.au>, linuxppc-embedded@ozlabs.org
+To: #LI JIANGGAN# <lijianggan@pmail.ntu.edu.sg>
+Subject: Re: boot failure on lite5200b board
+References: <84A109BF918D934CB46ACF33BCE187C002D54D71@mail02.student.main.ntu.edu.sg>
+In-Reply-To: <84A109BF918D934CB46ACF33BCE187C002D54D71@mail02.student.main.ntu.edu.sg>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,89 +31,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 14 Feb 2006, Dale Farnsworth wrote:
+#LI JIANGGAN# wrote:
+> Hello all,
+> 
+> For my end-of-study project, I am working on an embedded system with
+> reference of freescale's lite5200b reference board. I was trying to boot
+> Linux 2.6.15 on the board (with the fec and bestcomm corrected). however
+> the booting was stuck at the following stage:
 
-> From: Dale Farnsworth <dale@farnsworth.org>
-> 
-> On PPC Book E processsors, we currently handle debug
-> exceptions on the critical exception stack (debug stack
-> for E200).  This causes problems with the kgdb single
-> step handler, which calls smp_processor_id() and spin_lock(),
-> which reference current_thread_info(), which only works when
-> we are on the kernel stack.
-> 
-> We address this by switching to the kernel stack early while
-> handling debug exceptions.  Note that the entry values of r10
-> and r11 are still saved on the critical exception (or debug) stack.
-> 
-> Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-> 
+In addition to what has already been said (use a higher address for the
+image and don't forget console=ttyPSC0 in kernel command line), make
+sure you use the kernel from my git tree, it contains a few patches from
+John Rigby to add support for the lite5200b.
 
-Paul,
+Please report if it works, I've not been able to test those myself since
+i'm still on lite5200.
 
-We were wondering if you or David remember why a specific critical
-exception stack was added in the 40x port from 2.4 to 2.6?
 
-- kumar
-
-> ---
-> 
-> This is low level code and needs careful review.
-> I've only tested it on mpc8548cds.
-> 
-> I didn't find the corresponding code in arch/powerpc,
-> so I assume Book E support hasn't been merged yet.
-> 
->  arch/ppc/kernel/head_booke.h |   15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/ppc/kernel/head_booke.h b/arch/ppc/kernel/head_booke.h
-> index f3d274c..a5eec51 100644
-> --- a/arch/ppc/kernel/head_booke.h
-> +++ b/arch/ppc/kernel/head_booke.h
-> @@ -92,7 +92,8 @@
->   * registers as the normal prolog above. Instead we use a portion of the
->   * critical/machine check exception stack at low physical addresses.
->   */
-> -#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0, exc_level_srr1) \
-> +#define EXC_LEVEL_EXCEPTION_PROLOG(exc_level, exc_level_srr0,		     \
-> +				   exc_level_srr1, kernel_sp_reg)	     \
->  	mtspr	exc_level##_SPRG,r8;					     \
->  	BOOKE_LOAD_EXC_LEVEL_STACK(exc_level);/* r8 points to the exc_level stack*/ \
->  	stw	r10,GPR10-INT_FRAME_SIZE(r8);				     \
-> @@ -100,7 +101,7 @@
->  	mfcr	r10;			/* save CR in r10 for now	   */\
->  	mfspr	r11,exc_level_srr1;	/* check whether user or kernel    */\
->  	andi.	r11,r11,MSR_PR;						     \
-> -	mr	r11,r8;							     \
-> +	mr	r11,kernel_sp_reg;					     \
->  	mfspr	r8,exc_level##_SPRG;					     \
->  	beq	1f;							     \
->  	/* COMING FROM USER MODE */					     \
-> @@ -128,11 +129,13 @@
->  	SAVE_2GPRS(7, r11)
->  
->  #define CRITICAL_EXCEPTION_PROLOG \
-> -		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1)
-> +		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1, r8)
-> +#define CRITICAL_EXCEPTION_ON_KERNEL_STACK_PROLOG \
-> +		EXC_LEVEL_EXCEPTION_PROLOG(CRIT, SPRN_CSRR0, SPRN_CSRR1, r1)
->  #define DEBUG_EXCEPTION_PROLOG \
-> -		EXC_LEVEL_EXCEPTION_PROLOG(DEBUG, SPRN_DSRR0, SPRN_DSRR1)
-> +		EXC_LEVEL_EXCEPTION_PROLOG(DEBUG, SPRN_DSRR0, SPRN_DSRR1, r1)
->  #define MCHECK_EXCEPTION_PROLOG \
-> -		EXC_LEVEL_EXCEPTION_PROLOG(MCHECK, SPRN_MCSRR0, SPRN_MCSRR1)
-> +		EXC_LEVEL_EXCEPTION_PROLOG(MCHECK, SPRN_MCSRR0, SPRN_MCSRR1, r8)
->  
->  /*
->   * Exception vectors.
-> @@ -268,7 +271,7 @@ label:
->  #else
->  #define DEBUG_EXCEPTION							      \
->  	START_EXCEPTION(Debug);						      \
-> -	CRITICAL_EXCEPTION_PROLOG;					      \
-> +	CRITICAL_EXCEPTION_ON_KERNEL_STACK_PROLOG;			      \
->  									      \
->  	/*								      \
->  	 * If there is a single step or branch-taken exception in an	      \
-> 
+	Sylvain
