@@ -1,20 +1,19 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id 0646A679E7
+Return-Path: <marty.wedepohl@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.201])
+	by ozlabs.org (Postfix) with ESMTP id B92D4679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Feb 2006 01:23:40 +1100 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Thu, 23 Feb 2006 07:23:37 -0700
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-Subject: Re: [PATCH] ppc32: handle Book E debug exceptions on kernel stack
-Message-ID: <20060223142337.GA6161@xyzzy.farnsworth.org>
-References: <Pine.LNX.4.44.0602222217220.28948-100000@gate.crashing.org>
-	<1140692043.2892.1.camel@yoda.jdub.homelinux.org>
+	Fri, 24 Feb 2006 04:10:47 +1100 (EST)
+Received: by xproxy.gmail.com with SMTP id i28so78371wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 23 Feb 2006 09:10:45 -0800 (PST)
+Message-ID: <1f82ba6e0602230910g4b432352s1547681b0c88058d@mail.gmail.com>
+Date: Thu, 23 Feb 2006 10:10:45 -0700
+From: "Marty @ GMail" <marty.wedepohl@gmail.com>
+To: tnt@246tNt.com, lijianggan@pmail.ntu.edu.sg, linuxppc-embedded@ozlabs.org
+Subject: Re: boot failure on lite5200b board
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1140692043.2892.1.camel@yoda.jdub.homelinux.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Reply-To: marty.wedepohl@shaw.ca
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,36 +24,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 23, 2006 at 10:54:02AM +0000, Josh Boyer wrote:
-> On Wed, 2006-02-22 at 22:19 -0600, Kumar Gala wrote:
-> > On Tue, 14 Feb 2006, Dale Farnsworth wrote:
-> > 
-> > > From: Dale Farnsworth <dale@farnsworth.org>
-> > > 
-> > > On PPC Book E processsors, we currently handle debug
-> > > exceptions on the critical exception stack (debug stack
-> > > for E200).  This causes problems with the kgdb single
-> > > step handler, which calls smp_processor_id() and spin_lock(),
-> > > which reference current_thread_info(), which only works when
-> > > we are on the kernel stack.
-> > > 
-> > > We address this by switching to the kernel stack early while
-> > > handling debug exceptions.  Note that the entry values of r10
-> > > and r11 are still saved on the critical exception (or debug) stack.
-> > > 
-> > > Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
-> > 
-> > Paul,
-> > 
-> > We were wondering if you or David remember why a specific critical
-> > exception stack was added in the 40x port from 2.4 to 2.6?
-> 
-> I think Matt did that.  And if I remember correctly, it was to avoid
-> corruption if you were in the middle of handling a normal interrupt and
-> a critical interrupt came in.
-
-Thanks Josh, Matt was one of the "we" who were wondering.  If indeed
-you are remembering correctly, then I think we're safe to use the
-normal kernel stack rather than the critical exception stack.
-
--Dale
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+IEZyb206IFN5bHZhaW4gTXVuYXV0IFttYWls
+dG86dG50QDI0NnROdC5jb21dCj4gU2VudDogVGh1IDIvMjMvMjAwNiAxNTozOAo+IFRvOiAjTEkg
+SklBTkdHQU4jCj4gQ2M6IGxpbnV4cHBjLWVtYmVkZGVkQG96bGFicy5vcmcKPiBTdWJqZWN0OiBS
+ZTogYm9vdCBmYWlsdXJlIG9uIGxpdGU1MjAwYiBib2FyZAo+Cj4gI0xJIEpJQU5HR0FOIyB3cm90
+ZToKPiA+IEhlbGxvIGFsbCwKPiA+Cj4gPiBGb3IgbXkgZW5kLW9mLXN0dWR5IHByb2plY3QsIEkg
+YW0gd29ya2luZyBvbiBhbiBlbWJlZGRlZCBzeXN0ZW0gd2l0aAo+ID4gcmVmZXJlbmNlIG9mIGZy
+ZWVzY2FsZSdzIGxpdGU1MjAwYiByZWZlcmVuY2UgYm9hcmQuIEkgd2FzIHRyeWluZyB0byBib290
+Cj4gPiBMaW51eCAyLjYuMTUgb24gdGhlIGJvYXJkICh3aXRoIHRoZSBmZWMgYW5kIGJlc3Rjb21t
+IGNvcnJlY3RlZCkuIGhvd2V2ZXIKPiA+IHRoZSBib290aW5nIHdhcyBzdHVjayBhdCB0aGUgZm9s
+bG93aW5nIHN0YWdlOgo+Cj4gSW4gYWRkaXRpb24gdG8gd2hhdCBoYXMgYWxyZWFkeSBiZWVuIHNh
+aWQgKHVzZSBhIGhpZ2hlciBhZGRyZXNzIGZvciB0aGUKPiBpbWFnZSBhbmQgZG9uJ3QgZm9yZ2V0
+IGNvbnNvbGU9dHR5UFNDMCBpbiBrZXJuZWwgY29tbWFuZCBsaW5lKSwgbWFrZQo+IHN1cmUgeW91
+IHVzZSB0aGUga2VybmVsIGZyb20gbXkgZ2l0IHRyZWUsIGl0IGNvbnRhaW5zIGEgZmV3IHBhdGNo
+ZXMgZnJvbQo+IEpvaG4gUmlnYnkgdG8gYWRkIHN1cHBvcnQgZm9yIHRoZSBsaXRlNTIwMGIuCj4K
+PiBQbGVhc2UgcmVwb3J0IGlmIGl0IHdvcmtzLCBJJ3ZlIG5vdCBiZWVuIGFibGUgdG8gdGVzdCB0
+aG9zZSBteXNlbGYgc2luY2UKPiBpJ20gc3RpbGwgb24gbGl0ZTUyMDAuCj4KPgo+IAlTeWx2YWlu
+CgoKClRoZSBwcm9ibGVtIG1pZ2h0IGJlIGluIHRoZSBVLUJvb3QgZW52aXJvbm1lbnQgdmFyaWFi
+bGVzClNlZSBtaW5lIGJlbG93LgoKTk9URToKdGhhdCB0aGUgYm9vdF9jbWQgZXhlY3V0ZXMgdGhl
+IGNvbW1hbmQgcnVuIG5ldF9uZnMgYW5kCnRoYXQgdGhlIG5ldF9uZnMgdGZ0cCdzIHRoZSBrZXJu
+ZWwsIHRoZW4gZXhlY3V0cyB0aGUgcnVuIHNldGNvbnNvbGUKbmZzYXJncyBhZGRpcCBiZWZvcmUg
+aXQgYm9vdHMgdGhlIGtlcm5lbAoKSG9wZSB0aGF0IGhlbHBzCgpNYXJ0aW4KCgoKClUtQm9vdCAx
+LjEuNCAoRmViIDIyIDIwMDYgLSAxNDo0MjowNSkKCkNQVTogICBNUEM1MjAwIHYyLjIgYXQgNDYy
+IE1IegogICAgICAgQnVzIDEzMiBNSHosIElQQiAxMzIgTUh6LCBQQ0kgMzMgTUh6CkJvYXJkOiBG
+cmVlc2NhbGUgTVBDNTIwMCAoTGl0ZTUyMDBCKQpJMkM6ICAgODUga0h6LCByZWFkeQpEUkFNOiAg
+MjU2IE1CCkZMQVNIOiAzMiBNQgpQQ0k6ICAgQnVzIERldiBWZW5JZCBEZXZJZCBDbGFzcyBJbnQK
+ICAgICAgICAwMCAgMWEgIDEwNTcgIDU4MDkgIDA2ODAgIDAwCkluOiAgICBzZXJpYWwKT3V0OiAg
+IHNlcmlhbApFcnI6ICAgc2VyaWFsCk5ldDogICBGRUMgRVRIRVJORVQKSURFOiAgIEJ1cyAwOiBP
+SwogIERldmljZSAwOiBub3QgYXZhaWxhYmxlCiAgRGV2aWNlIDE6IG5vdCBhdmFpbGFibGUKClR5
+cGUgInJ1biBmbGFzaF9uZnMiIHRvIG1vdW50IHJvb3QgZmlsZXN5c3RlbSBvdmVyIE5GUwoKSGl0
+IGFueSBrZXkgdG8gc3RvcCBhdXRvYm9vdDogIDAKPT4gcHJpbnRlbnYKYm9vdGNtZD1ydW4gbmV0
+X25mcwpib290ZGVsYXk9NQpiYXVkcmF0ZT0xMTUyMDAKcHJlYm9vdD1lY2hvO2VjaG8gVHlwZSAi
+cnVuIGZsYXNoX25mcyIgdG8gbW91bnQgcm9vdCBmaWxlc3lzdGVtIG92ZXIgTkZTO2VjaG8KYmF1
+ZHJhdGU9MTE1MjAwCm5ldGRldj1ldGgwCmFkZGlwPXNldGVudiBib290YXJncyAkKGJvb3Rhcmdz
+KQppcD0kKGlwYWRkcik6JChzZXJ2ZXJpcCk6JChnYXRld2F5aXApOiQobmV0bWFzayk6JChob3N0
+bmFtZSk6JChuZXRkZXYpOm9mZgpwYW5pNWV0aGFjdD1GRUMgRVRIRVJORVQKc2VydmVyaXA9MTky
+LjE2OC4xMDAuMzMKZ2F0ZXdheWlwPTE5Mi4xNjguMTAwLjEKbmV0bWFzaz0yNTUuMjU1LjI1NS4w
+CnJvb3RwYXRoPS9vcHQvZWxkay9wcGNfNnh4CmlwYWRkcj0xOTIuMTY4LjEwMC4yOQpyYW1hcmdz
+PXNldGVudiBib290YXJncyByb290PS9kZXYvcmFtIHJ3Cm5ldF9uZnM9dGZ0cCAyMDAwMDAgJChi
+b290ZmlsZSk7cnVuIHNldGNvbnNvbGUgbmZzYXJncyBhZGRpcDtib290bQpzZXRjb25zb2xlPXNl
+dGVudiBib290YXJncyAkKGNvbnNvbGUpCm5mc2FyZ3M9c2V0ZW52IGJvb3RhcmdzICQoYm9vdGFy
+Z3MpIHJvb3Q9L2Rldi9uZnMgcncKbmZzcm9vdD0kKHNlcnZlcmlwKTokKHJvb3QpYm9vdGZpbGU9
+TVBDNTIwMC91SW1hZ2UKaG9zdG5hbWU9d2VlZHdoYWNrZXIKYm9vdGRlbGF5PTUKY29uc29sZT1j
+b25zb2xlPXR0eVBTQzAsMTE1MjAwbjggY29uc29sZT10dHkxCmZsYXNoX25mcz1ydW4gc2V0Y29u
+c29sZSBuZnNhcmdzIGFkZGlwO2Jvb3RtCmF1dG9sb2FkPW5vCmV0aGFkZHI9MDA6MDQ6OWY6MDA6
+Mjc6MzUKc3RkaW49c2VyaWFsCnN0ZG91dD1zZXJpYWwKc3RkZXJyPXNlcmlhbAoKRW52aXJvbm1l
+bnQgc2l6ZTogODY4LzY1NTMyIGJ5dGVzCj0+IGJvb3QKVXNpbmcgRkVDIEVUSEVSTkVUIGRldmlj
+ZQpURlRQIGZyb20gc2VydmVyIDE5Mi4xNjguMTAwLjMzOyBvdXIgSVAgYWRkcmVzcyBpcyAxOTIu
+MTY4LjEwMC4yOQpGaWxlbmFtZSAnTVBDNTIwMC91SW1hZ2UnLgpMb2FkIGFkZHJlc3M6IDB4MjAw
+MDAwCkxvYWRpbmc6ICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjCiAgICAgICAgICMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIwpk
+b25lCkJ5dGVzIHRyYW5zZmVycmVkID0gOTg2NDcyIChmMGQ2OCBoZXgpCiMjIEJvb3RpbmcgaW1h
+Z2UgYXQgMDAyMDAwMDAgLi4uCiAgIEltYWdlIE5hbWU6ICAgTGludXgtMi42LjE2LXJjMS1nYWY0
+Zjc1ZmQtZGlydHkKICAgSW1hZ2UgVHlwZTogICBQb3dlclBDIExpbnV4IEtlcm5lbCBJbWFnZSAo
+Z3ppcCBjb21wcmVzc2VkKQogICBEYXRhIFNpemU6ICAgIDk4NjQwOCBCeXRlcyA9IDk2My4zIGtC
+CiAgIExvYWQgQWRkcmVzczogMDAwMDAwMDAKICAgRW50cnkgUG9pbnQ6ICAwMDAwMDAwMAogICBW
+ZXJpZnlpbmcgQ2hlY2tzdW0gLi4uIE9LCiAgIFVuY29tcHJlc3NpbmcgS2VybmVsIEltYWdlIC4u
+LiBPSwppZCBtYWNoKCk6IGRvbmUKTU1VOmVudGVyCk1NVTpodyBpbml0Ck1NVTptYXBpbgpNTVU6
+c2V0aW8KTU1VOmV4aXQKc2V0dXBfYXJjaDogZW50ZXIKc2V0dXBfYXJjaDogYm9vdG1lbQphcmNo
+OiBleGl0CkxpbnV4IHZlcnNpb24gMi42LjE2LXJjMS1nYWY0Zjc1ZmQtZGlydHkgKHdlZGVwb2hs
+QHVidW50dSkgKGdjYwp2ZXJzaW9uIDQuMC4wICg2QnVpbHQgMSB6b25lbGlzdHMKS2VybmVsIGNv
+bW1hbmQgbGluZTogY29uc29sZT10dHlQU0MwLDExNTIwMG44IGNvbnNvbGU9dHR5MQpyb290PS9k
+ZXYvbmZzIHJ3IG5mc3hQSUQgaGFzaCB0YWJsZSBlbnRyaWVzOiAyMDQ4IChvcmRlcjogMTEsIDMy
+NzY4CmJ5dGVzKQpDb25zb2xlOiBjb2xvdXIgZHVtbXkgZGV2aWNlIDgweDI1CkRlbnRyeSBjYWNo
+ZSBoYXNoIHRhYmxlIGVudHJpZXM6IDY1NTM2IChvcmRlcjogNiwgMjYyMTQ0IGJ5dGVzKQpJbm9k
+ZS1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDMyNzY4IChvcmRlcjogNSwgMTMxMDcyIGJ5dGVz
+KQpNZW1vcnk6IDI1NzUzNmsgYXZhaWxhYmxlICgxNTA0ayBrZXJuZWwgY29kZSwgNDk2ayBkYXRh
+LCA5NmsgaW5pdCwgMGsgaGlnaG1lbSkKTW91bnQtY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiA1
+MTIKTkVUOiBSZWdpc3RlcmVkIHByb3RvY29sIGZhbWlseSAxNgoKUENJOiBQcm9iaW5nIFBDSSBo
+YXJkd2FyZQppbyBzY2hlZHVsZXIgbm9vcCByZWdpc3RlcmVkCmlvIHNjaGVkdWxlciBhbnRpY2lw
+YXRvcnkgcmVnaXN0ZXJlZCAoZGVmYXVsdCkKaW8gc2NoZWR1bGVyIGRlYWRsaW5lIHJlZ2lzdGVy
+ZWQKaW8gc2NoZWR1bGVyIGNmcSByZWdpc3RlcmVkClNlcmlhbDogTVBDNTJ4eCBQU0MgZHJpdmVy
+CnR0eVBTQzAgYXQgTU1JTyAweGYwMDAyMDAwIChpcnEgPSA0MCkgaXMgYSBNUEM1Mnh4IFBTQwpS
+QU1ESVNLIGRyaXZlciBpbml0aWFsaXplZDogMTYgUkFNIGRpc2tzIG9mIDQwOTZLIHNpemUgMTAy
+NCBibG9ja3NpemUKbWljZTogUFMvMiBtb3VzZSBkZXZpY2UgY29tbW9uIGZvciBhbGwgbWljZQpO
+RVQ6IFJlZ2lzdGVyZWQgcHJvdG9jb2wgZmFtaWx5IDIK
