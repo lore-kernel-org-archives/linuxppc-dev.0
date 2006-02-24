@@ -1,22 +1,21 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 94E8F679EA
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2006 20:16:33 +1100 (EST)
-Date: Fri, 24 Feb 2006 10:16:24 +0100
-From: Olaf Hering <olh@suse.de>
-To: Heikki Lindholm <holindho@cs.helsinki.fi>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1E9CA679F3
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2006 22:08:37 +1100 (EST)
 Subject: Re: ibook1 hangs during boot, atyfb broken
-Message-ID: <20060224091624.GB11693@suse.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Heikki Lindholm <holindho@cs.helsinki.fi>
+In-Reply-To: <43FEB064.1@cs.helsinki.fi>
 References: <20060223232423.GA29454@suse.de>
 	<1140752928.8264.72.camel@localhost.localdomain>
 	<43FEB064.1@cs.helsinki.fi>
+Content-Type: text/plain
+Date: Fri, 24 Feb 2006 22:08:21 +1100
+Message-Id: <1140779302.8264.79.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <43FEB064.1@cs.helsinki.fi>
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olh@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,8 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Fri, Feb 24, Heikki Lindholm wrote:
 
 > Using an older DVI TiBook, atyfb has been broken at least since 2.6.8 or 
+> so, and still is with 2.6.15, in that it can't seem to synchronize with 
+> the LCD and maybe 50% of the (re-)boots produce just more-or-less 
+> shimmering/flashing garbage on screen. Doesn't completely hang though...
 
-atyfb vs. aty128fb.
+Except that no tibook ever used atyfb...
+
+Ben.
