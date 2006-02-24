@@ -1,14 +1,22 @@
-Return-Path: <osubbu@yahoo.com>
-Received: from web32110.mail.mud.yahoo.com (web32110.mail.mud.yahoo.com
-	[68.142.207.124]) by ozlabs.org (Postfix) with SMTP id 0315B679F6
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2006 18:49:44 +1100 (EST)
-Message-ID: <20060224074302.79321.qmail@web32110.mail.mud.yahoo.com>
-Date: Thu, 23 Feb 2006 23:43:02 -0800 (PST)
-From: Subramanian Olagappan <osubbu@yahoo.com>
-Subject: command to check debug objects
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 94E8F679EA
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Feb 2006 20:16:33 +1100 (EST)
+Date: Fri, 24 Feb 2006 10:16:24 +0100
+From: Olaf Hering <olh@suse.de>
+To: Heikki Lindholm <holindho@cs.helsinki.fi>
+Subject: Re: ibook1 hangs during boot, atyfb broken
+Message-ID: <20060224091624.GB11693@suse.de>
+References: <20060223232423.GA29454@suse.de>
+	<1140752928.8264.72.camel@localhost.localdomain>
+	<43FEB064.1@cs.helsinki.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <43FEB064.1@cs.helsinki.fi>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,18 +26,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+ On Fri, Feb 24, Heikki Lindholm wrote:
 
-I am looking for the command to see if the .o's or .lib is generated
-using -g [ debug ] objects.
+> Using an older DVI TiBook, atyfb has been broken at least since 2.6.8 or 
 
-tried with readelf , but would like to know the exact options to use on
-power pc.
-
-Thanks,
-ols
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+atyfb vs. aty128fb.
