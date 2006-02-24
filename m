@@ -1,16 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: parsing of some early cmdline options
-Date: Fri, 24 Feb 2006 10:40:50 +1100
-References: <Pine.LNX.4.44.0602231658210.16092-100000@gate.crashing.org>
-	<1140736753.8264.55.camel@localhost.localdomain>
-In-Reply-To: <1140736753.8264.55.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13124548.YxcArkY8J3";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200602241040.54060.michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
+Return-Path: <sfr@canb.auug.org.au>
+Date: Fri, 24 Feb 2006 11:12:42 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Olaf Hering <olh@suse.de>
+Subject: Re: [PATCH] change compat shmget size arg to signed
+Message-Id: <20060224111242.08f14bd9.sfr@canb.auug.org.au>
+In-Reply-To: <20060223232717.GB29454@suse.de>
+References: <20060224101644.548b0c24.sfr@canb.auug.org.au>
+	<20060223232717.GB29454@suse.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__24_Feb_2006_11_12_42_+1100_Rd8vr1rFTIqIEnkq"
+Cc: linuxppc64-dev@ozlabs.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,53 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart13124548.YxcArkY8J3
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+--Signature=_Fri__24_Feb_2006_11_12_42_+1100_Rd8vr1rFTIqIEnkq
+Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 24 Feb 2006 10:19, Benjamin Herrenschmidt wrote:
-> On Thu, 2006-02-23 at 17:02 -0600, Kumar Gala wrote:
-> > Guys,
-> >
-> > I noticed that we have code in arch/powerpc/kernel/prom_init.c to handle
-> > parsing iommu=3D, mem=3D, and crashkernel=3D.
-> >
-> > The problem I have is that we only use/build prom_init.c on MULTIPLATFO=
-RM
-> > (coming from true OF).
+On Fri, 24 Feb 2006 00:27:17 +0100 Olaf Hering <olh@suse.de> wrote:
+>
+>  On Fri, Feb 24, Stephen Rothwell wrote:
+>=20
+> > Does the ltp test fail on a standard kernel(where SHMMAX is 0x2000000),=
+ or
+> > only on a SLES kernel (where SHMMAX is ULONG_MAX)?
+>=20
+> It fails with SLES9 and SLES10. SLES9 has 0x2000000 as default.
 
-> > Any ideas on how to handle this for the !MULTIPLATFORM cases.  I'm most
-> > concerned about mem=3D.
+So what was shm_ctlmax set to when the test was run.
 
-mem=3D is a bit tricky because you need to know about it really early, othe=
-rwise=20
-your bootloader might violate the limit. But we could certainly check for i=
-t=20
-again in prom.c. And you can always just set /chosen/linux,memory-limit.
+I am trying to figure out why this test:
 
-cheers
+if (size < SHMMIN || size > shm_ctlmax)
+                return -EINVAL;
 
-=2D-=20
-Michael Ellerman
-IBM OzLabs
+Doesn't return -EINVAL for size =3D=3D 0xffffffff if shm_ctlmax is 0x200000=
+0?
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---nextPart13124548.YxcArkY8J3
+--Signature=_Fri__24_Feb_2006_11_12_42_+1100_Rd8vr1rFTIqIEnkq
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+Version: GnuPG v1.4.2 (GNU/Linux)
 
-iD8DBQBD/kgGdSjSd0sB4dIRAsbHAJwMm3XiD0XPr2LtVvbw8HEAPd1d3ACgpu1s
-AePAhfIvr+8KnKsBKkd+oWk=
-=OCzW
+iD8DBQFD/k+HFdBgD/zoJvwRAjaaAJwNOKfbhsFCVFBiLCS00TvspMPDyACfafUC
+lyIWGX64U0bY0XJnx04Ntr4=
+=O2Sr
 -----END PGP SIGNATURE-----
 
---nextPart13124548.YxcArkY8J3--
+--Signature=_Fri__24_Feb_2006_11_12_42_+1100_Rd8vr1rFTIqIEnkq--
