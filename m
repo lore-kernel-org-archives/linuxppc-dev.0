@@ -1,21 +1,21 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2B5CD679F7
+Return-Path: <KokHow.Teh@marconi.com>
+Received: from smtpoutuk02.marconi.com (smtpoutuk02.marconi.com
+	[128.87.251.113]) by ozlabs.org (Postfix) with ESMTP id 752BD679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Feb 2006 20:51:15 +1100 (EST)
-Date: Fri, 24 Feb 2006 09:50:58 +0000
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-To: "Pelton, Dave" <dpelton@ciena.com>
-Subject: Re: UTOPIA support for MPC885 with 2.6.15 kernel
-Message-Id: <20060224095058.373a141b.ajz@cambridgebroadband.com>
-In-Reply-To: <3B9518857C91E345AA1806A6F53C0EB701596AF2@onmxm01.ciena.com>
-References: <3B9518857C91E345AA1806A6F53C0EB701596AF2@onmxm01.ciena.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 24 Feb 2006 21:13:23 +1100 (EST)
+Received: from cvdgwy01.uk.marconicomms.com (cvis26.uk.marconicomms.com
+	[128.87.251.109])
+	by smtpoutuk02.marconi.com (8.12.11/8.12.11) with ESMTP id
+	k1OA3LDS027348
+	for <linuxppc-embedded@ozlabs.org>; Fri, 24 Feb 2006 10:03:22 GMT
+	(envelope-from KokHow.Teh@marconi.com)
+Subject: PQ2FADS_ZU: u-boot-1.1.4, eldk.3.1.1, linux-2.4.25 boots problem
+To: linuxppc-embedded@ozlabs.org
+From: "KokHow Teh" <KokHow.Teh@marconi.com>
+Date: Fri, 24 Feb 2006 18:03:21 +0800
+Message-ID: <OFB33741BA.EBB350F9-ON4825711F.003669C0@uk.marconicomms.com>
+MIME-Version: 1.0
+Content-type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,50 +26,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Dave,
+Hi;
+      I use the above software, apply linuxppc-2005-03-06-2006-02-15.patch
+from http://mpc8260sar.sourceforge.net/, `make PQ2FADS_config`, not using
+devfs and never manage to boot the kernel:
 
-I maintain the mpc860sar project - although it hasn't required much
-maintenance for the past year or so.
+u-boot>  printenv
+ramboot=setenv bootargs root=/dev/ram rw;tftp $ramdiskaddr $ramdiskfile;tftp $loadaddr $bootfile
+;bootm $loadaddr $ramdiskaddr
+bootdelay=10
+baudrate=115200
+ethaddr=08:00:3E:33:44:56
+ipaddr=147.128.28.44
+serverip=147.128.28.42
+rootpath="/fadsroot"
+gatewayip=147.128.28.1
+netmask=255.255.254.0
+hostname=PQ2FADS-ZU
+bootfile="uImage.linux"
+netdev=eth0
+ramdiskaddr=400000
+ramdiskfile=uInitRD
+ethact=FCC2 ETHERNET
+testdramdata=y
+testdramaddress=y
+testdramwalk=n
+x86_run_bios=on
+bootcmd=run nfsboot
+nfsargs=setenv bootargs $bootargs root=/dev/nfs rw nfsroot=$serverip:$rootpath
+setconsole=setenv bootargs $console
+addip=setenv bootargs $bootargs ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netdev:off
+loadaddr=0x1000000
+nfsboot=tftp $loadaddr $bootfile; run setconsole nfsargs addip; echo $bootargs; bootm
+console=console=ttyS0,115200n8 console=tty0
+stdin=serial
+stdout=serial
+stderr=serial
 
-Nobody has told me about any linux-2.6 port, so it's possible you are
-the first to do this.
+Environment size: 891/262140 bytes
+u-boot>
+u-boot> boot
+Using FCC2 ETHERNET device
+TFTP from server 147.128.28.42; our IP address is 147.128.28.44
+Filename 'uImage.linux'.
+Load address: 0x1000000
+Loading: #################################################################
+         #################################################################
+         ######################################################
+done
+Bytes transferred = 941606 (e5e26 hex)
+console=ttyS0,115200n8 console=tty0 root=/dev/nfs rw nfsroot=147.128.28.42:/fadsroot ip=147.128.
+28.44:147.128.28.42:147.128.28.1:255.255.254.0:PQ2FADS-ZU:eth0:off
+## Booting image at 01000000 ...
+   Image Name:   Linux Kernel Image
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    941542 Bytes = 919.5 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
 
-If you are happy with your port I'd appreciate it if you sent me a
-patch which I would then consider adding to the site.
 
-FYI, I also maintain a  PQII driver called mpc8260sar, and I have
-been sent a patch which added support for linux-2.6 without breaking
-linux-2.4, so I added this to the sourceforge project.  If you like
-I'll send you the PQII linux-2.6 patch as a guide for how to do it for
-the original PQI driver.
+U-Boot 1.1.4 (Feb 15 2006 - 16:19:49)
 
-Alex
+MPC8260 Reset Status: Check Stop, External Soft, External Hard
 
 
-On Fri, 24 Feb 2006 00:54:39 -0500
-"Pelton, Dave" <dpelton@ciena.com> wrote:
+      I have tried console=ttyCPM0,115200n8 console=tty0 and it makes no difference. BTW, which one should be used for serial console in 2.4.x kernel
+for this PowerQUICC II 8280 platform? ttySx or ttyCPMx?
+      Any insight is appreciated.
 
-> Hello,
-> 
-> I am currently working with a MPC885ADS board running a 2.6.15
-> kernel build.  I have been attempting to get the UTOPIA interface
-> working, but I have not been able to find kernel code (or patches)
-> to do this.  
-> 
-> The closest I have found so far is the MPC860/862 ATM driver on
-> SourceForge.  Unfortunately this driver was written for the 2.4
-> kernel, and does not include MPHY support for ESAR mode.  I have
-> been able to get this code to compile and run on my kernel, and now
-> I am digging into the ESAR/MPHY support stuff.  
-> 
-> I was wondering if anyone else has already done anything along these
-> lines (either a ESAR/MPHY driver or MPC855 UTOPIA support on the 2.6
-> kernel), as I would prefer to build on existing code rather than
-> gluing this stuff together myself.
-> 
-> - Thanks,
->   David Pelton.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Regards,
+TEH
