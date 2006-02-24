@@ -1,20 +1,13 @@
-Return-Path: <holindho@cs.helsinki.fi>
-Received: from fep01-app.kolumbus.fi (fep01-0.kolumbus.fi [193.229.0.41])
-	by ozlabs.org (Postfix) with ESMTP id 033B3679FB
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Feb 2006 00:23:39 +1100 (EST)
-Message-ID: <43FF08D2.2050407@cs.helsinki.fi>
-Date: Fri, 24 Feb 2006 15:23:30 +0200
-From: Heikki Lindholm <holindho@cs.helsinki.fi>
+Return-Path: <galak@kernel.crashing.org>
+Date: Fri, 24 Feb 2006 10:34:30 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Membership stats (Was: Re: merge these lists?)
+In-Reply-To: <20060208110718.57e9f9f5.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.44.0602241033400.2323-100000@gate.crashing.org>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: ibook1 hangs during boot, atyfb broken
-References: <20060223232423.GA29454@suse.de>	
-	<1140752928.8264.72.camel@localhost.localdomain>	
-	<43FEB064.1@cs.helsinki.fi>
-	<1140779302.8264.79.camel@localhost.localdomain>
-In-Reply-To: <1140779302.8264.79.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olh@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linuxppc64-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +17,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt kirjoitti:
->>Using an older DVI TiBook, atyfb has been broken at least since 2.6.8 or 
->>so, and still is with 2.6.15, in that it can't seem to synchronize with 
->>the LCD and maybe 50% of the (re-)boots produce just more-or-less 
->>shimmering/flashing garbage on screen. Doesn't completely hang though...
-> 
-> 
-> Except that no tibook ever used atyfb...
+On Wed, 8 Feb 2006, Stephen Rothwell wrote:
 
-Damn straight! I stand corrected (confused with one PC laptop), it's the 
-radeon thing then..
+> On Wed, 8 Feb 2006 11:01:50 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > Yes, "a sysadmin" could do that.  However, those that are
+> > subscribed with different addresses on each list will end
+> > up subscribed twice and those who have changed their preferences on
+> > the abondoned list will have fix them as well.
+> 
+> Just for interest:
+> 
+> 	members of linuxppc-dev		473
+> 	members of linuxppc64-dev	264
+> 	common				 98
+> 
+> But, as I said, "common" above does not count those who have different
+> addresses subscribed to each list.
 
--- Heikki Lindholm
+Where did we leave on with this?  I was about to request that 
+marc.theaimsgroup.com start archiving some of the ppc lists but figured 
+doing it after we merged lists would be better.
+
+- kumar
