@@ -1,17 +1,18 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3A7EB67B5A
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Feb 2006 21:27:37 +1100 (EST)
-Date: Sat, 25 Feb 2006 11:27:31 +0100
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] processes stuck forever in __do_get_xsec
-Message-ID: <20060225102730.GA17550@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <weese.stanford@gmail.com>
+Received: from pproxy.gmail.com (pproxy.gmail.com [64.233.166.179])
+	by ozlabs.org (Postfix) with ESMTP id 79F9E67B5F
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Feb 2006 21:44:36 +1100 (EST)
+Received: by pproxy.gmail.com with SMTP id o67so526240pye
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Feb 2006 02:44:35 -0800 (PST)
+Message-ID: <251f20df0602250244l1cf9acd1x11b44cb9643b3de1@mail.gmail.com>
+Date: Sat, 25 Feb 2006 02:44:35 -0800
+From: "Sewook Wee" <weese@stanford.edu>
+Sender: weese.stanford@gmail.com
+To: linuxppc-dev@ozlabs.org
+Subject: Data Cache Write-through
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_22717_24854404.1140864275593"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,151 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+------=_Part_22717_24854404.1140864275593
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-64bit processes loop forever in __do_get_xsec, r8 is loaded, but r4 is compared.
-Also, gdb doesnt understand __do_get_xsec and __get_datapage.
+Hello all,
 
-No idea if my change is correct.
+I am Sewook Wee at Stanford University.
+For the research purpose, I am hacking the linux kernel (version 2.4.30) fo=
+r
+The PPC405 in Virtex II Pro Xilinx FPGA.
+What I want to do is make Data Cache policy to be write-through, not
+write-back.
+I changed the DCWR Value in the arch/ppc/mm/44x_mmu.c, but seems it does no=
+t
+work.
 
-(gdb) info registers
-r0             0x1      1
-r1             0xfffff8587c0    17592178018240
-r2             0x40000661448    4398053200968
-r3             0x102000 1056768
-r4             0x4400116315df5  1196273318321653
-r5             0x14cb69f61f48246        93650487927407174
-r6             0x4400116315df2  1196273318321650
-r7             0x3      3
-r8             0x3644   13892
-r9             0x4ae52fab6fd92  1317571323690386
-r10            0x0      0
-r11            0xfffff8588b0    17592178018480
-r12            0x40000599648    4398052382280
-r13            0x400000321c0    4398046716352
-r14            0xfffff85c644    17592178034244
-r15            0x400000c0de8    4398047301096
-r16            0x67     103
-r17            0x23     35
-r18            0x338    824
-r19            0x0      0
-r20            0x4      4
-r21            0x1017b350       269988688
-r22            0x102604c0       270927040
-r23            0xfffff858950    17592178018640
-r24            0x101f35a0       270480800
-r25            0x40000249598    4398048908696
-r26            0xfffff85c5d0    17592178034128
-r27            0x0      0
-r28            0x40000223928    4398048753960
-r29            0x35ac5  219845
-r30            0x0      0
-r31            0xfffff8588b0    17592178018480
-pc             0x1005f4 1050100
-cr             0x48022224       1208099364
-lr             0x100464 1049700
-ctr            0x100450 1049680
-xer            0x0      0
+I hope some of you have decent idea to make it happen.
 
-(gdb) bt
-#0  0x00000000001005f4 in __kernel_clock_getres ()
-#1  0x0000000000100464 in __kernel_gettimeofday ()
-#2  0x0000040000599648 in .__gettimeofday_internal () from /lib64/power5/libc.so.6
-#3  0x00000400002acef4 in .rpmswNow () from /usr/lib64/librpmio-4.4.so
-#4  0x00000400002acf74 in .rpmswExit () from /usr/lib64/librpmio-4.4.so
-#5  0x000004000014f244 in .rpmdbAdd () from /usr/lib64/librpmdb-4.4.so
-#6  0x0000040000072f80 in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
-#7  0x0000040000074254 in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
-#8  0x00000400000739ec in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
-#9  0x0000040000074254 in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
-#10 0x00000400000732d8 in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
-#11 0x000004000009fed4 in .rpmtsRun () from /usr/lib64/librpm-4.4.so
-#12 0x0000040000089208 in .rpmInstall () from /usr/lib64/librpm-4.4.so
-#13 0x0000000010004f30 in ?? ()
-#14 0x220004224d502053 in ?? ()
-#15 0x000004000003d010 in ?? () from /usr/lib64/librpm-4.4.so
-#16 0x0000000000000000 in ?? ()
+Thanks.
 
-(gdb) disassemble __kernel_gettimeofday
-Dump of assembler code for function __kernel_gettimeofday:
-0x0000000000100450 <__kernel_gettimeofday+0>:   mflr    r12
-0x0000000000100454 <__kernel_gettimeofday+4>:   mr      r11,r3
-0x0000000000100458 <__kernel_gettimeofday+8>:   mr      r10,r4
-0x000000000010045c <__kernel_gettimeofday+12>:  bl      0x10063c <__kernel_clock_getres+136>
-0x0000000000100460 <__kernel_gettimeofday+16>:  bl      0x1005f4 <__kernel_clock_getres+64>
-0x0000000000100464 <__kernel_gettimeofday+20>:  lis     r7,15
-0x0000000000100468 <__kernel_gettimeofday+24>:  ori     r7,r7,16960
-0x000000000010046c <__kernel_gettimeofday+28>:  rldicl  r5,r4,44,20
-0x0000000000100470 <__kernel_gettimeofday+32>:  rldicr  r6,r5,20,43
-0x0000000000100474 <__kernel_gettimeofday+36>:  std     r5,0(r11)
-0x0000000000100478 <__kernel_gettimeofday+40>:  subf    r0,r6,r4
-0x000000000010047c <__kernel_gettimeofday+44>:  mulld   r0,r0,r7
-0x0000000000100480 <__kernel_gettimeofday+48>:  rldicl  r0,r0,44,20
-0x0000000000100484 <__kernel_gettimeofday+52>:  cmpldi  r10,0
-0x0000000000100488 <__kernel_gettimeofday+56>:  std     r0,8(r11)
-0x000000000010048c <__kernel_gettimeofday+60>:  beq-    0x1004a0 <__kernel_gettimeofday+80>
-0x0000000000100490 <__kernel_gettimeofday+64>:  lwz     r4,88(r3)
-0x0000000000100494 <__kernel_gettimeofday+68>:  lwz     r5,92(r3)
-0x0000000000100498 <__kernel_gettimeofday+72>:  stw     r4,0(r10)
-0x000000000010049c <__kernel_gettimeofday+76>:  stw     r5,4(r10)
-0x00000000001004a0 <__kernel_gettimeofday+80>:  mtlr    r12
-0x00000000001004a4 <__kernel_gettimeofday+84>:  crclr   so
-0x00000000001004a8 <__kernel_gettimeofday+88>:  li      r3,0
-0x00000000001004ac <__kernel_gettimeofday+92>:  blr
+--
+Sewook Wee
+  weese@stanford.edu
+  Computer System Laboratory
+  Stanford University
 
-(gdb) disassemble __kernel_clock_getres
-Dump of assembler code for function __kernel_clock_getres:
-0x00000000001005b4 <__kernel_clock_getres+0>:   cmpwi   r3,0
-0x00000000001005b8 <__kernel_clock_getres+4>:   cmpwi   cr1,r3,1
-0x00000000001005bc <__kernel_clock_getres+8>:   cror    eq,eq,4*cr1+eq
-0x00000000001005c0 <__kernel_clock_getres+12>:  bne-    0x1005e8 <__kernel_clock_getres+52>
-0x00000000001005c4 <__kernel_clock_getres+16>:  li      r3,0
-0x00000000001005c8 <__kernel_clock_getres+20>:  cmplwi  r4,0
-0x00000000001005cc <__kernel_clock_getres+24>:  crclr   so
-0x00000000001005d0 <__kernel_clock_getres+28>:  beqlr   
-0x00000000001005d4 <__kernel_clock_getres+32>:  lis     r5,152
-0x00000000001005d8 <__kernel_clock_getres+36>:  ori     r5,r5,38528
-0x00000000001005dc <__kernel_clock_getres+40>:  std     r3,0(r4)
-0x00000000001005e0 <__kernel_clock_getres+44>:  std     r5,8(r4)
-0x00000000001005e4 <__kernel_clock_getres+48>:  blr
-0x00000000001005e8 <__kernel_clock_getres+52>:  li      r0,247
-0x00000000001005ec <__kernel_clock_getres+56>:  sc      
-0x00000000001005f0 <__kernel_clock_getres+60>:  blr
-0x00000000001005f4 <__kernel_clock_getres+64>:  ld      r8,80(r3)
-0x00000000001005f8 <__kernel_clock_getres+68>:  andi.   r0,r4,1
-0x00000000001005fc <__kernel_clock_getres+72>:  bne-    0x1005f4 <__kernel_clock_getres+64>
-0x0000000000100600 <__kernel_clock_getres+76>:  xor     r0,r4,r4
-0x0000000000100604 <__kernel_clock_getres+80>:  add     r3,r3,r0
-0x0000000000100608 <__kernel_clock_getres+84>:  mftb    r7
-0x000000000010060c <__kernel_clock_getres+88>:  ld      r9,48(r3)
-0x0000000000100610 <__kernel_clock_getres+92>:  subf    r7,r9,r7
-0x0000000000100614 <__kernel_clock_getres+96>:  ld      r5,64(r3)
-0x0000000000100618 <__kernel_clock_getres+100>: mulhdu  r7,r7,r5
-0x000000000010061c <__kernel_clock_getres+104>: ld      r6,72(r3)
-0x0000000000100620 <__kernel_clock_getres+108>: add     r4,r6,r7
-0x0000000000100624 <__kernel_clock_getres+112>: xor     r0,r4,r4
-0x0000000000100628 <__kernel_clock_getres+116>: add     r3,r3,r0
-0x000000000010062c <__kernel_clock_getres+120>: ld      r0,80(r3)
-0x0000000000100630 <__kernel_clock_getres+124>: cmpld   r0,r8
-0x0000000000100634 <__kernel_clock_getres+128>: bne-    0x1005f4 <__kernel_clock_getres+64>
-0x0000000000100638 <__kernel_clock_getres+132>: blr
-0x000000000010063c <__kernel_clock_getres+136>: mflr    r0
-0x0000000000100640 <__kernel_clock_getres+140>: bcl-    20,4*cr7+so,0x100648 <__kernel_datapage_offset+4>
+------=_Part_22717_24854404.1140864275593
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+<div>Hello all, </div>
+<div>&nbsp;</div>
+<div>I am Sewook Wee at Stanford University.</div>
+<div>For the research purpose, I am hacking the linux kernel (version 2.4.3=
+0) for The PPC405 in Virtex II Pro Xilinx FPGA. </div>
+<div>What I want to do is make Data Cache policy to be write-through, not w=
+rite-back.</div>
+<div>I changed the DCWR Value in the arch/ppc/mm/44x_mmu.c, but seems it do=
+es not work. </div>
+<div>&nbsp;</div>
+<div>I hope some of you have decent idea to make it happen.</div>
+<div>&nbsp;</div>
+<div>Thanks.</div>
+<div>&nbsp;</div>
+<div>-- <br>Sewook Wee<br>&nbsp;&nbsp;<a href=3D"mailto:weese@stanford.edu"=
+>weese@stanford.edu</a><br>&nbsp;&nbsp;Computer System Laboratory <br>&nbsp=
+;&nbsp;Stanford University </div>
 
-Signed-off-by: Olaf Hering <olh@suse.de>
-
- arch/powerpc/kernel/vdso64/gettimeofday.S |    1 +
- 1 files changed, 1 insertion(+)
-
-Index: linux-2.6.16-rc4-olh/arch/powerpc/kernel/vdso64/gettimeofday.S
-===================================================================
---- linux-2.6.16-rc4-olh.orig/arch/powerpc/kernel/vdso64/gettimeofday.S
-+++ linux-2.6.16-rc4-olh/arch/powerpc/kernel/vdso64/gettimeofday.S
-@@ -225,6 +225,7 @@ V_FUNCTION_BEGIN(__do_get_xsec)
-   .cfi_startproc
- 	/* check for update count & load values */
- 1:	ld	r8,CFG_TB_UPDATE_COUNT(r3)
-+	mr	r4,r8
- 	andi.	r0,r4,1			/* pending update ? loop */
- 	bne-	1b
- 	xor	r0,r4,r4		/* create dependency */
+------=_Part_22717_24854404.1140864275593--
