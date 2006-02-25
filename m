@@ -1,17 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Fix mem= cmdline handling on arch/powerpc for
-	!MULTIPLATFORM
-Date: Sat, 25 Feb 2006 11:12:33 +1100
-References: <Pine.LNX.4.44.0602241717340.11527-100000@gate.crashing.org>
-In-Reply-To: <Pine.LNX.4.44.0602241717340.11527-100000@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1775872.qG02lxQnDg";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200602251112.38582.michael@ellerman.id.au>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3A7EB67B5A
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Feb 2006 21:27:37 +1100 (EST)
+Date: Sat, 25 Feb 2006 11:27:31 +0100
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] processes stuck forever in __do_get_xsec
+Message-ID: <20060225102730.GA17550@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,107 +21,151 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1775872.qG02lxQnDg
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Sat, 25 Feb 2006 10:18, Kumar Gala wrote:
-> On Sat, 25 Feb 2006, Michael Ellerman wrote:
-> > On Sat, 25 Feb 2006 09:43, Kumar Gala wrote:
-> > > On Feb 24, 2006, at 4:27 PM, Michael Ellerman wrote:
-> > > > Hi Kumar,
-> > > >
-> > > > On Sat, 25 Feb 2006 03:54, Kumar Gala wrote:
-> > > >> mem=3D command line option was being ignored in arch/powerpc if we
-> > > >> were not
-> > > >> a CONFIG_MULTIPLATFORM (which is handled via prom_init stub). The
-> > > >> initial
-> > > >> command line extraction and parsing needed to be moved earlier in
-> > > >> the boot
-> > > >> process and have code to actual parse mem=3D and do something about
-> > > >> it.
-> > > >>
-> > > >> @@ -1004,6 +991,41 @@ static int __init early_init_dt_scan_cho
-> > > >>                 crashk_res.end =3D crashk_res.start + *lprop - 1;
-> > > >>  #endif
-> > > >>
-> > > >> +	/* Retreive command line */
-> > > >> + 	p =3D of_get_flat_dt_prop(node, "bootargs", &l);
-> > > >> +	if (p !=3D NULL && l > 0)
-> > > >> +		strlcpy(cmd_line, p, min((int)l, COMMAND_LINE_SIZE));
-> > > >> +
-> > > >> +#ifdef CONFIG_CMDLINE
-> > > >> +	if (l =3D=3D 0 || (l =3D=3D 1 && (*p) =3D=3D 0))
-> > > >> +		strlcpy(cmd_line, CONFIG_CMDLINE, COMMAND_LINE_SIZE);
-> > > >> +#endif /* CONFIG_CMDLINE */
-> > > >> +
-> > > >> +	DBG("Command line is: %s\n", cmd_line);
-> > > >> +
-> > > >> +	if (strstr(cmd_line, "mem=3D")) {
-> > > >> +		char *p, *q;
-> > > >> +		unsigned long maxmem =3D 0;
-> > > >> +
-> > > >> +		for (q =3D cmd_line; (p =3D strstr(q, "mem=3D")) !=3D 0; ) {
-> > > >> +			q =3D p + 4;
-> > > >> +			if (p > cmd_line && p[-1] !=3D ' ')
-> > > >> +				continue;
-> > > >> +			maxmem =3D simple_strtoul(q, &q, 0);
-> > > >> +			if (*q =3D=3D 'k' || *q =3D=3D 'K') {
-> > > >> +				maxmem <<=3D 10;
-> > > >> +				++q;
-> > > >> +			} else if (*q =3D=3D 'm' || *q =3D=3D 'M') {
-> > > >> +				maxmem <<=3D 20;
-> > > >> +				++q;
-> > > >> +			} else if (*q =3D=3D 'g' || *q =3D=3D 'G') {
-> > > >> +				maxmem <<=3D 30;
-> > > >> +				++q;
-> > > >> +			}
-> > > >> +		}
-> > > >> +		memory_limit =3D maxmem;
-> > > >> +	}
-> > > >> +
-> > > >
-> > > > Why not make the mem=3D parsing an early_param() handler and then c=
-all
-> > > > parse_early_param() here?
-> > >
-> > > This would put constraints on the early_param()'s that I dont think
-> > > we should impose.
-> >
-> > All they should really be doing is parsing the string and setting some
-> > variables, so that seems reasonable to me. Is there anything in
-> > particular?
->
-> If you ever had to do some memory allocation as part of the parsing that
-> might be an issue, since we haven't setup the LMB at that point.
+64bit processes loop forever in __do_get_xsec, r8 is loaded, but r4 is compared.
+Also, gdb doesnt understand __do_get_xsec and __get_datapage.
 
-Sure, but I think it's reasonable to say "don't allocate memory in an=20
-early_param handler", it is an _early_ param after all. But I guess we'll=20
-have to agree to disagree until someone else chimes in with an opinion :)
+No idea if my change is correct.
 
-cheers
+(gdb) info registers
+r0             0x1      1
+r1             0xfffff8587c0    17592178018240
+r2             0x40000661448    4398053200968
+r3             0x102000 1056768
+r4             0x4400116315df5  1196273318321653
+r5             0x14cb69f61f48246        93650487927407174
+r6             0x4400116315df2  1196273318321650
+r7             0x3      3
+r8             0x3644   13892
+r9             0x4ae52fab6fd92  1317571323690386
+r10            0x0      0
+r11            0xfffff8588b0    17592178018480
+r12            0x40000599648    4398052382280
+r13            0x400000321c0    4398046716352
+r14            0xfffff85c644    17592178034244
+r15            0x400000c0de8    4398047301096
+r16            0x67     103
+r17            0x23     35
+r18            0x338    824
+r19            0x0      0
+r20            0x4      4
+r21            0x1017b350       269988688
+r22            0x102604c0       270927040
+r23            0xfffff858950    17592178018640
+r24            0x101f35a0       270480800
+r25            0x40000249598    4398048908696
+r26            0xfffff85c5d0    17592178034128
+r27            0x0      0
+r28            0x40000223928    4398048753960
+r29            0x35ac5  219845
+r30            0x0      0
+r31            0xfffff8588b0    17592178018480
+pc             0x1005f4 1050100
+cr             0x48022224       1208099364
+lr             0x100464 1049700
+ctr            0x100450 1049680
+xer            0x0      0
 
-=2D-=20
-Michael Ellerman
-IBM OzLabs
+(gdb) bt
+#0  0x00000000001005f4 in __kernel_clock_getres ()
+#1  0x0000000000100464 in __kernel_gettimeofday ()
+#2  0x0000040000599648 in .__gettimeofday_internal () from /lib64/power5/libc.so.6
+#3  0x00000400002acef4 in .rpmswNow () from /usr/lib64/librpmio-4.4.so
+#4  0x00000400002acf74 in .rpmswExit () from /usr/lib64/librpmio-4.4.so
+#5  0x000004000014f244 in .rpmdbAdd () from /usr/lib64/librpmdb-4.4.so
+#6  0x0000040000072f80 in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
+#7  0x0000040000074254 in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
+#8  0x00000400000739ec in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
+#9  0x0000040000074254 in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
+#10 0x00000400000732d8 in .rpmpsmStage () from /usr/lib64/librpm-4.4.so
+#11 0x000004000009fed4 in .rpmtsRun () from /usr/lib64/librpm-4.4.so
+#12 0x0000040000089208 in .rpmInstall () from /usr/lib64/librpm-4.4.so
+#13 0x0000000010004f30 in ?? ()
+#14 0x220004224d502053 in ?? ()
+#15 0x000004000003d010 in ?? () from /usr/lib64/librpm-4.4.so
+#16 0x0000000000000000 in ?? ()
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+(gdb) disassemble __kernel_gettimeofday
+Dump of assembler code for function __kernel_gettimeofday:
+0x0000000000100450 <__kernel_gettimeofday+0>:   mflr    r12
+0x0000000000100454 <__kernel_gettimeofday+4>:   mr      r11,r3
+0x0000000000100458 <__kernel_gettimeofday+8>:   mr      r10,r4
+0x000000000010045c <__kernel_gettimeofday+12>:  bl      0x10063c <__kernel_clock_getres+136>
+0x0000000000100460 <__kernel_gettimeofday+16>:  bl      0x1005f4 <__kernel_clock_getres+64>
+0x0000000000100464 <__kernel_gettimeofday+20>:  lis     r7,15
+0x0000000000100468 <__kernel_gettimeofday+24>:  ori     r7,r7,16960
+0x000000000010046c <__kernel_gettimeofday+28>:  rldicl  r5,r4,44,20
+0x0000000000100470 <__kernel_gettimeofday+32>:  rldicr  r6,r5,20,43
+0x0000000000100474 <__kernel_gettimeofday+36>:  std     r5,0(r11)
+0x0000000000100478 <__kernel_gettimeofday+40>:  subf    r0,r6,r4
+0x000000000010047c <__kernel_gettimeofday+44>:  mulld   r0,r0,r7
+0x0000000000100480 <__kernel_gettimeofday+48>:  rldicl  r0,r0,44,20
+0x0000000000100484 <__kernel_gettimeofday+52>:  cmpldi  r10,0
+0x0000000000100488 <__kernel_gettimeofday+56>:  std     r0,8(r11)
+0x000000000010048c <__kernel_gettimeofday+60>:  beq-    0x1004a0 <__kernel_gettimeofday+80>
+0x0000000000100490 <__kernel_gettimeofday+64>:  lwz     r4,88(r3)
+0x0000000000100494 <__kernel_gettimeofday+68>:  lwz     r5,92(r3)
+0x0000000000100498 <__kernel_gettimeofday+72>:  stw     r4,0(r10)
+0x000000000010049c <__kernel_gettimeofday+76>:  stw     r5,4(r10)
+0x00000000001004a0 <__kernel_gettimeofday+80>:  mtlr    r12
+0x00000000001004a4 <__kernel_gettimeofday+84>:  crclr   so
+0x00000000001004a8 <__kernel_gettimeofday+88>:  li      r3,0
+0x00000000001004ac <__kernel_gettimeofday+92>:  blr
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+(gdb) disassemble __kernel_clock_getres
+Dump of assembler code for function __kernel_clock_getres:
+0x00000000001005b4 <__kernel_clock_getres+0>:   cmpwi   r3,0
+0x00000000001005b8 <__kernel_clock_getres+4>:   cmpwi   cr1,r3,1
+0x00000000001005bc <__kernel_clock_getres+8>:   cror    eq,eq,4*cr1+eq
+0x00000000001005c0 <__kernel_clock_getres+12>:  bne-    0x1005e8 <__kernel_clock_getres+52>
+0x00000000001005c4 <__kernel_clock_getres+16>:  li      r3,0
+0x00000000001005c8 <__kernel_clock_getres+20>:  cmplwi  r4,0
+0x00000000001005cc <__kernel_clock_getres+24>:  crclr   so
+0x00000000001005d0 <__kernel_clock_getres+28>:  beqlr   
+0x00000000001005d4 <__kernel_clock_getres+32>:  lis     r5,152
+0x00000000001005d8 <__kernel_clock_getres+36>:  ori     r5,r5,38528
+0x00000000001005dc <__kernel_clock_getres+40>:  std     r3,0(r4)
+0x00000000001005e0 <__kernel_clock_getres+44>:  std     r5,8(r4)
+0x00000000001005e4 <__kernel_clock_getres+48>:  blr
+0x00000000001005e8 <__kernel_clock_getres+52>:  li      r0,247
+0x00000000001005ec <__kernel_clock_getres+56>:  sc      
+0x00000000001005f0 <__kernel_clock_getres+60>:  blr
+0x00000000001005f4 <__kernel_clock_getres+64>:  ld      r8,80(r3)
+0x00000000001005f8 <__kernel_clock_getres+68>:  andi.   r0,r4,1
+0x00000000001005fc <__kernel_clock_getres+72>:  bne-    0x1005f4 <__kernel_clock_getres+64>
+0x0000000000100600 <__kernel_clock_getres+76>:  xor     r0,r4,r4
+0x0000000000100604 <__kernel_clock_getres+80>:  add     r3,r3,r0
+0x0000000000100608 <__kernel_clock_getres+84>:  mftb    r7
+0x000000000010060c <__kernel_clock_getres+88>:  ld      r9,48(r3)
+0x0000000000100610 <__kernel_clock_getres+92>:  subf    r7,r9,r7
+0x0000000000100614 <__kernel_clock_getres+96>:  ld      r5,64(r3)
+0x0000000000100618 <__kernel_clock_getres+100>: mulhdu  r7,r7,r5
+0x000000000010061c <__kernel_clock_getres+104>: ld      r6,72(r3)
+0x0000000000100620 <__kernel_clock_getres+108>: add     r4,r6,r7
+0x0000000000100624 <__kernel_clock_getres+112>: xor     r0,r4,r4
+0x0000000000100628 <__kernel_clock_getres+116>: add     r3,r3,r0
+0x000000000010062c <__kernel_clock_getres+120>: ld      r0,80(r3)
+0x0000000000100630 <__kernel_clock_getres+124>: cmpld   r0,r8
+0x0000000000100634 <__kernel_clock_getres+128>: bne-    0x1005f4 <__kernel_clock_getres+64>
+0x0000000000100638 <__kernel_clock_getres+132>: blr
+0x000000000010063c <__kernel_clock_getres+136>: mflr    r0
+0x0000000000100640 <__kernel_clock_getres+140>: bcl-    20,4*cr7+so,0x100648 <__kernel_datapage_offset+4>
 
---nextPart1775872.qG02lxQnDg
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-iD8DBQBD/6D2dSjSd0sB4dIRAiKjAJ0Sbh1T4JQK7h+SenfgDHrDEAaHVACgnL6N
-++oiuwADOA1uplxMY8E3zhY=
-=+Eiq
------END PGP SIGNATURE-----
+ arch/powerpc/kernel/vdso64/gettimeofday.S |    1 +
+ 1 files changed, 1 insertion(+)
 
---nextPart1775872.qG02lxQnDg--
+Index: linux-2.6.16-rc4-olh/arch/powerpc/kernel/vdso64/gettimeofday.S
+===================================================================
+--- linux-2.6.16-rc4-olh.orig/arch/powerpc/kernel/vdso64/gettimeofday.S
++++ linux-2.6.16-rc4-olh/arch/powerpc/kernel/vdso64/gettimeofday.S
+@@ -225,6 +225,7 @@ V_FUNCTION_BEGIN(__do_get_xsec)
+   .cfi_startproc
+ 	/* check for update count & load values */
+ 1:	ld	r8,CFG_TB_UPDATE_COUNT(r3)
++	mr	r4,r8
+ 	andi.	r0,r4,1			/* pending update ? loop */
+ 	bne-	1b
+ 	xor	r0,r4,r4		/* create dependency */
