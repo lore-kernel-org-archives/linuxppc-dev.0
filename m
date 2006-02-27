@@ -1,19 +1,21 @@
 Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx2.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0A6B467A06
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2006 03:43:35 +1100 (EST)
-Date: Mon, 27 Feb 2006 17:43:31 +0100
+	by ozlabs.org (Postfix) with ESMTP id 9423A679FF
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2006 04:31:29 +1100 (EST)
+Date: Mon, 27 Feb 2006 18:31:24 +0100
 From: Olaf Hering <olh@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: copying /sys causes fans to spin up
-Message-ID: <20060227164331.GA17749@suse.de>
-References: <20060227160911.GA17569@suse.de>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: fix NULL pointer in handle_eeh_events
+Message-ID: <20060227173124.GA18198@suse.de>
+References: <20060227145259.GA15955@suse.de>
+	<20060227172703.GL26339@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20060227160911.GA17569@suse.de>
+In-Reply-To: <20060227172703.GL26339@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,21 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Mon, Feb 27, Olaf Hering wrote:
+ On Mon, Feb 27, Linas Vepstas wrote:
 
-> Ben, 
+> > but ethtool -t still doesnt work right.
 > 
-> 
-> some tool copies /sys, and while doing it, the fans start to spin up on
-> my G5. Any idea how to fix it, other than not reading from /sys? Have to
-> find the exact file.
+> I'll look at this.
 
-Just 'cp -a --parents /sys /dev/shm/' will trigger this, but fans dont
-spin up:
-
-KW: wrong state. Got KW_I2C_IRQ_ADDR, state: state_stop (isr: 06)
-KW: wrong state. Got KW_I2C_IRQ_ADDR, state: state_stop (isr: 06)
-KW: wrong state. Got KW_I2C_IRQ_STOP, state: state_addr (isr: 04)
-low_i2c: Keywest got an out of state interrupt, ignoring
-low_i2c: Keywest got an out of state interrupt, ignoring
-low_i2c: Keywest got an out of state interrupt, ignoring
+Reverting e100.c back to 2.6.15 status fixes it, but maybe it just does
+not cover the error paths in EEH.
