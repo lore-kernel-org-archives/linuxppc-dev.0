@@ -1,32 +1,18 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7F194679F9
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2006 05:43:18 +1100 (EST)
-Received: from e6.ny.us.ibm.com ([192.168.1.106])
-	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id k1RHRCcl006435
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Feb 2006 12:27:12 -0500
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id k1RHR434030065
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Feb 2006 12:27:05 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k1RHR4rB123736
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Feb 2006 12:27:04 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k1RHR4rM018652
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Feb 2006 12:27:04 -0500
-Date: Mon, 27 Feb 2006 11:27:03 -0600
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B4872679FF
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2006 08:29:46 +1100 (EST)
+Subject: Re: copying /sys causes fans to spin up
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Olaf Hering <olh@suse.de>
-Subject: Re: fix NULL pointer in handle_eeh_events
-Message-ID: <20060227172703.GL26339@austin.ibm.com>
-References: <20060227145259.GA15955@suse.de>
+In-Reply-To: <20060227160911.GA17569@suse.de>
+References: <20060227160911.GA17569@suse.de>
+Content-Type: text/plain
+Date: Tue, 28 Feb 2006 08:29:55 +1100
+Message-Id: <1141075795.4809.15.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060227145259.GA15955@suse.de>
-From: linas@austin.ibm.com (Linas Vepstas)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,16 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 27, 2006 at 03:52:59PM +0100, Olaf Hering was heard to remark:
+On Mon, 2006-02-27 at 17:09 +0100, Olaf Hering wrote:
+> Ben, 
 > 
-> This patch fixes a crash in handle_eeh_events,
+> 
+> some tool copies /sys, and while doing it, the fans start to spin up on
+> my G5. Any idea how to fix it, other than not reading from /sys? Have to
+> find the exact file.
 
-Dohh.
+Interesting... it's causing the i2c bus to go nuts... It would be useful
+to find out what file indeed...
 
-Acked-by: Linas Vepstas <linas@austin.ibm.com>
-
-> but ethtool -t still doesnt work right.
-
-I'll look at this.
-
---linas
+Ben.
