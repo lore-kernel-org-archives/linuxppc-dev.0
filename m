@@ -1,23 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CC9CD67A01
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2006 03:12:59 +1100 (EST)
-In-Reply-To: <1140986335.8697.139.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0602241054090.2981-100000@gate.crashing.org>
-	<1140986335.8697.139.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <77448EF2-4D5F-4E7C-B1A5-6164A88E43C7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix mem= cmdline handling on arch/powerpc for
-	!MULTIPLATFORM
-Date: Mon, 27 Feb 2006 10:12:44 -0600
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
-	linux-kernel@vger.kernel.org
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0A6B467A06
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2006 03:43:35 +1100 (EST)
+Date: Mon, 27 Feb 2006 17:43:31 +0100
+From: Olaf Hering <olh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: copying /sys causes fans to spin up
+Message-ID: <20060227164331.GA17749@suse.de>
+References: <20060227160911.GA17569@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20060227160911.GA17569@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ On Mon, Feb 27, Olaf Hering wrote:
 
-On Feb 26, 2006, at 2:38 PM, Dave Hansen wrote:
+> Ben, 
+> 
+> 
+> some tool copies /sys, and while doing it, the fans start to spin up on
+> my G5. Any idea how to fix it, other than not reading from /sys? Have to
+> find the exact file.
 
-> On Fri, 2006-02-24 at 10:54 -0600, Kumar Gala wrote:
->> +       if (strstr(cmd_line, "mem=")) {
->> +               char *p, *q;
->> +               unsigned long maxmem = 0;
->> +
->> +               for (q = cmd_line; (p = strstr(q, "mem=")) != 0; ) {
->> +                       q = p + 4;
->> +                       if (p > cmd_line && p[-1] != ' ')
->> +                               continue;
->> +                       maxmem = simple_strtoul(q, &q, 0);
->> +                       if (*q == 'k' || *q == 'K') {
->> +                               maxmem <<= 10;
->> +                               ++q;
->> +                       } else if (*q == 'm' || *q == 'M') {
->> +                               maxmem <<= 20;
->> +                               ++q;
->> +                       } else if (*q == 'g' || *q == 'G') {
->> +                               maxmem <<= 30;
->> +                               ++q;
->> +                       }
->> +               }
->> +               memory_limit = maxmem;
->> +       }
->
-> You may want to check out lib/cmdline.c's memparse() function.  I  
-> think
-> it does this for you.
+Just 'cp -a --parents /sys /dev/shm/' will trigger this, but fans dont
+spin up:
 
-Yeah, found it after I sent the patch.  Since Linus applied this  
-version, I'll provide Paul a version that changes this code to use  
-memparse for post 2.6.16.
-
-- kumar
+KW: wrong state. Got KW_I2C_IRQ_ADDR, state: state_stop (isr: 06)
+KW: wrong state. Got KW_I2C_IRQ_ADDR, state: state_stop (isr: 06)
+KW: wrong state. Got KW_I2C_IRQ_STOP, state: state_addr (isr: 04)
+low_i2c: Keywest got an out of state interrupt, ignoring
+low_i2c: Keywest got an out of state interrupt, ignoring
+low_i2c: Keywest got an out of state interrupt, ignoring
