@@ -1,22 +1,15 @@
-Return-Path: <kris@slokatelecom.com>
-Received: from chtn01.999servers.com (chtn01.999servers.com [69.9.43.186])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DA557679FF
+Return-Path: <k_shivanii@yahoo.com>
+Received: from web32108.mail.mud.yahoo.com (web32108.mail.mud.yahoo.com
+	[68.142.207.122]) by ozlabs.org (Postfix) with SMTP id 9DAA567A00
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Feb 2006 18:07:42 +1100 (EST)
-Received: from [59.144.57.15] (helo=Krishnan)
-	by chtn01.999servers.com with esmtpa (Exim 4.52) id 1FDyR6-0003Zd-Um
-	for linuxppc-embedded@ozlabs.org; Tue, 28 Feb 2006 01:34:17 -0500
-From: "Krishnan" <kris@slokatelecom.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Help: How to search for previous topics
-Date: Tue, 28 Feb 2006 12:04:13 +0530
-Message-ID: <DJEKKNGPKJJHLCHIBHDAEEIPCCAA.kris@slokatelecom.com>
+	Tue, 28 Feb 2006 18:13:51 +1100 (EST)
+Message-ID: <20060228071349.38338.qmail@web32108.mail.mud.yahoo.com>
+Date: Mon, 27 Feb 2006 23:13:49 -0800 (PST)
+From: shivani kirubanandan <k_shivanii@yahoo.com>
+Subject: help regarding my kernel compilation for powerpc 405-xilinxml300
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Reply-To: kris@slokatelecom.com
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,15 +20,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+hello,
+intially the compiler was
+unable to find xiic_l.h file ...so i went to
+arch/ppc/boot/simple/embed_config.c
 
-Could anyone please tell me how previous topics could be searched so that I
-don't
-need to trouble anyone for repetitive content?
+and gave the entire path for the file to be
+#include<home/shivani/downloads/linux-2.4.26/drivers/i2c/xilinx_iic/xiic_l.h>
 
-I only know of one way today, go through each list and try to do a Ctrl+F
-which is quite
-painful.
+after which this error has occured,am not sure where
+the path ent wrong i again tried changing the path for
+this file (xbasic_types.h) but the error persists
+help me out plz.
 
-Cheers,
-Kris
+
+xiic_l.h:64:85:
+home/shivani/downloads/linux-2.4.26/drivers/i2c/xilinx_iic/xbasic_types.h:
+No such file or directory
+make[3]: *** [i2c-algo-xilinx.o] Error 1
+make[3]: Leaving directory
+`/home/shivani/downloads/linux-2.4.26/drivers/i2c/xilinx_iic'
+make[2]: *** [_subdir_xilinx_iic] Error 2
+make[2]: Leaving directory
+`/home/shivani/downloads/linux-2.4.26/drivers/i2c'
+make[1]: *** [_subdir_i2c] Error 2
+make[1]: Leaving directory
+`/home/shivani/downloads/linux-2.4.26/drivers'
+make: *** [_dir_drivers] Error 2
+
+
+thanks in advance 
+
+shivani
+
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
