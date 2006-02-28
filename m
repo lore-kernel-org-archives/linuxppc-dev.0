@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9974167A06
+Return-Path: <x.xiao@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id A954267A0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Mar 2006 01:38:08 +1100 (EST)
-In-Reply-To: <000201c63c44$14a9c1b0$5201a8c0@GEG2400>
-References: <000201c63c44$14a9c1b0$5201a8c0@GEG2400>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0B99478F-EAB3-4070-AA8E-81418BF4BFBE@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Minor bug in file irq.h
-Date: Tue, 28 Feb 2006 08:38:02 -0600
-To: Laurent Lagrange <lagrange@fr.oleane.com>
+	Wed,  1 Mar 2006 02:22:30 +1100 (EST)
+Message-ID: <44046A97.6080200@freescale.com>
+Date: Tue, 28 Feb 2006 09:21:59 -0600
+From: Xianghua Xiao <x.xiao@freescale.com>
+MIME-Version: 1.0
+To: kris@slokatelecom.com
+Subject: Re: Help: How to search for previous topics
+References: <DJEKKNGPKJJHLCHIBHDAEEIPCCAA.kris@slokatelecom.com>
+In-Reply-To: <DJEKKNGPKJJHLCHIBHDAEEIPCCAA.kris@slokatelecom.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: x.xiao@freescale.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,29 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+use google, for example, if you want to search ioremap in linuxppc 
+mailing list:
+ioremap site:ozlabs.org
 
-On Feb 28, 2006, at 2:50 AM, Laurent Lagrange wrote:
+Krishnan wrote:
 
+>Hello,
 >
-> Hello,
+>Could anyone please tell me how previous topics could be searched so that I
+>don't
+>need to trouble anyone for repetitive content?
 >
-> I use a Linux 2.6.9 on MPC85xx.
+>I only know of one way today, go through each list and try to do a Ctrl+F
+>which is quite
+>painful.
 >
-> In the ./linux/include/asm-ppc/irq.h file, I encountered a problem  
-> with the
-> timer3 interrupt definition :
-> #define     SIU_INT_TIMER3          ((uint)0x0e+CPM_IRQ_OFFSET)
+>Cheers,
+>Kris
 >
-> This definition generates a compilation error  because is  
-> interpreted as
-> something like
-> ((uint)0x0(e+CPM_IRQ_OFFSET)) ie 0x0 exponent  + CPM_IRQ_OFFSET.
 >
-> To work around just parenthesis or add a space character between  
-> 'e' and '+'
-> #define     SIU_INT_TIMER3          ((uint)0x0e +CPM_IRQ_OFFSET)
-
-Do you mind providing this in patch form with a signed-off-by.  I'll  
-include it in the queue of 85xx related patches.
-
-- kumar
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>  
+>
