@@ -1,29 +1,29 @@
 Return-Path: <thagen@slb.com>
 Received: from mail.slb.com (eurmta01.london.eur.slb.com [134.32.26.55])
-	by ozlabs.org (Postfix) with ESMTP id 0281E679E0
+	by ozlabs.org (Postfix) with ESMTP id 5C696679FF
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Feb 2006 19:39:53 +1100 (EST)
+	Tue, 28 Feb 2006 19:39:55 +1100 (EST)
 Received: from pmxchannel_int-daemon.eurmta01.london.eur.slb.com by
 	eurmta01.london.eur.slb.com
 	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
-	id <0IVE00F012JRVS@eurmta01.london.eur.slb.com> for
-	linuxppc-embedded@ozlabs.org; Tue, 28 Feb 2006 08:35:51 +0000 (GMT)
+	id <0IVE00G012L33M@eurmta01.london.eur.slb.com> for
+	linuxppc-embedded@ozlabs.org; Tue, 28 Feb 2006 08:36:39 +0000 (GMT)
 Received: from wgmail3.oslo.eur.slb.com
 	(wgmail3.oslo.eur.slb.com [134.32.44.153]) by
 	eurmta01.london.eur.slb.com
 	(iPlanet Messaging Server 5.2 Patch 2 (built Jul 14 2004))
-	with ESMTP id <0IVE00MKV2JRAO@eurmta01.london.eur.slb.com> for
-	linuxppc-embedded@ozlabs.org; Tue, 28 Feb 2006 08:35:51 +0000 (GMT)
+	with ESMTP id <0IVE00MN62L3AO@eurmta01.london.eur.slb.com> for
+	linuxppc-embedded@ozlabs.org; Tue, 28 Feb 2006 08:36:39 +0000 (GMT)
 Received: from [134.32.140.197] (localhost [127.0.0.1])
 	by wgmail3.oslo.eur.slb.com (Switch-2.2.8/8.11.1) with ESMTP id
-	k1S8ZgV01321 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Feb 2006 09:35:42 +0100 (MET)
-Date: Tue, 28 Feb 2006 09:35:41 +0100
+	k1S8aUV01362 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 28 Feb 2006 09:36:30 +0100 (MET)
+Date: Tue, 28 Feb 2006 09:36:32 +0100
 From: Tore Martin Hagen <thagen@slb.com>
 Subject: Re: All children killed in /sbin/init
 In-reply-to: <43F03632.9060609@slb.com>
 To: linuxppc-embedded@ozlabs.org
-Message-id: <44040B5D.6090002@slb.com>
+Message-id: <44040B90.3050708@slb.com>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii; format=flowed
 References: <43F03632.9060609@slb.com>
@@ -37,7 +37,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-For Archive reasons I am postin the sollution to my problem.
+For Archive reasons I am posting the solution to my problem.
 
 The problem was a missing patch to the arch/ppc/kernel/cputable.c (got 
 it from Montavista)
