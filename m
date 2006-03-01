@@ -1,16 +1,25 @@
-Return-Path: <michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: fastboot@lists.osdl.org
-Subject: Re: [Fastboot] Re: Kexec for booke PPC processors
-Date: Thu, 2 Mar 2006 10:12:54 +1100
-References: <3d42041d0603011443v4840d65en4f0676ff86c44e@mail.gmail.com>
-In-Reply-To: <3d42041d0603011443v4840d65en4f0676ff86c44e@mail.gmail.com>
-MIME-Version: 1.0
-Message-Id: <200603021012.57955.michael@ellerman.id.au>
-Content-Type: multipart/signed; boundary="nextPart1175347.Zf7CbuD8Wz";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Cc: linuxppc-dev@ozlabs.org, dagriego <dagriego@gmail.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <bcollins@ubuntu.com>
+Received: from a34-mta02.direcway.com (a34-mta02.direcpc.com [66.82.4.91])
+	by ozlabs.org (Postfix) with ESMTP id D1C5467B33
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Mar 2006 10:50:30 +1100 (EST)
+Received: from mail.phunnypharm.org ([72.169.114.90]) by a34-mta02.direcway.com
+	(iPlanet Messaging Server 5.2 HotFix 1.25 (built Mar  3 2004))
+	with ESMTP id <0IVH00KTM3JWPS@a34-mta02.direcway.com> for
+	linuxppc-dev@ozlabs.org; Wed, 01 Mar 2006 18:50:27 -0500 (EST)
+Date: Wed, 01 Mar 2006 18:49:25 -0500
+From: Ben Collins <bcollins@ubuntu.com>
+Subject: Re: [PPC,SOUND] Fix audio gpio state detection
+In-reply-to: <1141254596.3889.26.camel@localhost.localdomain>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-id: <1141256965.4378.145.camel@grayson>
+MIME-version: 1.0
+Content-type: text/plain
+References: <jehd7527wq.fsf@sykes.suse.de>
+	<1139783738.5247.54.camel@localhost.localdomain>
+	<20060226173908.GA4871@suse.de> <20060301223034.GA5965@suse.de>
+	<1141254596.3889.26.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	Ben Collins <ben.collins@ubuntu.com>, Olaf Hering <olh@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1175347.Zf7CbuD8Wz
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Thu, 2006-03-02 at 10:09 +1100, Benjamin Herrenschmidt wrote:
+> > > This (sort of) breaks PowerMac3,4 (69 (PowerMac G4 Silver)). I have to
+> > > force it on up to now, but with this patch the internal speaker will not
+> > > work with or without my patch to force it on.
+> > 
+> > But the patch fixes also my PowerBook4,1, I dont have to toggle the headphone
+> > once to get the built-in speakers enabled.
+> > Looks like 2.6.16 stuff, but its been broken for so long now...
+> 
+> What is the status of Ben's latest stuff ?
 
-On Thu, 2 Mar 2006 09:43, dagriego wrote:
-> I'm finishing my first pass on getting kexec to work on PPC booke
-> processor, and needed some insight into how to pass information from the
-> first kernel to the kexec'ed kernel.  This information is the board
-> information that the first kernel is given in r3 from the board firmware.=
-=20
-> Is there a standard convention for passing this information?
+I'm rediffing now. However, I may not include my tumbler changes
+immediately. For some reason, those are the ones causing problems. I
+need to review the diff and see if I can find the problem (which I
+cannot reproduce).
 
-Yep, it's called the flat device tree.
+The toonie stuff is great. Been working really well for all the folks
+I've heard from, and for me on my PowerBook5,9.
 
-cheers
-
-=2D-=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---nextPart1175347.Zf7CbuD8Wz
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBEBip5dSjSd0sB4dIRAr+EAJsFEnB23P4omib3bGECowhySjcXewCgo0cu
-1Md+3Yqo027s+zG5XUOFyJg=
-=dcx6
------END PGP SIGNATURE-----
-
---nextPart1175347.Zf7CbuD8Wz--
+-- 
+Ubuntu     - http://www.ubuntu.com/
+Debian     - http://www.debian.org/
+Linux 1394 - http://www.linux1394.org/
+SwissDisk  - http://www.swissdisk.com/
