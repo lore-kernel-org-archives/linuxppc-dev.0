@@ -1,17 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mark.fasheh@Oracle.com>
+Received: from rgminet02.oracle.com (rgminet02.oracle.com [148.87.113.119])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ABC0D67A3D
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Mar 2006 15:07:14 +1100 (EST)
-Subject: [PATCH] Expose SMT and L1 icache snoop userland features
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Wed, 01 Mar 2006 15:07:07 +1100
-Message-Id: <1141186028.4157.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id B840D67A04
+	for <linuxppc-dev@ozlabs.org>; Thu,  2 Mar 2006 05:51:58 +1100 (EST)
+Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
+	by rgminet02.oracle.com (Switch-3.1.6/Switch-3.1.7) with ESMTP id
+	k21HxVd7028719
+	for <linuxppc-dev@ozlabs.org>; Wed, 1 Mar 2006 10:59:32 -0700
+Date: Wed, 1 Mar 2006 09:59:22 -0800
+From: Mark Fasheh <mark.fasheh@Oracle.com>
+To: John Rose <johnrose@austin.ibm.com>
+Subject: Re: [PATCH] move eeh_add_device_tree_late()
+Message-ID: <20060301175922.GX20175@ca-server1.us.oracle.com>
+References: <20060301001909.GU20175@ca-server1.us.oracle.com>
+	<20060301010249.GV20175@ca-server1.us.oracle.com>
+	<1141230954.19095.19.camel@sinatra.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1141230954.19095.19.camel@sinatra.austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
+Reply-To: Mark Fasheh <mark.fasheh@Oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,48 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch makes userland aware of the icache snoop capability of the
-POWER5 (and possibly others in the future) and of SMT capabilities.
+On Wed, Mar 01, 2006 at 10:35:55AM -0600, John Rose wrote:
+> Good catch, Mark.
+Heh, thanks.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Commit 827c1a6c1a5dcb2902fecfb648f9af6a532934eb introduced a new
+> function that calls eeh_add_device_late() implicitly.  This patch
+> reorders the two functions in question to fix the compile error.  This
+> might be preferable to exposing eeh_add_device_late() in eeh.h.
+Hmm, you still left the EXPORT_SYMBOL(eeh_add_device_late) and you didn't
+make eeh_add_device_late() static. Shouldn't you do that if you don't want
+to make it accessible outside of eeh.c?
+	--Mark
 
-Index: linux-work/arch/powerpc/kernel/cputable.c
-===================================================================
---- linux-work.orig/arch/powerpc/kernel/cputable.c	2006-02-07 13:17:04.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/cputable.c	2006-03-01 14:59:20.000000000 +1100
-@@ -53,8 +53,10 @@ extern void __setup_cpu_ppc970(unsigned 
- 				 PPC_FEATURE_HAS_MMU)
- #define COMMON_USER_PPC64	(COMMON_USER | PPC_FEATURE_64)
- #define COMMON_USER_POWER4	(COMMON_USER_PPC64 | PPC_FEATURE_POWER4)
--#define COMMON_USER_POWER5	(COMMON_USER_PPC64 | PPC_FEATURE_POWER5)
--#define COMMON_USER_POWER5_PLUS	(COMMON_USER_PPC64 | PPC_FEATURE_POWER5_PLUS)
-+#define COMMON_USER_POWER5	(COMMON_USER_PPC64 | PPC_FEATURE_POWER5 |\
-+				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP)
-+#define COMMON_USER_POWER5_PLUS	(COMMON_USER_PPC64 | PPC_FEATURE_POWER5_PLUS|\
-+				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP)
- #define COMMON_USER_BOOKE	(PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | \
- 				 PPC_FEATURE_BOOKE)
- 
-@@ -267,7 +269,8 @@ struct cpu_spec	cpu_specs[] = {
- 		.cpu_name		= "Cell Broadband Engine",
- 		.cpu_features		= CPU_FTRS_CELL,
- 		.cpu_user_features	= COMMON_USER_PPC64 |
--			PPC_FEATURE_CELL | PPC_FEATURE_HAS_ALTIVEC_COMP,
-+			PPC_FEATURE_CELL | PPC_FEATURE_HAS_ALTIVEC_COMP |
-+			PPC_FEATURE_SMT,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
- 		.cpu_setup		= __setup_cpu_be,
-Index: linux-work/include/asm-powerpc/cputable.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/cputable.h	2006-02-28 16:52:18.000000000 +1100
-+++ linux-work/include/asm-powerpc/cputable.h	2006-03-01 14:27:51.000000000 +1100
-@@ -20,6 +20,8 @@
- #define PPC_FEATURE_POWER5_PLUS		0x00020000
- #define PPC_FEATURE_CELL		0x00010000
- #define PPC_FEATURE_BOOKE		0x00008000
-+#define PPC_FEATURE_SMT			0x00004000
-+#define PPC_FEATURE_ICACHE_SNOOP	0x00002000
- 
- #ifdef __KERNEL__
- #ifndef __ASSEMBLY__
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
