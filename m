@@ -1,17 +1,33 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from smtp9.clb.oleane.net (smtp9.clb.oleane.net [213.56.31.31])
-	by ozlabs.org (Postfix) with ESMTP id 66C2D679E9
+Return-Path: <Sylvain.Joyeau@thomson.net>
+Received: from dmzraw3.extranet.thmulti.com (dmzraw3.extranet.thmulti.com
+	[141.11.234.71]) by ozlabs.org (Postfix) with ESMTP id C00AF679F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Mar 2006 22:16:11 +1100 (EST)
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: Minor bug in file irq.h
-Date: Wed, 1 Mar 2006 12:21:53 +0100
-Message-ID: <000901c63d22$58de3da0$5201a8c0@GEG2400>
+	Wed,  1 Mar 2006 23:23:54 +1100 (EST)
+Received: from boulvss1.eu.thmulti.com (unknown [141.11.234.35])
+	by dmzraw3.extranet.thmulti.com (Postfix) with ESMTP id 3BAE212F5
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  1 Mar 2006 12:23:51 +0000 (GMT)
+Received: from localhost (localhost [127.0.0.1])
+	by boulvss1.eu.thmulti.com (Postfix) with ESMTP id 9C9F7121A
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  1 Mar 2006 12:23:36 +0000 (GMT)
+Received: from boulvss1.eu.thmulti.com ([127.0.0.1])
+	by localhost (boulvss1.eu.thmulti.com [127.0.0.1]) (amavisd-new,
+	port 10024) with LMTP id 13455-01 for <linuxppc-embedded@ozlabs.org>;
+	Wed,  1 Mar 2006 12:23:34 +0000 (GMT)
+Received: from boulsmailbh01.eu.thmulti.com (boulsmailbh01.eu.thmulti.com
+	[141.11.192.5])
+	by boulvss1.eu.thmulti.com (Postfix) with ESMTP id 912DB1220
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  1 Mar 2006 12:23:34 +0000 (GMT)
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_000A_01C63D2A.BAA2A5A0"
-In-Reply-To: <0B99478F-EAB3-4070-AA8E-81418BF4BFBE@kernel.crashing.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: MPC85xx TSEC performance limits
+Date: Wed, 1 Mar 2006 13:23:49 +0100
+Message-ID: <9C1918067C3BC14C9C351C206D8A84370398A987@rennsmail03.eu.thmulti.com>
+From: "Joyeau Sylvain" <Sylvain.Joyeau@thomson.net>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,112 +38,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi,
 
-------=_NextPart_000_000A_01C63D2A.BAA2A5A0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Does anybody already succeeded in getting full TX bandwidth on a TSEC
+interface, transmitting 1500 bytes frames at netdev level (ie calling
+directly dev_queue_xmit(skb)) for instance ?
 
-Hello,
+With default Gianfar driver parameters, I can transmit only around
+870Mb/s (while reception side is idle). The other TSEC interface is used
+only to control a telnet terminal (~1Kb/s), the CPU is idle 60%,
+6000irq/s.
 
-Here is a patch for the 2 bugs in irq.h.
+I must decrease TX threshold value from 1024 to 128 to get 960Mb/s.
 
-This is the first time, I generate a patch.
-I don't know if this is the right method.
+The problem is that decreasing the TX threshold under 512 bytes has a
+dramatic side effect: the Gianfar driver generates "TX underrun" events
+as soon as  I start, in parallel, a DMA transfer from memory to memory.
+Rather disappointing behavior from a PQ3@825MHz :-(
 
-Best regards
-Laurent
+Any idea how to get full TX bandwidth _without_ modifying this
+parameter?
 
->
-> In the ./linux/include/asm-ppc/irq.h file, I encountered a problem with
-the
-> timer3 interrupt definition :
-> #define     SIU_INT_TIMER3          ((uint)0x0e+CPM_IRQ_OFFSET)
->
-> This definition generates a compilation error  because is interpreted as
+Thanks.
 
-Note that this is not the only such definition. At least this one  is
-critical, too:
-
-	#define SIU_INT_PC1             ((uint)0x3e+CPM_IRQ_OFFSET)
-
-Best regards,
-
-Wolfgang Denk
-
-> -----Message d'origine-----
-> De : Kumar Gala [mailto:galak@kernel.crashing.org]
-> Envoye : mar. 28 fevrier 2006 15:38
-> A : Laurent Lagrange
-> Cc : linuxppc-embedded@ozlabs.org
-> Objet : Re: Minor bug in file irq.h
->
->
->
-> On Feb 28, 2006, at 2:50 AM, Laurent Lagrange wrote:
->
-> >
-> > Hello,
-> >
-> > I use a Linux 2.6.9 on MPC85xx.
-> >
-> > In the ./linux/include/asm-ppc/irq.h file, I encountered a problem
-> > with the
-> > timer3 interrupt definition :
-> > #define     SIU_INT_TIMER3          ((uint)0x0e+CPM_IRQ_OFFSET)
-> >
-> > This definition generates a compilation error  because is
-> > interpreted as
-> > something like
-> > ((uint)0x0(e+CPM_IRQ_OFFSET)) ie 0x0 exponent  + CPM_IRQ_OFFSET.
-> >
-> > To work around just parenthesis or add a space character between
-> > 'e' and '+'
-> > #define     SIU_INT_TIMER3          ((uint)0x0e +CPM_IRQ_OFFSET)
->
-> Do you mind providing this in patch form with a signed-off-by.  I'll
-> include it in the queue of 85xx related patches.
->
-> - kumar
->
->
-
-------=_NextPart_000_000A_01C63D2A.BAA2A5A0
-Content-Type: application/octet-stream;
-	name="irq.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="irq.patch"
-
---- include/asm-ppc/irq.h.ini	2005-10-05 11:16:51.000000000 +0200
-+++ include/asm-ppc/irq.h	2006-03-01 11:48:09.862587552 +0100
-@@ -1,3 +1,8 @@
-+/*
-+ * Fix erroneous syntax 2006/03/01
-+ * Replace e+CPM_IRQ_OFFSET by e +CPM_IRQ_OFFSET
-+ * Laurent Lagrange [lagrange@fr.oleane.com]
-+ */
- #ifdef __KERNEL__
- #ifndef _ASM_IRQ_H
- #define _ASM_IRQ_H
-@@ -205,7 +210,7 @@
- #define	SIU_INT_SMC2		((uint)0x05+CPM_IRQ_OFFSET)
- #define	SIU_INT_TIMER1		((uint)0x0c+CPM_IRQ_OFFSET)
- #define	SIU_INT_TIMER2		((uint)0x0d+CPM_IRQ_OFFSET)
--#define	SIU_INT_TIMER3		((uint)0x0e+CPM_IRQ_OFFSET)
-+#define	SIU_INT_TIMER3		((uint)0x0e +CPM_IRQ_OFFSET)
- #define	SIU_INT_TIMER4		((uint)0x0f+CPM_IRQ_OFFSET)
- #define	SIU_INT_FCC1		((uint)0x20+CPM_IRQ_OFFSET)
- #define	SIU_INT_FCC2		((uint)0x21+CPM_IRQ_OFFSET)
-@@ -230,7 +235,7 @@
- #define	SIU_INT_PC4		((uint)0x3b+CPM_IRQ_OFFSET)
- #define	SIU_INT_PC3		((uint)0x3c+CPM_IRQ_OFFSET)
- #define	SIU_INT_PC2		((uint)0x3d+CPM_IRQ_OFFSET)
--#define	SIU_INT_PC1		((uint)0x3e+CPM_IRQ_OFFSET)
-+#define	SIU_INT_PC1		((uint)0x3e +CPM_IRQ_OFFSET)
- #define	SIU_INT_PC0		((uint)0x3f+CPM_IRQ_OFFSET)
- 
- static __inline__ int irq_canonicalize(int irq)
-
-------=_NextPart_000_000A_01C63D2A.BAA2A5A0--
+--
+sylvain
