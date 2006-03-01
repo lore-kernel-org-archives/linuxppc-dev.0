@@ -1,26 +1,17 @@
-Return-Path: <atul.sabharwal@exgate.tek.com>
-Received: from igate.tek.com (igate.tek.com [192.65.41.20])
-	by ozlabs.org (Postfix) with ESMTP id 90F9467A59
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp9.clb.oleane.net (smtp9.clb.oleane.net [213.56.31.31])
+	by ozlabs.org (Postfix) with ESMTP id 66C2D679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Mar 2006 12:02:18 +1100 (EST)
-Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
-	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k2112HtT024021
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Feb 2006 17:02:17 -0800 (PST)
-Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
-	[128.181.2.45])
-	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k2112Hhu028736
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Feb 2006 17:02:17 -0800 (PST)
+	Wed,  1 Mar 2006 22:16:11 +1100 (EST)
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: RE: Minor bug in file irq.h
+Date: Wed, 1 Mar 2006 12:21:53 +0100
+Message-ID: <000901c63d22$58de3da0$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: INIT:
-Date: Tue, 28 Feb 2006 17:03:02 -0800
-Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201BA2BFB@us-bv-m23.global.tektronix.net>
-From: <atul.sabharwal@exgate.tek.com>
-To: <Pankaj.Patil@hp.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_000A_01C63D2A.BAA2A5A0"
+In-Reply-To: <0B99478F-EAB3-4070-AA8E-81418BF4BFBE@kernel.crashing.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,170 +22,112 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Easy answer is do you have /dev/console in your file system.  Glibc
-opens
-/dev/console and the kernel uses /dev/ttyS0 as specified on the command
-line.  There should not be any app calling uart_close as the console
-deriver
-should be opening it.=20
+This is a multi-part message in MIME format.
 
---
-Atul
+------=_NextPart_000_000A_01C63D2A.BAA2A5A0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Hi,
-I am running u-boot & linux2.6.12 on a custom ppc board(functional HW).
-I can get to the point where u-boot loads the kernel, kernel does all
-the initialization,  loads the Root File System over NFS & calls the
-Init process.
-Next, i am expecting to see a shell prompt. I am not sure where in the
-Init process i am failing. I have written my own serial driver(Philips
-SC28L194 Quad UART--under development-possible culprit). The printks
-work just fine.
-All i see is the kernel calling the Init process & after a minute or so
-i see uart_close call.
-The kernel runs just fine & responds to ping.
-What can trigger a uart_close??(tty_release calls release_dev calls
-uart_close) I have a JTAG debugger. What's the best way to debug once
-Init process is running??
+Hello,
 
+Here is a patch for the 2 bugs in irq.h.
 
+This is the first time, I generate a patch.
+I don't know if this is the right method.
 
-I am attaching a dump of my console:
-U-Boot 1.1.3 (Dec 16 2005 - 16:00:23), Build: 0.4.1
+Best regards
+Laurent
 
-SysClock =3D 120Mhz , TClock =3D 120Mhz=20
-CPU:   MPC7447A v1.1 @ 960 MHz
-CPU bus mode : 60x
+>
+> In the ./linux/include/asm-ppc/irq.h file, I encountered a problem with
+the
+> timer3 interrupt definition :
+> #define     SIU_INT_TIMER3          ((uint)0x0e+CPM_IRQ_OFFSET)
+>
+> This definition generates a compilation error  because is interpreted as
 
-DRAM:  SPD Checksum ok!
--- DIMM1 has 2 banks
--- DIMM2 has 0 banks
-ECC Initialization of Bank 0: Done
-CAS Latency =3D 2 tRP =3D 3 tRAS =3D 6 tRCD=3D3
-Total SDRAM memory is 1024 MB
-Now running in RAM - U-Boot at: 00fc0000
-Remapped Internal SRAM to 0xf2000000
-Remapped Flash Card to 0xffc00000
-FLASH:  4 MB
-Addresses 32M - 0M are saved for the U-Boot usage.
-Mem malloc Initialization (32M - 16M): Done
+Note that this is not the only such definition. At least this one  is
+critical, too:
 
-Internal SRAM ECC Initialization: Done
-***Phy Reset***
-Phy Auto-Negotiation Bit ReEnabled in SW
-Net:   , mv_enet1 [PRIME]
-Hit any key to stop autoboot:  0=20
-Ethernet status port 1: Link up, Full Duplex, Speed 100 Mbps
-Using mv_enet1 device
-TFTP from server 192.168.1.1; our IP address is 192.168.1.2
-Filename 'uImage'.
-Load address: 0x400000
-Loading:
-#################################################################
-=20
-#################################################################
-=20
-#################################################################
-         ########################
-done
-Bytes transferred =3D 1119847 (111667 hex)
+	#define SIU_INT_PC1             ((uint)0x3e+CPM_IRQ_OFFSET)
 
-### Network statistics: ###
---------------------------
- Packets received:              2192
- Packets send:                  2191
- Received bytes:                2347583
- Send bytes:                    100803
-## Booting image at 00400000 ...
-   Image Name:   Linux-2.6.12
-   Created:      2006-02-14   0:37:17 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1119783 Bytes =3D  1.1 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## cmdline at 0x007FFF00 ... 0x007FFF98
-memstart    =3D 0x00000000
-memsize     =3D 0x40000000
-flashstart  =3D 0xFFC00000
-flashsize   =3D 0x00400000
-flashoffset =3D 0x00000000
-sramstart   =3D 0xF8000000
-sramsize    =3D 0x00400000
-bootflags   =3D 0x00000001
-intfreq     =3D    960 MHz
-busfreq     =3D    120 MHz
-ethaddr     =3D 64:00:00:00:00:00
-IP addr     =3D 192.168.1.2
-baudrate    =3D 115200 bps
-tclk        =3D      0 MHz
-uboot_ver   =3D 0.4.1a=20
-L3 was init =3D 0
-Total memory =3D 768MB; using 2048kB for hash table (at c0400000)
-Linux version 2.6.12 (root@RHEL40) (gcc version 3.3.3 (DENX ELDK 3.1.1
-3.3.3-10)) #154 Mon Feb 13 17:36:35 MST 2006
-System Identification:=20
-Freescale 74XX port=20
-Built 1 zonelists                        =20
-Kernel command line: console=3DttyS0,115200 root=3D/dev/nfs rw
-nfsroot=3D192.168.1.1:/target/chestnut/rootfs
-ip=3D192.168.1.2:192.168.1.1:192.168.1.1:255.255.255.0:DB64xxx:eth0:non
-e
-PID hash table entries: 4096 (order: 12, 65536 bytes)
-time_init: decrementer frequency =3D 30.000000 MHz    =20
-Console: colour dummy device 80x25             =20
-Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-Inode-cache hash table entries: 65536 (order: 6, 262144 bytes) =20
-Memory: 774400k available (1596k kernel code, 556k data, 344k init, 0k
-highmem)
-Mount-cache hash table entries: 512
+Best regards,
 
-NET: Registered protocol family 16=20
-PCI: Probing PCI hardware        =20
-JFFS2 version 2.2. (C) 2001-2003 Red Hat, Inc.
-Generic RTC Driver v1.07                     =20
-Serial: SC28L194 driver 4 ports
-ttyS0 at MMIO 0x0 (irq =3D 17) is a PHILIPS SC28L194
-ttyS1 at MMIO 0x0 (irq =3D 17) is a PHILIPS SC28L194
-ttyS2 at MMIO 0x0 (irq =3D 17) is a PHILIPS SC28L194
-ttyS3 at MMIO 0x0 (irq =3D 17) is a PHILIPS SC28L194
-io scheduler noop registered                     =20
-io scheduler anticipatory registered
-io scheduler deadline registered   =20
-io scheduler cfq registered    =20
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)                                        =20
-MV-643xx 10/100/1000 Ethernet Driver
-eth0: port 1 with MAC address 00:11:85:da:0b:02
-eth0: RX NAPI Enabled                         =20
-physmap flash device: 400000 at ffc00000
-mice: PS/2 mouse device common for all mice
-NET: Registered protocol family 2         =20
-IP: routing cache hash table of 8192 buckets, 64Kbytes
-TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
-TCP bind hash table entries: 65536 (order: 6, 262144 bytes)        =20
-TCP: Hash tables configured (established 131072 bind 65536)
-NET: Registered protocol family 1                         =20
-NET: Registered protocol family 17
-IP-Config: Complete:             =20
-      device=3Deth0, addr=3D192.168.1.2, mask=3D255.255.255.0, =
-gw=3D192.168.1.1,
-     host=3DDB64xxx, domain=3D, nis-domain=3D(none),                     =
-    =20
-     bootserver=3D192.168.1.1, rootserver=3D192.168.1.1, rootpath=3D
-Looking up port of RPC 100003/2 on 192.168.1.1               =20
-Looking up port of RPC 100005/1 on 192.168.1.1
-VFS: Mounted root (nfs filesystem).          =20
-Freeing unused kernel memory: 344k init
+Wolfgang Denk
 
+> -----Message d'origine-----
+> De : Kumar Gala [mailto:galak@kernel.crashing.org]
+> Envoye : mar. 28 fevrier 2006 15:38
+> A : Laurent Lagrange
+> Cc : linuxppc-embedded@ozlabs.org
+> Objet : Re: Minor bug in file irq.h
+>
+>
+>
+> On Feb 28, 2006, at 2:50 AM, Laurent Lagrange wrote:
+>
+> >
+> > Hello,
+> >
+> > I use a Linux 2.6.9 on MPC85xx.
+> >
+> > In the ./linux/include/asm-ppc/irq.h file, I encountered a problem
+> > with the
+> > timer3 interrupt definition :
+> > #define     SIU_INT_TIMER3          ((uint)0x0e+CPM_IRQ_OFFSET)
+> >
+> > This definition generates a compilation error  because is
+> > interpreted as
+> > something like
+> > ((uint)0x0(e+CPM_IRQ_OFFSET)) ie 0x0 exponent  + CPM_IRQ_OFFSET.
+> >
+> > To work around just parenthesis or add a space character between
+> > 'e' and '+'
+> > #define     SIU_INT_TIMER3          ((uint)0x0e +CPM_IRQ_OFFSET)
+>
+> Do you mind providing this in patch form with a signed-off-by.  I'll
+> include it in the queue of 85xx related patches.
+>
+> - kumar
+>
+>
 
-Any help appreceated.
-Thanks
-pankaj
+------=_NextPart_000_000A_01C63D2A.BAA2A5A0
+Content-Type: application/octet-stream;
+	name="irq.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="irq.patch"
 
+--- include/asm-ppc/irq.h.ini	2005-10-05 11:16:51.000000000 +0200
++++ include/asm-ppc/irq.h	2006-03-01 11:48:09.862587552 +0100
+@@ -1,3 +1,8 @@
++/*
++ * Fix erroneous syntax 2006/03/01
++ * Replace e+CPM_IRQ_OFFSET by e +CPM_IRQ_OFFSET
++ * Laurent Lagrange [lagrange@fr.oleane.com]
++ */
+ #ifdef __KERNEL__
+ #ifndef _ASM_IRQ_H
+ #define _ASM_IRQ_H
+@@ -205,7 +210,7 @@
+ #define	SIU_INT_SMC2		((uint)0x05+CPM_IRQ_OFFSET)
+ #define	SIU_INT_TIMER1		((uint)0x0c+CPM_IRQ_OFFSET)
+ #define	SIU_INT_TIMER2		((uint)0x0d+CPM_IRQ_OFFSET)
+-#define	SIU_INT_TIMER3		((uint)0x0e+CPM_IRQ_OFFSET)
++#define	SIU_INT_TIMER3		((uint)0x0e +CPM_IRQ_OFFSET)
+ #define	SIU_INT_TIMER4		((uint)0x0f+CPM_IRQ_OFFSET)
+ #define	SIU_INT_FCC1		((uint)0x20+CPM_IRQ_OFFSET)
+ #define	SIU_INT_FCC2		((uint)0x21+CPM_IRQ_OFFSET)
+@@ -230,7 +235,7 @@
+ #define	SIU_INT_PC4		((uint)0x3b+CPM_IRQ_OFFSET)
+ #define	SIU_INT_PC3		((uint)0x3c+CPM_IRQ_OFFSET)
+ #define	SIU_INT_PC2		((uint)0x3d+CPM_IRQ_OFFSET)
+-#define	SIU_INT_PC1		((uint)0x3e+CPM_IRQ_OFFSET)
++#define	SIU_INT_PC1		((uint)0x3e +CPM_IRQ_OFFSET)
+ #define	SIU_INT_PC0		((uint)0x3f+CPM_IRQ_OFFSET)
+ 
+ static __inline__ int irq_canonicalize(int irq)
 
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+------=_NextPart_000_000A_01C63D2A.BAA2A5A0--
