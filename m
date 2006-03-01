@@ -1,16 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mark.fasheh@oracle.com>
+Received: from agminet02.oracle.com (agminet02.oracle.com [141.146.126.229])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 446CD67A40
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Mar 2006 13:54:39 +1100 (EST)
+Received: from agminet01.oracle.com (agminet01.oracle.com [141.146.126.228])
+	by agminet02.oracle.com (Switch-3.1.7/Switch-3.1.7) with ESMTP id
+	k2112wKs025198
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2006 19:02:59 -0600
+Date: Tue, 28 Feb 2006 17:02:50 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: paulus@samba.org, johnrose@austin.ibm.com
+Subject: Re: [PATCH] powerpc: restore eeh_add_device_late() prototype
+Message-ID: <20060301010249.GV20175@ca-server1.us.oracle.com>
+References: <20060301001909.GU20175@ca-server1.us.oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17412.54258.868906.846176@cargo.ozlabs.ibm.com>
-Date: Wed, 1 Mar 2006 09:51:30 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Membership stats (Was: Re: merge these lists?)
-In-Reply-To: <Pine.LNX.4.44.0602241033400.2323-100000@gate.crashing.org>
-References: <20060208110718.57e9f9f5.sfr@canb.auug.org.au>
-	<Pine.LNX.4.44.0602241033400.2323-100000@gate.crashing.org>
-Cc: linuxppc64-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <20060301001909.GU20175@ca-server1.us.oracle.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,16 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+Sigh, I forgot to actually CC linuxppc-dev@ozlabs.org, and I also left off
+my signed-off-by line (added below). Sorry about that.
 
-> Where did we leave on with this?  I was about to request that 
-> marc.theaimsgroup.com start archiving some of the ppc lists but figured 
-> doing it after we merged lists would be better.
+On Tue, Feb 28, 2006 at 04:19:09PM -0800, Mark Fasheh wrote:
+A search on the linux-kernel, linuxppc-dev mailing lists and the git tree at
+ git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc didn't show
+this issue fixed or reported. If I missed something please ignore :)
 
-My current thought is to call the combined list "linuxppc-dev" and put
-the appropriate redirection in place from linuxppc64-dev to
-linuxppc-dev.
+I get a compile failure trying to build a powerpc kernel:
 
-If anyone really objects to that, shout now.
+arch/powerpc/platforms/pseries/eeh.c: In function `eeh_add_device_tree_late':
+arch/powerpc/platforms/pseries/eeh.c:901: warning: implicit declaration of function `eeh_add_device_late'
+arch/powerpc/platforms/pseries/eeh.c: At top level:
+arch/powerpc/platforms/pseries/eeh.c:918: error: conflicting types for 'eeh_add_device_late'
+arch/powerpc/platforms/pseries/eeh.c:901: error: previous implicit declaration of 'eeh_add_device_late' was here
+make[2]: *** [arch/powerpc/platforms/pseries/eeh.o] Error 1
 
-Paul.
+It seems commit 827c1a6c1a5dcb2902fecfb648f9af6a532934eb removed this
+prototype from eeh.h. The following patch restores it.
+
+Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
+
+diff --git a/include/asm-powerpc/eeh.h b/include/asm-powerpc/eeh.h
+index 7dfb408..4250fa1 100644
+--- a/include/asm-powerpc/eeh.h
++++ b/include/asm-powerpc/eeh.h
+@@ -62,6 +62,7 @@ void __init pci_addr_cache_build(void);
+  */
+ void eeh_add_device_early(struct device_node *);
+ void eeh_add_device_tree_early(struct device_node *);
++void eeh_add_device_late(struct pci_dev *);
+ void eeh_add_device_tree_late(struct pci_bus *);
+ 
+ /**
+@@ -117,6 +118,8 @@ static inline void pci_addr_cache_build(
+ 
+ static inline void eeh_add_device_early(struct device_node *dn) { }
+ 
++static inline void eeh_add_device_late(struct pci_dev *dev) { }
++
+ static inline void eeh_remove_device(struct pci_dev *dev) { }
+ 
+ static inline void eeh_add_device_tree_early(struct device_node *dn) { }
