@@ -1,23 +1,26 @@
-Return-Path: <pankaj.patil@hp.com>
-Received: from ccerelbas01.cce.hp.com (ccerelbas01.cce.hp.com [161.114.21.104])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ccerelbas01.cce.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 6743167A3E
+Return-Path: <atul.sabharwal@exgate.tek.com>
+Received: from igate.tek.com (igate.tek.com [192.65.41.20])
+	by ozlabs.org (Postfix) with ESMTP id 90F9467A59
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  1 Mar 2006 11:51:58 +1100 (EST)
-Received: from cceexg13.americas.cpqcorp.net (cceexg13.americas.cpqcorp.net
-	[16.81.1.58])
-	by ccerelbas01.cce.hp.com (Postfix) with ESMTP id 665073403B
+	Wed,  1 Mar 2006 12:02:18 +1100 (EST)
+Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
+	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k2112HtT024021
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Feb 2006 18:41:26 -0600 (CST)
+	Tue, 28 Feb 2006 17:02:17 -0800 (PST)
+Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
+	[128.181.2.45])
+	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k2112Hhu028736
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 28 Feb 2006 17:02:17 -0800 (PST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: INIT:
-Date: Tue, 28 Feb 2006 17:41:24 -0700
-Message-ID: <9B832BEB407A774AA0520CCFC23221970663EA27@CXOEXC11.AMERICAS.CPQCORP.NET>
-From: "Patil, Pankaj P." <Pankaj.Patil@hp.com>
-To: <linuxppc-embedded@ozlabs.org>
+	charset="us-ascii"
+Subject: RE: INIT:
+Date: Tue, 28 Feb 2006 17:03:02 -0800
+Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201BA2BFB@us-bv-m23.global.tektronix.net>
+From: <atul.sabharwal@exgate.tek.com>
+To: <Pankaj.Patil@hp.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,20 +31,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Easy answer is do you have /dev/console in your file system.  Glibc
+opens
+/dev/console and the kernel uses /dev/ttyS0 as specified on the command
+line.  There should not be any app calling uart_close as the console
+deriver
+should be opening it.=20
+
+--
+Atul
+
 Hi,
-I am running u-boot & linux2.6.12 on a custom ppc board(functional HW).  =
-I can get to the point where u-boot loads the kernel, kernel does all =
-the initialization,  loads the Root File System over NFS & calls the =
+I am running u-boot & linux2.6.12 on a custom ppc board(functional HW).
+I can get to the point where u-boot loads the kernel, kernel does all
+the initialization,  loads the Root File System over NFS & calls the
 Init process.
-Next, i am expecting to see a shell prompt. I am not sure where in the =
-Init process i am failing. I have written my own serial driver(Philips =
-SC28L194 Quad UART--under development-possible culprit). The printks =
+Next, i am expecting to see a shell prompt. I am not sure where in the
+Init process i am failing. I have written my own serial driver(Philips
+SC28L194 Quad UART--under development-possible culprit). The printks
 work just fine.
-All i see is the kernel calling the Init process & after a minute or so =
+All i see is the kernel calling the Init process & after a minute or so
 i see uart_close call.
 The kernel runs just fine & responds to ping.
-What can trigger a uart_close??(tty_release calls release_dev calls =
-uart_close) I have a JTAG debugger. What's the best way to debug once =
+What can trigger a uart_close??(tty_release calls release_dev calls
+uart_close) I have a JTAG debugger. What's the best way to debug once
 Init process is running??
 
 
@@ -76,11 +89,11 @@ Using mv_enet1 device
 TFTP from server 192.168.1.1; our IP address is 192.168.1.2
 Filename 'uImage'.
 Load address: 0x400000
-Loading: =
+Loading:
 #################################################################
-         =
+=20
 #################################################################
-         =
+=20
 #################################################################
          ########################
 done
@@ -119,13 +132,13 @@ tclk        =3D      0 MHz
 uboot_ver   =3D 0.4.1a=20
 L3 was init =3D 0
 Total memory =3D 768MB; using 2048kB for hash table (at c0400000)
-Linux version 2.6.12 (root@RHEL40) (gcc version 3.3.3 (DENX ELDK 3.1.1 =
+Linux version 2.6.12 (root@RHEL40) (gcc version 3.3.3 (DENX ELDK 3.1.1
 3.3.3-10)) #154 Mon Feb 13 17:36:35 MST 2006
 System Identification:=20
 Freescale 74XX port=20
 Built 1 zonelists                        =20
-Kernel command line: console=3DttyS0,115200 root=3D/dev/nfs rw =
-nfsroot=3D192.168.1.1:/target/chestnut/rootfs =
+Kernel command line: console=3DttyS0,115200 root=3D/dev/nfs rw
+nfsroot=3D192.168.1.1:/target/chestnut/rootfs
 ip=3D192.168.1.2:192.168.1.1:192.168.1.1:255.255.255.0:DB64xxx:eth0:non
 e
 PID hash table entries: 4096 (order: 12, 65536 bytes)
@@ -133,10 +146,10 @@ time_init: decrementer frequency =3D 30.000000 MHz    =20
 Console: colour dummy device 80x25             =20
 Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
 Inode-cache hash table entries: 65536 (order: 6, 262144 bytes) =20
-Memory: 774400k available (1596k kernel code, 556k data, 344k init, 0k =
+Memory: 774400k available (1596k kernel code, 556k data, 344k init, 0k
 highmem)
-Mount-cache hash table entries: 512                                      =
-     =20
+Mount-cache hash table entries: 512
+
 NET: Registered protocol family 16=20
 PCI: Probing PCI hardware        =20
 JFFS2 version 2.2. (C) 2001-2003 Red Hat, Inc.
@@ -179,3 +192,9 @@ Freeing unused kernel memory: 344k init
 Any help appreceated.
 Thanks
 pankaj
+
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
