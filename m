@@ -1,24 +1,17 @@
-Return-Path: <mark.fasheh@oracle.com>
-Received: from agminet02.oracle.com (agminet02.oracle.com [141.146.126.229])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 446CD67A40
-	for <linuxppc-dev@ozlabs.org>; Wed,  1 Mar 2006 13:54:39 +1100 (EST)
-Received: from agminet01.oracle.com (agminet01.oracle.com [141.146.126.228])
-	by agminet02.oracle.com (Switch-3.1.7/Switch-3.1.7) with ESMTP id
-	k2112wKs025198
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Feb 2006 19:02:59 -0600
-Date: Tue, 28 Feb 2006 17:02:50 -0800
-From: Mark Fasheh <mark.fasheh@oracle.com>
-To: paulus@samba.org, johnrose@austin.ibm.com
-Subject: Re: [PATCH] powerpc: restore eeh_add_device_late() prototype
-Message-ID: <20060301010249.GV20175@ca-server1.us.oracle.com>
-References: <20060301001909.GU20175@ca-server1.us.oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060301001909.GU20175@ca-server1.us.oracle.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+	by ozlabs.org (Postfix) with ESMTP id ABC0D67A3D
+	for <linuxppc-dev@ozlabs.org>; Wed,  1 Mar 2006 15:07:14 +1100 (EST)
+Subject: [PATCH] Expose SMT and L1 icache snoop userland features
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Wed, 01 Mar 2006 15:07:07 +1100
+Message-Id: <1141186028.4157.33.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,46 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sigh, I forgot to actually CC linuxppc-dev@ozlabs.org, and I also left off
-my signed-off-by line (added below). Sorry about that.
+This patch makes userland aware of the icache snoop capability of the
+POWER5 (and possibly others in the future) and of SMT capabilities.
 
-On Tue, Feb 28, 2006 at 04:19:09PM -0800, Mark Fasheh wrote:
-A search on the linux-kernel, linuxppc-dev mailing lists and the git tree at
- git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc didn't show
-this issue fixed or reported. If I missed something please ignore :)
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I get a compile failure trying to build a powerpc kernel:
-
-arch/powerpc/platforms/pseries/eeh.c: In function `eeh_add_device_tree_late':
-arch/powerpc/platforms/pseries/eeh.c:901: warning: implicit declaration of function `eeh_add_device_late'
-arch/powerpc/platforms/pseries/eeh.c: At top level:
-arch/powerpc/platforms/pseries/eeh.c:918: error: conflicting types for 'eeh_add_device_late'
-arch/powerpc/platforms/pseries/eeh.c:901: error: previous implicit declaration of 'eeh_add_device_late' was here
-make[2]: *** [arch/powerpc/platforms/pseries/eeh.o] Error 1
-
-It seems commit 827c1a6c1a5dcb2902fecfb648f9af6a532934eb removed this
-prototype from eeh.h. The following patch restores it.
-
-Signed-off-by: Mark Fasheh <mark.fasheh@oracle.com>
-
-diff --git a/include/asm-powerpc/eeh.h b/include/asm-powerpc/eeh.h
-index 7dfb408..4250fa1 100644
---- a/include/asm-powerpc/eeh.h
-+++ b/include/asm-powerpc/eeh.h
-@@ -62,6 +62,7 @@ void __init pci_addr_cache_build(void);
-  */
- void eeh_add_device_early(struct device_node *);
- void eeh_add_device_tree_early(struct device_node *);
-+void eeh_add_device_late(struct pci_dev *);
- void eeh_add_device_tree_late(struct pci_bus *);
+Index: linux-work/arch/powerpc/kernel/cputable.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/cputable.c	2006-02-07 13:17:04.000000000 +1100
++++ linux-work/arch/powerpc/kernel/cputable.c	2006-03-01 14:59:20.000000000 +1100
+@@ -53,8 +53,10 @@ extern void __setup_cpu_ppc970(unsigned 
+ 				 PPC_FEATURE_HAS_MMU)
+ #define COMMON_USER_PPC64	(COMMON_USER | PPC_FEATURE_64)
+ #define COMMON_USER_POWER4	(COMMON_USER_PPC64 | PPC_FEATURE_POWER4)
+-#define COMMON_USER_POWER5	(COMMON_USER_PPC64 | PPC_FEATURE_POWER5)
+-#define COMMON_USER_POWER5_PLUS	(COMMON_USER_PPC64 | PPC_FEATURE_POWER5_PLUS)
++#define COMMON_USER_POWER5	(COMMON_USER_PPC64 | PPC_FEATURE_POWER5 |\
++				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP)
++#define COMMON_USER_POWER5_PLUS	(COMMON_USER_PPC64 | PPC_FEATURE_POWER5_PLUS|\
++				 PPC_FEATURE_SMT | PPC_FEATURE_ICACHE_SNOOP)
+ #define COMMON_USER_BOOKE	(PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | \
+ 				 PPC_FEATURE_BOOKE)
  
- /**
-@@ -117,6 +118,8 @@ static inline void pci_addr_cache_build(
+@@ -267,7 +269,8 @@ struct cpu_spec	cpu_specs[] = {
+ 		.cpu_name		= "Cell Broadband Engine",
+ 		.cpu_features		= CPU_FTRS_CELL,
+ 		.cpu_user_features	= COMMON_USER_PPC64 |
+-			PPC_FEATURE_CELL | PPC_FEATURE_HAS_ALTIVEC_COMP,
++			PPC_FEATURE_CELL | PPC_FEATURE_HAS_ALTIVEC_COMP |
++			PPC_FEATURE_SMT,
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.cpu_setup		= __setup_cpu_be,
+Index: linux-work/include/asm-powerpc/cputable.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/cputable.h	2006-02-28 16:52:18.000000000 +1100
++++ linux-work/include/asm-powerpc/cputable.h	2006-03-01 14:27:51.000000000 +1100
+@@ -20,6 +20,8 @@
+ #define PPC_FEATURE_POWER5_PLUS		0x00020000
+ #define PPC_FEATURE_CELL		0x00010000
+ #define PPC_FEATURE_BOOKE		0x00008000
++#define PPC_FEATURE_SMT			0x00004000
++#define PPC_FEATURE_ICACHE_SNOOP	0x00002000
  
- static inline void eeh_add_device_early(struct device_node *dn) { }
- 
-+static inline void eeh_add_device_late(struct pci_dev *dev) { }
-+
- static inline void eeh_remove_device(struct pci_dev *dev) { }
- 
- static inline void eeh_add_device_tree_early(struct device_node *dn) { }
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
