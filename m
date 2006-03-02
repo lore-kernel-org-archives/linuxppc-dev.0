@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <bjorn.helgaas@hp.com>
+Received: from atlrel9.hp.com (atlrel9.hp.com [156.153.255.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8C348679FD
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 10:35:46 +1100 (EST)
-Subject: Re: incorrect rmo_top handling in prom_init
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-In-Reply-To: <20060302185509.GA14235@suse.de>
-References: <20060302185509.GA14235@suse.de>
-Content-Type: text/plain
-Date: Fri, 03 Mar 2006 10:35:40 +1100
-Message-Id: <1141342541.13565.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "atlrel9.hp.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id F04CB67A01
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 10:35:32 +1100 (EST)
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: tidy-up of_register_driver()/driver_register()
+	return values
+Date: Thu, 2 Mar 2006 16:16:07 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200603021616.07670.bjorn.helgaas@hp.com>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-03-02 at 19:55 +0100, Olaf Hering wrote:
-> My iBook1 has 2 memory regions in reg. Depending on how I boot it
-> (vmlinux+initrd) or zImage.initrd, it will not boot with current Linus
-> tree.
-> rmo_top should be 160MB instead of 32MB.
+Remove the assumption that driver_register() returns the number of
+devices bound to the driver.  In fact, it returns zero for success
+or a negative error value.
 
-Does that fix it ?
+Nobody uses the return value of of_register_driver() anyway.
 
-Index: linux-work/arch/powerpc/kernel/prom_init.c
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+Index: work-mm4/arch/powerpc/kernel/of_device.c
 ===================================================================
---- linux-work.orig/arch/powerpc/kernel/prom_init.c	2006-03-01 11:48:27.000000000 +1100
-+++ linux-work/arch/powerpc/kernel/prom_init.c	2006-03-03 10:34:30.000000000 +1100
-@@ -978,7 +978,7 @@
- 			if (size == 0)
- 				continue;
- 			prom_debug("    %x %x\n", base, size);
--			if (base == 0)
-+			if (base == 0 && (RELOC(of_platform) & PLATFORM_LPAR))
- 				RELOC(rmo_top) = size;
- 			if ((base + size) > RELOC(ram_top))
- 				RELOC(ram_top) = base + size;
+--- work-mm4.orig/arch/powerpc/kernel/of_device.c	2006-03-01 15:37:13.000000000 -0700
++++ work-mm4/arch/powerpc/kernel/of_device.c	2006-03-02 10:46:58.000000000 -0700
+@@ -147,15 +147,12 @@
+ 
+ int of_register_driver(struct of_platform_driver *drv)
+ {
+-	int count = 0;
+-
+ 	/* initialize common driver fields */
+ 	drv->driver.name = drv->name;
+ 	drv->driver.bus = &of_platform_bus_type;
+ 
+ 	/* register with core */
+-	count = driver_register(&drv->driver);
+-	return count ? count : 1;
++	return driver_register(&drv->driver);
+ }
+ 
+ void of_unregister_driver(struct of_platform_driver *drv)
+Index: work-mm4/drivers/macintosh/smu.c
+===================================================================
+--- work-mm4.orig/drivers/macintosh/smu.c	2006-03-01 15:37:41.000000000 -0700
++++ work-mm4/drivers/macintosh/smu.c	2006-03-02 10:47:30.000000000 -0700
+@@ -630,8 +630,6 @@
+ 
+ static int __init smu_init_sysfs(void)
+ {
+-	int rc;
+-
+ 	/*
+ 	 * Due to sysfs bogosity, a sysdev is not a real device, so
+ 	 * we should in fact create both if we want sysdev semantics
+@@ -640,7 +638,7 @@
+ 	 * I'm a bit too far from figuring out how that works with those
+ 	 * new chipsets, but that will come back and bite us
+ 	 */
+-	rc = of_register_driver(&smu_of_platform_driver);
++	of_register_driver(&smu_of_platform_driver);
+ 	return 0;
+ }
+ 
