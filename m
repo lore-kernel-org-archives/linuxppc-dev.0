@@ -1,20 +1,21 @@
-Return-Path: <dagriego@gmail.com>
-Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.201])
-	by ozlabs.org (Postfix) with ESMTP id 7096D679E0
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 01:32:57 +1100 (EST)
-Received: by zproxy.gmail.com with SMTP id 13so436532nzp
-	for <linuxppc-dev@ozlabs.org>; Thu, 02 Mar 2006 06:32:56 -0800 (PST)
-Message-ID: <3d42041d0603020632o2d75bd7ao99c7b006042a88d9@mail.gmail.com>
-Date: Thu, 2 Mar 2006 07:32:56 -0700
-From: dagriego <dagriego@gmail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: [Fastboot] Re: Kexec for booke PPC processors
-In-Reply-To: <Pine.LNX.4.44.0603011746320.10931-100000@gate.crashing.org>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_6334_21432851.1141309976277"
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 19A6467A00
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 02:26:52 +1100 (EST)
+In-Reply-To: <3d42041d0603020632o2d75bd7ao99c7b006042a88d9@mail.gmail.com>
 References: <200603021012.57955.michael@ellerman.id.au>
 	<Pine.LNX.4.44.0603011746320.10931-100000@gate.crashing.org>
+	<3d42041d0603020632o2d75bd7ao99c7b006042a88d9@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <AA9A461A-06CF-44DE-A8EE-E2D60CA83B00@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [Fastboot] Re: Kexec for booke PPC processors
+Date: Thu, 2 Mar 2006 09:26:46 -0600
+To: dagriego <dagriego@gmail.com>
 Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
 	fastboot@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,54 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_6334_21432851.1141309976277
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-I'm working on the E500 core, particularly the mpc8540/8560ADS boards
-- David
+On Mar 2, 2006, at 8:32 AM, dagriego wrote:
 
-On 3/1/06, Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> > On Thu, 2 Mar 2006 09:43, dagriego wrote:
-> > > I'm finishing my first pass on getting kexec to work on PPC booke
-> > > processor, and needed some insight into how to pass information from
-> the
-> > > first kernel to the kexec'ed kernel.  This information is the board
-> > > information that the first kernel is given in r3 from the board
-> firmware.
-> > > Is there a standard convention for passing this information?
-> >
-> > Yep, it's called the flat device tree.
->
-> Which PPC booke are you trying to get this to work on?
->
-> - kumar
->
->
+> I'm working on the E500 core, particularly the mpc8540/8560ADS boards
+> - David
 
-------=_Part_6334_21432851.1141309976277
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+There are patches to u-boot that have been posted to allow mpc8540  
+ADS to boot with a flat device tree (needed by kexec).  In addition  
+the powerpc.git tree has support in arch/powerpc for building a  
+kernel that uses that flat device tree for mpc8540 ads.
 
-I'm working on the E500 core, particularly the mpc8540/8560ADS boards<br>
+I'd recommend you start with getting that going on your system.
 
-- David<br><br><div><span class=3D"gmail_quote">On 3/1/06, <b class=3D"gmai=
-l_sendername">Kumar Gala</b> &lt;<a href=3D"mailto:galak@kernel.crashing.or=
-g">galak@kernel.crashing.org</a>&gt; wrote:</span><blockquote class=3D"gmai=
-l_quote" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0p=
-t 0pt 0.8ex; padding-left: 1ex;">
-&gt; On Thu, 2 Mar 2006 09:43, dagriego wrote:<br>&gt; &gt; I'm finishing m=
-y first pass on getting kexec to work on PPC booke<br>&gt; &gt; processor, =
-and needed some insight into how to pass information from the<br>&gt; &gt; =
-first kernel to the kexec'ed kernel.&nbsp;&nbsp;This information is the boa=
-rd
-<br>&gt; &gt; information that the first kernel is given in r3 from the boa=
-rd firmware.<br>&gt; &gt; Is there a standard convention for passing this i=
-nformation?<br>&gt;<br>&gt; Yep, it's called the flat device tree.<br><br>
-Which PPC booke are you trying to get this to work on?<br><br>- kumar<br><b=
-r></blockquote></div><br>
-
-------=_Part_6334_21432851.1141309976277--
+- kumar
