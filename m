@@ -1,17 +1,19 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B1CD9679FB
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 07:26:44 +1100 (EST)
-Date: Thu, 2 Mar 2006 12:26:34 -0800
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Unsafe pte_update() in do_page_fault() (4xx and Book-E)
-Message-ID: <20060302202634.GA14387@gate.ebshome.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8C348679FD
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 10:35:46 +1100 (EST)
+Subject: Re: incorrect rmo_top handling in prom_init
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+In-Reply-To: <20060302185509.GA14235@suse.de>
+References: <20060302185509.GA14235@suse.de>
+Content-Type: text/plain
+Date: Fri, 03 Mar 2006 10:35:40 +1100
+Message-Id: <1141342541.13565.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,44 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi!
+On Thu, 2006-03-02 at 19:55 +0100, Olaf Hering wrote:
+> My iBook1 has 2 memory regions in reg. Depending on how I boot it
+> (vmlinux+initrd) or zImage.initrd, it will not boot with current Linus
+> tree.
+> rmo_top should be 160MB instead of 32MB.
 
-For the last couple of days I was debugging rare 
+Does that fix it ?
 
-  swap_dup: Bad swap file entry 0x00000080
-
-errors in my custom 2.4 kernel running on 405GPr system.
-
-My current theory is that this error is caused by the special lazy 
-dcache/icache flush handling on 4xx and BookE. Because this code in my 
-2.4 was actually a backport from 2.6, I think we have a problem in 
-current 2.6 as well.
-
-Here is what I think happens. On 4xx/BookE we use execute bit to 
-deffer dcache to icache flush, in do_page_fault() we flush page when 
-execute trap triggers and enable _PAGE_HWEXEC bit in PTE. 
-
-Unfortunately, we don't lock this PTE and it's possible that after 
-pte_present() check but _before_ pte_update() call this particular 
-page was purged from the memory, e.g. because of extreme memory 
-pressure (of course, I'm assuming enabled preempt). 
-
-If this happens, pte_update() sets _PAGE_HWEXEC bit in just cleared 
-PTE. Sometime later, another page fault happens for this page, but 
-because of that set bit, pte_none() test in handle_pte_fault() fails, 
-and we continue along the wrong path, thinking that this PTE was 
-swapped out to the swap file, and this triggers swap_dup error I 
-mentioned at the beginning.
-
-_PAGE_HWXEC is 0x200 on 405GPr, and because swap entry is PTE shifted 
-2 bits to the right, we get that "0x00000080" value.
-
-Paul, does my theory make any sense? I cannot test 2.6 on our hw. So 
-far, after I added additional page_table_lock locking to my 2.4 in 
-do_page_fault(), I haven't seen these errors, but it's too early to be 
-100% sure :).
-
-I'll make a patch for 2.6 if you think my analysis is correct.
-
--- 
-Eugene
+Index: linux-work/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/prom_init.c	2006-03-01 11:48:27.000000000 +1100
++++ linux-work/arch/powerpc/kernel/prom_init.c	2006-03-03 10:34:30.000000000 +1100
+@@ -978,7 +978,7 @@
+ 			if (size == 0)
+ 				continue;
+ 			prom_debug("    %x %x\n", base, size);
+-			if (base == 0)
++			if (base == 0 && (RELOC(of_platform) & PLATFORM_LPAR))
+ 				RELOC(rmo_top) = size;
+ 			if ((base + size) > RELOC(ram_top))
+ 				RELOC(ram_top) = base + size;
