@@ -1,19 +1,19 @@
-Return-Path: <bjorn.helgaas@hp.com>
-Received: from atlrel8.hp.com (atlrel8.hp.com [156.153.255.206])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "atlrel8.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 3CD29679FF
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 10:38:41 +1100 (EST)
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] macintosh: tidy-up driver_register() return values
-Date: Thu, 2 Mar 2006 16:18:51 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200603021618.51590.bjorn.helgaas@hp.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7AF77679E6
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 14:43:22 +1100 (EST)
+Subject: Re: Unsafe pte_update() in do_page_fault() (4xx and Book-E)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eugene Surovegin <ebs@ebshome.net>
+In-Reply-To: <20060302202634.GA14387@gate.ebshome.net>
+References: <20060302202634.GA14387@gate.ebshome.net>
+Content-Type: text/plain
+Date: Fri, 03 Mar 2006 14:43:02 +1100
+Message-Id: <1141357383.3888.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove the assumption that driver_register() returns the number of
-devices bound to the driver.  In fact, it returns zero for success
-or a negative error value.
 
-All callers of macio_register_driver() either ignore the return value
-or return it as the return value of a module_init() function.
+> If this happens, pte_update() sets _PAGE_HWEXEC bit in just cleared 
+> PTE. Sometime later, another page fault happens for this page, but 
+> because of that set bit, pte_none() test in handle_pte_fault() fails, 
+> and we continue along the wrong path, thinking that this PTE was 
+> swapped out to the swap file, and this triggers swap_dup error I 
+> mentioned at the beginning.
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Can we preempt at that point ? As tehre is no SMP 4xx that I know of
+preempt would be the only cause for such a race ...
 
-Index: work-mm4/drivers/macintosh/macio_asic.c
-===================================================================
---- work-mm4.orig/drivers/macintosh/macio_asic.c	2006-03-01 15:37:15.000000000 -0700
-+++ work-mm4/drivers/macintosh/macio_asic.c	2006-03-02 12:57:05.000000000 -0700
-@@ -550,15 +550,12 @@
-  */
- int macio_register_driver(struct macio_driver *drv)
- {
--	int count = 0;
--
- 	/* initialize common driver fields */
- 	drv->driver.name = drv->name;
- 	drv->driver.bus = &macio_bus_type;
- 
- 	/* register with core */
--	count = driver_register(&drv->driver);
--	return count ? count : 1;
-+	return driver_register(&drv->driver);
- }
- 
- /**
+Ben.
