@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 3030F67A33
+Return-Path: <paiarunk@gmail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.196])
+	by ozlabs.org (Postfix) with ESMTP id 77D5167A40
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Mar 2006 03:04:36 +1100 (EST)
-To: David Hawkins <dwh@ovro.caltech.edu>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Linux on PPC 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 02 Mar 2006 21:10:43 PST."
-	<4407CFD3.4060206@ovro.caltech.edu>
-Date: Fri, 03 Mar 2006 17:04:34 +0100
-Sender: wd@denx.de
-Message-Id: <20060303160434.3886335261F@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat,  4 Mar 2006 03:27:21 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id 34so724310nzf
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 03 Mar 2006 08:27:20 -0800 (PST)
+Message-ID: <000501c63edf$575c3e50$6401a8c0@arun0e8237123e>
+From: "Arun" <paiarunk@gmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: fbdev_drv/xfree86 getting rid of /dev/tty0 console
+Date: Fri, 3 Mar 2006 21:57:12 +0530
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0002_01C63F0D.6D10F370"
+Cc: RASS Arun <arun@rassit.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <4407CFD3.4060206@ovro.caltech.edu> you wrote:
-> 
-> If the vendor provided the VxWorks BSP, then hopefully they
-> also provided you with the physical memory map of the board.
-> This is what you really need to get another bootloader (eg. U-Boot)
+This is a multi-part message in MIME format.
 
-This is *NOT* corect, and actually dangerous.
+------=_NextPart_000_0002_01C63F0D.6D10F370
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> Step 1. Get the memory map of the board.
+Hello Sir
 
-Never use any given memory map unreflected. At least *check* if  it's
-usable with Linux.
-
-Many memory maps (especially those provides with some eval boards for
-demonstration purpose) will NOT work with Linux.  Remember  that  the
-memory  map  is  usually  not  cast  in  silicon,  but implemented in
-software, so you can change it as needed.
+I am also getting the same error with ELDK 3.1 ppc_7xx, so please help =
+us if u are able to solve it.
 
 
-Best regards,
+Regards
+Arun Kumar
+------=_NextPart_000_0002_01C63F0D.6D10F370
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Wolfgang Denk
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DVerdana size=3D2>Hello Sir</FONT></DIV>
+<DIV><FONT face=3DVerdana size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DVerdana size=3D2>I am also getting the same error with =
+ELDK 3.1=20
+ppc_7xx, so please help us if u are able to solve it.</FONT></DIV>
+<DIV><FONT face=3DVerdana size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DVerdana size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DVerdana size=3D2>Regards</FONT></DIV>
+<DIV><FONT face=3DVerdana size=3D2>Arun Kumar</FONT></DIV></BODY></HTML>
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-C++ was an interesting and valuable experiment, but we've learned its
-lessons and it's time to move on.
-                            - Peter Curran in <DCqM4z.BxB@isgtec.com>
+------=_NextPart_000_0002_01C63F0D.6D10F370--
