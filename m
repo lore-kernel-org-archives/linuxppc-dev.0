@@ -1,29 +1,19 @@
-Return-Path: <white@from-b.org>
-Received: from aphrodite.net-build.de (aphrodite.net-build.de [212.88.135.60])
-	by ozlabs.org (Postfix) with ESMTP id C261967A06
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id B230767A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Mar 2006 02:01:27 +1100 (EST)
-Received: from White64 (p54B4AC50.dip0.t-ipconnect.de [84.180.172.80])
-	(authenticated)
-	by aphrodite.net-build.de (8.11.6/8.11.2) with ESMTP id k23F1kq17086
-	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Mar 2006 16:01:57 +0100
-Date: Fri, 3 Mar 2006 16:01:27 +0100
-From: White <white@from-b.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: boot failure on lite5200b board
-Message-ID: <20060303160127.2f33d64c@White64>
-In-Reply-To: <84A109BF918D934CB46ACF33BCE187C002D54D96@mail02.student.main.ntu.edu.sg>
-References: <84A109BF918D934CB46ACF33BCE187C002D54D71@mail02.student.main.ntu.edu.sg>
-	<43FD6669.9090405@246tNt.com>
-	<84A109BF918D934CB46ACF33BCE187C002D54D7A@mail02.student.main.ntu.edu.sg>
-	<4b73d43f0602230818w63423513n817d9ec7eb580d2c@mail.gmail.com>
-	<84A109BF918D934CB46ACF33BCE187C002D54D7B@mail02.student.main.ntu.edu.sg>
-	<4b73d43f0602240917h1d80bcf8ycc87086305434304@mail.gmail.com>
-	<84A109BF918D934CB46ACF33BCE187C002D54D94@mail02.student.main.ntu.edu.sg>
-	<4b73d43f0603011652w39fb4393x8879891b7538f0b1@mail.gmail.com>
-	<84A109BF918D934CB46ACF33BCE187C002D54D96@mail02.student.main.ntu.edu.sg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat,  4 Mar 2006 03:00:14 +1100 (EST)
+To: nreddy@netenrich.com
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Linux on PPC 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 02 Mar 2006 21:09:32 PST."
+	<2611.61.95.208.2.1141362572.squirrel@61.95.208.2>
+Date: Fri, 03 Mar 2006 17:00:11 +0100
+Sender: wd@denx.de
+Message-Id: <20060303160011.8559F35261F@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,13 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <2611.61.95.208.2.1141362572.squirrel@61.95.208.2> you wrote:
+> 
+>  1. You can use u-boot as a boot loader.
+>  2. You can choose any standard linux kernel but you may have to do some
+> R&D on it to port to your board.
+>  Insted you can buy Montavista Linux, so that you can get support also.
 
-It looks like, your mpc52xx fec is missing...
+Commercial support is available not only from MV, but also from  many
+other companies.
 
-have you patched in the FEC Driver ?
+Best regards,
 
->Am Fri, 3 Mar 2006 16:06:40 +0800 schrieb "#LI JIANGGAN#"
-><lijianggan@pmail.ntu.edu.sg> :
->I couldn't figure out why error 101 /* Network is unreachable */ is
->given. Below is my current U-boot settings and a snapshot of the
->booting:
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The one who says it cannot be done should never interrupt the one who
+is doing it.
