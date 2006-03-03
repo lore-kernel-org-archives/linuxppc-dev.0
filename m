@@ -1,16 +1,17 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 1D9CC679FF
+Return-Path: <SStrublic@hypercom.com>
+Received: from fatman.hypercom.com (cipher.hypercom.com [208.248.82.254])
+	by ozlabs.org (Postfix) with ESMTP id 9ABD0679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Mar 2006 07:31:50 +1100 (EST)
+	Sat,  4 Mar 2006 07:44:48 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: Linux on PPC
-Date: Fri, 3 Mar 2006 14:31:49 -0600
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B8595AD@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "David Hawkins" <dwh@ovro.caltech.edu>
+Date: Fri, 3 Mar 2006 13:28:02 -0700
+Message-ID: <482F3C06ECF00C44AEC226520C6FCB1A51ED6A@EXCHANGEVS.HYPERCOM.COM>
+From: "Steve Strublic" <SStrublic@hypercom.com>
+To: "David Hawkins" <dwh@ovro.caltech.edu>,
+	"Rune Torgersen" <runet@innovsys.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,8 +23,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> From: David Hawkins [mailto:dwh@ovro.caltech.edu]=20
-> Sent: Friday, March 03, 2006 14:07
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+sstrublic=3Dhypercom.com@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+sstrublic=3Dhypercom.com@ozlabs.org]
+On
+> Behalf Of David Hawkins
+> Sent: Friday, March 03, 2006 1:07 PM
 > To: Rune Torgersen
 > Cc: linuxppc-embedded@ozlabs.org
 > Subject: Re: Linux on PPC
@@ -37,10 +42,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 > >>redefined in hardware to have a different memory location, but
 > >>its still a physical address.
 > >>
-> >=20
+> >
 > > Still not right. Even the physical memory is software settable. What
-> > matters is what chip-select things are hooked up to, and=20
-> then map those
+> > matters is what chip-select things are hooked up to, and then map
+those
 > > chip selects correctly (size, base address, access with and so on)
 >=20
 > Hi Rune,
@@ -51,7 +56,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 > up to the limit of the wiring on the board of course (chip-selects
 > and bus widths). That's where having the board schematic is
 > invaluable.
+>=20
+> But ok, I'm pretty sure I get the point, and hopefully the
+> original poster understands a bit more too.
+>=20
+> Given a board that you expect to run Linux on, I would imagine
+> you would select hardware settings consistent with making
+> Linux happy, i.e., defining 'in software' (the bootloader)
+> the physical address map (eg. like the Embedded Planet reference
+> manual for the 440EP Yosemite board), and then setup U-Boot and
+> Linux to program the TLBs to translate to those same addresses.
+>=20
+> When looking at the Yosemite board, I booted U-Boot and compared
+> device dcr settings to the recommended ones in the EP manual. Then
+> when I booted Linux, I took a look and found that on the whole, Linux
+> didn't touch too much of the things setup by U-Boot, i.e., the
+> responsibility for setting up the Linux environment was mainly
+> the job of the bootloader.
+>=20
+> So, if I had a board with a custom bootloader, I would be
+> concerned that the bootloader might not know enough about
+> Linux, to setup the hardware correctly.
 
+The boot loader should, ideally, NOT know anything about Linux except
+for knowing that since a Linux is being loaded, it requires some
+information at boot time, and the format in which to provide said
+information.
+
+Steve
+
+>=20
 > Does that sound right?
-
-Yes.
+>=20
+> Dave
+>=20
+>=20
+>=20
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
