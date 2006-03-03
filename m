@@ -1,20 +1,21 @@
 Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx2.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1FC3D67A65
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 03:54:00 +1100 (EST)
-Date: Fri, 3 Mar 2006 17:52:54 +0100
+	by ozlabs.org (Postfix) with ESMTP id BE526679A6
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 04:24:49 +1100 (EST)
+Date: Fri, 3 Mar 2006 18:24:40 +0100
 From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
-Subject: [PATCH] Workaround gcc bug #26549 which causes pointers to be
-	truncated.
-Message-ID: <20060303165253.GA6494@suse.de>
+To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Subject: Re: alignment bugs in prom_init
+Message-ID: <20060303172440.GA6691@suse.de>
 References: <20060303135717.GA5707@suse.de>
+	<44086B5E.60201@smiths-aerospace.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20060303135717.GA5707@suse.de>
+In-Reply-To: <44086B5E.60201@smiths-aerospace.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,87 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ On Fri, Mar 03, Jerry Van Baren wrote:
 
-Workaround gcc bug #26549 which causes pointers to be truncated.
+> Looks like you should use -malign-natural to make it do what you want it 
 
-The address of variable val in prom_init_stdout is passed to prom_getprop.
-prom_getprop casts the pointer to u32 and passes it to call_prom in the hope
-that OpenFirmware stores something there.
-But the pointer is truncated in the lower bits and the expected value is
-stored somewhere else.
-This gcc bug does not exist in SLES9 gcc33 toolchain, but it is present in
-gcc4.0+, likely also in gcc3.4. Compiling a testcase without any -O produces
-also correct code.
+Same story.
 
-In my testing I had a stackpointer of 0x0023e6b4. val was at offset 120, 
-wich has address 0x0023e72c. But the value passed to OF was 0x0023e728.
+c00000000040b924:       3b 01 00 78     addi    r24,r1,120
+c00000000040b968:       57 08 00 38     rlwinm  r8,r24,0,0,28
+c00000000040b984:       4b ff d6 01     bl      c000000000408f84 <.call_prom>
+c00000000040b998:       80 01 00 78     lwz     r0,120(r1)
 
-c00000000040b710:       3b 01 00 78     addi    r24,r1,120
-...
-c00000000040b754:       57 08 00 38     rlwinm  r8,r24,0,0,28
-...
-c00000000040b784:       80 01 00 78     lwz     r0,120(r1)
-...
-c00000000040b798:       90 1b 00 0c     stw     r0,12(r27)
-...
-
-simple testcase:
-
-int f(unsigned);
-void g(void)
-{
-	unsigned a;
-	unsigned int b = (unsigned long)(void*)(&a);
-	f(b);
-}
-
-asm should look like this:
-   c:   38 61 00 70     addi    r3,r1,112
-  10:   78 63 00 20     clrldi  r3,r3,32
-  14:   48 00 00 01     bl      14 <.g+0x14>
-
-But instead it looks like:
-   c:   38 61 00 70     addi    r3,r1,112
-  10:   54 63 00 36     rlwinm  r3,r3,0,0,27
-  14:   48 00 00 01     bl      14 <.g+0x14>
-
-
-So just uninline prom_getprop to workaround this gcc bug.
-
-c000000000409034 <.prom_getprop>:
-c000000000409054:       7c bc 2b 78     mr      r28,r5
-c000000000409074:       7b 88 00 20     clrldi  r8,r28,32
-...
-c00000000040b29c <.prom_init>:
-...
-c00000000040b3d0:       3b 41 00 74     addi    r26,r1,116
-...
-c00000000040b3f8:       e8 82 a4 a8     ld      r4,-23384(r2)
-c00000000040b3fc:       7f 45 d3 78     mr      r5,r26
-c00000000040b404:       80 7d 00 04     lwz     r3,4(r29)
-c00000000040b408:       38 c0 00 04     li      r6,4
-c00000000040b410:       4b ff dc 25     bl      c000000000409034 <.prom_getprop>
-...
-c00000000040b424:       80 01 00 74     lwz     r0,116(r1)
-
-
-
-Signed-off-by: Olaf Hering <olh@suse.de>
-
- arch/powerpc/kernel/prom_init.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
-===================================================================
---- linux-2.6.16-rc5-olh.orig/arch/powerpc/kernel/prom_init.c
-+++ linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
-@@ -422,7 +422,8 @@ static int __init prom_next_node(phandle
- 	}
- }
- 
--static int inline prom_getprop(phandle node, const char *pname,
-+/* do not mark as inline to work around gcc bug #26549 */
-+static int __init prom_getprop(phandle node, const char *pname,
- 			       void *value, size_t valuelen)
- {
- 	return call_prom("getprop", 4, 1, node, ADDR(pname),
+,28 is even worse.
