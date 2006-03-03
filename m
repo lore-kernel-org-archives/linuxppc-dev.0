@@ -1,16 +1,20 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from agrxsusmail.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 949D367A3F
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 03:20:44 +1100 (EST)
-Message-ID: <440865CC.7070607@smiths-aerospace.com>
-Date: Fri, 03 Mar 2006 10:50:36 -0500
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: alignment bugs in prom_init
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1FC3D67A65
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 03:54:00 +1100 (EST)
+Date: Fri, 3 Mar 2006 17:52:54 +0100
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
+Subject: [PATCH] Workaround gcc bug #26549 which causes pointers to be
+	truncated.
+Message-ID: <20060303165253.GA6494@suse.de>
 References: <20060303135717.GA5707@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 In-Reply-To: <20060303135717.GA5707@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,53 +24,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering wrote:
-> Some G5 and pSeries models dont boot with recent kernels. The reason is
-> likely the casting of pointers of stack variables to u32. One example is
-> the prom_getprop() call in prom_init_stdout().
-> 
-> sp is 0x0023e784, val is at offset 120, which makes 0x0023e7fc. This
-> address is casted to u32, which changes it to 0x0023e7f8. The firmware
-> writes to the wrong addres and things go downhill very quick.
-> 
-> c00000000040baa8:       3b 21 00 78     addi    r25,r1,120
-> ..
-> c00000000040baf4:       57 28 00 38     rlwinm  r8,r25,0,0,28
-> ..
-> c00000000040bb10:       4b ff d3 3d     bl      c000000000408e4c <.call_prom>
-> 
-> If I remove the casts and pass the pointer as is, everything starts to
-> work as expected? Why is all this (u32)(unsigned long) casting in
-> arch/powerpc/kernel/prom_init.c required?
-> 
-> Does -Os vs -O2 make a difference here?
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-Hi Olaf,
+Workaround gcc bug #26549 which causes pointers to be truncated.
 
-The casting is 8-byte aligning the address because it is a 64 bit 
-variable and it is frowned on (and on some processors, fatal) to have an 
-8-byte variable misaligned (not on a 8 byte boundary).
+The address of variable val in prom_init_stdout is passed to prom_getprop.
+prom_getprop casts the pointer to u32 and passes it to call_prom in the hope
+that OpenFirmware stores something there.
+But the pointer is truncated in the lower bits and the expected value is
+stored somewhere else.
+This gcc bug does not exist in SLES9 gcc33 toolchain, but it is present in
+gcc4.0+, likely also in gcc3.4. Compiling a testcase without any -O produces
+also correct code.
 
-In your example above, the variable is named "sp"... the sp is suppose 
-to be on a 8 byte boundary per the EABI (quoted below... note that the 
-ABI requires it to be on a 16 byte boundary):
-----
-The Stack Frame
-Unlike the SVR4 ABI, the stack pointer (GPR1) shall maintain 8-byte 
-alignment, from initialization through all routine calls and dynamic 
-stack space allocation.
-----
-In the instance above, the proper solution (but I don't know if it is a 
-realistic solution :-/) is to properly align the stack pointer on a 8 
-byte boundary.  I also don't know if there are other, non sp variable, 
-problems.  It sounds like the prom isn't 64 bit clean.  What are our 
-options to make it 64 bit clean?
+In my testing I had a stackpointer of 0x0023e6b4. val was at offset 120, 
+wich has address 0x0023e72c. But the value passed to OF was 0x0023e728.
 
-Disclaimer: Yeah, I know most PPCs handle misaligned longs, but that 
-doesn't make it _right_ and it definitely doesn't make it efficient.
+c00000000040b710:       3b 01 00 78     addi    r24,r1,120
+...
+c00000000040b754:       57 08 00 38     rlwinm  r8,r24,0,0,28
+...
+c00000000040b784:       80 01 00 78     lwz     r0,120(r1)
+...
+c00000000040b798:       90 1b 00 0c     stw     r0,12(r27)
+...
 
-gvb
+simple testcase:
+
+int f(unsigned);
+void g(void)
+{
+	unsigned a;
+	unsigned int b = (unsigned long)(void*)(&a);
+	f(b);
+}
+
+asm should look like this:
+   c:   38 61 00 70     addi    r3,r1,112
+  10:   78 63 00 20     clrldi  r3,r3,32
+  14:   48 00 00 01     bl      14 <.g+0x14>
+
+But instead it looks like:
+   c:   38 61 00 70     addi    r3,r1,112
+  10:   54 63 00 36     rlwinm  r3,r3,0,0,27
+  14:   48 00 00 01     bl      14 <.g+0x14>
+
+
+So just uninline prom_getprop to workaround this gcc bug.
+
+c000000000409034 <.prom_getprop>:
+c000000000409054:       7c bc 2b 78     mr      r28,r5
+c000000000409074:       7b 88 00 20     clrldi  r8,r28,32
+...
+c00000000040b29c <.prom_init>:
+...
+c00000000040b3d0:       3b 41 00 74     addi    r26,r1,116
+...
+c00000000040b3f8:       e8 82 a4 a8     ld      r4,-23384(r2)
+c00000000040b3fc:       7f 45 d3 78     mr      r5,r26
+c00000000040b404:       80 7d 00 04     lwz     r3,4(r29)
+c00000000040b408:       38 c0 00 04     li      r6,4
+c00000000040b410:       4b ff dc 25     bl      c000000000409034 <.prom_getprop>
+...
+c00000000040b424:       80 01 00 74     lwz     r0,116(r1)
+
+
+
+Signed-off-by: Olaf Hering <olh@suse.de>
+
+ arch/powerpc/kernel/prom_init.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-2.6.16-rc5-olh.orig/arch/powerpc/kernel/prom_init.c
++++ linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
+@@ -422,7 +422,8 @@ static int __init prom_next_node(phandle
+ 	}
+ }
+ 
+-static int inline prom_getprop(phandle node, const char *pname,
++/* do not mark as inline to work around gcc bug #26549 */
++static int __init prom_getprop(phandle node, const char *pname,
+ 			       void *value, size_t valuelen)
+ {
+ 	return call_prom("getprop", 4, 1, node, ADDR(pname),
