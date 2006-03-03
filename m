@@ -1,21 +1,17 @@
 Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
+	(Client CN "mx1.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BE526679A6
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 04:24:49 +1100 (EST)
-Date: Fri, 3 Mar 2006 18:24:40 +0100
+	by ozlabs.org (Postfix) with ESMTP id 3E83B679F8
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 04:34:23 +1100 (EST)
+Date: Fri, 3 Mar 2006 18:34:17 +0100
 From: Olaf Hering <olh@suse.de>
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: alignment bugs in prom_init
-Message-ID: <20060303172440.GA6691@suse.de>
-References: <20060303135717.GA5707@suse.de>
-	<44086B5E.60201@smiths-aerospace.com>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] mark a few functions as __init
+Message-ID: <20060303173417.GA6758@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <44086B5E.60201@smiths-aerospace.com>
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Fri, Mar 03, Jerry Van Baren wrote:
+Mark a few functions as __init.
+IFF gcc does not inline them, they end up in .text.
+Make 2 local functions static.
+Mark fake_elf as initdata.
 
-> Looks like you should use -malign-natural to make it do what you want it 
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-Same story.
+ arch/powerpc/kernel/prom_init.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-c00000000040b924:       3b 01 00 78     addi    r24,r1,120
-c00000000040b968:       57 08 00 38     rlwinm  r8,r24,0,0,28
-c00000000040b984:       4b ff d6 01     bl      c000000000408f84 <.call_prom>
-c00000000040b998:       80 01 00 78     lwz     r0,120(r1)
-
-,28 is even worse.
+Index: linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-2.6.16-rc5-olh.orig/arch/powerpc/kernel/prom_init.c
++++ linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
+@@ -435,7 +435,7 @@ static int inline prom_getproplen(phandl
+ 	return call_prom("getproplen", 2, 1, node, ADDR(pname));
+ }
+ 
+-static void add_string(char **str, const char *q)
++static void __init add_string(char **str, const char *q)
+ {
+ 	char *p = *str;
+ 
+@@ -445,7 +445,7 @@ static void add_string(char **str, const
+ 	*str = p;
+ }
+ 
+-static char *tohex(unsigned int x)
++static char __init *tohex(unsigned int x)
+ {
+ 	static char digits[] = "0123456789abcdef";
+ 	static char result[9];
+@@ -492,7 +492,7 @@ static int __init prom_setprop(phandle n
+ #define islower(c)	('a' <= (c) && (c) <= 'z')
+ #define toupper(c)	(islower(c) ? ((c) - 'a' + 'A') : (c))
+ 
+-unsigned long prom_strtoul(const char *cp, const char **endp)
++static unsigned long __init prom_strtoul(const char *cp, const char **endp)
+ {
+ 	unsigned long result = 0, base = 10, value;
+ 
+@@ -517,7 +517,7 @@ unsigned long prom_strtoul(const char *c
+ 	return result;
+ }
+ 
+-unsigned long prom_memparse(const char *ptr, const char **retptr)
++static unsigned long __init prom_memparse(const char *ptr, const char **retptr)
+ {
+ 	unsigned long ret = prom_strtoul(ptr, retptr);
+ 	int shift = 0;
+@@ -659,7 +659,7 @@ static struct fake_elf {
+ 			u32	ignore_me;
+ 		} rpadesc;
+ 	} rpanote;
+-} fake_elf = {
++} fake_elf __initdata = {
+ 	.elfhdr = {
+ 		.e_ident = { 0x7f, 'E', 'L', 'F',
+ 			     ELFCLASS32, ELFDATA2MSB, EV_CURRENT },
+@@ -891,7 +891,7 @@ static unsigned long __init prom_next_ce
+  * If problems seem to show up, it would be a good start to track
+  * them down.
+  */
+-static void reserve_mem(u64 base, u64 size)
++static void __init reserve_mem(u64 base, u64 size)
+ {
+ 	u64 top = base + size;
+ 	unsigned long cnt = RELOC(mem_reserve_cnt);
