@@ -1,9 +1,9 @@
 Return-Path: <gerald.vanbaren@smiths-aerospace.com>
 Received: from agrxsusmail.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id B497B67A3E
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 03:14:26 +1100 (EST)
-Message-ID: <44086B5E.60201@smiths-aerospace.com>
-Date: Fri, 03 Mar 2006 11:14:22 -0500
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 949D367A3F
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 03:20:44 +1100 (EST)
+Message-ID: <440865CC.7070607@smiths-aerospace.com>
+Date: Fri, 03 Mar 2006 10:50:36 -0500
 From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
@@ -40,23 +40,33 @@ Olaf Hering wrote:
 > arch/powerpc/kernel/prom_init.c required?
 > 
 > Does -Os vs -O2 make a difference here?
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
-Hi Olaf, me again...
+Hi Olaf,
 
-<http://gcc.gnu.org/onlinedocs/gcc-4.1.0/gcc/RS_002f6000-and-PowerPC-Options.html>
+The casting is 8-byte aligning the address because it is a 64 bit 
+variable and it is frowned on (and on some processors, fatal) to have an 
+8-byte variable misaligned (not on a 8 byte boundary).
 
-Looks like you should use -malign-natural to make it do what you want it 
-to do:
+In your example above, the variable is named "sp"... the sp is suppose 
+to be on a 8 byte boundary per the EABI (quoted below... note that the 
+ABI requires it to be on a 16 byte boundary):
+----
+The Stack Frame
+Unlike the SVR4 ABI, the stack pointer (GPR1) shall maintain 8-byte 
+alignment, from initialization through all routine calls and dynamic 
+stack space allocation.
+----
+In the instance above, the proper solution (but I don't know if it is a 
+realistic solution :-/) is to properly align the stack pointer on a 8 
+byte boundary.  I also don't know if there are other, non sp variable, 
+problems.  It sounds like the prom isn't 64 bit clean.  What are our 
+options to make it 64 bit clean?
 
--malign-natural
--malign-power
-     On AIX, 32-bit Darwin, and 64-bit PowerPC GNU/Linux, the option 
--malign-natural overrides the ABI-defined alignment of larger types, 
-such as floating-point doubles, on their natural size-based boundary. 
-The option -malign-power instructs GCC to follow the ABI-specified 
-alignment rules. GCC defaults to the standard alignment defined in the ABI.
-
-     On 64-bit Darwin, natural alignment is the default, and 
--malign-power is not supported.
+Disclaimer: Yeah, I know most PPCs handle misaligned longs, but that 
+doesn't make it _right_ and it definitely doesn't make it efficient.
 
 gvb
