@@ -3,15 +3,17 @@ Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3E83B679F8
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 04:34:23 +1100 (EST)
-Date: Fri, 3 Mar 2006 18:34:17 +0100
+	by ozlabs.org (Postfix) with ESMTP id 1CF66679A6
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 06:16:41 +1100 (EST)
+Date: Fri, 3 Mar 2006 20:16:33 +0100
 From: Olaf Hering <olh@suse.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] mark a few functions as __init
-Message-ID: <20060303173417.GA6758@suse.de>
+To: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
+Subject: [PATCH] force stackpointer alignment in 64bit kernel
+Message-ID: <20060303191633.GA7792@suse.de>
+References: <20060303135717.GA5707@suse.de> <20060303165253.GA6494@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20060303165253.GA6494@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,71 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark a few functions as __init.
-IFF gcc does not inline them, they end up in .text.
-Make 2 local functions static.
-Mark fake_elf as initdata.
+
+Fix gcc "bug" #26549 which causes pointers to be truncated.
+
+The address of variable val in prom_init_stdout is passed to prom_getprop.
+prom_getprop casts the pointer to u32 and passes it to call_prom in the hope
+that OpenFirmware stores something there.
+But the pointer is truncated in the lower bits and the expected value is
+stored somewhere else.
+
+In my testing I had a stackpointer of 0x0023e6b4. val was at offset 120, 
+wich has address 0x0023e72c. But the value passed to OF was 0x0023e728.
+
+c00000000040b710:       3b 01 00 78     addi    r24,r1,120
+...
+c00000000040b754:       57 08 00 38     rlwinm  r8,r24,0,0,28
+...
+c00000000040b784:       80 01 00 78     lwz     r0,120(r1)
+...
+c00000000040b798:       90 1b 00 0c     stw     r0,12(r27)
+...
+
+The stackpointer came from 32bit code, which appearently has different
+alignment rules than 64bit code. The chain was yaboot -> zImage -> vmlinux
+Force the stackpointer to be 16 byte aligned.
+
 
 Signed-off-by: Olaf Hering <olh@suse.de>
 
- arch/powerpc/kernel/prom_init.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/head_64.S |    2 ++
+ 1 files changed, 2 insertions(+)
 
-Index: linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
+Index: linux-2.6.16-rc5-olh/arch/powerpc/kernel/head_64.S
 ===================================================================
---- linux-2.6.16-rc5-olh.orig/arch/powerpc/kernel/prom_init.c
-+++ linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
-@@ -435,7 +435,7 @@ static int inline prom_getproplen(phandl
- 	return call_prom("getproplen", 2, 1, node, ADDR(pname));
- }
+--- linux-2.6.16-rc5-olh.orig/arch/powerpc/kernel/head_64.S
++++ linux-2.6.16-rc5-olh/arch/powerpc/kernel/head_64.S
+@@ -1547,6 +1547,8 @@ _STATIC(__boot_from_prom)
+ 	mr	r27,r7
  
--static void add_string(char **str, const char *q)
-+static void __init add_string(char **str, const char *q)
- {
- 	char *p = *str;
+ 	/* Make sure we are running in 64 bits mode */
++	addi	r1,r1,16
++	rlwinm	r1,r1,0,0,28
+ 	bl	.enable_64b_mode
  
-@@ -445,7 +445,7 @@ static void add_string(char **str, const
- 	*str = p;
- }
- 
--static char *tohex(unsigned int x)
-+static char __init *tohex(unsigned int x)
- {
- 	static char digits[] = "0123456789abcdef";
- 	static char result[9];
-@@ -492,7 +492,7 @@ static int __init prom_setprop(phandle n
- #define islower(c)	('a' <= (c) && (c) <= 'z')
- #define toupper(c)	(islower(c) ? ((c) - 'a' + 'A') : (c))
- 
--unsigned long prom_strtoul(const char *cp, const char **endp)
-+static unsigned long __init prom_strtoul(const char *cp, const char **endp)
- {
- 	unsigned long result = 0, base = 10, value;
- 
-@@ -517,7 +517,7 @@ unsigned long prom_strtoul(const char *c
- 	return result;
- }
- 
--unsigned long prom_memparse(const char *ptr, const char **retptr)
-+static unsigned long __init prom_memparse(const char *ptr, const char **retptr)
- {
- 	unsigned long ret = prom_strtoul(ptr, retptr);
- 	int shift = 0;
-@@ -659,7 +659,7 @@ static struct fake_elf {
- 			u32	ignore_me;
- 		} rpadesc;
- 	} rpanote;
--} fake_elf = {
-+} fake_elf __initdata = {
- 	.elfhdr = {
- 		.e_ident = { 0x7f, 'E', 'L', 'F',
- 			     ELFCLASS32, ELFDATA2MSB, EV_CURRENT },
-@@ -891,7 +891,7 @@ static unsigned long __init prom_next_ce
-  * If problems seem to show up, it would be a good start to track
-  * them down.
-  */
--static void reserve_mem(u64 base, u64 size)
-+static void __init reserve_mem(u64 base, u64 size)
- {
- 	u64 top = base + size;
- 	unsigned long cnt = RELOC(mem_reserve_cnt);
+ 	/* put a relocation offset into r3 */
