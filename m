@@ -1,18 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B7B6F67A33
-	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 17:13:36 +1100 (EST)
-Subject: [PATCH] powerpc: Fix windfarm_pm112 not starting all control loops
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Fri, 03 Mar 2006 17:13:30 +1100
-Message-Id: <1141366411.3888.50.camel@localhost.localdomain>
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2993967A06
+	for <linuxppc-dev@ozlabs.org>; Fri,  3 Mar 2006 22:06:26 +1100 (EST)
+Date: Fri, 3 Mar 2006 12:06:20 +0100
+From: Olaf Hering <olh@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: incorrect rmo_top handling in prom_init
+Message-ID: <20060303110620.GA5130@suse.de>
+References: <20060302185509.GA14235@suse.de>
+	<1141342541.13565.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1141342541.13565.6.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds a couple of printk's to windfarm_pm112 to display which
-control loops are actually starting and fixes a bug where it would not
-start all loops.
+ On Fri, Mar 03, Benjamin Herrenschmidt wrote:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Index: linux-work/drivers/macintosh/windfarm_pm112.c
-===================================================================
---- linux-work.orig/drivers/macintosh/windfarm_pm112.c	2006-03-03 16:24:44.000000000 +1100
-+++ linux-work/drivers/macintosh/windfarm_pm112.c	2006-03-03 17:04:53.000000000 +1100
-@@ -358,6 +358,7 @@ static void backside_fan_tick(void)
- 		return;
- 	if (!backside_tick) {
- 		/* first time; initialize things */
-+		printk(KERN_INFO "windfarm: Backside control loop started.\n");
- 		backside_param.min = backside_fan->ops->get_min(backside_fan);
- 		backside_param.max = backside_fan->ops->get_max(backside_fan);
- 		wf_pid_init(&backside_pid, &backside_param);
-@@ -407,6 +408,7 @@ static void drive_bay_fan_tick(void)
- 		return;
- 	if (!drive_bay_tick) {
- 		/* first time; initialize things */
-+		printk(KERN_INFO "windfarm: Drive bay control loop started.\n");
- 		drive_bay_prm.min = drive_bay_fan->ops->get_min(drive_bay_fan);
- 		drive_bay_prm.max = drive_bay_fan->ops->get_max(drive_bay_fan);
- 		wf_pid_init(&drive_bay_pid, &drive_bay_prm);
-@@ -458,6 +460,7 @@ static void slots_fan_tick(void)
- 		return;
- 	if (!slots_started) {
- 		/* first time; initialize things */
-+		printk(KERN_INFO "windfarm: Slots control loop started.\n");
- 		wf_pid_init(&slots_pid, &slots_param);
- 		slots_started = 1;
- 	}
-@@ -504,6 +507,7 @@ static void pm112_tick(void)
- 
- 	if (!started) {
- 		started = 1;
-+		printk(KERN_INFO "windfarm: CPUs control loops started.\n");
- 		for (i = 0; i < nr_cores; ++i) {
- 			if (create_cpu_loop(i) < 0) {
- 				failure_state = FAILURE_PERM;
-@@ -594,8 +598,6 @@ static void pm112_new_sensor(struct wf_s
- {
- 	unsigned int i;
- 
--	if (have_all_sensors)
--		return;
- 	if (!strncmp(sr->name, "cpu-temp-", 9)) {
- 		i = sr->name[9] - '0';
- 		if (sr->name[10] == 0 && i < NR_CORES &&
+> On Thu, 2006-03-02 at 19:55 +0100, Olaf Hering wrote:
+> > My iBook1 has 2 memory regions in reg. Depending on how I boot it
+> > (vmlinux+initrd) or zImage.initrd, it will not boot with current Linus
+> > tree.
+> > rmo_top should be 160MB instead of 32MB.
+> 
+> Does that fix it ?
+
+My G5 may need similar tweaks. looking.
+
+
+0 > dev /memory .properties 
+name                    memory
+device_type             memory
+reg                     00000000 00000000  10000000 
+                        00000000 00000000  00000000 
+                        00000000 00000000  00000000 
+                        00000000 00000000  00000000 
+                        00000000 00000000  00000000 
+                        00000000 00000000  00000000 
+                        00000000 00000000  00000000 
+                        00000000 00000000  00000000 
+slot-names              0000000f
+                        DIMM0/J11
+                        DIMM1/J12
+                        DIMM2/J13
+                        DIMM3/J14
+available               00003000 0fbf9000 
+bank-names              0000000f
+                        64 bit Bank0/J11/J12/front
+                        64 bit Bank1/J11/J12/back
+                        64 bit Bank2/J13/J14/front
+                        64 bit Bank3/J13/J14/back
+bank-sizes              10000000 00000000 00000000 00000000 
+dimm-info               8008070d 09014000 04607000 82100001 0e040c01 0220c075 
+                        70000048 30482a20 75754545 00000000 003c4830 2d550000 
+                        00000000 00000000 00000000 000000e7 ad000000 00000000 
+                        0148594d 44323136 20363436 41364a2d 4a202041 41033432 
+                        06873900 00000000 00000000 00000000 00000000 00000000 
+                        00000000 00000000 8008070d 09014000 04607000 82100001 
+                        0e040c01 0220c075 70000048 30482a20 75754545 00000000 
+                        003c4830 2d550000 00000000 00000000 00000000 000000e7 
+                        ad000000 00000000 0148594d 44323136 20363436 41364a2d 
+                        4a202041 41033432 06863800 00000000 00000000 00000000 
+                        00000000 00000000 00000000 00000000 
+                        ... 00000200 bytes total
+dimm-types              DDR SDRAM
+                        DDR SDRAM
+                        
+                        
+dimm-speeds             PC2700U-25330
+                        PC2700U-25330
+                        
+                        
+ram-layout-architecture 00000001 
+
+ ok
