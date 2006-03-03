@@ -1,18 +1,18 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id B230767A33
+	by ozlabs.org (Postfix) with ESMTP id 3030F67A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Mar 2006 03:00:14 +1100 (EST)
-To: nreddy@netenrich.com
+	Sat,  4 Mar 2006 03:04:36 +1100 (EST)
+To: David Hawkins <dwh@ovro.caltech.edu>
 From: Wolfgang Denk <wd@denx.de>
 Subject: Re: Linux on PPC 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 02 Mar 2006 21:09:32 PST."
-	<2611.61.95.208.2.1141362572.squirrel@61.95.208.2>
-Date: Fri, 03 Mar 2006 17:00:11 +0100
+In-reply-to: Your message of "Thu, 02 Mar 2006 21:10:43 PST."
+	<4407CFD3.4060206@ovro.caltech.edu>
+Date: Fri, 03 Mar 2006 17:04:34 +0100
 Sender: wd@denx.de
-Message-Id: <20060303160011.8559F35261F@atlas.denx.de>
+Message-Id: <20060303160434.3886335261F@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,15 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <2611.61.95.208.2.1141362572.squirrel@61.95.208.2> you wrote:
+In message <4407CFD3.4060206@ovro.caltech.edu> you wrote:
 > 
->  1. You can use u-boot as a boot loader.
->  2. You can choose any standard linux kernel but you may have to do some
-> R&D on it to port to your board.
->  Insted you can buy Montavista Linux, so that you can get support also.
+> If the vendor provided the VxWorks BSP, then hopefully they
+> also provided you with the physical memory map of the board.
+> This is what you really need to get another bootloader (eg. U-Boot)
 
-Commercial support is available not only from MV, but also from  many
-other companies.
+This is *NOT* corect, and actually dangerous.
+
+> Step 1. Get the memory map of the board.
+
+Never use any given memory map unreflected. At least *check* if  it's
+usable with Linux.
+
+Many memory maps (especially those provides with some eval boards for
+demonstration purpose) will NOT work with Linux.  Remember  that  the
+memory  map  is  usually  not  cast  in  silicon,  but implemented in
+software, so you can change it as needed.
+
 
 Best regards,
 
@@ -41,5 +50,6 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The one who says it cannot be done should never interrupt the one who
-is doing it.
+C++ was an interesting and valuable experiment, but we've learned its
+lessons and it's time to move on.
+                            - Peter Curran in <DCqM4z.BxB@isgtec.com>
