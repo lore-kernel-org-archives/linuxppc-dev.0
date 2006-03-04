@@ -1,18 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id B201E67A3D
+Return-Path: <atul.sabharwal@exgate.tek.com>
+Received: from igate.tek.com (igate.tek.com [192.65.41.20])
+	by ozlabs.org (Postfix) with ESMTP id B9AF767A3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Mar 2006 13:09:40 +1100 (EST)
-To: David Hawkins <dwh@ovro.caltech.edu>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Linux on PPC 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 03 Mar 2006 12:06:43 PST."
-	<4408A1D3.8010506@ovro.caltech.edu>
-Date: Sat, 04 Mar 2006 03:09:38 +0100
-Sender: wd@denx.de
-Message-Id: <20060304020938.00774352627@atlas.denx.de>
+	Sat,  4 Mar 2006 13:38:14 +1100 (EST)
+Received: from tektronix.tek.com (tektronix.tek.com [128.181.6.43])
+	by igate.tek.com (8.12.10+Sun/8.12.10) with ESMTP id k242cCtT007399
+	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Mar 2006 18:38:12 -0800 (PST)
+Received: from us-bv-u16.global.tektronix.net (us-bv-u16.bv.tek.com
+	[128.181.2.45])
+	by tektronix.tek.com (8.12.10+Sun/8.12.10) with SMTP id k242cB2i015069
+	for <linuxppc-embedded@ozlabs.org>; Fri, 3 Mar 2006 18:38:12 -0800 (PST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Different Page Size Support in Linux on PPC870
+Date: Fri, 3 Mar 2006 18:38:58 -0800
+Message-ID: <4A062D477D842B4C8FC48EA5AF2D41F201C47BE3@us-bv-m23.global.tektronix.net>
+From: <atul.sabharwal@exgate.tek.com>
+To: <wd@denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,49 +29,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <4408A1D3.8010506@ovro.caltech.edu> you wrote:
-> 
-> > Still not right. Even the physical memory is software settable. What
-> > matters is what chip-select things are hooked up to, and then map those
-> > chip selects correctly (size, base address, access with and so on)
-> 
-> Thats what I meant with 'redefined in hardware'. But yes, redefined
-> up to the limit of the wiring on the board of course (chip-selects
-> and bus widths). That's where having the board schematic is
-> invaluable.
+On PPC870, does the kernel only support 4K pages?  To reduce the size of
+page table (level & level 2), would 8M page be a better choice on a
+custom=20
+board? It's a no swap configuration. Memory load is critical in our
+design on this project.
 
-You don't get it. You can map - for example - your flash to  physical
-address  0x0000 or 0x04000000 or 0x40000000 or 0xFFF00000 as you like
-- without any changes to the hardware, and  without  using  the  MMU.
-Mind: that's all *physical* addresses.
+Comments?
 
-> manual for the 440EP Yosemite board), and then setup U-Boot and
-> Linux to program the TLBs to translate to those same addresses.
+Thanks,
 
-No. U-Boot does not use the MMU.
-
-> when I booted Linux, I took a look and found that on the whole, Linux
-> didn't touch too much of the things setup by U-Boot, i.e., the
-> responsibility for setting up the Linux environment was mainly
-> the job of the bootloader.
-
-Wrong  again.  Linux  completely  re-initializes  the  whole   memory
-management.
-
-> So, if I had a board with a custom bootloader, I would be
-> concerned that the bootloader might not know enough about
-> Linux, to setup the hardware correctly.
-> 
-> Does that sound right?
-
-No, it's wrong.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Language shapes the way we think, and determines what we  can  think
-about."                                                 - B. L. Whorf
+Atul
