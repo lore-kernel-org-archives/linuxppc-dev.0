@@ -1,24 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
-	[151.189.21.45])
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "mx1.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D0F6067A39
-	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 11:09:10 +1100 (EST)
-In-Reply-To: <20060303232334.GA9577@suse.de>
-References: <20060303135717.GA5707@suse.de> <20060303165253.GA6494@suse.de>
-	<20060303191633.GA7792@suse.de>
-	<3E10742C-61F9-417C-A191-C0C8C46A4529@kernel.crashing.org>
-	<20060303232334.GA9577@suse.de>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <68860BF1-B57E-481E-B51F-DA6F2A75EC3E@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] force stackpointer alignment in 64bit kernel
-Date: Sat, 4 Mar 2006 01:09:13 +0100
-To: Olaf Hering <olh@suse.de>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 55F8E679FC
+	for <linuxppc-dev@ozlabs.org>; Sat,  4 Mar 2006 23:15:46 +1100 (EST)
+Date: Sat, 4 Mar 2006 13:15:40 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] correct cacheflush loop in zImage
+Message-ID: <20060304121540.GA30106@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> The stack pointer is required to be 16-byte aligned when the
->> client program is started, on 32-bit as well.
->
-> See http://ozlabs.org/pipermail/linuxppc-dev/2006-March/021342.html
->
-> Either yaboot and/or zImage need to force a stack alignment, or we  
-> apply
-> the 2 liner.
 
-Yaboot should do it.  Of course, it won't hurt if the kernel will
-do it itself, too...
+Correct the loop for cacheflush. No idea where I copied the code from,
+but the original does not work correct. Maybe the flush is not needed.
 
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-Segher
+ arch/powerpc/boot/crt0.S |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.16-rc5-olh/arch/powerpc/boot/crt0.S
+===================================================================
+--- linux-2.6.16-rc5-olh.orig/arch/powerpc/boot/crt0.S
++++ linux-2.6.16-rc5-olh/arch/powerpc/boot/crt0.S
+@@ -45,7 +45,8 @@ _zimage_start:
+ 	bdnz	2b
+ 
+ 	/* Do a cache flush for our text, in case OF didn't */
+-3:	lis	r9,_start@h
++3:	lis	r9,_start@ha
++	addi	r9,r9,_start@l
+ 	add	r9,r0,r9
+ 	lis	r8,_etext@ha
+ 	addi	r8,r8,_etext@l
+@@ -53,7 +54,7 @@ _zimage_start:
+ 4:	dcbf	r0,r9
+ 	icbi	r0,r9
+ 	addi	r9,r9,0x20
+-	cmplwi	0,r9,8
++	cmplw	cr0,r9,r8
+ 	blt	4b
+ 	sync
+ 	isync
