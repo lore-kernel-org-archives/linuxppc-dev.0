@@ -1,18 +1,18 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 424EF67A3D
+	by ozlabs.org (Postfix) with ESMTP id B201E67A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  4 Mar 2006 13:05:32 +1100 (EST)
+	Sat,  4 Mar 2006 13:09:40 +1100 (EST)
 To: David Hawkins <dwh@ovro.caltech.edu>
 From: Wolfgang Denk <wd@denx.de>
 Subject: Re: Linux on PPC 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 03 Mar 2006 08:53:07 PST."
-	<44087473.6020905@ovro.caltech.edu>
-Date: Sat, 04 Mar 2006 03:05:29 +0100
+In-reply-to: Your message of "Fri, 03 Mar 2006 12:06:43 PST."
+	<4408A1D3.8010506@ovro.caltech.edu>
+Date: Sat, 04 Mar 2006 03:09:38 +0100
 Sender: wd@denx.de
-Message-Id: <20060304020529.F1CDF352627@atlas.denx.de>
+Message-Id: <20060304020938.00774352627@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,37 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <44087473.6020905@ovro.caltech.edu> you wrote:
+In message <4408A1D3.8010506@ovro.caltech.edu> you wrote:
 > 
-> > Many memory maps (especially those provides with some eval boards for
-> > demonstration purpose) will NOT work with Linux.  Remember  that  the
-> > memory  map  is  usually  not  cast  in  silicon,  but implemented in
-> > software, so you can change it as needed.
+> > Still not right. Even the physical memory is software settable. What
+> > matters is what chip-select things are hooked up to, and then map those
+> > chip selects correctly (size, base address, access with and so on)
 > 
-> Right, thats I made sure to say; Physical Memory Map.
+> Thats what I meant with 'redefined in hardware'. But yes, redefined
+> up to the limit of the wiring on the board of course (chip-selects
+> and bus widths). That's where having the board schematic is
+> invaluable.
 
-That's what I mean: the physical memory map  is  usually  set  up  in
-software, so it can be changed to your needs.
+You don't get it. You can map - for example - your flash to  physical
+address  0x0000 or 0x04000000 or 0x40000000 or 0xFFF00000 as you like
+- without any changes to the hardware, and  without  using  the  MMU.
+Mind: that's all *physical* addresses.
 
-> For example, on the Artesyn manual on their PrPMC they give a
-> physical memory map, and in the Yosemite board, there is a
-> physical memory map. I know many of the memory areas can be
-> redefined in hardware to have a different memory location, but
-> its still a physical address.
+> manual for the 440EP Yosemite board), and then setup U-Boot and
+> Linux to program the TLBs to translate to those same addresses.
 
-...which usually can be reprogrammed in software.
+No. U-Boot does not use the MMU.
 
-> Now, when the bootloader loads, eg. U-Boot, it sets up the
-> memory management. Now this is where my understanding gets
-> shakey, since I haven't looked at much of the code, so perhaps
-> you can clarify. The translation unit (TLB) maps virtual addresses
-> (or should that be MMU output addresses) into physical addresses,
+> when I booted Linux, I took a look and found that on the whole, Linux
+> didn't touch too much of the things setup by U-Boot, i.e., the
+> responsibility for setting up the Linux environment was mainly
+> the job of the bootloader.
 
-U-Boot usually does not use the MMU. 
+Wrong  again.  Linux  completely  re-initializes  the  whole   memory
+management.
 
-> What are the basic requirements for a Linux memory map then?
+> So, if I had a board with a custom bootloader, I would be
+> concerned that the bootloader might not know enough about
+> Linux, to setup the hardware correctly.
+> 
+> Does that sound right?
 
-See the FAQ.
+No, it's wrong.
 
 Best regards,
 
@@ -63,5 +68,5 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-It is surely a great calamity for  a  human  being  to  have  no  ob-
-sessions.                                                - Robert Bly
+"Language shapes the way we think, and determines what we  can  think
+about."                                                 - B. L. Whorf
