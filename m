@@ -1,21 +1,17 @@
 Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
+	(Client CN "mx2.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E8B0867A03
-	for <linuxppc-dev@ozlabs.org>; Sun,  5 Mar 2006 02:32:00 +1100 (EST)
-Date: Sat, 4 Mar 2006 16:31:55 +0100
+	by ozlabs.org (Postfix) with ESMTP id 1110767A3B
+	for <linuxppc-dev@ozlabs.org>; Sun,  5 Mar 2006 06:10:32 +1100 (EST)
+Date: Sat, 4 Mar 2006 20:10:26 +0100
 From: Olaf Hering <olh@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: incorrect rmo_top handling in prom_init
-Message-ID: <20060304153155.GA6763@suse.de>
-References: <20060302185509.GA14235@suse.de>
-	<1141342541.13565.6.camel@localhost.localdomain>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] return to OF via trap, not exit
+Message-ID: <20060304191026.GA9815@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1141342541.13565.6.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Fri, Mar 03, Benjamin Herrenschmidt wrote:
 
-> On Thu, 2006-03-02 at 19:55 +0100, Olaf Hering wrote:
-> > My iBook1 has 2 memory regions in reg. Depending on how I boot it
-> > (vmlinux+initrd) or zImage.initrd, it will not boot with current Linus
-> > tree.
-> > rmo_top should be 160MB instead of 32MB.
-> 
-> Does that fix it ?
+Do not call prom exit prom_panic. It clears the screen and the exit message is lost.
+On some (or all?) pmacs it causes another crash when OF tries to print the
+date and time in its banner.
 
-Yes.
+Signed-off-by: Olaf Hering <olh@suse.de>
+
+ arch/powerpc/kernel/prom_init.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-2.6.16-rc5-olh.orig/arch/powerpc/kernel/prom_init.c
++++ linux-2.6.16-rc5-olh/arch/powerpc/kernel/prom_init.c
+@@ -398,7 +398,9 @@ static void __init __attribute__((noretu
+ #endif
+ 	prom_print(reason);
+ 	/* ToDo: should put up an SRC here on p/iSeries */
+-	call_prom("exit", 0, 0);
++	/* Do not call exit because it clears the screen on pmac
++	 * it also causes some sort of double-fault on early pmacs */
++	asm("trap\n");
+ 
+ 	for (;;)			/* should never get here */
+ 		;
