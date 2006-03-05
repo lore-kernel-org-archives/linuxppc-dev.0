@@ -1,18 +1,16 @@
 Return-Path: <antonio.dibacco@aruba.it>
-Received: from smtpa4.aruba.it (smtpa4.aruba.it [62.149.128.201])
-	by ozlabs.org (Postfix) with SMTP id EB18267A39
+Received: from smtpa3.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id 094BD679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  6 Mar 2006 06:49:49 +1100 (EST)
+	Mon,  6 Mar 2006 07:23:11 +1100 (EST)
 From: Antonio Di Bacco <antonio.dibacco@aruba.it>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: kmod: /sbin/modprobe char-major-4 failed
-Date: Sun, 5 Mar 2006 20:52:46 +0100
-References: <20060303141742.21257.qmail@mx1.aruba.it>
-In-Reply-To: <20060303141742.21257.qmail@mx1.aruba.it>
+Subject: double fec in denx kernel 2.4
+Date: Sun, 5 Mar 2006 21:26:11 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200603052052.46533.antonio.dibacco@aruba.it>
+  charset="us-ascii"
+Message-Id: <200603052126.11407.antonio.dibacco@aruba.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,17 +21,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 03 March 2006 15:17, antonio.dibacco wrote:
-> Why should the kernel try to load this char-major-4? What should I
-> configure in  the kernel to have this module not loadable but included in
-> the kernel?
->
-> Bye,
-> Antonio.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+I saw that denx kernel has no support for double fec of MPC875. Is this true? 
+Then I'm going to pick up stuff from Arabella and putting into denx kernel, 
+is it the best way or not? 
 
-
-Simply you missed modprobe!!!!
+Thank you.
