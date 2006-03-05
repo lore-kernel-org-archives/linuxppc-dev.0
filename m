@@ -1,18 +1,23 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id BC0E667A39
+Return-Path: <rcblach@blach.dnsalias.org>
+Received: from mailserv1.intrex.net (mailserv1.intrex.net [209.42.192.236])
+	by ozlabs.org (Postfix) with ESMTP id D320B67A3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  5 Mar 2006 04:11:15 +1100 (EST)
-In-Reply-To: <4A062D477D842B4C8FC48EA5AF2D41F201C47BE3@us-bv-m23.global.tektronix.net>
-References: <4A062D477D842B4C8FC48EA5AF2D41F201C47BE3@us-bv-m23.global.tektronix.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <57b26fdcbffc2e1577e3438c59b94f04@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: Different Page Size Support in Linux on PPC870
-Date: Sat, 4 Mar 2006 12:11:27 -0500
-To: <atul.sabharwal@exgate.tek.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Sun,  5 Mar 2006 12:54:28 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mailserv1.intrex.net (Postfix) with ESMTP id E8D1EAB10
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat,  4 Mar 2006 20:26:07 -0500 (EST)
+Received: from [10.0.0.2] (client212-23.dsl.intrex.net [209.42.212.23])
+	by mailserv1.intrex.net (Postfix) with ESMTP id 9EA28AA37
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat,  4 Mar 2006 20:26:07 -0500 (EST)
+Message-ID: <440A3FB4.6060806@blach.dnsalias.org>
+Date: Sat, 04 Mar 2006 20:32:36 -0500
+From: Ralph Blach <rcblach@blach.dnsalias.org>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: cross tools for the 440gp
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,15 +28,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+are there any prebuild cross compilers for the 440gp processors
+that would compile a 2.6 kernel?
 
-On Mar 3, 2006, at 9:38 PM, <atul.sabharwal@exgate.tek.com> wrote:
+If so, could I get some pointer to where they are?
 
-> On PPC870, does the kernel only support 4K pages?
+Thanks
 
-The CONFIG_PIN_TLB will get you 8M pages for the kernel
-space, and likely be a good solution for you.  We have experimented
-with various dynamic replace methods for the past several years,
-but I still haven't found a solution I like.
-
-
-	-- Dan
+Chip
