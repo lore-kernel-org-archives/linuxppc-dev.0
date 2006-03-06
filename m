@@ -1,19 +1,19 @@
-Return-Path: <BillF@optiscan.com>
-Received: from clinica.optiscan.com (clinica.optiscan.com [203.26.112.14])
-	by ozlabs.org (Postfix) with SMTP id A529A67B25
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
+	by ozlabs.org (Postfix) with ESMTP id 46F86679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Mar 2006 09:55:36 +1100 (EST)
-Received: from postie.optiscan.com ([203.26.112.10])
-	by clinica.optiscan.com (SMSSMTP 4.1.9.35) with SMTP id
-	M2006030709403417416
-	for <linuxppc-embedded@ozlabs.org>; Tue, 07 Mar 2006 09:40:34 +1100
+	Tue,  7 Mar 2006 10:52:40 +1100 (EST)
+Received: from xbh-sjc-211.amer.cisco.com (xbh-sjc-211.cisco.com
+	[171.70.151.144])
+	by sj-core-4.cisco.com (8.12.10/8.12.6) with ESMTP id k26NdoYg008664
+	for <linuxppc-embedded@ozlabs.org>; Mon, 6 Mar 2006 15:39:50 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: INIT:
-Date: Tue, 7 Mar 2006 09:40:34 +1100
-Message-ID: <34E73CC1202BF246B7DE3463BEBC0689303AEE@postie.optiscan.com>
-From: "Bill Farrow" <BillF@optiscan.com>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C64177.326BF401"
+Subject: System hang and NMI support on 8541
+Date: Mon, 6 Mar 2006 15:39:22 -0800
+Message-ID: <F795765B112E7344AF36AA9112796415019ECDE1@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,31 +25,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-You should find the Virtual Terminal options under "Device Drivers ->
-Character Devices" in the kernel configuration.  I don't believe that it
-is dependant on anything else, so you should be able to just turn it
-off.
+This is a multi-part message in MIME format.
 
-Bill
+------_=_NextPart_001_01C64177.326BF401
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-________________________________
-
-From: On Behalf Of Patil, Pankaj P.
-Sent: Tuesday, 7 March 2006 4:20 AM
-To: Paulinha; linuxppc-embedded@ozlabs.org
-Subject: RE: INIT:
-
-
-I'll look into those config settings. While we are talking about config
-settings, i noticed i had CONFIG_VT turned on. I do the make ARCH=3Dppc
-xconfig but i cannot find the setting where CONFIG_VT gets turned on. I
-don't want to use the virtual terminal & i believe since the kernel is
-getting configured with CONFIG_VT=3Dy, it is trying to mount tty0 which =
-is
-not part of my root file system. Does that make sense??
-Is CONFIG_VT dependent on some other config setting?? How do i get
-CONFIG_VT set to n??
+Hi All,
+Our custom board 8541 base processor running Linux 2..11 hangs during
+stress testing. Is there a support for a=20
+Non Mask able interrupt?
 =20
-thanks
-pankaj
+Many thanks in advance,
+Bizhan
+
+------_=_NextPart_001_01C64177.326BF401
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D104383623-06032006>Hi=20
+All,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D104383623-06032006>Our =
+custom board=20
+8541 base processor running Linux 2..11 hangs during stress testing. Is =
+there a=20
+support for a </SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D104383623-06032006>Non =
+Mask able=20
+interrupt?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D104383623-06032006></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D104383623-06032006>Many =
+thanks in=20
+advance,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D104383623-06032006>Bizhan</SPAN></FONT></DIV></BODY></HTML>
+
+------_=_NextPart_001_01C64177.326BF401--
