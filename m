@@ -1,25 +1,26 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "mx2.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D65D67B2C
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Mar 2006 18:46:36 +1100 (EST)
-In-Reply-To: <20060306074339.GC24869@suse.de>
-References: <20060304191026.GA9815@suse.de>
-	<200603061212.12815.michael@ellerman.id.au>
-	<20060306073834.GA24869@suse.de>
-	<590CA2B3-AACE-4B69-930D-9A66A42FFC83@kernel.crashing.org>
-	<20060306074339.GC24869@suse.de>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1912CD56-027C-491D-B2A2-EA44AB4DDD14@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] return to OF via trap, not exit
-Date: Mon, 6 Mar 2006 08:46:55 +0100
-To: Olaf Hering <olh@suse.de>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 04FEE67B2C
+	for <linuxppc-dev@ozlabs.org>; Mon,  6 Mar 2006 18:48:17 +1100 (EST)
+Date: Mon, 6 Mar 2006 08:48:12 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Linux v2.6.16-rc5
+Message-ID: <20060306074812.GD24869@suse.de>
+References: <Pine.LNX.4.64.0602262122000.22647@g5.osdl.org>
+	<20060305140932.GA17132@suse.de> <20060305185923.GA21519@suse.de>
+	<Pine.LNX.4.64.0603051147590.13139@g5.osdl.org>
+	<20060305204231.GA22002@suse.de>
+	<17419.23860.883220.80199@cargo.ozlabs.ibm.com>
+	<20060305222202.GA22450@suse.de> <20060305224438.GA22580@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20060305224438.GA22580@suse.de>
+Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@osdl.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,16 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Which is likely ok because it saves us from typing .registers
->>> manually.
->>
->> I can't say that's a great argument.  How about doing the trap thing
->> on "known-bad" platforms only?
->
-> Can you do anything at that time anyway? I mean, reset-all pending
-> either way.
+ On Sun, Mar 05, Olaf Hering wrote:
 
-You can boot a different kernel, or try to work out what went wrong.
+>  On Sun, Mar 05, Olaf Hering wrote:
+> 
+> > 404849bbd2bfd62e05b36f4753f6e1af6050a824 + 3 buildfixes:
+> > 
+> > 31df1678d7732b94178a6e457ed6666e4431212f
+> > 8dacaedf04467e32c50148751a96150e73323cdc
+> > d2dd482bc17c3bc240045f80a7c4b4d5cea5e29c
+> > 
+> > 
+> > This one has the syscall changes, but not the two fixes you mentioned.
+> > It gets far, but at the point where it locks up with the d4eb, it
+> > crashes in run_timer_softirq, branched to 0x1f4. Maybe its the result of
+> > the missing fixes. Will continue tomorrow.
+> 
+> Another try with that version, now I see the corruption before the
+> package where it locked up before (glibc-locale, rather large).
+> Will backout the syscall change and try again with 404849bbd2bfd62e05b36f4753f6e1af6050a824.
 
-
-Segher
+Its not the syscall change at least. Looking further.
