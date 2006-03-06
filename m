@@ -1,18 +1,18 @@
-Return-Path: <jotken@softadvances.com>
-Received: from elasmtp-junco.atl.sa.earthlink.net
-	(elasmtp-junco.atl.sa.earthlink.net [209.86.89.63])
-	by ozlabs.org (Postfix) with ESMTP id F1B9C679EA
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id F371267B26
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Mar 2006 07:42:15 +1100 (EST)
-Message-ID: <440C9EAB.7080504@softadvances.com>
-Date: Mon, 06 Mar 2006 14:42:19 -0600
-From: John Otken <jotken@softadvances.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: make modules_install fails with [_modinst_post] Error 139
-References: <20060306195926.C7B303525CB@atlas.denx.de>
-In-Reply-To: <20060306195926.C7B303525CB@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue,  7 Mar 2006 09:26:30 +1100 (EST)
+To: Antonio Di Bacco <antonio.dibacco@aruba.it>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Cannot compile denx 2.6.15 for MBX 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 06 Mar 2006 21:36:26 +0100."
+	<200603062136.26121.antonio.dibacco@aruba.it>
+Date: Mon, 06 Mar 2006 23:26:27 +0100
+Sender: wd@denx.de
+Message-Id: <20060306222627.CB6BC3535F7@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,52 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> In message <440C88B1.6010809@softadvances.com> you wrote:
->> I'm trying to build the USB gadget file storage module for
->> a Yosemite board using the latest Denx kernel and ELDK4.
->>
->> $ make yosemite_defconfig
->> $ make menuconfig  # turn on CONFIG_USB_FILE_STORAGE <M>
+In message <200603062136.26121.antonio.dibacco@aruba.it> you wrote:
+> I do:
 > 
-> This is not necessary. The default config file for the Yosemite board
-> has USB and mass storage devices support  already  enabled  (compiled
-> in, i. e. not as modules). Just use the unmodified config file and it
-> will work.
+> >make mrproper
+> >make MBX_config
 > 
-> Note that CONFIG_USB_GADGET is not set, though (not sure what exactly
-> you want to do).
-
-I want to simulate an USB thumb drive using the Yosemite's device
-interface.  So the Yosemite board is the thumb drive.  I am not trying
-to connect a thumb drive to the Yosemite.  Sorry if I wasn't clear.
-
-I do not believe the device-side driver for the 440EP Musbhsfc is in
-the kernel tree yet, so this will give me a chance to test the patch
-that Wade Farnsworth released last September.
-
->> if [ -r System.map -a -x /sbin/depmod ]; then /sbin/depmod -ae -F System.map -b /opt/eldk4/ppc_4xxFP -r 2.6.15-g6afd198e; fi
->> make: *** [_modinst_post] Error 139
->>
->> I see a g_file_storage.ko but I get an "Invalid module" if I
->> try to modprobe it.
+> HOSTCC  scripts/basic/fixdep
+> HOSTCC  scripts/basic/split-include
+> HOSTCC  scripts/basic/docproc
+> make[1]: *** No rule to make target `MBX_config'.  Stop.
+> make: *** [MBX_config] Error 2
 > 
-> Your native system's (x86 ?) module utilities (depmod,  modprobe)  do
-> not understand PowerPC modules. If you want to run "depmod", you must
-> overwrite  the  Makefile's  default  setting of DEPMOD to use a cross
-> version of depmod instead.
+> What's the problem?
 
-Thanks, I'll work on that.
+You ask for a non-supported board. The MBX board is not supported  in
+the  public  2.6 kernel tree, and we did not add it either (and don't
+intend to, as this board is, umm, *very* old).
 
->> I do want to solve this problem, but if anyone wants to give
->> me the trick to building the gadget driver into kernel and
->> passing the file=disk_image parameter, I'd like to know that
->> as well.
-> 
-> What exactly do you have in mind?
+Best regards,
 
-Menuconfig does not let me build-in the gadget filesystem driver.  It
-insists on it being a module.  I saw something that says you can build
-one gadget driver into the kernel, but I was not able to figure out the
-trick.  I'm also not clear about passing parameters to the driver, but
-I'll try bootargs first.
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+But the only way of discovering the limits  of  the  possible  is  to
+venture a little way past them into the impossible.
+                         - _Profiles of the Future_ (1962; rev. 1973)
+                  ``Hazards of Prophecy: The Failure of Imagination''
