@@ -1,27 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-06.arcor-online.net
-	[151.189.21.46])
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "mx1.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D33567B7A
-	for <linuxppc-dev@ozlabs.org>; Mon,  6 Mar 2006 18:57:22 +1100 (EST)
-In-Reply-To: <20060306074953.GE24869@suse.de>
-References: <20060304191026.GA9815@suse.de>
-	<200603061212.12815.michael@ellerman.id.au>
-	<20060306073834.GA24869@suse.de>
-	<590CA2B3-AACE-4B69-930D-9A66A42FFC83@kernel.crashing.org>
-	<20060306074339.GC24869@suse.de>
-	<1912CD56-027C-491D-B2A2-EA44AB4DDD14@kernel.crashing.org>
-	<20060306074953.GE24869@suse.de>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <EA07A673-A993-490A-ADEC-29CFDF1DDAC1@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] return to OF via trap, not exit
-Date: Mon, 6 Mar 2006 08:57:42 +0100
-To: Olaf Hering <olh@suse.de>
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 92637679F5
+	for <linuxppc-dev@ozlabs.org>; Tue,  7 Mar 2006 02:39:33 +1100 (EST)
+Date: Mon, 6 Mar 2006 16:39:25 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] enable CONFIG_BLK_DEV_SL82C105
+Message-ID: <20060306153925.GB2084@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,29 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Can you do anything at that time anyway? I mean, reset-all pending
->>> either way.
->>
->> You can boot a different kernel, or try to work out what went wrong.
->
-> No, I cant, all resources are possible busy.
 
-That's a separate bug.  What resources do you see busy?  Allocated
-memory, I/O devices?
+Enable the onboard IDE driver for p610, p615 and p630.
+They have the CD connected to this card. All other RS/6000 systems with this
+controller have no connectors and dont need this option.
 
-> Either way, maybe checking
-> what type stdout is and trap or exit depending on that.
+Signed-off-by: Olaf Hering <olh@suse.de>
 
-That's better than always calling trap, sure.  Is there any reason
-you can't just do it on Macs though?  Because the problem you're trying
-to work around only happens there.
+ arch/powerpc/configs/ppc64_defconfig |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-> And I dont see whats bad about 'trap handler called', other than being
-> verbose.
-
-Too verbose -- it prints useless information, and the actual error
-message might scroll away.  No biggie of course, but why do the
-workaround when not needed?
-
-
-Segher
+Index: linux-2.6.16-rc5-olh/arch/powerpc/configs/ppc64_defconfig
+===================================================================
+--- linux-2.6.16-rc5-olh.orig/arch/powerpc/configs/ppc64_defconfig
++++ linux-2.6.16-rc5-olh/arch/powerpc/configs/ppc64_defconfig
+@@ -407,7 +407,7 @@ CONFIG_IDEPCI_SHARE_IRQ=y
+ # CONFIG_BLK_DEV_OFFBOARD is not set
+ CONFIG_BLK_DEV_GENERIC=y
+ # CONFIG_BLK_DEV_OPTI621 is not set
+-# CONFIG_BLK_DEV_SL82C105 is not set
++CONFIG_BLK_DEV_SL82C105=y
+ CONFIG_BLK_DEV_IDEDMA_PCI=y
+ # CONFIG_BLK_DEV_IDEDMA_FORCED is not set
+ CONFIG_IDEDMA_PCI_AUTO=y
