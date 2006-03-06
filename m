@@ -1,19 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 5C25367B34
+Return-Path: <BillF@optiscan.com>
+Received: from clinica.optiscan.com (clinica.optiscan.com [203.26.112.14])
+	by ozlabs.org (Postfix) with SMTP id A529A67B25
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Mar 2006 09:29:04 +1100 (EST)
-To: John Otken <jotken@softadvances.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: make modules_install fails with [_modinst_post] Error 139 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 06 Mar 2006 14:42:19 CST."
-	<440C9EAB.7080504@softadvances.com>
-Date: Mon, 06 Mar 2006 23:29:02 +0100
-Sender: wd@denx.de
-Message-Id: <20060306222902.7ACDD3535F7@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  7 Mar 2006 09:55:36 +1100 (EST)
+Received: from postie.optiscan.com ([203.26.112.10])
+	by clinica.optiscan.com (SMSSMTP 4.1.9.35) with SMTP id
+	M2006030709403417416
+	for <linuxppc-embedded@ozlabs.org>; Tue, 07 Mar 2006 09:40:34 +1100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: INIT:
+Date: Tue, 7 Mar 2006 09:40:34 +1100
+Message-ID: <34E73CC1202BF246B7DE3463BEBC0689303AEE@postie.optiscan.com>
+From: "Bill Farrow" <BillF@optiscan.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,30 +25,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear John,
+Hi,
+You should find the Virtual Terminal options under "Device Drivers ->
+Character Devices" in the kernel configuration.  I don't believe that it
+is dependant on anything else, so you should be able to just turn it
+off.
 
-in message <440C9EAB.7080504@softadvances.com> you wrote:
->
-> I want to simulate an USB thumb drive using the Yosemite's device
-> interface.  So the Yosemite board is the thumb drive.  I am not trying
-> to connect a thumb drive to the Yosemite.  Sorry if I wasn't clear.
+Bill
 
-I see.
+________________________________
 
-> > Your native system's (x86 ?) module utilities (depmod,  modprobe)  do
-> > not understand PowerPC modules. If you want to run "depmod", you must
-> > overwrite  the  Makefile's  default  setting of DEPMOD to use a cross
-> > version of depmod instead.
-> 
-> Thanks, I'll work on that.
+From: On Behalf Of Patil, Pankaj P.
+Sent: Tuesday, 7 March 2006 4:20 AM
+To: Paulinha; linuxppc-embedded@ozlabs.org
+Subject: RE: INIT:
 
-Try Busybox' depmod.pl script ...
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Overdrawn?  But I still have checks left!
+I'll look into those config settings. While we are talking about config
+settings, i noticed i had CONFIG_VT turned on. I do the make ARCH=3Dppc
+xconfig but i cannot find the setting where CONFIG_VT gets turned on. I
+don't want to use the virtual terminal & i believe since the kernel is
+getting configured with CONFIG_VT=3Dy, it is trying to mount tty0 which =
+is
+not part of my root file system. Does that make sense??
+Is CONFIG_VT dependent on some other config setting?? How do i get
+CONFIG_VT set to n??
+=20
+thanks
+pankaj
