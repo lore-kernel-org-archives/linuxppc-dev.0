@@ -1,15 +1,18 @@
-Return-Path: <antonio.dibacco@aruba.it>
-Received: from mx1.aruba.it (mxaruba.aruba.it [62.149.128.10])
-	by ozlabs.org (Postfix) with SMTP id D7A7467B3D
+Return-Path: <pantelis@embeddedalley.com>
+Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
+	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id A5767679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Mar 2006 02:17:26 +1100 (EST)
-Message-ID: <20060306151715.11926.qmail@mx1.aruba.it>
-From: "antonio.dibacco" <antonio.dibacco@aruba.it>
+	Tue,  7 Mar 2006 03:34:15 +1100 (EST)
+From: Pantelis Antoniou <pantelis@embeddedalley.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Anyone back-ported fs_enet to 2.4? Possible?
-Date: Mon, 06 Mar 2006 15:17:15 GMT
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1"
+Subject: Re: Anyone back-ported fs_enet to 2.4? Possible?
+Date: Mon, 6 Mar 2006 18:29:30 +0200
+References: <20060306151715.11926.qmail@mx1.aruba.it>
+In-Reply-To: <20060306151715.11926.qmail@mx1.aruba.it>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200603061829.30754.pantelis@embeddedalley.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,9 +23,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Monday 06 March 2006 17:17, antonio.dibacco wrote:
+> Hi,
+> 
+> anyone back ported fs_enet to 2.4? Is it feasible in your high opinion? 
+> 
+> Bye,
+> Antonio.
+>
 
-anyone back ported fs_enet to 2.4? Is it feasible in your high opinion? 
+The original patches of fec_8xx did.
 
-Bye,
-Antonio.
+Try to get a hold of them.
+
+Pantelis
