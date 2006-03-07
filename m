@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3E9E767B1B
+Return-Path: <rmcguire@uwbt.com>
+Received: from mail19b.g19.rapidsite.net (mail19b.dulles19-verio.com
+	[204.202.242.88]) by ozlabs.org (Postfix) with SMTP id 06EB767B18
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  7 Mar 2006 11:12:01 +1100 (EST)
-In-Reply-To: <F795765B112E7344AF36AA9112796415019ECDE1@xmb-sjc-212.amer.cisco.com>
-References: <F795765B112E7344AF36AA9112796415019ECDE1@xmb-sjc-212.amer.cisco.com>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <54B606C5-BEBA-4241-905F-E53C9240D616@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: System hang and NMI support on 8541
-Date: Mon, 6 Mar 2006 18:12:10 -0600
-To: Bizhan Gholikhamseh ((bgholikh)) <bgholikh@cisco.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  7 Mar 2006 12:57:53 +1100 (EST)
+Received: from mx41.stngva01.us.mxservers.net (204.202.242.76)
+	by mail19b.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
+	2-0643446667 for <linuxppc-embedded@ozlabs.org>;
+	Mon,  6 Mar 2006 20:57:50 -0500 (EST)
+From: "Russell McGuire" <rmcguire@uwbt.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: GNU and Freescale MPC83xx / e300 core support?
+Date: Mon, 6 Mar 2006 17:57:41 -0800
+Message-ID: <000301c6418a$86b32ee0$6405a8c0@absolut>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <mailman.3.1141693203.8543.linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,15 +27,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 6, 2006, at 5:39 PM, Bizhan Gholikhamseh ((bgholikh)) wrote:
+I was recently involved in a meeting with a Freescale FAE, which informed us
+that the current revisions of the GNU C/C++ compilers do not yet possess any
+optimizations for the MPC83xx cores, more precisely no optimizations for the
+e300 cores inside the MPC83xx line up.
 
-> Hi All,
-> Our custom board 8541 base processor running Linux 2..11 hangs  
-> during stress testing. Is there a support for a
-> Non Mask able interrupt?
+They did say it was 100% backwards compatible with the existing 603e / 6xx
+core support, so all the code should work just fine.
 
-Not sure what kernel ver you are using, but there is a machine check  
-pin on the 8541.  The MSR[ME] should always be set so this pin can be  
-used (except when are in the MachineCheck handler).
+I was curious if anyone out there was aware of any efforts to produce /
+patch any of the GNU compilers to have optimizations for these newer
+MPC83xx's with the e300 cores? 
 
-- k
+
+Thanks,
+
+-Russ
