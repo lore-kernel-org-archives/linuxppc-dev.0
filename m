@@ -3,19 +3,21 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4AEB679F5
+	by ozlabs.org (Postfix) with ESMTP id 66FC767A00
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 03:03:43 +1100 (EST)
-In-Reply-To: <002b01c641ff$666ccc70$6405a8c0@absolut>
-References: <002b01c641ff$666ccc70$6405a8c0@absolut>
+	Wed,  8 Mar 2006 03:26:20 +1100 (EST)
+In-Reply-To: <927594BA71733F4BAA815162B79A3F513B2958@ala-mail04.corp.ad.wrs.com>
+References: <927594BA71733F4BAA815162B79A3F513B2958@ala-mail04.corp.ad.wrs.com>
 Mime-Version: 1.0 (Apple Message framework v746.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7C2FA1F5-DF91-495E-A2C3-052048E34DFE@kernel.crashing.org>
+Message-Id: <BAB64425-65CD-4311-9A93-004EBA27729A@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: GNU and Freescale MPC83xx / e300 core support?
-Date: Tue, 7 Mar 2006 10:03:53 -0600
-To: Russell McGuire <rmcguire@uwbt.com>
-Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Calling PCI Autoconfig again
+Date: Tue, 7 Mar 2006 10:26:30 -0600
+To: "Wyse, Chris" <chris.wyse@windriver.com>
+Cc: linuxppc-embedded@ozlabs.org, "McComb,
+	Michael" <michael.mccomb@windriver.com>, "Touron,
+	Emmanuel" <emmanuel.touron@windriver.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,56 +29,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 7, 2006, at 9:54 AM, Russell McGuire wrote:
+On Mar 7, 2006, at 8:17 AM, Wyse, Chris wrote:
 
-> Thanks all...
+> Hi,
 >
-> The author of that comment humbly apologizes for his ineptitude on  
-> the FPU.
->
-> It would appear both cores have the same number of execution units,  
-> i.e. 5
-> So David, I guess in all this the only real difference seems to be  
-> the bus
-> architecture, raw clock speed, and perhaps a few new instructions.  
-> I checked
-> both manuals this morning and they do differ in some small ways.
->
-> * 603e, up to 4 instructions in the pipeline, only 3 being complete  
-> per
-> clock
-> * e300, up to 5 instructions in the pipeline, still only 3 being  
-> completed
-> or start per clock.
-> * Add/compare instructions are now executed in the IU unit instead  
-> of the
-> load/store unit. May be the same, but wasn't specific in earlier 603e
-> manuals.
-> * One more HID0 bit than G2, ability to interrupt based on cache  
-> parity
-> error
-> * new icbt instruction, instruction cache initialization
->
-> So there is a section inside the 8360E manual that outlines the  
-> specific
-> enhancements. "Features specific to the e300 core not present on  
-> the G2
-> processors follow:" Page  1-5.
->
-> So I guess my question is back up, does anyone know if an optimized  
-> compiler
-> would offer any noticeable performance enhancements in regards to  
-> these
-> changes? Other than the obvious instruction being added?
+> This code will do the rescan of the PCI that we need for the FPGA.
+> However, it currently only supports a single execution after the FPGA
+> gets loaded.  Additional calls will continue to add FPGA devices to  
+> the
+> PCI device list data structure.  I'm going to make some changes to  
+> it to
+> handle multiple calls and to support multiple device ids.  I'm  
+> expecting
+> it to take a day or two, but I'll make an initial cut at it today that
+> will let us load the Spartan FPGA (only once).  This driver will be
+> loaded when the kernel boots, so I believe that we'll just need to  
+> make
+> a call into it (we won't have to dynamically load it like the phob
+> driver).
 
-If you are asking about relative performance between the same  
-compiler tuned for a 603 vs e300, the there would most likely be a  
-small improvement.
+I'm dealing with this exact same situation and having a discussion on  
+lkml regarding the proper way to do this.  In your case, do you care  
+what addresses the FPGA is assigned at?
 
-However, a few things to note.  The new icbt instruction is really  
-intended for hand written assemble code and its highly unlikely that  
-a compiler will ever generate it.  Second, the other improvements  
-from the base 603e/G2LE in 8280, like doubling of the L1 caches has a  
-significant improvement in performance.
+http://marc.theaimsgroup.com/?l=linux-kernel&m=114140791428032&w=2
+
+> Michael,
+>
+> For the FPGA loader, you should load the FPGA, then make a call to
+> pci_rescan_bus0() (I'm renaming check_hw() to pci_rescan_bus0()).   
+> Next,
+> you need to do a pci_find_device() to detect the newly loaded  
+> FPGA.  If
+> the pci_find_device() fails, assume that the FPGA load has not
+> completed, so delay for some time frame (100 ms??), then rescan again.
+> If still not found, rescan up to MAX_PCI_RESCANS (probably set it  
+> to 3)
+> times, then return an error that the FPGA load failed.
+
+Do you not know when the FPGA load is done?  I assume its under  
+software control so the "fpga loader" should just call the PCI setup  
+code once it has completed successfully.
 
 - kumar
