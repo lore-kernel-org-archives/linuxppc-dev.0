@@ -1,20 +1,18 @@
-Return-Path: <markc@mail.com>
-Received: from smtp1.us4.outblaze.com (smtp1.us4.outblaze.com [205.158.62.78])
-	by ozlabs.org (Postfix) with SMTP id 715A867A39
+Return-Path: <kim.phillips@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 435BA67A3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 04:22:16 +1100 (EST)
-Message-ID: <005601c6420b$a99add50$6401a8c0@CHUCK2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-References: <927594BA71733F4BAA815162B79A3F513B2958@ala-mail04.corp.ad.wrs.com>
-	<BAB64425-65CD-4311-9A93-004EBA27729A@kernel.crashing.org>
-	<004901c64207$a31403c0$6401a8c0@CHUCK2>
-	<84F54A3B-0B2A-45B5-968D-68266C6EDEDA@kernel.crashing.org>
-Subject: Re: Calling PCI Autoconfig again
-Date: Tue, 7 Mar 2006 12:22:07 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=response
+	Wed,  8 Mar 2006 05:11:29 +1100 (EST)
+Date: Tue, 7 Mar 2006 12:11:24 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: rmcguire@uwbt.com
+Subject: Re: GNU and Freescale MPC83xx / e300 core support?
+Message-Id: <20060307121124.22cb4410.kim.phillips@freescale.com>
+In-Reply-To: <7C2FA1F5-DF91-495E-A2C3-052048E34DFE@kernel.crashing.org>
+References: <002b01c641ff$666ccc70$6405a8c0@absolut>
+	<7C2FA1F5-DF91-495E-A2C3-052048E34DFE@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,31 +24,85 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> 
-> On Mar 7, 2006, at 10:53 AM, Mark Chambers wrote:
-> 
->>> I'm dealing with this exact same situation and having a discussion  
->>> on  lkml regarding the proper way to do this.  In your case, do  
->>> you care  what addresses the FPGA is assigned at?
->>> http://marc.theaimsgroup.com/?l=linux-kernel&m=114140791428032&w=2
->>
->> Why does the PCI device have to have a fixed address?   And how do
->> you load an FPGA from user space - mmap?
-> 
-> In my case it does because we have other devices (DSPs) that are hard  
-> coded to know where in PCI address space the FPGA is.
-> 
+according to one of our architects, the 81xx, 82xx, 83xx, 52xx, and 51xx (all G2/e300 based parts) all share the same 603 pipeline:
 
-Ah, ok.  So I'm guessing we're talking about DSP bus-master operations
-where the DSP is putting out physical PCI space addresses that the
-MMU can't help map.  I've run into a similar problem where I'd like to
-be able to have a DSP do CPM/BD-like operations from SDRAM, but
-it's exceedingly difficult to get the physical address of user-space data.
+o dispatch 2 instructions, plus 1 branch per cycle,
+o up to 5 instructions in the pipeline at any given time, 
+o a maximum of 2 instructions are completed per cycle.
 
-Well, FWIW, seems to me that something like what Greg K-H referred to,
-where you pre-reserve space in PCI land, and then put the device there
-when it becomes available, is the way to go.  Otherwise you have this
-un-managed hole in PCI space allocation that might cause other problems 
-with true hot-swap PCI, or break with kernel revisions.
+the changes are:
 
-Mark
+o multiple HID0, HID1, HID3 bits for optimizing system,
+o icbt
+o PLL options
+
+so, the answer is no, modifying the compiler's scheduler won't do anything for you.  
+
+as Kumar says, the caches and adding icbt to your code does improve performance.
+
+Kim
+
+On Tue, 7 Mar 2006 10:03:53 -0600
+Kumar Gala <galak@kernel.crashing.org> wrote:
+
+> 
+> On Mar 7, 2006, at 9:54 AM, Russell McGuire wrote:
+> 
+> > Thanks all...
+> >
+> > The author of that comment humbly apologizes for his ineptitude on  
+> > the FPU.
+> >
+> > It would appear both cores have the same number of execution units,  
+> > i.e. 5
+> > So David, I guess in all this the only real difference seems to be  
+> > the bus
+> > architecture, raw clock speed, and perhaps a few new instructions.  
+> > I checked
+> > both manuals this morning and they do differ in some small ways.
+> >
+> > * 603e, up to 4 instructions in the pipeline, only 3 being complete  
+> > per
+> > clock
+> > * e300, up to 5 instructions in the pipeline, still only 3 being  
+> > completed
+> > or start per clock.
+> > * Add/compare instructions are now executed in the IU unit instead  
+> > of the
+> > load/store unit. May be the same, but wasn't specific in earlier 603e
+> > manuals.
+> > * One more HID0 bit than G2, ability to interrupt based on cache  
+> > parity
+> > error
+> > * new icbt instruction, instruction cache initialization
+> >
+> > So there is a section inside the 8360E manual that outlines the  
+> > specific
+> > enhancements. "Features specific to the e300 core not present on  
+> > the G2
+> > processors follow:" Page  1-5.
+> >
+> > So I guess my question is back up, does anyone know if an optimized  
+> > compiler
+> > would offer any noticeable performance enhancements in regards to  
+> > these
+> > changes? Other than the obvious instruction being added?
+> 
+> If you are asking about relative performance between the same  
+> compiler tuned for a 603 vs e300, the there would most likely be a  
+> small improvement.
+> 
+> However, a few things to note.  The new icbt instruction is really  
+> intended for hand written assemble code and its highly unlikely that  
+> a compiler will ever generate it.  Second, the other improvements  
+> from the base 603e/G2LE in 8280, like doubling of the L1 caches has a  
+> significant improvement in performance.
+> 
+> - kumar
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+-- 
