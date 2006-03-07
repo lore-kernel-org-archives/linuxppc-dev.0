@@ -1,17 +1,20 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19d.g19.rapidsite.net (mail19d.dulles19-verio.com
-	[204.202.242.120]) by ozlabs.org (Postfix) with SMTP id DD39D679F4
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E4AEB679F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 02:54:33 +1100 (EST)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: "'Dan Malek'" <dan@embeddedalley.com>
-Subject: RE: GNU and Freescale MPC83xx / e300 core support?
-Date: Tue, 7 Mar 2006 07:54:19 -0800
-Message-ID: <002b01c641ff$666ccc70$6405a8c0@absolut>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <50206c46cf7e37ede345eebf82ad6fbc@embeddedalley.com>
+	Wed,  8 Mar 2006 03:03:43 +1100 (EST)
+In-Reply-To: <002b01c641ff$666ccc70$6405a8c0@absolut>
+References: <002b01c641ff$666ccc70$6405a8c0@absolut>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7C2FA1F5-DF91-495E-A2C3-052048E34DFE@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: GNU and Freescale MPC83xx / e300 core support?
+Date: Tue, 7 Mar 2006 10:03:53 -0600
+To: Russell McGuire <rmcguire@uwbt.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,61 +26,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks all...
 
-The author of that comment humbly apologizes for his ineptitude on the FPU.
+On Mar 7, 2006, at 9:54 AM, Russell McGuire wrote:
 
-It would appear both cores have the same number of execution units, i.e. 5
-So David, I guess in all this the only real difference seems to be the bus
-architecture, raw clock speed, and perhaps a few new instructions. I checked
-both manuals this morning and they do differ in some small ways.
+> Thanks all...
+>
+> The author of that comment humbly apologizes for his ineptitude on  
+> the FPU.
+>
+> It would appear both cores have the same number of execution units,  
+> i.e. 5
+> So David, I guess in all this the only real difference seems to be  
+> the bus
+> architecture, raw clock speed, and perhaps a few new instructions.  
+> I checked
+> both manuals this morning and they do differ in some small ways.
+>
+> * 603e, up to 4 instructions in the pipeline, only 3 being complete  
+> per
+> clock
+> * e300, up to 5 instructions in the pipeline, still only 3 being  
+> completed
+> or start per clock.
+> * Add/compare instructions are now executed in the IU unit instead  
+> of the
+> load/store unit. May be the same, but wasn't specific in earlier 603e
+> manuals.
+> * One more HID0 bit than G2, ability to interrupt based on cache  
+> parity
+> error
+> * new icbt instruction, instruction cache initialization
+>
+> So there is a section inside the 8360E manual that outlines the  
+> specific
+> enhancements. "Features specific to the e300 core not present on  
+> the G2
+> processors follow:" Page  1-5.
+>
+> So I guess my question is back up, does anyone know if an optimized  
+> compiler
+> would offer any noticeable performance enhancements in regards to  
+> these
+> changes? Other than the obvious instruction being added?
 
-* 603e, up to 4 instructions in the pipeline, only 3 being complete per
-clock
-* e300, up to 5 instructions in the pipeline, still only 3 being completed
-or start per clock.
-* Add/compare instructions are now executed in the IU unit instead of the
-load/store unit. May be the same, but wasn't specific in earlier 603e
-manuals.
-* One more HID0 bit than G2, ability to interrupt based on cache parity
-error
-* new icbt instruction, instruction cache initialization
+If you are asking about relative performance between the same  
+compiler tuned for a 603 vs e300, the there would most likely be a  
+small improvement.
 
-So there is a section inside the 8360E manual that outlines the specific
-enhancements. "Features specific to the e300 core not present on the G2
-processors follow:" Page  1-5.
+However, a few things to note.  The new icbt instruction is really  
+intended for hand written assemble code and its highly unlikely that  
+a compiler will ever generate it.  Second, the other improvements  
+from the base 603e/G2LE in 8280, like doubling of the L1 caches has a  
+significant improvement in performance.
 
-So I guess my question is back up, does anyone know if an optimized compiler
-would offer any noticeable performance enhancements in regards to these
-changes? Other than the obvious instruction being added?
-
-Thanks
-
--Russ
-
-
-
-
-
------Original Message-----
-From: Dan Malek [mailto:dan@embeddedalley.com] 
-Sent: Tuesday, March 07, 2006 4:33 AM
-To: Russell McGuire
-Cc: 'David Hawkins'; linuxppc-embedded@ozlabs.org
-Subject: Re: GNU and Freescale MPC83xx / e300 core support?
-
-
-On Mar 7, 2006, at 12:52 AM, Russell McGuire wrote:
-
-> .....  The most obvious core difference is
-> the Floating Point unit; the MPC8280, 603e or G2LE core had no floating
-> point ability at all.
-
-I just want to state for archive purposes this simply isn't true.
-All of those processors had hardware FPUs.  If you would take
-a few seconds and read the product overviews for these parts,
-you can make your own informed decision.  The person you
-are talking to doesn't seem to have all of the facts in order.
-
-
-	-- Dan
+- kumar
