@@ -1,21 +1,20 @@
-Return-Path: <mcr@sandelman.ottawa.on.ca>
-Received: from lists.sandelman.ca (cod.sandelman.ca [192.139.46.139])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "lists.sandelman.ca",
-	Issuer "Michael Richardson" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5EDF0679E9
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
+	by ozlabs.org (Postfix) with ESMTP id 40CD3679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 07:43:25 +1100 (EST)
-To: "Wyse, Chris" <chris.wyse@windriver.com>
-Subject: Re: Calling PCI Autoconfig again 
-In-Reply-To: Message from "Wyse, Chris" <chris.wyse@windriver.com> of "Mon,
-	06 Mar 2006 13:34:57 PST."
-	<927594BA71733F4BAA815162B79A3F513B27FD@ala-mail04.corp.ad.wrs.com>
-References: <927594BA71733F4BAA815162B79A3F513B27FD@ala-mail04.corp.ad.wrs.com>
-Date: Tue, 07 Mar 2006 10:48:06 -0500
-Message-ID: <28658.1141746486@sandelman.ottawa.on.ca>
-From: Michael Richardson <mcr@sandelman.ottawa.on.ca>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed,  8 Mar 2006 08:19:39 +1100 (EST)
+Received: from xbh-sjc-221.amer.cisco.com (xbh-sjc-221.cisco.com
+	[128.107.191.63])
+	by sj-core-4.cisco.com (8.12.10/8.12.6) with ESMTP id k27LJcYi001596
+	for <linuxppc-embedded@ozlabs.org>; Tue, 7 Mar 2006 13:19:38 -0800 (PST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6422C.D6AF2F52"
+Subject: Hints on hard hang
+Date: Tue, 7 Mar 2006 13:19:37 -0800
+Message-ID: <F795765B112E7344AF36AA9112796415019ECDF5@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +25,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C6422C.D6AF2F52
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+Hi All,
+
+Our custom board based on 8541 processor running Linux 2.6.11 gets hard
+hang during run time. We can't soft reset (SRESET, Pin#AF20) and get a
+machine check interrupt when the hang happens, and JTAG can not
+communicate with the processor. We do not know how to go to debug this
+issue. If you have any idea or hints, we greatly appreciate.
+
+Many thanks in advance,
+
+Bizhan
 
 
-You need some kind of hotplug PCI interface to make this work.
+------_=_NextPart_001_01C6422C.D6AF2F52
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-When I last tried this -- for the same reason --- it was hard because we
-couldn't get the physical memory map from the (PC) BIOS.  (This was
-before ACPI 2.0...)
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV>
+<P><FONT face=3DArial size=3D2>Hi All,</FONT></P>
+<P><FONT face=3DArial><FONT size=3D2>Our custom board&nbsp;<SPAN=20
+class=3D955461421-07032006>based on </SPAN>854<SPAN =
+class=3D955461421-07032006>1=20
+</SPAN>processor running Linux 2.<SPAN=20
+class=3D955461421-07032006>6</SPAN>.11&nbsp;<SPAN =
+class=3D955461421-07032006>gets=20
+</SPAN><SPAN class=3D955461421-07032006>hard </SPAN>hang =
+during&nbsp;<SPAN=20
+class=3D955461421-07032006>run time</SPAN>.&nbsp;<SPAN=20
+class=3D955461421-07032006><SPAN class=3D376592603-07032006>We can't =
+soft reset=20
+(SRESET, Pin#AF20) and get a machine check interrupt&nbsp;when the hang =
+happens,=20
+and JTAG can not communicate with the processor. We do not know how to =
+go to=20
+debug this issue. If you have any idea or hints, we greatly=20
+appreciate.</SPAN></SPAN></FONT></FONT></P>
+<P><FONT size=3D2><SPAN class=3D955461421-07032006><SPAN=20
+class=3D376592603-07032006>Many thanks in =
+advance,</SPAN></SPAN></FONT></P>
+<P><FONT size=3D2><SPAN class=3D955461421-07032006><SPAN=20
+class=3D376592603-07032006>Bizhan</SPAN></SPAN></FONT></P></DIV></BODY></=
+HTML>
 
-Since you have complete control over the board, you should have this
-information already. 
-
-- -- 
-]       ON HUMILITY: to err is human. To moo, bovine.           |  firewalls  [
-]   Michael Richardson,    Xelerance Corporation, Ottawa, ON    |net architect[
-] mcr@xelerance.com      http://www.sandelman.ottawa.on.ca/mcr/ |device driver[
-] panic("Just another Debian GNU/Linux using, kernel hacking, security guy"); [
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-Comment: Finger me for keys
-
-iQEVAwUBRA2rNICLcPvd0N1lAQLchQf9E6B6ISMnpam5rgCXe67RQz3IWseOMtAb
-8m65WKBDwTUxwKIwiOygY0AnLudL4+dSKp8QaswXsjl4g7BvjVBwjWH0itmIvWew
-1V0BUVJUNMpzYH7I9fEtbJXjQvN/8VyJRX+7HIndvH1CWpeDzHgQTAVu+CIVfyGI
-SEEZsgwzgq8mzbopawxPORd+rKv9F6tlnbqAU8P1eHB8wcUEu+WZQ+oA3WGS+Zhn
-5ZjK3dX+QXI2JykicyS7VVUT5D6vaZFon4Ikk4Ao0JKfNHmAD7fN4BHhORrpGYyR
-+dHlRZlZiRfw3AEoqg6XZZrcGWfciBK8mD6utPnSHomMsaTk80jbtQ==
-=o2Wv
------END PGP SIGNATURE-----
+------_=_NextPart_001_01C6422C.D6AF2F52--
