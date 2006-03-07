@@ -1,23 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DF92A679F8
+Return-Path: <mcr@sandelman.ottawa.on.ca>
+Received: from lists.sandelman.ca (cod.sandelman.ca [192.139.46.139])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "lists.sandelman.ca",
+	Issuer "Michael Richardson" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5EDF0679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 06:57:48 +1100 (EST)
-In-Reply-To: <927594BA71733F4BAA815162B79A3F513B2B03@ala-mail04.corp.ad.wrs.com>
-References: <927594BA71733F4BAA815162B79A3F513B2B03@ala-mail04.corp.ad.wrs.com>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FF0A316F-B6A0-4C6A-B7A9-CA2C6C1AB72C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Calling PCI Autoconfig again
-Date: Tue, 7 Mar 2006 13:57:44 -0600
+	Wed,  8 Mar 2006 07:43:25 +1100 (EST)
 To: "Wyse, Chris" <chris.wyse@windriver.com>
-Cc: linuxppc-embedded@ozlabs.org, "McComb,
-	Michael" <michael.mccomb@windriver.com>, "Touron,
-	Emmanuel" <emmanuel.touron@windriver.com>
+Subject: Re: Calling PCI Autoconfig again 
+In-Reply-To: Message from "Wyse, Chris" <chris.wyse@windriver.com> of "Mon,
+	06 Mar 2006 13:34:57 PST."
+	<927594BA71733F4BAA815162B79A3F513B27FD@ala-mail04.corp.ad.wrs.com>
+References: <927594BA71733F4BAA815162B79A3F513B27FD@ala-mail04.corp.ad.wrs.com>
+Date: Tue, 07 Mar 2006 10:48:06 -0500
+Message-ID: <28658.1141746486@sandelman.ottawa.on.ca>
+From: Michael Richardson <mcr@sandelman.ottawa.on.ca>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,48 +26,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-On Mar 7, 2006, at 1:25 PM, Wyse, Chris wrote:
 
-> Hi Kumar,
->
-> Thanks for the response.  Also, I apologize to the group - I didn't  
-> mean
-> to CC: the list with the last note.  However, I am glad that it got a
-> response from you.
->
-> Regarding the FPGA address assignment - it doesn't matter at all to  
-> me,
-> I just need to be able to access it on the PCI once the load is
-> complete.
->
-> As for the FPGA loader, the intent is that it will make the call to
-> rescan the PCI after the load is complete.  In fact, I intend to  
-> use it
-> as a way of determining if the load completed successfully, since we
-> don't have access to the DONE signal from the FPGA (we ran out of GPIO
-> pins).
->
-> If you missed this link from a previous post, please check it out.  It
-> implements a rescan of the PCI.
->
-> http://marc.theaimsgroup.com/?l=linux-hotplug- 
-> devel&m=101318310111131&w=
-> 2
+You need some kind of hotplug PCI interface to make this work.
 
-I saw this link and felt that the code was doing alot of work that  
-was already handled by the PCI subsystem for you.  For example, there  
-isn't a need for you to kmalloc your own dev and go through all the  
-effort.
+When I last tried this -- for the same reason --- it was hard because we
+couldn't get the physical memory map from the (PC) BIOS.  (This was
+before ACPI 2.0...)
 
-For your case it should be as simple as the following:
+Since you have complete control over the board, you should have this
+information already. 
 
-bus = pci_find_bus(0, bus_of_dev);
-dev = pci_scan_single_device(bus, devfn);
-pci_bus_alloc_resource(...);
-pci_bus_add_devices(bus);
+- -- 
+]       ON HUMILITY: to err is human. To moo, bovine.           |  firewalls  [
+]   Michael Richardson,    Xelerance Corporation, Ottawa, ON    |net architect[
+] mcr@xelerance.com      http://www.sandelman.ottawa.on.ca/mcr/ |device driver[
+] panic("Just another Debian GNU/Linux using, kernel hacking, security guy"); [
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+Comment: Finger me for keys
 
-You could also look at using the pci_scan_slot() / pci_find_slot()  
-instead of pci_scan_single_device().
-
-- kumar
+iQEVAwUBRA2rNICLcPvd0N1lAQLchQf9E6B6ISMnpam5rgCXe67RQz3IWseOMtAb
+8m65WKBDwTUxwKIwiOygY0AnLudL4+dSKp8QaswXsjl4g7BvjVBwjWH0itmIvWew
+1V0BUVJUNMpzYH7I9fEtbJXjQvN/8VyJRX+7HIndvH1CWpeDzHgQTAVu+CIVfyGI
+SEEZsgwzgq8mzbopawxPORd+rKv9F6tlnbqAU8P1eHB8wcUEu+WZQ+oA3WGS+Zhn
+5ZjK3dX+QXI2JykicyS7VVUT5D6vaZFon4Ikk4Ao0JKfNHmAD7fN4BHhORrpGYyR
++dHlRZlZiRfw3AEoqg6XZZrcGWfciBK8mD6utPnSHomMsaTk80jbtQ==
+=o2Wv
+-----END PGP SIGNATURE-----
