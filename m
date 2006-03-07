@@ -1,20 +1,18 @@
-Return-Path: <antonio.dibacco@aruba.it>
-Received: from mx1.aruba.it (mxaruba.aruba.it [62.149.128.10])
-	by ozlabs.org (Postfix) with SMTP id A1852679F4
+Return-Path: <rmcguire@uwbt.com>
+Received: from mail19d.g19.rapidsite.net (mail19d.dulles19-verio.com
+	[204.202.242.120]) by ozlabs.org (Postfix) with SMTP id DD39D679F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 02:49:09 +1100 (EST)
-Message-ID: <20060307154903.18326.qmail@mx1.aruba.it>
-References: <20060307131500.3467.qmail@mx1.aruba.it>
-	<20060307165522.7936fd7b@vitb.ru.mvista.com>
-	<20060307153716.1130.qmail@mx1.aruba.it>
-	<20060307184217.1422472c@vitb.ru.mvista.com>
-In-Reply-To: <20060307184217.1422472c@vitb.ru.mvista.com> 
-From: "antonio.dibacco" <antonio.dibacco@aruba.it>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: fs_enet on 2.4 and 8xx_immap
-Date: Tue, 07 Mar 2006 15:49:03 GMT
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1"
+	Wed,  8 Mar 2006 02:54:33 +1100 (EST)
+From: "Russell McGuire" <rmcguire@uwbt.com>
+To: "'Dan Malek'" <dan@embeddedalley.com>
+Subject: RE: GNU and Freescale MPC83xx / e300 core support?
+Date: Tue, 7 Mar 2006 07:54:19 -0800
+Message-ID: <002b01c641ff$666ccc70$6405a8c0@absolut>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <50206c46cf7e37ede345eebf82ad6fbc@embeddedalley.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,61 +23,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Thanks all...
 
-I'm a novice and I don't understand what is "IIRC". Is something that 
-handles the two FECs on 885ads? I knew that on 885ads the second ethernet 
-was realized via an SCC and not FEC. Am I wrong? 
+The author of that comment humbly apologizes for his ineptitude on the FPU.
 
-Bye,
-Antonio. 
+It would appear both cores have the same number of execution units, i.e. 5
+So David, I guess in all this the only real difference seems to be the bus
+architecture, raw clock speed, and perhaps a few new instructions. I checked
+both manuals this morning and they do differ in some small ways.
+
+* 603e, up to 4 instructions in the pipeline, only 3 being complete per
+clock
+* e300, up to 5 instructions in the pipeline, still only 3 being completed
+or start per clock.
+* Add/compare instructions are now executed in the IU unit instead of the
+load/store unit. May be the same, but wasn't specific in earlier 603e
+manuals.
+* One more HID0 bit than G2, ability to interrupt based on cache parity
+error
+* new icbt instruction, instruction cache initialization
+
+So there is a section inside the 8360E manual that outlines the specific
+enhancements. "Features specific to the e300 core not present on the G2
+processors follow:" Page  1-5.
+
+So I guess my question is back up, does anyone know if an optimized compiler
+would offer any noticeable performance enhancements in regards to these
+changes? Other than the obvious instruction being added?
+
+Thanks
+
+-Russ
 
 
-Vitaly Bordug Scrive: 
 
-> On Tue, 07 Mar 2006 15:37:16 GMT
-> "antonio.dibacco" <antonio.dibacco@aruba.it> wrote: 
-> 
->> I think I will use the 8xx_immap.h borrowed from u-boot-1.1.4, it is really 
->> similar to that of 2.4.25, with some explicit padding and fec2. Do you think 
->> that porting fs_enet to 2.4 is it the best way to have both FECs working on 
->> a MPC875? I don't want to use 2.6. 
->> 
-> Sounds reasonable, but I'll repeat:
-> fs_enet patches for 2.6 used to support 2.4 thing(via #ifdef's), it was cleaned up close to submission. IIRC, it handles 2 fecs quite great on my 885ads, so it worths to search around a bit before hacking... 
-> 
->> Bye,
->> Antonio.  
->> 
->> Vitaly Bordug Scrive:  
->> 
->> > On Tue, 07 Mar 2006 13:15:00 GMT
->> > "antonio.dibacco" <antonio.dibacco@aruba.it> wrote: 
->> > 
->> >> I think that to make it work I need to update cpm8xx_t inserting the fec2 
->> >> filed. Is this true? Could I use the 8xx_immap.h of a 2.6 kernel? 
->> >> 
->> > Not exactly. I think you can borrow the structures from 2.6, but do a triple-check that the result offsets are the same. 
->> > 
->> >> Bye,
->> >> Antonio.
->> >> _______________________________________________
->> >> Linuxppc-embedded mailing list
->> >> Linuxppc-embedded@ozlabs.org
->> >> https://ozlabs.org/mailman/listinfo/linuxppc-embedded 
->> >> 
->> >> 
->> >  
->> > 
->> > -- 
->> > Sincerely, 
->> > Vitaly
->>   
->> 
->> 
->  
-> 
-> -- 
-> Sincerely, 
-> Vitaly
- 
+
+
+-----Original Message-----
+From: Dan Malek [mailto:dan@embeddedalley.com] 
+Sent: Tuesday, March 07, 2006 4:33 AM
+To: Russell McGuire
+Cc: 'David Hawkins'; linuxppc-embedded@ozlabs.org
+Subject: Re: GNU and Freescale MPC83xx / e300 core support?
+
+
+On Mar 7, 2006, at 12:52 AM, Russell McGuire wrote:
+
+> .....  The most obvious core difference is
+> the Floating Point unit; the MPC8280, 603e or G2LE core had no floating
+> point ability at all.
+
+I just want to state for archive purposes this simply isn't true.
+All of those processors had hardware FPUs.  If you would take
+a few seconds and read the product overviews for these parts,
+you can make your own informed decision.  The person you
+are talking to doesn't seem to have all of the facts in order.
+
+
+	-- Dan
