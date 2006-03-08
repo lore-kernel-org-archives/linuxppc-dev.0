@@ -1,24 +1,17 @@
-Return-Path: <Dai.Haruki@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id BD269679E2
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Mar 2006 06:24:49 +1100 (EST)
-Received: from de01smr01.am.mot.com (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k28JXQoq000533
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Mar 2006 12:33:26 -0700 (MST)
-Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
-	[10.64.32.14])
-	by de01smr01.am.mot.com (8.13.1/8.13.0) with ESMTP id k28JOkYJ013320
-	for <linuxppc-dev@ozlabs.org>; Wed, 8 Mar 2006 13:24:46 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] Fix MPC8548CDS rebooting procedure
-Date: Wed, 8 Mar 2006 12:24:30 -0700
-Message-ID: <18AEF66AFDF06F4CAAA1D419D000FD332ECDEA@az33exm24.fsl.freescale.net>
-From: "Haruki Dai-r35557" <Dai.Haruki@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4120A679E2
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Mar 2006 06:40:36 +1100 (EST)
+Date: Wed, 8 Mar 2006 20:40:28 +0100
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] add a raw dump command to xmon
+Message-ID: <20060308194028.GA21615@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,61 +21,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Wednesday, March 08, 2006 12:33 PM
-> To: Haruki Dai-r35557
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] Fix MPC8548CDS rebooting procedure
->=20
->=20
-> On Mar 8, 2006, at 11:22 AM, Haruki Dai-r35557 wrote:
->=20
-> > This patch fixes the MPC8548 CDS rebooting procedure.
-> > Without this patche, issuing reboot from shell doesn't reboot the=20
-> > machine.
-> >
-> > Signed-off-by: Dai Haruki <dai.haruki@freescale.com>
->=20
-> Dai, I'm avoid taking patches for 85xx that effect new=20
-> functionality.  If you want change this to work with=20
-> arch/powerpc and make it a run time check for 8548.
 
-Hi Kumar, what kind of new feature is affected by this bug fix? 8548
-requires reboot to set the hardware reset bits. The mpc85xx_restart() is
-not ported to arch/powerpc yet. Which portion of the arch/powerpc code
-should be modified in order to restart the machine correctly?=20
-And how do you want me to do run time check? Check SVR?=20
+Dump a stream of rawbytes with a new 'dr' command.
+Produces less output and it is simpler to feed the output to scripts.
+Also, dr has no dumpsize limits.
 
-Dai=20
+Signed-off-by: Olaf Hering <olh@suse.de>
 
->=20
-> - kumar
->=20
-> > ---
-> >
-> >  arch/ppc/syslib/ppc85xx_setup.c |    5 +++++
-> >  1 files changed, 5 insertions(+), 0 deletions(-)
-> >
-> > 8f095006923385c3546165b0e10d73d3e057c120
-> > diff --git a/arch/ppc/syslib/ppc85xx_setup.c=20
-> > b/arch/ppc/syslib/ppc85xx_setup.c index e4dda43..45b1b2b 100644
-> > --- a/arch/ppc/syslib/ppc85xx_setup.c
-> > +++ b/arch/ppc/syslib/ppc85xx_setup.c
-> > @@ -115,6 +115,11 @@ mpc85xx_early_serial_map(void)  void =20
-> > mpc85xx_restart(char *cmd)  {
-> > +#ifdef CONFIG_MPC8548
-> > +	volatile unsigned int *rstcr;
-> > +	u32 *pMem =3D (u32*) ioremap((BOARD_CCSRBAR + 0xe00b0),0x100);
-> > +	*pMem =3D 0x2; /* Set HRESET_REQ flag */ #endif
-> >  	local_irq_disable();
-> >  	abort();
-> >  }
-> > --
-> > 1.2.4
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
->=20
->=20
+ arch/powerpc/xmon/xmon.c |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+)
+
+Index: linux-2.6.16-rc5-olh/arch/powerpc/xmon/xmon.c
+===================================================================
+--- linux-2.6.16-rc5-olh.orig/arch/powerpc/xmon/xmon.c
++++ linux-2.6.16-rc5-olh/arch/powerpc/xmon/xmon.c
+@@ -191,6 +191,7 @@ Commands:\n\
+   di	dump instructions\n\
+   df	dump float values\n\
+   dd	dump double values\n\
++  dr	dump stream of raw bytes\n\
+   e	print exception information\n\
+   f	flush cache\n\
+   la	lookup symbol+offset of specified address\n\
+@@ -1938,6 +1939,28 @@ bsesc(void)
+ 	return c;
+ }
+ 
++static void xmon_rawdump (unsigned long adrs, long ndump)
++{
++	long n, m, r, nr;
++	unsigned char temp[16];
++
++	for (n = ndump; n > 0;) {
++		r = n < 16? n: 16;
++		nr = mread(adrs, temp, r);
++		adrs += nr;
++		for (m = 0; m < r; ++m) {
++			if (m < nr)
++				printf("%.2x", temp[m]);
++			else
++				printf("%s", fault_chars[fault_type]);
++		}
++		n -= r;
++		if (nr < r)
++			break;
++	}
++	printf("\n");
++}
++
+ #define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
+ 			 || ('a' <= (c) && (c) <= 'f') \
+ 			 || ('A' <= (c) && (c) <= 'F'))
+@@ -1960,6 +1983,13 @@ dump(void)
+ 			nidump = MAX_DUMP;
+ 		adrs += ppc_inst_dump(adrs, nidump, 1);
+ 		last_cmd = "di\n";
++	} else if (c == 'r') {
++		scanhex(&ndump);
++		if (ndump == 0)
++			ndump = 64;
++		xmon_rawdump(adrs, ndump);
++		adrs += ndump;
++		last_cmd = "dr\n";
+ 	} else {
+ 		scanhex(&ndump);
+ 		if (ndump == 0)
