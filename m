@@ -1,16 +1,21 @@
-Return-Path: <adrian@humboldt.co.uk>
-Subject: Re: linux DMA capabilities in MV64460
-From: Adrian Cox <adrian@humboldt.co.uk>
-To: Phil.Nitschke@avalon.com.au
-In-Reply-To: <kwlkvomcxp.fsf@lamorak.int.avalon.com.au>
-References: <kw3bkovcup.fsf@lamorak.int.avalon.com.au>
-	<20051220010136.GA31165@mag.az.mvista.com>
-	<kwlkvomcxp.fsf@lamorak.int.avalon.com.au>
-Content-Type: text/plain
-Date: Wed, 08 Mar 2006 22:36:18 +0000
-Message-Id: <1141857378.28095.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+Return-Path: <glikely@gmail.com>
+Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.197])
+	by ozlabs.org (Postfix) with ESMTP id CED0F679EA
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  9 Mar 2006 10:07:32 +1100 (EST)
+Received: by nproxy.gmail.com with SMTP id p48so234839nfa
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 08 Mar 2006 15:07:30 -0800 (PST)
+Message-ID: <528646bc0603081507t24c7e2f5u8e2823931200a857@mail.gmail.com>
+Date: Wed, 8 Mar 2006 16:07:30 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "linuxppc-embedded list" <linuxppc-embedded@ozlabs.org>,
+	"Matt Porter" <mporter@kernel.crashing.org>,
+	"Paul Mackerras" <paulus@samba.org>
+Subject: [Patch] Fix compile error for ML300/403
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,21 +26,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-03-06 at 14:39 +1030, Phil Nitschke wrote:
-> How is a DMA controlled (from a device driver writer's perspective) when
-> a third-party (i.e. in the bridge) DMA controller needs to do the work
-> to get the data from a PCI Target into main memory?
-> 
-> What kernel API should be provided by the DMA Controller Driver?  
+Fix compile error due to changes in ppc_sys.c.  This is needed in the
+powerpc.git tree
 
-There is no current API for this in the kernel, but there are some
-proposals. From Intel, we have I/OAT, which targets network operations:
-http://lkml.org/lkml/2006/3/3/219
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-There's some overlap with the ADMA feature set, which is intended to
-accelerate RAID operations:
-http://lkml.org/lkml/2006/2/2/442
+---
+commit 75ec8a6ff8410c30f459e5e1c924ce811f8b1e25
+tree 87f29c44458d2966bf208f9ea25432b26faa2eb5
+parent 126dddf2535520cbeafb7069ce092b80beb8558a
+author Grant Likely <grant.likely@secretlab.ca> Wed, 08 Mar 2006 16:03:56 -=
+0700
+committer <grant@weasley-twins.(none)> Wed, 08 Mar 2006 16:03:56 -0700
+
+ arch/ppc/platforms/4xx/virtex.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/ppc/platforms/4xx/virtex.h b/arch/ppc/platforms/4xx/virte=
+x.h
+index 2a2a65c..4d893ef 100644
+--- a/arch/ppc/platforms/4xx/virtex.h
++++ b/arch/ppc/platforms/4xx/virtex.h
+@@ -27,7 +27,7 @@
+ /* Device type enumeration for platform bus definitions */
+ #ifndef __ASSEMBLY__
+ enum ppc_sys_devices {
+-       VIRTEX_UART, VIRTEX_FB,
++       VIRTEX_UART, VIRTEX_FB, NUM_PPC_SYS_DEVS,
+ };
+ #endif
 
 
--- 
-Adrian Cox <adrian@humboldt.co.uk>
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 399-0195
