@@ -1,32 +1,16 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id F2035679E0
+Return-Path: <mustafa.cayir@bte.mam.gov.tr>
+Received: from itri.bte.mam.gov.tr (bte.mam.gov.tr [193.140.75.15])
+	by ozlabs.org (Postfix) with ESMTP id 268E5679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 19:38:19 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id 9D6AB29ECA
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 09:36:40 +0100 (CET)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 12602-02 for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 09:36:38 +0100 (CET)
-Received: from archvile (unknown [192.168.1.153])
-	by protonic.prtnl (Postfix) with ESMTP id B597129EC9
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  8 Mar 2006 09:36:38 +0100 (CET)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: How to quickly write cleanmarkers to jffs2 partitions?
-Date: Wed, 8 Mar 2006 09:38:35 +0100
-References: <200603021706.14618.david.jander@protonic.nl>
-	<200603031008.20075.mathieu.deschamps@com2gether.net>
-	<1141647684.23522.7.camel@linpc041.aimsys.nl>
-In-Reply-To: <1141647684.23522.7.camel@linpc041.aimsys.nl>
+	Wed,  8 Mar 2006 21:11:34 +1100 (EST)
+Message-ID: <004401c64298$69d50c30$9e01120a@bilisim.local>
+From: =?iso-8859-9?Q?Mustafa_=C7ay=FDr?= <mustafa.cayir@bte.mam.gov.tr>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: bdi2000 config file 
+Date: Wed, 8 Mar 2006 12:09:40 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200603080938.35299.david.jander@protonic.nl>
+	charset="iso-8859-9"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,32 +21,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 06 March 2006 13:21, Jaap-Jan Boor wrote:
-> On Fri, 2006-03-03 at 10:08 +0100, Mathieu Deschamps wrote:
-> > Hi,
-> >
-> > "When preparing a flash partition for JFFS2, it is recommended to put
-> > cleanmarkers to the erased blocks.
-> > This might be done my means of "-j" option of the "flash_eraseall" MTD
-> > utility. Otherwise, JFFS2 will re-erase the blocks
-> > which contain all 0xFF and have no cleanmarker. This is an unneeded
-> > wasting of time."
-> >
-> > Source : http://www.linux-mtd.infradead.org/faq/jffs2.html
-> >
-> > does this may be relevant ?
->
-> This is correct, however flash_eraseall does also (as it's
-> name suggests, erase all flash blocks, which takes
-> some time on NOR flash. If you 'know' the flash is erased,
-> it's not needed.
-> I used flash_eraseall to write the cleanmarkers, but without
-> erasing blocks (and called that utility cleanmark)
+Hi,
 
-Thanks to all for the suggestions.
-Is "cleanmark" an open-source tool? Would you share it?
+Are thare any guide about generating bdi2000 config file ?
 
-Greetings,
+I'm working on board MVME6100. are there bdi2000 config file of this =
+board? Or, anyone has a bdi2000 config file of a board that has marvell =
+64360 bridge?
 
--- 
-David Jander
+thanks .
