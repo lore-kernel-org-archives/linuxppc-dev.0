@@ -1,20 +1,15 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "sabrina.ovro.caltech.edu",
-	Issuer "sabrina.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 10191679EB
+Return-Path: <Jeff.Fellin@rflelect.com>
+Received: from noteshub1.teal.com (mail.teal.com [67.155.213.211])
+	by ozlabs.org (Postfix) with ESMTP id D02B8679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  9 Mar 2006 07:28:09 +1100 (EST)
-Message-ID: <440F3E3D.3090807@ovro.caltech.edu>
-Date: Wed, 08 Mar 2006 12:27:41 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: Jeff.Fellin@rflelect.com
+	Thu,  9 Mar 2006 08:18:26 +1100 (EST)
 Subject: Re: Yosemite board ala, PPC405EP
-References: <OFFBE09E88.DB8A5C68-ON8525712B.006C3D78@teal.com>
-In-Reply-To: <OFFBE09E88.DB8A5C68-ON8525712B.006C3D78@teal.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: dwh@ovro.caltech.edu
+Message-ID: <OF983EDDB6.1E8E12C2-ON8525712B.00750324@teal.com>
+From: Jeff.Fellin@rflelect.com
+Date: Wed, 8 Mar 2006 16:18:30 -0500
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,14 +21,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+
+Sorry, I was confused. I have a PPC405EP. not a Yosemite board.
+
+Jeff Fellin
+RFL Electronics
+Jeff.Fellin@rflelect.com
+973 334-3100, x 327
+
+
+                                                                                                               
+                      David Hawkins                                                                            
+                      <dwh@ovro.caltech        To:       Jeff.Fellin@rflelect.com                              
+                      .edu>                    cc:       linuxppc-embedded@ozlabs.org                          
+                                               Subject:  Re: Yosemite board ala, PPC405EP                      
+                      03/08/2006 15:27                                                                         
+                                                                                                               
+                                                                                                               
+
+
+
+
 Jeff.Fellin@rflelect.com wrote:
 > I have been using an Albatron BDI for a PPC405GP board in a project.
 > According to the documentation I've read the Yosemite board is identical
 > register wise to the 405GP, except for two sets of EMAC registers.
-> 
+>
 > My problem is when I use the Albatron BDI using the register definitions
 > for the 405GP, the BDI cannot communicate with the 405EP.
-> 
+>
 > Anyone have experience with usingg the BDI for the PPC 405EP?
 
 Hey Jeff,
