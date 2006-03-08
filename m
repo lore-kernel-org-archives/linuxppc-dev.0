@@ -1,17 +1,16 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4120A679E2
-	for <linuxppc-dev@ozlabs.org>; Thu,  9 Mar 2006 06:40:36 +1100 (EST)
-Date: Wed, 8 Mar 2006 20:40:28 +0100
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] add a raw dump command to xmon
-Message-ID: <20060308194028.GA21615@suse.de>
+Return-Path: <adrian@humboldt.co.uk>
+Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3202A679E6
+	for <linuxppc-dev@ozlabs.org>; Thu,  9 Mar 2006 09:28:21 +1100 (EST)
+Subject: [PATCH] Fix platform_notify functions marked __init
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 08 Mar 2006 22:10:20 +0000
+Message-Id: <1141855821.28095.18.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,68 +20,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+While adding USB support to an MV64360 based board this week, I
+discovered that all MV64x60 boards in the kernel have platform_notify
+functions marked with __init. This causes an oops if a device is added
+after boot.
 
-Dump a stream of rawbytes with a new 'dr' command.
-Produces less output and it is simpler to feed the output to scripts.
-Also, dr has no dumpsize limits.
+The patch below removes the __init markers. I do not have all these
+boards to test on, but the change seems very unlikely to break anything
+else.
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+Signed-off-by: Adrian Cox <adrian@humboldt.co.uk>
 
- arch/powerpc/xmon/xmon.c |   30 ++++++++++++++++++++++++++++++
- 1 files changed, 30 insertions(+)
-
-Index: linux-2.6.16-rc5-olh/arch/powerpc/xmon/xmon.c
-===================================================================
---- linux-2.6.16-rc5-olh.orig/arch/powerpc/xmon/xmon.c
-+++ linux-2.6.16-rc5-olh/arch/powerpc/xmon/xmon.c
-@@ -191,6 +191,7 @@ Commands:\n\
-   di	dump instructions\n\
-   df	dump float values\n\
-   dd	dump double values\n\
-+  dr	dump stream of raw bytes\n\
-   e	print exception information\n\
-   f	flush cache\n\
-   la	lookup symbol+offset of specified address\n\
-@@ -1938,6 +1939,28 @@ bsesc(void)
- 	return c;
+diff --git a/arch/ppc/platforms/cpci690.c b/arch/ppc/platforms/cpci690.c
+index 6ca7bca..ad1a21e 100644
+--- a/arch/ppc/platforms/cpci690.c
++++ b/arch/ppc/platforms/cpci690.c
+@@ -290,7 +290,7 @@ cpci690_fixup_mpsc_pdata(struct platform
+ 	pdata->brg_clk_freq = cpci690_get_bus_freq();
  }
  
-+static void xmon_rawdump (unsigned long adrs, long ndump)
-+{
-+	long n, m, r, nr;
-+	unsigned char temp[16];
-+
-+	for (n = ndump; n > 0;) {
-+		r = n < 16? n: 16;
-+		nr = mread(adrs, temp, r);
-+		adrs += nr;
-+		for (m = 0; m < r; ++m) {
-+			if (m < nr)
-+				printf("%.2x", temp[m]);
-+			else
-+				printf("%s", fault_chars[fault_type]);
-+		}
-+		n -= r;
-+		if (nr < r)
-+			break;
-+	}
-+	printf("\n");
-+}
-+
- #define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
- 			 || ('a' <= (c) && (c) <= 'f') \
- 			 || ('A' <= (c) && (c) <= 'F'))
-@@ -1960,6 +1983,13 @@ dump(void)
- 			nidump = MAX_DUMP;
- 		adrs += ppc_inst_dump(adrs, nidump, 1);
- 		last_cmd = "di\n";
-+	} else if (c == 'r') {
-+		scanhex(&ndump);
-+		if (ndump == 0)
-+			ndump = 64;
-+		xmon_rawdump(adrs, ndump);
-+		adrs += ndump;
-+		last_cmd = "dr\n";
- 	} else {
- 		scanhex(&ndump);
- 		if (ndump == 0)
+-static int __init
++static int
+ cpci690_platform_notify(struct device *dev)
+ {
+ 	static struct {
+diff --git a/arch/ppc/platforms/ev64260.c b/arch/ppc/platforms/ev64260.c
+index ffde8f6..fea4cf8 100644
+--- a/arch/ppc/platforms/ev64260.c
++++ b/arch/ppc/platforms/ev64260.c
+@@ -416,7 +416,7 @@ ev64260_fixup_mpsc_pdata(struct platform
+ 	return;
+ }
+ 
+-static int __init
++static int
+ ev64260_platform_notify(struct device *dev)
+ {
+ 	static struct {
+diff --git a/arch/ppc/platforms/ev64360.c b/arch/ppc/platforms/ev64360.c
+index b9d844f..e8cc999 100644
+--- a/arch/ppc/platforms/ev64360.c
++++ b/arch/ppc/platforms/ev64360.c
+@@ -300,7 +300,7 @@ ev64360_fixup_eth_pdata(struct platform_
+ }
+ #endif
+ 
+-static int __init
++static int
+ ev64360_platform_notify(struct device *dev)
+ {
+ 	static struct {
+diff --git a/arch/ppc/platforms/hdpu.c b/arch/ppc/platforms/hdpu.c
+index 50039a2..c79e589 100644
+--- a/arch/ppc/platforms/hdpu.c
++++ b/arch/ppc/platforms/hdpu.c
+@@ -354,7 +354,7 @@ static void __init hdpu_fixup_cpustate_p
+ }
+ #endif
+ 
+-static int __init hdpu_platform_notify(struct device *dev)
++static int hdpu_platform_notify(struct device *dev)
+ {
+ 	static struct {
+ 		char *bus_id;
+diff --git a/arch/ppc/platforms/katana.c b/arch/ppc/platforms/katana.c
+index 6e58e30..b655e53 100644
+--- a/arch/ppc/platforms/katana.c
++++ b/arch/ppc/platforms/katana.c
+@@ -598,7 +598,7 @@ katana_fixup_mv64xxx_pdata(struct platfo
+ }
+ #endif
+ 
+-static int __init
++static int
+ katana_platform_notify(struct device *dev)
+ {
+ 	static struct {
+diff --git a/arch/ppc/platforms/radstone_ppc7d.c b/arch/ppc/platforms/radstone_ppc7d.c
+index 872c0a3..d5c3e92 100644
+--- a/arch/ppc/platforms/radstone_ppc7d.c
++++ b/arch/ppc/platforms/radstone_ppc7d.c
+@@ -712,7 +712,7 @@ ppc7d_fixup_i2c_pdata(struct platform_de
+ }
+ #endif
+ 
+-static int __init ppc7d_platform_notify(struct device *dev)
++static int ppc7d_platform_notify(struct device *dev)
+ {
+ 	static struct {
+ 		char *bus_id;
+
+
+-- 
+Adrian Cox <adrian@humboldt.co.uk>
