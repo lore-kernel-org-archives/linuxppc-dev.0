@@ -1,17 +1,15 @@
-Return-Path: <mgreer@mvista.com>
-Received: from hermes.mvista.com (gateway-1237.mvista.com [63.81.120.158])
-	by ozlabs.org (Postfix) with ESMTP id 7183A679E0
-	for <linuxppc-dev@ozlabs.org>; Fri, 10 Mar 2006 04:36:05 +1100 (EST)
-Date: Thu, 9 Mar 2006 10:36:17 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Adrian Cox <adrian@humboldt.co.uk>
-Subject: Re: [PATCH] Fix platform_notify functions marked __init
-Message-ID: <20060309173617.GA29996@mag.az.mvista.com>
-References: <1141855821.28095.18.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1141855821.28095.18.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <bcook@bpointsys.com>
+Received: from bpointsys.com (70-253-197-251.ded.swbell.net [70.253.197.251])
+	by ozlabs.org (Postfix) with ESMTP id B3A59679A6
+	for <linuxppc-dev@ozlabs.org>; Fri, 10 Mar 2006 05:04:38 +1100 (EST)
+From: Brent Cook <bcook@bpointsys.com>
+To: linuxppc-dev@ozlabs.org
+Subject: System time accuracy
+Date: Thu, 9 Mar 2006 08:57:35 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200603090857.36199.bcook@bpointsys.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,19 +19,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 08, 2006 at 10:10:20PM +0000, Adrian Cox wrote:
-> While adding USB support to an MV64360 based board this week, I
-> discovered that all MV64x60 boards in the kernel have platform_notify
-> functions marked with __init. This causes an oops if a device is added
-> after boot.
-> 
-> The patch below removes the __init markers. I do not have all these
-> boards to test on, but the change seems very unlikely to break anything
-> else.
+I'm having a puzzling problem. On every 7448-based Linux system that I have 
+worked on so far, including:
 
-Arg...  I realized this a long time ago and fixed it in my tree.
-Somewhere along the line, I dropped it, I guess.
+  Mac Mini, 1.5 Ghz
+  Various PMC boards -  MV64460 system controller
+  Freescale HPC II - TSI108 system controller
 
-Thanks for the patch Adrian.
+, the system clock loses approx 1 second every 5 minutes. In fact, I have been 
+unable to even get NTP to sync these system clocks properly; it just doesn't 
+adjust fast enough to keep up with the lag, leading to big drifts and adjtimex 
+just doesn't keep up. Eventually the systems get more than 180 seconds out of 
+sync and NTP stops trying.
 
-Mark
+Is this normal behavior, and if so, what have you done to work around it? Is 
+this a general issue with PPC arch, Linux 2.6 (tried 2.6.11 - 2.6.15), or 
+specific to the platforms I have tried so far?
+
+Here is the result of running openntpd on a freshly synced system (this 
+particular one is the HPC II running 2.6.11):
+
+ntpd -sd
+192.168.1.1: offset 0.000066 delay 0.000352, next query 5s
+reply from 192.168.1.1: offset 0.010422 delay 0.000242, next query 5s
+peer 192.168.1.1 now valid
+reply from 192.168.1.1: offset 0.020899 delay 0.000256, next query 5s
+reply from 192.168.1.1: offset 0.031362 delay 0.000306, next query 5s
+reply from 192.168.1.1: offset 0.041838 delay 0.000316, next query 5s
+reply from 192.168.1.1: offset 0.052244 delay 0.000226, next query 287s
+reply from 192.168.1.1: offset 0.652178 delay 0.000343, next query 30s
+adjusting local clock by 0.052244s
+reply from 192.168.1.1: offset 0.684853 delay 0.000275, next query 30s
+reply from 192.168.1.1: offset 0.725305 delay 0.000257, next query 30s
+reply from 192.168.1.1: offset 0.788057 delay 0.000397, next query 30s
+reply from 192.168.1.1: offset 0.850732 delay 0.000291, next query 30s
+reply from 192.168.1.1: offset 0.913406 delay 0.000233, next query 30s
+reply from 192.168.1.1: offset 0.976180 delay 0.000369, next query 30s
+reply from 192.168.1.1: offset 1.038846 delay 0.000279, next query 30s
+adjusting local clock by 0.913406s
+reply from 192.168.1.1: offset 1.071584 delay 0.000309, next query 30s
+reply from 192.168.1.1: offset 1.104273 delay 0.000289, next query 30s
+reply from 192.168.1.1: offset 1.136919 delay 0.000273, next query 30s
+reply from 192.168.1.1: offset 1.169708 delay 0.000342, next query 30s
+reply from 192.168.1.1: offset 1.202390 delay 0.000295, next query 30s
+reply from 192.168.1.1: offset 1.235082 delay 0.000252, next query 30s
+adjusting local clock by 1.235082s
+reply from 192.168.1.1: offset 1.267829 delay 0.000320, next query 30s
+
+For comparison, this is an x86 PC doing the same thing:
+ntpd -sd
+ntp engine ready
+reply from 192.168.1.1: offset -0.025448 delay 0.000618, next query 5s
+reply from 192.168.1.1: offset -0.025973 delay 0.000285, next query 9s
+reply from 192.168.1.1: offset -0.030136 delay 0.000248, next query 5s
+peer 192.168.1.1 now valid
+reply from 192.168.1.1: offset -0.033057 delay 0.000293, next query 6s
+reply from 192.168.1.1: offset -0.036570 delay 0.000321, next query 5s
+reply from 192.168.1.1: offset -0.039546 delay 0.000231, next query 5s
+reply from 192.168.1.1: offset -0.042481 delay 0.000289, next query 34s
+reply from 192.168.1.1: offset -0.062430 delay 0.000264, next query 32s
+adjusting local clock by -0.039546s
+reply from 192.168.1.1: offset -0.049193 delay 0.000264, next query 307s
+reply from 192.168.1.1: offset -0.052205 delay 0.000299, next query 307s
+reply from 192.168.1.1: offset -0.078816 delay 0.000284, next query 309s
+reply from 192.168.1.1: offset -0.010273 delay 0.000336, next query 326s
+reply from 192.168.1.1: offset -0.038518 delay 0.000279, next query 323s
+reply from 192.168.1.1: offset -0.066434 delay 0.000314, next query 312s
+adjusting local clock by -0.049193s
+
+Now, none of these PPC systems has /dev/rtc (the x86 does), but that should 
+not matter, since the real-time clock is usually used in Linux a boot or 
+shutdown.
