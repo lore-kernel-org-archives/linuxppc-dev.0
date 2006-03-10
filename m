@@ -1,30 +1,30 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id E484067A5D
+Return-Path: <carlos.mitidieri@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id 99ECB679F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Mar 2006 18:22:21 +1100 (EST)
+	Fri, 10 Mar 2006 19:20:59 +1100 (EST)
 Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id 425B729ECA
+	by mail.sysgo.com (Postfix) with ESMTP id 7E455FB87C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Mar 2006 08:20:42 +0100 (CET)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 18585-01 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Mar 2006 08:20:40 +0100 (CET)
-Received: from archvile (unknown [192.168.1.153])
-	by protonic.prtnl (Postfix) with ESMTP id 494AD29EC9
+	Fri, 10 Mar 2006 08:52:43 +0100 (CET)
+Received: from donald.sysgo.com (unknown [172.20.1.30])
+	by mail.sysgo.com (Postfix) with ESMTP id 64D7FFB87C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Mar 2006 08:20:40 +0100 (CET)
-From: David Jander <david.jander@protonic.nl>
+	Fri, 10 Mar 2006 08:52:43 +0100 (CET)
+Received: from cam (unknown [172.40.1.200])
+	by donald.sysgo.com (Postfix) with ESMTP id E91721EA525
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 10 Mar 2006 08:52:42 +0100 (CET)
+From: Carlos Mitidieri <carlos.mitidieri@sysgo.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Stable Linux kernel 2.6 for MPC8XX
-Date: Fri, 10 Mar 2006 08:22:42 +0100
-References: <1CFEB358338412458B21FAA0D78FE86D02CABEE3@rennsmail02.eu.thmulti.com>
-In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D02CABEE3@rennsmail02.eu.thmulti.com>
+Subject: Re: kernel 2.6.15-rc5-latest doesn't work anymore on mpc8540ads
+Date: Fri, 10 Mar 2006 08:52:33 +0100
+References: <Pine.LNX.4.44.0512191437460.4403-100000@gate.crashing.org>
+In-Reply-To: <Pine.LNX.4.44.0512191437460.4403-100000@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200603100822.42764.david.jander@protonic.nl>
+Message-Id: <200603100852.34088.carlos.mitidieri@sysgo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,24 +35,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 08 March 2006 15:29, Fillod Stephane wrote:
-> >I would want to use a linux kernel 2.6 on a custom MPC8xx board.
-> >Which stable kernel release must or can I use ?
+Hi,
+Has the knowledge about this issue advanced?
+What I have noticed so far is that the same happens in 2.6.14, therefore the 
+problem rose in the transition from 2.6.13.
+Would this be related to the IRQ stuff initialization? Any guess?
+
+On Monday 19 December 2005 21:38, Kumar Gala wrote:
+> On Mon, 19 Dec 2005, Clemens Koller wrote:
+> > Hello!
+> >
+> > Here is a little update:
+> > > I am just about to update my kernel from 2.6.13-rc7 which is working
+> > > fine to linus' 2.6.15-rc5-latest git on my mpc8540ads flavored board.
+> > > However, the kernel hangs pretty early after
+> > >
+> > > openpic: exit
+> >
+> > openpic_init() is called by mpc85xx_ads_init_IRQ in ppc/platforms/85xx
+> >
+> > ppc_md.init_IRQ=mpc85xx_ads_init_IRQ in ppc/platforms/85xx
+> >
+> > ppc_md.init_IRQ() is called from powerpc/kernel/irq.c
+> >
+> > init_IRQ() is  called from init/main.c:start_kernel()
+> >
+> > and that seems to work fine. So, it crashes silently somewhere
+> > after that point. I try to build 2.6.15-rc6-latest with kgbd support,
+> > not knowing if it's supposed to work on this platform.
 >
-> http://www.denx.de/wiki/bin/view/Know/Linux24vs26
-
-I believe most of those observations and measurements are not valid anymore.
-Kernel 2.6 for 8xx has come a long way since this article was written. It 
-might have been true back then, but it surely isn't anymore.
-Kernel 2.6 is bigger than 2.4, that's a fact, but application performance is 
-actually slightly higher with 2.6.14 than it is with 2.4.25.
-The overall robustness and "niceness" of the code is also a totally different 
-story now. 2.6 software architecture is definitely better, and many drivers 
-are much more stable. Implementing board support and drivers in 2.6 is also 
-much easier and cleaner than in 2.4.
-
-Greetings,
+> It was a guess :)
+>
+> > Are there some open issues from the ppc->powerpc migration?
+>
+> possible, can you use git bisect to find what commit may have caused the
+> issue?
+>
+> - kumar
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
 -- 
-David Jander
-Protonic Holland.
+Carlos Mitidieri
