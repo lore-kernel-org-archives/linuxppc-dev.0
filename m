@@ -1,24 +1,30 @@
-Return-Path: <glikely@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.194])
-	by ozlabs.org (Postfix) with ESMTP id 2E87D679E0
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id E484067A5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Mar 2006 17:36:42 +1100 (EST)
-Received: by nproxy.gmail.com with SMTP id p77so51912nfc
+	Fri, 10 Mar 2006 18:22:21 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by protonic.prtnl (Postfix) with ESMTP id 425B729ECA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 09 Mar 2006 22:36:40 -0800 (PST)
-Message-ID: <528646bc0603092236t75b20124xeb7c84e1959056d@mail.gmail.com>
-Date: Thu, 9 Mar 2006 23:36:40 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Andrei Konovalov" <akonovalov@ru.mvista.com>
-Subject: Re: [Patch] Fix compile error for ML300/403
-In-Reply-To: <44102EB3.2000301@ru.mvista.com>
+	Fri, 10 Mar 2006 08:20:42 +0100 (CET)
+Received: from protonic.prtnl ([127.0.0.1])
+	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 18585-01 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 10 Mar 2006 08:20:40 +0100 (CET)
+Received: from archvile (unknown [192.168.1.153])
+	by protonic.prtnl (Postfix) with ESMTP id 494AD29EC9
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 10 Mar 2006 08:20:40 +0100 (CET)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Stable Linux kernel 2.6 for MPC8XX
+Date: Fri, 10 Mar 2006 08:22:42 +0100
+References: <1CFEB358338412458B21FAA0D78FE86D02CABEE3@rennsmail02.eu.thmulti.com>
+In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D02CABEE3@rennsmail02.eu.thmulti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <528646bc0603081507t24c7e2f5u8e2823931200a857@mail.gmail.com>
-	<44102EB3.2000301@ru.mvista.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200603100822.42764.david.jander@protonic.nl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,54 +35,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 3/9/06, Andrei Konovalov <akonovalov@ru.mvista.com> wrote:
-> > diff --git a/arch/ppc/platforms/4xx/virtex.h b/arch/ppc/platforms/4xx/v=
-irtex.h
-> > index 2a2a65c..4d893ef 100644
-> > --- a/arch/ppc/platforms/4xx/virtex.h
-> > +++ b/arch/ppc/platforms/4xx/virtex.h
-> > @@ -27,7 +27,7 @@
-> >  /* Device type enumeration for platform bus definitions */
-> >  #ifndef __ASSEMBLY__
-> >  enum ppc_sys_devices {
-> > -       VIRTEX_UART, VIRTEX_FB,
-> > +       VIRTEX_UART, VIRTEX_FB, NUM_PPC_SYS_DEVS,
+On Wednesday 08 March 2006 15:29, Fillod Stephane wrote:
+> >I would want to use a linux kernel 2.6 on a custom MPC8xx board.
+> >Which stable kernel release must or can I use ?
 >
-> AFAIK there is no VIRTEX_FB in the powerpc.git tree yet.
-> Otherwise I confirm that adding NUM_PPC_SYS_DEVS is necessary.
+> http://www.denx.de/wiki/bin/view/Know/Linux24vs26
 
-heh, oops.  yeah, I've got the FB driver in my local tree.  Fixed
-patch attached...
+I believe most of those observations and measurements are not valid anymore.
+Kernel 2.6 for 8xx has come a long way since this article was written. It 
+might have been true back then, but it surely isn't anymore.
+Kernel 2.6 is bigger than 2.4, that's a fact, but application performance is 
+actually slightly higher with 2.6.14 than it is with 2.4.25.
+The overall robustness and "niceness" of the code is also a totally different 
+story now. 2.6 software architecture is definitely better, and many drivers 
+are much more stable. Implementing board support and drivers in 2.6 is also 
+much easier and cleaner than in 2.4.
 
------
+Greetings,
 
-[patch] Fix compile error for ML300/403.
-
-Due to changes in ppc_sys.c.  This is needed in Paul's powerpc.git tree
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-
----
-commit 60a9fb927e8f68d307339e6e268452d2c62b717f
-tree e62d99cb4fa697d8d59af2a3ab063e050ba6ca99
-parent 6749c5507388f3fc3719f57a54b540ee83f6661a
-author Grant Likely <grant.likely@secretlab.ca> Wed, 08 Mar 2006 16:03:56 -=
-0700
-committer <grant@weasley-twins.(none)> Thu, 09 Mar 2006 23:30:38 -0700
-
- arch/ppc/platforms/4xx/virtex.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/ppc/platforms/4xx/virtex.h b/arch/ppc/platforms/4xx/virte=
-x.h
-index 1a01b81..c14325d 100644
---- a/arch/ppc/platforms/4xx/virtex.h
-+++ b/arch/ppc/platforms/4xx/virtex.h
-@@ -27,7 +27,7 @@
- /* Device type enumeration for platform bus definitions */
- #ifndef __ASSEMBLY__
- enum ppc_sys_devices {
--       VIRTEX_UART,
-+       VIRTEX_UART, NUM_PPC_SYS_DEVS,
- };
- #endif
+-- 
+David Jander
+Protonic Holland.
