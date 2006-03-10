@@ -1,18 +1,18 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp107.biz.mail.re2.yahoo.com (smtp107.biz.mail.re2.yahoo.com
-	[206.190.52.176]) by ozlabs.org (Postfix) with SMTP id 81AFA679F0
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A7EE3679FF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 11 Mar 2006 00:15:51 +1100 (EST)
-In-Reply-To: <200603100822.42764.david.jander@protonic.nl>
-References: <1CFEB358338412458B21FAA0D78FE86D02CABEE3@rennsmail02.eu.thmulti.com>
-	<200603100822.42764.david.jander@protonic.nl>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <da161c5383a7c1645080b918b0fd30ef@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: Stable Linux kernel 2.6 for MPC8XX
-Date: Fri, 10 Mar 2006 08:16:10 -0500
+	Sat, 11 Mar 2006 02:33:44 +1100 (EST)
 To: David Jander <david.jander@protonic.nl>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Stable Linux kernel 2.6 for MPC8XX 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 10 Mar 2006 08:22:42 +0100."
+	<200603100822.42764.david.jander@protonic.nl>
+Date: Fri, 10 Mar 2006 16:33:41 +0100
+Sender: wd@denx.de
+Message-Id: <20060310153341.080163525CB@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,21 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <200603100822.42764.david.jander@protonic.nl> you wrote:
+> >
+> > http://www.denx.de/wiki/bin/view/Know/Linux24vs26
+> 
+> I believe most of those observations and measurements are not valid anymore.
+> Kernel 2.6 for 8xx has come a long way since this article was written. It 
+> might have been true back then, but it surely isn't anymore.
 
-On Mar 10, 2006, at 2:22 AM, David Jander wrote:
+So did you actually run any benchmarks? Specilations on what might be
+or should be are not really helpful.
 
-> I believe most of those observations and measurements are not valid 
-> anymore.
-> Kernel 2.6 for 8xx has come a long way since this article was written.
+> Kernel 2.6 is bigger than 2.4, that's a fact, but application performance is 
+> actually slightly higher with 2.6.14 than it is with 2.4.25.
 
-They are still valid, we just have more knowledge about how to
-configure the kernels and have added some features you can
-use to mitigate the performance issues.  The Linux 2.6 kernel
-is simply bigger than 2.4, and on these small, resource challenged
-processors, you need to very carefully configure the kernels to
-your requirements.
+What says lmbench on your system? Can you please show actual data?
 
-Thanks.
+Best regards,
 
+Wolfgang Denk
 
-	-- Dan
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+...when fits of creativity run strong, more than  one  programmer  or
+writer  has  been  known to abandon the desktop for the more spacious
+floor.                                             - Fred Brooks, Jr.
