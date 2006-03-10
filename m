@@ -1,23 +1,24 @@
-Return-Path: <kashiwagi@co-nss.co.jp>
-Received: from nssinet2.co-nss.co.jp (nssinet2.co-nss.co.jp [150.96.0.5])
-	by ozlabs.org (Postfix) with ESMTP id 7EB67679E1
+Return-Path: <glikely@gmail.com>
+Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.194])
+	by ozlabs.org (Postfix) with ESMTP id 2E87D679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Mar 2006 05:10:07 +1100 (EST)
-Received: from nssinet2.co-nss.co.jp (localhost [127.0.0.1])
-	by nssinet2.co-nss.co.jp (8.9.3/3.7W) with ESMTP id CAA29212
+	Fri, 10 Mar 2006 17:36:42 +1100 (EST)
+Received: by nproxy.gmail.com with SMTP id p77so51912nfc
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 10 Mar 2006 02:52:54 +0900 (JST)
+	Thu, 09 Mar 2006 22:36:40 -0800 (PST)
+Message-ID: <528646bc0603092236t75b20124xeb7c84e1959056d@mail.gmail.com>
+Date: Thu, 9 Mar 2006 23:36:40 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Andrei Konovalov" <akonovalov@ru.mvista.com>
+Subject: Re: [Patch] Fix compile error for ML300/403
+In-Reply-To: <44102EB3.2000301@ru.mvista.com>
 MIME-Version: 1.0
-Date: Fri, 10 Mar 2006 03:10:07 +0900
-Subject: Re: Virtex-4 TEMAC device driver available?
-From: Yoshio Kashiwagi <kashiwagi@co-nss.co.jp>
-To: "S. Egbert" <s.egbert@sbcglobal.net>, linuxppc-embedded@ozlabs.org
-Message-ID: <JQ200603100310074.9918453@co-nss.co.jp>
-Content-Type: text/plain; charset=ISO-2022-JP
-In-Reply-To: <JS200602192039433.11799406@co-nss.co.jp>
-References: 93579fec0601170146h5363e65bt410276b8b696588f@mail.gmail.com
-	<43F7CB11.5000202@sbcglobal.net>
-	<JS200602192039433.11799406@co-nss.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <528646bc0603081507t24c7e2f5u8e2823931200a857@mail.gmail.com>
+	<44102EB3.2000301@ru.mvista.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,106 +29,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Steve San,
+On 3/9/06, Andrei Konovalov <akonovalov@ru.mvista.com> wrote:
+> > diff --git a/arch/ppc/platforms/4xx/virtex.h b/arch/ppc/platforms/4xx/v=
+irtex.h
+> > index 2a2a65c..4d893ef 100644
+> > --- a/arch/ppc/platforms/4xx/virtex.h
+> > +++ b/arch/ppc/platforms/4xx/virtex.h
+> > @@ -27,7 +27,7 @@
+> >  /* Device type enumeration for platform bus definitions */
+> >  #ifndef __ASSEMBLY__
+> >  enum ppc_sys_devices {
+> > -       VIRTEX_UART, VIRTEX_FB,
+> > +       VIRTEX_UART, VIRTEX_FB, NUM_PPC_SYS_DEVS,
+>
+> AFAIK there is no VIRTEX_FB in the powerpc.git tree yet.
+> Otherwise I confirm that adding NUM_PPC_SYS_DEVS is necessary.
 
-Although I was performing porting for the reference design of
-xapp902 shown in the following URL, I have noticed that the
-temac circuit of this xapp902 cannot perform control of PHY.
-The temac circuit of this xapp902 does not have control of PHY.
+heh, oops.  yeah, I've got the FB driver in my local tree.  Fixed
+patch attached...
 
-http://direct.xilinx.com/bvdocs/appnotes/xapp902.pdf
+-----
 
-As a result of consulting with our client, our client newly
-creates their original temac based on xapp807 design of the
-following URL. It is because the function is insufficient
-using Linux in this xapp897 design.
+[patch] Fix compile error for ML300/403.
 
-http://www.xilinx.com/bvdocs/appnotes/xapp807.pdf
+Due to changes in ppc_sys.c.  This is needed in Paul's powerpc.git tree
 
-Since I created the temac driver of their design, the release
-of the driver to ML became impossible to me.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-Best Regaeds,
+---
+commit 60a9fb927e8f68d307339e6e268452d2c62b717f
+tree e62d99cb4fa697d8d59af2a3ab063e050ba6ca99
+parent 6749c5507388f3fc3719f57a54b540ee83f6661a
+author Grant Likely <grant.likely@secretlab.ca> Wed, 08 Mar 2006 16:03:56 -=
+0700
+committer <grant@weasley-twins.(none)> Thu, 09 Mar 2006 23:30:38 -0700
 
-Yoshio kashiwagi - Nissin Systems
+ arch/ppc/platforms/4xx/virtex.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Hello Steve San,
-> 
-> Strictly, GSRD differs from TEMAC.
-> Although both are embedded TEMAC is used in Virtex4, GSRD accesses
-> direct memory through MPMC. MPMC is a multi-port memory controller
-> for GSRD to access direct memory. 
-> 
-> http://www.xilinx.com/esp/wired/optical/xlnx_net/gsrd_download.htm
-> 
-> Download of GSRD is linked out of the above-mentioned URL, and
-> becomes a place to be logged in (Registration for downloading the
-> reference design short cut).
-> http://www.xilinx.com/xlnx/xil_entry2.jsp?sMode=login&group=gsrd
-> 
-> Linux2.4 driver is contained in this GSRD. However, this Linux2.4
-> driver (adapter.c) has the fault which does not operate correctly,
-> when a 100BASE hub is connected. In order to correct this problem,
-> it is necessary to add the interrupt handling routine of PHY.
-> Although this GSRD is a reference design more nearly high-speed
-> than TEMAC, many FPGA resources are used for it.
-> 
-> I am going to create a TEMAC driver (Linux2.6) by a scratch, I
-> cannot make time for it now. Since it is due to make by the end of
-> this month, if it is completed, I'll announce it to this mailing
-> list.
-> 
-> I'll write the Linux2.6 TEMAC driver corresponding to the following
-> reference designs. 
-> http://direct.xilinx.com/bvdocs/appnotes/xapp902.pdf
-> http://www.xilinx.com/bvdocs/appnotes/xapp902.zip
-> (The Linux driver is not contained in this reference design)
-> 
-> Best Regards,
-> 
-> Yoshio Kashiwagi - Nissin Systems
-> 
-> > Dear Kashiwagi-San,
-> > 
-> > I noticed in your posting over at linuxppc-embedded in Jan 2006 
-about 
-> a
-> > Xilinx demo code for the TEMAC driver.
-> > 
-> > So, I pulled the
-> > http://www.xilinx.co.jp/ise/embedded/EDK/71i/mpmc_7_1_2.zip file and
-> > browsed it.
-> > 
-> > Do you know where one can get a patch for Linux 2.4?
-> > 
-> > Thank you,
-> > 
-> > Steve Egbert
-> > 
-> > -- 
-> > -----BEGIN GEEK CODE BLOCK-----
-> > Version: 3.12
-> > GAT d- s++: !a C+++ UL++++ P+++ L+++ E W+++ N+ o++ K+++ w--
-> > O- M+ V- PS PE++ Y+ PGP++ t++ 5++ X++ R tv- b++ DI+ D+
-> > G++ e* h++ r+++ z
-> > ------END GEEK CODE BLOCK------
-> > GPG Public Key: http://www.egbert.net/pgp
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> > 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-------------------------------------------------------------
-柏木良夫
-株式会社日新システムズ 基礎技術部
-Linuxプロフェショナルグループ
-〒600-8482 京都市下京区堀川通四条下ル東側 堀川四条ビル
-TEL 075-344-7950 FAX 075-344-7887
-E-Mail kashiwagi@co-nss.co.jp HTTP http://www.co-nss.co.jp/
-------------------------------------------------------------
+diff --git a/arch/ppc/platforms/4xx/virtex.h b/arch/ppc/platforms/4xx/virte=
+x.h
+index 1a01b81..c14325d 100644
+--- a/arch/ppc/platforms/4xx/virtex.h
++++ b/arch/ppc/platforms/4xx/virtex.h
+@@ -27,7 +27,7 @@
+ /* Device type enumeration for platform bus definitions */
+ #ifndef __ASSEMBLY__
+ enum ppc_sys_devices {
+-       VIRTEX_UART,
++       VIRTEX_UART, NUM_PPC_SYS_DEVS,
+ };
+ #endif
