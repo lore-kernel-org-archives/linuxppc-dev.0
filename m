@@ -2,8 +2,8 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 66FE1679E9
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Mar 2006 10:45:28 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 6C7E0679A6
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Mar 2006 10:55:12 +1100 (EST)
 Subject: Re: [PATCH] powerpc: enable NAP only on cpus who support it to
 	avoid memory corruption
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -11,8 +11,8 @@ To: Olaf Hering <olh@suse.de>
 In-Reply-To: <20060311215840.GA22766@suse.de>
 References: <20060311215840.GA22766@suse.de>
 Content-Type: text/plain
-Date: Sun, 12 Mar 2006 10:43:10 +1100
-Message-Id: <1142120591.4057.44.camel@localhost.localdomain>
+Date: Sun, 12 Mar 2006 10:55:01 +1100
+Message-Id: <1142121302.4057.52.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,83 +27,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 On Sat, 2006-03-11 at 22:58 +0100, Olaf Hering wrote:
 > commit 51d3082fe6e55aecfa17113dbe98077c749f724c enabled NAP unconditinally
 > on all powermacs. Early G3 cpus can not use it, the result is memory corruption.
-> 
-> Only enable powersave_nap in one place: probe_motherboard()
-> ppc32 gets nap if the cpu supports it
-> ppc32 smp gets no nap
-> ppc64 gets nap unconditionally
 
-CONFIG_SMP is certainly not the way to do it though... I wonder how we
-got that wrong, I'll have a look.
+Ok, here is what I think is a proper fix: Just remove the code from
+setup.c since feature.c will already set powersave_nap when needed.
 
-Ben.
+Can you test asap please ? If it fixes the problem for you, I'll send
+the patch to Linus/Andrew with hopes that it will make it in 2.6.16 
 
+---
 
-> ---
->  arch/powerpc/platforms/powermac/feature.c |    8 +++++++-
->  arch/powerpc/platforms/powermac/setup.c   |    4 ----
->  arch/powerpc/platforms/powermac/smp.c     |    4 ----
->  3 files changed, 7 insertions(+), 9 deletions(-)
-> 
-> Index: linux-2.6.16-rc5-olh/arch/powerpc/platforms/powermac/feature.c
-> ===================================================================
-> --- linux-2.6.16-rc5-olh.orig/arch/powerpc/platforms/powermac/feature.c
-> +++ linux-2.6.16-rc5-olh/arch/powerpc/platforms/powermac/feature.c
-> @@ -2513,8 +2513,11 @@ found:
->  		/* Nap mode not supported if flush-on-lock property is present */
->  		if (get_property(np, "flush-on-lock", NULL))
->  			break;
-> +
-> +#ifndef CONFIG_SMP
-> +		/* 32 bits SMP can't NAP */
->  		powersave_nap = 1;
-> -		printk(KERN_INFO "Processor NAP mode on idle enabled.\n");
-> +#endif
->  		break;
->  	}
->  
-> @@ -2526,6 +2529,9 @@ found:
->  #ifdef CONFIG_POWER4
->  	powersave_nap = 1;
->  #endif
-> +	if (powersave_nap)
-> +		printk(KERN_INFO "Using native/NAP idle loop\n");
-> +
->  	/* Check for "mobile" machine */
->  	if (model && (strncmp(model, "PowerBook", 9) == 0
->  		   || strncmp(model, "iBook", 5) == 0))
-> Index: linux-2.6.16-rc5-olh/arch/powerpc/platforms/powermac/setup.c
-> ===================================================================
-> --- linux-2.6.16-rc5-olh.orig/arch/powerpc/platforms/powermac/setup.c
-> +++ linux-2.6.16-rc5-olh/arch/powerpc/platforms/powermac/setup.c
-> @@ -621,10 +621,6 @@ static void __init pmac_init_early(void)
->  	/* Probe motherboard chipset */
->  	pmac_feature_init();
->  
-> -	/* We can NAP */
-> -	powersave_nap = 1;
-> -	printk(KERN_INFO "Using native/NAP idle loop\n");
-> -
->  	/* Initialize debug stuff */
->  	udbg_scc_init(!!strstr(cmd_line, "sccdbg"));
->  	udbg_adb_init(!!strstr(cmd_line, "btextdbg"));
-> Index: linux-2.6.16-rc5-olh/arch/powerpc/platforms/powermac/smp.c
-> ===================================================================
-> --- linux-2.6.16-rc5-olh.orig/arch/powerpc/platforms/powermac/smp.c
-> +++ linux-2.6.16-rc5-olh/arch/powerpc/platforms/powermac/smp.c
-> @@ -739,10 +739,6 @@ static void __init smp_core99_setup(int 
->  			smp_hw_index[i] = i;
->  	}
->  #endif
-> -
-> -	/* 32 bits SMP can't NAP */
-> -	if (!machine_is_compatible("MacRISC4"))
-> -		powersave_nap = 0;
->  }
->  
->  static int __init smp_core99_probe(void)
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+This patch fixes incorrect setting of powersave_nap to 1 on all
+PowerMac's potentially causing memory corruption on some models. This
+bug was introuced by me during the 32/64 bits merge.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Index: linux-work/arch/powerpc/platforms/powermac/setup.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/setup.c	2006-02-13 14:10:43.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/setup.c	2006-03-12 10:47:39.000000000 +1100
+@@ -621,10 +621,6 @@
+ 	/* Probe motherboard chipset */
+ 	pmac_feature_init();
+ 
+-	/* We can NAP */
+-	powersave_nap = 1;
+-	printk(KERN_INFO "Using native/NAP idle loop\n");
+-
+ 	/* Initialize debug stuff */
+ 	udbg_scc_init(!!strstr(cmd_line, "sccdbg"));
+ 	udbg_adb_init(!!strstr(cmd_line, "btextdbg"));
+Index: linux-work/arch/powerpc/platforms/powermac/feature.c
+===================================================================
+--- linux-work.orig/arch/powerpc/platforms/powermac/feature.c	2006-03-01 11:48:27.000000000 +1100
++++ linux-work/arch/powerpc/platforms/powermac/feature.c	2006-03-12 10:51:31.000000000 +1100
+@@ -2491,9 +2491,7 @@
+ 			pmac_mb.model_id = PMAC_TYPE_COMET;
+ 		iounmap(mach_id_ptr);
+ 	}
+-#endif /* CONFIG_POWER4 */
+ 
+-#ifdef CONFIG_6xx
+ 	/* Set default value of powersave_nap on machines that support it.
+ 	 * It appears that uninorth rev 3 has a problem with it, we don't
+ 	 * enable it on those. In theory, the flush-on-lock property is
+@@ -2522,10 +2520,11 @@
+ 	 * NAP mode
+ 	 */
+ 	powersave_lowspeed = 1;
+-#endif /* CONFIG_6xx */
+-#ifdef CONFIG_POWER4
++
++#else /* CONFIG_POWER4 */
+ 	powersave_nap = 1;
+-#endif
++#endif  /* CONFIG_POWER4 */
++
+ 	/* Check for "mobile" machine */
+ 	if (model && (strncmp(model, "PowerBook", 9) == 0
+ 		   || strncmp(model, "iBook", 5) == 0))
