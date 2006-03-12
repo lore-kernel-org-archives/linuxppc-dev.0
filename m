@@ -2,19 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C7E0679A6
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Mar 2006 10:55:12 +1100 (EST)
-Subject: Re: [PATCH] powerpc: enable NAP only on cpus who support it to
-	avoid memory corruption
+	by ozlabs.org (Postfix) with ESMTP id 079C7679EB
+	for <linuxppc-dev@ozlabs.org>; Sun, 12 Mar 2006 11:07:56 +1100 (EST)
+Subject: Re: Unmapping pages from the linear addressing without HIGHMEM support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-In-Reply-To: <20060311215840.GA22766@suse.de>
-References: <20060311215840.GA22766@suse.de>
-Content-Type: text/plain
-Date: Sun, 12 Mar 2006 10:55:01 +1100
-Message-Id: <1142121302.4057.52.camel@localhost.localdomain>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+In-Reply-To: <20006.1142083702@www079.gmx.net>
+References: <1142032411.4057.31.camel@localhost.localdomain>
+	<20006.1142083702@www079.gmx.net>
+Content-Type: text/plain; charset=utf-8
+Date: Sun, 12 Mar 2006 11:07:41 +1100
+Message-Id: <1142122062.4057.59.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,65 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-03-11 at 22:58 +0100, Olaf Hering wrote:
-> commit 51d3082fe6e55aecfa17113dbe98077c749f724c enabled NAP unconditinally
-> on all powermacs. Early G3 cpus can not use it, the result is memory corruption.
+On Sat, 2006-03-11 at 14:28 +0100, Gerhard Pircher wrote:
+> > --- Ursprüngliche Nachricht ---
+> > Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > Kopie: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+> > Betreff: Re: Unmapping pages from the linear addressing
+> > without HIGHMEM support
+> > Datum: Sat, 11 Mar 2006 10:13:30 +1100
+> > 
+> > > That would mean I cannot reuse the code in dma-mapping.c, right?
+> > > Killing the BAT mappings or limiting the memory size covered by the
+> > > BATs seems to be fairly easy, but I guess I have to setup my own page
+> > > table for the reserved DMA memory area and implement my own
+> > > alloc_pages() function!?
+> > 
+> > No, just limit the size of the BAT mapping and mark some of the top
+> > pages of the address space reserved... That should be enough.
+> > 
+> Okay, I will try that first. Marking some of the pages as reserved sounds
+> like the code you implemented for the uninorth_agp driver with this
+> "agp_special_page". I guess I still have to modify the code in dma_mapping.c
+> to use the reserved address space for the consistent memory allocation
+> (CONSISTENT_BASE, CONSISTENT_END)?
 
-Ok, here is what I think is a proper fix: Just remove the code from
-setup.c since feature.c will already set powersave_nap when needed.
+Probably. I'm not sure about that code, I think those
+CONSISTENT_BASE/END are only virtual addresses, the code still alocates
+real pages below that from anywhere in memory, you may have to change
+that, or maybe just 1:1 map that reserved area non-cacheable, and change
+dma-mapping.c to not allocate any physical pages but just pick the one
+matching the virtual ones it just allocated...;
 
-Can you test asap please ? If it fixes the problem for you, I'll send
-the patch to Linus/Andrew with hopes that it will make it in 2.6.16 
-
----
-
-This patch fixes incorrect setting of powersave_nap to 1 on all
-PowerMac's potentially causing memory corruption on some models. This
-bug was introuced by me during the 32/64 bits merge.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Index: linux-work/arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/setup.c	2006-02-13 14:10:43.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/powermac/setup.c	2006-03-12 10:47:39.000000000 +1100
-@@ -621,10 +621,6 @@
- 	/* Probe motherboard chipset */
- 	pmac_feature_init();
- 
--	/* We can NAP */
--	powersave_nap = 1;
--	printk(KERN_INFO "Using native/NAP idle loop\n");
--
- 	/* Initialize debug stuff */
- 	udbg_scc_init(!!strstr(cmd_line, "sccdbg"));
- 	udbg_adb_init(!!strstr(cmd_line, "btextdbg"));
-Index: linux-work/arch/powerpc/platforms/powermac/feature.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/feature.c	2006-03-01 11:48:27.000000000 +1100
-+++ linux-work/arch/powerpc/platforms/powermac/feature.c	2006-03-12 10:51:31.000000000 +1100
-@@ -2491,9 +2491,7 @@
- 			pmac_mb.model_id = PMAC_TYPE_COMET;
- 		iounmap(mach_id_ptr);
- 	}
--#endif /* CONFIG_POWER4 */
- 
--#ifdef CONFIG_6xx
- 	/* Set default value of powersave_nap on machines that support it.
- 	 * It appears that uninorth rev 3 has a problem with it, we don't
- 	 * enable it on those. In theory, the flush-on-lock property is
-@@ -2522,10 +2520,11 @@
- 	 * NAP mode
- 	 */
- 	powersave_lowspeed = 1;
--#endif /* CONFIG_6xx */
--#ifdef CONFIG_POWER4
-+
-+#else /* CONFIG_POWER4 */
- 	powersave_nap = 1;
--#endif
-+#endif  /* CONFIG_POWER4 */
-+
- 	/* Check for "mobile" machine */
- 	if (model && (strncmp(model, "PowerBook", 9) == 0
- 		   || strncmp(model, "iBook", 5) == 0))
+Ben.
