@@ -1,22 +1,17 @@
-Return-Path: <cedric.pradalier@free.fr>
-Received: from qsrv01ps.mx.bigpond.com (qsrv01ps.mx.bigpond.com
-	[144.140.82.181]) by ozlabs.org (Postfix) with ESMTP id E45A1679E1
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Mar 2006 23:17:10 +1100 (EST)
-Received: from lauren-ph.cat.csiro.au ([60.231.134.84])
-	by omta01ps.mx.bigpond.com with ESMTP id
-	<20060312114244.USLK19070.omta01ps.mx.bigpond.com@lauren-ph.cat.csiro.au>
-	for <linuxppc-dev@ozlabs.org>; Sun, 12 Mar 2006 11:42:44 +0000
-Received: from [127.0.0.1] (helo=lauren-ph.cat.csiro.au)
-	by lauren-ph.cat.csiro.au with smtp (Exim 4.60)
-	(envelope-from <cedric.pradalier@free.fr>) id 1FIOxx-0002tK-Pv
-	for linuxppc-dev@ozlabs.org; Sun, 12 Mar 2006 21:42:29 +1000
-Date: Sun, 12 Mar 2006 21:42:28 +1000
-From: Cedric Pradalier <cedric.pradalier@free.fr>
-To: linuxppc-dev@ozlabs.org
-Subject: Therm adm103x
-Message-Id: <20060312214228.5974e67c.cedric.pradalier@free.fr>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9D65F679E2
+	for <linuxppc-dev@ozlabs.org>; Mon, 13 Mar 2006 10:07:06 +1100 (EST)
+Subject: [Fwd: [PATCH] correct AC Power info in /proc/pmu/info]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain
+Date: Mon, 13 Mar 2006 10:06:27 +1100
+Message-Id: <1142204787.4433.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-Some time ago there was some talk about including the
-driver for the termostat chip on ibook 2.2 (G3,~800MHz),
-module therm_adm103x.
+Report AC Power present in /proc/pmu/info if there is no battery.
 
-Is it still something that is going on? Is there something
-missing?
+Signed-off-by: Olaf Hering <olh@suse.de>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>, 
 
-As I see all the traffic for important matters on the list,
-I appreciate that this is not a prioritary question, but
-I'm just following up.
+---
+ drivers/macintosh/via-pmu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks.
--- 
-Cedric
+Index: linux-2.6.16-rc6-olh/drivers/macintosh/via-pmu.c
+===================================================================
+--- linux-2.6.16-rc6-olh.orig/drivers/macintosh/via-pmu.c
++++ linux-2.6.16-rc6-olh/drivers/macintosh/via-pmu.c
+@@ -825,7 +825,7 @@ proc_get_info(char *page, char **start, 
+ 	p += sprintf(p, "PMU driver version     : %d\n", PMU_DRIVER_VERSION);
+ 	p += sprintf(p, "PMU firmware version   : %02x\n", pmu_version);
+ 	p += sprintf(p, "AC Power               : %d\n",
+-		((pmu_power_flags & PMU_PWR_AC_PRESENT) != 0));
++		((pmu_power_flags & PMU_PWR_AC_PRESENT) != 0) || pmu_battery_count == 0);
+ 	p += sprintf(p, "Battery count          : %d\n", pmu_battery_count);
+ 
+ 	return p - page;
