@@ -1,41 +1,20 @@
-Return-Path: <groer@bizerba.com>
-Received: from outbound1-ash-R.bigfish.com (outbound-ash.frontbridge.com
-	[206.16.192.249])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A8D87679EF
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 94DB567A39
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 22:46:02 +1100 (EST)
-Received: from outbound1-ash.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound1-ash-R.bigfish.com (Postfix) with ESMTP id 4351A8F44AE
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 11:27:13 +0000 (UTC)
-Received: from mail13-ash-R.bigfish.com (unknown [192.168.2.112])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(No client certificate requested)
-	by outbound1-ash.bigfish.com (Postfix) with ESMTP id 424DF8F447A
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 11:27:13 +0000 (UTC)
-Received: from mail13-ash.bigfish.com (localhost.localdomain [127.0.0.1])
-	by mail13-ash-R.bigfish.com (Postfix) with ESMTP id 2F628498E1E
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 11:27:13 +0000 (UTC)
-Received: from sweep01.bizerba.com (sweep01.bizerba.com [212.185.107.5])
-	by mail13-ash.bigfish.com (Postfix) with ESMTP id A8D4D498DDF
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 11:27:12 +0000 (UTC)
-Received: from ebalv004.Bizerba.com (unverified) by sweep01.bizerba.com
-	(Content Technologies SMTPRS 4.3.17) with ESMTP id
-	<T77052370e8ac140a0a464@sweep01.bizerba.com> for
-	<linuxppc-embedded@ozlabs.org>; Tue, 14 Mar 2006 12:28:36 +0100
+	Wed, 15 Mar 2006 01:57:53 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Stable Linux kernel 2.6 for MPC8XX
+Date: Tue, 14 Mar 2006 15:58:28 +0100
+References: <20060310153341.080163525CB@atlas.denx.de>
+	<200603140850.47014.david.jander@protonic.nl>
+	<409257f58f9dab82d72ccd997516f772@embeddedalley.com>
+In-Reply-To: <409257f58f9dab82d72ccd997516f772@embeddedalley.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: MPC8540 experience
-Date: Tue, 14 Mar 2006 12:27:11 +0100
-Message-ID: <30268BBA52A6374F8FA87EFDE7CD75410A365644@ebalv004.Bizerba.com>
-From: <groer@bizerba.com>
-To: <linuxppc-embedded@ozlabs.org>
+  charset="iso-8859-1"
+Message-Id: <200603141558.29155.david.jander@protonic.nl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -46,23 +25,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hallo Herr Koller,
-ich habe heute ihre EMail =
-(http://ozlabs.org/pipermail/linuxppc-embedded/2004-October/015851.html) =
-gelesen. Hatten sie bereits Erfolg?
-Ich habe ein =E4hnliches Problem. Wir beutzen bei uns ebenfalls einen =
-PPC und haben das Problem mit Big und Littel-Endian im XServer.
+On Tuesday 14 March 2006 15:01, Dan Malek wrote:
+> On Mar 14, 2006, at 2:50 AM, David Jander wrote:
+> > I don't know why, but while everyone still says 2.6 is slower, I am
+> > consistently getting results that seem to prove the opposite. Why?
+>
+> Because this is a compiler test and not an OS test.  The
+> newer ELDK with 2.6 has better compilers.
 
-Mit freundlichem Gru=DF
-=20
-Roland  Gr=F6ber  =20
-              =20
-BIZERBA GmbH & Co. KG       =20
-Abt.: PD-B-S   (Software-Entwicklung Basissysteme)
-Postfach 10 01 64        =20
-D-72301 Balingen
+No. Please read the cited e-mail entirely before jumping to such a conclusion.
+I used the same ELDK for both kernels, and I didn't recompile the nbench 
+binary ever again after the first time.
 
-Telefon   +49-(0)7433-12-  23 78
-Telefax   +49-(0)7433-12-5 23 78
+The reasons are different, still unknown and apparently my fault. See my 
+previous post responding to WG.
 
-Email     groer@bizerba.de
+Sorry to all for the confusion, looks like I must learn to be more careful 
+when benchmarking.
+
+To keep the answer short: nbench performs exactly the same on both kernels, as 
+one would expect, since nbench doesn't stress the kernel. I was looking at 
+incorrect results, trying to blame the cache/tlb management... I was just 
+wrong, sorry.
+
+Greetings,
+
+-- 
+David Jander
