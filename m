@@ -1,26 +1,31 @@
-Return-Path: <hquinn@sse.co.za>
-Received: from spoolmx.gam.co.za (spoolmx.gam.co.za [196.35.164.205])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 40586679F5
+Return-Path: <carlos.mitidieri@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id 1AE4D679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 20:30:18 +1100 (EST)
-Received: from [196.34.39.70] (helo=mail.sse.co.za)
-	by spoolmx.gam.co.za with esmtp (Exim 4.54 (FreeBSD))
-	id 1FJ4f5-000I9g-0F
-	for linuxppc-embedded@ozlabs.org; Tue, 14 Mar 2006 10:13:47 +0200
-Received: from sse10 (unknown [192.168.0.104])
-	by mail.sse.co.za (Postfix) with ESMTP id D39397A44E4
+	Tue, 14 Mar 2006 22:56:42 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.sysgo.com (Postfix) with ESMTP id E801BFB881
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 10:20:45 +0200 (SAST)
-From: "Henry Quinn" <hquinn@sse.co.za>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Hello
-Date: Tue, 14 Mar 2006 10:17:05 +0200
+	Tue, 14 Mar 2006 12:56:33 +0100 (CET)
+Received: from donald.sysgo.com (unknown [172.20.1.30])
+	by mail.sysgo.com (Postfix) with ESMTP id CAE11FB881
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Mar 2006 12:56:33 +0100 (CET)
+Received: from cam (unknown [172.40.1.200])
+	by donald.sysgo.com (Postfix) with ESMTP id F02612016DC
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Mar 2006 12:56:32 +0100 (CET)
+From: Carlos Mitidieri <carlos.mitidieri@sysgo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Stable Linux kernel 2.6 for MPC8XX
+Date: Tue, 14 Mar 2006 12:56:24 +0100
+References: <20060310153341.080163525CB@atlas.denx.de>
+	<200603140850.47014.david.jander@protonic.nl>
+In-Reply-To: <200603140850.47014.david.jander@protonic.nl>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0009_01C64750.71B4ADE0"
-Message-Id: <20060314082045.D39397A44E4@mail.sse.co.za>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_p9qFEshaJsSESxM"
+Message-Id: <200603141256.25652.carlos.mitidieri@sysgo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,110 +36,118 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0009_01C64750.71B4ADE0
+--Boundary-00=_p9qFEshaJsSESxM
 Content-Type: text/plain;
-	charset="US-ASCII"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi
+Hi, 
 
- 
+It seems that the nbench is not the most appropriate suit for comparing OSs 
+(or OS versions), since its programs exercise only the CPU/memory 
+subs-system. More suitable for comparing OSs are suites like unixbench and 
+lmbench, which include many programs that exercise the OS calls/services.
 
-I am new to the list and would like to introduce myself. My name is Henry
-Quinn and I work for a company called Specialist System Engineering.
+Please find attached the results I have obtained when running the 
+unixbench-4.1.0 for the kernels 2.4.26  and 2.6.14.  The 2.4.26 has better 
+indexes for 5 of the 6 tests from unixbench that I have run.  
 
-Linux rules, now two ways about that!
+On Tuesday 14 March 2006 08:50, David Jander wrote:
+> On Friday 10 March 2006 16:33, Wolfgang Denk wrote:
+> > > I believe most of those observations and measurements are not valid
+> > > anymore. Kernel 2.6 for 8xx has come a long way since this article was
+> > > written. It might have been true back then, but it surely isn't
+> > > anymore.
+> >
+> > So did you actually run any benchmarks? Specilations on what might be
+> > or should be are not really helpful.
+>
+> Of course I did. Otherwise I wouldn't say this.
+>
+> Here's some benchmark data from nbench (sorry didn't try lmbench yet):
+>
+> The same ELDK (version 3.1.1) for both kernels, running on exactly the same
+> board (MPC852T 100MHz, with 32Mbyte SDRAM and 32Mbyte Flash running from
+> NFS root). I removed some FPU benchmarks, as they are pretty meaningless
+> for this board and take an ethernity otherwise.
 
- 
 
-Regards
+Best regards,
+-- 
+Carlos Mitidieri
+SYSGO AG - Office Ulm
 
-Henry
+--Boundary-00=_p9qFEshaJsSESxM
+Content-Type: text/plain;
+  charset="iso-8859-1";
+  name="unixbench-2.4.26"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="unixbench-2.4.26"
 
 
-------=_NextPart_000_0009_01C64750.71B4ADE0
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+  BYTE UNIX Benchmarks (Version 4.1.0)
+  System -- Linux 2.4.26 Tue Mar 7 08:56:57 CET 2006 ppc unknown
+  Start Benchmark Run: Thu Jan  1 01:13:27 UTC 1970
+    1:13am  up  1:13, load average: 0.07, 0.73, 0.80
+  lrwxrwxrwx    1 root     root            9 Jan  1 00:00 /bin/sh -> /bin/bash
+System Call Overhead                     243637.1 lps   (10.0 secs, 10 samples)
+Pipe Throughput                          246562.1 lps   (10.0 secs, 10 samples)
+Pipe-based Context Switching             114521.0 lps   (10.0 secs, 10 samples)
+Process Creation                           2199.0 lps   (30.0 secs, 3 samples)
+Execl Throughput                            362.8 lps   (29.7 secs, 3 samples)
+Shell Scripts (1 concurrent)                680.0 lpm   (60.0 secs, 3 samples)
+Shell Scripts (8 concurrent)                 92.0 lpm   (60.0 secs, 3 samples)
+Shell Scripts (16 concurrent)                46.0 lpm   (60.0 secs, 3 samples)
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:612.0pt 792.0pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
+                     INDEX VALUES            
+TEST                                        BASELINE     RESULT      INDEX
 
-</head>
+Execl Throughput                                43.0      362.8       84.4
+Pipe Throughput                              12440.0   246562.1      198.2
+Pipe-based Context Switching                  4000.0   114521.0      286.3
+Process Creation                               126.0     2199.0      174.5
+Shell Scripts (8 concurrent)                     6.0       92.0      153.3
+System Call Overhead                         15000.0   243637.1      162.4
+                                                                 =========
+     FINAL SCORE                                                     165.8
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+--Boundary-00=_p9qFEshaJsSESxM
+Content-Type: text/plain;
+  charset="iso-8859-1";
+  name="unixbench-2.6.14"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="unixbench-2.6.14"
 
-<div class=3DSection1>
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi<o:p></o:p></span></font></p>
+  BYTE UNIX Benchmarks (Version 4.1.0)
+  System -- Linux 2.6.14 Tue Mar 7 12:50:28 CET 2006 ppc unknown
+  Start Benchmark Run: Thu Jan  1 00:06:12 UTC 1970
+   12:06am  up 6 min, load average: 0.00, 0.00, 0.00
+  lrwxrwxrwx    1 root     root            9 Jan  1 00:00 /bin/sh -> /bin/bash
+System Call Overhead                     339524.9 lps   (10.0 secs, 10 samples)
+Pipe Throughput                          236842.6 lps   (10.0 secs, 10 samples)
+Pipe-based Context Switching             106498.2 lps   (10.0 secs, 10 samples)
+Process Creation                           1873.8 lps   (30.0 secs, 3 samples)
+Execl Throughput                            372.6 lps   (29.8 secs, 3 samples)
+Shell Scripts (1 concurrent)                650.4 lpm   (60.0 secs, 3 samples)
+Shell Scripts (8 concurrent)                 88.0 lpm   (60.0 secs, 3 samples)
+Shell Scripts (16 concurrent)                44.0 lpm   (60.0 secs, 3 samples)
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I am new to the list and would like to introduce =
-myself. My
-name is Henry Quinn and I work for a company called Specialist System
-Engineering.<o:p></o:p></span></font></p>
+                     INDEX VALUES            
+TEST                                        BASELINE     RESULT      INDEX
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Linux rules, now two ways about =
-that!<o:p></o:p></span></font></p>
+Execl Throughput                                43.0      372.6       86.7
+Pipe Throughput                              12440.0   236842.6      190.4
+Pipe-based Context Switching                  4000.0   106498.2      266.2
+Process Creation                               126.0     1873.8      148.7
+Shell Scripts (8 concurrent)                     6.0       88.0      146.7
+System Call Overhead                         15000.0   339524.9      226.3
+                                                                 =========
+     FINAL SCORE                                                     167.0
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Regards<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Henry<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0009_01C64750.71B4ADE0--
+--Boundary-00=_p9qFEshaJsSESxM--
