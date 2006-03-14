@@ -1,21 +1,28 @@
-Return-Path: <gurubala.2005@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.197])
-	by ozlabs.org (Postfix) with ESMTP id 089ED67A5D
+Return-Path: <peterh@google.com>
+Received: from smtp-out.google.com (smtp-out.google.com [216.239.45.12])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CA72467A06
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Mar 2006 05:25:40 +1100 (EST)
-Received: by xproxy.gmail.com with SMTP id i27so1033651wxd
+	Wed, 15 Mar 2006 06:11:29 +1100 (EST)
+Received: from evilmonkey.corp.google.com (evilmonkey.corp.google.com
+	[172.24.0.124]) by smtp-out.google.com with ESMTP id k2EJ1KOB015581
+	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Mar 2006 11:01:20 -0800
+Received: from smtp-out2.google.com (fpx19.prod.google.com [10.253.24.19])
+	by evilmonkey.corp.google.com with ESMTP id k2EFpciH014121
+	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Mar 2006 11:01:15 -0800
+Received: by smtp-out2.google.com with SMTP id 19so28154fpx
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 10:25:39 -0800 (PST)
-Message-ID: <7dc476dd0603141025t1fbc80c6mb66f5fb155574248@mail.gmail.com>
-Date: Tue, 14 Mar 2006 23:55:39 +0530
-From: "guru bala" <gurubala.2005@gmail.com>
-To: "Henry Quinn" <hquinn@sse.co.za>
-Subject: Re: Hello
-In-Reply-To: <20060314082045.D39397A44E4@mail.sse.co.za>
+	Tue, 14 Mar 2006 11:01:15 -0800 (PST)
+Message-ID: <50e923300603141101w348a543ci39628aaeb5bc3513@mail.google.com>
+Date: Tue, 14 Mar 2006 11:01:15 -0800
+From: "Peter Hanson" <peterh@google.com>
+To: Ben <Ben@haliplex.com>
+Subject: Re: buildroot uClibc busybox and associated tool versions
+In-Reply-To: <loom.20060314T023032-451@post.gmane.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_6973_12646264.1142360739037"
-References: <20060314082045.D39397A44E4@mail.sse.co.za>
+Content-Type: text/plain; charset=ISO-8859-1
+References: <loom.20060314T023032-451@post.gmane.org>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,79 +34,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_6973_12646264.1142360739037
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+No direct answers, but look for lots of useful userland stuff via
+Pengutronix PTXdist:
+ =3D> http://www.pengutronix.de/software/ptxdist_en.html
 
-can anyone give headerfiles for mpc850 to write c programs and compile them
-with singlestep simul;ator for powerpc
+And have you looked at Crosstool?
+ =3D> http://kegel.com/crosstool/
 
-
-
-On 3/14/06, Henry Quinn <hquinn@sse.co.za> wrote:
->
->  Hi
->
->
->
-> I am new to the list and would like to introduce myself. My name is Henry
-> Quinn and I work for a company called Specialist System Engineering.
->
-> Linux rules, now two ways about that!
->
->
->
-> Regards
->
-> Henry
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
-
-------=_Part_6973_12646264.1142360739037
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-<div>can anyone give headerfiles for mpc850 to write c programs and compile=
- them with singlestep simul;ator for powerpc</div>
-<div><br><br>&nbsp;</div>
-<div><span class=3D"gmail_quote">On 3/14/06, <b class=3D"gmail_sendername">=
-Henry Quinn</b> &lt;<a href=3D"mailto:hquinn@sse.co.za">hquinn@sse.co.za</a=
->&gt; wrote:</span>
-<blockquote class=3D"gmail_quote" style=3D"PADDING-LEFT: 1ex; MARGIN: 0px 0=
-px 0px 0.8ex; BORDER-LEFT: #ccc 1px solid">
-<div style=3D"DIRECTION: ltr">
-<div>
-<p><font face=3D"Arial" size=3D"2"><span style=3D"FONT-SIZE: 10pt; FONT-FAM=
-ILY: Arial">Hi</span></font></p>
-<p><font face=3D"Arial" size=3D"2"><span style=3D"FONT-SIZE: 10pt; FONT-FAM=
-ILY: Arial">&nbsp;</span></font></p>
-<p><font face=3D"Arial" size=3D"2"><span style=3D"FONT-SIZE: 10pt; FONT-FAM=
-ILY: Arial">I am new to the list and would like to introduce myself. My nam=
-e is Henry Quinn and I work for a company called Specialist System Engineer=
-ing.
-</span></font></p>
-<p><font face=3D"Arial" size=3D"2"><span style=3D"FONT-SIZE: 10pt; FONT-FAM=
-ILY: Arial">Linux rules, now two ways about that!</span></font></p>
-<p><font face=3D"Arial" size=3D"2"><span style=3D"FONT-SIZE: 10pt; FONT-FAM=
-ILY: Arial">&nbsp;</span></font></p>
-<p><font face=3D"Arial" size=3D"2"><span style=3D"FONT-SIZE: 10pt; FONT-FAM=
-ILY: Arial">Regards</span></font></p>
-<p><font face=3D"Arial" size=3D"2"><span style=3D"FONT-SIZE: 10pt; FONT-FAM=
-ILY: Arial">Henry</span></font></p></div></div><br>________________________=
-_______________________<br>Linuxppc-embedded mailing list<br><a onclick=3D"=
-return top.js.OpenExtLink(window,event,this)" href=3D"mailto:Linuxppc-embed=
-ded@ozlabs.org">
-Linuxppc-embedded@ozlabs.org</a><br><a onclick=3D"return top.js.OpenExtLink=
-(window,event,this)" href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-e=
-mbedded" target=3D"_blank">https://ozlabs.org/mailman/listinfo/linuxppc-emb=
-edded
-</a><br><br></blockquote></div><br>
-
-------=_Part_6973_12646264.1142360739037--
+You may find the results section especially useful if you want to
+start with combinations that have already been found to work.
