@@ -1,18 +1,25 @@
-Return-Path: <markc@mail.com>
-Received: from smtp1.us4.outblaze.com (smtp1.us4.outblaze.com [205.158.62.78])
-	by ozlabs.org (Postfix) with SMTP id E5223679FF
+Return-Path: <rsmith@imagemap.com>
+Received: from fileserver3 (mail.imagemap.com [68.156.94.66])
+	by ozlabs.org (Postfix) with ESMTP id 5E3AD679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Mar 2006 02:46:18 +1100 (EST)
-Message-ID: <008001c6477e$6a760a50$6401a8c0@CHUCK2>
-From: "Mark Chambers" <markc@mail.com>
-To: <groer@bizerba.com>,
-	<linuxppc-embedded@ozlabs.org>
-References: <30268BBA52A6374F8FA87EFDE7CD75410A365644@ebalv004.Bizerba.com>
-Subject: Re: MPC8540 experience
-Date: Tue, 14 Mar 2006 10:46:00 -0500
+	Wed, 15 Mar 2006 03:20:49 +1100 (EST)
+Received: from amavis by fileserver3 with scanned-ok (Exim 3.36 #1 (Debian))
+	id 1FJC7q-00076Y-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Mar 2006 11:11:58 -0500
+Received: from fileserver3 ([127.0.0.1])
+	by localhost (fileserver3 [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 27094-04 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Mar 2006 11:11:43 -0500 (EST)
+Received: from [192.168.0.196] (helo=[192.168.0.196])
+	by fileserver3 with esmtp (Exim 3.36 #1 (Debian)) id 1FJC7b-00076S-00
+	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Mar 2006 11:11:43 -0500
+Message-ID: <4416EACF.2010802@imagemap.com>
+Date: Tue, 14 Mar 2006 11:09:51 -0500
+From: Randy Smith <rsmith@imagemap.com>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+To: linuxppc-embedded@ozlabs.org
+Subject: rtai for ppc in 2.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,16 +30,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello,
 
+A bit off topic, but I don't know where else to ask these questions.
 
-Hallo Herr Koller,
-ich habe heute ihre EMail 
-(http://ozlabs.org/pipermail/linuxppc-embedded/2004-October/015851.html) 
-gelesen. Hatten sie bereits Erfolg?
-Ich habe ein ähnliches Problem. Wir beutzen bei uns ebenfalls einen PPC und 
-haben das Problem mit Big und Littel-Endian im XServer.
+I am working to port an existing Lite5200 application that uses rtai on 
+the 2.4 kernel to a 2.6 kernel.  I have just noticed that support for 
+rtai in 2.6 is limited to the i386 tree.  Is there anyone working on the 
+ppc 2.6 rtai?  In looking at the rthal patch for the i386, it seems 
+non-trivial.  Otherwise I guess it would be done by now. :-)  
+Alternatively, I could rip out the rtai dependent code and just use the 
+native 2.6 kernel's improvements for near realtime response and see how 
+it goes but that route will take a little time.  I was hoping for a 
+quick recompile and go. :-(  Any advice?
 
-Have you seen the work done at Denx (www.denx.de) with the MPC5200 and 
-SM501?
+Also,  I have been reading about Adeos and rtai's adoption of this.  
+Does this implementation preserve the same rtai interface?  It looks 
+like it is in the same boat as the rthal for ppc 2.6.  Please correct me 
+if I am wrong.
 
-Mark Chambers 
+Thanks,
+
+-Randy Smith
+Software Engineer
+ImageMap, Inc.
