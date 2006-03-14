@@ -1,16 +1,18 @@
-Return-Path: <iseno@tomen-ele.co.jp>
-Received: from tme-gw.tomen-ele.co.jp (tme-gw.tomen-ele.co.jp [202.230.206.90])
-	by ozlabs.org (Postfix) with ESMTP id E437C679EF
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 155D4679F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 17:16:13 +1100 (EST)
-Message-ID: <D7E527950707D611B2A20003474C612A0BD92821@tmemail0.tomen-ele.co.jp>
-From: iseno@tomen-ele.co.jp
-To: edjubenville@adelphia.net, linuxppc-embedded@ozlabs.org
-Subject: RE: Where to define IO ports
-Date: Tue, 14 Mar 2006 15:01:37 +0900
+	Tue, 14 Mar 2006 18:50:13 +1100 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Stable Linux kernel 2.6 for MPC8XX
+Date: Tue, 14 Mar 2006 08:50:46 +0100
+References: <20060310153341.080163525CB@atlas.denx.de>
+In-Reply-To: <20060310153341.080163525CB@atlas.denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-2022-jp"
+  charset="iso-8859-1"
+Message-Id: <200603140850.47014.david.jander@protonic.nl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,50 +23,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Ed,
+On Friday 10 March 2006 16:33, Wolfgang Denk wrote:
+> > I believe most of those observations and measurements are not valid
+> > anymore. Kernel 2.6 for 8xx has come a long way since this article was
+> > written. It might have been true back then, but it surely isn't anymore.
+>
+> So did you actually run any benchmarks? Specilations on what might be
+> or should be are not really helpful.
 
-I think you should change the "u-boot".
- - include/configs/IceCube.h
- - board/icecube/icecube.h
+Of course I did. Otherwise I wouldn't say this.
 
-1st, put a constant like (CFG_CS1_START, CFG_CS1_STOP, CFG_CS1_CFG) to
-IceCube.h.
-And then, write some code to configure registers like (MPC5XXX_CS0_START,
-MPC5XXX_CS0_STOP, MPC5XXX_CS0_CFG).
+Here's some benchmark data from nbench (sorry didn't try lmbench yet):
 
-After that, you will be able to use ioremap() in your driver.
+The same ELDK (version 3.1.1) for both kernels, running on exactly the same 
+board (MPC852T 100MHz, with 32Mbyte SDRAM and 32Mbyte Flash running from NFS 
+root). I removed some FPU benchmarks, as they are pretty meaningless for this 
+board and take an ethernity otherwise.
 
->We have added a peripheral to the LocalPlus bus, and I'm trying to figure
-Is this address kernel space?
-If this is so, you have to change "TEXT_BASE" in u-boot's Makefile and etc.
+Results for Kernel 2.4.25 (Denx CVS from around sept-oct or so, 2005):
 
-    Akihiro Iseno
+TEST                : Iterations/sec.  : Old Index   : New Index
+                    :                  : Pentium 90* : AMD K6/233*
+--------------------:------------------:-------------:------------
+NUMERIC SORT        :          30.438  :       0.78  :       0.26
+STRING SORT         :          1.5842  :       0.71  :       0.11
+BITFIELD            :      7.9506e+06  :       1.36  :       0.28
+FP EMULATION        :           3.258  :       1.56  :       0.36
+IDEA                :          108.89  :       1.67  :       0.49
+HUFFMAN             :          26.281  :       0.73  :       0.23
+LU DECOMPOSITION    :         0.32765  :       0.02  :       0.01
+==========================ORIGINAL BYTEMARK RESULTS==========================
+INTEGER INDEX       : 1.052
+FLOATING-POINT INDEX: 0.257
 
-=================================
- Akihiro Iseno <iseno@tomen-ele.co.jp>
-   　TOMEN Electronics Corp.
-      System Engineering Dept. II
-=================================
 
------Original Message-----
-From: Edward Jubenville [mailto:edjubenville@adelphia.net] 
-Sent: Tuesday, March 14, 2006 1:41 PM
-To: linuxppc-embedded@ozlabs.org
-Subject: Where to define IO ports
+Now the results for 2.6.14 (Denx git released 2.6.14):
 
-We are building a board similar to the Freescale Lite5200 (IceCube) board,
-using ELDK 3.0 with Linux 2.4.25.
+TEST                : Iterations/sec.  : Old Index   : New Index
+                    :                  : Pentium 90* : AMD K6/233*
+--------------------:------------------:-------------:------------
+NUMERIC SORT        :          32.654  :       0.84  :       0.28
+STRING SORT         :          1.7408  :       0.78  :       0.12
+BITFIELD            :      8.3466e+06  :       1.43  :       0.30
+FP EMULATION        :           3.506  :       1.68  :       0.39
+IDEA                :           115.3  :       1.76  :       0.52
+HUFFMAN             :          27.855  :       0.77  :       0.25
+LU DECOMPOSITION    :         0.35932  :       0.02  :       0.01
+==========================ORIGINAL BYTEMARK RESULTS==========================
+INTEGER INDEX       : 1.115
+FLOATING-POINT INDEX: 0.265
 
-We have added a peripheral to the LocalPlus bus, and I'm trying to figure
-out how to modify the kernel startup code to define a memory address range
-and generate the proper chip select signal.
 
-Can someone point me to where that sort of thing is done in the kernel
-source?
+I don't know why, but while everyone still says 2.6 is slower, I am 
+consistently getting results that seem to prove the opposite. Why?
+Is the TLB/cache stuff better optimized for 8xx in 2.6?
+IMHO it is quite a difference.
+Btw, I also wrote different small "speed-measurement" tools (to measure 
+loop-speed, memory throughput for different block sizes, etc...) and they all 
+show aproximately the same increase.
+I was careful to strip both kernels of all unnecessary drivers and features 
+that could hamper performance. If you wish I could try to dig up the .config 
+files for you, but I am not sure I'll find them anymore (I did this when 
+2.6.14 was just released).
 
-Ed
+Greetings,
 
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+David Jander
+Protonic Holland.
