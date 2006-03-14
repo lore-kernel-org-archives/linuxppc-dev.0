@@ -1,21 +1,15 @@
-Return-Path: <iluri@fagorautomation.es>
-Received: from sollube.sarenet.es (mx1.sarenet.es [194.30.0.37])
-	by ozlabs.org (Postfix) with ESMTP id EEE60679F0
+Return-Path: <wg@grandegger.com>
+Received: from web10.manitu.net (web10.manitu.net [217.11.48.110])
+	by ozlabs.org (Postfix) with ESMTP id CB1B9679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 19:14:51 +1100 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by sollube.sarenet.es (Postfix) with ESMTP id D2A19371FD
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 08:54:14 +0100 (CET)
+	Tue, 14 Mar 2006 19:55:16 +1100 (EST)
+Date: Tue, 14 Mar 2006 09:34:20 +0100
+Message-Id: <200603140834.k2E8YKj08997@web10.manitu.net>
+From: "Wolfgang Grandegger" <wg@grandegger.com>
+To: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
+Subject: Re: Stable Linux kernel 2.6 for MPC8XX
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
-Subject: RE: buildroot  uClibc busybox and associated tool versions
-Date: Tue, 14 Mar 2006 08:54:18 +0100
-Message-ID: <918EB199DDDFFA42BEA2EB3A1C6021F3B5C6D8@correo.fagorautomation.net>
-From: "IGOR LURI" <iluri@fagorautomation.es>
-To: "Ben" <Ben@haliplex.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,90 +20,97 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We use the following version of uClibc , busybox , gcc , binutils
-and kernel headers to build toolchain, rootfs, u-boot, rtai and linux =
-kernel 2.4.25 for ppc5200:
-
-gcc                     3.3.6
-binutils                2.14.90.0.8
-linux headers           2.4.29
-gdb                     5.3
-uClibc                  0.9.28
-busybox                 1.0.0
-
-If you want to use this toolchain to build linux kernel 2.6.x, you need =
-other version of gcc, binutils and gdb.
-
-Hope this helps.
 
 
------Mensaje original-----
-De: linuxppc-embedded-bounces+iluri=3Dfagorautomation.es@ozlabs.org
-[mailto:linuxppc-embedded-bounces+iluri=3Dfagorautomation.es@ozlabs.org]E=
-n
-nombre de Ben
-Enviado el: martes, 14 de marzo de 2006 2:48
-Para: linuxppc-embedded@ozlabs.org
-Asunto: buildroot uClibc busybox and associated tool versions
+> On Friday 10 March 2006 16:33, Wolfgang Denk wrote:
+> > > I believe most of those observations and measurements are not valid
+> > > anymore. Kernel 2.6 for 8xx has come a long way since this article was
+> > > written. It might have been true back then, but it surely isn't
+anymore.
+> >
+> > So did you actually run any benchmarks? Specilations on what might be
+> > or should be are not really helpful.
+> 
+> Of course I did. Otherwise I wouldn't say this.
+> 
+> Here's some benchmark data from nbench (sorry didn't try lmbench yet):
+> 
+> The same ELDK (version 3.1.1) for both kernels, running on exactly the
+same 
+> board (MPC852T 100MHz, with 32Mbyte SDRAM and 32Mbyte Flash running
+from NFS 
+> root). I removed some FPU benchmarks, as they are pretty meaningless
+for this 
+> board and take an ethernity otherwise.
+> 
+> Results for Kernel 2.4.25 (Denx CVS from around sept-oct or so, 2005):
+> 
+> TEST                : Iterations/sec.  : Old Index   : New Index
+>                     :                  : Pentium 90* : AMD K6/233*
+> --------------------:------------------:-------------:------------
+> NUMERIC SORT        :          30.438  :       0.78  :       0.26
+> STRING SORT         :          1.5842  :       0.71  :       0.11
+> BITFIELD            :      7.9506e+06  :       1.36  :       0.28
+> FP EMULATION        :           3.258  :       1.56  :       0.36
+> IDEA                :          108.89  :       1.67  :       0.49
+> HUFFMAN             :          26.281  :       0.73  :       0.23
+> LU DECOMPOSITION    :         0.32765  :       0.02  :       0.01
+> ==========================ORIGINAL BYTEMARK
+RESULTS==========================
+> INTEGER INDEX       : 1.052
+> FLOATING-POINT INDEX: 0.257
+> 
+> 
+> Now the results for 2.6.14 (Denx git released 2.6.14):
+> 
+> TEST                : Iterations/sec.  : Old Index   : New Index
+>                     :                  : Pentium 90* : AMD K6/233*
+> --------------------:------------------:-------------:------------
+> NUMERIC SORT        :          32.654  :       0.84  :       0.28
+> STRING SORT         :          1.7408  :       0.78  :       0.12
+> BITFIELD            :      8.3466e+06  :       1.43  :       0.30
+> FP EMULATION        :           3.506  :       1.68  :       0.39
+> IDEA                :           115.3  :       1.76  :       0.52
+> HUFFMAN             :          27.855  :       0.77  :       0.25
+> LU DECOMPOSITION    :         0.35932  :       0.02  :       0.01
+> ==========================ORIGINAL BYTEMARK
+RESULTS==========================
+> INTEGER INDEX       : 1.115
+> FLOATING-POINT INDEX: 0.265
+> 
+> 
+> I don't know why, but while everyone still says 2.6 is slower, I am 
+> consistently getting results that seem to prove the opposite. Why?
+> Is the TLB/cache stuff better optimized for 8xx in 2.6?
+> IMHO it is quite a difference.
+
+Could you please provide more information on the kernel configuration
+e.g. the .config files and the size of the kernel images? 
+
+Thanks.
+
+Wolfgang.
 
 
-Hi all
-
-Im looking for some info on what versions of uClibc , busybox , gcc , =
-binutils
-and kernel headers are best to use to build up a toolchain and rootfs =
-for a 82xx
-PPC. =20
-
-I am using buildroot http://buildroot.uClibc.org  to generate the =
-toolchain
-associated tools and rootfs but so far have not had much luck.
-
-The host machine i am compiling on is a dell poweredge 650 xeon server =
-running
-Fedora Core 3,   it has  gcc 3.4.2-6  binutils-2.15.92.0.2  glibc-2.3.3 =
-and
-linux version 2.6.9-1.667. =20
-
-Im trying to compile up a rootfs for 82xx PPC with the following
-gcc 4.0.2
-binutils 2.16.1
-Kernel headers 2.16.12
-uClibc   - whatever version works best, right now i have daily snapshot =
-20060113
-busybox - whatever version works best, right now  i have snapshot from =
-9th march
-and am applying patches released from 9th march - 13th march.
-
-Personally i think the choices of gcc , binutils and Kernel headers are =
-fine,  i
-seem to be having more trouble with the uClibc ver and busybox ver.=20
-
-Last Friday 10th march selecting the daily snapshot of uClibc caused the
-compilation to not get past the point of generating gcc and bin utils. =
-Using the
-daily snapshot version of busybox also caused compilation to fail with =
-it
-reporting lots of .os and .osm files missing in the libbb dir until i =
-applied
-todays patches.
-
-Ive also tried building with use daily snapshot unchecked for busybox =
-and uClibc
-but compilation fails.=20
-
-Surely someone out there must know what versions of everything are the =
-best to
-use to generate a toolchain and rootfs for PPC.
-
-Any help anyone could give would be greatly appreciated
-
-
-
-
-
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> Btw, I also wrote different small "speed-measurement" tools (to measure 
+> loop-speed, memory throughput for different block sizes, etc...) and
+they all 
+> show aproximately the same increase.
+> I was careful to strip both kernels of all unnecessary drivers and
+features 
+> that could hamper performance. If you wish I could try to dig up the
+.config 
+> files for you, but I am not sure I'll find them anymore (I did this when 
+> 2.6.14 was just released).
+> 
+> Greetings,
+> 
+> -- 
+> David Jander
+> Protonic Holland.
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
