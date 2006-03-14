@@ -1,15 +1,26 @@
-Return-Path: <wg@grandegger.com>
-Received: from web10.manitu.net (web10.manitu.net [217.11.48.110])
-	by ozlabs.org (Postfix) with ESMTP id CB1B9679EA
+Return-Path: <hquinn@sse.co.za>
+Received: from spoolmx.gam.co.za (spoolmx.gam.co.za [196.35.164.205])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 40586679F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 19:55:16 +1100 (EST)
-Date: Tue, 14 Mar 2006 09:34:20 +0100
-Message-Id: <200603140834.k2E8YKj08997@web10.manitu.net>
-From: "Wolfgang Grandegger" <wg@grandegger.com>
-To: David Jander <david.jander@protonic.nl>, linuxppc-embedded@ozlabs.org
-Subject: Re: Stable Linux kernel 2.6 for MPC8XX
+	Tue, 14 Mar 2006 20:30:18 +1100 (EST)
+Received: from [196.34.39.70] (helo=mail.sse.co.za)
+	by spoolmx.gam.co.za with esmtp (Exim 4.54 (FreeBSD))
+	id 1FJ4f5-000I9g-0F
+	for linuxppc-embedded@ozlabs.org; Tue, 14 Mar 2006 10:13:47 +0200
+Received: from sse10 (unknown [192.168.0.104])
+	by mail.sse.co.za (Postfix) with ESMTP id D39397A44E4
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 14 Mar 2006 10:20:45 +0200 (SAST)
+From: "Henry Quinn" <hquinn@sse.co.za>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Hello
+Date: Tue, 14 Mar 2006 10:17:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0009_01C64750.71B4ADE0"
+Message-Id: <20060314082045.D39397A44E4@mail.sse.co.za>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,97 +31,110 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0009_01C64750.71B4ADE0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+
+Hi
+
+ 
+
+I am new to the list and would like to introduce myself. My name is Henry
+Quinn and I work for a company called Specialist System Engineering.
+
+Linux rules, now two ways about that!
+
+ 
+
+Regards
+
+Henry
 
 
-> On Friday 10 March 2006 16:33, Wolfgang Denk wrote:
-> > > I believe most of those observations and measurements are not valid
-> > > anymore. Kernel 2.6 for 8xx has come a long way since this article was
-> > > written. It might have been true back then, but it surely isn't
-anymore.
-> >
-> > So did you actually run any benchmarks? Specilations on what might be
-> > or should be are not really helpful.
-> 
-> Of course I did. Otherwise I wouldn't say this.
-> 
-> Here's some benchmark data from nbench (sorry didn't try lmbench yet):
-> 
-> The same ELDK (version 3.1.1) for both kernels, running on exactly the
-same 
-> board (MPC852T 100MHz, with 32Mbyte SDRAM and 32Mbyte Flash running
-from NFS 
-> root). I removed some FPU benchmarks, as they are pretty meaningless
-for this 
-> board and take an ethernity otherwise.
-> 
-> Results for Kernel 2.4.25 (Denx CVS from around sept-oct or so, 2005):
-> 
-> TEST                : Iterations/sec.  : Old Index   : New Index
->                     :                  : Pentium 90* : AMD K6/233*
-> --------------------:------------------:-------------:------------
-> NUMERIC SORT        :          30.438  :       0.78  :       0.26
-> STRING SORT         :          1.5842  :       0.71  :       0.11
-> BITFIELD            :      7.9506e+06  :       1.36  :       0.28
-> FP EMULATION        :           3.258  :       1.56  :       0.36
-> IDEA                :          108.89  :       1.67  :       0.49
-> HUFFMAN             :          26.281  :       0.73  :       0.23
-> LU DECOMPOSITION    :         0.32765  :       0.02  :       0.01
-> ==========================ORIGINAL BYTEMARK
-RESULTS==========================
-> INTEGER INDEX       : 1.052
-> FLOATING-POINT INDEX: 0.257
-> 
-> 
-> Now the results for 2.6.14 (Denx git released 2.6.14):
-> 
-> TEST                : Iterations/sec.  : Old Index   : New Index
->                     :                  : Pentium 90* : AMD K6/233*
-> --------------------:------------------:-------------:------------
-> NUMERIC SORT        :          32.654  :       0.84  :       0.28
-> STRING SORT         :          1.7408  :       0.78  :       0.12
-> BITFIELD            :      8.3466e+06  :       1.43  :       0.30
-> FP EMULATION        :           3.506  :       1.68  :       0.39
-> IDEA                :           115.3  :       1.76  :       0.52
-> HUFFMAN             :          27.855  :       0.77  :       0.25
-> LU DECOMPOSITION    :         0.35932  :       0.02  :       0.01
-> ==========================ORIGINAL BYTEMARK
-RESULTS==========================
-> INTEGER INDEX       : 1.115
-> FLOATING-POINT INDEX: 0.265
-> 
-> 
-> I don't know why, but while everyone still says 2.6 is slower, I am 
-> consistently getting results that seem to prove the opposite. Why?
-> Is the TLB/cache stuff better optimized for 8xx in 2.6?
-> IMHO it is quite a difference.
+------=_NextPart_000_0009_01C64750.71B4ADE0
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-Could you please provide more information on the kernel configuration
-e.g. the .config files and the size of the kernel images? 
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-Thanks.
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
 
-Wolfgang.
+</head>
 
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
-> Btw, I also wrote different small "speed-measurement" tools (to measure 
-> loop-speed, memory throughput for different block sizes, etc...) and
-they all 
-> show aproximately the same increase.
-> I was careful to strip both kernels of all unnecessary drivers and
-features 
-> that could hamper performance. If you wish I could try to dig up the
-.config 
-> files for you, but I am not sure I'll find them anymore (I did this when 
-> 2.6.14 was just released).
-> 
-> Greetings,
-> 
-> -- 
-> David Jander
-> Protonic Holland.
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am new to the list and would like to introduce =
+myself. My
+name is Henry Quinn and I work for a company called Specialist System
+Engineering.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Linux rules, now two ways about =
+that!<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Regards<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Henry<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0009_01C64750.71B4ADE0--
