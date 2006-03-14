@@ -1,25 +1,19 @@
-Return-Path: <rsmith@imagemap.com>
-Received: from fileserver3 (mail.imagemap.com [68.156.94.66])
-	by ozlabs.org (Postfix) with ESMTP id 5E3AD679E0
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 56DF667A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 15 Mar 2006 03:20:49 +1100 (EST)
-Received: from amavis by fileserver3 with scanned-ok (Exim 3.36 #1 (Debian))
-	id 1FJC7q-00076Y-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Mar 2006 11:11:58 -0500
-Received: from fileserver3 ([127.0.0.1])
-	by localhost (fileserver3 [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 27094-04 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 14 Mar 2006 11:11:43 -0500 (EST)
-Received: from [192.168.0.196] (helo=[192.168.0.196])
-	by fileserver3 with esmtp (Exim 3.36 #1 (Debian)) id 1FJC7b-00076S-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 14 Mar 2006 11:11:43 -0500
-Message-ID: <4416EACF.2010802@imagemap.com>
-Date: Tue, 14 Mar 2006 11:09:51 -0500
-From: Randy Smith <rsmith@imagemap.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: rtai for ppc in 2.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 15 Mar 2006 05:16:40 +1100 (EST)
+To: iseno@tomen-ele.co.jp
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Where to define IO ports 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 14 Mar 2006 15:01:37 +0900."
+	<D7E527950707D611B2A20003474C612A0BD92821@tmemail0.tomen-ele.co.jp>
+Date: Tue, 14 Mar 2006 19:16:38 +0100
+Sender: wd@denx.de
+Message-Id: <20060314181638.3586D3539FF@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,27 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+In message <D7E527950707D611B2A20003474C612A0BD92821@tmemail0.tomen-ele.co.jp> you wrote:
+> 
+> I think you should change the "u-boot".
 
-A bit off topic, but I don't know where else to ask these questions.
+NO. Linux stuff should be donme in Linux.
 
-I am working to port an existing Lite5200 application that uses rtai on 
-the 2.4 kernel to a 2.6 kernel.  I have just noticed that support for 
-rtai in 2.6 is limited to the i386 tree.  Is there anyone working on the 
-ppc 2.6 rtai?  In looking at the rthal patch for the i386, it seems 
-non-trivial.  Otherwise I guess it would be done by now. :-)  
-Alternatively, I could rip out the rtai dependent code and just use the 
-native 2.6 kernel's improvements for near realtime response and see how 
-it goes but that route will take a little time.  I was hoping for a 
-quick recompile and go. :-(  Any advice?
+>  - include/configs/IceCube.h
+>  - board/icecube/icecube.h
+> 
+> 1st, put a constant like (CFG_CS1_START, CFG_CS1_STOP, CFG_CS1_CFG) to
+> IceCube.h.
 
-Also,  I have been reading about Adeos and rtai's adoption of this.  
-Does this implementation preserve the same rtai interface?  It looks 
-like it is in the same boat as the rthal for ppc 2.6.  Please correct me 
-if I am wrong.
+NO again. If you port to your own board, you should create  your  own
+board  configuration  instead  of  messing  with  an existing one for
+another board.
 
-Thanks,
+Best regards,
 
--Randy Smith
-Software Engineer
-ImageMap, Inc.
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Brontosaurus Principle: Organizations  can  grow  faster  than  their
+brains  can manage them in relation to their environment and to their
+own physiology: when this occurs, they are an endangered species.
+                                                - Thomas K. Connellan
