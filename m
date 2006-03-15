@@ -1,21 +1,16 @@
-Return-Path: <white@from-b.org>
-Received: from aphrodite.net-build.de (aphrodite.net-build.de [212.88.135.60])
-	by ozlabs.org (Postfix) with ESMTP id B719E679E6
+Return-Path: <antonio.dibacco@aruba.it>
+Received: from smtpa3.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id 3C921679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Mar 2006 03:57:37 +1100 (EST)
-Received: from White64 (p54B4AFD9.dip0.t-ipconnect.de [84.180.175.217])
-	(authenticated)
-	by aphrodite.net-build.de (8.11.6/8.11.2) with ESMTP id k2FGw6P25176
-	for <linuxppc-embedded@ozlabs.org>; Wed, 15 Mar 2006 17:58:21 +0100
-Date: Wed, 15 Mar 2006 17:58:08 +0100
-From: White <white@from-b.org>
+	Thu, 16 Mar 2006 07:17:24 +1100 (EST)
+From: Antonio Di Bacco <antonio.dibacco@aruba.it>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: buildroot  uClibc busybox and associated tool versions
-Message-ID: <20060315175808.2bd1ae70@White64>
-In-Reply-To: <loom.20060314T023032-451@post.gmane.org>
-References: <loom.20060314T023032-451@post.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: mii_send error or at least strange
+Date: Wed, 15 Mar 2006 21:21:21 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200603152121.21852.antonio.dibacco@aruba.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,25 +21,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-i'm using gcc 3.4.6
-uclibc Release 0.9.28
-busybox daily Snapshot.
-
-
-
-With uclibc Snapshot i get an toolchain, but on the Target: 
-busybox init segfaults during init, at different points.
-(but the snapshots uclibc build with gcc 4.1 and 4.2 :)
-
-With gcc 4.x i get Compiler Errors, because of the weak aliases in
-uclibc.
-
-I test this last at 7.3 
-
-Would be nice to get Infos, which Combinations works... 
-
-Gcc 4.x would be nice to test.
-
-Bye
+I had a look to mii_send code in u-boot/cpu/mpc8xx/fec.c . It supports both 
+FEC1 and FEC2 but anyway it seems to write always register mii-data of FEC1, 
+look here: 
+ 
+/* send command to phy using mii, wait for result */ 
+static uint  mii_send(uint mii_cmd) 
+{ 
+uint mii_reply; 
+volatile fec_t *ep; 
+int cnt; 
+ 
+ep = &(((immap_t *)CFG_IMMR)->im_cpm.cp_fec); 
+ 
+ep->fec_mii_data = mii_cmd; /* command to phy */ 
+ 
+/* wait for mii complete */ 
+cnt = 0; 
+while (!(ep->fec_ievent & FEC_ENET_MII)) { 
+if (++cnt > 1000) { 
+printf("mii_send STUCK!\n"); 
+break; 
+} 
+} 
+mii_reply = ep->fec_mii_data; /* result from phy */ 
+ep->fec_ievent = FEC_ENET_MII; /* clear MII complete */ 
+#if 0 
+printf("%s[%d] %s: sent=0x%8.8x, reply=0x%8.8x\n", 
+__FILE__,__LINE__,__FUNCTION__,mii_cmd,mii_reply); 
+#endif 
+return (mii_reply & 0xffff); /* data read from phy */ 
+} 
