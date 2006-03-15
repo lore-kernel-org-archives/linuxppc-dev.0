@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 69782679F5
+Return-Path: <trhoudini@hotmail.com>
+Received: from hotmail.com (bay105-dav8.bay105.hotmail.com [65.54.224.80])
+	by ozlabs.org (Postfix) with ESMTP id 9C62C679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Mar 2006 08:03:15 +1100 (EST)
-To: Antonio Di Bacco <antonio.dibacco@aruba.it>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: spi support for 8xx in u-boot broken 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 15 Mar 2006 21:32:05 +0100."
-	<200603152132.05124.antonio.dibacco@aruba.it>
-Date: Wed, 15 Mar 2006 22:03:13 +0100
-Sender: wd@denx.de
-Message-Id: <20060315210313.949963539FF@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 16 Mar 2006 08:49:01 +1100 (EST)
+Message-ID: <BAY105-DAV8FE6C8406588474C0B5A2B1E60@phx.gbl>
+From: =?iso-8859-1?Q?Harald_K=FCthe?= <trhoudini@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>,
+	<white@from-b.org>
+Subject: Re: buildroot  uClibc busybox and associated tool versions
+Date: Wed, 15 Mar 2006 22:36:55 +0100
+MIME-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +22,6 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200603152132.05124.antonio.dibacco@aruba.it> you wrote:
-> I enabled the SPI COMMAND in u-boot for an 8xx and it doesn't compile. Chipset 
-
-Off topic again. Please post U-Boot related questions on  the  U-Boot
-mailing list.
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"We don't have to protect the environment -- the Second Coming is  at
-hand."                                                   - James Watt
+>>With uclibc Snapshot i get an toolchain, but on the Target:
+>>busybox init segfaults during init, at different points.Try a different 
+>>malloc "version" in the uClibc config.Harald 
