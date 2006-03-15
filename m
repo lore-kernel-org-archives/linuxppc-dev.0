@@ -1,17 +1,16 @@
-Return-Path: <trhoudini@hotmail.com>
-Received: from hotmail.com (bay105-dav8.bay105.hotmail.com [65.54.224.80])
-	by ozlabs.org (Postfix) with ESMTP id 9C62C679E7
+Return-Path: <antonio.dibacco@aruba.it>
+Received: from smtpa4.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id A0545679F6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Mar 2006 08:49:01 +1100 (EST)
-Message-ID: <BAY105-DAV8FE6C8406588474C0B5A2B1E60@phx.gbl>
-From: =?iso-8859-1?Q?Harald_K=FCthe?= <trhoudini@hotmail.com>
-To: <linuxppc-embedded@ozlabs.org>,
-	<white@from-b.org>
-Subject: Re: buildroot  uClibc busybox and associated tool versions
-Date: Wed, 15 Mar 2006 22:36:55 +0100
+	Thu, 16 Mar 2006 09:07:59 +1100 (EST)
+From: Antonio Di Bacco <antonio.dibacco@aruba.it>
+To: linuxppc-embedded@ozlabs.org
+Subject: Specify number of SPI received characters
+Date: Wed, 15 Mar 2006 23:11:56 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200603152311.57078.antonio.dibacco@aruba.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,6 +21,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>With uclibc Snapshot i get an toolchain, but on the Target:
->>busybox init segfaults during init, at different points.Try a different 
->>malloc "version" in the uClibc config.Harald 
+Anyone knows, during an SPI transfer (8xx CPU as master and EEPROM as slave ), 
+how to specify how many characters I want to receive? When should I release 
+the chip select?
+
+Thank you,
+Antonio.
