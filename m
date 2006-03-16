@@ -1,18 +1,18 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 04281679E2
+	by ozlabs.org (Postfix) with ESMTP id DDD4B679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Mar 2006 07:07:05 +1100 (EST)
-To: powerpc440 <powerpc440@googlemail.com>
+	Fri, 17 Mar 2006 07:10:05 +1100 (EST)
+To: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitech.se>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: glibc, Perl for ppc440GX - compile problems 
+Subject: Re: 8xx SMC1 problem 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 16 Mar 2006 17:09:47 +0100."
-	<44198DCB.90508@googlemail.com>
-Date: Thu, 16 Mar 2006 21:07:02 +0100
+In-reply-to: Your message of "Thu, 16 Mar 2006 18:23:46 +0100."
+	<004B1D7A5257174C9044A1B7BD0E60ED0178CC68@ratatosk.combitechsystems.com>
+Date: Thu, 16 Mar 2006 21:10:03 +0100
 Sender: wd@denx.de
-Message-Id: <20060316200702.A79AB353B16@atlas.denx.de>
+Message-Id: <20060316201003.9522F353B16@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,34 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <44198DCB.90508@googlemail.com> you wrote:
+In message <004B1D7A5257174C9044A1B7BD0E60ED0178CC68@ratatosk.combitechsystems.com> you wrote:
+>
+> First of, I have three serial ports (SMC1, SMC2 and SCC3) and they all work
+>  fine when the console is on SMC1. I have gadgets connected to SMC2 and SCC
+> 3 and now I need SMC1 for yet another device. So I have undefined CONFIG_SE
+> RIAL_CONSOLE in the kernel config and I jump out of u-boot (which have the
+> console on SMC1) with the argument "console=none".
+
+And did you make sure that no other process is accessing ttyS0 ?
+
+> When logging in (via telnet) ttyS0 works no more (but S1 and S2 does). At r
+> andom bootups, it is possible to open the port but it is no good for read o
+> r write.
 > 
-> I'm trying to compile glibc-2.4 on my system but I have the error:
+> Can anybody give me some advise on how to enable SMC1 but at the same time
+> don't have a console on it?
 
-In your subject you mention Perl - what has glibc to do with it?
+We did the same (passing console=null) in a couple of  configurations
+and  had  no  problems  using SMC1 as standard serial port. Try *not*
+undefining CONFIG_SERIAL_CONSOLE.
 
-> ....
-> running configure fragment for sysdeps/powerpc/powerpc32/elf
-> checking for powerpc32 TLS support... yes
-> running configure fragment for sysdeps/unix/sysv/linux/powerpc
-> checking whether gcc -g -O2 -mlong-double-128 uses IBM extended format... no
-> checking whether gcc -g -O2 supports -mabi=ibmlongdouble... no
-> configure: error: this configuration requires -mlong-double-128 IBM 
-> extended format support
-
-Are you running the native  compiler  on  the  board,  or  the  cross
-compiler? Did you apply all eventually needed patches?
-
-> compiler : GCC 4.0.0 (DENX ELDK 4.0 4.0.0-1), the CPU is PPC440GX, 
-> Ocotea based board with own design.
-
-Which architecture did you select? ppc_4xx- ??
-
-> I'm thinking that, the 440GX is not gut supported from GCC 4.0.0 compiler.
-> Do anobody already compile glibc and Perl for this platform, or can I 
-> find from somewhere .RPM packages?
-
-We build Perl without any problems.
+And please keep your line length < 72 characters or so.
 
 Best regards,
 
@@ -60,5 +54,5 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-A meeting is an event at which the minutes are kept and the hours are
-lost.
+A committee is a life form with six or more legs and no brain.
+                              -- Lazarus Long, "Time Enough For Love"
