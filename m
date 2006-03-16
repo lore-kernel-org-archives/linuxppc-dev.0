@@ -1,19 +1,20 @@
-Return-Path: <achim.machura@berghof.com>
-Received: from mail117.messagelabs.com (mail117.messagelabs.com
-	[195.245.231.211]) by ozlabs.org (Postfix) with SMTP id E729A679F4
+Return-Path: <powerpc440@googlemail.com>
+Received: from zproxy.gmail.com (zproxy.gmail.com [64.233.162.197])
+	by ozlabs.org (Postfix) with ESMTP id 1D036679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 16 Mar 2006 19:55:40 +1100 (EST)
-From: "Achim Machura" <achim.machura@berghof.com>
-To: "'Henry Quinn'" <hquinn@sse.co.za>
-Subject: AW: kernel support for the MPC5200b
-Date: Thu, 16 Mar 2006 09:48:11 +0100
-Message-ID: <002401c648d6$5b808b70$34f1ff0a@beint.local>
+	Fri, 17 Mar 2006 03:09:27 +1100 (EST)
+Received: by zproxy.gmail.com with SMTP id 14so392950nzn
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 16 Mar 2006 08:09:26 -0800 (PST)
+Message-ID: <44198DCB.90508@googlemail.com>
+Date: Thu, 16 Mar 2006 17:09:47 +0100
+From: powerpc440 <powerpc440@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <20060316061222.A93517A44CC@mail.sse.co.za>
-Cc: "Linuxppc-Embedded \(E-Mail\)" <linuxppc-embedded@ozlabs.org>
-Reply-To: achim.machura@berghof.com
+To: linuxppc-embedded@ozlabs.org
+Subject: glibc, Perl for ppc440GX - compile problems
+References: <mailman.5.1142470804.1007.linuxppc-embedded@ozlabs.org>
+In-Reply-To: <mailman.5.1142470804.1007.linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,12 +25,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello
+Hello,
 
-> I want to run the Linux kernel on a device based on the Freescale
-MPC5200b, based on the MPC603e series G2_LE core.
+I'm trying to compile glibc-2.4 on my system but I have the error:
 
-Look at www.denx.de there is support for 2.4 and 2.6
+....
+running configure fragment for sysdeps/powerpc/powerpc32/elf
+checking for powerpc32 TLS support... yes
+running configure fragment for sysdeps/unix/sysv/linux/powerpc
+checking whether gcc -g -O2 -mlong-double-128 uses IBM extended format... no
+checking whether gcc -g -O2 supports -mabi=ibmlongdouble... no
+configure: error: this configuration requires -mlong-double-128 IBM 
+extended format support
 
+compiler : GCC 4.0.0 (DENX ELDK 4.0 4.0.0-1), the CPU is PPC440GX, 
+Ocotea based board with own design.
+I'm thinking that, the 440GX is not gut supported from GCC 4.0.0 compiler.
+Do anobody already compile glibc and Perl for this platform, or can I 
+find from somewhere .RPM packages?
 
-Achim
+Regards,
+
+Zhivko
