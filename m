@@ -1,15 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <mgreer@mvista.com>
+Date: Wed, 15 Mar 2006 17:00:59 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: dtc: .quad asm directive generation
+Message-ID: <20060316000059.GA29326@mag.az.mvista.com>
+References: <20060313212105.GA11995@mag.az.mvista.com>
+	<20060314033135.GA24168@localhost.localdomain>
+	<20060314235254.GA6045@mag.az.mvista.com>
+	<E1FJJXV-0005Zf-7r@jdl.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17432.31197.789876.815753@cargo.ozlabs.ibm.com>
-Date: Thu, 16 Mar 2006 07:32:29 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: please pull powerpc-merge.git
-In-Reply-To: <Pine.LNX.4.64.0603150748380.3618@g5.osdl.org>
-References: <17431.43915.712222.861194@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0603150748380.3618@g5.osdl.org>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <E1FJJXV-0005Zf-7r@jdl.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,17 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus Torvalds writes:
+On Tue, Mar 14, 2006 at 06:06:57PM -0600, Jon Loeliger wrote:
+> 
+> For 9 months nothing.  Dave abdicates his DTC maintainer role to me.
 
-> Umm. What _have_ you done to that tree?
+Jon,
 
-Just stuffed up the objects/info/alternates file.  It's fixed now.
+I can't find dtc under ~dgibson on ozlabs anymore.  Do you have it
+somewhere now?
 
-> Please just do "git push" to push to master.  Use the "-f" flag if you
-> want to force it because you did bad things.  Don't use rsync.  rsync on
-> git repos is evil and wrong when there are other alternatives, and leads
-> to crap like the above. 
-
-OK, will do.
-
-Paul.
+Mark
