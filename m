@@ -1,18 +1,16 @@
-Return-Path: <antonio.dibacco@aruba.it>
-Received: from smtpa3.aruba.it (smtpa4.aruba.it [62.149.128.201])
-	by ozlabs.org (Postfix) with SMTP id 97175679E6
+Return-Path: <jimmyzhmliu@yahoo.com>
+Received: from web53111.mail.yahoo.com (web53111.mail.yahoo.com
+	[206.190.49.61]) by ozlabs.org (Postfix) with SMTP id 28667679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 18 Mar 2006 02:21:49 +1100 (EST)
-From: Antonio Di Bacco <antonio.dibacco@aruba.it>
+	Sat, 18 Mar 2006 02:42:31 +1100 (EST)
+Message-ID: <20060317153550.19366.qmail@web53111.mail.yahoo.com>
+Date: Fri, 17 Mar 2006 07:35:50 -0800 (PST)
+From: jimmy liu <jimmyzhmliu@yahoo.com>
+Subject: Linux kernel reboot issue
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: 8xx SMC1 problem
-Date: Fri, 17 Mar 2006 16:25:48 +0100
-References: <004B1D7A5257174C9044A1B7BD0E60ED0178CC6A@ratatosk.combitechsystems.com>
-In-Reply-To: <004B1D7A5257174C9044A1B7BD0E60ED0178CC6A@ratatosk.combitechsystems.com>
+In-Reply-To: <mailman.327.1141665606.16671.linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200603171625.49047.antonio.dibacco@aruba.it>
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,55 +21,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I tried directly with console=3D/dev/null and then I was able to use the se=
-rial=20
-port from an application.
+Our custom board is similar as EST8260. We use Linux
+Kernel 2.4.25 from ftp://ftp.denx.de/pub/linux/. When
+we type the reboot command or shutdown -r, we got the
+following error messages. Does anybody has idea? 
 
-Bye,
-Antonio.
+The system is going down NOW !!
+Sending SIGTERM to all processeTerminated
+Sending SIGKILL to all processes.
+Please stand by while rebooting the system.
+Restarting systemsteOops: Exception in kernel mode,
+sig: 4
+NIP: FFF00100 XER: 00000000 LR: FFF00100 SP: C0EDDDF0
+REGS: c0eddd40 TRAP: 0700    Not tainted
+MSR: 00081002 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 00
+TASK = c0edc000[34] 'init' Last syscall: 2
+last math 00000000 last altivec 00000000
+GPR00: 00001032 C0EDDDF0 C0EDC000 001EDA88 FFF00100
+00001002 000037D0 00000000
+GPR08: C0374060 C000C024 0000C000 00100088 0000000D
+10064B24 00000000 00000000
+GPR16: 00000000 00000000 00000000 00000000 00009032
+00EDDF40 00000000 C0003EA8
+GPR24: C0003C00 100034DC 7FFFFF38 00000001 7FFFFF24
+00000000 FFF00100 00000000
+Call backtrace:
+00000000
 
 
-On Friday 17 March 2006 07:55, Bj=F6rn =D6stby wrote:
-> >From: wd@denx.de [mailto:wd@denx.de]
-> >Sent: den 16 mars 2006 21:10
-> >To: Bj=F6rn =D6stby
-> >Cc: linuxppc-embedded@ozlabs.org
-> >Subject: Re: 8xx SMC1 problem
-> >
-> >In message <004Bxxxxx@ratatosk.combitechsystems.com> you wrote
-> >
-> >> First of, I have three serial ports (SMC1, SMC2 and SCC3) and they all
-> >> work  fine when the console is on SMC1. I have gadgets connected to
-> >> SMC2 and SCC 3 and now I need SMC1 for yet another device. So I have
-> >> undefined CONFIG_SE RIAL_CONSOLE in the kernel config and I jump out
-> >> of u-boot (which have the console on SMC1) with the argument
-> >> "console=3Dnone".
-> >
-> >And did you make sure that no other process is accessing ttyS0 ?
-> >
-> >> When logging in (via telnet) ttyS0 works no more (but S1 and S2 does).
-> >> At r andom bootups, it is possible to open the port but it is no good
-> >> for read o r write.
-> >>
-> >> Can anybody give me some advise on how to enable SMC1 but at the same
-> >> time don't have a console on it?
-> >
-> >We did the same (passing console=3Dnull) in a couple of  configurations =
-and
-> >had  no  problems  >using SMC1 as standard serial port. Try *not*
-> > undefining CONFIG_SERIAL_CONSOLE.
->
-> Ahh, "console=3Dnull" worked a lot better than "console=3Dnone".
-> Problem solved!
->
-> >And please keep your line length < 72 characters or so.
->
-> I'll see to that.
->
->
-> Regards,
-> Bj=F6rn =F6stby
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
