@@ -1,25 +1,16 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx017.isp.belgacom.be (outmx017.isp.belgacom.be
-	[195.238.4.116])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6ED08679E1
+Return-Path: <Bjorn.Ostby@combitech.se>
+Received: from ms-101.aerotechtelub.se (ms-101.aerotechtelub.se
+	[192.176.33.163]) by ozlabs.org (Postfix) with ESMTP id 92840679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Mar 2006 10:19:20 +1100 (EST)
-Received: from outmx017.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx017.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k2GNJBjI026857
-	for <linuxppc-embedded@ozlabs.org>; Fri, 17 Mar 2006 00:19:12 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <4419F26B.8020701@246tNt.com>
-Date: Fri, 17 Mar 2006 00:19:07 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+	Fri, 17 Mar 2006 17:55:08 +1100 (EST)
 MIME-Version: 1.0
-To: Henry Quinn <hquinn@sse.co.za>
-Subject: Re: kernel support for the MPC5200b
-References: <20060316061222.A93517A44CC@mail.sse.co.za>
-In-Reply-To: <20060316061222.A93517A44CC@mail.sse.co.za>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: 8xx SMC1 problem 
+Date: Fri, 17 Mar 2006 07:55:06 +0100
+Message-ID: <004B1D7A5257174C9044A1B7BD0E60ED0178CC6A@ratatosk.combitechsystems.com>
+From: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitech.se>
+To: <wd@denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -31,55 +22,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Henry Quinn wrote:
+>From: wd@denx.de [mailto:wd@denx.de]
+>Sent: den 16 mars 2006 21:10
+>To: Bj=F6rn =D6stby
+>Cc: linuxppc-embedded@ozlabs.org
+>Subject: Re: 8xx SMC1 problem
 >
-> Hello all
+>In message <004Bxxxxx@ratatosk.combitechsystems.com> you wrote
+>>
+>> First of, I have three serial ports (SMC1, SMC2 and SCC3) and they =
+all
+>> work  fine when the console is on SMC1. I have gadgets connected to
+>> SMC2 and SCC 3 and now I need SMC1 for yet another device. So I have
+>> undefined CONFIG_SE RIAL_CONSOLE in the kernel config and I jump out=20
+>> of u-boot (which have the console on SMC1) with the argument
+>> "console=3Dnone".
 >
-> I want to run the Linux kernel on a device based on the Freescale
-> MPC5200b, based on the MPC603e series G2_LE core.
+>And did you make sure that no other process is accessing ttyS0 ?
 >
-> What I don’t understand is whether support for this processor is built
-> into the kernel or not, can one take a stock kernel from
+>> When logging in (via telnet) ttyS0 works no more (but S1 and S2 =
+does).
+>> At r andom bootups, it is possible to open the port but it is no good
+>> for read o r write.
+>>
+>> Can anybody give me some advise on how to enable SMC1 but at the same
+>> time don't have a console on it?
 >
-> www.kernel.org <http://www.kernel.org/> and compile it to run on this
-> processor or are there a series of patches that one needs to apply
-> before the
+>We did the same (passing console=3Dnull) in a couple of  configurations =
+and
+>had  no  problems  >using SMC1 as standard serial port. Try *not* =
+undefining
+>CONFIG_SERIAL_CONSOLE.
 >
-> kernel will run on this processor?
+
+Ahh, "console=3Dnull" worked a lot better than "console=3Dnone".=20
+Problem solved!
+
+>
+>And please keep your line length < 72 characters or so.
 >
 
-The 5200b isn't that different from the 5200 ... most of the important
-differences should be taken care of in the boot loader (some supplementary
-CPU init iirc) and U-Boot takes care of that.
-
-The major difference that needs to be taken care of in the kernel is the
-PCI ID of the host bridge ... But that's trivial to take care of ...
-
-But the dev board lite5200 and lite5200b have some differences in the
-mapping of the PCI irq to the IRQ[0-3] pins and so requires some change in
-the platform dependent code, but if your device is another board then
-you need
-to do your own platform support file any way ...
+I'll see to that.
 
 
-Sources for the the kernels are :
-- denx.de that provides 2.4 and 2.6
-- the GIT tree at http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.git
-
-If you decide to try the last one, please don't clone directly from
-there, but :
-
-git clone
-git://www.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-cd linux-2.6
-git pull http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.git#ide
-git pull http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.git#bestcomm
-
-that should give you a tree with ide & fec support that has supports for the
-lite5200b and that works ... (make sure you have a console=ttyPSC0 in your
-kernel command line, that's required for the 246tnt's git tree and the
-kernel.org
-one. For the denx ones, i think it's console=ttyS0 that's required ...)
-
-
-Sylvain
+Regards,
+Bj=F6rn =F6stby
