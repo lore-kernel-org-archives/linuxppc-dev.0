@@ -1,21 +1,18 @@
-Return-Path: <iluri@fagorautomation.es>
-Received: from sollube.sarenet.es (mx1.sarenet.es [194.30.0.37])
-	by ozlabs.org (Postfix) with ESMTP id 9A649679E0
+Return-Path: <antonio.dibacco@aruba.it>
+Received: from smtpa3.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id 97175679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Mar 2006 22:35:08 +1100 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by sollube.sarenet.es (Postfix) with ESMTP id 03D1D36F62
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 17 Mar 2006 12:35:03 +0100 (CET)
-Message-ID: <441A9FC8.3020205@fagorautomation.es>
-Date: Fri, 17 Mar 2006 12:38:48 +0100
-From: Igor Luri <iluri@fagorautomation.es>
-MIME-Version: 1.0
+	Sat, 18 Mar 2006 02:21:49 +1100 (EST)
+From: Antonio Di Bacco <antonio.dibacco@aruba.it>
 To: linuxppc-embedded@ozlabs.org
-Subject: mpc5xxx keyboard BUG found
+Subject: Re: 8xx SMC1 problem
+Date: Fri, 17 Mar 2006 16:25:48 +0100
+References: <004B1D7A5257174C9044A1B7BD0E60ED0178CC6A@ratatosk.combitechsystems.com>
+In-Reply-To: <004B1D7A5257174C9044A1B7BD0E60ED0178CC6A@ratatosk.combitechsystems.com>
+MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
+  charset="iso-8859-1"
+Message-Id: <200603171625.49047.antonio.dibacco@aruba.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,39 +23,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We have an MPC5200LiteB board with a Microsoft USB keyboard atached and 
-we have realized that some keys don't work properly, like up, down, lef 
-and right arrows, PageUp, PageDown etc.
+I tried directly with console=3D/dev/null and then I was able to use the se=
+rial=20
+port from an application.
 
-We have found that when those keys are pressed, first it sends a special 
-scancode 0xe0 and then pressed key scancode.
+Bye,
+Antonio.
 
-Modifiying mpc5xxx_translate function to ignore the first scancode
- 
 
-                 // special prefix scancodes..
-                  if (scancode == 0xe0 || scancode == 0xe1) {
-                        return 0;
-                  } 
-
-our keyboard works well. Other cpus ignorates this special scancode or  
-it evaluates.
-
-Now, mpc5xxx_translate looks like this:
-
-int mpc5xxx_translate(unsigned char scancode, unsigned char *keycode,
-               char raw_mode)
-{
-    
-  // special prefix scancodes..
-  if (scancode == 0xe0 || scancode == 0xe1) {
-        return 0;
-  }  
-
-  //0xFF is sent by a few keyboards, ignore it. 0x00 is error
-  if (scancode == 0x00 || scancode == 0xff) {
-    return 0;
-  }
-  *keycode = scancode;
-  return 1;
-}
+On Friday 17 March 2006 07:55, Bj=F6rn =D6stby wrote:
+> >From: wd@denx.de [mailto:wd@denx.de]
+> >Sent: den 16 mars 2006 21:10
+> >To: Bj=F6rn =D6stby
+> >Cc: linuxppc-embedded@ozlabs.org
+> >Subject: Re: 8xx SMC1 problem
+> >
+> >In message <004Bxxxxx@ratatosk.combitechsystems.com> you wrote
+> >
+> >> First of, I have three serial ports (SMC1, SMC2 and SCC3) and they all
+> >> work  fine when the console is on SMC1. I have gadgets connected to
+> >> SMC2 and SCC 3 and now I need SMC1 for yet another device. So I have
+> >> undefined CONFIG_SE RIAL_CONSOLE in the kernel config and I jump out
+> >> of u-boot (which have the console on SMC1) with the argument
+> >> "console=3Dnone".
+> >
+> >And did you make sure that no other process is accessing ttyS0 ?
+> >
+> >> When logging in (via telnet) ttyS0 works no more (but S1 and S2 does).
+> >> At r andom bootups, it is possible to open the port but it is no good
+> >> for read o r write.
+> >>
+> >> Can anybody give me some advise on how to enable SMC1 but at the same
+> >> time don't have a console on it?
+> >
+> >We did the same (passing console=3Dnull) in a couple of  configurations =
+and
+> >had  no  problems  >using SMC1 as standard serial port. Try *not*
+> > undefining CONFIG_SERIAL_CONSOLE.
+>
+> Ahh, "console=3Dnull" worked a lot better than "console=3Dnone".
+> Problem solved!
+>
+> >And please keep your line length < 72 characters or so.
+>
+> I'll see to that.
+>
+>
+> Regards,
+> Bj=F6rn =F6stby
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
