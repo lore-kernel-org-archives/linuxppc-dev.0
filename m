@@ -1,18 +1,13 @@
-Return-Path: <johannes@sipsolutions.net>
-Subject: Re: RFC: [PATCH Upated]: snd-pmac-gpio interfaces for snd-powermac
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1142553267.14988.39.camel@localhost.localdomain>
-References: <1137630485.4425.2.camel@grayson>
-	<1142445631.4670.9.camel@localhost>
-	<1142553267.14988.39.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-+wuzecirrpptvlwD5uD3"
-Date: Fri, 17 Mar 2006 13:57:49 +0100
-Message-Id: <1142600269.3905.0.camel@localhost>
-Mime-Version: 1.0
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Date: Mon, 20 Mar 2006 12:03:42 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from '83xx' branch of powerpc
+Message-ID: <Pine.LNX.4.44.0603201202240.23637-100000@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +17,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from '83xx' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git
 
---=-+wuzecirrpptvlwD5uD3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+to receive the following updates:
 
-On Fri, 2006-03-17 at 10:54 +1100, Benjamin Herrenschmidt wrote:
+ arch/powerpc/platforms/83xx/misc.c    |    2 +-
+ arch/ppc/platforms/83xx/mpc834x_sys.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> I think we should only use the pfuncs on k2 (ppc64) or when the macio
-> node contains the include-k2-support property. At least, I +think+
-> that's what darwin is doing.
+Horst Kronstorfer:
+      ppc32: Fix BCSR_SIZE for MPC834x SYS
 
-According to the comments, yes :)
+Kumar Gala:
+      powerpc: Fix mpc83xx restart bug
 
-Been reading through their sources -- damn it's convoluted :(
-
-johannes
-
---=-+wuzecirrpptvlwD5uD3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIVAwUARBqyS6Vg1VMiehFYAQJLXQ/+O0yYG54+NXNkTS4xmNMIYZ+o9JCy0Tmx
-4+GhGAhKdnfF5c3ttHxDBV+Oe42VtQideSMJFDjpa7tBTQHt2hc/tUz44OBq67mo
-3TaVDo4aXuGPjGa/MloAY6A6VZ2ulLNpVnTi/HFyt/8fntTQhIJSWsOhZHVNF9TS
-1NUmfWacJQk2HjNeokCcTXA0IXT14No/rfK/d67ywNFfQvowBn6jnfPhTdf/d0It
-QkSBqotfpfXVOvZTKIxmauLOUGYcWcQ2h+AbS/dk5ESuMW9HtpDcCJRveqKsu/w0
-RNpxSdFgKiAJ9xmx0B1u2M8E0roJ0pYP4AZzVDkevQHLoIlP1OLXISIcXGSlrkX0
-43ygN36iiIwPDKahi/a3cejF3bKD6nBE/w9fMZbbvi7c6AVMYgO/RHeLSJUP8vHe
-03Pp8trh+l0iQpVGPeV/a2pmFO+FjFFgvlZ66INWCz+MvEJ5Di/0/XNO9sO6Fwje
-lVZl/Gsxwafr/Z+ts4KJozFpVizRxOnM+P4t3OIpm9upObU/NtmmY+U/ioeyaZMn
-eeD+YWvKR1/LcWiS3Rx7HU3j7iJGFiFuahTuQH7P4U6UwW5tqmX8ilnmiFk6jZ88
-xEs4OpIYHcFdKRhU809UL5F7M0cKLm1Ecx8toO4Ks0Zs57h3kXbZ9hBAPopFt0bQ
-EuPY2pKn89Y=
-=3zl8
------END PGP SIGNATURE-----
-
---=-+wuzecirrpptvlwD5uD3--
+diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
+index 0eb3d99..1455bce 100644
+--- a/arch/powerpc/platforms/83xx/misc.c
++++ b/arch/powerpc/platforms/83xx/misc.c
+@@ -35,7 +35,7 @@ void mpc83xx_restart(char *cmd)
+ 	out_be32(reg + (RST_PROT_REG >> 2), 0x52535445);
+ 
+ 	/* set software hard reset */
+-	out_be32(reg + (RST_CTRL_REG >> 2), 0x52535445);
++	out_be32(reg + (RST_CTRL_REG >> 2), 0x2);
+ 	for (;;) ;
+ }
+ 
+diff --git a/arch/ppc/platforms/83xx/mpc834x_sys.h b/arch/ppc/platforms/83xx/mpc834x_sys.h
+index aa86c22..6727bbd 100644
+--- a/arch/ppc/platforms/83xx/mpc834x_sys.h
++++ b/arch/ppc/platforms/83xx/mpc834x_sys.h
+@@ -23,7 +23,7 @@
+ #define VIRT_IMMRBAR		((uint)0xfe000000)
+ 
+ #define BCSR_PHYS_ADDR		((uint)0xf8000000)
+-#define BCSR_SIZE		((uint)(128 * 1024))
++#define BCSR_SIZE		((uint)(32 * 1024))
+ 
+ #define BCSR_MISC_REG2_OFF	0x07
+ #define BCSR_MISC_REG2_PORESET	0x01
