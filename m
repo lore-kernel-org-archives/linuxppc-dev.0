@@ -1,21 +1,20 @@
-Return-Path: <iluri@fagorautomation.es>
-Received: from correo2.sarenet.es (correo2.sarenet.es [194.30.0.12])
-	by ozlabs.org (Postfix) with ESMTP id 17827679E0
+Return-Path: <jarno.manninen@tut.fi>
+Received: from outbox.tut.fi (mail.cc.tut.fi [130.230.1.120])
+	by ozlabs.org (Postfix) with ESMTP id DDE5E679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Mar 2006 19:18:59 +1100 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by correo2.sarenet.es (Postfix) with ESMTP id 9BF553689F
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Mar 2006 09:18:56 +0100 (CET)
+	Mon, 20 Mar 2006 20:01:16 +1100 (EST)
+Message-ID: <20060320104429.qgqnb1esmscsoo84@webmail.tut.fi>
+Date: Mon, 20 Mar 2006 10:44:29 +0200
+From: Jarno Manninen <jarno.manninen@tut.fi>
+To: IGOR LURI <iluri@fagorautomation.es>
+Subject: RE: mpc5xxx keyboard BUG found
+References: <918EB199DDDFFA42BEA2EB3A1C6021F3B9143D@correo.fagorautomation.net>
+In-Reply-To: <918EB199DDDFFA42BEA2EB3A1C6021F3B9143D@correo.fagorautomation.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=iso-8859-1
-Subject: RE: mpc5xxx keyboard BUG found
-Date: Mon, 20 Mar 2006 09:18:57 +0100
-Message-ID: <918EB199DDDFFA42BEA2EB3A1C6021F3B9143D@correo.fagorautomation.net>
-From: "IGOR LURI" <iluri@fagorautomation.es>
-To: "Jarno Manninen" <jarno.manninen@tut.fi>,
-	<linuxppc-embedded@ozlabs.org>
+	charset=UTF-8;
+	format="flowed"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,37 +25,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The problem is that from aplication can't handle 0xe0 scancode because =
-mpc5xxx_translate function translates the scancode to a keycode, and to =
-the aplication arrives for example 0x0a1b5b41 (up arrow) and inmediatly =
-another 0x0a. For this efect I think mpc5xxx_translate function needs to =
-evaluate 0xe0 scancode correctly.
+Lainaus IGOR LURI <iluri@fagorautomation.es>:
 
-
------Mensaje original-----
-De: Jarno Manninen [mailto:jarno.manninen@tut.fi]
-Enviado el: viernes, 17 de marzo de 2006 19:50
-Para: linuxppc-embedded@ozlabs.org
-CC: IGOR LURI
-Asunto: Re: mpc5xxx keyboard BUG found
-
-
-On Friday 17 March 2006 13:38, Igor Luri wrote:
-
-> We have an MPC5200LiteB board with a Microsoft USB keyboard atached =
-and
-> we have realized that some keys don't work properly, like up, down, =
-lef
-> and right arrows, PageUp, PageDown etc.
+> The problem is that from aplication can't handle 0xe0 scancode 
+> because mpc5xxx_translate function translates the scancode to a 
+> keycode, and to the aplication arrives for example 0x0a1b5b41 (up 
+> arrow) and inmediatly another 0x0a. For this efect I think 
+> mpc5xxx_translate function needs to evaluate 0xe0 scancode correctly.
 
 Hi!
 
-Actually that Microsoft keyboard is working fine. A rare exception. ,-)
-For more information see chapter 1.3 from here:
+I propably should have read your mail with more attention.
 
-http://www.win.tue.nl/~aeb/linux/kbd/scancodes.html
-
-So basically you will have to handle those in the application level =
-code.
+I'm not sure about keyboard handling on 2.6, but on 2.4 I just used 
+translation function from pckeyb.c and it worked just fine.
 
 - Jarno
+
+> -----Mensaje original-----
+> De: Jarno Manninen [mailto:jarno.manninen@tut.fi]
+> Enviado el: viernes, 17 de marzo de 2006 19:50
+> Para: linuxppc-embedded@ozlabs.org
+> CC: IGOR LURI
+> Asunto: Re: mpc5xxx keyboard BUG found
+>
+>
+> On Friday 17 March 2006 13:38, Igor Luri wrote:
+>
+>> We have an MPC5200LiteB board with a Microsoft USB keyboard atached and
+>> we have realized that some keys don't work properly, like up, down, lef
+>> and right arrows, PageUp, PageDown etc.
+>
+> Hi!
+>
+> Actually that Microsoft keyboard is working fine. A rare exception. ,-)
+> For more information see chapter 1.3 from here:
+>
+> http://www.win.tue.nl/~aeb/linux/kbd/scancodes.html
+>
+> So basically you will have to handle those in the application level code.
+>
+> - Jarno
+>
