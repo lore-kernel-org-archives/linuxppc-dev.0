@@ -1,35 +1,12 @@
-Return-Path: <jdmason@us.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0ED2267A5A
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 15:28:56 +1100 (EST)
-Received: from e3.ny.us.ibm.com ([192.168.1.103])
-	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id k2L3pUvd002713
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 22:51:31 -0500
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id k2L3pGfF015984
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 22:51:16 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2L3p6OM222536
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 22:51:06 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2L3p6ua005507
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 22:51:06 -0500
-Date: Mon, 20 Mar 2006 21:54:22 -0600
-From: Jon Mason <jdmason@us.ibm.com>
-To: Nathan Lynch <nathanl@austin.ibm.com>
-Subject: Re: [PATCH 5/7] powerpc numa: Consolidate handling of Power4 special
-	case
-Message-ID: <20060321035421.GA7714@us.ibm.com>
-References: <1142901225978-git-send-email-nathanl@austin.ibm.com>
-	<11429013752643-git-send-email-nathanl@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11429013752643-git-send-email-nathanl@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>,
+	<linuxppc-dev@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 21 Mar 2006 16:51:29 +1100
+Subject: [RFC/PATCH] powerpc: Make BUG_ON & WARN_ON play nice with
+	compile-time optimisations
+In-Reply-To: <200603211445.32454.michael@ellerman.id.au>
+Message-Id: <20060321055203.EF12167A39@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,80 +16,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 20, 2006 at 06:36:15PM -0600, Nathan Lynch wrote:
-> Code to handle Power4's invalid node id (0xffff) is duplicated for cpu
-> and memory.  Better to handle this case in one place --
-> of_node_to_nid.  Overall behavior should be unchanged.
-> 
-> Signed-off-by: Nathan Lynch <nathanl@austin.ibm.com>
-> 
-> ---
-> 
->  arch/powerpc/mm/numa.c |   23 +++++++++++------------
->  1 files changed, 11 insertions(+), 12 deletions(-)
-> 
-> d9dd3889e58eeb34d1130d2514fea905ca2cab6a
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index e511ca1..4a6cbb0 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -207,6 +207,11 @@ static int of_node_to_nid(struct device_
->  		    device->full_name);
->  		nid = 0;
->  	}
-> +
-> +	/* POWER4 LPAR uses 0xffff as invalid node */
-> +	if (nid == 0xffff)
+Although we could do this. It relys on firmware_has_feature() being a macro,
+but perhaps that's ok. This isn't exactly ideal, as it encourages us to use
+macros where we could otherwise use static inlines, but perhaps it's ok.
 
-A #define for 0xffff would make the code much nicer.  Something like
-POWER4_LPAR_INVALID_NODEID could also enable you to remove the above
-comment.
+Given this:
 
-Thanks,
-Jon
+void test(void)
+{
+       constant_false();
+       BUG_ON(firmware_has_feature(FW_FEATURE_ISERIES));
 
-> +		nid = 0;
-> +
->  	return nid;
->  }
->  
-> @@ -297,14 +302,9 @@ static int __cpuinit numa_setup_cpu(unsi
->  	nid = of_node_to_nid(cpu);
->  
->  	if (nid >= num_online_nodes()) {
-> -		/*
-> -		 * POWER4 LPAR uses 0xffff as invalid node,
-> -		 * dont warn in this case.
-> -		 */
-> -		if (nid != 0xffff)
-> -			printk(KERN_ERR "WARNING: cpu %ld "
-> -			       "maps to invalid NUMA node %d\n",
-> -			       lcpu, nid);
-> +		printk(KERN_ERR "WARNING: cpu %ld "
-> +		       "maps to invalid NUMA node %d\n",
-> +		       lcpu, nid);
->  		nid = 0;
->  	}
->  out:
-> @@ -442,10 +442,9 @@ new_range:
->  		nid = of_node_to_nid(memory);
->  
->  		if (nid >= MAX_NUMNODES) {
-> -			if (nid != 0xffff)
-> -				printk(KERN_ERR "WARNING: memory at %lx maps "
-> -				       "to invalid NUMA node %d\n", start,
-> -				       nid);
-> +			printk(KERN_ERR "WARNING: memory at %lx maps "
-> +			       "to invalid NUMA node %d\n", start,
-> +			       nid);
->  			nid = 0;
->  		}
->  
-> -- 
-> 1.2.4
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+       constant_true();
+       BUG_ON(!firmware_has_feature(FW_FEATURE_ISERIES));
+
+       non_constant();
+       BUG_ON(firmware_has_feature(FW_FEATURE_SPLPAR));
+
+       constant_false();
+       WARN_ON(firmware_has_feature(FW_FEATURE_ISERIES));
+
+       constant_true();
+       WARN_ON(!firmware_has_feature(FW_FEATURE_ISERIES));
+
+       non_constant();
+       WARN_ON(firmware_has_feature(FW_FEATURE_SPLPAR));
+}
+
+I get assembly like so, which looks good to me:
+
+        bl .constant_false
+        bl .constant_true
+        1:      twi 31,0,0
+.section __bug_table,"a"
+        .llong  1b,400,.LC12,__func__.21353
+.previous
+        bl .non_constant
+        ld 9,.LC13@toc(2)
+        ld 0,0(9)
+        rldicl 0,0,44,63
+        1:      tdnei   0,0
+.section __bug_table,"a"
+        .llong  1b,403,.LC12,__func__.21353
+.previous
+        bl .constant_false
+        bl .constant_true
+        1:      twi 31,0,0
+.section __bug_table,"a"
+        .llong  1b,16777625,.LC12,__func__.21353
+.previous
+        bl .non_constant
+        ld 9,.LC13@toc(2)
+        ld 0,0(9)
+        rldicl 0,0,44,63
+        1:      tdnei   0,0
+.section __bug_table,"a"
+        .llong  1b,16777628,.LC12,__func__.21353
+.previous
+
+
+
+ include/asm-powerpc/bug.h      |   24 ++++++++++++++++++++++--
+ include/asm-powerpc/firmware.h |    8 +++-----
+ 2 files changed, 25 insertions(+), 7 deletions(-)
+
+Index: to-merge/include/asm-powerpc/bug.h
+===================================================================
+--- to-merge.orig/include/asm-powerpc/bug.h
++++ to-merge/include/asm-powerpc/bug.h
+@@ -40,17 +40,36 @@ struct bug_entry *find_bug(unsigned long
+ } while (0)
+ 
+ #define BUG_ON(x) do {						\
+-	__asm__ __volatile__(					\
++	if (__builtin_constant_p(x)) {				\
++		if (x)						\
++			BUG();					\
++	} else {						\
++		__asm__ __volatile__(				\
+ 		"1:	"PPC_TLNEI"	%0,0\n"			\
+ 		".section __bug_table,\"a\"\n"			\
+ 		"\t"PPC_LONG"	1b,%1,%2,%3\n"		\
+ 		".previous"					\
+ 		: : "r" ((long)(x)), "i" (__LINE__),		\
+ 		    "i" (__FILE__), "i" (__FUNCTION__));	\
++	}							\
+ } while (0)
+ 
+-#define WARN_ON(x) do {						\
++#define WARN() do {						\
+ 	__asm__ __volatile__(					\
++		"1:	twi 31,0,0\n"				\
++		".section __bug_table,\"a\"\n"			\
++		"\t"PPC_LONG"	1b,%0,%1,%2\n"			\
++		".previous"					\
++		: : "i" (__LINE__ + BUG_WARNING_TRAP),		\
++		    "i" (__FILE__), "i" (__FUNCTION__));	\
++} while (0)
++
++#define WARN_ON(x) do {						\
++	if (__builtin_constant_p(x)) {				\
++		if (x)						\
++			WARN();					\
++	} else {						\
++		__asm__ __volatile__(				\
+ 		"1:	"PPC_TLNEI"	%0,0\n"			\
+ 		".section __bug_table,\"a\"\n"			\
+ 		"\t"PPC_LONG"	1b,%1,%2,%3\n"		\
+@@ -58,6 +77,7 @@ struct bug_entry *find_bug(unsigned long
+ 		: : "r" ((long)(x)),				\
+ 		    "i" (__LINE__ + BUG_WARNING_TRAP),		\
+ 		    "i" (__FILE__), "i" (__FUNCTION__));	\
++	}							\
+ } while (0)
+ 
+ #define HAVE_ARCH_BUG
+Index: to-merge/include/asm-powerpc/firmware.h
+===================================================================
+--- to-merge.orig/include/asm-powerpc/firmware.h
++++ to-merge/include/asm-powerpc/firmware.h
+@@ -83,11 +83,9 @@ enum {
+  */
+ extern unsigned long	ppc64_firmware_features;
+ 
+-static inline unsigned long firmware_has_feature(unsigned long feature)
+-{
+-	return (FW_FEATURE_ALWAYS & feature) ||
+-		(FW_FEATURE_POSSIBLE & ppc64_firmware_features & feature);
+-}
++#define firmware_has_feature(feature)					\
++	((FW_FEATURE_ALWAYS & (feature)) ||				\
++		(FW_FEATURE_POSSIBLE & ppc64_firmware_features & (feature)))
+ 
+ extern void system_reset_fwnmi(void);
+ extern void machine_check_fwnmi(void);
