@@ -1,31 +1,17 @@
-Return-Path: <haveblue@us.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4602867A41
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Mar 2006 06:27:58 +1100 (EST)
-Received: from e4.ny.us.ibm.com ([192.168.1.104])
-	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id k2LIT5FA025559
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 13:29:05 -0500
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id k2LISmfA015416
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 13:28:48 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2LIScJ3226782
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 13:28:38 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2LISbGB008325
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 13:28:37 -0500
-Subject: Re: [PATCH 2/7] powerpc numa: Minor debugging code changes
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Nathan Lynch <nathanl@austin.ibm.com>
-In-Reply-To: <11429012851755-git-send-email-nathanl@austin.ibm.com>
-References: <11429012851755-git-send-email-nathanl@austin.ibm.com>
+Return-Path: <hollis@penguinppc.org>
+Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
+	[66.111.4.28]) by ozlabs.org (Postfix) with ESMTP id 9C98867A58
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Mar 2006 06:31:41 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Add FSL SEC node to documentation
+From: Hollis Blanchard <hollis@penguinppc.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1DBAE58F-2152-4074-B9BA-ADB1FA63DD1B@kernel.crashing.org>
+References: <20060320195945.004fdf26.kim.phillips@freescale.com>
+	<200603202014.44879.hollis@penguinppc.org>
+	<1DBAE58F-2152-4074-B9BA-ADB1FA63DD1B@kernel.crashing.org>
 Content-Type: text/plain
-Date: Tue, 21 Mar 2006 10:27:11 -0800
-Message-Id: <1142965632.10906.163.camel@localhost.localdomain>
+Date: Tue, 21 Mar 2006 13:28:55 -0600
+Message-Id: <1142969335.395.6.camel@basalt>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -37,20 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-03-20 at 18:34 -0600, Nathan Lynch wrote:
-> Don't print a meaningless associativity depth (-1) on non-numa systems.
-...
-> -	dbg("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
->  	if (min_common_depth < 0)
->  		return min_common_depth;
->  
-> +	dbg("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
+On Tue, 2006-03-21 at 12:25 -0600, Kumar Gala wrote:
+> On Mar 20, 2006, at 8:14 PM, Hollis Blanchard wrote:
+> 
+> > On Monday 20 March 2006 19:59, Kim Phillips wrote:
+> >> diff --git a/Documentation/powerpc/booting-without-of.txt
+> > b/Documentation/powerpc/booting-without-of.txt
+> >> index d02c649..72f3241 100644
+> >> --- a/Documentation/powerpc/booting-without-of.txt
+> >> +++ b/Documentation/powerpc/booting-without-of.txt
+> >> @@ -1365,6 +1365,79 @@ platforms are moved over to use the flat
+> >>       };
+> >>
+> >>
+> >> +   g) Freescale SOC SEC Security Engines
+> >> +
+> >> +   Required properties:
+> >> +
+> >> +    - device_type : Should be "crypto"
+> >> +    - model : Model of the device.  Should be "SEC1" or "SEC2"
+> >> +    - compatible : Should be "talitos"
+> > [snip]
+> >
+> > Have you consulted with any other vendors regarding these  
+> > properties? I know
+> > there is no IEEE1275 binding for these sorts of devices, but we can  
+> > at least
+> > attempt to standardize it (even in the absence of the Open Firmware  
+> > Working
+> > Group)...
+> 
+> Beyond the device_type, I'm not sure if there is much more one could  
+> standardize one.  The other fields that Kim spec'd are either generic  
+> OF fields (reg, interrupts, etc.) or specific to the Freescale devices.
 
-This is debugging code anyway, right?
+The device_type and compatible properties are exactly what I'm talking
+about.
 
-I thought this might be useful when you're booting on a machine which
-you _think_ should be NUMA, but doesn't come up that way.  Did you boot
-a non-NUMA kernel, or is something in the reporting wrong?  It makes it
-pretty obvious when you see this printout.  
-
--- Dave
+-Hollis
