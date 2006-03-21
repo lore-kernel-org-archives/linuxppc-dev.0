@@ -2,28 +2,26 @@ Return-Path: <nathanl@austin.ibm.com>
 Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DCB7D679F9
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 12:05:16 +1100 (EST)
-Received: from e33.co.us.ibm.com (e33.boulder.ibm.com [9.17.249.43])
-	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id k2L0cseL002836
+	by ozlabs.org (Postfix) with ESMTP id A6344679F9
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 12:24:53 +1100 (EST)
+Received: from e5.ny.us.ibm.com ([192.168.1.105])
+	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id k2L0fe6F005343
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:38:55 -0500
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e33.co.us.ibm.com (8.12.11/8.12.11) with ESMTP id k2L0ckg4016585
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:38:46 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2L0ZlCO263324
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 17:35:47 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k2L0ckvZ022292
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 17:38:46 -0700
-Subject: [PATCH 2/7] powerpc numa: Minor debugging code changes
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:41:40 -0500
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id k2L0fRjZ015420
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:41:27 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2L0fHOM256110
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:41:17 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2L0fG4M022738
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:41:16 -0500
+Subject: [PATCH 7/7] powerpc numa: Consolidate assignment of cpus to nodes
 In-Reply-To: <1142901225978-git-send-email-nathanl@austin.ibm.com>
-Date: Mon, 20 Mar 2006 18:34:45 -0600
-Message-Id: <11429012851755-git-send-email-nathanl@austin.ibm.com>
+Date: Mon, 20 Mar 2006 18:37:15 -0600
+Message-Id: <11429014352189-git-send-email-nathanl@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: linuxppc-dev@ozlabs.org
@@ -38,56 +36,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add debug statement for map_cpu_to_node; it's useful for cpu hotplug.
-
-Clarify debug statement about not finding the numa reference points
-property.
-
-Don't print a meaningless associativity depth (-1) on non-numa systems.
+We can plug the boot cpu into its node independently of whether numa
+topology is detected.  And numa_setup_cpu does the right thing for all
+cases now, so remove special-casing for non-numa from the cpu hotplug
+callback.
 
 Signed-off-by: Nathan Lynch <nathanl@austin.ibm.com>
 
 ---
 
- arch/powerpc/mm/numa.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/numa.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
 
-3b4f550f0a92badbec6e5784eee4da7524a75938
+69d1ca13915d4ba423d43177e491cd176b92e94c
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index b813bad..de99e47 100644
+index fe0ee6d..e9f340d 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -133,6 +133,8 @@ static inline void map_cpu_to_node(int c
- {
- 	numa_cpu_lookup_table[cpu] = node;
+@@ -321,10 +321,7 @@ static int cpu_numa_callback(struct noti
  
-+	dbg("adding cpu %d to node %d\n", cpu, node);
-+
- 	if (!(cpu_isset(cpu, numa_cpumask_lookup_table[node])))
- 		cpu_set(cpu, numa_cpumask_lookup_table[node]);
- }
-@@ -246,8 +248,7 @@ static int __init find_min_common_depth(
- 	if ((len >= 1) && ref_points) {
- 		depth = ref_points[1];
- 	} else {
--		dbg("WARNING: could not find NUMA "
--		    "associativity reference point\n");
-+		dbg("NUMA: ibm,associativity-reference-points not found.\n");
- 		depth = -1;
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+-		if (min_common_depth == -1 || !numa_enabled)
+-			map_cpu_to_node(lcpu, 0);
+-		else
+-			numa_setup_cpu(lcpu);
++		numa_setup_cpu(lcpu);
+ 		ret = NOTIFY_OK;
+ 		break;
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -459,8 +456,6 @@ new_range:
+ 			goto new_range;
  	}
- 	of_node_put(rtas_root);
-@@ -385,10 +386,11 @@ static int __init parse_numa_properties(
  
- 	min_common_depth = find_min_common_depth();
+-	numa_setup_cpu(boot_cpuid);
+-
+ 	return 0;
+ }
  
--	dbg("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
- 	if (min_common_depth < 0)
- 		return min_common_depth;
+@@ -475,7 +470,6 @@ static void __init setup_nonnuma(void)
+ 	printk(KERN_INFO "Memory hole size: %ldMB\n",
+ 	       (top_of_ram - total_ram) >> 20);
  
-+	dbg("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
-+
- 	/*
- 	 * Even though we connect cpus to numa domains later in SMP init,
- 	 * we need to know the maximum node id now. This is because each
+-	map_cpu_to_node(boot_cpuid, 0);
+ 	for (i = 0; i < lmb.memory.cnt; ++i)
+ 		add_region(0, lmb.memory.region[i].base >> PAGE_SHIFT,
+ 			   lmb_size_pages(&lmb.memory, i));
+@@ -612,6 +606,8 @@ void __init do_init_bootmem(void)
+ 		dump_numa_memory_topology();
+ 
+ 	register_cpu_notifier(&ppc64_numa_nb);
++	cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
++			  (void *)(unsigned long)boot_cpuid);
+ 
+ 	for_each_online_node(nid) {
+ 		unsigned long start_pfn, end_pfn, pages_present;
 -- 
 1.2.4
