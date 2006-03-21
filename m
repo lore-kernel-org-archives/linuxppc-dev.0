@@ -1,15 +1,18 @@
-Return-Path: <nvetter@sfvcmhc.org>
-Received: from SFV-GATEWAY.sfvcmhc.org (mail.sfvcmhc.org [67.126.136.97])
-	by ozlabs.org (Postfix) with ESMTP id AD333679F8
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Mar 2006 09:08:07 +1100 (EST)
-From: "Nick Vetter " <nvetter@sfvcmhc.org>
-To: <linuxppc-dev@ozlabs.org>
-Subject: Emulating button 3 on 2 button ADB mice.
-Date: Tue, 21 Mar 2006 13:56:15 -0800
+Return-Path: <michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 7/7] powerpc numa: Consolidate assignment of cpus to nodes
+Date: Wed, 22 Mar 2006 10:09:14 +1100
+References: <11429014352189-git-send-email-nathanl@austin.ibm.com>
+	<1142966317.10906.172.camel@localhost.localdomain>
+	<1142968571.27114.28.camel@pants.austin.ibm.com>
+In-Reply-To: <1142968571.27114.28.camel@pants.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0008_01C64CEF.38B99920"
-Message-ID: <SFV-GATEWAYGvDpEDiO00001021@SFV-GATEWAY.sfvcmhc.org>
+Content-Type: multipart/signed; boundary="nextPart1168872.MvgYH8zqAM";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200603221009.19523.michael@ellerman.id.au>
+Cc: Nathan Lynch <nathanl@austin.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,83 +22,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0008_01C64CEF.38B99920
+--nextPart1168872.MvgYH8zqAM
 Content-Type: text/plain;
-	charset="us-ascii"
+  charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Dear Sir: do you have a patch for this kensington orbit trackball mouse =
-that
-I can use with Debian? If so I will post it in the =
-pmac-Linux-nubus-users
-group at the Glist site in source forge.=20
+On Wed, 22 Mar 2006 06:16, Nathan Lynch wrote:
+> On Tue, 2006-03-21 at 10:38 -0800, Dave Hansen wrote:
+> > By the way, what do the "l" and "h" in front of "cpu" mean anyway?
+>
+> "logical" and "hot"?  I dunno, just seemed to be the convention in other
+> cpu notifiers at the time the code was written.
+
+Ouch, that's unfortunate. In the powerpc code hcpu _usually_ means hard cpu=
 =20
-I would also like to use it for my old powerbook 1400c which is running
-debian sarge.
-=20
-Thanks
-Nick
+number, as opposed to logical (lcpu). In this case though it looks like hcp=
+u=20
+holds the logical cpu number, which is a bit icky. That might be worth=20
+fixing.
 
-_______________________________________
-NOTICE OF CONFIDENTIALITY:  The information contained in this e-mail is =
-intended only for the use of the individual or entity to which it is =
-addressed and it may contain information that is privileged, =
-confidential and exempt from disclosure under applicable law.  If you =
-are not the intended recipient of this e-mail message, you are hereby =
-notified that any disclosure, dissemination or copying of this =
-communication is strictly prohibited.  If you received this =
-communication in error, please notify and delete the original message.  =
-Thank you for your cooperation.
+cheers
 
+=2D-=20
+Michael Ellerman
+IBM OzLabs
 
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-------=_NextPart_000_0008_01C64CEF.38B99920
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><SPAN class=3D063335321-21032006><FONT face=3DArial size=3D2>Dear =
-Sir: do you=20
-have a patch for this kensington orbit trackball mouse that I can use =
-with=20
-Debian? If so I will post it in the pmac-Linux-nubus-users group at the =
-Glist=20
-site in source forge. </FONT></SPAN></DIV>
-<DIV><SPAN class=3D063335321-21032006><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D063335321-21032006><FONT face=3DArial size=3D2>I =
-would also like to=20
-use it for my old powerbook 1400c which is running debian=20
-sarge.</FONT></SPAN></DIV>
-<DIV><SPAN class=3D063335321-21032006><FONT face=3DArial=20
-size=3D2></FONT></SPAN>&nbsp;</DIV>
-<DIV><SPAN class=3D063335321-21032006><FONT face=3DArial=20
-size=3D2>Thanks</FONT></SPAN></DIV>
-<DIV><SPAN class=3D063335321-21032006><FONT face=3DArial=20
-size=3D2>Nick</FONT></SPAN></DIV></BODY><!--[object_id=3D#sfvcmhc.org#]--=
-><P align=3Dleft><FONT face=3DTahoma size=3D2><FONT =
-color=3D#0000ff><FONT face=3D"Times New Roman" color=3D#000000 =
-size=3D3><STRONG>
-<HR>
-</STRONG></FONT></FONT></FONT></P>
-<P><STRONG><FONT size=3D2>NOTICE OF =
-CONFIDENTIALITY:</FONT></STRONG>&nbsp; <FONT size=3D1>The information =
-contained in this e-mail is intended only for the use of the individual =
-or entity to which it is addressed and it may contain information that =
-is privileged, confidential and exempt from disclosure under applicable =
-law.&nbsp; If you are not the intended recipient of this e-mail message, =
-you are hereby notified that any disclosure, dissemination or copying of =
-this communication is strictly prohibited.&nbsp; If you received this =
-communication in error, please notify and delete the original =
-message.&nbsp; Thank you for your cooperation.</FONT></P>
-<P><FONT size=3D1></FONT>&nbsp;</P></HTML>
+--nextPart1168872.MvgYH8zqAM
+Content-Type: application/pgp-signature
 
-------=_NextPart_000_0008_01C64CEF.38B99920--
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQBEIIefdSjSd0sB4dIRAoR0AKCM2+Q7k8tsZYMW+HFmgqy3QNIvygCdGMR3
+zGmsLrGl1z/qrzf/v86TJlM=
+=PJ0J
+-----END PGP SIGNATURE-----
+
+--nextPart1168872.MvgYH8zqAM--
