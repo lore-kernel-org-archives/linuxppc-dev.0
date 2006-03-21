@@ -2,26 +2,28 @@ Return-Path: <nathanl@austin.ibm.com>
 Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 89755679E1
-	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 11:50:49 +1100 (EST)
-Received: from e4.ny.us.ibm.com ([192.168.1.104])
-	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id k2L0eAC9002991
+	by ozlabs.org (Postfix) with ESMTP id DCB7D679F9
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 12:05:16 +1100 (EST)
+Received: from e33.co.us.ibm.com (e33.boulder.ibm.com [9.17.249.43])
+	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id k2L0cseL002836
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:40:10 -0500
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id k2L0dumt003442
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:39:56 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2L0dkOM222468
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:39:46 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2L0dkMB007168
-	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:39:46 -0500
-Subject: [PATCH 4/7] powerpc numa: Get rid of "numa domain" terminology
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:38:55 -0500
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e33.co.us.ibm.com (8.12.11/8.12.11) with ESMTP id k2L0ckg4016585
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 19:38:46 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2L0ZlCO263324
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 17:35:47 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k2L0ckvZ022292
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 17:38:46 -0700
+Subject: [PATCH 2/7] powerpc numa: Minor debugging code changes
 In-Reply-To: <1142901225978-git-send-email-nathanl@austin.ibm.com>
-Date: Mon, 20 Mar 2006 18:35:45 -0600
-Message-Id: <11429013451865-git-send-email-nathanl@austin.ibm.com>
+Date: Mon, 20 Mar 2006 18:34:45 -0600
+Message-Id: <11429012851755-git-send-email-nathanl@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 To: linuxppc-dev@ozlabs.org
@@ -36,214 +38,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since we effectively treat the domain ids given to us by firmare as
-logical node ids, make this explicit (basically s/numa_domain/nid/).
+Add debug statement for map_cpu_to_node; it's useful for cpu hotplug.
 
-No functional changes, only variable and function names are modified.
+Clarify debug statement about not finding the numa reference points
+property.
+
+Don't print a meaningless associativity depth (-1) on non-numa systems.
 
 Signed-off-by: Nathan Lynch <nathanl@austin.ibm.com>
 
 ---
 
- arch/powerpc/mm/numa.c |   78 ++++++++++++++++++++++++------------------------
- 1 files changed, 39 insertions(+), 39 deletions(-)
+ arch/powerpc/mm/numa.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-9bdff379544896ca96bad4881fa614a19ddf9d21
+3b4f550f0a92badbec6e5784eee4da7524a75938
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 1c3df1d..e511ca1 100644
+index b813bad..de99e47 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -191,9 +191,9 @@ static int *of_get_associativity(struct 
- 	return (unsigned int *)get_property(dev, "ibm,associativity", NULL);
- }
- 
--static int of_node_numa_domain(struct device_node *device)
-+static int of_node_to_nid(struct device_node *device)
+@@ -133,6 +133,8 @@ static inline void map_cpu_to_node(int c
  {
--	int numa_domain;
-+	int nid;
- 	unsigned int *tmp;
+ 	numa_cpu_lookup_table[cpu] = node;
  
- 	if (min_common_depth == -1)
-@@ -201,13 +201,13 @@ static int of_node_numa_domain(struct de
- 
- 	tmp = of_get_associativity(device);
- 	if (tmp && (tmp[0] >= min_common_depth)) {
--		numa_domain = tmp[min_common_depth];
-+		nid = tmp[min_common_depth];
++	dbg("adding cpu %d to node %d\n", cpu, node);
++
+ 	if (!(cpu_isset(cpu, numa_cpumask_lookup_table[node])))
+ 		cpu_set(cpu, numa_cpumask_lookup_table[node]);
+ }
+@@ -246,8 +248,7 @@ static int __init find_min_common_depth(
+ 	if ((len >= 1) && ref_points) {
+ 		depth = ref_points[1];
  	} else {
- 		dbg("WARNING: no NUMA information for %s\n",
- 		    device->full_name);
--		numa_domain = 0;
-+		nid = 0;
+-		dbg("WARNING: could not find NUMA "
+-		    "associativity reference point\n");
++		dbg("NUMA: ibm,associativity-reference-points not found.\n");
+ 		depth = -1;
  	}
--	return numa_domain;
-+	return nid;
- }
+ 	of_node_put(rtas_root);
+@@ -385,10 +386,11 @@ static int __init parse_numa_properties(
  
- /*
-@@ -286,7 +286,7 @@ static unsigned long __devinit read_n_ce
-  */
- static int __cpuinit numa_setup_cpu(unsigned long lcpu)
- {
--	int numa_domain = 0;
-+	int nid = 0;
- 	struct device_node *cpu = find_cpu_node(lcpu);
+ 	min_common_depth = find_min_common_depth();
  
- 	if (!cpu) {
-@@ -294,27 +294,27 @@ static int __cpuinit numa_setup_cpu(unsi
- 		goto out;
- 	}
+-	dbg("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
+ 	if (min_common_depth < 0)
+ 		return min_common_depth;
  
--	numa_domain = of_node_numa_domain(cpu);
-+	nid = of_node_to_nid(cpu);
- 
--	if (numa_domain >= num_online_nodes()) {
-+	if (nid >= num_online_nodes()) {
- 		/*
- 		 * POWER4 LPAR uses 0xffff as invalid node,
- 		 * dont warn in this case.
- 		 */
--		if (numa_domain != 0xffff)
-+		if (nid != 0xffff)
- 			printk(KERN_ERR "WARNING: cpu %ld "
- 			       "maps to invalid NUMA node %d\n",
--			       lcpu, numa_domain);
--		numa_domain = 0;
-+			       lcpu, nid);
-+		nid = 0;
- 	}
- out:
--	node_set_online(numa_domain);
-+	node_set_online(nid);
- 
--	map_cpu_to_node(lcpu, numa_domain);
-+	map_cpu_to_node(lcpu, nid);
- 
- 	of_node_put(cpu);
- 
--	return numa_domain;
-+	return nid;
- }
- 
- static int cpu_numa_callback(struct notifier_block *nfb,
-@@ -399,17 +399,17 @@ static int __init parse_numa_properties(
- 	 * with larger node ids. In that case we force the cpu into node 0.
- 	 */
- 	for_each_cpu(i) {
--		int numa_domain;
-+		int nid;
- 
- 		cpu = find_cpu_node(i);
- 
- 		if (cpu) {
--			numa_domain = of_node_numa_domain(cpu);
-+			nid = of_node_to_nid(cpu);
- 			of_node_put(cpu);
- 
--			if (numa_domain < MAX_NUMNODES &&
--			    max_domain < numa_domain)
--				max_domain = numa_domain;
-+			if (nid < MAX_NUMNODES &&
-+			    max_domain < nid)
-+				max_domain = nid;
- 		}
- 	}
- 
-@@ -418,7 +418,7 @@ static int __init parse_numa_properties(
- 	while ((memory = of_find_node_by_type(memory, "memory")) != NULL) {
- 		unsigned long start;
- 		unsigned long size;
--		int numa_domain;
-+		int nid;
- 		int ranges;
- 		unsigned int *memcell_buf;
- 		unsigned int len;
-@@ -439,18 +439,18 @@ new_range:
- 		start = read_n_cells(n_mem_addr_cells, &memcell_buf);
- 		size = read_n_cells(n_mem_size_cells, &memcell_buf);
- 
--		numa_domain = of_node_numa_domain(memory);
-+		nid = of_node_to_nid(memory);
- 
--		if (numa_domain >= MAX_NUMNODES) {
--			if (numa_domain != 0xffff)
-+		if (nid >= MAX_NUMNODES) {
-+			if (nid != 0xffff)
- 				printk(KERN_ERR "WARNING: memory at %lx maps "
- 				       "to invalid NUMA node %d\n", start,
--				       numa_domain);
--			numa_domain = 0;
-+				       nid);
-+			nid = 0;
- 		}
- 
--		if (max_domain < numa_domain)
--			max_domain = numa_domain;
-+		if (max_domain < nid)
-+			max_domain = nid;
- 
- 		if (!(size = numa_enforce_memory_limit(start, size))) {
- 			if (--ranges)
-@@ -459,7 +459,7 @@ new_range:
- 				continue;
- 		}
- 
--		add_region(numa_domain, start >> PAGE_SHIFT,
-+		add_region(nid, start >> PAGE_SHIFT,
- 			   size >> PAGE_SHIFT);
- 
- 		if (--ranges)
-@@ -769,10 +769,10 @@ int hot_add_scn_to_nid(unsigned long scn
- {
- 	struct device_node *memory = NULL;
- 	nodemask_t nodes;
--	int numa_domain = 0;
-+	int nid = 0;
- 
- 	if (!numa_enabled || (min_common_depth < 0))
--		return numa_domain;
-+		return nid;
- 
- 	while ((memory = of_find_node_by_type(memory, "memory")) != NULL) {
- 		unsigned long start, size;
-@@ -789,15 +789,15 @@ int hot_add_scn_to_nid(unsigned long scn
- ha_new_range:
- 		start = read_n_cells(n_mem_addr_cells, &memcell_buf);
- 		size = read_n_cells(n_mem_size_cells, &memcell_buf);
--		numa_domain = of_node_numa_domain(memory);
-+		nid = of_node_to_nid(memory);
- 
- 		/* Domains not present at boot default to 0 */
--		if (!node_online(numa_domain))
--			numa_domain = any_online_node(NODE_MASK_ALL);
-+		if (!node_online(nid))
-+			nid = any_online_node(NODE_MASK_ALL);
- 
- 		if ((scn_addr >= start) && (scn_addr < (start + size))) {
- 			of_node_put(memory);
--			goto got_numa_domain;
-+			goto got_nid;
- 		}
- 
- 		if (--ranges)		/* process all ranges in cell */
-@@ -806,12 +806,12 @@ ha_new_range:
- 	BUG();	/* section address should be found above */
- 
- 	/* Temporary code to ensure that returned node is not empty */
--got_numa_domain:
-+got_nid:
- 	nodes_setall(nodes);
--	while (NODE_DATA(numa_domain)->node_spanned_pages == 0) {
--		node_clear(numa_domain, nodes);
--		numa_domain = any_online_node(nodes);
-+	while (NODE_DATA(nid)->node_spanned_pages == 0) {
-+		node_clear(nid, nodes);
-+		nid = any_online_node(nodes);
- 	}
--	return numa_domain;
-+	return nid;
- }
- #endif /* CONFIG_MEMORY_HOTPLUG */
++	dbg("NUMA associativity depth for CPU/Memory: %d\n", min_common_depth);
++
+ 	/*
+ 	 * Even though we connect cpus to numa domains later in SMP init,
+ 	 * we need to know the maximum node id now. This is because each
 -- 
 1.2.4
