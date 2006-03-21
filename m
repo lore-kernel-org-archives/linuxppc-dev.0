@@ -1,16 +1,35 @@
-Return-Path: <michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: Make BUG_ON & WARN_ON play nice with
-	compile-time optimisations
-Date: Tue, 21 Mar 2006 14:45:23 +1100
-References: <20060207052220.917C668A92@ozlabs.org>
-In-Reply-To: <20060207052220.917C668A92@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart2345622.nkMyxvdSxf";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200603211445.32454.michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
+Return-Path: <jdmason@us.ibm.com>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0ED2267A5A
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 15:28:56 +1100 (EST)
+Received: from e3.ny.us.ibm.com ([192.168.1.103])
+	by pokfb.esmtp.ibm.com (8.12.11/8.12.11) with ESMTP id k2L3pUvd002713
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 22:51:31 -0500
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.12.11/8.12.11) with ESMTP id k2L3pGfF015984
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 22:51:16 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2L3p6OM222536
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 22:51:06 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2L3p6ua005507
+	for <linuxppc-dev@ozlabs.org>; Mon, 20 Mar 2006 22:51:06 -0500
+Date: Mon, 20 Mar 2006 21:54:22 -0600
+From: Jon Mason <jdmason@us.ibm.com>
+To: Nathan Lynch <nathanl@austin.ibm.com>
+Subject: Re: [PATCH 5/7] powerpc numa: Consolidate handling of Power4 special
+	case
+Message-ID: <20060321035421.GA7714@us.ibm.com>
+References: <1142901225978-git-send-email-nathanl@austin.ibm.com>
+	<11429013752643-git-send-email-nathanl@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <11429013752643-git-send-email-nathanl@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,67 +39,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart2345622.nkMyxvdSxf
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, Mar 20, 2006 at 06:36:15PM -0600, Nathan Lynch wrote:
+> Code to handle Power4's invalid node id (0xffff) is duplicated for cpu
+> and memory.  Better to handle this case in one place --
+> of_node_to_nid.  Overall behavior should be unchanged.
+> 
+> Signed-off-by: Nathan Lynch <nathanl@austin.ibm.com>
+> 
+> ---
+> 
+>  arch/powerpc/mm/numa.c |   23 +++++++++++------------
+>  1 files changed, 11 insertions(+), 12 deletions(-)
+> 
+> d9dd3889e58eeb34d1130d2514fea905ca2cab6a
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index e511ca1..4a6cbb0 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -207,6 +207,11 @@ static int of_node_to_nid(struct device_
+>  		    device->full_name);
+>  		nid = 0;
+>  	}
+> +
+> +	/* POWER4 LPAR uses 0xffff as invalid node */
+> +	if (nid == 0xffff)
 
-On Tue, 7 Feb 2006 16:22, Michael Ellerman wrote:
-> Currently if you do BUG_ON(0) you'll still get a trap instruction in your
-> object, although it'll never trigger. That's ok, but a bit ugly, it'd be
-> nice if the compiler could completely eliminate any trace of the BUG_ON.
->
-> So update the BUG_ON & WARN_ON macros to make this possible. From the
-> comment in the patch:
->
->  The if statement in BUG_ON and WARN_ON gives the compiler a chance to do
->  compile-time optimisation and possibly elide the entire block. The check
->  for !__builtin_constant(x) has the oppposite effect, if we must do the
->  test at runtime then we avoid a spurious compare and branch by ensuring
->  the if condition is always true.
->
-> I've confirmed it works in both cases, if the condition is false at compi=
-le
-> time we get no code emitted for the BUG statement. If the condition needs
-> to be evaluated at runtime we get the same code we used to, ie. only one
-> test in the trap instruction.
+A #define for 0xffff would make the code much nicer.  Something like
+POWER4_LPAR_INVALID_NODEID could also enable you to remove the above
+comment.
 
-Turns out this doesn't always do what we want, depending on what the condit=
-ion=20
-for the BUG_ON() is. Specifically the __builtin_constant_p() sometimes fail=
-s=20
-to recognise that the condition will be constant, and so we end up with:
+Thanks,
+Jon
 
- 558:   38 00 00 00     li      r0,0
- 55c:   0b 00 00 00     tdnei   r0,0
-
-Which is harmless but not really good enough. When gcc gets fixed=20
-(http://gcc.gnu.org/bugzilla/show_bug.cgi?id=3D26724) we can think about th=
-is=20
-again.
-
-cheers
-
-=2D-=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---nextPart2345622.nkMyxvdSxf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBEH3bcdSjSd0sB4dIRAl/+AJ9LyjH6MAvl0az9+bTw5LZ9hl9DeACdHplg
-kHTx0n9Feyn510kxuIAAMs4=
-=r9Fl
------END PGP SIGNATURE-----
-
---nextPart2345622.nkMyxvdSxf--
+> +		nid = 0;
+> +
+>  	return nid;
+>  }
+>  
+> @@ -297,14 +302,9 @@ static int __cpuinit numa_setup_cpu(unsi
+>  	nid = of_node_to_nid(cpu);
+>  
+>  	if (nid >= num_online_nodes()) {
+> -		/*
+> -		 * POWER4 LPAR uses 0xffff as invalid node,
+> -		 * dont warn in this case.
+> -		 */
+> -		if (nid != 0xffff)
+> -			printk(KERN_ERR "WARNING: cpu %ld "
+> -			       "maps to invalid NUMA node %d\n",
+> -			       lcpu, nid);
+> +		printk(KERN_ERR "WARNING: cpu %ld "
+> +		       "maps to invalid NUMA node %d\n",
+> +		       lcpu, nid);
+>  		nid = 0;
+>  	}
+>  out:
+> @@ -442,10 +442,9 @@ new_range:
+>  		nid = of_node_to_nid(memory);
+>  
+>  		if (nid >= MAX_NUMNODES) {
+> -			if (nid != 0xffff)
+> -				printk(KERN_ERR "WARNING: memory at %lx maps "
+> -				       "to invalid NUMA node %d\n", start,
+> -				       nid);
+> +			printk(KERN_ERR "WARNING: memory at %lx maps "
+> +			       "to invalid NUMA node %d\n", start,
+> +			       nid);
+>  			nid = 0;
+>  		}
+>  
+> -- 
+> 1.2.4
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
