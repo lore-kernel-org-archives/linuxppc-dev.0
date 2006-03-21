@@ -1,21 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A82A367A3E
-	for <linuxppc-dev@ozlabs.org>; Wed, 22 Mar 2006 05:25:06 +1100 (EST)
-In-Reply-To: <200603202014.44879.hollis@penguinppc.org>
-References: <20060320195945.004fdf26.kim.phillips@freescale.com>
-	<200603202014.44879.hollis@penguinppc.org>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1DBAE58F-2152-4074-B9BA-ADB1FA63DD1B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Add FSL SEC node to documentation
-Date: Tue, 21 Mar 2006 12:25:55 -0600
-To: Hollis Blanchard <hollis@penguinppc.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 41CF767A5A
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Mar 2006 05:32:49 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 8/11] powerpc: Add strne2a() to convert a string from
+	EBCDIC to ASCII
+References: <1142934351.193140.181086235013.qpush@concordia>
+	<20060321094637.C86EE67BBB@ozlabs.org>
+	<20060321181105.GA5248@pb15.lixom.net>
+Date: Tue, 21 Mar 2006 19:32:39 +0100
+In-Reply-To: <20060321181105.GA5248@pb15.lixom.net> (Olof Johansson's message
+	of "Tue, 21 Mar 2006 12:11:05 -0600")
+Message-ID: <je64m7sl6g.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Olof Johansson <olof@lixom.net> writes:
 
-On Mar 20, 2006, at 8:14 PM, Hollis Blanchard wrote:
+> Why iterate over the string twice? Why not do 
+> 	for (..; i < n && src[n]; ...)
 
-> On Monday 20 March 2006 19:59, Kim Phillips wrote:
->> diff --git a/Documentation/powerpc/booting-without-of.txt
-> b/Documentation/powerpc/booting-without-of.txt
->> index d02c649..72f3241 100644
->> --- a/Documentation/powerpc/booting-without-of.txt
->> +++ b/Documentation/powerpc/booting-without-of.txt
->> @@ -1365,6 +1365,79 @@ platforms are moved over to use the flat
->>       };
->>
->>
->> +   g) Freescale SOC SEC Security Engines
->> +
->> +   Required properties:
->> +
->> +    - device_type : Should be "crypto"
->> +    - model : Model of the device.  Should be "SEC1" or "SEC2"
->> +    - compatible : Should be "talitos"
-> [snip]
->
-> Have you consulted with any other vendors regarding these  
-> properties? I know
-> there is no IEEE1275 binding for these sorts of devices, but we can  
-> at least
-> attempt to standardize it (even in the absence of the Open Firmware  
-> Working
-> Group)...
+ITYM i < n && src[i].
 
-Beyond the device_type, I'm not sure if there is much more one could  
-standardize one.  The other fields that Kim spec'd are either generic  
-OF fields (reg, interrupts, etc.) or specific to the Freescale devices.
+Andreas.
 
-- kumar
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
