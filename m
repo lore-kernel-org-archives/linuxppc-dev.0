@@ -1,19 +1,34 @@
-Return-Path: <michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 8/11] powerpc: Add strne2a() to convert a string from
-	EBCDIC to ASCII
-Date: Wed, 22 Mar 2006 10:25:40 +1100
-References: <1142934351.193140.181086235013.qpush@concordia>
-	<je64m7sl6g.fsf@sykes.suse.de>
-	<20060321184358.GB5248@pb15.lixom.net>
-In-Reply-To: <20060321184358.GB5248@pb15.lixom.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1716182.njdcWcKOR6";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200603221025.48798.michael@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <nathanl@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7600A679E6
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Mar 2006 10:27:06 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e33.co.us.ibm.com (8.12.11/8.12.11) with ESMTP id k2LNR4LX008508
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 18:27:04 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2LNO3PM257792
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 16:24:03 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k2LNR3wH016649
+	for <linuxppc-dev@ozlabs.org>; Tue, 21 Mar 2006 16:27:03 -0700
+Subject: Re: [PATCH 7/7] powerpc numa: Consolidate assignment of cpus to nodes
+From: Nathan Lynch <nathanl@austin.ibm.com>
+To: michael@ellerman.id.au
+In-Reply-To: <200603221009.19523.michael@ellerman.id.au>
+References: <11429014352189-git-send-email-nathanl@austin.ibm.com>
+	<1142966317.10906.172.camel@localhost.localdomain>
+	<1142968571.27114.28.camel@pants.austin.ibm.com>
+	<200603221009.19523.michael@ellerman.id.au>
+Content-Type: text/plain
+Date: Tue, 21 Mar 2006 17:22:59 -0600
+Message-Id: <1142983379.28864.9.camel@pants.austin.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,43 +38,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1716182.njdcWcKOR6
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Wed, 22 Mar 2006 05:43, Olof Johansson wrote:
-> On Tue, Mar 21, 2006 at 07:32:39PM +0100, Andreas Schwab wrote:
-> > Olof Johansson <olof@lixom.net> writes:
-> > > Why iterate over the string twice? Why not do
-> > > 	for (..; i < n && src[n]; ...)
+On Wed, 2006-03-22 at 10:09 +1100, Michael Ellerman wrote:
+> On Wed, 22 Mar 2006 06:16, Nathan Lynch wrote:
+> > On Tue, 2006-03-21 at 10:38 -0800, Dave Hansen wrote:
+> > > By the way, what do the "l" and "h" in front of "cpu" mean anyway?
 > >
-> > ITYM i < n && src[i].
->
-> Doh, right.
+> > "logical" and "hot"?  I dunno, just seemed to be the convention in other
+> > cpu notifiers at the time the code was written.
+> 
+> Ouch, that's unfortunate. In the powerpc code hcpu _usually_ means hard cpu 
+> number, as opposed to logical (lcpu).
 
-That's why :)
+Grep begs to differ:
 
-=2D-=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---nextPart1716182.njdcWcKOR6
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBEIIt8dSjSd0sB4dIRAldNAJ42LB1X5irBoTzXUWp8PzX3fxBIfgCgyLEv
-6un/lv69sce/hDfnj0/+bKI=
-=9Tyf
------END PGP SIGNATURE-----
-
---nextPart1716182.njdcWcKOR6--
+$ grep -rw hcpu arch/powerpc include/asm-powerpc
+arch/powerpc/kernel/sysfs.c:                                  unsigned long action, void *hcpu)
+arch/powerpc/kernel/sysfs.c:    unsigned int cpu = (unsigned int)(long)hcpu;
+arch/powerpc/mm/numa.c:                      void *hcpu)
+arch/powerpc/mm/numa.c: unsigned long lcpu = (unsigned long)hcpu;
