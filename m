@@ -1,19 +1,18 @@
 Return-Path: <maule@lnx-maule.americas.sgi.com>
-Date: Tue, 21 Mar 2006 13:38:42 -0600
-From: Mark Maule <maule@sgi.com>
-To: "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Date: Tue, 21 Mar 2006 13:14:14 -0600
+From: Mark Maule <maule@SGI.com>
+To: Andreas Schwab <schwab@suse.de>
 Subject: Re: [PATCH 1/3] msi vector targeting abstractions
-Message-ID: <20060321193842.GF22524@sgi.com>
+Message-ID: <20060321191414.GE22524@sgi.com>
 References: <20060321143444.9913.48372.11324@lnx-maule.americas.sgi.com>
 	<20060321143449.9913.55794.57267@lnx-maule.americas.sgi.com>
 	<442029EA.9020900@ce.jp.nec.com> <jebqvzhhxr.fsf@sykes.suse.de>
-	<20060321191414.GE22524@sgi.com> <442052C0.8050304@ce.jp.nec.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <442052C0.8050304@ce.jp.nec.com>
+In-Reply-To: <jebqvzhhxr.fsf@sykes.suse.de>
 Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org, gregkh@suse.de,
-	linux-kernel@vger.kernel.org, linuxppc64-dev@ozlabs.org,
-	linux-pci@atrey.karlin.mff.cuni.cz
+	linux-kernel@vger.kernel.org, Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
+	linuxppc64-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 21, 2006 at 02:23:44PM -0500, Jun'ichi Nomura wrote:
-> Hi,
+On Tue, Mar 21, 2006 at 05:38:08PM +0100, Andreas Schwab wrote:
+> "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com> writes:
 > 
-> Mark Maule wrote:
-> >@@ -386,5 +390,8 @@
-> > #ifndef platform_readq_relaxed
-> > # define platform_readq_relaxed	__ia64_readq_relaxed
-> > #endif
-> >+#ifndef platform_msi_init
-> >+# define platform_msi_init	((ia64_mv_msi_init_t*)NULL)
-> >+#endif
+> > Hi Mark,
+> >
+> > Mark Maule wrote:
+> >> Index: linux-2.6.16/include/asm-ia64/msi.h
+> >> ===================================================================
+> >> --- linux-2.6.16.orig/include/asm-ia64/msi.h	2006-03-19 23:53:29.000000000 -0600
+> >> +++ linux-2.6.16/include/asm-ia64/msi.h	2006-03-20 14:50:53.331368084 -0600
+> >> @@ -14,4 +14,16 @@
+> >>  #define ack_APIC_irq		ia64_eoi
+> >>  #define MSI_TARGET_CPU_SHIFT	4
+> >>  
+> >> +extern struct msi_ops msi_apic_ops;
+> >> +
+> >> +static inline int msi_arch_init(void)
+> >> +{
+> >> +	if (platform_msi_init)
+> >> +		return platform_msi_init();
+> >> +
+> >> +	/* default ops for most ia64 platforms */
+> >> +	msi_register(&msi_apic_ops);
+> >> +	return 0;
+> >> +}
+> >> +
+> >>  #endif /* ASM_MSI_H */
+> >
+> > It turned out that the above code breaks configs other
+> > than CONFIG_IA64_SN and CONFIG_IA64_GENERIC.
+> > e.g. CONFIG_IA64_DIG.
+> >
+> > In file included from /build/16.msi/drivers/pci/msi.h:71,
+> >                  from /build/16.msi/drivers/pci/msi.c:24:
+> > include2/asm/msi.h: In function `msi_arch_init':
+> > include2/asm/msi.h:22: error: called object is not a function
+> > make[3]: *** [drivers/pci/msi.o] Error 1
+> >
+> > Something like below might fix this problem:
+> >   if (platform_msi_init) {
+> >       ia64_mv_msi_init_t *fn = platform_msi_init;
+> >       return (*fn)();
+> >   }
 > 
-> You may also need to change the sn specific header below.
+> platform_msi_init should have the right type in the first place,
+> ie. defined to ((ia64_mv_msi_init_t*)NULL) instead of just NULL.
 > 
-> >@@ -115,6 +116,11 @@
-> > #define platform_dma_sync_sg_for_device	sn_dma_sync_sg_for_device
-> > #define platform_dma_mapping_error		sn_dma_mapping_error
-> > #define platform_dma_supported		sn_dma_supported
-> >+#ifdef CONFIG_PCI_MSI
-> >+#define platform_msi_init		sn_msi_init
-> >+#else
-> >+#define platform_msi_init		NULL
-> >+#endif
-> 
-> Thanks,
-> -- 
-> Jun'ichi Nomura, NEC Solutions (America), Inc.
+> Andreas.
 
-Right - patch attached:
+The following resend of 1/3 fixes this:
 
 
 Abstract portions of the MSI core for platforms that do not use standard
@@ -394,7 +414,7 @@ Index: linux-2.6.16/include/asm-ia64/machvec.h
 Index: linux-2.6.16/include/asm-ia64/machvec_sn2.h
 ===================================================================
 --- linux-2.6.16.orig/include/asm-ia64/machvec_sn2.h	2006-03-21 11:13:59.728092656 -0600
-+++ linux-2.6.16/include/asm-ia64/machvec_sn2.h	2006-03-21 13:26:22.138073104 -0600
++++ linux-2.6.16/include/asm-ia64/machvec_sn2.h	2006-03-21 11:14:06.216715122 -0600
 @@ -66,6 +66,7 @@
  extern ia64_mv_dma_sync_sg_for_device	sn_dma_sync_sg_for_device;
  extern ia64_mv_dma_mapping_error	sn_dma_mapping_error;
@@ -410,7 +430,7 @@ Index: linux-2.6.16/include/asm-ia64/machvec_sn2.h
 +#ifdef CONFIG_PCI_MSI
 +#define platform_msi_init		sn_msi_init
 +#else
-+#define platform_msi_init		((ia64_mv_msi_init_t*)NULL)
++#define platform_msi_init		NULL
 +#endif
  
  #include <asm/sn/io.h>
