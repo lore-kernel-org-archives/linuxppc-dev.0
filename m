@@ -1,20 +1,21 @@
-Return-Path: <jarno.manninen@tut.fi>
-Received: from outbox.tut.fi (mail.cc.tut.fi [130.230.1.120])
-	by ozlabs.org (Postfix) with ESMTP id DDE5E679E7
+Return-Path: <bgholikh@cisco.com>
+Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
+	by ozlabs.org (Postfix) with ESMTP id 78548679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 20 Mar 2006 20:01:16 +1100 (EST)
-Message-ID: <20060320104429.qgqnb1esmscsoo84@webmail.tut.fi>
-Date: Mon, 20 Mar 2006 10:44:29 +0200
-From: Jarno Manninen <jarno.manninen@tut.fi>
-To: IGOR LURI <iluri@fagorautomation.es>
-Subject: RE: mpc5xxx keyboard BUG found
-References: <918EB199DDDFFA42BEA2EB3A1C6021F3B9143D@correo.fagorautomation.net>
-In-Reply-To: <918EB199DDDFFA42BEA2EB3A1C6021F3B9143D@correo.fagorautomation.net>
+	Wed, 22 Mar 2006 01:04:56 +1100 (EST)
+Received: from xbh-sjc-231.amer.cisco.com (xbh-sjc-231.cisco.com
+	[128.107.191.100])
+	by sj-core-3.cisco.com (8.12.10/8.12.6) with ESMTP id k2LE4s1j013737
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 21 Mar 2006 06:04:54 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=UTF-8;
-	format="flowed"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C64CF0.6DBB380E"
+Subject: VLAN support on TSEC for MPC8541
+Date: Tue, 21 Mar 2006 06:04:54 -0800
+Message-ID: <F795765B112E7344AF36AA9112796415019ECE6A@xmb-sjc-212.amer.cisco.com>
+From: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,45 +26,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Lainaus IGOR LURI <iluri@fagorautomation.es>:
+This is a multi-part message in MIME format.
 
-> The problem is that from aplication can't handle 0xe0 scancode 
-> because mpc5xxx_translate function translates the scancode to a 
-> keycode, and to the aplication arrives for example 0x0a1b5b41 (up 
-> arrow) and inmediatly another 0x0a. For this efect I think 
-> mpc5xxx_translate function needs to evaluate 0xe0 scancode correctly.
+------_=_NextPart_001_01C64CF0.6DBB380E
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Hi!
+Hi All,
+I have asked this question in past with no response. Are there any VLAN
+implementation of TSEC driver for MPC8541 (with CPM core)?
+=20
+Many thanks in advance,
+Bizhan
 
-I propably should have read your mail with more attention.
+------_=_NextPart_001_01C64CF0.6DBB380E
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I'm not sure about keyboard handling on 2.6, but on 2.4 I just used 
-translation function from pckeyb.c and it worked just fine.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2800.1498" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D431440214-21032006>Hi=20
+All,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D431440214-21032006>I have =
+asked this=20
+question in past with no response. Are there any VLAN implementation of =
+TSEC=20
+driver for MPC8541 (with CPM core)?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D431440214-21032006></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D431440214-21032006>Many =
+thanks in=20
+advance,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D431440214-21032006>Bizhan</SPAN></FONT></DIV></BODY></HTML>
 
-- Jarno
-
-> -----Mensaje original-----
-> De: Jarno Manninen [mailto:jarno.manninen@tut.fi]
-> Enviado el: viernes, 17 de marzo de 2006 19:50
-> Para: linuxppc-embedded@ozlabs.org
-> CC: IGOR LURI
-> Asunto: Re: mpc5xxx keyboard BUG found
->
->
-> On Friday 17 March 2006 13:38, Igor Luri wrote:
->
->> We have an MPC5200LiteB board with a Microsoft USB keyboard atached and
->> we have realized that some keys don't work properly, like up, down, lef
->> and right arrows, PageUp, PageDown etc.
->
-> Hi!
->
-> Actually that Microsoft keyboard is working fine. A rare exception. ,-)
-> For more information see chapter 1.3 from here:
->
-> http://www.win.tue.nl/~aeb/linux/kbd/scancodes.html
->
-> So basically you will have to handle those in the application level code.
->
-> - Jarno
->
+------_=_NextPart_001_01C64CF0.6DBB380E--
