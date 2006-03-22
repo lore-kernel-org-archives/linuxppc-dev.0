@@ -1,10 +1,11 @@
 Return-Path: <SRS0=lOLd=5O=de.ibm.com=abergman@srs.kundenserver.de>
-Message-Id: <20060323203521.613000000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+Message-Id: <20060323203522.545166000@dyn-9-152-242-103.boeblingen.de.ibm.com>
 References: <20060323203423.620978000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-Date: Thu, 23 Mar 2006 00:00:05 +0100
+Date: Thu, 23 Mar 2006 00:00:10 +0100
 From: Arnd Bergmann <abergman@de.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [patch 05/13] powerpc: update cell defconfig
+To: Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@osdl.org>
+Subject: [patch 10/13] add sys_unshare to syscalls.h
 Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
 	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,308 +17,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The default configuration in mainline got a little out of
-sync with what we use internally.
+All architecture independent system calls should be declared
+in syscalls.h, add the one that is missing.
 
+To: Andrew Morton <akpm@osdl.org>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Index: linus-2.6/arch/powerpc/configs/cell_defconfig
-===================================================================
---- linus-2.6.orig/arch/powerpc/configs/cell_defconfig
-+++ linus-2.6/arch/powerpc/configs/cell_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.16-rc6
--# Wed Mar 15 16:19:48 2006
-+# Linux kernel version: 2.6.16
-+# Thu Mar 23 20:48:09 2006
- #
- CONFIG_PPC64=y
- CONFIG_64BIT=y
-@@ -30,6 +30,7 @@ CONFIG_POWER4=y
- CONFIG_PPC_FPU=y
- CONFIG_ALTIVEC=y
- CONFIG_PPC_STD_MMU=y
-+CONFIG_VIRT_CPU_ACCOUNTING=y
- CONFIG_SMP=y
- CONFIG_NR_CPUS=4
+---
+
+This patch is not powerpc-specific in principle, the reason
+for including it in my cell updates is that my next patch
+depends on it.
+
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index d73501b..72de104 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -568,5 +568,6 @@ asmlinkage long compat_sys_newfstatat(un
+ 				      int flag);
+ asmlinkage long compat_sys_openat(unsigned int dfd, const char __user *filename,
+ 				   int flags, int mode);
++asmlinkage long sys_unshare(unsigned long unshare_flags);
  
-@@ -51,7 +52,8 @@ CONFIG_SYSVIPC=y
- # CONFIG_BSD_PROCESS_ACCT is not set
- CONFIG_SYSCTL=y
- # CONFIG_AUDIT is not set
--# CONFIG_IKCONFIG is not set
-+CONFIG_IKCONFIG=y
-+CONFIG_IKCONFIG_PROC=y
- # CONFIG_CPUSETS is not set
- CONFIG_INITRAMFS_SOURCE=""
- CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-@@ -85,7 +87,7 @@ CONFIG_MODULE_UNLOAD=y
- CONFIG_OBSOLETE_MODPARM=y
- # CONFIG_MODVERSIONS is not set
- # CONFIG_MODULE_SRCVERSION_ALL is not set
--# CONFIG_KMOD is not set
-+CONFIG_KMOD=y
- CONFIG_STOP_MACHINE=y
- 
- #
-@@ -130,7 +132,8 @@ CONFIG_CELL_IIC=y
- #
- # Cell Broadband Engine options
- #
--CONFIG_SPU_FS=y
-+CONFIG_SPU_FS=m
-+CONFIG_SPUFS_MMAP=y
- 
- #
- # Kernel options
-@@ -144,7 +147,7 @@ CONFIG_PREEMPT_NONE=y
- # CONFIG_PREEMPT is not set
- CONFIG_PREEMPT_BKL=y
- CONFIG_BINFMT_ELF=y
--# CONFIG_BINFMT_MISC is not set
-+CONFIG_BINFMT_MISC=m
- CONFIG_FORCE_MAX_ZONEORDER=13
- # CONFIG_IOMMU_VMERGE is not set
- CONFIG_KEXEC=y
-@@ -155,13 +158,16 @@ CONFIG_ARCH_SELECT_MEMORY_MODEL=y
- CONFIG_ARCH_FLATMEM_ENABLE=y
- CONFIG_ARCH_SPARSEMEM_ENABLE=y
- CONFIG_SELECT_MEMORY_MODEL=y
--CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_FLATMEM_MANUAL is not set
- # CONFIG_DISCONTIGMEM_MANUAL is not set
--# CONFIG_SPARSEMEM_MANUAL is not set
--CONFIG_FLATMEM=y
--CONFIG_FLAT_NODE_MEM_MAP=y
-+CONFIG_SPARSEMEM_MANUAL=y
-+CONFIG_SPARSEMEM=y
-+CONFIG_HAVE_MEMORY_PRESENT=y
- # CONFIG_SPARSEMEM_STATIC is not set
-+CONFIG_SPARSEMEM_EXTREME=y
-+# CONFIG_MEMORY_HOTPLUG is not set
- CONFIG_SPLIT_PTLOCK_CPUS=4
-+CONFIG_MIGRATION=y
- # CONFIG_PPC_64K_PAGES is not set
- CONFIG_SCHED_SMT=y
- CONFIG_PROC_DEVICETREE=y
-@@ -232,6 +238,7 @@ CONFIG_TCP_CONG_BIC=y
- # CONFIG_IP_VS is not set
- CONFIG_IPV6=y
- # CONFIG_IPV6_PRIVACY is not set
-+# CONFIG_IPV6_ROUTER_PREF is not set
- CONFIG_INET6_AH=m
- CONFIG_INET6_ESP=m
- CONFIG_INET6_IPCOMP=m
-@@ -244,25 +251,7 @@ CONFIG_NETFILTER=y
- # Core Netfilter Configuration
- #
- # CONFIG_NETFILTER_NETLINK is not set
--CONFIG_NETFILTER_XTABLES=m
--CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
--CONFIG_NETFILTER_XT_TARGET_MARK=m
--CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
--CONFIG_NETFILTER_XT_TARGET_NOTRACK=m
--CONFIG_NETFILTER_XT_MATCH_COMMENT=m
--CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
--# CONFIG_NETFILTER_XT_MATCH_DCCP is not set
--CONFIG_NETFILTER_XT_MATCH_HELPER=m
--CONFIG_NETFILTER_XT_MATCH_LENGTH=m
--CONFIG_NETFILTER_XT_MATCH_LIMIT=m
--CONFIG_NETFILTER_XT_MATCH_MAC=m
--CONFIG_NETFILTER_XT_MATCH_MARK=m
--CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
--CONFIG_NETFILTER_XT_MATCH_REALM=m
--CONFIG_NETFILTER_XT_MATCH_SCTP=m
--CONFIG_NETFILTER_XT_MATCH_STATE=m
--CONFIG_NETFILTER_XT_MATCH_STRING=m
--CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
-+# CONFIG_NETFILTER_XTABLES is not set
- 
- #
- # IP: Netfilter Configuration
-@@ -278,51 +267,13 @@ CONFIG_IP_NF_IRC=m
- CONFIG_IP_NF_TFTP=m
- CONFIG_IP_NF_AMANDA=m
- # CONFIG_IP_NF_PPTP is not set
-+# CONFIG_IP_NF_H323 is not set
- CONFIG_IP_NF_QUEUE=m
--CONFIG_IP_NF_IPTABLES=m
--CONFIG_IP_NF_MATCH_IPRANGE=m
--CONFIG_IP_NF_MATCH_MULTIPORT=m
--CONFIG_IP_NF_MATCH_TOS=m
--CONFIG_IP_NF_MATCH_RECENT=m
--CONFIG_IP_NF_MATCH_ECN=m
--CONFIG_IP_NF_MATCH_DSCP=m
--CONFIG_IP_NF_MATCH_AH_ESP=m
--CONFIG_IP_NF_MATCH_TTL=m
--CONFIG_IP_NF_MATCH_OWNER=m
--CONFIG_IP_NF_MATCH_ADDRTYPE=m
--CONFIG_IP_NF_MATCH_HASHLIMIT=m
--CONFIG_IP_NF_MATCH_POLICY=m
--CONFIG_IP_NF_FILTER=m
--CONFIG_IP_NF_TARGET_REJECT=m
--CONFIG_IP_NF_TARGET_LOG=m
--CONFIG_IP_NF_TARGET_ULOG=m
--CONFIG_IP_NF_TARGET_TCPMSS=m
--CONFIG_IP_NF_NAT=m
--CONFIG_IP_NF_NAT_NEEDED=y
--CONFIG_IP_NF_TARGET_MASQUERADE=m
--CONFIG_IP_NF_TARGET_REDIRECT=m
--CONFIG_IP_NF_TARGET_NETMAP=m
--CONFIG_IP_NF_TARGET_SAME=m
--CONFIG_IP_NF_NAT_SNMP_BASIC=m
--CONFIG_IP_NF_NAT_IRC=m
--CONFIG_IP_NF_NAT_FTP=m
--CONFIG_IP_NF_NAT_TFTP=m
--CONFIG_IP_NF_NAT_AMANDA=m
--CONFIG_IP_NF_MANGLE=m
--CONFIG_IP_NF_TARGET_TOS=m
--CONFIG_IP_NF_TARGET_ECN=m
--CONFIG_IP_NF_TARGET_DSCP=m
--CONFIG_IP_NF_TARGET_TTL=m
--CONFIG_IP_NF_RAW=m
--CONFIG_IP_NF_ARPTABLES=m
--CONFIG_IP_NF_ARPFILTER=m
--CONFIG_IP_NF_ARP_MANGLE=m
- 
- #
- # IPv6: Netfilter Configuration (EXPERIMENTAL)
- #
- # CONFIG_IP6_NF_QUEUE is not set
--# CONFIG_IP6_NF_IPTABLES is not set
- 
- #
- # DCCP Configuration (EXPERIMENTAL)
-@@ -355,7 +306,6 @@ CONFIG_IP_NF_ARP_MANGLE=m
- # QoS and/or fair queueing
- #
- # CONFIG_NET_SCHED is not set
--CONFIG_NET_CLS_ROUTE=y
- 
- #
- # Network testing
-@@ -408,7 +358,7 @@ CONFIG_FW_LOADER=y
- # CONFIG_BLK_DEV_COW_COMMON is not set
- CONFIG_BLK_DEV_LOOP=y
- # CONFIG_BLK_DEV_CRYPTOLOOP is not set
--CONFIG_BLK_DEV_NBD=y
-+# CONFIG_BLK_DEV_NBD is not set
- # CONFIG_BLK_DEV_SX8 is not set
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_COUNT=16
-@@ -484,7 +434,23 @@ CONFIG_IDEDMA_AUTO=y
- #
- # Multi-device support (RAID and LVM)
- #
--# CONFIG_MD is not set
-+CONFIG_MD=y
-+CONFIG_BLK_DEV_MD=m
-+CONFIG_MD_LINEAR=m
-+CONFIG_MD_RAID0=m
-+CONFIG_MD_RAID1=m
-+# CONFIG_MD_RAID10 is not set
-+# CONFIG_MD_RAID5 is not set
-+# CONFIG_MD_RAID6 is not set
-+# CONFIG_MD_MULTIPATH is not set
-+# CONFIG_MD_FAULTY is not set
-+CONFIG_BLK_DEV_DM=m
-+CONFIG_DM_CRYPT=m
-+CONFIG_DM_SNAPSHOT=m
-+CONFIG_DM_MIRROR=m
-+CONFIG_DM_ZERO=m
-+CONFIG_DM_MULTIPATH=m
-+# CONFIG_DM_MULTIPATH_EMC is not set
- 
- #
- # Fusion MPT device support
-@@ -548,7 +514,7 @@ CONFIG_MII=y
- # CONFIG_ACENIC is not set
- # CONFIG_DL2K is not set
- CONFIG_E1000=m
--# CONFIG_E1000_NAPI is not set
-+CONFIG_E1000_NAPI=y
- # CONFIG_E1000_DISABLE_PACKET_SPLIT is not set
- # CONFIG_NS83820 is not set
- # CONFIG_HAMACHI is not set
-@@ -560,7 +526,7 @@ CONFIG_SKGE=m
- # CONFIG_SK98LIN is not set
- # CONFIG_TIGON3 is not set
- # CONFIG_BNX2 is not set
--CONFIG_SPIDER_NET=y
-+CONFIG_SPIDER_NET=m
- # CONFIG_MV643XX_ETH is not set
- 
- #
-@@ -678,6 +644,8 @@ CONFIG_SERIAL_CORE_CONSOLE=y
- # CONFIG_SERIAL_JSM is not set
- CONFIG_UNIX98_PTYS=y
- # CONFIG_LEGACY_PTYS is not set
-+CONFIG_HVC_DRIVER=y
-+CONFIG_HVC_RTAS=y
- 
- #
- # IPMI
-@@ -694,14 +662,13 @@ CONFIG_WATCHDOG=y
- # Watchdog Device Drivers
- #
- # CONFIG_SOFT_WATCHDOG is not set
--# CONFIG_WATCHDOG_RTAS is not set
-+CONFIG_WATCHDOG_RTAS=y
- 
- #
- # PCI-based Watchdog Cards
- #
- # CONFIG_PCIPCWATCHDOG is not set
- # CONFIG_WDTPCI is not set
--# CONFIG_RTC is not set
- CONFIG_GEN_RTC=y
- # CONFIG_GEN_RTC_X is not set
- # CONFIG_DTLK is not set
-@@ -833,6 +800,7 @@ CONFIG_DUMMY_CONSOLE=y
- #
- CONFIG_USB_ARCH_HAS_HCD=y
- CONFIG_USB_ARCH_HAS_OHCI=y
-+CONFIG_USB_ARCH_HAS_EHCI=y
- # CONFIG_USB is not set
- 
- #
-@@ -852,7 +820,14 @@ CONFIG_USB_ARCH_HAS_OHCI=y
- #
- # InfiniBand support
- #
--# CONFIG_INFINIBAND is not set
-+CONFIG_INFINIBAND=y
-+CONFIG_INFINIBAND_USER_MAD=m
-+CONFIG_INFINIBAND_USER_ACCESS=m
-+CONFIG_INFINIBAND_MTHCA=m
-+CONFIG_INFINIBAND_MTHCA_DEBUG=y
-+CONFIG_INFINIBAND_IPOIB=m
-+CONFIG_INFINIBAND_IPOIB_DEBUG=y
-+CONFIG_INFINIBAND_IPOIB_DEBUG_DATA=y
- 
- #
- # EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
-@@ -1037,10 +1012,6 @@ CONFIG_CRC32=y
- # CONFIG_LIBCRC32C is not set
- CONFIG_ZLIB_INFLATE=m
- CONFIG_ZLIB_DEFLATE=m
--CONFIG_TEXTSEARCH=y
--CONFIG_TEXTSEARCH_KMP=m
--CONFIG_TEXTSEARCH_BM=m
--CONFIG_TEXTSEARCH_FSM=m
- 
- #
- # Instrumentation Support
-@@ -1058,7 +1029,7 @@ CONFIG_LOG_BUF_SHIFT=15
- CONFIG_DETECT_SOFTLOCKUP=y
- # CONFIG_SCHEDSTATS is not set
- # CONFIG_DEBUG_SLAB is not set
--# CONFIG_DEBUG_MUTEXES is not set
-+CONFIG_DEBUG_MUTEXES=y
- # CONFIG_DEBUG_SPINLOCK is not set
- CONFIG_DEBUG_SPINLOCK_SLEEP=y
- # CONFIG_DEBUG_KOBJECT is not set
+ #endif
 
 --
