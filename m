@@ -1,17 +1,16 @@
-Return-Path: <bersace03@laposte.net>
-In-Reply-To: <500AF45B-8341-44E2-8D83-0B803D7A77EC@laposte.net>
+Return-Path: <mguertin@ppckernel.org>
+In-Reply-To: <1142992999.12137.69.camel@localhost.localdomain>
 References: <82FEFC77-5EDB-4349-B935-AD422913F3F7@laposte.net>
 	<1142992999.12137.69.camel@localhost.localdomain>
-	<500AF45B-8341-44E2-8D83-0B803D7A77EC@laposte.net>
 Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: multipart/alternative; boundary=Apple-Mail-2--619912973
-Message-Id: <5BE976A9-0934-4030-BC23-C4304B498E35@laposte.net>
-From: =?ISO-8859-1?Q?=C9tienne_Bersac?= <bersace03@laposte.net>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <FCCB4002-AA48-437F-98F0-4E284CBB1818@ppckernel.org>
+From: Mark Guertin <mguertin@ppckernel.org>
 Subject: Re: Running Linux 2.6.16 and Xorg 7.0 on iMac G5 rev C (iSight)
-Date: Wed, 22 Mar 2006 17:05:27 +0100
+Date: Wed, 22 Mar 2006 11:33:48 -0500
 To: =?ISO-8859-1?Q?=C9tienne_Bersac?= <bersace03@laposte.net>
-Cc: debian-powerpc@lists.debian.org, ubuntu-devel@lists.ubuntu.com,
-	Linuxppc-dev@ozlabs.org
+Cc: Linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	ubuntu-devel@lists.ubuntu.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 21-Mar-06, at 9:03 PM, Benjamin Herrenschmidt wrote:
 
---Apple-Mail-2--619912973
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	delsp=yes;
-	format=flowed
+>
+>>   - Get Ben's kernel at http://bersace03.free.fr/pub/iMac%20G5/
+>> vmlinux.bz2 (mirror of http://gate.crashing.org/~benh/vmlinux.bz2).
+>> bunzip2 it at /.
+>
+> Don't do that ! :)
+>
+> There is no such thing as benh's kernels :) that's long gone. In  
+> fact, I
+> just removed the above one from the site... it was just a build to  
+> help
+> you. 2.6.16 should work on this machine, if you need a pre-build  
+> version
+> of it, try to get somebody on this list or post yourself one somewhere
+> but don't spread the idea that there is still such a thing as "benh's
+> kernel" :)
 
-Hello,
+If you're ever looking for prebuilt kernels for powerpc check out  
+http://ppckernel.org/
 
-An howto is available at https://wiki.ubuntu.com/iMacG5revC . Thanks =20
-for contributing.
+Many prebuilt (vanilla, some custom kernels).  We're always willing  
+to take on more configs as well (like ubuntu builds).  if you want to  
+add some get in touch with me offlist and we can get you setup.
 
-=C9tienne.=
+Makes for good regression testing as well as we keep an archive of  
+the kernels built.
 
---Apple-Mail-2--619912973
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=ISO-8859-1
-
-<HTML><BODY style=3D"word-wrap: break-word; -khtml-nbsp-mode: space; =
--khtml-line-break: after-white-space; ">Hello,<DIV><BR =
-class=3D"khtml-block-placeholder"></DIV><DIV>An howto is available =
-at=A0<FONT class=3D"Apple-style-span" face=3D"Helvetica"><A =
-href=3D"https://wiki.ubuntu.com/iMacG5revC">https://wiki.ubuntu.com/iMacG5=
-revC</A> . Thanks for contributing.</FONT></DIV><DIV><FONT =
-class=3D"Apple-style-span" face=3D"Helvetica"><BR =
-class=3D"khtml-block-placeholder"></FONT></DIV><DIV><FONT =
-class=3D"Apple-style-span" =
-face=3D"Helvetica">=C9tienne.</FONT></DIV></BODY></HTML>=
-
---Apple-Mail-2--619912973--
+Mark
