@@ -1,15 +1,21 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 22 Mar 2006 11:26:58 +1100
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id E3AA3679EA
+	for <linuxppc-dev@ozlabs.org>; Wed, 22 Mar 2006 11:35:27 +1100 (EST)
+Date: Wed, 22 Mar 2006 11:35:08 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@ozlabs.org
-Subject: [PATCH] powerpc: update mailing list addresses
-Message-Id: <20060322112658.5811ab4f.sfr@canb.auug.org.au>
-In-Reply-To: <96AB6792-D07B-4E5D-B43F-5D2D233B1131@kernel.crashing.org>
-References: <20060321104503.1b2f047b.sfr@canb.auug.org.au>
-	<96AB6792-D07B-4E5D-B43F-5D2D233B1131@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 4/11] powerpc: Replace platform_is_lpar() with a
+	firmware feature
+Message-Id: <20060322113508.08b07cb4.sfr@canb.auug.org.au>
+In-Reply-To: <20060321094630.E7AD067B21@ozlabs.org>
+References: <1142934351.193140.181086235013.qpush@concordia>
+	<20060321094630.E7AD067B21@ozlabs.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__22_Mar_2006_11_35_08_+1100_kNBGm4S_1DvpxTAY"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,57 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__22_Mar_2006_11_35_08_+1100_kNBGm4S_1DvpxTAY
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
+On Tue, 21 Mar 2006 20:45:59 +1100 Michael Ellerman <michael@ellerman.id.au=
+> wrote:
+>
+> It has been decreed that platform numbers are evil, so as a step in that
+> direction, replace platform_is_lpar() with a FW_FEATURE_LPAR bit.
+>=20
+> Currently FW_FEATURE_LPAR really means i/pSeries LPAR, in the future we m=
+ight
+> have to clean that up if we need to be more specific about what LPAR actu=
+ally
+> means. But that's another patch ...
+>=20
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
- Documentation/powerpc/hvcs.txt |    4 ++--
- MAINTAINERS                    |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Just wondering if you considered just #defining platform_is_lpar() to be
+firmware_has_feature(FW_FEATURE_LPAR) ...
 
--- 
+Otherwise looks good.
+
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+--=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
-0e626f91110ad84ae04809aec8a9458c6bdf3c64
-diff --git a/Documentation/powerpc/hvcs.txt b/Documentation/powerpc/hvcs.txt
-index dca75cb..1e38166 100644
---- a/Documentation/powerpc/hvcs.txt
-+++ b/Documentation/powerpc/hvcs.txt
-@@ -558,9 +558,9 @@ partitions.
- 
- The proper channel for reporting bugs is either through the Linux OS
- distribution company that provided your OS or by posting issues to the
--ppc64 development mailing list at:
-+PowerPC development mailing list at:
- 
--linuxppc64-dev@lists.linuxppc.org
-+linuxppc-dev@ozlabs.org
- 
- This request is to provide a documented and searchable public exchange
- of the problems and solutions surrounding this driver for the benefit of
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8db5c33..d8878ca 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -534,7 +534,7 @@ S:   Supported
- BROADBAND PROCESSOR ARCHITECTURE
- P:	Arnd Bergmann
- M:	arnd@arndb.de
--L:	linuxppc64-dev@ozlabs.org
-+L:	linuxppc-dev@ozlabs.org
- W:	http://linuxppc64.org
- S:	Supported
- 
-@@ -1626,7 +1626,7 @@ P:	Anton Blanchard
- M:	anton@samba.org
- M:	anton@au.ibm.com
- W:	http://linuxppc64.org
--L:	linuxppc64-dev@ozlabs.org
-+L:	linuxppc-dev@ozlabs.org
- S:	Supported
- 
- LINUX SECURITY MODULE (LSM) FRAMEWORK
--- 
-1.2.4
+--Signature=_Wed__22_Mar_2006_11_35_08_+1100_kNBGm4S_1DvpxTAY
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQFEIJu8FdBgD/zoJvwRAv0kAJ9QnokdwgDT+vhqcTGjVj8Tu9xa7wCeOh0C
+nxEhOlHjX80jbAtSZHQlmic=
+=hMyQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__22_Mar_2006_11_35_08_+1100_kNBGm4S_1DvpxTAY--
