@@ -1,17 +1,19 @@
-Return-Path: <bersace03@laposte.net>
-In-Reply-To: <FCCB4002-AA48-437F-98F0-4E284CBB1818@ppckernel.org>
-References: <82FEFC77-5EDB-4349-B935-AD422913F3F7@laposte.net>
-	<1142992999.12137.69.camel@localhost.localdomain>
-	<FCCB4002-AA48-437F-98F0-4E284CBB1818@ppckernel.org>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: multipart/alternative; boundary=Apple-Mail-1--611052302
-Message-Id: <FA896BF9-F214-449F-8F7E-B45BA370CCE8@laposte.net>
-From: =?ISO-8859-1?Q?=C9tienne_Bersac?= <bersace03@laposte.net>
-Subject: Re: Running Linux 2.6.16 and Xorg 7.0 on iMac G5 rev C (iSight)
-Date: Wed, 22 Mar 2006 19:33:08 +0100
-To: Mark Guertin <mguertin@ppckernel.org>
-Cc: Linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
-	ubuntu-devel@lists.ubuntu.com
+Return-Path: <mingo@elte.hu>
+Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E0A4867A33
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Mar 2006 05:39:43 +1100 (EST)
+Date: Wed, 22 Mar 2006 14:16:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] possible scheduler deadlock in 2.6.16
+Message-ID: <20060322131646.GB11714@elte.hu>
+References: <20060322104143.GC30422@krispykreme>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060322104143.GC30422@krispykreme>
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +24,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---Apple-Mail-1--611052302
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	delsp=yes;
-	format=flowed
+* Anton Blanchard <anton@samba.org> wrote:
 
-I updated the Howto. feel free to check it. https://wiki.ubuntu.com/=20
-iMacG5revC
+> One way to solve this is to always take runqueues in cpu id order. To 
+> do this we add a cpu variable to the runqueue and check it in the 
+> double runqueue locking functions.
+> 
+> Thoughts?
 
-=C9tienne.=
+it's fine with me - the overhead to double_rq_lock() is minimal, and 
+it's not critical code either.
 
---Apple-Mail-1--611052302
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=ISO-8859-1
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-<HTML><BODY style=3D"word-wrap: break-word; -khtml-nbsp-mode: space; =
--khtml-line-break: after-white-space; ">I updated the Howto. feel free =
-to check it.=A0<FONT class=3D"Apple-style-span" face=3D"Helvetica"><A =
-href=3D"https://wiki.ubuntu.com/iMacG5revC">https://wiki.ubuntu.com/iMacG5=
-revC</A></FONT><DIV><BR =
-class=3D"khtml-block-placeholder"></DIV><DIV>=C9tienne.</DIV></BODY></HTML=
->=
-
---Apple-Mail-1--611052302--
+	Ingo
