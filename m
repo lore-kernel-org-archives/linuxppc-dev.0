@@ -1,21 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1D358679F7
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 08:09:17 +1100 (EST)
-Subject: Re: new sound driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1143134017.8395.19.camel@localhost>
-References: <1143020119.11724.41.camel@localhost>
-	<1143064237.3823.29.camel@localhost.localdomain>
-	<1143134017.8395.19.camel@localhost>
-Content-Type: text/plain
-Date: Fri, 24 Mar 2006 08:09:05 +1100
-Message-Id: <1143148145.4257.8.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Alastair Poole <netstar@gatheringofgray.com>
+Return-Path: <SRS0=lOLd=5O=de.ibm.com=abergman@srs.kundenserver.de>
+Message-Id: <20060323203521.502162000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+References: <20060323203423.620978000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+Date: Thu, 23 Mar 2006 00:00:04 +0100
+From: Arnd Bergmann <abergman@de.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [patch 04/13] powerpc: fix cell iommu setup
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +16,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+A small bug crept in the iommu driver when we made it more
+generic. This patch is needed for boards that have a dma
+window that does not start at bus address zero.
 
-> What I'm currently thinking of is creating one PCM per codec, and then
-> if you can't use them at the same time just forbid access to it.
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-No, it should really be one PCM per bus... I don't see why you would
-prevent somebody from outputing on both digital and analog outputs at
-the same time for example (the same data of course). One PCM = one
-stream = one bus carrying the samples. All codecs on that bus whould be
-set to the same settings of course. If one can't but the other can, just
-mute the one that can't I suppose...
-
-Also, Alsa does have some means of asynchronous notifyication of a state
-change on a control (and calls you back later with some locking) though
-I'm not too familiar with the details. You should ask on the list once
-you have the basic dbdma stuff there :)
+Index: linux-2.6.15-rc5/arch/powerpc/platforms/cell/iommu.c
+===================================================================
+--- linux-2.6.15-rc5.orig/arch/powerpc/platforms/cell/iommu.c
++++ linux-2.6.15-rc5/arch/powerpc/platforms/cell/iommu.c
+@@ -289,7 +289,7 @@ static void cell_do_map_iommu(struct cel
+ 	ioc_base = iommu->mapped_base;
+ 	ioc_mmio_base = iommu->mapped_mmio_base;
  
-> > Just sleep on it for now :) We definitely need a "core" module that
-> > handles all of the gpio mess. ..
-> 
-> Yeah. Haven't even opened that can of worms yet...
-> 
-> johannes
+-	for (real_address = 0, io_address = 0;
++	for (real_address = 0, io_address = map_start;
+ 	     io_address <= map_start + map_size;
+ 	     real_address += io_page_size, io_address += io_page_size) {
+ 		ioste = get_iost_entry(fake_iopt, io_address, io_page_size);
+@@ -302,7 +302,7 @@ static void cell_do_map_iommu(struct cel
+ 		set_iopt_cache(ioc_mmio_base,
+ 			get_ioc_hash_1way(ioste, io_address),
+ 			get_ioc_tag(ioste, io_address),
+-			get_iopt_entry(real_address-map_start, ioid, IOPT_PROT_RW));
++			get_iopt_entry(real_address, ioid, IOPT_PROT_RW));
+ 	}
+ }
+ 
+
+--
