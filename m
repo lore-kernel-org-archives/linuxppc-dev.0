@@ -1,13 +1,12 @@
 Return-Path: <SRS0=lOLd=5O=de.ibm.com=abergman@srs.kundenserver.de>
-Message-Id: <20060323203521.862355000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+Message-Id: <20060323203520.909999000@dyn-9-152-242-103.boeblingen.de.ibm.com>
 References: <20060323203423.620978000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-Date: Thu, 23 Mar 2006 00:00:06 +0100
+Date: Thu, 23 Mar 2006 00:00:01 +0100
 From: Arnd Bergmann <abergman@de.ibm.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [patch 06/13] powerpc: cell interrupt controller updates
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, stk@de.ibm.com,
-	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, hpenner@de.ibm.com, cbe-oss-dev@ozlabs.org
+Subject: [patch 01/13] powerpc: hvc_console updates
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,347 +16,358 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The current interrupt controller setup on Cell is done
-in a rather ad-hoc way with device tree properties
-that are not standardized at all.
+These are some updates from both Ryan and Arnd for the hvc_console
+driver:
 
-In an attempt to do something that follows the OF standard
-(or at least the IBM extensions to it) more closely,
-we have now come up with this patch. It still provides
-a fallback to the old behaviour when we find older firmware,
-that hack can not be removed until the existing customer
-installations have upgraded.
+The main point is to enable the inclusion of a console driver
+for rtas, which is currrently needed for the cell platform.
 
-Cc: hpenner@de.ibm.com
-Cc: stk@de.ibm.com
-Cc: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Milton Miller <miltonm@bga.com>
-Cc: benh@kernel.crashing.org
-From: Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
+Also shuffle around some data-type declarations and moves some
+functions out of include/asm-ppc64/hvconsole.h and into a new
+drivers/char/hvc_console.h file.
+
+From: "Ryan S. Arnold" <rsa@us.ibm.com>
+Signed-off-by: "Ryan S. Arnold" <rsa@us.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Index: linus-2.6/arch/powerpc/platforms/cell/spider-pic.c
+Index: linux-2.6.16-rc/drivers/char/hvc_console.c
 ===================================================================
---- linus-2.6.orig/arch/powerpc/platforms/cell/spider-pic.c
-+++ linus-2.6/arch/powerpc/platforms/cell/spider-pic.c
-@@ -84,10 +84,11 @@ static void __iomem *spider_get_irq_conf
- 
- static void spider_enable_irq(unsigned int irq)
- {
-+	int nodeid = (irq / IIC_NODE_STRIDE) * 0x10;
- 	void __iomem *cfg = spider_get_irq_config(irq);
- 	irq = spider_get_nr(irq);
- 
--	out_be32(cfg, in_be32(cfg) | 0x3107000eu);
-+	out_be32(cfg, in_be32(cfg) | 0x3107000eu | nodeid);
- 	out_be32(cfg + 4, in_be32(cfg + 4) | 0x00020000u | irq);
- }
- 
-@@ -131,61 +132,108 @@ static struct hw_interrupt_type spider_p
- 	.end = spider_end_irq,
- };
- 
--
--int spider_get_irq(unsigned long int_pending)
-+int spider_get_irq(int node)
- {
--	void __iomem *regs = spider_get_pic(int_pending);
- 	unsigned long cs;
--	int irq;
--
--	cs = in_be32(regs + TIR_CS);
-+	void __iomem *regs = spider_pics[node];
- 
--	irq = cs >> 24;
--	if (irq != 63)
--		return irq;
-+	cs = in_be32(regs + TIR_CS) >> 24;
- 
--	return -1;
-+	if (cs == 63)
-+		return -1;
-+	else
-+		return cs;
- }
-- 
--void spider_init_IRQ(void)
+--- linux-2.6.16-rc.orig/drivers/char/hvc_console.c
++++ linux-2.6.16-rc/drivers/char/hvc_console.c
+@@ -39,8 +39,10 @@
+ #include <linux/sched.h>
+ #include <linux/spinlock.h>
+ #include <linux/delay.h>
 +
-+/* hardcoded part to be compatible with older firmware */
+ #include <asm/uaccess.h>
+-#include <asm/hvconsole.h>
 +
-+void spider_init_IRQ_hardcoded(void)
++#include "hvc_console.h"
+ 
+ #define HVC_MAJOR	229
+ #define HVC_MINOR	0
+@@ -54,17 +56,14 @@
+ #define HVC_CLOSE_WAIT (HZ/100) /* 1/10 of a second */
+ 
+ /*
+- * The Linux TTY code does not support dynamic addition of tty derived devices
+- * so we need to know how many tty devices we might need when space is allocated
+- * for the tty device.  Since this driver supports hotplug of vty adapters we
+- * need to make sure we have enough allocated.
++ * These sizes are most efficient for vio, because they are the
++ * native transfer size. We could make them selectable in the
++ * future to better deal with backends that want other buffer sizes.
+  */
+-#define HVC_ALLOC_TTY_ADAPTERS	8
+-
+ #define N_OUTBUF	16
+ #define N_INBUF		16
+ 
+-#define __ALIGNED__	__attribute__((__aligned__(8)))
++#define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
+ 
+ static struct tty_driver *hvc_driver;
+ static struct task_struct *hvc_task;
+@@ -154,7 +153,7 @@ static uint32_t vtermnos[MAX_NR_HVC_CONS
+ 
+ void hvc_console_print(struct console *co, const char *b, unsigned count)
  {
- 	int node;
--	struct device_node *dn;
--	unsigned int *property;
- 	long spiderpic;
-+	long pics[] = { 0x24000008000, 0x34000008000 };
- 	int n;
+-	char c[16] __ALIGNED__;
++	char c[N_OUTBUF] __ALIGNED__;
+ 	unsigned i = 0, n = 0;
+ 	int r, donecr = 0, index = co->index;
  
--/* FIXME: detect multiple PICs as soon as the device tree has them */
--	for (node = 0; node < 1; node++) {
--		dn = of_find_node_by_path("/");
--		n = prom_n_addr_cells(dn);
--		property = (unsigned int *) get_property(dn,
--				"platform-spider-pic", NULL);
-+	pr_debug("%s(%d): Using hardcoded defaults\n", __FUNCTION__, __LINE__);
+@@ -473,8 +472,10 @@ static void hvc_push(struct hvc_struct *
  
--		if (!property)
--			continue;
--		for (spiderpic = 0; n > 0; --n)
--			spiderpic = (spiderpic << 32) + *property++;
-+	for (node = 0; node < num_present_cpus()/2; node++) {
-+		spiderpic = pics[node];
- 		printk(KERN_DEBUG "SPIDER addr: %lx\n", spiderpic);
- 		spider_pics[node] = __ioremap(spiderpic, 0x800, _PAGE_NO_CACHE);
- 		for (n = 0; n < IIC_NUM_EXT; n++) {
- 			int irq = n + IIC_EXT_OFFSET + node * IIC_NODE_STRIDE;
- 			get_irq_desc(irq)->handler = &spider_pic;
+ 	n = hp->ops->put_chars(hp->vtermno, hp->outbuf, hp->n_outbuf);
+ 	if (n <= 0) {
+-		if (n == 0)
++		if (n == 0) {
++			hp->do_wakeup = 1;
+ 			return;
 +		}
- 
-  		/* do not mask any interrupts because of level */
-  		out_be32(spider_pics[node] + TIR_MSK, 0x0);
-- 		
-+
-  		/* disable edge detection clear */
-  		/* out_be32(spider_pics[node] + TIR_EDC, 0x0); */
-- 		
-+
-  		/* enable interrupt packets to be output */
-  		out_be32(spider_pics[node] + TIR_PIEN,
- 			in_be32(spider_pics[node] + TIR_PIEN) | 0x1);
-- 		
-+
-  		/* Enable the interrupt detection enable bit. Do this last! */
-  		out_be32(spider_pics[node] + TIR_DEN,
--			in_be32(spider_pics[node] +TIR_DEN) | 0x1);
-+			in_be32(spider_pics[node] + TIR_DEN) | 0x1);
-+	}
-+}
-+
-+void spider_init_IRQ(void)
-+{
-+	long spider_reg;
-+	struct device_node *dn;
-+	char *compatible;
-+	int n, node = 0;
-+
-+	for (dn = NULL; (dn = of_find_node_by_name(dn, "interrupt-controller"));) {
-+		compatible = (char *)get_property(dn, "compatible", NULL);
- 
-+		if (!compatible)
-+			continue;
-+
-+		if (strstr(compatible, "CBEA,platform-spider-pic"))
-+			spider_reg = *(long *)get_property(dn,"reg", NULL);
-+		else if (strstr(compatible, "sti,platform-spider-pic")) {
-+			spider_init_IRQ_hardcoded();
-+			return;
-+		} else
-+			continue;
-+
-+		if (!spider_reg)
-+			printk("interrupt controller does not have reg property !\n");
-+
-+		n = prom_n_addr_cells(dn);
-+
-+		if ( n != 2)
-+			printk("reg property with invalid number of elements \n");
-+
-+		spider_pics[node] = __ioremap(spider_reg, 0x800, _PAGE_NO_CACHE);
-+
-+		printk("SPIDER addr: %lx with %i addr_cells mapped to %p\n",
-+		       spider_reg, n, spider_pics[node]);
-+
-+		for (n = 0; n < IIC_NUM_EXT; n++) {
-+			int irq = n + IIC_EXT_OFFSET + node * IIC_NODE_STRIDE;
-+			get_irq_desc(irq)->handler = &spider_pic;
- 		}
-+
-+		/* do not mask any interrupts because of level */
-+		out_be32(spider_pics[node] + TIR_MSK, 0x0);
-+
-+		/* disable edge detection clear */
-+		/* out_be32(spider_pics[node] + TIR_EDC, 0x0); */
-+
-+		/* enable interrupt packets to be output */
-+		out_be32(spider_pics[node] + TIR_PIEN,
-+			in_be32(spider_pics[node] + TIR_PIEN) | 0x1);
-+
-+		/* Enable the interrupt detection enable bit. Do this last! */
-+		out_be32(spider_pics[node] + TIR_DEN,
-+			in_be32(spider_pics[node] + TIR_DEN) | 0x1);
-+
-+		node++;
- 	}
+ 		/* throw away output on error; this happens when
+ 		   there is no session connected to the vterm. */
+ 		hp->n_outbuf = 0;
+@@ -486,12 +487,19 @@ static void hvc_push(struct hvc_struct *
+ 		hp->do_wakeup = 1;
  }
-Index: linus-2.6/arch/powerpc/platforms/cell/interrupt.c
-===================================================================
---- linus-2.6.orig/arch/powerpc/platforms/cell/interrupt.c
-+++ linus-2.6/arch/powerpc/platforms/cell/interrupt.c
-@@ -123,7 +123,7 @@ static int iic_external_get_irq(struct i
- 		    pending.class != 2)
+ 
+-static inline int __hvc_write_kernel(struct hvc_struct *hp,
+-				   const unsigned char *buf, int count)
++static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count)
+ {
++	struct hvc_struct *hp = tty->driver_data;
+ 	unsigned long flags;
+ 	int rsize, written = 0;
+ 
++	/* This write was probably executed during a tty close. */
++	if (!hp)
++		return -EPIPE;
++
++	if (hp->count <= 0)
++		return -EIO;
++
+ 	spin_lock_irqsave(&hp->lock, flags);
+ 
+ 	/* Push pending writes */
+@@ -510,26 +518,8 @@ static inline int __hvc_write_kernel(str
+ 	}
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+-	return written;
+-}
+-static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count)
+-{
+-	struct hvc_struct *hp = tty->driver_data;
+-	int written;
+-
+-	/* This write was probably executed during a tty close. */
+-	if (!hp)
+-		return -EPIPE;
+-
+-	if (hp->count <= 0)
+-		return -EIO;
+-
+-	written = __hvc_write_kernel(hp, buf, count);
+-
+ 	/*
+ 	 * Racy, but harmless, kick thread if there is still pending data.
+-	 * There really is nothing wrong with kicking the thread, even if there
+-	 * is no buffered data.
+ 	 */
+ 	if (hp->n_outbuf)
+ 		hvc_kick();
+@@ -614,6 +604,13 @@ static int hvc_poll(struct hvc_struct *h
+ 				spin_unlock_irqrestore(&hp->lock, flags);
+ 				tty_hangup(tty);
+ 				spin_lock_irqsave(&hp->lock, flags);
++			} else if ( n == -EAGAIN ) {
++				/*
++				 * Some back-ends can only ensure a certain min
++				 * num of bytes read, which may be > 'count'.
++				 * Let the tty clear the flip buff to make room.
++				 */
++				poll_mask |= HVC_POLL_READ;
+ 			}
  			break;
- 		irq = IIC_EXT_OFFSET
--			+ spider_get_irq(pending.prio + node * IIC_NODE_STRIDE)
-+			+ spider_get_irq(node)
- 			+ node * IIC_NODE_STRIDE;
- 		break;
- 	case 0x01 ... 0x04:
-@@ -174,40 +174,104 @@ int iic_get_irq(struct pt_regs *regs)
- 	return irq;
- }
+ 		}
+@@ -635,16 +632,7 @@ static int hvc_poll(struct hvc_struct *h
+ 			tty_insert_flip_char(tty, buf[i], 0);
+ 		}
  
--static int setup_iic(int cpu, struct iic *iic)
-+/* hardcoded part to be compatible with older firmware */
-+
-+static int setup_iic_hardcoded(void)
- {
- 	struct device_node *np;
--	int nodeid = cpu / 2;
-+	int nodeid, cpu;
- 	unsigned long regs;
-+	struct iic *iic;
- 
--	for (np = of_find_node_by_type(NULL, "cpu");
--	     np;
--	     np = of_find_node_by_type(np, "cpu")) {
--		if (nodeid == *(int *)get_property(np, "node-id", NULL))
+-		/*
+-		 * Account for the total amount read in one loop, and if above
+-		 * 64 bytes, we do a quick schedule loop to let the tty grok
+-		 * the data and eventually throttle us.
+-		 */
+ 		read_total += n;
+-		if (read_total >= 64) {
+-			poll_mask |= HVC_POLL_QUICK;
 -			break;
--	}
-+	for_each_cpu(cpu) {
-+		iic = &per_cpu(iic, cpu);
-+		nodeid = cpu/2;
- 
--	if (!np) {
--		printk(KERN_WARNING "IIC: CPU %d not found\n", cpu);
--		iic->regs = NULL;
--		iic->target_id = 0xff;
--		return -ENODEV;
--	}
-+		for (np = of_find_node_by_type(NULL, "cpu");
-+		     np;
-+		     np = of_find_node_by_type(np, "cpu")) {
-+			if (nodeid == *(int *)get_property(np, "node-id", NULL))
-+				break;
-+			}
-+
-+		if (!np) {
-+			printk(KERN_WARNING "IIC: CPU %d not found\n", cpu);
-+			iic->regs = NULL;
-+			iic->target_id = 0xff;
-+			return -ENODEV;
-+			}
-+
-+		regs = *(long *)get_property(np, "iic", NULL);
-+
-+		/* hack until we have decided on the devtree info */
-+		regs += 0x400;
-+		if (cpu & 1)
-+			regs += 0x20;
-+
-+		printk(KERN_INFO "IIC for CPU %d at %lx\n", cpu, regs);
-+		iic->regs = __ioremap(regs, sizeof(struct iic_regs),
-+				      _PAGE_NO_CACHE);
- 
--	regs = *(long *)get_property(np, "iic", NULL);
-+		iic->target_id = (nodeid << 4) + ((cpu & 1) ? 0xf : 0xe);
-+	}
- 
--	/* hack until we have decided on the devtree info */
--	regs += 0x400;
--	if (cpu & 1)
--		regs += 0x20;
--
--	printk(KERN_DEBUG "IIC for CPU %d at %lx\n", cpu, regs);
--	iic->regs = __ioremap(regs, sizeof(struct iic_regs),
--					 _PAGE_NO_CACHE);
--	iic->target_id = (nodeid << 4) + ((cpu & 1) ? 0xf : 0xe);
- 	return 0;
- }
- 
-+static int setup_iic(void)
-+{
-+	struct device_node *dn;
-+	unsigned long *regs;
-+	char *compatible;
-+ 	unsigned *np, found = 0;
-+	struct iic *iic = NULL;
-+
-+	for (dn = NULL; (dn = of_find_node_by_name(dn, "interrupt-controller"));) {
-+		compatible = (char *)get_property(dn, "compatible", NULL);
-+
-+		if (!compatible) {
-+			printk(KERN_WARNING "no compatible property found !\n");
-+			continue;
-+		}
-+
-+ 		if (strstr(compatible, "IBM,CBEA-Internal-Interrupt-Controller"))
-+ 			regs = (unsigned long *)get_property(dn,"reg", NULL);
-+ 		else
-+			continue;
-+
-+ 		if (!regs)
-+ 			printk(KERN_WARNING "IIC: no reg property\n");
-+
-+ 		np = (unsigned int *)get_property(dn, "ibm,interrupt-server-ranges", NULL);
-+
-+ 		if (!np) {
-+			printk(KERN_WARNING "IIC: CPU association not found\n");
-+			iic->regs = NULL;
-+			iic->target_id = 0xff;
-+			return -ENODEV;
-+		}
-+
-+ 		iic = &per_cpu(iic, np[0]);
-+ 		iic->regs = __ioremap(regs[0], sizeof(struct iic_regs),
-+ 				      _PAGE_NO_CACHE);
-+		iic->target_id = ((np[0] & 2) << 3) + ((np[0] & 1) ? 0xf : 0xe);
-+ 		printk("IIC for CPU %d at %lx mapped to %p\n", np[0], regs[0], iic->regs);
-+
-+ 		iic = &per_cpu(iic, np[1]);
-+ 		iic->regs = __ioremap(regs[2], sizeof(struct iic_regs),
-+ 				      _PAGE_NO_CACHE);
-+		iic->target_id = ((np[1] & 2) << 3) + ((np[1] & 1) ? 0xf : 0xe);
-+ 		printk("IIC for CPU %d at %lx mapped to %p\n", np[1], regs[2], iic->regs);
-+
-+		found++;
-+  	}
-+
-+	if (found)
-+		return 0;
-+	else
-+		return -ENODEV;
-+}
-+
- #ifdef CONFIG_SMP
- 
- /* Use the highest interrupt priorities for IPI */
-@@ -283,10 +347,12 @@ void iic_init_IRQ(void)
- 	int cpu, irq_offset;
- 	struct iic *iic;
- 
-+	if (setup_iic() < 0)
-+		setup_iic_hardcoded();
-+
- 	irq_offset = 0;
- 	for_each_cpu(cpu) {
- 		iic = &per_cpu(iic, cpu);
--		setup_iic(cpu, iic);
- 		if (iic->regs)
- 			out_be64(&iic->regs->prio, 0xff);
+-		}
  	}
-Index: linus-2.6/arch/powerpc/platforms/cell/interrupt.h
+  throttled:
+ 	/* Wakeup write queue if necessary */
+@@ -767,7 +755,8 @@ struct hvc_struct __devinit *hvc_alloc(u
+ 	 * see if this vterm id matches one registered for console.
+ 	 */
+ 	for (i=0; i < MAX_NR_HVC_CONSOLES; i++)
+-		if (vtermnos[i] == hp->vtermno)
++		if (vtermnos[i] == hp->vtermno &&
++		    cons_ops[i] == hp->ops)
+ 			break;
+ 
+ 	/* no matching slot, just use a counter */
+Index: linux-2.6.16-rc/drivers/char/hvc_console.h
 ===================================================================
---- linus-2.6.orig/arch/powerpc/platforms/cell/interrupt.h
-+++ linus-2.6/arch/powerpc/platforms/cell/interrupt.h
-@@ -57,7 +57,7 @@ extern void iic_local_disable(void);
- extern u8 iic_get_target_id(int cpu);
+--- /dev/null
++++ linux-2.6.16-rc/drivers/char/hvc_console.h
+@@ -0,0 +1,63 @@
++/*
++ * hvc_console.h
++ * Copyright (C) 2005 IBM Corporation
++ *
++ * Author(s):
++ * 	Ryan S. Arnold <rsa@us.ibm.com>
++ *
++ * hvc_console header information:
++ *      moved here from include/asm-powerpc/hvconsole.h
++ *      and drivers/char/hvc_console.c
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++#ifndef HVC_CONSOLE_H
++#define HVC_CONSOLE_H
++
++/*
++ * This is the max number of console adapters that can/will be found as
++ * console devices on first stage console init.  Any number beyond this range
++ * can't be used as a console device but is still a valid tty device.
++ */
++#define MAX_NR_HVC_CONSOLES	16
++
++/*
++ * The Linux TTY code does not support dynamic addition of tty derived devices
++ * so we need to know how many tty devices we might need when space is allocated
++ * for the tty device.  Since this driver supports hotplug of vty adapters we
++ * need to make sure we have enough allocated.
++ */
++#define HVC_ALLOC_TTY_ADAPTERS	8
++
++
++/* implemented by a low level driver */
++struct hv_ops {
++	int (*get_chars)(uint32_t vtermno, char *buf, int count);
++	int (*put_chars)(uint32_t vtermno, const char *buf, int count);
++};
++
++struct hvc_struct;
++
++/* Register a vterm and a slot index for use as a console (console_init) */
++extern int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops);
++
++/* register a vterm for hvc tty operation (module_init or hotplug add) */
++extern struct hvc_struct * __devinit hvc_alloc(uint32_t vtermno, int irq,
++						 struct hv_ops *ops);
++/* remove a vterm from hvc tty operation (modele_exit or hotplug remove) */
++extern int __devexit hvc_remove(struct hvc_struct *hp);
++
++#endif // HVC_CONSOLE_H
+Index: linux-2.6.16-rc/include/asm-powerpc/hvconsole.h
+===================================================================
+--- linux-2.6.16-rc.orig/include/asm-powerpc/hvconsole.h
++++ linux-2.6.16-rc/include/asm-powerpc/hvconsole.h
+@@ -24,17 +24,16 @@
+ #ifdef __KERNEL__
  
- extern void spider_init_IRQ(void);
--extern int spider_get_irq(unsigned long int_pending);
-+extern int spider_get_irq(int node);
+ /*
+- * This is the max number of console adapters that can/will be found as
+- * console devices on first stage console init.  Any number beyond this range
+- * can't be used as a console device but is still a valid tty device.
++ * PSeries firmware will only send/recv up to 16 bytes of character data per
++ * hcall.
+  */
+-#define MAX_NR_HVC_CONSOLES	16
++#define MAX_VIO_PUT_CHARS	16
++#define SIZE_VIO_GET_CHARS	16
  
- #endif
- #endif /* ASM_CELL_PIC_H */
+-/* implemented by a low level driver */
+-struct hv_ops {
+-	int (*get_chars)(uint32_t vtermno, char *buf, int count);
+-	int (*put_chars)(uint32_t vtermno, const char *buf, int count);
+-};
++/*
++ * Vio firmware always attempts to fetch MAX_VIO_GET_CHARS chars.  The 'count'
++ * parm is included to conform to put_chars() function pointer template
++ */
+ extern int hvc_get_chars(uint32_t vtermno, char *buf, int count);
+ extern int hvc_put_chars(uint32_t vtermno, const char *buf, int count);
+ 
+Index: linux-2.6.16-rc/drivers/char/Kconfig
+===================================================================
+--- linux-2.6.16-rc.orig/drivers/char/Kconfig
++++ linux-2.6.16-rc/drivers/char/Kconfig
+@@ -560,9 +560,19 @@ config TIPAR
+ 
+ 	  If unsure, say N.
+ 
++config HVC_DRIVER
++	bool
++	help
++	  Users of pSeries machines that want to utilize the hvc console front-end
++	  module for their backend console driver should select this option.
++	  It will automatically be selected if one of the back-end console drivers
++	  is selected.
++
++
+ config HVC_CONSOLE
+ 	bool "pSeries Hypervisor Virtual Console support"
+ 	depends on PPC_PSERIES
++	select HVC_DRIVER
+ 	help
+ 	  pSeries machines when partitioned support a hypervisor virtual
+ 	  console. This driver allows each pSeries partition to have a console
+Index: linux-2.6.16-rc/drivers/char/Makefile
+===================================================================
+--- linux-2.6.16-rc.orig/drivers/char/Makefile
++++ linux-2.6.16-rc/drivers/char/Makefile
+@@ -41,11 +41,12 @@ obj-$(CONFIG_N_HDLC)		+= n_hdlc.o
+ obj-$(CONFIG_AMIGA_BUILTIN_SERIAL) += amiserial.o
+ obj-$(CONFIG_SX)		+= sx.o generic_serial.o
+ obj-$(CONFIG_RIO)		+= rio/ generic_serial.o
+-obj-$(CONFIG_HVC_CONSOLE)	+= hvc_console.o hvc_vio.o hvsi.o
++obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
++obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
+ obj-$(CONFIG_RAW_DRIVER)	+= raw.o
+ obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
+ obj-$(CONFIG_MMTIMER)		+= mmtimer.o
+-obj-$(CONFIG_VIOCONS) += viocons.o
++obj-$(CONFIG_VIOCONS)		+= viocons.o
+ obj-$(CONFIG_VIOTAPE)		+= viotape.o
+ obj-$(CONFIG_HVCS)		+= hvcs.o
+ obj-$(CONFIG_SGI_MBCS)		+= mbcs.o
+Index: linux-2.6.16-rc/drivers/char/hvc_vio.c
+===================================================================
+--- linux-2.6.16-rc.orig/drivers/char/hvc_vio.c
++++ linux-2.6.16-rc/drivers/char/hvc_vio.c
+@@ -31,10 +31,13 @@
+ 
+ #include <linux/types.h>
+ #include <linux/init.h>
++
+ #include <asm/hvconsole.h>
+ #include <asm/vio.h>
+ #include <asm/prom.h>
+ 
++#include "hvc_console.h"
++
+ char hvc_driver_name[] = "hvc_console";
+ 
+ static struct vio_device_id hvc_driver_table[] __devinitdata = {
+@@ -48,6 +51,14 @@ static int filtered_get_chars(uint32_t v
+ 	unsigned long got;
+ 	int i;
+ 
++	/*
++	 * Vio firmware will read up to SIZE_VIO_GET_CHARS at its own discretion
++	 * so we play safe and avoid the situation where got > count which could
++	 * overload the flip buffer.
++	 */
++	if (count < SIZE_VIO_GET_CHARS)
++		return -EAGAIN;
++
+ 	got = hvc_get_chars(vtermno, buf, count);
+ 
+ 	/*
+Index: linux-2.6.16-rc/arch/powerpc/platforms/pseries/hvconsole.c
+===================================================================
+--- linux-2.6.16-rc.orig/arch/powerpc/platforms/pseries/hvconsole.c
++++ linux-2.6.16-rc/arch/powerpc/platforms/pseries/hvconsole.c
+@@ -62,6 +62,11 @@ int hvc_put_chars(uint32_t vtermno, cons
+ 	unsigned long *lbuf = (unsigned long *) buf;
+ 	long ret;
+ 
++
++	/* hcall will ret H_PARAMETER if 'count' exceeds firmware max.*/
++	if (count > MAX_VIO_PUT_CHARS)
++		count = MAX_VIO_PUT_CHARS;
++
+ 	ret = plpar_hcall_norets(H_PUT_TERM_CHAR, vtermno, count, lbuf[0],
+ 				 lbuf[1]);
+ 	if (ret == H_Success)
 
 --
