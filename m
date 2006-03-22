@@ -1,12 +1,12 @@
 Return-Path: <kim.phillips@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 17619679EB
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Mar 2006 07:33:26 +1100 (EST)
-Date: Wed, 22 Mar 2006 14:33:12 -0600
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 31BB7679FD
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Mar 2006 07:39:06 +1100 (EST)
+Date: Wed, 22 Mar 2006 14:39:03 -0600
 From: Kim Phillips <kim.phillips@freescale.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Add FSL SEC node to documentation (whitespace fixed)
-Message-Id: <20060322143312.6339cb81.kim.phillips@freescale.com>
+Subject: [PATCH] powerpc: Add FSL SEC node to documentation
+Message-Id: <20060322143903.3917c5f0.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
