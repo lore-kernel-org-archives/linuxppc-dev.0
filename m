@@ -1,15 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Running Linux 2.6.16 and Xorg 7.0 on iMac G5 rev C (iSight)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: =?ISO-8859-1?Q?=C9tienne?= Bersac <bersace03@laposte.net>
-In-Reply-To: <82FEFC77-5EDB-4349-B935-AD422913F3F7@laposte.net>
-References: <82FEFC77-5EDB-4349-B935-AD422913F3F7@laposte.net>
-Content-Type: text/plain
-Date: Wed, 22 Mar 2006 13:03:18 +1100
-Message-Id: <1142992999.12137.69.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
-	ubuntu-devel@lists.ubuntu.com
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17440.52713.328338.255363@cargo.ozlabs.ibm.com>
+Date: Wed, 22 Mar 2006 15:09:13 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH] powerpc: Add FSL SEC node to documentation
+In-Reply-To: <20060321191012.2ef20179.kim.phillips@freescale.com>
+References: <20060320195945.004fdf26.kim.phillips@freescale.com>
+	<200603202014.44879.hollis@penguinppc.org>
+	<20060321114806.6bcf3885.kim.phillips@freescale.com>
+	<3C6218C3-3FC0-437E-A798-3AD6FEB69713@kernel.crashing.org>
+	<20060321191012.2ef20179.kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,18 +22,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kim Phillips writes:
 
->   - Get Ben's kernel at http://bersace03.free.fr/pub/iMac%20G5/ 
-> vmlinux.bz2 (mirror of http://gate.crashing.org/~benh/vmlinux.bz2).  
-> bunzip2 it at /.
+> ok, here's the replacement replacement patch with the above fixes:
 
-Don't do that ! :)
+Unfortunately your mailer wrecked the whitespace and it doesn't
+apply.  Please resend with a better mailer.
 
-There is no such thing as benh's kernels :) that's long gone. In fact, I
-just removed the above one from the site... it was just a build to help
-you. 2.6.16 should work on this machine, if you need a pre-build version
-of it, try to get somebody on this list or post yourself one somewhere
-but don't spread the idea that there is still such a thing as "benh's
-kernel" :)
-
-Ben.
+Thanks,
+Paul.
