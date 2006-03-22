@@ -1,19 +1,15 @@
-Return-Path: <bwaite@irobot.com>
-Received: from irobot.com (smtp1.irobot.com [66.238.211.203])
-	by ozlabs.org (Postfix) with ESMTP id 31C9B679E6
+Return-Path: <dwilson@dslextreme.com>
+Received: from mail5.dslextreme.com (mail5.dslextreme.com [66.51.199.81])
+	by ozlabs.org (Postfix) with SMTP id D70DE679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 22 Mar 2006 02:00:28 +1100 (EST)
-From: Brian Waite <bwaite@irobot.com>
+	Thu, 23 Mar 2006 01:34:54 +1100 (EST)
+Message-ID: <200603220628100675.0019366F@smtp.dslextreme.com>
+Date: Wed, 22 Mar 2006 06:28:10 -0800
+From: "Dan Wilson" <dwilson@dslextreme.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: VLAN support on TSEC for MPC8541
-Date: Tue, 21 Mar 2006 09:48:20 -0500
-References: <F795765B112E7344AF36AA9112796415019ECE6A@xmb-sjc-212.amer.cisco.com>
-In-Reply-To: <F795765B112E7344AF36AA9112796415019ECE6A@xmb-sjc-212.amer.cisco.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1433138.rTtNaEDWQ7";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200603210948.23646.bwaite@irobot.com>
-Cc: "Bizhan Gholikhamseh \(bgholikh\)" <bgholikh@cisco.com>
+Subject: software-triggered reset of MPC8541
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,35 +20,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart1433138.rTtNaEDWQ7
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+My apologies for asking a question in this mailing list that is somewhat=
+ off-topic, but this is the best list I know of for such a question:
 
-On Tuesday 21 March 2006 9:04 am, Bizhan Gholikhamseh (bgholikh) wrote:
-> Hi All,
-> I have asked this question in past with no response. Are there any VLAN
-> implementation of TSEC driver for MPC8541 (with CPM core)?
->
-> Many thanks in advance,
-> Bizhan
-Yes it was answered, and quite directly I might add.
-http://marc.theaimsgroup.com/?l=linuxppc-embedded&m=114166772622557&w=2
+We are trying to implement a software function to reset an 8541.  The ELDK=
+ 4.0 kernel includes an abort() function that does this by setting the=
+ appropriate bits in DBCR0.  In our tests, this unfailingly reboots the=
+ unit.  A colleague has put an identical function into a non-linux-based=
+ application on which he is working, and finds that most of the time the=
+ unit reboots as expected, but sometimes it just hangs.
 
+My question is: does the linux kernel do anything special to prepare the=
+ processor environment for this reboot prior to calling abort()?  The only=
+ thing I could find was a call to local_irq_disable(), which does:
+static inline void local_irq_disable(void)
+{
+#ifdef CONFIG_BOOKE
+        __asm__ __volatile__("wrteei 0": : :"memory");
+#else
+        unsigned long msr;
+        __asm__ __volatile__("": : :"memory");
+        msr =3D mfmsr();
+        SET_MSR_EE(msr & ~MSR_EE);
+#endif
+}
 
-Thanks
-Brian
+As the 8541 is an E500 core, I believe it is the #ifdef CONFIG_BOOKE code=
+ that is being executed.  The wrteei 0 instruction is clear enough.  What=
+ does the rest of that line do (i.e., the repeated colons and the memory=
+ command)?  I haven't been able to find a memory command in the ppc=
+ instruction set documents that I have?
 
---nextPart1433138.rTtNaEDWQ7
-Content-Type: application/pgp-signature
+Thanks in advance for any help anyone can give to help us understand this=
+ code sequence better!
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
+Best regards,
 
-iD8DBQBEIBI37q+4d2oaW2wRAp4cAJ49WWRdez44D0oedDZ0TCsTsZNIIgCfa5pN
-ZaP849ve0heh3RYz2qLVrxM=
-=rBfw
------END PGP SIGNATURE-----
-
---nextPart1433138.rTtNaEDWQ7--
+Dan.
