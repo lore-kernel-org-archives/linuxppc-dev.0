@@ -1,18 +1,16 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp107.mail.mud.yahoo.com (smtp107.mail.mud.yahoo.com
-	[209.191.85.217]) by ozlabs.org (Postfix) with SMTP id 2B676679EA
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Mar 2006 00:30:16 +1100 (EST)
-Message-ID: <4421307F.8020300@yahoo.com.au>
-Date: Wed, 22 Mar 2006 22:09:51 +1100
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] possible scheduler deadlock in 2.6.16
-References: <20060322104143.GC30422@krispykreme>
-In-Reply-To: <20060322104143.GC30422@krispykreme>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
+Return-Path: <bersace03@laposte.net>
+In-Reply-To: <1142992999.12137.69.camel@localhost.localdomain>
+References: <82FEFC77-5EDB-4349-B935-AD422913F3F7@laposte.net>
+	<1142992999.12137.69.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v746.3)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <500AF45B-8341-44E2-8D83-0B803D7A77EC@laposte.net>
+From: =?ISO-8859-1?Q?=C9tienne_Bersac?= <bersace03@laposte.net>
+Subject: Re: Running Linux 2.6.16 and Xorg 7.0 on iMac G5 rev C (iSight)
+Date: Wed, 22 Mar 2006 15:29:15 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org,
+	ubuntu-devel@lists.ubuntu.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Blanchard wrote:
+Hello,
 
-> One way to solve this is to always take runqueues in cpu id order. To do
-> this we add a cpu variable to the runqueue and check it in the
-> double runqueue locking functions.
-> 
-> Thoughts?
-> 
+>>   - Get Ben's kernel at http://bersace03.free.fr/pub/iMac%20G5/
+>> vmlinux.bz2 (mirror of http://gate.crashing.org/~benh/vmlinux.bz2).
+>> bunzip2 it at /.
+>
+> Don't do that ! :)
 
-You're right. I can't think of a better fix, although we've been trying
-to avoid adding cpu to the runqueue structure.
+I uploaded a .deb for 2.6.16 at http://bersace03.free.fr/pub/Linux/=20
+iMac%20G5 . We may extract vmlinux from it and copy it to Macintosh =20
+Volume, but that's untested.
 
-I was going to suggest moving more work into wake_sleeping_dependent
-instead, but cores with 4 and more threads now make that less desirable
-I suppose.
+I really need feedback on it. I'll write an howto at wiki.ubuntu.com.
 
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+=C9tienne.=
