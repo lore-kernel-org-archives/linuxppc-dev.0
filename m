@@ -1,22 +1,27 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id D2AFF67B36
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 07:13:32 +1100 (EST)
-Date: Thu, 23 Mar 2006 14:12:58 -0600
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] kdump: Fix for machine checkstop on DMA fault
-Message-ID: <20060323201258.GA5538@pb15.lixom.net>
-References: <44222462.2030103@us.ibm.com>
-	<20060323053854.GA17693@pb15.lixom.net>
-	<200603231706.35508.michael@ellerman.id.au>
-	<20060323061904.GA22439@pb15.lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060323061904.GA22439@pb15.lixom.net>
-From: Olof Johansson <olof@lixom.net>
-Cc: Milton Miller <miltonm@bga.com>, Michael Ellerman <michael@ellerman.id.au>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Olaf Hering <olh@suse.de>, ellerman@au1.ibm.com
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C998567B2D
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 08:04:03 +1100 (EST)
+Date: Thu, 23 Mar 2006 22:03:57 +0100
+From: Olaf Hering <olh@suse.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] return to OF via trap, not exit
+Message-ID: <20060323210357.GC24667@suse.de>
+References: <20060304191026.GA9815@suse.de>
+	<200603061212.12815.michael@ellerman.id.au>
+	<20060306073834.GA24869@suse.de>
+	<590CA2B3-AACE-4B69-930D-9A66A42FFC83@kernel.crashing.org>
+	<20060306074339.GC24869@suse.de>
+	<1912CD56-027C-491D-B2A2-EA44AB4DDD14@kernel.crashing.org>
+	<20060306074953.GE24869@suse.de>
+	<EA07A673-A993-490A-ADEC-29CFDF1DDAC1@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <EA07A673-A993-490A-ADEC-29CFDF1DDAC1@kernel.crashing.org>
+Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +31,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 23, 2006 at 12:19:04AM -0600, Olof Johansson wrote:
+ On Mon, Mar 06, Segher Boessenkool wrote:
 
-> The crash kernel needs to be even more careful, and instead read out
-> the entries that are mapped and reserve them. This would require a bit
-> more plumbing since there's no way to read an entry right now, but it'd
-> remove that hole.
+> That's better than always calling trap, sure.  Is there any reason
+> you can't just do it on Macs though?  Because the problem you're trying
+> to work around only happens there.
 
-Actually, what's probably easier is to allocate some entries when the
-purgatory is set up, and make the crash kernel only use those by modifying
-the device tree accordingly. Sort of how regular memory is handled right
-now. That'd be a cleaner solution with less changes needed.
-
-The trick will be to get a decent size contiguous allocation, but the
-same applies for the memory reserve.
+Maybe something like this? Only compile tested
 
 
--Olof
+Do not call prom exit prom_panic. It clears the screen and the exit message is lost.
+On some (or all?) pmacs it causes another crash when OF tries to print the
+date and time in its banner.
+
+Set of_platform earlier to catch more prom_panic() calls.
+
+Signed-off-by: Olaf Hering <olh@suse.de>
+
+ arch/powerpc/kernel/prom_init.c |   23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+Index: linux-2.6.16-olh/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-2.6.16-olh.orig/arch/powerpc/kernel/prom_init.c
++++ linux-2.6.16-olh/arch/powerpc/kernel/prom_init.c
+@@ -397,6 +397,11 @@ static void __init __attribute__((noretu
+ 	reason = PTRRELOC(reason);
+ #endif
+ 	prom_print(reason);
++	/* Do not call exit because it clears the screen on pmac
++	 * it also causes some sort of double-fault on early pmacs */
++	if (RELOC(of_platform) == PLATFORM_POWERMAC)
++		asm("trap\n");
++
+ 	/* ToDo: should put up an SRC here on p/iSeries */
+ 	call_prom("exit", 0, 0);
+ 
+@@ -2060,15 +2065,6 @@ unsigned long __init prom_init(unsigned 
+ 	 */
+ 	prom_init_stdout();
+ 
+-	/* Bail if this is a kdump kernel. */
+-	if (PHYSICAL_START > 0)
+-		prom_panic("Error: You can't boot a kdump kernel from OF!\n");
+-
+-	/*
+-	 * Check for an initrd
+-	 */
+-	prom_check_initrd(r3, r4);
+-
+ 	/*
+ 	 * Get default machine type. At this point, we do not differentiate
+ 	 * between pSeries SMP and pSeries LPAR
+@@ -2078,6 +2074,15 @@ unsigned long __init prom_init(unsigned 
+ 	prom_setprop(_prom->chosen, "/chosen", "linux,platform",
+ 		     &getprop_rval, sizeof(getprop_rval));
+ 
++	/* Bail if this is a kdump kernel. */
++	if (PHYSICAL_START > 0)
++		prom_panic("Error: You can't boot a kdump kernel from OF!\n");
++
++	/*
++	 * Check for an initrd
++	 */
++	prom_check_initrd(r3, r4);
++
+ #ifdef CONFIG_PPC_PSERIES
+ 	/*
+ 	 * On pSeries, inform the firmware about our capabilities
