@@ -3,21 +3,22 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EE35367A6C
+	by ozlabs.org (Postfix) with ESMTP id B7B0267B16
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Mar 2006 04:14:40 +1100 (EST)
-In-Reply-To: <dvuj1k$318$1@sea.gmane.org>
-References: <dvsds7$ta0$1@sea.gmane.org>
-	<E895715F-A853-4A27-8076-90A1973273E2@kernel.crashing.org>
-	<dvuj1k$318$1@sea.gmane.org>
+	Fri, 24 Mar 2006 04:19:06 +1100 (EST)
+In-Reply-To: <4422D6E3.1010407@ovro.caltech.edu>
+References: <B1E46DE837A394458BB1A58F74A66A780596CB@ala-mail02.corp.ad.wrs.com>
+	<204E7000-3E88-4497-86C0-5AF786D72F75@kernel.crashing.org>
+	<4422D6E3.1010407@ovro.caltech.edu>
 Mime-Version: 1.0 (Apple Message framework v746.3)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <97C7473A-C585-41F9-BC48-D59F32FF2654@kernel.crashing.org>
+Message-Id: <CCA437BF-E204-4652-9E6D-25388225EFE8@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: swizzling pci irqs
-Date: Thu, 23 Mar 2006 11:15:32 -0600
-To: David Updegraff <dave@cray.com>
-Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Memory mapping PCI memory region to user space
+Date: Thu, 23 Mar 2006 11:19:58 -0600
+To: David Hawkins <dwh@ovro.caltech.edu>
+Cc: Chris Wyse <chris.wyse@windriver.com>,
+	"Linuxppc-Embedded \(\(E-Mail\)\)" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,39 +30,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 23, 2006, at 10:40 AM, David Updegraff wrote:
+On Mar 23, 2006, at 11:12 AM, David Hawkins wrote:
 
-> Kumar Gala wrote:
->> On Mar 22, 2006, at 2:59 PM, David Updegraff wrote:
->>
->>
->>> Hi.
->>>
->>> If there were a noswizzle option to the kernel command line that
->>> resulted in pci scan simply trusting that the bootrom/u-boot had
->>> already
->>> correctly assigned the PCI irqs....  every tom,dick,harry, and
->>> yours-truly wouldn't have to make a new platform to define the
->>> swizzle-o-the-day.  Or have I already missed this argument?
->>
->>
->> Sure, I do this now.  Just don't build pci_auto into your pci support
->> and don't explicitly rescan in your pci setup.  The 83xx pci code
->> under arch/powerpc should effective do this.
->>
->> - kumar
 >
-> Hmm; I must be missing something...  cuz to me it looks like pci_32.c
-> will allways call pcibios_init, which will will scan the bus, which  
-> will
-> swizzle irqs if the platform has non-null swizzle and map_irq function
-> pointers defined..  Perhaps a setting I've missed somewhere re.
-> 'pci_auto', which I thought was a 'ppc' thing, not a 'powerpc'  
-> thing..??
+>
+>> Why don't use the mmap file exposed by sysfs so you dont have to   
+>> write your own code?
+>> See Documentation/filesystems/sysfs-pci.txt.  But effectively  
+>> down  under /sys/bus/pci/devices/[domain:bus:dev:func]/ you will  
+>> get  resource[0..N-1] that corresponds to each BAR on the device.   
+>> This is  a mmap file to access that region.
+>
+> Hi Kumar,
+>
+> Most likely he didn't know about it, I didn't :)
+>
+> When I was testing the Yosemite board as the host, I found
+> that I could set the endian flag on the mmapped page, which
+> then made the PCI device registers read as 32-bit quantities
+> read back with the same layout under both x86 and PPC
+> hosts.
 
-Ahh, why do you have swizzle and map_irq functions?  I guess I forgot  
-that part.  In my setup I have u-boot do all IRQ assignment (via PCI  
-IRQ line register) as well as all BAR config.  I just leave swizzle  
-and map_irq null.
+Hmm, I guess I would handle this like how the reset of the kernel  
+handle is with the io routines handling the swapping.  Not sure if  
+there is any advantage to using the endian flag.  I guess if you have  
+something you are treating as just memory there would be.
+
+> So, if someone planned on using that 'feature', that would
+> be a reason for writing your own mmap() implementation.
+> I didn't see any option in the sysfs file for setting that
+> page flag (but, I didn't look around in other sysfs files).
+
+There isn't a sysfs flag for the endianness page attribute since  
+thats a PPC book-e specific feature.  We could possible expand things  
+to support it but, I've been trying to actively avoid using the 'E' bit.
+
+> Thanks for the pointer to the sysfs node!
+
+No problem, its what we're here for :)
 
 - kumar
