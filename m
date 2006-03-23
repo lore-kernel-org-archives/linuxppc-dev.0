@@ -1,17 +1,18 @@
-Return-Path: <olof@lixom.net>
-Date: Thu, 23 Mar 2006 15:32:17 -0600
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [patch 06/13] powerpc: cell interrupt controller updates
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Arnd Bergmann <abergman@de.ibm.com>
-Subject: Re: [patch 02/13] powerpc: add hvc backend for rtas
-Message-ID: <20060323213217.GB5538@pb15.lixom.net>
+In-Reply-To: <20060323203521.862355000@dyn-9-152-242-103.boeblingen.de.ibm.com>
 References: <20060323203423.620978000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-	<20060323203521.100452000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060323203521.100452000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-From: Olof Johansson <olof@lixom.net>
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+	<20060323203521.862355000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+Content-Type: text/plain
+Date: Fri, 24 Mar 2006 09:15:52 +1100
+Message-Id: <1143152153.4257.28.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, stk@de.ibm.com,
+	linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	hpenner@de.ibm.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,151 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-I have a couple of nitpicks below, nothing major.
-
-Since it's such a simple driver, it's easy to use as a base for similar
-ones, and as such it'd be nice to have it as clean as possible to avoid
-others to inherit strangeness.
-
-
--Olof
-
-On Thu, Mar 23, 2006 at 12:00:02AM +0100, Arnd Bergmann wrote:
-
-> +static inline int hvc_rtas_write_console(uint32_t vtermno, const char *buf, int count)
-> +{
-> +	int done;
-> +
-> +	/* if there is more than one character to be displayed, wait a bit */
-> +	for (done = 0; done < count; done++) {
-> +		int result;
-> +		result = rtas_call(rtascons_put_char_token, 1, 1, NULL, buf[done]);
-> +		if (result)
-> +			break;
-
-Why introduce a scope-local variable just to check it?
-		if(rtas_call(...))   would be cleaner.
-
-> +	}
-> +	/* the calling routine expects to receive the number of bytes sent */
-> +	return done;
-> +}
-> +
-> +static int hvc_rtas_read_console(uint32_t vtermno, char *buf, int count)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < count; i++) {
-> +		int c, err;
-> +
-> +		err = rtas_call(rtascons_get_char_token, 0, 2, &c);
-> +		if (err)
-> +			break;
-
-Same here
-
-> +
-> +		buf[i] = c;
-> +	}
-> +
-> +	return i;
-> +}
-> +
-> +static struct hv_ops hvc_rtas_get_put_ops = {
-> +	.get_chars = hvc_rtas_read_console,
-> +	.put_chars = hvc_rtas_write_console,
-> +};
-> +
-> +static int hvc_rtas_init(void)
-> +{
-> +	struct hvc_struct *hp;
-> +
-> +	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
-> +		rtascons_put_char_token = rtas_token("put-term-char");
-> +	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
-> +		return -EIO;
-> +
-> +	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
-> +		rtascons_get_char_token = rtas_token("get-term-char");
-> +	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
-> +		return -EIO;
-> +
-> +	BUG_ON(hvc_rtas_dev);
-> +
-> +	/* Allocate an hvc_struct for the console device we instantiated
-> +	 * earlier.  Save off hp so that we can return it on exit */
-> +	hp = hvc_alloc(hvc_rtas_cookie, NO_IRQ, &hvc_rtas_get_put_ops);
-> +	if (IS_ERR(hp))
-> +		return PTR_ERR(hp);
-> +	hvc_rtas_dev = hp;
-> +	return 0;
-> +}
-> +module_init(hvc_rtas_init);
-> +
-> +/* This will tear down the tty portion of the driver */
-> +static void __exit hvc_rtas_exit(void)
-> +{
-> +	/* Really the fun isn't over until the worker thread breaks down and the
-> +	 * tty cleans up */
-> +	if (hvc_rtas_dev)
-> +		hvc_remove(hvc_rtas_dev);
-> +}
-> +module_exit(hvc_rtas_exit); /* before drivers/char/hvc_console.c */
-
-Cryptic comment? 
-
-> +/* This will happen prior to module init.  There is no tty at this time? */
-> +static int hvc_rtas_console_init(void)
-> +{
-> +	rtascons_put_char_token = rtas_token("put-term-char");
-> +	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
-> +		return -EIO;
-> +	rtascons_get_char_token = rtas_token("get-term-char");
-> +	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
-> +		return -EIO;
-> +
-> +	hvc_instantiate(hvc_rtas_cookie, 0, &hvc_rtas_get_put_ops );
-> +	add_preferred_console("hvc", 0, NULL);
-> +	return 0;
-> +}
-> +console_initcall(hvc_rtas_console_init);
-> Index: linus-2.6/drivers/char/Makefile
-> ===================================================================
-> --- linus-2.6.orig/drivers/char/Makefile
-> +++ linus-2.6/drivers/char/Makefile
-> @@ -43,6 +43,7 @@ obj-$(CONFIG_SX)		+= sx.o generic_serial
->  obj-$(CONFIG_RIO)		+= rio/ generic_serial.o
->  obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
->  obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
-> +obj-$(CONFIG_HVC_RTAS)		+= hvc_rtas.o
->  obj-$(CONFIG_RAW_DRIVER)	+= raw.o
->  obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
->  obj-$(CONFIG_MMTIMER)		+= mmtimer.o
-> Index: linus-2.6/drivers/char/Kconfig
-> ===================================================================
-> --- linus-2.6.orig/drivers/char/Kconfig
-> +++ linus-2.6/drivers/char/Kconfig
-> @@ -578,6 +578,13 @@ config HVC_CONSOLE
->  	  console. This driver allows each pSeries partition to have a console
->  	  which is accessed via the HMC.
->  
-> +config HVC_RTAS
-> +	bool "IBM RTAS Console support"
-> +	depends on PPC_RTAS
-> +	select HVC_DRIVER
-> +	help
-> +	  IBM Console device driver which makes use of RTAS
-> +
->  config HVCS
->  	tristate "IBM Hypervisor Virtual Console Server support"
->  	depends on PPC_PSERIES
+On Thu, 2006-03-23 at 00:00 +0100, Arnd Bergmann wrote:
+> plain text document attachment (cell-pic-updates-3.diff)
+> The current interrupt controller setup on Cell is done
+> in a rather ad-hoc way with device tree properties
+> that are not standardized at all.
 > 
-> --
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> In an attempt to do something that follows the OF standard
+> (or at least the IBM extensions to it) more closely,
+> we have now come up with this patch. It still provides
+> a fallback to the old behaviour when we find older firmware,
+> that hack can not be removed until the existing customer
+> installations have upgraded.
+
+BTW... You still use __ioremap(...,PAGE_NO_CACHE); which I think won't
+give you guarded... I wouldn'd do that if I were you... The accessors
+should have barriers but still...
+
+Ben.
