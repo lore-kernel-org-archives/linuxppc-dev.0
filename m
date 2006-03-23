@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 290D467A77
-	for <linuxppc-dev@ozlabs.org>; Thu, 23 Mar 2006 17:37:19 +1100 (EST)
-Date: Thu, 23 Mar 2006 17:36:59 +1100
+	by ozlabs.org (Postfix) with ESMTP id 3A6C267B27
+	for <linuxppc-dev@ozlabs.org>; Thu, 23 Mar 2006 17:38:29 +1100 (EST)
+Date: Thu, 23 Mar 2006 17:38:10 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH] powerpc: work around sparse warnings in cputable.h
-Message-Id: <20060323173659.7c3826a5.sfr@canb.auug.org.au>
+Subject: [PATCH] powerpc: fix various sparse warnings
+Message-Id: <20060323173810.44f836ff.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -19,361 +19,188 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph noticed that sparse warned about all the enum tags in cuptable.h
-that had values that required them to be type log. (enum tags are ints
-according to the standard.)
-
-This patch attempts to fix them in the least intrusive way possible by
-turning them all into #defines except for the 32 bit CPU_FTRS_POSSIBLE and
-CPU_FTRS_ALWAYS which are hard to construct that way.  This works because
-these last two contain no bits above 2^31.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
 
- include/asm-powerpc/cputable.h |  299 ++++++++++++++++++++--------------------
- 1 files changed, 152 insertions(+), 147 deletions(-)
+ arch/powerpc/kernel/legacy_serial.c          |    4 ++--
+ arch/powerpc/kernel/nvram_64.c               |    3 ++-
+ arch/powerpc/kernel/process.c                |    6 +++++-
+ arch/powerpc/kernel/setup_32.c               |    2 +-
+ arch/powerpc/lib/sstep.c                     |    2 +-
+ arch/powerpc/platforms/powermac/bootx_init.c |    2 +-
+ arch/powerpc/platforms/powermac/nvram.c      |   12 ++++++------
+ arch/powerpc/platforms/powermac/udbg_scc.c   |    2 +-
+ 8 files changed, 19 insertions(+), 14 deletions(-)
 
-This has been built for ppc64 and a previous version was built for ppc32.
-
+-- 
 Cheers,
-Stephen Rothwell		sfr@canb.auug.org.au
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-533676ca33803d3ebe85eea9009cc2fd7e79c1d7
-diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
-index fe45f6f..4321483 100644
---- a/include/asm-powerpc/cputable.h
-+++ b/include/asm-powerpc/cputable.h
-@@ -188,153 +188,154 @@ extern void do_cpu_ftr_fixups(unsigned l
- 		     !defined(CONFIG_POWER3) && !defined(CONFIG_POWER4) && \
- 		     !defined(CONFIG_BOOKE))
- 
--enum {
--	CPU_FTRS_PPC601 = CPU_FTR_COMMON | CPU_FTR_601 | CPU_FTR_HPTE_TABLE,
--	CPU_FTRS_603 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB |
--	    CPU_FTR_MAYBE_CAN_NAP,
--	CPU_FTRS_604 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB | CPU_FTR_604_PERF_MON | CPU_FTR_HPTE_TABLE,
--	CPU_FTRS_740_NOTAU = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
--	CPU_FTRS_740 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
--	CPU_FTRS_750 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP,
--	CPU_FTRS_750FX1 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
--	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_NO_DPM,
--	CPU_FTRS_750FX2 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
--	    CPU_FTR_NO_DPM,
--	CPU_FTRS_750FX = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
--	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
--	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS,
--	CPU_FTRS_750GX = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
--	    CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP |
--	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS,
--	CPU_FTRS_7400_NOTAU = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
--	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE |
--	    CPU_FTR_MAYBE_CAN_NAP,
--	CPU_FTRS_7400 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR |
--	    CPU_FTR_TAU | CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE |
--	    CPU_FTR_MAYBE_CAN_NAP,
--	CPU_FTRS_7450_20 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
--	    CPU_FTR_NEED_COHERENT,
--	CPU_FTRS_7450_21 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB |
--	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP |
--	    CPU_FTR_NEED_COHERENT,
--	CPU_FTRS_7450_23 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB |
--	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_NEED_COHERENT,
--	CPU_FTRS_7455_1 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB |
--	    CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_HAS_HIGH_BATS |
--	    CPU_FTR_NEED_COHERENT,
--	CPU_FTRS_7455_20 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB |
--	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP |
--	    CPU_FTR_NEED_COHERENT | CPU_FTR_HAS_HIGH_BATS,
--	CPU_FTRS_7455 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB |
--	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
--	    CPU_FTR_NEED_COHERENT,
--	CPU_FTRS_7447_10 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB |
--	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
--	    CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC,
--	CPU_FTRS_7447 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB |
--	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
--	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
--	    CPU_FTR_NEED_COHERENT,
--	CPU_FTRS_7447A = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB |
--	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 |
--	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS |
--	    CPU_FTR_NEED_COHERENT,
--	CPU_FTRS_82XX = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB,
--	CPU_FTRS_G2_LE = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
--	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS,
--	CPU_FTRS_E300 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE |
--	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS |
--	    CPU_FTR_COMMON,
--	CPU_FTRS_CLASSIC32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE,
--	CPU_FTRS_POWER3_32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE,
--	CPU_FTRS_POWER4_32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_NODSISRALIGN,
--	CPU_FTRS_970_32 = CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE |
--	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_ALTIVEC_COMP |
--	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN,
--	CPU_FTRS_8XX = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB,
--	CPU_FTRS_40X = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_NODSISRALIGN,
--	CPU_FTRS_44X = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_NODSISRALIGN,
--	CPU_FTRS_E200 = CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN,
--	CPU_FTRS_E500 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_NODSISRALIGN,
--	CPU_FTRS_E500_2 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN,
--	CPU_FTRS_GENERIC_32 = CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN,
-+#define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | CPU_FTR_HPTE_TABLE)
-+#define CPU_FTRS_603	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_MAYBE_CAN_NAP)
-+#define CPU_FTRS_604	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_604_PERF_MON | CPU_FTR_HPTE_TABLE)
-+#define CPU_FTRS_740_NOTAU	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP)
-+#define CPU_FTRS_740	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP)
-+#define CPU_FTRS_750	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP)
-+#define CPU_FTRS_750FX1	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
-+	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_NO_DPM)
-+#define CPU_FTRS_750FX2	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
-+	    CPU_FTR_NO_DPM)
-+#define CPU_FTRS_750FX	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
-+	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS)
-+#define CPU_FTRS_750GX	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
-+	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS)
-+#define CPU_FTRS_7400_NOTAU	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE | \
-+	    CPU_FTR_MAYBE_CAN_NAP)
-+#define CPU_FTRS_7400	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
-+	    CPU_FTR_TAU | CPU_FTR_ALTIVEC_COMP | CPU_FTR_HPTE_TABLE | \
-+	    CPU_FTR_MAYBE_CAN_NAP)
-+#define CPU_FTRS_7450_20	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_NEED_COHERENT)
-+#define CPU_FTRS_7450_21	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | \
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP | \
-+	    CPU_FTR_NEED_COHERENT)
-+#define CPU_FTRS_7450_23	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | \
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_NEED_COHERENT)
-+#define CPU_FTRS_7455_1	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | \
-+	    CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | CPU_FTR_L3CR | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_NEED_COHERENT)
-+#define CPU_FTRS_7455_20	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | \
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_L3_DISABLE_NAP | \
-+	    CPU_FTR_NEED_COHERENT | CPU_FTR_HAS_HIGH_BATS)
-+#define CPU_FTRS_7455	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | \
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_NEED_COHERENT)
-+#define CPU_FTRS_7447_10	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | \
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_NEED_COHERENT | CPU_FTR_NO_BTIC)
-+#define CPU_FTRS_7447	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | \
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_L3CR | CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_NEED_COHERENT)
-+#define CPU_FTRS_7447A	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | \
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
-+	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_NEED_COHERENT)
-+#define CPU_FTRS_82XX	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB)
-+#define CPU_FTRS_G2_LE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS)
-+#define CPU_FTRS_E300	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_HAS_HIGH_BATS | \
-+	    CPU_FTR_COMMON)
-+#define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE)
-+#define CPU_FTRS_POWER3_32	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE)
-+#define CPU_FTRS_POWER4_32	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_NODSISRALIGN)
-+#define CPU_FTRS_970_32	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
-+	    CPU_FTR_USE_TB | CPU_FTR_HPTE_TABLE | CPU_FTR_ALTIVEC_COMP | \
-+	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_NODSISRALIGN)
-+#define CPU_FTRS_8XX	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB)
-+#define CPU_FTRS_40X	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_NODSISRALIGN)
-+#define CPU_FTRS_44X	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_NODSISRALIGN)
-+#define CPU_FTRS_E200	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN)
-+#define CPU_FTRS_E500	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_NODSISRALIGN)
-+#define CPU_FTRS_E500_2	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_BIG_PHYS | CPU_FTR_NODSISRALIGN)
-+#define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
- #ifdef __powerpc64__
--	CPU_FTRS_POWER3 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR,
--	CPU_FTRS_RS64 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR |
--	    CPU_FTR_MMCRA | CPU_FTR_CTRL,
--	CPU_FTRS_POWER4 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA,
--	CPU_FTRS_PPC970 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 |
--	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA,
--	CPU_FTRS_POWER5 = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 |
--	    CPU_FTR_MMCRA | CPU_FTR_SMT |
--	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE |
--	    CPU_FTR_MMCRA_SIHV | CPU_FTR_PURR,
--	CPU_FTRS_CELL = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 |
--	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT |
--	    CPU_FTR_CTRL | CPU_FTR_PAUSE_ZERO,
--	CPU_FTRS_COMPATIBLE = CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB |
--	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2,
-+#define CPU_FTRS_POWER3	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR)
-+#define CPU_FTRS_RS64	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_IABR | \
-+	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
-+#define CPU_FTRS_POWER4	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_MMCRA)
-+#define CPU_FTRS_PPC970	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_CAN_NAP | CPU_FTR_MMCRA)
-+#define CPU_FTRS_POWER5	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-+	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
-+	    CPU_FTR_MMCRA_SIHV | CPU_FTR_PURR)
-+#define CPU_FTRS_CELL	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-+	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-+	    CPU_FTR_CTRL | CPU_FTR_PAUSE_ZERO)
-+#define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-+	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
- #endif
- 
--	CPU_FTRS_POSSIBLE =
- #ifdef __powerpc64__
--	    CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |
--	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_CELL |
--            CPU_FTR_CI_LARGE_PAGE |
-+#define CPU_FTRS_POSSIBLE	\
-+	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
-+	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_CELL |	\
-+            CPU_FTR_CI_LARGE_PAGE)
- #else
-+enum {
-+	CPU_FTRS_POSSIBLE =
- #if CLASSIC_PPC
- 	    CPU_FTRS_PPC601 | CPU_FTRS_603 | CPU_FTRS_604 | CPU_FTRS_740_NOTAU |
- 	    CPU_FTRS_740 | CPU_FTRS_750 | CPU_FTRS_750FX1 |
-@@ -368,14 +369,18 @@ enum {
- #ifdef CONFIG_E500
- 	    CPU_FTRS_E500 | CPU_FTRS_E500_2 |
- #endif
--#endif /* __powerpc64__ */
- 	    0,
-+};
-+#endif /* __powerpc64__ */
- 
--	CPU_FTRS_ALWAYS =
- #ifdef __powerpc64__
--	    CPU_FTRS_POWER3 & CPU_FTRS_RS64 & CPU_FTRS_POWER4 &
--	    CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & CPU_FTRS_CELL &
-+#define CPU_FTRS_ALWAYS		\
-+	    (CPU_FTRS_POWER3 & CPU_FTRS_RS64 & CPU_FTRS_POWER4 &	\
-+	    CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & CPU_FTRS_CELL &	\
-+	    CPU_FTRS_POSSIBLE)
- #else
-+enum {
-+	CPU_FTRS_ALWAYS =
- #if CLASSIC_PPC
- 	    CPU_FTRS_PPC601 & CPU_FTRS_603 & CPU_FTRS_604 & CPU_FTRS_740_NOTAU &
- 	    CPU_FTRS_740 & CPU_FTRS_750 & CPU_FTRS_750FX1 &
-@@ -409,9 +414,9 @@ enum {
- #ifdef CONFIG_E500
- 	    CPU_FTRS_E500 & CPU_FTRS_E500_2 &
- #endif
--#endif /* __powerpc64__ */
- 	    CPU_FTRS_POSSIBLE,
- };
-+#endif /* __powerpc64__ */
- 
- static inline int cpu_has_feature(unsigned long feature)
+7debffaf860554fd5ff8029d306140094e8b5022
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index c7a799a..09d9c82 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -37,7 +37,7 @@ static int legacy_serial_console = -1;
+ static int __init add_legacy_port(struct device_node *np, int want_index,
+ 				  int iotype, phys_addr_t base,
+ 				  phys_addr_t taddr, unsigned long irq,
+-				  unsigned int flags)
++				  upf_t flags)
  {
+ 	u32 *clk, *spd, clock = BASE_BAUD * 16;
+ 	int index;
+@@ -113,7 +113,7 @@ static int __init add_legacy_soc_port(st
+ {
+ 	phys_addr_t addr;
+ 	u32 *addrp;
+-	unsigned int flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST | UPF_SHARE_IRQ;
++	upf_t flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST | UPF_SHARE_IRQ;
+ 
+ 	/* We only support ports that have a clock frequency properly
+ 	 * encoded in the device-tree.
+diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+index fd7db8d..6c3989f 100644
+--- a/arch/powerpc/kernel/nvram_64.c
++++ b/arch/powerpc/kernel/nvram_64.c
+@@ -174,8 +174,9 @@ static int dev_nvram_ioctl(struct inode 
+ 		return 0;
+ 	}
+ #endif /* CONFIG_PPC_PMAC */
++	default:
++		return -EINVAL;
+ 	}
+-	return -EINVAL;
+ }
+ 
+ struct file_operations nvram_fops = {
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 1770a06..10a8363 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -363,7 +363,11 @@ static void show_instructions(struct pt_
+ 		if (!(i % 8))
+ 			printk("\n");
+ 
+-		if (BAD_PC(pc) || __get_user(instr, (unsigned int *)pc)) {
++		/* We use __get_user here *only* to avoid an OOPS on a
++		 * bad address because the pc *should* only be a
++		 * kernel address.
++		 */
++		if (BAD_PC(pc) || __get_user(instr, (unsigned int __user *)pc)) {
+ 			printk("XXXXXXXX ");
+ 		} else {
+ 			if (regs->nip == pc)
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index db72a92..1861b73 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -111,7 +111,7 @@ unsigned long __init early_init(unsigned
+ 
+ 	/* First zero the BSS -- use memset_io, some platforms don't have
+ 	 * caches on yet */
+-	memset_io(PTRRELOC(&__bss_start), 0, _end - __bss_start);
++	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0, _end - __bss_start);
+ 
+ 	/*
+ 	 * Identify the CPU type and fix up code sections
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 666c2aa..c251d99 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -18,7 +18,7 @@ extern char system_call_common[];
+ 
+ #ifdef CONFIG_PPC64
+ /* Bits in SRR1 that are copied from MSR */
+-#define MSR_MASK	0xffffffff87c0ffff
++#define MSR_MASK	0xffffffff87c0ffffUL
+ #else
+ #define MSR_MASK	0x87c0ffff
+ #endif
+diff --git a/arch/powerpc/platforms/powermac/bootx_init.c b/arch/powerpc/platforms/powermac/bootx_init.c
+index fa8b4d7..a94571b 100644
+--- a/arch/powerpc/platforms/powermac/bootx_init.c
++++ b/arch/powerpc/platforms/powermac/bootx_init.c
+@@ -493,7 +493,7 @@ void __init bootx_init(unsigned long r3,
+ 		    && (strcmp(model, "iMac,1") == 0
+ 			|| strcmp(model, "PowerMac1,1") == 0)) {
+ 			bootx_printf("iMac,1 detected, shutting down USB \n");
+-			out_le32((unsigned *)0x80880008, 1);	/* XXX */
++			out_le32((unsigned __iomem *)0x80880008, 1);	/* XXX */
+ 		}
+ 	}
+ 
+diff --git a/arch/powerpc/platforms/powermac/nvram.c b/arch/powerpc/platforms/powermac/nvram.c
+index 5fd2899..3aa3477 100644
+--- a/arch/powerpc/platforms/powermac/nvram.c
++++ b/arch/powerpc/platforms/powermac/nvram.c
+@@ -74,7 +74,7 @@ struct core99_header {
+  * Read and write the non-volatile RAM on PowerMacs and CHRP machines.
+  */
+ static int nvram_naddrs;
+-static volatile unsigned char *nvram_data;
++static volatile unsigned char __iomem *nvram_data;
+ static int is_core_99;
+ static int core99_bank = 0;
+ static int nvram_partitions[3];
+@@ -148,7 +148,7 @@ static ssize_t core99_nvram_size(void)
+ }
+ 
+ #ifdef CONFIG_PPC32
+-static volatile unsigned char *nvram_addr;
++static volatile unsigned char __iomem *nvram_addr;
+ static int nvram_mult;
+ 
+ static unsigned char direct_nvram_read_byte(int addr)
+@@ -285,7 +285,7 @@ static int sm_erase_bank(int bank)
+ 	int stat, i;
+ 	unsigned long timeout;
+ 
+-	u8* base = (u8 *)nvram_data + core99_bank*NVRAM_SIZE;
++	u8 __iomem *base = (u8 __iomem *)nvram_data + core99_bank*NVRAM_SIZE;
+ 
+        	DBG("nvram: Sharp/Micron Erasing bank %d...\n", bank);
+ 
+@@ -317,7 +317,7 @@ static int sm_write_bank(int bank, u8* d
+ 	int i, stat = 0;
+ 	unsigned long timeout;
+ 
+-	u8* base = (u8 *)nvram_data + core99_bank*NVRAM_SIZE;
++	u8 __iomem *base = (u8 __iomem *)nvram_data + core99_bank*NVRAM_SIZE;
+ 
+        	DBG("nvram: Sharp/Micron Writing bank %d...\n", bank);
+ 
+@@ -352,7 +352,7 @@ static int amd_erase_bank(int bank)
+ 	int i, stat = 0;
+ 	unsigned long timeout;
+ 
+-	u8* base = (u8 *)nvram_data + core99_bank*NVRAM_SIZE;
++	u8 __iomem *base = (u8 __iomem *)nvram_data + core99_bank*NVRAM_SIZE;
+ 
+        	DBG("nvram: AMD Erasing bank %d...\n", bank);
+ 
+@@ -399,7 +399,7 @@ static int amd_write_bank(int bank, u8* 
+ 	int i, stat = 0;
+ 	unsigned long timeout;
+ 
+-	u8* base = (u8 *)nvram_data + core99_bank*NVRAM_SIZE;
++	u8 __iomem *base = (u8 __iomem *)nvram_data + core99_bank*NVRAM_SIZE;
+ 
+        	DBG("nvram: AMD Writing bank %d...\n", bank);
+ 
+diff --git a/arch/powerpc/platforms/powermac/udbg_scc.c b/arch/powerpc/platforms/powermac/udbg_scc.c
+index c4352a8..b4fa9f0 100644
+--- a/arch/powerpc/platforms/powermac/udbg_scc.c
++++ b/arch/powerpc/platforms/powermac/udbg_scc.c
+@@ -116,7 +116,7 @@ void udbg_scc_init(int force_scc)
+ 	/* Setup for 57600 8N1 */
+ 	if (ch == ch_a)
+ 		addr += 0x20;
+-	sccc = (volatile u8 * __iomem) ioremap(addr & PAGE_MASK, PAGE_SIZE) ;
++	sccc = ioremap(addr & PAGE_MASK, PAGE_SIZE) ;
+ 	sccc += addr & ~PAGE_MASK;
+ 	sccd = sccc + 0x10;
+ 
 -- 
 1.2.4
