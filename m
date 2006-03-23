@@ -1,12 +1,17 @@
-Return-Path: <SRS0=lOLd=5O=de.ibm.com=abergman@srs.kundenserver.de>
-Message-Id: <20060323203520.909999000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+Return-Path: <olof@lixom.net>
+Date: Thu, 23 Mar 2006 15:32:17 -0600
+To: Arnd Bergmann <abergman@de.ibm.com>
+Subject: Re: [patch 02/13] powerpc: add hvc backend for rtas
+Message-ID: <20060323213217.GB5538@pb15.lixom.net>
 References: <20060323203423.620978000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-Date: Thu, 23 Mar 2006 00:00:01 +0100
-From: Arnd Bergmann <abergman@de.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [patch 01/13] powerpc: hvc_console updates
+	<20060323203521.100452000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060323203521.100452000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+From: Olof Johansson <olof@lixom.net>
 Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,358 +21,151 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These are some updates from both Ryan and Arnd for the hvc_console
-driver:
+Hi,
 
-The main point is to enable the inclusion of a console driver
-for rtas, which is currrently needed for the cell platform.
+I have a couple of nitpicks below, nothing major.
 
-Also shuffle around some data-type declarations and moves some
-functions out of include/asm-ppc64/hvconsole.h and into a new
-drivers/char/hvc_console.h file.
+Since it's such a simple driver, it's easy to use as a base for similar
+ones, and as such it'd be nice to have it as clean as possible to avoid
+others to inherit strangeness.
 
-From: "Ryan S. Arnold" <rsa@us.ibm.com>
-Signed-off-by: "Ryan S. Arnold" <rsa@us.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Index: linux-2.6.16-rc/drivers/char/hvc_console.c
-===================================================================
---- linux-2.6.16-rc.orig/drivers/char/hvc_console.c
-+++ linux-2.6.16-rc/drivers/char/hvc_console.c
-@@ -39,8 +39,10 @@
- #include <linux/sched.h>
- #include <linux/spinlock.h>
- #include <linux/delay.h>
-+
- #include <asm/uaccess.h>
--#include <asm/hvconsole.h>
-+
-+#include "hvc_console.h"
- 
- #define HVC_MAJOR	229
- #define HVC_MINOR	0
-@@ -54,17 +56,14 @@
- #define HVC_CLOSE_WAIT (HZ/100) /* 1/10 of a second */
- 
- /*
-- * The Linux TTY code does not support dynamic addition of tty derived devices
-- * so we need to know how many tty devices we might need when space is allocated
-- * for the tty device.  Since this driver supports hotplug of vty adapters we
-- * need to make sure we have enough allocated.
-+ * These sizes are most efficient for vio, because they are the
-+ * native transfer size. We could make them selectable in the
-+ * future to better deal with backends that want other buffer sizes.
-  */
--#define HVC_ALLOC_TTY_ADAPTERS	8
--
- #define N_OUTBUF	16
- #define N_INBUF		16
- 
--#define __ALIGNED__	__attribute__((__aligned__(8)))
-+#define __ALIGNED__ __attribute__((__aligned__(sizeof(long))))
- 
- static struct tty_driver *hvc_driver;
- static struct task_struct *hvc_task;
-@@ -154,7 +153,7 @@ static uint32_t vtermnos[MAX_NR_HVC_CONS
- 
- void hvc_console_print(struct console *co, const char *b, unsigned count)
- {
--	char c[16] __ALIGNED__;
-+	char c[N_OUTBUF] __ALIGNED__;
- 	unsigned i = 0, n = 0;
- 	int r, donecr = 0, index = co->index;
- 
-@@ -473,8 +472,10 @@ static void hvc_push(struct hvc_struct *
- 
- 	n = hp->ops->put_chars(hp->vtermno, hp->outbuf, hp->n_outbuf);
- 	if (n <= 0) {
--		if (n == 0)
-+		if (n == 0) {
-+			hp->do_wakeup = 1;
- 			return;
-+		}
- 		/* throw away output on error; this happens when
- 		   there is no session connected to the vterm. */
- 		hp->n_outbuf = 0;
-@@ -486,12 +487,19 @@ static void hvc_push(struct hvc_struct *
- 		hp->do_wakeup = 1;
- }
- 
--static inline int __hvc_write_kernel(struct hvc_struct *hp,
--				   const unsigned char *buf, int count)
-+static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count)
- {
-+	struct hvc_struct *hp = tty->driver_data;
- 	unsigned long flags;
- 	int rsize, written = 0;
- 
-+	/* This write was probably executed during a tty close. */
-+	if (!hp)
-+		return -EPIPE;
-+
-+	if (hp->count <= 0)
-+		return -EIO;
-+
- 	spin_lock_irqsave(&hp->lock, flags);
- 
- 	/* Push pending writes */
-@@ -510,26 +518,8 @@ static inline int __hvc_write_kernel(str
- 	}
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 
--	return written;
--}
--static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count)
--{
--	struct hvc_struct *hp = tty->driver_data;
--	int written;
--
--	/* This write was probably executed during a tty close. */
--	if (!hp)
--		return -EPIPE;
--
--	if (hp->count <= 0)
--		return -EIO;
--
--	written = __hvc_write_kernel(hp, buf, count);
--
- 	/*
- 	 * Racy, but harmless, kick thread if there is still pending data.
--	 * There really is nothing wrong with kicking the thread, even if there
--	 * is no buffered data.
- 	 */
- 	if (hp->n_outbuf)
- 		hvc_kick();
-@@ -614,6 +604,13 @@ static int hvc_poll(struct hvc_struct *h
- 				spin_unlock_irqrestore(&hp->lock, flags);
- 				tty_hangup(tty);
- 				spin_lock_irqsave(&hp->lock, flags);
-+			} else if ( n == -EAGAIN ) {
-+				/*
-+				 * Some back-ends can only ensure a certain min
-+				 * num of bytes read, which may be > 'count'.
-+				 * Let the tty clear the flip buff to make room.
-+				 */
-+				poll_mask |= HVC_POLL_READ;
- 			}
- 			break;
- 		}
-@@ -635,16 +632,7 @@ static int hvc_poll(struct hvc_struct *h
- 			tty_insert_flip_char(tty, buf[i], 0);
- 		}
- 
--		/*
--		 * Account for the total amount read in one loop, and if above
--		 * 64 bytes, we do a quick schedule loop to let the tty grok
--		 * the data and eventually throttle us.
--		 */
- 		read_total += n;
--		if (read_total >= 64) {
--			poll_mask |= HVC_POLL_QUICK;
--			break;
--		}
- 	}
-  throttled:
- 	/* Wakeup write queue if necessary */
-@@ -767,7 +755,8 @@ struct hvc_struct __devinit *hvc_alloc(u
- 	 * see if this vterm id matches one registered for console.
- 	 */
- 	for (i=0; i < MAX_NR_HVC_CONSOLES; i++)
--		if (vtermnos[i] == hp->vtermno)
-+		if (vtermnos[i] == hp->vtermno &&
-+		    cons_ops[i] == hp->ops)
- 			break;
- 
- 	/* no matching slot, just use a counter */
-Index: linux-2.6.16-rc/drivers/char/hvc_console.h
-===================================================================
---- /dev/null
-+++ linux-2.6.16-rc/drivers/char/hvc_console.h
-@@ -0,0 +1,63 @@
-+/*
-+ * hvc_console.h
-+ * Copyright (C) 2005 IBM Corporation
-+ *
-+ * Author(s):
-+ * 	Ryan S. Arnold <rsa@us.ibm.com>
-+ *
-+ * hvc_console header information:
-+ *      moved here from include/asm-powerpc/hvconsole.h
-+ *      and drivers/char/hvc_console.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#ifndef HVC_CONSOLE_H
-+#define HVC_CONSOLE_H
-+
-+/*
-+ * This is the max number of console adapters that can/will be found as
-+ * console devices on first stage console init.  Any number beyond this range
-+ * can't be used as a console device but is still a valid tty device.
-+ */
-+#define MAX_NR_HVC_CONSOLES	16
-+
-+/*
-+ * The Linux TTY code does not support dynamic addition of tty derived devices
-+ * so we need to know how many tty devices we might need when space is allocated
-+ * for the tty device.  Since this driver supports hotplug of vty adapters we
-+ * need to make sure we have enough allocated.
-+ */
-+#define HVC_ALLOC_TTY_ADAPTERS	8
-+
-+
-+/* implemented by a low level driver */
-+struct hv_ops {
-+	int (*get_chars)(uint32_t vtermno, char *buf, int count);
-+	int (*put_chars)(uint32_t vtermno, const char *buf, int count);
-+};
-+
-+struct hvc_struct;
-+
-+/* Register a vterm and a slot index for use as a console (console_init) */
-+extern int hvc_instantiate(uint32_t vtermno, int index, struct hv_ops *ops);
-+
-+/* register a vterm for hvc tty operation (module_init or hotplug add) */
-+extern struct hvc_struct * __devinit hvc_alloc(uint32_t vtermno, int irq,
-+						 struct hv_ops *ops);
-+/* remove a vterm from hvc tty operation (modele_exit or hotplug remove) */
-+extern int __devexit hvc_remove(struct hvc_struct *hp);
-+
-+#endif // HVC_CONSOLE_H
-Index: linux-2.6.16-rc/include/asm-powerpc/hvconsole.h
-===================================================================
---- linux-2.6.16-rc.orig/include/asm-powerpc/hvconsole.h
-+++ linux-2.6.16-rc/include/asm-powerpc/hvconsole.h
-@@ -24,17 +24,16 @@
- #ifdef __KERNEL__
- 
- /*
-- * This is the max number of console adapters that can/will be found as
-- * console devices on first stage console init.  Any number beyond this range
-- * can't be used as a console device but is still a valid tty device.
-+ * PSeries firmware will only send/recv up to 16 bytes of character data per
-+ * hcall.
-  */
--#define MAX_NR_HVC_CONSOLES	16
-+#define MAX_VIO_PUT_CHARS	16
-+#define SIZE_VIO_GET_CHARS	16
- 
--/* implemented by a low level driver */
--struct hv_ops {
--	int (*get_chars)(uint32_t vtermno, char *buf, int count);
--	int (*put_chars)(uint32_t vtermno, const char *buf, int count);
--};
-+/*
-+ * Vio firmware always attempts to fetch MAX_VIO_GET_CHARS chars.  The 'count'
-+ * parm is included to conform to put_chars() function pointer template
-+ */
- extern int hvc_get_chars(uint32_t vtermno, char *buf, int count);
- extern int hvc_put_chars(uint32_t vtermno, const char *buf, int count);
- 
-Index: linux-2.6.16-rc/drivers/char/Kconfig
-===================================================================
---- linux-2.6.16-rc.orig/drivers/char/Kconfig
-+++ linux-2.6.16-rc/drivers/char/Kconfig
-@@ -560,9 +560,19 @@ config TIPAR
- 
- 	  If unsure, say N.
- 
-+config HVC_DRIVER
-+	bool
-+	help
-+	  Users of pSeries machines that want to utilize the hvc console front-end
-+	  module for their backend console driver should select this option.
-+	  It will automatically be selected if one of the back-end console drivers
-+	  is selected.
-+
-+
- config HVC_CONSOLE
- 	bool "pSeries Hypervisor Virtual Console support"
- 	depends on PPC_PSERIES
-+	select HVC_DRIVER
- 	help
- 	  pSeries machines when partitioned support a hypervisor virtual
- 	  console. This driver allows each pSeries partition to have a console
-Index: linux-2.6.16-rc/drivers/char/Makefile
-===================================================================
---- linux-2.6.16-rc.orig/drivers/char/Makefile
-+++ linux-2.6.16-rc/drivers/char/Makefile
-@@ -41,11 +41,12 @@ obj-$(CONFIG_N_HDLC)		+= n_hdlc.o
- obj-$(CONFIG_AMIGA_BUILTIN_SERIAL) += amiserial.o
- obj-$(CONFIG_SX)		+= sx.o generic_serial.o
- obj-$(CONFIG_RIO)		+= rio/ generic_serial.o
--obj-$(CONFIG_HVC_CONSOLE)	+= hvc_console.o hvc_vio.o hvsi.o
-+obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
-+obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
- obj-$(CONFIG_RAW_DRIVER)	+= raw.o
- obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
- obj-$(CONFIG_MMTIMER)		+= mmtimer.o
--obj-$(CONFIG_VIOCONS) += viocons.o
-+obj-$(CONFIG_VIOCONS)		+= viocons.o
- obj-$(CONFIG_VIOTAPE)		+= viotape.o
- obj-$(CONFIG_HVCS)		+= hvcs.o
- obj-$(CONFIG_SGI_MBCS)		+= mbcs.o
-Index: linux-2.6.16-rc/drivers/char/hvc_vio.c
-===================================================================
---- linux-2.6.16-rc.orig/drivers/char/hvc_vio.c
-+++ linux-2.6.16-rc/drivers/char/hvc_vio.c
-@@ -31,10 +31,13 @@
- 
- #include <linux/types.h>
- #include <linux/init.h>
-+
- #include <asm/hvconsole.h>
- #include <asm/vio.h>
- #include <asm/prom.h>
- 
-+#include "hvc_console.h"
-+
- char hvc_driver_name[] = "hvc_console";
- 
- static struct vio_device_id hvc_driver_table[] __devinitdata = {
-@@ -48,6 +51,14 @@ static int filtered_get_chars(uint32_t v
- 	unsigned long got;
- 	int i;
- 
-+	/*
-+	 * Vio firmware will read up to SIZE_VIO_GET_CHARS at its own discretion
-+	 * so we play safe and avoid the situation where got > count which could
-+	 * overload the flip buffer.
-+	 */
-+	if (count < SIZE_VIO_GET_CHARS)
-+		return -EAGAIN;
-+
- 	got = hvc_get_chars(vtermno, buf, count);
- 
- 	/*
-Index: linux-2.6.16-rc/arch/powerpc/platforms/pseries/hvconsole.c
-===================================================================
---- linux-2.6.16-rc.orig/arch/powerpc/platforms/pseries/hvconsole.c
-+++ linux-2.6.16-rc/arch/powerpc/platforms/pseries/hvconsole.c
-@@ -62,6 +62,11 @@ int hvc_put_chars(uint32_t vtermno, cons
- 	unsigned long *lbuf = (unsigned long *) buf;
- 	long ret;
- 
-+
-+	/* hcall will ret H_PARAMETER if 'count' exceeds firmware max.*/
-+	if (count > MAX_VIO_PUT_CHARS)
-+		count = MAX_VIO_PUT_CHARS;
-+
- 	ret = plpar_hcall_norets(H_PUT_TERM_CHAR, vtermno, count, lbuf[0],
- 				 lbuf[1]);
- 	if (ret == H_Success)
+-Olof
 
---
+On Thu, Mar 23, 2006 at 12:00:02AM +0100, Arnd Bergmann wrote:
+
+> +static inline int hvc_rtas_write_console(uint32_t vtermno, const char *buf, int count)
+> +{
+> +	int done;
+> +
+> +	/* if there is more than one character to be displayed, wait a bit */
+> +	for (done = 0; done < count; done++) {
+> +		int result;
+> +		result = rtas_call(rtascons_put_char_token, 1, 1, NULL, buf[done]);
+> +		if (result)
+> +			break;
+
+Why introduce a scope-local variable just to check it?
+		if(rtas_call(...))   would be cleaner.
+
+> +	}
+> +	/* the calling routine expects to receive the number of bytes sent */
+> +	return done;
+> +}
+> +
+> +static int hvc_rtas_read_console(uint32_t vtermno, char *buf, int count)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < count; i++) {
+> +		int c, err;
+> +
+> +		err = rtas_call(rtascons_get_char_token, 0, 2, &c);
+> +		if (err)
+> +			break;
+
+Same here
+
+> +
+> +		buf[i] = c;
+> +	}
+> +
+> +	return i;
+> +}
+> +
+> +static struct hv_ops hvc_rtas_get_put_ops = {
+> +	.get_chars = hvc_rtas_read_console,
+> +	.put_chars = hvc_rtas_write_console,
+> +};
+> +
+> +static int hvc_rtas_init(void)
+> +{
+> +	struct hvc_struct *hp;
+> +
+> +	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
+> +		rtascons_put_char_token = rtas_token("put-term-char");
+> +	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
+> +		return -EIO;
+> +
+> +	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
+> +		rtascons_get_char_token = rtas_token("get-term-char");
+> +	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
+> +		return -EIO;
+> +
+> +	BUG_ON(hvc_rtas_dev);
+> +
+> +	/* Allocate an hvc_struct for the console device we instantiated
+> +	 * earlier.  Save off hp so that we can return it on exit */
+> +	hp = hvc_alloc(hvc_rtas_cookie, NO_IRQ, &hvc_rtas_get_put_ops);
+> +	if (IS_ERR(hp))
+> +		return PTR_ERR(hp);
+> +	hvc_rtas_dev = hp;
+> +	return 0;
+> +}
+> +module_init(hvc_rtas_init);
+> +
+> +/* This will tear down the tty portion of the driver */
+> +static void __exit hvc_rtas_exit(void)
+> +{
+> +	/* Really the fun isn't over until the worker thread breaks down and the
+> +	 * tty cleans up */
+> +	if (hvc_rtas_dev)
+> +		hvc_remove(hvc_rtas_dev);
+> +}
+> +module_exit(hvc_rtas_exit); /* before drivers/char/hvc_console.c */
+
+Cryptic comment? 
+
+> +/* This will happen prior to module init.  There is no tty at this time? */
+> +static int hvc_rtas_console_init(void)
+> +{
+> +	rtascons_put_char_token = rtas_token("put-term-char");
+> +	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
+> +		return -EIO;
+> +	rtascons_get_char_token = rtas_token("get-term-char");
+> +	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
+> +		return -EIO;
+> +
+> +	hvc_instantiate(hvc_rtas_cookie, 0, &hvc_rtas_get_put_ops );
+> +	add_preferred_console("hvc", 0, NULL);
+> +	return 0;
+> +}
+> +console_initcall(hvc_rtas_console_init);
+> Index: linus-2.6/drivers/char/Makefile
+> ===================================================================
+> --- linus-2.6.orig/drivers/char/Makefile
+> +++ linus-2.6/drivers/char/Makefile
+> @@ -43,6 +43,7 @@ obj-$(CONFIG_SX)		+= sx.o generic_serial
+>  obj-$(CONFIG_RIO)		+= rio/ generic_serial.o
+>  obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
+>  obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
+> +obj-$(CONFIG_HVC_RTAS)		+= hvc_rtas.o
+>  obj-$(CONFIG_RAW_DRIVER)	+= raw.o
+>  obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
+>  obj-$(CONFIG_MMTIMER)		+= mmtimer.o
+> Index: linus-2.6/drivers/char/Kconfig
+> ===================================================================
+> --- linus-2.6.orig/drivers/char/Kconfig
+> +++ linus-2.6/drivers/char/Kconfig
+> @@ -578,6 +578,13 @@ config HVC_CONSOLE
+>  	  console. This driver allows each pSeries partition to have a console
+>  	  which is accessed via the HMC.
+>  
+> +config HVC_RTAS
+> +	bool "IBM RTAS Console support"
+> +	depends on PPC_RTAS
+> +	select HVC_DRIVER
+> +	help
+> +	  IBM Console device driver which makes use of RTAS
+> +
+>  config HVCS
+>  	tristate "IBM Hypervisor Virtual Console Server support"
+>  	depends on PPC_PSERIES
+> 
+> --
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
