@@ -1,11 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 24 Mar 2006 10:40:08 +1100
-Subject: [PATCH] powerpc: Rename and export ppc64_firmware_features
-In-Reply-To: <20060324001748.5ae0c190.sfr@canb.auug.org.au>
-Message-Id: <20060323234040.E54EC67B55@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <paulmck@us.ibm.com>
+Date: Thu, 23 Mar 2006 14:26:45 -0800
+From: "Paul E. McKenney" <paulmck@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH] Document Linux's memory barriers [try #5]
+Message-ID: <20060323222645.GA1298@us.ibm.com>
+References: <20060316231723.GB1323@us.ibm.com>
+	<16835.1141936162@warthog.cambridge.redhat.com>
+	<18351.1142432599@warthog.cambridge.redhat.com>
+	<895.1143138867@warthog.cambridge.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <895.1143138867@warthog.cambridge.redhat.com>
+Cc: akpm@osdl.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+	torvalds@osdl.org, davem@redhat.com, linuxppc64-dev@ozlabs.org
+Reply-To: paulmck@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,86 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We need to export ppc64_firmware_features for modules. Before we do that
-I think we should probably rename it to powerpc_firmware_features.
+On Thu, Mar 23, 2006 at 06:34:27PM +0000, David Howells wrote:
+> Paul E. McKenney <paulmck@us.ibm.com> wrote:
+> 
+> > smp_mb__before_atomic_dec() and friends as well?
+> 
+> These seem to be something Sparc64 related; or, at least, Sparc64 seems to do
+> something weird with them.
+> 
+> What are these meant to achieve anyway? They seems to just be barrier() on a
+> lot of systems, even SMP ones.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+On architectures such as x86 where atomic_dec() implies an smp_mb(),
+they do nothing.  On other architectures, they supply whatever memory
+barrier is required.
 
- arch/powerpc/kernel/firmware.c            |    3 ++-
- arch/powerpc/platforms/iseries/setup.c    |    4 ++--
- arch/powerpc/platforms/pseries/firmware.c |    2 +-
- arch/powerpc/platforms/pseries/setup.c    |    2 +-
- include/asm-powerpc/firmware.h            |    4 ++--
- 5 files changed, 8 insertions(+), 7 deletions(-)
+So, on x86:
 
-Index: to-merge/arch/powerpc/kernel/firmware.c
-===================================================================
---- to-merge.orig/arch/powerpc/kernel/firmware.c
-+++ to-merge/arch/powerpc/kernel/firmware.c
-@@ -17,4 +17,5 @@
- 
- #include <asm/firmware.h>
- 
--unsigned long ppc64_firmware_features;
-+unsigned long powerpc_firmware_features;
-+EXPORT_SYMBOL_GPL(powerpc_firmware_features);
-Index: to-merge/arch/powerpc/platforms/iseries/setup.c
-===================================================================
---- to-merge.orig/arch/powerpc/platforms/iseries/setup.c
-+++ to-merge/arch/powerpc/platforms/iseries/setup.c
-@@ -680,8 +680,8 @@ static int __init iseries_probe(int plat
- 	if (PLATFORM_ISERIES_LPAR != platform)
- 		return 0;
- 
--	ppc64_firmware_features |= FW_FEATURE_ISERIES;
--	ppc64_firmware_features |= FW_FEATURE_LPAR;
-+	powerpc_firmware_features |= FW_FEATURE_ISERIES;
-+	powerpc_firmware_features |= FW_FEATURE_LPAR;
- 
- 	return 1;
- }
-Index: to-merge/arch/powerpc/platforms/pseries/firmware.c
-===================================================================
---- to-merge.orig/arch/powerpc/platforms/pseries/firmware.c
-+++ to-merge/arch/powerpc/platforms/pseries/firmware.c
-@@ -91,7 +91,7 @@ void __init fw_feature_init(void)
- 				continue;
- 
- 			/* we have a match */
--			ppc64_firmware_features |=
-+			powerpc_firmware_features |=
- 				firmware_features_table[i].val;
- 			break;
- 		}
-Index: to-merge/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- to-merge.orig/arch/powerpc/platforms/pseries/setup.c
-+++ to-merge/arch/powerpc/platforms/pseries/setup.c
-@@ -386,7 +386,7 @@ static int __init pSeries_probe(int plat
- 	 */
- 
- 	if (platform == PLATFORM_PSERIES_LPAR)
--		ppc64_firmware_features |= FW_FEATURE_LPAR;
-+		powerpc_firmware_features |= FW_FEATURE_LPAR;
- 
- 	return 1;
- }
-Index: to-merge/include/asm-powerpc/firmware.h
-===================================================================
---- to-merge.orig/include/asm-powerpc/firmware.h
-+++ to-merge/include/asm-powerpc/firmware.h
-@@ -82,11 +82,11 @@ enum {
- /* This is used to identify firmware features which are available
-  * to the kernel.
-  */
--extern unsigned long	ppc64_firmware_features;
-+extern unsigned long	powerpc_firmware_features;
- 
- #define firmware_has_feature(feature)					\
- 	((FW_FEATURE_ALWAYS & (feature)) ||				\
--		(FW_FEATURE_POSSIBLE & ppc64_firmware_features & (feature)))
-+		(FW_FEATURE_POSSIBLE & powerpc_firmware_features & (feature)))
- 
- extern void system_reset_fwnmi(void);
- extern void machine_check_fwnmi(void);
+	smp_mb();
+	atomic_dec(&my_atomic_counter);
+
+would result in -two- atomic instructions, but the smp_mb() would be
+absolutely required on CPUs with weaker memory-consistency models.
+So your choice is to (1) be inefficient on x86 or (2) be unsafe on
+weak-memory-consistency systems.  What we can do instead is:
+
+	smp_mb__before_atomic_dec();
+	atomic_dec(&my_atomic_counter);
+
+This allows x86 to generate efficient code -and- allows weak-memory
+machines (e.g., Alpha, MIPS, PA-RISC(!), ppc, s390, SPARC64) to generate
+safe code.
+
+						Thanx, Paul
