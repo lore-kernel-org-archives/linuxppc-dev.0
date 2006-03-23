@@ -1,18 +1,17 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 629F667B16
+Return-Path: <chris.wyse@windriver.com>
+Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
+	by ozlabs.org (Postfix) with ESMTP id 438C067A77
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Mar 2006 04:52:56 +1100 (EST)
-Message-ID: <4422E0CB.8080701@ovro.caltech.edu>
-Date: Thu, 23 Mar 2006 09:54:19 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Fri, 24 Mar 2006 06:53:43 +1100 (EST)
 MIME-Version: 1.0
-To: Mark Chambers <markc@mail.com>
-Subject: Re: Memory mapping PCI memory region to user space
-References: <B1E46DE837A394458BB1A58F74A66A780596CB@ala-mail02.corp.ad.wrs.com><204E7000-3E88-4497-86C0-5AF786D72F75@kernel.crashing.org><4422D6E3.1010407@ovro.caltech.edu>	<CCA437BF-E204-4652-9E6D-25388225EFE8@kernel.crashing.org>
-	<00be01c64ea1$4c6e0e20$6401a8c0@CHUCK2>
-In-Reply-To: <00be01c64ea1$4c6e0e20$6401a8c0@CHUCK2>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: Memory mapping PCI memory region to user space
+Date: Thu, 23 Mar 2006 11:52:52 -0800
+Message-ID: <B1E46DE837A394458BB1A58F74A66A78059878@ala-mail02.corp.ad.wrs.com>
+From: "Wyse, Chris" <chris.wyse@windriver.com>
+To: "David Hawkins" <dwh@ovro.caltech.edu>,
+	"Kumar Gala" <galak@kernel.crashing.org>
 Cc: "Linuxppc-Embedded \(\(E-Mail\)\)" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,33 +23,99 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-> 
-> PCI is actually endian-agnostic, so we're really 'fixing' the 
-> Freescale PCI implementation with endian swapping.
-> 
+Thanks for all the help.
 
-Hi Mark,
+My ideal solution would have been to use sysfs, but I didn't want to
+upgrade the kernel.  Therefore, I used Dave's program as a guide for
+setting the protect bits appropriately, and was able to get the driver
+working.  The driver required the pfn_pte macro change specified in my
+original post.  It appears to be a kernel bug on PPC processors with a
+greater than 32 bit address space.
 
-Its not agnostic, its little-endian.
 
-The configuration space layout of parameters larger than a
-byte are defined in little endian format.
+Chris Wyse
+Member of Technical Staff
+Embedded Technologies
+860-749-1556 office
+860-978-0849 cell
+413-778-9101 fax
+http://www.windriver.com
+ =20
 
-The wiring on the PCI bus is little-endian, and 32-bit
-quantities on the bus are represented by a logic analyzer
-in little endian format.
 
-But once you start talking about BAR regions, then yeah,
-they're your bytes, do with them what you will. My hardware
-uses a little-endian TI DSP, and an x86 host, so I
-had been using compatible machines.
+-----Original Message-----
+From: David Hawkins [mailto:dwh@ovro.caltech.edu]=20
+Sent: Thursday, March 23, 2006 12:47 PM
+To: Kumar Gala
+Cc: Wyse, Chris; Linuxppc-Embedded ((E-Mail))
+Subject: Re: Memory mapping PCI memory region to user space
 
-But the PLX PCI-9054 PCI chipset exposes BAR[0] and BAR[1]
-as control registers that are little-endian format.
+Hi Kumar,
 
-Conversely, we also use some Janz CAN cards, and their
-messaging protocol over PCI uses big-endian format
-structures in their protocol.
+>> When I was testing the Yosemite board as the host, I found that I=20
+>> could set the endian flag on the mmapped page, which then made the=20
+>> PCI device registers read as 32-bit quantities read back with the=20
+>> same layout under both x86 and PPC hosts.
+>=20
+> Hmm, I guess I would handle this like how the reset of the kernel=20
+> handle is with the io routines handling the swapping.  Not sure if=20
+> there is any advantage to using the endian flag.  I guess if you have=20
+> something you are treating as just memory there would be.
 
+I haven't used the feature, I just tested it to see what it did.
+
+The application case I thought of was this; the PCI boards I built (that
+I am revising, and replacing the DSP with a PPC) have an 8MB PCI region
+that I can mmap from the host. I have a test suite that runs from the
+host that manipulates registers on the boards to download FPGAs etc.
+When the boards are used in a real system, the onboard DSP is generally
+used, and the host just talks to the DSP.
+
+However, for the test suite, if I have a header with definitions
+like:
+
+#define CONTROL_FPGA_ENABLE   (1 << 0)
+#define CONTROL_FPGA_DONE_BIT (1 << 1)
+
+that correspond to bits in a 32-bit PCI mmapped register. Then code in
+the user-space test suite that did something like
+
+   pci_addr[CONTROL_OFFSET] |=3D CONTROL_FPGA_ENABLE;
+
+would instead need to be re-written, eg.,
+
+   write_le32(&pci_addr[CONTROL_OFFSET], CONTROL_FPGA_ENABLE);
+
+to be portable.
+
+I definitely agree that this is how kernel-level code should be written,
+but user-space code ... well, if I want to reuse code already written,
+setting the page endian flag and reusing the code would seem like the
+way to go. (This isn't what I need to do, since my host will still be an
+x86, the PPC will be a target device, but I still need to think about
+the endian issues).
+
+Now of course that I have seen the consequences of my coding, I'll be
+more careful to deal with endianness more appropriately.
+
+Its a tricky trade-off though. I could define control ioctl's that hide
+all the endianness issues ... but then the driver just gets bigger. I
+think the appropriate solution for the user-space test code would be to
+use CPU-to-little-endian routines, and wrap the lot in a re-usable
+library that the test suite links against.
+
+> There isn't a sysfs flag for the endianness page attribute since =20
+> thats a PPC book-e specific feature.  We could possible expand things
+
+> to support it but, I've been trying to actively avoid using the 'E'
+bit.
+
+Ok, I haven't received the 8349E board that I am waiting on, so I hadn't
+spotted that the PAGE_ENDIAN flag was Book E specific.
+
+Thanks for your insight.
+
+Cheers
 Dave
