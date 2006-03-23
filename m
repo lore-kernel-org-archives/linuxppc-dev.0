@@ -1,23 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] return to OF via trap, not exit
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olaf Hering <olh@suse.de>
-In-Reply-To: <20060323210357.GC24667@suse.de>
-References: <20060304191026.GA9815@suse.de>
-	<200603061212.12815.michael@ellerman.id.au>
-	<20060306073834.GA24869@suse.de>
-	<590CA2B3-AACE-4B69-930D-9A66A42FFC83@kernel.crashing.org>
-	<20060306074339.GC24869@suse.de>
-	<1912CD56-027C-491D-B2A2-EA44AB4DDD14@kernel.crashing.org>
-	<20060306074953.GE24869@suse.de>
-	<EA07A673-A993-490A-ADEC-29CFDF1DDAC1@kernel.crashing.org>
-	<20060323210357.GC24667@suse.de>
-Content-Type: text/plain
-Date: Fri, 24 Mar 2006 10:11:28 +1100
-Message-Id: <1143155488.23790.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 401FB67A6B
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 10:12:31 +1100 (EST)
+Date: Thu, 23 Mar 2006 17:11:29 -0600
+To: Haren Myneni <hbabu@us.ibm.com>
+Subject: Re: [PATCH] kdump: Fix for machine checkstop on DMA fault
+Message-ID: <20060323231129.GD5538@pb15.lixom.net>
+References: <20060323201258.GA5538@pb15.lixom.net>
+	<OF587D6284.5AECD8A6-ON8725713A.007B0F39-8825713A.007E8BA3@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF587D6284.5AECD8A6-ON8725713A.007B0F39-8825713A.007E8BA3@us.ibm.com>
+From: Olof Johansson <olof@lixom.net>
+Cc: Milton Miller <miltonm@bga.com>, Michael Ellerman <michael@ellerman.id.au>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Olaf Hering <olh@suse.de>, ellerman@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-03-23 at 22:03 +0100, Olaf Hering wrote:
->  On Mon, Mar 06, Segher Boessenkool wrote:
-> 
-> > That's better than always calling trap, sure.  Is there any reason
-> > you can't just do it on Macs though?  Because the problem you're trying
-> > to work around only happens there.
-> 
-> Maybe something like this? Only compile tested
-> 
-> 
-> Do not call prom exit prom_panic. It clears the screen and the exit message is lost.
-> On some (or all?) pmacs it causes another crash when OF tries to print the
-> date and time in its banner.
-> 
-> Set of_platform earlier to catch more prom_panic() calls.
+Hi,
 
-Looks reasonable, assuming it works :)
+On Thu, Mar 23, 2006 at 03:06:22PM -0800, Haren Myneni wrote:
 
-cheers
+> On JS21, immediately after the tce entries are initialized, the machine 
+> checkstops with an error "Internal CPU 1 Fault Error" on bladecenter MM. 
+> If we do not initialize tce entries for crash kernel, allows the ongoing 
+> DMA continue to the old kernel memory. I though that, ongoing DMA will be 
 
--- 
-Michael Ellerman
-IBM OzLabs
+The problem isn't when DMA is going to the old kernel memory. The
+problem is when that TCE entry gets reused by the crashdump kernel, and
+some other memory gets overwritten instead.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+> stopped when the device reset happens later by the drivers. I think, some 
+> hardening is already included in some drivers to take care of this 
+> behavior. I might be wrong. So far, I had e100 issue after testing on p5, 
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+What assures that the crash kernel has drivers for all hardware in the
+system? If there's no driver, what will then be used to quiesce the
+device?
+
+> p4, js20 and js21. Probably, it could be lucky scenario.
+> So, will be keeping the same change (posted here) plus your suggestion. 
+> Right? Can we apply same approach even for power-4?
+
+What you have now might be a 99%-of-the-time-it-works solution, but is
+that really good enough?
+
+The last things you want from a crash kernel is:
+
+1. Have it crash on it's own because of something getting overwritten
+(small chance, since most mappings are probably for writing out data
+for later analysis)
+
+or:
+
+2. Have it write corrupted data to the crash dump. This makes it more or
+less useless, since you can't trust what it wrote out: Did the machine
+go down because of the memory corruption you're spotting, or did that
+happen after the crash, while dumping it, etc?
+
+Either way, a proper solution is needed, not a 99% one.
+
+
+-Olof
