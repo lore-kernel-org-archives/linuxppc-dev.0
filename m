@@ -1,12 +1,11 @@
-Return-Path: <anton@ozlabs.org>
-Date: Thu, 23 Mar 2006 22:36:37 +1100
-From: Anton Blanchard <anton@samba.org>
-To: santil@us.ibm.com
-Subject: ibmveth initialisation failure
-Message-ID: <20060323113637.GJ30422@krispykreme>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>,
+	<linuxppc-dev@ozlabs.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 23 Mar 2006 23:32:24 +1100
+Subject: [PATCH 1/4] powerpc: Make BUG_ON & WARN_ON play nice with
+	compile-time optimisations
+Message-Id: <1143117144.850591.48752080269.qpush@concordia>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,68 +15,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Change BUG_ON and WARN_ON to give the compiler a chance to perform
+compile-time optimsations. Depending on the complexity of the condition,
+the compiler may not do this very well, so if it's important check the
+object code.
 
-Hi,
+Current GCC's (4.x) produce good code as long as the condition does not
+include a function call, including a static inline.
 
-While testing kdump I hit the register_logical_lan issue already under
-discussion. Unfortunately we end up oopsing shortly after this.
-
-It turns out we call ibmveth_change_mtu early in ->open, before we have
-set everything up. ibmveth_change_mtu calls ibmveth_interrupt and
-shortly after we call ibmveth_poll regardless of whether the device came
-up properly:
-
-(/drivers/net/ibmveth.c:515 ua:30000002) ERROR: h_register_logical_lan failed with -4
-(drivers/net/ibmveth.c:520 ua:30000002) ERROR: buffer TCE:0x0 filter TCE:0x1000 rxq desc:0x8000701000002000 MAC:0xdad230003002
-
-Unable to handle kernel paging request for data at address 0x00000000
-cpu 0x2: Vector: 300 (Data Access) at [c00000000778bab0]
-    pc: c0000000022c44fc: .ibmveth_poll+0x94/0x77c
-    lr: c0000000023997f4: .net_rx_action+0xe4/0x220
-   dar: 0
-[c00000000778be40] c0000000023997f4 .net_rx_action+0xe4/0x220
-[c00000000778bef0] c0000000020538e8 .__do_softirq+0x98/0x164
-[c00000000778bf90] c0000000020224d0 .call_do_softirq+0x14/0x24
-[c0000000066e3790] c00000000200b73c .do_softirq+0x94/0xe0
-[c0000000066e3820] c000000002053400 .local_bh_enable+0x58/0x8c
-[c0000000066e38a0] c00000000242bb64 ._spin_unlock_bh+0x1c/0x30
-[c0000000066e3920] c00000000238e3f4 .lock_sock+0xd4/0xf8
-[c0000000066e39e0] c00000000238b87c .sock_fasync+0x9c/0x1b0
-[c0000000066e3aa0] c00000000238c998 .sock_close+0x3c/0x60
-[c0000000066e3b20] c0000000020b1904 .__fput+0xf8/0x238
-[c0000000066e3bc0] c0000000020af054 .filp_close+0xac/0xd4
-[c0000000066e3c50] c00000000204e7dc .put_files_struct+0xbc/0x148
-[c0000000066e3cf0] c0000000020500e8 .do_exit+0x224/0x970
-[c0000000066e3da0] c000000002050910 .sys_exit_group+0x0/0x8
-[c0000000066e3e30] c00000000200871c syscall_exit+0x0/0x40
-
-Shift ibmveth_change_mtu until after we have set everything up and
-cannot fail.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
-Index: build/drivers/net/ibmveth.c
+ include/asm-powerpc/bug.h |   30 ++++++++++++++++++++++++++++--
+ 1 files changed, 28 insertions(+), 2 deletions(-)
+
+Index: to-merge/include/asm-powerpc/bug.h
 ===================================================================
---- build.orig/drivers/net/ibmveth.c	2006-02-13 13:24:22.000000000 +1100
-+++ build/drivers/net/ibmveth.c	2006-03-23 21:56:22.000000000 +1100
-@@ -489,9 +489,6 @@ static int ibmveth_open(struct net_devic
- 	adapter->rx_queue.num_slots = rxq_entries;
- 	adapter->rx_queue.toggle = 1;
+--- to-merge.orig/include/asm-powerpc/bug.h
++++ to-merge/include/asm-powerpc/bug.h
+@@ -30,6 +30,12 @@ struct bug_entry *find_bug(unsigned long
  
--	/* call change_mtu to init the buffer pools based in initial mtu */
--	ibmveth_change_mtu(netdev, netdev->mtu);
--
- 	memcpy(&mac_address, netdev->dev_addr, netdev->addr_len);
- 	mac_address = mac_address >> 16;
+ #ifdef CONFIG_BUG
  
-@@ -533,6 +530,9 @@ static int ibmveth_open(struct net_devic
- 		return rc;
- 	}
- 
-+	/* call change_mtu to init the buffer pools based in initial mtu */
-+	ibmveth_change_mtu(netdev, netdev->mtu);
++/*
++ * BUG_ON() and WARN_ON() do their best to cooperate with compile-time
++ * optimisations. However depending on the complexity of the condition
++ * some compiler versions may not produce optimal results.
++ */
 +
- 	ibmveth_debug_printk("initial replenish cycle\n");
- 	ibmveth_interrupt(netdev->irq, netdev, NULL);
+ #define BUG() do {							 \
+ 	__asm__ __volatile__(						 \
+ 		"1:	twi 31,0,0\n"					 \
+@@ -40,17 +46,36 @@ struct bug_entry *find_bug(unsigned long
+ } while (0)
  
+ #define BUG_ON(x) do {						\
+-	__asm__ __volatile__(					\
++	if (__builtin_constant_p(x)) {				\
++		if (x)						\
++			BUG();					\
++	} else {						\
++		__asm__ __volatile__(				\
+ 		"1:	"PPC_TLNEI"	%0,0\n"			\
+ 		".section __bug_table,\"a\"\n"			\
+ 		"\t"PPC_LONG"	1b,%1,%2,%3\n"		\
+ 		".previous"					\
+ 		: : "r" ((long)(x)), "i" (__LINE__),		\
+ 		    "i" (__FILE__), "i" (__FUNCTION__));	\
++	}							\
+ } while (0)
+ 
+-#define WARN_ON(x) do {						\
++#define WARN() do {						\
+ 	__asm__ __volatile__(					\
++		"1:	twi 31,0,0\n"				\
++		".section __bug_table,\"a\"\n"			\
++		"\t"PPC_LONG"	1b,%0,%1,%2\n"			\
++		".previous"					\
++		: : "i" (__LINE__ + BUG_WARNING_TRAP),		\
++		    "i" (__FILE__), "i" (__FUNCTION__));	\
++} while (0)
++
++#define WARN_ON(x) do {						\
++	if (__builtin_constant_p(x)) {				\
++		if (x)						\
++			WARN();					\
++	} else {						\
++		__asm__ __volatile__(				\
+ 		"1:	"PPC_TLNEI"	%0,0\n"			\
+ 		".section __bug_table,\"a\"\n"			\
+ 		"\t"PPC_LONG"	1b,%1,%2,%3\n"		\
+@@ -58,6 +83,7 @@ struct bug_entry *find_bug(unsigned long
+ 		: : "r" ((long)(x)),				\
+ 		    "i" (__LINE__ + BUG_WARNING_TRAP),		\
+ 		    "i" (__FILE__), "i" (__FUNCTION__));	\
++	}							\
+ } while (0)
+ 
+ #define HAVE_ARCH_BUG
