@@ -1,25 +1,29 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (unknown [213.151.39.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3CBC667A79
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 22:37:38 +1100 (EST)
-Received: from [131.234.73.110] (helo=dhcp-73-110.uni-paderborn.de)
-	by sipsolutions.net with esmtpsa (TLS-1.0:RSA_ARCFOUR_MD5:16)
-	(Exim 4.60) (envelope-from <johannes@sipsolutions.net>)
-	id 1FMkes-0007pG-6c
-	for linuxppc-dev@ozlabs.org; Fri, 24 Mar 2006 11:40:46 +0000
-Subject: Re: new sound driver
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1143020119.11724.41.camel@localhost>
-References: <1143020119.11724.41.camel@localhost>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-mBtoMAvMcUfr+rKqrOZs"
-Date: Fri, 24 Mar 2006 12:37:27 +0100
-Message-Id: <1143200247.28247.0.camel@localhost>
-Mime-Version: 1.0
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 22FDB67B20
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 23:11:28 +1100 (EST)
+In-Reply-To: <20060323210357.GC24667@suse.de>
+References: <20060304191026.GA9815@suse.de>
+	<200603061212.12815.michael@ellerman.id.au>
+	<20060306073834.GA24869@suse.de>
+	<590CA2B3-AACE-4B69-930D-9A66A42FFC83@kernel.crashing.org>
+	<20060306074339.GC24869@suse.de>
+	<1912CD56-027C-491D-B2A2-EA44AB4DDD14@kernel.crashing.org>
+	<20060306074953.GE24869@suse.de>
+	<EA07A673-A993-490A-ADEC-29CFDF1DDAC1@kernel.crashing.org>
+	<20060323210357.GC24667@suse.de>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D857A5CA-8D59-4047-AFAF-35FC421FDEE2@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] return to OF via trap, not exit
+Date: Fri, 24 Mar 2006 13:13:43 +0100
+To: Olaf Hering <olh@suse.de>
+Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,41 +33,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On 23-mrt-2006, at 22:03, Olaf Hering wrote:
+>  On Mon, Mar 06, Segher Boessenkool wrote:
+>> That's better than always calling trap, sure.  Is there any reason
+>> you can't just do it on Macs though?  Because the problem you're  
+>> trying
+>> to work around only happens there.
+>
+> Maybe something like this? Only compile tested
 
---=-mBtoMAvMcUfr+rKqrOZs
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+That looks fine yes (if it runs ;-) ), thanks!
 
-On Wed, 2006-03-22 at 10:35 +0100, Johannes Berg wrote:
+> Do not call prom exit prom_panic. It clears the screen and the exit  
+> message is lost.
+> On some (or all?) pmacs it causes another crash when OF tries to  
+> print the
+> date and time in its banner.
+>
+> Set of_platform earlier to catch more prom_panic() calls.
+>
+> Signed-off-by: Olaf Hering <olh@suse.de>
 
-> So I started to rewrite snd-powermac as snd-aoa, which I currently keep
-> in a git tree at http://johannes.sipsolutions.net/snd-aoa.git/
-
-It's a bit hacky (but hopefully those hacks can be removed rather
-easily) but it works now for the onyx based machines (powermac8,1, quad
-powermac, last 15" powerbook and probably more if you add the layout id)
-
-johannes
-
---=-mBtoMAvMcUfr+rKqrOZs
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIVAwUARCPZ9KVg1VMiehFYAQJaVw//XIQH/XasJA3xbK/UQZx7Hs0PVDRTKxhc
-3uE7q3Z5ZkBH3858ZFoRVxKJrU7fa6YRTpWJHJ2Ad+MOpI0JAQ4MUvKwnx3+QjOL
-3aN+0Z1hA9na17FU/UmIIc4xcsqEIe0YkBICY91l3pdXi3I+2RsENNc4KTlbraQB
-oNcDgjx6NtRL3Mlv6IzoLPlyL/W8Sc1+qsmRD1hwLztNvQhLszPPeK+LeecPT9zC
-R81U35PD6/RRCVZ2Syjw2VTr790JxqhyCagwnVLjmrgFIx/aqbbwj3iA95eWLKU7
-lcOilypPMkB1MnT7Hwocy9SUhXa2dBjRrQSTiSqJHm3gqPCIl/xCCWFW2b9kJEPh
-Qko+n0nehKkEPtDxp9hrz0nd4F2IQy4XSqAh4nZ2NckSnJLEsrIRGl3H/QmzYK5K
-LIrTXiUbEYFPqAwJtDSfRtKvHXBt1zeadNj9JkHM5t81KV3Wn6fTjKq0oKbEquDt
-0Q1WHvYKRdzuTBP2hBR6feWBvJgkwd26ZbX4WQD3k6v4LH5jq0ih/J3oiCLuqkW/
-efuZ9EJzdpTaWG2Git+8Pe/a330oQh7ID7Jfiqrd3nnul/VGX9n14nxKdF6s8DQT
-7GmRLZIytlVHqnrDuz2pTUdAi3GfotAcLZU7m8ILkRAUse7R52SkF8BHcI8Xp0ej
-E+NooVxxH6Y=
-=5+QP
------END PGP SIGNATURE-----
-
---=-mBtoMAvMcUfr+rKqrOZs--
+Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
