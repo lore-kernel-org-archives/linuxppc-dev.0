@@ -1,22 +1,31 @@
-Return-Path: <siju@india.tejasnetworks.com>
-Received: from anche.india.tejasnetworks.com (india.tejasnetworks.com
-	[164.164.94.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3355C67B79
+Return-Path: <carlos.mitidieri@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id C876667B40
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 24 Mar 2006 21:07:12 +1100 (EST)
-Subject: Re: [BULK]  Re: "transmit timed out" on FCC in MPC8260 as well as
-	MPC8247
-From: Siju Viswanath K E <siju@india.tejasnetworks.com>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20060324075148.4C106353BFB@atlas.denx.de>
-References: <20060324075148.4C106353BFB@atlas.denx.de>
-Content-Type: text/plain
-Message-Id: <1143193658.22246.20.camel@Blaze>
-Mime-Version: 1.0
-Date: 24 Mar 2006 15:17:39 +0530
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 24 Mar 2006 22:21:45 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by mail.sysgo.com (Postfix) with ESMTP id 31F3FFB879
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 24 Mar 2006 12:21:43 +0100 (CET)
+Received: from donald.sysgo.com (unknown [172.20.1.30])
+	by mail.sysgo.com (Postfix) with ESMTP id 184F1FB879
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 24 Mar 2006 12:21:43 +0100 (CET)
+Received: from cam (unknown [172.40.1.200])
+	by donald.sysgo.com (Postfix) with ESMTP id 7361220989A
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 24 Mar 2006 12:21:42 +0100 (CET)
+From: Carlos Mitidieri <carlos.mitidieri@sysgo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: pci-x
+Date: Fri, 24 Mar 2006 12:21:44 +0100
+References: <200603231435.01008.carlos.mitidieri@sysgo.com>
+	<AD260576-EB34-4B56-9FB7-CE3A2DAEBFE7@kernel.crashing.org>
+In-Reply-To: <AD260576-EB34-4B56-9FB7-CE3A2DAEBFE7@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200603241221.44576.carlos.mitidieri@sysgo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,26 +36,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Denk,
-	Thanks for the suggestion. I had a look at the source repository
-at projects/linuxppc_2_4_devel.git site. Outdated code doesnt seem to be
-the issue. My repository is patched upto 
-"Patch by Wojciech Kromer, 06 Jan 2004" and later changes are only
-adding extra board support. 
 
-regards,
-Siju Viswanath
+On Thursday 23 March 2006 16:41, Kumar Gala wrote:
+> > Is there PCI-X support for the mpc8540ads?
+>
+> Yes.  You have to make sure the board is setup (switches in the right
+> place) properly for it.
 
-On Fri, 2006-03-24 at 13:21, Wolfgang Denk wrote:
-> In message <1143177651.22246.3.camel@Blaze> you wrote:
-> >
-> > 	I am using denk's linuxppc-2.4.20 . I am getting this problem of
-> 
-> Why don't you try using a more current version of the code? 2.4.20 is
-> *very* old, and *lots* of bugs and problems have been fixed since.
-> 
-> It really does not make sense to spend effort on such old code.
-> 
-> Best regards,
-> 
-> Wolfgang Denk
+Thank you for answering.
+
+Looking the manuals and schematics,  I have changed the "config" switch in 
+SW1, and now the PCI-X support is activated in the kernel at the system 
+initialization. Nevertheless,  when I plug a bridge board to the slot 0, I 
+get the following messages:
+
+PCI: Probing PCI hardware
+PCI: Cannot allocate resource region 1 of PCI bridge 1
+PCI: bridge 1 resource 1 moved to 9ff00000..9fffffff
+PCI: Cannot allocate resource region 2 of PCI bridge 1
+PCI: bridge 1 resource 2 moved to 9fe00000..9fefffff
+
+Would you guess that this is a driver problem, or that my board setup is still 
+incorrect?
+
+-- 
+Carlos Mitidieri
+SYSGO AG - Office Ulm
