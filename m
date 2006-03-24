@@ -1,35 +1,15 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB730679E9
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2006 10:33:43 +1100 (EST)
-Received: from e32.co.us.ibm.com (e32.boulder.ibm.com [9.17.249.42])
-	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k2ONBZ1S013993
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 18:11:35 -0500
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k2ONBU6r018559
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 18:11:31 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2ONEY1r191920
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 16:14:34 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k2ONBUtb030882
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 16:11:30 -0700
-Date: Fri, 24 Mar 2006 17:11:29 -0600
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc/pseries: Cleanup device name printing.
-Message-ID: <20060324231129.GB21895@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <Kallol_Biswas@pmc-sierra.com>
+Received: from father.pmc-sierra.bc.ca (father.pmc-sierra.com [216.241.224.13])
+	by ozlabs.org (Postfix) with SMTP id E4B9967A45
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2006 10:45:04 +1100 (EST)
+Message-ID: <478F19F21671F04298A2116393EEC3D50A9C8D@sjc1exm08.pmc_nt.nt.pmc-sierra.bc.ca>
+From: Kallol Biswas <Kallol_Biswas@pmc-sierra.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: memory with __get_free_pages and disabling caching
+Date: Fri, 24 Mar 2006 15:44:42 -0800
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,69 +19,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+Thank you.
 
-Please apply and forward. 
+I wonder how consistent ptes are used if all kernel memory is mapped with large tlb.
+In the __dma_alloc_coherent() routine pages are allocated with alloc_pages(), new virtual address is created in consistent region, then consistent ptes are populated. Looks like that the routine creates a new virtual mapping. The memory is addressed with the new address. 
 
---linas
+Do we have two mappings in the TLB for the same physical address?
 
+When I find it out, I will do a posting. 
 
-[PATCH] powerpc/pseries: Cleanup device name printing.
+-----Original Message-----
+From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org] 
+Sent: Friday, March 24, 2006 2:31 PM
+To: Kallol Biswas
+Cc: linuxppc-dev@ozlabs.org
+Subject: RE: memory with __get_free_pages and disabling caching
 
-This patch avoids printk'ing a NULL string.
+On Fri, 2006-03-24 at 11:13 -0800, Kallol Biswas wrote:
+> We have a little endian device on a PPC 440GX based system.
+> The descriptors need to be swapped. With E bit turned on we can save swapping time.
+> 
+> May be all the pages with _get_free_page already are mapped with large tlb entry.
+> 
+> How about making a window (ptes) like consistent memory?
 
-Signed-off-by: Linas Vepstas <linas@linas.org>
+If you allocate with consistent allocator on 4xx, you should be able to hack the PTEs to set the E bit, but I think it's not necessary. We've been swapping descriptor for ages without any noticeable performance loss since pretty much all network devices have little endian descriptor rings :) Look into using the {ld,st}_le{16,32} inlines, they use the native swapped load/store instructions of the CPU to store things in little endian format. They shouldn't cost more or at least not significantly more than normal load/stores.
 
-----
+Ben.
 
- arch/powerpc/platforms/pseries/eeh_driver.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.16-git6/arch/powerpc/platforms/pseries/eeh_driver.c
-===================================================================
---- linux-2.6.16-git6.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2006-03-24 16:46:25.836892186 -0600
-+++ linux-2.6.16-git6/arch/powerpc/platforms/pseries/eeh_driver.c	2006-03-24 16:58:55.305489138 -0600
-@@ -257,6 +257,7 @@ void handle_eeh_events (struct eeh_event
- 	struct pci_bus *frozen_bus;
- 	int rc = 0;
- 	enum pci_ers_result result = PCI_ERS_RESULT_NONE;
-+	const char *pci_str, *drv_str;
- 
- 	frozen_dn = find_device_pe(event->dn);
- 	frozen_bus = pcibios_find_pci_bus(frozen_dn);
-@@ -291,6 +292,13 @@ void handle_eeh_events (struct eeh_event
- 
- 	frozen_pdn = PCI_DN(frozen_dn);
- 	frozen_pdn->eeh_freeze_count++;
-+
-+	pci_str = pci_name (frozen_pdn->pcidev);
-+	drv_str = pcid_name (frozen_pdn->pcidev);
-+	if (!pci_str) {
-+		pci_str = pci_name (event->dev);
-+		drv_str = pcid_name (event->dev);
-+	}
- 	
- 	if (frozen_pdn->eeh_freeze_count > EEH_MAX_ALLOWED_FREEZES)
- 		goto hard_fail;
-@@ -306,9 +314,7 @@ void handle_eeh_events (struct eeh_event
- 	eeh_slot_error_detail(frozen_pdn, 1 /* Temporary Error */);
- 	printk(KERN_WARNING
- 	   "EEH: This PCI device has failed %d times since last reboot: %s - %s\n",
--		frozen_pdn->eeh_freeze_count,
--		pci_name (frozen_pdn->pcidev), 
--		pcid_name(frozen_pdn->pcidev));
-+		frozen_pdn->eeh_freeze_count, drv_str, pci_str);
- 
- 	/* Walk the various device drivers attached to this slot through
- 	 * a reset sequence, giving each an opportunity to do what it needs
-@@ -360,9 +366,7 @@ hard_fail:
- 	   "EEH: PCI device %s - %s has failed %d times \n"
- 	   "and has been permanently disabled.  Please try reseating\n"
- 	   "this device or replacing it.\n",
--		pci_name (frozen_pdn->pcidev), 
--		pcid_name(frozen_pdn->pcidev), 
--		frozen_pdn->eeh_freeze_count);
-+		drv_str, pci_str, frozen_pdn->eeh_freeze_count);
- 
- 	eeh_slot_error_detail(frozen_pdn, 2 /* Permanent Error */);
- 
+> -----Original Message-----
+> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
+> Sent: Thursday, March 23, 2006 7:06 PM
+> To: Kallol Biswas
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: memory with __get_free_pages and disabling caching
+> 
+> On Thu, 2006-03-23 at 18:15 -0800, Kallol Biswas wrote:
+> > Hello,
+> >        Is there an easy way to set page table attributes for the 
+> > memory returned by __get_free_pages()?
+> >  
+> > I need to be able to turn off caching and turn on E bit for these 
+> > pages.
+> 
+> The Evil bit ? heh ! what are you trying to do ? here ... you can always create a virtual mapping to those pages with different attributes but that's nor recommended as some processors will shoke pretty badly if you end up with both cacheable and non-cacheable mappings for the same page.
+> However, it's not always possible to unmap the initial mapping since it's common to use things like large pages, BATs, large TLB entries etc... to map kernel memory..
+> 
+> > I tried to walk through the page tables data structures to get the 
+> > pte, but it seems that the pmd is not present for the pages. If 
+> > someone has done investigation on this before please send me a reply.
+> >  
+> Kernel linear memory isn't necessarily mapped by the page tables. What are you trying to do and with what processor ?
+> 
+> 
+> 
+> Ben.
+> 
