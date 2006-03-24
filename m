@@ -1,37 +1,30 @@
 Return-Path: <johnrose@austin.ibm.com>
-Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D3598679E7
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2006 03:50:57 +1100 (EST)
-Received: from e32.co.us.ibm.com (e32.boulder.ibm.com [9.17.249.42])
-	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k2OGHjQL029840
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 11:17:45 -0500
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 78FCB67A5C
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2006 04:18:42 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
 	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k2OGHOAS011801
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 11:17:24 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2OGKN1r191726
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 09:20:24 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k2OGGKcQ027194
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 09:16:20 -0700
-Subject: Re: pci_dlpar.c & probe mode
+	k2OHId0j013447
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 12:18:39 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2OHFZXl255976
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 10:15:35 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k2OHIdsU015481
+	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 10:18:39 -0700
+Subject: [PATCH] powerpc: dynamic probe - use ppc_md.pci_probe_mode()
 From: John Rose <johnrose@austin.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1143160576.4257.51.camel@localhost.localdomain>
-References: <1143160576.4257.51.camel@localhost.localdomain>
+To: benh@kernel.crashing.org
 Content-Type: text/plain
-Message-Id: <1143217005.2567.12.camel@sinatra.austin.ibm.com>
+Message-Id: <1143220753.2567.22.camel@sinatra.austin.ibm.com>
 Mime-Version: 1.0
-Date: Fri, 24 Mar 2006 10:16:45 -0600
-Cc: External List <linuxppc-dev@ozlabs.org>
+Date: Fri, 24 Mar 2006 11:19:13 -0600
+Cc: External List <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,19 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I noticed that pcibios_add_pci_devices() test the platform type to
-> decide wether to do a device-tree based probe or a direct PCI probe. Why
-> can't it use ppc_md.probe_mode() like the rest of the PCI code does ?
+Change the dynamic PCI probe function for pSeries to use
+ppc_md.pci_probe_mode() when appropriate.
 
-I can't see a good reason either! :)  I'll have a patch in two shakes of
-a lamb's tail.  
+Signed-off-by: John Rose <johnrose@austin.ibm.com>
 
-On a related note, I don't understand why devtree-based probe is only
-desirable for the LPAR case (on pSeries).  
+---
 
-Also, do we anticipate future probe modes for new platforms or
-something?  Adding such logic to ppc_md seems like mucho infrastructure
-to answer a simple question (lpar or not).  For exmaple, _machine gets
-used all over the pmac code.
+As suggested by BenH.  Tested on POWER5.
 
+Thanks-
 John
+
+diff -puN arch/powerpc/platforms/pseries/pci_dlpar.c~use_probe_mode arch/powerpc/platforms/pseries/pci_dlpar.c
+--- 2_6_cleanups/arch/powerpc/platforms/pseries/pci_dlpar.c~use_probe_mode	2006-03-24 09:57:08.000000000 -0600
++++ 2_6_cleanups-johnrose/arch/powerpc/platforms/pseries/pci_dlpar.c	2006-03-24 10:12:49.000000000 -0600
+@@ -152,20 +152,26 @@ pcibios_pci_config_bridge(struct pci_dev
+ void
+ pcibios_add_pci_devices(struct pci_bus * bus)
+ {
+-	int slotno, num;
++	int slotno, num, mode;
+ 	struct pci_dev *dev;
+ 	struct device_node *dn = pci_bus_to_OF_node(bus);
+ 
+ 	eeh_add_device_tree_early(dn);
+ 
+-	if (_machine == PLATFORM_PSERIES_LPAR) {
++	mode = PCI_PROBE_NORMAL;
++	if (ppc_md.pci_probe_mode)
++		mode = ppc_md.pci_probe_mode(bus);
++
++	if (mode == PCI_PROBE_DEVTREE) {
++		printk("%s: jhr: new probe\n", __FUNCTION__);
+ 		/* use ofdt-based probe */
+ 		of_scan_bus(dn, bus);
+ 		if (!list_empty(&bus->devices)) {
+ 			pcibios_fixup_new_pci_devices(bus, 0);
+ 			pci_bus_add_devices(bus);
+ 		}
+-	} else {
++	} else if (mode == PCI_PROBE_NORMAL) {
++		printk("%s: jhr: old probe\n", __FUNCTION__);
+ 		/* use legacy probe */
+ 		slotno = PCI_SLOT(PCI_DN(dn->child)->devfn);
+ 		num = pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
+
+_
