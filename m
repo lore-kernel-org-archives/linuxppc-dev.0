@@ -1,19 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C02EB679E6
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 14:06:09 +1100 (EST)
-Subject: Re: memory with __get_free_pages and disabling caching
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kallol Biswas <Kallol_Biswas@pmc-sierra.com>
-In-Reply-To: <478F19F21671F04298A2116393EEC3D50A9BE2@sjc1exm08.pmc_nt.nt.pmc-sierra.bc.ca>
-References: <478F19F21671F04298A2116393EEC3D50A9BE2@sjc1exm08.pmc_nt.nt.pmc-sierra.bc.ca>
-Content-Type: text/plain
-Date: Fri, 24 Mar 2006 14:05:51 +1100
-Message-Id: <1143169552.4257.68.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@ozlabs.org>
+From: Michael Neuling <mikey@neuling.org>
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Subject: [PATCH] powerpc: legacy_serial loop cleanup
+Date: Fri, 24 Mar 2006 15:17:27 +1100
+Sender: mikey@ozlabs.org
+Message-Id: <20060324041727.F131267B56@ozlabs.org>
+Cc: michael@ellerman.id.au
+Reply-To: mikey@neuling.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +17,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-03-23 at 18:15 -0800, Kallol Biswas wrote:
-> Hello,
->        Is there an easy way to set page table attributes for the
-> memory returned
-> by __get_free_pages()?
->  
-> I need to be able to turn off caching and turn on E bit for these
-> pages.
+We only ever execute the loop once, so let's move it to a function
+making it more readable.  Cleanup patch, no functional change.  
 
-The Evil bit ? heh ! what are you trying to do ? here ... you can always
-create a virtual mapping to those pages with different attributes but
-that's nor recommended as some processors will shoke pretty badly if you
-end up with both cacheable and non-cacheable mappings for the same page.
-However, it's not always possible to unmap the initial mapping since
-it's common to use things like large pages, BATs, large TLB entries
-etc... to map kernel memory..
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/legacy_serial.c |   39 +++++++++++++++++++-----------------
+ 1 files changed, 21 insertions(+), 18 deletions(-)
 
-> I tried to walk through the page tables data structures to get the
-> pte, but it seems
-> that the pmd is not present for the pages. If someone has done
-> investigation
-> on this before please send me a reply.
->  
-Kernel linear memory isn't necessarily mapped by the page tables. What
-are you trying to do and with what processor ?
-
-Ben.
+Index: linux-2.6-linus/arch/powerpc/kernel/legacy_serial.c
+===================================================================
+--- linux-2.6-linus.orig/arch/powerpc/kernel/legacy_serial.c
++++ linux-2.6-linus/arch/powerpc/kernel/legacy_serial.c
+@@ -236,6 +236,26 @@ static int __init add_legacy_pci_port(st
+ }
+ #endif
+ 
++static void __init setup_legacy_serial_console(int console)
++{
++	if (console >= 0) {
++		struct legacy_serial_info *info =
++			&legacy_serial_infos[legacy_serial_console];
++		void __iomem *addr;
++
++		if (info->taddr == 0)
++			return;
++		addr = ioremap(info->taddr, 0x1000);
++		if (addr == NULL)
++			return;
++		if (info->speed == 0)
++			info->speed = udbg_probe_uart_speed(addr, info->clock);
++		DBG("default console speed = %d\n", info->speed);
++		udbg_init_uart(addr, info->speed, info->clock);
++	}
++	return;
++}
++
+ /*
+  * This is called very early, as part of setup_system() or eventually
+  * setup_arch(), basically before anything else in this file. This function
+@@ -319,24 +339,7 @@ void __init find_legacy_serial_ports(voi
+ 
+ 	DBG("legacy_serial_console = %d\n", legacy_serial_console);
+ 
+-	/* udbg is 64 bits only for now, that will change soon though ... */
+-	while (legacy_serial_console >= 0) {
+-		struct legacy_serial_info *info =
+-			&legacy_serial_infos[legacy_serial_console];
+-		void __iomem *addr;
+-
+-		if (info->taddr == 0)
+-			break;
+-		addr = ioremap(info->taddr, 0x1000);
+-		if (addr == NULL)
+-			break;
+-		if (info->speed == 0)
+-			info->speed = udbg_probe_uart_speed(addr, info->clock);
+-		DBG("default console speed = %d\n", info->speed);
+-		udbg_init_uart(addr, info->speed, info->clock);
+-		break;
+-	}
+-
++	setup_legacy_serial_console(legacy_serial_console);
+ 	DBG(" <- find_legacy_serial_port()\n");
+ }
+ 
