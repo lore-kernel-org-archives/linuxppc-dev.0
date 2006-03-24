@@ -1,22 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DB0D967A03
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 19:01:59 +1100 (EST)
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] powerpc: Kill machine numbers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20060324062624.GA16815@pb15.lixom.net>
+Date: Fri, 24 Mar 2006 09:46:50 +0100
 References: <1143178947.4257.78.camel@localhost.localdomain>
 	<20060324062624.GA16815@pb15.lixom.net>
-Content-Type: text/plain
-Date: Fri, 24 Mar 2006 19:01:38 +1100
-Message-Id: <1143187298.3710.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+	<1143187298.3710.3.camel@localhost.localdomain>
+In-Reply-To: <1143187298.3710.3.camel@localhost.localdomain>
+MIME-Version: 1.0
+Message-Id: <200603240946.51793.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: Paul Mackerras <paulus@samba.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,73 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> It would be very useful to print the ppc_md.name of the found machine
-> here, even without debugging enabled.
-
-Not sure ... without debugging enabled, it's likely that you won't see
-anything that early anyway :)
-
-> > -struct machdep_calls __initdata cell_md = {
-> > +define_machine(cell) {
-> >  	.probe			= cell_probe,
-> >  	.setup_arch		= cell_setup_arch,
-> >  	.init_early		= cell_init_early,
+On Friday 24 March 2006 09:01, Benjamin Herrenschmidt wrote:
+> > > -struct machdep_calls __initdata cell_md = {
+> > > +define_machine(cell) {
+> > >     .probe                  = cell_probe,
+> > >     .setup_arch             = cell_setup_arch,
+> > >     .init_early             = cell_init_early,
+> > 
+> > You forgot to add a .name value here.
 > 
-> You forgot to add a .name value here.
+> Yup, thanks. I think this should become cpb instead of cell, other cell
+> based boards would then have different ppc_md's though they could share
+> various routines.
 
-Yup, thanks. I think this should become cpb instead of cell, other cell
-based boards would then have different ppc_md's though they could share
-various routines.
+The cpb name come from an outdated code name for what we currently
+call the cell blade. My current understanding is that we try to keep
+a common machine description for at least those machines that are
+running without a hypervisor underneath them but based on rtas,
+while then adding new machine descriptions for others.
 
-> > Index: linux-work/arch/powerpc/kernel/prom_init.c
-> > ===================================================================
-> > --- linux-work.orig/arch/powerpc/kernel/prom_init.c	2006-03-10 15:58:17.000000000 +1100
-> > +++ linux-work/arch/powerpc/kernel/prom_init.c	2006-03-24 14:41:14.000000000 +1100
-> [...]
-> > +	/* If not a mac, try to figure out if it's an IBM pSeries. We assume
-> > +	 * it is if :
-> > +	 *  - /device_type is "chrp" (please, do NOT use that for future
-> > +	 *    non-IBM designs !
-> > +	 *  - it has /rtas
-> > +	 */
-> 
-> It's really weird that IBM chose to use "chrp" to describe a
-> PAPR-compliant platform. I guess it's for historical reasons, but it
-> sure isn't CHRP any more.
+However I really want to avoid having to add a new machine description
+every time a company comes up with a new board design. As long
+as they get everything right in the device tree, it should just
+work (as long as all device drivers are there).
 
-Yup, I'm trying to get that changed in the architecture but even if I'm
-successful, we'll have to deal with existing machines.
+One thing I have been wondering about is what should be the right way
+to check whether we're running on something based on the
+Cell Broadband Engine Architecture, if that is needed somewhere.
+My original idea was to make this the platform number, but this
+seems impractical now.
 
-> Also, please change the wording. With power.org, there will likely be
-> non-IBM PAPR-compliant platforms at some point. "non-PAPR-compliant
-> designs" is a better term to use.
-
-Ok.
-
-> > Index: linux-work/Documentation/powerpc/booting-without-of.txt
-> > ===================================================================
-> > --- linux-work.orig/Documentation/powerpc/booting-without-of.txt	2006-03-24 11:42:13.000000000 +1100
-> > +++ linux-work/Documentation/powerpc/booting-without-of.txt	2006-03-24 14:28:27.000000000 +1100
-> > @@ -719,6 +719,10 @@ address which can extend beyond that lim
-> >      - model : this is your board name/model
-> >      - #address-cells : address representation for "root" devices
-> >      - #size-cells: the size representation for "root" devices
-> > +    - device_type : This property shouldn't be necessary. However, if
-> > +      device to create a device_type for your root node, make sure it
-> 
-> if you device to create... ?
-
-I was tired :) If you "decide" to create.. will fix, thanks.
-
-> > +      is _not_ "chrp" as this will be matched by the kernel to be a
-> > +      CHRP machine on 32 bits kernel or a pSeries on 64 bits kernels
-> 
-> ...or a PAPR-compliant machine on 64-bit kernels.
-> 
-> (Also, "xx-bit kernels", not "xx bits kernels").
-
-yeah yeah :) Thanks for the review anyway !
-
-Cheers,
-Ben.
+	Arnd <><
