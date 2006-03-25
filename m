@@ -1,36 +1,14 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 26E80679E7
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2006 14:21:59 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k2P3LrSs000896
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 22:21:53 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2P3Ou1r187314
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 20:24:56 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k2P3LqgK024634
-	for <linuxppc-dev@ozlabs.org>; Fri, 24 Mar 2006 20:21:53 -0700
-Date: Fri, 24 Mar 2006 21:21:46 -0600
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] PCI Error Recovery: e1000 network device driver
-Message-ID: <20060325032146.GE21895@austin.ibm.com>
-References: <20060324220002.GC26137@austin.ibm.com>
-	<20060325022206.GA6361@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060325022206.GA6361@kroah.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linux.nics@intel.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	jesse.brandeburg@intel.com, linuxppc-dev@ozlabs.org,
-	john.ronciak@intel.com, jeffrey.t.kirsher@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <mikey@ozlabs.org>
+To: Hollis Blanchard <hollis@penguinppc.org>
+From: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc: legacy_serial loop cleanup 
+In-reply-to: <200603241226.13171.hollis@penguinppc.org> 
+References: <20060324041727.F131267B56@ozlabs.org>
+	<200603241226.13171.hollis@penguinppc.org>
+Date: Sat, 25 Mar 2006 15:45:11 +1100
+Sender: mikey@ozlabs.org
+Message-Id: <20060325044501.D32A267A58@ozlabs.org>
+Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,174 +18,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 24, 2006 at 06:22:06PM -0800, Greg KH wrote:
-> ... a bit
-> different from the traditional kernel coding style.
+> I don't understand: it's only used once, so make it a function? Why not just 
+> change the "while" to an "if"?
 
-Sorry, this is due to inattention on my part; I get cross-eyed 
-after staring at the same code for too long. The patch below should
-fix things.  
+Because you can't use a break statements inside an if.  We could you
+gotos, but the idea was to increase read ability :-)
 
---linas
+> Regardless, two style issues:
+> - remove the plain "return"
+> - reduce indenting like so:
+> 	if (console < 0)
+> 		return;
+> 	struct legacy_serial_info *info = ...
+
+Agreed.  Updated patch below.
+
+Mikey
 
 
-[PATCH] PCI Error Recovery: e1000 network device driver
+We only ever execute the loop once, so let's move it to a function
+making it more readable.  Cleanup patch, no functional change.  
 
-Various PCI bus errors can be signaled by newer PCI controllers.  This
-patch adds the PCI error recovery callbacks to the intel gigabit
-ethernet e1000 device driver. The patch has been tested, and appears
-to work well.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/legacy_serial.c |   38 ++++++++++++++++++------------------
+ 1 files changed, 20 insertions(+), 18 deletions(-)
 
-Signed-off-by: Linas Vepstas <linas@linas.org>
-Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-
-----
-
- drivers/net/e1000/e1000_main.c |  114 ++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 113 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.16-git6/drivers/net/e1000/e1000_main.c
+Index: linux-2.6-powerpc-merge/arch/powerpc/kernel/legacy_serial.c
 ===================================================================
---- linux-2.6.16-git6.orig/drivers/net/e1000/e1000_main.c	2006-03-23 15:48:01.000000000 -0600
-+++ linux-2.6.16-git6/drivers/net/e1000/e1000_main.c	2006-03-24 15:14:40.431371705 -0600
-@@ -226,6 +226,16 @@ static int e1000_resume(struct pci_dev *
- static void e1000_netpoll (struct net_device *netdev);
- #endif
- 
-+static pci_ers_result_t e1000_io_error_detected(struct pci_dev *pdev,
-+                     pci_channel_state_t state);
-+static pci_ers_result_t e1000_io_slot_reset(struct pci_dev *pdev);
-+static void e1000_io_resume(struct pci_dev *pdev);
-+
-+static struct pci_error_handlers e1000_err_handler = {
-+	.error_detected = e1000_io_error_detected,
-+	.slot_reset = e1000_io_slot_reset,
-+	.resume = e1000_io_resume,
-+};
- 
- static struct pci_driver e1000_driver = {
- 	.name     = e1000_driver_name,
-@@ -235,8 +245,9 @@ static struct pci_driver e1000_driver = 
- 	/* Power Managment Hooks */
- #ifdef CONFIG_PM
- 	.suspend  = e1000_suspend,
--	.resume   = e1000_resume
-+	.resume   = e1000_resume,
- #endif
-+	.err_handler = &e1000_err_handler,
- };
- 
- MODULE_AUTHOR("Intel Corporation, <linux.nics@intel.com>");
-@@ -3063,6 +3074,10 @@ e1000_update_stats(struct e1000_adapter 
- 
- #define PHY_IDLE_ERROR_COUNT_MASK 0x00FF
- 
-+	/* Prevent stats update while adapter is being reset */
-+	if (adapter->link_speed == 0)
-+		return;
-+
- 	spin_lock_irqsave(&adapter->stats_lock, flags);
- 
- 	/* these counters are modified from e1000_adjust_tbi_stats,
-@@ -4631,4 +4646,101 @@ e1000_netpoll(struct net_device *netdev)
+--- linux-2.6-powerpc-merge.orig/arch/powerpc/kernel/legacy_serial.c
++++ linux-2.6-powerpc-merge/arch/powerpc/kernel/legacy_serial.c
+@@ -236,6 +236,25 @@ static int __init add_legacy_pci_port(st
  }
  #endif
  
-+/**
-+ * e1000_io_error_detected - called when PCI error is detected
-+ * @pdev: Pointer to PCI device
-+ * @state: The current pci conneection state
-+ *
-+ * This function is called after a PCI bus error affecting
-+ * this device has been detected.
-+ */
-+static pci_ers_result_t e1000_io_error_detected(struct pci_dev *pdev, pci_channel_state_t state)
++static void __init setup_legacy_serial_console(int console)
 +{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct e1000_adapter *adapter = netdev->priv;
++	struct legacy_serial_info *info =
++		&legacy_serial_infos[legacy_serial_console];
++	void __iomem *addr;
 +
-+	netif_device_detach(netdev);
-+
-+	if (netif_running(netdev))
-+		e1000_down(adapter);
-+
-+	/* Request a slot slot reset. */
-+	return PCI_ERS_RESULT_NEED_RESET;
++	if (console < 0)
++		return;
++	if (info->taddr == 0)
++		return;
++	addr = ioremap(info->taddr, 0x1000);
++	if (addr == NULL)
++		return;
++	if (info->speed == 0)
++		info->speed = udbg_probe_uart_speed(addr, info->clock);
++	DBG("default console speed = %d\n", info->speed);
++	udbg_init_uart(addr, info->speed, info->clock);
 +}
 +
-+/**
-+ * e1000_io_slot_reset - called after the pci bus has been reset.
-+ * @pdev: Pointer to PCI device
-+ *
-+ * Restart the card from scratch, as if from a cold-boot. Implementation
-+ * resembles the first-half of the e1000_resume routine.
-+ */
-+static pci_ers_result_t e1000_io_slot_reset(struct pci_dev *pdev)
-+{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct e1000_adapter *adapter = netdev->priv;
-+
-+	if (pci_enable_device(pdev)) {
-+		printk(KERN_ERR "e1000: Cannot re-enable PCI device after reset.\n");
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+	pci_set_master(pdev);
-+
-+	pci_enable_wake(pdev, 3, 0);
-+	pci_enable_wake(pdev, 4, 0); /* 4 == D3 cold */
-+
-+	/* Perform card reset only on one instance of the card */
-+	if (PCI_FUNC (pdev->devfn) != 0)
-+		return PCI_ERS_RESULT_RECOVERED;
-+
-+	e1000_reset(adapter);
-+	E1000_WRITE_REG(&adapter->hw, WUS, ~0);
-+
-+	return PCI_ERS_RESULT_RECOVERED;
-+}
-+
-+/**
-+ * e1000_io_resume - called when traffic can start flowing again.
-+ * @pdev: Pointer to PCI device
-+ *
-+ * This callback is called when the error recovery driver tells us that
-+ * its OK to resume normal operation. Implementation resembles the
-+ * second-half of the e1000_resume routine.
-+ */
-+static void e1000_io_resume(struct pci_dev *pdev)
-+{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct e1000_adapter *adapter = netdev->priv;
-+	uint32_t manc, swsm;
-+
-+	if (netif_running(netdev)) {
-+		if (e1000_up(adapter)) {
-+			printk("e1000: can't bring device back up after reset\n");
-+			return;
-+		}
-+	}
-+
-+	netif_device_attach(netdev);
-+
-+	if (adapter->hw.mac_type >= e1000_82540 &&
-+	    adapter->hw.media_type == e1000_media_type_copper) {
-+		manc = E1000_READ_REG(&adapter->hw, MANC);
-+		manc &= ~(E1000_MANC_ARP_EN);
-+		E1000_WRITE_REG(&adapter->hw, MANC, manc);
-+	}
-+
-+	switch (adapter->hw.mac_type) {
-+	case e1000_82573:
-+		swsm = E1000_READ_REG(&adapter->hw, SWSM);
-+		E1000_WRITE_REG(&adapter->hw, SWSM,
-+				swsm | E1000_SWSM_DRV_LOAD);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	if (netif_running(netdev))
-+		mod_timer(&adapter->watchdog_timer, jiffies);
-+}
-+
- /* e1000_main.c */
+ /*
+  * This is called very early, as part of setup_system() or eventually
+  * setup_arch(), basically before anything else in this file. This function
+@@ -319,24 +338,7 @@ void __init find_legacy_serial_ports(voi
+ 
+ 	DBG("legacy_serial_console = %d\n", legacy_serial_console);
+ 
+-	/* udbg is 64 bits only for now, that will change soon though ... */
+-	while (legacy_serial_console >= 0) {
+-		struct legacy_serial_info *info =
+-			&legacy_serial_infos[legacy_serial_console];
+-		void __iomem *addr;
+-
+-		if (info->taddr == 0)
+-			break;
+-		addr = ioremap(info->taddr, 0x1000);
+-		if (addr == NULL)
+-			break;
+-		if (info->speed == 0)
+-			info->speed = udbg_probe_uart_speed(addr, info->clock);
+-		DBG("default console speed = %d\n", info->speed);
+-		udbg_init_uart(addr, info->speed, info->clock);
+-		break;
+-	}
+-
++	setup_legacy_serial_console(legacy_serial_console);
+ 	DBG(" <- find_legacy_serial_port()\n");
+ }
+ 
