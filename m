@@ -1,17 +1,19 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id BF3FE679E9
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 7B32C679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 25 Mar 2006 09:37:29 +1100 (EST)
-Message-ID: <4424750C.7020809@ovro.caltech.edu>
-Date: Fri, 24 Mar 2006 14:39:08 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
-MIME-Version: 1.0
-To: "Bizhan Gholikhamseh (bgholikh)" <bgholikh@cisco.com>
-Subject: Re: Diagnostic tool
-References: <F795765B112E7344AF36AA9112796415019ECEBA@xmb-sjc-212.amer.cisco.com>
-In-Reply-To: <F795765B112E7344AF36AA9112796415019ECEBA@xmb-sjc-212.amer.cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 25 Mar 2006 11:10:16 +1100 (EST)
+To: Siju Viswanath K E <siju@india.tejasnetworks.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [BULK] Re: "transmit timed out" on FCC in MPC8260 as well as
+	MPC8247
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "24 Mar 2006 15:17:39 +0530."
+	<1143193658.22246.20.camel@Blaze>
+Date: Sat, 25 Mar 2006 01:10:14 +0100
+Sender: wd@denx.de
+Message-Id: <20060325001014.678AA353B50@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,24 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bizhan Gholikhamseh (bgholikh) wrote:
-> Hi,
-> 
-> I am using PQIII Freescale cpu 8541 on a custom board.
-> 
-> Is anyone aware of diagnostics tool as a kernel module to test cpu, 
-> memory and other hardware components that may be out there. This is 
-> normally a test suit that will be used manufacturing for extensive HW 
-> testing.
-> 
+In message <1143193658.22246.20.camel@Blaze> you wrote:
+>
+> the issue. My repository is patched upto 
+> "Patch by Wojciech Kromer, 06 Jan 2004" and later changes are only
+> adding extra board support. 
 
-The AMCC Yosemite 440EP board came with a proprietry
-package called Kozio Diagnostics. If you don't get
-any nice open source suggestions, you could check
-them out. On the Yosemite board, they were run from
-the U-Boot prompt as a stand-alone application.
+This is definitely *not* correct. A *long* list  of  bugs  have  been
+fixed in the last two years.
 
-Personally I'm not a fan of proprietry stuff, and would
-write my own, but since you asked ...
+Best regards,
 
-Dave
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Life is a game. Money is how we keep score.              - Ted Turner
