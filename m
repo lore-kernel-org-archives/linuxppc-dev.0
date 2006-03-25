@@ -1,19 +1,23 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
-	by ozlabs.org (Postfix) with ESMTP id 4D043679A6
-	for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2006 13:44:55 +1100 (EST)
-Date: Fri, 24 Mar 2006 17:27:33 -0700
-From: Matt Porter <mporter@kernel.crashing.org>
-To: Kallol Biswas <Kallol_Biswas@pmc-sierra.com>
-Subject: Re: memory with __get_free_pages and disabling caching
-Message-ID: <20060324172733.A20731@cox.net>
-References: <478F19F21671F04298A2116393EEC3D50A9C8D@sjc1exm08.pmc_nt.nt.pmc-sierra.bc.ca>
+Return-Path: <greg@kroah.org>
+Received: from aria.kroah.org (dsl093-040-174.pdx1.dsl.speakeasy.net
+	[66.93.40.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5BFD667A3F
+	for <linuxppc-dev@ozlabs.org>; Sat, 25 Mar 2006 13:50:21 +1100 (EST)
+Date: Fri, 24 Mar 2006 18:22:06 -0800
+From: Greg KH <greg@kroah.com>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH] PCI Error Recovery: e1000 network device driver
+Message-ID: <20060325022206.GA6361@kroah.com>
+References: <20060324220002.GC26137@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <478F19F21671F04298A2116393EEC3D50A9C8D@sjc1exm08.pmc_nt.nt.pmc-sierra.bc.ca>;
-	from Kallol_Biswas@pmc-sierra.com on Fri, Mar 24, 2006 at 03:44:42PM
-	-0800
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20060324220002.GC26137@austin.ibm.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	jesse.brandeburg@intel.com, linuxppc-dev@ozlabs.org,
+	john.ronciak@intel.com, jeffrey.t.kirsher@intel.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 24, 2006 at 03:44:42PM -0800, Kallol Biswas wrote:
-> Thank you.
-> 
-> I wonder how consistent ptes are used if all kernel memory is mapped with large tlb.
-> In the __dma_alloc_coherent() routine pages are allocated with alloc_pages(), new virtual address is created in consistent region, then consistent ptes are populated. Looks like that the routine creates a new virtual mapping. The memory is addressed with the new address. 
-> 
-> Do we have two mappings in the TLB for the same physical address?
+On Fri, Mar 24, 2006 at 04:00:02PM -0600, Linas Vepstas wrote:
+> +	/* Perform card reset only on one instance of the card */
+> +	if(0 != PCI_FUNC (pdev->devfn))
+> +		return PCI_ERS_RESULT_RECOVERED;
 
-Yes, that's how it works. After being allocated by the dma api
-routines, the direct map is never accessed. Accessing the same
-physical address via the cached direct map would cause serious
-problems but you aren't allowed to touch address space like
-that unless it's been allocated through a kernel allocator for
-your use.
+You seem to have forgotton to put a ' ' after the 'if' in a number of
+different places in this patch.  Also the (0 != foo) form is a bit
+different from the traditional kernel coding style.
 
--Matt
+> +	switch(adapter->hw.mac_type) {
+
+And here too.
+
+Remember, "if" and "switch" are not functions...
+
+thanks,
+
+greg k-h
