@@ -3,19 +3,19 @@ Received: from outmx010.isp.belgacom.be (outmx010.isp.belgacom.be
 	[195.238.5.233])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1DDD67A39
+	by ozlabs.org (Postfix) with ESMTP id 54FC467A41
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 26 Mar 2006 22:38:26 +1100 (EST)
+	Sun, 26 Mar 2006 22:38:54 +1100 (EST)
 Received: from outmx010.isp.belgacom.be (localhost [127.0.0.1])
 	by outmx010.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with
-	ESMTP id k2QBcHpj010489
-	for <linuxppc-embedded@ozlabs.org>; Sun, 26 Mar 2006 13:38:17 +0200
+	ESMTP id k2QBclW0010766
+	for <linuxppc-embedded@ozlabs.org>; Sun, 26 Mar 2006 13:38:48 +0200
 	(envelope-from <tnt@246tNt.com>)
-Date: Sun, 26 Mar 2006 13:38:09 +0200
-Message-ID: <3.20060326_133535_93e6_tnt@patchsend.246tNt.com>
+Date: Sun, 26 Mar 2006 13:38:40 +0200
+Message-ID: <4.20060326_133535_93e6_tnt@patchsend.246tNt.com>
 From: Sylvain Munaut <tnt@246tNt.com>
 To: Linux PPC embedded <linuxppc-embedded@ozlabs.org>
-Subject: [PATCH 3/4] ppc32: Reorganize and complete MPC52xx initial cpu setup
+Subject: [PATCH 4/4] ppc32/ide: Add support for MPC52xx on-chip ATA controller
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 In-Reply-To: <0.20060326_133535_93e6_tnt@patchsend.246tNt.com>
@@ -31,206 +31,785 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-ppc32: Reorganize and complete MPC52xx initial cpu setup
+ppc32/ide: Add support for MPC52xx on-chip ATA controller
 
-This patch splits up the CPU setup into a generic part and a
-platform specific part. We also add a few missing init at the
-same time.
+This patch adds initial support for Freescale MPC52xx on-chip ATA
+controller. It's currently PIO-mode only and all the erratas are
+not handled since some of them requires hw tricks ...
 
 Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
 ---
-commit 67015426ff51ba857b7678a993f4ffd6def1941e
-tree cca92c1916ede8f67fe8d16987a54303c76f31f8
-parent 37ffaaccad4fb48c8416e610aab4d3bed41dfc80
-author Sylvain Munaut <tnt@246tNt.com> 1143311892 +0100
-committer Sylvain Munaut <tnt@246tNt.com> 1143311892 +0100
+commit f3180ffadd5dddcfa9d11da4f7637e3e907e6aaa
+tree d9bf294057a0dcdda25ba6c6ea3fcc9748d87e93
+parent 67015426ff51ba857b7678a993f4ffd6def1941e
+author Sylvain Munaut <tnt@246tNt.com> 1139147442 +0100
+committer Sylvain Munaut <tnt@246tNt.com> 1143312600 +0100
 
- arch/ppc/platforms/lite5200.c   |   38 ++++++++-----------------------
- arch/ppc/syslib/mpc52xx_setup.c |   48 ++++++++++++++++++++++++++++++++++++++++
- include/asm-ppc/mpc52xx.h       |    4 +++
- 3 files changed, 62 insertions(+), 28 deletions(-)
+ drivers/ide/Kconfig                |    4 
+ drivers/ide/Makefile               |    1 
+ drivers/ide/ppc/mpc52xx_ide.c      |  420 +++++++++++++++++++++++++++++++++++++
+ drivers/ide/ppc/mpc52xx_ide.h      |  129 +++++++++++
+ drivers/ide/ppc/mpc52xx_ide_iops.c |  151 +++++++++++++
+ include/linux/ide.h                |    2 
+ 6 files changed, 706 insertions(+), 1 deletion(-)
 
 ---
-67015426ff51ba857b7678a993f4ffd6def1941e
-diff --git a/arch/ppc/platforms/lite5200.c b/arch/ppc/platforms/lite5200.c
-index d91efe1..fecbe9a 100644
---- a/arch/ppc/platforms/lite5200.c
-+++ b/arch/ppc/platforms/lite5200.c
-@@ -36,8 +36,6 @@
- #include <asm/machdep.h>
- #include <asm/pci-bridge.h>
+f3180ffadd5dddcfa9d11da4f7637e3e907e6aaa
+diff --git a/drivers/ide/Kconfig b/drivers/ide/Kconfig
+index d633081..3a10fec 100644
+--- a/drivers/ide/Kconfig
++++ b/drivers/ide/Kconfig
+@@ -962,6 +962,10 @@ config IDE_EXT_DIRECT
  
--#include <syslib/mpc52xx_pci.h>
--
+ endchoice
  
- extern int powersave_nap;
- 
-@@ -99,34 +97,23 @@ lite5200_map_irq(struct pci_dev *dev, un
- static void __init
- lite5200_setup_cpu(void)
- {
--	struct mpc52xx_cdm  __iomem *cdm;
- 	struct mpc52xx_gpio __iomem *gpio;
- 	struct mpc52xx_intr __iomem *intr;
--	struct mpc52xx_xlb  __iomem *xlb;
- 
- 	u32 port_config;
- 	u32 intr_ctrl;
- 
- 	/* Map zones */
--	cdm  = ioremap(MPC52xx_PA(MPC52xx_CDM_OFFSET), MPC52xx_CDM_SIZE);
- 	gpio = ioremap(MPC52xx_PA(MPC52xx_GPIO_OFFSET), MPC52xx_GPIO_SIZE);
--	xlb  = ioremap(MPC52xx_PA(MPC52xx_XLB_OFFSET), MPC52xx_XLB_SIZE);
- 	intr = ioremap(MPC52xx_PA(MPC52xx_INTR_OFFSET), MPC52xx_INTR_SIZE);
- 
--	if (!cdm || !gpio || !xlb || !intr) {
--		printk("lite5200.c: Error while mapping CDM/GPIO/XLB/INTR during"
--				"lite5200_setup_cpu\n");
-+	if (!gpio || !intr) {
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while mapping GPIO/INTR during "
-+			"lite5200_setup_cpu\n");
- 		goto unmap_regs;
- 	}
- 
--	/* Use internal 48 Mhz */
--	out_8(&cdm->ext_48mhz_en, 0x00);
--	out_8(&cdm->fd_enable, 0x01);
--	if (in_be32(&cdm->rstcfg) & 0x40)	/* Assumes 33Mhz clock */
--		out_be16(&cdm->fd_counters, 0x0001);
--	else
--		out_be16(&cdm->fd_counters, 0x5555);
--
- 	/* Get port mux config */
- 	port_config = in_be32(&gpio->port_config);
- 
-@@ -137,17 +124,13 @@ lite5200_setup_cpu(void)
- 	port_config &= ~0x00007000;	/* Differential mode - USB1 only */
- 	port_config |=  0x00001000;
- 
-+	/* ATA CS is on csb_4/5 */
-+	port_config &= ~0x03000000;
-+	port_config |=  0x01000000;
++config BLK_DEV_MPC52xx_IDE
++	tristate "MPC52xx Builtin IDE support"
++	depends on PPC_MPC52xx && IDE=y
 +
- 	/* Commit port config */
- 	out_be32(&gpio->port_config, port_config);
+ # no isa -> no vlb
+ config IDE_CHIPSETS
+ 	bool "Other IDE chipset support"
+diff --git a/drivers/ide/Makefile b/drivers/ide/Makefile
+index 569fae7..fcca1f3 100644
+--- a/drivers/ide/Makefile
++++ b/drivers/ide/Makefile
+@@ -34,6 +34,7 @@ ide-core-$(CONFIG_BLK_DEV_MAC_IDE)	+= le
+ ide-core-$(CONFIG_BLK_DEV_Q40IDE)	+= legacy/q40ide.o
  
--	/* Configure the XLB Arbiter */
--	out_be32(&xlb->master_pri_enable, 0xff);
--	out_be32(&xlb->master_priority, 0x11111111);
--
--	/* Enable ram snooping for 1GB window */
--	out_be32(&xlb->config, in_be32(&xlb->config) | MPC52xx_XLB_CFG_SNOOP);
--	out_be32(&xlb->snoop_window, MPC52xx_PCI_TARGET_MEM | 0x1d);
--
- 	/* IRQ[0-3] setup */
- 	intr_ctrl = in_be32(&intr->ctrl);
- 	intr_ctrl &= ~0x00ff0000;
-@@ -163,9 +146,7 @@ lite5200_setup_cpu(void)
+ # built-in only drivers from ppc/
++ide-core-$(CONFIG_BLK_DEV_MPC52xx_IDE)	+= ppc/mpc52xx_ide.o ppc/mpc52xx_ide_iops.o
+ ide-core-$(CONFIG_BLK_DEV_MPC8xx_IDE)	+= ppc/mpc8xx.o
+ ide-core-$(CONFIG_BLK_DEV_IDE_PMAC)	+= ppc/pmac.o
  
- 	/* Unmap reg zone */
- unmap_regs:
--	if (cdm)  iounmap(cdm);
- 	if (gpio) iounmap(gpio);
--	if (xlb)  iounmap(xlb);
- 	if (intr) iounmap(intr);
- }
- 
-@@ -173,7 +154,8 @@ static void __init
- lite5200_setup_arch(void)
- {
- 	/* CPU & Port mux setup */
--	lite5200_setup_cpu();
-+	mpc52xx_setup_cpu();	/* Generic */
-+	lite5200_setup_cpu();	/* Platform specific */
- 
- #ifdef CONFIG_PCI
- 	/* PCI Bridge setup */
-diff --git a/arch/ppc/syslib/mpc52xx_setup.c b/arch/ppc/syslib/mpc52xx_setup.c
-index 2ee48ce..ee6379b 100644
---- a/arch/ppc/syslib/mpc52xx_setup.c
-+++ b/arch/ppc/syslib/mpc52xx_setup.c
-@@ -24,6 +24,8 @@
- #include <asm/pgtable.h>
- #include <asm/ppcboot.h>
- 
-+#include <syslib/mpc52xx_pci.h>
+diff --git a/drivers/ide/ppc/mpc52xx_ide.c b/drivers/ide/ppc/mpc52xx_ide.c
+new file mode 100644
+index 0000000..5970f7b
+--- /dev/null
++++ b/drivers/ide/ppc/mpc52xx_ide.c
+@@ -0,0 +1,420 @@
++/*
++ * drivers/ide/ppc/mpc52xx_ide.h
++ *
++ * Driver for the Freescale MPC52xx on-chip IDE interface
++ *
++ *
++ * Copyright (C) 2006 Sylvain Munaut <tnt@246tNt.com>
++ * Copyright (C) 2003 Mipsys - Benjamin Herrenschmidt
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
 +
- extern bd_t __res;
- 
- static int core_mult[] = {		/* CPU Frequency multiplier, taken    */
-@@ -216,6 +218,52 @@ mpc52xx_calibrate_decr(void)
- 	tb_to_us = mulhwu_scale_factor(xlbfreq / divisor, 1000000);
- }
- 
++#undef REALLY_SLOW_IO	/* most systems can safely undef this */
 +
-+void __init
-+mpc52xx_setup_cpu(void)
++#include <linux/config.h>
++#include <linux/platform_device.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/delay.h>
++#include <linux/ide.h>
++
++#include <asm/io.h>
++#include <asm/ppcboot.h>
++
++#include "mpc52xx_ide.h"
++
++
++
++/* Private structures used by the driver */
++struct mpc52xx_ata_timings {
++	u32 pio1;
++	u32 pio2;
++	u32 mdma1;
++	u32 mdma2;
++	u32 udma1;
++	u32 udma2;
++	u32 udma3;
++	u32 udma4;
++	u32 udma5;
++	int using_udma;
++};
++
++struct mpc52xx_ide_priv {
++	unsigned int ipb_period;	/* in ps */
++	struct mpc52xx_ata __iomem *ata_regs;
++	struct mpc52xx_ata_timings  timings[2];
++};
++
++/* ATAPI-4 PIO specs (arranged for the 5200, cfr User Manual) */
++/* numbers in ns, extrapolation done by code */
++static int ataspec_t0[5]    = {600, 383, 240, 180, 120};
++static int ataspec_t1[5]    = { 70,  50,  30,  30,  25};
++static int ataspec_t2_8[5]  = {290, 290, 290,  80,  70};
++static int ataspec_t2_16[5] = {165, 125, 100,  80,  70};
++static int ataspec_t2i[5]   = {  0,   0,   0,  70,  25};
++static int ataspec_t4[5]    = { 30,  20,  15,  10,  10};
++static int ataspec_ta[5]    = { 35,  35,  35,  35,  35};
++
++/* Helpers to compute timing parameters */
++#define CALC_CLK_VALUE_UP(c,v) (((v) + c - 1) / c)
++
++
++/* ======================================================================== */
++/* IDE Driver & Aux functions                                               */
++/* ======================================================================== */
++
++static void
++mpc52xx_ide_apply_timing(
++	struct mpc52xx_ata __iomem *regs, struct mpc52xx_ata_timings *timing)
 +{
-+	struct mpc52xx_cdm  __iomem *cdm;
-+	struct mpc52xx_xlb  __iomem *xlb;
++	out_be32(&regs->pio1,  timing->pio1);
++	out_be32(&regs->pio2,  timing->pio2);
++	out_be32(&regs->mdma1, timing->mdma1);
++	out_be32(&regs->mdma2, timing->mdma2);
++	out_be32(&regs->udma1, timing->udma1);
++	out_be32(&regs->udma2, timing->udma2);
++	out_be32(&regs->udma3, timing->udma3);
++	out_be32(&regs->udma4, timing->udma4);
++	out_be32(&regs->udma5, timing->udma5);
++}
 +
-+	/* Map zones */
-+	cdm  = ioremap(MPC52xx_PA(MPC52xx_CDM_OFFSET), MPC52xx_CDM_SIZE);
-+	xlb  = ioremap(MPC52xx_PA(MPC52xx_XLB_OFFSET), MPC52xx_XLB_SIZE);
++static void
++mpc52xx_ide_compute_pio_timing(
++	struct mpc52xx_ata_timings *timing, unsigned int ipb_period, u8 pio)
++{
++	u32 t0, t2_8, t2_16, t2i, t4, t1, ta;
 +
-+	if (!cdm || !xlb) {
-+		printk(KERN_ERR __FILE__ ": "
-+			"Error while mapping CDM/XLB during "
-+			"mpc52xx_setup_cpu\n");
-+		goto unmap_regs;
-+	}
++		/* We add 1 as a 'margin' */
++	t0    = 1 + CALC_CLK_VALUE_UP(ipb_period, 1000*ataspec_t0[pio]);
++	t2_8  = 1 + CALC_CLK_VALUE_UP(ipb_period, 1000*ataspec_t2_8[pio]);
++	t2_16 = 1 + CALC_CLK_VALUE_UP(ipb_period, 1000*ataspec_t2_16[pio]);
++	t2i   = 1 + CALC_CLK_VALUE_UP(ipb_period, 1000*ataspec_t2i[pio]);
++	t4    = 1 + CALC_CLK_VALUE_UP(ipb_period, 1000*ataspec_t4[pio]);
++	t1    = 1 + CALC_CLK_VALUE_UP(ipb_period, 1000*ataspec_t1[pio]);
++	ta    = 1 + CALC_CLK_VALUE_UP(ipb_period, 1000*ataspec_ta[pio]);
 +
-+	/* Use internal 48 Mhz */
-+	out_8(&cdm->ext_48mhz_en, 0x00);
-+	out_8(&cdm->fd_enable, 0x01);
-+	if (in_be32(&cdm->rstcfg) & 0x40)	/* Assumes 33Mhz clock */
-+		out_be16(&cdm->fd_counters, 0x0001);
-+	else
-+		out_be16(&cdm->fd_counters, 0x5555);
-+
-+	/* Configure the XLB Arbiter priorities */
-+	out_be32(&xlb->master_pri_enable, 0xff);
-+	out_be32(&xlb->master_priority, 0x11111111);
-+
-+	/* Enable ram snooping for 1GB window */
-+	out_be32(&xlb->config, in_be32(&xlb->config) | MPC52xx_XLB_CFG_SNOOP);
-+	out_be32(&xlb->snoop_window, MPC52xx_PCI_TARGET_MEM | 0x1d);
-+
-+	/* Disable XLB pipelining */
-+	/* (cfr errate 292. We could do this only just before ATA PIO
-+	    transaction and re-enable it after ...) */
-+	out_be32(&xlb->config, in_be32(&xlb->config) | MPC52xx_XLB_CFG_PLDIS);
-+
-+	/* Unmap reg zone */
-+unmap_regs:
-+	if (cdm)  iounmap(cdm);
-+	if (xlb)  iounmap(xlb);
++	timing->pio1 = (t0 << 24) | (t2_8 << 16) | (t2_16 << 8) | (t2i);
++	timing->pio2 = (t4 << 24) | (t1 << 16) | (ta << 8);
 +}
 +
 +
- int mpc52xx_match_psc_function(int psc_idx, const char *func)
- {
- 	struct mpc52xx_psc_func *cf = mpc52xx_psc_functions;
-diff --git a/include/asm-ppc/mpc52xx.h b/include/asm-ppc/mpc52xx.h
-index 6167f74..7e98428 100644
---- a/include/asm-ppc/mpc52xx.h
-+++ b/include/asm-ppc/mpc52xx.h
-@@ -355,6 +355,7 @@ struct mpc52xx_xlb {
- 	u32	snoop_window;		/* XLB + 0x70 */
- };
- 
-+#define MPC52xx_XLB_CFG_PLDIS		(1 << 31)
- #define MPC52xx_XLB_CFG_SNOOP		(1 << 15)
- 
- /* Clock Distribution control */
-@@ -427,6 +428,9 @@ extern void mpc52xx_calibrate_decr(void)
- 
- extern void mpc52xx_find_bridges(void);
- 
-+extern void mpc52xx_setup_cpu(void);
++static void
++mpc52xx_ide_tuneproc(ide_drive_t *drive, u8 pio)
++{
++	struct mpc52xx_ide_priv *priv = drive->hwif->hwif_data;
++	struct mpc52xx_ata __iomem *regs = priv->ata_regs;
++	int w = drive->select.b.unit & 0x01;
++
++	pio = ide_get_best_pio_mode(drive, pio, 5, NULL);
++
++	printk("%s: Setting PIO %d timings\n", drive->name, pio);
++
++	mpc52xx_ide_compute_pio_timing(&priv->timings[w], priv->ipb_period, pio);
++
++	if (drive->select.all == HWIF(drive)->INB(IDE_SELECT_REG))
++		mpc52xx_ide_apply_timing(regs, &priv->timings[w]);
++
++		/* Should we do it here or only in speedproc ? */
++	ide_config_drive_speed(drive, pio + XFER_PIO_0);
++}
++
++static int
++mpc52xx_ide_speedproc(ide_drive_t *drive, u8 speed)
++{
++	/* Configure PIO Mode */
++	if (speed >= XFER_PIO_0 && speed <= XFER_PIO_4) {
++		mpc52xx_ide_tuneproc(drive, speed - XFER_PIO_0);
++		return 0;
++	}
++
++	/* DMA settings currently unsupported */
++	printk(KERN_ERR
++		"mpc52xx-ide: speedproc called with unsupported mode %d\n",
++		speed);
++
++	return 1;
++}
++
++static void
++mpc52xx_ide_selectproc(ide_drive_t *drive)
++{
++	/* Change the PIO timings to the ones of the
++	   currently selected drive */
++	struct mpc52xx_ide_priv *priv = drive->hwif->hwif_data;
++	struct mpc52xx_ata __iomem *regs = priv->ata_regs;
++
++	mpc52xx_ide_apply_timing(regs,
++		&priv->timings[drive->select.b.unit & 0x01]);
++}
 +
 +
++static int
++mpc52xx_ide_setup(
++	struct mpc52xx_ata __iomem *regs, struct mpc52xx_ide_priv *priv)
++{
++	/* Vars */
++	extern bd_t __res;
++	bd_t *bd = (bd_t *)&__res;
++	int tslot;
++
++	/* All sample code do this */
++	out_be32(&regs->share_cnt, 0);
++
++	/* Configure & Reset host */
++	out_be32(&regs->config,
++		MPC52xx_ATA_HOSTCONF_IE |
++		MPC52xx_ATA_HOSTCONF_IORDY |
++		MPC52xx_ATA_HOSTCONF_SMR |
++		MPC52xx_ATA_HOSTCONF_FR);
++	udelay(10);
++	out_be32(&regs->config,
++		MPC52xx_ATA_HOSTCONF_IE |
++		MPC52xx_ATA_HOSTCONF_IORDY);
++
++	/* Get IPB bus period */
++	priv->ipb_period = 1000000000 / (bd->bi_ipbfreq/1000);
++
++	/* Try to set the time slot to around 1us = 1000000 ps */
++	tslot = CALC_CLK_VALUE_UP(priv->ipb_period, 1000000);
++	out_be32(&regs->share_cnt, tslot << 16);
++
++	/* Init imings to PIO0 (safest) */
++	memset(priv->timings, 0x00, 2*sizeof(struct mpc52xx_ata_timings));
++
++	mpc52xx_ide_compute_pio_timing(&priv->timings[0], priv->ipb_period, 0);
++	mpc52xx_ide_compute_pio_timing(&priv->timings[1], priv->ipb_period, 0);
++
++	mpc52xx_ide_apply_timing(regs, &priv->timings[0]);
++
++	return 0;
++}
++
++static void
++mpc52xx_ide_setup_hwif_ports(hw_regs_t *hw, struct mpc52xx_ata __iomem *regs)
++{
++	/* It's MMIO and we handle all the io ops ourself, */
++	/* so theses address are really virtual addresses  */
++	hw->io_ports[IDE_DATA_OFFSET]    = (unsigned long) &regs->tf_data;
++	hw->io_ports[IDE_ERROR_OFFSET]   = (unsigned long) &regs->tf_features;
++	hw->io_ports[IDE_NSECTOR_OFFSET] = (unsigned long) &regs->tf_sec_count;
++	hw->io_ports[IDE_SECTOR_OFFSET]  = (unsigned long) &regs->tf_sec_num;
++	hw->io_ports[IDE_LCYL_OFFSET]    = (unsigned long) &regs->tf_cyl_low;
++	hw->io_ports[IDE_HCYL_OFFSET]    = (unsigned long) &regs->tf_cyl_high;
++	hw->io_ports[IDE_SELECT_OFFSET]  = (unsigned long) &regs->tf_dev_head;
++	hw->io_ports[IDE_STATUS_OFFSET]  = (unsigned long) &regs->tf_command;
++	hw->io_ports[IDE_CONTROL_OFFSET] = (unsigned long) &regs->tf_control;
++}
++
++
++/* ======================================================================== */
++/* Platform Driver                                                          */
++/* ======================================================================== */
++
++static int __devinit
++mpc52xx_ide_probe(struct platform_device *dev)
++{
++	/* Vars */
++	ide_hwif_t *hwif;
++	struct mpc52xx_ide_priv *priv;
++	struct mpc52xx_gpio __iomem *gpio_regs = NULL;
++	struct mpc52xx_ata __iomem *ata_regs = NULL;
++	int ata_irq;
++	struct resource *res_mem;
++	u32 reg;
++	int i, rv;
++
++	/* Get an empty slot */
++	for (i=0; i<MAX_HWIFS && ide_hwifs[i].io_ports[IDE_DATA_OFFSET]; i++);
++	if (i >= MAX_HWIFS) {
++		printk(KERN_ERR "mpc52xx-ide: No free hwif slot !\n");
++		return -ENOMEM;
++	}
++
++	hwif = &ide_hwifs[i];
++
++	/* Check port muxing for compatibility */
++	gpio_regs = ioremap(MPC52xx_PA(MPC52xx_GPIO_OFFSET), MPC52xx_GPIO_SIZE);
++	if (!gpio_regs) {
++		printk(KERN_ERR
++			"mpc52xx-ide: Unable to ioremap MPC52xx_GPIO zone\n");
++		return -ENOMEM;
++	}
++
++	reg = in_be32(&gpio_regs->port_config);
++	iounmap(gpio_regs);
++
++	if (!(reg & 0x03000000ul)) {
++		printk(KERN_ERR
++			"mpc52xx-ide: Invalid port config, no ATA CS !\n");
++		return -ENODEV;
++	}
++
++	/* Get the resources of this device */
++	ata_irq = platform_get_irq(dev, 0);
++	res_mem = platform_get_resource(dev, IORESOURCE_MEM, 0);
++
++	if (ata_irq<0 || res_mem==NULL) {
++		printk(KERN_ERR "mpc52xx-ide: Invalid resource set !\n");
++		return -EINVAL;
++	}
++
++	if (!request_mem_region(res_mem->start, sizeof(struct mpc52xx_ata),
++				"mpc52xx-ide")) {
++		printk(KERN_ERR "mpc52xx-ide: Memory zone unavailable !\n");
++		return -EBUSY;
++	}
++
++	ata_regs = ioremap(res_mem->start, sizeof(struct mpc52xx_ata));
++	if (!ata_regs) {
++		printk(KERN_ERR
++			"mpc52xx-ide: Unable to ioremap ATA registers\n");
++		rv = -ENOMEM;
++		goto error;
++	}
++
++	/* Setup private structure */
++	priv = kmalloc(sizeof(struct mpc52xx_ide_priv), GFP_ATOMIC);
++	if (!priv) {
++		printk(KERN_ERR
++			"mpc52xx-ide: Can't allocate private structure !\n");
++		rv = -ENOMEM;
++		goto error;
++	}
++
++	priv->ata_regs = ata_regs;
++
++	/* Setup the ATA controller */
++	rv = mpc52xx_ide_setup(ata_regs, priv);
++	if (rv) {
++		printk(KERN_ERR "mpc52xx-ide: Controller setup failed !\n");
++		goto error;
++	}
++
++	/* Setup the hwif structure */
++	hwif->irq = ata_irq;
++	hwif->mmio = 2;
++	mpc52xx_ide_setup_hwif_iops(hwif);
++	mpc52xx_ide_setup_hwif_ports(&hwif->hw, ata_regs);
++	memcpy(hwif->io_ports, hwif->hw.io_ports, sizeof(hwif->io_ports));
++
++	hwif->atapi_dma = 0;
++	hwif->ultra_mask = 0x00;
++	hwif->mwdma_mask = 0x00;
++	hwif->swdma_mask = 0x00;
++	hwif->chipset = ide_mpc52xx;
++	hwif->tuneproc = mpc52xx_ide_tuneproc;
++	hwif->speedproc = mpc52xx_ide_speedproc;
++	hwif->selectproc = mpc52xx_ide_selectproc;
++	hwif->noprobe = 0;
++	hwif->hold = 1;
++	hwif->autodma = 0;
++	hwif->udma_four = 0;
++	hwif->no_lba48 = 1;	/* FIXME ? Did some one test that ? */
++	hwif->no_lba48_dma = 1;
++
++	hwif->drives[0].unmask = 1;
++	hwif->drives[0].autotune = 0; /* default */
++	hwif->drives[0].autodma = hwif->autodma;
++	hwif->drives[0].no_io_32bit = 1;	/* Anyone tried ? */
++
++	hwif->drives[1].unmask = 1;
++	hwif->drives[1].autotune = 0; /* default */
++	hwif->drives[1].autodma = hwif->autodma;
++	hwif->drives[1].no_io_32bit = 1;	/* Anyone tried ? */
++
++	hwif->hwif_data = priv;
++	platform_set_drvdata(dev, hwif);
++
++	/* Lauch probe */
++	probe_hwif_init(hwif);
++
++	/* We're good ! */
++	printk(KERN_INFO
++	  "mpc52xx-ide: Setup successful for %s (mem=%08lx-%08lx irq=%d)\n",
++	  hwif->name, res_mem->start, res_mem->end, ata_irq);
++
++	return 0;
++
++
++	/* Error path */
++error:
++	if (ata_regs)
++		iounmap(ata_regs);
++
++	release_mem_region(res_mem->start, sizeof(struct mpc52xx_ata));
++
++	return rv;
++}
++
++static int
++mpc52xx_ide_remove(struct platform_device *dev)
++{
++	ide_hwif_t *hwif = platform_get_drvdata(dev);
++	struct mpc52xx_ide_priv *priv = hwif->hwif_data;
++	struct resource *res_mem;
++
++	ide_unregister(hwif - ide_hwifs);
++
++	iounmap(priv->ata_regs);
++
++	res_mem = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	release_mem_region(res_mem->start, sizeof(struct mpc52xx_ata));
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int
++mpc52xx_ide_suspend(struct platform_device *dev, pm_message_t state)
++{
++	return 0;	/* FIXME : What to do here ? */
++}
++
++static int
++mpc52xx_ide_resume(struct platform_device *dev)
++{
++	return 0;	/* FIXME : What to do here ? */
++}
++#endif
++
++static struct platform_driver mpc52xx_ide_platform_driver = {
++	.probe		= mpc52xx_ide_probe,
++	.remove		= mpc52xx_ide_remove,
++#ifdef CONFIG_PM
++	.suspend	= mpc52xx_ide_suspend,
++	.resume		= mpc52xx_ide_resume,
++#endif
++	.driver		= {
++		.name	= "mpc52xx-ata",
++	},
++};
++
++
++/* ======================================================================== */
++/* Module                                                                   */
++/* ======================================================================== */
++
++static int __init
++mpc52xx_ide_init(void)
++{
++	printk(KERN_INFO "ide: MPC52xx IDE/ATA driver\n");
++	return platform_driver_register(&mpc52xx_ide_platform_driver);
++}
++
++static void __exit
++mpc52xx_ide_exit(void)
++{
++	platform_driver_unregister(&mpc52xx_ide_platform_driver);
++}
++
++
++module_init(mpc52xx_ide_init);
++module_exit(mpc52xx_ide_exit);
++
++MODULE_AUTHOR("Sylvain Munaut <tnt@246tNt.com>");
++MODULE_DESCRIPTION("Freescale MPC52xx IDE/ATA driver");
++MODULE_LICENSE("GPL");
++
+diff --git a/drivers/ide/ppc/mpc52xx_ide.h b/drivers/ide/ppc/mpc52xx_ide.h
+new file mode 100644
+index 0000000..e2490a8
+--- /dev/null
++++ b/drivers/ide/ppc/mpc52xx_ide.h
+@@ -0,0 +1,129 @@
++/*
++ * drivers/ide/ppc/mpc52xx_ide.h
++ *
++ * Definitions for the Freescale MPC52xx on-chip IDE interface
++ *
++ *
++ * Copyright (C) 2006 Sylvain Munaut <tnt@246tNt.com>
++ * Copyright (C) 2003 Mipsys - Benjamin Herrenschmidt
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#ifndef __MPC52xx_IDE_H__
++#define __MPC52xx_IDE_H__
++
++
++#include <linux/config.h>
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/ide.h>
++#include <asm/types.h>
++#include <asm/io.h>
++
++
++
++/* Bit definitions inside the registers */
++
++#define MPC52xx_ATA_HOSTCONF_SMR	0x80000000UL /* State machine reset */
++#define MPC52xx_ATA_HOSTCONF_FR		0x40000000UL /* FIFO Reset */
++#define MPC52xx_ATA_HOSTCONF_IE		0x02000000UL /* Enable interrupt in PIO */
++#define MPC52xx_ATA_HOSTCONF_IORDY	0x01000000UL /* Drive supports IORDY protocol */
++
++#define MPC52xx_ATA_HOSTSTAT_TIP	0x80000000UL /* Transaction in progress */
++#define MPC52xx_ATA_HOSTSTAT_UREP	0x40000000UL /* UDMA Read Extended Pause */
++#define MPC52xx_ATA_HOSTSTAT_RERR	0x02000000UL /* Read Error */
++#define MPC52xx_ATA_HOSTSTAT_WERR	0x01000000UL /* Write Error */
++
++#define MPC52xx_ATA_FIFOSTAT_EMPTY	0x01 /* FIFO Empty */
++
++#define MPC52xx_ATA_DMAMODE_WRITE	0x01 /* Write DMA */
++#define MPC52xx_ATA_DMAMODE_READ	0x02 /* Read DMA */
++#define MPC52xx_ATA_DMAMODE_UDMA	0x04 /* UDMA enabled */
++#define MPC52xx_ATA_DMAMODE_IE		0x08 /* Enable drive interrupt to CPU in DMA mode */
++#define MPC52xx_ATA_DMAMODE_FE		0x10 /* FIFO Flush enable in Rx mode */
++#define MPC52xx_ATA_DMAMODE_FR		0x20 /* FIFO Reset */
++#define MPC52xx_ATA_DMAMODE_HUT		0x40 /* Host UDMA burst terminate */
++
++
++/* Structure of the hardware registers */
++struct mpc52xx_ata {
++
++	/* Host interface registers */
++	u32 config;		/* ATA + 0x00 Host configuration */
++	u32 host_status;	/* ATA + 0x04 Host controller status */
++	u32 pio1;		/* ATA + 0x08 PIO Timing 1 */
++	u32 pio2;		/* ATA + 0x0c PIO Timing 2 */
++	u32 mdma1;		/* ATA + 0x10 MDMA Timing 1 */
++	u32 mdma2;		/* ATA + 0x14 MDMA Timing 2 */
++	u32 udma1;		/* ATA + 0x18 UDMA Timing 1 */
++	u32 udma2;		/* ATA + 0x1c UDMA Timing 2 */
++	u32 udma3;		/* ATA + 0x20 UDMA Timing 3 */
++	u32 udma4;		/* ATA + 0x24 UDMA Timing 4 */
++	u32 udma5;		/* ATA + 0x28 UDMA Timing 5 */
++	u32 share_cnt;		/* ATA + 0x2c ATA share counter */
++	u32 reserved0[3];
++
++	/* FIFO registers */
++	u32 fifo_data;		/* ATA + 0x3c */
++	u8  fifo_status_frame;	/* ATA + 0x40 */
++	u8  fifo_status;	/* ATA + 0x41 */
++	u16 reserved7[1];
++	u8  fifo_control;	/* ATA + 0x44 */
++	u8  reserved8[5];
++	u16 fifo_alarm;		/* ATA + 0x4a */
++	u16 reserved9;
++	u16 fifo_rdp;		/* ATA + 0x4e */
++	u16 reserved10;
++	u16 fifo_wrp;		/* ATA + 0x52 */
++	u16 reserved11;
++	u16 fifo_lfrdp;		/* ATA + 0x56 */
++	u16 reserved12;
++	u16 fifo_lfwrp;		/* ATA + 0x5a */
++
++	/* Drive TaskFile registers */
++	u8  tf_control;		/* ATA + 0x5c TASKFILE Control/Alt Status */
++	u8  reserved13[3];
++	u16 tf_data;		/* ATA + 0x60 TASKFILE Data */
++	u16 reserved14;
++	u8  tf_features;	/* ATA + 0x64 TASKFILE Features/Error */
++	u8  reserved15[3];
++	u8  tf_sec_count;	/* ATA + 0x68 TASKFILE Sector Count */
++	u8  reserved16[3];
++	u8  tf_sec_num;		/* ATA + 0x6c TASKFILE Sector Number */
++	u8  reserved17[3];
++	u8  tf_cyl_low;		/* ATA + 0x70 TASKFILE Cylinder Low */
++	u8  reserved18[3];
++	u8  tf_cyl_high;	/* ATA + 0x74 TASKFILE Cylinder High */
++	u8  reserved19[3];
++	u8  tf_dev_head;	/* ATA + 0x78 TASKFILE Device/Head */
++	u8  reserved20[3];
++	u8  tf_command;		/* ATA + 0x7c TASKFILE Command/Status */
++	u8  dma_mode;		/* ATA + 0x7d ATA Host DMA Mode configuration */
++	u8  reserved21[2];
++};
++
++
++/* Function definition */
++
++static inline void
++mpc52xx_ide_wait_tip_bit_clear(struct mpc52xx_ata __iomem *regs)
++{
++	int timeout = 1000;
++
++	while (in_be32(&regs->host_status) & MPC52xx_ATA_HOSTSTAT_TIP)
++		if (timeout-- == 0) {
++			printk(KERN_ERR
++				"mpc52xx-ide: Timeout waiting for TIP clear\n");
++			break;
++		}
++	udelay(10);	/* FIXME: Necessary ??? */
++}
++
++extern void mpc52xx_ide_setup_hwif_iops(ide_hwif_t *hwif);
++
++
++#endif /* __MPC52xx_IDE_H__ */
++
+diff --git a/drivers/ide/ppc/mpc52xx_ide_iops.c b/drivers/ide/ppc/mpc52xx_ide_iops.c
+new file mode 100644
+index 0000000..6ced54e
+--- /dev/null
++++ b/drivers/ide/ppc/mpc52xx_ide_iops.c
+@@ -0,0 +1,151 @@
++/*
++ * drivers/ide/ppc/mpc52xx_ide_iops.c
++ *
++ * Utility functions for MPC52xx on-chip IDE interface
++ *
++ *
++ * Copyright (C) 2006 Sylvain Munaut <tnt@246tNt.com>
++ * Copyright (C) 2003 Mipsys - Benjamin Herrenschmidt
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#include <linux/config.h>
++#include <linux/kernel.h>
++#include <linux/ide.h>
++#include <asm/io.h>
++
++#include "mpc52xx_ide.h"
++
++
++
++static u8
++mpc52xx_ide_inb(unsigned long port)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	return (u8) readb((void __iomem *) port);
++}
++
++static u16
++mpc52xx_ide_inw(unsigned long port)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	return (u16) readw((void __iomem *) port);
++}
++
++static void
++mpc52xx_ide_insw(unsigned long port, void *addr, u32 count)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	__ide_mm_insw((void __iomem *) port, addr, count);
++}
++
++static u32
++mpc52xx_ide_inl(unsigned long port)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	return (u32) readl((void __iomem *) port);
++}
++
++static void
++mpc52xx_ide_insl(unsigned long port, void *addr, u32 count)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	__ide_mm_insl((void __iomem *) port, addr, count);
++}
++
++static void
++mpc52xx_ide_outb(u8 value, unsigned long port)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	writeb(value, (void __iomem *) port);
++}
++
++static void
++mpc52xx_ide_outbsync(ide_drive_t *drive, u8 value, unsigned long port)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	writeb(value, (void __iomem *) port);
++}
++
++
++static void
++mpc52xx_ide_outw(u16 value, unsigned long port)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	writew(value, (void __iomem *) port);
++}
++
++static void
++mpc52xx_ide_outsw(unsigned long port, void *addr, u32 count)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	__ide_mm_outsw((void __iomem *) port, addr, count);
++}
++
++static void
++mpc52xx_ide_outl(u32 value, unsigned long port)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	writel(value, (void __iomem *) port);
++}
++
++static void
++mpc52xx_ide_outsl(unsigned long port, void *addr, u32 count)
++{
++	struct mpc52xx_ata __iomem *ata_regs =
++		(struct mpc52xx_ata __iomem *)(port & ~0xfful);
++
++	mpc52xx_ide_wait_tip_bit_clear(ata_regs);
++	__ide_mm_outsl((void __iomem *) port, addr, count);
++}
++
++
++void
++mpc52xx_ide_setup_hwif_iops(ide_hwif_t *hwif)
++{
++	hwif->OUTB	= mpc52xx_ide_outb;
++	hwif->OUTBSYNC	= mpc52xx_ide_outbsync;
++	hwif->OUTW	= mpc52xx_ide_outw;
++	hwif->OUTL	= mpc52xx_ide_outl;
++	hwif->OUTSW	= mpc52xx_ide_outsw;
++	hwif->OUTSL	= mpc52xx_ide_outsl;
++	hwif->INB	= mpc52xx_ide_inb;
++	hwif->INW	= mpc52xx_ide_inw;
++	hwif->INL	= mpc52xx_ide_inl;
++	hwif->INSW	= mpc52xx_ide_insw;
++	hwif->INSL	= mpc52xx_ide_insl;
++}
++
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index 8d2db41..793c70a 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -203,7 +203,7 @@ typedef enum {	ide_unknown,	ide_generic,
+ 		ide_rz1000,	ide_trm290,
+ 		ide_cmd646,	ide_cy82c693,	ide_4drives,
+ 		ide_pmac,	ide_etrax100,	ide_acorn,
+-		ide_au1xxx, ide_forced
++		ide_au1xxx,	ide_mpc52xx,	ide_forced
+ } hwif_chipset_t;
  
- 	/* Matching of PSC function */
- struct mpc52xx_psc_func {
+ /*
