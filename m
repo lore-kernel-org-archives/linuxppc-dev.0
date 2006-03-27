@@ -1,19 +1,27 @@
-Return-Path: <antonio.dibacco@aruba.it>
-Received: from mx1.aruba.it (mxaruba.aruba.it [62.149.128.10])
-	by ozlabs.org (Postfix) with SMTP id 2CE9067B22
+Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
+Received: from max72.rrze.uni-erlangen.de (max72.rrze.uni-erlangen.de
+	[131.188.3.69]) by ozlabs.org (Postfix) with ESMTP id D605E679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 27 Mar 2006 20:38:28 +1100 (EST)
-Message-ID: <20060327093822.480.qmail@mx1.aruba.it>
-References: <20060327064907.23992.qmail@mx1.aruba.it>
-	<200603270953.11079.roger.larsson@norran.net>
-	<4427A9C1.3060000@berghof.com>
-In-Reply-To: <4427A9C1.3060000@berghof.com> 
-From: "antonio.dibacco" <antonio.dibacco@aruba.it>
+	Tue, 28 Mar 2006 00:20:59 +1100 (EST)
+Received: from fau-vscan-2.rrze.uni-erlangen.de ([131.188.3.69]
+	[131.188.3.69]) by faurelaysmart-2.rrze.uni-erlangen.de with
+	ESMTP for linuxppc-embedded@ozlabs.org;
+	Mon, 27 Mar 2006 15:20:20 +0200
+Received: from max72.rrze.uni-erlangen.de ([131.188.3.69])
+	by fau-vscan-2.rrze.uni-erlangen.de (fau-vscan-2.rrze.uni-erlangen.de
+	[131.188.2.92]) (amavisd-new)
+	with ESMTP id 03369-02 for <linuxppc-embedded@ozlabs.org>;
+	Mon, 27 Mar 2006 15:20:20 +0200 (MEST)
+Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
+	smtp-auth.uni-erlangen.de with ESMTP for
+	linuxppc-embedded@ozlabs.org; Mon, 27 Mar 2006 15:20:20 +0200
+Message-Id: <4427E693.6060601@cs.fau.de>
+Date: Mon, 27 Mar 2006 15:20:19 +0200
+From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Interpreting /proc/meminfo. How much free memory do I have?
-Date: Mon, 27 Mar 2006 09:38:22 GMT
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1"
+Subject: freescale 8xx: which architecture to use ? ppc - powerpc ?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,62 +32,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I don't understand the meaning of "Inactive". They are not used but the 
-kernel cannot give this memory to a requesting process because we tipically 
-don't have a swap device on a linux embedded board. Where we can store the 
-Inactive page? Am I wrong?
-If I run a process that continuosly allocates memory and print out the total 
-allocated memory when it receives SIGINT or SIGTERM, I think I get the real 
-"free memory"! 
 
-Bye,
-Antonio. 
+Hello,
 
-Eberhard Stoll Scrive: 
+i want to run linux (2.6.15) on my MPC875 board. I wonder which 
+architecture to choose:  "powerpc" or "ppc" ? - menuconfig shows a 
+"freescale 8xx" option when used with "powerpc", and a "8xx" option when 
+used with ARCH=ppc. Because i use a embedded freescale 8xx i wanted to 
+use the "powerpc" architecture. BUT: i seems to be unstable, i got some 
+undefined referencies. Or am i wrong ?
 
-> Roger Larsson schrieb: 
-> 
->>On måndag 27 mars 2006 08.49, antonio.dibacco wrote:
->>   
->>
->>>Hi, 
->>>
->>>I'm a little bit puzzled with the fields in /proc/meminfo. Which fields
->>>have I to sum up to get the amount of free memory?
->>>     
->>>
->>
->>>From a 2.6 /proc/meminfo
->>
->>MemTotal:       515532 kB
->>MemFree:          6012 kB
->>Buffers:         79964 kB
->>Cached:          83264 kB
->>SwapCached:      82840 kB
->>Active:         294024 kB
->>Inactive:       130304 kB
->>- - - 
->>
->>Completely free is only MemFree. But those pages are only needed for
->>interrupt handlers (close enough). 
->>
->>Cached pages are also free but since they contain data that maybe will
->>be needed again (unmodified data that already is on disk) they are not
->>returned to MemFree state. 
->>
->>Inactive pages has not been in use for awhile and can be written out
->>if needed (some are probably unmodified and quick to get)
->>   
->>
-> Active + Inactive + MemFree is not equal MemTotal. Where can i find the
-> offset? 
-> 
-> Thanks,
-> Eberhard 
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
- 
+thanks
+Josef
