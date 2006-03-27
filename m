@@ -1,11 +1,13 @@
 Return-Path: <anton@ozlabs.org>
-Date: Mon, 27 Mar 2006 11:23:29 +1100
+Date: Mon, 27 Mar 2006 11:46:18 +1100
 From: Anton Blanchard <anton@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Remove some ifdefs in oprofile_impl.h
-Message-ID: <20060327002329.GA4962@krispykreme>
+Subject: [PATCH] powerpc: export validate_sp for oprofile calltrace
+Message-ID: <20060327004618.GB4962@krispykreme>
+References: <20060327002329.GA4962@krispykreme>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060327002329.GA4962@krispykreme>
 Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -17,43 +19,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-- No one uses op_counter_config.valid, so remove it
-- No need to ifdef around function protypes.
+Export validate_sp so we can use it in the oprofile calltrace code.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-2.6/include/asm-powerpc/oprofile_impl.h
+Index: build/arch/powerpc/kernel/process.c
 ===================================================================
---- linux-2.6.orig/include/asm-powerpc/oprofile_impl.h	2006-03-26 12:17:23.000000000 +1100
-+++ linux-2.6/include/asm-powerpc/oprofile_impl.h	2006-03-26 12:21:13.000000000 +1100
-@@ -17,9 +17,6 @@
+--- build.orig/arch/powerpc/kernel/process.c	2006-03-26 10:39:29.000000000 +1000
++++ build/arch/powerpc/kernel/process.c	2006-03-26 12:48:03.000000000 +1000
+@@ -767,7 +767,7 @@ out:
+ 	return error;
+ }
  
- /* Per-counter configuration as set via oprofilefs.  */
- struct op_counter_config {
--#ifdef __powerpc64__
--	unsigned long valid;
--#endif
- 	unsigned long enabled;
- 	unsigned long event;
- 	unsigned long count;
-@@ -56,17 +53,12 @@ struct op_powerpc_model {
- 	int num_counters;
- };
+-static int validate_sp(unsigned long sp, struct task_struct *p,
++int validate_sp(unsigned long sp, struct task_struct *p,
+ 		       unsigned long nbytes)
+ {
+ 	unsigned long stack_page = (unsigned long)task_stack_page(p);
+@@ -805,6 +805,8 @@ static int validate_sp(unsigned long sp,
+ #define FRAME_MARKER	2
+ #endif
  
--#ifdef CONFIG_FSL_BOOKE
- extern struct op_powerpc_model op_model_fsl_booke;
--#else /* Otherwise, it's classic */
--
--#ifdef CONFIG_PPC64
- extern struct op_powerpc_model op_model_rs64;
- extern struct op_powerpc_model op_model_power4;
--
--#else /* Otherwise, CONFIG_PPC32 */
- extern struct op_powerpc_model op_model_7450;
--#endif
++EXPORT_SYMBOL(validate_sp);
 +
-+#ifndef CONFIG_FSL_BOOKE
+ unsigned long get_wchan(struct task_struct *p)
+ {
+ 	unsigned long ip, sp;
+Index: build/include/asm-powerpc/processor.h
+===================================================================
+--- build.orig/include/asm-powerpc/processor.h	2006-03-24 15:51:22.000000000 +1100
++++ build/include/asm-powerpc/processor.h	2006-03-26 12:48:03.000000000 +1000
+@@ -251,6 +251,10 @@ static inline unsigned long __pack_fe01(
+ #define cpu_relax()	barrier()
+ #endif
  
- /* All the classic PPC parts use these */
- static inline unsigned int ctr_read(unsigned int i)
++/* Check that a certain kernel stack pointer is valid in task_struct p */
++int validate_sp(unsigned long sp, struct task_struct *p,
++                       unsigned long nbytes);
++
+ /*
+  * Prefetch macros.
+  */
