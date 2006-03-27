@@ -1,18 +1,12 @@
-Return-Path: <hans@fugal.net>
-Received: from mgr3.xmission.com (mgr3.xmission.com [198.60.22.203])
-	by ozlabs.org (Postfix) with ESMTP id 07AB867A5A
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Mar 2006 08:44:16 +1100 (EST)
-Message-ID: <44270B34.3070406@fugal.net>
-Date: Sun, 26 Mar 2006 14:44:20 -0700
-From: Hans Fugal <hans@fugal.net>
+Return-Path: <anton@ozlabs.org>
+Date: Mon, 27 Mar 2006 11:23:29 +1100
+From: Anton Blanchard <anton@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Remove some ifdefs in oprofile_impl.h
+Message-ID: <20060327002329.GA4962@krispykreme>
 MIME-Version: 1.0
-To: Hollis Blanchard <hollis@penguinppc.org>
-References: <442008EE.6040808@fugal.net>
-	<ce3dc94b4e52e43d812f3783b6fc8b42@penguinppc.org>
-In-Reply-To: <ce3dc94b4e52e43d812f3783b6fc8b42@penguinppc.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Subject: Re: make install on ppc
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +16,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hollis Blanchard wrote:
-> On Mar 21, 2006, at 8:08 AM, Hans Fugal wrote:
-> 
->> Is there something that stops us from having a make install target for 
->> ppc?
-> 
-> Why do you want it, and what would it do? Clearly not many people have 
-> needed it so far...
 
-I bet a lot of people have typed it, wished it was there, then worked 
-around it. That's what I've been doing for a year now.
+- No one uses op_counter_config.valid, so remove it
+- No need to ifdef around function protypes.
 
-It doesn't do much - basically it has the proper dependencies and runs 
-installkernel with the appropriate arguments (as indicated by `make help`).
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Thanks
+Index: linux-2.6/include/asm-powerpc/oprofile_impl.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/oprofile_impl.h	2006-03-26 12:17:23.000000000 +1100
++++ linux-2.6/include/asm-powerpc/oprofile_impl.h	2006-03-26 12:21:13.000000000 +1100
+@@ -17,9 +17,6 @@
+ 
+ /* Per-counter configuration as set via oprofilefs.  */
+ struct op_counter_config {
+-#ifdef __powerpc64__
+-	unsigned long valid;
+-#endif
+ 	unsigned long enabled;
+ 	unsigned long event;
+ 	unsigned long count;
+@@ -56,17 +53,12 @@ struct op_powerpc_model {
+ 	int num_counters;
+ };
+ 
+-#ifdef CONFIG_FSL_BOOKE
+ extern struct op_powerpc_model op_model_fsl_booke;
+-#else /* Otherwise, it's classic */
+-
+-#ifdef CONFIG_PPC64
+ extern struct op_powerpc_model op_model_rs64;
+ extern struct op_powerpc_model op_model_power4;
+-
+-#else /* Otherwise, CONFIG_PPC32 */
+ extern struct op_powerpc_model op_model_7450;
+-#endif
++
++#ifndef CONFIG_FSL_BOOKE
+ 
+ /* All the classic PPC parts use these */
+ static inline unsigned int ctr_read(unsigned int i)
