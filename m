@@ -1,22 +1,18 @@
-Return-Path: <roger.larsson@norran.net>
-Received: from mail.skekraft.net (ns.skekraft.net [213.199.96.131])
-	by ozlabs.org (Postfix) with ESMTP id D98BC67B18
+Return-Path: <eberhard.stoll@berghof.com>
+Received: from mail117.messagelabs.com (mail117.messagelabs.com
+	[195.245.231.211]) by ozlabs.org (Postfix) with SMTP id E7BE167B14
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 27 Mar 2006 19:19:46 +1100 (EST)
-Received: from icd.localnet (131.net95.skekraft.net [213.199.95.131])
-	by mail.skekraft.net (Postfix) with ESMTP id 6525FA4021
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 27 Mar 2006 09:53:14 +0200 (CEST)
-From: Roger Larsson <roger.larsson@norran.net>
+	Mon, 27 Mar 2006 20:00:55 +1100 (EST)
+Message-ID: <4427A9C1.3060000@berghof.com>
+Date: Mon, 27 Mar 2006 11:00:49 +0200
+From: Eberhard Stoll <eberhard.stoll@berghof.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: Interpreting /proc/meminfo. How much free memory do I have?
-Date: Mon, 27 Mar 2006 08:53:10 +0100
 References: <20060327064907.23992.qmail@mx1.aruba.it>
-In-Reply-To: <20060327064907.23992.qmail@mx1.aruba.it>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200603270953.11079.roger.larsson@norran.net>
+	<200603270953.11079.roger.larsson@norran.net>
+In-Reply-To: <200603270953.11079.roger.larsson@norran.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,31 +23,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On m=E5ndag 27 mars 2006 08.49, antonio.dibacco wrote:
-> Hi,
+Roger Larsson schrieb:
+
+>On måndag 27 mars 2006 08.49, antonio.dibacco wrote:
+>  
 >
-> I'm a little bit puzzled with the fields in /proc/meminfo. Which fields
-> have I to sum up to get the amount of free memory?
+>>Hi,
+>>
+>>I'm a little bit puzzled with the fields in /proc/meminfo. Which fields
+>>have I to sum up to get the amount of free memory?
+>>    
+>>
+>
+>>From a 2.6 /proc/meminfo
+>
+>MemTotal:       515532 kB
+>MemFree:          6012 kB
+>Buffers:         79964 kB
+>Cached:          83264 kB
+>SwapCached:      82840 kB
+>Active:         294024 kB
+>Inactive:       130304 kB
+>- - -
+>
+>Completely free is only MemFree. But those pages are only needed for
+>interrupt handlers (close enough).
+>
+>Cached pages are also free but since they contain data that maybe will
+>be needed again (unmodified data that already is on disk) they are not
+>returned to MemFree state.
+>
+>Inactive pages has not been in use for awhile and can be written out
+>if needed (some are probably unmodified and quick to get)
+>  
+>
+Active + Inactive + MemFree is not equal MemTotal. Where can i find the
+offset?
 
-=46rom a 2.6 /proc/meminfo
-
-MemTotal:       515532 kB
-MemFree:          6012 kB
-Buffers:         79964 kB
-Cached:          83264 kB
-SwapCached:      82840 kB
-Active:         294024 kB
-Inactive:       130304 kB
-=2D - -
-
-Completely free is only MemFree. But those pages are only needed for
-interrupt handlers (close enough).
-
-Cached pages are also free but since they contain data that maybe will
-be needed again (unmodified data that already is on disk) they are not
-returned to MemFree state.
-
-Inactive pages has not been in use for awhile and can be written out
-if needed (some are probably unmodified and quick to get)
-
-/RogerL
+Thanks,
+Eberhard
