@@ -1,14 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17447.5060.59058.187721@cargo.ozlabs.ibm.com>
-Date: Mon, 27 Mar 2006 09:20:52 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Sylvain Munaut <tnt@246tNt.com>
-Subject: Re: [PATCH 0/4] MPC52xx updates : lite5200b + ide support
-In-Reply-To: <0.20060326_133535_93e6_tnt@patchsend.246tNt.com>
-References: <0.20060326_133535_93e6_tnt@patchsend.246tNt.com>
-Cc: Linux PPC embedded <linuxppc-embedded@ozlabs.org>
+Return-Path: <siju@india.tejasnetworks.com>
+Received: from anche.india.tejasnetworks.com (india.tejasnetworks.com
+	[164.164.94.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 15C0B67A63
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 27 Mar 2006 15:51:02 +1100 (EST)
+Subject: Re: [BULK]  Re: "transmit timed out" on FCC in MPC8260 => bug
+	corrected
+From: Siju Viswanath K E <siju@india.tejasnetworks.com>
+To: "hubert.loewenguth" <hubert.loewenguth@thales-bm.com>
+In-Reply-To: <4423DB92.5070305@thales-bm.com>
+References: <20060324075148.4C106353BFB@atlas.denx.de>
+	<1143193658.22246.20.camel@Blaze>  <4423DB92.5070305@thales-bm.com>
+Content-Type: text/plain
+Message-Id: <1143433880.1476.10.camel@Blaze>
+Mime-Version: 1.0
+Date: 27 Mar 2006 10:01:20 +0530
+Cc: "Hunter, David" <David.Hunter@ipc.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,19 +28,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sylvain Munaut writes:
+Thanks for the patch.. I have implemented the changes but since it is
+not very frequent in my case, I dont know whether it works for me yet.
 
-> This set of updates mainly adds support for the new lite5200B
-> devboard from Freescale and support for IDE.
+regards,
+siju
+On Fri, 2006-03-24 at 17:14, hubert.loewenguth wrote:
+> Hi to the community.
 > 
-> Theses have been posted on the ppc-embedded mailing list some
-> time ago, they've been tested and reported working by a few people,
-> so Paul it'd be nice to get those merged upstream. If you were
-> not the one to cc about this, let me know, I'll forward those
-> to Andrew.
-
-I'll handle patches 1-3, but you will need to send the IDE patch to
-the IDE maintainer, Bartlomiej Zolnierkiewicz
-<B.Zolnierkiewicz@elka.pw.edu.pl>.
-
-Paul.
+> I'm the man who has posted numerous questions about this problem of
+> fcc_enet timeout in ppc8260.
+> I just want to say that the 2.6 kernel doesn't solve the problem if
+> you have it on your board (I tried it,  normally I have a 2.4-20 linux
+> too).
+> I have search for this bug during a long time, and fortunatly, I 'm
+> happy to say you that finally, it is corrected since few days. 
+> Special thanks to "Hunter, David" for having take in consideration my
+> problem, and proposing me some way of invastigations in this thread:
+> 
+> http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021842.html
+> 
+> In fact the solution comes from the new "MPC8260 PowerQUICC II Family
+> Reference Manual"   fresescale has delivered 01/19/2006.
+> http://www.freescale.com/files/product/doc/MPC8260UM.pdf
