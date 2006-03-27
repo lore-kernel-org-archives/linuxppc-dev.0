@@ -1,9 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Mon, 27 Mar 2006 14:26:25 +1100
-Subject: [PATCH 1/2] powerpc: Rename and export ppc64_firmware_features
-Message-Id: <1143429985.443737.375094420785.qpush@concordia>
+Date: Mon, 27 Mar 2006 14:26:26 +1100
+Subject: [PATCH 2/2] powerpc: Cope with duplicate node & property names in
+	/proc/device-tree
+In-Reply-To: <1143429985.443737.375094420785.qpush@concordia>
+Message-Id: <20060327032634.7888D67AC5@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,90 +16,177 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We need to export ppc64_firmware_features for modules. Before we do that
-I think we should probably rename it to powerpc_firmware_features.
+Various dodgy firmware might give us nodes and/or properties in the device
+tree with conflicting names. That's generally ok, except for when we export
+the device tree via /proc, so check when we're creating the proc device tree
+and munge names accordingly.
+
+Tested on a faked device tree with kexec, would be good if someone with
+actual bogus firmware could try it, but just for completeness.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/kernel/firmware.c            |    4 +++-
- arch/powerpc/platforms/iseries/setup.c    |    4 ++--
- arch/powerpc/platforms/pseries/firmware.c |    2 +-
- arch/powerpc/platforms/pseries/setup.c    |    2 +-
- include/asm-powerpc/firmware.h            |    4 ++--
- 5 files changed, 9 insertions(+), 7 deletions(-)
+ fs/proc/proc_devtree.c |  103 ++++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 80 insertions(+), 23 deletions(-)
 
-Index: to-merge/arch/powerpc/kernel/firmware.c
+Index: to-merge/fs/proc/proc_devtree.c
 ===================================================================
---- to-merge.orig/arch/powerpc/kernel/firmware.c
-+++ to-merge/arch/powerpc/kernel/firmware.c
-@@ -14,7 +14,9 @@
+--- to-merge.orig/fs/proc/proc_devtree.c
++++ to-merge/fs/proc/proc_devtree.c
+@@ -52,7 +52,8 @@ static int property_read_proc(char *page
+  * Add a property to a node
   */
+ static struct proc_dir_entry *
+-__proc_device_tree_add_prop(struct proc_dir_entry *de, struct property *pp)
++__proc_device_tree_add_prop(struct proc_dir_entry *de, struct property *pp,
++		const char *name)
+ {
+ 	struct proc_dir_entry *ent;
  
- #include <linux/config.h>
-+#include <linux/module.h>
- 
- #include <asm/firmware.h>
- 
--unsigned long ppc64_firmware_features;
-+unsigned long powerpc_firmware_features;
-+EXPORT_SYMBOL_GPL(powerpc_firmware_features);
-Index: to-merge/arch/powerpc/platforms/iseries/setup.c
-===================================================================
---- to-merge.orig/arch/powerpc/platforms/iseries/setup.c
-+++ to-merge/arch/powerpc/platforms/iseries/setup.c
-@@ -680,8 +680,8 @@ static int __init iseries_probe(int plat
- 	if (PLATFORM_ISERIES_LPAR != platform)
- 		return 0;
- 
--	ppc64_firmware_features |= FW_FEATURE_ISERIES;
--	ppc64_firmware_features |= FW_FEATURE_LPAR;
-+	powerpc_firmware_features |= FW_FEATURE_ISERIES;
-+	powerpc_firmware_features |= FW_FEATURE_LPAR;
- 
- 	return 1;
- }
-Index: to-merge/arch/powerpc/platforms/pseries/firmware.c
-===================================================================
---- to-merge.orig/arch/powerpc/platforms/pseries/firmware.c
-+++ to-merge/arch/powerpc/platforms/pseries/firmware.c
-@@ -91,7 +91,7 @@ void __init fw_feature_init(void)
- 				continue;
- 
- 			/* we have a match */
--			ppc64_firmware_features |=
-+			powerpc_firmware_features |=
- 				firmware_features_table[i].val;
- 			break;
- 		}
-Index: to-merge/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- to-merge.orig/arch/powerpc/platforms/pseries/setup.c
-+++ to-merge/arch/powerpc/platforms/pseries/setup.c
-@@ -386,7 +386,7 @@ static int __init pSeries_probe(int plat
+@@ -60,14 +61,14 @@ __proc_device_tree_add_prop(struct proc_
+ 	 * Unfortunately proc_register puts each new entry
+ 	 * at the beginning of the list.  So we rearrange them.
  	 */
+-	ent = create_proc_read_entry(pp->name,
+-				     strncmp(pp->name, "security-", 9)
++	ent = create_proc_read_entry(name,
++				     strncmp(name, "security-", 9)
+ 				     ? S_IRUGO : S_IRUSR, de,
+ 				     property_read_proc, pp);
+ 	if (ent == NULL)
+ 		return NULL;
  
- 	if (platform == PLATFORM_PSERIES_LPAR)
--		ppc64_firmware_features |= FW_FEATURE_LPAR;
-+		powerpc_firmware_features |= FW_FEATURE_LPAR;
+-	if (!strncmp(pp->name, "security-", 9))
++	if (!strncmp(name, "security-", 9))
+ 		ent->size = 0; /* don't leak number of password chars */
+ 	else
+ 		ent->size = pp->length;
+@@ -78,7 +79,7 @@ __proc_device_tree_add_prop(struct proc_
  
- 	return 1;
+ void proc_device_tree_add_prop(struct proc_dir_entry *pde, struct property *prop)
+ {
+-	__proc_device_tree_add_prop(pde, prop);
++	__proc_device_tree_add_prop(pde, prop, prop->name);
  }
-Index: to-merge/include/asm-powerpc/firmware.h
-===================================================================
---- to-merge.orig/include/asm-powerpc/firmware.h
-+++ to-merge/include/asm-powerpc/firmware.h
-@@ -82,11 +82,11 @@ enum {
- /* This is used to identify firmware features which are available
-  * to the kernel.
+ 
+ void proc_device_tree_remove_prop(struct proc_dir_entry *pde,
+@@ -106,6 +107,69 @@ void proc_device_tree_update_prop(struct
+ }
+ 
+ /*
++ * Various dodgy firmware might give us nodes and/or properties with
++ * conflicting names. That's generally ok, except for exporting via /proc,
++ * so munge names here to ensure they're unique.
++ */
++
++static int duplicate_name(struct proc_dir_entry *de, const char *name)
++{
++	struct proc_dir_entry *ent;
++	int found = 0;
++
++	spin_lock(&proc_subdir_lock);
++
++	for (ent = de->subdir; ent != NULL; ent = ent->next) {
++		if (strcmp(ent->name, name) == 0) {
++			found = 1;
++			break;
++		}
++	}
++
++	spin_unlock(&proc_subdir_lock);
++
++	return found;
++}
++
++static const char *fixup_name(struct device_node *np, struct proc_dir_entry *de,
++		const char *name)
++{
++	char *fixed_name;
++	int fixup_len = strlen(name) + 2 + 1; /* name + #x + \0 */
++	int i = 1, size;
++
++realloc:
++	fixed_name = kmalloc(fixup_len, GFP_KERNEL);
++	if (fixed_name == NULL) {
++		printk(KERN_ERR "device-tree: Out of memory trying to fixup "
++				"name \"%s\"\n", name);
++		return name;
++	}
++
++retry:
++	size = snprintf(fixed_name, fixup_len, "%s#%d", name, i);
++	size++; /* account for NULL */
++
++	if (size > fixup_len) {
++		/* We ran out of space, free and reallocate. */
++		kfree(fixed_name);
++		fixup_len = size;
++		goto realloc;
++	}
++
++	if (duplicate_name(de, fixed_name)) {
++		/* Multiple duplicates. Retry with a different offset. */
++		i++;
++		goto retry;
++	}
++
++	printk(KERN_WARNING "device-tree: Duplicate name in %s, "
++			"renamed to \"%s\"\n", np->full_name, fixed_name);
++
++	return fixed_name;
++}
++
++/*
+  * Process a node, adding entries for its children and its properties.
   */
--extern unsigned long	ppc64_firmware_features;
-+extern unsigned long	powerpc_firmware_features;
+ void proc_device_tree_add_node(struct device_node *np,
+@@ -118,37 +182,30 @@ void proc_device_tree_add_node(struct de
  
- #define firmware_has_feature(feature)					\
- 	((FW_FEATURE_ALWAYS & (feature)) ||				\
--		(FW_FEATURE_POSSIBLE & ppc64_firmware_features & (feature)))
-+		(FW_FEATURE_POSSIBLE & powerpc_firmware_features & (feature)))
+ 	set_node_proc_entry(np, de);
+ 	for (child = NULL; (child = of_get_next_child(np, child));) {
++		/* Use everything after the last slash, or the full name */
+ 		p = strrchr(child->full_name, '/');
+ 		if (!p)
+ 			p = child->full_name;
+ 		else
+ 			++p;
++
++		if (duplicate_name(de, p))
++			p = fixup_name(np, de, p);
++
+ 		ent = proc_mkdir(p, de);
+ 		if (ent == 0)
+ 			break;
+ 		proc_device_tree_add_node(child, ent);
+ 	}
+ 	of_node_put(child);
++
+ 	for (pp = np->properties; pp != 0; pp = pp->next) {
+-		/*
+-		 * Yet another Apple device-tree bogosity: on some machines,
+-		 * they have properties & nodes with the same name. Those
+-		 * properties are quite unimportant for us though, thus we
+-		 * simply "skip" them here, but we do have to check.
+-		 */
+-		spin_lock(&proc_subdir_lock);
+-		for (ent = de->subdir; ent != NULL; ent = ent->next)
+-			if (!strcmp(ent->name, pp->name))
+-				break;
+-		spin_unlock(&proc_subdir_lock);
+-		if (ent != NULL) {
+-			printk(KERN_WARNING "device-tree: property \"%s\" name"
+-			       " conflicts with node in %s\n", pp->name,
+-			       np->full_name);
+-			continue;
+-		}
++		p = pp->name;
++
++		if (duplicate_name(de, p))
++			p = fixup_name(np, de, p);
  
- extern void system_reset_fwnmi(void);
- extern void machine_check_fwnmi(void);
+-		ent = __proc_device_tree_add_prop(de, pp);
++		ent = __proc_device_tree_add_prop(de, pp, p);
+ 		if (ent == 0)
+ 			break;
+ 	}
