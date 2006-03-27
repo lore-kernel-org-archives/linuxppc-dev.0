@@ -1,17 +1,10 @@
-Return-Path: <bcook@bpointsys.com>
-Received: from smtp111.sbc.mail.mud.yahoo.com (smtp111.sbc.mail.mud.yahoo.com
-	[68.142.198.210]) by ozlabs.org (Postfix) with SMTP id 9BFE267A79
-	for <linuxppc-dev@ozlabs.org>; Mon, 27 Mar 2006 13:06:57 +1100 (EST)
-From: Brent Cook <bcook@bpointsys.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: make install on ppc
-Date: Sun, 26 Mar 2006 19:56:40 -0600
-References: <OF06763F9B.91995CDB-ON4825713E.000850DE-4825713E.000949FE@cn.ibm.com>
-In-Reply-To: <OF06763F9B.91995CDB-ON4825713E.000850DE-4825713E.000949FE@cn.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200603261956.40700.bcook@bpointsys.com>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Mon, 27 Mar 2006 14:26:25 +1100
+Subject: [PATCH 1/2] powerpc: Rename and export ppc64_firmware_features
+Message-Id: <1143429985.443737.375094420785.qpush@concordia>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +14,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sunday 26 March 2006 19:42, Jin Qi Huang wrote:
-> I also think the 'make install' is very useful, now on ia32, the 'make
-> install' provided by the latest kernel linux-2.6.16 not only create
-> initrd, copy vmlinuz and System.map to /boot directory, but also update
-> grub, ppc32 does not provide this useful feature, maybe it is a pity!
->
+We need to export ppc64_firmware_features for modules. Before we do that
+I think we should probably rename it to powerpc_firmware_features.
 
-Maybe narrow it to define 'make install' for new world/old world Macintoshes, 
-or IBM machines? I can't see a generic make install being useful for the 
-wider range of platforms that fall under ppc.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-'make install' appears to me to be very platform dependent. Sure, on x86, you 
-can reasonably assume that the majority of systems have the kernel on a disk 
-under /boot and the bootloader is grub or lilo. I have 5 ppc machines 
-currently, and no two use the same bootloader or kernel image. I've seen 
-u-boot, yaboot, quik, powerboot (Motorola/Force), xmon (XES) and more, and 
-they all required different post-processing to the kernel image to boot. For 
-most of these, there is no way to programmatically guess where a particular 
-kernel image should go to work with the boot loader.
+ arch/powerpc/kernel/firmware.c            |    4 +++-
+ arch/powerpc/platforms/iseries/setup.c    |    4 ++--
+ arch/powerpc/platforms/pseries/firmware.c |    2 +-
+ arch/powerpc/platforms/pseries/setup.c    |    2 +-
+ include/asm-powerpc/firmware.h            |    4 ++--
+ 5 files changed, 9 insertions(+), 7 deletions(-)
 
- - Brent
+Index: to-merge/arch/powerpc/kernel/firmware.c
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/firmware.c
++++ to-merge/arch/powerpc/kernel/firmware.c
+@@ -14,7 +14,9 @@
+  */
+ 
+ #include <linux/config.h>
++#include <linux/module.h>
+ 
+ #include <asm/firmware.h>
+ 
+-unsigned long ppc64_firmware_features;
++unsigned long powerpc_firmware_features;
++EXPORT_SYMBOL_GPL(powerpc_firmware_features);
+Index: to-merge/arch/powerpc/platforms/iseries/setup.c
+===================================================================
+--- to-merge.orig/arch/powerpc/platforms/iseries/setup.c
++++ to-merge/arch/powerpc/platforms/iseries/setup.c
+@@ -680,8 +680,8 @@ static int __init iseries_probe(int plat
+ 	if (PLATFORM_ISERIES_LPAR != platform)
+ 		return 0;
+ 
+-	ppc64_firmware_features |= FW_FEATURE_ISERIES;
+-	ppc64_firmware_features |= FW_FEATURE_LPAR;
++	powerpc_firmware_features |= FW_FEATURE_ISERIES;
++	powerpc_firmware_features |= FW_FEATURE_LPAR;
+ 
+ 	return 1;
+ }
+Index: to-merge/arch/powerpc/platforms/pseries/firmware.c
+===================================================================
+--- to-merge.orig/arch/powerpc/platforms/pseries/firmware.c
++++ to-merge/arch/powerpc/platforms/pseries/firmware.c
+@@ -91,7 +91,7 @@ void __init fw_feature_init(void)
+ 				continue;
+ 
+ 			/* we have a match */
+-			ppc64_firmware_features |=
++			powerpc_firmware_features |=
+ 				firmware_features_table[i].val;
+ 			break;
+ 		}
+Index: to-merge/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- to-merge.orig/arch/powerpc/platforms/pseries/setup.c
++++ to-merge/arch/powerpc/platforms/pseries/setup.c
+@@ -386,7 +386,7 @@ static int __init pSeries_probe(int plat
+ 	 */
+ 
+ 	if (platform == PLATFORM_PSERIES_LPAR)
+-		ppc64_firmware_features |= FW_FEATURE_LPAR;
++		powerpc_firmware_features |= FW_FEATURE_LPAR;
+ 
+ 	return 1;
+ }
+Index: to-merge/include/asm-powerpc/firmware.h
+===================================================================
+--- to-merge.orig/include/asm-powerpc/firmware.h
++++ to-merge/include/asm-powerpc/firmware.h
+@@ -82,11 +82,11 @@ enum {
+ /* This is used to identify firmware features which are available
+  * to the kernel.
+  */
+-extern unsigned long	ppc64_firmware_features;
++extern unsigned long	powerpc_firmware_features;
+ 
+ #define firmware_has_feature(feature)					\
+ 	((FW_FEATURE_ALWAYS & (feature)) ||				\
+-		(FW_FEATURE_POSSIBLE & ppc64_firmware_features & (feature)))
++		(FW_FEATURE_POSSIBLE & powerpc_firmware_features & (feature)))
+ 
+ extern void system_reset_fwnmi(void);
+ extern void machine_check_fwnmi(void);
