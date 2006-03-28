@@ -1,17 +1,20 @@
-Return-Path: <wrobell@pld-linux.org>
-Received: from mx.it-zone.org (a.mx.it-zone.org [81.0.225.183])
-	by ozlabs.org (Postfix) with SMTP id BD08867A75
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 01:45:50 +1100 (EST)
+Return-Path: <dalang@cs.ubc.ca>
+Received: from mail-relay1.cs.ubc.ca (mail-relay1.cs.ubc.ca [142.103.6.79])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0E6A567A3F
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 02:12:25 +1100 (EST)
+Date: Tue, 28 Mar 2006 06:40:44 -0800 (PST)
+From: Dustin Lang <dalang@cs.ubc.ca>
+To: Michal Purzynski <michal@rsbac.org>
 Subject: Re: 2.6.16 does not boot on powerbook
-From: wrobell <wrobell@pld-linux.org>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <442925A8.6030004@rsbac.org>
+In-Reply-To: <Pine.LNX.4.60.0603280630130.8520@tin.icics.ubc.ca>
+Message-ID: <Pine.LNX.4.60.0603280639310.8520@tin.icics.ubc.ca>
 References: <442925A8.6030004@rsbac.org>
-Content-Type: text/plain
-Date: Tue, 28 Mar 2006 15:38:25 +0100
-Message-Id: <1143556705.3562.104.camel@RECENT-CONVERT>
-Mime-Version: 1.0
-Reply-To: wrobell@pld-linux.org
+	<Pine.LNX.4.60.0603280630130.8520@tin.icics.ubc.ca>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,23 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-03-28 at 14:01 +0200, Michal Purzynski wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> hey,
-> 
-> i've just installed 2.6.16 vanilla kernel on powerbook G4 but it cannot
-> boot.
-[...]
-> my kernel config (the same config works on 2.6.15)
-[...]
-> # CONFIG_PPC_PMAC is not set
 
-you have to go through configuration options carefully.
-some of them are disabled because of ppc32/64 arch merging changes
-(please correct me if i am wrong).
+Hi again,
 
-[...]
+I was wrong about MULTIPLATFORM - it IS set in my config.  Here's my 
+config:
 
-  wrobell <wrobell@pld-linux.org>
+CONFIG_PPC_MULTIPLATFORM=y
+# CONFIG_PPC_ISERIES is not set
+# CONFIG_EMBEDDED6xx is not set
+# CONFIG_APUS is not set
+# CONFIG_PPC_CHRP is not set
+CONFIG_PPC_PMAC=y
+
+
+I also set the environment variable ARCH=powerpc in my .bashrc file so I 
+don't forget :)
+
+Cheers,
+dstn.
