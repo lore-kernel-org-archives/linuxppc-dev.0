@@ -1,17 +1,17 @@
-Return-Path: <bersace03@laposte.net>
-Received: from smtp6-g19.free.fr (smtp6-g19.free.fr [212.27.42.36])
-	by ozlabs.org (Postfix) with ESMTP id 48FD967A0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 01:36:21 +1100 (EST)
-In-Reply-To: <442922F3.8090804@rsbac.org>
-References: <442922F3.8090804@rsbac.org>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <3A237700-8757-499C-8C3D-727CABB45340@laposte.net>
-From: =?ISO-8859-1?Q?=C9tienne_Bersac?= <bersace03@laposte.net>
-Subject: Re: 2.6.16 cannot boot on powerbook
-Date: Tue, 28 Mar 2006 16:36:18 +0200
-To: Michal Purzynski <michal@rsbac.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wrobell@pld-linux.org>
+Received: from mx.it-zone.org (a.mx.it-zone.org [81.0.225.183])
+	by ozlabs.org (Postfix) with SMTP id BD08867A75
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 01:45:50 +1100 (EST)
+Subject: Re: 2.6.16 does not boot on powerbook
+From: wrobell <wrobell@pld-linux.org>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <442925A8.6030004@rsbac.org>
+References: <442925A8.6030004@rsbac.org>
+Content-Type: text/plain
+Date: Tue, 28 Mar 2006 15:38:25 +0100
+Message-Id: <1143556705.3562.104.camel@RECENT-CONVERT>
+Mime-Version: 1.0
+Reply-To: wrobell@pld-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,10 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Tue, 2006-03-28 at 14:01 +0200, Michal Purzynski wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> hey,
+> 
+> i've just installed 2.6.16 vanilla kernel on powerbook G4 but it cannot
+> boot.
+[...]
+> my kernel config (the same config works on 2.6.15)
+[...]
+> # CONFIG_PPC_PMAC is not set
 
-Did you try video=3Dofonly in the cmdline ? Please attach files instead =20=
+you have to go through configuration options carefully.
+some of them are disabled because of ppc32/64 arch merging changes
+(please correct me if i am wrong).
 
-of copying them. I also have freeze with radeonfb on radeon X600 XT Pro.
+[...]
 
-=C9tienne.=
+  wrobell <wrobell@pld-linux.org>
