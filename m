@@ -1,18 +1,22 @@
-Return-Path: <pnasrat@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 6FF5467A40
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 03:55:21 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
-From: Paul Nasrat <pnasrat@redhat.com>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-In-Reply-To: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
-References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
-Content-Type: text/plain
-Date: Tue, 28 Mar 2006 11:55:10 -0500
-Message-Id: <1143564910.2660.4.camel@enki.eridu>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E812D679EF
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 05:13:15 +1100 (EST)
+Date: Tue, 28 Mar 2006 10:13:12 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] lock PTE before updating it in 440/BookE page fault
+	handler
+Message-ID: <20060328181312.GB20801@gate.ebshome.net>
+References: <20060302202634.GA14387@gate.ebshome.net>
+	<20060328075525.GA20801@gate.ebshome.net>
+	<17449.6575.927844.106127@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17449.6575.927844.106127@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +26,210 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-03-28 at 20:14 +0400, Vitaly Bordug wrote:
-> Updated the documentation to include the initial description of the CPM2
-> device that are used on PQII and PQIII families. Only initial sub-devices
-> described so far, but that should be sufficient to move the respective
-> boards to powerpc, with a reasonable minimum supporteddevice set.
+On Tue, Mar 28, 2006 at 10:10:39PM +1100, Paul Mackerras wrote:
+> Eugene Surovegin writes:
 > 
+> > Fix 44x and BookE page fault handler to correctly lock PTE before 
+> > trying to pte_update() it, otherwise this PTE might be swapped out 
+> > after pte_present() check but before pte_uptdate() call, resulting in 
+> > corrupted PTE. This can happen with enabled preemption and low memory 
+> > condition.
+> 
+> That gives me this for an ARCH=powerpc 32-bit pmac build:
+> 
+> /home/paulus/kernel/powerpc/arch/powerpc/mm/pgtable_32.c:376: error: conflicting types for 'get_pteptr'
+> /home/paulus/kernel/powerpc/include/asm-ppc/pgtable.h:841: error: previous declaration of 'get_pteptr' was here
 
-> +	5) FCCs (Fast Communications Controllers)
-> +
-> +	  Required properties:
-> +
-> +	  - device_type : should be "network"
-> +	  - model : "FCCx", x is typically a small number depending on the
-> +	  devices amount
-> +	  - compatible : should be "fs_enet"
-> +	  - address : List of bytes representing the ethernet address of
-> +		this controller
+Oops, sorry. Haven't noticed we have duplicated files in ppc and 
+powerpc. Full patch follows.
 
-Umm should we not use local-mac-address and mac-address (and
-address-bits) as in section 3.7.4 in 1275-1994?
 
-Paul
+Fix 44x and BookE page fault handler to correctly lock PTE before
+trying to pte_update() it, otherwise this PTE might be swapped out
+after pte_present() check but before pte_uptdate() call, resulting in
+corrupted PTE. This can happen with enabled preemption and low memory
+condition.
+
+Signed-off-by: Eugene Surovegin <ebs@ebshome.net>
+
+---
+ arch/powerpc/mm/fault.c      |   30 +++++++++++++++++-------------
+ arch/powerpc/mm/pgtable_32.c |    6 ++++--
+ arch/ppc/mm/fault.c          |   30 +++++++++++++++++-------------
+ arch/ppc/mm/pgtable.c        |    6 ++++--
+ include/asm-ppc/pgtable.h    |    3 ++-
+ 5 files changed, 44 insertions(+), 31 deletions(-)
+
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index ec4adcb..5aea090 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -267,25 +267,29 @@ good_area:
+ #endif
+ #if defined(CONFIG_4xx) || defined(CONFIG_BOOKE)
+ 		pte_t *ptep;
++		pmd_t *pmdp;
+ 
+ 		/* Since 4xx/Book-E supports per-page execute permission,
+ 		 * we lazily flush dcache to icache. */
+ 		ptep = NULL;
+-		if (get_pteptr(mm, address, &ptep) && pte_present(*ptep)) {
+-			struct page *page = pte_page(*ptep);
+-
+-			if (! test_bit(PG_arch_1, &page->flags)) {
+-				flush_dcache_icache_page(page);
+-				set_bit(PG_arch_1, &page->flags);
++		if (get_pteptr(mm, address, &ptep, &pmdp)) {
++			spinlock_t *ptl = pte_lockptr(mm, pmdp);
++			spin_lock(ptl);
++			if (pte_present(*ptep)) {
++				struct page *page = pte_page(*ptep);
++
++				if (!test_bit(PG_arch_1, &page->flags)) {
++					flush_dcache_icache_page(page);
++					set_bit(PG_arch_1, &page->flags);
++				}
++				pte_update(ptep, 0, _PAGE_HWEXEC);
++				_tlbie(address);
++				pte_unmap_unlock(ptep, ptl);
++				up_read(&mm->mmap_sem);
++				return 0;
+ 			}
+-			pte_update(ptep, 0, _PAGE_HWEXEC);
+-			_tlbie(address);
+-			pte_unmap(ptep);
+-			up_read(&mm->mmap_sem);
+-			return 0;
++			pte_unmap_unlock(ptep, ptl);
+ 		}
+-		if (ptep != NULL)
+-			pte_unmap(ptep);
+ #endif
+ 	/* a write */
+ 	} else if (is_write) {
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index d296eb6..9062860 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -372,7 +372,7 @@ void __init io_block_mapping(unsigned lo
+  * the PTE pointer is unmodified if PTE is not found.
+  */
+ int
+-get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep)
++get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
+ {
+         pgd_t	*pgd;
+         pmd_t	*pmd;
+@@ -387,6 +387,8 @@ get_pteptr(struct mm_struct *mm, unsigne
+                         if (pte) {
+ 				retval = 1;
+ 				*ptep = pte;
++				if (pmdp)
++					*pmdp = pmd;
+ 				/* XXX caller needs to do pte_unmap, yuck */
+                         }
+                 }
+@@ -424,7 +426,7 @@ unsigned long iopa(unsigned long addr)
+ 		mm = &init_mm;
+ 
+ 	pa = 0;
+-	if (get_pteptr(mm, addr, &pte)) {
++	if (get_pteptr(mm, addr, &pte, NULL)) {
+ 		pa = (pte_val(*pte) & PAGE_MASK) | (addr & ~PAGE_MASK);
+ 		pte_unmap(pte);
+ 	}
+diff --git a/arch/ppc/mm/fault.c b/arch/ppc/mm/fault.c
+index 0217188..8e08ca3 100644
+--- a/arch/ppc/mm/fault.c
++++ b/arch/ppc/mm/fault.c
+@@ -202,6 +202,7 @@ good_area:
+ 	/* an exec  - 4xx/Book-E allows for per-page execute permission */
+ 	} else if (TRAP(regs) == 0x400) {
+ 		pte_t *ptep;
++		pmd_t *pmdp;
+ 
+ #if 0
+ 		/* It would be nice to actually enforce the VM execute
+@@ -215,21 +216,24 @@ good_area:
+ 		/* Since 4xx/Book-E supports per-page execute permission,
+ 		 * we lazily flush dcache to icache. */
+ 		ptep = NULL;
+-		if (get_pteptr(mm, address, &ptep) && pte_present(*ptep)) {
+-			struct page *page = pte_page(*ptep);
+-
+-			if (! test_bit(PG_arch_1, &page->flags)) {
+-				flush_dcache_icache_page(page);
+-				set_bit(PG_arch_1, &page->flags);
++		if (get_pteptr(mm, address, &ptep, &pmdp)) {
++			spinlock_t *ptl = pte_lockptr(mm, pmdp);
++			spin_lock(ptl);
++			if (pte_present(*ptep)) {
++				struct page *page = pte_page(*ptep);
++
++				if (!test_bit(PG_arch_1, &page->flags)) {
++					flush_dcache_icache_page(page);
++					set_bit(PG_arch_1, &page->flags);
++				}
++				pte_update(ptep, 0, _PAGE_HWEXEC);
++				_tlbie(address);
++				pte_unmap_unlock(ptep, ptl);
++				up_read(&mm->mmap_sem);
++				return 0;
+ 			}
+-			pte_update(ptep, 0, _PAGE_HWEXEC);
+-			_tlbie(address);
+-			pte_unmap(ptep);
+-			up_read(&mm->mmap_sem);
+-			return 0;
++			pte_unmap_unlock(ptep, ptl);
+ 		}
+-		if (ptep != NULL)
+-			pte_unmap(ptep);
+ #endif
+ 	/* a read */
+ 	} else {
+diff --git a/arch/ppc/mm/pgtable.c b/arch/ppc/mm/pgtable.c
+index 6ea9185..98a83be 100644
+--- a/arch/ppc/mm/pgtable.c
++++ b/arch/ppc/mm/pgtable.c
+@@ -368,7 +368,7 @@ void __init io_block_mapping(unsigned lo
+  * the PTE pointer is unmodified if PTE is not found.
+  */
+ int
+-get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep)
++get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep, pmd_t **pmdp)
+ {
+         pgd_t	*pgd;
+         pmd_t	*pmd;
+@@ -383,6 +383,8 @@ get_pteptr(struct mm_struct *mm, unsigne
+                         if (pte) {
+ 				retval = 1;
+ 				*ptep = pte;
++				if (pmdp)
++					*pmdp = pmd;
+ 				/* XXX caller needs to do pte_unmap, yuck */
+                         }
+                 }
+@@ -420,7 +422,7 @@ unsigned long iopa(unsigned long addr)
+ 		mm = &init_mm;
+ 
+ 	pa = 0;
+-	if (get_pteptr(mm, addr, &pte)) {
++	if (get_pteptr(mm, addr, &pte, NULL)) {
+ 		pa = (pte_val(*pte) & PAGE_MASK) | (addr & ~PAGE_MASK);
+ 		pte_unmap(pte);
+ 	}
+diff --git a/include/asm-ppc/pgtable.h b/include/asm-ppc/pgtable.h
+index e1c62da..570b355 100644
+--- a/include/asm-ppc/pgtable.h
++++ b/include/asm-ppc/pgtable.h
+@@ -837,7 +837,8 @@ static inline int io_remap_pfn_range(str
+  */
+ #define pgtable_cache_init()	do { } while (0)
+ 
+-extern int get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep);
++extern int get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep,
++		      pmd_t **pmdp);
+ 
+ #include <asm-generic/pgtable.h>
+ 
