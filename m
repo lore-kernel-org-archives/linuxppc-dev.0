@@ -1,25 +1,25 @@
 Return-Path: <michal@rsbac.org>
 Received: from www.rsbac.org (www.rsbac.org [81.169.139.228])
-	by ozlabs.org (Postfix) with ESMTP id 255AB679EA
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Mar 2006 23:02:02 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id AAC79679F8
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Mar 2006 23:17:44 +1100 (EST)
 Received: from localhost (localhost [127.0.0.1])
-	by www.rsbac.org (Postfix) with ESMTP id DCEF33AA8C
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Mar 2006 14:02:00 +0200 (CEST)
+	by www.rsbac.org (Postfix) with ESMTP id A63D73AA89
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Mar 2006 13:51:11 +0200 (CEST)
 Received: from www.rsbac.org ([127.0.0.1])
 	by localhost (www.rsbac.org [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP id 13899-06 for <linuxppc-dev@ozlabs.org>;
-	Tue, 28 Mar 2006 14:01:54 +0200 (CEST)
+	port 10024) with ESMTP id 13899-05 for <linuxppc-dev@ozlabs.org>;
+	Tue, 28 Mar 2006 13:51:05 +0200 (CEST)
 Received: from [157.158.185.93] (pc185-93.solaris.ds.polsl.pl [157.158.185.93])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by www.rsbac.org (Postfix) with ESMTP id 315F03AA8A
-	for <linuxppc-dev@ozlabs.org>; Tue, 28 Mar 2006 14:01:52 +0200 (CEST)
-Message-ID: <442925A8.6030004@rsbac.org>
-Date: Tue, 28 Mar 2006 14:01:44 +0200
+	by www.rsbac.org (Postfix) with ESMTP id 9E3013AA84
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Mar 2006 13:51:03 +0200 (CEST)
+Message-ID: <442922F3.8090804@rsbac.org>
+Date: Tue, 28 Mar 2006 13:50:11 +0200
 From: Michal Purzynski <michal@rsbac.org>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: 2.6.16 does not boot on powerbook
+Subject: 2.6.16 cannot boot on powerbook
 Content-Type: text/plain; charset=ISO-8859-2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -1961,7 +1961,7 @@ Michal Purzynski
 Version: GnuPG v1.4.2.2 (GNU/Linux)
 Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFEKSWm+8juDbyM0PsRAn95AKCJPamUjBSX5V6h4UOZeCmNrAexZQCgw/9k
-edKgqGwqP4uXBpOlNWu1eGY=
-=y3Pv
+iD8DBQFEKSLw+8juDbyM0PsRApPjAKCJc9AKZ+UUi4X1B3G+wvz2o530eQCeJOPk
+0mxWYfRW3dpMt8jDVzos7nI=
+=UOyQ
 -----END PGP SIGNATURE-----
