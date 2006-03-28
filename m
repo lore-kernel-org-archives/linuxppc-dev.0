@@ -1,24 +1,15 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id 39A2067A60
+Return-Path: <Jeff.Fellin@rflelect.com>
+Received: from noteshub1.teal.com (mail.teal.com [67.155.213.211])
+	by ozlabs.org (Postfix) with ESMTP id 0160E67A60
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Mar 2006 03:33:46 +1100 (EST)
-Message-ID: <442965CC.4040903@ovro.caltech.edu>
-Date: Tue, 28 Mar 2006 08:35:24 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Wed, 29 Mar 2006 03:36:12 +1100 (EST)
+Subject: PPC405EP and Abatron BDI help
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OF3A743E50.87BEEA66-ON8525713F.00587402@teal.com>
+From: Jeff.Fellin@rflelect.com
+Date: Tue, 28 Mar 2006 11:36:05 -0500
 MIME-Version: 1.0
-To: Phil.Nitschke@avalon.com.au
-Subject: Re: Memory mapping PCI memory region to user space
-References: <B1E46DE837A394458BB1A58F74A66A780596CB@ala-mail02.corp.ad.wrs.com>	
-	<204E7000-3E88-4497-86C0-5AF786D72F75@kernel.crashing.org>	
-	<1143446542.24304.8.camel@lamorak.int.avalon.com.au>	
-	<44280D45.7090103@ovro.caltech.edu>	
-	<1143519660.24304.18.camel@lamorak.int.avalon.com.au>	
-	<4428C1B9.4080200@ovro.caltech.edu>
-	<1143528245.24304.28.camel@lamorak.int.avalon.com.au>
-In-Reply-To: <1143528245.24304.28.camel@lamorak.int.avalon.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,13 +21,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hey Phil,
-> 
-> Much better, thanks.  I might be able to use your program/driver as a
-> comparison to my own driver, at least as far as the mmap() goes, because
-> mine is broken and yours isn't!
-> 
+I'm not sure if this forum can help me, but perhaps someone has experience
+with
+using an Abatron BDI2000 to control an AMCC PPC405EP evaluation board. I am
+having problems with getting the BDI to access devices on the external bus.
+I have verifed the EBC settings are correct by comparing them to the values
+set by Uboot 1.1.2 (Jun 2, 2005 Rev B) running on the board.
 
-Great! Good to hear.
+I have used the base bubinga.cfg , Stefan Roese's configuration file, sent
+to me
+from someone on this mailing list. I modified the configuration to match
+the external
+device configuration of the AMCC PPC405EP evaluation board.
 
-Dave
+Any ideas as to why I cannot access devices on the external bus using the
+BDI,
+but Uboot can?
+
+
+ Jeff Fellin
+RFL Electronics
+Jeff.Fellin@rflelect.com
+973 334-3100, x 327
