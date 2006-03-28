@@ -1,18 +1,17 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id AA15E679E2
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 03:42:09 +1100 (EST)
-Date: Tue, 28 Mar 2006 20:42:01 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <pnasrat@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 6FF5467A40
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 03:55:21 +1100 (EST)
 Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
-Message-ID: <20060328204201.08058ec0@vitb.ru.mvista.com>
-In-Reply-To: <BA98B559-3041-4D80-A0DA-0CD9F6080B1B@kernel.crashing.org>
+From: Paul Nasrat <pnasrat@redhat.com>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+In-Reply-To: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
 References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
-	<BA98B559-3041-4D80-A0DA-0CD9F6080B1B@kernel.crashing.org>
+Content-Type: text/plain
+Date: Tue, 28 Mar 2006 11:55:10 -0500
+Message-Id: <1143564910.2660.4.camel@enki.eridu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Marcelo, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>,
 	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,21 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 28 Mar 2006 10:37:02 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
+On Tue, 2006-03-28 at 20:14 +0400, Vitaly Bordug wrote:
+> Updated the documentation to include the initial description of the CPM2
+> device that are used on PQII and PQIII families. Only initial sub-devices
+> described so far, but that should be sufficient to move the respective
+> boards to powerpc, with a reasonable minimum supporteddevice set.
+> 
 
-> Paul,
-> 
-> Please dont accept this patch right away.  I think we should let this  
-> have some discussion on the list before it goes in.  I believe this  
-> is the first time any of the 8xx maintainers have seen this (Dan or  
-> Marcelo) so getting their feedback would be good.
-> 
-That was implied... This is definitely RFC, I forgot to add that to the subject :)
+> +	5) FCCs (Fast Communications Controllers)
+> +
+> +	  Required properties:
+> +
+> +	  - device_type : should be "network"
+> +	  - model : "FCCx", x is typically a small number depending on the
+> +	  devices amount
+> +	  - compatible : should be "fs_enet"
+> +	  - address : List of bytes representing the ethernet address of
+> +		this controller
 
-> Nothing against your patch Vitaly :)
-> 
-> - kumar
-> -- 
-Sincerely, 
-Vitaly
+Umm should we not use local-mac-address and mac-address (and
+address-bits) as in section 3.7.4 in 1275-1994?
+
+Paul
