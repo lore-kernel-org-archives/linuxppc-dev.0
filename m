@@ -1,19 +1,26 @@
-Return-Path: <listmember@orkun.us>
-Received: from www65.dixiesys.com (ns65a.dixiesys.com [65.254.42.90])
+Return-Path: <tnt@246tNt.com>
+Received: from outmx012.isp.belgacom.be (outmx012.isp.belgacom.be
+	[195.238.5.70])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 46456679FF
+	by ozlabs.org (Postfix) with ESMTP id AA319679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Mar 2006 05:17:08 +1100 (EST)
-Message-ID: <44297979.2050206@orkun.us>
-Date: Tue, 28 Mar 2006 11:59:21 -0600
-From: Tolunay Orkun <listmember@orkun.us>
+	Wed, 29 Mar 2006 07:48:13 +1100 (EST)
+Received: from outmx012.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx012.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k2SKm6n7020833
+	for <linuxppc-embedded@ozlabs.org>; Tue, 28 Mar 2006 22:48:07 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <4429A0E5.8010308@246tNt.com>
+Date: Tue, 28 Mar 2006 22:47:33 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-To: Jeff.Fellin@rflelect.com
-Subject: Re: PPC405EP and Abatron BDI help
-References: <OF3A743E50.87BEEA66-ON8525713F.00587402@teal.com>
-In-Reply-To: <OF3A743E50.87BEEA66-ON8525713F.00587402@teal.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: John Rigby <jcrigby@gmail.com>
+Subject: Re: Kernel for MPC Lite 5200 will not compile
+References: <20060328000703.GA95672@server.idefix.loc>	<4b73d43f0603271701q24910d9rf4e61e5136c2b727@mail.gmail.com>	<20060328094939.GA43123@server.idefix.loc>
+	<4b73d43f0603280815n3fc7bb5dq38b72f87f18b905f@mail.gmail.com>
+In-Reply-To: <4b73d43f0603280815n3fc7bb5dq38b72f87f18b905f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,60 +32,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Matthias,
 
-I am also involved in bring up effort of a 405EP board (in-house 
-developed). We had 3rd party 405GP boards before so I expected bring up 
-to be less rocky but there are some subtle differences to note.
+You might want to try the "quick start" section of
+http://www.246tnt.com/mpc52xx/
 
-Are you configuring the PerWE* and PerCS* properly?
+The last compile I tried worked just fine ... You just needed to be sure
+CONFIG_NET is
+enabled (even if you don't use network ... the issue is known and being
+taken care of,
+I've seen some posts of Russel King and Andrew Morton about it).
 
-1) You need to set CPC0_PCI[SPE] bit to set PerWE* as output for CS0 
-(So, you can write your Flash connected to CS0. Note that this is DCR 
-0x0F9. There are incorrect references in the manual as the register 
-number is 0x0F4 (which is PLLMR1)
+If it still doesnt work, report it and I'll have a closer look. Maybe
+something changed
+recently and I didn't update my tree since a few days ...
 
-2) You need to program GPIO pins to alternate functions via GPIO0 
-registers (Read Chapter 23 of 405EP manual) otherwise you will not sett 
-CS* asserted for your devices (except CS0). For example, for CS1 you 
-need to set GPIO10 to alternate function.
 
-On the 405GP these would normally be configured CPC0_CR0/1. 405EP 
-probably does not use these registers at all (well, the CPC0_CR 
-registers are not documented in 405EP manual except two places make 
-refer to it: table 3-6 and 12.2.1 Timer Base Counter -- someone else 
-could chime on this)
 
-3) Of course you need to configure EBC0_BnCR and EBC0_BnAP as 
-appropriate to your peripheral as well.
+Sylvain
 
-Best regards,
-Tolunay
 
-Jeff.Fellin@rflelect.com wrote:
-> I'm not sure if this forum can help me, but perhaps someone has experience
-> with
-> using an Abatron BDI2000 to control an AMCC PPC405EP evaluation board. I am
-> having problems with getting the BDI to access devices on the external bus.
-> I have verifed the EBC settings are correct by comparing them to the values
-> set by Uboot 1.1.2 (Jun 2, 2005 Rev B) running on the board.
-> 
-> I have used the base bubinga.cfg , Stefan Roese's configuration file, sent
-> to me
-> from someone on this mailing list. I modified the configuration to match
-> the external
-> device configuration of the AMCC PPC405EP evaluation board.
-> 
-> Any ideas as to why I cannot access devices on the external bus using the
-> BDI,
-> but Uboot can?
-> 
-> 
->  Jeff Fellin
-> RFL Electronics
-> Jeff.Fellin@rflelect.com
-> 973 334-3100, x 327
-> 
+
+John Rigby wrote:
+> Sorry I'm not sure what the state of 5200 support in the eldk.  I know
+> that Wolfgang
+> has said that 2.6 is not supported though.  You may want to try out
+> Sylvains
+> kernel:  http://gitbits.246tnt.com/gitbits/linux-2.6-mpc52xx.git
+>
+> You can search in list for Syvains instructions on how to use it.
+>
+>
+> On 3/28/06, *Matthias Fechner* <idefix@fechner.net
+> <mailto:idefix@fechner.net>> wrote:
+>
+>     Hello John,
+>
+>     * John Rigby <jcrigby@gmail.com <mailto:jcrigby@gmail.com>>
+>     [27-03-06 18:01]:
+>     > try make lite5200_defconfig instead of copying it to .config
+>     > or make oldconfig after copying ti to .config
+>
+>     I tried now several combinations with:
+>     make ARCH=ppc CROSS_COMPILE=ppc_6xx- lite5200_defconfig
+>     make ARCH=ppc CROSS_COMPILE=ppc_6xx- uImage
+>
+>     then coping the file to .config and
+>     make ARCH=ppc CROSS_COMPILE=ppc_6xx- oldconfig
+>     make ARCH=ppc CROSS_COMPILE=ppc_6xx- uImage
+>
+>     but it always leads to the same error message...
+>
+>     Best regards,
+>     Matthias
+>     _______________________________________________
+>     Linuxppc-embedded mailing list
+>     Linuxppc-embedded@ozlabs.org <mailto:Linuxppc-embedded@ozlabs.org>
+>     https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+> ------------------------------------------------------------------------
+>
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
