@@ -1,26 +1,33 @@
-Return-Path: <Phil.Nitschke@avalon.com.au>
-Received: from camden.avalon.com.au (unknown [150.101.131.13])
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de [83.120.0.234])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B58D8679F0
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 79A46679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Mar 2006 17:44:24 +1100 (EST)
-Subject: Re: Memory mapping PCI memory region to user space
-From: Phil Nitschke <Phil.Nitschke@avalon.com.au>
-To: David Hawkins <dwh@ovro.caltech.edu>
-In-Reply-To: <4428C1B9.4080200@ovro.caltech.edu>
-References: <B1E46DE837A394458BB1A58F74A66A780596CB@ala-mail02.corp.ad.wrs.com>
-	<204E7000-3E88-4497-86C0-5AF786D72F75@kernel.crashing.org>
-	<1143446542.24304.8.camel@lamorak.int.avalon.com.au>
-	<44280D45.7090103@ovro.caltech.edu>
-	<1143519660.24304.18.camel@lamorak.int.avalon.com.au>
-	<4428C1B9.4080200@ovro.caltech.edu>
-Content-Type: text/plain
-Date: Tue, 28 Mar 2006 17:14:05 +1030
-Message-Id: <1143528245.24304.28.camel@lamorak.int.avalon.com.au>
+	Tue, 28 Mar 2006 20:49:47 +1100 (EST)
+Received: from server.idefix.loc (ppp-82-135-78-215.mnet-online.de
+	[82.135.78.215]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.4/8.13.4) with ESMTP id k2S9ndw7048011
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 28 Mar 2006 11:49:40 +0200 (CEST)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.loc with local (Exim 4.60 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1FOApY-000BPN-6s
+	for linuxppc-embedded@ozlabs.org; Tue, 28 Mar 2006 11:49:40 +0200
+Date: Tue, 28 Mar 2006 11:49:40 +0200
+From: Matthias Fechner <idefix@fechner.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Kernel for MPC Lite 5200 will not compile
+Message-ID: <20060328094939.GA43123@server.idefix.loc>
+References: <20060328000703.GA95672@server.idefix.loc>
+	<4b73d43f0603271701q24910d9rf4e61e5136c2b727@mail.gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: Phil.Nitschke@avalon.com.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4b73d43f0603271701q24910d9rf4e61e5136c2b727@mail.gmail.com>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,38 +38,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-03-27 at 20:55 -0800, David Hawkins wrote:
+Hello John,
 
-> I don't see any probe calls in the driver log, so I'm not sure
-> that the driver has been told to register for that device ID.
-> You can either add your device ID to the pci IDs list in the
-> driver, 
+* John Rigby <jcrigby@gmail.com> [27-03-06 18:01]:
+> try make lite5200_defconfig instead of copying it to .config
+> or make oldconfig after copying ti to .config
 
-OK, I added the device ID(s).
+I tried now several combinations with:
+make ARCH=ppc CROSS_COMPILE=ppc_6xx- lite5200_defconfig
+make ARCH=ppc CROSS_COMPILE=ppc_6xx- uImage
 
-> or echo to a sysfs node ... let me see ... yeah
-> 
-> echo "129a:dd11" > /sys/bus/pci/drivers/pci_io/new_id
-> 
-> should do the trick.
+then coping the file to .config and
+make ARCH=ppc CROSS_COMPILE=ppc_6xx- oldconfig
+make ARCH=ppc CROSS_COMPILE=ppc_6xx- uImage
 
-That didn't work for me.  (Permission denied, IIRC)
+but it always leads to the same error message...
 
-> Then you'll see probe callbacks and comments about
-> what major and start minor is assigned to each device.
-> 
-> Then create your dev nodes, eg major=254, minor=0, count=3
-> 
-> mknod /dev/pci_00:02.0_0 c 254 0
-> mknod /dev/pci_00:02.0_1 c 254 1
-> mknod /dev/pci_00:02.0_2 c 254 2
-> 
-> which is what you were trying already.
-
-Much better, thanks.  I might be able to use your program/driver as a
-comparison to my own driver, at least as far as the mmap() goes, because
-mine is broken and yours isn't!
-
--- 
-Phil Nitschke <Phil.Nitschke@avalon.com.au>
-Avalon Systems Pty Ltd
+Best regards,
+Matthias
