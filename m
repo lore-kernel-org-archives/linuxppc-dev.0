@@ -1,32 +1,23 @@
-Return-Path: <carlos.mitidieri@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 2CDE067A67
+Return-Path: <jcrigby@gmail.com>
+Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.205])
+	by ozlabs.org (Postfix) with ESMTP id 3D7CB679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Mar 2006 01:39:31 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.sysgo.com (Postfix) with ESMTP id E6E7BFB863
+	Wed, 29 Mar 2006 03:15:08 +1100 (EST)
+Received: by xproxy.gmail.com with SMTP id s17so1207012wxc
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Mar 2006 16:39:28 +0200 (CEST)
-Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id D2EF9FB863
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Mar 2006 16:39:28 +0200 (CEST)
-Received: from cam (unknown [172.40.1.200])
-	by donald.sysgo.com (Postfix) with ESMTP id 0952F20E697
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 28 Mar 2006 16:39:28 +0200 (CEST)
-From: Carlos Mitidieri <carlos.mitidieri@sysgo.com>
+	Tue, 28 Mar 2006 08:15:07 -0800 (PST)
+Message-ID: <4b73d43f0603280815n3fc7bb5dq38b72f87f18b905f@mail.gmail.com>
+Date: Tue, 28 Mar 2006 09:15:06 -0700
+From: "John Rigby" <jcrigby@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: pci-x
-Date: Tue, 28 Mar 2006 16:51:52 +0200
-References: <200603231435.01008.carlos.mitidieri@sysgo.com>
-	<24661B8C-C4DF-4D9C-8F4A-F2E6600AFFE2@kernel.crashing.org>
-	<200603241607.35267.carlos.mitidieri@sysgo.com>
-In-Reply-To: <200603241607.35267.carlos.mitidieri@sysgo.com>
+Subject: Re: Kernel for MPC Lite 5200 will not compile
+In-Reply-To: <20060328094939.GA43123@server.idefix.loc>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200603281651.53196.carlos.mitidieri@sysgo.com>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_21542_30707012.1143562506763"
+References: <20060328000703.GA95672@server.idefix.loc>
+	<4b73d43f0603271701q24910d9rf4e61e5136c2b727@mail.gmail.com>
+	<20060328094939.GA43123@server.idefix.loc>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,47 +28,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_21542_30707012.1143562506763
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On Friday 24 March 2006 15:53, Kumar Gala wrote:
-> > That seems like a driver problem.  Does lspci show your devices after
-> > you boot?  Also, what kernel ver are you using?
+Sorry I'm not sure what the state of 5200 support in the eldk.  I know that
+Wolfgang
+has said that 2.6 is not supported though.  You may want to try out Sylvain=
+s
+
+kernel:  http://gitbits.246tnt.com/gitbits/linux-2.6-mpc52xx.git
+
+You can search in list for Syvains instructions on how to use it.
+
+
+On 3/28/06, Matthias Fechner <idefix@fechner.net> wrote:
 >
-> No, the device behind the bridge is not recognized, although the bridge
-> itself is. I am using kernel 2.6.15.
+> Hello John,
+>
+> * John Rigby <jcrigby@gmail.com> [27-03-06 18:01]:
+> > try make lite5200_defconfig instead of copying it to .config
+> > or make oldconfig after copying ti to .config
+>
+> I tried now several combinations with:
+> make ARCH=3Dppc CROSS_COMPILE=3Dppc_6xx- lite5200_defconfig
+> make ARCH=3Dppc CROSS_COMPILE=3Dppc_6xx- uImage
+>
+> then coping the file to .config and
+> make ARCH=3Dppc CROSS_COMPILE=3Dppc_6xx- oldconfig
+> make ARCH=3Dppc CROSS_COMPILE=3Dppc_6xx- uImage
+>
+> but it always leads to the same error message...
+>
+> Best regards,
+> Matthias
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
 
-I am trying to use a PCI-X bridge (Intel 31154) on a mpc8540ads running kernel 
-2.6.15.  A USB controller is behind the bridge. 
+------=_Part_21542_30707012.1143562506763
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-When the mpc8540ads is booted with the PCI-X switch disabled, the device 
-behind the bridge is detected (and actually works), and the following 
-messages are printed:
+Sorry I'm not sure what the state of 5200 support in the eldk.&nbsp; I know=
+ that Wolfgang <br>has said that 2.6 is not supported though.&nbsp; You may=
+ want to try out Sylvains <br>kernel:&nbsp; <a href=3D"http://gitbits.246tn=
+t.com/gitbits/linux-2.6-mpc52xx.git">
+http://gitbits.246tnt.com/gitbits/linux-2.6-mpc52xx.git</a><br><br>You can =
+search in list for Syvains instructions on how to use it.<br><br><br><div><=
+span class=3D"gmail_quote">
+On 3/28/06, <b class=3D"gmail_sendername">Matthias Fechner</b> &lt;<a href=
+=3D"mailto:idefix@fechner.net" target=3D"_blank" onclick=3D"return top.js.O=
+penExtLink(window,event,this)">idefix@fechner.net</a>&gt; wrote:</span><blo=
+ckquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 204,=
+ 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
 
-PCI: bridge rsrc 0..ffffff (100), parent c01ce78c
-PCI: bridge rsrc 80000000..9fffffff (200), parent c01ce770
-PCI: bridge rsrc fff000..ffffff (101), parent c0217038
-PCI: bridge rsrc 9ff00000..9fffffff (200), parent c0217054
-PCI: bridge rsrc 9fe00000..9fefffff (1201), parent c0217054
-PCI:0000:01:06.0: Resource 0: 9ffff000-9fffffff (f=200)
-PCI:0000:01:06.0: Resource 1: 9ffe0000-9ffeffff (f=1208)
-PCI:0000:01:06.0: Resource 2: 9ffd0000-9ffdffff (f=200)
- 
-The last three lines are for the usb controller.
-On the other hand, if the PCI-X is enabled, the usb controller is not detected 
-anymore and the messages become:
+Hello John,<br><br>* John Rigby &lt;<a href=3D"mailto:jcrigby@gmail.com" ta=
+rget=3D"_blank" onclick=3D"return top.js.OpenExtLink(window,event,this)">jc=
+rigby@gmail.com</a>&gt; [27-03-06 18:01]:<br>&gt; try make lite5200_defconf=
+ig instead of copying it to .config
+<br>&gt; or make oldconfig after copying ti to .config
+<br><br>I tried now several combinations with:<br>make ARCH=3Dppc CROSS_COM=
+PILE=3Dppc_6xx- lite5200_defconfig<br>make ARCH=3Dppc CROSS_COMPILE=3Dppc_6=
+xx- uImage<br><br>then coping the file to .config and<br>make ARCH=3Dppc CR=
+OSS_COMPILE=3Dppc_6xx- oldconfig
+<br>make ARCH=3Dppc CROSS_COMPILE=3Dppc_6xx- uImage<br><br>but it always le=
+ads to the same error message...<br><br>Best regards,<br>Matthias<br>______=
+_________________________________________<br>Linuxppc-embedded mailing list
+<br><a href=3D"mailto:Linuxppc-embedded@ozlabs.org" target=3D"_blank" oncli=
+ck=3D"return top.js.OpenExtLink(window,event,this)">Linuxppc-embedded@ozlab=
+s.org</a><br><a href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedd=
+ed" target=3D"_blank" onclick=3D"return top.js.OpenExtLink(window,event,thi=
+s)">
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote>
+</div><br>
 
-PCI: bridge rsrc 0..ffffff (100), parent c01ce78c
-PCI: bridge rsrc 80000000..9fffffff (200), parent c01ce770
-PCI: bridge rsrc 0..fff (101), parent c0217038
-PCI: bridge rsrc 0..fffff (200), parent c0217054
-PCI: Cannot allocate resource region 1 of PCI bridge 1
-PCI: bridge 1 resource 1 moved to 9ff00000..9fffffff
-PCI: bridge rsrc 0..fffff (1201), parent c0217054
-PCI: Cannot allocate resource region 2 of PCI bridge 1
-PCI: bridge 1 resource 2 moved to 9fe00000..9fefffff
 
-In the 3rd and 4th lines, the resource addresses are different for the two 
-runs.  What could be the reason?
-
--- 
-Carlos Mitidieri
-SYSGO AG - Office Ulm
+------=_Part_21542_30707012.1143562506763--
