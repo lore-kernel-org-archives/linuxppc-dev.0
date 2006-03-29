@@ -2,20 +2,22 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (unknown [213.151.39.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C82D1679F7
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 23:36:54 +1100 (EST)
-Received: from [131.234.74.199] (helo=dhcp-74-199.uni-paderborn.de)
-	by sipsolutions.net with esmtpsa (TLS-1.0:RSA_ARCFOUR_MD5:16)
-	(Exim 4.60) (envelope-from <johannes@sipsolutions.net>)
-	id 1FOZz8-0006qT-4O
-	for linuxppc-dev@ozlabs.org; Wed, 29 Mar 2006 13:41:14 +0100
-Subject: [PATCH] PowerMac11,2 i2c-bus@0 duplicate dev-tree workaround
+	by ozlabs.org (Postfix) with ESMTP id BC3B5679F7
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 00:00:55 +1100 (EST)
+Subject: Re: snd-aoa: new apple sound driver
 From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 29 Mar 2006 13:30:15 +0200
-Message-Id: <1143631816.9481.5.camel@localhost>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1143604878.3585.5.camel@localhost.localdomain>
+References: <1143547826.13615.24.camel@localhost>
+	<1143604878.3585.5.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-VFJE4B6BkvMLxHlBKMuZ"
+Date: Wed, 29 Mar 2006 15:00:43 +0200
+Message-Id: <1143637243.9481.17.camel@localhost>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc <debian-powerpc@lists.debian.org>,
+	Alastair Poole <netstar@gatheringofgray.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,89 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On a PowerMac11,2, there are two i2c-bus@0 nodes of which only the first
-is correct. This patch makes the device tree unflattening code ignore
-the second one on those machines.
 
-Signed-Off-By: Johannes Berg <johannes@sipsolutions.net>
+--=-VFJE4B6BkvMLxHlBKMuZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
---- 
-I'm not sure this is the right way to do it. Maybe we should have some
-'dev-tree quirks fixer' that makes a third pass through the device tree
-after the allnodes chain has been set up, and fixes it up. On the other
-hand, as long as there aren't too many workarounds, this works fine.
+On Wed, 2006-03-29 at 15:01 +1100, Benjamin Herrenschmidt wrote:
+> BTW.. with the current stuff, if I install the modules and then do
+>=20
+> modprobe i2sbus
+>=20
+> I get a registration error in dmesg.=20
 
-The patch looks longer than it is because some code changed indentation
-level.
+Hmm. What's the error? Can't reproduce this at all. Also, what machine?
+It works fine on my powermac, even when i2sbus is auto-loaded due to
+binding to the macio i2s device alias.
 
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -624,6 +624,11 @@ static void *__init unflatten_dt_alloc(u
- 	return res;
- }
- 
-+/* PowerMac11,2 has a bug in the device tree where
-+ * an i2c-bus@0 shows up twice. We ignore the second
-+ * one since it is the bogus one */
-+static __initdata int powermac_i2c_bus_0_workaround = 0;
-+
- static unsigned long __init unflatten_dt_node(unsigned long mem,
- 					      unsigned long *p,
- 					      struct device_node *dad,
-@@ -695,17 +700,31 @@ static unsigned long __init unflatten_dt
- 			memcpy(p, pathp, l);
- 		} else
- 			memcpy(np->full_name, pathp, l);
-+		DBG("node %s found\n", np->full_name);
- 		prev_pp = &np->properties;
--		**allnextpp = np;
--		*allnextpp = &np->allnext;
--		if (dad != NULL) {
--			np->parent = dad;
--			/* we temporarily use the next field as `last_child'*/
--			if (dad->next == 0)
--				dad->child = np;
--			else
--				dad->next->sibling = np;
--			dad->next = np;
-+		/* so if the workaround is in effect, and we have the right
-+		 * node found, we increase the workaround count (we use the
-+		 * same variable) and then set allnextpp to NULL on the second
-+		 * one around so the node isn't added to the allnodes list */
-+		if (powermac_i2c_bus_0_workaround &&
-+		    strcmp(np->full_name,
-+		           "/ht@0,f2000000/pci@8/mac-io@7/i2c@18000/i2c-bus@0") == 0) {
-+			powermac_i2c_bus_0_workaround++;
-+			if (powermac_i2c_bus_0_workaround == 3)
-+				allnextpp = NULL;
-+		}
-+		if (allnextpp) {
-+			**allnextpp = np;
-+			*allnextpp = &np->allnext;
-+			if (dad != NULL) {
-+				np->parent = dad;
-+				/* we temporarily use the next field as `last_child'*/
-+				if (dad->next == 0)
-+					dad->child = np;
-+				else
-+					dad->next->sibling = np;
-+				dad->next = np;
-+			}
- 		}
- 		kref_init(&np->kref);
- 	}
-@@ -745,6 +764,14 @@ static unsigned long __init unflatten_dt
- 			}
- 			if (strcmp(pname, "ibm,phandle") == 0)
- 				np->linux_phandle = *((u32 *)*p);
-+			/* we check the root node's compatible property
-+			 * to see if we need to start the powermac i2c
-+			 * workaround */
-+			if ((pathp[0] == '\0') &&
-+			    (strcmp(pname, "compatible") == 0) &&
-+			    (strncmp((char*)*p, "PowerMac11,2", sz) == 0)) {
-+				powermac_i2c_bus_0_workaround = 1;
-+			}
- 			pp->name = pname;
- 			pp->length = sz;
- 			pp->value = (void *)*p;
+> If I then try to rmmod it, the
+> machine blows up. Haven't had time to track that down at this point.
+
+That sucks.
+
+> Appart from that, it works and I can play morse with myh SPID output :)
+
+Heh yeah, we did that too :)
+
+> Oh, and jackd seems to be unhappy even if I tell it to ignore the
+> capture channels, it's probably a problem with setting the sample
+> formats, I haven't looked in detail (yet).
+
+Hmm. I'll try to see what jackd does.
+
+johannes
+
+--=-VFJE4B6BkvMLxHlBKMuZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARCqE+KVg1VMiehFYAQLG9w/9GQa839edyTh2tnRC6+X+VCGfXYiuLrHv
+0eFoCdnhMZpURiQTDQXQ7H8Wz/mQvtYkUZaTjrggzdbn7r98pPzIpzRTZGGnY6Q4
+KxwqbdwoMZPHTSCmNvVnkXxtDdBTVdLGaQ08vCKrbU2m1MRmgJ57vzKnFEh49+Ga
+7YFsK0cwKAOD0f1Os6/d5qrxMcYWqc3pKyG3XePAfz/b3ncFLc/L3Mu1W/8AGKdV
+V70qRKerjK29+qCGPZ4YD5pDDUBBfWK7H6H1iX27UW6ztjEdCIs29pM/tNPhUtCj
+hG1Bu4zFNSBXZPW86ykrE8jTJpKEVYJdj3JaBFmgY2S/ukI3Xe1TaH+bk1NMZcVq
+QD0wYk3dTlHibXo8R81keGCCIOjjz2rWlc6eak2vmmQMJ6mhibh1CWC93maUZSRX
+zncNL0CEN3p9ZKFq3d3uNSohd2rY8FmEfIZjPRjMqqKgrGJjfRpRKzJfxUJzaUf/
+fsOYelENNVpCHVlKHxGVZKBgFae7VpcZxWt4lIP9N/qdlb5eVbg6MuDq6A3hGRfG
+tLUI3v63/TnygaZptZfeQ9jx5Xg1BV8FAO9xSwYLJ+3NQ9kBAN9Yotc03SAr0NQG
+DatEVrf8Nw2ML8R+Ogd4Pzn0iuJRz7h3g8nDNkBE07ggIyYENBA1xUuuwPIi90+d
+nZSNcSbTOsw=
+=nQUg
+-----END PGP SIGNATURE-----
+
+--=-VFJE4B6BkvMLxHlBKMuZ--
