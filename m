@@ -1,33 +1,18 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de [83.120.0.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 29EAC67A40
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id C924167A40
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Mar 2006 02:39:45 +1100 (EST)
-Received: from server.idefix.loc (ppp-82-135-78-215.mnet-online.de
-	[82.135.78.215]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.4/8.13.4) with ESMTP id k2TFdfsi083935
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 29 Mar 2006 17:39:41 +0200 (CEST)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.loc with local (Exim 4.60 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1FOclp-000PiD-Hd
-	for linuxppc-embedded@ozlabs.org; Wed, 29 Mar 2006 17:39:41 +0200
-Date: Wed, 29 Mar 2006 17:39:41 +0200
-From: Matthias Fechner <idefix@fechner.net>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Kernel for MPC Lite 5200 will not compile
-Message-ID: <20060329153941.GD95498@server.idefix.loc>
-References: <20060328000703.GA95672@server.idefix.loc>
-	<20060328223105.2E44D3535F7@atlas.denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060328223105.2E44D3535F7@atlas.denx.de>
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+	Thu, 30 Mar 2006 03:48:57 +1100 (EST)
+Message-ID: <442AB9DE.9080806@ovro.caltech.edu>
+Date: Wed, 29 Mar 2006 08:46:22 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
+MIME-Version: 1.0
+To: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
+Subject: Re: "lseek/write char driver" versus "usermode iomem access"
+References: <442A43C6.5050605@cs.fau.de>
+In-Reply-To: <442A43C6.5050605@cs.fau.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,39 +23,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Wolfgang,
 
-* Wolfgang Denk <wd@denx.de> [29-03-06 00:31]:
-> Which kernel tree are you using? There is no support for  MPC5200  in
-> the  DENX  Linux  tree.  Well, some code is there, as there is in the
-> public 2.6 kernel tree, but it's known to be broken and not supported
-> by us.
-
-i tried the following trees:
-linux-2.6.15 (from kernel.org)
-linux-2.6-denx (from cg-clone http://www.denx.de/git/<project_name>)
-linux-2.6-denx-git (see above)
-linuxppc_2_4_mpc5200 (see above)
-
-on the 2.4 kernel i got a different errormessage, but now with the
-kernel linux-2.6-mpc52xx.git from Sylvain  everthing seems to work fine,
-I need to test it at first. :) But I think this will take now some
-time from now.
-
-> > For this I used the git repository.
+> besides adapting linux to my custom board, i now have to write a driver 
+> for a special device. This device mainly consists of an up to 512 bytes 
+> big IO memory. Because performance matters alot, i wonder if i shall 
+> write a simple char driver offering a write/lseek-interface to access 
+> this memory or if i shall do something new to me, mapping the IO-memory 
+> to the userspace, so that the user-program can directly access the 
+> device memory. Can anyone tell me how performance probably differs 
+> between those two design.
 > 
-> Which one?
+> Thanks, you probably save me alot of time to tryout!
 
-see above
+Hi Josef,
 
-> > I copied the file arch/ppc/configs/lite5200_defconfig to .config, and
-> > tried the following one:
-> > make ARCH=ppc CROSS_COMPILE=ppc_6xx- uImage
-> 
-> That's not the official way to build images.
+Here's a couple of comments that may help:
 
-oh, sry I played with crosscompiling the firt time, it would be a
-pleasure for me if you could correct me.
+lseek()/read()/write():
 
-Best regards,
-Matthias
+   - read and write need to use copy_to_user and copy_from_user
+     commands to copy bytes from the registers into the user-space
+     buffer.
+
+mmap()
+
+   - maps pages directly, so avoids the overhead of the copy_xx_user
+     calls.
+
+So, if you have a set of control *registers* that you want to
+manipulate, then mmap would be recommended.
+
+However, this 512-bytes of memory is just that, *memory*, and the
+requirement is to move it off the device as fast as possible,
+then you probably want to create a device that has a linked
+list of 512-byte buffers internally, and use a DMA channel
+to move data from the device into the buffer. Then the
+'read' function of the driver would consume the contents of
+the buffer.
+
+So, as always, things are application dependent. If you
+could describe things in more detail, I can help make
+more suggestions and supply you with code.
+
+Regards,
+Dave
