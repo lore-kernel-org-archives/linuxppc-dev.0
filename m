@@ -1,23 +1,20 @@
 Return-Path: <ivan@vmfacility.fr>
-Received: from postfix1-c.free.fr (postfix1-c.free.fr [213.228.0.79])
-	by ozlabs.org (Postfix) with ESMTP id 380FE67A3F
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 05:43:05 +1100 (EST)
-Received: from smtp2-g19.free.fr (smtp2-g19.free.fr [212.27.42.28])
-	by postfix1-c.free.fr (Postfix) with ESMTP id 1E20F188EFFE
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 20:43:04 +0200 (CEST)
-Message-ID: <442AD531.2040702@vmfacility.fr>
-Date: Wed, 29 Mar 2006 20:42:57 +0200
+Received: from smtp3-g19.free.fr (smtp3-g19.free.fr [212.27.42.29])
+	by ozlabs.org (Postfix) with ESMTP id A1358679F6
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 08:29:50 +1100 (EST)
+Message-ID: <442AFC49.40400@vmfacility.fr>
+Date: Wed, 29 Mar 2006 23:29:45 +0200
 From: Ivan Warren <ivan@vmfacility.fr>
 MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
+To: Ivan Warren <ivan@vmfacility.fr>
 Subject: Re: [OT] ppc64 serialization problem
-References: <1143597506.3075.53.camel@localhost.localdomain>	<17450.2061.510951.479016@cargo.ozlabs.ibm.com>	<1143656433.3075.108.camel@localhost.localdomain>
-	<20060329183259.GA18514@suse.de>
-In-Reply-To: <20060329183259.GA18514@suse.de>
+References: <1143597506.3075.53.camel@localhost.localdomain>	<17450.2061.510951.479016@cargo.ozlabs.ibm.com>	<1143656433.3075.108.camel@localhost.localdomain>	<20060329183259.GA18514@suse.de>
+	<442AD531.2040702@vmfacility.fr>
+In-Reply-To: <442AD531.2040702@vmfacility.fr>
 Content-Type: multipart/signed; protocol="application/x-pkcs7-signature";
-	micalg=sha1; boundary="------------ms030701090102010901090103"
+	micalg=sha1; boundary="------------ms040508050808070809080103"
 Cc: Greg Smith <gsmith@nc.rr.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+	Paul Mackerras <paulus@samba.org>, Olaf Hering <olh@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,40 +26,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 This is a cryptographically signed message in MIME format.
 
---------------ms030701090102010901090103
+--------------ms040508050808070809080103
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-Olaf Hering wrote:
->  On Wed, Mar 29, Greg Smith wrote:
+Ivan Warren wrote:
+> Question :
+> Is this *NORMAL* behavior ? I discussed this with some C folks and 
+> they seem to think (at least some of them) that it's broken per 
+> standards.. (volatile fields should be only read/written IFF 
+> read/written explicitly - pretty much what section 6.3.7 of the C std 
+> says).
 >
->   
->> So it is clear between .A and .B -> value of b was read then written. If
->> anything happens between .A and .B to ->b, then it is lost.
->>     
->
-> Even gcc4.1 does it that way with -O0
-Yeah.. Noticed that..gcc 3.3.3 and gcc 4.0.3 also do this
+...For Info...
 
-Even declaring the field volatile has no effect..
+I've submitted a gcc PR :
 
-Question :
-Is this *NORMAL* behavior ? I discussed this with some C folks and they 
-seem to think (at least some of them) that it's broken per standards.. 
-(volatile fields should be only read/written IFF read/written explicitly 
-- pretty much what section 6.3.7 of the C std says).
+http://gcc.gnu.org/bugzilla/show_bug.cgi?id=26933
 
-Anyway I can produce perfectly valid sample code (to my understanding 
-anyway) that produces incorrect result.. YUCK !
-
-This is also possibly a problem with the powerpc64 back end of gcc..
-
-Anyway.. It's OT.. Sorry to have bothered you guys ! (And thanks Greg 
-for pointing me here).
+Anyway.. My apologies since this was a bit off topic..
 
 --Ivan
 
---------------ms030701090102010901090103
+--------------ms040508050808070809080103
 Content-Type: application/x-pkcs7-signature; name="smime.p7s"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="smime.p7s"
@@ -115,17 +101,17 @@ x9sncVcljd2pnDmOjCBPZV+V2vf3h9bGCE6u9uo05RAaWzVNd+NWIXiC3CEZNd4ksdMdRv9d
 X2VPMYIDOzCCAzcCAQEwaTBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3RlIENvbnN1
 bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIElz
 c3VpbmcgQ0ECAw8zMzAJBgUrDgMCGgUAoIIBpzAYBgkqhkiG9w0BCQMxCwYJKoZIhvcNAQcB
-MBwGCSqGSIb3DQEJBTEPFw0wNjAzMjkxODQyNTdaMCMGCSqGSIb3DQEJBDEWBBQ+oUsk3qtm
-lC4LbHx5OvPqpl4sJjBSBgkqhkiG9w0BCQ8xRTBDMAoGCCqGSIb3DQMHMA4GCCqGSIb3DQMC
+MBwGCSqGSIb3DQEJBTEPFw0wNjAzMjkyMTI5NDVaMCMGCSqGSIb3DQEJBDEWBBTct56cyMmm
+xPsI3R+ymAk5tJjJvDBSBgkqhkiG9w0BCQ8xRTBDMAoGCCqGSIb3DQMHMA4GCCqGSIb3DQMC
 AgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMCBzANBggqhkiG9w0DAgIBKDB4BgkrBgEEAYI3
 EAQxazBpMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5
 KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQID
 DzMzMHoGCyqGSIb3DQEJEAILMWugaTBiMQswCQYDVQQGEwJaQTElMCMGA1UEChMcVGhhd3Rl
 IENvbnN1bHRpbmcgKFB0eSkgTHRkLjEsMCoGA1UEAxMjVGhhd3RlIFBlcnNvbmFsIEZyZWVt
-YWlsIElzc3VpbmcgQ0ECAw8zMzANBgkqhkiG9w0BAQEFAASCAQA76CEui4yYOeL6G7AFO43G
-3+Hhv+X5cZyUnRUfLpVzafhQuyf1RZ+Rz2xC7V+sYnkbbmqkuoRgTH/vQ04Ryu6/oLb8jrVu
-/NUajr/pJK8T0lnnEDH/iKZjc8UgL8p424CDh/F6iqu2HYNGaciP0s8F4sA/or1k5xLZBviq
-Dl3Y8gCsjGa5A6XbKhs+Xk/ir6KIao2ptkxjl0eSGyTdvl+wLBwlxLokOaobyRACh1wRPQ+q
-ot5gXg3to7fysa13HZhsouxXngKiP387938k/pON6AChI+DA6NidbJWGPzdDRWOhqvs1ph41
-9d2y994yMzy2YFemT7aip6PmGTlNr6GlAAAAAAAA
---------------ms030701090102010901090103--
+YWlsIElzc3VpbmcgQ0ECAw8zMzANBgkqhkiG9w0BAQEFAASCAQB70+cyBewik25KLseyTR/9
+DEfah5c0S/rd4SK4TJK4LMPBC4BSITwfTYYbMfiCh7MIGw92qfA0vC66ERT0bP0r6dKoKQ/c
+1dnB9rRHAEGbKi4IcYKu5C/2L9BaMt5YYy6FEdwEZtE05EI1ZgE5zoQIIwdRW1nnomiPme1z
+dxlo+ntCwk4TKskmgdQCroeaeiHttblgd7y5GyGMGFC6sdO+Hp2lOSszw8/jXFLBtGe9kRC8
+tlpOFrCCCG6D82vIIVnesmwbuSuXGuxmNDU6hGMUKkLE1o1RJiw9qS5zUvvOpqee5Sfs9ImA
+jdTSEmDdcrLaK5mcWJrFppg9l+fs3s4uAAAAAAAA
+--------------ms040508050808070809080103--
