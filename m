@@ -1,21 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C08A8679E6
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 15:21:22 +1100 (EST)
-Subject: Re: [OT] ppc64 serialization problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg Smith <gsmith@nc.rr.com>
-In-Reply-To: <1143605294.3075.87.camel@localhost.localdomain>
-References: <1143597506.3075.53.camel@localhost.localdomain>
-	<1143601903.3585.2.camel@localhost.localdomain>
-	<1143605294.3075.87.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 29 Mar 2006 15:21:01 +1100
-Message-Id: <1143606061.3585.9.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <emrekara2002@yahoo.co.uk>
+Received: from web25913.mail.ukl.yahoo.com (web25913.mail.ukl.yahoo.com
+	[217.146.176.251]) by ozlabs.org (Postfix) with SMTP id 5306A679E7
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 17:52:34 +1100 (EST)
+Message-ID: <20060329064551.29548.qmail@web25913.mail.ukl.yahoo.com>
+Date: Wed, 29 Mar 2006 07:45:51 +0100 (BST)
+From: emre kara <emrekara2002@yahoo.co.uk>
+Subject: linux-2.6-rt patch on ppc and OOM messages
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,76 +18,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-03-28 at 23:08 -0500, Greg Smith wrote:
-> Very fair questions!!
-> 
-> Actually the code was
-> 
->     pthread_mutex_lock(&lock);
->     u32 |= bitB;
->     TRACE("A", u32, ...);
->     TRACE("B", u32, ...);
->     pthread_mutex_unlock(&lock);
-> 
-> where TRACE is a function call (entering a trace entry to an in-storage
-> wrap-around table).  So for the "A" call, u32 could have come directly
-> from a register and for "B" from the storage location.  I'll have the
-> user (actually a fellow developer) send me the assembly listing to make
-> sure.
+Dear All,
+Is Ingo Molnar's realtime-preempt patch compatible
+with ppc, or is there any work on a porting effort of
+this patch ? I have made some tests on a 85xx machine
+with this patch, under heavy load on ethernet
+interfaces, thw system prints OOM messages on console
+and hangs..
+Thanks.
+--------------------------console output-----
+softirq-net-rx/: page allocation failure. order:0,
+mode:0x20
+Call Trace:
+[C04E3DB0] [C000A60C] show_stack+0x50/0x188
+(unreliable)
+[C04E3DE0] [C004C3EC] __alloc_pages+0x1c8/0x2a4
+[C04E3E30] [C0063C90] cache_alloc_refill+0x35c/0x57c
+[C04E3E80] [C0063FA4] __kmalloc+0xf4/0xfc
+[C04E3EB0] [C012D460] __alloc_skb+0x58/0x118
+[C04E3ED0] [C011AF20] gfar_new_skb+0x40/0xd4
+[C04E3EF0] [C011D320] gfar_clean_rx_ring+0x25c/0x634
+[C04E3F30] [C011D72C] gfar_poll+0x34/0x140
+[C04E3F50] [C013364C] net_rx_action+0x94/0x188
+[C04E3F80] [C0026730] ksoftirqd+0x104/0x1b4
+[C04E3FC0] [C003779C] kthread+0xf8/0x100
+[C04E3FF0] [C0004DB8] kernel_thread+0x44/0x60
+Mem-info:
+DMA per-cpu:
+cpu 0 hot: high 90, batch 15 used:0
+cpu 0 cold: high 30, batch 7 used:0
+DMA32 per-cpu: empty
+Normal per-cpu: empty
+HighMem per-cpu: empty
+Free pages:         768kB (0kB HighMem)
+Active:1650 inactive:2036 dirty:0 writeback:0
+unstable:0 free:192
+slab:60106 mapped:764 pagetables:29
+DMA free:768kB min:2048kB low:2560kB high:3072kB
+active:6600kB
+inactive:8144kB present:262144kB pages_scanned:0
+all_unreclaimab
+le? no
+lowmem_reserve[]: 0 0 0 0
+DMA32 free:0kB min:0kB low:0kB high:0kB active:0kB
+inactive:0kB
+present:0kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+Normal free:0kB min:0kB low:0kB high:0kB active:0kB
+inactive:0kB
+present:0kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+HighMem free:0kB min:128kB low:128kB high:128kB
+active:0kB
+inactive:0kB present:0kB pages_scanned:0
+all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+DMA: 0*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB 1*256kB
+1*512kB 0*1024kB
+0*2048kB 0*4096kB = 768kB
+DMA32: empty
+Normal: empty
+HighMem: empty
+Swap cache: add 0, delete 0, find 0/0, race 0+0
+Free swap  = 0kB
+Total swap = 0kB
+Free swap:            0kB
+65536 pages of RAM
+0 pages of HIGHMEM
+662 free pages
+1180 reserved pages
+1249 pages shared
+0 pages swap cached
+printk: 2159030 messages suppressed.
 
-Could you try to make a small program that reproduces the problem
-instead ?
 
-> He has tested SLES9 (kernel 2.6.5, glibc 2.3.3, gcc 3.3.3) and Debian
-> (kernel 2.6.16, glibc 2.3.6, gcc 4.0.3).
-> 
-> The TRACE occurs while the lock is held.
-> 
-> Now the interesting part.
-> 
-> I suggested he try u64 instead of u32.  That works!!
-> 
-> He is suspecting a recent firmware upgrade may have something to do with
-> the problem.
 
-I doubt it, but I need more informations.
-
-> Thank you,
-> Greg Smith
-> 
-> On Wed, 2006-03-29 at 14:11 +1100, Benjamin Herrenschmidt wrote:
-> > On Tue, 2006-03-28 at 20:58 -0500, Greg Smith wrote:
-> > > We have a multi-threaded app running on a p520 in 64 bit mode.
-> > > 
-> > > Thread A does
-> > > 
-> > > pthread_mutex_lock(&lock);
-> > > u32 &= ~bitA;
-> > > pthread_mutex_unlock(&lock);
-> > > 
-> > > and Thread B does
-> > > 
-> > > pthread_mutex_lock(&lock);
-> > > u32 |= bitB;
-> > > A = u32;
-> > > B = u32;
-> > > pthread_mutex_unlock(&lock);
-> > > 
-> > > On rare occasions, values A and B will differ!  In the examples that I
-> > > have seen, there is contention with `lock'.  This phenomenon does not
-> > > occur on ppc32 or a number of other architectures that we support.
-> > 
-> > How did you actually "look" at A and B ? is that also protected by the
-> > lock ?
-> > 
-> > > I confess I do not know the linux version nor the glibc version nor what
-> > > pthreads implementation is being used.  I'll find that out shortly.
-> > 
-> > That's fairly important to know those yes.
-> > 
-> > > What I am curious about is where the problem might lie
-> > > (kernel/lib/pthreads/app) so I can ask the right people.
-> > > 
-> > > Thank you for your patience,
-> > > Greg Smith
-> 
+		
+___________________________________________________________ 
+Yahoo! Photos – NEW, now offering a quality print service from just 8p a photo http://uk.photos.yahoo.com
