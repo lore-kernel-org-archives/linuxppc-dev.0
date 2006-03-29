@@ -1,16 +1,21 @@
-Return-Path: <emrekara2002@yahoo.co.uk>
-Received: from web25909.mail.ukl.yahoo.com (web25909.mail.ukl.yahoo.com
-	[217.12.10.207]) by ozlabs.org (Postfix) with SMTP id BA893679FD
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 21:21:16 +1100 (EST)
-Message-ID: <20060329101434.84118.qmail@web25909.mail.ukl.yahoo.com>
-Date: Wed, 29 Mar 2006 11:14:34 +0100 (BST)
-From: emre kara <emrekara2002@yahoo.co.uk>
-Subject: Re: linux-2.6-rt patch on ppc85xx and OOM messages
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <77C1FC46-AF49-4807-9AC4-C3DC448F79BF@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (unknown [213.151.39.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C82D1679F7
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 23:36:54 +1100 (EST)
+Received: from [131.234.74.199] (helo=dhcp-74-199.uni-paderborn.de)
+	by sipsolutions.net with esmtpsa (TLS-1.0:RSA_ARCFOUR_MD5:16)
+	(Exim 4.60) (envelope-from <johannes@sipsolutions.net>)
+	id 1FOZz8-0006qT-4O
+	for linuxppc-dev@ozlabs.org; Wed, 29 Mar 2006 13:41:14 +0100
+Subject: [PATCH] PowerMac11,2 i2c-bus@0 duplicate dev-tree workaround
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 29 Mar 2006 13:30:15 +0200
+Message-Id: <1143631816.9481.5.camel@localhost>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,124 +25,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The OOM messages disappeared but the ethernet
-throughput decreased significantly (90MBit for
-1518Byte packet, and throughput without the patch is
-about 900Bits) and the system can't manage load
-balancing between to interfaces,the system acts like
-the priorty of tsec0 is higher then tsec1 because of
-this, the heavy load on tsec0 blocks packet receiving
-on tsec1.
---- Kumar Gala <galak@kernel.crashing.org> wrote:
+On a PowerMac11,2, there are two i2c-bus@0 nodes of which only the first
+is correct. This patch makes the device tree unflattening code ignore
+the second one on those machines.
 
-> 
-> On Mar 29, 2006, at 12:45 AM, emre kara wrote:
-> 
-> > Dear All,
-> > Is Ingo Molnar's realtime-preempt patch compatible
-> > with ppc, or is there any work on a porting effort
-> of
-> > this patch ? I have made some tests on a 85xx
-> machine
-> > with this patch, under heavy load on ethernet
-> > interfaces, thw system prints OOM messages on
-> console
-> > and hangs..
-> > Thanks.
-> 
-> Can you try setting the gfar interrupts to
-> SA_INTERRUPT and see what  
-> happens.
-> 
-> - k
-> 
-> > --------------------------console output-----
-> > softirq-net-rx/: page allocation failure. order:0,
-> > mode:0x20
-> > Call Trace:
-> > [C04E3DB0] [C000A60C] show_stack+0x50/0x188
-> > (unreliable)
-> > [C04E3DE0] [C004C3EC] __alloc_pages+0x1c8/0x2a4
-> > [C04E3E30] [C0063C90]
-> cache_alloc_refill+0x35c/0x57c
-> > [C04E3E80] [C0063FA4] __kmalloc+0xf4/0xfc
-> > [C04E3EB0] [C012D460] __alloc_skb+0x58/0x118
-> > [C04E3ED0] [C011AF20] gfar_new_skb+0x40/0xd4
-> > [C04E3EF0] [C011D320]
-> gfar_clean_rx_ring+0x25c/0x634
-> > [C04E3F30] [C011D72C] gfar_poll+0x34/0x140
-> > [C04E3F50] [C013364C] net_rx_action+0x94/0x188
-> > [C04E3F80] [C0026730] ksoftirqd+0x104/0x1b4
-> > [C04E3FC0] [C003779C] kthread+0xf8/0x100
-> > [C04E3FF0] [C0004DB8] kernel_thread+0x44/0x60
-> > Mem-info:
-> > DMA per-cpu:
-> > cpu 0 hot: high 90, batch 15 used:0
-> > cpu 0 cold: high 30, batch 7 used:0
-> > DMA32 per-cpu: empty
-> > Normal per-cpu: empty
-> > HighMem per-cpu: empty
-> > Free pages:         768kB (0kB HighMem)
-> > Active:1650 inactive:2036 dirty:0 writeback:0
-> > unstable:0 free:192
-> > slab:60106 mapped:764 pagetables:29
-> > DMA free:768kB min:2048kB low:2560kB high:3072kB
-> > active:6600kB
-> > inactive:8144kB present:262144kB pages_scanned:0
-> > all_unreclaimab
-> > le? no
-> > lowmem_reserve[]: 0 0 0 0
-> > DMA32 free:0kB min:0kB low:0kB high:0kB active:0kB
-> > inactive:0kB
-> > present:0kB pages_scanned:0 all_unreclaimable? no
-> > lowmem_reserve[]: 0 0 0 0
-> > Normal free:0kB min:0kB low:0kB high:0kB
-> active:0kB
-> > inactive:0kB
-> > present:0kB pages_scanned:0 all_unreclaimable? no
-> > lowmem_reserve[]: 0 0 0 0
-> > HighMem free:0kB min:128kB low:128kB high:128kB
-> > active:0kB
-> > inactive:0kB present:0kB pages_scanned:0
-> > all_unreclaimable? no
-> > lowmem_reserve[]: 0 0 0 0
-> > DMA: 0*4kB 0*8kB 0*16kB 0*32kB 0*64kB 0*128kB
-> 1*256kB
-> > 1*512kB 0*1024kB
-> > 0*2048kB 0*4096kB = 768kB
-> > DMA32: empty
-> > Normal: empty
-> > HighMem: empty
-> > Swap cache: add 0, delete 0, find 0/0, race 0+0
-> > Free swap  = 0kB
-> > Total swap = 0kB
-> > Free swap:            0kB
-> > 65536 pages of RAM
-> > 0 pages of HIGHMEM
-> > 662 free pages
-> > 1180 reserved pages
-> > 1249 pages shared
-> > 0 pages swap cached
-> > printk: 2159030 messages suppressed.
-> >
-> >
-> >
-> > 		
-> >
->
-___________________________________________________________
-> > Yahoo! Photos – NEW, now offering a quality print
-> service from just  
-> > 8p a photo http://uk.photos.yahoo.com
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
+Signed-Off-By: Johannes Berg <johannes@sipsolutions.net>
 
+--- 
+I'm not sure this is the right way to do it. Maybe we should have some
+'dev-tree quirks fixer' that makes a third pass through the device tree
+after the allnodes chain has been set up, and fixes it up. On the other
+hand, as long as there aren't too many workarounds, this works fine.
 
+The patch looks longer than it is because some code changed indentation
+level.
 
-		
-___________________________________________________________ 
-To help you stay safe and secure online, we've developed the all new Yahoo! Security Centre. http://uk.security.yahoo.com
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -624,6 +624,11 @@ static void *__init unflatten_dt_alloc(u
+ 	return res;
+ }
+ 
++/* PowerMac11,2 has a bug in the device tree where
++ * an i2c-bus@0 shows up twice. We ignore the second
++ * one since it is the bogus one */
++static __initdata int powermac_i2c_bus_0_workaround = 0;
++
+ static unsigned long __init unflatten_dt_node(unsigned long mem,
+ 					      unsigned long *p,
+ 					      struct device_node *dad,
+@@ -695,17 +700,31 @@ static unsigned long __init unflatten_dt
+ 			memcpy(p, pathp, l);
+ 		} else
+ 			memcpy(np->full_name, pathp, l);
++		DBG("node %s found\n", np->full_name);
+ 		prev_pp = &np->properties;
+-		**allnextpp = np;
+-		*allnextpp = &np->allnext;
+-		if (dad != NULL) {
+-			np->parent = dad;
+-			/* we temporarily use the next field as `last_child'*/
+-			if (dad->next == 0)
+-				dad->child = np;
+-			else
+-				dad->next->sibling = np;
+-			dad->next = np;
++		/* so if the workaround is in effect, and we have the right
++		 * node found, we increase the workaround count (we use the
++		 * same variable) and then set allnextpp to NULL on the second
++		 * one around so the node isn't added to the allnodes list */
++		if (powermac_i2c_bus_0_workaround &&
++		    strcmp(np->full_name,
++		           "/ht@0,f2000000/pci@8/mac-io@7/i2c@18000/i2c-bus@0") == 0) {
++			powermac_i2c_bus_0_workaround++;
++			if (powermac_i2c_bus_0_workaround == 3)
++				allnextpp = NULL;
++		}
++		if (allnextpp) {
++			**allnextpp = np;
++			*allnextpp = &np->allnext;
++			if (dad != NULL) {
++				np->parent = dad;
++				/* we temporarily use the next field as `last_child'*/
++				if (dad->next == 0)
++					dad->child = np;
++				else
++					dad->next->sibling = np;
++				dad->next = np;
++			}
+ 		}
+ 		kref_init(&np->kref);
+ 	}
+@@ -745,6 +764,14 @@ static unsigned long __init unflatten_dt
+ 			}
+ 			if (strcmp(pname, "ibm,phandle") == 0)
+ 				np->linux_phandle = *((u32 *)*p);
++			/* we check the root node's compatible property
++			 * to see if we need to start the powermac i2c
++			 * workaround */
++			if ((pathp[0] == '\0') &&
++			    (strcmp(pname, "compatible") == 0) &&
++			    (strncmp((char*)*p, "PowerMac11,2", sz) == 0)) {
++				powermac_i2c_bus_0_workaround = 1;
++			}
+ 			pp->name = pname;
+ 			pp->length = sz;
+ 			pp->value = (void *)*p;
