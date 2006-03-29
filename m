@@ -1,18 +1,19 @@
-Return-Path: <pnasrat@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id A2F0767A0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 13:33:43 +1100 (EST)
-Subject: Re: [PATCH] DTC - validation by device_type
-From: Paul Nasrat <pnasrat@redhat.com>
-To: Hollis Blanchard <hollis@penguinppc.org>
-In-Reply-To: <66cc5bfb5a367a814fbace8105572658@penguinppc.org>
-References: <1143586160.2660.19.camel@enki.eridu>
-	<66cc5bfb5a367a814fbace8105572658@penguinppc.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 51F2367A00
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 14:12:04 +1100 (EST)
+Subject: Re: [OT] ppc64 serialization problem
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg Smith <gsmith@nc.rr.com>
+In-Reply-To: <1143597506.3075.53.camel@localhost.localdomain>
+References: <1143597506.3075.53.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 28 Mar 2006 21:33:31 -0500
-Message-Id: <1143599612.2704.14.camel@enki.eridu>
+Date: Wed, 29 Mar 2006 14:11:42 +1100
+Message-Id: <1143601903.3585.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,88 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-03-28 at 20:03 -0600, Hollis Blanchard wrote:
-> On Mar 28, 2006, at 4:49 PM, Paul Nasrat wrote:
-> >
-> > It'd be nice to be able to validate by device_type, to ensure that we
-> > don't reinvent the wheel (address vs. local-mac-address) and to give
-> > embedded designers an added level of sanity checking.
-> >
-> > Here is a proposed implementation with an implemented check for
-> > "network".
+On Tue, 2006-03-28 at 20:58 -0500, Greg Smith wrote:
+> We have a multi-threaded app running on a p520 in 64 bit mode.
+> 
+> Thread A does
+> 
+> pthread_mutex_lock(&lock);
+> u32 &= ~bitA;
+> pthread_mutex_unlock(&lock);
+> 
+> and Thread B does
+> 
+> pthread_mutex_lock(&lock);
+> u32 |= bitB;
+> A = u32;
+> B = u32;
+> pthread_mutex_unlock(&lock);
+> 
+> On rare occasions, values A and B will differ!  In the examples that I
+> have seen, there is contention with `lock'.  This phenomenon does not
+> occur on ppc32 or a number of other architectures that we support.
 
-> >
-> Unless this is some weird style thing, that close brace seems 
-> misindented.
+How did you actually "look" at A and B ? is that also protected by the
+lock ?
 
-No you're not missing anything, both artefacts of how I got there.  Take
-2.
+> I confess I do not know the linux version nor the glibc version nor what
+> pthreads implementation is being used.  I'll find that out shortly.
 
-As above
+That's fairly important to know those yes.
 
-Signed-off-by: Paul Nasrat <pnasrat@redhat.com>
-
-diff --git a/livetree.c b/livetree.c
-index ef54174..bf8bb56 100644
---- a/livetree.c
-+++ b/livetree.c
-@@ -441,6 +441,51 @@ static int check_structure(struct node *
- 				(propname), (node)->fullpath); \
- 	} while (0)
- 
-+static int check_network(struct node *net)
-+{
-+
-+	int ok = 1;
-+	struct property *prop;
-+
-+	CHECK_HAVE(net, "reg");
-+	CHECK_HAVE(net, "local-mac-address");
-+	CHECK_HAVE(net, "mac-address");
-+	CHECK_HAVE(net, "address-bits");
-+
-+	return ok;
-+}
-+
-+static struct {
-+	char *devtype;
-+	int (*check_fn)(struct node *node);
-+} devtype_checker_table[] = {
-+	{"network", check_network},
-+};
-+
-+static int check_devtypes(struct node *root)
-+{
-+
-+	struct node *child;
-+	struct property *prop;
-+	int ok = 1;
-+	int i;
-+
-+	for_each_child(root, child) {
-+		/* check this node */
-+		if ((prop = get_property((child), ("device_type"))))
-+			for (i = 0; i < ARRAY_SIZE(devtype_checker_table); i++) {
-+				if (streq(prop->val.val, devtype_checker_table[i].devtype))
-+					if (! devtype_checker_table[i].check_fn(child)) {
-+						ok = 0;
-+						break;
-+					}
-+			}
-+		ok = check_devtypes(child);
-+	}
-+
-+	return ok;
-+}
-+
- static int check_root(struct node *root)
- {
- 	struct property *prop;
-@@ -716,6 +761,7 @@ int check_device_tree(struct node *dt)
- 	ok = ok && check_cpus(dt);
- 	ok = ok && check_memory(dt);
- 	ok = ok && check_chosen(dt);
-+	ok = ok && check_devtypes(dt);
- 	if (! ok)
- 		return 0;
- 
+> What I am curious about is where the problem might lie
+> (kernel/lib/pthreads/app) so I can ask the right people.
+> 
+> Thank you for your patience,
+> Greg Smith
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
