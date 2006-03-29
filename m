@@ -1,18 +1,20 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from smtpauth07.mail.atl.earthlink.net
-	(smtpauth07.mail.atl.earthlink.net [209.86.89.67])
-	by ozlabs.org (Postfix) with ESMTP id EC841679F7
-	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 13:03:39 +1100 (EST)
-In-Reply-To: <1143586160.2660.19.camel@enki.eridu>
-References: <1143586160.2660.19.camel@enki.eridu>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <66cc5bfb5a367a814fbace8105572658@penguinppc.org>
-From: Hollis Blanchard <hollis@penguinppc.org>
-Subject: Re: [PATCH] DTC - validation by device_type
-Date: Tue, 28 Mar 2006 20:03:47 -0600
-To: Paul Nasrat <pnasrat@redhat.com>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <gsmith@nc.rr.com>
+Received: from ms-smtp-04-eri0.southeast.rr.com
+	(ms-smtp-04-lbl.southeast.rr.com [24.25.9.103])
+	by ozlabs.org (Postfix) with ESMTP id 791E3679F7
+	for <linuxppc-dev@ozlabs.org>; Wed, 29 Mar 2006 12:58:31 +1100 (EST)
+Received: from [192.168.1.103] (cpe-069-134-161-101.nc.res.rr.com
+	[69.134.161.101])
+	by ms-smtp-04-eri0.southeast.rr.com (8.13.4/8.13.4) with ESMTP id
+	k2T1wRcb013009
+	for <linuxppc-dev@ozlabs.org>; Tue, 28 Mar 2006 20:58:29 -0500 (EST)
+Subject: [OT] ppc64 serialization problem
+From: Greg Smith <gsmith@nc.rr.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 28 Mar 2006 20:58:26 -0500
+Message-Id: <1143597506.3075.53.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,93 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mar 28, 2006, at 4:49 PM, Paul Nasrat wrote:
->
-> It'd be nice to be able to validate by device_type, to ensure that we
-> don't reinvent the wheel (address vs. local-mac-address) and to give
-> embedded designers an added level of sanity checking.
->
-> Here is a proposed implementation with an implemented check for
-> "network".
->
-> Signed-off-by: Paul Nasrat <pnasrat@redhat.com>
->
-> diff --git a/livetree.c b/livetree.c
-> index ef54174..351773b 100644
-> --- a/livetree.c
-> +++ b/livetree.c
-> @@ -441,6 +441,52 @@ static int check_structure(struct node *
->  				(propname), (node)->fullpath); \
->  	} while (0)
->
-> +static int check_network(struct node *net)
-> +{
-> +
-> +	int ok = 1;
-> +	struct property *prop;
-> +
-> +	CHECK_HAVE_STREQ(net, "device_type", "network");
+We have a multi-threaded app running on a p520 in 64 bit mode.
 
-The only reason you got into this function was that device_type == 
-"network"...
+Thread A does
 
-> +	CHECK_HAVE(net, "reg");
-> +	CHECK_HAVE(net, "local-mac-address");
-> +	CHECK_HAVE(net, "mac-address");
-> +	CHECK_HAVE(net, "address-bits");
-> +
-> +	return ok;
-> +}
-> +
-> +static struct {
-> +	char *devtype;
-> +	int (*check_fn)(struct node *node);
-> +} devtype_checker_table[] = {
-> +	{"network", check_network},
-> +};
-> +
-> +static int check_devtypes(struct node *root)
-> +{
-> +
-> +	struct node *child;
-> +	struct property *prop;
-> +	int ok = 1;
-> +	int i;
-> +
-> +	for_each_child(root, child) {
-> +		/* check this node */
-> +		if ((prop = get_property((child), ("device_type"))))
-> +			for (i = 0; i < ARRAY_SIZE(devtype_checker_table); i++) {
-> +				if (streq(prop->val.val, devtype_checker_table[i].devtype))
-> +					if (! devtype_checker_table[i].check_fn(child)) {
-> +						ok = 0;
-> +						break;
-> +						}
+pthread_mutex_lock(&lock);
+u32 &= ~bitA;
+pthread_mutex_unlock(&lock);
 
-Unless this is some weird style thing, that close brace seems 
-misindented.
+and Thread B does
 
-> +			}
-> +		ok = check_devtypes(child);
-> +	}
-> +
-> +	return ok;
-> +}
-> +
->  static int check_root(struct node *root)
->  {
->  	struct property *prop;
-> @@ -716,6 +762,7 @@ int check_device_tree(struct node *dt)
->  	ok = ok && check_cpus(dt);
->  	ok = ok && check_memory(dt);
->  	ok = ok && check_chosen(dt);
-> +	ok = ok && check_devtypes(dt);
->  	if (! ok)
->  		return 0;
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+pthread_mutex_lock(&lock);
+u32 |= bitB;
+A = u32;
+B = u32;
+pthread_mutex_unlock(&lock);
+
+On rare occasions, values A and B will differ!  In the examples that I
+have seen, there is contention with `lock'.  This phenomenon does not
+occur on ppc32 or a number of other architectures that we support.
+
+I confess I do not know the linux version nor the glibc version nor what
+pthreads implementation is being used.  I'll find that out shortly.
+
+What I am curious about is where the problem might lie
+(kernel/lib/pthreads/app) so I can ask the right people.
+
+Thank you for your patience,
+Greg Smith
