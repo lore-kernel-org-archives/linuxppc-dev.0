@@ -1,23 +1,18 @@
-Return-Path: <mort@bork.org>
-Received: from galileo.bork.org (galileo.bork.org [134.117.69.57])
-	by ozlabs.org (Postfix) with ESMTP id 3401F679F7
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 31 Mar 2006 08:39:28 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by galileo.bork.org (Postfix) with ESMTP id F256F4037
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Mar 2006 16:11:43 -0500 (EST)
-Received: from galileo.bork.org ([127.0.0.1])
-	by localhost (galileo.bork.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 29121-03 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Mar 2006 16:11:43 -0500 (EST)
-Date: Thu, 30 Mar 2006 16:11:43 -0500
-From: Martin Hicks <mort@bork.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: U-boot CPU post failure on 405gp
-Message-ID: <20060330211143.GK27792@bork.org>
+Return-Path: <jcrigby@gmail.com>
+Message-ID: <4b73d43f0603301351qba22edn70e2f4052034bb78@mail.gmail.com>
+Date: Thu, 30 Mar 2006 14:51:26 -0700
+From: "John Rigby" <jcrigby@gmail.com>
+To: "Dale Farnsworth" <dale@farnsworth.org>
+Subject: Re: Kernel for MPC Lite 5200 will not compile
+In-Reply-To: <20060330200509.10908.qmail@farnsworth.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+References: <442B11E8.7020107@246tNt.com>
+	<20060330003419.3FF71353A37@atlas.denx.de>
+	<4b73d43f0603300829q7d45a029qdb5d8006ccda7275@mail.gmail.com>
+	<4b73d43f0603300839k4465b2aao7e073f83052b97ff@mail.gmail.com>
+	<20060330200509.10908.qmail@farnsworth.org>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,60 +23,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Even if the current Freescale code were cleaned up the basic design is
+ugly.  The C preprocessor hell it goes through along with the
+indirection is a high price to pay for the generalitiy it buys in
+terms of the task var/inc setting.
 
-I'm using a PPC405gp based board, and using u-boot to boot Linux.  I
-recently upgraded toolchains from gcc-3.2 (some timesys build) to a
-gcc-3.4.5/glibc-2.3.6 toolchain built with crosstools-0.42
+On the licensing side, it has been changed to an MIT license so it can
+be included in the kernel but third parties can use it in there non
+GPL OSs without problem.
 
-Reading specs from /home/mort/src/targa/powerpc-linux/gcc-3.4.5-glibc-2.3.6/powerpc-405-linux-gnu/bin/../lib/gcc/powerpc-405-linux-gnu/3.4.5/specs
-Configured with: /home/mort/src/crosstool-0.42/build/powerpc-405-linux-gnu/gcc-3.4.5-glibc-2.3.6/gcc-3.4.5/configure --target=powerpc-405-linux-gnu --host=i686-host_pc-linux-gnu --prefix=/opt/targa/local/powerpc-linux/gcc-3.4.5-glibc-2.3.6/powerpc-405-linux-gnu --with-cpu=405 --enable-cxx-flags=-mcpu=405 --with-headers=/opt/targa/local/powerpc-linux/gcc-3.4.5-glibc-2.3.6/powerpc-405-linux-gnu/powerpc-405-linux-gnu/include --with-local-prefix=/opt/targa/local/powerpc-linux/gcc-3.4.5-glibc-2.3.6/powerpc-405-linux-gnu/powerpc-405-linux-gnu --disable-nls --enable-threads=posix --enable-symvers=gnu --enable-__cxa_atexit --enable-languages=c,c++ --enable-shared --enable-c99 --enable-long-long
-Thread model: posix
-gcc version 3.4.5
+For now lets just stay with your code and I will work on getting other
+drivers to use it.
 
-
-The problem I'm having is when running the CPU post test on u-boot
-1.1.4.  Specifically, in the branch tests.  While doing the first branch
-conditional test the computer incorrectly takes the "if (link)" branch
-in u-boot/post/cpu/b.c::cpu_post_test_bc()
-
---- a/post/cpu/b.c
-+++ b/post/cpu/b.c
-@@ -84,10 +84,14 @@ static int cpu_post_test_bc (ulong cmd, 
-     }
-     if (ret == 0)
-     {
--	if (link)
-+        printf("link = %d\n", link);
-+        if (link)
- 	    ret = lr == (ulong) code + 24 ? 0 : -1;
- 	else
- 	    ret = lr == 0 ? 0 : -1;
-+	if (ret)
-+		printf("ret = %d, link = %lx, code = %p, lr = %lx\n",
-+		       ret, link, code, lr);
-     }
- 
-     return ret;
-
----
-
-Running with this small change, I get:
-
-POST cpu link = 0
-ret = -1, link = 0, code = 03fa5ab8, lr = 0
-
-It looks clear to me that link == 0, so the test worked fine.
-
-However, if I take away the "static" from the cpu_post_test_bc()
-declaration then everything works fine.
-
-I've posted "objdump -dS" output for post/cpu/b.o with and without
-cpu_post_test_bc() declared as static at:
-
-http://www.bork.org/~mort/ppcstatic/
-
-Any hints appreciated.  Let me know if any other info is required.
-mh
-
--- 
-Martin Hicks || mort@bork.org || PGP/GnuPG: 0x4C7F2BEE
+On 30 Mar 2006 20:05:09 -0000, Dale Farnsworth <dale@farnsworth.org> wrote:
+> Jon Rigby <jcrigby@gmail.com> wrote:
+> > After thinking about this more....I don't want to push getting the offi=
+cial
+> > Freescale code into the tree.  If Dale's code works as well as the Free=
+scale
+> > code then lets stay with it because it is a lot cleaner.
+>
+> Thanks.
+>
+> > The effort of porting other drivers will hopefully be easier now that
+> > I have the experience of having done ATA.
+>
+> Would Freescale be amenable to working toward a revised, common, API?
+> Unfortunately, I didn't find the Freescale Bestcomm API to be clean enoug=
+h
+> for acceptance into Linux, so changes would be needed.
+>
+> -Dale
+>
