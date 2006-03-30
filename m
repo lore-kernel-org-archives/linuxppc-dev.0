@@ -1,25 +1,18 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx022.isp.belgacom.be (outmx022.isp.belgacom.be
-	[195.238.4.203])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 22694679E9
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 52669679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Mar 2006 10:02:47 +1100 (EST)
-Received: from outmx022.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k2TN2ehX015045
-	for <linuxppc-embedded@ozlabs.org>; Thu, 30 Mar 2006 01:02:40 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <442B11E8.7020107@246tNt.com>
-Date: Thu, 30 Mar 2006 01:02:00 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: Kernel for MPC Lite 5200 will not compile
-References: <20060329201128.2FB713535EE@atlas.denx.de>
-In-Reply-To: <20060329201128.2FB713535EE@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 30 Mar 2006 11:34:21 +1100 (EST)
+To: Sylvain Munaut <tnt@246tNt.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Kernel for MPC Lite 5200 will not compile 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 30 Mar 2006 01:02:00 +0200."
+	<442B11E8.7020107@246tNt.com>
+Date: Thu, 30 Mar 2006 02:34:19 +0200
+Sender: wd@denx.de
+Message-Id: <20060330003419.3FF71353A37@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -31,24 +24,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> Dear Matthias,
+In message <442B11E8.7020107@246tNt.com> you wrote:
 >
-> in message <20060329153941.GD95498@server.idefix.loc> you wrote:
->   
->> i tried the following trees:
->> linux-2.6.15 (from kernel.org)
->> linux-2.6-denx (from cg-clone http://www.denx.de/git/<project_name>)
->>     
->
-> MPC5200 support known to be broken in these two.
->   
-It is ?
+> It is ?
 
-I don't know about the 2.6-denx, but the stock 2.6.15 should work just fine.
-What's wrong with it ? (except it misses some drivers ... it should compile
-and boot just fine)
+I think so.
 
+> I don't know about the 2.6-denx, but the stock 2.6.15 should work just fine.
+> What's wrong with it ? (except it misses some drivers ... it should compile
+> and boot just fine)
 
+Isn't the current reengineered implementation of  the  BestComm  code
+based  on  an very old Freescale version, which has known limitations
+and problems?
 
-        Sylvain
+Or has there any action resulted  out  of  the  discussion  with  the
+Freescale engineers, and I have missed it?
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+In accord with UNIX philosophy, Perl gives you enough  rope  to  hang
+yourself.              - L. Wall & R. L. Schwartz, _Programming Perl_
