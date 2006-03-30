@@ -1,17 +1,17 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
+Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6BBE067A3D
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 23:46:52 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id CDF8367A2E
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 23:46:53 +1100 (EST)
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: [PATCH] Change H_StudlyCaps to H_SHOUTING_CAPS
 To: Paul Mackerras <paulus@samba.org>
 To: linuxppc-dev@ozlabs.org
-Message-Id: <20060330115817.ADB99211AE9@Schermpje.local>
-Date: Thu, 30 Mar 2006 13:58:17 +0200 (CEST)
+Message-Id: <20060330124940.C341D211C50@Schermpje.local>
+Date: Thu, 30 Mar 2006 14:49:40 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
