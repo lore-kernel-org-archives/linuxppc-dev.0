@@ -1,20 +1,20 @@
-Return-Path: <peter.ryser@xilinx.com>
-Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
-	[207.46.163.16])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D8A0867A33
+Return-Path: <afleming@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id C145067A5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Mar 2006 19:08:33 +1100 (EST)
-Message-ID: <442B8D51.5070401@xilinx.com>
-Date: Wed, 29 Mar 2006 23:48:33 -0800
-From: Peter Ryser <peter.ryser@xilinx.com>
-MIME-Version: 1.0
-To: jean-francois.hasson@hispano-suiza-sa.com
-Subject: Re: linux 2.4 on ml403
-References: <OF281713A1.B46F6CC0-ONC1257141.0023B19E-C1257141.00241646@win-master.hsa.snecma>
-In-Reply-To: <OF281713A1.B46F6CC0-ONC1257141.0023B19E-C1257141.00241646@win-master.hsa.snecma>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 31 Mar 2006 03:28:53 +1100 (EST)
+In-Reply-To: <200603281651.53196.carlos.mitidieri@sysgo.com>
+References: <200603231435.01008.carlos.mitidieri@sysgo.com>
+	<24661B8C-C4DF-4D9C-8F4A-F2E6600AFFE2@kernel.crashing.org>
+	<200603241607.35267.carlos.mitidieri@sysgo.com>
+	<200603281651.53196.carlos.mitidieri@sysgo.com>
+Mime-Version: 1.0 (Apple Message framework v746.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <621AE6AC-D37E-4EB5-9390-7050B654C692@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: pci-x
+Date: Thu, 30 Mar 2006 10:28:59 -0600
+To: Carlos Mitidieri <carlos.mitidieri@sysgo.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,85 +26,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jean-Francois,
 
-follow the instructions in the ML403 Reference Design Users Guide (pg 
-39). In particular, create the board support package with the Linux MLD 
-and use the patch_linux script in the linux sub-directory of the ML403 
-reference design. The patch sets bits 1 and 3 in CCR0 which is required 
-for ES silicon, i.e. silicon where the PPC405 has a PVR of 0x20011430. 
-After applying the patch the problem will be gone.
+On Mar 28, 2006, at 08:51, Carlos Mitidieri wrote:
 
-- Peter
+>
+>> On Friday 24 March 2006 15:53, Kumar Gala wrote:
+>>> That seems like a driver problem.  Does lspci show your devices  
+>>> after
+>>> you boot?  Also, what kernel ver are you using?
+>>
+>> No, the device behind the bridge is not recognized, although the  
+>> bridge
+>> itself is. I am using kernel 2.6.15.
+>
+> I am trying to use a PCI-X bridge (Intel 31154) on a mpc8540ads  
+> running kernel
+> 2.6.15.  A USB controller is behind the bridge.
+>
+> When the mpc8540ads is booted with the PCI-X switch disabled, the  
+> device
+> behind the bridge is detected (and actually works), and the following
+> messages are printed:
+
+Are you using a Rev A or higher board?  PCI-X doesn't work on earlier  
+systems.
+
+Also, make sure your board is configured to run PCI at 66 MHz.  PCI-X  
+doesn't work at 33 MHz.
 
 
-Links:
-- ML403 Web Page: http://www.xilinx.com/ml403
-- ML403 Users Guide: http://www.xilinx.com/bvdocs/userguides/ug082.pdf
-- ML403 reference design: 
-http://www.xilinx.com/products/boards/ml403/files/ml403_emb_ref_ppc_81.zip
-
-
-jean-francois.hasson@hispano-suiza-sa.com wrote:
-
->Hi,
->
->I have been trying to run a linux 2.4 devel from the montavista site on an
->ml403 following among other things some advice from BYU website. I managed
->to have Linux start on the ml403 after downaloading it with XMD but then I
->have an error message :
->
->Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc.
->(source@mvista.com)
->On node 0 totalpages: 16384
->zone(0): 16384 pages.
->zone(1): 0 pages.
->zone(2): 0 pages.
->Kernel command line: console=ttyS0,9600 root=/dev/xsysace/disc0/part3 rw
->Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFE000
->Calibrating delay loop... 99.73 BogoMIPS
->Oops: kernel access of bad area, sig: 11
->NIP: 00000000 XER: 0000005E LR: 00000000 SP: C0182E50 REGS: c0182da0 TRAP:
->0400
->   Not tainted
->MSR: 00001030 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
->TASK = c0181020[0] 'swapper' Last syscall: 0
->last math 00000000 last altivec 00000000
->GPR00: 00000000 C0182E50 C0181020 C0181020 00000000 00000001 C0181120
->00000048
->GPR08: 00000048 00000000 00000000 00000017 24000022 0000CC60 00000000
->00000000
->GPR16: 00000000 00000000 00000000 00000000 00001032 00182ED0 00000000
->C0000000
->GPR24: C019DDB0 00000001 C01A0000 C01A0000 044AA234 00000001 00000000
->C0181020
->Call backtrace:
->00000000 C001C27C C0005F30 C00047C0 C0196064 C01943B8 C019154C
->C0002328
->Kernel panic: Aiee, killing interrupt handler!
->In interrupt handler - not syncing
-> <0>Rebooting in 180 seconds..
->
->Does anyone have an idea as to what is wrong ? How could I investigate it ?
->I have turned on the xmon option while building the kernel and it indicates
->I have a kernel stack overflow. If it could help.
->
->Best regards,
->
->JF H
->
->
->
->#
->  This e-mail and any attached documents may contain confidential or proprietary information. If you are not the intended recipient, please advise the sender immediately and delete this e-mail and all attached documents from your computer system. Any unauthorised disclosure, distribution or copying hereof is prohibited. 
->
->  Ce courriel et les documents qui y sont attaches peuvent contenir des informations confidentielles. Au cas ou vous ne seriez pas le destinataire de ce courriel, vous etes prie d'en informer l'expediteur immediatement et de le detruire  ainsi que tous les documents attaches de votre systeme informatique. Toute divulgation, distribution ou copie du present courriel et des documents attaches sans autorisation prealable de son emetteur est interdite. 
->#
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
->  
->
+Andy Fleming
