@@ -1,19 +1,31 @@
-Return-Path: <bersace03@laposte.net>
-Received: from smtp2-g19.free.fr (smtp2-g19.free.fr [212.27.42.28])
-	by ozlabs.org (Postfix) with ESMTP id 5C554679F4
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 08:38:17 +1100 (EST)
-In-Reply-To: <0a0de86818d24b8f1d6d58c6bcbd3f75@rsbac.org>
-References: <442922F3.8090804@rsbac.org>
-	<3A237700-8757-499C-8C3D-727CABB45340@laposte.net>
-	<0a0de86818d24b8f1d6d58c6bcbd3f75@rsbac.org>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <44DD97EA-8E7A-4EB8-B8EA-7D774FE53A57@laposte.net>
-From: =?ISO-8859-1?Q?=C9tienne_Bersac?= <bersace03@laposte.net>
-Subject: Re: 2.6.16 cannot boot on powerbook
-Date: Thu, 30 Mar 2006 23:38:13 +0200
-To: Michal Purzynski <michal@rsbac.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <linas@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6ECE567B62
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 08:39:33 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k2ULdTAr003713
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 16:39:29 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2ULdTHP119016
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 16:39:29 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2ULdTbs019663
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 16:39:29 -0500
+Date: Thu, 30 Mar 2006 15:39:28 -0600
+To: john.ronciak@intel.com, jesse.brandeburg@intel.com,
+	jeffrey.t.kirsher@intel.com
+Subject: [PATCH]: e1000: prevent statistics from getting garbled during reset.
+Message-ID: <20060330213928.GQ2172@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: netdev@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,15 +35,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-If it works without video=3Dofonly, i strongly advice you to let the =20
-kernel use radeonfb.
+Please review, sign-off/ack, and forward upstream.
+--linas
 
-Is usplash using psychedelic colors ? If yes, offb is used else =20
-radeonfb is in use. Or try using fbdev in xorg.conf to see those =20
-flashy colours :) At your own risk.
+[PATCH]: e1000: prevent statistics from getting garbled during reset.
 
-What problem do you have ?
+If a PCI bus error/fault triggers a PCI bus reset, attempts to get the
+ethernet packet count statistics from the hardware will fail, returning
+garbage data upstream.  This patch skips statistics data collection
+if the PCI device is not on the bus. 
 
-=C9tienne.=
+This patch presumes that an earlier patch,
+[PATCH] PCI Error Recovery: e1000 network device driver
+has already been applied.
+
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+
+----
+ drivers/net/e1000/e1000_main.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.16-git6/drivers/net/e1000/e1000_main.c
+===================================================================
+--- linux-2.6.16-git6.orig/drivers/net/e1000/e1000_main.c	2006-03-30 14:42:33.000000000 -0600
++++ linux-2.6.16-git6/drivers/net/e1000/e1000_main.c	2006-03-30 14:44:52.000000000 -0600
+@@ -3069,13 +3069,17 @@ void
+ e1000_update_stats(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
++	struct pci_dev *pdev = adapter->pdev;
+ 	unsigned long flags;
+ 	uint16_t phy_tmp;
+ 
+ #define PHY_IDLE_ERROR_COUNT_MASK 0x00FF
+ 
+-	/* Prevent stats update while adapter is being reset */
+-	if (adapter->link_speed == 0)
++	/* Prevent stats update while adapter is being reset, or if
++	 * the pci connection is down. */
++	if ((adapter->link_speed == 0) ||
++       ((pdev->error_state != 0) &&
++	    (pdev->error_state != pci_channel_io_normal)))
+ 		return;
+ 
+ 	spin_lock_irqsave(&adapter->stats_lock, flags);
