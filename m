@@ -1,21 +1,21 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 87307679EA
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 10:09:16 +1100 (EST)
-Message-ID: <442B0BA2.9020200@garzik.org>
-Date: Wed, 29 Mar 2006 17:35:14 -0500
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH] Janitor: drivers/net/pcnet32: fix incorrect comments
-References: <20060328223623.GD2172@austin.ibm.com>
-In-Reply-To: <20060328223623.GD2172@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: tsbogend@alpha.franken.de, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, jklewis@us.bm.com,
-	linuxppc-dev@ozlabs.org, donf@us.ibm.com
+	by ozlabs.org (Postfix) with ESMTP id 697E7679E1
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 15:19:49 +1100 (EST)
+Subject: Re: [PATCH] powerpc: Extends HCALL interface for InfiniBand usage
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Heiko J Schick <info@schihei.de>
+In-Reply-To: <FEF4C367-872B-416D-8166-E439D1F4F9A4@schihei.de>
+References: <442AA34B.7050801@de.ibm.com>
+	<2691DBEE-C7E2-46A3-8455-6F98806C3102@kernel.crashing.org>
+	<FEF4C367-872B-416D-8166-E439D1F4F9A4@schihei.de>
+Content-Type: text/plain
+Date: Thu, 30 Mar 2006 15:19:36 +1100
+Message-Id: <1143692376.16706.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +25,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas wrote:
-> Please sign-off/ack/apply and/or forward upstream.
-> 
-> [PATCH] Janitor: drivers/net/pcnet32: fix incorrect comments
-> 
-> The comments concerning how the pcnet32 ethernet device driver selects 
-> the MAC addr to use are incorrect. A recent patch (in the last 3 months)
-> changed how the code worked, but did not change the comments.
-> 
-> Side comment: the new behaviour is good; I've got a pcnet32 card which
-> powers up with garbage in the CSR's, and a good MAC addr in the PROM.
-> 
-> Signed-off-by: Linas Vepstas <linas@linas.org>
 
-applied
+> if StudlyCaps are better (and more readable) than SHOUTING CAPS I can
+> change it. Not a big deal.
+
+They are not... but consistency is better :)
+
+Ben.
