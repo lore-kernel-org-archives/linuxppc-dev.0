@@ -1,22 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 99A9B679EF
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 01:36:55 +1100 (EST)
-In-Reply-To: <0f0e0fbbf56f73879a70f785c497756c@embeddededge.com>
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
+	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id B682567A58
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 02:14:20 +1100 (EST)
+In-Reply-To: <EE317557-1474-41EE-B746-22B6C275905F@kernel.crashing.org>
 References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
 	<bed6c40abe7664da7506270a46611d00@embeddededge.com>
 	<20060330142626.1a9d22f5@vitb.ru.mvista.com>
 	<0f0e0fbbf56f73879a70f785c497756c@embeddededge.com>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EE317557-1474-41EE-B746-22B6C275905F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
+	<EE317557-1474-41EE-B746-22B6C275905F@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <9ede6f664a3419c5dda34c5e1911a7e6@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
 Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
-Date: Thu, 30 Mar 2006 08:37:00 -0600
-To: Dan Malek <dan@embeddededge.com>
+Date: Thu, 30 Mar 2006 10:14:18 -0500
+To: Kumar Gala <galak@kernel.crashing.org>
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,81 +26,64 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 30, 2006, at 7:09 AM, Dan Malek wrote:
+On Mar 30, 2006, at 9:37 AM, Kumar Gala wrote:
 
->
-> On Mar 30, 2006, at 5:26 AM, Vitaly Bordug wrote:
->
->> - 	the new way, all that will not follow it will be obsoleted sooner
->> or later
->
-> The problem I see is the "new way" is done for the sake of doing
-> something
-> new, without adding any value.  If you want to make the drivers
-> dynamically
-> configurable, which I'll continue to argue is silly in an embedded
-> environment
-> of the type with CPMs, all you need to know is personality of the
-> device.
-> The reason it's silly is the wiring on the particular board dictates
-> how a
-> CPM peripheral will be used.  The SCC1 can't be a serial uart one
-> moment and an Ethernet the next time you boot up.  Since you have
-> already
-> done a "board port", you may as well wire this as part of the
-> configuration
-> and eliminate potential mistakes.  If you insist on making this  
-> dynamic
-> (and as a port maintainer I would reject such patches), the only thing
-> you need to describe is the device type.  For example, the SCC1 can be
-> an Ethernet or uart.  We only support FCCs as Ethernets, and unless
-> someone submits some other kind of driver, like ATM/UTOPIA, there
-> isn't anything variable to configure.
->
-> All of the truly configurable options, like NMSI vs. TSA, are so  
-> complex
-> the device tree would not be helpful, as that would be built into the
-> custom driver to configure as necessary.
->
-> The offsets into the internal register maps are not so variable that
-> adding
-> the information into the device tree is useful.  There is CPM1 and  
-> CPM2,
-> some common code shared between them that already solves the
-> problems, and the real difference between the two different CPM2 maps
-> on 82xx isn't reflected here (but again is already solved in the
-> existing
-> software).  As I said in the past message, this seems more likely to
-> cause
-> errors than be helpful.  To me it just seems new for the sake of being
-> new, rather than providing any real value.
->
-> I'd rather we spend our time adding the xmon and kgdb over serial port
-> features back into the driver that were lost during the "great driver
-> clean up"
-> than pursing stuff like this.
+> * What a give channel (SCC, FCC, UCC, SMC?) is used for serial,
+> ethernet, ATM, etc.
 
-Maybe we should look at this from a different point of view.  What  
-are the things that change can change between boards for the same CPU?
+You need to view this from the other direction.  As I've always
+said, we don't have an "SCC driver", we have a uart driver for
+SCCs.  So, you configure from that perspective.  The uart driver
+is configured to use certain SCCs.
 
-* What a give channel (SCC, FCC, UCC, SMC?) is used for serial,  
-ethernet, ATM, etc.
-* How a channel is wired? [pin muxing]  (I really hate having drivers  
-have board specific ifdefs for this)
-* which (if any) BRG a channel is using?
-* ...? [I feel like I'm missing some but haven't worked on a CPM  
-driver in a while :)]
+> * How a channel is wired? [pin muxing]  (I really hate having drivers
+> have board specific ifdefs for this)
 
-The other question is what changes between CPUs?
+I've got a solution for IO pin multiplexing that I have to get pushed
+in using the "feature_call" method like a pmac.  The other thing
+to realize here is there is often hardware beyond just "pin muxing"
+that is unique to a board and requires configuration.  Statically
+describing what pins set/clear is a small, and already understood
+part, of more complex set up that needs to be done with code
+unique to a board.
 
-* Number/Mix of channels
-* some PRAM offset (8272 FCC comes to mind)
-* channel differences for same channel type? (what's an example of  
-this?)
-* ...?
+> * which (if any) BRG a channel is using?
 
-I think we should attempt to answer my two questions first (which Dan  
-took an initial swag at) and use those answers to drive how/what we  
-need in the description of a CPM node.
+These are already a dynamically allocated resource.  Drivers
+don't care which one is assigned, you should be allocating
+one and using the handle provided to the support functions.
 
-- kumar
+> * ...? [I feel like I'm missing some but haven't worked on a CPM
+> driver in a while :)]
+
+I can't think of any, and I use the CPM all of the time.  :-)
+
+> The other question is what changes between CPUs?
+
+Almost nothing, except the PRAM offset you mention below
+and I've mentioned in past messages as memory bank differences.
+
+> * Number/Mix of channels
+> * some PRAM offset (8272 FCC comes to mind)
+> * channel differences for same channel type? (what's an example of
+> this?)
+> * ...?
+
+Don't be creating problems to solve because we seem to have
+a solution for _something_.  Yes, this would be a cute piece of code
+to write and interesting driver updates, but in the end all we have
+is change for the sake of change, without adding any new features.
+
+The thing to remember is the few public Linux drivers we have
+take little advantage of the CPM features.  We just configure a few
+fixed standard modes (like serial and Ethernet).  The CPM is far
+more powerful and flexible than this, so it seems silly to create some
+complex method of describing our trivial fixed modes that has no
+hope of actually being useful for "real" CPM usage.  Then, when
+someone does write a more complex driver, we have all of this
+"framework" that just gets in the way instead of being useful.
+
+Thanks.
+
+
+	-- Dan
