@@ -1,21 +1,15 @@
-Return-Path: <afleming@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id C145067A5D
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 31 Mar 2006 03:28:53 +1100 (EST)
-In-Reply-To: <200603281651.53196.carlos.mitidieri@sysgo.com>
-References: <200603231435.01008.carlos.mitidieri@sysgo.com>
-	<24661B8C-C4DF-4D9C-8F4A-F2E6600AFFE2@kernel.crashing.org>
-	<200603241607.35267.carlos.mitidieri@sysgo.com>
-	<200603281651.53196.carlos.mitidieri@sysgo.com>
-Mime-Version: 1.0 (Apple Message framework v746.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <621AE6AC-D37E-4EB5-9390-7050B654C692@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: pci-x
-Date: Thu, 30 Mar 2006 10:28:59 -0600
-To: Carlos Mitidieri <carlos.mitidieri@sysgo.com>
-Cc: linuxppc-embedded@ozlabs.org
+Return-Path: <jcrigby@gmail.com>
+Message-ID: <4b73d43f0603300829q7d45a029qdb5d8006ccda7275@mail.gmail.com>
+Date: Thu, 30 Mar 2006 09:29:56 -0700
+From: "John Rigby" <jcrigby@gmail.com>
+To: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+Subject: Re: Kernel for MPC Lite 5200 will not compile
+In-Reply-To: <20060330003419.3FF71353A37@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_11616_3617777.1143736196308"
+References: <442B11E8.7020107@246tNt.com>
+	<20060330003419.3FF71353A37@atlas.denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +20,163 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_11616_3617777.1143736196308
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Mar 28, 2006, at 08:51, Carlos Mitidieri wrote:
+Sent this to Wolfgang last night.  Accidently omitted Syvain and the list.
 
+The actual bestcomm "microcode" in Sylvain's tree is the same as the latest
+Freescale supported code.  The linux driver code that interfaces with it is
+code written by Dale Farnsworth and has Montavista copyright.  I don't know
+if it is based on old Freescale (Motorola) code or if it is Dale's creation
+(perhaps Dale can comment).
+
+I have just spent some time getting UDMA support into the ATA driver using
+the the bestcomm code in Sylvain's tree.  In the process I found some bugs
+in the code that may explain some problems people have seen with the FEC
+driver.  I'll try to get the patch out tomorrow.
+
+The ATA driver is a port from a version that worked on an older kernel and
+used the supported Freescale Bestcomm code.  I did the port because it was
+my understanding that attempts to get the supported Freescale code into a
+public tree had met with resistance in the past.  (Second hand info, I'm
+actually fairly new to the 52xx world).
+
+The pluses for the Freescale version is that several devices are supported
+that are not in Sylvain's tree.  The version in Sylvain's kernel has a
+generic api plus specific code for FEC.  My upcoming patch fixes some bugs,
+adds some missing functionality that I need for ATA and adds the specific
+ATA dma driver code.
+
+The biggest minus for the Freescale version is that it is really opaque.
+Its implementation makes it hard to figure out what the code is actually
+doing.
+
+If there is a chance of getting the Freescale Bestcomm code into Sylvain's
+tree (and on up the line to Linus) I would welcome that since I would not
+have to port other Bestcomm dependent drivers to the version in Sylvain's
+tree.  I would gladly port the current FEC code to the Freescale Bestcomm
+code to avoid the work of porting the other drivers.  Also we at Freescale
+would prefer to have one version of the Bestcomm code circulating.
+
+So I guess my question for those with an opinion is what version of Bestcom=
+m
+should be we use for 5200.
+
+Thanks for your input
+John
+
+On 3/29/06, Wolfgang Denk <wd@denx.de> wrote:
 >
->> On Friday 24 March 2006 15:53, Kumar Gala wrote:
->>> That seems like a driver problem.  Does lspci show your devices  
->>> after
->>> you boot?  Also, what kernel ver are you using?
->>
->> No, the device behind the bridge is not recognized, although the  
->> bridge
->> itself is. I am using kernel 2.6.15.
+> In message <442B11E8.7020107@246tNt.com> you wrote:
+> >
+> > It is ?
 >
-> I am trying to use a PCI-X bridge (Intel 31154) on a mpc8540ads  
-> running kernel
-> 2.6.15.  A USB controller is behind the bridge.
+> I think so.
 >
-> When the mpc8540ads is booted with the PCI-X switch disabled, the  
-> device
-> behind the bridge is detected (and actually works), and the following
-> messages are printed:
+> > I don't know about the 2.6-denx, but the stock 2.6.15 should work just
+> fine.
+> > What's wrong with it ? (except it misses some drivers ... it should
+> compile
+> > and boot just fine)
+>
+> Isn't the current reengineered implementation of  the  BestComm  code
+> based  on  an very old Freescale version, which has known limitations
+> and problems?
+>
+> Or has there any action resulted  out  of  the  discussion  with  the
+> Freescale engineers, and I have missed it?
+>
+> Best regards,
+>
+> Wolfgang Denk
+>
+> --
+> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+> In accord with UNIX philosophy, Perl gives you enough  rope  to  hang
+> yourself.              - L. Wall & R. L. Schwartz, _Programming Perl_
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
 
-Are you using a Rev A or higher board?  PCI-X doesn't work on earlier  
-systems.
+------=_Part_11616_3617777.1143736196308
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Also, make sure your board is configured to run PCI at 66 MHz.  PCI-X  
-doesn't work at 33 MHz.
+Sent this to Wolfgang last night.&nbsp; Accidently omitted Syvain and the l=
+ist.<br><br>The actual bestcomm &quot;microcode&quot; in Sylvain's tree is =
+the same as the
+latest Freescale supported code.&nbsp; The linux driver code that interface=
+s
+with it is code written by Dale Farnsworth and has Montavista
+copyright.&nbsp; I don't know if it is based on old Freescale (Motorola)
+code or if it is Dale's creation (perhaps Dale can comment).
+<br><br>I have just spent some time getting UDMA support into the ATA
+driver using the the bestcomm code in Sylvain's tree.&nbsp; In the process =
+I
+found some bugs in the code that may explain some problems people have
+seen with the FEC driver.&nbsp; I'll try to get the patch out tomorrow.
+<br><br>The ATA driver is a port from a version that worked on an
+older kernel and used the supported Freescale Bestcomm code.&nbsp; I did th=
+e
+port because it was my understanding that attempts to get the supported
+Freescale code into a public tree had met with resistance in the past.&nbsp=
+;
+(Second hand info, I'm actually fairly new to the 52xx world).
+<br><br>The pluses for the Freescale version is that several devices
+are supported that are not in Sylvain's tree.&nbsp; The version in Sylvain'=
+s
+kernel has a generic api plus specific code for FEC.&nbsp; My upcoming patc=
+h
+fixes some bugs, adds some missing functionality that I need for ATA
+and adds the specific ATA dma driver code.
+<br><br>The biggest minus for the Freescale version is that it is
+really opaque.&nbsp; Its implementation makes it hard to figure out what th=
+e
+code is actually doing.<br><br>If there is a chance of getting the
+Freescale Bestcomm code into Sylvain's tree (and on up the line to
+Linus) I would welcome that since I would not have to port other
+Bestcomm dependent drivers to the version in Sylvain's tree.&nbsp; I would
+gladly port the current FEC code to the Freescale Bestcomm code to
+avoid the work of porting the other drivers.&nbsp; Also we at Freescale
+would prefer to have one version of the Bestcomm code circulating.
+<br><br>So I guess my question for those with an opinion is what version of=
+ Bestcomm should be we use for 5200.<br><br>Thanks for your input<br>John<b=
+r><br><div><span class=3D"gmail_quote">On 3/29/06, <b class=3D"gmail_sender=
+name">
+Wolfgang Denk</b> &lt;<a href=3D"mailto:wd@denx.de">wd@denx.de</a>&gt; wrot=
+e:</span><blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid =
+rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">In messa=
+ge &lt;
+<a href=3D"mailto:442B11E8.7020107@246tNt.com">442B11E8.7020107@246tNt.com<=
+/a>&gt; you wrote:<br>&gt;<br>&gt; It is ?<br><br>I think so.<br><br>&gt; I=
+ don't know about the 2.6-denx, but the stock 2.6.15 should work just fine.
+<br>&gt; What's wrong with it ? (except it misses some drivers ... it shoul=
+d compile<br>&gt; and boot just fine)<br><br>Isn't the current reengineered=
+ implementation of&nbsp;&nbsp;the&nbsp;&nbsp;BestComm&nbsp;&nbsp;code<br>ba=
+sed&nbsp;&nbsp;on&nbsp;&nbsp;an very old Freescale version, which has known=
+ limitations
+<br>and problems?<br><br>Or has there any action resulted&nbsp;&nbsp;out&nb=
+sp;&nbsp;of&nbsp;&nbsp;the&nbsp;&nbsp;discussion&nbsp;&nbsp;with&nbsp;&nbsp=
+;the<br>Freescale engineers, and I have missed it?<br><br>Best regards,<br>=
+<br>Wolfgang Denk<br><br>--<br>Software Engineering:&nbsp;&nbsp;Embedded an=
+d Realtime Systems,&nbsp;&nbsp;Embedded Linux
+<br>Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: <a href=3D"m=
+ailto:wd@denx.de">wd@denx.de</a><br>In accord with UNIX philosophy, Perl gi=
+ves you enough&nbsp;&nbsp;rope&nbsp;&nbsp;to&nbsp;&nbsp;hang<br>yourself.&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;- L. Wall &amp; R. L. Schwartz, _Programming Perl_
+<br>_______________________________________________<br>Linuxppc-embedded ma=
+iling list<br><a href=3D"mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embe=
+dded@ozlabs.org</a><br><a href=3D"https://ozlabs.org/mailman/listinfo/linux=
+ppc-embedded">
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote><=
+/div><br>
 
-
-Andy Fleming
+------=_Part_11616_3617777.1143736196308--
