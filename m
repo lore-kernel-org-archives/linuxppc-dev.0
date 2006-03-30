@@ -1,22 +1,21 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (unknown [213.151.39.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <dan@embeddededge.com>
+Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C32C67A3F
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 00:04:37 +1100 (EST)
-Subject: Re: [PATCH] PowerMac11,2 i2c-bus@0 duplicate dev-tree workaround
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1143692765.16706.10.camel@localhost.localdomain>
-References: <1143631816.9481.5.camel@localhost>
-	<1143692765.16706.10.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-Qer2Y7GqKp5J3Aezx1GI"
-Date: Thu, 30 Mar 2006 15:04:26 +0200
-Message-Id: <1143723866.20571.13.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 7FB49679E6
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 00:09:12 +1100 (EST)
+In-Reply-To: <20060330142626.1a9d22f5@vitb.ru.mvista.com>
+References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
+	<bed6c40abe7664da7506270a46611d00@embeddededge.com>
+	<20060330142626.1a9d22f5@vitb.ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0f0e0fbbf56f73879a70f785c497756c@embeddededge.com>
+From: Dan Malek <dan@embeddededge.com>
+Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
+Date: Thu, 30 Mar 2006 08:09:01 -0500
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,56 +26,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-Qer2Y7GqKp5J3Aezx1GI
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Mar 30, 2006, at 5:26 AM, Vitaly Bordug wrote:
 
-On Thu, 2006-03-30 at 15:26 +1100, Benjamin Herrenschmidt wrote:
+> - 	the new way, all that will not follow it will be obsoleted sooner 
+> or later
 
-> Hrm... you set allnextpp to NULL ... won't that prevent any further node
-> from being enqueued in the global node list ?
+The problem I see is the "new way" is done for the sake of doing 
+something
+new, without adding any value.  If you want to make the drivers 
+dynamically
+configurable, which I'll continue to argue is silly in an embedded 
+environment
+of the type with CPMs, all you need to know is personality of the 
+device.
+The reason it's silly is the wiring on the particular board dictates 
+how a
+CPM peripheral will be used.  The SCC1 can't be a serial uart one
+moment and an Ethernet the next time you boot up.  Since you have 
+already
+done a "board port", you may as well wire this as part of the 
+configuration
+and eliminate potential mistakes.  If you insist on making this dynamic
+(and as a port maintainer I would reject such patches), the only thing
+you need to describe is the device type.  For example, the SCC1 can be
+an Ethernet or uart.  We only support FCCs as Ethernets, and unless
+someone submits some other kind of driver, like ATM/UTOPIA, there
+isn't anything variable to configure.
 
-No, it only prevents all *child* nodes, since the function recurses so
-once you go out allnextpp is valid again. I'm not setting *allnextpp :)
+All of the truly configurable options, like NMSI vs. TSA, are so complex
+the device tree would not be helpful, as that would be built into the
+custom driver to configure as necessary.
 
-> In fact, I think the workaround should be in prom_init.c when
-> flattening... easier to skip a node there, and that's also where you are
-> reasonably sure of getting the nodes in the right order, not when
-> unflattening.=20
+The offsets into the internal register maps are not so variable that 
+adding
+the information into the device tree is useful.  There is CPM1 and CPM2,
+some common code shared between them that already solves the
+problems, and the real difference between the two different CPM2 maps
+on 82xx isn't reflected here (but again is already solved in the 
+existing
+software).  As I said in the past message, this seems more likely to 
+cause
+errors than be helpful.  To me it just seems new for the sake of being
+new, rather than providing any real value.
 
-Ok. I'll look at that code then.
+I'd rather we spend our time adding the xmon and kgdb over serial port
+features back into the driver that were lost during the "great driver 
+clean up"
+than pursing stuff like this.
 
-> Also, you don't even need to test for PowerMac11,2 .. .prom_init.c
-> already has a machine type, so just test that it's a mac and has this
-> node duplicated, and if yes, remove the dup. In fact, you could probably
-> even run a bit of forth with "interpret" to do so before the tree is
-> even walked though :)
+Thanks.
 
-Heh. Well, if you tell me what you prefer I'll try to do it. Meanwhile
-I'll use this patch so the sound stuff etc. doesn't get too confusing
-(it keeps telling me about two onyx codecs found...)
-
-johannes
-
---=-Qer2Y7GqKp5J3Aezx1GI
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIVAwUARCvXWaVg1VMiehFYAQKhUg//a97JR2szMwIlaiiKMphkNeW2jzdOmnqI
-E2C/1LCV6/MgCBR3GNVyJKzOZda+EIgMSkFlTBeL6XyfstAU5GgBHfxkahlw0JKo
-j/mx/r/MuzwJoANhB1M3VOuZVZ2NSXogqIxB+K1jqaHsb3Fx0vrsYuwxQ0SC1FZ/
-zDgytzt67flabjV4x2Ep7pAcF+MFZVWulCv/kTrNiZ3t7ZAbCUgtDZSJCgcvzE20
-aU1rrBVftD1mTGgvLp2NHbgqSDsIJI9NNnieAWY65C+srtcaOxg7YUbwOhLvn/Kx
-P/Sdhf4ilNlXioyo0TGlr+zQicLFgievCCfmNILH2u+MPPWPF822hLyG/ZF+3ndU
-cU9WFM+dMyC1vpW0Ofez8rrocrnJQ/9px9nE4iA/S1G1TXg/f6KphmfYihUyYr1I
-QYlGuVZKsMjyBh7GHrD5dKg2nvcxZXp9yBL+p70xiF3JAJSSHmJsrLyHSnUCJbtm
-Bt8TeVNpMu1rN8Pvv8RL2iVIQSOExM60DBDPUZyItGlUIrJM/X22nMryp367Allp
-s0NUuz7HCHI/0NwKaeRGwY+ZD3WmrNn8iFMXL7zZ5pGe4EIB4uBdBCvSF4TnC1JG
-JxN9N1p7h7Cq9nO6YLzZw90JVWyCmcJfo3khrbRSdLaNf5ZquGgpetuapfYCUEKE
-MO8eudPFtJ0=
-=XOc5
------END PGP SIGNATURE-----
-
---=-Qer2Y7GqKp5J3Aezx1GI--
+	-- Dan
