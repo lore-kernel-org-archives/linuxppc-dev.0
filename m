@@ -1,12 +1,19 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 6C429679F9
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 22:57:06 +1100 (EST)
+Date: Thu, 30 Mar 2006 14:37:09 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Thu, 30 Mar 2006 17:13:15 +1100
-Subject: [PATCH 5/5] powerpc: Replace calls to make_bl() with
-	create_function_call()
-In-Reply-To: <1143699173.339118.857634197021.qpush@concordia>
-Message-Id: <20060330061315.9EE2A67B80@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
+Message-ID: <20060330143709.50464af5@vitb.ru.mvista.com>
+In-Reply-To: <17451.30312.967754.699319@cargo.ozlabs.ibm.com>
+References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
+	<bed6c40abe7664da7506270a46611d00@embeddededge.com>
+	<17451.30312.967754.699319@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,80 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use create_function_call() instead of make_bl() in htab_finish_init().
+On Thu, 30 Mar 2006 17:10:48 +1100
+Paul Mackerras <paulus@samba.org> wrote:
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+> Dan Malek writes:
+> 
+> > I haven't followed the device tree development in detail, but when
+> > looking at this the only question that comes to mind is wondering
+> > what this really does to help me.  None of the information provided
+> > here is variable nor configurable .... except I guess for the internal
+> > register base address (IMMR), which for some reason has turned
+> > into a variable which hasn't changed since I did the first kernel port.
+> > About the only thing that is variable, which is the two different bank
+> > addresses of the CPM memory that affects the configuration of
+> > the FCCs in Ethernet mode, isn't reflected here in any way.
+> 
+> I don't know much about the CPM or CPM2, so I don't know precisely why
+> these bits have been put in.  If the CPM2 is completely unique and is
+> identical across all possible past and future implementations, then
+> indeed there isn't a lot of value in putting details about it in the
+> device tree.  Having details in the device tree becomes useful if:
+> 
+> * there are variants that have different collections of subdevices, or
+>   subdevices at different offsets, or
+> 
+Yes. Offsets differ across the different PQ families. Collections may differ even on the same reference design, 885 for instance could have all the scc's/smc's utilized as UARTs, while on classic SMC1+SMC2, only, SCC may be used as 10M network.
 
- arch/powerpc/mm/hash_utils_64.c |   45 ++++++++++++++++------------------------
- 1 files changed, 18 insertions(+), 27 deletions(-)
+> * there are common subdevices between CPM and CPM2 (or future CPM*
+>   devices), potentially with subtle variations in offset, method of
+>   enabling, etc., or
+> 
+Yes, but this is similar with the first point... Well even cpm and cpm2 differ (different immap.h ), and we have CPM future heading for QE. 
+> * there are subdevices in CPM/CPM2 which match some common device
+>   (e.g. a 16550 uart) for which a generic driver can be used with some
+>   appropriate configuration.
+Yep - cpm_uart and fs_enet are live examples. Both are intended to deal with serial and Ethernet stuff from the different variations of CPM. Right now they are not ideal, because they still have to remap the whole immr (say to access cpm command register) ,and such parts are still board-specific which is not good...
+> 
+> As I say, I don't know if these points apply to CPM/CPM2 specifically.
+> 
+> Paul.
+> 
+> 
+Thank you for your comments - now I'm sure all this following the right way...
 
-Index: to-merge/arch/powerpc/mm/hash_utils_64.c
-===================================================================
---- to-merge.orig/arch/powerpc/mm/hash_utils_64.c
-+++ to-merge/arch/powerpc/mm/hash_utils_64.c
-@@ -52,6 +52,7 @@
- #include <asm/cputable.h>
- #include <asm/abs_addr.h>
- #include <asm/sections.h>
-+#include <asm/util.h>
- 
- #ifdef DEBUG
- #define DBG(fmt...) udbg_printf(fmt)
-@@ -375,39 +376,29 @@ void create_section_mapping(unsigned lon
- }
- #endif /* CONFIG_MEMORY_HOTPLUG */
- 
--static inline void make_bl(unsigned int *insn_addr, void *func)
--{
--	unsigned long funcp = *((unsigned long *)func);
--	int offset = funcp - (unsigned long)insn_addr;
--
--	*insn_addr = (unsigned int)(0x48000001 | (offset & 0x03fffffc));
--	flush_icache_range((unsigned long)insn_addr, 4+
--			   (unsigned long)insn_addr);
--}
--
- static void __init htab_finish_init(void)
- {
--	extern unsigned int *htab_call_hpte_insert1;
--	extern unsigned int *htab_call_hpte_insert2;
--	extern unsigned int *htab_call_hpte_remove;
--	extern unsigned int *htab_call_hpte_updatepp;
-+	extern unsigned long htab_call_hpte_insert1;
-+	extern unsigned long htab_call_hpte_insert2;
-+	extern unsigned long htab_call_hpte_remove;
-+	extern unsigned long htab_call_hpte_updatepp;
- 
- #ifdef CONFIG_PPC_64K_PAGES
--	extern unsigned int *ht64_call_hpte_insert1;
--	extern unsigned int *ht64_call_hpte_insert2;
--	extern unsigned int *ht64_call_hpte_remove;
--	extern unsigned int *ht64_call_hpte_updatepp;
--
--	make_bl(ht64_call_hpte_insert1, ppc_md.hpte_insert);
--	make_bl(ht64_call_hpte_insert2, ppc_md.hpte_insert);
--	make_bl(ht64_call_hpte_remove, ppc_md.hpte_remove);
--	make_bl(ht64_call_hpte_updatepp, ppc_md.hpte_updatepp);
-+	extern unsigned long ht64_call_hpte_insert1;
-+	extern unsigned long ht64_call_hpte_insert2;
-+	extern unsigned long ht64_call_hpte_remove;
-+	extern unsigned long ht64_call_hpte_updatepp;
-+
-+	create_function_call(ht64_call_hpte_insert1, ppc_md.hpte_insert);
-+	create_function_call(ht64_call_hpte_insert2, ppc_md.hpte_insert);
-+	create_function_call(ht64_call_hpte_remove, ppc_md.hpte_remove);
-+	create_function_call(ht64_call_hpte_updatepp, ppc_md.hpte_updatepp);
- #endif /* CONFIG_PPC_64K_PAGES */
- 
--	make_bl(htab_call_hpte_insert1, ppc_md.hpte_insert);
--	make_bl(htab_call_hpte_insert2, ppc_md.hpte_insert);
--	make_bl(htab_call_hpte_remove, ppc_md.hpte_remove);
--	make_bl(htab_call_hpte_updatepp, ppc_md.hpte_updatepp);
-+	create_function_call(htab_call_hpte_insert1, ppc_md.hpte_insert);
-+	create_function_call(htab_call_hpte_insert2, ppc_md.hpte_insert);
-+	create_function_call(htab_call_hpte_remove, ppc_md.hpte_remove);
-+	create_function_call(htab_call_hpte_updatepp, ppc_md.hpte_updatepp);
- }
- 
- void __init htab_initialize(void)
+-- 
+Sincerely, 
+Vitaly
