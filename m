@@ -1,21 +1,25 @@
-Return-Path: <dan@embeddededge.com>
-Received: from penguin.netx4.com (embeddededge.com [209.113.146.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (unknown [213.151.39.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7FB49679E6
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 00:09:12 +1100 (EST)
-In-Reply-To: <20060330142626.1a9d22f5@vitb.ru.mvista.com>
-References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
-	<bed6c40abe7664da7506270a46611d00@embeddededge.com>
-	<20060330142626.1a9d22f5@vitb.ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0f0e0fbbf56f73879a70f785c497756c@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
-Date: Thu, 30 Mar 2006 08:09:01 -0500
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTP id 7EE6E67A40
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 00:14:36 +1100 (EST)
+Subject: Re: snd-aoa: new apple sound driver
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1143672819.32206.1.camel@localhost.localdomain>
+References: <1143547826.13615.24.camel@localhost>
+	<1143604878.3585.5.camel@localhost.localdomain>
+	<1143637243.9481.17.camel@localhost>
+	<1143672819.32206.1.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-a/Drl2KuZ3kTRTzvf5Ov"
+Date: Thu, 30 Mar 2006 15:14:28 +0200
+Message-Id: <1143724468.20571.21.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc <debian-powerpc@lists.debian.org>,
+	Alastair Poole <netstar@gatheringofgray.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,54 +30,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 30, 2006, at 5:26 AM, Vitaly Bordug wrote:
+--=-a/Drl2KuZ3kTRTzvf5Ov
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> - 	the new way, all that will not follow it will be obsoleted sooner 
-> or later
+On Thu, 2006-03-30 at 09:53 +1100, Benjamin Herrenschmidt wrote:
 
-The problem I see is the "new way" is done for the sake of doing 
-something
-new, without adding any value.  If you want to make the drivers 
-dynamically
-configurable, which I'll continue to argue is silly in an embedded 
-environment
-of the type with CPMs, all you need to know is personality of the 
-device.
-The reason it's silly is the wiring on the particular board dictates 
-how a
-CPM peripheral will be used.  The SCC1 can't be a serial uart one
-moment and an Ethernet the next time you boot up.  Since you have 
-already
-done a "board port", you may as well wire this as part of the 
-configuration
-and eliminate potential mistakes.  If you insist on making this dynamic
-(and as a port maintainer I would reject such patches), the only thing
-you need to describe is the device type.  For example, the SCC1 can be
-an Ethernet or uart.  We only support FCCs as Ethernets, and unless
-someone submits some other kind of driver, like ATM/UTOPIA, there
-isn't anything variable to configure.
+> On the laptop.
+>=20
+> Mar 29 11:11:51 localhost kernel: [  192.069735] i2sbus: found i2s
+> controller
+> Mar 29 11:11:51 localhost kernel: [  192.069752] soundbus: adding device
+> failed sanity check!
+> Mar 29 11:11:51 localhost kernel: [  192.069757] i2sbus: device
+> registration error!
 
-All of the truly configurable options, like NMSI vs. TSA, are so complex
-the device tree would not be helpful, as that would be built into the
-custom driver to configure as necessary.
+That is, umm, weird. But it shouldn't cause the module to crash either
+way so I'll force it and look into it.
 
-The offsets into the internal register maps are not so variable that 
-adding
-the information into the device tree is useful.  There is CPM1 and CPM2,
-some common code shared between them that already solves the
-problems, and the real difference between the two different CPM2 maps
-on 82xx isn't reflected here (but again is already solved in the 
-existing
-software).  As I said in the past message, this seems more likely to 
-cause
-errors than be helpful.  To me it just seems new for the sake of being
-new, rather than providing any real value.
+johannes
 
-I'd rather we spend our time adding the xmon and kgdb over serial port
-features back into the driver that were lost during the "great driver 
-clean up"
-than pursing stuff like this.
+--=-a/Drl2KuZ3kTRTzvf5Ov
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Thanks.
+-----BEGIN PGP SIGNATURE-----
 
-	-- Dan
+iQIVAwUARCvZsaVg1VMiehFYAQKcXg//aqrzUTFGqPl0EwgUKlP+HxTbcIdKjFx6
+ZEW9lDZcjBqYmUJ5yaVrWCpIFKAKtsQkx2ZXSLO/2f9WzRGl/+vUxYta6SdavREQ
+GRoImhIejkKRRRhmRL9UsQ/wRMrlgr0tJ3OdI/hImlDzssZMi990qF2ctldYT7ZN
+KltZ1uKqNwfgLCx/gloBug7N61pPGMXif4KqvfeI5fPKn8MIqVaRQHP8eTT45byQ
+Ky+3+rceSRozGNez+WIZUB5P7wKxy2PcdMezct5Wu8BX7hxqJqFHDpPZ386U6vmv
+NHqinAj1F0L1O2ciKkceVvOMUshHg7g1fSsLJkmT+BWA1VQ0oECZ/na9LPlA7uhf
+qMbpUEtWTJoG6SOQfD1jYM+RoOrVS1uHVJl2v/N/IbvQBVWqXUdiY43enj4G+LIh
+7DdiZN+4wAqhXy8GnMEd+dGEBizjeAl63b8p57fWzokOT6w8VJDZ1EPKuYjQ3OLR
+WRLe+kK5oR+At99x+9wDdO4cYvDYhIKHpw4Ncs5F7y2q/y/3nODvTOjuENEXPEPQ
+VdscfnN0buaa/X1dRtpHgqULVCtAjowK5pqvbWYylXMG5n8s9UmcU4J/eTAfTIYB
+K03iB5au1C9Sa22+t4j2NI3MZhwkpOPCNOGGK1HGNEbCYVblYys65aTpbLo6bTUK
+/K3QDW30vSg=
+=JVD8
+-----END PGP SIGNATURE-----
+
+--=-a/Drl2KuZ3kTRTzvf5Ov--
