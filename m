@@ -1,28 +1,31 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <nfont@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B62E6679F7
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 02:07:58 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k2VF7s8c022495
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 10:07:54 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2VF7sLt250850
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 10:07:54 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2VF7sW6027428
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 10:07:54 -0500
-Subject: [PATCH Resend] misc lparcfg fixes
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org, will_schmidt@vnet.ibm.com
-Content-Type: text/plain
-Date: Fri, 31 Mar 2006 09:07:48 -0600
-Message-Id: <1143817669.2101.40.camel@localhost.localdomain>
-Mime-Version: 1.0
-Reply-To: will_schmidt@vnet.ibm.com
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2B1F8679E9
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 03:13:25 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k2VGDLsU025720
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 11:13:21 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2VGA7ku250616
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 09:10:07 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k2VGDKQ6007850
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 09:13:20 -0700
+From: Nathan Fontenot <nfont@austin.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/pseries: EEH Cleanup
+Date: Fri, 31 Mar 2006 10:13:21 -0600
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200603311013.22208.nfont@austin.ibm.com>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,73 +35,137 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please apply... 
+This patch removes unnecessary exports, marks functions as static when
+possible, and simplifies some list-related code.
 
-(Resending with patch inline)
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
-This patch fixed several problems with the lparcfg code.  In case
-someone gets a sense of deja-vu, part of this was submitted last Sep, I
-thought the changes went in, but either got backed out, or just got
-lost. 
-
-First, change the local_buffer declaration to be unsigned char *.  We
-had a bad-math problem in a 2.4 tree which was built with a
-"-fsigned-char" parm.  I dont believe we ever build with that parm
-now-a-days, but to be safe, I'd prefer the declaration be explicit.
-
-Second, fix a bad math calculation for splpar_strlen.   
-
-Third, on the rtas_call for get-system-parameter, pass in
-RTAS_DATA_BUF_SIZE for the rtas_data_buf size, instead of letting random
-data determine the size.   Until recently, we've had a sufficiently
-large 'random data' value get passed in, so the function just happens to
-have worked OK.   Now it's getting passed a '0', which causes the
-rtas_call to return success, but no data shows up in the buffer.
-(oops!).   This was found by the LTC test org.  
-
-This is in a branch of code that only gets run on SPLPAR systems.
-Tested on power5 Lpar.  
-
-Signed-off-by: Will Schmidt <willschm@us.ibm.com>
----
-
-diff -Naur 2.6/arch/powerpc/kernel/lparcfg.c 2.6.mar30/arch/powerpc/kernel/lparcfg.c
---- 2.6/arch/powerpc/kernel/lparcfg.c	2006-03-20 02:15:57.000000000 -0800
-+++ 2.6.mar30/arch/powerpc/kernel/lparcfg.c	2006-03-30 12:06:34.323023840 -0800
-@@ -37,7 +37,7 @@
- #include <asm/prom.h>
- #include <asm/vdso_datapage.h>
- 
--#define MODULE_VERS "1.6"
-+#define MODULE_VERS "1.7"
- #define MODULE_NAME "lparcfg"
- 
- /* #define LPARCFG_DEBUG */
-@@ -242,7 +242,7 @@
+Index: nfont/kernel/arch/powerpc/platforms/pseries/eeh.c
+===================================================================
+--- nfont.orig/kernel/arch/powerpc/platforms/pseries/eeh.c      2006-03-27 
+16:04:52.%N -0600
++++ nfont/kernel/arch/powerpc/platforms/pseries/eeh.c   2006-03-31 09:02:17.%N 
+-0600
+@@ -865,7 +865,7 @@ void __init eeh_init(void)
+  * on the CEC architecture, type of the device, on earlier boot
+  * command-line arguments & etc.
+  */
+-void eeh_add_device_early(struct device_node *dn)
++static void eeh_add_device_early(struct device_node *dn)
  {
- 	int call_status;
- 
--	char *local_buffer = kmalloc(SPLPAR_MAXLENGTH, GFP_KERNEL);
-+	unsigned char *local_buffer = kmalloc(SPLPAR_MAXLENGTH, GFP_KERNEL);
- 	if (!local_buffer) {
- 		printk(KERN_ERR "%s %s kmalloc failure at line %d \n",
- 		       __FILE__, __FUNCTION__, __LINE__);
-@@ -254,7 +254,8 @@
- 	call_status = rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
- 				NULL,
- 				SPLPAR_CHARACTERISTICS_TOKEN,
--				__pa(rtas_data_buf));
-+				__pa(rtas_data_buf),
-+				RTAS_DATA_BUF_SIZE);
- 	memcpy(local_buffer, rtas_data_buf, SPLPAR_MAXLENGTH);
- 	spin_unlock(&rtas_data_buf_lock);
- 
-@@ -275,7 +276,7 @@
- #ifdef LPARCFG_DEBUG
- 		printk(KERN_INFO "success calling get-system-parameter \n");
- #endif
--		splpar_strlen = local_buffer[0] * 16 + local_buffer[1];
-+		splpar_strlen = local_buffer[0] * 256 + local_buffer[1];
- 		local_buffer += 2;	/* step over strlen value */
- 
- 		memset(workbuffer, 0, SPLPAR_MAXLENGTH);
+        struct pci_controller *phb;
+        struct eeh_early_enable_info info;
+@@ -882,7 +882,6 @@ void eeh_add_device_early(struct device_
+        info.buid_lo = BUID_LO(phb->buid);
+        early_enable_eeh(dn, &info);
+ }
+-EXPORT_SYMBOL_GPL(eeh_add_device_early);
+
+ void eeh_add_device_tree_early(struct device_node *dn)
+ {
+@@ -914,7 +913,7 @@ void eeh_add_device_tree_late(struct pci
+  * This routine must be used to complete EEH initialization for PCI
+  * devices that were added after system boot (e.g. hotplug, dlpar).
+  */
+-void eeh_add_device_late(struct pci_dev *dev)
++static void eeh_add_device_late(struct pci_dev *dev)
+ {
+        struct device_node *dn;
+        struct pci_dn *pdn;
+@@ -933,16 +932,18 @@ void eeh_add_device_late(struct pci_dev
+
+        pci_addr_cache_insert_device (dev);
+ }
+-EXPORT_SYMBOL_GPL(eeh_add_device_late);
+
+ /**
+  * eeh_remove_device - undo EEH setup for the indicated pci device
+  * @dev: pci device to be removed
+  *
+- * This routine should be when a device is removed from a running
+- * system (e.g. by hotplug or dlpar).
++ * This routine should be called when a device is removed from
++ * a running system (e.g. by hotplug or dlpar).  It unregisters
++ * the PCI device from the EEH subsystem.  I/O errors affecting
++ * this device will no longer be detected after this call; thus,
++ * i/o errors affecting this slot may leave this device unusable.
+  */
+-void eeh_remove_device(struct pci_dev *dev)
++static void eeh_remove_device(struct pci_dev *dev)
+ {
+        struct device_node *dn;
+        if (!dev || !eeh_subsystem_enabled)
+@@ -958,22 +959,18 @@ void eeh_remove_device(struct pci_dev *d
+        PCI_DN(dn)->pcidev = NULL;
+        pci_dev_put (dev);
+ }
+-EXPORT_SYMBOL_GPL(eeh_remove_device);
+
+ void eeh_remove_bus_device(struct pci_dev *dev)
+ {
++       struct pci_bus *bus = dev->subordinate;
++       struct pci_dev *child, *tmp;
++
+        eeh_remove_device(dev);
+-       if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
+-               struct pci_bus *bus = dev->subordinate;
+-               struct list_head *ln;
+-               if (!bus)
+-                       return;
+-               for (ln = bus->devices.next; ln != &bus->devices; ln = 
+ln->next) {
+-                       struct pci_dev *pdev = pci_dev_b(ln);
+-                       if (pdev)
+-                               eeh_remove_bus_device(pdev);
+-               }
+-       }
++
++       if (bus && dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
++               list_for_each_entry_safe(child, tmp, &bus->devices, bus_list)
++                       eeh_remove_bus_device(child);
++       }
+ }
+ EXPORT_SYMBOL_GPL(eeh_remove_bus_device);
+
+Index: nfont/kernel/include/asm-powerpc/eeh.h
+===================================================================
+--- nfont.orig/kernel/include/asm-powerpc/eeh.h 2006-03-27 16:05:00.%N -0600
++++ nfont/kernel/include/asm-powerpc/eeh.h      2006-03-29 15:26:57.%N -0600
+@@ -60,24 +60,10 @@ void __init pci_addr_cache_build(void);
+  * device (including config space i/o).  Call eeh_add_device_late
+  * to finish the eeh setup for this device.
+  */
+-void eeh_add_device_early(struct device_node *);
+-void eeh_add_device_late(struct pci_dev *dev);
+ void eeh_add_device_tree_early(struct device_node *);
+ void eeh_add_device_tree_late(struct pci_bus *);
+
+ /**
+- * eeh_remove_device - undo EEH setup for the indicated pci device
+- * @dev: pci device to be removed
+- *
+- * This routine should be called when a device is removed from
+- * a running system (e.g. by hotplug or dlpar).  It unregisters
+- * the PCI device from the EEH subsystem.  I/O errors affecting
+- * this device will no longer be detected after this call; thus,
+- * i/o errors affecting this slot may leave this device unusable.
+- */
+-void eeh_remove_device(struct pci_dev *);
+-
+-/**
+  * eeh_remove_device_recursive - undo EEH for device & children.
+  * @dev: pci device to be removed
+  *
+@@ -116,12 +102,6 @@ static inline int eeh_dn_check_failure(s
+
+ static inline void pci_addr_cache_build(void) { }
+
+-static inline void eeh_add_device_early(struct device_node *dn) { }
+-
+-static inline void eeh_add_device_late(struct pci_dev *dev) { }
+-
+-static inline void eeh_remove_device(struct pci_dev *dev) { }
+-
+ static inline void eeh_add_device_tree_early(struct device_node *dn) { }
+
+ static inline void eeh_add_device_tree_late(struct pci_bus *bus) { }
