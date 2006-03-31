@@ -1,22 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (unknown [213.151.39.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 84A83679E0
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 01:39:17 +1100 (EST)
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD467305790AEB@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD467305790AEB@zch01exm40.ap.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2DAA97AA-4DB6-4E2B-A702-729681BCA478@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: moving board support from arch/ppc/ to arch/powerpc
-Date: Fri, 31 Mar 2006 08:39:20 -0600
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	linux kernel mailing list <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTP id 2718D679EA
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 01:47:34 +1100 (EST)
+Subject: Re: snd-aoa: new apple sound driver
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <1143547826.13615.24.camel@localhost>
+References: <1143547826.13615.24.camel@localhost>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-kSum+LCKaZIlq94+igdP"
+Date: Fri, 31 Mar 2006 16:47:24 +0200
+Message-Id: <1143816444.23254.3.camel@localhost>
+Mime-Version: 1.0
+Cc: debian-powerpc <debian-powerpc@lists.debian.org>,
+	Alastair Poole <netstar@gatheringofgray.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +27,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 31, 2006, at 4:44 AM, Zang Roy-r61911 wrote:
+--=-kSum+LCKaZIlq94+igdP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Hi,
-> 	I am moving mpc7448 hpc2 support from arch/ppc to arch/powerpc and  
-> plan to summit it to open source tree future.  Is there any good  
-> suggestion or reference?
-> 	Thanks a lot!
+Just FYI if anyone's thinking about using this:
 
-All ports under arch/powerpc are required to use a flat device tree  
-to boot.  Look at Documentation/powerpc/booting-without-of.txt
-  for details on how that is done.  Beyond that there isn't too much  
-different from arch/ppc to arch/powerpc.  Take a look at the 83xx or  
-85xx platforms for comparison examples between arch/ppc & arch/powerpc.
+> GPIO stuff.
 
-I'd suggest for working up your flat dev tree for the bridge on HPC2  
-and post that to the linuxppc-dev list for review and then go from  
-there.
+Started, you can now turn on/off the lineout/speakers/headphones (note:
+powerbooks have line out, not headphones despite the symbol on them),
+but automatic switching isn't done yet.
+Only on new machines with PMFs though.
 
-- kumar
+> Clock setting.
+
+Done except for master/slave switching.
+
+johannes
+
+--=-kSum+LCKaZIlq94+igdP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARC1A+6Vg1VMiehFYAQIDfA//W0AFV0ZUzNFjuLRODhJoTYFRQrE2tHd6
+BmTiU8DtFKySA85Dg2nPQ3esN/82qEeIBJlJDo4LVb50LAJ3y2pi7utkFZAJVJJy
+c4LdsExjnJ1ArnX6ULz0Tjq9mJ/NV5adPtY7Gox6y81sShUznCOPMc4C9Rg+qh02
+oSX5JRDNBRzLFHr/L4o7CRHUid/TmMX9+A8cRTOmCryqDSnV4MEN/tLdLMQJ66k6
+uSnkD28/AGz1Ra0773kHa2+y0ehRZjtLet2EdLtTwJOh00fbVTtun4JJxGYCB7vH
+NB918STns1R45UGS6VQM/Q62OGGh0UmpO9Tcq45HBes84JBv0kAKC4OFtVlE1kVf
+zJqDeUAa54Wref2nBgD+zKSR65LX92im2LNY2FB7Z7xbBD7qw417knBnDEvkz2DE
+qIGwe+Z6vbMIht1pMEPNJHxs6nfUJ6NC2oLoc0X1ViudU5ypUqVFJtPn87U1ogio
+radMLaTvji0k1wPJQdd9TlnvbSNt7J39ZJUmhz2KS04p8fRcq2vlovwbpsyP46iC
+1YzVADWQi/sRKmLdwSZf37OHfHjEUG7/lyzHKDis4Vaz6M6kQrG6xyascTTNGkdl
+6T/uNAsqoHLZDtSSDkfvwrjlHxw6SlvQYwzpG5dJ28KOIRXgg5yyMFc1C5DYnnwq
+XMYJHhvteFg=
+=1LHi
+-----END PGP SIGNATURE-----
+
+--=-kSum+LCKaZIlq94+igdP--
