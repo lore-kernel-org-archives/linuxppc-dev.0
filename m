@@ -1,26 +1,26 @@
-Return-Path: <mort@bork.org>
-Received: from galileo.bork.org (galileo.bork.org [134.117.69.57])
-	by ozlabs.org (Postfix) with ESMTP id 98227679E7
+Return-Path: <tnt@246tNt.com>
+Received: from outmx024.isp.belgacom.be (outmx024.isp.belgacom.be
+	[195.238.4.128])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E07D6679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 31 Mar 2006 11:51:19 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by galileo.bork.org (Postfix) with ESMTP id CDE8C412D
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Mar 2006 19:51:19 -0500 (EST)
-Received: from galileo.bork.org ([127.0.0.1])
-	by localhost (galileo.bork.org [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 32181-02 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 30 Mar 2006 19:51:19 -0500 (EST)
-Date: Thu, 30 Mar 2006 19:51:19 -0500
-From: Martin Hicks <mort@bork.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: U-boot CPU post failure on 405gp
-Message-ID: <20060331005119.GM27792@bork.org>
-References: <20060330211143.GK27792@bork.org>
+	Fri, 31 Mar 2006 17:13:40 +1100 (EST)
+Received: from outmx024.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx024.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k2V6DB1I028974
+	for <linuxppc-embedded@ozlabs.org>; Fri, 31 Mar 2006 08:13:24 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <442CC847.2080207@246tNt.com>
+Date: Fri, 31 Mar 2006 08:12:23 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="skzcsJvRJWOW8YcK"
-In-Reply-To: <20060330211143.GK27792@bork.org>
+To: bennett78@digis.net
+Subject: Re: Bestcomm Firmware update
+References: <442C5A75.7030107@digis.net>
+In-Reply-To: <442C5A75.7030107@digis.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,52 +31,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+bennett78 wrote:
+> SoSoComm Dudes:
+>
+>  I was able to contact Davide Santo, AN2604 "Introduction to
+> BestComm". He admitted
+> the short commings of his document in the area of Firmware instruction
+> info and gave
+> me a name of a guy, Ed in the ASIC design area in Austin.  Ed has
+> agreed to answer
+> questions, push for resources to provide a support tool and provided
+> me with a document
+> from their head programmer "SmartDMA Hand-Assembly Guides" (see
+> attached pdf).
+>
 
---skzcsJvRJWOW8YcK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Great document ! At last some documentation ... Thanks very much !
+
+> With this secret decoded ring I was able to put together a
+> disassembler, see attached
+> disasm.c. Cut and paste your favorite Task into fw[] array at the
+> beginning,
+> "cc -o d disasm.c ; d"  It's not perfect, but useful- Enjoy.  Sorry
+> I'm not
+> sure where or if you guys want to check this stuff into a git
+> repository, somewhere
+> and hope ozlabs is not fussy about attachments!
+I can put it on line on a webserver. I guess Freescale gave you
+permission to publish
+this document ?
+
+> If we can formulate a list of questions Ed might be able to help, I'll
+> start:
+>    o what does init=31 mean?
+>       AN2604 say init=0 means always requestor and 31 is reserved but
+> referenced
+>       alot in the F/W comments
+>    o Need more info on how MORE works
+>    o Tell us about LCD levels. Only 2? (let's call a LCD indent a level)
+>      LCD seems to reset DRD to 1A. DRD2B1or2 follow a DRD2A (ext=1)?
+>    o LCD[28:23]orLCD[20:15] or LCD[11:6] what is extraN?
+>        drop 101nnn - extraN
+>        add  1nnnnn - indexN
+>    o how many DRD2B1[2] can be stacked up?
+>    o when is/can a LDC Literal used? and how?
+
+I'll read the document more deeply this week end with the task code
+beside me,
+try to see if some things are still unclear.
 
 
-
-On Thu, Mar 30, 2006 at 04:11:43PM -0500, Martin Hicks wrote:
->=20
-> POST cpu link =3D 0
-> ret =3D -1, link =3D 0, code =3D 03fa5ab8, lr =3D 0
->=20
-> It looks clear to me that link =3D=3D 0, so the test worked fine.
->=20
-> However, if I take away the "static" from the cpu_post_test_bc()
-> declaration then everything works fine.
->=20
-> I've posted "objdump -dS" output for post/cpu/b.o with and without
-> cpu_post_test_bc() declared as static at:
-
-It looks like the problem is the automatic inlining of the static
-function.  If I declare cpu_post_test_bc as:
-
-__attribute__((noinline))
-static int cpu_post_test_bc (ulong cmd, ulong bo, ulong bi,
-    int pjump, int dec, int link, ulong pctr, ulong cr)
-
-
-Then the test completes.
-mh
-
---=20
-Martin Hicks || mort@bork.org || PGP/GnuPG: 0x4C7F2BEE
-
---skzcsJvRJWOW8YcK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFELH0H0ZUZrUx/K+4RAkl0AJ9/HrESFghvH0HLAWfW8JRBVxEh8ACfRiMz
-Olwg1kpWeZ4O4jJy/PQJlYg=
-=Frs6
------END PGP SIGNATURE-----
-
---skzcsJvRJWOW8YcK--
+    Sylvain
