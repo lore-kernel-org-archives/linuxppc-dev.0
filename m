@@ -1,24 +1,19 @@
-Return-Path: <jmerkey@wolfmountaingroup.com>
-Received: from ns1.utah-nac.org (c-67-177-35-222.hsd1.ut.comcast.net
-	[67.177.35.222]) by ozlabs.org (Postfix) with ESMTP id CFC71679E1
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 15:29:47 +1100 (EST)
-Message-ID: <442CACC0.1060308@wolfmountaingroup.com>
-Date: Thu, 30 Mar 2006 21:14:56 -0700
-From: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
-MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH]: e1000: prevent statistics from getting garbled during
-	reset.
-References: <20060330213928.GQ2172@austin.ibm.com>
-	<20060331000208.GS2172@austin.ibm.com>
-	<442C8069.507@wolfmountaingroup.com>
-	<20060331003506.GU2172@austin.ibm.com>
-In-Reply-To: <20060331003506.GU2172@austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	jesse.brandeburg@intel.com, linuxppc-dev@ozlabs.org,
-	john.ronciak@intel.com, jeffrey.t.kirsher@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, Jeff Garzik <jgarzik@pobox.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] PowerMac11,2 i2c-bus@0 duplicate dev-tree workaround
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1143758297.5388.12.camel@localhost>
+References: <1143631816.9481.5.camel@localhost>
+	<1143700119.23392.27.camel@localhost.localdomain>
+	<1143758297.5388.12.camel@localhost>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-xhBNBoRv5joa+y6Ve8+n"
+Date: Fri, 31 Mar 2006 16:37:23 +1100
+Message-Id: <1143783444.28005.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,98 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas wrote:
 
->On Thu, Mar 30, 2006 at 06:05:45PM -0700, Jeff V. Merkey wrote:
->  
->
->>Linas Vepstas wrote:
->>    
->>
->
->Well, these comments have nothing to do with my patch, but ... 
->anyway ... 
->
->  
->
->>The driver also needs to be fixed to allow clearing of the stats (like 
->>all the other adapter drivers). At present, when I run performance
->>and packet drop counts on the cards, I cannot reset the stats with this 
->>code because the driver stores them in the e100_adapter
->>structure. This is busted.
->>
->>This function:
->>
->>int clear_network_device_stats(BYTE *name)
->>    
->>
->
->I couldn't find such a function in the kernel.
-> 
->  
->
->>does not work on e1000 due to this section of code:
->>
->>void
->>e1000_update_stats(struct e1000_adapter *adapter)
->>{
->>
->>adapter->stats.xofftxc += E1000_READ_REG(hw, XOFFTXC);
->>adapter->stats.fcruc += E1000_READ_REG(hw, FCRUC);
->>    
->>
->
->These are hardware stats ... presumably useless without
->a detailed understanding of the guts of the e1000.
->
->  
->
->>//NOTE These stats need to be stored in the stats structure so they can 
->>be cleared by
->>statistics monitoring programs.
->>    
->>
->
->I can't imagine what generic interface would allow these 
->to be viewed.
->
->  
->
->>/* Fill out the OS statistics structure */
->>
->>adapter->net_stats.rx_packets = adapter->stats.gprc;
->>adapter->net_stats.tx_packets = adapter->stats.gptc;
->>adapter->net_stats.rx_bytes = adapter->stats.gorcl;
->>adapter->net_stats.tx_bytes = adapter->stats.gotcl;
->>    
->>
->
->Now *these* are generic ... and fixing this so that the 
->stats increment instead of over-riding would take 
->maybe half-an-hour or so; this is not hard to do ... !? 
->
->Do you want me to write a patch to do this?
->
->--lina
->  
->
-Yes, we need one. The adapter needs to maintain these stats from the
-registers in the kernel structure and not
-its own local variables. That way, when someone calls to clear the stats
-for testing and analysis purposes,
-they zero out and are reset.
+--=-xhBNBoRv5joa+y6Ve8+n
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The code fragment above is in our analysis code not the kernel, but we
-use it to test performance of various
-vendor cards. It's provided as an example of this capability.
+On Fri, 2006-03-31 at 00:38 +0200, Johannes Berg wrote:
+> On Thu, 2006-03-30 at 17:28 +1100, Michael Ellerman wrote:
+>=20
+> > I don't understand why we need this patch? If we care about getting the
+> > "right" node why not check for that where we care?
+>=20
+> It's not just a single node but also contains sub-nodes. In one of them,
+> one of those sub nodes is there but contains bogus info, and in the
+> other both are there and contain the right info. Some things that work
+> off these bus nodes are detected twice if they're there, and they're
+> used in at least two places that I know of.
 
-Jeff
+OK, that sounds a little complicated. I'm just worried about having lots
+workarounds in the unflattening code, the code's hard enough to read as
+it is. I think it's preferable to do the workarounds in the code that
+needs the workaround, that way they're isolated in certain parts of the
+code rather than all in the unflattening.
 
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->  
->
+cheers
+
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-xhBNBoRv5joa+y6Ve8+n
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBELMATdSjSd0sB4dIRAoC3AJ4h8L5CF/YnTPRK8dUR7jMQWEbj0gCfRxLw
+IQfwLhCELbOffUVrc+jring=
+=tCaf
+-----END PGP SIGNATURE-----
+
+--=-xhBNBoRv5joa+y6Ve8+n--
