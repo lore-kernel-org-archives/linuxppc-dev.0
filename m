@@ -1,21 +1,22 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 33D08679E0
+Return-Path: <avolkov@varma-el.com>
+Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.varma-el.com",
+	Issuer "mail.varma-el.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D66A9679F6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 31 Mar 2006 22:50:52 +1100 (EST)
-Date: Fri, 31 Mar 2006 15:50:47 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Carlos Mitidieri <carlos.mitidieri@sysgo.com>
-Subject: Re: pci-x
-Message-ID: <20060331155047.0411cbf6@vitb.ru.mvista.com>
-In-Reply-To: <200603310852.29987.carlos.mitidieri@sysgo.com>
-References: <200603231435.01008.carlos.mitidieri@sysgo.com>
-	<200603281651.53196.carlos.mitidieri@sysgo.com>
-	<621AE6AC-D37E-4EB5-9390-7050B654C692@freescale.com>
-	<200603310852.29987.carlos.mitidieri@sysgo.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 31 Mar 2006 23:05:37 +1100 (EST)
+Date: Fri, 31 Mar 2006 15:41:04 +0400
+From: Andrey Volkov <avolkov@varma-el.com>
+Message-ID: <884202836.20060331154104@varma-el.com>
+To: bennett78 <bennett78@digis.net>
+Subject: Re: Bestcomm Firmware update
+In-Reply-To: <442C5A75.7030107@digis.net>
+References: <442C5A75.7030107@digis.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Sylvain Munaut <tnt@246tNt.com>, linuxppc-embedded@ozlabs.org
+Reply-To: Andrey Volkov <avolkov@varma-el.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,131 +27,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 31 Mar 2006 08:52:28 +0200
-Carlos Mitidieri <carlos.mitidieri@sysgo.com> wrote:
+Hello, Frank.
 
-> Hi,
-> 
-> I am using  a Rev PILOT board, S/N:0251
-> To my discernment, a Rev PILOT is lower than a Rev A. 
-> Is that correct?  
->    
-> By the way, thank you very much.
-> 
-Yes, that is correct. 
+On Friday, March 31, 2006, bennett78 wrote:
 
-There are some notes in u-boot documentation also, that might be interesting for you:
+> SoSoComm Dudes:
 
-<citate>
-1.0 Nomenclature
+VERY, VERY BIG thanks to you :-))), finally we can do something more
+sensible with it (like scatter-gather).
 
-    For some reason, the HW designers describe the switch settings
-    in terms of 0 and 1, and then map that to physical switches where
-    the label "On" refers to logic 0 and "Off" (unlabeled) is logic 1.
-    Luckily, we're SW types and virtual settings are handled daily.
+>   I was able to contact Davide Santo, AN2604 "Introduction to BestComm".
+> He admitted
+> the short commings of his document in the area of Firmware instruction
+> info and gave
+> me a name of a guy, Ed in the ASIC design area in Austin.  Ed has agreed
+> to answer
+> questions, push for resources to provide a support tool and provided me
+> with a document
+> from their head programmer "SmartDMA Hand-Assembly Guides" (see attached
+> pdf).
 
-    The switches for the Rev A board are numbered differently than
-    for the Pilot board.  Oh yeah.
+> With this secret decoded ring I was able to put together a disassembler,
+> see attached
+> disasm.c. Cut and paste your favorite Task into fw[] array at the 
+> beginning,
+> "cc -o d disasm.c ; d"  It's not perfect, but useful- Enjoy.  Sorry I'm not
+> sure where or if you guys want to check this stuff into a git 
+> repository, somewhere
+> and hope ozlabs is not fussy about attachments!
+But it could be start point for a kernel compiler :).
 
-    Switch bits are numbered 1 through, like, 4 6 8 or 10, but the
-    bits may contribute to signals that are numbered based at 0,
-    and some of those signals may be high-bit-number-0 too.  Heed
-    well the names and labels and do not get confused.
-
-    "Off" == 1
-    "On"  == 0
-
-    SW18 is switch 18 as silk-screened onto the board.
-    SW4[8] is the bit labled 8 on Switch 4.
-    SW2[1:6] refers to bits labeled 1 through 6 in order on switch 2
-    SW3[7:1] refers to bits labeled 7 through 1 in order on switch 3
-
-1.1 For the MPC85xxADS Pilot Board
-
-    First, make sure the board default setting is consistent with the document
-    shipped with your board. Then apply the following changes:
-    SW3[1-6]="all OFF"	(boot from 32bit flash, no boot sequence is used)
-    SW10[2-6]="all OFF" (turn on CPM SCC for serial port,works for 8540/8560)
-    SW11[2]='OFF for 8560, ON for 8540' (toggle 8540.8560 mode)
-    SW11[7]='ON' (rev2), 'OFF' (rev1)
-    SW4[7-8]="OFF OFF" (enable serial ports,I'm using the top serial connector)
-    SW22[1-4]="OFF OFF ON OFF"
-    SW5[1-10[="ON ON OFF OFF OFF OFF OFF OFF OFF OFF"
-    J1 = "Enable Prog" (Make sure your flash is programmable for development)
-
-    If you want to test PCI functionality with a 33Mhz PCI card, you will
-    have to change the system clock from the default 66Mhz to 33Mhz by
-    setting SW15[1]="OFF" and SW17[8]="OFF". After that you may also need
-    double your platform clock(SW6) because the system clock is now only
-    half of its original value. For example, if at 66MHz your system
-    clock showed SW6[0:1] = 01, then at 33MHz SW6[0:1] it should be 10.
-
-	SW17[8] ------+	   SW6
-	SW15[1] ----+ |	  [0:1]
-		    V V	   V V
-	33MHz	    1 1	   1 0
-	66MHz	    0 0	   0 1
-
-    Hmmm... That SW6 setting description is incomplete but it works.
-
-
-1.3 For the MPC85xxADS Rev A Board
-
-    As shipped, the board should be a 33MHz PCI bus with a CPU Clock
-    rate of 825 +/- fuzz:
-
-	Clocks: CPU: 825 MHz, CCB: 330 MHz, DDR: 165 MHz, LBC:	82 MHz
-
-    For 33MHz PCI, the switch settings should be like this:
-
-	SW18[7:1] = 0100001 = M==33 =>	  33MHz
-	SW18[8]	  =	  1	    => PWD Divider == 16
-	SW16[1:2] =	 11	    => N == 16 as PWD==1
-
-    Use the magical formula:
-	Fout (MHz) = 16 * M / N = 16 * 33 / 16 = 33 MHz
-
-	SW7[1:4]  =    1010 = 10    => 10 x 33	 = 330	CCB Sysclk
-	SW7[5:6]  =	 01	    => 5:2 x 330 = 825	Core clock
-
-
-    For 66MHz PCI, the switch settings should be like this:
-
-	SW18[7:1] = 0100001 = M==33 =>	  33MHz
-	SW18[8]	  =	  0	    => PWD Divider == 1
-	SW16[1:2] =	 01	    => N == 8 as PWD == 0
-
-    Use the magical formula:
-	Fout (MHz) = 16 * M / N = 16 * 33 / 8 = 66 MHz
-
-	SW7[1:4]  =    0101 =  5    => 5 x 66	 = 330	CCB
-Sysclk SW7[5:6]  =	 01	    => 5:2 x 330 = 825	Core
-clock
-
-</citate>
-
-> > Are you using a Rev A or higher board?  PCI-X doesn't work on earlier
-> > systems.
-> >
-> > Also, make sure your board is configured to run PCI at 66 MHz.  PCI-X
-> > doesn't work at 33 MHz.
-> >
-> >
-> > Andy Fleming
-> 
-> Best regards,
-> -- 
-> Carlos Mitidieri
-> SYSGO AG - Office Ulm
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
-
+> If we can formulate a list of questions Ed might be able to help, I'll
+> start:
+>     o what does init=31 mean?
+>        AN2604 say init=0 means always requestor and 31 is reserved but
+> referenced
+>        alot in the F/W comments
+>     o Need more info on how MORE works
+>     o Tell us about LCD levels. Only 2? (let's call a LCD indent a level)
+>       LCD seems to reset DRD to 1A. DRD2B1or2 follow a DRD2A (ext=1)?
+>     o LCD[28:23]orLCD[20:15] or LCD[11:6] what is extraN?
+>         drop 101nnn - extraN
+>         add  1nnnnn - indexN
+>     o how many DRD2B1[2] can be stacked up?
+>     o when is/can a LDC Literal used? and how?
+I'll reread my drafts at next week too, so may be this list will be
+extended.
 
 -- 
-Sincerely, 
-Vitaly
+Regards,
+Andrey Volkov
