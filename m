@@ -1,29 +1,33 @@
-Return-Path: <dwm@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <moilanen@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3EDC9679E7
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 09:40:26 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k2VMeClO028925
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 17:40:12 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2VMe2fG229826
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 17:40:02 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2VMe2jT030861
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 17:40:02 -0500
-Message-Id: <200603312239.k2VMdtWP007243@falcon10.austin.ibm.com>
-In-reply-to: <20060331160203.f2bf8b53.moilanen@austin.ibm.com> 
-To: Jake Moilanen <moilanen@austin.ibm.com>
-Subject: Re: [PATCH 0/2] Base pSeries PCIe support 
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E7C15679F3
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 09:42:03 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k2VMg1jb020066
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 17:42:01 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2VMclku222768
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 15:38:47 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k2VMg0Rw028968
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 15:42:00 -0700
+Date: Fri, 31 Mar 2006 16:35:04 -0600
+From: Jake Moilanen <moilanen@austin.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 0/2] Base pSeries PCIe support
+Message-Id: <20060331163504.a3b2f6fa.moilanen@austin.ibm.com>
+In-Reply-To: <200604010028.43685.arnd@arndb.de>
+References: <20060331160203.f2bf8b53.moilanen@austin.ibm.com>
+	<200604010028.43685.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Fri, 31 Mar 2006 16:39:55 -0600
-From: Doug Maxey <dwm@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,16 +37,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 1 Apr 2006 00:28:43 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-On Fri, 31 Mar 2006 16:02:03 CST, Jake Moilanen wrote:
->Here are the two base patches for PCIe on pSeries for 2.6.17.
->
->This is enough to probe, find, configure, and run basic I/O to PCIe
->enabled devices.
->
+> Am Saturday 01 April 2006 00:02 schrieb Jake Moilanen:
+> > Here are the two base patches for PCIe on pSeries for 2.6.17.
+> >
+> > This is enough to probe, find, configure, and run basic I/O to PCIe
+> > enabled devices.
+> 
+> Does this use the draft PCIe bindings from Sun, or something else?
+> Is it compatible with the way that Apple represents PCIe devices
+> as plain PCI?
+> 
+> I'm just curious.
 
-Where are the bindings for pcie?  In the papr?
+You can find some info on it:
 
-Have you heard of any effort to publish?
+	http://playground.sun.com/1275/bindings/pci/pci-express.txt
 
-++doug
+Jake
