@@ -1,20 +1,34 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 3/5] powerpc: Move
-	create_(instruction|branch|function_call) into util.h
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20060330181049.GN2172@austin.ibm.com>
-References: <1143699173.339118.857634197021.qpush@concordia>
-	<20060330061300.0B12567B6C@ozlabs.org>
-	<20060330181049.GN2172@austin.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-HzyYI1DRKz81ZNQKjv/X"
-Date: Fri, 31 Mar 2006 09:43:05 +1100
-Message-Id: <1143758585.10478.3.camel@localhost.localdomain>
+Return-Path: <linas@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 86983679E6
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 11:02:13 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k2V029DX017789
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 19:02:09 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2V02AHP206936
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 19:02:10 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2V029vQ009389
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 19:02:09 -0500
+Date: Thu, 30 Mar 2006 18:02:08 -0600
+To: john.ronciak@intel.com, jesse.brandeburg@intel.com,
+	jeffrey.t.kirsher@intel.com
+Subject: Re: [PATCH]: e1000: prevent statistics from getting garbled during
+	reset.
+Message-ID: <20060331000208.GS2172@austin.ibm.com>
+References: <20060330213928.GQ2172@austin.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060330213928.GQ2172@austin.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: netdev@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,63 +38,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Mar 30, 2006 at 03:39:28PM -0600, Linas Vepstas wrote:
+> 
+> Please review, sign-off/ack, and forward upstream.
+> --linas
 
---=-HzyYI1DRKz81ZNQKjv/X
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Per feedback, here's a slightly more human-readable version.
+--linas
 
-On Thu, 2006-03-30 at 12:10 -0600, Linas Vepstas wrote:
-> Hi,
-> A minor quibble from the dept. of naming things:
->=20
-> On Thu, Mar 30, 2006 at 05:12:59PM +1100, Michael Ellerman wrote:
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- /dev/null
-> > +++ to-merge/include/asm-powerpc/util.h
-> > @@ -0,0 +1,56 @@
-> > +
-> > +#ifndef _ASM_POWERPC_UTIL_H
-> > +#define _ASM_POWERPC_UTIL_H
-> > +
-> > +static inline void create_instruction(unsigned long addr, unsigned int=
- instr)
->=20
->=20
-> Surely there is a more descriptive name for this new file than "util.h"?
->=20
-> How about "dynamic_insn.h" or "insn_patch.h" or "dyn_fixup.h" or
-> something like that?=20
+[PATCH]: e1000: prevent statistics from getting garbled during reset.
 
-That would be more descriptive of what's in there now, but I actually
-intended it to be a place where we can put util-ish code. Obviously
-we'll have to make sure it doesn't get abused, but I think it's valid to
-have one header file for random stuff that doesn't belong elsewhere.
-Others may disagree?
+If a PCI bus error/fault triggers a PCI bus reset, attempts to get the
+ethernet packet count statistics from the hardware will fail, returning
+garbage data upstream.  This patch skips statistics data collection
+if the PCI device is not on the bus. 
 
-cheers
+This patch presumes that an earlier patch,
+[PATCH] PCI Error Recovery: e1000 network device driver
+has already been applied.
 
---=20
-Michael Ellerman
-IBM OzLabs
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+----
+ drivers/net/e1000/e1000_main.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletion(-)
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-HzyYI1DRKz81ZNQKjv/X
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQBELF75dSjSd0sB4dIRAl/KAJsGG6YSWU78mNAuk6wEDTSXGmHSCwCdGFLX
-8ugjHKFQub3he9IvNbtDhQE=
-=xgEa
------END PGP SIGNATURE-----
-
---=-HzyYI1DRKz81ZNQKjv/X--
+Index: linux-2.6.16-git6/drivers/net/e1000/e1000_main.c
+===================================================================
+--- linux-2.6.16-git6.orig/drivers/net/e1000/e1000_main.c	2006-03-30 17:51:37.924162779 -0600
++++ linux-2.6.16-git6/drivers/net/e1000/e1000_main.c	2006-03-30 17:54:07.659188391 -0600
+@@ -3069,14 +3069,18 @@ void
+ e1000_update_stats(struct e1000_adapter *adapter)
+ {
+ 	struct e1000_hw *hw = &adapter->hw;
++	struct pci_dev *pdev = adapter->pdev;
+ 	unsigned long flags;
+ 	uint16_t phy_tmp;
+ 
+ #define PHY_IDLE_ERROR_COUNT_MASK 0x00FF
+ 
+-	/* Prevent stats update while adapter is being reset */
++	/* Prevent stats update while adapter is being reset,
++	 * or if the pci connection is down. */
+ 	if (adapter->link_speed == 0)
+ 		return;
++   if (pdev->error_state && pdev->error_state != pci_channel_io_normal)
++		return;
+ 
+ 	spin_lock_irqsave(&adapter->stats_lock, flags);
+ 
