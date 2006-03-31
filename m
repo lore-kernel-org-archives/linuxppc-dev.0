@@ -1,34 +1,38 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 86983679E6
-	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 11:02:13 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k2V029DX017789
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 19:02:09 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k2V02AHP206936
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 19:02:10 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k2V029vQ009389
-	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 19:02:09 -0500
-Date: Thu, 30 Mar 2006 18:02:08 -0600
-To: john.ronciak@intel.com, jesse.brandeburg@intel.com,
-	jeffrey.t.kirsher@intel.com
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2DA86679A6
+	for <linuxppc-dev@ozlabs.org>; Fri, 31 Mar 2006 11:35:14 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k2V0Z7lI022672
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 19:35:07 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k2V0VtSJ263206
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 17:31:55 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k2V0Z7UA002497
+	for <linuxppc-dev@ozlabs.org>; Thu, 30 Mar 2006 17:35:07 -0700
+Date: Thu, 30 Mar 2006 18:35:06 -0600
+To: "Jeff V. Merkey" <jmerkey@wolfmountaingroup.com>
 Subject: Re: [PATCH]: e1000: prevent statistics from getting garbled during
 	reset.
-Message-ID: <20060331000208.GS2172@austin.ibm.com>
+Message-ID: <20060331003506.GU2172@austin.ibm.com>
 References: <20060330213928.GQ2172@austin.ibm.com>
+	<20060331000208.GS2172@austin.ibm.com>
+	<442C8069.507@wolfmountaingroup.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060330213928.GQ2172@austin.ibm.com>
+In-Reply-To: <442C8069.507@wolfmountaingroup.com>
 From: linas@austin.ibm.com (Linas Vepstas)
-Cc: netdev@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	jesse.brandeburg@intel.com, linuxppc-dev@ozlabs.org,
+	john.ronciak@intel.com, jeffrey.t.kirsher@intel.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,52 +42,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 30, 2006 at 03:39:28PM -0600, Linas Vepstas wrote:
+On Thu, Mar 30, 2006 at 06:05:45PM -0700, Jeff V. Merkey wrote:
 > 
-> Please review, sign-off/ack, and forward upstream.
-> --linas
+> Linas Vepstas wrote:
 
-Per feedback, here's a slightly more human-readable version.
+Well, these comments have nothing to do with my patch, but ... 
+anyway ... 
+
+> The driver also needs to be fixed to allow clearing of the stats (like 
+> all the other adapter drivers). At present, when I run performance
+> and packet drop counts on the cards, I cannot reset the stats with this 
+> code because the driver stores them in the e100_adapter
+> structure. This is busted.
+> 
+> This function:
+> 
+> int clear_network_device_stats(BYTE *name)
+
+I couldn't find such a function in the kernel.
+ 
+> does not work on e1000 due to this section of code:
+> 
+> void
+> e1000_update_stats(struct e1000_adapter *adapter)
+> {
+> 
+> adapter->stats.xofftxc += E1000_READ_REG(hw, XOFFTXC);
+> adapter->stats.fcruc += E1000_READ_REG(hw, FCRUC);
+
+These are hardware stats ... presumably useless without
+a detailed understanding of the guts of the e1000.
+
+> //NOTE These stats need to be stored in the stats structure so they can 
+> be cleared by
+> statistics monitoring programs.
+
+I can't imagine what generic interface would allow these 
+to be viewed.
+
+> /* Fill out the OS statistics structure */
+> 
+> adapter->net_stats.rx_packets = adapter->stats.gprc;
+> adapter->net_stats.tx_packets = adapter->stats.gptc;
+> adapter->net_stats.rx_bytes = adapter->stats.gorcl;
+> adapter->net_stats.tx_bytes = adapter->stats.gotcl;
+
+Now *these* are generic ... and fixing this so that the 
+stats increment instead of over-riding would take 
+maybe half-an-hour or so; this is not hard to do ... !? 
+
+Do you want me to write a patch to do this?
+
 --linas
-
-[PATCH]: e1000: prevent statistics from getting garbled during reset.
-
-If a PCI bus error/fault triggers a PCI bus reset, attempts to get the
-ethernet packet count statistics from the hardware will fail, returning
-garbage data upstream.  This patch skips statistics data collection
-if the PCI device is not on the bus. 
-
-This patch presumes that an earlier patch,
-[PATCH] PCI Error Recovery: e1000 network device driver
-has already been applied.
-
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-
-----
- drivers/net/e1000/e1000_main.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.16-git6/drivers/net/e1000/e1000_main.c
-===================================================================
---- linux-2.6.16-git6.orig/drivers/net/e1000/e1000_main.c	2006-03-30 17:51:37.924162779 -0600
-+++ linux-2.6.16-git6/drivers/net/e1000/e1000_main.c	2006-03-30 17:54:07.659188391 -0600
-@@ -3069,14 +3069,18 @@ void
- e1000_update_stats(struct e1000_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
-+	struct pci_dev *pdev = adapter->pdev;
- 	unsigned long flags;
- 	uint16_t phy_tmp;
- 
- #define PHY_IDLE_ERROR_COUNT_MASK 0x00FF
- 
--	/* Prevent stats update while adapter is being reset */
-+	/* Prevent stats update while adapter is being reset,
-+	 * or if the pci connection is down. */
- 	if (adapter->link_speed == 0)
- 		return;
-+   if (pdev->error_state && pdev->error_state != pci_channel_io_normal)
-+		return;
- 
- 	spin_lock_irqsave(&adapter->stats_lock, flags);
- 
