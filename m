@@ -1,79 +1,48 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (unknown [195.144.244.147])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.varma-el.com",
-	Issuer "mail.varma-el.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D66A9679F6
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 31 Mar 2006 23:05:37 +1100 (EST)
-Date: Fri, 31 Mar 2006 15:41:04 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
-Message-ID: <884202836.20060331154104@varma-el.com>
-To: bennett78 <bennett78@digis.net>
-Subject: Re: Bestcomm Firmware update
-In-Reply-To: <442C5A75.7030107@digis.net>
-References: <442C5A75.7030107@digis.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Sylvain Munaut <tnt@246tNt.com>, linuxppc-embedded@ozlabs.org
-Reply-To: Andrey Volkov <avolkov@varma-el.com>
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 84A83679E0
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 01:39:17 +1100 (EST)
+In-Reply-To: <9FCDBA58F226D911B202000BDBAD467305790AEB@zch01exm40.ap.freescale.net>
+References: <9FCDBA58F226D911B202000BDBAD467305790AEB@zch01exm40.ap.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v746.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2DAA97AA-4DB6-4E2B-A702-729681BCA478@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: moving board support from arch/ppc/ to arch/powerpc
+Date: Fri, 31 Mar 2006 08:39:20 -0600
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	linux kernel mailing list <linux-kernel@vger.kernel.org>
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, Frank.
 
-On Friday, March 31, 2006, bennett78 wrote:
+On Mar 31, 2006, at 4:44 AM, Zang Roy-r61911 wrote:
 
-> SoSoComm Dudes:
+> Hi,
+> 	I am moving mpc7448 hpc2 support from arch/ppc to arch/powerpc and  
+> plan to summit it to open source tree future.  Is there any good  
+> suggestion or reference?
+> 	Thanks a lot!
 
-VERY, VERY BIG thanks to you :-))), finally we can do something more
-sensible with it (like scatter-gather).
+All ports under arch/powerpc are required to use a flat device tree  
+to boot.  Look at Documentation/powerpc/booting-without-of.txt
+  for details on how that is done.  Beyond that there isn't too much  
+different from arch/ppc to arch/powerpc.  Take a look at the 83xx or  
+85xx platforms for comparison examples between arch/ppc & arch/powerpc.
 
->   I was able to contact Davide Santo, AN2604 "Introduction to BestComm".
-> He admitted
-> the short commings of his document in the area of Firmware instruction
-> info and gave
-> me a name of a guy, Ed in the ASIC design area in Austin.  Ed has agreed
-> to answer
-> questions, push for resources to provide a support tool and provided me
-> with a document
-> from their head programmer "SmartDMA Hand-Assembly Guides" (see attached
-> pdf).
+I'd suggest for working up your flat dev tree for the bridge on HPC2  
+and post that to the linuxppc-dev list for review and then go from  
+there.
 
-> With this secret decoded ring I was able to put together a disassembler,
-> see attached
-> disasm.c. Cut and paste your favorite Task into fw[] array at the 
-> beginning,
-> "cc -o d disasm.c ; d"  It's not perfect, but useful- Enjoy.  Sorry I'm not
-> sure where or if you guys want to check this stuff into a git 
-> repository, somewhere
-> and hope ozlabs is not fussy about attachments!
-But it could be start point for a kernel compiler :).
-
-> If we can formulate a list of questions Ed might be able to help, I'll
-> start:
->     o what does init=31 mean?
->        AN2604 say init=0 means always requestor and 31 is reserved but
-> referenced
->        alot in the F/W comments
->     o Need more info on how MORE works
->     o Tell us about LCD levels. Only 2? (let's call a LCD indent a level)
->       LCD seems to reset DRD to 1A. DRD2B1or2 follow a DRD2A (ext=1)?
->     o LCD[28:23]orLCD[20:15] or LCD[11:6] what is extraN?
->         drop 101nnn - extraN
->         add  1nnnnn - indexN
->     o how many DRD2B1[2] can be stacked up?
->     o when is/can a LDC Literal used? and how?
-I'll reread my drafts at next week too, so may be this list will be
-extended.
-
--- 
-Regards,
-Andrey Volkov
+- kumar
