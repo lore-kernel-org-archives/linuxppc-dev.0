@@ -1,21 +1,19 @@
-Return-Path: <white@from-b.org>
-Received: from aphrodite.net-build.de (aphrodite.net-build.de [212.88.135.60])
-	by ozlabs.org (Postfix) with ESMTP id 65DE8679F6
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
+	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id D2B8A679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Apr 2006 05:35:58 +1100 (EST)
-Received: from White64 (p54B4B5BE.dip0.t-ipconnect.de [84.180.181.190])
-	(authenticated)
-	by aphrodite.net-build.de (8.11.6/8.11.2) with ESMTP id k2VIajl12510
-	for <linuxppc-embedded@ozlabs.org>; Fri, 31 Mar 2006 20:36:56 +0200
-Date: Fri, 31 Mar 2006 20:36:34 +0200
-From: White <white@from-b.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc5200b and floating point
-Message-ID: <20060331203634.3818e8af@White64>
-In-Reply-To: <20060331133619.GD7738@localhost.localdomain>
+	Sat,  1 Apr 2006 05:58:36 +1100 (EST)
+In-Reply-To: <200603312027.22359.roger.larsson@norran.net>
 References: <20060331133619.GD7738@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<200603312027.22359.roger.larsson@norran.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <84f8b653e927098568cab6da979caf04@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: mpc5200b and floating point
+Date: Fri, 31 Mar 2006 13:58:36 -0500
+To: Roger Larsson <roger.larsson@norran.net>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,35 +24,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Am Fri, 31 Mar 2006 15:36:20 +0200 schrieb Sascha Hauer
-<s.hauer@pengutronix.de> :
 
-Please check your Toolchain.
-Have you build it ?
+On Mar 31, 2006, at 1:27 PM, Roger Larsson wrote:
 
-Do you use glibc or something like uclibc ?
+> Since a lot of PowerPC do not have floating point processor your tools
+> might be setup to compile without it (compare with sse2 on x86).
 
-At my beginning with mpc5200 i hat simular problems.
+Nearly all of the PowerPC do have floating point, only a few do not.
+It's highly unlikely to find a PowerPC tool set that was custom
+built to not enable floating point.  Don't forget that the compiler
+flags are only a small part of the picture, you need matching
+compiler run time support and application libraries as well.
+Just using the compiler flags and not selecting the proper
+libraries will not be a positive experience.
 
-I had the wrong Compilerflags during build of my ToolChain.
-(uclibc).
 
-Good Luck.
-
-> Hi,
-> 
-> I'm working with a mpc5200b custom board and I'm trying to run an
-> application with floating point. All floating point variables seem to
-> zero all the time. Since I'm not very familiar with powerpc it might be
-> something stupid I have overlooked.
-> Any hints?
-> 
-> Thank you,
-> 
->   Sascha Hauer
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+	-- Dan
