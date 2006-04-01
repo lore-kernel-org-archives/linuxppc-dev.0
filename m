@@ -1,17 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id A525067A64
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Apr 2006 02:18:44 +1000 (EST)
-Date: Sun, 2 Apr 2006 02:18:40 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: iSeries needs slb_initialize to be called
-Message-Id: <20060402021840.4640dab7.sfr@canb.auug.org.au>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (unknown [213.151.39.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3FB49679E6
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Apr 2006 02:32:17 +1000 (EST)
+Subject: Re: suspend2 on PowerBook: keyboard doesn't work on resume [now it
+	does!]
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Dustin Lang <dstn@cs.toronto.edu>
+In-Reply-To: <Pine.LNX.4.58.0604011108240.2100@monte.ai>
+References: <Pine.LNX.4.58.0603112043460.25986@monte.ai>
+	<1142232047.4228.1.camel@quad.lan>
+	<Pine.LNX.4.58.0604011108240.2100@monte.ai>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ABixZqBEN0fh/RPDUAub"
+Date: Sat, 01 Apr 2006 18:32:07 +0200
+Message-Id: <1143909127.23254.8.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__2_Apr_2006_02_18_40_+1000_VLONO+4XzFX=Ij2j"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,74 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__2_Apr_2006_02_18_40_+1000_VLONO+4XzFX=Ij2j
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-ABixZqBEN0fh/RPDUAub
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Since the "ppc64: support 64k pages" patch
-(3c726f8dee6f55e96475574e9f645327e461884c) went in, systems that have SLBs
-(like Power4 iSeries) needed to have slb_initialize called to set up some
-variables for the SLB miss handler.  This was not being called on the boot
-processor on iSeries, so on single cpu iSeries machines, we would get
-apparent memory curruption as soon as we entered user mode.
+On Sat, 2006-04-01 at 11:18 -0500, Dustin Lang wrote:
 
-This patch fixes that by calling slb_initialize on the boot cpu if the
-processor has an SLB.
+> To follow up on my previous post: after upgrading to suspend2.2.2 and
+> kernel 2.6.16.1, suspend/resume works perfectly on my PowerBook.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
+Good to know. Nigel told me it now uses the mainline suspend code for
+doing the hard stuff, so a lot of the hacks I had previously went out
+and were replaced by some proper stuff :)
 
- arch/powerpc/kernel/setup_64.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+johannes
 
-Please check I haven't missed anything, as I don't really understand the
-SLB miss handler.
-
-This has been booted on a 2 cpu Power4 iSeries partition with and without
-maxcpus=3D1.  This needs to go into 2.6.17 and probably into 2.6.16.x
-
-git bisect rocks! :-)
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
-b116f2eae79ee837fa5e5e55bf1d59329ecd7c93
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index f96c49b..abd758f 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -256,12 +256,10 @@ void __init early_setup(unsigned long dt
- 	/*
- 	 * Initialize stab / SLB management except on iSeries
- 	 */
--	if (!firmware_has_feature(FW_FEATURE_ISERIES)) {
--		if (cpu_has_feature(CPU_FTR_SLB))
--			slb_initialize();
--		else
--			stab_initialize(lpaca->stab_real);
--	}
-+	if (cpu_has_feature(CPU_FTR_SLB))
-+		slb_initialize();
-+	else if (!firmware_has_feature(FW_FEATURE_ISERIES))
-+		stab_initialize(lpaca->stab_real);
-=20
- 	DBG(" <- early_setup()\n");
- }
---=20
-1.2.4
-
-
---Signature=_Sun__2_Apr_2006_02_18_40_+1000_VLONO+4XzFX=Ij2j
-Content-Type: application/pgp-signature
+--=-ABixZqBEN0fh/RPDUAub
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQFELqfgFdBgD/zoJvwRAiEpAJ9KyeoXjFYmw68jVjm7sSdARjcJHgCePa/G
-rPDR73wFJsRsmL0NLPaL9JA=
-=3xVE
+iQIVAwUARC6rBqVg1VMiehFYAQKWaBAAriBqeM9jCBkxiP3C1yVnH66m77ORpsjH
+X+a4KYr67WCei4cn7zOn039946jMmlJWspsRNQRYg9LzCpLgUgLdpOiaIX6vACIT
+1nXONJEbVckl79JxDXJpcyfvnAZsVzJRb1j2vbJlE/fDql9SuG6/XkRGiIJjnKjz
+E22Jczo+4Lzsa1P8jNUMT2mJ0V3IL8XX6N9wUqMQ9ftLrCApyXIBSHSESH+JI+Pa
+upPzytyMRSlBSi5SIZn8sNZEhd5TOrfBHUIy+KQoZA45qhraUJU7nnoxP1IVo64t
+JSaL1AnC3J7kB43aJxwiZVq/6VtD+EGMAkhpr5WmjbY8+hfUA7ABKHg6hQ8M+WWa
+UYmi14ely+zSBTZcd3d7Csa2X7qz0+gUZlTN+qa1LSpZa4HE8KSV413WjcoQLuHE
+yW2JcXuUcFX+rNWB3k1dvAycbGxfapPB4LP5MBMo32g2RTReP+k4Mftqt60c0Rw5
+YtTdg1wItCP4r7bY+dxFrkau2glpEVaOtRp/bC3xOmeejTBmypulYpL6t2wU89lQ
+sQ+vFaODdl1kPZgLwB5wt5anS407VdPz1I1JIG7RFLJVzlHUnI8WIoUNAzqD5EOa
+lUBYyH546+9l/qMx/27zZiLg5NISz9bWykN+zvlHnZJhp15xj5ZY5I6qrN7+/e5c
+aKj1D2fVbDc=
+=RzKx
 -----END PGP SIGNATURE-----
 
---Signature=_Sun__2_Apr_2006_02_18_40_+1000_VLONO+4XzFX=Ij2j--
+--=-ABixZqBEN0fh/RPDUAub--
