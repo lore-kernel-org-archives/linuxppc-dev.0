@@ -1,17 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 4B8E8679F4
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Apr 2006 02:45:08 +1000 (EST)
-Date: Sun, 2 Apr 2006 02:45:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: iSeries needs slb_initialize to be called
-Message-Id: <20060402024504.39d58d41.sfr@canb.auug.org.au>
-In-Reply-To: <20060402021840.4640dab7.sfr@canb.auug.org.au>
-References: <20060402021840.4640dab7.sfr@canb.auug.org.au>
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 07A4B679E2
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Apr 2006 06:53:39 +1000 (EST)
+Date: Sat, 1 Apr 2006 12:53:36 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: linux-kernel@vger.kernel.org
+Subject: "tvec_bases too large for per-cpu data" commit broke
+	early_serial_setup()
+Message-ID: <20060401205336.GA5748@gate.ebshome.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Jan Beulich <jbeulich@novell.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,49 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since the powerpc 64k pages patch went in, systems that have SLBs
-(like Power4 iSeries) needed to have slb_initialize called to set up
-some variables for the SLB miss handler.  This was not being called
-on the boot processor on iSeries, so on single cpu iSeries machines,
-we would get apparent memory curruption as soon as we entered user mode.
+Hi!
 
-This patch fixes that by calling slb_initialize on the boot cpu if the
-processor has an SLB.
+Commit 
+a4a6198b80cf82eb8160603c98da218d1bd5e104 
+"[PATCH] tvec_bases too large for per-cpu data"
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
+broke early_serial_setup() and maybe other code which uses 
+init_timer() before init_timers_cpu() is called.
 
- arch/powerpc/kernel/setup_64.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+This commit introduced run-time initialization dependence which never 
+existed before, namely, tvec_bases was always valid before this 
+change, but now it's a pointer which should be initialized prior to 
+use of any timer function.
 
-The previous version was against 2.6.16, this one is against the current
-powerpc tree.
+If init_timer() is called before such initialization (in my case this 
+happens when PPC440GX board support code calls early_serial_setup to 
+register UARTs, serial8250_isa_init_ports() calls init_timer()), 
+"base" field in the timer_list struct is set to NULL.
+
+When later mod_timer() is called for such timer it hangs in 
+lock_timer_base().
+
+Rolling back this commit fixes the problem, although, this is 
+obviously not a proper fix.
+
+I don't a fix I like, so I'll leave it to people more familiar with 
+this matter :)
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-032013b4b9e7617e88ad1da8d8515bfd9f8ab012
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 59aa92c..13e91c4 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -215,12 +215,10 @@ void __init early_setup(unsigned long dt
- 	/*
- 	 * Initialize stab / SLB management except on iSeries
- 	 */
--	if (!firmware_has_feature(FW_FEATURE_ISERIES)) {
--		if (cpu_has_feature(CPU_FTR_SLB))
--			slb_initialize();
--		else
--			stab_initialize(get_paca()->stab_real);
--	}
-+	if (cpu_has_feature(CPU_FTR_SLB))
-+		slb_initialize();
-+	else if (!firmware_has_feature(FW_FEATURE_ISERIES))
-+		stab_initialize(get_paca()->stab_real);
- 
- 	DBG(" <- early_setup()\n");
- }
--- 
-1.2.4
+Eugene
