@@ -1,8 +1,8 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17454.15223.929530.985654@cargo.ozlabs.ibm.com>
-Date: Sat, 1 Apr 2006 19:36:07 +1100
+Message-ID: <17454.15381.164905.580671@cargo.ozlabs.ibm.com>
+Date: Sat, 1 Apr 2006 19:38:45 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Jake Moilanen <moilanen@austin.ibm.com>
 Subject: Re: [PATCH 2/2] Base pSeries PCIe support
@@ -21,15 +21,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Jake Moilanen writes:
 
-> The NR_IRQS got bumped up to 1024, as vectors can go much higher.
-> Unfortunately, this number was arbitrarily picked as there is no claim
-> at what the max number really is by either the firmware team, or the
-> PAPR+.
+> +property_present(struct device_node *np, const char *name)
+> +{
+> +	struct property *pp;
+> +
+> +	read_lock(&devtree_lock);
+> +	for (pp = np->properties; pp != 0; pp = pp->next)
+> +		if (strcmp(pp->name, name) == 0) {
+> +			return 1;
 
-What matters is the number of different vectors, not the actual value
-of the vectors, because we remap interrupt numbers that the firmware
-gives us to logical Linux irq numbers between 0 and NR_IRQS-1.  We had
-to do that when the POWER5 systems came out, because the interrupt
-numbers there occupy 24 bits.
+Ummm, did you mean to return with the devtree_lock held?  I suspect
+not.  In any case, why not just use get_property or of_find_property?
 
 Paul.
