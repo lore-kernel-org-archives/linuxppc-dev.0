@@ -1,19 +1,24 @@
-Return-Path: <markus@unixforces.net>
-Received: from mail.unixforces.net (unixforces.net [217.160.130.73])
-	by ozlabs.org (Postfix) with ESMTP id 87C46679E2
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 19:16:43 +1100 (EST)
-From: Markus Rothe <markus@unixforces.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Oops: mounting floppy disk on PPC64 (power3)
-Date: Sat, 1 Apr 2006 07:43:47 +0000
-References: <200603312138.16032.markus@unixforces.net>
-	<20060331225034.GA25663@localdomain>
-In-Reply-To: <20060331225034.GA25663@localdomain>
+Return-Path: <dstn@cs.toronto.edu>
+Received: from cliff.cs.toronto.edu (cliff.cs.toronto.edu [128.100.3.120])
+	by ozlabs.org (Postfix) with ESMTP id 4C8F0679E9
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Apr 2006 02:18:39 +1000 (EST)
+Received: from monte.ai (monte.ai.toronto.edu [128.100.5.22])
+	by cliff.cs.toronto.edu (Postfix) with ESMTP id CD7715FD03
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 11:18:36 -0500 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by monte.ai (Postfix) with ESMTP id C3B1631401
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Apr 2006 11:18:36 -0500 (EST)
+Date: Sat, 1 Apr 2006 11:18:36 -0500 (EST)
+From: Dustin Lang <dstn@cs.toronto.edu>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: suspend2 on PowerBook: keyboard doesn't work on resume [now it
+	does!]
+In-Reply-To: <1142232047.4228.1.camel@quad.lan>
+Message-ID: <Pine.LNX.4.58.0604011108240.2100@monte.ai>
+References: <Pine.LNX.4.58.0603112043460.25986@monte.ai>
+	<1142232047.4228.1.camel@quad.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1847019.k06EbHjheZ";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200604010743.55018.markus@unixforces.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,31 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart1847019.k06EbHjheZ
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-On Friday 31 March 2006 22:50, Nathan Lynch wrote:
-> Maybe you could verify with latest -git, or 2.6.17-rc1 when it's
-> released?
+Hi,
 
-Yes, it is fixed.
+To follow up on my previous post: after upgrading to suspend2.2.2 and
+kernel 2.6.16.1, suspend/resume works perfectly on my PowerBook.
 
-Thanks for help!
+(I was just getting ready to do some kernel hacking to figure out why it
+didn't work, and was pleasantly surprised to find that it did work!)
 
-Markus Rothe
-
---nextPart1847019.k06EbHjheZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBELi86x15fTQSr/HcRAtHSAKCTl1HZ6PXhGJIuAZEmSQ99fGZyGwCfVe3c
-UEKtrgHM2a3ARGMG4Y35KuQ=
-=TDzQ
------END PGP SIGNATURE-----
-
---nextPart1847019.k06EbHjheZ--
+Cheers,
+dstn.
