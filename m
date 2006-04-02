@@ -1,14 +1,18 @@
-Return-Path: <sonny@kevlar.burdell.org>
-Received: from kevlar.burdell.org (kevlar.burdell.org [66.92.73.214])
-	by ozlabs.org (Postfix) with ESMTP id A8AC067A58
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Apr 2006 08:51:58 +1000 (EST)
-Date: Sun, 2 Apr 2006 18:19:21 -0400
-From: Sonny Rao <sonny@burdell.org>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: 2.6.16 crashes when running numastat on p575
-Message-ID: <20060402221921.GA27513@kevlar.burdell.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 0613667A45
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Apr 2006 09:00:38 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] Add 85xx CDS to arch/powerpc
+Date: Mon, 3 Apr 2006 01:00:26 +0200
+References: <Pine.LNX.4.61.0604021737010.9886@ld0175-tx32.am.freescale.net>
+In-Reply-To: <Pine.LNX.4.61.0604021737010.9886@ld0175-tx32.am.freescale.net>
+MIME-Version: 1.0
+Message-Id: <200604030100.27013.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,98 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, I'm getting an immediate crash on 2.6.16 when  I run the numastat
-command.  The machine is a 16-way IBM p575 POWER5+ box.  It has 8 NUMA
-nodes.  Bug is very easy to reproduce on this machine, haven't seen it
-on another machine yet.
+On Monday 03 April 2006 00:42, Andy Fleming wrote:
+> +void __init mpc85xx_cds_pic_init(void)
+> +{
+> +	struct mpic *mpic1;
+> +	phys_addr_t OpenPIC_PAddr;
+> +
+> +	/* Determine the Physical Address of the OpenPIC regs */
+> +	OpenPIC_PAddr = get_immrbase() + MPC85xx_OPENPIC_OFFSET;
+> +
+> +	mpic1 = mpic_alloc(OpenPIC_PAddr,
+> +			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
+> +			4, MPC85xx_OPENPIC_IRQ_OFFSET, 0, 250,
+> +			mpc85xx_cds_openpic_initsenses,
+> +			sizeof(mpc85xx_cds_openpic_initsenses), " OpenPIC  ");
+> +	BUG_ON(mpic1 == NULL);
+> +	mpic_assign_isu(mpic1, 0, OpenPIC_PAddr + 0x10200);
+> +	mpic_assign_isu(mpic1, 1, OpenPIC_PAddr + 0x10280);
+> +	mpic_assign_isu(mpic1, 2, OpenPIC_PAddr + 0x10300);
+> +	mpic_assign_isu(mpic1, 3, OpenPIC_PAddr + 0x10380);
+> +	mpic_assign_isu(mpic1, 4, OpenPIC_PAddr + 0x10400);
+> +	mpic_assign_isu(mpic1, 5, OpenPIC_PAddr + 0x10480);
+> +	mpic_assign_isu(mpic1, 6, OpenPIC_PAddr + 0x10500);
+> +	mpic_assign_isu(mpic1, 7, OpenPIC_PAddr + 0x10580);
+> +
+> +	/* dummy mappings to get to 48 */
+> +	mpic_assign_isu(mpic1, 8, OpenPIC_PAddr + 0x10600);
+> +	mpic_assign_isu(mpic1, 9, OpenPIC_PAddr + 0x10680);
+> +	mpic_assign_isu(mpic1, 10, OpenPIC_PAddr + 0x10700);
+> +	mpic_assign_isu(mpic1, 11, OpenPIC_PAddr + 0x10780);
+> +
+> +	/* External ints */
+> +	mpic_assign_isu(mpic1, 12, OpenPIC_PAddr + 0x10000);
+> +	mpic_assign_isu(mpic1, 13, OpenPIC_PAddr + 0x10080);
+> +	mpic_assign_isu(mpic1, 14, OpenPIC_PAddr + 0x10100);
 
-exception info:
- 16:mon> e
-cpu 0x16: Vector: 300 (Data Access) at [c0000005aa5db890]
-    pc: c000000000293940: .node_read_numastat+0x7c/0x114
-    lr: c00000000028aeb4: .sysdev_show+0x48/0x64
-    sp: c0000005aa5dbb10
-   msr: 8000000000009032
-   dar: 68
- dsisr: 40000000
-  current = 0xc0000003b7037800
-  paca    = 0xc0000000005a8780
-    pid   = 14382, comm = numastat
+Shouldn't all this come from the device tree?
 
-disassembly:
+> +/* CADMUS info */
+> +#define CADMUS_BASE (0xf8004000)
+> +#define CADMUS_SIZE (256)
+> +#define CM_VER	(0)
+> +#define CM_CSR	(1)
+> +#define CM_RST	(2)
+> +
+> +/* CDS NVRAM/RTC */
+> +#define CDS_RTC_ADDR	(0xf8000000)
+> +#define CDS_RTC_SIZE	(8 * 1024)
+> +
+> +/* PCI interrupt controller */
+> +#define PIRQ0A			MPC85xx_IRQ_EXT0
+> +#define PIRQ0B			MPC85xx_IRQ_EXT1
+> +#define PIRQ0C			MPC85xx_IRQ_EXT2
+> +#define PIRQ0D			MPC85xx_IRQ_EXT3
+> +#define PIRQ1A			MPC85xx_IRQ_EXT11
 
- c000000000293930  e9240000      ld      r9,0(r4)
-c000000000293934  38840008      addi    r4,r4,8
-c000000000293938  7c0607b4      extsw   r6,r0
-c00000000029393c  2f86007f      cmpwi   cr7,r6,127
-c000000000293940  e8e90068      ld      r7,104(r9) <----------- Null
-Ptr in r9
-c000000000293944  e8090040      ld      r0,64(r9)
-c000000000293948  e9690048      ld      r11,72(r9)
-c00000000029394c  e9490050      ld      r10,80(r9)
-c000000000293950  e9090058      ld      r8,88(r9)
-c000000000293954  e9290060      ld      r9,96(r9)
-c000000000293958  7f7b0214      add     r27,r27,r0
-c00000000029395c  7f5a5a14      add     r26,r26,r11
-c000000000293960  7f9c3a14      add     r28,r28,r7
-c000000000293964  7fff5214      add     r31,r31,r10
+And these as well, more importantly?
 
-registers:
-
-16:mon> r
-R00 = 0000000000000002   R16 = 000000001009b360
-R01 = c0000005aa5dbb10   R17 = 0000000000000001
-R02 = c00000000077ad10   R18 = 0000000000000000
-R03 = c000000b67459000   R19 = 0000000000000000
-R04 = c000000f7ffd5cd0   R20 = 000000000000001a
-R05 = 0000000000000000   R21 = 00000000101220d0
-R06 = 0000000000000002   R22 = 000000001013fdd8
-R07 = 000000000000161f   R23 = 0000000000001000
-R08 = 0000000000001310   R24 = 0000000000000000
-R09 = 0000000000000000   R25 = 0000000000001310
-R10 = 0000000000000000   R26 = 0000000000000000
-R11 = 0000000000000000   R27 = 000000000000161f
-R12 = c000000f7ffd5c80   R28 = 000000000000161f
-R13 = c0000000005a8780   R29 = 0000000000000000
-R14 = 0000000000000000   R30 = c000000000637430
-R15 = 0000000000000000   R31 = 0000000000000000
-pc  = c000000000293940 .node_read_numastat+0x7c/0x114
-lr  = c00000000028aeb4 .sysdev_show+0x48/0x64
-msr = 8000000000009032   cr  = 44222488
-ctr = c0000000002938c4   xer = 0000000000000010   trap =  300
-dar = 0000000000000068   dsisr = 40000000
-
-source code for the function, I believe r9 corresponds to 
-the struct per_cpu_pageset *ps
-
-static ssize_t node_read_numastat(struct sys_device * dev, char * buf)
-{
-        unsigned long numa_hit, numa_miss, interleave_hit,numa_foreign;
-        unsigned long local_node, other_node;
-        int i, cpu;
-        pg_data_t *pg = NODE_DATA(dev->id);
-        numa_hit = 0;
-        numa_miss = 0;
-        interleave_hit = 0;
-        numa_foreign = 0;
-        local_node = 0;
-        other_node = 0;
-        for (i = 0; i < MAX_NR_ZONES; i++) {
-                struct zone *z = &pg->node_zones[i];
-                for (cpu = 0; cpu < NR_CPUS; cpu++) {
-                        struct per_cpu_pageset *ps = zone_pcp(z,cpu);
-                        numa_hit += ps->numa_hit;
-                        numa_miss += ps->numa_miss;
-                        numa_foreign += ps->numa_foreign;
-                        interleave_hit += ps->interleave_hit;
-                        local_node += ps->local_node;
-                        other_node += ps->other_node;
-                }
-        }
-...
-
-so the first attempt to dereference 'ps' causes an oops.
-
-Anton B. says that if pg is non-NULL, ps should be non-NULL as well...
-
-Sonny
+	Arnd <><
