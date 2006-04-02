@@ -1,24 +1,20 @@
-Return-Path: <biteme@quicknet.nl>
-Received: from mx101.multikabel.net (mx101.multikabel.net [212.127.254.150])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2D4CA679F5
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Apr 2006 00:30:20 +1000 (EST)
-Received: from vmx20.multikabel.net ([212.127.254.137])
-	by mx101.multikabel.net with esmtp (Exim 4.54) id 1FQ2ry-0008VF-Ax
-	for linuxppc-dev@ozlabs.org; Sun, 02 Apr 2006 15:43:54 +0200
-Received: from sun.nodomain.nl (84-104-186-89.cable.quicknet.nl
-	[84.104.186.89])
-	by vmx20.multikabel.net (8.13.6/8.13.3) with ESMTP id k32Di0m2027808
-	for <linuxppc-dev@ozlabs.org>; Sun, 2 Apr 2006 15:44:07 +0200
-From: "Ingmar" <biteme@quicknet.nl>
-To: linuxppc-dev@ozlabs.org
-Subject: yaboot load address
-Date: Sun, 2 Apr 2006 15:43:59 +0200
-Message-Id: <20060402134229.M44328@quicknet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B8272679FF
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Apr 2006 05:40:50 +1000 (EST)
+Date: Sun, 2 Apr 2006 21:40:45 +0200
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] Set cpu explicitly in kernel compiles
+Message-ID: <20060402194044.GA866@suse.de>
+References: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, trini@kernel.crashing.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+ On Wed, 2005-05-04, Paul Mackeras wrote:
 
-I have a issue with the load address of the yaboot loader, I need it to be
-loaded higher in memory than 2MB, at about 10MB. Recompiling the yaboot loader
-is no problem, but I need to get into the part of code that calls (and loads)
-the yaboot program. Editing the ofboot file, (forth script) does not
-(completely?) solve the problem. Updates to the ToolBox ROM image have to be
-made to?
+> What do people think of this patch?  The motivation for it is that a
+> biarch gcc-4.0 will by default tune for POWER4, even for a 32-bit
+> compile, meaning that we end up with a lot of nops we don't need.
+> This also takes out -mstring.
+> 
+> With this, the text size reduces by about 120k for my normal config
+> when compiling with a biarch gcc-4.0.  The text size also reduces
+> slightly when compiling with the Debian gcc-3.3.5 (32-bit only, not
+> biarch).
 
-Any ideas on steps I need to make to (recompile?) edit the tbxi file to let it
-load yaboot at another address?
+
+Compile the 32bit kernel with -mcpu=powerpc. This reduces the imagesize
+when a compiler is used that defaults to -mtune=power4. It inserts lots 
+of nops to please the 64bit cpu instruction scheduling. But all these nops
+are not needed for 32bit kernels.
+
+Example with SLES10 gcc 4.1.0 and arch/powerpc/configs/pmac32_defconfig:
+
+                    vmlinux  vmlinux.strip  vmlinux.gz
+ -O2                4980515     4187528      1846829
+ -Os                4618801     3827084      1673333
+ -O2 -mcpu=powerpc  4738851     3945868      1816253
+ -Os -mcpu=powerpc  4532785     3741068      1664688
 
 
-Ingmar
+Signed-off-by: Olaf Hering <olh@suse.de>
+
+---
+ arch/powerpc/Makefile |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-2.6.16-olh/arch/powerpc/Makefile
+===================================================================
+--- linux-2.6.16-olh.orig/arch/powerpc/Makefile
++++ linux-2.6.16-olh/arch/powerpc/Makefile
+@@ -107,6 +107,7 @@ endif
+ cpu-as-$(CONFIG_PPC64BRIDGE)	+= -Wa,-mppc64bridge
+ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+ cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
++cpu-as-$(CONFIG_6xx)		+= -mcpu=powerpc
+ cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltivec
+ cpu-as-$(CONFIG_E500)		+= -Wa,-me500
+ cpu-as-$(CONFIG_E200)		+= -Wa,-me200
