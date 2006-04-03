@@ -1,13 +1,19 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (unknown [65.200.49.142])
-	by ozlabs.org (Postfix) with SMTP id F29CE67A60
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2006 00:44:33 +1000 (EST)
-Date: 3 Apr 2006 14:44:30 -0000
-Message-ID: <20060403144430.18964.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: TSchnuerer@men.de, linuxppc-dev@ozlabs.org
-Subject: Re: MPC5200 FEC Ethernet only halfduplex ?
-In-Reply-To: <0ABEEA3685414344B4BE536AE3912E6EC0506F@men-exch1.intra.men.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C1B4E679FF
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2006 02:16:37 +1000 (EST)
+Subject: Re: _machine removal breaks kexec?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20060403014044.GA4704@krispykreme>
+References: <20060403014044.GA4704@krispykreme>
+Content-Type: text/plain
+Date: Mon, 03 Apr 2006 18:16:34 +0200
+Message-Id: <1144080994.4449.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,25 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-TSchnuerer@men.de wrote:
-> Im working with Linux on our MPC5200 Board, with the latest Rev. B3 
-> Processor.
-> I was updating our Linux BSP from BestComm 2.1 to 2.2 some time ago and
-> used your patches which increased usability of the FEC very much.
+On Mon, 2006-04-03 at 11:40 +1000, Anton Blanchard wrote:
+> Hi,
 > 
-> There is a line in the driver code which I dont understand, it says:
-> + fec_restart(dev, 0); /* always use half duplex mode only */
+> It looks like the _machine removal broke kexec:
 > 
-> Why can only half duplex be used ?
+>  # kexec -l vmlinux
+>  /proc/device-tree/chosen/linux,platform: No such file or directory
+> 
+> The kexec tools seem to want the linux,platform property:
+> 
+>         /* if LPAR, no need to read any more from /chosen */
+>         if (platform != PLATFORM_PSERIES) {
+>                 closedir(cdir);
+>                 continue;
+>         }
 
-The reason is simple, but not satisfying.  The driver has no
-mechanism to detect PHY status changes and thus no way to determine
-when a connection changes from full to half duplex.  It needs a
-poll function for PHY status change.  Doing only half-duplex
-avoids this issue--at a big performance cost.
+Damn.... the platform numbers are gone, we need to fix that. (And nobody
+complained when I posted the patch twice over the past couple of monthes
+btw).
 
-I think a poll function was added in the Denx version.
+I suppose kexec needs to look for /rtas/hypertas or such ..
 
-The MPC5200 FEC driver desperately needs a rewrite.
-
--Dale
+Ben.
