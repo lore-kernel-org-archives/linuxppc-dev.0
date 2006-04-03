@@ -1,12 +1,19 @@
-Return-Path: <anton@ozlabs.org>
-Date: Mon, 3 Apr 2006 11:40:44 +1000
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: _machine removal breaks kexec?
-Message-ID: <20060403014044.GA4704@krispykreme>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org
+Return-Path: <pj@sgi.com>
+Received: from omx2.sgi.com (omx2-ext.sgi.com [192.48.171.19])
+	by ozlabs.org (Postfix) with ESMTP id 6EEE367A40
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Apr 2006 15:38:24 +1000 (EST)
+Date: Sun, 2 Apr 2006 22:15:13 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: Fw: 2.6.16 crashes when running numastat on p575
+Message-Id: <20060402221513.96f05bdc.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0604022149450.15895@schroedinger.engr.sgi.com>
+References: <20060402213216.2e61b74e.akpm@osdl.org>
+	<Pine.LNX.4.64.0604022149450.15895@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, ak@suse.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,20 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+-		for (cpu = 0; cpu < NR_CPUS; cpu++) {
++		for_each_online_cpu(cpu) {
 
-Hi,
+Idle curiosity -- what keeps a cpu from going offline during
+this scan, and leaving us with the same crash as before?
 
-It looks like the _machine removal broke kexec:
-
- # kexec -l vmlinux
- /proc/device-tree/chosen/linux,platform: No such file or directory
-
-The kexec tools seem to want the linux,platform property:
-
-        /* if LPAR, no need to read any more from /chosen */
-        if (platform != PLATFORM_PSERIES) {
-                closedir(cdir);
-                continue;
-        }
-
-Anton
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
