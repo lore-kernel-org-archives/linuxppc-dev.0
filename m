@@ -1,22 +1,13 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id 5B166679E1
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2006 00:18:30 +1000 (EST)
-Date: Mon, 3 Apr 2006 09:18:05 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: Fw: 2.6.16 crashes when running numastat on p575
-Message-ID: <20060403141805.GC25663@localdomain>
-References: <20060402213216.2e61b74e.akpm@osdl.org>
-	<Pine.LNX.4.64.0604022149450.15895@schroedinger.engr.sgi.com>
-	<20060402221513.96f05bdc.pj@sgi.com>
-	<200604031349.03036.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200604031349.03036.ak@suse.de>
-Cc: akpm@osdl.org, ak@suse.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Jackson <pj@sgi.com>,
-	Christoph Lameter <clameter@sgi.com>
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (unknown [65.200.49.142])
+	by ozlabs.org (Postfix) with SMTP id F29CE67A60
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2006 00:44:33 +1000 (EST)
+Date: 3 Apr 2006 14:44:30 -0000
+Message-ID: <20060403144430.18964.qmail@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+To: TSchnuerer@men.de, linuxppc-dev@ozlabs.org
+Subject: Re: MPC5200 FEC Ethernet only halfduplex ?
+In-Reply-To: <0ABEEA3685414344B4BE536AE3912E6EC0506F@men-exch1.intra.men.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +17,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andi Kleen wrote:
-> On Monday 03 April 2006 07:15, Paul Jackson wrote:
-> > -		for (cpu = 0; cpu < NR_CPUS; cpu++) {
-> > +		for_each_online_cpu(cpu) {
-> > 
-> > Idle curiosity -- what keeps a cpu from going offline during
-> > this scan, and leaving us with the same crash as before?
+TSchnuerer@men.de wrote:
+> Im working with Linux on our MPC5200 Board, with the latest Rev. B3 
+> Processor.
+> I was updating our Linux BSP from BestComm 2.1 to 2.2 some time ago and
+> used your patches which increased usability of the FEC very much.
 > 
+> There is a line in the driver code which I dont understand, it says:
+> + fec_restart(dev, 0); /* always use half duplex mode only */
 > 
-> CPU hotdown uses RCU like techniques to avoid this. Only potential
-> problem could be on a preemptive kernel, but I hope nobody tries
-> cpu unplug on such a beast.
+> Why can only half duplex be used ?
 
-I always turn on preempt when testing cpu hotplug (usually on ppc64).
-There were several preempt vs cpu hotplug issues until around 2.6.10
-or so, iirc, but I think the situation has been stable for a while
-now.
+The reason is simple, but not satisfying.  The driver has no
+mechanism to detect PHY status changes and thus no way to determine
+when a connection changes from full to half duplex.  It needs a
+poll function for PHY status change.  Doing only half-duplex
+avoids this issue--at a big performance cost.
+
+I think a poll function was added in the Denx version.
+
+The MPC5200 FEC driver desperately needs a rewrite.
+
+-Dale
