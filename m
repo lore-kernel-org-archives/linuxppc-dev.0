@@ -1,33 +1,27 @@
-Return-Path: <haren@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4FDF5679EA
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2006 04:19:24 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k33IJMuZ000828
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Apr 2006 14:19:22 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k33IG4vm240898
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Apr 2006 12:16:04 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k33IJLuF022229
-	for <linuxppc-dev@ozlabs.org>; Mon, 3 Apr 2006 12:19:21 -0600
-Message-ID: <44316705.1040202@us.ibm.com>
-Date: Mon, 03 Apr 2006 11:18:45 -0700
-From: Haren Myneni <haren@us.ibm.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: _machine removal breaks kexec?
-References: <20060403014044.GA4704@krispykreme>	<1144080994.4449.10.camel@localhost.localdomain>
-	<1078253E-4B9E-4432-86E3-82B01A4B68D1@kernel.crashing.org>
-In-Reply-To: <1078253E-4B9E-4432-86E3-82B01A4B68D1@kernel.crashing.org>
-Content-Type: multipart/mixed; boundary="------------080401030201030408080302"
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C7BF2679E2
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2006 07:16:16 +1000 (EST)
+Date: Mon, 3 Apr 2006 14:18:34 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: Fw: 2.6.16 crashes when running numastat on p575
+Message-Id: <20060403141834.31cd9dea.akpm@osdl.org>
+In-Reply-To: <Pine.LNX.4.64.0604031104110.20903@schroedinger.engr.sgi.com>
+References: <20060402213216.2e61b74e.akpm@osdl.org>
+	<Pine.LNX.4.64.0604022149450.15895@schroedinger.engr.sgi.com>
+	<20060402221513.96f05bdc.pj@sgi.com>
+	<Pine.LNX.4.64.0604022224001.18401@schroedinger.engr.sgi.com>
+	<20060403141027.GB25663@localdomain>
+	<Pine.LNX.4.64.0604031039560.20648@schroedinger.engr.sgi.com>
+	<20060403180131.GD25663@localdomain>
+	<Pine.LNX.4.64.0604031104110.20903@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, pj@sgi.com, ntl@pobox.com, ak@suse.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,127 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080401030201030408080302
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Kumar Gala wrote:
-
->On Apr 3, 2006, at 11:16 AM, Benjamin Herrenschmidt wrote:
+Christoph Lameter <clameter@sgi.com> wrote:
 >
->  
->
->>On Mon, 2006-04-03 at 11:40 +1000, Anton Blanchard wrote:
->>    
->>
->>>Hi,
->>>
->>>It looks like the _machine removal broke kexec:
->>>
->>> # kexec -l vmlinux
->>> /proc/device-tree/chosen/linux,platform: No such file or directory
->>>
->>>The kexec tools seem to want the linux,platform property:
->>>
->>>        /* if LPAR, no need to read any more from /chosen */
->>>        if (platform != PLATFORM_PSERIES) {
->>>                closedir(cdir);
->>>                continue;
->>>        }
->>>      
->>>
->>Damn.... the platform numbers are gone, we need to fix that. (And  
->>nobody
->>complained when I posted the patch twice over the past couple of  
->>monthes
->>btw).
->>
->>I suppose kexec needs to look for /rtas/hypertas or such ..
->>    
->>
->
->uugh, can we make kexec not depend on something that embedded systems  
->would also have.
->  
->
-Basically, kexec-tools looks the platform property to determine whether 
-to read tce-base, tce-size and htab-* properties. The attached patch 
-find out the platform info based on /proc/device-tree/chosen/htab-base 
-property. Not tested yet.
-Kumar,  kexec-tools completely depends on device-tree.  Not sure whether 
-the embedded system exports the device-tree.
+> On Mon, 3 Apr 2006, Nathan Lynch wrote:
+> 
+> > > There are many other for_each_*_cpu loops in the kernel that do not have 
+> > > any of the instrumentation you suggest. I suggest you come up with a 
+> > > general solution and then go through all of them and fix this. Please be 
+> > > aware that many of these loops are performance critical.
+> > 
+> > But this one isn't, right?
+> 
+> Right. One could use more expensive processing here.
 
-Thanks
-Haren
+Hopefully none of the for_each_foo() loops are performance-critical - those
+things are expensive.
 
->- k
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-dev
->  
->
+> > And I'm afraid there's a misunderstanding here -- only
+> > for_each_online_cpu (or accessing the cpu online map in general) has
+> > such restrictions -- for_each_possible_cpu doesn't require any locking
+> > or preempt tricks since cpu_possible_map must not change after boot.
 
+for_each_present_cpu() presumably has the same problems.
 
---------------080401030201030408080302
-Content-Type: text/x-patch;
- name="ppc64-kexec-tools-rm-platform-fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ppc64-kexec-tools-rm-platform-fix.patch"
+> Correct. We may want to audit the kernel and check that each 
+> for_each_possible_cpu or for_each_cpu is really correct.
 
---- ./kexec-tools-1.101/kexec/arch/ppc64/kexec-ppc64.c.orig	2006-04-07 17:39:08.000000000 -0700
-+++ ./kexec-tools-1.101/kexec/arch/ppc64/kexec-ppc64.c	2006-04-07 17:36:34.000000000 -0700
-@@ -40,7 +40,7 @@
- 
- static struct exclude_range exclude_range[MAX_MEMORY_RANGES];
- static unsigned long long rmo_top;
--static unsigned int platform;
-+static unsigned int platform = PLATFORM_PSERIES_LPAR;
- static struct memory_range memory_range[MAX_MEMORY_RANGES];
- static struct memory_range base_memory_range[MAX_MEMORY_RANGES];
- unsigned long long memory_max = 0;
-@@ -179,8 +179,13 @@ static int get_devtree_details(unsigned 
- 	DIR *dir, *cdir;
- 	FILE *file;
- 	struct dirent *dentry;
-+	struct stat sbuf;
-+
- 	int n, i = 0;
- 
-+	if (!stat("/proc/device-tree/chosen/linux,htab-base", &sbuf))
-+		platform = PLATFORM_PSERIES;
-+
- 	if ((dir = opendir(device_tree)) == NULL) {
- 		perror(device_tree);
- 		return -1;
-@@ -201,26 +206,6 @@ static int get_devtree_details(unsigned 
- 		}
- 
- 		if (strncmp(dentry->d_name, "chosen", 6) == 0) {
--			/* get platform details from /chosen node */
--			strcat(fname, "/linux,platform");
--			if ((file = fopen(fname, "r")) == NULL) {
--				perror(fname);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
--			}
--			if (fread(&platform, sizeof(int), 1, file) != 1) {
--				perror(fname);
--				fclose(file);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
--			}
--			fclose(file);
--
--			memset(fname, 0, sizeof(fname));
--			strcpy(fname, device_tree);
--			strcat(fname, dentry->d_name);
- 			strcat(fname, "/linux,kernel-end");
- 			if ((file = fopen(fname, "r")) == NULL) {
- 				perror(fname);
+A fair bit of that has been happening in recent weeks.
 
---------------080401030201030408080302--
+But yes, we should be protecting these things with rcu_read_lock() if
+possible, lock_cpu_hotplug() otherwise.
+
+(rcu_read_lock() might not be the appropriate name for this operation -
+maybe it should be an open-coded preempt_disable().  Or some other suitably
+named alias; dunno).
