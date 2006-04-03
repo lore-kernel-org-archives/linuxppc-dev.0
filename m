@@ -1,24 +1,16 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 98975679FF
+Return-Path: <vbordug@ru.mvista.com>
+Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 69D9E679F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Apr 2006 20:10:46 +1000 (EST)
-Received: from leda.ptxnet.pengutronix.de ([10.1.0.71])
-	by metis.extern.pengutronix.de with esmtp (Exim 3.36 #1 (Debian))
-	id 1FQM1E-0007fP-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 03 Apr 2006 12:10:44 +0200
-Received: from sha by leda.ptxnet.pengutronix.de with local (Exim 4.51)
-	id 1FQM1D-0001NL-Sn
-	for linuxppc-embedded@ozlabs.org; Mon, 03 Apr 2006 12:10:43 +0200
-Date: Mon, 3 Apr 2006 12:10:43 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: mpc5200b and floating point
-Message-ID: <20060403101043.GB4857@localhost.localdomain>
-References: <20060331133619.GD7738@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060331133619.GD7738@localhost.localdomain>
+	Mon,  3 Apr 2006 21:26:39 +1000 (EST)
+To: Paul Mackerras <paulus@samba.org>
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH] ppc32: Fix string comparing in platform_notify_map
+Date: Mon, 03 Apr 2006 15:26:32 +0400
+Message-Id: <20060403112632.17790.24809.stgit@vitb.ru.mvista.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,19 +21,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 31, 2006 at 03:36:20PM +0200, Sascha Hauer wrote:
-> Hi,
-> 
-> I'm working with a mpc5200b custom board and I'm trying to run an
-> application with floating point. All floating point variables seem to
-> zero all the time. Since I'm not very familiar with powerpc it might be
-> something stupid I have overlooked.
-> Any hints?
 
-The problem turned out to be toolchain related. We chrooted into the
-rootfs on an Ibook, same problem there. I'll take a closer look in my
-toochain.
+Fixed odd function behavior when dev->bus_id does not contain '.' - it
+compared that case 0 characters of the string and hereby reported success and
+executed callback. Now bus_id's are compared correctly, extra callback
+triggering eliminated.
 
-Thank you for your replies,
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+---
 
-Sascha Hauer
+ arch/ppc/syslib/ppc_sys.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
+index 60c724e..7662c4e 100644
+--- a/arch/ppc/syslib/ppc_sys.c
++++ b/arch/ppc/syslib/ppc_sys.c
+@@ -156,12 +156,13 @@ void platform_notify_map(const struct pl
+ 	while (map->bus_id != NULL) {
+ 		idx = -1;
+ 		s = strrchr(dev->bus_id, '.');
+-		if (s != NULL)
++		if (s != NULL) {
+ 			idx = (int)simple_strtol(s + 1, NULL, 10);
+-		else
++			len = s - dev->bus_id;
++		} else {
+ 			s = dev->bus_id;
+-
+-		len = s - dev->bus_id;
++			len = strlen(dev->bus_id);
++		}
+ 
+ 		if (!strncmp(dev->bus_id, map->bus_id, len)) {
+ 			pdev = container_of(dev, struct platform_device, dev);
