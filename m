@@ -1,21 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 53C5667AC5
+Return-Path: <Bjorn.Ostby@combitech.se>
+Received: from ms-101.aerotechtelub.se (ms-101.aerotechtelub.se
+	[192.176.33.163]) by ozlabs.org (Postfix) with ESMTP id 8DCB6679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Apr 2006 14:14:36 +1000 (EST)
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673081427@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD4673081427@zch01exm40.ap.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7A8E2BF7-3155-4014-B035-2E677F7ADF2D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: of_platform bus?
-Date: Mon, 3 Apr 2006 23:14:55 -0500
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  4 Apr 2006 23:35:18 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: Can't get serial SMC1 and SMC2 working together
+Date: Tue, 4 Apr 2006 15:34:45 +0200
+Message-ID: <004B1D7A5257174C9044A1B7BD0E60ED0177AA10@ratatosk.combitechsystems.com>
+From: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitech.se>
+To: "Kenneth Poole" <kpoole@mrv.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,17 +22,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>
+>>I'm using a TQM823L board, ELDK and Linux 2.4.25 (from denx). My=20
+>>problem is that i can't use both SMC1 and SMC2 at the same time when I =
 
-On Apr 3, 2006, at 10:52 PM, Li Yang-r58472 wrote:
+>>disable the console (console=3Dnull).
+>
+>Serial port interactions can result from incorrect mapping of the baud
+>rate generators (BRGs) to the ports. I'm looking at source from 2.4.19,
+>and this may have changed, but the serial driver init function =
+(rs_8xx_init)
+>calls m8xx_cpm_setbrg() with 'baud_idx' as the argument that selects =
+which
+>BRG. 'baud_idx' is set in serial_console_setup(). If you don't =
+configure
+>a console, 'baud_idx' may not be initialized.
+>
+>In any event, make sure that the BRGs are mapped to the ports as=20
+>required for your specific board.
+>
+>Ken Poole
+>MRV Communications, INC.
+>
 
-> I noticed that there is a new bus type of_platform_bus added.   
-> Current ppc embedded systems are using platform_device, and are  
-> changing to use OF flat device tree structure.  Does it mean that  
-> current drivers need to be switched from platform_bus to  
-> of_platform_bus?
+I had the same problem with a custom 823 based card a few weeks ago. =
+Turned=20
+out smc1 and smc2 indeed became wired to the same BRG when =
+console=3D....=20
+was passed as argument. My solution was a fast bypass hack in uart.c and =
 
-At some point we may look at that.  However, since drivers are shared  
-between arch/ppc and arch/powerpc we will continue to use  
-platform_device.
+no console=3D argument_
 
-- k
+long __init console_8xx_init(long kmem_start, long kmem_end)
+{
+  /* register_console(&sercons); */
+  sercons.setup(&sercons, NULL);
+  return kmem_start;
+}
+
+A very static and ugly solution since time was of big essence, but that=20
+could possibly help you.
+
+Regards,
+Bj=F6rn =D6stby
+
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org =
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
