@@ -1,10 +1,12 @@
 Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
+To: Paul Mackerras <paulus@samba.org>,
+	<linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 04 Apr 2006 13:24:49 +0200
-Subject: [RFC/PATCH] powerpc: Use rtas query-cpu-stopped-state in smp spinup
-Message-Id: <20060404112459.C9170679EB@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Date: Tue, 04 Apr 2006 13:43:01 +0200
+Subject: [PATCH] powerpc: Disable and EOI interrupts in
+	machine_crash_shutdown()
+Message-Id: <20060404114306.8DC0F679EF@ozlabs.org>
+Cc: Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,123 +16,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently we use a cpumask called of_spin_map to keep track of which threads
-have been spun up. We basically guess that OF has spun up all even numbered
-threads, and so all the odd numbered threads need to be brought up.
+We've seen several bugs caused by interrupt weirdness in the kdump kernel.
+Panicking from an interrupt handler means we fail to EOI the interrupt, and
+so the second kernel never gets that interrupt ever again. We also see hangs
+on JS20 where we take interrupts in the second kernel early during boot.
 
-That's a bit of a dicey assumption at best, and is totally incorrect for
-kexec. Luckily we have an rtas call which can tell us whether a cpu is up
-or not, so let's use it?
-
-I notice this code is duplicated in platforms/cell, do we want to move it into
-kernel/rtas_smp.c or something?
+This patch fixes both those problems, and although it adds more code to the
+crash path I think it is the best solution.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/platforms/pseries/smp.c |   48 +++++++----------------------------
- 1 file changed, 10 insertions(+), 38 deletions(-)
+ arch/powerpc/kernel/crash.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-Index: to-merge/arch/powerpc/platforms/pseries/smp.c
+Index: kdump/arch/powerpc/kernel/crash.c
 ===================================================================
---- to-merge.orig/arch/powerpc/platforms/pseries/smp.c
-+++ to-merge/arch/powerpc/platforms/pseries/smp.c
-@@ -57,16 +57,6 @@
- #define DBG(fmt...)
- #endif
+--- kdump.orig/arch/powerpc/kernel/crash.c
++++ kdump/arch/powerpc/kernel/crash.c
+@@ -22,6 +22,7 @@
+ #include <linux/elf.h>
+ #include <linux/elfcore.h>
+ #include <linux/init.h>
++#include <linux/irq.h>
+ #include <linux/types.h>
  
--/*
-- * The primary thread of each non-boot processor is recorded here before
-- * smp init.
-- */
--static cpumask_t of_spin_map;
--
--extern void pSeries_secondary_smp_init(unsigned long);
--
--#ifdef CONFIG_HOTPLUG_CPU
--
- /* Get state of physical CPU.
-  * Return codes:
-  *	0	- The processor is in the RTAS stopped state
-@@ -93,6 +83,8 @@ static int query_cpu_stopped(unsigned in
- 	return cpu_status;
- }
+ #include <asm/processor.h>
+@@ -174,6 +175,8 @@ static void crash_kexec_prepare_cpus(voi
  
-+#ifdef CONFIG_HOTPLUG_CPU
+ void default_machine_crash_shutdown(struct pt_regs *regs)
+ {
++	unsigned int irq;
 +
- static int pSeries_cpu_disable(void)
- {
- 	int cpu = smp_processor_id();
-@@ -269,22 +261,23 @@ static struct notifier_block pSeries_smp
-  */
- static inline int __devinit smp_startup_cpu(unsigned int lcpu)
- {
--	int status;
-+	extern void pSeries_secondary_smp_init(unsigned long);
- 	unsigned long start_here = __pa((u32)*((unsigned long *)
- 					       pSeries_secondary_smp_init));
- 	unsigned int pcpu;
--	int start_cpu;
--
--	if (cpu_isset(lcpu, of_spin_map))
--		/* Already started by OF and sitting in spin loop */
--		return 1;
-+	int start_cpu, status;
+ 	/*
+ 	 * This function is only called after the system
+ 	 * has paniced or is otherwise in a critical state.
+@@ -186,6 +189,16 @@ void default_machine_crash_shutdown(stru
+ 	 */
+ 	local_irq_disable();
  
- 	pcpu = get_hard_smp_processor_id(lcpu);
- 
-+	if (query_cpu_stopped(pcpu) == 0) {
-+		DBG("CPU %d (%d) already running.\n", lcpu, pcpu);
-+		return 1;
++	for_each_irq(irq) {
++		struct irq_desc *desc = irq_descp(irq);
++
++		if (desc->status & IRQ_INPROGRESS)
++			desc->handler->end(irq);
++
++		if (!(desc->status & IRQ_DISABLED))
++			desc->handler->disable(irq);
 +	}
 +
- 	/* Fixup atomic count: it exited inside IRQ handler. */
- 	task_thread_info(paca[lcpu].__current)->preempt_count	= 0;
+ 	if (ppc_md.kexec_cpu_down)
+ 		ppc_md.kexec_cpu_down(1, 0);
  
--	/* 
-+	/*
- 	 * If the RTAS start-cpu token does not exist then presume the
- 	 * cpu is already spinning.
- 	 */
-@@ -339,9 +332,6 @@ static void __devinit smp_xics_setup_cpu
- 
- 	if (firmware_has_feature(FW_FEATURE_SPLPAR))
- 		vpa_init(cpu);
--
--	cpu_clear(cpu, of_spin_map);
--
- }
- #endif /* CONFIG_XICS */
- 
-@@ -419,8 +409,6 @@ static struct smp_ops_t pSeries_xics_smp
- /* This is called very early */
- void __init smp_init_pSeries(void)
- {
--	int i;
--
- 	DBG(" -> smp_init_pSeries()\n");
- 
- 	switch (ppc64_interrupt_controller) {
-@@ -447,22 +435,6 @@ void __init smp_init_pSeries(void)
- 		pSeries_reconfig_notifier_register(&pSeries_smp_nb);
- #endif
- 
--	/* Mark threads which are still spinning in hold loops. */
--	if (cpu_has_feature(CPU_FTR_SMT)) {
--		for_each_present_cpu(i) { 
--			if (i % 2 == 0)
--				/*
--				 * Even-numbered logical cpus correspond to
--				 * primary threads.
--				 */
--				cpu_set(i, of_spin_map);
--		}
--	} else {
--		of_spin_map = cpu_present_map;
--	}
--
--	cpu_clear(boot_cpuid, of_spin_map);
--
- 	/* Non-lpar has additional take/give timebase */
- 	if (rtas_token("freeze-time-base") != RTAS_UNKNOWN_SERVICE) {
- 		smp_ops->give_timebase = pSeries_give_timebase;
