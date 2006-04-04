@@ -1,14 +1,23 @@
-Return-Path: <ebs@ebshome.net>
-Date: Mon, 3 Apr 2006 15:17:23 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Ralph Blach <ralph.blach@gmail.com>
-Subject: Re: where do applications get loaded in virtual memory on a 4xx?
-Message-ID: <20060403221723.GB32233@gate.ebshome.net>
-References: <b06339d40604030546u4d6192faubca0c63cbaaef741@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b06339d40604030546u4d6192faubca0c63cbaaef741@mail.gmail.com>
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (unknown [192.88.165.103])
+	by ozlabs.org (Postfix) with ESMTP id 7A4DB67A44
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  4 Apr 2006 13:52:12 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k3441O8x009883
+	for <linuxppc-embedded@ozlabs.org>; Mon, 3 Apr 2006 21:01:24 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k343rGXu007571
+	for <linuxppc-embedded@ozlabs.org>; Mon, 3 Apr 2006 22:53:17 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD4673081427@zch01exm40.ap.freescale.net>
+From: Li Yang-r58472 <LeoLi@freescale.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: of_platform bus?
+Date: Tue, 4 Apr 2006 11:52:05 +0800 
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,14 +28,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 03, 2006 at 08:46:13AM -0400, Ralph Blach wrote:
-> I would like to know where in virtual memory application get loaded.
-> I can do an NM and see the address in an a.out file?  How do these address
-> actually translate to 4xx virtual address?
+I noticed that there is a new bus type of_platform_bus added.  Current ppc embedded systems are using platform_device, and are changing to use OF flat device tree structure.  Does it mean that current drivers need to be switched from platform_bus to of_platform_bus?
 
-There is nothing 4xx specific here.
-
-cat /proc/<pid>/maps
-
--- 
-Eugene
+--
+Regards,
+Leo
