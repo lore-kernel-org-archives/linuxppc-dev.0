@@ -1,37 +1,10 @@
-Return-Path: <hbabu@us.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2B871679E7
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2006 16:51:24 +1000 (EST)
-Received: from e33.co.us.ibm.com (e33.boulder.ibm.com [9.17.249.43])
-	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k346BAoi023907
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Apr 2006 02:11:11 -0400
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k346AtL6032062
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Apr 2006 02:10:55 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k346E7Ya191052
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Apr 2006 00:14:07 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k346AtZU009038
-	for <linuxppc-dev@ozlabs.org>; Tue, 4 Apr 2006 00:10:55 -0600
-In-Reply-To: <1144129248.29756.7.camel@localhost.localdomain>
-To: Michael Ellerman <michaelellerman@internode.on.net>
-MIME-Version: 1.0
-Subject: Re: _machine removal breaks kexec?
-Message-ID: <OFA8E8A02F.0E4B5943-ON87257146.0020CEB6-88257146.0021F4AD@us.ibm.com>
-From: Haren Myneni <hbabu@us.ibm.com>
-Date: Mon, 3 Apr 2006 23:15:32 -0700
-Content-Type: multipart/alternative;
-	boundary="=_alternative 0021F4A888257146_="
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 04 Apr 2006 13:24:49 +0200
+Subject: [RFC/PATCH] powerpc: Use rtas query-cpu-stopped-state in smp spinup
+Message-Id: <20060404112459.C9170679EB@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,137 +14,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 0021F4A888257146_=
-Content-Type: text/plain; charset="US-ASCII"
+Currently we use a cpumask called of_spin_map to keep track of which threads
+have been spun up. We basically guess that OF has spun up all even numbered
+threads, and so all the odd numbered threads need to be brought up.
 
-linuxppc-dev-bounces+hbabu=us.ibm.com@ozlabs.org wrote on 04/03/2006 
-10:40:48 PM:
+That's a bit of a dicey assumption at best, and is totally incorrect for
+kexec. Luckily we have an rtas call which can tell us whether a cpu is up
+or not, so let's use it?
 
-> On Mon, 2006-04-03 at 11:18 -0700, Haren Myneni wrote:
-> > Basically, kexec-tools looks the platform property to determine 
-whether 
-> > to read tce-base, tce-size and htab-* properties. The attached patch 
-> > find out the platform info based on /proc/device-tree/chosen/htab-base 
+I notice this code is duplicated in platforms/cell, do we want to move it into
+kernel/rtas_smp.c or something?
 
-> > property. Not tested yet.
-> 
-> Why don't we get rid of the platform variable entirely in kexec-ppc64.c,
-> if the tce-* and htab-* properties are there, then we read them, if not
-> we don't.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-> 
-> There's also:
-> 
-> if (platform == PLATFORM_PSERIES) {
->         if (rmo_top > 0x30000000UL)
->                 rmo_top = 0x30000000UL;
-> }
-> 
-> I'm not sure where that number comes from, perhaps we need to export the
-> RMO value like we do for the htab?
+ arch/powerpc/platforms/pseries/smp.c |   48 +++++++----------------------------
+ 1 file changed, 10 insertions(+), 38 deletions(-)
 
-Yes, we can remove this PLATFORM_* and read these properties if exists. I 
-believe, this large number is copied from prom_init.c. I am not sure 
-whether exporting rmo_top is needed since it is always the size of first 
-memory node unless the size is greater than 0x30000000UL. PLATFORM_PSERIES 
-is not needed anyway for this comparison.
-
-
-> 
-> While we're there that code could use a function to read
-> a /proc/device-tree file and do error handling, there's a lot of
-> duplicate code at the moment.
-> 
-Yes, there is some cleanup needed in kexec-tools.
-
-Thanks
-Haren
-
-> cheers
-> 
-> -- 
-> Michael Ellerman
-> IBM OzLabs
-> 
-> wwweb: http://michael.ellerman.id.au
-> phone: +61 2 6212 1183 (tie line 70 21183)
-> 
-> We do not inherit the earth from our ancestors,
-> we borrow it from our children. - S.M.A.R.T Person
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-
---=_alternative 0021F4A888257146_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br>
-<br><font size=2><tt>linuxppc-dev-bounces+hbabu=us.ibm.com@ozlabs.org wrote
-on 04/03/2006 10:40:48 PM:<br>
-<br>
-&gt; On Mon, 2006-04-03 at 11:18 -0700, Haren Myneni wrote:<br>
-&gt; &gt; Basically, kexec-tools looks the platform property to determine
-whether <br>
-&gt; &gt; to read tce-base, tce-size and htab-* properties. The attached
-patch <br>
-&gt; &gt; find out the platform info based on /proc/device-tree/chosen/htab-base
-<br>
-&gt; &gt; property. Not tested yet.<br>
-&gt; <br>
-&gt; Why don't we get rid of the platform variable entirely in kexec-ppc64.c,<br>
-&gt; if the tce-* and htab-* properties are there, then we read them, if
-not<br>
-&gt; we don't.</tt></font>
-<br><font size=2><tt><br>
-&gt; <br>
-&gt; There's also:<br>
-&gt; <br>
-&gt; if (platform == PLATFORM_PSERIES) {<br>
-&gt; &nbsp; &nbsp; &nbsp; &nbsp; if (rmo_top &gt; 0x30000000UL)<br>
-&gt; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; rmo_top =
-0x30000000UL;<br>
-&gt; }<br>
-&gt; <br>
-&gt; I'm not sure where that number comes from, perhaps we need to export
-the<br>
-&gt; RMO value like we do for the htab?</tt></font>
-<br>
-<br><font size=2><tt>Yes, we can remove this PLATFORM_* and read these
-properties if exists. I believe, this large number is copied from prom_init.c.
-I am not sure whether exporting rmo_top is needed since it is always the
-size of first memory node unless the size is greater than 0x30000000UL.
-PLATFORM_PSERIES is not needed anyway for this comparison.</tt></font>
-<br>
-<br><font size=2><tt><br>
-&gt; <br>
-&gt; While we're there that code could use a function to read<br>
-&gt; a /proc/device-tree file and do error handling, there's a lot of<br>
-&gt; duplicate code at the moment.<br>
-&gt; </tt></font>
-<br><font size=2><tt>Yes, there is some cleanup needed in kexec-tools.</tt></font>
-<br>
-<br><font size=2><tt>Thanks</tt></font>
-<br><font size=2><tt>Haren</tt></font>
-<br><font size=2><tt><br>
-&gt; cheers<br>
-&gt; <br>
-&gt; -- <br>
-&gt; Michael Ellerman<br>
-&gt; IBM OzLabs<br>
-&gt; <br>
-&gt; wwweb: http://michael.ellerman.id.au<br>
-&gt; phone: +61 2 6212 1183 (tie line 70 21183)<br>
-&gt; <br>
-&gt; We do not inherit the earth from our ancestors,<br>
-&gt; we borrow it from our children. - S.M.A.R.T Person<br>
-&gt; <br>
-&gt; _______________________________________________<br>
-&gt; Linuxppc-dev mailing list<br>
-&gt; Linuxppc-dev@ozlabs.org<br>
-&gt; https://ozlabs.org/mailman/listinfo/linuxppc-dev<br>
-</tt></font>
---=_alternative 0021F4A888257146_=--
+Index: to-merge/arch/powerpc/platforms/pseries/smp.c
+===================================================================
+--- to-merge.orig/arch/powerpc/platforms/pseries/smp.c
++++ to-merge/arch/powerpc/platforms/pseries/smp.c
+@@ -57,16 +57,6 @@
+ #define DBG(fmt...)
+ #endif
+ 
+-/*
+- * The primary thread of each non-boot processor is recorded here before
+- * smp init.
+- */
+-static cpumask_t of_spin_map;
+-
+-extern void pSeries_secondary_smp_init(unsigned long);
+-
+-#ifdef CONFIG_HOTPLUG_CPU
+-
+ /* Get state of physical CPU.
+  * Return codes:
+  *	0	- The processor is in the RTAS stopped state
+@@ -93,6 +83,8 @@ static int query_cpu_stopped(unsigned in
+ 	return cpu_status;
+ }
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++
+ static int pSeries_cpu_disable(void)
+ {
+ 	int cpu = smp_processor_id();
+@@ -269,22 +261,23 @@ static struct notifier_block pSeries_smp
+  */
+ static inline int __devinit smp_startup_cpu(unsigned int lcpu)
+ {
+-	int status;
++	extern void pSeries_secondary_smp_init(unsigned long);
+ 	unsigned long start_here = __pa((u32)*((unsigned long *)
+ 					       pSeries_secondary_smp_init));
+ 	unsigned int pcpu;
+-	int start_cpu;
+-
+-	if (cpu_isset(lcpu, of_spin_map))
+-		/* Already started by OF and sitting in spin loop */
+-		return 1;
++	int start_cpu, status;
+ 
+ 	pcpu = get_hard_smp_processor_id(lcpu);
+ 
++	if (query_cpu_stopped(pcpu) == 0) {
++		DBG("CPU %d (%d) already running.\n", lcpu, pcpu);
++		return 1;
++	}
++
+ 	/* Fixup atomic count: it exited inside IRQ handler. */
+ 	task_thread_info(paca[lcpu].__current)->preempt_count	= 0;
+ 
+-	/* 
++	/*
+ 	 * If the RTAS start-cpu token does not exist then presume the
+ 	 * cpu is already spinning.
+ 	 */
+@@ -339,9 +332,6 @@ static void __devinit smp_xics_setup_cpu
+ 
+ 	if (firmware_has_feature(FW_FEATURE_SPLPAR))
+ 		vpa_init(cpu);
+-
+-	cpu_clear(cpu, of_spin_map);
+-
+ }
+ #endif /* CONFIG_XICS */
+ 
+@@ -419,8 +409,6 @@ static struct smp_ops_t pSeries_xics_smp
+ /* This is called very early */
+ void __init smp_init_pSeries(void)
+ {
+-	int i;
+-
+ 	DBG(" -> smp_init_pSeries()\n");
+ 
+ 	switch (ppc64_interrupt_controller) {
+@@ -447,22 +435,6 @@ void __init smp_init_pSeries(void)
+ 		pSeries_reconfig_notifier_register(&pSeries_smp_nb);
+ #endif
+ 
+-	/* Mark threads which are still spinning in hold loops. */
+-	if (cpu_has_feature(CPU_FTR_SMT)) {
+-		for_each_present_cpu(i) { 
+-			if (i % 2 == 0)
+-				/*
+-				 * Even-numbered logical cpus correspond to
+-				 * primary threads.
+-				 */
+-				cpu_set(i, of_spin_map);
+-		}
+-	} else {
+-		of_spin_map = cpu_present_map;
+-	}
+-
+-	cpu_clear(boot_cpuid, of_spin_map);
+-
+ 	/* Non-lpar has additional take/give timebase */
+ 	if (rtas_token("freeze-time-base") != RTAS_UNKNOWN_SERVICE) {
+ 		smp_ops->give_timebase = pSeries_give_timebase;
