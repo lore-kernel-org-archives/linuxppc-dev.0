@@ -1,12 +1,14 @@
-Return-Path: <linuxppcdev@qbjnet.com>
-Received: from kunk.qbjnet.com (ddsl1-28.ddsl.mr.net [137.192.135.28])
-	by ozlabs.org (Postfix) with SMTP id C671A67A44
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Apr 2006 12:16:29 +1000 (EST)
-Date: 4 Apr 2006 02:09:46 -0000
-Message-ID: <20060404020946.19378.qmail@kunk.qbjnet.com>
-To: linuxppc-dev@ozlabs.org
-From: "Bob Brose" <linuxppcdev@qbjnet.com>
-Subject: platinumfb broken in 2.6.16
+Return-Path: <galak@kernel.crashing.org>
+Date: Mon, 3 Apr 2006 23:27:39 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [PATCH] Add 85xx CDS to arch/powerpc 
+In-Reply-To: <E1FQBs8-00061K-BI@jdl.com>
+Message-ID: <Pine.LNX.4.44.0604032326320.9767-100000@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,20 +18,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Worked in 2.6.14:
-platinumfb: Found Apple Platinum video hardware
-platinumfb: Total VRAM = 2MB (0011)
-platinumfb: DACula type 0x3c
-platinumfb: Monitor sense value = 0x62b, platinumfb:  Using video mode 6 and col
-or mode 2.
-line_length: a20
-Console: switching to colour frame buffer device 80x30
-fb0: Apple Platinum frame buffer device
-Macintosh non-volatile memory driver v1.1
+On Sun, 2 Apr 2006, Jon Loeliger wrote:
 
-This is all I get in 2.6.16:
-Platinumfb: Found Apple Platinum video hardware
-Macintosh non-volatile memory driver v1.1
+> So, like, the other day Arnd Bergmann mumbled:
+> > [MPIC]
+> > 
+> > Shouldn't all this come from the device tree?
+> > 
+> > ...
+> >
+> > > +/* PCI interrupt controller */
+> > > +#define PIRQ0A			MPC85xx_IRQ_EXT0
+> > > +#define PIRQ0B			MPC85xx_IRQ_EXT1
+> > > +#define PIRQ0C			MPC85xx_IRQ_EXT2
+> > > +#define PIRQ0D			MPC85xx_IRQ_EXT3
+> > > +#define PIRQ1A			MPC85xx_IRQ_EXT11
+> > 
+> > And these as well, more importantly?
+> 
+> Yep.  In time they will.  However, the parsing of the
+> PIC nodes hasn't been added to the 85xx (uh, nor 83xx)
+> as of yet.
+> 
+> It is on "the list".
+> 
+> We should defer to Kumar to accepting these at this stage
+> or not.
 
-The screen has the boot params on it but is otherwise blank.
-Everything else works as normal.
+As Jon stated its on the list.  We need to work up something like what we 
+have for parsing memory addresses for irqs.  Ben has some ideas, until 
+then we make forward progress using the old style of things.
+
+- k
