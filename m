@@ -3,16 +3,16 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 19416679E6
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2006 00:06:45 +1000 (EST)
-In-Reply-To: <11442138641124-git-send-email-sfr@canb.auug.org.au>
-References: <11442138641124-git-send-email-sfr@canb.auug.org.au>
+	by ozlabs.org (Postfix) with ESMTP id DC476679E6
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2006 00:07:17 +1000 (EST)
+In-Reply-To: <1144213868772-git-send-email-sfr@canb.auug.org.au>
+References: <1144213868772-git-send-email-sfr@canb.auug.org.au>
 Mime-Version: 1.0 (Apple Message framework v746.3)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C4EF40B5-0951-4F3C-B072-4B29550C7DCE@kernel.crashing.org>
+Message-Id: <42E5FD7F-3CD6-4488-A2E7-ACFDC0ED8C94@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 08/15] powerpc: move asm/open_pic.h
-Date: Wed, 5 Apr 2006 09:07:07 -0500
+Subject: Re: [PATCH 11/15] powerpc: move asm/ocp.h
+Date: Wed, 5 Apr 2006 09:07:41 -0500
 To: sfr@canb.auug.org.au
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,9 +24,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I'd need to check, but I dont think we should move this since arch/ 
-powerpc is using mpic to handle openpic and I'm guessing it has its  
-own headers.
+Nack. OCP should not exist in arch/powerpc so leave this header where  
+it is.
 
 - k
 
@@ -41,234 +40,476 @@ On Apr 5, 2006, at 12:10 AM, sfr@canb.auug.org.au wrote:
 >
 > ---
 >
->  include/asm-powerpc/open_pic.h |   99 +++++++++++++++++++++++++++++ 
+>  include/asm-powerpc/ocp.h |  206 ++++++++++++++++++++++++++++++++++ 
 > +++++++++++
->  include/asm-ppc/open_pic.h     |   99  
-> ----------------------------------------
->  2 files changed, 99 insertions(+), 99 deletions(-)
->  create mode 100644 include/asm-powerpc/open_pic.h
->  delete mode 100644 include/asm-ppc/open_pic.h
+>  include/asm-ppc/ocp.h     |  207  
+> ---------------------------------------------
+>  2 files changed, 206 insertions(+), 207 deletions(-)
+>  create mode 100644 include/asm-powerpc/ocp.h
+>  delete mode 100644 include/asm-ppc/ocp.h
 >
-> 54316678b9e6aad8349f2df50dadd2597b675804
-> diff --git a/include/asm-powerpc/open_pic.h b/include/asm-powerpc/ 
-> open_pic.h
+> c7b417812dc2ebece32356c0a5e93966de9ba2cd
+> diff --git a/include/asm-powerpc/ocp.h b/include/asm-powerpc/ocp.h
 > new file mode 100644
-> index 0000000..3f197cf
+> index 0000000..8916c52
 > --- /dev/null
-> +++ b/include/asm-powerpc/open_pic.h
-> @@ -0,0 +1,99 @@
-> +#ifndef _ASM_POWERPC_OPEN_PIC_H
-> +#define _ASM_POWERPC_OPEN_PIC_H
-> +
+> +++ b/include/asm-powerpc/ocp.h
+> @@ -0,0 +1,206 @@
+> +#ifndef _ASM_POWERPC_OCP_H
+> +#define _ASM_POWERPC_OCP_H
 > +/*
-> + *  include/asm-ppc/open_pic.h -- OpenPIC Interrupt Handling
+> + * ocp.h
 > + *
-> + *  Copyright (C) 1997 Geert Uytterhoeven
+> + *      (c) Benjamin Herrenschmidt (benh@kernel.crashing.org)
+> + *          Mipsys - France
 > + *
-> + *  This file is subject to the terms and conditions of the GNU  
-> General Public
-> + *  License.  See the file COPYING in the main directory of this  
-> archive
-> + *  for more details.
+> + *          Derived from work (c) Armin Kuster akuster@pacbell.net
 > + *
+> + *          Additional support and port to 2.6 LDM/sysfs by
+> + *          Matt Porter <mporter@kernel.crashing.org>
+> + *          Copyright 2003-2004 MontaVista Software, Inc.
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + *
+> + *  TODO: - Add get/put interface & fixup locking to provide same  
+> API for
+> + *          2.4 and 2.5
+> + *	  - Rework PM callbacks
 > + */
 > +
-> +#include <linux/irq.h>
+> +#ifdef __KERNEL__
 > +
-> +#define OPENPIC_SIZE	0x40000
+> +#include <linux/init.h>
+> +#include <linux/list.h>
+> +#include <linux/devfs_fs_kernel.h>
+> +#include <linux/device.h>
+> +
+> +#include <asm/mmu.h>
+> +#include <asm/ocp_ids.h>
+> +#include <asm/rwsem.h>
+> +#include <asm/semaphore.h>
+> +
+> +#ifdef CONFIG_PPC_OCP
+> +
+> +#define OCP_MAX_IRQS	7
+> +#define MAX_EMACS	4
+> +#define OCP_IRQ_NA	-1	/* used when ocp device does not have an irq */
+> +#define OCP_IRQ_MUL	-2	/* used for ocp devices with multiply irqs */
+> +#define OCP_NULL_TYPE	-1	/* used to mark end of list */
+> +#define OCP_CPM_NA	0	/* No Clock or Power Management avaliable */
+> +#define OCP_PADDR_NA	0	/* No MMIO registers */
+> +
+> +#define OCP_ANY_ID	(~0)
+> +#define OCP_ANY_INDEX	-1
+> +
+> +extern struct list_head 	ocp_devices;
+> +extern struct rw_semaphore	ocp_devices_sem;
+> +
+> +struct ocp_device_id {
+> +	unsigned int	vendor, function;	/* Vendor and function ID or  
+> OCP_ANY_ID */
+> +	unsigned long	driver_data;		/* Data private to the driver */
+> +};
+> +
 > +
 > +/*
-> + *  Non-offset'ed vector numbers
+> + * Static definition of an OCP device.
+> + *
+> + * @vendor:    Vendor code. It is _STRONGLY_ discouraged to use
+> + *             the vendor code as a way to match a unique device,
+> + *             though I kept that possibility open, you should
+> + *             really define different function codes for different
+> + *             device types
+> + * @function:  This is the function code for this device.
+> + * @index:     This index is used for mapping the Nth function of a
+> + *             given core. This is typically used for cross-driver
+> + *             matching, like looking for a given MAL or ZMII from
+> + *             an EMAC or for getting to the proper set of DCRs.
+> + *             Indices are no longer magically calculated based on
+> + *             structure ordering, they have to be actually coded
+> + *             into the ocp_def to avoid any possible confusion
+> + *             I _STRONGLY_ (again ? wow !) encourage anybody relying
+> + *             on index mapping to encode the "target" index in an
+> + *             associated structure pointed to by "additions", see
+> + *             how it's done for the EMAC driver.
+> + * @paddr:     Device physical address (may not mean anything...)
+> + * @irq:       Interrupt line for this device (TODO: think about  
+> making
+> + *             an array with this)
+> + * @pm:        Currently, contains the bitmask in CPMFR DCR for  
+> the device
+> + * @additions: Optionally points to a function specific structure
+> + *             providing additional informations for a given device
+> + *             instance. It's currently used by the EMAC driver  
+> for MAL
+> + *             channel & ZMII port mapping among others.
+> + * @show:      Optionally points to a function specific structure
+> + *             providing a sysfs show routine for additions fields.
 > + */
+> +struct ocp_def {
+> +	unsigned int	vendor;
+> +	unsigned int	function;
+> +	int		index;
+> +	phys_addr_t	paddr;
+> +	int	  	irq;
+> +	unsigned long	pm;
+> +	void		*additions;
+> +	void		(*show)(struct device *);
+> +};
 > +
-> +#define OPENPIC_VEC_TIMER	110	/* and up */
-> +#define OPENPIC_VEC_IPI		118	/* and up */
-> +#define OPENPIC_VEC_SPURIOUS	255
 > +
-> +/* Priorities */
-> +#define OPENPIC_PRIORITY_IPI_BASE	10
-> +#define OPENPIC_PRIORITY_DEFAULT	4
-> +#define OPENPIC_PRIORITY_NMI		9
+> +/* Struct for a given device instance */
+> +struct ocp_device {
+> +	struct list_head	link;
+> +	char			name[80];	/* device name */
+> +	struct ocp_def		*def;		/* device definition */
+> +	void			*drvdata;	/* driver data for this device */
+> +	struct ocp_driver	*driver;
+> +	u32			current_state;	/* Current operating state. In ACPI-speak,
+> +						   this is D0-D3, D0 being fully functional,
+> +						   and D3 being off. */
+> +	struct			device dev;
+> +};
 > +
-> +/* OpenPIC IRQ controller structure */
-> +extern struct hw_interrupt_type open_pic;
+> +struct ocp_driver {
+> +	struct list_head node;
+> +	char *name;
+> +	const struct ocp_device_id *id_table;	/* NULL if wants all  
+> devices */
+> +	int  (*probe)  (struct ocp_device *dev);	/* New device inserted */
+> +	void (*remove) (struct ocp_device *dev);	/* Device removed (NULL  
+> if not a hot-plug capable driver) */
+> +	int  (*suspend) (struct ocp_device *dev, pm_message_t state);	/*  
+> Device suspended */
+> +	int  (*resume) (struct ocp_device *dev);	                /*  
+> Device woken up */
+> +	struct device_driver driver;
+> +};
 > +
-> +/* OpenPIC IPI controller structure */
-> +#ifdef CONFIG_SMP
-> +extern struct hw_interrupt_type open_pic_ipi;
-> +#endif /* CONFIG_SMP */
+> +#define to_ocp_dev(n) container_of(n, struct ocp_device, dev)
+> +#define to_ocp_drv(n) container_of(n, struct ocp_driver, driver)
 > +
-> +extern u_int OpenPIC_NumInitSenses;
-> +extern u_char *OpenPIC_InitSenses;
-> +extern void __iomem * OpenPIC_Addr;
-> +extern int epic_serial_mode;
-> +
-> +/* Exported functions */
-> +extern void openpic_set_sources(int first_irq, int num_irqs, void  
-> __iomem *isr);
-> +extern void openpic_init(int linux_irq_offset);
-> +extern void openpic_init_nmi_irq(u_int irq);
-> +extern void openpic_set_irq_priority(u_int irq, u_int pri);
-> +extern void openpic_hookup_cascade(u_int irq, char *name,
-> +				   int (*cascade_fn)(struct pt_regs *));
-> +extern u_int openpic_irq(void);
-> +extern void openpic_eoi(void);
-> +extern void openpic_request_IPIs(void);
-> +extern void do_openpic_setup_cpu(void);
-> +extern int openpic_get_irq(struct pt_regs *regs);
-> +extern void openpic_reset_processor_phys(u_int cpumask);
-> +extern void openpic_setup_ISU(int isu_num, unsigned long addr);
-> +extern void openpic_cause_IPI(u_int ipi, cpumask_t cpumask);
-> +extern void smp_openpic_message_pass(int target, int msg);
-> +extern void openpic_set_k2_cascade(int irq);
-> +extern void openpic_set_priority(u_int pri);
-> +extern u_int openpic_get_priority(void);
-> +
-> +extern inline int openpic_to_irq(int irq)
+> +/* Similar to the helpers above, these manipulate per-ocp_dev
+> + * driver-specific data.  Currently stored as ocp_dev::ocpdev,
+> + * a void pointer, but it is not present on older kernels.
+> + */
+> +static inline void *
+> +ocp_get_drvdata(struct ocp_device *pdev)
 > +{
-> +	/* IRQ 0 usually means 'disabled'.. don't mess with it
-> +	 * exceptions to this (sandpoint maybe?)
-> +	 * shouldn't use openpic_to_irq
-> +	 */
-> +	if (irq != 0){
-> +		return irq += NUM_8259_INTERRUPTS;
-> +	} else {
-> +		return 0;
-> +	}
+> +	return pdev->drvdata;
 > +}
-> +/* Support for second openpic on G5 macs */
 > +
-> +// FIXME: To be replaced by sane cascaded controller management */
+> +static inline void
+> +ocp_set_drvdata(struct ocp_device *pdev, void *data)
+> +{
+> +	pdev->drvdata = data;
+> +}
 > +
-> +#define PMAC_OPENPIC2_OFFSET	128
+> +#if defined (CONFIG_PM)
+> +/*
+> + * This is right for the IBM 405 and 440 but will need to be
+> + * generalized if the OCP stuff gets used on other processors.
+> + */
+> +static inline void
+> +ocp_force_power_off(struct ocp_device *odev)
+> +{
+> +	mtdcr(DCRN_CPMFR, mfdcr(DCRN_CPMFR) | odev->def->pm);
+> +}
 > +
-> +#define OPENPIC2_VEC_TIMER	110	/* and up */
-> +#define OPENPIC2_VEC_IPI	118	/* and up */
-> +#define OPENPIC2_VEC_SPURIOUS	127
+> +static inline void
+> +ocp_force_power_on(struct ocp_device *odev)
+> +{
+> +	mtdcr(DCRN_CPMFR, mfdcr(DCRN_CPMFR) & ~odev->def->pm);
+> +}
+> +#else
+> +#define ocp_force_power_off(x)	(void)(x)
+> +#define ocp_force_power_on(x)	(void)(x)
+> +#endif
 > +
+> +/* Register/Unregister an OCP driver */
+> +extern int ocp_register_driver(struct ocp_driver *drv);
+> +extern void ocp_unregister_driver(struct ocp_driver *drv);
 > +
-> +extern void* OpenPIC2_Addr;
+> +/* Build list of devices */
+> +extern int ocp_early_init(void) __init;
 > +
-> +/* Exported functions */
-> +extern void openpic2_set_sources(int first_irq, int num_irqs, void  
-> *isr);
-> +extern void openpic2_init(int linux_irq_offset);
-> +extern void openpic2_init_nmi_irq(u_int irq);
-> +extern u_int openpic2_irq(void);
-> +extern void openpic2_eoi(void);
-> +extern int openpic2_get_irq(struct pt_regs *regs);
-> +extern void openpic2_setup_ISU(int isu_num, unsigned long addr);
+> +/* Find a device by index */
+> +extern struct ocp_device *ocp_find_device(unsigned int vendor,  
+> unsigned int function, int index);
 > +
-> +#endif /* _ASM_POWERPC_OPEN_PIC_H */
-> diff --git a/include/asm-ppc/open_pic.h b/include/asm-ppc/open_pic.h
+> +/* Get a def by index */
+> +extern struct ocp_def *ocp_get_one_device(unsigned int vendor,  
+> unsigned int function, int index);
+> +
+> +/* Add a device by index */
+> +extern int ocp_add_one_device(struct ocp_def *def);
+> +
+> +/* Remove a device by index */
+> +extern int ocp_remove_one_device(unsigned int vendor, unsigned int  
+> function, int index);
+> +
+> +/* Iterate over devices and execute a routine */
+> +extern void ocp_for_each_device(void(*callback)(struct ocp_device  
+> *, void *arg), void *arg);
+> +
+> +/* Sysfs support */
+> +#define OCP_SYSFS_ADDTL(type, format, name, field)			\
+> +static ssize_t								\
+> +show_##name##_##field(struct device *dev, struct device_attribute  
+> *attr, char *buf)			\
+> +{									\
+> +	struct ocp_device *odev = to_ocp_dev(dev);			\
+> +	type *add = odev->def->additions;				\
+> +									\
+> +	return sprintf(buf, format, add->field);			\
+> +}									\
+> +static DEVICE_ATTR(name##_##field, S_IRUGO, show_##name##_##field,  
+> NULL);
+> +
+> +#ifdef CONFIG_IBM_OCP
+> +#include <asm/ibm_ocp.h>
+> +#endif
+> +
+> +#endif				/* CONFIG_PPC_OCP */
+> +#endif				/* __KERNEL__ */
+> +#endif /* _ASM_POWERPC_OCP_H */
+> diff --git a/include/asm-ppc/ocp.h b/include/asm-ppc/ocp.h
 > deleted file mode 100644
-> index ec2f466..0000000
-> --- a/include/asm-ppc/open_pic.h
+> index 983116f..0000000
+> --- a/include/asm-ppc/ocp.h
 > +++ /dev/null
-> @@ -1,99 +0,0 @@
+> @@ -1,207 +0,0 @@
 > -/*
-> - *  include/asm-ppc/open_pic.h -- OpenPIC Interrupt Handling
+> - * ocp.h
 > - *
-> - *  Copyright (C) 1997 Geert Uytterhoeven
+> - *      (c) Benjamin Herrenschmidt (benh@kernel.crashing.org)
+> - *          Mipsys - France
 > - *
-> - *  This file is subject to the terms and conditions of the GNU  
-> General Public
-> - *  License.  See the file COPYING in the main directory of this  
-> archive
-> - *  for more details.
+> - *          Derived from work (c) Armin Kuster akuster@pacbell.net
 > - *
+> - *          Additional support and port to 2.6 LDM/sysfs by
+> - *          Matt Porter <mporter@kernel.crashing.org>
+> - *          Copyright 2003-2004 MontaVista Software, Inc.
+> - *
+> - * This program is free software; you can redistribute  it and/or  
+> modify it
+> - * under  the terms of  the GNU General  Public License as  
+> published by the
+> - * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> - * option) any later version.
+> - *
+> - *  TODO: - Add get/put interface & fixup locking to provide same  
+> API for
+> - *          2.4 and 2.5
+> - *	  - Rework PM callbacks
 > - */
 > -
-> -#ifndef _PPC_KERNEL_OPEN_PIC_H
-> -#define _PPC_KERNEL_OPEN_PIC_H
+> -#ifdef __KERNEL__
+> -#ifndef __OCP_H__
+> -#define __OCP_H__
 > -
+> -#include <linux/init.h>
+> -#include <linux/list.h>
 > -#include <linux/config.h>
-> -#include <linux/irq.h>
+> -#include <linux/devfs_fs_kernel.h>
+> -#include <linux/device.h>
 > -
-> -#define OPENPIC_SIZE	0x40000
+> -#include <asm/mmu.h>
+> -#include <asm/ocp_ids.h>
+> -#include <asm/rwsem.h>
+> -#include <asm/semaphore.h>
+> -
+> -#ifdef CONFIG_PPC_OCP
+> -
+> -#define OCP_MAX_IRQS	7
+> -#define MAX_EMACS	4
+> -#define OCP_IRQ_NA	-1	/* used when ocp device does not have an irq */
+> -#define OCP_IRQ_MUL	-2	/* used for ocp devices with multiply irqs */
+> -#define OCP_NULL_TYPE	-1	/* used to mark end of list */
+> -#define OCP_CPM_NA	0	/* No Clock or Power Management avaliable */
+> -#define OCP_PADDR_NA	0	/* No MMIO registers */
+> -
+> -#define OCP_ANY_ID	(~0)
+> -#define OCP_ANY_INDEX	-1
+> -
+> -extern struct list_head 	ocp_devices;
+> -extern struct rw_semaphore	ocp_devices_sem;
+> -
+> -struct ocp_device_id {
+> -	unsigned int	vendor, function;	/* Vendor and function ID or  
+> OCP_ANY_ID */
+> -	unsigned long	driver_data;		/* Data private to the driver */
+> -};
+> -
 > -
 > -/*
-> - *  Non-offset'ed vector numbers
+> - * Static definition of an OCP device.
+> - *
+> - * @vendor:    Vendor code. It is _STRONGLY_ discouraged to use
+> - *             the vendor code as a way to match a unique device,
+> - *             though I kept that possibility open, you should
+> - *             really define different function codes for different
+> - *             device types
+> - * @function:  This is the function code for this device.
+> - * @index:     This index is used for mapping the Nth function of a
+> - *             given core. This is typically used for cross-driver
+> - *             matching, like looking for a given MAL or ZMII from
+> - *             an EMAC or for getting to the proper set of DCRs.
+> - *             Indices are no longer magically calculated based on
+> - *             structure ordering, they have to be actually coded
+> - *             into the ocp_def to avoid any possible confusion
+> - *             I _STRONGLY_ (again ? wow !) encourage anybody relying
+> - *             on index mapping to encode the "target" index in an
+> - *             associated structure pointed to by "additions", see
+> - *             how it's done for the EMAC driver.
+> - * @paddr:     Device physical address (may not mean anything...)
+> - * @irq:       Interrupt line for this device (TODO: think about  
+> making
+> - *             an array with this)
+> - * @pm:        Currently, contains the bitmask in CPMFR DCR for  
+> the device
+> - * @additions: Optionally points to a function specific structure
+> - *             providing additional informations for a given device
+> - *             instance. It's currently used by the EMAC driver  
+> for MAL
+> - *             channel & ZMII port mapping among others.
+> - * @show:      Optionally points to a function specific structure
+> - *             providing a sysfs show routine for additions fields.
 > - */
+> -struct ocp_def {
+> -	unsigned int	vendor;
+> -	unsigned int	function;
+> -	int		index;
+> -	phys_addr_t	paddr;
+> -	int	  	irq;
+> -	unsigned long	pm;
+> -	void		*additions;
+> -	void		(*show)(struct device *);
+> -};
 > -
-> -#define OPENPIC_VEC_TIMER	110	/* and up */
-> -#define OPENPIC_VEC_IPI		118	/* and up */
-> -#define OPENPIC_VEC_SPURIOUS	255
 > -
-> -/* Priorities */
-> -#define OPENPIC_PRIORITY_IPI_BASE	10
-> -#define OPENPIC_PRIORITY_DEFAULT	4
-> -#define OPENPIC_PRIORITY_NMI		9
+> -/* Struct for a given device instance */
+> -struct ocp_device {
+> -	struct list_head	link;
+> -	char			name[80];	/* device name */
+> -	struct ocp_def		*def;		/* device definition */
+> -	void			*drvdata;	/* driver data for this device */
+> -	struct ocp_driver	*driver;
+> -	u32			current_state;	/* Current operating state. In ACPI-speak,
+> -						   this is D0-D3, D0 being fully functional,
+> -						   and D3 being off. */
+> -	struct			device dev;
+> -};
 > -
-> -/* OpenPIC IRQ controller structure */
-> -extern struct hw_interrupt_type open_pic;
+> -struct ocp_driver {
+> -	struct list_head node;
+> -	char *name;
+> -	const struct ocp_device_id *id_table;	/* NULL if wants all  
+> devices */
+> -	int  (*probe)  (struct ocp_device *dev);	/* New device inserted */
+> -	void (*remove) (struct ocp_device *dev);	/* Device removed (NULL  
+> if not a hot-plug capable driver) */
+> -	int  (*suspend) (struct ocp_device *dev, pm_message_t state);	/*  
+> Device suspended */
+> -	int  (*resume) (struct ocp_device *dev);	                /*  
+> Device woken up */
+> -	struct device_driver driver;
+> -};
 > -
-> -/* OpenPIC IPI controller structure */
-> -#ifdef CONFIG_SMP
-> -extern struct hw_interrupt_type open_pic_ipi;
-> -#endif /* CONFIG_SMP */
+> -#define to_ocp_dev(n) container_of(n, struct ocp_device, dev)
+> -#define to_ocp_drv(n) container_of(n, struct ocp_driver, driver)
 > -
-> -extern u_int OpenPIC_NumInitSenses;
-> -extern u_char *OpenPIC_InitSenses;
-> -extern void __iomem * OpenPIC_Addr;
-> -extern int epic_serial_mode;
-> -
-> -/* Exported functions */
-> -extern void openpic_set_sources(int first_irq, int num_irqs, void  
-> __iomem *isr);
-> -extern void openpic_init(int linux_irq_offset);
-> -extern void openpic_init_nmi_irq(u_int irq);
-> -extern void openpic_set_irq_priority(u_int irq, u_int pri);
-> -extern void openpic_hookup_cascade(u_int irq, char *name,
-> -				   int (*cascade_fn)(struct pt_regs *));
-> -extern u_int openpic_irq(void);
-> -extern void openpic_eoi(void);
-> -extern void openpic_request_IPIs(void);
-> -extern void do_openpic_setup_cpu(void);
-> -extern int openpic_get_irq(struct pt_regs *regs);
-> -extern void openpic_reset_processor_phys(u_int cpumask);
-> -extern void openpic_setup_ISU(int isu_num, unsigned long addr);
-> -extern void openpic_cause_IPI(u_int ipi, cpumask_t cpumask);
-> -extern void smp_openpic_message_pass(int target, int msg);
-> -extern void openpic_set_k2_cascade(int irq);
-> -extern void openpic_set_priority(u_int pri);
-> -extern u_int openpic_get_priority(void);
-> -
-> -extern inline int openpic_to_irq(int irq)
+> -/* Similar to the helpers above, these manipulate per-ocp_dev
+> - * driver-specific data.  Currently stored as ocp_dev::ocpdev,
+> - * a void pointer, but it is not present on older kernels.
+> - */
+> -static inline void *
+> -ocp_get_drvdata(struct ocp_device *pdev)
 > -{
-> -	/* IRQ 0 usually means 'disabled'.. don't mess with it
-> -	 * exceptions to this (sandpoint maybe?)
-> -	 * shouldn't use openpic_to_irq
-> -	 */
-> -	if (irq != 0){
-> -		return irq += NUM_8259_INTERRUPTS;
-> -	} else {
-> -		return 0;
-> -	}
+> -	return pdev->drvdata;
 > -}
-> -/* Support for second openpic on G5 macs */
 > -
-> -// FIXME: To be replaced by sane cascaded controller management */
+> -static inline void
+> -ocp_set_drvdata(struct ocp_device *pdev, void *data)
+> -{
+> -	pdev->drvdata = data;
+> -}
 > -
-> -#define PMAC_OPENPIC2_OFFSET	128
+> -#if defined (CONFIG_PM)
+> -/*
+> - * This is right for the IBM 405 and 440 but will need to be
+> - * generalized if the OCP stuff gets used on other processors.
+> - */
+> -static inline void
+> -ocp_force_power_off(struct ocp_device *odev)
+> -{
+> -	mtdcr(DCRN_CPMFR, mfdcr(DCRN_CPMFR) | odev->def->pm);
+> -}
 > -
-> -#define OPENPIC2_VEC_TIMER	110	/* and up */
-> -#define OPENPIC2_VEC_IPI	118	/* and up */
-> -#define OPENPIC2_VEC_SPURIOUS	127
+> -static inline void
+> -ocp_force_power_on(struct ocp_device *odev)
+> -{
+> -	mtdcr(DCRN_CPMFR, mfdcr(DCRN_CPMFR) & ~odev->def->pm);
+> -}
+> -#else
+> -#define ocp_force_power_off(x)	(void)(x)
+> -#define ocp_force_power_on(x)	(void)(x)
+> -#endif
 > -
+> -/* Register/Unregister an OCP driver */
+> -extern int ocp_register_driver(struct ocp_driver *drv);
+> -extern void ocp_unregister_driver(struct ocp_driver *drv);
 > -
-> -extern void* OpenPIC2_Addr;
+> -/* Build list of devices */
+> -extern int ocp_early_init(void) __init;
 > -
-> -/* Exported functions */
-> -extern void openpic2_set_sources(int first_irq, int num_irqs, void  
-> *isr);
-> -extern void openpic2_init(int linux_irq_offset);
-> -extern void openpic2_init_nmi_irq(u_int irq);
-> -extern u_int openpic2_irq(void);
-> -extern void openpic2_eoi(void);
-> -extern int openpic2_get_irq(struct pt_regs *regs);
-> -extern void openpic2_setup_ISU(int isu_num, unsigned long addr);
-> -#endif /* _PPC_KERNEL_OPEN_PIC_H */
+> -/* Find a device by index */
+> -extern struct ocp_device *ocp_find_device(unsigned int vendor,  
+> unsigned int function, int index);
+> -
+> -/* Get a def by index */
+> -extern struct ocp_def *ocp_get_one_device(unsigned int vendor,  
+> unsigned int function, int index);
+> -
+> -/* Add a device by index */
+> -extern int ocp_add_one_device(struct ocp_def *def);
+> -
+> -/* Remove a device by index */
+> -extern int ocp_remove_one_device(unsigned int vendor, unsigned int  
+> function, int index);
+> -
+> -/* Iterate over devices and execute a routine */
+> -extern void ocp_for_each_device(void(*callback)(struct ocp_device  
+> *, void *arg), void *arg);
+> -
+> -/* Sysfs support */
+> -#define OCP_SYSFS_ADDTL(type, format, name, field)			\
+> -static ssize_t								\
+> -show_##name##_##field(struct device *dev, struct device_attribute  
+> *attr, char *buf)			\
+> -{									\
+> -	struct ocp_device *odev = to_ocp_dev(dev);			\
+> -	type *add = odev->def->additions;				\
+> -									\
+> -	return sprintf(buf, format, add->field);			\
+> -}									\
+> -static DEVICE_ATTR(name##_##field, S_IRUGO, show_##name##_##field,  
+> NULL);
+> -
+> -#ifdef CONFIG_IBM_OCP
+> -#include <asm/ibm_ocp.h>
+> -#endif
+> -
+> -#endif				/* CONFIG_PPC_OCP */
+> -#endif				/* __OCP_H__ */
+> -#endif				/* __KERNEL__ */
 > -- 
 > 1.2.4
 >
