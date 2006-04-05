@@ -3,16 +3,16 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1890567A6D
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2006 00:05:26 +1000 (EST)
-In-Reply-To: <11442138551674-git-send-email-sfr@canb.auug.org.au>
-References: <11442138551674-git-send-email-sfr@canb.auug.org.au>
+	by ozlabs.org (Postfix) with ESMTP id 19416679E6
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2006 00:06:45 +1000 (EST)
+In-Reply-To: <11442138641124-git-send-email-sfr@canb.auug.org.au>
+References: <11442138641124-git-send-email-sfr@canb.auug.org.au>
 Mime-Version: 1.0 (Apple Message framework v746.3)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B708D33C-313A-46BD-9A20-3826660E1D47@kernel.crashing.org>
+Message-Id: <C4EF40B5-0951-4F3C-B072-4B29550C7DCE@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 04/15] powerpc: move asm/bootinfo.h
-Date: Wed, 5 Apr 2006 09:05:51 -0500
+Subject: Re: [PATCH 08/15] powerpc: move asm/open_pic.h
+Date: Wed, 5 Apr 2006 09:07:07 -0500
 To: sfr@canb.auug.org.au
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,8 +24,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nack, we are using the flat dev tree so old boot methods should stay  
-in arch/ppc.
+I'd need to check, but I dont think we should move this since arch/ 
+powerpc is using mpic to handle openpic and I'm guessing it has its  
+own headers.
 
 - k
 
@@ -33,141 +34,241 @@ On Apr 5, 2006, at 12:10 AM, sfr@canb.auug.org.au wrote:
 
 > From: Stephen Rothwell <sfr@canb.auug.org.au>
 >
-> Since files in arch/powerpc now depend on asm/bootinfo.h,
-> move it to include/asm-powerpc.
+> Since the ARCH=powerpc build depends on this file, move it to
+> include/asm-powerpc.
 >
 > Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 >
 > ---
 >
->  include/asm-powerpc/bootinfo.h |   52 +++++++++++++++++++++++++++++ 
+>  include/asm-powerpc/open_pic.h |   99 +++++++++++++++++++++++++++++ 
 > +++++++++++
->  include/asm-ppc/bootinfo.h     |   52  
+>  include/asm-ppc/open_pic.h     |   99  
 > ----------------------------------------
->  2 files changed, 52 insertions(+), 52 deletions(-)
->  create mode 100644 include/asm-powerpc/bootinfo.h
->  delete mode 100644 include/asm-ppc/bootinfo.h
+>  2 files changed, 99 insertions(+), 99 deletions(-)
+>  create mode 100644 include/asm-powerpc/open_pic.h
+>  delete mode 100644 include/asm-ppc/open_pic.h
 >
-> 355987a8cf0cf4b644e83b8268a9a34cf4524ee0
-> diff --git a/include/asm-powerpc/bootinfo.h b/include/asm-powerpc/ 
-> bootinfo.h
+> 54316678b9e6aad8349f2df50dadd2597b675804
+> diff --git a/include/asm-powerpc/open_pic.h b/include/asm-powerpc/ 
+> open_pic.h
 > new file mode 100644
-> index 0000000..231c534
+> index 0000000..3f197cf
 > --- /dev/null
-> +++ b/include/asm-powerpc/bootinfo.h
-> @@ -0,0 +1,52 @@
-> +#ifndef _ASM_POWERPC_BOOTINFO_H
-> +#define _ASM_POWERPC_BOOTINFO_H
+> +++ b/include/asm-powerpc/open_pic.h
+> @@ -0,0 +1,99 @@
+> +#ifndef _ASM_POWERPC_OPEN_PIC_H
+> +#define _ASM_POWERPC_OPEN_PIC_H
 > +
 > +/*
-> + * Non-machine dependent bootinfo structure.  Basic idea
-> + * borrowed from the m68k.
+> + *  include/asm-ppc/open_pic.h -- OpenPIC Interrupt Handling
 > + *
-> + * Copyright (C) 1999 Cort Dougan <cort@ppc.kernel.org>
+> + *  Copyright (C) 1997 Geert Uytterhoeven
+> + *
+> + *  This file is subject to the terms and conditions of the GNU  
+> General Public
+> + *  License.  See the file COPYING in the main directory of this  
+> archive
+> + *  for more details.
+> + *
 > + */
 > +
-> +#ifdef __KERNEL__
+> +#include <linux/irq.h>
 > +
-> +#include <asm/page.h>
+> +#define OPENPIC_SIZE	0x40000
 > +
-> +#if defined(CONFIG_APUS) && !defined(__BOOTER__)
-> +#include <asm-m68k/bootinfo.h>
-> +#else
+> +/*
+> + *  Non-offset'ed vector numbers
+> + */
 > +
-> +struct bi_record {
-> +	unsigned long tag;		/* tag ID */
-> +	unsigned long size;		/* size of record (in bytes) */
-> +	unsigned long data[0];		/* data */
-> +};
+> +#define OPENPIC_VEC_TIMER	110	/* and up */
+> +#define OPENPIC_VEC_IPI		118	/* and up */
+> +#define OPENPIC_VEC_SPURIOUS	255
 > +
-> +#define BI_FIRST		0x1010  /* first record - marker */
-> +#define BI_LAST			0x1011	/* last record - marker */
-> +#define BI_CMD_LINE		0x1012
-> +#define BI_BOOTLOADER_ID	0x1013
-> +#define BI_INITRD		0x1014
-> +#define BI_SYSMAP		0x1015
-> +#define BI_MACHTYPE		0x1016
-> +#define BI_MEMSIZE		0x1017
-> +#define BI_BOARD_INFO		0x1018
+> +/* Priorities */
+> +#define OPENPIC_PRIORITY_IPI_BASE	10
+> +#define OPENPIC_PRIORITY_DEFAULT	4
+> +#define OPENPIC_PRIORITY_NMI		9
 > +
-> +extern struct bi_record *find_bootinfo(void);
-> +extern void bootinfo_init(struct bi_record *rec);
-> +extern void bootinfo_append(unsigned long tag, unsigned long size,  
-> void * data);
-> +extern void parse_bootinfo(struct bi_record *rec);
-> +extern unsigned long boot_mem_size;
+> +/* OpenPIC IRQ controller structure */
+> +extern struct hw_interrupt_type open_pic;
 > +
-> +static inline struct bi_record *
-> +bootinfo_addr(unsigned long offset)
+> +/* OpenPIC IPI controller structure */
+> +#ifdef CONFIG_SMP
+> +extern struct hw_interrupt_type open_pic_ipi;
+> +#endif /* CONFIG_SMP */
+> +
+> +extern u_int OpenPIC_NumInitSenses;
+> +extern u_char *OpenPIC_InitSenses;
+> +extern void __iomem * OpenPIC_Addr;
+> +extern int epic_serial_mode;
+> +
+> +/* Exported functions */
+> +extern void openpic_set_sources(int first_irq, int num_irqs, void  
+> __iomem *isr);
+> +extern void openpic_init(int linux_irq_offset);
+> +extern void openpic_init_nmi_irq(u_int irq);
+> +extern void openpic_set_irq_priority(u_int irq, u_int pri);
+> +extern void openpic_hookup_cascade(u_int irq, char *name,
+> +				   int (*cascade_fn)(struct pt_regs *));
+> +extern u_int openpic_irq(void);
+> +extern void openpic_eoi(void);
+> +extern void openpic_request_IPIs(void);
+> +extern void do_openpic_setup_cpu(void);
+> +extern int openpic_get_irq(struct pt_regs *regs);
+> +extern void openpic_reset_processor_phys(u_int cpumask);
+> +extern void openpic_setup_ISU(int isu_num, unsigned long addr);
+> +extern void openpic_cause_IPI(u_int ipi, cpumask_t cpumask);
+> +extern void smp_openpic_message_pass(int target, int msg);
+> +extern void openpic_set_k2_cascade(int irq);
+> +extern void openpic_set_priority(u_int pri);
+> +extern u_int openpic_get_priority(void);
+> +
+> +extern inline int openpic_to_irq(int irq)
 > +{
-> +
-> +	return (struct bi_record *)_ALIGN((offset) + (1 << 20) - 1,
-> +					  (1 << 20));
+> +	/* IRQ 0 usually means 'disabled'.. don't mess with it
+> +	 * exceptions to this (sandpoint maybe?)
+> +	 * shouldn't use openpic_to_irq
+> +	 */
+> +	if (irq != 0){
+> +		return irq += NUM_8259_INTERRUPTS;
+> +	} else {
+> +		return 0;
+> +	}
 > +}
-> +#endif /* CONFIG_APUS */
+> +/* Support for second openpic on G5 macs */
+> +
+> +// FIXME: To be replaced by sane cascaded controller management */
+> +
+> +#define PMAC_OPENPIC2_OFFSET	128
+> +
+> +#define OPENPIC2_VEC_TIMER	110	/* and up */
+> +#define OPENPIC2_VEC_IPI	118	/* and up */
+> +#define OPENPIC2_VEC_SPURIOUS	127
 > +
 > +
-> +#endif /* __KERNEL__ */
-> +#endif /* _ASM_POWERPC_BOOTINFO_H */
-> diff --git a/include/asm-ppc/bootinfo.h b/include/asm-ppc/bootinfo.h
+> +extern void* OpenPIC2_Addr;
+> +
+> +/* Exported functions */
+> +extern void openpic2_set_sources(int first_irq, int num_irqs, void  
+> *isr);
+> +extern void openpic2_init(int linux_irq_offset);
+> +extern void openpic2_init_nmi_irq(u_int irq);
+> +extern u_int openpic2_irq(void);
+> +extern void openpic2_eoi(void);
+> +extern int openpic2_get_irq(struct pt_regs *regs);
+> +extern void openpic2_setup_ISU(int isu_num, unsigned long addr);
+> +
+> +#endif /* _ASM_POWERPC_OPEN_PIC_H */
+> diff --git a/include/asm-ppc/open_pic.h b/include/asm-ppc/open_pic.h
 > deleted file mode 100644
-> index 93d955c..0000000
-> --- a/include/asm-ppc/bootinfo.h
+> index ec2f466..0000000
+> --- a/include/asm-ppc/open_pic.h
 > +++ /dev/null
-> @@ -1,52 +0,0 @@
+> @@ -1,99 +0,0 @@
 > -/*
-> - * Non-machine dependent bootinfo structure.  Basic idea
-> - * borrowed from the m68k.
+> - *  include/asm-ppc/open_pic.h -- OpenPIC Interrupt Handling
 > - *
-> - * Copyright (C) 1999 Cort Dougan <cort@ppc.kernel.org>
+> - *  Copyright (C) 1997 Geert Uytterhoeven
+> - *
+> - *  This file is subject to the terms and conditions of the GNU  
+> General Public
+> - *  License.  See the file COPYING in the main directory of this  
+> archive
+> - *  for more details.
+> - *
 > - */
 > -
-> -#ifdef __KERNEL__
-> -#ifndef _PPC_BOOTINFO_H
-> -#define _PPC_BOOTINFO_H
+> -#ifndef _PPC_KERNEL_OPEN_PIC_H
+> -#define _PPC_KERNEL_OPEN_PIC_H
 > -
 > -#include <linux/config.h>
-> -#include <asm/page.h>
+> -#include <linux/irq.h>
 > -
-> -#if defined(CONFIG_APUS) && !defined(__BOOTER__)
-> -#include <asm-m68k/bootinfo.h>
-> -#else
+> -#define OPENPIC_SIZE	0x40000
 > -
-> -struct bi_record {
-> -	unsigned long tag;		/* tag ID */
-> -	unsigned long size;		/* size of record (in bytes) */
-> -	unsigned long data[0];		/* data */
-> -};
+> -/*
+> - *  Non-offset'ed vector numbers
+> - */
 > -
-> -#define BI_FIRST		0x1010  /* first record - marker */
-> -#define BI_LAST			0x1011	/* last record - marker */
-> -#define BI_CMD_LINE		0x1012
-> -#define BI_BOOTLOADER_ID	0x1013
-> -#define BI_INITRD		0x1014
-> -#define BI_SYSMAP		0x1015
-> -#define BI_MACHTYPE		0x1016
-> -#define BI_MEMSIZE		0x1017
-> -#define BI_BOARD_INFO		0x1018
+> -#define OPENPIC_VEC_TIMER	110	/* and up */
+> -#define OPENPIC_VEC_IPI		118	/* and up */
+> -#define OPENPIC_VEC_SPURIOUS	255
 > -
-> -extern struct bi_record *find_bootinfo(void);
-> -extern void bootinfo_init(struct bi_record *rec);
-> -extern void bootinfo_append(unsigned long tag, unsigned long size,  
-> void * data);
-> -extern void parse_bootinfo(struct bi_record *rec);
-> -extern unsigned long boot_mem_size;
+> -/* Priorities */
+> -#define OPENPIC_PRIORITY_IPI_BASE	10
+> -#define OPENPIC_PRIORITY_DEFAULT	4
+> -#define OPENPIC_PRIORITY_NMI		9
 > -
-> -static inline struct bi_record *
-> -bootinfo_addr(unsigned long offset)
+> -/* OpenPIC IRQ controller structure */
+> -extern struct hw_interrupt_type open_pic;
+> -
+> -/* OpenPIC IPI controller structure */
+> -#ifdef CONFIG_SMP
+> -extern struct hw_interrupt_type open_pic_ipi;
+> -#endif /* CONFIG_SMP */
+> -
+> -extern u_int OpenPIC_NumInitSenses;
+> -extern u_char *OpenPIC_InitSenses;
+> -extern void __iomem * OpenPIC_Addr;
+> -extern int epic_serial_mode;
+> -
+> -/* Exported functions */
+> -extern void openpic_set_sources(int first_irq, int num_irqs, void  
+> __iomem *isr);
+> -extern void openpic_init(int linux_irq_offset);
+> -extern void openpic_init_nmi_irq(u_int irq);
+> -extern void openpic_set_irq_priority(u_int irq, u_int pri);
+> -extern void openpic_hookup_cascade(u_int irq, char *name,
+> -				   int (*cascade_fn)(struct pt_regs *));
+> -extern u_int openpic_irq(void);
+> -extern void openpic_eoi(void);
+> -extern void openpic_request_IPIs(void);
+> -extern void do_openpic_setup_cpu(void);
+> -extern int openpic_get_irq(struct pt_regs *regs);
+> -extern void openpic_reset_processor_phys(u_int cpumask);
+> -extern void openpic_setup_ISU(int isu_num, unsigned long addr);
+> -extern void openpic_cause_IPI(u_int ipi, cpumask_t cpumask);
+> -extern void smp_openpic_message_pass(int target, int msg);
+> -extern void openpic_set_k2_cascade(int irq);
+> -extern void openpic_set_priority(u_int pri);
+> -extern u_int openpic_get_priority(void);
+> -
+> -extern inline int openpic_to_irq(int irq)
 > -{
-> -
-> -	return (struct bi_record *)_ALIGN((offset) + (1 << 20) - 1,
-> -					  (1 << 20));
+> -	/* IRQ 0 usually means 'disabled'.. don't mess with it
+> -	 * exceptions to this (sandpoint maybe?)
+> -	 * shouldn't use openpic_to_irq
+> -	 */
+> -	if (irq != 0){
+> -		return irq += NUM_8259_INTERRUPTS;
+> -	} else {
+> -		return 0;
+> -	}
 > -}
-> -#endif /* CONFIG_APUS */
+> -/* Support for second openpic on G5 macs */
+> -
+> -// FIXME: To be replaced by sane cascaded controller management */
+> -
+> -#define PMAC_OPENPIC2_OFFSET	128
+> -
+> -#define OPENPIC2_VEC_TIMER	110	/* and up */
+> -#define OPENPIC2_VEC_IPI	118	/* and up */
+> -#define OPENPIC2_VEC_SPURIOUS	127
 > -
 > -
-> -#endif /* _PPC_BOOTINFO_H */
-> -#endif /* __KERNEL__ */
+> -extern void* OpenPIC2_Addr;
+> -
+> -/* Exported functions */
+> -extern void openpic2_set_sources(int first_irq, int num_irqs, void  
+> *isr);
+> -extern void openpic2_init(int linux_irq_offset);
+> -extern void openpic2_init_nmi_irq(u_int irq);
+> -extern u_int openpic2_irq(void);
+> -extern void openpic2_eoi(void);
+> -extern int openpic2_get_irq(struct pt_regs *regs);
+> -extern void openpic2_setup_ISU(int isu_num, unsigned long addr);
+> -#endif /* _PPC_KERNEL_OPEN_PIC_H */
 > -- 
 > 1.2.4
 >
