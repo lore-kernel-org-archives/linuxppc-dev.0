@@ -1,22 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F300567B1E
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2006 03:07:47 +1000 (EST)
-Date: Thu, 6 Apr 2006 03:07:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17460.17562.163079.347023@cargo.ozlabs.ibm.com>
+Date: Thu, 6 Apr 2006 08:28:42 +1000
+From: Paul Mackerras <paulus@samba.org>
 To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH 00/15] powerpc: move some header files
-Message-Id: <20060406030744.18a89ad5.sfr@canb.auug.org.au>
 In-Reply-To: <C1CE62AD-7989-4DCA-B7B3-8A107ACBD153@kernel.crashing.org>
 References: <11442138494042-git-send-email-sfr@canb.auug.org.au>
 	<C40B1083-7953-4104-8FA3-5B9B4EBE1A77@kernel.crashing.org>
 	<20060406020313.186a74ad.sfr@canb.auug.org.au>
 	<C1CE62AD-7989-4DCA-B7B3-8A107ACBD153@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__6_Apr_2006_03_07_44_+1000_nkj.3O5Cj/YmVqW4"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,44 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__6_Apr_2006_03_07_44_+1000_nkj.3O5Cj/YmVqW4
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Kumar Gala writes:
 
-On Wed, 5 Apr 2006 11:15:04 -0500 Kumar Gala <galak@kernel.crashing.org> wr=
-ote:
->
-> I'm guessing you had to pull some of them in because of the following:
->=20
-> io.h:#include <asm-ppc/io.h>
-> mmu_context.h:#include <asm-ppc/mmu_context.h>
-> mmu.h:#include <asm-ppc/mmu.h>
-> pci-bridge.h:#include <asm-ppc/pci-bridge.h>
-> pgalloc.h:#include <asm-ppc/pgalloc.h>
-> pgtable.h:#include <asm-ppc/pgtable.h>
->=20
-> I think addressing these will make life easier with the other includes.
+> > I guess that would work, but Paulus is going to not like me as he  
+> > already
+> > put all these patches into the powerpc tree.  :-)
+> 
+> That's Paulus own doing for his premature pull :)
 
-I'll have a look at these in the morning, thanks for the hint.
+For now I have reverted the powerpc.git tree to remove those commits
+of Stephen's, so all it has now (compared to v2.6.17-rc1) are a CHRP
+booting fix and the "iSeries has only 256 IRQs" patch.
 
-I am thinking of creating an include/asm-powerpc/<xx>_32.h for each of the =
-asm-ppc
-files above and then only putting into them what we need for arch/powerpc.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Everyone, if you have done a pull from powerpc.git in the last 24
+hours, please do this on your repository:
 
---Signature=_Thu__6_Apr_2006_03_07_44_+1000_nkj.3O5Cj/YmVqW4
-Content-Type: application/pgp-signature
+git reset b86756ae76dc5e7ecff3ca52a5842155e6d457de
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
+That will get us back into sync.  Sorry about the to-ing and fro-ing
+on this.
 
-iD8DBQFEM/lgFdBgD/zoJvwRAh5OAJ49XX825yQEPjih1yl6WWob+IsJ1QCgjWBC
-nzTW35prVwNSrpm4q3PILJs=
-=PRrg
------END PGP SIGNATURE-----
-
---Signature=_Thu__6_Apr_2006_03_07_44_+1000_nkj.3O5Cj/YmVqW4--
+Paul.
