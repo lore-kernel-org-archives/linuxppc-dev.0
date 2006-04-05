@@ -1,18 +1,20 @@
-Return-Path: <yangdh@cableplus.com.cn>
-Received: from cableplus.com.cn (unknown [211.167.104.2])
-	by ozlabs.org (Postfix) with ESMTP id 16575679E2
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Apr 2006 20:52:01 +1000 (EST)
-Message-ID: <007e01c6589e$f6041ea0$6500a8c0@yangdh>
-From: "Yang Dehua" <yangdh@cableplus.com.cn>
-To: "Brian D. Carlstrom" <bdc@carlstrom.com>
-References: <004301c65843$d561d710$6500a8c0@yangdh>
-	<17459.11188.362959.630416@zot.electricrain.com>
-Subject: Re:  xorg-7.0 freezes on gentoo ppc64 linux with 9800 card
-Date: Wed, 5 Apr 2006 18:51:54 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH] powerpc: Use rtas query-cpu-stopped-state in smp
+	spinup
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20060404172550.GE25663@localdomain>
+References: <20060404112459.C9170679EB@ozlabs.org>
+	<20060404172550.GE25663@localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-xov13G4DxjsoAwQUXHLD"
+Date: Wed, 05 Apr 2006 13:23:30 +0200
+Message-Id: <1144236210.6788.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +24,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-RGVhciBCcmlhbiwNClRoYW5rIHlvdS4NCkkganVzdCBmZXRjaGVkIHRoZSBjdnMgb2YgeGY4Ni12
-aWRlby1hdGkgZHJpdmVyIGZyb20gZnJlZWRlc2t0b3Aub3JnLCBhbmQgaXQgd29ya2VkIG9uIG15
-IDk4MDB4dCBjYXJkLg0KDQpSZWdhcmRzLA0KRGVodWENCg0KLS0tLS0gT3JpZ2luYWwgTWVzc2Fn
-ZSAtLS0tLSANCkZyb206ICJCcmlhbiBELiBDYXJsc3Ryb20iIDxiZGNAY2FybHN0cm9tLmNvbT4N
-ClRvOiAiWWFuZyBEZWh1YSIgPHlhbmdkaEBjYWJsZXBsdXMuY29tLmNuPg0KQ2M6IDxsaW51eHBw
-Yy1kZXZAb3psYWJzLm9yZz4NClNlbnQ6IFdlZG5lc2RheSwgQXByaWwgMDUsIDIwMDYgMTA6MzAg
-QU0NClN1YmplY3Q6IHhvcmctNy4wIGZyZWV6ZXMgb24gZ2VudG9vIHBwYzY0IGxpbnV4IHdpdGgg
-OTgwMCBjYXJkDQoNCg0KPiBZYW5nIERlaHVhIHdyaXRlczoNCj4gID4gSSBqdXN0IGJvdWdodCBh
-IG1hYyA5ODAweHQgY2FyZCB0byByZXBsYWNlIG15IDk2MDBwcm8gb24gbXkgRzUNCj4gID4gcnVu
-bmluZyBnZW50b28gcHBjNjQgbGludXgoMjAwNi4wLCA2NC1iaXQgdXNlcmxhbmQpLiBUaGUgc3lz
-dGVtDQo+ICA+IHdvcmtlZCBmaW5lIHVudGlsIEkgc3RhcnRlZCB4b3JnLTcuMDogdGhlIHNjcmVl
-biBibGFja2VkIGFuZCB0aGUNCj4gID4ga2V5Ym9hcmQgYW5kIG1vdXNlIHdlcmUgbm90IHJlc3Bv
-bmRpbmcgYW55IG1vcmUsIHNvIEkgaGFkIHRvIHNodXRkb3duDQo+ICA+IHRoZSBtYWNoaW5lLiBU
-aGUgc2FtZSBYIGNvbmZpZyB3b3JrZWQgd2VsbCB3aXRoIDk2MDBwcm8gY2FyZCg2NE0pLg0KPiAN
-Cj4gSSByYW4gaW50byB0aGlzIGFuZCBwb3N0ZWQgYSB3b3JrYXJvdW5kIGFib3V0IGl0IGhlcmUg
-Zm9yIGZlZG9yYToNCj4gICAgIGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL3BpcGVybWFpbC9m
-ZWRvcmEtcHBjLzIwMDYtTWFyY2gvMDAwODE2Lmh0bWwNCj4gDQo+IEkgYmFzZWQgdGhpcyB3b3Jr
-YXJvdW5kIGJhc2VkIG9uIHRoZSBVYnVudHUgZGlzY3Vzc2lvbiBoZXJlOg0KPiAgICAgaHR0cHM6
-Ly9sYXVuY2hwYWQubmV0L2Rpc3Ryb3MvdWJ1bnR1Lytzb3VyY2UveHNlcnZlci14b3JnLWRyaXZl
-ci1hdGkvK2J1Zy8zMDQyNg0KPiANCj4gQmFzaWNhbGx5LCBCZW5qYW1pbiBIZXJyZW5zY2htaWR0
-IHJlY29tbWVuZHMgImJ1aWxkaW5nIHRoZSBhdGkgZHJpdmVyDQo+IGZyb20gWC5vcmcgYXRpLTEt
-MC1icmFuY2ggQ1ZTIGJyYW5jaCIuIFdpdGggdGhhdCwgSSdtIHdvcmtpbmcgaW4gWA0KPiBoYXBw
-aWx5LiBJJ2xsIG5vdGUgdGhhdCBhbiBhbHRlcm5hdGl2ZSBiZWZvcmUgdGhhdCB3YXMgdG8gdXNl
-IHRoZQ0KPiAiZmJkZXYiIGRyaXZlciBpbnN0ZWFkIG9mIHRoZSAicmFkZW9uIi4NCj4gDQo+IC1i
-cmkNCj4gDQo+IA0K
+
+--=-xov13G4DxjsoAwQUXHLD
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, 2006-04-04 at 12:25 -0500, Nathan Lynch wrote:
+> Michael Ellerman wrote:
+> > Currently we use a cpumask called of_spin_map to keep track of which th=
+reads
+> > have been spun up. We basically guess that OF has spun up all even numb=
+ered
+> > threads, and so all the odd numbered threads need to be brought up.
+> >=20
+> > That's a bit of a dicey assumption at best, and is totally incorrect fo=
+r
+> > kexec.
+> >
+> > Luckily we have an rtas call which can tell us whether a cpu is up
+> > or not, so let's use it?
+>=20
+> 1. query-cpu-stopped-state isn't available on all RTAS systems (I
+>    believe it's required only on systems that support cpu offline).
+
+That should be ok, I'm pretty sure the way I've written it if
+query-cpu-stopped-state isn't there we try and start it the old way
+anyway.
+
+> 2. I've tried it before.  Hope I'm remembering this correctly, but I
+>    think my experience was that query-cpu-stopped-state reported
+>    nonsense for cpus that were started by OF.  This was on Power5,
+>    btw.
+
+That's not what I see, perhaps I have newer firmware?
+
+> 3. This isn't how query-cpu-stopped-state was intended to be used.
+>    It's meant to be used by the OS to determine when a thread has
+>    stopped itself using the stop-self method.  Which might partially
+>    explain (2).
+
+Perhaps, PAPR says: "The query-cpu-stopped-state primitive is used to
+query a different processor thread to determine its status with respect
+to the RTAS stopped state". I guess I assumed that a thread that's not
+started would be in the "RTAS stopped state", which seems logical if not
+correct.
+
+cheers
+
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+
+--=-xov13G4DxjsoAwQUXHLD
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBEM6iydSjSd0sB4dIRAjqlAKCgwkZtBJ/99hrJG9kPMs5IwkFxOQCcC1r5
+5moOg3B6DHAU18d+XsoTMuA=
+=NV1d
+-----END PGP SIGNATURE-----
+
+--=-xov13G4DxjsoAwQUXHLD--
