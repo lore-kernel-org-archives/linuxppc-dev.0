@@ -1,12 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-From: sfr@canb.auug.org.au
-To: paulus@samba.org
-Subject: [PATCH 15/15] powerpc: remove include hack
-Date: Wed, 05 Apr 2006 15:10:49 +1000
-Message-Id: <11442138832112-git-send-email-sfr@canb.auug.org.au>
-In-Reply-To: <11442138494042-git-send-email-sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Reply-To: sfr@canb.auug.org.au
+Return-Path: <yangdh@cableplus.com.cn>
+Received: from cableplus.com.cn (unknown [211.167.104.2])
+	by ozlabs.org (Postfix) with ESMTP id 16575679E2
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Apr 2006 20:52:01 +1000 (EST)
+Message-ID: <007e01c6589e$f6041ea0$6500a8c0@yangdh>
+From: "Yang Dehua" <yangdh@cableplus.com.cn>
+To: "Brian D. Carlstrom" <bdc@carlstrom.com>
+References: <004301c65843$d561d710$6500a8c0@yangdh>
+	<17459.11188.362959.630416@zot.electricrain.com>
+Subject: Re:  xorg-7.0 freezes on gentoo ppc64 linux with 9800 card
+Date: Wed, 5 Apr 2006 18:51:54 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,85 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-
-This patch removes the Makefile hack that allows including files from
-include/asm-ppc when doing a 32bit ARCH=powerpc build.  Build tested
-for all three 32bit defconfigs and pseries_defconfig.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
----
-
- arch/powerpc/Makefile |   21 +++------------------
- 1 files changed, 3 insertions(+), 18 deletions(-)
-
-50d33a5568cebd00d7148e90a6b5b6865f029602
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 6ec84d3..f757532 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -36,7 +36,7 @@ export CROSS32CC CROSS32AS CROSS32LD CRO
- KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
- 
- ifeq ($(CONFIG_PPC64),y)
--OLDARCH	:= ppc64
-+UTS_MACHINE	:= ppc64
- SZ	:= 64
- 
- new_nm := $(shell if $(NM) --help 2>&1 | grep -- '--synthetic' > /dev/null; then echo y; else echo n; fi)
-@@ -46,12 +46,10 @@ NM		:= $(NM) --synthetic
- endif
- 
- else
--OLDARCH	:= ppc
-+UTS_MACHINE	:= ppc
- SZ	:= 32
- endif
- 
--UTS_MACHINE := $(OLDARCH)
--
- ifeq ($(HAS_BIARCH),y)
- override AS	+= -a$(SZ)
- override LD	+= -m elf$(SZ)ppc
-@@ -60,8 +58,7 @@ endif
- 
- LDFLAGS_vmlinux	:= -Bstatic
- 
--# The -Iarch/$(ARCH)/include is temporary while we are merging
--CPPFLAGS-$(CONFIG_PPC32) := -Iarch/$(ARCH) -Iarch/$(ARCH)/include
-+CPPFLAGS-$(CONFIG_PPC32) := -Iarch/$(ARCH)
- AFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH)
- CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=none  -mcall-aixdesc
- CFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH) -ffixed-r2 -mmultiple
-@@ -69,9 +66,6 @@ CPPFLAGS	+= $(CPPFLAGS-y)
- AFLAGS		+= $(AFLAGS-y)
- CFLAGS		+= -msoft-float -pipe $(CFLAGS-y)
- CPP		= $(CC) -E $(CFLAGS)
--# Temporary hack until we have migrated to asm-powerpc
--LINUXINCLUDE-$(CONFIG_PPC32)	:= -Iarch/$(ARCH)/include
--LINUXINCLUDE    += $(LINUXINCLUDE-y)
- 
- CHECKFLAGS	+= -m$(SZ) -D__powerpc__ -D__powerpc$(SZ)__
- 
-@@ -165,18 +159,9 @@ archclean:
- 	$(Q)$(MAKE) $(clean)=$(boot)
- 
- archmrproper:
--	$(Q)rm -rf arch/$(ARCH)/include
- 
- archprepare: checkbin
- 
--ifeq ($(CONFIG_PPC32),y)
--# Temporary hack until we have migrated to asm-powerpc
--include/asm: arch/$(ARCH)/include/asm
--arch/$(ARCH)/include/asm: FORCE
--	$(Q)if [ ! -d arch/$(ARCH)/include ]; then mkdir -p arch/$(ARCH)/include; fi
--	$(Q)ln -fsn $(srctree)/include/asm-$(OLDARCH) arch/$(ARCH)/include/asm
--endif
--
- # Use the file '.tmp_gas_check' for binutils tests, as gas won't output
- # to stdout and these checks are run even on install targets.
- TOUT	:= .tmp_gas_check
--- 
-1.2.4
+RGVhciBCcmlhbiwNClRoYW5rIHlvdS4NCkkganVzdCBmZXRjaGVkIHRoZSBjdnMgb2YgeGY4Ni12
+aWRlby1hdGkgZHJpdmVyIGZyb20gZnJlZWRlc2t0b3Aub3JnLCBhbmQgaXQgd29ya2VkIG9uIG15
+IDk4MDB4dCBjYXJkLg0KDQpSZWdhcmRzLA0KRGVodWENCg0KLS0tLS0gT3JpZ2luYWwgTWVzc2Fn
+ZSAtLS0tLSANCkZyb206ICJCcmlhbiBELiBDYXJsc3Ryb20iIDxiZGNAY2FybHN0cm9tLmNvbT4N
+ClRvOiAiWWFuZyBEZWh1YSIgPHlhbmdkaEBjYWJsZXBsdXMuY29tLmNuPg0KQ2M6IDxsaW51eHBw
+Yy1kZXZAb3psYWJzLm9yZz4NClNlbnQ6IFdlZG5lc2RheSwgQXByaWwgMDUsIDIwMDYgMTA6MzAg
+QU0NClN1YmplY3Q6IHhvcmctNy4wIGZyZWV6ZXMgb24gZ2VudG9vIHBwYzY0IGxpbnV4IHdpdGgg
+OTgwMCBjYXJkDQoNCg0KPiBZYW5nIERlaHVhIHdyaXRlczoNCj4gID4gSSBqdXN0IGJvdWdodCBh
+IG1hYyA5ODAweHQgY2FyZCB0byByZXBsYWNlIG15IDk2MDBwcm8gb24gbXkgRzUNCj4gID4gcnVu
+bmluZyBnZW50b28gcHBjNjQgbGludXgoMjAwNi4wLCA2NC1iaXQgdXNlcmxhbmQpLiBUaGUgc3lz
+dGVtDQo+ICA+IHdvcmtlZCBmaW5lIHVudGlsIEkgc3RhcnRlZCB4b3JnLTcuMDogdGhlIHNjcmVl
+biBibGFja2VkIGFuZCB0aGUNCj4gID4ga2V5Ym9hcmQgYW5kIG1vdXNlIHdlcmUgbm90IHJlc3Bv
+bmRpbmcgYW55IG1vcmUsIHNvIEkgaGFkIHRvIHNodXRkb3duDQo+ICA+IHRoZSBtYWNoaW5lLiBU
+aGUgc2FtZSBYIGNvbmZpZyB3b3JrZWQgd2VsbCB3aXRoIDk2MDBwcm8gY2FyZCg2NE0pLg0KPiAN
+Cj4gSSByYW4gaW50byB0aGlzIGFuZCBwb3N0ZWQgYSB3b3JrYXJvdW5kIGFib3V0IGl0IGhlcmUg
+Zm9yIGZlZG9yYToNCj4gICAgIGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL3BpcGVybWFpbC9m
+ZWRvcmEtcHBjLzIwMDYtTWFyY2gvMDAwODE2Lmh0bWwNCj4gDQo+IEkgYmFzZWQgdGhpcyB3b3Jr
+YXJvdW5kIGJhc2VkIG9uIHRoZSBVYnVudHUgZGlzY3Vzc2lvbiBoZXJlOg0KPiAgICAgaHR0cHM6
+Ly9sYXVuY2hwYWQubmV0L2Rpc3Ryb3MvdWJ1bnR1Lytzb3VyY2UveHNlcnZlci14b3JnLWRyaXZl
+ci1hdGkvK2J1Zy8zMDQyNg0KPiANCj4gQmFzaWNhbGx5LCBCZW5qYW1pbiBIZXJyZW5zY2htaWR0
+IHJlY29tbWVuZHMgImJ1aWxkaW5nIHRoZSBhdGkgZHJpdmVyDQo+IGZyb20gWC5vcmcgYXRpLTEt
+MC1icmFuY2ggQ1ZTIGJyYW5jaCIuIFdpdGggdGhhdCwgSSdtIHdvcmtpbmcgaW4gWA0KPiBoYXBw
+aWx5LiBJJ2xsIG5vdGUgdGhhdCBhbiBhbHRlcm5hdGl2ZSBiZWZvcmUgdGhhdCB3YXMgdG8gdXNl
+IHRoZQ0KPiAiZmJkZXYiIGRyaXZlciBpbnN0ZWFkIG9mIHRoZSAicmFkZW9uIi4NCj4gDQo+IC1i
+cmkNCj4gDQo+IA0K
