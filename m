@@ -1,23 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0628B67A0E
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Apr 2006 14:33:33 +1000 (EST)
-In-Reply-To: <20060405130553.3240e5ea.sfr@canb.auug.org.au>
-References: <Pine.LNX.4.44.0604041612320.30113-100000@gate.crashing.org>
-	<20060405102837.66b44c43.sfr@canb.auug.org.au>
-	<1E1C6A02-5C4D-4A3A-8483-8D5E2773680B@kernel.crashing.org>
-	<20060405130553.3240e5ea.sfr@canb.auug.org.au>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <426751E3-A5CA-4656-B9CC-3D3F19375B32@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from 'for_paulus' branch of powerpc
-Date: Tue, 4 Apr 2006 23:33:52 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+From: sfr@canb.auug.org.au
+To: paulus@samba.org
+Subject: [PATCH 00/15] powerpc: move some header files
+Date: Wed, 05 Apr 2006 15:10:34 +1000
+Message-Id: <11442138494042-git-send-email-sfr@canb.auug.org.au>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +15,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch set moves sufficient include files from include/asm-ppc
+to include/asm-powerpc to allow us to remove the include hack in the
+arch/powerpc/Makefile.
 
-On Apr 4, 2006, at 10:05 PM, Stephen Rothwell wrote:
+ b/arch/powerpc/Makefile           |   21 ++------------
+ b/include/asm-powerpc/amigappc.h  |    9 ++----
+ b/include/asm-powerpc/bootinfo.h  |    8 ++---
+ b/include/asm-powerpc/highmem.h   |   11 +++----
+ b/include/asm-powerpc/hydra.h     |    8 ++---
+ b/include/asm-powerpc/mpc83xx.h   |    7 ++--
+ b/include/asm-powerpc/mpc85xx.h   |    9 ++----
+ b/include/asm-powerpc/mpc8xx.h    |   10 +++---
+ b/include/asm-powerpc/ocp.h       |    7 ++--
+ b/include/asm-powerpc/ocp_ids.h   |    6 ++--
+ b/include/asm-powerpc/open_pic.h  |   10 +++---
+ b/include/asm-powerpc/pnp.h       |    8 ++---
+ b/include/asm-powerpc/reg_booke.h |   55 +++++++++++++++++++------------------- b/include/asm-powerpc/residual.h  |    6 ++--
+ b/include/asm-powerpc/suspend.h   |   17 +++++++++++
+ include/asm-ppc/suspend.h         |   12 --------
+ 16 files changed, 95 insertions(+), 109 deletions(-)
 
-> Hi Kumar,
->
-> On Tue, 4 Apr 2006 20:23:23 -0500 Kumar Gala  
-> <galak@kernel.crashing.org> wrote:
->>
->> We need the irq rework before I'd be willing to do this.  The main
->> dependancy between asm-ppc and asm-powerpc is the static IRQs we
->> currently have.  I'd rather spend time on fixing up the IRQ handling
->> to parse the flat dev tree.
->
-> I agree entirely.  To clrify, I was referring to header files that  
-> only
-> exist in include/asm-ppc and are trivial to move.
->
-> Patches following ...
+Cheers,
+Stephen Rothwell <sfr@canb.auug.org.au>
 
-Agreed.
-
-- k
+P.S. these are available in my private git tree if you want them.
