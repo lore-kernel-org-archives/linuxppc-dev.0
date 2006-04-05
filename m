@@ -1,9 +1,9 @@
 Return-Path: <sfr@canb.auug.org.au>
 From: sfr@canb.auug.org.au
 To: paulus@samba.org
-Subject: [PATCH 09/15] powerpc: move asm/hydra.h
-Date: Wed, 05 Apr 2006 15:10:43 +1000
-Message-Id: <11442138651818-git-send-email-sfr@canb.auug.org.au>
+Subject: [PATCH 10/15] powerpc: move asm/mpc83xx.h
+Date: Wed, 05 Apr 2006 15:10:44 +1000
+Message-Id: <11442138673826-git-send-email-sfr@canb.auug.org.au>
 In-Reply-To: <11442138494042-git-send-email-sfr@canb.auug.org.au>
 Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 Reply-To: sfr@canb.auug.org.au
@@ -25,228 +25,255 @@ Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 ---
 
- include/asm-powerpc/hydra.h |  102 +++++++++++++++++++++++++++++++++++++++++++
- include/asm-ppc/hydra.h     |  102 -------------------------------------------
- 2 files changed, 102 insertions(+), 102 deletions(-)
- create mode 100644 include/asm-powerpc/hydra.h
- delete mode 100644 include/asm-ppc/hydra.h
+ include/asm-powerpc/mpc83xx.h |  115 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-ppc/mpc83xx.h     |  116 -----------------------------------------
+ 2 files changed, 115 insertions(+), 116 deletions(-)
+ create mode 100644 include/asm-powerpc/mpc83xx.h
+ delete mode 100644 include/asm-ppc/mpc83xx.h
 
-cdf75e3d546f69e8d3cf7c32b705a40ce2552a22
-diff --git a/include/asm-powerpc/hydra.h b/include/asm-powerpc/hydra.h
+ce28e1e8654ad07cc23573a31f8cea992d41f9cc
+diff --git a/include/asm-powerpc/mpc83xx.h b/include/asm-powerpc/mpc83xx.h
 new file mode 100644
-index 0000000..61c8abb
+index 0000000..da4b0fa
 --- /dev/null
-+++ b/include/asm-powerpc/hydra.h
-@@ -0,0 +1,102 @@
-+#ifndef _ASM_POWERCP_HYDRA_H
-+#define _ASM_POWERCP_HYDRA_H
-+
++++ b/include/asm-powerpc/mpc83xx.h
+@@ -0,0 +1,115 @@
++#ifndef _ASM_POWERPC_MPC83XX_H
++#define _ASM_POWERPC_MPC83XX_H
 +/*
-+ *  include/asm-ppc/hydra.h -- Mac I/O `Hydra' definitions
++ * include/asm-ppc/mpc83xx.h
 + *
-+ *  Copyright (C) 1997 Geert Uytterhoeven
++ * MPC83xx definitions
 + *
-+ *  This file is based on the following documentation:
++ * Maintainer: Kumar Gala <galak@kernel.crashing.org>
 + *
-+ *	Macintosh Technology in the Common Hardware Reference Platform
-+ *	Apple Computer, Inc.
++ * Copyright 2005 Freescale Semiconductor, Inc
 + *
-+ *	© Copyright 1995 Apple Computer, Inc. All rights reserved.
-+ *
-+ *  It's available online from http://chrp.apple.com/MacTech.pdf.
-+ *  You can obtain paper copies of this book from computer bookstores or by
-+ *  writing Morgan Kaufmann Publishers, Inc., 340 Pine Street, Sixth Floor, San
-+ *  Francisco, CA 94104. Reference ISBN 1-55860-393-X.
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of this archive
-+ *  for more details.
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
 +
 +#ifdef __KERNEL__
 +
-+struct Hydra {
-+    /* DBDMA Controller Register Space */
-+    char Pad1[0x30];
-+    u_int CachePD;
-+    u_int IDs;
-+    u_int Feature_Control;
-+    char Pad2[0x7fc4];
-+    /* DBDMA Channel Register Space */
-+    char SCSI_DMA[0x100];
-+    char Pad3[0x300];
-+    char SCCA_Tx_DMA[0x100];
-+    char SCCA_Rx_DMA[0x100];
-+    char SCCB_Tx_DMA[0x100];
-+    char SCCB_Rx_DMA[0x100];
-+    char Pad4[0x7800];
-+    /* Device Register Space */
-+    char SCSI[0x1000];
-+    char ADB[0x1000];
-+    char SCC_Legacy[0x1000];
-+    char SCC[0x1000];
-+    char Pad9[0x2000];
-+    char VIA[0x2000];
-+    char Pad10[0x28000];
-+    char OpenPIC[0x40000];
++#include <asm/mmu.h>
++
++#ifdef CONFIG_83xx
++
++#ifdef CONFIG_MPC834x_SYS
++#include <platforms/83xx/mpc834x_sys.h>
++#endif
++
++#define _IO_BASE        isa_io_base
++#define _ISA_MEM_BASE   isa_mem_base
++#ifdef CONFIG_PCI
++#define PCI_DRAM_OFFSET pci_dram_offset
++#else
++#define PCI_DRAM_OFFSET 0
++#endif
++
++/*
++ * The "residual" board information structure the boot loader passes
++ * into the kernel.
++ */
++extern unsigned char __res[];
++
++/* Internal IRQs on MPC83xx OpenPIC */
++/* Not all of these exist on all MPC83xx implementations */
++
++#ifndef MPC83xx_IPIC_IRQ_OFFSET
++#define MPC83xx_IPIC_IRQ_OFFSET	0
++#endif
++
++#define NR_IPIC_INTS 128
++
++#define MPC83xx_IRQ_UART1	( 9 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_UART2	(10 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_SEC2	(11 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_IIC1	(14 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_IIC2	(15 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_SPI		(16 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_EXT1	(17 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_EXT2	(18 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_EXT3	(19 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_EXT4	(20 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_EXT5	(21 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_EXT6	(22 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_EXT7	(23 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_TSEC1_TX	(32 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_TSEC1_RX	(33 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_TSEC1_ERROR	(34 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_TSEC2_TX	(35 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_TSEC2_RX	(36 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_TSEC2_ERROR	(37 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_USB2_DR	(38 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_USB2_MPH	(39 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_EXT0	(48 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_RTC_SEC	(64 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_PIT		(65 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_PCI1	(66 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_PCI2	(67 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_RTC_ALR	(68 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_MU		(69 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_SBA		(70 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_DMA		(71 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GTM4	(72 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GTM8	(73 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GPIO1	(74 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GPIO2	(75 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_DDR		(76 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_LBC		(77 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GTM2	(78 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GTM6	(79 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_PMC		(80 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GTM3	(84 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GTM7	(85 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GTM1	(90 + MPC83xx_IPIC_IRQ_OFFSET)
++#define MPC83xx_IRQ_GTM5	(91 + MPC83xx_IPIC_IRQ_OFFSET)
++
++#define MPC83xx_CCSRBAR_SIZE	(1024*1024)
++
++/* Let modules/drivers get at immrbar (physical) */
++extern phys_addr_t immrbar;
++
++enum ppc_sys_devices {
++	MPC83xx_TSEC1,
++	MPC83xx_TSEC2,
++	MPC83xx_IIC1,
++	MPC83xx_IIC2,
++	MPC83xx_DUART,
++	MPC83xx_SEC2,
++	MPC83xx_USB2_DR,
++	MPC83xx_USB2_MPH,
++	MPC83xx_MDIO,
++	NUM_PPC_SYS_DEVS,
 +};
 +
-+extern volatile struct Hydra __iomem *Hydra;
-+
-+
-+    /*
-+     *  Feature Control Register
-+     */
-+
-+#define HYDRA_FC_SCC_CELL_EN	0x00000001	/* Enable SCC Clock */
-+#define HYDRA_FC_SCSI_CELL_EN	0x00000002	/* Enable SCSI Clock */
-+#define HYDRA_FC_SCCA_ENABLE	0x00000004	/* Enable SCC A Lines */
-+#define HYDRA_FC_SCCB_ENABLE	0x00000008	/* Enable SCC B Lines */
-+#define HYDRA_FC_ARB_BYPASS	0x00000010	/* Bypass Internal Arbiter */
-+#define HYDRA_FC_RESET_SCC	0x00000020	/* Reset SCC */
-+#define HYDRA_FC_MPIC_ENABLE	0x00000040	/* Enable OpenPIC */
-+#define HYDRA_FC_SLOW_SCC_PCLK	0x00000080	/* 1=15.6672, 0=25 MHz */
-+#define HYDRA_FC_MPIC_IS_MASTER	0x00000100	/* OpenPIC Master Mode */
-+
-+
-+    /*
-+     *  OpenPIC Interrupt Sources
-+     */
-+
-+#define HYDRA_INT_SIO		0
-+#define HYDRA_INT_SCSI_DMA	1
-+#define HYDRA_INT_SCCA_TX_DMA	2
-+#define HYDRA_INT_SCCA_RX_DMA	3
-+#define HYDRA_INT_SCCB_TX_DMA	4
-+#define HYDRA_INT_SCCB_RX_DMA	5
-+#define HYDRA_INT_SCSI		6
-+#define HYDRA_INT_SCCA		7
-+#define HYDRA_INT_SCCB		8
-+#define HYDRA_INT_VIA		9
-+#define HYDRA_INT_ADB		10
-+#define HYDRA_INT_ADB_NMI	11
-+#define HYDRA_INT_EXT1		12	/* PCI IRQW */
-+#define HYDRA_INT_EXT2		13	/* PCI IRQX */
-+#define HYDRA_INT_EXT3		14	/* PCI IRQY */
-+#define HYDRA_INT_EXT4		15	/* PCI IRQZ */
-+#define HYDRA_INT_EXT5		16	/* IDE Primay/Secondary */
-+#define HYDRA_INT_EXT6		17	/* IDE Secondary */
-+#define HYDRA_INT_EXT7		18	/* Power Off Request */
-+#define HYDRA_INT_SPARE		19
-+
-+extern int hydra_init(void);
-+extern void macio_adb_init(void);
-+
++#endif /* CONFIG_83xx */
 +#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_POWERCP_HYDRA_H */
-diff --git a/include/asm-ppc/hydra.h b/include/asm-ppc/hydra.h
++#endif /* _ASM_POWERPC_MPC83XX_H */
+diff --git a/include/asm-ppc/mpc83xx.h b/include/asm-ppc/mpc83xx.h
 deleted file mode 100644
-index 833a8af..0000000
---- a/include/asm-ppc/hydra.h
+index 3c23fc4..0000000
+--- a/include/asm-ppc/mpc83xx.h
 +++ /dev/null
-@@ -1,102 +0,0 @@
+@@ -1,116 +0,0 @@
 -/*
-- *  include/asm-ppc/hydra.h -- Mac I/O `Hydra' definitions
+- * include/asm-ppc/mpc83xx.h
 - *
-- *  Copyright (C) 1997 Geert Uytterhoeven
+- * MPC83xx definitions
 - *
-- *  This file is based on the following documentation:
+- * Maintainer: Kumar Gala <galak@kernel.crashing.org>
 - *
-- *	Macintosh Technology in the Common Hardware Reference Platform
-- *	Apple Computer, Inc.
+- * Copyright 2005 Freescale Semiconductor, Inc
 - *
-- *	© Copyright 1995 Apple Computer, Inc. All rights reserved.
-- *
-- *  It's available online from http://chrp.apple.com/MacTech.pdf.
-- *  You can obtain paper copies of this book from computer bookstores or by
-- *  writing Morgan Kaufmann Publishers, Inc., 340 Pine Street, Sixth Floor, San
-- *  Francisco, CA 94104. Reference ISBN 1-55860-393-X.
-- *
-- *  This file is subject to the terms and conditions of the GNU General Public
-- *  License.  See the file COPYING in the main directory of this archive
-- *  for more details.
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
 - */
 -
--#ifndef _ASMPPC_HYDRA_H
--#define _ASMPPC_HYDRA_H
--
 -#ifdef __KERNEL__
+-#ifndef __ASM_MPC83xx_H__
+-#define __ASM_MPC83xx_H__
 -
--struct Hydra {
--    /* DBDMA Controller Register Space */
--    char Pad1[0x30];
--    u_int CachePD;
--    u_int IDs;
--    u_int Feature_Control;
--    char Pad2[0x7fc4];
--    /* DBDMA Channel Register Space */
--    char SCSI_DMA[0x100];
--    char Pad3[0x300];
--    char SCCA_Tx_DMA[0x100];
--    char SCCA_Rx_DMA[0x100];
--    char SCCB_Tx_DMA[0x100];
--    char SCCB_Rx_DMA[0x100];
--    char Pad4[0x7800];
--    /* Device Register Space */
--    char SCSI[0x1000];
--    char ADB[0x1000];
--    char SCC_Legacy[0x1000];
--    char SCC[0x1000];
--    char Pad9[0x2000];
--    char VIA[0x2000];
--    char Pad10[0x28000];
--    char OpenPIC[0x40000];
+-#include <linux/config.h>
+-#include <asm/mmu.h>
+-
+-#ifdef CONFIG_83xx
+-
+-#ifdef CONFIG_MPC834x_SYS
+-#include <platforms/83xx/mpc834x_sys.h>
+-#endif
+-
+-#define _IO_BASE        isa_io_base
+-#define _ISA_MEM_BASE   isa_mem_base
+-#ifdef CONFIG_PCI
+-#define PCI_DRAM_OFFSET pci_dram_offset
+-#else
+-#define PCI_DRAM_OFFSET 0
+-#endif
+-
+-/*
+- * The "residual" board information structure the boot loader passes
+- * into the kernel.
+- */
+-extern unsigned char __res[];
+-
+-/* Internal IRQs on MPC83xx OpenPIC */
+-/* Not all of these exist on all MPC83xx implementations */
+-
+-#ifndef MPC83xx_IPIC_IRQ_OFFSET
+-#define MPC83xx_IPIC_IRQ_OFFSET	0
+-#endif
+-
+-#define NR_IPIC_INTS 128
+-
+-#define MPC83xx_IRQ_UART1	( 9 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_UART2	(10 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_SEC2	(11 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_IIC1	(14 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_IIC2	(15 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_SPI		(16 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT1	(17 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT2	(18 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT3	(19 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT4	(20 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT5	(21 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT6	(22 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT7	(23 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC1_TX	(32 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC1_RX	(33 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC1_ERROR	(34 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC2_TX	(35 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC2_RX	(36 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_TSEC2_ERROR	(37 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_USB2_DR	(38 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_USB2_MPH	(39 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_EXT0	(48 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_RTC_SEC	(64 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_PIT		(65 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_PCI1	(66 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_PCI2	(67 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_RTC_ALR	(68 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_MU		(69 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_SBA		(70 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_DMA		(71 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM4	(72 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM8	(73 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GPIO1	(74 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GPIO2	(75 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_DDR		(76 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_LBC		(77 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM2	(78 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM6	(79 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_PMC		(80 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM3	(84 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM7	(85 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM1	(90 + MPC83xx_IPIC_IRQ_OFFSET)
+-#define MPC83xx_IRQ_GTM5	(91 + MPC83xx_IPIC_IRQ_OFFSET)
+-
+-#define MPC83xx_CCSRBAR_SIZE	(1024*1024)
+-
+-/* Let modules/drivers get at immrbar (physical) */
+-extern phys_addr_t immrbar;
+-
+-enum ppc_sys_devices {
+-	MPC83xx_TSEC1,
+-	MPC83xx_TSEC2,
+-	MPC83xx_IIC1,
+-	MPC83xx_IIC2,
+-	MPC83xx_DUART,
+-	MPC83xx_SEC2,
+-	MPC83xx_USB2_DR,
+-	MPC83xx_USB2_MPH,
+-	MPC83xx_MDIO,
+-	NUM_PPC_SYS_DEVS,
 -};
 -
--extern volatile struct Hydra __iomem *Hydra;
--
--
--    /*
--     *  Feature Control Register
--     */
--
--#define HYDRA_FC_SCC_CELL_EN	0x00000001	/* Enable SCC Clock */
--#define HYDRA_FC_SCSI_CELL_EN	0x00000002	/* Enable SCSI Clock */
--#define HYDRA_FC_SCCA_ENABLE	0x00000004	/* Enable SCC A Lines */
--#define HYDRA_FC_SCCB_ENABLE	0x00000008	/* Enable SCC B Lines */
--#define HYDRA_FC_ARB_BYPASS	0x00000010	/* Bypass Internal Arbiter */
--#define HYDRA_FC_RESET_SCC	0x00000020	/* Reset SCC */
--#define HYDRA_FC_MPIC_ENABLE	0x00000040	/* Enable OpenPIC */
--#define HYDRA_FC_SLOW_SCC_PCLK	0x00000080	/* 1=15.6672, 0=25 MHz */
--#define HYDRA_FC_MPIC_IS_MASTER	0x00000100	/* OpenPIC Master Mode */
--
--
--    /*
--     *  OpenPIC Interrupt Sources
--     */
--
--#define HYDRA_INT_SIO		0
--#define HYDRA_INT_SCSI_DMA	1
--#define HYDRA_INT_SCCA_TX_DMA	2
--#define HYDRA_INT_SCCA_RX_DMA	3
--#define HYDRA_INT_SCCB_TX_DMA	4
--#define HYDRA_INT_SCCB_RX_DMA	5
--#define HYDRA_INT_SCSI		6
--#define HYDRA_INT_SCCA		7
--#define HYDRA_INT_SCCB		8
--#define HYDRA_INT_VIA		9
--#define HYDRA_INT_ADB		10
--#define HYDRA_INT_ADB_NMI	11
--#define HYDRA_INT_EXT1		12	/* PCI IRQW */
--#define HYDRA_INT_EXT2		13	/* PCI IRQX */
--#define HYDRA_INT_EXT3		14	/* PCI IRQY */
--#define HYDRA_INT_EXT4		15	/* PCI IRQZ */
--#define HYDRA_INT_EXT5		16	/* IDE Primay/Secondary */
--#define HYDRA_INT_EXT6		17	/* IDE Secondary */
--#define HYDRA_INT_EXT7		18	/* Power Off Request */
--#define HYDRA_INT_SPARE		19
--
--extern int hydra_init(void);
--extern void macio_adb_init(void);
--
+-#endif /* CONFIG_83xx */
+-#endif /* __ASM_MPC83xx_H__ */
 -#endif /* __KERNEL__ */
--
--#endif /* _ASMPPC_HYDRA_H */
 -- 
 1.2.4
