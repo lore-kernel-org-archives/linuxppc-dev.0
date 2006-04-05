@@ -1,9 +1,9 @@
 Return-Path: <sfr@canb.auug.org.au>
 From: sfr@canb.auug.org.au
 To: paulus@samba.org
-Subject: [PATCH 08/15] powerpc: move asm/open_pic.h
-Date: Wed, 05 Apr 2006 15:10:42 +1000
-Message-Id: <11442138641124-git-send-email-sfr@canb.auug.org.au>
+Subject: [PATCH 09/15] powerpc: move asm/hydra.h
+Date: Wed, 05 Apr 2006 15:10:43 +1000
+Message-Id: <11442138651818-git-send-email-sfr@canb.auug.org.au>
 In-Reply-To: <11442138494042-git-send-email-sfr@canb.auug.org.au>
 Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 Reply-To: sfr@canb.auug.org.au
@@ -25,222 +25,228 @@ Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 ---
 
- include/asm-powerpc/open_pic.h |   99 ++++++++++++++++++++++++++++++++++++++++
- include/asm-ppc/open_pic.h     |   99 ----------------------------------------
- 2 files changed, 99 insertions(+), 99 deletions(-)
- create mode 100644 include/asm-powerpc/open_pic.h
- delete mode 100644 include/asm-ppc/open_pic.h
+ include/asm-powerpc/hydra.h |  102 +++++++++++++++++++++++++++++++++++++++++++
+ include/asm-ppc/hydra.h     |  102 -------------------------------------------
+ 2 files changed, 102 insertions(+), 102 deletions(-)
+ create mode 100644 include/asm-powerpc/hydra.h
+ delete mode 100644 include/asm-ppc/hydra.h
 
-54316678b9e6aad8349f2df50dadd2597b675804
-diff --git a/include/asm-powerpc/open_pic.h b/include/asm-powerpc/open_pic.h
+cdf75e3d546f69e8d3cf7c32b705a40ce2552a22
+diff --git a/include/asm-powerpc/hydra.h b/include/asm-powerpc/hydra.h
 new file mode 100644
-index 0000000..3f197cf
+index 0000000..61c8abb
 --- /dev/null
-+++ b/include/asm-powerpc/open_pic.h
-@@ -0,0 +1,99 @@
-+#ifndef _ASM_POWERPC_OPEN_PIC_H
-+#define _ASM_POWERPC_OPEN_PIC_H
++++ b/include/asm-powerpc/hydra.h
+@@ -0,0 +1,102 @@
++#ifndef _ASM_POWERCP_HYDRA_H
++#define _ASM_POWERCP_HYDRA_H
 +
 +/*
-+ *  include/asm-ppc/open_pic.h -- OpenPIC Interrupt Handling
++ *  include/asm-ppc/hydra.h -- Mac I/O `Hydra' definitions
 + *
 + *  Copyright (C) 1997 Geert Uytterhoeven
++ *
++ *  This file is based on the following documentation:
++ *
++ *	Macintosh Technology in the Common Hardware Reference Platform
++ *	Apple Computer, Inc.
++ *
++ *	© Copyright 1995 Apple Computer, Inc. All rights reserved.
++ *
++ *  It's available online from http://chrp.apple.com/MacTech.pdf.
++ *  You can obtain paper copies of this book from computer bookstores or by
++ *  writing Morgan Kaufmann Publishers, Inc., 340 Pine Street, Sixth Floor, San
++ *  Francisco, CA 94104. Reference ISBN 1-55860-393-X.
 + *
 + *  This file is subject to the terms and conditions of the GNU General Public
 + *  License.  See the file COPYING in the main directory of this archive
 + *  for more details.
-+ *
 + */
 +
-+#include <linux/irq.h>
++#ifdef __KERNEL__
 +
-+#define OPENPIC_SIZE	0x40000
++struct Hydra {
++    /* DBDMA Controller Register Space */
++    char Pad1[0x30];
++    u_int CachePD;
++    u_int IDs;
++    u_int Feature_Control;
++    char Pad2[0x7fc4];
++    /* DBDMA Channel Register Space */
++    char SCSI_DMA[0x100];
++    char Pad3[0x300];
++    char SCCA_Tx_DMA[0x100];
++    char SCCA_Rx_DMA[0x100];
++    char SCCB_Tx_DMA[0x100];
++    char SCCB_Rx_DMA[0x100];
++    char Pad4[0x7800];
++    /* Device Register Space */
++    char SCSI[0x1000];
++    char ADB[0x1000];
++    char SCC_Legacy[0x1000];
++    char SCC[0x1000];
++    char Pad9[0x2000];
++    char VIA[0x2000];
++    char Pad10[0x28000];
++    char OpenPIC[0x40000];
++};
 +
-+/*
-+ *  Non-offset'ed vector numbers
-+ */
-+
-+#define OPENPIC_VEC_TIMER	110	/* and up */
-+#define OPENPIC_VEC_IPI		118	/* and up */
-+#define OPENPIC_VEC_SPURIOUS	255
-+
-+/* Priorities */
-+#define OPENPIC_PRIORITY_IPI_BASE	10
-+#define OPENPIC_PRIORITY_DEFAULT	4
-+#define OPENPIC_PRIORITY_NMI		9
-+
-+/* OpenPIC IRQ controller structure */
-+extern struct hw_interrupt_type open_pic;
-+
-+/* OpenPIC IPI controller structure */
-+#ifdef CONFIG_SMP
-+extern struct hw_interrupt_type open_pic_ipi;
-+#endif /* CONFIG_SMP */
-+
-+extern u_int OpenPIC_NumInitSenses;
-+extern u_char *OpenPIC_InitSenses;
-+extern void __iomem * OpenPIC_Addr;
-+extern int epic_serial_mode;
-+
-+/* Exported functions */
-+extern void openpic_set_sources(int first_irq, int num_irqs, void __iomem *isr);
-+extern void openpic_init(int linux_irq_offset);
-+extern void openpic_init_nmi_irq(u_int irq);
-+extern void openpic_set_irq_priority(u_int irq, u_int pri);
-+extern void openpic_hookup_cascade(u_int irq, char *name,
-+				   int (*cascade_fn)(struct pt_regs *));
-+extern u_int openpic_irq(void);
-+extern void openpic_eoi(void);
-+extern void openpic_request_IPIs(void);
-+extern void do_openpic_setup_cpu(void);
-+extern int openpic_get_irq(struct pt_regs *regs);
-+extern void openpic_reset_processor_phys(u_int cpumask);
-+extern void openpic_setup_ISU(int isu_num, unsigned long addr);
-+extern void openpic_cause_IPI(u_int ipi, cpumask_t cpumask);
-+extern void smp_openpic_message_pass(int target, int msg);
-+extern void openpic_set_k2_cascade(int irq);
-+extern void openpic_set_priority(u_int pri);
-+extern u_int openpic_get_priority(void);
-+
-+extern inline int openpic_to_irq(int irq)
-+{
-+	/* IRQ 0 usually means 'disabled'.. don't mess with it
-+	 * exceptions to this (sandpoint maybe?)
-+	 * shouldn't use openpic_to_irq
-+	 */
-+	if (irq != 0){
-+		return irq += NUM_8259_INTERRUPTS;
-+	} else {
-+		return 0;
-+	}
-+}
-+/* Support for second openpic on G5 macs */
-+
-+// FIXME: To be replaced by sane cascaded controller management */
-+
-+#define PMAC_OPENPIC2_OFFSET	128
-+
-+#define OPENPIC2_VEC_TIMER	110	/* and up */
-+#define OPENPIC2_VEC_IPI	118	/* and up */
-+#define OPENPIC2_VEC_SPURIOUS	127
++extern volatile struct Hydra __iomem *Hydra;
 +
 +
-+extern void* OpenPIC2_Addr;
++    /*
++     *  Feature Control Register
++     */
 +
-+/* Exported functions */
-+extern void openpic2_set_sources(int first_irq, int num_irqs, void *isr);
-+extern void openpic2_init(int linux_irq_offset);
-+extern void openpic2_init_nmi_irq(u_int irq);
-+extern u_int openpic2_irq(void);
-+extern void openpic2_eoi(void);
-+extern int openpic2_get_irq(struct pt_regs *regs);
-+extern void openpic2_setup_ISU(int isu_num, unsigned long addr);
++#define HYDRA_FC_SCC_CELL_EN	0x00000001	/* Enable SCC Clock */
++#define HYDRA_FC_SCSI_CELL_EN	0x00000002	/* Enable SCSI Clock */
++#define HYDRA_FC_SCCA_ENABLE	0x00000004	/* Enable SCC A Lines */
++#define HYDRA_FC_SCCB_ENABLE	0x00000008	/* Enable SCC B Lines */
++#define HYDRA_FC_ARB_BYPASS	0x00000010	/* Bypass Internal Arbiter */
++#define HYDRA_FC_RESET_SCC	0x00000020	/* Reset SCC */
++#define HYDRA_FC_MPIC_ENABLE	0x00000040	/* Enable OpenPIC */
++#define HYDRA_FC_SLOW_SCC_PCLK	0x00000080	/* 1=15.6672, 0=25 MHz */
++#define HYDRA_FC_MPIC_IS_MASTER	0x00000100	/* OpenPIC Master Mode */
 +
-+#endif /* _ASM_POWERPC_OPEN_PIC_H */
-diff --git a/include/asm-ppc/open_pic.h b/include/asm-ppc/open_pic.h
++
++    /*
++     *  OpenPIC Interrupt Sources
++     */
++
++#define HYDRA_INT_SIO		0
++#define HYDRA_INT_SCSI_DMA	1
++#define HYDRA_INT_SCCA_TX_DMA	2
++#define HYDRA_INT_SCCA_RX_DMA	3
++#define HYDRA_INT_SCCB_TX_DMA	4
++#define HYDRA_INT_SCCB_RX_DMA	5
++#define HYDRA_INT_SCSI		6
++#define HYDRA_INT_SCCA		7
++#define HYDRA_INT_SCCB		8
++#define HYDRA_INT_VIA		9
++#define HYDRA_INT_ADB		10
++#define HYDRA_INT_ADB_NMI	11
++#define HYDRA_INT_EXT1		12	/* PCI IRQW */
++#define HYDRA_INT_EXT2		13	/* PCI IRQX */
++#define HYDRA_INT_EXT3		14	/* PCI IRQY */
++#define HYDRA_INT_EXT4		15	/* PCI IRQZ */
++#define HYDRA_INT_EXT5		16	/* IDE Primay/Secondary */
++#define HYDRA_INT_EXT6		17	/* IDE Secondary */
++#define HYDRA_INT_EXT7		18	/* Power Off Request */
++#define HYDRA_INT_SPARE		19
++
++extern int hydra_init(void);
++extern void macio_adb_init(void);
++
++#endif /* __KERNEL__ */
++
++#endif /* _ASM_POWERCP_HYDRA_H */
+diff --git a/include/asm-ppc/hydra.h b/include/asm-ppc/hydra.h
 deleted file mode 100644
-index ec2f466..0000000
---- a/include/asm-ppc/open_pic.h
+index 833a8af..0000000
+--- a/include/asm-ppc/hydra.h
 +++ /dev/null
-@@ -1,99 +0,0 @@
+@@ -1,102 +0,0 @@
 -/*
-- *  include/asm-ppc/open_pic.h -- OpenPIC Interrupt Handling
+- *  include/asm-ppc/hydra.h -- Mac I/O `Hydra' definitions
 - *
 - *  Copyright (C) 1997 Geert Uytterhoeven
+- *
+- *  This file is based on the following documentation:
+- *
+- *	Macintosh Technology in the Common Hardware Reference Platform
+- *	Apple Computer, Inc.
+- *
+- *	© Copyright 1995 Apple Computer, Inc. All rights reserved.
+- *
+- *  It's available online from http://chrp.apple.com/MacTech.pdf.
+- *  You can obtain paper copies of this book from computer bookstores or by
+- *  writing Morgan Kaufmann Publishers, Inc., 340 Pine Street, Sixth Floor, San
+- *  Francisco, CA 94104. Reference ISBN 1-55860-393-X.
 - *
 - *  This file is subject to the terms and conditions of the GNU General Public
 - *  License.  See the file COPYING in the main directory of this archive
 - *  for more details.
-- *
 - */
 -
--#ifndef _PPC_KERNEL_OPEN_PIC_H
--#define _PPC_KERNEL_OPEN_PIC_H
+-#ifndef _ASMPPC_HYDRA_H
+-#define _ASMPPC_HYDRA_H
 -
--#include <linux/config.h>
--#include <linux/irq.h>
+-#ifdef __KERNEL__
 -
--#define OPENPIC_SIZE	0x40000
+-struct Hydra {
+-    /* DBDMA Controller Register Space */
+-    char Pad1[0x30];
+-    u_int CachePD;
+-    u_int IDs;
+-    u_int Feature_Control;
+-    char Pad2[0x7fc4];
+-    /* DBDMA Channel Register Space */
+-    char SCSI_DMA[0x100];
+-    char Pad3[0x300];
+-    char SCCA_Tx_DMA[0x100];
+-    char SCCA_Rx_DMA[0x100];
+-    char SCCB_Tx_DMA[0x100];
+-    char SCCB_Rx_DMA[0x100];
+-    char Pad4[0x7800];
+-    /* Device Register Space */
+-    char SCSI[0x1000];
+-    char ADB[0x1000];
+-    char SCC_Legacy[0x1000];
+-    char SCC[0x1000];
+-    char Pad9[0x2000];
+-    char VIA[0x2000];
+-    char Pad10[0x28000];
+-    char OpenPIC[0x40000];
+-};
 -
--/*
-- *  Non-offset'ed vector numbers
-- */
--
--#define OPENPIC_VEC_TIMER	110	/* and up */
--#define OPENPIC_VEC_IPI		118	/* and up */
--#define OPENPIC_VEC_SPURIOUS	255
--
--/* Priorities */
--#define OPENPIC_PRIORITY_IPI_BASE	10
--#define OPENPIC_PRIORITY_DEFAULT	4
--#define OPENPIC_PRIORITY_NMI		9
--
--/* OpenPIC IRQ controller structure */
--extern struct hw_interrupt_type open_pic;
--
--/* OpenPIC IPI controller structure */
--#ifdef CONFIG_SMP
--extern struct hw_interrupt_type open_pic_ipi;
--#endif /* CONFIG_SMP */
--
--extern u_int OpenPIC_NumInitSenses;
--extern u_char *OpenPIC_InitSenses;
--extern void __iomem * OpenPIC_Addr;
--extern int epic_serial_mode;
--
--/* Exported functions */
--extern void openpic_set_sources(int first_irq, int num_irqs, void __iomem *isr);
--extern void openpic_init(int linux_irq_offset);
--extern void openpic_init_nmi_irq(u_int irq);
--extern void openpic_set_irq_priority(u_int irq, u_int pri);
--extern void openpic_hookup_cascade(u_int irq, char *name,
--				   int (*cascade_fn)(struct pt_regs *));
--extern u_int openpic_irq(void);
--extern void openpic_eoi(void);
--extern void openpic_request_IPIs(void);
--extern void do_openpic_setup_cpu(void);
--extern int openpic_get_irq(struct pt_regs *regs);
--extern void openpic_reset_processor_phys(u_int cpumask);
--extern void openpic_setup_ISU(int isu_num, unsigned long addr);
--extern void openpic_cause_IPI(u_int ipi, cpumask_t cpumask);
--extern void smp_openpic_message_pass(int target, int msg);
--extern void openpic_set_k2_cascade(int irq);
--extern void openpic_set_priority(u_int pri);
--extern u_int openpic_get_priority(void);
--
--extern inline int openpic_to_irq(int irq)
--{
--	/* IRQ 0 usually means 'disabled'.. don't mess with it
--	 * exceptions to this (sandpoint maybe?)
--	 * shouldn't use openpic_to_irq
--	 */
--	if (irq != 0){
--		return irq += NUM_8259_INTERRUPTS;
--	} else {
--		return 0;
--	}
--}
--/* Support for second openpic on G5 macs */
--
--// FIXME: To be replaced by sane cascaded controller management */
--
--#define PMAC_OPENPIC2_OFFSET	128
--
--#define OPENPIC2_VEC_TIMER	110	/* and up */
--#define OPENPIC2_VEC_IPI	118	/* and up */
--#define OPENPIC2_VEC_SPURIOUS	127
+-extern volatile struct Hydra __iomem *Hydra;
 -
 -
--extern void* OpenPIC2_Addr;
+-    /*
+-     *  Feature Control Register
+-     */
 -
--/* Exported functions */
--extern void openpic2_set_sources(int first_irq, int num_irqs, void *isr);
--extern void openpic2_init(int linux_irq_offset);
--extern void openpic2_init_nmi_irq(u_int irq);
--extern u_int openpic2_irq(void);
--extern void openpic2_eoi(void);
--extern int openpic2_get_irq(struct pt_regs *regs);
--extern void openpic2_setup_ISU(int isu_num, unsigned long addr);
--#endif /* _PPC_KERNEL_OPEN_PIC_H */
+-#define HYDRA_FC_SCC_CELL_EN	0x00000001	/* Enable SCC Clock */
+-#define HYDRA_FC_SCSI_CELL_EN	0x00000002	/* Enable SCSI Clock */
+-#define HYDRA_FC_SCCA_ENABLE	0x00000004	/* Enable SCC A Lines */
+-#define HYDRA_FC_SCCB_ENABLE	0x00000008	/* Enable SCC B Lines */
+-#define HYDRA_FC_ARB_BYPASS	0x00000010	/* Bypass Internal Arbiter */
+-#define HYDRA_FC_RESET_SCC	0x00000020	/* Reset SCC */
+-#define HYDRA_FC_MPIC_ENABLE	0x00000040	/* Enable OpenPIC */
+-#define HYDRA_FC_SLOW_SCC_PCLK	0x00000080	/* 1=15.6672, 0=25 MHz */
+-#define HYDRA_FC_MPIC_IS_MASTER	0x00000100	/* OpenPIC Master Mode */
+-
+-
+-    /*
+-     *  OpenPIC Interrupt Sources
+-     */
+-
+-#define HYDRA_INT_SIO		0
+-#define HYDRA_INT_SCSI_DMA	1
+-#define HYDRA_INT_SCCA_TX_DMA	2
+-#define HYDRA_INT_SCCA_RX_DMA	3
+-#define HYDRA_INT_SCCB_TX_DMA	4
+-#define HYDRA_INT_SCCB_RX_DMA	5
+-#define HYDRA_INT_SCSI		6
+-#define HYDRA_INT_SCCA		7
+-#define HYDRA_INT_SCCB		8
+-#define HYDRA_INT_VIA		9
+-#define HYDRA_INT_ADB		10
+-#define HYDRA_INT_ADB_NMI	11
+-#define HYDRA_INT_EXT1		12	/* PCI IRQW */
+-#define HYDRA_INT_EXT2		13	/* PCI IRQX */
+-#define HYDRA_INT_EXT3		14	/* PCI IRQY */
+-#define HYDRA_INT_EXT4		15	/* PCI IRQZ */
+-#define HYDRA_INT_EXT5		16	/* IDE Primay/Secondary */
+-#define HYDRA_INT_EXT6		17	/* IDE Secondary */
+-#define HYDRA_INT_EXT7		18	/* Power Off Request */
+-#define HYDRA_INT_SPARE		19
+-
+-extern int hydra_init(void);
+-extern void macio_adb_init(void);
+-
+-#endif /* __KERNEL__ */
+-
+-#endif /* _ASMPPC_HYDRA_H */
 -- 
 1.2.4
