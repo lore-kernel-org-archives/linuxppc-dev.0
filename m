@@ -1,9 +1,9 @@
 Return-Path: <sfr@canb.auug.org.au>
 From: sfr@canb.auug.org.au
 To: paulus@samba.org
-Subject: [PATCH 01/15] powerpc: move asm/hignmem.h
-Date: Wed, 05 Apr 2006 15:10:35 +1000
-Message-Id: <1144213850783-git-send-email-sfr@canb.auug.org.au>
+Subject: [PATCH 02/15] powerpc: move asm/suspend.h
+Date: Wed, 05 Apr 2006 15:10:36 +1000
+Message-Id: <11442138521003-git-send-email-sfr@canb.auug.org.au>
 In-Reply-To: <11442138494042-git-send-email-sfr@canb.auug.org.au>
 Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 Reply-To: sfr@canb.auug.org.au
@@ -18,304 +18,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Files in arch/powerpc now depend on asm/highmem.h, so move
-it to include/asm-powerpc/
+Since files in arch/powerpc now depend on asm/suspend.h,
+move it to include/asm-powerpc.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 ---
 
- include/asm-powerpc/highmem.h |  136 +++++++++++++++++++++++++++++++++++++++++
- include/asm-ppc/highmem.h     |  137 -----------------------------------------
- 2 files changed, 136 insertions(+), 137 deletions(-)
- create mode 100644 include/asm-powerpc/highmem.h
- delete mode 100644 include/asm-ppc/highmem.h
+ include/asm-powerpc/suspend.h |   17 +++++++++++++++++
+ include/asm-ppc/suspend.h     |   12 ------------
+ 2 files changed, 17 insertions(+), 12 deletions(-)
+ create mode 100644 include/asm-powerpc/suspend.h
+ delete mode 100644 include/asm-ppc/suspend.h
 
-50bea8557eb3c7ac43a21d7e5990e2f61cf4caed
-diff --git a/include/asm-powerpc/highmem.h b/include/asm-powerpc/highmem.h
+8d1f48e5eb94865c139b9c0ffd51ad50f991a1e6
+diff --git a/include/asm-powerpc/suspend.h b/include/asm-powerpc/suspend.h
 new file mode 100644
-index 0000000..c2357ba
+index 0000000..39fb2cd
 --- /dev/null
-+++ b/include/asm-powerpc/highmem.h
-@@ -0,0 +1,136 @@
-+#ifndef _ASM_POWERPC_HIGHMEM_H
-+#define _ASM_POWERPC_HIGHMEM_H
-+/*
-+ * highmem.h: virtual kernel memory mappings for high memory
-+ *
-+ * PowerPC version, stolen from the i386 version.
-+ *
-+ * Used in CONFIG_HIGHMEM systems for memory pages which
-+ * are not addressable by direct kernel virtual addresses.
-+ *
-+ * Copyright (C) 1999 Gerhard Wichert, Siemens AG
-+ *		      Gerhard.Wichert@pdb.siemens.de
-+ *
-+ *
-+ * Redesigned the x86 32-bit VM architecture to deal with
-+ * up to 16 Terrabyte physical memory. With current x86 CPUs
-+ * we now support up to 64 Gigabytes physical RAM.
-+ *
-+ * Copyright (C) 1999 Ingo Molnar <mingo@redhat.com>
-+ */
++++ b/include/asm-powerpc/suspend.h
+@@ -0,0 +1,17 @@
++#ifndef _ASM_POWERPC_SUSPEND_H
++#define _ASM_POWERPC_SUSPEND_H
 +
-+#ifdef __KERNEL__
-+
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <asm/kmap_types.h>
-+#include <asm/tlbflush.h>
-+#include <asm/page.h>
-+
-+/* undef for production */
-+#define HIGHMEM_DEBUG 1
-+
-+extern pte_t *kmap_pte;
-+extern pgprot_t kmap_prot;
-+extern pte_t *pkmap_page_table;
-+
-+/*
-+ * Right now we initialize only a single pte table. It can be extended
-+ * easily, subsequent pte tables have to be allocated in one physical
-+ * chunk of RAM.
-+ */
-+#define PKMAP_BASE	CONFIG_HIGHMEM_START
-+#define LAST_PKMAP	(1 << PTE_SHIFT)
-+#define LAST_PKMAP_MASK (LAST_PKMAP-1)
-+#define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
-+#define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
-+
-+#define KMAP_FIX_BEGIN	(PKMAP_BASE + 0x00400000UL)
-+
-+extern void *kmap_high(struct page *page);
-+extern void kunmap_high(struct page *page);
-+
-+static inline void *kmap(struct page *page)
++static inline int arch_prepare_suspend(void)
 +{
-+	might_sleep();
-+	if (!PageHighMem(page))
-+		return page_address(page);
-+	return kmap_high(page);
++	return 0;
 +}
 +
-+static inline void kunmap(struct page *page)
++static inline void save_processor_state(void)
 +{
-+	BUG_ON(in_interrupt());
-+	if (!PageHighMem(page))
-+		return;
-+	kunmap_high(page);
 +}
 +
-+/*
-+ * The use of kmap_atomic/kunmap_atomic is discouraged - kmap/kunmap
-+ * gives a more generic (and caching) interface. But kmap_atomic can
-+ * be used in IRQ contexts, so in some (very limited) cases we need
-+ * it.
-+ */
-+static inline void *kmap_atomic(struct page *page, enum km_type type)
++static inline void restore_processor_state(void)
 +{
-+	unsigned int idx;
-+	unsigned long vaddr;
-+
-+	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
-+	inc_preempt_count();
-+	if (!PageHighMem(page))
-+		return page_address(page);
-+
-+	idx = type + KM_TYPE_NR*smp_processor_id();
-+	vaddr = KMAP_FIX_BEGIN + idx * PAGE_SIZE;
-+#ifdef HIGHMEM_DEBUG
-+	BUG_ON(!pte_none(*(kmap_pte+idx)));
-+#endif
-+	set_pte_at(&init_mm, vaddr, kmap_pte+idx, mk_pte(page, kmap_prot));
-+	flush_tlb_page(NULL, vaddr);
-+
-+	return (void*) vaddr;
 +}
 +
-+static inline void kunmap_atomic(void *kvaddr, enum km_type type)
-+{
-+#ifdef HIGHMEM_DEBUG
-+	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
-+	unsigned int idx = type + KM_TYPE_NR*smp_processor_id();
-+
-+	if (vaddr < KMAP_FIX_BEGIN) { // FIXME
-+		dec_preempt_count();
-+		preempt_check_resched();
-+		return;
-+	}
-+
-+	BUG_ON(vaddr != KMAP_FIX_BEGIN + idx * PAGE_SIZE);
-+
-+	/*
-+	 * force other mappings to Oops if they'll try to access
-+	 * this pte without first remap it
-+	 */
-+	pte_clear(&init_mm, vaddr, kmap_pte+idx);
-+	flush_tlb_page(NULL, vaddr);
-+#endif
-+	dec_preempt_count();
-+	preempt_check_resched();
-+}
-+
-+static inline struct page *kmap_atomic_to_page(void *ptr)
-+{
-+	unsigned long idx, vaddr = (unsigned long) ptr;
-+
-+	if (vaddr < KMAP_FIX_BEGIN)
-+		return virt_to_page(ptr);
-+
-+	idx = (vaddr - KMAP_FIX_BEGIN) >> PAGE_SHIFT;
-+	return pte_page(kmap_pte[idx]);
-+}
-+
-+#define flush_cache_kmaps()	flush_cache_all()
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_POWERPC_HIGHMEM_H */
-diff --git a/include/asm-ppc/highmem.h b/include/asm-ppc/highmem.h
++#endif /* _ASM_POWERPC_SUSPEND_H */
+diff --git a/include/asm-ppc/suspend.h b/include/asm-ppc/suspend.h
 deleted file mode 100644
-index 1d2c4ef..0000000
---- a/include/asm-ppc/highmem.h
+index 3df9f32..0000000
+--- a/include/asm-ppc/suspend.h
 +++ /dev/null
-@@ -1,137 +0,0 @@
--/*
-- * highmem.h: virtual kernel memory mappings for high memory
-- *
-- * PowerPC version, stolen from the i386 version.
-- *
-- * Used in CONFIG_HIGHMEM systems for memory pages which
-- * are not addressable by direct kernel virtual addresses.
-- *
-- * Copyright (C) 1999 Gerhard Wichert, Siemens AG
-- *		      Gerhard.Wichert@pdb.siemens.de
-- *
-- *
-- * Redesigned the x86 32-bit VM architecture to deal with
-- * up to 16 Terrabyte physical memory. With current x86 CPUs
-- * we now support up to 64 Gigabytes physical RAM.
-- *
-- * Copyright (C) 1999 Ingo Molnar <mingo@redhat.com>
-- */
--
--#ifndef _ASM_HIGHMEM_H
--#define _ASM_HIGHMEM_H
--
--#ifdef __KERNEL__
--
--#include <linux/init.h>
--#include <linux/interrupt.h>
--#include <asm/kmap_types.h>
--#include <asm/tlbflush.h>
--#include <asm/page.h>
--
--/* undef for production */
--#define HIGHMEM_DEBUG 1
--
--extern pte_t *kmap_pte;
--extern pgprot_t kmap_prot;
--extern pte_t *pkmap_page_table;
--
--/*
-- * Right now we initialize only a single pte table. It can be extended
-- * easily, subsequent pte tables have to be allocated in one physical
-- * chunk of RAM.
-- */
--#define PKMAP_BASE 	CONFIG_HIGHMEM_START
--#define LAST_PKMAP 	(1 << PTE_SHIFT)
--#define LAST_PKMAP_MASK (LAST_PKMAP-1)
--#define PKMAP_NR(virt)  ((virt-PKMAP_BASE) >> PAGE_SHIFT)
--#define PKMAP_ADDR(nr)  (PKMAP_BASE + ((nr) << PAGE_SHIFT))
--
--#define KMAP_FIX_BEGIN	(PKMAP_BASE + 0x00400000UL)
--
--extern void *kmap_high(struct page *page);
--extern void kunmap_high(struct page *page);
--
--static inline void *kmap(struct page *page)
+@@ -1,12 +0,0 @@
+-static inline int arch_prepare_suspend(void)
 -{
--	might_sleep();
--	if (!PageHighMem(page))
--		return page_address(page);
--	return kmap_high(page);
+-	return 0;
 -}
 -
--static inline void kunmap(struct page *page)
+-static inline void save_processor_state(void)
 -{
--	BUG_ON(in_interrupt());
--	if (!PageHighMem(page))
--		return;
--	kunmap_high(page);
 -}
 -
--/*
-- * The use of kmap_atomic/kunmap_atomic is discouraged - kmap/kunmap
-- * gives a more generic (and caching) interface. But kmap_atomic can
-- * be used in IRQ contexts, so in some (very limited) cases we need
-- * it.
-- */
--static inline void *kmap_atomic(struct page *page, enum km_type type)
+-static inline void restore_processor_state(void)
 -{
--	unsigned int idx;
--	unsigned long vaddr;
--
--	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
--	inc_preempt_count();
--	if (!PageHighMem(page))
--		return page_address(page);
--
--	idx = type + KM_TYPE_NR*smp_processor_id();
--	vaddr = KMAP_FIX_BEGIN + idx * PAGE_SIZE;
--#ifdef HIGHMEM_DEBUG
--	BUG_ON(!pte_none(*(kmap_pte+idx)));
--#endif
--	set_pte_at(&init_mm, vaddr, kmap_pte+idx, mk_pte(page, kmap_prot));
--	flush_tlb_page(NULL, vaddr);
--
--	return (void*) vaddr;
 -}
--
--static inline void kunmap_atomic(void *kvaddr, enum km_type type)
--{
--#ifdef HIGHMEM_DEBUG
--	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
--	unsigned int idx = type + KM_TYPE_NR*smp_processor_id();
--
--	if (vaddr < KMAP_FIX_BEGIN) { // FIXME
--		dec_preempt_count();
--		preempt_check_resched();
--		return;
--	}
--
--	BUG_ON(vaddr != KMAP_FIX_BEGIN + idx * PAGE_SIZE);
--
--	/*
--	 * force other mappings to Oops if they'll try to access
--	 * this pte without first remap it
--	 */
--	pte_clear(&init_mm, vaddr, kmap_pte+idx);
--	flush_tlb_page(NULL, vaddr);
--#endif
--	dec_preempt_count();
--	preempt_check_resched();
--}
--
--static inline struct page *kmap_atomic_to_page(void *ptr)
--{
--	unsigned long idx, vaddr = (unsigned long) ptr;
--
--	if (vaddr < KMAP_FIX_BEGIN)
--		return virt_to_page(ptr);
--
--	idx = (vaddr - KMAP_FIX_BEGIN) >> PAGE_SHIFT;
--	return pte_page(kmap_pte[idx]);
--}
--
--#define flush_cache_kmaps()	flush_cache_all()
--
--#endif /* __KERNEL__ */
--
--#endif /* _ASM_HIGHMEM_H */
 -- 
 1.2.4
