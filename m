@@ -1,15 +1,15 @@
-Return-Path: <kevinmorizur@hotmail.fr>
-Received: from hotmail.com (bay109-f18.bay109.hotmail.com [64.4.19.28])
-	by ozlabs.org (Postfix) with ESMTP id A18FB679EF
+Return-Path: <eemingliu@hotmail.com>
+Received: from hotmail.com (bay110-f12.bay110.hotmail.com [65.54.229.22])
+	by ozlabs.org (Postfix) with ESMTP id 34C4B679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Apr 2006 21:06:48 +1000 (EST)
-Message-ID: <BAY109-F187E08DFC53AE3753CC9F5A1CB0@phx.gbl>
-From: "kevin morizur" <kevinmorizur@hotmail.fr>
+	Thu,  6 Apr 2006 02:20:01 +1000 (EST)
+Message-ID: <BAY110-F12AEECB510AD5DC78CDEDEB2CB0@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: SBC 8245 problem with linux kernel PCI bus configuration
-Date: Wed, 05 Apr 2006 12:49:41 +0200
+Subject: help. a question on "make menuconfig"
+Date: Wed, 05 Apr 2006 16:02:54 +0000
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,31 +20,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi.
-I'am using a SBC8245 board,ELDK 4.0 and Linux 2.6.11.
-I make a linux kernel for MPC8245 with ELDK version 4.0 and i meet few 
-problems :
+Hi,
+I am a novice for embendded linux. My platform is Xilinx Virtex4 (PPC405). 
+I have downloaded the kernal source of linuxppc_2_4_devel and modified the 
+Makefile as:
+ARCH := ppc
+CROSS_COMPILE = powerpc-405-linux-gnu-
 
-1) I make my kernel configuration and when i activate the PCI bus support i 
-have errors in compilation: PIRQA,PIRQB,PIRQC,PIRQD, 
-PCI_INT_MASK_REG,PCI_INT_STAT_REG,PCI_INT_TO_SIU are not defined. When i 
-compile without PCI bus support, there is no problem. So i don't have PCI 
-bus activate !
+But when I execute "make menuconfig", the following error happens,
 
-2) When i start the kernel on my target the console displays : Detected 
-PPCBOOT header
-                    Verifying image CRC...ok
-                    Uncompressing Kernel Image...ok
-                    Starting Linux Kernel.
-and it stops. My console is connected via the serial port which is connected 
-to the MPC8245 via PCI bus. So maybe the linux kernel starts correctly but i 
-can't see anything ?
+mingliu@linux:~/linuxppc_2_4_devel> make menuconfig 
+make: *** arch/ppc: Is a directory.  Stop. 
+mingliu@linux:~/linuxppc_2_4_devel> 
 
-So if you could help me to make PCI bus working correctly !
+Why this error happened? Is there something wrong with the Makefile? I did 
+nothing except for specifying the ARCH and the CROSS_COMPILE.
 
-Regards,
-Kevin
+Thanks for your help.
+
+                                                              BR
+                                                                 Ming
 
 _________________________________________________________________
-Tout savoir sur la sécurité de votre PC ! 
-http://go.msn.fr/10-channel/80-security/spam/default.asp
+ÓëÁª»úµÄÅóÓÑ½øÐÐ½»Á÷£¬ÇëÊ¹ÓÃ MSN Messenger:  http://messenger.msn.com/cn  
