@@ -1,20 +1,21 @@
-Return-Path: <bdc@carlstrom.com>
-Received: from electricrain.com (electricrain.com [207.7.145.10])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 28D9167A33
-	for <linuxppc-dev@ozlabs.org>; Wed,  5 Apr 2006 12:36:59 +1000 (EST)
-From: "Brian D. Carlstrom" <bdc@carlstrom.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17459.11188.362959.630416@zot.electricrain.com>
-Date: Tue, 4 Apr 2006 19:30:12 -0700
-To: "Yang Dehua" <yangdh@cableplus.com.cn>
-Subject: xorg-7.0 freezes on gentoo ppc64 linux with 9800 card
-In-Reply-To: <004301c65843$d561d710$6500a8c0@yangdh>
-References: <004301c65843$d561d710$6500a8c0@yangdh>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: "Brian D. Carlstrom" <bdc@carlstrom.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7ED6867A33
+	for <linuxppc-dev@ozlabs.org>; Wed,  5 Apr 2006 13:06:15 +1000 (EST)
+Date: Wed, 5 Apr 2006 13:05:53 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull from 'for_paulus' branch of powerpc
+Message-Id: <20060405130553.3240e5ea.sfr@canb.auug.org.au>
+In-Reply-To: <1E1C6A02-5C4D-4A3A-8483-8D5E2773680B@kernel.crashing.org>
+References: <Pine.LNX.4.44.0604041612320.30113-100000@gate.crashing.org>
+	<20060405102837.66b44c43.sfr@canb.auug.org.au>
+	<1E1C6A02-5C4D-4A3A-8483-8D5E2773680B@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__5_Apr_2006_13_05_53_+1000_pXShg8Y1kSkbxYU1"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,22 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Yang Dehua writes:
- > I just bought a mac 9800xt card to replace my 9600pro on my G5
- > running gentoo ppc64 linux(2006.0, 64-bit userland). The system
- > worked fine until I started xorg-7.0: the screen blacked and the
- > keyboard and mouse were not responding any more, so I had to shutdown
- > the machine. The same X config worked well with 9600pro card(64M).
+--Signature=_Wed__5_Apr_2006_13_05_53_+1000_pXShg8Y1kSkbxYU1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I ran into this and posted a workaround about it here for fedora:
-    http://lists.infradead.org/pipermail/fedora-ppc/2006-March/000816.html
+Hi Kumar,
 
-I based this workaround based on the Ubuntu discussion here:
-    https://launchpad.net/distros/ubuntu/+source/xserver-xorg-driver-ati/+bug/30426
+On Tue, 4 Apr 2006 20:23:23 -0500 Kumar Gala <galak@kernel.crashing.org> wr=
+ote:
+>
+> We need the irq rework before I'd be willing to do this.  The main =20
+> dependancy between asm-ppc and asm-powerpc is the static IRQs we =20
+> currently have.  I'd rather spend time on fixing up the IRQ handling =20
+> to parse the flat dev tree.
 
-Basically, Benjamin Herrenschmidt recommends "building the ati driver
-from X.org ati-1-0-branch CVS branch". With that, I'm working in X
-happily. I'll note that an alternative before that was to use the
-"fbdev" driver instead of the "radeon".
+I agree entirely.  To clrify, I was referring to header files that only
+exist in include/asm-ppc and are trivial to move.
 
--bri
+Patches following ...
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__5_Apr_2006_13_05_53_+1000_pXShg8Y1kSkbxYU1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQFEMzQSFdBgD/zoJvwRAkFUAJ44xAkco6RX1R9+lw8g46s+/3tBCACfTWL8
+J/eVgu5VQ3KZto+WaMsLZi8=
+=Qv15
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__5_Apr_2006_13_05_53_+1000_pXShg8Y1kSkbxYU1--
