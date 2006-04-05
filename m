@@ -1,9 +1,9 @@
 Return-Path: <sfr@canb.auug.org.au>
 From: sfr@canb.auug.org.au
 To: paulus@samba.org
-Subject: [PATCH 11/15] powerpc: move asm/ocp.h
-Date: Wed, 05 Apr 2006 15:10:45 +1000
-Message-Id: <1144213868772-git-send-email-sfr@canb.auug.org.au>
+Subject: [PATCH 12/15] powerpc: move asm/ocp_ids.h
+Date: Wed, 05 Apr 2006 15:10:46 +1000
+Message-Id: <1144213870220-git-send-email-sfr@canb.auug.org.au>
 In-Reply-To: <11442138494042-git-send-email-sfr@canb.auug.org.au>
 Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 Reply-To: sfr@canb.auug.org.au
@@ -25,437 +25,172 @@ Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 ---
 
- include/asm-powerpc/ocp.h |  206 +++++++++++++++++++++++++++++++++++++++++++++
- include/asm-ppc/ocp.h     |  207 ---------------------------------------------
- 2 files changed, 206 insertions(+), 207 deletions(-)
- create mode 100644 include/asm-powerpc/ocp.h
- delete mode 100644 include/asm-ppc/ocp.h
+ include/asm-powerpc/ocp_ids.h |   75 +++++++++++++++++++++++++++++++++++++++++
+ include/asm-ppc/ocp_ids.h     |   73 ----------------------------------------
+ 2 files changed, 75 insertions(+), 73 deletions(-)
+ create mode 100644 include/asm-powerpc/ocp_ids.h
+ delete mode 100644 include/asm-ppc/ocp_ids.h
 
-c7b417812dc2ebece32356c0a5e93966de9ba2cd
-diff --git a/include/asm-powerpc/ocp.h b/include/asm-powerpc/ocp.h
+a374f458829d868a3142bff918ef872e0ecff1a8
+diff --git a/include/asm-powerpc/ocp_ids.h b/include/asm-powerpc/ocp_ids.h
 new file mode 100644
-index 0000000..8916c52
+index 0000000..78e5906
 --- /dev/null
-+++ b/include/asm-powerpc/ocp.h
-@@ -0,0 +1,206 @@
-+#ifndef _ASM_POWERPC_OCP_H
-+#define _ASM_POWERPC_OCP_H
++++ b/include/asm-powerpc/ocp_ids.h
+@@ -0,0 +1,75 @@
++#ifndef _ASM_POWERPC_OCP_IDS_H
++#define _ASM_POWERPC_OCP_IDS_H
 +/*
-+ * ocp.h
++ * OCP device ids based on the ideas from PCI
 + *
-+ *      (c) Benjamin Herrenschmidt (benh@kernel.crashing.org)
-+ *          Mipsys - France
-+ *
-+ *          Derived from work (c) Armin Kuster akuster@pacbell.net
-+ *
-+ *          Additional support and port to 2.6 LDM/sysfs by
-+ *          Matt Porter <mporter@kernel.crashing.org>
-+ *          Copyright 2003-2004 MontaVista Software, Inc.
++ * The numbers below are almost completely arbitrary, and in fact
++ * strings might work better.  -- paulus
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
 + * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
-+ *
-+ *  TODO: - Add get/put interface & fixup locking to provide same API for
-+ *          2.4 and 2.5
-+ *	  - Rework PM callbacks
 + */
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/init.h>
-+#include <linux/list.h>
-+#include <linux/devfs_fs_kernel.h>
-+#include <linux/device.h>
-+
-+#include <asm/mmu.h>
-+#include <asm/ocp_ids.h>
-+#include <asm/rwsem.h>
-+#include <asm/semaphore.h>
-+
-+#ifdef CONFIG_PPC_OCP
-+
-+#define OCP_MAX_IRQS	7
-+#define MAX_EMACS	4
-+#define OCP_IRQ_NA	-1	/* used when ocp device does not have an irq */
-+#define OCP_IRQ_MUL	-2	/* used for ocp devices with multiply irqs */
-+#define OCP_NULL_TYPE	-1	/* used to mark end of list */
-+#define OCP_CPM_NA	0	/* No Clock or Power Management avaliable */
-+#define OCP_PADDR_NA	0	/* No MMIO registers */
-+
-+#define OCP_ANY_ID	(~0)
-+#define OCP_ANY_INDEX	-1
-+
-+extern struct list_head 	ocp_devices;
-+extern struct rw_semaphore	ocp_devices_sem;
-+
-+struct ocp_device_id {
-+	unsigned int	vendor, function;	/* Vendor and function ID or OCP_ANY_ID */
-+	unsigned long	driver_data;		/* Data private to the driver */
-+};
-+
 +
 +/*
-+ * Static definition of an OCP device.
++ * Vender  device
++ * [xxxx]  [xxxx]
 + *
-+ * @vendor:    Vendor code. It is _STRONGLY_ discouraged to use
-+ *             the vendor code as a way to match a unique device,
-+ *             though I kept that possibility open, you should
-+ *             really define different function codes for different
-+ *             device types
-+ * @function:  This is the function code for this device.
-+ * @index:     This index is used for mapping the Nth function of a
-+ *             given core. This is typically used for cross-driver
-+ *             matching, like looking for a given MAL or ZMII from
-+ *             an EMAC or for getting to the proper set of DCRs.
-+ *             Indices are no longer magically calculated based on
-+ *             structure ordering, they have to be actually coded
-+ *             into the ocp_def to avoid any possible confusion
-+ *             I _STRONGLY_ (again ? wow !) encourage anybody relying
-+ *             on index mapping to encode the "target" index in an
-+ *             associated structure pointed to by "additions", see
-+ *             how it's done for the EMAC driver.
-+ * @paddr:     Device physical address (may not mean anything...)
-+ * @irq:       Interrupt line for this device (TODO: think about making
-+ *             an array with this)
-+ * @pm:        Currently, contains the bitmask in CPMFR DCR for the device
-+ * @additions: Optionally points to a function specific structure
-+ *             providing additional informations for a given device
-+ *             instance. It's currently used by the EMAC driver for MAL
-+ *             channel & ZMII port mapping among others.
-+ * @show:      Optionally points to a function specific structure
-+ *             providing a sysfs show routine for additions fields.
++ *  Keep in order, please
 + */
-+struct ocp_def {
-+	unsigned int	vendor;
-+	unsigned int	function;
-+	int		index;
-+	phys_addr_t	paddr;
-+	int	  	irq;
-+	unsigned long	pm;
-+	void		*additions;
-+	void		(*show)(struct device *);
-+};
 +
++/* Vendor IDs 0x0001 - 0xFFFF copied from pci_ids.h */
 +
-+/* Struct for a given device instance */
-+struct ocp_device {
-+	struct list_head	link;
-+	char			name[80];	/* device name */
-+	struct ocp_def		*def;		/* device definition */
-+	void			*drvdata;	/* driver data for this device */
-+	struct ocp_driver	*driver;
-+	u32			current_state;	/* Current operating state. In ACPI-speak,
-+						   this is D0-D3, D0 being fully functional,
-+						   and D3 being off. */
-+	struct			device dev;
-+};
++#define	OCP_VENDOR_INVALID	0x0000
++#define	OCP_VENDOR_ARM		0x0004
++#define OCP_VENDOR_FREESCALE	0x1057
++#define OCP_VENDOR_IBM		0x1014
++#define OCP_VENDOR_MOTOROLA	OCP_VENDOR_FREESCALE
++#define	OCP_VENDOR_XILINX	0x10ee
++#define	OCP_VENDOR_UNKNOWN	0xFFFF
 +
-+struct ocp_driver {
-+	struct list_head node;
-+	char *name;
-+	const struct ocp_device_id *id_table;	/* NULL if wants all devices */
-+	int  (*probe)  (struct ocp_device *dev);	/* New device inserted */
-+	void (*remove) (struct ocp_device *dev);	/* Device removed (NULL if not a hot-plug capable driver) */
-+	int  (*suspend) (struct ocp_device *dev, pm_message_t state);	/* Device suspended */
-+	int  (*resume) (struct ocp_device *dev);	                /* Device woken up */
-+	struct device_driver driver;
-+};
++/* device identification */
 +
-+#define to_ocp_dev(n) container_of(n, struct ocp_device, dev)
-+#define to_ocp_drv(n) container_of(n, struct ocp_driver, driver)
++/* define type */
++#define OCP_FUNC_INVALID	0x0000
 +
-+/* Similar to the helpers above, these manipulate per-ocp_dev
-+ * driver-specific data.  Currently stored as ocp_dev::ocpdev,
-+ * a void pointer, but it is not present on older kernels.
-+ */
-+static inline void *
-+ocp_get_drvdata(struct ocp_device *pdev)
-+{
-+	return pdev->drvdata;
-+}
++/* system 0x0001 - 0x001F */
 +
-+static inline void
-+ocp_set_drvdata(struct ocp_device *pdev, void *data)
-+{
-+	pdev->drvdata = data;
-+}
++/* Timers 0x0020 - 0x002F */
 +
-+#if defined (CONFIG_PM)
-+/*
-+ * This is right for the IBM 405 and 440 but will need to be
-+ * generalized if the OCP stuff gets used on other processors.
-+ */
-+static inline void
-+ocp_force_power_off(struct ocp_device *odev)
-+{
-+	mtdcr(DCRN_CPMFR, mfdcr(DCRN_CPMFR) | odev->def->pm);
-+}
++/* Serial 0x0030 - 0x006F*/
++#define OCP_FUNC_16550		0x0031
++#define OCP_FUNC_IIC		0x0032
++#define OCP_FUNC_USB		0x0033
++#define OCP_FUNC_PSC_UART	0x0034
 +
-+static inline void
-+ocp_force_power_on(struct ocp_device *odev)
-+{
-+	mtdcr(DCRN_CPMFR, mfdcr(DCRN_CPMFR) & ~odev->def->pm);
-+}
-+#else
-+#define ocp_force_power_off(x)	(void)(x)
-+#define ocp_force_power_on(x)	(void)(x)
-+#endif
++/* Memory devices 0x0090 - 0x009F */
++#define OCP_FUNC_MAL		0x0090
++#define OCP_FUNC_DMA		0x0091
 +
-+/* Register/Unregister an OCP driver */
-+extern int ocp_register_driver(struct ocp_driver *drv);
-+extern void ocp_unregister_driver(struct ocp_driver *drv);
++/* Display 0x00A0 - 0x00AF */
 +
-+/* Build list of devices */
-+extern int ocp_early_init(void) __init;
++/* Sound 0x00B0 - 0x00BF */
 +
-+/* Find a device by index */
-+extern struct ocp_device *ocp_find_device(unsigned int vendor, unsigned int function, int index);
++/* Mass Storage 0x00C0 - 0xxCF */
++#define OCP_FUNC_IDE		0x00C0
 +
-+/* Get a def by index */
-+extern struct ocp_def *ocp_get_one_device(unsigned int vendor, unsigned int function, int index);
++/* Misc 0x00D0 - 0x00DF*/
++#define OCP_FUNC_GPIO		0x00D0
++#define OCP_FUNC_ZMII		0x00D1
++#define OCP_FUNC_PERFMON	0x00D2	/* Performance Monitor */
++#define OCP_FUNC_RGMII		0x00D3
++#define OCP_FUNC_TAH		0x00D4
++#define OCP_FUNC_SEC2		0x00D5	/* Crypto/Security 2.0 */
 +
-+/* Add a device by index */
-+extern int ocp_add_one_device(struct ocp_def *def);
++/* Network 0x0200 - 0x02FF */
++#define OCP_FUNC_EMAC		0x0200
++#define OCP_FUNC_GFAR		0x0201	/* TSEC & FEC */
 +
-+/* Remove a device by index */
-+extern int ocp_remove_one_device(unsigned int vendor, unsigned int function, int index);
++/* Bridge devices 0xE00 - 0xEFF */
++#define OCP_FUNC_OPB		0x0E00
 +
-+/* Iterate over devices and execute a routine */
-+extern void ocp_for_each_device(void(*callback)(struct ocp_device *, void *arg), void *arg);
++#define OCP_FUNC_UNKNOWN	0xFFFF
 +
-+/* Sysfs support */
-+#define OCP_SYSFS_ADDTL(type, format, name, field)			\
-+static ssize_t								\
-+show_##name##_##field(struct device *dev, struct device_attribute *attr, char *buf)			\
-+{									\
-+	struct ocp_device *odev = to_ocp_dev(dev);			\
-+	type *add = odev->def->additions;				\
-+									\
-+	return sprintf(buf, format, add->field);			\
-+}									\
-+static DEVICE_ATTR(name##_##field, S_IRUGO, show_##name##_##field, NULL);
-+
-+#ifdef CONFIG_IBM_OCP
-+#include <asm/ibm_ocp.h>
-+#endif
-+
-+#endif				/* CONFIG_PPC_OCP */
-+#endif				/* __KERNEL__ */
-+#endif /* _ASM_POWERPC_OCP_H */
-diff --git a/include/asm-ppc/ocp.h b/include/asm-ppc/ocp.h
++#endif /* _ASM_POWERPC_OCP_IDS_H */
+diff --git a/include/asm-ppc/ocp_ids.h b/include/asm-ppc/ocp_ids.h
 deleted file mode 100644
-index 983116f..0000000
---- a/include/asm-ppc/ocp.h
+index 8ae4b31..0000000
+--- a/include/asm-ppc/ocp_ids.h
 +++ /dev/null
-@@ -1,207 +0,0 @@
+@@ -1,73 +0,0 @@
 -/*
-- * ocp.h
+- * ocp_ids.h
 - *
-- *      (c) Benjamin Herrenschmidt (benh@kernel.crashing.org)
-- *          Mipsys - France
+- * OCP device ids based on the ideas from PCI
 - *
-- *          Derived from work (c) Armin Kuster akuster@pacbell.net
-- *
-- *          Additional support and port to 2.6 LDM/sysfs by
-- *          Matt Porter <mporter@kernel.crashing.org>
-- *          Copyright 2003-2004 MontaVista Software, Inc.
+- * The numbers below are almost completely arbitrary, and in fact
+- * strings might work better.  -- paulus
 - *
 - * This program is free software; you can redistribute  it and/or modify it
 - * under  the terms of  the GNU General  Public License as published by the
 - * Free Software Foundation;  either version 2 of the  License, or (at your
 - * option) any later version.
-- *
-- *  TODO: - Add get/put interface & fixup locking to provide same API for
-- *          2.4 and 2.5
-- *	  - Rework PM callbacks
 - */
--
--#ifdef __KERNEL__
--#ifndef __OCP_H__
--#define __OCP_H__
--
--#include <linux/init.h>
--#include <linux/list.h>
--#include <linux/config.h>
--#include <linux/devfs_fs_kernel.h>
--#include <linux/device.h>
--
--#include <asm/mmu.h>
--#include <asm/ocp_ids.h>
--#include <asm/rwsem.h>
--#include <asm/semaphore.h>
--
--#ifdef CONFIG_PPC_OCP
--
--#define OCP_MAX_IRQS	7
--#define MAX_EMACS	4
--#define OCP_IRQ_NA	-1	/* used when ocp device does not have an irq */
--#define OCP_IRQ_MUL	-2	/* used for ocp devices with multiply irqs */
--#define OCP_NULL_TYPE	-1	/* used to mark end of list */
--#define OCP_CPM_NA	0	/* No Clock or Power Management avaliable */
--#define OCP_PADDR_NA	0	/* No MMIO registers */
--
--#define OCP_ANY_ID	(~0)
--#define OCP_ANY_INDEX	-1
--
--extern struct list_head 	ocp_devices;
--extern struct rw_semaphore	ocp_devices_sem;
--
--struct ocp_device_id {
--	unsigned int	vendor, function;	/* Vendor and function ID or OCP_ANY_ID */
--	unsigned long	driver_data;		/* Data private to the driver */
--};
--
 -
 -/*
-- * Static definition of an OCP device.
+- * Vender  device
+- * [xxxx]  [xxxx]
 - *
-- * @vendor:    Vendor code. It is _STRONGLY_ discouraged to use
-- *             the vendor code as a way to match a unique device,
-- *             though I kept that possibility open, you should
-- *             really define different function codes for different
-- *             device types
-- * @function:  This is the function code for this device.
-- * @index:     This index is used for mapping the Nth function of a
-- *             given core. This is typically used for cross-driver
-- *             matching, like looking for a given MAL or ZMII from
-- *             an EMAC or for getting to the proper set of DCRs.
-- *             Indices are no longer magically calculated based on
-- *             structure ordering, they have to be actually coded
-- *             into the ocp_def to avoid any possible confusion
-- *             I _STRONGLY_ (again ? wow !) encourage anybody relying
-- *             on index mapping to encode the "target" index in an
-- *             associated structure pointed to by "additions", see
-- *             how it's done for the EMAC driver.
-- * @paddr:     Device physical address (may not mean anything...)
-- * @irq:       Interrupt line for this device (TODO: think about making
-- *             an array with this)
-- * @pm:        Currently, contains the bitmask in CPMFR DCR for the device
-- * @additions: Optionally points to a function specific structure
-- *             providing additional informations for a given device
-- *             instance. It's currently used by the EMAC driver for MAL
-- *             channel & ZMII port mapping among others.
-- * @show:      Optionally points to a function specific structure
-- *             providing a sysfs show routine for additions fields.
+- *  Keep in order, please
 - */
--struct ocp_def {
--	unsigned int	vendor;
--	unsigned int	function;
--	int		index;
--	phys_addr_t	paddr;
--	int	  	irq;
--	unsigned long	pm;
--	void		*additions;
--	void		(*show)(struct device *);
--};
 -
+-/* Vendor IDs 0x0001 - 0xFFFF copied from pci_ids.h */
 -
--/* Struct for a given device instance */
--struct ocp_device {
--	struct list_head	link;
--	char			name[80];	/* device name */
--	struct ocp_def		*def;		/* device definition */
--	void			*drvdata;	/* driver data for this device */
--	struct ocp_driver	*driver;
--	u32			current_state;	/* Current operating state. In ACPI-speak,
--						   this is D0-D3, D0 being fully functional,
--						   and D3 being off. */
--	struct			device dev;
--};
+-#define	OCP_VENDOR_INVALID	0x0000
+-#define	OCP_VENDOR_ARM		0x0004
+-#define OCP_VENDOR_FREESCALE	0x1057
+-#define OCP_VENDOR_IBM		0x1014
+-#define OCP_VENDOR_MOTOROLA	OCP_VENDOR_FREESCALE
+-#define	OCP_VENDOR_XILINX	0x10ee
+-#define	OCP_VENDOR_UNKNOWN	0xFFFF
 -
--struct ocp_driver {
--	struct list_head node;
--	char *name;
--	const struct ocp_device_id *id_table;	/* NULL if wants all devices */
--	int  (*probe)  (struct ocp_device *dev);	/* New device inserted */
--	void (*remove) (struct ocp_device *dev);	/* Device removed (NULL if not a hot-plug capable driver) */
--	int  (*suspend) (struct ocp_device *dev, pm_message_t state);	/* Device suspended */
--	int  (*resume) (struct ocp_device *dev);	                /* Device woken up */
--	struct device_driver driver;
--};
+-/* device identification */
 -
--#define to_ocp_dev(n) container_of(n, struct ocp_device, dev)
--#define to_ocp_drv(n) container_of(n, struct ocp_driver, driver)
+-/* define type */
+-#define OCP_FUNC_INVALID	0x0000
 -
--/* Similar to the helpers above, these manipulate per-ocp_dev
-- * driver-specific data.  Currently stored as ocp_dev::ocpdev,
-- * a void pointer, but it is not present on older kernels.
-- */
--static inline void *
--ocp_get_drvdata(struct ocp_device *pdev)
--{
--	return pdev->drvdata;
--}
+-/* system 0x0001 - 0x001F */
 -
--static inline void
--ocp_set_drvdata(struct ocp_device *pdev, void *data)
--{
--	pdev->drvdata = data;
--}
+-/* Timers 0x0020 - 0x002F */
 -
--#if defined (CONFIG_PM)
--/*
-- * This is right for the IBM 405 and 440 but will need to be
-- * generalized if the OCP stuff gets used on other processors.
-- */
--static inline void
--ocp_force_power_off(struct ocp_device *odev)
--{
--	mtdcr(DCRN_CPMFR, mfdcr(DCRN_CPMFR) | odev->def->pm);
--}
+-/* Serial 0x0030 - 0x006F*/
+-#define OCP_FUNC_16550		0x0031
+-#define OCP_FUNC_IIC		0x0032
+-#define OCP_FUNC_USB		0x0033
+-#define OCP_FUNC_PSC_UART	0x0034
 -
--static inline void
--ocp_force_power_on(struct ocp_device *odev)
--{
--	mtdcr(DCRN_CPMFR, mfdcr(DCRN_CPMFR) & ~odev->def->pm);
--}
--#else
--#define ocp_force_power_off(x)	(void)(x)
--#define ocp_force_power_on(x)	(void)(x)
--#endif
+-/* Memory devices 0x0090 - 0x009F */
+-#define OCP_FUNC_MAL		0x0090
+-#define OCP_FUNC_DMA		0x0091
 -
--/* Register/Unregister an OCP driver */
--extern int ocp_register_driver(struct ocp_driver *drv);
--extern void ocp_unregister_driver(struct ocp_driver *drv);
+-/* Display 0x00A0 - 0x00AF */
 -
--/* Build list of devices */
--extern int ocp_early_init(void) __init;
+-/* Sound 0x00B0 - 0x00BF */
 -
--/* Find a device by index */
--extern struct ocp_device *ocp_find_device(unsigned int vendor, unsigned int function, int index);
+-/* Mass Storage 0x00C0 - 0xxCF */
+-#define OCP_FUNC_IDE		0x00C0
 -
--/* Get a def by index */
--extern struct ocp_def *ocp_get_one_device(unsigned int vendor, unsigned int function, int index);
+-/* Misc 0x00D0 - 0x00DF*/
+-#define OCP_FUNC_GPIO		0x00D0
+-#define OCP_FUNC_ZMII		0x00D1
+-#define OCP_FUNC_PERFMON	0x00D2	/* Performance Monitor */
+-#define OCP_FUNC_RGMII		0x00D3
+-#define OCP_FUNC_TAH		0x00D4
+-#define OCP_FUNC_SEC2		0x00D5	/* Crypto/Security 2.0 */
 -
--/* Add a device by index */
--extern int ocp_add_one_device(struct ocp_def *def);
+-/* Network 0x0200 - 0x02FF */
+-#define OCP_FUNC_EMAC		0x0200
+-#define OCP_FUNC_GFAR		0x0201	/* TSEC & FEC */
 -
--/* Remove a device by index */
--extern int ocp_remove_one_device(unsigned int vendor, unsigned int function, int index);
+-/* Bridge devices 0xE00 - 0xEFF */
+-#define OCP_FUNC_OPB		0x0E00
 -
--/* Iterate over devices and execute a routine */
--extern void ocp_for_each_device(void(*callback)(struct ocp_device *, void *arg), void *arg);
--
--/* Sysfs support */
--#define OCP_SYSFS_ADDTL(type, format, name, field)			\
--static ssize_t								\
--show_##name##_##field(struct device *dev, struct device_attribute *attr, char *buf)			\
--{									\
--	struct ocp_device *odev = to_ocp_dev(dev);			\
--	type *add = odev->def->additions;				\
--									\
--	return sprintf(buf, format, add->field);			\
--}									\
--static DEVICE_ATTR(name##_##field, S_IRUGO, show_##name##_##field, NULL);
--
--#ifdef CONFIG_IBM_OCP
--#include <asm/ibm_ocp.h>
--#endif
--
--#endif				/* CONFIG_PPC_OCP */
--#endif				/* __OCP_H__ */
--#endif				/* __KERNEL__ */
+-#define OCP_FUNC_UNKNOWN	0xFFFF
 -- 
 1.2.4
