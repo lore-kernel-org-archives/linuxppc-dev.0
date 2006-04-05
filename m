@@ -1,9 +1,9 @@
 Return-Path: <sfr@canb.auug.org.au>
 From: sfr@canb.auug.org.au
 To: paulus@samba.org
-Subject: [PATCH 07/15] powerpc: move asm/amigappc.h
-Date: Wed, 05 Apr 2006 15:10:41 +1000
-Message-Id: <11442138632305-git-send-email-sfr@canb.auug.org.au>
+Subject: [PATCH 08/15] powerpc: move asm/open_pic.h
+Date: Wed, 05 Apr 2006 15:10:42 +1000
+Message-Id: <11442138641124-git-send-email-sfr@canb.auug.org.au>
 In-Reply-To: <11442138494042-git-send-email-sfr@canb.auug.org.au>
 Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 Reply-To: sfr@canb.auug.org.au
@@ -25,193 +25,222 @@ Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 ---
 
- include/asm-powerpc/amigappc.h |   84 ++++++++++++++++++++++++++++++++++++++++
- include/asm-ppc/amigappc.h     |   85 ----------------------------------------
- 2 files changed, 84 insertions(+), 85 deletions(-)
- create mode 100644 include/asm-powerpc/amigappc.h
- delete mode 100644 include/asm-ppc/amigappc.h
+ include/asm-powerpc/open_pic.h |   99 ++++++++++++++++++++++++++++++++++++++++
+ include/asm-ppc/open_pic.h     |   99 ----------------------------------------
+ 2 files changed, 99 insertions(+), 99 deletions(-)
+ create mode 100644 include/asm-powerpc/open_pic.h
+ delete mode 100644 include/asm-ppc/open_pic.h
 
-a53c21d9d235cc02ab34d696d1440a1ceda1e3d7
-diff --git a/include/asm-powerpc/amigappc.h b/include/asm-powerpc/amigappc.h
+54316678b9e6aad8349f2df50dadd2597b675804
+diff --git a/include/asm-powerpc/open_pic.h b/include/asm-powerpc/open_pic.h
 new file mode 100644
-index 0000000..e7f9c33
+index 0000000..3f197cf
 --- /dev/null
-+++ b/include/asm-powerpc/amigappc.h
-@@ -0,0 +1,84 @@
-+#ifndef _ASM_POWERPC_AMIGAPPC_H
-+#define _ASM_POWERPC_AMIGAPPC_H
++++ b/include/asm-powerpc/open_pic.h
+@@ -0,0 +1,99 @@
++#ifndef _ASM_POWERPC_OPEN_PIC_H
++#define _ASM_POWERPC_OPEN_PIC_H
++
 +/*
-+** This header defines some values and pointers for the Phase 5 PowerUp card.
-+**
-+** Copyright 1997, 1998 by Phase5, Germany.
-+**
-+** This file is subject to the terms and conditions of the GNU General Public
-+** License.  See the file COPYING in the main directory of this archive
-+** for more details.
-+**
-+** Created: 7/22/97 by Jesper Skov
-+*/
++ *  include/asm-ppc/open_pic.h -- OpenPIC Interrupt Handling
++ *
++ *  Copyright (C) 1997 Geert Uytterhoeven
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of this archive
++ *  for more details.
++ *
++ */
 +
-+#ifdef __KERNEL__
++#include <linux/irq.h>
 +
-+#ifndef __ASSEMBLY__
++#define OPENPIC_SIZE	0x40000
 +
-+/* #include <asm/system.h> */
-+#define mb()  __asm__ __volatile__ ("sync" : : : "memory")
++/*
++ *  Non-offset'ed vector numbers
++ */
 +
-+#define APUS_WRITE(_a_, _v_)				\
-+do {							\
-+	(*((volatile unsigned char *)(_a_)) = (_v_));	\
-+	mb();						\
-+} while (0)
++#define OPENPIC_VEC_TIMER	110	/* and up */
++#define OPENPIC_VEC_IPI		118	/* and up */
++#define OPENPIC_VEC_SPURIOUS	255
 +
-+#define APUS_READ(_a_, _v_)				\
-+do {							\
-+	(_v_) = (*((volatile unsigned char *)(_a_)));	\
-+	mb();						\
-+} while (0)
-+#endif /* ndef __ASSEMBLY__ */
++/* Priorities */
++#define OPENPIC_PRIORITY_IPI_BASE	10
++#define OPENPIC_PRIORITY_DEFAULT	4
++#define OPENPIC_PRIORITY_NMI		9
 +
-+/* Maybe add a [#ifdef WANT_ZTWOBASE] condition to amigahw.h? */
-+#define zTwoBase (0x80000000)
++/* OpenPIC IRQ controller structure */
++extern struct hw_interrupt_type open_pic;
 +
-+#define APUS_IPL_BASE   	(zTwoBase + 0x00f60000)
-+#define APUS_REG_RESET    	(APUS_IPL_BASE + 0x00)
-+#define APUS_REG_WAITSTATE    	(APUS_IPL_BASE + 0x10)
-+#define APUS_REG_SHADOW    	(APUS_IPL_BASE + 0x18)
-+#define APUS_REG_LOCK		(APUS_IPL_BASE + 0x20)
-+#define APUS_REG_INT    	(APUS_IPL_BASE + 0x28)
-+#define APUS_IPL_EMU		(APUS_IPL_BASE + 0x30)
-+#define APUS_INT_LVL		(APUS_IPL_BASE + 0x38)
++/* OpenPIC IPI controller structure */
++#ifdef CONFIG_SMP
++extern struct hw_interrupt_type open_pic_ipi;
++#endif /* CONFIG_SMP */
 +
-+#define REGSHADOW_SETRESET	(0x80)
-+#define REGSHADOW_SELFRESET	(0x40)
++extern u_int OpenPIC_NumInitSenses;
++extern u_char *OpenPIC_InitSenses;
++extern void __iomem * OpenPIC_Addr;
++extern int epic_serial_mode;
 +
-+#define REGLOCK_SETRESET	(0x80)
-+#define REGLOCK_BLACKMAGICK1	(0x40)
-+#define REGLOCK_BLACKMAGICK2	(0x20)
-+#define REGLOCK_BLACKMAGICK3	(0x10)
++/* Exported functions */
++extern void openpic_set_sources(int first_irq, int num_irqs, void __iomem *isr);
++extern void openpic_init(int linux_irq_offset);
++extern void openpic_init_nmi_irq(u_int irq);
++extern void openpic_set_irq_priority(u_int irq, u_int pri);
++extern void openpic_hookup_cascade(u_int irq, char *name,
++				   int (*cascade_fn)(struct pt_regs *));
++extern u_int openpic_irq(void);
++extern void openpic_eoi(void);
++extern void openpic_request_IPIs(void);
++extern void do_openpic_setup_cpu(void);
++extern int openpic_get_irq(struct pt_regs *regs);
++extern void openpic_reset_processor_phys(u_int cpumask);
++extern void openpic_setup_ISU(int isu_num, unsigned long addr);
++extern void openpic_cause_IPI(u_int ipi, cpumask_t cpumask);
++extern void smp_openpic_message_pass(int target, int msg);
++extern void openpic_set_k2_cascade(int irq);
++extern void openpic_set_priority(u_int pri);
++extern u_int openpic_get_priority(void);
 +
-+#define REGWAITSTATE_SETRESET	(0x80)
-+#define REGWAITSTATE_PPCW	(0x08)
-+#define REGWAITSTATE_PPCR	(0x04)
++extern inline int openpic_to_irq(int irq)
++{
++	/* IRQ 0 usually means 'disabled'.. don't mess with it
++	 * exceptions to this (sandpoint maybe?)
++	 * shouldn't use openpic_to_irq
++	 */
++	if (irq != 0){
++		return irq += NUM_8259_INTERRUPTS;
++	} else {
++		return 0;
++	}
++}
++/* Support for second openpic on G5 macs */
 +
-+#define REGRESET_SETRESET	(0x80)
-+#define REGRESET_PPCRESET	(0x10)
-+#define REGRESET_M68KRESET	(0x08)
-+#define REGRESET_AMIGARESET	(0x04)
-+#define REGRESET_AUXRESET	(0x02)
-+#define REGRESET_SCSIRESET	(0x01)
++// FIXME: To be replaced by sane cascaded controller management */
 +
-+#define REGINT_SETRESET		(0x80)
-+#define REGINT_ENABLEIPL	(0x02)
-+#define REGINT_INTMASTER	(0x01)
++#define PMAC_OPENPIC2_OFFSET	128
 +
-+#define IPLEMU_SETRESET		(0x80)
-+#define IPLEMU_DISABLEINT	(0x40)
-+#define IPLEMU_IPL2		(0x20)
-+#define IPLEMU_IPL1		(0x10)
-+#define IPLEMU_IPL0		(0x08)
-+#define IPLEMU_PPCIPL2		(0x04)
-+#define IPLEMU_PPCIPL1		(0x02)
-+#define IPLEMU_PPCIPL0		(0x01)
-+#define IPLEMU_IPLMASK		(IPLEMU_PPCIPL2|IPLEMU_PPCIPL1|IPLEMU_PPCIPL0)
++#define OPENPIC2_VEC_TIMER	110	/* and up */
++#define OPENPIC2_VEC_IPI	118	/* and up */
++#define OPENPIC2_VEC_SPURIOUS	127
 +
-+#define INTLVL_SETRESET         (0x80)
-+#define INTLVL_MASK             (0x7f)
 +
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_POWERPC_AMIGAPPC_H */
-diff --git a/include/asm-ppc/amigappc.h b/include/asm-ppc/amigappc.h
++extern void* OpenPIC2_Addr;
++
++/* Exported functions */
++extern void openpic2_set_sources(int first_irq, int num_irqs, void *isr);
++extern void openpic2_init(int linux_irq_offset);
++extern void openpic2_init_nmi_irq(u_int irq);
++extern u_int openpic2_irq(void);
++extern void openpic2_eoi(void);
++extern int openpic2_get_irq(struct pt_regs *regs);
++extern void openpic2_setup_ISU(int isu_num, unsigned long addr);
++
++#endif /* _ASM_POWERPC_OPEN_PIC_H */
+diff --git a/include/asm-ppc/open_pic.h b/include/asm-ppc/open_pic.h
 deleted file mode 100644
-index 35114ce..0000000
---- a/include/asm-ppc/amigappc.h
+index ec2f466..0000000
+--- a/include/asm-ppc/open_pic.h
 +++ /dev/null
-@@ -1,85 +0,0 @@
+@@ -1,99 +0,0 @@
 -/*
--** asm-ppc/amigappc.h -- This header defines some values and pointers for
--**                        the Phase 5 PowerUp card.
--**
--** Copyright 1997, 1998 by Phase5, Germany.
--**
--** This file is subject to the terms and conditions of the GNU General Public
--** License.  See the file COPYING in the main directory of this archive
--** for more details.
--**
--** Created: 7/22/97 by Jesper Skov
--*/
+- *  include/asm-ppc/open_pic.h -- OpenPIC Interrupt Handling
+- *
+- *  Copyright (C) 1997 Geert Uytterhoeven
+- *
+- *  This file is subject to the terms and conditions of the GNU General Public
+- *  License.  See the file COPYING in the main directory of this archive
+- *  for more details.
+- *
+- */
 -
--#ifdef __KERNEL__
--#ifndef _M68K_AMIGAPPC_H
--#define _M68K_AMIGAPPC_H
+-#ifndef _PPC_KERNEL_OPEN_PIC_H
+-#define _PPC_KERNEL_OPEN_PIC_H
 -
--#ifndef __ASSEMBLY__
+-#include <linux/config.h>
+-#include <linux/irq.h>
 -
--/* #include <asm/system.h> */
--#define mb()  __asm__ __volatile__ ("sync" : : : "memory")
+-#define OPENPIC_SIZE	0x40000
 -
--#define APUS_WRITE(_a_, _v_)				\
--do {							\
--	(*((volatile unsigned char *)(_a_)) = (_v_));	\
--	mb();						\
--} while (0)
+-/*
+- *  Non-offset'ed vector numbers
+- */
 -
--#define APUS_READ(_a_, _v_)				\
--do {							\
--	(_v_) = (*((volatile unsigned char *)(_a_)));	\
--	mb();						\
--} while (0)
--#endif /* ndef __ASSEMBLY__ */
+-#define OPENPIC_VEC_TIMER	110	/* and up */
+-#define OPENPIC_VEC_IPI		118	/* and up */
+-#define OPENPIC_VEC_SPURIOUS	255
 -
--/* Maybe add a [#ifdef WANT_ZTWOBASE] condition to amigahw.h? */
--#define zTwoBase (0x80000000)
+-/* Priorities */
+-#define OPENPIC_PRIORITY_IPI_BASE	10
+-#define OPENPIC_PRIORITY_DEFAULT	4
+-#define OPENPIC_PRIORITY_NMI		9
 -
--#define APUS_IPL_BASE   	(zTwoBase + 0x00f60000)
--#define APUS_REG_RESET    	(APUS_IPL_BASE + 0x00)
--#define APUS_REG_WAITSTATE    	(APUS_IPL_BASE + 0x10)
--#define APUS_REG_SHADOW    	(APUS_IPL_BASE + 0x18)
--#define APUS_REG_LOCK		(APUS_IPL_BASE + 0x20)
--#define APUS_REG_INT    	(APUS_IPL_BASE + 0x28)
--#define APUS_IPL_EMU		(APUS_IPL_BASE + 0x30)
--#define APUS_INT_LVL		(APUS_IPL_BASE + 0x38)
+-/* OpenPIC IRQ controller structure */
+-extern struct hw_interrupt_type open_pic;
 -
--#define REGSHADOW_SETRESET	(0x80)
--#define REGSHADOW_SELFRESET	(0x40)
+-/* OpenPIC IPI controller structure */
+-#ifdef CONFIG_SMP
+-extern struct hw_interrupt_type open_pic_ipi;
+-#endif /* CONFIG_SMP */
 -
--#define REGLOCK_SETRESET	(0x80)
--#define REGLOCK_BLACKMAGICK1	(0x40)
--#define REGLOCK_BLACKMAGICK2	(0x20)
--#define REGLOCK_BLACKMAGICK3	(0x10)
+-extern u_int OpenPIC_NumInitSenses;
+-extern u_char *OpenPIC_InitSenses;
+-extern void __iomem * OpenPIC_Addr;
+-extern int epic_serial_mode;
 -
--#define REGWAITSTATE_SETRESET	(0x80)
--#define REGWAITSTATE_PPCW	(0x08)
--#define REGWAITSTATE_PPCR	(0x04)
+-/* Exported functions */
+-extern void openpic_set_sources(int first_irq, int num_irqs, void __iomem *isr);
+-extern void openpic_init(int linux_irq_offset);
+-extern void openpic_init_nmi_irq(u_int irq);
+-extern void openpic_set_irq_priority(u_int irq, u_int pri);
+-extern void openpic_hookup_cascade(u_int irq, char *name,
+-				   int (*cascade_fn)(struct pt_regs *));
+-extern u_int openpic_irq(void);
+-extern void openpic_eoi(void);
+-extern void openpic_request_IPIs(void);
+-extern void do_openpic_setup_cpu(void);
+-extern int openpic_get_irq(struct pt_regs *regs);
+-extern void openpic_reset_processor_phys(u_int cpumask);
+-extern void openpic_setup_ISU(int isu_num, unsigned long addr);
+-extern void openpic_cause_IPI(u_int ipi, cpumask_t cpumask);
+-extern void smp_openpic_message_pass(int target, int msg);
+-extern void openpic_set_k2_cascade(int irq);
+-extern void openpic_set_priority(u_int pri);
+-extern u_int openpic_get_priority(void);
 -
--#define REGRESET_SETRESET	(0x80)
--#define REGRESET_PPCRESET	(0x10)
--#define REGRESET_M68KRESET	(0x08)
--#define REGRESET_AMIGARESET	(0x04)
--#define REGRESET_AUXRESET	(0x02)
--#define REGRESET_SCSIRESET	(0x01)
+-extern inline int openpic_to_irq(int irq)
+-{
+-	/* IRQ 0 usually means 'disabled'.. don't mess with it
+-	 * exceptions to this (sandpoint maybe?)
+-	 * shouldn't use openpic_to_irq
+-	 */
+-	if (irq != 0){
+-		return irq += NUM_8259_INTERRUPTS;
+-	} else {
+-		return 0;
+-	}
+-}
+-/* Support for second openpic on G5 macs */
 -
--#define REGINT_SETRESET		(0x80)
--#define REGINT_ENABLEIPL	(0x02)
--#define REGINT_INTMASTER	(0x01)
+-// FIXME: To be replaced by sane cascaded controller management */
 -
--#define IPLEMU_SETRESET		(0x80)
--#define IPLEMU_DISABLEINT	(0x40)
--#define IPLEMU_IPL2		(0x20)
--#define IPLEMU_IPL1		(0x10)
--#define IPLEMU_IPL0		(0x08)
--#define IPLEMU_PPCIPL2		(0x04)
--#define IPLEMU_PPCIPL1		(0x02)
--#define IPLEMU_PPCIPL0		(0x01)
--#define IPLEMU_IPLMASK		(IPLEMU_PPCIPL2|IPLEMU_PPCIPL1|IPLEMU_PPCIPL0)
+-#define PMAC_OPENPIC2_OFFSET	128
 -
--#define INTLVL_SETRESET         (0x80)
--#define INTLVL_MASK             (0x7f)
+-#define OPENPIC2_VEC_TIMER	110	/* and up */
+-#define OPENPIC2_VEC_IPI	118	/* and up */
+-#define OPENPIC2_VEC_SPURIOUS	127
 -
--#endif /* _M68k_AMIGAPPC_H */
--#endif /* __KERNEL__ */
+-
+-extern void* OpenPIC2_Addr;
+-
+-/* Exported functions */
+-extern void openpic2_set_sources(int first_irq, int num_irqs, void *isr);
+-extern void openpic2_init(int linux_irq_offset);
+-extern void openpic2_init_nmi_irq(u_int irq);
+-extern u_int openpic2_irq(void);
+-extern void openpic2_eoi(void);
+-extern int openpic2_get_irq(struct pt_regs *regs);
+-extern void openpic2_setup_ISU(int isu_num, unsigned long addr);
+-#endif /* _PPC_KERNEL_OPEN_PIC_H */
 -- 
 1.2.4
