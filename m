@@ -3,16 +3,16 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 523BF679E9
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2006 00:17:00 +1000 (EST)
-In-Reply-To: <11442138673826-git-send-email-sfr@canb.auug.org.au>
-References: <11442138673826-git-send-email-sfr@canb.auug.org.au>
+	by ozlabs.org (Postfix) with ESMTP id 26B39679E9
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Apr 2006 00:17:24 +1000 (EST)
+In-Reply-To: <11442138813940-git-send-email-sfr@canb.auug.org.au>
+References: <11442138813940-git-send-email-sfr@canb.auug.org.au>
 Mime-Version: 1.0 (Apple Message framework v746.3)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AD100823-2B50-4098-9E0D-F692E02B7930@kernel.crashing.org>
+Message-Id: <A4027707-0CE6-47F0-BF10-83362E0CF3FB@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 10/15] powerpc: move asm/mpc83xx.h
-Date: Wed, 5 Apr 2006 09:17:18 -0500
+Subject: Re: [PATCH 14/15] powerpc: move asm/mpc85xx.h
+Date: Wed, 5 Apr 2006 09:17:49 -0500
 To: sfr@canb.auug.org.au
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -40,32 +40,30 @@ On Apr 5, 2006, at 12:10 AM, sfr@canb.auug.org.au wrote:
 >
 > ---
 >
->  include/asm-powerpc/mpc83xx.h |  115 ++++++++++++++++++++++++++++++ 
-> +++++++++++
->  include/asm-ppc/mpc83xx.h     |  116  
+>  include/asm-powerpc/mpc85xx.h |  195 ++++++++++++++++++++++++++++++ 
+> ++++++++++
+>  include/asm-ppc/mpc85xx.h     |  198  
 > -----------------------------------------
->  2 files changed, 115 insertions(+), 116 deletions(-)
->  create mode 100644 include/asm-powerpc/mpc83xx.h
->  delete mode 100644 include/asm-ppc/mpc83xx.h
+>  2 files changed, 195 insertions(+), 198 deletions(-)
+>  create mode 100644 include/asm-powerpc/mpc85xx.h
+>  delete mode 100644 include/asm-ppc/mpc85xx.h
 >
-> ce28e1e8654ad07cc23573a31f8cea992d41f9cc
-> diff --git a/include/asm-powerpc/mpc83xx.h b/include/asm-powerpc/ 
-> mpc83xx.h
+> 4fc7b6e78d24e11e704ef7b5a1ceb659d3a03cc2
+> diff --git a/include/asm-powerpc/mpc85xx.h b/include/asm-powerpc/ 
+> mpc85xx.h
 > new file mode 100644
-> index 0000000..da4b0fa
+> index 0000000..4113165
 > --- /dev/null
-> +++ b/include/asm-powerpc/mpc83xx.h
-> @@ -0,0 +1,115 @@
-> +#ifndef _ASM_POWERPC_MPC83XX_H
-> +#define _ASM_POWERPC_MPC83XX_H
+> +++ b/include/asm-powerpc/mpc85xx.h
+> @@ -0,0 +1,195 @@
+> +#ifndef _ASM_POWERPC_MPC85XX_H
+> +#define _ASM_POWERPC_MPC85XX_H
 > +/*
-> + * include/asm-ppc/mpc83xx.h
-> + *
-> + * MPC83xx definitions
+> + * MPC85xx definitions
 > + *
 > + * Maintainer: Kumar Gala <galak@kernel.crashing.org>
 > + *
-> + * Copyright 2005 Freescale Semiconductor, Inc
+> + * Copyright 2004 Freescale Semiconductor, Inc
 > + *
 > + * This program is free software; you can redistribute  it and/or  
 > modify it
@@ -80,10 +78,26 @@ On Apr 5, 2006, at 12:10 AM, sfr@canb.auug.org.au wrote:
 > +
 > +#include <asm/mmu.h>
 > +
-> +#ifdef CONFIG_83xx
+> +#ifdef CONFIG_85xx
 > +
-> +#ifdef CONFIG_MPC834x_SYS
-> +#include <platforms/83xx/mpc834x_sys.h>
+> +#ifdef CONFIG_MPC8540_ADS
+> +#include <platforms/85xx/mpc8540_ads.h>
+> +#endif
+> +#if defined(CONFIG_MPC8555_CDS) || defined(CONFIG_MPC8548_CDS)
+> +#include <platforms/85xx/mpc8555_cds.h>
+> +#endif
+> +#ifdef CONFIG_MPC8560_ADS
+> +#include <platforms/85xx/mpc8560_ads.h>
+> +#endif
+> +#ifdef CONFIG_SBC8560
+> +#include <platforms/85xx/sbc8560.h>
+> +#endif
+> +#ifdef CONFIG_STX_GP3
+> +#include <platforms/85xx/stx_gp3.h>
+> +#endif
+> +#if defined(CONFIG_TQM8540) || defined(CONFIG_TQM8541) || \
+> +	defined(CONFIG_TQM8555) || defined(CONFIG_TQM8560)
+> +#include <platforms/85xx/tqm85xx.h>
 > +#endif
 > +
 > +#define _IO_BASE        isa_io_base
@@ -100,94 +114,161 @@ On Apr 5, 2006, at 12:10 AM, sfr@canb.auug.org.au wrote:
 > + */
 > +extern unsigned char __res[];
 > +
-> +/* Internal IRQs on MPC83xx OpenPIC */
-> +/* Not all of these exist on all MPC83xx implementations */
+> +/* Offset from CCSRBAR */
+> +#define MPC85xx_CPM_OFFSET	(0x80000)
+> +#define MPC85xx_CPM_SIZE	(0x40000)
+> +#define MPC85xx_DMA_OFFSET	(0x21000)
+> +#define MPC85xx_DMA_SIZE	(0x01000)
+> +#define MPC85xx_DMA0_OFFSET	(0x21100)
+> +#define MPC85xx_DMA0_SIZE	(0x00080)
+> +#define MPC85xx_DMA1_OFFSET	(0x21180)
+> +#define MPC85xx_DMA1_SIZE	(0x00080)
+> +#define MPC85xx_DMA2_OFFSET	(0x21200)
+> +#define MPC85xx_DMA2_SIZE	(0x00080)
+> +#define MPC85xx_DMA3_OFFSET	(0x21280)
+> +#define MPC85xx_DMA3_SIZE	(0x00080)
+> +#define MPC85xx_ENET1_OFFSET	(0x24000)
+> +#define MPC85xx_ENET1_SIZE	(0x01000)
+> +#define MPC85xx_MIIM_OFFSET	(0x24520)
+> +#define MPC85xx_MIIM_SIZE	(0x00018)
+> +#define MPC85xx_ENET2_OFFSET	(0x25000)
+> +#define MPC85xx_ENET2_SIZE	(0x01000)
+> +#define MPC85xx_ENET3_OFFSET	(0x26000)
+> +#define MPC85xx_ENET3_SIZE	(0x01000)
+> +#define MPC85xx_GUTS_OFFSET	(0xe0000)
+> +#define MPC85xx_GUTS_SIZE	(0x01000)
+> +#define MPC85xx_IIC1_OFFSET	(0x03000)
+> +#define MPC85xx_IIC1_SIZE	(0x00100)
+> +#define MPC85xx_OPENPIC_OFFSET	(0x40000)
+> +#define MPC85xx_OPENPIC_SIZE	(0x40000)
+> +#define MPC85xx_PCI1_OFFSET	(0x08000)
+> +#define MPC85xx_PCI1_SIZE	(0x01000)
+> +#define MPC85xx_PCI2_OFFSET	(0x09000)
+> +#define MPC85xx_PCI2_SIZE	(0x01000)
+> +#define MPC85xx_PERFMON_OFFSET	(0xe1000)
+> +#define MPC85xx_PERFMON_SIZE	(0x01000)
+> +#define MPC85xx_SEC2_OFFSET	(0x30000)
+> +#define MPC85xx_SEC2_SIZE	(0x10000)
+> +#define MPC85xx_UART0_OFFSET	(0x04500)
+> +#define MPC85xx_UART0_SIZE	(0x00100)
+> +#define MPC85xx_UART1_OFFSET	(0x04600)
+> +#define MPC85xx_UART1_SIZE	(0x00100)
 > +
-> +#ifndef MPC83xx_IPIC_IRQ_OFFSET
-> +#define MPC83xx_IPIC_IRQ_OFFSET	0
+> +#define MPC85xx_CCSRBAR_SIZE	(1024*1024)
+> +
+> +/* Let modules/drivers get at CCSRBAR */
+> +extern phys_addr_t get_ccsrbar(void);
+> +
+> +#ifdef MODULE
+> +#define CCSRBAR get_ccsrbar()
+> +#else
+> +#define CCSRBAR BOARD_CCSRBAR
 > +#endif
 > +
-> +#define NR_IPIC_INTS 128
-> +
-> +#define MPC83xx_IRQ_UART1	( 9 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_UART2	(10 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_SEC2	(11 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_IIC1	(14 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_IIC2	(15 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_SPI		(16 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_EXT1	(17 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_EXT2	(18 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_EXT3	(19 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_EXT4	(20 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_EXT5	(21 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_EXT6	(22 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_EXT7	(23 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_TSEC1_TX	(32 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_TSEC1_RX	(33 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_TSEC1_ERROR	(34 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_TSEC2_TX	(35 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_TSEC2_RX	(36 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_TSEC2_ERROR	(37 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_USB2_DR	(38 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_USB2_MPH	(39 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_EXT0	(48 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_RTC_SEC	(64 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_PIT		(65 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_PCI1	(66 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_PCI2	(67 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_RTC_ALR	(68 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_MU		(69 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_SBA		(70 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_DMA		(71 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GTM4	(72 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GTM8	(73 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GPIO1	(74 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GPIO2	(75 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_DDR		(76 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_LBC		(77 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GTM2	(78 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GTM6	(79 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_PMC		(80 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GTM3	(84 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GTM7	(85 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GTM1	(90 + MPC83xx_IPIC_IRQ_OFFSET)
-> +#define MPC83xx_IRQ_GTM5	(91 + MPC83xx_IPIC_IRQ_OFFSET)
-> +
-> +#define MPC83xx_CCSRBAR_SIZE	(1024*1024)
-> +
-> +/* Let modules/drivers get at immrbar (physical) */
-> +extern phys_addr_t immrbar;
-> +
 > +enum ppc_sys_devices {
-> +	MPC83xx_TSEC1,
-> +	MPC83xx_TSEC2,
-> +	MPC83xx_IIC1,
-> +	MPC83xx_IIC2,
-> +	MPC83xx_DUART,
-> +	MPC83xx_SEC2,
-> +	MPC83xx_USB2_DR,
-> +	MPC83xx_USB2_MPH,
-> +	MPC83xx_MDIO,
+> +	MPC85xx_TSEC1,
+> +	MPC85xx_TSEC2,
+> +	MPC85xx_FEC,
+> +	MPC85xx_IIC1,
+> +	MPC85xx_DMA0,
+> +	MPC85xx_DMA1,
+> +	MPC85xx_DMA2,
+> +	MPC85xx_DMA3,
+> +	MPC85xx_DUART,
+> +	MPC85xx_PERFMON,
+> +	MPC85xx_SEC2,
+> +	MPC85xx_CPM_SPI,
+> +	MPC85xx_CPM_I2C,
+> +	MPC85xx_CPM_USB,
+> +	MPC85xx_CPM_SCC1,
+> +	MPC85xx_CPM_SCC2,
+> +	MPC85xx_CPM_SCC3,
+> +	MPC85xx_CPM_SCC4,
+> +	MPC85xx_CPM_FCC1,
+> +	MPC85xx_CPM_FCC2,
+> +	MPC85xx_CPM_FCC3,
+> +	MPC85xx_CPM_MCC1,
+> +	MPC85xx_CPM_MCC2,
+> +	MPC85xx_CPM_SMC1,
+> +	MPC85xx_CPM_SMC2,
+> +	MPC85xx_eTSEC1,
+> +	MPC85xx_eTSEC2,
+> +	MPC85xx_eTSEC3,
+> +	MPC85xx_eTSEC4,
+> +	MPC85xx_IIC2,
+> +	MPC85xx_MDIO,
 > +	NUM_PPC_SYS_DEVS,
 > +};
 > +
-> +#endif /* CONFIG_83xx */
+> +/* Internal interrupts are all Level Sensitive, and Positive  
+> Polarity */
+> +#define MPC85XX_INTERNAL_IRQ_SENSES \
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  0 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  1 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  2 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  3 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  4 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  5 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  6 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  7 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  8 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  9 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 10 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 11 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 12 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 13 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 14 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 15 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 16 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 17 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 18 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 19 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 20 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 21 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 22 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 23 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 24 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 25 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 26 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 27 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 28 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 29 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 30 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 31 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 32 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 33 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 34 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 35 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 36 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 37 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 38 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 39 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 40 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 41 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 42 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 43 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 44 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 45 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 46 */	\
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE)	/* Internal 47 */
+> +
+> +#endif /* CONFIG_85xx */
 > +#endif /* __KERNEL__ */
-> +#endif /* _ASM_POWERPC_MPC83XX_H */
-> diff --git a/include/asm-ppc/mpc83xx.h b/include/asm-ppc/mpc83xx.h
+> +#endif /* _ASM_POWERPC_MPC85XX_H */
+> diff --git a/include/asm-ppc/mpc85xx.h b/include/asm-ppc/mpc85xx.h
 > deleted file mode 100644
-> index 3c23fc4..0000000
-> --- a/include/asm-ppc/mpc83xx.h
+> index f47002a..0000000
+> --- a/include/asm-ppc/mpc85xx.h
 > +++ /dev/null
-> @@ -1,116 +0,0 @@
+> @@ -1,198 +0,0 @@
 > -/*
-> - * include/asm-ppc/mpc83xx.h
+> - * include/asm-ppc/mpc85xx.h
 > - *
-> - * MPC83xx definitions
+> - * MPC85xx definitions
 > - *
 > - * Maintainer: Kumar Gala <galak@kernel.crashing.org>
 > - *
-> - * Copyright 2005 Freescale Semiconductor, Inc
+> - * Copyright 2004 Freescale Semiconductor, Inc
 > - *
 > - * This program is free software; you can redistribute  it and/or  
 > modify it
@@ -199,16 +280,32 @@ On Apr 5, 2006, at 12:10 AM, sfr@canb.auug.org.au wrote:
 > - */
 > -
 > -#ifdef __KERNEL__
-> -#ifndef __ASM_MPC83xx_H__
-> -#define __ASM_MPC83xx_H__
+> -#ifndef __ASM_MPC85xx_H__
+> -#define __ASM_MPC85xx_H__
 > -
 > -#include <linux/config.h>
 > -#include <asm/mmu.h>
 > -
-> -#ifdef CONFIG_83xx
+> -#ifdef CONFIG_85xx
 > -
-> -#ifdef CONFIG_MPC834x_SYS
-> -#include <platforms/83xx/mpc834x_sys.h>
+> -#ifdef CONFIG_MPC8540_ADS
+> -#include <platforms/85xx/mpc8540_ads.h>
+> -#endif
+> -#if defined(CONFIG_MPC8555_CDS) || defined(CONFIG_MPC8548_CDS)
+> -#include <platforms/85xx/mpc8555_cds.h>
+> -#endif
+> -#ifdef CONFIG_MPC8560_ADS
+> -#include <platforms/85xx/mpc8560_ads.h>
+> -#endif
+> -#ifdef CONFIG_SBC8560
+> -#include <platforms/85xx/sbc8560.h>
+> -#endif
+> -#ifdef CONFIG_STX_GP3
+> -#include <platforms/85xx/stx_gp3.h>
+> -#endif
+> -#if defined(CONFIG_TQM8540) || defined(CONFIG_TQM8541) || \
+> -	defined(CONFIG_TQM8555) || defined(CONFIG_TQM8560)
+> -#include <platforms/85xx/tqm85xx.h>
 > -#endif
 > -
 > -#define _IO_BASE        isa_io_base
@@ -225,79 +322,146 @@ On Apr 5, 2006, at 12:10 AM, sfr@canb.auug.org.au wrote:
 > - */
 > -extern unsigned char __res[];
 > -
-> -/* Internal IRQs on MPC83xx OpenPIC */
-> -/* Not all of these exist on all MPC83xx implementations */
+> -/* Offset from CCSRBAR */
+> -#define MPC85xx_CPM_OFFSET	(0x80000)
+> -#define MPC85xx_CPM_SIZE	(0x40000)
+> -#define MPC85xx_DMA_OFFSET	(0x21000)
+> -#define MPC85xx_DMA_SIZE	(0x01000)
+> -#define MPC85xx_DMA0_OFFSET	(0x21100)
+> -#define MPC85xx_DMA0_SIZE	(0x00080)
+> -#define MPC85xx_DMA1_OFFSET	(0x21180)
+> -#define MPC85xx_DMA1_SIZE	(0x00080)
+> -#define MPC85xx_DMA2_OFFSET	(0x21200)
+> -#define MPC85xx_DMA2_SIZE	(0x00080)
+> -#define MPC85xx_DMA3_OFFSET	(0x21280)
+> -#define MPC85xx_DMA3_SIZE	(0x00080)
+> -#define MPC85xx_ENET1_OFFSET	(0x24000)
+> -#define MPC85xx_ENET1_SIZE	(0x01000)
+> -#define MPC85xx_MIIM_OFFSET	(0x24520)
+> -#define MPC85xx_MIIM_SIZE	(0x00018)
+> -#define MPC85xx_ENET2_OFFSET	(0x25000)
+> -#define MPC85xx_ENET2_SIZE	(0x01000)
+> -#define MPC85xx_ENET3_OFFSET	(0x26000)
+> -#define MPC85xx_ENET3_SIZE	(0x01000)
+> -#define MPC85xx_GUTS_OFFSET	(0xe0000)
+> -#define MPC85xx_GUTS_SIZE	(0x01000)
+> -#define MPC85xx_IIC1_OFFSET	(0x03000)
+> -#define MPC85xx_IIC1_SIZE	(0x00100)
+> -#define MPC85xx_OPENPIC_OFFSET	(0x40000)
+> -#define MPC85xx_OPENPIC_SIZE	(0x40000)
+> -#define MPC85xx_PCI1_OFFSET	(0x08000)
+> -#define MPC85xx_PCI1_SIZE	(0x01000)
+> -#define MPC85xx_PCI2_OFFSET	(0x09000)
+> -#define MPC85xx_PCI2_SIZE	(0x01000)
+> -#define MPC85xx_PERFMON_OFFSET	(0xe1000)
+> -#define MPC85xx_PERFMON_SIZE	(0x01000)
+> -#define MPC85xx_SEC2_OFFSET	(0x30000)
+> -#define MPC85xx_SEC2_SIZE	(0x10000)
+> -#define MPC85xx_UART0_OFFSET	(0x04500)
+> -#define MPC85xx_UART0_SIZE	(0x00100)
+> -#define MPC85xx_UART1_OFFSET	(0x04600)
+> -#define MPC85xx_UART1_SIZE	(0x00100)
 > -
-> -#ifndef MPC83xx_IPIC_IRQ_OFFSET
-> -#define MPC83xx_IPIC_IRQ_OFFSET	0
+> -#define MPC85xx_CCSRBAR_SIZE	(1024*1024)
+> -
+> -/* Let modules/drivers get at CCSRBAR */
+> -extern phys_addr_t get_ccsrbar(void);
+> -
+> -#ifdef MODULE
+> -#define CCSRBAR get_ccsrbar()
+> -#else
+> -#define CCSRBAR BOARD_CCSRBAR
 > -#endif
 > -
-> -#define NR_IPIC_INTS 128
-> -
-> -#define MPC83xx_IRQ_UART1	( 9 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_UART2	(10 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_SEC2	(11 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_IIC1	(14 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_IIC2	(15 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_SPI		(16 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_EXT1	(17 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_EXT2	(18 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_EXT3	(19 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_EXT4	(20 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_EXT5	(21 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_EXT6	(22 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_EXT7	(23 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_TSEC1_TX	(32 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_TSEC1_RX	(33 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_TSEC1_ERROR	(34 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_TSEC2_TX	(35 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_TSEC2_RX	(36 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_TSEC2_ERROR	(37 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_USB2_DR	(38 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_USB2_MPH	(39 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_EXT0	(48 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_RTC_SEC	(64 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_PIT		(65 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_PCI1	(66 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_PCI2	(67 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_RTC_ALR	(68 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_MU		(69 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_SBA		(70 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_DMA		(71 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GTM4	(72 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GTM8	(73 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GPIO1	(74 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GPIO2	(75 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_DDR		(76 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_LBC		(77 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GTM2	(78 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GTM6	(79 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_PMC		(80 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GTM3	(84 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GTM7	(85 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GTM1	(90 + MPC83xx_IPIC_IRQ_OFFSET)
-> -#define MPC83xx_IRQ_GTM5	(91 + MPC83xx_IPIC_IRQ_OFFSET)
-> -
-> -#define MPC83xx_CCSRBAR_SIZE	(1024*1024)
-> -
-> -/* Let modules/drivers get at immrbar (physical) */
-> -extern phys_addr_t immrbar;
-> -
 > -enum ppc_sys_devices {
-> -	MPC83xx_TSEC1,
-> -	MPC83xx_TSEC2,
-> -	MPC83xx_IIC1,
-> -	MPC83xx_IIC2,
-> -	MPC83xx_DUART,
-> -	MPC83xx_SEC2,
-> -	MPC83xx_USB2_DR,
-> -	MPC83xx_USB2_MPH,
-> -	MPC83xx_MDIO,
+> -	MPC85xx_TSEC1,
+> -	MPC85xx_TSEC2,
+> -	MPC85xx_FEC,
+> -	MPC85xx_IIC1,
+> -	MPC85xx_DMA0,
+> -	MPC85xx_DMA1,
+> -	MPC85xx_DMA2,
+> -	MPC85xx_DMA3,
+> -	MPC85xx_DUART,
+> -	MPC85xx_PERFMON,
+> -	MPC85xx_SEC2,
+> -	MPC85xx_CPM_SPI,
+> -	MPC85xx_CPM_I2C,
+> -	MPC85xx_CPM_USB,
+> -	MPC85xx_CPM_SCC1,
+> -	MPC85xx_CPM_SCC2,
+> -	MPC85xx_CPM_SCC3,
+> -	MPC85xx_CPM_SCC4,
+> -	MPC85xx_CPM_FCC1,
+> -	MPC85xx_CPM_FCC2,
+> -	MPC85xx_CPM_FCC3,
+> -	MPC85xx_CPM_MCC1,
+> -	MPC85xx_CPM_MCC2,
+> -	MPC85xx_CPM_SMC1,
+> -	MPC85xx_CPM_SMC2,
+> -	MPC85xx_eTSEC1,
+> -	MPC85xx_eTSEC2,
+> -	MPC85xx_eTSEC3,
+> -	MPC85xx_eTSEC4,
+> -	MPC85xx_IIC2,
+> -	MPC85xx_MDIO,
 > -	NUM_PPC_SYS_DEVS,
 > -};
 > -
-> -#endif /* CONFIG_83xx */
-> -#endif /* __ASM_MPC83xx_H__ */
+> -/* Internal interrupts are all Level Sensitive, and Positive  
+> Polarity */
+> -#define MPC85XX_INTERNAL_IRQ_SENSES \
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  0 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  1 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  2 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  3 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  4 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  5 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  6 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  7 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  8 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  9 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 10 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 11 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 12 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 13 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 14 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 15 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 16 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 17 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 18 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 19 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 20 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 21 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 22 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 23 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 24 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 25 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 26 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 27 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 28 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 29 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 30 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 31 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 32 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 33 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 34 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 35 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 36 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 37 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 38 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 39 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 40 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 41 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 42 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 43 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 44 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 45 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 46 */	\
+> -	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE)	/* Internal 47 */
+> -
+> -#endif /* CONFIG_85xx */
+> -#endif /* __ASM_MPC85xx_H__ */
 > -#endif /* __KERNEL__ */
 > -- 
 > 1.2.4
