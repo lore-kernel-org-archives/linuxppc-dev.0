@@ -1,17 +1,33 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3831E67B14
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2006 00:12:22 +1000 (EST)
-Date: Thu, 6 Apr 2006 16:12:17 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: arndb@arndb.de
-Subject: [PATCH] spufs: fix section conflicts
-Message-ID: <20060406141217.GA9329@lst.de>
+Return-Path: <linas@austin.ibm.com>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6568B67B14
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2006 07:36:35 +1000 (EST)
+Received: from e6.ny.us.ibm.com ([192.168.1.106])
+	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k36Kfq4f013539
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 16:41:52 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k36KfgCu014343
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 16:41:42 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k36KfguK219602
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 16:41:42 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k36KfgC2025837
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 16:41:42 -0400
+Date: Thu, 6 Apr 2006 15:41:41 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH]: powerpc/pseries: bugfix: balance calls to pci_device_put
+Message-ID: <20060406204141.GA27256@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,42 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-spufs_init/spufs_exit call various __init/__exit functions so they
-need to be marked __init/__exit aswell to not get section conflicts.
-Also move the module_init call to where it belongs.
 
+[PATCH]: powerpc/pseries: bugfix: balance calls to pci_device_put 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Repeated calls to eeh_remove_device() can result in multiple
+(and thus unbalanced) calls to pci_dev_put(). Make sure the
+pci_device_put() is called only once (since there was only 
+one call to the matching pci_device_get()).
 
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+
+----
+ arch/powerpc/platforms/pseries/eeh.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.17-rc1/arch/powerpc/platforms/pseries/eeh.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/inode.c	2006-04-06 15:53:42.000000000 +0200
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/inode.c	2006-04-06 15:56:21.000000000 +0200
-@@ -442,7 +442,7 @@
- 	.kill_sb = kill_litter_super,
- };
+--- linux-2.6.17-rc1.orig/arch/powerpc/platforms/pseries/eeh.c	2006-04-06 15:35:55.000000000 -0500
++++ linux-2.6.17-rc1/arch/powerpc/platforms/pseries/eeh.c	2006-04-06 15:38:04.968433419 -0500
+@@ -957,8 +957,10 @@ static void eeh_remove_device(struct pci
+ 	pci_addr_cache_remove_device(dev);
  
--static int spufs_init(void)
-+static int __init spufs_init(void)
- {
- 	int ret;
- 	ret = -ENOMEM;
-@@ -470,15 +470,16 @@
- out:
- 	return ret;
+ 	dn = pci_device_to_OF_node(dev);
+-	PCI_DN(dn)->pcidev = NULL;
+-	pci_dev_put (dev);
++	if (PCI_DN(dn)->pcidev) {
++		PCI_DN(dn)->pcidev = NULL;
++		pci_dev_put (dev);
++	}
  }
--module_init(spufs_init);
  
--static void spufs_exit(void)
-+static void __exit spufs_exit(void)
- {
- 	spu_sched_exit();
- 	unregister_spu_syscalls(&spufs_calls);
- 	unregister_filesystem(&spufs_type);
- 	kmem_cache_destroy(spufs_inode_cache);
- }
-+
-+module_init(spufs_init);
- module_exit(spufs_exit);
- 
- MODULE_LICENSE("GPL");
+ void eeh_remove_bus_device(struct pci_dev *dev)
