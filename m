@@ -1,24 +1,15 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de [83.120.0.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 418BC67A63
+Return-Path: <kevinmorizur@hotmail.fr>
+Received: from hotmail.com (bay109-f33.bay109.hotmail.com [64.4.19.43])
+	by ozlabs.org (Postfix) with ESMTP id CC8A667A62
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  6 Apr 2006 19:33:00 +1000 (EST)
-Date: Thu, 6 Apr 2006 11:32:53 +0200
-From: Matthias Fechner <idefix@fechner.net>
-To: Sylvain Munaut <tnt@246tNt.com>
-Subject: Re: freescale lite 5200 board and kernel 2.6
-Message-ID: <20060406093253.GB18854@server.idefix.loc>
-References: <20060405210654.GA16848@raptus.dandreoli.com>
-	<20060405212741.GC61331@server.idefix.loc>
-	<44344F50.8010401@246tNt.com>
+	Thu,  6 Apr 2006 23:27:11 +1000 (EST)
+Message-ID: <BAY109-F33EAD6B9CF7FA1CBCA1DAEA1C80@phx.gbl>
+From: "kevin morizur" <kevinmorizur@hotmail.fr>
+To: linuxppc-embedded@ozlabs.org
+Subject: SBC 8245 which architecture on kernel configuration ?
+Date: Thu, 06 Apr 2006 15:27:06 +0200
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <44344F50.8010401@246tNt.com>
-Sender: Matthias Fechner <idefix@fechner.net>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,27 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Sylvain,
+Hello everybody,
 
-* Sylvain Munaut <tnt@246tNt.com> [06-04-06 01:14]:
-> It made me realize the git commands I gave on my website were kinda
-> wrong, I messed
-> up git fetch and git pull among other things ...
+I use a MEN A12 SBC card with MPC8245 processor. I want to install a linux 
+kernel version 2.6.15 via ELDK 4.0. My Problem is that when i configure my 
+kernel with xconfig ARCH=ppc , i don't know if the architecture sbc82xx is 
+the right. When i choose this architecture i have compilation error when PCI 
+bus is select in the config menu. So if anyone works with SBC8245 and know 
+how to configure kernel or PCI bus or have a kernel with Power Pc SBC8245 
+support please help me.
 
-ah that explains why I have some problems with git.
-It seems that on the actual kernel-git-repository something has
-changed (kernel.org).
-The patch:
-git pull http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.git master:mpc52xx
+Thanks.
+Dear.
+Kevin Morizur
 
-failed last week, so I used the complete repository from your side.
-Maybe you can fix this problem, I will adapt then my wiki. :)
-
-
-Matthias
-
--- 
-
-"Programming today is a race between software engineers striving to build
-bigger and better idiot-proof programs, and the universe trying to produce
-bigger and better idiots. So far, the universe is winning." -- Rich Cook
+_________________________________________________________________
+Tout savoir sur la sécurité de vos enfants sur Internet ! 
+http://go.msn.fr/10-channel/80-security/protection/default.asp
