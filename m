@@ -1,20 +1,12 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BE1CD67B4A
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Apr 2006 00:17:10 +1000 (EST)
-In-Reply-To: <20060407063131.GB22416@in.ibm.com>
-References: <20060407063131.GB22416@in.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <981C3B4E-7336-403D-AF58-3B36AA071866@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] tickless idle cpu: Skip ticks when CPU is idle
-Date: Fri, 7 Apr 2006 09:16:58 -0500
-To: vatsa@in.ibm.com
-Cc: sri_vatsa_v@yahoo.com, paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Message-Id: <20060407150743.155351000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+References: <20060407150124.422051000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+Date: Fri, 07 Apr 2006 00:00:01 +0200
+From: arnd@arndb.de
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/5] spufs: Disable local interrupts for SPE hash_page calls.
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,51 +16,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch disables and saves local interrupts during
+hash_page processing for SPE contexts.
 
-On Apr 7, 2006, at 1:31 AM, Srivatsa Vaddagiri wrote:
+We have to do it explicitly in the spu_irq_class_1_bottom
+function. For the interrupt handlers, we get the behaviour
+implicitly by using SA_INTERRUPT to disable interrupts while
+in the handler.
 
-> This is the core patch which skips ticks when a CPU is idle.
-> Should work on pSeries, pmac and maple machines.
->
-> The patch is against 2.6.17-rc1-mm1 and has been tested on a 16-way  
-> (with SMT)
-> Power5 box (p570).
->
-> Signed-off-by: Srivatsa Vaddagiri <vatsa@in.ibm.com>
->
-> ---
->
->  linux-2.6.17-rc1-root/arch/powerpc/Kconfig                   |    6
->  linux-2.6.17-rc1-root/arch/powerpc/kernel/idle_power4.S      |    3
->  linux-2.6.17-rc1-root/arch/powerpc/kernel/irq.c              |    3
->  linux-2.6.17-rc1-root/arch/powerpc/kernel/time.c             |   
-> 150 ++++++++---
->  linux-2.6.17-rc1-root/arch/powerpc/kernel/traps.c            |    1
->  linux-2.6.17-rc1-root/arch/powerpc/platforms/pseries/setup.c |    6
->  linux-2.6.17-rc1-root/include/asm-powerpc/time.h             |    8
->  7 files changed, 147 insertions(+), 30 deletions(-)
->
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+---
 
-[snip]
+Index: linus-2.6/arch/powerpc/platforms/cell/spu_base.c
+===================================================================
+--- linus-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
++++ linus-2.6/arch/powerpc/platforms/cell/spu_base.c
+@@ -306,19 +306,19 @@ spu_request_irqs(struct spu *spu)
+ 
+ 	snprintf(spu->irq_c0, sizeof (spu->irq_c0), "spe%02d.0", spu->number);
+ 	ret = request_irq(irq_base + spu->isrc,
+-		 spu_irq_class_0, 0, spu->irq_c0, spu);
++		 spu_irq_class_0, SA_INTERRUPT, spu->irq_c0, spu);
+ 	if (ret)
+ 		goto out;
+ 
+ 	snprintf(spu->irq_c1, sizeof (spu->irq_c1), "spe%02d.1", spu->number);
+ 	ret = request_irq(irq_base + IIC_CLASS_STRIDE + spu->isrc,
+-		 spu_irq_class_1, 0, spu->irq_c1, spu);
++		 spu_irq_class_1, SA_INTERRUPT, spu->irq_c1, spu);
+ 	if (ret)
+ 		goto out1;
+ 
+ 	snprintf(spu->irq_c2, sizeof (spu->irq_c2), "spe%02d.2", spu->number);
+ 	ret = request_irq(irq_base + 2*IIC_CLASS_STRIDE + spu->isrc,
+-		 spu_irq_class_2, 0, spu->irq_c2, spu);
++		 spu_irq_class_2, SA_INTERRUPT, spu->irq_c2, spu);
+ 	if (ret)
+ 		goto out2;
+ 	goto out;
+@@ -487,10 +487,14 @@ int spu_irq_class_1_bottom(struct spu *s
+ 	ea = spu->dar;
+ 	dsisr = spu->dsisr;
+ 	if (dsisr & (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED)) {
++		u64 flags;
++
+ 		access = (_PAGE_PRESENT | _PAGE_USER);
+ 		access |= (dsisr & MFC_DSISR_ACCESS_PUT) ? _PAGE_RW : 0UL;
++		local_irq_save(flags);
+ 		if (hash_page(ea, access, 0x300) != 0)
+ 			error |= CLASS1_ENABLE_STORAGE_FAULT_INTR;
++		local_irq_restore(flags);
+ 	}
+ 	if (error & CLASS1_ENABLE_STORAGE_FAULT_INTR) {
+ 		if ((ret = spu_handle_mm_fault(spu)) != 0)
 
-> diff -puN arch/powerpc/Kconfig~no_idle_hz arch/powerpc/Kconfig
-> --- linux-2.6.17-rc1/arch/powerpc/Kconfig~no_idle_hz	2006-04-07  
-> 04:14:39.000000000 +0530
-> +++ linux-2.6.17-rc1-root/arch/powerpc/Kconfig	2006-04-07  
-> 04:14:58.000000000 +0530
-> @@ -593,6 +593,12 @@ config HOTPLUG_CPU
->
->  	  Say N if you are unsure.
->
-> +config NO_IDLE_HZ
-> +	depends on EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC || PPC_MAPLE)
-> +	bool "Switch off timer ticks on idle CPUs"
-> +	help
-> +	  Switches the HZ timer interrupts off when a CPU is idle.
-> +
-
-any reason not to provide this for all 6xx class processors?
-
->  config KEXEC
->  	bool "kexec system call (EXPERIMENTAL)"
->  	depends on PPC_MULTIPLATFORM && EXPERIMENTAL
+--
