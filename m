@@ -1,13 +1,16 @@
-Return-Path: <Hans.Thielemans@skynet.be>
-Date: Thu, 6 Apr 2006 22:02:05 +0200 (CEST)
-From: Hans Thielemans <Hans.Thielemans@skynet.be>
-To: Amir Bukhari <Bukhari@fzi.de>
-Subject: Re: Porting new MPC5200 based Board to linux kernel
-In-Reply-To: <EE3E34EBE104B24DA5DF5DBC1EA998D528801E@loretta.fzi.de>
-Message-ID: <Pine.LNX.4.44.0604062158500.31146-100000@gandalf.inthazo.be>
+Return-Path: <antonio.dibacco@aruba.it>
+Received: from smtpa4.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id B773067B16
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  7 Apr 2006 06:36:58 +1000 (EST)
+From: Antonio Di Bacco <antonio.dibacco@aruba.it>
+To: linuxppc-embedded@ozlabs.org
+Subject: Upgrading cramfs root file system
+Date: Thu, 6 Apr 2006 22:38:17 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200604062238.17972.antonio.dibacco@aruba.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,31 +21,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Amir,
+Hi,
 
-Which MEN board is this? The EM01(A) or the PP01. 
-We are using the EM01A and have linux running.
-We always got reasonable fast response from the MEN support service.
+how could I upgrade my cramfs rootfs? I have a CGI in the rootfs that receives 
+the new rootfs from a web interface and then tries to write it in the flash. 
+While overwriting the old cramfs, the CGI will continue to work? something 
+weird could happen?
 
-If this does not work, I could send you my config file.
-
-Hans 
-
-On Thu, 6 Apr 2006, Amir Bukhari wrote:
-
-> We have a MEN mpc5200 base board and we want to get linux running on it.
-> MEN has a bios and can load linux kernel and passing to parameters. I have
-> tried to configure kernel manualy but without success. MEN bios load kernel,
-> but nothing happend after that, I don't see anything on console.
-> 
-> I am new in this area, I need a first working kernel so that I can implement
-> other part.
-> I will need some guidnes.
-> Any help will be appretiated!!
-> 
-> -Amir
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+Best regards,
+Antonio.
