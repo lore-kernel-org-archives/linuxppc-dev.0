@@ -1,14 +1,14 @@
 Return-Path: <wd@denx.de>
-To: "Amir Bukhari" <Bukhari@fzi.de>
+To: bukhari@fzi.de
 From: Wolfgang Denk <wd@denx.de>
 Subject: Re: Porting new MPC5200 based Board to linux kernel 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 06 Apr 2006 16:39:17 +0200."
-	<EE3E34EBE104B24DA5DF5DBC1EA998D528801E@loretta.fzi.de>
-Date: Fri, 07 Apr 2006 00:48:56 +0200
+In-reply-to: Your message of "Thu, 06 Apr 2006 22:57:40 +0200."
+	<20060406205251.7511E67B16@ozlabs.org>
+Date: Fri, 07 Apr 2006 00:50:40 +0200
 Sender: wd@denx.de
-Message-Id: <20060406224856.BA993352671@atlas.denx.de>
+Message-Id: <20060406225040.E5E4F352671@atlas.denx.de>
 Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -20,14 +20,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <EE3E34EBE104B24DA5DF5DBC1EA998D528801E@loretta.fzi.de> you wrote:
-> We have a MEN mpc5200 base board and we want to get linux running on it.
-> MEN has a bios and can load linux kernel and passing to parameters. I have
-> tried to configure kernel manualy but without success. MEN bios load kernel,
-> but nothing happend after that, I don't see anything on console.
+In message <20060406205251.7511E67B16@ozlabs.org> you wrote:
+>  
+> Is that config file what I need to get linux running, didn't I need any
+> board special code. Like tqm5xxx.c etc. which located on arch\ppc\platforms
 
-Is this by any chance a PP01 board? If yes, then see our
-linuxppc_2_4_devel kernel tree which supports this board.
+What has the TQM code (fot TQ boards) to do with MEN boards? You must
+be missing something.
 
 Best regards,
 
@@ -36,5 +35,6 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"...and the fully armed nuclear warheads, are, of  course,  merely  a
-courtesy detail."
+"Though a program be but three lines long,
+someday it will have to be maintained."
+- The Tao of Programming
