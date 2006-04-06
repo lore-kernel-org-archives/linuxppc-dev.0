@@ -1,31 +1,38 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <hbabu@us.ibm.com>
+Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A761267B27
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2006 08:24:27 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k36MOCca002460
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 18:24:12 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k36MO1uK230154
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 18:24:01 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k36MO1im004848
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 18:24:01 -0400
-Date: Thu, 6 Apr 2006 17:24:00 -0500
-To: Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
-	linux-pci@atrey.karlin.mff.cuni.cz
-Subject: [PATCH] PCI Error Recovery: e100 network device driver
-Message-ID: <20060406222359.GA30037@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, john.ronciak@intel.com,
-	linux-kernel@vger.kernel.org, jeffrey.t.kirsher@intel.com,
-	jesse.brandeburg@intel.com
+	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0FA5867A6C
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2006 08:44:34 +1000 (EST)
+Received: from e31.co.us.ibm.com (e31.boulder.ibm.com [9.17.249.41])
+	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k36KgdNQ008537
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 16:42:39 -0400
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e31.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k36KgaE6021868
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 16:42:36 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k36KdETA248472
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 14:39:14 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k36KgZeO007907
+	for <linuxppc-dev@ozlabs.org>; Thu, 6 Apr 2006 14:42:35 -0600
+To: linuxppc-dev@ozlabs.org, fastboot@osdl.org
+MIME-Version: 1.0
+Subject: [PATCH/RFC] powerpc: could not stop CPU(s) even with soft-reset when
+	debugger enabled
+Message-ID: <OFF3123BC5.74ECB260-ON87257148.006EAC06-88257148.0071C438@us.ibm.com>
+From: Haren Myneni <hbabu@us.ibm.com>
+Date: Thu, 6 Apr 2006 13:47:11 -0700
+Content-Type: multipart/alternative;
+	boundary="=_alternative 0071C43588257148_="
+Cc: michael@ellerman.id.au, David Wilder <wilder@us.ibm.com>, paulus@samba.org,
+	miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,105 +42,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multipart message in MIME format.
+--=_alternative 0071C43588257148_=
+Content-Type: text/plain; charset="US-ASCII"
 
-Please apply and forward upstream.
+- During CPU(s) hang scenarios, kdump could not stop these CPUs. However, 
+the user could invoke soft-reset to shoot down CPUs reliably. But, when 
+the debugger is enabled, these CPUs are returned to hang state after they 
+exited from the debugger. This patch fixes this issue by calling 
+crash_kexec_secondary() before returns to previous state. 
 
---linas
 
-[PATCH] PCI Error Recovery: e100 network device driver
+Signed-off-by: Haren Myneni <haren@us.ibm.com>
 
-Various PCI bus errors can be signaled by newer PCI controllers.  This
-patch adds the PCI error recovery callbacks to the intel ethernet e100
-device driver. The patch has been tested, and appears to work well.
-
-Signed-off-by: Linas Vepstas <linas@linas.org>
-Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-
-----
-
- drivers/net/e100.c |   65 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 65 insertions(+)
-
-Index: linux-2.6.17-rc1/drivers/net/e100.c
-===================================================================
---- linux-2.6.17-rc1.orig/drivers/net/e100.c	2006-04-05 09:56:06.000000000 -0500
-+++ linux-2.6.17-rc1/drivers/net/e100.c	2006-04-06 15:17:29.000000000 -0500
-@@ -2781,6 +2781,70 @@ static void e100_shutdown(struct pci_dev
- }
+--- 2617-rc1/arch/powerpc/kernel/traps.c.orig            2006-04-05 
+13:25:22.000000000 -0700
++++ 2617-rc1/arch/powerpc/kernel/traps.c                 2006-04-05 
+13:25:33.000000000 -0700
+@@ -206,6 +206,16 @@ void system_reset_exception(struct pt_re
  
+                 die("System Reset", regs, SIGABRT);
  
-+/* ------------------ PCI Error Recovery infrastructure  -------------- */
-+/** e100_io_error_detected() is called when PCI error is detected */
-+static pci_ers_result_t e100_io_error_detected(struct pci_dev *pdev, pci_channel_state_t state)
-+{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
++                /*
++                 * Some CPUs which got released from debugger will 
+execute this path.
++                 * These CPUs entered debugger first time via soft-reset 
+- Means,
++                 * could be possible that these CPUs may not repond to an 
+IPI later.
++                 * Therefore, has to call kdump func directly.
++                 * Not a problem if we exited from debugger to recover. 
+In this case
++                 * there will not be any primary kexec CPU. Hence, will 
+be returned.
++                 */
++                crash_kexec_secondary(regs);
 +
-+	/* Same as calling e100_down(netdev_priv(netdev)), but generic */
-+	netdev->stop(netdev);
-+
-+	/* Detach; put netif into state similar to hotplug unplug */
-+	netif_poll_enable(netdev);
-+	netif_device_detach(netdev);
-+
-+	/* Request a slot reset. */
-+	return PCI_ERS_RESULT_NEED_RESET;
-+}
-+
-+/** e100_io_slot_reset is called after the pci bus has been reset.
-+ *  Restart the card from scratch. */
-+static pci_ers_result_t e100_io_slot_reset(struct pci_dev *pdev)
-+{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct nic *nic = netdev_priv(netdev);
-+
-+	if(pci_enable_device(pdev)) {
-+		printk(KERN_ERR "e100: Cannot re-enable PCI device after reset.\n");
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+	pci_set_master(pdev);
-+
-+	/* Only one device per card can do a reset */
-+	if (0 != PCI_FUNC (pdev->devfn))
-+		return PCI_ERS_RESULT_RECOVERED;
-+	e100_hw_reset(nic);
-+	e100_phy_init(nic);
-+
-+	return PCI_ERS_RESULT_RECOVERED;
-+}
-+
-+/** e100_io_resume is called when the error recovery driver
-+ *  tells us that its OK to resume normal operation.
-+ */
-+static void e100_io_resume(struct pci_dev *pdev)
-+{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct nic *nic = netdev_priv(netdev);
-+
-+	/* ack any pending wake events, disable PME */
-+	pci_enable_wake(pdev, 0, 0);
-+
-+	netif_device_attach(netdev);
-+	if(netif_running(netdev)) {
-+		e100_open (netdev);
-+		mod_timer(&nic->watchdog, jiffies);
-+	}
-+}
-+
-+static struct pci_error_handlers e100_err_handler = {
-+	.error_detected = e100_io_error_detected,
-+	.slot_reset = e100_io_slot_reset,
-+	.resume = e100_io_resume,
-+};
-+
-+
- static struct pci_driver e100_driver = {
- 	.name =         DRV_NAME,
- 	.id_table =     e100_id_table,
-@@ -2791,6 +2855,7 @@ static struct pci_driver e100_driver = {
- 	.resume =       e100_resume,
- #endif
- 	.shutdown =     e100_shutdown,
-+	.err_handler = &e100_err_handler,
- };
- 
- static int __init e100_init_module(void)
+                 /* Must die if the interrupt is not recoverable */
+                 if (!(regs->msr & MSR_RI))
+                                 panic("Unrecoverable System Reset");
+
+--=_alternative 0071C43588257148_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br>
+<br><font size=2 face="sans-serif">- During CPU(s) hang scenarios, kdump
+could not stop these CPUs. However, the user could invoke soft-reset to
+shoot down CPUs reliably. But, when the debugger is enabled, these CPUs
+are returned to hang state after they exited from the debugger. This patch
+fixes this issue by calling crash_kexec_secondary() before returns to previous
+state. </font>
+<br>
+<br>
+<br><font size=2 face="sans-serif">Signed-off-by: Haren Myneni &lt;haren@us.ibm.com&gt;</font>
+<br>
+<br><font size=2><tt>--- 2617-rc1/arch/powerpc/kernel/traps.c.orig &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 2006-04-05
+13:25:22.000000000 -0700<br>
++++ 2617-rc1/arch/powerpc/kernel/traps.c &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; 2006-04-05 13:25:33.000000000 -0700<br>
+@@ -206,6 +206,16 @@ void system_reset_exception(struct pt_re<br>
+ <br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;die(&quot;System
+Reset&quot;, regs, SIGABRT);<br>
+ <br>
++ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+/*<br>
++ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;* Some CPUs which got released from debugger will execute this path.<br>
++ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;* These CPUs entered debugger first time via soft-reset - Means,<br>
++ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;* could be possible that these CPUs may not repond to an IPI later.<br>
++ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;* Therefore, has to call kdump func directly.<br>
++ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;* Not a problem if we exited from debugger to recover. In this case<br>
++ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;* there will not be any primary kexec CPU. Hence, will be returned.<br>
++ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;*/<br>
++ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+crash_kexec_secondary(regs);<br>
++<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;/*
+Must die if the interrupt is not recoverable */<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;if
+(!(regs-&gt;msr &amp; MSR_RI))<br>
+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+panic(&quot;Unrecoverable System Reset&quot;);<br>
+</tt></font>
+--=_alternative 0071C43588257148_=--
