@@ -1,19 +1,22 @@
-Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (unknown [63.81.120.158])
-	by ozlabs.org (Postfix) with ESMTP id ABF5967B71
+Return-Path: <glikely@gmail.com>
+Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.191])
+	by ozlabs.org (Postfix) with ESMTP id D382767B9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Apr 2006 01:16:57 +1000 (EST)
-Date: Fri, 7 Apr 2006 08:17:55 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Claus Gindhart <claus.gindhart@kontron-modular.com>
-Subject: Re: RTC/I2C on 82xx with Linux 2.6.x
-Message-ID: <20060407151755.GA27623@mag.az.mvista.com>
-References: <003401c65a1b$915dac90$5201a8c0@GEG2400>
-	<200604071057.26265.claus.gindhart@kontron-modular.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200604071057.26265.claus.gindhart@kontron-modular.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat,  8 Apr 2006 08:18:19 +1000 (EST)
+Received: by nproxy.gmail.com with SMTP id p77so337325nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 07 Apr 2006 15:18:17 -0700 (PDT)
+Message-ID: <528646bc0604071518i5f95b4dbtd232d8cb92ef4fb9@mail.gmail.com>
+Date: Fri, 7 Apr 2006 16:18:17 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: yding <yding@lnxw.com>,
+	"linuxppc-embedded list" <linuxppc-embedded@ozlabs.org>
+Subject: Re: question about Linux 2.6 with Xilinx ML-403
+In-Reply-To: <4436BD2B.9050306@lnxw.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <4436BD2B.9050306@lnxw.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +27,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 07, 2006 at 10:57:25AM +0200, Claus Gindhart wrote:
-> Laurent,
-> 
-> attached you find a rtc-driver for 2.6.13.
-> I ported it from 2.4 myself, because i didnt find any 2.6-port out in the 
-> world.
-> the ppc_md-structure entries are initialized within the driver itself. This is 
-> propably not 100% consistent with the coding conventions, but it works fro 
-> me.
-> This i2c-layer can still be used with this driver; i have a LM75 and an EEPROM 
-> on the same bus, which i operate via LM-Sensors and the i2c-dev driver.
+On 4/7/06, yding <yding@lnxw.com> wrote:
+>  HI, Grant,
+>
+>  I found this message :
+> http://patchwork.ozlabs.org/linuxppc/patch?id=3D3841 on
+> Internet.
+>  It looks like you created some patch files for supporting Linux 2.6 with
+> Xilinx ML-403.
+>
+> how can download the whole kernel source tree with your patched files (vi=
+a
+> cvs or bitkeeper) ?
 
-Note that there is a drivers/rtc directory that new (and old) rtc drivers
-should be ported to.
+I believe they are now in Linus' mainline git tree.  If not, they are
+in Paul's powerpc git tree.
 
-Mark
+BTW, please CC the linuxppc-embedded mailing list when emailing me directly=
+.
+
+Cheers,
+g.
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 399-0195
