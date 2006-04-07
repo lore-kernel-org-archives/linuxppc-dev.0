@@ -1,28 +1,32 @@
 Return-Path: <vatsa@in.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1C0FC67B37
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2006 16:34:55 +1000 (EST)
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 315C467A70
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2006 17:57:14 +1000 (EST)
+Received: from e33.co.us.ibm.com (e33.boulder.ibm.com [9.17.249.43])
+	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k376XfOT024313
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 02:33:42 -0400
 Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
 	[9.17.195.11])
-	by e35.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k376YqkU023924
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 02:34:52 -0400
+	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k376XSnW015421
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 02:33:28 -0400
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
 	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k376VUTA259416
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 00:31:30 -0600
+	k376U6TA041356
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 00:30:06 -0600
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k376Yqgw026432
-	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 00:34:52 -0600
-Date: Fri, 7 Apr 2006 12:02:56 +0530
+	k376XSgP024574
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 00:33:28 -0600
+Date: Fri, 7 Apr 2006 12:01:32 +0530
 From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
 To: anton@samba.org, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 4/4] tickless idle cpus: decrementer statistics - NOT MEANT
-	FOR INCLUSION
-Message-ID: <20060407063256.GD22416@in.ibm.com>
+Subject: [PATCH 2/4] tickless idle cpu: Skip ticks when CPU is idle
+Message-ID: <20060407063131.GB22416@in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org, sri_vatsa_v@yahoo.com
@@ -36,78 +40,309 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch (a hack) provides some statistics of decrementer exception on
-each CPU. I used this purely to verify that tickless feature is working.
+This is the core patch which skips ticks when a CPU is idle.
+Should work on pSeries, pmac and maple machines.
 
-Anton, would this be useful statistics to be exposed (maybe in
-/proc/interrupts)? If so, I could work out a more cleaner way of
-providing this statistics to user.
+The patch is against 2.6.17-rc1-mm1 and has been tested on a 16-way (with SMT) 
+Power5 box (p570).
 
 Signed-off-by: Srivatsa Vaddagiri <vatsa@in.ibm.com>
 
 ---
 
- linux-2.6.17-rc1-root/arch/powerpc/kernel/time.c |    4 ++++
- linux-2.6.17-rc1-root/fs/proc/proc_misc.c        |   17 +++++++++++++++++
- 2 files changed, 21 insertions(+)
+ linux-2.6.17-rc1-root/arch/powerpc/Kconfig                   |    6 
+ linux-2.6.17-rc1-root/arch/powerpc/kernel/idle_power4.S      |    3 
+ linux-2.6.17-rc1-root/arch/powerpc/kernel/irq.c              |    3 
+ linux-2.6.17-rc1-root/arch/powerpc/kernel/time.c             |  150 ++++++++---
+ linux-2.6.17-rc1-root/arch/powerpc/kernel/traps.c            |    1 
+ linux-2.6.17-rc1-root/arch/powerpc/platforms/pseries/setup.c |    6 
+ linux-2.6.17-rc1-root/include/asm-powerpc/time.h             |    8 
+ 7 files changed, 147 insertions(+), 30 deletions(-)
 
-diff -puN arch/powerpc/kernel/time.c~stat arch/powerpc/kernel/time.c
---- linux-2.6.17-rc1/arch/powerpc/kernel/time.c~stat	2006-04-07 11:29:20.000000000 +0530
-+++ linux-2.6.17-rc1-root/arch/powerpc/kernel/time.c	2006-04-07 11:29:20.000000000 +0530
-@@ -757,6 +757,8 @@ void start_hz_timer(struct pt_regs *regs
- static inline int clear_hzless_mask(void) { return 0;}
+diff -puN arch/powerpc/kernel/time.c~no_idle_hz arch/powerpc/kernel/time.c
+--- linux-2.6.17-rc1/arch/powerpc/kernel/time.c~no_idle_hz	2006-04-07 04:14:39.000000000 +0530
++++ linux-2.6.17-rc1-root/arch/powerpc/kernel/time.c	2006-04-07 11:29:13.000000000 +0530
+@@ -633,40 +633,12 @@ static void iSeries_tb_recal(void)
+ }
  #endif
  
-+DEFINE_PER_CPU(int, dec_ticks);
-+
- /*
-  * For iSeries shared processors, we have to let the hypervisor
-  * set the hardware decrementer.  We set a virtual decrementer
-@@ -780,6 +782,8 @@ void timer_interrupt(struct pt_regs * re
+-/*
+- * For iSeries shared processors, we have to let the hypervisor
+- * set the hardware decrementer.  We set a virtual decrementer
+- * in the lppaca and call the hypervisor if the virtual
+- * decrementer is less than the current value in the hardware
+- * decrementer. (almost always the new decrementer value will
+- * be greater than the current hardware decementer so the hypervisor
+- * call will not be needed)
+- */
+-
+-/*
+- * timer_interrupt - gets called when the decrementer overflows,
+- * with interrupts disabled.
+- */
+-void timer_interrupt(struct pt_regs * regs)
++static void account_ticks(struct pt_regs *regs)
+ {
+ 	int next_dec;
+ 	int cpu = smp_processor_id();
+ 	unsigned long ticks;
  
- 	irq_enter();
- 
-+	__get_cpu_var(dec_ticks) += 1;
-+
- 	clear_hzless_mask();
- 
- 	profile_tick(CPU_PROFILING, regs);
-diff -puN fs/proc/proc_misc.c~stat fs/proc/proc_misc.c
---- linux-2.6.17-rc1/fs/proc/proc_misc.c~stat	2006-04-07 11:29:20.000000000 +0530
-+++ linux-2.6.17-rc1-root/fs/proc/proc_misc.c	2006-04-07 11:29:20.000000000 +0530
-@@ -243,6 +243,22 @@ static int version_read_proc(char *page,
- 	return proc_calc_metrics(page, start, off, count, eof, len);
- }
- 
-+DECLARE_PER_CPU(int, dec_ticks);
-+
-+static int decrementer_read_proc(char *page, char **start, off_t off,
-+				 int count, int *eof, void *data)
-+{
-+	int len, cpu;
-+	char *cp = page;
-+
-+	for_each_cpu(cpu)
-+		cp += sprintf (cp, "%d ", per_cpu(dec_ticks, cpu));
-+
-+	len = cp - page;
-+
-+	return proc_calc_metrics(page, start, off, count, eof, len);
+-#ifdef CONFIG_PPC32
+-	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+-		do_IRQ(regs);
+-#endif
+-
+-	irq_enter();
+-
+-	profile_tick(CPU_PROFILING, regs);
+-	calculate_steal_time();
+-
+-#ifdef CONFIG_PPC_ISERIES
+-	get_lppaca()->int_dword.fields.decr_int = 0;
+-#endif
+-
+ 	while ((ticks = tb_ticks_since(per_cpu(last_jiffy, cpu)))
+ 	       >= tb_ticks_per_jiffy) {
+ 		/* Update last_jiffy */
+@@ -701,6 +673,123 @@ void timer_interrupt(struct pt_regs * re
+ 	
+ 	next_dec = tb_ticks_per_jiffy - ticks;
+ 	set_dec(next_dec);
 +}
 +
- extern struct seq_operations cpuinfo_op;
- static int cpuinfo_open(struct inode *inode, struct file *file)
- {
-@@ -740,6 +756,7 @@ void __init proc_misc_init(void)
- 		{"uptime",	uptime_read_proc},
- 		{"meminfo",	meminfo_read_proc},
- 		{"version",	version_read_proc},
-+		{"decrementer",	decrementer_read_proc},
- #ifdef CONFIG_PROC_HARDWARE
- 		{"hardware",	hardware_read_proc},
++#ifdef CONFIG_NO_IDLE_HZ
++
++/* Returns 1 if this CPU was set in the mask */
++static inline int clear_hzless_mask(void)
++{
++	unsigned long cpu = smp_processor_id();
++	int rc = 0;
++
++	if (unlikely(cpu_isset(cpu, nohz_cpu_mask))) {
++		cpu_clear(cpu, nohz_cpu_mask);
++		rc = 1;
++	}
++
++	return rc;
++}
++
++#define MAX_DEC_COUNT	UINT_MAX	/* Decrementer is 32-bit */
++static int min_skip = 2;		/* Minimum number of ticks to skip */
++static int max_skip;			/* Maximum number of ticks to skip */
++
++
++int sysctl_hz_timer = 1;
++
++/* Defer timer interrupt for as long as possible. This is accomplished by
++ * programming the decrementer to a suitable value such that it raises the
++ * exception after desired interval. This features allows CPUs to
++ * be used more efficiently in virtualized environments.
++ *
++ * Called with interrupts disabled on an idle CPU. Caller has to ensure that
++ * idle loop is not exited w/o start_hz_timer being called via an interrupt
++ * to restore timer interrupt frequency.
++ */
++
++void stop_hz_timer(void)
++{
++	unsigned long cpu = smp_processor_id(), seq, delta;
++	int next_dec;
++
++	if (sysctl_hz_timer != 0)
++		return;
++
++	cpu_set(cpu, nohz_cpu_mask);
++	mb();
++	if (rcu_pending(cpu) || local_softirq_pending()) {
++		cpu_clear(cpu, nohz_cpu_mask);
++		return;
++	}
++
++	do {
++		seq = read_seqbegin(&xtime_lock);
++
++		delta = next_timer_interrupt() - jiffies;
++
++		if (delta < min_skip) {
++			cpu_clear(cpu, nohz_cpu_mask);
++			return;
++		}
++
++		if (delta > max_skip)
++			delta = max_skip;
++
++		next_dec = tb_last_stamp + delta * tb_ticks_per_jiffy;
++
++	} while (read_seqretry(&xtime_lock, seq));
++
++	next_dec -= get_tb();
++	set_dec(next_dec);
++
++	return;
++}
++
++/* Take into account skipped ticks and restore the HZ timer frequency */
++void start_hz_timer(struct pt_regs *regs)
++{
++	if (clear_hzless_mask())
++		account_ticks(regs);
++}
++
++#else
++static inline int clear_hzless_mask(void) { return 0;}
++#endif
++
++/*
++ * For iSeries shared processors, we have to let the hypervisor
++ * set the hardware decrementer.  We set a virtual decrementer
++ * in the lppaca and call the hypervisor if the virtual
++ * decrementer is less than the current value in the hardware
++ * decrementer. (almost always the new decrementer value will
++ * be greater than the current hardware decementer so the hypervisor
++ * call will not be needed)
++ */
++
++/*
++ * timer_interrupt - gets called when the decrementer overflows,
++ * with interrupts disabled.
++ */
++void timer_interrupt(struct pt_regs * regs)
++{
++#ifdef CONFIG_PPC32
++	if (atomic_read(&ppc_n_lost_interrupts) != 0)
++		do_IRQ(regs);
++#endif
++
++	irq_enter();
++
++	clear_hzless_mask();
++
++	profile_tick(CPU_PROFILING, regs);
++	calculate_steal_time();
++
++#ifdef CONFIG_PPC_ISERIES
++	get_lppaca()->int_dword.fields.decr_int = 0;
++#endif
++
++	account_ticks(regs);
+ 
+ #ifdef CONFIG_PPC_ISERIES
+ 	if (hvlpevent_is_pending())
+@@ -955,6 +1044,9 @@ void __init time_init(void)
+ 	tb_ticks_per_usec = ppc_tb_freq / 1000000;
+ 	tb_to_us = mulhwu_scale_factor(ppc_tb_freq, 1000000);
+ 	calc_cputime_factors();
++#ifdef CONFIG_NO_IDLE_HZ
++	max_skip = __USE_RTC() ? HZ : MAX_DEC_COUNT / tb_ticks_per_jiffy;
++#endif
+ 
+ 	/*
+ 	 * Calculate the length of each tick in ns.  It will not be
+diff -puN arch/powerpc/kernel/irq.c~no_idle_hz arch/powerpc/kernel/irq.c
+--- linux-2.6.17-rc1/arch/powerpc/kernel/irq.c~no_idle_hz	2006-04-07 04:14:39.000000000 +0530
++++ linux-2.6.17-rc1-root/arch/powerpc/kernel/irq.c	2006-04-07 04:14:57.000000000 +0530
+@@ -60,6 +60,7 @@
+ #ifdef CONFIG_PPC_ISERIES
+ #include <asm/paca.h>
  #endif
++#include <asm/time.h>
+ 
+ int __irq_offset_value;
+ #ifdef CONFIG_PPC32
+@@ -189,6 +190,8 @@ void do_IRQ(struct pt_regs *regs)
+ 
+         irq_enter();
+ 
++	start_hz_timer(regs);
++
+ #ifdef CONFIG_DEBUG_STACKOVERFLOW
+ 	/* Debugging check for stack overflow: is there less than 2KB free? */
+ 	{
+diff -puN include/asm-powerpc/time.h~no_idle_hz include/asm-powerpc/time.h
+--- linux-2.6.17-rc1/include/asm-powerpc/time.h~no_idle_hz	2006-04-07 04:14:39.000000000 +0530
++++ linux-2.6.17-rc1-root/include/asm-powerpc/time.h	2006-04-07 04:14:58.000000000 +0530
+@@ -198,6 +198,14 @@ static inline unsigned long tb_ticks_sin
+ 	return get_tbl() - tstamp;
+ }
+ 
++#ifdef CONFIG_NO_IDLE_HZ
++extern void stop_hz_timer(void);
++extern void start_hz_timer(struct pt_regs *);
++#else
++static inline void stop_hz_timer(void) { }
++static inline void start_hz_timer(struct pt_regs *regs) { }
++#endif
++
+ #define mulhwu(x,y) \
+ ({unsigned z; asm ("mulhwu %0,%1,%2" : "=r" (z) : "r" (x), "r" (y)); z;})
+ 
+diff -puN arch/powerpc/Kconfig~no_idle_hz arch/powerpc/Kconfig
+--- linux-2.6.17-rc1/arch/powerpc/Kconfig~no_idle_hz	2006-04-07 04:14:39.000000000 +0530
++++ linux-2.6.17-rc1-root/arch/powerpc/Kconfig	2006-04-07 04:14:58.000000000 +0530
+@@ -593,6 +593,12 @@ config HOTPLUG_CPU
+ 
+ 	  Say N if you are unsure.
+ 
++config NO_IDLE_HZ
++	depends on EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC || PPC_MAPLE)
++	bool "Switch off timer ticks on idle CPUs"
++	help
++	  Switches the HZ timer interrupts off when a CPU is idle.
++
+ config KEXEC
+ 	bool "kexec system call (EXPERIMENTAL)"
+ 	depends on PPC_MULTIPLATFORM && EXPERIMENTAL
+diff -puN arch/powerpc/kernel/traps.c~no_idle_hz arch/powerpc/kernel/traps.c
+--- linux-2.6.17-rc1/arch/powerpc/kernel/traps.c~no_idle_hz	2006-04-07 04:14:39.000000000 +0530
++++ linux-2.6.17-rc1-root/arch/powerpc/kernel/traps.c	2006-04-07 04:14:58.000000000 +0530
+@@ -875,6 +875,7 @@ void altivec_unavailable_exception(struc
+ 
+ void performance_monitor_exception(struct pt_regs *regs)
+ {
++	start_hz_timer(regs);
+ 	perf_irq(regs);
+ }
+ 
+diff -puN arch/powerpc/platforms/pseries/setup.c~no_idle_hz arch/powerpc/platforms/pseries/setup.c
+--- linux-2.6.17-rc1/arch/powerpc/platforms/pseries/setup.c~no_idle_hz	2006-04-07 04:14:39.000000000 +0530
++++ linux-2.6.17-rc1-root/arch/powerpc/platforms/pseries/setup.c	2006-04-07 04:15:50.000000000 +0530
+@@ -463,8 +463,10 @@ static void pseries_dedicated_idle_sleep
+ 	 * very low priority.  The cede enables interrupts, which
+ 	 * doesn't matter here.
+ 	 */
+-	if (!lppaca[cpu ^ 1].idle || poll_pending() == H_PENDING)
++	if (!lppaca[cpu ^ 1].idle || poll_pending() == H_PENDING) {
++		stop_hz_timer();
+ 		cede_processor();
++	}
+ 
+ out:
+ 	HMT_medium();
+@@ -479,6 +481,8 @@ static void pseries_shared_idle_sleep(vo
+ 	 */
+ 	get_lppaca()->idle = 1;
+ 
++	stop_hz_timer();
++
+ 	/*
+ 	 * Yield the processor to the hypervisor.  We return if
+ 	 * an external interrupt occurs (which are driven prior
+diff -puN arch/powerpc/kernel/idle_power4.S~no_idle_hz arch/powerpc/kernel/idle_power4.S
+--- linux-2.6.17-rc1/arch/powerpc/kernel/idle_power4.S~no_idle_hz	2006-04-07 04:14:39.000000000 +0530
++++ linux-2.6.17-rc1-root/arch/powerpc/kernel/idle_power4.S	2006-04-07 04:14:58.000000000 +0530
+@@ -30,6 +30,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+ 	cmpwi	0,r4,0
+ 	beqlr
+ 
++	mflr	r4
++	bl	.stop_hz_timer
++	mtlr	r4
+ 	/* Go to NAP now */
+ BEGIN_FTR_SECTION
+ 	DSSALL
 
 _
+
 
 -- 
 Regards,
