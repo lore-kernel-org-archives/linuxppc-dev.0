@@ -1,18 +1,31 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [PATCH 4/5] powerpc: export symbols for page size
-	selection
-Date: Fri, 7 Apr 2006 18:49:34 +0200
-References: <20060407150124.422051000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-	<200604071803.01836.arnd.bergmann@de.ibm.com>
-	<20060407162026.GK952@pb15.lixom.net>
-In-Reply-To: <20060407162026.GK952@pb15.lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200604071849.35391.arnd.bergmann@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Mark Nutter <mnutter@us.ibm.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D351367BA1
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Apr 2006 07:18:33 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k37LIT7l001348
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 17:18:29 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k37LF6hO252176
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 15:15:06 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k37LITId012854
+	for <linuxppc-dev@ozlabs.org>; Fri, 7 Apr 2006 15:18:29 -0600
+Date: Fri, 7 Apr 2006 16:18:22 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc/pseries: clear PCI failure counter if no new failures.
+Message-ID: <20060407211822.GI25225@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,52 +35,209 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 07 April 2006 18:20, Olof Johansson wrote:
-> On Fri, Apr 07, 2006 at 06:03:01PM +0200, Arnd Bergmann wrote:
-> > On Friday 07 April 2006 17:42, Olof Johansson wrote:
-> > > Yeah, what's the need for that, really? It needs to know so much of
-> > > kernel internals that it's getting silly to allow it to be a module.
-> >
-> > How about if I do a patch that always includes the base but not
-> > the actual file system?
-> 
-> Sounds like a decent tradeoff.
-> 
 
-Unfortunately, this one doesn't get rid of the need to have the
-exports, since the context switch code also needs mmu_psize_defs
-and the associated objects. I think I have to come up with
-a different change for that, but I don't mind putting the base
-stuff into the kernel in the first place.
+[PATCH] powerpc/pseries: clear PCI failure counter if no new failures.
 
-Mark has some changes to the file layout pending that will
-impact this as well. I first need to see how that works out
-together.
+The current PCI error recovery system keeps track of the number of 
+PCI card resets, and refuses to bring a card back up if this number 
+is too large. The goal of doing this was to avoid an infinite loop 
+of resets if a card is obviously dead.  However, if the failures are
+rare, but the machine has a high uptime, this mechanism might still
+be triggered; this is too harsh.
 
-The patch to make the base non-modular is trivial, so we might
-as well apply it now.
+This patch will avoids this problem by decrementing the fail count 
+after an hour. Thus, as long as a pci card BSOD's less than 6 times 
+an hour, it will continue to be reset indefinitely. If it's failure 
+rate is greater than that, it will be taken off-line permanently.
 
-	Arnd <><
+This patch is larger than it might otherwise be because it 
+changes indentation by removing a pointless while-loop. The while 
+loop is not needed, as the handler is invoked once fo each event 
+(by schedule_work()); the loop is leftover cruft from an earlier 
+implementation. 
 
-Index: linus-2.6/arch/powerpc/platforms/cell/Makefile
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+
+----
+ arch/powerpc/platforms/pseries/eeh_driver.c |   13 +++---
+ arch/powerpc/platforms/pseries/eeh_event.c  |   60 +++++++++++++++-------------
+ include/asm-powerpc/eeh_event.h             |   10 ++--
+ 3 files changed, 45 insertions(+), 38 deletions(-)
+
+Index: linux-2.6.17-rc1/arch/powerpc/platforms/pseries/eeh_driver.c
 ===================================================================
---- linus-2.6.orig/arch/powerpc/platforms/cell/Makefile
-+++ linus-2.6/arch/powerpc/platforms/cell/Makefile
-@@ -2,15 +2,13 @@ obj-y			+= interrupt.o iommu.o setup.o s
- obj-y			+= pervasive.o
+--- linux-2.6.17-rc1.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2006-04-04 15:28:59.000000000 -0500
++++ linux-2.6.17-rc1/arch/powerpc/platforms/pseries/eeh_driver.c	2006-04-07 16:08:27.000000000 -0500
+@@ -23,9 +23,8 @@
+  *
+  */
+ #include <linux/delay.h>
+-#include <linux/irq.h>
+ #include <linux/interrupt.h>
+-#include <linux/notifier.h>
++#include <linux/irq.h>
+ #include <linux/pci.h>
+ #include <asm/eeh.h>
+ #include <asm/eeh_event.h>
+@@ -250,7 +249,7 @@ static int eeh_reset_device (struct pci_
+  */
+ #define MAX_WAIT_FOR_RECOVERY 15
  
- obj-$(CONFIG_SMP)	+= smp.o
--obj-$(CONFIG_SPU_FS)	+= spu-base.o spufs/
+-void handle_eeh_events (struct eeh_event *event)
++struct pci_dn * handle_eeh_events (struct eeh_event *event)
+ {
+ 	struct device_node *frozen_dn;
+ 	struct pci_dn *frozen_pdn;
+@@ -265,7 +264,7 @@ void handle_eeh_events (struct eeh_event
+ 	if (!frozen_dn) {
+ 		printk(KERN_ERR "EEH: Error: Cannot find partition endpoint for %s\n",
+ 		        pci_name(event->dev));
+-		return;
++		return NULL;
+ 	}
+ 
+ 	/* There are two different styles for coming up with the PE.
+@@ -280,7 +279,7 @@ void handle_eeh_events (struct eeh_event
+ 	if (!frozen_bus) {
+ 		printk(KERN_ERR "EEH: Cannot find PCI bus for %s\n",
+ 		        frozen_dn->full_name);
+-		return;
++		return NULL;
+ 	}
+ 
+ #if 0
+@@ -355,7 +354,7 @@ void handle_eeh_events (struct eeh_event
+ 	/* Tell all device drivers that they can resume operations */
+ 	pci_walk_bus(frozen_bus, eeh_report_resume, NULL);
+ 
+-	return;
++	return frozen_pdn;
+ 	
+ excess_failures:
+ 	/*
+@@ -384,6 +383,8 @@ perm_error:
+ 
+ 	/* Shut down the device drivers for good. */
+ 	pcibios_remove_pci_devices(frozen_bus);
++
++	return NULL;
+ }
+ 
+ /* ---------- end of file ---------- */
+Index: linux-2.6.17-rc1/arch/powerpc/platforms/pseries/eeh_event.c
+===================================================================
+--- linux-2.6.17-rc1.orig/arch/powerpc/platforms/pseries/eeh_event.c	2006-04-04 15:28:59.000000000 -0500
++++ linux-2.6.17-rc1/arch/powerpc/platforms/pseries/eeh_event.c	2006-04-05 09:56:38.000000000 -0500
+@@ -18,6 +18,7 @@
+  * Copyright (c) 2005 Linas Vepstas <linas@linas.org>
+  */
+ 
++#include <linux/delay.h>
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+ #include <linux/pci.h>
+@@ -56,38 +57,43 @@ static int eeh_event_handler(void * dumm
+ {
+ 	unsigned long flags;
+ 	struct eeh_event	*event;
++	struct pci_dn *pdn;
+ 
+ 	daemonize ("eehd");
++	set_current_state(TASK_INTERRUPTIBLE);
+ 
+-	while (1) {
+-		set_current_state(TASK_INTERRUPTIBLE);
++	spin_lock_irqsave(&eeh_eventlist_lock, flags);
++	event = NULL;
++
++	/* Unqueue the event, get ready to process. */
++	if (!list_empty(&eeh_eventlist)) {
++		event = list_entry(eeh_eventlist.next, struct eeh_event, list);
++		list_del(&event->list);
++	}
++	spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
+ 
+-		spin_lock_irqsave(&eeh_eventlist_lock, flags);
+-		event = NULL;
++	if (event == NULL)
++		return 0;
+ 
+-		/* Unqueue the event, get ready to process. */
+-		if (!list_empty(&eeh_eventlist)) {
+-			event = list_entry(eeh_eventlist.next, struct eeh_event, list);
+-			list_del(&event->list);
+-		}
+-		spin_unlock_irqrestore(&eeh_eventlist_lock, flags);
 -
--spu-base-y		+= spu_base.o spu_priv1.o
-+obj-$(CONFIG_SPU_FS)	+= spufs/
+-		if (event == NULL)
+-			break;
+-
+-		/* Serialize processing of EEH events */
+-		mutex_lock(&eeh_event_mutex);
+-		eeh_mark_slot(event->dn, EEH_MODE_RECOVERING);
+-
+-		printk(KERN_INFO "EEH: Detected PCI bus error on device %s\n",
+-		       pci_name(event->dev));
+-
+-		handle_eeh_events(event);
+-
+-		eeh_clear_slot(event->dn, EEH_MODE_RECOVERING);
+-		pci_dev_put(event->dev);
+-		kfree(event);
+-		mutex_unlock(&eeh_event_mutex);
++	/* Serialize processing of EEH events */
++	mutex_lock(&eeh_event_mutex);
++	eeh_mark_slot(event->dn, EEH_MODE_RECOVERING);
++
++	printk(KERN_INFO "EEH: Detected PCI bus error on device %s\n",
++	       pci_name(event->dev));
++
++	pdn = handle_eeh_events(event);
++
++	eeh_clear_slot(event->dn, EEH_MODE_RECOVERING);
++	pci_dev_put(event->dev);
++	kfree(event);
++	mutex_unlock(&eeh_event_mutex);
++
++	/* If there are no new errors after an hour, clear the counter. */
++	if (pdn && pdn->eeh_freeze_count>0) {
++		msleep_interruptible (3600*1000);
++		if (pdn->eeh_freeze_count>0)
++			pdn->eeh_freeze_count--;
+ 	}
  
- # needed only when building loadable spufs.ko
- spufs-modular-$(CONFIG_SPU_FS) += spu_syscalls.o
- obj-y			+= $(spufs-modular-m)
+ 	return 0;
+Index: linux-2.6.17-rc1/include/asm-powerpc/eeh_event.h
+===================================================================
+--- linux-2.6.17-rc1.orig/include/asm-powerpc/eeh_event.h	2006-03-19 23:53:29.000000000 -0600
++++ linux-2.6.17-rc1/include/asm-powerpc/eeh_event.h	2006-04-04 15:37:22.000000000 -0500
+@@ -18,8 +18,8 @@
+  * Copyright (c) 2005 Linas Vepstas <linas@linas.org>
+  */
  
- # always needed in kernel
--spufs-builtin-$(CONFIG_SPU_FS) += spu_callbacks.o
-+spufs-builtin-$(CONFIG_SPU_FS) += spu_callbacks.o spu_base.o spu_priv1.o
- obj-y			+= $(spufs-builtin-y) $(spufs-builtin-m)
+-#ifndef ASM_PPC64_EEH_EVENT_H
+-#define ASM_PPC64_EEH_EVENT_H
++#ifndef ASM_POWERPC_EEH_EVENT_H
++#define ASM_POWERPC_EEH_EVENT_H
+ #ifdef __KERNEL__
  
+ /** EEH event -- structure holding pci controller data that describes
+@@ -39,7 +39,7 @@ struct eeh_event {
+  * @dev pci device
+  *
+  * This routine builds a PCI error event which will be delivered
+- * to all listeners on the peh_notifier_chain.
++ * to all listeners on the eeh_notifier_chain.
+  *
+  * This routine can be called within an interrupt context;
+  * the actual event will be delivered in a normal context
+@@ -51,7 +51,7 @@ int eeh_send_failure_event (struct devic
+                             int time_unavail);
+ 
+ /* Main recovery function */
+-void handle_eeh_events (struct eeh_event *);
++struct pci_dn * handle_eeh_events (struct eeh_event *);
+ 
+ #endif /* __KERNEL__ */
+-#endif /* ASM_PPC64_EEH_EVENT_H */
++#endif /* ASM_POWERPC_EEH_EVENT_H */
