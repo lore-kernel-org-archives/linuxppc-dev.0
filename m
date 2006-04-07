@@ -1,12 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Message-Id: <20060407150743.688538000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C8DF867B7F
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Apr 2006 01:28:23 +1000 (EST)
+Date: Fri, 7 Apr 2006 17:28:13 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: arnd@arndb.de
+Subject: Re: [PATCH 4/5] powerpc: export symbols for page size selection
+Message-ID: <20060407152813.GA382@lst.de>
 References: <20060407150124.422051000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-Date: Fri, 07 Apr 2006 00:00:04 +0200
-From: arnd@arndb.de
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 4/5] powerpc: export symbols for page size selection
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+	<20060407150743.688538000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060407150743.688538000@dyn-9-152-242-103.boeblingen.de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,41 +25,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We need access to some symbols in powerpc memory management
-from spufs in order to create proper SLB entries.
+On Fri, Apr 07, 2006 at 12:00:04AM +0200, arnd@arndb.de wrote:
+> We need access to some symbols in powerpc memory management
+> from spufs in order to create proper SLB entries.
 
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Index: linus-2.6/arch/powerpc/mm/hash_utils_64.c
-===================================================================
---- linus-2.6.orig/arch/powerpc/mm/hash_utils_64.c
-+++ linus-2.6/arch/powerpc/mm/hash_utils_64.c
-@@ -85,16 +85,26 @@ extern unsigned long dart_tablebase;
- #endif /* CONFIG_U3_DART */
- 
- static unsigned long _SDR1;
--struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
- 
- hpte_t *htab_address;
- unsigned long htab_size_bytes;
- unsigned long htab_hash_mask;
-+
-+struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT];
-+EXPORT_SYMBOL_GPL(mmu_psize_defs);
-+
- int mmu_linear_psize = MMU_PAGE_4K;
-+EXPORT_SYMBOL_GPL(mmu_linear_psize);
-+
- int mmu_virtual_psize = MMU_PAGE_4K;
-+EXPORT_SYMBOL_GPL(mmu_virtual_psize);
-+
- #ifdef CONFIG_HUGETLB_PAGE
- int mmu_huge_psize = MMU_PAGE_16M;
-+EXPORT_SYMBOL_GPL(mmu_huge_psize);
-+
- unsigned int HPAGE_SHIFT;
-+EXPORT_SYMBOL_GPL(HPAGE_SHIFT);
- #endif
- 
- /* There are definitions of page sizes arrays to be used when none
-
---
+One more reason to disallow modular spufs..
