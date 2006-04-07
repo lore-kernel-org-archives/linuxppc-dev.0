@@ -1,21 +1,14 @@
-Return-Path: <ntl@pobox.com>
-Received: from proof.pobox.com (proof.pobox.com [207.106.133.28])
-	by ozlabs.org (Postfix) with ESMTP id 0DE5767B25
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Apr 2006 11:10:16 +1000 (EST)
-Date: Thu, 6 Apr 2006 20:10:02 -0500
-From: Nathan Lynch <ntl@pobox.com>
+Return-Path: <mikey@ozlabs.org>
 To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [RFC/PATCH] powerpc: Use rtas query-cpu-stopped-state in smp
-	spinup
-Message-ID: <20060407011002.GF9208@localdomain>
-References: <20060404112459.C9170679EB@ozlabs.org>
-	<20060404172550.GE25663@localdomain>
-	<1144236210.6788.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1144236210.6788.6.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+From: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc: Fix machine detection in prom_init.c 
+In-reply-to: <20060405161830.CFD28679EB@ozlabs.org> 
+References: <20060405161830.CFD28679EB@ozlabs.org>
+Date: Fri, 07 Apr 2006 13:46:39 +1000
+Sender: mikey@ozlabs.org
+Message-Id: <20060407034632.5078667B24@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +18,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> On Tue, 2006-04-04 at 12:25 -0500, Nathan Lynch wrote:
-> 
-> > 2. I've tried it before.  Hope I'm remembering this correctly, but I
-> >    think my experience was that query-cpu-stopped-state reported
-> >    nonsense for cpus that were started by OF.  This was on Power5,
-> >    btw.
-> 
-> That's not what I see, perhaps I have newer firmware?
+> In e8222502ee6157e2713da9e0792c21f4ad458d50 the detection of machine
+> types in prom_init broke for some machines. We should be checking
+> /device_type instead of /model. This should make Power3 and Power4
+> boot again. Haven't been able to test this.
 
-I tried your patch (non-kexec boot) on a 1-way SMT power5 with
-2.6.17-rc1 and got the badness below, and I think it matches what I
-ran into in the past.  Maybe doing query-cpu-stopped-state on a thread
-that has yet to be started by RTAS mucks things up?
+We also need to relocate the string before comparing.
 
-Memory: 2047640k/2097152k available (5356k kernel code, 49512k
-reserved, 1412k data, 900k bss, 240k init)
-Calibrating delay loop... 375.80 BogoMIPS (lpj=751616)
-Security Framework v1.0.0 initialized
-SELinux:  Disabled at boot.
-Mount-cache hash table entries: 256
-Processor 1 is stuck.               <<<<<<<<
-Brought up 1 CPUs
-Node 0 CPUs: 0
-migration_cost=0
+Combined patch below.  Tested on POWER3.  
+
+Mikey
+
+
+From: Michael Ellerman <michael@ellerman.id.au>
+
+In e8222502ee6157e2713da9e0792c21f4ad458d50 the detection of machine types
+in prom_init broke for some machines. We should be checking /device_type
+instead of /model. This should make Power3 and Power4 boot again. Haven't
+been able to test this.  We also need to relocate before comparing. 
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+
+ arch/powerpc/kernel/prom_init.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+Index: linux-2.6-powerpc/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-2.6-powerpc.orig/arch/powerpc/kernel/prom_init.c
++++ linux-2.6-powerpc/arch/powerpc/kernel/prom_init.c
+@@ -1528,12 +1528,11 @@ static int __init prom_find_machine_type
+ 	 *    non-IBM designs !
+ 	 *  - it has /rtas
+ 	 */
+-	len = prom_getprop(_prom->root, "model",
++	len = prom_getprop(_prom->root, "device_type",
+ 			   compat, sizeof(compat)-1);
+ 	if (len <= 0)
+ 		return PLATFORM_GENERIC;
+-	compat[len] = 0;
+-	if (strcmp(compat, "chrp"))
++	if (strcmp(compat, RELOC("chrp")))
+ 		return PLATFORM_GENERIC;
+ 
+ 	/* Default to pSeries. We need to know if we are running LPAR */
