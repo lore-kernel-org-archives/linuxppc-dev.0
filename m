@@ -1,13 +1,13 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17462.63610.217794.308786@cargo.ozlabs.ibm.com>
-Date: Sat, 8 Apr 2006 09:40:42 +1000
+Message-ID: <17462.61423.42032.559627@cargo.ozlabs.ibm.com>
+Date: Sat, 8 Apr 2006 09:04:15 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: vatsa@in.ibm.com
-Subject: Re: [PATCH 2/4] tickless idle cpu: Skip ticks when CPU is idle
-In-Reply-To: <20060407063131.GB22416@in.ibm.com>
-References: <20060407063131.GB22416@in.ibm.com>
+Subject: Re: [PATCH 1/4] tickless idle cpu - Allow any CPU to update jiffies
+In-Reply-To: <20060407063044.GA22416@in.ibm.com>
+References: <20060407063044.GA22416@in.ibm.com>
 Cc: sri_vatsa_v@yahoo.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,19 +20,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Srivatsa Vaddagiri writes:
 
-> diff -puN arch/powerpc/kernel/idle_power4.S~no_idle_hz arch/powerpc/kernel/idle_power4.S
-> --- linux-2.6.17-rc1/arch/powerpc/kernel/idle_power4.S~no_idle_hz	2006-04-07 04:14:39.000000000 +0530
-> +++ linux-2.6.17-rc1-root/arch/powerpc/kernel/idle_power4.S	2006-04-07 04:14:58.000000000 +0530
-> @@ -30,6 +30,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
->  	cmpwi	0,r4,0
->  	beqlr
->  
-> +	mflr	r4
-> +	bl	.stop_hz_timer
-> +	mtlr	r4
+> Currently, only boot CPU calls do_timer to update jiffies. This prevents
+> idle boot CPU from skipping ticks. Patch below, against 2.6.17-rc1-mm1,
+> allows jiffies to be updated from any CPU.
 
-This won't work - r4 is volatile across function calls, that is,
-stop_hz_timer() could change r4 and is not required to save and
-restore it.
+We have to be very careful here.  The code that keeps xtime and
+gettimeofday in sync relies on xtime being incremented as close as
+possible in time to when the timebase passes specific values.  Since
+we currently stagger the timer interrupts for the cpus throughout a
+jiffy, having cpus other than the boot cpus calling do_timer will
+break this and introduce inaccuracies.  There are also implications
+for the stolen time accounting on shared-processor LPAR systems.
 
+I think we need to remove the staggering, thus having all cpus take
+their timer interrupt at the same time.  That way, any of them can
+call do_timer.  However we then have to be much more careful about
+possible contention, e.g. on xtime_lock.  Your patch has every cpu
+taking xtime_lock for writing rather than just the boot cpu.  I'd like
+to see if there is some way to avoid that (while still having just one
+cpu call do_timer, of course).
+
+Regards,
 Paul.
