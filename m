@@ -1,17 +1,17 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: cbe-oss-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Date: Fri, 7 Apr 2006 11:20:26 -0500
+To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 Subject: Re: [Cbe-oss-dev] [PATCH 4/5] powerpc: export symbols for page size
 	selection
-Date: Fri, 7 Apr 2006 18:03:01 +0200
+Message-ID: <20060407162026.GK952@pb15.lixom.net>
 References: <20060407150124.422051000@dyn-9-152-242-103.boeblingen.de.ibm.com>
 	<20060407152813.GA382@lst.de> <20060407154247.GJ952@pb15.lixom.net>
-In-Reply-To: <20060407154247.GJ952@pb15.lixom.net>
+	<200604071803.01836.arnd.bergmann@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200604071803.01836.arnd.bergmann@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200604071803.01836.arnd.bergmann@de.ibm.com>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 07 April 2006 17:42, Olof Johansson wrote:
-> Yeah, what's the need for that, really? It needs to know so much of
-> kernel internals that it's getting silly to allow it to be a module.
-> 
-It's still quite handy to have the actual file system as a module,
-because
+On Fri, Apr 07, 2006 at 06:03:01PM +0200, Arnd Bergmann wrote:
+> On Friday 07 April 2006 17:42, Olof Johansson wrote:
+> > Yeah, what's the need for that, really? It needs to know so much of
+> > kernel internals that it's getting silly to allow it to be a module.
+>
+> How about if I do a patch that always includes the base but not
+> the actual file system?
 
-a) the module is rather bloated atm, it's about 200kb including the
-   embedded spu code that it runs for context switch. I don't want
-   to burden the generic distros with that
-b) It simplifies development a bit to not have to reload the whole
-   kernel when making changes. Booting with all the HW debugger stuff
-   enabled takes quite a bit of time, especially when you have to
-   tunnel the binaries through our internal network ;-).
+Sounds like a decent tradeoff.
 
-We currently have two modules, and the base module has most of the
-stuff that has dependencies on exported symbols. The binary is
-25k on my system (with some debugging options enabled).
 
-How about if I do a patch that always includes the base but not
-the actual file system?
-
-	Arnd <><
+-Olof
