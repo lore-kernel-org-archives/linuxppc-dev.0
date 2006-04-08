@@ -1,34 +1,16 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de [83.120.0.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6117667B34
+Return-Path: <antonio.dibacco@aruba.it>
+Received: from smtpa3.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id 9926167B47
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Apr 2006 18:21:07 +1000 (EST)
-Received: from server.idefix.loc (ppp-82-135-78-215.mnet-online.de
-	[82.135.78.215]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.4/8.13.4) with ESMTP id k388L1Ve047718
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 8 Apr 2006 10:21:02 +0200 (CEST)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.loc with local (Exim 4.60 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1FS8gn-000E9n-9x
-	for linuxppc-embedded@ozlabs.org; Sat, 08 Apr 2006 10:21:01 +0200
-Date: Sat, 8 Apr 2006 10:21:00 +0200
-From: Matthias Fechner <idefix@fechner.net>
+	Sun,  9 Apr 2006 05:01:03 +1000 (EST)
+From: Antonio Di Bacco <antonio.dibacco@aruba.it>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: freescale lite 5200 board and kernel 2.6
-Message-ID: <20060408082100.GA54030@server.idefix.loc>
-References: <20060405210654.GA16848@raptus.dandreoli.com>
-	<20060405212741.GC61331@server.idefix.loc>
-	<20060406221056.GA15540@raptus.dandreoli.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="ibTvN161/egqYuK8"
-In-Reply-To: <20060406221056.GA15540@raptus.dandreoli.com>
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+Subject: slram
+Date: Sat, 8 Apr 2006 21:02:35 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200604082102.35245.antonio.dibacco@aruba.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -39,119 +21,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Anyone knows what slram driver is meant for?
 
---ibTvN161/egqYuK8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hello Domenico,
-
-* Domenico Andreoli <cavokz@gmail.com> [07-04-06 00:10]:
-> kernel is built following the instructions on your wiki, i attached
-> the config file. please have a look, let me know if any check/test may
-> be advised.
-
-sry, but I have now time to try your kernel config, but I attached
-mine which is working fine for me.
-Maybe this helps you.
-
-
-Best regards,
-Matthias
-
---ibTvN161/egqYuK8
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="config-mpc52xx.bz2"
-Content-Transfer-Encoding: base64
-
-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
-
---ibTvN161/egqYuK8--
+Bye,
+Antonio.
