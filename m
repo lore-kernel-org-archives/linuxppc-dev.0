@@ -1,28 +1,34 @@
-Return-Path: <aidan@nicta.com.au>
-Received: from mail01.syd.optusnet.com.au (mail01.syd.optusnet.com.au
-	[211.29.132.182])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B50B567A70
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de [83.120.0.234])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6117667B34
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Apr 2006 08:42:19 +1000 (EST)
-Received: from [192.168.1.11] (c220-237-11-187.randw1.nsw.optusnet.com.au
-	[220.237.11.187])
-	by mail01.syd.optusnet.com.au (8.12.11/8.12.11) with ESMTP id
-	k37MgHOf015438
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Sat, 8 Apr 2006 08:42:18 +1000
-Message-ID: <4436EAC9.9000904@nicta.com.au>
-Date: Sat, 08 Apr 2006 08:42:17 +1000
-From: Aidan Williams <aidan@nicta.com.au>
-MIME-Version: 1.0
+	Sat,  8 Apr 2006 18:21:07 +1000 (EST)
+Received: from server.idefix.loc (ppp-82-135-78-215.mnet-online.de
+	[82.135.78.215]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.4/8.13.4) with ESMTP id k388L1Ve047718
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 8 Apr 2006 10:21:02 +0200 (CEST)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.loc with local (Exim 4.60 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1FS8gn-000E9n-9x
+	for linuxppc-embedded@ozlabs.org; Sat, 08 Apr 2006 10:21:01 +0200
+Date: Sat, 8 Apr 2006 10:21:00 +0200
+From: Matthias Fechner <idefix@fechner.net>
 To: linuxppc-embedded@ozlabs.org
-Subject: Virtex-4 FX12 Mini-Module support
-References: <4417CEB8.40004@nicta.com.au> <4417FBA9.1030101@petalogix.com>
-	<4418896E.4040007@nicta.com.au> <44189045.3010905@petalogix.com>
-	<4418BA71.7040208@nicta.com.au> <4418EA57.6060308@petalogix.com>
-In-Reply-To: <4418EA57.6060308@petalogix.com>
-Content-Type: multipart/mixed; boundary="------------030300060300060800080703"
+Subject: Re: freescale lite 5200 board and kernel 2.6
+Message-ID: <20060408082100.GA54030@server.idefix.loc>
+References: <20060405210654.GA16848@raptus.dandreoli.com>
+	<20060405212741.GC61331@server.idefix.loc>
+	<20060406221056.GA15540@raptus.dandreoli.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="ibTvN161/egqYuK8"
+In-Reply-To: <20060406221056.GA15540@raptus.dandreoli.com>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,602 +39,119 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030300060300060800080703
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Hi All,
+--ibTvN161/egqYuK8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I'm using the UQ powerpc uclinux code on the
-Memec Virtex-4 FX12 Mini-Module Development Kit.
+Hello Domenico,
 
-I have attached a patch with our modifications:
+* Domenico Andreoli <cavokz@gmail.com> [07-04-06 00:10]:
+> kernel is built following the instructions on your wiki, i attached
+> the config file. please have a look, let me know if any check/test may
+> be advised.
 
-   - switch to set cache policy (OFF, WriteThru, WriteBack)
-   - switch to enable PPC405 CPU_213 errata workaround
-   - cosmetic update to cputable
-   - view ccr0 register in /proc/cpu
-
-The patch is against:
-http://www.itee.uq.edu.au/~pml/uclinux_powerpc/linuxppc-2.4-20051021.tgz
+sry, but I have now time to try your kernel config, but I attached
+mine which is working fine for me.
+Maybe this helps you.
 
 
-The specific modules/chips we're using have a silicon bug,
-See the euphemistically named "Solution 13:"
-http://www.xilinx.com/xlnx/xil_ans_display.jsp?iLanguageID=1&iCountryID=1&getPagePath=20658
+Best regards,
+Matthias
 
-The board boots and runs reliably with the caches OFF.
-WriteThru and WriteBack caching cause memory corruption and
-this is why we implemented the cache policy switch.
+--ibTvN161/egqYuK8
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="config-mpc52xx.bz2"
+Content-Transfer-Encoding: base64
 
+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
 
-regards
-	aidan
-____
-:wq!
-
-
---------------030300060300060800080703
-Content-Type: plain/text; x-mac-type="0"; x-mac-creator="0";
- name="virtex-4-fx12-minimodule.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="virtex-4-fx12-minimodule.txt"
-
-Index: arch/ppc/config.in
-===================================================================
-RCS file: /cvs/linuxppc-2.4/arch/ppc/config.in,v
-retrieving revision 1.1.1.1
-retrieving revision 1.3
-diff -u -r1.1.1.1 -r1.3
---- arch/ppc/config.in	17 Mar 2006 05:19:36 -0000	1.1.1.1
-+++ arch/ppc/config.in	20 Mar 2006 05:20:38 -0000	1.3
-@@ -41,6 +41,13 @@
-   define_bool CONFIG_4xx y
- fi
- 
-+if [ "$CONFIG_40x" = "y" ]; then
-+  choice 'Cache Mode'				\
-+  	"OFF		CONFIG_CACHE_OFF	\
-+	 WriteThru	CONFIG_CACHE_WRITETHRU	\
-+	 WriteBack	CONFIG_CACHE_WRITEBACK"	OFF
-+fi
-+
- if [ "$CONFIG_6xx" = "y" ]; then
-   bool 'MPC8260 CPM Support' CONFIG_8260
- fi
-@@ -365,6 +372,10 @@
-     define_bool CONFIG_405 y
-   fi
- 
-+  if [ "$CONFIG_XILINX_AUTO" = "y" ]; then
-+    bool 'Virtex-4 cache bug (CPU_213)' CONFIG_VIRTEX4_CPU_213_BUG
-+  fi
-+
-   if [ "$CONFIG_VIRTEX_II_PRO" = "y" ]; then
-     define_bool CONFIG_XILINX_OCP y
-     define_bool CONFIG_PPC_OCP y
-Index: arch/ppc/boot/simple/embed_config.c
-===================================================================
-RCS file: /cvs/linuxppc-2.4/arch/ppc/boot/simple/embed_config.c,v
-retrieving revision 1.1.1.1
-retrieving revision 1.2
-diff -u -r1.1.1.1 -r1.2
---- arch/ppc/boot/simple/embed_config.c	17 Mar 2006 05:19:36 -0000	1.1.1.1
-+++ arch/ppc/boot/simple/embed_config.c	17 Mar 2006 06:01:25 -0000	1.2
-@@ -895,7 +895,7 @@
-                bd->bi_enetaddr[2] = 0x35;
-                bd->bi_enetaddr[3] = 0x00;
-                bd->bi_enetaddr[4] = 0x22;
--               bd->bi_enetaddr[5] = 0x00;
-+               bd->bi_enetaddr[5] = 0x01;
-        }
-        timebase_period_ns = 1000000000 / bd->bi_tbfreq;
- }
-Index: arch/ppc/boot/simple/head.S
-===================================================================
-RCS file: /cvs/linuxppc-2.4/arch/ppc/boot/simple/head.S,v
-retrieving revision 1.1.1.1
-retrieving revision 1.3
-diff -u -r1.1.1.1 -r1.3
---- arch/ppc/boot/simple/head.S	17 Mar 2006 05:19:36 -0000	1.1.1.1
-+++ arch/ppc/boot/simple/head.S	20 Mar 2006 05:20:40 -0000	1.3
-@@ -64,6 +64,13 @@
- 			 */
- #endif
- 
-+#ifdef	CONFIG_VIRTEX4_CPU_213_BUG
-+	/* PPC errata 213: only for Virtex-4 FX */
-+	mfccr0  r0
-+	oris    r0,r0,0x50000000@h
-+	mtccr0  r0
-+#endif
-+
- 	mflr	r3	/* Save our actual starting address. */
- 
- 	/* The following functions we call must not modify r3 or r4.....
-Index: arch/ppc/kernel/cputable.c
-===================================================================
-RCS file: /cvs/linuxppc-2.4/arch/ppc/kernel/cputable.c,v
-retrieving revision 1.1.1.1
-retrieving revision 1.2
-diff -u -r1.1.1.1 -r1.2
---- arch/ppc/kernel/cputable.c	17 Mar 2006 05:19:36 -0000	1.1.1.1
-+++ arch/ppc/kernel/cputable.c	17 Mar 2006 06:01:27 -0000	1.2
-@@ -508,7 +508,14 @@
- 	0, /*__setup_cpu_405 */
-     },
-      {	/* Xilinx Virtex-II Pro  */
--	0xffff0000, 0x20010000, "Virtex-II Pro",
-+	0xfffff000, 0x20010000, "Virtex-II Pro",
-+	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_DOZE,
-+	PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
-+	32, 32,
-+	0, /*__setup_cpu_405 */
-+     },
-+     {	/* Xilinx Virtex-4 FX  */
-+	0xfffff000, 0x20011000, "Virtex-4 FX",
- 	CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | CPU_FTR_CAN_DOZE,
- 	PPC_FEATURE_32 | PPC_FEATURE_HAS_MMU | PPC_FEATURE_HAS_4xxMAC,
- 	32, 32,
-Index: arch/ppc/kernel/head_4xx.S
-===================================================================
-RCS file: /cvs/linuxppc-2.4/arch/ppc/kernel/head_4xx.S,v
-retrieving revision 1.1.1.1
-retrieving revision 1.2
-diff -u -r1.1.1.1 -r1.2
---- arch/ppc/kernel/head_4xx.S	17 Mar 2006 05:19:36 -0000	1.1.1.1
-+++ arch/ppc/kernel/head_4xx.S	17 Mar 2006 06:01:27 -0000	1.2
-@@ -46,6 +46,19 @@
- #define	STND_EXC	0
- #define	CRIT_EXC	1
- 
-+#if	defined(CONFIG_CACHE_OFF)
-+#define	_PAGE_CACHE	_PAGE_NO_CACHE	/* TLB_I */
-+#warning CONFIG_CACHE_CACHE_OFF is defined
-+#elif	defined(CONFIG_CACHE_WRITETHRU)
-+#define	_PAGE_CACHE	_PAGE_WRITETHRU	/* TLB_W */
-+#warning CONFIG_CACHE_WRITETHRU is defined
-+#elif	defined(CONFIG_CACHE_WRITEBACK)
-+#define	_PAGE_CACHE	0x0
-+#warning CONFIG_CACHE_WRITEBACK is defined
-+#else
-+#error	CONFIG_CACHE_XXX is not defined!
-+#endif
-+
- /* As with the other PowerPC ports, it is expected that when code
-  * execution begins here, the following registers contain valid, yet
-  * optional, information:
-@@ -304,7 +317,7 @@
- 	 */
- 	li	r22, 0x0ce2
- 	andc	r21, r21, r22		/* Make sure 20, 21 are zero */
--	ori	r21, r21, _PAGE_HWEXEC	/* make it executable */
-+	ori	r21, r21, _PAGE_HWEXEC|_PAGE_CACHE
- 
- 	/* find the TLB index that caused the fault.  It has to be here.
- 	*/
-@@ -791,7 +804,7 @@
- 	stw	r23, tlb_4xx_index@l(0)
- 
- 6:
--	ori	r21, r21, _PAGE_HWEXEC		/* make it executable */
-+	ori	r21, r21, _PAGE_HWEXEC|_PAGE_CACHE
- 	tlbwe	r21, r23, TLB_DATA		/* Load TLB LO */
- 
- 	/* Create EPN.  This is the faulting address plus a static
-@@ -1043,7 +1056,7 @@
- 	 * matter where they are loaded.
- 	 */
- 	clrrwi	r4,r4,10		/* Mask off the real page number */
--	ori	r4,r4,(TLB_WR | TLB_EX)	/* Set the write and execute bits */
-+	ori	r4,r4,(TLB_WR | TLB_EX | _PAGE_CACHE)	/* Set the write and execute bits */
- 
- 	clrrwi	r3,r3,10		/* Mask off the effective page number */
- 	ori	r3,r3,(TLB_VALID | TLB_PAGESZ(PAGESZ_16M))
-Index: arch/ppc/kernel/ppc4xx_setup.c
-===================================================================
-RCS file: /cvs/linuxppc-2.4/arch/ppc/kernel/ppc4xx_setup.c,v
-retrieving revision 1.1.1.1
-retrieving revision 1.2
-diff -u -r1.1.1.1 -r1.2
---- arch/ppc/kernel/ppc4xx_setup.c	17 Mar 2006 05:19:36 -0000	1.1.1.1
-+++ arch/ppc/kernel/ppc4xx_setup.c	17 Mar 2006 06:01:27 -0000	1.2
-@@ -129,6 +129,7 @@
- 	bd_t *bip = (bd_t *) __res;
- 
- 	seq_printf(m, "clock\t\t: %ldMHz\n", (long) bip->bi_intfreq / 1000000);
-+	seq_printf(m, "ccr0\t\t: 0x%08x\n", mfspr(SPRN_CCR0));
- 
- 	return 0;
- }
-Index: arch/ppc/mm/4xx_mmu.c
-===================================================================
-RCS file: /cvs/linuxppc-2.4/arch/ppc/mm/4xx_mmu.c,v
-retrieving revision 1.1.1.1
-retrieving revision 1.2
-diff -u -r1.1.1.1 -r1.2
---- arch/ppc/mm/4xx_mmu.c	17 Mar 2006 05:19:36 -0000	1.1.1.1
-+++ arch/ppc/mm/4xx_mmu.c	17 Mar 2006 06:01:33 -0000	1.2
-@@ -78,7 +78,12 @@
- 	 * handlers (which are run in real-mode).
- 	 */
- 
-+#ifdef	CONFIG_CACHE_WRITEBACK
-         mtspr(SPRN_DCWR, 0x00000000);	/* All caching is write-back */
-+#endif
-+#ifdef	CONFIG_CACHE_WRITETHRU
-+        mtspr(SPRN_DCWR, 0xffffffff);	/* All caching is write-thru */
-+#endif
- 
-         /*
- 	 * Cache instruction and data space where the exception
-@@ -92,6 +97,12 @@
- 	 * without flushing. -- Tom
- 	 */
- 
-+#if defined(CONFIG_CACHE_OFF)
-+        mtspr(SPRN_DCCR, 0x00000000);
-+        mtspr(SPRN_ICCR, 0x00000000);
-+#endif
-+#if defined(CONFIG_CACHE_WRITETHRU) || defined(CONFIG_CACHE_WRITEBACK)
-         mtspr(SPRN_DCCR, 0xF0000000);	/* 512 MB of data space at 0x0. */
-         mtspr(SPRN_ICCR, 0xF0000000);	/* 512 MB of instr. space at 0x0. */
-+#endif
- }
-Index: arch/ppc/platforms/xilinx_auto/auto-config.in
-===================================================================
-RCS file: /cvs/linuxppc-2.4/arch/ppc/platforms/xilinx_auto/auto-config.in,v
-retrieving revision 1.1.1.1
-retrieving revision 1.2
-diff -u -r1.1.1.1 -r1.2
---- arch/ppc/platforms/xilinx_auto/auto-config.in	17 Mar 2006 05:19:36 -0000	1.1.1.1
-+++ arch/ppc/platforms/xilinx_auto/auto-config.in	17 Mar 2006 06:01:33 -0000	1.2
-@@ -1,7 +1,7 @@
- ############################################################
- # 
- # CAUTION: This file is automatically generated by libgen.
--# Version: Xilinx EDK 7.1.2 EDK_H.12.5.1 
-+# Version: Xilinx EDK 8.1.01 EDK_I.19.5 
- # Description: uClinux Configuration File
- # 
- ############################################################
-@@ -10,26 +10,72 @@
- 
- # MAIN_MEMORY Settings
- define_hex CONFIG_XILINX_ERAM_START 0x00000000
--define_hex CONFIG_XILINX_ERAM_SIZE 0x10000000
-+define_hex CONFIG_XILINX_ERAM_SIZE 0x04000000
- 
- # System Clock Frequency
- define_int CONFIG_XILINX_CPU_CLOCK_FREQ 100000000
- 
- # Definitions for PPC405_0
- define_string CONFIG_XILINX_PPC405_0_INSTANCE ppc405_0
--define_hex CONFIG_XILINX_PPC405_0_ISOCM_DCR_BASEADDR 0x00000010
--define_hex CONFIG_XILINX_PPC405_0_ISOCM_DCR_HIGHADDR 0x00000013
--define_hex CONFIG_XILINX_PPC405_0_DSOCM_DCR_BASEADDR 0x00000020
--define_hex CONFIG_XILINX_PPC405_0_DSOCM_DCR_HIGHADDR 0x00000023
-+define_hex CONFIG_XILINX_PPC405_0_IDCR_BASEADDR 0x00000100
-+define_hex CONFIG_XILINX_PPC405_0_IDCR_HIGHADDR 0x0000010F
- define_int CONFIG_XILINX_PPC405_0_DISABLE_OPERAND_FORWARDING 1
--define_int CONFIG_XILINX_PPC405_0_DETERMINISTIMULT 0
- define_int CONFIG_XILINX_PPC405_0_MMU_ENABLE 1
--define_int CONFIG_XILINX_PPC405_0_DCR_RESYNC 0
-+define_int CONFIG_XILINX_PPC405_0_DETERMINISTIMULT 0
-+define_int CONFIG_XILINX_PPC405_0_PLBSYNCBYPASS 1
-+define_hex CONFIG_XILINX_PPC405_0_APU_CONTROL 0x0000DE00
-+define_hex CONFIG_XILINX_PPC405_0_APU_UDI_1 0x00A18983
-+define_hex CONFIG_XILINX_PPC405_0_APU_UDI_2 0x00A38983
-+define_hex CONFIG_XILINX_PPC405_0_APU_UDI_3 0x00A589C3
-+define_hex CONFIG_XILINX_PPC405_0_APU_UDI_4 0x00A789C3
-+define_hex CONFIG_XILINX_PPC405_0_APU_UDI_5 0x00A98C03
-+define_hex CONFIG_XILINX_PPC405_0_APU_UDI_6 0x00AB8C03
-+define_hex CONFIG_XILINX_PPC405_0_APU_UDI_7 0x00AD8C43
-+define_hex CONFIG_XILINX_PPC405_0_APU_UDI_8 0x00AF8C43
-+define_hex CONFIG_XILINX_PPC405_0_PVR_HIGH 0x00000000
-+define_hex CONFIG_XILINX_PPC405_0_PVR_LOW 0x00000000
- define_string CONFIG_XILINX_PPC405_0_INSTANCE ppc405_0
--define_string CONFIG_XILINX_PPC405_0_HW_VER 2.00.c
-+define_string CONFIG_XILINX_PPC405_0_HW_VER 1.01.a
-+
-+# Definitions for V34_0
-+define_string CONFIG_XILINX_V34_0_INSTANCE plb
-+define_int CONFIG_XILINX_V34_0_PLB_NUM_MASTERS 2
-+define_int CONFIG_XILINX_V34_0_PLB_NUM_SLAVES 2
-+define_int CONFIG_XILINX_V34_0_PLB_MID_WIDTH 1
-+define_int CONFIG_XILINX_V34_0_PLB_AWIDTH 32
-+define_int CONFIG_XILINX_V34_0_PLB_DWIDTH 64
-+define_int CONFIG_XILINX_V34_0_DCR_INTFCE 0
-+define_hex CONFIG_XILINX_V34_0_BASEADDR 0x000003FF
-+define_hex CONFIG_XILINX_V34_0_HIGHADDR 0x00000000
-+define_int CONFIG_XILINX_V34_0_DCR_AWIDTH 10
-+define_int CONFIG_XILINX_V34_0_DCR_DWIDTH 32
-+define_int CONFIG_XILINX_V34_0_EXT_RESET_HIGH 1
-+define_int CONFIG_XILINX_V34_0_IRQ_ACTIVE 1
-+define_int CONFIG_XILINX_V34_0_NUM_OPBCLK_PLB2OPB_REARB 5
-+define_string CONFIG_XILINX_V34_0_INSTANCE plb
-+define_string CONFIG_XILINX_V34_0_HW_VER 1.02.a
-+
-+# Definitions for V20_0
-+define_string CONFIG_XILINX_V20_0_INSTANCE opb
-+define_hex CONFIG_XILINX_V20_0_BASEADDR 0xFFFFFFFF
-+define_hex CONFIG_XILINX_V20_0_HIGHADDR 0x00000000
-+define_int CONFIG_XILINX_V20_0_OPB_AWIDTH 32
-+define_int CONFIG_XILINX_V20_0_OPB_DWIDTH 32
-+define_int CONFIG_XILINX_V20_0_NUM_MASTERS 1
-+define_int CONFIG_XILINX_V20_0_NUM_SLAVES 4
-+define_int CONFIG_XILINX_V20_0_USE_LUT_OR 1
-+define_int CONFIG_XILINX_V20_0_EXT_RESET_HIGH 1
-+define_int CONFIG_XILINX_V20_0_DYNAM_PRIORITY 0
-+define_int CONFIG_XILINX_V20_0_PARK 0
-+define_int CONFIG_XILINX_V20_0_PROINTRFCE 0
-+define_int CONFIG_XILINX_V20_0_REG_GRANTS 1
-+define_int CONFIG_XILINX_V20_0_DEV_BLK_ID 0
-+define_int CONFIG_XILINX_V20_0_DEV_MIR_ENABLE 0
-+define_string CONFIG_XILINX_V20_0_INSTANCE opb
-+define_string CONFIG_XILINX_V20_0_HW_VER 1.10.c
- 
- # Definitions for UARTLITE_0
--define_string CONFIG_XILINX_UARTLITE_0_INSTANCE RS232_Uart_1
-+define_string CONFIG_XILINX_UARTLITE_0_INSTANCE RS232
- define_hex CONFIG_XILINX_UARTLITE_0_BASEADDR 0x40600000
- define_hex CONFIG_XILINX_UARTLITE_0_HIGHADDR 0x4060FFFF
- define_int CONFIG_XILINX_UARTLITE_0_OPB_DWIDTH 32
-@@ -39,134 +85,109 @@
- define_int CONFIG_XILINX_UARTLITE_0_BAUDRATE 9600
- define_int CONFIG_XILINX_UARTLITE_0_USE_PARITY 0
- define_int CONFIG_XILINX_UARTLITE_0_ODD_PARITY 0
--define_string CONFIG_XILINX_UARTLITE_0_INSTANCE RS232_Uart_1
-+define_string CONFIG_XILINX_UARTLITE_0_INSTANCE RS232
- define_string CONFIG_XILINX_UARTLITE_0_HW_VER 1.00.b
--define_int CONFIG_XILINX_UARTLITE_0_IRQ 2
--
--# Definitions for TIMER_0
--define_string CONFIG_XILINX_TIMER_0_INSTANCE opb_timer_1
--define_string CONFIG_XILINX_TIMER_0_FAMILY virtex2p
--define_int CONFIG_XILINX_TIMER_0_COUNT_WIDTH 32
--define_int CONFIG_XILINX_TIMER_0_ONE_TIMER_ONLY 1
--define_int CONFIG_XILINX_TIMER_0_TRIG0_ASSERT 1
--define_int CONFIG_XILINX_TIMER_0_TRIG1_ASSERT 1
--define_int CONFIG_XILINX_TIMER_0_GEN0_ASSERT 1
--define_int CONFIG_XILINX_TIMER_0_GEN1_ASSERT 1
--define_int CONFIG_XILINX_TIMER_0_OPB_AWIDTH 32
--define_int CONFIG_XILINX_TIMER_0_OPB_DWIDTH 32
--define_hex CONFIG_XILINX_TIMER_0_BASEADDR 0x41C00000
--define_hex CONFIG_XILINX_TIMER_0_HIGHADDR 0x41C0FFFF
--define_string CONFIG_XILINX_TIMER_0_INSTANCE opb_timer_1
--define_string CONFIG_XILINX_TIMER_0_HW_VER 1.00.b
--define_int CONFIG_XILINX_TIMER_0_IRQ 0
--
--# Definitions for INTC_0
--define_string CONFIG_XILINX_INTC_0_INSTANCE opb_intc_0
--define_string CONFIG_XILINX_INTC_0_FAMILY virtex2p
--define_int CONFIG_XILINX_INTC_0_Y 0
--define_int CONFIG_XILINX_INTC_0_X 0
--define_string CONFIG_XILINX_INTC_0_U_SET intc
--define_int CONFIG_XILINX_INTC_0_OPB_AWIDTH 32
--define_int CONFIG_XILINX_INTC_0_OPB_DWIDTH 32
--define_hex CONFIG_XILINX_INTC_0_BASEADDR 0x41200000
--define_hex CONFIG_XILINX_INTC_0_HIGHADDR 0x4120FFFF
--define_int CONFIG_XILINX_INTC_0_NUM_INTR_INPUTS 3
--define_hex CONFIG_XILINX_INTC_0_KIND_OF_INTR 0x00000004
--define_hex CONFIG_XILINX_INTC_0_KIND_OF_EDGE 0x00000004
--define_hex CONFIG_XILINX_INTC_0_KIND_OF_LVL 0x00000003
--define_int CONFIG_XILINX_INTC_0_HAS_IPR 1
--define_int CONFIG_XILINX_INTC_0_HAS_SIE 1
--define_int CONFIG_XILINX_INTC_0_HAS_CIE 1
--define_int CONFIG_XILINX_INTC_0_HAS_IVR 1
--define_int CONFIG_XILINX_INTC_0_IRQ_IS_LEVEL 1
--define_int CONFIG_XILINX_INTC_0_IRQ_ACTIVE 1
--define_string CONFIG_XILINX_INTC_0_INSTANCE opb_intc_0
--define_string CONFIG_XILINX_INTC_0_HW_VER 1.00.c
-+define_int CONFIG_XILINX_UARTLITE_0_IRQ 1
- 
- # Definitions for ETHERNET_0
- define_string CONFIG_XILINX_ETHERNET_0_INSTANCE Ethernet_MAC
--define_int CONFIG_XILINX_ETHERNET_0_DEV_BLK_ID 0
--define_int CONFIG_XILINX_ETHERNET_0_PLB_CLK_PERIOD_PS 10000
--define_string CONFIG_XILINX_ETHERNET_0_FAMILY virtex2p
--define_int CONFIG_XILINX_ETHERNET_0_IPIF_FIFO_DEPTH 32768
--define_hex CONFIG_XILINX_ETHERNET_0_BASEADDR 0x80400000
--define_hex CONFIG_XILINX_ETHERNET_0_HIGHADDR 0x8040FFFF
-+define_int CONFIG_XILINX_ETHERNET_0_DEV_BLK_ID 1
- define_int CONFIG_XILINX_ETHERNET_0_DEV_MIR_ENABLE 1
-+define_hex CONFIG_XILINX_ETHERNET_0_BASEADDR 0x40C00000
-+define_hex CONFIG_XILINX_ETHERNET_0_HIGHADDR 0x40C0FFFF
- define_int CONFIG_XILINX_ETHERNET_0_RESET_PRESENT 1
- define_int CONFIG_XILINX_ETHERNET_0_INCLUDE_DEV_PENCODER 1
- define_int CONFIG_XILINX_ETHERNET_0_DMA_PRESENT 1
- define_int CONFIG_XILINX_ETHERNET_0_DMA_INTR_COALESCE 1
--define_int CONFIG_XILINX_ETHERNET_0_PLB_NUM_MASTERS 2
--define_int CONFIG_XILINX_ETHERNET_0_PLB_MID_WIDTH 1
--define_int CONFIG_XILINX_ETHERNET_0_PLB_AWIDTH 32
--define_int CONFIG_XILINX_ETHERNET_0_PLB_DWIDTH 64
--define_hex CONFIG_XILINX_ETHERNET_0_MIIM_CLKDVD 0x00000013
-+define_int CONFIG_XILINX_ETHERNET_0_OPB_AWIDTH 32
-+define_int CONFIG_XILINX_ETHERNET_0_OPB_DWIDTH 32
-+define_int CONFIG_XILINX_ETHERNET_0_OPB_CLK_PERIOD_PS 10000
-+define_string CONFIG_XILINX_ETHERNET_0_FAMILY virtex4
-+define_int CONFIG_XILINX_ETHERNET_0_IPIF_RDFIFO_DEPTH 32768
-+define_int CONFIG_XILINX_ETHERNET_0_IPIF_WRFIFO_DEPTH 32768
-+define_hex CONFIG_XILINX_ETHERNET_0_MIIM_CLKDVD 0x0000001F
- define_int CONFIG_XILINX_ETHERNET_0_SOURCE_ADDR_INSERT_EXIST 1
- define_int CONFIG_XILINX_ETHERNET_0_PAD_INSERT_EXIST 1
- define_int CONFIG_XILINX_ETHERNET_0_FCS_INSERT_EXIST 1
- define_int CONFIG_XILINX_ETHERNET_0_MAFIFO_DEPTH 64
-+define_int CONFIG_XILINX_ETHERNET_0_MAFIFO_BRAM_1_SRL_0 0
- define_int CONFIG_XILINX_ETHERNET_0_HALF_DUPLEX_EXIST 1
- define_int CONFIG_XILINX_ETHERNET_0_ERR_COUNT_EXIST 1
-+define_int CONFIG_XILINX_ETHERNET_0_CAM_EXIST 0
-+define_int CONFIG_XILINX_ETHERNET_0_CAM_BRAM_0_SRL_1 1
-+define_int CONFIG_XILINX_ETHERNET_0_JUMBO_EXIST 0
- define_int CONFIG_XILINX_ETHERNET_0_MII_EXIST 1
- define_string CONFIG_XILINX_ETHERNET_0_INSTANCE Ethernet_MAC
--define_string CONFIG_XILINX_ETHERNET_0_HW_VER 1.01.a
--define_int CONFIG_XILINX_ETHERNET_0_IRQ 1
-+define_string CONFIG_XILINX_ETHERNET_0_HW_VER 1.02.a
-+define_int CONFIG_XILINX_ETHERNET_0_IRQ 0
- 
- # Definitions for DDR_0
--define_string CONFIG_XILINX_DDR_0_INSTANCE DDR_256MB_32MX64_rank1_row13_col10_cl2_5
--define_int CONFIG_XILINX_DDR_0_INCLUDE_BURST_CACHELN_SUPPORT 1
-+define_string CONFIG_XILINX_DDR_0_INSTANCE DDR_SDRAM_32Mx16
-+define_int CONFIG_XILINX_DDR_0_DDR_ASYNSUPPORT 0
-+define_int CONFIG_XILINX_DDR_0_INCLUDE_BURST_SUPPORT 0
- define_int CONFIG_XILINX_DDR_0_REG_DIMM 0
-+define_int CONFIG_XILINX_DDR_0_EXTRA_TSU 0
- define_int CONFIG_XILINX_DDR_0_NUM_BANKS_MEM 1
--define_int CONFIG_XILINX_DDR_0_NUM_CLK_PAIRS 4
--define_string CONFIG_XILINX_DDR_0_FAMILY virtex2p
--define_int CONFIG_XILINX_DDR_0_INCLUDE_ECSUPPORT 0
--define_int CONFIG_XILINX_DDR_0_ENABLE_ECREG 1
--define_int CONFIG_XILINX_DDR_0_ECDEFAULT_ON 1
--define_int CONFIG_XILINX_DDR_0_INCLUDE_ECINTR 0
--define_int CONFIG_XILINX_DDR_0_INCLUDE_ECTEST 0
--define_int CONFIG_XILINX_DDR_0_ECSETHRESHOLD 1
--define_int CONFIG_XILINX_DDR_0_ECDETHRESHOLD 1
--define_int CONFIG_XILINX_DDR_0_ECPETHRESHOLD 1
--define_int CONFIG_XILINX_DDR_0_NUM_ECBITS 7
--define_int CONFIG_XILINX_DDR_0_DDR_TMRD 20000
--define_int CONFIG_XILINX_DDR_0_DDR_TWR 20000
-+define_int CONFIG_XILINX_DDR_0_NUM_CLK_PAIRS 1
-+define_string CONFIG_XILINX_DDR_0_FAMILY virtex4
-+define_int CONFIG_XILINX_DDR_0_DDR_TMRD 15000
-+define_int CONFIG_XILINX_DDR_0_DDR_TWR 15000
- define_int CONFIG_XILINX_DDR_0_DDR_TWTR 1
--define_int CONFIG_XILINX_DDR_0_DDR_TRAS 60000
--define_int CONFIG_XILINX_DDR_0_DDR_TRC 90000
--define_int CONFIG_XILINX_DDR_0_DDR_TRFC 100000
--define_int CONFIG_XILINX_DDR_0_DDR_TRCD 30000
--define_int CONFIG_XILINX_DDR_0_DDR_TRRD 20000
--define_int CONFIG_XILINX_DDR_0_DDR_TREFC 70300000
-+define_int CONFIG_XILINX_DDR_0_DDR_TRAS 40000
-+define_int CONFIG_XILINX_DDR_0_DDR_TRC 65000
-+define_int CONFIG_XILINX_DDR_0_DDR_TRFC 75000
-+define_int CONFIG_XILINX_DDR_0_DDR_TRCD 20000
-+define_int CONFIG_XILINX_DDR_0_DDR_TRRD 15000
-+define_int CONFIG_XILINX_DDR_0_DDR_TREFC 70300
- define_int CONFIG_XILINX_DDR_0_DDR_TREFI 7800000
--define_int CONFIG_XILINX_DDR_0_DDR_TRP 30000
-+define_int CONFIG_XILINX_DDR_0_DDR_TRP 20000
- define_int CONFIG_XILINX_DDR_0_DDR_CAS_LAT 2
--define_int CONFIG_XILINX_DDR_0_DDR_DWIDTH 64
-+define_int CONFIG_XILINX_DDR_0_DDR_DWIDTH 16
- define_int CONFIG_XILINX_DDR_0_DDR_AWIDTH 13
- define_int CONFIG_XILINX_DDR_0_DDR_COL_AWIDTH 10
- define_int CONFIG_XILINX_DDR_0_DDR_BANK_AWIDTH 2
- define_hex CONFIG_XILINX_DDR_0_MEM0_BASEADDR 0x00000000
--define_hex CONFIG_XILINX_DDR_0_MEM0_HIGHADDR 0x0FFFFFFF
-+define_hex CONFIG_XILINX_DDR_0_MEM0_HIGHADDR 0x03FFFFFF
- define_hex CONFIG_XILINX_DDR_0_MEM1_BASEADDR 0xFFFFFFFF
- define_hex CONFIG_XILINX_DDR_0_MEM1_HIGHADDR 0x00000000
- define_hex CONFIG_XILINX_DDR_0_MEM2_BASEADDR 0xFFFFFFFF
- define_hex CONFIG_XILINX_DDR_0_MEM2_HIGHADDR 0x00000000
- define_hex CONFIG_XILINX_DDR_0_MEM3_BASEADDR 0xFFFFFFFF
- define_hex CONFIG_XILINX_DDR_0_MEM3_HIGHADDR 0x00000000
--define_hex CONFIG_XILINX_DDR_0_ECBASEADDR 0xFFFFFFFF
--define_hex CONFIG_XILINX_DDR_0_ECHIGHADDR 0x00000000
--define_int CONFIG_XILINX_DDR_0_PLB_NUM_MASTERS 2
--define_int CONFIG_XILINX_DDR_0_PLB_MID_WIDTH 1
--define_int CONFIG_XILINX_DDR_0_PLB_AWIDTH 32
--define_int CONFIG_XILINX_DDR_0_PLB_DWIDTH 64
--define_int CONFIG_XILINX_DDR_0_PLB_CLK_PERIOD_PS 10000
-+define_int CONFIG_XILINX_DDR_0_OPB_DWIDTH 32
-+define_int CONFIG_XILINX_DDR_0_OPB_AWIDTH 32
-+define_int CONFIG_XILINX_DDR_0_OPB_CLK_PERIOD_PS 10000
- define_int CONFIG_XILINX_DDR_0_SIM_INIT_TIME_PS 200000000
--define_string CONFIG_XILINX_DDR_0_INSTANCE DDR_256MB_32MX64_rank1_row13_col10_cl2_5
--define_string CONFIG_XILINX_DDR_0_HW_VER 1.11.a
-+define_string CONFIG_XILINX_DDR_0_INSTANCE DDR_SDRAM_32Mx16
-+define_string CONFIG_XILINX_DDR_0_HW_VER 2.00.b
-+
-+# Definitions for INTC_0
-+define_string CONFIG_XILINX_INTC_0_INSTANCE opb_intc_0
-+define_string CONFIG_XILINX_INTC_0_FAMILY virtex4
-+define_int CONFIG_XILINX_INTC_0_Y 0
-+define_int CONFIG_XILINX_INTC_0_X 0
-+define_string CONFIG_XILINX_INTC_0_U_SET intc
-+define_int CONFIG_XILINX_INTC_0_OPB_AWIDTH 32
-+define_int CONFIG_XILINX_INTC_0_OPB_DWIDTH 32
-+define_hex CONFIG_XILINX_INTC_0_BASEADDR 0x41200000
-+define_hex CONFIG_XILINX_INTC_0_HIGHADDR 0x4120FFFF
-+define_int CONFIG_XILINX_INTC_0_NUM_INTR_INPUTS 2
-+define_hex CONFIG_XILINX_INTC_0_KIND_OF_INTR 0x00000002
-+define_hex CONFIG_XILINX_INTC_0_KIND_OF_EDGE 0x00000002
-+define_hex CONFIG_XILINX_INTC_0_KIND_OF_LVL 0x00000001
-+define_int CONFIG_XILINX_INTC_0_HAS_IPR 1
-+define_int CONFIG_XILINX_INTC_0_HAS_SIE 1
-+define_int CONFIG_XILINX_INTC_0_HAS_CIE 1
-+define_int CONFIG_XILINX_INTC_0_HAS_IVR 1
-+define_int CONFIG_XILINX_INTC_0_IRQ_IS_LEVEL 1
-+define_int CONFIG_XILINX_INTC_0_IRQ_ACTIVE 1
-+define_string CONFIG_XILINX_INTC_0_INSTANCE opb_intc_0
-+define_string CONFIG_XILINX_INTC_0_HW_VER 1.00.c
- 
- # Definitions for BRAM_IF_CNTLR_0
- define_string CONFIG_XILINX_BRAM_IF_CNTLR_0_INSTANCE plb_bram_if_cntlr_1
- define_int CONFIG_XILINX_BRAM_IF_CNTLR_0_NUM_MASTERS 2
--define_hex CONFIG_XILINX_BRAM_IF_CNTLR_0_BASEADDR 0xFFFFC000
-+define_hex CONFIG_XILINX_BRAM_IF_CNTLR_0_BASEADDR 0xFFFF0000
- define_hex CONFIG_XILINX_BRAM_IF_CNTLR_0_HIGHADDR 0xFFFFFFFF
- define_int CONFIG_XILINX_BRAM_IF_CNTLR_0_INCLUDE_BURST_CACHELN_SUPPORT 0
- define_int CONFIG_XILINX_BRAM_IF_CNTLR_0_PLB_DWIDTH 64
-@@ -176,31 +197,12 @@
- define_string CONFIG_XILINX_BRAM_IF_CNTLR_0_INSTANCE plb_bram_if_cntlr_1
- define_string CONFIG_XILINX_BRAM_IF_CNTLR_0_HW_VER 1.00.b
- 
--# Definitions for DSBRAM_IF_CNTLR_0
--define_string CONFIG_XILINX_DSBRAM_IF_CNTLR_0_INSTANCE docm_cntlr
--define_hex CONFIG_XILINX_DSBRAM_IF_CNTLR_0_BASEADDR 0x28800000
--define_hex CONFIG_XILINX_DSBRAM_IF_CNTLR_0_HIGHADDR 0x28803FFF
--define_int CONFIG_XILINX_DSBRAM_IF_CNTLR_0_BRAM_EN 0
--define_int CONFIG_XILINX_DSBRAM_IF_CNTLR_0_RANGECHECK 0
--define_string CONFIG_XILINX_DSBRAM_IF_CNTLR_0_INSTANCE docm_cntlr
--define_string CONFIG_XILINX_DSBRAM_IF_CNTLR_0_HW_VER 3.00.a
--
--# Definitions for ISBRAM_IF_CNTLR_0
--define_string CONFIG_XILINX_ISBRAM_IF_CNTLR_0_INSTANCE iocm_cntlr
--define_hex CONFIG_XILINX_ISBRAM_IF_CNTLR_0_BASEADDR 0xE8800000
--define_hex CONFIG_XILINX_ISBRAM_IF_CNTLR_0_HIGHADDR 0xE8801FFF
--define_int CONFIG_XILINX_ISBRAM_IF_CNTLR_0_BRAM_EN 0
--define_int CONFIG_XILINX_ISBRAM_IF_CNTLR_0_RANGECHECK 0
--define_string CONFIG_XILINX_ISBRAM_IF_CNTLR_0_INSTANCE iocm_cntlr
--define_string CONFIG_XILINX_ISBRAM_IF_CNTLR_0_HW_VER 3.00.a
--
- # Peripheral counts
--define_int CONFIG_XILINX_DSBRAM_IF_CNTLR_NUM_INSTANCES 1
--define_int CONFIG_XILINX_TIMER_NUM_INSTANCES 1
--define_int CONFIG_XILINX_ISBRAM_IF_CNTLR_NUM_INSTANCES 1
-+define_int CONFIG_XILINX_V20_NUM_INSTANCES 1
-+define_int CONFIG_XILINX_V34_NUM_INSTANCES 1
- define_int CONFIG_XILINX_BRAM_IF_CNTLR_NUM_INSTANCES 1
--define_int CONFIG_XILINX_DDR_NUM_INSTANCES 1
- define_int CONFIG_XILINX_INTC_NUM_INSTANCES 1
-+define_int CONFIG_XILINX_DDR_NUM_INSTANCES 1
- define_int CONFIG_XILINX_UARTLITE_NUM_INSTANCES 1
- define_int CONFIG_XILINX_ETHERNET_NUM_INSTANCES 1
- 
-Index: arch/ppc/platforms/xilinx_auto/xilinx_auto.c
-===================================================================
-RCS file: /cvs/linuxppc-2.4/arch/ppc/platforms/xilinx_auto/xilinx_auto.c,v
-retrieving revision 1.1.1.1
-retrieving revision 1.2
-diff -u -r1.1.1.1 -r1.2
---- arch/ppc/platforms/xilinx_auto/xilinx_auto.c	17 Mar 2006 05:19:36 -0000	1.1.1.1
-+++ arch/ppc/platforms/xilinx_auto/xilinx_auto.c	17 Mar 2006 06:01:33 -0000	1.2
-@@ -224,8 +224,8 @@
- #endif
- 
- 	/* Identify the system */
--	printk
--	    ("Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc. (source@mvista.com)\n");
-+	printk("Xilinx Auto Virtex-II/Virtex-4, based on:\n"
-+	       "  Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc. (source@mvista.com)\n");
- }
- 
- /* Called after board_setup_irq from ppc4xx_init_IRQ(). */
-
-
---------------030300060300060800080703--
+--ibTvN161/egqYuK8--
