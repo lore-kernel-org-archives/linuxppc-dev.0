@@ -1,14 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <romieu@fr.zoreil.com>
+Received: from fr.zoreil.com (electric-eye.fr.zoreil.com [213.41.134.224])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5977967B43
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Apr 2006 18:25:01 +1000 (EST)
+Date: Sat, 8 Apr 2006 10:12:31 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH] PCI Error Recovery: e100 network device driver
+Message-ID: <20060408081231.GA29323@electric-eye.fr.zoreil.com>
+References: <20060406222359.GA30037@austin.ibm.com>
+	<20060406224643.GA6278@kroah.com>
+	<20060407231134.GN25225@austin.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17462.61423.42032.559627@cargo.ozlabs.ibm.com>
-Date: Sat, 8 Apr 2006 09:04:15 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: vatsa@in.ibm.com
-Subject: Re: [PATCH 1/4] tickless idle cpu - Allow any CPU to update jiffies
-In-Reply-To: <20060407063044.GA22416@in.ibm.com>
-References: <20060407063044.GA22416@in.ibm.com>
-Cc: sri_vatsa_v@yahoo.com, linuxppc-dev@ozlabs.org
+In-Reply-To: <20060407231134.GN25225@austin.ibm.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+	jesse.brandeburg@intel.com, linuxppc-dev@ozlabs.org,
+	john.ronciak@intel.com, jeffrey.t.kirsher@intel.com,
+	netdev@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+	Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,27 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Srivatsa Vaddagiri writes:
+Linas Vepstas <linas@austin.ibm.com> :
+> Index: linux-2.6.17-rc1/drivers/net/e100.c
+> ===================================================================
+> --- linux-2.6.17-rc1.orig/drivers/net/e100.c	2006-04-07 16:21:46.000000000 -0500
+> +++ linux-2.6.17-rc1/drivers/net/e100.c	2006-04-07 18:10:52.411266545 -0500
+[...]
+> +static pci_ers_result_t e100_io_error_detected(struct pci_dev *pdev, pci_channel_state_t state)
 
-> Currently, only boot CPU calls do_timer to update jiffies. This prevents
-> idle boot CPU from skipping ticks. Patch below, against 2.6.17-rc1-mm1,
-> allows jiffies to be updated from any CPU.
+80 cols limit.
 
-We have to be very careful here.  The code that keeps xtime and
-gettimeofday in sync relies on xtime being incremented as close as
-possible in time to when the timebase passes specific values.  Since
-we currently stagger the timer interrupts for the cpus throughout a
-jiffy, having cpus other than the boot cpus calling do_timer will
-break this and introduce inaccuracies.  There are also implications
-for the stolen time accounting on shared-processor LPAR systems.
+[...]
+> +static pci_ers_result_t e100_io_slot_reset(struct pci_dev *pdev)
+> +{
+> +	struct net_device *netdev = pci_get_drvdata(pdev);
+> +	struct nic *nic = netdev_priv(netdev);
+> +
+> +	if (pci_enable_device(pdev)) {
+> +		printk(KERN_ERR "e100: Cannot re-enable PCI device after reset.\n");
 
-I think we need to remove the staggering, thus having all cpus take
-their timer interrupt at the same time.  That way, any of them can
-call do_timer.  However we then have to be much more careful about
-possible contention, e.g. on xtime_lock.  Your patch has every cpu
-taking xtime_lock for writing rather than just the boot cpu.  I'd like
-to see if there is some way to avoid that (while still having just one
-cpu call do_timer, of course).
+- The driver supports {get/set}_msglevel. Please consider using netif_msg_xxx
+  (see include/linux/netdevice.h).
 
-Regards,
-Paul.
+- s/e100/DRV_NAME/ (or netdev->name, or pci_name(...) depending on the
+  context).
+
+[...]
+> +static struct pci_error_handlers e100_err_handler = {
+> +	.error_detected = e100_io_error_detected,
+> +	.slot_reset = e100_io_slot_reset,
+> +	.resume = e100_io_resume,
+> +};
+
+Nit: I'd rather follow the style in the declaration of e100_driver.
+
+-- 
+Ueimor
