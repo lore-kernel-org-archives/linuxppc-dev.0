@@ -1,18 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 6E62D67B50
+Return-Path: <dwh@mmarray.org>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id C6C5C67B46
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  9 Apr 2006 09:07:26 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
+	Sun,  9 Apr 2006 15:08:50 +1000 (EST)
+Message-ID: <20060408212053.rhv0zzr0yss0cwo0@webmail.ovro.caltech.edu>
+Date: Sat, 08 Apr 2006 21:20:53 -0700
+From: dwh@mmarray.org
+To: Antonio Di Bacco <antonio.dibacco@aruba.it>
 Subject: Re: Accessing physical memory
-Date: Sun, 9 Apr 2006 01:07:16 +0200
 References: <200604082352.55490.antonio.dibacco@aruba.it>
 In-Reply-To: <200604082352.55490.antonio.dibacco@aruba.it>
 MIME-Version: 1.0
-Message-Id: <200604090107.17132.arnd@arndb.de>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset=ISO-8859-1;
+	format="flowed"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,15 +25,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Saturday 08 April 2006 23:52, Antonio Di Bacco wrote:
-> How can I access the physical memory? Can I MMAP for example /dev/mem? Is 
+Quoting Antonio Di Bacco <antonio.dibacco@aruba.it>:
+
+> How can I access the physical memory? Can I MMAP for example /dev/mem? Is
 > there a simpler way?
+>
 
-/dev/mem access is the most simple way. A cleaner solution is usually to
-write your own simple character device driver for the stuff you want to
-access in memory.
+Hi Antonio,
 
-Depending on why you want to access memory, slram may be the right
-driver, e.g. when you want to store a file system there.
+What would you like to do? If you just want some arbitrary
+page of memory, then look at the 'nopage' example in Rubini,
+or ask me and I'll send you some code.
 
-	Arnd <><
+If you want a specific memory location, then you'll need
+to claim and ioremap the memory, and again, I can give you
+some code.
+
+So, explain a little more and I can help.
+
+Dave
+
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
