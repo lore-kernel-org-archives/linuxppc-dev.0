@@ -1,25 +1,20 @@
-Return-Path: <romieu@fr.zoreil.com>
-Received: from fr.zoreil.com (electric-eye.fr.zoreil.com [213.41.134.224])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <daniel.ritz-ml@swissonline.ch>
+Received: from smtp.hispeed.ch (mxout.hispeed.ch [62.2.95.247])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5977967B43
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Apr 2006 18:25:01 +1000 (EST)
-Date: Sat, 8 Apr 2006 10:12:31 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH] PCI Error Recovery: e100 network device driver
-Message-ID: <20060408081231.GA29323@electric-eye.fr.zoreil.com>
-References: <20060406222359.GA30037@austin.ibm.com>
-	<20060406224643.GA6278@kroah.com>
-	<20060407231134.GN25225@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060407231134.GN25225@austin.ibm.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-	jesse.brandeburg@intel.com, linuxppc-dev@ozlabs.org,
-	john.ronciak@intel.com, jeffrey.t.kirsher@intel.com,
-	netdev@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	Jeff Garzik <jgarzik@pobox.com>
+	by ozlabs.org (Postfix) with ESMTP id DCD87679E0
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 07:15:30 +1000 (EST)
+From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+To: "Edward Felberbaum" <efelberbaum@hotmail.com>
+Subject: Re: Oops: machine check, sig: 7 [#1] - 16-bit Pccard - SOLVED!!!
+Date: Sun, 9 Apr 2006 22:57:50 +0200
+References: <BAY104-F3E7D812AD1E707C145856ABC90@phx.gbl>
+In-Reply-To: <BAY104-F3E7D812AD1E707C145856ABC90@phx.gbl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200604092257.52206.daniel.ritz-ml@swissonline.ch>
+Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,39 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas <linas@austin.ibm.com> :
-> Index: linux-2.6.17-rc1/drivers/net/e100.c
-> ===================================================================
-> --- linux-2.6.17-rc1.orig/drivers/net/e100.c	2006-04-07 16:21:46.000000000 -0500
-> +++ linux-2.6.17-rc1/drivers/net/e100.c	2006-04-07 18:10:52.411266545 -0500
-[...]
-> +static pci_ers_result_t e100_io_error_detected(struct pci_dev *pdev, pci_channel_state_t state)
+On Friday 07 April 2006 08.25, Edward Felberbaum wrote:
+> >From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+> >To: Edward Felberbaum <efelberbaum@hotmail.com>
+> >CC: "linux-pcmcia" <linux-pcmcia@lists.infradead.org>
+> >Subject: Re: Oops: machine check, sig: 7 [#1] - 16-bit Pccard - CardBus OK 
+> >Edward Felberbaum
+> >Date: Thu, 6 Apr 2006 20:11:50 +0200
+> >
+> > > >Can you try booting with the boot parameter
+> > > >
+> > > >reserve=0xfd000000-0xfdffffff
+> > > >
+> > > >?
+> >
+> >errm...that should have been:
+> >	reserve=0xfd000000,0xffffff
+> >ie. reserve=start,size
+> >
+> > >
+> > > I added the above reserve to the boot parameters, it shows up on the 
+> >Kernel
+> > > command line in dmesg,  but dmesg still displays
+> > >
+> > > pcmcia: parent PCI bridge Memory window: 0xfd000000 - 0xfdffffff
+> > >
+> > > I would have expected the above line to not appear - use a different 
+> >memory
+> > > range due to the kernel command line "reserve".
+> >
+> >it will...:)
+> >
+> >rgds
+> >-daniel
+> 
+> I followed your advice and inserted a 3Com 589 card and there was NO Oops!  
+> WOW!
+> 
+> I built the 3c589 driver and the card works too.
+> 
+> Now I'm trying to get my Belkin F5D6020 v2 Wifi card to work.
+> 
+> Thanks very much for your help!
+> 
+> I see from the dmesg output from my original post that memory ranges 
+> 0xfdd7f000 and 0xfddff000 are used by the Gatwick and Heathrow mac io 
+> controllers.  That explains the conflict with PCMCIA over 0xfd000000.
 
-80 cols limit.
+interesting...the memory ranges are used by other devices yet the
+request_resource() call in PCMCIA succeeds,,,and PCI resources shoudn't
+be there in the first place then...
 
-[...]
-> +static pci_ers_result_t e100_io_slot_reset(struct pci_dev *pdev)
-> +{
-> +	struct net_device *netdev = pci_get_drvdata(pdev);
-> +	struct nic *nic = netdev_priv(netdev);
-> +
-> +	if (pci_enable_device(pdev)) {
-> +		printk(KERN_ERR "e100: Cannot re-enable PCI device after reset.\n");
+ok, it's in file arch/powerpc/platforms/powermac/feature.c...
+i can't see any request_resource() calls in there...so CC'ing the PPC guys..
+they can sure comment...
 
-- The driver supports {get/set}_msglevel. Please consider using netif_msg_xxx
-  (see include/linux/netdevice.h).
+> 
+> Question, can I minimize the range of memory that is reserved 0xffffff - or 
+> is it a waste of time?
+> 
 
-- s/e100/DRV_NAME/ (or netdev->name, or pci_name(...) depending on the
-  context).
+yeah, you probably could, but it sounds like a waste of time...
 
-[...]
-> +static struct pci_error_handlers e100_err_handler = {
-> +	.error_detected = e100_io_error_detected,
-> +	.slot_reset = e100_io_slot_reset,
-> +	.resume = e100_io_resume,
-> +};
+> Eddie
+> 
 
-Nit: I'd rather follow the style in the declaration of e100_driver.
-
--- 
-Ueimor
+rgds
+-daniel
