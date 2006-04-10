@@ -1,35 +1,17 @@
-Return-Path: <moilanen@austin.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 051C6679F8
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2006 01:46:48 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3AFkkdm014641
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 11:46:46 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3AFhIne250232
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 09:43:18 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k3AFkjm2025878
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 09:46:45 -0600
-Date: Mon, 10 Apr 2006 10:39:29 -0500
-From: Jake Moilanen <moilanen@austin.ibm.com>
-To: paulus@samba.org
-Subject: Re: [PATCH 2/2] Base pSeries PCIe support
-Message-Id: <20060410103929.9664238d.moilanen@austin.ibm.com>
-In-Reply-To: <20060401165723.ab77c81f.moilanen@austin.ibm.com>
-References: <20060331160203.f2bf8b53.moilanen@austin.ibm.com>
-	<20060331161330.3c723103.moilanen@austin.ibm.com>
-	<17454.15223.929530.985654@cargo.ozlabs.ibm.com>
-	<20060401165723.ab77c81f.moilanen@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E6828679F6
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2006 04:13:22 +1000 (EST)
+Date: Mon, 10 Apr 2006 13:11:26 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] powerpc: fixup pci resource DBG code to handle size change
+Message-ID: <Pine.LNX.4.44.0604101310560.3666-100000@gate.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,31 +21,147 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 1 Apr 2006 16:57:23 -0600
-Jake Moilanen <moilanen@austin.ibm.com> wrote:
+A number of DBG() calls needed to be fixed up to properly handle the size
+change in struct resource
 
-> On Sat, 1 Apr 2006 19:36:07 +1100
-> Paul Mackerras <paulus@samba.org> wrote:
-> 
-> > Jake Moilanen writes:
-> > 
-> > > The NR_IRQS got bumped up to 1024, as vectors can go much higher.
-> > > Unfortunately, this number was arbitrarily picked as there is no claim
-> > > at what the max number really is by either the firmware team, or the
-> > > PAPR+.
-> > 
-> > What matters is the number of different vectors, not the actual value
-> > of the vectors, because we remap interrupt numbers that the firmware
-> > gives us to logical Linux irq numbers between 0 and NR_IRQS-1.  We had
-> > to do that when the POWER5 systems came out, because the interrupt
-> > numbers there occupy 24 bits.
-> 
-> Ah.  That sounds right.  I haven't had a chance to test this version of
-> the patch.  Firmware is currently broken on my machine.
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-I was able to validate that these patches do work, and we are receiving
-MSI interrupts correctly.
+---
+commit 8e55334e29b2996d921641911a3802f9d004566d
+tree 723945265ad953fd6ce4f59c66e560165e78da41
+parent 6d05f46f58f45d4aa74cf328f9f7935a71d4fe87
+author Kumar Gala <galak@kernel.crashing.org> Mon, 10 Apr 2006 13:10:45 -0500
+committer Kumar Gala <galak@kernel.crashing.org> Mon, 10 Apr 2006 13:10:45 -0500
 
-Is it too late to get into 2.6.17?
+ arch/powerpc/kernel/pci_32.c |   28 ++++++++++++++--------------
+ arch/ppc/kernel/pci.c        |    2 +-
+ 2 files changed, 15 insertions(+), 15 deletions(-)
 
-Jake
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index 96a5ee9..9607a09 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -99,7 +99,7 @@ pcibios_fixup_resources(struct pci_dev *
+ 		if (!res->flags)
+ 			continue;
+ 		if (res->end == 0xffffffff) {
+-			DBG("PCI:%s Resource %d [%08lx-%08lx] is unassigned\n",
++			DBG("PCI:%s Resource %d [%016llx-%016llx] is unassigned\n",
+ 			    pci_name(dev), i, res->start, res->end);
+ 			res->end -= res->start;
+ 			res->start = 0;
+@@ -117,7 +117,7 @@ pcibios_fixup_resources(struct pci_dev *
+ 			res->start += offset;
+ 			res->end += offset;
+ #ifdef DEBUG
+-			printk("Fixup res %d (%lx) of dev %s: %lx -> %lx\n",
++			printk("Fixup res %d (%lx) of dev %s: %llx -> %llx\n",
+ 			       i, res->flags, pci_name(dev),
+ 			       res->start - offset, res->start);
+ #endif
+@@ -179,7 +179,7 @@ void pcibios_align_resource(void *data, 
+ 	struct pci_dev *dev = data;
+ 
+ 	if (res->flags & IORESOURCE_IO) {
+-		unsigned long start = res->start;
++		u64 start = res->start;
+ 
+ 		if (size > 0x100) {
+ 			printk(KERN_ERR "PCI: I/O Region %s/%d too large"
+@@ -255,8 +255,8 @@ pcibios_allocate_bus_resources(struct li
+ 				}
+ 			}
+ 
+-			DBG("PCI: bridge rsrc %lx..%lx (%lx), parent %p\n",
+-			    res->start, res->end, res->flags, pr);
++			DBG("PCI: bridge rsrc %llx..%llx (%lx), parent %p\n",
++				res->start, res->end, res->flags, pr);
+ 			if (pr) {
+ 				if (request_resource(pr, res) == 0)
+ 					continue;
+@@ -306,7 +306,7 @@ reparent_resources(struct resource *pare
+ 	*pp = NULL;
+ 	for (p = res->child; p != NULL; p = p->sibling) {
+ 		p->parent = res;
+-		DBG(KERN_INFO "PCI: reparented %s [%lx..%lx] under %s\n",
++		DBG(KERN_INFO "PCI: reparented %s [%llx..%llx] under %s\n",
+ 		    p->name, p->start, p->end, res->name);
+ 	}
+ 	return 0;
+@@ -362,7 +362,7 @@ pci_relocate_bridge_resource(struct pci_
+ 		try = conflict->start - 1;
+ 	}
+ 	if (request_resource(pr, res)) {
+-		DBG(KERN_ERR "PCI: huh? couldn't move to %lx..%lx\n",
++		DBG(KERN_ERR "PCI: huh? couldn't move to %llx..%llx\n",
+ 		    res->start, res->end);
+ 		return -1;		/* "can't happen" */
+ 	}
+@@ -480,14 +480,14 @@ static inline void alloc_resource(struct
+ {
+ 	struct resource *pr, *r = &dev->resource[idx];
+ 
+-	DBG("PCI:%s: Resource %d: %08lx-%08lx (f=%lx)\n",
++	DBG("PCI:%s: Resource %d: %016llx-%016llx (f=%lx)\n",
+ 	    pci_name(dev), idx, r->start, r->end, r->flags);
+ 	pr = pci_find_parent_resource(dev, r);
+ 	if (!pr || request_resource(pr, r) < 0) {
+ 		printk(KERN_ERR "PCI: Cannot allocate resource region %d"
+ 		       " of device %s\n", idx, pci_name(dev));
+ 		if (pr)
+-			DBG("PCI:  parent is %p: %08lx-%08lx (f=%lx)\n",
++			DBG("PCI:  parent is %p: %016llx-%016llx (f=%lx)\n",
+ 			    pr, pr->start, pr->end, pr->flags);
+ 		/* We'll assign a new address later */
+ 		r->flags |= IORESOURCE_UNSET;
+@@ -957,7 +957,7 @@ pci_process_bridge_OF_ranges(struct pci_
+ 			res = &hose->io_resource;
+ 			res->flags = IORESOURCE_IO;
+ 			res->start = ranges[2];
+-			DBG("PCI: IO 0x%lx -> 0x%lx\n",
++			DBG("PCI: IO 0x%llx -> 0x%llx\n",
+ 				    res->start, res->start + size - 1);
+ 			break;
+ 		case 2:		/* memory space */
+@@ -979,7 +979,7 @@ pci_process_bridge_OF_ranges(struct pci_
+ 				if(ranges[0] & 0x40000000)
+ 					res->flags |= IORESOURCE_PREFETCH;
+ 				res->start = ranges[na+2];
+-				DBG("PCI: MEM[%d] 0x%lx -> 0x%lx\n", memno,
++				DBG("PCI: MEM[%d] 0x%llx -> 0x%llx\n", memno,
+ 					    res->start, res->start + size - 1);
+ 			}
+ 			break;
+@@ -1075,7 +1075,7 @@ do_update_p2p_io_resource(struct pci_bus
+ 	DBG("Remapping Bus %d, bridge: %s\n", bus->number, pci_name(bridge));
+ 	res.start -= ((unsigned long) hose->io_base_virt - isa_io_base);
+ 	res.end -= ((unsigned long) hose->io_base_virt - isa_io_base);
+-	DBG("  IO window: %08lx-%08lx\n", res.start, res.end);
++	DBG("  IO window: %016llx-%016llx\n", res.start, res.end);
+ 
+ 	/* Set up the top and bottom of the PCI I/O segment for this bus. */
+ 	pci_read_config_dword(bridge, PCI_IO_BASE, &l);
+@@ -1223,8 +1223,8 @@ do_fixup_p2p_level(struct pci_bus *bus)
+ 					continue;
+ 				if ((r->flags & IORESOURCE_IO) == 0)
+ 					continue;
+-				DBG("Trying to allocate from %08lx, size %08lx from parent"
+-				    " res %d: %08lx -> %08lx\n",
++				DBG("Trying to allocate from %016llx, size %016llx from parent"
++				    " res %d: %016llx -> %016llx\n",
+ 					res->start, res->end, i, r->start, r->end);
+ 			
+ 				if (allocate_resource(r, res, res->end + 1, res->start, max,
+diff --git a/arch/ppc/kernel/pci.c b/arch/ppc/kernel/pci.c
+index ffbae40..fb25b30 100644
+--- a/arch/ppc/kernel/pci.c
++++ b/arch/ppc/kernel/pci.c
+@@ -960,7 +960,7 @@ static pgprot_t __pci_mmap_set_pgprot(st
+ 	else
+ 		prot |= _PAGE_GUARDED;
+ 
+-	printk("PCI map for %s:%lx, prot: %lx\n", pci_name(dev), rp->start,
++	printk("PCI map for %s:%llx, prot: %llx\n", pci_name(dev), rp->start,
+ 	       prot);
+ 
+ 	return __pgprot(prot);
