@@ -1,18 +1,19 @@
-Return-Path: <rdreier@cisco.com>
-Received: from test-iport-3.cisco.com (test-iport-3.cisco.com [171.71.176.78])
-	by ozlabs.org (Postfix) with ESMTP id 25BB167A6F
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 301FC679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Apr 2006 11:52:18 +1000 (EST)
+	Mon, 10 Apr 2006 17:15:00 +1000 (EST)
+Date: Mon, 10 Apr 2006 00:14:57 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
 To: Andre Draszik <kernel@andred.net>
 Subject: Re: Slab errors on 4xx (STB04)
+Message-ID: <20060410071457.GA16898@gate.ebshome.net>
 References: <44398BD4.60904@andred.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sun, 09 Apr 2006 18:42:17 -0700
-In-Reply-To: <44398BD4.60904@andred.net> (Andre Draszik's message of "Mon,
-	10 Apr 2006 00:33:56 +0200")
-Message-ID: <adairpi5hqe.fsf@cisco.com>
-MIME-Version: 1.0
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <44398BD4.60904@andred.net>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,16 +25,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    Andre> Since it _seems_ to work nevertheless - is
-    Andre> CONFIG_DEBUG_SLAB known to be broken on this platform?
-    Andre> (Although such stack traces are only printed when doing sth
-    Andre> with the USB). Or is this caused by some other (memory
-    Andre> initialization?) error?
+On Mon, Apr 10, 2006 at 12:33:56AM +0200, Andre Draszik wrote:
+> 
+> Since it _seems_ to work nevertheless - is CONFIG_DEBUG_SLAB known to be
+> broken on this platform?
 
-Last time I looked, I think CONFIG_DEBUG_SLAB was broken on
-non-cache-coherent architectures (such as PPC 4xx).  The reason is
-that the slab poisoning breaks the cacheline alignment of slabs, and
-then invalidating the cache can trash stuff that slab debugging ends
-up thinking is overwritten.
+Yes, it's very likely that CONFIG_DEBUG_SLAB is the culprit here. This 
+config option changes allocation alignment (it becomes not L1 cache 
+line aligned). For 4xx which has non-coherent L1 cache this with 
+almost 100% probability will break DMA, resulting in memory 
+corruption.
 
- - R.
+You can try changing __dma_sync() to do flush_dcache_range() even for 
+DMA_FROM_DEVICE case. However, do this only to check this theory, not 
+as a permanent solution :).
+
+-- 
+Eugene
