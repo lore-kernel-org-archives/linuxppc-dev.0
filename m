@@ -1,20 +1,17 @@
-Return-Path: <avolkov@varma-el.com>
-Received: from amanaus.varma-el.com (unknown [195.144.244.147])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.varma-el.com",
-	Issuer "mail.varma-el.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D4FDB67AC7
+Return-Path: <stephane.fillod@thomson.net>
+Received: from dmzraw4.extranet.thmulti.com (dmzraw4.extranet.thmulti.com
+	[141.11.234.72]) by ozlabs.org (Postfix) with ESMTP id B5C3567B16
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Apr 2006 20:39:28 +1000 (EST)
-Date: Mon, 10 Apr 2006 14:39:16 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
-Message-ID: <1799377474.20060410143916@varma-el.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: [ANNOUNCE] socket-can for linux
+	Mon, 10 Apr 2006 22:46:27 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org
-Reply-To: Andrey Volkov <avolkov@varma-el.com>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Accessing physical memory
+Date: Mon, 10 Apr 2006 14:43:14 +0200
+Message-ID: <1CFEB358338412458B21FAA0D78FE86D042A2FFA@rennsmail02.eu.thmulti.com>
+From: "Fillod Stephane" <stephane.fillod@thomson.net>
+To: "Antonio Di Bacco" <antonio.dibacco@aruba.it>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,11 +22,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Antonio Di Bacco wrote:
+>How can I access the physical memory? Can I MMAP for example /dev/mem?
+Is=20
+>there a simpler way?
 
-FYI, as it pointed in subj., yesterday socket-can project finally created at
-berlios.de, project page: http://developer.berlios.de/projects/socketcan/
+Your question is a linuxppc-embedded FAQ.
+It is documented in Denx's FAQ[1], and accessible through shorter
+URL[2].
+For more information, please follow this thread[3] (not ppc specific
+actually).
 
-Happy hacking.
+[1]
+http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acce
+ssingPeripheralsFromUserSpace
+[2] http://tinyurl.com/6c7th
+[3] http://lists.linuxppc.org/linuxppc-embedded/200403/msg00059.html
 
-Andrey Volkov
+CIAO,
+--=20
+Stephane
