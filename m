@@ -1,17 +1,20 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw4.extranet.thmulti.com (dmzraw4.extranet.thmulti.com
-	[141.11.234.72]) by ozlabs.org (Postfix) with ESMTP id B5C3567B16
+Return-Path: <kernel@andred.net>
+Received: from andred.net (sushi.andred.net [217.160.180.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DF648679F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Apr 2006 22:46:27 +1000 (EST)
+	Tue, 11 Apr 2006 05:48:52 +1000 (EST)
+Message-ID: <443AB696.7080205@andred.net>
+Date: Mon, 10 Apr 2006 21:48:38 +0200
+From: Andre Draszik <kernel@andred.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Accessing physical memory
-Date: Mon, 10 Apr 2006 14:43:14 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D042A2FFA@rennsmail02.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "Antonio Di Bacco" <antonio.dibacco@aruba.it>,
-	<linuxppc-embedded@ozlabs.org>
+To: Andre Draszik <kernel@andred.net>, linuxppc-embedded@ozlabs.org
+Subject: Re: Slab errors on 4xx (STB04)
+References: <44398BD4.60904@andred.net>
+	<20060410071457.GA16898@gate.ebshome.net>
+In-Reply-To: <20060410071457.GA16898@gate.ebshome.net>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,23 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Antonio Di Bacco wrote:
->How can I access the physical memory? Can I MMAP for example /dev/mem?
-Is=20
->there a simpler way?
+Eugene Surovegin wrote:
+> On Mon, Apr 10, 2006 at 12:33:56AM +0200, Andre Draszik wrote:
+>> Since it _seems_ to work nevertheless - is CONFIG_DEBUG_SLAB known to be
+>> broken on this platform?
+> 
+> Yes, it's very likely that CONFIG_DEBUG_SLAB is the culprit here. This 
+> [...]
 
-Your question is a linuxppc-embedded FAQ.
-It is documented in Denx's FAQ[1], and accessible through shorter
-URL[2].
-For more information, please follow this thread[3] (not ppc specific
-actually).
+Thanks Roland and Eugene for the advice.
 
-[1]
-http://www.denx.de/twiki/bin/view/PPCEmbedded/DeviceDrivers#Section_Acce
-ssingPeripheralsFromUserSpace
-[2] http://tinyurl.com/6c7th
-[3] http://lists.linuxppc.org/linuxppc-embedded/200403/msg00059.html
+> You can try changing __dma_sync() to do flush_dcache_range() even for 
+> DMA_FROM_DEVICE case. However, do this only to check this theory, not 
+> as a permanent solution :).
 
-CIAO,
---=20
-Stephane
+OK, I will play with the cache later today... I wanted DEBUG_SLAB turned
+on for some other unrelated problem, so just for debugging, this hack
+would be fine if it worked :)
+
+
+Greetings,
+Andre'
