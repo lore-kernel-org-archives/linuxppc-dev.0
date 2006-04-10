@@ -1,18 +1,32 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Fastboot] [PATCH]ppc64 kexec tools rm platform fix
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Wilder <dwilder@us.ibm.com>
-In-Reply-To: <443700CB.3090909@us.ibm.com>
-References: <443700CB.3090909@us.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-EK01hU1zgSURodOpL6NZ"
-Date: Mon, 10 Apr 2006 10:53:55 +0200
-Message-Id: <1144659236.26317.35.camel@localhost.localdomain>
+Return-Path: <vatsa@in.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 60919679F3
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 21:51:43 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3ABpddi032654
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 07:51:39 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3ABpdIm206304
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 07:51:39 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3ABpd89009070
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 07:51:39 -0400
+Date: Mon, 10 Apr 2006 17:19:44 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/4] tickless idle cpu - Allow any CPU to update jiffies
+Message-ID: <20060410114944.GA5564@in.ibm.com>
+References: <20060407063044.GA22416@in.ibm.com>
+	<17462.61423.42032.559627@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: Mohan Kumar <mohankumar@in.ibm.com>, fastboot@lists.osdl.org,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17462.61423.42032.559627@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: vatsa@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,163 +36,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, Apr 08, 2006 at 09:04:15AM +1000, Paul Mackerras wrote:
+> Srivatsa Vaddagiri writes:
+> 
+> > Currently, only boot CPU calls do_timer to update jiffies. This prevents
+> > idle boot CPU from skipping ticks. Patch below, against 2.6.17-rc1-mm1,
+> > allows jiffies to be updated from any CPU.
+> 
+> We have to be very careful here.  The code that keeps xtime and
+> gettimeofday in sync relies on xtime being incremented as close as
+> possible in time to when the timebase passes specific values.  Since
+> we currently stagger the timer interrupts for the cpus throughout a
+> jiffy, having cpus other than the boot cpus calling do_timer will
+> break this and introduce inaccuracies.  There are also implications
+> for the stolen time accounting on shared-processor LPAR systems.
+> 
+> I think we need to remove the staggering, thus having all cpus take
+> their timer interrupt at the same time.  That way, any of them can
+> call do_timer.  However we then have to be much more careful about
+> possible contention, e.g. on xtime_lock.  Your patch has every cpu
+> taking xtime_lock for writing rather than just the boot cpu.  I'd like
+> to see if there is some way to avoid that (while still having just one
+> cpu call do_timer, of course).
 
---=-EK01hU1zgSURodOpL6NZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Paul,
+	Thanks for the feedback on the patches.
 
-Hi David,
+Avoiding contention on xtime_lock doesnt seem to be trivial. Any
+solution to it is fraught with races. Anyway, I have attempted one
+solution (in the followon Patch 2/2) which keeps the overhead in timer 
+interrupt handler low. 
 
-Thanks for working on this one. Few comments below ...
+Let me know if you have other suggestions to avoid xtime_lock
+contention!
 
-On Fri, 2006-04-07 at 17:16 -0700, David Wilder wrote:
-> This patch was discussed earlier on this list.  (see posting by Haren=20
-> Myneni <hbabu@us.ibm.com>).=20
->=20
-> In recent kernels, the platform property is removed from the=20
-> /proc/device-tree.This property is used to determine whether the=20
-> platform is LPAR or non-lpar, and reads htab-* and tce-* properties=20
-> based on the platform. Fixed this issue such that read these properties=20
-> if exists, otherwise continue instead of exiting with an error message.
+Following patches are sent in separate mails:
 
-(Copied from attachment, won't apply, original here
-http://lists.osdl.org/pipermail/fastboot/2006-April/002765.html)
+Patch 1/2	-	Core patch to skip ticks - v2
+Patch 2/2	- 	Allow boot CPU to skip ticks - v2
 
-> ---
-> kexec-tools-1.101/kexec/arch/ppc64/kexec-ppc64.c.orig       2006-04-08
-> 16:09:20.000000000 -0700
-> +++ kexec-tools-1.101/kexec/arch/ppc64/kexec-ppc64.c    2006-04-08
-> 16:23:26.000000000 -0700
-> @@ -34,13 +34,8 @@
->  #include "crashdump-ppc64.h"
->  #include <arch/options.h>
-> =20
-> -/* Platforms supported by kexec on PPC64 */
-> -#define PLATFORM_PSERIES       0x0100
-> -#define PLATFORM_PSERIES_LPAR  0x0101
-> -
->  static struct exclude_range exclude_range[MAX_MEMORY_RANGES];
->  static unsigned long long rmo_top;
-> -static unsigned int platform;
->  static struct memory_range memory_range[MAX_MEMORY_RANGES];
->  static struct memory_range base_memory_range[MAX_MEMORY_RANGES];
->  unsigned long long memory_max =3D 0;
-> @@ -201,26 +196,6 @@ static int get_devtree_details(unsigned=20
->                 }
-> =20
->                 if (strncmp(dentry->d_name, "chosen", 6) =3D=3D 0) {
-> -                       /* get platform details from /chosen node */
-> -                       strcat(fname, "/linux,platform");
-> -                       if ((file =3D fopen(fname, "r")) =3D=3D NULL) {
-> -                               perror(fname);
-> -                               closedir(cdir);
-> -                               closedir(dir);
-> -                               return -1;
-> -                       }
-> -                       if (fread(&platform, sizeof(int), 1, file) !=3D
-> 1) {
-> -                               perror(fname);
-> -                               fclose(file);
-> -                               closedir(cdir);
-> -                               closedir(dir);
-> -                               return -1;
-> -                       }
-> -                       fclose(file);
-> -
-> -                       memset(fname, 0, sizeof(fname));
-> -                       strcpy(fname, device_tree);
-> -                       strcat(fname, dentry->d_name);
->                         strcat(fname, "/linux,kernel-end");
->                         if ((file =3D fopen(fname, "r")) =3D=3D NULL) {
->                                 perror(fname);
-> @@ -291,18 +266,18 @@ static int get_devtree_details(unsigned=20
->                                 reserve(KDUMP_BACKUP_LIMIT,
-> crash_base-KDUMP_BACKUP_LIMIT);
->                         }
-> =20
-> -                       /* if LPAR, no need to read any more
-> from /chosen */
-> -                       if (platform !=3D PLATFORM_PSERIES) {
-> -                               closedir(cdir);
-> -                               continue;
-> -                       }
->                         memset(fname, 0, sizeof(fname));
->                         strcpy(fname, device_tree);
->                         strcat(fname, dentry->d_name);
->                         strcat(fname, "/linux,htab-base");
->                         if ((file =3D fopen(fname, "r")) =3D=3D NULL) {
-> -                               perror(fname);
->                                 closedir(cdir);
-> +                               if (errno =3D=3D ENOENT) {
-> +                                       /* Non LPAR */
-> +                                       errno =3D 0;
-> +                                       continue;
-> +                                }
-> +                               perror(fname);
->                                 closedir(dir);
->                                 return -1;
+The sysctl control patch and decrementer statistics patch are as before
+and hence I am not resending them this time.
 
-I don't think you want to do the closedir() before the if. You certainly
-don't need to do it twice?
 
->                         }
-> @@ -394,23 +369,23 @@ static int get_devtree_details(unsigned=20
->                         }
->                         rmo_base =3D ((unsigned long long *)buf)[0];
->                         rmo_top =3D rmo_base + ((unsigned long long
-> *)buf)[1];
-> -                       if (platform =3D=3D PLATFORM_PSERIES) {
-> -                               if (rmo_top > 0x30000000UL)
-> -                                       rmo_top =3D 0x30000000UL;
-> -                       }
-> +                       if (rmo_top > 0x30000000UL)
-> +                               rmo_top =3D 0x30000000UL;
-> +
->                         fclose(file);
->                         closedir(cdir);
->                 } /* memory */
-> =20
->                 if (strncmp(dentry->d_name, "pci@", 4) =3D=3D 0) {
-> -                       if (platform !=3D PLATFORM_PSERIES) {
-> -                               closedir(cdir);
-> -                               continue;
-> -                       }
->                         strcat(fname, "/linux,tce-base");
->                         if ((file =3D fopen(fname, "r")) =3D=3D NULL) {
-> -                               perror(fname);
->                                 closedir(cdir);
-> +                               if (errno =3D=3D ENOENT) {
-> +                                       /* Non LPAR */
-> +                                       errno =3D 0;
-> +                                       continue;
-> +                               }
-> +                               perror(fname);
->                                 closedir(dir);
-
-Same comment here.
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-EK01hU1zgSURodOpL6NZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBEOh0jdSjSd0sB4dIRAjvZAJ4z+PVReONKCLLyiFzpwJTup5R6gQCfa+/M
-rn9QR3TSZqbnuGyJ2aW4i2o=
-=KYjV
------END PGP SIGNATURE-----
-
---=-EK01hU1zgSURodOpL6NZ--
+-- 
+Regards,
+vatsa
