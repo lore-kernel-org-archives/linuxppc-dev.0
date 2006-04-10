@@ -1,17 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dwilder@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E6828679F6
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2006 04:13:22 +1000 (EST)
-Date: Mon, 10 Apr 2006 13:11:26 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] powerpc: fixup pci resource DBG code to handle size change
-Message-ID: <Pine.LNX.4.44.0604101310560.3666-100000@gate.crashing.org>
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 129DB679F8
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2006 07:47:39 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3ALlVga005132
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 17:47:31 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3ALom6e150664
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 15:50:48 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k3ALlUXj006363
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 15:47:31 -0600
+Message-ID: <443ADCA2.20903@us.ibm.com>
+Date: Mon, 10 Apr 2006 15:30:58 -0700
+From: David Wilder <dwilder@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: fastboot@lists.osdl.org, linuxppc-dev@ozlabs.org, akpm@osdl.org,
+	mchintage@in.ibm.com, paulus@samba.org, hbabu@us.ibm.com
+Subject: [PATCH] kdump-image-rm-static
+Content-Type: multipart/mixed; boundary="------------060109020300090300050604"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,147 +34,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A number of DBG() calls needed to be fixed up to properly handle the size
-change in struct resource
+This is a multi-part message in MIME format.
+--------------060109020300090300050604
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+I am posting three patches (in separate emails) to both these lists.    
+The 2nd and 3d patches have dependencies on the first patch that I have 
+attached to this email (changing a static to non-static).  This patch 
+applies to generic code where the other two are powerpc specific. Please 
+pick up these patchs.
 
----
-commit 8e55334e29b2996d921641911a3802f9d004566d
-tree 723945265ad953fd6ce4f59c66e560165e78da41
-parent 6d05f46f58f45d4aa74cf328f9f7935a71d4fe87
-author Kumar Gala <galak@kernel.crashing.org> Mon, 10 Apr 2006 13:10:45 -0500
-committer Kumar Gala <galak@kernel.crashing.org> Mon, 10 Apr 2006 13:10:45 -0500
+On powerpc, the panic CPU sends an IPI to shoot down other CPUs. Since 
+the IPI is not an NMI, it may not be able to stop all CPUs before kdump 
+boot. However, one solution could be, if some CPUs are not stopped, 
+asking the user to activate soft-reset (either from management console 
+or pressing soft-reset button) which sends FW NMI to all CPUs. These 
+CPUS will execute arch specific kdump func which has to be invoked 
+machine_kexec() directly. At present, kexec_crash_image is not passed to 
+machine_crash_shutdown() or defined as static in kexec.c.
 
- arch/powerpc/kernel/pci_32.c |   28 ++++++++++++++--------------
- arch/ppc/kernel/pci.c        |    2 +-
- 2 files changed, 15 insertions(+), 15 deletions(-)
+-- 
+David Wilder
+IBM Linux Technology Center
+Beaverton, Oregon, USA 
+dwilder@us.ibm.com
+(503)578-3789
 
-diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-index 96a5ee9..9607a09 100644
---- a/arch/powerpc/kernel/pci_32.c
-+++ b/arch/powerpc/kernel/pci_32.c
-@@ -99,7 +99,7 @@ pcibios_fixup_resources(struct pci_dev *
- 		if (!res->flags)
- 			continue;
- 		if (res->end == 0xffffffff) {
--			DBG("PCI:%s Resource %d [%08lx-%08lx] is unassigned\n",
-+			DBG("PCI:%s Resource %d [%016llx-%016llx] is unassigned\n",
- 			    pci_name(dev), i, res->start, res->end);
- 			res->end -= res->start;
- 			res->start = 0;
-@@ -117,7 +117,7 @@ pcibios_fixup_resources(struct pci_dev *
- 			res->start += offset;
- 			res->end += offset;
- #ifdef DEBUG
--			printk("Fixup res %d (%lx) of dev %s: %lx -> %lx\n",
-+			printk("Fixup res %d (%lx) of dev %s: %llx -> %llx\n",
- 			       i, res->flags, pci_name(dev),
- 			       res->start - offset, res->start);
- #endif
-@@ -179,7 +179,7 @@ void pcibios_align_resource(void *data, 
- 	struct pci_dev *dev = data;
+
+--------------060109020300090300050604
+Content-Type: text/x-patch;
+ name="kdump-image-rm-static.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="kdump-image-rm-static.patch"
+
+
+On powerpc, the panic CPU sends an IPI to shoot down other CPUs. Since not an NMI, may not able to stop all CPUs before kdump boot. However, one solution could be, if some CPUs are not stopped, asking the user to activate soft-reset (either from management console or pressing soft-reset button) which sends FW NMI to all CPUs. These CPUS will execute arch specific kdump func which has to be invoked machine_kexec() directly. At present, kexec_crash_image is not passed to machine_crash_shutdown() or defined as static in kexec.c.
+
+Signed-off-by: David Wilder <dwilder@us.ibm.com>
+Signed-off-by: Haren Myneni <haren@us.ibm.com>
+
+--- 2617-rc1/kernel/kexec.c.orig	2006-04-05 13:27:53.000000000 -0700
++++ 2617-rc1/kernel/kexec.c	2006-04-05 13:27:43.000000000 -0700
+@@ -903,7 +903,7 @@ static int kimage_load_segment(struct ki
+  * that to happen you need to do that yourself.
+  */
+ struct kimage *kexec_image = NULL;
+-static struct kimage *kexec_crash_image = NULL;
++struct kimage *kexec_crash_image = NULL;
+ /*
+  * A home grown binary mutex.
+  * Nothing can wait so this mutex is safe to use
+@@ -1042,7 +1042,6 @@ asmlinkage long compat_sys_kexec_load(un
  
- 	if (res->flags & IORESOURCE_IO) {
--		unsigned long start = res->start;
-+		u64 start = res->start;
- 
- 		if (size > 0x100) {
- 			printk(KERN_ERR "PCI: I/O Region %s/%d too large"
-@@ -255,8 +255,8 @@ pcibios_allocate_bus_resources(struct li
- 				}
- 			}
- 
--			DBG("PCI: bridge rsrc %lx..%lx (%lx), parent %p\n",
--			    res->start, res->end, res->flags, pr);
-+			DBG("PCI: bridge rsrc %llx..%llx (%lx), parent %p\n",
-+				res->start, res->end, res->flags, pr);
- 			if (pr) {
- 				if (request_resource(pr, res) == 0)
- 					continue;
-@@ -306,7 +306,7 @@ reparent_resources(struct resource *pare
- 	*pp = NULL;
- 	for (p = res->child; p != NULL; p = p->sibling) {
- 		p->parent = res;
--		DBG(KERN_INFO "PCI: reparented %s [%lx..%lx] under %s\n",
-+		DBG(KERN_INFO "PCI: reparented %s [%llx..%llx] under %s\n",
- 		    p->name, p->start, p->end, res->name);
- 	}
- 	return 0;
-@@ -362,7 +362,7 @@ pci_relocate_bridge_resource(struct pci_
- 		try = conflict->start - 1;
- 	}
- 	if (request_resource(pr, res)) {
--		DBG(KERN_ERR "PCI: huh? couldn't move to %lx..%lx\n",
-+		DBG(KERN_ERR "PCI: huh? couldn't move to %llx..%llx\n",
- 		    res->start, res->end);
- 		return -1;		/* "can't happen" */
- 	}
-@@ -480,14 +480,14 @@ static inline void alloc_resource(struct
+ void crash_kexec(struct pt_regs *regs)
  {
- 	struct resource *pr, *r = &dev->resource[idx];
+-	struct kimage *image;
+ 	int locked;
  
--	DBG("PCI:%s: Resource %d: %08lx-%08lx (f=%lx)\n",
-+	DBG("PCI:%s: Resource %d: %016llx-%016llx (f=%lx)\n",
- 	    pci_name(dev), idx, r->start, r->end, r->flags);
- 	pr = pci_find_parent_resource(dev, r);
- 	if (!pr || request_resource(pr, r) < 0) {
- 		printk(KERN_ERR "PCI: Cannot allocate resource region %d"
- 		       " of device %s\n", idx, pci_name(dev));
- 		if (pr)
--			DBG("PCI:  parent is %p: %08lx-%08lx (f=%lx)\n",
-+			DBG("PCI:  parent is %p: %016llx-%016llx (f=%lx)\n",
- 			    pr, pr->start, pr->end, pr->flags);
- 		/* We'll assign a new address later */
- 		r->flags |= IORESOURCE_UNSET;
-@@ -957,7 +957,7 @@ pci_process_bridge_OF_ranges(struct pci_
- 			res = &hose->io_resource;
- 			res->flags = IORESOURCE_IO;
- 			res->start = ranges[2];
--			DBG("PCI: IO 0x%lx -> 0x%lx\n",
-+			DBG("PCI: IO 0x%llx -> 0x%llx\n",
- 				    res->start, res->start + size - 1);
- 			break;
- 		case 2:		/* memory space */
-@@ -979,7 +979,7 @@ pci_process_bridge_OF_ranges(struct pci_
- 				if(ranges[0] & 0x40000000)
- 					res->flags |= IORESOURCE_PREFETCH;
- 				res->start = ranges[na+2];
--				DBG("PCI: MEM[%d] 0x%lx -> 0x%lx\n", memno,
-+				DBG("PCI: MEM[%d] 0x%llx -> 0x%llx\n", memno,
- 					    res->start, res->start + size - 1);
- 			}
- 			break;
-@@ -1075,7 +1075,7 @@ do_update_p2p_io_resource(struct pci_bus
- 	DBG("Remapping Bus %d, bridge: %s\n", bus->number, pci_name(bridge));
- 	res.start -= ((unsigned long) hose->io_base_virt - isa_io_base);
- 	res.end -= ((unsigned long) hose->io_base_virt - isa_io_base);
--	DBG("  IO window: %08lx-%08lx\n", res.start, res.end);
-+	DBG("  IO window: %016llx-%016llx\n", res.start, res.end);
  
- 	/* Set up the top and bottom of the PCI I/O segment for this bus. */
- 	pci_read_config_dword(bridge, PCI_IO_BASE, &l);
-@@ -1223,8 +1223,8 @@ do_fixup_p2p_level(struct pci_bus *bus)
- 					continue;
- 				if ((r->flags & IORESOURCE_IO) == 0)
- 					continue;
--				DBG("Trying to allocate from %08lx, size %08lx from parent"
--				    " res %d: %08lx -> %08lx\n",
-+				DBG("Trying to allocate from %016llx, size %016llx from parent"
-+				    " res %d: %016llx -> %016llx\n",
- 					res->start, res->end, i, r->start, r->end);
- 			
- 				if (allocate_resource(r, res, res->end + 1, res->start, max,
-diff --git a/arch/ppc/kernel/pci.c b/arch/ppc/kernel/pci.c
-index ffbae40..fb25b30 100644
---- a/arch/ppc/kernel/pci.c
-+++ b/arch/ppc/kernel/pci.c
-@@ -960,7 +960,7 @@ static pgprot_t __pci_mmap_set_pgprot(st
- 	else
- 		prot |= _PAGE_GUARDED;
- 
--	printk("PCI map for %s:%lx, prot: %lx\n", pci_name(dev), rp->start,
-+	printk("PCI map for %s:%llx, prot: %llx\n", pci_name(dev), rp->start,
- 	       prot);
- 
- 	return __pgprot(prot);
+@@ -1056,12 +1055,11 @@ void crash_kexec(struct pt_regs *regs)
+ 	 */
+ 	locked = xchg(&kexec_lock, 1);
+ 	if (!locked) {
+-		image = xchg(&kexec_crash_image, NULL);
+-		if (image) {
++		if (kexec_crash_image) {
+ 			struct pt_regs fixed_regs;
+ 			crash_setup_regs(&fixed_regs, regs);
+ 			machine_crash_shutdown(&fixed_regs);
+-			machine_kexec(image);
++			machine_kexec(kexec_crash_image);
+ 		}
+ 		xchg(&kexec_lock, 0);
+ 	}
+
+--------------060109020300090300050604--
