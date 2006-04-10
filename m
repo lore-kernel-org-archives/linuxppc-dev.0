@@ -1,37 +1,35 @@
-Return-Path: <vatsa@in.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+Return-Path: <moilanen@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 069B167AC7
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 23:44:29 +1000 (EST)
-Received: from e6.ny.us.ibm.com ([192.168.1.106])
-	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3ACPwIS012442
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 08:25:58 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3ACPibS001441
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 08:25:44 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3ACPYun230660
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 08:25:34 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3ACPYjk013544
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 08:25:34 -0400
-Date: Mon, 10 Apr 2006 17:53:39 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] tickless idle cpu: Skip ticks when CPU is idle
-Message-ID: <20060410122339.GD5564@in.ibm.com>
-References: <20060407063131.GB22416@in.ibm.com>
-	<981C3B4E-7336-403D-AF58-3B36AA071866@kernel.crashing.org>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 051C6679F8
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2006 01:46:48 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3AFkkdm014641
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 11:46:46 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3AFhIne250232
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 09:43:18 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k3AFkjm2025878
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Apr 2006 09:46:45 -0600
+Date: Mon, 10 Apr 2006 10:39:29 -0500
+From: Jake Moilanen <moilanen@austin.ibm.com>
+To: paulus@samba.org
+Subject: Re: [PATCH 2/2] Base pSeries PCIe support
+Message-Id: <20060410103929.9664238d.moilanen@austin.ibm.com>
+In-Reply-To: <20060401165723.ab77c81f.moilanen@austin.ibm.com>
+References: <20060331160203.f2bf8b53.moilanen@austin.ibm.com>
+	<20060331161330.3c723103.moilanen@austin.ibm.com>
+	<17454.15223.929530.985654@cargo.ozlabs.ibm.com>
+	<20060401165723.ab77c81f.moilanen@austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <981C3B4E-7336-403D-AF58-3B36AA071866@kernel.crashing.org>
-Cc: sri_vatsa_v@yahoo.com, paulus@samba.org, linuxppc-dev@ozlabs.org
-Reply-To: vatsa@in.ibm.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,22 +39,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 07, 2006 at 09:16:58AM -0500, Kumar Gala wrote:
-> >+config NO_IDLE_HZ
-> >+	depends on EXPERIMENTAL && (PPC_PSERIES || PPC_PMAC || PPC_MAPLE)
-> >+	bool "Switch off timer ticks on idle CPUs"
-> >+	help
-> >+	  Switches the HZ timer interrupts off when a CPU is idle.
-> >+
+On Sat, 1 Apr 2006 16:57:23 -0600
+Jake Moilanen <moilanen@austin.ibm.com> wrote:
+
+> On Sat, 1 Apr 2006 19:36:07 +1100
+> Paul Mackerras <paulus@samba.org> wrote:
 > 
-> any reason not to provide this for all 6xx class processors?
+> > Jake Moilanen writes:
+> > 
+> > > The NR_IRQS got bumped up to 1024, as vectors can go much higher.
+> > > Unfortunately, this number was arbitrarily picked as there is no claim
+> > > at what the max number really is by either the firmware team, or the
+> > > PAPR+.
+> > 
+> > What matters is the number of different vectors, not the actual value
+> > of the vectors, because we remap interrupt numbers that the firmware
+> > gives us to logical Linux irq numbers between 0 and NR_IRQS-1.  We had
+> > to do that when the POWER5 systems came out, because the interrupt
+> > numbers there occupy 24 bits.
+> 
+> Ah.  That sounds right.  I haven't had a chance to test this version of
+> the patch.  Firmware is currently broken on my machine.
 
-I think the same patch would work mostly for 6xx cpus as well. I however
-dont think have any hardware to test it. If I am not mistaken, to
-support 6xx CPUs, only ppc6xx_idle needs to be modified to call stop_hz_timer 
-before going into power-save mode?
+I was able to validate that these patches do work, and we are receiving
+MSI interrupts correctly.
 
+Is it too late to get into 2.6.17?
 
--- 
-Regards,
-vatsa
+Jake
