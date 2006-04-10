@@ -1,20 +1,16 @@
-Return-Path: <kernel@andred.net>
-Received: from andred.net (sushi.andred.net [217.160.180.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DF648679F8
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
+	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 2057267A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 05:48:52 +1000 (EST)
-Message-ID: <443AB696.7080205@andred.net>
-Date: Mon, 10 Apr 2006 21:48:38 +0200
-From: Andre Draszik <kernel@andred.net>
-MIME-Version: 1.0
-To: Andre Draszik <kernel@andred.net>, linuxppc-embedded@ozlabs.org
-Subject: Re: Slab errors on 4xx (STB04)
-References: <44398BD4.60904@andred.net>
-	<20060410071457.GA16898@gate.ebshome.net>
-In-Reply-To: <20060410071457.GA16898@gate.ebshome.net>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 11 Apr 2006 05:58:16 +1000 (EST)
+Subject: GPIO endianness on MPC8349
+From: Ben Warren <bwarren@qstreams.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Mon, 10 Apr 2006 15:48:21 -0400
+Message-Id: <1144698501.972.103.camel@saruman.qstreams.net>
+Mime-Version: 1.0
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,24 +21,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Eugene Surovegin wrote:
-> On Mon, Apr 10, 2006 at 12:33:56AM +0200, Andre Draszik wrote:
->> Since it _seems_ to work nevertheless - is CONFIG_DEBUG_SLAB known to be
->> broken on this platform?
-> 
-> Yes, it's very likely that CONFIG_DEBUG_SLAB is the culprit here. This 
-> [...]
+Hello,
 
-Thanks Roland and Eugene for the advice.
+I'm a noobie to this CPU, and am utterly confused with how the bits are
+ordered on the GPIO ports.  I imagine it's the same as all Freescale
+PPCs, but who knows.  Anyway...
 
-> You can try changing __dma_sync() to do flush_dcache_range() even for 
-> DMA_FROM_DEVICE case. However, do this only to check this theory, not 
-> as a permanent solution :).
+Using an MPC8349MDS eval board, I have one LED to play with.  From the
+schematic, it's connected to GPIO1[1].  From other processors that I've
+worked with, I would have expected to toggle it with either 0x40000000
+(IBM 405) or 0x00000002 (68360).  Nope.  To make this bit move, I mess
+with bit 0x00000040 in the appropriate DAT register.  This leads me to
+believe that either the bit ordering is something
+like ...89abcdef01234567 (sorry for the confusing notation, but
+hopefully it makes sense) or the schematic has a typo.  Since I'm trying
+to write a generic GPIO handler, I'd like to have a little confidence in
+my extrapolation from a single point.
 
-OK, I will play with the cache later today... I wanted DEBUG_SLAB turned
-on for some other unrelated problem, so just for debugging, this hack
-would be fine if it worked :)
+Can anybody shed some light on this?
 
-
-Greetings,
-Andre'
+thanks,
+Ben
