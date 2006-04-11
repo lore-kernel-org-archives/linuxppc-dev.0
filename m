@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2990267A76
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2006 11:35:01 +1000 (EST)
-Subject: Re: Oops: machine check, sig: 7 [#1] - 16-bit Pccard - SOLVED!!!
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
-In-Reply-To: <200604092257.52206.daniel.ritz-ml@swissonline.ch>
-References: <BAY104-F3E7D812AD1E707C145856ABC90@phx.gbl>
-	<200604092257.52206.daniel.ritz-ml@swissonline.ch>
-Content-Type: text/plain
-Date: Tue, 11 Apr 2006 11:30:14 +1000
-Message-Id: <1144719014.19353.11.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH] powerpc: Use rtas query-cpu-stopped-state in smp
+	spinup
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20060407011002.GF9208@localdomain>
+References: <20060404112459.C9170679EB@ozlabs.org>
+	<20060404172550.GE25663@localdomain>
+	<1144236210.6788.6.camel@localhost.localdomain>
+	<20060407011002.GF9208@localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-x1AbwUm2y3Ih5pNKd+Ic"
+Date: Tue, 11 Apr 2006 10:53:20 +0200
+Message-Id: <1144745600.25733.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Edward Felberbaum <efelberbaum@hotmail.com>,
-	linux-pcmcia@lists.infradead.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +27,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > I see from the dmesg output from my original post that memory ranges 
-> > 0xfdd7f000 and 0xfddff000 are used by the Gatwick and Heathrow mac io 
-> > controllers.  That explains the conflict with PCMCIA over 0xfd000000.
-> 
-> interesting...the memory ranges are used by other devices yet the
-> request_resource() call in PCMCIA succeeds,,,and PCI resources shoudn't
-> be there in the first place then...
-> 
-> ok, it's in file arch/powerpc/platforms/powermac/feature.c...
-> i can't see any request_resource() calls in there...so CC'ing the PPC guys..
-> they can sure comment...
+--=-x1AbwUm2y3Ih5pNKd+Ic
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Most of the macio stuff is in drivers/macintosh/macio_asic.c ... the
-whole macio itself is a PCI device and thus should already "occupy" it's
-possibly address range...
+On Thu, 2006-04-06 at 20:10 -0500, Nathan Lynch wrote:
+> I tried your patch (non-kexec boot) on a 1-way SMT power5 with
+> 2.6.17-rc1 and got the badness below, and I think it matches what I
+> ran into in the past.  Maybe doing query-cpu-stopped-state on a thread
+> that has yet to be started by RTAS mucks things up?
+>=20
+> Memory: 2047640k/2097152k available (5356k kernel code, 49512k
+> reserved, 1412k data, 900k bss, 240k init)
+> Calibrating delay loop... 375.80 BogoMIPS (lpj=3D751616)
+> Security Framework v1.0.0 initialized
+> SELinux:  Disabled at boot.
+> Mount-cache hash table entries: 256
+> Processor 1 is stuck.               <<<<<<<<
 
-> > 
-> > Question, can I minimize the range of memory that is reserved 0xffffff - or 
-> > is it a waste of time?
-> > 
-> 
-> yeah, you probably could, but it sounds like a waste of time...
-> 
-> > Eddie
-> > 
-> 
-> rgds
-> -daniel
+OK, thanks for testing it. This is clearly not going to fly.
+
+cheers
+
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-x1AbwUm2y3Ih5pNKd+Ic
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBEO26AdSjSd0sB4dIRAqmHAKCLQV9OEPsfSvLl+ghnXNYSeYomXwCgyueh
+LtlchO8oFZ5gmZ4TTquOflQ=
+=RAmY
+-----END PGP SIGNATURE-----
+
+--=-x1AbwUm2y3Ih5pNKd+Ic--
