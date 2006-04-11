@@ -1,18 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 886DD679F3
+Return-Path: <reyems@telkomsa.net>
+Received: from ctb-mesg5.saix.net (ctb-mesg5.saix.net [196.25.240.75])
+	by ozlabs.org (Postfix) with ESMTP id E4C6067A58
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 01:16:46 +1000 (EST)
-Date: Tue, 11 Apr 2006 10:14:52 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Stefan Meyer <reyems@telkomsa.net>
+	Wed, 12 Apr 2006 01:24:02 +1000 (EST)
+Message-ID: <003d01c65d7b$f88a6da0$1100a8c0@stefanlaptop>
+From: "Stefan Meyer" <reyems@telkomsa.net>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+References: <Pine.LNX.4.44.0604111013580.25404-100000@gate.crashing.org>
 Subject: Re: Linux kernel for MPC834X platform
-In-Reply-To: <003101c65d7a$c68fbd60$1100a8c0@stefanlaptop>
-Message-ID: <Pine.LNX.4.44.0604111013580.25404-100000@gate.crashing.org>
+Date: Tue, 11 Apr 2006 17:24:04 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,14 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 11 Apr 2006, Stefan Meyer wrote:
+Hi Kumar
+Pardon my ignorance, but  I am not with you on the flat device tree and the 
+new u-boot ??
+Regards
+Stefan
 
-> Hi Kumar
-> Thanks for the advice. I will rebuild for powerpc and report back.
-> B.t.w. what is the story behind the ppc and powerpc branches anyway ?
 
-The powerpc tree is a merge of the ppc32/64 trees into one arch.  It 
-requires a flat device tree to boot.  You will need a new u-boot for this 
-that produces a flat device tree.
+----- Original Message ----- 
+From: "Kumar Gala" <galak@kernel.crashing.org>
+To: "Stefan Meyer" <reyems@telkomsa.net>
+Cc: <linuxppc-embedded@ozlabs.org>
+Sent: Tuesday, April 11, 2006 5:14 PM
+Subject: Re: Linux kernel for MPC834X platform
 
-- kumar
+
+> On Tue, 11 Apr 2006, Stefan Meyer wrote:
+>
+>> Hi Kumar
+>> Thanks for the advice. I will rebuild for powerpc and report back.
+>> B.t.w. what is the story behind the ppc and powerpc branches anyway ?
+>
+> The powerpc tree is a merge of the ppc32/64 trees into one arch.  It
+> requires a flat device tree to boot.  You will need a new u-boot for this
+> that produces a flat device tree.
+>
+> - kumar
+>
+> 
