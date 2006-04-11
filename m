@@ -1,18 +1,20 @@
-Return-Path: <markc@mail.com>
-Received: from smtp1.us4.outblaze.com (smtp1.us4.outblaze.com [205.158.62.78])
-	by ozlabs.org (Postfix) with SMTP id E5BE967B16
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DE6F767A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 22:03:51 +1000 (EST)
-Message-ID: <003601c65d5f$f8e43720$5800000a@CHUCK2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
-References: <91B22F93A880FA48879475E134D6F0BE026CD163@CA1EXCLV02.adcorp.kla-tencor.com><443B0718.3050001@ovro.caltech.edu><91B22F93A880FA48879475E134D6F0BE386FBC@CA1EXCLV02.adcorp.kla-tencor.com><443B1EE9.5030104@ovro.caltech.edu><91B22F93A880FA48879475E134D6F0BE386FBD@CA1EXCLV02.adcorp.kla-tencor.com>
-	<443B27E6.8070607@ovro.caltech.edu>
-Subject: Re: Create permanent mapping from PCI bus to region of physical memory
-Date: Tue, 11 Apr 2006 08:03:37 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+	Tue, 11 Apr 2006 23:03:16 +1000 (EST)
+In-Reply-To: <002301c65d52$fd7c6fd0$1100a8c0@stefanlaptop>
+References: <002301c65d52$fd7c6fd0$1100a8c0@stefanlaptop>
+Mime-Version: 1.0 (Apple Message framework v746.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2A229EEE-36CF-4E1D-B94C-D4EB6AB5F5B3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Linux kernel for MPC834X platform
+Date: Tue, 11 Apr 2006 08:03:20 -0500
+To: Stefan Meyer <reyems@telkomsa.net>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,17 +26,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> You always have the hack of reserving a block of memory
-> at the top of SDRAM, i.e., lie to Linux and tell it it
-> has less memory. It sounds like that might be the least
-> effort. Rubini has an example of how to do that.
-> 
 
-I've done this with a bus-master PCI peripheral and it works
-nicely.  The other point about this is that the mmap() call
-will work rationally with memory above the linux pool, so
-it's easy to go straight to/from user land with this approach.
-(and you can set caching and the guard bit and all that so
-that PPC access works the way you want it to)
+On Apr 11, 2006, at 5:30 AM, Stefan Meyer wrote:
 
-Mark Chambers
+> Hi All
+> Pardon the intrusion if this is not the correct way to get the  
+> relevant information, but I am relatively new to kernel hacking.
+> Anyway here goes my question:
+> I am getting a Freescale MPC8343 based board up and running and  
+> have been using the BSP (with patched 2.6.11 kernel) release by  
+> Freescale with great success.
+> However when I tried to use the USB ISO transactions it seems to be  
+> non functional. I have connected a known good working codec (tested  
+> on my PC's usb) and tried to access it via the low level sound  
+> driver (/dev/dsp) but it only creates garbled noise.
+> In the meanwhile, I have noticed that the official kernel release  
+> 2.6.17 also start supporting the MPC834X platform and would rather  
+> like to persue that avenue to get my problems addressed (hopefully).
+> I have downloaded the latest 2.6.17 kernel and got it going  with  
+> the configuration for MPC834x_sys, with relation to booting and  
+> ethernet comms.
+> However there are clearly no provision in the USB driver for  
+> setting up the usb clocks and ports (which is of course MPC834x  
+> specific).
+> I have tried to hack it by inserting approriate code form the  
+> 2.6.11 freescale kernel but with very little success.
+> On inspection of the 2.6.11 kernel from Freescale I have also  
+> noticed that the USB core drivers were heavily modified around DMA  
+> buffer management, although the 2.6.17 had no such hacks in place.
+> My question simply relates to the status of the MPC834x  
+> implementation on the 2.6.17 kernel in so far that it is  
+> operational and being tested on hardware platforms. Could you  
+> please direct me to the persons(s) who have experience with this  
+> platform ?
+
+The USB support for MPC834x only exists if you build it for  
+ARCH=powerpc.  There is a patch on the list archives for adding  
+support to ARCH=ppc.  I don't know if there is any issue with ISO  
+transactions in those version, but they been shown to work with USB  
+ethernet and USB HD devices.
+
+- kumar
