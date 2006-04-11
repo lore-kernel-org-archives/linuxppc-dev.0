@@ -1,24 +1,24 @@
-Return-Path: <cavok@tiscali.it>
-Received: from filibusta.crema.unimi.it (filibusta.crema.unimi.it
-	[159.149.70.151])
+Return-Path: <Marc.Howard@kla-tencor.com>
+Received: from ca1mail04.kla-tencor.com (mailout04.kla-tencor.com
+	[192.146.1.174])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "filibusta.crema.unimi.it",
-	Issuer "filibusta.crema.unimi.it" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 29AC667A60
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D1DDF67A5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 07:54:06 +1000 (EST)
-Date: Mon, 10 Apr 2006 23:54:28 +0200
-From: Domenico Andreoli <cavokz@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: freescale lite 5200 board and kernel 2.6
-Message-ID: <20060410215428.GA22290@raptus.dandreoli.com>
-References: <20060405210654.GA16848@raptus.dandreoli.com>
-	<20060405212741.GC61331@server.idefix.loc>
-	<20060406221056.GA15540@raptus.dandreoli.com>
-	<20060408082100.GA54030@server.idefix.loc>
+	Tue, 11 Apr 2006 11:14:49 +1000 (EST)
+Received: from CA1EXBH02.adcorp.kla-tencor.com (ca1exbh02.kla-tencor.com
+	[10.60.33.12])
+	by ca1mail04.kla-tencor.com (8.12.10/8.12.11) with ESMTP id
+	k3B0HXwK001367
+	for <linuxppc-embedded@ozlabs.org>; Mon, 10 Apr 2006 17:17:33 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060408082100.GA54030@server.idefix.loc>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Create permanent mapping from PCI bus to region of physical memory
+Date: Mon, 10 Apr 2006 17:17:32 -0700
+Message-ID: <91B22F93A880FA48879475E134D6F0BE026CD163@CA1EXCLV02.adcorp.kla-tencor.com>
+From: "Howard, Marc" <Marc.Howard@kla-tencor.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,36 +29,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sat, Apr 08, 2006 at 10:21:00AM +0200, Matthias Fechner wrote:
-> Hello Domenico,
+Hi,
 
-Hello Matthias,
+I'm working on a PPC440GX based board in which a PCI based peripheral
+communicates with the host via a shared region of processor memory.  The
+peripheral will read and write this region autonomously.  Because of
+this I need a fixed mapping FROM the PCI bus TO system memory.
 
-> * Domenico Andreoli <cavokz@gmail.com> [07-04-06 00:10]:
-> > kernel is built following the instructions on your wiki, i attached
-> > the config file. please have a look, let me know if any check/test may
-> > be advised.
-> 
-> sry, but I have now time to try your kernel config, but I attached
-> mine which is working fine for me.
-> Maybe this helps you.
+It's easy enough to rope off the top 16 MB or so of system physical
+memory by lying to linux in the boot arguments.  What I can't seem find
+is a system call to use to create a fixed, permanent mapping of PPC
+memory as seen from the PCI bus.
 
-unfortunately it does not :/
+Has anyone out there done this and could share a code snippet with me?
 
-sometimes kernel prints "eth0: config: auto-negotiation on, 100HDX,
-10HDX.", the eth0 is up and everything works.
+Thanks,
 
-most of the times "eth0: config: auto-negotiation off, No speed/duplex
-selected?." is instead printed and eth0 seems to not exist.
-
-i tend to exclude hw problems, older kernel 2.4.x always succeed in
-using eth0.
-
-is there any way to force eth0 auto-negotiation?
-
-thank you
-domenico
-
------[ Domenico Andreoli, aka cavok
- --[ http://people.debian.org/~cavok/gpgkey.asc
-   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
+Marc W. Howard
