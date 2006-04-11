@@ -1,22 +1,23 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3167B67B24
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 04:42:15 +1000 (EST)
-Date: Tue, 11 Apr 2006 20:42:08 +0200
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Set cpu explicitly in kernel compiles
-Message-ID: <20060411184208.GA12171@suse.de>
-References: <17016.29775.224816.691409@cargo.ozlabs.ibm.com>
-	<20060402194044.GA866@suse.de>
-	<17460.39696.910677.444426@cargo.ozlabs.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8143D67A6C
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 07:31:35 +1000 (EST)
+Subject: Re: [PATCH 2/2] Base pSeries PCIe support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jake Moilanen <moilanen@austin.ibm.com>
+In-Reply-To: <20060410103929.9664238d.moilanen@austin.ibm.com>
+References: <20060331160203.f2bf8b53.moilanen@austin.ibm.com>
+	<20060331161330.3c723103.moilanen@austin.ibm.com>
+	<17454.15223.929530.985654@cargo.ozlabs.ibm.com>
+	<20060401165723.ab77c81f.moilanen@austin.ibm.com>
+	<20060410103929.9664238d.moilanen@austin.ibm.com>
+Content-Type: text/plain
+Date: Wed, 12 Apr 2006 07:31:06 +1000
+Message-Id: <1144791067.19353.46.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <17460.39696.910677.444426@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, trini@kernel.crashing.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,55 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Thu, Apr 06, Paul Mackeras wrote:
 
-> Olaf Hering writes:
+> I was able to validate that these patches do work, and we are receiving
+> MSI interrupts correctly.
 > 
-> > --- linux-2.6.16-olh.orig/arch/powerpc/Makefile
-> > +++ linux-2.6.16-olh/arch/powerpc/Makefile
-> > @@ -107,6 +107,7 @@ endif
-> >  cpu-as-$(CONFIG_PPC64BRIDGE)	+= -Wa,-mppc64bridge
-> >  cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
-> >  cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
-> > +cpu-as-$(CONFIG_6xx)		+= -mcpu=powerpc
-> 
-> Is this really the right place for this?  The cpu-as- thing is really
-> for assembler options.
+> Is it too late to get into 2.6.17?
 
+Yes and it's totally broken anyway. The whole idea of "hiding" MSIs as
+if they were LSIs is totally irrealistic in practice. Our firmware might
+do it but we have to undo it.
 
+Linux defines the semantics of a driver probe() routine to be called
+with MSIs disabled by default.
 
-Compile the 32bit kernel with -mcpu=powerpc. This reduces the imagesize
-when a compiler is used that defaults to -mtune=power4. It inserts lots 
-of nops to please the 64bit cpu instruction scheduling. But all these nops
-are not needed for 32bit kernels.
+This is very important as for a lot of devices (I'd say the vast
+majority of the devices that claim to be MSI capable), enabling MSI is
+either broken (various HW bugs related to using them, mostly ordering
+issues) or requires all sort of additional tweaking on the device side
+in addition to the standard config space stuffs.
 
-Example with SLES10 gcc 4.1.0 and arch/powerpc/configs/pmac32_defconfig:
+Thus, we need to help whoever is currently ripping off the
+drivers/pci/msi.c code which is way too Intel-centric (there's an SGI
+guy working on it already) and implement an arch specific implementation
+that undoes what the firmware did, and then re-assign MSIs as requested
+by drviers.
 
-                    vmlinux  vmlinux.strip  vmlinux.gz
- -O2                4980515     4187528      1846829
- -Os                4618801     3827084      1673333
- -O2 -mcpu=powerpc  4738851     3945868      1816253
- -Os -mcpu=powerpc  4532785     3741068      1664688
+Some of the Boeblingen folks have already been looking into it as part
+of some bare-metal/bringup effort, but that doesn't include PAPR
+implementation.
 
-
-Signed-off-by: Olaf Hering <olh@suse.de>
-
----
- arch/powerpc/Makefile |    4 ++++
- 1 file changed, 4 insertions(+)
-
-Index: linux-2.6.16-olh/arch/powerpc/Makefile
-===================================================================
---- linux-2.6.16-olh.orig/arch/powerpc/Makefile
-+++ linux-2.6.16-olh/arch/powerpc/Makefile
-@@ -104,6 +104,10 @@ ifndef CONFIG_FSL_BOOKE
- CFLAGS		+= -mstring
- endif
- 
-+ifeq ($(CONFIG_6xx),y)
-+CFLAGS		+= -mcpu=powerpc
-+endif
-+
- cpu-as-$(CONFIG_PPC64BRIDGE)	+= -Wa,-mppc64bridge
- cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
- cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
+Ben.
