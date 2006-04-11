@@ -1,18 +1,21 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH 4/5] powerpc: export symbols for page
-	size selection
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2990267A76
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Apr 2006 11:35:01 +1000 (EST)
+Subject: Re: Oops: machine check, sig: 7 [#1] - 16-bit Pccard - SOLVED!!!
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>
-In-Reply-To: <20060407152813.GA382@lst.de>
-References: <20060407150124.422051000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-	<20060407150743.688538000@dyn-9-152-242-103.boeblingen.de.ibm.com>
-	<20060407152813.GA382@lst.de>
+To: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
+In-Reply-To: <200604092257.52206.daniel.ritz-ml@swissonline.ch>
+References: <BAY104-F3E7D812AD1E707C145856ABC90@phx.gbl>
+	<200604092257.52206.daniel.ritz-ml@swissonline.ch>
 Content-Type: text/plain
-Date: Tue, 11 Apr 2006 11:21:56 +1000
-Message-Id: <1144718517.19353.7.camel@localhost.localdomain>
+Date: Tue, 11 Apr 2006 11:30:14 +1000
+Message-Id: <1144719014.19353.11.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Edward Felberbaum <efelberbaum@hotmail.com>,
+	linux-pcmcia@lists.infradead.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,13 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-04-07 at 17:28 +0200, Christoph Hellwig wrote:
-> On Fri, Apr 07, 2006 at 12:00:04AM +0200, arnd@arndb.de wrote:
-> > We need access to some symbols in powerpc memory management
-> > from spufs in order to create proper SLB entries.
+
+> > I see from the dmesg output from my original post that memory ranges 
+> > 0xfdd7f000 and 0xfddff000 are used by the Gatwick and Heathrow mac io 
+> > controllers.  That explains the conflict with PCMCIA over 0xfd000000.
 > 
-> One more reason to disallow modular spufs..
+> interesting...the memory ranges are used by other devices yet the
+> request_resource() call in PCMCIA succeeds,,,and PCI resources shoudn't
+> be there in the first place then...
+> 
+> ok, it's in file arch/powerpc/platforms/powermac/feature.c...
+> i can't see any request_resource() calls in there...so CC'ing the PPC guys..
+> they can sure comment...
 
-Why ? It's not problem as long as they are exported GPL only ...
+Most of the macio stuff is in drivers/macintosh/macio_asic.c ... the
+whole macio itself is a PCI device and thus should already "occupy" it's
+possibly address range...
 
-Ben.
+> > 
+> > Question, can I minimize the range of memory that is reserved 0xffffff - or 
+> > is it a waste of time?
+> > 
+> 
+> yeah, you probably could, but it sounds like a waste of time...
+> 
+> > Eddie
+> > 
+> 
+> rgds
+> -daniel
