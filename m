@@ -1,15 +1,18 @@
-Return-Path: <kevinmorizur@hotmail.fr>
-Received: from hotmail.com (bay109-f21.bay109.hotmail.com [64.4.19.31])
-	by ozlabs.org (Postfix) with ESMTP id AC276679E6
+Return-Path: <crackpig@gmail.com>
+Received: from uproxy.gmail.com (uproxy.gmail.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 96D0F67A5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 18:20:21 +1000 (EST)
-Message-ID: <BAY109-F2190BC0CB3006D05D94A08A1CD0@phx.gbl>
-From: "kevin morizur" <kevinmorizur@hotmail.fr>
+	Tue, 11 Apr 2006 20:24:00 +1000 (EST)
+Received: by uproxy.gmail.com with SMTP id c2so750876ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 11 Apr 2006 03:23:58 -0700 (PDT)
+Message-ID: <b24c02850604110323t68602c4cu9a8a1a8505a4975@mail.gmail.com>
+Date: Tue, 11 Apr 2006 12:23:58 +0200
+From: stone <crackpig@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: RTC/I2C problems
-Date: Tue, 11 Apr 2006 10:20:14 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Subject: post to the list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,32 +23,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody.
+Thank you!
 
-I have a problem with my RTC, i work on a MEN A12 board with MPC8245 and 
-when my kernel start it takes 8 min to run. I have find the problem but i 
-don't know how to solve it. In time.c the function time_init execute the 
-following lines :
+Welcome to the Linuxppc-embedded@ozlabs.org mailing list!
 
-if (__USE_RTC()) {
-    /* 601 processor: dec counts down by 128 every 128ns */
-    tb_ticks_per_jiffy = DECREMENTER_COUNT_601;
-    /* mulhwu_scale_factor(1000000000, 1000000) is 0x418937 */
-    tb_to_us = 0x0x418937;
-}  else {
-    ppc_md.calibrate_decr();
-    tb_to_ns_scale = mulhwu(tb_to_us, 1000 << 10);
-}
+To post to this list, send your email to:
 
-this is the ppc_md.calibrate_decr() function that takes a lot of time and i 
-don't know how to solve the problem. USE_RTC is fixed at 0 for 6xx config 
-maybe it must be at 1 ? My RTC run with SMBus (I2C). I work with ELDK 4.0 
-and linux 2.6.15.
+ linuxppc-embedded@ozlabs.org
 
-Thanks in advance.
+General information about the mailing list is at:
 
-Regards.
+ https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-_________________________________________________________________
-Tout savoir sur la sécurité de vos enfants sur Internet ! 
-http://go.msn.fr/10-channel/80-security/protection/default.asp
+If you ever want to unsubscribe or change your options (eg, switch to
+or from digest mode, change your password, etc.), visit your
+subscription page at:
+
+ https://ozlabs.org/mailman/options/linuxppc-embedded/crackpig%40gmail.com
+
+
+You can also make such adjustments via email by sending a message to:
+
+ Linuxppc-embedded-request@ozlabs.org
+
+with the word `help' in the subject or body (don't include the
+quotes), and you will get back a message with instructions.
+
+You must know your password to change your options (including changing
+the password, itself) or to unsubscribe.  It is:
+
+ 80548054
+
+Normally, Mailman will remind you of your ozlabs.org mailing list
+passwords once every month, although you can disable this if you
+prefer.  This reminder will also include instructions on how to
+unsubscribe or change your account options.  There is also a button on
+your options page that will email your current password to you.
