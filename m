@@ -1,21 +1,17 @@
-Return-Path: <glikely@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.191])
-	by ozlabs.org (Postfix) with ESMTP id 823F867B1C
+Return-Path: <jjboor@aimsys.nl>
+Received: from mta-fe.casema.nl (cas-mta2-fe.casema.nl [83.80.1.24])
+	by ozlabs.org (Postfix) with ESMTP id 9442F67A76
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 05:46:34 +1000 (EST)
-Received: by nproxy.gmail.com with SMTP id l24so916715nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 12:46:32 -0700 (PDT)
-Message-ID: <528646bc0604111246t5fa92de4n73a43bfb6714b6e@mail.gmail.com>
-Date: Tue, 11 Apr 2006 13:46:31 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Vincent Winstead" <vwinstead@yahoo.com>
-Subject: Re: Xilinx Virtex-2 PRO FPGA ppc 405 on ML310 board
-In-Reply-To: <20060411125550.52660.qmail@web52002.mail.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <20060411125550.52660.qmail@web52002.mail.yahoo.com>
+	Wed, 12 Apr 2006 06:31:22 +1000 (EST)
+In-Reply-To: <000001c65d85$5e699890$5201a8c0@GEG2400>
+References: <000001c65d85$5e699890$5201a8c0@GEG2400>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2A6845D3-BD54-4407-9CC7-B053622E2E20@aimsys.nl>
+From: Jaap-Jan Boor <jjboor@aimsys.nl>
+Subject: Re: NAND and JFFS2 supports in Linux 2.4
+Date: Tue, 11 Apr 2006 22:06:06 +0200
+To: Laurent Lagrange <lagrange@fr.oleane.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,35 +23,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/11/06, Vincent Winstead <vwinstead@yahoo.com> wrote:
+Laurent,
+
+Take a look at the 2.4 http://www.denx.de kernel, it has NAND and jffs2
+support.
+
+Jaap-Jan
+
+On 11-apr-2006, at 18:31, Laurent Lagrange wrote:
+
 >
-> I'm having a real difficulty trying to get linux onto this board.  So I'm
-> finally turning to the community for help.  The only people that have
-> documented their approach to putting open source linux onto the ML310 boa=
-rd
-> have used bitkeeper to download the kernel for the project, but bitkeeper
-> isn't used any more is it?  I've been going straight to kernel.org and
-> getting kernels from there and crosscompiling them on my machine to be
-> transported to the ppc core on the ML310.  Is this wrong?  Is there a pat=
-ch
-> or some kernel source that I don't know about for PPC?  Thanks!
+> Hello,
+>
+> I work on a custom 82xx board with a NAND flash :
+> NAND device: Manufacturer ID: 0xec, Chip ID: 0xf1 (Samsung NAND  
+> 128MiB 3,3V
+> 8-bit)
+>
+> I have to KEEP a Linux 2.4 and can't migrate to a Linux 2.6 for  
+> this board.
+>
+> This type of NAND flash and JFFS2 work fine with a Linux 2.6 but  
+> with a
+> Linux 2.4,
+> this is a little tricky :
+> Linux 2.4.18 or 2.4.25 do not support this device,
+> Linux 2.4.31 seems supporting this device but JFFS2 is not adapted,
+> Linux 2.4.32 does not support this device anymore.
+>
+> On www.linux-mtd.infradead.org, it seems that Linux 2.4 is no more
+> supported.
+>
+> Any help would be welcome
+> Thanks
+> Laurent
+>
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+> -- 
+> This message has been scanned for viruses and is believed to be clean
+>
 
-Are you using 2.4 or 2.6?
-
-Support for the ML300 & ML403 is in the mainline 2.6 git tree.  As
-long as you've got an xparameters.h file for your FPGA bitstream,  you
-should be able to port a 2.6 kernel really easily.
-
-If you want to use 2.4, you can pull the linuxppc rsync mirror which
-has ML300 support in it.
-
-http://www.penguinppc.org/kernel/  (Look at the very bottom of the
-page for the RSYNC mirror)
-
-Cheers,
-g.
-
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 399-0195
+____
+J.G.J. Boor                       Anton Philipsweg 1
+Software Engineer                 1223 KZ Hilversum
+AimSys bv                         tel. +31 35 689 1941
+Postbus 2194, 1200 CD Hilversum   jjboor at aimsys dot nl
