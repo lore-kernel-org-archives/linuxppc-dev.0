@@ -1,17 +1,18 @@
-Return-Path: <reyems@telkomsa.net>
-Received: from ctb-mesg5.saix.net (ctb-mesg5.saix.net [196.25.240.75])
-	by ozlabs.org (Postfix) with ESMTP id E4C6067A58
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 89258679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 01:24:02 +1000 (EST)
-Message-ID: <003d01c65d7b$f88a6da0$1100a8c0@stefanlaptop>
-From: "Stefan Meyer" <reyems@telkomsa.net>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-References: <Pine.LNX.4.44.0604111013580.25404-100000@gate.crashing.org>
+	Wed, 12 Apr 2006 01:25:51 +1000 (EST)
+Date: Tue, 11 Apr 2006 10:23:58 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Stefan Meyer <reyems@telkomsa.net>
 Subject: Re: Linux kernel for MPC834X platform
-Date: Tue, 11 Apr 2006 17:24:04 +0200
+In-Reply-To: <003d01c65d7b$f88a6da0$1100a8c0@stefanlaptop>
+Message-ID: <Pine.LNX.4.44.0604111022330.25404-100000@gate.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,31 +24,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar
-Pardon my ignorance, but  I am not with you on the flat device tree and the 
-new u-boot ??
-Regards
-Stefan
+On Tue, 11 Apr 2006, Stefan Meyer wrote:
 
+> Hi Kumar
+> Pardon my ignorance, but  I am not with you on the flat device tree and the 
+> new u-boot ??
+> Regards
+> Stefan
 
------ Original Message ----- 
-From: "Kumar Gala" <galak@kernel.crashing.org>
-To: "Stefan Meyer" <reyems@telkomsa.net>
-Cc: <linuxppc-embedded@ozlabs.org>
-Sent: Tuesday, April 11, 2006 5:14 PM
-Subject: Re: Linux kernel for MPC834X platform
+Look at Documentation/powerpc/booting-without-of.txt in the kernel tree.  
+I have a u-boot tree @ git.kernel.org/pub/scm/boot/u-boot/u-boot.git which 
+has support for booting the MPC834x ADS/MDS/SYS board from Freescale with 
+a flat device tree for use with the arch/powerpc port.
 
-
-> On Tue, 11 Apr 2006, Stefan Meyer wrote:
->
->> Hi Kumar
->> Thanks for the advice. I will rebuild for powerpc and report back.
->> B.t.w. what is the story behind the ppc and powerpc branches anyway ?
->
-> The powerpc tree is a merge of the ppc32/64 trees into one arch.  It
-> requires a flat device tree to boot.  You will need a new u-boot for this
-> that produces a flat device tree.
->
-> - kumar
->
-> 
+- kumar
