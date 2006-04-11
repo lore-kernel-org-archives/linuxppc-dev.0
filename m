@@ -1,21 +1,19 @@
-Return-Path: <Marc.Howard@KLA-Tencor.com>
-Received: from ca1mail04.kla-tencor.com (mailout04.kla-tencor.com
-	[192.146.1.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02B1567A62
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id EB5E967A62
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 12:56:41 +1000 (EST)
+	Tue, 11 Apr 2006 13:16:15 +1000 (EST)
+Message-ID: <443B1EE9.5030104@ovro.caltech.edu>
+Date: Mon, 10 Apr 2006 20:13:45 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C65D13.7CA363EF"
-Subject: RE: Create permanent mapping from PCI bus to region of physical memory
-Date: Mon, 10 Apr 2006 19:56:10 -0700
-Message-ID: <91B22F93A880FA48879475E134D6F0BE386FBC@CA1EXCLV02.adcorp.kla-tencor.com>
+To: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
+Subject: Re: Create permanent mapping from PCI bus to region of physical memory
 References: <91B22F93A880FA48879475E134D6F0BE026CD163@CA1EXCLV02.adcorp.kla-tencor.com>
 	<443B0718.3050001@ovro.caltech.edu>
-From: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
-To: "David Hawkins" <dwh@ovro.caltech.edu>
+	<91B22F93A880FA48879475E134D6F0BE386FBC@CA1EXCLV02.adcorp.kla-tencor.com>
+In-Reply-To: <91B22F93A880FA48879475E134D6F0BE386FBC@CA1EXCLV02.adcorp.kla-tencor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,157 +25,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C65D13.7CA363EF
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Hi Marc,
 
-Howard, Marc wrote:
->> Hi,
->>=20
->> I'm working on a PPC440GX based board in which a PCI based peripheral
->> communicates with the host via a shared region of processor memory.  =
-The
->> peripheral will read and write this region autonomously.  Because of
->> this I need a fixed mapping FROM the PCI bus TO system memory.
->>
->> It's easy enough to rope off the top 16 MB or so of system physical
->> memory by lying to linux in the boot arguments.  What I can't seem =
-find
->> is a system call to use to create a fixed, permanent mapping of PPC
->> memory as seen from the PCI bus.
->>=20
->> Has anyone out there done this and could share a code snippet with =
-me?
->>=20
+> The periperal is an FPGA.  No, there is no internal processor;
+> everything is coded in Verilog.
+>
+> Scatter/gather isn't a viable option because of this. 
 
->Hi Marc,
+Er, why not, its an FPGA, everything is possible :)
 
->So the PPC440GX is the host, but what is the peripheral, and
->what restricts it to require a fixed address? Can it handle
->a set of fixed addresses, eg. a scatter-gather buffer setup
->by the host? Can the host and peripheral communicate in any
->other way, eg. when the peripheral changes something in the
->shared memory, surely it has to interrupt the host to let it
->know?
+So you have a PCI core, since you are planning to write to
+the host memory space, its a Bus Master PCI core.
+Who's FPGA, Altera, Xilinx, or someone else?
 
->Does the peripheral contain a CPU, if thats the case, then
->the host and peripheral could also maintain a smaller region
->that contains addresses of other pages, i.e., no need to
->restrict the design to a single block of memory, you just
->need a page of pointers to other shared blocks of pages.
+> Additionally non-contiguous memory would reduce bandwidth 
+> and increase FPGA design complexity. 
 
-Dave,
+Not necessarily. If the target is using bus master DMA to
+write to the host memory, then you can hit pretty close
+to the bandwidth of the PCI bus. If you are DMAing in
+big blocks, the overhead of a block change isn't too much.
+I did tests with the 440EP using a DMA controller on an
+adapter board and found that the PCI bridge in the 440EP
+was the limiting factor, i.e., for a 33MHz 32-bit bus
+with a potential for 132MB/s, the *best* you can do is
+about 40MB/s since the bridge only accepts data in cache
+line sizes before sending a retry to the target. I can
+send you those results.
 
-The periperal is an FPGA.  No, there is no internal processor;
-everything is coded in Verilog.
+> The data must be contignuous because
+> of these reasons and the need for the data to be randomly
+> accessible from the outside using simple address arithmetic.
 
-Scatter/gather isn't a viable option because of this.  Additionally
-non-contiguous memory would reduce bandwidth and increase
-FPGA design complexity.  The data must be contignuous because
-of these reasons and the need for the data to be randomly
-accessible from the outside using simple address arithmetic.
+Randomly accessible from where; the host or an I/O interface
+at the FPGA. The pages can be made to appear contiguous to
+a host processor user-space process using the nopage callback
+of the VMA.
 
-I realize this isn't a standard linux request but having
-fixed, linear memory is quite common in embedded apps.  There
-should be a way to create this mapping in the 440GX's hardware
-and I'm just looking for a system call (if there is one) to
-implement it.
+> I realize this isn't a standard linux request but having
+> fixed, linear memory is quite common in embedded apps.  There
+> should be a way to create this mapping in the 440GX's hardware
+> and I'm just looking for a system call (if there is one) to
+> implement it.
 
-Thanks,
+Alas, this is one of the concessions one must make if you
+want to use a processor that enables the MMU. However,
+I don't see any fundamental limitation in the design
+that would preclude a little extra work on the FPGA.
+But, it does require additional Verilog to support
+the flexibility. The long-term advantage is that you
+don't have to provide a hack (eg. reserve a block of
+high-memory under Linux).
 
-Marc
+So how about this concession. If Linux lets you alloc_pages
+in 2MB max chunks, create 8 address decode regions on your
+FPGA. Provide the host access to the 8 address registers.
+When the Linux driver is installed, the driver alloc_pages
+8 times and loads the PCI address of those regions into
+the 8 registers.
 
+On the FPGA side of things create a flat 16MB region, as
+an address passes through a 2MB block, it changes the PCI
+address it decodes to. So, your FPGA believes it has
+a 16MB continuous block, and Linux can supply the memory
+as 8 non-contiguous chunks. Back in user-space on Linux,
+the nopage VMA call is used to map a page-at-a-time
+and the 2MB regions appear as a 16MB contiguous region to
+user-space. (There are probably other ways to make user
+space see it as one block too)
 
-
-
-------_=_NextPart_001_01C65D13.7CA363EF
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">
-<TITLE>RE: Create permanent mapping from PCI bus to region of physical =
-memory</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>Howard, Marc wrote:<BR>
-&gt;&gt; Hi,<BR>
-&gt;&gt;<BR>
-&gt;&gt; I'm working on a PPC440GX based board in which a PCI based =
-peripheral<BR>
-&gt;&gt; communicates with the host via a shared region of processor =
-memory.&nbsp; The<BR>
-&gt;&gt; peripheral will read and write this region autonomously.&nbsp; =
-Because of<BR>
-&gt;&gt; this I need a fixed mapping FROM the PCI bus TO system =
-memory.<BR>
-&gt;&gt;<BR>
-&gt;&gt; It's easy enough to rope off the top 16 MB or so of system =
-physical<BR>
-&gt;&gt; memory by lying to linux in the boot arguments.&nbsp; What I =
-can't seem find<BR>
-&gt;&gt; is a system call to use to create a fixed, permanent mapping of =
-PPC<BR>
-&gt;&gt; memory as seen from the PCI bus.<BR>
-&gt;&gt;<BR>
-&gt;&gt; Has anyone out there done this and could share a code snippet =
-with me?<BR>
-&gt;&gt;<BR>
-<BR>
-&gt;Hi Marc,<BR>
-<BR>
-&gt;So the PPC440GX is the host, but what is the peripheral, and<BR>
-&gt;what restricts it to require a fixed address? Can it handle<BR>
-&gt;a set of fixed addresses, eg. a scatter-gather buffer setup<BR>
-&gt;by the host? Can the host and peripheral communicate in any<BR>
-&gt;other way, eg. when the peripheral changes something in the<BR>
-&gt;shared memory, surely it has to interrupt the host to let it<BR>
-&gt;know?<BR>
-<BR>
-&gt;Does the peripheral contain a CPU, if thats the case, then<BR>
-&gt;the host and peripheral could also maintain a smaller region<BR>
-&gt;that contains addresses of other pages, i.e., no need to<BR>
-&gt;restrict the design to a single block of memory, you just<BR>
-&gt;need a page of pointers to other shared blocks of pages.<BR>
-<BR>
-Dave,<BR>
-<BR>
-The periperal is an FPGA.&nbsp; No, there is no internal processor;<BR>
-everything is coded in Verilog.<BR>
-<BR>
-Scatter/gather isn't a viable option because of this.&nbsp; =
-Additionally<BR>
-non-contiguous memory would reduce bandwidth and increase<BR>
-FPGA design complexity.&nbsp; The data must be contignuous because<BR>
-of these reasons and the need for the data to be randomly<BR>
-accessible from the outside using simple address arithmetic.<BR>
-<BR>
-I realize this isn't a standard linux request but having<BR>
-fixed, linear memory is quite common in embedded apps.&nbsp; There<BR>
-should be a way to create this mapping in the 440GX's hardware<BR>
-and I'm just looking for a system call (if there is one) to<BR>
-implement it.<BR>
-<BR>
-Thanks,<BR>
-<BR>
-Marc<BR>
-<BR>
-<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C65D13.7CA363EF--
+Cheers
+Dave
