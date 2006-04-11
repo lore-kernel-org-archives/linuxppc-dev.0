@@ -1,18 +1,21 @@
-Return-Path: <crackpig@gmail.com>
-Received: from uproxy.gmail.com (uproxy.gmail.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 96D0F67A5A
+Return-Path: <reyems@telkomsa.net>
+Received: from ctb-mesg4.saix.net (ctb-mesg4.saix.net [196.25.240.74])
+	by ozlabs.org (Postfix) with ESMTP id 52BBE67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 20:24:00 +1000 (EST)
-Received: by uproxy.gmail.com with SMTP id c2so750876ugf
+	Tue, 11 Apr 2006 21:34:57 +1000 (EST)
+Received: from stefanlaptop (dsl-165-249-230.telkomadsl.co.za
+	[165.165.249.230])
+	by ctb-mesg4.saix.net (Postfix) with SMTP id 9EA162984
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 03:23:58 -0700 (PDT)
-Message-ID: <b24c02850604110323t68602c4cu9a8a1a8505a4975@mail.gmail.com>
-Date: Tue, 11 Apr 2006 12:23:58 +0200
-From: stone <crackpig@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: post to the list
+	Tue, 11 Apr 2006 13:34:46 +0200 (SAST)
+Message-ID: <005301c65d5b$f763d580$1100a8c0@stefanlaptop>
+From: "Stefan Meyer" <reyems@telkomsa.net>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: checking posting: ignore please
+Date: Tue, 11 Apr 2006 13:34:51 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0050_01C65D6C.B60945F0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,39 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thank you!
+This is a multi-part message in MIME format.
 
-Welcome to the Linuxppc-embedded@ozlabs.org mailing list!
+------=_NextPart_000_0050_01C65D6C.B60945F0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-To post to this list, send your email to:
+Just verifying that the posting is working=20
 
- linuxppc-embedded@ozlabs.org
+------=_NextPart_000_0050_01C65D6C.B60945F0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-General information about the mailing list is at:
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Just verifying that the posting is =
+working=20
+</FONT></DIV>
+<DIV>&nbsp;</DIV></BODY></HTML>
 
- https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-If you ever want to unsubscribe or change your options (eg, switch to
-or from digest mode, change your password, etc.), visit your
-subscription page at:
-
- https://ozlabs.org/mailman/options/linuxppc-embedded/crackpig%40gmail.com
-
-
-You can also make such adjustments via email by sending a message to:
-
- Linuxppc-embedded-request@ozlabs.org
-
-with the word `help' in the subject or body (don't include the
-quotes), and you will get back a message with instructions.
-
-You must know your password to change your options (including changing
-the password, itself) or to unsubscribe.  It is:
-
- 80548054
-
-Normally, Mailman will remind you of your ozlabs.org mailing list
-passwords once every month, although you can disable this if you
-prefer.  This reminder will also include instructions on how to
-unsubscribe or change your account options.  There is also a button on
-your options page that will email your current password to you.
+------=_NextPart_000_0050_01C65D6C.B60945F0--
