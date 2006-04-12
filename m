@@ -1,8 +1,8 @@
 Return-Path: <olof@lixom.net>
-Date: Wed, 12 Apr 2006 15:22:29 -0500
+Date: Wed, 12 Apr 2006 15:26:00 -0500
 To: paulus@ozlabs.org
-Subject: [4/10]: Quiet VETH version printk
-Message-ID: <20060412202229.GK19464@pb15.lixom.net>
+Subject: [7/10]: Lack of ISA interrupts on XICS isn't dangerous
+Message-ID: <20060412202559.GN19464@pb15.lixom.net>
 References: <20060412201823.GG19464@pb15.lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,25 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ibmveth_printk() is only used to print the driver version when the module
-initializes, which means on all machines as long as it's compiled in.
+This isn't really a dangerous thing any more; most systems lack
+ISA interrupt controllers.
 
-If it's really only needed for debugging, boot with loglevel=8, or get
-it from dmesg instead.
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
-
-Index: 2.6/drivers/net/ibmveth.c
+Index: 2.6/arch/powerpc/platforms/pseries/xics.c
 ===================================================================
---- 2.6.orig/drivers/net/ibmveth.c
-+++ 2.6/drivers/net/ibmveth.c
-@@ -61,7 +61,7 @@
- #undef DEBUG
+--- 2.6.orig/arch/powerpc/platforms/pseries/xics.c
++++ 2.6/arch/powerpc/platforms/pseries/xics.c
+@@ -522,7 +522,7 @@ nextnode:
  
- #define ibmveth_printk(fmt, args...) \
--  printk(KERN_INFO "%s: " fmt, __FILE__, ## args)
-+  printk(KERN_DEBUG "%s: " fmt, __FILE__, ## args)
- 
- #define ibmveth_error_printk(fmt, args...) \
-   printk(KERN_ERR "(%s:%3.3d ua:%x) ERROR: " fmt, __FILE__, __LINE__ , adapter->vdev->unit_address, ## args)
+ 	np = of_find_node_by_type(NULL, "interrupt-controller");
+ 	if (!np) {
+-		printk(KERN_WARNING "xics: no ISA interrupt controller\n");
++		printk(KERN_DEBUG "xics: no ISA interrupt controller\n");
+ 		xics_irq_8259_cascade_real = -1;
+ 		xics_irq_8259_cascade = -1;
+ 	} else {
