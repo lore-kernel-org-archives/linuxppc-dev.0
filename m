@@ -1,24 +1,23 @@
-Return-Path: <yding@lnxw.com>
-Received: from smtp.lnxw.com (smtp.lnxw.com [207.21.185.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 85B9367C15
+Return-Path: <glikely@gmail.com>
+Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.189])
+	by ozlabs.org (Postfix) with ESMTP id A9AE767C58
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 04:09:23 +1000 (EST)
-Message-ID: <443D424D.40607@lnxw.com>
-Date: Wed, 12 Apr 2006 11:09:17 -0700
-From: yding <yding@lnxw.com>
+	Thu, 13 Apr 2006 04:42:10 +1000 (EST)
+Received: by nproxy.gmail.com with SMTP id p77so1025153nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 12 Apr 2006 11:42:08 -0700 (PDT)
+Message-ID: <528646bc0604121142l115a4fa4r1d9e6bc532300fb7@mail.gmail.com>
+Date: Wed, 12 Apr 2006 12:42:06 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Vincent Winstead" <vwinstead@yahoo.com>
+Subject: Re: Xilinx Virtex-2 PRO FPGA ppc 405 on ML310 board
+In-Reply-To: <20060412172641.32987.qmail@web52014.mail.yahoo.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: question about Linux 2.6 with Xilinx ML-403
-References: <4436BD2B.9050306@lnxw.com>	
-	<528646bc0604071518i5f95b4dbtd232d8cb92ef4fb9@mail.gmail.com>	
-	<443C61BA.1030404@lnxw.com>
-	<528646bc0604112104h7bb011abue5eefd9fcbce7fbd@mail.gmail.com>
-In-Reply-To: <528646bc0604112104h7bb011abue5eefd9fcbce7fbd@mail.gmail.com>
-Content-Type: multipart/alternative;
-	boundary="------------010304070008080904090208"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+References: <528646bc0604111246t5fa92de4n73a43bfb6714b6e@mail.gmail.com>
+	<20060412172641.32987.qmail@web52014.mail.yahoo.com>
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,94 +28,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010304070008080904090208
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-HI, Grant,
-
-I downloaded Paul's git tree as you suggested.
-
-It seems that the defconfig for ML-403(in Patch [9/9]:
-http://patchwork.ozlabs.org/linuxppc/patch?id=4226 ), the tri-mode
-Ethernet MAC on Virtex-4 FX12 on the ML-403 board was disabled.
-
-Is this Ethernet device supported by this patch ?
-
-Thanks.
---
-Ying Ding
-
-
-Grant Likely wrote:
-
->On 4/11/06, yding <yding@lnxw.com> wrote:
->  
+On 4/12/06, Vincent Winstead <vwinstead@yahoo.com> wrote:
+> Thanks for the info!  Now I installed rsync onto this computer with
+> configure, then make, then make install and everything seemed to install
+> correctly.  Then i typed in:
 >
->> I just checked out Linus's GIT tree from
->>rsync://rsync.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
->>linux-2.6.
->>
->> Where is the location for Paul's GIT tree ? Just curious ...
->>    
->>
+>  rsync rsync://source.mvista.com/linuxppc-2.4
 >
->rsync://rsync.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+>  but it ended up showing a timed-out error message:
 >
->g.
+>  rsync: failed to connect to source.mvista.com: Connection timed out (110=
+)
+>  rsync error: error in socket IO (code 10) at clientserver.c(107) [receiv=
+er]
 >
->--
->Grant Likely, B.Sc. P.Eng.
->Secret Lab Technologies Ltd.
->(403) 399-0195
->
->  
->
+>  Now, I've had problems in the past in that I can't access any ftp server=
+s
+> due to the fact that I am behind a firewall that I have no control over (=
+on
+> the University of Minnesota campus) and I was wondering - do you think th=
+is
+> might be related to that same problem?
 
---------------010304070008080904090208
-Content-Type: text/html; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+You poor sod.  Yes, this is probably the same problem.  You can access
+it via http instead.  (the git trees on kernel.org can be accessed
+with rsync, http and git protocols.)
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=GB2312" http-equiv="Content-Type">
-  <title></title>
-</head>
-<body bgcolor="#ffffff" text="#000000">
-HI, Grant,<br>
-<br>
-I downloaded Paul's git tree as you suggested. <br>
-<br>
-It seems that the defconfig for ML-403(<i>in Patch [9/9]: <a
- href="http://patchwork.ozlabs.org/linuxppc/patch?id=4226">http://patchwork.ozlabs.org/linuxppc/patch?id=4226</a></i>
-), the tri-mode Ethernet MAC on Virtex-4 FX12 on the ML-403 board was
-disabled. <br>
-<br>
-Is this Ethernet device supported by this patch ?<br>
-<br>
-Thanks.<br>
---<br>
-Ying Ding<br>
-<br>
-<br>
-Grant Likely wrote:<br>
-<blockquote
- cite="mid528646bc0604112104h7bb011abue5eefd9fcbce7fbd@mail.gmail.com"
- type="cite">
-  <pre wrap="">On 4/11/06, yding <a class="moz-txt-link-rfc2396E" href="mailto:yding@lnxw.com">&lt;yding@lnxw.com&gt;</a> wrote:
-  </pre>
-  <blockquote type="cite">
-    <pre wrap=""> I just checked out Linus's GIT tree from
-rsync://rsync.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-linux-2.6.
+BTW, you need to download and install git also (and cogito for a nicer
+front end).
 
- Where is the location for Paul's GIT tree ? Just curious ...
-    </pre>
-  </blockquote>
-  <pre wrap=""><!---->
-rsync://rsync.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+http://git.or.cz/
+
+Then you can do a "cg clone <depot>" to get the tree
 
 g.
 
@@ -124,10 +67,3 @@ g.
 Grant Likely, B.Sc. P.Eng.
 Secret Lab Technologies Ltd.
 (403) 399-0195
-
-  </pre>
-</blockquote>
-</body>
-</html>
-
---------------010304070008080904090208--
