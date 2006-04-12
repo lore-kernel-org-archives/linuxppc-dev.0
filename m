@@ -1,16 +1,17 @@
-Return-Path: <a.korud@vector.com.pl>
-Received: from 3bit.vector.com.pl (3bit.vector.com.pl [81.210.9.37])
-	by ozlabs.org (Postfix) with ESMTP id 914DD67C37
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 1EF7867C3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 02:34:17 +1000 (EST)
+	Thu, 13 Apr 2006 03:01:15 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="ISO-8859-1"
-Subject: U-Boot on 440EP Bamboo board, anybody succeed?
-Date: Wed, 12 Apr 2006 18:22:08 +0200
-Message-ID: <60E856FD577CC04BA3727AF4122D3F1601238501@3bit.vector.com.pl>
-From: "Andriy Korud" <a.korud@vector.com.pl>
-To: <linuxppc-embedded@ozlabs.org>
+	charset="us-ascii"
+Subject: RE: question about Linux 2.6 with Xilinx ML-403
+Date: Wed, 12 Apr 2006 09:49:10 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE4871044F9E54@VCAEXCH01.hq.corp.viasat.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,19 +22,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Grant,
 
-Hi,
-I'm trying to run U-Boot 1.1.4 on original 440EP Bamboo board and have =
-two major problems:
-1. Ethernets don't work, just "Net:   No ethernet found" on boot. In =
-PIBS works.=20
-2. When trying to boot uImage (loaded via USB, as eth doesn't work), it =
-just hang after "Uncompressing Kernel Image ... OK". The same bzImage =
-runs in PIBS.=20
-U-Boot 1.1.4, Linux 2.6.16, compiled with gcc 3.4.5.
+I know I could probably figure this out by looking at the GIT tree
+directly (which I'm planning to do) but could you summarize how much
+(which devices) of the ML-403 is supported by your patches?
 
-Does anybody succeed to run U-Boot on this board?
+Serial? (which Xilinx core)
 
-thanks in advance,=20
+Ethernet? (Hard-Core PLB TEMAC?, Soft-Core PLB EMAC? Localink TEMAC? Is
+10/100/1000 supported, or is there only 1 rate e.g. 1000 supported?)
+
+Anything else (GPIO buttons/switches?)
+
+Thanks,
+Tim
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+tmartin=3Dviasat.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+tmartin=3Dviasat.com@ozlabs.org] On
+Behalf Of Grant Likely
+Sent: Tuesday, April 11, 2006 9:05 PM
+To: yding
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: question about Linux 2.6 with Xilinx ML-403
+
+On 4/11/06, yding <yding@lnxw.com> wrote:
+>  I just checked out Linus's GIT tree from
+>
+rsync://rsync.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+> linux-2.6.
+>
+>  Where is the location for Paul's GIT tree ? Just curious ...
+
+rsync://rsync.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+
+g.
+
 --
-Andriy Korud=20
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 399-0195
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
