@@ -1,24 +1,36 @@
-Return-Path: <glikely@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.184])
-	by ozlabs.org (Postfix) with ESMTP id B18EC67C50
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de [83.120.0.234])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 7D1C567C73
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 05:52:31 +1000 (EST)
-Received: by nproxy.gmail.com with SMTP id m19so1026467nfc
+	Thu, 13 Apr 2006 06:09:29 +1000 (EST)
+Received: from server.idefix.loc (ppp-82-135-78-215.mnet-online.de
+	[82.135.78.215]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.4/8.13.4) with ESMTP id k3CK9Pen027329
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 12:52:29 -0700 (PDT)
-Message-ID: <528646bc0604121252r48d93ac0ubf7d60116815c1b5@mail.gmail.com>
-Date: Wed, 12 Apr 2006 13:52:29 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Vincent Winstead" <vwinstead@yahoo.com>
-Subject: Re: Xilinx Virtex-2 PRO FPGA ppc 405 on ML310 board
-In-Reply-To: <20060412193338.75924.qmail@web52010.mail.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <528646bc0604121142l115a4fa4r1d9e6bc532300fb7@mail.gmail.com>
-	<20060412193338.75924.qmail@web52010.mail.yahoo.com>
-Cc: trini@kernel.crashing.org,
-	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+	Wed, 12 Apr 2006 22:09:25 +0200 (CEST)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.loc with local (Exim 4.61 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1FTleX-000Aci-N3
+	for linuxppc-embedded@ozlabs.org; Wed, 12 Apr 2006 22:09:25 +0200
+Date: Wed, 12 Apr 2006 22:09:25 +0200
+From: Matthias Fechner <idefix@fechner.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: freescale lite 5200 board and kernel 2.6
+Message-ID: <20060412200925.GA33398@server.idefix.loc>
+References: <20060405210654.GA16848@raptus.dandreoli.com>
+	<20060405212741.GC61331@server.idefix.loc>
+	<20060406221056.GA15540@raptus.dandreoli.com>
+	<20060408082100.GA54030@server.idefix.loc>
+	<20060410215428.GA22290@raptus.dandreoli.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060410215428.GA22290@raptus.dandreoli.com>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,47 +41,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Please remember to CC the mailing list when replying
+Hello Domenico,
 
-On 4/12/06, Vincent Winstead <vwinstead@yahoo.com> wrote:
->
->    Now, what does that mean, to get the tree.  Does it mean I'll get a li=
-st
-> of possible kernels that I can download, and then i'll have to choose one=
- of
-> them to download?
+* Domenico Andreoli <cavokz@gmail.com> [10-04-06 23:54]:
+> unfortunately it does not :/
 
-It means you get a clone of the source tree + revision history which
-you can easily keep up to date with mainline.  For things like Paul's
-powerpc and powerpc-merge trees, you need to use it because I don't
-think anybody is making .tar.gz snapshots from it.
+im sorry about it, but I'm a newbie too.
+The only think I did is documenting how i got the kernel running. :(
 
->    Also, how come I have to go through all this 'git' mumbo-jumbo?  Why
-> can't I just go to kernel.org and grab one of the 2.6 kernels off of ther=
-e,
-> then untar it?  What's so special about the source.mvista.com kernels
-> through git and rsync?
+> is there any way to force eth0 auto-negotiation?
 
-If you want to use 2.6:  Git is a pretty easy way to keep up to date
-with changes other are making on the tree.  But no, you don't have to
-use it.  Some of the maintainers have snapshots generated from their
-trees which you can download.
+maybe giving a parameter to the bootargs?
+Maybe you found something in the description of the driver in the
+kernelconfiguration.
 
-If you use 2.4: You need to use rsync to get the linuxppc-2.4 tree
-because I don't think anyone is maintaining .tar.gz of the rsync
-snapshot.  Email Tom Rini and ask him.  The linuxppc-2.4 tree is
-special because it's one of the trees that actually has the ML300
-patches integrated.  Mainline does not.
-
-> --
-> Grant Likely, B.Sc. P.Eng.
-> Secret Lab Technologies Ltd.
-> (403) 399-0195
->
->
-
-
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 399-0195
+Best regards,
+Matthias
