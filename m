@@ -1,13 +1,15 @@
 Return-Path: <ALEBAS@televes.com>
 Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id 08F8267B83
+	by ozlabs.org (Postfix) with ESMTP id 5CBE367BCE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 18:05:54 +1000 (EST)
-Message-ID: <1144835330.443ccd021b40a@webmail.televes.com:443>
-Date: Wed, 12 Apr 2006 11:48:50 +0200
+	Wed, 12 Apr 2006 19:39:12 +1000 (EST)
+Message-ID: <1144842264.443ce818d6822@webmail.televes.com:443>
+Date: Wed, 12 Apr 2006 13:44:24 +0200
 From: Bastos Fernandez Alexandre <ALEBAS@televes.com>
 To: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
-Subject: Watchdog on MPC82xx
+Subject: Re: Watchdog on MPC82xx
+References: <1144835330.443ccd021b40a@webmail.televes.com:443>
+In-Reply-To: <1144835330.443ccd021b40a@webmail.televes.com:443>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -21,30 +23,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi list,
+> So, can anyone give me some guidelines for this job? I have seen from
+> freescale docs that MPC83xx watchdog may be the same than MPC82xx one.
+> So, could I use the same approach than used on MPC83xx boards?
+>
+> http://patchwork.ozlabs.org/linuxppc//patch?id=4118
+>
 
-I am trying to use the on-chip watchdog timer in the MPC8248 to
-recover from system hangs.
+Though Freescales doc for MPC83xx says:
 
-I have been following the guidelines from the changes I have found
-from Compulab.
+• Functional and programming compatibility with MPC8260 watchdog timer
 
-In u-boot, the watchdog is activated and works fine. The changes in
-the kernel are, basically, assigning the ppd_md.heartbeat to a function
-which resets the watchdog. This is supposed to start reseting the wdt
-after ppc_md.setup_arch is invoked, but this is not working, and the
-kernel keeps rebooting during startup.
+further reading shows that there is a "little" difference. MPC83xx can
+come out of reset with WDT disabled, while MPC82xx can't. So the approach
+for MPC83xx is not possible on those other systems.
 
-I have tried to catch the point when this happens to force a WD service
-sequence before that, but I had no success.
+So, any other idea? Is the WDT on MPC8248 usable at all?
 
-So, can anyone give me some guidelines for this job? I have seen from
-freescale docs that MPC83xx watchdog may be the same than MPC82xx one.
-So, could I use the same approach than used on MPC83xx boards?
-
-http://patchwork.ozlabs.org/linuxppc//patch?id=4118
-
-
-Thanks in advance
+Thanks,
 
 Alex
