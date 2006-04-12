@@ -1,19 +1,24 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E905D67C14
+Return-Path: <glikely@gmail.com>
+Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.184])
+	by ozlabs.org (Postfix) with ESMTP id B18EC67C50
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 05:39:47 +1000 (EST)
-To: "Andriy Korud" <a.korud@vector.com.pl>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: U-Boot on 440EP Bamboo board, anybody succeed? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 12 Apr 2006 18:22:08 +0200."
-	<60E856FD577CC04BA3727AF4122D3F1601238501@3bit.vector.com.pl>
-Date: Wed, 12 Apr 2006 21:39:44 +0200
-Sender: wd@denx.de
-Message-Id: <20060412193944.EAAC6353C96@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 13 Apr 2006 05:52:31 +1000 (EST)
+Received: by nproxy.gmail.com with SMTP id m19so1026467nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 12 Apr 2006 12:52:29 -0700 (PDT)
+Message-ID: <528646bc0604121252r48d93ac0ubf7d60116815c1b5@mail.gmail.com>
+Date: Wed, 12 Apr 2006 13:52:29 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Vincent Winstead" <vwinstead@yahoo.com>
+Subject: Re: Xilinx Virtex-2 PRO FPGA ppc 405 on ML310 board
+In-Reply-To: <20060412193338.75924.qmail@web52010.mail.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+References: <528646bc0604121142l115a4fa4r1d9e6bc532300fb7@mail.gmail.com>
+	<20060412193338.75924.qmail@web52010.mail.yahoo.com>
+Cc: trini@kernel.crashing.org,
+	linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +29,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <60E856FD577CC04BA3727AF4122D3F1601238501@3bit.vector.com.pl> you wrote:
-> 
-> Does anybody succeed to run U-Boot on this board?
+Please remember to CC the mailing list when replying
 
-Yes, see my reply on the U-Boot list.
+On 4/12/06, Vincent Winstead <vwinstead@yahoo.com> wrote:
+>
+>    Now, what does that mean, to get the tree.  Does it mean I'll get a li=
+st
+> of possible kernels that I can download, and then i'll have to choose one=
+ of
+> them to download?
 
-Please note thet it is really bad manner to post the same question to
-several mailing lists without any indication.
+It means you get a clone of the source tree + revision history which
+you can easily keep up to date with mainline.  For things like Paul's
+powerpc and powerpc-merge trees, you need to use it because I don't
+think anybody is making .tar.gz snapshots from it.
 
-Best regards,
+>    Also, how come I have to go through all this 'git' mumbo-jumbo?  Why
+> can't I just go to kernel.org and grab one of the 2.6 kernels off of ther=
+e,
+> then untar it?  What's so special about the source.mvista.com kernels
+> through git and rsync?
 
-Wolfgang Denk
+If you want to use 2.6:  Git is a pretty easy way to keep up to date
+with changes other are making on the tree.  But no, you don't have to
+use it.  Some of the maintainers have snapshots generated from their
+trees which you can download.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Let's say the docs present a simplified view of reality...    :-)
-                      - Larry Wall in  <6940@jpl-devvax.JPL.NASA.GOV>
+If you use 2.4: You need to use rsync to get the linuxppc-2.4 tree
+because I don't think anyone is maintaining .tar.gz of the rsync
+snapshot.  Email Tom Rini and ask him.  The linuxppc-2.4 tree is
+special because it's one of the trees that actually has the ML300
+patches integrated.  Mainline does not.
+
+> --
+> Grant Likely, B.Sc. P.Eng.
+> Secret Lab Technologies Ltd.
+> (403) 399-0195
+>
+>
+
+
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 399-0195
