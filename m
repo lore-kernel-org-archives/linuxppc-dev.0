@@ -1,23 +1,21 @@
-Return-Path: <glikely@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id 44E7767C52
+Return-Path: <aidan@nicta.com.au>
+Received: from mail25.syd.optusnet.com.au (mail25.syd.optusnet.com.au
+	[211.29.133.166])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DE4C567BBF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 07:55:15 +1000 (EST)
-Received: by nproxy.gmail.com with SMTP id m19so1040269nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 14:55:14 -0700 (PDT)
-Message-ID: <528646bc0604121455l659cfb10of555ad62733f5507@mail.gmail.com>
-Date: Wed, 12 Apr 2006 15:55:14 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Vincent Winstead" <vwinstead@yahoo.com>
-Subject: Re: Xilinx Virtex-2 PRO FPGA ppc 405 on ML310 board
-In-Reply-To: <528646bc0604121450t2467be31med5e97fc14077313@mail.gmail.com>
+	Thu, 13 Apr 2006 08:11:02 +1000 (EST)
+Message-ID: <443D7AF5.6030401@nicta.com.au>
+Date: Thu, 13 Apr 2006 08:11:01 +1000
+From: Aidan Williams <aidan@nicta.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <528646bc0604121252r48d93ac0ubf7d60116815c1b5@mail.gmail.com>
-	<20060412214613.10018.qmail@web52004.mail.yahoo.com>
-	<528646bc0604121450t2467be31med5e97fc14077313@mail.gmail.com>
+To: Vincent Winstead <vwinstead@yahoo.com>
+Subject: Re: Xilinx Virtex-2 PRO FPGA ppc 405 on ML310 board
+References: <528646bc0604121142l115a4fa4r1d9e6bc532300fb7@mail.gmail.com>	<20060412193338.75924.qmail@web52010.mail.yahoo.com>
+	<528646bc0604121252r48d93ac0ubf7d60116815c1b5@mail.gmail.com>
+In-Reply-To: <528646bc0604121252r48d93ac0ubf7d60116815c1b5@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,20 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/12/06, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 4/12/06, Vincent Winstead <vwinstead@yahoo.com> wrote:
->
-> >   So, when you say that the "The linuxppc-2.4 tree is
-> > special because it's one of the trees that actually has the ML300
-> > patches integrated", are you implying that you could put these patches =
-into
-> > the system on your own if you wanted to?
->
-> Of course you can
+Grant Likely wrote:
+> If you use 2.4: You need to use rsync to get the linuxppc-2.4 tree
+> because I don't think anyone is maintaining .tar.gz of the rsync
+> snapshot.  Email Tom Rini and ask him.  The linuxppc-2.4 tree is
+> special because it's one of the trees that actually has the ML300
+> patches integrated.  Mainline does not.
+> 
 
-(assuming of course you can find copies of the patch files)
+For 2.4, I've had good success on two different boards
+using the v2pro and virtex4 parts with:
 
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 399-0195
+   http://www.itee.uq.edu.au/~pml/uclinux_powerpc/
+
+The kernel tarball there has support for various xilinx
+supplied peripheral cores..
+
+The neat thing about this approach is that there is a
+uclinux BSP for the EDK that is used to generate an
+auto-config.in file which you then drop directly
+into the linux kernel tree.
+
+Even though it is about the microblaze rather than
+the PPC, a helpful "getting started" document is:
+http://www.itee.uq.edu.au/~wu/downloads/uClinux_ready_Microblaze_design.pdf
+
+- aidan
