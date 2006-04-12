@@ -1,8 +1,8 @@
 Return-Path: <olof@lixom.net>
-Date: Wed, 12 Apr 2006 15:29:00 -0500
+Date: Wed, 12 Apr 2006 15:20:27 -0500
 To: paulus@ozlabs.org
-Subject: [10/10]: Quiet oprofile output at boot
-Message-ID: <20060412202900.GQ19464@pb15.lixom.net>
+Subject: [2/10]: Quiet time init output
+Message-ID: <20060412202027.GI19464@pb15.lixom.net>
 References: <20060412201823.GG19464@pb15.lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,22 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-No need to always print out which performance monitoring type is used
-on the console at every boot.
+Move time_init console output to KERN_DEBUG prink level. No need to
+print it at every boot.
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
-
-Index: 2.6/arch/powerpc/oprofile/common.c
+Index: 2.6/arch/powerpc/kernel/time.c
 ===================================================================
---- 2.6.orig/arch/powerpc/oprofile/common.c
-+++ 2.6/arch/powerpc/oprofile/common.c
-@@ -162,7 +162,7 @@ int __init oprofile_arch_init(struct opr
- 	ops->stop = op_powerpc_stop;
- 	ops->backtrace = op_powerpc_backtrace;
- 
--	printk(KERN_INFO "oprofile: using %s performance monitoring.\n",
-+	printk(KERN_DEBUG "oprofile: using %s performance monitoring.\n",
- 	       ops->cpu_type);
- 
- 	return 0;
+--- 2.6.orig/arch/powerpc/kernel/time.c
++++ 2.6/arch/powerpc/kernel/time.c
+@@ -945,9 +945,9 @@ void __init time_init(void)
+ 	} else {
+ 		/* Normal PowerPC with timebase register */
+ 		ppc_md.calibrate_decr();
+-		printk(KERN_INFO "time_init: decrementer frequency = %lu.%.6lu MHz\n",
++		printk(KERN_DEBUG "time_init: decrementer frequency = %lu.%.6lu MHz\n",
+ 		       ppc_tb_freq / 1000000, ppc_tb_freq % 1000000);
+-		printk(KERN_INFO "time_init: processor frequency   = %lu.%.6lu MHz\n",
++		printk(KERN_DEBUG "time_init: processor frequency   = %lu.%.6lu MHz\n",
+ 		       ppc_proc_freq / 1000000, ppc_proc_freq % 1000000);
+ 		tb_last_stamp = tb_last_jiffy = get_tb();
+ 	}
