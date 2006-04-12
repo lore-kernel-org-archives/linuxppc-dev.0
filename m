@@ -1,36 +1,19 @@
-Return-Path: <dwilder@us.ibm.com>
-Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E52C167BD6
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 08:43:01 +1000 (EST)
-Received: from e5.ny.us.ibm.com (e5.pok.ibm.com [9.56.232.145])
-	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3CJdgfp015661
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 15:39:43 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3CJdQQv007727
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 15:39:26 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3CJdKfB130074
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 15:39:20 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3CJdJii004713
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 15:39:20 -0400
-Message-ID: <443D618D.5050407@us.ibm.com>
-Date: Wed, 12 Apr 2006 13:22:37 -0700
-From: David Wilder <dwilder@us.ibm.com>
-MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
-Subject: Re: [PATCH] 2 of 3   kdump-ppc64-soft-reset-fixes
-References: <443ADCCE.1070504@us.ibm.com> <20060412171520.GA24681@suse.de>
-In-Reply-To: <20060412171520.GA24681@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: akpm@osdl.org, fastboot@lists.osdl.org, mchintage@in.ibm.com,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <afleming@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id EA98C67B16
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 09:19:54 +1000 (EST)
+In-Reply-To: <1143564910.2660.4.camel@enki.eridu>
+References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
+	<1143564910.2660.4.camel@enki.eridu>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <644FB6AC-3702-41D0-A9E2-6FDEC52B819D@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
+Date: Wed, 12 Apr 2006 18:19:11 -0500
+To: Paul Nasrat <pnasrat@redhat.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,49 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering wrote:
 
-> On Mon, Apr 10, David Wilder wrote:
->
->
->  
->
->>+++ 2617-rc1/arch/powerpc/kernel/crash.c	2006-04-05 13:24:19.000000000 -0700
->>    
+On Mar 28, 2006, at 10:55, Paul Nasrat wrote:
+
+> On Tue, 2006-03-28 at 20:14 +0400, Vitaly Bordug wrote:
+>> Updated the documentation to include the initial description of  
+>> the CPM2
+>> device that are used on PQII and PQIII families. Only initial sub- 
+>> devices
+>> described so far, but that should be sufficient to move the  
+>> respective
+>> boards to powerpc, with a reasonable minimum supporteddevice set.
 >>
 >
->  
+>> +	5) FCCs (Fast Communications Controllers)
+>> +
+>> +	  Required properties:
+>> +
+>> +	  - device_type : should be "network"
+>> +	  - model : "FCCx", x is typically a small number depending on the
+>> +	  devices amount
+>> +	  - compatible : should be "fs_enet"
+>> +	  - address : List of bytes representing the ethernet address of
+>> +		this controller
 >
->>@@ -185,15 +277,14 @@ void default_machine_crash_shutdown(stru
->> 	 * The kernel is broken so disable interrupts.
->> 	 */
->> 	local_irq_disable();
->>-
->>-	if (ppc_md.kexec_cpu_down)
->>-		ppc_md.kexec_cpu_down(1, 0);
->>-
->> 	/*
->> 	 * Make a note of crashing cpu. Will be used in machine_kexec
->> 	 * such that another IPI will not be sent.
->>    
->>
->
->This change conflicts with the patch for interrupt shutdown. I guess
->both patches are needed, as each one fixes a different bug?
->
->http://ozlabs.org/pipermail/linuxppc-dev/2006-April/021855.html
->[PATCH] powerpc: Disable and EOI interrupts in machine_crash_shutdown()
->
->  
->
-
-Yes both are needed,  I don t see the conflict.  If you apply interrupt 
-shutdown first then the soft-reset patch.  It should work ok.
+> Umm should we not use local-mac-address and mac-address (and
+> address-bits) as in section 3.7.4 in 1275-1994?
 
 
--- 
-David Wilder
-IBM Linux Technology Center
-Beaverton, Oregon, USA 
-dwilder@us.ibm.com
-(503)578-3789
+So no one chimed in on this.  Clearly, 1275 states that it's supposed  
+to be local-mac-address or mac-address.  We use "address".  But I'm  
+pretty sure we copied our ethernet node from somewhere else, so which  
+one should it be?
+
+Andy Fleming
