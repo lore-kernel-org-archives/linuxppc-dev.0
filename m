@@ -1,8 +1,8 @@
 Return-Path: <olof@lixom.net>
-Date: Wed, 12 Apr 2006 15:25:01 -0500
+Date: Wed, 12 Apr 2006 15:22:29 -0500
 To: paulus@ozlabs.org
-Subject: [6/10]: Less verbose mem configuration output
-Message-ID: <20060412202501.GM19464@pb15.lixom.net>
+Subject: [4/10]: Quiet VETH version printk
+Message-ID: <20060412202229.GK19464@pb15.lixom.net>
 References: <20060412201823.GG19464@pb15.lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,69 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Quieten some of the debug ram config output. we already print out available
-memory at KERN_INFO level.
+ibmveth_printk() is only used to print the driver version when the module
+initializes, which means on all machines as long as it's compiled in.
 
+If it's really only needed for debugging, boot with loglevel=8, or get
+it from dmesg instead.
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
 
-Index: 2.6/arch/powerpc/mm/mem.c
+Index: 2.6/drivers/net/ibmveth.c
 ===================================================================
---- 2.6.orig/arch/powerpc/mm/mem.c
-+++ 2.6/arch/powerpc/mm/mem.c
-@@ -299,9 +299,9 @@ void __init paging_init(void)
- 	kmap_prot = PAGE_KERNEL;
- #endif /* CONFIG_HIGHMEM */
+--- 2.6.orig/drivers/net/ibmveth.c
++++ 2.6/drivers/net/ibmveth.c
+@@ -61,7 +61,7 @@
+ #undef DEBUG
  
--	printk(KERN_INFO "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
-+	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
- 	       top_of_ram, total_ram);
--	printk(KERN_INFO "Memory hole size: %ldMB\n",
-+	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
- 	       (top_of_ram - total_ram) >> 20);
- 	/*
- 	 * All pages are DMA-able so we put them all in the DMA zone.
-@@ -380,7 +380,7 @@ void __init mem_init(void)
- 			totalhigh_pages++;
- 		}
- 		totalram_pages += totalhigh_pages;
--		printk(KERN_INFO "High memory: %luk\n",
-+		printk(KERN_DEBUG "High memory: %luk\n",
- 		       totalhigh_pages << (PAGE_SHIFT-10));
- 	}
- #endif /* CONFIG_HIGHMEM */
-Index: 2.6/arch/powerpc/mm/numa.c
-===================================================================
---- 2.6.orig/arch/powerpc/mm/numa.c
-+++ 2.6/arch/powerpc/mm/numa.c
-@@ -465,9 +465,9 @@ static void __init setup_nonnuma(void)
- 	unsigned long total_ram = lmb_phys_mem_size();
- 	unsigned int i;
+ #define ibmveth_printk(fmt, args...) \
+-  printk(KERN_INFO "%s: " fmt, __FILE__, ## args)
++  printk(KERN_DEBUG "%s: " fmt, __FILE__, ## args)
  
--	printk(KERN_INFO "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
-+	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
- 	       top_of_ram, total_ram);
--	printk(KERN_INFO "Memory hole size: %ldMB\n",
-+	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
- 	       (top_of_ram - total_ram) >> 20);
- 
- 	for (i = 0; i < lmb.memory.cnt; ++i)
-@@ -485,7 +485,7 @@ void __init dump_numa_cpu_topology(void)
- 		return;
- 
- 	for_each_online_node(node) {
--		printk(KERN_INFO "Node %d CPUs:", node);
-+		printk(KERN_DEBUG "Node %d CPUs:", node);
- 
- 		count = 0;
- 		/*
-@@ -521,7 +521,7 @@ static void __init dump_numa_memory_topo
- 	for_each_online_node(node) {
- 		unsigned long i;
- 
--		printk(KERN_INFO "Node %d Memory:", node);
-+		printk(KERN_DEBUG "Node %d Memory:", node);
- 
- 		count = 0;
- 
+ #define ibmveth_error_printk(fmt, args...) \
+   printk(KERN_ERR "(%s:%3.3d ua:%x) ERROR: " fmt, __FILE__, __LINE__ , adapter->vdev->unit_address, ## args)
