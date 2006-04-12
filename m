@@ -1,18 +1,18 @@
-Return-Path: <jarno.manninen@tut.fi>
-Received: from kivi.ton.tut.fi (kivi.ton.tut.fi [193.166.235.14])
-	by ozlabs.org (Postfix) with ESMTP id 8383367BBE
+Return-Path: <bcook@bpointsys.com>
+Received: from bpointsys.com (70-253-197-251.ded.swbell.net [70.253.197.251])
+	by ozlabs.org (Postfix) with ESMTP id F186967BD1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 22:40:57 +1000 (EST)
-From: Jarno Manninen <jarno.manninen@tut.fi>
+	Wed, 12 Apr 2006 23:02:37 +1000 (EST)
+From: Brent Cook <bcook@bpointsys.com>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: root file system mounted via NFS - retry?
-Date: Wed, 12 Apr 2006 15:40:41 +0300
+Date: Wed, 12 Apr 2006 07:50:31 -0500
 References: <443CF3F8.408@imagemap.com>
 In-Reply-To: <443CF3F8.408@imagemap.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200604121540.41148.jarno.manninen@tut.fi>
+Message-Id: <200604120750.31421.bcook@bpointsys.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,15 +23,7 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 12 April 2006 15:35, Randy Smith wrote:
-
-Hi,
-
-If your system configuration is static why not just sleep in the bootloader 
-for a while? U-boot has sleep command.
-
-- Jarno
-
+On Wednesday 12 April 2006 07:35, Randy Smith wrote:
 > Hello,
 >
 > I have a general question regarding having a root file system mounted
@@ -45,19 +37,20 @@ for a while? U-boot has sleep command.
 > What I would like for them to do is keep trying until the NFS server
 > appears and then continue to boot.
 >
-> We are running DENX's ELDK 2.4.25 kernel on the ppc boards and I know
-> that for some linux releases, one may add values for timeo and retrans
-> on the boot command line in the NFSROOT= command.  Can anyone tell me if
-> they are valid for this release of the kernel?  Or if there is another
-> way to accomplish this?
->
-> Thanks,
->
-> -Randy Smith
-> Software Engineer
-> ImageMap, Inc.
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+Sorry to try the obvious, but could you make the firmware's auto-boot timeout 
+longer? I know that u-boot and several others support this.
+
+Also, you could try, instead of mounting root NFS directly from the kernel, an 
+initrd or embedding an initramfs that does the mount using a script. They you 
+could retry as much as you wanted without having to teach the kernel 
+anything.
+
+Or, just hook up some GPIOs from your PC to the reset lines on those PPC's. 
+Then reset them once your PC is up.
+
+Or rather than running the PPC kernel from flash, tftp it to RAM from your 
+PC - that way your PPCs can't even load the kernel until the PC is up 
+(assuming your firmware knows how to do this and handles faults gracefully.)
+
+ - Brent
