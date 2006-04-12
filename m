@@ -1,25 +1,18 @@
-Return-Path: <glikely@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id C81B267C6F
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E905D67C14
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 04:46:18 +1000 (EST)
-Received: by nproxy.gmail.com with SMTP id m19so1017440nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 11:46:17 -0700 (PDT)
-Message-ID: <528646bc0604121146q27764925n8d87e43e8effd568@mail.gmail.com>
-Date: Wed, 12 Apr 2006 12:46:16 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: yding <yding@lnxw.com>
-Subject: Re: question about Linux 2.6 with Xilinx ML-403
-In-Reply-To: <443D424D.40607@lnxw.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <4436BD2B.9050306@lnxw.com>
-	<528646bc0604071518i5f95b4dbtd232d8cb92ef4fb9@mail.gmail.com>
-	<443C61BA.1030404@lnxw.com>
-	<528646bc0604112104h7bb011abue5eefd9fcbce7fbd@mail.gmail.com>
-	<443D424D.40607@lnxw.com>
+	Thu, 13 Apr 2006 05:39:47 +1000 (EST)
+To: "Andriy Korud" <a.korud@vector.com.pl>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: U-Boot on 440EP Bamboo board, anybody succeed? 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 12 Apr 2006 18:22:08 +0200."
+	<60E856FD577CC04BA3727AF4122D3F1601238501@3bit.vector.com.pl>
+Date: Wed, 12 Apr 2006 21:39:44 +0200
+Sender: wd@denx.de
+Message-Id: <20060412193944.EAAC6353C96@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -31,15 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/12/06, yding <yding@lnxw.com> wrote:
->  Is this Ethernet device supported by this patch ?
+In message <60E856FD577CC04BA3727AF4122D3F1601238501@3bit.vector.com.pl> you wrote:
+> 
+> Does anybody succeed to run U-Boot on this board?
 
-No, sorry.  I'm still trying to get permission to release it (it's
-internal only at the moment)
+Yes, see my reply on the U-Boot list.
 
-g.
+Please note thet it is really bad manner to post the same question to
+several mailing lists without any indication.
 
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 399-0195
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Let's say the docs present a simplified view of reality...    :-)
+                      - Larry Wall in  <6940@jpl-devvax.JPL.NASA.GOV>
