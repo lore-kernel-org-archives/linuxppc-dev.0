@@ -1,21 +1,21 @@
 Return-Path: <apache@imc08.net>
 Received: from imc08.net (imc08.net [66.39.196.184])
-	by ozlabs.org (Postfix) with ESMTP id 1BDB867BA0
+	by ozlabs.org (Postfix) with ESMTP id AE28767B41
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 14:32:58 +1000 (EST)
+	Wed, 12 Apr 2006 16:28:57 +1000 (EST)
 Received: from imc08.net (imc08.net [127.0.0.1])
-	by imc08.net (Postfix) with ESMTP id 76A364E718D
+	by imc08.net (Postfix) with ESMTP id 83320507595
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 22:18:30 -0500 (CDT)
-Date: Tue, 11 Apr 2006 22:18:30 -0500
-Message-Id: <200604120318.k3C3IUtM015608@imc08.net>
+	Wed, 12 Apr 2006 01:25:24 -0500 (CDT)
+Date: Wed, 12 Apr 2006 01:25:24 -0500
+Message-Id: <200604120625.k3C6POp6024096@imc08.net>
 To: linuxppc-embedded@ozlabs.org
 Subject: Check it out
 MIME-Version: 1.0
 Content-type: text/html; charset=iso-8859-1
-From: vijesh.vh@gmail.com
-Sender: vijesh.vh@gmail.com
-Reply-To: vijesh.vh@gmail.com
+From: jefferxu@gmail.com
+Sender: jefferxu@gmail.com
+Reply-To: jefferxu@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,7 +29,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Sign up so we can play
 <br><br> 
-								<a href="http://followhere01.com/go.asp?id=1&sourceid=&friend=Vijesh">http://followhere01.com/go.asp?id=1&sourceid=&friend=Vijesh</a>
+								<a href="http://followhere01.com/go.asp?id=1&sourceid=&friend=">http://followhere01.com/go.asp?id=1&sourceid=&friend=</a>
 <br><br>
 								
 <br>
@@ -52,7 +52,7 @@ Sign up so we can play
 <br>
 <br>
 <br>
-								This invitation was sent on behalf of your friend, Vijesh (vijesh.vh@gmail.com).
+								This invitation was sent on behalf of your friend,  (jefferxu@gmail.com).
 <br>
 								To stop receiving further emails, please <a href="http://followhere01.com/go.asp?id=2">follow-here</a>:
 <br><br>
