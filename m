@@ -2,22 +2,23 @@ Return-Path: <mel@skynet.ie>
 Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CD86C67BC5
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 20:50:40 +1000 (EST)
-Date: Wed, 12 Apr 2006 11:50:31 +0100 (IST)
+	by ozlabs.org (Postfix) with ESMTP id 109A167BDB
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 20:59:07 +1000 (EST)
+Date: Wed, 12 Apr 2006 11:59:01 +0100 (IST)
 From: Mel Gorman <mel@skynet.ie>
-To: "Luck, Tony" <tony.luck@intel.com>
+To: Bob Picco <bob.picco@hp.com>
 Subject: Re: [PATCH 0/6] [RFC] Sizing zones and holes in an architecture
 	independent manner
-In-Reply-To: <20060412000500.GA8532@agluck-lia64.sc.intel.com>
-Message-ID: <Pine.LNX.4.64.0604121001590.24819@skynet.skynet.ie>
+In-Reply-To: <20060412013824.GF23742@localhost>
+Message-ID: <Pine.LNX.4.64.0604121150370.24819@skynet.skynet.ie>
 References: <20060411103946.18153.83059.sendpatchset@skynet>
 	<20060411222029.GA7743@agluck-lia64.sc.intel.com>
-	<Pine.LNX.4.64.0604112352230.6624@skynet.skynet.ie>
-	<20060412000500.GA8532@agluck-lia64.sc.intel.com>
+	<20060411232944.GE23742@localhost>
+	<Pine.LNX.4.64.0604120053080.10268@skynet.skynet.ie>
+	<20060412013824.GF23742@localhost>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org, ak@suse.de,
+Cc: linuxppc-dev@ozlabs.org, ak@suse.de, "Luck, Tony" <tony.luck@intel.com>,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	davej@codemonkey.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,93 +30,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 11 Apr 2006, Luck, Tony wrote:
+On Tue, 11 Apr 2006, Bob Picco wrote:
 
-> On Wed, Apr 12, 2006 at 12:23:45AM +0100, Mel Gorman wrote:
->> Darn.
+> Mel Gorman wrote:	[Tue Apr 11 2006, 08:02:10PM EDT]
+>> On Tue, 11 Apr 2006, Bob Picco wrote:
 >>
->> o Did it boot on other IA64 machines or was the Tiger the first boot failure?
->
-> I only tried to boot on the Tiger.
->
-
-ok, based on your console log, I'm pretty sure it would have broken on 
-almost any IA64.
-
->> o Possibly a stupid question but does the Tiger configuration use the
->>    flatmem memory model, sparsemem or discontig?
->
-> I built using arch/ia64/configs/tiger_defconfig - a FLATMEM config with
-> VIRT_MEM_MAP=y.  The machine has 4G of memory, 2G at 0-2G, and 2G at 6G-8G
-> (so it is somewhat sparse ... but this is pretty normal for an ia64 with
->> 2G).
->
-
-That's useful to know. It means I know what pfn ranges I expect to see 
-being passed to add_active_range().
-
->> If it's flatmem, I noticed I made a stupid mistake where vmem_map is not
->> getting set to (void *)0 for machines with small memory holes. Nothing
->> else really obvious jumped out at me.
+>>> luck wrote:	[Tue Apr 11 2006, 06:20:29PM EDT]
+>>>> On Tue, Apr 11, 2006 at 11:39:46AM +0100, Mel Gorman wrote:
+>>>>
+>>>>> The patches have only been *compile tested* for ia64 with a flatmem
+>>>>> configuration. At attempt was made to boot test on an ancient RS/6000
+>>>>> but the vanilla kernel does not boot so I have to investigate there.
+>>>>
+>>>> The good news: Compilation is clean on the ia64 config variants that
+>>>> I usually build (all 10 of them).
+>>>>
+>>>> The bad (or at least consistent) news: It doesn't boot on an Intel
+>>>> Tiger either (oops at kmem_cache_alloc+0x41).
+>>>>
+>>>> -Tony
+>>> I had a reply queued to report the same failure with
+>>> DISCONTIG+NUMA+VIRTUAL_MEM_MAP.  This was 2 CPU HP rx2600. I'll take a
+>>> closer
+>>> look at the code tomorrow.
+>>>
 >>
->> I've attached a patch called "105-ia64_use_init_nodes.patch". Can you
->> reverse Patch 5/6 and apply this one instead please? I've also attached
->> 107-debug.diff that applies on top of patch 6/6. It just prints out
->> debugging information during startup that may tell me where I went wrong
->> in arch/ia64. I'd really appreciate it if you could use both patches, let
->> me know if it still fails to boot and send me the console log of the
->> machine starting up if it fails so I can make guesses as to what is going
->> wrong.
->>
->> Thanks a lot for trying the patches out on ia64. It was the one arch of
->> the set I had no chance to test with at all :/
+>> hmm, ok, so discontig.c is in use which narrows things down. When
+>> build_node_maps() is called, I assumed that the start and end pfn passed
+>> in was for a valid page range. Was this a valid assumption? When I re-read
+> The addresses are a valid physical range. The caution should be that
+> filter_rsvd_memory converts the addresses from identity mapped to
+> physical. efi_memmap_walk calls back to function with identity mapped
+> addresses. What you've done seems okay.
+
+It would have been ok if I spotted it was physical addresses being passed 
+into count_node_pages(). add_active_range() expects pfns so a >> PAGE_SHIFT
+was missing there.
+
+> BTW - I like want you are attempting to achieve.
+
+Thanks
+
+>> the comment, it implies that memory holes could be within this range which
+>> would cause boot failures. If that is the case, the correct thing to do
+>> was to call add_active_range() in count_node_pages() instead of
+>> build_node_maps().
+> Yes that helps because of granules and it boots.  The patch below is applied
+> on top of your original post. But..
 >
-> Ok, I cloned a branch from patch4, applied the new patch 5, git-cherry-picked
-> patch 6, and then applied the debug patch7.
+> <Patch Snipped>
 >
-> Here's the console log:
+> Page free/avail accounting is off and I'm done for tonight. I believe it's how
+> you treat holes but haven't looked closely yet.
 >
-> <snip snip>
-> add_active_range(0, 16140901064512634880, 16140901066637049856): New
-> add_active_range(0, 16140901066641899520, 16140901066642489344): New
-> add_active_range(0, 16140901070938308608, 16140901073083760640): New
-> add_active_range(0, 16140901073084219392, 16140901073085480960): New
-> <snip snip>
 
-Good man Mel! The callback register_active_ranges() callback is getting 
-*virtual addresses*, not PFNs (which is brutally obvious now!). For 
-discontig, there is a similar story. count_node_pages() is getting a 
-*physical address*, not a pfn (also called start which is a bit confusing 
-but a different problem).
+Thanks for trying it out so late in the evening. The accounting is off 
+because I was passing in physical addresses instead of pfns. The fact it 
+booted at all means we probably registered the memory near address 0 by 
+accident and it would eventually oops.
 
-So some thinking out loud to see if you spot problems;
+>
+> Let me wrap my head around this code again. It's been some time.
 
-o PAGE_OFFSET seems to be 16140901064495857664 from the header file
-o Instead of using add_active_range(node, start, end), assume I had used
-   add_active_range(node,
- 		(start - PAGE_OFFSET) >> PAGE_SHIFT,
- 		(end - PAGE_OFFSET) >> PAGE_SHIFT);
+This is the same patch I posted to Tony that hopefully fix the problems on 
+flatmem. The important changes for your discontig machine is;
 
-That would have made the console log look something like;
+o Registering in count_node_pages() as your patch fixed
+o Converting the physical address passed to count_node_pages() to a PFN
 
-add_active_range(0, 4096, 522752): New
-add_active_range(0, 523936, 524080): New
-add_active_range(0, 1572864, 2096656): New
-add_active_range(0, 2096768, 2097076): New
-
-That seems to register memory about the 0-2G mark and 6-8G with some small 
-holes here and there. Sounds like what you expected to happen. In case the 
-1:1 virt->phys mapping is not always true on IA64, I decided to use __pa() 
-instead of PAGE_OFFSET like;
-
-add_active_range(node, __pa(start) >> PAGE_SHIFT, __pa(end) >> PAGE_SHIFT);
-
-Is this the correct thing to do or is "start - PAGE_OFFSET" safer? 
-Optimistically assuming __pa() is ok, the following patch (which replaces 
-Patch 5/6 again) should boot (passed compile testing here). If it doesn't, 
-can you send the console log again please?
-
-Thanks again.
+Can you try it out when you're next looking at this? Thanks
 
 diff -rup -X /usr/src/patchset-0.5/bin//dontdiff linux-2.6.17-rc1-104-x86_64_use_init_nodes/arch/ia64/Kconfig linux-2.6.17-rc1-105-ia64_use_init_nodes/arch/ia64/Kconfig
 --- linux-2.6.17-rc1-104-x86_64_use_init_nodes/arch/ia64/Kconfig	2006-04-03 04:22:10.000000000 +0100
