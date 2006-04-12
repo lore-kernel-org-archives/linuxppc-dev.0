@@ -1,21 +1,15 @@
-Return-Path: <apache@imc08.net>
-Received: from imc08.net (imc08.net [66.39.196.184])
-	by ozlabs.org (Postfix) with ESMTP id AE28767B41
+Return-Path: <ALEBAS@televes.com>
+Received: from tvesnat.televes.com (unknown [212.163.42.137])
+	by ozlabs.org (Postfix) with ESMTP id 08F8267B83
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 16:28:57 +1000 (EST)
-Received: from imc08.net (imc08.net [127.0.0.1])
-	by imc08.net (Postfix) with ESMTP id 83320507595
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 01:25:24 -0500 (CDT)
-Date: Wed, 12 Apr 2006 01:25:24 -0500
-Message-Id: <200604120625.k3C6POp6024096@imc08.net>
-To: linuxppc-embedded@ozlabs.org
-Subject: Check it out
+	Wed, 12 Apr 2006 18:05:54 +1000 (EST)
+Message-ID: <1144835330.443ccd021b40a@webmail.televes.com:443>
+Date: Wed, 12 Apr 2006 11:48:50 +0200
+From: Bastos Fernandez Alexandre <ALEBAS@televes.com>
+To: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: Watchdog on MPC82xx
 MIME-Version: 1.0
-Content-type: text/html; charset=iso-8859-1
-From: jefferxu@gmail.com
-Sender: jefferxu@gmail.com
-Reply-To: jefferxu@gmail.com
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,37 +21,30 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Sign up so we can play
-<br><br> 
-								<a href="http://followhere01.com/go.asp?id=1&sourceid=&friend=">http://followhere01.com/go.asp?id=1&sourceid=&friend=</a>
-<br><br>
-								
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-								This invitation was sent on behalf of your friend,  (jefferxu@gmail.com).
-<br>
-								To stop receiving further emails, please <a href="http://followhere01.com/go.asp?id=2">follow-here</a>:
-<br><br>
-								Kosta Ourani, 6 
-<br>
-								Pera Chorio Nisou 
-<br>
-								P.C. 2572 Nicosia, Cyprus
+Hi list,
+
+I am trying to use the on-chip watchdog timer in the MPC8248 to
+recover from system hangs.
+
+I have been following the guidelines from the changes I have found
+from Compulab.
+
+In u-boot, the watchdog is activated and works fine. The changes in
+the kernel are, basically, assigning the ppd_md.heartbeat to a function
+which resets the watchdog. This is supposed to start reseting the wdt
+after ppc_md.setup_arch is invoked, but this is not working, and the
+kernel keeps rebooting during startup.
+
+I have tried to catch the point when this happens to force a WD service
+sequence before that, but I had no success.
+
+So, can anyone give me some guidelines for this job? I have seen from
+freescale docs that MPC83xx watchdog may be the same than MPC82xx one.
+So, could I use the same approach than used on MPC83xx boards?
+
+http://patchwork.ozlabs.org/linuxppc//patch?id=4118
+
+
+Thanks in advance
+
+Alex
