@@ -1,26 +1,20 @@
-Return-Path: <bob.picco@hp.com>
-Received: from mailhub.hp.com (mailhub.hp.com [192.151.27.10])
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "mailhub.hp.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 8F58467B55
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 11:38:30 +1000 (EST)
-From: "Bob Picco" <bob.picco@hp.com>
-Date: Tue, 11 Apr 2006 21:38:24 -0400
-To: Mel Gorman <mel@skynet.ie>
-Subject: Re: [PATCH 0/6] [RFC] Sizing zones and holes in an architecture
-	independent manner
-Message-ID: <20060412013824.GF23742@localhost>
-References: <20060411103946.18153.83059.sendpatchset@skynet>
-	<20060411222029.GA7743@agluck-lia64.sc.intel.com>
-	<20060411232944.GE23742@localhost>
-	<Pine.LNX.4.64.0604120053080.10268@skynet.skynet.ie>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4FBF567B8D
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 14:05:16 +1000 (EST)
+Date: Wed, 12 Apr 2006 06:05:03 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Jake Moilanen <moilanen@austin.ibm.com>
+Subject: Re: [PATCH 2/2] Base pSeries PCIe support
+Message-ID: <20060412040503.GA7870@lst.de>
+References: <20060331160203.f2bf8b53.moilanen@austin.ibm.com>
+	<20060331161330.3c723103.moilanen@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.64.0604120053080.10268@skynet.skynet.ie>
-Cc: davej@codemonkey.org.uk, "Luck, Tony" <tony.luck@intel.com>, ak@suse.de,
-	Bob Picco <bob.picco@hp.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <20060331161330.3c723103.moilanen@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,71 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mel Gorman wrote:	[Tue Apr 11 2006, 08:02:10PM EDT]
-> On Tue, 11 Apr 2006, Bob Picco wrote:
-> 
-> >luck wrote:	[Tue Apr 11 2006, 06:20:29PM EDT]
-> >>On Tue, Apr 11, 2006 at 11:39:46AM +0100, Mel Gorman wrote:
-> >>
-> >>>The patches have only been *compile tested* for ia64 with a flatmem
-> >>>configuration. At attempt was made to boot test on an ancient RS/6000
-> >>>but the vanilla kernel does not boot so I have to investigate there.
-> >>
-> >>The good news: Compilation is clean on the ia64 config variants that
-> >>I usually build (all 10 of them).
-> >>
-> >>The bad (or at least consistent) news: It doesn't boot on an Intel
-> >>Tiger either (oops at kmem_cache_alloc+0x41).
-> >>
-> >>-Tony
-> >I had a reply queued to report the same failure with
-> >DISCONTIG+NUMA+VIRTUAL_MEM_MAP.  This was 2 CPU HP rx2600. I'll take a 
-> >closer
-> >look at the code tomorrow.
-> >
-> 
-> hmm, ok, so discontig.c is in use which narrows things down. When 
-> build_node_maps() is called, I assumed that the start and end pfn passed 
-> in was for a valid page range. Was this a valid assumption? When I re-read 
-The addresses are a valid physical range. The caution should be that
-filter_rsvd_memory converts the addresses from identity mapped to
-physical. efi_memmap_walk calls back to function with identity mapped
-addresses. What you've done seems okay.
-BTW - I like want you are attempting to achieve.
-> the comment, it implies that memory holes could be within this range which 
-> would cause boot failures. If that is the case, the correct thing to do 
-> was to call add_active_range() in count_node_pages() instead of 
-> build_node_maps().
-Yes that helps because of granules and it boots.  The patch below is applied 
-on top of your original post. But..
+On Fri, Mar 31, 2006 at 04:13:30PM -0600, Jake Moilanen wrote:
+> This patch hooks our current interrupt subsystem and sets up a single
+> vector MSI as if it was a LSI.  Multiple MSI vectors is coming in the
+> future.
 
-Index: linux-2.6.17-rc1/arch/ia64/mm/discontig.c
-===================================================================
---- linux-2.6.17-rc1.orig/arch/ia64/mm/discontig.c	2006-04-11 20:36:15.000000000 -0400
-+++ linux-2.6.17-rc1/arch/ia64/mm/discontig.c	2006-04-11 20:52:59.000000000 -0400
-@@ -88,9 +88,6 @@ static int __init build_node_maps(unsign
- 	min_low_pfn = min(min_low_pfn, bdp->node_boot_start>>PAGE_SHIFT);
- 	max_low_pfn = max(max_low_pfn, bdp->node_low_pfn);
- 
--	/* Add a known active range */
--	add_active_range(node, start, end);
--
- 	return 0;
- }
- 
-@@ -651,6 +648,8 @@ static __init int count_node_pages(unsig
- 	mem_data[node].min_pfn = min(mem_data[node].min_pfn,
- 				     start >> PAGE_SHIFT);
- 
-+	add_active_range(node, start, end);
-+
- 	return 0;
- }
+This is broken.  Linux drivers expect MSI to be disabled on ->probe.
+There's at least two reasons for that:
 
-Page free/avail accounting is off and I'm done for tonight. I believe it's how 
-you treat holes but haven't looked closely yet.
- 
-
-Let me wrap my head around this code again. It's been some time.
-> 
-bob
+ (1) Many devices that claim to implement MSI are actually broken in
+     more or less subtile ways. and thus must use traditition INTx pins.
+ (2) MSI defines relaxed semantics for dma synchronization.  Silently
+     enabling MSI could cause subtile data corruption.
