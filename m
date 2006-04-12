@@ -1,8 +1,8 @@
 Return-Path: <olof@lixom.net>
-Date: Wed, 12 Apr 2006 15:28:13 -0500
+Date: Wed, 12 Apr 2006 15:25:01 -0500
 To: paulus@ozlabs.org
-Subject: [9/10]: Quiet rtasd output at boot
-Message-ID: <20060412202813.GP19464@pb15.lixom.net>
+Subject: [6/10]: Less verbose mem configuration output
+Message-ID: <20060412202501.GM19464@pb15.lixom.net>
 References: <20060412201823.GG19464@pb15.lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,41 +18,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Most users won't really know the difference between a started RTAS
-daemon and a missing event-scan. Move it to debug levels.
+Quieten some of the debug ram config output. we already print out available
+memory at KERN_INFO level.
 
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
 
-Index: 2.6/arch/powerpc/platforms/pseries/rtasd.c
+Index: 2.6/arch/powerpc/mm/mem.c
 ===================================================================
---- 2.6.orig/arch/powerpc/platforms/pseries/rtasd.c
-+++ 2.6/arch/powerpc/platforms/pseries/rtasd.c
-@@ -348,7 +348,7 @@ static int enable_surveillance(int timeo
- 		return 0;
+--- 2.6.orig/arch/powerpc/mm/mem.c
++++ 2.6/arch/powerpc/mm/mem.c
+@@ -299,9 +299,9 @@ void __init paging_init(void)
+ 	kmap_prot = PAGE_KERNEL;
+ #endif /* CONFIG_HIGHMEM */
  
- 	if (error == -EINVAL) {
--		printk(KERN_INFO "rtasd: surveillance not supported\n");
-+		printk(KERN_DEBUG "rtasd: surveillance not supported\n");
- 		return 0;
+-	printk(KERN_INFO "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
++	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
+ 	       top_of_ram, total_ram);
+-	printk(KERN_INFO "Memory hole size: %ldMB\n",
++	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+ 	       (top_of_ram - total_ram) >> 20);
+ 	/*
+ 	 * All pages are DMA-able so we put them all in the DMA zone.
+@@ -380,7 +380,7 @@ void __init mem_init(void)
+ 			totalhigh_pages++;
+ 		}
+ 		totalram_pages += totalhigh_pages;
+-		printk(KERN_INFO "High memory: %luk\n",
++		printk(KERN_DEBUG "High memory: %luk\n",
+ 		       totalhigh_pages << (PAGE_SHIFT-10));
  	}
+ #endif /* CONFIG_HIGHMEM */
+Index: 2.6/arch/powerpc/mm/numa.c
+===================================================================
+--- 2.6.orig/arch/powerpc/mm/numa.c
++++ 2.6/arch/powerpc/mm/numa.c
+@@ -465,9 +465,9 @@ static void __init setup_nonnuma(void)
+ 	unsigned long total_ram = lmb_phys_mem_size();
+ 	unsigned int i;
  
-@@ -440,7 +440,7 @@ static int rtasd(void *unused)
- 		goto error;
- 	}
+-	printk(KERN_INFO "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
++	printk(KERN_DEBUG "Top of RAM: 0x%lx, Total RAM: 0x%lx\n",
+ 	       top_of_ram, total_ram);
+-	printk(KERN_INFO "Memory hole size: %ldMB\n",
++	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+ 	       (top_of_ram - total_ram) >> 20);
  
--	printk(KERN_INFO "RTAS daemon started\n");
-+	printk(KERN_DEBUG "RTAS daemon started\n");
+ 	for (i = 0; i < lmb.memory.cnt; ++i)
+@@ -485,7 +485,7 @@ void __init dump_numa_cpu_topology(void)
+ 		return;
  
- 	DEBUG("will sleep for %d milliseconds\n", (30000/rtas_event_scan_rate));
+ 	for_each_online_node(node) {
+-		printk(KERN_INFO "Node %d CPUs:", node);
++		printk(KERN_DEBUG "Node %d CPUs:", node);
  
-@@ -487,7 +487,7 @@ static int __init rtas_init(void)
+ 		count = 0;
+ 		/*
+@@ -521,7 +521,7 @@ static void __init dump_numa_memory_topo
+ 	for_each_online_node(node) {
+ 		unsigned long i;
  
- 	/* No RTAS */
- 	if (rtas_token("event-scan") == RTAS_UNKNOWN_SERVICE) {
--		printk(KERN_INFO "rtasd: no event-scan on system\n");
-+		printk(KERN_DEBUG "rtasd: no event-scan on system\n");
- 		return 1;
- 	}
+-		printk(KERN_INFO "Node %d Memory:", node);
++		printk(KERN_DEBUG "Node %d Memory:", node);
+ 
+ 		count = 0;
  
