@@ -1,21 +1,29 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <mel@skynet.ie>
+Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 39E94679EA
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 03:15:32 +1000 (EST)
-Date: Wed, 12 Apr 2006 19:15:20 +0200
-From: Olaf Hering <olh@suse.de>
-To: David Wilder <dwilder@us.ibm.com>
-Subject: Re: [PATCH] 2 of 3   kdump-ppc64-soft-reset-fixes
-Message-ID: <20060412171520.GA24681@suse.de>
-References: <443ADCCE.1070504@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <443ADCCE.1070504@us.ibm.com>
-Cc: akpm@osdl.org, fastboot@lists.osdl.org, mchintage@in.ibm.com,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E36B367C48
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 03:32:49 +1000 (EST)
+Date: Wed, 12 Apr 2006 18:32:42 +0100 (IST)
+From: Mel Gorman <mel@skynet.ie>
+To: "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: [PATCH 0/6] [RFC] Sizing zones and holes in an architecture
+	independent manner
+In-Reply-To: <20060412170726.GA11143@agluck-lia64.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0604121818200.7697@skynet.skynet.ie>
+References: <20060411103946.18153.83059.sendpatchset@skynet>
+	<20060411222029.GA7743@agluck-lia64.sc.intel.com>
+	<Pine.LNX.4.64.0604112352230.6624@skynet.skynet.ie>
+	<20060412000500.GA8532@agluck-lia64.sc.intel.com>
+	<Pine.LNX.4.64.0604121001590.24819@skynet.skynet.ie>
+	<20060412154633.GA10589@agluck-lia64.sc.intel.com>
+	<Pine.LNX.4.64.0604121657380.24819@skynet.skynet.ie>
+	<20060412170726.GA11143@agluck-lia64.sc.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org, ak@suse.de,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	bob.picco@hp.com, davej@codemonkey.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +33,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Mon, Apr 10, David Wilder wrote:
+On Wed, 12 Apr 2006, Luck, Tony wrote:
 
+> On Wed, Apr 12, 2006 at 05:00:32PM +0100, Mel Gorman wrote:
+>> Patch is attached as 105-ia64_use_init_nodes.patch until I beat sense into
+>> my mail setup. I've added Bob Picco to the cc list as he will hit the same
+>> issue with whitespace corruption.
+>
+> Next I tried building a "generic" kernel (using arch/ia64/defconfig). This
+> has NUMA=y and DISCONTIG=y).  This crashes with the following console log.
+>
+>
+> <snipped>
+> add_active_range(0, 0, 4096): New
+> add_active_range(0, 0, 131072): New
+> add_active_range(0, 0, 131072): New
+> add_active_range(0, 393216, 523264): New
+> add_active_range(0, 393216, 523264): New
+> add_active_range(0, 393216, 524288): New
+> add_active_range(0, 393216, 524288): New
 
-> +++ 2617-rc1/arch/powerpc/kernel/crash.c	2006-04-05 13:24:19.000000000 -0700
+This is where it started going wrong. I did not expect add_active_range() 
+to be called with overlapping PFNs so they were not getting merged. If 
+they were getting merged correctly, I'd expect the output to be
 
-> @@ -185,15 +277,14 @@ void default_machine_crash_shutdown(stru
->  	 * The kernel is broken so disable interrupts.
->  	 */
->  	local_irq_disable();
-> -
-> -	if (ppc_md.kexec_cpu_down)
-> -		ppc_md.kexec_cpu_down(1, 0);
-> -
->  	/*
->  	 * Make a note of crashing cpu. Will be used in machine_kexec
->  	 * such that another IPI will not be sent.
+add_active_range(0, 0, 4096): New
+add_active_range(0, 0, 131072): Merging forward
+add_active_range(0, 0, 131072): Merging forward
+add_active_range(0, 393216, 523264): New
+add_active_range(0, 393216, 523264): Merging forward
+add_active_range(0, 393216, 524288): Merging forward
+add_active_range(0, 393216, 524288): Merging forward
 
-This change conflicts with the patch for interrupt shutdown. I guess
-both patches are needed, as each one fixes a different bug?
+> Virtual mem_map starts at 0xa0007ffffe400000
+> Dumping sorted node map
+> entry 0: 0  0 -> 131072
+> entry 1: 0  0 -> 4096
+> entry 2: 0  0 -> 131072
+> entry 3: 0  393216 -> 523264
+> entry 4: 0  393216 -> 524288
+> entry 5: 0  393216 -> 524288
+> entry 6: 0  393216 -> 523264
+> Hole found index 0: 0 -> 0
+> prev_end > start_pfn : 131072 > 0
 
-http://ozlabs.org/pipermail/linuxppc-dev/2006-April/021855.html
-[PATCH] powerpc: Disable and EOI interrupts in machine_crash_shutdown()
+And here is where it goes BLAM. Without the debugging patch, the check is 
+just;
+
+BUG_ON(prev_end_pfn > start_pfn);
+
+The error I was *expecting* to catch was an unsorted node map. It's just 
+nice it caught this situation as well. It'll take a while to fix this up 
+properly.
+
+Thanks
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
