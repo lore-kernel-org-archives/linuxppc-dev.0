@@ -1,18 +1,22 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.185])
-	by ozlabs.org (Postfix) with ESMTP id 61D8E679FC
+Return-Path: <yding@lnxw.com>
+Received: from smtp.lnxw.com (smtp.lnxw.com [207.21.185.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1D53C67B57
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 11:04:33 +1000 (EST)
-Received: by nproxy.gmail.com with SMTP id l24so958432nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Apr 2006 18:04:32 -0700 (PDT)
-Message-ID: <c3d0340b0604111804y5dd65d3em3d15625a9b0ac7da@mail.gmail.com>
-Date: Tue, 11 Apr 2006 18:04:32 -0700
-From: "Shawn Jin" <shawnxjin@gmail.com>
-To: ppcembed <linuxppc-embedded@ozlabs.org>
-Subject: The behavior of L2 cache controller for PPC440
+	Wed, 12 Apr 2006 12:36:41 +1000 (EST)
+Message-ID: <443C61BA.1030404@lnxw.com>
+Date: Tue, 11 Apr 2006 19:11:06 -0700
+From: yding <yding@lnxw.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: question about Linux 2.6 with Xilinx ML-403
+References: <4436BD2B.9050306@lnxw.com>
+	<528646bc0604071518i5f95b4dbtd232d8cb92ef4fb9@mail.gmail.com>
+In-Reply-To: <528646bc0604071518i5f95b4dbtd232d8cb92ef4fb9@mail.gmail.com>
+Content-Type: multipart/alternative;
+	boundary="------------040309030007000805030004"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,36 +27,120 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+This is a multi-part message in MIME format.
+--------------040309030007000805030004
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-I'm testing the error interrupts of a PPC440 L2 cache controller and
-having some confusion about the bahvior of the tag parity error. I
-hope here in the list there are some people had worked on this before
-can shed some light on it.
+Hi, Grant,
 
-I use the error injection bit in L2_CONFIG to generate tag parity
-error. The L2 cache error handler comes from ibm440gx_common.c, which
-uses CTP command to clear a tag error. However once a tag parity error
-occurs, the handler keeps getting invoked and the error interrupt
-keeps asserted. It looks like that the CTP command won't clear the tag
-error or the tag error status bit in L2_STATUS.
+Thanks for the information.
 
-The L2 cache controller spec only says that CTP command will reset the
-tag trap address and way registers within the L2 design such that they
-can trap a new error. From this statement I assume it doesn't clear
-the status bit in L2_STATUS. If my assumption is correct, then the
-L2_INTERRUPT will keep asserted until a CLEAR command invalidates the
-trapped cache line. This is NOT implemented in the ibm440gx_common.c's
-l2_error_handler().
+I just checked out Linus's GIT tree from
+rsync://rsync.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+linux-2.6.
 
-However is it really necessary to use CLEAR command to invalidate the
-cache line? The spec describes tag array parity in section 2.6, which
-says tag parity errors are self correcting since the way with a tag
-parity error will be LRUed out of the L2 cache. So it seems that no
-explicit invalidation is required.
+Where is the location for Paul's GIT tree ? Just curious ...
 
-So my question is "Does or should the CTP command clear the status bit
-in L2_STATUS?"
+Best Regards,
+--
+Ying Ding
 
-Thanks for your comments,
--Shawn.
+
+Grant Likely wrote:
+
+>On 4/7/06, yding <yding@lnxw.com> wrote:
+>  
+>
+>> HI, Grant,
+>>
+>> I found this message :
+>>http://patchwork.ozlabs.org/linuxppc/patch?id=3841 on
+>>Internet.
+>> It looks like you created some patch files for supporting Linux 2.6 with
+>>Xilinx ML-403.
+>>
+>>how can download the whole kernel source tree with your patched files (via
+>>cvs or bitkeeper) ?
+>>    
+>>
+>
+>I believe they are now in Linus' mainline git tree.  If not, they are
+>in Paul's powerpc git tree.
+>
+>BTW, please CC the linuxppc-embedded mailing list when emailing me directly.
+>
+>Cheers,
+>g.
+>--
+>Grant Likely, B.Sc. P.Eng.
+>Secret Lab Technologies Ltd.
+>(403) 399-0195
+>
+>  
+>
+
+--------------040309030007000805030004
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=GB2312" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+Hi, Grant,<br>
+<br>
+Thanks for the information.<br>
+<br>
+I just checked out Linus's GIT tree from
+rsync://rsync.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+linux-2.6.<br>
+<br>
+Where is the location for Paul's GIT tree ? Just curious ...<br>
+<br>
+Best Regards,<br>
+--<br>
+Ying Ding<br>
+<br>
+<br>
+Grant Likely wrote:<br>
+<blockquote
+ cite="mid528646bc0604071518i5f95b4dbtd232d8cb92ef4fb9@mail.gmail.com"
+ type="cite">
+  <pre wrap="">On 4/7/06, yding <a class="moz-txt-link-rfc2396E" href="mailto:yding@lnxw.com">&lt;yding@lnxw.com&gt;</a> wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap=""> HI, Grant,
+
+ I found this message :
+<a class="moz-txt-link-freetext" href="http://patchwork.ozlabs.org/linuxppc/patch?id=3841">http://patchwork.ozlabs.org/linuxppc/patch?id=3841</a> on
+Internet.
+ It looks like you created some patch files for supporting Linux 2.6 with
+Xilinx ML-403.
+
+how can download the whole kernel source tree with your patched files (via
+cvs or bitkeeper) ?
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+I believe they are now in Linus' mainline git tree.  If not, they are
+in Paul's powerpc git tree.
+
+BTW, please CC the linuxppc-embedded mailing list when emailing me directly.
+
+Cheers,
+g.
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 399-0195
+
+  </pre>
+</blockquote>
+</body>
+</html>
+
+--------------040309030007000805030004--
