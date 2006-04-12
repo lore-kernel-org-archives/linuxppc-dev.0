@@ -1,23 +1,22 @@
 Return-Path: <glikely@gmail.com>
 Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.189])
-	by ozlabs.org (Postfix) with ESMTP id A9AE767C58
+	by ozlabs.org (Postfix) with ESMTP id EB8FF67C74
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 04:42:10 +1000 (EST)
-Received: by nproxy.gmail.com with SMTP id p77so1025153nfc
+	Thu, 13 Apr 2006 04:44:56 +1000 (EST)
+Received: by nproxy.gmail.com with SMTP id a25so1174739nfc
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 11:42:08 -0700 (PDT)
-Message-ID: <528646bc0604121142l115a4fa4r1d9e6bc532300fb7@mail.gmail.com>
-Date: Wed, 12 Apr 2006 12:42:06 -0600
+	Wed, 12 Apr 2006 11:44:54 -0700 (PDT)
+Message-ID: <528646bc0604121144t16a900d3r7792c7e0b4830571@mail.gmail.com>
+Date: Wed, 12 Apr 2006 12:44:54 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@gmail.com
-To: "Vincent Winstead" <vwinstead@yahoo.com>
-Subject: Re: Xilinx Virtex-2 PRO FPGA ppc 405 on ML310 board
-In-Reply-To: <20060412172641.32987.qmail@web52014.mail.yahoo.com>
+To: "Martin, Tim" <tim.martin@viasat.com>
+Subject: Re: question about Linux 2.6 with Xilinx ML-403
+In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE4871044F9E54@VCAEXCH01.hq.corp.viasat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-References: <528646bc0604111246t5fa92de4n73a43bfb6714b6e@mail.gmail.com>
-	<20060412172641.32987.qmail@web52014.mail.yahoo.com>
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+References: <821B2170E9E7F04FA38DF7EC21DE4871044F9E54@VCAEXCH01.hq.corp.viasat.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,42 +27,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/12/06, Vincent Winstead <vwinstead@yahoo.com> wrote:
-> Thanks for the info!  Now I installed rsync onto this computer with
-> configure, then make, then make install and everything seemed to install
-> correctly.  Then i typed in:
+On 4/12/06, Martin, Tim <tim.martin@viasat.com> wrote:
+> Grant,
 >
->  rsync rsync://source.mvista.com/linuxppc-2.4
+> I know I could probably figure this out by looking at the GIT tree
+> directly (which I'm planning to do) but could you summarize how much
+> (which devices) of the ML-403 is supported by your patches?
 >
->  but it ended up showing a timed-out error message:
+> Serial? (which Xilinx core)
+Yes, full uart
+
 >
->  rsync: failed to connect to source.mvista.com: Connection timed out (110=
-)
->  rsync error: error in socket IO (code 10) at clientserver.c(107) [receiv=
-er]
+> Ethernet? (Hard-Core PLB TEMAC?, Soft-Core PLB EMAC? Localink TEMAC? Is
+> 10/100/1000 supported, or is there only 1 rate e.g. 1000 supported?)
+
+No.  I've ported the 2.4 driver, but I haven't got permission to
+release it yet.  (I'm a contractor; I don't own any of the work I do)
+
 >
->  Now, I've had problems in the past in that I can't access any ftp server=
-s
-> due to the fact that I am behind a firewall that I have no control over (=
-on
-> the University of Minnesota campus) and I was wondering - do you think th=
-is
-> might be related to that same problem?
+> Anything else (GPIO buttons/switches?)
+I've got drivers for the PS/2 & VGA, but I'm still trying to get them relea=
+sed.
 
-You poor sod.  Yes, this is probably the same problem.  You can access
-it via http instead.  (the git trees on kernel.org can be accessed
-with rsync, http and git protocols.)
-
-BTW, you need to download and install git also (and cogito for a nicer
-front end).
-
-http://git.or.cz/
-
-Then you can do a "cg clone <depot>" to get the tree
-
+Cheers,
 g.
-
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 399-0195
