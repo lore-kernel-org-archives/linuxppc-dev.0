@@ -1,31 +1,21 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx022.isp.belgacom.be (outmx022.isp.belgacom.be
-	[195.238.4.203])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E7BA67BBF
+Return-Path: <rick.moleres@xilinx.com>
+Received: from outbound2-res-R.bigfish.com (outbound-res.frontbridge.com
+	[63.161.60.49])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2C59167CE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 08:30:27 +1000 (EST)
-Received: from outmx022.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k3CMUH68030339
-	for <linuxppc-embedded@ozlabs.org>; Thu, 13 Apr 2006 00:30:18 +0200
-	(envelope-from <tnt@246tNt.com>)
-Received: from [10.0.0.131] (181-88.244.81.adsl.skynet.be [81.244.88.181])
-	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k3CMUGMb030334
-	for <linuxppc-embedded@ozlabs.org>; Thu, 13 Apr 2006 00:30:16 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <443D7F78.30402@246tNt.com>
-Date: Thu, 13 Apr 2006 00:30:16 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
+	Thu, 13 Apr 2006 08:29:13 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: freescale lite 5200 board and kernel 2.6
-References: <20060405210654.GA16848@raptus.dandreoli.com>	<20060405212741.GC61331@server.idefix.loc>	<20060406221056.GA15540@raptus.dandreoli.com>	<20060408082100.GA54030@server.idefix.loc>
-	<20060410215428.GA22290@raptus.dandreoli.com>
-In-Reply-To: <20060410215428.GA22290@raptus.dandreoli.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: question about Linux 2.6 with Xilinx ML-403
+Date: Wed, 12 Apr 2006 15:54:47 -0600
+Message-ID: <689CB232690D8D4E97DA6C76DA098E6C021E5AAA@XCO-EXCHVS1.xlnx.xilinx.com>
+From: "Rick Moleres" <rick.moleres@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+	"Martin, Tim" <tim.martin@viasat.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,42 +26,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Domenico Andreoli wrote:
-> On Sat, Apr 08, 2006 at 10:21:00AM +0200, Matthias Fechner wrote:
->   
->> Hello Domenico,
->>     
->
-> Hello Matthias,
->
->   
->> * Domenico Andreoli <cavokz@gmail.com> [07-04-06 00:10]:
->>     
->>> kernel is built following the instructions on your wiki, i attached
->>> the config file. please have a look, let me know if any check/test may
->>> be advised.
->>>       
->> sry, but I have now time to try your kernel config, but I attached
->> mine which is working fine for me.
->> Maybe this helps you.
->>     
->
-> unfortunately it does not :/
->
-> sometimes kernel prints "eth0: config: auto-negotiation on, 100HDX,
-> 10HDX.", the eth0 is up and everything works.
->
-> most of the times "eth0: config: auto-negotiation off, No speed/duplex
-> selected?." is instead printed and eth0 seems to not exist.
->
-> i tend to exclude hw problems, older kernel 2.4.x always succeed in
-> using eth0.
->
-> is there any way to force eth0 auto-negotiation?
->   
-When it doesn't work, did it detect the phy correctly ?
-Somewhere in the boot sequence it should print something about a LXT971
-being found at some address.
 
+Yes, we have a driver for the PLB TEMAC (different than the GSRD LL
+TEMAC) for Linux 2.4 (MontaVista Linux 2.4.20) that's shipped in EDK
+8.1.1, and MontaVista is on the verge of publishing a driver for PLB
+TEMAC for Linux 2.6. (I believe it came across this mailing list a few
+weeks ago)
 
-    Sylvain
+-Rick
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org] On
+Behalf Of Grant Likely
+Sent: Wednesday, April 12, 2006 3:25 PM
+To: Martin, Tim
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: question about Linux 2.6 with Xilinx ML-403
+
+On 4/12/06, Martin, Tim <tim.martin@viasat.com> wrote:
+>
+> Which 2.4 driver - there's the "Montavista" one for the softcore PLB
+> EMAC, and there's also one for the hardcore PLB TEMAC that gets
+> distributed with the GSRD.
+
+The montavista softcore driver.  Has someone written a driver for the
+TEMAC yet?
+
+g.
+
+--
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+(403) 399-0195
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
