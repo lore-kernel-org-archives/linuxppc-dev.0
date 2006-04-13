@@ -1,20 +1,15 @@
-Return-Path: <michaelellerman@internode.on.net>
-Received: from mail.internode.on.net (bld-mail01.adl2.internode.on.net
-	[203.16.214.65]) by ozlabs.org (Postfix) with ESMTP id 6CF8567DF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 21:07:22 +1000 (EST)
-Subject: Re: [patch][rfc]flattened device tree: Passing a dtb (blob) to Linux.
-From: Michael Ellerman <michaelellerman@internode.on.net>
-To: Jimi Xenidis <jimix@watson.ibm.com>
-In-Reply-To: <C67D530F-2629-4D6B-986B-0FC7CFE525BF@watson.ibm.com>
-References: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
-	<9B2C87C5-0B69-46E7-B48B-9CDB882836B2@watson.ibm.com>
-	<20060413053614.2648467DE3@ozlabs.org>
-	<C67D530F-2629-4D6B-986B-0FC7CFE525BF@watson.ibm.com>
-Content-Type: text/plain
-Date: Thu, 13 Apr 2006 13:07:14 +0200
-Message-Id: <1144926434.7777.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
+Return-Path: <arnd.bergmann@de.ibm.com>
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] [patch] cell: correctly detect systemsim host
+Date: Thu, 13 Apr 2006 13:44:26 +0200
+References: <443E38FE.2050304@de.ibm.com>
+In-Reply-To: <443E38FE.2050304@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200604131344.26392.arnd.bergmann@de.ibm.com>
+Cc: Christian Krafft <krafft@de.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-04-13 at 06:37 -0400, Jimi Xenidis wrote:
-> On Apr 13, 2006, at 1:36 AM, Michael Neuling wrote:
+On Thursday 13 April 2006 13:41, Christian Krafft wrote:
+> Systemsim uses a different compatible property in the device tree.
 > 
-> > Hey Jimi,
-> >
-> >>> NOTE: that the dtc must also not generate the blob reservation
-> >>> entry.
-> >>
-> >> This reservation is only generated for "asm" dtc targets so it is
-> >> only that case that need to be changed.
-> >
-> > The user space kexec tools create a reserve map entry for the blob as
-> > well.
-> good point, but I thought the kexec tools used dtc, no?
+> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 
-No, but they should.
+Thanks.
 
-> looking passed my own world I see:
->    - iSeries: not reserving the blob at all
+I'm wondering if we should have that upstream, since some
+more patches are currently required to run on systemsim
+anyway. For now, I'll keep it in my tree.
 
-That sounds right. I think having the kernel do it is definitely the
-right option.
-
-cheers
-
--- 
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+	Arnd <><
