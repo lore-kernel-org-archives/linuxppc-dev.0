@@ -1,21 +1,20 @@
-Return-Path: <rick.moleres@xilinx.com>
-Received: from outbound2-res-R.bigfish.com (outbound-res.frontbridge.com
-	[63.161.60.49])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2C59167CE9
+Return-Path: <carlos@kenati.com>
+Received: from mail.kenati.com (unknown [69.90.147.196])
+	by ozlabs.org (Postfix) with ESMTP id 32B9F67A05
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 08:29:13 +1000 (EST)
+	Thu, 13 Apr 2006 11:33:45 +1000 (EST)
+Received: from [192.168.1.67] (adsl-71-130-109-177.dsl.snfc21.pacbell.net
+	[71.130.109.177])
+	by mail.kenati.com (Postfix) with ESMTP id 71EE012F000B
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 12 Apr 2006 18:14:37 -0700 (PDT)
+Message-ID: <443DA7D9.8090606@kenati.com>
+Date: Wed, 12 Apr 2006 18:22:33 -0700
+From: Carlos Munoz <carlos@kenati.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: question about Linux 2.6 with Xilinx ML-403
-Date: Wed, 12 Apr 2006 15:54:47 -0600
-Message-ID: <689CB232690D8D4E97DA6C76DA098E6C021E5AAA@XCO-EXCHVS1.xlnx.xilinx.com>
-From: "Rick Moleres" <rick.moleres@xilinx.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>,
-	"Martin, Tim" <tim.martin@viasat.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Freescale 8272ADS configuration
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,40 +25,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-Yes, we have a driver for the PLB TEMAC (different than the GSRD LL
-TEMAC) for Linux 2.4 (MontaVista Linux 2.4.20) that's shipped in EDK
-8.1.1, and MontaVista is on the verge of publishing a driver for PLB
-TEMAC for Linux 2.6. (I believe it came across this mailing list a few
-weeks ago)
+I have a new Freescale 8272ADS board that I need to load uboot and linux 
+on. I have read all the documentation that came with the board but 
+unfortunately it doesn't explain how to bring up the board from scratch. 
+Does anyone know what I need to do to load uboot and linux on this board ?
 
--Rick
+Thanks,
 
------Original Message-----
-From: linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org] On
-Behalf Of Grant Likely
-Sent: Wednesday, April 12, 2006 3:25 PM
-To: Martin, Tim
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: question about Linux 2.6 with Xilinx ML-403
 
-On 4/12/06, Martin, Tim <tim.martin@viasat.com> wrote:
->
-> Which 2.4 driver - there's the "Montavista" one for the softcore PLB
-> EMAC, and there's also one for the hardcore PLB TEMAC that gets
-> distributed with the GSRD.
-
-The montavista softcore driver.  Has someone written a driver for the
-TEMAC yet?
-
-g.
-
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 399-0195
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Carlos
