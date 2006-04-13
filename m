@@ -1,27 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id A396E679F5
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 08:45:38 +1000 (EST)
-Date: Thu, 13 Apr 2006 17:44:39 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 7447A strange problem with MSR:POW (WAS: can't boot 2.6.17-rc1)
-Message-ID: <20060413224439.GP24769@pb15.lixom.net>
-References: <Pine.LNX.4.44.0604071010290.18017-100000@zirkon.biophys.uni-duesseldorf.de>
-	<1144408805.30891.42.camel@localhost.localdomain>
-	<17463.9759.442768.685153@cargo.ozlabs.ibm.com>
-	<1144923633.4935.11.camel@localhost.localdomain>
-	<21F7D7D8-B9BC-44EB-B07B-F888D89DCF25@freescale.com>
-	<1144961737.4935.28.camel@localhost.localdomain>
-	<C7A11372-61BF-4EF7-9869-62B0FD5D8F44@freescale.com>
-	<1144967841.4935.32.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1144967841.4935.32.camel@localhost.localdomain>
-From: Olof Johansson <olof@lixom.net>
-Cc: Becky Bruce <Becky.Bruce@freescale.com>,
-	Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-	debian-powerpc@lists.debian.org, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DD891679E7
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 09:12:31 +1000 (EST)
+Subject: Re: [patch][rfc]flattened device tree: Passing a dtb (blob) to Linux.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jimi Xenidis <jimix@watson.ibm.com>
+In-Reply-To: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
+References: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
+Content-Type: text/plain
+Date: Fri, 14 Apr 2006 09:12:13 +1000
+Message-Id: <1144969933.4935.45.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,12 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 14, 2006 at 08:37:21AM +1000, Benjamin Herrenschmidt wrote:
+On Wed, 2006-04-12 at 22:05 -0400, Jimi Xenidis wrote:
+> A devtree compiler (dtc) generated devtree blob is "relocatable" and  
+> so does not contain a reserved_map entry for the blob itself.
+> This means that if passed to Linux, Linux will not get lmb_reserve()  
+> the blob and it could be over.
+> The following patch will explicitly reserve the "blob" as it was  
+> given to us and stops prom_init.c from creating a reserved mapping  
+> for the blob.
+> 
+> NOTE: that the dtc must also not generate the blob reservation  
+> entry.  Should we try to detect this redundant entry? Should we bump  
+> the DT version number?
 
-> I need to verify what's up with the 970. I noticed Apple has some
+We should make lmb_reserve() of redudant/overlapping entries become
+harmless I think. We need to be backward compatible with earlier blobs
+that do contain themselves in the reserve map
 
-970 keeps executing too. I guess it's never bitten hard enough to
-trigger anything serious.
-
-
--Olof
+Ben.
