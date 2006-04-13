@@ -1,33 +1,17 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D0CB367D66
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 12:05:12 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e35.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3D25956003203
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 22:05:09 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3D21dYY239750
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 20:01:39 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k3D259sZ001415
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 20:05:09 -0600
-Received: from [10.0.1.6] (sig-9-65-60-15.mts.ibm.com [9.65.60.15])
-	by d03av04.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
-	k3D258mM001132
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 20:05:08 -0600
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Message-Id: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linuxppc-dev@ozlabs.org
-From: Jimi Xenidis <jimix@watson.ibm.com>
-Subject: [patch][rfc]flattened device tree: Passing a dtb (blob) to Linux.
-Date: Wed, 12 Apr 2006 22:05:09 -0400
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 73FA267D72
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 12:28:49 +1000 (EST)
+Date: Wed, 12 Apr 2006 21:28:09 -0500
+To: paulus@samba.org
+Subject: [PATCH] [2/2] POWERPC: Lower threshold for DART enablement to 1GB
+Message-ID: <20060413022809.GD24769@pb15.lixom.net>
+References: <20060413020559.GC24769@pb15.lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060413020559.GC24769@pb15.lixom.net>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,55 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A devtree compiler (dtc) generated devtree blob is "relocatable" and  
-so does not contain a reserved_map entry for the blob itself.
-This means that if passed to Linux, Linux will not get lmb_reserve()  
-the blob and it could be over.
-The following patch will explicitly reserve the "blob" as it was  
-given to us and stops prom_init.c from creating a reserved mapping  
-for the blob.
+Hi,
 
-NOTE: that the dtc must also not generate the blob reservation  
-entry.  Should we try to detect this redundant entry? Should we bump  
-the DT version number?
+This goes with the previous dma_mask patch -- enable DART at 1GB due to
+Airport Extreme cards needing it. Please consider for 2.6.17.
 
 
-Signed-off-by:  <jimix@watson.ibm.com>
---
-diff -r eb0990a251a9 arch/powerpc/kernel/prom.c
---- a/arch/powerpc/kernel/prom.c	Thu Mar 30 22:05:40 2006 -0500
-+++ b/arch/powerpc/kernel/prom.c	Wed Apr 12 22:00:27 2006 -0400
-@@ -1132,6 +1132,11 @@ static void __init early_reserve_mem(voi
-	reserve_map = (u64 *)(((unsigned long)initial_boot_params) +
-					initial_boot_params->off_mem_rsvmap);
+Thanks,
+
+Olof
+
+
+---
+
+Turn on the DART already at 1GB. This is needed because of crippled
+devices in some systems, i.e. Airport Extreme cards, only supporting
+30-bit DMA addresses.
+
+Otherwise, users with between 1 and 2GB of memory will need to manually
+enable it with iommu=force, and that's no good.
+
+Some simple performance tests show that there's a slight impact of
+enabling DART, but it's in the 1-3% range (kernel build with disk I/O
+as well as over NFS).
+
+iommu=off can still be used for those who don't want to deal with the
+overhead (and don't need it for any devices).
+
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+Index: 2.6/arch/powerpc/sysdev/dart_iommu.c
+===================================================================
+--- 2.6.orig/arch/powerpc/sysdev/dart_iommu.c
++++ 2.6/arch/powerpc/sysdev/dart_iommu.c
+@@ -329,10 +329,14 @@ void iommu_init_early_dart(void)
+ 
+ void __init alloc_dart_table(void)
+ {
+-	/* Only reserve DART space if machine has more than 2GB of RAM
++	/* Only reserve DART space if machine has more than 1GB of RAM
+ 	 * or if requested with iommu=on on cmdline.
++	 *
++	 * 1GB of RAM is picked as limit because some default devices
++	 * (i.e. Airport Extreme) have 30 bit address range limits.
+ 	 */
+-	if (lmb_end_of_DRAM() <= 0x80000000ull && !iommu_force_on)
 +
-+	/* before we do anything, lets reserve the dt blob */
-+	lmb_reserve(__pa((unsigned long)initial_boot_params),
-+		    initial_boot_params->totalsize);
-+
-#ifdef CONFIG_PPC32
-	/*
-	 * Handle the case where we might be booting from an old kexec
-diff -r eb0990a251a9 arch/powerpc/kernel/prom_init.c
---- a/arch/powerpc/kernel/prom_init.c	Thu Mar 30 22:05:40 2006 -0500
-+++ b/arch/powerpc/kernel/prom_init.c	Wed Apr 12 22:00:27 2006 -0400
-@@ -1909,11 +1909,7 @@ static void __init flatten_device_tree(v
-	/* Version 16 is not backward compatible */
-	hdr->last_comp_version = 0x10;
--	/* Reserve the whole thing and copy the reserve map in, we
--	 * also bump mem_reserve_cnt to cause further reservations to
--	 * fail since it's too late.
--	 */
--	reserve_mem(RELOC(dt_header_start), hdr->totalsize);
-+	/* Copy the reserve map in */
-	memcpy(rsvmap, RELOC(mem_reserve_map), sizeof(mem_reserve_map));
-#ifdef DEBUG_PROM
-@@ -1926,6 +1922,9 @@ static void __init flatten_device_tree(v
-				    RELOC(mem_reserve_map)[i].size);
-	}
-#endif
-+	/* Bump mem_reserve_cnt to cause further reservations to fail
-+	 * since it's too late.
-+	 */
-	RELOC(mem_reserve_cnt) = MEM_RESERVE_MAP_SIZE;
-	prom_printf("Device tree strings 0x%x -> 0x%x\n",
++	if (lmb_end_of_DRAM() <= 0x40000000ull && !iommu_force_on)
+ 		return;
+ 
+ 	/* 512 pages (2MB) is max DART tablesize. */
