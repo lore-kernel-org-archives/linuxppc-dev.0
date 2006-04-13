@@ -1,22 +1,21 @@
-Return-Path: <michaelellerman@internode.on.net>
-Received: from mail.internode.on.net (bld-mail01.adl2.internode.on.net
-	[203.16.214.65]) by ozlabs.org (Postfix) with ESMTP id E7A6867DFA
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 00:34:11 +1000 (EST)
-Subject: Re: [patch][rfc]flattened device tree: Passing a dtb (blob) to Linux.
-From: Michael Ellerman <michaelellerman@internode.on.net>
-To: Jimi Xenidis <jimix@watson.ibm.com>
-In-Reply-To: <2A70CBD7-4A52-4599-8BEF-6AC633F62C83@watson.ibm.com>
-References: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
-	<9B2C87C5-0B69-46E7-B48B-9CDB882836B2@watson.ibm.com>
-	<20060413053614.2648467DE3@ozlabs.org>
-	<C67D530F-2629-4D6B-986B-0FC7CFE525BF@watson.ibm.com>
-	<1144926434.7777.5.camel@localhost.localdomain>
-	<2A70CBD7-4A52-4599-8BEF-6AC633F62C83@watson.ibm.com>
-Content-Type: text/plain
-Date: Thu, 13 Apr 2006 16:34:04 +0200
-Message-Id: <1144938844.7777.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [66.118.10.122])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D5B4B67E12
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 01:15:39 +1000 (EST)
+To: Paul Nasrat <pnasrat@redhat.com>
+Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation 
+In-Reply-To: Your message of "Thu, 13 Apr 2006 01:14:56 EDT."
+	<1144905296.29397.40.camel@enki.eridu>
+References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
+	<1143564910.2660.4.camel@enki.eridu>
+	<644FB6AC-3702-41D0-A9E2-6FDEC52B819D@freescale.com>
+	<1144905296.29397.40.camel@enki.eridu>
+Date: Thu, 13 Apr 2006 10:15:26 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1FU3Xa-0005xd-9m@jdl.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,62 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-04-13 at 09:19 -0400, Jimi Xenidis wrote:
-> Actually, is this even an issue? can the LMB handle repeated  
-> reservations?
-
-It can, but we were thinking about adding code to check and warn if
-reservations overlap, because it usually indicates a bug. Although
-that's probably ok in this case, as long as dtc gets fixed eventually.
-Another option would be to not warn for identical reservations.
-
-cheers
-
-> On Apr 13, 2006, at 7:07 AM, Michael Ellerman wrote:
+So, like, the other day Paul Nasrat mumbled:
 > 
-> > On Thu, 2006-04-13 at 06:37 -0400, Jimi Xenidis wrote:
-> >> On Apr 13, 2006, at 1:36 AM, Michael Neuling wrote:
-> >>
-> >>> Hey Jimi,
-> >>>
-> >>>>> NOTE: that the dtc must also not generate the blob reservation
-> >>>>> entry.
-> >>>>
-> >>>> This reservation is only generated for "asm" dtc targets so it is
-> >>>> only that case that need to be changed.
-> >>>
-> >>> The user space kexec tools create a reserve map entry for the  
-> >>> blob as
-> >>> well.
-> >> good point, but I thought the kexec tools used dtc, no?
-> >
-> > No, but they should.
-> >
-> >> looking passed my own world I see:
-> >>    - iSeries: not reserving the blob at all
-> >
-> > That sounds right. I think having the kernel do it is definitely the
-> > right option.
-> >
-> > cheers
-> >
-> > -- 
-> > Michael Ellerman
-> > IBM OzLabs
-> >
-> > wwweb: http://michael.ellerman.id.au
-> > phone: +61 2 6212 1183 (tie line 70 21183)
-> >
-> > We do not inherit the earth from our ancestors,
-> > we borrow it from our children. - S.M.A.R.T Person
-> >
-> 
--- 
-Michael Ellerman
-IBM OzLabs
+> Well I'm biased and say we shouldn't reinvent the wheel with dtc if we
+> don't need to.  I've sent Jon a patch to start validating this for dtc
+> and am waiting feedback before I add additional device_types.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+What other device_types do you want to check? 
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+> So we
+> should have local-mac-address be preassiged hwaddr and mac-address last
+> used. For some setups this would be the same persistently, but I can
+> envisage some non OF setups populating mac-address from the card. 
+
+I'm sitting at a conference right now.  I'll slate 
+some time for looking into it early next week.
+
+jdl
