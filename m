@@ -1,25 +1,20 @@
-Return-Path: <mel@skynet.ie>
-Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CB84567DE8
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 20:51:29 +1000 (EST)
-Date: Thu, 13 Apr 2006 11:51:17 +0100 (IST)
-From: Mel Gorman <mel@skynet.ie>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Subject: Re: [PATCH 0/7] [RFC] Sizing zones and holes in an architecture
-	independent manner V2
-In-Reply-To: <20060413191700.1146.Y-GOTO@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0604131150370.4452@skynet.skynet.ie>
-References: <20060412232036.18862.84118.sendpatchset@skynet>
-	<20060413095207.GA4047@skynet.ie>
-	<20060413191700.1146.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: davej@codemonkey.org.uk, tony.luck@intel.com,
-	Linux Memory Management List <linux-mm@kvack.org>, ak@suse.de,
-	bob.picco@hp.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <michaelellerman@internode.on.net>
+Received: from mail.internode.on.net (bld-mail01.adl2.internode.on.net
+	[203.16.214.65]) by ozlabs.org (Postfix) with ESMTP id 6CF8567DF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 21:07:22 +1000 (EST)
+Subject: Re: [patch][rfc]flattened device tree: Passing a dtb (blob) to Linux.
+From: Michael Ellerman <michaelellerman@internode.on.net>
+To: Jimi Xenidis <jimix@watson.ibm.com>
+In-Reply-To: <C67D530F-2629-4D6B-986B-0FC7CFE525BF@watson.ibm.com>
+References: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
+	<9B2C87C5-0B69-46E7-B48B-9CDB882836B2@watson.ibm.com>
+	<20060413053614.2648467DE3@ozlabs.org>
+	<C67D530F-2629-4D6B-986B-0FC7CFE525BF@watson.ibm.com>
+Content-Type: text/plain
+Date: Thu, 13 Apr 2006 13:07:14 +0200
+Message-Id: <1144926434.7777.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,16 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 13 Apr 2006, Yasunori Goto wrote:
+On Thu, 2006-04-13 at 06:37 -0400, Jimi Xenidis wrote:
+> On Apr 13, 2006, at 1:36 AM, Michael Neuling wrote:
+> 
+> > Hey Jimi,
+> >
+> >>> NOTE: that the dtc must also not generate the blob reservation
+> >>> entry.
+> >>
+> >> This reservation is only generated for "asm" dtc targets so it is
+> >> only that case that need to be changed.
+> >
+> > The user space kexec tools create a reserve map entry for the blob as
+> > well.
+> good point, but I thought the kexec tools used dtc, no?
 
-> Ah, my willing patch is here. :-).
-> My system, which is Tiger4 with my numa emulation,
-> can boot up by this patch.
->
+No, but they should.
 
-Most excellent! Thanks for testing.
+> looking passed my own world I see:
+>    - iSeries: not reserving the blob at all
+
+That sounds right. I think having the kernel do it is definitely the
+right option.
+
+cheers
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
