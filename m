@@ -1,27 +1,22 @@
-Return-Path: <muli@granada.merseine.nu>
-Received: from mtaout4.012.net.il (mtaout4.012.net.il [84.95.2.10])
-	by ozlabs.org (Postfix) with ESMTP id 6E9E167A3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 03:32:10 +1000 (EST)
-Received: from granada.merseine.nu ([87.69.40.180])
-	by i_mtaout4.012.net.il (HyperSendmail v2004.12)
-	with ESMTP id <0IXO00F348UPP530@i_mtaout4.012.net.il> for
-	linuxppc-dev@ozlabs.org; Thu, 13 Apr 2006 20:35:13 +0300 (IDT)
-Date: Thu, 13 Apr 2006 20:31:21 +0300
-From: Muli Ben-Yehuda <mulix@mulix.org>
-Subject: Re: [PATCH] [2/2] POWERPC: Lower threshold for DART enablement to 1GB,
-	V2
-In-reply-to: <20060413160712.GG24769@pb15.lixom.net>
-To: Olof Johansson <olof@lixom.net>
-Message-id: <20060413173121.GJ10412@granada.merseine.nu>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-References: <20060413020559.GC24769@pb15.lixom.net>
-	<20060413022809.GD24769@pb15.lixom.net>
-	<20060413025233.GE24769@pb15.lixom.net>
-	<20060413064027.GH10412@granada.merseine.nu>
-	<1144925149.4935.14.camel@localhost.localdomain>
-	<20060413160712.GG24769@pb15.lixom.net>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <tony.luck@intel.com>
+Received: from fmsmga101-1.fm.intel.com (mga01.intel.com [192.55.52.88])
+	by ozlabs.org (Postfix) with ESMTP id 26CFE67A40
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 03:47:25 +1000 (EST)
+Date: Thu, 13 Apr 2006 10:47:20 -0700
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 0/7] [RFC] Sizing zones and holes in an architecture
+	independent manner V2
+Message-ID: <20060413174720.GA15183@agluck-lia64.sc.intel.com>
+References: <20060412232036.18862.84118.sendpatchset@skynet>
+	<20060413095207.GA4047@skynet.ie>
+	<20060413171942.GA15047@agluck-lia64.sc.intel.com>
+	<20060413173008.GA19402@skynet.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060413173008.GA19402@skynet.ie>
+Cc: davej@codemonkey.org.uk, linuxppc-dev@ozlabs.org, ak@suse.de,
+	bob.picco@hp.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,18 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 13, 2006 at 11:07:12AM -0500, Olof Johansson wrote:
+> Double counted a hole here, then went downhill. Does the following fix
+> it?
 
-> Walking the DT means we need to hardcode it on PCI IDs, since the Apple
-> OF doesn't give the Airport device a logical name. It's probably easier
-> to implement than walking PCI, but we'd need to maintain a table. My
-> vote is for PCI walking, I'll give that a shot over the weekend.
+Yes, that boots.  What's more the counts of pages in DMA/Normal
+zone match the kernel w/o your patches too.  So for tiger_defconfig
+you've now exactly matched the old behaivour.
 
-Cool! bonus points if you do it in drivers/pci and we can steal it
-easily for Calgary on x8-64 :-)
+I'll try to test generic and sparse kernels later, but I have to
+look at another issue now.
 
-Cheers,
-Muli
--- 
-Muli Ben-Yehuda
-http://www.mulix.org | http://mulix.livejournal.com/
+-Tony
