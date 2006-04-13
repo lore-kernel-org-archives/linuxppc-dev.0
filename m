@@ -1,27 +1,17 @@
-Return-Path: <cavok@tiscali.it>
-Received: from filibusta.crema.unimi.it (filibusta.crema.unimi.it
-	[159.149.70.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "filibusta.crema.unimi.it",
-	Issuer "filibusta.crema.unimi.it" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 606D467DF4
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp10.clb.oleane.net (smtp10.clb.oleane.net [213.56.31.32])
+	by ozlabs.org (Postfix) with ESMTP id C516C67DFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 21:11:15 +1000 (EST)
-Date: Thu, 13 Apr 2006 12:23:30 +0200
-From: Domenico Andreoli <cavokz@gmail.com>
-To: Sylvain Munaut <tnt@246tNt.com>
-Subject: Re: freescale lite 5200 board and kernel 2.6
-Message-ID: <20060413102330.GA10025@raptus.dandreoli.com>
-References: <20060405210654.GA16848@raptus.dandreoli.com>
-	<20060405212741.GC61331@server.idefix.loc>
-	<20060406221056.GA15540@raptus.dandreoli.com>
-	<20060408082100.GA54030@server.idefix.loc>
-	<20060410215428.GA22290@raptus.dandreoli.com>
-	<443D7F78.30402@246tNt.com>
+	Fri, 14 Apr 2006 00:50:46 +1000 (EST)
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: RE: NAND and JFFS2 supports in Linux 2.4
+Date: Thu, 13 Apr 2006 16:49:35 +0200
+Message-ID: <006201c65f09$7d809140$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <443D7F78.30402@246tNt.com>
-Cc: massimo.vanetti@fastwebnet.it, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <1144790375.3659.3.camel@yoda.jdub.homelinux.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,34 +22,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 13, 2006 at 12:30:16AM +0200, Sylvain Munaut wrote:
-> Domenico Andreoli wrote:
-> >
-> > sometimes kernel prints "eth0: config: auto-negotiation on, 100HDX,
-> > 10HDX.", the eth0 is up and everything works.
-> >
-> > most of the times "eth0: config: auto-negotiation off, No speed/duplex
-> > selected?." is instead printed and eth0 seems to not exist.
-> >
-> > i tend to exclude hw problems, older kernel 2.4.x always succeed in
-> > using eth0.
-> >
-> > is there any way to force eth0 auto-negotiation?
-> >   
-> When it doesn't work, did it detect the phy correctly ?
-> Somewhere in the boot sequence it should print something about a LXT971
-> being found at some address.
 
-no, it does not, it uses GENERIC. when PHY is detected as LXT971,
-network works.
+Hello
 
-actually this is unrelated with previous runs of kernel 2.4 (as i
-stated in some previous post). sometimes PHY is detected correctly,
-sometimes is not.
+> -----Message d'origine-----
+> De : Josh Boyer
 
-thank you
-domenico
+> > Linux 2.4.18 or 2.4.25 do not support this device,
+> Those are entire too old.
+Except for some customers which must maintain kernels during many years :-)
 
------[ Domenico Andreoli, aka cavok
- --[ http://people.debian.org/~cavok/gpgkey.asc
-   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
+> > Linux 2.4.31 seems supporting this device but JFFS2 is not adapted,
+> NAND + JFFS2 + 2.4 is not a supported combination.
+That's the problem i am facing with.
+
+> > Linux 2.4.32 does not support this device anymore.
+> Odd.  Do you have a diff from .31 to .32?
+Not a diff but
+
+1) in Linux 2.4.32, I have the following files :
+Config.in        diskonchip.c  nand_bbt.c        rtc_from4.c  tx4925ndfmc.c
+Makefile         edb7312.c     nand_ecc.c        s3c2410.c    tx4938ndfmc.c
+Makefile.common  h1910.c       nand_ids.c        sharpsl.c*
+au1550nd.c       nand.c        nandsim.c         spia.c
+autcpu12.c       nand_base.c   ppchameleonevb.c  toto.c
+$Id: nand_ids.c,v 1.12 2005/02/16 09:33:27 gleixner Exp $
+
+2) in Linux 2.4.32, I just have the following files :
+autcpu12.c  edb7312.c  nand.c      nand_ids.c
+Config.in   Makefile   nand_ecc.c  spia.c
+with a very old nand_ids.c.
+$Id: nand_ids.c,v 1.1 2002/12/02 22:06:04 gleixner Exp $
+
+> > On www.linux-mtd.infradead.org, it seems that Linux 2.4 is no more
+supported.
+> Well, 2.4 is supported but no new features go in that tree.  Including
+> NAND support in JFFS2.  If there is a bug in the 2.4 code that is
+> present in MTD/JFFS2 it can certainly still be fixed.
+OK
+
+> > Any help would be welcome
+> You might try your luck with patching the latest 2.4 kernel with MTD
+> CVS.  But be warned that quite a few things have changed, so
+> you'd have to essentially backport.
+> And keep in mind that it's not supported.
+Yes, I saw  that many things have changed and are not be easily backported.
+I checked the MTD CVS. All that I found are in the Linux kernel 2.4.31 or
+2.6.x.
+
+> -----Message d'origine-----
+> De : Jaap-Jan Boor
+> Take a look at the 2.4 http://www.denx.de kernel, it has NAND
+> and jffs2 support.
+Thanks but, I retreived the same files than in the other kernels.
+
+
+Thanks again for your ideas
+I will see what I can do
+
+Bye
+Laurent
