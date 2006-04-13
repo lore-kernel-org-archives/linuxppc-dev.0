@@ -1,37 +1,20 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EFDF867D50
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 14:50:07 +1000 (EST)
-Received: from e31.co.us.ibm.com (e31.boulder.ibm.com [9.17.249.41])
-	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3D2FgcX002718
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 22:15:42 -0400
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e31.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3D2FcR2029799
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 22:15:38 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3D2C8YY257868
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 20:12:08 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k3D2FZa9019563
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Apr 2006 20:15:35 -0600
-In-Reply-To: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
-References: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9B2C87C5-0B69-46E7-B48B-9CDB882836B2@watson.ibm.com>
-From: Jimi Xenidis <jimix@watson.ibm.com>
-Subject: Re: [patch][rfc]flattened device tree: Passing a dtb (blob) to Linux.
-Date: Wed, 12 Apr 2006 22:15:40 -0400
-To: Jimi Xenidis <jimix@watson.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <pnasrat@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 0738567C5A
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Apr 2006 15:29:56 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
+From: Paul Nasrat <pnasrat@redhat.com>
+To: Andy Fleming <afleming@freescale.com>
+In-Reply-To: <644FB6AC-3702-41D0-A9E2-6FDEC52B819D@freescale.com>
+References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
+	<1143564910.2660.4.camel@enki.eridu>
+	<644FB6AC-3702-41D0-A9E2-6FDEC52B819D@freescale.com>
+Content-Type: text/plain
+Date: Thu, 13 Apr 2006 01:14:56 -0400
+Message-Id: <1144905296.29397.40.camel@enki.eridu>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,16 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2006-04-12 at 18:19 -0500, Andy Fleming wrote:
+> On Mar 28, 2006, at 10:55, Paul Nasrat wrote:
+> 
+> > On Tue, 2006-03-28 at 20:14 +0400, Vitaly Bordug wrote:
 
-On Apr 12, 2006, at 10:05 PM, Jimi Xenidis wrote:
->
-> NOTE: that the dtc must also not generate the blob reservation
-> entry.
+> >> +	  - address : List of bytes representing the ethernet address of
+> >> +		this controller
+> >
+> > Umm should we not use local-mac-address and mac-address (and
+> > address-bits) as in section 3.7.4 in 1275-1994?
+> 
+> 
+> So no one chimed in on this.  Clearly, 1275 states that it's supposed  
+> to be local-mac-address or mac-address.  We use "address".  But I'm  
+> pretty sure we copied our ethernet node from somewhere else, so which  
+> one should it be?
 
-This reservation is only generated for "asm" dtc targets so it is  
-only that case that need to be changed.
+Well I'm biased and say we shouldn't reinvent the wheel with dtc if we
+don't need to.  I've sent Jon a patch to start validating this for dtc
+and am waiting feedback before I add additional device_types. So we
+should have local-mac-address be preassiged hwaddr and mac-address last
+used. For some setups this would be the same persistently, but I can
+envisage some non OF setups populating mac-address from the card. 
 
->   Should we try to detect this redundant entry? Should we bump
-> the DT version number?
-
--JX
+Paul
