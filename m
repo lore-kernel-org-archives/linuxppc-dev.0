@@ -1,23 +1,21 @@
-Return-Path: <glikely@gmail.com>
-Received: from nproxy.gmail.com (nproxy.gmail.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id DA89567D67
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3839267D78
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 13 Apr 2006 15:19:27 +1000 (EST)
-Received: by nproxy.gmail.com with SMTP id m19so1073737nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Apr 2006 22:19:26 -0700 (PDT)
-Message-ID: <528646bc0604122219o73810de4ga743cc8e4a0e507c@mail.gmail.com>
-Date: Wed, 12 Apr 2006 23:19:26 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Rick Moleres" <rick.moleres@xilinx.com>
-Subject: Re: question about Linux 2.6 with Xilinx ML-403
-In-Reply-To: <689CB232690D8D4E97DA6C76DA098E6C021E5AAA@XCO-EXCHVS1.xlnx.xilinx.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <689CB232690D8D4E97DA6C76DA098E6C021E5AAA@XCO-EXCHVS1.xlnx.xilinx.com>
-Cc: Jeff Gibbons <jeff.gibbons@appspec.com>, linuxppc-embedded@ozlabs.org,
-	"Martin, Tim" <tim.martin@viasat.com>
+	Thu, 13 Apr 2006 19:15:48 +1000 (EST)
+Date: Thu, 13 Apr 2006 09:36:20 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: Carlos Munoz <carlos@kenati.com>
+Subject: Re: Freescale 8272ADS configuration
+Message-Id: <20060413093620.10a0dadb.ajz@cambridgebroadband.com>
+In-Reply-To: <443DA7D9.8090606@kenati.com>
+References: <443DA7D9.8090606@kenati.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,23 +26,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/12/06, Rick Moleres <rick.moleres@xilinx.com> wrote:
->
-> Yes, we have a driver for the PLB TEMAC (different than the GSRD LL
-> TEMAC) for Linux 2.4 (MontaVista Linux 2.4.20) that's shipped in EDK
-> 8.1.1, and MontaVista is on the verge of publishing a driver for PLB
-> TEMAC for Linux 2.6. (I believe it came across this mailing list a few
-> weeks ago)
+Carlos,
 
-Hey cool!  Yeah I just found it now.  I haven't been following the
-list very closely the last month or so.  I'll try it out in short
-order.
+You need to load u-boot using the following BDI2000 config file:
 
-Thanks Rick!
+	ftp://ftp.denx.de/pub/BDI2000/MPC8260ADS.cfg
 
-g.
+u-boot itself needs to be configured with 
+	
+	make  MPC8272ADS_config
 
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 399-0195
+before it is built.
+
+The kernel needs to be configured with
+
+	make ads8272_config && make oldconfig
+
+before it is built.
+
+And most importantly you should read the user manual on 
+
+	http://www.denx.de/wiki/DULG/Manual
+
+It's a bit 8xx centric but most of it applies to the 82xx as well.
+
+Alex
+
+
+On Wed, 12 Apr 2006 18:22:33 -0700
+Carlos Munoz <carlos@kenati.com> wrote:
+
+> Hi all,
+> 
+> I have a new Freescale 8272ADS board that I need to load uboot and
+> linux on. I have read all the documentation that came with the board
+> but unfortunately it doesn't explain how to bring up the board from
+> scratch. Does anyone know what I need to do to load uboot and linux
+> on this board ?
+> 
+> Thanks,
+> 
+> 
+> Carlos
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
