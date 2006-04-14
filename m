@@ -1,30 +1,21 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from ms-smtp-04.nyroc.rr.com (ms-smtp-04.nyroc.rr.com [24.24.2.58])
-	by ozlabs.org (Postfix) with ESMTP id D6406679F6
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Apr 2006 13:10:52 +1000 (EST)
-Subject: [PATCH 00/08] robust per_cpu allocation for modules - V2
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1145049535.1336.128.camel@localhost.localdomain>
-References: <1145049535.1336.128.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 14 Apr 2006 23:10:24 -0400
-Message-Id: <1145070624.27407.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
-	linux-ia64@vger.kernel.org,
-	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, SamRavnborg <sam@ravnborg.org>,
-	bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
-	grundler@parisc-linux.org, starvik@axis.com,
-	Linus Torvalds <torvalds@osdl.org>,
-	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
-	Andi Kleen <ak@suse.de>, ralf@linux-mips.org,
-	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
-	parisc-linux@parisc-linux.org
+Return-Path: <ncunningham@cyclades.com>
+Received: from cust8446.nsw01.dataco.com.au (cust8446.nsw01.dataco.com.au
+	[203.171.93.254]) by ozlabs.org (Postfix) with ESMTP id D355467A44
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Apr 2006 16:49:12 +1000 (EST)
+From: Nigel Cunningham <ncunningham@cyclades.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 0/7] [RFC] Sizing zones and holes in an architecture
+	independent manner V2
+Date: Sat, 15 Apr 2006 09:17:04 +1000
+References: <20060412232036.18862.84118.sendpatchset@skynet>
+In-Reply-To: <20060412232036.18862.84118.sendpatchset@skynet>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart5114347.xFTveIS9QW";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200604150917.10596.ncunningham@cyclades.com>
+Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linux-mm@kvack.org,
+	ak@suse.de, bob.picco@hp.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,24 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is version 2 of the percpu patch set.
+--nextPart5114347.xFTveIS9QW
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Changes from version 1:
+Hi Mel.
 
-- Created a PERCPU_OFFSET variable to use in vmlinux.lds.h
-  (suggested by Sam Ravnborg)
+It looks to me like this code could be used by the software suspend code in=
+=20
+our determinations of what pages to save, particularly in the context of=20
+memory hotplug support. Just some food for thought at the moment; I'll see =
+if=20
+I can come up with a patch when I have some time, but it might help justify=
+=20
+getting this merged.
 
-- Added support for x86_64 (Steven Rostedt)
+Regards,
 
-The support for x86_64 goes back to the asm-generic handling when both
-CONFIG_SMP and CONFIG_MODULES are set. This is due to the fact that the
-__per_cpu_offset array is no longer referenced in per_cpu, but instead a
-per per_cpu variable is used to find the offset.
+Nigel
 
-Again, the rest of the patches are only sent to the LKML.
+--nextPart5114347.xFTveIS9QW
+Content-Type: application/pgp-signature
 
-Still I need help to port this to the rest of the architectures.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
-Thanks,
+iD8DBQBEQC12N0y+n1M3mo0RAmFYAJ9a9Oz/cpEM/HR9N+6tkCaM9M8ckACgwZhq
+qzMYheL6j+4zC3D1vEv6gWM=
+=wz0/
+-----END PGP SIGNATURE-----
 
--- Steve
+--nextPart5114347.xFTveIS9QW--
