@@ -1,28 +1,22 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id DE8E0679E1
+Return-Path: <kris@slokatelecom.com>
+Received: from chtn01.999servers.com (chtn01.999servers.com [69.9.43.186])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 73DE1679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Apr 2006 18:48:57 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by protonic.prtnl (Postfix) with ESMTP id 7A94029ED3
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Apr 2006 10:47:14 +0200 (CEST)
-Received: from protonic.prtnl ([127.0.0.1])
-	by localhost (protonic [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 18557-08 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Apr 2006 10:47:13 +0200 (CEST)
-Received: from archvile (unknown [192.168.1.153])
-	by protonic.prtnl (Postfix) with ESMTP id 937A729EC9
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Apr 2006 10:47:13 +0200 (CEST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: Trouble with 2.6.16 on ppc8xx ?
-Date: Fri, 14 Apr 2006 10:50:56 +0200
+	Fri, 14 Apr 2006 23:40:11 +1000 (EST)
+Received: from [125.22.34.160] (helo=Krishnan)
+	by chtn01.999servers.com with esmtpa (Exim 4.52) id 1FUOWv-0007Bt-TO
+	for linuxppc-embedded@ozlabs.org; Fri, 14 Apr 2006 09:40:10 -0400
+From: "Krishnan" <kris@slokatelecom.com>
+To: "Linuxppc-Embedded@Ozlabs. Org" <linuxppc-embedded@ozlabs.org>
+Subject: Re: Freescale 8272ADS configuration
+Date: Fri, 14 Apr 2006 19:10:03 +0530
+Message-ID: <DJEKKNGPKJJHLCHIBHDAIEABCDAA.kris@slokatelecom.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200604141050.56757.david.jander@protonic.nl>
+	charset="iso-8859-1"
+Reply-To: kris@slokatelecom.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,39 +27,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Carlos,
 
-Hi all,
+I found two interesting documents on the Web (one from a grad student and
+other from Freescale website). Both are generic steps from U-BOOT porting to
+Linux bring up. I don't know which kernel you decide to use but these are
+quite useful to read to get very good inputs.
 
-I just cg-update'd to the HEAD of the denx 2.6.x kernel tree (2.6.16 as 
-released).
-Our board-support stuff was succesfully moved along from 2.6.14 (when 
-everything but the SCC3 and SCC4 uarts worked just fine).
-I compiled a kernel without any special drivers, just console on ttyCPM0, but 
-after "Uncompressing Kernel Image ... OK" there is no more output and no 
-further activity on ethernet (it should boot from nfs-root) or any other 
-device.
+I have both these documents (they are for 860 and 8260 but as Wolfgang
+mentioned) these are very closely related as they are the same family. I
+cannot attach documents more than 100 KB on this list.
 
-After "cg-seek DENX-v2.6.15; make clean uImage", it works again (everything 
-seems fine, system boots).
+One more "WAR Story" for you too from helicontech
 
-Our board is based on a MPC852T and until now we used "MPC86X" as the 
-BOARD_CHIP_NAME and it worked just fine with 2.6.14 and 2.6.15, but not with 
-2.6.16 as described above.
+http://www.helicontech.co.il/whitepapers/LinuxBringUp.html
 
-When doing "cg-diff" and carfully examining it's output, I can only see our 
-board-support stuff (not very much, not very special) and some custom drivers 
-that are disabled anyway.
-
-Any clue about where to start looking?
-
-I didn't find any suspicious changes in arch/ppc/mm, arch/ppc/syslib and 
-arch/ppc/kernel. Neither in drivers/serial/cpm_uart.
-
-Which change from 2.6.15 to 2.6.16 could have broken 8xx support for us?
-
-Is there perhaps a known issue with 2.6.16 and ppc8xx I am unaware of?
-
-Greetings,
-
--- 
-David Jander
+Cheers,
+Krishnan
