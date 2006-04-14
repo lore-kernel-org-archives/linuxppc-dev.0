@@ -1,30 +1,30 @@
-Return-Path: <kenneth.w.chen@intel.com>
-Received: from azsmga101-1.ch.intel.com (mga03.intel.com [143.182.124.21])
-	by ozlabs.org (Postfix) with ESMTP id B6178679EF
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Apr 2006 08:22:56 +1000 (EST)
-Message-Id: <4t16i2$ma94t@orsmga001.jf.intel.com>
-From: "Chen, Kenneth W" <kenneth.w.chen@intel.com>
-To: "'Steven Rostedt'" <rostedt@goodmis.org>,
-	"LKML" <linux-kernel@vger.kernel.org>, "Andrew Morton" <akpm@osdl.org>
-Subject: RE: [PATCH 00/05] robust per_cpu allocation for modules
-Date: Fri, 14 Apr 2006 15:12:52 -0700
+Return-Path: <mel@skynet.ie>
+Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9ABDB679FD
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Apr 2006 08:54:16 +1000 (EST)
+Date: Fri, 14 Apr 2006 23:54:07 +0100 (IST)
+From: Mel Gorman <mel@skynet.ie>
+To: "Luck, Tony" <tony.luck@intel.com>
+Subject: Re: [PATCH 0/7] [RFC] Sizing zones and holes in an architecture
+	independent manner V2
+In-Reply-To: <20060414205345.GA1258@agluck-lia64.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0604142353460.22940@skynet.skynet.ie>
+References: <20060412232036.18862.84118.sendpatchset@skynet>
+	<20060413095207.GA4047@skynet.ie>
+	<20060413171942.GA15047@agluck-lia64.sc.intel.com>
+	<20060413173008.GA19402@skynet.ie>
+	<20060413174720.GA15183@agluck-lia64.sc.intel.com>
+	<20060413191402.GA20606@skynet.ie>
+	<20060413215358.GA15957@agluck-lia64.sc.intel.com>
+	<20060414131235.GA19064@skynet.ie>
+	<20060414205345.GA1258@agluck-lia64.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <1145049535.1336.128.camel@localhost.localdomain>
-Cc: linux-mips@linux-mips.org, David Mosberger-Tang <davidm@hpl.hp.com>,
-	linux-ia64@vger.kernel.org,
-	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, benedict.gaster@superh.com, bjornw@axis.com,
-	Ingo Molnar <mingo@elte.hu>, grundler@parisc-linux.org,
-	starvik@axis.com, Linus Torvalds <torvalds@osdl.org>,
-	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	chris@zankel.net, "Luck, Tony" <tony.luck@intel.com>,
-	Andi Kleen <ak@suse.de>, ralf@linux-mips.org,
-	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
-	parisc-linux@parisc-linux.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: davej@codemonkey.org.uk, linuxppc-dev@ozlabs.org, ak@suse.de,
+	bob.picco@hp.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linux Memory Management List <linux-mm@kvack.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,14 +34,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Steven Rostedt wrote on Friday, April 14, 2006 2:19 PM
-> So the current solution has two flaws:
-> 1. not robust. If we someday add more modules that together take up
->    more than 14K, we need to manually update the PERCPU_ENOUGH_ROOM.
-> 2. waste of memory.  We have 14K of memory wasted per CPU. Remember
->    a 64 processor machine would be wasting 896K of memory!
+On Fri, 14 Apr 2006, Luck, Tony wrote:
 
-If someone who has the money to own a 64-process machine, 896K of memory
-is pocket change ;-)
+> On Fri, Apr 14, 2006 at 02:12:35PM +0100, Mel Gorman wrote:
+>> That appears fine, but I call add_active_range() after a GRANULEROUNDUP and
+>> GRANULEROUNDDOWN has taken place so that might be the problem, especially as
+>> all those ranges are aligned on a 16MiB boundary. The following patch calls
+>> add_active_range() before the rounding takes place. Can you try it out please?
+>
+> That's good.  Now I see identical output before/after your patch for
+> the generic (DISCONTIG=y) kernel:
+>
+> On node 0 totalpages: 259873
+>  DMA zone: 128931 pages, LIFO batch:7
+>  Normal zone: 130942 pages, LIFO batch:7
+>
 
-- Ken
+Very very cool. Thanks for all the testing.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
