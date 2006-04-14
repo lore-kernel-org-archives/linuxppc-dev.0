@@ -1,22 +1,30 @@
-Return-Path: <aris@cathedrallabs.org>
-Received: from tinc.cathedrallabs.org (tinc.cathedrallabs.org [72.9.252.66])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CF22B679E7
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 23:52:17 +1000 (EST)
-Received: from tate.cathedrallabs.org
-	(201-25-163-155.ctame704.dsl.brasiltelecom.net.br [201.25.163.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by tinc.cathedrallabs.org (Postfix) with ESMTP id 7AB27104BD
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 09:31:44 -0400 (EDT)
-Date: Fri, 14 Apr 2006 10:31:38 -0300
-From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: bisect results for powerbook G4 not booting on latest git tree
-Message-ID: <20060414133138.GG16901@cathedrallabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <muli@granada.merseine.nu>
+Received: from mtaout3.012.net.il (mtaout3.012.net.il [84.95.2.7])
+	by ozlabs.org (Postfix) with ESMTP id 1A069679E1
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Apr 2006 01:19:23 +1000 (EST)
+Received: from granada.merseine.nu ([87.69.40.180])
+	by i_mtaout3.012.net.il (HyperSendmail v2004.12)
+	with ESMTP id <0IXP00GA9VOU6Z40@i_mtaout3.012.net.il> for
+	linuxppc-dev@ozlabs.org; Fri, 14 Apr 2006 17:46:07 +0300 (IDT)
+Date: Fri, 14 Apr 2006 17:48:30 +0300
+From: Muli Ben-Yehuda <mulix@mulix.org>
+Subject: Re: [PATCH] [2/2] POWERPC: Lower threshold for DART enablement to 1GB,
+	V2
+In-reply-to: <1144961564.4935.24.camel@localhost.localdomain>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-id: <20060414144830.GQ10412@granada.merseine.nu>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+References: <20060413020559.GC24769@pb15.lixom.net>
+	<20060413022809.GD24769@pb15.lixom.net>
+	<20060413025233.GE24769@pb15.lixom.net>
+	<20060413064027.GH10412@granada.merseine.nu>
+	<1144925149.4935.14.camel@localhost.localdomain>
+	<20060413160712.GG24769@pb15.lixom.net>
+	<20060413173121.GJ10412@granada.merseine.nu>
+	<1144961564.4935.24.camel@localhost.localdomain>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +34,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-	I was unable to find someone who already did it, so here it
-	the possible culprit of latest git tree (pulled both Linus' and
-	Paul's tree) not booting on a powerbook G4:
+On Fri, Apr 14, 2006 at 06:52:44AM +1000, Benjamin Herrenschmidt wrote:
+> On Thu, 2006-04-13 at 20:31 +0300, Muli Ben-Yehuda wrote:
+> > On Thu, Apr 13, 2006 at 11:07:12AM -0500, Olof Johansson wrote:
+> > 
+> > > Walking the DT means we need to hardcode it on PCI IDs, since the Apple
+> > > OF doesn't give the Airport device a logical name. It's probably easier
+> > > to implement than walking PCI, but we'd need to maintain a table. My
+> > > vote is for PCI walking, I'll give that a shot over the weekend.
+> > 
+> > Cool! bonus points if you do it in drivers/pci and we can steal it
+> > easily for Calgary on x8-64 :-)
+> 
+> How so ? Anything remotely related to the iommu is totally different...
+> Besides, on x86-64, laptops _are_ more common, and thus the problem of
+> cardbus cards is much more significant.
 
-a0652fc9a28c3ef8cd59264bfcb089c44d1b0e06 is first bad commit
-diff-tree a0652fc9a28c3ef8cd59264bfcb089c44d1b0e06 (from 55aab8cd3a498201b769a19de861c77516bdfd45)
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Mon Mar 27 15:03:03 2006 +1100
+What I had in mind is an interface that given a PCI bridge will tell
+you what's the most restrictive DMA mask for a device on that bridge,
+so that you'll know whether you need to enable the IOMMU for that
+bridge. I'll even settle for a function that tells you what's the most
+restrictive DMA mask in the system, preiod. There's nothing inherently
+arch specific about this.
 
-    powerpc: Unify the 32 and 64 bit idle loops
+(and as a side note, the IOMMU we are working on on x86-64 is Calgary,
+which is actually roughly the same chipset used in some PPC
+machines...)
 
-    This unifies the 32-bit (ARCH=ppc and ARCH=powerpc) and 64-bit idle
-    loops.  It brings over the concept of having a ppc_md.power_save
-    function from 32-bit to ARCH=powerpc, which lets us get rid of
-    native_idle().  With this we will also be able to simplify the idle
-    handling for pSeries and cell.
-
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-:040000 040000 c6998a13a214b16c0cb936526d9e087095530eb39282cff1b1d6a5893c17319c0fbe13d93f5369f7 M      arch
-:040000 040000 44489477a1708a022f564892e233207434ab79ee78d125804d5c52fef1ebc089bce121773bc8f5b7 M      include
-
-if there's any other info that I can provide or a patch to try, please
-let me know
-
+Cheers,
+Muli
 -- 
-Aristeu
+Muli Ben-Yehuda
+http://www.mulix.org | http://mulix.livejournal.com/
