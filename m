@@ -1,27 +1,22 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+Return-Path: <aris@cathedrallabs.org>
+Received: from tinc.cathedrallabs.org (tinc.cathedrallabs.org [72.9.252.66])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8A404679E9
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 23:12:44 +1000 (EST)
-Date: Fri, 14 Apr 2006 14:12:35 +0100
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: [PATCH 0/7] [RFC] Sizing zones and holes in an architecture
-	independent manner V2
-Message-ID: <20060414131235.GA19064@skynet.ie>
-References: <20060412232036.18862.84118.sendpatchset@skynet>
-	<20060413095207.GA4047@skynet.ie>
-	<20060413171942.GA15047@agluck-lia64.sc.intel.com>
-	<20060413173008.GA19402@skynet.ie>
-	<20060413174720.GA15183@agluck-lia64.sc.intel.com>
-	<20060413191402.GA20606@skynet.ie>
-	<20060413215358.GA15957@agluck-lia64.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20060413215358.GA15957@agluck-lia64.sc.intel.com>
-From: mel@csn.ul.ie (Mel Gorman)
-Cc: davej@codemonkey.org.uk, linuxppc-dev@ozlabs.org, ak@suse.de,
-	bob.picco@hp.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+	by ozlabs.org (Postfix) with ESMTP id CF22B679E7
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 23:52:17 +1000 (EST)
+Received: from tate.cathedrallabs.org
+	(201-25-163-155.ctame704.dsl.brasiltelecom.net.br [201.25.163.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by tinc.cathedrallabs.org (Postfix) with ESMTP id 7AB27104BD
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Apr 2006 09:31:44 -0400 (EDT)
+Date: Fri, 14 Apr 2006 10:31:38 -0300
+From: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+To: linuxppc-dev@ozlabs.org
+Subject: bisect results for powerbook G4 not booting on latest git tree
+Message-ID: <20060414133138.GG16901@cathedrallabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,75 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (13/04/06 14:53), Luck, Tony didst pronounce:
-> On Thu, Apr 13, 2006 at 08:14:02PM +0100, Mel Gorman wrote:
-> > When you get around to it later, there is one case you may hit that Bob
-> > Picco encountered and fixed for me. It's where a "new" range is registered
-> > that is inside an existing area; e.g.
-> > 
-> > add_active_range:    0->10000
-> > add_active_range: 9800->10000
-> > 
-> > It ends up merging incorrectly and you end up with one region from
-> > 9800-10000. The fix is below. 
-> 
-> I applied that fix on top of all the others and re-built and booted
-> a "generic" kernel (using arch/ia64/defconfig) and a "sparse" kernel
-> (based on arch/ia64/configs/gensparse_defconfig).
-> 
-> Both booted just fine on my tiger, the memory amounts looked
-> a bit suspicious though ... as if you are reporting *all* the
-> memory in range for the zone, rather than the usable parts.
-> 
-> Diffing console log from the boot of a 2.6.17-rc1 generic
-> kernel against one with your patches the relevent bit is:
-> 
-> < On node 0 totalpages: 259873
-> <   DMA zone: 128931 pages, LIFO batch:7
-> <   Normal zone: 130942 pages, LIFO batch:7
-> ---
-> > On node 0 totalpages: 262144
-> >   DMA zone: 131072 pages, LIFO batch:7
-> >   Normal zone: 131072 pages, LIFO batch:7
-> 
-> That's a very precise 4G total, split exactly 2G+2G between
-> DMA and normal zones.  Same thing for the sparse kernel
-> (though I didn't check what an unpatched kernel prints).
-> 
+Hi,
+	I was unable to find someone who already did it, so here it
+	the possible culprit of latest git tree (pulled both Linus' and
+	Paul's tree) not booting on a powerbook G4:
 
-Interesting.  I register active ranges inside count_node_pages() which is an
-EFI memmap_walk callback. So, I'd expect to see one call to add_active_range()
-for each active range in the EFI map;
+a0652fc9a28c3ef8cd59264bfcb089c44d1b0e06 is first bad commit
+diff-tree a0652fc9a28c3ef8cd59264bfcb089c44d1b0e06 (from 55aab8cd3a498201b769a19de861c77516bdfd45)
+Author: Paul Mackerras <paulus@samba.org>
+Date:   Mon Mar 27 15:03:03 2006 +1100
 
-> add_active_range(0, 0, 4096): New
-> add_active_range(0, 0, 131072): Merging forward
-> add_active_range(0, 0, 131072): Existing
-> add_active_range(0, 393216, 523264): New
-> add_active_range(0, 393216, 523264): Existing
-> add_active_range(0, 393216, 524288): Merging forward
-> add_active_range(0, 393216, 524288): Existing
+    powerpc: Unify the 32 and 64 bit idle loops
 
-That appears fine, but I call add_active_range() after a GRANULEROUNDUP and
-GRANULEROUNDDOWN has taken place so that might be the problem, especially as
-all those ranges are aligned on a 16MiB boundary. The following patch calls
-add_active_range() before the rounding takes place. Can you try it out please?
+    This unifies the 32-bit (ARCH=ppc and ARCH=powerpc) and 64-bit idle
+    loops.  It brings over the concept of having a ppc_md.power_save
+    function from 32-bit to ARCH=powerpc, which lets us get rid of
+    native_idle().  With this we will also be able to simplify the idle
+    handling for pSeries and cell.
 
-diff -rup -X /usr/src/patchset-0.5/bin//dontdiff linux-2.6.17-rc1-zonesizing-v6/arch/ia64/mm/discontig.c linux-2.6.17-rc1-107-debug/arch/ia64/mm/discontig.c
---- linux-2.6.17-rc1-zonesizing-v6/arch/ia64/mm/discontig.c	2006-04-13 10:30:49.000000000 +0100
-+++ linux-2.6.17-rc1-107-debug/arch/ia64/mm/discontig.c	2006-04-14 11:37:51.000000000 +0100
-@@ -636,6 +636,7 @@ static __init int count_node_pages(unsig
- {
- 	unsigned long end = start + len;
- 
-+	add_active_range(node, start >> PAGE_SHIFT, end >> PAGE_SHIFT);
- 	mem_data[node].num_physpages += len >> PAGE_SHIFT;
- 	if (start <= __pa(MAX_DMA_ADDRESS))
- 		mem_data[node].num_dma_physpages +=
-@@ -647,7 +648,6 @@ static __init int count_node_pages(unsig
- 				     end >> PAGE_SHIFT);
- 	mem_data[node].min_pfn = min(mem_data[node].min_pfn,
- 				     start >> PAGE_SHIFT);
--	add_active_range(node, start >> PAGE_SHIFT, end >> PAGE_SHIFT);
- 
- 	return 0;
- }
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+:040000 040000 c6998a13a214b16c0cb936526d9e087095530eb39282cff1b1d6a5893c17319c0fbe13d93f5369f7 M      arch
+:040000 040000 44489477a1708a022f564892e233207434ab79ee78d125804d5c52fef1ebc089bce121773bc8f5b7 M      include
+
+if there's any other info that I can provide or a patch to try, please
+let me know
+
+-- 
+Aristeu
