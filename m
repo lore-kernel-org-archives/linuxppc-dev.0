@@ -1,26 +1,28 @@
-Return-Path: <Becky.Bruce@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 3E6FE679F6
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Apr 2006 07:07:41 +1000 (EST)
-In-Reply-To: <20060414202452.GD24769@pb15.lixom.net>
-References: <Pine.LNX.4.44.0604071010290.18017-100000@zirkon.biophys.uni-duesseldorf.de>
-	<1144408805.30891.42.camel@localhost.localdomain>
-	<17463.9759.442768.685153@cargo.ozlabs.ibm.com>
-	<1144923633.4935.11.camel@localhost.localdomain>
-	<21F7D7D8-B9BC-44EB-B07B-F888D89DCF25@freescale.com>
-	<17471.62187.774127.783000@cargo.ozlabs.ibm.com>
-	<20060414195436.GC24769@pb15.lixom.net>
-	<17472.984.760483.334447@cargo.ozlabs.ibm.com>
-	<20060414202452.GD24769@pb15.lixom.net>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <EAC69420-A425-480D-BEDE-379945104409@freescale.com>
-From: Becky Bruce <Becky.Bruce@freescale.com>
-Subject: Re: 7447A strange problem with MSR:POW (WAS: can't boot 2.6.17-rc1)
-Date: Fri, 14 Apr 2006 16:09:02 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	debian-powerpc@lists.debian.org
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E28BF679FC
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Apr 2006 08:11:46 +1000 (EST)
+Date: Fri, 14 Apr 2006 15:06:25 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
+Message-Id: <20060414150625.3ba369d2.akpm@osdl.org>
+In-Reply-To: <1145049535.1336.128.camel@localhost.localdomain>
+References: <1145049535.1336.128.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-mips@linux-mips.org, davidm@hpl.hp.com, linux-ia64@vger.kernel.org,
+	mj@atrey.karlin.mff.cuni.cz, spyro@f2s.com, joe@tensilica.com,
+	ak@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	benedict.gaster@superh.com, bjornw@axis.com, mingo@elte.hu,
+	grundler@parisc-linux.org, starvik@axis.com, torvalds@osdl.org,
+	tglx@linutronix.de, rth@twiddle.net, chris@zankel.net,
+	tony.luck@intel.com, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, marc@tensilica.com, lethal@linux-sh.org,
+	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
+	parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,21 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-04-14 at 12:07 -0700, Paul Mackerras wrote:
+Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+> Example:
+> 
+>  DEFINE_PER_CPU(int, myint);
+> 
+>  would now create a variable called per_cpu_offset__myint in
+> the .data.percpu_offset section.
 
-> Becky Bruce writes:
->
->
->> Actually, I think the problem is that the code linux is using to turn
->> on nap mode is not guaranteed to put the processor in nap mode by the
->> time the blr in ppc6xx_idle occurs.
->>
->
-> Thanks, Becky.
->
-> This patch fixes it for me.  Comments, anyone?
+Suppose two .c files each have
 
-Patch LGTM, as well.  I like the approach.
+	DEFINE_STATIC_PER_CPU(myint)
 
-Thanks!
--Becky
+Do we end up with two per_cpu_offset__myint's in the same section?
