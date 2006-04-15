@@ -1,21 +1,30 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id D97EC679E9
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Apr 2006 03:32:35 +1000 (EST)
-Date: Sat, 15 Apr 2006 12:31:16 -0500
-To: Carl Love <cel@us.ibm.com>
-Subject: Re: patch for powerpc lparcfg.c
-Message-ID: <20060415173116.GA21864@pb15.lixom.net>
-References: <1144969793.5286.10.camel@dyn9047021119.beaverton.ibm.com>
-	<20060414002539.GC25138@localdomain>
-	<1145035146.5214.16.camel@dyn9047021119.beaverton.ibm.com>
-	<20060414175039.GD25138@localdomain>
-	<1145060162.5214.30.camel@dyn9047021119.beaverton.ibm.com>
+Return-Path: <nickpiggin@yahoo.com.au>
+Received: from smtp109.mail.mud.yahoo.com (smtp109.mail.mud.yahoo.com
+	[209.191.85.219]) by ozlabs.org (Postfix) with SMTP id 161B867A03
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Apr 2006 04:58:21 +1000 (EST)
+Message-ID: <4440855A.7040203@yahoo.com.au>
+Date: Sat, 15 Apr 2006 15:32:10 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1145060162.5214.30.camel@dyn9047021119.beaverton.ibm.com>
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
+References: <1145049535.1336.128.camel@localhost.localdomain>
+In-Reply-To: <1145049535.1336.128.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
+	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
+	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
+	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	benedict.gaster@superh.com, bjornw@axis.com,
+	Ingo Molnar <mingo@elte.hu>, grundler@parisc-linux.org,
+	starvik@axis.com, Linus Torvalds <torvalds@osdl.org>,
+	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
+	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
+	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
+	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
+	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
+	parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +34,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 14, 2006 at 05:16:02PM -0700, Carl Love wrote:
-> Nathan Lynch:
-> 
-> Oops, lost the cc line the last time.
-> 
-> I wasn't aware that the partition name was already being printed in
-> the /proc/device-tree.  Yes, my tool could use that entry.  It just
-> means opening multiple locations to get all the information.  I will go
-> ahead and use it since it is there.   
-> 
-> The patch becomes a bit more academic.  The question becomes, should the
-> partition name also be printed in /proc/ppc64/lparcfg along with the
-> rest of the partition information?  Seems like a good idea to me since
-> it makes the information in lparcfg more complete.  I will leave it up
-> to the maintainers to decide. 
+Steven Rostedt wrote:
 
-IMHO, duplicating the information is just extra overhead. It's not a
-piece of data I would expect applications to have performance-critical
-access requirements for, so the extra file open isn't that much of a
-bother.
+>  would now create a variable called per_cpu_offset__myint in
+> the .data.percpu_offset section.  This variable will point to the (if
+> defined in the kernel) __per_cpu_offset[] array.  If this was a module
+> variable, it would point to the module per_cpu_offset[] array which is
+> created when the modules is loaded.
 
-In general, adding things to an interface like lparcfg just means we
-will need to maintain it there forever. The less we can get away with
-in such ways, the better.
+If I'm following you correctly, this adds another dependent load
+to a per-CPU data access, and from memory that isn't node-affine.
 
-I think lparcfg is a leftover from the iseries days, where there was no
-more convenient way to pass the information to userspace (since there is
-no native device tree in that environment). We have since then added one
-in linux, but the hypervisor doesn't provide it to us.
+If so, I think people with SMP and NUMA kernels would care more
+about performance and scalability than the few k of memory this
+saves.
 
-
--Olfo
+-- 
+SUSE Labs, Novell Inc.
+Send instant messages to your online friends http://au.messenger.yahoo.com 
