@@ -1,22 +1,27 @@
-Return-Path: <kernel@andred.net>
-Received: from andred.net (sushi.andred.net [217.160.180.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AD4A7679FF
+Return-Path: <andrewd.lists@gmail.com>
+Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.193])
+	by ozlabs.org (Postfix) with ESMTP id 5909F67A33
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 16 Apr 2006 16:55:48 +1000 (EST)
-Message-ID: <4441EA6C.7010706@andred.net>
-Date: Sun, 16 Apr 2006 08:55:40 +0200
-From: Andre Draszik <kernel@andred.net>
+	Sun, 16 Apr 2006 21:50:23 +1000 (EST)
+Received: by nz-out-0102.google.com with SMTP id 12so335897nzp
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 16 Apr 2006 04:50:22 -0700 (PDT)
+Message-ID: <54823def0604160443tcce818dk8cca5c20593c46a7@mail.gmail.com>
+Date: Sun, 16 Apr 2006 21:43:17 +1000
+From: "Andrew Dennison" <andrewd.lists@gmail.com>
+To: "Sylvain Munaut" <tnt@246tnt.com>, linuxppc-embedded@ozlabs.org,
+	massimo.vanetti@fastwebnet.it
+Subject: Re: freescale lite 5200 board and kernel 2.6
+In-Reply-To: <20060413102330.GA10025@raptus.dandreoli.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: IIC troubles w/ ppc4xx (STB04)
-References: <4441A0C8.8090708@andred.net>
-	<20060416030944.GA20416@gate.ebshome.net>
-	<4441D739.6040107@andred.net>
-	<20060416055702.GB20416@gate.ebshome.net>
-In-Reply-To: <20060416055702.GB20416@gate.ebshome.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
+References: <20060405210654.GA16848@raptus.dandreoli.com>
+	<20060405212741.GC61331@server.idefix.loc>
+	<20060406221056.GA15540@raptus.dandreoli.com>
+	<20060408082100.GA54030@server.idefix.loc>
+	<20060410215428.GA22290@raptus.dandreoli.com>
+	<443D7F78.30402@246tNt.com>
+	<20060413102330.GA10025@raptus.dandreoli.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,36 +32,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Eugene Surovegin wrote:
-> On Sun, Apr 16, 2006 at 07:33:45AM +0200, Andre Draszik wrote:
->> I see :) So if that doesn't work, what is the preferred way of testing
->> for existence of a device in a kernel module? Should I just
->> unconditionally i2c_client_register() a static struct and then
->> i2c_master_send() to see if it works?
-> 
-> There is no generic reliable way to detect that some i2c device exists 
-> on the bus. Even if smbus_quick worked it cannot guarantee that 
-> device you found is actually device you are expected - same i2c 
-> address can be used by different devices.
+On 4/13/06, Domenico Andreoli <cavokz@gmail.com> wrote:
+> no, it does not, it uses GENERIC. when PHY is detected as LXT971,
+> network works.
+>
+> actually this is unrelated with previous runs of kernel 2.4 (as i
+> stated in some previous post). sometimes PHY is detected correctly,
+> sometimes is not.
+>
 
-I know, I really meant the linux side of this, i.e. if there was maybe
-something I missed till now. But doesn't seem so ;)
+Is the PHY address something other than 0?
 
-> Frankly, I never saw this as a problem in embedded world, because 
-> most of the time you have a custom built kernel for your particular 
-> board or family of the boards, and you already know what devices might 
-> be there, so just trying to access those devices from whatever 
-> drivers and/or user-space applications you wrote is sufficient. In 
-> fact, I never needed i2c "probing" in any of almost dozen different 
-> embedded projects I wrote firmware/Linux board support for.
+If there is no pullup on MDIO (?) and the PHY address isn't 0
+sometimes a PHY will be detected on the wrong address. Well that's the
+problem I had with a 5200 on a custom board. I worked around something
+like this with the following (edited) patch / hack. The correct answer
+was to add a pullup on the board, but this is fairly safe as it won't
+misdetect any of the phys supported in fec.c.
 
-Sure, normally you know which devices are there. I am just playing
-around with two boards I have here and am adding/removing parts as I
-like ;) Therefore, for the moment, I wanted my driver to be as flexible
-as possible, so I thought i'd use some probing and do it the preferred
-way w/o hardcoding anything. At least that's what I thought the
-preferred way to be...
+--- arch/ppc/5xxx_io/fec.c      15 Feb 2005 00:19:13 -0000      1.10
++++ arch/ppc/5xxx_io/fec.c      22 Apr 2005 05:28:12 -0000
+@@ -732,7 +825,7 @@ mii_discover_phy(uint mii_reg, struct ne
+        printk("mii_discover_phy\n");
+ #endif
 
-
-Thanks!
-Andre'
+-       if ((phytype =3D (mii_reg & 0xffff)) !=3D 0xffff) {
++       if ((phytype =3D (mii_reg & 0x3ff)) !=3D 0x3ff) { /* hack - was 0xf=
+fff */
+                /* Got first part of ID, now get remainder.
+                */
+                priv->phy_id =3D phytype << 16;
