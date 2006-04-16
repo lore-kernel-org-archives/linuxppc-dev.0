@@ -1,22 +1,21 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EFACD67A41
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 09:33:19 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4FB2E67AC7
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 09:54:27 +1000 (EST)
 Subject: Re: PowerBook5,4 -- no sound?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <je7j5phz9j.fsf@sykes.suse.de>
 References: <878xq51t61.fsf@briny.internal.ondioline.org>
 	<je1wvxo70l.fsf@sykes.suse.de>
 	<1145220233.9833.11.camel@localhost.localdomain>
-Date: Mon, 17 Apr 2006 01:33:12 +0200
-In-Reply-To: <1145220233.9833.11.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Mon, 17 Apr 2006 06:43:53 +1000")
-Message-ID: <je7j5phz9j.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	<je7j5phz9j.fsf@sykes.suse.de>
+Content-Type: text/plain
+Date: Mon, 17 Apr 2006 09:54:18 +1000
+Message-Id: <1145231658.9833.17.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,16 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Mon, 2006-04-17 at 01:33 +0200, Andreas Schwab wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > Same reply... load i2c-powermac before snd-powermac.
+> 
+> It's builtin.
 
-> Same reply... load i2c-powermac before snd-powermac.
+i2c-powermac is built-in ans snd-powermac is a module or they are both
+built-in ?
 
-It's builtin.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Ben.
