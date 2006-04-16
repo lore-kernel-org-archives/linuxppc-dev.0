@@ -1,28 +1,28 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp108.mail.mud.yahoo.com (smtp108.mail.mud.yahoo.com
-	[209.191.85.218]) by ozlabs.org (Postfix) with SMTP id 758EE67A76
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 01:20:15 +1000 (EST)
-Message-ID: <4441ECE6.5010709@yahoo.com.au>
-Date: Sun, 16 Apr 2006 17:06:14 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id E199C67A6C
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 01:35:35 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
+Date: Sun, 16 Apr 2006 17:34:18 +0200
 References: <1145049535.1336.128.camel@localhost.localdomain>
-	<4440855A.7040203@yahoo.com.au>
-	<Pine.LNX.4.58.0604151609340.11302@gandalf.stny.rr.com>
-	<4441B02D.4000405@yahoo.com.au>
-	<Pine.LNX.4.58.0604152323560.16853@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0604152323560.16853@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	<17473.60411.690686.714791@cargo.ozlabs.ibm.com>
+	<1145194804.27407.103.camel@localhost.localdomain>
+In-Reply-To: <1145194804.27407.103.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200604161734.20256.arnd@arndb.de>
 Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
 	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
 	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
 	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	benedict.gaster@superh.com, bjornw@axis.com,
-	Ingo Molnar <mingo@elte.hu>, grundler@parisc-linux.org,
-	starvik@axis.com, Linus Torvalds <torvalds@osdl.org>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	benedict.gaster@superh.com, bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
+	Nick Piggin <nickpiggin@yahoo.com.au>, grundler@parisc-linux.org,
+	rusty@rustcorp.com.au, starvik@axis.com,
+	Linus Torvalds <torvalds@osdl.org>,
 	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
 	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
 	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
@@ -38,68 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Steven Rostedt wrote:
-> On Sun, 16 Apr 2006, Nick Piggin wrote:
+On Sunday 16 April 2006 15:40, Steven Rostedt wrote:
+> I'll think more about this, but maybe someone else has some crazy ideas
+> that can find a solution to this that is both fast and robust.
 
->>Why is your module using so much per-cpu memory, anyway?
-> 
-> 
-> Wasn't my module anyway. The problem appeared in the -rt patch set, when
-> tracing was turned on.  Some module was affected, and grew it's per_cpu
-> size by quite a bit. In fact we had to increase PERCPU_ENOUGH_ROOM by up
-> to something like 300K.
+Ok, you asked for a crazy idea, you're going to get it ;-)
 
-Well that's easy then, just configure PERCPU_ENOUGH_ROOM to be larger
-when tracing is on in the -rt patchset? Or use alloc_percpu for the
-tracing data?
+You could take a fixed range from the vmalloc area (e.g. 1MB per cpu)
+and use that to remap pages on demand when you need per cpu data.
 
->>I don't think it would have been hard for the original author to make
->>it robust... just not both fast and robust. PERCPU_ENOUGH_ROOM seems
->>like an ugly hack at first glance, but I'm fairly sure it was a result
->>of design choices.
-> 
-> Yeah, and I discovered the reasons for those choices as I worked on this.
-> I've put a little more thought into this and still think there's a
-> solution to not slow things down.
-> 
-> Since the per_cpu_offset section is still smaller than the
-> PERCPU_ENOUGH_ROOM and robust, I could still copy it into a per cpu memory
-> field, and even add the __per_cpu_offset to it.  This would still save
-> quite a bit of space.
+#define PER_CPU_BASE 0xe000000000000000UL /* arch dependant */
+#define PER_CPU_SHIFT 0x100000UL
+#define __per_cpu_offset(__cpu) (PER_CPU_BASE + PER_CPU_STRIDE * (__cpu))
+#define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
+#define __get_cpu_var(var) per_cpu(var, smp_processor_id())
 
-Well I don't think making it per-cpu would help much (presumably it
-is not going to be written to very frequently) -- I guess it would
-be a small advantage on NUMA. The main problem is the extra load in
-the fastpath.
+This is a lot like the current sparc64 implementation already is.
 
-You can't start the next load until the results of the first come
-back.
+The tricky part here is the remapping of pages. You'd need to 
+alloc_pages_node() new pages whenever the already reserved space is
+not enough for the module you want to load and then map_vm_area()
+them into the space reserved for them.
 
-> So now I'm asking for advice on some ideas that can be a work around to
-> keep the robustness and speed.
-> 
-> Is there a way (for archs that support it) to allocate memory in a per cpu
-> manner. So each CPU would have its own variable table in the memory that
-> is best of it.  Then have a field (like the pda in x86_64) to point to
-> this section, and use the linker offsets to index and find the per_cpu
-> variables.
-> 
-> So this solution still has one more redirection than the current solution
-> (per_cpu_offset__##var -> __per_cpu_offset -> actual_var where as the
-> current solution is __per_cpu_offset -> actual_var), but all the loads
-> would be done from memory that would only be specified for a particular
-> CPU.
-> 
-> The generic case would still be the same as the patches I already sent,
-> but the archs that can support it, can have something like the above.
-> 
-> Would something like that be acceptible?
+Advantages of this solution are:
+- no dependant load access for per_cpu()
+- might be flexible enough to implement a faster per_cpu_ptr()
+- can be combined with ia64-style per-cpu remapping
 
-I still don't understand what the justification is for slowing down
-this critical bit of infrastructure for something that is only a
-problem in the -rt patchset, and even then only a problem when tracing
-is enabled.
+Disadvantages are:
+- you can't use huge tlbs for mapping per cpu data like the
+  regular linear mapping -> may be slower on some archs
+- does not work in real mode, so percpu data can't be used
+  inside exception handlers on some architectures.
+- memory consumption is rather high when PAGE_SIZE is large
 
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+	Arnd <><
