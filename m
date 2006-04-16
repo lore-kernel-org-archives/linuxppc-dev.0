@@ -1,23 +1,28 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17473.58781.901412.135671@cargo.ozlabs.ibm.com>
-Date: Sun, 16 Apr 2006 16:35:09 +1000
+Message-ID: <17473.60411.690686.714791@cargo.ozlabs.ibm.com>
+Date: Sun, 16 Apr 2006 17:02:19 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Steven Rostedt <rostedt@goodmis.org>
 Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
-In-Reply-To: <1145049535.1336.128.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.58.0604152323560.16853@gandalf.stny.rr.com>
 References: <1145049535.1336.128.camel@localhost.localdomain>
+	<4440855A.7040203@yahoo.com.au>
+	<Pine.LNX.4.58.0604151609340.11302@gandalf.stny.rr.com>
+	<4441B02D.4000405@yahoo.com.au>
+	<Pine.LNX.4.58.0604152323560.16853@gandalf.stny.rr.com>
 Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
 	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
 	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
 	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
 	linuxppc-dev@ozlabs.org, benedict.gaster@superh.com,
 	bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
-	grundler@parisc-linux.org, starvik@axis.com,
+	Nick Piggin <nickpiggin@yahoo.com.au>, grundler@parisc-linux.org,
+	rusty@rustcorp.com.au, starvik@axis.com,
 	Linus Torvalds <torvalds@osdl.org>,
 	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	chris@zankel.net, tony.luck@intel.com,
+	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
 	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
 	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
 	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
@@ -33,22 +38,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Steven Rostedt writes:
 
-> The data in .data.percpu_offset holds is referenced by the per_cpu
-> variable name which points to the __per_cpu_offset array.  For modules,
-> it will point to the per_cpu_offset array of the module.
-> 
-> Example:
-> 
->  DEFINE_PER_CPU(int, myint);
-> 
->  would now create a variable called per_cpu_offset__myint in
-> the .data.percpu_offset section.  This variable will point to the (if
-> defined in the kernel) __per_cpu_offset[] array.  If this was a module
-> variable, it would point to the module per_cpu_offset[] array which is
-> created when the modules is loaded.
+> So now I'm asking for advice on some ideas that can be a work around to
+> keep the robustness and speed.
 
-This sounds like you have an extra memory reference each time a
-per-cpu variable is accessed.  Have you tried to measure the
-performance impact of that?  If so, how much performance does it lose?
+Ideally, what I'd like to do on powerpc is to dedicate one register to
+storing a per-cpu base address or offset, and be able to resolve the
+offset at link time, so that per-cpu variable accesses just become a
+register + offset memory access.  (For modules, "link time" would be
+module load time.)
+
+We *might* be able to use some of the infrastructure that was put into
+gcc and binutils to support TLS (thread local storage) to achieve
+this.  (See http://people.redhat.com/drepper/tls.pdf for some of the
+details of that.)
+
+Also, I've added Rusty Russell to the cc list, since he designed the
+per-cpu variable stuff in the first place, and would be able to
+explain the trade-offs that led to the PERCPU_ENOUGH_ROOM thing.  (I
+think you're discovering them as you go, though. :)
 
 Paul.
