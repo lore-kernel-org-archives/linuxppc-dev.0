@@ -1,37 +1,19 @@
-Return-Path: <tony.luck@gmail.com>
-Received: from uproxy.gmail.com (uproxy.gmail.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id 1A1B667A73
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 04:03:25 +1000 (EST)
-Received: by uproxy.gmail.com with SMTP id k3so260544ugf
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Apr 2006 11:03:23 -0700 (PDT)
-Message-ID: <12c511ca0604161103l3013f5f1t99c93ee38f102e95@mail.gmail.com>
-Date: Sun, 16 Apr 2006 11:03:03 -0700
-From: "Tony Luck" <tony.luck@intel.com>
-Sender: tony.luck@gmail.com
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
-In-Reply-To: <200604161734.20256.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-References: <1145049535.1336.128.camel@localhost.localdomain>
-	<17473.60411.690686.714791@cargo.ozlabs.ibm.com>
-	<1145194804.27407.103.camel@localhost.localdomain>
-	<200604161734.20256.arnd@arndb.de>
-Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
-	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
-	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	benedict.gaster@superh.com, bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
-	Nick Piggin <nickpiggin@yahoo.com.au>, grundler@parisc-linux.org,
-	rusty@rustcorp.com.au, Steven Rostedt <rostedt@goodmis.org>,
-	starvik@axis.com, Linus Torvalds <torvalds@osdl.org>,
-	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	Chris Zankel <chris@zankel.net>,
-	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
-	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
-	parisc-linux@parisc-linux.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7F732679F8
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 06:43:12 +1000 (EST)
+Subject: Re: PowerBook5,4 -- no sound?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Collins <paul@briny.ondioline.org>
+In-Reply-To: <878xq51t61.fsf@briny.internal.ondioline.org>
+References: <878xq51t61.fsf@briny.internal.ondioline.org>
+Content-Type: text/plain
+Date: Mon, 17 Apr 2006 06:43:03 +1000
+Message-Id: <1145220183.9833.9.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,14 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 4/16/06, Arnd Bergmann <arnd@arndb.de> wrote:
-> #define PER_CPU_BASE 0xe000000000000000UL /* arch dependant */
+On Mon, 2006-04-17 at 00:39 +1000, Paul Collins wrote:
+> With Linus's current git plus the boot fix and some unrelated patches
+> (console font and bluetooth) sound no longer seems to work (nothing in
+> /proc/asound/cards), although snd-powermac loaded without complaint.
+> Is this a known problem?
 
-On ia64 the percpu area is at 0xffffffffffff0000 so that it can be
-addressed without tying up another register (all percpu addresses
-are small negative offsets from "r0").  When David Mosberger
-chose this address he said that gcc 4 would actually make
-ue of this, but I haven't checked the generated code to see
-whether it really is doing so.
+Load i2c-powermac before snd-powermac
 
--Tony
+Ben.
