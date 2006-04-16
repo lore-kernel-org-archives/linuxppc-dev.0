@@ -2,19 +2,15 @@ Return-Path: <kernel@andred.net>
 Received: from andred.net (sushi.andred.net [217.160.180.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 633FE679E7
+	by ozlabs.org (Postfix) with ESMTP id E864367A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 16 Apr 2006 11:32:38 +1000 (EST)
-Message-ID: <44419EAC.3070302@andred.net>
-Date: Sun, 16 Apr 2006 03:32:28 +0200
+	Sun, 16 Apr 2006 11:41:36 +1000 (EST)
+Message-ID: <4441A0C8.8090708@andred.net>
+Date: Sun, 16 Apr 2006 03:41:28 +0200
 From: Andre Draszik <kernel@andred.net>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Slab errors on 4xx (STB04)
-References: <44398BD4.60904@andred.net>
-	<20060410071457.GA16898@gate.ebshome.net>
-	<443AB696.7080205@andred.net>
-In-Reply-To: <443AB696.7080205@andred.net>
+Subject: IIC troubles w/ ppc4xx (STB04)
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,16 +24,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
-Andre Draszik wrote:
-> Eugene Surovegin wrote:
->> You can try changing __dma_sync() to do flush_dcache_range() even for 
->> DMA_FROM_DEVICE case. However, do this only to check this theory, not 
->> as a permanent solution :).
-> 
-> OK, I will play with the cache later today... I wanted DEBUG_SLAB turned
-> on for some other unrelated problem, so just for debugging, this hack
-> would be fine if it worked :)
+I am having trouble using iic_smbus_quick() of i2c/busses/i2c-ibm-iic.c
+I am trying to i2c_probe() to probe for some devices, which at the end
+calls iic_smbus_quick().
 
-Eugene, your workaround works, thx!
+Basically, I get a Data Machine Check as soon as iic->directcntl is
+accessed. Actually, this register is not described in the (old)
+documentation I have.
+Is anybody using this successfully on STB04?
 
+
+Greets,
 Andre'
