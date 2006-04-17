@@ -1,18 +1,18 @@
-Return-Path: <Becky.Bruce@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id EE840679E7
+Return-Path: <marcelo.tosatti@cyclades.com>
+Received: from kanga.kvack.org (kanga.kvack.org [66.96.29.28])
+	by ozlabs.org (Postfix) with ESMTP id E1EEE679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Apr 2006 04:51:20 +1000 (EST)
-In-Reply-To: <026801c661ed$bcb352d0$0760120a@photon>
-References: <026801c661ed$bcb352d0$0760120a@photon>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <35CCBAB0-7BA0-4CA0-879D-F6D90ACD3AC2@freescale.com>
-From: Becky Bruce <Becky.Bruce@freescale.com>
-Subject: Re: about ppc <asm/string.h>
-Date: Mon, 17 Apr 2006 13:52:43 -0500
-To: HappyPhot <happyphot@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 18 Apr 2006 05:59:16 +1000 (EST)
+Date: Mon, 17 Apr 2006 16:52:01 -0500
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+To: David Jander <david.jander@protonic.nl>
+Subject: Re: Trouble with 2.6.16 on ppc8xx ?
+Message-ID: <20060417215201.GA9548@dmt.cnet>
+References: <200604141050.56757.david.jander@protonic.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200604141050.56757.david.jander@protonic.nl>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,40 +23,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
+Hi David,
 
-There's no string.h in include/asm-ppc because this is one of the  
-header files that has been merged between 32 and 64-bit powerpc.  It  
-now lives in include/asm-powerpc with all the other merged headers.  
-Only headers specific to 32-bit ppc have been left in include/asm- 
-ppc.  For a kernel build with ARCH=ppc, the build uses headers from  
-both include/asm-ppc and include/asm-powerpc.  This is accomplished  
-through the use of a temporary include directory that is created in  
-the arch dir.  Check out arch/ppc/Makefile for details.
+On Fri, Apr 14, 2006 at 10:50:56AM +0200, David Jander wrote:
+> 
+> Hi all,
+> 
+> I just cg-update'd to the HEAD of the denx 2.6.x kernel tree (2.6.16 as 
+> released).
 
-Cheers,
--Becky
+Is it a vanilla 2.6.16?
 
-On Apr 17, 2006, at 2:08 AM, HappyPhot wrote:
+> Our board-support stuff was succesfully moved along from 2.6.14 (when 
+> everything but the SCC3 and SCC4 uarts worked just fine).
+> I compiled a kernel without any special drivers, just console on ttyCPM0, but 
+> after "Uncompressing Kernel Image ... OK" there is no more output and no 
+> further activity on ethernet (it should boot from nfs-root) or any other 
+> device.
+> 
+> After "cg-seek DENX-v2.6.15; make clean uImage", it works again (everything 
+> seems fine, system boots).
+> 
+> Our board is based on a MPC852T and until now we used "MPC86X" as the 
+> BOARD_CHIP_NAME and it worked just fine with 2.6.14 and 2.6.15, but not with 
+> 2.6.16 as described above.
+> 
+> When doing "cg-diff" and carfully examining it's output, I can only see our 
+> board-support stuff (not very much, not very special) and some custom drivers 
+> that are disabled anyway.
+> 
+> Any clue about where to start looking?
+> 
+> I didn't find any suspicious changes in arch/ppc/mm, arch/ppc/syslib and 
+> arch/ppc/kernel. Neither in drivers/serial/cpm_uart.
+> 
+> Which change from 2.6.15 to 2.6.16 could have broken 8xx support for us?
+> 
+> Is there perhaps a known issue with 2.6.16 and ppc8xx I am unaware of?
 
-> Hi,
->
->   Under linux kernel, the file /include/linux/string.h will include
-> <asm/string.h>.
->   But I didn't found "string.h" under "asm-ppc", my asm is link to  
-> asm-ppc
-> (CPU is ppc). This makes me compile some code failed.
->   (kernel version 2.6.x)
->
->   Anybody knows about this ? Why there is no string.h under "asm-ppc"
-> directory.
->
-> thanks a lot,
-> /Phot
->
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+2.6.16 working fine over here... What's your .config?
+
+[root@CAS root]# cat /proc/cpuinfo 
+processor       : 0
+cpu             : 8xx
+clock           : 48MHz
+bus clock       : 48MHz
+revision        : 0.0 (pvr 0050 0000)
+bogomips        : 47.71
+[root@CAS root]# uname -a
+Linux CAS 2.6.16 #1 Thu Apr 13 11:08:03 PDT 2006 ppc unknown
