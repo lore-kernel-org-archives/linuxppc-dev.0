@@ -1,13 +1,13 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C4260679F4
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 07:33:44 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 97E3C679F0
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 07:51:03 +1000 (EST)
 Subject: Re: PowerBook5,4 -- no sound?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <jey7y3dgzw.fsf@sykes.suse.de>
 References: <878xq51t61.fsf@briny.internal.ondioline.org>
 	<je1wvxo70l.fsf@sykes.suse.de>
 	<1145220233.9833.11.camel@localhost.localdomain>
@@ -17,12 +17,11 @@ References: <878xq51t61.fsf@briny.internal.ondioline.org>
 	<1145233812.9833.21.camel@localhost.localdomain>
 	<je1wvwfh7s.fsf@sykes.suse.de>
 	<1145307118.3912.11.camel@localhost.localdomain>
-Date: Mon, 17 Apr 2006 23:33:39 +0200
-In-Reply-To: <1145307118.3912.11.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Tue, 18 Apr 2006 06:51:57 +1000")
-Message-ID: <jey7y3dgzw.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	<jey7y3dgzw.fsf@sykes.suse.de>
+Content-Type: text/plain
+Date: Tue, 18 Apr 2006 07:50:57 +1000
+Message-Id: <1145310657.3912.23.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -33,29 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Mon, 2006-04-17 at 23:33 +0200, Andreas Schwab wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > On Mon, 2006-04-17 at 15:45 +0200, Andreas Schwab wrote:
+> >> request_mem_region(80000000 - 80000fff, i2sbus control)
+> >> 
+> >>       80000000-8007ffff : 0.80000000:mac-io
+> >>         8000002c-8000002f : 0.0000004c:fans
+> >>         80000030-80000033 : 0.0000004c:fans
+> >>         80000034-80000037 : 0.0000004c:fans
+> >>         8000004c-8000004f : 0.0000004c:fans
+> >>         80000050-8000008a : 0.00000050:gpio
+> >
+> > Johannes,
+> >
+> > Look like the bugs in the device-tree I told you about ...
+> 
+> There is special support for K2-Keylargo in sound/ppc/pmac.c, is it that
+> what you mean?
 
-> On Mon, 2006-04-17 at 15:45 +0200, Andreas Schwab wrote:
->> request_mem_region(80000000 - 80000fff, i2sbus control)
->> 
->>       80000000-8007ffff : 0.80000000:mac-io
->>         8000002c-8000002f : 0.0000004c:fans
->>         80000030-80000033 : 0.0000004c:fans
->>         80000034-80000037 : 0.0000004c:fans
->>         8000004c-8000004f : 0.0000004c:fans
->>         80000050-8000008a : 0.00000050:gpio
->
-> Johannes,
->
-> Look like the bugs in the device-tree I told you about ...
+Yes, though it doesn't seem to affect all K2 based models, thus in this
+regard, snd-powermac isn't bug free neither ... Apple keeps fucking up
+their device-tree in all sort of funny ways.. at least kept, hopfeully
+this is finished now :)
 
-There is special support for K2-Keylargo in sound/ppc/pmac.c, is it that
-what you mean?
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Ben.
