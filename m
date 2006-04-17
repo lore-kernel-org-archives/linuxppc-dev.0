@@ -1,28 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <kiran@scalex86.org>
+Received: from serv01.siteground.net (ns1.siteground.net [207.218.208.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 97E3C679F0
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 07:51:03 +1000 (EST)
-Subject: Re: PowerBook5,4 -- no sound?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jey7y3dgzw.fsf@sykes.suse.de>
-References: <878xq51t61.fsf@briny.internal.ondioline.org>
-	<je1wvxo70l.fsf@sykes.suse.de>
-	<1145220233.9833.11.camel@localhost.localdomain>
-	<je7j5phz9j.fsf@sykes.suse.de>
-	<1145231658.9833.17.camel@localhost.localdomain>
-	<je3bgdhwre.fsf@sykes.suse.de>
-	<1145233812.9833.21.camel@localhost.localdomain>
-	<je1wvwfh7s.fsf@sykes.suse.de>
-	<1145307118.3912.11.camel@localhost.localdomain>
-	<jey7y3dgzw.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Tue, 18 Apr 2006 07:50:57 +1000
-Message-Id: <1145310657.3912.23.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 9C94C679F0
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 08:01:42 +1000 (EST)
+Date: Mon, 17 Apr 2006 15:02:38 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
+Message-ID: <20060417220238.GD3945@localhost.localdomain>
+References: <1145049535.1336.128.camel@localhost.localdomain>
+	<4440855A.7040203@yahoo.com.au>
+	<Pine.LNX.4.64.0604170953390.29732@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0604170953390.29732@schroedinger.engr.sgi.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
+	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
+	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
+	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	benedict.gaster@superh.com, bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
+	Nick Piggin <nickpiggin@yahoo.com.au>, grundler@parisc-linux.org,
+	Steven Rostedt <rostedt@goodmis.org>, starvik@axis.com,
+	Linus Torvalds <torvalds@osdl.org>,
+	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
+	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
+	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
+	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
+	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
+	parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,29 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-04-17 at 23:33 +0200, Andreas Schwab wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Mon, Apr 17, 2006 at 09:55:02AM -0700, Christoph Lameter wrote:
+> On Sat, 15 Apr 2006, Nick Piggin wrote:
 > 
-> > On Mon, 2006-04-17 at 15:45 +0200, Andreas Schwab wrote:
-> >> request_mem_region(80000000 - 80000fff, i2sbus control)
-> >> 
-> >>       80000000-8007ffff : 0.80000000:mac-io
-> >>         8000002c-8000002f : 0.0000004c:fans
-> >>         80000030-80000033 : 0.0000004c:fans
-> >>         80000034-80000037 : 0.0000004c:fans
-> >>         8000004c-8000004f : 0.0000004c:fans
-> >>         80000050-8000008a : 0.00000050:gpio
-> >
-> > Johannes,
-> >
-> > Look like the bugs in the device-tree I told you about ...
+> > If I'm following you correctly, this adds another dependent load
+> > to a per-CPU data access, and from memory that isn't node-affine.
 > 
-> There is special support for K2-Keylargo in sound/ppc/pmac.c, is it that
-> what you mean?
+> I am also concerned about that. Kiran has a patch to avoid allocpercpu
+> having to go through one level of indirection that I guess would no 
+> longer work with this scheme.
 
-Yes, though it doesn't seem to affect all K2 based models, thus in this
-regard, snd-powermac isn't bug free neither ... Apple keeps fucking up
-their device-tree in all sort of funny ways.. at least kept, hopfeully
-this is finished now :)
+The alloc_percpu reimplementation would work regardless of changes to
+static per-cpu areas.  But, any extra indirection as was proposed initially
+is bad IMHO. 
 
-Ben.
+>  
+> > If so, I think people with SMP and NUMA kernels would care more
+> > about performance and scalability than the few k of memory this
+> > saves.
+> 
+> Right.
+
+Me too :)
+
+Kiran
