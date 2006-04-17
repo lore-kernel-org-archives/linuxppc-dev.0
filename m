@@ -1,20 +1,34 @@
-Return-Path: <paul@briny.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id 04F3567B26
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 10:55:13 +1000 (EST)
-From: Paul Collins <paul@briny.ondioline.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: PowerBook5,4 -- no sound?
-References: <878xq51t61.fsf@briny.internal.ondioline.org>
-	<1145220183.9833.9.camel@localhost.localdomain>
-	<874q0t11lz.fsf@briny.internal.ondioline.org>
-Date: Mon, 17 Apr 2006 10:51:30 +1000
-In-Reply-To: <874q0t11lz.fsf@briny.internal.ondioline.org> (Paul Collins's
-	message of "Mon, 17 Apr 2006 10:34:32 +1000")
-Message-ID: <87psjhowh9.fsf@briny.internal.ondioline.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id A117967B26
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 12:08:07 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
+Date: Mon, 17 Apr 2006 04:07:23 +0200
+References: <1145049535.1336.128.camel@localhost.localdomain>
+	<200604161734.20256.arnd@arndb.de>
+	<1145234750.27828.8.camel@localhost.localdomain>
+In-Reply-To: <1145234750.27828.8.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200604170407.26111.arnd@arndb.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
+	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
+	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
+	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	benedict.gaster@superh.com, bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
+	Nick Piggin <nickpiggin@yahoo.com.au>, grundler@parisc-linux.org,
+	rusty@rustcorp.com.au, starvik@axis.com,
+	Linus Torvalds <torvalds@osdl.org>,
+	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
+	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
+	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
+	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
+	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
+	parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +38,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Collins <paul@briny.ondioline.org> writes:
-
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Am Monday 17 April 2006 02:45 schrieb Steven Rostedt:
+> > - does not work in real mode, so percpu data can't be used
+> > =C2=A0 inside exception handlers on some architectures.
 >
->> On Mon, 2006-04-17 at 00:39 +1000, Paul Collins wrote:
->>> With Linus's current git plus the boot fix and some unrelated patches
->>> (console font and bluetooth) sound no longer seems to work (nothing in
->>> /proc/asound/cards), although snd-powermac loaded without complaint.
->>> Is this a known problem?
->>
->> Load i2c-powermac before snd-powermac
+> This is probably a big issue. =C2=A0I believe interrupt context in hrtime=
+rs
+> uses per_cpu variables.
+
+If it's just about hrtimers, it should be harmless, since they
+are run in softirq context. Even regular interrupt handlers are
+always called with paging enabled, otherwise you could not
+have them im modules.
+
+> > - memory consumption is rather high when PAGE_SIZE is large
 >
-> Like Andreas, I have =y and =m for those.
+> That's also something that I'm trying to solve. =C2=A0To use the least am=
+ount
+> of memory and still have the performance.
+>
+> Now, I've also thought about allocating per_cpu and when a module is
+> loaded, reallocate more memory and copy it again. =C2=A0Use something like
+> the kstopmachine to sync the system so that the CPUS don't update any
+> per_cpu variables while this is happening, so that things can't get out
+> of sync.
 
-Still doesn't work with both =m.
+I guess this breaks if someone holds a pointer to a per-cpu variable
+while a module gets loaded.
 
-Anyway I guess I'll look into this snd-aoa thing.
-
--- 
-Dag vijandelijk luchtschip de huismeester is dood
+	Arnd <><
