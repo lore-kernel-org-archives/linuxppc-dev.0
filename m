@@ -1,19 +1,23 @@
 Return-Path: <rostedt@goodmis.org>
-Received: from ms-smtp-01.nyroc.rr.com (ms-smtp-01.nyroc.rr.com [24.24.2.55])
-	by ozlabs.org (Postfix) with ESMTP id D849967B26
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 12:17:59 +1000 (EST)
-Date: Sun, 16 Apr 2006 22:17:50 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Arnd Bergmann <arnd@arndb.de>
+Received: from ms-smtp-03.nyroc.rr.com (ms-smtp-03.nyroc.rr.com [24.24.2.57])
+	by ozlabs.org (Postfix) with ESMTP id 58BDD679E6
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 21:33:53 +1000 (EST)
 Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
-In-Reply-To: <200604170407.26111.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.58.0604162211430.3718@gandalf.stny.rr.com>
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <1145256445.28600.34.camel@localhost.localdomain>
 References: <1145049535.1336.128.camel@localhost.localdomain>
-	<200604161734.20256.arnd@arndb.de>
-	<1145234750.27828.8.camel@localhost.localdomain>
-	<200604170407.26111.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=utf-8
+	<4440855A.7040203@yahoo.com.au>
+	<Pine.LNX.4.58.0604151609340.11302@gandalf.stny.rr.com>
+	<4441B02D.4000405@yahoo.com.au>
+	<Pine.LNX.4.58.0604152323560.16853@gandalf.stny.rr.com>
+	<17473.60411.690686.714791@cargo.ozlabs.ibm.com>
+	<1145194804.27407.103.camel@localhost.localdomain>
+	<1145256445.28600.34.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 17 Apr 2006 07:33:36 -0400
+Message-Id: <1145273616.27828.21.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
 	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
 	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
@@ -21,8 +25,7 @@ Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
 	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
 	benedict.gaster@superh.com, bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
 	Nick Piggin <nickpiggin@yahoo.com.au>, grundler@parisc-linux.org,
-	rusty@rustcorp.com.au, starvik@axis.com,
-	Linus Torvalds <torvalds@osdl.org>,
+	starvik@axis.com, Linus Torvalds <torvalds@osdl.org>,
 	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
 	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
 	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
@@ -38,51 +41,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2006-04-17 at 16:47 +1000, Rusty Russell wrote:
 
-On Mon, 17 Apr 2006, Arnd Bergmann wrote:
+> 
+> The arch would allocate a virtual memory hole for each CPU, and map
+> pages as required (this is the simplest of several potential schemes).
+> This gives the "same space between CPUs" property which is required for
+> the ptr + per-cpu-offset scheme.  An arch would supply functions like:
+> 
+> 	/* Returns address of new memory chunk(s)
+>          * (add __per_cpu_offset to get virtual addresses). */
+> 	unsigned long alloc_percpu_memory(unsigned long *size);
+> 
+> 	/* Set by ia64 to reserve the first chunk for percpu vars
+> 	 * in modules only.
+> 	#define __MODULE_RESERVE_FIRST_CHUNK
+> 
+> And an allocator would work on top of these.
+> 
+> I'm glad someone is looking at this again!
 
-> Am Monday 17 April 2006 02:45 schrieb Steven Rostedt:
-> > > - does not work in real mode, so percpu data can't be used
-> > > =C2=A0 inside exception handlers on some architectures.
-> >
-> > This is probably a big issue. =C2=A0I believe interrupt context in hrti=
-mers
-> > uses per_cpu variables.
->
-> If it's just about hrtimers, it should be harmless, since they
-> are run in softirq context. Even regular interrupt handlers are
-> always called with paging enabled, otherwise you could not
-> have them im modules.
+Hi Rusty, thanks for the input.
 
-Ah, you're right. You said exceptions, I'm thinking interrupts.  I was a
-little confused why it wouldn't work.
+Arnd Bergmann also suggested doing the same thing.  I've slept on this
+thought last night and I'm starting to like it more and more.  At least
+it seems to be a better solution than some of the things that I've come
+up with.
 
->
-> > > - memory consumption is rather high when PAGE_SIZE is large
-> >
-> > That's also something that I'm trying to solve. =C2=A0To use the least =
-amount
-> > of memory and still have the performance.
-> >
-> > Now, I've also thought about allocating per_cpu and when a module is
-> > loaded, reallocate more memory and copy it again. =C2=A0Use something l=
-ike
-> > the kstopmachine to sync the system so that the CPUS don't update any
-> > per_cpu variables while this is happening, so that things can't get out
-> > of sync.
->
-> I guess this breaks if someone holds a pointer to a per-cpu variable
-> while a module gets loaded.
->
+I'll start playing around a little and see what I can do with it.  I
+also need to start doing some other work too, so this might take a month
+or two to get some results.  So hopefully, I'll have another patch set
+in June or July that will be more acceptable.
 
-Argh, good point, I didn't think about that.  Hmm, this solution is
-looking harder and harder.  Darn, I was really hoping this could be a
-little better in space savings and robustness. It's starting to seem
-clearer that Rusty's little hack, may be the best solution.
-
-If that's the case, I can at least take comfort in knowing that the time I
-spent on this is documented in LKML archives, and perhaps can keep others
-from spending the time too.  That said, I haven't quite given up, and may
-spend a couple more sleepless nights pondering this.
+I'd like to thank all those that responded with ideas and criticisms.
+It's been very helpful.
 
 -- Steve
