@@ -1,25 +1,28 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
-	by ozlabs.org (Postfix) with ESMTP id 8E03167A5D
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 02:56:25 +1000 (EST)
-Date: Mon, 17 Apr 2006 09:55:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: kiran@scalex86.org
+Return-Path: <ak@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BBEBF67A5D
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 03:11:44 +1000 (EST)
+From: Andi Kleen <ak@suse.de>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
 Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
-In-Reply-To: <4440855A.7040203@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0604170953390.29732@schroedinger.engr.sgi.com>
+Date: Mon, 17 Apr 2006 19:10:46 +0200
 References: <1145049535.1336.128.camel@localhost.localdomain>
-	<4440855A.7040203@yahoo.com.au>
+	<Pine.LNX.4.58.0604152323560.16853@gandalf.stny.rr.com>
+	<4441ECE6.5010709@yahoo.com.au>
+In-Reply-To: <4441ECE6.5010709@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200604171910.48838.ak@suse.de>
 Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
 	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
 	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	benedict.gaster@superh.com, bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
-	Nick Piggin <nickpiggin@yahoo.com.au>, grundler@parisc-linux.org,
+	Joe Taylor <joe@tensilica.com>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, benedict.gaster@superh.com, bjornw@axis.com,
+	Ingo Molnar <mingo@elte.hu>, grundler@parisc-linux.org,
 	Steven Rostedt <rostedt@goodmis.org>, starvik@axis.com,
 	Linus Torvalds <torvalds@osdl.org>,
 	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
@@ -37,17 +40,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 15 Apr 2006, Nick Piggin wrote:
+On Sunday 16 April 2006 09:06, Nick Piggin wrote:
 
-> If I'm following you correctly, this adds another dependent load
-> to a per-CPU data access, and from memory that isn't node-affine.
+> I still don't understand what the justification is for slowing down
+> this critical bit of infrastructure for something that is only a
+> problem in the -rt patchset, and even then only a problem when tracing
+> is enabled.
 
-I am also concerned about that. Kiran has a patch to avoid allocpercpu
-having to go through one level of indirection that I guess would no 
-longer work with this scheme.
- 
-> If so, I think people with SMP and NUMA kernels would care more
-> about performance and scalability than the few k of memory this
-> saves.
+There are actually problems outside -rt. e.g. the Xen kernel was running
+into a near overflow and as more and more code is using per cpu variables
+others might too.
 
-Right.
+I'm confident the problem can be solved without adding more variables
+though - e.g. in the way rusty proposed.
+
+-Andi
