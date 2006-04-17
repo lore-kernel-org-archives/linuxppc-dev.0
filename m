@@ -1,37 +1,27 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from ms-smtp-03.nyroc.rr.com (ms-smtp-03.nyroc.rr.com [24.24.2.57])
-	by ozlabs.org (Postfix) with ESMTP id 58BDD679E6
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 21:33:53 +1000 (EST)
-Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <1145256445.28600.34.camel@localhost.localdomain>
-References: <1145049535.1336.128.camel@localhost.localdomain>
-	<4440855A.7040203@yahoo.com.au>
-	<Pine.LNX.4.58.0604151609340.11302@gandalf.stny.rr.com>
-	<4441B02D.4000405@yahoo.com.au>
-	<Pine.LNX.4.58.0604152323560.16853@gandalf.stny.rr.com>
-	<17473.60411.690686.714791@cargo.ozlabs.ibm.com>
-	<1145194804.27407.103.camel@localhost.localdomain>
-	<1145256445.28600.34.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 17 Apr 2006 07:33:36 -0400
-Message-Id: <1145273616.27828.21.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
-	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
-	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	benedict.gaster@superh.com, bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
-	Nick Piggin <nickpiggin@yahoo.com.au>, grundler@parisc-linux.org,
-	starvik@axis.com, Linus Torvalds <torvalds@osdl.org>,
-	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
-	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
-	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
-	parisc-linux@parisc-linux.org
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A7C9167A58
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Apr 2006 23:46:04 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PowerBook5,4 -- no sound?
+References: <878xq51t61.fsf@briny.internal.ondioline.org>
+	<je1wvxo70l.fsf@sykes.suse.de>
+	<1145220233.9833.11.camel@localhost.localdomain>
+	<je7j5phz9j.fsf@sykes.suse.de>
+	<1145231658.9833.17.camel@localhost.localdomain>
+	<je3bgdhwre.fsf@sykes.suse.de>
+	<1145233812.9833.21.camel@localhost.localdomain>
+Date: Mon, 17 Apr 2006 15:45:59 +0200
+In-Reply-To: <1145233812.9833.21.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Mon, 17 Apr 2006 10:30:12 +1000")
+Message-ID: <je1wvwfh7s.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,39 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-04-17 at 16:47 +1000, Rusty Russell wrote:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> 
-> The arch would allocate a virtual memory hole for each CPU, and map
-> pages as required (this is the simplest of several potential schemes).
-> This gives the "same space between CPUs" property which is required for
-> the ptr + per-cpu-offset scheme.  An arch would supply functions like:
-> 
-> 	/* Returns address of new memory chunk(s)
->          * (add __per_cpu_offset to get virtual addresses). */
-> 	unsigned long alloc_percpu_memory(unsigned long *size);
-> 
-> 	/* Set by ia64 to reserve the first chunk for percpu vars
-> 	 * in modules only.
-> 	#define __MODULE_RESERVE_FIRST_CHUNK
-> 
-> And an allocator would work on top of these.
-> 
-> I'm glad someone is looking at this again!
+> Interesting... I would have expected that setup to work... Oh well... at
+> this point, the best to do is to add support for your G5 to Johannes new
+> snd-aoa
 
-Hi Rusty, thanks for the input.
+I agree.  Unfortunately, the i2sbus probing already fails, due to
+requesting a memory region that is already (partially) claimed by other
+resources:
 
-Arnd Bergmann also suggested doing the same thing.  I've slept on this
-thought last night and I'm starting to like it more and more.  At least
-it seems to be a better solution than some of the things that I've come
-up with.
+request_mem_region(80000000 - 80000fff, i2sbus control)
 
-I'll start playing around a little and see what I can do with it.  I
-also need to start doing some other work too, so this might take a month
-or two to get some results.  So hopefully, I'll have another patch set
-in June or July that will be more acceptable.
+      80000000-8007ffff : 0.80000000:mac-io
+        8000002c-8000002f : 0.0000004c:fans
+        80000030-80000033 : 0.0000004c:fans
+        80000034-80000037 : 0.0000004c:fans
+        8000004c-8000004f : 0.0000004c:fans
+        80000050-8000008a : 0.00000050:gpio
 
-I'd like to thank all those that responded with ideas and criticisms.
-It's been very helpful.
+Andreas.
 
--- Steve
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
