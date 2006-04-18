@@ -1,27 +1,19 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx020.isp.belgacom.be (outmx020.isp.belgacom.be
-	[195.238.4.201])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EFF42679FC
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id A9A3A67A04
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Apr 2006 23:40:15 +1000 (EST)
-Received: from outmx020.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx020.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k3IDdx1q002012
-	for <linuxppc-embedded@ozlabs.org>; Tue, 18 Apr 2006 15:40:03 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+	Wed, 19 Apr 2006 00:03:26 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
 To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: New fs_enet driver : filling platform_data
-Date: Tue, 18 Apr 2006 15:40:58 +0200
-References: <200604181509.38713.laurent.pinchart@tbox.biz>
-	<20060418171317.5f9db046@vitb.ru.mvista.com>
-In-Reply-To: <20060418171317.5f9db046@vitb.ru.mvista.com>
+Subject: Re: kernel 2.6.15: cpm_uart driver broken?
+Date: Tue, 18 Apr 2006 16:05:40 +0200
+References: <200604181446.08673.david.jander@protonic.nl>
+	<20060418172244.25eefcd3@vitb.ru.mvista.com>
+In-Reply-To: <20060418172244.25eefcd3@vitb.ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200604181540.58627.laurent.pinchart@tbox.biz>
+Message-Id: <200604181605.40642.david.jander@protonic.nl>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -33,14 +25,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Vitaly,
+On Tuesday 18 April 2006 15:22, Vitaly Bordug wrote:
+>[..]
+> Well, existing code works just fine on 885ads and 866ads, that use SMC1 and
+> SMC2 as UARTs.
 
-> I have posted recently fs_enet driver update to the list - (FS_ENET: use
-> PAL for mii management) - you'll find needed platform info updates for
-> 8272ads and 866 ads in the patch. I am going to push it rather shortly,
-> after I'll correct some minor issues appeared.
+Interesting.
 
-Thanks. Which tree is your patched based on ? It doesn't apply cleanly against 
-2.6.16.
+> > I'm pretty sure the following is wrong, but I can't seem to fix it
+> > either. This seems to apply for both PQ and PQ2 type uarts:
+> > from drivers/serial/cpm_uart/cpm_uart_cpm1.c (line 190):
+>
+> That's wrong - cpm_uart_cpm1.c applies to PQ only...
 
-Laurent Pinchart
+I know. cpm_uart_cpm2.c contains the same code, so it should be as broken as 
+the cpm_uart_cpm1.c.
+
+>[...]
+> Well, since it works on other boards, and kmalloc stuff seems to sorta work
+> as well, then I guess reason is screwed DMA thing for your board.
+> Check/alter CONFIG_CONSISTENT_* things and see if it will help.
+
+I did not touch de defaults. What are the rules to change them? What do I have 
+to look out for?
+CONFIG_CONSISTENT_START = 0xff100000 and I suspect a problem here if I was 
+using MTD (currently disabled) since flash is at physical adress 
+0xfe000000-0xffffffff on my board. Isn't MTD going to io_remap that area to 
+that same virtual adress? How's that supposed to work then?
+I changed CONFIG_CONSISTENT_START to 0xfd100000 and now the system freezes 
+when I write to the serial port :-(
+
+> And, try to just replace dma_alloc_.. with kmalloc (not changing rx_buf
+> etc.) and reproduce the same behavior you had. BTW, rx_buf and tx_buf are
+> never used actually in the code, hereby there is no difference what values
+> they contain...
+
+Argh. Code looks obviously broken, but since it isn't used, it just works. 
+That is not good! We should fix that either way then.
+
+Thanks,
+
+-- 
+David Jander
