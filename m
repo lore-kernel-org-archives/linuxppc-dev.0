@@ -1,29 +1,12 @@
 Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id E5C0F67A3A
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2006 02:04:05 +1000 (EST)
-Date: Tue, 18 Apr 2006 11:03:30 -0500
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: 7447A strange problem with MSR:POW (WAS: can't boot 2.6.17-rc1)
-Message-ID: <20060418160330.GB26746@pb15.lixom.net>
-References: <1144408805.30891.42.camel@localhost.localdomain>
-	<17463.9759.442768.685153@cargo.ozlabs.ibm.com>
-	<1144923633.4935.11.camel@localhost.localdomain>
-	<21F7D7D8-B9BC-44EB-B07B-F888D89DCF25@freescale.com>
-	<17471.62187.774127.783000@cargo.ozlabs.ibm.com>
-	<1145048461.4223.38.camel@localhost.localdomain>
-	<17476.31998.168122.413195@cargo.ozlabs.ibm.com>
-	<1145340034.4705.55.camel@localhost.localdomain>
-	<17476.34830.897083.360572@cargo.ozlabs.ibm.com>
-	<20060418145600.GE20234@pb15.lixom.net>
+Date: Tue, 18 Apr 2006 11:25:53 -0500
+To: sfr@ozlabs.org
+Subject: [PATCH] Remove stale iseries global
+Message-ID: <20060418162553.GC26746@pb15.lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060418145600.GE20234@pb15.lixom.net>
 From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
-	debian-powerpc@lists.debian.org, Paul Mackerras <paulus@samba.org>,
-	Becky Bruce <Becky.Bruce@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,22 +16,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 18, 2006 at 09:56:00AM -0500, Olof Johansson wrote:
-> On Tue, Apr 18, 2006 at 04:32:46PM +1000, Paul Mackerras wrote:
-> 
-> > > understand now why you were talking about putting the code in the exit
-> > > path on irc ... I don't like it that way.... Also, if you want to keep
-> > > it, maybe use a separate CONFIG_PPC_970STYLE_NAP or something that gets
-> > > selected by platforms that can do it ?
-> > 
-> > The config option makes sense.
-> 
-> How about a CPU feature bit instead? That way it's possible to build a
-> multiplatform kernel without getting the overhead on other platforms.
-> 4 nops should be manageable?
+Hi,
 
-DOH! I'm going blind, that's already there. So, Ben, you're unhappy
-with nopping it out?
+Not even the iSeries maintainer seems to have access to this legendary
+piranha simulator. It adds a bit of ugliness in the common time init
+code, and if it's no longer used we might as well be done with it and
+remove the bloat.
 
 
--Olof
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+Index: 2.6/arch/powerpc/kernel/time.c
+===================================================================
+--- 2.6.orig/arch/powerpc/kernel/time.c
++++ 2.6/arch/powerpc/kernel/time.c
+@@ -76,7 +76,6 @@
+ 
+ /* keep track of when we need to update the rtc */
+ time_t last_rtc_update;
+-extern int piranha_simulator;
+ #ifdef CONFIG_PPC_ISERIES
+ unsigned long iSeries_recal_titan = 0;
+ unsigned long iSeries_recal_tb = 0; 
+@@ -1010,10 +1009,7 @@ void __init time_init(void)
+ 	tb_to_ns_scale = scale;
+ 	tb_to_ns_shift = shift;
+ 
+-#ifdef CONFIG_PPC_ISERIES
+-	if (!piranha_simulator)
+-#endif
+-		tm = get_boot_time();
++	tm = get_boot_time();
+ 
+ 	write_seqlock_irqsave(&xtime_lock, flags);
+ 
+Index: 2.6/arch/powerpc/platforms/iseries/mf.c
+===================================================================
+--- 2.6.orig/arch/powerpc/platforms/iseries/mf.c
++++ 2.6/arch/powerpc/platforms/iseries/mf.c
+@@ -45,7 +45,6 @@
+ 
+ #include "setup.h"
+ 
+-extern int piranha_simulator;
+ static int mf_initialized;
+ 
+ /*
+@@ -658,7 +657,7 @@ static void mf_clear_src(void)
+ 
+ void __init mf_display_progress(u16 value)
+ {
+-	if (piranha_simulator || !mf_initialized)
++	if (!mf_initialized)
+ 		return;
+ 
+ 	if (0xFFFF == value)
+@@ -1295,9 +1294,6 @@ __initcall(mf_proc_init);
+  */
+ void iSeries_get_rtc_time(struct rtc_time *rtc_tm)
+ {
+-	if (piranha_simulator)
+-		return;
+-
+ 	mf_get_rtc(rtc_tm);
+ 	rtc_tm->tm_mon--;
+ }
+@@ -1316,9 +1312,6 @@ unsigned long iSeries_get_boot_time(void
+ {
+ 	struct rtc_time tm;
+ 
+-	if (piranha_simulator)
+-		return 0;
+-
+ 	mf_get_boot_rtc(&tm);
+ 	return mktime(tm.tm_year + 1900, tm.tm_mon, tm.tm_mday,
+ 		      tm.tm_hour, tm.tm_min, tm.tm_sec);
+Index: 2.6/arch/powerpc/platforms/iseries/setup.c
+===================================================================
+--- 2.6.orig/arch/powerpc/platforms/iseries/setup.c
++++ 2.6/arch/powerpc/platforms/iseries/setup.c
+@@ -80,9 +80,6 @@ extern void iSeries_pci_final_fixup(void
+ static void iSeries_pci_final_fixup(void) { }
+ #endif
+ 
+-/* Global Variables */
+-int piranha_simulator;
+-
+ extern int rd_size;		/* Defined in drivers/block/rd.c */
+ extern unsigned long embedded_sysmap_start;
+ extern unsigned long embedded_sysmap_end;
+@@ -339,8 +336,6 @@ static void __init iSeries_init_early(vo
+ #ifdef CONFIG_SMP
+ 	smp_init_iSeries();
+ #endif
+-	if (itLpNaca.xPirEnvironMode == 0)
+-		piranha_simulator = 1;
+ 
+ 	/* Associate Lp Event Queue 0 with processor 0 */
+ 	HvCallEvent_setLpEventQueueInterruptProc(0, 0);
