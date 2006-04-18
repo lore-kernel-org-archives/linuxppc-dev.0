@@ -1,16 +1,18 @@
-Return-Path: <kpoole@mrv.com>
-Received: from mailserver.corp.int.mrv.com (mx2.lb.mrv.com [66.43.110.200])
-	by ozlabs.org (Postfix) with ESMTP id 5EEF6679EF
+Return-Path: <jessicac@tccomm.com>
+Received: from smtpout07-04.prod.mesa1.secureserver.net
+	(smtpout07-01.prod.mesa1.secureserver.net [64.202.165.230])
+	by ozlabs.org (Postfix) with SMTP id 300EF679FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Apr 2006 05:19:49 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6631D.02904B9D"
-Subject: kernel 2.6.15: cpm_uart driver broken?
-Date: Tue, 18 Apr 2006 15:19:41 -0400
-Message-ID: <4D8794260B62C940BBA7150CC5EB3BD432D3A5@bosmail.BOS.int.mrv.com>
-From: "Kenneth Poole" <kpoole@mrv.com>
+	Wed, 19 Apr 2006 05:51:24 +1000 (EST)
+Message-ID: <002001c66321$76d44050$9afea8c0@tcdomain.com>
+From: "Jessica Chen" <jessicac@tccomm.com>
 To: <linuxppc-embedded@ozlabs.org>
+References: <20060415001224.D1551353A56@atlas.denx.de>
+Subject: Re: Port Linux w/ mbxboot to PPCBoot system 
+Date: Tue, 18 Apr 2006 12:51:19 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,144 +23,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Thank you for your reply Wolfgang!
 
-------_=_NextPart_001_01C6631D.02904B9D
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+In u-boot-1.1.4 README "Where we come from" section, it says u-boot "provide
+extended interface to Linux boot loader".  Does it mean that there is still
+some sort of boot loader in arch/ppc/coffboot/vmlinux.gz ?  If yes, when
+does it start?  Does it boot the kernel?
 
-For David Jander and Vitaly Bordug:
+To build u-boot, I will need to get the manual for MPC852 and check the
+configurations in include/configs/TQM860L.h file.
 
-Regarding DMA allocation for CPM uarts, we had a similar issue with our
-MPC857T and MPC885 boards. I think the real problem is that
-bus_to_virt() and virt_to_bus() don't work on 8xx platforms for
-addresses allocated using dma_alloc_coherent(). We had a previous
-discussion Pantelis Antoniou and he agreed that the use of bus_to_virt()
-and virt_to_bus() should be deprecated. This is also recommended in the
-whitepaper series that discussed porting device drivers from 2.4 to 2.6.
+I am trying to find the machine specific header file in linux-2.4.25
+(include/asm-ppc/tqm8xx.h file in linux-2.4.4) which should have the same
+definition of structure bd_info as in include/asm-ppc/u-boot.h.  And you
+recommend using linux-2.4 instead of linux-2.6 on your website.
 
-What we did was use dma_alloc_coherent() in cpm_uart_cpm1.c, saving
-dma_addr in the pinfo structure. The in cpm_uart_core.c, we use dma_addr
-as the base address for the cbd_bufaddr values in each of the
-descriptors. The software, when accessing the DMA buffers, uses mem_addr
-as the base, applying the same offset computed previously for the dma
-addresses. This technique is used in other drivers all over 2.6.
-
-This avoids the configuration dependencies on the conversion functions.
-
-Ken Poole
-kpoole@bos.mrv.com
+So am I heading the right directions here?  Because the u-boot README
+doesn't have the new directories and filenames, I am a little confused.
 
 
-------_=_NextPart_001_01C6631D.02904B9D
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">
-<TITLE>kernel 2.6.15: cpm_uart driver broken?</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
+Thanks again,
 
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">For</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Arial">David</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
-FACE=3D"Arial">Jander</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Arial">an</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">d</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial"> Vitaly</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial"> Bordug</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">:</FONT></SPAN></P>
+Jessica
 
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">Regarding DMA allocation for CPM uarts, we had a similar =
-issue with our MPC857T and MPC8</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">8</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">5 =
-boards.</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial"> I think the real problem =
-is that bus_to_virt</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">(</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">) and virt_to_bus() don</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">&#8217;</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">t work</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
-FACE=3D"Arial">o</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">n 8xx</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial"></FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Arial">platforms for addresses =
-allocated using dma_alloc_coherent().</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial"></FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Arial">We had =
-a</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT =
-SIZE=3D2 FACE=3D"Arial"> previous discussion</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
-FACE=3D"Arial">Pantelis Antoniou and he agreed that the use of =
-bus_to_virt() and virt_to_bus() should be deprecated. This is also =
-recommended in the whitepaper series that discussed porting device =
-drivers</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> =
-<FONT SIZE=3D2 FACE=3D"Arial">from 2.4 to</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
-FACE=3D"Arial">2.6.</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN></P>
 
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">What =
-we did was</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Arial">use dma_alloc_coherent() =
-in cpm_uart_cpm1.c, saving dma_addr in the pinfo</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
-FACE=3D"Arial">structure</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">.</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial"> The in cpm_uart_core</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial">.c</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">,</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
-FACE=3D"Arial">we</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"> <FONT SIZE=3D2 FACE=3D"Arial">use dma_addr as the base =
-address for the cbd_bufaddr values in each of the</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
-FACE=3D"Arial">descriptors.</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
-FACE=3D"Arial"> The software, when accessing the DMA buffers, uses =
-mem_addr as the base, applying the same offset computed previously for =
-the dma addresses.</FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial"> This technique is used in =
-other drivers all over 2.6.</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"></SPAN></P>
 
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">This =
-avoids the configuration dependencies on the</FONT></SPAN><SPAN =
-LANG=3D"en-us"></SPAN><SPAN LANG=3D"en-us"> <FONT SIZE=3D2 =
-FACE=3D"Arial">conversion functions.</FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Ken =
-Poole</FONT></SPAN></P>
-
-<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"></SPAN><A =
-HREF=3D"mailto:kpoole@bos.mrv.com"><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"><U><FONT COLOR=3D"#0000FF" SIZE=3D2 =
-FACE=3D"Arial">kpoole@bos.mrv.com</FONT></U></SPAN><SPAN =
-LANG=3D"en-us"></SPAN></A><SPAN LANG=3D"en-us"></SPAN><SPAN =
-LANG=3D"en-us"></SPAN></P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C6631D.02904B9D--
+> >      I am new to embedded system, I am studying ppcboot-1.1.5 and linux
+> > kernel-2.4.4 that comes with an mpc852 base board, we want to modify it
+in
+>
+> Both PPCBoot and Linux 2.4.4 are *hoplessly* obsolete. It may  be  ok
+> to study this to understand the workings, but please don't even dream
+> of using it for any current work.
+>
+> > the future.  In the build process, they use the zImage.initrd
+> > (arch/ppc/mbxboot/zvmlinux.initrd) instead of the raw Linux kernel image
+>
+> Somebody didn't know what he was doing, it seems.
+>
+> > since ppcboot is already running, what happens when I boot the kernel
+that
+> > has old boot loader code in arch/ppc/mbxboot?  Will some parameters be
+> > overwritten?  If not, why?
+>
+> The Linux bootstrap loader code (arch/ppc/mbxboot)  will  ignore  the
+> parameteres  passed  by  U-Boot,  will set up is own (hardwired), and
+> duplicate some of the things that PPCboot did or would do.
+>
+> >      I am very tempted to follow the README to re-build the kernel with
+only
+> > vmlinux.gz and port it, but I don't want to create any un-recoverable
+> > results.  So I am here to seek advice, maybe this is something obvious
+to
+> > many people.
+>
+> Don't change anything. Look at it, then drop it. Start using  current
+> code, i. e. a recent version of U-Boot and a recent Linux kernel.
