@@ -1,20 +1,15 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id D818267A3A
+Return-Path: <nethi@rocketmail.com>
+Received: from web34212.mail.mud.yahoo.com (web34212.mail.mud.yahoo.com
+	[66.163.178.127]) by ozlabs.org (Postfix) with SMTP id 7B01367A04
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Apr 2006 00:21:04 +1000 (EST)
-Date: Tue, 18 Apr 2006 18:21:09 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: David Jander <david.jander@protonic.nl>
-Subject: Re: kernel 2.6.15: cpm_uart driver broken?
-Message-ID: <20060418182109.35b01dab@vitb.ru.mvista.com>
-In-Reply-To: <200604181605.40642.david.jander@protonic.nl>
-References: <200604181446.08673.david.jander@protonic.nl>
-	<20060418172244.25eefcd3@vitb.ru.mvista.com>
-	<200604181605.40642.david.jander@protonic.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Wed, 19 Apr 2006 00:13:14 +1000 (EST)
+Message-ID: <20060418140634.90720.qmail@web34212.mail.mud.yahoo.com>
+Date: Tue, 18 Apr 2006 07:06:34 -0700 (PDT)
+From: Nethi venkata Subbarao <nethi@rocketmail.com>
+Subject: scc in hdlc mode linux-2.4 device driver for MPC8247
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,56 +20,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 18 Apr 2006 16:05:40 +0200
-David Jander <david.jander@protonic.nl> wrote:
+Hi All,
+   I am new to embedded systems software and planning
+to write a scc device driver for MPC8247 processor. It
+will be very useful if someone can provide me sample
+scc driver code for MPC8247. currently using denk's
+linuxppc-2.4.20. I had written test driver but it was
+hanging SMC1 console.
 
-> On Tuesday 18 April 2006 15:22, Vitaly Bordug wrote:
-> >[..]
-> > Well, existing code works just fine on 885ads and 866ads, that use SMC1 and
-> > SMC2 as UARTs.
-> 
-> Interesting.
-> 
+Thanks in advance
+nethi.
 
-And for PQ2 I can add 8260 , PQ2fads and 8272ads that had no issues with current driver
-> > > I'm pretty sure the following is wrong, but I can't seem to fix it
-> > > either. This seems to apply for both PQ and PQ2 type uarts:
-> > > from drivers/serial/cpm_uart/cpm_uart_cpm1.c (line 190):
-> >
-> > That's wrong - cpm_uart_cpm1.c applies to PQ only...
-> 
-> I know. cpm_uart_cpm2.c contains the same code, so it should be as broken as 
-> the cpm_uart_cpm1.c.
-pq2 are cache-coherent, so there are no such troubles in there. And allocation routine is different of course.
-> 
-> >[...]
-> > Well, since it works on other boards, and kmalloc stuff seems to sorta work
-> > as well, then I guess reason is screwed DMA thing for your board.
-> > Check/alter CONFIG_CONSISTENT_* things and see if it will help.
-> 
-> I did not touch de defaults. What are the rules to change them? What do I have 
-> to look out for?
-> CONFIG_CONSISTENT_START = 0xff100000 and I suspect a problem here if I was 
-> using MTD (currently disabled) since flash is at physical adress 
-> 0xfe000000-0xffffffff on my board. Isn't MTD going to io_remap that area to 
-> that same virtual adress? How's that supposed to work then?
-> I changed CONFIG_CONSISTENT_START to 0xfd100000 and now the system freezes 
-> when I write to the serial port :-(
-> 
-
-Unfortunately, I know nothing where the correct thing should be pulled from...
-But the problem lies in dma stuff from what I can say.
-
-> > And, try to just replace dma_alloc_.. with kmalloc (not changing rx_buf
-> > etc.) and reproduce the same behavior you had. BTW, rx_buf and tx_buf are
-> > never used actually in the code, hereby there is no difference what values
-> > they contain...
-> 
-> Argh. Code looks obviously broken, but since it isn't used, it just works. 
-> That is not good! We should fix that either way then.
-
-The overhaul is on the way, I'll put the cleanup of the unused stuff together with other changes.
-
--- 
-Sincerely, 
-Vitaly
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
