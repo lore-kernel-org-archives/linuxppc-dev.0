@@ -1,35 +1,21 @@
-Return-Path: <nickpiggin@yahoo.com.au>
-Received: from smtp104.mail.mud.yahoo.com (smtp104.mail.mud.yahoo.com
-	[209.191.85.214]) by ozlabs.org (Postfix) with SMTP id 20089679F0
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 16:58:24 +1000 (EST)
-Message-ID: <44448A60.4040903@yahoo.com.au>
-Date: Tue, 18 Apr 2006 16:42:40 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
-References: <1145049535.1336.128.camel@localhost.localdomain>
-	<4440855A.7040203@yahoo.com.au>
-	<Pine.LNX.4.64.0604170953390.29732@schroedinger.engr.sgi.com>
-	<20060417220238.GD3945@localhost.localdomain>
-	<Pine.LNX.4.58.0604171936040.24264@gandalf.stny.rr.com>
-In-Reply-To: <Pine.LNX.4.58.0604171936040.24264@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
-	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
-	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	benedict.gaster@superh.com, bjornw@axis.com, Ingo Molnar <mingo@elte.hu>,
-	Ravikiran G Thirumalai <kiran@scalex86.org>,
-	Christoph Lameter <clameter@sgi.com>, grundler@parisc-linux.org,
-	starvik@axis.com, Linus Torvalds <torvalds@osdl.org>,
-	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
-	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
-	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
-	parisc-linux@parisc-linux.org
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 310EC679F0
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 19:56:28 +1000 (EST)
+Date: Tue, 18 Apr 2006 11:56:23 +0200
+From: Olaf Hering <olh@suse.de>
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] ppc64-soft-reset-fixes
+Message-ID: <20060418095623.GA12192@suse.de>
+References: <4443D738.3040704@us.ibm.com>
+	<20060417231235.36546cb6.akpm@osdl.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20060417231235.36546cb6.akpm@osdl.org>
+Cc: linuxppc-dev@ozlabs.org, fastboot@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,21 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Steven Rostedt wrote:
+ On Mon, Apr 17, Andrew Morton wrote:
 
-> Understood, but I'm going to start looking in the way Rusty and Arnd
-> suggested with the vmalloc approach. This would allow for saving of
-> memory and dynamic allocation of module memory making it more robust. And
-> all this without that evil extra indirection!
+> David Wilder <dwilder@us.ibm.com> wrote:
+> >
+> >  - For the crash scenario, when a CPU hangs with interrupts disabled and 
+> >  the other CPUs panic or user invoked kdump boot using sysrq-c. In this 
+> >  case, the hung CPU can not be stopped and causes the kdump boot not 
+> >  successful. This case can be treated as complete system hang and asks 
+> >  the user to activate soft-reset if all secondary CPUs are not stopped.
+> 
+> It breaks `make allmodconfig':
+> 
+> arch/powerpc/kernel/built-in.o(.toc+0x2a00): In function `PPC64_CACHES':
+> : undefined reference to `kexec_crash_image'
 
-Remember that this approach could effectively just move the indirection to
-the TLB / page tables (well, I say "moves" because large kernel mappings
-are effectively free compared with 4K mappings).
+This change requires another patch.
 
-So be careful about coding up a large amount of work before unleashing it:
-I doubt you'll be able to find a solution that doesn't involve tradeoffs
-somewhere (but wohoo if you can).
+It also breaks ppc32, this line is included in misc_32.S:
 
--- 
-SUSE Labs, Novell Inc.
-Send instant messages to your online friends http://au.messenger.yahoo.com 
+static inline void crash_kexec_secondary(struct pt_regs *regs) { }
+
+Maybe the whole block should be look like that, compile tested on ppc32,
+ppc64 and iseries:
+
+---
+ include/asm-powerpc/kexec.h |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.16/include/asm-powerpc/kexec.h
+===================================================================
+--- linux-2.6.16.orig/include/asm-powerpc/kexec.h
++++ linux-2.6.16/include/asm-powerpc/kexec.h
+@@ -31,9 +31,8 @@
+ #define KEXEC_ARCH KEXEC_ARCH_PPC
+ #endif
+ 
+-#ifdef CONFIG_KEXEC
+-
+ #ifndef __ASSEMBLY__
++#ifdef CONFIG_KEXEC
+ #ifdef __powerpc64__
+ /*
+  * This function is responsible for capturing register states if coming
+@@ -124,9 +123,9 @@ extern void default_machine_crash_shutdo
+ 
+ extern void machine_kexec_simple(struct kimage *image);
+ extern void crash_kexec_secondary(struct pt_regs *regs);
+-#endif /* ! __ASSEMBLY__ */
+ #else
+ static inline void crash_kexec_secondary(struct pt_regs *regs) { }
+ #endif /* CONFIG_KEXEC */
++#endif /* ! __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_KEXEC_H */
