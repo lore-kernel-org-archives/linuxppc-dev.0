@@ -1,19 +1,21 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+Return-Path: <sundar@datapatterns.co.in>
+Received: from ns0.datapatterns.co.in (ns0.datapatterns.co.in [202.91.69.116])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7638067F2F
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 23:02:40 +1000 (EST)
-From: Mel Gorman <mel@csn.ul.ie>
-To: davej@codemonkey.org.uk, tony.luck@intel.com, linux-mm@kvack.org,
-	ak@suse.de, bob.picco@hp.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Message-Id: <20060418130236.28928.52261.sendpatchset@skynet>
-In-Reply-To: <20060418130015.28928.10163.sendpatchset@skynet>
-References: <20060418130015.28928.10163.sendpatchset@skynet>
-Subject: [PATCH 7/7] Print out debugging information during initialisation
-Date: Tue, 18 Apr 2006 14:02:36 +0100 (IST)
-Cc: Mel Gorman <mel@csn.ul.ie>
+	(Client CN "ns1.datapatterns.co.in",
+	Issuer "ns1.datapatterns.co.in" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 750CC679F0
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 18:18:18 +1000 (EST)
+Received: from itdeg04 (itdeg04.datapatterns [10.5.2.4]) (authenticated bits=0)
+	by ns0.datapatterns.co.in (8.13.5/8.13.5) with ESMTP id k3I74QWK011477
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 12:34:27 +0530
+Message-ID: <000501c662a2$800ae720$0402050a@itdeg04>
+From: "Sundar" <sundar@datapatterns.co.in>
+To: <linuxppc-dev@ozlabs.org>
+Subject: isochronous mode of USB audio device on MPC5200
+Date: Tue, 18 Apr 2006 12:42:28 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0002_01C662E5.8D7DC2E0"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,166 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-The zone and hole sizing code is new and unexpected problems showed up
-on machines that were not covered by the pre-release tests. This patch
-prints out useful information when those unexpected situations occur.
+------=_NextPart_000_0002_01C662E5.8D7DC2E0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-It is not expected that this patch become a permanent part of the set.
+Hi Benny,
+            I am also facing the same problem. Can you send me the =
+details about the changes you have done.
 
+Thank you for any help.
 
- mem_init.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 47 insertions(+), 4 deletions(-)
+with warm regards,
+sundar
+------=_NextPart_000_0002_01C662E5.8D7DC2E0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-diff -rup -X /usr/src/patchset-0.5/bin//dontdiff linux-2.6.17-rc1-106-breakout_mem_init/mm/mem_init.c linux-2.6.17-rc1-107-debug/mm/mem_init.c
---- linux-2.6.17-rc1-106-breakout_mem_init/mm/mem_init.c	2006-04-18 10:22:00.000000000 +0100
-+++ linux-2.6.17-rc1-107-debug/mm/mem_init.c	2006-04-18 10:23:46.000000000 +0100
-@@ -593,6 +593,7 @@ static __meminit void init_currently_emp
- }
- 
- #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
-+
- /* Note: nid == MAX_NUMNODES returns first region */
- static int __init first_active_region_index_in_nid(int nid)
- {
-@@ -645,13 +646,24 @@ void __init free_bootmem_with_active_reg
- 	for_each_active_range_index_in_nid(i, nid) {
- 		unsigned long size_pages = 0;
- 		unsigned long end_pfn = early_node_map[i].end_pfn;
--		if (early_node_map[i].start_pfn >= max_low_pfn)
-+		if (early_node_map[i].start_pfn >= max_low_pfn) {
-+			printk("start_pfn %lu >= %lu\n", early_node_map[i].start_pfn,
-+								max_low_pfn);
- 			continue;
-+		}
- 
--		if (end_pfn > max_low_pfn)
-+		if (end_pfn > max_low_pfn) {
-+			printk("end_pfn %lu going back to %lu\n", early_node_map[i].end_pfn,
-+									max_low_pfn);
- 			end_pfn = max_low_pfn;
-+		}
- 
- 		size_pages = end_pfn - early_node_map[i].start_pfn;
-+		printk("free_bootmem_node(%d, %lu, %lu) :::: pfn ranges (%d, %lu, %lu)\n",
-+				early_node_map[i].nid,
-+				PFN_PHYS(early_node_map[i].start_pfn),
-+				PFN_PHYS(size_pages),
-+				early_node_map[i].nid, early_node_map[i].start_pfn, end_pfn);
- 		free_bootmem_node(NODE_DATA(early_node_map[i].nid),
- 				PFN_PHYS(early_node_map[i].start_pfn),
- 				PFN_PHYS(size_pages));
-@@ -661,10 +673,15 @@ void __init free_bootmem_with_active_reg
- void __init sparse_memory_present_with_active_regions(int nid)
- {
- 	unsigned int i;
--	for_each_active_range_index_in_nid(i, nid)
-+	for_each_active_range_index_in_nid(i, nid) {
-+		printk("memory_present(%d, %lu, %lu)\n",
-+			early_node_map[i].nid,
-+			early_node_map[i].start_pfn,
-+			early_node_map[i].end_pfn);
- 		memory_present(early_node_map[i].nid,
- 				early_node_map[i].start_pfn,
- 				early_node_map[i].end_pfn);
-+	}
- }
- 
- void __init get_pfn_range_for_nid(unsigned int nid,
-@@ -722,6 +739,8 @@ unsigned long __init __absent_pages_in_r
- 	unsigned long prev_end_pfn = 0, hole_pages = 0;
- 	unsigned long start_pfn;
- 
-+	printk("__absent_pages_in_range(%d, %lu, %lu) = ", nid,
-+					range_start_pfn, range_end_pfn);
- 	/* Find the end_pfn of the first active range of pfns in the node */
- 	i = first_active_region_index_in_nid(nid);
- 	prev_end_pfn = early_node_map[i].start_pfn;
-@@ -749,6 +768,8 @@ unsigned long __init __absent_pages_in_r
- 		prev_end_pfn = early_node_map[i].end_pfn;
- 	}
- 
-+	printk("%lu\n", hole_pages);
-+
- 	return hole_pages;
- }
- 
-@@ -911,6 +932,9 @@ void __init add_active_range(unsigned in
- {
- 	unsigned int i;
- 
-+	printk("add_active_range(%d, %lu, %lu): ",
-+			nid, start_pfn, end_pfn);
-+
- 	/* Merge with existing active regions if possible */
- 	for (i = 0; early_node_map[i].end_pfn; i++) {
- 		if (early_node_map[i].nid != nid)
-@@ -918,12 +942,15 @@ void __init add_active_range(unsigned in
- 
- 		/* Skip if an existing region covers this new one */
- 		if (start_pfn >= early_node_map[i].start_pfn &&
--				end_pfn <= early_node_map[i].end_pfn)
-+				end_pfn <= early_node_map[i].end_pfn) {
-+			printk("Existing\n");
- 			return;
-+		}
- 
- 		/* Merge forward if suitable */
- 		if (start_pfn <= early_node_map[i].end_pfn &&
- 				end_pfn > early_node_map[i].end_pfn) {
-+			printk("Merging forward\n");
- 			early_node_map[i].end_pfn = end_pfn;
- 			return;
- 		}
-@@ -931,6 +958,7 @@ void __init add_active_range(unsigned in
- 		/* Merge backward if suitable */
- 		if (start_pfn < early_node_map[i].end_pfn &&
- 				end_pfn >= early_node_map[i].start_pfn) {
-+			printk("Merging backwards\n");
- 			early_node_map[i].start_pfn = start_pfn;
- 			return;
- 		}
-@@ -942,6 +970,7 @@ void __init add_active_range(unsigned in
- 		return;
- 	}
- 
-+	printk("New\n");
- 	early_node_map[i].nid = nid;
- 	early_node_map[i].start_pfn = start_pfn;
- 	early_node_map[i].end_pfn = end_pfn;
-@@ -971,6 +1000,14 @@ static void __init sort_node_map(void)
- 
- 	sort(early_node_map, num, sizeof(struct node_active_region),
- 						cmp_node_active_region, NULL);
-+
-+	printk("Dumping sorted node map\n");
-+	for (num = 0; early_node_map[num].end_pfn; num++) {
-+		printk("entry %lu: %d  %lu -> %lu\n", num,
-+				early_node_map[num].nid,
-+				early_node_map[num].start_pfn,
-+				early_node_map[num].end_pfn);
-+	}
- }
- 
- /* Find the lowest pfn for a node. This depends on a sorted early_node_map */
-@@ -1012,6 +1049,10 @@ void __init free_area_init_nodes(unsigne
- 	unsigned long nid;
- 	int zone_index;
- 
-+	printk("free_area_init_nodes(%lu, %lu, %lu, %lu)\n",
-+			arch_max_dma_pfn, arch_max_dma32_pfn,
-+			arch_max_low_pfn, arch_max_high_pfn);
-+
- 	/* Record where the zone boundaries are */
- 	memset(arch_zone_lowest_possible_pfn, 0,
- 				sizeof(arch_zone_lowest_possible_pfn));
-@@ -1028,6 +1069,8 @@ void __init free_area_init_nodes(unsigne
- 			arch_zone_highest_possible_pfn[zone_index-1];
- 	}
- 
-+	printk("free_area_init_nodes(): find_min_pfn = %lu\n", find_min_pfn_with_active_regions());
-+
- 	/* Regions in the early_node_map can be in any order */
- 	sort_node_map();
- 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.2180" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hi Benny,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;=20
+&nbsp;&nbsp;&nbsp; I am also facing the same problem. Can you&nbsp;send =
+me the=20
+details about the changes you have done.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Thank you for any help.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>with warm regards,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>sundar</FONT></DIV></BODY></HTML>
+
+------=_NextPart_000_0002_01C662E5.8D7DC2E0--
