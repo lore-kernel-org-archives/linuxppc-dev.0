@@ -1,35 +1,18 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from ms-smtp-02.nyroc.rr.com (ms-smtp-02.nyroc.rr.com [24.24.2.56])
-	by ozlabs.org (Postfix) with ESMTP id 59428679F5
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 22:48:05 +1000 (EST)
-Subject: Re: [PATCH 00/05] robust per_cpu allocation for modules
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <44448A60.4040903@yahoo.com.au>
-References: <1145049535.1336.128.camel@localhost.localdomain>
-	<4440855A.7040203@yahoo.com.au>
-	<Pine.LNX.4.64.0604170953390.29732@schroedinger.engr.sgi.com>
-	<20060417220238.GD3945@localhost.localdomain>
-	<Pine.LNX.4.58.0604171936040.24264@gandalf.stny.rr.com>
-	<44448A60.4040903@yahoo.com.au>
-Content-Type: text/plain
-Date: Tue, 18 Apr 2006 08:47:57 -0400
-Message-Id: <1145364477.17085.54.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
-	linux-ia64@vger.kernel.org,
-	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, bjornw@axis.com,
-	Ingo Molnar <mingo@elte.hu>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-	Christoph Lameter <clameter@sgi.com>, grundler@parisc-linux.org,
-	starvik@axis.com, Linus Torvalds <torvalds@osdl.org>,
-	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
-	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
-	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
-	parisc-linux@parisc-linux.org
+Return-Path: <mel@csn.ul.ie>
+Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EA009679E6
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 23:00:23 +1000 (EST)
+From: Mel Gorman <mel@csn.ul.ie>
+To: davej@codemonkey.org.uk, tony.luck@intel.com,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	bob.picco@hp.com, ak@suse.de, linux-mm@kvack.org
+Message-Id: <20060418130015.28928.10163.sendpatchset@skynet>
+Subject: [PATCH 0/7] [RFC] Sizing zones and holes in an architecture
+	independent manner V3
+Date: Tue, 18 Apr 2006 14:00:15 +0100 (IST)
+Cc: Mel Gorman <mel@csn.ul.ie>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,37 +22,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[Removed from CC davidm@hpl.hp.com and benedict.gaster@superh.com
-because I keep getting "unknown user" bounces from them]
+This is V3 of the patchset to size zones and memory holes in an
+architecture-independent manner. A number of bugs have been fixed in the
+IA64 changes and it is now known to boot with the correct zone sizes. In
+this release, 98 lines of x86_64 arch-specific code is removed because
+it used similar initialisation functions to powerpc. In the last release,
+only 34 lines were removed.
 
-On Tue, 2006-04-18 at 16:42 +1000, Nick Piggin wrote:
-> Steven Rostedt wrote:
-> 
-> > Understood, but I'm going to start looking in the way Rusty and Arnd
-> > suggested with the vmalloc approach. This would allow for saving of
-> > memory and dynamic allocation of module memory making it more robust. And
-> > all this without that evil extra indirection!
-> 
-> Remember that this approach could effectively just move the indirection to
-> the TLB / page tables (well, I say "moves" because large kernel mappings
-> are effectively free compared with 4K mappings).
+Andi, in light of the x86_64 changes since the last release, can you take
+another look at the x86_64 changes please? Does this release make a bit
+more sense for x86_64 now?
 
-Yeah, I thought about the paging latencies when it was first mentioned.
-And this is something that's going to be very hard to know the impact,
-because it will be different on every system.
+Changelog since V2
+o Fix a bug where holes in lower zones get double counted
+o Catch the case where a new range is registered that is within an range
+o Catch the case where a zone boundary is within a hole
+o Use the EFI map for registering ranges on x86_64+numa
+o On IA64+NUMA, add the active ranges before rounding for granules
+o On x86_64, remove e820_hole_size and e820_bootmem_free and use
+  arch-independent equivalents
+o On x86_64, remove the map walk in e820_end_of_ram()
+o Rename memory_present_with_active_regions, name ambiguous
+o Add absent_pages_in_range() for arches to call
 
-> 
-> So be careful about coding up a large amount of work before unleashing it:
-> I doubt you'll be able to find a solution that doesn't involve tradeoffs
-> somewhere (but wohoo if you can).
-> 
+Changelog since V1
+o Correctly convert virtual and physical addresses to PFNs on ia64
+o Correctly convert physical addresses to PFN on older ppc 
+o When add_active_range() is called with overlapping pfn ranges, merge them
+o When a zone boundary occurs within a memory hole, account correctly
+o Minor whitespace damage cleanup
+o Debugging patch temporarily included
 
-OK, but as I mentioned that this is now more of a side project, so a
-month of work is not really going to be a month of work ;)  I'll first
-try to get something that just "works" and then post an RFC PATCH set,
-to get more ideas.  Since obviously there's a lot of people out there
-that know their systems much better than I do ;)
+At a basic level, architectures define structures to record where active
+ranges of page frames are located. Once located, the code to calculate
+zone sizes and holes in each architecture is very similar.  Some of this
+zone and hole sizing code is difficult to read for no good reason. This
+set of patches eliminates the similar-looking architecture-specific code.
 
-Thanks,
+The patches introduce a mechanism where architectures register where the
+active ranges of page frames are with add_active_range(). When all areas
+have been discovered, free_area_init_nodes() is called to initialise
+the pgdat and zones. The zone sizes and holes are then calculated in an
+architecture independent manner.
 
--- Steve
+Patch 1 introduces the mechanism for registering and initialising PFN ranges
+Patch 2 changes ppc to use the mechanism - 128 arch-specific LOC removed
+Patch 3 changes x86 to use the mechanism - 150 arch-specific LOC removed
+Patch 4 changes x86_64 to use the mechanism - 98 arch-specific LOC removed
+Patch 5 changes ia64 to use the mechanism - 60 arch-specific LOC removed
+
+At this point, there is a net reduction of 62 lines of code and the
+arch-independent code is a lot easier to read in comparison to some of
+the arch-specific stuff, particularly in arch/i386/ .
+
+For Patch 6, it was also noted that page_alloc.c has a *lot* of
+initialisation code which makes the file harder to read than it needs to
+be. Patch 6 creates a new file mem_init.c and moves a lot of initialisation
+code from page_alloc.c to it. After the patch is applied, there is still a net
+loss of 43 lines.
+
+The patches have been successfully boot tested and verified that the
+zones are the correct size on
+
+o x86, flatmem
+o x86, NUMAQ
+o PPC64, NUMA
+o PPC64, CONFIG_NUMA=n
+o x86_64, NUMA with SRAT
+o x86_64, CONFIG_NUMA=n
+
+There are differences in the zone sizes for x86_64 as the arch-specific code
+for x86_64 accounts the kernel image and the starting mem_maps as memory
+holes but the architecture-specific code accounts the memory as present.
+The patches have been compile tested for ia64 for flatmem and sparsemem
+configurations. At attempt was made to boot test on an ancient RS/6000
+but the vanilla kernel does not boot so I have to investigate there.
+
+The net reduction seems small but the big benefit of this set of patches
+is the reduction of 437 lines of architecture-specific code, some of
+which is very hairy. There should be a greater net reduction when other
+architectures use the same mechanisms for zone and hole sizing but I lack
+the hardware to test on.
+
+Comments?
+
+Additional credit;
+	Dave Hansen for the initial suggestion and comments on early patches
+	Andy Whitcroft for reviewing early versions and catching numerous errors
+	Tony Luck and Yasunori Goto for testing and debugging on IA64
+	Bob Picco for testing and fixing bugs related to pfn registration
+
+ arch/i386/Kconfig          |    8 
+ arch/i386/kernel/setup.c   |   19 
+ arch/i386/kernel/srat.c    |   98 ----
+ arch/i386/mm/discontig.c   |   59 --
+ arch/ia64/Kconfig          |    3 
+ arch/ia64/mm/contig.c      |   60 --
+ arch/ia64/mm/discontig.c   |   41 -
+ arch/ia64/mm/init.c        |   12 
+ arch/powerpc/Kconfig       |   13 
+ arch/powerpc/mm/mem.c      |   53 --
+ arch/powerpc/mm/numa.c     |  157 ------
+ arch/ppc/Kconfig           |    3 
+ arch/ppc/mm/init.c         |   26 -
+ arch/x86_64/Kconfig        |    3 
+ arch/x86_64/kernel/e820.c  |  109 +---
+ arch/x86_64/kernel/setup.c |    3 
+ arch/x86_64/mm/init.c      |   62 --
+ arch/x86_64/mm/numa.c      |   18 
+ arch/x86_64/mm/srat.c      |    7 
+ include/asm-ia64/meminit.h |    1 
+ include/asm-x86_64/e820.h  |    5 
+ include/asm-x86_64/proto.h |    2 
+ include/linux/mm.h         |   18 
+ include/linux/mmzone.h     |   15 
+ mm/Makefile                |    2 
+ mm/mem_init.c              | 1040 +++++++++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c            |  678 -----------------------------
+ 27 files changed, 1236 insertions(+), 1279 deletions(-)
+
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
