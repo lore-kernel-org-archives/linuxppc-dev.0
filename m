@@ -1,21 +1,12 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 310EC679F0
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 19:56:28 +1000 (EST)
-Date: Tue, 18 Apr 2006 11:56:23 +0200
-From: Olaf Hering <olh@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] ppc64-soft-reset-fixes
-Message-ID: <20060418095623.GA12192@suse.de>
-References: <4443D738.3040704@us.ibm.com>
-	<20060417231235.36546cb6.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20060417231235.36546cb6.akpm@osdl.org>
-Cc: linuxppc-dev@ozlabs.org, fastboot@lists.osdl.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17476.55180.340464.351828@cargo.ozlabs.ibm.com>
+Date: Tue, 18 Apr 2006 22:11:56 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: please pull powerpc-merge.git
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,57 +16,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Mon, Apr 17, Andrew Morton wrote:
+Linus,
 
-> David Wilder <dwilder@us.ibm.com> wrote:
-> >
-> >  - For the crash scenario, when a CPU hangs with interrupts disabled and 
-> >  the other CPUs panic or user invoked kdump boot using sysrq-c. In this 
-> >  case, the hung CPU can not be stopped and causes the kdump boot not 
-> >  successful. This case can be treated as complete system hang and asks 
-> >  the user to activate soft-reset if all secondary CPUs are not stopped.
-> 
-> It breaks `make allmodconfig':
-> 
-> arch/powerpc/kernel/built-in.o(.toc+0x2a00): In function `PPC64_CACHES':
-> : undefined reference to `kexec_crash_image'
+Please do a pull from
 
-This change requires another patch.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
 
-It also breaks ppc32, this line is included in misc_32.S:
+to get the following powerpc bug-fixes.
 
-static inline void crash_kexec_secondary(struct pt_regs *regs) { }
+Thanks,
+Paul.
 
-Maybe the whole block should be look like that, compile tested on ppc32,
-ppc64 and iseries:
+Anton Blanchard:
+      powerpc: Ensure runlatch is off in the idle loop
+      powerpc: Avoid __initcall warnings
 
----
- include/asm-powerpc/kexec.h |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+Jordi Caubet:
+      spufs: fix context-switch decrementer code
 
-Index: linux-2.6.16/include/asm-powerpc/kexec.h
-===================================================================
---- linux-2.6.16.orig/include/asm-powerpc/kexec.h
-+++ linux-2.6.16/include/asm-powerpc/kexec.h
-@@ -31,9 +31,8 @@
- #define KEXEC_ARCH KEXEC_ARCH_PPC
- #endif
- 
--#ifdef CONFIG_KEXEC
--
- #ifndef __ASSEMBLY__
-+#ifdef CONFIG_KEXEC
- #ifdef __powerpc64__
- /*
-  * This function is responsible for capturing register states if coming
-@@ -124,9 +123,9 @@ extern void default_machine_crash_shutdo
- 
- extern void machine_kexec_simple(struct kimage *image);
- extern void crash_kexec_secondary(struct pt_regs *regs);
--#endif /* ! __ASSEMBLY__ */
- #else
- static inline void crash_kexec_secondary(struct pt_regs *regs) { }
- #endif /* CONFIG_KEXEC */
-+#endif /* ! __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_KEXEC_H */
+Linas Vepstas:
+      powerpc/pseries: bugfix: balance calls to pci_device_put
+
+Michael Ellerman:
+      powerpc: Fix machine detection in prom_init.c
+
+Olaf Hering:
+      powerpc32: Set cpu explicitly in kernel compiles
+
+Paul Mackerras:
+      powerpc: Fix CHRP booting - needs a define_machine call
+      powerpc: Use correct sequence for putting CPU into nap mode
+
+Stephen Rothwell:
+      powerpc: iSeries has only 256 IRQs
+
+Vitaly Bordug:
+      ppc32: Fix string comparing in platform_notify_map
+
+ arch/powerpc/Kconfig                       |    6 +++
+ arch/powerpc/Makefile                      |    4 ++
+ arch/powerpc/kernel/Makefile               |    2 -
+ arch/powerpc/kernel/asm-offsets.c          |    1 
+ arch/powerpc/kernel/entry_32.S             |   35 +++++++--------
+ arch/powerpc/kernel/head_64.S              |   49 +++++++++++++++++++++
+ arch/powerpc/kernel/idle.c                 |    4 +-
+ arch/powerpc/kernel/idle_6xx.S             |   65 +++++++++-------------------
+ arch/powerpc/kernel/idle_power4.S          |   10 +++-
+ arch/powerpc/kernel/irq.c                  |   36 +++++++++-------
+ arch/powerpc/kernel/prom_init.c            |    5 +-
+ arch/powerpc/kernel/rtas-proc.c            |    4 +-
+ arch/powerpc/platforms/cell/spufs/switch.c |    2 -
+ arch/powerpc/platforms/chrp/chrp.h         |    1 
+ arch/powerpc/platforms/chrp/pci.c          |    6 ++-
+ arch/powerpc/platforms/chrp/setup.c        |   48 +++++++++------------
+ arch/powerpc/platforms/iseries/setup.c     |    7 +++
+ arch/powerpc/platforms/pseries/eeh.c       |    6 ++-
+ arch/powerpc/platforms/pseries/rtasd.c     |    2 -
+ arch/ppc/syslib/ppc_sys.c                  |    9 ++--
+ include/asm-powerpc/irq.h                  |    7 +++
+ include/asm-powerpc/thread_info.h          |    8 +++
+ 22 files changed, 194 insertions(+), 123 deletions(-)
