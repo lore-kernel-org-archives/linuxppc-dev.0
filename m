@@ -1,15 +1,16 @@
-Return-Path: <nethi@rocketmail.com>
-Received: from web34212.mail.mud.yahoo.com (web34212.mail.mud.yahoo.com
-	[66.163.178.127]) by ozlabs.org (Postfix) with SMTP id 7B01367A04
+Return-Path: <javadtalab@yahoo.com>
+Received: from web30404.mail.mud.yahoo.com (web30404.mail.mud.yahoo.com
+	[68.142.200.107]) by ozlabs.org (Postfix) with SMTP id 278C067A3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Apr 2006 00:13:14 +1000 (EST)
-Message-ID: <20060418140634.90720.qmail@web34212.mail.mud.yahoo.com>
-Date: Tue, 18 Apr 2006 07:06:34 -0700 (PDT)
-From: Nethi venkata Subbarao <nethi@rocketmail.com>
-Subject: scc in hdlc mode linux-2.4 device driver for MPC8247
+	Wed, 19 Apr 2006 01:25:24 +1000 (EST)
+Message-ID: <20060418151832.76266.qmail@web30404.mail.mud.yahoo.com>
+Date: Tue, 18 Apr 2006 08:18:32 -0700 (PDT)
+From: Abas Javadtalab <javadtalab@yahoo.com>
+Subject: MCC 8260 problem
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/alternative; boundary="0-100997250-1145373512=:75601"
+Cc: gianfranco.morandi@euro-studio.it
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,18 +21,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
-   I am new to embedded systems software and planning
-to write a scc device driver for MPC8247 processor. It
-will be very useful if someone can provide me sample
-scc driver code for MPC8247. currently using denk's
-linuxppc-2.4.20. I had written test driver but it was
-hanging SMC1 console.
+--0-100997250-1145373512=:75601
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Thanks in advance
-nethi.
+Hi 
+  I have downloaded mcc source code from Source forge site. However, this source unable to execute because the Rules.make file is not found. in addition it seems that this package is incomplete source  It would be glad for me if you help me about it. 
+  Best regards 
+  Abbas
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+		
+---------------------------------
+Talk is cheap. Use Yahoo! Messenger to make PC-to-Phone calls.  Great rates starting at 1&cent;/min.
+--0-100997250-1145373512=:75601
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+<DIV><SPAN style="FONT-SIZE: 10pt; FONT-FAMILY: Arial">Hi <?xml:namespace prefix = o ns = "urn:schemas-microsoft-com:office:office" /><o:p></o:p></SPAN></DIV>  <DIV><SPAN style="FONT-SIZE: 10pt; FONT-FAMILY: Arial">I have downloaded mcc source code from Source forge site. However, this source unable to&nbsp;execute because the Rules.make file is not found. in addition&nbsp;it seems that this package is incomplete source &nbsp;It would be glad for me if you help me about it. <o:p></o:p></SPAN></DIV>  <DIV><SPAN style="FONT-SIZE: 10pt; FONT-FAMILY: Arial">Best regards <o:p></o:p></SPAN></DIV>  <DIV><SPAN style="FONT-SIZE: 10pt; FONT-FAMILY: Arial">Abbas<o:p></o:p></SPAN></DIV><p>
+		<hr size=1>Talk is cheap. Use Yahoo! Messenger to make PC-to-Phone calls. <a href="http://us.rd.yahoo.com/mail_us/taglines/postman7/*http://us.rd.yahoo.com/evt=39666/*http://beta.messenger.yahoo.com"> Great rates starting at 1&cent;/min.
+--0-100997250-1145373512=:75601--
