@@ -1,17 +1,17 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 2727A67A41
+Return-Path: <tsawyer@broadcom.com>
+Received: from sandmail.sandburst.com (sandmail.sandburst.com [216.57.132.42])
+	by ozlabs.org (Postfix) with ESMTP id 87FD667A5A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Apr 2006 23:13:15 +1000 (EST)
-Date: Tue, 18 Apr 2006 17:13:17 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Laurent Pinchart <laurent.pinchart@tbox.biz>
-Subject: Re: New fs_enet driver : filling platform_data
-Message-ID: <20060418171317.5f9db046@vitb.ru.mvista.com>
-In-Reply-To: <200604181509.38713.laurent.pinchart@tbox.biz>
-References: <200604181509.38713.laurent.pinchart@tbox.biz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Apr 2006 23:20:15 +1000 (EST)
+Message-ID: <4444E01F.5000100@broadcom.com>
+Date: Tue, 18 Apr 2006 08:48:31 -0400
+From: "Travis B. Sawyer" <tsawyer@broadcom.com>
+MIME-Version: 1.0
+To: Andriy Korud <a.korud@vector.com.pl>
+Subject: Re: CF card connection to PPC CPUs
+References: <60E856FD577CC04BA3727AF4122D3F160106FDDB@3bit.vector.com.pl>
+In-Reply-To: <60E856FD577CC04BA3727AF4122D3F160106FDDB@3bit.vector.com.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,32 +23,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 18 Apr 2006 15:09:38 +0200
-Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
+Andriy Korud wrote:
 
-> Hi everybody,
-> 
-> I'm trying to use the new fs_enet FCC ethernet driver (drivers/net/fs_enet) 
-> with an Embedded Planet EP8284 board (LXT971A phy).
-> 
-> I don't know how/where to fill the platform_data structure that the 
-> mii-bitbang driver uses. Could anyone give me some help, or point me to a 
-> sample implementation for a similar platform ?
-> 
-I have posted recently fs_enet driver update to the list - (FS_ENET: use PAL for mii management)
-- you'll find needed platform info updates for 8272ads and 866 ads in the patch. I am going to push it rather shortly, after I'll correct some minor issues appeared.
+>Hi,
+>Does anybody has experience in connecting CF card to PPC (especially
+>44x) CPU directly via EBC bus?
+>I see how this can be done in TrueIDE mode, but unfortunately our
+>application requires hot swap capability.
+>
+>  
+>
+Andriy:
 
-> Best regards,
-> 
-> Laurent Pinchart
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+We've done the direct connect route on a couple of our platforms 
+(formerly Sandburst Metrobox).
+Unfortunately, as you state, you lose HS caps.
 
+We used two chip selects, and connected the bus as follows:
 
--- 
-Sincerely, 
-Vitaly
+EBC Addr 28:30 <-> CF Addr 2:0
+
+EBC Data   CF Data
+8                    15
+9                    14
+10                  13
+11                  12
+12                  11
+13                  10
+14                  9
+15                  8
+0                    7
+1                    6
+2                    5
+3                    4
+4                    3
+5                    2
+6                    1
+7                    0
+
+/OE  & /CSEL are pulled down
+/REG & /WE are pulled up.
+
+Check out Das U-Boot Sandburst Metrobox (include/configs/METROBOX.h) for 
+usage info.
+We essentially used a technote/appnote from Toshiba (that I can't find 
+right now).
+
+Good luck,
+
+travis
