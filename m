@@ -1,24 +1,38 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7CF4867A05
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2006 06:27:55 +1000 (EST)
-Date: Tue, 18 Apr 2006 21:27:47 +0100 (IST)
-From: Mel Gorman <mel@csn.ul.ie>
-To: Jack Steiner <steiner@sgi.com>
-Subject: Re: [PATCH 0/7] [RFC] Sizing zones and holes in an architecture
-	independent manner V3
-In-Reply-To: <20060418195644.GA30911@sgi.com>
-Message-ID: <Pine.LNX.4.64.0604182113470.5601@skynet.skynet.ie>
-References: <20060418130015.28928.10163.sendpatchset@skynet>
-	<20060418195644.GA30911@sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: davej@codemonkey.org.uk, tony.luck@intel.com,
-	Linux Memory Management List <linux-mm@kvack.org>, ak@suse.de,
-	bob.picco@hp.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A8E84679F3
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2006 07:31:18 +1000 (EST)
+Received: from e5.ny.us.ibm.com (e5.pok.ibm.com [9.56.232.145])
+	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3IJ2WCX006258
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 15:02:33 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3IJ2Qfi017878
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 15:02:26 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3IJ2Q3d216384
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 15:02:26 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3IJ2Pc2017258
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 15:02:25 -0400
+Subject: Re: [PATCH] Remove stale iseries global
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1145382862.20176.5.camel@localhost.localdomain>
+References: <20060418162553.GC26746@pb15.lixom.net>
+	<1145381474.20493.5.camel@localhost.localdomain>
+	<1145382862.20176.5.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 18 Apr 2006 14:02:17 -0500
+Message-Id: <1145386937.20493.33.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,93 +42,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 18 Apr 2006, Jack Steiner wrote:
+On Tue, 2006-04-18 at 19:54 +0200, Michael Ellerman wrote:
+> On Tue, 2006-04-18 at 12:31 -0500, Will Schmidt wrote:
+> > On Tue, 2006-04-18 at 11:25 -0500, Olof Johansson wrote:
+> > > Hi,
+> > > 
+> > > Not even the iSeries maintainer seems to have access to this legendary
+> > > piranha simulator. It adds a bit of ugliness in the common time init
+> > > code, and if it's no longer used we might as well be done with it and
+> > > remove the bloat.
+> > 
+> > Yes, the piranha tools are no longer used with linux.   I see no reason
+> > why this needs to stay.  
+> 
+> So can we get rid of this from head_64.S as well? Or is that a different
+> debugger?
 
-> On Tue, Apr 18, 2006 at 02:00:15PM +0100, Mel Gorman wrote:
->> This is V3 of the patchset to size zones and memory holes in an
-> ...
->
->
->
-> FYI, I applied the patches to a recent kernel & booted on a large
-> SGI system.
+It's likely the same (piranha) debugger.  I'm not aware of any other
+debuggers that would be involved here.
 
-Very cool, thanks for testing. I'm glad to see the assumptions related to 
-the size of node_map held up for a large machine.
+What I dont know is if this offset to the mschunks_map array is also
+used by the hypervisor for some non debug purposes.   If iSeries
+continues to work without it, then it can probably go too.
 
-> No problem aside from what I assume is a very large number
-> of debug messages.
->
+Just be sure that PPC_EARLY_DEBUG_ISERIES will continue to work for
+getting info out of the system.  :-)
 
-The debug messages are all in patch 7/7 and will be dropped before I try 
-and push this to -mm. The patch was included here in case a machine failed 
-to boot so I could figure out what went wrong.
-
->
-> ------
-> Linux version 2.6.17-tony (steiner@attica) (gcc version 4.1.0 (SUSE Linux)) #5 SMP PREEMPT Tue Apr 18 14:01:54 CDT 2006
-> EFI v1.10 by INTEL: SALsystab=0x6002c51df0 ACPI 2.0=0x6002c51ee0
-> Number of logical nodes in system = 512
-> Number of memory chunks in system = 512
-> SAL 2.9: SGI SN2 version 1.10
-> SAL Platform features: ITC_Drift
-> SAL: AP wakeup using external interrupt vector 0x12
-> No logical to physical processor mapping available
-> ACPI: Local APIC address c0000000fee00000
-> ACPI: Error parsing MADT - no IOSAPIC entries
-> register_intr: No IOSAPIC for GSI 52
-> 512 CPUs available, 512 CPUs total
-> MCA related initialization done
-> SGI SAL version 1.10
-> add_active_range(0, 25168900, 25235456): New
-> add_active_range(0, 25236375, 25419776): New
-> add_active_range(0, 27262976, 27516927): New
-> add_active_range(0, 29360128, 29614080): New
-> add_active_range(1, 92277760, 92528640): New
-> ...
-> add_active_range(511, 34322242024, 34322242047): New
-> add_active_range(511, 34322243072, 34322243417): New
-> add_active_range(511, 34322243432, 34322243460): New
-> add_active_range(511, 34322243488, 34322243500): New
-> Virtual mem_map starts at 0xa0007e407d270000
-> free_area_init_nodes(68719476736, 68719476736, 34322243584, 34322243584)
-> free_area_init_nodes(): find_min_pfn = 25168900
-> Dumping sorted node map
-> entry 0: 0  25168900 -> 25235456
-> entry 1: 0  25236375 -> 25419776
-> entry 2: 0  27262976 -> 27516927
-> entry 3: 0  29360128 -> 29614080
-> entry 4: 1  92277760 -> 92528640
-> entry 5: 1  94371840 -> 94625792
-> entry 6: 1  96468992 -> 96722944
-> ...
-> entry 1536: 511	 34321989632 -> 34322242001
-> entry 1537: 511	 34322242016 -> 34322242022
-> entry 1538: 511	 34322242024 -> 34322242047
-> entry 1539: 511	 34322243072 -> 34322243417
-> entry 1540: 511	 34322243432 -> 34322243460
-> entry 1541: 511	 34322243488 -> 34322243500
-> __absent_pages_in_range(0, 25168900, 68719476736) = 3687320
-> __absent_pages_in_range(0, 68719476736, 68719476736) = 0
-> __absent_pages_in_range(0, 68719476736, 34322243584) = 0
-> __absent_pages_in_range(0, 34322243584, 34322243584) = 0
-> __absent_pages_in_range(0, 25168900, 68719476736) = 3687320
-> ...
-> __absent_pages_in_range(511, 34322243584, 34322243584) = 0
-> __absent_pages_in_range(511, 25168900, 68719476736) = 3687485
-> __absent_pages_in_range(511, 68719476736, 68719476736) = 0
-> __absent_pages_in_range(511, 68719476736, 34322243584) = 0
-> __absent_pages_in_range(511, 34322243584, 34322243584) = 0
-> Built 512 zonelists
-> Kernel command line: BOOT_IMAGE=net0:jfs/tonys	ro hashdist=1 dhash_entries=2097152 ihash_entries=2097152 rhash_entries=2097152 thash_entries=2097152 console=ttySG0,38400n8 kdb=on noprobe root=/dev/sda5
-> PID hash table entries: 4096 (order: 12, 32768 bytes)
-> Console: colour dummy device 80x25
-> Memory: 4639378784k/4655642784k available (7021k code, 16279040k reserved, 4361k data, 736k init)
-> 	(essentially the same numbers as with a kernel w/o the patches)
-> McKinley Errata 9 workaround not needed; disabling it
->
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+>         /*
+>          * At offset 0x28 and 0x30 are offsets to the mschunks_map
+>          * array (used by the iSeries LPAR debugger to do translation
+>          * between physical addresses and absolute addresses) and
+>          * to the pidhash table (also used by the debugger)
+>          */
+>         .llong mschunks_map-KERNELBASE
+>         .llong 0        /* pidhash-KERNELBASE SFRXXX */
+> 
+> cheers
+> 
