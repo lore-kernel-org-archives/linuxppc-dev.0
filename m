@@ -1,38 +1,20 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A8E84679F3
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2006 07:31:18 +1000 (EST)
-Received: from e5.ny.us.ibm.com (e5.pok.ibm.com [9.56.232.145])
-	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3IJ2WCX006258
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 15:02:33 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3IJ2Qfi017878
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 15:02:26 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3IJ2Q3d216384
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 15:02:26 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3IJ2Pc2017258
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Apr 2006 15:02:25 -0400
-Subject: Re: [PATCH] Remove stale iseries global
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: michael@ellerman.id.au
-In-Reply-To: <1145382862.20176.5.camel@localhost.localdomain>
-References: <20060418162553.GC26746@pb15.lixom.net>
-	<1145381474.20493.5.camel@localhost.localdomain>
-	<1145382862.20176.5.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 18 Apr 2006 14:02:17 -0500
-Message-Id: <1145386937.20493.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org
-Reply-To: will_schmidt@vnet.ibm.com
+Return-Path: <paul@briny.ondioline.org>
+Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
+	by ozlabs.org (Postfix) with ESMTP id 4A2EC679E2
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2006 14:31:19 +1000 (EST)
+From: Paul Collins <paul@briny.ondioline.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 2.6.16 backtrace at boot (Ibook G4) (related to "PowerBook5,
+	4 -- no sound?")
+References: <Pine.LNX.4.44.0604181714400.12545-100000@zirkon.biophys.uni-duesseldorf.de>
+	<1145397523.4705.94.camel@localhost.localdomain>
+Date: Wed, 19 Apr 2006 14:25:06 +1000
+Message-ID: <87r73u19b1.fsf@briny.internal.ondioline.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: "\[ATR\]Dj-Death" <djdeath@gmx.fr>, linuxppc-dev@ozlabs.org,
+	Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>,
+	debian-powerpc@lists.debian.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,40 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-04-18 at 19:54 +0200, Michael Ellerman wrote:
-> On Tue, 2006-04-18 at 12:31 -0500, Will Schmidt wrote:
-> > On Tue, 2006-04-18 at 11:25 -0500, Olof Johansson wrote:
-> > > Hi,
-> > > 
-> > > Not even the iSeries maintainer seems to have access to this legendary
-> > > piranha simulator. It adds a bit of ugliness in the common time init
-> > > code, and if it's no longer used we might as well be done with it and
-> > > remove the bloat.
-> > 
-> > Yes, the piranha tools are no longer used with linux.   I see no reason
-> > why this needs to stay.  
-> 
-> So can we get rid of this from head_64.S as well? Or is that a different
-> debugger?
+Hi Ben,
 
-It's likely the same (piranha) debugger.  I'm not aware of any other
-debuggers that would be involved here.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-What I dont know is if this offset to the mschunks_map array is also
-used by the hypervisor for some non debug purposes.   If iSeries
-continues to work without it, then it can probably go too.
+> On Tue, 2006-04-18 at 17:20 +0200, Michael Schmitz wrote:
+>> > > Here a trace at boot from the sound driver :
+>> >
+>> > I think that bug happens if the sound driver loads before i2c-powermac.
+>> 
+>> i2c-keywest is still request-module()d in 2.6.17-rc1, FWIW.
+>> 
+>> Regarding other sound breakage with 2.6.17-rc1, I traced that to
+>> 
+>> machine_is(powermac)
+>> 
+>> returning zero in sound/ppc/pmac.c:snd_pmac_detect() when loading
+>> snd-powermac. The OSS driver spits -ENODEV as well on loading so I'd
+>> suspect the same thing here.
+>> 
+>> machine_is boils down to a comparison machine_id == &mach_powermac, is
+>> that sort of thing illegal after kernel init?
+>
+> Totally untested patch, please let me know if it helps:
 
-Just be sure that PPC_EARLY_DEBUG_ISERIES will continue to work for
-getting info out of the system.  :-)
+Results in the following.
 
->         /*
->          * At offset 0x28 and 0x30 are offsets to the mschunks_map
->          * array (used by the iSeries LPAR debugger to do translation
->          * between physical addresses and absolute addresses) and
->          * to the pidhash table (also used by the debugger)
->          */
->         .llong mschunks_map-KERNELBASE
->         .llong 0        /* pidhash-KERNELBASE SFRXXX */
-> 
-> cheers
-> 
+  arch/powerpc/platforms/powermac/setup.c:721: error: 'mach_powermac' undeclared here (not in a function)
+  arch/powerpc/platforms/powermac/setup.c:721: warning: type defaults to 'int' in declaration of 'mach_powermac'
+  make[2]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
+  make[1]: *** [arch/powerpc/platforms/powermac] Error 2
+  make: *** [arch/powerpc/platforms] Error 2
+
+It looks like the EXPORT_SYMBOL() needs to be after the definition.
+
+However, I tried adding "EXPORT_SYMBOL(mach_powermac);" after the
+define_machine(powermac) and now sound works for me with my original
+I2C_POWERMAC=y SND_POWERMAC=m configuration.
+
+-- 
+Dag vijandelijk luchtschip de huismeester is dood
