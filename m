@@ -1,18 +1,18 @@
-Return-Path: <jessicac@tccomm.com>
-Received: from smtpout07-04.prod.mesa1.secureserver.net
-	(smtpout07-01.prod.mesa1.secureserver.net [64.202.165.230])
-	by ozlabs.org (Postfix) with SMTP id 300EF679FD
+Return-Path: <ynkim@adics.com>
+Received: from localhost.localdomain (unknown [210.205.117.170])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2B244679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Apr 2006 05:51:24 +1000 (EST)
-Message-ID: <002001c66321$76d44050$9afea8c0@tcdomain.com>
-From: "Jessica Chen" <jessicac@tccomm.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <20060415001224.D1551353A56@atlas.denx.de>
-Subject: Re: Port Linux w/ mbxboot to PPCBoot system 
-Date: Tue, 18 Apr 2006 12:51:19 -0700
+	Wed, 19 Apr 2006 17:28:31 +1000 (EST)
+Message-ID: <4445DB5E.6010808@adics.com>
+Date: Wed, 19 Apr 2006 15:40:30 +0900
+From: =?EUC-KR?B?sei/tbOy?= <ynkim@adics.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: linuxppc-embedded@ozlabs.org
+Subject: I want to use SCC3 as ethernet with SMC1 as console(mpc8xx)
+Content-Type: text/plain; charset=EUC-KR
+Reply-To: ynkim@adics.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,60 +23,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thank you for your reply Wolfgang!
+First of all, I am sorry for my poor english.
 
-In u-boot-1.1.4 README "Where we come from" section, it says u-boot "provide
-extended interface to Linux boot loader".  Does it mean that there is still
-some sort of boot loader in arch/ppc/coffboot/vmlinux.gz ?  If yes, when
-does it start?  Does it boot the kernel?
+I have mpc850 custom board with followings:
 
-To build u-boot, I will need to get the manual for MPC852 and check the
-configurations in include/configs/TQM860L.h file.
+SMC1 - console
+SMC2 - uart
+SCC2 - ethernet
 
-I am trying to find the machine specific header file in linux-2.4.25
-(include/asm-ppc/tqm8xx.h file in linux-2.4.4) which should have the same
-definition of structure bd_info as in include/asm-ppc/u-boot.h.  And you
-recommend using linux-2.4 instead of linux-2.6 on your website.
+I want to use SCC2 and SCC3 as ethernet(two ethernet interfaces).
 
-So am I heading the right directions here?  Because the u-boot README
-doesn't have the new directories and filenames, I am a little confused.
+As many web sites and mailing lists describe, I knew that SMC patch is
+required because SMC1 and SCC3 share parameter ram.
 
+I have DENX 2.4.25 kernel and this kernel works fine except using SCC3
+as ethernet.
+When apply "USE_SMC_PATCH" in arch/ppc/8xx_io/micropatch.c, kernel hang
+and reset without any messages.(using u-boot 1.1.4)
 
+I want to know that when I use "USE_SMC_PATCH", which source file is
+modified and how to modify source file to use SMC1 as console.
 
-Thanks again,
-
-Jessica
-
-
-
-> >      I am new to embedded system, I am studying ppcboot-1.1.5 and linux
-> > kernel-2.4.4 that comes with an mpc852 base board, we want to modify it
-in
->
-> Both PPCBoot and Linux 2.4.4 are *hoplessly* obsolete. It may  be  ok
-> to study this to understand the workings, but please don't even dream
-> of using it for any current work.
->
-> > the future.  In the build process, they use the zImage.initrd
-> > (arch/ppc/mbxboot/zvmlinux.initrd) instead of the raw Linux kernel image
->
-> Somebody didn't know what he was doing, it seems.
->
-> > since ppcboot is already running, what happens when I boot the kernel
-that
-> > has old boot loader code in arch/ppc/mbxboot?  Will some parameters be
-> > overwritten?  If not, why?
->
-> The Linux bootstrap loader code (arch/ppc/mbxboot)  will  ignore  the
-> parameteres  passed  by  U-Boot,  will set up is own (hardwired), and
-> duplicate some of the things that PPCboot did or would do.
->
-> >      I am very tempted to follow the README to re-build the kernel with
-only
-> > vmlinux.gz and port it, but I don't want to create any un-recoverable
-> > results.  So I am here to seek advice, maybe this is something obvious
-to
-> > many people.
->
-> Don't change anything. Look at it, then drop it. Start using  current
-> code, i. e. a recent version of U-Boot and a recent Linux kernel.
+Could you tell me useful information about that?
