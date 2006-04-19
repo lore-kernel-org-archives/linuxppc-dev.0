@@ -1,20 +1,16 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id E1BC6679EB
+Return-Path: <kpoole@mrv.com>
+Received: from mailserver.corp.int.mrv.com (mx2.lb.mrv.com [66.43.110.200])
+	by ozlabs.org (Postfix) with ESMTP id 532C0679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 19 Apr 2006 22:51:02 +1000 (EST)
-Message-ID: <1145458791.44465067c4afa@webmail.televes.com:443>
-Date: Wed, 19 Apr 2006 16:59:51 +0200
-From: Bastos Fernandez Alexandre <alebas@televes.com>
-To: Mark Chambers <markc@mail.com>
-Subject: Re: Watchdog on MPC82xx
-References: <1144835330.443ccd021b40a@webmail.televes.com:443><1144842264.443ce818d6822@webmail.televes.com:443>
-	<1145445235.44461b733f242@webmail.televes.com:443>
-	<005401c663a9$e1fd8930$6401a8c0@CHUCK2>
-In-Reply-To: <005401c663a9$e1fd8930$6401a8c0@CHUCK2>
+	Wed, 19 Apr 2006 22:58:40 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C663B0.F47D3D04"
+Subject: kernel access of bad area, sig: 11 ( mpc852t)
+Date: Wed, 19 Apr 2006 08:58:35 -0400
+Message-ID: <4D8794260B62C940BBA7150CC5EB3BD432D423@bosmail.BOS.int.mrv.com>
+From: "Kenneth Poole" <kpoole@mrv.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,39 +21,261 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mark,
+This is a multi-part message in MIME format.
 
->
-> I haven't been following this closely, but are you sure it's a WDT
-> reset?  You can tell from the Reset Status Register (RSR).
-> u-boot prints out a decode of this register, which also clears the
-> bits, so you have to go by the printout when u-boot starts to see
-> why the last reset occurred.
-
-U-boot is reporting the Watchdog reset. You can see:
-
-U-Boot 1.1.4 (Apr 11 2006 - 14:39:01)
-
-MPC8272 Reset Status: Software Watchdog, External Soft, External Hard
-
-MPC8272 Clock Configuration
- - Bus-to-Core Mult 4x, VCO Div 2, 60x Bus Freq  25-75 , Core Freq 100-300
- - dfbrg 1, corecnf 0x1a, busdf 3, cpmdf 1, plldf 0, pllmf 3
- - vco_out  400000000, scc_clk  100000000, brg_clk   25000000
- - cpu_clk  400000000, cpm_clk  200000000, bus_clk  100000000
- - pci_clk   66666666
-
-CPU:   MPC8272 (HiP7 Rev 14, Mask 1.0 1K50M) at 400 MHz
-Board: Televes XXX8248
-       Watchdog enabled
+------_=_NextPart_001_01C663B0.F47D3D04
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
 
->
-> Just trying to help brainstorm...
->
-> Mark Chambers
->
+>>> Hi,
+>>> Im having problem porting linux kernel 2.4.21 to our mpc852T custom
+>>> board.The kernel
+>>> panics randomly with sig 11.
+>>> The board boots up fine and we also get to the prompt.When we open
+3-4
+>>> telnet sessions
+>>> and try to run some command the kernel panics.This is completely
+>>> random.Sometimes it
+>>> even panics before opening the telnet session.
+>>>
 
-Thanks,
+>>> <oops dump snipped>
+>>>
+>>You almost certainly have SDRAM problems.  If you have thoroughly
+checked
+>>out the
+>>complete address range statically, remember that burst accesses will
+not
+>>occur until the
+>>cache is turned on, so your problem may be with bursting.  But you can
+also
+>>have severe
+>>problems like a missing address line and linux still run for a few
+seconds.
+>>
+>>Mark Chambers
 
-Alex Bastos
+>We've checked the SDRAM. The timings (UPM) look fine. The problem
+>however is that linux does not hang until after a few processes are
+>started.
+>If we boot to linux and leave it as it is, everything is fine and the
+>board remains working. However each time a few processes (4-5 telnet
+>sessions for eg.) are started the system either panics or hangs (goes
+>dead).
+
+>Thanks in advance,
+>Akshay
+
+We have been experiencing this same issue with random boards in
+production. The exact same version of software will run for months on
+other instances of the exact same board design, but a few percent get
+'random' trap 300s. When they do occur, it's only after Linux has booted
+and address translation and caching are turned on. Examining the oops-es
+and memory shows that some location in SDRAM has a bogus value, but I
+don't have the tools to trace back how it got that way.
+
+I have ported a rigorous moving-inversions memory test into our
+firmware, and have run it extensively across the entire SDRAM address
+space (the test code executes from flash). I have let this test run
+continuously for hours and hours, but never found a memory problem.
+Unfortunately, I do not have test software that enables the MMU address
+translation or caching, so as Mark said, I can't test memory using
+bursting. Our hardware engineers have reviewed the designs very
+carefully and are quite confident that there is plenty of margin in the
+memory timing. Signal quality has also been carefully checked.
+
+Our manufacturing people have replaced the CPU on some of these boards,
+and the problem went away.
+
+If anyone else on the mailing list has experienced this issue, or has
+developed a virtual address memory test, please let us know.
+
+Ken Poole
+=20
+
+=20
+
+------_=_NextPart_001_01C663B0.F47D3D04
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7638.1">
+<TITLE>kernel access of bad area, sig: 11 ( mpc852t)</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/rtf format -->
+<BR>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New"> Hi,</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New"> Im having problem porting linux kernel 2.4.21 to =
+our mpc852T custom</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New"> board.The kernel</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New"> panics randomly with sig 11.</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New"> The board boots up fine and we also get to the =
+prompt.When we open 3-4</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New"> telnet sessions</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New"> and try to run some command the kernel panics.This =
+is completely</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New"> random.Sometimes it</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New"> even panics before opening the telnet =
+session.</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial">&gt;&gt;&gt;</FONT></SPAN></P>
+<BR>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial">&gt;&gt;&gt; &lt;oops dump snipped&gt;</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial">&gt;&gt;&gt;</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New">You almost certainly have SDRAM problems.&nbsp; If =
+you have thoroughly checked</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New">out the</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New">complete address range statically, remember that =
+burst accesses will not</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New">occur until the</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New">cache is turned on, so your problem may be with =
+bursting.&nbsp; But you can also</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New">have severe</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New">problems like a missing address line and linux =
+still run for a few seconds.</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;&gt;</FONT></SPAN><SPAN LANG=3D"en-us"><I><FONT SIZE=3D2 =
+FACE=3D"Courier New">Mark Chambers</FONT></I></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;We've checked the SDRAM. The timings (UPM) look fine. The =
+problem</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;however is that linux does not hang until after a few processes =
+are</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;started.</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;If we boot to linux and leave it as it is, everything is fine =
+and the</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;board remains working. However each time a few processes (4-5 =
+telnet</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;sessions for eg.) are started the system either panics or hangs =
+(goes</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;dead).</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;Thanks in advance,</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Courier =
+New">&gt;Akshay</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">We =
+have been experiencing this same issue with random boards in production. =
+The exact same version of software will run for months on other =
+instances of the exact same board design, but a few percent get =
+&#8216;random&#8217; trap 300s. When they do occur, it&#8217;s only =
+after Linux has booted and address translation and caching are turned =
+on. Examining the oops-es and memory shows that some location in SDRAM =
+has a bogus value, but I don&#8217;t have the tools to trace back how it =
+got that way.</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">I =
+have ported a rigorous moving-inversions memory test into our firmware, =
+and have run it extensively across the entire SDRAM address space (the =
+test code executes from flash). I have let this test run continuously =
+for hours and hours, but never found a memory problem. Unfortunately, I =
+do not have test software that enables the MMU address translation or =
+caching, so as Mark said, I can&#8217;t test memory using bursting. Our =
+hardware engineers have reviewed the designs very carefully and are =
+quite confident that there is plenty of margin in the memory timing. =
+Signal quality has also been carefully checked.</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Our =
+manufacturing people have replaced the CPU on some of these boards, and =
+the problem went away.</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">If =
+anyone else on the mailing list has experienced this issue, or has =
+developed a virtual address memory test, please let us =
+know.</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 FACE=3D"Arial">Ken =
+Poole</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial">&nbsp;</FONT></SPAN></P>
+
+<P ALIGN=3DLEFT><SPAN LANG=3D"en-us"><FONT SIZE=3D2 =
+FACE=3D"Arial"></FONT></SPAN><SPAN LANG=3D"en-us"></SPAN><SPAN =
+LANG=3D"en-us">&nbsp;</SPAN></P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C663B0.F47D3D04--
