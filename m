@@ -1,31 +1,17 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 908B2679F7
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 01:46:00 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k3KG16fa007119
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2006 09:01:06 -0700 (MST)
-Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k3KFv2MN023999
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2006 10:57:02 -0500 (CDT)
-Subject: Re: [patch][rfc]flattened device tree: Passing a dtb (blob) to Linux.
-From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1145383451.20176.9.camel@localhost.localdomain>
-References: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
-	<9B2C87C5-0B69-46E7-B48B-9CDB882836B2@watson.ibm.com>
-	<20060413053614.2648467DE3@ozlabs.org>
-	<C67D530F-2629-4D6B-986B-0FC7CFE525BF@watson.ibm.com>
-	<1144926434.7777.5.camel@localhost.localdomain>
-	<2A70CBD7-4A52-4599-8BEF-6AC633F62C83@watson.ibm.com>
-	<1144938844.7777.16.camel@localhost.localdomain>
-	<1145378886.5314.57.camel@cashmere.sps.mot.com>
-	<1145383451.20176.9.camel@localhost.localdomain>
-Content-Type: text/plain
-Message-Id: <1145547747.5314.126.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Date: Thu, 20 Apr 2006 10:42:28 -0500
+Return-Path: <geoffrey.levand@am.sony.com>
+Received: from mail8.fw-bc.sony.com (mail8.fw-bc.sony.com [160.33.98.75])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 56CE6679E9
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 03:24:14 +1000 (EST)
+Message-ID: <4447C3BA.6050709@am.sony.com>
+Date: Thu, 20 Apr 2006 10:24:10 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: [patch] powerpc: move PAGE_SIZE outside #ifdef __KERNEL__
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,41 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-04-18 at 13:04, Michael Ellerman wrote:
+The procps package needs PAGE_SIZE, defined in asm-powerpc/page.h,
+but it is defined inside "#ifdef __KERNEL__".
 
-> > OK, I'm back to reading the list and beginning to catch
-> > up some here...
-> > 
-> > Let me see if I understand the consensus and direction:
-> > 
-> >     1) DTC should NOT reserve its own blob space in the
-> >        memory map, as it does for generated ASM code now,
+This moves the PAGE_SIZE definition outside of "#ifdef __KERNEL__".
 
-> > In all of this, I'm on deck for step 1) above.
+From: Hiroaki Fuse
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
 
-I have updated the DTC to have several bug fixes:
+Index: powerpc.git/include/asm-powerpc/page.h
+===================================================================
+--- powerpc.git.orig/include/asm-powerpc/page.h	2006-03-19 21:53:29.000000000 -0800
++++ powerpc.git/include/asm-powerpc/page.h	2006-04-19 12:30:04.000000000 -0700
+@@ -10,7 +10,6 @@
+  * 2 of the License, or (at your option) any later version.
+  */
 
-    - asm_emit_cell() little endian bug fix
-    - use two .long and not .quad directives
-    - Eliminate emitting memreserve for blob in ASM output
+-#ifdef __KERNEL__
+ #include <linux/config.h>
+ #include <asm/asm-compat.h>
 
-These updates are available here:
+@@ -37,6 +36,7 @@
+  */
+ #define PAGE_MASK      (~((1 << PAGE_SHIFT) - 1))
 
-    www.jdl.com/git_repos
-and
-    git://ozlabs.org/srv/projects/dtc/dtc.git
-
-Please verify and let me know of any problems!
-
-> Nice summary :)
-
-Thanks.
-
-> I'm up for 3a, we should make redundant/overlapping reserves "harmless",
-> by which I mean "not an error", but there should definitely be a warning
-> in the dmesg - as it will _usually_ indicate a bug.
-
-Please feel free to patch these into existence as needed! :-)
-
-Thanks,
-jdl
++#ifdef __KERNEL__
+ /*
+  * KERNELBASE is the virtual address of the start of the kernel, it's often
+  * the same as PAGE_OFFSET, but _might not be_.
