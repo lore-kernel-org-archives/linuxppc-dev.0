@@ -1,19 +1,21 @@
-Return-Path: <amodra@bigpond.net.au>
-Received: from grove.modra.org (CPE-144-136-172-108.sa.bigpond.net.au
-	[144.136.172.108]) by ozlabs.org (Postfix) with ESMTP id 2104F679E9
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2006 18:54:02 +1000 (EST)
-Date: Thu, 20 Apr 2006 18:24:01 +0930
-From: Alan Modra <amodra@bigpond.net.au>
-To: "Robin H. Johnson" <robbat2@gentoo.org>
-Subject: Re: modules without a .toc section not loading
-Message-ID: <20060420085401.GI27430@bubble.grove.modra.org>
-References: <20060420000220.GB22797@curie-int.vc.shawcable.net>
-	<20060420002829.GD27430@bubble.grove.modra.org>
-	<20060420005445.GA24721@curie-int.vc.shawcable.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060420005445.GA24721@curie-int.vc.shawcable.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <schmitz@zirkon.biophys.uni-duesseldorf.de>
+Received: from zirkon.biophys.uni-duesseldorf.de
+	(zirkon.biophys.uni-duesseldorf.de [134.99.176.3])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 526A8679EF
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2006 23:51:48 +1000 (EST)
+Date: Thu, 20 Apr 2006 15:51:29 +0200 (CEST)
+From: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 2.6.16 backtrace at boot (Ibook G4) (related to "PowerBook5,4
+	-- no sound?")
+In-Reply-To: <1145423962.9924.40.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44.0604201548060.12273-100000@zirkon.biophys.uni-duesseldorf.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "\[ATR\]Dj-Death" <djdeath@gmx.fr>, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,96 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 19, 2006 at 05:54:45PM -0700, Robin H. Johnson wrote:
-> On Thu, Apr 20, 2006 at 09:58:30AM +0930, Alan Modra wrote:
-> > > Ideas for Solutions:
-> > > 1. Either the kernel needs to realize that it does not need a .toc
-> > > section (I'm uncertain about this, being new to PPC).
-> > > 2. GCC is at fault, and it should be generating a .toc.
-> > The former.
-> Ok, so in module_64.c, under what cases is .toc NOT needed?
-> 
-> I dug at the code, and the R_PPC_REL24 blocks need the contents of the
-> .toc (via stub_for_addr -> create_stub -> my_r2), and I'm not certain
-> about it.
+> >   arch/powerpc/platforms/powermac/setup.c:721: error: 'mach_powermac' undeclared here (not in a function)
+> >   arch/powerpc/platforms/powermac/setup.c:721: warning: type defaults to 'int' in declaration of 'mach_powermac'
+> >   make[2]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
+> >   make[1]: *** [arch/powerpc/platforms/powermac] Error 2
+> >   make: *** [arch/powerpc/platforms] Error 2
 
-Yes, the stubs need some reasonable r2 value.
+That's how far I got on my own (didn't try Bens patch yet but machine_id
+is in fact still OK in the module, so exporting the necessary bits should
+fix it.
 
-> The R_PPC64_TOC/R_PPC64_TOC16/R_PPC64_TOC16_DS blocks shouldn't be hit
-> when there isn't a .toc* from what I figure.
+Commenting out the -ENODEV return gives me working sound; didn't I mention
+that?
 
-Yes, and finding such a reloc should trigger an error.
+> > However, I tried adding "EXPORT_SYMBOL(mach_powermac);" after the
+> > define_machine(powermac) and now sound works for me with my original
+> > I2C_POWERMAC=y SND_POWERMAC=m configuration.
+>
+> Yup, Paul has a working patch already, will be in 2.6.17 soonish.
 
-> If the R_PPC_REL24 block won't be hit when there isn't a .toc, the check
-> in module_frob_arch_sections, lines 194-197 can just be shortened as a
-> fix to the problem.
+I'll pull the current tree as soon as I'm back at the lab.
 
-You could have an R_PPC_REL24 in a module (a function call into another
-module or the kernel) without a .toc.  A module without a .toc section
-won't itself use r2 for anything, but the any stubs added do need r2.
-
-I'm surprised no one has fixed this.  Here's a totally untested patch
-that ought to do the trick (or if it doesn't, should put you on the
-right path).
-
---- linux-2.6.16/arch/powerpc/kernel/module_64.c~	2006-01-18 14:17:29.000000000 +1030
-+++ linux-2.6.16/arch/powerpc/kernel/module_64.c	2006-04-20 18:22:42.000000000 +0930
-@@ -191,8 +191,15 @@ int module_frob_arch_sections(Elf64_Ehdr
- 				 (void *)hdr
- 				 + sechdrs[sechdrs[i].sh_link].sh_offset);
- 	}
--	if (!me->arch.stubs_section || !me->arch.toc_section) {
--		printk("%s: doesn't contain .toc or .stubs.\n", me->name);
-+
-+	/* If we don't have a .toc, just use .stubs.  Nothing in the
-+	   module itself should use r2, but we need to set r2 in case
-+	   the module calls out to other functions. */
-+	if (!me->arch.toc_section)
-+		me->arch.toc_section = me->arch.stubs_section;
-+
-+	if (!me->arch.stubs_section) {
-+		printk("%s: doesn't contain .stubs.\n", me->name);
- 		return -ENOEXEC;
- 	}
- 
-@@ -338,11 +345,21 @@ int apply_relocate_add(Elf64_Shdr *sechd
- 			break;
- 
- 		case R_PPC64_TOC:
-+			if (me->arch.toc_section == me->arch.stubs_section) {
-+				printk("%s: TOC reloc without .toc\n",
-+				       me->name);
-+				return -ENOEXEC;
-+			}
- 			*(unsigned long *)location = my_r2(sechdrs, me);
- 			break;
- 
- 		case R_PPC64_TOC16:
--			/* Subtact TOC pointer */
-+			if (me->arch.toc_section == me->arch.stubs_section) {
-+				printk("%s: TOC16 reloc without .toc\n",
-+				       me->name);
-+				return -ENOEXEC;
-+			}
-+			/* Subtract TOC pointer */
- 			value -= my_r2(sechdrs, me);
- 			if (value + 0x8000 > 0xffff) {
- 				printk("%s: bad TOC16 relocation (%lu)\n",
-@@ -355,7 +372,12 @@ int apply_relocate_add(Elf64_Shdr *sechd
- 			break;
- 
- 		case R_PPC64_TOC16_DS:
--			/* Subtact TOC pointer */
-+			if (me->arch.toc_section == me->arch.stubs_section) {
-+				printk("%s: TOC16_DS reloc without .toc\n",
-+				       me->name);
-+				return -ENOEXEC;
-+			}
-+			/* Subtract TOC pointer */
- 			value -= my_r2(sechdrs, me);
- 			if ((value & 3) != 0 || value + 0x8000 > 0xffff) {
- 				printk("%s: bad TOC16_DS relocation (%lu)\n",
-
--- 
-Alan Modra
-IBM OzLabs - Linux Technology Centre
+	Michael
