@@ -1,12 +1,20 @@
-Return-Path: <linuxppcdev@qbjnet.com>
-Received: from kunk.qbjnet.com (ddsl1-28.ddsl.mr.net [137.192.135.28])
-	by ozlabs.org (Postfix) with SMTP id C8066679EF
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 01:23:06 +1000 (EST)
-Date: 20 Apr 2006 15:22:50 -0000
-Message-ID: <20060420152250.17407.qmail@kunk.qbjnet.com>
-From: Robert Brose <linuxppcdev@qbjnet.com>
-To: linuxppc-dev@ozlabs.org
-Subject: powermac S900 6 slot PCI broken in 2.6.16
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 64886679F8
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 01:38:49 +1000 (EST)
+Subject: Re: [PATCH] DTC - validation by device_type
+From: Jon Loeliger <jdl@freescale.com>
+To: Paul Nasrat <pnasrat@redhat.com>
+In-Reply-To: <1143599612.2704.14.camel@enki.eridu>
+References: <1143586160.2660.19.camel@enki.eridu>
+	<66cc5bfb5a367a814fbace8105572658@penguinppc.org>
+	<1143599612.2704.14.camel@enki.eridu>
+Content-Type: text/plain
+Message-Id: <1145547307.5314.118.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Thu, 20 Apr 2006 10:35:08 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,57 +24,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The s900 has a 6 slot PCI bus. It works fine in 2.6.15. In 2.6.16 it
-appears the interrupts are being assigned in an incorrect way, I get
-an interrupt assignment failure on the device on the 21052 bridge.
-(notice in the interrupt assignment at the end that the stuff on the
-bridge is on irq 25 when it works in 2.6.15 and irq 1 when it doesn't
-work in 2.6.16).
+On Tue, 2006-03-28 at 20:33, Paul Nasrat wrote:
 
-2.6.16 relevant dmesg
-irq: Found primary Apple PIC /bandit/gc for 32 irqs
-irq: System has 32 possible interrupts
-.
-.
-ohci_hcd 0000:01:03.0: Unlink after no-IRQ?  Controller is probably using the wrong IRQ.
+> Signed-off-by: Paul Nasrat <pnasrat@redhat.com>
+
+Paul,
+
+Sorry about the hang-time here.  Couple questions.
 
 
-lspci
-0000:00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 03)
-0000:00:0f.0 PCI bridge: Digital Equipment Corporation DECchip 21052 (rev 01)
-0000:00:10.0 ff00: Apple Computer Inc. Grand Central I/O (rev 02)
+> +static int check_network(struct node *net)
+> +{
+> +
+> +	int ok = 1;
+> +	struct property *prop;
+> +
+> +	CHECK_HAVE(net, "reg");
+> +	CHECK_HAVE(net, "local-mac-address");
+> +	CHECK_HAVE(net, "mac-address");
+> +	CHECK_HAVE(net, "address-bits");
+> +
+> +	return ok;
+> +}
 
-2.6.16 /proc/interrupts
-           CPU0       
-  1:          0   PMAC-PIC  Edge      ohci1394, ohci_hcd:usb1
-  2:          0   PMAC-PIC  Edge      MACE-txdma
-  3:        302   PMAC-PIC  Edge      MACE-rxdma
-  8:          0   PMAC-PIC  Edge      Built-in Sound out
-  9:          0   PMAC-PIC  Edge      Built-in Sound in
- 13:         37   PMAC-PIC  Edge      MESH
- 14:        640   PMAC-PIC  Edge      MACE
- 17:          0   PMAC-PIC  Edge      Built-in Sound misc
- 18:      18917   PMAC-PIC  Edge      ADB
- 19:          0   PMAC-PIC  Edge      SWIM3
- 23:        452   PMAC-PIC  Level     eth0
- 24:       1159   PMAC-PIC  Level     ide0
-BAD:          0
+This says that all network nodes have to have all four
+of those properties.  It's not clear to me that they all
+need to have both local-mac-address and mac-address.
+Specifically, 1275 seems to indicate to me that the
+mac-address property, being introduced by the open
+operation, might be dynamically set at run time, rather
+than passed as a config parameter from, say, U-Boot to
+the kernel.  Thus, it might not be necessary here.
 
-2.6.15 /proc/interrupts
-           CPU0       
-  2:          0   PMAC-PIC  Edge      MACE-txdma
-  3:    3233732   PMAC-PIC  Edge      MACE-rxdma
-  8:          0   PMAC-PIC  Edge      Built-in Sound out
-  9:          0   PMAC-PIC  Edge      Built-in Sound in
- 13:        109   PMAC-PIC  Edge      MESH
- 14:    3148467   PMAC-PIC  Edge      MACE
- 15:          4   PMAC-PIC  Edge      PowerMac Zilog
- 17:          0   PMAC-PIC  Edge      Built-in Sound misc
- 18:      18746   PMAC-PIC  Edge      ADB
- 19:          0   PMAC-PIC  Edge      SWIM3
- 23:    1123909   PMAC-PIC  Level     eth0
- 24:     403989   PMAC-PIC  Level     ide0
- 25:    9440212   PMAC-PIC  Level     ohci1394, ohci_hcd:usb1, r128@PCI:1:0:0
+Should this check be more like "has at least one of
+local-mac-address and mac-address" instead?
 
 
-Bob
+> +static struct {
+> +	char *devtype;
+> +	int (*check_fn)(struct node *node);
+> +} devtype_checker_table[] = {
+> +	{"network", check_network},
+> +};
+> +
+> +static int check_devtypes(struct node *root)
+> +{
+> +
+> +	struct node *child;
+> +	struct property *prop;
+> +	int ok = 1;
+> +	int i;
+> +
+> +	for_each_child(root, child) {
+> +		/* check this node */
+> +		if ((prop = get_property((child), ("device_type"))))
+> +			for (i = 0; i < ARRAY_SIZE(devtype_checker_table); i++) {
+> +				if (streq(prop->val.val, devtype_checker_table[i].devtype))
+> +					if (! devtype_checker_table[i].check_fn(child)) {
+> +						ok = 0;
+> +						break;
+> +					}
+> +			}
+> +		ok = check_devtypes(child);
+> +	}
+> +
+> +	return ok;
+> +}
+> +
+>  static int check_root(struct node *root)
+>  {
+>  	struct property *prop;
+> @@ -716,6 +761,7 @@ int check_device_tree(struct node *dt)
+>  	ok = ok && check_cpus(dt);
+>  	ok = ok && check_memory(dt);
+>  	ok = ok && check_chosen(dt);
+> +	ok = ok && check_devtypes(dt);
+>  	if (! ok)
+>  		return 0;
+
+I buy the rest of this.
+
+Thanks,
+jdl
