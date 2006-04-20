@@ -1,14 +1,21 @@
-Return-Path: <rsa@us.ibm.com>
-Subject: Re: [PATCH] powerpc: Make rtas console _much_ faster
-From: Ryan Arnold <rsa@us.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <20060418185534.B1ADF679F0@ozlabs.org>
-References: <20060418185534.B1ADF679F0@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A9E6767A40
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 06:48:23 +1000 (EST)
+Subject: Re: 2.6.16 backtrace at boot (Ibook G4) (related to "PowerBook5,4
+	-- no sound?")
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Schmitz <schmitz@zirkon.biophys.uni-duesseldorf.de>
+In-Reply-To: <Pine.LNX.4.44.0604201548060.12273-100000@zirkon.biophys.uni-duesseldorf.de>
+References: <Pine.LNX.4.44.0604201548060.12273-100000@zirkon.biophys.uni-duesseldorf.de>
 Content-Type: text/plain
-Date: Thu, 20 Apr 2006 15:03:11 -0500
-Message-Id: <1145563391.29313.174.camel@localhost.localdomain>
+Date: Fri, 21 Apr 2006 06:48:05 +1000
+Message-Id: <1145566085.17087.70.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: "\[ATR\]Dj-Death" <djdeath@gmx.fr>, linuxppc-dev@ozlabs.org,
+	debian-powerpc@lists.debian.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,41 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-04-18 at 20:55 +0200, Michael Ellerman wrote:
+On Thu, 2006-04-20 at 15:51 +0200, Michael Schmitz wrote:
+> > >   arch/powerpc/platforms/powermac/setup.c:721: error: 'mach_powermac' undeclared here (not in a function)
+> > >   arch/powerpc/platforms/powermac/setup.c:721: warning: type defaults to 'int' in declaration of 'mach_powermac'
+> > >   make[2]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
+> > >   make[1]: *** [arch/powerpc/platforms/powermac] Error 2
+> > >   make: *** [arch/powerpc/platforms] Error 2
+> 
+> That's how far I got on my own (didn't try Bens patch yet but machine_id
+> is in fact still OK in the module, so exporting the necessary bits should
+> fix it.
+> 
+> Commenting out the -ENODEV return gives me working sound; didn't I mention
+> that?
 
-> There's already code in the hvc_console driver to make the khvcd thread do
-> a "quick" loop, where it just calls yield() instead of sleeping. The only code
-> that triggered that behaviour was recently removed though, which I don't
-> quite understand.
+There is a proper patch in paulus tree.. it's basically the patch I
+posted with an extern declaration at the beginning of the macro before
+the EXPORT_SYMBOL.
+ 
+> > > However, I tried adding "EXPORT_SYMBOL(mach_powermac);" after the
+> > > define_machine(powermac) and now sound works for me with my original
+> > > I2C_POWERMAC=y SND_POWERMAC=m configuration.
+> >
+> > Yup, Paul has a working patch already, will be in 2.6.17 soonish.
+> 
+> I'll pull the current tree as soon as I'm back at the lab.
 
-I think I'm the guilty part and I removed that code because it was silly
-to be pushing to the tty with a partially filled buffer when we could
-pack it up full.  The original intention of HVC_POLL_QUICK was for
-letting the TTY grok the data read from firmware.  I think I was just
-worried about 'off by one' errors and did it to be safe.  I didn't count
-on the write frequency side-effect
+Patch isn't in yet it seems.
 
-The hvc_console was originally quite speedy after I added khvcd (before
-it was broken apart into back-end/front-end).  We should review it for
-performance on all platforms again in the future.
-
-> Still, if we set HVC_POLL_QUICK whenever the push hvc_push() doesn't push all
-> characters (ie. RTAS blocks), we can get good performance out of the hvc_rtas
-> backend. With this patch the "benchmark" takes ~2.8 seconds.
-
-You might as well use HVC_POLL_QUICK to speed up the write.  I put that
-construct in for quick reading, not quick writing but it is a dead at
-the moment.  Maybe rename it HVC_WRITE_QUICK?
-
-> I'll test this on P5 LPAR, is there anyone else that uses hvc_console?
-> Thoughts?
-
-btw, there are a lot of users of hvc_console, power4 (non-interrupt
-driven), power5 (interrupt-driven), cbe simulator, and rtas console.
-
-Is it possible to make the poll frequency platform dependent?
-
--- 
-Ryan S. Arnold <rsa@us.ibm.com>
-IBM Linux Technology Center
-Linux on Power Toolchain
+Ben
