@@ -1,19 +1,20 @@
-Return-Path: <jgeissel@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id B2CEE67A2E
+Return-Path: <antonio.dibacco@aruba.it>
+Received: from smtpa3.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id AA4A267A05
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Apr 2006 23:09:02 +1000 (EST)
-From: Arno Geissel <jgeissel@gmx.net>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: problem with watchdog/reboot MPC5200
-Date: Thu, 20 Apr 2006 15:08:56 +0200
-References: <F6AD7E21CDF4E145A44F61F43EE6D9396B20F9@tmnt04.transmode.se>
-In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D9396B20F9@tmnt04.transmode.se>
+	Fri, 21 Apr 2006 05:51:56 +1000 (EST)
+From: Antonio Di Bacco <antonio.dibacco@aruba.it>
+To: wojciech.kromer@dgt.com.pl
+Subject: Re: Upgrading cramfs root file system
+Date: Thu, 20 Apr 2006 21:54:45 +0200
+References: <200604062238.17972.antonio.dibacco@aruba.it>
+	<4445E9E1.50204@dgt.com.pl>
+In-Reply-To: <4445E9E1.50204@dgt.com.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200604201508.56578.jgeissel@gmx.net>
-Reply-To: jgeissel@gmx.net
+  charset="utf-8"
+Message-Id: <200604202154.45963.antonio.dibacco@aruba.it>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +25,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Confirmed! Using the MPC reset pin (instead of PORESET)
-solves it.
+Yes you are right, it is not a good idea to overwrite working cramfs=20
+filesystem. But what happens if I download the new cramfs plus kernel in RA=
+M,=20
+do a checksum and then, completely in kernel mode, disabling all the=20
+interrupts, I write to flash? No process could complain that I am overwriti=
+ng=20
+because no one is executing.
 
-Thank you all
+Bye,
+Antonio.
 
-Arno
-
-> You first need to e.g. write a reset cmd (0x5050) to it or connect
-> the processor's hardreset line to the flash device.
-
-> Jaap-Jan
-
+On Wednesday 19 April 2006 09:42, Wojciech Kromer wrote:
+> Dnia 2006-04-06 22:38, U=C5=BCytkownik Antonio Di Bacco napisa=C5=82:
+> > Hi,
+> >
+> > how could I upgrade my cramfs rootfs? I have a CGI in the rootfs that
+> > receives the new rootfs from a web interface and then tries to write it
+> > in the flash. While overwriting the old cramfs, the CGI will continue to
+> > work? something weird could happen?
 >
-> I think you need to connect your flash reset pin to the MPC reset pin so
-> that
-> the CPU reset will reset the flash as well.
+> Generally it's not a good idea to override working filesystem ( I've
+> tried to do it once).
 >
->  Jocke
+> You can have two separate copies of filesystem, one to work with, and
+> another to overwrite, it requires more flash.
+> Another way is working in initrd, it requires more RAM.
+> You can also use jffs2 or jffs3 (experimental) to have read-write
+> filesystem, and change applications only, not whole filesystem (be
+> carefull with changing busybox or libraries!)
