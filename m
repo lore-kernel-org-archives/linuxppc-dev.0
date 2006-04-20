@@ -1,15 +1,16 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 3B3C067A3B
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 08:08:19 +1000 (EST)
-Date: Fri, 21 Apr 2006 00:08:18 +0200 (MEST)
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-To: Eugene Surovegin <ebs@ebshome.net>
-MIME-Version: 1.0
-References: <20060420215514.GE25755@gate.ebshome.net>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id AE63267A6D
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 08:23:57 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Fri, 21 Apr 2006 00:07:08 +0200
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
 Subject: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
-Message-ID: <1468.1145570898@www002.gmx.net>
-Content-Type: text/plain; charset="iso-8859-1"
+Message-ID: <20060420220707.GA17593@iram.es>
+References: <28892.1145559466@www088.gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <28892.1145559466@www088.gmx.net>
 Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,41 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> --- Ursprüngliche Nachricht ---
-> Von: Eugene Surovegin <ebs@ebshome.net>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> Kopie: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
-> Betreff: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
-> Datum: Thu, 20 Apr 2006 14:55:14 -0700
+On Thu, Apr 20, 2006 at 08:57:46PM +0200, Gerhard Pircher wrote:
+> Hi,
 > 
-> Well, you aren't the first person who tries to run G4 with 
-> CONFIG_NOT_COHERENT_CACHE. This was done before and I don't remember 
-> that those people had to implement anything as complex as you are 
-> trying to do.
-
-Maybe these systems have cache coherent northbridges, which is not the case
-for the AmigaOne and its "famous" ArticiaS northbridge.
-
-> You can try asking on #mklinux. It always better to ask people who 
-> actually _did_ this :).
+> I try to implement not coherent cache/DMA support for G3/G4 processors, by
+> reserving some physical memory for DMA operations. The memory used for
+> consistent allocations (removed from the top of the physical memory below
+> 896MB) is excluded from the BAT mapping and the pages are marked as
+> reserved. This seems to work just fine, although I still have to mark the
+> pages as cache inhibited.
 > 
-> In fact, I just grepped 2.6 and found 
-> #ifdef(CONFIG_NOT_COHERENT_CACHE) in syslib/mv64x60.c. Guess what 
-> systems usually have this type of bridge? Not 4xx/8xx, that's for sure.
+> Whilst working on this workaround for the AmigaOne and reading some articles
+> about the Linux kernel page tables and memory management, I came to the
+> conclusion that there may be some problems with this approach for not
+> coherent DMA: 
+> 
+> 1. The AmigaOne is similar to the PREP platform, i.e. DMA can only be
+> performed in the first 16MB for ISA devices (there's only a VIA southbridge,
+> no other SuperI/O IC with 32bit capable DMA controller). 
 
-Hmm, strange. AFAIK the NOT_COHERENT_CACHE config option is available only
-for the 4xx and 8xx platforms. Wouldn't the config option depend on
-CONFIG_6XX too, if there are not cache coherent systems with G4 cpus? 
+More details please what are the exact capabilities of the south and
+host bridges? 
 
-At least I could not compile in the dma-mapping.c file without modifying the
-Kconfig file.
+I've never needed (and therefore) used floppy on my PreP boards (Motorola
+MVME2[467]xx series), but they have a south bridge (WinBond) that has 32
+bit DMA capability. This was specified in the PreP spec. 
 
-> Good luck.
+This may also depend on the host bridge since RAM appears at 2GB on
+default PreP machines, which is an area that you can't access with
+normal ISA DMA anyway. On the MVME machines, you could map PCI addresses
+0-16 MB anywhere in RAM by reprogramming the host bridge.
 
-Thanks!
+However I actually reprogram the chipset to look like CHRP, i.e., 
+1:1 mapping of RAM to PCI. This caused problems a long time
+ago since sometimes DMA went to VGA video memory instead of RAM.
+This was when kernels were not bloated enough to at least occupy
+768kB of RAM, nowadays there is strictly no risk.
 
-Gerhard
+> 3. How are DMA buffers used outside the kernel? Do user programs get a
+> pointer to the DMA buffer (in theory) from the device driver or is the data
+> copied to another buffer allocated by an user program?
 
--- 
-Analog-/ISDN-Nutzer sparen mit GMX SmartSurfer bis zu 70%!
-Kostenlos downloaden: http://www.gmx.net/de/go/smartsurfer
+If your memory is uncacheable, you are better off copying it to
+cacheable memory. At least you are sure that you only access it 
+once (trying to copy with FP registers to halve the number of
+accesses might be a big win, but you need to be careful).
+
+	Regards,
+	Gabriel
