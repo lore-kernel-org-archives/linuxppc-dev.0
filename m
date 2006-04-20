@@ -1,22 +1,19 @@
-Return-Path: <robbat2@gentoo.org>
-Received: from mail.net-conex.com (pops.net-conex.com [204.244.176.3])
-	by ozlabs.org (Postfix) with ESMTP id ED63E679E9
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2006 10:54:41 +1000 (EST)
-Received: from curie.orbis-terrarum.net (S01060050da688d47.vc.shawcable.net
-	[24.80.100.253])
-	by mail.net-conex.com (8.13.4/8.12.11) with ESMTP id k3K0seoN006411
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Apr 2006 17:54:40 -0700
-Date: Wed, 19 Apr 2006 17:54:45 -0700
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <amodra@bigpond.net.au>
+Received: from grove.modra.org (CPE-144-136-172-108.sa.bigpond.net.au
+	[144.136.172.108]) by ozlabs.org (Postfix) with ESMTP id 2104F679E9
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Apr 2006 18:54:02 +1000 (EST)
+Date: Thu, 20 Apr 2006 18:24:01 +0930
+From: Alan Modra <amodra@bigpond.net.au>
+To: "Robin H. Johnson" <robbat2@gentoo.org>
 Subject: Re: modules without a .toc section not loading
-Message-ID: <20060420005445.GA24721@curie-int.vc.shawcable.net>
+Message-ID: <20060420085401.GI27430@bubble.grove.modra.org>
 References: <20060420000220.GB22797@curie-int.vc.shawcable.net>
 	<20060420002829.GD27430@bubble.grove.modra.org>
+	<20060420005445.GA24721@curie-int.vc.shawcable.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="r5Pyd7+fXNt84Ff3"
-In-Reply-To: <20060420002829.GD27430@bubble.grove.modra.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060420005445.GA24721@curie-int.vc.shawcable.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,47 +23,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Apr 19, 2006 at 05:54:45PM -0700, Robin H. Johnson wrote:
+> On Thu, Apr 20, 2006 at 09:58:30AM +0930, Alan Modra wrote:
+> > > Ideas for Solutions:
+> > > 1. Either the kernel needs to realize that it does not need a .toc
+> > > section (I'm uncertain about this, being new to PPC).
+> > > 2. GCC is at fault, and it should be generating a .toc.
+> > The former.
+> Ok, so in module_64.c, under what cases is .toc NOT needed?
+> 
+> I dug at the code, and the R_PPC_REL24 blocks need the contents of the
+> .toc (via stub_for_addr -> create_stub -> my_r2), and I'm not certain
+> about it.
 
---r5Pyd7+fXNt84Ff3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, the stubs need some reasonable r2 value.
 
-On Thu, Apr 20, 2006 at 09:58:30AM +0930, Alan Modra wrote:
-> > Ideas for Solutions:
-> > 1. Either the kernel needs to realize that it does not need a .toc
-> > section (I'm uncertain about this, being new to PPC).
-> > 2. GCC is at fault, and it should be generating a .toc.
-> The former.
-Ok, so in module_64.c, under what cases is .toc NOT needed?
+> The R_PPC64_TOC/R_PPC64_TOC16/R_PPC64_TOC16_DS blocks shouldn't be hit
+> when there isn't a .toc* from what I figure.
 
-I dug at the code, and the R_PPC_REL24 blocks need the contents of the
-=2Etoc (via stub_for_addr -> create_stub -> my_r2), and I'm not certain
-about it.
+Yes, and finding such a reloc should trigger an error.
 
-The R_PPC64_TOC/R_PPC64_TOC16/R_PPC64_TOC16_DS blocks shouldn't be hit
-when there isn't a .toc* from what I figure.
+> If the R_PPC_REL24 block won't be hit when there isn't a .toc, the check
+> in module_frob_arch_sections, lines 194-197 can just be shortened as a
+> fix to the problem.
 
-If the R_PPC_REL24 block won't be hit when there isn't a .toc, the check
-in module_frob_arch_sections, lines 194-197 can just be shortened as a
-fix to the problem.
+You could have an R_PPC_REL24 in a module (a function call into another
+module or the kernel) without a .toc.  A module without a .toc section
+won't itself use r2 for anything, but the any stubs added do need r2.
 
---=20
-Robin Hugh Johnson
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+I'm surprised no one has fixed this.  Here's a totally untested patch
+that ought to do the trick (or if it doesn't, should put you on the
+right path).
 
---r5Pyd7+fXNt84Ff3
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+--- linux-2.6.16/arch/powerpc/kernel/module_64.c~	2006-01-18 14:17:29.000000000 +1030
++++ linux-2.6.16/arch/powerpc/kernel/module_64.c	2006-04-20 18:22:42.000000000 +0930
+@@ -191,8 +191,15 @@ int module_frob_arch_sections(Elf64_Ehdr
+ 				 (void *)hdr
+ 				 + sechdrs[sechdrs[i].sh_link].sh_offset);
+ 	}
+-	if (!me->arch.stubs_section || !me->arch.toc_section) {
+-		printk("%s: doesn't contain .toc or .stubs.\n", me->name);
++
++	/* If we don't have a .toc, just use .stubs.  Nothing in the
++	   module itself should use r2, but we need to set r2 in case
++	   the module calls out to other functions. */
++	if (!me->arch.toc_section)
++		me->arch.toc_section = me->arch.stubs_section;
++
++	if (!me->arch.stubs_section) {
++		printk("%s: doesn't contain .stubs.\n", me->name);
+ 		return -ENOEXEC;
+ 	}
+ 
+@@ -338,11 +345,21 @@ int apply_relocate_add(Elf64_Shdr *sechd
+ 			break;
+ 
+ 		case R_PPC64_TOC:
++			if (me->arch.toc_section == me->arch.stubs_section) {
++				printk("%s: TOC reloc without .toc\n",
++				       me->name);
++				return -ENOEXEC;
++			}
+ 			*(unsigned long *)location = my_r2(sechdrs, me);
+ 			break;
+ 
+ 		case R_PPC64_TOC16:
+-			/* Subtact TOC pointer */
++			if (me->arch.toc_section == me->arch.stubs_section) {
++				printk("%s: TOC16 reloc without .toc\n",
++				       me->name);
++				return -ENOEXEC;
++			}
++			/* Subtract TOC pointer */
+ 			value -= my_r2(sechdrs, me);
+ 			if (value + 0x8000 > 0xffff) {
+ 				printk("%s: bad TOC16 relocation (%lu)\n",
+@@ -355,7 +372,12 @@ int apply_relocate_add(Elf64_Shdr *sechd
+ 			break;
+ 
+ 		case R_PPC64_TOC16_DS:
+-			/* Subtact TOC pointer */
++			if (me->arch.toc_section == me->arch.stubs_section) {
++				printk("%s: TOC16_DS reloc without .toc\n",
++				       me->name);
++				return -ENOEXEC;
++			}
++			/* Subtract TOC pointer */
+ 			value -= my_r2(sechdrs, me);
+ 			if ((value & 3) != 0 || value + 0x8000 > 0xffff) {
+ 				printk("%s: bad TOC16_DS relocation (%lu)\n",
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2-ecc0.1.6 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks
-
-iD8DBQFERtvVPpIsIjIzwiwRAnEQAJ9pqXBdL7rgtke3WrSjaOLdcSBwQgCfY5UR
-6CCjaMLB6kzRBJkDx390Lho=
-=IRpM
------END PGP SIGNATURE-----
-
---r5Pyd7+fXNt84Ff3--
+-- 
+Alan Modra
+IBM OzLabs - Linux Technology Centre
