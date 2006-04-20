@@ -1,18 +1,17 @@
-Return-Path: <alebas@televes.com>
-Received: from tvesnat.televes.com (unknown [212.163.42.137])
-	by ozlabs.org (Postfix) with ESMTP id EFC77679A6
+Return-Path: <jgeissel@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 88989679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Apr 2006 18:17:50 +1000 (EST)
-Message-ID: <1145528816.444761f0a9962@webmail.televes.com:443>
-Date: Thu, 20 Apr 2006 12:26:56 +0200
-From: Bastos Fernandez Alexandre <alebas@televes.com>
-To: Rune Torgersen <runet@innovsys.com>
-Subject: RE: Watchdog on MPC82xx
-References: <DCEAAC0833DD314AB0B58112AD99B93B85964A@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B85964A@ismail.innsys.innovsys.com>
+	Thu, 20 Apr 2006 19:46:09 +1000 (EST)
+From: Arno Geissel <jgeissel@gmx.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: problem with watchdog/reboot MPC5200
+Date: Thu, 20 Apr 2006 11:46:01 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200604201146.01342.jgeissel@gmx.net>
+Reply-To: jgeissel@gmx.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,20 +22,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Rune,
+Hello all,
 
-> On our 8265/8280 board, the max timeout of the watchdog timer was ~1.3
-> seconds, so it kept resetting before the heartbeat function got called
-> on boot.
->
-> I had to add a watchdog reset to time_init() because it woud pause there
-> for about 2 secondfs trying to see if there was a realtime clock.
->
+I have a custom board based on MPC5200 processor running
+the latest linuxppc_2_4_devel.
+Everything is working fine until a flash write access is performed
+using MTD. After this a (soft) reboot stucks in mpc5xxx_restart()
+where the watchdog timer is charged and linux waits with closed
+interrupts until the MPC performs the reset. Only power off helps
+in this situation.
+It seems to me like a hardware problem, because the freescale
+MPC5200lite reference board does not run into this.
+The main difference of the custom board to the reference board
+is, that it is using 16MB Intel Strada Flash instead of AMD flash,
+which has an erase block size of 128kB.
+Has anybody else experienced such behaviour?
 
-I think that you are OK. Using the while(1) test suggested by Paul Bilke,
-I could verify that time_init() is the cause for the reset. In fact, I have
-no RTC on my board (so I suppose the delay looking for it will be maximum).
-
-Thanks
-
-Alex Bastos
+Arno Geissel
