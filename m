@@ -1,29 +1,33 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 691F2679EB
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Apr 2006 09:29:51 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3LNTm4f004400
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 19:29:48 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3LNTmLg236924
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 19:29:48 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3LNTlPV021599
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 19:29:48 -0400
-Date: Fri, 21 Apr 2006 18:29:42 -0500
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 75436679F3
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Apr 2006 09:46:00 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3LNjqIB027710
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 19:45:52 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3LNnHla187276
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 17:49:17 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k3LNjpSj020535
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 17:45:52 -0600
+Date: Fri, 21 Apr 2006 18:45:51 -0500
 To: utz.bacher@de.ibm.com, Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Subject: [PATCH 1/2]: Spider ethernet driver spinlocks
-Message-ID: <20060421232942.GG7242@austin.ibm.com>
+Subject: [PATCH 2/2]: Spider ethernet driver -- protect chain head
+Message-ID: <20060421234551.GI7242@austin.ibm.com>
+References: <20060421232942.GG7242@austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060421232942.GG7242@austin.ibm.com>
 From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Maxim Shchetynin <maxim@de.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Cc: Maxim Shchetynin <maxim@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,100 +38,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-
 Please review/apply/ack/forward upstream.
 
 --linas
 
 
-The spider network driver currently uses hand-rolled spinlocks
-in a few places. Replace these with industry standard spinlocks.
-In particular, this should add some safety if multiple threads
-are touching the tx and rx chain pointers.
+Prevent a potential race. If two threads are both calling
+the transmit routine, both can potentially try to grab the
+same dma descriptor. Serialize access to the head of the
+tx ring with spinlocks.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ----
- drivers/net/spider_net.c |   18 ++++++++----------
- drivers/net/spider_net.h |    4 ++--
- 2 files changed, 10 insertions(+), 12 deletions(-)
+ drivers/net/spider_net.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
 Index: linux-2.6.17-rc1/drivers/net/spider_net.c
 ===================================================================
---- linux-2.6.17-rc1.orig/drivers/net/spider_net.c	2006-04-20 17:22:04.000000000 -0500
-+++ linux-2.6.17-rc1/drivers/net/spider_net.c	2006-04-21 11:52:39.000000000 -0500
-@@ -335,8 +335,6 @@ spider_net_init_chain(struct spider_net_
- 	struct spider_net_descr *descr;
- 	dma_addr_t buf;
- 
--	atomic_set(&card->rx_chain_refill,0);
--
- 	descr = start_descr;
- 	memset(descr, 0, sizeof(*descr) * no);
- 
-@@ -509,15 +507,15 @@ spider_net_refill_rx_chain(struct spider
- 	 * and omitting it) is ok. If called by NAPI, we'll be called again
- 	 * as spider_net_decode_one_descr is called several times. If some
- 	 * interrupt calls us, the NAPI is about to clean up anyway. */
--	if (atomic_inc_return(&card->rx_chain_refill) == 1)
-+	if (spin_trylock(&card->rx_chain_lock)) {
- 		while (spider_net_get_descr_status(chain->head) ==
- 		       SPIDER_NET_DESCR_NOT_IN_USE) {
- 			if (spider_net_prepare_rx_descr(card, chain->head))
- 				break;
- 			chain->head = chain->head->next;
- 		}
--
--	atomic_dec(&card->rx_chain_refill);
-+		spin_unlock(&card->rx_chain_lock);
-+	}
+--- linux-2.6.17-rc1.orig/drivers/net/spider_net.c	2006-04-21 18:32:46.000000000 -0500
++++ linux-2.6.17-rc1/drivers/net/spider_net.c	2006-04-21 18:39:12.000000000 -0500
+@@ -806,13 +806,19 @@ spider_net_stop(struct net_device *netde
+ static struct spider_net_descr *
+ spider_net_get_next_tx_descr(struct spider_net_card *card)
+ {
++	struct spider_net_descr *descr;
++	spin_lock(&card->tx_chain_lock);
++
++	descr = card->tx_chain.head;
+ 	/* check, if head points to not-in-use descr */
+ 	if ( spider_net_get_descr_status(card->tx_chain.head) ==
+ 	     SPIDER_NET_DESCR_NOT_IN_USE ) {
+-		return card->tx_chain.head;
++		card->tx_chain.head = descr->next;
+ 	} else {
+-		return NULL;
++		descr = NULL;
+ 	}
++	spin_unlock(&card->tx_chain_lock);
++	return descr;
  }
  
  /**
-@@ -596,10 +594,8 @@ spider_net_release_tx_chain(struct spide
- 	struct spider_net_descr_chain *tx_chain = &card->tx_chain;
- 	enum spider_net_descr_status status;
+@@ -932,8 +938,6 @@ spider_net_xmit(struct sk_buff *skb, str
+ 	if (result)
+ 		goto error;
  
--	if (atomic_inc_return(&card->tx_chain_release) != 1) {
--		atomic_dec(&card->tx_chain_release);
-+	if (!spin_trylock(&card->tx_chain_lock))
- 		return 1;
--	}
- 
- 	for (;;) {
- 		status = spider_net_get_descr_status(tx_chain->tail);
-@@ -633,7 +629,7 @@ spider_net_release_tx_chain(struct spide
- 		tx_chain->tail = tx_chain->tail->next;
- 	}
- out:
--	atomic_dec(&card->tx_chain_release);
-+	spin_unlock(&card->tx_chain_lock);
- 
- 	netif_wake_queue(card->netdev);
- 
-@@ -2072,7 +2068,9 @@ spider_net_setup_netdev(struct spider_ne
- 
- 	pci_set_drvdata(card->pdev, netdev);
- 
--	atomic_set(&card->tx_chain_release,0);
-+	spin_lock_init(&card->rx_chain_lock);
-+	spin_lock_init(&card->tx_chain_lock);
-+
- 	card->rxram_full_tl.data = (unsigned long) card;
- 	card->rxram_full_tl.func =
- 		(void (*)(unsigned long)) spider_net_handle_rxram_full;
-Index: linux-2.6.17-rc1/drivers/net/spider_net.h
-===================================================================
---- linux-2.6.17-rc1.orig/drivers/net/spider_net.h	2006-04-20 17:22:04.000000000 -0500
-+++ linux-2.6.17-rc1/drivers/net/spider_net.h	2006-04-21 11:47:17.000000000 -0500
-@@ -451,8 +451,8 @@ struct spider_net_card {
- 
- 	struct spider_net_descr_chain tx_chain;
- 	struct spider_net_descr_chain rx_chain;
--	atomic_t rx_chain_refill;
--	atomic_t tx_chain_release;
-+	spinlock_t rx_chain_lock;
-+	spinlock_t tx_chain_lock;
- 
- 	struct net_device_stats netdev_stats;
- 
+-	card->tx_chain.head = card->tx_chain.head->next;
+-
+ 	if (spider_net_get_descr_status(descr->prev) !=
+ 	    SPIDER_NET_DESCR_CARDOWNED) {
+ 		/* make sure the current descriptor is in memory. Then
