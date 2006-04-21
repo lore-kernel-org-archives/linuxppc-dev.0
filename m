@@ -1,21 +1,18 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id AA3AA67B24
+Return-Path: <alebas@televes.com>
+Received: from tvesnat.televes.com (unknown [212.163.42.137])
+	by ozlabs.org (Postfix) with ESMTP id BBDCE679F6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Apr 2006 16:51:12 +1000 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Upgrading cramfs root file system while running (DENX wrote that
-	is not possible)
-Date: Fri, 21 Apr 2006 08:53:32 +0200
-References: <200604062238.17972.antonio.dibacco@aruba.it>
-	<20060420221801.55331e15@White64>
-	<200604202303.21680.antonio.dibacco@aruba.it>
-In-Reply-To: <200604202303.21680.antonio.dibacco@aruba.it>
+	Fri, 21 Apr 2006 18:23:50 +1000 (EST)
+Message-ID: <1145615613.4448b4fdd6052@webmail.televes.com:443>
+Date: Fri, 21 Apr 2006 12:33:33 +0200
+From: Bastos Fernandez Alexandre <alebas@televes.com>
+To: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
+Subject: RE: Watchdog on MPC82xx [SOLVED]
+References: <DCEAAC0833DD314AB0B58112AD99B93B85964A@ismail.innsys.innovsys.com>
+	<1145528816.444761f0a9962@webmail.televes.com:443>
+In-Reply-To: <1145528816.444761f0a9962@webmail.televes.com:443>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200604210853.32860.david.jander@protonic.nl>
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,48 +23,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
 Hi,
 
-On Thursday 20 April 2006 23:03, Antonio Di Bacco wrote:
-> Yes, I also thought this too. Anything important should stay already in RAM
-> but there is a chance that something bad could happen. Probably the best
+As suggested by Rune, problem was concerning to the RTC on time_init().
+As I don't have a RTC on the board, the solution for me was setting
+the ppc_md.get_rtc_time to NULL, which prevents time_init() from
+doing the loop which tries to set the next second boundary. So
 
-What do you mean with "something bad could happen"?
-The only thing I can think of is pulling the power plug while flash is being 
-erased or written. What else could go wrong?
-We do the following: system running from read-only jffs2 partition. Sometimes 
-that partition is remounted read-write and single files are replaced, but in 
-some occasions we need to upgrade the whole fs. In that case a CGI lodas the 
-image into a ramdisk, and the upgrade process is started. For upgrade, 
-'eraseall' and 'dd' (from busybox) are needed. First, all unnecessary 
-processes are killed (the webserver stays alive to be able to report the 
-status when finished), then "dd" is called for a dummy operation (to have it 
-cached). After that the upgrade tool calls "eraseall" on the rootfs 
-partition, and then "dd" again to copy the image. At that point no critical 
-flash-read access should be requested since dd is already in cache (it's 
-busybox, so it's almost always in RAM anyway). When dd is finished, the only 
-other thing that's needed is to either be able to send some last html strings 
-to the web-server to complete the progress page and tell the user, that it's 
-ok to pull the plug, or reset the system, we don't care if the rest of the 
-system goes belly-up, since the fs was mounted read-only anyway, and the 
-upgrade is finished.
+void __init
+m82xx_board_setup(void)
+{
+[...]
+    ppc_md.get_rtc_time = NULL;
+    ppc_md.set_rtc_time = NULL;
+}
 
-Of course this isn't failsafe, so there should always be a way to recover if 
-the rootfs gets trashed, but most of the time it's acceptable that service 
-personel is required in that situation. Until now, it has never been required 
-though.
+Thanks to all.
 
-> thing is what you suggested as second option but I have not so much ram. My
-> CGI writes the downloaded new software in RAM and then I should directly
-> jump to u-boot without leaving Linux the chance to mix things up and then
-> u-boot should copy the RAM to the flash. It seems a strange procedure but
-> what else could be done with 4MB flash and 16 MB ram?
+Alex BASTOS
 
-Run from initrd? Maybe an uncomressed filesystem on a ramdisk to be able to do 
-XIP (execute in place)?
-
-Greetings,
-
--- 
-David Jander
+> Rune,
+>
+> > On our 8265/8280 board, the max timeout of the watchdog timer was ~1.3
+> > seconds, so it kept resetting before the heartbeat function got called
+> > on boot.
+> >
+> > I had to add a watchdog reset to time_init() because it woud pause there
+> > for about 2 secondfs trying to see if there was a realtime clock.
+> >
+>
+> I think that you are OK. Using the while(1) test suggested by Paul Bilke,
+> I could verify that time_init() is the cause for the reset. In fact, I have
+> no RTC on my board (so I suppose the delay looking for it will be maximum).
+>
+> Thanks
+>
+> Alex Bastos
