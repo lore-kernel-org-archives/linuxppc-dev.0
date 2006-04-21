@@ -1,20 +1,20 @@
-Return-Path: <bcook@bpointsys.com>
-Received: from bpointsys.com (70-253-197-251.ded.swbell.net [70.253.197.251])
-	by ozlabs.org (Postfix) with ESMTP id A11A067A05
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Apr 2006 00:45:19 +1000 (EST)
-From: Brent Cook <bcook@bpointsys.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
-Date: Fri, 21 Apr 2006 09:33:10 -0500
-References: <20060420210201.GA25755@gate.ebshome.net>
-	<20060420215514.GE25755@gate.ebshome.net>
-	<1145594285.28014.12.camel@localhost.localdomain>
-In-Reply-To: <1145594285.28014.12.camel@localhost.localdomain>
+Return-Path: <geoffrey.levand@am.sony.com>
+Received: from mail8.fw-bc.sony.com (mail8.fw-bc.sony.com [160.33.98.75])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4FEF867A41
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Apr 2006 01:23:17 +1000 (EST)
+Message-ID: <4448F8DB.6050803@am.sony.com>
+Date: Fri, 21 Apr 2006 08:23:07 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200604210933.10888.bcook@bpointsys.com>
-Cc: debian-powerpc@lists.debian.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [patch] powerpc: move PAGE_SIZE outside #ifdef __KERNEL__
+References: <4447C3BA.6050709@am.sony.com>
+	<17480.5183.958036.533453@cargo.ozlabs.ibm.com>
+In-Reply-To: <17480.5183.958036.533453@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 20 April 2006 23:38, Benjamin Herrenschmidt wrote:
-> On Thu, 2006-04-20 at 14:55 -0700, Eugene Surovegin wrote:
-> > On Thu, Apr 20, 2006 at 11:10:55PM +0200, Gerhard Pircher wrote:
-> > > Well, Freescale's PPC programming environment manual clearly states
-> > > that this will not work on G4 CPUs (74xx). Also Benjamin Herrenschmidt
-> > > told me, that this implementation will not work for the reasons I
-> > > mentioned before. The approach I'm trying to implement was his idea, so
-> > > I have to trust in him.
-> >
-> > Well, you aren't the first person who tries to run G4 with
-> > CONFIG_NOT_COHERENT_CACHE. This was done before and I don't remember
-> > that those people had to implement anything as complex as you are
-> > trying to do.
-> >
-> > You can try asking on #mklinux. It always better to ask people who
-> > actually _did_ this :).
-> >
-> > In fact, I just grepped 2.6 and found
-> > #ifdef(CONFIG_NOT_COHERENT_CACHE) in syslib/mv64x60.c. Guess what
-> > systems usually have this type of bridge? Not 4xx/8xx, that's for sure.
->
-> I think some folks tried ... and failed.
->
-> Ben.
+Paul Mackerras wrote:
+> Geoff Levand writes:
+> 
+>> The procps package needs PAGE_SIZE, defined in asm-powerpc/page.h,
+> 
+> Ummm... why?  If procps is assuming that the page size of the kernel
+> it's running on is the same as the page size of the kernel it was
+> compiled on, it's broken.  It should be using sysconf(PAGE_SIZE) at
+> runtime.
 
-I'm not claiming to understand all of the issues here, but I have some 
-MV64460 / MPC7448-based systems, and they only boot if 
-CONFIG_NOT_COHERENT_CACHE=y
 
- - Brent
+As it turned out, the procps was out of date, and getting the latest
+solved the problem.  Sorry for the trouble.
+
+-Geoff
