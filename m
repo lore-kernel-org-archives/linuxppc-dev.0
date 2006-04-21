@@ -1,28 +1,20 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CF5F2679F9
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 60268679FC
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Apr 2006 02:35:21 +1000 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1FWyaz-0003KI-PT
-	for linuxppc-embedded@ozlabs.org; Fri, 21 Apr 2006 18:35:01 +0200
-Received: from icarus.icarus.com ([64.105.89.2])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Fri, 21 Apr 2006 18:35:01 +0200
-Received: from steve by icarus.icarus.com with local (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Fri, 21 Apr 2006 18:35:01 +0200
-To: linuxppc-embedded@ozlabs.org
-From: Stephen Williams <steve@icarus.com>
-Subject: Choices of 2.4 Kernel for PPC
-Date: Fri, 21 Apr 2006 09:32:49 -0700
-Message-ID: <e2b1fi$klf$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Sender: news <news@sea.gmane.org>
+	Sat, 22 Apr 2006 02:55:51 +1000 (EST)
+To: Tolunay Orkun <listmember@orkun.us>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Upgrading cramfs root file system while running (DENX wrote that
+	is not possible)
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 20 Apr 2006 23:10:39 CDT."
+	<44485B3F.8080308@orkun.us>
+Date: Fri, 21 Apr 2006 18:55:48 +0200
+Sender: wd@denx.de
+Message-Id: <20060421165548.A03E53526B7@atlas.denx.de>
+Cc: White <white@from-b.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,28 +25,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <44485B3F.8080308@orkun.us> you wrote:
+>
+> If your bootloader is U-Boot and you are using standard bootm command to 
+> boot, U-Boot decompresses the initrd image to RAM before passing the 
+> file system to Linux. So, you are not working with flash copy and 
+> updating the flash copy is not a problem at all. This applies to ext2, 
+> cramfs or squashfs based initrd.
 
-I'd been using the BK tree (I know, old old) but it's been stable
-for me for a while. But I'm starting to see so problems and I want
-to work with a recent kernel tree. I'm using a PPC405GPr processor.
+But it makes no sense to use cramfs or squashfs on a ramdisk.
+You *want* to run these directly from flash.
+But then, of course, you need alternate images (or other tricks)
+for full image updates.
 
-I downloaded the linux-2.4.32 tree from kernel.org, but it has
-none of the Xilinx stuff so I immediately wonder about other things
-it lacks for embedded PPC.
+[Single file updates can be done using overlay file systems; see  the
+DULG for details.]
 
-I downloaded the linux 2.4 .git tree from Denx, but the makefile
-in top says it's based on 2.4.25, which is even older then what
-I've got now.
+Best regards,
 
-I've looked on the penguinppc.org page, but it points me back
-to the kernel.org distribution and possibly the bk repository.
-Hmm...
+Wolfgang Denk
 
-So what tree is most universally accepted as current so far as
-embedded PPC goes? And can the penguinppc.org pages be updated
-to reflect the consensus?
 -- 
-Steve Williams                "The woods are lovely, dark and deep.
-steve at icarus.com           But I have promises to keep,
-http://www.icarus.com         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Just about every computer on the market today runs Unix,  except  the
+Mac (and nobody cares about it).                   - Bill Joy 6/21/85
