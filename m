@@ -1,14 +1,14 @@
 Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 9F52F679F3
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 18:03:22 +1000 (EST)
-Date: Fri, 21 Apr 2006 10:03:20 +0200 (MEST)
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 02D1A679EB
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 18:21:23 +1000 (EST)
+Date: Fri, 21 Apr 2006 10:21:22 +0200 (MEST)
 From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 MIME-Version: 1.0
-References: <1145594285.28014.12.camel@localhost.localdomain>
+References: <1145572869.4517.12.camel@localhost.localdomain>
 Subject: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
-Message-ID: <13431.1145606600@www025.gmx.net>
+Message-ID: <8178.1145607682@www025.gmx.net>
 Content-Type: text/plain; charset="iso-8859-1"
 Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,17 +26,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 > Kopie: Gerhard Pircher <gerhard_pircher@gmx.net>,
 > linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 > Betreff: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
-> Datum: Fri, 21 Apr 2006 14:38:05 +1000
+> Datum: Fri, 21 Apr 2006 08:41:09 +1000
 > 
-> > In fact, I just grepped 2.6 and found 
-> > #ifdef(CONFIG_NOT_COHERENT_CACHE) in syslib/mv64x60.c. Guess what 
-> > systems usually have this type of bridge? Not 4xx/8xx, that's for sure.
+> On Thu, 2006-04-20 at 14:33 -0700, Eugene Surovegin wrote:
+> > On Fri, Apr 21, 2006 at 07:06:13AM +1000, Benjamin Herrenschmidt wrote:
+> > > (On 6xx this is deadly even if you don't access those cacheable pages
+> > > because the CPU prefetch may do it for you).
+> > 
+> > Here is another thought if this "prefetch" theory is correct.
+> > 
+> > You guys seems to focus on 
+> > dma_alloc_coherent()/pci_alloc_consistent(), but forgeting about so 
+> > called "streaming" mappings.
+> > 
+> > You cannot just flush/invalidate cache any more, because "CPU can 
+> > prefetch this data back". So, to be completely correct (if you insist 
+> > on "6xx can prefetch"-theory), you have to actually _copy_ data to 
+> > your consistent memory on dma_map_single(). You can imagine 
+> > performance implications. I suspect even 440 will be faster in this 
+> > case than G4 :).
 > 
-> I think some folks tried ... and failed.
-That doesn't sound encouraging. ;)
+> Yes.
+
+I'm not sure, if I can follow you here. Would that mean I have to allocate
+two consistent buffers of the same size? I guess the first buffer would be
+used for the actual DMA transfer and is read only and the second one by the
+CPU for further data processing (after the CPU has copied the data from the
+first one to the second one)?
+
+Hmm, doesn't sound feasible for me.. ?)
 
 Gerhard
 
 -- 
-"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
+Analog-/ISDN-Nutzer sparen mit GMX SmartSurfer bis zu 70%!
+Kostenlos downloaden: http://www.gmx.net/de/go/smartsurfer
