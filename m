@@ -1,16 +1,19 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 02D1A679EB
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 18:21:23 +1000 (EST)
-Date: Fri, 21 Apr 2006 10:21:22 +0200 (MEST)
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <agx@sigxcpu.org>
+Received: from honk1.physik.uni-konstanz.de (honk1.physik.uni-konstanz.de
+	[134.34.140.224])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "honk1.physik.uni-konstanz.de",
+	Issuer "Mittelerde" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0BD9D679FB
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 18:26:59 +1000 (EST)
+Date: Fri, 21 Apr 2006 10:03:14 +0200
+From: Guido Guenther <agx@sigxcpu.org>
+To: linuxppc-dev@ozlabs.org
+Subject: fix oops due to i2c-keylarge ->  i2c-powermac rename
+Message-ID: <20060421080314.GA4538@bogon.ms20.nix>
 MIME-Version: 1.0
-References: <1145572869.4517.12.camel@localhost.localdomain>
-Subject: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
-Message-ID: <8178.1145607682@www025.gmx.net>
-Content-Type: text/plain; charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,44 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> --- Ursprüngliche Nachricht ---
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Eugene Surovegin <ebs@ebshome.net>
-> Kopie: Gerhard Pircher <gerhard_pircher@gmx.net>,
-> linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
-> Betreff: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
-> Datum: Fri, 21 Apr 2006 08:41:09 +1000
-> 
-> On Thu, 2006-04-20 at 14:33 -0700, Eugene Surovegin wrote:
-> > On Fri, Apr 21, 2006 at 07:06:13AM +1000, Benjamin Herrenschmidt wrote:
-> > > (On 6xx this is deadly even if you don't access those cacheable pages
-> > > because the CPU prefetch may do it for you).
-> > 
-> > Here is another thought if this "prefetch" theory is correct.
-> > 
-> > You guys seems to focus on 
-> > dma_alloc_coherent()/pci_alloc_consistent(), but forgeting about so 
-> > called "streaming" mappings.
-> > 
-> > You cannot just flush/invalidate cache any more, because "CPU can 
-> > prefetch this data back". So, to be completely correct (if you insist 
-> > on "6xx can prefetch"-theory), you have to actually _copy_ data to 
-> > your consistent memory on dma_map_single(). You can imagine 
-> > performance implications. I suspect even 440 will be faster in this 
-> > case than G4 :).
-> 
-> Yes.
+Hi,
+the i2c-keywest module has been renamed to i2c-powermac during the
+2.6.16 development cycle. This fixes the corresponding request_module
+calls so the module gets loaded again and we don't oops on i2c accesses.
+Patch applies against current Linus git. Please apply:
 
-I'm not sure, if I can follow you here. Would that mean I have to allocate
-two consistent buffers of the same size? I guess the first buffer would be
-used for the actual DMA transfer and is read only and the second one by the
-CPU for further data processing (after the CPU has copied the data from the
-first one to the second one)?
+Singend-Off-By: Guido Guenther <agx@sigxcpu.org>
 
-Hmm, doesn't sound feasible for me.. ?)
+--- orig/linux-2.6.16.7/sound/ppc/tumbler.c	2006-03-20 06:53:29.000000000 +0100
++++ linux-2.6.16.7/sound/ppc/tumbler.c	2006-04-19 23:15:20.000000000 +0200
+@@ -1314,7 +1314,7 @@
+ 
+ #ifdef CONFIG_KMOD
+ 	if (current->fs->root)
+-		request_module("i2c-keywest");
++		request_module("i2c-powermac");
+ #endif /* CONFIG_KMOD */	
+ 
+ 	mix = kmalloc(sizeof(*mix), GFP_KERNEL);
+--- orig/linux-2.6.16.7/sound/ppc/daca.c	2006-03-20 06:53:29.000000000 +0100
++++ linux-2.6.16.7/sound/ppc/daca.c	2006-04-19 23:14:33.000000000 +0200
+@@ -256,7 +256,7 @@
+ 
+ #ifdef CONFIG_KMOD
+ 	if (current->fs->root)
+-		request_module("i2c-keywest");
++		request_module("i2c-powermac");
+ #endif /* CONFIG_KMOD */	
+ 
+ 	mix = kmalloc(sizeof(*mix), GFP_KERNEL);
+--- orig/linux-2.6.16.7/sound/oss/dmasound/tas_common.c	2006-03-20 06:53:29.000000000 +0100
++++ linux-2.6.16.7/sound/oss/dmasound/tas_common.c	2006-04-20 20:46:55.000000000 +0200
+@@ -195,8 +195,8 @@
+ 
+ 	printk(KERN_INFO "tas driver [%s])\n", driver_name);
+ 
+-#ifndef CONFIG_I2C_KEYWEST
+-	request_module("i2c-keywest");
++#ifndef CONFIG_I2C_POWERMAC
++	request_module("i2c-powermac");
+ #endif
+ 	tas_node = find_devices("deq");
+ 	if (tas_node == NULL)
+--- orig/linux-2.6.16.7/drivers/macintosh/therm_adt746x.c	2006-03-20 06:53:29.000000000 +0100
++++ linux-2.6.16.7/drivers/macintosh/therm_adt746x.c	2006-04-20 20:45:32.000000000 +0200
+@@ -627,8 +627,8 @@
+ 	if(therm_type == ADT7460)
+ 		device_create_file(&of_dev->dev, &dev_attr_sensor2_fan_speed);
+ 
+-#ifndef CONFIG_I2C_KEYWEST
+-	request_module("i2c-keywest");
++#ifndef CONFIG_I2C_POWERMAC
++	request_module("i2c-powermac");
+ #endif
+ 
+ 	return i2c_add_driver(&thermostat_driver);
 
-Gerhard
-
--- 
-Analog-/ISDN-Nutzer sparen mit GMX SmartSurfer bis zu 70%!
-Kostenlos downloaden: http://www.gmx.net/de/go/smartsurfer
+Cheers,
+ -- Guido
