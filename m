@@ -1,23 +1,20 @@
-Return-Path: <antonio.dibacco@aruba.it>
-Received: from mx1.aruba.it (mxaruba.aruba.it [62.149.128.10])
-	by ozlabs.org (Postfix) with SMTP id 6676567A65
+Return-Path: <wojciech.kromer@dgt.com.pl>
+Received: from dgt.com.pl (mail.dgt.com.pl [195.117.141.2])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6C71E67A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Apr 2006 15:51:56 +1000 (EST)
-Message-ID: <20060421055142.11025.qmail@mx1.aruba.it>
-References: <200604062238.17972.antonio.dibacco@aruba.it>
-	<200604202154.45963.antonio.dibacco@aruba.it>
+	Fri, 21 Apr 2006 16:42:23 +1000 (EST)
+Message-ID: <44487EB9.6090600@dgt.com.pl>
+Date: Fri, 21 Apr 2006 08:42:01 +0200
+From: Wojciech Kromer <wojciech.kromer@dgt.com.pl>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Upgrading cramfs root file system
+References: <200604062238.17972.antonio.dibacco@aruba.it>	<4445E9E1.50204@dgt.com.pl>	<200604202154.45963.antonio.dibacco@aruba.it>
 	<20060420221801.55331e15@White64>
-	<200604202303.21680.antonio.dibacco@aruba.it>
-	<44485B3F.8080308@orkun.us>
-In-Reply-To: <44485B3F.8080308@orkun.us> 
-From: "antonio.dibacco" <antonio.dibacco@aruba.it>
-To: Tolunay Orkun <listmember@orkun.us>
-Subject: Re: Upgrading cramfs root file system while running (DENX wrote that
-	is not possible)
-Date: Fri, 21 Apr 2006 05:51:42 GMT
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1"
-Cc: White <white@from-b.org>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <20060420221801.55331e15@White64>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,91 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-No, I have a cramfs on flash and the kernel uses it directly from flash, 
-extracting what it needs to execute. I'm not using initrd then, I have to 
-update in situ, while running.
+Dnia 2006-04-20 22:18, Użytkownik White napisał:
+> make it easy: if you start an application which do the flash and after
+> this a reset.. nothing should happen. I do it that way.
+> the application resist completly in RAM .. and all important libs are
+> in RAm or in Filesystem Cache.
+> It's only important that you pretend any Application from accessing
+> Datafiles or start of new application ...
+>
+> Alternativly, you can put it in a reserved RAM Area ( mark it not
+> usable by Linux) and put a Flash Code in your Bootloader (U-boot?)
+> after a reset....
+>
+> But overwrite a cramfs works for me on >100 times without problems.
+>
+>   
 
-Bye,
-Antonio. 
+Problems with changing cramfs  and reboot may vary depending on changes 
+made to filesystem.
+You can't even call reboot, bacause it's not in the prevoius location 
+after changing flash.
 
-Tolunay Orkun Scrive: 
-
-> If your bootloader is U-Boot and you are using standard bootm command to 
-> boot, U-Boot decompresses the initrd image to RAM before passing the file 
-> system to Linux. So, you are not working with flash copy and updating the 
-> flash copy is not a problem at all. This applies to ext2, cramfs or 
-> squashfs based initrd. 
-> 
-> You can keep working as long as you like until it is time to reboot. 
-> 
-> Antonio Di Bacco wrote:
->> Yes, I also thought this too. Anything important should stay already in 
->> RAM but there is a chance that something bad could happen. Probably the 
->> best thing is what you suggested as second option but I have not so much 
->> ram. My CGI writes the downloaded new software in RAM and then I should 
->> directly jump to u-boot without leaving Linux the chance to mix things up 
->> and then u-boot  should copy the RAM to the flash. It seems a strange 
->> procedure but what else could be done with 4MB flash and 16 MB ram?  
->> 
->> Bye,
->> Antonio. 
->> 
->> On Thursday 20 April 2006 22:18, White wrote:
->>> make it easy: if you start an application which do the flash and after
->>> this a reset.. nothing should happen. I do it that way.
->>> the application resist completly in RAM .. and all important libs are
->>> in RAm or in Filesystem Cache.
->>> It's only important that you pretend any Application from accessing
->>> Datafiles or start of new application ... 
->>> 
->>> Alternativly, you can put it in a reserved RAM Area ( mark it not
->>> usable by Linux) and put a Flash Code in your Bootloader (U-boot?)
->>> after a reset.... 
->>> 
->>> But overwrite a cramfs works for me on >100 times without problems. 
->>> 
->>> Am Thu, 20 Apr 2006 21:54:45 +0200 schrieb Antonio Di Bacco 
->>> 
->>> <antonio.dibacco@aruba.it> :
->>>> Yes you are right, it is not a good idea to overwrite working cramfs
->>>> filesystem. But what happens if I download the new cramfs plus kernel 
->>>> in
->>>> RAM, do a checksum and then, completely in kernel mode, disabling all 
->>>> the
->>>> interrupts, I write to flash? No process could complain that I am
->>>> overwriting because no one is executing. 
->>>> 
->>>> Bye,
->>>> Antonio. 
->>>> 
->>>> On Wednesday 19 April 2006 09:42, Wojciech Kromer wrote:
->>>>> Dnia 2006-04-06 22:38, Użytkownik Antonio Di Bacco napisał:
->>>>>> Hi, 
->>>>>> 
->>>>>> how could I upgrade my cramfs rootfs? I have a CGI in the rootfs that
->>>>>> receives the new rootfs from a web interface and then tries to write
->>>>>> it in the flash. While overwriting the old cramfs, the CGI will
->>>>>> continue to work? something weird could happen?
->>>>> Generally it's not a good idea to override working filesystem ( I've
->>>>> tried to do it once). 
->>>>> 
->>>>> You can have two separate copies of filesystem, one to work with, and
->>>>> another to overwrite, it requires more flash.
->>>>> Another way is working in initrd, it requires more RAM.
->>>>> You can also use jffs2 or jffs3 (experimental) to have read-write
->>>>> filesystem, and change applications only, not whole filesystem (be
->>>>> carefull with changing busybox or libraries!)
->>>> _______________________________________________
->>>> Linuxppc-embedded mailing list
->>>> Linuxppc-embedded@ozlabs.org
->>>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>> _______________________________________________
->>> Linuxppc-embedded mailing list
->>> Linuxppc-embedded@ozlabs.org
->>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
- 
+> Am Thu, 20 Apr 2006 21:54:45 +0200 schrieb Antonio Di Bacco
+> <antonio.dibacco@aruba.it> :
+>
+>   
+>> Yes you are right, it is not a good idea to overwrite working cramfs 
+>> filesystem. But what happens if I download the new cramfs plus kernel in RAM, 
+>> do a checksum and then, completely in kernel mode, disabling all the 
+>> interrupts, I write to flash? No process could complain that I am overwriting 
+>> because no one is executing.
+>>
+>>     
+Maybe such feature should be added to MTD code.
+But disabling interrupts may cause watchdog reset in most embedded 
+platforms.
