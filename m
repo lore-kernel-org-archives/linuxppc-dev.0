@@ -1,16 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id D872067A05
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 23:52:50 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: [PATCH] fix spu_callbacks BUILD_BUG_ON
+Date: Fri, 21 Apr 2006 15:52:38 +0200
+References: <20060421080239.GC4717@suse.de> <200604211245.27744.arnd@arndb.de>
+	<Pine.LNX.4.61.0604211512370.23180@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0604211512370.23180@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17480.48944.451869.575596@cargo.ozlabs.ibm.com>
-Date: Fri, 21 Apr 2006 21:17:04 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
-In-Reply-To: <644FB6AC-3702-41D0-A9E2-6FDEC52B819D@freescale.com>
-References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
-	<1143564910.2660.4.camel@enki.eridu>
-	<644FB6AC-3702-41D0-A9E2-6FDEC52B819D@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200604211552.38923.arnd@arndb.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	Jens Axboe <axboe@suse.de>, linuxppc-dev@ozlabs.org,
+	torvalds@osdl.org, Paul Mackerras <paulus@samba.org>, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,14 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andy Fleming writes:
+On Friday 21 April 2006 15:14, Jan Engelhardt wrote:
+> +      [__NR_syscalls] = NULL,
+> 
+> > };
+> > 
 
-> So no one chimed in on this.  Clearly, 1275 states that it's supposed  
-> to be local-mac-address or mac-address.  We use "address".  But I'm  
-> pretty sure we copied our ethernet node from somewhere else, so which  
-> one should it be?
+> >-      if (s->nr_ret >= __NR_syscalls) {
+> >+      if (s->nr_ret >= ARRAY_SIZE(spu_syscall_table)) {
+> 
+> +       if(syscall == NULL) {
+> 
+> 
+> 
+> That way, syscalls could be added in the master table while spu does not 
+> break. Comments?
 
-It shouldn't be "address".  That would normally be the physical
-address of the device's registers, if anything.
+Hmm, my idea was not having to check for NULL pointers when we know
+that they are valid function calls. But you are right that your approach
+is more robust. It also means that we might just leave out all
+the assignments to sys_ni_syscall in order to make the source a little
+shorter.
 
-Paul.
+	Arnd <><
