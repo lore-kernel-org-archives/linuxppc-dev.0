@@ -1,23 +1,20 @@
-Return-Path: <jengelh@linux01.gwdg.de>
-Received: from linux01.gwdg.de (linux01.gwdg.de [134.76.13.21])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7A23267A05
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Apr 2006 23:44:48 +1000 (EST)
-Date: Fri, 21 Apr 2006 15:14:07 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] fix spu_callbacks BUILD_BUG_ON
-In-Reply-To: <200604211245.27744.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.61.0604211512370.23180@yvahk01.tjqt.qr>
-References: <20060421080239.GC4717@suse.de>
-	<20060421022555.2d460805.akpm@osdl.org>
-	<200604211241.36596.arnd@arndb.de> <200604211245.27744.arnd@arndb.de>
+Return-Path: <bcook@bpointsys.com>
+Received: from bpointsys.com (70-253-197-251.ded.swbell.net [70.253.197.251])
+	by ozlabs.org (Postfix) with ESMTP id A11A067A05
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Apr 2006 00:45:19 +1000 (EST)
+From: Brent Cook <bcook@bpointsys.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
+Date: Fri, 21 Apr 2006 09:33:10 -0500
+References: <20060420210201.GA25755@gate.ebshome.net>
+	<20060420215514.GE25755@gate.ebshome.net>
+	<1145594285.28014.12.camel@localhost.localdomain>
+In-Reply-To: <1145594285.28014.12.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	Jens Axboe <axboe@suse.de>, linuxppc-dev@ozlabs.org,
-	torvalds@osdl.org, Paul Mackerras <paulus@samba.org>, davem@davemloft.net
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200604210933.10888.bcook@bpointsys.com>
+Cc: debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 20 April 2006 23:38, Benjamin Herrenschmidt wrote:
+> On Thu, 2006-04-20 at 14:55 -0700, Eugene Surovegin wrote:
+> > On Thu, Apr 20, 2006 at 11:10:55PM +0200, Gerhard Pircher wrote:
+> > > Well, Freescale's PPC programming environment manual clearly states
+> > > that this will not work on G4 CPUs (74xx). Also Benjamin Herrenschmidt
+> > > told me, that this implementation will not work for the reasons I
+> > > mentioned before. The approach I'm trying to implement was his idea, so
+> > > I have to trust in him.
+> >
+> > Well, you aren't the first person who tries to run G4 with
+> > CONFIG_NOT_COHERENT_CACHE. This was done before and I don't remember
+> > that those people had to implement anything as complex as you are
+> > trying to do.
+> >
+> > You can try asking on #mklinux. It always better to ask people who
+> > actually _did_ this :).
+> >
+> > In fact, I just grepped 2.6 and found
+> > #ifdef(CONFIG_NOT_COHERENT_CACHE) in syslib/mv64x60.c. Guess what
+> > systems usually have this type of bridge? Not 4xx/8xx, that's for sure.
+>
+> I think some folks tried ... and failed.
+>
+> Ben.
 
->--- linus-2.6.orig/arch/powerpc/platforms/cell/spu_callbacks.c
->+++ linus-2.6/arch/powerpc/platforms/cell/spu_callbacks.c
->@@ -317,17 +317,16 @@ void *spu_syscall_table[] = {
-> 	[__NR_ppoll]			sys_ni_syscall, /* sys_ppoll */
-> 	[__NR_unshare]			sys_unshare,
-> 	[__NR_splice]			sys_splice,
->+	[__NR_tee]			sys_tee,
+I'm not claiming to understand all of the issues here, but I have some 
+MV64460 / MPC7448-based systems, and they only boot if 
+CONFIG_NOT_COHERENT_CACHE=y
 
-+      [__NR_syscalls] = NULL,
-
-> };
-> 
-> long spu_sys_callback(struct spu_syscall_block *s)
-> {
-> 	long (*syscall)(u64 a1, u64 a2, u64 a3, u64 a4, u64 a5, u64 a6);
-> 
->-	BUILD_BUG_ON(ARRAY_SIZE(spu_syscall_table) != __NR_syscalls);
->-
-> 	syscall = spu_syscall_table[s->nr_ret];
-> 
->-	if (s->nr_ret >= __NR_syscalls) {
->+	if (s->nr_ret >= ARRAY_SIZE(spu_syscall_table)) {
-
-+       if(syscall == NULL) {
-
-
-
-That way, syscalls could be added in the master table while spu does not 
-break. Comments?
-
-
-Jan Engelhardt
--- 
+ - Brent
