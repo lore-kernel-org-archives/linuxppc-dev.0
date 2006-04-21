@@ -1,15 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17480.51661.41707.53706@cargo.ozlabs.ibm.com>
-Date: Fri, 21 Apr 2006 22:02:21 +1000
+Message-ID: <17480.48944.451869.575596@cargo.ozlabs.ibm.com>
+Date: Fri, 21 Apr 2006 21:17:04 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: linas@austin.ibm.com (Linas Vepstas)
-Subject: Re: [PATCH] powerpc/pseries: avoid crash in PCI code if mem system
-	not up.
-In-Reply-To: <20060421004042.GC7242@austin.ibm.com>
-References: <20060421004042.GC7242@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH] powerpc: Add FSL CPM2 device tree node documentation
+In-Reply-To: <644FB6AC-3702-41D0-A9E2-6FDEC52B819D@freescale.com>
+References: <20060328161431.18517.82573.stgit@vitb.ru.mvista.com>
+	<1143564910.2660.4.camel@enki.eridu>
+	<644FB6AC-3702-41D0-A9E2-6FDEC52B819D@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,14 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas writes:
+Andy Fleming writes:
 
-> Please apply and forward upstream.  And a question: once 
-> upon a time, the arch PCI subsystem was inited after mem init 
-> was done; currently, it seems to be happening before mem init. 
-> Is this intentional? 
+> So no one chimed in on this.  Clearly, 1275 states that it's supposed  
+> to be local-mac-address or mac-address.  We use "address".  But I'm  
+> pretty sure we copied our ethernet node from somewhere else, so which  
+> one should it be?
 
-No, and it is bogus if it is.  Do you have the full backtrace from the
-crash?
+It shouldn't be "address".  That would normally be the physical
+address of the device's registers, if anything.
 
 Paul.
