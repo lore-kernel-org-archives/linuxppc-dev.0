@@ -2,18 +2,18 @@ Return-Path: <listmember@orkun.us>
 Received: from www65.dixiesys.com (ns65a.dixiesys.com [65.254.42.90])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1887C679E1
+	by ozlabs.org (Postfix) with ESMTP id BF69C679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 23 Apr 2006 04:50:48 +1000 (EST)
-Message-ID: <444A7AF2.5010605@orkun.us>
-Date: Sat, 22 Apr 2006 13:50:26 -0500
+	Sun, 23 Apr 2006 05:07:56 +1000 (EST)
+Message-ID: <444A7EF8.8010709@orkun.us>
+Date: Sat, 22 Apr 2006 14:07:36 -0500
 From: Tolunay Orkun <listmember@orkun.us>
 MIME-Version: 1.0
 To: Wolfgang Denk <wd@denx.de>
 Subject: Re: Upgrading cramfs root file system while running (DENX wrote that
 	is not possible)
-References: <20060421165548.A03E53526B7@atlas.denx.de>
-In-Reply-To: <20060421165548.A03E53526B7@atlas.denx.de>
+References: <20060421165732.CD0EB3526B7@atlas.denx.de>
+In-Reply-To: <20060421165732.CD0EB3526B7@atlas.denx.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: White <white@from-b.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -27,32 +27,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 Wolfgang Denk wrote:
-> In message <44485B3F.8080308@orkun.us> you wrote:
+> In message <20060421055142.11025.qmail@mx1.aruba.it> you wrote:
 >   
->> If your bootloader is U-Boot and you are using standard bootm command to 
->> boot, U-Boot decompresses the initrd image to RAM before passing the 
->> file system to Linux. So, you are not working with flash copy and 
->> updating the flash copy is not a problem at all. This applies to ext2, 
->> cramfs or squashfs based initrd.
+>> No, I have a cramfs on flash and the kernel uses it directly from flash,
+>> extracting what it needs to execute. I'm not using initrd then, I have to
+>> update in situ, while running.
 >>     
 >
-> But it makes no sense to use cramfs or squashfs on a ramdisk.
-> You *want* to run these directly from flash.
-> But then, of course, you need alternate images (or other tricks)
-> for full image updates.
+> This cannot be done reliably. You have to make the file system  idle,
+> i. e. unmount it.
 >   
-Well, we lose a couple of MB of RAM but squashfs as initrd has been 
-reliable, very compact and since the file system is in RAM, it is faster 
-and we can tune a bit for smaller cache etc. 
+I agree, even if you make the executables involved in the update 
+statically linked (so library dependencies are removed), kernel can 
+choose to reload any running executables page and it would end up with a 
+bogus page in memory. This is particularly true if you do not have swap 
+which you could try to lock executable in swap. Also, you cannot 
+reliably depend on file system cache to contain all the executable code 
+you would need to complete update either.
 
-Image updates have been extremely easy as a result, we did not need to 
-resort to alternate images and other tricks as a result. If you have 
-more flexibility in RAM than in flash, our approach makes sense without 
-complicating the matter much. I understand that not everyone might have 
-this option.
-> [Single file updates can be done using overlay file systems; see  the
-> DULG for details.]
-I know about the overlay fs. There is also unionfs that works similarly.
-
-Best regards,
+Regards,
 Tolunay
