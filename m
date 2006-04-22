@@ -1,23 +1,21 @@
-Return-Path: <stefan.eletzhofer@inquant.de>
-Received: from gonzo.webpack.hosteurope.de (gonzo.webpack.hosteurope.de
-	[217.115.142.69])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <listmember@orkun.us>
+Received: from www65.dixiesys.com (ns65a.dixiesys.com [65.254.42.90])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D4688679E2
+	by ozlabs.org (Postfix) with ESMTP id 1887C679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 22 Apr 2006 21:55:34 +1000 (EST)
-In-Reply-To: <200604212332.55123.antonio.dibacco@aruba.it>
-References: <20060421202308.D508F3526B7@atlas.denx.de>
-	<200604212332.55123.antonio.dibacco@aruba.it>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <27FB8E28-233C-42CF-9C2A-696C70BF45C1@inquant.de>
-From: Stefan Eletzhofer <stefan.eletzhofer@inquant.de>
+	Sun, 23 Apr 2006 04:50:48 +1000 (EST)
+Message-ID: <444A7AF2.5010605@orkun.us>
+Date: Sat, 22 Apr 2006 13:50:26 -0500
+From: Tolunay Orkun <listmember@orkun.us>
+MIME-Version: 1.0
+To: Wolfgang Denk <wd@denx.de>
 Subject: Re: Upgrading cramfs root file system while running (DENX wrote that
 	is not possible)
-Date: Sat, 22 Apr 2006 13:40:20 +0200
-To: Antonio Di Bacco <antonio.dibacco@aruba.it>
-Cc: linuxppc-embedded@ozlabs.org
+References: <20060421165548.A03E53526B7@atlas.denx.de>
+In-Reply-To: <20060421165548.A03E53526B7@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: White <white@from-b.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,74 +26,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-Am 21.04.2006 um 23:32 schrieb Antonio Di Bacco:
-
-> Little bit off topic:
-> I decided to adopt a different strategy, the sw download web page  
-> will contain
-> a java applet that will act as a tftp server, then the board will  
-> be rebooted
-> and an environment variable will instruct the u-boot to tftp the  
-> new software
-> from the applet. What do you think? I know that applets cannot read  
-> local
-> files on the PC, unless they have a valid certificate but the user  
-> should
-> trust me.
-
-nice idea IMHO. Is that applet available somewhere? That would surely  
-fit my needs
-(and others probably, too).
-
-Cheers,
-Stefan.
-
+Wolfgang Denk wrote:
+> In message <44485B3F.8080308@orkun.us> you wrote:
+>   
+>> If your bootloader is U-Boot and you are using standard bootm command to 
+>> boot, U-Boot decompresses the initrd image to RAM before passing the 
+>> file system to Linux. So, you are not working with flash copy and 
+>> updating the flash copy is not a problem at all. This applies to ext2, 
+>> cramfs or squashfs based initrd.
+>>     
 >
-> Bye,
-> Antonio.
->
-> On Friday 21 April 2006 22:23, Wolfgang Denk wrote:
->> In message <200604210853.32860.david.jander@protonic.nl> you wrote:
->>> What do you mean with "something bad could happen"?
->>
->> System crashes.
->>
->>> The only thing I can think of is pulling the power plug while  
->>> flash is
->>> being erased or written. What else could go wrong?
->>
->> The kernel may try to (re-) load some pages of a  running  executable
->> or  library  which  is  no  longer  available  (at  least  not at the
->> addresses where they used to be). The kernel will either stumble over
->> what it believes to be a corrupted file system,  or  load  the  wrong
->> data -> kaboom.
->>
->>> We do the following: system running from read-only jffs2 partition.
->>> Sometimes that partition is remounted read-write and single files  
->>> are
->>> replaced, but in some occasions we need to upgrade the whole fs.  
->>> In that
->>> case a CGI lodas the image into a ramdisk, and the upgrade  
->>> process is
->>> started. For upgrade,
->>
->> You *have* to unmount the old file system here.
->>
->>> partition, and then "dd" again to copy the image. At that point no
->>> critical flash-read access should be requested since dd is  
->>> already in
->>> cache (it's
->>
->> The kernel might reload any page of any running executable or  
->> library.
->>
->> Best regards,
->>
->> Wolfgang Denk
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+> But it makes no sense to use cramfs or squashfs on a ramdisk.
+> You *want* to run these directly from flash.
+> But then, of course, you need alternate images (or other tricks)
+> for full image updates.
+>   
+Well, we lose a couple of MB of RAM but squashfs as initrd has been 
+reliable, very compact and since the file system is in RAM, it is faster 
+and we can tune a bit for smaller cache etc. 
+
+Image updates have been extremely easy as a result, we did not need to 
+resort to alternate images and other tricks as a result. If you have 
+more flexibility in RAM than in flash, our approach makes sense without 
+complicating the matter much. I understand that not everyone might have 
+this option.
+> [Single file updates can be done using overlay file systems; see  the
+> DULG for details.]
+I know about the overlay fs. There is also unionfs that works similarly.
+
+Best regards,
+Tolunay
