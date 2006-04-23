@@ -1,21 +1,20 @@
-Return-Path: <betatester@orkun.us>
-Received: from www65.dixiesys.com (ns65a.dixiesys.com [65.254.42.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 16B82679E1
+Return-Path: <chang.sun@xilinx.com>
+Received: from outbound1-ash-R.bigfish.com (outbound-ash.frontbridge.com
+	[206.16.192.249])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 9B657679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 23 Apr 2006 06:24:04 +1000 (EST)
-Message-ID: <444A89A5.4030402@orkun.us>
-Date: Sat, 22 Apr 2006 14:53:09 -0500
-From: Tolunay Orkun <betatester@orkun.us>
+	Mon, 24 Apr 2006 05:29:07 +1000 (EST)
 MIME-Version: 1.0
-To: Antonio Di Bacco <antonio.dibacco@aruba.it>
-Subject: Re: Upgrading cramfs root file system while running (DENX wrote that
-	is not possible)
-References: <20060421202308.D508F3526B7@atlas.denx.de>
-	<200604212332.55123.antonio.dibacco@aruba.it>
-In-Reply-To: <200604212332.55123.antonio.dibacco@aruba.it>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: question about Linux 2.6 with Xilinx ML-403
+Date: Sun, 23 Apr 2006 12:00:57 -0700
+Message-ID: <0AF7A30943B8EF42B5A41B51B30BE52C0197306B@XSJ-EXCHVS1.xlnx.xilinx.com>
+From: "Chang Sun" <chang.sun@xilinx.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>,
+	"Martin, Tim" <tim.martin@viasat.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,30 +26,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Antonio Di Bacco wrote:
-> Little bit off topic:
-> I decided to adopt a different strategy, the sw download web page will contain 
-> a java applet that will act as a tftp server, then the board will be rebooted 
-> and an environment variable will instruct the u-boot to tftp the new software 
-> from the applet. What do you think? I know that applets cannot read local 
-> files on the PC, unless they have a valid certificate but the user should 
-> trust me.
-> 
-> Bye,
-> Antonio.
-> 
+Grant,=20
+I checked both Torvalds' tree and Paul's tree. I see the defconfig file
+for both ml300 and ml403, but I don't see any source files related to
+either ml300 or ml403 under the <platforms> subdirectory. Have you done
+a complete BSP for either ml300 or ml403?
 
-If this approach hits a roadblock for some reason (user resistance, 
-firewall issues with tftp etc.), think about the following...
+Thanks,=20
+Chang
 
-During the update you can use a small ram based file system (tempfs) 
-holding everything you need, kill all unneeded processes, fill your ram 
-based file system. Once this ram file system is filled you will 
-pivot_root to it making it new root fs and proceed to update from it. 
-Once update is down you can reboot.
+-----Original Message-----
+From: linuxppc-embedded-bounces+chang.sun=3Dxilinx.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+chang.sun=3Dxilinx.com@ozlabs.org] On
+Behalf Of Grant Likely
+Sent: Wednesday, April 12, 2006 11:45 AM
+To: Martin, Tim
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: question about Linux 2.6 with Xilinx ML-403
 
-I have not done this so it is very likely there are some details that I 
-cannot foresee at this very moment.
+On 4/12/06, Martin, Tim <tim.martin@viasat.com> wrote:
+> Grant,
+>
+> I know I could probably figure this out by looking at the GIT tree
+> directly (which I'm planning to do) but could you summarize how much
+> (which devices) of the ML-403 is supported by your patches?
+>
+> Serial? (which Xilinx core)
+Yes, full uart
 
-Best regards,
-Tolunay
+>
+> Ethernet? (Hard-Core PLB TEMAC?, Soft-Core PLB EMAC? Localink TEMAC?
+Is
+> 10/100/1000 supported, or is there only 1 rate e.g. 1000 supported?)
+
+No.  I've ported the 2.4 driver, but I haven't got permission to
+release it yet.  (I'm a contractor; I don't own any of the work I do)
+
+>
+> Anything else (GPIO buttons/switches?)
+I've got drivers for the PS/2 & VGA, but I'm still trying to get them
+released.
+
+Cheers,
+g.
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
