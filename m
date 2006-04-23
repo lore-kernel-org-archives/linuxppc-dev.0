@@ -1,18 +1,11 @@
-Return-Path: <SRS0+bf7e8443b56fb01442c6+972+infradead.org+dwmw2@canuck.srs.infradead.org>
-Received: from canuck.infradead.org (canuck.infradead.org [205.233.218.70])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3C1C8679E1
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Apr 2006 22:57:57 +1000 (EST)
-Subject: Re: Fedora 5 on POWER5
-From: David Woodhouse <dwmw2@infradead.org>
-To: Josef =?ISO-8859-1?Q?M=E1dl?= <jmadl@kts.cz>
-In-Reply-To: <001201c6650b$e507b110$0c01a8c0@KTSJMXP>
-References: <001201c6650b$e507b110$0c01a8c0@KTSJMXP>
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 22 Apr 2006 13:57:41 +0100
-Message-Id: <1145710661.11909.244.camel@pmac.infradead.org>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17482.54553.159397.400323@cargo.ozlabs.ibm.com>
+Date: Sun, 23 Apr 2006 11:15:05 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: please pull powerpc-merge.git
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,18 +16,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-04-21 at 08:21 +0200, Josef Mádl wrote:
-> I am trying to install fedora 5 on IBM i5 system. Instalation start,
-> all seems to good to partitioning disk.
-> Fedora see two disks /dev/sda (real disk - virtual disk prepared with
-> CRTNWSSTG) and /dev/sdb (booting disk of instalation - Prep).
-> I choise /dev/sda for creating linux partitions, fedora show me how it
-> will be parted but try to write to /dev/sdb - it ends with error.
-> 
-> Do anybody know how solved this problem ?
+Linus,
 
-I'm fairly sure I saw Paul helping someone work around this on Freenode
-#fedora-ppc a couple of weeks ago.
+Please do a pull from
 
--- 
-dwmw2
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
+
+to get the following powerpc bug-fixes, and a defconfig update.
+
+Thanks,
+Paul.
+
+Arnd Bergmann:
+      powerpc/cell: remove BUILD_BUG_ON and add sys_tee to spu_syscall_table
+
+Becky Bruce:
+      ppc: Fix powersave code on arch/ppc
+
+Benjamin Herrenschmidt:
+      powermac: Fix i2c on keywest based chips
+      powerpc: fix oops in alsa powermac driver
+
+Kumar Gala:
+      powerpc/ppc: export strncasecmp
+
+Olof Johansson:
+      powerpc: IOMMU support for honoring dma_mask
+      powerpc: Lower threshold for DART enablement to 1GB
+
+Paul Mackerras:
+      powerpc: Fix define_machine so machine_is() works from modules
+
+Will Schmidt:
+      powerpc: update {g5,iseries,pseries}_defconfigs
+
+ arch/powerpc/configs/g5_defconfig           |   58 ++++++++++----------
+ arch/powerpc/configs/iseries_defconfig      |   43 +++++++++------
+ arch/powerpc/configs/pseries_defconfig      |   54 +++++++++----------
+ arch/powerpc/kernel/iommu.c                 |   38 +++++++++----
+ arch/powerpc/kernel/pci_iommu.c             |   42 +++++++++++++--
+ arch/powerpc/kernel/ppc_ksyms.c             |    1 
+ arch/powerpc/kernel/prom.c                  |    2 -
+ arch/powerpc/kernel/systbl.S                |    5 ++
+ arch/powerpc/kernel/vio.c                   |    6 +-
+ arch/powerpc/platforms/cell/spu_callbacks.c |    5 +-
+ arch/powerpc/platforms/powermac/low_i2c.c   |   78 ++++++++++++---------------
+ arch/powerpc/sysdev/dart_iommu.c            |   12 +++-
+ arch/ppc/kernel/asm-offsets.c               |    1 
+ arch/ppc/kernel/entry.S                     |   35 ++++++------
+ arch/ppc/kernel/ppc_ksyms.c                 |    1 
+ drivers/macintosh/therm_adt746x.c           |    4 +
+ include/asm-powerpc/iommu.h                 |    7 +-
+ include/asm-powerpc/machdep.h               |    6 ++
+ sound/oss/dmasound/tas_common.c             |    4 +
+ sound/ppc/daca.c                            |    2 -
+ sound/ppc/tumbler.c                         |    2 -
+ 21 files changed, 234 insertions(+), 172 deletions(-)
