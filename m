@@ -1,12 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A3EB5679E6
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 04:32:47 +1000 (EST)
+Received: from Relay2.suse.de (mail2.suse.de [195.135.221.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mx1.suse.de (Postfix) with ESMTP id 6D31AEF03
+	for <linuxppc-dev@ozlabs.org>; Sun, 23 Apr 2006 20:32:42 +0200 (CEST)
+From: Andreas Schwab <schwab@suse.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] snd_pmac_toonie_init should to be __init
+Date: Sun, 23 Apr 2006 20:32:41 +0200
+Message-ID: <jeodys87na.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17482.54553.159397.400323@cargo.ozlabs.ibm.com>
-Date: Sun, 23 Apr 2006 11:15:05 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: please pull powerpc-merge.git
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,59 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+snd_pmac_toonie_init is only called by __init code and calls __init code
+itself.
 
-Please do a pull from
+Signed-off-by: Andreas Schwab <schwab@suse.de>
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc-merge.git
+---
+ sound/ppc/toonie.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-to get the following powerpc bug-fixes, and a defconfig update.
+Index: linux-2.6.17-rc2/sound/ppc/toonie.c
+===================================================================
+--- linux-2.6.17-rc2.orig/sound/ppc/toonie.c	2006-04-19 21:46:39.000000000 +0200
++++ linux-2.6.17-rc2/sound/ppc/toonie.c	2006-04-19 22:56:30.000000000 +0200
+@@ -335,7 +335,7 @@ static void toonie_cleanup(struct snd_pm
+ 	chip->mixer_data = NULL;
+ }
+ 
+-int snd_pmac_toonie_init(struct snd_pmac *chip)
++int __init snd_pmac_toonie_init(struct snd_pmac *chip)
+ {
+ 	struct pmac_toonie *mix;
+ 
 
-Thanks,
-Paul.
+Andreas.
 
-Arnd Bergmann:
-      powerpc/cell: remove BUILD_BUG_ON and add sys_tee to spu_syscall_table
-
-Becky Bruce:
-      ppc: Fix powersave code on arch/ppc
-
-Benjamin Herrenschmidt:
-      powermac: Fix i2c on keywest based chips
-      powerpc: fix oops in alsa powermac driver
-
-Kumar Gala:
-      powerpc/ppc: export strncasecmp
-
-Olof Johansson:
-      powerpc: IOMMU support for honoring dma_mask
-      powerpc: Lower threshold for DART enablement to 1GB
-
-Paul Mackerras:
-      powerpc: Fix define_machine so machine_is() works from modules
-
-Will Schmidt:
-      powerpc: update {g5,iseries,pseries}_defconfigs
-
- arch/powerpc/configs/g5_defconfig           |   58 ++++++++++----------
- arch/powerpc/configs/iseries_defconfig      |   43 +++++++++------
- arch/powerpc/configs/pseries_defconfig      |   54 +++++++++----------
- arch/powerpc/kernel/iommu.c                 |   38 +++++++++----
- arch/powerpc/kernel/pci_iommu.c             |   42 +++++++++++++--
- arch/powerpc/kernel/ppc_ksyms.c             |    1 
- arch/powerpc/kernel/prom.c                  |    2 -
- arch/powerpc/kernel/systbl.S                |    5 ++
- arch/powerpc/kernel/vio.c                   |    6 +-
- arch/powerpc/platforms/cell/spu_callbacks.c |    5 +-
- arch/powerpc/platforms/powermac/low_i2c.c   |   78 ++++++++++++---------------
- arch/powerpc/sysdev/dart_iommu.c            |   12 +++-
- arch/ppc/kernel/asm-offsets.c               |    1 
- arch/ppc/kernel/entry.S                     |   35 ++++++------
- arch/ppc/kernel/ppc_ksyms.c                 |    1 
- drivers/macintosh/therm_adt746x.c           |    4 +
- include/asm-powerpc/iommu.h                 |    7 +-
- include/asm-powerpc/machdep.h               |    6 ++
- sound/oss/dmasound/tas_common.c             |    4 +
- sound/ppc/daca.c                            |    2 -
- sound/ppc/tumbler.c                         |    2 -
- 21 files changed, 234 insertions(+), 172 deletions(-)
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
