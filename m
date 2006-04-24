@@ -1,14 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 3A4FB67A00
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 09:31:26 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Wire up *at syscalls
+Date: Tue, 25 Apr 2006 01:31:21 +0200
+References: <jeu08ippb9.fsf@sykes.suse.de>
+In-Reply-To: <jeu08ippb9.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17485.23369.946413.882252@cargo.ozlabs.ibm.com>
-Date: Tue, 25 Apr 2006 09:12:09 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Olaf Hering <olh@suse.de>
-Subject: Re: alignment exceptionhandler sleeps in invalid context
-In-Reply-To: <20060424173246.GA22318@suse.de>
-References: <20060424173246.GA22318@suse.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200604250131.22154.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,14 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering writes:
-
-> I'm not sure where the bug is. Does it mean the network stack does
-> something nasty, or is the exception handler itself broken? (probably the latter)
-> This is 2.6.16.9 on a p270.
-
-The alignment handler does a get_user to read the instruction.  I
-suppose it will have to read the instruction directly if the exception
-occurred in kernel mode.
-
-Paul.
+QW0gVHVlc2RheSAyNSBBcHJpbCAyMDA2IDAwOjQzIHNjaHJpZWIgQW5kcmVhcyBTY2h3YWI6Cj4g
+SW5kZXg6IGxpbnV4LTIuNi4xNy1yYzItZ2l0NS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwv
+c3B1X2NhbGxiYWNrcy5jCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLQo+IGxpbnV4LTIuNi4xNy1yYzItZ2l0
+NS5vcmlnL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2VsbC9zcHVfY2FsbGJhY2tzLmOgoKCgoAo+
+oDIwMDYtMDQtMjQgMTY6MjQ6NDcuMDAwMDAwMDAwICswMjAwICsrKwo+IGxpbnV4LTIuNi4xNy1y
+YzItZ2l0NS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwvc3B1X2NhbGxiYWNrcy5joKCgMjAw
+Ni0wNAo+LTI0IDE4OjA3OjU5LjAwMDAwMDAwMCArMDIwMCBAQCAtMzE4LDYgKzMxOCwxOSBAQCB2
+b2lkICpzcHVfc3lzY2FsbF90YWJsZVtdCj4gPSB7Cj4goKCgoKCgoKBbX19OUl91bnNoYXJlXaCg
+oKCgoKCgoKCgoKCgoKCgoHN5c191bnNoYXJlLAo+IKCgoKCgoKCgW19fTlJfc3BsaWNlXaCgoKCg
+oKCgoKCgoKCgoKCgoKBzeXNfc3BsaWNlLAo+IKCgoKCgoKCgW19fTlJfdGVlXaCgoKCgoKCgoKCg
+oKCgoKCgoKCgoKBzeXNfdGVlLAo+ICugoKCgoKCgW19fTlJfb3BlbmF0XaCgoKCgoKCgoKCgoKCg
+oKCgoKBzeXNfb3BlbmF0LAo+ICugoKCgoKCgW19fTlJfbWtkaXJhdF2goKCgoKCgoKCgoKCgoKCg
+oKBzeXNfbWtkaXJhdCwKPiAroKCgoKCgoFtfX05SX21rbm9kYXRdoKCgoKCgoKCgoKCgoKCgoKCg
+c3lzX21rbm9kYXQsCj4gK6CgoKCgoKBbX19OUl9mY2hvd25hdF2goKCgoKCgoKCgoKCgoKCgoHN5
+c19mY2hvd25hdCwKPiAroKCgoKCgoFtfX05SX2Z1dGltZXNhdF2goKCgoKCgoKCgoKCgoKCgc3lz
+X2Z1dGltZXNhdCwKPiAroKCgoKCgoFtfX05SX25ld2ZzdGF0YXRdoKCgoKCgoKCgoKCgoKCgc3lz
+X25ld2ZzdGF0YXQsCj4gK6CgoKCgoKBbX19OUl91bmxpbmthdF2goKCgoKCgoKCgoKCgoKCgoHN5
+c191bmxpbmthdCwKPiAroKCgoKCgoFtfX05SX3JlbmFtZWF0XaCgoKCgoKCgoKCgoKCgoKCgc3lz
+X3JlbmFtZWF0LAo+ICugoKCgoKCgW19fTlJfbGlua2F0XaCgoKCgoKCgoKCgoKCgoKCgoKBzeXNf
+bGlua2F0LAo+ICugoKCgoKCgW19fTlJfc3ltbGlua2F0XaCgoKCgoKCgoKCgoKCgoKBzeXNfc3lt
+bGlua2F0LAo+ICugoKCgoKCgW19fTlJfcmVhZGxpbmthdF2goKCgoKCgoKCgoKCgoKBzeXNfcmVh
+ZGxpbmthdCwKPiAroKCgoKCgoFtfX05SX2ZjaG1vZGF0XaCgoKCgoKCgoKCgoKCgoKCgc3lzX2Zj
+aG1vZGF0LAo+ICugoKCgoKCgW19fTlJfZmFjY2Vzc2F0XaCgoKCgoKCgoKCgoKCgoKBzeXNfZmFj
+Y2Vzc2F0LAo+IKB9Owo+IKAKClRoZSBzcHUgcGFydHMgbG9vayBmaW5lLCB0aGFua3MuCgo+IKBs
+b25nIHNwdV9zeXNfY2FsbGJhY2soc3RydWN0IHNwdV9zeXNjYWxsX2Jsb2NrICpzKQo+IEluZGV4
+OiBsaW51eC0yLjYuMTctcmMyLWdpdDUvZnMvc3RhdC5jCj4gPT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLSBsaW51
+eC0yLjYuMTctcmMyLWdpdDUub3JpZy9mcy9zdGF0LmOgoKCgoKCgoDIwMDYtMDQtMjQKPiAxODow
+NToyMy4wMDAwMDAwMDAgKzAyMDAgKysrIGxpbnV4LTIuNi4xNy1yYzItZ2l0NS9mcy9zdGF0LmOg
+oKCgoDIwMDYtMDQtMjQKPiAxODowNTo0NC4wMDAwMDAwMDAgKzAyMDAgQEAgLTI2MSw3ICsyNjEs
+NiBAQCBhc21saW5rYWdlIGxvbmcKPiBzeXNfbmV3bHN0YXQoY2hhciBfX3VzZXIKPiCgoKCgoKCg
+oHJldHVybiBlcnJvcjsKPiCgfQo+IKAKPiAtI2lmbmRlZiBfX0FSQ0hfV0FOVF9TVEFUNjQKPiCg
+YXNtbGlua2FnZSBsb25nIHN5c19uZXdmc3RhdGF0KGludCBkZmQsIGNoYXIgX191c2VyICpmaWxl
+bmFtZSwKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoHN0cnVjdCBzdGF0IF9fdXNl
+ciAqc3RhdGJ1ZiwgaW50IGZsYWcpCj4goHsKPiBAQCAtMjgyLDcgKzI4MSw2IEBAIGFzbWxpbmth
+Z2UgbG9uZyBzeXNfbmV3ZnN0YXRhdChpbnQgZGZkLAo+IKBvdXQ6Cj4goKCgoKCgoKByZXR1cm4g
+ZXJyb3I7Cj4goH0KPiAtI2VuZGlmCj4goAo+IKBhc21saW5rYWdlIGxvbmcgc3lzX25ld2ZzdGF0
+KHVuc2lnbmVkIGludCBmZCwgc3RydWN0IHN0YXQgX191c2VyICpzdGF0YnVmKQo+IKB7CgpTaW1w
+bHkgcmVtb3ZpbmcgdGhlICNpZmRlZiBsb29rcyB3cm9uZy4gQUZBSUNULCBwb3dlcnBjIGFuZCBp
+YTY0IGFyZSB0aGUKb25seSBvbmVzIHRoYXQgd2FudCBib3RoIHN5c19uZXdmc3RhdGF0IGFuZCBz
+eXNfZnN0YXRhdDY0LCBtYXliZSB5b3UKY2FuIHNpbXBseSBkbyAKCiNpZiAhZGVmaW5lZChfX0FS
+Q0hfV0FOVF9TVEFUNjQpIHx8IGRlZmluZWQoX19BUkNIX1dBTlRfTkVXU1RBVEZTQVQpCgoJQXJu
+ZCA8PjwK
