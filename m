@@ -1,21 +1,34 @@
-Return-Path: <amodra@bigpond.net.au>
-Received: from grove.modra.org (CPE-144-136-172-108.sa.bigpond.net.au
-	[144.136.172.108]) by ozlabs.org (Postfix) with ESMTP id 231BC679F3
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 22:41:52 +1000 (EST)
-Date: Mon, 24 Apr 2006 22:11:51 +0930
-From: Alan Modra <amodra@bigpond.net.au>
-To: "Robin H. Johnson" <robbat2@gentoo.org>
-Subject: Re: modules without a .toc section not loading
-Message-ID: <20060424124151.GR27430@bubble.grove.modra.org>
-References: <20060420000220.GB22797@curie-int.vc.shawcable.net>
-	<20060420002829.GD27430@bubble.grove.modra.org>
-	<20060420005445.GA24721@curie-int.vc.shawcable.net>
-	<20060420085401.GI27430@bubble.grove.modra.org>
-	<20060423035614.GB30578@curie-int.vc.shawcable.net>
+Return-Path: <vatsa@in.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D43F5679F4
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 01:41:57 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3OFfrKI025361
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 11:41:53 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3OFfr3O229642
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 11:41:53 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3OFfq1C013859
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 11:41:53 -0400
+Date: Mon, 24 Apr 2006 21:09:53 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/2] tickless idle cpus: core patch - v2
+Message-ID: <20060424153953.GA4934@in.ibm.com>
+References: <20060407063044.GA22416@in.ibm.com>
+	<17462.61423.42032.559627@cargo.ozlabs.ibm.com>
+	<20060410121847.GB5564@in.ibm.com>
+	<17480.47308.126194.26202@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060423035614.GB30578@curie-int.vc.shawcable.net>
+In-Reply-To: <17480.47308.126194.26202@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: vatsa@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,93 +38,156 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Apr 22, 2006 at 08:56:14PM -0700, Robin H. Johnson wrote:
-> On Thu, Apr 20, 2006 at 06:24:01PM +0930, Alan Modra wrote:
-> > > I dug at the code, and the R_PPC_REL24 blocks need the contents of the
-> > > .toc (via stub_for_addr -> create_stub -> my_r2), and I'm not certain
-> > > about it.
-> > Yes, the stubs need some reasonable r2 value.
-> Using the .stubs values for the .toc seems to work, but I should
-> construct a better test case for it, to double check.
+Paul,
+	At the outset I am slightly confused on whether you are
+proposing to allow boot cpus to skip ticks or not. A clarification on
+this will help!
+
+On Fri, Apr 21, 2006 at 08:49:48PM +1000, Paul Mackerras wrote:
+> Is the nohz_cpu_mask accessed by other cpus?  I wonder if using a
+
+Yes, nohz_cpu_mask can be accessed by other CPUs, as part of RCU batch
+processing.
+
+> 1-byte per-cpu variable for this, or even a bit in the thread_info
+> struct, might be better because it would reduce the number of atomic
+> bit set/clear operations we have to do.
+
+Agreed that updating a global bitmask is not a scalable thing to do. But
+unfortunately this is tied to RCU implementation ATM. I know that Dipankar has 
+plans to get rid of nohz_cpu_mask in the RCU implementation. When that happens, 
+maybe we can revist this.
+
+> > +#define MAX_DEC_COUNT	UINT_MAX	/* Decrementer is 32-bit */
 > 
-> > > The R_PPC64_TOC/R_PPC64_TOC16/R_PPC64_TOC16_DS blocks shouldn't be hit
-> > > when there isn't a .toc* from what I figure.
-> > Yes, and finding such a reloc should trigger an error.
-> Ok, there is a case where R_PPC64_TOC exists and there isn't a .toc, and
-> I suspect you're just the right person to ask...
+> The decrementer value should be restricted to INT_MAX.  I think some
+> implementations will take a decrementer interrupt if you set the
+> decrementer to a negative value.
 
-Oops.  R_PPC64_TOC without a toc isn't an error, despite it looking
-self-contradictory.
+Ok. Thanks for pointing it out.
 
-[snip about R_PPC64_TOC in .opd]
-> It seems that these R_PPC64_TOC entries are safe to completely ignore -
-> is this correct? 
+> > +static void account_ticks(struct pt_regs *regs)
+> > +{
+> > +	int next_dec;
+> > +	int cpu = smp_processor_id();
+> > +	unsigned long ticks;
+> > +
+> >  	while ((ticks = tb_ticks_since(per_cpu(last_jiffy, cpu)))
+> >  	       >= tb_ticks_per_jiffy) {
+> >  		/* Update last_jiffy */
+> 
+> This is just the loop body from timer_interrupt, right?  Why do we
 
-They are the toc pointer value used by functions defined in the module.
-Since we are using .stubs+0x8000, that should be the value of these
-relocs.  There may be situations where the opd entry escapes out of
-the module as a function pointer (eg. via an initialised global function
-pointer variable), so we'd better set them to the correct value.
+Correct. Note that this loop body is common to both timer_interrupt and 
+start_hz_timer currently.
 
-In fact, it probably isn't worth doing error checking of any of the
-R_PPC64_TOC* relocs.  If I hadn't tried to be fancy with error checks,
-it seems my original patch would have been good.  Oh well, revised patch
-follows.
+> have to loop around N times after we skipped N ticks?  What we're
+> doing inside the loop is:
+> 
+> - account_process_time, but we know we were in the idle task, so the
+>   time is just idle time.  If we have the accurate accounting stuff
+>   turned on the first call to account_process_time will account all
+>   the idle time anyway.
 
-[snip]
-> I have searched Google, but not actually found any documentation on what
-> the format of the .opd section is supposed to be. LSB-3.1 just says it
-> has to exist, without saying what it's format is.
+Do you mean to say that "the first call to account_system_vtime will account 
+all the idle time"? AFAICS account_process_time (->account_process_vtime) is
+accounting just usertime.
 
-First word is the function entry point, second word is the toc pointer
-used by the function, third word is the static chain pointer (unused by
-C, but used in languages like Pascal).  Some Redhat compilers omit the
-third word entirely, so opd entries may be either 16 bytes or 24 bytes
-apart.
+I had a related question: if we put the idle CPU to some power-saving
+state in the period that it is tickless, would its PURR value keep
+getting incremented? If not, would that affect the idle time we
+calculate after skipping N ticks (in case accurate acct is turned ON
+that is)?
+
+> - we're not skipping ticks on the boot cpu (yet), so we won't do the
+>   do_timer and timer_recalc_offset calls.
+
+Don't follow you here. I thought we wanted to let the boot cpu to skip
+ticks too (as you seem to indicate down below - while talking of
+updating xtime/NTP)? If we want to allow that, then we need to be able to
+call do_timer with a regs argument?
+
+> I think we could probably rearrange this code to eliminate the need
+> for the regs argument - all it's used for is telling whether we were
+> in user mode, and we know we weren't since we were in the idle task.
+> That would mean that we maybe could call start_hz_timer from the idle
+> task body instead of inside do_IRQ etc.  The only thing we'd have to
+> watch out for is updating the decrementer if some interrupt handler
+> called add_timer/mod_timer etc.
+
+One problem in deferring the call to start_hz_timer like this is RCU. Ideally
+we want to clear the tickless idle-CPU from nohz_cpu_mask -as soon- as it
+starts processing an interrupt. Otherwise RCU will think that the CPU is in
+tickless state (hence not accessing RCU-protected data structures) while the 
+idle-CPU is processing interrupts/softirqs and will not include the CPU in its
+grace-period processing. This may be a bad thing to allow. 
+
+The other problem in deferring a call to start_hz_timer is we could cause them 
+to be running with an incorrect jiffy value (can happen if all cpus were
+skipping ticks for a period).
+
+IMO we should let start_hz_timer be called as it is being called now, i.e
+immediately when a tickless idle-CPU wakes up. This would also
+unfortunately mean that we need to embed calls to start_hz_timer from all
+the interrupt paths (do_IRQ, performance_monitor_exception etc) where we
+come out of tickless state.
+
+> Assuming we make the changes we have discussed to reduce the skewing
+> of the decrementer interrupts quite small, and allow any cpu to call
+> do_timer, then how where you thinking that xtime and the NTP stuff
+> would get updated, in the situation where all cpus are skipping ticks?
+> By doing N calls to do_timer in a row?  Or by adding N-1 to jiffies_64
+> and then calling do_timer once?
+
+I assume this implies we want to let boot-cpu to skip ticks?
+
+Ideally it would be good if we add N-1 to jiffies_64 and call do_timer
+once. But I wonder if it can be done w/o being racy. In order to calculate
+N, we may calculate the difference, delta, between current timebase and
+tb_last_stamp as:
+
+	delta = tb_ticks_since(tb_last_stamp);	-> Step 1
+
+We may then calculate N as:
+
+	N = delta / tb_ticks_per_jiffy;		-> Step 2
+
+However this will be racy, if we happen to sample timebase (Step 1) just
+before a jiffy boundary. In which case, we would have missed to update
+jiffy by 1? To avoid this, we may need to check for the corner case and
+introduce a 'goto retry' loop?
+
+BTW, I realized that my patch to let boot cpu to skip ticks also is
+slightly buggy here:
+
+                if (cpu != do_timer_cpu)
+                       continue;
+
+                write_seqlock(&xtime_lock);
+		...
+                do_timer(regs);
+		...
+                write_sequnlock(&xtime_lock);
+
+There needs to a different while loop to call do_timer based on 
+tb_ticks_since(tb_last_stamp). Will fix it next time around.
+
+> 
+> > +#ifdef CONFIG_NO_IDLE_HZ
+> > +	max_skip = __USE_RTC() ? HZ : MAX_DEC_COUNT / tb_ticks_per_jiffy;
+> > +#endif
+> 
+> If we allow the boot cpu to skip ticks, then we will have to make sure
+> that at least one cpu wakes up in time to do the updating in
+> recalc_timer_offset.
+
+Good point. However is this critical, especially if all cpus had been
+idle for quite a while? As I understand, if we don't wakeup in time to
+do timer_recalc_offset, the only drawback is the first gettimeofday will
+be slow (because it has make a system call)?
+
+
 
 -- 
-Alan Modra
-IBM OzLabs - Linux Technology Centre
-
---- linux-2.6.16/arch/powerpc/kernel/module_64.c~	2006-01-18 14:17:29.000000000 +1030
-+++ linux-2.6.16/arch/powerpc/kernel/module_64.c	2006-04-24 22:01:19.000000000 +0930
-@@ -191,11 +191,19 @@ int module_frob_arch_sections(Elf64_Ehdr
- 				 (void *)hdr
- 				 + sechdrs[sechdrs[i].sh_link].sh_offset);
- 	}
--	if (!me->arch.stubs_section || !me->arch.toc_section) {
--		printk("%s: doesn't contain .toc or .stubs.\n", me->name);
-+
-+	if (!me->arch.stubs_section) {
-+		printk("%s: doesn't contain .stubs.\n", me->name);
- 		return -ENOEXEC;
- 	}
- 
-+	/* If we don't have a .toc, just use .stubs.  We need to set r2
-+	   to some reasonable value in case the module calls out to
-+	   other functions via a stub, or if a function pointer escapes
-+	   the module by some means.  */
-+	if (!me->arch.toc_section)
-+		me->arch.toc_section = me->arch.stubs_section;
-+
- 	/* Override the stubs size */
- 	sechdrs[me->arch.stubs_section].sh_size = get_stubs_size(hdr, sechdrs);
- 	return 0;
-@@ -342,7 +350,7 @@ int apply_relocate_add(Elf64_Shdr *sechd
- 			break;
- 
- 		case R_PPC64_TOC16:
--			/* Subtact TOC pointer */
-+			/* Subtract TOC pointer */
- 			value -= my_r2(sechdrs, me);
- 			if (value + 0x8000 > 0xffff) {
- 				printk("%s: bad TOC16 relocation (%lu)\n",
-@@ -355,7 +363,7 @@ int apply_relocate_add(Elf64_Shdr *sechd
- 			break;
- 
- 		case R_PPC64_TOC16_DS:
--			/* Subtact TOC pointer */
-+			/* Subtract TOC pointer */
- 			value -= my_r2(sechdrs, me);
- 			if ((value & 3) != 0 || value + 0x8000 > 0xffff) {
- 				printk("%s: bad TOC16_DS relocation (%lu)\n",
+Regards,
+vatsa
