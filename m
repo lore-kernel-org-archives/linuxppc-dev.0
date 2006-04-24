@@ -1,16 +1,21 @@
-Return-Path: <Victor.Krawczuk@gdcanada.com>
-Received: from gdcanada.com (smtp1.gdcanada.com [209.29.50.245])
-	by ozlabs.org (Postfix) with ESMTP id 5A06667A63
+Return-Path: <aidan@nicta.com.au>
+Received: from mail24.syd.optusnet.com.au (mail24.syd.optusnet.com.au
+	[211.29.133.165])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4D44E67A00
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Apr 2006 07:48:06 +1000 (EST)
+	Tue, 25 Apr 2006 09:02:33 +1000 (EST)
+Message-ID: <444D5907.6010506@nicta.com.au>
+Date: Tue, 25 Apr 2006 09:02:31 +1000
+From: Aidan Williams <aidan@nicta.com.au>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C667E6.5A736893"
-Subject: Rebuilding FS MDS 8349 BSP & JFFS2 integration
-Date: Mon, 24 Apr 2006 17:30:48 -0400
-Message-ID: <64A27FD84D948C48ABF3250BF78446FD01B7DF5D@OTTSVW100.gdcan.com>
-From: "Krawczuk, Victor" <Victor.Krawczuk@gdcanada.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: Vincent Winstead <vwinstead@yahoo.com>
+Subject: Re: Xilinx Virtex-2 PRO FPGA ppc 405 on ML310 board
+References: <20060424203047.86885.qmail@web52005.mail.yahoo.com>
+In-Reply-To: <20060424203047.86885.qmail@web52005.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,273 +26,143 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C667E6.5A736893
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-I am a newbie to Linux but not to embedded PPC. I was hoping someone
-could point me to the direction here. I apologize in advance if this is
-kindergarten stuff.
-
-I downloaded the MDS-8349 Linux BSP from FreeScale. I was able to burn
-the default prebuilt images "uboot" and "jffs2.img" to my MDS-8349 (PB)
-board and have uboot tftp the prebuilt "uImage" to my PB. I used
-"tftpboot 200000 uImage" to download and "bootm" to boot.  As per
-included instructions, I had "setenv bootargs root=3D/dev/mtdblock1
-rootfstype=3Djffs2 rw console=3DttyS0,115200" in uboot, followed by a
-"saveenv". The prebuilt Linux (uImage) came up, no problem.
-
-As I need to include USB Host support to the PPC kernel, I used the ltib
-tool to reconfigure and rebuild Linux, as well as a matching jffs2 (I
-would think). Ltib produced vmlinux.gz.uboot and rootfs.jffs2 for me.
-For some reason, rootfs.jffs2 was significantly smaller than the
-prebuilt "jffs2.img" (2483184 bytes vs. 4325376 bytes). I'm not sure
-why. I then did the following:
-
-bootargs is still set to "root=3D/dev/mtdblock1 rootfstype=3Djffs2 rw
-console=3DttyS0,115200"  in uboot:
-
-Using the same (prebuilt) uboot as before:
-
-- tftpboot 400000 rootfs.jffs2 (rebuilt jffs2)
-- erase fe020000 fe5fffff
-- cp.b 400000 fe020000 25e3f0
-
-- tftpboot 200000 vmlinux.gz.uboot (rebuilt Linux containing USB Host
-stuff)
-- bootm
-
-Linux could not boot!  I got the following root FS error:
-
-[stuff deleted...]
-io scheduler deadline registered
-io scheduler cfq registered
-RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
-loop: loaded (max 8 devices)
-eth0: Gianfar Ethernet Controller Version 1.1, 00:04:9f:00:2d:b7
-eth0: Running with NAPI disabled
-eth0: 64/64 RX/TX BD ring size
-eth1: Gianfar Ethernet Controller Version 1.1, 00:04:9f:00:2d:b8
-eth1: Running with NAPI disabled
-eth1: 64/64 RX/TX BD ring size
-i2c /dev entries driver
-NET: Registered protocol family 2
-IP: routing cache hash table of 2048 buckets, 16Kbytes
-TCP established hash table entries: 16384 (order: 5, 131072 bytes)
-TCP bind hash table entries: 16384 (order: 4, 65536 bytes)
-TCP: Hash tables configured (established 16384 bind 16384)
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-Root-NFS: No NFS server available, giving up.
-VFS: Unable to mount root fs via NFS, trying floppy.
-VFS: Cannot open root device "mtdblock1" or unknown-block(2,0)
-Please append a correct "root=3D" boot option
-Kernel panic - not syncing: VFS: Unable to mount root fs on
-unknown-block(2,0)
- <0>Rebooting in 180 seconds..
-
-Would anybody happen to know what is going wrong?  How am I supposed to
-know the correct "root=3D" boot option for a rebuilt jffs2 using LTIB, =
-if
-that is my problem?
-
-
-
-Thanks in advance for any hints,
-
-
-Victor.
-
-
-
-
-
-The information contained in this e-mail message is PRIVATE. It may =
-contain confidential information and may be legally privileged. It is =
-intended for the exclusive use of the addressee(s). If you are not the =
-intended recipient, you are hereby notified that any dissemination, =
-distribution or reproduction of this communication is strictly =
-prohibited. If the intended recipient(s) cannot be reached or if a =
-transmission problem has occurred, please notify the sender immediately =
-by return e-mail and destroy all copies of this message.=20
-Thank you.=20
-
-
-------_=_NextPart_001_01C667E6.5A736893
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7233.28">
-<TITLE>Rebuilding FS MDS 8349 BSP &amp; JFFS2 integration</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Hi,</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">I am a newbie to Linux but not to =
-embedded PPC. I was hoping someone could point me to the direction here. =
-I apologize in advance if this is kindergarten stuff.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">I downloaded the MDS-8349 Linux BSP =
-from FreeScale. I was able to burn the default prebuilt images =
-&quot;uboot&quot; and &quot;jffs2.img&quot; to my MDS-8349 (PB) board =
-and have uboot tftp the prebuilt &quot;uImage&quot; to my PB. I used =
-&quot;tftpboot 200000 uImage&quot; to download and &quot;bootm&quot; to =
-boot.&nbsp; As per included instructions, I had &quot;setenv bootargs =
-root=3D/dev/mtdblock1 rootfstype=3Djffs2 rw console=3DttyS0,115200&quot; =
-in uboot, followed by a &quot;saveenv&quot;. The prebuilt Linux (uImage) =
-came up, no problem.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">As I need to include USB Host support =
-to the PPC kernel, I used the ltib tool to reconfigure and rebuild =
-Linux, as well as a matching jffs2 (I would think). Ltib produced =
-vmlinux.gz.uboot and rootfs.jffs2 for me.&nbsp; For some reason, =
-rootfs.jffs2 was significantly smaller than the prebuilt =
-&quot;jffs2.img&quot; (2483184 bytes vs. 4325376 bytes). I'm not sure =
-why. I then did the following:</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">bootargs is still set to =
-&quot;root=3D/dev/mtdblock1 rootfstype=3Djffs2 rw =
-console=3DttyS0,115200&quot;&nbsp; in uboot:</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Using the same (prebuilt) uboot as =
-before:</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">- tftpboot 400000 rootfs.jffs2 (rebuilt =
-jffs2)</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">- erase fe020000 fe5fffff</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">- cp.b 400000 fe020000 25e3f0</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">- tftpboot 200000 vmlinux.gz.uboot =
-(rebuilt Linux containing USB Host stuff)</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">- bootm</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Linux could not boot!&nbsp; I got the =
-following root FS error:</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">[stuff deleted&#8230;]</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">io scheduler deadline =
-registered</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">io scheduler cfq registered</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">RAMDISK driver initialized: 16 RAM =
-disks of 32768K size 1024 blocksize</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">loop: loaded (max 8 devices)</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">eth0: Gianfar Ethernet Controller =
-Version 1.1, 00:04:9f:00:2d:b7</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">eth0: Running with NAPI =
-disabled</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">eth0: 64/64 RX/TX BD ring size</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">eth1: Gianfar Ethernet Controller =
-Version 1.1, 00:04:9f:00:2d:b8</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">eth1: Running with NAPI =
-disabled</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">eth1: 64/64 RX/TX BD ring size</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">i2c /dev entries driver</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">NET: Registered protocol family =
-2</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">IP: routing cache hash table of 2048 =
-buckets, 16Kbytes</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">TCP established hash table entries: =
-16384 (order: 5, 131072 bytes)</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">TCP bind hash table entries: 16384 =
-(order: 4, 65536 bytes)</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">TCP: Hash tables configured =
-(established 16384 bind 16384)</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">NET: Registered protocol family =
-1</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">NET: Registered protocol family =
-17</FONT>
-
-<BR><B><I><FONT SIZE=3D2 FACE=3D"Arial">Root-NFS: No NFS server =
-available, giving up.</FONT></I></B>
-
-<BR><B><I><FONT SIZE=3D2 FACE=3D"Arial">VFS: Unable to mount root fs via =
-NFS, trying floppy.</FONT></I></B>
-
-<BR><B><I><FONT SIZE=3D2 FACE=3D"Arial">VFS: Cannot open root device =
-&quot;mtdblock1&quot; or unknown-block(2,0)</FONT></I></B>
-
-<BR><B><I><FONT SIZE=3D2 FACE=3D"Arial">Please append a correct =
-&quot;root=3D&quot; boot option</FONT></I></B>
-
-<BR><B><I><FONT SIZE=3D2 FACE=3D"Arial">Kernel panic - not syncing: VFS: =
-Unable to mount root fs on unknown-block(2,0)</FONT></I></B>
-
-<BR><B><I><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;&lt;0&gt;Rebooting in 180 =
-seconds..</FONT></I></B>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Would anybody happen to know what is =
-going wrong?&nbsp; How am I supposed to know the correct =
-&quot;root=3D&quot; boot option for a rebuilt jffs2 using LTIB, if that =
-is my problem?</FONT></P>
-<BR>
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks in advance for any hints,</FONT>
-</P>
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Victor.</FONT>
-</P>
-<BR>
-<BR>
-<BR>
-
-</BODY>
-<!--[object_id=3D#gdcanada.com#]--><FONT face=3DTahoma><FONT =
-color=3D#0000ff><SPAN style=3D"FONT-WEIGHT: bold; FONT-SIZE: 10pt; =
-FONT-FAMILY: Arial"><FONT color=3D#000000>
-<P align=3Dleft><FONT face=3DTahoma size=3D2><FONT color=3D#0000ff><FONT =
-face=3DArial color=3D#000000 size=3D1>The information contained in this =
-e-mail message is PRIVATE. It may contain confidential information and =
-may be legally privileged. It is intended for the exclusive use of the =
-addressee(s). If you are not the intended recipient, you are hereby =
-notified that any dissemination, distribution or reproduction of this =
-communication is strictly prohibited. If the intended recipient(s) =
-cannot be reached or if a transmission problem has occurred, please =
-notify the sender immediately by return e-mail and destroy all copies of =
-this message. <BR>Thank you.</FONT> =
-</FONT></FONT></P></FONT></SPAN><FONT =
-size=3D2></FONT></FONT></FONT></HTML>
-------_=_NextPart_001_01C667E6.5A736893--
+After generating a new auto-config.in using the BSP,
+you'll need to:
+
+   0. put new auto-config.in into kernel directory
+      linux-2.4.x/arch/ppc/platforms/xilinx_auto
+
+   1. change to the top uClinux-dist directory
+      (*NOT* the kernel directory)
+
+   2. In "Vendor/Product Selection  --->"
+      Choose "Xilinx"
+      Choose "powerpc-auto"
+
+   3. In "Kernel/Library/Defaults Selection  --->"
+      Choose linux-2.4.x as your kernel, making sure that
+      this is a symlink to or copy of the linuxppc-2.4
+      tarball from UQ.
+
+   4. In "Kernel/Library/Defaults Selection  --->"
+      Choose "[*] Default all settings (lose changes)"
+
+   5. Save and quit..
+
+This process will pull in default Xilinx/powerpc config
+files from vendors/Xilinx/powerpc-auto/config.*
+for the kernel and for other uClinux components.
+
+It will also generate a new linux-2.4.x/.config
+based on your auto-config.in and the defaults
+in vendors/Xilinx/powerpc-auto/config.linux-2.4.x.
+
+btw, I don't have an ML310 board.  I have however gotten
+the UQ kernel + uclinux to work on a v2pro FF1152 board
+and a virtex-4 FX-12 minimodule.
+
+another btw, the linuxppc-2.4 code has an auto-config.in
+inside it which, if you follow the above steps (without
+doing step 0), should compile.  The supplied auto-config.in
+won't match your board, but it should at least compile.
+
+- aidan
+
+
+Vincent Winstead wrote:
+> guess what - I got the BSP to work!  But now I have a problem with the 
+> make command.  I put the auto-config.in where it needs to be then I did 
+> a make menuconfig to configure it, then I did a make dep, but when I did 
+> a make is when  an error came up that I can't seem to figure out:
+> 
+> In file included from 
+> /home/ml310_linux/uClinux-dist/linuxppc-2.4/include/linux/pagemap.h:16,
+>                  from 
+> /home/ml310_linux/uClinux-dist/linuxppc-2.4/include/linux/locks.h:8,
+>                  from 
+> /home/ml310_linux/uClinux-dist/linuxppc-2.4/include/linux/blk.h:5,
+>                  from init/main.c:25:
+> /home/ml310_linux/uClinux-dist/linuxppc-2.4/include/linux/highmem.h: In 
+> function `kmap':
+> /home/ml310_linux/uClinux-dist/linuxppc-2.4/include/linux/highmem.h:68: 
+> error: `CONFIG_KERNEL_START' undeclared (first use in this function)
+> init/main.c: In function `start_kernel':
+> init/main.c:393: error: `CONFIG_KERNEL_START' undeclared (first use in 
+> this function)
+> make[1]: *** [init/main.o] Error 1
+> make[1]: Leaving directory `/home/ml310_linux/uClinux-dist/linuxppc-2.4'
+> make: *** [linux] Error 1
+> 
+> This CONFIG_KERNEL_START is the problem.  It doesn't seem to be defined 
+> anywhere and I guess it needs to be.  Is this something I need to get 
+> from somewhere?  Or is it maybe generated along with the BSP so I would 
+> have to put a start number into the platform Studio configuration?
+> 
+> -Vincent
+> 
+> 
+> */Aidan Williams /* wrote:
+> 
+> 
+>     Vincent Winstead wrote:
+>      > Now, as far as step 5, am I supposed to have a symbolic link that is
+>      > named linux-2.4.x placed into the uClinux-dist directory? Because
+>      > there's already a folder named linux-2.4.x which was in there
+>     already
+>      > when I untarred everything. At the command prompt in the
+>     uClinux-dist
+>      > directory I entered the following line:
+>      >
+>      > ln -s ../linuxppc-2.4 linux-2.4.x
+>      >
+>      > and the result of this operation was to put a symbolic link into my
+>      > linuxppc-2.4 directory with the name of linux-2.4.x - is this
+>     correct?
+>      >
+> 
+>     First, you'll need to move the existing directory aside using
+>     a command like:
+> 
+>     mv linux-2.4.x linux-2.4.x-dist
+> 
+>     and then re-run the ln -s command above.
+> 
+>      > Now on to Step 6 problem.
+>      > How am I supposed to make use uClinux EDK Board Support Package 1.0
+>      > files? I'm not sure how to go about using them in the Xilinx
+>     Platform
+>      > Studio in order to generate the necessary auto-config.in file.
+>      >
+> 
+>     See the document below for the general approach:
+> 
+>      > Even though it is about the microblaze rather than
+>      > the PPC, a helpful "getting started" document is:
+>      >
+>     http://www.itee.uq.edu.au/~wu/downloads/uClinux_ready_Microblaze_design.pdf
+>      >
+> 
+>     Look particularly at the section "Software Platform Settings"
+>     on page 29, steps 67,68.
+> 
+>     If you are not overly familiar with the EDK, it would
+>     be best to find someone locally who can help walk you
+>     through the process of generating a system.
+> 
+>     - aidan
+> 
+> 
+>     --------------------------------------------------------------------------
+>     This email and any attachments may be confidential. They may contain
+>     legally
+>     privileged information or copyright material. You should not read, copy,
+>     use or disclose them without authorisation. If you are not an intended
+>     recipient, please contact us at once by return email and then delete
+>     both
+>     messages. We do not accept liability in connection with computer virus,
+>     data corruption, delay, interruption, unauthorised access or
+>     unauthorised
+>     amendment. This notice should not be removed.
+> 
+> 
