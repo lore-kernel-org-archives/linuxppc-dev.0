@@ -1,34 +1,22 @@
-Return-Path: <vatsa@in.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <olh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D43F5679F4
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 01:41:57 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3OFfrKI025361
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 11:41:53 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3OFfr3O229642
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 11:41:53 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3OFfq1C013859
-	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 11:41:53 -0400
-Date: Mon, 24 Apr 2006 21:09:53 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/2] tickless idle cpus: core patch - v2
-Message-ID: <20060424153953.GA4934@in.ibm.com>
-References: <20060407063044.GA22416@in.ibm.com>
-	<17462.61423.42032.559627@cargo.ozlabs.ibm.com>
-	<20060410121847.GB5564@in.ibm.com>
-	<17480.47308.126194.26202@cargo.ozlabs.ibm.com>
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 718EB679E6
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 03:32:53 +1000 (EST)
+Received: from Relay1.suse.de (mail2.suse.de [195.135.221.8])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mx2.suse.de (Postfix) with ESMTP id 2E6D31D921
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 19:32:47 +0200 (CEST)
+Date: Mon, 24 Apr 2006 19:32:46 +0200
+From: Olaf Hering <olh@suse.de>
+To: linuxppc-dev@ozlabs.org
+Subject: alignment exceptionhandler sleeps in invalid context
+Message-ID: <20060424173246.GA22318@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17480.47308.126194.26202@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: vatsa@in.ibm.com
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,156 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
-	At the outset I am slightly confused on whether you are
-proposing to allow boot cpus to skip ticks or not. A clarification on
-this will help!
 
-On Fri, Apr 21, 2006 at 08:49:48PM +1000, Paul Mackerras wrote:
-> Is the nohz_cpu_mask accessed by other cpus?  I wonder if using a
+I'm not sure where the bug is. Does it mean the network stack does
+something nasty, or is the exception handler itself broken? (probably the latter)
+This is 2.6.16.9 on a p270.
 
-Yes, nohz_cpu_mask can be accessed by other CPUs, as part of RCU batch
-processing.
-
-> 1-byte per-cpu variable for this, or even a bit in the thread_info
-> struct, might be better because it would reduce the number of atomic
-> bit set/clear operations we have to do.
-
-Agreed that updating a global bitmask is not a scalable thing to do. But
-unfortunately this is tied to RCU implementation ATM. I know that Dipankar has 
-plans to get rid of nohz_cpu_mask in the RCU implementation. When that happens, 
-maybe we can revist this.
-
-> > +#define MAX_DEC_COUNT	UINT_MAX	/* Decrementer is 32-bit */
-> 
-> The decrementer value should be restricted to INT_MAX.  I think some
-> implementations will take a decrementer interrupt if you set the
-> decrementer to a negative value.
-
-Ok. Thanks for pointing it out.
-
-> > +static void account_ticks(struct pt_regs *regs)
-> > +{
-> > +	int next_dec;
-> > +	int cpu = smp_processor_id();
-> > +	unsigned long ticks;
-> > +
-> >  	while ((ticks = tb_ticks_since(per_cpu(last_jiffy, cpu)))
-> >  	       >= tb_ticks_per_jiffy) {
-> >  		/* Update last_jiffy */
-> 
-> This is just the loop body from timer_interrupt, right?  Why do we
-
-Correct. Note that this loop body is common to both timer_interrupt and 
-start_hz_timer currently.
-
-> have to loop around N times after we skipped N ticks?  What we're
-> doing inside the loop is:
-> 
-> - account_process_time, but we know we were in the idle task, so the
->   time is just idle time.  If we have the accurate accounting stuff
->   turned on the first call to account_process_time will account all
->   the idle time anyway.
-
-Do you mean to say that "the first call to account_system_vtime will account 
-all the idle time"? AFAICS account_process_time (->account_process_vtime) is
-accounting just usertime.
-
-I had a related question: if we put the idle CPU to some power-saving
-state in the period that it is tickless, would its PURR value keep
-getting incremented? If not, would that affect the idle time we
-calculate after skipping N ticks (in case accurate acct is turned ON
-that is)?
-
-> - we're not skipping ticks on the boot cpu (yet), so we won't do the
->   do_timer and timer_recalc_offset calls.
-
-Don't follow you here. I thought we wanted to let the boot cpu to skip
-ticks too (as you seem to indicate down below - while talking of
-updating xtime/NTP)? If we want to allow that, then we need to be able to
-call do_timer with a regs argument?
-
-> I think we could probably rearrange this code to eliminate the need
-> for the regs argument - all it's used for is telling whether we were
-> in user mode, and we know we weren't since we were in the idle task.
-> That would mean that we maybe could call start_hz_timer from the idle
-> task body instead of inside do_IRQ etc.  The only thing we'd have to
-> watch out for is updating the decrementer if some interrupt handler
-> called add_timer/mod_timer etc.
-
-One problem in deferring the call to start_hz_timer like this is RCU. Ideally
-we want to clear the tickless idle-CPU from nohz_cpu_mask -as soon- as it
-starts processing an interrupt. Otherwise RCU will think that the CPU is in
-tickless state (hence not accessing RCU-protected data structures) while the 
-idle-CPU is processing interrupts/softirqs and will not include the CPU in its
-grace-period processing. This may be a bad thing to allow. 
-
-The other problem in deferring a call to start_hz_timer is we could cause them 
-to be running with an incorrect jiffy value (can happen if all cpus were
-skipping ticks for a period).
-
-IMO we should let start_hz_timer be called as it is being called now, i.e
-immediately when a tickless idle-CPU wakes up. This would also
-unfortunately mean that we need to embed calls to start_hz_timer from all
-the interrupt paths (do_IRQ, performance_monitor_exception etc) where we
-come out of tickless state.
-
-> Assuming we make the changes we have discussed to reduce the skewing
-> of the decrementer interrupts quite small, and allow any cpu to call
-> do_timer, then how where you thinking that xtime and the NTP stuff
-> would get updated, in the situation where all cpus are skipping ticks?
-> By doing N calls to do_timer in a row?  Or by adding N-1 to jiffies_64
-> and then calling do_timer once?
-
-I assume this implies we want to let boot-cpu to skip ticks?
-
-Ideally it would be good if we add N-1 to jiffies_64 and call do_timer
-once. But I wonder if it can be done w/o being racy. In order to calculate
-N, we may calculate the difference, delta, between current timebase and
-tb_last_stamp as:
-
-	delta = tb_ticks_since(tb_last_stamp);	-> Step 1
-
-We may then calculate N as:
-
-	N = delta / tb_ticks_per_jiffy;		-> Step 2
-
-However this will be racy, if we happen to sample timebase (Step 1) just
-before a jiffy boundary. In which case, we would have missed to update
-jiffy by 1? To avoid this, we may need to check for the corner case and
-introduce a 'goto retry' loop?
-
-BTW, I realized that my patch to let boot cpu to skip ticks also is
-slightly buggy here:
-
-                if (cpu != do_timer_cpu)
-                       continue;
-
-                write_seqlock(&xtime_lock);
-		...
-                do_timer(regs);
-		...
-                write_sequnlock(&xtime_lock);
-
-There needs to a different while loop to call do_timer based on 
-tb_ticks_since(tb_last_stamp). Will fix it next time around.
-
-> 
-> > +#ifdef CONFIG_NO_IDLE_HZ
-> > +	max_skip = __USE_RTC() ? HZ : MAX_DEC_COUNT / tb_ticks_per_jiffy;
-> > +#endif
-> 
-> If we allow the boot cpu to skip ticks, then we will have to make sure
-> that at least one cpu wakes up in time to do the updating in
-> recalc_timer_offset.
-
-Good point. However is this critical, especially if all cpus had been
-idle for quite a while? As I understand, if we don't wakeup in time to
-do timer_recalc_offset, the only drawback is the first gettimeofday will
-be slow (because it has make a system call)?
-
-
-
--- 
-Regards,
-vatsa
+<3>Debug: sleeping function called from invalid context at arch/powerpc/kernel/align.c:440
+<4>in_atomic():1, irqs_disabled():0
+<4>Call Trace:
+<4>[C00000000FFE6D10] [C00000000000EE20] .show_stack+0x68/0x1b0 (unreliable)
+<4>[C00000000FFE6DB0] [C000000000054248] .__might_sleep+0xd8/0xf4
+<4>[C00000000FFE6E30] [C00000000000C490] .fix_alignment+0x50c/0x9c8
+<4>[C00000000FFE6F10] [C000000000024E20] .alignment_exception+0x18/0xc8
+<4>[C00000000FFE6F90] [C00000000000430C] alignment_common+0x10c/0x180
+<4>--- Exception: 600 at .csum_partial+0x34/0x9c
+<4>    LR = .skb_checksum+0x194/0x35c
+<4>[C00000000FFE7280] [D00000000033F3D0] 0xd00000000033f3d0 (unreliable)
+<4>[C00000000FFE7340] [C0000000002EB558] .skb_checksum_help+0x98/0x124
+<4>[C00000000FFE73D0] [D000000000330748] .ip_nat_fn+0x84/0x278 [iptable_nat]
+<4>[C00000000FFE7490] [D000000000330C34] .ip_nat_local_fn+0x40/0xec [iptable_nat]
+<4>[C00000000FFE7520] [C00000000030DAE0] .nf_iterate+0x80/0x11c
+<4>[C00000000FFE75E0] [C00000000030DEC8] .nf_hook_slow+0x8c/0x17c
+<4>[C00000000FFE76B0] [C00000000031D2B0] .ip_queue_xmit+0x4bc/0x5d0
+<4>[C00000000FFE7800] [C00000000032FBA0] .tcp_transmit_skb+0x7d8/0x844
+<4>[C00000000FFE78B0] [C0000000003318F0] .__tcp_push_pending_frames+0x2d4/0x3fc
+<4>[C00000000FFE7970] [C00000000032EAD4] .tcp_rcv_established+0x894/0x964
+<4>[C00000000FFE7A20] [C0000000003355C8] .tcp_v4_do_rcv+0x5c/0x48c
+<4>[C00000000FFE7AF0] [C000000000338A48] .tcp_v4_rcv+0xc78/0xcfc
+<4>[C00000000FFE7BC0] [C000000000316310] .ip_local_deliver+0x208/0x36c
+<4>[C00000000FFE7C50] [C000000000316024] .ip_rcv+0x600/0x6e4
+<4>[C00000000FFE7CF0] [C0000000002EBB34] .netif_receive_skb+0x500/0x598
+<4>[C00000000FFE7D90] [C0000000002EE37C] .process_backlog+0xcc/0x1c8
+<4>[C00000000FFE7E40] [C0000000002EE55C] .net_rx_action+0xe4/0x230
+<4>[C00000000FFE7EF0] [C000000000066524] .__do_softirq+0x98/0x164
+<4>[C00000000FFE7F90] [C000000000025854] .call_do_softirq+0x14/0x24
+<4>[C0000003BA3C3370] [C00000000000BCC8] .do_softirq+0x8c/0xd8
+<4>[C0000003BA3C3400] [C0000000000663E4] .local_bh_enable+0x58/0x8c
+<4>[C0000003BA3C3480] [C0000000002EEA34] .dev_queue_xmit+0x2f0/0x318
+<4>[C0000003BA3C3510] [C00000000031CA60] .ip_output+0x348/0x3f0
+<4>[C0000003BA3C35B0] [C00000000031D2E0] .ip_queue_xmit+0x4ec/0x5d0
+<4>[C0000003BA3C3700] [C00000000032FBA0] .tcp_transmit_skb+0x7d8/0x844
+<4>[C0000003BA3C37B0] [C0000000003231A8] .tcp_cleanup_rbuf+0x148/0x168
+<4>[C0000003BA3C3840] [C000000000325B24] .tcp_recvmsg+0x8a8/0xa00
+<4>[C0000003BA3C3930] [C0000000002E0C64] .sock_common_recvmsg+0x5c/0x84
+<4>[C0000003BA3C39C0] [C0000000002DD408] .do_sock_read+0x120/0x14c
+<4>[C0000003BA3C3A60] [C0000000002DF034] .sock_aio_read+0x58/0x74
+<4>[C0000003BA3C3B70] [C0000000000C6050] .do_sync_read+0xd4/0x130
+<4>[C0000003BA3C3CF0] [C0000000000C6ECC] .vfs_read+0x134/0x1fc
+<4>[C0000003BA3C3D90] [C0000000000C7390] .sys_read+0x4c/0x8c
+<4>[C0000003BA3C3E30] [C00000000000871C] syscall_exit+0x0/0x40
