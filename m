@@ -1,21 +1,18 @@
-Return-Path: <pnasrat@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 4D25067A3B
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 05:10:06 +1000 (EST)
-Subject: Re: [PATCH] DTC - validation by device_type
-From: Paul Nasrat <pnasrat@redhat.com>
-To: Jon Loeliger <jdl@freescale.com>
-In-Reply-To: <1145547307.5314.118.camel@cashmere.sps.mot.com>
-References: <1143586160.2660.19.camel@enki.eridu>
-	<66cc5bfb5a367a814fbace8105572658@penguinppc.org>
-	<1143599612.2704.14.camel@enki.eridu>
-	<1145547307.5314.118.camel@cashmere.sps.mot.com>
-Content-Type: text/plain
-Date: Mon, 24 Apr 2006 15:09:52 -0400
-Message-Id: <1145905793.4082.27.camel@enki.eridu>
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 9183A679EF
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 05:20:20 +1000 (EST)
+Date: Mon, 24 Apr 2006 12:21:41 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Subject: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
+Message-ID: <20060424192141.GC11896@mag.az.mvista.com>
+References: <20060420215514.GE25755@gate.ebshome.net>
+	<1468.1145570898@www002.gmx.net>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Jon Loeliger <jdl@jdl.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1468.1145570898@www002.gmx.net>
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,68 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-04-20 at 10:35 -0500, Jon Loeliger wrote:
-> On Tue, 2006-03-28 at 20:33, Paul Nasrat wrote:
+On Fri, Apr 21, 2006 at 12:08:18AM +0200, Gerhard Pircher wrote:
+> > --- Ursprüngliche Nachricht ---
+> > Von: Eugene Surovegin <ebs@ebshome.net>
+> > An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> > Kopie: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+> > Betreff: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
+> > Datum: Thu, 20 Apr 2006 14:55:14 -0700
+> > 
+> > Well, you aren't the first person who tries to run G4 with 
+> > CONFIG_NOT_COHERENT_CACHE. This was done before and I don't remember 
+> > that those people had to implement anything as complex as you are 
+> > trying to do.
 > 
-> > Signed-off-by: Paul Nasrat <pnasrat@redhat.com>
+> Maybe these systems have cache coherent northbridges, which is not the case
+> for the AmigaOne and its "famous" ArticiaS northbridge.
+
+Nope.  I believe Eugene is referring to the Marvell 64x60 line of *North*
+bridges.
+
+> > You can try asking on #mklinux. It always better to ask people who 
+> > actually _did_ this :).
+> > 
+> > In fact, I just grepped 2.6 and found 
+> > #ifdef(CONFIG_NOT_COHERENT_CACHE) in syslib/mv64x60.c. Guess what 
+> > systems usually have this type of bridge? Not 4xx/8xx, that's for sure.
 > 
-> Paul,
+> Hmm, strange. AFAIK the NOT_COHERENT_CACHE config option is available only
+> for the 4xx and 8xx platforms. Wouldn't the config option depend on
+> CONFIG_6XX too, if there are not cache coherent systems with G4 cpus? 
 > 
-> Sorry about the hang-time here.  Couple questions.
-> 
-> 
-> > +static int check_network(struct node *net)
-> > +{
-> > +
-> > +	int ok = 1;
-> > +	struct property *prop;
-> > +
-> > +	CHECK_HAVE(net, "reg");
-> > +	CHECK_HAVE(net, "local-mac-address");
-> > +	CHECK_HAVE(net, "mac-address");
-> > +	CHECK_HAVE(net, "address-bits");
-> > +
-> > +	return ok;
-> > +}
-> 
-> This says that all network nodes have to have all four
-> of those properties.  It's not clear to me that they all
-> need to have both local-mac-address and mac-address.
+> At least I could not compile in the dma-mapping.c file without modifying the
+> Kconfig file.
 
+If you're looking in arch/ppc/Kconfig in either the kernel.org or paulus'
+git trees, look further down.  There is a separate option where
+NOT_COHERENT_CACHE can be set for 64x60 bridges.
 
-> Specifically, 1275 seems to indicate to me that the
-> mac-address property, being introduced by the open
-> operation, might be dynamically set at run time, rather
-> than passed as a config parameter from, say, U-Boot to
-> the kernel.  Thus, it might not be necessary here.
-
-
-1275 defines shall to indicate a mandatory requirement.
-
-p.165 (Annexe A) defines "network" device_type:
-
-A standard package with this "device_type" property shall implement the
-following methods:
-
-open, ...
-
-Requirements for open method:
-
-Execute mac-address and create a "mac-address" property with that value.
-...
-A standard package with this "device_type" property shall implement the
-following property if the associated device has a preassigned IEEE 802.3
-MAC (network) address:
-
-So for flattened device tree my reading would be something like:
-
-local-mac-address - for the most part this would be compulsory - does
-anyone have any cases where a device would not have a preassigned MAC
-address?  Use of address in the booting-without-of and example should be
-replaced by local-mac-address.
-
-For a standard 1275 tree mac-address would be created on open, obviously
-this isn't a hard requirement for compatibility so I think we could make
-this optional.
-
-Paul
+Mark
