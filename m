@@ -1,17 +1,21 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 5038567A01
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 05:04:07 +1000 (EST)
-Date: Mon, 24 Apr 2006 23:04:13 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+Return-Path: <pnasrat@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 4D25067A3B
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 05:10:06 +1000 (EST)
+Subject: Re: [PATCH] DTC - validation by device_type
+From: Paul Nasrat <pnasrat@redhat.com>
 To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: 85xx FDT updates?
-Message-ID: <20060424230413.5344770b@vitb.ru.mvista.com>
-In-Reply-To: <1145900516.4251.18.camel@cashmere.sps.mot.com>
-References: <1145900516.4251.18.camel@cashmere.sps.mot.com>
+In-Reply-To: <1145547307.5314.118.camel@cashmere.sps.mot.com>
+References: <1143586160.2660.19.camel@enki.eridu>
+	<66cc5bfb5a367a814fbace8105572658@penguinppc.org>
+	<1143599612.2704.14.camel@enki.eridu>
+	<1145547307.5314.118.camel@cashmere.sps.mot.com>
+Content-Type: text/plain
+Date: Mon, 24 Apr 2006 15:09:52 -0400
+Message-Id: <1145905793.4082.27.camel@enki.eridu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,76 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 24 Apr 2006 12:41:56 -0500
-Jon Loeliger <jdl@freescale.com> wrote:
-
-> OK, so what is the deal with the 85xx patches
-> that have been submitted for more FDT support?
-> I get a variety of mixed stories, message and
-> vague comments.  I want some facts and direction.
+On Thu, 2006-04-20 at 10:35 -0500, Jon Loeliger wrote:
+> On Tue, 2006-03-28 at 20:33, Paul Nasrat wrote:
 > 
-> Can anyone verify, validate, refute, deny or
-> support any of these statements?  Not trying to
-> be mean, point fingers or sound negative here,
-> I'm just trying to pinpoint the apparent log-jam.
+> > Signed-off-by: Paul Nasrat <pnasrat@redhat.com>
+> 
+> Paul,
+> 
+> Sorry about the hang-time here.  Couple questions.
 > 
 > 
-> 1. The 85xx patches that Andy submitted, that
->    have been pulled into Kumar's 85xx git tree
->    are going to sit there until further patches
->    are submitted that _remove_all_85xx_support_
->    from the arch/ppc tree as well.
+> > +static int check_network(struct node *net)
+> > +{
+> > +
+> > +	int ok = 1;
+> > +	struct property *prop;
+> > +
+> > +	CHECK_HAVE(net, "reg");
+> > +	CHECK_HAVE(net, "local-mac-address");
+> > +	CHECK_HAVE(net, "mac-address");
+> > +	CHECK_HAVE(net, "address-bits");
+> > +
+> > +	return ok;
+> > +}
 > 
-> 2. The same patches are going to sit in Kumar's
->    tree until 8560 patches with support for CPM
->    are released and all 85xx ports appear fully
->    and completely in arch/powerpc.  BTW, CPM is
->    waiting on approval of Vitaly's CPM proposal
->    for OF FDT support.
-> 
-> 3. Statements 1 and 2 combined.
-> 
-
-That's my understanding. We agreed to have the CPM dts that is limited to "devices" only,
-(scc, fcc or ucc) inside it. 
-
-Right now I am in process of update the drivers part (yet keeping compatibility with existing ppc stuff, that is tricky), then I am going to rework immap stuff a bit to utilize the parts that are common across the PQ family, and go ahead with some CPM(2) code to powerpc.
-
-> 4. The same 85xx patches have just slipped through
->    some mental crack and simply need to be pulled,
->    re-applied, re-drafted, re-submitted.  Oops, sorry.
->    The action item is in _________'s lap.
-> 
-> 5. There was an unresolved comment/issue that
->    FSL still needs to address.  BTW, that issue
->    is ________.
-> 
-> 6. We are waiting on something else and that
->    item is _______.
-> 
-Well, as already mentioned, the CPM2-related drivers the way they are could not be utilized in powerpc 
-sane way. Thankfully, the update is 90% ready right now.
-
-> 7. You know, you really need to address the _other_
->    85xx ports (such as TQMs) as well.  Can you
->    please do something about those as well?
-> 
-> 8. These Linux patches aren't going to be picked
->    up until the corresponding U-Boot patches are
->    picked up as well.
-> 
-> Thanks,
-> jdl
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
+> This says that all network nodes have to have all four
+> of those properties.  It's not clear to me that they all
+> need to have both local-mac-address and mac-address.
 
 
--- 
-Sincerely, 
-Vitaly
+> Specifically, 1275 seems to indicate to me that the
+> mac-address property, being introduced by the open
+> operation, might be dynamically set at run time, rather
+> than passed as a config parameter from, say, U-Boot to
+> the kernel.  Thus, it might not be necessary here.
+
+
+1275 defines shall to indicate a mandatory requirement.
+
+p.165 (Annexe A) defines "network" device_type:
+
+A standard package with this "device_type" property shall implement the
+following methods:
+
+open, ...
+
+Requirements for open method:
+
+Execute mac-address and create a "mac-address" property with that value.
+...
+A standard package with this "device_type" property shall implement the
+following property if the associated device has a preassigned IEEE 802.3
+MAC (network) address:
+
+So for flattened device tree my reading would be something like:
+
+local-mac-address - for the most part this would be compulsory - does
+anyone have any cases where a device would not have a preassigned MAC
+address?  Use of address in the booting-without-of and example should be
+replaced by local-mac-address.
+
+For a standard 1275 tree mac-address would be created on open, obviously
+this isn't a hard requirement for compatibility so I think we could make
+this optional.
+
+Paul
