@@ -1,20 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CA56C67A62
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 07:42:38 +1000 (EST)
-In-Reply-To: <1145900516.4251.18.camel@cashmere.sps.mot.com>
-References: <1145900516.4251.18.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4C61B597-BD91-4D05-BB40-43DE0319F123@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: 85xx FDT updates?
-Date: Mon, 24 Apr 2006 16:43:14 -0500
-To: Jon Loeliger <jdl@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <mlan@cpu.lu>
+Received: from smtp-out.coditel.net (smtp-out.coditel.net [212.95.66.33])
+	by ozlabs.org (Postfix) with ESMTP id 4A882679F8
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 08:00:24 +1000 (EST)
+Received: from smtp.coditel.net (localhost.localdomain [127.0.0.1])
+	by smtp-out.coditel.net (Postfix) with ESMTP id 9D986EB221
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 23:37:54 +0200 (CEST)
+Received: from owl.grunz.lu (cable-83.217.129.40.coditel.net [83.217.129.40])
+	by smtp.coditel.net (Postfix) with ESMTP id D32482FD2C
+	for <linuxppc-dev@ozlabs.org>; Mon, 24 Apr 2006 23:37:51 +0200 (CEST)
+Received: from localhost ([127.0.0.1] helo=cpu.lu)
+	by owl.grunz.lu with esmtp (Exim 4.61) (envelope-from <mlan@cpu.lu>)
+	id 1FY8kd-0000mH-PO
+	for linuxppc-dev@ozlabs.org; Mon, 24 Apr 2006 23:37:48 +0200
+Date: Mon, 24 Apr 2006 23:37:42 +0200 (CEST)
+From: Mich Lanners <mlan@cpu.lu>
+Subject: Clock running fast on Mac Mini?
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: TEXT/plain; charset=us-ascii
+Message-Id: <E1FY8kd-0000mH-PO@owl.grunz.lu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,63 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello all,
 
-On Apr 24, 2006, at 12:41 PM, Jon Loeliger wrote:
+I have a problem on my Mac Mini with the kernel clock, which is running
+fast.
 
-> OK, so what is the deal with the 85xx patches
-> that have been submitted for more FDT support?
-> I get a variety of mixed stories, message and
-> vague comments.  I want some facts and direction.
->
-> Can anyone verify, validate, refute, deny or
-> support any of these statements?  Not trying to
-> be mean, point fingers or sound negative here,
-> I'm just trying to pinpoint the apparent log-jam.
->
->
-> 1. The 85xx patches that Andy submitted, that
->    have been pulled into Kumar's 85xx git tree
->    are going to sit there until further patches
->    are submitted that _remove_all_85xx_support_
->    from the arch/ppc tree as well.
->
-> 2. The same patches are going to sit in Kumar's
->    tree until 8560 patches with support for CPM
->    are released and all 85xx ports appear fully
->    and completely in arch/powerpc.  BTW, CPM is
->    waiting on approval of Vitaly's CPM proposal
->    for OF FDT support.
->
-> 3. Statements 1 and 2 combined.
->
-> 4. The same 85xx patches have just slipped through
->    some mental crack and simply need to be pulled,
->    re-applied, re-drafted, re-submitted.  Oops, sorry.
->    The action item is in _________'s lap.
->
-> 5. There was an unresolved comment/issue that
->    FSL still needs to address.  BTW, that issue
->    is ________.
->
-> 6. We are waiting on something else and that
->    item is _______.
->
-> 7. You know, you really need to address the _other_
->    85xx ports (such as TQMs) as well.  Can you
->    please do something about those as well?
->
-> 8. These Linux patches aren't going to be picked
->    up until the corresponding U-Boot patches are
->    picked up as well.
+In fact, it is gaining 10 ms every 5 seconds, as can be seen here, with
+ntpdate called every 5 seconds:
 
-My understanding is that paulus should pull them into powerpc.git.   
-He hasn't given me any reason to believe that shouldn't just happen.   
-I dont see any reason that we need to have other dependancies for  
-code that works.  I'll push on paulus to pull the patches in my tree  
-into powerpc.git.
+owl:~# while true; do ntpdate -u be.pool.ntp.org; sleep 5; done
+24 Apr 23:14:17 ntpdate[2601]: adjust time server 195.47.215.226 offset 0.151197 sec
+24 Apr 23:14:22 ntpdate[2607]: adjust time server 195.47.215.226 offset 0.160348 sec
+24 Apr 23:14:28 ntpdate[2613]: adjust time server 195.47.215.226 offset 0.170311 sec
+[...]
+24 Apr 23:17:15 ntpdate[2813]: adjust time server 195.47.215.226 offset 0.489635 sec
+24 Apr 23:17:20 ntpdate[2819]: adjust time server 195.47.215.226 offset 0.499386 sec
+24 Apr 23:17:25 ntpdate[2825]: step time server 195.47.215.226 offset 0.509342 sec
+24 Apr 23:17:31 ntpdate[2831]: adjust time server 195.47.215.226 offset 0.013693 sec
+24 Apr 23:17:36 ntpdate[2837]: adjust time server 195.47.215.226 offset 0.021668 sec
 
-However, I am against removing the arch/ppc support until the u-boot  
-patches are picked up.  I think its bad form to give people a kernel  
-they can't easily boot.
+and so on.
 
-- k
+This is with ntpd stopped, after a fresh boot with /etc/adjtime removed
+to make sure hwclock is not falsly tuning the kernel timekeeping (I did
+this because I once had a 2.6.16 kernel running, where clock problems
+have been reported. I thought that may have falsified ntp's drift file
+and/or hwclock's /etc/adjtime).
+
+All this is with a 2.6.15 kernel.
+
+My Alu powerbook with a 2.6.15 kernel does not show this problem.
+
+Anybody know what's up?
+
+Thanks, and cheers
+
+Michel
+
+-------------------------------------------------------------------------
+Michel Lanners                 |  " Read Philosophy.  Study Art.
+23, Rue Paul Henkes            |    Ask Questions.  Make Mistakes.
+L-1710 Luxembourg              |
+email   mlan@cpu.lu            |
+http://www.cpu.lu/~mlan        |                     Learn Always. "
