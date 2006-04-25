@@ -1,18 +1,18 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 213CC67B1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 08:22:45 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 6E3F667A5F
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 08:28:43 +1000 (EST)
 To: Kumar Gala <galak@kernel.crashing.org>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: 85xx FDT updates? 
+Subject: Re: FT u-boot shim 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 25 Apr 2006 16:38:06 CDT."
-	<D6F58AA4-54EA-44BF-A0B7-83397B115B27@kernel.crashing.org>
-Date: Wed, 26 Apr 2006 00:22:42 +0200
+In-reply-to: Your message of "Tue, 25 Apr 2006 16:42:47 CDT."
+	<DAD4396E-7458-471C-8150-9DDCD396BA63@kernel.crashing.org>
+Date: Wed, 26 Apr 2006 00:28:41 +0200
 Sender: wd@denx.de
-Message-Id: <20060425222242.F2A77353DAC@atlas.denx.de>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Message-Id: <20060425222841.C2D0E353DAC@atlas.denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <D6F58AA4-54EA-44BF-A0B7-83397B115B27@kernel.crashing.org> you wrote:
+In message <DAD4396E-7458-471C-8150-9DDCD396BA63@kernel.crashing.org> you wrote:
 > 
-> > Some do. Some use them in products.
+> > No. Remove them from the U-Boot tree. I was never happy to  see  this
+> > stuff there.
 > 
-> Can you give a concrete example of this.
+> Then why did you accept the patches for them?  I'm confused on what  
 
-No, I cannot. Not in public.
+Because I  had  neither  time  nor  nerves  to  discuss  with  kernel
+maintainers how this could be done. Several people asked me again and
+again  to  accept  these  patches  because  they  were  vital for FDT
+support, so I gave in.
 
-> > Others (and not a small number)  use  them  for  testing  application
-> > code. In your definition these are probably "end users", too.
-> 
-> Then they can use the kernel the board comes with.
+> you see as the solution for how to boot an arch/powerpc kernel going  
+> forward.
 
-No, they cannot. Running different  kernel  versions  (including  old
-ones,  eventually even 2.4) may be the key issue of their tests. Note
-that this is something which does not require any modification to the
-board - I can just TFTP the kernel image and boot it.
+I strongly agree with Dan and Eugene: the kernel should not depend on
+any specific version of a boot loader, and more general not  even  on
+any specific boot loader at all.
 
 Best regards,
 
@@ -47,4 +48,6 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Weekends were made for programming.                 - Karl Lehenbauer
+Any sufficiently advanced technology is indistinguishable from magic.
+Clarke's Third Law       - _Profiles of the Future_ (1962; rev. 1973)
+                  ``Hazards of Prophecy: The Failure of Imagination''
