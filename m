@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4AF6067A76
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 07:33:15 +1000 (EST)
-In-Reply-To: <20060425213043.2860B352B18@atlas.denx.de>
-References: <20060425213043.2860B352B18@atlas.denx.de>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <07A76292-03D1-4648-AA40-11E06698FEE1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: FT u-boot shim 
-Date: Tue, 25 Apr 2006 16:33:11 -0500
-To: Wolfgang Denk <wd@denx.de>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 81EEC67A77
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 07:34:13 +1000 (EST)
+To: Kumar Gala <galak@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: 85xx FDT updates? 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 25 Apr 2006 16:19:45 CDT."
+	<07032FB1-0607-4862-815A-C817C7222FF5@kernel.crashing.org>
+Date: Tue, 25 Apr 2006 23:34:11 +0200
+Sender: wd@denx.de
+Message-Id: <20060425213411.8E6FC352B18@atlas.denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In message <07032FB1-0607-4862-815A-C817C7222FF5@kernel.crashing.org> you wrote:
+> 
+> Which users are you speaking of, end users or developers that will  
+> use u-boot & linux for building a product?
 
-On Apr 25, 2006, at 4:30 PM, Wolfgang Denk wrote:
+Users that try to get some application running on some hardware; they
+might be interested to compare different kernel  versions,  but  they
+probably  have  no interest (or are not capable or allowed) to change
+U-Boot. I'm not sure if this is what you call "end users" - they  are
+software engineers, too, but work in a different department.
 
-> In message <1448E56E-1327-40D5- 
-> BE44-0DC103AC3E8A@kernel.crashing.org> you wrote:
->>
->> If we have a u-boot shim there are some questions that need  
->> answering:
->> * where should the .dts live (hate duplicating the file both in u-
->> boot and kernel source tree)
->
-> Since U-Boot  does  not  need  nor  use  this  information  for  it's
-> operation, but the kernel does, it should be part of the kernel.
+Best regards,
 
-What about the case in which u-boot already has a .dts for a given  
-board?  Should we duplicate the files between the kernel & u-boot?
+Wolfgang Denk
 
-- kumar
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Gewöhnlich glaubt der Mensch,  wenn er nur Worte hört,  es müsse sich
+dabei doch auch was denken lassen.                 -- Goethe, Faust I
