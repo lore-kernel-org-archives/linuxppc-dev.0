@@ -1,25 +1,19 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
-	by ozlabs.org (Postfix) with ESMTP id 83736679F6
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 12:30:33 +1000 (EST)
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
-	by fgwmail8.fujitsu.co.jp (Fujitsu Gateway)
-	with ESMTP id k3P1mN6a025844 for <linuxppc-dev@ozlabs.org>;
-	Tue, 25 Apr 2006 10:48:23 +0900
-	(envelope-from kamezawa.hiroyu@jp.fujitsu.com)
-Date: Tue, 25 Apr 2006 10:48:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/7] [RFC] Sizing zones and holes in an architecture
-	independent manner V4
-Message-Id: <20060425104855.42c6ca62.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20060424202009.20409.89016.sendpatchset@skynet>
-References: <20060424202009.20409.89016.sendpatchset@skynet>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B0D16679F5
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 14:14:17 +1000 (EST)
+Subject: Re: Clock running fast on Mac Mini?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mich Lanners <mlan@cpu.lu>
+In-Reply-To: <E1FY8kd-0000mH-PO@owl.grunz.lu>
+References: <E1FY8kd-0000mH-PO@owl.grunz.lu>
+Content-Type: text/plain
+Date: Tue, 25 Apr 2006 14:14:03 +1000
+Message-Id: <1145938443.29938.60.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linux-mm@kvack.org,
-	mel@csn.ul.ie, ak@suse.de, bob.picco@hp.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,35 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 24 Apr 2006 21:20:09 +0100 (IST)
-Mel Gorman <mel@csn.ul.ie> wrote:
-
-> This is V4 of the patchset to size zones and memory holes in an
-> architecture-independent manner.
+On Mon, 2006-04-24 at 23:37 +0200, Mich Lanners wrote:
+> Hello all,
 > 
+> I have a problem on my Mac Mini with the kernel clock, which is running
+> fast.
+> 
+> In fact, it is gaining 10 ms every 5 seconds, as can be seen here, with
+> ntpdate called every 5 seconds:
+> 
+> owl:~# while true; do ntpdate -u be.pool.ntp.org; sleep 5; done
+> 24 Apr 23:14:17 ntpdate[2601]: adjust time server 195.47.215.226 offset 0.151197 sec
+> 24 Apr 23:14:22 ntpdate[2607]: adjust time server 195.47.215.226 offset 0.160348 sec
+> 24 Apr 23:14:28 ntpdate[2613]: adjust time server 195.47.215.226 offset 0.170311 sec
+> [...]
+> 24 Apr 23:17:15 ntpdate[2813]: adjust time server 195.47.215.226 offset 0.489635 sec
+> 24 Apr 23:17:20 ntpdate[2819]: adjust time server 195.47.215.226 offset 0.499386 sec
+> 24 Apr 23:17:25 ntpdate[2825]: step time server 195.47.215.226 offset 0.509342 sec
+> 24 Apr 23:17:31 ntpdate[2831]: adjust time server 195.47.215.226 offset 0.013693 sec
+> 24 Apr 23:17:36 ntpdate[2837]: adjust time server 195.47.215.226 offset 0.021668 sec
+> 
+> and so on.
+> 
+> This is with ntpd stopped, after a fresh boot with /etc/adjtime removed
+> to make sure hwclock is not falsly tuning the kernel timekeeping (I did
+> this because I once had a 2.6.16 kernel running, where clock problems
+> have been reported. I thought that may have falsified ntp's drift file
+> and/or hwclock's /etc/adjtime).
+> 
+> All this is with a 2.6.15 kernel.
+> 
+> My Alu powerbook with a 2.6.15 kernel does not show this problem.
 
-Could you add some documentation about 'how to use' your generic funcs ?
-I think more archs can use your generic routine if well documented.
+Could be several things... the clock calibration data from the
+device-tree incorrect, or a rouding bug we fixed recently... I'd expect
+2.6.16 to be good.
 
-All initialization path can be written in following way ?
-==
-for_all_memory_region()
-	add_active_range(nid, start, end)
-free_area_init_nodes(max_dma, max_dma32, max_low_pfn, max_pfn);
-==
-
-And following functions are really needed ?
-==
-+extern void remove_all_active_ranges(void);
-+extern void get_pfn_range_for_nid(unsigned int nid,
-+			unsigned long *start_pfn, unsigned long *end_pfn);
-+extern unsigned long find_min_pfn_with_active_regions(void);
-+extern unsigned long find_max_pfn_with_active_regions(void);
-+extern int early_pfn_to_nid(unsigned long pfn);
-+extern void free_bootmem_with_active_regions(int nid,
-+						unsigned long max_low_pfn);
-+extern void sparse_memory_present_with_active_regions(int nid);
-+extern unsigned long absent_pages_in_range(unsigned long start_pfn,
-+						unsigned long end_pfn);
-
--Kame
+Ben
