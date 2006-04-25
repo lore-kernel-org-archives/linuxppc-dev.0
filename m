@@ -1,20 +1,16 @@
-Return-Path: <Becky.Bruce@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id B42B067A6C
+Return-Path: <vbordug@ru.mvista.com>
+Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8F05D679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Apr 2006 01:43:27 +1000 (EST)
-In-Reply-To: <200604252303190264825@126.com>
-References: <200604242151091399377@126.com>
-	<9866A56E-AF4C-477D-A035-E6D6A78A75D3@freescale.com>
-	<200604252303190264825@126.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=UTF-8; delsp=yes; format=flowed
-Message-Id: <4819ACC0-1281-487B-B290-C55071E1EC27@freescale.com>
-From: Becky Bruce <Becky.Bruce@freescale.com>
-Subject: Re: PPC exception 0x320
-Date: Tue, 25 Apr 2006 10:44:54 -0500
-To: jeanwelly <jeanwelly@126.com>
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Wed, 26 Apr 2006 02:26:49 +1000 (EST)
+To: Paul Mackerras <paulus@samba.org>
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH 1/4] ppc32: odd fixes and improvements in ppc_sys
+Date: Tue, 25 Apr 2006 20:26:33 +0400
+Message-Id: <20060425162633.23551.85273.stgit@vitb.ru.mvista.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,69 +21,120 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Is there some error message you can show me?
 
--B
+This consists of offsets fix in ..._devices.c, and update of
+ppc_sys_fixup_mem_resource() function to prevent subsequent fixups
 
-On Apr 25, 2006, at 10:03 AM, jeanwelly wrote:
+Sigbed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+---
 
-> Hi Becky Bruce,
-> I'm using PPC 750... Just as you said, 0x300 is for DSI, and I =20
-> guess they are a set of exceptions, not just one. And 0x320 is one =20
-> of them.
-> I got a board crash, and PPC alarmed exception 0x320. Could you =20
-> show me the mechanism of handling of a special exception not one set.
-> =09
->
-> =3D=3D=3D=3D=3D=3D=3D 2006-04-25 02:53:35 =
-=E6=82=A8=E5=9C=A8=E6=9D=A5=E4=BF=A1=E4=B8=AD=E5=86=99=E9=81=93=EF=BC=9A=3D=
-=3D=3D=3D=3D=3D=3D
->
->> Could you try to be more specific?  What processor do you have, what
->> linux version are you running, and what do you mean exactly when you
->> say you "encountered PPC exception 0x320"?  As far as I know, the
->> powerpc architecture does not define an exception 0x320.  0x300 is
->> usually DSI on classic powerpc parts.  BookE parts handle things
->> differently.
->>
->> Thanks,
->> -Becky
->>
->> On Apr 24, 2006, at 8:51 AM, jeanwelly wrote:
->>
->>> Hi,
->>> I encountered PPC exception 0x320, but don't know what it for. Any
->>> one could help me on this?
->>> Thanks!
->>>  			=09
->>>
->>> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
-jeanwelly
->>> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
-jeanwelly@126.com
->>> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
-=E3=80=80=E3=80=802006-04-24
->>> _______________________________________________
->>> Linuxppc-embedded mailing list
->>> Linuxppc-embedded@ozlabs.org
->>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>
->>
->> .
->
-> =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =
-=3D =3D
-> 		=09
->
-> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
-=E8=87=B4
-> =E7=A4=BC=EF=BC=81
->
-> 			=09
-> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
-jeanwelly
-> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
-jeanwelly@126.com
-> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
-=E3=80=80=E3=80=802006-04-25
->
+ arch/ppc/syslib/mpc8xx_devices.c |   25 +++++++++++++++++++------
+ arch/ppc/syslib/ppc_sys.c        |    4 +++-
+ arch/ppc/syslib/pq2_sys.c        |    8 ++++----
+ include/asm-ppc/ppc_sys.h        |    2 ++
+ 4 files changed, 28 insertions(+), 11 deletions(-)
+
+diff --git a/arch/ppc/syslib/mpc8xx_devices.c b/arch/ppc/syslib/mpc8xx_devices.c
+index bd41ed8..6f53638 100644
+--- a/arch/ppc/syslib/mpc8xx_devices.c
++++ b/arch/ppc/syslib/mpc8xx_devices.c
+@@ -170,12 +170,18 @@ struct platform_device ppc_sys_platform_
+ 	[MPC8xx_CPM_SMC1] = {
+ 		.name = "fsl-cpm-smc",
+ 		.id	= 1,
+-		.num_resources	= 2,
++		.num_resources	= 3,
+ 		.resource = (struct resource[]) {
+ 			{
+ 				.name	= "regs",
+-				.start	= 0xa82,
+-				.end	= 0xa91,
++				.start	= 0xa80,
++				.end	= 0xa8f,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.name	= "pram",
++				.start	= 0x3e80,
++				.end	= 0x3ebf,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
+@@ -189,15 +195,22 @@ struct platform_device ppc_sys_platform_
+ 	[MPC8xx_CPM_SMC2] = {
+ 		.name = "fsl-cpm-smc",
+ 		.id	= 2,
+-		.num_resources	= 2,
++		.num_resources	= 3,
+ 		.resource = (struct resource[]) {
+ 			{
+ 				.name	= "regs",
+-				.start	= 0xa92,
+-				.end	= 0xaa1,
++				.start	= 0xa90,
++				.end	= 0xa9f,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
++ 				.name	= "pram",
++ 				.start	= 0x3f80,
++ 				.end	= 0x3fbf,
++ 				.flags	= IORESOURCE_MEM,
++
++			},
++			{
+ 				.name	= "interrupt",
+ 				.start	= MPC8xx_INT_SMC2,
+ 				.end	= MPC8xx_INT_SMC2,
+diff --git a/arch/ppc/syslib/ppc_sys.c b/arch/ppc/syslib/ppc_sys.c
+index 7662c4e..2d48018 100644
+--- a/arch/ppc/syslib/ppc_sys.c
++++ b/arch/ppc/syslib/ppc_sys.c
+@@ -109,9 +109,11 @@ ppc_sys_fixup_mem_resource(struct platfo
+ 	int i;
+ 	for (i = 0; i < pdev->num_resources; i++) {
+ 		struct resource *r = &pdev->resource[i];
+-		if ((r->flags & IORESOURCE_MEM) == IORESOURCE_MEM) {
++		if (((r->flags & IORESOURCE_MEM) == IORESOURCE_MEM) && 
++			((r->flags & PPC_SYS_IORESOURCE_FIXUPPED) != PPC_SYS_IORESOURCE_FIXUPPED)) {
+ 			r->start += paddr;
+ 			r->end += paddr;
++			r->flags |= PPC_SYS_IORESOURCE_FIXUPPED;
+ 		}
+ 	}
+ }
+diff --git a/arch/ppc/syslib/pq2_sys.c b/arch/ppc/syslib/pq2_sys.c
+index 75e64f1..433b0fa 100644
+--- a/arch/ppc/syslib/pq2_sys.c
++++ b/arch/ppc/syslib/pq2_sys.c
+@@ -113,13 +113,13 @@ struct ppc_sys_spec ppc_sys_specs[] = {
+ 		.ppc_sys_name	= "8248",
+ 		.mask		= 0x0000ff00,
+ 		.value		= 0x00000c00,
+-		.num_devices	= 11,
++		.num_devices	= 12,
+ 		.device_list = (enum ppc_sys_devices[])
+ 		{
+ 			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_SCC1,
+-			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SMC1,
+-			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
+-			MPC82xx_CPM_USB, MPC82xx_SEC1,
++			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SCC4,
++			MPC82xx_CPM_SMC1, MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI,
++			MPC82xx_CPM_I2C, MPC82xx_CPM_USB, MPC82xx_SEC1,
+ 		},
+ 	},
+ 	{
+diff --git a/include/asm-ppc/ppc_sys.h b/include/asm-ppc/ppc_sys.h
+index 4b94f70..40f197a 100644
+--- a/include/asm-ppc/ppc_sys.h
++++ b/include/asm-ppc/ppc_sys.h
+@@ -39,6 +39,8 @@
+ #error "need definition of ppc_sys_devices"
+ #endif
+ 
++#define PPC_SYS_IORESOURCE_FIXUPPED	0x00000001	
++
+ struct ppc_sys_spec {
+ 	/* PPC sys is matched via (ID & mask) == value, id could be
+ 	 * PVR, SVR, IMMR, * etc. */
