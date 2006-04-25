@@ -1,17 +1,17 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 0FDF367A5D
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 07:24:42 +1000 (EST)
-To: Kumar Gala <galak@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id E453367A63
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 07:25:49 +1000 (EST)
+To: Eugene Surovegin <ebs@ebshome.net>
 From: Wolfgang Denk <wd@denx.de>
 Subject: Re: 85xx FDT updates? 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 25 Apr 2006 13:31:21 CDT."
-	<E29663C3-8289-443F-BF7A-F973EC41CC72@kernel.crashing.org>
-Date: Tue, 25 Apr 2006 23:24:40 +0200
+In-reply-to: Your message of "Tue, 25 Apr 2006 11:48:57 PDT."
+	<20060425184857.GB1132@gate.ebshome.net>
+Date: Tue, 25 Apr 2006 23:25:48 +0200
 Sender: wd@denx.de
-Message-Id: <20060425212440.65DF0352B18@atlas.denx.de>
+Message-Id: <20060425212548.43E76352B18@atlas.denx.de>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,18 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <E29663C3-8289-443F-BF7A-F973EC41CC72@kernel.crashing.org> you wrote:
+In message <20060425184857.GB1132@gate.ebshome.net> you wrote:
+>
+> Yes. This was suggested numerous number of times. Kumar, for some 
+> reason which I don't understand, keeps ignoring this.
 > 
-> I'm not talking about all embedded PPC boards.  I'm taking about the  
-> subset that exists for 85xx.  Also, its moving forward as the  
+> And yes, I think person who breaks compatibility is the one who should 
+> be doing this work :).
 
-What's the difference?
-
-> And how do you suggest we do this?  My argument is for the boards I'm  
-> talking about updating u-boot is the easiest and most straight  
-> forward solution.  I'm not advocating this at the right solution for  
-
-It may be easiest for you, not for others. 
+Agreed. No smiley here.
 
 Best regards,
 
@@ -42,5 +39,4 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-As far as we know, our computer has never had an undetected error.
-		                                           -- Weisert
+ The software required `Windows 95 or better', so I installed Linux.
