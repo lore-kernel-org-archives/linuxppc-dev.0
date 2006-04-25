@@ -2,14 +2,14 @@ Return-Path: <vbordug@ru.mvista.com>
 Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8EDFE679E9
+	by ozlabs.org (Postfix) with ESMTP id 95E52679F9
 	for <linuxppc-embedded@ozlabs.org>;
 	Wed, 26 Apr 2006 02:26:49 +1000 (EST)
 To: Paul Mackerras <paulus@samba.org>
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 3/4] PPC32: Update board-specific code of the CPM UART users
-Date: Tue, 25 Apr 2006 20:26:43 +0400
-Message-Id: <20060425162643.23551.81283.stgit@vitb.ru.mvista.com>
+Subject: [PATCH 2/4] CPM_UART: Convert to use platform devices
+Date: Tue, 25 Apr 2006 20:26:41 +0400
+Message-Id: <20060425162641.23551.21925.stgit@vitb.ru.mvista.com>
 In-Reply-To: <20060425162633.23551.85273.stgit@vitb.ru.mvista.com>
 References: <20060425162633.23551.85273.stgit@vitb.ru.mvista.com>
 Cc: linuxppc-embedded@ozlabs.org
@@ -24,612 +24,494 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-This has the relevant updates/additions to the BSP code so that proper
-platform_info struct well be passed to the CPM UART drivers. The changes
-covered mpc866ads, mpc885ads and mpc8272ads.
+This is intended to make the driver code more generic and flexible,
+to get rid of board-specific layouts within driver, and generic rehaul,
+yet keeping compatibility with the existing stuff utilizing it, being
+compatible with legacy behavior (but with complaints that legacy mode
+used).
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 ---
 
- arch/ppc/platforms/mpc8272ads_setup.c |  114 +++++++++++++++++++++++++++
- arch/ppc/platforms/mpc866ads_setup.c  |  140 +++++++++++++++++++++++++++++++++
- arch/ppc/platforms/mpc885ads_setup.c  |  131 +++++++++++++++++++++++++++++++
- arch/ppc/platforms/pq2ads.c           |   31 +++++++
- 4 files changed, 415 insertions(+), 1 deletions(-)
+ drivers/serial/cpm_uart/cpm_uart.h      |   16 +-
+ drivers/serial/cpm_uart/cpm_uart_core.c |  259 +++++++++++++++++++++++++------
+ drivers/serial/cpm_uart/cpm_uart_cpm1.c |   47 ------
+ drivers/serial/cpm_uart/cpm_uart_cpm2.c |    9 -
+ 4 files changed, 220 insertions(+), 111 deletions(-)
 
-diff --git a/arch/ppc/platforms/mpc8272ads_setup.c b/arch/ppc/platforms/mpc8272ads_setup.c
-index bc9b94f..d5c8a3a 100644
---- a/arch/ppc/platforms/mpc8272ads_setup.c
-+++ b/arch/ppc/platforms/mpc8272ads_setup.c
-@@ -26,11 +26,35 @@
- #include <asm/irq.h>
- #include <asm/ppc_sys.h>
- #include <asm/ppcboot.h>
+diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/cpm_uart.h
+index 73c8a08..17f2c7a 100644
+--- a/drivers/serial/cpm_uart/cpm_uart.h
++++ b/drivers/serial/cpm_uart/cpm_uart.h
+@@ -10,6 +10,8 @@
+ #define CPM_UART_H
+ 
+ #include <linux/config.h>
++#include <linux/platform_device.h>
 +#include <linux/fs_uart_pd.h>
  
- #include "pq2ads_pd.h"
+ #if defined(CONFIG_CPM2)
+ #include "cpm_uart_cpm2.h"
+@@ -26,14 +28,14 @@
+ #define FLAG_SMC	0x00000002
+ #define FLAG_CONSOLE	0x00000001
  
- static void init_fcc1_ioports(void);
- static void init_fcc2_ioports(void);
-+static void init_scc1_uart_ioports(void);
-+static void init_scc4_uart_ioports(void);
-+
-+static struct fs_uart_platform_info mpc8272_uart_pdata[] = {
-+	[fsid_scc1_uart] = {
-+		.init_ioports 	= init_scc1_uart_ioports,
-+		.fs_no		= fsid_scc1_uart,
-+		.brg		= 1,
-+		.tx_num_fifo	= 4,
-+		.tx_buf_size	= 32,
-+		.rx_num_fifo	= 4,
-+		.rx_buf_size	= 32,
-+	},
-+	[fsid_scc4_uart] = {
-+		.init_ioports 	= init_scc4_uart_ioports,
-+		.fs_no		= fsid_scc4_uart,
-+		.brg		= 4,
-+		.tx_num_fifo	= 4,
-+		.tx_buf_size	= 32,
-+		.rx_num_fifo	= 4,
-+		.rx_buf_size	= 32,
-+	},
-+};
+-#define UART_SMC1	0
+-#define UART_SMC2	1
+-#define UART_SCC1	2
+-#define UART_SCC2	3
+-#define UART_SCC3	4
+-#define UART_SCC4	5
++#define UART_SMC1	fsid_smc1_uart
++#define UART_SMC2	fsid_smc2_uart
++#define UART_SCC1	fsid_scc1_uart
++#define UART_SCC2	fsid_scc2_uart
++#define UART_SCC3	fsid_scc3_uart
++#define UART_SCC4	fsid_scc4_uart
  
- static struct fs_mii_bus_info mii_bus_info = {
- 	.method                 = fsmii_bitbang,
-@@ -201,6 +225,55 @@ static void __init mpc8272ads_fixup_enet
- 	}
+-#define UART_NR	6
++#define UART_NR		fs_uart_nr
+ 
+ #define RX_NUM_FIFO	4
+ #define RX_BUF_SIZE	32
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index b7bf4c6..8f33815 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -41,6 +41,7 @@
+ #include <linux/device.h>
+ #include <linux/bootmem.h>
+ #include <linux/dma-mapping.h>
++#include <linux/fs_uart_pd.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -60,7 +61,7 @@
+ /* Track which ports are configured as uarts */
+ int cpm_uart_port_map[UART_NR];
+ /* How many ports did we config as uarts */
+-int cpm_uart_nr;
++int cpm_uart_nr = 0;
+ 
+ /**************************************************************/
+ 
+@@ -85,6 +86,37 @@ static inline void *cpm2cpu_addr(unsigne
+ 	return bus_to_virt(addr);
  }
  
-+static void mpc8272ads_fixup_uart_pdata(struct platform_device *pdev,
-+					      int idx)
++/* Place-holder for board-specific stuff */
++struct platform_device* __attribute__ ((weak)) __init
++early_uart_get_pdev(int index)
 +{
-+	bd_t *bd = (bd_t *) __res;
-+	struct fs_uart_platform_info *pinfo;
-+	int num = ARRAY_SIZE(mpc8272_uart_pdata);
-+	int id = fs_uart_id_scc2fsid(idx);
-+	
-+	/* no need to alter anything if console */
-+	if ((id <= num) && (!pdev->dev.platform_data)) {
-+		pinfo = &mpc8272_uart_pdata[id];
-+		pinfo->uart_clk = bd->bi_intfreq;
-+		pdev->dev.platform_data = pinfo; 
-+	}
-+}
-+
-+static void init_scc1_uart_ioports(void)
-+{
-+	cpm2_map_t* immap = ioremap(CPM_MAP_ADDR, sizeof(cpm2_map_t));
-+
-+        /* SCC1 is only on port D */
-+	setbits32(&immap->im_ioport.iop_ppard,0x00000003);
-+	clrbits32(&immap->im_ioport.iop_psord,0x00000001);
-+	setbits32(&immap->im_ioport.iop_psord,0x00000002);
-+	clrbits32(&immap->im_ioport.iop_pdird,0x00000001);
-+	setbits32(&immap->im_ioport.iop_pdird,0x00000002);
-+
-+        /* Wire BRG1 to SCC1 */
-+	clrbits32(&immap->im_cpmux.cmx_scr,0x00ffffff);
-+
-+	iounmap(immap);
-+}
-+
-+static void init_scc4_uart_ioports(void)
-+{
-+	cpm2_map_t* immap = ioremap(CPM_MAP_ADDR, sizeof(cpm2_map_t));
-+
-+	setbits32(&immap->im_ioport.iop_ppard,0x00000600);
-+	clrbits32(&immap->im_ioport.iop_psord,0x00000600);
-+	clrbits32(&immap->im_ioport.iop_pdird,0x00000200);
-+	setbits32(&immap->im_ioport.iop_pdird,0x00000400);
-+
-+        /* Wire BRG4 to SCC4 */
-+	clrbits32(&immap->im_cpmux.cmx_scr,0x000000ff);
-+	setbits32(&immap->im_cpmux.cmx_scr,0x0000001b);
-+
-+	iounmap(immap);
-+}
-+
- static int mpc8272ads_platform_notify(struct device *dev)
- {
- 	static const struct platform_notify_dev_map dev_map[] = {
-@@ -209,6 +282,10 @@ static int mpc8272ads_platform_notify(st
- 			.rtn = mpc8272ads_fixup_enet_pdata
- 		},
- 		{
-+			.bus_id = "fsl-cpm-scc:uart",
-+			.rtn = mpc
-+		},
-+		{
- 			.bus_id = NULL
- 		}
- 	};
-@@ -230,7 +307,44 @@ int __init mpc8272ads_init(void)
- 	ppc_sys_device_enable(MPC82xx_CPM_FCC1);
- 	ppc_sys_device_enable(MPC82xx_CPM_FCC2);
- 
-+	/* to be ready for console, let's attach pdata here */
-+#ifdef CONFIG_SERIAL_CPM_SCC1
-+	ppc_sys_device_setfunc(MPC82xx_CPM_SCC1, PPC_SYS_FUNC_UART);
-+	ppc_sys_device_enable(MPC82xx_CPM_SCC1);
-+
-+#endif
-+
-+#ifdef CONFIG_SERIAL_CPM_SCC4
-+	ppc_sys_device_setfunc(MPC82xx_CPM_SCC4, PPC_SYS_FUNC_UART);
-+	ppc_sys_device_enable(MPC82xx_CPM_SCC4);
-+#endif
-+
-+
- 	return 0;
- }
- 
-+/* 
-+   To prevent confusion, console selection is gross:
-+   by 0 assumed SCC1 and by 1 assumed SCC4
-+ */
-+struct platform_device* early_uart_get_pdev(int index)
-+{
-+	bd_t *bd = (bd_t *) __res;
-+	struct fs_uart_platform_info *pinfo;
-+
-+	struct platform_device* pdev = NULL;
-+	if(index) { /*assume SCC4 here*/
-+		pdev = &ppc_sys_platform_devices[MPC82xx_CPM_SCC4];
-+		pinfo = &mpc8272<F12>_uart_pdata[1];
-+	} else { /*over SCC1*/
-+		pdev = &ppc_sys_platform_devices[MPC82xx_CPM_SCC1];
-+		pinfo = &mpc8272_uart_pdata[0];
-+	}
-+	
-+	pinfo->uart_clk = bd->bi_intfreq;
-+	pdev->dev.platform_data = pinfo;
-+	ppc_sys_fixup_mem_resource(pdev, IMAP_ADDR);
 +	return NULL;
 +}
 +
- arch_initcall(mpc8272ads_init);
-diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
-index ac8fcc6..7edefa5 100644
---- a/arch/ppc/platforms/mpc866ads_setup.c
-+++ b/arch/ppc/platforms/mpc866ads_setup.c
-@@ -20,6 +20,7 @@
- #include <linux/device.h>
- 
- #include <linux/fs_enet_pd.h>
-+#include <linux/fs_uart_pd.h>
- #include <linux/mii.h>
- 
- #include <asm/delay.h>
-@@ -37,6 +38,11 @@
- 
- extern unsigned char __res[];
- 
-+static void setup_fec1_ioports(void);
-+static void setup_scc1_ioports(void);
-+static void setup_smc1_ioports(void);
-+static void setup_smc2_ioports(void);
 +
- static struct fs_mii_bus_info fec_mii_bus_info = {
- 	.method = fsmii_fec,
- 	.id = 0,
-@@ -79,6 +85,28 @@ static struct fs_platform_info mpc8xx_sc
- 	.phy_irq = -1,
++void cpm_uart_count(void)
++{
++	cpm_uart_nr = 0;
++#ifdef CONFIG_SERIAL_CPM_SMC1
++	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
++#endif
++#ifdef CONFIG_SERIAL_CPM_SMC2
++	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
++#endif
++#ifdef CONFIG_SERIAL_CPM_SCC1
++	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
++#endif
++#ifdef CONFIG_SERIAL_CPM_SCC2
++	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
++#endif
++#ifdef CONFIG_SERIAL_CPM_SCC3
++	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
++#endif
++#ifdef CONFIG_SERIAL_CPM_SCC4
++	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
++#endif
++}
++
+ /*
+  * Check, if transmit buffers are processed
+ */
+@@ -829,14 +861,6 @@ static int cpm_uart_request_port(struct 
+ 	if (pinfo->flags & FLAG_CONSOLE)
+ 		return 0;
  
- 	.bus_info = &scc_mii_bus_info,
-+
-+};
-+
-+static struct fs_uart_platform_info mpc866_uart_pdata[] = {
-+	[fsid_smc1_uart] = {
-+		.brg		= 1,
-+ 		.fs_no 		= fsid_smc1_uart,
-+ 		.init_ioports	= setup_smc1_ioports,
-+		.tx_num_fifo	= 4,
-+		.tx_buf_size	= 32,
-+		.rx_num_fifo	= 4,
-+		.rx_buf_size	= 32,
-+ 	},
-+ 	[fsid_smc2_uart] = {
-+ 		.brg		= 2,
-+ 		.fs_no 		= fsid_smc2_uart,
-+ 		.init_ioports	= setup_smc2_ioports,
-+		.tx_num_fifo	= 4,
-+		.tx_buf_size	= 32,
-+		.rx_num_fifo	= 4,
-+		.rx_buf_size	= 32,
-+ 	},
+-	/*
+-	 * Setup any port IO, connect any baud rate generators,
+-	 * etc.  This is expected to be handled by board
+-	 * dependant code
+-	 */
+-	if (pinfo->set_lineif)
+-		pinfo->set_lineif(pinfo);
+-
+ 	if (IS_SMC(pinfo)) {
+ 		pinfo->smcp->smc_smcm &= ~(SMCM_RX | SMCM_TX);
+ 		pinfo->smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
+@@ -988,6 +1012,54 @@ struct uart_cpm_port cpm_uart_ports[UART
+ 	},
  };
  
- void __init board_init(void)
-@@ -92,9 +120,12 @@ void __init board_init(void)
- 		printk(KERN_CRIT "Could not remap BCSR1\n");
- 		return;
- 	}
++int cpm_uart_drv_get_platform_data(struct platform_device *pdev, int is_con)
++{
++	struct resource *r;
++	struct fs_uart_platform_info *pdata = pdev->dev.platform_data;
++	int idx = pdata->fs_no;	/* It is UART_SMCx or UART_SCCx index */
++	struct uart_cpm_port *pinfo;
++	int line;
++	u32 mem, pram;
 +
- #ifdef CONFIG_SERIAL_CPM_SMC1
- 	cp->cp_simode &= ~(0xe0000000 >> 17);	/* brg1 */
- 	clrbits32(bcsr_io,(0x80000000 >> 7));
-+	cp->cp_smc[0].smc_smcm |= (SMCM_RX | SMCM_TX);
-+	cp->cp_smc[0].smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
- #else
- 	setbits32(bcsr_io,(0x80000000 >> 7));
- 
-@@ -108,6 +139,8 @@ void __init board_init(void)
- 	cp->cp_simode &= ~(0xe0000000 >> 1);
- 	cp->cp_simode |= (0x20000000 >> 1);	/* brg2 */
- 	clrbits32(bcsr_io,(0x80000000 >> 13));
-+	cp->cp_smc[1].smc_smcm |= (SMCM_RX | SMCM_TX);
-+	cp->cp_smc[1].smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
- #else
- 	clrbits32(bcsr_io,(0x80000000 >> 13));
- 	cp->cp_pbpar &= ~(0x00000c00);
-@@ -232,6 +265,74 @@ static void mpc866ads_fixup_scc_enet_pda
- 	mpc866ads_fixup_enet_pdata(pdev, fsid_scc1 + pdev->id - 1);
++	for (line=0; line<UART_NR && cpm_uart_port_map[line]!=pdata->fs_no; line++);
++
++	pinfo = (struct uart_cpm_port *) &cpm_uart_ports[idx];
++
++	pinfo->brg = pdata->brg;
++
++	if (!is_con) {
++		pinfo->port.line = line;
++		pinfo->port.flags = UPF_BOOT_AUTOCONF;
++	}
++
++	if (!(r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs")))
++		return -EINVAL;
++	mem = r->start;
++
++	if (!(r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram")))
++		return -EINVAL;
++	pram = r->start;
++
++	if(idx > fsid_smc2_uart) {
++		pinfo->sccp = (scc_t *)mem;
++		pinfo->sccup = (scc_uart_t *)pram; 
++	} else {
++		pinfo->smcp = (smc_t *)mem;
++		pinfo->smcup = (smc_uart_t *)pram; 
++	}
++	pinfo->tx_nrfifos = pdata->tx_num_fifo;
++	pinfo->tx_fifosize = pdata->tx_buf_size;
++
++	pinfo->rx_nrfifos = pdata->rx_num_fifo;
++	pinfo->rx_fifosize = pdata->rx_buf_size;
++
++	pinfo->port.uartclk = pdata->uart_clk;
++	pinfo->port.mapbase = (unsigned long)mem;
++	pinfo->port.irq = platform_get_irq(pdev, 0);
++	
++	return 0;
++}
++
+ #ifdef CONFIG_SERIAL_CPM_CONSOLE
+ /*
+  *	Print a string to the serial port trying not to disturb
+@@ -1067,9 +1139,7 @@ static void cpm_uart_console_write(struc
+ 	pinfo->tx_cur = (volatile cbd_t *) bdp;
  }
  
-+static void setup_smc1_ioports(void)
-+{
-+	immap_t *immap = (immap_t *) IMAP_ADDR;
-+	unsigned *bcsr_io;
-+	unsigned int iobits = 0x000000c0;
+-/*
+- * Setup console. Be careful is called early !
+- */
 +
-+	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-+
-+	if (bcsr_io == NULL) {
-+		printk(KERN_CRIT "Could not remap BCSR1\n");
-+		return;
-+	}
-+
-+	clrbits32(bcsr_io,BCSR1_RS232EN_1);
-+	iounmap(bcsr_io);
-+
-+	setbits32(&immap->im_cpm.cp_pbpar, iobits);
-+	clrbits32(&immap->im_cpm.cp_pbdir, iobits);
-+	clrbits16(&immap->im_cpm.cp_pbodr, iobits);
-+
-+}
-+
-+static void setup_smc2_ioports(void)
-+{
-+	immap_t *immap = (immap_t *) IMAP_ADDR;
-+	unsigned *bcsr_io;
-+	unsigned int iobits = 0x00000c00;
-+
-+	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-+
-+	if (bcsr_io == NULL) {
-+		printk(KERN_CRIT "Could not remap BCSR1\n");
-+		return;
-+	} 
-+
-+	clrbits32(bcsr_io,BCSR1_RS232EN_2);
-+
-+	iounmap(bcsr_io);
-+	
-+#ifndef CONFIG_SERIAL_CPM_ALT_SMC2
-+	setbits32(&immap->im_cpm.cp_pbpar, iobits);
-+	clrbits32(&immap->im_cpm.cp_pbdir, iobits);
-+	clrbits16(&immap->im_cpm.cp_pbodr, iobits);
-+#else
-+	setbits16(&immap->im_ioport.iop_papar, iobits);
-+	clrbits16(&immap->im_ioport.iop_padir, iobits);
-+	clrbits16(&immap->im_ioport.iop_paodr, iobits);
-+#endif
-+
-+}
-+
-+static void __init mpc866ads_fixup_uart_pdata(struct platform_device *pdev,
-+                                              int idx)
-+{
-+	bd_t *bd = (bd_t *) __res;
-+	struct fs_uart_platform_info *pinfo;
-+	int num = ARRAY_SIZE(mpc866_uart_pdata);
-+
-+	int id = fs_uart_id_smc2fsid(idx);
-+	
-+	/* no need to alter anything if console */
-+	if ((id <= num) && (!pdev->dev.platform_data)) {
-+		pinfo = &mpc866_uart_pdata[id];
-+		pinfo->uart_clk = bd->bi_intfreq;
-+		pdev->dev.platform_data = pinfo; 
-+	}
-+}
-+
- static int mpc866ads_platform_notify(struct device *dev)
+ static int __init cpm_uart_console_setup(struct console *co, char *options)
  {
- 	static const struct platform_notify_dev_map dev_map[] = {
-@@ -244,6 +345,10 @@ static int mpc866ads_platform_notify(str
- 			.rtn = mpc866ads_fixup_scc_enet_pdata,
- 		},
- 		{
-+			.bus_id = "fsl-cpm-smc:uart",
-+			.rtn = mpc866ads_fixup_uart_pdata
-+		},
-+		{
- 			.bus_id = NULL
- 		}
- 	};
-@@ -267,7 +372,42 @@ int __init mpc866ads_init(void)
- #endif
- 	ppc_sys_device_enable(MPC8xx_CPM_FEC1);
+ 	struct uart_port *port;
+@@ -1080,9 +1150,27 @@ static int __init cpm_uart_console_setup
+ 	int flow = 'n';
+ 	int ret;
  
-+/* Since either of the uarts could be used as console, they need to ready */
-+#ifdef CONFIG_SERIAL_CPM_SMC1
-+	ppc_sys_device_enable(MPC8xx_CPM_SMC1);
-+	ppc_sys_device_setfunc(MPC8xx_CPM_SMC1, PPC_SYS_FUNC_UART);
-+#endif
++	struct fs_uart_platform_info *pdata;
++	struct platform_device* pdev = early_uart_get_pdev(co->index);
++	
+ 	port =
+ 	    (struct uart_port *)&cpm_uart_ports[cpm_uart_port_map[co->index]];
+ 	pinfo = (struct uart_cpm_port *)port;
++	if (!pdev) {
++		pr_info("cpm_uart: console: compat mode\n");
++		/* compatibility - will be cleaned up */
++		cpm_uart_init_portdesc();
 +
-+#ifdef CONFIG_SERIAL_CPM_SMCer
-+	ppc_sys_device_enable(MPC8xx_CPM_SMC2);
-+	ppc_sys_device_setfunc(MPC8xx_CPM_SMC2, PPC_SYS_FUNC_UART);
-+#endif
++		if (pinfo->set_lineif)
++			pinfo->set_lineif(pinfo);
++	} else {
++		pdata = pdev->dev.platform_data;
++		if (pdata)
++			if (pdata->init_ioports)
++    	                	pdata->init_ioports();
 +
- 	return 0;
++		cpm_uart_drv_get_platform_data(pdev, 1);
++	}
+ 
+ 	pinfo->flags |= FLAG_CONSOLE;
+ 
+@@ -1097,14 +1185,6 @@ static int __init cpm_uart_console_setup
+ 			baud = 9600;
+ 	}
+ 
+-	/*
+-	 * Setup any port IO, connect any baud rate generators,
+-	 * etc.  This is expected to be handled by board
+-	 * dependant code
+-	 */
+-	if (pinfo->set_lineif)
+-		pinfo->set_lineif(pinfo);
+-
+ 	if (IS_SMC(pinfo)) {
+ 		pinfo->smcp->smc_smcm &= ~(SMCM_RX | SMCM_TX);
+ 		pinfo->smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
+@@ -1143,11 +1223,8 @@ static struct console cpm_scc_uart_conso
+ 
+ int __init cpm_uart_console_init(void)
+ {
+-	int ret = cpm_uart_init_portdesc();
+-
+-	if (!ret)
+-		register_console(&cpm_scc_uart_console);
+-	return ret;
++	register_console(&cpm_scc_uart_console);
++	return 0;
  }
  
-+/* 
-+   To prevent confusion, console selection is gross:
-+   by 0 assumed SMC1 and by 1 assumed SMC2
-+ */
-+struct platform_device* early_uart_get_pdev(int index)
-+{
-+	bd_t *bd = (bd_t *) __res;
-+	struct fs_uart_platform_info *pinfo;
-+
-+	struct platform_device* pdev = NULL;
-+	if(index) { /*assume SMC2 here*/
-+		pdev = &ppc_sys_platform_devices[MPC8xx_CPM_SMC2];
-+		pinfo = &mpc866_uart_pdata[1];
-+	} else { /*over SMC1*/
-+		pdev = &ppc_sys_platform_devices[MPC8xx_CPM_SMC1];
-+		pinfo = &mpc866_uart_pdata[0];
+ console_initcall(cpm_uart_console_init);
+@@ -1165,44 +1242,130 @@ static struct uart_driver cpm_reg = {
+ 	.minor		= SERIAL_CPM_MINOR,
+ 	.cons		= CPM_UART_CONSOLE,
+ };
+-
+-static int __init cpm_uart_init(void)
++static int cpm_uart_drv_probe(struct device *dev)
+ {
+-	int ret, i;
++	struct platform_device  *pdev = to_platform_device(dev);
++	struct fs_uart_platform_info *pdata;
++	int ret = -ENODEV;
+ 
+-	printk(KERN_INFO "Serial: CPM driver $Revision: 0.01 $\n");
+-
+-#ifndef CONFIG_SERIAL_CPM_CONSOLE
+-	ret = cpm_uart_init_portdesc();
+-	if (ret)
++	if(!pdev) {
++		printk(KERN_ERR"CPM UART: platform data missing!\n");
+ 		return ret;
+-#endif
 +	}
-+	
-+	pinfo->uart_clk = bd->bi_intfreq;
-+	pdev->dev.platform_data = pinfo;
-+	ppc_sys_fixup_mem_resource(pdev, IMAP_ADDR);
-+	return NULL;
+ 
+-	cpm_reg.nr = cpm_uart_nr;
+-	ret = uart_register_driver(&cpm_reg);
++	pdata = pdev->dev.platform_data;
++	pr_debug("cpm_uart_drv_probe: Adding CPM UART %d\n",
++			cpm_uart_port_map[pdata->fs_no]);
+ 
+-	if (ret)
++	if ((ret = cpm_uart_drv_get_platform_data(pdev, 0)))
+ 		return ret;
+ 
+-	for (i = 0; i < cpm_uart_nr; i++) {
+-		int con = cpm_uart_port_map[i];
+-		cpm_uart_ports[con].port.line = i;
+-		cpm_uart_ports[con].port.flags = UPF_BOOT_AUTOCONF;
+-		uart_add_one_port(&cpm_reg, &cpm_uart_ports[con].port);
+-	}
++	if (pdata->init_ioports)
++                pdata->init_ioports();
++ 
++	ret = uart_add_one_port(&cpm_reg, &cpm_uart_ports[pdata->fs_no].port);
+ 
+-	return ret;
++        return ret;
+ }
+ 
+-static void __exit cpm_uart_exit(void)
++static int cpm_uart_drv_remove(struct device *dev)
+ {
++	struct platform_device  *pdev = to_platform_device(dev);
++	struct fs_uart_platform_info *pdata = pdev->dev.platform_data;
++
++	pr_debug("cpm_uart_drv_remove: Removing CPM UART %d\n", 
++			cpm_uart_port_map[pdata->fs_no]);
++
++        uart_remove_one_port(&cpm_reg, &cpm_uart_ports[pdata->fs_no].port);
++        return 0;
 +}
 +
- arch_initcall(mpc866ads_init);
-diff --git a/arch/ppc/platforms/mpc885ads_setup.c b/arch/ppc/platforms/mpc885ads_setup.c
-index 50a99e5..fc37aea 100644
---- a/arch/ppc/platforms/mpc885ads_setup.c
-+++ b/arch/ppc/platforms/mpc885ads_setup.c
-@@ -20,6 +20,7 @@
- #include <linux/device.h>
- 
- #include <linux/fs_enet_pd.h>
-+#include <linux/fs_uart_pd.h>
- #include <linux/mii.h>
- 
- #include <asm/delay.h>
-@@ -35,9 +36,32 @@
- #include <asm/ppc_sys.h>
- 
- extern unsigned char __res[];
-+static void setup_smc1_ioports(void);
-+static void setup_smc2_ioports(void);
- 
- static void __init mpc885ads_scc_phy_init(char);
- 
-+static struct fs_uart_platform_info mpc885_uart_pdata[] = {
-+	[fsid_smc1_uart] = {
-+		.brg		= 1,
-+ 		.fs_no 		= fsid_smc1_uart,
-+ 		.init_ioports	= setup_smc1_ioports,
-+		.tx_num_fifo	= 4,
-+		.tx_buf_size	= 32,
-+		.rx_num_fifo	= 4,
-+		.rx_buf_size	= 32,
-+ 	},
-+ 	[fsid_smc2_uart] = {
-+ 		.brg		= 2,
-+ 		.fs_no 		= fsid_smc2_uart,
-+ 		.init_ioports	= setup_smc2_ioports,
-+		.tx_num_fifo	= 4,
-+		.tx_buf_size	= 32,
-+		.rx_num_fifo	= 4,
-+		.rx_buf_size	= 32,
-+ 	},
++static struct device_driver cpm_smc_uart_driver = {
++        .name   = "fsl-cpm-smc:uart",
++        .bus    = &platform_bus_type,
++        .probe  = cpm_uart_drv_probe,
++        .remove = cpm_uart_drv_remove,
 +};
 +
- static struct fs_mii_bus_info fec_mii_bus_info = {
- 	.method = fsmii_fec,
- 	.id = 0,
-@@ -116,6 +140,8 @@ void __init board_init(void)
- #ifdef CONFIG_SERIAL_CPM_SMC1
- 	cp->cp_simode &= ~(0xe0000000 >> 17);	/* brg1 */
- 	clrbits32(bcsr_io, BCSR1_RS232EN_1);
-+        cp->cp_smc[0].smc_smcm |= (SMCM_RX | SMCM_TX);
-+        cp->cp_smc[0].smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
- #else
- 	setbits32(bcsr_io,BCSR1_RS232EN_1);
- 	cp->cp_smc[0].smc_smcmr = 0;
-@@ -126,6 +152,8 @@ void __init board_init(void)
- 	cp->cp_simode &= ~(0xe0000000 >> 1);
- 	cp->cp_simode |= (0x20000000 >> 1);	/* brg2 */
- 	clrbits32(bcsr_io,BCSR1_RS232EN_2);
-+        cp->cp_smc[1].smc_smcm |= (SMCM_RX | SMCM_TX);
-+        cp->cp_smc[1].smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
- #else
- 	setbits32(bcsr_io,BCSR1_RS232EN_2);
- 	cp->cp_smc[1].smc_smcmr = 0;
-@@ -343,6 +371,70 @@ static void mpc885ads_scc_phy_init(char 
- 	out_be32(&fecp->fec_mii_speed, 0);
- }
- 
-+static void setup_smc1_ioports(void)
-+{
-+        immap_t *immap = (immap_t *) IMAP_ADDR;
-+        unsigned *bcsr_io;
-+        unsigned int iobits = 0x000000c0;
-+
-+        bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-+
-+        if (bcsr_io == NULL) {
-+                printk(KERN_CRIT "Could not remap BCSR1\n");
-+                return;
-+        }
-+        clrbits32(bcsr_io,BCSR1_RS232EN_1);
-+        iounmap(bcsr_io);
-+
-+        setbits32(&immap->im_cpm.cp_pbpar, iobits);
-+        clrbits32(&immap->im_cpm.cp_pbdir, iobits);
-+        clrbits16(&immap->im_cpm.cp_pbodr, iobits);
-+}
-+
-+static void setup_smc2_ioports(void)
-+{
-+        immap_t *immap = (immap_t *) IMAP_ADDR;
-+        unsigned *bcsr_io;
-+        unsigned int iobits = 0x00000c00;
-+
-+        bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-+
-+        if (bcsr_io == NULL) {
-+                printk(KERN_CRIT "Could not remap BCSR1\n");
-+                return;
-+        }
-+        clrbits32(bcsr_io,BCSR1_RS232EN_2);
-+        iounmap(bcsr_io);
-+
-+#ifndef CONFIG_SERIAL_CPM_ALT_SMC2
-+        setbits32(&immap->im_cpm.cp_pbpar, iobits);
-+        clrbits32(&immap->im_cpm.cp_pbdir, iobits);
-+        clrbits16(&immap->im_cpm.cp_pbodr, iobits);
-+#else
-+        setbits16(&immap->im_ioport.iop_papar, iobits);
-+        clrbits16(&immap->im_ioport.iop_padir, iobits);
-+        clrbits16(&immap->im_ioport.iop_paodr, iobits);
-+#endif
-+}
-+
-+static void __init mpc885ads_fixup_uart_pdata(struct platform_device *pdev,
-+                                              int idx)
-+{
-+	bd_t *bd = (bd_t *) __res;
-+	struct fs_uart_platform_info *pinfo;
-+	int num = ARRAY_SIZE(mpc885_uart_pdata);
-+
-+	int id = fs_uart_id_smc2fsid(idx);
-+	
-+	/* no need to alter anything if console */
-+	if ((id <= num) && (!pdev->dev.platform_data)) {
-+		pinfo = &mpc885_uart_pdata[id];
-+		pinfo->uart_clk = bd->bi_intfreq;
-+		pdev->dev.platform_data = pinfo; 
-+	}
-+}
-+
-+
- static int mpc885ads_platform_notify(struct device *dev)
- {
- 
-@@ -356,12 +448,17 @@ static int mpc885ads_platform_notify(str
- 			.rtn = mpc885ads_fixup_scc_enet_pdata,
- 		},
- 		{
-+			.bus_id = "fsl-cpm-smc:uart",
-+			.rtn = mpc885ads_fixup_uart_pdata
-+		},
-+		{
- 			.bus_id = NULL
- 		}
- 	};
- 
- 	platform_notify_map(dev_map,dev);
- 
-+	return 0;	
- }
- 
- int __init mpc885ads_init(void)
-@@ -383,7 +480,41 @@ int __init mpc885ads_init(void)
- 	ppc_sys_device_enable(MPC8xx_CPM_FEC2);
- #endif
- 
-+#ifdef CONFIG_SERIAL_CPM_SMC1
-+	ppc_sys_device_enable(MPC8xx_CPM_SMC1);
-+	ppc_sys_device_setfunc(MPC8xx_CPM_SMC1, PPC_SYS_FUNC_UART);
-+#endif
-+
-+#ifdef CONFIG_SERIAL_CPM_SMC2
-+	ppc_sys_device_enable(MPC8xx_CPM_SMC2);
-+	ppc_sys_device_setfunc(MPC8xx_CPM_SMC2, PPC_SYS_FUNC_UART);
-+#endif
- 	return 0;
- }
- 
- arch_initcall(mpc885ads_init);
++static struct device_driver cpm_scc_uart_driver = {
++        .name   = "fsl-cpm-scc:uart",
++        .bus    = &platform_bus_type,
++        .probe  = cpm_uart_drv_probe,
++        .remove = cpm_uart_drv_remove,
++};
 +
 +/* 
-+   To prevent confusion, console selection is gross:
-+   by 0 assumed SMC1 and by 1 assumed SMC2
-+ */
-+struct platform_device* early_uart_get_pdev(int index)
++   This is supposed to match uart devices on platform bus,
++   */
++static int match_is_uart (struct device* dev, void* data)
 +{
-+	bd_t *bd = (bd_t *) __res;
-+	struct fs_uart_platform_info *pinfo;
-+
-+	struct platform_device* pdev = NULL;
-+	if(index) { /*assume SMC2 here*/
-+		pdev = &ppc_sys_platform_devices[MPC8xx_CPM_SMC2];
-+		pinfo = &mpc885_uart_pdata[1];
-+	} else { /*over SMC1*/
-+		pdev = &ppc_sys_platform_devices[MPC8xx_CPM_SMC1];
-+		pinfo = &mpc885_uart_pdata[0];
++	struct platform_device* pdev = container_of(dev, struct platform_device, dev);
++	int ret = 0;
++	/* this was setfunc as uart */
++	if(strstr(pdev->name,":uart")) {
++		ret = 1;
 +	}
-+	
-+	pinfo->uart_clk = bd->bi_intfreq;
-+	pdev->dev.platform_data = pinfo;
-+	ppc_sys_fixup_mem_resource(pdev, IMAP_ADDR);
-+	return NULL;
++	return ret;
 +}
 +
-diff --git a/arch/ppc/platforms/pq2ads.c b/arch/ppc/platforms/pq2ads.c
-index 3365fd7..7fc2e02 100644
---- a/arch/ppc/platforms/pq2ads.c
-+++ b/arch/ppc/platforms/pq2ads.c
-@@ -14,11 +14,40 @@
++
++static int cpm_uart_init(void) {
++
++	int ret;
+ 	int i;
++	struct device *dev; 
++	printk(KERN_INFO "Serial: CPM driver $Revision: 0.02 $\n");
++
++	/* lookup the bus for uart devices */
++	dev = bus_find_device(&platform_bus_type, NULL, 0, match_is_uart);
++
++	/* There are devices on the bus - all should be OK  */
++	if (dev) {
++		cpm_uart_count();
++		cpm_reg.nr = cpm_uart_nr;
++
++		if (!(ret = uart_register_driver(&cpm_reg))) {
++			if ((ret = driver_register(&cpm_smc_uart_driver))) {
++				uart_unregister_driver(&cpm_reg);
++				return ret;
++			}
++			if ((ret = driver_register(&cpm_scc_uart_driver))) {
++				driver_unregister(&cpm_scc_uart_driver);
++				uart_unregister_driver(&cpm_reg);
++			}
++		}
++	} else {
++	/* No capable platform devices found - falling back to legacy mode */
++		pr_info("cpm_uart: WARNING: no UART devices found on platform bus!\n");
++		pr_info(
++		"cpm_uart: the driver will guess configuration, but this mode is no longer supported.\n");
++#ifndef CONFIG_SERIAL_CPM_CONSOLE
++		ret = cpm_uart_init_portdesc();
++		if (ret)
++			return ret;
++#endif
++
++		cpm_reg.nr = cpm_uart_nr;
++		ret = uart_register_driver(&cpm_reg);
++
++		if (ret)
++			return ret;
++
++		for (i = 0; i < cpm_uart_nr; i++) {
++			int con = cpm_uart_port_map[i];
++			cpm_uart_ports[con].port.line = i;
++			cpm_uart_ports[con].port.flags = UPF_BOOT_AUTOCONF;
++			uart_add_one_port(&cpm_reg, &cpm_uart_ports[con].port);
++		}
  
- #include <linux/init.h>
+-	for (i = 0; i < cpm_uart_nr; i++) {
+-		int con = cpm_uart_port_map[i];
+-		uart_remove_one_port(&cpm_reg, &cpm_uart_ports[con].port);
+ 	}
++	return ret;
++}
  
-+#include <asm/io.h>
- #include <asm/mpc8260.h>
-+#include <asm/cpm2.h>
-+#include <asm/immap_cpm2.h>
- 
- void __init
- m82xx_board_setup(void)
- {
-+	cpm2_map_t* immap = ioremap(CPM_MAP_ADDR, sizeof(cpm2_map_t));
-+	u32 *bcsr = ioremap(BCSR_ADDR+4, sizeof(u32));
-+
- 	/* Enable the 2nd UART port */
--	*(volatile uint *)(BCSR_ADDR + 4) &= ~BCSR1_RS232_EN2;
-+	clrbits32(bcsr, BCSR1_RS232_EN2);
-+
-+#ifdef CONFIG_SERIAL_CPM_SCC1
-+	clrbits32((u32*)&immap->im_scc[0].scc_sccm, UART_SCCM_TX | UART_SCCM_RX);
-+	clrbits32((u32*)&immap->im_scc[0].scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
-+#endif
-+
-+#ifdef CONFIG_SERIAL_CPM_SCC2
-+	clrbits32((u32*)&immap->im_scc[1].scc_sccm, UART_SCCM_TX | UART_SCCM_RX);
-+	clrbits32((u32*)&immap->im_scc[1].scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
-+#endif
-+
-+#ifdef CONFIG_SERIAL_CPM_SCC3
-+	clrbits32((u32*)&immap->im_scc[2].scc_sccm, UART_SCCM_TX | UART_SCCM_RX);
-+	clrbits32((u32*)&immap->im_scc[2].scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
-+#endif
-+
-+#ifdef CONFIG_SERIAL_CPM_SCC4
-+	clrbits32((u32*)&immap->im_scc[3].scc_sccm, UART_SCCM_TX | UART_SCCM_RX);
-+	clrbits32((u32*)&immap->im_scc[3].scc_gsmrl, SCC_GSMRL_ENR | SCC_GSMRL_ENT);
-+#endif
-+
-+	iounmap(bcsr);
-+	iounmap(immap);
++static void __exit cpm_uart_exit(void)
++{
++	driver_unregister(&cpm_scc_uart_driver);
++	driver_unregister(&cpm_smc_uart_driver);
+ 	uart_unregister_driver(&cpm_reg);
  }
+ 
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index d789ee5..31223aa 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -81,58 +81,11 @@ void cpm_line_cr_cmd(int line, int cmd)
+ 
+ void smc1_lineif(struct uart_cpm_port *pinfo)
+ {
+-	volatile cpm8xx_t *cp = cpmp;
+-
+-	(void)cp;	/* fix warning */
+-#if defined (CONFIG_MPC885ADS)
+-	/* Enable SMC1 transceivers */
+-	{
+-		cp->cp_pepar |= 0x000000c0;
+-		cp->cp_pedir &= ~0x000000c0;
+-		cp->cp_peso &= ~0x00000040;
+-		cp->cp_peso |= 0x00000080;
+-	}
+-#elif defined (CONFIG_MPC86XADS)
+-	unsigned int iobits = 0x000000c0;
+-
+-	if (!pinfo->is_portb) {
+-		cp->cp_pbpar |= iobits;
+-		cp->cp_pbdir &= ~iobits;
+-		cp->cp_pbodr &= ~iobits;
+-	} else {
+-		((immap_t *)IMAP_ADDR)->im_ioport.iop_papar |= iobits;
+-		((immap_t *)IMAP_ADDR)->im_ioport.iop_padir &= ~iobits;
+-		((immap_t *)IMAP_ADDR)->im_ioport.iop_paodr &= ~iobits;
+-	}
+-#endif
+ 	pinfo->brg = 1;
+ }
+ 
+ void smc2_lineif(struct uart_cpm_port *pinfo)
+ {
+-	volatile cpm8xx_t *cp = cpmp;
+-
+-	(void)cp;	/* fix warning */
+-#if defined (CONFIG_MPC885ADS)
+-	cp->cp_pepar |= 0x00000c00;
+-	cp->cp_pedir &= ~0x00000c00;
+-	cp->cp_peso &= ~0x00000400;
+-	cp->cp_peso |= 0x00000800;
+-#elif defined (CONFIG_MPC86XADS)
+-	unsigned int iobits = 0x00000c00;
+-
+-	if (!pinfo->is_portb) {
+-		cp->cp_pbpar |= iobits;
+-		cp->cp_pbdir &= ~iobits;
+-		cp->cp_pbodr &= ~iobits;
+-	} else {
+-		((immap_t *)IMAP_ADDR)->im_ioport.iop_papar |= iobits;
+-		((immap_t *)IMAP_ADDR)->im_ioport.iop_padir &= ~iobits;
+-		((immap_t *)IMAP_ADDR)->im_ioport.iop_paodr &= ~iobits;
+-	}
+-
+-#endif
+-
+ 	pinfo->brg = 2;
+ }
+ 
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index fd9e53e..c9c3b1d 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -142,14 +142,6 @@ void scc2_lineif(struct uart_cpm_port *p
+ 	 * be supported in a sane fashion.
+ 	 */
+ #ifndef CONFIG_STX_GP3
+-#ifdef CONFIG_MPC8560_ADS
+-	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
+-	io->iop_ppard |= 0x00000018;
+-	io->iop_psord &= ~0x00000008;	/* Rx */
+-	io->iop_psord &= ~0x00000010;	/* Tx */
+-	io->iop_pdird &= ~0x00000008;	/* Rx */
+-	io->iop_pdird |= 0x00000010;	/* Tx */
+-#else
+ 	volatile iop_cpm2_t *io = &cpm2_immr->im_ioport;
+ 	io->iop_pparb |= 0x008b0000;
+ 	io->iop_pdirb |= 0x00880000;
+@@ -157,7 +149,6 @@ void scc2_lineif(struct uart_cpm_port *p
+ 	io->iop_pdirb &= ~0x00030000;
+ 	io->iop_psorb &= ~0x00030000;
+ #endif
+-#endif
+ 	cpm2_immr->im_cpmux.cmx_scr &= 0xff00ffff;
+ 	cpm2_immr->im_cpmux.cmx_scr |= 0x00090000;
+ 	pinfo->brg = 2;
