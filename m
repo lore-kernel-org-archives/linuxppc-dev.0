@@ -1,18 +1,18 @@
 Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 18E3267A3D
-	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 07:09:06 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 996C167A41
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 07:16:41 +1000 (EST)
 To: Kumar Gala <galak@kernel.crashing.org>
 From: Wolfgang Denk <wd@denx.de>
 Subject: Re: 85xx FDT updates? 
 Mime-version: 1.0
 Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 25 Apr 2006 01:08:00 CDT."
-	<34C11E8A-ED04-490F-B601-841DC1F94AD6@kernel.crashing.org>
-Date: Tue, 25 Apr 2006 23:09:04 +0200
+In-reply-to: Your message of "Tue, 25 Apr 2006 11:25:59 CDT."
+	<6F7CAB43-B4C0-47DA-BC7D-3FD04A552131@kernel.crashing.org>
+Date: Tue, 25 Apr 2006 23:16:39 +0200
 Sender: wd@denx.de
-Message-Id: <20060425210904.15D2E353DAC@atlas.denx.de>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Message-Id: <20060425211639.DD1E8353DAC@atlas.denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <34C11E8A-ED04-490F-B601-841DC1F94AD6@kernel.crashing.org> you wrote:
+In message <6F7CAB43-B4C0-47DA-BC7D-3FD04A552131@kernel.crashing.org> you wrote:
 > 
-> > What about systems that can't update u-boot, but want to run
-> > a newer kernel?
-> 
-> Does this situation exist for any in tree boards that are supported?
+> If we are talking about a reference board than I think this is an  
+> absurd requirement.  If you are willing to update your kernel on such  
+> a board why would you not be willing to update the firmware as well.
 
-Probably. We don't know what our users do. Not so few of the projects
-run a policy on never touching U-Boot.
+For example, because I don't own it and have  to  return  it  in  the
+original state.
+
+For example, because U-Boot is in a ROM which cannot  be  written  to
+without special tools.
+
+Kumar, please try seeing the world from the eyes of a *user*, not the
+developer you and me are.
+
+We should help the users, not make their live harder than necessary.
 
 Best regards,
 
@@ -39,5 +46,6 @@ Wolfgang Denk
 -- 
 Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The only way to get rid of a temptation is to yield to it.
-                                                        - Oscar Wilde
+If you believe that feeling bad or worrying long enough will change a
+past or future event, then you are residing on another planet with  a
+different reality system.
