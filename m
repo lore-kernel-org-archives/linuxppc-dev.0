@@ -1,20 +1,19 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <SRS0+a691280239d1ec275d45+975+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3294A679FC
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 10:03:14 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Arnd Bergmann <arnd@arndb.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 60BC5679E7
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 10:13:26 +1000 (EST)
 Subject: Re: [PATCH] Wire up *at syscalls
-References: <jeu08ippb9.fsf@sykes.suse.de> <200604250131.22154.arnd@arndb.de>
-Date: Tue, 25 Apr 2006 02:03:08 +0200
-In-Reply-To: <200604250131.22154.arnd@arndb.de> (Arnd Bergmann's message of
-	"Tue, 25 Apr 2006 01:31:21 +0200")
-Message-ID: <jelktuplmr.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+From: David Woodhouse <dwmw2@infradead.org>
+To: arnd@arndb.de
+In-Reply-To: <jeu08ippb9.fsf@sykes.suse.de>
+References: <jeu08ippb9.fsf@sykes.suse.de>
+Content-Type: text/plain
+Date: Tue, 25 Apr 2006 01:13:30 +0100
+Message-Id: <1145924011.16166.465.camel@shinybook.infradead.org>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,130 +24,496 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann <arnd@arndb.de> writes:
 
-> Simply removing the #ifdef looks wrong. AFAICT, powerpc and ia64 are the
-> only ones that want both sys_newfstatat and sys_fstatat64, maybe you
-> can simply do 
->
-> #if !defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_NEWSTATFSAT)
+>   * please add new calls to arch/powerpc/platforms/cell/spu_callbacks.c 
 
-Updated patch below.
+Hm, do we really need that? How about something based on this instead...
+note that I used CONFIG_PPC_CELL because dependencies on CONFIG_*_MODULE
+in the static kernel are evil.
 
-Andreas.
+Syscall 224 is missing from the existing spu_syscall_table, btw.
 
-Signed-off-by: Andreas Schwab <schwab@suse.de>
-
----
- arch/powerpc/kernel/systbl.S                |   13 +++++++++++++
- arch/powerpc/platforms/cell/spu_callbacks.c |   13 +++++++++++++
- fs/stat.c                                   |    2 +-
- include/asm-powerpc/unistd.h                |   20 +++++++++++++++++++-
- 4 files changed, 46 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.17-rc2-git5/arch/powerpc/kernel/systbl.S
-===================================================================
---- linux-2.6.17-rc2-git5.orig/arch/powerpc/kernel/systbl.S	2006-04-24 16:24:47.000000000 +0200
-+++ linux-2.6.17-rc2-git5/arch/powerpc/kernel/systbl.S	2006-04-24 19:53:50.000000000 +0200
-@@ -324,6 +324,19 @@ COMPAT_SYS(ppoll)
- SYSCALL(unshare)
- SYSCALL(splice)
- SYSCALL(tee)
-+COMPAT_SYS(openat)
-+SYSCALL(mkdirat)
-+SYSCALL(mknodat)
-+SYSCALL(fchownat)
-+COMPAT_SYS(futimesat)
-+SYSX(sys_newfstatat, sys_fstatat64, sys_fstatat64)
-+SYSCALL(unlinkat)
-+SYSCALL(renameat)
-+SYSCALL(linkat)
-+SYSCALL(symlinkat)
-+SYSCALL(readlinkat)
-+SYSCALL(fchmodat)
-+SYSCALL(faccessat)
+diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
+index 8d15226..8371f14 100644
+--- a/arch/powerpc/kernel/systbl.S
++++ b/arch/powerpc/kernel/systbl.S
+@@ -18,17 +18,29 @@ #include <linux/config.h>
+ #include <asm/ppc_asm.h>
  
- /*
-  * please add new calls to arch/powerpc/platforms/cell/spu_callbacks.c
-Index: linux-2.6.17-rc2-git5/include/asm-powerpc/unistd.h
-===================================================================
---- linux-2.6.17-rc2-git5.orig/include/asm-powerpc/unistd.h	2006-04-24 16:24:15.000000000 +0200
-+++ linux-2.6.17-rc2-git5/include/asm-powerpc/unistd.h	2006-04-25 01:35:38.000000000 +0200
-@@ -303,8 +303,25 @@
- #define __NR_unshare		282
- #define __NR_splice		283
- #define __NR_tee		284
-+#define __NR_openat		285
-+#define __NR_mkdirat		286
-+#define __NR_mknodat		287
-+#define __NR_fchownat		288
-+#define __NR_futimesat		289
-+#ifdef __powerpc64__
-+#define __NR_newfstatat		290
-+#else
-+#define __NR_fstatat64		290
-+#endif
-+#define __NR_unlinkat		291
-+#define __NR_renameat		292
-+#define __NR_linkat		293
-+#define __NR_symlinkat		294
-+#define __NR_readlinkat		295
-+#define __NR_fchmodat		296
-+#define __NR_faccessat		297
- 
--#define __NR_syscalls		285
-+#define __NR_syscalls		298
- 
- #ifdef __KERNEL__
- #define __NR__exit __NR_exit
-@@ -457,6 +474,7 @@ type name(type1 arg1, type2 arg2, type3 
  #ifdef CONFIG_PPC64
- #define __ARCH_WANT_COMPAT_SYS_TIME
- #define __ARCH_WANT_COMPAT_SYS_RT_SIGSUSPEND
-+#define __ARCH_WANT_SYS_NEWFSTATAT
+-#define SYSCALL(func)		.llong	.sys_##func,.sys_##func
+-#define COMPAT_SYS(func)	.llong	.sys_##func,.compat_sys_##func
+-#define PPC_SYS(func)		.llong	.ppc_##func,.ppc_##func
+-#define OLDSYS(func)		.llong	.sys_ni_syscall,.sys_ni_syscall
+-#define SYS32ONLY(func)		.llong	.sys_ni_syscall,.compat_sys_##func
+-#define SYSX(f, f3264, f32)	.llong	.f,.f3264
++
++#ifdef CONFIG_PPC_CELL
++#define SPU(x) ,x
++#else
++#define SPU(x)
++#endif
++
++#define SYSCALL(func)		.llong	.sys_##func,.sys_##func SPU(.sys_ni_syscall)
++#define SYSCALL_SPU(func)	.llong	.sys_##func,.sys_##func SPU(.sys_##func)
++#define COMPAT_SYS(func)	.llong	.sys_##func,.compat_sys_##func SPU(.sys_ni_syscall)
++#define COMPAT_SYS_SPU(func)	.llong	.sys_##func,.compat_sys_##func SPU(.sys_##func)
++#define PPC_SYS(func)		.llong	.ppc_##func,.ppc_##func SPU(.sys_ni_syscall)
++#define PPC_SYS_SPU(func)	.llong	.ppc_##func,.ppc_##func SPU(.ppc_##func)
++#define OLDSYS(func)		.llong	.sys_ni_syscall,.sys_ni_syscall SPU(.sys_ni_syscall)
++#define SYS32ONLY(func)		.llong	.sys_ni_syscall,.compat_sys_##func SPU(.sys_ni_syscall)
++#define SYSX(f, f3264, f32)	.llong	.f,.f3264 SPU(.f)
+ #else
+-#define SYSCALL(func)		.long	sys_##func
+ #define COMPAT_SYS(func)	.long	sys_##func
++#define COMPAT_SYS_SPU(func)	.long	sys_##func
+ #define PPC_SYS(func)		.long	ppc_##func
++#define PPC_SYS_SPU(func)	.long	ppc_##func
+ #define OLDSYS(func)		.long	sys_##func
++#define OLDSYS_SPU(func)	.long	sys_##func
+ #define SYS32ONLY(func)		.long	sys_##func
+ #define SYSX(f, f3264, f32)	.long	f32
  #endif
- 
- /*
-Index: linux-2.6.17-rc2-git5/arch/powerpc/platforms/cell/spu_callbacks.c
-===================================================================
---- linux-2.6.17-rc2-git5.orig/arch/powerpc/platforms/cell/spu_callbacks.c	2006-04-24 16:24:47.000000000 +0200
-+++ linux-2.6.17-rc2-git5/arch/powerpc/platforms/cell/spu_callbacks.c	2006-04-24 23:51:16.000000000 +0200
-@@ -318,6 +318,19 @@ void *spu_syscall_table[] = {
- 	[__NR_unshare]			sys_unshare,
- 	[__NR_splice]			sys_splice,
- 	[__NR_tee]			sys_tee,
-+	[__NR_openat]			sys_openat,
-+	[__NR_mkdirat]			sys_mkdirat,
-+	[__NR_mknodat]			sys_mknodat,
-+	[__NR_fchownat]			sys_fchownat,
-+	[__NR_futimesat]		sys_futimesat,
-+	[__NR_newfstatat]		sys_newfstatat,
-+	[__NR_unlinkat]			sys_unlinkat,
-+	[__NR_renameat]			sys_renameat,
-+	[__NR_linkat]			sys_linkat,
-+	[__NR_symlinkat]		sys_symlinkat,
-+	[__NR_readlinkat]		sys_readlinkat,
-+	[__NR_fchmodat]			sys_fchmodat,
-+	[__NR_faccessat]		sys_faccessat,
- };
- 
- long spu_sys_callback(struct spu_syscall_block *s)
-Index: linux-2.6.17-rc2-git5/fs/stat.c
-===================================================================
---- linux-2.6.17-rc2-git5.orig/fs/stat.c	2006-04-24 18:05:23.000000000 +0200
-+++ linux-2.6.17-rc2-git5/fs/stat.c	2006-04-25 01:37:06.000000000 +0200
-@@ -261,7 +261,7 @@ asmlinkage long sys_newlstat(char __user
- 	return error;
- }
- 
--#ifndef __ARCH_WANT_STAT64
-+#if !defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_SYS_NEWFSTATAT)
- asmlinkage long sys_newfstatat(int dfd, char __user *filename,
- 				struct stat __user *statbuf, int flag)
- {
+@@ -42,175 +54,175 @@ _GLOBAL(sys_call_table)
+ SYSCALL(restart_syscall)
+ SYSCALL(exit)
+ PPC_SYS(fork)
+-SYSCALL(read)
+-SYSCALL(write)
+-COMPAT_SYS(open)
+-SYSCALL(close)
+-COMPAT_SYS(waitpid)
+-COMPAT_SYS(creat)
+-SYSCALL(link)
+-SYSCALL(unlink)
++SYSCALL_SPU(read)
++SYSCALL_SPU(write)
++COMPAT_SYS_SPU(open)
++SYSCALL_SPU(close)
++COMPAT_SYS_SPU(waitpid)
++COMPAT_SYS_SPU(creat)
++SYSCALL_SPU(link)
++SYSCALL_SPU(unlink)
+ COMPAT_SYS(execve)
+-SYSCALL(chdir)
+-COMPAT_SYS(time)
+-SYSCALL(mknod)
+-SYSCALL(chmod)
+-SYSCALL(lchown)
++SYSCALL_SPU(chdir)
++COMPAT_SYS_SPU(time)
++SYSCALL_SPU(mknod)
++SYSCALL_SPU(chmod)
++SYSCALL_SPU(lchown)
+ SYSCALL(ni_syscall)
+ OLDSYS(stat)
+-SYSX(sys_lseek,ppc32_lseek,sys_lseek)
+-SYSCALL(getpid)
++SYSX_SPU(sys_lseek,ppc32_lseek,sys_lseek)
++SYSCALL_SPU(getpid)
+ COMPAT_SYS(mount)
+ SYSX(sys_ni_syscall,sys_oldumount,sys_oldumount)
+-SYSCALL(setuid)
+-SYSCALL(getuid)
+-COMPAT_SYS(stime)
++SYSCALL_SPU(setuid)
++SYSCALL_SPU(getuid)
++COMPAT_SYS_SPU(stime)
+ COMPAT_SYS(ptrace)
+-SYSCALL(alarm)
++SYSCALL_SPU(alarm)
+ OLDSYS(fstat)
+ COMPAT_SYS(pause)
+ COMPAT_SYS(utime)
+ SYSCALL(ni_syscall)
+ SYSCALL(ni_syscall)
+-COMPAT_SYS(access)
+-COMPAT_SYS(nice)
++COMPAT_SYS_SPU(access)
++COMPAT_SYS_SPU(nice)
+ SYSCALL(ni_syscall)
+-SYSCALL(sync)
+-COMPAT_SYS(kill)
+-SYSCALL(rename)
+-COMPAT_SYS(mkdir)
+-SYSCALL(rmdir)
+-SYSCALL(dup)
+-SYSCALL(pipe)
+-COMPAT_SYS(times)
++SYSCALL_SPU(sync)
++COMPAT_SYS_SPU(kill)
++SYSCALL_SPU(rename)
++COMPAT_SYS_SPU(mkdir)
++SYSCALL_SPU(rmdir)
++SYSCALL_SPU(dup)
++SYSCALL_SPU(pipe)
++COMPAT_SYS_SPU(times)
+ SYSCALL(ni_syscall)
+-SYSCALL(brk)
+-SYSCALL(setgid)
+-SYSCALL(getgid)
++SYSCALL_SPU(brk)
++SYSCALL_SPU(setgid)
++SYSCALL_SPU(getgid)
+ SYSCALL(signal)
+-SYSCALL(geteuid)
+-SYSCALL(getegid)
++SYSCALL_SPU(geteuid)
++SYSCALL_SPU(getegid)
+ SYSCALL(acct)
+ SYSCALL(umount)
+ SYSCALL(ni_syscall)
+-COMPAT_SYS(ioctl)
+-COMPAT_SYS(fcntl)
++COMPAT_SYS_SPU(ioctl)
++COMPAT_SYS_SPU(fcntl)
+ SYSCALL(ni_syscall)
+-COMPAT_SYS(setpgid)
++COMPAT_SYS_SPU(setpgid)
+ SYSCALL(ni_syscall)
+ SYSX(sys_ni_syscall,sys_olduname, sys_olduname)
+-COMPAT_SYS(umask)
+-SYSCALL(chroot)
++COMPAT_SYS_SPU(umask)
++SYSCALL_SPU(chroot)
+ SYSCALL(ustat)
+-SYSCALL(dup2)
+-SYSCALL(getppid)
+-SYSCALL(getpgrp)
+-SYSCALL(setsid)
++SYSCALL_SPU(dup2)
++SYSCALL_SPU(getppid)
++SYSCALL_SPU(getpgrp)
++SYSCALL_SPU(setsid)
+ SYS32ONLY(sigaction)
+-SYSCALL(sgetmask)
+-COMPAT_SYS(ssetmask)
+-SYSCALL(setreuid)
+-SYSCALL(setregid)
++SYSCALL_SPU(sgetmask)
++COMPAT_SYS_SPU(ssetmask)
++SYSCALL_SPU(setreuid)
++SYSCALL_SPU(setregid)
+ SYS32ONLY(sigsuspend)
+ COMPAT_SYS(sigpending)
+-COMPAT_SYS(sethostname)
+-COMPAT_SYS(setrlimit)
++COMPAT_SYS_SPU(sethostname)
++COMPAT_SYS_SPU(setrlimit)
+ COMPAT_SYS(old_getrlimit)
+-COMPAT_SYS(getrusage)
+-COMPAT_SYS(gettimeofday)
+-COMPAT_SYS(settimeofday)
+-COMPAT_SYS(getgroups)
+-COMPAT_SYS(setgroups)
++COMPAT_SYS_SPU(getrusage)
++COMPAT_SYS_SPU(gettimeofday)
++COMPAT_SYS_SPU(settimeofday)
++COMPAT_SYS_SPU(getgroups)
++COMPAT_SYS_SPU(setgroups)
+ SYSX(sys_ni_syscall,sys_ni_syscall,ppc_select)
+-SYSCALL(symlink)
++SYSCALL_SPU(symlink)
+ OLDSYS(lstat)
+-COMPAT_SYS(readlink)
++COMPAT_SYS_SPU(readlink)
+ SYSCALL(uselib)
+ SYSCALL(swapon)
+ SYSCALL(reboot)
+ SYSX(sys_ni_syscall,old32_readdir,old_readdir)
+-SYSCALL(mmap)
+-SYSCALL(munmap)
+-SYSCALL(truncate)
+-SYSCALL(ftruncate)
+-SYSCALL(fchmod)
+-SYSCALL(fchown)
+-COMPAT_SYS(getpriority)
+-COMPAT_SYS(setpriority)
++SYSCALL_SPU(mmap)
++SYSCALL_SPU(munmap)
++SYSCALL_SPU(truncate)
++SYSCALL_SPU(ftruncate)
++SYSCALL_SPU(fchmod)
++SYSCALL_SPU(fchown)
++COMPAT_SYS_SPU(getpriority)
++COMPAT_SYS_SPU(setpriority)
+ SYSCALL(ni_syscall)
+ COMPAT_SYS(statfs)
+ COMPAT_SYS(fstatfs)
+ SYSCALL(ni_syscall)
+-COMPAT_SYS(socketcall)
+-COMPAT_SYS(syslog)
+-COMPAT_SYS(setitimer)
+-COMPAT_SYS(getitimer)
+-COMPAT_SYS(newstat)
+-COMPAT_SYS(newlstat)
+-COMPAT_SYS(newfstat)
++COMPAT_SYS_SPU(socketcall)
++COMPAT_SYS_SPU(syslog)
++COMPAT_SYS_SPU(setitimer)
++COMPAT_SYS_SPU(getitimer)
++COMPAT_SYS_SPU(newstat)
++COMPAT_SYS_SPU(newlstat)
++COMPAT_SYS_SPU(newfstat)
+ SYSX(sys_ni_syscall,sys_uname,sys_uname)
+ SYSCALL(ni_syscall)
+-SYSCALL(vhangup)
++SYSCALL_SPU(vhangup)
+ SYSCALL(ni_syscall)
+ SYSCALL(ni_syscall)
+-COMPAT_SYS(wait4)
++COMPAT_SYS_SPU(wait4)
+ SYSCALL(swapoff)
+-COMPAT_SYS(sysinfo)
++COMPAT_SYS_SPU(sysinfo)
+ COMPAT_SYS(ipc)
+-SYSCALL(fsync)
++SYSCALL_SPU(fsync)
+ SYS32ONLY(sigreturn)
+ PPC_SYS(clone)
+-COMPAT_SYS(setdomainname)
+-PPC_SYS(newuname)
++COMPAT_SYS_SPU(setdomainname)
++PPC_SYS_SPU(newuname)
+ SYSCALL(ni_syscall)
+-COMPAT_SYS(adjtimex)
+-SYSCALL(mprotect)
++COMPAT_SYS_SPU(adjtimex)
++SYSCALL_SPU(mprotect)
+ SYSX(sys_ni_syscall,compat_sys_sigprocmask,sys_sigprocmask)
+ SYSCALL(ni_syscall)
+ SYSCALL(init_module)
+ SYSCALL(delete_module)
+ SYSCALL(ni_syscall)
+ SYSCALL(quotactl)
+-COMPAT_SYS(getpgid)
+-SYSCALL(fchdir)
+-SYSCALL(bdflush)
++COMPAT_SYS_SPU(getpgid)
++SYSCALL_SPU(fchdir)
++SYSCALL_SPU(bdflush)
+ COMPAT_SYS(sysfs)
+-SYSX(ppc64_personality,ppc64_personality,sys_personality)
++SYSX_SPU(ppc64_personality,ppc64_personality,sys_personality)
+ SYSCALL(ni_syscall)
+-SYSCALL(setfsuid)
+-SYSCALL(setfsgid)
+-SYSCALL(llseek)
+-COMPAT_SYS(getdents)
+-SYSX(sys_select,ppc32_select,ppc_select)
+-SYSCALL(flock)
+-SYSCALL(msync)
+-COMPAT_SYS(readv)
+-COMPAT_SYS(writev)
+-COMPAT_SYS(getsid)
+-SYSCALL(fdatasync)
++SYSCALL_SPU(setfsuid)
++SYSCALL_SPU(setfsgid)
++SYSCALL_SPU(llseek)
++COMPAT_SYS_SPU(getdents)
++SYSX_SPU(sys_select,ppc32_select,ppc_select)
++SYSCALL_SPU(flock)
++SYSCALL_SPU(msync)
++COMPAT_SYS_SPU(readv)
++COMPAT_SYS_SPU(writev)
++COMPAT_SYS_SPU(getsid)
++SYSCALL_SPU(fdatasync)
+ COMPAT_SYS(sysctl)
+-SYSCALL(mlock)
+-SYSCALL(munlock)
+-SYSCALL(mlockall)
+-SYSCALL(munlockall)
+-COMPAT_SYS(sched_setparam)
+-COMPAT_SYS(sched_getparam)
+-COMPAT_SYS(sched_setscheduler)
+-COMPAT_SYS(sched_getscheduler)
+-SYSCALL(sched_yield)
+-COMPAT_SYS(sched_get_priority_max)
+-COMPAT_SYS(sched_get_priority_min)
+-COMPAT_SYS(sched_rr_get_interval)
+-COMPAT_SYS(nanosleep)
+-SYSCALL(mremap)
+-SYSCALL(setresuid)
+-SYSCALL(getresuid)
++SYSCALL_SPU(mlock)
++SYSCALL_SPU(munlock)
++SYSCALL_SPU(mlockall)
++SYSCALL_SPU(munlockall)
++COMPAT_SYS_SPU(sched_setparam)
++COMPAT_SYS_SPU(sched_getparam)
++COMPAT_SYS_SPU(sched_setscheduler)
++COMPAT_SYS_SPU(sched_getscheduler)
++SYSCALL_SPU(sched_yield)
++COMPAT_SYS_SPU(sched_get_priority_max)
++COMPAT_SYS_SPU(sched_get_priority_min)
++COMPAT_SYS_SPU(sched_rr_get_interval)
++COMPAT_SYS_SPU(nanosleep)
++SYSCALL_SPU(mremap)
++SYSCALL_SPU(setresuid)
++SYSCALL_SPU(getresuid)
+ SYSCALL(ni_syscall)
+-SYSCALL(poll)
++SYSCALL_SPU(poll)
+ COMPAT_SYS(nfsservctl)
+-SYSCALL(setresgid)
+-SYSCALL(getresgid)
+-COMPAT_SYS(prctl)
++SYSCALL_SPU(setresgid)
++SYSCALL_SPU(getresgid)
++COMPAT_SYS_SPU(prctl)
+ COMPAT_SYS(rt_sigreturn)
+ COMPAT_SYS(rt_sigaction)
+ COMPAT_SYS(rt_sigprocmask)
+@@ -218,19 +230,19 @@ COMPAT_SYS(rt_sigpending)
+ COMPAT_SYS(rt_sigtimedwait)
+ COMPAT_SYS(rt_sigqueueinfo)
+ COMPAT_SYS(rt_sigsuspend)
+-COMPAT_SYS(pread64)
+-COMPAT_SYS(pwrite64)
+-SYSCALL(chown)
+-SYSCALL(getcwd)
+-SYSCALL(capget)
+-SYSCALL(capset)
++COMPAT_SYS_SPU(pread64)
++COMPAT_SYS_SPU(pwrite64)
++SYSCALL_SPU(chown)
++SYSCALL_SPU(getcwd)
++SYSCALL_SPU(capget)
++SYSCALL_SPU(capset)
+ COMPAT_SYS(sigaltstack)
+-SYSX(sys_sendfile64,compat_sys_sendfile,sys_sendfile)
++SYSX_SPU(sys_sendfile64,compat_sys_sendfile,sys_sendfile)
+ SYSCALL(ni_syscall)
+ SYSCALL(ni_syscall)
+ PPC_SYS(vfork)
+-COMPAT_SYS(getrlimit)
+-COMPAT_SYS(readahead)
++COMPAT_SYS_SPU(getrlimit)
++COMPAT_SYS_SPU(readahead)
+ SYS32ONLY(mmap2)
+ SYS32ONLY(truncate64)
+ SYS32ONLY(ftruncate64)
+@@ -241,60 +253,60 @@ SYSCALL(pciconfig_read)
+ SYSCALL(pciconfig_write)
+ SYSCALL(pciconfig_iobase)
+ SYSCALL(ni_syscall)
+-SYSCALL(getdents64)
+-SYSCALL(pivot_root)
++SYSCALL_SPU(getdents64)
++SYSCALL_SPU(pivot_root)
+ SYSX(sys_ni_syscall,compat_sys_fcntl64,sys_fcntl64)
+-SYSCALL(madvise)
+-SYSCALL(mincore)
+-SYSCALL(gettid)
+-SYSCALL(tkill)
+-SYSCALL(setxattr)
+-SYSCALL(lsetxattr)
+-SYSCALL(fsetxattr)
+-SYSCALL(getxattr)
+-SYSCALL(lgetxattr)
+-SYSCALL(fgetxattr)
+-SYSCALL(listxattr)
+-SYSCALL(llistxattr)
+-SYSCALL(flistxattr)
+-SYSCALL(removexattr)
+-SYSCALL(lremovexattr)
+-SYSCALL(fremovexattr)
+-COMPAT_SYS(futex)
+-COMPAT_SYS(sched_setaffinity)
+-COMPAT_SYS(sched_getaffinity)
++SYSCALL_SPU(madvise)
++SYSCALL_SPU(mincore)
++SYSCALL_SPU(gettid)
++SYSCALL_SPU(tkill)
++SYSCALL_SPU(setxattr)
++SYSCALL_SPU(lsetxattr)
++SYSCALL_SPU(fsetxattr)
++SYSCALL_SPU(getxattr)
++SYSCALL_SPU(lgetxattr)
++SYSCALL_SPU(fgetxattr)
++SYSCALL_SPU(listxattr)
++SYSCALL_SPU(llistxattr)
++SYSCALL_SPU(flistxattr)
++SYSCALL_SPU(removexattr)
++SYSCALL_SPU(lremovexattr)
++SYSCALL_SPU(fremovexattr)
++COMPAT_SYS_SPU(futex)
++COMPAT_SYS_SPU(sched_setaffinity)
++COMPAT_SYS_SPU(sched_getaffinity)
+ SYSCALL(ni_syscall)
+ SYSCALL(ni_syscall)
+ SYS32ONLY(sendfile64)
+-COMPAT_SYS(io_setup)
+-SYSCALL(io_destroy)
+-COMPAT_SYS(io_getevents)
+-COMPAT_SYS(io_submit)
+-SYSCALL(io_cancel)
++COMPAT_SYS_SPU(io_setup)
++SYSCALL_SPU(io_destroy)
++COMPAT_SYS_SPU(io_getevents)
++COMPAT_SYS_SPU(io_submit)
++SYSCALL_SPU(io_cancel)
+ SYSCALL(set_tid_address)
+-SYSX(sys_fadvise64,ppc32_fadvise64,sys_fadvise64)
++SYSX_SPU(sys_fadvise64,ppc32_fadvise64,sys_fadvise64)
+ SYSCALL(exit_group)
+ SYSX(sys_lookup_dcookie,ppc32_lookup_dcookie,sys_lookup_dcookie)
+-SYSCALL(epoll_create)
+-SYSCALL(epoll_ctl)
+-SYSCALL(epoll_wait)
+-SYSCALL(remap_file_pages)
+-SYSX(sys_timer_create,compat_sys_timer_create,sys_timer_create)
+-COMPAT_SYS(timer_settime)
+-COMPAT_SYS(timer_gettime)
+-SYSCALL(timer_getoverrun)
+-SYSCALL(timer_delete)
+-COMPAT_SYS(clock_settime)
+-COMPAT_SYS(clock_gettime)
+-COMPAT_SYS(clock_getres)
+-COMPAT_SYS(clock_nanosleep)
++SYSCALL_SPU(epoll_create)
++SYSCALL_SPU(epoll_ctl)
++SYSCALL_SPU(epoll_wait)
++SYSCALL_SPU(remap_file_pages)
++SYSX_SPU(sys_timer_create,compat_sys_timer_create,sys_timer_create)
++COMPAT_SYS_SPU(timer_settime)
++COMPAT_SYS_SPU(timer_gettime)
++SYSCALL_SPU(timer_getoverrun)
++SYSCALL_SPU(timer_delete)
++COMPAT_SYS_SPU(clock_settime)
++COMPAT_SYS_SPU(clock_gettime)
++COMPAT_SYS_SPU(clock_getres)
++COMPAT_SYS_SPU(clock_nanosleep)
+ SYSX(ppc64_swapcontext,ppc32_swapcontext,ppc_swapcontext)
+-COMPAT_SYS(tgkill)
+-COMPAT_SYS(utimes)
+-COMPAT_SYS(statfs64)
+-COMPAT_SYS(fstatfs64)
++COMPAT_SYS_SPU(tgkill)
++COMPAT_SYS_SPU(utimes)
++COMPAT_SYS_SPU(statfs64)
++COMPAT_SYS_SPU(fstatfs64)
+ SYSX(sys_ni_syscall, ppc_fadvise64_64, ppc_fadvise64_64)
+-PPC_SYS(rtas)
++PPC_SYS_SPU(rtas)
+ OLDSYS(debug_setcontext)
+ SYSCALL(ni_syscall)
+ SYSCALL(ni_syscall)
+@@ -321,11 +333,6 @@ SYSCALL(spu_run)
+ SYSCALL(spu_create)
+ COMPAT_SYS(pselect6)
+ COMPAT_SYS(ppoll)
+-SYSCALL(unshare)
+-SYSCALL(splice)
+-SYSCALL(tee)
+-
+-/*
+- * please add new calls to arch/powerpc/platforms/cell/spu_callbacks.c
+- * as well when appropriate.
+- */
++SYSCALL_SPU(unshare)
++SYSCALL_SPU(splice)
++SYSCALL_SPU(tee)
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+dwmw2
