@@ -1,27 +1,19 @@
-Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
-Received: from max72.rrze.uni-erlangen.de (max72.rrze.uni-erlangen.de
-	[131.188.3.69]) by ozlabs.org (Postfix) with ESMTP id 1E5BB67A41
+Return-Path: <jeanwelly@126.com>
+Received: from m15-112.126.com (m15-112.126.com [220.181.15.112])
+	by ozlabs.org (Postfix) with SMTP id 3A1E167A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Apr 2006 01:04:08 +1000 (EST)
-Received: from fau-vscan-2.rrze.uni-erlangen.de ([131.188.3.69]
-	[131.188.3.69]) by faurelaysmart-2.rrze.uni-erlangen.de with
-	ESMTP for linuxppc-embedded@ozlabs.org;
-	Tue, 25 Apr 2006 17:03:33 +0200
-Received: from max72.rrze.uni-erlangen.de ([131.188.3.69])
-	by fau-vscan-2.rrze.uni-erlangen.de (fau-vscan-2.rrze.uni-erlangen.de
-	[131.188.2.92]) (amavisd-new)
-	with ESMTP id 05916-03 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 25 Apr 2006 17:03:33 +0200 (MEST)
-Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
-	smtp-auth.uni-erlangen.de with ESMTP for
-	linuxppc-embedded@ozlabs.org; Tue, 25 Apr 2006 17:03:14 +0200
-Message-Id: <444E3A32.3050508@cs.fau.de>
-Date: Tue, 25 Apr 2006 17:03:14 +0200
-From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: USB working on MPC875/885 ?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 26 Apr 2006 01:34:34 +1000 (EST)
+Date: Tue, 25 Apr 2006 23:03:20 +0800
+From: "jeanwelly" <jeanwelly@126.com>
+To: "Becky Bruce" <Becky.Bruce@freescale.com>
+References: <200604242151091399377@126.com>
+	<9866A56E-AF4C-477D-A035-E6D6A78A75D3@freescale.com>
+Subject: Re: Re: PPC exception 0x320
+Message-ID: <200604252303190264825@126.com>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,13 +25,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hello,
-
-anyone who got a USB working on the MPC885 or MPC875 processor ? With 
-linux 2.4 ? Using the patch from brad parker ?
-
-It would help me alot to know, if this has been successfully done 
-before! Thanks in advance!
-
-Best regards,
-Josef
+SGkgQmVja3kgQnJ1Y2UsDQpJJ20gdXNpbmcgUFBDIDc1MC4uLiBKdXN0IGFzIHlvdSBzYWlkLCAw
+eDMwMCBpcyBmb3IgRFNJLCBhbmQgSSBndWVzcyB0aGV5IGFyZSBhIHNldCBvZiBleGNlcHRpb25z
+LCBub3QganVzdCBvbmUuIEFuZCAweDMyMCBpcyBvbmUgb2YgdGhlbS4NCkkgZ290IGEgYm9hcmQg
+Y3Jhc2gsIGFuZCBQUEMgYWxhcm1lZCBleGNlcHRpb24gMHgzMjAuIENvdWxkIHlvdSBzaG93IG1l
+IHRoZSBtZWNoYW5pc20gb2YgaGFuZGxpbmcgb2YgYSBzcGVjaWFsIGV4Y2VwdGlvbiBub3Qgb25l
+IHNldC4NCgkNCg0KPT09PT09PSAyMDA2LTA0LTI1IDAyOjUzOjM1IMT61NrAtNDF1tDQtLXAo7o9
+PT09PT09DQoNCj5Db3VsZCB5b3UgdHJ5IHRvIGJlIG1vcmUgc3BlY2lmaWM/ICBXaGF0IHByb2Nl
+c3NvciBkbyB5b3UgaGF2ZSwgd2hhdCAgDQo+bGludXggdmVyc2lvbiBhcmUgeW91IHJ1bm5pbmcs
+IGFuZCB3aGF0IGRvIHlvdSBtZWFuIGV4YWN0bHkgd2hlbiB5b3UgIA0KPnNheSB5b3UgImVuY291
+bnRlcmVkIFBQQyBleGNlcHRpb24gMHgzMjAiPyAgQXMgZmFyIGFzIEkga25vdywgdGhlICANCj5w
+b3dlcnBjIGFyY2hpdGVjdHVyZSBkb2VzIG5vdCBkZWZpbmUgYW4gZXhjZXB0aW9uIDB4MzIwLiAg
+MHgzMDAgaXMgIA0KPnVzdWFsbHkgRFNJIG9uIGNsYXNzaWMgcG93ZXJwYyBwYXJ0cy4gIEJvb2tF
+IHBhcnRzIGhhbmRsZSB0aGluZ3MgIA0KPmRpZmZlcmVudGx5Lg0KPg0KPlRoYW5rcywNCj4tQmVj
+a3kNCj4NCj5PbiBBcHIgMjQsIDIwMDYsIGF0IDg6NTEgQU0sIGplYW53ZWxseSB3cm90ZToNCj4N
+Cj4+IEhpLA0KPj4gSSBlbmNvdW50ZXJlZCBQUEMgZXhjZXB0aW9uIDB4MzIwLCBidXQgZG9uJ3Qg
+a25vdyB3aGF0IGl0IGZvci4gQW55ICANCj4+IG9uZSBjb3VsZCBoZWxwIG1lIG9uIHRoaXM/DQo+
+PiBUaGFua3MhDQo+PiAgCQkJCQ0KPj4NCj4+IKGhoaGhoaGhoaGhoaGhoaFqZWFud2VsbHkNCj4+
+IKGhoaGhoaGhoaGhoaGhoaFqZWFud2VsbHlAMTI2LmNvbQ0KPj4goaGhoaGhoaGhoaGhoaGhoaGh
+oaEyMDA2LTA0LTI0DQo+PiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXw0KPj4gTGludXhwcGMtZW1iZWRkZWQgbWFpbGluZyBsaXN0DQo+PiBMaW51eHBwYy1l
+bWJlZGRlZEBvemxhYnMub3JnDQo+PiBodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5m
+by9saW51eHBwYy1lbWJlZGRlZA0KPg0KPg0KPi4NCg0KPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0g
+PSA9ID0gPSA9ID0gPSA9DQoJCQkNCg0KoaGhoaGhoaGhoaGhoaGhodbCDQrA8aOhDQogDQoJCQkJ
+IA0KoaGhoaGhoaGhoaGhoaGhoWplYW53ZWxseQ0KoaGhoaGhoaGhoaGhoaGhoWplYW53ZWxseUAx
+MjYuY29tDQqhoaGhoaGhoaGhoaGhoaGhoaGhoTIwMDYtMDQtMjUNCg0K
