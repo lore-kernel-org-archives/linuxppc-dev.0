@@ -1,23 +1,20 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id DA8AF67A3B
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 22:00:16 +1000 (EST)
+Received: from localhost (ta-1-1.tip.net.au [203.11.71.1])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 48C7B679F4
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 19:05:33 +1000 (EST)
-Date: Tue, 25 Apr 2006 10:05:27 +0100 (IST)
-From: Mel Gorman <mel@csn.ul.ie>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 0/7] [RFC] Sizing zones and holes in an architecture
-	independent manner V4
-In-Reply-To: <20060425104855.42c6ca62.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0604250948080.7250@skynet.skynet.ie>
-References: <20060424202009.20409.89016.sendpatchset@skynet>
-	<20060425104855.42c6ca62.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linux-mm@kvack.org,
-	ak@suse.de, bob.picco@hp.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+	by smtps.tip.net.au (Postfix) with ESMTP id 7DC7C3683DB
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 22:00:16 +1000 (EST)
+Date: Tue, 25 Apr 2006 21:54:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: [RFC 1/2] powerpc: add all the iSeries virtual devices to the
+	device tree
+Message-Id: <20060425215405.648a16e7.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,79 +24,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 25 Apr 2006, KAMEZAWA Hiroyuki wrote:
+We do this by putting them in the flattened device tree at setup time.
+This required the flattened device tree blob to be made bigger.
 
-> On Mon, 24 Apr 2006 21:20:09 +0100 (IST)
-> Mel Gorman <mel@csn.ul.ie> wrote:
->
->> This is V4 of the patchset to size zones and memory holes in an
->> architecture-independent manner.
->>
->
-> Could you add some documentation about 'how to use' your generic funcs ?
-> I think more archs can use your generic routine if well documented.
->
-> All initialization path can be written in following way ?
-> ==
-> for_all_memory_region()
-> 	add_active_range(nid, start, end)
-> free_area_init_nodes(max_dma, max_dma32, max_low_pfn, max_pfn);
-> ==
+Currently we don't do anything with these.
 
-Yes, that is accurate. I can write in some documentation.
+Also make a function static.
 
->
-> And following functions are really needed ?
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
 
-Most of them, yes. Without them, the arch-specific could would need to be 
-able to iterate through the list of active regions which would lead to 
-more similar-looking code.
-
-> ==
-
-> +extern void remove_all_active_ranges(void);
-
-Used by x86_64 when it finds the SRAT table is bad and needs to rediscover 
-active regions in another way. Spontaneous reboots were possible without 
-it.
-
-> +extern void get_pfn_range_for_nid(unsigned int nid,
-> +			unsigned long *start_pfn, unsigned long *end_pfn);
-
-Currently only used by power when initialising the boot allocator. There 
-were no obvious canditates for use elsewhere.
-
-> +extern unsigned long find_min_pfn_with_active_regions(void);
-
-This does not need to be in a header.
-
-> +extern unsigned long find_max_pfn_with_active_regions(void);
-
-Could be dropped, only required by x86_64.
-
-> +extern int early_pfn_to_nid(unsigned long pfn);
-
-Removed two copies of similar functions from power and x86. I thought I 
-could replace the IA64 one as well, but the code was unusual enough there 
-that I decided not to.
-
-> +extern void free_bootmem_with_active_regions(int nid,
-> +						unsigned long max_low_pfn);
-
-Removes similar-looking code from power and x86_64.
-
-> +extern void sparse_memory_present_with_active_regions(int nid);
-
-This is only used by power.
-
-> +extern unsigned long absent_pages_in_range(unsigned long start_pfn,
-> +						unsigned long end_pfn);
->
-
-Removes similar looking code from x86_64. For all other architectures, it 
-does the job of the existing functions that calculate zholes_size[].
+ arch/powerpc/platforms/iseries/setup.c |   87 ++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/iseries/vio.c   |    2 -
+ 2 files changed, 87 insertions(+), 2 deletions(-)
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+676ab187518bfb5e48aa4c3cc418456e67a2ed70
+diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
+index 3c51448..9ce2afc 100644
+--- a/arch/powerpc/platforms/iseries/setup.c
++++ b/arch/powerpc/platforms/iseries/setup.c
+@@ -45,6 +45,7 @@ #include <asm/paca.h>
+ #include <asm/cache.h>
+ #include <asm/sections.h>
+ #include <asm/abs_addr.h>
++#include <asm/iseries/hv_types.h>
+ #include <asm/iseries/hv_lp_config.h>
+ #include <asm/iseries/hv_call_event.h>
+ #include <asm/iseries/hv_call_xm.h>
+@@ -710,7 +711,7 @@ define_machine(iseries) {
+ };
+ 
+ struct blob {
+-	unsigned char data[PAGE_SIZE];
++	unsigned char data[PAGE_SIZE * 2];
+ 	unsigned long next;
+ };
+ 
+@@ -911,6 +912,88 @@ void dt_model(struct iseries_flat_dt *dt
+ 	dt_prop_str(dt, "compatible", "IBM,iSeries");
+ }
+ 
++void dt_vdevices(struct iseries_flat_dt *dt)
++{
++	u32 reg = 0;
++	HvLpIndexMap vlan_map;
++	int i;
++	char buf[32];
++
++	dt_start_node(dt, "vdevice");
++	dt_prop_u32(dt, "#address-cells", 1);
++	dt_prop_u32(dt, "#size-cells", 0);
++
++	snprintf(buf, sizeof(buf), "viocons@%08x", reg);
++	dt_start_node(dt, buf);
++	dt_prop_str(dt, "device_type", "serial");
++	dt_prop_empty(dt, "compatible");
++	dt_prop_u32(dt, "reg", reg);
++	dt_end_node(dt);
++	reg++;
++
++	snprintf(buf, sizeof(buf), "v-scsi@%08x", reg);
++	dt_start_node(dt, buf);
++	dt_prop_str(dt, "device_type", "vscsi");
++	dt_prop_str(dt, "compatible", "IBM,v-scsi");
++	dt_prop_u32(dt, "reg", reg);
++	dt_end_node(dt);
++	reg++;
++
++	vlan_map = HvLpConfig_getVirtualLanIndexMap();
++	for (i = 0; i < HVMAXARCHITECTEDVIRTUALLANS; i++) {
++		unsigned char mac_addr[6];
++
++		if ((vlan_map & (0x8000 >> i)) == 0)
++			continue;
++		snprintf(buf, 32, "vlan@%08x", reg + i);
++		dt_start_node(dt, buf);
++		dt_prop_str(dt, "device_type", "vlan");
++		dt_prop_empty(dt, "compatible");
++		dt_prop_u32(dt, "reg", reg + i);
++
++		mac_addr[0] = 0x02;
++		mac_addr[1] = 0x01;
++		mac_addr[2] = 0xff;
++		mac_addr[3] = i;
++		mac_addr[4] = 0xff;
++		mac_addr[5] = HvLpConfig_getLpIndex_outline();
++		dt_prop(dt, "local-mac-address", (char *)mac_addr, 6);
++		dt_prop(dt, "mac-address", (char *)mac_addr, 6);
++
++		dt_end_node(dt);
++	}
++	reg += HVMAXARCHITECTEDVIRTUALLANS;
++
++	for (i = 0; i < HVMAXARCHITECTEDVIRTUALDISKS; i++) {
++		snprintf(buf, 32, "viodasd@%08x", reg + i);
++		dt_start_node(dt, buf);
++		dt_prop_str(dt, "device_type", "viodasd");
++		dt_prop_empty(dt, "compatible");
++		dt_prop_u32(dt, "reg", reg + i);
++		dt_end_node(dt);
++	}
++	reg += HVMAXARCHITECTEDVIRTUALDISKS;
++	for (i = 0; i < HVMAXARCHITECTEDVIRTUALCDROMS; i++) {
++		snprintf(buf, 32, "viocd@%08x", reg + i);
++		dt_start_node(dt, buf);
++		dt_prop_str(dt, "device_type", "viocd");
++		dt_prop_empty(dt, "compatible");
++		dt_prop_u32(dt, "reg", reg + i);
++		dt_end_node(dt);
++	}
++	reg += HVMAXARCHITECTEDVIRTUALCDROMS;
++	for (i = 0; i < HVMAXARCHITECTEDVIRTUALTAPES; i++) {
++		snprintf(buf, 32, "viotape@%08x", reg + i);
++		dt_start_node(dt, buf);
++		dt_prop_str(dt, "device_type", "viotape");
++		dt_prop_empty(dt, "compatible");
++		dt_prop_u32(dt, "reg", reg + i);
++		dt_end_node(dt);
++	}
++
++	dt_end_node(dt);
++}
++
+ void build_flat_dt(struct iseries_flat_dt *dt, unsigned long phys_mem_size)
+ {
+ 	u64 tmp[2];
+@@ -941,6 +1024,8 @@ void build_flat_dt(struct iseries_flat_d
+ 
+ 	dt_cpus(dt);
+ 
++	dt_vdevices(dt);
++
+ 	dt_end_node(dt);
+ 
+ 	dt_push_u32(dt, OF_DT_END);
+diff --git a/arch/powerpc/platforms/iseries/vio.c b/arch/powerpc/platforms/iseries/vio.c
+index ad36ab0..22045a2 100644
+--- a/arch/powerpc/platforms/iseries/vio.c
++++ b/arch/powerpc/platforms/iseries/vio.c
+@@ -71,7 +71,7 @@ static struct vio_dev *__init vio_regist
+ 	return viodev;
+ }
+ 
+-void __init probe_bus_iseries(void)
++static void __init probe_bus_iseries(void)
+ {
+ 	HvLpIndexMap vlan_map;
+ 	struct vio_dev *viodev;
+-- 
+1.3.1
