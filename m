@@ -1,17 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 3A4FB67A00
-	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 09:31:26 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3294A679FC
+	for <linuxppc-dev@ozlabs.org>; Tue, 25 Apr 2006 10:03:14 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH] Wire up *at syscalls
-Date: Tue, 25 Apr 2006 01:31:21 +0200
-References: <jeu08ippb9.fsf@sykes.suse.de>
-In-Reply-To: <jeu08ippb9.fsf@sykes.suse.de>
+References: <jeu08ippb9.fsf@sykes.suse.de> <200604250131.22154.arnd@arndb.de>
+Date: Tue, 25 Apr 2006 02:03:08 +0200
+In-Reply-To: <200604250131.22154.arnd@arndb.de> (Arnd Bergmann's message of
+	"Tue, 25 Apr 2006 01:31:21 +0200")
+Message-ID: <jelktuplmr.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200604250131.22154.arnd@arndb.de>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +25,130 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-QW0gVHVlc2RheSAyNSBBcHJpbCAyMDA2IDAwOjQzIHNjaHJpZWIgQW5kcmVhcyBTY2h3YWI6Cj4g
-SW5kZXg6IGxpbnV4LTIuNi4xNy1yYzItZ2l0NS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwv
-c3B1X2NhbGxiYWNrcy5jCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLQo+IGxpbnV4LTIuNi4xNy1yYzItZ2l0
-NS5vcmlnL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvY2VsbC9zcHVfY2FsbGJhY2tzLmOgoKCgoAo+
-oDIwMDYtMDQtMjQgMTY6MjQ6NDcuMDAwMDAwMDAwICswMjAwICsrKwo+IGxpbnV4LTIuNi4xNy1y
-YzItZ2l0NS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL2NlbGwvc3B1X2NhbGxiYWNrcy5joKCgMjAw
-Ni0wNAo+LTI0IDE4OjA3OjU5LjAwMDAwMDAwMCArMDIwMCBAQCAtMzE4LDYgKzMxOCwxOSBAQCB2
-b2lkICpzcHVfc3lzY2FsbF90YWJsZVtdCj4gPSB7Cj4goKCgoKCgoKBbX19OUl91bnNoYXJlXaCg
-oKCgoKCgoKCgoKCgoKCgoHN5c191bnNoYXJlLAo+IKCgoKCgoKCgW19fTlJfc3BsaWNlXaCgoKCg
-oKCgoKCgoKCgoKCgoKBzeXNfc3BsaWNlLAo+IKCgoKCgoKCgW19fTlJfdGVlXaCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKBzeXNfdGVlLAo+ICugoKCgoKCgW19fTlJfb3BlbmF0XaCgoKCgoKCgoKCgoKCg
-oKCgoKBzeXNfb3BlbmF0LAo+ICugoKCgoKCgW19fTlJfbWtkaXJhdF2goKCgoKCgoKCgoKCgoKCg
-oKBzeXNfbWtkaXJhdCwKPiAroKCgoKCgoFtfX05SX21rbm9kYXRdoKCgoKCgoKCgoKCgoKCgoKCg
-c3lzX21rbm9kYXQsCj4gK6CgoKCgoKBbX19OUl9mY2hvd25hdF2goKCgoKCgoKCgoKCgoKCgoHN5
-c19mY2hvd25hdCwKPiAroKCgoKCgoFtfX05SX2Z1dGltZXNhdF2goKCgoKCgoKCgoKCgoKCgc3lz
-X2Z1dGltZXNhdCwKPiAroKCgoKCgoFtfX05SX25ld2ZzdGF0YXRdoKCgoKCgoKCgoKCgoKCgc3lz
-X25ld2ZzdGF0YXQsCj4gK6CgoKCgoKBbX19OUl91bmxpbmthdF2goKCgoKCgoKCgoKCgoKCgoHN5
-c191bmxpbmthdCwKPiAroKCgoKCgoFtfX05SX3JlbmFtZWF0XaCgoKCgoKCgoKCgoKCgoKCgc3lz
-X3JlbmFtZWF0LAo+ICugoKCgoKCgW19fTlJfbGlua2F0XaCgoKCgoKCgoKCgoKCgoKCgoKBzeXNf
-bGlua2F0LAo+ICugoKCgoKCgW19fTlJfc3ltbGlua2F0XaCgoKCgoKCgoKCgoKCgoKBzeXNfc3lt
-bGlua2F0LAo+ICugoKCgoKCgW19fTlJfcmVhZGxpbmthdF2goKCgoKCgoKCgoKCgoKBzeXNfcmVh
-ZGxpbmthdCwKPiAroKCgoKCgoFtfX05SX2ZjaG1vZGF0XaCgoKCgoKCgoKCgoKCgoKCgc3lzX2Zj
-aG1vZGF0LAo+ICugoKCgoKCgW19fTlJfZmFjY2Vzc2F0XaCgoKCgoKCgoKCgoKCgoKBzeXNfZmFj
-Y2Vzc2F0LAo+IKB9Owo+IKAKClRoZSBzcHUgcGFydHMgbG9vayBmaW5lLCB0aGFua3MuCgo+IKBs
-b25nIHNwdV9zeXNfY2FsbGJhY2soc3RydWN0IHNwdV9zeXNjYWxsX2Jsb2NrICpzKQo+IEluZGV4
-OiBsaW51eC0yLjYuMTctcmMyLWdpdDUvZnMvc3RhdC5jCj4gPT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLSBsaW51
-eC0yLjYuMTctcmMyLWdpdDUub3JpZy9mcy9zdGF0LmOgoKCgoKCgoDIwMDYtMDQtMjQKPiAxODow
-NToyMy4wMDAwMDAwMDAgKzAyMDAgKysrIGxpbnV4LTIuNi4xNy1yYzItZ2l0NS9mcy9zdGF0LmOg
-oKCgoDIwMDYtMDQtMjQKPiAxODowNTo0NC4wMDAwMDAwMDAgKzAyMDAgQEAgLTI2MSw3ICsyNjEs
-NiBAQCBhc21saW5rYWdlIGxvbmcKPiBzeXNfbmV3bHN0YXQoY2hhciBfX3VzZXIKPiCgoKCgoKCg
-oHJldHVybiBlcnJvcjsKPiCgfQo+IKAKPiAtI2lmbmRlZiBfX0FSQ0hfV0FOVF9TVEFUNjQKPiCg
-YXNtbGlua2FnZSBsb25nIHN5c19uZXdmc3RhdGF0KGludCBkZmQsIGNoYXIgX191c2VyICpmaWxl
-bmFtZSwKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoHN0cnVjdCBzdGF0IF9fdXNl
-ciAqc3RhdGJ1ZiwgaW50IGZsYWcpCj4goHsKPiBAQCAtMjgyLDcgKzI4MSw2IEBAIGFzbWxpbmth
-Z2UgbG9uZyBzeXNfbmV3ZnN0YXRhdChpbnQgZGZkLAo+IKBvdXQ6Cj4goKCgoKCgoKByZXR1cm4g
-ZXJyb3I7Cj4goH0KPiAtI2VuZGlmCj4goAo+IKBhc21saW5rYWdlIGxvbmcgc3lzX25ld2ZzdGF0
-KHVuc2lnbmVkIGludCBmZCwgc3RydWN0IHN0YXQgX191c2VyICpzdGF0YnVmKQo+IKB7CgpTaW1w
-bHkgcmVtb3ZpbmcgdGhlICNpZmRlZiBsb29rcyB3cm9uZy4gQUZBSUNULCBwb3dlcnBjIGFuZCBp
-YTY0IGFyZSB0aGUKb25seSBvbmVzIHRoYXQgd2FudCBib3RoIHN5c19uZXdmc3RhdGF0IGFuZCBz
-eXNfZnN0YXRhdDY0LCBtYXliZSB5b3UKY2FuIHNpbXBseSBkbyAKCiNpZiAhZGVmaW5lZChfX0FS
-Q0hfV0FOVF9TVEFUNjQpIHx8IGRlZmluZWQoX19BUkNIX1dBTlRfTkVXU1RBVEZTQVQpCgoJQXJu
-ZCA8PjwK
+Arnd Bergmann <arnd@arndb.de> writes:
+
+> Simply removing the #ifdef looks wrong. AFAICT, powerpc and ia64 are the
+> only ones that want both sys_newfstatat and sys_fstatat64, maybe you
+> can simply do 
+>
+> #if !defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_NEWSTATFSAT)
+
+Updated patch below.
+
+Andreas.
+
+Signed-off-by: Andreas Schwab <schwab@suse.de>
+
+---
+ arch/powerpc/kernel/systbl.S                |   13 +++++++++++++
+ arch/powerpc/platforms/cell/spu_callbacks.c |   13 +++++++++++++
+ fs/stat.c                                   |    2 +-
+ include/asm-powerpc/unistd.h                |   20 +++++++++++++++++++-
+ 4 files changed, 46 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.17-rc2-git5/arch/powerpc/kernel/systbl.S
+===================================================================
+--- linux-2.6.17-rc2-git5.orig/arch/powerpc/kernel/systbl.S	2006-04-24 16:24:47.000000000 +0200
++++ linux-2.6.17-rc2-git5/arch/powerpc/kernel/systbl.S	2006-04-24 19:53:50.000000000 +0200
+@@ -324,6 +324,19 @@ COMPAT_SYS(ppoll)
+ SYSCALL(unshare)
+ SYSCALL(splice)
+ SYSCALL(tee)
++COMPAT_SYS(openat)
++SYSCALL(mkdirat)
++SYSCALL(mknodat)
++SYSCALL(fchownat)
++COMPAT_SYS(futimesat)
++SYSX(sys_newfstatat, sys_fstatat64, sys_fstatat64)
++SYSCALL(unlinkat)
++SYSCALL(renameat)
++SYSCALL(linkat)
++SYSCALL(symlinkat)
++SYSCALL(readlinkat)
++SYSCALL(fchmodat)
++SYSCALL(faccessat)
+ 
+ /*
+  * please add new calls to arch/powerpc/platforms/cell/spu_callbacks.c
+Index: linux-2.6.17-rc2-git5/include/asm-powerpc/unistd.h
+===================================================================
+--- linux-2.6.17-rc2-git5.orig/include/asm-powerpc/unistd.h	2006-04-24 16:24:15.000000000 +0200
++++ linux-2.6.17-rc2-git5/include/asm-powerpc/unistd.h	2006-04-25 01:35:38.000000000 +0200
+@@ -303,8 +303,25 @@
+ #define __NR_unshare		282
+ #define __NR_splice		283
+ #define __NR_tee		284
++#define __NR_openat		285
++#define __NR_mkdirat		286
++#define __NR_mknodat		287
++#define __NR_fchownat		288
++#define __NR_futimesat		289
++#ifdef __powerpc64__
++#define __NR_newfstatat		290
++#else
++#define __NR_fstatat64		290
++#endif
++#define __NR_unlinkat		291
++#define __NR_renameat		292
++#define __NR_linkat		293
++#define __NR_symlinkat		294
++#define __NR_readlinkat		295
++#define __NR_fchmodat		296
++#define __NR_faccessat		297
+ 
+-#define __NR_syscalls		285
++#define __NR_syscalls		298
+ 
+ #ifdef __KERNEL__
+ #define __NR__exit __NR_exit
+@@ -457,6 +474,7 @@ type name(type1 arg1, type2 arg2, type3 
+ #ifdef CONFIG_PPC64
+ #define __ARCH_WANT_COMPAT_SYS_TIME
+ #define __ARCH_WANT_COMPAT_SYS_RT_SIGSUSPEND
++#define __ARCH_WANT_SYS_NEWFSTATAT
+ #endif
+ 
+ /*
+Index: linux-2.6.17-rc2-git5/arch/powerpc/platforms/cell/spu_callbacks.c
+===================================================================
+--- linux-2.6.17-rc2-git5.orig/arch/powerpc/platforms/cell/spu_callbacks.c	2006-04-24 16:24:47.000000000 +0200
++++ linux-2.6.17-rc2-git5/arch/powerpc/platforms/cell/spu_callbacks.c	2006-04-24 23:51:16.000000000 +0200
+@@ -318,6 +318,19 @@ void *spu_syscall_table[] = {
+ 	[__NR_unshare]			sys_unshare,
+ 	[__NR_splice]			sys_splice,
+ 	[__NR_tee]			sys_tee,
++	[__NR_openat]			sys_openat,
++	[__NR_mkdirat]			sys_mkdirat,
++	[__NR_mknodat]			sys_mknodat,
++	[__NR_fchownat]			sys_fchownat,
++	[__NR_futimesat]		sys_futimesat,
++	[__NR_newfstatat]		sys_newfstatat,
++	[__NR_unlinkat]			sys_unlinkat,
++	[__NR_renameat]			sys_renameat,
++	[__NR_linkat]			sys_linkat,
++	[__NR_symlinkat]		sys_symlinkat,
++	[__NR_readlinkat]		sys_readlinkat,
++	[__NR_fchmodat]			sys_fchmodat,
++	[__NR_faccessat]		sys_faccessat,
+ };
+ 
+ long spu_sys_callback(struct spu_syscall_block *s)
+Index: linux-2.6.17-rc2-git5/fs/stat.c
+===================================================================
+--- linux-2.6.17-rc2-git5.orig/fs/stat.c	2006-04-24 18:05:23.000000000 +0200
++++ linux-2.6.17-rc2-git5/fs/stat.c	2006-04-25 01:37:06.000000000 +0200
+@@ -261,7 +261,7 @@ asmlinkage long sys_newlstat(char __user
+ 	return error;
+ }
+ 
+-#ifndef __ARCH_WANT_STAT64
++#if !defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_SYS_NEWFSTATAT)
+ asmlinkage long sys_newfstatat(int dfd, char __user *filename,
+ 				struct stat __user *statbuf, int flag)
+ {
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
