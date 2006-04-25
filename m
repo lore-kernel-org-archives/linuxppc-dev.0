@@ -1,18 +1,19 @@
-Return-Path: <jeanwelly@126.com>
-Received: from m15-112.126.com (m15-112.126.com [220.181.15.112])
-	by ozlabs.org (Postfix) with SMTP id 3A1E167A64
+Return-Path: <Becky.Bruce@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id B42B067A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Apr 2006 01:34:34 +1000 (EST)
-Date: Tue, 25 Apr 2006 23:03:20 +0800
-From: "jeanwelly" <jeanwelly@126.com>
-To: "Becky Bruce" <Becky.Bruce@freescale.com>
+	Wed, 26 Apr 2006 01:43:27 +1000 (EST)
+In-Reply-To: <200604252303190264825@126.com>
 References: <200604242151091399377@126.com>
 	<9866A56E-AF4C-477D-A035-E6D6A78A75D3@freescale.com>
-Subject: Re: Re: PPC exception 0x320
-Message-ID: <200604252303190264825@126.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+	<200604252303190264825@126.com>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=UTF-8; delsp=yes; format=flowed
+Message-Id: <4819ACC0-1281-487B-B290-C55071E1EC27@freescale.com>
+From: Becky Bruce <Becky.Bruce@freescale.com>
+Subject: Re: PPC exception 0x320
+Date: Tue, 25 Apr 2006 10:44:54 -0500
+To: jeanwelly <jeanwelly@126.com>
 Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,29 +25,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Is there some error message you can show me?
 
-SGkgQmVja3kgQnJ1Y2UsDQpJJ20gdXNpbmcgUFBDIDc1MC4uLiBKdXN0IGFzIHlvdSBzYWlkLCAw
-eDMwMCBpcyBmb3IgRFNJLCBhbmQgSSBndWVzcyB0aGV5IGFyZSBhIHNldCBvZiBleGNlcHRpb25z
-LCBub3QganVzdCBvbmUuIEFuZCAweDMyMCBpcyBvbmUgb2YgdGhlbS4NCkkgZ290IGEgYm9hcmQg
-Y3Jhc2gsIGFuZCBQUEMgYWxhcm1lZCBleGNlcHRpb24gMHgzMjAuIENvdWxkIHlvdSBzaG93IG1l
-IHRoZSBtZWNoYW5pc20gb2YgaGFuZGxpbmcgb2YgYSBzcGVjaWFsIGV4Y2VwdGlvbiBub3Qgb25l
-IHNldC4NCgkNCg0KPT09PT09PSAyMDA2LTA0LTI1IDAyOjUzOjM1IMT61NrAtNDF1tDQtLXAo7o9
-PT09PT09DQoNCj5Db3VsZCB5b3UgdHJ5IHRvIGJlIG1vcmUgc3BlY2lmaWM/ICBXaGF0IHByb2Nl
-c3NvciBkbyB5b3UgaGF2ZSwgd2hhdCAgDQo+bGludXggdmVyc2lvbiBhcmUgeW91IHJ1bm5pbmcs
-IGFuZCB3aGF0IGRvIHlvdSBtZWFuIGV4YWN0bHkgd2hlbiB5b3UgIA0KPnNheSB5b3UgImVuY291
-bnRlcmVkIFBQQyBleGNlcHRpb24gMHgzMjAiPyAgQXMgZmFyIGFzIEkga25vdywgdGhlICANCj5w
-b3dlcnBjIGFyY2hpdGVjdHVyZSBkb2VzIG5vdCBkZWZpbmUgYW4gZXhjZXB0aW9uIDB4MzIwLiAg
-MHgzMDAgaXMgIA0KPnVzdWFsbHkgRFNJIG9uIGNsYXNzaWMgcG93ZXJwYyBwYXJ0cy4gIEJvb2tF
-IHBhcnRzIGhhbmRsZSB0aGluZ3MgIA0KPmRpZmZlcmVudGx5Lg0KPg0KPlRoYW5rcywNCj4tQmVj
-a3kNCj4NCj5PbiBBcHIgMjQsIDIwMDYsIGF0IDg6NTEgQU0sIGplYW53ZWxseSB3cm90ZToNCj4N
-Cj4+IEhpLA0KPj4gSSBlbmNvdW50ZXJlZCBQUEMgZXhjZXB0aW9uIDB4MzIwLCBidXQgZG9uJ3Qg
-a25vdyB3aGF0IGl0IGZvci4gQW55ICANCj4+IG9uZSBjb3VsZCBoZWxwIG1lIG9uIHRoaXM/DQo+
-PiBUaGFua3MhDQo+PiAgCQkJCQ0KPj4NCj4+IKGhoaGhoaGhoaGhoaGhoaFqZWFud2VsbHkNCj4+
-IKGhoaGhoaGhoaGhoaGhoaFqZWFud2VsbHlAMTI2LmNvbQ0KPj4goaGhoaGhoaGhoaGhoaGhoaGh
-oaEyMDA2LTA0LTI0DQo+PiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXw0KPj4gTGludXhwcGMtZW1iZWRkZWQgbWFpbGluZyBsaXN0DQo+PiBMaW51eHBwYy1l
-bWJlZGRlZEBvemxhYnMub3JnDQo+PiBodHRwczovL296bGFicy5vcmcvbWFpbG1hbi9saXN0aW5m
-by9saW51eHBwYy1lbWJlZGRlZA0KPg0KPg0KPi4NCg0KPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0g
-PSA9ID0gPSA9ID0gPSA9DQoJCQkNCg0KoaGhoaGhoaGhoaGhoaGhodbCDQrA8aOhDQogDQoJCQkJ
-IA0KoaGhoaGhoaGhoaGhoaGhoWplYW53ZWxseQ0KoaGhoaGhoaGhoaGhoaGhoWplYW53ZWxseUAx
-MjYuY29tDQqhoaGhoaGhoaGhoaGhoaGhoaGhoTIwMDYtMDQtMjUNCg0K
+-B
+
+On Apr 25, 2006, at 10:03 AM, jeanwelly wrote:
+
+> Hi Becky Bruce,
+> I'm using PPC 750... Just as you said, 0x300 is for DSI, and I =20
+> guess they are a set of exceptions, not just one. And 0x320 is one =20
+> of them.
+> I got a board crash, and PPC alarmed exception 0x320. Could you =20
+> show me the mechanism of handling of a special exception not one set.
+> =09
+>
+> =3D=3D=3D=3D=3D=3D=3D 2006-04-25 02:53:35 =
+=E6=82=A8=E5=9C=A8=E6=9D=A5=E4=BF=A1=E4=B8=AD=E5=86=99=E9=81=93=EF=BC=9A=3D=
+=3D=3D=3D=3D=3D=3D
+>
+>> Could you try to be more specific?  What processor do you have, what
+>> linux version are you running, and what do you mean exactly when you
+>> say you "encountered PPC exception 0x320"?  As far as I know, the
+>> powerpc architecture does not define an exception 0x320.  0x300 is
+>> usually DSI on classic powerpc parts.  BookE parts handle things
+>> differently.
+>>
+>> Thanks,
+>> -Becky
+>>
+>> On Apr 24, 2006, at 8:51 AM, jeanwelly wrote:
+>>
+>>> Hi,
+>>> I encountered PPC exception 0x320, but don't know what it for. Any
+>>> one could help me on this?
+>>> Thanks!
+>>>  			=09
+>>>
+>>> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
+jeanwelly
+>>> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
+jeanwelly@126.com
+>>> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
+=E3=80=80=E3=80=802006-04-24
+>>> _______________________________________________
+>>> Linuxppc-embedded mailing list
+>>> Linuxppc-embedded@ozlabs.org
+>>> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>>
+>> .
+>
+> =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =3D =
+=3D =3D
+> 		=09
+>
+> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
+=E8=87=B4
+> =E7=A4=BC=EF=BC=81
+>
+> 			=09
+> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
+jeanwelly
+> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
+jeanwelly@126.com
+> =E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=E3=80=80=
+=E3=80=80=E3=80=802006-04-25
+>
