@@ -1,28 +1,19 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6DB77679EA
+Return-Path: <marcelo@kvack.org>
+Received: from kanga.kvack.org (kanga.kvack.org [66.96.29.28])
+	by ozlabs.org (Postfix) with ESMTP id 0C48C679F4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Apr 2006 07:46:56 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1FYrqJ-00042K-Un
-	for linuxppc-embedded@ozlabs.org; Wed, 26 Apr 2006 23:46:40 +0200
-Received: from icarus.icarus.com ([64.105.89.2])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Apr 2006 23:46:39 +0200
-Received: from steve by icarus.icarus.com with local (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Apr 2006 23:46:39 +0200
-To: linuxppc-embedded@ozlabs.org
-From: Stephen Williams <steve@icarus.com>
-Subject: Xilinx SysACE drivers for Linux 2.4
-Date: Wed, 26 Apr 2006 14:46:27 -0700
-Message-ID: <e2opnj$gju$1@sea.gmane.org>
+	Thu, 27 Apr 2006 07:49:09 +1000 (EST)
+Subject: Re: [PATCH 4/4] ppc32 CPM_UART: Fixed odd address translations
+From: Marcelo Tosatti <marcelo@kvack.org>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+In-Reply-To: <20060425162646.23551.61674.stgit@vitb.ru.mvista.com>
+References: <20060425162633.23551.85273.stgit@vitb.ru.mvista.com>
+	<20060425162646.23551.61674.stgit@vitb.ru.mvista.com>
+Content-Type: text/plain
+Date: Wed, 26 Apr 2006 18:41:33 -0300
+Message-Id: <1146087693.6305.80.camel@dmt.cnet>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Sender: news <news@sea.gmane.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,18 +24,226 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Ouch. 
 
-So I'm now looking at moving from my bk based linuxppc-2.4 devel
-tree to the kernel.org sources, but the latter doesn't have the
-Xilinx SystemACE drivers. Is there a repository for the latest
-port (to kernel 2.4) of this driver, or should I just lift it
-from the kernel tree I have?
+I would convert the warning printk() to a BUG(), since such an address
+error 
+indicates deep trouble anyway... 
 
-Also, I'd be going from linuxppc-2.4.30-pre1 (or thereabouts) to
-kernel.org 2.4.32. This is likely to be fine for my PPC405GPr, yes?
+And add a "likely()" indication around the range check.
 
--- 
-Steve Williams                "The woods are lovely, dark and deep.
-steve at icarus.com           But I have promises to keep,
-http://www.icarus.com         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+Looks great otherwise!
+
+On Tue, 2006-04-25 at 20:26 +0400, Vitaly Bordug wrote:
+> Current address translation methods can produce wrong results, because
+> virt_to_bus and vice versa may not produce correct offsets on dma-allocated
+> memory. The right way is, while tracking both phys and virt address of the
+> window that has been allocated for boffer descriptors, and use those
+> numbers to compute the offset and make translation properly.
+> 
+> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> ---
+> 
+>  drivers/serial/cpm_uart/cpm_uart.h      |   33 +++++++++++++++++++++++++++++++
+>  drivers/serial/cpm_uart/cpm_uart_core.c |   31 ++++++++---------------------
+>  drivers/serial/cpm_uart/cpm_uart_cpm1.c |    7 ++++---
+>  drivers/serial/cpm_uart/cpm_uart_cpm2.c |    5 ++++-
+>  4 files changed, 50 insertions(+), 26 deletions(-)
+> 
+> diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/cpm_uart.h
+> index 17f2c7a..9db402c 100644
+> --- a/drivers/serial/cpm_uart/cpm_uart.h
+> +++ b/drivers/serial/cpm_uart/cpm_uart.h
+> @@ -66,6 +66,7 @@ struct uart_cpm_port {
+>  	uint			 dp_addr;
+>  	void			*mem_addr;
+>  	dma_addr_t		 dma_addr;
+> +	u32			mem_size;
+>  	/* helpers */
+>  	int			 baud;
+>  	int			 bits;
+> @@ -92,4 +93,36 @@ void scc2_lineif(struct uart_cpm_port *p
+>  void scc3_lineif(struct uart_cpm_port *pinfo);
+>  void scc4_lineif(struct uart_cpm_port *pinfo);
+>  
+> +/* 
+> +   virtual to phys transtalion
+> +*/
+> +static inline unsigned long cpu2cpm_addr(void* addr, struct uart_cpm_port *pinfo)
+> +{
+> +	int offset;
+> +	u32 val = (u32)addr;
+> +	/* sane check */
+> +	if ((val >= (u32)pinfo->mem_addr) && 
+> +			(val<((u32)pinfo->mem_addr + pinfo->mem_size))) {
+> +		offset = val - (u32)pinfo->mem_addr;
+> +		return pinfo->dma_addr+offset;
+> +	}
+> +	printk("%s(): address %x to translate out of range!\n", __FUNCTION__, val);
+> +	return 0;
+> +}
+> +
+> +static inline void *cpm2cpu_addr(unsigned long addr, struct uart_cpm_port *pinfo)
+> +{	
+> +	int offset;
+> +	u32 val = addr;
+> +	/* sane check */
+> +	if ((val >= pinfo->dma_addr) && 
+> +			(val<(pinfo->dma_addr + pinfo->mem_size))) {
+> +		offset = val - (u32)pinfo->dma_addr;
+> +		return (void*)(pinfo->mem_addr+offset);
+> +	}
+> +	printk("%s(): address %x to translate out of range!\n", __FUNCTION__, val);
+> +	return 0;
+> +}
+> +
+> +
+>  #endif /* CPM_UART_H */
+> diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+> index 8f33815..3549073 100644
+> --- a/drivers/serial/cpm_uart/cpm_uart_core.c
+> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+> @@ -72,19 +72,6 @@ static void cpm_uart_initbd(struct uart_
+>  
+>  /**************************************************************/
+>  
+> -static inline unsigned long cpu2cpm_addr(void *addr)
+> -{
+> -	if ((unsigned long)addr >= CPM_ADDR)
+> -		return (unsigned long)addr;
+> -	return virt_to_bus(addr);
+> -}
+> -
+> -static inline void *cpm2cpu_addr(unsigned long addr)
+> -{
+> -	if (addr >= CPM_ADDR)
+> -		return (void *)addr;
+> -	return bus_to_virt(addr);
+> -}
+>  
+>  /* Place-holder for board-specific stuff */
+>  struct platform_device* __attribute__ ((weak)) __init
+> @@ -290,7 +277,7 @@ static void cpm_uart_int_rx(struct uart_
+>  		}
+>  
+>  		/* get pointer */
+> -		cp = cpm2cpu_addr(bdp->cbd_bufaddr);
+> +		cp = cpm2cpu_addr(bdp->cbd_bufaddr, pinfo);
+>  
+>  		/* loop through the buffer */
+>  		while (i-- > 0) {
+> @@ -633,7 +620,7 @@ static int cpm_uart_tx_pump(struct uart_
+>  		/* Pick next descriptor and fill from buffer */
+>  		bdp = pinfo->tx_cur;
+>  
+> -		p = cpm2cpu_addr(bdp->cbd_bufaddr);
+> +		p = cpm2cpu_addr(bdp->cbd_bufaddr, pinfo);
+>  
+>  		*p++ = port->x_char;
+>  		bdp->cbd_datlen = 1;
+> @@ -660,7 +647,7 @@ static int cpm_uart_tx_pump(struct uart_
+>  
+>  	while (!(bdp->cbd_sc & BD_SC_READY) && (xmit->tail != xmit->head)) {
+>  		count = 0;
+> -		p = cpm2cpu_addr(bdp->cbd_bufaddr);
+> +		p = cpm2cpu_addr(bdp->cbd_bufaddr, pinfo);
+>  		while (count < pinfo->tx_fifosize) {
+>  			*p++ = xmit->buf[xmit->tail];
+>  			xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
+> @@ -709,12 +696,12 @@ static void cpm_uart_initbd(struct uart_
+>  	mem_addr = pinfo->mem_addr;
+>  	bdp = pinfo->rx_cur = pinfo->rx_bd_base;
+>  	for (i = 0; i < (pinfo->rx_nrfifos - 1); i++, bdp++) {
+> -		bdp->cbd_bufaddr = cpu2cpm_addr(mem_addr);
+> +		bdp->cbd_bufaddr = cpu2cpm_addr(mem_addr, pinfo);
+>  		bdp->cbd_sc = BD_SC_EMPTY | BD_SC_INTRPT;
+>  		mem_addr += pinfo->rx_fifosize;
+>  	}
+>  
+> -	bdp->cbd_bufaddr = cpu2cpm_addr(mem_addr);
+> +	bdp->cbd_bufaddr = cpu2cpm_addr(mem_addr, pinfo);
+>  	bdp->cbd_sc = BD_SC_WRAP | BD_SC_EMPTY | BD_SC_INTRPT;
+>  
+>  	/* Set the physical address of the host memory
+> @@ -724,12 +711,12 @@ static void cpm_uart_initbd(struct uart_
+>  	mem_addr = pinfo->mem_addr + L1_CACHE_ALIGN(pinfo->rx_nrfifos * pinfo->rx_fifosize);
+>  	bdp = pinfo->tx_cur = pinfo->tx_bd_base;
+>  	for (i = 0; i < (pinfo->tx_nrfifos - 1); i++, bdp++) {
+> -		bdp->cbd_bufaddr = cpu2cpm_addr(mem_addr);
+> +		bdp->cbd_bufaddr = cpu2cpm_addr(mem_addr, pinfo);
+>  		bdp->cbd_sc = BD_SC_INTRPT;
+>  		mem_addr += pinfo->tx_fifosize;
+>  	}
+>  
+> -	bdp->cbd_bufaddr = cpu2cpm_addr(mem_addr);
+> +	bdp->cbd_bufaddr = cpu2cpm_addr(mem_addr, pinfo);
+>  	bdp->cbd_sc = BD_SC_WRAP | BD_SC_INTRPT;
+>  }
+>  
+> @@ -1099,7 +1086,7 @@ static void cpm_uart_console_write(struc
+>  		 * If the buffer address is in the CPM DPRAM, don't
+>  		 * convert it.
+>  		 */
+> -		cp = cpm2cpu_addr(bdp->cbd_bufaddr);
+> +		cp = cpm2cpu_addr(bdp->cbd_bufaddr, pinfo);
+>  
+>  		*cp = *s;
+>  
+> @@ -1116,7 +1103,7 @@ static void cpm_uart_console_write(struc
+>  			while ((bdp->cbd_sc & BD_SC_READY) != 0)
+>  				;
+>  
+> -			cp = cpm2cpu_addr(bdp->cbd_bufaddr);
+> +			cp = cpm2cpu_addr(bdp->cbd_bufaddr, pinfo);
+>  
+>  			*cp = 13;
+>  			bdp->cbd_datlen = 1;
+> diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+> index 31223aa..a5a3062 100644
+> --- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+> +++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+> @@ -144,7 +144,7 @@ int cpm_uart_allocbuf(struct uart_cpm_po
+>  		/* was hostalloc but changed cause it blows away the */
+>  		/* large tlb mapping when pinning the kernel area    */
+>  		mem_addr = (u8 *) cpm_dpram_addr(cpm_dpalloc(memsz, 8));
+> -		dma_addr = 0;
+> +		dma_addr = (u32)mem_addr;
+>  	} else
+>  		mem_addr = dma_alloc_coherent(NULL, memsz, &dma_addr,
+>  					      GFP_KERNEL);
+> @@ -157,8 +157,9 @@ int cpm_uart_allocbuf(struct uart_cpm_po
+>  	}
+>  
+>  	pinfo->dp_addr = dp_offset;
+> -	pinfo->mem_addr = mem_addr;
+> -	pinfo->dma_addr = dma_addr;
+> +	pinfo->mem_addr = mem_addr;             /*  virtual address*/
+> +	pinfo->dma_addr = dma_addr;             /*  physical address*/
+> +	pinfo->mem_size = memsz;
+>  
+>  	pinfo->rx_buf = mem_addr;
+>  	pinfo->tx_buf = pinfo->rx_buf + L1_CACHE_ALIGN(pinfo->rx_nrfifos
+> diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> index c9c3b1d..7c6b07a 100644
+> --- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> +++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+> @@ -209,8 +209,10 @@ int cpm_uart_allocbuf(struct uart_cpm_po
+>  
+>  	memsz = L1_CACHE_ALIGN(pinfo->rx_nrfifos * pinfo->rx_fifosize) +
+>  	    L1_CACHE_ALIGN(pinfo->tx_nrfifos * pinfo->tx_fifosize);
+> -	if (is_con)
+> +	if (is_con) {
+>  		mem_addr = alloc_bootmem(memsz);
+> +		dma_addr = mem_addr;
+> +	}
+>  	else
+>  		mem_addr = dma_alloc_coherent(NULL, memsz, &dma_addr,
+>  					      GFP_KERNEL);
+> @@ -225,6 +227,7 @@ int cpm_uart_allocbuf(struct uart_cpm_po
+>  	pinfo->dp_addr = dp_offset;
+>  	pinfo->mem_addr = mem_addr;
+>  	pinfo->dma_addr = dma_addr;
+> +	pinfo->mem_size = memsz;
+>  
+>  	pinfo->rx_buf = mem_addr;
+>  	pinfo->tx_buf = pinfo->rx_buf + L1_CACHE_ALIGN(pinfo->rx_nrfifos
