@@ -1,20 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33603679E2
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 00:37:18 +1000 (EST)
-In-Reply-To: <20060425222841.C2D0E353DAC@atlas.denx.de>
-References: <20060425222841.C2D0E353DAC@atlas.denx.de>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A8793E99-83C1-4FD9-8735-D2E8F98B3003@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: FT u-boot shim 
-Date: Wed, 26 Apr 2006 09:37:09 -0500
-To: Wolfgang Denk <wd@denx.de>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C54A3679F0
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 02:10:10 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3QGA7w3003225
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 12:10:07 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3QGA75Q230618
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 12:10:07 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3QGA7OH016777
+	for <linuxppc-dev@ozlabs.org>; Wed, 26 Apr 2006 12:10:07 -0400
+Subject: [PATCH] nvram_print_partitions cosmetic fixup
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Content-Type: text/plain
+Date: Wed, 26 Apr 2006 11:09:46 -0500
+Message-Id: <1146067786.27214.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +33,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 25, 2006, at 5:28 PM, Wolfgang Denk wrote:
+This is a cosmetic fixup.   When printing the nvram partition table, the
+first couple entries have a shorter 'index' value than the others, so
+table is a bit askew.   This change makes the table look pretty.
+Tested on pseries and g5.   Footnote: yes, this table is normally hidden
+behind a DEBUG_NVRAM #define. 
 
-> In message  
-> <DAD4396E-7458-471C-8150-9DDCD396BA63@kernel.crashing.org> you wrote:
->>
->>> No. Remove them from the U-Boot tree. I was never happy to  see   
->>> this
->>> stuff there.
->>
->> Then why did you accept the patches for them?  I'm confused on what
->
-> Because I  had  neither  time  nor  nerves  to  discuss  with  kernel
-> maintainers how this could be done. Several people asked me again and
-> again  to  accept  these  patches  because  they  were  vital for FDT
-> support, so I gave in.
->
->> you see as the solution for how to boot an arch/powerpc kernel going
->> forward.
->
-> I strongly agree with Dan and Eugene: the kernel should not depend on
-> any specific version of a boot loader, and more general not  even  on
-> any specific boot loader at all.
+Signed-off-by: Will Schmidt <willschm@us.ibm.com> 
 
-I think thats part of the idea with arch/powerpc defining a standard  
-mechanism for how a boot loader should pass information to the kernel  
-(via a flat device tree).
 
-How would you propose that we handle booting arch/powerpc kernels  
-from u-boot going forward? (for new board ports and existing board  
-ports).
-
-- kumar
+diff --git a/arch/powerpc/kernel/nvram_64.c
+b/arch/powerpc/kernel/nvram_64.c
+index ada50aa..6960f09 100644
+--- a/arch/powerpc/kernel/nvram_64.c
++++ b/arch/powerpc/kernel/nvram_64.c
+@@ -204,7 +204,7 @@ static void nvram_print_partitions(char 
+ 	printk(KERN_WARNING "indx\t\tsig\tchks\tlen\tname\n");
+ 	list_for_each(p, &nvram_part->partition) {
+ 		tmp_part = list_entry(p, struct nvram_partition, partition);
+-		printk(KERN_WARNING "%d    \t%02x\t%02x\t%d\t%s\n",
++		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%s\n",
+ 		       tmp_part->index, tmp_part->header.signature,
+ 		       tmp_part->header.checksum, tmp_part->header.length,
+ 		       tmp_part->header.name);
