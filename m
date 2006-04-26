@@ -1,18 +1,17 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 4757B679F7
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 22B7E679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Apr 2006 21:47:37 +1000 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: linuxppc-embedded@ozlabs.org, chandrasekhar_n@math.net
-Subject: Re: Linux 2.6 sources for MPC852T processor
-Date: Wed, 26 Apr 2006 13:50:04 +0200
-References: <20060426025008.C8A7D773@resin02.mta.everyone.net>
-In-Reply-To: <20060426025008.C8A7D773@resin02.mta.everyone.net>
+	Thu, 27 Apr 2006 02:24:22 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200604261350.05295.david.jander@protonic.nl>
+	charset="us-ascii"
+Subject: RE: PPC Linux support for Tundra TSI148
+Date: Wed, 26 Apr 2006 09:24:20 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE4871049711CD@VCAEXCH01.hq.corp.viasat.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "Gerhard Jaeger" <g.jaeger@sysgo.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,36 +22,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 26 April 2006 11:50, Chandrasekhar Nagaraj wrote:
-> <DIV style="font-family:Arial,sans-serif;"><DIV>Hi,</DIV>
-> <DIV>I have a customized board based on the MPC852T based processor.</DIV>
-> <DIV>I intend to develop a BSP for this board.</DIV>
-> <DIV>&nbsp;</DIV>
-> <DIV>Does 2.6.16 from the kernel.org support this processor?</DIV>
+Gerhard,
 
-First of all, please avoid HTML in e-mail messages. It is hard to read, and 
-normally banned on mailing list such as this one.
+Thanks for the information.  More questions...
 
-Yes, MPC852T is supported, although I might add that I have been using 2.6.14 
-and 2.6.15 sucessfully with our own MPC852T-based board, but 2.6.16 did not 
-boot and as of today I don't know why, or whether this is an issue at all 
-with boards other than ours.
+What type of transfers were you doing? (e.g. A32/D64? SST320 or SST267?)
 
-> <DIV>&nbsp;</DIV>
-> <DIV>In the 2.6.16 sources I found support for CONFIG_8xx. Does this mean
-> that 852T processor is also supported?</DIV> <DIV>&nbsp;</DIV>
+Are these transfer from userspace data, from kernelspace data, or from
+the Tundra's pattern buffer?
 
-Yes. Look at BSP stuff for other 8xx boards to learn how to port yours. Keep 
-an eye on the new platform_bus stuff, that's currently being implemented for 
-different drivers and subsystmes for powerpc (this could be the reason, our 
-own BSP stuff stopped working with 2.6.16, btw).
-Also a transition from /arch/ppc and /arch/ppc64 towards the 
-common /arch/powerpc is in progress, and therefore some things might be in a 
-state of flux between released versions of the kernel. As of today (kernel 
-2.6.16) the architecture you need to use is still /arch/ppc.
-Good luck!
+What was your PCI bus speed & width?
 
-Greetings,
+Were you using inbound/outbound windows or Tundra's DMA controller?
 
--- 
-David Jander
+What was the Tundra chipset configuration for the 168 MBps?
+
+Thanks,
+Tim
+
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+tmartin=3Dviasat.com@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+tmartin=3Dviasat.com@ozlabs.org] On
+Behalf
+> Of Gerhard Jaeger
+> Sent: Wednesday, April 26, 2006 12:26 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: Re: PPC Linux support for Tundra TSI148
+>=20
+> On Wednesday 26 April 2006 01:47, Martin, Tim wrote:
+> > Does anyone out there have any real world measured performance of a
+> > Linux PowerPC (kernel module + user space application) doing 2eSST
+VME
+> > transfers with the Tundra TSI148 chipset?
+> >
+> > Tundra has a Linux driver available for the Motorola MVME6100 , but
+told
+> > me they don't have any performance data available.  I'm looking for
+> > sustained throughput rates, not the peak burst rates (e.g. 320 MBps,
+267
+> > MBps).
+> >
+>=20
+> Hi,
+>=20
+> I've done here some tests between two MVME6100, while updating the
+6100
+> BSP
+> for our embedded Linux distro. Depending on the buffersize, alignment,
+VME
+> and
+> PCI FIFO settings we have (without further optimizations) throughput
+rates
+> ranging
+> from 100MBps up to 168MBps. I think some tuning could still be done.
+>=20
+> HTH
+> Gerhard
+>=20
+> --
+> Gerhard Jaeger <gjaeger@sysgo.com>
+> SYSGO AG                      Embedded and Real-Time Software
+> www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
