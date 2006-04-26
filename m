@@ -1,20 +1,18 @@
-Return-Path: <chandrasekhar_n@Math.net>
-Received: from omta06.mta.everyone.net (sitemail3.everyone.net
-	[216.200.145.37]) by ozlabs.org (Postfix) with ESMTP id 2D460679E6
+Return-Path: <david.jander@protonic.nl>
+Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
+	by ozlabs.org (Postfix) with ESMTP id 4757B679F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Apr 2006 20:09:18 +1000 (EST)
-Received: from dm24.mta.everyone.net (bigiplb-dsnat [172.16.0.19])
-	by omta06.mta.everyone.net (Postfix) with ESMTP id CD3D8182D7
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 26 Apr 2006 02:50:08 -0700 (PDT)
+	Wed, 26 Apr 2006 21:47:37 +1000 (EST)
+From: David Jander <david.jander@protonic.nl>
+To: linuxppc-embedded@ozlabs.org, chandrasekhar_n@math.net
+Subject: Re: Linux 2.6 sources for MPC852T processor
+Date: Wed, 26 Apr 2006 13:50:04 +0200
+References: <20060426025008.C8A7D773@resin02.mta.everyone.net>
+In-Reply-To: <20060426025008.C8A7D773@resin02.mta.everyone.net>
 MIME-Version: 1.0
-Content-Type: text/html; charset="UTF-8"
-Message-Id: <20060426025008.C8A7D773@resin02.mta.everyone.net>
-Date: Wed, 26 Apr 2006 02:50:08 -0700
-From: "Chandrasekhar Nagaraj" <chandrasekhar_n@Math.net>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Linux 2.6 sources for MPC852T processor
-Reply-To: chandrasekhar_n@Math.net
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200604261350.05295.david.jander@protonic.nl>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,13 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-<DIV style="font-family:Arial,sans-serif;"><DIV>Hi,</DIV>
-<DIV>I have a customized board based on the MPC852T based processor.</DIV>
-<DIV>I intend to develop a BSP for this board.</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Does 2.6.16 from the kernel.org support this processor?</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>In the 2.6.16 sources I found support for CONFIG_8xx. Does this mean that 852T processor is also supported?</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Thanks and Regards</DIV>
-<DIV>Chandrasekhar</DIV><BR>&nbsp;<BR><HR>Get your free web-based e-mail account from http://www.Math.net<BR>Your online tourguide of Mathematics, with books, links, news,<BR>message boards, and much more!</DIV>
+On Wednesday 26 April 2006 11:50, Chandrasekhar Nagaraj wrote:
+> <DIV style="font-family:Arial,sans-serif;"><DIV>Hi,</DIV>
+> <DIV>I have a customized board based on the MPC852T based processor.</DIV>
+> <DIV>I intend to develop a BSP for this board.</DIV>
+> <DIV>&nbsp;</DIV>
+> <DIV>Does 2.6.16 from the kernel.org support this processor?</DIV>
+
+First of all, please avoid HTML in e-mail messages. It is hard to read, and 
+normally banned on mailing list such as this one.
+
+Yes, MPC852T is supported, although I might add that I have been using 2.6.14 
+and 2.6.15 sucessfully with our own MPC852T-based board, but 2.6.16 did not 
+boot and as of today I don't know why, or whether this is an issue at all 
+with boards other than ours.
+
+> <DIV>&nbsp;</DIV>
+> <DIV>In the 2.6.16 sources I found support for CONFIG_8xx. Does this mean
+> that 852T processor is also supported?</DIV> <DIV>&nbsp;</DIV>
+
+Yes. Look at BSP stuff for other 8xx boards to learn how to port yours. Keep 
+an eye on the new platform_bus stuff, that's currently being implemented for 
+different drivers and subsystmes for powerpc (this could be the reason, our 
+own BSP stuff stopped working with 2.6.16, btw).
+Also a transition from /arch/ppc and /arch/ppc64 towards the 
+common /arch/powerpc is in progress, and therefore some things might be in a 
+state of flux between released versions of the kernel. As of today (kernel 
+2.6.16) the architecture you need to use is still /arch/ppc.
+Good luck!
+
+Greetings,
+
+-- 
+David Jander
