@@ -1,18 +1,28 @@
-Return-Path: <BlakesleeS@embeddedplanet.com>
-Received: from tag-03.ashton-group.com (tag-03.ashton-group.com [66.94.86.90])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 91CAD679F0
+	by ozlabs.org (Postfix) with ESMTP id 6DB77679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Apr 2006 05:28:27 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: How do you make linux 2.6.10 U-Boot aware?
-Date: Wed, 26 Apr 2006 14:57:13 -0400
-Message-ID: <1628E43D99629C46988BE46087A3FBB95466D2@ep-01.EmbeddedPlanet.local>
-From: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
-To: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>, <linuxppc-embedded@ozlabs.org>
+	Thu, 27 Apr 2006 07:46:56 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1FYrqJ-00042K-Un
+	for linuxppc-embedded@ozlabs.org; Wed, 26 Apr 2006 23:46:40 +0200
+Received: from icarus.icarus.com ([64.105.89.2])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Apr 2006 23:46:39 +0200
+Received: from steve by icarus.icarus.com with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Apr 2006 23:46:39 +0200
+To: linuxppc-embedded@ozlabs.org
+From: Stephen Williams <steve@icarus.com>
+Subject: Xilinx SysACE drivers for Linux 2.4
+Date: Wed, 26 Apr 2006 14:46:27 -0700
+Message-ID: <e2opnj$gju$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,12 +33,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> I'm using MontaVista linux 4.01 for the PPC440GX which is=20
-> based on 2.6.10.  It doesn't read the bootargs from U-Boot=20
-> however.  Does anyone out there have a synopsis of what needs=20
-> to be modified (bd_info, etc.) to make this work with a=20
-> 2.6.10 based release?
->=20
 
-The bd_info structure needs to come from ppcboot.h and the make command
-is "make uImage"  That should be about it.
+So I'm now looking at moving from my bk based linuxppc-2.4 devel
+tree to the kernel.org sources, but the latter doesn't have the
+Xilinx SystemACE drivers. Is there a repository for the latest
+port (to kernel 2.4) of this driver, or should I just lift it
+from the kernel tree I have?
+
+Also, I'd be going from linuxppc-2.4.30-pre1 (or thereabouts) to
+kernel.org 2.4.32. This is likely to be fine for my PPC405GPr, yes?
+
+-- 
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
