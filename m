@@ -1,24 +1,20 @@
-Return-Path: <Marc.Howard@KLA-Tencor.com>
-Received: from ca1mail04.kla-tencor.com (mailout04.kla-tencor.com
-	[192.146.1.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CE8C7679E9
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2985A679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Apr 2006 04:54:19 +1000 (EST)
-Received: from CA1EXBH01.adcorp.kla-tencor.com
-	(ca1exbh01.adcorp.kla-tencor.com [10.60.33.3])
-	by ca1mail04.kla-tencor.com (8.12.10/8.12.11) with ESMTP id
-	k3QIsFwK025133
-	for <linuxppc-embedded@ozlabs.org>; Wed, 26 Apr 2006 11:54:15 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: How do you make linux 2.6.10 U-Boot aware?
-Date: Wed, 26 Apr 2006 11:54:13 -0700
-Message-ID: <91B22F93A880FA48879475E134D6F0BE027DEF15@CA1EXCLV02.adcorp.kla-tencor.com>
-From: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Thu, 27 Apr 2006 05:02:44 +1000 (EST)
+Date: Wed, 26 Apr 2006 12:02:41 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
+Subject: Re: How do you make linux 2.6.10 U-Boot aware?
+Message-ID: <20060426190241.GA20725@gate.ebshome.net>
+References: <91B22F93A880FA48879475E134D6F0BE027DEF15@CA1EXCLV02.adcorp.kla-tencor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <91B22F93A880FA48879475E134D6F0BE027DEF15@CA1EXCLV02.adcorp.kla-tencor.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,13 +25,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, Apr 26, 2006 at 11:54:13AM -0700, Howard, Marc wrote:
+> Hi,
+> 
+> I'm using MontaVista linux 4.01 for the PPC440GX which is based on
+> 2.6.10.  It doesn't read the bootargs from U-Boot however.  Does anyone
+> out there have a synopsis of what needs to be modified (bd_info, etc.)
+> to make this work with a 2.6.10 based release?
 
-I'm using MontaVista linux 4.01 for the PPC440GX which is based on
-2.6.10.  It doesn't read the bootargs from U-Boot however.  Does anyone
-out there have a synopsis of what needs to be modified (bd_info, etc.)
-to make this work with a 2.6.10 based release?
+Please, take a look at Ocotea port in the latest 2.6 kernel. It 
+supports booting from PIBS and U-Boot.
 
-Thanks,
-
-Marc W. Howard
+-- 
