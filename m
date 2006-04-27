@@ -1,17 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <17489.18630.75412.66803@cargo.ozlabs.ibm.com>
-Date: Fri, 28 Apr 2006 08:42:14 +1000
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17489.18925.506395.279443@cargo.ozlabs.ibm.com>
+Date: Fri, 28 Apr 2006 08:47:09 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-Subject: Re: [PATCH 13/16] ehca: firmware InfiniBand interface
-In-Reply-To: <20060427123701.GG32127@wohnheim.fh-wedel.de>
-References: <4450A1C0.3080209@de.ibm.com>
-	<20060427123701.GG32127@wohnheim.fh-wedel.de>
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
+To: Gerhard Jaeger <g.jaeger@sysgo.com>
+Subject: Re: do_mmap_pgoff issue...
+In-Reply-To: <200604271559.19818.g.jaeger@sysgo.com>
+References: <200604271559.19818.g.jaeger@sysgo.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,18 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-J=F6rn Engel writes:
+Gerhard Jaeger writes:
 
-> 25 parameters=3F  If you tell me which drugs were involved in this co=
-de,
-> I know what to stay away from.
+> The facts:
+> - mmap the last page @ 0xFFFFF000, len 4K
+> - result: mmap says EOVERFLOW...
+> - the function that failed was do_mmap_pgoff()
+> 
+> Here's the pice of code
+> 
+> /* offset overflow? */
+> if ((pgoff + (len >> PAGE_SHIFT)) < pgoff)
+>     return -EOVERFLOW;
+> 
+> It's quite clear why it fails in my case:
+> pgoff + (len >> PAGE_SHIFT) will be 0
 
-You really need to ask the firmware architects that, since this is
-basically a single firmware call.
-
-Mind you, since a lot of the parameters are used to return individual
-bytes or half-words, which are then put into structures, it might be
-better to pass the pointers to the structures and let the wrapper put
-the values straight into the structures.
+No, pgoff will be 0xfffff, len will be 1, the sum is 0x100000.  You
+need to look elsewhere for the problem.
 
 Paul.
