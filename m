@@ -1,33 +1,32 @@
 Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F0CEF67A00
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 21:07:42 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3RB7cM4009488
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:07:38 -0400
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 258A067A00
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 21:19:10 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3RBJ7rl017848
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:19:07 -0400
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3RB7cfm240512
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:07:38 -0400
+	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3RBJ7PR202766
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:19:07 -0400
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3RB7b2N028588
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:07:38 -0400
+	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3RBJ71v023862
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:19:07 -0400
 From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 01/16] ehca: integration in Linux
-	=?iso-8859-1?q?kernel=09build?= system
-Date: Thu, 27 Apr 2006 13:07:36 +0200
-References: <4450B384.4020601@de.ibm.com>
-In-Reply-To: <4450B384.4020601@de.ibm.com>
+Subject: Re: [PATCH 06/16] ehca: common include files
+Date: Thu, 27 Apr 2006 13:19:06 +0200
+References: <4450A183.6030405@de.ibm.com>
+In-Reply-To: <4450A183.6030405@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200604271307.36987.arnd.bergmann@de.ibm.com>
-Cc: schickhj@de.ibm.com, linux-kernel@vger.kernel.org,
-	openib-general@openib.org, Christoph Raisch <RAISCH@de.ibm.com>,
+Message-Id: <200604271319.06844.arnd.bergmann@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	Christoph Raisch <RAISCH@de.ibm.com>,
 	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,68 +37,128 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 27 April 2006 14:05, Heiko J Schick wrote:
-> Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
-> 
+On Thursday 27 April 2006 12:48, Heiko J Schick wrote:
 
-Missing any description whatsoever.
+> +/**
+> + * ehca_adr_bad - Handle to be used for adress translation mechanisms,
+> + * currently a placeholder.
+> + */
+> +inline static int ehca_adr_bad(void *adr)
 
-> 
->   Kconfig  |    6 ++++++
->   Makefile |   29 +++++++++++++++++++++++++++++
->   2 files changed, 35 insertions(+)
-> 
+'static inline', not 'inline static', by convention.
 
-It would be more practical to put this patch last instead of
-first so you don't break the build system with partial applies.
 
-> --- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/Kconfig    1970-01-01 01:00:00.000000000 +0100
-> +++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/Kconfig 2006-01-04 16:29:05.000000000 +0100
-> @@ -0,0 +1,6 @@
-> +config INFINIBAND_EHCA
-> +       tristate "eHCA support"
-> +       depends on IBMEBUS && INFINIBAND
-> +       ---help---
-> +       This is a low level device driver for the IBM
-> +       GX based Host channel adapters (HCAs)
-> \ No newline at end of file
-> --- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/Makefile   1970-01-01 01:00:00.000000000 +0100
-> +++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/Makefile        2006-03-06 12:26:36.000000000 +0100
-> @@ -0,0 +1,29 @@
-> +#  Authors: Heiko J Schick <schickhj@de.ibm.com>
-> +#           Christoph Raisch <raisch@de.ibm.com>
-> +#
-> +#  Copyright (c) 2005 IBM Corporation
-> +#
-> +#  All rights reserved.
-> +#
-> +#  This source code is distributed under a dual license of GPL v2.0 and OpenIB BSD.
+> +/* We will remove this lines in SVN when it is included in the Linux kernel.
+> + * We don't want to introducte unnecessary dependencies to a patched kernel.
+> + */
+> +#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,17)
+
+Well, you should also remove this for submission, I guess ;-)
+
+> +#define EHCA_EDEB_TRACE_MASK_SIZE 32
+> +extern u8 ehca_edeb_mask[EHCA_EDEB_TRACE_MASK_SIZE];
+> +#define EDEB_ID_TO_U32(str4) (str4[3] | (str4[2] << 8) | (str4[1] << 16) | \
+> +			      (str4[0] << 24))
 > +
-> +obj-$(CONFIG_INFINIBAND_EHCA) += hcad_mod.o
-> +
-> +hcad_mod-objs = ehca_main.o   \
-> +               ehca_hca.o    \
-> +               ehca_mcast.o  \
-> +               ehca_pd.o     \
-> +               ehca_av.o     \
-> +               ehca_eq.o     \
-> +               ehca_cq.o     \
-> +               ehca_qp.o     \
-> +               ehca_sqp.o    \
-> +               ehca_mrmw.o   \
-> +               ehca_reqs.o   \
-> +               ehca_irq.o    \
-> +               ehca_uverbs.o \
-> +               hcp_if.o      \
-> +               hcp_phyp.o    \
-> +               ipz_pt_fn.o
-> +
-> +CFLAGS += -DEHCA_USE_HCALL -DEHCA_USE_HCALL_KERNEL
-> 
-Do these need to be on the command line? If you always set them
-anyways, you can probably get rid of the #ifdef checking for them.
-If you want to keep the code for some reason, it might be better
-to have a CONFIG_EHCA_USE_HCALL symbol that is set unconditionally
-from Kconfig.
+> +inline static u64 ehca_edeb_filter(const u32 level,
+> +				   const u32 id, const u32 line)
 
-	Arnd <><
+'static inline' again. best grep all your source for this, there are probably
+more places.
+
+> +{
+> +	u64 ret = 0;
+> +	u32 filenr = 0;
+> +	u32 filter_level = 9;
+> +	u32 dynamic_level = 0;
+> +
+> +	/* This is code written for the gcc -O2 optimizer which should colapse
+> +	 * to two single ints filter_level is the first level kicked out by
+> +	 * compiler means trace everythin below 6. */
+> +	if (id == EDEB_ID_TO_U32("ehav")) {
+> +		filenr = 0x01;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("clas")) {
+> +		filenr = 0x02;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("cqeq")) {
+> +		filenr = 0x03;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("shca")) {
+> +		filenr = 0x05;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("eirq")) {
+> +		filenr = 0x06;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("lMad")) {
+> +		filenr = 0x07;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("mcas")) {
+> +		filenr = 0x08;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("mrmw")) {
+> +		filenr = 0x09;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("vpd ")) {
+> +		filenr = 0x0a;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("e_qp")) {
+> +		filenr = 0x0b;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("uqes")) {
+> +		filenr = 0x0c;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("PHYP")) {
+> +		filenr = 0x0d;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("hcpi")) {
+> +		filenr = 0x0e;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("iptz")) {
+> +		filenr = 0x0f;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("spta")) {
+> +		filenr = 0x10;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("simp")) {
+> +		filenr = 0x11;
+> +		filter_level = 8;
+> +	}
+> +	if (id == EDEB_ID_TO_U32("reqs")) {
+> +		filenr = 0x12;
+> +		filter_level = 8;
+> +	}
+
+I guess you can convert that to
+
+switch (id) {
+	case EBEB_ID_CLAS:
+		...
+	case EDEB_ID_CQEQ:
+		...
+}
+
+> +
+> +#ifdef EHCA_USE_HCALL_KERNEL
+> +#ifdef CONFIG_PPC_PSERIES
+> +
+> +#include <asm/paca.h>
+> +
+
+You could make everything down from here a separate header
+for hcall.
