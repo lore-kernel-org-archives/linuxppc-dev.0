@@ -1,12 +1,20 @@
-Return-Path: <mbligh@google.com>
-Message-ID: <4450F732.90704@google.com>
-Date: Thu, 27 Apr 2006 09:54:10 -0700
-From: Martin Bligh <mbligh@google.com>
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Subject: Re: 2.6.17-rc2-mm1
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc64-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Return-Path: <mrmacman_g4@mac.com>
+Received: from smtpout.mac.com (smtpout.mac.com [17.250.248.184])
+	by ozlabs.org (Postfix) with ESMTP id D57DF67A6B
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 03:19:53 +1000 (EST)
+In-Reply-To: <20060427123701.GG32127@wohnheim.fh-wedel.de>
+References: <4450A1C0.3080209@de.ibm.com>
+	<20060427123701.GG32127@wohnheim.fh-wedel.de>
+Mime-Version: 1.0 (Apple Message framework v746.3)
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+Message-Id: <28E154B8-B491-4C5D-9976-5082718FEF26@mac.com>
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [PATCH 13/16] ehca: firmware InfiniBand interface
+Date: Thu, 27 Apr 2006 13:13:54 -0400
+To: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,46 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-OK, one more time, cause I'm an idiot, and can't type.
+On Apr 27, 2006, at 08:37:01, J=F6rn Engel wrote:
+> On Thu, 27 April 2006 12:49:36 +0200, Heiko J Schick wrote:
+>> +u64 hipz_h_alloc_resource_qp(const struct ipz_adapter_handle
+>> adapter_handle,
+>> +			     struct ehca_pfqp *pfqp,
+>> +			     const u8 servicetype,
+>> +			     const u8 daqp_ctrl,
+>> +			     const u8 signalingtype,
+>> +			     const u8 ud_av_l_key_ctl,
+>> +			     const struct ipz_cq_handle send_cq_handle,
+>> +			     const struct ipz_cq_handle =
+receive_cq_handle,
+>> +			     const struct ipz_eq_handle async_eq_handle,
+>> +			     const u32 qp_token,
+>> +			     const struct ipz_pd pd,
+>> +			     const u16 max_nr_send_wqes,
+>> +			     const u16 max_nr_receive_wqes,
+>> +			     const u8 max_nr_send_sges,
+>> +			     const u8 max_nr_receive_sges,
+>> +			     const u32 ud_av_l_key,
+>> +			     struct ipz_qp_handle *qp_handle,
+>> +			     u32 * qp_nr,
+>> +			     u16 * act_nr_send_wqes,
+>> +			     u16 * act_nr_receive_wqes,
+>> +			     u8 * act_nr_send_sges,
+>> +			     u8 * act_nr_receive_sges,
+>> +			     u32 * nr_sq_pages,
+>> +			     u32 * nr_rq_pages,
+>> +			     struct h_galpas *h_galpas);
+>
+> 25 parameters?  If you tell me which drugs were involved in this =20
+> code, I know what to stay away from.  Might be the current record =20
+> for any code ever proposed for inclusion.
+>
+> The whole patch is full of parameter-happy functions with this one =20
+> being the ugly top of the iceberg.  I sincerely hope this is not a =20
+> defined ABI and can still be changed.
 
---------------------------------
+What's worse; look at the stack usage on that sucker alone:
 
-Still crashes in LTP on x86_64:
-(introduced in previous release)
+10 pointers, 6 u8, 2 u16, 2 u32, and topped off with 3 unknown-sized =20
+"struct ipz_cq_handle", an unknown-sized "struct ipz_pd".  The =20
+alignment alone probably chews up at least another couple bytes in =20
+there somewhere too.  That's at _least_ 98 + 3*sizeof(struct =20
+ipz_cq_handle) + sizeof(struct ipz_pd) on a 64-bit platform (58 + =20
+3*sizeof(struct ipz_cq_handle) + sizeof(struct ipz_pd) on 32-bit).  =20
+Not to mention the fact that you totally screwed the compiler's =20
+chances of ever passing the important stuff in registers.  And you =20
+haven't even gotten into local variables yet.
 
-http://test.kernel.org/abat/29674/debug/console.log
-
-Different panic on 2-way ppp64  blade, again during LTP.
-
-http://test.kernel.org/abat/29675/debug/console.log
-
-  Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=128 NUMA
-Modules linked in: evdev joydev st sr_mod ipv6 usbcore sg dm_mod
-NIP: C000000000048F0C LR: C0000000000AF854 CTR: 800000000000A984
-REGS: c0000000074af560 TRAP: 0300   Not tainted  (2.6.17-rc2-mm1-autokern1)
-MSR: 8000000000001032 <ME,IR,DR>  CR: 24002024  XER: 00000010
-DAR: C00001800056B0B0, DSISR: 0000000040010000
-TASK = c000000007460800[84] 'kswapd0' THREAD: c0000000074ac000 CPU: 1
-GPR00: 8000000000001032 C0000000074AF7E0 C000000000691420 C0000000007586A8
-GPR04: 000000000000000F 0000000000000000 0000000000000000 0000000000000000
-GPR08: C0000000FE80AAD8 C00001800056B080 0000000000000001 C0000000007586A8
-GPR12: 0000000024002024 C00000000056B280 0000000000000020 0000000000000020
-GPR16: 0000000000000020 0000000000000000 0000000000000000 000000000000000F
-GPR20: C0000000074AF860 0000000000000000 C0000000FFFF3098 0000000000000001
-GPR24: C0000000074AFE00 C00000000059FCC0 0000000000000001 C0000000007586A8
-GPR28: C000000000545680 0000000000000022 C0000000005A4DA8 C00000000056B080
-NIP [C000000000048F0C] .try_to_wake_up+0x98/0x598
-LR [C0000000000AF854] .add_to_swapped_list+0x23c/0x264
-Call Trace:
-[C0000000074AF7E0] [C0000000005A4DA8] 0xc0000000005a4da8 (unreliable)
-[C0000000074AF8F0] [C0000000000AF854] .add_to_swapped_list+0x23c/0x264
-[C0000000074AF990] [C000000000098290] .remove_mapping+0x88/0x174
-[C0000000074AFA20] [C000000000099340] .shrink_zone+0xc74/0xf9c
-[C0000000074AFD30] [C00000000009A008] .kswapd+0x3e4/0x54c
-[C0000000074AFED0] [C0000000000705C8] .kthread+0x174/0x1c4
-[C0000000074AFF90] [C000000000024AB0] .kernel_thread+0x4c/0x68
-Instruction dump:
-3a810080 7d2000a6 79208042 f9340000 78008000 7c010164 e97b0008 ebfe8008
-eb9e8000 812b0010 79294da4 7d29fa14 <e8090030> 7fbc0214 7fa3eb78 4841f615
--- 0:conmux-control -- time-stamp -- Apr/27/06  5:10:48 --
+Cheers,
+Kyle Moffett
