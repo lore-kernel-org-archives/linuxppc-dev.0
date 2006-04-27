@@ -1,18 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 43A4B67A58
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 05:45:24 +1000 (EST)
-To: Kumar Gala <galak@kernel.crashing.org>
-From: Wolfgang Denk <wd@denx.de>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 898C867A0E
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 05:46:50 +1000 (EST)
+In-Reply-To: <20060427194055.3EED1353A57@atlas.denx.de>
+References: <20060427194055.3EED1353A57@atlas.denx.de>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <BC840B06-F69E-4304-90E2-415906D29A1D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: FT u-boot shim 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 27 Apr 2006 14:40:42 CDT."
-	<2CD98C5D-E51C-49CA-9BDC-6FE4C1B67854@kernel.crashing.org>
-Date: Thu, 27 Apr 2006 21:45:22 +0200
-Sender: wd@denx.de
-Message-Id: <20060427194522.6FA1B353A57@atlas.denx.de>
-Cc: linuxppc-dev@ozlabs.org, U-Boot Users <u-boot-users@lists.sourceforge.net>
+Date: Thu, 27 Apr 2006 14:46:45 -0500
+To: Wolfgang Denk <wd@denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	U-Boot Users <u-boot-users@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,21 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <2CD98C5D-E51C-49CA-9BDC-6FE4C1B67854@kernel.crashing.org> you wrote:
-> 
-> We can do this w/o too much modification to what is happening in u- 
-> boot today.  I'd probably like to keep the ability to build a dev  
-> tree into the u-boot binary, but make the preferred means to pass a  
 
-I don't like this, as it's a very Linux-centric view, but  U-Boot  is
-supposed to be OS unaware and independent.
+On Apr 27, 2006, at 2:40 PM, Wolfgang Denk wrote:
 
-Best regards,
+> In message  
+> <D358E665-60E4-48C0-82FD-7A1C16DAF00C@kernel.crashing.org> you wrote:
+>>
+>> The problem is that there are somethings that u-boot knows that needs
+>> to go into the blob (memory size, boot args, initrd info,
+>> frequencies, etc.)
+>
+> Yes. Can we append auch variable data to the fixed part of the dts?
 
-Wolfgang Denk
+appending is not really how it works, but the runtime fixup is doable.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Q: Why do PCs have a reset button on the front?
-A: Because they are expected to run Microsoft operating systems.
+>> How would we distinguish the bootm command that takes a blob versus
+>> the ones we have today?
+>
+> Arg count. For example:
+>
+> OLD:	bootm <kernel_addr>
+>    or	bootm <kernel_addr> <ramdisk_addr>
+>
+> NEW:	bootm <kernel_addr> - <dts_addr>
+>    or	bootm <kernel_addr> <ramdisk_addr> <dts_addr>
+>
+>> As stated before, the main issue is doing some runtime fix ups to the
+>> blob before its handed to the kernel.
+>
+> Let's do exactly this: runtime fix ups.
+>
+>> We could hand bootm a memory location with a blob and do the fix ups
+>> at runtime, we would still have some coupling between the blob and u-
+>> boot build.  At least the blob wouldn't be built into u-boot.
+>
+> OK.
+
+Let me play with this some now that I've got some direction.
+
+- kumar
