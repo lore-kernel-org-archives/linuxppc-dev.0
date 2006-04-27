@@ -1,16 +1,12 @@
-Return-Path: <Horst.KRONSTORFER@frequentis.com>
-Received: from webmail.frequentis.com (webmail.frequentis.com [213.47.210.151])
-	by ozlabs.org (Postfix) with ESMTP id BF90767A63
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 03:23:37 +1000 (EST)
+Return-Path: <mbligh@google.com>
+Message-ID: <4450F5AD.9030200@google.com>
+Date: Thu, 27 Apr 2006 09:47:41 -0700
+From: Martin Bligh <mbligh@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [QUESTION] MPC834x DMA Support 
-Date: Thu, 27 Apr 2006 19:23:29 +0200
-Message-ID: <C5BA91F04186584EB68FD42BB4993E6BC1B63C@FRQWOLEX01.frequentis.frq>
-From: "KRONSTORFER Horst" <Horst.KRONSTORFER@frequentis.com>
-To: <wd@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.17-rc2-mm1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc64-dev@ozlabs.org, linux-kernel@google.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +16,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Still crashes in LTP on x86_64:
+(introduced in previous release)
 
-> -----Original Message-----
-> From: wd@denx.de [mailto:wd@denx.de]=20
-> Sent: Donnerstag, 27. April 2006 18:28
-> To: KRONSTORFER Horst
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: [QUESTION] MPC834x DMA Support=20
->=20
-> In message=20
-> <C5BA91F04186584EB68FD42BB4993E6BC1B5C6@FRQWOLEX01.frequentis.
-> frq> you wrote:
-> >=20
-> > does anyone know if the mpc834x's dma unit supports dma=20
-> operation only=20
-> > between pci and csb or also between csb and csb, f.e. devices=20
-> > connected via the lbc (f.e. ram and a dsp)?
->=20
-> This should work. We used this  to  initialize  ECC  memory. =20
-> But  be careful  about your performance expectations - ask=20
-> Freescale what you can get out of memory to memory DMA.=20
-> [Sorry, I'm  still  waiting  for replies from FSL myself.]
->
+http://test.kernel.org/abat/29674/debug/console.log
 
-thanks for the hints!
+Different panic on 2-way ppp64  blade, again during LTP.
 
--h
-=20
-> Best regards,
->=20
-> Wolfgang Denk
->=20
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email:=20
-> wd@denx.de You speak of courage. Obviously you do not know=20
-> the  difference  bet- ween  courage and foolhardiness. Always=20
-> it is the brave ones who die, the soldiers.
-> 	-- Kor, the Klingon Commander, "Errand of Mercy",
-> 	   stardate 3201.7
->=20
+http://test.kernel.org/abat/29675/debug/console.log
+
+  Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=128 NUMA
+Modules linked in: evdev joydev st sr_mod ipv6 usbcore sg dm_mod
+NIP: C000000000048F0C LR: C0000000000AF854 CTR: 800000000000A984
+REGS: c0000000074af560 TRAP: 0300   Not tainted  (2.6.17-rc2-mm1-autokern1)
+MSR: 8000000000001032 <ME,IR,DR>  CR: 24002024  XER: 00000010
+DAR: C00001800056B0B0, DSISR: 0000000040010000
+TASK = c000000007460800[84] 'kswapd0' THREAD: c0000000074ac000 CPU: 1
+GPR00: 8000000000001032 C0000000074AF7E0 C000000000691420 C0000000007586A8
+GPR04: 000000000000000F 0000000000000000 0000000000000000 0000000000000000
+GPR08: C0000000FE80AAD8 C00001800056B080 0000000000000001 C0000000007586A8
+GPR12: 0000000024002024 C00000000056B280 0000000000000020 0000000000000020
+GPR16: 0000000000000020 0000000000000000 0000000000000000 000000000000000F
+GPR20: C0000000074AF860 0000000000000000 C0000000FFFF3098 0000000000000001
+GPR24: C0000000074AFE00 C00000000059FCC0 0000000000000001 C0000000007586A8
+GPR28: C000000000545680 0000000000000022 C0000000005A4DA8 C00000000056B080
+NIP [C000000000048F0C] .try_to_wake_up+0x98/0x598
+LR [C0000000000AF854] .add_to_swapped_list+0x23c/0x264
+Call Trace:
+[C0000000074AF7E0] [C0000000005A4DA8] 0xc0000000005a4da8 (unreliable)
+[C0000000074AF8F0] [C0000000000AF854] .add_to_swapped_list+0x23c/0x264
+[C0000000074AF990] [C000000000098290] .remove_mapping+0x88/0x174
+[C0000000074AFA20] [C000000000099340] .shrink_zone+0xc74/0xf9c
+[C0000000074AFD30] [C00000000009A008] .kswapd+0x3e4/0x54c
+[C0000000074AFED0] [C0000000000705C8] .kthread+0x174/0x1c4
+[C0000000074AFF90] [C000000000024AB0] .kernel_thread+0x4c/0x68
+Instruction dump:
+3a810080 7d2000a6 79208042 f9340000 78008000 7c010164 e97b0008 ebfe8008
+eb9e8000 812b0010 79294da4 7d29fa14 <e8090030> 7fbc0214 7fa3eb78 4841f615
+-- 0:conmux-control -- time-stamp -- Apr/27/06  5:10:48 --
