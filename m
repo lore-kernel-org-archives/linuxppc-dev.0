@@ -1,33 +1,34 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <mohan@in.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 258A067A00
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 21:19:10 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3RBJ7rl017848
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:19:07 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3RBJ7PR202766
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:19:07 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3RBJ71v023862
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:19:07 -0400
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 06/16] ehca: common include files
-Date: Thu, 27 Apr 2006 13:19:06 +0200
-References: <4450A183.6030405@de.ibm.com>
-In-Reply-To: <4450A183.6030405@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200604271319.06844.arnd.bergmann@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D571F67A06
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 21:58:02 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3RBvwS1027263
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 07:57:58 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3RC1StY106404
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 06:01:28 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k3RBvvvn024538
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 05:57:57 -0600
+Date: Thu, 27 Apr 2006 17:27:49 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [Fastboot] Documentation feedback request.
+Message-ID: <20060427115749.GA23048@in.ibm.com>
+References: <444FB2AF.3020802@us.ibm.com>
+	<1146095071.29876.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1146095071.29876.23.camel@localhost.localdomain>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, fastboot@lists.osdl.org
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,128 +38,357 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 27 April 2006 12:48, Heiko J Schick wrote:
+On Thu, Apr 27, 2006 at 09:44:31AM +1000, Michael Ellerman wrote:
+> Hi David,
+> 
+> Nice work. Few comments below ...
+> 
+> On Wed, 2006-04-26 at 10:49 -0700, David Wilder wrote:
+> > Attached is a updated  Documentation/kdump/kdump.txt.  Please provide 
+> > comments.  I will incorporate your feedback and send up to Linus.
+> > 
+> > plain text document attachment (kdump-final-20060425.txt)
+> > ================================================================
+> > Documentation for Kdump - The kexec-based Crash Dumping Solution
+> > ================================================================
+> > 
+> > This document includes overview, setup and installation, and analysis
+> > information.
+> > 
+> > Overview
+> > ========
+> > 
+> > Kdump uses kexec to quickly boot to a dump-capture kernel whenever a
+> > dump of the system kernel's memory needs to be taken (for example, when
+> > the system panics). The system kernel's memory image is preserved across
+> > the reboot and is accessible to the dump-capture kernel.
+> > 
+> > You can use common Linux commands, such as cp and scp, to copy the
+> > memory image to a dump file on the local disk, or across the network to
+> > a remote system.
+> > 
+> > Kdump and kexec are currently supported on the x86, x86_64, and ppc64
+> > architectures.
+> 
+> s/ppc64/64-bit powerpc/ ?
+> 
+> > When the system kernel boots, it reserves a small section of memory for
+> > the dump-capture kernel. This ensures that ongoing Direct Memory Access
+> > (DMA) from the system kernel does not corrupt the dump-capture kernel. 
+> > The kexec -p command loads the dump-capture kernel into this reserved
+> > memory.
+> 
+> Well hopefully ;)
+> 
+> > On x86 machines, the first 640 KB of physical memory is needed to boot,
+> > regardless of where the kernel loads. Therefore, kexec backs up this
+> > region just before rebooting into the dump-capture kernel.
+> > 
+> > All of the necessary information about the system kernel's core image is
+> > encoded in the ELF format, and stored in a reserved area of memory
+> > before a crash. The physical address of the start of the ELF header is
+> > passed to the dump-capture kernel through the elfcorehdr= boot
+> > parameter.
+> > 
+> > With the dump-capture kernel, you can access the memory image, or "old
+> > memory," in two ways:
+> > 
+> > - Through a /dev/oldmem device interface. A capture utility can read the
+> >   device file and write out the memory in raw format. This is a raw dump
+> >   of memory. Analysis and capture tools must be intelligent enough to
+> >   determine where to look for the right information.
+> > 
+> > - Through /proc/vmcore. This exports the dump as an ELF-format file that
+> >   you can write out using file copy commands such as cp or scp. Further,
+> >   you can use analysis tools such as the GNU Debugger (GDB) and the Crash
+> >   tool to debug the dump file. This method ensures that the dump pages are
+> >   correctly ordered.
+> > 
+> > 
+> > Setup and Installation
+> > ======================
+> > 
+> > Install kexec-tools and the Kdump patch
+> > ---------------------------------------
+> > 
+> > 1) Login as the root user.
+> > 
+> > 2) Download the kexec-tools user-space package from the following URL:
+> > 
+> >    http://www.xmission.com/~ebiederm/files/kexec/kexec-tools-1.101.tar.gz
+> > 
+> > 3) Unpack the tarball with the tar command, as follows:
+> > 
+> >    tar xvpzf kexec-tools-1.101.tar.gz
+> > 
+> > 4) Download the latest consolidated Kdump patch from the following URL:
+> > 
+> >    http://lse.sourceforge.net/kdump/
+> >    
+> >    (This location is being used until all the user-space Kdump patches
+> >    are integrated with the kexec-tools package.)
+> >    
+> > 5) Change to the kexec-tools-1.101 directory, as follows:
+> > 
+> >    cd kexec-tools-1.101
+> > 
+> > 6) Apply the consolidated patch to the kexec-tools-1.101 source tree
+> >    with the patch command, as follows. (Modify the path to the downloaded
+> >    patch as necessary.)
+> >    
+> >    patch -p1 < /path-to-kdump-patch/kexec-tools-1.101-kdump.patch
+> > 
+> > 7) Configure the package, as follows:
+> > 
+> >    ./configure
+> > 
+> > 8) Compile the package, as follows:
+> > 
+> >    make
+> > 
+> > 9) Install the package, as follows:
+> > 
+> >    make install
+> > 
+> > 
+> > Download and build the system and dump-capture kernels
+> > ------------------------------------------------------
+> > 
+> > Download the mainline (vanilla) kernel source code (2.6.13-rc1 or newer)
+> > from http://www.kernel.org. Two kernels must be built: a system kernel
+> > and a dump-capture kernel. Use the following steps to configure these
+> > kernels with the necessary kexec and Kdump features:
+> > 
+> > System kernel
+> > -------------
+> > 
+> > 1) Enable "kexec system call" in "Processor type and features."
+> > 
+> >    CONFIG_KEXEC=y
+> > 
+> > 2) Enable "sysfs file system support" in "Filesystem" -> "Pseudo
+> >    filesystems." This is usually enabled by default.
+> > 
+> >    CONFIG_SYSFS=y
+> > 
+> >    Note that "sysfs file system support" might not appear in the "Pseudo
+> >    filesystems" menu if "Configure standard kernel features (for small
+> >    systems)" is not enabled in "General Setup." In this case, check the
+> >    .config file itself to ensure that sysfs is turned on, as follows:
+> > 
+> >    grep 'CONFIG_SYSFS' .config
+> 
+> Is there a particular requirement for sysfs?
+> 
+> > 3) Enable "Compile the kernel with debug info" in "Kernel hacking."
+> > 
+> >    CONFIG_DEBUG_INFO=Y
+> > 
+> >    This causes the kernel to be built with debug symbols. The dump
+> >    analysis tools require a vmlinux with debug symbols in order to read
+> >    and analyze a dump file.
+> >            
+> > 4) Make and install the kernel and its modules. Update the boot loader
+> >    (such as grub, yaboot, or lilo) configuration files as necessary.
+> > 
+> > 5) Boot the system kernel with the boot parameter "crashkernel=Y@X",
+> >    where Y specifies how much memory to reserve for the dump-capture kernel
+> >    and X specifies the beginning of this reserved memory. For example,
+> >    "crashkernel=64M@16M" tells the system kernel to reserve 64 MB of memory
+> >    starting at physical address 0x01000000 for the dump-capture kernel.
+> 
+> Most of this doesn't apply to powerpc.
+> 
+> >    On x86 and x86_64, use "crashkernel=64M@16M".
+> > 
+> >    On ppc64, use "crashkernel=128M@32M".
+> 
+> No just use "crashkernel=128M".
+> 
+May be this is to follow the same convention in other architectures.
 
-> +/**
-> + * ehca_adr_bad - Handle to be used for adress translation mechanisms,
-> + * currently a placeholder.
-> + */
-> +inline static int ehca_adr_bad(void *adr)
+> > The dump-capture kernel
+> > -----------------------
+> > 
+> > 1) Under "General setup," append "-kdump" to the current string in
+> >    "Local version."
+> > 
+> > 2) On x86, enable high memory support under "Processor type and
+> >    features":
+> > 
+> >    CONFIG_HIGHMEM=y
+> > 
+> > 3) On x86 and x86_64, disable symmetric multi-processing support
+> >    under "Processor type and features":
+> >    
+> >    CONFIG_SMP=n
+> > 
+> > 4) On ppc64, disable NUMA support and enable EMBEDDED support:
+> >    
+> >    CONFIG_NUMA=n
+> >    CONFIG_EMBEDDED=y
+> >    CONFIG_EEH=N for the dump-capture kernel
+> 
+> Why are we disabling NUMA? AFAIK we work on more systems with NUMA than
+> without?
+> And why are we turning off EMBEDDED and EEH?
+> 
+In some systems kdump with NUMA panics. Also EEH gives some oops while kdump booting. To disable EEH, we need to enable CONFIG_EMBEDDED
 
-'static inline', not 'inline static', by convention.
+> > 5) Enable "kernel crash dumps" support under "Processor type and
+> >    features":
+> > 
+> >    CONFIG_CRASH_DUMP=y
+> > 
+> > 6) Use a suitable value for "Physical address where the kernel is
+> >    loaded" (under "Processor type and features"). This only appears when
+> >    "kernel crash dumps" is enabled. By default this value is 0x1000000
+> >    (16MB). It should be the same as X in the "crashkernel=Y@X" boot
+> >    parameter discussed above.
+> > 
+> >    On x86 and x86_64, use "CONFIG_PHYSICAL_START=0x1000000".
+> >       
+> >    On ppc64 the value is automatically set at 32MB when
+> >    CONFIG_CRASH_DUMP is set.
+> 
+> This whole step should start "On x86 ..."
+> 
+> > 6) Optionally enable "/proc/vmcore support" under "Filesystems" ->
+> >    "Pseudo filesystems".
+> 
+> 6 + 1 = 6 :D
+> 
+> >    CONFIG_PROC_VMCORE=y
+> >       
+> > 7) Make and install the kernel and its modules. DO NOT add this kernel
+> >    to the boot loader configuration files.
+> >    
+> > 
+> > Load the Dump-capture Kernel
+> > ============================
+> > 
+> > After booting to the system kernel, load the dump-capture kernel using
+> > the following command:
+> > 
+> >    kexec -p <dump-capture-kernel> \
+> >    --initrd=<initrd-for-dump-capture-kernel> --args-linux \
+> >    --append="root=<root-dev> init 1 irqpoll"
+> 
+> I've never tested irqpoll on powerpc, I'm not sure we want to recommend
+> it, has someone tested it?
+> 
+> > Notes on loading the dump-capture kernel:
+> > 
+> > * <dump-capture-kernel> must be a vmlinux image (that is, an
+> >   uncompressed ELF image). bzImage does not work at this time.
+> > 
+> > * By default, the ELF headers are stored in ELF64 format to support
+> >   systems with more than 4GB memory. The --elf32-core-headers option can
+> >   be used to force the generation of ELF32 headers. This is necessary
+> >   because GDB currently cannot open vmcore files with ELF64 headers on
+> >   32-bit systems. ELF32 headers can be used on non-PAE systems (that is,
+> >   less than 4GB of memory).
+> > 		 
+> > * The "irqpoll" boot parameter reduces driver initialization failures
+> >   due to shared interrupts in the dump-capture kernel.
+> > 		  
+> > * You must specify <root-dev> in the format corresponding to the root
+> >   device name in the output of mount command.
+> 
+> > * "init 1" boots the dump-capture kernel into single-user mode without
+> >   networking. If you want networking, use "init 3."
+> > 
+> > 
+> > Kernel Panic
+> > ============
+> > 
+> > After successfully loading the dump-capture kernel as previously
+> > described, the system will reboot into the dump-capture kernel if a
+> > panic occurs. You can write a module to force the panic, or use
+> > "ALT-SysRq-c" to initiate a crash dump for testing purposes.
+> > 
+> > 
+> > Write Out the Dump File
+> > =======================
+> > 
+> > After the dump-capture kernel is booted, write out the dump file with
+> > the following command:
+> > 
+> >    cp /proc/vmcore <dump-file>
+> > 
+> > You can also access dumped memory as a /dev/oldmem device for a linear
+> > and raw view. To create the device, use the following command:
+> > 
+> >     mknod /dev/oldmem c 1 12
+> > 
+> > Use the dd command with suitable options for count, bs, and skip to
+> > access specific portions of the dump.
+> > 
+> > To see the entire memory, use the following command:
+> >    
+> >    dd if=/dev/oldmem of=oldmem.001
+> > 
+> > 
+> > Analysis
+> > ========
+> > 
+> > Before analyzing the dump image, you should reboot into a stable kernel.
+> > 
+> > You can do limited analysis using GDB on the dump file copied out of
+> > /proc/vmcore. Use the debug vmlinux built with -g and run the following
+> > command:
+> > 
+> >    gdb vmlinux <dump-file>
+> > 
+> > Stack trace for the task on processor 0, register display, and memory
+> > display work fine.
+> > 
+> > Note: GDB cannot analyze core files generated in ELF64 format for x86. 
+> > On systems with a maximum of 4GB of memory, you can generate
+> > ELF32-format headers using the --elf32-core-headers kernel option on the
+> > dump kernel.
+> > 
+> > You can also use the Crash utility to analyze dump files in Kdump
+> > format. Crash is available on Dave Anderson's site at the following URL:
+> > 
+> >    http://people.redhat.com/~anderson/
+> > 
+> > 
+> > To Do
+> > =====
+> > 
+> > 1) Provide a kernel pages filtering mechanism, so core file size is not
+> >    extreme on systems with huge memory banks.
+> > 
+> > 2) Relocatable kernel can help in maintaining multiple kernels for
+> >    crash_dump, and the same kernel as the system kernel can be used to
+> >    capture the dump.
+> > 
+> > 
+> > Contact
+> > =======
+> > 
+> > Vivek Goyal (vgoyal@in.ibm.com)
+> > Maneesh Soni (maneesh@in.ibm.com)
+> 
+> fastboot@lists.osdl.org
+> 
+> 
+> cheers
+> 
+> -- 
+> Michael Ellerman
+> IBM OzLabs
+> 
+> wwweb: http://michael.ellerman.id.au
+> phone: +61 2 6212 1183 (tie line 70 21183)
+> 
+> We do not inherit the earth from our ancestors,
+> we borrow it from our children. - S.M.A.R.T Person
 
 
-> +/* We will remove this lines in SVN when it is included in the Linux kernel.
-> + * We don't want to introducte unnecessary dependencies to a patched kernel.
-> + */
-> +#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,17)
 
-Well, you should also remove this for submission, I guess ;-)
-
-> +#define EHCA_EDEB_TRACE_MASK_SIZE 32
-> +extern u8 ehca_edeb_mask[EHCA_EDEB_TRACE_MASK_SIZE];
-> +#define EDEB_ID_TO_U32(str4) (str4[3] | (str4[2] << 8) | (str4[1] << 16) | \
-> +			      (str4[0] << 24))
-> +
-> +inline static u64 ehca_edeb_filter(const u32 level,
-> +				   const u32 id, const u32 line)
-
-'static inline' again. best grep all your source for this, there are probably
-more places.
-
-> +{
-> +	u64 ret = 0;
-> +	u32 filenr = 0;
-> +	u32 filter_level = 9;
-> +	u32 dynamic_level = 0;
-> +
-> +	/* This is code written for the gcc -O2 optimizer which should colapse
-> +	 * to two single ints filter_level is the first level kicked out by
-> +	 * compiler means trace everythin below 6. */
-> +	if (id == EDEB_ID_TO_U32("ehav")) {
-> +		filenr = 0x01;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("clas")) {
-> +		filenr = 0x02;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("cqeq")) {
-> +		filenr = 0x03;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("shca")) {
-> +		filenr = 0x05;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("eirq")) {
-> +		filenr = 0x06;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("lMad")) {
-> +		filenr = 0x07;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("mcas")) {
-> +		filenr = 0x08;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("mrmw")) {
-> +		filenr = 0x09;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("vpd ")) {
-> +		filenr = 0x0a;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("e_qp")) {
-> +		filenr = 0x0b;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("uqes")) {
-> +		filenr = 0x0c;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("PHYP")) {
-> +		filenr = 0x0d;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("hcpi")) {
-> +		filenr = 0x0e;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("iptz")) {
-> +		filenr = 0x0f;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("spta")) {
-> +		filenr = 0x10;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("simp")) {
-> +		filenr = 0x11;
-> +		filter_level = 8;
-> +	}
-> +	if (id == EDEB_ID_TO_U32("reqs")) {
-> +		filenr = 0x12;
-> +		filter_level = 8;
-> +	}
-
-I guess you can convert that to
-
-switch (id) {
-	case EBEB_ID_CLAS:
-		...
-	case EDEB_ID_CQEQ:
-		...
-}
-
-> +
-> +#ifdef EHCA_USE_HCALL_KERNEL
-> +#ifdef CONFIG_PPC_PSERIES
-> +
-> +#include <asm/paca.h>
-> +
-
-You could make everything down from here a separate header
-for hcall.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
