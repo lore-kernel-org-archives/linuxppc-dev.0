@@ -1,21 +1,21 @@
-Return-Path: <david.jander@protonic.nl>
-Received: from protonic.prtnl (protonic.xs4all.nl [213.84.116.84])
-	by ozlabs.org (Postfix) with ESMTP id 75E40679F5
+Return-Path: <aidan@nicta.com.au>
+Received: from mail11.syd.optusnet.com.au (mail11.syd.optusnet.com.au
+	[211.29.132.192])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6D36767A5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Apr 2006 20:38:48 +1000 (EST)
-From: David Jander <david.jander@protonic.nl>
-To: Dan Malek <dan@embeddededge.com>
-Subject: Re: Linux 2.6 sources for MPC852T processor
-Date: Thu, 27 Apr 2006 12:41:20 +0200
-References: <20060426025008.C8A7D773@resin02.mta.everyone.net>
-	<200604261350.05295.david.jander@protonic.nl>
-	<0606BE3C-7751-4E71-B724-FEFE2FF252C8@embeddededge.com>
-In-Reply-To: <0606BE3C-7751-4E71-B724-FEFE2FF252C8@embeddededge.com>
+	Thu, 27 Apr 2006 21:15:54 +1000 (EST)
+Message-ID: <4450A7E9.5030308@nicta.com.au>
+Date: Thu, 27 Apr 2006 21:15:53 +1000
+From: Aidan Williams <aidan@nicta.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200604271241.20627.david.jander@protonic.nl>
-Cc: chandrasekhar_n@math.net, linuxppc-embedded@ozlabs.org
+To: Vincent Winstead <vwinstead@yahoo.com>
+Subject: Re: Xilinx Virtex-2 PRO FPGA ppc 405 on ML310 board
+References: <20060425222107.97443.qmail@web52006.mail.yahoo.com>
+In-Reply-To: <20060425222107.97443.qmail@web52006.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,18 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 27 April 2006 01:32, Dan Malek wrote:
-> There is a horrible bug in the 8xx TLB miss handler that is in the
-> 2.6.16
-> sources.  I don't know when it appeared.  Enable the CPU6 Errata
-> workaround to see if that solves the problem and please report back
-> to me.  I'm working on a solution.
+Vincent Winstead wrote:
+>   But I still have nothing working with the ML310 board.  I did a "dow 
+> image.elf" at the XMD command prompt, then "con" and it showed up with a 
+> "RUNNING>" prompt, but nothing showed up on the hyperterminal window.  I 
+> compiled using 115200 baud and I changed my hyperterminal to match this, 
+> but nothing shows up ...at all.  Where do you think I would need to 
+> start looking to resolve this issue?
 
-I received instructions from Marcelo to reverse two patches he sent me this 
-morning, that did solve the problem. In fact those patches changed some 
-TLB-related assembly code in head_8xx.S
+Ensure that your hardware is working by running one of
+the xilinx-supplied demo programs on your design
+that outputs stuff from the serial port (e.g. the memory
+tester).  If nothing comes out, check your hardware
+design carefully, check your serial port settings
+(e.g. flow control), etc.
 
-Greetings,
+I would also read up on serial port block you are using
+and its linux driver.  For example, if you're using the
+uartlite, it could be that your hardware and software
+don't agree on the baudrate.
 
--- 
-David Jander
+e.g. See drivers/char/xilinx_uartlite/xuartlite.h :-
+
+* @file xuartlite.h
+*
+* This component contains the implementation of the XUartLite component which is
+* the driver for the Xilinx UART Lite device. This UART is a minimal hardware
+* implementation with minimal features.  Most of the features, including baud
+* rate, parity, and number of data bits are only configurable when the hardware
+* device is built, rather than at run time by software.
+
+
+- aidan
