@@ -3,19 +3,18 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8189067A60
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 05:20:40 +1000 (EST)
-In-Reply-To: <20060427190547.1DD90353DAC@atlas.denx.de>
-References: <20060427190547.1DD90353DAC@atlas.denx.de>
+	by ozlabs.org (Postfix) with ESMTP id 9011767A73
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 05:40:48 +1000 (EST)
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859673@ismail.innsys.innovsys.com>
+References: <DCEAAC0833DD314AB0B58112AD99B93B859673@ismail.innsys.innovsys.com>
 Mime-Version: 1.0 (Apple Message framework v749.3)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D358E665-60E4-48C0-82FD-7A1C16DAF00C@kernel.crashing.org>
+Message-Id: <2CD98C5D-E51C-49CA-9BDC-6FE4C1B67854@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: FT u-boot shim 
-Date: Thu, 27 Apr 2006 14:20:34 -0500
-To: Wolfgang Denk <wd@denx.de>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	U-Boot Users <u-boot-users@lists.sourceforge.net>
+Date: Thu, 27 Apr 2006 14:40:42 -0500
+To: "Rune Torgersen" <runet@innovsys.com>
+Cc: linuxppc-dev@ozlabs.org, U-Boot Users <u-boot-users@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,74 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Let's say we have to support such situations, too.
->
->> * dts owned by u-boot??
->
-> I'm not sure about this. I tend to believe the  dts  belongs  to  the
-> kernel.
->
->> Some questions/issues:
->> * ownership of .dts is problematic.  I hate having a file duplicated
->> by both u-boot and kernel.  However it also seems bad to make the
->> build of either depend on the user grabbing a dts from some third
->> party.  Ideas?  A concrete example would be the MPC8349 ADS/SYS/MDS
->> port.  Boards ship with an "old" u-boot, thus we need a kernel
->> wrapper with .dts.  However, newer u-boot's can (hopefully will) have
->> a dts in them
->
-> Can we provide the dts as a separate blob that gets  built  with  the
-> kernel image? From U-Boot's point of view, this could be a multi-file
-> image  which  combines  the  dts and the kernel into a single file so
-> that users don't have to care much about this.
 
-The problem is that there are somethings that u-boot knows that needs  
-to go into the blob (memory size, boot args, initrd info,  
-frequencies, etc.)
+On Apr 27, 2006, at 2:30 PM, Rune Torgersen wrote:
 
->> * updating of dts:  In case 1, this is trivial since its part of the
->> kernel blob.  Case 2. is more difficult.  What do people think of
->> treating the dts like the environment.  You have a version compiled
->
-> I don't like this idea.
->
->> in, but can alternately have a blob in another location that will be
->> used if exists.  This would allow one to update the dts portion w/o
->> effecting the actual boot loader.
->
-> If we consider this, then we might as well combine the dts  with  the
-> kernel  image.  Alternatively,  the dts might be stored in a separate
-> location in memory. It would be easy to extend the "bootm" command to
-> take an additional argument (dts address).
+> Would it be possible to have the kernel smart enough that if it gets
+> passed a bd_t pointer, it updates the dts before booting fully.
+> Newer u-boot versions that support dts then would pass a NULL bd_t
+> pointer to a kernel that supports dts. Kernel would then not update  
+> the
+> dts, but use the one it gets handed.
 
-How would we distinguish the bootm command that takes a blob versus  
-the ones we have today?
+What you are describing is the boot shim method.
 
->> * one solution to the copies of .dts is that we make the wrapper
->> portion of the kernel the owner of the official latest and
->> greatest .dts.  Every so often a maintainer can sync their .dts with
->> u-boot to keep them relatively in sync.  However, the main mechanism
->> would be to load the latest .dts blob into the secondary location.
->
-> Why not load it separately or as part of the Linux kernel image?
+U-boot is already capable of effectively doing this.  You can set a u- 
+boot environment variable to make bootm do different things if you  
+have flat device tree support built into u-boot.
 
-As stated before, the main issue is doing some runtime fix ups to the  
-blob before its handed to the kernel.
+> bootm should be able to see if the kernel has an attached dts,  
+> update it
+> with runtime parameters, and hand it off to the kernel. If it is an  
+> old
+> kernel, hand it the bd_t pointer.
 
-The following pieces of info are setup at runtime that are board  
-specific:
-
-linux,stdout_path
-cpus/<foo>/clock-frequency
-cpus/<foo>/timebase-frequency
-cpus/<foo>/bus-frequency
-<soc>/pci/bus-range
-<soc>/bus-frequency
-<soc>/serial/clock-frequecny
-<soc>/ethernet/address
-
-We could hand bootm a memory location with a blob and do the fix ups  
-at runtime, we would still have some coupling between the blob and u- 
-boot build.  At least the blob wouldn't be built into u-boot.
+We can do this w/o too much modification to what is happening in u- 
+boot today.  I'd probably like to keep the ability to build a dev  
+tree into the u-boot binary, but make the preferred means to pass a  
+blob into the bootm command.
 
 - kumar
