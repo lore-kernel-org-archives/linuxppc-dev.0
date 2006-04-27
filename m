@@ -1,30 +1,23 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 53B3E67A3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 07:50:37 +1000 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1FZEN7-0008HD-SH
-	for linuxppc-dev@ozlabs.org; Thu, 27 Apr 2006 23:50:01 +0200
-Received: from p50814d44.dip.t-dialin.net ([80.129.77.68])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 23:50:01 +0200
-Received: from info by p50814d44.dip.t-dialin.net with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 23:50:01 +0200
-To: linuxppc-dev@ozlabs.org
-From: Heiko J Schick <info@schihei.de>
-Subject: Re: [PATCH 06/16] ehca: common include files
-Date: Thu, 27 Apr 2006 23:31:41 +0200
-Message-ID: <e2rd7t$94v$1@sea.gmane.org>
-References: <4450A183.6030405@de.ibm.com>
-	<200604271319.06844.arnd.bergmann@de.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 1DA6867A41
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 07:53:43 +1000 (EST)
+Subject: Re: Not coherent cache DMA for G3/G4 CPUs: clarification needed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20060427213134.GA12572@mag.az.mvista.com>
+References: <20060420210201.GA25755@gate.ebshome.net>
+	<10026.1145567455@www088.gmx.net>
+	<20060420215514.GE25755@gate.ebshome.net>
+	<1145594285.28014.12.camel@localhost.localdomain>
+	<20060427213134.GA12572@mag.az.mvista.com>
+Content-Type: text/plain
+Date: Fri, 28 Apr 2006 07:53:29 +1000
+Message-Id: <1146174809.30710.14.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Sender: news <news@sea.gmane.org>
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org
+Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,15 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2006-04-27 13:19:06 +0200, Arnd Bergmann <arnd.bergmann@de.ibm.com> said:
 
-> Well, you should also remove this for submission, I guess ;-)
+> There are many mv64x60 based platforms working just fine today with
+> CONFIG_NOT_COHERENT_CACHE defined.  The reason for turning coherency off
+> is that there is a bug in the bridge requiring a hardware workaround.
+> Unfortunately, not all of the hardware vendors have implemented that
+> workaround and I know of one that considers it infeasible and will
+> not implement it.
 
-Yeah, I've planed to remove this lines when 2.6.17 official came out.
-It is still included because we don't want to introduce unnecessary
-dependencies.
+Define "working fine" ... With the current implementation, and according
+to the spec, it will randomly crap out or checkstop due to the same page
+beging accessed via the NCU and being in the L2 unless you disabled
+speculative loads and made sure it can't prefetch accross page
+boundaries maybe ? Or set the G bit all over the BAT mapping (ouch !).
 
-I will remove it for the next patchset.
+> I expect that the pegasos has that hardware workaround implemented so
+> the kernel maintainers for that platform have the good fortune of being
+> able to run with coherency on.
 
-Regards,
-	Heiko
+I suppose so...
+
+> What Ben says is correct, there is that issue.  However, AFAIK, I have
+> not yet to run into it.
+
+Hrm... well, I wouldn't rely on that tho.
+
+> If that hardware workaround is not implemented, the options are:
+> a) 100% chance of a system hang with coherency on
+> or
+> b) < 0.0..1% chance of a system hang with coherency off (at least in my
+> experience to far).
+> 
+> The choice is simple.
+
+I disagree. A solution that is known to have a hole in it is no good
+even if you haven't managed to trigger it so far. Now it's Gerhard's
+choice.
+
+Ben.
