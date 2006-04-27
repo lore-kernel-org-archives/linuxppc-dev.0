@@ -1,17 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Fastboot] Documentation feedback request.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Wilder <dwilder@us.ibm.com>
-In-Reply-To: <444FB2AF.3020802@us.ibm.com>
-References: <444FB2AF.3020802@us.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-21zlVN4+iSfsWeMNNJSr"
-Date: Thu, 27 Apr 2006 09:44:31 +1000
-Message-Id: <1146095071.29876.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, fastboot@lists.osdl.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <npk_0@yahoo.co.in>
+Received: from web8907.mail.in.yahoo.com (web8907.mail.in.yahoo.com
+	[203.84.221.139]) by ozlabs.org (Postfix) with SMTP id 9B171679F0
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 16:13:22 +1000 (EST)
+Message-ID: <20060427060639.56542.qmail@web8907.mail.in.yahoo.com>
+Date: Thu, 27 Apr 2006 07:06:39 +0100 (BST)
+From: Prakash N <npk_0@yahoo.co.in>
+Subject: linux 2.4.26 bummer problem
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-513996594-1146117999=:54568"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,372 +18,179 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--0-513996594-1146117999=:54568
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
---=-21zlVN4+iSfsWeMNNJSr
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hi, 
+  Iam trying to run linux 2.4.26 from mvista in xilinx XUPV2P board. 
+  During booting I get this error message, 
+ 
+ Mounted devfs on /dev 
+  . 
+  Freeing unused kernel memory: 60k init 
+  init started:  BusyBox v1.1.2 (2006.04.24-13:20+0000) multi-call binary 
+  Starting pid 11, console /dev/console: '/etc/init.d/rcS' 
+  Bummer, could not run '/etc/init.d/rcS': No such file or directory 
+  Bummer, could not run 
+  ML300 powerpc linux 2.4.21-pre7 E.I.S. edition 
+  (none) login: 
+  . 
+  But I could see in the generated root file system this file is there. 
+  Even its not logging with anything. 
+   My inittab file is 
+ ::sysinit:/etc/init.d/rcS 
+ #::askfirst:-/bin/sh 
+ ::ctrlaltdel:/sbin/reboot 
+ ::shutdown:/sbin/swapoff -a 
+ ::shutdown:/bin/umount -a -r 
+ ::restart:/sbin/init 
+ ::respawn:/sbin/getty 9600 tts/0 
+ 
+ Without init options specified in busybox configuration I got, 
+ . 
+ NET4: Unix domain sockets 1.0/SMP for Linux NET4.0. 
+ EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended 
+ VFS: Mounted root (ext2 filesystem). 
+ mount_devfs_fs(): unable to mount devfs, err: -5 
+ Freeing unused kernel memory: 60k init 
+ Warning: unable to open an initial console. 
+ Kernel panic: No init found.  Try passing init= option to kernel. 
+ Some replies in usenet, which I answered,
+ 
+ - x bits set for this shell script? 
+ SInce Iam new to this embedded linux, could you tell whats that x bits means, is it exec permission (if so for whom,root?). 
+ 
+  - does a shell run? 
+ Iam not clear why does it say /etc/init.d/rcS is not there, while its definitely there.
+ I feel shell is not running. I want to just put what I get in minicom
+ ----------------------------------------------------------------------------------------------------------------------------------------
+ loaded at:     00400000 004C11E4
+ board data at: 004BE13C 004BE154
+ relocated to:  00405634 0040564C
+ zimage at:     00405BF9 004BDD33
+ avail ram:     004C2000 10000000
+ 
+ Linux/PPC load: console=ttyS0,9600 root=/dev/xsysace/disc0/part2 rw
+ Uncompressing Linux...done.
+ Now booting the kernel
+ Linux version 2.4.26 (root@edvl28.cedt.iisc.ernet.in) (gcc version 3.4.1) #16 Sat Apr 22 15:19:6Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc. (source@mvista.com)
+ On node 0 totalpages: 65536
+ zone(0): 65536 pages.
+ zone(1): 0 pages.
+ zone(2): 0 pages.
+ Kernel command line: console=ttyS0,9600 root=/dev/xsysace/disc0/part2 rw
+ Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFE000
+ Calibrating delay loop... 299.00 BogoMIPS
+ Memory: 257332k available (1284k kernel code, 380k data, 60k init, 0k highmem)
+ Dentry cache hash table entries: 32768 (order: 6, 262144 bytes)
+ Inode cache hash table entries: 16384 (order: 5, 131072 bytes)
+ Mount cache hash table entries: 512 (order: 0, 4096 bytes)
+ Buffer cache hash table entries: 16384 (order: 4, 65536 bytes)
+ Page-cache hash table entries: 65536 (order: 6, 262144 bytes)
+ POSIX conformance testing by UNIFIX
+ Linux NET4.0 for Linux 2.4
+ Based upon Swansea University Computer Society NET3.039
+ Initializing RT netlink socket
+ Starting kswapd
+ devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
+ devfs: boot_options: 0x1
+ JFFS2 version 2.1. (C) 2001 Red Hat, Inc., designed by Axis Communications AB.
+ pty: 256 Unix98 ptys configured
+ Serial driver version 5.05c (2001-07-08) with no serial options enabled
+ ttyS00 at 0xfdfff003 (irq = 29) is a 16550A
+ RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+ loop: loaded (max 8 devices)
+ Partition check:
+  xsysacea: p1 p2
+ System ACE at 0x41800000 mapped to 0xD1070000, irq=30, 250880KB
+ eth0: using fifo mode.
+ eth0: No PHY detected.  Assuming a PHY at address 0.
+ eth0: Xilinx EMAC #0 at 0x40C00000 mapped to 0xD1083000, irq=31
+ eth0: id 2.0h; block id 7, type 1
+ SCSI subsystem driver Revision: 1.00
+ NET4: Linux TCP/IP 1.0 for NET4.0
+ IP Protocols: ICMP, UDP, TCP, IGMP
+ IP: routing cache hash table of 2048 buckets, 16Kbytes
+ TCP: Hash tables configured (established 16384 bind 32768)
+ NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+ EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+ VFS: Mounted root (ext2 filesystem).
+ Mounted devfs on /dev
+ Freeing unused kernel memory: 60k init
+ init started:  BusyBox v1.1.2 (2006.04.27-03:52+0000) multi-call binary
+ Starting pid 11, console /dev/console: '/etc/init.d/rcS'
+ Bummer, could not run '/etc/init.d/rcS': No such file or directory
+ Bummer, could not run '/etc/init.d/rcS': No such file
+ ML300 powerpc linux 2.4.21-pre7 E.I.S. edition
+ (none) login:
+ -----------------------------------------------------------------------------------------------------------------------------------
+ Here If I type su or root or whatever it asks password but always says incorrect login.
+ 
+ - try init=/bin/sh as a kernel parameter. Does it run?
+ My init tab file is 
+ ----------------------------------------------------------------------------------------------------------------------------
+ ::init=/bin/sh
+ ::sysinit:/etc/init.d/rcS
+ #::askfirst:-/bin/sh
+ ::ctrlaltdel:/sbin/reboot
+ ::shutdown:/sbin/swapoff -a
+ ::shutdown:/bin/umount -a -r
+ ::restart:/sbin/init
+ ::respawn:/sbin/getty 9600 tts/0
+ ------------------------------------------------------------------------------------------------------------------------------
+ 
+ The log is 
+ ..........
+ VFS: Mounted root (ext2 filesystem).
+ mount_devfs_fs(): unable to mount devfs, err: -5
+ Freeing unused kernel memory: 60k init
+ Warning: unable to open an initial console.
+ Kernel panic: No init found.  Try passing init= option to kernel.
+  <0>Rebooting in 180 seconds..
+ -----------------------------------------------------------------------------------------------------------------
+ 
+  - all needed libraries to run available on your target?
+ I feel yes, as I could see these in lib folder of my RFS.
+ 
+ ld-2.3.3.so               libdl.so.2              libnss_dns.so.2          libpthread.so.0
+ ld.so.1                   libgcc_s_nof.so.1       libnss_files-2.3.3.so    libresolv-2.3.3.so
+ libanl-2.3.3.so           libgcc_s.so.1           libnss_files.so.2        libresolv.so.2
+ libanl.so.1               libm-2.3.3.so           libnss_hesiod-2.3.3.so   librt-2.3.3.so
+ libBrokenLocale-2.3.3.so  libmemusage.so          libnss_hesiod.so.2       librt.so.1
+ libBrokenLocale.so.1      libm.so.6               libnss_nis-2.3.3.so      libSegFault.so
+ libc-2.3.3.so             libnsl-2.3.3.so         libnss_nisplus-2.3.3.so  libstdc++.so.6
+ libcrypt-2.3.3.so         libnsl.so.1             libnss_nisplus.so.2      libthread_db-1.0.so
+ libcrypt.so.1             libnss_compat-2.3.3.so  libnss_nis.so.2          libthread_db.so.1
+ libc.so.6                 libnss_compat.so.2      libpcprofile.so          libutil-2.3.3.so
+ libdl-2.3.3.so            libnss_dns-2.3.3.so     libpthread-0.10.so       libutil.so.1
+ 
+ guide me where Iam wrong
+ Prakash
+ 
+ 
+				
+---------------------------------
+ Jiyo cricket on Yahoo! India cricket
+Yahoo! Messenger Mobile Stay in touch with your buddies all the time.
+--0-513996594-1146117999=:54568
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Hi David,
+Hi, <br>  Iam trying to run linux 2.4.26 from mvista in xilinx XUPV2P board. <br>  During booting I get this error message, <br> <br> Mounted devfs on /dev <br>  . <br>  Freeing unused kernel memory: 60k init <br>  init started: &nbsp;BusyBox v1.1.2 (2006.04.24-13:20+0000) multi-call binary <br>  Starting pid 11, console /dev/console: '/etc/init.d/rcS' <br>  Bummer, could not run '/etc/init.d/rcS': No such file or directory <br>  Bummer, could not run <br>  ML300 powerpc linux 2.4.21-pre7 E.I.S. edition <br>  (none) login: <br>  . <br>  But I could see in the generated root file system this file is there. <br>  Even its not logging with anything. <br>   <div>My inittab file is <br> ::sysinit:/etc/init.d/rcS <br> #::askfirst:-/bin/sh <br> ::ctrlaltdel:/sbin/reboot <br> ::shutdown:/sbin/swapoff -a <br> ::shutdown:/bin/umount -a -r <br> ::restart:/sbin/init <br> ::respawn:/sbin/getty 9600 tts/0 <br> </div> <div>Without init options specified in busybox configuration I got,
+ <br> . <br> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0. <br> EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended <br> VFS: Mounted root (ext2 filesystem). <br> mount_devfs_fs(): unable to mount devfs, err: -5 <br> Freeing unused kernel memory: 60k init <br> Warning: unable to open an initial console. <br> Kernel panic: No init found. &nbsp;Try passing init= option to kernel. </div> Some replies in usenet, which I answered,<br> <br> - x bits set for this shell script? <br> SInce Iam new to this embedded linux, could you tell whats that x bits means, is it exec permission (if so for whom,root?). <br> <br> &nbsp;- does a shell run? <br> Iam not clear why does it say /etc/init.d/rcS is not there, while its definitely there.<br> I feel shell is not running. I want to just put what I get in minicom<br> ----------------------------------------------------------------------------------------------------------------------------------------<br> loaded
+ at:&nbsp;&nbsp;&nbsp;&nbsp; 00400000 004C11E4<br> board data at: 004BE13C 004BE154<br> relocated to:&nbsp; 00405634 0040564C<br> zimage at:&nbsp;&nbsp;&nbsp;&nbsp; 00405BF9 004BDD33<br> avail ram:&nbsp;&nbsp;&nbsp;&nbsp; 004C2000 10000000<br> <br> Linux/PPC load: console=ttyS0,9600 root=/dev/xsysace/disc0/part2 rw<br> Uncompressing Linux...done.<br> Now booting the kernel<br> Linux version 2.4.26 (root@edvl28.cedt.iisc.ernet.in) (gcc version 3.4.1) #16 Sat Apr 22 15:19:6Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc. (source@mvista.com)<br> On node 0 totalpages: 65536<br> zone(0): 65536 pages.<br> zone(1): 0 pages.<br> zone(2): 0 pages.<br> Kernel command line: console=ttyS0,9600 root=/dev/xsysace/disc0/part2 rw<br> Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFE000<br> Calibrating delay loop... 299.00 BogoMIPS<br> Memory: 257332k available (1284k kernel code, 380k data, 60k init, 0k highmem)<br> Dentry cache hash table entries: 32768 (order: 6, 262144
+ bytes)<br> Inode cache hash table entries: 16384 (order: 5, 131072 bytes)<br> Mount cache hash table entries: 512 (order: 0, 4096 bytes)<br> Buffer cache hash table entries: 16384 (order: 4, 65536 bytes)<br> Page-cache hash table entries: 65536 (order: 6, 262144 bytes)<br> POSIX conformance testing by UNIFIX<br> Linux NET4.0 for Linux 2.4<br> Based upon Swansea University Computer Society NET3.039<br> Initializing RT netlink socket<br> Starting kswapd<br> devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)<br> devfs: boot_options: 0x1<br> JFFS2 version 2.1. (C) 2001 Red Hat, Inc., designed by Axis Communications AB.<br> pty: 256 Unix98 ptys configured<br> Serial driver version 5.05c (2001-07-08) with no serial options enabled<br> ttyS00 at 0xfdfff003 (irq = 29) is a 16550A<br> RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize<br> loop: loaded (max 8 devices)<br> Partition check:<br> &nbsp;xsysacea: p1 p2<br> System ACE at 0x41800000 mapped to
+ 0xD1070000, irq=30, 250880KB<br> eth0: using fifo mode.<br> eth0: No PHY detected.&nbsp; Assuming a PHY at address 0.<br> eth0: Xilinx EMAC #0 at 0x40C00000 mapped to 0xD1083000, irq=31<br> eth0: id 2.0h; block id 7, type 1<br> SCSI subsystem driver Revision: 1.00<br> NET4: Linux TCP/IP 1.0 for NET4.0<br> IP Protocols: ICMP, UDP, TCP, IGMP<br> IP: routing cache hash table of 2048 buckets, 16Kbytes<br> TCP: Hash tables configured (established 16384 bind 32768)<br> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.<br> EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended<br> VFS: Mounted root (ext2 filesystem).<br> Mounted devfs on /dev<br> Freeing unused kernel memory: 60k init<br> init started:&nbsp; BusyBox v1.1.2 (2006.04.27-03:52+0000) multi-call binary<br> Starting pid 11, console /dev/console: '/etc/init.d/rcS'<br> Bummer, could not run '/etc/init.d/rcS': No such file or directory<br> Bummer, could not run '/etc/init.d/rcS': No such file<br> ML300
+ powerpc linux 2.4.21-pre7 E.I.S. edition<br> (none) login:<br> -----------------------------------------------------------------------------------------------------------------------------------<br> Here If I type su or root or whatever it asks password but always says incorrect login.<br> <br> - try init=/bin/sh as a kernel parameter. Does it run?<br> My init tab file is <br> ----------------------------------------------------------------------------------------------------------------------------<br> ::init=/bin/sh<br> ::sysinit:/etc/init.d/rcS<br> #::askfirst:-/bin/sh<br> ::ctrlaltdel:/sbin/reboot<br> ::shutdown:/sbin/swapoff -a<br> ::shutdown:/bin/umount -a -r<br> ::restart:/sbin/init<br> ::respawn:/sbin/getty 9600 tts/0<br> ------------------------------------------------------------------------------------------------------------------------------<br> <br> The log is <br> ..........<br> VFS: Mounted root (ext2 filesystem).<br> mount_devfs_fs(): unable to mount
+ devfs, err: -5<br> Freeing unused kernel memory: 60k init<br> Warning: unable to open an initial console.<br> Kernel panic: No init found.&nbsp; Try passing init= option to kernel.<br> &nbsp;&lt;0&gt;Rebooting in 180 seconds..<br> -----------------------------------------------------------------------------------------------------------------<br> <br> &nbsp;- all needed libraries to run available on your target?<br> I feel yes, as I could see these in lib folder of my RFS.<br> <br> ld-2.3.3.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libdl.so.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_dns.so.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libpthread.so.0<br> ld.so.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libgcc_s_nof.so.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_files-2.3.3.so&nbsp;&nbsp;&nbsp;
+ libresolv-2.3.3.so<br> libanl-2.3.3.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libgcc_s.so.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_files.so.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libresolv.so.2<br> libanl.so.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libm-2.3.3.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_hesiod-2.3.3.so&nbsp;&nbsp; librt-2.3.3.so<br> libBrokenLocale-2.3.3.so&nbsp; libmemusage.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_hesiod.so.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; librt.so.1<br> libBrokenLocale.so.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libm.so.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_nis-2.3.3.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libSegFault.so<br> libc-2.3.3.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ libnsl-2.3.3.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_nisplus-2.3.3.so&nbsp; libstdc++.so.6<br> libcrypt-2.3.3.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnsl.so.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_nisplus.so.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libthread_db-1.0.so<br> libcrypt.so.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_compat-2.3.3.so&nbsp; libnss_nis.so.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libthread_db.so.1<br> libc.so.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_compat.so.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libpcprofile.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libutil-2.3.3.so<br> libdl-2.3.3.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libnss_dns-2.3.3.so&nbsp;&nbsp;&nbsp;&nbsp; libpthread-0.10.so&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; libutil.so.1<br>
+ <br> guide me where Iam wrong<br> Prakash<br> <br> <p>
+	
 
-Nice work. Few comments below ...
-
-On Wed, 2006-04-26 at 10:49 -0700, David Wilder wrote:
-> Attached is a updated  Documentation/kdump/kdump.txt.  Please provide=20
-> comments.  I will incorporate your feedback and send up to Linus.
->=20
-> plain text document attachment (kdump-final-20060425.txt)
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> Documentation for Kdump - The kexec-based Crash Dumping Solution
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> This document includes overview, setup and installation, and analysis
-> information.
->=20
-> Overview
-> =3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> Kdump uses kexec to quickly boot to a dump-capture kernel whenever a
-> dump of the system kernel's memory needs to be taken (for example, when
-> the system panics). The system kernel's memory image is preserved across
-> the reboot and is accessible to the dump-capture kernel.
->=20
-> You can use common Linux commands, such as cp and scp, to copy the
-> memory image to a dump file on the local disk, or across the network to
-> a remote system.
->=20
-> Kdump and kexec are currently supported on the x86, x86_64, and ppc64
-> architectures.
-
-s/ppc64/64-bit powerpc/ ?
-
-> When the system kernel boots, it reserves a small section of memory for
-> the dump-capture kernel. This ensures that ongoing Direct Memory Access
-> (DMA) from the system kernel does not corrupt the dump-capture kernel.=20
-> The kexec -p command loads the dump-capture kernel into this reserved
-> memory.
-
-Well hopefully ;)
-
-> On x86 machines, the first 640 KB of physical memory is needed to boot,
-> regardless of where the kernel loads. Therefore, kexec backs up this
-> region just before rebooting into the dump-capture kernel.
->=20
-> All of the necessary information about the system kernel's core image is
-> encoded in the ELF format, and stored in a reserved area of memory
-> before a crash. The physical address of the start of the ELF header is
-> passed to the dump-capture kernel through the elfcorehdr=3D boot
-> parameter.
->=20
-> With the dump-capture kernel, you can access the memory image, or "old
-> memory," in two ways:
->=20
-> - Through a /dev/oldmem device interface. A capture utility can read the
->   device file and write out the memory in raw format. This is a raw dump
->   of memory. Analysis and capture tools must be intelligent enough to
->   determine where to look for the right information.
->=20
-> - Through /proc/vmcore. This exports the dump as an ELF-format file that
->   you can write out using file copy commands such as cp or scp. Further,
->   you can use analysis tools such as the GNU Debugger (GDB) and the Crash
->   tool to debug the dump file. This method ensures that the dump pages ar=
-e
->   correctly ordered.
->=20
->=20
-> Setup and Installation
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> Install kexec-tools and the Kdump patch
-> ---------------------------------------
->=20
-> 1) Login as the root user.
->=20
-> 2) Download the kexec-tools user-space package from the following URL:
->=20
->    http://www.xmission.com/~ebiederm/files/kexec/kexec-tools-1.101.tar.gz
->=20
-> 3) Unpack the tarball with the tar command, as follows:
->=20
->    tar xvpzf kexec-tools-1.101.tar.gz
->=20
-> 4) Download the latest consolidated Kdump patch from the following URL:
->=20
->    http://lse.sourceforge.net/kdump/
->   =20
->    (This location is being used until all the user-space Kdump patches
->    are integrated with the kexec-tools package.)
->   =20
-> 5) Change to the kexec-tools-1.101 directory, as follows:
->=20
->    cd kexec-tools-1.101
->=20
-> 6) Apply the consolidated patch to the kexec-tools-1.101 source tree
->    with the patch command, as follows. (Modify the path to the downloaded
->    patch as necessary.)
->   =20
->    patch -p1 < /path-to-kdump-patch/kexec-tools-1.101-kdump.patch
->=20
-> 7) Configure the package, as follows:
->=20
->    ./configure
->=20
-> 8) Compile the package, as follows:
->=20
->    make
->=20
-> 9) Install the package, as follows:
->=20
->    make install
->=20
->=20
-> Download and build the system and dump-capture kernels
-> ------------------------------------------------------
->=20
-> Download the mainline (vanilla) kernel source code (2.6.13-rc1 or newer)
-> from http://www.kernel.org. Two kernels must be built: a system kernel
-> and a dump-capture kernel. Use the following steps to configure these
-> kernels with the necessary kexec and Kdump features:
->=20
-> System kernel
-> -------------
->=20
-> 1) Enable "kexec system call" in "Processor type and features."
->=20
->    CONFIG_KEXEC=3Dy
->=20
-> 2) Enable "sysfs file system support" in "Filesystem" -> "Pseudo
->    filesystems." This is usually enabled by default.
->=20
->    CONFIG_SYSFS=3Dy
->=20
->    Note that "sysfs file system support" might not appear in the "Pseudo
->    filesystems" menu if "Configure standard kernel features (for small
->    systems)" is not enabled in "General Setup." In this case, check the
->    .config file itself to ensure that sysfs is turned on, as follows:
->=20
->    grep 'CONFIG_SYSFS' .config
-
-Is there a particular requirement for sysfs?
-
-> 3) Enable "Compile the kernel with debug info" in "Kernel hacking."
->=20
->    CONFIG_DEBUG_INFO=3DY
->=20
->    This causes the kernel to be built with debug symbols. The dump
->    analysis tools require a vmlinux with debug symbols in order to read
->    and analyze a dump file.
->           =20
-> 4) Make and install the kernel and its modules. Update the boot loader
->    (such as grub, yaboot, or lilo) configuration files as necessary.
->=20
-> 5) Boot the system kernel with the boot parameter "crashkernel=3DY@X",
->    where Y specifies how much memory to reserve for the dump-capture kern=
-el
->    and X specifies the beginning of this reserved memory. For example,
->    "crashkernel=3D64M@16M" tells the system kernel to reserve 64 MB of me=
-mory
->    starting at physical address 0x01000000 for the dump-capture kernel.
-
-Most of this doesn't apply to powerpc.
-
->    On x86 and x86_64, use "crashkernel=3D64M@16M".
->=20
->    On ppc64, use "crashkernel=3D128M@32M".
-
-No just use "crashkernel=3D128M".
-
-> The dump-capture kernel
-> -----------------------
->=20
-> 1) Under "General setup," append "-kdump" to the current string in
->    "Local version."
->=20
-> 2) On x86, enable high memory support under "Processor type and
->    features":
->=20
->    CONFIG_HIGHMEM=3Dy
->=20
-> 3) On x86 and x86_64, disable symmetric multi-processing support
->    under "Processor type and features":
->   =20
->    CONFIG_SMP=3Dn
->=20
-> 4) On ppc64, disable NUMA support and enable EMBEDDED support:
->   =20
->    CONFIG_NUMA=3Dn
->    CONFIG_EMBEDDED=3Dy
->    CONFIG_EEH=3DN for the dump-capture kernel
-
-Why are we disabling NUMA? AFAIK we work on more systems with NUMA than
-without?
-And why are we turning off EMBEDDED and EEH?
-
-> 5) Enable "kernel crash dumps" support under "Processor type and
->    features":
->=20
->    CONFIG_CRASH_DUMP=3Dy
->=20
-> 6) Use a suitable value for "Physical address where the kernel is
->    loaded" (under "Processor type and features"). This only appears when
->    "kernel crash dumps" is enabled. By default this value is 0x1000000
->    (16MB). It should be the same as X in the "crashkernel=3DY@X" boot
->    parameter discussed above.
->=20
->    On x86 and x86_64, use "CONFIG_PHYSICAL_START=3D0x1000000".
->      =20
->    On ppc64 the value is automatically set at 32MB when
->    CONFIG_CRASH_DUMP is set.
-
-This whole step should start "On x86 ..."
-
-> 6) Optionally enable "/proc/vmcore support" under "Filesystems" ->
->    "Pseudo filesystems".
-
-6 + 1 =3D 6 :D
-
->    CONFIG_PROC_VMCORE=3Dy
->      =20
-> 7) Make and install the kernel and its modules. DO NOT add this kernel
->    to the boot loader configuration files.
->   =20
->=20
-> Load the Dump-capture Kernel
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D
->=20
-> After booting to the system kernel, load the dump-capture kernel using
-> the following command:
->=20
->    kexec -p <dump-capture-kernel> \
->    --initrd=3D<initrd-for-dump-capture-kernel> --args-linux \
->    --append=3D"root=3D<root-dev> init 1 irqpoll"
-
-I've never tested irqpoll on powerpc, I'm not sure we want to recommend
-it, has someone tested it?
-
-> Notes on loading the dump-capture kernel:
->=20
-> * <dump-capture-kernel> must be a vmlinux image (that is, an
->   uncompressed ELF image). bzImage does not work at this time.
->=20
-> * By default, the ELF headers are stored in ELF64 format to support
->   systems with more than 4GB memory. The --elf32-core-headers option can
->   be used to force the generation of ELF32 headers. This is necessary
->   because GDB currently cannot open vmcore files with ELF64 headers on
->   32-bit systems. ELF32 headers can be used on non-PAE systems (that is,
->   less than 4GB of memory).
-> 		=20
-> * The "irqpoll" boot parameter reduces driver initialization failures
->   due to shared interrupts in the dump-capture kernel.
-> 		 =20
-> * You must specify <root-dev> in the format corresponding to the root
->   device name in the output of mount command.
-
-> * "init 1" boots the dump-capture kernel into single-user mode without
->   networking. If you want networking, use "init 3."
->=20
->=20
-> Kernel Panic
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> After successfully loading the dump-capture kernel as previously
-> described, the system will reboot into the dump-capture kernel if a
-> panic occurs. You can write a module to force the panic, or use
-> "ALT-SysRq-c" to initiate a crash dump for testing purposes.
->=20
->=20
-> Write Out the Dump File
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> After the dump-capture kernel is booted, write out the dump file with
-> the following command:
->=20
->    cp /proc/vmcore <dump-file>
->=20
-> You can also access dumped memory as a /dev/oldmem device for a linear
-> and raw view. To create the device, use the following command:
->=20
->     mknod /dev/oldmem c 1 12
->=20
-> Use the dd command with suitable options for count, bs, and skip to
-> access specific portions of the dump.
->=20
-> To see the entire memory, use the following command:
->   =20
->    dd if=3D/dev/oldmem of=3Doldmem.001
->=20
->=20
-> Analysis
-> =3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> Before analyzing the dump image, you should reboot into a stable kernel.
->=20
-> You can do limited analysis using GDB on the dump file copied out of
-> /proc/vmcore. Use the debug vmlinux built with -g and run the following
-> command:
->=20
->    gdb vmlinux <dump-file>
->=20
-> Stack trace for the task on processor 0, register display, and memory
-> display work fine.
->=20
-> Note: GDB cannot analyze core files generated in ELF64 format for x86.=20
-> On systems with a maximum of 4GB of memory, you can generate
-> ELF32-format headers using the --elf32-core-headers kernel option on the
-> dump kernel.
->=20
-> You can also use the Crash utility to analyze dump files in Kdump
-> format. Crash is available on Dave Anderson's site at the following URL:
->=20
->    http://people.redhat.com/~anderson/
->=20
->=20
-> To Do
-> =3D=3D=3D=3D=3D
->=20
-> 1) Provide a kernel pages filtering mechanism, so core file size is not
->    extreme on systems with huge memory banks.
->=20
-> 2) Relocatable kernel can help in maintaining multiple kernels for
->    crash_dump, and the same kernel as the system kernel can be used to
->    capture the dump.
->=20
->=20
-> Contact
-> =3D=3D=3D=3D=3D=3D=3D
->=20
-> Vivek Goyal (vgoyal@in.ibm.com)
-> Maneesh Soni (maneesh@in.ibm.com)
-
-fastboot@lists.osdl.org
-
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-21zlVN4+iSfsWeMNNJSr
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBEUAXfdSjSd0sB4dIRAqp+AKDHyCZAYGd1Yk3pW6RyhJr4B4GNGACgsqjl
-RSo4qo+ICX2Wzyp770m+K6g=
-=dixm
------END PGP SIGNATURE-----
-
---=-21zlVN4+iSfsWeMNNJSr--
+	
+		<hr size=1> 
+Jiyo cricket on <a href="http://us.rd.yahoo.com/mail/in/mailcricket/*http://in.sports.yahoo.com/cricket/">Yahoo! India cricket</a><br>
+<a href="http://us.rd.yahoo.com/mail/in/mailmobilemessenger/*http://in.mobile.yahoo.com/new/messenger/">Yahoo! Messenger Mobile</a> Stay in touch with your buddies all the time.
+--0-513996594-1146117999=:54568--
