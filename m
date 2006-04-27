@@ -1,29 +1,18 @@
-Return-Path: <rsmith@imagemap.com>
-Received: from fileserver3.imagemap.com (mail.imagemap.com [68.156.94.66])
-	by ozlabs.org (Postfix) with ESMTP id 300C767A45
+Return-Path: <steve@icarus.com>
+Received: from icarus.com (icarus.icarus.com [64.105.89.2])
+	by ozlabs.org (Postfix) with ESMTP id 2837A67A60
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Apr 2006 04:47:23 +1000 (EST)
-Received: from amavis by fileserver3.imagemap.com with scanned-ok (Exim 3.36
-	#1 (Debian)) id 1FZBZ7-0001fj-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 27 Apr 2006 14:50:13 -0400
-Received: from fileserver3.imagemap.com ([127.0.0.1])
-	by localhost (fileserver3 [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 06200-04 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Apr 2006 14:49:56 -0400 (EDT)
-Received: from [192.168.0.196] (helo=[192.168.0.196])
-	by fileserver3.imagemap.com with esmtp (Exim 3.36 #1 (Debian))
-	id 1FZBYq-0001fR-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 27 Apr 2006 14:49:56 -0400
-Message-ID: <4451114D.1010607@imagemap.com>
-Date: Thu, 27 Apr 2006 14:45:33 -0400
-From: Randy Smith <rsmith@imagemap.com>
+	Fri, 28 Apr 2006 04:54:39 +1000 (EST)
+Message-ID: <44510E4D.5040504@icarus.com>
+Date: Thu, 27 Apr 2006 11:32:45 -0700
+From: Stephen Williams <steve@icarus.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re-configuring busybox that comes with DENX's ELDK SELF
+To: Matt Porter <mporter@kernel.crashing.org>, linuxppc-embedded@ozlabs.org
+Subject: Re: PPC 405GPr support in linux 2.4.32
 References: <e2ov5s$1hn$1@sea.gmane.org> <20060426163540.H16236@cox.net>
 	<20060427180743.GB11206@gate.ebshome.net>
 In-Reply-To: <20060427180743.GB11206@gate.ebshome.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,38 +23,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Eugene Surovegin wrote:
+> There are bigger problems with 4xx support in 2.4 mainline than just 
+> missing some chips support.
+> 
+> Some parts which are already in 2.4 (e.g. ethernet driver) are of 
+> non-production quality. 
+> 
+> I can imagine Marcelo agreeing to commit 405GPr/405EP support as this 
+> change shouldn't break anything, but this will not make 2.4 support 
+> really useful for real world deployments. I think we are stuck with 
+> maintaining our own 2.4 trees with backports from 2.6. This is what I 
+> do myself of all our products (and yeah, diff between stock 2.4.32 and 
+> my internal version has already grown quite big to be acceptable for 
+> 2.4 inclusion).
+> 
 
-I have a weird situation that I am very confused about and I was 
-wondering if some kind soul would point me in the right direction?
+Of course we are going to have to keep our own per-board trees.
+but the blatantly common stuff, like the core 405gpr support and
+certain drivers, might as well go in if the gatekeeper can be
+convinced. You and I both probably have huge drivers for custom
+devices hanging off our PPCs, with various hacks to squeeze extra
+performance out. These make our transition to 2.6 difficult, and
+surely we are not alone.
 
-I have a working powerpc embedded system using the 2.4 kernel built with 
-DENX' ELDK and root file system from DENX' SELF.
-I am trying to enable some additional applets in the busybox (well, tftp 
-anyway) that came with SELF. I am using the ELDK cross toolchain on an 
-x86 box to build everything and the powerpc board itself is based on an 
-Icecube board. I thought I could do the following...
+So 2.4 is going to be around for a while longer for us, so we might
+as well make an effort to keep the house in some sort of order. It
+serves no one to keep these fixes a secret:-)
 
-1. Download the source for busybox and compile it using the cross tools 
-from DENX.
-2. Install it in my target root file system
-3. Make the jffs2 file system image and flash it into the unit under test.
+In any case, if the patches I sent are rejected, then that's that.
+We'll see.
 
-When I do this, the kernel loads and boots just like before and then 
-hangs after is says it is freeing unused memory. I am assuming that this 
-is where it is trying to run the new init that I just installed, so 
-obviously it isn't working like I planned.
-
-Where did I go wrong?
-
-I am thinking that I have a library mismatch/issue and that the new init 
-binary can't/won't run with the runtime libraries that come with SELF, 
-but I don't know how to go about correcting this if this is the case.
-
-Opinions or urls to tutorials welcome.
-
-Thanks,
-
--Randy Smith
-Software Engineer
-Imagemap, Inc.
+-- 
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
