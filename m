@@ -1,30 +1,30 @@
 Return-Path: <schihei@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B4A7567BFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 20:49:37 +1000 (EST)
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 184B667D96
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 20:49:38 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.6/8.13.6) with ESMTP id k3RAnNbO185662
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 10:49:23 GMT
+	by mtagate1.de.ibm.com (8.13.6/8.13.6) with ESMTP id k3RAnTeU082540
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 10:49:29 GMT
 Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
 	[9.149.165.213])
 	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3RAoTXl111462
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 12:50:29 +0200
+	k3RAoZXl118170
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 12:50:35 +0200
 Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
 	by d12av03.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k3RAnMA4018458
-	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 12:49:22 +0200
-Message-ID: <4450A1CE.80503@de.ibm.com>
-Date: Thu, 27 Apr 2006 12:49:50 +0200
+	k3RAnSTE018637
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 12:49:28 +0200
+Message-ID: <4450A1D4.3030200@de.ibm.com>
+Date: Thu, 27 Apr 2006 12:49:56 +0200
 From: Heiko J Schick <schihei@de.ibm.com>
 MIME-Version: 1.0
 To: openib-general@openib.org, Christoph Raisch <RAISCH@de.ibm.com>,
 	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>,
 	schihei@de.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 15/16] ehca: queue page table handling
+Subject: [PATCH 16/16] ehca: PHYP abstraction layer
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,23 +38,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
 
 
-  ipz_pt_fn.c |  184 ++++++++++++++++++++++++++++++++++++++++++
-  ipz_pt_fn.h |  258 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  2 files changed, 442 insertions(+)
+  hcp_phyp.c |   97 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  hcp_phyp.h |   97 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  2 files changed, 194 insertions(+)
 
 
 
---- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/ipz_pt_fn.h	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/ipz_pt_fn.h	2006-03-27 00:48:21.000000000 +0200
-@@ -0,0 +1,258 @@
+--- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/hcp_phyp.h	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/hcp_phyp.h	2006-03-09 15:05:14.000000000 +0100
+@@ -0,0 +1,97 @@
 +/*
 + *  IBM eServer eHCA Infiniband device driver for Linux on POWER
 + *
-+ *  internal queue handling
++ *  Firmware calls
 + *
-+ *  Authors: Waleri Fomin <fomin@de.ibm.com>
-+ *           Reinhard Ernst <rernst@de.ibm.com>
-+ *           Christoph Raisch <raisch@de.ibm.com>
++ *  Authors: Christoph Raisch <raisch@de.ibm.com>
++ *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
++ *           Waleri Fomin <fomin@de.ibm.com>
++ *           Gerd Bayer <gerd.bayer@de.ibm.com>
 + *
 + *  Copyright (c) 2005 IBM Corporation
 + *
@@ -88,236 +89,75 @@ Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
 + * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 + * POSSIBILITY OF SUCH DAMAGE.
 + *
-+ *  $Id: ipz_pt_fn.h,v 1.6 2006/03/26 22:48:21 nguyen Exp $
++ *  $Id: hcp_phyp.h,v 1.5 2006/03/09 14:05:14 schickhj Exp $
 + */
 +
-+#ifndef __IPZ_PT_FN_H__
-+#define __IPZ_PT_FN_H__
++#ifndef __HCP_PHYP_H__
++#define __HCP_PHYP_H__
 +
-+#include "ehca_qes.h"
-+#define EHCA_PAGESHIFT   12
-+#define EHCA_PAGESIZE   4096UL
-+#define EHCA_PT_ENTRIES 512UL
 +
-+#include "ehca_tools.h"
-+#include "ehca_qes.h"
-+
-+/* struct generic ehca page
-+ */
-+struct ipz_page {
-+	u8 entries[EHCA_PAGESIZE];
++/* eHCA page (mapped into memory)
++    resource to access eHCA register pages in CPU address space
++*/
++struct h_galpa {
++	u64 fw_handle;
++	/* for pSeries this is a 64bit memory address where
++	   I/O memory is mapped into CPU address space (kv) */
 +};
-+
-+/* struct generic queue in linux kernel virtual memory (kv)
-+ */
-+struct ipz_queue {
-+	u64 current_q_offset;	/* current queue entry */
-+
-+	struct ipz_page **queue_pages;	/* array of pages belonging to queue */
-+	u32 qe_size;		/* queue entry size */
-+	u32 act_nr_of_sg;
-+	u32 queue_length;	/* queue length allocated in bytes */
-+	u32 pagesize;
-+	u32 toggle_state;	/* toggle flag - per page */
-+	u32 dummy3;		/* 64 bit alignment */
-+};
-+
-+/*  return current Queue Entry for a certain q_offset
-+ *   returns address (kv) of Queue Entry
-+ */
-+static inline void *ipz_qeit_calc(struct ipz_queue *queue, u64 q_offset)
-+{
-+	struct ipz_page *current_page = NULL;
-+	if (q_offset >= queue->queue_length) {
-+		return NULL;
-+	}
-+	current_page = (queue->queue_pages)[q_offset >> EHCA_PAGESHIFT];
-+	return  &current_page->entries[q_offset & (EHCA_PAGESIZE - 1)];
-+}
-+
-+/*  return current Queue Entry
-+ *   returns address (kv) of Queue Entry
-+ */
-+static inline void *ipz_qeit_get(struct ipz_queue *queue)
-+{
-+	return ipz_qeit_calc(queue, queue->current_q_offset);
-+}
-+
-+/*  return current Queue Page , increment Queue Page iterator from
-+ *   page to page in struct ipz_queue, last increment will return 0! and
-+ *   NOT wrap
-+ *   returns address (kv) of Queue Page
-+ *   warning don't use in parallel with ipz_QE_get_inc()
-+ */
-+void *ipz_qpageit_get_inc(struct ipz_queue *queue);
-+
-+/*  return current Queue Entry, increment Queue Entry iterator by one
-+ *   step in struct ipz_queue, will wrap in ringbuffer
-+ *   @returns address (kv) of Queue Entry BEFORE increment
-+ *   warning don't use in parallel with ipz_qpageit_get_inc()
-+ *   warning unpredictable results may occur if steps>act_nr_of_queue_entries
-+ */
-+static inline void *ipz_qeit_get_inc(struct ipz_queue *queue)
-+{
-+	void *retvalue = NULL;
-+
-+	retvalue = ipz_qeit_get(queue);
-+	queue->current_q_offset += queue->qe_size;
-+	if (queue->current_q_offset >= queue->queue_length) {
-+		queue->current_q_offset = 0;
-+		/* toggle the valid flag */
-+		queue->toggle_state = (~queue->toggle_state) & 1;
-+	}
-+
-+	EDEB(7, "queue=%p retvalue=%p new current_q_addr=%lx qe_size=%x",
-+	     queue, retvalue, queue->current_q_offset, queue->qe_size);
-+
-+	return (retvalue);
-+}
-+
-+/*  return current Queue Entry, increment Queue Entry iterator by one
-+ *   step in struct ipz_queue, will wrap in ringbuffer
-+ *   returns address (kv) of Queue Entry BEFORE increment
-+ *   returns 0 and does not increment, if wrong valid state
-+ *   warning don't use in parallel with ipz_qpageit_get_inc()
-+ *   warning unpredictable results may occur if steps>act_nr_of_queue_entries
-+ */
-+inline static void *ipz_qeit_get_inc_valid(struct ipz_queue *queue)
-+{
-+	void *retvalue = ipz_qeit_get(queue);
-+	u32 qe = ((struct ehca_cqe *)retvalue)->cqe_flags;
-+	if ((qe >> 7) == (queue->toggle_state & 1)) {
-+		/* this is a good one */
-+		ipz_qeit_get_inc(queue);
-+	} else
-+		retvalue = NULL;
-+	return (retvalue);
-+}
-+
-+/*  returns and resets Queue Entry iterator
-+ *   returns address (kv) of first Queue Entry
-+ */
-+static inline void *ipz_qeit_reset(struct ipz_queue *queue)
-+{
-+	queue->current_q_offset = 0;
-+	return (ipz_qeit_get(queue));
-+}
-+
-+/** struct generic page table
-+ */
-+struct ipz_pt {
-+	u64 entries[EHCA_PT_ENTRIES];
-+};
-+
-+/* struct page table for a queue, only to be used in pf
-+ */
-+struct ipz_qpt {
-+	/* queue page tables (kv), use u64 because we know the element length */
-+	u64 *qpts;
-+	u32 allocated_qpts_entries;
-+	u32 nr_of_PTEs;		/*  number of page table entries PTE iterators */
-+	u64 *current_pte_addr;
-+};
-+
-+/* constructor for a ipz_queue_t, placement new for ipz_queue_t,
-+ *  new for all dependent datastructors
-+ *
-+ *  all QP Tables are the same
-+ *  flow:
-+ *     allocate+pin queue
-+ *  see ipz_qpt_ctor()
-+ *  returns true if ok, false if out of memory
-+ */
-+int ipz_queue_ctor(struct ipz_queue *queue, const u32 nr_of_pages, const u32 pagesize, const u32 qe_size,	/* queue entry size */
-+		   const u32 nr_of_sg);
-+
-+/* destructor for a ipz_queue_t
-+ *  -# free queue
-+ *  see ipz_queue_ctor()
-+ *  returns true if ok, false if queue was NULL-ptr of free failed
-+ */
-+int ipz_queue_dtor(struct ipz_queue *queue);
-+
-+/* constructor for a ipz_qpt_t,
-+ * placement new for struct ipz_queue, new for all dependent datastructors
-+ *
-+ *  all QP Tables are the same,
-+ *  flow:
-+ *  -# allocate+pin queue
-+ *  -# initialise ptcb
-+ *  -# allocate+pin PTs
-+ *  -# link PTs to a ring, according to HCA Arch, set bit62 id needed
-+ *  -# the ring must have room for exactly nr_of_PTEs
-+ *  see ipz_qpt_ctor()
-+ */
-+void ipz_qpt_ctor(struct ipz_qpt *qpt,
-+		  const u32 nr_of_QEs,
-+		  const u32 pagesize,
-+		  const u32 qe_size,
-+		  const u8 lowbyte, const u8 toggle,
-+		  u32 * act_nr_of_QEs, u32 * act_nr_of_pages);
-+
-+/*  return current Queue Entry, increment Queue Entry iterator by one
-+ *   step in struct ipz_queue, will wrap in ringbuffer
-+ *   returns address (kv) of Queue Entry BEFORE increment
-+ *   warning don't use in parallel with ipz_qpageit_get_inc()
-+ *   warning unpredictable results may occur if steps>act_nr_of_queue_entries
-+ *
-+ *   fix EQ page problems
-+ */
-+void *ipz_qeit_eq_get_inc(struct ipz_queue *queue);
-+
-+/*  return current Event Queue Entry, increment Queue Entry iterator
-+ *   by one step in struct ipz_queue if valid, will wrap in ringbuffer
-+ *   returns address (kv) of Queue Entry BEFORE increment
-+ *   returns 0 and does not increment, if wrong valid state
-+ *   warning don't use in parallel with ipz_queue_QPageit_get_inc()
-+ *   warning unpredictable results may occur if steps>act_nr_of_queue_entries
-+ */
-+inline static void *ipz_eqit_eq_get_inc_valid(struct ipz_queue *queue)
-+{
-+	void *retvalue = ipz_qeit_get(queue);
-+	u32 qe = *(u8 *) retvalue;
-+	EDEB(7, "ipz_QEit_EQ_get_inc_valid qe=%x", qe);
-+	if ((qe >> 7) == (queue->toggle_state & 1)) {
-+		/* this is a good one */
-+		ipz_qeit_eq_get_inc(queue);
-+	} else {
-+		retvalue = NULL;
-+	}
-+	return (retvalue);
-+}
 +
 +/*
-+ *   returns address (GX) of first queue entry
-+ */
-+inline static u64 ipz_qpt_get_firstpage(struct ipz_qpt *qpt)
-+{
-+	return (be64_to_cpu(qpt->qpts[0]));
-+}
++   resource to access eHCA address space registers, all types
++*/
++struct h_galpas {
++	u32 pid;		/*PID of userspace galpa checking */
++	struct h_galpa user;	/* user space accessible resource,
++				   set to 0 if unused */
++	struct h_galpa kernel;	/* kernel space accessible resource,
++				   set to 0 if unused */
++};
 +
-+/*
-+ *   returns address (kv) of first page of queue page table
-+ */
-+inline static void *ipz_qpt_get_qpt(struct ipz_qpt *qpt)
++inline static u64 hipz_galpa_load(struct h_galpa galpa, u32 offset)
 +{
-+	return (qpt->qpts);
-+}
++	u64 addr = galpa.fw_handle + offset;
++	u64 out;
++	EDEB_EN(7, "addr=%lx offset=%x ", addr, offset);
++	out = *(u64 *) addr;
++	EDEB_EX(7, "addr=%lx value=%lx", addr, out);
++	return out;
++};
 +
-+#endif				/* __IPZ_PT_FN_H__ */
---- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/ipz_pt_fn.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/ipz_pt_fn.c	2006-04-12 16:20:47.000000000 +0200
-@@ -0,0 +1,184 @@
++inline static void hipz_galpa_store(struct h_galpa galpa, u32 offset, u64 value)
++{
++	u64 addr = galpa.fw_handle + offset;
++	EDEB(7, "addr=%lx offset=%x value=%lx", addr,
++	     offset, value);
++	*(u64 *) addr = value;
++};
++
++int hcp_galpas_ctor(struct h_galpas *galpas,
++		    u64 paddr_kernel, u64 paddr_user);
++
++int hcp_galpas_dtor(struct h_galpas *galpas);
++
++int hcall_map_page(u64 physaddr, u64 * mapaddr);
++
++int hcall_unmap_page(u64 mapaddr);
++
++#endif
+--- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/hcp_phyp.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/hcp_phyp.c	2006-03-17 13:31:35.000000000 +0100
+@@ -0,0 +1,97 @@
 +/*
 + *  IBM eServer eHCA Infiniband device driver for Linux on POWER
 + *
-+ *  internal queue handling
++ *   load store abstraction for ehca register access with tracing
 + *
-+ *  Authors: Waleri Fomin <fomin@de.ibm.com>
-+ *           Reinhard Ernst <rernst@de.ibm.com>
-+ *           Christoph Raisch <raisch@de.ibm.com>
++ *  Authors: Christoph Raisch <raisch@de.ibm.com>
++ *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
 + *
 + *  Copyright (c) 2005 IBM Corporation
++ *
++ *  All rights reserved.
 + *
 + *  This source code is distributed under a dual license of GPL v2.0 and OpenIB
 + *  BSD.
@@ -347,148 +187,60 @@ Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
 + * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 + * POSSIBILITY OF SUCH DAMAGE.
 + *
-+ *  $Id: ipz_pt_fn.c,v 1.7 2006/04/12 14:20:47 nguyen Exp $
++ *  $Id: hcp_phyp.c,v 1.7 2006/03/17 12:31:35 nguyen Exp $
 + */
 +
-+#define DEB_PREFIX "iptz"
++#define DEB_PREFIX "PHYP"
 +
 +#include "ehca_kernel.h"
-+#include "ehca_tools.h"
-+#include "ipz_pt_fn.h"
++#include "ehca_classes.h"
++#include "hipz_hw.h"
 +
-+extern int ehca_hwlevel;
-+
-+void *ipz_qpageit_get_inc(struct ipz_queue *queue)
++int hcall_map_page(u64 physaddr, u64 * mapaddr)
 +{
-+	void *retvalue = NULL;
++	*mapaddr = (u64)(ioremap(physaddr, 4096));
 +
-+	retvalue = ipz_qeit_get(queue);
-+	queue->current_q_offset += queue->pagesize;
-+	if (queue->current_q_offset > queue->queue_length) {
-+		queue->current_q_offset -= queue->pagesize;
-+		retvalue = NULL;
-+	}
-+	if ((((u64) retvalue) % EHCA_PAGESIZE) != 0) {
-+		EDEB(4, "ERROR!! not at PAGE-Boundary");
-+		return (NULL);
-+	}
-+	EDEB(7, "queue=%p retvalue=%p", queue, retvalue);
-+	return (retvalue);
-+}
-+
-+void *ipz_qeit_eq_get_inc(struct ipz_queue *queue)
-+{
-+	void *retvalue = NULL;
-+	u64 last_entry_in_q = queue->queue_length - queue->qe_size;
-+
-+	retvalue = ipz_qeit_get(queue);
-+	queue->current_q_offset += queue->qe_size;
-+	if (queue->current_q_offset > last_entry_in_q) {
-+		queue->current_q_offset = 0;
-+		queue->toggle_state = (~queue->toggle_state) & 1;
-+	}
-+
-+	EDEB(7, "queue=%p retvalue=%p new current_q_offset=%lx qe_size=%x",
-+	     queue, retvalue, queue->current_q_offset, queue->qe_size);
-+
-+	return (retvalue);
-+}
-+
-+int ipz_queue_ctor(struct ipz_queue *queue,
-+		   const u32 nr_of_pages,
-+		   const u32 pagesize, const u32 qe_size, const u32 nr_of_sg)
-+{
-+	int pages_per_kpage = PAGE_SIZE >> EHCA_PAGESHIFT;
-+	int f;
-+
-+	EDEB_EN(7, "nr_of_pages=%x pagesize=%x qe_size=%x",
-+		nr_of_pages, pagesize, qe_size);
-+	if (pagesize > PAGE_SIZE) {
-+		EDEB_ERR(4, "FATAL ERROR: pagesize=%x is greater than "
-+			 "kernel page size", pagesize);
-+		return 0;
-+	}
-+	if (pages_per_kpage == 0) {
-+		EDEB_ERR(4, "FATAL ERROR: invalid kernel page size. "
-+			"pages_per_kpage=%x", pages_per_kpage);
-+		return 0;
-+	}
-+	queue->queue_length = nr_of_pages * pagesize;
-+	queue->queue_pages = vmalloc(nr_of_pages * sizeof(void *));
-+	if (queue->queue_pages == NULL) {
-+		EDEB(4, "ERROR!! didn't get the memory");
-+		return 0;
-+	}
-+	memset(queue->queue_pages, 0, nr_of_pages * sizeof(void *));
-+	/* allocate pages for queue:
-+	   while loop allocates whole kernel pages
-+	   if cond allocates so much mem needed for the rest of queue pages,
-+	   which is nr_of_pages % pages_per_kpage
-+	 */
-+	f = 0;
-+	while (f + pages_per_kpage <= nr_of_pages) {
-+		u8 *kpage = kzalloc(PAGE_SIZE, GFP_KERNEL); /*@@TODO get_zeroed_page(GFP_KERNEL);*/
-+		int k;
-+		if (kpage == NULL)
-+			goto ipz_queue_ctor_exit0; /*NOMEM*/
-+		for (k = 0; k < pages_per_kpage; k++) {
-+			(queue->queue_pages)[f] = (struct ipz_page *)kpage;
-+			kpage += EHCA_PAGESIZE;
-+			f++;
-+		}
-+	}
-+	if (f < nr_of_pages) {
-+		u8 *kpage = kzalloc((nr_of_pages - f) * EHCA_PAGESIZE,
-+				      GFP_KERNEL);
-+		if (kpage == NULL)
-+			goto ipz_queue_ctor_exit0; /*NOMEM*/
-+		while (f < nr_of_pages) {
-+			(queue->queue_pages)[f] = (struct ipz_page *)kpage;
-+			kpage += EHCA_PAGESIZE;
-+			f++;
-+		}
-+	}
-+
-+	queue->current_q_offset = 0;
-+	queue->qe_size = qe_size;
-+	queue->act_nr_of_sg = nr_of_sg;
-+	queue->pagesize = pagesize;
-+	queue->toggle_state = 1;
-+	EDEB_EX(7, "queue_length=%x queue_pages=%p qe_size=%x"
-+		" act_nr_of_sg=%x", queue->queue_length, queue->queue_pages,
-+		queue->qe_size, queue->act_nr_of_sg);
-+	return 1;
-+
-+ ipz_queue_ctor_exit0:
-+	EDEB_ERR(4, "Couldn't get alloc pages queue=%p f=%x nr_of_pages=%x",
-+		 queue, f, nr_of_pages);
-+	for (f = 0; f < nr_of_pages; f += pages_per_kpage) {
-+		if ((queue->queue_pages)[f] == NULL)
-+			break;
-+		kfree((queue->queue_pages)[f]);
-+	}
++	EDEB(7, "ioremap physaddr=%lx mapaddr=%lx", physaddr, *mapaddr);
 +	return 0;
 +}
 +
-+int ipz_queue_dtor(struct ipz_queue *queue)
++int hcall_unmap_page(u64 mapaddr)
 +{
-+	int pages_per_kpage = PAGE_SIZE >> EHCA_PAGESHIFT;
-+	int g;
-+	int nr_pages;
++	EDEB(7, "mapaddr=%lx", mapaddr);
++	iounmap((volatile void __iomem*)mapaddr);
++	return 0;
++}
 +
-+	EDEB_EN(7, "ipz_queue pointer=%p", queue);
-+	if (queue == NULL || queue->queue_pages == NULL) {
-+		EDEB_ERR(4, "queue or queue_pages is NULL");
-+		return 0;
-+	}
-+	EDEB(7, "destructing a queue with the following "
-+	     "properties:\n nr_of_pages=%x pagesize=%x qe_size=%x",
-+	     queue->act_nr_of_sg, queue->pagesize, queue->qe_size);
-+	nr_pages = queue->queue_length / queue->pagesize;
-+	for (g = 0; g < nr_pages; g += pages_per_kpage)
-+		kfree((queue->queue_pages)[g]);
-+	vfree(queue->queue_pages);
++int hcp_galpas_ctor(struct h_galpas *galpas,
++		    u64 paddr_kernel, u64 paddr_user)
++{
++	int rc = 0;
 +
-+	EDEB_EX(7, "queue freed!");
-+	return 1;
++	rc = hcall_map_page(paddr_kernel, &galpas->kernel.fw_handle);
++	if (rc != 0)
++		return (rc);
++
++	galpas->user.fw_handle = paddr_user;
++
++	EDEB(7, "paddr_kernel=%lx paddr_user=%lx galpas->kernel=%lx"
++	     " galpas->user=%lx",
++	     paddr_kernel, paddr_user, galpas->kernel.fw_handle,
++	     galpas->user.fw_handle);
++
++	return (rc);
++}
++
++int hcp_galpas_dtor(struct h_galpas *galpas)
++{
++	int rc = 0;
++
++	if (galpas->kernel.fw_handle != 0)
++		rc = hcall_unmap_page(galpas->kernel.fw_handle);
++
++	if (rc != 0)
++		return (rc);
++
++	galpas->user.fw_handle = galpas->kernel.fw_handle = 0;
++
++	return rc;
 +}
