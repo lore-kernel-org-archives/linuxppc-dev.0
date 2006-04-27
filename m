@@ -1,18 +1,19 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 13A2767A3A
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0077E67A41
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Apr 2006 22:18:10 +1000 (EST)
-Message-ID: <4450B6A0.9010903@ru.mvista.com>
-Date: Thu, 27 Apr 2006 16:18:40 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
-To: Stephen Williams <steve@icarus.com>
-Subject: Re: Xilinx SysACE drivers for Linux 2.4
-References: <e2opnj$gju$1@sea.gmane.org>
-In-Reply-To: <e2opnj$gju$1@sea.gmane.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 28 Apr 2006 00:11:40 +1000 (EST)
+Date: Thu, 27 Apr 2006 15:11:21 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+To: linuxppc-embedded@ozlabs.org, "linux-atm-general@lists.sourceforge.net"
+	<linux-atm-general@lists.sourceforge.net>
+Subject: QUICC Engine ATM driver
+Message-Id: <20060427151121.7cd010dc.ajz@cambridgebroadband.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,17 +24,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Stephen Williams wrote:
-> So I'm now looking at moving from my bk based linuxppc-2.4 devel
-> tree to the kernel.org sources, but the latter doesn't have the
-> Xilinx SystemACE drivers. Is there a repository for the latest
-> port (to kernel 2.4) of this driver, or should I just lift it
-> from the kernel tree I have?
+Hi all,
 
-The same link Matt mentioned (as regards to PPC405GPr support):
-rsync://source.mvista.com/linuxppc-2.4
+Has anybody ported, or started to port, the mpc8260sar ATM driver for
+the "PowerQUICC II" to the "PowerQUICC II Pro" (e.g. the MPC8360).  If
+so I'd love to hear from you :)
 
-Here is the most recent Xilinx Virtex stuff MontaVista has for 2.4 kernel.
+Regards,
 
-Thanks,
-Andrei
+Alex
+
+
+PS: For the record:
+
+  PowerQUICC I contains a CPM1 which needs the mpc860sar driver
+  PowerQUICC II & III contain a CPM2 which needs the mpc8260sar driver
+  PowerQUICC II Pro contains a "QUICC Engine" ....
