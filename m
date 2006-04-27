@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9011767A73
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 05:40:48 +1000 (EST)
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B859673@ismail.innsys.innovsys.com>
-References: <DCEAAC0833DD314AB0B58112AD99B93B859673@ismail.innsys.innovsys.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2CD98C5D-E51C-49CA-9BDC-6FE4C1B67854@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id AB4CF67BD1
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 05:40:57 +1000 (EST)
+To: Kumar Gala <galak@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
 Subject: Re: FT u-boot shim 
-Date: Thu, 27 Apr 2006 14:40:42 -0500
-To: "Rune Torgersen" <runet@innovsys.com>
-Cc: linuxppc-dev@ozlabs.org, U-Boot Users <u-boot-users@lists.sourceforge.net>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 27 Apr 2006 14:20:34 CDT."
+	<D358E665-60E4-48C0-82FD-7A1C16DAF00C@kernel.crashing.org>
+Date: Thu, 27 Apr 2006 21:40:55 +0200
+Sender: wd@denx.de
+Message-Id: <20060427194055.3EED1353A57@atlas.denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	U-Boot Users <u-boot-users@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In message <D358E665-60E4-48C0-82FD-7A1C16DAF00C@kernel.crashing.org> you wrote:
+>
+> The problem is that there are somethings that u-boot knows that needs  
+> to go into the blob (memory size, boot args, initrd info,  
+> frequencies, etc.)
 
-On Apr 27, 2006, at 2:30 PM, Rune Torgersen wrote:
+Yes. Can we append auch variable data to the fixed part of the dts?
 
-> Would it be possible to have the kernel smart enough that if it gets
-> passed a bd_t pointer, it updates the dts before booting fully.
-> Newer u-boot versions that support dts then would pass a NULL bd_t
-> pointer to a kernel that supports dts. Kernel would then not update  
-> the
-> dts, but use the one it gets handed.
+> How would we distinguish the bootm command that takes a blob versus  
+> the ones we have today?
 
-What you are describing is the boot shim method.
+Arg count. For example:
 
-U-boot is already capable of effectively doing this.  You can set a u- 
-boot environment variable to make bootm do different things if you  
-have flat device tree support built into u-boot.
+OLD:	bootm <kernel_addr>
+   or	bootm <kernel_addr> <ramdisk_addr>
 
-> bootm should be able to see if the kernel has an attached dts,  
-> update it
-> with runtime parameters, and hand it off to the kernel. If it is an  
-> old
-> kernel, hand it the bd_t pointer.
+NEW:	bootm <kernel_addr> - <dts_addr>
+   or	bootm <kernel_addr> <ramdisk_addr> <dts_addr>
 
-We can do this w/o too much modification to what is happening in u- 
-boot today.  I'd probably like to keep the ability to build a dev  
-tree into the u-boot binary, but make the preferred means to pass a  
-blob into the bootm command.
+> As stated before, the main issue is doing some runtime fix ups to the  
+> blob before its handed to the kernel.
 
-- kumar
+Let's do exactly this: runtime fix ups.
+
+> We could hand bootm a memory location with a blob and do the fix ups  
+> at runtime, we would still have some coupling between the blob and u- 
+> boot build.  At least the blob wouldn't be built into u-boot.
+
+OK.
+
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+It is necessary to have purpose.
+	-- Alice #1, "I, Mudd", stardate 4513.3
