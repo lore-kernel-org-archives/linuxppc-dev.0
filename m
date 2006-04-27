@@ -1,26 +1,19 @@
-Return-Path: <jean-francois.hasson@hispano-suiza-sa.com>
-Received: from snecma2.snecma.fr (snecma2.snecma.fr [195.220.252.67])
-	by ozlabs.org (Postfix) with ESMTP id 654C4679E9
+Return-Path: <g.jaeger@sysgo.com>
+Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
+	by ozlabs.org (Postfix) with ESMTP id 7B1B4679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Apr 2006 16:06:31 +1000 (EST)
-From: <jean-francois.hasson@hispano-suiza-sa.com>
-Received: from localhost (unknown [127.0.0.1])
-	by H465140T.snecma.fr (Symantec Mail Security) with ESMTP id 30003A03
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Apr 2006 08:06:23 +0200 (CEST)
-Received: from mail.snecma.fr (unknown [195.220.252.125])
-	by H465140T.snecma.fr (Bienvenue au service SMTP) with ESMTP id
-	11846A02 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 27 Apr 2006 08:06:23 +0200 (CEST)
-Received: from h319300a.win-master.hsa.snecma ([128.30.41.23]) by
-	mail.snecma.fr (AIX4.3/8.9.3/8.8.8) with ESMTP id HAA72316 for
-	<linuxppc-embedded@ozlabs.org>; Thu, 27 Apr 2006 07:56:44 +0200
-Subject: Linux 2.4 devel on ML403 board : problem with prompt
+	Thu, 27 Apr 2006 17:13:25 +1000 (EST)
+From: Gerhard Jaeger <g.jaeger@sysgo.com>
 To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF86B9A972.248E5CE3-ONC125715D.0021112D-C125715D.002187E5@win-master.hsa.snecma>
-Date: Thu, 27 Apr 2006 08:06:15 +0200
+Subject: Re: PPC Linux support for Tundra TSI148
+Date: Thu, 27 Apr 2006 09:13:10 +0200
+References: <821B2170E9E7F04FA38DF7EC21DE4871049711CD@VCAEXCH01.hq.corp.viasat.com>
+In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE4871049711CD@VCAEXCH01.hq.corp.viasat.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200604270913.10778.g.jaeger@sysgo.com>
+Cc: "Martin, Tim" <tim.martin@viasat.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,26 +24,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+See my comments inline:
 
-I am trying to port linux 2.4 devel to ML403. I have used advices from this
-mailing list and some websites and finally got to th epoint where
-everything seems find except I cannot get the boot prompt. I have used
-busybox 1.0.1 and it seems init runs well, rcS runs well and afterr that I
-do not get the prompt. I have activated the askfirst line in inittab and I
-am asked to hit enter to go further but all I get is, automatically,
-without hitting the keyboard, is character X. I do not seem to have any
-echo. I have the console node defined in /dev. Has anyone an idea as to
-what I have done wrong ?
+On Wednesday 26 April 2006 18:24, Martin, Tim wrote:
+> Gerhard,
+> 
+> Thanks for the information.  More questions...
+> 
+> What type of transfers were you doing? (e.g. A32/D64? SST320 or SST267?)
+A32/D64 and 2eSST @ SST320
 
-Best regards,
+> Are these transfer from userspace data, from kernelspace data, or from
+> the Tundra's pattern buffer?
 
-JF Hasson
+They are from userspace.
 
+> What was your PCI bus speed & width? 
+???
 
+> Were you using inbound/outbound windows or Tundra's DMA controller?
+DMA - via /dev/vme_dma0 interface
 
-#
-  This e-mail and any attached documents may contain confidential or proprietary information. If you are not the intended recipient, please advise the sender immediately and delete this e-mail and all attached documents from your computer system. Any unauthorised disclosure, distribution or copying hereof is prohibited. 
+> What was the Tundra chipset configuration for the 168 MBps?
+i.e. Buffersize 64K, 4K alignment, 2K PCI Fifo and 1K VME Fifo.
+Using the Tundra driver and its interface structure, I used a 
+request level of 2, fairmode is set to normal, timeon timeout timer
+is set to 7 and timeoff is set to no waiting (0).
 
-  Ce courriel et les documents qui y sont attaches peuvent contenir des informations confidentielles. Au cas ou vous ne seriez pas le destinataire de ce courriel, vous etes prie d'en informer l'expediteur immediatement et de le detruire  ainsi que tous les documents attaches de votre systeme informatique. Toute divulgation, distribution ou copie du present courriel et des documents attaches sans autorisation prealable de son emetteur est interdite. 
-#
+> 
+> Thanks,
+> Tim
+> 
+> > -----Original Message-----
+> > From: linuxppc-embedded-bounces+tmartin=viasat.com@ozlabs.org
+> > [mailto:linuxppc-embedded-bounces+tmartin=viasat.com@ozlabs.org] On
+> Behalf
+> > Of Gerhard Jaeger
+> > Sent: Wednesday, April 26, 2006 12:26 AM
+> > To: linuxppc-embedded@ozlabs.org
+> > Subject: Re: PPC Linux support for Tundra TSI148
+> > 
+> > On Wednesday 26 April 2006 01:47, Martin, Tim wrote:
+> > > Does anyone out there have any real world measured performance of a
+> > > Linux PowerPC (kernel module + user space application) doing 2eSST
+> VME
+> > > transfers with the Tundra TSI148 chipset?
+> > >
+> > > Tundra has a Linux driver available for the Motorola MVME6100 , but
+> told
+> > > me they don't have any performance data available.  I'm looking for
+> > > sustained throughput rates, not the peak burst rates (e.g. 320 MBps,
+> 267
+> > > MBps).
+> > >
+> > 
+> > Hi,
+> > 
+> > I've done here some tests between two MVME6100, while updating the
+> 6100
+> > BSP
+> > for our embedded Linux distro. Depending on the buffersize, alignment,
+> VME
+> > and
+> > PCI FIFO settings we have (without further optimizations) throughput
+> rates
+> > ranging
+> > from 100MBps up to 168MBps. I think some tuning could still be done.
+> > 
+> >HTH
+> > Gerhard
+
+-- 
+Gerhard Jaeger <gjaeger@sysgo.com>            
+SYSGO AG                      Embedded and Real-Time Software
+www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
