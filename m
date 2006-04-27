@@ -1,17 +1,31 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from agrxsusmail.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 1AA7E67A3A
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 06:40:08 +1000 (EST)
-Message-ID: <44512C25.2080105@smiths-aerospace.com>
-Date: Thu, 27 Apr 2006 16:40:05 -0400
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-MIME-Version: 1.0
-To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
-Subject: Re: [U-Boot-Users] Re: FT u-boot shim
-References: <20060427194316.CBFBC353A57@atlas.denx.de>
-In-Reply-To: <20060427194316.CBFBC353A57@atlas.denx.de>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 48E75679F3
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 07:05:30 +1000 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1FZCeg-0001F7-0p
+	for linuxppc-dev@ozlabs.org; Thu, 27 Apr 2006 22:00:02 +0200
+Received: from p508176ef.dip.t-dialin.net ([80.129.118.239])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 22:00:02 +0200
+Received: from info by p508176ef.dip.t-dialin.net with local (Gmexim 0.1
+	(Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 27 Apr 2006 22:00:02 +0200
+To: linuxppc-dev@ozlabs.org
+From: Heiko Joerg Schick <info@schihei.de>
+Subject: Re: [PATCH 00/16] ehca: IBM eHCA InfiniBand Device   Driver
+Date: Thu, 27 Apr 2006 21:50:28 +0200
+Message-ID: <e2r7a0$fo2$1@sea.gmane.org>
+References: <4450B378.9000705@de.ibm.com>
+	<20060427125726.GK32127@wohnheim.fh-wedel.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: U-Boot Users <u-boot-users@lists.sourceforge.net>
+Sender: news <news@sea.gmane.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	openib-general@openib.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,54 +35,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> In message <44511C88.1010107@smiths-aerospace.com> you wrote:
->> A thought that keeps recurring (but I've suppressed because I don't have 
->> time to play...) is that it would be Really Cool[tm] to store the u-boot 
->> env variables in a flat tree and then pass the env/tree to linux.  It 
-> 
-> If somebody wants to read the environment variables, you  don't  need
-> to create a flat tree from it.
+On 2006-04-27 14:57:26 +0200, Jörn Engel <joern@wohnheim.fh-wedel.de> said:
 
-Understood.  That is why it is Really Cool[tm] rather than Really 
-Useful[tm] ;-)
+> Don't expect much cheer and rejoicing over this.  I suspect that akpm
+> or Linus will either want the 17 patches merged into one or have a
+> patchset where every single patch leaves the kernel in a working
+> state, including working eHCA driver.
 
-> Also, it doesn't solve the original problem as most of  the  informa-
-> tion  you  need to pass is NOT part of the environment (and shall not
-> become such a part).
-> 
-> Best regards,
-> Wolfgang Denk
+I don't like the idea to put the whole driver in one patch file. I 
+would propose to put the patch "ehca: integration in Linux kernel" last 
+instead
+of first, as Arnd mentioned. With that change we leave the kernel in a
+working state when applying the patches.
 
-I agree and disagree with the parenthetical part of your statement. 
-Agree because it _wouldn't_ be a part of u-boot (technically it would be 
-if someone put it in their default env for their specific board, but why 
-would denx.de care?).
-
-Disagree because, while u-boot needs/uses some env variables, 
-engineers/companies/end users are free to add variables and, I dare say, 
-most do.  If a given board needs to pass certain non u-boot parameters 
-to linux, it would simply add that to its env (which already happens).
-
-I'm not sure you (Wolfgang and Kumar) are following my thought fully (or 
-my ignorance is showing to everybody but me).  The thought is to change 
-the native format of the u-boot environment storage from the 
-key-string/value-string pairs to the flat tree (OpenFirmware) format 
-which still supports the same key-string/value-string capability (but 
-can do more than that).
-
-The advantage, as I see it, is that it would be unifying and thus easier 
-to maintain the common variables (call it the GRand Unifying Flat Tree 
-(GRAFT) ;-).  One language (flat tree), no shims, equivalent key/value 
-utility (but a different underlying storage format), no visible 
-difference for the users (but potentially an upgrade challenge for 
-existing boards and env variables).
-
-The disadvantage is that it would be disruptive to u-boot and may cause 
-some bloating and discomfort.
-
-gvb
-(the naive)
-
-P.S. For the non-USA readers: "may cause some bloating and discomfort" 
-is a standard disclaimer on medicines advertised on TV over here.
+Regards,
+	Heiko
