@@ -1,20 +1,21 @@
-Return-Path: <mrmacman_g4@mac.com>
-Received: from smtpout.mac.com (smtpout.mac.com [17.250.248.184])
-	by ozlabs.org (Postfix) with ESMTP id D57DF67A6B
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 03:19:53 +1000 (EST)
-In-Reply-To: <20060427123701.GG32127@wohnheim.fh-wedel.de>
-References: <4450A1C0.3080209@de.ibm.com>
-	<20060427123701.GG32127@wohnheim.fh-wedel.de>
-Mime-Version: 1.0 (Apple Message framework v746.3)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <28E154B8-B491-4C5D-9976-5082718FEF26@mac.com>
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH 13/16] ehca: firmware InfiniBand interface
-Date: Thu, 27 Apr 2006 13:13:54 -0400
-To: =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DDE96679F9
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 04:18:49 +1000 (EST)
+In-Reply-To: <20060426191957.14C4F353DAC@atlas.denx.de>
+References: <20060426191957.14C4F353DAC@atlas.denx.de>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6E3621C5-A379-4ABC-99C0-9A02B48D525D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: FT u-boot shim 
+Date: Thu, 27 Apr 2006 13:18:43 -0500
+To: Wolfgang Denk <wd@denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	U-Boot Users <u-boot-users@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,55 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Apr 27, 2006, at 08:37:01, J=F6rn Engel wrote:
-> On Thu, 27 April 2006 12:49:36 +0200, Heiko J Schick wrote:
->> +u64 hipz_h_alloc_resource_qp(const struct ipz_adapter_handle
->> adapter_handle,
->> +			     struct ehca_pfqp *pfqp,
->> +			     const u8 servicetype,
->> +			     const u8 daqp_ctrl,
->> +			     const u8 signalingtype,
->> +			     const u8 ud_av_l_key_ctl,
->> +			     const struct ipz_cq_handle send_cq_handle,
->> +			     const struct ipz_cq_handle =
-receive_cq_handle,
->> +			     const struct ipz_eq_handle async_eq_handle,
->> +			     const u32 qp_token,
->> +			     const struct ipz_pd pd,
->> +			     const u16 max_nr_send_wqes,
->> +			     const u16 max_nr_receive_wqes,
->> +			     const u8 max_nr_send_sges,
->> +			     const u8 max_nr_receive_sges,
->> +			     const u32 ud_av_l_key,
->> +			     struct ipz_qp_handle *qp_handle,
->> +			     u32 * qp_nr,
->> +			     u16 * act_nr_send_wqes,
->> +			     u16 * act_nr_receive_wqes,
->> +			     u8 * act_nr_send_sges,
->> +			     u8 * act_nr_receive_sges,
->> +			     u32 * nr_sq_pages,
->> +			     u32 * nr_rq_pages,
->> +			     struct h_galpas *h_galpas);
+
+On Apr 26, 2006, at 2:19 PM, Wolfgang Denk wrote:
+
+> In message <A8793E99-83C1-4FD9-8735- 
+> D2E8F98B3003@kernel.crashing.org> you wrote:
+>>
+>> I think thats part of the idea with arch/powerpc defining a standard
+>> mechanism for how a boot loader should pass information to the kernel
+>> (via a flat device tree).
 >
-> 25 parameters?  If you tell me which drugs were involved in this =20
-> code, I know what to stay away from.  Might be the current record =20
-> for any code ever proposed for inclusion.
+> Yet another standard.
 >
-> The whole patch is full of parameter-happy functions with this one =20
-> being the ugly top of the iceberg.  I sincerely hope this is not a =20
-> defined ABI and can still be changed.
+>> How would you propose that we handle booting arch/powerpc kernels
+>> from u-boot going forward? (for new board ports and existing board
+>> ports).
+>
+> Ideally, I'd like to see a common kernel  interface  for  all  archi-
+> tectures,  PowerPC  and ARM and MIPS and ... But last time I dared to
+> suggest this I've been told what a nincompoop I am.
+>
+> I will accept what is decided by the P.T.B., but  I  request  not  to
+> break backwards compatibility with existing systems.
 
-What's worse; look at the stack usage on that sucker alone:
+I've been thinking about the various issues related to booting an  
+arch/powerpc kernel via u-boot.   I was hoping to get some ideas/ 
+comments on what people thought about the various issues/questions  
+related to producing a system that can boot an arch/powerpc kernel  
+for an embedded system.  I'm using u-boot as the boot loader since  
+its a popular choice (I imagine the issues are similar for others):
 
-10 pointers, 6 u8, 2 u16, 2 u32, and topped off with 3 unknown-sized =20
-"struct ipz_cq_handle", an unknown-sized "struct ipz_pd".  The =20
-alignment alone probably chews up at least another couple bytes in =20
-there somewhere too.  That's at _least_ 98 + 3*sizeof(struct =20
-ipz_cq_handle) + sizeof(struct ipz_pd) on a 64-bit platform (58 + =20
-3*sizeof(struct ipz_cq_handle) + sizeof(struct ipz_pd) on 32-bit).  =20
-Not to mention the fact that you totally screwed the compiler's =20
-chances of ever passing the important stuff in registers.  And you =20
-haven't even gotten into local variables yet.
+[NOTE: dts, flat dev tree, etc are used interchangeably]
 
-Cheers,
-Kyle Moffett
+1. boot with an "old" u-boot (via bd_t):
+* Have a boot wrapper that takes bd_t and dts and merges them @ runtime
+* Boot wrapper has to be custom based on bd_t definition for the system
+* dts owned by kernel??
+
+2. boot with a "new" u-boot (has a .dts in it):
+* capable of booting arch/powerpc kernel directly w/o modification
+* in a production system don't want to update u-boot
+* dts owned by u-boot??
+
+Some questions/issues:
+* ownership of .dts is problematic.  I hate having a file duplicated  
+by both u-boot and kernel.  However it also seems bad to make the  
+build of either depend on the user grabbing a dts from some third  
+party.  Ideas?  A concrete example would be the MPC8349 ADS/SYS/MDS  
+port.  Boards ship with an "old" u-boot, thus we need a kernel  
+wrapper with .dts.  However, newer u-boot's can (hopefully will) have  
+a dts in them
+
+* updating of dts:  In case 1, this is trivial since its part of the  
+kernel blob.  Case 2. is more difficult.  What do people think of  
+treating the dts like the environment.  You have a version compiled  
+in, but can alternately have a blob in another location that will be  
+used if exists.  This would allow one to update the dts portion w/o  
+effecting the actual boot loader.
+
+* one solution to the copies of .dts is that we make the wrapper  
+portion of the kernel the owner of the official latest and  
+greatest .dts.  Every so often a maintainer can sync their .dts with  
+u-boot to keep them relatively in sync.  However, the main mechanism  
+would be to load the latest .dts blob into the secondary location.   
+We can provide scripts/tools to do this via u-boot and linux.
+
+comments, other issues people have thought of?
+
+- kumar
