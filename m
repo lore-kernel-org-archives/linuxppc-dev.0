@@ -1,22 +1,15 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B25F367A60
+Return-Path: <tsawyer@broadcom.com>
+Received: from sandmail.sandburst.com (sandmail.sandburst.com [216.57.132.42])
+	by ozlabs.org (Postfix) with ESMTP id 25ECD679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Apr 2006 05:05:01 +1000 (EST)
-Date: Thu, 27 Apr 2006 12:04:58 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Stephen Williams <steve@icarus.com>
-Subject: Re: PPC 405GPr support in linux 2.4.32
-Message-ID: <20060427190458.GC11206@gate.ebshome.net>
-References: <e2ov5s$1hn$1@sea.gmane.org> <20060426163540.H16236@cox.net>
-	<20060427180743.GB11206@gate.ebshome.net>
-	<44510E4D.5040504@icarus.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <44510E4D.5040504@icarus.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 28 Apr 2006 07:12:04 +1000 (EST)
+Message-ID: <445133A1.1050202@broadcom.com>
+Date: Thu, 27 Apr 2006 17:12:01 -0400
+From: "Travis B. Sawyer" <tsawyer@broadcom.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: TI1520 Cardbus with CF troubles
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,52 +20,159 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 27, 2006 at 11:32:45AM -0700, Stephen Williams wrote:
-> Eugene Surovegin wrote:
-> > There are bigger problems with 4xx support in 2.4 mainline than just 
-> > missing some chips support.
-> > 
-> > Some parts which are already in 2.4 (e.g. ethernet driver) are of 
-> > non-production quality. 
-> > 
-> > I can imagine Marcelo agreeing to commit 405GPr/405EP support as this 
-> > change shouldn't break anything, but this will not make 2.4 support 
-> > really useful for real world deployments. I think we are stuck with 
-> > maintaining our own 2.4 trees with backports from 2.6. This is what I 
-> > do myself of all our products (and yeah, diff between stock 2.4.32 and 
-> > my internal version has already grown quite big to be acceptable for 
-> > 2.4 inclusion).
-> > 
-> 
-> Of course we are going to have to keep our own per-board trees.
-> but the blatantly common stuff, like the core 405gpr support and
-> certain drivers, might as well go in if the gatekeeper can be
-> convinced. You and I both probably have huge drivers for custom
-> devices hanging off our PPCs, with various hacks to squeeze extra
-> performance out. These make our transition to 2.6 difficult, and
-> surely we are not alone.
+Greetings:
 
-Well, personally, I don't migrate to 2.6 not because I have many custom 
-drivers in my tree (if they are properly written, migration is 
-relatively easy), but because 2.6 in my opinion isn't production 
-ready, at least for architectures I work with. 2.6 is slower, bigger, 
-is constantly being broken by huge amount of changes, etc. I spent 
-enough time making 2.4 work on our hardware given limitations and 
-requirements put on performance, resources etc. I just don't have time 
-to go through this cycle again. And I'm not talking about PPC stuff, I 
-mean mostly generic stuff - filesystems, scheduling, networking, etc.
+I'm working on getting some cardbus support into a 8540 based platform.
 
-> So 2.4 is going to be around for a while longer for us, so we might
-> as well make an effort to keep the house in some sort of order. It
-> serves no one to keep these fixes a secret:-)
+We're using a TI1520 cardbus controller (pci<->cardbus bridge) and 
+compact flash.
 
-They aren't secret, but I can understand the simple fact that 2.4 is 
-closed for a new stuff, we might not like that (although I do, just 
-look at the mess "stable" 2.6 is :).
+(Note:  this is using 2.4.30 kernel.org kernel + some patches from the 
+vendor)
 
-There is a point in every piece of software life-cycle when you have 
-to stop adding features. 2.4 is already at this point, and we should 
-accept that.
+At first I was getting no interrupts when the yenta driver was starting 
+up, but
+I back ported some stuff from 2.6 and now the ti1520 is routing the 
+interrupts
+properly through pci:
 
--- 
-Eugene
+[root@mbc80-4 01]$ cat /proc/interrupts
+           CPU0
+  8:          0   None      Edge      rtc
+ 83:      12106   OpenPIC   Edge      enet_tx
+ 84:      19011   OpenPIC   Edge      enet_rx
+ 88:          0   OpenPIC   Edge      enet_error
+ 90:       1805   OpenPIC   Edge      serial
+ 91:        137   OpenPIC   Level     MPC I2C
+ 98:          1   OpenPIC   Level     Texas Instruments PCI1250 PC card 
+Cardbus Controller
+ 99:          1   OpenPIC   Level     Texas Instruments PCI1250 PC card 
+Cardbus Controller (#2)
+101:          0   OpenPIC   Level     sb/ife0
+102:          0   OpenPIC   Level     sbqe0
+104:          0   OpenPIC   Level     phy_interrupt
+BAD:          0
+
+I have a cf card in the second controller socket. I've strewn printk's 
+all over and what I'm
+finding is that pcmcia_request_io is called with base=0 numports=0x10, 
+ioAddrLines=4, and
+returns with a base of 0x8100.
+
+Here's the pci dump of both functions of the TI device (note, the card 
+is plugged into the
+socket associated with func 1 not func 0):
+
+[root@mbc80-4 01]$ lspci -v -s 01:01
+01:01.0 CardBus bridge: Texas Instruments PCI1250 PC card Cardbus 
+Controller (rev 01)
+        Flags: bus master, medium devsel, latency 168, IRQ 98
+        Memory at eafff000 (32-bit, non-prefetchable) [size=4K]
+        Bus: primary=01, secondary=02, subordinate=02, sec-latency=176
+        Memory window 0: ea600000-ea61f000 (prefetchable)
+        Memory window 1: ea700000-ea7ff000
+        I/O window 0: 00008000-000080ff
+        I/O window 1: 00008400-000084ff
+        16-bit legacy interface ports at 0001
+ 
+01:01.1 CardBus bridge: Texas Instruments PCI1250 PC card Cardbus 
+Controller (rev 01)
+        Flags: bus master, medium devsel, latency 168, IRQ 99
+        Memory at eabfe000 (32-bit, non-prefetchable) [size=4K]
+        Bus: primary=01, secondary=03, subordinate=03, sec-latency=176
+        Memory window 0: ea620000-ea63f000 (prefetchable)
+        Memory window 1: ea800000-ea8ff000
+        I/O window 0: 00008800-000088ff
+        I/O window 1: 00008c00-00008cff
+        16-bit legacy interface ports at 0001
+ 
+
+I added printks to the ide do_probe, and all hwif->INB() calls return 0.
+
+My /etc/pcmcia/config.opts adds the following lines:
+include port 0x0000-0xffff
+include memory 0xe0000000-0xeaffffff
+ 
+
+Any ideas?
+
+-travis
+
+more dumps below:
+[root@mbc80-4 01]$ cardctl status
+Socket 0:
+  no card
+Socket 1:
+  3.3V 16-bit PC Card
+  function 0: [ready]
+[root@mbc80-4 01]$ cardctl config
+Socket 0:
+  not configured
+Socket 1:
+  Vcc 3.3V  Vpp1 3.3V  Vpp2 3.3V
+
+
+ide_config linkio: nports: 0 baseport 0
+pcmcia_request_io calling alloc io spaces BLP1 NP1 IOADDRLines:  0 10 4
+alloc_io_space s->io BP NP Inuse: 8100 10 10
+pcmcia_request_io called alloc io spaces BLP1 NP1 IOADDRLines:  8100 10 4
+ide_config b4Config base 8100
+ide_config AFConfig base 8100
+SELECT_DRIVE sending a0 to 8106
+SELECT_DRIVE sending b0 to 8106
+SELECT_DRIVE sending a0 to 8106
+probing for hda: present=0, media=32, probetype=ATA
+[root@mbc80-4 01]$ SELECT_DRIVE sending a0 to 8106
+do_probe after select inb= 0
+do_probe error reg 0
+do_probe nsect reg 0
+do_probe sect  reg 0
+do_probe lcyl  reg 0
+do_probe hcyl  reg 0
+do_probe selct reg 0
+do_probe stats reg 0
+do_probe cntrl reg 0
+
+[root@mbc80-4 ~]$ dump_cis
+Socket 0:
+  no CIS present
+ 
+Socket 1:
+  dev_info
+    fn_specific 120ns, 2kb
+  common_jedec 0xdf 0x01
+  manfid 0x0045, 0x0401
+  vers_1 4.1, "SanDisk", "SDP", "5/3 0.6"
+  funcid fixed_disk [post]
+  disk_interface [ide]
+  disk_features [silicon] [unique] [single]
+    [sleep] [standby] [idle] [low power]
+  config base 0x0200 mask 0x000f last_index 0x07
+  cftable_entry 0x00 [default]
+    [rdybsy] [mwait] [pwrdown]
+    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
+    memory 0x0000-0x07ff @ 0x0000
+  cftable_entry 0x00
+    Vcc Vnom 3300mV Ipeak 45mA
+  cftable_entry 0x01 [default]
+    [rdybsy] [pwrdown]
+    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
+    io 0x0000-0x000f [lines=4] [8bit] [16bit]
+    irq mask 0xffff [level] [pulse] [shared]
+  cftable_entry 0x01
+    Vcc Vnom 3300mV Ipeak 45mA
+  cftable_entry 0x02 [default]
+    [rdybsy] [pwrdown]
+    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
+    io 0x01f0-0x01f7, 0x03f6-0x03f7 [lines=10] [8bit] [16bit] [range]
+    irq 14 [level] [pulse] [shared]
+  cftable_entry 0x02
+    Vcc Vnom 3300mV Ipeak 45mA
+  cftable_entry 0x03 [default]
+    [rdybsy] [pwrdown]
+    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
+    io 0x0170-0x0177, 0x0376-0x0377 [lines=10] [8bit] [16bit] [range]
+    irq 14 [level] [pulse] [shared]
+  cftable_entry 0x03
+    Vcc Vnom 3300mV Ipeak 45mA
+  cftable_entry 0x07
