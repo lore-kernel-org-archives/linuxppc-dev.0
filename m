@@ -1,12 +1,12 @@
 Return-Path: <mbligh@google.com>
-Message-ID: <4450F64D.50009@google.com>
-Date: Thu, 27 Apr 2006 09:50:21 -0700
+Message-ID: <4450F732.90704@google.com>
+Date: Thu, 27 Apr 2006 09:54:10 -0700
 From: Martin Bligh <mbligh@google.com>
 MIME-Version: 1.0
 To: Andrew Morton <akpm@osdl.org>
 Subject: Re: 2.6.17-rc2-mm1
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc64-dev@ozlabs.org, LKML <linux-kernel@vger.org>
+Cc: linuxppc64-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,6 +15,10 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+OK, one more time, cause I'm an idiot, and can't type.
+
+--------------------------------
 
 Still crashes in LTP on x86_64:
 (introduced in previous release)
