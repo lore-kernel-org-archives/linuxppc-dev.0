@@ -1,14 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17490.42497.351114.712494@cargo.ozlabs.ibm.com>
-Date: Sat, 29 Apr 2006 09:32:17 +1000
+Message-ID: <17490.42678.793678.267072@cargo.ozlabs.ibm.com>
+Date: Sat, 29 Apr 2006 09:35:18 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: sign extension for 32bit syscalls on ppc64
-In-Reply-To: <20060428131254.GA507@lst.de>
-References: <20060428131254.GA507@lst.de>
-Cc: linuxppc-dev@ozlabs.org
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: FT u-boot shim 
+In-Reply-To: <20060428191124.B202B353DAC@atlas.denx.de>
+References: <EA2821E8-FB7E-4DDA-8C18-C659B5483DC2@kernel.crashing.org>
+	<20060428191124.B202B353DAC@atlas.denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,30 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig writes:
+Wolfgang Denk writes:
 
-> OTOH various syscalls in the generic code don't do that and it seems to
-> still work fine.  I have patches for various new generic compat
-> routines, and they all seem to work fine without this sign extension.
+> > 2. using a u-boot that is ft aware + dtb (boot command in u-boot  
+> > takes kernel & dtb images, updates blob and passes to kernel)
+> > 3. using a u-boot that is ft aware + built in dtb.
+> > 
+> > The issue is that for a given system/board you may need to support  
+> > multiple or all three.  This raises the question where does the .dts  
 > 
-> What's the exact sign extention rules for ppc64?
+> Assuming we had 2., under which circumstances would we need 3. then?
 
-As far as the ABI and the compiler are concerned, 32-bit values stored
-in registers are always correctly extended to 64 bits according to
-their type.  That is, the top 32 bits of the register will be either
-all zeroes or all ones, and will only be all ones for negative values
-of a signed type.
-
-Syscall arguments are zero-extended in the syscall entry path for
-32-bit processes (see lines 131-136 of arch/powerpc/kernel/entry_64.S)
-so if the argument is an int, we do an (int) cast in the compat
-wrapper, which makes the compiler emit an extsw instruction to get the
-value correctly sign-extended.
-
-However, it's debatable whether file descriptor arguments really need
-to be sign-extended.  Although they are typed as int, negative values
-are not generally valid (although there are one or two cases where
-they are), and an fd value of 4294967295 will generate an EBADF error
-just as well as -1 will.
+I imagine 3. would be more convenient for users than 2., or at least
+it would seem to mean less typing for them.
 
 Paul.
