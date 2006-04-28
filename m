@@ -1,17 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17490.43037.407086.355772@cargo.ozlabs.ibm.com>
-Date: Sat, 29 Apr 2006 09:41:17 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: alignment exceptionhandler sleeps in invalid context
-In-Reply-To: <27BDABD8-B970-4F2C-AA0A-07D55A9D3303@kernel.crashing.org>
-References: <20060424173246.GA22318@suse.de>
-	<17489.63055.968862.256370@cargo.ozlabs.ibm.com>
-	<20060428111942.GA15646@suse.de>
-	<27BDABD8-B970-4F2C-AA0A-07D55A9D3303@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olh@suse.de>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id B38FE679E7
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 09:55:04 +1000 (EST)
+To: Paul Mackerras <paulus@samba.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: FT u-boot shim 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 29 Apr 2006 09:35:18 +1000."
+	<17490.42678.793678.267072@cargo.ozlabs.ibm.com>
+Date: Sat, 29 Apr 2006 01:55:02 +0200
+Sender: wd@denx.de
+Message-Id: <20060428235502.1535C3525C5@atlas.denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,17 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+In message <17490.42678.793678.267072@cargo.ozlabs.ibm.com> you wrote:
+>
+> > > 2. using a u-boot that is ft aware + dtb (boot command in u-boot  
+> > > takes kernel & dtb images, updates blob and passes to kernel)
+> > > 3. using a u-boot that is ft aware + built in dtb.
+...
+> I imagine 3. would be more convenient for users than 2., or at least
+> it would seem to mean less typing for them.
 
-> I was going to ask how this was actually hit.  It seems odd that we  
-> would have an alignment error in the network stack.  From the oops  
-> can we determine what the instruction was that faulted and what  
-> address it was trying to access.
+This is not necessarily the case. We discussed that kernel & dtb
+could be combined in what U-Boot calls a single "multi-file image".
+>From the user's point of view there would be no difference to the
+current state: he has to deal with a single image file, and needs
+only it's start address in emory as argument to the "bootm" command.
 
-No, it's not particularly odd, given that our get_unaligned() and
-put_unaligned() in include/asm-powerpc/unaligned.h just do a single
-access.  That makes the common case (address is actually aligned, or
-cpu handles it in hardware) fast at the expense of occasionally taking
-an alignment exception.
+Best regards,
 
-Paul.
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Cleverness and Style have no place in getting a project completed.
+                                                  -- Tom Christiansen
