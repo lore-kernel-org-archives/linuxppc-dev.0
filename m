@@ -1,21 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 57A5D679F6
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 00:22:14 +1000 (EST)
-In-Reply-To: <20060428111942.GA15646@suse.de>
-References: <20060424173246.GA22318@suse.de>
-	<17489.63055.968862.256370@cargo.ozlabs.ibm.com>
-	<20060428111942.GA15646@suse.de>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <27BDABD8-B970-4F2C-AA0A-07D55A9D3303@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: alignment exceptionhandler sleeps in invalid context
-Date: Fri, 28 Apr 2006 09:22:11 -0500
-To: Olaf Hering <olh@suse.de>
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 78F98679F9
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 00:42:47 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] Wire up *at syscalls
+References: <jeu08ippb9.fsf@sykes.suse.de>
+	<1145924011.16166.465.camel@shinybook.infradead.org>
+	<17489.50396.320494.589703@cargo.ozlabs.ibm.com>
+	<1146219867.10561.39.camel@shinybook.infradead.org>
+Date: Fri, 28 Apr 2006 16:42:32 +0200
+In-Reply-To: <1146219867.10561.39.camel@shinybook.infradead.org> (David
+	Woodhouse's message of "Fri, 28 Apr 2006 11:24:26 +0100")
+Message-ID: <jehd4d7odj.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,26 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Woodhouse <dwmw2@infradead.org> writes:
 
-On Apr 28, 2006, at 6:19 AM, Olaf Hering wrote:
-
->  On Fri, Apr 28, Paul Mackeras wrote:
+> On Fri, 2006-04-28 at 17:31 +1000, Paul Mackerras wrote:
+>> Nice idea, but you didn't change the syscall entry path to multiply
+>> the syscall number by 24 instead of 16. 
 >
->> Olaf Hering writes:
->>
->>> I'm not sure where the bug is. Does it mean the network stack does
->>> something nasty, or is the exception handler itself broken?  
->>> (probably the latter)
->>> This is 2.6.16.9 on a p270.
->>
->> This patch should fix it, I hope.  If you can verify that it fixes it
->> I'll send it to Linus.
+> Indeed. Neither did I wire up the spu callbacks. It wasn't meant to be
+> applied as-is.
 >
-> I dont have a testcase, it just happend once on the p270.
+>>  It would be nice to have a way to do something like that but generate
+>> two separate tables instead of a single table with 3 entries per
+>> syscall. 
+>
+> Arnd apparently tried that once and it was icky.
 
-I was going to ask how this was actually hit.  It seems odd that we  
-would have an alignment error in the network stack.  From the oops  
-can we determine what the instruction was that faulted and what  
-address it was trying to access.
+void *spu_syscall_table[] = {
+#define SYSCALL(func)		sys_ni_syscall
+#define SYSCALL_SPU(func)       sys_##func
+#define COMPAT_SYS(func)	sys_ni_syscall
+#define COMPAT_SYS_SPU(func)	sys_##func
+#define PPC_SYS(func)		sys_ni_syscall
+#define PPC_SYS_SPU(func)	ppc_##func
+#define OLDSYS(func)		sys_ni_syscall
+#define SYS32ONLY(func)		sys_ni_syscall
+#define SYSX(f, f3264, f32)	f
+#include <asm/systbl.h>
+}
 
-- k
+where <asm/systbl.h> contains the bopy of arch/powerpc/kernel/systbl.S
+after _GLOBAL(sys_call_table), and the latter is changed to include the
+former.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
