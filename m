@@ -1,21 +1,20 @@
-Return-Path: <olh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A6966679F0
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 21:19:47 +1000 (EST)
-Date: Fri, 28 Apr 2006 13:19:42 +0200
-From: Olaf Hering <olh@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: alignment exceptionhandler sleeps in invalid context
-Message-ID: <20060428111942.GA15646@suse.de>
-References: <20060424173246.GA22318@suse.de>
-	<17489.63055.968862.256370@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <17489.63055.968862.256370@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17489.64606.75404.314368@cargo.ozlabs.ibm.com>
+Date: Fri, 28 Apr 2006 21:28:30 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: FT u-boot shim
+In-Reply-To: <1448E56E-1327-40D5-BE44-0DC103AC3E8A@kernel.crashing.org>
+References: <4C61B597-BD91-4D05-BB40-43DE0319F123@kernel.crashing.org>
+	<265F73F8-F641-4EDD-B88F-A2B2F7FA1308@kernel.crashing.org>
+	<20060425182418.GA1132@gate.ebshome.net>
+	<200604251329.35584.bcook@bpointsys.com>
+	<248CD1B3-A33B-47F5-AFE8-F7C9DDCD1D0B@kernel.crashing.org>
+	<20060425185314.GC1132@gate.ebshome.net>
+	<1448E56E-1327-40D5-BE44-0DC103AC3E8A@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Fri, Apr 28, Paul Mackeras wrote:
+Kumar Gala writes:
 
-> Olaf Hering writes:
-> 
-> > I'm not sure where the bug is. Does it mean the network stack does
-> > something nasty, or is the exception handler itself broken? (probably the latter)
-> > This is 2.6.16.9 on a p270.
-> 
-> This patch should fix it, I hope.  If you can verify that it fixes it
-> I'll send it to Linus.
+> If we have a u-boot shim there are some questions that need answering:
+> * where should the .dts live (hate duplicating the file both in u- 
+> boot and kernel source tree)
+> * how does build system find .dts
+> * a Kconfig option to enable shim
+> * assume done as a boot wrapper of sorts
 
-I dont have a testcase, it just happend once on the p270.
+What I think would be useful is a stand-alone tool that would take a
+kernel and a dts and construct an image that is bootable on a given
+board by its existing firmware.  That means there would either need to
+be a version of the tool for each firmware, or alternatively a set of
+command-line options to tell it what sort of firmware you have.
+
+This wouldn't have to be done at kernel build time; it could be
+potentially be done much later.  Hopefully then the board vendors
+could take on the job of generating the dts.  In fact for some boards
+the board-support package could be just the dts.
+
+This tool would need to insert a suitable shim, which might actually
+need to contain code to pull stuff out of a firmware-specific
+structure such as a bd_t, and stuff it into the dts.  That should be
+doable provided there is a convention about labels in the dts for
+things such as memory size, ethernet mac address, etc.
+
+Clearly it is neater if the firmware can supply the device-tree blob
+directly, and just boot a raw kernel.  However, there will always be
+situations where we don't get to choose the firmware, so I think we
+need this tool.
+
+Paul.
