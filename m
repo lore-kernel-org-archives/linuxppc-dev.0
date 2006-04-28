@@ -1,12 +1,31 @@
-Return-Path: <geoffrey.levand@am.sony.com>
-Message-ID: <44528CD6.8020007@am.sony.com>
-Date: Fri, 28 Apr 2006 14:44:54 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: [patch 4/4] spufs: wrap cpu affinity
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org, arnd@arndb.de
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 01329679E6
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 07:54:06 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3SLs33E006036
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 17:54:03 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3SLs3Ok215868
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 17:54:03 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3SLs3Gi013861
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 17:54:03 -0400
+Subject: Re: [RFC , PATCH] support for the ibm,pa_features cpu property
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1146249684.27214.18.camel@localhost.localdomain>
+References: <1146249684.27214.18.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 28 Apr 2006 16:53:41 -0500
+Message-Id: <1146261221.24076.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: paulus@samba.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,115 +35,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This changes the hypervisor abstraction of setting cpu affinity to a
-higher level to avoid platform dependent interrupt controller
-routines.  I replaced spu_priv1_ops:spu_int_route_set() with a
-new routine spu_priv1_ops:spu_cpu_affinity_set().
+Whoops.. funny thing occurred to me on my drive home..   comment inline
 
-As a by-product, this change eliminated what looked like an
-existing bug in the set affinity code where spu_int_route_set()
-mistakenly called int_stat_get().
+On Fri, 2006-04-28 at 13:41 -0500, Will Schmidt wrote:
+> To determine if our processors support some features, such as large
+> pages, we should be using the ibm,pa_features property, rather than just
+> the PVR values.  
+> This is an initial pass at the functionality.  This has been tested in
+> the case where the property is missing, but still needs to be tested
+> against a system where the property actually exists.  :-o  
+> 
+> 
+> 
+> diff --git a/arch/powerpc/kernel/setup_64.c
+> b/arch/powerpc/kernel/setup_64.c
+> index 13e91c4..78ad054 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -106,6 +106,65 @@ static struct notifier_block ppc64_panic
+>  	.priority = INT_MIN /* may not return; must be done last */
+>  };
+> 
+> +/*
+> + * ibm,pa-features is a per-cpu property that contains a 2 byte header
+> + * plus up to 256 bytes worth of processor attributes.  First header
+> + * byte specifies the number of bytes implemented by the platform.
+> + * Second header byte is an "attribute-specifier" type, which should
+> + * be zero.  Remainder of the data consists of ones and zeros.
+> + * Implementation:  Pass in the byte and bit offset for the feature
+> + * that we are interested in.  The function will return -1 if the
+> + * pa-features property is missing, or a 1/0 to indicate if the feature
+> + * is supported/not supported.
+> + */
+> +
+> +static int get_pa_features(int pabyte,int pabit)
+> +{
+> +	struct device_node *cpu;
+> +	char *pa_feature_table;
+> +
+> +	cpu = of_find_node_by_type(NULL, "cpu");
+> +	pa_feature_table = 
+> +		(char *)get_property(cpu, "ibm,pa-features", NULL);
+> +
+> +	if ( pa_feature_table == NULL ) {
+> +		printk("ibm,pa-features property is missing.\n");
+> +		return -1;
+> +	}
+> +
+> +	/* sanity check */
+> +	if ( pabyte > pa_feature_table[0] ) {
+> +		printk("%s: %d out of range for table of size %d\n",
+> +			__FUNCTION__,pabyte,pa_feature_table[0]);
+> +		return -1;
+> +	}
+> +	
+> +	return pa_feature_table[2+pabyte*8+pabit];
+
+pa_feature_table would be byte (char) addressable, while the fields that
+we are interested with inside are actually bit values.  So this should
+be something like
+
+	return   (pa_feature_table[2+pabyte] & 1<<pabit);
 
 
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-
----
-Index: linux-powerpc.git/arch/powerpc/platforms/cell/spu_base.c
-===================================================================
---- linux-powerpc.git.orig/arch/powerpc/platforms/cell/spu_base.c	2006-04-28 14:34:06.000000000 -0700
-+++ linux-powerpc.git/arch/powerpc/platforms/cell/spu_base.c	2006-04-28 14:34:06.000000000 -0700
-@@ -513,14 +513,6 @@
- 	return ret;
- }
-
--void spu_irq_setaffinity(struct spu *spu, int cpu)
--{
--	u64 target = iic_get_target_id(cpu);
--	u64 route = target << 48 | target << 32 | target << 16;
--	spu_int_route_set(spu, route);
--}
--EXPORT_SYMBOL_GPL(spu_irq_setaffinity);
--
- static void __iomem * __init map_spe_prop(struct device_node *n,
- 						 const char *name)
- {
-Index: linux-powerpc.git/arch/powerpc/platforms/cell/spu_priv1_mmio.c
-===================================================================
---- linux-powerpc.git.orig/arch/powerpc/platforms/cell/spu_priv1_mmio.c	2006-04-28 14:34:06.000000000 -0700
-+++ linux-powerpc.git/arch/powerpc/platforms/cell/spu_priv1_mmio.c	2006-04-28 14:34:06.000000000 -0700
-@@ -24,6 +24,8 @@
- #include <asm/spu.h>
- #include <asm/spu_priv1.h>
-
-+#include "interrupt.h"
-+
- static void int_mask_and(struct spu *spu, int class, u64 mask)
- {
- 	u64 old_mask;
-@@ -60,8 +62,10 @@
- 	return in_be64(&spu->priv1->int_stat_RW[class]);
- }
-
--static void int_route_set(struct spu *spu, u64 route)
-+static void cpu_affinity_set(struct spu *spu, int cpu)
- {
-+	u64 target = iic_get_target_id(cpu);
-+	u64 route = target << 48 | target << 32 | target << 16;
- 	out_be64(&spu->priv1->int_route_RW, route);
- }
-
-@@ -147,7 +151,7 @@
- 	.int_mask_get = int_mask_get,
- 	.int_stat_clear = int_stat_clear,
- 	.int_stat_get = int_stat_get,
--	.int_route_set = int_route_set,
-+	.cpu_affinity_set = cpu_affinity_set,
- 	.mfc_dar_get = mfc_dar_get,
- 	.mfc_dsisr_get = mfc_dsisr_get,
- 	.mfc_dsisr_set = mfc_dsisr_set,
-Index: linux-powerpc.git/arch/powerpc/platforms/cell/spufs/sched.c
-===================================================================
---- linux-powerpc.git.orig/arch/powerpc/platforms/cell/spufs/sched.c	2006-04-19 11:48:28.000000000 -0700
-+++ linux-powerpc.git/arch/powerpc/platforms/cell/spufs/sched.c	2006-04-28 14:34:06.000000000 -0700
-@@ -43,6 +43,7 @@
- #include <asm/mmu_context.h>
- #include <asm/spu.h>
- #include <asm/spu_csa.h>
-+#include <asm/spu_priv1.h>
- #include "spufs.h"
-
- #define SPU_MIN_TIMESLICE 	(100 * HZ / 1000)
-@@ -363,7 +364,7 @@
- 	 * We're likely to wait for interrupts on the same
- 	 * CPU that we are now on, so send them here.
- 	 */
--	spu_irq_setaffinity(spu, raw_smp_processor_id());
-+	spu_cpu_affinity_set(spu, raw_smp_processor_id());
- 	put_active_spu(spu);
- 	return 0;
- }
-Index: linux-powerpc.git/include/asm-powerpc/spu_priv1.h
-===================================================================
---- linux-powerpc.git.orig/include/asm-powerpc/spu_priv1.h	2006-04-28 14:34:06.000000000 -0700
-+++ linux-powerpc.git/include/asm-powerpc/spu_priv1.h	2006-04-28 14:34:06.000000000 -0700
-@@ -33,7 +33,7 @@
- 	u64 (*int_mask_get) (struct spu *spu, int class);
- 	void (*int_stat_clear) (struct spu *spu, int class, u64 stat);
- 	u64 (*int_stat_get) (struct spu *spu, int class);
--	void (*int_route_set) (struct spu *spu, u64 route);
-+	void (*cpu_affinity_set) (struct spu *spu, int cpu);
- 	u64 (*mfc_dar_get) (struct spu *spu);
- 	u64 (*mfc_dsisr_get) (struct spu *spu);
- 	void (*mfc_dsisr_set) (struct spu *spu, u64 dsisr);
-@@ -89,9 +89,9 @@
- }
-
- static inline void
--spu_int_route_set (struct spu *spu, u64 route)
-+spu_cpu_affinity_set (struct spu *spu, int cpu)
- {
--	spu_priv1_ops->int_stat_get(spu, route);
-+	spu_priv1_ops->cpu_affinity_set(spu, cpu);
- }
-
- static inline u64
+> +}
+> +
+> +/*
+> + * set values within the cur_cpu_spec table according to
+> + * the ibm,pa_features property. 
+> + * potential entries include: 
+> + * Byte 0, bit 1 - FPU available
+> + * Byte 1, bit 2 - Large Pages 
+> + * Byte 2, bit 3 - DAR set on alignment Interrupt. 
+> + */
+> +static void add_cpu_features()
+> +{
+> +	/* if no property, bail early */
+> +	if (get_pa_features(0,0) == -1 ) return;
+> +
+> +	if (get_pa_features(1,2) ) {
+> +		printk("Adding CI_LARGE_PAGE to cur_cpu_spec \n");
+> +		cur_cpu_spec->cpu_features |= CPU_FTR_CI_LARGE_PAGE;
+> +	}
+> +
+> +	/* add more here... */
+> +
+> +}
+> +
+> +
+>  #ifdef CONFIG_SMP
+> 
+>  static int smt_enabled_cmdline;
+> @@ -425,6 +484,8 @@ void __init setup_system(void)
+> 
+>  	parse_early_param();
+> 
+> +	add_cpu_features();
+> +
+>  	check_smt_enabled();
+>  	smp_setup_cpu_maps();
+> 
+> 
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
