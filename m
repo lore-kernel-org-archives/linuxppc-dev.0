@@ -1,31 +1,28 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <linas@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 01329679E6
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 07:54:06 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3SLs33E006036
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 17:54:03 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3SLs3Ok215868
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 17:54:03 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3SLs3Gi013861
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 17:54:03 -0400
-Subject: Re: [RFC , PATCH] support for the ibm,pa_features cpu property
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1146249684.27214.18.camel@localhost.localdomain>
-References: <1146249684.27214.18.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 28 Apr 2006 16:53:41 -0500
-Message-Id: <1146261221.24076.5.camel@localhost.localdomain>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2BF63679A6
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 08:39:42 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k3SMdcJY017169
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 18:39:38 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3SMddxt241004
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 18:39:39 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3SMddT0004640
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 18:39:39 -0400
+Date: Fri, 28 Apr 2006 17:39:38 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH]: powerpc/pseries: Increment fail counter in PCI recovery
+Message-ID: <20060428223938.GD22621@austin.ibm.com>
 Mime-Version: 1.0
-Cc: paulus@samba.org
-Reply-To: will_schmidt@vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,111 +32,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Whoops.. funny thing occurred to me on my drive home..   comment inline
+Paul,
 
-On Fri, 2006-04-28 at 13:41 -0500, Will Schmidt wrote:
-> To determine if our processors support some features, such as large
-> pages, we should be using the ibm,pa_features property, rather than just
-> the PVR values.  
-> This is an initial pass at the functionality.  This has been tested in
-> the case where the property is missing, but still needs to be tested
-> against a system where the property actually exists.  :-o  
-> 
-> 
-> 
-> diff --git a/arch/powerpc/kernel/setup_64.c
-> b/arch/powerpc/kernel/setup_64.c
-> index 13e91c4..78ad054 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -106,6 +106,65 @@ static struct notifier_block ppc64_panic
->  	.priority = INT_MIN /* may not return; must be done last */
->  };
-> 
-> +/*
-> + * ibm,pa-features is a per-cpu property that contains a 2 byte header
-> + * plus up to 256 bytes worth of processor attributes.  First header
-> + * byte specifies the number of bytes implemented by the platform.
-> + * Second header byte is an "attribute-specifier" type, which should
-> + * be zero.  Remainder of the data consists of ones and zeros.
-> + * Implementation:  Pass in the byte and bit offset for the feature
-> + * that we are interested in.  The function will return -1 if the
-> + * pa-features property is missing, or a 1/0 to indicate if the feature
-> + * is supported/not supported.
-> + */
-> +
-> +static int get_pa_features(int pabyte,int pabit)
-> +{
-> +	struct device_node *cpu;
-> +	char *pa_feature_table;
-> +
-> +	cpu = of_find_node_by_type(NULL, "cpu");
-> +	pa_feature_table = 
-> +		(char *)get_property(cpu, "ibm,pa-features", NULL);
-> +
-> +	if ( pa_feature_table == NULL ) {
-> +		printk("ibm,pa-features property is missing.\n");
-> +		return -1;
-> +	}
-> +
-> +	/* sanity check */
-> +	if ( pabyte > pa_feature_table[0] ) {
-> +		printk("%s: %d out of range for table of size %d\n",
-> +			__FUNCTION__,pabyte,pa_feature_table[0]);
-> +		return -1;
-> +	}
-> +	
-> +	return pa_feature_table[2+pabyte*8+pabit];
+A small medium-priority patch; please send upstream as appropriate.
 
-pa_feature_table would be byte (char) addressable, while the fields that
-we are interested with inside are actually bit values.  So this should
-be something like
+--linas
 
-	return   (pa_feature_table[2+pabyte] & 1<<pabit);
+[PATCH]: powerpc/pseries: Increment fail counter in PCI recovery
 
+When a PCI device driver does not support PCI error recovery,
+the powerpc/pseries code takes a walk through a branch of code 
+that resets the failure counter. Because of this, if a broken
+PCI card is present, the kernel will attempt to reset it an
+infinite number of times. (This is annoying but mostly harmless:
+each reset takes about 10-20 seconds, and uses almost no CPU time).
 
-> +}
-> +
-> +/*
-> + * set values within the cur_cpu_spec table according to
-> + * the ibm,pa_features property. 
-> + * potential entries include: 
-> + * Byte 0, bit 1 - FPU available
-> + * Byte 1, bit 2 - Large Pages 
-> + * Byte 2, bit 3 - DAR set on alignment Interrupt. 
-> + */
-> +static void add_cpu_features()
-> +{
-> +	/* if no property, bail early */
-> +	if (get_pa_features(0,0) == -1 ) return;
-> +
-> +	if (get_pa_features(1,2) ) {
-> +		printk("Adding CI_LARGE_PAGE to cur_cpu_spec \n");
-> +		cur_cpu_spec->cpu_features |= CPU_FTR_CI_LARGE_PAGE;
-> +	}
-> +
-> +	/* add more here... */
-> +
-> +}
-> +
-> +
->  #ifdef CONFIG_SMP
-> 
->  static int smt_enabled_cmdline;
-> @@ -425,6 +484,8 @@ void __init setup_system(void)
-> 
->  	parse_early_param();
-> 
-> +	add_cpu_features();
-> +
->  	check_smt_enabled();
->  	smp_setup_cpu_maps();
-> 
-> 
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+This patch preserves the failure count across resets.
+
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+
+----
+ arch/powerpc/platforms/pseries/eeh_driver.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.17-rc1/arch/powerpc/platforms/pseries/eeh_driver.c
+===================================================================
+--- linux-2.6.17-rc1.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2006-04-28 17:30:21.000000000 -0500
++++ linux-2.6.17-rc1/arch/powerpc/platforms/pseries/eeh_driver.c	2006-04-28 17:31:31.000000000 -0500
+@@ -201,7 +201,11 @@ static void eeh_report_failure(struct pc
+ 
+ static int eeh_reset_device (struct pci_dn *pe_dn, struct pci_bus *bus)
+ {
+-	int rc;
++	int cnt, rc;
++
++	/* pcibios will clear the counter; save the value */
++	cnt = pe_dn->eeh_freeze_count;
++
+ 	if (bus)
+ 		pcibios_remove_pci_devices(bus);
+ 
+@@ -240,6 +244,7 @@ static int eeh_reset_device (struct pci_
+ 		ssleep (5);
+ 		pcibios_add_pci_devices(bus);
+ 	}
++	pe_dn->eeh_freeze_count = cnt;
+ 
+ 	return 0;
+ }
