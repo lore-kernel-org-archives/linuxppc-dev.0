@@ -2,16 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EB2ED679F8
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 01:15:34 +1000 (EST)
-Subject: Re: [PATCH] convert powermac ide blink to new led infrastructure
+	by ozlabs.org (Postfix) with ESMTP id 14362679EF
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 01:24:23 +1000 (EST)
+Subject: [PATCH] convert powermac ide blink to new led infrastructure
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1146235779.19164.109.camel@localhost>
-References: <1146235779.19164.109.camel@localhost>
 Content-Type: text/plain
-Date: Fri, 28 Apr 2006 17:15:26 +0200
-Message-Id: <1146237326.19164.111.camel@localhost>
+Date: Fri, 28 Apr 2006 16:49:39 +0200
+Message-Id: <1146235779.19164.109.camel@localhost>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	debian-powerpc <debian-powerpc@lists.debian.org>
@@ -24,18 +22,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[resent slightly different patch that adds a comment over the original
-version]
-
-This patch removes the old pmac ide led blink code and
-adds generic LED subsystem support for the LED.
+This patch removes the old pmac ide led blink code and adds generic LED
+subsystem support for the LED.
 
 Ben: I removed the retry code that was present in the original. I guess
 LEDs aren't really too important but if it really is necessary please
 tell me and I'll add it back.
-
-Also, I don't have any suspend handling things. It doesn't appear to be
-necessary, how do I find out?
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
@@ -337,7 +329,7 @@ Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 +
 +#endif /* __VIA_PMU_LED_H */
 --- linux-2.6.orig/drivers/macintosh/via-pmu.c	2006-04-28 13:09:02.197288704 +0200
-+++ linux-2.6/drivers/macintosh/via-pmu.c	2006-04-28 16:55:57.877288704 +0200
++++ linux-2.6/drivers/macintosh/via-pmu.c	2006-04-28 15:58:45.497288704 +0200
 @@ -69,6 +69,8 @@
  #include <asm/open_pic.h>
  #endif
@@ -347,7 +339,7 @@ Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
  /* Some compile options */
  #undef SUSPEND_USES_PMU
  #define DEBUG_SLEEP
-@@ -2896,11 +2898,30 @@ static int __init init_pmu_sysfs(void)
+@@ -2896,11 +2898,25 @@ static int __init init_pmu_sysfs(void)
  		printk(KERN_ERR "Failed registering PMU sys driver\n");
  		return -ENODEV;
  	}
@@ -359,11 +351,6 @@ Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
  
 +static int __init init_pmu_led(void)
 +{
-+	/* Only enable this feature on KeyLargo based laptops, older
-+	 * laptops may support it (at least heathrow/paddington) but
-+	 * I don't feel like loading those venerable old machines with
-+	 * so much additional interrupt & PMU activity...
-+	 */
 +	if (pmu_kind == PMU_KEYLARGO_BASED) {
 +		if (pmu_led_init()) {
 +			printk(KERN_WARNING "via-pmu: LED failed to init\n");
