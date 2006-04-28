@@ -1,10 +1,10 @@
 Return-Path: <geoffrey.levand@am.sony.com>
-Message-ID: <44528CCE.1090400@am.sony.com>
-Date: Fri, 28 Apr 2006 14:44:46 -0700
+Message-ID: <44528CD3.1020906@am.sony.com>
+Date: Fri, 28 Apr 2006 14:44:51 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [patch 2/4] cell: split out platform code
+Subject: [patch 3/4] spufs: support multi-platform priv1 access
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,413 +16,531 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Split the Cell BPA support into generic and platform
-dependant parts.
+To support muti-platform binaries the spu hypervisor accessor
+routines must have runtime binding.
 
-Creates a new config variable CONFIG_PPC_IBM_CELL_BLADE.
-The existing CONFIG_PPC_CELL is now used to denote the
-generic Cell processor support.  Also renames spu_priv1.c
-to spu_priv1_mmio.c.
+I removed the existing statically linked routines in spu.h
+and spu_priv1_mmio.c and created new accessor routines in spu_priv1.h
+that operate indirectly through an ops struct spu_priv1_ops.
+spu_priv1_mmio.c contains the instance of the accessor routines
+for running on raw hardware.
 
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
-Index: linux-powerpc.git/arch/powerpc/Kconfig
+Index: linux-powerpc.git/arch/powerpc/platforms/cell/setup.c
 ===================================================================
---- linux-powerpc.git.orig/arch/powerpc/Kconfig	2006-04-28 14:32:25.000000000 -0700
-+++ linux-powerpc.git/arch/powerpc/Kconfig	2006-04-28 14:34:06.000000000 -0700
-@@ -391,11 +391,17 @@
- 	  For more informations, refer to <http://www.970eval.com>
+--- linux-powerpc.git.orig/arch/powerpc/platforms/cell/setup.c	2006-04-28 14:32:25.000000000 -0700
++++ linux-powerpc.git/arch/powerpc/platforms/cell/setup.c	2006-04-28 14:34:06.000000000 -0700
+@@ -46,6 +46,7 @@
+ #include <asm/cputable.h>
+ #include <asm/ppc-pci.h>
+ #include <asm/irq.h>
++#include <asm/spu_priv1.h>
 
- config PPC_CELL
--	bool "  Cell Broadband Processor Architecture"
-+	bool
-+	default n
+ #include "interrupt.h"
+ #include "iommu.h"
+@@ -149,6 +150,9 @@
+ {
+ 	ppc_md.init_IRQ       = iic_init_IRQ;
+ 	ppc_md.get_irq        = iic_get_irq;
++#ifdef CONFIG_SPU_BASE
++	spu_priv1_ops         = &spu_priv1_mmio_ops;
++#endif
+
+ #ifdef CONFIG_SMP
+ 	smp_init_cell();
+Index: linux-powerpc.git/arch/powerpc/platforms/cell/spu_base.c
+===================================================================
+--- linux-powerpc.git.orig/arch/powerpc/platforms/cell/spu_base.c	2006-04-28 14:32:25.000000000 -0700
++++ linux-powerpc.git/arch/powerpc/platforms/cell/spu_base.c	2006-04-28 14:38:16.000000000 -0700
+@@ -34,10 +34,15 @@
+ #include <asm/prom.h>
+ #include <linux/mutex.h>
+ #include <asm/spu.h>
++#include <asm/spu_priv1.h>
+ #include <asm/mmu_context.h>
+
+ #include "interrupt.h"
+
++const struct spu_priv1_ops *spu_priv1_ops;
 +
-+config PPC_IBM_CELL_BLADE
-+	bool "  IBM Cell Blade"
- 	depends on PPC_MULTIPLATFORM && PPC64
-+	select PPC_CELL
- 	select PPC_RTAS
- 	select MMIO_NVRAM
- 	select PPC_UDBG_16550
-+	select SPUFS_PRIV1_MMIO
-
- config XICS
- 	depends on PPC_PSERIES
-@@ -440,7 +446,7 @@
- 	default y
-
- config CELL_IIC
--	depends on PPC_CELL
-+	depends on PPC_IBM_CELL_BLADE
- 	bool
- 	default y
-
-Index: linux-powerpc.git/arch/powerpc/configs/cell_defconfig
-===================================================================
---- linux-powerpc.git.orig/arch/powerpc/configs/cell_defconfig	2006-04-28 14:32:25.000000000 -0700
-+++ linux-powerpc.git/arch/powerpc/configs/cell_defconfig	2006-04-28 14:34:06.000000000 -0700
-@@ -118,6 +118,7 @@
- # CONFIG_PPC_PMAC is not set
- # CONFIG_PPC_MAPLE is not set
- CONFIG_PPC_CELL=y
-+CONFIG_PPC_IBM_CELL_BLADE=y
- # CONFIG_U3_DART is not set
- CONFIG_PPC_RTAS=y
- # CONFIG_RTAS_ERROR_LOGGING is not set
-@@ -133,6 +134,8 @@
- # Cell Broadband Engine options
- #
- CONFIG_SPU_FS=m
-+CONFIG_SPU_BASE=y
-+CONFIG_SPUFS_PRIV1_MMIO=y
- CONFIG_SPUFS_MMAP=y
-
- #
-Index: linux-powerpc.git/arch/powerpc/platforms/cell/Kconfig
-===================================================================
---- linux-powerpc.git.orig/arch/powerpc/platforms/cell/Kconfig	2006-04-28 14:32:25.000000000 -0700
-+++ linux-powerpc.git/arch/powerpc/platforms/cell/Kconfig	2006-04-28 14:34:06.000000000 -0700
-@@ -5,11 +5,20 @@
- 	tristate "SPU file system"
- 	default m
- 	depends on PPC_CELL
-+	select SPU_BASE
- 	help
- 	  The SPU file system is used to access Synergistic Processing
- 	  Units on machines implementing the Broadband Processor
- 	  Architecture.
-
-+config SPU_BASE
-+	bool
-+	default n
++EXPORT_SYMBOL_GPL(spu_priv1_ops);
 +
-+config SPUFS_PRIV1_MMIO
-+	bool
-+	default n
+ static int __spu_trap_invalid_dma(struct spu *spu)
+ {
+ 	pr_debug("%s\n", __FUNCTION__);
+@@ -687,6 +692,8 @@
+ 	struct device_node *node;
+ 	int ret;
+
++	BUG_ON(!spu_priv1_ops);
 +
- config SPUFS_MMAP
- 	bool
- 	depends on SPU_FS && SPARSEMEM && !PPC_64K_PAGES
-Index: linux-powerpc.git/arch/powerpc/platforms/cell/Makefile
-===================================================================
---- linux-powerpc.git.orig/arch/powerpc/platforms/cell/Makefile	2006-04-28 14:32:25.000000000 -0700
-+++ linux-powerpc.git/arch/powerpc/platforms/cell/Makefile	2006-04-28 14:34:06.000000000 -0700
-@@ -1,16 +1,13 @@
--obj-y			+= interrupt.o iommu.o setup.o spider-pic.o
--obj-y			+= pervasive.o
--
--obj-$(CONFIG_SMP)	+= smp.o
--obj-$(CONFIG_SPU_FS)	+= spu-base.o spufs/
--
--spu-base-y		+= spu_base.o spu_priv1.o
-+obj-$(CONFIG_PPC_IBM_CELL_BLADE)	+= interrupt.o iommu.o setup.o \
-+					   spider-pic.o pervasive.o
-+ifeq ($(CONFIG_SMP),y)
-+obj-$(CONFIG_PPC_IBM_CELL_BLADE)	+= smp.o
-+endif
-
- # needed only when building loadable spufs.ko
--spufs-modular-$(CONFIG_SPU_FS) += spu_syscalls.o
--obj-y			+= $(spufs-modular-m)
--
--# always needed in kernel
--spufs-builtin-$(CONFIG_SPU_FS) += spu_callbacks.o
--obj-y			+= $(spufs-builtin-y) $(spufs-builtin-m)
-+spufs-modular-$(CONFIG_SPU_FS)		+= spu_syscalls.o
-
-+obj-$(CONFIG_SPU_BASE)			+= spu_callbacks.o spu_base.o \
-+					   $(spufs-modular-m)
-+obj-$(CONFIG_SPUFS_PRIV1_MMIO)		+= spu_priv1_mmio.o
-+obj-$(CONFIG_SPU_FS)			+= spufs/
-Index: linux-powerpc.git/arch/powerpc/platforms/cell/spu_priv1.c
-===================================================================
---- linux-powerpc.git.orig/arch/powerpc/platforms/cell/spu_priv1.c	2006-04-28 14:32:25.000000000 -0700
-+++ linux-powerpc.git/arch/powerpc/platforms/cell/spu_priv1.c	2006-04-21 13:04:41.284693750 -0700
-@@ -1,133 +0,0 @@
--/*
-- * access to SPU privileged registers
-- */
--#include <linux/module.h>
--
--#include <asm/io.h>
--#include <asm/spu.h>
--
--void spu_int_mask_and(struct spu *spu, int class, u64 mask)
--{
--	u64 old_mask;
--
--	old_mask = in_be64(&spu->priv1->int_mask_RW[class]);
--	out_be64(&spu->priv1->int_mask_RW[class], old_mask & mask);
--}
--EXPORT_SYMBOL_GPL(spu_int_mask_and);
--
--void spu_int_mask_or(struct spu *spu, int class, u64 mask)
--{
--	u64 old_mask;
--
--	old_mask = in_be64(&spu->priv1->int_mask_RW[class]);
--	out_be64(&spu->priv1->int_mask_RW[class], old_mask | mask);
--}
--EXPORT_SYMBOL_GPL(spu_int_mask_or);
--
--void spu_int_mask_set(struct spu *spu, int class, u64 mask)
--{
--	out_be64(&spu->priv1->int_mask_RW[class], mask);
--}
--EXPORT_SYMBOL_GPL(spu_int_mask_set);
--
--u64 spu_int_mask_get(struct spu *spu, int class)
--{
--	return in_be64(&spu->priv1->int_mask_RW[class]);
--}
--EXPORT_SYMBOL_GPL(spu_int_mask_get);
--
--void spu_int_stat_clear(struct spu *spu, int class, u64 stat)
--{
--	out_be64(&spu->priv1->int_stat_RW[class], stat);
--}
--EXPORT_SYMBOL_GPL(spu_int_stat_clear);
--
--u64 spu_int_stat_get(struct spu *spu, int class)
--{
--	return in_be64(&spu->priv1->int_stat_RW[class]);
--}
--EXPORT_SYMBOL_GPL(spu_int_stat_get);
--
--void spu_int_route_set(struct spu *spu, u64 route)
--{
--	out_be64(&spu->priv1->int_route_RW, route);
--}
--EXPORT_SYMBOL_GPL(spu_int_route_set);
--
--u64 spu_mfc_dar_get(struct spu *spu)
--{
--	return in_be64(&spu->priv1->mfc_dar_RW);
--}
--EXPORT_SYMBOL_GPL(spu_mfc_dar_get);
--
--u64 spu_mfc_dsisr_get(struct spu *spu)
--{
--	return in_be64(&spu->priv1->mfc_dsisr_RW);
--}
--EXPORT_SYMBOL_GPL(spu_mfc_dsisr_get);
--
--void spu_mfc_dsisr_set(struct spu *spu, u64 dsisr)
--{
--	out_be64(&spu->priv1->mfc_dsisr_RW, dsisr);
--}
--EXPORT_SYMBOL_GPL(spu_mfc_dsisr_set);
--
--void spu_mfc_sdr_set(struct spu *spu, u64 sdr)
--{
--	out_be64(&spu->priv1->mfc_sdr_RW, sdr);
--}
--EXPORT_SYMBOL_GPL(spu_mfc_sdr_set);
--
--void spu_mfc_sr1_set(struct spu *spu, u64 sr1)
--{
--	out_be64(&spu->priv1->mfc_sr1_RW, sr1);
--}
--EXPORT_SYMBOL_GPL(spu_mfc_sr1_set);
--
--u64 spu_mfc_sr1_get(struct spu *spu)
--{
--	return in_be64(&spu->priv1->mfc_sr1_RW);
--}
--EXPORT_SYMBOL_GPL(spu_mfc_sr1_get);
--
--void spu_mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
--{
--	out_be64(&spu->priv1->mfc_tclass_id_RW, tclass_id);
--}
--EXPORT_SYMBOL_GPL(spu_mfc_tclass_id_set);
--
--u64 spu_mfc_tclass_id_get(struct spu *spu)
--{
--	return in_be64(&spu->priv1->mfc_tclass_id_RW);
--}
--EXPORT_SYMBOL_GPL(spu_mfc_tclass_id_get);
--
--void spu_tlb_invalidate(struct spu *spu)
--{
--	out_be64(&spu->priv1->tlb_invalidate_entry_W, 0ul);
--}
--EXPORT_SYMBOL_GPL(spu_tlb_invalidate);
--
--void spu_resource_allocation_groupID_set(struct spu *spu, u64 id)
--{
--	out_be64(&spu->priv1->resource_allocation_groupID_RW, id);
--}
--EXPORT_SYMBOL_GPL(spu_resource_allocation_groupID_set);
--
--u64 spu_resource_allocation_groupID_get(struct spu *spu)
--{
--	return in_be64(&spu->priv1->resource_allocation_groupID_RW);
--}
--EXPORT_SYMBOL_GPL(spu_resource_allocation_groupID_get);
--
--void spu_resource_allocation_enable_set(struct spu *spu, u64 enable)
--{
--	out_be64(&spu->priv1->resource_allocation_enable_RW, enable);
--}
--EXPORT_SYMBOL_GPL(spu_resource_allocation_enable_set);
--
--u64 spu_resource_allocation_enable_get(struct spu *spu)
--{
--	return in_be64(&spu->priv1->resource_allocation_enable_RW);
--}
--EXPORT_SYMBOL_GPL(spu_resource_allocation_enable_get);
+ 	ret = -ENODEV;
+ 	for (node = of_find_node_by_type(NULL, "spe");
+ 			node; node = of_find_node_by_type(node, "spe")) {
 Index: linux-powerpc.git/arch/powerpc/platforms/cell/spu_priv1_mmio.c
 ===================================================================
---- linux-powerpc.git.orig/arch/powerpc/platforms/cell/spu_priv1_mmio.c	2006-04-21 13:04:41.284693750 -0700
-+++ linux-powerpc.git/arch/powerpc/platforms/cell/spu_priv1_mmio.c	2006-04-28 14:38:18.000000000 -0700
-@@ -0,0 +1,133 @@
-+/*
-+ * access to SPU privileged registers
-+ */
-+#include <linux/module.h>
+--- linux-powerpc.git.orig/arch/powerpc/platforms/cell/spu_priv1_mmio.c	2006-04-28 14:34:06.000000000 -0700
++++ linux-powerpc.git/arch/powerpc/platforms/cell/spu_priv1_mmio.c	2006-04-28 14:38:16.000000000 -0700
+@@ -1,133 +1,165 @@
+ /*
+- * access to SPU privileged registers
++ * spu hypervisor abstraction for direct hardware access.
++ *
++ *  (C) Copyright IBM Deutschland Entwicklung GmbH 2005
++ *  Copyright 2006 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
 +
-+#include <asm/io.h>
-+#include <asm/spu.h>
-+
-+void spu_int_mask_and(struct spu *spu, int class, u64 mask)
-+{
-+	u64 old_mask;
-+
-+	old_mask = in_be64(&spu->priv1->int_mask_RW[class]);
-+	out_be64(&spu->priv1->int_mask_RW[class], old_mask & mask);
-+}
-+EXPORT_SYMBOL_GPL(spu_int_mask_and);
-+
-+void spu_int_mask_or(struct spu *spu, int class, u64 mask)
-+{
-+	u64 old_mask;
-+
-+	old_mask = in_be64(&spu->priv1->int_mask_RW[class]);
-+	out_be64(&spu->priv1->int_mask_RW[class], old_mask | mask);
-+}
-+EXPORT_SYMBOL_GPL(spu_int_mask_or);
-+
-+void spu_int_mask_set(struct spu *spu, int class, u64 mask)
-+{
-+	out_be64(&spu->priv1->int_mask_RW[class], mask);
-+}
-+EXPORT_SYMBOL_GPL(spu_int_mask_set);
-+
-+u64 spu_int_mask_get(struct spu *spu, int class)
-+{
-+	return in_be64(&spu->priv1->int_mask_RW[class]);
-+}
-+EXPORT_SYMBOL_GPL(spu_int_mask_get);
-+
-+void spu_int_stat_clear(struct spu *spu, int class, u64 stat)
-+{
-+	out_be64(&spu->priv1->int_stat_RW[class], stat);
-+}
-+EXPORT_SYMBOL_GPL(spu_int_stat_clear);
-+
-+u64 spu_int_stat_get(struct spu *spu, int class)
-+{
-+	return in_be64(&spu->priv1->int_stat_RW[class]);
-+}
-+EXPORT_SYMBOL_GPL(spu_int_stat_get);
-+
-+void spu_int_route_set(struct spu *spu, u64 route)
-+{
-+	out_be64(&spu->priv1->int_route_RW, route);
-+}
-+EXPORT_SYMBOL_GPL(spu_int_route_set);
-+
-+u64 spu_mfc_dar_get(struct spu *spu)
-+{
-+	return in_be64(&spu->priv1->mfc_dar_RW);
-+}
-+EXPORT_SYMBOL_GPL(spu_mfc_dar_get);
-+
-+u64 spu_mfc_dsisr_get(struct spu *spu)
-+{
-+	return in_be64(&spu->priv1->mfc_dsisr_RW);
-+}
-+EXPORT_SYMBOL_GPL(spu_mfc_dsisr_get);
-+
-+void spu_mfc_dsisr_set(struct spu *spu, u64 dsisr)
-+{
-+	out_be64(&spu->priv1->mfc_dsisr_RW, dsisr);
-+}
-+EXPORT_SYMBOL_GPL(spu_mfc_dsisr_set);
-+
-+void spu_mfc_sdr_set(struct spu *spu, u64 sdr)
-+{
-+	out_be64(&spu->priv1->mfc_sdr_RW, sdr);
-+}
-+EXPORT_SYMBOL_GPL(spu_mfc_sdr_set);
-+
-+void spu_mfc_sr1_set(struct spu *spu, u64 sr1)
-+{
-+	out_be64(&spu->priv1->mfc_sr1_RW, sr1);
-+}
-+EXPORT_SYMBOL_GPL(spu_mfc_sr1_set);
-+
-+u64 spu_mfc_sr1_get(struct spu *spu)
-+{
-+	return in_be64(&spu->priv1->mfc_sr1_RW);
-+}
-+EXPORT_SYMBOL_GPL(spu_mfc_sr1_get);
-+
-+void spu_mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
-+{
-+	out_be64(&spu->priv1->mfc_tclass_id_RW, tclass_id);
-+}
-+EXPORT_SYMBOL_GPL(spu_mfc_tclass_id_set);
-+
-+u64 spu_mfc_tclass_id_get(struct spu *spu)
-+{
-+	return in_be64(&spu->priv1->mfc_tclass_id_RW);
-+}
-+EXPORT_SYMBOL_GPL(spu_mfc_tclass_id_get);
-+
-+void spu_tlb_invalidate(struct spu *spu)
-+{
-+	out_be64(&spu->priv1->tlb_invalidate_entry_W, 0ul);
-+}
-+EXPORT_SYMBOL_GPL(spu_tlb_invalidate);
-+
-+void spu_resource_allocation_groupID_set(struct spu *spu, u64 id)
-+{
-+	out_be64(&spu->priv1->resource_allocation_groupID_RW, id);
-+}
-+EXPORT_SYMBOL_GPL(spu_resource_allocation_groupID_set);
-+
-+u64 spu_resource_allocation_groupID_get(struct spu *spu)
-+{
-+	return in_be64(&spu->priv1->resource_allocation_groupID_RW);
-+}
-+EXPORT_SYMBOL_GPL(spu_resource_allocation_groupID_get);
-+
-+void spu_resource_allocation_enable_set(struct spu *spu, u64 enable)
-+{
-+	out_be64(&spu->priv1->resource_allocation_enable_RW, enable);
-+}
-+EXPORT_SYMBOL_GPL(spu_resource_allocation_enable_set);
-+
-+u64 spu_resource_allocation_enable_get(struct spu *spu)
-+{
-+	return in_be64(&spu->priv1->resource_allocation_enable_RW);
-+}
-+EXPORT_SYMBOL_GPL(spu_resource_allocation_enable_get);
-Index: linux-powerpc.git/drivers/net/Kconfig
-===================================================================
---- linux-powerpc.git.orig/drivers/net/Kconfig	2006-04-28 14:32:25.000000000 -0700
-+++ linux-powerpc.git/drivers/net/Kconfig	2006-04-28 14:34:06.000000000 -0700
-@@ -2171,7 +2171,7 @@
+ #include <linux/module.h>
 
- config SPIDER_NET
- 	tristate "Spider Gigabit Ethernet driver"
--	depends on PCI && PPC_CELL
-+	depends on PCI && PPC_IBM_CELL_BLADE
- 	select FW_LOADER
- 	help
- 	  This driver supports the Gigabit Ethernet chips present on the
+ #include <asm/io.h>
+ #include <asm/spu.h>
++#include <asm/spu_priv1.h>
+
+-void spu_int_mask_and(struct spu *spu, int class, u64 mask)
++static void int_mask_and(struct spu *spu, int class, u64 mask)
+ {
+ 	u64 old_mask;
+
+ 	old_mask = in_be64(&spu->priv1->int_mask_RW[class]);
+ 	out_be64(&spu->priv1->int_mask_RW[class], old_mask & mask);
+ }
+-EXPORT_SYMBOL_GPL(spu_int_mask_and);
+
+-void spu_int_mask_or(struct spu *spu, int class, u64 mask)
++static void int_mask_or(struct spu *spu, int class, u64 mask)
+ {
+ 	u64 old_mask;
+
+ 	old_mask = in_be64(&spu->priv1->int_mask_RW[class]);
+ 	out_be64(&spu->priv1->int_mask_RW[class], old_mask | mask);
+ }
+-EXPORT_SYMBOL_GPL(spu_int_mask_or);
+
+-void spu_int_mask_set(struct spu *spu, int class, u64 mask)
++static void int_mask_set(struct spu *spu, int class, u64 mask)
+ {
+ 	out_be64(&spu->priv1->int_mask_RW[class], mask);
+ }
+-EXPORT_SYMBOL_GPL(spu_int_mask_set);
+
+-u64 spu_int_mask_get(struct spu *spu, int class)
++static u64 int_mask_get(struct spu *spu, int class)
+ {
+ 	return in_be64(&spu->priv1->int_mask_RW[class]);
+ }
+-EXPORT_SYMBOL_GPL(spu_int_mask_get);
+
+-void spu_int_stat_clear(struct spu *spu, int class, u64 stat)
++static void int_stat_clear(struct spu *spu, int class, u64 stat)
+ {
+ 	out_be64(&spu->priv1->int_stat_RW[class], stat);
+ }
+-EXPORT_SYMBOL_GPL(spu_int_stat_clear);
+
+-u64 spu_int_stat_get(struct spu *spu, int class)
++static u64 int_stat_get(struct spu *spu, int class)
+ {
+ 	return in_be64(&spu->priv1->int_stat_RW[class]);
+ }
+-EXPORT_SYMBOL_GPL(spu_int_stat_get);
+
+-void spu_int_route_set(struct spu *spu, u64 route)
++static void int_route_set(struct spu *spu, u64 route)
+ {
+ 	out_be64(&spu->priv1->int_route_RW, route);
+ }
+-EXPORT_SYMBOL_GPL(spu_int_route_set);
+
+-u64 spu_mfc_dar_get(struct spu *spu)
++static u64 mfc_dar_get(struct spu *spu)
+ {
+ 	return in_be64(&spu->priv1->mfc_dar_RW);
+ }
+-EXPORT_SYMBOL_GPL(spu_mfc_dar_get);
+
+-u64 spu_mfc_dsisr_get(struct spu *spu)
++static u64 mfc_dsisr_get(struct spu *spu)
+ {
+ 	return in_be64(&spu->priv1->mfc_dsisr_RW);
+ }
+-EXPORT_SYMBOL_GPL(spu_mfc_dsisr_get);
+
+-void spu_mfc_dsisr_set(struct spu *spu, u64 dsisr)
++static void mfc_dsisr_set(struct spu *spu, u64 dsisr)
+ {
+ 	out_be64(&spu->priv1->mfc_dsisr_RW, dsisr);
+ }
+-EXPORT_SYMBOL_GPL(spu_mfc_dsisr_set);
+
+-void spu_mfc_sdr_set(struct spu *spu, u64 sdr)
++static void mfc_sdr_set(struct spu *spu, u64 sdr)
+ {
+ 	out_be64(&spu->priv1->mfc_sdr_RW, sdr);
+ }
+-EXPORT_SYMBOL_GPL(spu_mfc_sdr_set);
+
+-void spu_mfc_sr1_set(struct spu *spu, u64 sr1)
++static void mfc_sr1_set(struct spu *spu, u64 sr1)
+ {
+ 	out_be64(&spu->priv1->mfc_sr1_RW, sr1);
+ }
+-EXPORT_SYMBOL_GPL(spu_mfc_sr1_set);
+
+-u64 spu_mfc_sr1_get(struct spu *spu)
++static u64 mfc_sr1_get(struct spu *spu)
+ {
+ 	return in_be64(&spu->priv1->mfc_sr1_RW);
+ }
+-EXPORT_SYMBOL_GPL(spu_mfc_sr1_get);
+
+-void spu_mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
++static void mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
+ {
+ 	out_be64(&spu->priv1->mfc_tclass_id_RW, tclass_id);
+ }
+-EXPORT_SYMBOL_GPL(spu_mfc_tclass_id_set);
+
+-u64 spu_mfc_tclass_id_get(struct spu *spu)
++static u64 mfc_tclass_id_get(struct spu *spu)
+ {
+ 	return in_be64(&spu->priv1->mfc_tclass_id_RW);
+ }
+-EXPORT_SYMBOL_GPL(spu_mfc_tclass_id_get);
+
+-void spu_tlb_invalidate(struct spu *spu)
++static void smm_pgsz_set(struct spu *spu, u64 pgsz)
++{
++	u64 smm_hid;
++	smm_hid = in_be64(&spu->priv1->smm_hid);
++	smm_hid &= ~(0xfull << 60);
++	smm_hid |= pgsz << 60;
++	out_be64(&spu->priv1->smm_hid, smm_hid);
++}
++
++static void tlb_invalidate(struct spu *spu)
+ {
+ 	out_be64(&spu->priv1->tlb_invalidate_entry_W, 0ul);
+ }
+-EXPORT_SYMBOL_GPL(spu_tlb_invalidate);
+
+-void spu_resource_allocation_groupID_set(struct spu *spu, u64 id)
++static void resource_allocation_groupID_set(struct spu *spu, u64 id)
+ {
+ 	out_be64(&spu->priv1->resource_allocation_groupID_RW, id);
+ }
+-EXPORT_SYMBOL_GPL(spu_resource_allocation_groupID_set);
+
+-u64 spu_resource_allocation_groupID_get(struct spu *spu)
++static u64 resource_allocation_groupID_get(struct spu *spu)
+ {
+ 	return in_be64(&spu->priv1->resource_allocation_groupID_RW);
+ }
+-EXPORT_SYMBOL_GPL(spu_resource_allocation_groupID_get);
+
+-void spu_resource_allocation_enable_set(struct spu *spu, u64 enable)
++static void resource_allocation_enable_set(struct spu *spu, u64 enable)
+ {
+ 	out_be64(&spu->priv1->resource_allocation_enable_RW, enable);
+ }
+-EXPORT_SYMBOL_GPL(spu_resource_allocation_enable_set);
+
+-u64 spu_resource_allocation_enable_get(struct spu *spu)
++static u64 resource_allocation_enable_get(struct spu *spu)
+ {
+ 	return in_be64(&spu->priv1->resource_allocation_enable_RW);
+ }
+-EXPORT_SYMBOL_GPL(spu_resource_allocation_enable_get);
++
++const struct spu_priv1_ops spu_priv1_mmio_ops =
++{
++	.int_mask_and = int_mask_and,
++	.int_mask_or = int_mask_or,
++	.int_mask_set = int_mask_set,
++	.int_mask_get = int_mask_get,
++	.int_stat_clear = int_stat_clear,
++	.int_stat_get = int_stat_get,
++	.int_route_set = int_route_set,
++	.mfc_dar_get = mfc_dar_get,
++	.mfc_dsisr_get = mfc_dsisr_get,
++	.mfc_dsisr_set = mfc_dsisr_set,
++	.mfc_sdr_set = mfc_sdr_set,
++	.mfc_sr1_set = mfc_sr1_set,
++	.mfc_sr1_get = mfc_sr1_get,
++	.mfc_tclass_id_set = mfc_tclass_id_set,
++	.mfc_tclass_id_get = mfc_tclass_id_get,
++	.smm_pgsz_set = smm_pgsz_set,
++	.tlb_invalidate = tlb_invalidate,
++	.resource_allocation_groupID_set = resource_allocation_groupID_set,
++	.resource_allocation_groupID_get = resource_allocation_groupID_get,
++	.resource_allocation_enable_set = resource_allocation_enable_set,
++	.resource_allocation_enable_get = resource_allocation_enable_get,
++};
+Index: linux-powerpc.git/arch/powerpc/platforms/cell/spufs/hw_ops.c
+===================================================================
+--- linux-powerpc.git.orig/arch/powerpc/platforms/cell/spufs/hw_ops.c	2006-04-28 14:32:25.000000000 -0700
++++ linux-powerpc.git/arch/powerpc/platforms/cell/spufs/hw_ops.c	2006-04-28 14:34:06.000000000 -0700
+@@ -32,6 +32,7 @@
+
+ #include <asm/io.h>
+ #include <asm/spu.h>
++#include <asm/spu_priv1.h>
+ #include <asm/spu_csa.h>
+ #include <asm/mmu_context.h>
+ #include "spufs.h"
+Index: linux-powerpc.git/arch/powerpc/platforms/cell/spufs/switch.c
+===================================================================
+--- linux-powerpc.git.orig/arch/powerpc/platforms/cell/spufs/switch.c	2006-04-28 14:32:25.000000000 -0700
++++ linux-powerpc.git/arch/powerpc/platforms/cell/spufs/switch.c	2006-04-28 14:34:06.000000000 -0700
+@@ -46,6 +46,7 @@
+
+ #include <asm/io.h>
+ #include <asm/spu.h>
++#include <asm/spu_priv1.h>
+ #include <asm/spu_csa.h>
+ #include <asm/mmu_context.h>
+
+Index: linux-powerpc.git/include/asm-powerpc/spu.h
+===================================================================
+--- linux-powerpc.git.orig/include/asm-powerpc/spu.h	2006-04-28 14:34:06.000000000 -0700
++++ linux-powerpc.git/include/asm-powerpc/spu.h	2006-04-28 14:34:06.000000000 -0700
+@@ -182,30 +182,6 @@
+ }
+ #endif /* MODULE */
+
+-
+-/* access to priv1 registers */
+-void spu_int_mask_and(struct spu *spu, int class, u64 mask);
+-void spu_int_mask_or(struct spu *spu, int class, u64 mask);
+-void spu_int_mask_set(struct spu *spu, int class, u64 mask);
+-u64 spu_int_mask_get(struct spu *spu, int class);
+-void spu_int_stat_clear(struct spu *spu, int class, u64 stat);
+-u64 spu_int_stat_get(struct spu *spu, int class);
+-void spu_int_route_set(struct spu *spu, u64 route);
+-u64 spu_mfc_dar_get(struct spu *spu);
+-u64 spu_mfc_dsisr_get(struct spu *spu);
+-void spu_mfc_dsisr_set(struct spu *spu, u64 dsisr);
+-void spu_mfc_sdr_set(struct spu *spu, u64 sdr);
+-void spu_mfc_sr1_set(struct spu *spu, u64 sr1);
+-u64 spu_mfc_sr1_get(struct spu *spu);
+-void spu_mfc_tclass_id_set(struct spu *spu, u64 tclass_id);
+-u64 spu_mfc_tclass_id_get(struct spu *spu);
+-void spu_tlb_invalidate(struct spu *spu);
+-void spu_resource_allocation_groupID_set(struct spu *spu, u64 id);
+-u64 spu_resource_allocation_groupID_get(struct spu *spu);
+-void spu_resource_allocation_enable_set(struct spu *spu, u64 enable);
+-u64 spu_resource_allocation_enable_get(struct spu *spu);
+-
+-
+ /*
+  * This defines the Local Store, Problem Area and Privlege Area of an SPU.
+  */
+Index: linux-powerpc.git/include/asm-powerpc/spu_priv1.h
+===================================================================
+--- linux-powerpc.git.orig/include/asm-powerpc/spu_priv1.h	2006-04-21 13:04:41.284693750 -0700
++++ linux-powerpc.git/include/asm-powerpc/spu_priv1.h	2006-04-28 14:38:16.000000000 -0700
+@@ -0,0 +1,189 @@
++/*
++ * Defines an spu hypervisor abstraction layer.
++ *
++ *  Copyright 2006 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#if !defined(_SPU_PRIV1_H)
++#define _SPU_PRIV1_H
++#if defined(__KERNEL__)
++
++struct spu;
++
++/* access to priv1 registers */
++
++struct spu_priv1_ops
++{
++	void (*int_mask_and) (struct spu *spu, int class, u64 mask);
++	void (*int_mask_or) (struct spu *spu, int class, u64 mask);
++	void (*int_mask_set) (struct spu *spu, int class, u64 mask);
++	u64 (*int_mask_get) (struct spu *spu, int class);
++	void (*int_stat_clear) (struct spu *spu, int class, u64 stat);
++	u64 (*int_stat_get) (struct spu *spu, int class);
++	void (*int_route_set) (struct spu *spu, u64 route);
++	u64 (*mfc_dar_get) (struct spu *spu);
++	u64 (*mfc_dsisr_get) (struct spu *spu);
++	void (*mfc_dsisr_set) (struct spu *spu, u64 dsisr);
++	void (*mfc_sdr_set) (struct spu *spu, u64 sdr);
++	void (*mfc_sr1_set) (struct spu *spu, u64 sr1);
++	u64 (*mfc_sr1_get) (struct spu *spu);
++	void (*mfc_tclass_id_set) (struct spu *spu, u64 tclass_id);
++	u64 (*mfc_tclass_id_get) (struct spu *spu);
++	void (*smm_pgsz_set) (struct spu *spu, u64 pgsz);
++	void (*tlb_invalidate) (struct spu *spu);
++	void (*resource_allocation_groupID_set) (struct spu *spu, u64 id);
++	u64 (*resource_allocation_groupID_get) (struct spu *spu);
++	void (*resource_allocation_enable_set) (struct spu *spu, u64 enable);
++	u64 (*resource_allocation_enable_get) (struct spu *spu);
++};
++
++extern const struct spu_priv1_ops* spu_priv1_ops;
++
++static inline void
++spu_int_mask_and (struct spu *spu, int class, u64 mask)
++{
++	spu_priv1_ops->int_mask_and(spu, class, mask);
++}
++
++static inline void
++spu_int_mask_or (struct spu *spu, int class, u64 mask)
++{
++	spu_priv1_ops->int_mask_or(spu, class, mask);
++}
++
++static inline void
++spu_int_mask_set (struct spu *spu, int class, u64 mask)
++{
++	spu_priv1_ops->int_mask_set(spu, class, mask);
++}
++
++static inline u64
++spu_int_mask_get (struct spu *spu, int class)
++{
++	return spu_priv1_ops->int_mask_get(spu, class);
++}
++
++static inline void
++spu_int_stat_clear (struct spu *spu, int class, u64 stat)
++{
++	spu_priv1_ops->int_stat_clear(spu, class, stat);
++}
++
++static inline u64
++spu_int_stat_get (struct spu *spu, int class)
++{
++	return spu_priv1_ops->int_stat_get (spu, class);
++}
++
++static inline void
++spu_int_route_set (struct spu *spu, u64 route)
++{
++	spu_priv1_ops->int_stat_get(spu, route);
++}
++
++static inline u64
++spu_mfc_dar_get (struct spu *spu)
++{
++	return spu_priv1_ops->mfc_dar_get(spu);
++}
++
++static inline u64
++spu_mfc_dsisr_get (struct spu *spu)
++{
++	return spu_priv1_ops->mfc_dsisr_get(spu);
++}
++
++static inline void
++spu_mfc_dsisr_set (struct spu *spu, u64 dsisr)
++{
++	spu_priv1_ops->mfc_dsisr_set(spu, dsisr);
++}
++
++static inline void
++spu_mfc_sdr_set (struct spu *spu, u64 sdr)
++{
++	spu_priv1_ops->mfc_sdr_set(spu, sdr);
++}
++
++static inline void
++spu_mfc_sr1_set (struct spu *spu, u64 sr1)
++{
++	spu_priv1_ops->mfc_sr1_set(spu, sr1);
++}
++
++static inline u64
++spu_mfc_sr1_get (struct spu *spu)
++{
++	return spu_priv1_ops->mfc_sr1_get(spu);
++}
++
++static inline void
++spu_mfc_tclass_id_set (struct spu *spu, u64 tclass_id)
++{
++	spu_priv1_ops->mfc_tclass_id_set(spu, tclass_id);
++}
++
++static inline u64
++spu_mfc_tclass_id_get (struct spu *spu)
++{
++	return spu_priv1_ops->mfc_tclass_id_get(spu);
++}
++
++static inline void
++spu_smm_pgsz_set (struct spu *spu, u64 pgsz)
++{
++	spu_priv1_ops->smm_pgsz_set(spu, pgsz);
++}
++
++static inline void
++spu_tlb_invalidate (struct spu *spu)
++{
++	spu_priv1_ops->tlb_invalidate(spu);
++}
++
++static inline void
++spu_resource_allocation_groupID_set (struct spu *spu, u64 id)
++{
++	spu_priv1_ops->resource_allocation_groupID_set(spu, id);
++}
++
++static inline u64
++spu_resource_allocation_groupID_get (struct spu *spu)
++{
++	return spu_priv1_ops->resource_allocation_groupID_get(spu);
++}
++
++static inline void
++spu_resource_allocation_enable_set (struct spu *spu, u64 enable)
++{
++	spu_priv1_ops->resource_allocation_enable_set(spu, enable);
++}
++
++static inline u64
++spu_resource_allocation_enable_get (struct spu *spu)
++{
++	return spu_priv1_ops->resource_allocation_enable_get(spu);
++}
++
++/* The declarations folowing are put here for convenience
++ * and only intended to be used by the platform setup code
++ * for initializing spu_priv1_ops.
++ */
++
++extern const struct spu_priv1_ops spu_priv1_mmio_ops;
++
++#endif /* __KERNEL__ */
++#endif
