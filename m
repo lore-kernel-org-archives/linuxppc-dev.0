@@ -1,19 +1,17 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtai05.cox.net (fed1rmmtai05.cox.net [68.230.241.54])
-	by ozlabs.org (Postfix) with ESMTP id 4CBAB679F5
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 06:50:19 +1000 (EST)
-Date: Fri, 28 Apr 2006 12:44:57 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: FT u-boot shim
-Message-ID: <20060428194457.GA458@smtp.west.cox.net>
-References: <EA2821E8-FB7E-4DDA-8C18-C659B5483DC2@kernel.crashing.org>
-	<20060428191124.B202B353DAC@atlas.denx.de>
+Return-Path: <santil@us.ibm.com>
+Message-ID: <4452724D.7050800@us.ibm.com>
+Date: Fri, 28 Apr 2006 14:51:41 -0500
+From: Santiago Leon <santil@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060428191124.B202B353DAC@atlas.denx.de>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] powerpc: ibmveth: Harden driver initilisation for kexec
+References: <20060131041055.5623C68A46@ozlabs.org>	
+	<20060131042903.GF28896@krispykreme> <44074A22.8060705@us.ibm.com>	
+	<1143421876.7795.2.camel@localhost.localdomain>
+	<1146047837.10735.29.camel@localhost.localdomain>
+In-Reply-To: <1146047837.10735.29.camel@localhost.localdomain>
+Content-Type: multipart/mixed; boundary="------------020700020008030409020008"
+Cc: linuxppc64-dev@ozlabs.org, jgarzik@pobox.com, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,25 +21,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 28, 2006 at 09:11:24PM +0200, Wolfgang Denk wrote:
-> In message <EA2821E8-FB7E-4DDA-8C18-C659B5483DC2@kernel.crashing.org>
-> Kumar Gala wrote:
-> > 
-> > What I envision as the way one boots for something like u-boot is one  
-> > of three options:
-> > 1. using an old u-boot + boot wrapper (bd_t -> wrapper -> kernel)
-> > 2. using a u-boot that is ft aware + dtb (boot command in u-boot  
-> > takes kernel & dtb images, updates blob and passes to kernel)
-> > 3. using a u-boot that is ft aware + built in dtb.
-> > 
-> > The issue is that for a given system/board you may need to support  
-> > multiple or all three.  This raises the question where does the .dts  
-> 
-> Assuming we had 2., under which circumstances would we need 3. then?
+This is a multi-part message in MIME format.
+--------------020700020008030409020008
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Especially if we had mkuimage let you tack your dtb into the 'kernel'
-image.
+Michael Ellerman wrote:
+>>Looks like this hit the floor. Any chance of getting it into to 2.6.17
+>>Jeff? AFAICT it should still apply cleanly.
+>  
+> /me knocks politely
 
+Actually, it doesn't apply cleanly anymore.  Here's a patch that does.
 -- 
-Tom Rini
-http://gate.crashing.org/~trini/
+Santiago A. Leon
+Power Linux Development
+IBM Linux Technology Center
+
+--------------020700020008030409020008
+Content-Type: text/plain;
+ name="ibmveth_harden_init.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ibmveth_harden_init.patch"
+
+From: Michael Ellerman <michael@ellerman.id.au>
+
+After a kexec the ibmveth driver will fail when trying to register with the Hypervisor because the previous kernel has not unregistered.
+
+So if the registration fails, we unregister and then try again.
+
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Acked-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Santiago Leon <santil@us.ibm.com>
+
+ ibmveth.c |   31 ++++++++++++++++++++++++++-----
+ 1 file changed, 26 insertions(+), 5 deletions(-)
+
+Index: kexec/drivers/net/ibmveth.c
+===================================================================
+--- a/drivers/net/ibmveth.c	2006-04-28 13:16:22.244724056 -0500
++++ b/drivers/net/ibmveth.c	2006-04-28 13:29:49.429736784 -0500
+@@ -436,6 +436,31 @@ static void ibmveth_cleanup(struct ibmve
+ 		ibmveth_free_buffer_pool(adapter, &adapter->rx_buff_pool[i]);
+ }
+ 
++static int ibmveth_register_logical_lan(struct ibmveth_adapter *adapter,
++        union ibmveth_buf_desc rxq_desc, u64 mac_address)
++{
++	int rc, try_again = 1;
++
++	/* After a kexec the adapter will still be open, so our attempt to
++	* open it will fail. So if we get a failure we free the adapter and
++	* try again, but only once. */
++retry:
++	rc = h_register_logical_lan(adapter->vdev->unit_address,
++				    adapter->buffer_list_dma, rxq_desc.desc,
++				    adapter->filter_list_dma, mac_address);
++
++	if (rc != H_SUCCESS && try_again) {
++		do {
++			rc = h_free_logical_lan(adapter->vdev->unit_address);
++		} while (H_IS_LONG_BUSY(rc) || (rc == H_BUSY));
++
++		try_again = 0;
++		goto retry;
++	}
++
++	return rc;
++}
++
+ static int ibmveth_open(struct net_device *netdev)
+ {
+ 	struct ibmveth_adapter *adapter = netdev->priv;
+@@ -505,11 +530,7 @@ static int ibmveth_open(struct net_devic
+ 	ibmveth_debug_printk("receive q   @ 0x%p\n", adapter->rx_queue.queue_addr);
+ 
+     
+-	lpar_rc = h_register_logical_lan(adapter->vdev->unit_address,
+-					 adapter->buffer_list_dma,
+-					 rxq_desc.desc,
+-					 adapter->filter_list_dma,
+-					 mac_address);
++	lpar_rc = ibmveth_register_logical_lan(adapter, rxq_desc, mac_address);
+ 
+ 	if(lpar_rc != H_SUCCESS) {
+ 		ibmveth_error_printk("h_register_logical_lan failed with %ld\n", lpar_rc);
+
+--------------020700020008030409020008--
