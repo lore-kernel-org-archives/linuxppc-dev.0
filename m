@@ -1,19 +1,24 @@
-Return-Path: <mrmacman_g4@mac.com>
-Received: from smtpout.mac.com (smtpout.mac.com [17.250.248.176])
-	by ozlabs.org (Postfix) with ESMTP id 3B347679E0
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 15:11:19 +1000 (EST)
-In-Reply-To: <4450A183.6030405@de.ibm.com>
-References: <4450A183.6030405@de.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v746.3)
+Return-Path: <info@schihei.de>
+Received: from schihei.org (schihei.net [81.169.184.117])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 939F5679EA
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 16:11:36 +1000 (EST)
+In-Reply-To: <1146177388.19236.1.camel@localhost.localdomain>
+References: <4450A176.9000008@de.ibm.com>
+	<20060427114355.GB32127@wohnheim.fh-wedel.de>
+	<1146177388.19236.1.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v749.3)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <12A9A218-DC60-4944-892D-150DF2D88F0C@mac.com>
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH 06/16] ehca: common include files
-Date: Fri, 28 Apr 2006 01:11:11 -0400
-To: Heiko J Schick <schihei@de.ibm.com>
+Message-Id: <6C4A3B96-4752-4FF9-8FBE-C383B00AE014@schihei.de>
+From: Heiko J Schick <info@schihei.de>
+Subject: Re: [openib-general] Re: [PATCH 04/16] ehca: userspace support
+Date: Fri, 28 Apr 2006 08:11:08 +0200
+To: Michael Ellerman <michael@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
 	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>,
+	=?ISO-8859-1?Q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Apr 27, 2006, at 06:48:35, Heiko J Schick wrote:
-> +#define EHCA_EDEB_TRACE_MASK_SIZE 32
-> +extern u8 ehca_edeb_mask[EHCA_EDEB_TRACE_MASK_SIZE];
-> +#define EDEB_ID_TO_U32(str4) (str4[3] | (str4[2] << 8) | (str4[1]  
-> << 16) | \
-> +			      (str4[0] << 24))
-> +
-> +inline static u64 ehca_edeb_filter(const u32 level,
-> +				   const u32 id, const u32 line)
-> +{
-> +	u64 ret = 0;
-> +	u32 filenr = 0;
-> +	u32 filter_level = 9;
-> +	u32 dynamic_level = 0;
-> +
-> +	/* This is code written for the gcc -O2 optimizer which should  
-> colapse
-> +	 * to two single ints filter_level is the first level kicked out by
-> +	 * compiler means trace everythin below 6. */
-> +	if (id == EDEB_ID_TO_U32("ehav")) {
-> +		filenr = 0x01;
-> +		filter_level = 8;
-> +	}
-> [...]
+Hello Michael,
 
-This whole mess should be a simpler with a table and a loop
+On 28.04.2006, at 00:36, Michael Ellerman wrote:
 
-struct edeb_filter_entry {
-	u32 filenr;
-	u32 filter_level;
-};
+> Try pr_debug() in include/linux/kernel.h
 
-# define EDEB_FILTER_ENTRY(name,nr,level) { .id = name, .filenr =  
-nr, .filter_level = level }
-static const struct edeb_filter_entry edeb_filter_table[] = {
-	EDEB_FILTER_ENTRY("clas", 0x02, 8),
-	[...]
-};
+The problem I see with pr_debug() is that it could only activated via
+a compile flag. To use the debug outputs you have to re-compile /  
+compile
+your own kernel.
 
-Then just iterate over that table in a loop.  The end result is much  
-smaller code and data, and much clearer as to intent as well.
-
-Cheers,
-Kyle Moffett
+Regards,
+	Heiko
