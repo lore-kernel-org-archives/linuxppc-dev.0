@@ -1,28 +1,19 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 63D16679E1
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 09:04:04 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k3SN41Ya001802
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 19:04:01 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k3SN41Ok254418
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 19:04:01 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k3SN41Lb011127
-	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 19:04:01 -0400
-Date: Fri, 28 Apr 2006 18:04:01 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: PCI init vs. memory init
-Message-ID: <20060428230401.GF22621@austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8067F679EA
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 09:07:23 +1000 (EST)
+To: Tom Rini <trini@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: FT u-boot shim 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 28 Apr 2006 12:44:57 PDT."
+	<20060428194457.GA458@smtp.west.cox.net>
+Date: Sat, 29 Apr 2006 01:07:20 +0200
+Sender: wd@denx.de
+Message-Id: <20060428230720.7C0CB353DAC@atlas.denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,25 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Dear Tom,
 
-Paul,
+in message <20060428194457.GA458@smtp.west.cox.net> you wrote:
+>
+> > > 3. using a u-boot that is ft aware + built in dtb.
+...
+> > Assuming we had 2., under which circumstances would we need 3. then?
+> 
+> Especially if we had mkuimage let you tack your dtb into the 'kernel'
+> image.
 
-I'd previously reported a problem where the PCI subsystem 
-was getting inited before the memory subsystem. In the unusual
-case of an EEH failure, this resulted in a crash in kmalloc,
-which I hacked around with a if(!mem_init_done).
+Sorry, but I don't understand. If we have the dtb combined  with  the
+kernel  image,  then  why would we need another copy of the dtb built
+into U-Boot?
 
-You mentioned that the sequence of inits seemed wrong, that the 
-PCI init should be done later, after the memory init. I think
-I agree; but when I took a very very quick look at the code, there 
-was no obvious hook in later init to move the PCI init over to. 
+Best regards,
 
-Are you pursuing this further? Should I dig into it?  Any bright
-ideas? Am I missing something obvious?  
+Wolfgang Denk
 
-There are several spots in in the powerpc PCI init code where 
-a boot_mem alloc is used instead of kmalloc, and this boot_mem is 
-then hacked around in the case of a PCI hotplug remove.  It would 
-be nice to fix this...
-
---linas
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A day without sunshine is like night.
