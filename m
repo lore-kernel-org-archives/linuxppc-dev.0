@@ -1,20 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4F91F679E1
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 23:12:59 +1000 (EST)
+Received: from verein.lst.de (localhost [127.0.0.1])
+	by mail.lst.de (8.12.3/8.12.3/Debian-7.1) with ESMTP id k3SDCsRT000637
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Fri, 28 Apr 2006 15:12:55 +0200
+Received: (from hch@localhost)
+	by verein.lst.de (8.12.3/8.12.3/Debian-6.6) id k3SDCs5D000635
+	for linuxppc-dev@ozlabs.org; Fri, 28 Apr 2006 15:12:54 +0200
+Date: Fri, 28 Apr 2006 15:12:54 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: linuxppc-dev@ozlabs.org
+Subject: sign extension for 32bit syscalls on ppc64
+Message-ID: <20060428131254.GA507@lst.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17489.64606.75404.314368@cargo.ozlabs.ibm.com>
-Date: Fri, 28 Apr 2006 21:28:30 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: FT u-boot shim
-In-Reply-To: <1448E56E-1327-40D5-BE44-0DC103AC3E8A@kernel.crashing.org>
-References: <4C61B597-BD91-4D05-BB40-43DE0319F123@kernel.crashing.org>
-	<265F73F8-F641-4EDD-B88F-A2B2F7FA1308@kernel.crashing.org>
-	<20060425182418.GA1132@gate.ebshome.net>
-	<200604251329.35584.bcook@bpointsys.com>
-	<248CD1B3-A33B-47F5-AFE8-F7C9DDCD1D0B@kernel.crashing.org>
-	<20060425185314.GC1132@gate.ebshome.net>
-	<1448E56E-1327-40D5-BE44-0DC103AC3E8A@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+For 32bit syscalls implemented in arch/powerpc/ we're doing our own
+sign-extension where an int argument is passed as u32 in the prototype
+and then casted to int later on:
 
-> If we have a u-boot shim there are some questions that need answering:
-> * where should the .dts live (hate duplicating the file both in u- 
-> boot and kernel source tree)
-> * how does build system find .dts
-> * a Kconfig option to enable shim
-> * assume done as a boot wrapper of sorts
+asmlinkage long compat_sys_sendfile(u32 out_fd, u32 in_fd, compat_off_t
+__user * offset, u32 count)
 
-What I think would be useful is a stand-alone tool that would take a
-kernel and a dts and construct an image that is bootable on a given
-board by its existing firmware.  That means there would either need to
-be a version of the tool for each firmware, or alternatively a set of
-command-line options to tell it what sort of firmware you have.
+{
+	...
+	ret = sys_sendfile((int)out_fd, (int)in_fd, up, count);
+	..
+}
 
-This wouldn't have to be done at kernel build time; it could be
-potentially be done much later.  Hopefully then the board vendors
-could take on the job of generating the dts.  In fact for some boards
-the board-support package could be just the dts.
+OTOH various syscalls in the generic code don't do that and it seems to
+still work fine.  I have patches for various new generic compat
+routines, and they all seem to work fine without this sign extension.
 
-This tool would need to insert a suitable shim, which might actually
-need to contain code to pull stuff out of a firmware-specific
-structure such as a bd_t, and stuff it into the dts.  That should be
-doable provided there is a convention about labels in the dts for
-things such as memory size, ethernet mac address, etc.
-
-Clearly it is neater if the firmware can supply the device-tree blob
-directly, and just boot a raw kernel.  However, there will always be
-situations where we don't get to choose the firmware, so I think we
-need this tool.
-
-Paul.
+What's the exact sign extention rules for ppc64?
