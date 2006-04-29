@@ -1,17 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 147EF679F5
-	for <linuxppc-dev@ozlabs.org>; Sun, 30 Apr 2006 01:20:52 +1000 (EST)
-Date: Sat, 29 Apr 2006 10:19:36 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: please pull powerpc.git 'merge' branch
-Message-ID: <20060429151936.GM5518@pb15.lixom.net>
-References: <17491.1134.565353.149941@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17491.1134.565353.149941@cargo.ozlabs.ibm.com>
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, torvalds@osdl.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1EC38679F9
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Apr 2006 01:33:35 +1000 (EST)
+In-Reply-To: <20060429083743.64CA7353A56@atlas.denx.de>
+References: <20060429083743.64CA7353A56@atlas.denx.de>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <DD3A7629-F190-49A5-BF90-A1097CC42AF2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: FT u-boot shim 
+Date: Sat, 29 Apr 2006 10:33:24 -0500
+To: Wolfgang Denk <wd@denx.de>
+Cc: Tom Rini <trini@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Apr 29, 2006 at 04:15:10PM +1000, Paul Mackerras wrote:
 
-> Anton Blanchard:
->       powerpc: Add cputable entry for POWER6
+On Apr 29, 2006, at 3:37 AM, Wolfgang Denk wrote:
 
-I never saw this posted to the list.
+> In message <20060429005231.GH458@smtp.west.cox.net> you wrote:
+>>
+>>> In my understanding, 1. is with a shim; 2. is loading a separate   
+>>> dtb
+>>> (probably  as  multi-file  image), and 3. is when U-Boot provides  
+>>> the
+>>> dtb. Am I missing something?
+>>
+>> I'm suggesting that we make 2 easier.  U-Boot needs the file  
+>> mkuimage'd
+>> anyways.  Why not make it easier and make adding the dtb part of that
+>> step instead of a seperate load?  It's still quite easy to replace if
+>> you're testing new dtb's out.
+>
+> But that's what I'm trying to  tell  you  all  the  time.  An  U-Boot
+> multi-file  image is a single file (=no separate load) which combines
+> several files (similar to a  tarball),  here  the  kernel  +  dtb  (+
+> eventually ramdisk).
 
-+#define PPC_FEATURE_ARCH_2_05 0x00001000
+This was my intent for #2.  You could either provide an explicit  
+image or use a multi-file image.  I was going to look at having the  
+default build target that we use for uImage create a multi file image  
+(kernel & dtb) so the user still only sees one image.
 
-Previously we've said implementation instead of specification
-("PPC_FEATURE_POWER5_PLUS" etc). That's better than saying base
-architecture version, since there are parts of the arch that might or
-might not be implemented (i.e. optional features, etc).
-
-> Paul Mackerras:
->       powerpc/pseries: Tell firmware our capabilities on new machines
-
-I never saw this one on the list either.
-
-Don't you want to fall back to the ELF method if the prom call fails
-(ret != 0)? Right you close and return.
-
-
--Olof
+- kumar
