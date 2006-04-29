@@ -1,20 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id DC98C679EB
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 12:38:36 +1000 (EST)
-Date: Sat, 29 Apr 2006 12:38:29 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <akpm@osdl.org>
+Date: Fri, 28 Apr 2006 19:47:46 -0700
+From: Andrew Morton <akpm@osdl.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC , PATCH] support for the ibm,pa_features cpu property
-Message-Id: <20060429123829.4d25b125.sfr@canb.auug.org.au>
-In-Reply-To: <17490.52602.577587.524391@cargo.ozlabs.ibm.com>
-References: <1146249684.27214.18.camel@localhost.localdomain>
-	<17490.52602.577587.524391@cargo.ozlabs.ibm.com>
+Subject: Re: [PATCH 0/4] NUMA support for spufs
+Message-Id: <20060428194746.531b1a4f.akpm@osdl.org>
+In-Reply-To: <17490.53283.417700.559725@cargo.ozlabs.ibm.com>
+References: <20060429011827.502138000@localhost.localdomain>
+	<17490.53283.417700.559725@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__29_Apr_2006_12_38_29_+1000_eK_sGbzpt6aijjoC"
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org, arnd@arndb.de,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__29_Apr_2006_12_38_29_+1000_eK_sGbzpt6aijjoC
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Paul,
-
-On Sat, 29 Apr 2006 12:20:42 +1000 Paul Mackerras <paulus@samba.org> wrote:
+Paul Mackerras <paulus@samba.org> wrote:
 >
-> +	/* find descriptor with type =3D=3D 0 */
-> +	for (;;) {
-> +		if (tablelen < 3 || tablelen < 2 + pa_feature_table[1])
-                                                                    ^
-Shouldn't that be 0?
+> Arnd Bergmann writes:
+> 
+> > The current version of spufs breaks upon boot when NUMA support is enabled.
+> > I'd like to fix that before 2.6.17 so we can use the same kernel image
+> > on Cell that we use on other powerpc systems using NUMA.
+> 
+> Andrew,
+> 
+> If 2/4 of this series looks OK to you to go into 2.6.17,
 
-> +			goto out;	/* not found */
-> +		if (pa_feature_table[0] =3D=3D 0)
-                                     ^
-And this 1?
+OK by me.  1/4 touches __add_pages(), which it undergoing quite a bit of
+churn at present, but we'll work it out.
 
-> +			break;
-> +		tablelen -=3D 2 + pa_feature_table[1];
-                                                 ^
-0
+> let me know
+> and I'll push the others to Linus (or you can if you prefer).
 
-> +		pa_feature_table +=3D 2 + pa_feature_table[1];
-                                                         ^
-0
-
-> +	}
-> +
-> +	/* check if the specifier is long enough */
-> +	if (pabyte >=3D pa_feature_table[1])
-                                       ^
-0
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__29_Apr_2006_12_38_29_+1000_eK_sGbzpt6aijjoC
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQFEUtGmFdBgD/zoJvwRAm8SAJ0R4fQklSv9kHWBDDhXdgy2KKD6lgCfQGXS
-cZSqIzQeOvKpRmUYfWRnsTM=
-=q2v1
------END PGP SIGNATURE-----
-
---Signature=_Sat__29_Apr_2006_12_38_29_+1000_eK_sGbzpt6aijjoC--
+I'll queue all four for the next batch (within the next 48 hours).  If you
+merge them first then no probs.
