@@ -1,12 +1,26 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17491.1134.565353.149941@cargo.ozlabs.ibm.com>
-Date: Sat, 29 Apr 2006 16:15:10 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: please pull powerpc.git 'merge' branch
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <info@schihei.de>
+Received: from schihei.org (schihei.net [81.169.184.117])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A207F679EA
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 16:39:20 +1000 (EST)
+In-Reply-To: <84144f020604272332s6101032cy6936096230f3637c@mail.gmail.com>
+References: <4450A176.9000008@de.ibm.com>
+	<20060427114355.GB32127@wohnheim.fh-wedel.de>
+	<1146177388.19236.1.camel@localhost.localdomain>
+	<6C4A3B96-4752-4FF9-8FBE-C383B00AE014@schihei.de>
+	<84144f020604272332s6101032cy6936096230f3637c@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4044CACC-FB5A-415E-8974-27136269B5C1@schihei.de>
+From: Heiko J Schick <info@schihei.de>
+Subject: Re: [openib-general] Re: [PATCH 04/16] ehca: userspace support
+Date: Sat, 29 Apr 2006 08:38:46 +0200
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>,
+	=?ISO-8859-1?Q? J=F6rn_Engel ?= <joern@wohnheim.fh-wedel.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,87 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Hello,
 
-Please do a pull from the "merge" branch of
+On 28.04.2006, at 08:32, Pekka Enberg wrote:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+>> The problem I see with pr_debug() is that it could only activated via
+>> a compile flag. To use the debug outputs you have to re-compile /
+>> compile your own kernel.
+>
+> Do you really need this heavy debug logging in the first place? You
+> can use kprobes for arbitrary run-time inspection anyway, so logging
+> everything seems wasteful.
 
-to get the following powerpc updates.  They are mostly bug-fixes;
-there is also a defconfig update for Cell, plus a couple of commits
-that will enable the kernel to run on forthcoming IBM machines.
-These don't affect anything on the current machines, since the
-firmware properties and methods they use aren't present.
+The problem I see with kprobes is that you have to set several kernel
+configuration options (e.g. CONFIG_KPROBES, CONFIG_DEBUG_INFO, etc.)
+on compile time to use it. Same problem with pr_debug().
 
-Thanks,
-Paul.
-
-Alan Modra:
-      powerpc64: Fix loading of modules without a .toc section
-
-Andreas Schwab:
-      sound/ppc: snd_pmac_toonie_init should be __init
-      powerpc: Wire up *at syscalls
-
-Anton Blanchard:
-      powerpc: Add cputable entry for POWER6
-
-Arnd Bergmann:
-      spufs: Disable local interrupts for SPE hash_page calls.
-      powerpc: update cell_defconfig
-
-David Gibson:
-      powerpc: Fix pagetable bloat for hugepages
-
-David Woodhouse:
-      powerpc: Use check_legacy_ioport() on ppc32 too.
-
-Eugene Surovegin:
-      ppc32: add 440GX erratum 440_43 workaround
-
-Paul Mackerras:
-      powerpc/pseries: Tell firmware our capabilities on new machines
-
-Vitaly Bordug:
-      ppc32: odd fixes and improvements in ppc_sys
-      ppc32 CPM_UART: Convert to use platform devices
-      ppc32: Update board-specific code of the CPM UART users
-      ppc32 CPM_UART: Fixed odd address translations
-
- arch/powerpc/configs/cell_defconfig         |   40 ++--
- arch/powerpc/kernel/cputable.c              |   16 +
- arch/powerpc/kernel/module_64.c             |   16 +
- arch/powerpc/kernel/prom_init.c             |  112 ++++++++++
- arch/powerpc/kernel/setup-common.c          |    8 +
- arch/powerpc/kernel/setup_64.c              |    8 -
- arch/powerpc/kernel/systbl.S                |   13 +
- arch/powerpc/mm/hugetlbpage.c               |  295 ++++++++++++++++++++++++---
- arch/powerpc/mm/init_64.c                   |    7 +
- arch/powerpc/platforms/cell/spu_base.c      |   10 +
- arch/powerpc/platforms/cell/spu_callbacks.c |   13 +
- arch/ppc/platforms/4xx/ocotea.c             |    2 
- arch/ppc/platforms/mpc8272ads_setup.c       |  114 ++++++++++
- arch/ppc/platforms/mpc866ads_setup.c        |  140 +++++++++++++
- arch/ppc/platforms/mpc885ads_setup.c        |  131 ++++++++++++
- arch/ppc/platforms/pq2ads.c                 |   31 +++
- arch/ppc/syslib/ibm440gx_common.c           |   13 +
- arch/ppc/syslib/ibm440gx_common.h           |    4 
- arch/ppc/syslib/mpc8xx_devices.c            |   25 ++
- arch/ppc/syslib/ppc_sys.c                   |    4 
- arch/ppc/syslib/pq2_sys.c                   |    8 -
- drivers/block/floppy.c                      |    2 
- drivers/input/serio/i8042-io.h              |    4 
- drivers/serial/cpm_uart/cpm_uart.h          |   49 ++++
- drivers/serial/cpm_uart/cpm_uart_core.c     |  280 ++++++++++++++++++++------
- drivers/serial/cpm_uart/cpm_uart_cpm1.c     |   54 -----
- drivers/serial/cpm_uart/cpm_uart_cpm2.c     |   14 -
- fs/stat.c                                   |    2 
- include/asm-powerpc/cputable.h              |   14 +
- include/asm-powerpc/io.h                    |    6 -
- include/asm-powerpc/page_64.h               |    1 
- include/asm-powerpc/pgalloc.h               |    2 
- include/asm-powerpc/unistd.h                |   20 ++
- include/asm-ppc/ppc_sys.h                   |    2 
- include/asm-ppc/reg_booke.h                 |    1 
- sound/ppc/toonie.c                          |    2 
- 36 files changed, 1234 insertions(+), 229 deletions(-)
+Regards,
+	Heiko
