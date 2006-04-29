@@ -1,15 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17490.51212.357234.664398@cargo.ozlabs.ibm.com>
-Date: Sat, 29 Apr 2006 11:57:32 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [RFC , PATCH] support for the ibm,pa_features cpu property
-In-Reply-To: <20060428192149.GJ5518@pb15.lixom.net>
-References: <1146249684.27214.18.camel@localhost.localdomain>
-	<20060428192149.GJ5518@pb15.lixom.net>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/3] powerpc: Make rtas console _much_ faster
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200604290245.57507.arnd@arndb.de>
+References: <20060429004019.126937000@localhost.localdomain>
+	<200604290245.57507.arnd@arndb.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Wjcki+kFBXd9yGX5NeKB"
+Date: Sat, 29 Apr 2006 11:56:57 +1000
+Message-Id: <1146275817.14733.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +24,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson writes:
 
-> Do you know why they went for this brand new extra architected bitfield
-> instead of continuing down the way that processor features always have
-> been documented before, by adding a property to the cpu device node?
+--=-Wjcki+kFBXd9yGX5NeKB
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-They wanted to cover basically everything that we have CPU feature
-bits for, plus some other things.  That would have been a lot of new
-properties, so they went for one that had a bitmap in it, and made it
-extensible in two different directions for good measure while they
-were at it. :)
+I'll clean this one up a little before merging it as per Ryan's email of
+a week or two ago. New patch today or tomorrow.
 
-> (Now, the naming convention of calling it a "pa feature" is unfortunate,
-> but nothing I can really complain about since our stuff is not yet in
-> tree.)
+Even though this is 1/3 the rest of the series should be fine to merge,
+right Arnd?
 
-The "pa" is just "processor architecture", nothing to do with your
-employer. :)
+cheers
 
-Paul.
+On Sat, 2006-04-29 at 02:45 +0200, Arnd Bergmann wrote:
+> Currently the hvc_rtas driver is painfully slow to use. Our "benchmark" i=
+s
+> ls -R /etc, which spits out about 27866 characters. The theoretical maxim=
+um
+> speed would be about 2.2 seconds, the current code takes ~50 seconds.
+>=20
+> The core of the problem is that sometimes when the tty layer asks us to p=
+ush
+> characters the firmware isn't able to handle some or all of them, and so
+> returns an error. The current code sees this and just returns to the tty =
+code
+> with the buffer half sent.
+>=20
+> There's the khvcd thread which will eventually wake up and try to push mo=
+re
+> characters, that will usually work because the firmware's had time to pus=
+h
+> the characters out. But the thread only wakes up every 10 milliseconds, w=
+hich
+> isn't fast enough.
+>=20
+> There's already code in the hvc_console driver to make the khvcd thread d=
+o
+> a "quick" loop, where it just calls yield() instead of sleeping. The only=
+ code
+> that triggered that behaviour was recently removed though, which I don't
+> quite understand.
+>=20
+> Still, if we set HVC_POLL_QUICK whenever the push hvc_push() doesn't push=
+ all
+> characters (ie. RTAS blocks), we can get good performance out of the hvc_=
+rtas
+> backend. With this patch the "benchmark" takes ~2.8 seconds.
+>=20
+> Cc: Ryan Arnold <rsa@us.ibm.com>
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+>=20
+> ---
+>=20
+>  drivers/char/hvc_console.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> Index: linus-2.6/drivers/char/hvc_console.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linus-2.6.orig/drivers/char/hvc_console.c
+> +++ linus-2.6/drivers/char/hvc_console.c
+> @@ -570,7 +570,7 @@ static int hvc_poll(struct hvc_struct *h
+>  		hvc_push(hp);
+>  	/* Reschedule us if still some write pending */
+>  	if (hp->n_outbuf > 0)
+> -		poll_mask |=3D HVC_POLL_WRITE;
+> +		poll_mask |=3D HVC_POLL_WRITE | HVC_POLL_QUICK;
+> =20
+>  	/* No tty attached, just skip */
+>  	tty =3D hp->tty;
+>=20
+> --
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-Wjcki+kFBXd9yGX5NeKB
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBEUsfodSjSd0sB4dIRAu44AJ9IvqVQ7yr80ifObCySAID1TprrMwCgnZkp
+ln8rPHvHMiDp5rRxiKRne8c=
+=cmwQ
+-----END PGP SIGNATURE-----
+
+--=-Wjcki+kFBXd9yGX5NeKB--
