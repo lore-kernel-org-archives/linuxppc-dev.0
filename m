@@ -1,15 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Message-Id: <200604290245.57507.arnd@arndb.de>
-References: <20060429004019.126937000@localhost.localdomain>
-Date: Sat, 29 Apr 2006 02:45:56 +0200
-From: Arnd Bergmann <arnd@arndb.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/3] powerpc: Make rtas console _much_ faster
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 580EB679E6
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 10:52:33 +1000 (EST)
+Date: Fri, 28 Apr 2006 17:52:31 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: FT u-boot shim
+Message-ID: <20060429005231.GH458@smtp.west.cox.net>
+References: <20060428232211.GE458@smtp.west.cox.net>
+	<20060429003232.9926C353DAC@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060429003232.9926C353DAC@atlas.denx.de>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,50 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently the hvc_rtas driver is painfully slow to use. Our "benchmark" is
-ls -R /etc, which spits out about 27866 characters. The theoretical maximum
-speed would be about 2.2 seconds, the current code takes ~50 seconds.
+On Sat, Apr 29, 2006 at 02:32:32AM +0200, Wolfgang Denk wrote:
+> In message <20060428232211.GE458@smtp.west.cox.net> you wrote:
+> >
+> > You wouldn't have the dtb combined in the kernel image, unless you have
+> > the shim.   This is instead of loading a separate dtb anyhow.
+> 
+> Now you got me completely confused. [Maybe I should go to bed.]
+> 
+> Kumar wrote:
+> 
+> > What I envision as the way one boots for something like u-boot is one  
+> > of three options:
+> > 1. using an old u-boot + boot wrapper (bd_t -> wrapper -> kernel)
+> > 2. using a u-boot that is ft aware + dtb (boot command in u-boot  
+> > takes kernel & dtb images, updates blob and passes to kernel)
+> > 3. using a u-boot that is ft aware + built in dtb.
+> 
+> In my understanding, 1. is with a shim; 2. is loading a separate  dtb
+> (probably  as  multi-file  image), and 3. is when U-Boot provides the
+> dtb. Am I missing something?
 
-The core of the problem is that sometimes when the tty layer asks us to push
-characters the firmware isn't able to handle some or all of them, and so
-returns an error. The current code sees this and just returns to the tty code
-with the buffer half sent.
+I'm suggesting that we make 2 easier.  U-Boot needs the file mkuimage'd
+anyways.  Why not make it easier and make adding the dtb part of that
+step instead of a seperate load?  It's still quite easy to replace if
+you're testing new dtb's out.
 
-There's the khvcd thread which will eventually wake up and try to push more
-characters, that will usually work because the firmware's had time to push
-the characters out. But the thread only wakes up every 10 milliseconds, which
-isn't fast enough.
-
-There's already code in the hvc_console driver to make the khvcd thread do
-a "quick" loop, where it just calls yield() instead of sleeping. The only code
-that triggered that behaviour was recently removed though, which I don't
-quite understand.
-
-Still, if we set HVC_POLL_QUICK whenever the push hvc_push() doesn't push all
-characters (ie. RTAS blocks), we can get good performance out of the hvc_rtas
-backend. With this patch the "benchmark" takes ~2.8 seconds.
-
-Cc: Ryan Arnold <rsa@us.ibm.com>
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-
----
-
- drivers/char/hvc_console.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linus-2.6/drivers/char/hvc_console.c
-===================================================================
---- linus-2.6.orig/drivers/char/hvc_console.c
-+++ linus-2.6/drivers/char/hvc_console.c
-@@ -570,7 +570,7 @@ static int hvc_poll(struct hvc_struct *h
- 		hvc_push(hp);
- 	/* Reschedule us if still some write pending */
- 	if (hp->n_outbuf > 0)
--		poll_mask |= HVC_POLL_WRITE;
-+		poll_mask |= HVC_POLL_WRITE | HVC_POLL_QUICK;
- 
- 	/* No tty attached, just skip */
- 	tty = hp->tty;
-
---
+-- 
+Tom Rini
+http://gate.crashing.org/~trini/
