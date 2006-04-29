@@ -1,10 +1,10 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20060429011908.790087000@localhost.localdomain>
+Message-Id: <20060429011908.122296000@localhost.localdomain>
 References: <20060429011827.502138000@localhost.localdomain>
-Date: Sat, 29 Apr 2006 03:18:30 +0200
+Date: Sat, 29 Apr 2006 03:18:28 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 3/4] powerpc: Allow devices to register with numa topology
+Subject: [PATCH 1/4] spufs: fix for CONFIG_NUMA
 Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org
@@ -17,184 +17,276 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jeremy Kerr <jk@ozlabs.org>
+From: Joel H Schopp <jschopp@us.ibm.com>
 
-Change of_node_to_nid() to traverse the device tree, looking for a numa
-id. Cell uses this to assign ids to SPUs, which are children of the CPU
-node. Existing users of of_node_to_nid() are altered to use
-of_node_to_nid_single(), which doesn't do the traversal.
+Based on an older patch from  Mike Kravetz <kravetz@us.ibm.com>
 
-Export an attach_sysdev_to_node() function, allowing system devices (eg.
-SPUs) to link themselves into the numa topology in sysfs.
+We need to have a mem_map for high addresses in order to make
+fops->no_page work on spufs mem and register files. So far, we
+have used the memory_present() function during early bootup,
+but that did not work when CONFIG_NUMA was enabled.
+
+We now use the __add_pages() function to add the mem_map
+when loading the spufs module, which is a lot nicer.
 
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 ---
-Index: linus-2.6/arch/powerpc/mm/numa.c
+Index: linus-2.6/arch/powerpc/platforms/cell/setup.c
 ===================================================================
---- linus-2.6.orig/arch/powerpc/mm/numa.c	2006-04-29 01:50:25.000000000 +0200
-+++ linus-2.6/arch/powerpc/mm/numa.c	2006-04-29 02:02:28.000000000 +0200
-@@ -194,7 +194,7 @@
- /* Returns nid in the range [0..MAX_NUMNODES-1], or -1 if no useful numa
-  * info is found.
-  */
--static int of_node_to_nid(struct device_node *device)
-+static int of_node_to_nid_single(struct device_node *device)
+--- linus-2.6.orig/arch/powerpc/platforms/cell/setup.c	2006-04-29 02:51:29.000000000 +0200
++++ linus-2.6/arch/powerpc/platforms/cell/setup.c	2006-04-29 02:51:33.000000000 +0200
+@@ -29,6 +29,8 @@
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
+ #include <linux/console.h>
++#include <linux/mutex.h>
++#include <linux/memory_hotplug.h>
+ 
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+@@ -46,6 +48,7 @@
+ #include <asm/cputable.h>
+ #include <asm/ppc-pci.h>
+ #include <asm/irq.h>
++#include <asm/spu.h>
+ 
+ #include "interrupt.h"
+ #include "iommu.h"
+@@ -69,77 +72,6 @@
+ 	of_node_put(root);
+ }
+ 
+-#ifdef CONFIG_SPARSEMEM
+-static int __init find_spu_node_id(struct device_node *spe)
+-{
+-	unsigned int *id;
+-#ifdef CONFIG_NUMA
+-	struct device_node *cpu;
+-	cpu = spe->parent->parent;
+-	id = (unsigned int *)get_property(cpu, "node-id", NULL);
+-#else
+-	id = NULL;
+-#endif
+-	return id ? *id : 0;
+-}
+-
+-static void __init cell_spuprop_present(struct device_node *spe,
+-				       const char *prop, int early)
+-{
+-	struct address_prop {
+-		unsigned long address;
+-		unsigned int len;
+-	} __attribute__((packed)) *p;
+-	int proplen;
+-
+-	unsigned long start_pfn, end_pfn, pfn;
+-	int node_id;
+-
+-	p = (void*)get_property(spe, prop, &proplen);
+-	WARN_ON(proplen != sizeof (*p));
+-
+-	node_id = find_spu_node_id(spe);
+-
+-	start_pfn = p->address >> PAGE_SHIFT;
+-	end_pfn = (p->address + p->len + PAGE_SIZE - 1) >> PAGE_SHIFT;
+-
+-	/* We need to call memory_present *before* the call to sparse_init,
+-	   but we can initialize the page structs only *after* that call.
+-	   Thus, we're being called twice. */
+-	if (early)
+-		memory_present(node_id, start_pfn, end_pfn);
+-	else {
+-		/* As the pages backing SPU LS and I/O are outside the range
+-		   of regular memory, their page structs were not initialized
+-		   by free_area_init. Do it here instead. */
+-		for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+-			struct page *page = pfn_to_page(pfn);
+-			set_page_links(page, ZONE_DMA, node_id, pfn);
+-			init_page_count(page);
+-			reset_page_mapcount(page);
+-			SetPageReserved(page);
+-			INIT_LIST_HEAD(&page->lru);
+-		}
+-	}
+-}
+-
+-static void __init cell_spumem_init(int early)
+-{
+-	struct device_node *node;
+-	for (node = of_find_node_by_type(NULL, "spe");
+-			node; node = of_find_node_by_type(node, "spe")) {
+-		cell_spuprop_present(node, "local-store", early);
+-		cell_spuprop_present(node, "problem", early);
+-		cell_spuprop_present(node, "priv1", early);
+-		cell_spuprop_present(node, "priv2", early);
+-	}
+-}
+-#else
+-static void __init cell_spumem_init(int early)
+-{
+-}
+-#endif
+-
+ static void cell_progress(char *s, unsigned short hex)
  {
- 	int nid = -1;
- 	unsigned int *tmp;
-@@ -216,6 +216,28 @@
- 	return nid;
- }
- 
-+/* Walk the device tree upwards, looking for an associativity id */
-+int of_node_to_nid(struct device_node *device)
-+{
-+	struct device_node *tmp;
-+	int nid = -1;
-+
-+	of_node_get(device);
-+	while (device) {
-+		nid = of_node_to_nid_single(device);
-+		if (nid != -1)
-+			break;
-+
-+	        tmp = device;
-+		device = of_get_parent(tmp);
-+		of_node_put(tmp);
-+	}
-+	of_node_put(device);
-+
-+	return nid;
-+}
-+EXPORT_SYMBOL_GPL(of_node_to_nid);
-+
- /*
-  * In theory, the "ibm,associativity" property may contain multiple
-  * associativity lists because a resource may be multiply connected
-@@ -300,7 +322,7 @@
- 		goto out;
- 	}
- 
--	nid = of_node_to_nid(cpu);
-+	nid = of_node_to_nid_single(cpu);
- 
- 	if (nid < 0 || !node_online(nid))
- 		nid = any_online_node(NODE_MASK_ALL);
-@@ -393,7 +415,7 @@
- 
- 		cpu = find_cpu_node(i);
- 		BUG_ON(!cpu);
--		nid = of_node_to_nid(cpu);
-+		nid = of_node_to_nid_single(cpu);
- 		of_node_put(cpu);
- 
- 		/*
-@@ -437,7 +459,7 @@
- 		 * have associativity properties.  If none, then
- 		 * everything goes to default_nid.
- 		 */
--		nid = of_node_to_nid(memory);
-+		nid = of_node_to_nid_single(memory);
- 		if (nid < 0)
- 			nid = default_nid;
- 		node_set_online(nid);
-@@ -776,7 +798,7 @@
- ha_new_range:
- 		start = read_n_cells(n_mem_addr_cells, &memcell_buf);
- 		size = read_n_cells(n_mem_size_cells, &memcell_buf);
--		nid = of_node_to_nid(memory);
-+		nid = of_node_to_nid_single(memory);
- 
- 		/* Domains not present at boot default to 0 */
- 		if (nid < 0 || !node_online(nid))
-Index: linus-2.6/include/asm-powerpc/topology.h
-===================================================================
---- linus-2.6.orig/include/asm-powerpc/topology.h	2006-04-29 01:50:25.000000000 +0200
-+++ linus-2.6/include/asm-powerpc/topology.h	2006-04-29 02:02:28.000000000 +0200
-@@ -4,6 +4,9 @@
- 
- #include <linux/config.h>
- 
-+struct sys_device;
-+struct device_node;
-+
- #ifdef CONFIG_NUMA
- 
- #include <asm/mmzone.h>
-@@ -27,6 +30,8 @@
- 	return first_cpu(tmp);
- }
- 
-+int of_node_to_nid(struct device_node *device);
-+
- #define pcibus_to_node(node)    (-1)
- #define pcibus_to_cpumask(bus)	(cpu_online_map)
- 
-@@ -57,10 +62,29 @@
- 
- extern void __init dump_numa_cpu_topology(void);
- 
-+extern int sysfs_add_device_to_node(struct sys_device *dev, int nid);
-+extern void sysfs_remove_device_from_node(struct sys_device *dev, int nid);
-+
- #else
- 
-+static inline int of_node_to_nid(struct device_node *device)
-+{
-+	return 0;
-+}
-+
- static inline void dump_numa_cpu_topology(void) {}
- 
-+static inline int sysfs_add_device_to_node(struct sys_device *dev, int nid)
-+{
-+	return 0;
-+}
-+
-+static inline void sysfs_remove_device_from_node(struct sys_device *dev,
-+						int nid)
-+{
-+}
-+
-+
- #include <asm-generic/topology.h>
- 
- #endif /* CONFIG_NUMA */
-Index: linus-2.6/arch/powerpc/kernel/sysfs.c
-===================================================================
---- linus-2.6.orig/arch/powerpc/kernel/sysfs.c	2006-04-29 01:50:25.000000000 +0200
-+++ linus-2.6/arch/powerpc/kernel/sysfs.c	2006-04-29 02:02:28.000000000 +0200
-@@ -322,13 +322,31 @@
- 		}
- 	}
- }
-+
-+int sysfs_add_device_to_node(struct sys_device *dev, int nid)
-+{
-+	struct node *node = &node_devices[nid];
-+	return sysfs_create_link(&node->sysdev.kobj, &dev->kobj,
-+			kobject_name(&dev->kobj));
-+}
-+
-+void sysfs_remove_device_from_node(struct sys_device *dev, int nid)
-+{
-+	struct node *node = &node_devices[nid];
-+	sysfs_remove_link(&node->sysdev.kobj, kobject_name(&dev->kobj));
-+}
-+
- #else
- static void register_nodes(void)
- {
- 	return;
- }
-+
+ 	printk("*** %04x : %s\n", hex, s ? s : "");
+@@ -172,8 +104,6 @@
  #endif
  
-+EXPORT_SYMBOL_GPL(sysfs_add_device_to_node);
-+EXPORT_SYMBOL_GPL(sysfs_remove_device_from_node);
+ 	mmio_nvram_init();
+-
+-	cell_spumem_init(0);
+ }
+ 
+ /*
+@@ -189,8 +119,6 @@
+ 
+ 	ppc64_interrupt_controller = IC_CELL_PIC;
+ 
+-	cell_spumem_init(1);
+-
+ 	DBG(" <- cell_init_early()\n");
+ }
+ 
+Index: linus-2.6/arch/powerpc/platforms/cell/Kconfig
+===================================================================
+--- linus-2.6.orig/arch/powerpc/platforms/cell/Kconfig	2006-04-29 02:51:29.000000000 +0200
++++ linus-2.6/arch/powerpc/platforms/cell/Kconfig	2006-04-29 02:51:33.000000000 +0200
+@@ -12,7 +12,8 @@
+ 
+ config SPUFS_MMAP
+ 	bool
+-	depends on SPU_FS && SPARSEMEM && !PPC_64K_PAGES
++	depends on SPU_FS && SPARSEMEM
++	select MEMORY_HOTPLUG
+ 	default y
+ 
+ endmenu
+Index: linus-2.6/arch/powerpc/platforms/cell/spu_base.c
+===================================================================
+--- linus-2.6.orig/arch/powerpc/platforms/cell/spu_base.c	2006-04-29 02:51:29.000000000 +0200
++++ linus-2.6/arch/powerpc/platforms/cell/spu_base.c	2006-04-29 02:51:33.000000000 +0200
+@@ -516,6 +516,56 @@
+ }
+ EXPORT_SYMBOL_GPL(spu_irq_setaffinity);
+ 
++static int __init find_spu_node_id(struct device_node *spe)
++{
++	unsigned int *id;
++	struct device_node *cpu;
++	cpu = spe->parent->parent;
++	id = (unsigned int *)get_property(cpu, "node-id", NULL);
++	return id ? *id : 0;
++}
 +
- /* Only valid if CPU is present. */
- static ssize_t show_physical_id(struct sys_device *dev, char *buf)
++static int __init cell_spuprop_present(struct device_node *spe,
++					const char *prop)
++{
++	static DEFINE_MUTEX(add_spumem_mutex);
++
++	struct address_prop {
++		unsigned long address;
++		unsigned int len;
++	} __attribute__((packed)) *p;
++	int proplen;
++
++	unsigned long start_pfn, nr_pages;
++	int node_id;
++	struct pglist_data *pgdata;
++	struct zone *zone;
++	int ret;
++
++	p = (void*)get_property(spe, prop, &proplen);
++	WARN_ON(proplen != sizeof (*p));
++
++	start_pfn = p->address >> PAGE_SHIFT;
++	nr_pages = ((unsigned long)p->len + PAGE_SIZE - 1) >> PAGE_SHIFT;
++
++	/*
++	 * XXX need to get the correct NUMA node in here. This may
++	 * be different from the spe::node_id property, e.g. when
++	 * the host firmware is not NUMA aware.
++	 */
++	node_id = 0;
++
++	pgdata = NODE_DATA(node_id);
++	zone = pgdata->node_zones;
++
++	/* XXX rethink locking here */
++	mutex_lock(&add_spumem_mutex);
++	ret = __add_pages(zone, start_pfn, nr_pages);
++	mutex_unlock(&add_spumem_mutex);
++
++	return ret;
++}
++
+ static void __iomem * __init map_spe_prop(struct device_node *n,
+ 						 const char *name)
  {
+@@ -526,6 +576,8 @@
+ 
+ 	void *p;
+ 	int proplen;
++	void* ret = NULL;
++	int err = 0;
+ 
+ 	p = get_property(n, name, &proplen);
+ 	if (proplen != sizeof (struct address_prop))
+@@ -533,7 +585,14 @@
+ 
+ 	prop = p;
+ 
+-	return ioremap(prop->address, prop->len);
++	err = cell_spuprop_present(n, name);
++	if (err && (err != -EEXIST))
++		goto out;
++
++	ret = ioremap(prop->address, prop->len);
++
++ out:
++	return ret;
+ }
+ 
+ static void spu_unmap(struct spu *spu)
+@@ -593,17 +652,6 @@
+ 	return ret;
+ }
+ 
+-static int __init find_spu_node_id(struct device_node *spe)
+-{
+-	unsigned int *id;
+-	struct device_node *cpu;
+-
+-	cpu = spe->parent->parent;
+-	id = (unsigned int *)get_property(cpu, "node-id", NULL);
+-
+-	return id ? *id : 0;
+-}
+-
+ static int __init create_spu(struct device_node *spe)
+ {
+ 	struct spu *spu;
+Index: linus-2.6/mm/memory_hotplug.c
+===================================================================
+--- linus-2.6.orig/mm/memory_hotplug.c	2006-04-29 02:51:29.000000000 +0200
++++ linus-2.6/mm/memory_hotplug.c	2006-04-29 02:51:33.000000000 +0200
+@@ -69,12 +69,16 @@
+ 	for (i = 0; i < nr_pages; i += PAGES_PER_SECTION) {
+ 		err = __add_section(zone, phys_start_pfn + i);
+ 
+-		if (err)
++		/* We want to keep adding the rest of the
++		 * sections if the first ones already exist
++		 */
++		if (err && (err != -EEXIST))
+ 			break;
+ 	}
+ 
+ 	return err;
+ }
++EXPORT_SYMBOL_GPL(__add_pages);
+ 
+ static void grow_zone_span(struct zone *zone,
+ 		unsigned long start_pfn, unsigned long end_pfn)
 
 --
