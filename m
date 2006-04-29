@@ -1,14 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 1/3] powerpc: Make rtas console _much_ faster
+Date: Sat, 29 Apr 2006 10:00:52 +0200
+References: <20060429004019.126937000@localhost.localdomain>
+	<200604290245.57507.arnd@arndb.de>
+	<1146275817.14733.2.camel@localhost.localdomain>
+In-Reply-To: <1146275817.14733.2.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17491.7435.783197.658219@cargo.ozlabs.ibm.com>
-Date: Sat, 29 Apr 2006 18:00:11 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linas@austin.ibm.com (Linas Vepstas)
-Subject: Re: [PATCH]: powerpc/pseries: Print PCI slot location code on failure
-In-Reply-To: <20060428224218.GE22621@austin.ibm.com>
-References: <20060428224218.GE22621@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Message-Id: <200604291000.52541.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,15 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas writes:
+On Saturday 29 April 2006 03:56, Michael Ellerman wrote:
+> I'll clean this one up a little before merging it as per Ryan's email of
+> a week or two ago. New patch today or tomorrow.
 
-> +		location = (char *) get_property(event->dn, "ibm,loc-code", NULL);
-> +		printk(KERN_ERR "EEH: Error: Cannot find partition endpoint "
-> +		                "for location=%s pci addr=%s\n",
-> +		        location, pci_name(event->dev));
+Ok, I misremembered the discussion on that patch and it didn't occur
+to me that a one-line patch needs cleanup ;-)
 
-If location is NULL, printk will fortunately save us from a null
-pointer dereference; still, it might be nice to have the message say
-"location=unknown" or something rather than "location=<NULL>".
+Thanks!
 
-Paul.
+> Even though this is 1/3 the rest of the series should be fine to merge,
+> right Arnd?
+
+Yes.
+
+	Arnd <><
