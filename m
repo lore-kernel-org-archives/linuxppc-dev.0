@@ -1,15 +1,16 @@
-Return-Path: <tsawyer@broadcom.com>
-Received: from sandmail.sandburst.com (sandmail.sandburst.com [216.57.132.42])
-	by ozlabs.org (Postfix) with ESMTP id 25ECD679F3
+Return-Path: <vbordug@ru.mvista.com>
+Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2C684679FC
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 28 Apr 2006 07:12:04 +1000 (EST)
-Message-ID: <445133A1.1050202@broadcom.com>
-Date: Thu, 27 Apr 2006 17:12:01 -0400
-From: "Travis B. Sawyer" <tsawyer@broadcom.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: TI1520 Cardbus with CF troubles
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 30 Apr 2006 03:14:29 +1000 (EST)
+To: Paul Mackerras <paulus@samba.org>
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH] ppc32 CPM_UART: fixes and improvements
+Date: Sat, 29 Apr 2006 21:14:17 +0400
+Message-Id: <20060429171417.6922.88480.stgit@vitb.ru.mvista.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,159 +21,254 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Greetings:
 
-I'm working on getting some cardbus support into a 8540 based platform.
+A number of small issues are fixed, and added the header file, missed from the
+original series. With this, driver should be pretty stable as tested among
+both platform-device-driven and "old way" boards. Also added missing GPL
+statement , and updated year field on existing ones to reflect 
+code update.
 
-We're using a TI1520 cardbus controller (pci<->cardbus bridge) and 
-compact flash.
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+---
 
-(Note:  this is using 2.4.30 kernel.org kernel + some patches from the 
-vendor)
+ arch/ppc/platforms/mpc866ads_setup.c    |    2 +
+ drivers/serial/cpm_uart/cpm_uart.h      |   19 +++++++---
+ drivers/serial/cpm_uart/cpm_uart_core.c |   31 +++++++++++++---
+ drivers/serial/cpm_uart/cpm_uart_cpm1.c |    2 +
+ drivers/serial/cpm_uart/cpm_uart_cpm2.c |    2 +
+ include/linux/fs_uart_pd.h              |   60 +++++++++++++++++++++++++++++++
+ 6 files changed, 104 insertions(+), 12 deletions(-)
 
-At first I was getting no interrupts when the yenta driver was starting 
-up, but
-I back ported some stuff from 2.6 and now the ti1520 is routing the 
-interrupts
-properly through pci:
-
-[root@mbc80-4 01]$ cat /proc/interrupts
-           CPU0
-  8:          0   None      Edge      rtc
- 83:      12106   OpenPIC   Edge      enet_tx
- 84:      19011   OpenPIC   Edge      enet_rx
- 88:          0   OpenPIC   Edge      enet_error
- 90:       1805   OpenPIC   Edge      serial
- 91:        137   OpenPIC   Level     MPC I2C
- 98:          1   OpenPIC   Level     Texas Instruments PCI1250 PC card 
-Cardbus Controller
- 99:          1   OpenPIC   Level     Texas Instruments PCI1250 PC card 
-Cardbus Controller (#2)
-101:          0   OpenPIC   Level     sb/ife0
-102:          0   OpenPIC   Level     sbqe0
-104:          0   OpenPIC   Level     phy_interrupt
-BAD:          0
-
-I have a cf card in the second controller socket. I've strewn printk's 
-all over and what I'm
-finding is that pcmcia_request_io is called with base=0 numports=0x10, 
-ioAddrLines=4, and
-returns with a base of 0x8100.
-
-Here's the pci dump of both functions of the TI device (note, the card 
-is plugged into the
-socket associated with func 1 not func 0):
-
-[root@mbc80-4 01]$ lspci -v -s 01:01
-01:01.0 CardBus bridge: Texas Instruments PCI1250 PC card Cardbus 
-Controller (rev 01)
-        Flags: bus master, medium devsel, latency 168, IRQ 98
-        Memory at eafff000 (32-bit, non-prefetchable) [size=4K]
-        Bus: primary=01, secondary=02, subordinate=02, sec-latency=176
-        Memory window 0: ea600000-ea61f000 (prefetchable)
-        Memory window 1: ea700000-ea7ff000
-        I/O window 0: 00008000-000080ff
-        I/O window 1: 00008400-000084ff
-        16-bit legacy interface ports at 0001
+diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
+index 6ce3b84..d919dab 100644
+--- a/arch/ppc/platforms/mpc866ads_setup.c
++++ b/arch/ppc/platforms/mpc866ads_setup.c
+@@ -378,7 +378,7 @@ int __init mpc866ads_init(void)
+ 	ppc_sys_device_setfunc(MPC8xx_CPM_SMC1, PPC_SYS_FUNC_UART);
+ #endif
  
-01:01.1 CardBus bridge: Texas Instruments PCI1250 PC card Cardbus 
-Controller (rev 01)
-        Flags: bus master, medium devsel, latency 168, IRQ 99
-        Memory at eabfe000 (32-bit, non-prefetchable) [size=4K]
-        Bus: primary=01, secondary=03, subordinate=03, sec-latency=176
-        Memory window 0: ea620000-ea63f000 (prefetchable)
-        Memory window 1: ea800000-ea8ff000
-        I/O window 0: 00008800-000088ff
-        I/O window 1: 00008c00-00008cff
-        16-bit legacy interface ports at 0001
+-#ifdef CONFIG_SERIAL_CPM_SMCer
++#ifdef CONFIG_SERIAL_CPM_SMC
+ 	ppc_sys_device_enable(MPC8xx_CPM_SMC2);
+ 	ppc_sys_device_setfunc(MPC8xx_CPM_SMC2, PPC_SYS_FUNC_UART);
+ #endif
+diff --git a/drivers/serial/cpm_uart/cpm_uart.h b/drivers/serial/cpm_uart/cpm_uart.h
+index aa5eb7d..3b35cb7 100644
+--- a/drivers/serial/cpm_uart/cpm_uart.h
++++ b/drivers/serial/cpm_uart/cpm_uart.h
+@@ -5,6 +5,13 @@
+  *
+  *  Copyright (C) 2004 Freescale Semiconductor, Inc.
+  *
++ *  2006 (c) MontaVista Software, Inc.
++ * 	Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ *
+  */
+ #ifndef CPM_UART_H
+ #define CPM_UART_H
+@@ -101,12 +108,13 @@ static inline unsigned long cpu2cpm_addr
+ 	int offset;
+ 	u32 val = (u32)addr;
+ 	/* sane check */
+-	if ((val >= (u32)pinfo->mem_addr) &&
++	if (likely((val >= (u32)pinfo->mem_addr)) &&
+ 			(val<((u32)pinfo->mem_addr + pinfo->mem_size))) {
+ 		offset = val - (u32)pinfo->mem_addr;
+ 		return pinfo->dma_addr+offset;
+ 	}
+-	printk("%s(): address %x to translate out of range!\n", __FUNCTION__, val);
++	/* something nasty happened */
++	BUG();
+ 	return 0;
+ }
  
-
-I added printks to the ide do_probe, and all hwif->INB() calls return 0.
-
-My /etc/pcmcia/config.opts adds the following lines:
-include port 0x0000-0xffff
-include memory 0xe0000000-0xeaffffff
+@@ -115,12 +123,13 @@ static inline void *cpm2cpu_addr(unsigne
+ 	int offset;
+ 	u32 val = addr;
+ 	/* sane check */
+-	if ((val >= pinfo->dma_addr) &&
+-			(val<(pinfo->dma_addr + pinfo->mem_size))) {
++	if (likely((val >= pinfo->dma_addr) &&
++			(val<(pinfo->dma_addr + pinfo->mem_size)))) {
+ 		offset = val - (u32)pinfo->dma_addr;
+ 		return (void*)(pinfo->mem_addr+offset);
+ 	}
+-	printk("%s(): address %x to translate out of range!\n", __FUNCTION__, val);
++	/* something nasty happened */
++	BUG();
+ 	return 0;
+ }
  
-
-Any ideas?
-
--travis
-
-more dumps below:
-[root@mbc80-4 01]$ cardctl status
-Socket 0:
-  no card
-Socket 1:
-  3.3V 16-bit PC Card
-  function 0: [ready]
-[root@mbc80-4 01]$ cardctl config
-Socket 0:
-  not configured
-Socket 1:
-  Vcc 3.3V  Vpp1 3.3V  Vpp2 3.3V
-
-
-ide_config linkio: nports: 0 baseport 0
-pcmcia_request_io calling alloc io spaces BLP1 NP1 IOADDRLines:  0 10 4
-alloc_io_space s->io BP NP Inuse: 8100 10 10
-pcmcia_request_io called alloc io spaces BLP1 NP1 IOADDRLines:  8100 10 4
-ide_config b4Config base 8100
-ide_config AFConfig base 8100
-SELECT_DRIVE sending a0 to 8106
-SELECT_DRIVE sending b0 to 8106
-SELECT_DRIVE sending a0 to 8106
-probing for hda: present=0, media=32, probetype=ATA
-[root@mbc80-4 01]$ SELECT_DRIVE sending a0 to 8106
-do_probe after select inb= 0
-do_probe error reg 0
-do_probe nsect reg 0
-do_probe sect  reg 0
-do_probe lcyl  reg 0
-do_probe hcyl  reg 0
-do_probe selct reg 0
-do_probe stats reg 0
-do_probe cntrl reg 0
-
-[root@mbc80-4 ~]$ dump_cis
-Socket 0:
-  no CIS present
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index ced193b..2bdbcb3 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -12,7 +12,8 @@
+  *
+  *  Copyright (C) 2004 Freescale Semiconductor, Inc.
+  *            (C) 2004 Intracom, S.A.
+- *            (C) 2005 MontaVista Software, Inc. by Vitaly Bordug <vbordug@ru.mvista.com>
++ *            (C) 2005-2006 MontaVista Software, Inc.
++ * 		Vitaly Bordug <vbordug@ru.mvista.com>
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -81,7 +82,7 @@ early_uart_get_pdev(int index)
+ }
  
-Socket 1:
-  dev_info
-    fn_specific 120ns, 2kb
-  common_jedec 0xdf 0x01
-  manfid 0x0045, 0x0401
-  vers_1 4.1, "SanDisk", "SDP", "5/3 0.6"
-  funcid fixed_disk [post]
-  disk_interface [ide]
-  disk_features [silicon] [unique] [single]
-    [sleep] [standby] [idle] [low power]
-  config base 0x0200 mask 0x000f last_index 0x07
-  cftable_entry 0x00 [default]
-    [rdybsy] [mwait] [pwrdown]
-    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
-    memory 0x0000-0x07ff @ 0x0000
-  cftable_entry 0x00
-    Vcc Vnom 3300mV Ipeak 45mA
-  cftable_entry 0x01 [default]
-    [rdybsy] [pwrdown]
-    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
-    io 0x0000-0x000f [lines=4] [8bit] [16bit]
-    irq mask 0xffff [level] [pulse] [shared]
-  cftable_entry 0x01
-    Vcc Vnom 3300mV Ipeak 45mA
-  cftable_entry 0x02 [default]
-    [rdybsy] [pwrdown]
-    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
-    io 0x01f0-0x01f7, 0x03f6-0x03f7 [lines=10] [8bit] [16bit] [range]
-    irq 14 [level] [pulse] [shared]
-  cftable_entry 0x02
-    Vcc Vnom 3300mV Ipeak 45mA
-  cftable_entry 0x03 [default]
-    [rdybsy] [pwrdown]
-    Vcc Vnom 5V Vmin 4500mV Vmax 5500mV Ipeak 80mA
-    io 0x0170-0x0177, 0x0376-0x0377 [lines=10] [8bit] [16bit] [range]
-    irq 14 [level] [pulse] [shared]
-  cftable_entry 0x03
-    Vcc Vnom 3300mV Ipeak 45mA
-  cftable_entry 0x07
+ 
+-void cpm_uart_count(void)
++static void cpm_uart_count(void)
+ {
+ 	cpm_uart_nr = 0;
+ #ifdef CONFIG_SERIAL_CPM_SMC1
+@@ -104,6 +105,21 @@ void cpm_uart_count(void)
+ #endif
+ }
+ 
++/* Get UART number by its id */
++static int cpm_uart_id2nr(int id)
++{
++	int i;
++	if (id < UART_NR) {
++		for (i=0; i<UART_NR; i++) {
++			if (cpm_uart_port_map[i] == id)
++				return i;
++		}
++	}
++
++	/* not found or invalid argument */
++	return -1;
++}
++
+ /*
+  * Check, if transmit buffers are processed
+ */
+@@ -1008,7 +1024,11 @@ int cpm_uart_drv_get_platform_data(struc
+ 	int line;
+ 	u32 mem, pram;
+ 
+-	for (line=0; line<UART_NR && cpm_uart_port_map[line]!=pdata->fs_no; line++);
++	line = cpm_uart_id2nr(idx);
++	if(line < 0) {
++		printk(KERN_ERR"%s(): port %d is not registered", __FUNCTION__, idx);
++		return -1;
++	}
+ 
+ 	pinfo = (struct uart_cpm_port *) &cpm_uart_ports[idx];
+ 
+@@ -1241,8 +1261,7 @@ static int cpm_uart_drv_probe(struct dev
+ 	}
+ 
+ 	pdata = pdev->dev.platform_data;
+-	pr_debug("cpm_uart_drv_probe: Adding CPM UART %d\n",
+-			cpm_uart_port_map[pdata->fs_no]);
++	pr_debug("cpm_uart_drv_probe: Adding CPM UART %d\n", cpm_uart_id2nr(pdata->fs_no));
+ 
+ 	if ((ret = cpm_uart_drv_get_platform_data(pdev, 0)))
+ 		return ret;
+@@ -1261,7 +1280,7 @@ static int cpm_uart_drv_remove(struct de
+ 	struct fs_uart_platform_info *pdata = pdev->dev.platform_data;
+ 
+ 	pr_debug("cpm_uart_drv_remove: Removing CPM UART %d\n",
+-			cpm_uart_port_map[pdata->fs_no]);
++			cpm_uart_id2nr(pdata->fs_no));
+ 
+         uart_remove_one_port(&cpm_reg, &cpm_uart_ports[pdata->fs_no].port);
+         return 0;
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index a5a3062..17406a0 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -8,6 +8,8 @@
+  *
+  *  Copyright (C) 2004 Freescale Semiconductor, Inc.
+  *            (C) 2004 Intracom, S.A.
++ *            (C) 2006 MontaVista Software, Inc.
++ * 		Vitaly Bordug <vbordug@ru.mvista.com>
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index 7c6b07a..4b2de08 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -8,6 +8,8 @@
+  * 
+  *  Copyright (C) 2004 Freescale Semiconductor, Inc.
+  *            (C) 2004 Intracom, S.A.
++ *            (C) 2006 MontaVista Software, Inc.
++ * 		Vitaly Bordug <vbordug@ru.mvista.com>
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+diff --git a/include/linux/fs_uart_pd.h b/include/linux/fs_uart_pd.h
+new file mode 100644
+index 0000000..a6454f6
+--- /dev/null
++++ b/include/linux/fs_uart_pd.h
+@@ -0,0 +1,60 @@
++/*
++ * Platform information definitions for the CMP Uart driver.
++ *
++ * 2006 (c) MontaVista Software, Inc.
++ * Vitaly Bordug <vbordug@ru.mvista.com>
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#ifndef FS_UART_PD_H
++#define FS_UART_PD_H
++
++#include <linux/version.h>
++#include <asm/types.h>
++
++enum fs_uart_id {
++	fsid_smc1_uart,
++	fsid_smc2_uart,
++	fsid_scc1_uart,
++	fsid_scc2_uart,
++	fsid_scc3_uart,
++	fsid_scc4_uart,
++	fs_uart_nr,
++};
++
++static inline int fs_uart_id_scc2fsid(int id)
++{
++    return fsid_scc1_uart + id - 1;
++}
++
++static inline int fs_uart_id_fsid2scc(int id)
++{
++    return id - fsid_scc1_uart + 1;
++}
++
++static inline int fs_uart_id_smc2fsid(int id)
++{
++    return fsid_smc1_uart + id - 1;
++}
++
++static inline int fs_uart_id_fsid2smc(int id)
++{
++    return id - fsid_smc1_uart + 1;
++}
++
++struct fs_uart_platform_info {
++        void(*init_ioports)(void);
++	/* device specific information */
++	int fs_no;		/* controller index */
++	u32 uart_clk;
++	u8 tx_num_fifo;
++	u8 tx_buf_size;
++	u8 rx_num_fifo;
++	u8 rx_buf_size;
++	u8 brg;
++};
++
++#endif
