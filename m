@@ -1,20 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C6A0E679EF
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 11:31:06 +1000 (EST)
-Date: Sat, 29 Apr 2006 11:30:59 +1000
+	by ozlabs.org (Postfix) with ESMTP id 82157679F6
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 11:41:03 +1000 (EST)
+Date: Sat, 29 Apr 2006 11:40:56 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: sign extension for 32bit syscalls on ppc64
-Message-Id: <20060429113059.150cadd6.sfr@canb.auug.org.au>
-In-Reply-To: <17490.42497.351114.712494@cargo.ozlabs.ibm.com>
-References: <20060428131254.GA507@lst.de>
-	<17490.42497.351114.712494@cargo.ozlabs.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] [2.6.18] powerpc: kill union tce_entry
+Message-Id: <20060429114056.09928ba9.sfr@canb.auug.org.au>
+In-Reply-To: <20060428140835.GG5518@pb15.lixom.net>
+References: <20060428140835.GG5518@pb15.lixom.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
 	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__29_Apr_2006_11_30_59_+1000_IFZ7g+N.BCZa.Wlh"
-Cc: linuxppc-dev@ozlabs.org
+	boundary="Signature=_Sat__29_Apr_2006_11_40_56_+1000_aQK0AdtsFCgF8Mcy"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__29_Apr_2006_11_30_59_+1000_IFZ7g+N.BCZa.Wlh
+--Signature=_Sat__29_Apr_2006_11_40_56_+1000_aQK0AdtsFCgF8Mcy
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 29 Apr 2006 09:32:17 +1000 Paul Mackerras <paulus@samba.org> wrote:
+On Fri, 28 Apr 2006 09:08:35 -0500 Olof Johansson <olof@lixom.net> wrote:
 >
-> However, it's debatable whether file descriptor arguments really need
-> to be sign-extended.  Although they are typed as int, negative values
-> are not generally valid (although there are one or two cases where
-> they are), and an fd value of 4294967295 will generate an EBADF error
-> just as well as -1 will.
+> -	struct {
+> -		unsigned int  tb_cacheBits :6;	/* Cache hash bits - not used */
+> -		unsigned int  tb_rsvd      :6;
+> -		unsigned long tb_rpn       :40;	/* Real page number */
+> -		unsigned int  tb_valid     :1;	/* Tce is valid (vb only) */
+> -		unsigned int  tb_allio     :1;	/* Tce is valid for all lps (vb only) */
+> -		unsigned int  tb_lpindex   :8;	/* LpIndex for user of TCE (vb only) */
+> -		unsigned int  tb_pciwr     :1;	/* Write allowed (pci only) */
+> -		unsigned int  tb_rdwr      :1;	/* Read allowed  (pci), Write allowed (=
+vb) */
+> -	} te_bits;
 
-They do need to be sign extended for the new *at syscalls where you can pass
-a sepecial value AT_FDCWD (-10) to represent the current directory ...
+> +#define TCE_RPN_MASK		0xfffffffffful  /* 40-bit RPN (4K pages) */
+> +#define TCE_RPN_SHIFT		12
+> +#define TCE_VALID		0x200		/* TCE valid */
+> +#define TCE_ALLIO		0x100		/* TCE valid for all lpars */
+
+Shouldn't the above two be 0x800 and 0x400 respectively (or is my bit
+counting/ordering mucked up)?
 
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
---Signature=_Sat__29_Apr_2006_11_30_59_+1000_IFZ7g+N.BCZa.Wlh
+--Signature=_Sat__29_Apr_2006_11_40_56_+1000_aQK0AdtsFCgF8Mcy
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQFEUsHTFdBgD/zoJvwRAg6xAKCcyW8r4cJ0ug4Wy1fzSAw8cxfCPQCfX2e2
-8eyQ7tkPCiAd7ovvptE3nwc=
-=mH+K
+iD8DBQFEUsQoFdBgD/zoJvwRAibFAJ4zSu6UOhQtvJaeVLdwqgazwWQC9wCfRPe3
+3e3dXue+QGFqdvtaQQke8fo=
+=2ddf
 -----END PGP SIGNATURE-----
 
---Signature=_Sat__29_Apr_2006_11_30_59_+1000_IFZ7g+N.BCZa.Wlh--
+--Signature=_Sat__29_Apr_2006_11_40_56_+1000_aQK0AdtsFCgF8Mcy--
