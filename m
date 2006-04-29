@@ -1,16 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <200604300142.23473.arnd@arndb.de>
+Message-Id: <20060429233920.825603000@localhost.localdomain>
 References: <20060429232812.825714000@localhost.localdomain>
-Date: Sun, 30 Apr 2006 01:42:22 +0200
+Date: Sun, 30 Apr 2006 01:28:18 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: paulus@samba.org
-Subject: [PATCH 10/13] cell: correctly detect systemsim host
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Subject: [PATCH 06/13] powerpc: fix 64k pages on non-hypervisor
 Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	Christian Krafft <krafft@de.ibm.com>, cbe-oss-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +16,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Christian Krafft <krafft@de.ibm.com>
-Systemsim uses a different compatible property in the device tree.
+ From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+The page size encoding passed to tlbie is incorrect for
+new-style large pages. This fixes it.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 ---
-Index: linus-2.6/arch/powerpc/platforms/cell/setup.c
+Index: linus-2.6/arch/powerpc/mm/hash_native_64.c
 ===================================================================
---- linus-2.6.orig/arch/powerpc/platforms/cell/setup.c	2006-04-29 
-22:53:51.000000000 +0200
-+++ linus-2.6/arch/powerpc/platforms/cell/setup.c	2006-04-29 
-22:54:32.000000000 +0200
-@@ -201,10 +201,13 @@
- 	 * more appropriate detection logic
- 	 */
- 	unsigned long root = of_get_flat_dt_root();
--	if (!of_flat_dt_is_compatible(root, "IBM,CPBW-1.0"))
--		return 0;
-+	if (of_flat_dt_is_compatible(root, "IBM,CPBW-1.0"))
-+		return 1;
- 
--	return 1;
-+	if (of_flat_dt_is_compatible(root, "IBM,CPBW-SystemSim"))
-+		return 1;
-+
-+	return 0;
- }
- 
- /*
+--- linus-2.6.orig/arch/powerpc/mm/hash_native_64.c	2006-04-29 22:47:55.000000000 +0200
++++ linus-2.6/arch/powerpc/mm/hash_native_64.c	2006-04-29 22:53:42.000000000 +0200
+@@ -52,7 +52,7 @@
+ 	default:
+ 		penc = mmu_psize_defs[psize].penc;
+ 		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
+-		va |= (0x7f >> (8 - penc)) << 12;
++		va |= penc << 12;
+ 		asm volatile("tlbie %0,1" : : "r" (va) : "memory");
+ 		break;
+ 	}
+@@ -74,7 +74,7 @@
+ 	default:
+ 		penc = mmu_psize_defs[psize].penc;
+ 		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
+-		va |= (0x7f >> (8 - penc)) << 12;
++		va |= penc << 12;
+ 		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
+ 			     : : "r"(va) : "memory");
+ 		break;
 
 --
