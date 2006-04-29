@@ -1,25 +1,41 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2A4D7679FD
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 19:28:01 +1000 (EST)
-Subject: Re: [PATCH] convert powermac ide blink to new led infrastructure
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1146237326.19164.111.camel@localhost>
-References: <1146235779.19164.109.camel@localhost>
-	<1146237326.19164.111.camel@localhost>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-UJG/bvH6uExxbiuvPnL/"
-Date: Sat, 29 Apr 2006 11:27:52 +0200
-Message-Id: <1146302872.5019.19.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Richard Purdie <rpurdie@openedhand.com>,
-	debian-powerpc <debian-powerpc@lists.debian.org>,
-	John Lenz <lenz@cs.wisc.edu>
+Return-Path: <heiko.carstens@de.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 26FD1679F4
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 20:17:04 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.6/8.13.6) with ESMTP id k3T78Ti6170436
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 07:08:29 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k3T79bGg107516
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 09:09:37 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k3T78SR7024266
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 09:08:28 +0200
+Date: Sat, 29 Apr 2006 09:08:26 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Heiko J Schick <info@schihei.de>
+Subject: Re: [openib-general] Re: [PATCH 04/16] ehca: userspace support
+Message-ID: <20060429070826.GA9463@osiris.boeblingen.de.ibm.com>
+References: <4450A176.9000008@de.ibm.com>
+	<20060427114355.GB32127@wohnheim.fh-wedel.de>
+	<1146177388.19236.1.camel@localhost.localdomain>
+	<6C4A3B96-4752-4FF9-8FBE-C383B00AE014@schihei.de>
+	<84144f020604272332s6101032cy6936096230f3637c@mail.gmail.com>
+	<4044CACC-FB5A-415E-8974-27136269B5C1@schihei.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4044CACC-FB5A-415E-8974-27136269B5C1@schihei.de>
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>,
+	Christoph Raisch <RAISCH@de.ibm.com>,
+	J?rn Engel <joern@wohnheim.fh-wedel.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +45,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> >>The problem I see with pr_debug() is that it could only activated via
+> >>a compile flag. To use the debug outputs you have to re-compile /
+> >>compile your own kernel.
+> >
+> >Do you really need this heavy debug logging in the first place? You
+> >can use kprobes for arbitrary run-time inspection anyway, so logging
+> >everything seems wasteful.
+> 
+> The problem I see with kprobes is that you have to set several kernel
+> configuration options (e.g. CONFIG_KPROBES, CONFIG_DEBUG_INFO, etc.)
+> on compile time to use it. Same problem with pr_debug().
 
---=-UJG/bvH6uExxbiuvPnL/
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2006-04-28 at 17:15 +0200, Johannes Berg wrote:
-> =20
-> +config ADB_PMU_LED
-> +	bool "Support for the Power/iBook front LED"
-> +	depends on LEDS_CLASS && ADB_PMU
-
-come to think of it, that should probably be
-	depends on ADB_PMU
-	select LEDS_CLASS
-
-since we should imho consider the led stuff as infrastructure for other
-stuff. Opinions?
-
-johannes
-
---=-UJG/bvH6uExxbiuvPnL/
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIVAwUARFMxlaVg1VMiehFYAQJEDQ//SYW3f//MnpbDkUkbZ0jEIvrsTK4mKSVy
-GclSczdyWwkqqjZ0JWLduyTwoXcTrkvLYjl5hZLuqlvjzu2b6lwQuvFXour+NBKu
-O201bFNiqGkqqFpijMUqdqputOaPrbCtN5elJV4yaAK4ERIxQg3SZ7SYs3w5HqQg
-quBEn4Pv3EgYmoz6b167WaQfK1CHAB3ZRuCMBZwRTYpzmdCiIl5Wfjl+Hm1a36Sj
-6a/YyVMiESJcMH+Z9hk1qFbDWTAj+F9MZCSA9RXLlaGKWW2RRQI9fGjaEPMpFojQ
-2RLAsEbckudgT8BkUB+DdeNNiqq42Cv9XFnILZULi2kS73cj0WWUNjOqWVVqs37E
-Ms+JBR3hICzzqYRUhIZ8UsBvCd3bwT0pV1itzDdDW8wZSGx2AwB05Yx1yQ545Drr
-aViPG0jLYRAEnIAPIPY8sjLcgrpgtLLKcDLStMfnxHQeEEdVHeRi26xCJAZYrPq/
-UTnEnzpG7CuBaTqpEWip7c5qNFqbHRQy0n2/9AxMrOdEIWR+lfYkfjTJcs8zqaD3
-QaA40kTT2+2JDckkPOEqvxrJKI1j4wtQA8w/wTTCafyBJ26D50BK/TNOgNucoRTu
-W0s3nk6UxEvAusnq47RqIkY1IvnEjC5yb+Kf1Olfdy2TmAG4LNlOghCr4o2/v2AV
-hPgD36PgXU8=
-=1zCQ
------END PGP SIGNATURE-----
-
---=-UJG/bvH6uExxbiuvPnL/--
+It might be worth to move the s390 debug feature to common code. At least
+it has proven many times to be very useful in device driver debugging...
+See Documentation/s390/s390dbf.txt and arch/s390/kernel/debug.c.
