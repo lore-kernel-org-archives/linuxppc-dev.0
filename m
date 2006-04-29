@@ -1,13 +1,19 @@
-Return-Path: <arnd@arndb.de>
-Message-Id: <20060429011908.390998000@localhost.localdomain>
-References: <20060429011827.502138000@localhost.localdomain>
-Date: Sat, 29 Apr 2006 03:18:29 +0200
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 2/4] sparsemem interaction with memory add bug fixes
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 40DD767A60
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 11:22:49 +1000 (EST)
+Date: Sat, 29 Apr 2006 11:22:34 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: patches for 2.6.18
+Message-Id: <20060429112234.0dc0b485.sfr@canb.auug.org.au>
+In-Reply-To: <17489.60365.655344.949668@cargo.ozlabs.ibm.com>
+References: <17489.60365.655344.949668@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__29_Apr_2006_11_22_34_+1000_f7R/m9QuxOUfR7IP"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,54 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Mike Kravetz <mjkravetz@verizon.net>
+--Signature=_Sat__29_Apr_2006_11_22_34_+1000_f7R/m9QuxOUfR7IP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This patch fixes two bugs with the way sparsemem interacts with memory add.
-They are:
+On Fri, 28 Apr 2006 20:17:49 +1000 Paul Mackerras <paulus@samba.org> wrote:
+>
+> If you have patches that aren't 2.6.17 material, but you would like to
+> see them in 2.6.18, now is the time to be posting them to the list, so
+> that I can put them in the powerpc.git tree, and they can get some
+> testing before 2.6.17 comes out.  Please don't wait for the 2-week
+> merge window to send them.  That 2-week merge window is the window for
+> me to send stuff to Linus, not the window for you to send stuff to me.
 
-- memory leak if memmap for section already exists
+The four I sent a couple of days ago that put the iSeries vio stuff into
+the device tree would be good to go into the powerpc.git tree.
 
-- calling alloc_bootmem_node() after boot
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-These bugs were discovered and a first cut at the fixes were provided by
-Arnd Bergmann <arnd@arndb.de> and Joel Schopp <jschopp@us.ibm.com>.
+--Signature=_Sat__29_Apr_2006_11_22_34_+1000_f7R/m9QuxOUfR7IP
+Content-Type: application/pgp-signature
 
-Signed-off-by: Mike Kravetz <kravetz@us.ibm.com>
-Signed-off-by: Joel Schopp <jschopp@austin.ibm.com>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
----
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
 
- mm/sparse.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+iD8DBQFEUr/iFdBgD/zoJvwRAi6zAJsHKIO0f/Uj2AmqEsclM7Q2WTX09ACff1YT
+GPjGM51U0bA8Hom+llGBjgQ=
+=1F22
+-----END PGP SIGNATURE-----
 
-diff -puN mm/sparse.c~sparsemem-interaction-with-memory-add-bug-fixes mm/sparse.c
---- 25/mm/sparse.c~sparsemem-interaction-with-memory-add-bug-fixes	Wed Apr 12 14:38:04 2006
-+++ 25-akpm/mm/sparse.c	Wed Apr 12 14:38:04 2006
-@@ -32,7 +32,10 @@ static struct mem_section *sparse_index_
- 	unsigned long array_size = SECTIONS_PER_ROOT *
- 				   sizeof(struct mem_section);
- 
--	section = alloc_bootmem_node(NODE_DATA(nid), array_size);
-+	if (system_state == SYSTEM_RUNNING)
-+		section = kmalloc_node(array_size, GFP_KERNEL, nid);
-+	else
-+		section = alloc_bootmem_node(NODE_DATA(nid), array_size);
- 
- 	if (section)
- 		memset(section, 0, array_size);
-@@ -281,9 +284,9 @@ int sparse_add_one_section(struct zone *
- 
- 	ret = sparse_init_one_section(ms, section_nr, memmap);
- 
--	if (ret <= 0)
--		__kfree_section_memmap(memmap, nr_pages);
- out:
- 	pgdat_resize_unlock(pgdat, &flags);
-+	if (ret <= 0)
-+		__kfree_section_memmap(memmap, nr_pages);
- 	return ret;
- }
-_
-
---
+--Signature=_Sat__29_Apr_2006_11_22_34_+1000_f7R/m9QuxOUfR7IP--
