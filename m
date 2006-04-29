@@ -1,22 +1,12 @@
-Return-Path: <yanmin.zhang@intel.com>
-Received: from azsmga101-1.ch.intel.com (mga03.intel.com [143.182.124.21])
-	by ozlabs.org (Postfix) with ESMTP id 1921D679EF
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 13:37:00 +1000 (EST)
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Subject: RE: [PATCH] PCI Error Recovery: e1000 network device driver
-Date: Sat, 29 Apr 2006 11:26:50 +0800
-Message-ID: <117E3EB5059E4E48ADFF2822933287A4A1EF47@pdsmsx404>
-From: "Zhang, Yanmin" <yanmin.zhang@intel.com>
-To: "Linas Vepstas" <linas@austin.ibm.com>,
-	"Greg KH" <greg@kroah.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Brandeburg,
-	Jesse" <jesse.brandeburg@intel.com>, linuxppc-dev@ozlabs.org,
-	"Ronciak, John" <john.ronciak@intel.com>, "Kirsher,
-	Jeffrey T" <jeffrey.t.kirsher@intel.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz, Jeff Garzik <jgarzik@pobox.com>,
-	Linux NICS <linuxnics@mailbox.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17491.1134.565353.149941@cargo.ozlabs.ibm.com>
+Date: Sat, 29 Apr 2006 16:15:10 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: please pull powerpc.git 'merge' branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,101 +16,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>-----Original Message-----
->>From: linux-kernel-owner@vger.kernel.org =
-[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Linas Vepstas
->>Sent: 2006=C4=EA3=D4=C225=C8=D5 11:22
->>To: Greg KH
->>Cc: Jeff Garzik; Ronciak, John; Brandeburg, Jesse; Kirsher, Jeffrey T; =
-linux-kernel@vger.kernel.org; netdev@vger.kernel.org;
->>linux-pci@atrey.karlin.mff.cuni.cz; linuxppc-dev@ozlabs.org; Linux =
-NICS
->>Subject: Re: [PATCH] PCI Error Recovery: e1000 network device driver
->>
->>On Fri, Mar 24, 2006 at 06:22:06PM -0800, Greg KH wrote:
->>> ... a bit
->>> different from the traditional kernel coding style.
->>
->>Sorry, this is due to inattention on my part; I get cross-eyed
->>after staring at the same code for too long. The patch below should
->>fix things.
->>
->>--linas
->>
->>
->>[PATCH] PCI Error Recovery: e1000 network device driver
->>
->>Various PCI bus errors can be signaled by newer PCI controllers.  This
->>patch adds the PCI error recovery callbacks to the intel gigabit
->>ethernet e1000 device driver. The patch has been tested, and appears
->>to work well.
->>
->>Signed-off-by: Linas Vepstas <linas@linas.org>
->>Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
->>
->>----
->>
->> drivers/net/e1000/e1000_main.c |  114 =
-++++++++++++++++++++++++++++++++++++++++-
->> 1 files changed, 113 insertions(+), 1 deletion(-)
->>
->>Index: linux-2.6.16-git6/drivers/net/e1000/e1000_main.c
->>=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>--- linux-2.6.16-git6.orig/drivers/net/e1000/e1000_main.c	2006-03-23 =
-15:48:01.000000000 -0600
->>+++ linux-2.6.16-git6/drivers/net/e1000/e1000_main.c	2006-03-24 =
-15:14:40.431371705 -0600
->>@@ -226,6 +226,16 @@ static int e1000_resume(struct pci_dev *
->>+/**
->>+ * e1000_io_error_detected - called when PCI error is detected
->>+ * @pdev: Pointer to PCI device
->>+ * @state: The current pci conneection state
->>+ *
->>+ * This function is called after a PCI bus error affecting
->>+ * this device has been detected.
->>+ */
->>+static pci_ers_result_t e1000_io_error_detected(struct pci_dev *pdev, =
-pci_channel_state_t state)
->>+{
->>+	struct net_device *netdev =3D pci_get_drvdata(pdev);
->>+	struct e1000_adapter *adapter =3D netdev->priv;
->>+
->>+	netif_device_detach(netdev);
->>+
->>+	if (netif_running(netdev))
->>+		e1000_down(adapter);
-[YM] e1000_down will do device IO. So it's not appropriate to do so =
-here.
+Linus,
 
+Please do a pull from the "merge" branch of
 
->>+
->>+	/* Request a slot slot reset. */
->>+	return PCI_ERS_RESULT_NEED_RESET;
->>+}
->>+
->>+/**
->>+ * e1000_io_slot_reset - called after the pci bus has been reset.
->>+ * @pdev: Pointer to PCI device
->>+ *
->>+ * Restart the card from scratch, as if from a cold-boot. =
-Implementation
->>+ * resembles the first-half of the e1000_resume routine.
->>+ */
->>+static pci_ers_result_t e1000_io_slot_reset(struct pci_dev *pdev)
->>+{
->>+	struct net_device *netdev =3D pci_get_drvdata(pdev);
->>+	struct e1000_adapter *adapter =3D netdev->priv;
->>+
->>+	if (pci_enable_device(pdev)) {
->>+		printk(KERN_ERR "e1000: Cannot re-enable PCI device after =
-reset.\n");
->>+		return PCI_ERS_RESULT_DISCONNECT;
->>+	}
->>+	pci_set_master(pdev);
->>+
->>+	pci_enable_wake(pdev, 3, 0);
->>+	pci_enable_wake(pdev, 4, 0); /* 4 =3D=3D D3 cold */
-[YM] Suggest using PCI_D3hot and PCI_D3cold instead of hard-coded =
-numbers.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+
+to get the following powerpc updates.  They are mostly bug-fixes;
+there is also a defconfig update for Cell, plus a couple of commits
+that will enable the kernel to run on forthcoming IBM machines.
+These don't affect anything on the current machines, since the
+firmware properties and methods they use aren't present.
+
+Thanks,
+Paul.
+
+Alan Modra:
+      powerpc64: Fix loading of modules without a .toc section
+
+Andreas Schwab:
+      sound/ppc: snd_pmac_toonie_init should be __init
+      powerpc: Wire up *at syscalls
+
+Anton Blanchard:
+      powerpc: Add cputable entry for POWER6
+
+Arnd Bergmann:
+      spufs: Disable local interrupts for SPE hash_page calls.
+      powerpc: update cell_defconfig
+
+David Gibson:
+      powerpc: Fix pagetable bloat for hugepages
+
+David Woodhouse:
+      powerpc: Use check_legacy_ioport() on ppc32 too.
+
+Eugene Surovegin:
+      ppc32: add 440GX erratum 440_43 workaround
+
+Paul Mackerras:
+      powerpc/pseries: Tell firmware our capabilities on new machines
+
+Vitaly Bordug:
+      ppc32: odd fixes and improvements in ppc_sys
+      ppc32 CPM_UART: Convert to use platform devices
+      ppc32: Update board-specific code of the CPM UART users
+      ppc32 CPM_UART: Fixed odd address translations
+
+ arch/powerpc/configs/cell_defconfig         |   40 ++--
+ arch/powerpc/kernel/cputable.c              |   16 +
+ arch/powerpc/kernel/module_64.c             |   16 +
+ arch/powerpc/kernel/prom_init.c             |  112 ++++++++++
+ arch/powerpc/kernel/setup-common.c          |    8 +
+ arch/powerpc/kernel/setup_64.c              |    8 -
+ arch/powerpc/kernel/systbl.S                |   13 +
+ arch/powerpc/mm/hugetlbpage.c               |  295 ++++++++++++++++++++++++---
+ arch/powerpc/mm/init_64.c                   |    7 +
+ arch/powerpc/platforms/cell/spu_base.c      |   10 +
+ arch/powerpc/platforms/cell/spu_callbacks.c |   13 +
+ arch/ppc/platforms/4xx/ocotea.c             |    2 
+ arch/ppc/platforms/mpc8272ads_setup.c       |  114 ++++++++++
+ arch/ppc/platforms/mpc866ads_setup.c        |  140 +++++++++++++
+ arch/ppc/platforms/mpc885ads_setup.c        |  131 ++++++++++++
+ arch/ppc/platforms/pq2ads.c                 |   31 +++
+ arch/ppc/syslib/ibm440gx_common.c           |   13 +
+ arch/ppc/syslib/ibm440gx_common.h           |    4 
+ arch/ppc/syslib/mpc8xx_devices.c            |   25 ++
+ arch/ppc/syslib/ppc_sys.c                   |    4 
+ arch/ppc/syslib/pq2_sys.c                   |    8 -
+ drivers/block/floppy.c                      |    2 
+ drivers/input/serio/i8042-io.h              |    4 
+ drivers/serial/cpm_uart/cpm_uart.h          |   49 ++++
+ drivers/serial/cpm_uart/cpm_uart_core.c     |  280 ++++++++++++++++++++------
+ drivers/serial/cpm_uart/cpm_uart_cpm1.c     |   54 -----
+ drivers/serial/cpm_uart/cpm_uart_cpm2.c     |   14 -
+ fs/stat.c                                   |    2 
+ include/asm-powerpc/cputable.h              |   14 +
+ include/asm-powerpc/io.h                    |    6 -
+ include/asm-powerpc/page_64.h               |    1 
+ include/asm-powerpc/pgalloc.h               |    2 
+ include/asm-powerpc/unistd.h                |   20 ++
+ include/asm-ppc/ppc_sys.h                   |    2 
+ include/asm-ppc/reg_booke.h                 |    1 
+ sound/ppc/toonie.c                          |    2 
+ 36 files changed, 1234 insertions(+), 229 deletions(-)
