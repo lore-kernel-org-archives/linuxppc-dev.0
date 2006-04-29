@@ -1,18 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: alignment exceptionhandler sleeps in invalid context
-From: Michael Ellerman <michael@ellerman.id.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id DC98C679EB
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 12:38:36 +1000 (EST)
+Date: Sat, 29 Apr 2006 12:38:29 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17489.63055.968862.256370@cargo.ozlabs.ibm.com>
-References: <20060424173246.GA22318@suse.de>
-	<17489.63055.968862.256370@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-/NyXEDtnvWewDXaDOUcs"
-Date: Sat, 29 Apr 2006 12:34:13 +1000
-Message-Id: <1146278053.14733.8.camel@localhost.localdomain>
+Subject: Re: [RFC , PATCH] support for the ibm,pa_features cpu property
+Message-Id: <20060429123829.4d25b125.sfr@canb.auug.org.au>
+In-Reply-To: <17490.52602.577587.524391@cargo.ozlabs.ibm.com>
+References: <1146249684.27214.18.camel@localhost.localdomain>
+	<17490.52602.577587.524391@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olh@suse.de>
-Reply-To: michael@ellerman.id.au
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sat__29_Apr_2006_12_38_29_+1000_eK_sGbzpt6aijjoC"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,64 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-/NyXEDtnvWewDXaDOUcs
-Content-Type: text/plain
+--Signature=_Sat__29_Apr_2006_12_38_29_+1000_eK_sGbzpt6aijjoC
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2006-04-28 at 21:02 +1000, Paul Mackerras wrote:
-> Olaf Hering writes:
->=20
-> > I'm not sure where the bug is. Does it mean the network stack does
-> > something nasty, or is the exception handler itself broken? (probably t=
-he latter)
-> > This is 2.6.16.9 on a p270.
->=20
-> This patch should fix it, I hope.  If you can verify that it fixes it
-> I'll send it to Linus.
->=20
-> Paul.
->=20
-> diff --git a/include/asm-powerpc/uaccess.h b/include/asm-powerpc/uaccess.=
-h
-> index 3872e92..b02d858 100644
-> --- a/include/asm-powerpc/uaccess.h
-> +++ b/include/asm-powerpc/uaccess.h
-> @@ -179,7 +179,8 @@ do {								\
->  #define __put_user_nocheck(x, ptr, size)			\
->  ({								\
->  	long __pu_err;						\
-> -	might_sleep();						\
-> +	if ((unsigned long)ptr < PAGE_OFFSET)			\
-> +		might_sleep();					\
+Hi Paul,
 
-+	if (!is_kernel_addr((unsigned long)ptr))		\
-+		might_sleep();					\
+On Sat, 29 Apr 2006 12:20:42 +1000 Paul Mackerras <paulus@samba.org> wrote:
+>
+> +	/* find descriptor with type =3D=3D 0 */
+> +	for (;;) {
+> +		if (tablelen < 3 || tablelen < 2 + pa_feature_table[1])
+                                                                    ^
+Shouldn't that be 0?
 
-In asm/page.h :)
+> +			goto out;	/* not found */
+> +		if (pa_feature_table[0] =3D=3D 0)
+                                     ^
+And this 1?
 
-cheers
+> +			break;
+> +		tablelen -=3D 2 + pa_feature_table[1];
+                                                 ^
+0
+
+> +		pa_feature_table +=3D 2 + pa_feature_table[1];
+                                                         ^
+0
+
+> +	}
+> +
+> +	/* check if the specifier is long enough */
+> +	if (pabyte >=3D pa_feature_table[1])
+                                       ^
+0
 
 --=20
-Michael Ellerman
-IBM OzLabs
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-/NyXEDtnvWewDXaDOUcs
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+--Signature=_Sat__29_Apr_2006_12_38_29_+1000_eK_sGbzpt6aijjoC
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
+Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQBEUtCldSjSd0sB4dIRAvuAAJoCRE2IY9vUNJktvgvQ4SseLuwagQCgnKy2
-OcZQ2hoeI9hbV1DTcIAIAdM=
-=5euB
+iD8DBQFEUtGmFdBgD/zoJvwRAm8SAJ0R4fQklSv9kHWBDDhXdgy2KKD6lgCfQGXS
+cZSqIzQeOvKpRmUYfWRnsTM=
+=q2v1
 -----END PGP SIGNATURE-----
 
---=-/NyXEDtnvWewDXaDOUcs--
+--Signature=_Sat__29_Apr_2006_12_38_29_+1000_eK_sGbzpt6aijjoC--
