@@ -1,23 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2B8BA679EB
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 13:42:11 +1000 (EST)
-Date: Sat, 29 Apr 2006 13:42:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: Re: sign extension for 32bit syscalls on ppc64
-Message-Id: <20060429134204.2619adcd.sfr@canb.auug.org.au>
-In-Reply-To: <20060429131640.6f79e0d3.sfr@canb.auug.org.au>
-References: <20060428131254.GA507@lst.de>
-	<17490.42497.351114.712494@cargo.ozlabs.ibm.com>
-	<20060429113059.150cadd6.sfr@canb.auug.org.au>
-	<17490.53377.898206.21369@cargo.ozlabs.ibm.com>
-	<20060429131640.6f79e0d3.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sat__29_Apr_2006_13_42_04_+1000_K/+Qp8lHju_qooJB"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2AF8F679EB
+	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 13:48:00 +1000 (EST)
+Date: Fri, 28 Apr 2006 22:46:42 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC , PATCH] support for the ibm,pa_features cpu property
+Message-ID: <20060429034642.GK5518@pb15.lixom.net>
+References: <1146249684.27214.18.camel@localhost.localdomain>
+	<20060428192149.GJ5518@pb15.lixom.net>
+	<17490.51212.357234.664398@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17490.51212.357234.664398@cargo.ozlabs.ibm.com>
+From: Olof Johansson <olof@lixom.net>
+Cc: Olof Johansson <olof@lixom.net>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,34 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sat__29_Apr_2006_13_42_04_+1000_K/+Qp8lHju_qooJB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, Apr 29, 2006 at 11:57:32AM +1000, Paul Mackerras wrote:
+> Olof Johansson writes:
+> 
+> > Do you know why they went for this brand new extra architected bitfield
+> > instead of continuing down the way that processor features always have
+> > been documented before, by adding a property to the cpu device node?
+> 
+> They wanted to cover basically everything that we have CPU feature
+> bits for, plus some other things.  That would have been a lot of new
+> properties, so they went for one that had a bitmap in it, and made it
+> extensible in two different directions for good measure while they
+> were at it. :)
 
-On Sat, 29 Apr 2006 13:16:40 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> AT_FDCWD (actually -100, sorry) is not protected by __KERNEL__ in
-> include/linux/fcntl.h and sys_openat does not stop it being passed, so I
-> assume it is part of the user ABI.
+Sure, it might be a few, but we already have a handful. And having a
+bitfield only gives you a chance to say here or not, no version numbers,
+capacities, etc.
 
-And AT_FDCWD is mentioned in the Solaris documentation for openat(2).
+Anyway, I can't really debate it since I haven't seen the spec, just one
+implementation.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> > (Now, the naming convention of calling it a "pa feature" is unfortunate,
+> > but nothing I can really complain about since our stuff is not yet in
+> > tree.)
+> 
+> The "pa" is just "processor architecture", nothing to do with your
+> employer. :)
 
---Signature=_Sat__29_Apr_2006_13_42_04_+1000_K/+Qp8lHju_qooJB
-Content-Type: application/pgp-signature
+Yes, I know. Just saying. :)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQFEUuCMFdBgD/zoJvwRAvfLAKCcl3/6h15ASa237OIPAsviMbjfUwCcCpDK
-RPCiygppAvEPm6/sQyZlJE0=
-=QmPU
------END PGP SIGNATURE-----
-
---Signature=_Sat__29_Apr_2006_13_42_04_+1000_K/+Qp8lHju_qooJB--
+-Olof
