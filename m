@@ -1,25 +1,17 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A8070679E6
-	for <linuxppc-dev@ozlabs.org>; Sat, 29 Apr 2006 23:46:18 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: sign extension for 32bit syscalls on ppc64
-References: <20060428131254.GA507@lst.de>
-	<17490.42497.351114.712494@cargo.ozlabs.ibm.com>
-	<20060429113059.150cadd6.sfr@canb.auug.org.au>
-	<17490.53377.898206.21369@cargo.ozlabs.ibm.com>
-	<20060429131640.6f79e0d3.sfr@canb.auug.org.au>
-Date: Sat, 29 Apr 2006 15:46:11 +0200
-In-Reply-To: <20060429131640.6f79e0d3.sfr@canb.auug.org.au> (Stephen
-	Rothwell's message of "Sat, 29 Apr 2006 13:16:40 +1000")
-Message-ID: <jezmi4xzoc.fsf@sykes.suse.de>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 147EF679F5
+	for <linuxppc-dev@ozlabs.org>; Sun, 30 Apr 2006 01:20:52 +1000 (EST)
+Date: Sat, 29 Apr 2006 10:19:36 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: please pull powerpc.git 'merge' branch
+Message-ID: <20060429151936.GM5518@pb15.lixom.net>
+References: <17491.1134.565353.149941@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17491.1134.565353.149941@cargo.ozlabs.ibm.com>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, torvalds@osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,18 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
+On Sat, Apr 29, 2006 at 04:15:10PM +1000, Paul Mackerras wrote:
 
-> Has any testing been done on these interfaces that involves 32 bit
-> processes passing AT_FDCWD on 64 bit kernels (I realise that it will work
-> for some architectures but I suspect not ppc64).
+> Anton Blanchard:
+>       powerpc: Add cputable entry for POWER6
 
-Appears to work fine for me (tested with openat).
+I never saw this posted to the list.
 
-Andreas.
++#define PPC_FEATURE_ARCH_2_05 0x00001000
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Previously we've said implementation instead of specification
+("PPC_FEATURE_POWER5_PLUS" etc). That's better than saying base
+architecture version, since there are parts of the arch that might or
+might not be implemented (i.e. optional features, etc).
+
+> Paul Mackerras:
+>       powerpc/pseries: Tell firmware our capabilities on new machines
+
+I never saw this one on the list either.
+
+Don't you want to fall back to the ELF method if the prom call fails
+(ret != 0)? Right you close and return.
+
+
+-Olof
