@@ -1,41 +1,40 @@
-Return-Path: <moris_dong@hotmail.com>
-Received: from hotmail.com (bay19-f22.bay19.hotmail.com [64.4.53.72])
-	by ozlabs.org (Postfix) with ESMTP id 049B467A70
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 30 Apr 2006 18:32:49 +1000 (EST)
-Message-ID: <BAY19-F22FE6D4F4F38A760BBF9B2F8B00@phx.gbl>
-From: "moris dong" <moris_dong@hotmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Large Page Support, 2.6 kernel , PPC440
-Date: Sun, 30 Apr 2006 08:15:43 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 7B14E67B1F
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 01:04:52 +1000 (EST)
+Date: Sun, 30 Apr 2006 10:03:56 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: please pull powerpc.git 'merge' branch
+Message-ID: <20060430150356.GR5518@pb15.lixom.net>
+References: <17491.1134.565353.149941@cargo.ozlabs.ibm.com>
+	<71339D1F-CAF1-4FF0-A1A3-1A74B8984F05@kernel.crashing.org>
+	<20060430042059.GO5518@pb15.lixom.net>
+	<200604301342.02043.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200604301342.02043.arnd@arndb.de>
+From: Olof Johansson <olof@lixom.net>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, torvalds@osdl.org,
+	Paul Mackerras <paulus@samba.org>
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Friends,
-My PPC440 (32bit) MMU supports multiple page sizes.
-For the default 4K pages, my 2.6.11 kernel compiles and boots just fine.
-I want to re-build it with large pages, to improve my application 
-performance.
-I tried modifying PAGE_SHIFT in "page.h" to 13 (8K pages) and re-build my 
-kernel.
-Compilation worked out fine, but my kernel does NOT boot, nor it prints 
-anything to the console.
+On Sun, Apr 30, 2006 at 01:42:01PM +0200, Arnd Bergmann wrote:
 
-Has anyone successfully compiled & booted a 2.6 kernel with pages larger 
-than 4K ?
-What am I doing wrong ?
+> The Cell Broadband Engine Architecture in theory is 2.03 and also mandates
+> some of the extensions that are optional in there.
+> The relevant sections in the specs are:
 
-Thanks a lot.
+Ok. So Cell should really set PPC_FEATURE_ARCH_2_02 then, and possible
+PPC_FEATURE_CELL to signify the cell extensions?
 
-_________________________________________________________________
-Express yourself instantly with MSN Messenger! Download today it's FREE! 
-http://messenger.msn.click-url.com/go/onm00200471ave/direct/01/
+Right now ARCH_2_02 is not set as far as I can see.
+
+
+-Olof
