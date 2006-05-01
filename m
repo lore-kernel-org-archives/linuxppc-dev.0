@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 25F0667B3D
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 16:58:42 +1000 (EST)
-Subject: Re: [PATCH] via-pmu: report powerbutton as proper input event
+	by ozlabs.org (Postfix) with ESMTP id 807E567B49
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 17:16:16 +1000 (EST)
+Subject: Re: windfarm for PM72/PM73/RM31
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1146251713.5019.4.camel@localhost>
-References: <1146251713.5019.4.camel@localhost>
+To: "Robin H. Johnson" <robbat2@gentoo.org>
+In-Reply-To: <20060501064443.GA20481@curie-int.vc.shawcable.net>
+References: <20060501002719.GD15141@curie-int.vc.shawcable.net>
+	<A2D81A03-8CD5-41CD-BD49-3EDB1CDE53FD@laposte.net>
+	<20060501064443.GA20481@curie-int.vc.shawcable.net>
 Content-Type: text/plain
-Date: Mon, 01 May 2006 16:58:36 +1000
-Message-Id: <1146466716.30710.39.camel@localhost.localdomain>
+Date: Mon, 01 May 2006 17:16:05 +1000
+Message-Id: <1146467765.30710.41.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-04-28 at 21:15 +0200, Johannes Berg wrote:
-> This patch adds an input device for the power button so that userspace gets
-> notified about the user pressing it via the standard input layer.
+On Sun, 2006-04-30 at 23:44 -0700, Robin H. Johnson wrote:
+> On Mon, May 01, 2006 at 06:53:09AM +0200, ?tienne Bersac wrote:
+> > I own an iMac G5 rev C (iSight) with a PowerMac 12,1 included. Do you  
+> > intend to make support for it ? I will be happy to help you :)
+> I'd like to start on the PM72 stuff first, but please tar up your
+> /proc/device-tree/ directory and email it to me, and I can see about it.
+> 
+> If Apple stuck to the same sensors (max6690, lm75. lm87, ds1775, ds1631,
+> ad7417), it should be reasonable simple to add your machine afterwards.
+> 
+> Is there actually a reasonable archive of the OF node trees somewhere?
+> It think it might be handy in developing drivers in future. I've
+> presently got: PowerBook4,3 PowerMac7,2 PowerMac7,3 PowerMac11,2
 
-Looks interesting. Waht about other buttons/events the PMU can report ?
-
-> +#endif /* __VIA_PMU_EVENT_H */
-> --- linux-2.6.orig/include/linux/input.h	2006-04-28 20:00:37.417288704 +0200
-> +++ linux-2.6/include/linux/input.h	2006-04-28 20:00:48.157288704 +0200
-> @@ -658,6 +658,7 @@ struct input_absinfo {
->  #define BUS_I2C			0x18
->  #define BUS_HOST		0x19
->  #define BUS_GSC			0x1A
-> +#define BUS_PMU			0x20
-
-Magic numbers... BAD BAD BAD ... Somebody needs to LART the input layer
-people.
- 
-
-> @@ -2915,6 +2921,10 @@ static int __init init_pmu_led(void)
->  		if (pmu_led_init()) {
->  			printk(KERN_WARNING "via-pmu: LED failed to init\n");
->  		}
-> +
-> +		/* only on keylargo can the power button be on the pmu ... */
-> +		if (pmu_event_init())
-> +			printk(KERN_WARNING "via-pmu: couldn't add event device");
->  	}
->  
->  	return 0;
-
-Do we need these here ? Why not an initcall self-contained in each
-file ?
+I'm not sure we can publically post them, there might be some apple
+copyright lurking around. I have a fairly big archive here too.
 
 Ben.
