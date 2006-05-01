@@ -1,17 +1,23 @@
-Return-Path: <codevana@gmail.com>
-Received: from wproxy.gmail.com (wproxy.gmail.com [64.233.184.235])
-	by ozlabs.org (Postfix) with ESMTP id A49AC67BC3
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 07:25:59 +1000 (EST)
-Received: by wproxy.gmail.com with SMTP id i3so24774wra
-	for <linuxppc-dev@ozlabs.org>; Mon, 01 May 2006 14:25:57 -0700 (PDT)
-Message-ID: <7cb1293c0605011425w1cc34197h4d5fa73ad1077d5a@mail.gmail.com>
-Date: Mon, 1 May 2006 14:25:57 -0700
-From: "Srinivas Murthy" <codevana@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: ioremap
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 6B93167BBE
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 08:00:53 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 2 May 2006 00:00:35 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: DTC/dts modifications
+Message-ID: <20060501220034.GA22651@iram.es>
+References: <5CA113BC-1614-4551-87E5-6926E14C2225@kernel.crashing.org>
+	<1146512012.24239.28.camel@cashmere.sps.mot.com>
+	<695BB790-1E64-4B53-91DD-7DD88305F201@kernel.crashing.org>
+	<1146512732.24239.34.camel@cashmere.sps.mot.com>
+	<55FD11DB-54AF-4284-9E9A-C313F4232105@kernel.crashing.org>
+	<20060501150728.04694488.kim.phillips@freescale.com>
+	<00CD15B8-F448-4985-8EEC-3BBF61C0110B@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_22309_19516944.1146518757362"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <00CD15B8-F448-4985-8EEC-3BBF61C0110B@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,48 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_22309_19516944.1146518757362
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, May 01, 2006 at 03:28:34PM -0500, Kumar Gala wrote:
+> 
+> Cool, here's an invocation that seems to work well.  Not sure what  
+> causes linux = 1 (thus I need the -U linux).  Also address the line  
+> information that is normally spit out.
+> 
+> cpp -U linux -P -x assembler-with-cpp foo.dts
 
-Hi,
- Why does ioremap() not allow normal system RAM to be mapped in using
-ioremap().
+Try to add the -undef parameter:
 
- We have a need to access a portion of the normal system RAM to be mapped i=
-n
-non-cached.
+`-undef'
+     Do not predefine any system-specific or GCC-specific macros.  The
+     standard predefined macros remain defined.
 
- To simulate, I used kmalloc() to allocate the memory and then passed the
-virt_to_phys() of the memory to ioremap() but then noticed that ioremap()
-wont allow it.
+On this machine, the number of lines from:
 
- Is there another way to access this memory non-cached?
+cpp -dM -x assembler-with-cpp /dev/null
 
-Regards,
-_Srinivas
+drops from 83 (among which linux, unix, PPC, and powerpc do not start
+with underscores) to 5(!) when I add the -undef option. The only ones
+left are:
 
-------=_Part_22309_19516944.1146518757362
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+#define __linux__ 1
+#define __STDC_HOSTED__ 1
+#define __unix__ 1
+#define __gnu_linux__ 1
+#define __ASSEMBLER__ 1
 
-<div>Hi,</div>
-<div>&nbsp;Why does ioremap() not allow normal system RAM to be mapped in u=
-sing ioremap().</div>
-<div>&nbsp;</div>
-<div>&nbsp;We have a need to access&nbsp;a portion of the normal system RAM=
- to be mapped in non-cached.</div>
-<div>&nbsp;</div>
-<div>&nbsp;To simulate, I used kmalloc() to allocate the memory and then pa=
-ssed the virt_to_phys() of the memory to ioremap() but then noticed that io=
-remap() wont allow it.</div>
-<div>&nbsp;</div>
-<div>&nbsp;Is there another way to access this memory non-cached?</div>
-<div>&nbsp;</div>
-<div>Regards,</div>
-<div>_Srinivas</div>
-<div>&nbsp;</div>
+but at least they all have leading and trailing double underscores.
 
-------=_Part_22309_19516944.1146518757362--
+	Regards,
+	Gabriel
