@@ -2,21 +2,22 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A71FC67B55
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 19:22:03 +1000 (EST)
-Subject: Re: [PATCH] via-pmu: report powerbutton as proper input event
+	by ozlabs.org (Postfix) with ESMTP id B219467B5C
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 19:25:20 +1000 (EST)
+Subject: Re: [PATCH] convert powermac ide blink to new led infrastructure
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1146474566.30710.45.camel@localhost.localdomain>
-References: <1146251713.5019.4.camel@localhost>
-	<1146466716.30710.39.camel@localhost.localdomain>
-	<1146473774.24172.2.camel@localhost>
-	<1146474566.30710.45.camel@localhost.localdomain>
+In-Reply-To: <1146474648.30710.48.camel@localhost.localdomain>
+References: <1146235779.19164.109.camel@localhost>
+	<1146237326.19164.111.camel@localhost>
+	<1146466608.30710.36.camel@localhost.localdomain>
+	<1146473959.24172.4.camel@localhost>
+	<1146474648.30710.48.camel@localhost.localdomain>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-3Ad/TjCHCqXhqk5Id4vV"
-Date: Mon, 01 May 2006 11:21:54 +0200
-Message-Id: <1146475314.24172.7.camel@localhost>
+	boundary="=-Df9ndwETYjlc3SVFkHOH"
+Date: Mon, 01 May 2006 11:25:13 +0200
+Message-Id: <1146475513.24172.10.camel@localhost>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,43 +30,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-3Ad/TjCHCqXhqk5Id4vV
+--=-Df9ndwETYjlc3SVFkHOH
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2006-05-01 at 19:09 +1000, Benjamin Herrenschmidt wrote:
-> > What else does it report? As far as I know it doesn't have anything
-> > else, at least on my system.
->=20
-> Depends on the machine... earlier ones have the backlight there or
-> volume control.. then LID close could be an event too...
+On Mon, 2006-05-01 at 19:10 +1000, Benjamin Herrenschmidt wrote:
 
-Ok, yea. Well, we need to rework all of that. Currently, to get at the
-lid status, you have to open /dev/adb and do something through that.
+> Yes, there is a callback, that's the "done" function, but you can also
+> poll/check on request->complete though in this case, polling is not
+> recommended, the LED stuff should be as low latency as possible.
 
-I honestly don't understand the reason for this. Is it just historic?
+I suppose then what I'll do is request a done callback, and when an LED
+update comes in while not done, just save it into a new 'next state
+should be' variable, which is compared when done so that at worst I
+loose events, but not the final status.
+
+Can I use pmu_request from within the done callback with the same
+structure? Probably not a good idea right? I can schedule_work then.
 
 johannes
 
---=-3Ad/TjCHCqXhqk5Id4vV
+--=-Df9ndwETYjlc3SVFkHOH
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARFXTL6Vg1VMiehFYAQJN0xAAo7FGNIWF7JT7sJv/omXoVeUfpgL0iJp8
-sz1MyLCYwR08zgrgOtsofvfBgLmQSWGQtG1Fj/wtUfrNhRM8kdOIMEXbTC8FUKL6
-yCMSeoJwoAaaL/OI4tS9YAXJ6D5Y2jR7ogjA114hihocJh0aBoeqSnCPoL1KjfJ9
-/FunZ/w3EmOYRX8gS3bmV9iwGCl4gwm9DRDlS1Wsixe0EdKnS9j535klyQk4tEoh
-R6mXe+3nlKZ0legU696BMx1icB+ivRBkr4gtPonx4k8405d6JyI0ZyA5Vkgk2Fq+
-c4sTQZjXtHGD5uHQzBrJ1suggOkpmKBplheZIXSbCCfD/U+mnC/AcNVvS1F4JK8V
-vKgi4AbwIO4vJDAzFMJu18Cei/npBU3rrhcD8tT4PcKANJcKFDyYqiQUM6eu2er6
-sMPD42gacy3k9YTkQ+RdD17rHmG0mO8lm/Dw82tKW2JyN6a1gux5dbW4m4InZZjB
-7RooF+3PmIEAftsK/RPVSe2V+cHgzHo4qy0Fk9+Z1U4ZKpGGD64sUszshC8boN3/
-5ZgOQ99AaWK0g9znOqMAavVoRX/06gJSu52vA0/RdgDjeGHOTRSqtt/UP98YCqZO
-U+A40NlgumC2cbHGHWaaMqJTPqjlFn/TmJAb1iTbWlqchfLIV1tnlvRp5P4RLSP+
-KmnQekv1JOs=
-=oPrY
+iQIVAwUARFXT96Vg1VMiehFYAQIljg/+MIDC6GWyUVmc+bIRj4oXdyZ5OSLE8ir8
+lkY/u9/4p3AiW4+1Fr15NHq/JvDr8LxH6lTcIR34yahpydfHSdYDYh7NQx9L8RCY
+T5+dit9ZnJm0823rW/ka5De237RdKEVDiLmwUbFi/XutdwtKzxT6Z3vdhWT41K5K
+YJDVaxDckWqFIscHivv4ty8IoT8cyfwOrI6ZUc7SvPiWkU+gopQBW5ilt30MYWW1
+FQEVw/0efWsQ6RkTqkcWKRmpd3BCnSvFzugimOGIuXqAemySJ6ZVD3HPqvtzd4wa
+hFe3SfwiBFbKXUEmP0biWglUlRnDSj8tPnL9O2GuWItEXK237oGLR28mNufck3gY
+T4BpVbCeZid9oDjL7yMFhxAJMyHM/4Yw4atphUjOn2u/u+++sZ7QaoG9aSx6fUT+
+9wFonpqxSDyLUHR7WR5XNRaylLcqsR0kFmkTxvBDgcgsQ8V2yY4SVzB+1v7aur2O
+iMKI7BlFAgLRWRygyjfXVsPmaX8kF/s+z3wI9IFVG3yxxS1fXorVbkdm7mR2y5Mk
+TVHxnUWO3+nw3cWD7NieqivreSc+0GVtnwzzNNF2cFz08kkwlZQe1Mpu1HvpDGPp
+EON2Dh366JKxYsuyF+fB0fsy074H97qoNsCvxwZnzxOOidcgtO2yZb2RFPdOh5gD
+a8eUrJDR0ro=
+=YUQ6
 -----END PGP SIGNATURE-----
 
---=-3Ad/TjCHCqXhqk5Id4vV--
+--=-Df9ndwETYjlc3SVFkHOH--
