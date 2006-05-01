@@ -2,19 +2,20 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3303E67B4F
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 18:56:25 +1000 (EST)
-Subject: Re: [PATCH] via-pmu: report powerbutton as proper input event
+	by ozlabs.org (Postfix) with ESMTP id 8663D67B5D
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 18:59:26 +1000 (EST)
+Subject: Re: [PATCH] convert powermac ide blink to new led infrastructure
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1146466716.30710.39.camel@localhost.localdomain>
-References: <1146251713.5019.4.camel@localhost>
-	<1146466716.30710.39.camel@localhost.localdomain>
+In-Reply-To: <1146466608.30710.36.camel@localhost.localdomain>
+References: <1146235779.19164.109.camel@localhost>
+	<1146237326.19164.111.camel@localhost>
+	<1146466608.30710.36.camel@localhost.localdomain>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-IbZ9DmiQBU87ADOh4P3z"
-Date: Mon, 01 May 2006 10:56:13 +0200
-Message-Id: <1146473774.24172.2.camel@localhost>
+	boundary="=-OIjRnf82mviAHiJ1twOO"
+Date: Mon, 01 May 2006 10:59:19 +0200
+Message-Id: <1146473959.24172.4.camel@localhost>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,58 +28,51 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-IbZ9DmiQBU87ADOh4P3z
+--=-OIjRnf82mviAHiJ1twOO
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2006-05-01 at 16:58 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2006-04-28 at 21:15 +0200, Johannes Berg wrote:
-> > This patch adds an input device for the power button so that userspace =
-gets
-> > notified about the user pressing it via the standard input layer.
->=20
-> Looks interesting. Waht about other buttons/events the PMU can report ?
+On Mon, 2006-05-01 at 16:56 +1000, Benjamin Herrenschmidt wrote:
 
-What else does it report? As far as I know it doesn't have anything
-else, at least on my system.
+> Hrm... you find out the hard way in general ... we'll have to be careful
+> with this one, maybe have the PMU driver stop the LED after the device
+> suspend dance or do a sysdev with a suspend/resume and make sure that
+> any pending LED request is complete. Also, your code isn't testing if
+> the PMU request is still in progress before possibly sending another
+> one ... that's a bit dangerous (and may cause the LED to get "stuck").
+> You can re-use a request once it's complete though. In addition, my PMU
+> code was written to minimize spinlock usage in the hot path... There
+> might be a way to do the same here.
 
-> > +#define BUS_PMU			0x20
->=20
-> Magic numbers... BAD BAD BAD ... Somebody needs to LART the input layer
-> people.
+I don't really understand how the PMU works hence wasn't really sure
+what the whole request thing does. Do we get an interrupt when it
+completes or something? If so, could I get at that notification via the
+request structure?
 
-It's not really a "magic" number since it doesn't really carry any
-information, or would you like string identifiers in each device
-descriptor? An enum would be just the same, in fact, the definition
-could be rewritten as an enum :)
+I'll take a closer look and rework this, I think it's worthwhile even if
+it requires some more effort.
 
-> Do we need these here ? Why not an initcall self-contained in each
-> file ?
-
-No heh, good point.
-
-Thanks,
 johannes
 
---=-IbZ9DmiQBU87ADOh4P3z
+--=-OIjRnf82mviAHiJ1twOO
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARFXNK6Vg1VMiehFYAQLe+g//aTfvrZLcNxcCDgbT5ikoqtbjNE0jwKd8
-56b4rHnAENyJTse3TDce2swFiAw5kmzF2x6+sLz2bbQvbwk1uQYiupE62e7yahJ+
-UMpiqdljXrVqbUsr5D7ghp86QEqHpMMRzPYeQ+ePv5AiYdBgJ/pUAQJyJ3eyI+5R
-3yhy3e7390iFBeODIOs4JC3LaqDQkntB19eb3CjFJn74J44KSPj95Lu+JBTwUiWh
-1aTZ6RCU/tLMgWI0tSZSB5MtNIlAbYNEBX2fb0zCkJ+xwHZlb4Qt2CTSgEtdQDnI
-AmDvK0xC9pnSGXGpH0+bMkfiM8XJzCSIjiP6hUJ6lG0XLl0sIrZEn6pjn0H9SFGg
-/1EDCZ8OzMg0hUQqJXmAPotdet7DbpshduXKcxwx9J4qNTjjR33znyMZaopi9ZY3
-nHSQeiAwa13UyrW9whXYu+4p4jjykT+KdJRuVAQ9LFt3mIcD2J+hLS18UZwZrlYA
-tEErMblXNUIrjr1W8zMYp0suhIsu+2u7V52qbgGjm8S7x4jL8VawPXd0H8Pi3wVx
-3eW9WiHfVQriiPiNlR3nEYMopRVNV36YozH1QS1gKbyVxLOJkxTONpGjQ5DH97GG
-bUrtEgPMFYGFThUu9MNS3enIAA9zJiIbkY+KK5Gw7338RC8B1aEnfbPJihicQ9ZM
-khHSAQ/yLUY=
-=xlLn
+iQIVAwUARFXN5aVg1VMiehFYAQI1NxAAvd9TAwuSywrWPntJ9BmLmVPlQi+2CbIL
+621wat+Sl5xi0ikC4wWNmmA17zNpP9hahHkO9dPu6+bpyHpTPngc5Fmremxt4vDg
+ZEma9HACBuBDfp8nZy5bkkls+7W73NWb8LiWIVoAXepugc0WLzeapQ/PpcqeADny
+DTnyP4diT43Oo1mpCXZKB8uVPkj9U6j+yuriP06XBdRSwPpMDofyTnRws5PL3AL3
+IKV3kbbIGfEE697sSvXYl9oOKroPGo3qIxgNFdcgOfCu8Ph0WQ4sgC7NymDy9Yp6
+gfKKYSc6jzPh8eEgqG6dzqdjmGCkab01QxX49+6XV1+l0dDmN8BkXU/u1W7cRWuq
+gmXa21d7iUkUKs8tQCqN7Nc0o+tj/QP61djWSJOzqGsWCmGdUj5q1eocQmERHZkR
+tV5b90kVLRo/zKkXFyq9zKn7MNupjq4F8YiOKZHC3faz/pEtFxxLAZ4orb/6/6j5
+xlx1niZTquzYjVJ20C42EA1envGi+Zl4XxkGLMxFQwrNUWZFN8m2x7ybOl10AzMw
+fWGY0u0SfQXamadd+ryTnPm984jfBizLof9H1ThLaF/SHZLvLyvLiTFmIr0HPdPw
+otQEfBK1q89ovLogRZrgPWnV4CvVKSigUxXYLSliH5CERYb3cwVZryokNAZUAwau
+ELVPynuO+Q0=
+=40ki
 -----END PGP SIGNATURE-----
 
---=-IbZ9DmiQBU87ADOh4P3z--
+--=-OIjRnf82mviAHiJ1twOO--
