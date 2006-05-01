@@ -1,18 +1,9 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3102967B4F
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 17:17:40 +1000 (EST)
-Subject: Re: windfarm for PM72/PM73/RM31
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Robin H. Johnson" <robbat2@gentoo.org>
-In-Reply-To: <20060501002719.GD15141@curie-int.vc.shawcable.net>
-References: <20060501002719.GD15141@curie-int.vc.shawcable.net>
-Content-Type: text/plain
-Date: Mon, 01 May 2006 17:17:33 +1000
-Message-Id: <1146467853.30710.43.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Mon, 01 May 2006 17:40:41 +1000
+Subject: [PATCH] powerpc: Export flat device tree via debugfs for debugging
+Message-Id: <20060501074044.D552967B55@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,18 +14,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+If DEBUG is turned on in prom.c, export the flat device tree via debugfs.
+This has been handy on several occasions.
 
-> 1. Message naming consistancy - there are a number of printk/DBG
-> statements that seem to flip randomly between using a prefix of
-> 'windfarm:' or 'wf:', and then some that omit it entirely.
-> Any consensus on which one is preferred?
+To look at it:
+ # mount -t debugfs none /sys/kernel/debug
+ # od -a /sys/kernel/debug/powerpc/flat-device-tree
+ and/or
+ # dtc -fI dtb /sys/kernel/debug/powerpc/flat-device-tree -O dts
 
-Not really... I tended to use "wf" for debug and "windfarm" for normally
-visible messages but I may not have been totally consistent.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-> 2. Could somebody please send me a tarball of /proc/device-tree/ from a
-> RackMac3,1 unit? I've got the data for PM72/73 already.
+ arch/powerpc/kernel/prom.c |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-I'll do so tomorrow, ping me if you don't hear from me.
-
-Ben.
+Index: to-merge/arch/powerpc/kernel/prom.c
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/prom.c
++++ to-merge/arch/powerpc/kernel/prom.c
+@@ -30,6 +30,7 @@
+ #include <linux/bitops.h>
+ #include <linux/module.h>
+ #include <linux/kexec.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -2009,3 +2010,27 @@ void kdump_move_device_tree(void)
+ 	/* XXX should we unreserve the old DT? */
+ }
+ #endif /* CONFIG_KEXEC */
++
++#ifdef DEBUG
++static struct debugfs_blob_wrapper flat_dt_blob;
++
++static int __init export_flat_device_tree(void)
++{
++	struct dentry *d;
++
++	d = debugfs_create_dir("powerpc", NULL);
++	if (!d)
++		return 1;
++
++	flat_dt_blob.data = initial_boot_params;
++	flat_dt_blob.size = initial_boot_params->totalsize;
++
++	d = debugfs_create_blob("flat-device-tree", S_IFREG | S_IRUSR,
++				d, &flat_dt_blob);
++	if (!d)
++		return 1;
++
++	return 0;
++}
++__initcall(export_flat_device_tree);
++#endif
