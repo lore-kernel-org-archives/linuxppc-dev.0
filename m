@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B6BD467BAC
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 05:39:53 +1000 (EST)
-In-Reply-To: <1146512012.24239.28.camel@cashmere.sps.mot.com>
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 4A53067BB4
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 05:46:13 +1000 (EST)
+Subject: Re: DTC/dts modifications
+From: Jon Loeliger <jdl@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <695BB790-1E64-4B53-91DD-7DD88305F201@kernel.crashing.org>
 References: <5CA113BC-1614-4551-87E5-6926E14C2225@kernel.crashing.org>
 	<1146512012.24239.28.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <695BB790-1E64-4B53-91DD-7DD88305F201@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: DTC/dts modifications
-Date: Mon, 1 May 2006 14:39:44 -0500
-To: Jon Loeliger <jdl@freescale.com>
+	<695BB790-1E64-4B53-91DD-7DD88305F201@kernel.crashing.org>
+Content-Type: text/plain
+Message-Id: <1146512732.24239.34.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Mon, 01 May 2006 14:45:33 -0500
 Cc: Jon Loeliger <jdl@jdl.com>,
 	"linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,51 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2006-05-01 at 14:39, Kumar Gala wrote:
 
-On May 1, 2006, at 2:33 PM, Jon Loeliger wrote:
+> 
+> Comment aren't the issue.
 
-> On Sat, 2006-04-29 at 11:00, Kumar Gala wrote:
->> All,
->>
->> What evilness would it be to change the use of '#' in the .dts format
->> to some other character like '$' or '%'.
->
-> Uh, use of '#' for what?  Current comment style is
-> either C or C++, ie, /* ... */ or //.
+Ah, ok.
 
-Comment aren't the issue.
 
->>   The problem is the use of
->> '#' prevents use from using cpp which would make some aspects of
->> building up .dts for boards far more useful.
->
-> I think to get CPP to be usable, it will need to handle
-> the # emitted line-location markers, "# <line> <file> <level>".
+> > I think to get CPP to be usable, it will need to handle
+> > the # emitted line-location markers, "# <line> <file> <level>".
+> 
+> Don't follow you here.
 
-Don't follow you here.
+The pre-processor emits crap like this:
 
->> We can easily provide a one line script to convert people's .dts to
->> the new format.
->
-> I don't think there is a conversion necessary yet.
-> Did I miss something here?
+# 1 "cmd_load.c"
+# 1 "/proj/ppc/sysperf/sw/u/jdl/86xx/u-boot-86xx/common//"
+# 1 "<built-in>"
+# 1 "<command line>"
+# 1 "cmd_load.c"
+# 27 "cmd_load.c"
+# 1 "/proj/ppc/sysperf/sw/u/jdl/86xx/u-boot-86xx/include/common.h" 1
+# 30 "/proj/ppc/sysperf/sw/u/jdl/86xx/u-boot-86xx/include/common.h"
+typedef unsigned char uchar;
+typedef volatile unsigned long vu_long;
+typedef volatile unsigned short vu_short;
+typedef volatile unsigned char vu_char;
 
-Try running a current .dts through cpp today.  You will get errors like:
+> Try running a current .dts through cpp today.  You will get errors like:
+> 
+> oftree.dts:15:3: error: invalid preprocessing directive #address
 
-oftree.dts:15:3: error: invalid preprocessing directive #address
-oftree.dts:16:3: error: invalid preprocessing directive #size
-oftree.dts:20:4: error: invalid preprocessing directive #cpus
-oftree.dts:21:4: error: invalid preprocessing directive #address
-oftree.dts:22:4: error: invalid preprocessing directive #size
-oftree.dts:25:2: error: invalid preprocessing directive #foobar
+> Because of props like:
+> 
+>        #cpus = <1>;
+>        #address-cells = <1>;
+>        #size-cells = <0>;
+> 
+> If these used some other symbol instead of '#' cpp will be happy and  
+> we can use it to create macros for us.
 
-Because of props like:
+Yeah, we're not going to be able to change those; they
+are "By The Book".
 
-       #cpus = <1>;
-       #address-cells = <1>;
-       #size-cells = <0>;
+Instead, we'll have to make the lexical analysis conscious
+of something like a <newline> context sensitive token or so.
+Or throw some flag to cpp to not emit location markers.
 
-If these used some other symbol instead of '#' cpp will be happy and  
-we can use it to create macros for us.
+Or something.
 
-- k
+jdl
