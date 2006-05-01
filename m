@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A6799679FC
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 03:54:13 +1000 (EST)
-In-Reply-To: <20060501074044.D552967B55@ozlabs.org>
-References: <20060501074044.D552967B55@ozlabs.org>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7C163A77-FF5F-49E7-87CF-0EA0411FE7A6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Export flat device tree via debugfs for debugging
-Date: Mon, 1 May 2006 12:54:04 -0500
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <mbligh@google.com>
+Message-ID: <44564BEC.1040803@google.com>
+Date: Mon, 01 May 2006 10:57:00 -0700
+From: Martin Bligh <mbligh@google.com>
+MIME-Version: 1.0
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: 2.6.17-rc2-mm1
+References: <4450F5AD.9030200@google.com>	
+	<20060428012022.7b73c77b.akpm@osdl.org>
+	<44561A1E.7000103@google.com>	
+	<20060501100731.051f4eff.akpm@osdl.org>	
+	<1146503960.317.1.camel@dyn9047017100.beaverton.ibm.com>	
+	<445644B7.7060807@google.com>
+	<1146506105.317.4.camel@dyn9047017100.beaverton.ibm.com>
+In-Reply-To: <1146506105.317.4.camel@dyn9047017100.beaverton.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc64-dev@ozlabs.org, ak@suse.de,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,69 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Badari Pulavarty wrote:
+> On Mon, 2006-05-01 at 10:26 -0700, Martin Bligh wrote:
+> 
+>>>I ran mtest01 multiple times with various options on my 4-way AMD64 box.
+>>>So far couldn't reproduce the problem (2.6.17-rc3-mm1).
+>>>
+>>>Are there any special config or test options you are testing with ?
+>>
+>>Config is here:
+>>
+>>http://ftp.kernel.org/pub/linux/kernel/people/mbligh/config/abat/amd64
+>>
+>>It's just doing "runalltests", I think.
+> 
+> 
+> FWIW, I tried your config file on my 4-way AMD64 (melody) box 
+> and ran latest "mtest01" fine.
+> 
+> I am now trying runalltests. I guess, its time to bi-sect :(
 
-On May 1, 2006, at 2:40 AM, Michael Ellerman wrote:
+There was a panic on PPC64 during LTP too, but it seems to have gone
+away with rc3-mm1. Not sure if it was really fixed, or just intermittent.
 
-> If DEBUG is turned on in prom.c, export the flat device tree via  
-> debugfs.
-> This has been handy on several occasions.
->
-> To look at it:
->  # mount -t debugfs none /sys/kernel/debug
->  # od -a /sys/kernel/debug/powerpc/flat-device-tree
->  and/or
->  # dtc -fI dtb /sys/kernel/debug/powerpc/flat-device-tree -O dts
->
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->
->  arch/powerpc/kernel/prom.c |   25 +++++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
->
-> Index: to-merge/arch/powerpc/kernel/prom.c
-> ===================================================================
-> --- to-merge.orig/arch/powerpc/kernel/prom.c
-> +++ to-merge/arch/powerpc/kernel/prom.c
-> @@ -30,6 +30,7 @@
->  #include <linux/bitops.h>
->  #include <linux/module.h>
->  #include <linux/kexec.h>
-> +#include <linux/debugfs.h>
->
->  #include <asm/prom.h>
->  #include <asm/rtas.h>
-> @@ -2009,3 +2010,27 @@ void kdump_move_device_tree(void)
->  	/* XXX should we unreserve the old DT? */
->  }
->  #endif /* CONFIG_KEXEC */
-> +
-> +#ifdef DEBUG
+http://test.kernel.org/abat/29675/debug/console.log
 
-Shouldn't this also depend on DEBUGFS being built in.
-
-> +static struct debugfs_blob_wrapper flat_dt_blob;
-> +
-> +static int __init export_flat_device_tree(void)
-> +{
-> +	struct dentry *d;
-> +
-> +	d = debugfs_create_dir("powerpc", NULL);
-> +	if (!d)
-> +		return 1;
-> +
-> +	flat_dt_blob.data = initial_boot_params;
-> +	flat_dt_blob.size = initial_boot_params->totalsize;
-> +
-> +	d = debugfs_create_blob("flat-device-tree", S_IFREG | S_IRUSR,
-> +				d, &flat_dt_blob);
-> +	if (!d)
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +__initcall(export_flat_device_tree);
-> +#endif
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+M.
