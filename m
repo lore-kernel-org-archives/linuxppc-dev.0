@@ -1,19 +1,16 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BFB9767D2A
-	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 23:37:55 +1000 (EST)
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@osdl.org, davej@codemonkey.org.uk, tony.luck@intel.com,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org, bob.picco@hp.com,
-	ak@suse.de, linuxppc-dev@ozlabs.org
-Message-Id: <20060501133751.6379.12632.sendpatchset@skynet>
-In-Reply-To: <20060501133530.6379.66000.sendpatchset@skynet>
-References: <20060501133530.6379.66000.sendpatchset@skynet>
-Subject: [PATCH 7/7] Print out debugging information during initialisation
-Date: Mon,  1 May 2006 14:37:51 +0100 (IST)
-Cc: Mel Gorman <mel@csn.ul.ie>
+Return-Path: <mbligh@google.com>
+Message-ID: <44561A1E.7000103@google.com>
+Date: Mon, 01 May 2006 07:24:30 -0700
+From: "Martin J. Bligh" <mbligh@google.com>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.17-rc2-mm1
+References: <4450F5AD.9030200@google.com>
+	<20060428012022.7b73c77b.akpm@osdl.org>
+In-Reply-To: <20060428012022.7b73c77b.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc64-dev@ozlabs.org, Andi Kleen <ak@suse.de>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,216 +20,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Andrew Morton wrote:
+> (I did s/linux-kernel@google.com/linux-kernel@vger.kernel.org/)
+> 
+> Martin Bligh <mbligh@google.com> wrote:
+> 
+>>Still crashes in LTP on x86_64:
+>>(introduced in previous release)
+>>
+>>http://test.kernel.org/abat/29674/debug/console.log
+> 
+> 
+> What a mess.  A doublefault inside an NMI watchdog timeout.  I think.  It's
+> hard to see.  Some CPUs are stuck on a CPU scheduler lock, others seem to
+> be stuck in flush_tlb_others.  One of these could be a consequence of the
+> other, or both could be a consequence of something else.
 
-The zone and hole sizing code is new and unexpected problems showed up
-during early releases on machines that were not covered by the pre-release
-tests. This patch prints out useful information when those unexpected
-situations occur.
+OK, well the latest one seems cleaner, on -rc3-mm1.
+http://test.kernel.org/abat/30007/debug/console.log
 
-It is not expected that this patch become a permanent part of the set.
+Just has the double fault, with no NMI watchdog timeouts. Not that
+it means any more to me, but still ;-) mtest01 seems to be able to
+reproduce this every time, but I don't have an appropriate box here
+to diagnose it with (this was a 4x Opteron inside IBM), and it's
+definitely something in -mm that's not in mainline.
 
+M.
 
- mem_init.c |   62 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 58 insertions(+), 4 deletions(-)
+double fault: 0000 [1] SMP
+last sysfs file: /devices/pci0000:00/0000:00:06.0/resource
+CPU 0
+Modules linked in:
+Pid: 20519, comm: mtest01 Not tainted 2.6.17-rc3-mm1-autokern1 #1
+RIP: 0010:[<ffffffff8047c8b8>] <ffffffff8047c8b8>{__sched_text_start+1856}
+RSP: 0000:0000000000000000  EFLAGS: 00010082
+RAX: 0000000000000000 RBX: 0000000000000000 RCX: ffffffff805d9438
+RDX: ffff8100db12c0d0 RSI: ffffffff805d9438 RDI: ffff8100db12c0d0
+RBP: ffffffff805d9438 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+R13: ffff8100e39bd440 R14: ffff810008003620 R15: 000002b02751726c
+FS:  0000000000000000(0000) GS:ffffffff805fa000(0063) knlGS:00000000f7dd0460
+CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
+CR2: fffffffffffffff8 CR3: 00000000da399000 CR4: 00000000000006e0
+Process mtest01 (pid: 20519, threadinfo ffff8100b1bb4000, task 
+ffff8100db12c0d0)
+Stack: ffffffff80579e20 ffff8100db12c0d0 0000000000000001 ffffffff80579f58
+        0000000000000000 ffffffff80579e78 ffffffff8020b0b2 ffffffff80579f58
+        0000000000000000 ffffffff80485520
+Call Trace: <#DF> <ffffffff8020b0b2>{show_registers+140}
+        <ffffffff8020b357>{__die+159} <ffffffff8020b3cc>{die+50}
+        <ffffffff8020bba6>{do_double_fault+115} 
+<ffffffff8020aa91>{double_fault+125}
+        <ffffffff8047c8b8>{__sched_text_start+1856} <EOE>
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-diff -rup -X /usr/src/patchset-0.5/bin//dontdiff linux-2.6.17-rc3-mm1-106-breakout_mem_init/mm/mem_init.c linux-2.6.17-rc3-mm1-107-debug/mm/mem_init.c
---- linux-2.6.17-rc3-mm1-106-breakout_mem_init/mm/mem_init.c	2006-05-01 11:51:50.000000000 +0100
-+++ linux-2.6.17-rc3-mm1-107-debug/mm/mem_init.c	2006-05-01 11:51:50.000000000 +0100
-@@ -341,6 +341,9 @@ void __meminit memmap_init_zone(unsigned
- 	unsigned long end_pfn = start_pfn + size;
- 	unsigned long pfn;
- 
-+	printk("memmap_init_zone(size %lu, nid %d, zone %lu, start_pfn %lu)\n",
-+						size, nid, zone, start_pfn);
-+
- 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
- 		if (!early_pfn_valid(pfn))
- 			continue;
-@@ -661,6 +664,7 @@ __meminit int init_currently_empty_zone(
- }
- 
- #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
-+
- /* Note: nid == MAX_NUMNODES returns first region */
- static int __init first_active_region_index_in_nid(int nid)
- {
-@@ -713,13 +717,24 @@ void __init free_bootmem_with_active_reg
- 	for_each_active_range_index_in_nid(i, nid) {
- 		unsigned long size_pages = 0;
- 		unsigned long end_pfn = early_node_map[i].end_pfn;
--		if (early_node_map[i].start_pfn >= max_low_pfn)
-+		if (early_node_map[i].start_pfn >= max_low_pfn) {
-+			printk("start_pfn %lu >= %lu\n", early_node_map[i].start_pfn,
-+								max_low_pfn);
- 			continue;
-+		}
- 
--		if (end_pfn > max_low_pfn)
-+		if (end_pfn > max_low_pfn) {
-+			printk("end_pfn %lu going back to %lu\n", early_node_map[i].end_pfn,
-+									max_low_pfn);
- 			end_pfn = max_low_pfn;
-+		}
- 
- 		size_pages = end_pfn - early_node_map[i].start_pfn;
-+		printk("free_bootmem_node(%d, %lu, %lu) :::: pfn ranges (%d, %lu, %lu)\n",
-+				early_node_map[i].nid,
-+				PFN_PHYS(early_node_map[i].start_pfn),
-+				PFN_PHYS(size_pages),
-+				early_node_map[i].nid, early_node_map[i].start_pfn, end_pfn);
- 		free_bootmem_node(NODE_DATA(early_node_map[i].nid),
- 				PFN_PHYS(early_node_map[i].start_pfn),
- 				size_pages << PAGE_SHIFT);
-@@ -729,10 +744,15 @@ void __init free_bootmem_with_active_reg
- void __init sparse_memory_present_with_active_regions(int nid)
- {
- 	unsigned int i;
--	for_each_active_range_index_in_nid(i, nid)
-+	for_each_active_range_index_in_nid(i, nid) {
-+		printk("memory_present(%d, %lu, %lu)\n",
-+			early_node_map[i].nid,
-+			early_node_map[i].start_pfn,
-+			early_node_map[i].end_pfn);
- 		memory_present(early_node_map[i].nid,
- 				early_node_map[i].start_pfn,
- 				early_node_map[i].end_pfn);
-+	}
- }
- 
- void __init get_pfn_range_for_nid(unsigned int nid,
-@@ -785,6 +805,8 @@ unsigned long __init __absent_pages_in_r
- 	unsigned long prev_end_pfn = 0, hole_pages = 0;
- 	unsigned long start_pfn;
- 
-+	printk("__absent_pages_in_range(%d, %lu, %lu) = ", nid,
-+					range_start_pfn, range_end_pfn);
- 	/* Find the end_pfn of the first active range of pfns in the node */
- 	i = first_active_region_index_in_nid(nid);
- 	if (i == MAX_ACTIVE_REGIONS)
-@@ -811,6 +833,8 @@ unsigned long __init __absent_pages_in_r
- 		prev_end_pfn = early_node_map[i].end_pfn;
- 	}
- 
-+	printk("%lu\n", hole_pages);
-+
- 	return hole_pages;
- }
- 
-@@ -975,6 +999,9 @@ void __init add_active_range(unsigned in
- {
- 	unsigned int i;
- 
-+	printk("add_active_range(%d, %lu, %lu): ",
-+			nid, start_pfn, end_pfn);
-+
- 	/* Merge with existing active regions if possible */
- 	for (i = 0; early_node_map[i].end_pfn; i++) {
- 		if (early_node_map[i].nid != nid)
-@@ -982,12 +1009,15 @@ void __init add_active_range(unsigned in
- 
- 		/* Skip if an existing region covers this new one */
- 		if (start_pfn >= early_node_map[i].start_pfn &&
--				end_pfn <= early_node_map[i].end_pfn)
-+				end_pfn <= early_node_map[i].end_pfn) {
-+			printk("Existing\n");
- 			return;
-+		}
- 
- 		/* Merge forward if suitable */
- 		if (start_pfn <= early_node_map[i].end_pfn &&
- 				end_pfn > early_node_map[i].end_pfn) {
-+			printk("Merging forward\n");
- 			early_node_map[i].end_pfn = end_pfn;
- 			return;
- 		}
-@@ -995,6 +1025,7 @@ void __init add_active_range(unsigned in
- 		/* Merge backward if suitable */
- 		if (start_pfn < early_node_map[i].end_pfn &&
- 				end_pfn >= early_node_map[i].start_pfn) {
-+			printk("Merging backwards\n");
- 			early_node_map[i].start_pfn = start_pfn;
- 			return;
- 		}
-@@ -1006,6 +1037,7 @@ void __init add_active_range(unsigned in
- 		return;
- 	}
- 
-+	printk("New\n");
- 	early_node_map[i].nid = nid;
- 	early_node_map[i].start_pfn = start_pfn;
- 	early_node_map[i].end_pfn = end_pfn;
-@@ -1017,16 +1049,22 @@ void __init shrink_active_range(unsigned
- 	unsigned int i;
- 
- 	/* Find the old active region end and shrink */
-+	printk("Shrinking %u from %lu to %lu: ",
-+					nid, old_end_pfn, new_end_pfn);
- 	for_each_active_range_index_in_nid(i, nid) {
- 		if (early_node_map[i].end_pfn == old_end_pfn) {
-+			printk("Done\n");
- 			early_node_map[i].end_pfn = new_end_pfn;
- 			break;
- 		}
- 	}
-+
-+	printk("Not found\n");
- }
- 
- void __init remove_all_active_ranges()
- {
-+	printk("remove_all_active_ranges()\n");
- 	memset(early_node_map, 0, sizeof(early_node_map));
- }
- 
-@@ -1054,6 +1092,14 @@ static void __init sort_node_map(void)
- 
- 	sort(early_node_map, num, sizeof(struct node_active_region),
- 						cmp_node_active_region, NULL);
-+
-+	printk("Dumping sorted node map\n");
-+	for (num = 0; early_node_map[num].end_pfn; num++) {
-+		printk("entry %lu: %d  %lu -> %lu\n", num,
-+				early_node_map[num].nid,
-+				early_node_map[num].start_pfn,
-+				early_node_map[num].end_pfn);
-+	}
- }
- 
- /* Find the lowest pfn for a node. This depends on a sorted early_node_map */
-@@ -1069,6 +1115,7 @@ unsigned long __init find_min_pfn_for_no
- 	return 0;
- }
- 
-+
- unsigned long __init find_min_pfn_with_active_regions(void)
- {
- 	return find_min_pfn_for_node(MAX_NUMNODES);
-@@ -1082,6 +1129,7 @@ unsigned long __init find_max_pfn_with_a
- 	for (i = 0; early_node_map[i].end_pfn; i++)
- 		max_pfn = max(max_pfn, early_node_map[i].end_pfn);
- 
-+	printk("find_max_pfn_with_active_regions() == %lu\n", max_pfn);
- 	return max_pfn;
- }
- 
-@@ -1093,6 +1141,10 @@ void __init free_area_init_nodes(unsigne
- 	unsigned long nid;
- 	int zone_index;
- 
-+	printk("free_area_init_nodes(%lu, %lu, %lu, %lu)\n",
-+			arch_max_dma_pfn, arch_max_dma32_pfn,
-+			arch_max_low_pfn, arch_max_high_pfn);
-+
- 	/* Record where the zone boundaries are */
- 	memset(arch_zone_lowest_possible_pfn, 0,
- 				sizeof(arch_zone_lowest_possible_pfn));
-@@ -1109,6 +1161,8 @@ void __init free_area_init_nodes(unsigne
- 			arch_zone_highest_possible_pfn[zone_index-1];
- 	}
- 
-+	printk("free_area_init_nodes(): find_min_pfn = %lu\n", find_min_pfn_with_active_regions());
-+
- 	/* Regions in the early_node_map can be in any order */
- 	sort_node_map();
- 
+Code: e8 4c ba d8 ff 65 48 8b 34 25 00 00 00 00 4c 8b 46 08 f0 41
+RIP <ffffffff8047c8b8>{__sched_text_start+1856} RSP <0000000000000000>
+  -- 0:conmux-control -- time-stamp -- May/01/06  3:54:37 --
