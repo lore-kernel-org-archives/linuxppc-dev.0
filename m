@@ -1,19 +1,33 @@
-Return-Path: <kkboyanov@gmail.com>
-Received: from xproxy.gmail.com (xproxy.gmail.com [66.249.82.202])
-	by ozlabs.org (Postfix) with ESMTP id 1A40967B69
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E5353679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  1 May 2006 19:54:23 +1000 (EST)
-Received: by xproxy.gmail.com with SMTP id s17so1673917wxc
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 01 May 2006 02:54:21 -0700 (PDT)
-Message-ID: <929bf310605010254j5b9afccdw@mail.gmail.com>
-Date: Mon, 1 May 2006 11:54:21 +0200
-From: "Konstantin Boyanov" <kkboyanov@gmail.com>
+	Tue,  2 May 2006 01:22:01 +1000 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1FaaDe-0004BH-CE
+	for linuxppc-embedded@ozlabs.org; Mon, 01 May 2006 17:21:51 +0200
+Received: from icarus.icarus.com ([64.105.89.2])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Mon, 01 May 2006 17:21:50 +0200
+Received: from steve by icarus.icarus.com with local (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Mon, 01 May 2006 17:21:50 +0200
 To: linuxppc-embedded@ozlabs.org
-Subject: Building custom 2.6 kernel
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_5549_15162349.1146477261375"
+From: Stephen Williams <steve@icarus.com>
+Subject: Re: PPC 405GPr support in linux 2.4.32
+Date: Mon, 01 May 2006 08:21:14 -0700
+Message-ID: <4456276A.9050405@icarus.com>
+References: <e2ov5s$1hn$1@sea.gmane.org>
+	<20060426163540.H16236@cox.net>	<20060427180743.GB11206@gate.ebshome.net>	<44510E4D.5040504@icarus.com>
+	<20060430164013.GA4631@dmt>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20060430164013.GA4631@dmt>
+Sender: news <news@sea.gmane.org>
+Cc: Willy Tarreau <willy@w.ods.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,101 +38,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_5549_15162349.1146477261375
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Marcelo Tosatti wrote:
+> Folks,
+> 
+> The v2.4 patch acceptance policy has been shifting gradually from
+> "accept new features" to "critical fixes only", and at this point in
+> time the goal is to have a minimal amount of modifications as possible.
+> 
+> There should be no need for major patch reworking with reference to new
+> v2.4 releases.
+> 
+> Willy Tarreau created a repository of useful v2.4 patches for this sort
+> of situations. Stephen, Eugene, I think the 405GPr patches are good candidates.
+> 
+> http://w.ods.org/linux/kernel/2.4/lkup/hardware.html
 
-Hi there,
+This (and things like it) needs to be *much* better advertised.
+I had no idea it existed, or where I would look for such a thing.
+It does no one any good if no one thinks to look for it;-)
 
-These days I'm trying to compile and get working a 2.6 kernel for the
-Motorola MVME6100 VME single board computer. For the purpose I'm using an
-ELinOS IDE by the SysGo company (don't ask me why, it's the boss' decision)=
-.
-Since ELinOS lacks support I post here with the hope of getting some help.
-Thus far I have succeeded in only compiling a bare kernel but not getting i=
-t
-up. There is a running RedHat distro on the board but I want to get a
-customized cernel for it, because RedHat does not support certain stuff
-(like VME drivers for example).
-So, the kernel I compiled seems to be quite messy, as you can see from the
-dmesg at startup:
-
-The existing kernel >>
-http://www-zeuthen.desy.de/~boyanov/dmesg_normal.txt<http://www-zeuthen.des=
-y.de/%7Eboyanov/dmesg_normal.txt>
-The new one          >>
-http://www-zeuthen.desy.de/~boyanov/dmesg_failed.txt<http://www-zeuthen.des=
-y.de/%7Eboyanov/dmesg_failed.txt>
-
-As you can see in the links above the kernel panics because of insufficient
-"init" part of the command line passed to it. Another issue is the SCSI
-hard-disk initialization and RAM disk creation. I forgot to mention, becaus=
-e
-this is only a test kernel I just want basic functionality included, as I
-tried to do so in the kernel configuration.
-But nevertheless i failed to do so.
-I'm actually only asking for some advice and tips (especially where to find
-information on the web, if there is any) on the problems occuring, or if
-someone has encountered such problems in the past and is willing to share
-his/her experience.
-I'm quite newbie to this stuff, and as such I'm really confused about what'=
-s
-going on...
-So any help and advice is appreciated.
-
-Best regards,
-Konstantin
-
-------=_Part_5549_15162349.1146477261375
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi there,<br>
-<br>
-These days I'm trying to compile and get working a 2.6 kernel for the
-Motorola MVME6100 VME single board computer. For the purpose I'm using
-an ELinOS IDE by the SysGo company (don't ask me why, it's the boss'
-decision). Since ELinOS lacks support I post here with the hope of
-getting some help. Thus far I have succeeded
-in only compiling a bare kernel but not getting it up. There is a
-running RedHat distro on the board but I want to get a customized
-cernel for it, because RedHat does not support certain stuff (like VME
-drivers for example).<br>
-So, the kernel I compiled seems to be quite messy, as you can see from the =
-dmesg at startup:<br>
-<br>
-The existing kernel &gt;&gt; <a href=3D"http://www-zeuthen.desy.de/%7Eboyan=
-ov/dmesg_normal.txt" target=3D"_blank" onclick=3D"return top.js.OpenExtLink=
-(window,event,this)">http://www-zeuthen.desy.de/~boyanov/dmesg_normal.txt</=
-a>
-<br>
-The new one&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &gt;&gt; =
-<a href=3D"http://www-zeuthen.desy.de/%7Eboyanov/dmesg_failed.txt" target=
-=3D"_blank" onclick=3D"return top.js.OpenExtLink(window,event,this)">http:/=
-/www-zeuthen.desy.de/~boyanov/dmesg_failed.txt</a>
-<br>
-<br>
-As you can see in the links above the kernel panics because of
-insufficient &quot;init&quot; part of the command line passed to it. Anothe=
-r
-issue is the SCSI hard-disk initialization and RAM disk creation. I
-forgot to mention, because this is only a test kernel I just want basic
-functionality included, as I tried to do so in the kernel
-configuration. <br>
-But nevertheless i failed to do so.<br>
-I'm actually only asking for some advice and tips (especially where to
-find information on the web, if there is any) on the problems occuring,
-or if someone has encountered such problems in the past and is willing
-to share his/her experience.<br>
-I'm quite newbie to this stuff, and as such I'm really confused about what'=
-s going on...<br>
-So any help and advice is appreciated.<br>
-<br>
-Best regards,<br>
-Konstantin<br>
-
-
-
-------=_Part_5549_15162349.1146477261375--
+If course the next major question is how does one submit patches
+to this system?
+-- 
+Steve Williams                "The woods are lovely, dark and deep.
+steve at icarus.com           But I have promises to keep,
+http://www.icarus.com         and lines to code before I sleep,
+http://www.picturel.com       And lines to code before I sleep."
