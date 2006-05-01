@@ -1,27 +1,18 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9AF4E67A00
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 08:59:43 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: DTC/dts modifications
-References: <5CA113BC-1614-4551-87E5-6926E14C2225@kernel.crashing.org>
-	<1146512012.24239.28.camel@cashmere.sps.mot.com>
-	<695BB790-1E64-4B53-91DD-7DD88305F201@kernel.crashing.org>
-	<1146512732.24239.34.camel@cashmere.sps.mot.com>
-	<55FD11DB-54AF-4284-9E9A-C313F4232105@kernel.crashing.org>
-	<20060501150728.04694488.kim.phillips@freescale.com>
-	<00CD15B8-F448-4985-8EEC-3BBF61C0110B@kernel.crashing.org>
-Date: Tue, 02 May 2006 00:59:25 +0200
-In-Reply-To: <00CD15B8-F448-4985-8EEC-3BBF61C0110B@kernel.crashing.org> (Kumar
-	Gala's message of "Mon, 1 May 2006 15:28:34 -0500")
-Message-ID: <jehd49s65u.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <445690F7.5050605@am.sony.com>
+References: <20060429232812.825714000@localhost.localdomain>	<20060429233922.167124000@localhost.localdomain>
+	<F989FA67-91B5-493B-9A12-D02C3C14A984@kernel.crashing.org>
+	<445690F7.5050605@am.sony.com>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <FE7E70B5-F0CD-4254-8555-27EC2A70C316@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 11/13] cell: split out board specific files
+Date: Tue, 2 May 2006 01:09:53 +0200
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,20 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala <galak@kernel.crashing.org> writes:
+> Segher, a problem with your suggestion is that our
+> makefiles don't have as rich a set of logical ops as the
+> config files.  Its easy to express 'build A if B', but not
+> so easy to do 'build A if not C'.  To make this work
+> cleanly I made PPC_CELL denote !SOME_HYPERVISOR_THING,
+> so I can have constructions like this in the makefile:
 
-> Cool, here's an invocation that seems to work well.  Not sure what  
-> causes linux = 1 (thus I need the -U linux).  Also address the line  
-> information that is normally spit out.
->
-> cpp -U linux -P -x assembler-with-cpp foo.dts
+Not just that, but we can have a kernel image supporting both
+the "raw" hardware _and_ stuff with a hypervisor underneath.
 
-Try -undef, that removes all pre-defined macros.
+All CONFIG_<whatever> should always be used as a positive,
+never a negative.  My bad :-)
 
-Andreas.
+So it really should be
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+	depends on PPC_CELL_NATIVE
+
+or similar.  Having PPC_CELL mean "native" / "raw" is not the
+way to go, there will be many many hypervisors in the future,
+it would be nice to have PPC_CELL mean just that, "support for
+the Cell architecture" in general, kernels running on various
+hypervisors will see the hardware virtualised to varying degrees.
+
+
+Segher
