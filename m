@@ -1,15 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17493.48780.692035.741025@cargo.ozlabs.ibm.com>
-Date: Mon, 1 May 2006 17:53:48 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Use the ibm,pa-features property where available
-In-Reply-To: <1146466281.30710.32.camel@localhost.localdomain>
-References: <17493.35040.453321.909465@cargo.ozlabs.ibm.com>
-	<1146466281.30710.32.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mel@csn.ul.ie>
+Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1BE0867B49
+	for <linuxppc-dev@ozlabs.org>; Mon,  1 May 2006 23:35:38 +1000 (EST)
+From: Mel Gorman <mel@csn.ul.ie>
+To: akpm@osdl.org, davej@codemonkey.org.uk, tony.luck@intel.com,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	bob.picco@hp.com, ak@suse.de, linux-mm@kvack.org
+Message-Id: <20060501133530.6379.66000.sendpatchset@skynet>
+Subject: [PATCH 0/7] Sizing zones and holes in an architecture independent
+	manner V5
+Date: Mon,  1 May 2006 14:35:30 +0100 (IST)
+Cc: Mel Gorman <mel@csn.ul.ie>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,12 +22,159 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt writes:
+This is V5 of the patchset to size zones and memory holes in
+an architecture-independent manner. This has been rebased against
+2.6.17-rc3-mm1 and as there were no objections against release V4, I would
+like to have it considered for merging. If there are merge conflicts with
+later trees, let me know what to rebase against.
 
-> We should also remove all the bits potentially found in the property
-> before hand...
+The reasons why I'd like to this merged include;
 
-That's why I clear the feature bit if the pa-features bit is there and
-is zero...
+ o Less architecture-specific code - particularly for x86 and ppc64
+ o More maintainable. Changes to zone layout need only be made in one place
+ o Zone-sizing and memory hole calculation is one less job that needs to be
+   done for new architecture ports
+ o With the architecture-independent representation, zone-based
+   anti-fragmentation needs a lot less architecture-specific code making it
+   more portable between architectures. This will be important for future
+   hugepage-availability work
+ o Nigel Cunningham has stated that that software suspend could potentially
+   use the architecture-independent representation to discover what pages
+   need to be saved during suspend
 
-Paul.
+Changelog since V4
+o Rebase to 2.6.17-rc3-mm1
+o Calculate holes on x86 with SRAT correctly
+
+Changelog since V3
+o Rebase to 2.6.17-rc2
+o Allow the active regions to be cleared. Needed by x86_64 when it decides
+  the SRAT table is bad half way through the registering of active regions
+o Fix for flatmem x86_64 machines booting
+
+Changelog since V2
+o Fix a bug where holes in lower zones get double counted
+o Catch the case where a new range is registered that is within an range
+o Catch the case where a zone boundary is within a hole
+o Use the EFI map for registering ranges on x86_64+numa
+o On IA64+NUMA, add the active ranges before rounding for granules
+o On x86_64, remove e820_hole_size and e820_bootmem_free and use
+  arch-independent equivalents
+o On x86_64, remove the map walk in e820_end_of_ram()
+o Rename memory_present_with_active_regions, name ambiguous
+o Add absent_pages_in_range() for arches to call
+
+Changelog since V1
+o Correctly convert virtual and physical addresses to PFNs on ia64
+o Correctly convert physical addresses to PFN on older ppc 
+o When add_active_range() is called with overlapping pfn ranges, merge them
+o When a zone boundary occurs within a memory hole, account correctly
+o Minor whitespace damage cleanup
+o Debugging patch temporarily included
+
+At a basic level, architectures define structures to record where active
+ranges of page frames are located. Once located, the code to calculate
+zone sizes and holes in each architecture is very similar.  Some of this
+zone and hole sizing code is difficult to read for no good reason. This
+set of patches eliminates the similar-looking architecture-specific code.
+
+The patches introduce a mechanism where architectures register where the
+active ranges of page frames are with add_active_range(). When all areas
+have been discovered, free_area_init_nodes() is called to initialise
+the pgdat and zones. The zone sizes and holes are then calculated in an
+architecture independent manner.
+
+Patch 1 introduces the mechanism for registering and initialising PFN ranges
+Patch 2 changes ppc to use the mechanism - 128 arch-specific LOC removed
+Patch 3 changes x86 to use the mechanism - 142 arch-specific LOC removed
+Patch 4 changes x86_64 to use the mechanism - 94 arch-specific LOC removed
+Patch 5 changes ia64 to use the mechanism - 57 arch-specific LOC removed
+
+At this point, there is a reduction of 421 architecture-specific lines of code
+and a net reduction of 25 lines. The arch-independent code is a lot easier
+to read in comparison to some of the arch-specific stuff, particularly in
+arch/i386/ .
+
+For Patch 6, it was also noted that page_alloc.c has a *lot* of
+initialisation code which makes the file harder to read than it needs to
+be. Patch 6 creates a new file mem_init.c and moves a lot of initialisation
+code from page_alloc.c to it. After the patch is applied, there is still a net
+loss of 8 lines.
+
+The patches have been successfully boot tested by me and verified that the
+zones are the correct size on
+
+o x86, flatmem with 1.5GiB of RAM
+o x86, NUMAQ
+o x86, NUMA, with SRAT
+o x86 with SRAT CONFIG_NUMA=n
+o PPC64, NUMA
+o PPC64, CONFIG_NUMA=n
+o Power, RS6000 (Had difficulty here with missing __udivdi3 symbol in pci_32.o)
+o x86_64, NUMA with SRAT
+o x86_64, NUMA with broken SRAT that falls back to k8topology discovery
+o x86_64, ACPI_NUMA, ACPI_MEMORY_HOTPLUG && !SPARSEMEM to trigger the
+  hotadd path without sparsemem fun in srat.c (SRAT broken on test machine and
+  I'm pretty sure the machine does not support physical memory hotadd anyway
+  so test may not have been effective other than being a compile test.)
+o x86_64, CONFIG_NUMA=n
+o x86_64, AMD64 desktop machine with flatmem
+
+Tony Luck has successfully tested for ia64 on Itanium with tiger_defconfig,
+gensparse_defconfig and defconfig. Bob Picco has also tested and debugged
+on IA64. Jack Steiner successfully boot tested on a mammoth SGI IA64-based
+machine. These were on patches against 2.6.17-rc1 but there have been no
+ia64-changes made between release 3 and 5 of these patches.
+
+There are differences in the zone sizes for x86_64 as the arch-specific code
+for x86_64 accounts the kernel image and the starting mem_maps as memory
+holes but the architecture-independent code accounts the memory as present.
+
+The net reduction seems small but the big benefit of this set of patches
+is the reduction of 421 lines of architecture-specific code, some of
+which is very hairy. There should be a greater net reduction when other
+architectures use the same mechanisms for zone and hole sizing but I lack
+the hardware to test on.
+
+Comments?
+
+Additional credit;
+	Dave Hansen for the initial suggestion and comments on early patches
+	Andy Whitcroft for reviewing early versions and catching numerous errors
+	Tony Luck for testing and debugging on IA64
+	Bob Picco for testing and fixing bugs related to pfn registration
+	Jack Steiner and Yasunori for testing on IA64
+
+ arch/i386/Kconfig           |    8 
+ arch/i386/kernel/setup.c    |   19 
+ arch/i386/kernel/srat.c     |  101 ---
+ arch/i386/mm/discontig.c    |   65 --
+ arch/ia64/Kconfig           |    3 
+ arch/ia64/mm/contig.c       |   60 --
+ arch/ia64/mm/discontig.c    |   41 -
+ arch/ia64/mm/init.c         |   12 
+ arch/powerpc/Kconfig        |   13 
+ arch/powerpc/mm/mem.c       |   53 --
+ arch/powerpc/mm/numa.c      |  157 ------
+ arch/ppc/Kconfig            |    3 
+ arch/ppc/mm/init.c          |   26 -
+ arch/x86_64/Kconfig         |    3 
+ arch/x86_64/kernel/e820.c   |  109 +---
+ arch/x86_64/kernel/setup.c  |    7 
+ arch/x86_64/mm/init.c       |   62 --
+ arch/x86_64/mm/k8topology.c |    3 
+ arch/x86_64/mm/numa.c       |   18 
+ arch/x86_64/mm/srat.c       |   11 
+ include/asm-ia64/meminit.h  |    1 
+ include/asm-x86_64/e820.h   |    5 
+ include/asm-x86_64/proto.h  |    2 
+ include/linux/mm.h          |   34 +
+ include/linux/mmzone.h      |   10 
+ mm/Makefile                 |    2 
+ mm/mem_init.c               | 1121 ++++++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c             |  750 -----------------------------
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
