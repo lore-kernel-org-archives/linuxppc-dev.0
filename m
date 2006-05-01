@@ -1,21 +1,22 @@
-Return-Path: <mbligh@google.com>
-Message-ID: <44564BEC.1040803@google.com>
-Date: Mon, 01 May 2006 10:57:00 -0700
-From: Martin Bligh <mbligh@google.com>
+Return-Path: <rdreier@cisco.com>
+Received: from test-iport-1.cisco.com (test-iport-1.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id 7493C67B6E
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 03:13:34 +1000 (EST)
+To: Heiko Joerg Schick <info@schihei.de>
+Subject: Re: [openib-general] Re: [PATCH 00/16] ehca: IBM eHCA InfiniBand
+	Device Driver
+References: <4450B378.9000705@de.ibm.com>
+	<20060427125726.GK32127@wohnheim.fh-wedel.de>
+	<e2r7a0$fo2$1@sea.gmane.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 01 May 2006 10:03:24 -0700
+In-Reply-To: <e2r7a0$fo2$1@sea.gmane.org> (Heiko Joerg Schick's message of
+	"Thu, 27 Apr 2006 21:50:28 +0200")
+Message-ID: <ada8xply8wz.fsf@cisco.com>
 MIME-Version: 1.0
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: 2.6.17-rc2-mm1
-References: <4450F5AD.9030200@google.com>	
-	<20060428012022.7b73c77b.akpm@osdl.org>
-	<44561A1E.7000103@google.com>	
-	<20060501100731.051f4eff.akpm@osdl.org>	
-	<1146503960.317.1.camel@dyn9047017100.beaverton.ibm.com>	
-	<445644B7.7060807@google.com>
-	<1146506105.317.4.camel@dyn9047017100.beaverton.ibm.com>
-In-Reply-To: <1146506105.317.4.camel@dyn9047017100.beaverton.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc64-dev@ozlabs.org, ak@suse.de,
-	lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	openib-general@openib.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Badari Pulavarty wrote:
-> On Mon, 2006-05-01 at 10:26 -0700, Martin Bligh wrote:
-> 
->>>I ran mtest01 multiple times with various options on my 4-way AMD64 box.
->>>So far couldn't reproduce the problem (2.6.17-rc3-mm1).
->>>
->>>Are there any special config or test options you are testing with ?
->>
->>Config is here:
->>
->>http://ftp.kernel.org/pub/linux/kernel/people/mbligh/config/abat/amd64
->>
->>It's just doing "runalltests", I think.
-> 
-> 
-> FWIW, I tried your config file on my 4-way AMD64 (melody) box 
-> and ran latest "mtest01" fine.
-> 
-> I am now trying runalltests. I guess, its time to bi-sect :(
+    Heiko> I don't like the idea to put the whole driver in one patch
+    Heiko> file. I would propose to put the patch "ehca: integration
+    Heiko> in Linux kernel" last instead of first, as Arnd
+    Heiko> mentioned. With that change we leave the kernel in a
+    Heiko> working state when applying the patches.
 
-There was a panic on PPC64 during LTP too, but it seems to have gone
-away with rc3-mm1. Not sure if it was really fixed, or just intermittent.
+Yes, that makes sense.
 
-http://test.kernel.org/abat/29675/debug/console.log
+And I can fold the patches into a single git changeset when we finally
+merge it, since I don't see any advantage to having the driver split
+into pieces.  (No one is going to git biset a half-applied driver or
+anything like that)
 
-M.
+ - R.
