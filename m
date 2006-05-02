@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8FD9E67B7F
+Return-Path: <sheldoninstruments@yahoo.com>
+Received: from web37812.mail.mud.yahoo.com (web37812.mail.mud.yahoo.com
+	[209.191.87.125]) by ozlabs.org (Postfix) with SMTP id C7EBC67A00
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 May 2006 05:50:44 +1000 (EST)
-In-Reply-To: <DDBD7B17DB2ECE48BCD94C593F7255B401551C7C@monk.echelon.echcorp.com>
-References: <DDBD7B17DB2ECE48BCD94C593F7255B401551C7C@monk.echelon.echcorp.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BCAE05B9-1AD6-44A8-B9AB-B44D16D89B4D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: USB on MPC8349EMDS
-Date: Tue, 2 May 2006 14:50:31 -0500
-To: Prashant Viswanathan <vprashant@echelon.com>
-Cc: "linuxppc-embedded \(\(\(\(E-Mail\)\)\)\)" <linuxppc-embedded@ozlabs.org>
+	Wed,  3 May 2006 08:02:44 +1000 (EST)
+Message-ID: <20060502220242.2001.qmail@web37812.mail.mud.yahoo.com>
+Date: Tue, 2 May 2006 15:02:42 -0700 (PDT)
+From: Eric Heim <sheldoninstruments@yahoo.com>
+Subject: cfg_lock
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-550463469-1146607362=:98609"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,49 +20,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--0-550463469-1146607362=:98609
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-On May 2, 2006, at 1:52 PM, Prashant Viswanathan wrote:
+Anybody know how the cfg_lock bit is manipulated on the MPC8349EMDS board?  I know the bit is in the internal configuration registers but how is this bit flipped on boot?  We are trying to boot the board as an agent in a PC.  We can only do this using the hard coded option.  We would like to boot the board with the reset config word in the I2C but we can't boot the board with the 'core disabled' as we would like(it only works if the core enable bit is set, otherwise the PC hangs and won't boot).  We are hoping to use a pre-load command in the boot sequencer,  but there is little information on how this can be done or if it can be done.  We can flip the bit from u-boot or using our driver when the PC has booted up but we need some way to flip the bit during boot to allow our PC to get its proper configuration cycles.  Any ideas?
 
->>> When I insert a USB Mass storage device (thumb drive), I get the
->>> following errors
->>>
->>> / #  usb 1-2: new high speed USB device using fsl-usb2-mph and
->>> address 8
->>> usb 1-2: khubd timed out on ep0in
->>> usb 1-2: new high speed USB device using fsl-usb2-mph and address 9
->>> usb 1-2: khubd timed out on ep0in
->>>
->>> It does not show up in /proc/bus/usb/devices (I do have usbfs
->>> mounted).
->>>
->>> I also have usb-utils installed and lsusb fails to list the device.
->>>
->>> I have also tried other USB devices and get similar errors.
->>>
->>> Has anybody else experience similar problems? Any pointers/help
->>> will be
->>> appreciated.
->>
->> I know there are some bugs in the Freescale driver that was released
->> as part of their BSP.
->>
->> Are you using a PMC2USB module or just the USB ports on the SYS card?
->>
->> - k
->
-> I am connecting to the USB port on the board using the USB adaptor. I
-> tried both configurations (MPH and DR).
->
-> I also tried the latest stable kernel (2.6.16.12) but that doesn't
-> compile for this board. Is there a later (later than 2.16.11)  
-> kernel out
-> there which works for this particular board?
->
-> Another possibility might be that the eval board I have is bad. I  
-> can't
-> seem to get my hands on the errata.
+		
+---------------------------------
+How low will we go? Check out Yahoo! Messenger’s low  PC-to-Phone call rates.
+--0-550463469-1146607362=:98609
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-You'll need something like 2.6.16 plus a patch from Randy Vinson  
-(posted to the list a month or two ago).
-
-- kumar
+Anybody know how the cfg_lock bit is manipulated on the MPC8349EMDS board?&nbsp; I know the bit is in the internal configuration registers but how is this bit flipped on boot?&nbsp; We are trying to boot the board as an agent in a PC.&nbsp; We can only do this using the hard coded option.&nbsp; We would like to boot the board with the reset config word in the I2C but we can't boot the board with the 'core disabled' as we would like(it only works if the core enable bit is set, otherwise the PC hangs and won't boot).&nbsp; We are hoping to use a pre-load command in the boot sequencer,&nbsp; but there is little information on how this can be done or if it can be done.&nbsp; We can flip the bit from u-boot or using our driver when the PC has booted up but we need some way to flip the bit during boot to allow our PC to get its proper configuration cycles.&nbsp; Any ideas?<br><p>
+		<hr size=1>How low will we go? Check out Yahoo! Messenger’s low <a href="http://us.rd.yahoo.com/mail_us/taglines/postman8/*http://us.rd.yahoo.com/evt=39663/*http://voice.yahoo.com"> PC-to-Phone call rates.
+--0-550463469-1146607362=:98609--
