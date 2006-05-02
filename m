@@ -1,18 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id EE29567B34
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 51F9967B9A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 May 2006 09:34:53 +1000 (EST)
-To: pravin <pravin3560@yahoo.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: U-boot1.1.4 porting problem on PPC 440GX 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 02 May 2006 15:55:40 PDT."
-	<20060502225540.GA25045@gate.ebshome.net>
-Date: Wed, 03 May 2006 01:34:51 +0200
-Sender: wd@denx.de
-Message-Id: <20060502233451.11BC4353AD3@atlas.denx.de>
+	Wed,  3 May 2006 09:49:19 +1000 (EST)
+Date: Tue, 2 May 2006 16:49:16 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Stephen Winiecki <stevewin@us.ibm.com>
+Subject: Re: Configuring PCI w/ 44x
+Message-ID: <20060502234916.GB25045@gate.ebshome.net>
+References: <OF7EB5CFE4.CBC11341-ON87257162.0071F2FC-85257162.0072FFA5@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OF7EB5CFE4.CBC11341-ON87257162.0071F2FC-85257162.0072FFA5@us.ibm.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,19 +25,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20060502225540.GA25045@gate.ebshome.net> Eugene Surovegin wrote:
-> 
-> Start with asking your hardware people about such differences.
+On Tue, May 02, 2006 at 04:58:32PM -0400, Stephen Winiecki wrote:
+> I have a question regarding configuring PCI with 44x.  Using 2.6.17-rc3 as
+> a reference, PCI_CONFIG is defined for the 44x defconfigs, and Kconfig is
+> not enabled to reflect/change the setting for 44x.  When I update
+> arch/ppc/Kconfig to enable configuring or not configuring PCI with 44x, and
+> then don't configure it, the kernel won't compile:
 
-...and then post to a mailing list  (like  u-boot-users)  where  your
-questions fit. Here they are off topic.
+Hmm, you cannot disable PCI for 44x in the current 2.6. It's always 
+enabled.
 
-Best regards,
+If you changed Konfig to be able to do so, why are you complaining 
+here? It's not enough to just change Konfig, you have to modify Ocotea 
+port as well. Look for example how this is handled for 85xx.
 
-Wolfgang Denk
+Patches are welcome.
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Q:  Do you know what the death rate around here is?
-A:  One per person.
+Eugene
