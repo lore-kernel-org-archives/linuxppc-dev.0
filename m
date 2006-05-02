@@ -1,9 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 02 May 2006 19:54:02 +1000
-Subject: [PATCH 1/3] powerpc: Cleanup hvc_rtas.c a little
-Message-Id: <20060502095405.DA27D67B3A@ozlabs.org>
+Date: Tue, 02 May 2006 19:54:03 +1000
+Subject: [PATCH 2/3] powerpc: Add early debugging / xmon support for Cell
+Message-Id: <20060502095406.C25DA67B3B@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,120 +14,187 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A few cleanups in hvc_rtas.c:
- 1. Remove unused RTASCONS_PUT_ATTEMPTS
- 2. Remove unused rtascons_put_delay.
- 3. Use i as a loop counter like everyone else on earth.
- 4. Remove pointless variables, eg. x = foo; if (x) return something_else;
- 5. Whitespace.
+This patch adds udbg routines for cell, and hooks them up for use as an early
+debugging console or for xmon.
+
+With this patch xmon seems to work. On one occasion after sitting in xmon
+for a while I lost hard disk interrupts and had to power off, not sure what
+the story was there.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- drivers/char/hvc_rtas.c |   43 ++++++++++++++++++-------------------------
- 1 file changed, 18 insertions(+), 25 deletions(-)
+ arch/powerpc/Kconfig.debug           |    6 ++
+ arch/powerpc/kernel/udbg.c           |    3 +
+ arch/powerpc/platforms/cell/Makefile |    2 
+ arch/powerpc/platforms/cell/setup.c  |    3 +
+ arch/powerpc/platforms/cell/udbg.c   |   86 +++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/udbg.h           |    1 
+ 6 files changed, 100 insertions(+), 1 deletion(-)
 
-Index: cell/drivers/char/hvc_rtas.c
+Index: cell/arch/powerpc/Kconfig.debug
 ===================================================================
---- cell.orig/drivers/char/hvc_rtas.c
-+++ cell/drivers/char/hvc_rtas.c
-@@ -41,37 +41,28 @@
- #define hvc_rtas_cookie 0x67781e15
- struct hvc_struct *hvc_rtas_dev;
+--- cell.orig/arch/powerpc/Kconfig.debug
++++ cell/arch/powerpc/Kconfig.debug
+@@ -131,6 +131,12 @@ config PPC_EARLY_DEBUG_G5
+ 	help
+ 	  Select this to enable early debugging for Apple G5 machines.
  
--#define RTASCONS_PUT_ATTEMPTS  16
--
- static int rtascons_put_char_token = RTAS_UNKNOWN_SERVICE;
- static int rtascons_get_char_token = RTAS_UNKNOWN_SERVICE;
--static int rtascons_put_delay = 100;
--module_param_named(put_delay, rtascons_put_delay, int, 0644);
++config PPC_EARLY_DEBUG_CELL
++	bool "Cell RTAS console"
++	depends on PPC_CELL
++	help
++	  Select this to enable early debugging for Cell systems.
++
+ config PPC_EARLY_DEBUG_RTAS
+ 	bool "RTAS Panel"
+ 	depends on PPC_RTAS
+Index: cell/arch/powerpc/kernel/udbg.c
+===================================================================
+--- cell.orig/arch/powerpc/kernel/udbg.c
++++ cell/arch/powerpc/kernel/udbg.c
+@@ -42,6 +42,9 @@ void __init udbg_early_init(void)
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_ISERIES)
+ 	/* For iSeries - hit Ctrl-x Ctrl-x to see the output */
+ 	udbg_init_iseries();
++#elif defined(CONFIG_PPC_EARLY_DEBUG_CELL)
++	/* Cell RTAS console */
++	udbg_init_cell();
+ #endif
+ }
  
--static inline int hvc_rtas_write_console(uint32_t vtermno, const char *buf, int count)
-+static inline int hvc_rtas_write_console(uint32_t vtermno, const char *buf,
-+		int count)
+Index: cell/arch/powerpc/platforms/cell/Makefile
+===================================================================
+--- cell.orig/arch/powerpc/platforms/cell/Makefile
++++ cell/arch/powerpc/platforms/cell/Makefile
+@@ -1,5 +1,5 @@
+ obj-y			+= interrupt.o iommu.o setup.o spider-pic.o
+-obj-y			+= pervasive.o pci.o
++obj-y			+= pervasive.o pci.o udbg.o
+ 
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_SPU_FS)	+= spufs/
+Index: cell/arch/powerpc/platforms/cell/setup.c
+===================================================================
+--- cell.orig/arch/powerpc/platforms/cell/setup.c
++++ cell/arch/powerpc/platforms/cell/setup.c
+@@ -49,6 +49,7 @@
+ #include <asm/ppc-pci.h>
+ #include <asm/irq.h>
+ #include <asm/spu.h>
++#include <asm/udbg.h>
+ 
+ #include "interrupt.h"
+ #include "iommu.h"
+@@ -145,6 +146,8 @@ static void __init cell_init_early(void)
  {
--	int done;
+ 	DBG(" -> cell_init_early()\n");
+ 
++	udbg_init_cell();
++
+ 	hpte_init_native();
+ 
+ 	cell_init_iommu();
+Index: cell/arch/powerpc/platforms/cell/udbg.c
+===================================================================
+--- /dev/null
++++ cell/arch/powerpc/platforms/cell/udbg.c
+@@ -0,0 +1,86 @@
++#ifndef _CELL_UDBG_H
++#define _CELL_UDBG_H
++
++/*
++ * Copyright (C) 2006 Michael Ellerman, IBM Corporation
++ *
++ * Early debugging and xmon console support.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <asm/rtas.h>
++#include <asm/udbg.h>
++
++/*
++ * For early debugging it's too early to get these out of the device tree,
++ * so we use hard coded values. These may change in future, check that they
++ * match your firmware!
++ * For normal use we get the values from the device tree, so that should
++ * always work ok.
++ */
++static int put_char_token = 0x27;
++static int get_char_token = 0x28;
++
++/*
++ * If firmware won't accept a character, try this many times before
++ * giving up and just throwing the chracter away.
++ */
++#define PUT_ATTEMPTS	16
++
++static void udbg_putc_cell(char c)
++{
 +	int i;
- 
--	/* if there is more than one character to be displayed, wait a bit */
--	for (done = 0; done < count; done++) {
--		int result;
--		result = rtas_call(rtascons_put_char_token, 1, 1, NULL, buf[done]);
--		if (result)
-+	for (i = 0; i < count; i++) {
-+		if (rtas_call(rtascons_put_char_token, 1, 1, NULL, buf[i]))
- 			break;
- 	}
--	/* the calling routine expects to receive the number of bytes sent */
--	return done;
 +
-+	return i;
- }
- 
- static int hvc_rtas_read_console(uint32_t vtermno, char *buf, int count)
- {
--	int i;
-+	int i, c;
- 
- 	for (i = 0; i < count; i++) {
--		int c, err;
--
--		err = rtas_call(rtascons_get_char_token, 0, 2, &c);
--		if (err)
-+		if (rtas_call(rtascons_get_char_token, 0, 2, &c))
- 			break;
- 
- 		buf[i] = c;
-@@ -89,13 +80,11 @@ static int hvc_rtas_init(void)
- {
- 	struct hvc_struct *hp;
- 
--	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
--		rtascons_put_char_token = rtas_token("put-term-char");
-+	rtascons_put_char_token = rtas_token("put-term-char");
- 	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
- 		return -EIO;
- 
--	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
--		rtascons_get_char_token = rtas_token("get-term-char");
-+	rtascons_get_char_token = rtas_token("get-term-char");
- 	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
- 		return -EIO;
- 
-@@ -106,7 +95,9 @@ static int hvc_rtas_init(void)
- 	hp = hvc_alloc(hvc_rtas_cookie, NO_IRQ, &hvc_rtas_get_put_ops);
- 	if (IS_ERR(hp))
- 		return PTR_ERR(hp);
++	if (c == '\n')
++		udbg_putc_cell('\r');
 +
- 	hvc_rtas_dev = hp;
++	for (i = 0; i < PUT_ATTEMPTS; i++) {
++		if (rtas_call(put_char_token, 1, 1, NULL, c) == 0)
++			break;
++		udelay(100);
++	}
++}
 +
- 	return 0;
- }
- module_init(hvc_rtas_init);
-@@ -114,8 +105,8 @@ module_init(hvc_rtas_init);
- /* This will tear down the tty portion of the driver */
- static void __exit hvc_rtas_exit(void)
- {
--	/* Really the fun isn't over until the worker thread breaks down and the
--	 * tty cleans up */
-+	/* Really the fun isn't over until the worker thread breaks down and
-+	 * the tty cleans up */
- 	if (hvc_rtas_dev)
- 		hvc_remove(hvc_rtas_dev);
- }
-@@ -127,12 +118,14 @@ static int hvc_rtas_console_init(void)
- 	rtascons_put_char_token = rtas_token("put-term-char");
- 	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
- 		return -EIO;
++static int udbg_getc_poll_cell(void)
++{
++	int c;
 +
- 	rtascons_get_char_token = rtas_token("get-term-char");
- 	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
- 		return -EIO;
++	if (rtas_call(get_char_token, 0, 2, &c))
++		c = -1;
++
++	return c;
++}
++
++static int udbg_getc_cell(void)
++{
++	int c;
++
++	while (1) {
++		c = udbg_getc_poll_cell();
++		if (c != -1)
++			return c;
++	}
++}
++
++void __init udbg_init_cell(void)
++{
++	int token;
++
++	token = rtas_token("put-term-char");
++	if (token != RTAS_UNKNOWN_SERVICE)
++		put_char_token = token;
++
++	token = rtas_token("get-term-char");
++	if (token != RTAS_UNKNOWN_SERVICE)
++		get_char_token = token;
++
++	udbg_putc = udbg_putc_cell;
++	udbg_getc = udbg_getc_cell;
++	udbg_getc_poll = udbg_getc_poll_cell;
++}
++
++#endif /* _CELL_UDBG_H */
+Index: cell/include/asm-powerpc/udbg.h
+===================================================================
+--- cell.orig/include/asm-powerpc/udbg.h
++++ cell/include/asm-powerpc/udbg.h
+@@ -42,6 +42,7 @@ extern void __init udbg_init_pmac_realmo
+ extern void __init udbg_init_maple_realmode(void);
+ extern void __init udbg_init_iseries(void);
+ extern void __init udbg_init_rtas(void);
++extern void __init udbg_init_cell(void);
  
--	hvc_instantiate(hvc_rtas_cookie, 0, &hvc_rtas_get_put_ops );
-+	hvc_instantiate(hvc_rtas_cookie, 0, &hvc_rtas_get_put_ops);
- 	add_preferred_console("hvc", 0, NULL);
-+
- 	return 0;
- }
- console_initcall(hvc_rtas_console_init);
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_UDBG_H */
