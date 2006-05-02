@@ -1,17 +1,16 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Export flat device tree via debugfs for debugging
+Subject: Re: [PATCH 0/5] powerpc: Cleanup htab code a little
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <7C163A77-FF5F-49E7-87CF-0EA0411FE7A6@kernel.crashing.org>
-References: <20060501074044.D552967B55@ozlabs.org>
-	<7C163A77-FF5F-49E7-87CF-0EA0411FE7A6@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1143699173.339118.857634197021.qpush@concordia>
+References: <1143699173.339118.857634197021.qpush@concordia>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-kLi4FMX8T0SaVI2WcSP4"
-Date: Tue, 02 May 2006 10:20:00 +1000
-Message-Id: <1146529200.27495.23.camel@localhost.localdomain>
+	boundary="=-aYqdX+TId38GsFR8dUqn"
+Date: Tue, 02 May 2006 11:09:45 +1000
+Message-Id: <1146532185.27495.27.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,54 +22,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-kLi4FMX8T0SaVI2WcSP4
+--=-aYqdX+TId38GsFR8dUqn
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2006-05-01 at 12:54 -0500, Kumar Gala wrote:
-> On May 1, 2006, at 2:40 AM, Michael Ellerman wrote:
->=20
-> > If DEBUG is turned on in prom.c, export the flat device tree via =20
-> > debugfs.
-> > This has been handy on several occasions.
-> >
-> > To look at it:
-> >  # mount -t debugfs none /sys/kernel/debug
-> >  # od -a /sys/kernel/debug/powerpc/flat-device-tree
-> >  and/or
-> >  # dtc -fI dtb /sys/kernel/debug/powerpc/flat-device-tree -O dts
-> >
-> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > ---
-> >
-> >  arch/powerpc/kernel/prom.c |   25 +++++++++++++++++++++++++
-> >  1 file changed, 25 insertions(+)
-> >
-> > Index: to-merge/arch/powerpc/kernel/prom.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- to-merge.orig/arch/powerpc/kernel/prom.c
-> > +++ to-merge/arch/powerpc/kernel/prom.c
-> > @@ -30,6 +30,7 @@
-> >  #include <linux/bitops.h>
-> >  #include <linux/module.h>
-> >  #include <linux/kexec.h>
-> > +#include <linux/debugfs.h>
-> >
-> >  #include <asm/prom.h>
-> >  #include <asm/rtas.h>
-> > @@ -2009,3 +2010,27 @@ void kdump_move_device_tree(void)
-> >  	/* XXX should we unreserve the old DT? */
-> >  }
-> >  #endif /* CONFIG_KEXEC */
-> > +
-> > +#ifdef DEBUG
->=20
-> Shouldn't this also depend on DEBUGFS being built in.
+On Thu, 2006-03-30 at 17:12 +1100, Michael Ellerman wrote:
+> A few cleanups to the htab. Built for pSeries, iSeries, pmac, pmac32
+> and maple. Booted on P5 LPAR and iSeries.
 
-It could, but DEBUG_FS is written so that you don't have to care, so I
-didn't :)
+This series still applies cleanly, so consider this a resend for 2.6.18
+if you will.
 
 cheers
 
@@ -84,16 +45,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-kLi4FMX8T0SaVI2WcSP4
+--=-aYqdX+TId38GsFR8dUqn
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQBEVqWwdSjSd0sB4dIRAga0AKCzVNL2ct59ASFohwdMx00nCGEDeQCeJjqH
-/PhibFsXJw/7cOOXVtLJvIw=
-=vuNj
+iD8DBQBEVrFZdSjSd0sB4dIRAvnOAKCJ99dpfsm7DXk+GYRUwMVjXKAEaACfR7mY
+HfeMw59RKOiPQsvAF3NouZ8=
+=lHmz
 -----END PGP SIGNATURE-----
 
---=-kLi4FMX8T0SaVI2WcSP4--
+--=-aYqdX+TId38GsFR8dUqn--
