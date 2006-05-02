@@ -1,17 +1,19 @@
-Return-Path: <vprashant@echelon.com>
-Received: from [205.229.50.10] (ntfw.echelon.com [205.229.50.10])
-	by ozlabs.org (Postfix) with ESMTP id E95CE67B69
+Return-Path: <BlakesleeS@embeddedplanet.com>
+Received: from tag-03.ashton-group.com (tag-03.ashton-group.com [66.94.86.90])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A280167B68
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 May 2006 04:52:27 +1000 (EST)
+	Wed,  3 May 2006 05:27:43 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: USB on MPC8349EMDS
-Date: Tue, 2 May 2006 11:52:26 -0700
-Message-ID: <DDBD7B17DB2ECE48BCD94C593F7255B401551C7C@monk.echelon.echcorp.com>
-From: "Prashant Viswanathan" <vprashant@echelon.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-embedded@ozlabs.org
+Date: Tue, 2 May 2006 15:26:27 -0400
+Message-ID: <1628E43D99629C46988BE46087A3FBB9546A40@ep-01.EmbeddedPlanet.local>
+From: "Steven Blakeslee" <BlakesleeS@embeddedplanet.com>
+To: "Prashant Viswanathan" <vprashant@echelon.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,43 +24,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> > When I insert a USB Mass storage device (thumb drive), I get the
-> > following errors
-> >
-> > / #  usb 1-2: new high speed USB device using fsl-usb2-mph and
-> > address 8
-> > usb 1-2: khubd timed out on ep0in
-> > usb 1-2: new high speed USB device using fsl-usb2-mph and address 9
-> > usb 1-2: khubd timed out on ep0in
-> >
-> > It does not show up in /proc/bus/usb/devices (I do have usbfs
-> > mounted).
-> >
-> > I also have usb-utils installed and lsusb fails to list the device.
-> >
-> > I have also tried other USB devices and get similar errors.
-> >
-> > Has anybody else experience similar problems? Any pointers/help
-> > will be
-> > appreciated.
 >=20
-> I know there are some bugs in the Freescale driver that was released
-> as part of their BSP.
+> / #  usb 1-2: new high speed USB device using fsl-usb2-mph=20
+> and address 8 usb 1-2: khubd timed out on ep0in usb 1-2: new=20
+> high speed USB device using fsl-usb2-mph and address 9 usb=20
+> 1-2: khubd timed out on ep0in
 >=20
-> Are you using a PMC2USB module or just the USB ports on the SYS card?
->=20
-> - k
 
-I am connecting to the USB port on the board using the USB adaptor. I
-tried both configurations (MPH and DR).
-
-I also tried the latest stable kernel (2.6.16.12) but that doesn't
-compile for this board. Is there a later (later than 2.16.11) kernel out
-there which works for this particular board?
-
-Another possibility might be that the eval board I have is bad. I can't
-seem to get my hands on the errata.
-
-Also waiting to hear back from Freescale folks.
-
-Prashant
+When I used that driver I found it only worked with Full speed devices.
+Low and High speed devices did not work.
