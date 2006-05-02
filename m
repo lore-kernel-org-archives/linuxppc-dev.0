@@ -1,17 +1,34 @@
-Return-Path: <apw@shadowen.org>
-Message-ID: <44575CA1.1090009@shadowen.org>
-Date: Tue, 02 May 2006 14:20:33 +0100
-From: Andy Whitcroft <apw@shadowen.org>
+Return-Path: <RAISCH@de.ibm.com>
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 57C2167B47
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 22:56:20 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate4.de.ibm.com (8.13.6/8.13.6) with ESMTP id k429TQYP081472
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 May 2006 09:29:26 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
+	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k429UbMP118056
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 May 2006 11:30:37 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k429TPFR025396
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 May 2006 11:29:25 +0200
+In-Reply-To: <17489.18630.75412.66803@cargo.ozlabs.ibm.com>
+Subject: Re: [PATCH 13/16] ehca: firmware InfiniBand interface
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <OF38200CFC.0F39484B-ONC1257162.003179ED-C1257162.0033A003@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Tue, 2 May 2006 11:30:35 +0200
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.17-rc2-mm1
-References: <4450F5AD.9030200@google.com>
-	<20060428012022.7b73c77b.akpm@osdl.org>
-	<44561A1E.7000103@google.com> <200605012034.26763.ak@suse.de>
-In-Reply-To: <200605012034.26763.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc64-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, "Martin J. Bligh" <mbligh@google.com>
+Content-type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+	Marcus Eder <MEDER@de.ibm.com>,
+	=?ISO-8859-1?Q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,43 +38,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andi Kleen wrote:
-> On Monday 01 May 2006 16:24, Martin J. Bligh wrote:
-> 
-> 
->>double fault: 0000 [1] SMP
->>last sysfs file: /devices/pci0000:00/0000:00:06.0/resource
->>CPU 0
->>Modules linked in:
->>Pid: 20519, comm: mtest01 Not tainted 2.6.17-rc3-mm1-autokern1 #1
->>RIP: 0010:[<ffffffff8047c8b8>] <ffffffff8047c8b8>{__sched_text_start+1856}
->>RSP: 0000:0000000000000000  EFLAGS: 00010082
->>RAX: 0000000000000000 RBX: 0000000000000000 RCX: ffffffff805d9438
->>RDX: ffff8100db12c0d0 RSI: ffffffff805d9438 RDI: ffff8100db12c0d0
->>RBP: ffffffff805d9438 R08: 0000000000000000 R09: 0000000000000000
->>R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
->>R13: ffff8100e39bd440 R14: ffff810008003620 R15: 000002b02751726c
->>FS:  0000000000000000(0000) GS:ffffffff805fa000(0063) knlGS:00000000f7dd0460
->>CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
->>CR2: fffffffffffffff8 CR3: 00000000da399000 CR4: 00000000000006e0
->>Process mtest01 (pid: 20519, threadinfo ffff8100b1bb4000, task 
->>ffff8100db12c0d0)
->>Stack: ffffffff80579e20 ffff8100db12c0d0 0000000000000001 ffffffff80579f58
->>        0000000000000000 ffffffff80579e78 ffffffff8020b0b2 ffffffff80579f58
->>        0000000000000000 ffffffff80485520
->>Call Trace: <#DF> <ffffffff8020b0b2>{show_registers+140}
->>        <ffffffff8020b357>{__die+159} <ffffffff8020b3cc>{die+50}
->>        <ffffffff8020bba6>{do_double_fault+115} 
->><ffffffff8020aa91>{double_fault+125}
->>        <ffffffff8047c8b8>{__sched_text_start+1856} <EOE>
-> 
-> 
-> That's really strange - i wonder why the backtracer can't find the original
-> stack. Should probably add some printk diagnosis here.
-> 
-> Can you send the output with this patch?
+We started like that to get a clean interface between the register
+intensive h_calls and the driver code.
+We're in the middle of the tradeoff  "nice interface" vs strict fencing=
+ of
+data structures from one code piece to another.
+Initially these functions, which only move paramaters from the stack in=
+to
+registers and back, were inline functions.
+So the compiler collapsed the function call into "nothing", which won't=
 
-Submitted, they should show up in teh matrix forthwith.  Will drop you
-the output when done.
+work if you use a struct *.
+Somewhen during code reviews people agreed that having this many inline=
 
--apw
+functions leads to large header files
+which isn't a good idea either.
+
+We're about to change that interface again, so what should be the max
+number of parameters in a function call?
+The limit in existing kernel code is somewhere between 5-8
+(just as a reminder, 8 is the max nr of parameters to be passed by regi=
+ster
+on ppc)
+
+
+christoph raisch
+
+Paul Mackerras <paulus@samba.org> wrote on 28.04.2006 00:42:14:
+
+> J=F6rn Engel writes:
+>
+> > 25 parameters?  If you tell me which drugs were involved in this co=
+de,
+> > I know what to stay away from.
+>
+> You really need to ask the firmware architects that, since this is
+> basically a single firmware call.
+>
+> Mind you, since a lot of the parameters are used to return individual=
+
+> bytes or half-words, which are then put into structures, it might be
+> better to pass the pointers to the structures and let the wrapper put=
+
+> the values straight into the structures.
+>
+> Paul.=
