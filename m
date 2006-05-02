@@ -1,22 +1,22 @@
-Return-Path: <robbat2@gentoo.org>
-Received: from mail.net-conex.com (pops.net-conex.com [204.244.176.3])
-	by ozlabs.org (Postfix) with ESMTP id CDA5567BA7
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 10:13:03 +1000 (EST)
-Received: from curie.orbis-terrarum.net (S01060050da688d47.vc.shawcable.net
-	[24.80.100.253])
-	by mail.net-conex.com (8.13.4/8.12.11) with ESMTP id k420D1i6029454
-	for <linuxppc-dev@ozlabs.org>; Mon, 1 May 2006 17:13:01 -0700
-Date: Mon, 1 May 2006 17:13:06 -0700
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: windfarm for PM72/PM73/RM31
-Message-ID: <20060502001306.GA9589@curie-int.vc.shawcable.net>
-References: <20060501002719.GD15141@curie-int.vc.shawcable.net>
-	<A2D81A03-8CD5-41CD-BD49-3EDB1CDE53FD@laposte.net>
-Mime-Version: 1.0
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [Cbe-oss-dev] [PATCH 11/13] cell: split out board specific files
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <445690F7.5050605@am.sony.com>
+References: <20060429232812.825714000@localhost.localdomain>
+	<20060429233922.167124000@localhost.localdomain>
+	<F989FA67-91B5-493B-9A12-D02C3C14A984@kernel.crashing.org>
+	<445690F7.5050605@am.sony.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
-In-Reply-To: <A2D81A03-8CD5-41CD-BD49-3EDB1CDE53FD@laposte.net>
+	protocol="application/pgp-signature";
+	boundary="=-nY39FS7qB/bu6/mFRtjo"
+Date: Tue, 02 May 2006 10:13:28 +1000
+Message-Id: <1146528809.27495.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +27,64 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-nY39FS7qB/bu6/mFRtjo
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, May 01, 2006 at 06:53:09AM +0200, ?tienne Bersac wrote:
-> I own an iMac G5 rev C (iSight) with a PowerMac 12,1 included. Do you =20
-> intend to make support for it ? I will be happy to help you :)
-Thanks for sending it to me.
+On Mon, 2006-05-01 at 15:51 -0700, Geoff Levand wrote:
+> Segher, a problem with your suggestion is that our
+> makefiles don't have as rich a set of logical ops as the
+> config files.  Its easy to express 'build A if B', but not
+> so easy to do 'build A if not C'.  To make this work
+> cleanly I made PPC_CELL denote !SOME_HYPERVISOR_THING,
+> so I can have constructions like this in the makefile:
+>=20
+> obj-$(CONFIG_PPC_CELL)	+=3D ...
 
-The sensor portion of yours is done, it fit right into my existing code
-(three lm75 and two max6690, with the dual temps on max6690 being very
-important).
+Hi Geoff,
 
-The PID params portion will come together a bit later, please bug me by
-Wednesday next week if I haven't posted anything.
+I've been ignoring this discussion, but now that I read it I think this
+is all kinda backwards.
+
+PPC_CELL should not denote !SOME_HYPERVISOR, it should just mean "basic
+cell support", ie. PPC_CELL gets you platforms/cell built in.
+
+Then we can have SOME_HYPERVISOR which _adds_ support for that
+hypervisor. And PPC_CELL_BLADE which selects things which are actually
+specific to that hardware, like SPIDERNET etc.
+
+But SOME_HYPERVISOR should not remove support for running on bare metal,
+it should just give you the option of running on the hypervisor. Yes
+that may require testing things at runtime, that's what
+firmware_has_feature() is for.
+
+The goal should be that we have one kernel which can boot on all Cell
+implementations. In fact the ultimate goal is to have one kernel that
+can boot any platform under powerpc, that's a way off still, but we
+don't want to start going backwards.
+
+cheers
 
 --=20
-Robin Hugh Johnson
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+Michael Ellerman
+IBM OzLabs
 
---dDRMvlgZJXvWKvBx
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-nY39FS7qB/bu6/mFRtjo
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2-ecc0.1.6 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks
+Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQFEVqQSPpIsIjIzwiwRAmwOAJ96mD2fTpawnkAs0WkNyfSPssvToACghAhp
-tnzsC/Sw5ZZ2Hu3EY+RGDYQ=
-=Pza3
+iD8DBQBEVqQodSjSd0sB4dIRAtxEAJkBaKgtzuYNyel3Y/d6pa2aoj9KqACfVXo6
+GYN82hBz+PqYmf62EOmeI3s=
+=uhPV
 -----END PGP SIGNATURE-----
 
---dDRMvlgZJXvWKvBx--
+--=-nY39FS7qB/bu6/mFRtjo--
