@@ -1,17 +1,17 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [PATCH 11/13] cell: split out board specific files
-Date: Tue, 2 May 2006 12:59:23 +0200
-References: <20060429232812.825714000@localhost.localdomain>
-	<200605020150.14152.arnd@arndb.de>
-	<1900A234-BE31-4292-87E1-5C02F12A440D@kernel.crashing.org>
-In-Reply-To: <1900A234-BE31-4292-87E1-5C02F12A440D@kernel.crashing.org>
+Return-Path: <apw@shadowen.org>
+Message-ID: <44575CA1.1090009@shadowen.org>
+Date: Tue, 02 May 2006 14:20:33 +0100
+From: Andy Whitcroft <apw@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200605021259.24157.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.17-rc2-mm1
+References: <4450F5AD.9030200@google.com>
+	<20060428012022.7b73c77b.akpm@osdl.org>
+	<44561A1E.7000103@google.com> <200605012034.26763.ak@suse.de>
+In-Reply-To: <200605012034.26763.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc64-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, "Martin J. Bligh" <mbligh@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,17 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 02 May 2006 02:06, Segher Boessenkool wrote:
-> Is there any reason the driver wouldn't build and/or run on other
-> platforms?  If so, fix it.  If not, just make it
+Andi Kleen wrote:
+> On Monday 01 May 2006 16:24, Martin J. Bligh wrote:
 > 
->         depends on PCI
+> 
+>>double fault: 0000 [1] SMP
+>>last sysfs file: /devices/pci0000:00/0000:00:06.0/resource
+>>CPU 0
+>>Modules linked in:
+>>Pid: 20519, comm: mtest01 Not tainted 2.6.17-rc3-mm1-autokern1 #1
+>>RIP: 0010:[<ffffffff8047c8b8>] <ffffffff8047c8b8>{__sched_text_start+1856}
+>>RSP: 0000:0000000000000000  EFLAGS: 00010082
+>>RAX: 0000000000000000 RBX: 0000000000000000 RCX: ffffffff805d9438
+>>RDX: ffff8100db12c0d0 RSI: ffffffff805d9438 RDI: ffff8100db12c0d0
+>>RBP: ffffffff805d9438 R08: 0000000000000000 R09: 0000000000000000
+>>R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+>>R13: ffff8100e39bd440 R14: ffff810008003620 R15: 000002b02751726c
+>>FS:  0000000000000000(0000) GS:ffffffff805fa000(0063) knlGS:00000000f7dd0460
+>>CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
+>>CR2: fffffffffffffff8 CR3: 00000000da399000 CR4: 00000000000006e0
+>>Process mtest01 (pid: 20519, threadinfo ffff8100b1bb4000, task 
+>>ffff8100db12c0d0)
+>>Stack: ffffffff80579e20 ffff8100db12c0d0 0000000000000001 ffffffff80579f58
+>>        0000000000000000 ffffffff80579e78 ffffffff8020b0b2 ffffffff80579f58
+>>        0000000000000000 ffffffff80485520
+>>Call Trace: <#DF> <ffffffff8020b0b2>{show_registers+140}
+>>        <ffffffff8020b357>{__die+159} <ffffffff8020b3cc>{die+50}
+>>        <ffffffff8020bba6>{do_double_fault+115} 
+>><ffffffff8020aa91>{double_fault+125}
+>>        <ffffffff8047c8b8>{__sched_text_start+1856} <EOE>
+> 
+> 
+> That's really strange - i wonder why the backtracer can't find the original
+> stack. Should probably add some printk diagnosis here.
+> 
+> Can you send the output with this patch?
 
-Well, it could run on other platforms, except:
+Submitted, they should show up in teh matrix forthwith.  Will drop you
+the output when done.
 
-- it requires a few properties in the device tree (local-mac-address,
-  firmware), so it should also depend on PPC
-- It's not actually PCI at all, but on an internal bus that has
-  something close enough to a PCI config space.
-
-	Arnd <><
+-apw
