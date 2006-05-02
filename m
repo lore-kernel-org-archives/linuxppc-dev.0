@@ -1,17 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <200605020150.14152.arnd@arndb.de>
-References: <20060429232812.825714000@localhost.localdomain>
-	<F989FA67-91B5-493B-9A12-D02C3C14A984@kernel.crashing.org>
-	<445690F7.5050605@am.sony.com> <200605020150.14152.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1900A234-BE31-4292-87E1-5C02F12A440D@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH 11/13] cell: split out board specific files
-Date: Tue, 2 May 2006 02:06:10 +0200
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <robbat2@gentoo.org>
+Received: from mail.net-conex.com (pops.net-conex.com [204.244.176.3])
+	by ozlabs.org (Postfix) with ESMTP id CDA5567BA7
+	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 10:13:03 +1000 (EST)
+Received: from curie.orbis-terrarum.net (S01060050da688d47.vc.shawcable.net
+	[24.80.100.253])
+	by mail.net-conex.com (8.13.4/8.12.11) with ESMTP id k420D1i6029454
+	for <linuxppc-dev@ozlabs.org>; Mon, 1 May 2006 17:13:01 -0700
+Date: Mon, 1 May 2006 17:13:06 -0700
+From: "Robin H. Johnson" <robbat2@gentoo.org>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: windfarm for PM72/PM73/RM31
+Message-ID: <20060502001306.GA9589@curie-int.vc.shawcable.net>
+References: <20060501002719.GD15141@curie-int.vc.shawcable.net>
+	<A2D81A03-8CD5-41CD-BD49-3EDB1CDE53FD@laposte.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
+In-Reply-To: <A2D81A03-8CD5-41CD-BD49-3EDB1CDE53FD@laposte.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,28 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>  config SPIDER_NET
->>  	tristate "Spider Gigabit Ethernet driver"
->> -	depends on PCI && PPC_CELL
->> +	depends on PCI && PPC_IBM_CELL_BLADE
->>  	select FW_LOADER
->>  	help
->>  	  This driver supports the Gigabit Ethernet chips present on the
->
-> Hmm, I'm also no longer sure if this is right. In theory, spidernet
-> could be used in all sorts of products, wether they are using the
-> same bridge chip or just the gigabit ethernet macro from it.
->
-> For now, I guess you can just leave this one alone if you respin
-> the patch another time. It's disabled by default, so the dependency
-> can be updated the next time we get a user in _addition_ to PPC_CELL.
 
-Is there any reason the driver wouldn't build and/or run on other
-platforms?  If so, fix it.  If not, just make it
+--dDRMvlgZJXvWKvBx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	depends on PCI
+On Mon, May 01, 2006 at 06:53:09AM +0200, ?tienne Bersac wrote:
+> I own an iMac G5 rev C (iSight) with a PowerMac 12,1 included. Do you =20
+> intend to make support for it ? I will be happy to help you :)
+Thanks for sending it to me.
 
-?
+The sensor portion of yours is done, it fit right into my existing code
+(three lm75 and two max6690, with the dual temps on max6690 being very
+important).
 
+The PID params portion will come together a bit later, please bug me by
+Wednesday next week if I haven't posted anything.
 
-Segher
+--=20
+Robin Hugh Johnson
+E-Mail     : robbat2@gentoo.org
+GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+
+--dDRMvlgZJXvWKvBx
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2-ecc0.1.6 (GNU/Linux)
+Comment: Robbat2 @ Orbis-Terrarum Networks
+
+iD8DBQFEVqQSPpIsIjIzwiwRAmwOAJ96mD2fTpawnkAs0WkNyfSPssvToACghAhp
+tnzsC/Sw5ZZ2Hu3EY+RGDYQ=
+=Pza3
+-----END PGP SIGNATURE-----
+
+--dDRMvlgZJXvWKvBx--
