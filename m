@@ -1,19 +1,21 @@
-Return-Path: <SRS0+0ce65aaf38edc7aeca5c+982+infradead.org+hch@pentafluge.srs.infradead.org>
-Date: Tue, 2 May 2006 14:45:36 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH 11/13] cell: split out board specific files
-Message-ID: <20060502134536.GB26704@infradead.org>
-References: <20060429232812.825714000@localhost.localdomain>
-	<20060429233922.167124000@localhost.localdomain>
-	<F989FA67-91B5-493B-9A12-D02C3C14A984@kernel.crashing.org>
-	<445690F7.5050605@am.sony.com>
+Return-Path: <kim.phillips@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 0C4F967B36
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 May 2006 02:58:30 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k42HHeB7019189
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 May 2006 10:17:40 -0700 (MST)
+Received: from ld0028-tx32 (ld0028-tx32.am.freescale.net [10.82.19.18])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with SMTP id k42H9kdK012243
+	for <linuxppc-dev@ozlabs.org>; Tue, 2 May 2006 12:09:47 -0500 (CDT)
+Date: Tue, 2 May 2006 11:58:27 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Fix FSL SEC node in documentation
+Message-Id: <20060502115827.02ed3ca1.kim.phillips@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <445690F7.5050605@am.sony.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 01, 2006 at 03:51:35PM -0700, Geoff Levand wrote:
-> makefiles don't have as rich a set of logical ops as the
-> config files.  Its easy to express 'build A if B', but not
-> so easy to do 'build A if not C'.  To make this work
-> cleanly I made PPC_CELL denote !SOME_HYPERVISOR_THING,
-> so I can have constructions like this in the makefile:
-> 
-> obj-$(CONFIG_PPC_CELL)	+= ...
-> 
-> I also got rid of SPUFS_PRIV1_MMIO, since SPUFS_PRIV1_MMIO
-> just meant spufs with !SOME_HYPERVISOR_THING.
+Documentation: correct values in MPC5848E SEC example node
 
-The Kconfig files has lots of nice operators.
+---
+commit 27ef8f30208ceb62c5387e834a335558e7e88c70
+tree e96c74f732489115651ea00d0514e66e8050c60a
+parent 1f4a90670bacbf61f2fcc19a9e0e78748c932a25
+author Kim Phillips <kim.phillips@freescale.com> Tue, 02 May 2006 11:38:23 -0500
+committer Kim Phillips <kim.phillips@freescale.com> Tue, 02 May 2006 11:38:23 -0500
 
-Anyway, until we actually have the cell common hypervisor interface
-out in the public adding any support for it in Kconfig or the
-Makefile is completely pointless, and a patch like this even when
-done correctly shouldn't go in.
+ Documentation/powerpc/booting-without-of.txt |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-
-> Split the Cell BPA support into generic and platform
-> dependant parts.
-> 
-> Creates new config variable CONFIG_PPC_IBM_CELL_BLADE.
-
-That's wrong.  Most of these files will be needed to support
-the PS3 when running on bare hardware.  The right option will
-be CELL_SPIDER_HARDWARE, which is right now the only cell
-hardware generation supported.  It'll become meaningfull when
-adding axon support.
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 217e517..3c62e66 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1436,9 +1436,9 @@ platforms are moved over to use the flat
+                interrupts = <1d 3>;
+                interrupt-parent = <40000>;
+                num-channels = <4>;
+-               channel-fifo-len = <24>;
++               channel-fifo-len = <18>;
+                exec-units-mask = <000000fe>;
+-               descriptor-types-mask = <073f1127>;
++               descriptor-types-mask = <012b0ebf>;
+        };
+ 
+ 
