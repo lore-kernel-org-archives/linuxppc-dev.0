@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 15AE267B86
+Return-Path: <pravin3560@yahoo.com>
+Received: from web50512.mail.yahoo.com (web50512.mail.yahoo.com
+	[68.142.228.51]) by ozlabs.org (Postfix) with SMTP id B985267B61
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 May 2006 08:35:56 +1000 (EST)
-In-Reply-To: <20060502220242.2001.qmail@web37812.mail.mud.yahoo.com>
-References: <20060502220242.2001.qmail@web37812.mail.mud.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C7A2986C-E416-4B0D-A3D8-F974B4B8D96C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: cfg_lock
-Date: Tue, 2 May 2006 17:35:44 -0500
-To: Eric Heim <sheldoninstruments@yahoo.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed,  3 May 2006 08:39:41 +1000 (EST)
+Message-ID: <20060502223259.55214.qmail@web50512.mail.yahoo.com>
+Date: Tue, 2 May 2006 15:32:59 -0700 (PDT)
+From: pravin <pravin3560@yahoo.com>
+Subject: U-boot1.1.4 porting problem on PPC 440GX 
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-2007005706-1146609179=:45416"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,27 +20,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--0-2007005706-1146609179=:45416
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-On May 2, 2006, at 5:02 PM, Eric Heim wrote:
+Hi All,
+  I build uboot1.1.4 for ocotea_config  and run on an ocotea without SPD on DIMMS (SDRAM) and  It works. We manufactured another board derived from Ocotea Ref design, 440GX processor and on baord SDRAM (DIMMS) 256MB discrete parts. I use the same Uboot1.1.4 for this board. It boots upto calling the 
+   
+  relocate_code in cpu/ppc4xx/start.S and hangs. The same code works well on Ocotea. I run the memory tests and it passed all.
+   
+  Any idea why this could hang and never finish the relocate_code function. Trying relocating Uboot to SDRAM memory to get the C environment and run from memory.
+   
+  Any help would be appreciated. Any idea if i need any special code because of the discrete parts of SDRAM on our board.
+   
+  Thanks,
+  Pravin
+   
 
-> Anybody know how the cfg_lock bit is manipulated on the MPC8349EMDS  
-> board?  I know the bit is in the internal configuration registers  
-> but how is this bit flipped on boot?  We are trying to boot the  
-> board as an agent in a PC.  We can only do this using the hard  
-> coded option.  We would like to boot the board with the reset  
-> config word in the I2C but we can't boot the board with the 'core  
-> disabled' as we would like(it only works if the core enable bit is  
-> set, otherwise the PC hangs and won't boot).  We are hoping to use  
-> a pre-load command in the boot sequencer,  but there is little  
-> information on how this can be done or if it can be done.  We can  
-> flip the bit from u-boot or using our driver when the PC has booted  
-> up but we need some way to flip the bit during boot to allow our PC  
-> to get its proper configuration cycles.  Any ideas?
+--0-2007005706-1146609179=:45416
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-You have the right idea about using the I2C to handle various  
-register and config writes.  However, the UM details how to setup  
-your EEPROM so that I2C boot sequencer can process it.
-
-See section 4.4.3 in the UM.
-
-- k
+<div>Hi All,</div>  <div>I build uboot1.1.4 for&nbsp;ocotea_config&nbsp; and run on an ocotea without SPD on DIMMS (SDRAM) and &nbsp;It works. We manufactured another board derived from Ocotea Ref design, 440GX processor and on baord SDRAM (DIMMS) 256MB discrete parts. I use the same Uboot1.1.4 for this board. It boots upto calling the </div>  <div>&nbsp;</div>  <div>relocate_code in cpu/ppc4xx/start.S and hangs. The same code works well on Ocotea. I run the memory tests and it passed all.</div>  <div>&nbsp;</div>  <div>Any idea why this could hang and never finish the relocate_code function. Trying relocating Uboot to SDRAM memory to get the C environment and run from memory.</div>  <div>&nbsp;</div>  <div>Any help would be appreciated. Any idea if i need any special code because of the discrete parts of SDRAM on our board.</div>  <div>&nbsp;</div>  <div>Thanks,</div>  <div>Pravin</div>  <div>&nbsp;</div>
+--0-2007005706-1146609179=:45416--
