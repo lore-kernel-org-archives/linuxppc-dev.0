@@ -1,15 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id CBA0A67BF9
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 13:25:46 +1000 (EST)
-Date: Tue, 2 May 2006 13:25:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: move _etext out of the text section
-Message-Id: <20060502132525.00bde9ab.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17494.55672.893322.11125@cargo.ozlabs.ibm.com>
+Date: Tue, 2 May 2006 14:00:56 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Olaf Hering <olh@suse.de>,
+    linuxppc-dev@ozlabs.org
+Subject: Re: alignment exceptionhandler sleeps in invalid context
+In-Reply-To: <17489.63055.968862.256370@cargo.ozlabs.ibm.com>
+References: <20060424173246.GA22318@suse.de>
+	<17489.63055.968862.256370@cargo.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,44 +19,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The readprofile program stops when it hits the first non-text symbol
-after _stext.  By moving _etext, it will become an absolute symbol and
-so stop the readprofile output.  This is a safety measure in case more
-text symbols are placed directly after the text section.
+I wrote:
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
+> This patch should fix it, I hope.  If you can verify that it fixes it
+> I'll send it to Linus.
 
- arch/powerpc/kernel/vmlinux.lds.S |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+but init barfs at startup with that patch, due to the double
+evaluation of `ptr'.  This one runs a bit better...
 
-It would be nice if this was in 2.6.17, but 2.6.18 would also do.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Paul.
 
-77a86e7cdbf5eaa5810109f7632e5bff69e1a7e6
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index fe79c25..9055f5a 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -46,12 +46,12 @@ #ifdef CONFIG_PPC32
- 		*(.got2)
- 		__got2_end = .;
- #endif /* CONFIG_PPC32 */
--
--		. = ALIGN(PAGE_SIZE);
--		_etext = .;
--		PROVIDE32 (etext = .);
- 	}
+diff --git a/include/asm-powerpc/uaccess.h b/include/asm-powerpc/uaccess.h
+index 3872e92..d83fc29 100644
+--- a/include/asm-powerpc/uaccess.h
++++ b/include/asm-powerpc/uaccess.h
+@@ -7,6 +7,7 @@ #ifndef __ASSEMBLY__
+ #include <linux/sched.h>
+ #include <linux/errno.h>
+ #include <asm/processor.h>
++#include <asm/page.h>
  
-+	. = ALIGN(PAGE_SIZE);
-+	_etext = .;
-+	PROVIDE32 (etext = .);
-+
- 	/* Read-only data */
- 	RODATA
+ #define VERIFY_READ	0
+ #define VERIFY_WRITE	1
+@@ -179,9 +180,11 @@ do {								\
+ #define __put_user_nocheck(x, ptr, size)			\
+ ({								\
+ 	long __pu_err;						\
+-	might_sleep();						\
+-	__chk_user_ptr(ptr);					\
+-	__put_user_size((x), (ptr), (size), __pu_err);		\
++	__typeof__(*(ptr)) __user *__pu_addr = (ptr);		\
++	if (!is_kernel_addr((unsigned long)__pu_addr))		\
++		might_sleep();					\
++	__chk_user_ptr(ptr);					\
++	__put_user_size((x), __pu_addr, (size), __pu_err);	\
+ 	__pu_err;						\
+ })
  
--- 
-1.3.1.gaa6b
+@@ -258,9 +261,11 @@ #define __get_user_nocheck(x, ptr, size)
+ ({								\
+ 	long __gu_err;						\
+ 	unsigned long __gu_val;					\
++	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
+ 	__chk_user_ptr(ptr);					\
+-	might_sleep();						\
+-	__get_user_size(__gu_val, (ptr), (size), __gu_err);	\
++	if (!is_kernel_addr((unsigned long)__gu_addr))		\
++		might_sleep();					\
++	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+ })
+@@ -270,9 +275,11 @@ #define __get_user64_nocheck(x, ptr, siz
+ ({								\
+ 	long __gu_err;						\
+ 	long long __gu_val;					\
+-	__chk_user_ptr(ptr);					\
+-	might_sleep();						\
+-	__get_user_size(__gu_val, (ptr), (size), __gu_err);	\
++	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
++	__chk_user_ptr(ptr);					\
++	if (!is_kernel_addr((unsigned long)__gu_addr))		\
++		might_sleep();					\
++	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+ })
