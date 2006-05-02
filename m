@@ -1,22 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 679A1679F6
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 15:53:48 +1000 (EST)
-In-Reply-To: <1146529200.27495.23.camel@localhost.localdomain>
-References: <20060501074044.D552967B55@ozlabs.org>
-	<7C163A77-FF5F-49E7-87CF-0EA0411FE7A6@kernel.crashing.org>
-	<1146529200.27495.23.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6731E540-E1A9-4BB6-8B39-22D82A0F1C2C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Export flat device tree via debugfs for debugging
-Date: Tue, 2 May 2006 00:53:45 -0500
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 02 May 2006 15:57:35 +1000
+Subject: [RFC/PATCH] powerpc: Remove remaining iSeries debugger cruft
+In-Reply-To: <20060502040557.DE09667C13@ozlabs.org>
+Message-Id: <20060502055739.0385567B93@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,52 +15,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+None of this seems to be necessary, so let's see if can remove it and not
+break anything. Booted on iSeries & pSeries here.
 
-On May 1, 2006, at 7:20 PM, Michael Ellerman wrote:
+NB. we don't remove the hvReleaseData, we just move it down so that the file
+reads more clearly.
 
-> On Mon, 2006-05-01 at 12:54 -0500, Kumar Gala wrote:
->> On May 1, 2006, at 2:40 AM, Michael Ellerman wrote:
->>
->>> If DEBUG is turned on in prom.c, export the flat device tree via
->>> debugfs.
->>> This has been handy on several occasions.
->>>
->>> To look at it:
->>>  # mount -t debugfs none /sys/kernel/debug
->>>  # od -a /sys/kernel/debug/powerpc/flat-device-tree
->>>  and/or
->>>  # dtc -fI dtb /sys/kernel/debug/powerpc/flat-device-tree -O dts
->>>
->>> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
->>> ---
->>>
->>>  arch/powerpc/kernel/prom.c |   25 +++++++++++++++++++++++++
->>>  1 file changed, 25 insertions(+)
->>>
->>> Index: to-merge/arch/powerpc/kernel/prom.c
->>> ===================================================================
->>> --- to-merge.orig/arch/powerpc/kernel/prom.c
->>> +++ to-merge/arch/powerpc/kernel/prom.c
->>> @@ -30,6 +30,7 @@
->>>  #include <linux/bitops.h>
->>>  #include <linux/module.h>
->>>  #include <linux/kexec.h>
->>> +#include <linux/debugfs.h>
->>>
->>>  #include <asm/prom.h>
->>>  #include <asm/rtas.h>
->>> @@ -2009,3 +2010,27 @@ void kdump_move_device_tree(void)
->>>  	/* XXX should we unreserve the old DT? */
->>>  }
->>>  #endif /* CONFIG_KEXEC */
->>> +
->>> +#ifdef DEBUG
->>
->> Shouldn't this also depend on DEBUGFS being built in.
->
-> It could, but DEBUG_FS is written so that you don't have to care, so I
-> didn't :)
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-Cool.  Haven't messed with DEBUG_FS.
+ arch/powerpc/kernel/head_64.S          |   37 ++++++++-------------------------
+ arch/powerpc/platforms/iseries/setup.c |   12 ----------
+ 2 files changed, 9 insertions(+), 40 deletions(-)
 
-- k
+Index: to-merge/arch/powerpc/kernel/head_64.S
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/head_64.S
++++ to-merge/arch/powerpc/kernel/head_64.S
+@@ -85,34 +85,6 @@ END_FTR_SECTION(0, 1)
+ 	/* Catch branch to 0 in real mode */
+ 	trap
+ 
+-#ifdef CONFIG_PPC_ISERIES
+-	/*
+-	 * At offset 0x20, there is a pointer to iSeries LPAR data.
+-	 * This is required by the hypervisor
+-	 */
+-	. = 0x20
+-	.llong hvReleaseData-KERNELBASE
+-
+-	/*
+-	 * At offset 0x28 and 0x30 are offsets to the mschunks_map
+-	 * array (used by the iSeries LPAR debugger to do translation
+-	 * between physical addresses and absolute addresses) and
+-	 * to the pidhash table (also used by the debugger)
+-	 */
+-	.llong mschunks_map-KERNELBASE
+-	.llong 0	/* pidhash-KERNELBASE SFRXXX */
+-
+-	/* Offset 0x38 - Pointer to start of embedded System.map */
+-	.globl	embedded_sysmap_start
+-embedded_sysmap_start:
+-	.llong	0
+-	/* Offset 0x40 - Pointer to end of embedded System.map */
+-	.globl	embedded_sysmap_end
+-embedded_sysmap_end:
+-	.llong	0
+-
+-#endif /* CONFIG_PPC_ISERIES */
+-
+ 	/* Secondary processors spin on this value until it goes to 1. */
+ 	.globl  __secondary_hold_spinloop
+ __secondary_hold_spinloop:
+@@ -124,6 +96,15 @@ __secondary_hold_spinloop:
+ __secondary_hold_acknowledge:
+ 	.llong	0x0
+ 
++#ifdef CONFIG_PPC_ISERIES
++	/*
++	 * At offset 0x20, there is a pointer to iSeries LPAR data.
++	 * This is required by the hypervisor
++	 */
++	. = 0x20
++	.llong hvReleaseData-KERNELBASE
++#endif /* CONFIG_PPC_ISERIES */
++
+ 	. = 0x60
+ /*
+  * The following code is used on pSeries to hold secondary processors
+Index: to-merge/arch/powerpc/platforms/iseries/setup.c
+===================================================================
+--- to-merge.orig/arch/powerpc/platforms/iseries/setup.c
++++ to-merge/arch/powerpc/platforms/iseries/setup.c
+@@ -84,8 +84,6 @@ static void iSeries_pci_final_fixup(void
+ #endif
+ 
+ extern int rd_size;		/* Defined in drivers/block/rd.c */
+-extern unsigned long embedded_sysmap_start;
+-extern unsigned long embedded_sysmap_end;
+ 
+ extern unsigned long iSeries_recal_tb;
+ extern unsigned long iSeries_recal_titan;
+@@ -568,16 +566,6 @@ static void __init iSeries_fixup_klimit(
+ 	if (naca.xRamDisk)
+ 		klimit = KERNELBASE + (u64)naca.xRamDisk +
+ 			(naca.xRamDiskSize * HW_PAGE_SIZE);
+-	else {
+-		/*
+-		 * No ram disk was included - check and see if there
+-		 * was an embedded system map.  Change klimit to take
+-		 * into account any embedded system map
+-		 */
+-		if (embedded_sysmap_end)
+-			klimit = KERNELBASE + ((embedded_sysmap_end + 4095) &
+-					0xfffffffffffff000);
+-	}
+ }
+ 
+ static int __init iSeries_src_init(void)
