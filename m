@@ -1,27 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 01A1967A65
-	for <linuxppc-dev@ozlabs.org>; Tue,  2 May 2006 10:17:30 +1000 (EST)
-In-Reply-To: <1146526448.30710.70.camel@localhost.localdomain>
-References: <5CA113BC-1614-4551-87E5-6926E14C2225@kernel.crashing.org>
-	<1146512012.24239.28.camel@cashmere.sps.mot.com>
-	<695BB790-1E64-4B53-91DD-7DD88305F201@kernel.crashing.org>
-	<1146512732.24239.34.camel@cashmere.sps.mot.com>
-	<55FD11DB-54AF-4284-9E9A-C313F4232105@kernel.crashing.org>
-	<1146526448.30710.70.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F2FFCB64-C013-4A0B-A954-9764E6C912FE@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: DTC/dts modifications
-Date: Tue, 2 May 2006 02:17:24 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
-	Jon Loeliger <jdl@jdl.com>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Export flat device tree via debugfs for debugging
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <7C163A77-FF5F-49E7-87CF-0EA0411FE7A6@kernel.crashing.org>
+References: <20060501074044.D552967B55@ozlabs.org>
+	<7C163A77-FF5F-49E7-87CF-0EA0411FE7A6@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-kLi4FMX8T0SaVI2WcSP4"
+Date: Tue, 02 May 2006 10:20:00 +1000
+Message-Id: <1146529200.27495.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,18 +22,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> By what book?  It would seem to me that BNF for dtc is completely
->> under our control and if we want to change it we can.  I understand
->> that there is some correspondence to Open Firmware, but it seems that
->> if its people are ok with the dts format changing that's a lot easier
->> than implementing tons of support in dtc for features that cpp  
->> gives us.
->
-> What about just providing a way to escape them ? Something like \#  
-> would
-> do the trick
 
-Nope, cpp won't eat that.
+--=-kLi4FMX8T0SaVI2WcSP4
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, 2006-05-01 at 12:54 -0500, Kumar Gala wrote:
+> On May 1, 2006, at 2:40 AM, Michael Ellerman wrote:
+>=20
+> > If DEBUG is turned on in prom.c, export the flat device tree via =20
+> > debugfs.
+> > This has been handy on several occasions.
+> >
+> > To look at it:
+> >  # mount -t debugfs none /sys/kernel/debug
+> >  # od -a /sys/kernel/debug/powerpc/flat-device-tree
+> >  and/or
+> >  # dtc -fI dtb /sys/kernel/debug/powerpc/flat-device-tree -O dts
+> >
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> >
+> >  arch/powerpc/kernel/prom.c |   25 +++++++++++++++++++++++++
+> >  1 file changed, 25 insertions(+)
+> >
+> > Index: to-merge/arch/powerpc/kernel/prom.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- to-merge.orig/arch/powerpc/kernel/prom.c
+> > +++ to-merge/arch/powerpc/kernel/prom.c
+> > @@ -30,6 +30,7 @@
+> >  #include <linux/bitops.h>
+> >  #include <linux/module.h>
+> >  #include <linux/kexec.h>
+> > +#include <linux/debugfs.h>
+> >
+> >  #include <asm/prom.h>
+> >  #include <asm/rtas.h>
+> > @@ -2009,3 +2010,27 @@ void kdump_move_device_tree(void)
+> >  	/* XXX should we unreserve the old DT? */
+> >  }
+> >  #endif /* CONFIG_KEXEC */
+> > +
+> > +#ifdef DEBUG
+>=20
+> Shouldn't this also depend on DEBUGFS being built in.
 
-\#Segher
+It could, but DEBUG_FS is written so that you don't have to care, so I
+didn't :)
+
+cheers
+
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-kLi4FMX8T0SaVI2WcSP4
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBEVqWwdSjSd0sB4dIRAga0AKCzVNL2ct59ASFohwdMx00nCGEDeQCeJjqH
+/PhibFsXJw/7cOOXVtLJvIw=
+=vuNj
+-----END PGP SIGNATURE-----
+
+--=-kLi4FMX8T0SaVI2WcSP4--
