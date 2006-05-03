@@ -1,18 +1,31 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <4458C89B.9070505@yahoo.fr>
-References: <43E23B4A.4020402@yahoo.fr>	
-	<1138930958.4934.102.camel@localhost.localdomain>	
-	<43E37DAC.4030606@yahoo.fr>
-	<1139011975.8543.4.camel@localhost.localdomain>
-	<4458C89B.9070505@yahoo.fr>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2BCBBD4E-35BE-4B9D-8FAB-797AF11D0D8C@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: Maple freezing on PCI Target-Abort
-Date: Wed, 3 May 2006 17:40:37 +0200
-To: jfaslist <jfaslist@yahoo.fr>
-Cc: linuxppc64-dev@ozlabs.org
+Return-Path: <mjw@us.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BDEDA67B24
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 May 2006 05:11:23 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k43JBJd3002088
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2006 15:11:19 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k43JBI9g255620
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2006 15:11:18 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k43JBINB004183
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2006 15:11:18 -0400
+Received: from sig-9-76-26-66.mts.ibm.com (sig-9-76-26-66.mts.ibm.com
+	[9.76.26.66])
+	by d01av02.pok.ibm.com (8.12.11/8.12.11) with ESMTP id k43JBIMJ004165
+	for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2006 15:11:18 -0400
+Subject: [PATCH] define defaultimage for pseries
+From: Mike Wolf <mjw@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 03 May 2006 14:11:14 -0500
+Message-Id: <1146683474.26128.4.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,17 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I still don't like the fact that a user process causing the  
-> condition causes the system to enter the "mon" debugger rather than  
-> being killed w/ SIGBUS/SIGSEGV. I guess the correct way for a fix  
-> would be to write a Maple specific machine_check exception?
+Need to define defaultimage in arch/powerpc/Makefile
+so that make rpm will work.
 
-arch/powerpc/kernel/traps.c:machine_check_exception() does
-check for user mode, and if so, throws SIGBUS.  It doesn't
-do this if CONFIG_PPC64 though; that's a bug.
+Signed-off-by: Mike Wolf <mjw@us.ibm.com>
 
-I'm not sure if the user-mode check should be done before
-or after the machine-specific handler though.  Ben?
-
-
-Segher
+---
+--- 21959/arch/powerpc/Makefile.orig	2006-05-03 12:40:00.648340168 -0500
++++ 21959/arch/powerpc/Makefile	2006-05-03 13:49:53.754321760 -0500
+@@ -141,6 +141,7 @@
+ # Default to zImage, override when needed
+ defaultimage-y			:= zImage
+ defaultimage-$(CONFIG_PPC_ISERIES) := vmlinux
++defaultimage-$(CONFIG_PPC_PSERIES) := vmlinux
+ defaultimage-$(CONFIG_DEFAULT_UIMAGE) := uImage
+ KBUILD_IMAGE := $(defaultimage-y)
+ all: $(KBUILD_IMAGE)
