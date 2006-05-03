@@ -1,19 +1,17 @@
-Return-Path: <simon.v.smith@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.234])
-	by ozlabs.org (Postfix) with ESMTP id 0E25867B28
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 88D3167A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 May 2006 04:52:40 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 58so204171wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 03 May 2006 11:52:39 -0700 (PDT)
-Message-ID: <c4b82dc40605031145h18145dcci520a8ee7ff4a7c8@mail.gmail.com>
-Date: Wed, 3 May 2006 13:45:19 -0500
-From: "Simon Smith" <simon.v.smith@gmail.com>
+	Thu,  4 May 2006 06:11:14 +1000 (EST)
+Subject: Re: mpc8270 : i2c support
+From: Heiko Schocher <hs@denx.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: Sandpoint X3B and 7447 - boot problems
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_1149_13031985.1146681919785"
+In-Reply-To: 
+Content-Type: text/plain
+Date: Wed, 03 May 2006 22:11:17 +0200
+Message-Id: <1146687078.5942.36.camel@Zeus.EmbLux>
+Mime-Version: 1.0
+Reply-To: hs@denx.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,90 +22,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_1149_13031985.1146681919785
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hello jfaslist,
 
-Hi,
+on Wed, 03 May 2006 14:33:37 jfaslist wrote:
+> But when we try to access i2c devices from under linux 2.6 using 
+> the /dev/i2c-0 special file we get an ENODEV on opening that 
+> file. I think it is because we lack an adapter driver.
+> 
+> If I look in the official kernel, it looks like the adapter 
+> driver for the mpc8270 i2c system is 
+> ./drivers/i2c/busses/i2c-mpc.c. Is this correct?
 
-I'm a new member on this list.  I've been trying to get my Sandpoint
-X3B/mpmc7447 to boot a stock Linux kernel from kernel.org (tried 2.6.14 and
-2.6.16). I'm running into a boot issue, I load zImage.elf (using DINK32
-v13.1.1) -  I get the "Linux/PPC load:" prompt  and then nothing (no more
-text, and no more serial port response).
+No. It is for:
+MODULE_DESCRIPTION
+("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
 
-I been searching through the archives - I did come across one email that
-mentioned that Motorola(Freescale) started to ship Sandpoint X3B's with
-serial #'s > 6000 with "different" switch settings (my board has a serial #
-greater than 6000).  I haven't changed any switch settings from the
-defaults, the comments in arch/ppc/platforms/sandpoint.c seem to make
-reference to switch settings for the X1/2 board - but nothing about the X3B=
-.
-In all my searching I have yet to find any reference to what the switch
-settings for the X3B rev should be for Linux.
+> In DENX ELDK there is also a i2c-mpc8260.c, but we couldn't get 
+> that to work either.
 
-If anyone has any pointers regarding the switch settings for the X3B - or
-anything else that might help - I would appreciate any help I can get.
+OK, this was the right driver ... but it was tested on a MPC826x
+Processor.
 
-Here's my environment:
+Hmmm.... I think there are differences in the memory map between
+MPC826x and MPC827x ... can you try following Hack in
+include/asm-ppc/cpm_8260.h?
 
-Development Environment:
--------------------------------------
-RedHat Enterprise Linux 4.0
-ELDK 4.0 cross devlopment tools
+-#define PROFF_I2C       ((16 * 1024) - 64)
++#define PROFF_I2C       ((8 * 1024) - 64)
 
-(I'm successufully building zImage for sandpoint_defconfig and cross
-compiling for ppc_74xx-)
+[If it solves the problem, we must do this on a better way ;-)]
 
-build steps:
-  export CROSS_COMPILE=3Dppc_74xx-
-  make ARCH=3Dppc CROSS_COMPILE=3Dppc_74xx- sandpoint_defconfig
-  make ARCH=3Dppc CROSS_COMPILE=3Dppc_74xx- zImage
+I think i had the same problem with a 2.4er Kernel ... Yes,
+this is in my queue, but not merged in our official 2.4er Tree ...
 
-Board:
----------
-Sandpoint X3B , serial # > 6000
-DINK32 v13.1.1
-Altimus (MPMC7447) v1.1
-Memory: Map B (CHRP) 128MB at CL3
+Maybe you have to set other Portsettings in
+drivers/i2c/busses/i2c-cpm2.c cpm2_iic_init() ... ?
 
-Thanks,
+> What should I do to be able to access i2c devices using the 
+> /dev/i2c-0 file? I feel I need to modify the i2c adapter driver 
+> to follow the driver model, but in what ways?
 
--Simon.
+Bring up the driver running, and then read:
+Documentation/i2c/dev-interface.
 
-------=_Part_1149_13031985.1146681919785
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi,<br><br>I'm a new member on this list.&nbsp; I've been trying to get my =
-Sandpoint X3B/mpmc7447 to boot a stock Linux kernel from <a href=3D"http://=
-kernel.org">kernel.org</a> (tried 2.6.14 and 2.6.16). I'm running into a bo=
-ot issue, I load=20
-zImage.elf (using DINK32 v13.1.1) -&nbsp; I get the &quot;Linux/PPC load:&q=
-uot; prompt&nbsp; and then nothing (no more text, and no more serial port r=
-esponse).<br><br>I been searching through the archives - I did come across =
-one email that mentioned that Motorola(Freescale) started to ship Sandpoint=
- X3B's with serial #'s &gt; 6000 with &quot;different&quot; switch settings=
- (my board has a serial # greater than 6000).&nbsp; I haven't changed any s=
-witch settings from the defaults, the comments in arch/ppc/platforms/sandpo=
-int.c seem to make reference to switch settings for the X1/2 board - but no=
-thing about the X3B. In all my searching I have yet to find any reference t=
-o what the switch settings for the X3B rev should be for Linux.
-<br><br>If anyone has any pointers regarding the switch settings for the X3=
-B - or anything else that might help - I would appreciate any help I can ge=
-t.<br><br>Here's my environment:<br><br>Development Environment:<br>-------=
-------------------------------
-<br>RedHat Enterprise Linux 4.0<br>ELDK 4.0 cross devlopment tools<br><br>(=
-I'm successufully building zImage for sandpoint_defconfig and cross compili=
-ng for ppc_74xx-)<br><br>build steps:<br>&nbsp; export CROSS_COMPILE=3Dppc_=
-74xx-
-<br>&nbsp; make ARCH=3Dppc CROSS_COMPILE=3Dppc_74xx- sandpoint_defconfig<br=
->&nbsp; make ARCH=3Dppc CROSS_COMPILE=3Dppc_74xx- zImage<br><br>Board:<br>-=
---------<br>Sandpoint X3B , serial # &gt; 6000<br>DINK32 v13.1.1<br>Altimus=
- (MPMC7447) v1.1
-<br>Memory: Map B (CHRP) 128MB at CL3<br><br>Thanks,<br><br>-Simon.<br><br>=
-<br>
-
-------=_Part_1149_13031985.1146681919785--
+Best regards
+Heiko
