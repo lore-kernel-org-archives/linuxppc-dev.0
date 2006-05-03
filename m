@@ -1,34 +1,17 @@
-Return-Path: <RAISCH@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de.ibm.com", Issuer "Equifax" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CE5C467A63
-	for <linuxppc-dev@ozlabs.org>; Wed,  3 May 2006 23:55:29 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.6/8.13.6) with ESMTP id k43DtN1N050112
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2006 13:55:23 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k43DuZH6112514
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2006 15:56:35 +0200
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k43DtNJr018344
-	for <linuxppc-dev@ozlabs.org>; Wed, 3 May 2006 15:55:23 +0200
-In-Reply-To: <17489.18630.75412.66803@cargo.ozlabs.ibm.com>
-Subject: Re: [PATCH 13/16] ehca: firmware InfiniBand interface
-To: Paul Mackerras <paulus@samba.org>
-Message-ID: <OF10E7ED21.CCC1AFCE-ONC1257163.00478AC0-C1257163.004BF94F@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Wed, 3 May 2006 15:56:34 +0200
+Return-Path: <jfaslist@yahoo.fr>
+Message-ID: <4458C89B.9070505@yahoo.fr>
+Date: Wed, 03 May 2006 17:13:31 +0200
+From: jfaslist <jfaslist@yahoo.fr>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
-	Marcus Eder <MEDER@de.ibm.com>,
-	=?ISO-8859-1?Q?J=F6rn_Engel?= <joern@wohnheim.fh-wedel.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Maple freezing on PCI Target-Abort
+References: <43E23B4A.4020402@yahoo.fr>	
+	<1138930958.4934.102.camel@localhost.localdomain>	
+	<43E37DAC.4030606@yahoo.fr>
+	<1139011975.8543.4.camel@localhost.localdomain>
+In-Reply-To: <1139011975.8543.4.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc64-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,61 +21,117 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> wrote on 28.04.2006 00:42:14:
+Hi,
+Back on this old posting, we have made progress thanks to IBM help, the 
+Maple platform no longer freezes on a (PIO) PCI target-abort. On such an 
+occurence we now run the machine check excpetion handler, just like you 
+said.
+Here is what we got from IBM:
 
-> Mind you, since a lot of the parameters are used to return individual
-> bytes or half-words, which are then put into structures, it might be
-> better to pass the pointers to the structures and let the wrapper put
-> the values straight into the structures.
+"...
+Engineering has verified following behavior relating to Machine Check 
+and Check Stop. CPC925 documentation will be updated.
+
+   1. With APIMASK register DerrEXCP set to 1 the target abort on the
+      PCI bus causes P_CSTP signal to be driven low.
+   2. With APIMASK register DerrEXCP set to 0 and APIEMASK register
+      DerrEXCP set to 0 the target abort on the PCI bus causes machine
+      check interrupt. In this case the CHP_FAULT signal continues to be
+      driven high. It appears that the EI interface has a way of
+      signaling machine check since both pins P_CSTP and CHP_FAULT are
+      disabled through APIMASK and APIEMASK.
+   3. With APIMASK register DerrEXCP set to 0 and APIEMASK register
+      DerrEXCP set to 1 the target abort on the PCI bus causes machine
+      check interrupt. In this case the CHP_FAULT signal is driven low
+      until the APIEXCP is read. After APIEXCP register is read the
+      CHP_FAULT signal is again driven high. Since the CHP_FAULT pin is
+      not connected to the PPC970FX MCP_B input pin EI bus has a way of
+      signaling machine check through EI interface...."
+
+
+Setting the CPC925 according to item 3, fixes the problem. I give this 
+for the record, since the fix should be in PIBS, I think.
+I still don't like the fact that a user process causing the condition 
+causes the system to enter the "mon" debugger rather than being killed 
+w/ SIGBUS/SIGSEGV. I guess the correct way for a fix would be to write a 
+Maple specific machine_check exception?
+Thanks,
+-jf simon
+
+Benjamin Herrenschmidt wrote:
+
+>On Fri, 2006-02-03 at 16:58 +0100, jfaslist wrote:
+>  
 >
-> Paul.
-
-As Paul already mentioned we can't change the firmware interface.
-
-...so we would propose the following solution:
-For the two h_call wrappers with more than 8 parameters we'll change to the
-following signature:
-
-hipz_h_alloc_resource_cq(const struct ipz_adapter_handle adapter_handle,
-                         struct ehca_cq *cq, /* used for input and output
-parameters */
-                         const struct ipz_eq_handle eq_handle);
-
-hipz_h_alloc_resource_qp(const struct ipz_adapter_handle adapter_handle,
-                         struct ehca_qp * qp, /* used for input and output
-parameters */
-                         struct ehca_alloc_qp_params * param); /*input
-params not in ehca_qp*/
-
-
-hipz_h_alloc_resource_mr(const struct ipz_adapter_handle adapter_handle,
-                         struct ehca_mr *mr,
-                         const u64 vaddr,
-                         const u64 length,
-                         const u32 access_ctrl,
-                         const struct ipz_pd pd);
+>>Hi,
+>>Yes, we are going to dig into all this CPC925 and Processor Interface 
+>>initialization.
+>>Note that I checked that both MSR_ME and MSR_RI were set prior to 
+>>triggering the PCI Target-Abort.
+>>
+>>-MSR_ME: If not set the CPU will "checkstop" on a machine chaeck.
+>>-MSR_RI: So that the exception is recoverable.
+>>
+>>Regarding MSR_RI, this should always be set, I think?
+>>    
+>>
+>
+>Yes, MSR:RI is always set by the kernel except in the rare code path
+>where taking an exception is actually unsafe (like in some of the
+>exception handling code itself)
+>
+>Ben.
+>
+>
+>  
+>
 
 
-u64 hipz_h_query_mr(const struct ipz_adapter_handle adapter_handle,
-                    struct ehca_mr *mr);
 
-u64 hipz_h_reregister_pmr(const struct ipz_adapter_handle adapter_handle,
-                          struct ehca_mr *mr,
-                          const u64 vaddr_in,
-                          const u64 length,
-                          const u32 access_ctrl,
-                          const struct ipz_pd pd,
-                          const u64 mr_addr_cb);
-
-u64 hipz_h_register_smr(const struct ipz_adapter_handle adapter_handle,
-                        struct ehca_mr *mr,
-                        struct ehca_mr *orig_mr,
-                        const u64 vaddr_in,
-                        const u32 access_ctrl,
-                        const struct ipz_pd pd);
+-------- Original Message --------
+Subject: 	Re: Maple freezing on PCI Target-Abort
+Date: 	Fri, 03 Feb 2006 12:42:37 +1100
+From: 	Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: 	jfaslist <jfaslist@yahoo.fr>
+CC: 	linuxppc64-dev@ozlabs.org
+References: 	<43E23B4A.4020402@yahoo.fr>
 
 
-What do you think about this solution?
+
+> -What exception vector is taking care of a DERR excp? From what I can 
+> see it seems to be the "machine check" vector. But that seems a bit 
+> drastic to me. After all this is just a PCI target abort.
+
+I would expect a machine check yes.
+
+> -I expect that the normal behavior would be for the kernel to send a 
+> signal termination to the user process which caused the PIO READ PCI 
+> cycle (from a previously mmap()'ed VMA address). Is it  doable on this 
+> platform?  Since a READ operation is coupled by nature, I think this is 
+> the only acceptable way.
+
+It should SIGBUS except if the problem occurred in the kernel. I don't
+know why it's not doing so, maybe you are hitting an issue/errata or
+misconfiguration of the 925 ?
+
+> I have tried to set the MSR[RI] bit before doing the PCI cycle, but it 
+> didn't change change anything. Also on our design we disconnect the 
+> CPC925 checkstop pin from the 970 machine check pin.(see page 39 of 
+> cpc925 user's manual). So a DERR shouldn't cause a machine check I would 
+> think.
+> 
+> I realize that these questions are very H/W related but couldn't find 
+> the answer in IBM doc.
 
 
-Gruss / Regards . . . Christoph Raisch
+
+
+
+
+	
+
+	
+		
+___________________________________________________________________________ 
+Faites de Yahoo! votre page d'accueil sur le web pour retrouver directement vos services préférés : vérifiez vos nouveaux mails, lancez vos recherches et suivez l'actualité en temps réel. 
+Rendez-vous sur http://fr.yahoo.com/set
