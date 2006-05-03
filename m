@@ -1,15 +1,22 @@
-Return-Path: <jfaslist@yahoo.fr>
-Received: from smtp004.mail.ukl.yahoo.com (smtp004.mail.ukl.yahoo.com
-	[217.12.11.35]) by ozlabs.org (Postfix) with SMTP id ABF8567A06
+Return-Path: <kimmo.surakka@oxinst.fi>
+Received: from imap.oxinst.fi (unknown [62.236.216.24])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3E25767A5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  3 May 2006 22:40:32 +1000 (EST)
-Message-ID: <4458A321.1030206@yahoo.fr>
-Date: Wed, 03 May 2006 14:33:37 +0200
-From: jfaslist <jfaslist@yahoo.fr>
-MIME-Version: 1.0
+	Wed,  3 May 2006 23:27:00 +1000 (EST)
+Received: from [62.236.216.25] (helo=s5mtx04.metorex.fi)
+	by imap.oxinst.fi with smtp (Exim 3.35 #1 (Debian))
+	id 1FbH0l-0001IE-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 03 May 2006 16:03:23 +0300
+From: Kimmo Surakka <kimmo.surakka@oxinst.fi>
 To: linuxppc-embedded@ozlabs.org
-Subject: mpc8270 : i2c support
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: MPC5200 I2C unstable?
+Date: Wed, 3 May 2006 16:08:47 +0300
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200605031608.47579.kimmo.surakka@oxinst.fi>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,34 +28,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 Hi,
-We have designed a system using a mpc8270 cpu. The firmware we 
-use is u-boot and we can access all our i2c devices from u-boot.
 
-But when we try to access i2c devices from under linux 2.6 using 
-the /dev/i2c-0 special file we get an ENODEV on opening that 
-file. I think it is because we lack an adapter driver.
+I'm using a MPC5200 based board (namely TQM5200) and the 
+linuxppc_2_4_devel-2005-10-25-1440 kernel from denx.de. To get the serial 
+ports more stable, I've applied the serial port patch by Achim Machura (can 
+be found in 
+http://marc.theaimsgroup.com/?l=linuxppc-embedded&m=112901824515097&w=2). The 
+patch needed small adjustments, but nothing too large -- mostly different 
+line numbers.
 
-If I look in the official kernel, it looks like the adapter 
-driver for the mpc8270 i2c system is 
-./drivers/i2c/busses/i2c-mpc.c. Is this correct?
+Also, to get the first I2C interface to work, I've had to change the file 
+drivers/i2c/i2c-tqm5200.c followingly:
 
-Why is this driver registering as a platform driver and not as a 
-i2c bus driver?
+-#define MPC5xxx_I2C1_ENABLE    0       /* Disable  */
++#define MPC5xxx_I2C1_ENABLE    1       /* Enable   */
 
-In DENX ELDK there is also a i2c-mpc8260.c, but we couldn't get 
-that to work either.
+The code compiles OK, but the I2C bus gets stuck after a short while. Has 
+anyone else experienced something similar? I tried to Google for information 
+but didn't find anything relevant. Maybe I just didn't know the right 
+keywords to search for?
 
-What should I do to be able to access i2c devices using the 
-/dev/i2c-0 file? I feel I need to modify the i2c adapter driver 
-to follow the driver model, but in what ways?
+Thanks in advance,
 
-Thx for any help,
--jf simon
+Kimmo Surakka
 
-	
+This message has been scanned by F-Secure Anti-Virus
 
-	
-		
-___________________________________________________________________________ 
-Faites de Yahoo! votre page d'accueil sur le web pour retrouver directement vos services préférés : vérifiez vos nouveaux mails, lancez vos recherches et suivez l'actualité en temps réel. 
-Rendez-vous sur http://fr.yahoo.com/set
+###  OXFORD INSTRUMENTS   http://www.oxford-instruments.com/  ###
+
+Unless stated above to be non-confidential, this E-mail and any
+attachments are private and confidential and are for the addressee
+only and may not be used, copied or disclosed save to the addressee.
+If you have received this E-mail in error please notify us upon receipt
+and delete it from your records. Internet communications are not secure
+and Oxford Instruments is not responsible for their abuse by third
+parties nor for any alteration or corruption in transmission.
