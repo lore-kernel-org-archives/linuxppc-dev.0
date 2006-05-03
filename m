@@ -1,17 +1,18 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 88D3167A64
+Return-Path: <sauros@gmail.com>
+Received: from wx-out-0102.google.com (wx-out-0102.google.com [66.249.82.198])
+	by ozlabs.org (Postfix) with ESMTP id E681E67B14
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 May 2006 06:11:14 +1000 (EST)
-Subject: Re: mpc8270 : i2c support
-From: Heiko Schocher <hs@denx.de>
+	Thu,  4 May 2006 07:22:03 +1000 (EST)
+Received: by wx-out-0102.google.com with SMTP id h29so202122wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 03 May 2006 14:22:02 -0700 (PDT)
+Message-ID: <c359a7c00605031415o545d761cha3a3498c9454f3df@mail.gmail.com>
+Date: Wed, 3 May 2006 18:15:22 -0300
+From: "Sauro Salomoni" <sauros@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-In-Reply-To: 
-Content-Type: text/plain
-Date: Wed, 03 May 2006 22:11:17 +0200
-Message-Id: <1146687078.5942.36.camel@Zeus.EmbLux>
-Mime-Version: 1.0
-Reply-To: hs@denx.de
+Subject: Where to look for CRAMFS
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,48 +23,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello jfaslist,
+Greetings.
 
-on Wed, 03 May 2006 14:33:37 jfaslist wrote:
-> But when we try to access i2c devices from under linux 2.6 using 
-> the /dev/i2c-0 special file we get an ENODEV on opening that 
-> file. I think it is because we lack an adapter driver.
-> 
-> If I look in the official kernel, it looks like the adapter 
-> driver for the mpc8270 i2c system is 
-> ./drivers/i2c/busses/i2c-mpc.c. Is this correct?
+I have an embedded board using i.MX21.
 
-No. It is for:
-MODULE_DESCRIPTION
-("I2C-Bus adapter for MPC107 bridge and MPC824x/85xx/52xx processors");
+What I want to know is: how do I tell the kernel where my CRAMFS root
+file system is?
+I mean, I put it in a specific memory address, but how does the kernel
+know where it is?!
 
-> In DENX ELDK there is also a i2c-mpc8260.c, but we couldn't get 
-> that to work either.
+What happens here is that the kernel looks in some address and don't
+find the Magic Number CRAMFS stores in its own start address. I have a
+"bad magic number" msg because my root fs is somewhere else.
+Can anyone help me, plz?
 
-OK, this was the right driver ... but it was tested on a MPC826x
-Processor.
+Thanks in advance.
 
-Hmmm.... I think there are differences in the memory map between
-MPC826x and MPC827x ... can you try following Hack in
-include/asm-ppc/cpm_8260.h?
 
--#define PROFF_I2C       ((16 * 1024) - 64)
-+#define PROFF_I2C       ((8 * 1024) - 64)
-
-[If it solves the problem, we must do this on a better way ;-)]
-
-I think i had the same problem with a 2.4er Kernel ... Yes,
-this is in my queue, but not merged in our official 2.4er Tree ...
-
-Maybe you have to set other Portsettings in
-drivers/i2c/busses/i2c-cpm2.c cpm2_iic_init() ... ?
-
-> What should I do to be able to access i2c devices using the 
-> /dev/i2c-0 file? I feel I need to modify the i2c adapter driver 
-> to follow the driver model, but in what ways?
-
-Bring up the driver running, and then read:
-Documentation/i2c/dev-interface.
-
-Best regards
-Heiko
+Sauro
+Engineer
+Z Tec
+www.ztec.com.br
++55 61 3322-2544
