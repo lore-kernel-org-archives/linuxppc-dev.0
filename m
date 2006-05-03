@@ -1,20 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <17496.6519.733076.663815@cargo.ozlabs.ibm.com>
-References: <20060429232812.825714000@localhost.localdomain>
-	<200605020150.14152.arnd@arndb.de>
-	<1900A234-BE31-4292-87E1-5C02F12A440D@kernel.crashing.org>
-	<200605021259.24157.arnd@arndb.de>
-	<801072F8-7701-4BD7-81FB-A8C1AA534C2E@kernel.crashing.org>
-	<17496.6519.733076.663815@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <904F5BD9-1ACB-4936-B390-E4128886824C@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH 11/13] cell: split out board specific files
-Date: Wed, 3 May 2006 08:28:15 +0200
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: question on why hvc_console calls hvc_poll() in
+	hvc_handle_interrupt().
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Ryan Arnold <rsa@us.ibm.com>
+In-Reply-To: <1145564752.29313.185.camel@localhost.localdomain>
+References: <20060418185534.B1ADF679F0@ozlabs.org>
+	<1145563391.29313.174.camel@localhost.localdomain>
+	<1145564752.29313.185.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-f+ZxoLvmb1d/GNyUyk4M"
+Date: Wed, 03 May 2006 17:42:43 +1000
+Message-Id: <1146642164.16640.30.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+	Milton Miller <miltonm@bga.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Well, it could run on other platforms, except:
->>>
->>> - it requires a few properties in the device tree (local-mac- 
->>> address,
->>>   firmware), so it should also depend on PPC
->>
->> The portions of code that require OF should have appropriate #ifdef
->> guards.
->
-> So you're suggesting that we change the Makefile so we can *add*
-> ifdefs?  Usually we do it the other way around. :)
 
-Yeah, what was I thinking.  So use some platform hook instead.
+--=-f+ZxoLvmb1d/GNyUyk4M
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-But Arnd of course is right; if the driver (currently) only works
-on a certain platform, just mark it as such in the Makefile (erm,
-Kconfig file).
+On Thu, 2006-04-20 at 15:25 -0500, Ryan Arnold wrote:
+> While on the topic of hvc_console; I think I saw a patch go through a
+> while ago that added hvc_poll() to hvc_handle_interrupt().  I can't say
+> I'm too pleased with that addition.  I did my best to keep locking
+> outside of the interrupt handler.
+>=20
+> I wonder if that change was tested on a power5 lpar system with several
+> secondary VSerial Server adapters (hvc1-hvcn) being hammered with data.
+> I'm pretty paranoid about deadlock, hence the reason for keeping locking
+> out of the int. handler.
 
-Hey, we should probably do that with 90% of all drivers.  But that
-is a discussion for some other day :-)
+That was Milton's patch. No idea whether it's correct/tested.
 
+cheers
 
-Segher
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-f+ZxoLvmb1d/GNyUyk4M
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBEWF7zdSjSd0sB4dIRArUtAJ0TsWRb2bSV73GuNNf49fhwsj9OJgCfRTFW
+aD+hsWJL78oqf8C8EMEiGk8=
+=HcZu
+-----END PGP SIGNATURE-----
+
+--=-f+ZxoLvmb1d/GNyUyk4M--
