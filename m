@@ -1,18 +1,36 @@
-Return-Path: <jfaslist@yahoo.fr>
-Received: from smtp008.mail.ukl.yahoo.com (smtp008.mail.ukl.yahoo.com
-	[217.12.11.62]) by ozlabs.org (Postfix) with SMTP id 0D43667AC6
+Return-Path: <stevewin@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0222E67B17
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 May 2006 03:04:30 +1000 (EST)
-Message-ID: <4458E28E.8080705@yahoo.fr>
-Date: Wed, 03 May 2006 19:04:14 +0200
-From: jfaslist <jfaslist@yahoo.fr>
+	Thu,  4 May 2006 03:09:03 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k43H90f2019332
+	for <linuxppc-embedded@ozlabs.org>; Wed, 3 May 2006 13:09:00 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k43H90Tl250510
+	for <linuxppc-embedded@ozlabs.org>; Wed, 3 May 2006 11:09:00 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k43H907e000395
+	for <linuxppc-embedded@ozlabs.org>; Wed, 3 May 2006 11:09:00 -0600
+Received: from d03nm125.boulder.ibm.com (d03nm125.boulder.ibm.com
+	[9.17.195.151])
+	by d03av03.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
+	k43H90mx000392
+	for <linuxppc-embedded@ozlabs.org>; Wed, 3 May 2006 11:09:00 -0600
+Subject: Fw: Configuring PCI w/ 44x
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OF417BCEEB.CBCC9EBC-ON87257163.005DB572-85257163.005E34EB@us.ibm.com>
+From: Stephen Winiecki <stevewin@us.ibm.com>
+Date: Wed, 3 May 2006 13:11:26 -0400
 MIME-Version: 1.0
-To: Jean-Marie Teuler <jean-marie.teuler@lcp.u-psud.fr>
-Subject: Re: Impossible to open the root console with 2.6.15
-References: <1146663369.2448.25.camel@khnoum.lcp.u-psud.fr>
-In-Reply-To: <1146663369.2448.25.camel@khnoum.lcp.u-psud.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-type: multipart/alternative;
+	Boundary="0__=08BBFBF0DFCE33E28f9e8a93df938690918c08BBFBF0DFCE33E2"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,46 +41,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Jean-Marie Teuler wrote:
+--0__=08BBFBF0DFCE33E28f9e8a93df938690918c08BBFBF0DFCE33E2
+Content-type: text/plain; charset=US-ASCII
 
->Hi there,
+
+
+
+
+Eugene Surovegin <ebs@ebshome.net> wrote on 05/02/2006 07:49:16 PM:
+
+> On Tue, May 02, 2006 at 04:58:32PM -0400, Stephen Winiecki wrote:
+> > I have a question regarding configuring PCI with 44x.  Using 2.6.17-rc3
+as
+> > a reference, PCI_CONFIG is defined for the 44x defconfigs, and Kconfig
+is
+> > not enabled to reflect/change the setting for 44x.  When I update
+> > arch/ppc/Kconfig to enable configuring or not configuring PCI with 44x,
+and
+> > then don't configure it, the kernel won't compile:
 >
->I am trying to use ELDK 4.0 on my TQM860L board.
+> Hmm, you cannot disable PCI for 44x in the current 2.6. It's always
+> enabled.
 >
->I have compiled the included 2.6.15 kernel with reasonable options, but
->when I try to boot it, I do not get the prompt after the message
->"Uncompressing Kernel Image ... OK"
->  
+> If you changed Konfig to be able to do so, why are you complaining
+> here? It's not enough to just change Konfig, you have to modify Ocotea
+> port as well. Look for example how this is handled for 85xx.
 >
-It could be a FAQ:
-http://www.denx.de/wiki/DULG/LinuxHangsAfterUncompressingKernel
+> Patches are welcome.
+>
+> --
+> Eugene
+>
 
-But in fact, wwe had a similar case recently (no console outputs, but 
-linux running OK) and I am told that the problem was with  the "virtual 
-terminal"  option that needed to be disabled:
+I was first wondering if for some reason defaulting/forcing PCI to always
+be configured for 44x was intentional.  I was second reporting the fact
+that if a change is made to not configure PCI for 44x, the kernel will not
+compile.
 
-Device Drivers
--> Character devices
- -> [ ] Virtual Terminal
-	serial drivers->
-		<*> CPM SCC/SMC serial port support
- 		 <*> Support for console CMP SCC/SMC serial port......
+Steve
+--0__=08BBFBF0DFCE33E28f9e8a93df938690918c08BBFBF0DFCE33E2
+Content-type: text/html; charset=US-ASCII
+Content-Disposition: inline
 
- --
-
-Best regards,
-_______________________________________
-jean-francois simon - themis computer
-5, rue irene joliot curie
-38330 eybens - france
-+33 (0)870 448 638
-+33 (0)4 76 14 77 85
-
-
-	
-
-	
-		
-___________________________________________________________________________ 
-Faites de Yahoo! votre page d'accueil sur le web pour retrouver directement vos services préférés : vérifiez vos nouveaux mails, lancez vos recherches et suivez l'actualité en temps réel. 
-Rendez-vous sur http://fr.yahoo.com/set
+<html><body>
+<p><tt>Eugene Surovegin &lt;ebs@ebshome.net&gt; wrote on 05/02/2006 07:49:16 PM:<br>
+<br>
+&gt; On Tue, May 02, 2006 at 04:58:32PM -0400, Stephen Winiecki wrote:<br>
+&gt; &gt; I have a question regarding configuring PCI with 44x. &nbsp;Using 2.6.17-rc3 as<br>
+&gt; &gt; a reference, PCI_CONFIG is defined for the 44x defconfigs, and Kconfig is<br>
+&gt; &gt; not enabled to reflect/change the setting for 44x. &nbsp;When I update<br>
+&gt; &gt; arch/ppc/Kconfig to enable configuring or not configuring PCI with 44x, and<br>
+&gt; &gt; then don't configure it, the kernel won't compile:<br>
+&gt; <br>
+&gt; Hmm, you cannot disable PCI for 44x in the current 2.6. It's always <br>
+&gt; enabled.<br>
+&gt; <br>
+&gt; If you changed Konfig to be able to do so, why are you complaining <br>
+&gt; here? It's not enough to just change Konfig, you have to modify Ocotea <br>
+&gt; port as well. Look for example how this is handled for 85xx.<br>
+&gt; <br>
+&gt; Patches are welcome.<br>
+&gt; <br>
+&gt; -- <br>
+&gt; Eugene<br>
+&gt; </tt><br>
+<br>
+<tt>I was first wondering if for some reason defaulting/forcing PCI to always be configured for 44x was intentional. &nbsp;I was second reporting the fact that if a change is made to not configure PCI for 44x, the kernel will not compile.</tt><br>
+<br>
+<tt>Steve</tt><tt><br>
+</tt></body></html>
+--0__=08BBFBF0DFCE33E28f9e8a93df938690918c08BBFBF0DFCE33E2--
