@@ -1,16 +1,16 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	by ozlabs.org (Postfix) with ESMTP id CB6C667AC5
+Return-Path: <jfaslist@yahoo.fr>
+Received: from smtp008.mail.ukl.yahoo.com (smtp008.mail.ukl.yahoo.com
+	[217.12.11.62]) by ozlabs.org (Postfix) with SMTP id 0D43667AC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 May 2006 02:06:47 +1000 (EST)
-Message-ID: <4458D4FA.8090302@ovro.caltech.edu>
-Date: Wed, 03 May 2006 09:06:18 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Thu,  4 May 2006 03:04:30 +1000 (EST)
+Message-ID: <4458E28E.8080705@yahoo.fr>
+Date: Wed, 03 May 2006 19:04:14 +0200
+From: jfaslist <jfaslist@yahoo.fr>
 MIME-Version: 1.0
-To: "Steve Iribarne (GMail)" <netstv@gmail.com>
-Subject: Re: kernel debugging
-References: <b4b98b690605030711q69426a59j28db8e38be73f1f0@mail.gmail.com>
-In-Reply-To: <b4b98b690605030711q69426a59j28db8e38be73f1f0@mail.gmail.com>
+To: Jean-Marie Teuler <jean-marie.teuler@lcp.u-psud.fr>
+Subject: Re: Impossible to open the root console with 2.6.15
+References: <1146663369.2448.25.camel@khnoum.lcp.u-psud.fr>
+In-Reply-To: <1146663369.2448.25.camel@khnoum.lcp.u-psud.fr>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,39 +23,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Jean-Marie Teuler wrote:
+
+>Hi there,
+>
+>I am trying to use ELDK 4.0 on my TQM860L board.
+>
+>I have compiled the included 2.6.15 kernel with reasonable options, but
+>when I try to boot it, I do not get the prompt after the message
+>"Uncompressing Kernel Image ... OK"
+>  
+>
+It could be a FAQ:
+http://www.denx.de/wiki/DULG/LinuxHangsAfterUncompressingKernel
+
+But in fact, wwe had a similar case recently (no console outputs, but 
+linux running OK) and I am told that the problem was with  the "virtual 
+terminal"  option that needed to be disabled:
+
+Device Drivers
+-> Character devices
+ -> [ ] Virtual Terminal
+	serial drivers->
+		<*> CPM SCC/SMC serial port support
+ 		 <*> Support for console CMP SCC/SMC serial port......
+
+ --
+
+Best regards,
+_______________________________________
+jean-francois simon - themis computer
+5, rue irene joliot curie
+38330 eybens - france
++33 (0)870 448 638
++33 (0)4 76 14 77 85
 
 
-> This is more a general question to see what others do out here.  I am
-> begining to get sick of printk debugging.  I work on two different PPC
-> boards.  An 860 and 8260.
-> 
-> I want to get some feedback on the best kernel debugger to use.  I
-> have been looking at three.
-> 
-> 1.  kgdb
-> 2.  kdb
-> 3.  UML
-> 
-> I am leaning towards kgdb, but before I jump in I thought I'd put this
-> out to the best group I could think of linuxppc.  Because I am sure
-> most of you are using something!  :)
+	
 
-Hey Steve,
-
-You've missed the most important one; a hardware debugger. I believe
-most people using PPC use a BDI2000 from Abatron. They're about $3k.
-I recently received one, but haven't had time to work on my PPC
-stuff, so can't comment further. I'm sure everyone else on the
-list will help with comments.
-
-Note that if you use a bunch of different PPC cores, you need to
-add $1k per core for the firmware uploads to the BDI2000. So if
-you are working with say AMCC 440, Freescale e300/G2, e500, etc
-you'll need a firmware image for each due to the debug core
-differences (I guess).
-
-The US distributor for the BDI2000 is Ultimate Solutions,
-www.ultsol.com.
-
-Cheers
-Dave
+	
+		
+___________________________________________________________________________ 
+Faites de Yahoo! votre page d'accueil sur le web pour retrouver directement vos services préférés : vérifiez vos nouveaux mails, lancez vos recherches et suivez l'actualité en temps réel. 
+Rendez-vous sur http://fr.yahoo.com/set
