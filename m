@@ -1,12 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17497.11957.878902.757294@cargo.ozlabs.ibm.com>
-Date: Thu, 4 May 2006 08:29:09 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: please pull powerpc.git 'merge' branch
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: Maple freezing on PCI Target-Abort
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: jfaslist <jfaslist@yahoo.fr>
+In-Reply-To: <4458C89B.9070505@yahoo.fr>
+References: <43E23B4A.4020402@yahoo.fr>
+	<1138930958.4934.102.camel@localhost.localdomain>
+	<43E37DAC.4030606@yahoo.fr>
+	<1139011975.8543.4.camel@localhost.localdomain>
+	<4458C89B.9070505@yahoo.fr>
+Content-Type: text/plain
+Date: Thu, 04 May 2006 09:05:55 +1000
+Message-Id: <1146697555.6652.85.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc64-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,44 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
 
-Please do a pull from the "merge" branch of
+> Setting the CPC925 according to item 3, fixes the problem. I give this 
+> for the record, since the fix should be in PIBS, I think.
+> I still don't like the fact that a user process causing the condition 
+> causes the system to enter the "mon" debugger rather than being killed 
+> w/ SIGBUS/SIGSEGV. I guess the correct way for a fix would be to write a 
+> Maple specific machine_check exception?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+Wasn't that fixed ? The current kernel will send a SIGBUS to userland.
+The problem however is that in some cases, MC can be asynchronous in
+which case I suppose it's possible that userland triggers a condition
+that will cause a machine check later on in kernel mode. In any way,
+userland direct mapping of MMIO is a root only facility...
 
-Five smallish bugfixes, plus one commit from me that has no effect on
-existing machines, but will allow the kernel to run on some machines
-that will shortly be released.
-
-Thanks,
-Paul.
-
-Ananth N Mavinakayanahalli:
-      powerpc/kprobes: fix singlestep out-of-line
-
-Linas Vepstas:
-      powerpc/pseries: avoid crash in PCI code if mem system not up
-
-Paul Mackerras:
-      powerpc: Fix incorrect might_sleep in __get_user/__put_user on kernel addresses
-      powerpc: Use the ibm,pa-features property if available
-
-Vitaly Bordug:
-      ppc32 CPM_UART: Fixed break send on SCC
-      ppc32 CPM_UART: fixes and improvements
-
- arch/powerpc/kernel/kprobes.c              |   14 +++---
- arch/powerpc/kernel/prom.c                 |   70 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/eeh_event.c |    8 +++
- arch/ppc/platforms/mpc866ads_setup.c       |    2 -
- drivers/serial/cpm_uart/cpm_uart.h         |   19 ++++++--
- drivers/serial/cpm_uart/cpm_uart_core.c    |   37 ++++++++++++---
- drivers/serial/cpm_uart/cpm_uart_cpm1.c    |    2 +
- drivers/serial/cpm_uart/cpm_uart_cpm2.c    |    2 +
- include/asm-powerpc/uaccess.h              |   19 +++++---
- include/asm-ppc/commproc.h                 |    1 
- include/asm-ppc/cpm2.h                     |    2 -
- include/linux/fs_uart_pd.h                 |   60 ++++++++++++++++++++++++
- 12 files changed, 209 insertions(+), 27 deletions(-)
- create mode 100644 include/linux/fs_uart_pd.h
+Ben.
