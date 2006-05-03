@@ -1,18 +1,15 @@
-Return-Path: <netstv@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id 15FDB67A6C
+Return-Path: <pdfdoc15@yahoo.com>
+Received: from web37101.mail.mud.yahoo.com (web37101.mail.mud.yahoo.com
+	[209.191.85.103]) by ozlabs.org (Postfix) with SMTP id A8B1A67A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 May 2006 00:17:50 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id c63so211936pyc
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 03 May 2006 07:17:49 -0700 (PDT)
-Message-ID: <b4b98b690605030711q69426a59j28db8e38be73f1f0@mail.gmail.com>
-Date: Wed, 3 May 2006 07:11:48 -0700
-From: "Steve Iribarne (GMail)" <netstv@gmail.com>
+	Thu,  4 May 2006 00:33:38 +1000 (EST)
+Message-ID: <20060503142655.2152.qmail@web37101.mail.mud.yahoo.com>
+Date: Wed, 3 May 2006 07:26:55 -0700 (PDT)
+From: Om Vadlapatla <pdfdoc15@yahoo.com>
+Subject: Performance improvement Montavista 3.0 MPC8260 by D-cache enable
 To: linuxppc-embedded@ozlabs.org
-Subject: kernel debugging
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,23 +20,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
+I want to confirm if the Montavista linux version 3.0
+for the MPC8260 has the data cache working.
 
-This is more a general question to see what others do out here.  I am
-begining to get sick of printk debugging.  I work on two different PPC
-boards.  An 860 and 8260.
+I work on an SDH unit that uses 2 channels and we are
+about to recieve a shipment of new harware that has to
+support 4 serial optical channels.
 
-I want to get some feedback on the best kernel debugger to use.  I
-have been looking at three.
+I need to confirm if the version of linux we are using
+has the data chache enabled as I am about to spend a
+lot of time on the data cache.
 
-1.  kgdb
-2.  kdb
-3.  UML
+Thank you,
+Best Regards,
 
-I am leaning towards kgdb, but before I jump in I thought I'd put this
-out to the best group I could think of linuxppc.  Because I am sure
-most of you are using something!  :)
+Om Vadlapatla
 
-Thanks.
-
--stv
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
