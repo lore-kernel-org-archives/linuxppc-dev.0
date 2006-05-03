@@ -1,15 +1,18 @@
-Return-Path: <pdfdoc15@yahoo.com>
-Received: from web37101.mail.mud.yahoo.com (web37101.mail.mud.yahoo.com
-	[209.191.85.103]) by ozlabs.org (Postfix) with SMTP id A8B1A67A79
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	by ozlabs.org (Postfix) with ESMTP id CB6C667AC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 May 2006 00:33:38 +1000 (EST)
-Message-ID: <20060503142655.2152.qmail@web37101.mail.mud.yahoo.com>
-Date: Wed, 3 May 2006 07:26:55 -0700 (PDT)
-From: Om Vadlapatla <pdfdoc15@yahoo.com>
-Subject: Performance improvement Montavista 3.0 MPC8260 by D-cache enable
-To: linuxppc-embedded@ozlabs.org
+	Thu,  4 May 2006 02:06:47 +1000 (EST)
+Message-ID: <4458D4FA.8090302@ovro.caltech.edu>
+Date: Wed, 03 May 2006 09:06:18 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: "Steve Iribarne (GMail)" <netstv@gmail.com>
+Subject: Re: kernel debugging
+References: <b4b98b690605030711q69426a59j28db8e38be73f1f0@mail.gmail.com>
+In-Reply-To: <b4b98b690605030711q69426a59j28db8e38be73f1f0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,23 +23,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I want to confirm if the Montavista linux version 3.0
-for the MPC8260 has the data cache working.
 
-I work on an SDH unit that uses 2 channels and we are
-about to recieve a shipment of new harware that has to
-support 4 serial optical channels.
 
-I need to confirm if the version of linux we are using
-has the data chache enabled as I am about to spend a
-lot of time on the data cache.
+> This is more a general question to see what others do out here.  I am
+> begining to get sick of printk debugging.  I work on two different PPC
+> boards.  An 860 and 8260.
+> 
+> I want to get some feedback on the best kernel debugger to use.  I
+> have been looking at three.
+> 
+> 1.  kgdb
+> 2.  kdb
+> 3.  UML
+> 
+> I am leaning towards kgdb, but before I jump in I thought I'd put this
+> out to the best group I could think of linuxppc.  Because I am sure
+> most of you are using something!  :)
 
-Thank you,
-Best Regards,
+Hey Steve,
 
-Om Vadlapatla
+You've missed the most important one; a hardware debugger. I believe
+most people using PPC use a BDI2000 from Abatron. They're about $3k.
+I recently received one, but haven't had time to work on my PPC
+stuff, so can't comment further. I'm sure everyone else on the
+list will help with comments.
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+Note that if you use a bunch of different PPC cores, you need to
+add $1k per core for the firmware uploads to the BDI2000. So if
+you are working with say AMCC 440, Freescale e300/G2, e500, etc
+you'll need a firmware image for each due to the debug core
+differences (I guess).
+
+The US distributor for the BDI2000 is Ultimate Solutions,
+www.ultsol.com.
+
+Cheers
+Dave
