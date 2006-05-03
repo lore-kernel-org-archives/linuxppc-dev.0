@@ -1,21 +1,22 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: question on why hvc_console calls hvc_poll() in
-	hvc_handle_interrupt().
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Ryan Arnold <rsa@us.ibm.com>
-In-Reply-To: <1145564752.29313.185.camel@localhost.localdomain>
-References: <20060418185534.B1ADF679F0@ozlabs.org>
-	<1145563391.29313.174.camel@localhost.localdomain>
-	<1145564752.29313.185.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-f+ZxoLvmb1d/GNyUyk4M"
-Date: Wed, 03 May 2006 17:42:43 +1000
-Message-Id: <1146642164.16640.30.camel@localhost.localdomain>
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 01CBF67A3A
+	for <linuxppc-dev@ozlabs.org>; Wed,  3 May 2006 22:43:34 +1000 (EST)
+Date: Wed, 3 May 2006 05:43:12 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: =?ISO-8859-1?B?SvZybg==?= Engel <joern@wohnheim.fh-wedel.de>
+Subject: Re: [PATCH 00/16] ehca: IBM eHCA InfiniBand Device Driver
+Message-Id: <20060503054312.b3978297.akpm@osdl.org>
+In-Reply-To: <20060427125726.GK32127@wohnheim.fh-wedel.de>
+References: <4450B378.9000705@de.ibm.com>
+	<20060427125726.GK32127@wohnheim.fh-wedel.de>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Milton Miller <miltonm@bga.com>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: schickhj@de.ibm.com, linux-kernel@vger.kernel.org,
+	openib-general@openib.org, linuxppc-dev@ozlabs.org,
+	RAISCH@de.ibm.com, HNGUYEN@de.ibm.com, MEDER@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 27 Apr 2006 14:57:26 +0200
+J=F6rn Engel <joern@wohnheim.fh-wedel.de> wrote:
 
---=-f+ZxoLvmb1d/GNyUyk4M
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Don't expect much cheer and rejoicing over this.  I suspect that akpm
+> or Linus will either want the 17 patches merged into one or have a
+> patchset where every single patch leaves the kernel in a working
+> state, including working eHCA driver.
 
-On Thu, 2006-04-20 at 15:25 -0500, Ryan Arnold wrote:
-> While on the topic of hvc_console; I think I saw a patch go through a
-> while ago that added hvc_poll() to hvc_handle_interrupt().  I can't say
-> I'm too pleased with that addition.  I did my best to keep locking
-> outside of the interrupt handler.
->=20
-> I wonder if that change was tested on a power5 lpar system with several
-> secondary VSerial Server adapters (hvc1-hvcn) being hammered with data.
-> I'm pretty paranoid about deadlock, hence the reason for keeping locking
-> out of the int. handler.
+It doesn't matter in this case.  The "don't break the build at any stage of
+a series" preference exists because it's extremely irritating to hit a
+won't-build in the middle of a git-bisect operation.
 
-That was Milton's patch. No idea whether it's correct/tested.
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-f+ZxoLvmb1d/GNyUyk4M
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBEWF7zdSjSd0sB4dIRArUtAJ0TsWRb2bSV73GuNNf49fhwsj9OJgCfRTFW
-aD+hsWJL78oqf8C8EMEiGk8=
-=HcZu
------END PGP SIGNATURE-----
-
---=-f+ZxoLvmb1d/GNyUyk4M--
+But anybody who is bisection searching for a bug won't want to enable a
+brand-new driver in their config, so no problems.
