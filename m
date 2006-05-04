@@ -1,18 +1,22 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Maple freezing on PCI Target-Abort
+Subject: Re: [Cbe-oss-dev] [PATCH 11/13] cell: split out board specific files
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: jfaslist <jfaslist@yahoo.fr>
-In-Reply-To: <4458C89B.9070505@yahoo.fr>
-References: <43E23B4A.4020402@yahoo.fr>
-	<1138930958.4934.102.camel@localhost.localdomain>
-	<43E37DAC.4030606@yahoo.fr>
-	<1139011975.8543.4.camel@localhost.localdomain>
-	<4458C89B.9070505@yahoo.fr>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <904F5BD9-1ACB-4936-B390-E4128886824C@kernel.crashing.org>
+References: <20060429232812.825714000@localhost.localdomain>
+	<200605020150.14152.arnd@arndb.de>
+	<1900A234-BE31-4292-87E1-5C02F12A440D@kernel.crashing.org>
+	<200605021259.24157.arnd@arndb.de>
+	<801072F8-7701-4BD7-81FB-A8C1AA534C2E@kernel.crashing.org>
+	<17496.6519.733076.663815@cargo.ozlabs.ibm.com>
+	<904F5BD9-1ACB-4936-B390-E4128886824C@kernel.crashing.org>
 Content-Type: text/plain
-Date: Thu, 04 May 2006 09:05:55 +1000
-Message-Id: <1146697555.6652.85.camel@localhost.localdomain>
+Date: Thu, 04 May 2006 12:03:05 +1000
+Message-Id: <1146708185.6652.108.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc64-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +27,15 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Setting the CPC925 according to item 3, fixes the problem. I give this 
-> for the record, since the fix should be in PIBS, I think.
-> I still don't like the fact that a user process causing the condition 
-> causes the system to enter the "mon" debugger rather than being killed 
-> w/ SIGBUS/SIGSEGV. I guess the correct way for a fix would be to write a 
-> Maple specific machine_check exception?
+> Yeah, what was I thinking.  So use some platform hook instead.
 
-Wasn't that fixed ? The current kernel will send a SIGBUS to userland.
-The problem however is that in some cases, MC can be asynchronous in
-which case I suppose it's possible that userland triggers a condition
-that will cause a machine check later on in kernel mode. In any way,
-userland direct mapping of MMIO is a root only facility...
+You must be smoking good stuff :)
 
-Ben.
+> But Arnd of course is right; if the driver (currently) only works
+> on a certain platform, just mark it as such in the Makefile (erm,
+> Kconfig file).
+
+Exactly :) I don't see any point in adding hooks or ifdef's or anything
+fancy like that to guard from something that doesn't exist in real life:
+that is building that driver on non-cell :) Thus Kconfig is the way to
+go.
