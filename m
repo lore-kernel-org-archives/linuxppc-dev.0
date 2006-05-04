@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
+Return-Path: <hs@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 81CC067B1E
+	by ozlabs.org (Postfix) with ESMTP id E4BEC67B23
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 May 2006 09:00:20 +1000 (EST)
-To: Jean-Marie Teuler <jean-marie.teuler@lcp.u-psud.fr>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Impossible to open the root console with 2.6.15 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 03 May 2006 15:36:08 +0200."
-	<1146663369.2448.25.camel@khnoum.lcp.u-psud.fr>
-Date: Thu, 04 May 2006 01:00:14 +0200
-Sender: wd@denx.de
-Message-Id: <20060503230014.BA748353BE7@atlas.denx.de>
+	Thu,  4 May 2006 14:34:16 +1000 (EST)
+Subject: Re: mpc8270 : i2c support
+From: Heiko Schocher <hs@denx.de>
+To: jean-francois simon <jfaslist@yahoo.fr>
+In-Reply-To: <20060503205654.39188.qmail@web26605.mail.ukl.yahoo.com>
+References: <20060503205654.39188.qmail@web26605.mail.ukl.yahoo.com>
+Content-Type: text/plain
+Date: Thu, 04 May 2006 06:34:15 +0200
+Message-Id: <1146717255.6058.11.camel@Zeus.EmbLux>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +24,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1146663369.2448.25.camel@khnoum.lcp.u-psud.fr> you wrote:
+Hello jean-francois,
+
+on Wed, 03 May 2006 22:56 jean-francois simon wrote:
+> > Maybe you have to set other Portsettings in
+> > drivers/i2c/busses/i2c-cpm2.c cpm2_iic_init() ... ?
 > 
-> I am trying to use ELDK 4.0 on my TQM860L board.
-> 
-> I have compiled the included 2.6.15 kernel with reasonable options, but
-> when I try to boot it, I do not get the prompt after the message
-> "Uncompressing Kernel Image ... OK"
+> Sorry, but where can i find this file? 
 
-We do not support Linux 2.6 kernels for MPC8xx systems yet.  For  the
-TQM860L please continue to use ELDK 3.1.1 as shipping with the board.
+Sorry, I meant:
+drivers/i2c/busses/i2c-mpc8260.c mpc8260_iic_init()
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Committee, n.:  A group of men who individually can do nothing but as
-a group decide that nothing can be done.                 - Fred Allen
+Best regards
+Heiko
