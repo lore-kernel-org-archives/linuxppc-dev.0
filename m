@@ -1,17 +1,17 @@
 Return-Path: <jean-marie.teuler@lcp.u-psud.fr>
-Received: from smtp1.u-psud.fr (smtp1.u-psud.fr [129.175.33.41])
-	by ozlabs.org (Postfix) with ESMTP id 5BFB467B1D
+Received: from smtp2.u-psud.fr (smtp2.u-psud.fr [129.175.33.42])
+	by ozlabs.org (Postfix) with ESMTP id 5C71067B1D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 May 2006 20:34:42 +1000 (EST)
+	Thu,  4 May 2006 20:41:20 +1000 (EST)
 Subject: Re: Impossible to open the root console with 2.6.15
 From: Jean-Marie Teuler <jean-marie.teuler@lcp.u-psud.fr>
-To: jfaslist <jfaslist@yahoo.fr>
-In-Reply-To: <4458E28E.8080705@yahoo.fr>
+To: Mark Chambers <markc@mail.com>
+In-Reply-To: <005801c66ee1$ba2b1380$6601a8c0@CHUCK2>
 References: <1146663369.2448.25.camel@khnoum.lcp.u-psud.fr>
-	<4458E28E.8080705@yahoo.fr>
+	<005801c66ee1$ba2b1380$6601a8c0@CHUCK2>
 Content-Type: text/plain; charset=ISO-8859-1
-Date: Thu, 04 May 2006 12:35:58 +0200
-Message-Id: <1146738958.6866.4.camel@khnoum.lcp.u-psud.fr>
+Date: Thu, 04 May 2006 12:42:36 +0200
+Message-Id: <1146739357.6866.12.camel@khnoum.lcp.u-psud.fr>
 Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,20 +24,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Jean-François,
+Dear Mark,
 
-> But in fact, wwe had a similar case recently (no console outputs, but 
-> linux running OK) and I am told that the problem was with  the "virtual 
-> terminal"  option that needed to be disabled:
-> 
-> Device Drivers
-> -> Character devices
->  -> [ ] Virtual Terminal
-> 	serial drivers->
-> 		<*> CPM SCC/SMC serial port support
->  		 <*> Support for console CMP SCC/SMC serial port......
+> Are you passing a 'console=' option to the kernel, like 'console=ttyCPM0' or 
+> 'console=ttyCPM1'.
 
-Thanks. This solved the problem. Just by disabling the virtual
-terminals!
+No. I was not passing any option (besides the standard NFSROOT options
+(root=/dev/nfs rw nfsroot= ip=).
+
+Actually, the trick suggested by Jean-François Simon (disabling the
+virtual terminals option in the kernel configuration) solved the problem
+(please see my previous post).
+
+Thanks for your interest anyway.
 
 Jean-Marie
