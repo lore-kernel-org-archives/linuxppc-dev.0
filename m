@@ -1,12 +1,17 @@
-Return-Path: <anton@ozlabs.org>
-Date: Fri, 5 May 2006 05:44:26 +1000
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: add num_pmcs to 970MP cputable entry
-Message-ID: <20060504194426.GA30251@krispykreme>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 83CD267A41
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 May 2006 07:32:25 +1000 (EST)
+Date: Thu, 4 May 2006 16:28:50 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Please pull from 'for_paulus' branch of powerpc
+Message-ID: <Pine.LNX.4.44.0605041622180.3700-100000@gate.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,23 +21,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'for_paulus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git
 
-Hi,
+to receive the following updates:
 
-The 970MP cputable entry needs a num_pmcs entry for oprofile to work.
+ arch/powerpc/kernel/setup-common.c |   17 +++++++++++++++++
+ arch/powerpc/kernel/setup_32.c     |    4 ++++
+ arch/powerpc/kernel/setup_64.c     |   17 ++---------------
+ 3 files changed, 23 insertions(+), 15 deletions(-)
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Kumar Gala:
+      powerpc: provide ppc_md.panic() for both ppc32 & ppc64
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 39e348a..f618ff4 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -230,6 +230,7 @@ struct cpu_spec	cpu_specs[] = {
- 			PPC_FEATURE_HAS_ALTIVEC_COMP,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
-+		.num_pmcs		= 8,
- 		.cpu_setup		= __setup_cpu_ppc970,
- 		.oprofile_cpu_type	= "ppc64/970",
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 684ab1d..7a6a883 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -524,3 +524,20 @@ int check_legacy_ioport(unsigned long ba
+ 	return ppc_md.check_legacy_ioport(base_port);
+ }
+ EXPORT_SYMBOL(check_legacy_ioport);
++
++static int ppc_panic_event(struct notifier_block *this,
++                             unsigned long event, void *ptr)
++{
++	ppc_md.panic((char *)ptr);  /* May not return */
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block ppc_panic_block = {
++	.notifier_call = ppc_panic_event,
++	.priority = INT_MIN /* may not return; must be done last */
++};
++
++void __init setup_panic(void)
++{
++	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
++}
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 69ac257..9d55234 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -236,6 +236,7 @@ arch_initcall(ppc_init);
+ void __init setup_arch(char **cmdline_p)
+ {
+ 	extern void do_init_bootmem(void);
++	extern void setup_panic(void);
+ 
+ 	/* so udelay does something sensible, assume <= 1000 bogomips */
+ 	loops_per_jiffy = 500000000 / HZ;
+@@ -285,6 +286,9 @@ #endif
+ 	/* reboot on panic */
+ 	panic_timeout = 180;
+ 
++	if (ppc_md.panic)
++		setup_panic();
++
+ 	init_mm.start_code = PAGE_OFFSET;
+ 	init_mm.end_code = (unsigned long) _etext;
+ 	init_mm.end_data = (unsigned long) _edata;
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 4467c49..ff6726f 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -100,12 +100,6 @@ unsigned long SYSRQ_KEY;
+ #endif /* CONFIG_MAGIC_SYSRQ */
+ 
+ 
+-static int ppc64_panic_event(struct notifier_block *, unsigned long, void *);
+-static struct notifier_block ppc64_panic_block = {
+-	.notifier_call = ppc64_panic_event,
+-	.priority = INT_MIN /* may not return; must be done last */
+-};
+-
+ #ifdef CONFIG_SMP
+ 
+ static int smt_enabled_cmdline;
+@@ -456,13 +450,6 @@ #endif
+ 	DBG(" <- setup_system()\n");
+ }
+ 
+-static int ppc64_panic_event(struct notifier_block *this,
+-                             unsigned long event, void *ptr)
+-{
+-	ppc_md.panic((char *)ptr);  /* May not return */
+-	return NOTIFY_DONE;
+-}
+-
+ #ifdef CONFIG_IRQSTACKS
+ static void __init irqstack_early_init(void)
+ {
+@@ -518,6 +505,7 @@ static void __init emergency_stack_init(
+ void __init setup_arch(char **cmdline_p)
+ {
+ 	extern void do_init_bootmem(void);
++	extern void setup_panic(void);
+ 
+ 	ppc64_boot_msg(0x12, "Setup Arch");
+ 
+@@ -535,8 +523,7 @@ void __init setup_arch(char **cmdline_p)
+ 	panic_timeout = 180;
+ 
+ 	if (ppc_md.panic)
+-		atomic_notifier_chain_register(&panic_notifier_list,
+-				&ppc64_panic_block);
++		setup_panic();
+ 
+ 	init_mm.start_code = PAGE_OFFSET;
+ 	init_mm.end_code = (unsigned long) _etext;
