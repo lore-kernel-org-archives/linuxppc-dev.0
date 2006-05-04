@@ -1,14 +1,15 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 56C5367AC6
-	for <linuxppc-dev@ozlabs.org>; Thu,  4 May 2006 13:49:20 +1000 (EST)
-Date: Thu, 4 May 2006 13:46:50 +1000
+	by ozlabs.org (Postfix) with ESMTP id 1E0E167AC6
+	for <linuxppc-dev@ozlabs.org>; Thu,  4 May 2006 13:49:21 +1000 (EST)
+Date: Thu, 4 May 2006 13:47:47 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 2/4] powerpc: update iSeries viodasd device-tree entries
-Message-Id: <20060504134650.7dd45964.sfr@canb.auug.org.au>
-In-Reply-To: <20060504134544.2fc295db.sfr@canb.auug.org.au>
+Subject: [PATCH 3/4] powerpc: update iSeries vdevice
+Message-Id: <20060504134747.0db5233b.sfr@canb.auug.org.au>
+In-Reply-To: <20060504134650.7dd45964.sfr@canb.auug.org.au>
 References: <20060504134544.2fc295db.sfr@canb.auug.org.au>
+	<20060504134650.7dd45964.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -21,48 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These devices should have device_type block and a unique compatible entry.
+Make it look more like the pSeries vdevice tree.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
 
- arch/powerpc/platforms/iseries/setup.c |    4 ++--
- drivers/block/viodasd.c                |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/iseries/setup.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
-1f5b48ad3ece3e3f35ec05cc3ffd028e16c22732
+e013355bd53f3f51101bc2c86fc082f02f2d0141
 diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
-index 0a08257..285f2b2 100644
+index 285f2b2..d3f94b4 100644
 --- a/arch/powerpc/platforms/iseries/setup.c
 +++ b/arch/powerpc/platforms/iseries/setup.c
-@@ -971,8 +971,8 @@ void dt_vdevices(struct iseries_flat_dt 
- 	for (i = 0; i < HVMAXARCHITECTEDVIRTUALDISKS; i++) {
- 		snprintf(buf, 32, "viodasd@%08x", reg + i);
- 		dt_start_node(dt, buf);
--		dt_prop_str(dt, "device_type", "viodasd");
--		dt_prop_str(dt, "compatible", "");
-+		dt_prop_str(dt, "device_type", "block");
-+		dt_prop_str(dt, "compatible", "IBM,iSeries-viodasd");
- 		dt_prop_u32(dt, "reg", reg + i);
- 		dt_prop_u32(dt, "linux,unit_address", i);
- 		dt_end_node(dt);
-diff --git a/drivers/block/viodasd.c b/drivers/block/viodasd.c
-index f63e07b..b0df4f5 100644
---- a/drivers/block/viodasd.c
-+++ b/drivers/block/viodasd.c
-@@ -747,7 +747,7 @@ static int viodasd_remove(struct vio_dev
-  * support.
-  */
- static struct vio_device_id viodasd_device_table[] __devinitdata = {
--	{ "viodasd", "" },
-+	{ "block", "IBM,iSeries-viodasd" },
- 	{ "", "" }
- };
- MODULE_DEVICE_TABLE(vio, viodasd_device_table);
+@@ -921,13 +921,14 @@ void dt_vdevices(struct iseries_flat_dt 
+ 	char buf[32];
+ 
+ 	dt_start_node(dt, "vdevice");
++	dt_prop_str(dt, "device_type", "vdevice");
++	dt_prop_str(dt, "compatible", "IBM,iSeries-vdevice");
+ 	dt_prop_u32(dt, "#address-cells", 1);
+ 	dt_prop_u32(dt, "#size-cells", 0);
+ 
+-	snprintf(buf, sizeof(buf), "viocons@%08x", reg);
++	snprintf(buf, sizeof(buf), "vty@%08x", reg);
+ 	dt_start_node(dt, buf);
+ 	dt_prop_str(dt, "device_type", "serial");
+-	dt_prop_str(dt, "compatible", "");
+ 	dt_prop_u32(dt, "reg", reg);
+ 	dt_end_node(dt);
+ 	reg++;
 -- 
 1.3.1.ge923
