@@ -1,17 +1,16 @@
 Return-Path: <jean-marie.teuler@lcp.u-psud.fr>
-Received: from smtp2.u-psud.fr (smtp2.u-psud.fr [129.175.33.42])
-	by ozlabs.org (Postfix) with ESMTP id 5C71067B1D
+Received: from smtp1.u-psud.fr (smtp1.u-psud.fr [129.175.33.41])
+	by ozlabs.org (Postfix) with ESMTP id C4D0B679F5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  4 May 2006 20:41:20 +1000 (EST)
+	Thu,  4 May 2006 20:57:17 +1000 (EST)
 Subject: Re: Impossible to open the root console with 2.6.15
 From: Jean-Marie Teuler <jean-marie.teuler@lcp.u-psud.fr>
-To: Mark Chambers <markc@mail.com>
-In-Reply-To: <005801c66ee1$ba2b1380$6601a8c0@CHUCK2>
-References: <1146663369.2448.25.camel@khnoum.lcp.u-psud.fr>
-	<005801c66ee1$ba2b1380$6601a8c0@CHUCK2>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20060503230014.BA748353BE7@atlas.denx.de>
+References: <20060503230014.BA748353BE7@atlas.denx.de>
 Content-Type: text/plain; charset=ISO-8859-1
-Date: Thu, 04 May 2006 12:42:36 +0200
-Message-Id: <1146739357.6866.12.camel@khnoum.lcp.u-psud.fr>
+Date: Thu, 04 May 2006 12:58:34 +0200
+Message-Id: <1146740314.6866.26.camel@khnoum.lcp.u-psud.fr>
 Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -24,18 +23,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Mark,
+Dear Wolfgang,
 
-> Are you passing a 'console=' option to the kernel, like 'console=ttyCPM0' or 
-> 'console=ttyCPM1'.
+> We do not support Linux 2.6 kernels for MPC8xx systems yet.  For  the
+> TQM860L please continue to use ELDK 3.1.1 as shipping with the board.
 
-No. I was not passing any option (besides the standard NFSROOT options
-(root=/dev/nfs rw nfsroot= ip=).
+Sorry for the misunderstanding: as the ELDK 4.0 officially supports
+MPC8xx systems (as said in the README.html file), and as it is shipped
+with a 2.6 kernel, I have jumped to the conclusion that this kernel was
+also supported.
 
-Actually, the trick suggested by Jean-François Simon (disabling the
-virtual terminals option in the kernel configuration) solved the problem
-(please see my previous post).
+Anyway, my present constatation is that, with the help of the tricks
+suggested by Jean-François Simon or Mark Chambers, at least the system
+starts correctly... I did not make any further check yet.
 
-Thanks for your interest anyway.
+Best regards,
 
 Jean-Marie
