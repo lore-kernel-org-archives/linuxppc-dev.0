@@ -1,17 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 83CD267A41
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 May 2006 07:32:25 +1000 (EST)
-Date: Thu, 4 May 2006 16:28:50 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'for_paulus' branch of powerpc
-Message-ID: <Pine.LNX.4.44.0605041622180.3700-100000@gate.crashing.org>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
+	by ozlabs.org (Postfix) with ESMTP id 5340367A41
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 May 2006 07:39:50 +1000 (EST)
+To: Heiko J Schick <schihei@de.ibm.com>
+Subject: Re: [openib-general] [PATCH 07/16] ehca: interrupt handling routines
+References: <4450A196.2050901@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 04 May 2006 14:29:54 -0700
+In-Reply-To: <4450A196.2050901@de.ibm.com> (Heiko J. Schick's message of "Thu,
+	27 Apr 2006 12:48:54 +0200")
+Message-ID: <adaejz9o4vh.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,112 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please pull from 'for_paulus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git
+ > +void ehca_queue_comp_task(struct ehca_comp_pool *pool, struct ehca_cq *__cq)
+ > +{
+ > +	int cpu;
+ > +	int cpu_id;
+ > +	struct ehca_cpu_comp_task *cct;
+ > +	unsigned long flags_cct;
+ > +	unsigned long flags_cq;
+ > +
+ > +	cpu = get_cpu();
+ > +	cpu_id = find_next_online_cpu(pool);
+ > +
+ > +	EDEB_EN(7, "pool=%p cq=%p cq_nr=%x CPU=%x:%x:%x:%x",
+ > +		pool, __cq, __cq->cq_number,
+ > +		cpu, cpu_id, num_online_cpus(), num_possible_cpus());
+ > +
+ > +	BUG_ON(!cpu_online(cpu_id));
+ > +
+ > +	cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu_id);
+ > +
+ > +	spin_lock_irqsave(&cct->task_lock, flags_cct);
+ > +	spin_lock_irqsave(&__cq->task_lock, flags_cq);
+ > +
+ > +	if (__cq->nr_callbacks == 0) {
+ > +		__cq->nr_callbacks++;
+ > +		list_add_tail(&__cq->entry, &cct->cq_list);
+ > +		wake_up(&cct->wait_queue);
+ > +	}
+ > +	else
+ > +		__cq->nr_callbacks++;
+ > +
+ > +	spin_unlock_irqrestore(&__cq->task_lock, flags_cq);
+ > +	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
+ > +
+ > +	put_cpu();
+ > +
+ > +	EDEB_EX(7, "cct=%p", cct);
+ > +
+ > +	return;
+ > +}
 
-to receive the following updates:
+I never read the ehca completion event handling code very carefully
+until now.  But I was motivated by Shirley's work on IPoIB to take a
+closer look.
 
- arch/powerpc/kernel/setup-common.c |   17 +++++++++++++++++
- arch/powerpc/kernel/setup_32.c     |    4 ++++
- arch/powerpc/kernel/setup_64.c     |   17 ++---------------
- 3 files changed, 23 insertions(+), 15 deletions(-)
+It seems that you are deferring completion event dispatch into threads
+spread across all the CPUs.  This seems like a very strange thing to
+me -- you are adding latency and possibly causing cacheline pingpong.
 
-Kumar Gala:
-      powerpc: provide ppc_md.panic() for both ppc32 & ppc64
+It may help throughput in some cases to spread the work across
+multiple CPUs but it seems strange to me to do this in the low-level
+driver.  My intuition would be that it would be better to do this in
+the higher levels, and leave open the possibility for protocols that
+want the lowest possible latency to be called directly from the
+interrupt handler.
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 684ab1d..7a6a883 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -524,3 +524,20 @@ int check_legacy_ioport(unsigned long ba
- 	return ppc_md.check_legacy_ioport(base_port);
- }
- EXPORT_SYMBOL(check_legacy_ioport);
-+
-+static int ppc_panic_event(struct notifier_block *this,
-+                             unsigned long event, void *ptr)
-+{
-+	ppc_md.panic((char *)ptr);  /* May not return */
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block ppc_panic_block = {
-+	.notifier_call = ppc_panic_event,
-+	.priority = INT_MIN /* may not return; must be done last */
-+};
-+
-+void __init setup_panic(void)
-+{
-+	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
-+}
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 69ac257..9d55234 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -236,6 +236,7 @@ arch_initcall(ppc_init);
- void __init setup_arch(char **cmdline_p)
- {
- 	extern void do_init_bootmem(void);
-+	extern void setup_panic(void);
- 
- 	/* so udelay does something sensible, assume <= 1000 bogomips */
- 	loops_per_jiffy = 500000000 / HZ;
-@@ -285,6 +286,9 @@ #endif
- 	/* reboot on panic */
- 	panic_timeout = 180;
- 
-+	if (ppc_md.panic)
-+		setup_panic();
-+
- 	init_mm.start_code = PAGE_OFFSET;
- 	init_mm.end_code = (unsigned long) _etext;
- 	init_mm.end_data = (unsigned long) _edata;
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 4467c49..ff6726f 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -100,12 +100,6 @@ unsigned long SYSRQ_KEY;
- #endif /* CONFIG_MAGIC_SYSRQ */
- 
- 
--static int ppc64_panic_event(struct notifier_block *, unsigned long, void *);
--static struct notifier_block ppc64_panic_block = {
--	.notifier_call = ppc64_panic_event,
--	.priority = INT_MIN /* may not return; must be done last */
--};
--
- #ifdef CONFIG_SMP
- 
- static int smt_enabled_cmdline;
-@@ -456,13 +450,6 @@ #endif
- 	DBG(" <- setup_system()\n");
- }
- 
--static int ppc64_panic_event(struct notifier_block *this,
--                             unsigned long event, void *ptr)
--{
--	ppc_md.panic((char *)ptr);  /* May not return */
--	return NOTIFY_DONE;
--}
--
- #ifdef CONFIG_IRQSTACKS
- static void __init irqstack_early_init(void)
- {
-@@ -518,6 +505,7 @@ static void __init emergency_stack_init(
- void __init setup_arch(char **cmdline_p)
- {
- 	extern void do_init_bootmem(void);
-+	extern void setup_panic(void);
- 
- 	ppc64_boot_msg(0x12, "Setup Arch");
- 
-@@ -535,8 +523,7 @@ void __init setup_arch(char **cmdline_p)
- 	panic_timeout = 180;
- 
- 	if (ppc_md.panic)
--		atomic_notifier_chain_register(&panic_notifier_list,
--				&ppc64_panic_block);
-+		setup_panic();
- 
- 	init_mm.start_code = PAGE_OFFSET;
- 	init_mm.end_code = (unsigned long) _etext;
+What was the thinking that led to this design?
+
+ - R.
