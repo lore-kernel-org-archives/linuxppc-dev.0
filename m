@@ -1,21 +1,21 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id 9630C679FF
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 May 2006 00:49:15 +1000 (EST)
-To: Heiko J Schick <schihei@de.ibm.com>
-Subject: Re: [openib-general] [PATCH 07/16] ehca: interrupt handling routines
-References: <4450A196.2050901@de.ibm.com> <adaejz9o4vh.fsf@cisco.com>
-	<445B4DA9.9040601@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 05 May 2006 07:49:10 -0700
-In-Reply-To: <445B4DA9.9040601@de.ibm.com> (Heiko J. Schick's message of "Fri,
-	05 May 2006 15:05:45 +0200")
-Message-ID: <adafyjomsrd.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DA889679EF
+	for <linuxppc-dev@ozlabs.org>; Sat,  6 May 2006 00:56:54 +1000 (EST)
+Subject: Re: [PATCH] powermac: U4 DART improvements
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20060430191430.GU5518@pb15.lixom.net>
+References: <20060430191430.GU5518@pb15.lixom.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-KGYBoBo3rD23cnBKBy4v"
+Date: Fri, 05 May 2006 16:56:32 +0200
+Message-Id: <1146840992.16487.0.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-    Heiko> Originaly, we had the same idea as you mentioned, that it
-    Heiko> would be better to do this in the higher levels. The point
-    Heiko> is that we can't see so far any simple posibility how this
-    Heiko> can done in the OpenIB stack, the TCP/IP network layer or
-    Heiko> somewhere in the Linux kernel.
 
-    Heiko> For example: For IPoIB we get the best throughput when we
-    Heiko> do the CQ callbacks on different CPUs and not to stay on
-    Heiko> the same CPU.
+--=-KGYBoBo3rD23cnBKBy4v
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-So why not do it in IPoIB then?  This approach is not optimal
-globally.  For example, uverbs event dispatch is just going to queue
-an event and wake up the process waiting for events, and doing this on
-some random CPU not related to the where the process will run is
-clearly the worst possible way to dispatch the event.
 
-    Heiko> In other papers and slides (see [1]) you can see similar
-    Heiko> approaches.
+> This boots happily on my quad at home,
 
-    Heiko> [1]: Speeding up Networking, Van Jacobson and Bob
-    Heiko> Felderman,
-    Heiko> http://www.lemis.com/grog/Documentation/vj/lca06vj.pdf
+Boots fine on my quad and seems to survive a bunch of normal tasks.
+Haven't gotten to do any benchmarking yet.
 
-I think you've misunderstood this paper.  It's about maximizing CPU
-locality and pushing processing directly into the consumer.  In the
-context of slide 9, what you've done is sort of like adding another
-control loop inside the kernel, since you dispatch from interrupt
-handler to driver thread to final consumer.  So I would argue that
-your approach is exactly the opposite of what VJ is advocating.
+johannes
 
- - R.
+--=-KGYBoBo3rD23cnBKBy4v
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARFtnnqVg1VMiehFYAQJjYhAAtpZRnxbK66ci1EOTV2dp1hRldzjnAiNO
+EnIQgsPZ3l7+L+DRr85XQoWQDwf8oTVifotqYOxtvgDOUvwxDUWkODQ9KyJRr7N6
+cD2IP2R8puNbO/9P+D9+GA3jSY8XH/l36S3LOIQVvc8pc3xJdTA9INT+tzwlwMir
+L+ojwCLfHbjY4ieCLl05S/MWC6Nc9NygDCb5Afq2N99DsyIP0XfaRhqQR7jerhde
+7v0MPsnAAPcm0cRd4pP4g+BWHGqA7/774KtxTxQAeV1FMbXsWc9vz7DcuUx/WC7K
+ABCyztDqubJqOgaNqysKXwWKa9xPliwE11/2/Cp39QTgpysV7/s9Pes0tK8gJzCY
+WTBvQfcZv2H5GLtCz0Z/pQI7+HYCEPvHuSFu/5XmXnT/idNY5TTWAkQFAKkn0i+h
+J0a4dPlqBEERUrw1gaIxwOMUAVXUXBzBkqEOG6mksR5NlHv9U9970XSHby9vUvPH
+v1E4TJerkZSbiZ8DrXk5k+zx0QW9bRgU84TRfBhDTCqfiollMJy6xechhkb/Ntbr
+Og8zliBZih6+l1CXmwvNVfG/mkDiGsXLtwpx6TdUY1gLR/QTew2wSSWM8skYtTtL
+QW0jcQWffTyJ7YMipP04mvuC8ihiLWXbCXxvjNl1Zaao1lh4gyDNG6+MgIzF57BG
+LnvnZtAm3xI=
+=uIRp
+-----END PGP SIGNATURE-----
+
+--=-KGYBoBo3rD23cnBKBy4v--
