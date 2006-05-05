@@ -1,25 +1,18 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx020.isp.belgacom.be (outmx020.isp.belgacom.be
-	[195.238.4.201])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3B73D679E2
+Return-Path: <marcelo@kvack.org>
+Received: from kanga.kvack.org (kanga.kvack.org [66.96.29.28])
+	by ozlabs.org (Postfix) with ESMTP id A7411679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  6 May 2006 05:28:19 +1000 (EST)
-Received: from outmx020.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx020.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k45JS7Ed026455
-	for <linuxppc-embedded@ozlabs.org>; Fri, 5 May 2006 21:28:08 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <445BA736.30208@246tNt.com>
-Date: Fri, 05 May 2006 21:27:50 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Chris Dumoulin <cdumoulin@ics-ltd.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: Calculating virtual address from physical address
-References: <445B6A80.2090202@ics-ltd.com>
-In-Reply-To: <445B6A80.2090202@ics-ltd.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat,  6 May 2006 06:22:12 +1000 (EST)
+Date: Fri, 5 May 2006 17:22:11 -0300
+From: Marcelo Tosatti <marcelo@kvack.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] ppc32 8xx: Fix r3 thrashing due to 8MB TLB page instantiation
+	(!CONFIG_8xx_CPU6)
+Message-ID: <20060505202211.GA18136@dmt>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: David Jander <david.jander@protonic.nl>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,28 +23,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Chris Dumoulin wrote:
-> I'm using a Virtex II Pro-based board with a PPC405. The board is 
-> hanging somewhere very early in the kernel boot process. I believe it 
-> may be dying at the point where the MMU is enabled. In order to 
-> determine the exact point at which my board hangs, I'm blinking two LEDs 
-> in the assembly code found in arch/ppc/kernel/head_4xx.S, . Currently I 
-> am only able to successfully access the LEDs before the MMU is turned 
-> on, but I can't be sure that I'm calculating the virtual address 
-> properly when I try to access the LED after the MMU is turned on.
 
-Typical when trying to bring up board ...
+(please ignore last patch, its incomplete)
 
-Once the MMU is turned on, you leds register are most likely ... nowhere
-... i.e.
-if you don't create a mapping your self there is just no virtual address
-that will
-access your leds physical address.
+Instantiation of 8MB pages on the TLB cache for the kernel static
+mapping thrashes r3 register on !CONFIG_8xx_CPU6 configurations.
 
-What I did on some ppc work was tu use a quick BAT mapping to map some leds.
-It's pretty easy to setup. Be aware though that this mapping will get
-wiped out when
-the kernel sets up the BAT for itself.
+Signed-off-by: Marcelo Tosatti <marcelo@kvack.org>
 
-
-    Sylvain
+diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+index ec53c7d..09b3adc 100644
+--- a/arch/ppc/kernel/head_8xx.S
++++ b/arch/ppc/kernel/head_8xx.S
+@@ -355,9 +355,7 @@ #endif
+ 
+ 	. = 0x1200
+ DataStoreTLBMiss:
+-#ifdef CONFIG_8xx_CPU6
+ 	stw	r3, 8(r0)
+-#endif
+ 	DO_8xx_CPU6(0x3f80, r3)
+ 	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
+ 	mfcr	r10
+@@ -417,9 +415,7 @@ #endif
+ 	lwz	r11, 0(r0)
+ 	mtcr	r11
+ 	lwz	r11, 4(r0)
+-#ifdef CONFIG_8xx_CPU6
+ 	lwz	r3, 8(r0)
+-#endif
+ 	rfi
+ 
+ /* This is an instruction TLB error on the MPC8xx.  This could be due
+@@ -500,9 +496,7 @@ LoadLargeDTLB:
+ 	lwz	r11, 4(r0)
+ 
+ 	lwz	r12, 16(r0)
+-#ifdef CONFIG_8xx_CPU6
+ 	lwz	r3, 8(r0)
+-#endif
+ 	rfi
+ 
+ /* This is the data TLB error on the MPC8xx.  This could be due to
