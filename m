@@ -1,22 +1,18 @@
-Return-Path: <glikely@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id 6F260679A6
+Return-Path: <marcelo@kvack.org>
+Received: from kanga.kvack.org (kanga.kvack.org [66.96.29.28])
+	by ozlabs.org (Postfix) with ESMTP id 2F253679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  7 May 2006 05:38:34 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id l35so701024nfa
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 06 May 2006 12:38:32 -0700 (PDT)
-Message-ID: <528646bc0605061238q37c253fdua58f826ac1a519d7@mail.gmail.com>
-Date: Sat, 6 May 2006 13:38:32 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Chris Dumoulin" <cdumoulin@ics-ltd.com>
-Subject: Re: Calculating virtual address from physical address
-In-Reply-To: <200605061843.k46Ih5Vd032048@www-webmail1.magma.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <200605061843.k46Ih5Vd032048@www-webmail1.magma.ca>
-Cc: dhlii@comcast.net, linuxppc-embedded@ozlabs.org
+	Sun,  7 May 2006 19:11:42 +1000 (EST)
+Date: Fri, 5 May 2006 17:09:29 -0300
+From: Marcelo Tosatti <marcelo@kvack.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] ppc32 8xx: Fix r3 thrashing due to 8MB TLB page instantiation
+	(!CONFIG_8xx_CPU6)
+Message-ID: <20060505200929.GA17731@dmt>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: David Jander <david.jander@protonic.nl>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,42 +23,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/6/06, Chris Dumoulin <cdumoulin@ics-ltd.com> wrote:
-> You said that the temporary TLB entries setup in head_4xx.S will eventual=
-ly be replaced.
-> Where is the code that creates these new TLB entries later on? Are the 'r=
-eal' TLB entries
-> only created once, and persist for as long as the system is running, or d=
-o TLB entries
-> change often while the system is running?
 
-The kernel maintains a list of mappings between virtual and physical
-space.  When the processor takes a TLB miss exception, then exception
-handler loads the needed mapping into the TLB and returns from
-exception.  (Look in head_4xx.S; specifically at finish_tlb_load).=20
-TLB entries are loaded in a round-robin fashion as needed.  Since your
-early TLB mappings aren't in the kernel page tables; they get
-overwritten and can't be reloaded by the TLB miss exception handler.
+Instantiation of 8MB pages on the TLB cache for the kernel static
+mapping thrashes r3 register on !CONFIG_8xx_CPU6 configurations.
 
-> Can you point me to some information about Grant's platform bus changes t=
-hat you were
-> talking about? I am using a custom V2Pro board, and I'd be interested to =
-see if this code
-> is something I should be looking at.
+Signed-off-by: Marcelo Tosatti <marcelo@kvack.org>
 
-The platform bus changes moves the devices to use the "Platform Bus"
-infrastructure.  It's kind of a move away from multiple
-processor-specific bus management schemes for "simple" busses.  ie.=20
-If the processor can access it without special setup code; the device
-can go on the platform bus.
-
-Check out http://patchwork.ozlabs.org/linuxppc/ and search for my
-name.  There's about 9 patches grouped together.
-
-Cheers,
-g.
-
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 399-0195
+diff --git a/arch/ppc/kernel/head_8xx.S b/arch/ppc/kernel/head_8xx.S
+index ec53c7d..7a2f205 100644
+--- a/arch/ppc/kernel/head_8xx.S
++++ b/arch/ppc/kernel/head_8xx.S
+@@ -355,9 +355,7 @@ #endif
+ 
+ 	. = 0x1200
+ DataStoreTLBMiss:
+-#ifdef CONFIG_8xx_CPU6
+ 	stw	r3, 8(r0)
+-#endif
+ 	DO_8xx_CPU6(0x3f80, r3)
+ 	mtspr	SPRN_M_TW, r10	/* Save a couple of working registers */
+ 	mfcr	r10
+@@ -417,9 +415,7 @@ #endif
+ 	lwz	r11, 0(r0)
+ 	mtcr	r11
+ 	lwz	r11, 4(r0)
+-#ifdef CONFIG_8xx_CPU6
+ 	lwz	r3, 8(r0)
+-#endif
+ 	rfi
+ 
+ /* This is an instruction TLB error on the MPC8xx.  This could be due
