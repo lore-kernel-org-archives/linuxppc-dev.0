@@ -1,21 +1,17 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from mx.dlasys.net (unknown [24.152.213.223])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7EE5B679EA
+Return-Path: <gautam@eisodus.com>
+Received: from smtp1.iitb.ac.in (smtp1.iitb.ac.in [202.68.145.249])
+	by ozlabs.org (Postfix) with SMTP id 1E247679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  5 May 2006 11:35:25 +1000 (EST)
-Message-ID: <4459C774.8000300@dlasys.net>
-Date: Thu, 04 May 2006 05:20:52 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Fri,  5 May 2006 18:38:39 +1000 (EST)
+Message-ID: <445B1019.9010103@eisodus.com>
+Date: Fri, 05 May 2006 14:13:05 +0530
+From: Gautam Borad <gautam@eisodus.com>
 MIME-Version: 1.0
-To: "Steve Iribarne (GMail)" <netstv@gmail.com>
-Subject: Re: kernel debugging
-References: <b4b98b690605030711q69426a59j28db8e38be73f1f0@mail.gmail.com>
-In-Reply-To: <b4b98b690605030711q69426a59j28db8e38be73f1f0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: dhlii@comcast.net
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: frequent sig 11 with malloc() on mpc8xx
+References: <20060504144605.B18B3353BE7@atlas.denx.de>
+In-Reply-To: <20060504144605.B18B3353BE7@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,66 +22,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    Everyone has their own debugging style.
+Wolfgang Denk wrote:
 
-    Engineers seem to like hardware debugging tools. I have used some
-very fancy debugging hardware, but except for extremely rare instances
-it is more work to get setup
-    and figure out what you are trying to do than inserting some
-debugging and rebuilding.
-
-    My idea of debugging hardware is a port with an LED on it I can try
-to blink.
-
-    I also only rarely use software debuggers.
-
-    Most of the time when things go off the rails the critical question
-for me is Where did things go wrong. Once I know that usually the
-problem is obvious and I do nto need dumps of variables or memory.
-
-    I also do development across numerous platforms, OS's and languages.
-I need debugging tools and techniques that are broadly portable. A
-hardware debugging tool might help with board bringup, but it would be
-of little use
-    for web or perl programming. Investing time and capitol in highly
-specialized tools or knowledge requires being narrowly focused to get a
-worthwhile payback.
-   
-    Regardless, I think debugging is a sort of religious preference. You
-need to know who you are and what you need. Other peoples experience is
-useful but should not be determinative.
-
-Steve Iribarne (GMail) wrote:
-> Hello.
+>In message <4459B1CF.60909@eisodus.com> you wrote:
+>  
 >
-> This is more a general question to see what others do out here.  I am
-> begining to get sick of printk debugging.  I work on two different PPC
-> boards.  An 860 and 8260.
+>>We are having a frequent sig 11 problem on our custom mpc852t board
+>>with linux kernel 2.6.14 and U-boot version 1.1.3
+>>    
+>>
+>That's a FAQ.
 >
-> I want to get some feedback on the best kernel debugger to use.  I
-> have been looking at three.
+>  
 >
-> 1.  kgdb
-> 2.  kdb
-> 3.  UML
+>>I had the same problem with 2.4 kernel and after posting the problem 
+>>    
+>>
+>This confirms that the FAQ matches your problem. See
+>http://www.denx.de/wiki/view/DULG/LinuxCrashesRandomly
 >
-> I am leaning towards kgdb, but before I jump in I thought I'd put this
-> out to the best group I could think of linuxppc.  Because I am sure
-> most of you are using something!  :)
+>  
 >
-> Thanks.
->
-> -stv
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->   
+Thanks for the reply. We have checked the cpu sdram settings and would
+re-check the sdram initialization sequence.
+However the problem faced is following:
+The sig. 11 is generated at a specific instance of accessing memory 
+areas in
+range of 0x00000024 - 0x000000C8 (i.e low address range).
+AFAIK this is assigned to kernel area.
+We have a ptrintk in arch/ppc/mm/fault.c which shows the frequent page 
+fault
+and its recovery from the fault, however as soon as the DAR loads 
+0x00000024
+or such low address we get a sig. 11.
 
+Bad emulation malloctest/657
+ NIP: 30000c10 instruction: 00000000 opcode: 0 A: 0 B: 0 C: 0 code: 0 rc: 0
+ pte @ 0x30000c10:  (0xc1d3b300)->(0xc020f000)->0x01c2b889
+ RPN: 01c2b PP: 2 SPS: 1 SH: 0 CI: 0 v: 1
+Kernel VA for NIP c1c2bc10  pte @ 0xc1c2bc10: no pmd
+Oops: kernel access of bad area, sig: 11 [#1]
+NIP: C00286C8 LR: C0186684 SP: C02CDCA0 REGS: c02cdbf0 TRAP: 0300    Not 
+tainted
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 00000000, DSISR: C2000000                                          
+<======== here the DAR is 0x00000000
+TASK = c1d0e070[657] 'malloctest' THREAD: c02cc000
 
--- 
-Dave Lynch 						DLA Systems
-Software Development:  				     Embedded Linux
-717.627.3770 	     dhlii@dlasys.net 	      http://www.dlasys.net
-fax: 1.253.369.9244 			       Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+We have tested the SDRAM in both U-boot (mtest) and linux, and the tests 
+doesnt show anything
+wrong with the SDRAM.
+
+thanks in advance.
