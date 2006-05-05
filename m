@@ -1,21 +1,21 @@
-Return-Path: <SRS0+4a93b1d90320a7f59990+985+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A20E7679EF
-	for <linuxppc-dev@ozlabs.org>; Fri,  5 May 2006 10:34:01 +1000 (EST)
-Subject: Re: Flash map information in device tree.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-In-Reply-To: <1146787262.12254.5.camel@vader.jdub.homelinux.org>
-References: <1146785683.2885.148.camel@hades.cambridge.redhat.com>
-	<1146787262.12254.5.camel@vader.jdub.homelinux.org>
-Content-Type: text/plain
-Date: Fri, 05 May 2006 01:33:48 +0100
-Message-Id: <1146789228.17133.4.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id C8D29679E7
+	for <linuxppc-dev@ozlabs.org>; Fri,  5 May 2006 14:59:41 +1000 (EST)
+In-Reply-To: <17498.34041.993647.189930@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.44.0605041622180.3700-100000@gate.crashing.org>
+	<17498.34041.993647.189930@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <900DA3FF-3DF2-43AA-A8EA-869E95B7431F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Please pull from 'for_paulus' branch of powerpc
+Date: Thu, 4 May 2006 23:59:35 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-05-04 at 19:01 -0500, Josh Boyer wrote:
-> On Fri, 2006-05-05 at 00:34 +0100, David Woodhouse wrote:
-> > I'd like to get rid of some of the 'map' drivers in drivers/mtd/maps/
-> > and replace them with simple platform devices. On PPC, I'd like to do
-> > that with nodes in the device tree, with appropriate properties:
-> > 	- physical address
-> > 	- size
-> > 	- bankwidth
-> > 	- chip probe type (CFI/JEDEC/RAM/ROM/etc)
-> 
-> Hm.  How do you deal with NAND, which really isn't any of the above and
-> can really depend on things like controllers, etc.
-> 
-> Or was this only for NOR for the time being?
 
-Only NOR. NAND requires a little more than just "where is it?".
+On May 4, 2006, at 5:49 PM, Paul Mackerras wrote:
 
--- 
-dwmw2
+> Kumar Gala writes:
+>
+>> Please pull from 'for_paulus' branch of
+>> master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git
+>
+>> --- a/arch/powerpc/kernel/setup_32.c
+>> +++ b/arch/powerpc/kernel/setup_32.c
+>> @@ -236,6 +236,7 @@ arch_initcall(ppc_init);
+>>  void __init setup_arch(char **cmdline_p)
+>>  {
+>>  	extern void do_init_bootmem(void);
+>> +	extern void setup_panic(void);
+>
+> Urk.
+
+Yeah didn't care for it either.  Will move to "setup.h"
+
+>
+>> @@ -285,6 +286,9 @@ #endif
+>>  	/* reboot on panic */
+>>  	panic_timeout = 180;
+>>
+>> +	if (ppc_md.panic)
+>> +		setup_panic();
+>
+> Since no 32-bit platform sets ppc_md.panic AFAICS, I guess this
+> doesn't need to be pushed into 2.6.17.  Please redo with setup_panic
+> declared in a header file.
+
+Yeah, this was for 2.6.18. (will do on the header change)
+
+- k
