@@ -1,26 +1,25 @@
-Return-Path: <glikely@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
-	by ozlabs.org (Postfix) with ESMTP id AB2E1679F5
+Return-Path: <tnt@246tNt.com>
+Received: from outmx020.isp.belgacom.be (outmx020.isp.belgacom.be
+	[195.238.4.201])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3B73D679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  6 May 2006 01:31:57 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id l24so538933nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 05 May 2006 08:31:56 -0700 (PDT)
-Message-ID: <528646bc0605050831y75abe02dib2abe85ee88374d1@mail.gmail.com>
-Date: Fri, 5 May 2006 09:31:56 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Chris Dumoulin" <cdumoulin@ics-ltd.com>
-Subject: Re: Moving from 2.4 to 2.6 kernel
-In-Reply-To: <445B5597.9010801@ics-ltd.com>
+	Sat,  6 May 2006 05:28:19 +1000 (EST)
+Received: from outmx020.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx020.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k45JS7Ed026455
+	for <linuxppc-embedded@ozlabs.org>; Fri, 5 May 2006 21:28:08 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <445BA736.30208@246tNt.com>
+Date: Fri, 05 May 2006 21:27:50 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <445A3AB1.7040405@ics-ltd.com>
-	<528646bc0605041111o1b652d60w3f5847a19abe5c95@mail.gmail.com>
-	<445A534D.8090800@ics-ltd.com>
-	<528646bc0605041304q695a183ao68a4720e974ad4f@mail.gmail.com>
-	<445B5597.9010801@ics-ltd.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: Chris Dumoulin <cdumoulin@ics-ltd.com>, linuxppc-embedded@ozlabs.org
+Subject: Re: Calculating virtual address from physical address
+References: <445B6A80.2090202@ics-ltd.com>
+In-Reply-To: <445B6A80.2090202@ics-ltd.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,45 +30,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/5/06, Chris Dumoulin <cdumoulin@ics-ltd.com> wrote:
-> I generated the xparameters_ml300.h file and built my kernel configured
-> for the ML300 board, but I still had the same problem. I'm wondering if
-> there's something in the hardware that's not being setup by u-boot as
-> the linux kernel expects it. I'm looking through the ML300 code in
-> u-boot 1.1.4 to see if can spot anything that's being done in there
-> that's not being done in my u-boot code. Do you have any ideas about
-> some hardware (or other)  initialization that I could be neglecting to
-> do in u-boot that might cause things to hang?
+Chris Dumoulin wrote:
+> I'm using a Virtex II Pro-based board with a PPC405. The board is 
+> hanging somewhere very early in the kernel boot process. I believe it 
+> may be dying at the point where the MMU is enabled. In order to 
+> determine the exact point at which my board hangs, I'm blinking two LEDs 
+> in the assembly code found in arch/ppc/kernel/head_4xx.S, . Currently I 
+> am only able to successfully access the LEDs before the MMU is turned 
+> on, but I can't be sure that I'm calculating the virtual address 
+> properly when I try to access the LED after the MMU is turned on.
 
-Probably not;  The nice thing about the V2Pro is that there is pretty
-much no setup that needs to be done.  The bitstream takes care of
-configuring SDRAM.  :).  For my daily work; I don't even use u-boot.=20
-I'm downloading a zImage directly through my BDI 2000.  (But u-boot
-does work for me too)
+Typical when trying to bring up board ...
 
-Can you post your xparameters file?  (Or email it to me directly)
+Once the MMU is turned on, you leds register are most likely ... nowhere
+... i.e.
+if you don't create a mapping your self there is just no virtual address
+that will
+access your leds physical address.
 
-Are you using a full UART or UART lite?
+What I did on some ppc work was tu use a quick BAT mapping to map some leds.
+It's pretty easy to setup. Be aware though that this mapping will get
+wiped out when
+the kernel sets up the BAT for itself.
 
-> On a similar note, is there any guide to porting u-boot that I could
-> read that would enumerate all the steps I should be taking in u-boot? I
-> know the README in the u-boot source basically says to browse the
-> mailing list (which I'm doing), read the DULG (which I've done), and
-> read the source (which I'm also doing), but some kind of succinct guide
-> would be nice, if it exists.
 
-Not that I know of; I had to pile throught the same stuff to learn it.
-
-> Interactive Circuits and Systems Ltd.
-> 5430 Canotek Road
-> Ottawa, ON
-
-Hey; you going to OLS this year?
-
-Cheers,
-g.
-
---
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-(403) 399-0195
+    Sylvain
