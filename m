@@ -1,18 +1,16 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id A2A59679F3
-	for <linuxppc-dev@ozlabs.org>; Sat,  6 May 2006 01:45:41 +1000 (EST)
-Date: Fri, 5 May 2006 10:46:24 -0500
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] powermac: U4 DART improvements
-Message-ID: <20060505154624.GA7576@lixom.net>
-References: <20060430191430.GU5518@pb15.lixom.net>
-	<1146840992.16487.0.camel@localhost>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1146840992.16487.0.camel@localhost>
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Message-ID: <17498.60066.92373.6527@cargo.ozlabs.ibm.com>
+Date: Fri, 5 May 2006 16:03:14 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 04/13] cell: remove broken __setup_cpu_be function
+In-Reply-To: <20060429233920.295209000@localhost.localdomain>
+References: <20060429232812.825714000@localhost.localdomain>
+	<20060429233920.295209000@localhost.localdomain>
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,16 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 05, 2006 at 04:56:32PM +0200, Johannes Berg wrote:
+Arnd Bergmann writes:
+
+>  From: Geoff Levand <geoffrey.levand@am.sony.com>
 > 
-> > This boots happily on my quad at home,
-> 
-> Boots fine on my quad and seems to survive a bunch of normal tasks.
-> Haven't gotten to do any benchmarking yet.
+> This patch removes the incorrect Cell processor setup routine
+> __setup_cpu_be.  This routine improperly accesses the hypervisor
+> page size configuration at SPR HID6.  The correct behavior is for
+> firmware, or if needed, platform setup code, to set the correct
+> page size.
 
-Thanks for testing. I've been running with it all week here as well. I'll
-try to do some benchmarking this weekend; there are a couple of other
-things that should be changed in the patch as well.
+> -		.cpu_setup		= __setup_cpu_be,
+> +		.cpu_setup		= __setup_cpu_power4,
 
+That looks a bit dodgy.  Either just remove the contents of
+__setup_cpu_be (leaving only the blr), or define a __setup_cpu_null
+that does nothing, or make the identify_cpu not call the cpu setup
+function if the pointer is NULL.
 
--Olof
+Paul.
