@@ -1,16 +1,18 @@
-Return-Path: <alex@astech.at>
-Received: from sun.astech.local (62-99-150-78.static.adsl-line.inode.at
-	[62.99.150.78]) by ozlabs.org (Postfix) with ESMTP id 72820679E1
+Return-Path: <cdumoulin@ics-ltd.com>
+Received: from mx1.magmacom.com (mx1.magmacom.com [206.191.0.217])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 775DD679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  6 May 2006 18:50:23 +1000 (EST)
-Subject: RE: Calculating virtual address from physical address
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Sat, 6 May 2006 10:43:53 +0200
-Message-ID: <78A4D4CFEEA72D4D89EEAAD7AD8300BF3241@sun.astech.local>
-From: "Alexander Szekely" <alex@astech.at>
-To: <linuxppc-embedded@ozlabs.org>
+	Sun,  7 May 2006 04:43:11 +1000 (EST)
+Date: Sat, 6 May 2006 14:43:05 -0400
+Message-Id: <200605061843.k46Ih5Vd032048@www-webmail1.magma.ca>
+To: dhlii@comcast.net, Chris Dumoulin <cdumoulin@ics-ltd.com>
+From: "Chris Dumoulin" <cdumoulin@ics-ltd.com>
+Subject: Re: Calculating virtual address from physical address
+Mime-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,37 +23,169 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> How is a virtual address=20
-> calculated for a high address like 0x4F600000?
+Thanks for your reply; I found it very useful and interesting. Now, I have a whole bunch
+of questions.
 
-Add this to the MMU initialzation code (initial_mmu):
+You said that the temporary TLB entries setup in head_4xx.S will eventually be replaced.
+Where is the code that creates these new TLB entries later on? Are the 'real' TLB entries
+only created once, and persist for as long as the system is running, or do TLB entries
+change often while the system is running?
 
-/* map leds - 1:1 phys=3Dvirt */
-	lis	r3,0x4F600000@h
-	ori	r3,r3,0x4F600000@l
-	mr	r4,r3
-	clrrwi	r4,r4,12
-	ori	r4,r4,(TLB_WR|TLB_I|TLB_M|TLB_G)
+Do you know what state the MSR will be in at this point in the code? I know what the
+power-on reset state is, but I'm wondering if it'll be in a different state by the time we
+get to this point in head_4xx.S.
 
-	clrrwi	r3,r3,12
-	ori	r3,r3,(TLB_VALID | TLB_PAGESZ(PAGESZ_4K))
+When you suggest disabling instruction or data address translation, is that just so I
+could access my hardware directly, or is there some other reason?
 
-	li	r0,0			/* TLB slot 0 */
-	tlbwe	r4,r0,TLB_DATA
-	tlbwe	r3,r0,TLB_TAG
+You were enabling the MSR bits, one at a time, and found that the machine check was
+causing the hang (I'm assuming that's what you meant by 'sent me to space'). Was the idea
+there to just isolate what type of exception was causing the hang, or were you looking to
+make some permanent changes to the MSR? Is a machine check interrupt caused by trying to
+access an address that doesn't have a TLB entry?
 
-Then you have a one to one mapping between physical and virtual memory,=20
-and you can access the LEDs at the same address after turning one the
-MMU.
+Can you point me to some information about Grant's platform bus changes that you were
+talking about? I am using a custom V2Pro board, and I'd be interested to see if this code
+is something I should be looking at.
 
-BTW, we had a similar problem, but the reason was not turning on the
-MMU. The MMU is enabled by writing MSR_KERNEL the status register. This
-also enables the machine state exception interrupt.=20
+Thanks alot,
+Chris
 
-Our hardware design produced PLB bus exceptions, which was unnoticed on
-standalone applications. But this bus exceptions also trigger machine
-state exceptions. So instead of jumping to start_here the processor
-branched to 0x200 - unfortunatly the trap table is not set up at this
-point in the boot process...
 
-Alex=20
+On May 05, "David H. Lynch Jr." <dhlii@dlasys.net> wrote:
+> 
+> Chris Dumoulin wrote:
+> > My LEDs are at address 0x4F600000 and my CONFIG_KERNEL_START is 
+> > 0xC0000000. If this address were low enough, I would just add 0xC0000000 
+> > to the address to get the virtual address, but since my LED address is 
+> > so high, the sum will be well past the 32-bit maximum address value. How 
+> > is a virtual address calculated for a high address like 0x4F600000?
+> >   
+>     There are macros tophys and tovirt  that convert addresses between
+> physical and virtual. There are use example in the head_4xx.S file you
+> are already in.
+> 
+>     If you are going to use a port for debugging you need to create a
+> tlb entry for it.
+>     Same file in initial_mmu the code inside the if
+> defined(CONFIG_SERIAL_TEXT_DEBUG) should provide an example how to do that.
+> 
+>     Be forwarned that any entries you create now will eventually
+> disappear (took 2 weeks to figure that out once), but that may not
+> happen intil after /init starts.
+> 
+>     Also with a little of jiggering arround the bits in MSR_KERNEL you
+> can enable Data address translation independently of instruction address
+> translation as well as disable or enable a variety of
+>     checks. It took me three weeks to get a new Xilinx V4 board through
+> the rfi and to start_here in the same turn_on_mmu code you are working on.
+> 
+>     Eventually I ended up enabling the MSR bits one at a time until I
+> discovered that enabling the Machine Check sent me to space.
+> 
+>     Regardless, once I relialized I could test the code with the MSR
+> bits enabled one at a time isolating the problem became easier.
+> 
+>    
+>     The two issues I addressed above which relate specifically to your
+> efforts with the ml300, constituted more than 80% of my effort to get a
+> Xilinx Virtex 4 running.
+> 
+>     Finally, I started prior to grants platform bus changes. I have been
+> adapting my V4 code to fit with Grants changes (the client has what they
+> want so they do not care)
+>     I have not put alot of effort into this, but I currently get
+> waylayed much later in new platform bus specific initialization code.
+>     I had no problem with the older board specific initialization code.
+> 
+>     If you are running on a real ml300 I am surprised you are having any
+> problems though I do not have an ml300 to check that.
+>     But if you are running on a custom V2Pro board you have to get the
+> board specific initalization right and therefore could trip over the
+> issue I am currently having migrating from old to new.
+> 
+> 
+> 
+>    
+> 
+> 
+> 
+> > BTW, he is the assembly code that I'm working with (from 
+> > arch/ppc/kernel/head_4xx.S):
+> >
+> >     .text
+> > _GLOBAL(_stext)
+> > _GLOBAL(_start)
+> >
+> >     /* Save parameters we are passed.
+> >     */
+> >     mr    r31,r3
+> >     mr    r30,r4
+> >     mr    r29,r5
+> >     mr    r28,r6
+> >     mr    r27,r7
+> >    
+> >     /* CRD: set LED state here */
+> >     lis    r26,0x4F600000@h
+> >     ori    r26,r26,0x4F600000@l
+> >     li  r25,LED_STATE_0
+> >     stw r25,0(r26)
+> >    
+> >     /* We have to turn on the MMU right away so we get cache modes
+> >      * set correctly.
+> >      */
+> >     bl    initial_mmu
+> >    
+> >     /* CRD: set LED state here */
+> >     lis    r26,0x4F600000@h
+> >     ori    r26,r26,0x4F600000@l
+> >     li  r25,LED_STATE_1
+> >     stw r25,0(r26)
+> >
+> > /* We now have the lower 16 Meg mapped into TLB entries, and the caches
+> >  * ready to work.
+> >  */
+> > turn_on_mmu:
+> >     lis    r0,MSR_KERNEL@h
+> >     ori    r0,r0,MSR_KERNEL@l
+> >     mtspr    SPRN_SRR1,r0
+> >     lis    r0,start_here@h
+> >     ori    r0,r0,start_here@l
+> >     mtspr    SPRN_SRR0,r0
+> >     SYNC
+> >    
+> >     /* CRD: set LED state here */
+> >     lis    r26,0x4F600000@h
+> >     ori    r26,r26,0x4F600000@l
+> >     li  r25,LED_STATE_2
+> >     stw r25,0(r26)
+> >    
+> >     rfi                /* enables MMU */
+> >    
+> >     /* CRD: set LED state here */
+> >     /* This address should be a virtual address */
+> >     lis    r26,0x4F600000@h
+> >     ori    r26,r26,0x4F600000@l
+> >     li  r25,LED_STATE_3
+> >     stw r25,0(r26)
+> >    
+> >     b    .            /* prevent prefetch past rfi */
+> >
+> > Regards,
+> > Chris Dumoulin
+> >   
+> 
+> 
+> -- 
+> Dave Lynch 					  	    DLA Systems
+> Software Development:  				         Embedded Linux
+> 717.627.3770 	       dhlii@dlasys.net 	  <a
+href='http://www.dlasys.net'>http://www.dlasys.net</a>
+> fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+> Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+> 
+> "Any intelligent fool can make things bigger and more complex... It takes a touch of
+genius - and a lot of courage to move in the opposite direction."
+> Albert Einstein
+> 
+> 
