@@ -1,22 +1,27 @@
-Return-Path: <ralph.blach@gmail.com>
-Received: from wx-out-0102.google.com (wx-out-0102.google.com [66.249.82.201])
-	by ozlabs.org (Postfix) with ESMTP id 2E1E1679E6
+Return-Path: <walt.wimer@timesys.com>
+Received: from postfix.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id A1CB3679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  8 May 2006 22:43:48 +1000 (EST)
-Received: by wx-out-0102.google.com with SMTP id h29so788963wxd
+	Tue,  9 May 2006 03:55:31 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by postfix.timesys.com (Postfix) with ESMTP id 4947580697A7
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 08 May 2006 05:43:47 -0700 (PDT)
-Message-ID: <b06339d40605080536u2b68eedya42531ad9761dc30@mail.gmail.com>
-Date: Mon, 8 May 2006 08:36:43 -0400
-From: "Ralph Blach" <ralph.blach@gmail.com>
-To: "moris dong" <moris_dong@hotmail.com>
-Subject: Re: Large Page Support, 2.6 kernel , PPC440
-In-Reply-To: <BAY19-F90D433E50C500C4EF93CBF8B10@phx.gbl>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_38490_32197939.1147091803918"
-References: <BAY19-F90D433E50C500C4EF93CBF8B10@phx.gbl>
-Cc: linuxppc-embedded@ozlabs.org
+	Mon,  8 May 2006 13:23:13 -0400 (EDT)
+Received: from postfix.timesys.com ([127.0.0.1])
+	by localhost (postfix.timesys.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 12240-07 for <linuxppc-embedded@ozlabs.org>;
+	Mon,  8 May 2006 13:23:11 -0400 (EDT)
+Received: from exchange.timesys.com (exchange.timesys.com [192.168.2.250])
+	by postfix.timesys.com (Postfix) with ESMTP id 04E8F806978E
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  8 May 2006 13:23:11 -0400 (EDT)
+Subject: IMAP_ADDR on PPC 8xx
+From: "Walter L. Wimer III" <walt.wimer@timesys.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Mon, 08 May 2006 13:23:03 -0400
+Message-Id: <1147108983.27101.63.camel@excalibur.timesys.com>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,105 +32,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_38490_32197939.1147091803918
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Morris,
+Hi Everyone,
 
-A long time ago, I did this for a 405 and it involves much more than just
-changing the page shift.
+I'm looking for wisdom/understanding about IMAP_ADDR on PPC 8xx
+platforms.
 
->From my memory, I will give you what I think you have to do.
-1)you must go into tlb handling code and change it.  That is in the
-header file 44x.S i beleive.
-2)You have to change the pte directory sizes
-3)You have to chage the linker script.
-4)You have to change the size of the zero page.
-5)you have to chage dcache flush routines, to cover the new page size.
-You have to find where 4096/4095 is hard coded as the page size and change
-it.
+In particular, I have an MPC885ADS board running "U-Boot 1.1.3 (Apr 19
+2005 - 13:39:58)".  It will boot neither 2.6.15 nor 2.6.16.11.  After
+U-Boot decompresses the kernel, I get no kernel output at all; it just
+hangs.
 
-This  is no small job, and what you come up with will be very unsupported.
-I beleive If you pin the kerel TLB you might get
-the performance you need and this should be in the kernel config scripts.
+After some debugging, I think things go awry when the code starts
+dereferencing IMAP_ADDR as a direct pointer.  IMAP_ADDR is defined to be
+0xFF000000, but the MPC885ADS documentation says that the internal
+memory map is supposed to at 0x22000000.  In addition, when I look at
+the bd_t pointer from U-Boot, it's saying that 0x22000000 is the correct
+address.
 
-Good luck,
+We have a 2.6.11.7 kernel that successfully boots on this board.  The
+port was done by another engineer who has moved on to another job.  His
+port includes a patch that replaces all references to IMAP_ADDR with a
+global pointer that is initialized using io_remap() of the internal map
+value from the U-Boot bd_t structure.
 
-Chip
+Why is this a problem for us and apparently not for anyone else on this
+list?  Is no one else using U-Boot?  Or does everyone else's U-Boot use
+0xFF000000 instead of 0x22000000?  Or do I have a different problem
+entirely?  :-)
 
-On 5/1/06, moris dong <moris_dong@hotmail.com> wrote:
->
-> Friends,
-> My PPC440 (32bit) MMU supports multiple page sizes.
-> For the default 4K pages, my 2.6.11 kernel compiles and boots just fine.
-> I want to re-build it with large pages, to improve my application
-> performance.
-> I tried modifying PAGE_SHIFT in "page.h" to 13 (8K pages) and re-build my
-> kernel.
-> Compilation worked out fine, but my kernel does NOT boot, nor it prints
-> anything to the console.
->
-> Has anyone successfully compiled & booted a 2.6 kernel with pages larger
-> than 4K ?
-> What am I doing wrong ?
->
-> Thanks a lot.
->
-> _________________________________________________________________
-> Express yourself instantly with MSN Messenger! Download today it's FREE!
-> http://messenger.msn.click-url.com/go/onm00200471ave/direct/01/
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+While reading through the archives, I see that using IMAP_ADDR the way
+it is currently used is somewhat frowned upon anyway.  Is this one of
+those things that we (the PPC Linux community) should fix the "right
+way" once and for all?  I'm happy to submit a patch once I understand
+what the "right way" is...  :-)
 
-------=_Part_38490_32197939.1147091803918
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-Morris,<br><br>A long time ago, I did this for a 405 and it involves much m=
-ore than just changing the page shift.<br><br>From my memory, I will give y=
-ou what I think you have to do.<br>1)you must go into tlb handling code and=
- change it.&nbsp; That is in the=20
-<br>header file 44x.S i beleive.<br>2)You have to change the pte directory =
-sizes<br>3)You have to chage the linker script.<br>4)You have to change the=
- size of the zero page.<br>5)you have to chage dcache flush routines, to co=
-ver the new page size.
-<br>You have to find where 4096/4095 is hard coded as the page size and cha=
-nge it.<br><br>This&nbsp; is no small job, and what you come up with will b=
-e very unsupported.<br>I beleive If you pin the kerel TLB you might get <br=
->
-the performance you need and this should be in the kernel config scripts.<b=
-r><br>Good luck, <br><br>Chip<br><br><div><span class=3D"gmail_quote">On 5/=
-1/06, <b class=3D"gmail_sendername">moris dong</b> &lt;<a href=3D"mailto:mo=
-ris_dong@hotmail.com">
-moris_dong@hotmail.com</a>&gt; wrote:</span><blockquote class=3D"gmail_quot=
-e" style=3D"border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt =
-0.8ex; padding-left: 1ex;">Friends,<br>My PPC440 (32bit) MMU supports multi=
-ple page sizes.
-<br>For the default 4K pages, my 2.6.11 kernel compiles and boots just fine=
-.<br>I want to re-build it with large pages, to improve my application<br>p=
-erformance.<br>I tried modifying PAGE_SHIFT in &quot;page.h&quot; to 13 (8K=
- pages) and re-build my
-<br>kernel.<br>Compilation worked out fine, but my kernel does NOT boot, no=
-r it prints<br>anything to the console.<br><br>Has anyone successfully comp=
-iled &amp; booted a 2.6 kernel with pages larger<br>than 4K ?<br>What am I =
-doing wrong ?
-<br><br>Thanks a lot.<br><br>______________________________________________=
-___________________<br>Express yourself instantly with MSN Messenger! Downl=
-oad today it's FREE!<br><a href=3D"http://messenger.msn.click-url.com/go/on=
-m00200471ave/direct/01/">
-http://messenger.msn.click-url.com/go/onm00200471ave/direct/01/</a><br><br>=
-_______________________________________________<br>Linuxppc-embedded mailin=
-g list<br><a href=3D"mailto:Linuxppc-embedded@ozlabs.org">Linuxppc-embedded=
-@ozlabs.org
-</a><br><a href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded">h=
-ttps://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote></=
-div><br>
 
-------=_Part_38490_32197939.1147091803918--
+Thanks!!!
+
+Walt Wimer
+TimeSys Corporation
