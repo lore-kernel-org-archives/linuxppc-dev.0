@@ -1,20 +1,17 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 764EA682CF
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 May 2006 00:12:37 +1000 (EST)
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@osdl.org
-Message-Id: <20060508141231.26912.52976.sendpatchset@skynet>
-In-Reply-To: <20060508141030.26912.93090.sendpatchset@skynet>
-References: <20060508141030.26912.93090.sendpatchset@skynet>
-Subject: [PATCH 6/6] Break out memory initialisation code from page_alloc.c to
-	mem_init.c
-Date: Mon,  8 May 2006 15:12:31 +0100 (IST)
-Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linux-mm@kvack.org,
-	Mel Gorman <mel@csn.ul.ie>, ak@suse.de, bob.picco@hp.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <mmeswani@utep.edu>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C672CA.7FE452AA"
+Subject: Information for setting up SMT related parameters on linux 2.6.16 on
+	POWER5
+Date: Mon, 8 May 2006 12:09:08 -0600
+Message-ID: <C26C730943E01145B4F89E37FE0A022002BBC74B@itdsrvmail02.utep.edu>
+References: <17498.60066.92373.6527@cargo.ozlabs.ibm.com>
+	<445BE729.80903@am.sony.com>
+From: "Meswani, Mitesh" <mmeswani@utep.edu>
+To: <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,2302 +21,415 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-page_alloc.c contains a large amount of memory initialisation code. This patch
-breaks out the initialisation code to a separate file to make page_alloc.c
-a bit easier to read.
+------_=_NextPart_001_01C672CA.7FE452AA
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+=20
+Hello=20
+=20
+I am looking to use the SMT related parameters like Snooze delay, HMT =
+thread priorities, SMT ON/Off and wanted to know how to invoke and set =
+them. I am running Open Suse 10 with 2.6.16.rc4-3-ppc64 kernel on =
+eServer p590 2-way POWER5 partition.=20
+=20
+I noticed the parameters in /sys/devices/system/cpu/cpu#   with the =
+following :
+=20
+mmcr0  online       pmc2  pmc5  smt_snooze_delay
+mmcr1  physical_id  pmc3  pmc6  topology
+crash_notes  mmcra  pmc1         pmc4  purr
+
+setting the value in online to 0 seems to turn off the logical =
+processor, but I am not sure what the others are for and the meaning of =
+their hex values?=20
+It seems that there is include/asm-ppc64/processor.h  with macros like =
+HMT_very_low()  ,  wonder if these can be set on command line since I am =
+running unmodified app binaries.=20
+=20
+=20
+=20
+Thanks,=20
+Mitesh
+=20
+=20
+
+Mitesh R. Meswani=20
+Ph.D. Candidate=20
+Research Associate, PLS2 Group
+Room 106 F, Department of Computer Science
+The University of Texas at El Paso,=20
+El Paso, Texas 79968
+Tel: 915 747 8012 (O)
+Email: mmeswani@utep.edu
+
+________________________________
+
+From: linuxppc-dev-bounces+mmeswani=3Dutep.edu@ozlabs.org on behalf of =
+Geoff Levand
+Sent: Fri 5/5/2006 6:00 PM
+To: Paul Mackerras
+Cc: Arnd Bergmann; Levand,Geoffrey; linux-kernel@vger.kernel.org; =
+linuxppc-dev@ozlabs.org; Arnd Bergmann; cbe-oss-dev@ozlabs.org
+Subject: Re: [PATCH 04/13] cell: remove broken __setup_cpu_be function
 
 
- Makefile     |    2 
- mem_init.c   | 1123 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- page_alloc.c | 1105 -----------------------------------------------------
- 3 files changed, 1124 insertions(+), 1106 deletions(-)
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-diff -rup -X /usr/src/patchset-0.5/bin//dontdiff linux-2.6.17-rc3-mm1-105-ia64_use_init_nodes/mm/Makefile linux-2.6.17-rc3-mm1-106-breakout_mem_init/mm/Makefile
---- linux-2.6.17-rc3-mm1-105-ia64_use_init_nodes/mm/Makefile	2006-05-01 11:37:01.000000000 +0100
-+++ linux-2.6.17-rc3-mm1-106-breakout_mem_init/mm/Makefile	2006-05-08 09:22:02.000000000 +0100
-@@ -8,7 +8,7 @@ mmu-$(CONFIG_MMU)	:= fremap.o highmem.o 
- 			   vmalloc.o
- 
- obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
--			   page_alloc.o page-writeback.o pdflush.o \
-+			   page_alloc.o mem_init.o page-writeback.o pdflush.o \
- 			   readahead.o swap.o truncate.o vmscan.o \
- 			   prio_tree.o util.o mmzone.o $(mmu-y)
- 
-diff -rup -X /usr/src/patchset-0.5/bin//dontdiff linux-2.6.17-rc3-mm1-105-ia64_use_init_nodes/mm/mem_init.c linux-2.6.17-rc3-mm1-106-breakout_mem_init/mm/mem_init.c
---- linux-2.6.17-rc3-mm1-105-ia64_use_init_nodes/mm/mem_init.c	2006-05-01 11:51:50.000000000 +0100
-+++ linux-2.6.17-rc3-mm1-106-breakout_mem_init/mm/mem_init.c	2006-05-08 11:00:23.000000000 +0100
-@@ -0,0 +1,1123 @@
-+/*
-+ * mm/mem_init.c
-+ * Initialises the architecture independant view of memory. pgdats, zones, etc
-+ *
-+ *  Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
-+ *  Copyright (C) 1995, Stephen Tweedie
-+ *  Copyright (C) July 1999, Gerhard Wichert, Siemens AG
-+ *  Copyright (C) 1999, Ingo Molnar, Red Hat
-+ *  Copyright (C) 1999, 2000, Kanoj Sarcar, SGI
-+ *  Copyright (C) Sept 2000, Martin J. Bligh
-+ *	(lots of bits borrowed from Ingo Molnar & Andrew Morton)
-+ *  Copyright (C) Apr 2006, Mel Gorman, IBM
-+ *	(lots of bits taken from architecture-specific code)
-+ */
-+#include <linux/config.h>
-+#include <linux/sort.h>
-+#include <linux/pfn.h>
-+#include <linux/mm.h>
-+#include <linux/bootmem.h>
-+#include <linux/cpuset.h>
-+#include <linux/mempolicy.h>
-+#include <linux/sysctl.h>
-+#include <linux/swap.h>
-+#include <linux/cpu.h>
-+#include <linux/stop_machine.h>
-+#include <linux/vmalloc.h>
-+
-+static char *zone_names[MAX_NR_ZONES] = { "DMA", "DMA32", "Normal", "HighMem" };
-+int percpu_pagelist_fraction;
-+
-+#ifdef CONFIG_ARCH_POPULATES_NODE_MAP
-+  #ifdef CONFIG_MAX_ACTIVE_REGIONS
-+    #define MAX_ACTIVE_REGIONS CONFIG_MAX_ACTIVE_REGIONS
-+  #else
-+    #define MAX_ACTIVE_REGIONS (MAX_NR_ZONES * MAX_NUMNODES + 1)
-+  #endif
-+
-+  struct node_active_region __initdata early_node_map[MAX_ACTIVE_REGIONS];
-+  unsigned long __initdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
-+  unsigned long __initdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
-+#endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
-+
-+/*
-+ * Builds allocation fallback zone lists.
-+ *
-+ * Add all populated zones of a node to the zonelist.
-+ */
-+static int __meminit build_zonelists_node(pg_data_t *pgdat,
-+			struct zonelist *zonelist, int nr_zones, int zone_type)
-+{
-+	struct zone *zone;
-+
-+	BUG_ON(zone_type > ZONE_HIGHMEM);
-+
-+	do {
-+		zone = pgdat->node_zones + zone_type;
-+		if (populated_zone(zone)) {
-+#ifndef CONFIG_HIGHMEM
-+			BUG_ON(zone_type > ZONE_NORMAL);
-+#endif
-+			zonelist->zones[nr_zones++] = zone;
-+			check_highest_zone(zone_type);
-+		}
-+		zone_type--;
-+
-+	} while (zone_type >= 0);
-+	return nr_zones;
-+}
-+
-+static inline int highest_zone(int zone_bits)
-+{
-+	int res = ZONE_NORMAL;
-+	if (zone_bits & (__force int)__GFP_HIGHMEM)
-+		res = ZONE_HIGHMEM;
-+	if (zone_bits & (__force int)__GFP_DMA32)
-+		res = ZONE_DMA32;
-+	if (zone_bits & (__force int)__GFP_DMA)
-+		res = ZONE_DMA;
-+	return res;
-+}
-+
-+#ifdef CONFIG_NUMA
-+#define MAX_NODE_LOAD (num_online_nodes())
-+static int __meminitdata node_load[MAX_NUMNODES];
-+/**
-+ * find_next_best_node - find the next node that should appear in a given node's fallback list
-+ * @node: node whose fallback list we're appending
-+ * @used_node_mask: nodemask_t of already used nodes
-+ *
-+ * We use a number of factors to determine which is the next node that should
-+ * appear on a given node's fallback list.  The node should not have appeared
-+ * already in @node's fallback list, and it should be the next closest node
-+ * according to the distance array (which contains arbitrary distance values
-+ * from each node to each node in the system), and should also prefer nodes
-+ * with no CPUs, since presumably they'll have very little allocation pressure
-+ * on them otherwise.
-+ * It returns -1 if no node is found.
-+ */
-+static int __meminit find_next_best_node(int node, nodemask_t *used_node_mask)
-+{
-+	int n, val;
-+	int min_val = INT_MAX;
-+	int best_node = -1;
-+
-+	/* Use the local node if we haven't already */
-+	if (!node_isset(node, *used_node_mask)) {
-+		node_set(node, *used_node_mask);
-+		return node;
-+	}
-+
-+	for_each_online_node(n) {
-+		cpumask_t tmp;
-+
-+		/* Don't want a node to appear more than once */
-+		if (node_isset(n, *used_node_mask))
-+			continue;
-+
-+		/* Use the distance array to find the distance */
-+		val = node_distance(node, n);
-+
-+		/* Penalize nodes under us ("prefer the next node") */
-+		val += (n < node);
-+
-+		/* Give preference to headless and unused nodes */
-+		tmp = node_to_cpumask(n);
-+		if (!cpus_empty(tmp))
-+			val += PENALTY_FOR_NODE_WITH_CPUS;
-+
-+		/* Slight preference for less loaded node */
-+		val *= (MAX_NODE_LOAD*MAX_NUMNODES);
-+		val += node_load[n];
-+
-+		if (val < min_val) {
-+			min_val = val;
-+			best_node = n;
-+		}
-+	}
-+
-+	if (best_node >= 0)
-+		node_set(best_node, *used_node_mask);
-+
-+	return best_node;
-+}
-+
-+static void __meminit build_zonelists(pg_data_t *pgdat)
-+{
-+	int i, j, k, node, local_node;
-+	int prev_node, load;
-+	struct zonelist *zonelist;
-+	nodemask_t used_mask;
-+
-+	/* initialize zonelists */
-+	for (i = 0; i < GFP_ZONETYPES; i++) {
-+		zonelist = pgdat->node_zonelists + i;
-+		zonelist->zones[0] = NULL;
-+	}
-+
-+	/* NUMA-aware ordering of nodes */
-+	local_node = pgdat->node_id;
-+	load = num_online_nodes();
-+	prev_node = local_node;
-+	nodes_clear(used_mask);
-+	while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
-+		int distance = node_distance(local_node, node);
-+
-+		/*
-+		 * If another node is sufficiently far away then it is better
-+		 * to reclaim pages in a zone before going off node.
-+		 */
-+		if (distance > RECLAIM_DISTANCE)
-+			zone_reclaim_mode = 1;
-+
-+		/*
-+		 * We don't want to pressure a particular node.
-+		 * So adding penalty to the first node in same
-+		 * distance group to make it round-robin.
-+		 */
-+
-+		if (distance != node_distance(local_node, prev_node))
-+			node_load[node] += load;
-+		prev_node = node;
-+		load--;
-+		for (i = 0; i < GFP_ZONETYPES; i++) {
-+			zonelist = pgdat->node_zonelists + i;
-+			for (j = 0; zonelist->zones[j] != NULL; j++);
-+
-+			k = highest_zone(i);
-+
-+	 		j = build_zonelists_node(NODE_DATA(node), zonelist, j, k);
-+			zonelist->zones[j] = NULL;
-+		}
-+	}
-+}
-+
-+#else	/* CONFIG_NUMA */
-+
-+static void __meminit build_zonelists(pg_data_t *pgdat)
-+{
-+	int i, j, k, node, local_node;
-+
-+	local_node = pgdat->node_id;
-+	for (i = 0; i < GFP_ZONETYPES; i++) {
-+		struct zonelist *zonelist;
-+
-+		zonelist = pgdat->node_zonelists + i;
-+
-+		j = 0;
-+		k = highest_zone(i);
-+ 		j = build_zonelists_node(pgdat, zonelist, j, k);
-+ 		/*
-+ 		 * Now we build the zonelist so that it contains the zones
-+ 		 * of all the other nodes.
-+ 		 * We don't want to pressure a particular node, so when
-+ 		 * building the zones for node N, we make sure that the
-+ 		 * zones coming right after the local ones are those from
-+ 		 * node N+1 (modulo N)
-+ 		 */
-+		for (node = local_node + 1; node < MAX_NUMNODES; node++) {
-+			if (!node_online(node))
-+				continue;
-+			j = build_zonelists_node(NODE_DATA(node), zonelist, j, k);
-+		}
-+		for (node = 0; node < local_node; node++) {
-+			if (!node_online(node))
-+				continue;
-+			j = build_zonelists_node(NODE_DATA(node), zonelist, j, k);
-+		}
-+
-+		zonelist->zones[j] = NULL;
-+	}
-+}
-+
-+#endif	/* CONFIG_NUMA */
-+
-+/* return values int ....just for stop_machine_run() */
-+static int __meminit __build_all_zonelists(void *dummy)
-+{
-+	int nid;
-+	for_each_online_node(nid)
-+		build_zonelists(NODE_DATA(nid));
-+	return 0;
-+}
-+
-+void __meminit build_all_zonelists(void)
-+{
-+	if (system_state == SYSTEM_BOOTING) {
-+		__build_all_zonelists(0);
-+		cpuset_init_current_mems_allowed();
-+	} else {
-+		/* we have to stop all cpus to guaranntee there is no user
-+		   of zonelist */
-+		stop_machine_run(__build_all_zonelists, NULL, NR_CPUS);
-+		/* cpuset refresh routine should be here */
-+	}
-+
-+	printk("Built %i zonelists\n", num_online_nodes());
-+
-+}
-+
-+/*
-+ * Helper functions to size the waitqueue hash table.
-+ * Essentially these want to choose hash table sizes sufficiently
-+ * large so that collisions trying to wait on pages are rare.
-+ * But in fact, the number of active page waitqueues on typical
-+ * systems is ridiculously low, less than 200. So this is even
-+ * conservative, even though it seems large.
-+ *
-+ * The constant PAGES_PER_WAITQUEUE specifies the ratio of pages to
-+ * waitqueues, i.e. the size of the waitq table given the number of pages.
-+ */
-+#define PAGES_PER_WAITQUEUE	256
-+
-+#ifndef CONFIG_MEMORY_HOTPLUG
-+static inline unsigned long wait_table_hash_nr_entries(unsigned long pages)
-+{
-+	unsigned long size = 1;
-+
-+	pages /= PAGES_PER_WAITQUEUE;
-+
-+	while (size < pages)
-+		size <<= 1;
-+
-+	/*
-+	 * Once we have dozens or even hundreds of threads sleeping
-+	 * on IO we've got bigger problems than wait queue collision.
-+	 * Limit the size of the wait table to a reasonable size.
-+	 */
-+	size = min(size, 4096UL);
-+
-+	return max(size, 4UL);
-+}
-+#else
-+/*
-+ * A zone's size might be changed by hot-add, so it is not possible to determine
-+ * a suitable size for its wait_table.  So we use the maximum size now.
-+ *
-+ * The max wait table size = 4096 x sizeof(wait_queue_head_t).   ie:
-+ *
-+ *    i386 (preemption config)    : 4096 x 16 = 64Kbyte.
-+ *    ia64, x86-64 (no preemption): 4096 x 20 = 80Kbyte.
-+ *    ia64, x86-64 (preemption)   : 4096 x 24 = 96Kbyte.
-+ *
-+ * The maximum entries are prepared when a zone's memory is (512K + 256) pages
-+ * or more by the traditional way. (See above).  It equals:
-+ *
-+ *    i386, x86-64, powerpc(4K page size) : =  ( 2G + 1M)byte.
-+ *    ia64(16K page size)                 : =  ( 8G + 4M)byte.
-+ *    powerpc (64K page size)             : =  (32G +16M)byte.
-+ */
-+static inline unsigned long wait_table_hash_nr_entries(unsigned long pages)
-+{
-+	return 4096UL;
-+}
-+#endif
-+
-+/*
-+ * This is an integer logarithm so that shifts can be used later
-+ * to extract the more random high bits from the multiplicative
-+ * hash function before the remainder is taken.
-+ */
-+static inline unsigned long wait_table_bits(unsigned long size)
-+{
-+	return ffz(~size);
-+}
-+
-+#define LONG_ALIGN(x) (((x)+(sizeof(long))-1)&~((sizeof(long))-1))
-+
-+#ifndef __HAVE_ARCH_MEMMAP_INIT
-+#define memmap_init(size, nid, zone, start_pfn) \
-+	memmap_init_zone((size), (nid), (zone), (start_pfn))
-+#endif
-+
-+/*
-+ * Initially all pages are reserved - free ones are freed
-+ * up by free_all_bootmem() once the early boot process is
-+ * done. Non-atomic initialization, single-pass.
-+ */
-+void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
-+		unsigned long start_pfn)
-+{
-+	struct page *page;
-+	unsigned long end_pfn = start_pfn + size;
-+	unsigned long pfn;
-+
-+	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
-+		if (!early_pfn_valid(pfn))
-+			continue;
-+		page = pfn_to_page(pfn);
-+		set_page_links(page, zone, nid, pfn);
-+		init_page_count(page);
-+		reset_page_mapcount(page);
-+		SetPageReserved(page);
-+		INIT_LIST_HEAD(&page->lru);
-+#ifdef WANT_PAGE_VIRTUAL
-+		/* The shift won't overflow because ZONE_NORMAL is below 4G. */
-+		if (!is_highmem_idx(zone))
-+			set_page_address(page, __va(pfn << PAGE_SHIFT));
-+#endif
-+	}
-+}
-+
-+void zone_init_free_lists(struct pglist_data *pgdat, struct zone *zone,
-+				unsigned long size)
-+{
-+	int order;
-+	for (order = 0; order < MAX_ORDER ; order++) {
-+		INIT_LIST_HEAD(&zone->free_area[order].free_list);
-+		zone->free_area[order].nr_free = 0;
-+	}
-+}
-+
-+#define ZONETABLE_INDEX(x, zone_nr)	((x << ZONES_SHIFT) | zone_nr)
-+void zonetable_add(struct zone *zone, int nid, int zid, unsigned long pfn,
-+		unsigned long size)
-+{
-+	unsigned long snum = pfn_to_section_nr(pfn);
-+	unsigned long end = pfn_to_section_nr(pfn + size);
-+
-+	if (FLAGS_HAS_NODE)
-+		zone_table[ZONETABLE_INDEX(nid, zid)] = zone;
-+	else
-+		for (; snum <= end; snum++)
-+			zone_table[ZONETABLE_INDEX(snum, zid)] = zone;
-+}
-+
-+static __meminit
-+int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
-+{
-+	int i;
-+	struct pglist_data *pgdat = zone->zone_pgdat;
-+	size_t alloc_size;
-+
-+	/*
-+	 * The per-page waitqueue mechanism uses hashed waitqueues
-+	 * per zone.
-+	 */
-+	zone->wait_table_hash_nr_entries =
-+		 wait_table_hash_nr_entries(zone_size_pages);
-+	zone->wait_table_bits =
-+		wait_table_bits(zone->wait_table_hash_nr_entries);
-+	alloc_size = zone->wait_table_hash_nr_entries
-+					* sizeof(wait_queue_head_t);
-+
-+ 	if (system_state == SYSTEM_BOOTING) {
-+		zone->wait_table = (wait_queue_head_t *)
-+			alloc_bootmem_node(pgdat, alloc_size);
-+	} else {
-+		/*
-+		 * This case means that a zone whose size was 0 gets new memory
-+		 * via memory hot-add.
-+		 * But it may be the case that a new node was hot-added.  In
-+		 * this case vmalloc() will not be able to use this new node's
-+		 * memory - this wait_table must be initialized to use this new
-+		 * node itself as well.
-+		 * To use this new node's memory, further consideration will be
-+		 * necessary.
-+		 */
-+		zone->wait_table = (wait_queue_head_t *)vmalloc(alloc_size);
-+	}
-+	if (!zone->wait_table)
-+		return -ENOMEM;
-+
-+	for(i = 0; i < zone->wait_table_hash_nr_entries; ++i)
-+		init_waitqueue_head(zone->wait_table + i);
-+
-+	return 0;
-+}
-+
-+/*
-+ * setup_pagelist_highmark() sets the high water mark for hot per_cpu_pagelist
-+ * to the value high for the pageset p.
-+ */
-+static void setup_pagelist_highmark(struct per_cpu_pageset *p,
-+				unsigned long high)
-+{
-+	struct per_cpu_pages *pcp;
-+
-+	pcp = &p->pcp[0]; /* hot list */
-+	pcp->high = high;
-+	pcp->batch = max(1UL, high/4);
-+	if ((high/4) > (PAGE_SHIFT * 8))
-+		pcp->batch = PAGE_SHIFT * 8;
-+}
-+
-+/*
-+ * percpu_pagelist_fraction - changes the pcp->high for each zone on each
-+ * cpu.  It is the fraction of total pages in each zone that a hot per cpu pagelist
-+ * can have before it gets flushed back to buddy allocator.
-+ */
-+int percpu_pagelist_fraction_sysctl_handler(ctl_table *table, int write,
-+	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
-+{
-+	struct zone *zone;
-+	unsigned int cpu;
-+	int ret;
-+
-+	ret = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
-+	if (!write || (ret == -EINVAL))
-+		return ret;
-+	for_each_zone(zone) {
-+		for_each_online_cpu(cpu) {
-+			unsigned long  high;
-+			high = zone->present_pages / percpu_pagelist_fraction;
-+			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
-+		}
-+	}
-+	return 0;
-+}
-+
-+static int __cpuinit zone_batchsize(struct zone *zone)
-+{
-+	int batch;
-+
-+	/*
-+	 * The per-cpu-pages pools are set to around 1000th of the
-+	 * size of the zone.  But no more than 1/2 of a meg.
-+	 *
-+	 * OK, so we don't know how big the cache is.  So guess.
-+	 */
-+	batch = zone->present_pages / 1024;
-+	if (batch * PAGE_SIZE > 512 * 1024)
-+		batch = (512 * 1024) / PAGE_SIZE;
-+	batch /= 4;		/* We effectively *= 4 below */
-+	if (batch < 1)
-+		batch = 1;
-+
-+	/*
-+	 * Clamp the batch to a 2^n - 1 value. Having a power
-+	 * of 2 value was found to be more likely to have
-+	 * suboptimal cache aliasing properties in some cases.
-+	 *
-+	 * For example if 2 tasks are alternately allocating
-+	 * batches of pages, one task can end up with a lot
-+	 * of pages of one half of the possible page colors
-+	 * and the other with pages of the other colors.
-+	 */
-+	batch = (1 << (fls(batch + batch/2)-1)) - 1;
-+
-+	return batch;
-+}
-+
-+inline void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
-+{
-+	struct per_cpu_pages *pcp;
-+
-+	memset(p, 0, sizeof(*p));
-+
-+	pcp = &p->pcp[0];		/* hot */
-+	pcp->count = 0;
-+	pcp->high = 6 * batch;
-+	pcp->batch = max(1UL, 1 * batch);
-+	INIT_LIST_HEAD(&pcp->list);
-+
-+	pcp = &p->pcp[1];		/* cold*/
-+	pcp->count = 0;
-+	pcp->high = 2 * batch;
-+	pcp->batch = max(1UL, batch/2);
-+	INIT_LIST_HEAD(&pcp->list);
-+}
-+
-+#ifdef CONFIG_NUMA
-+/*
-+ * Boot pageset table. One per cpu which is going to be used for all
-+ * zones and all nodes. The parameters will be set in such a way
-+ * that an item put on a list will immediately be handed over to
-+ * the buddy list. This is safe since pageset manipulation is done
-+ * with interrupts disabled.
-+ *
-+ * Some NUMA counter updates may also be caught by the boot pagesets.
-+ *
-+ * The boot_pagesets must be kept even after bootup is complete for
-+ * unused processors and/or zones. They do play a role for bootstrapping
-+ * hotplugged processors.
-+ *
-+ * zoneinfo_show() and maybe other functions do
-+ * not check if the processor is online before following the pageset pointer.
-+ * Other parts of the kernel may not check if the zone is available.
-+ */
-+static struct per_cpu_pageset boot_pageset[NR_CPUS];
-+
-+/*
-+ * Dynamically allocate memory for the
-+ * per cpu pageset array in struct zone.
-+ */
-+static int __cpuinit process_zones(int cpu)
-+{
-+	struct zone *zone, *dzone;
-+
-+	for_each_zone(zone) {
-+
-+		zone_pcp(zone, cpu) = kmalloc_node(sizeof(struct per_cpu_pageset),
-+					 GFP_KERNEL, cpu_to_node(cpu));
-+		if (!zone_pcp(zone, cpu))
-+			goto bad;
-+
-+		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
-+
-+		if (percpu_pagelist_fraction)
-+			setup_pagelist_highmark(zone_pcp(zone, cpu),
-+			 	(zone->present_pages / percpu_pagelist_fraction));
-+	}
-+
-+	return 0;
-+bad:
-+	for_each_zone(dzone) {
-+		if (dzone == zone)
-+			break;
-+		kfree(zone_pcp(dzone, cpu));
-+		zone_pcp(dzone, cpu) = NULL;
-+	}
-+	return -ENOMEM;
-+}
-+
-+static inline void free_zone_pagesets(int cpu)
-+{
-+	struct zone *zone;
-+
-+	for_each_zone(zone) {
-+		struct per_cpu_pageset *pset = zone_pcp(zone, cpu);
-+
-+		zone_pcp(zone, cpu) = NULL;
-+		kfree(pset);
-+	}
-+}
-+
-+static int pageset_cpuup_callback(struct notifier_block *nfb,
-+		unsigned long action,
-+		void *hcpu)
-+{
-+	int cpu = (long)hcpu;
-+	int ret = NOTIFY_OK;
-+
-+	switch (action) {
-+		case CPU_UP_PREPARE:
-+			if (process_zones(cpu))
-+				ret = NOTIFY_BAD;
-+			break;
-+		case CPU_UP_CANCELED:
-+		case CPU_DEAD:
-+			free_zone_pagesets(cpu);
-+			break;
-+		default:
-+			break;
-+	}
-+	return ret;
-+}
-+
-+static struct notifier_block pageset_notifier =
-+	{ &pageset_cpuup_callback, NULL, 0 };
-+
-+void __init setup_per_cpu_pageset(void)
-+{
-+	int err;
-+
-+	/* Initialize per_cpu_pageset for cpu 0.
-+	 * A cpuup callback will do this for every cpu
-+	 * as it comes online
-+	 */
-+	err = process_zones(smp_processor_id());
-+	BUG_ON(err);
-+	register_cpu_notifier(&pageset_notifier);
-+}
-+#endif
-+
-+static __meminit void zone_pcp_init(struct zone *zone)
-+{
-+	int cpu;
-+	unsigned long batch = zone_batchsize(zone);
-+
-+	for (cpu = 0; cpu < NR_CPUS; cpu++) {
-+#ifdef CONFIG_NUMA
-+		/* Early boot. Slab allocator not functional yet */
-+		zone_pcp(zone, cpu) = &boot_pageset[cpu];
-+		setup_pageset(&boot_pageset[cpu],0);
-+#else
-+		setup_pageset(zone_pcp(zone,cpu), batch);
-+#endif
-+	}
-+	if (zone->present_pages)
-+		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%lu\n",
-+			zone->name, zone->present_pages, batch);
-+}
-+
-+__meminit int init_currently_empty_zone(struct zone *zone,
-+					unsigned long zone_start_pfn,
-+					unsigned long size)
-+{
-+	struct pglist_data *pgdat = zone->zone_pgdat;
-+	int ret;
-+	ret = zone_wait_table_init(zone, size);
-+	if (ret)
-+		return ret;
-+	pgdat->nr_zones = zone_idx(zone) + 1;
-+
-+	zone->zone_start_pfn = zone_start_pfn;
-+
-+	memmap_init(size, pgdat->node_id, zone_idx(zone), zone_start_pfn);
-+
-+	zone_init_free_lists(pgdat, zone, zone->spanned_pages);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_ARCH_POPULATES_NODE_MAP
-+/* Note: nid == MAX_NUMNODES returns first region */
-+static int __init first_active_region_index_in_nid(int nid)
-+{
-+	int i;
-+	for (i = 0; early_node_map[i].end_pfn; i++) {
-+		if (nid == MAX_NUMNODES || early_node_map[i].nid == nid)
-+			return i;
-+	}
-+
-+	return MAX_ACTIVE_REGIONS;
-+}
-+
-+/* Note: nid == MAX_NUMNODES returns next region */
-+static int __init next_active_region_index_in_nid(unsigned int index, int nid)
-+{
-+	for (index = index + 1; early_node_map[index].end_pfn; index++) {
-+		if (nid == MAX_NUMNODES || early_node_map[index].nid == nid)
-+			return index;
-+	}
-+
-+	return MAX_ACTIVE_REGIONS;
-+}
-+
-+#ifndef CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
-+int __init early_pfn_to_nid(unsigned long pfn)
-+{
-+	int i;
-+
-+	for (i = 0; early_node_map[i].end_pfn; i++) {
-+		unsigned long start_pfn = early_node_map[i].start_pfn;
-+		unsigned long end_pfn = early_node_map[i].end_pfn;
-+
-+		if ((start_pfn <= pfn) && (pfn < end_pfn))
-+			return early_node_map[i].nid;
-+	}
-+
-+	return -1;
-+}
-+#endif
-+
-+#define for_each_active_range_index_in_nid(i, nid) \
-+	for (i = first_active_region_index_in_nid(nid); \
-+				i != MAX_ACTIVE_REGIONS; \
-+				i = next_active_region_index_in_nid(i, nid))
-+
-+void __init free_bootmem_with_active_regions(int nid,
-+						unsigned long max_low_pfn)
-+{
-+	unsigned int i;
-+	for_each_active_range_index_in_nid(i, nid) {
-+		unsigned long size_pages = 0;
-+		unsigned long end_pfn = early_node_map[i].end_pfn;
-+		if (early_node_map[i].start_pfn >= max_low_pfn)
-+			continue;
-+
-+		if (end_pfn > max_low_pfn)
-+			end_pfn = max_low_pfn;
-+
-+		size_pages = end_pfn - early_node_map[i].start_pfn;
-+		free_bootmem_node(NODE_DATA(early_node_map[i].nid),
-+				PFN_PHYS(early_node_map[i].start_pfn),
-+				size_pages << PAGE_SHIFT);
-+	}
-+}
-+
-+void __init sparse_memory_present_with_active_regions(int nid)
-+{
-+	unsigned int i;
-+	for_each_active_range_index_in_nid(i, nid)
-+		memory_present(early_node_map[i].nid,
-+				early_node_map[i].start_pfn,
-+				early_node_map[i].end_pfn);
-+}
-+
-+void __init get_pfn_range_for_nid(unsigned int nid,
-+			unsigned long *start_pfn, unsigned long *end_pfn)
-+{
-+	unsigned int i;
-+	*start_pfn = -1UL;
-+	*end_pfn = 0;
-+
-+	for_each_active_range_index_in_nid(i, nid) {
-+		*start_pfn = min(*start_pfn, early_node_map[i].start_pfn);
-+		*end_pfn = max(*end_pfn, early_node_map[i].end_pfn);
-+	}
-+
-+	if (*start_pfn == -1UL) {
-+		printk(KERN_WARNING "Node %u active with no memory\n", nid);
-+		*start_pfn = 0;
-+	}
-+}
-+
-+unsigned long __init zone_present_pages_in_node(int nid,
-+					unsigned long zone_type,
-+					unsigned long *ignored)
-+{
-+	unsigned long node_start_pfn, node_end_pfn;
-+	unsigned long zone_start_pfn, zone_end_pfn;
-+
-+	/* Get the start and end of the node and zone */
-+	get_pfn_range_for_nid(nid, &node_start_pfn, &node_end_pfn);
-+	zone_start_pfn = arch_zone_lowest_possible_pfn[zone_type];
-+	zone_end_pfn = arch_zone_highest_possible_pfn[zone_type];
-+
-+	/* Check that this node has pages within the zone's required range */
-+	if (zone_end_pfn < node_start_pfn || zone_start_pfn > node_end_pfn)
-+		return 0;
-+
-+	/* Move the zone boundaries inside the node if necessary */
-+	zone_end_pfn = min(zone_end_pfn, node_end_pfn);
-+	zone_start_pfn = max(zone_start_pfn, node_start_pfn);
-+
-+	/* Return the spanned pages */
-+	return zone_end_pfn - zone_start_pfn;
-+}
-+
-+unsigned long __init __absent_pages_in_range(int nid,
-+				unsigned long range_start_pfn,
-+				unsigned long range_end_pfn)
-+{
-+	int i = 0;
-+	unsigned long prev_end_pfn = 0, hole_pages = 0;
-+	unsigned long start_pfn;
-+
-+	/* Find the end_pfn of the first active range of pfns in the node */
-+	i = first_active_region_index_in_nid(nid);
-+	if (i == MAX_ACTIVE_REGIONS)
-+		return 0;
-+	prev_end_pfn = early_node_map[i].start_pfn;
-+
-+	/* Find all holes for the zone within the node */
-+	for (; i != MAX_ACTIVE_REGIONS;
-+			i = next_active_region_index_in_nid(i, nid)) {
-+
-+		/* No need to continue if prev_end_pfn is outside the zone */
-+		if (prev_end_pfn >= range_end_pfn)
-+			break;
-+
-+		/* Make sure the end of the zone is not within the hole */
-+		start_pfn = min(early_node_map[i].start_pfn, range_end_pfn);
-+		prev_end_pfn = max(prev_end_pfn, range_start_pfn);
-+
-+		/* Update the hole size cound and move on */
-+		if (start_pfn > range_start_pfn) {
-+			BUG_ON(prev_end_pfn > start_pfn);
-+			hole_pages += start_pfn - prev_end_pfn;
-+		}
-+		prev_end_pfn = early_node_map[i].end_pfn;
-+	}
-+
-+	return hole_pages;
-+}
-+
-+unsigned long __init absent_pages_in_range(unsigned long start_pfn,
-+							unsigned long end_pfn)
-+{
-+	return __absent_pages_in_range(MAX_NUMNODES, start_pfn, end_pfn);
-+}
-+
-+unsigned long __init zone_absent_pages_in_node(int nid,
-+					unsigned long zone_type,
-+					unsigned long *ignored)
-+{
-+	return __absent_pages_in_range(nid,
-+				arch_zone_lowest_possible_pfn[zone_type],
-+				arch_zone_highest_possible_pfn[zone_type]);
-+}
-+#else
-+static inline unsigned long zone_present_pages_in_node(int nid,
-+					unsigned long zone_type,
-+					unsigned long *zones_size)
-+{
-+	return zones_size[zone_type];
-+}
-+
-+static inline unsigned long zone_absent_pages_in_node(int nid,
-+						unsigned long zone_type,
-+						unsigned long *zholes_size)
-+{
-+	if (!zholes_size)
-+		return 0;
-+
-+	return zholes_size[zone_type];
-+}
-+#endif
-+
-+static void __init calculate_node_totalpages(struct pglist_data *pgdat,
-+		unsigned long *zones_size, unsigned long *zholes_size)
-+{
-+	unsigned long realtotalpages, totalpages = 0;
-+	int i;
-+
-+	for (i = 0; i < MAX_NR_ZONES; i++) {
-+		totalpages += zone_present_pages_in_node(pgdat->node_id, i,
-+								zones_size);
-+	}
-+	pgdat->node_spanned_pages = totalpages;
-+
-+	realtotalpages = totalpages;
-+	for (i = 0; i < MAX_NR_ZONES; i++) {
-+		realtotalpages -=
-+			zone_absent_pages_in_node(pgdat->node_id, i, zholes_size);
-+	}
-+	pgdat->node_present_pages = realtotalpages;
-+	printk(KERN_DEBUG "On node %d totalpages: %lu\n", pgdat->node_id,
-+							realtotalpages);
-+}
-+
-+/*
-+ * Set up the zone data structures:
-+ *   - mark all pages reserved
-+ *   - mark all memory queues empty
-+ *   - clear the memory bitmaps
-+ */
-+static void __meminit free_area_init_core(struct pglist_data *pgdat,
-+		unsigned long *zones_size, unsigned long *zholes_size)
-+{
-+	unsigned long j;
-+	int nid = pgdat->node_id;
-+	unsigned long zone_start_pfn = pgdat->node_start_pfn;
-+	int ret;
-+
-+	pgdat_resize_init(pgdat);
-+	pgdat->nr_zones = 0;
-+	init_waitqueue_head(&pgdat->kswapd_wait);
-+	pgdat->kswapd_max_order = 0;
-+
-+	for (j = 0; j < MAX_NR_ZONES; j++) {
-+		struct zone *zone = pgdat->node_zones + j;
-+		unsigned long size, realsize;
-+
-+		size = zone_present_pages_in_node(nid, j, zones_size);
-+		realsize = size - zone_absent_pages_in_node(nid, j,
-+								zholes_size);
-+		if (j < ZONE_HIGHMEM)
-+			nr_kernel_pages += realsize;
-+		nr_all_pages += realsize;
-+
-+		zone->spanned_pages = size;
-+		zone->present_pages = realsize;
-+		zone->name = zone_names[j];
-+		spin_lock_init(&zone->lock);
-+		spin_lock_init(&zone->lru_lock);
-+		zone_seqlock_init(zone);
-+		zone->zone_pgdat = pgdat;
-+		zone->free_pages = 0;
-+
-+		zone->temp_priority = zone->prev_priority = DEF_PRIORITY;
-+
-+		zone_pcp_init(zone);
-+		INIT_LIST_HEAD(&zone->active_list);
-+		INIT_LIST_HEAD(&zone->inactive_list);
-+		zone->nr_scan_active = 0;
-+		zone->nr_scan_inactive = 0;
-+		zone->nr_active = 0;
-+		zone->nr_inactive = 0;
-+		atomic_set(&zone->reclaim_in_progress, 0);
-+		if (!size)
-+			continue;
-+
-+		zonetable_add(zone, nid, j, zone_start_pfn, size);
-+		ret = init_currently_empty_zone(zone, zone_start_pfn, size);
-+		BUG_ON(ret);
-+		zone_start_pfn += size;
-+	}
-+}
-+
-+static void __init alloc_node_mem_map(struct pglist_data *pgdat)
-+{
-+	/* Skip empty nodes */
-+	if (!pgdat->node_spanned_pages)
-+		return;
-+
-+#ifdef CONFIG_FLAT_NODE_MEM_MAP
-+	/* ia64 gets its own node_mem_map, before this, without bootmem */
-+	if (!pgdat->node_mem_map) {
-+		unsigned long size;
-+		struct page *map;
-+
-+		size = (pgdat->node_spanned_pages + 1) * sizeof(struct page);
-+		map = alloc_remap(pgdat->node_id, size);
-+		if (!map)
-+			map = alloc_bootmem_node(pgdat, size);
-+		pgdat->node_mem_map = map;
-+	}
-+#ifdef CONFIG_FLATMEM
-+	/*
-+	 * With no DISCONTIG, the global mem_map is just set as node 0's
-+	 */
-+	if (pgdat == NODE_DATA(0))
-+		mem_map = NODE_DATA(0)->node_mem_map;
-+#endif
-+#endif /* CONFIG_FLAT_NODE_MEM_MAP */
-+}
-+
-+void __meminit free_area_init_node(int nid, struct pglist_data *pgdat,
-+		unsigned long *zones_size, unsigned long node_start_pfn,
-+		unsigned long *zholes_size)
-+{
-+	pgdat->node_id = nid;
-+	pgdat->node_start_pfn = node_start_pfn;
-+	calculate_node_totalpages(pgdat, zones_size, zholes_size);
-+
-+	alloc_node_mem_map(pgdat);
-+
-+	free_area_init_core(pgdat, zones_size, zholes_size);
-+}
-+
-+#ifdef CONFIG_ARCH_POPULATES_NODE_MAP
-+void __init add_active_range(unsigned int nid, unsigned long start_pfn,
-+						unsigned long end_pfn)
-+{
-+	unsigned int i;
-+	printk(KERN_DEBUG "Range (%d) %lu -> %lu\n", nid, start_pfn, end_pfn);
-+
-+	/* Merge with existing active regions if possible */
-+	for (i = 0; early_node_map[i].end_pfn; i++) {
-+		if (early_node_map[i].nid != nid)
-+			continue;
-+
-+		/* Skip if an existing region covers this new one */
-+		if (start_pfn >= early_node_map[i].start_pfn &&
-+				end_pfn <= early_node_map[i].end_pfn)
-+			return;
-+
-+		/* Merge forward if suitable */
-+		if (start_pfn <= early_node_map[i].end_pfn &&
-+				end_pfn > early_node_map[i].end_pfn) {
-+			early_node_map[i].end_pfn = end_pfn;
-+			return;
-+		}
-+
-+		/* Merge backward if suitable */
-+		if (start_pfn < early_node_map[i].end_pfn &&
-+				end_pfn >= early_node_map[i].start_pfn) {
-+			early_node_map[i].start_pfn = start_pfn;
-+			return;
-+		}
-+	}
-+
-+	/* Leave last entry NULL, we use range.end_pfn to terminate the walk */
-+	if (i >= MAX_ACTIVE_REGIONS - 1) {
-+		printk(KERN_ERR "Too many memory regions, truncating\n");
-+		return;
-+	}
-+
-+	early_node_map[i].nid = nid;
-+	early_node_map[i].start_pfn = start_pfn;
-+	early_node_map[i].end_pfn = end_pfn;
-+}
-+
-+void __init shrink_active_range(unsigned int nid, unsigned long old_end_pfn,
-+						unsigned long new_end_pfn)
-+{
-+	unsigned int i;
-+
-+	/* Find the old active region end and shrink */
-+	for_each_active_range_index_in_nid(i, nid) {
-+		if (early_node_map[i].end_pfn == old_end_pfn) {
-+			early_node_map[i].end_pfn = new_end_pfn;
-+			break;
-+		}
-+	}
-+}
-+
-+void __init remove_all_active_ranges()
-+{
-+	memset(early_node_map, 0, sizeof(early_node_map));
-+}
-+
-+/* Compare two active node_active_regions */
-+static int __init cmp_node_active_region(const void *a, const void *b)
-+{
-+	struct node_active_region *arange = (struct node_active_region *)a;
-+	struct node_active_region *brange = (struct node_active_region *)b;
-+
-+	/* Done this way to avoid overflows */
-+	if (arange->start_pfn > brange->start_pfn)
-+		return 1;
-+	if (arange->start_pfn < brange->start_pfn)
-+		return -1;
-+
-+	return 0;
-+}
-+
-+/* sort the node_map by start_pfn */
-+static void __init sort_node_map(void)
-+{
-+	size_t num = 0;
-+	while (early_node_map[num].end_pfn)
-+		num++;
-+
-+	sort(early_node_map, num, sizeof(struct node_active_region),
-+						cmp_node_active_region, NULL);
-+}
-+
-+/* Find the lowest pfn for a node. This depends on a sorted early_node_map */
-+unsigned long __init find_min_pfn_for_node(unsigned long nid)
-+{
-+	int i;
-+
-+	/* Assuming a sorted map, the first range found has the starting pfn */
-+	for_each_active_range_index_in_nid(i, nid)
-+		return early_node_map[i].start_pfn;
-+
-+	printk(KERN_WARNING "Could not find start_pfn for node %lu\n", nid);
-+	return 0;
-+}
-+
-+unsigned long __init find_min_pfn_with_active_regions(void)
-+{
-+	return find_min_pfn_for_node(MAX_NUMNODES);
-+}
-+
-+unsigned long __init find_max_pfn_with_active_regions(void)
-+{
-+	int i;
-+	unsigned long max_pfn = 0;
-+
-+	for (i = 0; early_node_map[i].end_pfn; i++)
-+		max_pfn = max(max_pfn, early_node_map[i].end_pfn);
-+
-+	return max_pfn;
-+}
-+
-+void __init free_area_init_nodes(unsigned long arch_max_dma_pfn,
-+				unsigned long arch_max_dma32_pfn,
-+				unsigned long arch_max_low_pfn,
-+				unsigned long arch_max_high_pfn)
-+{
-+	unsigned long nid;
-+	int zone_index;
-+
-+	/* Record where the zone boundaries are */
-+	memset(arch_zone_lowest_possible_pfn, 0,
-+				sizeof(arch_zone_lowest_possible_pfn));
-+	memset(arch_zone_highest_possible_pfn, 0,
-+				sizeof(arch_zone_highest_possible_pfn));
-+	arch_zone_lowest_possible_pfn[ZONE_DMA] =
-+					find_min_pfn_with_active_regions();
-+	arch_zone_highest_possible_pfn[ZONE_DMA] = arch_max_dma_pfn;
-+	arch_zone_highest_possible_pfn[ZONE_DMA32] = arch_max_dma32_pfn;
-+	arch_zone_highest_possible_pfn[ZONE_NORMAL] = arch_max_low_pfn;
-+	arch_zone_highest_possible_pfn[ZONE_HIGHMEM] = arch_max_high_pfn;
-+	for (zone_index = 1; zone_index < MAX_NR_ZONES; zone_index++) {
-+		arch_zone_lowest_possible_pfn[zone_index] =
-+			arch_zone_highest_possible_pfn[zone_index-1];
-+	}
-+
-+	/* Regions in the early_node_map can be in any order */
-+	sort_node_map();
-+
-+	for_each_online_node(nid) {
-+		pg_data_t *pgdat = NODE_DATA(nid);
-+		free_area_init_node(nid, pgdat, NULL,
-+				find_min_pfn_for_node(nid), NULL);
-+	}
-+}
-+#endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
-diff -rup -X /usr/src/patchset-0.5/bin//dontdiff linux-2.6.17-rc3-mm1-105-ia64_use_init_nodes/mm/page_alloc.c linux-2.6.17-rc3-mm1-106-breakout_mem_init/mm/page_alloc.c
---- linux-2.6.17-rc3-mm1-105-ia64_use_init_nodes/mm/page_alloc.c	2006-05-08 10:56:43.000000000 +0100
-+++ linux-2.6.17-rc3-mm1-106-breakout_mem_init/mm/page_alloc.c	2006-05-08 09:22:02.000000000 +0100
-@@ -38,8 +38,6 @@
- #include <linux/vmalloc.h>
- #include <linux/mempolicy.h>
- #include <linux/stop_machine.h>
--#include <linux/sort.h>
--#include <linux/pfn.h>
- 
- #include <asm/tlbflush.h>
- #include "internal.h"
-@@ -56,7 +54,6 @@ unsigned long totalram_pages __read_most
- unsigned long totalhigh_pages __read_mostly;
- unsigned long totalreserve_pages __read_mostly;
- long nr_swap_pages;
--int percpu_pagelist_fraction;
- 
- static void __free_pages_ok(struct page *page, unsigned int order);
- 
-@@ -82,24 +79,11 @@ EXPORT_SYMBOL(totalram_pages);
- struct zone *zone_table[1 << ZONETABLE_SHIFT] __read_mostly;
- EXPORT_SYMBOL(zone_table);
- 
--static char *zone_names[MAX_NR_ZONES] = { "DMA", "DMA32", "Normal", "HighMem" };
- int min_free_kbytes = 1024;
- 
- unsigned long __meminitdata nr_kernel_pages;
- unsigned long __meminitdata nr_all_pages;
- 
--#ifdef CONFIG_ARCH_POPULATES_NODE_MAP
--  #ifdef CONFIG_MAX_ACTIVE_REGIONS
--    #define MAX_ACTIVE_REGIONS CONFIG_MAX_ACTIVE_REGIONS
--  #else
--    #define MAX_ACTIVE_REGIONS (MAX_NR_ZONES * MAX_NUMNODES + 1)
--  #endif
--
--  struct node_active_region __initdata early_node_map[MAX_ACTIVE_REGIONS];
--  unsigned long __initdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
--  unsigned long __initdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
--#endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
--
- #ifdef CONFIG_DEBUG_VM
- static int page_outside_zone_boundaries(struct zone *zone, struct page *page)
- {
-@@ -1593,1069 +1577,6 @@ void show_free_areas(void)
- 	show_swap_cache_info();
- }
- 
--/*
-- * Builds allocation fallback zone lists.
-- *
-- * Add all populated zones of a node to the zonelist.
-- */
--static int __meminit build_zonelists_node(pg_data_t *pgdat,
--			struct zonelist *zonelist, int nr_zones, int zone_type)
--{
--	struct zone *zone;
--
--	BUG_ON(zone_type > ZONE_HIGHMEM);
--
--	do {
--		zone = pgdat->node_zones + zone_type;
--		if (populated_zone(zone)) {
--#ifndef CONFIG_HIGHMEM
--			BUG_ON(zone_type > ZONE_NORMAL);
--#endif
--			zonelist->zones[nr_zones++] = zone;
--			check_highest_zone(zone_type);
--		}
--		zone_type--;
--
--	} while (zone_type >= 0);
--	return nr_zones;
--}
--
--static inline int highest_zone(int zone_bits)
--{
--	int res = ZONE_NORMAL;
--	if (zone_bits & (__force int)__GFP_HIGHMEM)
--		res = ZONE_HIGHMEM;
--	if (zone_bits & (__force int)__GFP_DMA32)
--		res = ZONE_DMA32;
--	if (zone_bits & (__force int)__GFP_DMA)
--		res = ZONE_DMA;
--	return res;
--}
--
--#ifdef CONFIG_NUMA
--#define MAX_NODE_LOAD (num_online_nodes())
--static int __meminitdata node_load[MAX_NUMNODES];
--/**
-- * find_next_best_node - find the next node that should appear in a given node's fallback list
-- * @node: node whose fallback list we're appending
-- * @used_node_mask: nodemask_t of already used nodes
-- *
-- * We use a number of factors to determine which is the next node that should
-- * appear on a given node's fallback list.  The node should not have appeared
-- * already in @node's fallback list, and it should be the next closest node
-- * according to the distance array (which contains arbitrary distance values
-- * from each node to each node in the system), and should also prefer nodes
-- * with no CPUs, since presumably they'll have very little allocation pressure
-- * on them otherwise.
-- * It returns -1 if no node is found.
-- */
--static int __meminit find_next_best_node(int node, nodemask_t *used_node_mask)
--{
--	int n, val;
--	int min_val = INT_MAX;
--	int best_node = -1;
--
--	/* Use the local node if we haven't already */
--	if (!node_isset(node, *used_node_mask)) {
--		node_set(node, *used_node_mask);
--		return node;
--	}
--
--	for_each_online_node(n) {
--		cpumask_t tmp;
--
--		/* Don't want a node to appear more than once */
--		if (node_isset(n, *used_node_mask))
--			continue;
--
--		/* Use the distance array to find the distance */
--		val = node_distance(node, n);
--
--		/* Penalize nodes under us ("prefer the next node") */
--		val += (n < node);
--
--		/* Give preference to headless and unused nodes */
--		tmp = node_to_cpumask(n);
--		if (!cpus_empty(tmp))
--			val += PENALTY_FOR_NODE_WITH_CPUS;
--
--		/* Slight preference for less loaded node */
--		val *= (MAX_NODE_LOAD*MAX_NUMNODES);
--		val += node_load[n];
--
--		if (val < min_val) {
--			min_val = val;
--			best_node = n;
--		}
--	}
--
--	if (best_node >= 0)
--		node_set(best_node, *used_node_mask);
--
--	return best_node;
--}
--
--static void __meminit build_zonelists(pg_data_t *pgdat)
--{
--	int i, j, k, node, local_node;
--	int prev_node, load;
--	struct zonelist *zonelist;
--	nodemask_t used_mask;
--
--	/* initialize zonelists */
--	for (i = 0; i < GFP_ZONETYPES; i++) {
--		zonelist = pgdat->node_zonelists + i;
--		zonelist->zones[0] = NULL;
--	}
--
--	/* NUMA-aware ordering of nodes */
--	local_node = pgdat->node_id;
--	load = num_online_nodes();
--	prev_node = local_node;
--	nodes_clear(used_mask);
--	while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
--		int distance = node_distance(local_node, node);
--
--		/*
--		 * If another node is sufficiently far away then it is better
--		 * to reclaim pages in a zone before going off node.
--		 */
--		if (distance > RECLAIM_DISTANCE)
--			zone_reclaim_mode = 1;
--
--		/*
--		 * We don't want to pressure a particular node.
--		 * So adding penalty to the first node in same
--		 * distance group to make it round-robin.
--		 */
--
--		if (distance != node_distance(local_node, prev_node))
--			node_load[node] += load;
--		prev_node = node;
--		load--;
--		for (i = 0; i < GFP_ZONETYPES; i++) {
--			zonelist = pgdat->node_zonelists + i;
--			for (j = 0; zonelist->zones[j] != NULL; j++);
--
--			k = highest_zone(i);
--
--	 		j = build_zonelists_node(NODE_DATA(node), zonelist, j, k);
--			zonelist->zones[j] = NULL;
--		}
--	}
--}
--
--#else	/* CONFIG_NUMA */
--
--static void __meminit build_zonelists(pg_data_t *pgdat)
--{
--	int i, j, k, node, local_node;
--
--	local_node = pgdat->node_id;
--	for (i = 0; i < GFP_ZONETYPES; i++) {
--		struct zonelist *zonelist;
--
--		zonelist = pgdat->node_zonelists + i;
--
--		j = 0;
--		k = highest_zone(i);
-- 		j = build_zonelists_node(pgdat, zonelist, j, k);
-- 		/*
-- 		 * Now we build the zonelist so that it contains the zones
-- 		 * of all the other nodes.
-- 		 * We don't want to pressure a particular node, so when
-- 		 * building the zones for node N, we make sure that the
-- 		 * zones coming right after the local ones are those from
-- 		 * node N+1 (modulo N)
-- 		 */
--		for (node = local_node + 1; node < MAX_NUMNODES; node++) {
--			if (!node_online(node))
--				continue;
--			j = build_zonelists_node(NODE_DATA(node), zonelist, j, k);
--		}
--		for (node = 0; node < local_node; node++) {
--			if (!node_online(node))
--				continue;
--			j = build_zonelists_node(NODE_DATA(node), zonelist, j, k);
--		}
--
--		zonelist->zones[j] = NULL;
--	}
--}
--
--#endif	/* CONFIG_NUMA */
--
--/* return values int ....just for stop_machine_run() */
--static int __meminit __build_all_zonelists(void *dummy)
--{
--	int nid;
--	for_each_online_node(nid)
--		build_zonelists(NODE_DATA(nid));
--	return 0;
--}
--
--void __meminit build_all_zonelists(void)
--{
--	if (system_state == SYSTEM_BOOTING) {
--		__build_all_zonelists(0);
--		cpuset_init_current_mems_allowed();
--	} else {
--		/* we have to stop all cpus to guaranntee there is no user
--		   of zonelist */
--		stop_machine_run(__build_all_zonelists, NULL, NR_CPUS);
--		/* cpuset refresh routine should be here */
--	}
--
--	printk("Built %i zonelists\n", num_online_nodes());
--
--}
--
--/*
-- * Helper functions to size the waitqueue hash table.
-- * Essentially these want to choose hash table sizes sufficiently
-- * large so that collisions trying to wait on pages are rare.
-- * But in fact, the number of active page waitqueues on typical
-- * systems is ridiculously low, less than 200. So this is even
-- * conservative, even though it seems large.
-- *
-- * The constant PAGES_PER_WAITQUEUE specifies the ratio of pages to
-- * waitqueues, i.e. the size of the waitq table given the number of pages.
-- */
--#define PAGES_PER_WAITQUEUE	256
--
--#ifndef CONFIG_MEMORY_HOTPLUG
--static inline unsigned long wait_table_hash_nr_entries(unsigned long pages)
--{
--	unsigned long size = 1;
--
--	pages /= PAGES_PER_WAITQUEUE;
--
--	while (size < pages)
--		size <<= 1;
--
--	/*
--	 * Once we have dozens or even hundreds of threads sleeping
--	 * on IO we've got bigger problems than wait queue collision.
--	 * Limit the size of the wait table to a reasonable size.
--	 */
--	size = min(size, 4096UL);
--
--	return max(size, 4UL);
--}
--#else
--/*
-- * A zone's size might be changed by hot-add, so it is not possible to determine
-- * a suitable size for its wait_table.  So we use the maximum size now.
-- *
-- * The max wait table size = 4096 x sizeof(wait_queue_head_t).   ie:
-- *
-- *    i386 (preemption config)    : 4096 x 16 = 64Kbyte.
-- *    ia64, x86-64 (no preemption): 4096 x 20 = 80Kbyte.
-- *    ia64, x86-64 (preemption)   : 4096 x 24 = 96Kbyte.
-- *
-- * The maximum entries are prepared when a zone's memory is (512K + 256) pages
-- * or more by the traditional way. (See above).  It equals:
-- *
-- *    i386, x86-64, powerpc(4K page size) : =  ( 2G + 1M)byte.
-- *    ia64(16K page size)                 : =  ( 8G + 4M)byte.
-- *    powerpc (64K page size)             : =  (32G +16M)byte.
-- */
--static inline unsigned long wait_table_hash_nr_entries(unsigned long pages)
--{
--	return 4096UL;
--}
--#endif
--
--/*
-- * This is an integer logarithm so that shifts can be used later
-- * to extract the more random high bits from the multiplicative
-- * hash function before the remainder is taken.
-- */
--static inline unsigned long wait_table_bits(unsigned long size)
--{
--	return ffz(~size);
--}
--
--#define LONG_ALIGN(x) (((x)+(sizeof(long))-1)&~((sizeof(long))-1))
--
--/*
-- * Initially all pages are reserved - free ones are freed
-- * up by free_all_bootmem() once the early boot process is
-- * done. Non-atomic initialization, single-pass.
-- */
--void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
--		unsigned long start_pfn)
--{
--	struct page *page;
--	unsigned long end_pfn = start_pfn + size;
--	unsigned long pfn;
--
--	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
--		if (!early_pfn_valid(pfn))
--			continue;
--		page = pfn_to_page(pfn);
--		set_page_links(page, zone, nid, pfn);
--		init_page_count(page);
--		reset_page_mapcount(page);
--		SetPageReserved(page);
--		INIT_LIST_HEAD(&page->lru);
--#ifdef WANT_PAGE_VIRTUAL
--		/* The shift won't overflow because ZONE_NORMAL is below 4G. */
--		if (!is_highmem_idx(zone))
--			set_page_address(page, __va(pfn << PAGE_SHIFT));
--#endif
--#ifdef CONFIG_PAGE_OWNER
--		page->order = -1;
--#endif
--	}
--}
--
--void zone_init_free_lists(struct pglist_data *pgdat, struct zone *zone,
--				unsigned long size)
--{
--	int order;
--	for (order = 0; order < MAX_ORDER ; order++) {
--		INIT_LIST_HEAD(&zone->free_area[order].free_list);
--		zone->free_area[order].nr_free = 0;
--	}
--}
--
--#define ZONETABLE_INDEX(x, zone_nr)	((x << ZONES_SHIFT) | zone_nr)
--void zonetable_add(struct zone *zone, int nid, int zid, unsigned long pfn,
--		unsigned long size)
--{
--	unsigned long snum = pfn_to_section_nr(pfn);
--	unsigned long end = pfn_to_section_nr(pfn + size);
--
--	if (FLAGS_HAS_NODE)
--		zone_table[ZONETABLE_INDEX(nid, zid)] = zone;
--	else
--		for (; snum <= end; snum++)
--			zone_table[ZONETABLE_INDEX(snum, zid)] = zone;
--}
--
--#ifndef __HAVE_ARCH_MEMMAP_INIT
--#define memmap_init(size, nid, zone, start_pfn) \
--	memmap_init_zone((size), (nid), (zone), (start_pfn))
--#endif
--
--static int __cpuinit zone_batchsize(struct zone *zone)
--{
--	int batch;
--
--	/*
--	 * The per-cpu-pages pools are set to around 1000th of the
--	 * size of the zone.  But no more than 1/2 of a meg.
--	 *
--	 * OK, so we don't know how big the cache is.  So guess.
--	 */
--	batch = zone->present_pages / 1024;
--	if (batch * PAGE_SIZE > 512 * 1024)
--		batch = (512 * 1024) / PAGE_SIZE;
--	batch /= 4;		/* We effectively *= 4 below */
--	if (batch < 1)
--		batch = 1;
--
--	/*
--	 * Clamp the batch to a 2^n - 1 value. Having a power
--	 * of 2 value was found to be more likely to have
--	 * suboptimal cache aliasing properties in some cases.
--	 *
--	 * For example if 2 tasks are alternately allocating
--	 * batches of pages, one task can end up with a lot
--	 * of pages of one half of the possible page colors
--	 * and the other with pages of the other colors.
--	 */
--	batch = (1 << (fls(batch + batch/2)-1)) - 1;
--
--	return batch;
--}
--
--inline void setup_pageset(struct per_cpu_pageset *p, unsigned long batch)
--{
--	struct per_cpu_pages *pcp;
--
--	memset(p, 0, sizeof(*p));
--
--	pcp = &p->pcp[0];		/* hot */
--	pcp->count = 0;
--	pcp->high = 6 * batch;
--	pcp->batch = max(1UL, 1 * batch);
--	INIT_LIST_HEAD(&pcp->list);
--
--	pcp = &p->pcp[1];		/* cold*/
--	pcp->count = 0;
--	pcp->high = 2 * batch;
--	pcp->batch = max(1UL, batch/2);
--	INIT_LIST_HEAD(&pcp->list);
--}
--
--/*
-- * setup_pagelist_highmark() sets the high water mark for hot per_cpu_pagelist
-- * to the value high for the pageset p.
-- */
--
--static void setup_pagelist_highmark(struct per_cpu_pageset *p,
--				unsigned long high)
--{
--	struct per_cpu_pages *pcp;
--
--	pcp = &p->pcp[0]; /* hot list */
--	pcp->high = high;
--	pcp->batch = max(1UL, high/4);
--	if ((high/4) > (PAGE_SHIFT * 8))
--		pcp->batch = PAGE_SHIFT * 8;
--}
--
--
--#ifdef CONFIG_NUMA
--/*
-- * Boot pageset table. One per cpu which is going to be used for all
-- * zones and all nodes. The parameters will be set in such a way
-- * that an item put on a list will immediately be handed over to
-- * the buddy list. This is safe since pageset manipulation is done
-- * with interrupts disabled.
-- *
-- * Some NUMA counter updates may also be caught by the boot pagesets.
-- *
-- * The boot_pagesets must be kept even after bootup is complete for
-- * unused processors and/or zones. They do play a role for bootstrapping
-- * hotplugged processors.
-- *
-- * zoneinfo_show() and maybe other functions do
-- * not check if the processor is online before following the pageset pointer.
-- * Other parts of the kernel may not check if the zone is available.
-- */
--static struct per_cpu_pageset boot_pageset[NR_CPUS];
--
--/*
-- * Dynamically allocate memory for the
-- * per cpu pageset array in struct zone.
-- */
--static int __cpuinit process_zones(int cpu)
--{
--	struct zone *zone, *dzone;
--
--	for_each_zone(zone) {
--
--		zone_pcp(zone, cpu) = kmalloc_node(sizeof(struct per_cpu_pageset),
--					 GFP_KERNEL, cpu_to_node(cpu));
--		if (!zone_pcp(zone, cpu))
--			goto bad;
--
--		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
--
--		if (percpu_pagelist_fraction)
--			setup_pagelist_highmark(zone_pcp(zone, cpu),
--			 	(zone->present_pages / percpu_pagelist_fraction));
--	}
--
--	return 0;
--bad:
--	for_each_zone(dzone) {
--		if (dzone == zone)
--			break;
--		kfree(zone_pcp(dzone, cpu));
--		zone_pcp(dzone, cpu) = NULL;
--	}
--	return -ENOMEM;
--}
--
--static inline void free_zone_pagesets(int cpu)
--{
--	struct zone *zone;
--
--	for_each_zone(zone) {
--		struct per_cpu_pageset *pset = zone_pcp(zone, cpu);
--
--		zone_pcp(zone, cpu) = NULL;
--		kfree(pset);
--	}
--}
--
--static int pageset_cpuup_callback(struct notifier_block *nfb,
--		unsigned long action,
--		void *hcpu)
--{
--	int cpu = (long)hcpu;
--	int ret = NOTIFY_OK;
--
--	switch (action) {
--		case CPU_UP_PREPARE:
--			if (process_zones(cpu))
--				ret = NOTIFY_BAD;
--			break;
--		case CPU_UP_CANCELED:
--		case CPU_DEAD:
--			free_zone_pagesets(cpu);
--			break;
--		default:
--			break;
--	}
--	return ret;
--}
--
--static struct notifier_block pageset_notifier =
--	{ &pageset_cpuup_callback, NULL, 0 };
--
--void __init setup_per_cpu_pageset(void)
--{
--	int err;
--
--	/* Initialize per_cpu_pageset for cpu 0.
--	 * A cpuup callback will do this for every cpu
--	 * as it comes online
--	 */
--	err = process_zones(smp_processor_id());
--	BUG_ON(err);
--	register_cpu_notifier(&pageset_notifier);
--}
--
--#endif
--
--static __meminit
--int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
--{
--	int i;
--	struct pglist_data *pgdat = zone->zone_pgdat;
--	size_t alloc_size;
--
--	/*
--	 * The per-page waitqueue mechanism uses hashed waitqueues
--	 * per zone.
--	 */
--	zone->wait_table_hash_nr_entries =
--		 wait_table_hash_nr_entries(zone_size_pages);
--	zone->wait_table_bits =
--		wait_table_bits(zone->wait_table_hash_nr_entries);
--	alloc_size = zone->wait_table_hash_nr_entries
--					* sizeof(wait_queue_head_t);
--
-- 	if (system_state == SYSTEM_BOOTING) {
--		zone->wait_table = (wait_queue_head_t *)
--			alloc_bootmem_node(pgdat, alloc_size);
--	} else {
--		/*
--		 * This case means that a zone whose size was 0 gets new memory
--		 * via memory hot-add.
--		 * But it may be the case that a new node was hot-added.  In
--		 * this case vmalloc() will not be able to use this new node's
--		 * memory - this wait_table must be initialized to use this new
--		 * node itself as well.
--		 * To use this new node's memory, further consideration will be
--		 * necessary.
--		 */
--		zone->wait_table = (wait_queue_head_t *)vmalloc(alloc_size);
--	}
--	if (!zone->wait_table)
--		return -ENOMEM;
--
--	for(i = 0; i < zone->wait_table_hash_nr_entries; ++i)
--		init_waitqueue_head(zone->wait_table + i);
--
--	return 0;
--}
--
--static __meminit void zone_pcp_init(struct zone *zone)
--{
--	int cpu;
--	unsigned long batch = zone_batchsize(zone);
--
--	for (cpu = 0; cpu < NR_CPUS; cpu++) {
--#ifdef CONFIG_NUMA
--		/* Early boot. Slab allocator not functional yet */
--		zone_pcp(zone, cpu) = &boot_pageset[cpu];
--		setup_pageset(&boot_pageset[cpu],0);
--#else
--		setup_pageset(zone_pcp(zone,cpu), batch);
--#endif
--	}
--	if (zone->present_pages)
--		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%lu\n",
--			zone->name, zone->present_pages, batch);
--}
--
--__meminit int init_currently_empty_zone(struct zone *zone,
--					unsigned long zone_start_pfn,
--					unsigned long size)
--{
--	struct pglist_data *pgdat = zone->zone_pgdat;
--	int ret;
--	ret = zone_wait_table_init(zone, size);
--	if (ret)
--		return ret;
--	pgdat->nr_zones = zone_idx(zone) + 1;
--
--	zone->zone_start_pfn = zone_start_pfn;
--
--	memmap_init(size, pgdat->node_id, zone_idx(zone), zone_start_pfn);
--
--	zone_init_free_lists(pgdat, zone, zone->spanned_pages);
--
--	return 0;
--}
--
--#ifdef CONFIG_ARCH_POPULATES_NODE_MAP
--/* Note: nid == MAX_NUMNODES returns first region */
--static int __init first_active_region_index_in_nid(int nid)
--{
--	int i;
--	for (i = 0; early_node_map[i].end_pfn; i++) {
--		if (nid == MAX_NUMNODES || early_node_map[i].nid == nid)
--			return i;
--	}
--
--	return MAX_ACTIVE_REGIONS;
--}
--
--/* Note: nid == MAX_NUMNODES returns next region */
--static int __init next_active_region_index_in_nid(unsigned int index, int nid)
--{
--	for (index = index + 1; early_node_map[index].end_pfn; index++) {
--		if (nid == MAX_NUMNODES || early_node_map[index].nid == nid)
--			return index;
--	}
--
--	return MAX_ACTIVE_REGIONS;
--}
--
--#ifndef CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
--int __init early_pfn_to_nid(unsigned long pfn)
--{
--	int i;
--
--	for (i = 0; early_node_map[i].end_pfn; i++) {
--		unsigned long start_pfn = early_node_map[i].start_pfn;
--		unsigned long end_pfn = early_node_map[i].end_pfn;
--
--		if ((start_pfn <= pfn) && (pfn < end_pfn))
--			return early_node_map[i].nid;
--	}
--
--	return -1;
--}
--#endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
--
--#define for_each_active_range_index_in_nid(i, nid) \
--	for (i = first_active_region_index_in_nid(nid); \
--				i != MAX_ACTIVE_REGIONS; \
--				i = next_active_region_index_in_nid(i, nid))
--
--void __init free_bootmem_with_active_regions(int nid,
--						unsigned long max_low_pfn)
--{
--	unsigned int i;
--	for_each_active_range_index_in_nid(i, nid) {
--		unsigned long size_pages = 0;
--		unsigned long end_pfn = early_node_map[i].end_pfn;
--		if (early_node_map[i].start_pfn >= max_low_pfn)
--			continue;
--
--		if (end_pfn > max_low_pfn)
--			end_pfn = max_low_pfn;
--
--		size_pages = end_pfn - early_node_map[i].start_pfn;
--		free_bootmem_node(NODE_DATA(early_node_map[i].nid),
--				PFN_PHYS(early_node_map[i].start_pfn),
--				size_pages << PAGE_SHIFT);
--	}
--}
--
--void __init sparse_memory_present_with_active_regions(int nid)
--{
--	unsigned int i;
--	for_each_active_range_index_in_nid(i, nid)
--		memory_present(early_node_map[i].nid,
--				early_node_map[i].start_pfn,
--				early_node_map[i].end_pfn);
--}
--
--void __init get_pfn_range_for_nid(unsigned int nid,
--			unsigned long *start_pfn, unsigned long *end_pfn)
--{
--	unsigned int i;
--	*start_pfn = -1UL;
--	*end_pfn = 0;
--
--	for_each_active_range_index_in_nid(i, nid) {
--		*start_pfn = min(*start_pfn, early_node_map[i].start_pfn);
--		*end_pfn = max(*end_pfn, early_node_map[i].end_pfn);
--	}
--
--	if (*start_pfn == -1UL) {
--		printk(KERN_WARNING "Node %u active with no memory\n", nid);
--		*start_pfn = 0;
--	}
--}
--
--unsigned long __init zone_present_pages_in_node(int nid,
--					unsigned long zone_type,
--					unsigned long *ignored)
--{
--	unsigned long node_start_pfn, node_end_pfn;
--	unsigned long zone_start_pfn, zone_end_pfn;
--
--	/* Get the start and end of the node and zone */
--	get_pfn_range_for_nid(nid, &node_start_pfn, &node_end_pfn);
--	zone_start_pfn = arch_zone_lowest_possible_pfn[zone_type];
--	zone_end_pfn = arch_zone_highest_possible_pfn[zone_type];
--
--	/* Check that this node has pages within the zone's required range */
--	if (zone_end_pfn < node_start_pfn || zone_start_pfn > node_end_pfn)
--		return 0;
--
--	/* Move the zone boundaries inside the node if necessary */
--	zone_end_pfn = min(zone_end_pfn, node_end_pfn);
--	zone_start_pfn = max(zone_start_pfn, node_start_pfn);
--
--	/* Return the spanned pages */
--	return zone_end_pfn - zone_start_pfn;
--}
--
--unsigned long __init __absent_pages_in_range(int nid,
--				unsigned long range_start_pfn,
--				unsigned long range_end_pfn)
--{
--	int i = 0;
--	unsigned long prev_end_pfn = 0, hole_pages = 0;
--	unsigned long start_pfn;
--
--	/* Find the end_pfn of the first active range of pfns in the node */
--	i = first_active_region_index_in_nid(nid);
--	if (i == MAX_ACTIVE_REGIONS)
--		return 0;
--	prev_end_pfn = early_node_map[i].start_pfn;
--
--	/* Find all holes for the zone within the node */
--	for (; i != MAX_ACTIVE_REGIONS;
--			i = next_active_region_index_in_nid(i, nid)) {
--
--		/* No need to continue if prev_end_pfn is outside the zone */
--		if (prev_end_pfn >= range_end_pfn)
--			break;
--
--		/* Make sure the end of the zone is not within the hole */
--		start_pfn = min(early_node_map[i].start_pfn, range_end_pfn);
--		prev_end_pfn = max(prev_end_pfn, range_start_pfn);
--
--		/* Update the hole size cound and move on */
--		if (start_pfn > range_start_pfn) {
--			BUG_ON(prev_end_pfn > start_pfn);
--			hole_pages += start_pfn - prev_end_pfn;
--		}
--		prev_end_pfn = early_node_map[i].end_pfn;
--	}
--
--	return hole_pages;
--}
--
--unsigned long __init absent_pages_in_range(unsigned long start_pfn,
--							unsigned long end_pfn)
--{
--	return __absent_pages_in_range(MAX_NUMNODES, start_pfn, end_pfn);
--}
--
--unsigned long __init zone_absent_pages_in_node(int nid,
--					unsigned long zone_type,
--					unsigned long *ignored)
--{
--	return __absent_pages_in_range(nid,
--				arch_zone_lowest_possible_pfn[zone_type],
--				arch_zone_highest_possible_pfn[zone_type]);
--}
--#else
--static inline unsigned long zone_present_pages_in_node(int nid,
--					unsigned long zone_type,
--					unsigned long *zones_size)
--{
--	return zones_size[zone_type];
--}
--
--static inline unsigned long zone_absent_pages_in_node(int nid,
--						unsigned long zone_type,
--						unsigned long *zholes_size)
--{
--	if (!zholes_size)
--		return 0;
--
--	return zholes_size[zone_type];
--}
--#endif
--
--static void __init calculate_node_totalpages(struct pglist_data *pgdat,
--		unsigned long *zones_size, unsigned long *zholes_size)
--{
--	unsigned long realtotalpages, totalpages = 0;
--	int i;
--
--	for (i = 0; i < MAX_NR_ZONES; i++) {
--		totalpages += zone_present_pages_in_node(pgdat->node_id, i,
--								zones_size);
--	}
--	pgdat->node_spanned_pages = totalpages;
--
--	realtotalpages = totalpages;
--	for (i = 0; i < MAX_NR_ZONES; i++) {
--		realtotalpages -=
--			zone_absent_pages_in_node(pgdat->node_id, i, zholes_size);
--	}
--	pgdat->node_present_pages = realtotalpages;
--	printk(KERN_DEBUG "On node %d totalpages: %lu\n", pgdat->node_id,
--							realtotalpages);
--}
--
--/*
-- * Set up the zone data structures:
-- *   - mark all pages reserved
-- *   - mark all memory queues empty
-- *   - clear the memory bitmaps
-- */
--static void __meminit free_area_init_core(struct pglist_data *pgdat,
--		unsigned long *zones_size, unsigned long *zholes_size)
--{
--	unsigned long j;
--	int nid = pgdat->node_id;
--	unsigned long zone_start_pfn = pgdat->node_start_pfn;
--	int ret;
--
--	pgdat_resize_init(pgdat);
--	pgdat->nr_zones = 0;
--	init_waitqueue_head(&pgdat->kswapd_wait);
--	pgdat->kswapd_max_order = 0;
--	
--	for (j = 0; j < MAX_NR_ZONES; j++) {
--		struct zone *zone = pgdat->node_zones + j;
--		unsigned long size, realsize;
--
--		size = zone_present_pages_in_node(nid, j, zones_size);
--		realsize = size - zone_absent_pages_in_node(nid, j,
--								zholes_size);
--		if (j < ZONE_HIGHMEM)
--			nr_kernel_pages += realsize;
--		nr_all_pages += realsize;
--
--		zone->spanned_pages = size;
--		zone->present_pages = realsize;
--		zone->name = zone_names[j];
--		spin_lock_init(&zone->lock);
--		spin_lock_init(&zone->lru_lock);
--		zone_seqlock_init(zone);
--		zone->zone_pgdat = pgdat;
--		zone->free_pages = 0;
--
--		zone->temp_priority = zone->prev_priority = DEF_PRIORITY;
--
--		zone_pcp_init(zone);
--		INIT_LIST_HEAD(&zone->active_list);
--		INIT_LIST_HEAD(&zone->inactive_list);
--		zone->nr_scan_active = 0;
--		zone->nr_scan_inactive = 0;
--		zone->nr_active = 0;
--		zone->nr_inactive = 0;
--		atomic_set(&zone->reclaim_in_progress, 0);
--		if (!size)
--			continue;
--
--		zonetable_add(zone, nid, j, zone_start_pfn, size);
--		ret = init_currently_empty_zone(zone, zone_start_pfn, size);
--		BUG_ON(ret);
--		zone_start_pfn += size;
--	}
--}
--
--static void __init alloc_node_mem_map(struct pglist_data *pgdat)
--{
--	/* Skip empty nodes */
--	if (!pgdat->node_spanned_pages)
--		return;
--
--#ifdef CONFIG_FLAT_NODE_MEM_MAP
--	/* ia64 gets its own node_mem_map, before this, without bootmem */
--	if (!pgdat->node_mem_map) {
--		unsigned long size;
--		struct page *map;
--
--		size = (pgdat->node_spanned_pages + 1) * sizeof(struct page);
--		map = alloc_remap(pgdat->node_id, size);
--		if (!map)
--			map = alloc_bootmem_node(pgdat, size);
--		pgdat->node_mem_map = map;
--	}
--#ifdef CONFIG_FLATMEM
--	/*
--	 * With no DISCONTIG, the global mem_map is just set as node 0's
--	 */
--	if (pgdat == NODE_DATA(0))
--		mem_map = NODE_DATA(0)->node_mem_map;
--#endif
--#endif /* CONFIG_FLAT_NODE_MEM_MAP */
--}
--
--void __meminit free_area_init_node(int nid, struct pglist_data *pgdat,
--		unsigned long *zones_size, unsigned long node_start_pfn,
--		unsigned long *zholes_size)
--{
--	pgdat->node_id = nid;
--	pgdat->node_start_pfn = node_start_pfn;
--	calculate_node_totalpages(pgdat, zones_size, zholes_size);
--
--	alloc_node_mem_map(pgdat);
--
--	free_area_init_core(pgdat, zones_size, zholes_size);
--}
--
--#ifdef CONFIG_ARCH_POPULATES_NODE_MAP
--void __init add_active_range(unsigned int nid, unsigned long start_pfn,
--						unsigned long end_pfn)
--{
--	unsigned int i;
--	printk(KERN_DEBUG "Range (%d) %lu -> %lu\n", nid, start_pfn, end_pfn);
--
--	/* Merge with existing active regions if possible */
--	for (i = 0; early_node_map[i].end_pfn; i++) {
--		if (early_node_map[i].nid != nid)
--			continue;
--
--		/* Skip if an existing region covers this new one */
--		if (start_pfn >= early_node_map[i].start_pfn &&
--				end_pfn <= early_node_map[i].end_pfn)
--			return;
--
--		/* Merge forward if suitable */
--		if (start_pfn <= early_node_map[i].end_pfn &&
--				end_pfn > early_node_map[i].end_pfn) {
--			early_node_map[i].end_pfn = end_pfn;
--			return;
--		}
--
--		/* Merge backward if suitable */
--		if (start_pfn < early_node_map[i].end_pfn &&
--				end_pfn >= early_node_map[i].start_pfn) {
--			early_node_map[i].start_pfn = start_pfn;
--			return;
--		}
--	}
--
--	/* Leave last entry NULL, we use range.end_pfn to terminate the walk */
--	if (i >= MAX_ACTIVE_REGIONS - 1) {
--		printk(KERN_ERR "Too many memory regions, truncating\n");
--		return;
--	}
--
--	early_node_map[i].nid = nid;
--	early_node_map[i].start_pfn = start_pfn;
--	early_node_map[i].end_pfn = end_pfn;
--}
--
--void __init shrink_active_range(unsigned int nid, unsigned long old_end_pfn,
--						unsigned long new_end_pfn)
--{
--	unsigned int i;
--
--	/* Find the old active region end and shrink */
--	for_each_active_range_index_in_nid(i, nid) {
--		if (early_node_map[i].end_pfn == old_end_pfn) {
--			early_node_map[i].end_pfn = new_end_pfn;
--			break;
--		}
--	}
--}
--
--void __init remove_all_active_ranges()
--{
--	memset(early_node_map, 0, sizeof(early_node_map));
--}
--
--/* Compare two active node_active_regions */
--static int __init cmp_node_active_region(const void *a, const void *b)
--{
--	struct node_active_region *arange = (struct node_active_region *)a;
--	struct node_active_region *brange = (struct node_active_region *)b;
--
--	/* Done this way to avoid overflows */
--	if (arange->start_pfn > brange->start_pfn)
--		return 1;
--	if (arange->start_pfn < brange->start_pfn)
--		return -1;
--
--	return 0;
--}
--
--/* sort the node_map by start_pfn */
--static void __init sort_node_map(void)
--{
--	size_t num = 0;
--	while (early_node_map[num].end_pfn)
--		num++;
--
--	sort(early_node_map, num, sizeof(struct node_active_region),
--						cmp_node_active_region, NULL);
--}
--
--/* Find the lowest pfn for a node. This depends on a sorted early_node_map */
--unsigned long __init find_min_pfn_for_node(unsigned long nid)
--{
--	int i;
--
--	/* Assuming a sorted map, the first range found has the starting pfn */
--	for_each_active_range_index_in_nid(i, nid)
--		return early_node_map[i].start_pfn;
--
--	printk(KERN_WARNING "Could not find start_pfn for node %lu\n", nid);
--	return 0;
--}
--
--unsigned long __init find_min_pfn_with_active_regions(void)
--{
--	return find_min_pfn_for_node(MAX_NUMNODES);
--}
--
--unsigned long __init find_max_pfn_with_active_regions(void)
--{
--	int i;
--	unsigned long max_pfn = 0;
--
--	for (i = 0; early_node_map[i].end_pfn; i++)
--		max_pfn = max(max_pfn, early_node_map[i].end_pfn);
--
--	return max_pfn;
--}
--
--void __init free_area_init_nodes(unsigned long arch_max_dma_pfn,
--				unsigned long arch_max_dma32_pfn,
--				unsigned long arch_max_low_pfn,
--				unsigned long arch_max_high_pfn)
--{
--	unsigned long nid;
--	int zone_index;
--
--	/* Record where the zone boundaries are */
--	memset(arch_zone_lowest_possible_pfn, 0,
--				sizeof(arch_zone_lowest_possible_pfn));
--	memset(arch_zone_highest_possible_pfn, 0,
--				sizeof(arch_zone_highest_possible_pfn));
--	arch_zone_lowest_possible_pfn[ZONE_DMA] =
--					find_min_pfn_with_active_regions();
--	arch_zone_highest_possible_pfn[ZONE_DMA] = arch_max_dma_pfn;
--	arch_zone_highest_possible_pfn[ZONE_DMA32] = arch_max_dma32_pfn;
--	arch_zone_highest_possible_pfn[ZONE_NORMAL] = arch_max_low_pfn;
--	arch_zone_highest_possible_pfn[ZONE_HIGHMEM] = arch_max_high_pfn;
--	for (zone_index = 1; zone_index < MAX_NR_ZONES; zone_index++) {
--		arch_zone_lowest_possible_pfn[zone_index] =
--			arch_zone_highest_possible_pfn[zone_index-1];
--	}
--
--	/* Regions in the early_node_map can be in any order */
--	sort_node_map();
--
--	for_each_online_node(nid) {
--		pg_data_t *pgdat = NODE_DATA(nid);
--		free_area_init_node(nid, pgdat, NULL,
--				find_min_pfn_for_node(nid), NULL);
--	}
--}
--#endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
--
- #ifndef CONFIG_NEED_MULTIPLE_NODES
- static bootmem_data_t contig_bootmem_data;
- struct pglist_data contig_page_data = { .bdata = &contig_bootmem_data };
-@@ -3176,32 +2097,6 @@ int lowmem_reserve_ratio_sysctl_handler(
- 	return 0;
- }
- 
--/*
-- * percpu_pagelist_fraction - changes the pcp->high for each zone on each
-- * cpu.  It is the fraction of total pages in each zone that a hot per cpu pagelist
-- * can have before it gets flushed back to buddy allocator.
-- */
--
--int percpu_pagelist_fraction_sysctl_handler(ctl_table *table, int write,
--	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
--{
--	struct zone *zone;
--	unsigned int cpu;
--	int ret;
--
--	ret = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
--	if (!write || (ret == -EINVAL))
--		return ret;
--	for_each_zone(zone) {
--		for_each_online_cpu(cpu) {
--			unsigned long  high;
--			high = zone->present_pages / percpu_pagelist_fraction;
--			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
--		}
--	}
--	return 0;
--}
--
- __initdata int hashdist = HASHDIST_DEFAULT;
- 
- #ifdef CONFIG_NUMA
+Paul Mackerras wrote:
+> Arnd Bergmann writes:
+>
+>>  From: Geoff Levand <geoffrey.levand@am.sony.com>
+>>
+>> This patch removes the incorrect Cell processor setup routine
+>> __setup_cpu_be.  This routine improperly accesses the hypervisor
+>> page size configuration at SPR HID6.  The correct behavior is for
+>> firmware, or if needed, platform setup code, to set the correct
+>> page size.
+>
+>> -            .cpu_setup              =3D __setup_cpu_be,
+>> +            .cpu_setup              =3D __setup_cpu_power4,
+>
+> That looks a bit dodgy.  Either just remove the contents of
+> __setup_cpu_be (leaving only the blr), or define a __setup_cpu_null
+> that does nothing, or make the identify_cpu not call the cpu setup
+> function if the pointer is NULL.
+
+
+OK, I set it up with __setup_cpu_null.  An updated patch follows.
+
+It falls out from this that we can replace the do-nothing routines
+__setup_cpu_power3 and __setup_cpu_power4 with __setup_cpu_null also.
+I'll post a separate patch for consideration.
+
+-Geoff
+
+
+Replaced the Cell processor specific routine __setup_cpu_be with
+a new generic routine __setup_cpu_null.  __setup_cpu_be improperly
+accessed the hypervisor page size configuration at SPR HID6.  Correct
+behavior is for firmware, or if needed, platform setup code, to set
+the correct page size.
+
+
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+
+
+Index: cell--alp--3/arch/powerpc/kernel/cpu_setup_power4.S
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- cell--alp--3.orig/arch/powerpc/kernel/cpu_setup_power4.S    =
+2006-04-26 19:19:25.000000000 -0700
++++ cell--alp--3/arch/powerpc/kernel/cpu_setup_power4.S 2006-05-05 =
+15:59:58.000000000 -0700
+@@ -76,20 +76,6 @@
+ _GLOBAL(__setup_cpu_power4)
+        blr
+
+-_GLOBAL(__setup_cpu_be)
+-        /* Set large page sizes LP=3D0: 16MB, LP=3D1: 64KB */
+-        addi    r3, 0,  0
+-        ori     r3, r3, HID6_LB
+-        sldi    r3, r3, 32
+-        nor     r3, r3, r3
+-        mfspr   r4, SPRN_HID6
+-        and     r4, r4, r3
+-        addi    r3, 0, 0x02000
+-        sldi    r3, r3, 32
+-        or      r4, r4, r3
+-        mtspr   SPRN_HID6, r4
+-       blr
+-
+ _GLOBAL(__setup_cpu_ppc970)
+        mfspr   r0,SPRN_HID0
+        li      r11,5                   /* clear DOZE and SLEEP */
+Index: cell--alp--3/arch/powerpc/kernel/cputable.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- cell--alp--3.orig/arch/powerpc/kernel/cputable.c    2006-04-26 =
+19:19:25.000000000 -0700
++++ cell--alp--3/arch/powerpc/kernel/cputable.c 2006-05-05 =
+16:29:06.000000000 -0700
+@@ -31,9 +31,9 @@
+  * and ppc64
+  */
+ #ifdef CONFIG_PPC64
++extern void __setup_cpu_null(unsigned long offset, struct cpu_spec* =
+spec);
+ extern void __setup_cpu_power3(unsigned long offset, struct cpu_spec* =
+spec);
+ extern void __setup_cpu_power4(unsigned long offset, struct cpu_spec* =
+spec);
+-extern void __setup_cpu_be(unsigned long offset, struct cpu_spec* =
+spec);
+ #else
+ extern void __setup_cpu_603(unsigned long offset, struct cpu_spec* =
+spec);
+ extern void __setup_cpu_604(unsigned long offset, struct cpu_spec* =
+spec);
+@@ -273,7 +273,7 @@
+                        PPC_FEATURE_SMT,
+                .icache_bsize           =3D 128,
+                .dcache_bsize           =3D 128,
+-               .cpu_setup              =3D __setup_cpu_be,
++               .cpu_setup              =3D __setup_cpu_null,
+                .platform               =3D "ppc-cell-be",
+        },
+        {       /* default match */
+Index: cell--alp--3/arch/powerpc/kernel/misc_64.S
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- cell--alp--3.orig/arch/powerpc/kernel/misc_64.S     2006-04-26 =
+19:19:25.000000000 -0700
++++ cell--alp--3/arch/powerpc/kernel/misc_64.S  2006-05-05 =
+16:04:59.000000000 -0700
+@@ -768,6 +768,9 @@
+
+ #endif /* CONFIG_ALTIVEC */
+
++_GLOBAL(__setup_cpu_null)
++       blr
++
+ _GLOBAL(__setup_cpu_power3)
+        blr
+
+_______________________________________________
+Linuxppc-dev mailing list
+Linuxppc-dev@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+
+
+------_=_NextPart_001_01C672CA.7FE452AA
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">=0A=
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">=0A=
+<HTML>=0A=
+<HEAD>=0A=
+=0A=
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7638.1">=0A=
+<TITLE>Re: [PATCH 04/13] cell: remove broken __setup_cpu_be =
+function</TITLE>=0A=
+</HEAD>=0A=
+<BODY>=0A=
+<DIV id=3DidOWAReplyText4852 dir=3Dltr>=0A=
+<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
+size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>Hello =
+</FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2>I am looking to use the SMT =
+related =0A=
+parameters like Snooze delay, HMT thread priorities, SMT ON/Off and =
+wanted to =0A=
+know how to invoke and set them. I am running Open Suse 10 with =0A=
+2.6.16.rc4-3-ppc64 kernel on eServer p590 2-way POWER5 partition. =
+</FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2>I noticed the parameters in =0A=
+/sys/devices/system/cpu/cpu#&nbsp;&nbsp; with the following =
+:</FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr>mmcr0&nbsp; online&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+pmc2&nbsp; =0A=
+pmc5&nbsp; smt_snooze_delay<BR>mmcr1&nbsp; physical_id&nbsp; pmc3&nbsp; =0A=
+pmc6&nbsp; topology<BR>crash_notes&nbsp; mmcra&nbsp; =0A=
+pmc1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pmc4&nbsp; =0A=
+purr<BR></DIV></DIV>=0A=
+<DIV id=3DidSignature26272 dir=3Dltr><FONT face=3DArial color=3D#000000 =
+size=3D2>=0A=
+<DIV>setting the value in online to 0 seems to turn off the logical =
+processor, =0A=
+but I am not sure what the others are for and the meaning of their hex =
+values? =0A=
+</DIV>=0A=
+<DIV>It seems that there is include/asm-ppc64/processor.h&nbsp; with =
+macros =0A=
+like&nbsp;HMT_very_low()&nbsp;&nbsp;, &nbsp;wonder if these can be set =
+on =0A=
+command line since I am running unmodified app binaries. </DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>Thanks, </DIV>=0A=
+<DIV>Mitesh</DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV><BR>Mitesh R.&nbsp;Meswani <BR>Ph.D. Candidate </DIV>=0A=
+<DIV>Research Associate, PLS2 Group</DIV>=0A=
+<DIV>Room 106 F, Department of Computer Science</DIV>=0A=
+<DIV>The University of Texas at El Paso, </DIV>=0A=
+<DIV>El Paso, Texas 79968<BR>Tel: 915 747 8012 (O)</DIV>=0A=
+<DIV>Email: mmeswani@utep.edu</FONT></DIV></DIV>=0A=
+<DIV dir=3Dltr><BR>=0A=
+<HR tabIndex=3D-1>=0A=
+<FONT face=3DTahoma size=3D2><B>From:</B> =0A=
+linuxppc-dev-bounces+mmeswani=3Dutep.edu@ozlabs.org on behalf of Geoff =0A=
+Levand<BR><B>Sent:</B> Fri 5/5/2006 6:00 PM<BR><B>To:</B> Paul =0A=
+Mackerras<BR><B>Cc:</B> Arnd Bergmann; Levand,Geoffrey; =0A=
+linux-kernel@vger.kernel.org; linuxppc-dev@ozlabs.org; Arnd Bergmann; =0A=
+cbe-oss-dev@ozlabs.org<BR><B>Subject:</B> Re: [PATCH 04/13] cell: remove =
+broken =0A=
+__setup_cpu_be function<BR></FONT><BR></DIV>=0A=
+<DIV>=0A=
+<P><FONT size=3D2>Paul Mackerras wrote:<BR>&gt; Arnd Bergmann =0A=
+writes:<BR>&gt;<BR>&gt;&gt;&nbsp; From: Geoff Levand =0A=
+&lt;geoffrey.levand@am.sony.com&gt;<BR>&gt;&gt;<BR>&gt;&gt; This patch =
+removes =0A=
+the incorrect Cell processor setup routine<BR>&gt;&gt; =
+__setup_cpu_be.&nbsp; =0A=
+This routine improperly accesses the hypervisor<BR>&gt;&gt; page size =0A=
+configuration at SPR HID6.&nbsp; The correct behavior is for<BR>&gt;&gt; =0A=
+firmware, or if needed, platform setup code, to set the =
+correct<BR>&gt;&gt; page =0A=
+size.<BR>&gt;<BR>&gt;&gt; -&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+.cpu_setup&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D =
+__setup_cpu_be,<BR>&gt;&gt; =0A=
++&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+.cpu_setup&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D =
+__setup_cpu_power4,<BR>&gt;<BR>&gt; =0A=
+That looks a bit dodgy.&nbsp; Either just remove the contents of<BR>&gt; =0A=
+__setup_cpu_be (leaving only the blr), or define a =
+__setup_cpu_null<BR>&gt; that =0A=
+does nothing, or make the identify_cpu not call the cpu setup<BR>&gt; =
+function =0A=
+if the pointer is NULL.<BR><BR><BR>OK, I set it up with =
+__setup_cpu_null.&nbsp; =0A=
+An updated patch follows.<BR><BR>It falls out from this that we can =
+replace the =0A=
+do-nothing routines<BR>__setup_cpu_power3 and __setup_cpu_power4 with =0A=
+__setup_cpu_null also.<BR>I'll post a separate patch for =0A=
+consideration.<BR><BR>-Geoff<BR><BR><BR>Replaced the Cell processor =
+specific =0A=
+routine __setup_cpu_be with<BR>a new generic routine =
+__setup_cpu_null.&nbsp; =0A=
+__setup_cpu_be improperly<BR>accessed the hypervisor page size =
+configuration at =0A=
+SPR HID6.&nbsp; Correct<BR>behavior is for firmware, or if needed, =
+platform =0A=
+setup code, to set<BR>the correct page size.<BR><BR><BR>Signed-off-by: =
+Geoff =0A=
+Levand &lt;geoffrey.levand@am.sony.com&gt;<BR><BR><BR>Index: =0A=
+cell--alp--3/arch/powerpc/kernel/cpu_setup_power4.S<BR>=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D<BR>--- =0A=
+cell--alp--3.orig/arch/powerpc/kernel/cpu_setup_power4.S&nbsp;&nbsp;&nbsp=
+; =0A=
+2006-04-26 19:19:25.000000000 -0700<BR>+++ =0A=
+cell--alp--3/arch/powerpc/kernel/cpu_setup_power4.S 2006-05-05 =0A=
+15:59:58.000000000 -0700<BR>@@ -76,20 +76,6 =0A=
+@@<BR>&nbsp;_GLOBAL(__setup_cpu_power4)<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp; =0A=
+blr<BR><BR>-_GLOBAL(__setup_cpu_be)<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp; =0A=
+/* Set large page sizes LP=3D0: 16MB, LP=3D1: 64KB =0A=
+*/<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; addi&nbsp;&nbsp;&nbsp; =
+r3, =0A=
+0,&nbsp; 0<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+ori&nbsp;&nbsp;&nbsp;&nbsp; r3, r3, =0A=
+HID6_LB<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+sldi&nbsp;&nbsp;&nbsp; =0A=
+r3, r3, 32<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+nor&nbsp;&nbsp;&nbsp;&nbsp; r3, r3, =0A=
+r3<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mfspr&nbsp;&nbsp; r4, =0A=
+SPRN_HID6<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+and&nbsp;&nbsp;&nbsp;&nbsp; r4, r4, =0A=
+r3<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; addi&nbsp;&nbsp;&nbsp; =
+r3, 0, =0A=
+0x02000<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+sldi&nbsp;&nbsp;&nbsp; =0A=
+r3, r3, 32<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+or&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; r4, r4, =0A=
+r3<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mtspr&nbsp;&nbsp; =
+SPRN_HID6, =0A=
+r4<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+blr<BR>-<BR>&nbsp;_GLOBAL(__setup_cpu_ppc970)<BR>&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp; =0A=
+mfspr&nbsp;&nbsp; =
+r0,SPRN_HID0<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+li&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; r11,5&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* clear DOZE and SLEEP =
+*/<BR>Index: =0A=
+cell--alp--3/arch/powerpc/kernel/cputable.c<BR>=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D<BR>--- =0A=
+cell--alp--3.orig/arch/powerpc/kernel/cputable.c&nbsp;&nbsp;&nbsp; =
+2006-04-26 =0A=
+19:19:25.000000000 -0700<BR>+++ =
+cell--alp--3/arch/powerpc/kernel/cputable.c =0A=
+2006-05-05 16:29:06.000000000 -0700<BR>@@ -31,9 +31,9 @@<BR>&nbsp; * and =0A=
+ppc64<BR>&nbsp; */<BR>&nbsp;#ifdef CONFIG_PPC64<BR>+extern void =0A=
+__setup_cpu_null(unsigned long offset, struct cpu_spec* =
+spec);<BR>&nbsp;extern =0A=
+void __setup_cpu_power3(unsigned long offset, struct cpu_spec* =0A=
+spec);<BR>&nbsp;extern void __setup_cpu_power4(unsigned long offset, =
+struct =0A=
+cpu_spec* spec);<BR>-extern void __setup_cpu_be(unsigned long offset, =
+struct =0A=
+cpu_spec* spec);<BR>&nbsp;#else<BR>&nbsp;extern void =
+__setup_cpu_603(unsigned =0A=
+long offset, struct cpu_spec* spec);<BR>&nbsp;extern void =0A=
+__setup_cpu_604(unsigned long offset, struct cpu_spec* spec);<BR>@@ =
+-273,7 =0A=
++273,7 @@<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+PPC_FEATURE_SMT,<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .icache_bsize&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D =0A=
+128,<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .dcache_bsize&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D =0A=
+128,<BR>-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+.cpu_setup&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D =0A=
+__setup_cpu_be,<BR>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+.cpu_setup&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D =0A=
+__setup_cpu_null,<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+.platform&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D =0A=
+"ppc-cell-be",<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+},<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+{&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* default match */<BR>Index: =0A=
+cell--alp--3/arch/powerpc/kernel/misc_64.S<BR>=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D<BR>--- =0A=
+cell--alp--3.orig/arch/powerpc/kernel/misc_64.S&nbsp;&nbsp;&nbsp;&nbsp; =0A=
+2006-04-26 19:19:25.000000000 -0700<BR>+++ =0A=
+cell--alp--3/arch/powerpc/kernel/misc_64.S&nbsp; 2006-05-05 =
+16:04:59.000000000 =0A=
+-0700<BR>@@ -768,6 +768,9 @@<BR><BR>&nbsp;#endif /* CONFIG_ALTIVEC =0A=
+*/<BR><BR>+_GLOBAL(__setup_cpu_null)<BR>+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp; =0A=
+blr<BR>+<BR>&nbsp;_GLOBAL(__setup_cpu_power3)<BR>&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp; =0A=
+blr<BR><BR>_______________________________________________<BR>Linuxppc-de=
+v =0A=
+mailing list<BR>Linuxppc-dev@ozlabs.org<BR><A =0A=
+href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-dev">https://ozlabs.=
+org/mailman/listinfo/linuxppc-dev</A><BR></FONT></P></DIV>=0A=
+=0A=
+</BODY>=0A=
+</HTML>
+------_=_NextPart_001_01C672CA.7FE452AA--
