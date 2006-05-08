@@ -1,21 +1,18 @@
-Return-Path: <Prabhat_Singh@Satyam.com>
-Received: from chnmail.satyam.com (chnmail.satyam.com [210.18.90.100])
-	by ozlabs.org (Postfix) with ESMTP id 2DA98679EB
-	for <linuxppc-dev@ozlabs.org>; Mon,  8 May 2006 16:46:24 +1000 (EST)
-Received: from blr.satyam.com (blr.satyam.com [208.220.245.73])
-	by che2.satyam.com (8.12.8/8.12.8) with ESMTP id k486ZPZD003772
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 May 2006 12:05:25 +0530
-Received: from Disclaimerbng.corp.satyam.ad (bng.satyam.com [172.19.57.211])
-	by blr.satyam.com (8.12.8/8.12.8) with ESMTP id k486NHD5011328
-	for <linuxppc-dev@ozlabs.org>; Mon, 8 May 2006 11:53:17 +0530
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C67269.A975FA4B"
-Subject: Low latency Patch
-Date: Mon, 8 May 2006 12:05:02 +0530
-Message-ID: <D8595042F3765A4285B848A78A2C2ED1040246B9@bsdmsg002.corp.satyam.ad>
-From: "Prabhat_Singh" <Prabhat_Singh@Satyam.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <mel@csn.ul.ie>
+Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0602C679E2
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 May 2006 00:10:41 +1000 (EST)
+From: Mel Gorman <mel@csn.ul.ie>
+To: akpm@osdl.org
+Message-Id: <20060508141030.26912.93090.sendpatchset@skynet>
+Subject: [PATCH 0/6] Sizing zones and holes in an architecture independent
+	manner V6
+Date: Mon,  8 May 2006 15:10:30 +0100 (IST)
+Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linux-mm@kvack.org,
+	Mel Gorman <mel@csn.ul.ie>, ak@suse.de, bob.picco@hp.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,139 +22,179 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+This is V6 of the patchset to size zones and memory holes in an
+architecture-independent manner. This is based against 2.6.17-rc3-mm1
+and as there were no objections to these patches since V4. Please merge.
 
-------_=_NextPart_001_01C67269.A975FA4B
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+The reasons why I'd like to this merged include;
 
-Hi ,
+ o Less architecture-specific code - particularly for x86 and ppc64
+ o More maintainable. Changes to zone layout need only be made in one place
+ o Zone-sizing and memory hole calculation is one less job that needs to be
+   done for new architecture ports
+ o With the architecture-independent representation, zone-based
+   anti-fragmentation needs a lot less architecture-specific code making it
+   more portable between architectures. This will be important for future
+   hugepage-availability work
+ o Nigel Cunningham has stated that that software suspend could potentially
+   use the architecture-independent representation to discover what pages
+   need to be saved during suspend
 
-       Can any one please tell me from where I can get Low-latency and
-rtc-debug patches for linux-2.4.24 kernel source and for MPC8248
-processor platform.
+When testing on powerpc, I found compile errors that looked like this;
 
-=20
+arch/powerpc/kernel/built-in.o(.init.text+0x7778): In function `vrsqrtefp':
+: undefined reference to `__udivdi3'
+arch/powerpc/kernel/built-in.o(.init.text+0x77c4): In function `vrsqrtefp':
+: undefined reference to `__udivdi3'
+make: *** [.tmp_vmlinux1] Error 1
 
-=20
+A workaround that is *very likely wrong* and blatantly stolen from arch/sh
+is at http://www.csn.ul.ie/~mel/udivdi3-powerpc-workaround.diff .
 
-Thanks
+Changelog since V5
+o Add a missing #include to mm/mem_init.c
+o Drop the verbose debugging part of the set
+o Report active range registration when loglevel is set for KERN_DEBUG
 
-Prabhat Singh
+Changelog since V4
+o Rebase to 2.6.17-rc3-mm1
+o Calculate holes on x86 with SRAT correctly
 
-=20
+Changelog since V3
+o Rebase to 2.6.17-rc2
+o Allow the active regions to be cleared. Needed by x86_64 when it decides
+  the SRAT table is bad half way through the registering of active regions
+o Fix for flatmem x86_64 machines booting
 
-=20
+Changelog since V2
+o Fix a bug where holes in lower zones get double counted
+o Catch the case where a new range is registered that is within an range
+o Catch the case where a zone boundary is within a hole
+o Use the EFI map for registering ranges on x86_64+numa
+o On IA64+NUMA, add the active ranges before rounding for granules
+o On x86_64, remove e820_hole_size and e820_bootmem_free and use
+  arch-independent equivalents
+o On x86_64, remove the map walk in e820_end_of_ram()
+o Rename memory_present_with_active_regions, name ambiguous
+o Add absent_pages_in_range() for arches to call
 
+Changelog since V1
+o Correctly convert virtual and physical addresses to PFNs on ia64
+o Correctly convert physical addresses to PFN on older ppc 
+o When add_active_range() is called with overlapping pfn ranges, merge them
+o When a zone boundary occurs within a memory hole, account correctly
+o Minor whitespace damage cleanup
+o Debugging patch temporarily included
 
+At a basic level, architectures define structures to record where active
+ranges of page frames are located. Once located, the code to calculate
+zone sizes and holes in each architecture is very similar.  Some of this
+zone and hole sizing code is difficult to read for no good reason. This
+set of patches eliminates the similar-looking architecture-specific code.
 
-DISCLAIMER:
-This email (including any attachments) is intended for the sole use of =
-the intended recipient/s and may contain material that is CONFIDENTIAL =
-AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
-copying or distribution or forwarding of any or all of the contents in =
-this message is STRICTLY PROHIBITED. If you are not the intended =
-recipient, please contact the sender by email and delete all copies; =
-your cooperation in this regard is appreciated.
+The patches introduce a mechanism where architectures register where the
+active ranges of page frames are with add_active_range(). When all areas
+have been discovered, free_area_init_nodes() is called to initialise
+the pgdat and zones. The zone sizes and holes are then calculated in an
+architecture independent manner.
 
-------_=_NextPart_001_01C67269.A975FA4B
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+Patch 1 introduces the mechanism for registering and initialising PFN ranges
+Patch 2 changes ppc to use the mechanism - 128 arch-specific LOC removed
+Patch 3 changes x86 to use the mechanism - 142 arch-specific LOC removed
+Patch 4 changes x86_64 to use the mechanism - 94 arch-specific LOC removed
+Patch 5 changes ia64 to use the mechanism - 57 arch-specific LOC removed
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+At this point, there is a reduction of 421 architecture-specific lines of code
+and a net reduction of 25 lines. The arch-independent code is a lot easier
+to read in comparison to some of the arch-specific stuff, particularly in
+arch/i386/ .
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
+For Patch 6, it was also noted that page_alloc.c has a *lot* of
+initialisation code which makes the file harder to read than it needs to
+be. Patch 6 creates a new file mem_init.c and moves a lot of initialisation
+code from page_alloc.c to it. After the patch is applied, there is still a net
+loss of 7 lines.
 
-</head>
+The patches have been successfully boot tested by me and verified that the
+zones are the correct size on
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+o x86, flatmem with 1.5GiB of RAM
+o x86, NUMAQ
+o x86, NUMA, with SRAT
+o x86 with SRAT CONFIG_NUMA=n
+o PPC64, NUMA
+o PPC64, CONFIG_NUMA=n
+o PPC64, CONFIG_64BIT=N
+o Power, RS6000 (Had difficulty here with missing __udivdi3 symbol)
+o x86_64, NUMA with SRAT
+o x86_64, NUMA with broken SRAT that falls back to k8topology discovery
+o x86_64, ACPI_NUMA, ACPI_MEMORY_HOTPLUG && !SPARSEMEM to trigger the
+  hotadd path without sparsemem fun in srat.c (SRAT broken on test machine and
+  I'm pretty sure the machine does not support physical memory hotadd anyway
+  so test may not have been effective other than being a compile test.)
+o x86_64, CONFIG_NUMA=n
+o x86_64, CONFIG_64=n
+o x86_64, CONFIG_64=n, CONFIG_NUMA=n
+o x86_64, AMD64 desktop machine with flatmem
+o ia64 (Itanium 2)
+o ia64 (Itanium 2), CONFIG_64=N
 
-<div class=3DSection1>
+Tony Luck has successfully tested for ia64 on Itanium with tiger_defconfig,
+gensparse_defconfig and defconfig. Bob Picco has also tested and debugged
+on IA64. Jack Steiner successfully boot tested on a mammoth SGI IA64-based
+machine. These were on patches against 2.6.17-rc1 and release 3 of these
+patches but there have been no ia64-changes since release 3.
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi ,<o:p></o:p></span></font></p>
+There are differences in the zone sizes for x86_64 as the arch-specific code
+for x86_64 accounts the kernel image and the starting mem_maps as memory
+holes but the architecture-independent code accounts the memory as present.
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Can any one =
-please tell
-me from where I can get <b><span style=3D'font-weight:bold'>Low-latency =
-</span></b>and
-<b><span style=3D'font-weight:bold'>rtc-debug</span></b> patches for =
-<b><span
-style=3D'font-weight:bold'>linux-2.4.24 </span></b>kernel source and for =
-<b><span
-style=3D'font-weight:bold'>MPC8248</span></b> processor =
-platform.<o:p></o:p></span></font></p>
+The net reduction seems small but the big benefit of this set of patches
+is the reduction of 421 lines of architecture-specific code, some of
+which is very hairy. There should be a greater net reduction when other
+architectures use the same mechanisms for zone and hole sizing but I lack
+the hardware to test on.
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+Comments?
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+Additional credit;
+	Dave Hansen for the initial suggestion and comments on early patches
+	Andy Whitcroft for reviewing early versions and catching numerous errors
+	Tony Luck for testing and debugging on IA64
+	Bob Picco for testing and fixing bugs related to pfn registration
+	Jack Steiner and Yasunori for testing on IA64
+	Andi Kleen for reviewing and feeding back about x86_64
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Prabhat Singh<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>&nbsp;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-<p></p><p>DISCLAIMER:<br>This email (including any attachments) is =
-intended for the sole use of the intended recipient/s and may contain =
-material that is CONFIDENTIAL AND PRIVATE COMPANY INFORMATION. Any =
-review or reliance by others or copying or distribution or forwarding of =
-any or all of the contents in this message is STRICTLY PROHIBITED. If =
-you are not the intended recipient, please contact the sender by email =
-and delete all copies; your cooperation in this regard is =
-appreciated..</body>
-
-</html>
-
-------_=_NextPart_001_01C67269.A975FA4B--
+ arch/i386/Kconfig           |    8 
+ arch/i386/kernel/setup.c    |   19 
+ arch/i386/kernel/srat.c     |  101 ---
+ arch/i386/mm/discontig.c    |   65 --
+ arch/ia64/Kconfig           |    3 
+ arch/ia64/mm/contig.c       |   60 --
+ arch/ia64/mm/discontig.c    |   41 -
+ arch/ia64/mm/init.c         |   12 
+ arch/powerpc/Kconfig        |   13 
+ arch/powerpc/mm/mem.c       |   53 --
+ arch/powerpc/mm/numa.c      |  157 ------
+ arch/ppc/Kconfig            |    3 
+ arch/ppc/mm/init.c          |   26 -
+ arch/x86_64/Kconfig         |    3 
+ arch/x86_64/kernel/e820.c   |  109 +---
+ arch/x86_64/kernel/setup.c  |    7 
+ arch/x86_64/mm/init.c       |   62 --
+ arch/x86_64/mm/k8topology.c |    3 
+ arch/x86_64/mm/numa.c       |   18 
+ arch/x86_64/mm/srat.c       |   11 
+ include/asm-ia64/meminit.h  |    1 
+ include/asm-x86_64/e820.h   |    5 
+ include/asm-x86_64/proto.h  |    2 
+ include/linux/mm.h          |   34 +
+ include/linux/mmzone.h      |   10 
+ mm/Makefile                 |    2 
+ mm/mem_init.c               | 1121 ++++++++++++++++++++++++++++++++++++++++++
+ mm/page_alloc.c             |  750 -----------------------------
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
