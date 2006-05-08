@@ -1,18 +1,17 @@
-Return-Path: <netstv@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id F0418679E1
+Return-Path: <jotken@softadvances.com>
+Received: from elasmtp-spurfowl.atl.sa.earthlink.net
+	(elasmtp-spurfowl.atl.sa.earthlink.net [209.86.89.66])
+	by ozlabs.org (Postfix) with ESMTP id 568FC679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 May 2006 08:27:37 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id e30so1545045pya
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 08 May 2006 15:27:36 -0700 (PDT)
-Message-ID: <b4b98b690605081527u9001aandfd6f54733c2a09d@mail.gmail.com>
-Date: Mon, 8 May 2006 15:27:36 -0700
-From: "Steve Iribarne (GMail)" <netstv@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: BDI2000 help
+	Tue,  9 May 2006 08:40:46 +1000 (EST)
+Message-ID: <445FC705.4060208@softadvances.com>
+Date: Mon, 08 May 2006 17:32:37 -0500
+From: John Otken <jotken@softadvances.com>
 MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] Add PVR for new Rev C 440EP
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Stefan Roese <sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,18 +22,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello All.
+Here's a patch to add the PVR for the AMCC 440EP Rev C:
 
-Yes it's me again.  So I've got a BDI2000.  I have my serial cable
-hooked up and I can run the ./bdisetup -v program.
 
-The question I have is what "type" do I select for my MPC8260.  As you
-can see I'm new to this part of the PPC world.  I'm usually a bit
-higher up and someone has already set this up for me.
 
-I think I have everything else setup right, I just don't get that last
-bit.  Because I think I need a configuration file for it.  Correct?
-
-Thanks.
-
--stv
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index e4e8137..a2967b6 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -938,6 +938,16 @@ struct cpu_spec	cpu_specs[] = {
+  		.dcache_bsize		= 32,
+  		.platform		= "ppc440",
+  	},
++	{
++		.pvr_mask		= 0xf0000fff,
++		.pvr_value		= 0x400008d4,
++		.cpu_name		= "440EP Rev. C",
++		.cpu_features		= CPU_FTRS_44X,
++		.cpu_user_features	= COMMON_USER_BOOKE | PPC_FEATURE_HAS_FPU,
++		.icache_bsize		= 32,
++		.dcache_bsize		= 32,
++		.platform		= "ppc440",
++	},
+  	{	/* 440GP Rev. B */
+  		.pvr_mask		= 0xf0000fff,
+  		.pvr_value		= 0x40000440,
