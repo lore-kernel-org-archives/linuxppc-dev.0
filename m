@@ -1,18 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 817C9679F3
+Return-Path: <Marc.Howard@KLA-Tencor.com>
+Received: from ca1mail04.kla-tencor.com (mailout04.kla-tencor.com
+	[192.146.1.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 10BC8679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 08:31:16 +1000 (EST)
-To: Eugene Surovegin <ebs@ebshome.net>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Viable PPC platform? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 09 May 2006 10:15:20 PDT."
-	<20060509171520.GA10886@gate.ebshome.net>
-Date: Wed, 10 May 2006 00:31:13 +0200
-Sender: wd@denx.de
-Message-Id: <20060509223113.5715D353DB1@atlas.denx.de>
+	Wed, 10 May 2006 08:52:30 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Viable PPC platform? 
+Date: Tue, 9 May 2006 15:52:20 -0700
+Message-ID: <91B22F93A880FA48879475E134D6F0BE028A43D2@CA1EXCLV02.adcorp.kla-tencor.com>
+From: "Howard, Marc" <Marc.Howard@KLA-Tencor.com>
+To: "Wolfgang Denk" <wd@denx.de>, "Eugene Surovegin" <ebs@ebshome.net>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,28 +25,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <20060509171520.GA10886@gate.ebshome.net> you wrote:
->
-> After many years of doing embedded Linux stuff I still don't 
-> understand why people are so fond of initrd.
-> 
-> For temporary stuff - tempfs is much better and flexible. For r/o 
-> stuff - just make separate MTD partition (cramfs, squashfs) and mount 
-> it directly as root. Both options will waste significantly less 
-> memory.
+> -----Original Message-----
+> From:=20
+> linuxppc-embedded-bounces+marc.howard=3Dkla-tencor.com@ozlabs.or
+g [mailto:linuxppc-embedded-bounces+marc.howard=3Dkla->
+tencor.com@ozlabs.org] On Behalf Of Wolfgang Denk
+> Sent: Tuesday, May 09, 2006 3:31 PM
+> To: Eugene Surovegin
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: Viable PPC platform?=20
+>=20
+> In message <20060509171520.GA10886@gate.ebshome.net> you wrote:
+> >
+> > After many years of doing embedded Linux stuff I still don't=20
+> > understand why people are so fond of initrd.
+> >=20
+> > For temporary stuff - tempfs is much better and flexible. For r/o=20
+> > stuff - just make separate MTD partition (cramfs, squashfs)=20
+> and mount=20
+> > it directly as root. Both options will waste significantly less=20
+> > memory.
+>=20
+> Agreed.
+>=20
+> And if somebody wants to see facts and numbers, please see
+> http://www.denx.de/wiki/view/DULG/RootFileSystemSelection
+>=20
 
-Agreed.
+One size does not fit all.  We have an application with a very large
+file system.  It can't fit in the available flash, however we do have a
+ton of RAM (512MB).  NFS is not an option nor is it desirable (latency
+and availability issues).  Boot time is not an issue either in this case
+as it takes the equipment many minutes to calibrate and initialize.
 
-And if somebody wants to see facts and numbers, please see
-http://www.denx.de/wiki/view/DULG/RootFileSystemSelection
+initrd also solves another problem.  The combined uBoot multi-image
+although huge (>32 MB) represents a complete system firmware snapshot in
+a single (huge) file.  By selecting the appropriate uImage the host can
+guarantee the linux build, device drivers, application version and FPGA
+firmware revs (the embedded board is rebooted to guarantee a repeatable
+starting state).  This makes revision control for the overall system
+much easier, especially since the host system is running windoze.
 
-Best regards,
+I agree with your general conclusion but there are specific cases where
+it is not optimal.
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Ninety-Ninety Rule of Project Schedules:
-        The first ninety percent of the task takes ninety percent of
-the time, and the last ten percent takes the other ninety percent.
+Marc W. Howard
