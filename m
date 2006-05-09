@@ -1,23 +1,19 @@
-Return-Path: <cdumoulin@ics-ltd.com>
-Received: from mx5.magma.ca (mx5-1.spamtrap.magma.ca [209.217.78.136])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EDDB367A77
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
+	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id 904EF679F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 07:13:30 +1000 (EST)
-Received: from mail1.magma.ca ([10.0.10.11])
-	by mx5.magma.ca (8.13.1/8.13.1) with ESMTP id k49LDIeL011219
-	for <linuxppc-embedded@ozlabs.org>; Tue, 9 May 2006 17:13:18 -0400
-Received: from [192.9.200.156] ([64.26.174.130]) (authenticated bits=0)
-	by mail1.magma.ca (Magma's Mail Server) with ESMTP id k49LDFV1011627
-	for <linuxppc-embedded@ozlabs.org>; Tue, 9 May 2006 17:13:18 -0400
-Message-ID: <446105F0.6080004@ics-ltd.com>
-Date: Tue, 09 May 2006 17:13:20 -0400
-From: Chris Dumoulin <cdumoulin@ics-ltd.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: When is it safe to start using ioremap?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 10 May 2006 07:51:57 +1000 (EST)
+In-Reply-To: <1147204345.3139.11.camel@excalibur.timesys.com>
+References: <4D8794260B62C940BBA7150CC5EB3BD43D23CA@bosmail.BOS.int.mrv.com>
+	<1147204345.3139.11.camel@excalibur.timesys.com>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3A4FA660-AD13-4E2B-846B-B9ACD901444F@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: IMAP_ADDR on PPC 8xx
+Date: Tue, 9 May 2006 17:51:08 -0400
+To: Walter L. Wimer III <walt.wimer@timesys.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,35 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-At what point in the linux boot sequence can/should you start using 
-ioremap to get a virtual address to hardware? Early on (in head_4xx.S), 
-I'm setting up a TLB entry to access my hardware, but eventually my TLB 
-entry will be overwritten, and at this point I would like to call 
-ioremap to get an address for accessing my hardware. I'm having trouble 
-figuring out when the original TLB entry will be overwritten (can that 
-even be determined?), and at what point I can start calling ioremap.
 
-Any help is appreciated.
+On May 9, 2006, at 3:52 PM, Walter L. Wimer III wrote:
 
-Cheers,
-Chris Dumoulin
--- 
-*--Christopher Dumoulin--*
-Software Team Leader
+> Exactly.  I think this kind of "automatic adaption" to the particular
+> platform is what should be in the vanilla kernel.
 
-<http://ics-ltd.com/>
-<http://ics-ltd.com/>
+This does not mean you can choose some arbitrary value.
+There is a small range of high memory addresses that will
+work successfully for IMMR.  You may not see any problems
+right away, but depending upon drivers selected and the
+software features used, some problems will crop up.
+There are also MMU performance enhancements that may
+be used with certain values, and guaranteed kernel crashes
+at some point in the future when abused.
 
-Interactive Circuits and Systems Ltd.
-5430 Canotek Road
-Ottawa, ON
-K1J 9G2
-(613)749-9241
-1-800-267-9794 (USA only)
+With Linux, the IMMR should always have a value of
+0xf0000000 or 0xff000000 for best results.
 
-------------------------------------------------------------------------
-This e-mail is private and confidential and is for the addressee only. 
-If misdirected, please notify us by telephone and confirm that it has 
-been deleted from your system and any hard copies destroyed. You are 
-strictly prohibited from using, printing, distributing or disseminating 
-it or any information contained in it save to the intended recipient.
+> This was the second major part of our 2.6.11.7-based patch.  It
+> performed a single ioremap(), stored the result in a global  
+> pointer, and
+> then used that pointer in all the drivers instead of using IMAP_ADDR
+> directly.
+
+This is not an acceptable practice.  We are removing all
+global pointers like this, and any driver that needs access to
+some or all of the IMMR space should be individually mapping
+those regions it needs.  Under the covers of ioremap() we are
+performing various alignment and reuse of address spaces
+in order to support things like performance enhancements
+and cache coherent regions.
+
+Thanks.
+
+	-- Dan
