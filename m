@@ -1,19 +1,29 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 8C22C67A70
+Return-Path: <walt.wimer@timesys.com>
+Received: from postfix.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id 6ED5667B7C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 06:22:59 +1000 (EST)
-To: "Walter L. Wimer III" <walt.wimer@timesys.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: IMAP_ADDR on PPC 8xx 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 09 May 2006 13:14:39 EDT."
-	<1147194879.2200.41.camel@excalibur.timesys.com>
-Date: Tue, 09 May 2006 22:22:57 +0200
-Sender: wd@denx.de
-Message-Id: <20060509202257.551DF352B2A@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 10 May 2006 06:46:42 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by postfix.timesys.com (Postfix) with ESMTP id 389C28069799
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  9 May 2006 16:46:44 -0400 (EDT)
+Received: from postfix.timesys.com ([127.0.0.1])
+	by localhost (postfix.timesys.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 26915-10 for <linuxppc-embedded@ozlabs.org>;
+	Tue,  9 May 2006 16:46:37 -0400 (EDT)
+Received: from exchange.timesys.com (exchange.timesys.com [192.168.2.250])
+	by postfix.timesys.com (Postfix) with ESMTP id D3DFA8069794
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  9 May 2006 16:46:37 -0400 (EDT)
+Subject: Re: IMAP_ADDR on PPC 8xx
+From: "Walter L. Wimer III" <walt.wimer@timesys.com>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: <20060509202257.551DF352B2A@atlas.denx.de>
+References: <20060509202257.551DF352B2A@atlas.denx.de>
+Content-Type: text/plain
+Date: Tue, 09 May 2006 16:46:03 -0400
+Message-Id: <1147207564.3139.20.camel@excalibur.timesys.com>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +34,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1147194879.2200.41.camel@excalibur.timesys.com> you wrote:
+On Tue, 2006-05-09 at 22:22 +0200, Wolfgang Denk wrote:
+> In message <1147194879.2200.41.camel@excalibur.timesys.com> you wrote:
+> > 
+> > Thanks again for the advice.  Interestingly, I gave the wrong
+> > address above.  It wasn't 0x22000000, it was 0x02200000 (i.e.
+> > even lower!).  And yet with the "io_remap()'ed global variable"
+> > patch, 2.6.11.7 does indeed work on this board with this U-Boot....
+> > Perhaps this works because this particular board only has 8MiB of
+> > RAM....
 > 
-> Thanks again for the advice.  Interestingly, I gave the wrong address
-> above.  It wasn't 0x22000000, it was 0x02200000 (i.e. even lower!).  And
-> yet with the "io_remap()'ed global variable" patch, 2.6.11.7 does indeed
-> work on this board with this U-Boot....  Perhaps this works because this
-> particular board only has 8MiB of RAM....
+> It does not work. It will certainly crash as soon as you start a  few
+> user space applications.
 
-It does not work. It will certainly crash as soon as you start a  few
-user space applications.
 
-> Bottom line: I'm wondering what the Linux PPC community thinks is the
-> correct long term solution to these discrepancies.  Should we the
-> community declare "Freescale U-Boots are considered harmful; never use
-> them; always use the official U-Boot sources" ???
+Well, something "interesting" is certainly going on because our 2.6.11.7
+kernel *does* work and *does not* crash when running user space
+applications.  It runs BusyBox quite happily with multiple processes
+(e.g. 3 incoming telnet sessions, a console shell, etc.).
 
-Indeed it would be nice if Freescale worked more  directly  with  the
-community.
+I can only conclude that there is something more to our 2.6.11.7-based
+patch than I currently understand.
 
-> Or should we create a kernel mechanism to automatically adapt to the
-> different U-Boot flavors?
 
-No, of course not. U-Boot is just one boot  loader,  there  are  many
-others, and the kernel hast to stay independent.
 
-And it is definitely not the kernel's fault if the boot  loader  sets
-up a braindamaged memory map.
+Cheers!
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-As in certain cults it is possible to kill a process if you know  its
-true name.                      -- Ken Thompson and Dennis M. Ritchie
+Walt
