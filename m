@@ -1,28 +1,19 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E95EE679F9
+Return-Path: <mmporter@cox.net>
+Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
+	by ozlabs.org (Postfix) with ESMTP id 5B9A8679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 00:51:38 +1000 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1FdTXM-0001Ah-Ku
-	for linuxppc-embedded@ozlabs.org; Tue, 09 May 2006 16:50:08 +0200
-Received: from 24-158-130-128.dhcp.kgpt.tn.charter.com ([24.158.130.128])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 09 May 2006 16:50:08 +0200
-Received: from gd.smth by 24-158-130-128.dhcp.kgpt.tn.charter.com with local
-	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Tue, 09 May 2006 16:50:08 +0200
-To: linuxppc-embedded@ozlabs.org
-From: geneSmith <gd.smth@gmail.com>
-Subject: Viable PPC platform?
-Date: Tue, 09 May 2006 10:38:19 -0400
-Message-ID: <e3q9gu$vq8$1@sea.gmane.org>
+	Wed, 10 May 2006 01:34:06 +1000 (EST)
+Date: Tue, 9 May 2006 08:34:03 -0700
+From: Matt Porter <mporter@kernel.crashing.org>
+To: geneSmith <gd.smth@gmail.com>
+Subject: Re: Viable PPC platform?
+Message-ID: <20060509083403.A31741@cox.net>
+References: <e3q9gu$vq8$1@sea.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Sender: news <news@sea.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e3q9gu$vq8$1@sea.gmane.org>;
+	from gd.smth@gmail.com on Tue, May 09, 2006 at 10:38:19AM -0400
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,9 +24,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have a ppc405gpr system with 64M ram and 4Meg flash in a AM29LV320. Is 
-this a viable platform for linux? Can a filesystem (JFFS2?) be put this 
-flash type?
+On Tue, May 09, 2006 at 10:38:19AM -0400, geneSmith wrote:
+> I have a ppc405gpr system with 64M ram and 4Meg flash in a AM29LV320. Is 
+> this a viable platform for linux? Can a filesystem (JFFS2?) be put this 
+> flash type?
 
--- 
-Lit up like Levy's
+Yes. (Yes) Yes.
+
+-Matt
