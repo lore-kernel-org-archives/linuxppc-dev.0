@@ -1,18 +1,18 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id 904EF679F2
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 817C9679F3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 07:51:57 +1000 (EST)
-In-Reply-To: <1147204345.3139.11.camel@excalibur.timesys.com>
-References: <4D8794260B62C940BBA7150CC5EB3BD43D23CA@bosmail.BOS.int.mrv.com>
-	<1147204345.3139.11.camel@excalibur.timesys.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3A4FA660-AD13-4E2B-846B-B9ACD901444F@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: IMAP_ADDR on PPC 8xx
-Date: Tue, 9 May 2006 17:51:08 -0400
-To: Walter L. Wimer III <walt.wimer@timesys.com>
+	Wed, 10 May 2006 08:31:16 +1000 (EST)
+To: Eugene Surovegin <ebs@ebshome.net>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Viable PPC platform? 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 09 May 2006 10:15:20 PDT."
+	<20060509171520.GA10886@gate.ebshome.net>
+Date: Wed, 10 May 2006 00:31:13 +0200
+Sender: wd@denx.de
+Message-Id: <20060509223113.5715D353DB1@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,38 +24,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <20060509171520.GA10886@gate.ebshome.net> you wrote:
+>
+> After many years of doing embedded Linux stuff I still don't 
+> understand why people are so fond of initrd.
+> 
+> For temporary stuff - tempfs is much better and flexible. For r/o 
+> stuff - just make separate MTD partition (cramfs, squashfs) and mount 
+> it directly as root. Both options will waste significantly less 
+> memory.
 
-On May 9, 2006, at 3:52 PM, Walter L. Wimer III wrote:
+Agreed.
 
-> Exactly.  I think this kind of "automatic adaption" to the particular
-> platform is what should be in the vanilla kernel.
+And if somebody wants to see facts and numbers, please see
+http://www.denx.de/wiki/view/DULG/RootFileSystemSelection
 
-This does not mean you can choose some arbitrary value.
-There is a small range of high memory addresses that will
-work successfully for IMMR.  You may not see any problems
-right away, but depending upon drivers selected and the
-software features used, some problems will crop up.
-There are also MMU performance enhancements that may
-be used with certain values, and guaranteed kernel crashes
-at some point in the future when abused.
+Best regards,
 
-With Linux, the IMMR should always have a value of
-0xf0000000 or 0xff000000 for best results.
+Wolfgang Denk
 
-> This was the second major part of our 2.6.11.7-based patch.  It
-> performed a single ioremap(), stored the result in a global  
-> pointer, and
-> then used that pointer in all the drivers instead of using IMAP_ADDR
-> directly.
-
-This is not an acceptable practice.  We are removing all
-global pointers like this, and any driver that needs access to
-some or all of the IMMR space should be individually mapping
-those regions it needs.  Under the covers of ioremap() we are
-performing various alignment and reuse of address spaces
-in order to support things like performance enhancements
-and cache coherent regions.
-
-Thanks.
-
-	-- Dan
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Ninety-Ninety Rule of Project Schedules:
+        The first ninety percent of the task takes ninety percent of
+the time, and the last ten percent takes the other ninety percent.
