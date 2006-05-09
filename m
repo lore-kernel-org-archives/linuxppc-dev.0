@@ -1,23 +1,26 @@
-Return-Path: <mst@mellanox.co.il>
-Received: from mtlexch01.mtl.com (unknown [194.90.237.34])
-	by ozlabs.org (Postfix) with ESMTP id E5A7867A65
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 May 2006 04:54:51 +1000 (EST)
-Date: Tue, 9 May 2006 21:55:33 +0300
-From: "Michael S. Tsirkin" <mst@mellanox.co.il>
-To: Shirley Ma <xma@us.ibm.com>
-Subject: Re: Re: [PATCH 07/16] ehca: interrupt handling routines
-Message-ID: <20060509185533.GG22825@mellanox.co.il>
-References: <20060509184451.GF22825@mellanox.co.il>
-	<OF9332FF11.38007290-ON87257169.00673F71-88257169.006C7F6E@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <OF9332FF11.38007290-ON87257169.00673F71-88257169.006C7F6E@us.ibm.com>
+Return-Path: <info@schihei.de>
+Received: from schihei.org (schihei.net [81.169.184.117])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4225D67A77
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 May 2006 04:57:33 +1000 (EST)
+In-Reply-To: <20060509164919.GC5063@mellanox.co.il>
+References: <4450A196.2050901@de.ibm.com> <adaejz9o4vh.fsf@cisco.com>
+	<445B4DA9.9040601@de.ibm.com> <adafyjomsrd.fsf@cisco.com>
+	<44608C90.30909@de.ibm.com> <adalktbcgl1.fsf@cisco.com>
+	<20060509164919.GC5063@mellanox.co.il>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <40FCD6B6-9135-43C1-8974-E9070475DB78@schihei.de>
+From: Heiko J Schick <info@schihei.de>
+Subject: Re: [openib-general] Re: [PATCH 07/16] ehca: interrupt handling
+	routines
+Date: Tue, 9 May 2006 20:57:01 +0200
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
 Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
 	openib-general@openib.org, linuxppc-dev@ozlabs.org,
 	Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>,
-	openib-general-bounces@openib.org
-Reply-To: "Michael S. Tsirkin" <mst@mellanox.co.il>
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Quoting r. Shirley Ma <xma@us.ibm.com>:
-> No, CPU utilization wasn't reduced. When you use single CQ, NAPI polls on both RX/TX.
+On 09.05.2006, at 18:49, Michael S. Tsirkin wrote:
 
-I think NAPI's point is to reduce the interrupt rate.
-Wouldn't this reduce CPU load?
+>> The trivial way to do it would be to use the same idea as the current
+>> ehca driver: just create a thread for receive CQ events and a thread
+>> for send CQ events, and defer CQ polling into those two threads.
+>
+> For RX, isn't this basically what NAPI is doing?
+> Only NAPI seems better, avoiding interrupts completely and avoiding  
+> latency hit
+> by only getting triggered on high load ...
 
-> netperf, iperf, mpstat, netpipe, oprofiling, what's your suggestion?
+Does NAPI schedules CQ callbacks to different CPUs or stays the callback
+(handling of data, etc.) on the same CPU where the interrupt came in?
 
-netperf has -C which gives CPU load, which is handy.
-Running vmstat in another window also works reasoably well.
-
--- 
-MST
+Regards,
+	Heiko
