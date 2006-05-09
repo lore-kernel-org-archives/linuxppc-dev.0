@@ -1,24 +1,42 @@
-Return-Path: <mmeswani@utep.edu>
-Received: from itdsrvmail02.utep.edu (itdsrvmail02.utep.edu [129.108.0.88])
-	by ozlabs.org (Postfix) with ESMTP id B139367A05
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 May 2006 09:17:31 +1000 (EST)
+Return-Path: <xma@us.ibm.com>
+Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7DAD9679E9
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 May 2006 09:33:44 +1000 (EST)
+Received: from e31.co.us.ibm.com (e31.boulder.ibm.com [9.17.249.41])
+	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k49IPr0x027839
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 May 2006 14:25:53 -0400
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e31.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k49IPn3T017354
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 May 2006 14:25:49 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k49IPnUi243762
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 May 2006 12:25:49 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k49IPmah032467
+	for <linuxppc-dev@ozlabs.org>; Tue, 9 May 2006 12:25:49 -0600
+In-Reply-To: <20060509164919.GC5063@mellanox.co.il>
+To: "Michael S. Tsirkin" <mst@mellanox.co.il>
 MIME-Version: 1.0
+Subject: Re: [openib-general] Re: [PATCH 07/16] ehca: interrupt handling
+	routines
+Message-ID: <OF22D08323.20D303C1-ON87257169.0063C980-88257169.006A41AB@us.ibm.com>
+From: Shirley Ma <xma@us.ibm.com>
+Date: Tue, 9 May 2006 11:27:29 -0700
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C673BE.BBC444DC"
-Subject: RE: Information for setting up SMT related parameters on linux 2.6.16
-	on POWER5
-Date: Tue, 9 May 2006 17:17:25 -0600
-Message-ID: <C26C730943E01145B4F89E37FE0A022002BBC74D@itdsrvmail02.utep.edu>
-References: <17498.60066.92373.6527@cargo.ozlabs.ibm.com>
-	<445BE729.80903@am.sony.com>
-	<C26C730943E01145B4F89E37FE0A022002BBC74B@itdsrvmail02.utep.edu>
-	<1147118619.8664.44.camel@localhost.localdomain>
-	<18583972-9E29-4B52-BF2E-53102F1794EB@kernel.crashing.org>
-From: "Meswani, Mitesh" <mmeswani@utep.edu>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>,
-	<will_schmidt@vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org,
-	Arnd Bergmann <arnd.bergmann%ibmde.RSCS@BLDVMB.POK.IBM.COM>
+	boundary="=_alternative 006A41A288257169_="
+Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+	openib-general@openib.org, linuxppc-dev@ozlabs.org,
+	Christoph Raisch <RAISCH@de.ibm.com>,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>,
+	openib-general-bounces@openib.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,209 +46,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+This is a multipart message in MIME format.
+--=_alternative 006A41A288257169_=
+Content-Type: text/plain; charset="US-ASCII"
 
-------_=_NextPart_001_01C673BE.BBC444DC
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+openib-general-bounces@openib.org wrote on 05/09/2006 09:49:19 AM:
 
-Thanks guys=20
-=20
-That answered so many of my questions.=20
-=20
-If I were to use these macros from user space, would they remain set =
-until next reboot or change ? POWER5 allows priorities 2 through 4 for =
-user apps, so considering this, and the fact that the normal prioirity =
-is level 4, if a user app resets it to say 2 and then finishes without =
-changing it back to 4 , would all the subsequent user apps run at the =
-new level 2. I wonder what I am saying even makes sense, because the =
-kernel internally throttles the priority for various sections of the =
-kernel code and it may even overwrite it.=20
-=20
-=20
-On a slightly unrelated note, I appended some boot parameters like =
-smt-enabled=3Don/off to /etc/lilo.conf and unfortunately I am not able =
-to see any effect and it boots the same way. I am switching from the AIX =
-world so I maybe doing something dumb, please point out if I am !  This =
-kind of seems to effect the bind processor calls using sys_setaffinity =
-when there are 4 logical processors 0-3 on two physical processors, bind =
-only allows me to set affinity to either cpu 0 or 2, this seems weird to =
-me because my system is booting with two logical cpus and then I set =
-online bit to 1 to turn the remaining on, thereafter I try binding and =
-havent been very successful.=20
-=20
-=20
-Thanks for all your replies.=20
-=20
-=20
-=20
+> Quoting r. Roland Dreier <rdreier@cisco.com>:
+> > The trivial way to do it would be to use the same idea as the current
+> > ehca driver: just create a thread for receive CQ events and a thread
+> > for send CQ events, and defer CQ polling into those two threads.
 
-Mitesh R. Meswani=20
-Ph.D. Candidate=20
-Research Associate, PLS2 Group
-Room 106 F, Department of Computer Science
-The University of Texas at El Paso,=20
-El Paso, Texas 79968
-Tel: 915 747 8012 (O)
-Email: mmeswani@utep.edu
+I have done some patch like that on top of splitting CQ. The problem I 
+found that hardware interrupt favors one CPU. Most of the time these two 
+threads are running on the same cpu according to my debug output. You can 
+easily find out by cat /proc/interrupts and /proc/irq/XXX/smp_affinity. 
+ehca has distributed interrupts evenly on SMP, so it gets the benefits of 
+two threads, and gains much better throughputs.
 
-________________________________
+The interesting thing is the UP results are much better than SMP results 
+with this approach on mthca.
 
-From: Segher Boessenkool [mailto:segher@kernel.crashing.org]
-Sent: Mon 5/8/2006 5:04 PM
-To: will_schmidt@vnet.ibm.com
-Cc: Meswani, Mitesh; linuxppc-dev@ozlabs.org; Arnd Bergmann; =
-linux-kernel@vger.kernel.org; cbe-oss-dev@ozlabs.org
-Subject: Re: Information for setting up SMT related parameters on linux =
-2.6.16 on POWER5
+> For RX, isn't this basically what NAPI is doing?
+> Only NAPI seems better, avoiding interrupts completely and avoiding 
+> latency hit
+> by only getting triggered on high load ...
+> 
+> -- 
+> MST
+
+According to some results from different resouces, NAPI only gives 3%-10% 
+performance improvement on single CQ.
+I am trying a simple NAPI patch on splitting CQ now to see how much 
+performance there.
+
+Thanks
+Shirley Ma
+IBM Linux Technology Center
+15300 SW Koll Parkway
+Beaverton, OR 97006-6063
+Phone(Fax): (503) 578-7638
+--=_alternative 006A41A288257169_=
+Content-Type: text/html; charset="US-ASCII"
 
 
-
-> the HMT_* macros are telling firmware that "this processor thread=20
-> should
-> run at this priority".  Typically used when we're waiting on a=20
-> spinlock.
-> I.e. When we are waiting on a spinlock, we hit the HMT_low macro to=20
-> drop
-> our threads priority, allowing the other thread to use those extra
-> cycles finish it's stuff quicker, and maybe even release the lock=20
-> we're
-> waiting for.          HMT_* is all within the kernel though, no=20
-> exposure
-> to userspace apps.
-
-Actually, those macros translate straight into a single machine insn.
-No firmware is involved.  See include/asm-powerpc/processor.h.  For
-example:
-
-#define HMT_very_low()   asm volatile("or 31,31,31   # very low=20
-priority")
-
-You can use those same macros from user space, although it is CPU
-implementation dependent which priorities you can actually set (you
-probably can do low and medium priority).
-
-
-Segher
-
-
-
-
-------_=_NextPart_001_01C673BE.BBC444DC
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">=0A=
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">=0A=
-<HTML>=0A=
-<HEAD>=0A=
-=0A=
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">=0A=
-<TITLE>Re: Information for setting up SMT related parameters on linux =
-2.6.16 on POWER5</TITLE>=0A=
-</HEAD>=0A=
-<BODY>=0A=
-<DIV id=3DidOWAReplyText63025 dir=3Dltr>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>Thanks guys =
-</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>That answered so many of my =
-questions. =0A=
-</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>If I were to use these macros =
-from user =0A=
-space, would they remain set until next reboot or change ? POWER5 allows =0A=
-priorities 2 through 4 for user apps, so considering this, and the fact =
-that the =0A=
-normal prioirity is level 4, if a user app resets it to say 2 and then =
-finishes =0A=
-without changing it back to 4 , would all the subsequent user apps run =
-at the =0A=
-new level 2. I wonder what I am saying even makes sense, because the =
-kernel =0A=
-internally throttles the priority for various sections of the kernel =
-code and it =0A=
-may even overwrite it. </FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>On a slightly unrelated note, =
-I appended =0A=
-some boot parameters like smt-enabled=3Don/off to /etc/lilo.conf and =
-unfortunately =0A=
-I am not able to see any effect and it boots the same way. I am =
-switching from =0A=
-the AIX world so I maybe doing something dumb, please point out if I am =
-!&nbsp; =0A=
-This kind of seems to effect the bind processor calls using =
-sys_setaffinity when =0A=
-there are 4 logical processors 0-3 on two physical processors, bind only =
-allows =0A=
-me to set affinity to either cpu 0 or 2, this seems weird to me because =
-my =0A=
-system is booting with two logical cpus and then I set online bit to 1 =
-to turn =0A=
-the remaining on, thereafter&nbsp;I try binding and havent been very =
-successful. =0A=
-</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2>Thanks for all your replies. =
-</FONT></DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2></FONT>&nbsp;</DIV></DIV>=0A=
-<DIV id=3DidSignature38110 dir=3Dltr><FONT face=3DArial color=3D#000000 =
-size=3D2>=0A=
-<DIV>&nbsp;</DIV>=0A=
-<DIV><BR>Mitesh R.&nbsp;Meswani <BR>Ph.D. Candidate </DIV>=0A=
-<DIV>Research Associate, PLS2 Group</DIV>=0A=
-<DIV>Room 106 F, Department of Computer Science</DIV>=0A=
-<DIV>The University of Texas at El Paso, </DIV>=0A=
-<DIV>El Paso, Texas 79968<BR>Tel: 915 747 8012 (O)</DIV>=0A=
-<DIV>Email: mmeswani@utep.edu</FONT></DIV></DIV>=0A=
-<DIV dir=3Dltr><BR>=0A=
-<HR tabIndex=3D-1>=0A=
-<FONT face=3DTahoma size=3D2><B>From:</B> Segher Boessenkool =0A=
-[mailto:segher@kernel.crashing.org]<BR><B>Sent:</B> Mon 5/8/2006 5:04 =0A=
-PM<BR><B>To:</B> will_schmidt@vnet.ibm.com<BR><B>Cc:</B> Meswani, =
-Mitesh; =0A=
-linuxppc-dev@ozlabs.org; Arnd Bergmann; linux-kernel@vger.kernel.org; =0A=
-cbe-oss-dev@ozlabs.org<BR><B>Subject:</B> Re: Information for setting up =
-SMT =0A=
-related parameters on linux 2.6.16 on POWER5<BR></FONT><BR></DIV>=0A=
-<DIV>=0A=
-<P><FONT size=3D2>&gt; the HMT_* macros are telling firmware that "this =
-processor =0A=
-thread&nbsp;<BR>&gt; should<BR>&gt; run at this priority".&nbsp; =
-Typically used =0A=
-when we're waiting on a&nbsp;<BR>&gt; spinlock.<BR>&gt; I.e. When we are =
-waiting =0A=
-on a spinlock, we hit the HMT_low macro to&nbsp;<BR>&gt; drop<BR>&gt; =
-our =0A=
-threads priority, allowing the other thread to use those extra<BR>&gt; =
-cycles =0A=
-finish it's stuff quicker, and maybe even release the lock&nbsp;<BR>&gt; =0A=
-we're<BR>&gt; waiting =
-for.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =0A=
-HMT_* is all within the kernel though, no&nbsp;<BR>&gt; exposure<BR>&gt; =
-to =0A=
-userspace apps.<BR><BR>Actually, those macros translate straight into a =
-single =0A=
-machine insn.<BR>No firmware is involved.&nbsp; See =0A=
-include/asm-powerpc/processor.h.&nbsp; For<BR>example:<BR><BR>#define =0A=
-HMT_very_low()&nbsp;&nbsp; asm volatile("or 31,31,31&nbsp;&nbsp; # very =0A=
-low&nbsp;<BR>priority")<BR><BR>You can use those same macros from user =
-space, =0A=
-although it is CPU<BR>implementation dependent which priorities you can =
-actually =0A=
-set (you<BR>probably can do low and medium =0A=
-priority).<BR><BR><BR>Segher<BR><BR></FONT></P></DIV>=0A=
-=0A=
-</BODY>=0A=
-</HTML>
-------_=_NextPart_001_01C673BE.BBC444DC--
+<br><font size=2><tt>openib-general-bounces@openib.org wrote on 05/09/2006
+09:49:19 AM:<br>
+<br>
+&gt; Quoting r. Roland Dreier &lt;rdreier@cisco.com&gt;:<br>
+&gt; &gt; The trivial way to do it would be to use the same idea as the
+current<br>
+&gt; &gt; ehca driver: just create a thread for receive CQ events and a
+thread<br>
+&gt; &gt; for send CQ events, and defer CQ polling into those two threads.<br>
+</tt></font>
+<br><font size=2><tt>I have done some patch like that on top of splitting
+CQ. The problem I found that hardware interrupt favors one CPU. Most of
+the time these two threads are running on the same cpu according to my
+debug output. You can easily find out by cat /proc/interrupts and /proc/irq/XXX/smp_affinity.
+ehca has distributed interrupts evenly on SMP, so it gets the benefits
+of two threads, and gains much better throughputs.</tt></font>
+<br>
+<br><font size=2><tt>The interesting thing is the UP results are much better
+than SMP results with this approach on mthca.</tt></font>
+<br><font size=2><tt><br>
+&gt; For RX, isn't this basically what NAPI is doing?<br>
+&gt; Only NAPI seems better, avoiding interrupts completely and avoiding
+<br>
+&gt; latency hit<br>
+&gt; by only getting triggered on high load ...<br>
+&gt; <br>
+&gt; -- <br>
+&gt; MST<br>
+</tt></font>
+<br><font size=2><tt>According to some results from different resouces,
+NAPI only gives 3%-10% performance improvement on single CQ.</tt></font>
+<br><font size=2><tt>I am trying a simple NAPI patch on splitting CQ now
+to see how much performance there.</tt></font>
+<br>
+<br><font size=2><tt>Thanks</tt></font>
+<br><font size=2 face="sans-serif">Shirley Ma<br>
+IBM Linux Technology Center<br>
+15300 SW Koll Parkway<br>
+Beaverton, OR 97006-6063<br>
+Phone(Fax): (503) 578-7638</font>
+--=_alternative 006A41A288257169_=--
