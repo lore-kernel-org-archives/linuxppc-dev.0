@@ -1,29 +1,19 @@
-Return-Path: <walt.wimer@timesys.com>
-Received: from postfix.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 3160267A5C
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 8C22C67A70
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 05:59:38 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by postfix.timesys.com (Postfix) with ESMTP id 2951A806979A
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 May 2006 15:59:40 -0400 (EDT)
-Received: from postfix.timesys.com ([127.0.0.1])
-	by localhost (postfix.timesys.com [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 26283-03 for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 May 2006 15:59:33 -0400 (EDT)
-Received: from exchange.timesys.com (exchange.timesys.com [192.168.2.250])
-	by postfix.timesys.com (Postfix) with ESMTP id AFBBC8069794
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  9 May 2006 15:59:33 -0400 (EDT)
-Subject: Re: IMAP_ADDR on PPC 8xx
-From: "Walter L. Wimer III" <walt.wimer@timesys.com>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <4D8794260B62C940BBA7150CC5EB3BD43D23CA@bosmail.BOS.int.mrv.com>
-References: <4D8794260B62C940BBA7150CC5EB3BD43D23CA@bosmail.BOS.int.mrv.com>
-Content-Type: text/plain; charset=iso-8859-13
-Date: Tue, 09 May 2006 15:52:24 -0400
-Message-Id: <1147204345.3139.11.camel@excalibur.timesys.com>
-Mime-Version: 1.0
+	Wed, 10 May 2006 06:22:59 +1000 (EST)
+To: "Walter L. Wimer III" <walt.wimer@timesys.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: IMAP_ADDR on PPC 8xx 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 09 May 2006 13:14:39 EDT."
+	<1147194879.2200.41.camel@excalibur.timesys.com>
+Date: Tue, 09 May 2006 22:22:57 +0200
+Sender: wd@denx.de
+Message-Id: <20060509202257.551DF352B2A@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,45 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-05-09 at 14:38 -0400, Kenneth Poole wrote:
-> In our build, (currently based on 2.6.14.3) we define IMAP_ADDR as
-> follows:
->=20
-> #define IMAP_ADDR       (((bd_t *)__res)->bi_immr_base)
+In message <1147194879.2200.41.camel@excalibur.timesys.com> you wrote:
+> 
+> Thanks again for the advice.  Interestingly, I gave the wrong address
+> above.  It wasn't 0x22000000, it was 0x02200000 (i.e. even lower!).  And
+> yet with the "io_remap()'ed global variable" patch, 2.6.11.7 does indeed
+> work on this board with this U-Boot....  Perhaps this works because this
+> particular board only has 8MiB of RAM....
 
-Yes, this is (part of) what our 2.6.11.7-based patch does.
+It does not work. It will certainly crash as soon as you start a  few
+user space applications.
 
+> Bottom line: I'm wondering what the Linux PPC community thinks is the
+> correct long term solution to these discrepancies.  Should we the
+> community declare "Freescale U-Boots are considered harmful; never use
+> them; always use the official U-Boot sources" ???
 
-> With very few exceptions, nearly all driver code that dereferences
-> IMAP_ADDR can be used unchanged and the IMMR value is always the value
-> passed up from the bootloader. We build one image that runs on
-> multiple platforms and some platforms place the IMMR address space at
-> different addresses than others. It=FFs not a constant.
+Indeed it would be nice if Freescale worked more  directly  with  the
+community.
 
-Exactly.  I think this kind of "automatic adaption" to the particular
-platform is what should be in the vanilla kernel.
+> Or should we create a kernel mechanism to automatically adapt to the
+> different U-Boot flavors?
 
+No, of course not. U-Boot is just one boot  loader,  there  are  many
+others, and the kernel hast to stay independent.
 
-> Regardless, I see little reason to ioremap() the IMMR address.
+And it is definitely not the kernel's fault if the boot  loader  sets
+up a braindamaged memory map.
 
-This was the second major part of our 2.6.11.7-based patch.  It
-performed a single ioremap(), stored the result in a global pointer, and
-then used that pointer in all the drivers instead of using IMAP_ADDR
-directly.  Personally, I don't have a strong opinion yet as to whether
-this is desirable or not.
+Best regards,
 
+Wolfgang Denk
 
-> The MMU is set up in such a way that IMMR based locations can be
-> accessed directly.
-
-I'm still rather fuzzy on whether one can count on this always being the
-case on all PPC variants.  (????)
-
-
-
-> Ken Poole, MRV Communications, Inc.
-
-
-Thanks!
-
-Walt
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+As in certain cults it is possible to kill a process if you know  its
+true name.                      -- Ken Thompson and Dennis M. Ritchie
