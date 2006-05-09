@@ -1,9 +1,17 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 09 May 2006 16:03:51 +1000
-Subject: [PATCH] powerpc: Make early debugging options behave with oldconfig
-Message-Id: <20060509060353.88680679F2@ozlabs.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 528F6679EF
+	for <linuxppc-dev@ozlabs.org>; Tue,  9 May 2006 17:14:34 +1000 (EST)
+To: "Srinivas Murthy" <codevana@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: ELDK for MPC8260 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 08 May 2006 18:46:32 PDT."
+	<7cb1293c0605081846w2a94d60ara83511f5e6bd30e7@mail.gmail.com>
+Date: Tue, 09 May 2006 09:14:31 +0200
+Sender: wd@denx.de
+Message-Id: <20060509071431.3A89E352B0C@atlas.denx.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,47 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If you undefine all the early debugging options and then run make oldconfig,
-you don't get prompted to see if you want to enable any of them. This is
-annoying.
+In message <7cb1293c0605081846w2a94d60ara83511f5e6bd30e7@mail.gmail.com> you wrote:
+>
+>  What is the current status of the ELDK support for the MPC8260 processor?
 
-AFAICT we can't do this just with a choice, because the choice is either
-optional, in which case we don't get prompted, or not in which case we _must_
-select early debugging.
+It has always been supported right from the very first version of the
+ELDK, and still is.
 
-So add a bool which controls whether we have early debugging at all, and then
-if that's enabled provide the choice. The extra bool will actually be useful
-in another patch I have lying around, so this is a win-win.
+>  Is there a current POWERQuicc based processor board for which we have the
+> ELDK support?
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+Yes, there are several such boards.
 
- arch/powerpc/Kconfig.debug |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+Best regards,
 
-Index: to-merge/arch/powerpc/Kconfig.debug
-===================================================================
---- to-merge.orig/arch/powerpc/Kconfig.debug
-+++ to-merge/arch/powerpc/Kconfig.debug
-@@ -110,13 +110,16 @@ config SERIAL_TEXT_DEBUG
- 	depends on 4xx || LOPEC || MV64X60 || PPLUS || PRPMC800 || \
- 		PPC_GEN550 || PPC_MPC52xx
- 
-+config PPC_EARLY_DEBUG
-+	bool "Early debugging (dangerous)"
-+
- choice
--	prompt "Early debugging (dangerous)"
--	bool
--	optional
-+	prompt "Early debugging console"
-+	depends on PPC_EARLY_DEBUG
- 	help
--	  Enable early debugging. Careful, if you enable debugging for the
--	  wrong type of machine your kernel _will not boot_.
-+	  Use the selected console for early debugging. Careful, if you
-+	  enable debugging for the wrong type of machine your kernel
-+	  _will not boot_.
- 
- config PPC_EARLY_DEBUG_LPAR
- 	bool "LPAR HV Console"
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+How many QA engineers does it take to screw in a lightbulb? 3:  1  to
+screw it in and 2 to say "I told you so" when it doesn't work.
