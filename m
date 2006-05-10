@@ -1,27 +1,34 @@
-Return-Path: <jcrigby@gmail.com>
-Received: from wx-out-0102.google.com (wx-out-0102.google.com [66.249.82.203])
-	by ozlabs.org (Postfix) with ESMTP id 58F4D679E9
+Return-Path: <walt.wimer@timesys.com>
+Received: from postfix.timesys.com (mail.timesys.com [65.117.135.102])
+	by ozlabs.org (Postfix) with ESMTP id AA3FC679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 May 2006 06:04:22 +1000 (EST)
-Received: by wx-out-0102.google.com with SMTP id s11so8414wxc
+	Thu, 11 May 2006 06:19:32 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by postfix.timesys.com (Postfix) with ESMTP id 6A3178069798
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 13:04:21 -0700 (PDT)
-Message-ID: <4b73d43f0605101258x134646b8ufd323cff57cbd65d@mail.gmail.com>
-Date: Wed, 10 May 2006 13:58:01 -0600
-From: "John Rigby" <jrigby@freescale.com>
-Sender: jcrigby@gmail.com
-To: "Dan Malek" <dan@embeddedalley.com>
+	Wed, 10 May 2006 16:19:33 -0400 (EDT)
+Received: from postfix.timesys.com ([127.0.0.1])
+	by localhost (postfix.timesys.com [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 07139-01 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 10 May 2006 16:19:31 -0400 (EDT)
+Received: from exchange.timesys.com (exchange.timesys.com [192.168.2.250])
+	by postfix.timesys.com (Postfix) with ESMTP id BA65E8069796
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 10 May 2006 16:19:31 -0400 (EDT)
 Subject: Re: IMAP_ADDR on PPC 8xx
+From: "Walter L. Wimer III" <walt.wimer@timesys.com>
+To: linuxppc-embedded@ozlabs.org
 In-Reply-To: <6CE25E1C-0F7A-4644-926E-746C17A7A851@embeddedalley.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <4D8794260B62C940BBA7150CC5EB3BD43D23CA@bosmail.BOS.int.mrv.com>
 	<1147204345.3139.11.camel@excalibur.timesys.com>
 	<3A4FA660-AD13-4E2B-846B-B9ACD901444F@embeddedalley.com>
 	<1147274635.23931.17.camel@excalibur.timesys.com>
 	<1147279763.23931.32.camel@excalibur.timesys.com>
 	<6CE25E1C-0F7A-4644-926E-746C17A7A851@embeddedalley.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 10 May 2006 16:19:22 -0400
+Message-Id: <1147292362.23931.45.camel@excalibur.timesys.com>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,48 +39,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks Dan for the extra info.
-
-Just to let everyone know even though this turned out to not
-be our problem we here at Freescale are looking at how we
-can make sure this does not happen in the future.  We want
-any uboot shipped with future Freescale boards to have the
-correct behavior.  We also understand the board documentation
-needs to be changed to mention the appropriate value for IMMR
-for linux.
-
-John
-jrigby@freescale.com
-
-On 5/10/06, Dan Malek <dan@embeddedalley.com> wrote:
->
-> On May 10, 2006, at 12:49 PM, Walter L. Wimer III wrote:
->
-> > FYI, here's a table from the "MPC885ADS PowerQUICC(tm) Application
-> > Development System User's Guide", available on Freescale's website.
-> > This table seems to confirm how they've configured their U-Boot -- the
-> > IMMR is set to 0x02200000...
->
-> Freescale never ported U-Boot to the MPC855ADS platform, and
-> I don't believe it came with any software at all.  This IMMR value was
-> chosen to be backward compatible with some old software tools to
-> get a compact address space without the need of using the MMU,
-> long before we had Linux running on the platform.
->
-> > This may be fine for non-Linux purposes, but it looks like we need to
-> > spread some gospel to Freescale regarding the correct IMMR address for
-> > U-Boot / Linux....
->
+On Wed, 2006-05-10 at 13:45 -0400, Dan Malek wrote:
+> > This may be fine for non-Linux purposes, but it looks like we need
+> > to spread some gospel to Freescale regarding the correct IMMR
+> > address for U-Boot / Linux....
+> 
 > I think you better be pointing fingers at the clueless person that
 > provided the software you have, as it didn't come from Freescale nor
 > any of the public U-Boot sources.
->
+
+
+My sincerest apologies to Freescale.  Upon further research, it appears
+that it was another TimeSys engineer (who has since moved on to another
+job) who built and installed U-Boot on our MPC885ADS board.  Strangely,
+it appears that he started with the community U-Boot 1.1.3 and then
+added a patch to change the IMMR value (plus a few other things).  I'm
+not sure why.  He's a very bright guy, so I'm very puzzled....
+
+Anyway, mystery solved.
+
+Again, my sincerest apologies to Freescale.
+
+I built the community U-Boot 1.1.4 and flashed it onto our board.  Linux
+2.6.16.11 now boots much farther than before (I'm now getting printk()
+output).  The kernel is hitting a new problem now, but I suspect it may
+be related to the TLB code that Marcello has discussed recently.  I'm
+going to go look at that patch next.  :-)
+
+
 > Thanks.
->
+> 
 >         -- Dan
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+
+
+Thanks again to everyone!!!
+
+Walt Wimer
+TimeSys Corporation
