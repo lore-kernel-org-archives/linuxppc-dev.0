@@ -1,18 +1,20 @@
-Return-Path: <roto@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id A8BAC679EB
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 03:22:31 +1000 (EST)
-Date: Wed, 10 May 2006 19:24:43 +0200
-From: Wolfgang Pfeiffer <roto@gmx.net>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Alubook 5,8: No sound with 2.6.17-rc3-g5528e568-dirty
-Message-ID: <20060510172443.GF3878@localhost>
-References: <20060510154930.GD3878@localhost>
-	<2829.131.234.104.112.1147277053.squirrel@secure.sipsolutions.net>
+Return-Path: <rostedt@goodmis.org>
+Received: from ms-smtp-04.nyroc.rr.com (ms-smtp-04.nyroc.rr.com [24.24.2.58])
+	by ozlabs.org (Postfix) with ESMTP id DA6F267B31
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 04:04:22 +1000 (EST)
+Date: Wed, 10 May 2006 14:04:18 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Richard Henderson <rth@twiddle.net>
+Subject: Re: [RFC/PATCH] Make powerpc64 use __thread for per-cpu variables
+In-Reply-To: <20060510154702.GA28938@twiddle.net>
+Message-ID: <Pine.LNX.4.58.0605101400530.20305@gandalf.stny.rr.com>
+References: <17505.26159.807484.477212@cargo.ozlabs.ibm.com>
+	<20060510154702.GA28938@twiddle.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2829.131.234.104.112.1147277053.squirrel@secure.sipsolutions.net>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+	t@twiddle.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 10, 2006 at 06:04:13PM +0200, Johannes Berg wrote:
-> > As to the reason why I came here:
-> > As I can't be sure whether the issue announced in the subject line is
-> > really a kernel issue
-> 
-> Did it ever work? 
 
-Not with Debian, but with this Ubuntu live CD I have sound: 
-Ubuntu 6.06 "Dapper Drake" Beta 2 powerpc (20060427)
+On Wed, 10 May 2006, Richard Henderson wrote:
 
-The kernel on their CD is a 2.6.15-21-powerpc
+> On Wed, May 10, 2006 at 02:03:59PM +1000, Paul Mackerras wrote:
+> > With this patch, 64-bit powerpc uses __thread for per-cpu variables.
+>
+> How do you plan to address the compiler optimizing
+>
+> 	__thread int foo;
+> 	{
+> 	  use(foo);
+> 	  schedule();
+> 	  use(foo);
+> 	}
+>
+> into
+>
+> 	{
+> 	  int *tmp = &foo;	// tls arithmetic here
+> 	  use(*tmp);
+> 	  schedule();
+> 	  use(*tmp);
+> 	}
+>
+> Across the schedule, we may have changed cpus, making the cached
+> address invalid.
+>
 
-> I don't quite know what machine a 5,8 is since I have a
-> 5,6 only. 
+If you mean use(foo) is the same as per_cpu(foo), I can't see the compile
+optimizing this:
+
++#define per_cpu(var, cpu)                                      \
++       (*(__typeof__(&per_cpu__##var))({                       \
++               void *__ptr;                                    \
++               asm("addi %0,%1,per_cpu__"#var"@tprel"          \
++                   : "=b" (__ptr)                              \
++                   : "b" (paca[(cpu)].thread_ptr));            \
++               __ptr;                                          \
++       }))
 
 
-5.8 is, IINM, the last PPC 15" Powerbook that Apple made
+Anyway, per_cpu variables are usually used with preemption turned off and
+no need to schedule.
 
-> Also, try snd-aoa.
-
-With the git kernel mentioned in my previous mail there's no snd-aoa
-available, IINM. I'll try figure out how to get the source and compile
-another kernel with this driver ...
-
-Best Regards
-Wolfgang
-
-
--- 
-Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
-http://profiles.yahoo.com/wolfgangpfeiffer
-
-Key ID: E3037113
-http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
+-- Steve
