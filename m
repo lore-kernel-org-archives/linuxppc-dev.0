@@ -1,18 +1,16 @@
-Return-Path: <netstv@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id B99C3679F6
+Return-Path: <JDas@alphion.com>
+Received: from alphion.com (mail.alphion.com [207.145.47.133])
+	by ozlabs.org (Postfix) with ESMTP id DA909679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 May 2006 04:04:12 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id e30so2149456pya
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 11:04:08 -0700 (PDT)
-Message-ID: <b4b98b690605101104s424fb445l731f3d705d66d55e@mail.gmail.com>
-Date: Wed, 10 May 2006 11:04:08 -0700
-From: "Steve Iribarne (GMail)" <netstv@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Need help debugging
+	Thu, 11 May 2006 04:13:53 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C6745B.CE9DABD4"
+Subject: Help: Linux porting to custom target hw
+Date: Wed, 10 May 2006 14:01:45 -0400
+Message-ID: <8584FDC94AFF7640B17B8A89B23B19B331C626@sbsserver.AlphionCorp.local>
+From: "Jayanta Das" <JDas@alphion.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,31 +21,115 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-ok, so I've got my BDI2000 working and talking to my 8260.
-I read as much info as I could find on this but I still think I'm
-missing something.
+This is a multi-part message in MIME format.
 
-I have a uBoot image and I wait for the system to download my kernel.=20
-Not through the BDI, I just let the uBoot boot image do it the normal
-way.  I start it by telling the BDI to "go".
+------_=_NextPart_001_01C6745B.CE9DABD4
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Then what I want to do is connect to my linux kernel after the kernel
-is up and running so I do:
+Hello:
+=20
+Can someone point me in the right direction for some good documentation
+on the above topic. Following is what I so far have done and what I need
+to do.
+=20
+1. Set up host environment based on Fedora Core 4
+2. Downloaded 'ppc4xx' tool chain, ELDK and kernel
+3. Built U-Boot and uImage
+4. Flashed U-Boot on the 2nd flash on the Ocotea board (AMCC440GX
+PowerPC)
+5. Changed the environment variable for NFS mounted root fs and other
+MAC and IP addresses as needed
+6. TFTP uImage at 400000
+7. bootm and kernel boots all right with root fs mounted on the host
+=20
+I am expecting my hardware based on 440GX end of the month. I told the
+HW engineer to follow the peripheral i/f as much possible close to the
+ref. design. We are putting 32MB of Flash and 256MB of RAM.
+=20
+I need some guidance so that I can port U-Boot and the kernel (minimal
+changes) so that I can bring up the board initially with root fs NFS
+minted and later on the RAMDISK.
+=20
+Appreciate the help.
+=20
+Regards.
 
-(gdb) target remote bdi:2001
-Remote debugging using bdi:2001
-0xc000c9cc in ??()
-(gdb)
+------_=_NextPart_001_01C6745B.CE9DABD4
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Then I add my symbol table.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2873" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana=20
+size=3D2>Hello:</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>Can =
+someone point=20
+me in the right direction for some good documentation on the above =
+topic.=20
+Following is what I so far have done and what I need to =
+do.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>1. =
+Set up host=20
+environment based on Fedora Core 4</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>2. =
+Downloaded=20
+'ppc4xx' tool chain, ELDK and kernel</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>3. =
+Built U-Boot=20
+and uImage</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>4. =
+Flashed U-Boot=20
+on the 2nd flash on the Ocotea board (AMCC440GX =
+PowerPC)</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>5. =
+Changed the=20
+environment variable for NFS mounted root fs and other MAC and IP =
+addresses as=20
+needed</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>6. =
+TFTP uImage at=20
+400000</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>7. =
+bootm and=20
+kernel boots all right with root fs mounted on the =
+host</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>I am =
+expecting my=20
+hardware based on 440GX end of the month. I told the HW engineer to =
+follow the=20
+peripheral i/f as much possible close to the ref. design. We are putting =
+32MB of=20
+Flash and 256MB of RAM.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana size=3D2>I =
+need some=20
+guidance so that I can port U-Boot and the kernel (minimal changes) so =
+that I=20
+can bring up the board initially with root fs NFS minted and later on =
+the=20
+RAMDISK.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana =
+size=3D2>Appreciate the=20
+help.</FONT></SPAN></DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana=20
+size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV><SPAN class=3D036035317-10052006><FONT face=3DVerdana=20
+size=3D2>Regards.</FONT></SPAN></DIV></BODY></HTML>
 
-(gdb) add-symbol-file vmlinux 0xc0000000
-
-at that point I get a reset.
-
-I turn off the software watchdog in the BDI config file.  Is there
-something I am missing?
-
-Thanks in advance.
-
--stv
+------_=_NextPart_001_01C6745B.CE9DABD4--
