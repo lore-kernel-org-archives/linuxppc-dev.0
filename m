@@ -1,17 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17506.21908.857189.645889@cargo.ozlabs.ibm.com>
-Date: Thu, 11 May 2006 07:05:24 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: Re: [RFC/PATCH] Make powerpc64 use __thread for per-cpu variables
-In-Reply-To: <20060510.124003.04457042.davem@davemloft.net>
-References: <17505.26159.807484.477212@cargo.ozlabs.ibm.com>
-	<20060510154702.GA28938@twiddle.net>
-	<20060510.124003.04457042.davem@davemloft.net>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, rth@twiddle.net
+Return-Path: <chris@netzfragmente.de>
+Received: from mail.netzfragmente.de (netzfragmente.de [85.10.199.130])
+	by ozlabs.org (Postfix) with ESMTP id 0F37F679E6
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 07:15:02 +1000 (EST)
+Subject: Re: Alubook 5,8: No sound with 2.6.17-rc3-g5528e568-dirty
+From: Christoph Cebulla <chris@netzfragmente.de>
+To: Wolfgang Pfeiffer <roto@gmx.net>
+In-Reply-To: <20060510172443.GF3878@localhost>
+References: <20060510154930.GD3878@localhost>
+	<2829.131.234.104.112.1147277053.squirrel@secure.sipsolutions.net>
+	<20060510172443.GF3878@localhost>
+Content-Type: text/plain
+Date: Wed, 10 May 2006 22:54:33 +0200
+Message-Id: <1147294473.20771.11.camel@turing>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David S. Miller writes:
+Hi,
 
-> From: Richard Henderson <rth@twiddle.net>
-> Date: Wed, 10 May 2006 08:47:13 -0700
+> > Did it ever work? 
+
+Kind of... with a patch[1] originally by Ben Collins and adapted by
+Gaudenz Steinlin it at least lets you play your favorite music. The
+kernel I use is a 2.6.17-rc3-git5.
+
+> Not with Debian, but with this Ubuntu live CD I have sound: 
+> Ubuntu 6.06 "Dapper Drake" Beta 2 powerpc (20060427)
 > 
-> > How do you plan to address the compiler optimizing
->  ...
-> > Across the schedule, we may have changed cpus, making the cached
-> > address invalid.
+> The kernel on their CD is a 2.6.15-21-powerpc
+
+This patch applied cleanly on every kernel I tried since 2.6.15...
+
+> 5.8 is, IINM, the last PPC 15" Powerbook that Apple made
 > 
-> Per-cpu variables need to be accessed only with preemption
-> disabled.  And the preemption enable/disable operations
-> provide a compiler memory barrier.
+> > Also, try snd-aoa.
 
-No, Richard has a point, it's not the value that is the concern, it's
-the address, which gcc could assume is still valid after a barrier.
-Drat.
+Best regards,
+Christoph
 
-Paul.
+
+[1] http://lists.debian.org/debian-powerpc/2006/03/msg00226.html
