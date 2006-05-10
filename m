@@ -1,23 +1,20 @@
-Return-Path: <stevan@iritel.com>
-Received: from iritel.iritel.bg.ac.yu (iritel.iritel.bg.ac.yu [193.203.18.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 61984679E2
+Return-Path: <netstv@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.176])
+	by ozlabs.org (Postfix) with ESMTP id 26F12679F2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 23:34:13 +1000 (EST)
-Received: from iritel (root@localhost)
-	by iritel.iritel.bg.ac.yu (8.13.1/8.13.1) with SMTP id k4ADSu0V007182
-	for <linuxppc-embedded@ozlabs.org>; Wed, 10 May 2006 15:28:56 +0200
-Subject: Re: Help Needed: input overrun(s)
-From: Stevan Ignjatovic <stevan@iritel.com>
-To: s.maiti@tcs.com
-In-Reply-To: <OF00585CA1.4BAD2F12-ON6525716A.0018127A-6525716A.00191467@tcs.com>
-References: <OF00585CA1.4BAD2F12-ON6525716A.0018127A-6525716A.00191467@tcs.com>
-Content-Type: text/plain
-Message-Id: <1147267964.25388.41.camel@stevan.iritel.co.yu>
-Mime-Version: 1.0
-Date: Wed, 10 May 2006 15:32:44 +0200
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 10 May 2006 23:57:43 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id e30so2070102pya
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 10 May 2006 06:57:41 -0700 (PDT)
+Message-ID: <b4b98b690605100657n1d54fcdw51bb5bdc77f9813a@mail.gmail.com>
+Date: Wed, 10 May 2006 06:57:26 -0700
+From: "Steve Iribarne (GMail)" <netstv@gmail.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Re: Kernel panic - not syncing: No init found.
+In-Reply-To: <-1484187685935794069@unknownmsgid>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <-1484187685935794069@unknownmsgid>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,54 +25,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On 5/10/06, hangtoo <hangtoo@163.com> wrote:
+>
+> I try to make a new uRamdisk for my bubinga board(linux-2.6.14,PPC405EP).
+> actully I just copy the most of the files in the board,and compiled busyb=
+ox with ppc tools.
+> but when I use the new uRamdisk for a try,it just showed up this errors(a=
+s follow),then reboot,back and forth...
+> **************************************************
+> RAMDISK: incomplete write (-28 !=3D 32768) 4194304
+>
 
-On Wed, 2006-05-10 at 06:33, s.maiti@tcs.com wrote:
-> Hi all,
-> 
-> I am currently involve in development of Multi-Channel Controller (MCC) 
-> driver for MPC8260 processor. Whenever we are loading the driver, on the 
-> console we are receiving a print "ttyS: 1 input overrun(s)" along with 
-> other prints of the driver and resulting in scrambled output. 
-> Can anyone suggest why this is happening? Is the driver affecting the uart 
-> driver?
 
-As far as UART driver is concerned, it could be affected if you did not
-carefully allocate some resources. Are you using MCC1 or MCC2? Channel
-specific parameters of MCC1 (channels 0-127) are at the beginning of the
-DPRAM (channel CH_NUM at address 64*CH_NUM). UART driver (as well as
-ethernet driver) allocates its buffer descriptors with
-m8260_cpm_dpalloc. I think that allocating with this function starts at
-the beginning of the DPRAM, so you might have overwritten UART's buffer
-descriptors. So, use MCC2 if you can. If you use some BRGs in your MCC
-driver you should check that as well.     
+I'm pretty sure this tells me that your ramdisk is not big enough.
+Take a look at
+http://www.vanemery.com/Linux/Ramdisk/ramdisk.html
 
->  We have seen the memory map thoroughly, there is no issue of 
-> memory conflict. Any help in this regards, I will be grateful.
-> 
-> Thnaks and regards,
-> Souvik Maiti
-> Tata Consultancy Services Limited
-> Mailto: s.maiti@tcs.com
-> Website: http://www.tcs.com
-> =====-----=====-----=====
-> Notice: The information contained in this e-mail
-> message and/or attachments to it may contain 
-> confidential or privileged information. If you are 
-> not the intended recipient, any dissemination, use, 
-> review, distribution, printing or copying of the 
-> information contained in this e-mail message 
-> and/or attachments to it are strictly prohibited. If 
-> you have received this communication in error, 
-> please notify us by reply e-mail or telephone and 
-> immediately and permanently delete the message 
-> and any attachments. Thank you
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+If you are using LILO like in the example listed at the link above,
+you need to make sure your ramdisk_size parameter is big enough.
 
-Regards,
-Stevan
+That's what my gues is.
+
+-stv
