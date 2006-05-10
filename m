@@ -1,19 +1,25 @@
-Return-Path: <roto@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 586E667B27
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 09:05:59 +1000 (EST)
-Date: Thu, 11 May 2006 01:08:11 +0200
-From: Wolfgang Pfeiffer <roto@gmx.net>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: Alubook 5,8: No sound with 2.6.17-rc3-g5528e568-dirty
-Message-ID: <20060510230811.GH3878@localhost>
-References: <20060510154930.GD3878@localhost>
-	<2829.131.234.104.112.1147277053.squirrel@secure.sipsolutions.net>
-	<20060510213028.GG3878@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060510213028.GG3878@localhost>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A5B44679E6
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 09:18:00 +1000 (EST)
+In-Reply-To: <17506.21908.857189.645889@cargo.ozlabs.ibm.com>
+References: <17505.26159.807484.477212@cargo.ozlabs.ibm.com>
+	<20060510154702.GA28938@twiddle.net>
+	<20060510.124003.04457042.davem@davemloft.net>
+	<17506.21908.857189.645889@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <49BB818F-DF88-43A3-8B6A-7F9F5C7A2C3C@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] Make powerpc64 use __thread for per-cpu variables
+Date: Thu, 11 May 2006 01:17:50 +0200
+To: Paul Mackerras <paulus@samba.org>
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org, rth@twiddle.net,
+	"David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 10, 2006 at 11:30:28PM +0200, Wolfgang Pfeiffer wrote:
-> On Wed, May 10, 2006 at 06:04:13PM +0200, Johannes Berg wrote:
-> 
-> > Also, try snd-aoa.
-> 
-> Impossible here, it does not compile here. Neither with gcc 4.0 or 4.1
-> 
+>>> How do you plan to address the compiler optimizing
+>>  ...
+>>> Across the schedule, we may have changed cpus, making the cached
+>>> address invalid.
+>>
+>> Per-cpu variables need to be accessed only with preemption
+>> disabled.  And the preemption enable/disable operations
+>> provide a compiler memory barrier.
+>
+> No, Richard has a point, it's not the value that is the concern, it's
+> the address, which gcc could assume is still valid after a barrier.
+> Drat.
 
-Not being sure tho' whether the fact my source dir for the running
-kernel is cleaned up, IINM, (like "fakeroot make-kpkg clean") is the
-culprit for the failed compile ... I'll have a look into that at
-next daylight ... :)
+Would an asm clobber of GPR13 in the schedule routines (or a wrapper
+for them, or whatever) work?
 
-Until then
 
-Wolfgang 
-
--- 
-Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
-http://profiles.yahoo.com/wolfgangpfeiffer
-
-Key ID: E3037113
-http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
+Segher
