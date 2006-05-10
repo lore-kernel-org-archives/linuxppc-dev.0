@@ -1,16 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 586E667B27
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 09:05:59 +1000 (EST)
+Date: Thu, 11 May 2006 01:08:11 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Alubook 5,8: No sound with 2.6.17-rc3-g5528e568-dirty
+Message-ID: <20060510230811.GH3878@localhost>
+References: <20060510154930.GD3878@localhost>
+	<2829.131.234.104.112.1147277053.squirrel@secure.sipsolutions.net>
+	<20060510213028.GG3878@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17506.29128.591758.502430@cargo.ozlabs.ibm.com>
-Date: Thu, 11 May 2006 09:05:44 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Richard Henderson <rth@twiddle.net>
-Subject: Re: [RFC/PATCH] Make powerpc64 use __thread for per-cpu variables
-In-Reply-To: <20060510154702.GA28938@twiddle.net>
-References: <17505.26159.807484.477212@cargo.ozlabs.ibm.com>
-	<20060510154702.GA28938@twiddle.net>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, t@twiddle.net
+In-Reply-To: <20060510213028.GG3878@localhost>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,29 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Richard Henderson writes:
-
-> How do you plan to address the compiler optimizing
+On Wed, May 10, 2006 at 11:30:28PM +0200, Wolfgang Pfeiffer wrote:
+> On Wed, May 10, 2006 at 06:04:13PM +0200, Johannes Berg wrote:
 > 
-> 	__thread int foo;
-> 	{
-> 	  use(foo);
-> 	  schedule();
-> 	  use(foo);
-> 	}
+> > Also, try snd-aoa.
 > 
-> into
+> Impossible here, it does not compile here. Neither with gcc 4.0 or 4.1
 > 
-> 	{
-> 	  int *tmp = &foo;	// tls arithmetic here
-> 	  use(*tmp);
-> 	  schedule();
-> 	  use(*tmp);
-> 	}
 
-Hmmm...  Would it be sufficient to use a RELOC_HIDE in __get_cpu_var,
-like this?
+Not being sure tho' whether the fact my source dir for the running
+kernel is cleaned up, IINM, (like "fakeroot make-kpkg clean") is the
+culprit for the failed compile ... I'll have a look into that at
+next daylight ... :)
 
-#define __get_cpu_var(x)	(*(RELOC_HIDE(&per_cpu__##x, 0)))
+Until then
 
-Paul.
+Wolfgang 
+
+-- 
+Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
