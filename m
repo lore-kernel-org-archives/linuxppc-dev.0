@@ -1,15 +1,16 @@
-Return-Path: <s.maiti@tcs.com>
-Received: from inkolg01.tcs.com (inkolg01.tcs.com [203.197.96.54])
-	by ozlabs.org (Postfix) with ESMTP id E7D4D679F8
+Return-Path: <hangtoo@163.com>
+Received: from m5-84.163.com (m5-84.163.com [202.108.5.84])
+	by ozlabs.org (Postfix) with SMTP id 788F3679FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 May 2006 14:44:30 +1000 (EST)
-To: linuxppc-embedded@ozlabs.org
-Subject: Help Needed: input overrun(s)
-MIME-Version: 1.0
-From: s.maiti@tcs.com
-Message-ID: <OF00585CA1.4BAD2F12-ON6525716A.0018127A-6525716A.00191467@tcs.com>
-Date: Wed, 10 May 2006 10:03:55 +0530
-Content-Type: text/plain; charset="us-ascii"
+	Wed, 10 May 2006 20:02:03 +1000 (EST)
+Date: Wed, 10 May 2006 17:40:31 +0800
+From: "hangtoo" <hangtoo@163.com>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Subject: Kernel panic - not syncing: No init found.
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Message-Id: <4461BA19.032DB3.12441>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,30 +21,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
 
-I am currently involve in development of Multi-Channel Controller (MCC) 
-driver for MPC8260 processor. Whenever we are loading the driver, on the 
-console we are receiving a print "ttyS: 1 input overrun(s)" along with 
-other prints of the driver and resulting in scrambled output. 
-Can anyone suggest why this is happening? Is the driver affecting the uart 
-driver? We have seen the memory map thoroughly, there is no issue of 
-memory conflict. Any help in this regards, I will be grateful.
+I try to make a new uRamdisk for my bubinga board(linux-2.6.14,PPC405EP).
+actully I just copy the most of the files in the board,and compiled busybox with ppc tools.
+but when I use the new uRamdisk for a try,it just showed up this errors(as follow),then reboot,back and forth...
+**************************************************
+RAMDISK: incomplete write (-28 != 32768) 4194304
 
-Thnaks and regards,
-Souvik Maiti
-Tata Consultancy Services Limited
-Mailto: s.maiti@tcs.com
-Website: http://www.tcs.com
-=====-----=====-----=====
-Notice: The information contained in this e-mail
-message and/or attachments to it may contain 
-confidential or privileged information. If you are 
-not the intended recipient, any dissemination, use, 
-review, distribution, printing or copying of the 
-information contained in this e-mail message 
-and/or attachments to it are strictly prohibited. If 
-you have received this communication in error, 
-please notify us by reply e-mail or telephone and 
-immediately and permanently delete the message 
-and any attachments. Thank you
+EXT2-fs warning: checktime reached, running e2fsck is recommended
+
+VFS: Mounted root (ext2 filesystem).
+
+Freeing unused kernel memory: 116k init
+
+attempt to access beyond end of device  //this is where the error begins.
+
+ram0: rw=0, want=10330, limit=8192
+
+Buffer I/O error on device ram0, logical block 5164
+
+attempt to access beyond end of device
+
+ram0: rw=0, want=10330, limit=8192
+
+Buffer I/O error on device ram0, logical block 5164
+
+attempt to access beyond end of device
+
+ram0: rw=0, want=10330, limit=8192
+
+Buffer I/O error on device ram0, logical block 5164
+
+attempt to access beyond end of device
+
+ram0: rw=0, want=10330, limit=8192
+
+Buffer I/O error on device ram0, logical block 5164
+
+Kernel panic - not syncing: No init found.  Try passing init= option to kernel.
+//according to this note,is there something I have to do with my kernel??
+ <0>Rebooting in 1 seconds..
+*************************************************
+
+Any help is appreciated.
+
+regards
+tony
