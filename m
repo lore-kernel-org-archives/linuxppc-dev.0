@@ -1,16 +1,28 @@
-Return-Path: <nathanpilatzke@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.194])
-	by ozlabs.org (Postfix) with ESMTP id 06D9A679F7
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2006 05:14:10 +1000 (EST)
-Received: by nz-out-0102.google.com with SMTP id x7so254009nzc
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 12:14:09 -0700 (PDT)
-Message-ID: <98889dd30605111207g6afe6158je681717ccacb9e40@mail.gmail.com>
-Date: Thu, 11 May 2006 15:07:39 -0400
-From: "Nathan Pilatzke" <nathanpilatzke@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: ppc32 kernel boot problem (pmu related?)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D3048679F4
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2006 09:41:45 +1000 (EST)
+In-Reply-To: <20060511002217.GA31481@twiddle.net>
+References: <17505.26159.807484.477212@cargo.ozlabs.ibm.com>
+	<20060510154702.GA28938@twiddle.net>
+	<20060510.124003.04457042.davem@davemloft.net>
+	<17506.21908.857189.645889@cargo.ozlabs.ibm.com>
+	<49BB818F-DF88-43A3-8B6A-7F9F5C7A2C3C@kernel.crashing.org>
+	<20060511002217.GA31481@twiddle.net>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <E44D1BA0-2DB1-4151-BAC7-16B4BF37E419@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC/PATCH] Make powerpc64 use __thread for per-cpu variables
+Date: Fri, 12 May 2006 01:41:32 +0200
+To: Richard Henderson <rth@twiddle.net>
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,39 +32,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I am not a member of this list and I hope this is the correct
-place to report such problems and ask for help.
+>> Would an asm clobber of GPR13 in the schedule routines (or a wrapper
+>> for them, or whatever) work?
+>
+> No.  The address is cse'd symbolically long before the r13
+> reference is exposed.
 
-I am running an eMac first generation powerpc (700MHz) and the Gentoo
-distribution.  Kernel 2.6.15 (Gentoo revision 1) is working quite well
-for me.  A few days ago I compiled 2.6.17-rc3 from the vanilla sources
-ebuild and am having troubles with the pmu code.
+Current GCC won't ever do that over a (non-local, non-inlinable)
+function call though.  _Current_ GCC.
 
-I can boot successfully when my config has
-# CONFIG_ADB_PMU is not set
-but cannot boot if my config has
-CONFIG_ADB_PMU=3Dy
 
-I can post anything you need to help narrow down the problem (ie.
-kernel configs, boot msgs).  Would turning on the kernel debugging
-give more information on the problem?  Any help would be greatly
-appreciated... even if I can just narrow down the problem further so
-that I can make a very specific bug report.
-
-Here is the cpuinfo (as reported under 2.6.17-rc3 without PMU):
-cat /proc/cpuinfo
-processor       : 0
-cpu             : 7450, altivec supported
-clock           : 700.000000MHz
-revision        : 0.1 (pvr 8000 0201)
-bogomips        : 49.79
-timebase        : 24913389
-platform        : PowerMac
-machine         : PowerMac4,4
-motherboard     : PowerMac4,4 MacRISC2 MacRISC Power Macintosh
-detected as     : 80 (eMac)
-pmac flags      : 00000010
-L2 cache        : 256K unified
-pmac-generation : NewWorld
-
-Thanks.
+Segher
