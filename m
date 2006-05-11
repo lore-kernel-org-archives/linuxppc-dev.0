@@ -1,23 +1,23 @@
-Return-Path: <amodra@bigpond.net.au>
-Received: from grove.modra.org (CPE-144-136-172-108.sa.bigpond.net.au
-	[144.136.172.108]) by ozlabs.org (Postfix) with ESMTP id 08C69679E0
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 12:01:25 +1000 (EST)
-Date: Thu, 11 May 2006 11:31:25 +0930
-From: Alan Modra <amodra@bigpond.net.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC/PATCH] Make powerpc64 use __thread for per-cpu variables
-Message-ID: <20060511020125.GF24458@bubble.grove.modra.org>
-References: <17505.26159.807484.477212@cargo.ozlabs.ibm.com>
-	<20060510154702.GA28938@twiddle.net>
-	<20060510.124003.04457042.davem@davemloft.net>
-	<17506.21908.857189.645889@cargo.ozlabs.ibm.com>
-	<20060511010438.GE24458@bubble.grove.modra.org>
-	<17506.37259.755099.974824@cargo.ozlabs.ibm.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7BEBA679E1
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 21:59:11 +1000 (EST)
+Subject: Re: Alubook 5,8: No sound with 2.6.17-rc3-g5528e568-dirty
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1147304824.32448.82.camel@localhost.localdomain>
+References: <20060510154930.GD3878@localhost>
+	<2829.131.234.104.112.1147277053.squirrel@secure.sipsolutions.net>
+	<1147304824.32448.82.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-y6i+8m5kueLoyHdpYUr5"
+Date: Thu, 11 May 2006 13:58:22 +0200
+Message-Id: <1147348702.9630.7.camel@johannes>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17506.37259.755099.974824@cargo.ozlabs.ibm.com>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org, rth@twiddle.net,
-	"David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,46 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, May 11, 2006 at 11:21:15AM +1000, Paul Mackerras wrote:
-> Alan Modra writes:
-> 
-> > gcc shouldn't think there is any reason to cache the address.
-> 
-> Can I rely on that being true in the future?
 
-It isn't true in the *present*, except with a compiler on my home
-machine.  :-) 
+--=-y6i+8m5kueLoyHdpYUr5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-__thread int i1;
-void
-f3 (void)
-{
-  int x = i1;
-  __asm__ __volatile__ ("#dragons be here.  %0" : "+r" (x));
-  i1 = x;
-}
+On Thu, 2006-05-11 at 09:47 +1000, Benjamin Herrenschmidt wrote:
 
-current mainline with -O2 -S -mtls-size=16
+> Same as mine, it works fine with snd-aoa
 
-f3:
-        addi 9,2,i1@tprel
-        lwz 0,0(9)
-#APP
-        #dragons be here.  0
-#NO_APP
-        stw 0,0(9)
-        blr
+I should build a database with a machine string -> user* mapping... This
+means that even my brother has this one and it works great with snd-aoa
+as far as I know :)
 
-Same thing with my modified compiler.
+Though, since the alsa userspace libs absolutely *SUCK* no program I
+know of can properly represent the mixer controls except maybe amixer...
+I'd hate to work around this in the kernel, but the alsa libs are such
+complex beasts that I have a feeling they won't be fixed.
 
-f3:
-        lwz 0,i1@tprel(2)
-#APP
-        #dragons be here.  0
-#NO_APP
-        stw 0,i1@tprel(2)
-        blr
+Anyone up to inventing a new mixer API that uses sysfs? ;)
 
--- 
-Alan Modra
-IBM OzLabs - Linux Technology Centre
+johannes
+
+--=-y6i+8m5kueLoyHdpYUr5
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARGMm3KVg1VMiehFYAQJM0BAAqt/YmdASobeXi3A5FMpbo4/cpJslmh7j
+mV/OkEsvX41Or0mgwSELbsBMIisXxOoTyjVAPqa1j+ic5HCCfuOzP6zmdzMnAb8g
+746Eir7BFB38Rbeju2oXMkluSwduI4lQY0r00QKEzaJRviAqkd/IEyAH6Ghy8r/p
+WUHRn9eAc8f7NebJ5KArssGZT9fjqNss6DuXhRFOqC7Fsas9FtyP4fTC3zB/ybRs
+U7GSPoykcpFihnro36zi1Jt3YGxfkNojXsf0+sVK9Jb6Qu7Eq3eQyP/uPngShMdu
+L+UOMM4uQYKagDnOR1/GrnFv4C1Qv/0iqXH3sWh7dGig8vUgnpIr85NHDg3KqUOE
+kY/OYxnLmRpOo8wZm5/nmQN/dkFdRsBlun/4pbw+B3AbKf4UXgVDnK2odl9FHzu8
+7Bqis/EvLbFu5uWC5a+YcpPyk/cERwCFSztVocqveMgdeH2lc9zqYBAnXfMGfaLH
+vwP1N8SGzzpfZw2BaUBuAA1yKtx9kaQNtod8XVJwJzM5MC34Q1AIyfJ5YHYhD2Wl
+3Ff0wi/h92soU97o/GuvnMn79TtT2xZWr/ivR5lpdUXNAaV+n7YlNzGUgMRZnQYM
+O+jbkQqXOLedNnRihhL+iN19wfr46zMXcJ+0QTQUabmBgTztMgriyw1++JUUKpaF
+w0Y7zcamO1Q=
+=F1vo
+-----END PGP SIGNATURE-----
+
+--=-y6i+8m5kueLoyHdpYUr5--
