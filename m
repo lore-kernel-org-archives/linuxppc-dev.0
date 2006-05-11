@@ -1,25 +1,33 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Return-Path: <dwilder@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A5B44679E6
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 09:18:00 +1000 (EST)
-In-Reply-To: <17506.21908.857189.645889@cargo.ozlabs.ibm.com>
-References: <17505.26159.807484.477212@cargo.ozlabs.ibm.com>
-	<20060510154702.GA28938@twiddle.net>
-	<20060510.124003.04457042.davem@davemloft.net>
-	<17506.21908.857189.645889@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <49BB818F-DF88-43A3-8B6A-7F9F5C7A2C3C@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] Make powerpc64 use __thread for per-cpu variables
-Date: Thu, 11 May 2006 01:17:50 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org, rth@twiddle.net,
-	"David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 52077679E9
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 09:37:12 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k4ANb9ek020865
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 May 2006 19:37:09 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k4ANb9YQ273884
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 May 2006 17:37:09 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
+	k4ANb8Dt018089
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 May 2006 17:37:08 -0600
+Received: from [9.47.18.65] (dyn9047018065.beaverton.ibm.com [9.47.18.65])
+	by d03av02.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
+	k4ANb8Pl018074
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 May 2006 17:37:08 -0600
+Message-ID: <44628316.80600@us.ibm.com>
+Date: Wed, 10 May 2006 17:19:34 -0700
+From: David Wilder <dwilder@us.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC-PATCH] Prevent tasks from sleeping in die()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,21 +37,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> How do you plan to address the compiler optimizing
->>  ...
->>> Across the schedule, we may have changed cpus, making the cached
->>> address invalid.
->>
->> Per-cpu variables need to be accessed only with preemption
->> disabled.  And the preemption enable/disable operations
->> provide a compiler memory barrier.
->
-> No, Richard has a point, it's not the value that is the concern, it's
-> the address, which gcc could assume is still valid after a barrier.
-> Drat.
+I am seeing an issue in die() when voluntary preemption is enabled.
+die() 
+->>show_regs()->>show_instructions()->>__get_user_nocheck()->>might_sleep()
+If multiple CPUs call die() and one should sleep other CPUs may block on 
+the die_lock held by the sleeping CPU.  This problem is seen when a 
+soft-reset is issued as all CPUs call die() at roughly the same time.
 
-Would an asm clobber of GPR13 in the schedule routines (or a wrapper
-for them, or whatever) work?
+Is this the correct way to fix this problem?
 
+Signed-of-by: <wilder@us.ibm.com>
 
-Segher
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 064a525..dc45bcd 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -101,6 +101,15 @@ int die(const char *str, struct pt_regs
+    if (debugger(regs))
+        return 1;
+
++    /* If voluntary preemption is on we can sleep
++     * in show_regs().  This is bad as we hold the
++    * die_lock. Ether the task is exiting or the system
++    * is crashing so there is no need to restore the
++    * NEED_RESCHED flag.
++    */
++    clear_need_resched();
++
++
+        console_verbose();
+        spin_lock_irq(&die_lock);
+        bust_spinlocks(1);
+
+-- 
+David Wilder
+IBM Linux Technology Center
+Beaverton, Oregon, USA 
+dwilder@us.ibm.com
+(503)578-3789
