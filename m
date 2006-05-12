@@ -1,19 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 546DD679E7
+Return-Path: <hangtoo@163.com>
+Received: from m5-86.163.com (m5-86.163.com [202.108.5.86])
+	by ozlabs.org (Postfix) with SMTP id 3D35C679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 May 2006 19:53:41 +1000 (EST)
-To: "IGOR LURI" <iluri@fagorautomation.es>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Linux doesn't boot if USB is enabled 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 12 May 2006 10:53:15 +0200."
-	<918EB199DDDFFA42BEA2EB3A1C6021F3CE19E2@correo.fagorautomation.net>
-Date: Fri, 12 May 2006 11:53:39 +0200
-Sender: wd@denx.de
-Message-Id: <20060512095339.421CC352B2A@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 12 May 2006 20:00:38 +1000 (EST)
+Date: Fri, 12 May 2006 17:43:59 +0800
+From: "tony" <hangtoo@163.com>
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Subject: how to mount /dev/ram0 to / 
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Message-Id: <44645CBD.00AAC3.19405>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,27 +21,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <918EB199DDDFFA42BEA2EB3A1C6021F3CE19E2@correo.fagorautomation.net> you wrote:
-> 
-> We also have a mpc5200liteB evaluation board with u-boot 1.1.4 and linux
-> 2.4.25 from Denx. We have realized that when USB is enabled linux
-> doen´t boot, it hungs after u-boot uncompresses linux image.
 
-You need the latest versions of both U-boot and Linux.
+I made a new uRamdisk for the mini bubinga board,
+change uboot's bootargs like this
+bootargs root=/dev/ram rw console=ttyS0,115200 ip=192.168.0.200:192.168.0.19:::bubinga:eth0:off panic=1
+==>
+bootargs root=/dev/ram0 rw console=ttyS0,115200 ip=192.168.0.200:192.168.0.19:::bubinga:eth0:off panic=1
 
-For U-Boot, you need a version after April 18 (see especially  commit
-ID  8419c013048b1f15f3fa2fc7c0463d860a04ee3e).  For the Linux kernel,
-you  need  a  version  after  April  21  (see  especially  commit  ID
-1ac8b71bdbe6de928ba84c83831f6988a9b51165).
+after boot up,excute df to see the mount point:
+~ # df
+Filesystem           1k-blocks      Used Available Use% Mounted on
+~ # 
+nothing was mounted.
+the fatab in /etc is like this:
+/dev/ram0               /               ext2    defaults        1 1
+none                    /proc           proc    defaults        0 0
 
-I recommend to grab the top-of-tree from both repositories.
+anything wrong?
+thank you.
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Well, the way I see it, logic is only a way of being ignorant by num-
-bers.                                 - Terry Pratchett, _Small Gods_
+tony
