@@ -1,19 +1,26 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 017DC679E6
+Return-Path: <kiranf5@lycos.com>
+Received: from fallback.us4.outblaze.com (fallback.us4.outblaze.com
+	[205.158.62.120]) by ozlabs.org (Postfix) with ESMTP id C6758679EA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 May 2006 20:09:20 +1000 (EST)
-To: "tony" <hangtoo@163.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: how to mount /dev/ram0 to / 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 12 May 2006 17:43:59 +0800."
-	<44645CBD.00AAC3.19405>
-Date: Fri, 12 May 2006 12:09:17 +0200
-Sender: wd@denx.de
-Message-Id: <20060512100917.B4FCD352B2A@atlas.denx.de>
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	Fri, 12 May 2006 21:33:32 +1000 (EST)
+Received: from webmail-outgoing.us4.outblaze.com
+	(webmail-outgoing.us4.outblaze.com [205.158.62.67])
+	by fallback.us4.outblaze.com (Postfix) with ESMTP id 352311C0EE27
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 12 May 2006 11:06:01 +0000 (GMT)
+Received: from unknown (unknown [192.168.9.180])
+	by webmail-outgoing.us4.outblaze.com (Postfix) with QMQP id
+	421851800207 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 12 May 2006 11:06:28 +0000 (GMT)
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+From: "Kiran Kumar.A" <kiranf5@lycos.com>
+To: siman@bsysjob.sharella.com
+Date: Fri, 12 May 2006 06:06:24 -0500
+Subject: regarding setup_common_caches (port linux to prpmc610 kernel-2.4.25
+	with MVME2100 patch) dated jan 10 2006
+Message-Id: <20060512110624.720FCE5BC7@ws7-2.us4.outblaze.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,33 +31,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <44645CBD.00AAC3.19405> you wrote:
-> 
-> after boot up,excute df to see the mount point:
-> ~ # df
-> Filesystem           1k-blocks      Used Available Use% Mounted on
-> ~ # 
-> nothing was mounted.
+Hello Siman,
 
-Your rc scripts probably did not care to update /etc/mtag as needed.
+This is kiran here working on mvme6100 for kernel 2.6.13-4.
+I saw your issue regarding the setup_common_caches in mvme2100 port.=20
 
-Check what "cat /proc/mounts" gives.
+Since I'm also getting the similar problem in the port mentioned above, I j=
+ust wanted to know that , Did you crack the issue of common_caches??. If so=
+, Please let me know as to what could be done with this.
 
-> the fatab in /etc is like this:
-> /dev/ram0               /               ext2    defaults        1 1
-> none                    /proc           proc    defaults        0 0
-> 
-> anything wrong?
+Waiting for your reply at the earliest.
 
-Probably no part of your rc scripts did anything with the information
-in /etc/fstab ...
+regards,
+kiran
 
-Best regards,
 
-Wolfgang Denk
+--=20
+_______________________________________________
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Perl itself is  usually  pretty  good  about  telling  you  what  you
-shouldn't do. :-)     - Larry Wall in <11091@jpl-devvax.JPL.NASA.GOV>
+Search for businesses by name, location, or phone number.  -Lycos Yellow Pa=
+ges
+
+http://r.lycos.com/r/yp_emailfooter/http://yellowpages.lycos.com/default.as=
+p?SRC=3Dlycos10
