@@ -1,16 +1,19 @@
-Return-Path: <hangtoo@163.com>
-Received: from m5-86.163.com (m5-86.163.com [202.108.5.86])
-	by ozlabs.org (Postfix) with SMTP id 3D35C679E9
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 017DC679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 May 2006 20:00:38 +1000 (EST)
-Date: Fri, 12 May 2006 17:43:59 +0800
-From: "tony" <hangtoo@163.com>
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: how to mount /dev/ram0 to / 
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Message-Id: <44645CBD.00AAC3.19405>
+	Fri, 12 May 2006 20:09:20 +1000 (EST)
+To: "tony" <hangtoo@163.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: how to mount /dev/ram0 to / 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 12 May 2006 17:43:59 +0800."
+	<44645CBD.00AAC3.19405>
+Date: Fri, 12 May 2006 12:09:17 +0200
+Sender: wd@denx.de
+Message-Id: <20060512100917.B4FCD352B2A@atlas.denx.de>
+Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,23 +24,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <44645CBD.00AAC3.19405> you wrote:
+> 
+> after boot up,excute df to see the mount point:
+> ~ # df
+> Filesystem           1k-blocks      Used Available Use% Mounted on
+> ~ # 
+> nothing was mounted.
 
-I made a new uRamdisk for the mini bubinga board,
-change uboot's bootargs like this
-bootargs root=/dev/ram rw console=ttyS0,115200 ip=192.168.0.200:192.168.0.19:::bubinga:eth0:off panic=1
-==>
-bootargs root=/dev/ram0 rw console=ttyS0,115200 ip=192.168.0.200:192.168.0.19:::bubinga:eth0:off panic=1
+Your rc scripts probably did not care to update /etc/mtag as needed.
 
-after boot up,excute df to see the mount point:
-~ # df
-Filesystem           1k-blocks      Used Available Use% Mounted on
-~ # 
-nothing was mounted.
-the fatab in /etc is like this:
-/dev/ram0               /               ext2    defaults        1 1
-none                    /proc           proc    defaults        0 0
+Check what "cat /proc/mounts" gives.
 
-anything wrong?
-thank you.
+> the fatab in /etc is like this:
+> /dev/ram0               /               ext2    defaults        1 1
+> none                    /proc           proc    defaults        0 0
+> 
+> anything wrong?
 
-tony
+Probably no part of your rc scripts did anything with the information
+in /etc/fstab ...
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Perl itself is  usually  pretty  good  about  telling  you  what  you
+shouldn't do. :-)     - Larry Wall in <11091@jpl-devvax.JPL.NASA.GOV>
