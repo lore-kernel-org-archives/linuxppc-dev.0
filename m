@@ -1,21 +1,21 @@
-Return-Path: <bersace03@laposte.net>
-Received: from smtp6-g19.free.fr (smtp6-g19.free.fr [212.27.42.36])
-	by ozlabs.org (Postfix) with ESMTP id 85F8C67A3D
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 May 2006 01:15:28 +1000 (EST)
-Subject: Re: windfarm for PM72/PM73/RM31
-From: =?ISO-8859-1?Q?=C9tienne?= Bersac <bersace03@laposte.net>
-To: "Robin H. Johnson" <robbat2@gentoo.org>
-In-Reply-To: <20060502001306.GA9589@curie-int.vc.shawcable.net>
-References: <20060501002719.GD15141@curie-int.vc.shawcable.net>
-	<A2D81A03-8CD5-41CD-BD49-3EDB1CDE53FD@laposte.net>
-	<20060502001306.GA9589@curie-int.vc.shawcable.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-jXIQBnDIk88YS8xa/yiY"
-Date: Fri, 12 May 2006 17:15:23 +0200
-Message-Id: <1147446923.5147.29.camel@celebrad>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <thiagogalesi@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id 45B3367A05
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 May 2006 02:24:34 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id e2so375730ugf
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2006 09:24:33 -0700 (PDT)
+Message-ID: <82ecf08e0605120924p59ae4c21pb0fbf3e8b7170c07@mail.gmail.com>
+Date: Fri, 12 May 2006 13:24:33 -0300
+From: "Thiago Galesi" <thiagogalesi@gmail.com>
+To: "Felix Domke" <tmbinc@elitedvb.net>
+Subject: 2.6 vs 2.4
+In-Reply-To: <44649F09.2020803@elitedvb.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <7cb1293c0605112351y658460a0x8b793ea12004dbfc@mail.gmail.com>
+	<82ecf08e0605120729l43041aebuaef375a568700354@mail.gmail.com>
+	<44649F09.2020803@elitedvb.net>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,38 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Can you point me to a list of changes which where done? I really like to
+> check if they apply to my performance problems with 2.6 kernels, i.e. if
+> it's worth porting the board specific changes to a newer kernel.
+>
 
---=-jXIQBnDIk88YS8xa/yiY
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+I'm sorry, I was thinking (specifically) of the 8XX port that went
+from broken to maintained.
 
-Hello,
+It would help if you could mention some ofthe problems you are having.
 
-> The PID params portion will come together a bit later, please bug me by
-> Wednesday next week if I haven't posted anything.
+>When we switched from 2.4 to 2.6, IDE performance ("hdparm -t" to have a
+>single number) was reduced by about 25% (even after trying to finetune
+>the IDE driver
 
-Now we are Friday, what can we test ? ;) Sadly, my iMac G5 is under
-repair for quite some times (it crashes during compilation of mesa
-packages and never woke up).
+>On a 300MHz embedded mips machine, saturating a 100MBit network link via
+>ftp is not easy.
 
-So what'sup ? :)
+Unfortunatelly my knowlege of IDE is almost 0. Maybe it has something
+to do with schedulers being used?
 
-=C3=89tienne
+About network, I had better results with a much slower processor than
+your reported 5Mb/s (60MHz PPC in 2.6.10)
 
---=20
-Verso l'Alto !
 
---=-jXIQBnDIk88YS8xa/yiY
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBEZKaLbyMDDeXZS7URArIoAJ9UrxwpHW0bCAF2gLNwkls6y/uJ4gCcC0pl
-lHx4sfWSrrIPzj9KOECN2vs=
-=vR8B
------END PGP SIGNATURE-----
-
---=-jXIQBnDIk88YS8xa/yiY--
+Thiago
