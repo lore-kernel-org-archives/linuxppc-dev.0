@@ -1,22 +1,17 @@
-Return-Path: <Prabhat_Singh@Satyam.com>
-Received: from chnmail.satyam.com (chnmail.satyam.com [210.18.90.100])
-	by ozlabs.org (Postfix) with ESMTP id 8489D679EB
+Return-Path: <s.maiti@tcs.com>
+Received: from inkolg01.tcs.com (inkolg01.tcs.com [203.197.96.54])
+	by ozlabs.org (Postfix) with ESMTP id 9D218679F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 May 2006 13:43:30 +1000 (EST)
-Received: from blr.satyam.com (blr.satyam.com [208.220.245.73])
-	by che2.satyam.com (8.12.8/8.12.8) with ESMTP id k4C3gYT7026098
-	for <linuxppc-embedded@ozlabs.org>; Fri, 12 May 2006 09:12:34 +0530
-Received: from Disclaimerbng.corp.satyam.ad (bng.satyam.com [172.19.57.211])
-	by blr.satyam.com (8.12.8/8.12.8) with ESMTP id k4C3ULD5027984
-	for <linuxppc-embedded@ozlabs.org>; Fri, 12 May 2006 09:00:21 +0530
+	Fri, 12 May 2006 15:10:25 +1000 (EST)
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B0189DDA7@ismail.innsys.innovsys.com>
+To: "Rune Torgersen" <runet@innovsys.com>
+Subject: RE: Help Needed: input overrun(s)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C67576.1DC92A36"
-Subject: scheduler Latecy test on power pc 
-Date: Fri, 12 May 2006 09:12:38 +0530
-Message-ID: <D8595042F3765A4285B848A78A2C2ED104192B5A@bsdmsg002.corp.satyam.ad>
-From: "Prabhat_Singh" <Prabhat_Singh@Satyam.com>
-To: <linuxppc-embedded@ozlabs.org>
+From: s.maiti@tcs.com
+Message-ID: <OF3D251B79.F77E45B0-ON6525716C.00158469-6525716C.001C29A9@tcs.com>
+Date: Fri, 12 May 2006 10:37:38 +0530
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,140 +22,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Thank you very much for your help. Actually in our driver we are using all 
+128 channels of MCC1. So we have relocated the dpram for the uart and 
+ethernet to the dpram 3 and freed the space for the MCC1 accordingly. We 
+have gone through our allocations, nowhere it's conflicting. 
+In your case is your driver able to transmit and receive data correctly? 
+In our case whenever we load the driver the console output gets crambbled. 
+Through debugging we have identified that the cause of it may be due to 
+the configuration of L1RSYNC, L1TSYNC, RCLK and TCLK. Can these 
+configuration cause this ttyS overrun? 
+Also when the driver is loaded we are not getting any interrupts. We are 
+writting to the Tx buffer through a user space application, but that is 
+not resulting in any tx interrupts. Can you help me regarding this.
+Also I will be grateful to if let me know which kernel version of linux 
+you are using and the flow of initialization you are using in your driver.
+Looking forward to your help.
 
-------_=_NextPart_001_01C67576.1DC92A36
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-
- Hi,
-
-  I am using denx linux-2.4.24 on our customized board based on
-
- MPC8248 power processor.=20
-
-        I want to do kernel scheduling latency test on my power pc based
-board=20
-
- , can any one please tell me how could I do that?
-
-=20
-
-=20
-
-prabhat
+Thanks and regards,
+Souvik Maiti
+Tata Consultancy Services Limited
+Mailto: s.maiti@tcs.com
+Website: http://www.tcs.com
 
 
 
-DISCLAIMER:
-This email (including any attachments) is intended for the sole use of =
-the intended recipient/s and may contain material that is CONFIDENTIAL =
-AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
-copying or distribution or forwarding of any or all of the contents in =
-this message is STRICTLY PROHIBITED. If you are not the intended =
-recipient, please contact the sender by email and delete all copies; =
-your cooperation in this regard is appreciated.
+"Rune Torgersen" <runet@innovsys.com> 
+05/11/2006 07:44 PM
 
-------_=_NextPart_001_01C67576.1DC92A36
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+To
+<s.maiti@tcs.com>
+cc
+<linuxppc-embedded@ozlabs.org>, "Stevan Ignjatovic" <stevan@iritel.com>
+Subject
+RE: Help Needed: input overrun(s)
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
 
-</head>
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
 
-<div class=3DSection1>
 
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier =
-New"'>&nbsp;Hi,<o:p></o:p></span></font></p>
+> From: s.maiti@tcs.com [mailto:s.maiti@tcs.com] 
+> Thanks very much for your reply. It's seems you have already 
+> developed the MCC driver. Are you using channels 32 to 96? 
+> Have you made any changes in the dp ram allocation for uart 
+> or ethernet driver? 
+> Please help me... 
 
-<p class=3DMsoNormal =
-style=3D'text-indent:.5in;text-autospace:none'><font size=3D2
-face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;font-family:"Courier New"'>&nbsp; I
-am using denx linux-2.4.24 on our customized board based =
-on<o:p></o:p></span></font></p>
+We are using every other channel from 32 to 96 on both MCC's as SS7
+receivers.
+We did not have to do any relocations for UART or ethernet. 
+Ethernet uses upper DPRAM (above 0x8000) and uarts use the first 128
+bytes.
 
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier New"'>&nbsp;MPC8248 power =
-processor. <o:p></o:p></span></font></p>
+We statically allocate DPRAM with cpm_alloc_fixed. MCC1 use 0x0800 to
+0x17ff
+MCC2 use 0x2800 to 0x37ff. Extra param RAM is allocated with cpm_alloc
+and is allocated as 256*8 bytes, and shared between MCC1 and 2.
 
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier =
-New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; I want to do kernel
-scheduling latency test on my power pc based board =
-<o:p></o:p></span></font></p>
+All BD and interrupt tables are in main memory.
 
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier New"'>&nbsp;, can any one =
-please tell
-me how could I do that?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal style=3D'text-autospace:none'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt;font-family:"Courier =
-New"'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>prabhat<o:p></o:p></span></font></p>
-
-</div>
-
-<p></p><p>DISCLAIMER:<br>This email (including any attachments) is =
-intended for the sole use of the intended recipient/s and may contain =
-material that is CONFIDENTIAL AND PRIVATE COMPANY INFORMATION. Any =
-review or reliance by others or copying or distribution or forwarding of =
-any or all of the contents in this message is STRICTLY PROHIBITED. If =
-you are not the intended recipient, please contact the sender by email =
-and delete all copies; your cooperation in this regard is =
-appreciated..</body>
-
-</html>
-
-------_=_NextPart_001_01C67576.1DC92A36--
+ForwardSourceID:NT00006DD6 
+=====-----=====-----=====
+Notice: The information contained in this e-mail
+message and/or attachments to it may contain 
+confidential or privileged information. If you are 
+not the intended recipient, any dissemination, use, 
+review, distribution, printing or copying of the 
+information contained in this e-mail message 
+and/or attachments to it are strictly prohibited. If 
+you have received this communication in error, 
+please notify us by reply e-mail or telephone and 
+immediately and permanently delete the message 
+and any attachments. Thank you
