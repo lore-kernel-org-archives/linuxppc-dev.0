@@ -1,14 +1,17 @@
-Return-Path: <monika_borikar@yahoo.com>
-Received: from web30302.mail.mud.yahoo.com (web30302.mail.mud.yahoo.com
-	[68.142.200.95]) by ozlabs.org (Postfix) with SMTP id 327AC679EA
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2006 16:51:18 +1000 (EST)
-Message-ID: <20060512064437.17666.qmail@web30302.mail.mud.yahoo.com>
-Date: Thu, 11 May 2006 23:44:37 -0700 (PDT)
-From: Monika Borikar <monika_borikar@yahoo.com>
-Subject: DMA problem on PPC 74xx
-To: linuxppc-dev@ozlabs.org
+Return-Path: <codevana@gmail.com>
+Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.202])
+	by ozlabs.org (Postfix) with ESMTP id 3549067BF0
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 May 2006 16:51:37 +1000 (EST)
+Received: by nz-out-0102.google.com with SMTP id x7so93680nzc
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 May 2006 23:51:36 -0700 (PDT)
+Message-ID: <7cb1293c0605112351y658460a0x8b793ea12004dbfc@mail.gmail.com>
+Date: Thu, 11 May 2006 23:51:36 -0700
+From: "Srinivas Murthy" <codevana@gmail.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: 2.6 vs 2.4
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1221658401-1147416277=:15869"
+Content-Type: multipart/alternative;
+	boundary="----=_Part_19224_20163739.1147416696767"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,29 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0-1221658401-1147416277=:15869
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+------=_Part_19224_20163739.1147416696767
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Hello All,
- 
- I am working on PPC 74xx processor which uses Marvell mv64360 host bridge. On PPC linux-2.6.12.5 (with EV64360 patch ) is running, with CONFIG_NOT_COHERENT_CACHE=y option in .config file.
- 
- I have a pci device which has to do DMA transfer from PPC memory. This pci device is DMA master for all dma transactions. The device driver on PPC allocates memory using pci_alloc_consistent & write the data to this allocated memory. Address of this allocated memory is given to device using which device is supposed to do read/write using dma mechanism.
- 
- Looks like dma transfer is not happening. I found few mails which talks about some problem with caching. Can anybody guide me if there is any such issue & how to solve that?
- 
- Thanks
- -Monika
- 
- 
-		
----------------------------------
-New Yahoo! Messenger with Voice. Call regular phones from your PC and save big.
---0-1221658401-1147416277=:15869
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Hi,
+ Wolfgang Denk has a good listing of issues to consider betn linux 2.4 vs
+2.6 for ppc82xx based platforms (http://www.denx.de/wiki/Know/Linux24vs26).
 
-Hello All,<br> <br> I am working on PPC 74xx processor which uses Marvell mv64360 host bridge. On PPC linux-2.6.12.5 (with EV64360 patch ) is running, with CONFIG_NOT_COHERENT_CACHE=y option in .config file.<br> <br> I have a pci device which has to do DMA transfer from PPC memory. This pci device is DMA master for all dma transactions. The device driver on PPC allocates memory using pci_alloc_consistent &amp; write the data to this allocated memory. Address of this allocated memory is given to device using which device is supposed to do read/write using dma mechanism.<br> <br> Looks like dma transfer is not happening. I found few mails which talks about some problem with caching. Can anybody guide me if there is any such issue &amp; how to solve that?<br> <br> Thanks<br> -Monika<br> <br> <p>
-		<hr size=1>New Yahoo! Messenger with Voice. <a href="http://us.rd.yahoo.com/mail_us/taglines/postman5/*http://us.rd.yahoo.com/evt=39666/*http://messenger.yahoo.com">Call regular phones from your PC</a> and save big.
---0-1221658401-1147416277=:15869--
+ Would this recommendation still hold?
+
+ Are there any patches, developments in this area?
+
+Thanks,
+_Srinivas
+
+------=_Part_19224_20163739.1147416696767
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+<div>Hi,</div>
+<div>&nbsp;Wolfgang Denk has a good listing of issues to consider betn linu=
+x 2.4 vs 2.6 for ppc82xx based platforms (<a href=3D"http://www.denx.de/wik=
+i/Know/Linux24vs26">http://www.denx.de/wiki/Know/Linux24vs26</a>).</div>
+<div>&nbsp;</div>
+<div>&nbsp;Would this recommendation still hold?</div>
+<div>
+<div>&nbsp;</div>
+<div>&nbsp;Are there any patches, developments in this area?</div>
+<div>&nbsp;</div>
+<div>Thanks,</div>
+<div>_Srinivas</div>
+<div>&nbsp;</div></div>
+
+------=_Part_19224_20163739.1147416696767--
