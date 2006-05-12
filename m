@@ -1,26 +1,18 @@
-Return-Path: <kiranf5@lycos.com>
-Received: from fallback.us4.outblaze.com (fallback.us4.outblaze.com
-	[205.158.62.120]) by ozlabs.org (Postfix) with ESMTP id C6758679EA
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from agrxsusmail.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 93D73679F7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 May 2006 21:33:32 +1000 (EST)
-Received: from webmail-outgoing.us4.outblaze.com
-	(webmail-outgoing.us4.outblaze.com [205.158.62.67])
-	by fallback.us4.outblaze.com (Postfix) with ESMTP id 352311C0EE27
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 May 2006 11:06:01 +0000 (GMT)
-Received: from unknown (unknown [192.168.9.180])
-	by webmail-outgoing.us4.outblaze.com (Postfix) with QMQP id
-	421851800207 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 May 2006 11:06:28 +0000 (GMT)
-Content-Type: text/plain; charset="iso-8859-1"
+	Fri, 12 May 2006 22:56:24 +1000 (EST)
+Message-ID: <44647EE7.2020205@smiths-aerospace.com>
+Date: Fri, 12 May 2006 08:26:15 -0400
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
 MIME-Version: 1.0
-From: "Kiran Kumar.A" <kiranf5@lycos.com>
-To: siman@bsysjob.sharella.com
-Date: Fri, 12 May 2006 06:06:24 -0500
-Subject: regarding setup_common_caches (port linux to prpmc610 kernel-2.4.25
-	with MVME2100 patch) dated jan 10 2006
-Message-Id: <20060512110624.720FCE5BC7@ws7-2.us4.outblaze.com>
-Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: [U-Boot-Users] Re: Failure of 2 BAT schemes to enable D-cache
+References: <20060511223814.2195C352B0C@atlas.denx.de>
+In-Reply-To: <20060511223814.2195C352B0C@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "U-Boot-Users@lists.sourceforge.net" <U-Boot-Users@lists.sourceforge.net>,
+	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,26 +23,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Siman,
+Wolfgang Denk wrote:
+> In message <20060511201329.23866.qmail@web37105.mail.mud.yahoo.com> you wrote:
+>> Please post comments and suggestions of how I can
+>> initialized MMU for d-cache performance. I am  new
+>> to this.
+> 
+> We have been through this before, several times. Many times actually.
+> I have explained it to you, and so did others.
+> 
+> It is perfectly fine with me if you ignore my advice. But then please
+> stop posting the same question again and again here.
+> 
+> You will not receive any new answers.
+> 
+> Again, and definitely for the last time:
+> 
+> It makes no sense to try to enable the data cache on a MPC82xx system
+> in U-Boot; the time you could save if you succeeded  is  marginal  to
+> your application startup time.
+> 
+> And in Linux the D-Cache is enabled, so no changes are needed.
+> 
+> 
+> Best regards,
+> Wolfgang Denk
 
-This is kiran here working on mvme6100 for kernel 2.6.13-4.
-I saw your issue regarding the setup_common_caches in mvme2100 port.=20
+Furthermore, manipulating processor control registers interactively with 
+a debugger (e.g. attempting to enable dcache) is somewhere between 
+nearly impossible and totally impossible.  Read and understand the 
+processor manual on the sequences required for changing control 
+registers and enabling/disabling cache.  You cannot guarantee that the 
+sequences will be done properly because the debugger has LOTS of unknown 
+code running to implement what to you "looks like" a simple register 
+write command.
 
-Since I'm also getting the similar problem in the port mentioned above, I j=
-ust wanted to know that , Did you crack the issue of common_caches??. If so=
-, Please let me know as to what could be done with this.
-
-Waiting for your reply at the earliest.
-
-regards,
-kiran
-
-
---=20
-_______________________________________________
-
-Search for businesses by name, location, or phone number.  -Lycos Yellow Pa=
-ges
-
-http://r.lycos.com/r/yp_emailfooter/http://yellowpages.lycos.com/default.as=
-p?SRC=3Dlycos10
+Signing off on this thread,
+gvb
