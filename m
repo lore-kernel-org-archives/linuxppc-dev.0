@@ -1,20 +1,16 @@
-Return-Path: <thiagogalesi@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id D66BC679F2
+Return-Path: <samlinuxppc@yahoo.com.cn>
+Received: from web15706.mail.cnb.yahoo.com (web15706.mail.cnb.yahoo.com
+	[202.165.102.73]) by ozlabs.org (Postfix) with SMTP id 71410679F6
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 May 2006 10:49:03 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id e2so220129ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 May 2006 17:49:01 -0700 (PDT)
-Message-ID: <82ecf08e0605111749l5a0d7758y704e98b86778f2ea@mail.gmail.com>
-Date: Thu, 11 May 2006 21:49:01 -0300
-From: "Thiago Galesi" <thiagogalesi@gmail.com>
-To: "Jayanta Das" <JDas@alphion.com>
-Subject: Help: Linux porting to custom target hw
-In-Reply-To: <8584FDC94AFF7640B17B8A89B23B19B331C6BA@sbsserver.AlphionCorp.local>
+	Fri, 12 May 2006 11:31:12 +1000 (EST)
+Message-ID: <20060512013106.47527.qmail@web15706.mail.cnb.yahoo.com>
+Date: Fri, 12 May 2006 09:31:06 +0800 (CST)
+From: Sam Song <samlinuxppc@yahoo.com.cn>
+Subject: Re: MPC8641(D) software status
+To: Xianghua Xiao <x.xiao@freescale.com>
+In-Reply-To: <44638F6D.1030602@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <8584FDC94AFF7640B17B8A89B23B19B331C6BA@sbsserver.AlphionCorp.local>
+Content-Type: text/plain; charset=gb2312
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,20 +22,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->
-> My specific question was what do I need to change in the kernel and U-Boo=
-t
-> source to boot my target HW. Is flash location and the memory map only th=
-ing
-> I need to worry about or I need to do something more. E.g. I am looking f=
-or
-> a document which will specify the LSP specific files.
+Hi Xianghua,
 
-I'm not very familiar with UBoot but most of the changes will be made
-there, not in the kernel (that is, memory size, memory mappings, etc)
+Xianghua Xiao <x.xiao@freescale.com> wrote:
+> well I am not the one to be allowed to send
+> public patches. However if 
+> someone needs a 2.6.15/2.6.16 patch I can
+> certainly send it out before a 
+> public release(2.6.17?) is ready. It's also
+> available on freescale's 
+> website.
 
-AFAIK the only thing you'll have to set up in the kernel is the flash
-location, size and configuration (that is, if it is 16 bits, 32 bits,
-2x16 bits , etc, etc)
+That's fine. But I couldn't get it on your
+website. Not NOW, perhaps? :-)
 
-Thiago
+As wolfgang mentioned, the sooner it released
+to community, the better it would be. 
+
+Still one thing. Does MPC7447A tool chain 
+work for MPC8641D? 
+
+The big news is that it can be supported 
+by u-boot and 2.6 kernel. It's so great!
+
+Highly appreciate your info,
+
+Sam
+
+BTW, will you show up at FTF Shangahi at the
+end of this month? If so, I could invite you
+visit our lab for further communication.
+
+
+Best regards,
+
+Sam
+
+
+	
+
+	
+		
+___________________________________________________________ 
+—≈ª¢√‚∑—” œ‰-3.5G»›¡ø£¨20M∏Ωº˛
+http://cn.mail.yahoo.com/
