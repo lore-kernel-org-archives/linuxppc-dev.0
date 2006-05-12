@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 11F95679F7
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 May 2006 00:02:13 +1000 (EST)
-Subject: Re: 2.6 vs 2.4
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Srinivas Murthy <codevana@gmail.com>
-In-Reply-To: <1147442231.9412.9.camel@localhost.localdomain>
-References: <7cb1293c0605112351y658460a0x8b793ea12004dbfc@mail.gmail.com>
-	<1147442231.9412.9.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 13 May 2006 00:02:02 +1000
-Message-Id: <1147442522.9412.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id D5E0D679F4
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 May 2006 00:17:07 +1000 (EST)
+Date: Fri, 12 May 2006 16:19:18 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Alubook 5,8: No sound with 2.6.17-rc3-g5528e568-dirty
+Message-ID: <20060512141918.GA3566@localhost>
+References: <20060510154930.GD3878@localhost>
+	<2829.131.234.104.112.1147277053.squirrel@secure.sipsolutions.net>
+	<20060510213028.GG3878@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060510213028.GG3878@localhost>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	debian-powerpc <debian-powerpc@lists.debian.org>,
+	Matthias Grimm <matthiasgrimm@users.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +25,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-05-12 at 23:57 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2006-05-11 at 23:51 -0700, Srinivas Murthy wrote:
-> > Hi,
-> >  Wolfgang Denk has a good listing of issues to consider betn linux 2.4
-> > vs 2.6 for ppc82xx based platforms
-> > (http://www.denx.de/wiki/Know/Linux24vs26).
-> >  
-> >  Would this recommendation still hold?
-> >  
-> >  Are there any patches, developments in this area?
+Hi All
+
+First a fat Thanks to Johannes, Benh and to all of those heroes making
+it possible to run a relatively freh PPC (Apple) Powerbook model with Linux ... :)
+
+I'm cross-posting. So a short note for those who can't know what all this is about:
+
+I didn't have sound with a fresh git kernel, on the machine mentioned above:
+
+$ cat /proc/cpuinfo 
+processor       : 0
+cpu             : 7447A, altivec supported
+clock           : 833.333000MHz
+revision        : 0.5 (pvr 8003 0105)
+bogomips        : 16.57
+timebase        : 8320000
+platform        : PowerMac
+machine         : PowerBook5,8
+motherboard     : PowerBook5,8 MacRISC3 Power Macintosh 
+detected as     : 287 (PowerBook G4 15")
+pmac flags      : 00000019
+L2 cache        : 512K unified
+pmac-generation : NewWorld
+
+[Oops, something's messed up there: this actually is a 1.67 Ghz
+processor. I'll have a look at this later .. :) ]
+
+That's why I sent a message to linuxppc-dev@ozlabs.org. The thread is
+starting here:
+
+http://ozlabs.org/pipermail/linuxppc-dev/2006-May/022736.html
+
+On Wed, May 10, 2006 at 11:30:28PM +0200, Wolfgang Pfeiffer wrote:
+> On Wed, May 10, 2006 at 06:04:13PM +0200, Johannes Berg wrote:
 > 
-> The main open question is: is somebody still maintaining the 8xx kernel
-> port ?
+> > Also, try snd-aoa.
+> 
+> Impossible here, it does not compile here. Neither with gcc 4.0 or 4.1
 
-Oh , and to give a better reply after reading that web page... I'd say
-there might be a reason why 2.6 is slower (or appears slower) than 2.4
-on some of those embedded platforms. It's definitely faster in a number
-of areas on 6xx and other desktop CPUs. A lot of embedded folks will
-then bitch and complain about the slowdown on their 8xx processor, but
-very few of them if not none popped up actually identifying the actual
-issues and coming up with solution for them during the 2.6 dev. cycle.
+Wrong. To put it mildly .. :) Result probably of me being too tired,
+too fast, and too anal when reading instructions ...
 
-Ben.
+# lsmod | grep -i aoa
+snd_aoa_codec_onyx     12032  2 
+snd_aoa_fabric_layout     7492  2 
+snd_aoa                 8076  2 snd_aoa_codec_onyx,snd_aoa_fabric_layout
+soundbus                6628  2 snd_aoa_fabric_layout,i2sbus
+snd                    60148  12 snd_aoa_codec_onyx,snd_aoa_fabric_layout,
+				 snd_aoa,snd_powermac,i2sbus,snd_pcm_oss,
+				snd_mixer_oss,snd_pcm,snd_timer   
+
+I successfully compiled the software now, and only with gcc-4.1. Example:
+
+# modinfo snd_aoa 
+filename:       /lib/modules/2.6.17-rc3-gf358166a-dirty/kernel/sound/aoa/snd-aoa.ko
+description:    Apple Onboard Audio Sound Driver
+author:         Johannes Berg <johannes@sipsolutions.net>
+license:        GPL
+vermagic:       2.6.17-rc3-gf358166a-dirty mod_unload gcc-4.1
+depends:        snd
+srcversion:     D0DFD2EF0CFEB8E7C08AAEB
+
+The git kernel I compiled the snd-aoa modules for (must be from about
+yesterday, IINM):
+
+ cat /proc/version
+Linux version 2.6.17-rc3-gf358166a-dirty (root@debby1-6) (gcc version
+4.1.1 20060428 (prerelease) (Debian 4.1.0-2)) #1 Fri May 12 01:13:36
+CEST 2006
+
+config for this latest kernel (Please note the
+"CONFIG_PREEMPT_VOLUNTARY=y" in there ... :) ... :
+
+<http://wolfgangpfeiffer.com/config-2.6.17-rc3-gf358166a-dirty.txt>
+
+I filled /etc/modules with snd_aoa modules and i have sound already
+from boot time on ... with a minor glitch (i.e. not being able to
+store a certain volume level via alsactrl to the next reboot, as it
+seems), but sound ...
+
+> 
+> I took your instructions from
+> http://lists.debian.org/debian-powerpc/2006/03/msg00470.html
+> 
+
+I'm listening to some Internet radio station via alsaplayer while
+writing this mail ... :) ...
+
+Results, as of now:
+
+I can change the sound volume via the software. Tested in xine and
+alsaplayer-gtk so far ...
+
+I have problems doing the same with pbbuttonsd. That is I can start,
+e.g., gtkppbuttons, but when pressing <FN>-<F5> or <FN>-<F4> it seems
+being impossible to change the sound volume this way. But I can toggle
+it completely ON/OFF with <FN>-<F3.> ... not being sure tho' whether
+this is due to some of my braindead mistakes or really a pbbuttonsd
+issue ...
+
+Thanks again a lot to everyone for your work, your time, and the
+resulting fine software ... :)
+
+Nice weekend
+Wolfgang
+
+-- 
+Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
