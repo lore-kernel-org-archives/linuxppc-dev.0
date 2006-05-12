@@ -1,16 +1,16 @@
-Return-Path: <JDas@alphion.com>
-Received: from alphion.com (mail.alphion.com [207.145.47.133])
-	by ozlabs.org (Postfix) with ESMTP id 0D7ED679F7
+Return-Path: <antonio.dibacco@aruba.it>
+Received: from smtpa4.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id 8A1AA679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 May 2006 00:23:39 +1000 (EST)
+	Sat, 13 May 2006 06:51:42 +1000 (EST)
+From: Antonio Di Bacco <antonio.dibacco@aruba.it>
+To: linuxppc-embedded@ozlabs.org
+Subject: Routing problem
+Date: Fri, 12 May 2006 22:53:20 +0200
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C675CF.A9249AD3"
-Subject: Help: Linux porting to custom target hw
-Date: Fri, 12 May 2006 10:23:37 -0400
-Message-ID: <8584FDC94AFF7640B17B8A89B23B19B331C6F1@sbsserver.AlphionCorp.local>
-From: "Jayanta Das" <JDas@alphion.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200605122253.20195.antonio.dibacco@aruba.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,28 +21,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi all,
 
-------_=_NextPart_001_01C675CF.A9249AD3
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+I have a board with an MPC880 using the tow FECs as two ethernet interfaces. I 
+tried to enable the ip forwarding with no success. I have issued  "echo 1 
+> /proc/sys/net/ipv4/ip_forward", is it sufficient to make Linux work as a 
+router?
 
-Thiago - thanks for the help.
-
-------_=_NextPart_001_01C675CF.A9249AD3
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2873" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><SPAN class=3D681172314-12052006><FONT face=3DVerdana =
-size=3D2>Thiago - thanks=20
-for the help.</FONT></SPAN></DIV></BODY></HTML>
-
-------_=_NextPart_001_01C675CF.A9249AD3--
+Bye,
+Antonio. 
