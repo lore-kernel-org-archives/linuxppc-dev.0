@@ -1,19 +1,19 @@
-Return-Path: <joachim.denil@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id C926E679E9
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id F3B2D679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 May 2006 23:17:23 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id e2so475482ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 May 2006 06:17:21 -0700 (PDT)
-Message-ID: <d7b8e9f80605130610v7e0fa0ffx64641c63c4487dfe@mail.gmail.com>
-Date: Sat, 13 May 2006 15:10:45 +0200
-From: "Joachim Denil" <joachim.denil@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: board without RTC
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_34177_13288435.1147525845092"
+	Sat, 13 May 2006 23:47:32 +1000 (EST)
+To: "tony" <hangtoo@163.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: how to mount /dev/ram0 to / 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 13 May 2006 14:21:56 +0800."
+	<44657B5A.00FD1A.21222>
+Date: Sat, 13 May 2006 15:47:30 +0200
+Sender: wd@denx.de
+Message-Id: <20060513134730.1FF493526CA@atlas.denx.de>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,68 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_34177_13288435.1147525845092
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+In message <44657B5A.00FD1A.21222> you wrote:
+> 
+> >Probably no part of your rc scripts did anything with the information
+> >in /etc/fstab ...
+> ------------------------>> 
+> 	but,isn't it auto excuted? 
 
-Hello,
+Who should "auto execute"  it  if  not  one  of  your  rc  scripts???
+("execute"  being  a  bad  term, as the file is neither an executable
+itself not any kind of script - it's just a config file).
 
-Can someone tell me what the following functions should do in case there is
-no RTC on the hardware board. My processor is a 405gpr. Which of these i
-must implement. (maybe some code snippets...). I think the most important
-one is calibrate_decr for it is necesary to calibrate_delay function.
+Best regards,
 
-Thanks...
+Wolfgang Denk
 
-Joachim Denil
-Student
-
-
-long (*time_init <http://lxr.linux.no/ident?a=3Dppc;i=3Dtime_init>)(void);
-int (*set_rtc_time <http://lxr.linux.no/ident?a=3Dppc;i=3Dset_rtc_time>)(un=
-signed
-long nowtime);
-unsigned long (*get_rtc_time<http://lxr.linux.no/ident?a=3Dppc;i=3Dget_rtc_=
-time>
-)(void);
-unsigned char (*rtc_read_val)(int addr<http://lxr.linux.no/ident?a=3Dppc;i=
-=3Daddr>
-);
-void (*rtc_write_val)(int addr <http://lxr.linux.no/ident?a=3Dppc;i=3Daddr>=
-,
-unsigned char val <http://lxr.linux.no/ident?a=3Dppc;i=3Dval>);
-void (*calibrate_decr)(void);
-
-------=_Part_34177_13288435.1147525845092
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-<div>Hello,</div>
-<div>&nbsp;</div>
-<div>Can someone tell me what the following functions should do in case the=
-re is no RTC on the hardware board. My processor is a 405gpr. Which of thes=
-e i must implement. (maybe some code snippets...). I think the most importa=
-nt one is calibrate_decr for it is necesary to calibrate_delay function.
-</div>
-<div>&nbsp;</div>
-<div>Thanks...</div>
-<div>&nbsp;</div>
-<div>Joachim Denil</div>
-<div>Student</div>
-<div>&nbsp;</div>
-<div>&nbsp;</div>
-<div>long&nbsp;(*<a href=3D"http://lxr.linux.no/ident?a=3Dppc;i=3Dtime_init=
-">time_init</a>)(void);&nbsp;</div>
-<div>int&nbsp;(*<a href=3D"http://lxr.linux.no/ident?a=3Dppc;i=3Dset_rtc_ti=
-me">set_rtc_time</a>)(unsigned long nowtime);<br>unsigned long&nbsp;(*<a hr=
-ef=3D"http://lxr.linux.no/ident?a=3Dppc;i=3Dget_rtc_time">get_rtc_time</a>)=
-(void);<br>unsigned char&nbsp;(*rtc_read_val)(int=20
-<a href=3D"http://lxr.linux.no/ident?a=3Dppc;i=3Daddr">addr</a>);<br>void (=
-*rtc_write_val)(int <a href=3D"http://lxr.linux.no/ident?a=3Dppc;i=3Daddr">=
-addr</a>, unsigned char <a href=3D"http://lxr.linux.no/ident?a=3Dppc;i=3Dva=
-l">val</a>);<br>
-void&nbsp;(*calibrate_decr)(void);<br>&nbsp;</div>
-
-------=_Part_34177_13288435.1147525845092--
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Alles Gescheite ist schon gedacht worden, man muﬂ nur versuchen,
+es noch einmal zu denken.          -- Goethe, Maximen und Reflexionen
