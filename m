@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id F3B2D679EF
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 01FB8679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 May 2006 23:47:32 +1000 (EST)
-To: "tony" <hangtoo@163.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: how to mount /dev/ram0 to / 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 13 May 2006 14:21:56 +0800."
-	<44657B5A.00FD1A.21222>
-Date: Sat, 13 May 2006 15:47:30 +0200
-Sender: wd@denx.de
-Message-Id: <20060513134730.1FF493526CA@atlas.denx.de>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Sun, 14 May 2006 09:22:49 +1000 (EST)
+In-Reply-To: <d7b8e9f80605130610v7e0fa0ffx64641c63c4487dfe@mail.gmail.com>
+References: <d7b8e9f80605130610v7e0fa0ffx64641c63c4487dfe@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5D4F2E94-6295-4CA7-8226-8209FBE863FB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: board without RTC
+Date: Sat, 13 May 2006 18:22:47 -0500
+To: Joachim Denil <joachim.denil@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +26,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <44657B5A.00FD1A.21222> you wrote:
-> 
-> >Probably no part of your rc scripts did anything with the information
-> >in /etc/fstab ...
-> ------------------------>> 
-> 	but,isn't it auto excuted? 
 
-Who should "auto execute"  it  if  not  one  of  your  rc  scripts???
-("execute"  being  a  bad  term, as the file is neither an executable
-itself not any kind of script - it's just a config file).
+On May 13, 2006, at 8:10 AM, Joachim Denil wrote:
 
-Best regards,
+> Hello,
+>
+> Can someone tell me what the following functions should do in case  
+> there is no RTC on the hardware board. My processor is a 405gpr.  
+> Which of these i must implement. (maybe some code snippets...). I  
+> think the most important one is calibrate_decr for it is necesary  
+> to calibrate_delay function.
+>
+> Thanks...
+>
+> Joachim Denil
+> Student
+>
+>
+> long (*time_init)(void);
+> int (*set_rtc_time)(unsigned long nowtime);
+> unsigned long (*get_rtc_time)(void);
+> unsigned char (*rtc_read_val)(int addr);
+> void (*rtc_write_val)(int addr, unsigned char val);
+> void (*calibrate_decr)(void);
 
-Wolfgang Denk
+You should only need time_init if you need to poke some registers or  
+something to get the clocks going.  You are correct about  
+calibrate_decr.  All the *rtc* you dont need to bother with.
 
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Alles Gescheite ist schon gedacht worden, man muﬂ nur versuchen,
-es noch einmal zu denken.          -- Goethe, Maximen und Reflexionen
+- k
