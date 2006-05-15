@@ -2,29 +2,29 @@ Return-Path: <schihei@de.ibm.com>
 Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E861467BC8
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 03:41:00 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id C189F679F2
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 03:41:08 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.6/8.13.6) with ESMTP id k4FHeuOt098664
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 17:40:56 GMT
+	by mtagate1.de.ibm.com (8.13.6/8.13.6) with ESMTP id k4FHf4A9116086
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 17:41:04 GMT
 Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
 	[9.149.165.212])
 	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k4FHgMvT123336
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:42:22 +0200
+	k4FHgVvT080634
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:42:31 +0200
 Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
 	by d12av01.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k4FHetnV025114
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:40:56 +0200
-Message-ID: <4468BD41.4010803@de.ibm.com>
-Date: Mon, 15 May 2006 19:41:21 +0200
+	k4FHf4HM025229
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:41:04 +0200
+Message-ID: <4468BD4A.6080108@de.ibm.com>
+Date: Mon, 15 May 2006 19:41:30 +0200
 From: Heiko J Schick <schihei@de.ibm.com>
 MIME-Version: 1.0
 To: openib-general@openib.org, Christoph Raisch <RAISCH@de.ibm.com>,
 	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>,
 	schihei@de.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 02/16] ehca: structure definitions
+Subject: [PATCH 03/16] ehca: userspace support
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,22 +38,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
 
 
-  drivers/infiniband/hw/ehca/ehca_classes.h         |  350 ++++++++++++++++++++++
-  drivers/infiniband/hw/ehca/ehca_classes_pSeries.h |  251 +++++++++++++++
-  2 files changed, 601 insertions(+)
+  drivers/infiniband/hw/ehca/ehca_uverbs.c |  391 +++++++++++++++++++++++++++++++
+  1 file changed, 391 insertions(+)
 
 
 
---- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/ehca_classes.h	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/ehca_classes.h	2006-05-12 12:48:21.000000000 +0200
-@@ -0,0 +1,350 @@
+--- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/ehca_uverbs.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/ehca_uverbs.c	2006-05-12 12:31:52.000000000 +0200
+@@ -0,0 +1,391 @@
 +/*
 + *  IBM eServer eHCA Infiniband device driver for Linux on POWER
 + *
-+ *  Struct definition for eHCA internal structures
++ *  userspace support verbs
 + *
-+ *  Authors: Heiko J Schick <schickhj@de.ibm.com>
-+ *           Christoph Raisch <raisch@de.ibm.com>
++ *  Authors: Christoph Raisch <raisch@de.ibm.com>
++ *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
++ *           Heiko J Schick <schickhj@de.ibm.com>
 + *
 + *  Copyright (c) 2005 IBM Corporation
 + *
@@ -88,566 +88,352 @@ Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
 + * POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#ifndef __EHCA_CLASSES_H__
-+#define __EHCA_CLASSES_H__
++#undef DEB_PREFIX
++#define DEB_PREFIX "uver"
++
++#include <asm/current.h>
 +
 +#include "ehca_classes.h"
-+#include "ipz_pt_fn.h"
++#include "ehca_iverbs.h"
++#include "ehca_mrmw.h"
++#include "ehca_tools.h"
++#include "hcp_if.h"
 +
-+struct ehca_module;
-+struct ehca_qp;
-+struct ehca_cq;
-+struct ehca_eq;
-+struct ehca_mr;
-+struct ehca_mw;
-+struct ehca_pd;
-+struct ehca_av;
++struct ib_ucontext *ehca_alloc_ucontext(struct ib_device *device,
++					struct ib_udata *udata)
++{
++	struct ehca_ucontext *my_context = NULL;
 +
-+#ifdef CONFIG_PPC64
-+#include "ehca_classes_pSeries.h"
-+#endif
++	EHCA_CHECK_ADR_P(device);
++	EDEB_EN(7, "device=%p name=%s", device, device->name);
 +
-+#include <rdma/ib_verbs.h>
-+#include <rdma/ib_user_verbs.h>
++	my_context = kzalloc(sizeof *my_context, GFP_KERNEL);
++	if (!my_context) {
++		EDEB_ERR(4, "Out of memory device=%p", device);
++		return ERR_PTR(-ENOMEM);
++	}
 +
-+#include "ehca_irq.h"
++	EDEB_EX(7, "device=%p ucontext=%p", device, my_context);
 +
-+struct ehca_module {
-+	struct list_head shca_list;
-+	spinlock_t shca_lock;
-+	struct timer_list timer;
-+	kmem_cache_t *cache_pd;
-+	kmem_cache_t *cache_cq;
-+	kmem_cache_t *cache_qp;
-+	kmem_cache_t *cache_av;
-+	kmem_cache_t *cache_mr;
-+	kmem_cache_t *cache_mw;
-+	struct ehca_pfmodule pf;
++	return &my_context->ib_ucontext;
++}
++
++int ehca_dealloc_ucontext(struct ib_ucontext *context)
++{
++	struct ehca_ucontext *my_context = NULL;
++	EHCA_CHECK_ADR(context);
++	EDEB_EN(7, "ucontext=%p", context);
++	my_context = container_of(context, struct ehca_ucontext, ib_ucontext);
++	kfree(my_context);
++	EDEB_EN(7, "ucontext=%p", context);
++	return 0;
++}
++
++struct page *ehca_nopage(struct vm_area_struct *vma,
++			 unsigned long address, int *type)
++{
++	struct page *mypage = NULL;
++	u64 fileoffset = vma->vm_pgoff << PAGE_SHIFT;
++	u32 idr_handle = fileoffset >> 32;
++	u32 q_type = (fileoffset >> 28) & 0xF;	  /* CQ, QP,...        */
++	u32 rsrc_type = (fileoffset >> 24) & 0xF; /* sq,rq,cmnd_window */
++	u32 cur_pid = current->tgid;
++	unsigned long flags;
++
++	EDEB_EN(7, "vm_start=%lx vm_end=%lx vm_page_prot=%lx vm_fileoff=%lx "
++		"address=%lx",
++		vma->vm_start, vma->vm_end, vma->vm_page_prot, fileoffset,
++		address);
++
++	if (q_type == 1) { /* CQ */
++		struct ehca_cq *cq = NULL;
++		u64 offset;
++		void *vaddr = NULL;
++
++		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++		cq = idr_find(&ehca_cq_idr, idr_handle);
++		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++
++		if (cq->ownpid != cur_pid) {
++			EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++				 cur_pid, cq->ownpid);
++			return NOPAGE_SIGBUS;
++		}
++
++		/* make sure this mmap really belongs to the authorized user */
++		if (!cq) {
++			EDEB_ERR(4, "cq is NULL ret=NOPAGE_SIGBUS");
++			return NOPAGE_SIGBUS;
++		}
++		if (rsrc_type == 2) {
++			EDEB(6, "cq=%p cq queuearea", cq);
++			offset = address - vma->vm_start;
++			vaddr = ipz_qeit_calc(&cq->ipz_queue, offset);
++			EDEB(6, "offset=%lx vaddr=%p", offset, vaddr);
++			mypage = virt_to_page(vaddr);
++		}
++	} else if (q_type == 2) { /* QP */
++		struct ehca_qp *qp = NULL;
++		struct ehca_pd *pd = NULL;
++		u64 offset;
++		void *vaddr = NULL;
++
++		spin_lock_irqsave(&ehca_qp_idr_lock, flags);
++		qp = idr_find(&ehca_qp_idr, idr_handle);
++		spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
++
++
++		pd = container_of(qp->ib_qp.pd, struct ehca_pd, ib_pd);
++		if (pd->ownpid != cur_pid) {
++			EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++				 cur_pid, pd->ownpid);
++			return NOPAGE_SIGBUS;
++		}
++
++		/* make sure this mmap really belongs to the authorized user */
++		if (!qp) {
++			EDEB_ERR(4, "qp is NULL ret=NOPAGE_SIGBUS");
++			return NOPAGE_SIGBUS;
++		}
++		if (rsrc_type == 2) {	/* rqueue */
++			EDEB(6, "qp=%p qp rqueuearea", qp);
++			offset = address - vma->vm_start;
++			vaddr = ipz_qeit_calc(&qp->ipz_rqueue, offset);
++			EDEB(6, "offset=%lx vaddr=%p", offset, vaddr);
++			mypage = virt_to_page(vaddr);
++		} else if (rsrc_type == 3) {	/* squeue */
++			EDEB(6, "qp=%p qp squeuearea", qp);
++			offset = address - vma->vm_start;
++			vaddr = ipz_qeit_calc(&qp->ipz_squeue, offset);
++			EDEB(6, "offset=%lx vaddr=%p", offset, vaddr);
++			mypage = virt_to_page(vaddr);
++		}
++	}
++
++	if (!mypage) {
++		EDEB_ERR(4, "Invalid page adr==NULL ret=NOPAGE_SIGBUS");
++		return NOPAGE_SIGBUS;
++	}
++	get_page(mypage);
++	EDEB_EX(7, "page adr=%p", mypage);
++	return mypage;
++}
++
++static struct vm_operations_struct ehcau_vm_ops = {
++	.nopage = ehca_nopage,
 +};
 +
-+struct ehca_eq {
-+	u32 length;
-+	struct ipz_queue ipz_queue;
-+	struct ipz_eq_handle ipz_eq_handle;
-+	struct work_struct work;
-+	struct h_galpas galpas;
-+	int is_initialized;
-+	struct ehca_pfeq pf;
-+	spinlock_t spinlock;
-+	struct tasklet_struct interrupt_task;
-+	u32 ist;
-+};
++int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
++{
++	u64 fileoffset = vma->vm_pgoff << PAGE_SHIFT;
++	u32 idr_handle = fileoffset >> 32;
++	u32 q_type = (fileoffset >> 28) & 0xF;	  /* CQ, QP,...        */
++	u32 rsrc_type = (fileoffset >> 24) & 0xF; /* sq,rq,cmnd_window */
++	u32 ret = -EFAULT;	/* assume the worst             */
++	u64 vsize = 0;		/* must be calculated/set below */
++	u64 physical = 0;	/* must be calculated/set below */
++	u32 cur_pid = current->tgid;
++	unsigned long flags;
 +
-+struct ehca_sport {
-+	struct ib_cq *ibcq_aqp1;
-+	struct ib_qp *ibqp_aqp1;
-+	enum ib_rate  rate;
-+	enum ib_port_state port_state;
-+};
++	EDEB_EN(7, "vm_start=%lx vm_end=%lx vm_page_prot=%lx vm_fileoff=%lx",
++		vma->vm_start, vma->vm_end, vma->vm_page_prot, fileoffset);
 +
-+struct ehca_shca {
-+	struct ib_device ib_device;
-+	struct ibmebus_dev *ibmebus_dev;
-+	u8 num_ports;
-+	int hw_level;
-+	struct list_head shca_list;
-+	struct ipz_adapter_handle ipz_hca_handle;
-+	struct ehca_sport sport[2];
-+	struct ehca_eq eq;
-+	struct ehca_eq neq;
-+	struct ehca_mr *maxmr;
-+	struct ehca_pd *pd;
-+	struct ehca_pfshca pf;
-+	struct h_galpas galpas;
-+};
++	if (q_type == 1) { /* CQ */
++		struct ehca_cq *cq;
 +
-+struct ehca_pd {
-+	struct ib_pd ib_pd;
-+	struct ipz_pd fw_pd;
-+	struct ehca_pfpd pf;
-+	u32 ownpid;
-+};
++		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++		cq = idr_find(&ehca_cq_idr, idr_handle);
++		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
 +
-+struct ehca_qp {
-+	struct ib_qp ib_qp;
-+	u32 qp_type;
-+	struct ipz_queue ipz_squeue;
-+	struct ipz_queue ipz_rqueue;
-+	struct h_galpas galpas;
-+	u32 qkey;
-+	u32 real_qp_num;
-+	u32 token;
-+	spinlock_t spinlock_s;
-+	spinlock_t spinlock_r;
-+	u32 sq_max_inline_data_size;
-+	struct ipz_qp_handle ipz_qp_handle;
-+	struct ehca_pfqp pf;
-+	struct ib_qp_init_attr init_attr;
-+	u64 uspace_squeue;
-+	u64 uspace_rqueue;
-+	u64 uspace_fwh;
-+	struct ehca_cq *send_cq;
-+	struct ehca_cq *recv_cq;
-+	unsigned int sqerr_purgeflag;
-+	struct hlist_node list_entries;
-+};
++		if (cq->ownpid != cur_pid) {
++			EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++				 cur_pid, cq->ownpid);
++			return -ENOMEM;
++		}
 +
-+/* must be power of 2 */
-+#define QP_HASHTAB_LEN 8
++		/* make sure this mmap really belongs to the authorized user */
++		if (!cq)
++			return -EINVAL;
++		if (!cq->ib_cq.uobject)
++			return -EINVAL;
++		if (cq->ib_cq.uobject->context != context)
++			return -EINVAL;
++		if (rsrc_type == 1) {	/* galpa fw handle */
++			EDEB(6, "cq=%p cq triggerarea", cq);
++			vma->vm_flags |= VM_RESERVED;
++			vsize = vma->vm_end - vma->vm_start;
++			if (vsize != EHCA_PAGESIZE) {
++				EDEB_ERR(4, "invalid vsize=%lx",
++					 vma->vm_end - vma->vm_start);
++				ret = -EINVAL;
++				goto mmap_exit0;
++			}
 +
-+struct ehca_cq {
-+	struct ib_cq ib_cq;
-+	struct ipz_queue ipz_queue;
-+	struct h_galpas galpas;
-+	spinlock_t spinlock;
-+	u32 cq_number;
-+	u32 token;
-+	u32 nr_of_entries;
-+	struct ipz_cq_handle ipz_cq_handle;
-+	struct ehca_pfcq pf;
-+	spinlock_t cb_lock;
-+	u64 uspace_queue;
-+	u64 uspace_fwh;
-+	struct hlist_head qp_hashtab[QP_HASHTAB_LEN];
-+	struct list_head entry;
-+	u32 nr_callbacks;
-+	spinlock_t task_lock;
-+	u32 ownpid;
-+};
++			physical = cq->galpas.user.fw_handle;
++			vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++			vma->vm_flags |= VM_IO | VM_RESERVED;
 +
-+enum ehca_mr_flag {
-+	EHCA_MR_FLAG_FMR = 0x80000000,	 /* FMR, created with ehca_alloc_fmr */
-+	EHCA_MR_FLAG_MAXMR = 0x40000000, /* max-MR                           */
-+};
++			EDEB(6, "vsize=%lx physical=%lx", vsize, physical);
++			ret = remap_pfn_range(vma, vma->vm_start,
++					      physical >> PAGE_SHIFT, vsize,
++					      vma->vm_page_prot);
++			if (ret) {
++				EDEB_ERR(4, "remap_pfn_range() failed ret=%x",
++					 ret);
++				ret = -ENOMEM;
++			}
++			goto mmap_exit0;
++		} else if (rsrc_type == 2) {	/* cq queue_addr */
++			EDEB(6, "cq=%p cq q_addr", cq);
++			/* vma->vm_page_prot =
++			 * pgprot_noncached(vma->vm_page_prot); */
++			vma->vm_flags |= VM_RESERVED;
++			vma->vm_ops = &ehcau_vm_ops;
++			ret = 0;
++			goto mmap_exit0;
++		} else {
++			EDEB_ERR(6, "bad resource type %x", rsrc_type);
++			ret = -EINVAL;
++			goto mmap_exit0;
++		}
++	} else if (q_type == 2) { /* QP */
++		struct ehca_qp *qp = NULL;
++		struct ehca_pd *pd = NULL;
 +
-+struct ehca_mr {
-+	union {
-+		struct ib_mr ib_mr;	/* must always be first in ehca_mr */
-+		struct ib_fmr ib_fmr;	/* must always be first in ehca_mr */
-+	} ib;
-+	spinlock_t mrlock;
++		spin_lock_irqsave(&ehca_qp_idr_lock, flags);
++		qp = idr_find(&ehca_qp_idr, idr_handle);
++		spin_unlock_irqrestore(&ehca_qp_idr_lock, flags);
 +
-+	enum ehca_mr_flag flags;
-+	u32 num_pages;		/* number of MR pages */
-+	u32 num_4k;		/* number of 4k "page" portions to form MR */
-+	int acl;		/* ACL (stored here for usage in reregister) */
-+	u64 *start;		/* virtual start address (stored here for */
-+	                        /* usage in reregister) */
-+	u64 size;		/* size (stored here for usage in reregister) */
-+	u32 fmr_page_size;	/* page size for FMR */
-+	u32 fmr_max_pages;	/* max pages for FMR */
-+	u32 fmr_max_maps;	/* max outstanding maps for FMR */
-+	u32 fmr_map_cnt;	/* map counter for FMR */
-+	/* fw specific data */
-+	struct ipz_mrmw_handle ipz_mr_handle;	/* MR handle for h-calls */
-+	struct h_galpas galpas;
-+	/* data for userspace bridge */
-+	u32 nr_of_pages;
-+	void *pagearray;
++		pd = container_of(qp->ib_qp.pd, struct ehca_pd, ib_pd);
++		if (pd->ownpid != cur_pid) {
++			EDEB_ERR(4, "Invalid caller pid=%x ownpid=%x",
++				 cur_pid, pd->ownpid);
++			return -ENOMEM;
++		}
 +
-+	struct ehca_pfmr pf;	/* platform specific part of MR */
-+};
++		/* make sure this mmap really belongs to the authorized user */
++		if (!qp || !qp->ib_qp.uobject ||
++		    qp->ib_qp.uobject->context != context) {
++			EDEB(6, "qp=%p, uobject=%p, context=%p",
++			     qp, qp->ib_qp.uobject, qp->ib_qp.uobject->context);
++			ret = -EINVAL;
++			goto mmap_exit0;
++		}
++		if (rsrc_type == 1) {	/* galpa fw handle */
++			EDEB(6, "qp=%p qp triggerarea", qp);
++			vma->vm_flags |= VM_RESERVED;
++			vsize = vma->vm_end - vma->vm_start;
++			if (vsize != EHCA_PAGESIZE) {
++				EDEB_ERR(4, "invalid vsize=%lx",
++					 vma->vm_end - vma->vm_start);
++				ret = -EINVAL;
++				goto mmap_exit0;
++			}
 +
-+struct ehca_mw {
-+	struct ib_mw ib_mw;	/* gen2 mw, must always be first in ehca_mw */
-+	spinlock_t mwlock;
++			physical = qp->galpas.user.fw_handle;
++			vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++			vma->vm_flags |= VM_IO | VM_RESERVED;
 +
-+	u8 never_bound;		/* indication MW was never bound */
-+	struct ipz_mrmw_handle ipz_mw_handle;	/* MW handle for h-calls */
-+	struct h_galpas galpas;
++			EDEB(6, "vsize=%lx physical=%lx", vsize, physical);
++			ret = remap_pfn_range(vma, vma->vm_start,
++					      physical >> PAGE_SHIFT, vsize,
++					      vma->vm_page_prot);
++			if (ret) {
++				EDEB_ERR(4, "remap_pfn_range() failed ret=%x",
++					 ret);
++				ret = -ENOMEM;
++			}
++			goto mmap_exit0;
++		} else if (rsrc_type == 2) {	/* qp rqueue_addr */
++			EDEB(6, "qp=%p qp rqueue_addr", qp);
++			vma->vm_flags |= VM_RESERVED;
++			vma->vm_ops = &ehcau_vm_ops;
++			ret = 0;
++			goto mmap_exit0;
++		} else if (rsrc_type == 3) {	/* qp squeue_addr */
++			EDEB(6, "qp=%p qp squeue_addr", qp);
++			vma->vm_flags |= VM_RESERVED;
++			vma->vm_ops = &ehcau_vm_ops;
++			ret = 0;
++			goto mmap_exit0;
++		} else {
++			EDEB_ERR(4, "bad resource type %x", rsrc_type);
++			ret = -EINVAL;
++			goto mmap_exit0;
++		}
++	} else {
++		EDEB_ERR(4, "bad queue type %x", q_type);
++		ret = -EINVAL;
++		goto mmap_exit0;
++	}
 +
-+	struct ehca_pfmw pf;	/* platform specific part of MW */
-+};
++mmap_exit0:
++	EDEB_EX(7, "ret=%x", ret);
++	return ret;
++}
 +
-+enum ehca_mr_pgi_type {
-+	EHCA_MR_PGI_PHYS   = 1,  /* type of ehca_reg_phys_mr,
-+				  * ehca_rereg_phys_mr,
-+				  * ehca_reg_internal_maxmr */
-+	EHCA_MR_PGI_USER   = 2,  /* type of ehca_reg_user_mr */
-+	EHCA_MR_PGI_FMR    = 3   /* type of ehca_map_phys_fmr */
-+};
++int ehca_mmap_nopage(u64 foffset, u64 length, void ** mapped,
++		     struct vm_area_struct ** vma)
++{
++	EDEB_EN(7, "foffset=%lx length=%lx", foffset, length);
++	down_write(&current->mm->mmap_sem);
++	*mapped = (void*)
++		do_mmap(NULL,0,
++			length,
++			PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS,
++			foffset);
++	up_write(&current->mm->mmap_sem);
++	if (*mapped) {
++		*vma = find_vma(current->mm,(u64)*mapped);
++		if (*vma) {
++			(*vma)->vm_flags |= VM_RESERVED;
++			(*vma)->vm_ops = &ehcau_vm_ops;
++		} else
++			EDEB_ERR(4, "couldn't find queue vma queue=%p", *mapped);
++	} else
++		EDEB_ERR(4, "couldn't create mmap length=%lx", length);
++	EDEB_EX(7, "mapped=%p", *mapped);
++	return 0;
++}
 +
-+struct ehca_mr_pginfo {
-+	enum ehca_mr_pgi_type type;
-+	u64 num_pages;
-+	u64 page_cnt;
-+	u64 num_4k;       /* number of 4k "page" portions */
-+	u64 page_4k_cnt;  /* counter for 4k "page" portions */
-+	u64 next_4k;      /* next 4k "page" portion in buffer/chunk/listelem */
++int ehca_mmap_register(u64 physical, void ** mapped,
++		       struct vm_area_struct ** vma)
++{
++	int ret = 0;
++	unsigned long vsize;
++	/* ehca hw supports only 4k page */
++	ehca_mmap_nopage(0, EHCA_PAGESIZE, mapped, vma);
++	(*vma)->vm_flags |= VM_RESERVED;
++	vsize = (*vma)->vm_end - (*vma)->vm_start;
++	if (vsize != EHCA_PAGESIZE) {
++		EDEB_ERR(4, "invalid vsize=%lx",
++			 (*vma)->vm_end - (*vma)->vm_start);
++		ret = -EINVAL;
++		return ret;
++	}
 +
-+	/* type EHCA_MR_PGI_PHYS section */
-+	int num_phys_buf;
-+	struct ib_phys_buf *phys_buf_array;
-+	u64 next_buf;
++	(*vma)->vm_page_prot = pgprot_noncached((*vma)->vm_page_prot);
++	(*vma)->vm_flags |= VM_IO | VM_RESERVED;
 +
-+	/* type EHCA_MR_PGI_USER section */
-+	struct ib_umem *region;
-+	struct ib_umem_chunk *next_chunk;
-+	u64 next_nmap;
++	EDEB(6, "vsize=%lx physical=%lx", vsize, physical);
++	ret = remap_pfn_range((*vma), (*vma)->vm_start,
++			      physical >> PAGE_SHIFT, vsize,
++			      (*vma)->vm_page_prot);
++	if (ret) {
++		EDEB_ERR(4, "remap_pfn_range() failed ret=%x", ret);
++		ret = -ENOMEM;
++	}
++	return ret;
 +
-+	/* type EHCA_MR_PGI_FMR section */
-+	u64 *page_list;
-+	u64 next_listelem;
-+	/* next_4k also used within EHCA_MR_PGI_FMR */
-+};
++}
 +
-+/* output parameters for MR/FMR hipz calls */
-+struct ehca_mr_hipzout_parms {
-+	struct ipz_mrmw_handle handle;
-+	u32 lkey;
-+	u32 rkey;
-+	u64 len;
-+	u64 vaddr;
-+	u32 acl;
-+};
-+
-+/* output parameters for MW hipz calls */
-+struct ehca_mw_hipzout_parms {
-+	struct ipz_mrmw_handle handle;
-+	u32 rkey;
-+};
-+
-+struct ehca_av {
-+	struct ib_ah ib_ah;
-+	struct ehca_ud_av av;
-+};
-+
-+struct ehca_ucontext {
-+	struct ib_ucontext ib_ucontext;
-+};
-+
-+struct ehca_module *ehca_module_new(void);
-+
-+int ehca_module_delete(struct ehca_module *me);
-+
-+int ehca_eq_ctor(struct ehca_eq *eq);
-+
-+int ehca_eq_dtor(struct ehca_eq *eq);
-+
-+struct ehca_shca *ehca_shca_new(void);
-+
-+int ehca_shca_delete(struct ehca_shca *me);
-+
-+struct ehca_sport *ehca_sport_new(struct ehca_shca *anchor);
-+
-+extern spinlock_t ehca_qp_idr_lock;
-+extern spinlock_t ehca_cq_idr_lock;
-+extern struct idr ehca_qp_idr;
-+extern struct idr ehca_cq_idr;
-+
-+struct ipzu_queue_resp {
-+	u64 queue;        /* points to first queue entry */
-+	u32 qe_size;      /* queue entry size */
-+	u32 act_nr_of_sg;
-+	u32 queue_length; /* queue length allocated in bytes */
-+	u32 pagesize;
-+	u32 toggle_state;
-+	u32 dummy; /* padding for 8 byte alignment */
-+};
-+
-+struct ehca_create_cq_resp {
-+	u32 cq_number;
-+	u32 token;
-+	struct ipzu_queue_resp ipz_queue;
-+	struct h_galpas galpas;
-+};
-+
-+struct ehca_create_qp_resp {
-+	u32 qp_num;
-+	u32 token;
-+	u32 qp_type;
-+	u32 qkey;
-+	/* qp_num assigned by ehca: sqp0/1 may have got different numbers */
-+	u32 real_qp_num;
-+	u32 dummy; /* padding for 8 byte alignment */
-+	struct ipzu_queue_resp ipz_squeue;
-+	struct ipzu_queue_resp ipz_rqueue;
-+	struct h_galpas galpas;
-+};
-+
-+struct ehca_alloc_cq_parms {
-+	u32 nr_cqe;
-+	u32 act_nr_of_entries;
-+	u32 act_pages;
-+	struct ipz_eq_handle eq_handle;
-+};
-+
-+struct ehca_alloc_qp_parms {
-+	int servicetype;
-+	int sigtype;
-+	int daqp_ctrl;
-+	int max_send_sge;
-+	int max_recv_sge;
-+	int ud_av_l_key_ctl;
-+
-+	u16 act_nr_send_wqes;
-+	u16 act_nr_recv_wqes;
-+	u8  act_nr_recv_sges;
-+	u8  act_nr_send_sges;
-+
-+	u32 nr_rq_pages;
-+	u32 nr_sq_pages;
-+
-+	struct ipz_eq_handle ipz_eq_handle;
-+	struct ipz_pd pd;
-+};
-+
-+int ehca_cq_assign_qp(struct ehca_cq *cq, struct ehca_qp *qp);
-+int ehca_cq_unassign_qp(struct ehca_cq *cq, unsigned int qp_num);
-+struct ehca_qp* ehca_cq_get_qp(struct ehca_cq *cq, int qp_num);
-+
-+#endif
---- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/ehca_classes_pSeries.h	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/ehca_classes_pSeries.h	2006-04-28 14:20:07.000000000 +0200
-@@ -0,0 +1,251 @@
-+/*
-+ *  IBM eServer eHCA Infiniband device driver for Linux on POWER
-+ *
-+ *  pSeries interface definitions
-+ *
-+ *  Authors: Waleri Fomin <fomin@de.ibm.com>
-+ *           Christoph Raisch <raisch@de.ibm.com>
-+ *
-+ *  Copyright (c) 2005 IBM Corporation
-+ *
-+ *  All rights reserved.
-+ *
-+ *  This source code is distributed under a dual license of GPL v2.0 and OpenIB
-+ *  BSD.
-+ *
-+ * OpenIB BSD License
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *
-+ * Redistributions of source code must retain the above copyright notice, this
-+ * list of conditions and the following disclaimer.
-+ *
-+ * Redistributions in binary form must reproduce the above copyright notice,
-+ * this list of conditions and the following disclaimer in the documentation
-+ * and/or other materials
-+ * provided with the distribution.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-+ * POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifndef __EHCA_CLASSES_PSERIES_H__
-+#define __EHCA_CLASSES_PSERIES_H__
-+
-+#include "hcp_phyp.h"
-+#include "ipz_pt_fn.h"
-+
-+
-+struct ehca_pfmodule {
-+};
-+
-+struct ehca_pfshca {
-+};
-+
-+struct ehca_pfqp {
-+	struct ipz_qpt sqpt;
-+	struct ipz_qpt rqpt;
-+};
-+
-+struct ehca_pfcq {
-+	struct ipz_qpt qpt;
-+	u32 cqnr;
-+};
-+
-+struct ehca_pfeq {
-+	struct ipz_qpt qpt;
-+	struct h_galpa galpa;
-+	u32 eqnr;
-+};
-+
-+struct ehca_pfpd {
-+};
-+
-+struct ehca_pfmr {
-+};
-+
-+struct ehca_pfmw {
-+};
-+
-+struct ipz_adapter_handle {
-+	u64 handle;
-+};
-+
-+struct ipz_cq_handle {
-+	u64 handle;
-+};
-+
-+struct ipz_eq_handle {
-+	u64 handle;
-+};
-+
-+struct ipz_qp_handle {
-+	u64 handle;
-+};
-+struct ipz_mrmw_handle {
-+	u64 handle;
-+};
-+
-+struct ipz_pd {
-+	u32 value;
-+};
-+
-+struct hcp_modify_qp_control_block {
-+	u32 qkey;                      /* 00 */
-+	u32 rdd;                       /* reliable datagram domain */
-+	u32 send_psn;                  /* 02 */
-+	u32 receive_psn;               /* 03 */
-+	u32 prim_phys_port;            /* 04 */
-+	u32 alt_phys_port;             /* 05 */
-+	u32 prim_p_key_idx;            /* 06 */
-+	u32 alt_p_key_idx;             /* 07 */
-+	u32 rdma_atomic_ctrl;          /* 08 */
-+	u32 qp_state;                  /* 09 */
-+	u32 reserved_10;               /* 10 */
-+	u32 rdma_nr_atomic_resp_res;   /* 11 */
-+	u32 path_migration_state;      /* 12 */
-+	u32 rdma_atomic_outst_dest_qp; /* 13 */
-+	u32 dest_qp_nr;                /* 14 */
-+	u32 min_rnr_nak_timer_field;   /* 15 */
-+	u32 service_level;             /* 16 */
-+	u32 send_grh_flag;             /* 17 */
-+	u32 retry_count;               /* 18 */
-+	u32 timeout;                   /* 19 */
-+	u32 path_mtu;                  /* 20 */
-+	u32 max_static_rate;           /* 21 */
-+	u32 dlid;                      /* 22 */
-+	u32 rnr_retry_count;           /* 23 */
-+	u32 source_path_bits;          /* 24 */
-+	u32 traffic_class;             /* 25 */
-+	u32 hop_limit;                 /* 26 */
-+	u32 source_gid_idx;            /* 27 */
-+	u32 flow_label;                /* 28 */
-+	u32 reserved_29;               /* 29 */
-+	union {                        /* 30 */
-+		u64 dw[2];
-+		u8 byte[16];
-+	} dest_gid;
-+	u32 service_level_al;          /* 34 */
-+	u32 send_grh_flag_al;          /* 35 */
-+	u32 retry_count_al;            /* 36 */
-+	u32 timeout_al;                /* 37 */
-+	u32 max_static_rate_al;        /* 38 */
-+	u32 dlid_al;                   /* 39 */
-+	u32 rnr_retry_count_al;        /* 40 */
-+	u32 source_path_bits_al;       /* 41 */
-+	u32 traffic_class_al;          /* 42 */
-+	u32 hop_limit_al;              /* 43 */
-+	u32 source_gid_idx_al;         /* 44 */
-+	u32 flow_label_al;             /* 45 */
-+	u32 reserved_46;               /* 46 */
-+	u32 reserved_47;               /* 47 */
-+	union {                        /* 48 */
-+		u64 dw[2];
-+		u8 byte[16];
-+	} dest_gid_al;
-+	u32 max_nr_outst_send_wr;      /* 52 */
-+	u32 max_nr_outst_recv_wr;      /* 53 */
-+	u32 disable_ete_credit_check;  /* 54 */
-+	u32 qp_number;                 /* 55 */
-+	u64 send_queue_handle;         /* 56 */
-+	u64 recv_queue_handle;         /* 58 */
-+	u32 actual_nr_sges_in_sq_wqe;  /* 60 */
-+	u32 actual_nr_sges_in_rq_wqe;  /* 61 */
-+	u32 qp_enable;                 /* 62 */
-+	u32 curr_srq_limit;            /* 63 */
-+	u64 qp_aff_asyn_ev_log_reg;    /* 64 */
-+	u64 shared_rq_hndl;            /* 66 */
-+	u64 trigg_doorbell_qp_hndl;    /* 68 */
-+	u32 reserved_70_127[58];       /* 70 */
-+};
-+
-+#define MQPCB_MASK_QKEY                         EHCA_BMASK_IBM(0,0)
-+#define MQPCB_MASK_SEND_PSN                     EHCA_BMASK_IBM(2,2)
-+#define MQPCB_MASK_RECEIVE_PSN                  EHCA_BMASK_IBM(3,3)
-+#define MQPCB_MASK_PRIM_PHYS_PORT               EHCA_BMASK_IBM(4,4)
-+#define MQPCB_PRIM_PHYS_PORT                    EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_ALT_PHYS_PORT                EHCA_BMASK_IBM(5,5)
-+#define MQPCB_MASK_PRIM_P_KEY_IDX               EHCA_BMASK_IBM(6,6)
-+#define MQPCB_PRIM_P_KEY_IDX                    EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_ALT_P_KEY_IDX                EHCA_BMASK_IBM(7,7)
-+#define MQPCB_MASK_RDMA_ATOMIC_CTRL             EHCA_BMASK_IBM(8,8)
-+#define MQPCB_MASK_QP_STATE                     EHCA_BMASK_IBM(9,9)
-+#define MQPCB_QP_STATE                          EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_RDMA_NR_ATOMIC_RESP_RES      EHCA_BMASK_IBM(11,11)
-+#define MQPCB_MASK_PATH_MIGRATION_STATE         EHCA_BMASK_IBM(12,12)
-+#define MQPCB_MASK_RDMA_ATOMIC_OUTST_DEST_QP    EHCA_BMASK_IBM(13,13)
-+#define MQPCB_MASK_DEST_QP_NR                   EHCA_BMASK_IBM(14,14)
-+#define MQPCB_MASK_MIN_RNR_NAK_TIMER_FIELD      EHCA_BMASK_IBM(15,15)
-+#define MQPCB_MASK_SERVICE_LEVEL                EHCA_BMASK_IBM(16,16)
-+#define MQPCB_MASK_SEND_GRH_FLAG                EHCA_BMASK_IBM(17,17)
-+#define MQPCB_MASK_RETRY_COUNT                  EHCA_BMASK_IBM(18,18)
-+#define MQPCB_MASK_TIMEOUT                      EHCA_BMASK_IBM(19,19)
-+#define MQPCB_MASK_PATH_MTU                     EHCA_BMASK_IBM(20,20)
-+#define MQPCB_PATH_MTU                          EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_MAX_STATIC_RATE              EHCA_BMASK_IBM(21,21)
-+#define MQPCB_MAX_STATIC_RATE                   EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_DLID                         EHCA_BMASK_IBM(22,22)
-+#define MQPCB_DLID                              EHCA_BMASK_IBM(16,31)
-+#define MQPCB_MASK_RNR_RETRY_COUNT              EHCA_BMASK_IBM(23,23)
-+#define MQPCB_RNR_RETRY_COUNT                   EHCA_BMASK_IBM(29,31)
-+#define MQPCB_MASK_SOURCE_PATH_BITS             EHCA_BMASK_IBM(24,24)
-+#define MQPCB_SOURCE_PATH_BITS                  EHCA_BMASK_IBM(25,31)
-+#define MQPCB_MASK_TRAFFIC_CLASS                EHCA_BMASK_IBM(25,25)
-+#define MQPCB_TRAFFIC_CLASS                     EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_HOP_LIMIT                    EHCA_BMASK_IBM(26,26)
-+#define MQPCB_HOP_LIMIT                         EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_SOURCE_GID_IDX               EHCA_BMASK_IBM(27,27)
-+#define MQPCB_SOURCE_GID_IDX                    EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_FLOW_LABEL                   EHCA_BMASK_IBM(28,28)
-+#define MQPCB_FLOW_LABEL                        EHCA_BMASK_IBM(12,31)
-+#define MQPCB_MASK_DEST_GID                     EHCA_BMASK_IBM(30,30)
-+#define MQPCB_MASK_SERVICE_LEVEL_AL             EHCA_BMASK_IBM(31,31)
-+#define MQPCB_SERVICE_LEVEL_AL                  EHCA_BMASK_IBM(28,31)
-+#define MQPCB_MASK_SEND_GRH_FLAG_AL             EHCA_BMASK_IBM(32,32)
-+#define MQPCB_SEND_GRH_FLAG_AL                  EHCA_BMASK_IBM(31,31)
-+#define MQPCB_MASK_RETRY_COUNT_AL               EHCA_BMASK_IBM(33,33)
-+#define MQPCB_RETRY_COUNT_AL                    EHCA_BMASK_IBM(29,31)
-+#define MQPCB_MASK_TIMEOUT_AL                   EHCA_BMASK_IBM(34,34)
-+#define MQPCB_TIMEOUT_AL                        EHCA_BMASK_IBM(27,31)
-+#define MQPCB_MASK_MAX_STATIC_RATE_AL           EHCA_BMASK_IBM(35,35)
-+#define MQPCB_MAX_STATIC_RATE_AL                EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_DLID_AL                      EHCA_BMASK_IBM(36,36)
-+#define MQPCB_DLID_AL                           EHCA_BMASK_IBM(16,31)
-+#define MQPCB_MASK_RNR_RETRY_COUNT_AL           EHCA_BMASK_IBM(37,37)
-+#define MQPCB_RNR_RETRY_COUNT_AL                EHCA_BMASK_IBM(29,31)
-+#define MQPCB_MASK_SOURCE_PATH_BITS_AL          EHCA_BMASK_IBM(38,38)
-+#define MQPCB_SOURCE_PATH_BITS_AL               EHCA_BMASK_IBM(25,31)
-+#define MQPCB_MASK_TRAFFIC_CLASS_AL             EHCA_BMASK_IBM(39,39)
-+#define MQPCB_TRAFFIC_CLASS_AL                  EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_HOP_LIMIT_AL                 EHCA_BMASK_IBM(40,40)
-+#define MQPCB_HOP_LIMIT_AL                      EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_SOURCE_GID_IDX_AL            EHCA_BMASK_IBM(41,41)
-+#define MQPCB_SOURCE_GID_IDX_AL                 EHCA_BMASK_IBM(24,31)
-+#define MQPCB_MASK_FLOW_LABEL_AL                EHCA_BMASK_IBM(42,42)
-+#define MQPCB_FLOW_LABEL_AL                     EHCA_BMASK_IBM(12,31)
-+#define MQPCB_MASK_DEST_GID_AL                  EHCA_BMASK_IBM(44,44)
-+#define MQPCB_MASK_MAX_NR_OUTST_SEND_WR         EHCA_BMASK_IBM(45,45)
-+#define MQPCB_MAX_NR_OUTST_SEND_WR              EHCA_BMASK_IBM(16,31)
-+#define MQPCB_MASK_MAX_NR_OUTST_RECV_WR         EHCA_BMASK_IBM(46,46)
-+#define MQPCB_MAX_NR_OUTST_RECV_WR              EHCA_BMASK_IBM(16,31)
-+#define MQPCB_MASK_DISABLE_ETE_CREDIT_CHECK     EHCA_BMASK_IBM(47,47)
-+#define MQPCB_DISABLE_ETE_CREDIT_CHECK          EHCA_BMASK_IBM(31,31)
-+#define MQPCB_QP_NUMBER                         EHCA_BMASK_IBM(8,31)
-+#define MQPCB_MASK_QP_ENABLE                    EHCA_BMASK_IBM(48,48)
-+#define MQPCB_QP_ENABLE                         EHCA_BMASK_IBM(31,31)
-+#define MQPCB_MASK_CURR_SQR_LIMIT               EHCA_BMASK_IBM(49,49)
-+#define MQPCB_CURR_SQR_LIMIT                    EHCA_BMASK_IBM(15,31)
-+#define MQPCB_MASK_QP_AFF_ASYN_EV_LOG_REG       EHCA_BMASK_IBM(50,50)
-+#define MQPCB_MASK_SHARED_RQ_HNDL               EHCA_BMASK_IBM(51,51)
-+
-+#endif /* __EHCA_CLASSES_PSERIES_H__ */
++int ehca_munmap(unsigned long addr, size_t len) {
++	int ret = 0;
++	struct mm_struct *mm = current->mm;
++	if (mm) {
++		down_write(&mm->mmap_sem);
++		ret = do_munmap(mm, addr, len);
++		up_write(&mm->mmap_sem);
++	}
++	return ret;
++}
