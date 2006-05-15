@@ -1,16 +1,25 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id EEB01679F6
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 08:25:16 +1000 (EST)
-Date: Tue, 16 May 2006 00:25:14 +0200 (MEST)
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <mel@csn.ul.ie>
+Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7B1D9679FB
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 08:44:43 +1000 (EST)
+Date: Mon, 15 May 2006 23:44:35 +0100 (IST)
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 5/6] Have ia64 use add_active_range() and
+	free_area_init_nodes
+In-Reply-To: <20060515122728.GA29253@skynet.ie>
+Message-ID: <Pine.LNX.4.64.0605152342520.30476@skynet.skynet.ie>
+References: <20060508141030.26912.93090.sendpatchset@skynet>
+	<20060508141211.26912.48278.sendpatchset@skynet>
+	<20060514203158.216a966e.akpm@osdl.org>
+	<20060515122728.GA29253@skynet.ie>
 MIME-Version: 1.0
-References: <3746.1147538916@www086.gmx.net>
-Subject: =?ISO-8859-1?Q?NOT=5FCOHERENT=5FCACHE:_1._kernel_oops_in_page=5Fadd=5Ffil?=
-	=?ISO-8859-1?Q?e=5Frmap()_and_2._crash_with_HIGHMEM_support?=
-Message-ID: <12262.1147731914@www050.gmx.net>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linuxppc-dev@ozlabs.org,
+	ak@suse.de, bob.picco@hp.com, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,86 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+> diff -rup -X /usr/src/patchset-0.5/bin//dontdiff linux-2.6.17-rc4-mm4-clean/mm/page_alloc.c linux-2.6.17-rc4-mm4-ia64_force_alignment/mm/page_alloc.c
+> --- linux-2.6.17-rc4-mm4-clean/mm/page_alloc.c	2006-05-15 10:37:55.000000000 +0100
+> +++ linux-2.6.17-rc4-mm4-ia64_force_alignment/mm/page_alloc.c	2006-05-15 13:10:42.000000000 +0100
+> @@ -2640,14 +2640,20 @@ void __init free_area_init_nodes(unsigne
+> {
+> 	unsigned long nid;
+> 	int zone_index;
+> +	unsigned long lowest_pfn = find_min_pfn_with_active_regions();
+> +
+> +	lowest_pfn = zone_boundary_align_pfn(lowest_pfn);
+> +	arch_max_dma_pfn = zone_boundary_align_pfn(arch_max_dma_pfn);
+> +	arch_max_dma32_pfn = zone_boundary_align_pfn(arch_max_dma32_pfn);
+> +	arch_max_low_pfn = zone_boundary_align_pfn(arch_max_low_pfn);
+> +	arch_max_high_pfn = zone_boundary_align_pfn(arch_max_high_pfn);
+>
+> 	/* Record where the zone boundaries are */
+> 	memset(arch_zone_lowest_possible_pfn, 0,
+> 				sizeof(arch_zone_lowest_possible_pfn));
+> 	memset(arch_zone_highest_possible_pfn, 0,
+> 				sizeof(arch_zone_highest_possible_pfn));
+> -	arch_zone_lowest_possible_pfn[ZONE_DMA] =
+> -					find_min_pfn_with_active_regions();
+> +	arch_zone_lowest_possible_pfn[ZONE_DMA] = lowest_pfn;
+> 	arch_zone_highest_possible_pfn[ZONE_DMA] = arch_max_dma_pfn;
+> 	arch_zone_highest_possible_pfn[ZONE_DMA32] = arch_max_dma32_pfn;
+> 	arch_zone_highest_possible_pfn[ZONE_NORMAL] = arch_max_low_pfn;
+>
 
-I applied the CONFIG_NOT_COHERENT_CACHE option for the AmigaOne, which has a
-northbridge with cache coherence problems. Unfortunately the kernel now
-crashes when viewing DVD (for example with totem) and when support for
-HIGHMEM is compiled in. Kernel version is 2.6.8-16 (debian).
-
-First some infos:
-To get NOT_COHERENT_CACHE working on the AmigaOne, I had to limit the PCI
-memory and ISA IO/MEM space of the northbridge first and then changed the
-CONFIG_CONSISTENT_BASE parameter from 0xFF100000 to 0xF8100000
-(CONSISTENT_SIZE is still set to 0x00200000 = 2MB).
-
-The IO/MEM space was previously mapped like this in the platform setup:
-io_block_mapping(0xF0000000, 0xF0000000, 0x10000000, _PAGE_IO)
-
-I changed this line to:
-io_block_mapping(0xFD000000, 0xFD000000, 0x01000000, _PAGE_IO) -> ISA MEM
-and
-io_block_mapping(0xFE000000, 0xFE000000, 0x02000000, _PAGE_IO) -> ISA IO/PCI
-config space.
-These address ranges are mapped by BATs.
-
-The PCI memory normally goes from 0x80000000 to 0xFCFFFFFF, but is limited
-to 0xEFFFFFFF in the PCI host controller resource initialization:
-
-amigaone_init_resource(&hose->mem_resources[0], 0x80000000, 0x0xEFFFFFFF,
-IORESOURCE_MEM);
-
-With this setup DMA (and UDMA for IDE devices) works without any data
-corruption. I tested this with around 500 MD5 checksum tests of three
-different files with a file size of at least 100 MB. But when I view a DVD
-for example (without HIGHMEM support), the system crashes with the following
-kernel oops:
-
-May 12 00:04:17 localhost kernel: kernel BUG in page_add_file_rmap at
-mm/rmap.c:387!
-May 12 00:04:17 localhost kernel: Oops: Exception in kernel mode, sig: 5
-[#1]
-May 12 00:04:17 localhost kernel: NIP: C004968C LR: C0044CB8 SP: D2C77E20
-REGS: d2c77d70 TRAP: 0700    Not tainted
-May 12 00:04:17 localhost kernel: MSR: 00029032 EE: 1 PR: 0 FP: 0 ME: 1
-IR/DR: 11
-May 12 00:04:17 localhost kernel: TASK = d4918000[2900] 'totem' THREAD:
-d2c76000Last syscall: 246
-May 12 00:04:17 localhost kernel: GPR00: 00000001 D2C77E20 D4918000 C0D02720
-00000000 D27B02A0 02000000 D4FE4400
-May 12 00:04:17 localhost kernel: GPR08: C03D0000 38139785 00000000 38139785
-24048444 10054698 00000000 10171158
-May 12 00:04:17 localhost kernel: GPR16: 00000000 00000000 0EADDD7C 00015F90
-000001F6 315B1970 33CA8000 D4D6BBA0
-May 12 00:04:17 localhost kernel: GPR24: 00000000 00000000 02000000 D4B7D33C
-33CA8000 C0D02720 38139785 D2888220
-May 12 00:04:17 localhost kernel: NIP [c004968c] page_add_file_rmap+0x8/0x78
-May 12 00:04:17 localhost kernel: LR [c0044cb8] do_no_page+0x1cc/0x37c
-May 12 00:04:17 localhost kernel: Call trace:
-May 12 00:04:17 localhost kernel:  [c004503c] handle_mm_fault+0xf4/0x174
-May 12 00:04:17 localhost kernel:  [c0012100] do_page_fault+0x140/0x398
-May 12 00:04:17 localhost kernel:  [c0008178] handle_page_fault+0xc/0x80
-
-Does anybody know how I can debug this crash, or what's happening here? I
-don't think that the PCI memory is the cause for this crash, because the
-CONSISTENT_BASE address is a virtual address, which is not mapped phyiscally
-to the same address (phys = virt)!?
-
-The second problem is HIGHMEM support in combination with
-NOT_COHERENT_CACHE. When both options are enabled, the kernel crashes within
-kmap_atomic() early in the boot process. kmap_atomic() is called by
-__dma_sync_page_highmem(). I guess it should work even, if I have only 512MB
-RAM. I moved the PKMAP_BASE to 0xF0000000, because the default address is
-again within the ISA MEM space.
-
-Did anyone else experience this problem?
-
-Thanks in advance!
-
-regards,
-
-Gerhard
+Ok, this patch is broken in a number of ways. It doesn't help the IA64 
+problem at all and two other machine configurations failed with the patch 
+applied during regression testing. Please drop and I'll figure out what 
+the correct solution is to your IA64 machine not booting.
 
 -- 
-Mobile Internet - E-Mail und Internet immer und überall!
-GMX zum Mitnehmen: http://www.gmx.net/de/go/pocketweb
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
