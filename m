@@ -1,12 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id C16CE67A3D
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 13:44:58 +1000 (EST)
-Date: Mon, 15 May 2006 13:39:47 +1000
+	by ozlabs.org (Postfix) with ESMTP id 742AC67BE6
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 13:45:13 +1000 (EST)
+Date: Mon, 15 May 2006 13:42:29 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 1/4] powerpc: update iseries_veth device-tree information
-Message-Id: <20060515133947.626e10dc.sfr@canb.auug.org.au>
+Subject: [PATCH 3/4] powerpc: update iSeries vdevice
+Message-Id: <20060515134229.45bde004.sfr@canb.auug.org.au>
+In-Reply-To: <20060515133947.626e10dc.sfr@canb.auug.org.au>
+References: <20060515133947.626e10dc.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -19,123 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make the device-tree information more generic and more
-like the pSeries virtual lan device. Also use the MAC
-address from the device tree.
+Make it look more like the pSeries vdevice tree.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
 
- arch/powerpc/platforms/iseries/setup.c |    8 +++++---
- drivers/net/iseries_veth.c             |   27 +++++++++++++++++----------
- 2 files changed, 22 insertions(+), 13 deletions(-)
+ arch/powerpc/platforms/iseries/setup.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-These patches are relative to the current powerpc kernel tree and have
-been built and run on an iSeries 270.  They should be suitable for 2.6.18.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-6f393cd3fd10e4ee54a3cc4cf0cfff391d5be555
+a8b78e46b1b998769fb45fbd9e37fc6ceebf06b1
 diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
-index befd36a..0a08257 100644
+index 285f2b2..d3f94b4 100644
 --- a/arch/powerpc/platforms/iseries/setup.c
 +++ b/arch/powerpc/platforms/iseries/setup.c
-@@ -946,10 +946,10 @@ void dt_vdevices(struct iseries_flat_dt 
+@@ -921,13 +921,14 @@ void dt_vdevices(struct iseries_flat_dt 
+ 	char buf[32];
  
- 		if ((vlan_map & (0x8000 >> i)) == 0)
- 			continue;
--		snprintf(buf, 32, "vlan@%08x", reg + i);
-+		snprintf(buf, 32, "l-lan@%08x", reg + i);
- 		dt_start_node(dt, buf);
--		dt_prop_str(dt, "device_type", "vlan");
--		dt_prop_str(dt, "compatible", "");
-+		dt_prop_str(dt, "device_type", "network");
-+		dt_prop_str(dt, "compatible", "IBM,iSeries-l-lan");
- 		dt_prop_u32(dt, "reg", reg + i);
- 		dt_prop_u32(dt, "linux,unit_address", i);
+ 	dt_start_node(dt, "vdevice");
++	dt_prop_str(dt, "device_type", "vdevice");
++	dt_prop_str(dt, "compatible", "IBM,iSeries-vdevice");
+ 	dt_prop_u32(dt, "#address-cells", 1);
+ 	dt_prop_u32(dt, "#size-cells", 0);
  
-@@ -961,6 +961,8 @@ void dt_vdevices(struct iseries_flat_dt 
- 		mac_addr[5] = HvLpConfig_getLpIndex_outline();
- 		dt_prop(dt, "local-mac-address", (char *)mac_addr, ETH_ALEN);
- 		dt_prop(dt, "mac-address", (char *)mac_addr, ETH_ALEN);
-+		dt_prop_u32(dt, "max-frame-size", 9000);
-+		dt_prop_u32(dt, "address-bits", 48);
- 
- 		dt_end_node(dt);
- 	}
-diff --git a/drivers/net/iseries_veth.c b/drivers/net/iseries_veth.c
-index f0f04be..93394d7 100644
---- a/drivers/net/iseries_veth.c
-+++ b/drivers/net/iseries_veth.c
-@@ -69,6 +69,7 @@ #include <linux/init.h>
- #include <linux/delay.h>
- #include <linux/mm.h>
- #include <linux/ethtool.h>
-+#include <linux/if_ether.h>
- 
- #include <asm/abs_addr.h>
- #include <asm/iseries/mf.h>
-@@ -1035,11 +1036,22 @@ static struct ethtool_ops ops = {
- 	.get_link = veth_get_link,
- };
- 
--static struct net_device * __init veth_probe_one(int vlan, struct device *vdev)
-+static struct net_device * __init veth_probe_one(int vlan,
-+		struct vio_dev *vio_dev)
- {
- 	struct net_device *dev;
- 	struct veth_port *port;
-+	struct device *vdev = &vio_dev->dev;
- 	int i, rc;
-+	const unsigned char *mac_addr;
-+
-+	mac_addr = vio_get_attribute(vio_dev, "local-mac-address", NULL);
-+	if (mac_addr == NULL)
-+		mac_addr = vio_get_attribute(vio_dev, "mac-address", NULL);
-+	if (mac_addr == NULL) {
-+		veth_error("Unable to fetch MAC address from device tree.\n");
-+		return NULL;
-+	}
- 
- 	dev = alloc_etherdev(sizeof (struct veth_port));
- 	if (! dev) {
-@@ -1064,16 +1076,11 @@ static struct net_device * __init veth_p
- 	}
- 	port->dev = vdev;
- 
--	dev->dev_addr[0] = 0x02;
--	dev->dev_addr[1] = 0x01;
--	dev->dev_addr[2] = 0xff;
--	dev->dev_addr[3] = vlan;
--	dev->dev_addr[4] = 0xff;
--	dev->dev_addr[5] = this_lp;
-+	memcpy(dev->dev_addr, mac_addr, ETH_ALEN);
- 
- 	dev->mtu = VETH_MAX_MTU;
- 
--	memcpy(&port->mac_addr, dev->dev_addr, 6);
-+	memcpy(&port->mac_addr, mac_addr, ETH_ALEN);
- 
- 	dev->open = veth_open;
- 	dev->hard_start_xmit = veth_start_xmit;
-@@ -1608,7 +1615,7 @@ static int veth_probe(struct vio_dev *vd
- 	struct net_device *dev;
- 	struct veth_port *port;
- 
--	dev = veth_probe_one(i, &vdev->dev);
-+	dev = veth_probe_one(i, vdev);
- 	if (dev == NULL) {
- 		veth_remove(vdev);
- 		return 1;
-@@ -1641,7 +1648,7 @@ static int veth_probe(struct vio_dev *vd
-  * support.
-  */
- static struct vio_device_id veth_device_table[] __devinitdata = {
--	{ "vlan", "" },
-+	{ "network", "IBM,iSeries-l-lan" },
- 	{ "", "" }
- };
- MODULE_DEVICE_TABLE(vio, veth_device_table);
+-	snprintf(buf, sizeof(buf), "viocons@%08x", reg);
++	snprintf(buf, sizeof(buf), "vty@%08x", reg);
+ 	dt_start_node(dt, buf);
+ 	dt_prop_str(dt, "device_type", "serial");
+-	dt_prop_str(dt, "compatible", "");
+ 	dt_prop_u32(dt, "reg", reg);
+ 	dt_end_node(dt);
+ 	reg++;
 -- 
 1.3.1.ge923
