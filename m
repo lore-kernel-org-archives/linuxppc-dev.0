@@ -1,23 +1,15 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4B03067A0E
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 13:35:32 +1000 (EST)
-Date: Sun, 14 May 2006 20:31:58 -0700
-From: Andrew Morton <akpm@osdl.org>
-To: Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 5/6] Have ia64 use add_active_range() and
-	free_area_init_nodes
-Message-Id: <20060514203158.216a966e.akpm@osdl.org>
-In-Reply-To: <20060508141211.26912.48278.sendpatchset@skynet>
-References: <20060508141030.26912.93090.sendpatchset@skynet>
-	<20060508141211.26912.48278.sendpatchset@skynet>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id C16CE67A3D
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 13:44:58 +1000 (EST)
+Date: Mon, 15 May 2006 13:39:47 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 1/4] powerpc: update iseries_veth device-tree information
+Message-Id: <20060515133947.626e10dc.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linuxppc-dev@ozlabs.org,
-	mel@csn.ul.ie, linux-kernel@vger.kernel.org, bob.picco@hp.com,
-	ak@suse.de, linux-mm@kvack.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,106 +19,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mel Gorman <mel@csn.ul.ie> wrote:
->
-> Size zones and holes in an architecture independent manner for ia64.
-> 
+Make the device-tree information more generic and more
+like the pSeries virtual lan device. Also use the MAC
+address from the device tree.
 
-This one makes my ia64 die very early in boot.   The trace is pretty useless.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
 
-config at http://www.zip.com.au/~akpm/linux/patches/stuff/config-ia64
+ arch/powerpc/platforms/iseries/setup.c |    8 +++++---
+ drivers/net/iseries_veth.c             |   27 +++++++++++++++++----------
+ 2 files changed, 22 insertions(+), 13 deletions(-)
 
-EFI v1.10 by INTEL: SALsystab=0x3fe4c8c0 ACPI=0x3ff84000 ACPI 2.0=0x3ff83000 MP0
-Early serial console at I/O port 0x2f8 (options '9600n8')
-SAL 3.1: Intel Corp                       SR870BN4                         vers0
-SAL Platform features: BusLock IRQ_Redirection
-SAL: AP wakeup using external interrupt vector 0xf0
-No logical to physical processor mapping available
-iosapic_system_init: Disabling PC-AT compatible 8259 interrupts
-ACPI: Local APIC address c0000000fee00000
-PLATFORM int CPEI (0x3): GSI 22 (level, low) -> CPU 0 (0xc618) vector 30
-register_intr: changing vector 39 from IO-SAPIC-edge to IO-SAPIC-level
-4 CPUs available, 4 CPUs total
-MCA related initialization done
-node 0 zone DMA missaligned start pfn, enable UNALIGNED_ZONE_BOUNDRIES
-node 0 zone DMA32 missaligned start pfn, enable UNALIGNED_ZONE_BOUNDRIES
-node 0 zone Normal missaligned start pfn, enable UNALIGNED_ZONE_BOUNDRIES
-node 0 zone HighMem missaligned start pfn, enable UNALIGNED_ZONE_BOUNDRIES
-SMP: Allowing 4 CPUs, 0 hotplug CPUs
-Built 1 zonelists
-Kernel command line: BOOT_IMAGE=scsi0:\EFI\redhat\vmlinuz-2.6.17-rc4-mm1 root=/o
-PID hash table entries: 4096 (order: 12, 32768 bytes)
-Console: colour VGA+ 80x25
-Dentry cache hash table entries: 131072 (order: 6, 1048576 bytes)
-Inode-cache hash table entries: 65536 (order: 5, 524288 bytes)
-Placing software IO TLB between 0x4a30000 - 0x8a30000
-Unable to handle kernel NULL pointer dereference (address 0000000000000008)
-swapper[0]: Oops 8813272891392 [1]
-Modules linked in:
+These patches are relative to the current powerpc kernel tree and have
+been built and run on an iSeries 270.  They should be suitable for 2.6.18.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Pid: 0, CPU 0, comm:              swapper
-psr : 00001010084a6010 ifs : 800000000000060f ip  : [<a0000001000e6750>]    Notd
-ip is at __free_pages_ok+0x190/0x3c0
-unat: 0000000000000000 pfs : 000000000000060f rsc : 0000000000000003
-rnat: 0000000000ffffff bsps: 00000000000002f9 pr  : 80000000afb5956b
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70433f
-csd : 0930ffff00090000 ssd : 0930ffff00090000
-b0  : a0000001000e6660 b6  : e00000003fe52940 b7  : a000000100790120
-f6  : 1003e6db6db6db6db6db7 f7  : 1003e000000000006dec0
-f8  : 1003e000000000000fb80 f9  : 1003e000000000006e080
-f10 : 1003e000000000000fb40 f11 : 1003e000000000006dec0
-r1  : a000000100af2db0 r2  : 0000000000000001 r3  : 0000000000000000
-r8  : a0000001008f3d38 r9  : 0000000000004000 r10 : 0000000000370400
-r11 : 0000000000004000 r12 : a0000001007b7e10 r13 : a0000001007b0000
-r14 : 0000000000000001 r15 : 0000000100000001 r16 : 0000000100000001
-r17 : 0000000100000001 r18 : 0000000000001041 r19 : 0000000000000000
-r20 : e00000000149df00 r21 : 0000000100000000 r22 : 0000000055555155
-r23 : 00000000ffffffff r24 : e00000000149df08 r25 : 1555555555555155
-r26 : 0000000000000032 r27 : 0000000000000000 r28 : 0000000000000008
-r29 : 0000000000001041 r30 : 0000000000001041 r31 : 0000000000000001
-Unable to handle kernel NULL pointer dereference (address 0000000000000000)
-swapper[0]: Oops 8813272891392 [2]
-Modules linked in:
-
-Pid: 0, CPU 0, comm:              swapper
-psr : 0000101008022018 ifs : 8000000000000287 ip  : [<a0000001001236c0>]    Notd
-ip is at kmem_cache_alloc+0x40/0x100
-unat: 0000000000000000 pfs : 0000000000000712 rsc : 0000000000000003
-rnat: 0000000000000000 bsps: 0000000000000000 pr  : 80000000afb59967
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70033f
-csd : 0930ffff00090000 ssd : 0930ffff00090000
-b0  : a00000010003e450 b6  : a000000100001b50 b7  : a00000010003f320
-f6  : 1003e9e3779b97f4a7c16 f7  : 0ffdb8000000000000000
-f8  : 1003e000000000000007f f9  : 1003e0000000000000379
-f10 : 1003e6db6db6db6db6db7 f11 : 1003e000000000000007f
-r1  : a000000100af2db0 r2  : 0000000000000000 r3  : 0000000000000000
-r8  : 0000000000000000 r9  : 0000000000000000 r10 : a0000001007b0f24
-r11 : 0000000000000000 r12 : a0000001007b7280 r13 : a0000001007b0000
-r14 : 0000000000000000 r15 : 0000000000000000 r16 : a0000001007b7310
-r17 : 0000000000000000 r18 : a0000001007b7478 r19 : 0000000000000000
-r20 : 0000000000000000 r21 : 0000000000000018 r22 : 0000000000000000
-r23 : 0000000000000000 r24 : 0000000000000000 r25 : a0000001007b7308
-r26 : 000000007fffffff r27 : a000000100825520 r28 : a0000001008f3c40
-r29 : a000000100816ca8 r30 : 0000000000000018 r31 : 0000000000000018
-
-
-
-(gdb) l *0xa0000001000e6750
-0xa0000001000e6750 is in __free_pages_ok (mm.h:324).
-319     extern void FASTCALL(__page_cache_release(struct page *));
-320     
-321     static inline int page_count(struct page *page)
-322     {
-323             if (unlikely(PageCompound(page)))
-324                     page = (struct page *)page_private(page);
-325             return atomic_read(&page->_count);
-326     }
-327     
-328     static inline void get_page(struct page *page)
-
-
-Note the misaligned pfns.
-
-Andy's (misspelled) CONFIG_UNALIGNED_ZONE_BOUNDRIES patch didn't actually
-include an update to any Kconfig files.  But hacking that in by hand didn't
-help.
+6f393cd3fd10e4ee54a3cc4cf0cfff391d5be555
+diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
+index befd36a..0a08257 100644
+--- a/arch/powerpc/platforms/iseries/setup.c
++++ b/arch/powerpc/platforms/iseries/setup.c
+@@ -946,10 +946,10 @@ void dt_vdevices(struct iseries_flat_dt 
+ 
+ 		if ((vlan_map & (0x8000 >> i)) == 0)
+ 			continue;
+-		snprintf(buf, 32, "vlan@%08x", reg + i);
++		snprintf(buf, 32, "l-lan@%08x", reg + i);
+ 		dt_start_node(dt, buf);
+-		dt_prop_str(dt, "device_type", "vlan");
+-		dt_prop_str(dt, "compatible", "");
++		dt_prop_str(dt, "device_type", "network");
++		dt_prop_str(dt, "compatible", "IBM,iSeries-l-lan");
+ 		dt_prop_u32(dt, "reg", reg + i);
+ 		dt_prop_u32(dt, "linux,unit_address", i);
+ 
+@@ -961,6 +961,8 @@ void dt_vdevices(struct iseries_flat_dt 
+ 		mac_addr[5] = HvLpConfig_getLpIndex_outline();
+ 		dt_prop(dt, "local-mac-address", (char *)mac_addr, ETH_ALEN);
+ 		dt_prop(dt, "mac-address", (char *)mac_addr, ETH_ALEN);
++		dt_prop_u32(dt, "max-frame-size", 9000);
++		dt_prop_u32(dt, "address-bits", 48);
+ 
+ 		dt_end_node(dt);
+ 	}
+diff --git a/drivers/net/iseries_veth.c b/drivers/net/iseries_veth.c
+index f0f04be..93394d7 100644
+--- a/drivers/net/iseries_veth.c
++++ b/drivers/net/iseries_veth.c
+@@ -69,6 +69,7 @@ #include <linux/init.h>
+ #include <linux/delay.h>
+ #include <linux/mm.h>
+ #include <linux/ethtool.h>
++#include <linux/if_ether.h>
+ 
+ #include <asm/abs_addr.h>
+ #include <asm/iseries/mf.h>
+@@ -1035,11 +1036,22 @@ static struct ethtool_ops ops = {
+ 	.get_link = veth_get_link,
+ };
+ 
+-static struct net_device * __init veth_probe_one(int vlan, struct device *vdev)
++static struct net_device * __init veth_probe_one(int vlan,
++		struct vio_dev *vio_dev)
+ {
+ 	struct net_device *dev;
+ 	struct veth_port *port;
++	struct device *vdev = &vio_dev->dev;
+ 	int i, rc;
++	const unsigned char *mac_addr;
++
++	mac_addr = vio_get_attribute(vio_dev, "local-mac-address", NULL);
++	if (mac_addr == NULL)
++		mac_addr = vio_get_attribute(vio_dev, "mac-address", NULL);
++	if (mac_addr == NULL) {
++		veth_error("Unable to fetch MAC address from device tree.\n");
++		return NULL;
++	}
+ 
+ 	dev = alloc_etherdev(sizeof (struct veth_port));
+ 	if (! dev) {
+@@ -1064,16 +1076,11 @@ static struct net_device * __init veth_p
+ 	}
+ 	port->dev = vdev;
+ 
+-	dev->dev_addr[0] = 0x02;
+-	dev->dev_addr[1] = 0x01;
+-	dev->dev_addr[2] = 0xff;
+-	dev->dev_addr[3] = vlan;
+-	dev->dev_addr[4] = 0xff;
+-	dev->dev_addr[5] = this_lp;
++	memcpy(dev->dev_addr, mac_addr, ETH_ALEN);
+ 
+ 	dev->mtu = VETH_MAX_MTU;
+ 
+-	memcpy(&port->mac_addr, dev->dev_addr, 6);
++	memcpy(&port->mac_addr, mac_addr, ETH_ALEN);
+ 
+ 	dev->open = veth_open;
+ 	dev->hard_start_xmit = veth_start_xmit;
+@@ -1608,7 +1615,7 @@ static int veth_probe(struct vio_dev *vd
+ 	struct net_device *dev;
+ 	struct veth_port *port;
+ 
+-	dev = veth_probe_one(i, &vdev->dev);
++	dev = veth_probe_one(i, vdev);
+ 	if (dev == NULL) {
+ 		veth_remove(vdev);
+ 		return 1;
+@@ -1641,7 +1648,7 @@ static int veth_probe(struct vio_dev *vd
+  * support.
+  */
+ static struct vio_device_id veth_device_table[] __devinitdata = {
+-	{ "vlan", "" },
++	{ "network", "IBM,iSeries-l-lan" },
+ 	{ "", "" }
+ };
+ MODULE_DEVICE_TABLE(vio, veth_device_table);
+-- 
+1.3.1.ge923
