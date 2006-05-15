@@ -1,33 +1,16 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E50EA679E6
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 01:48:02 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k4FFlwvK024413
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 11:47:58 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k4FFlvrI174300
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 09:47:57 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k4FFlvod000837
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 09:47:57 -0600
-Received: from [10.0.1.3] (sig-9-65-60-6.mts.ibm.com [9.65.60.6])
-	by d03av03.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id
-	k4FFlrZW000353
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 09:47:54 -0600
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Message-Id: <D46A754B-CDF8-4582-80BA-39B50ACD2D55@watson.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linuxppc-dev@ozlabs.org
-From: Jimi Xenidis <jimix@watson.ibm.com>
-Subject: [dtc][PATCH] Fix ftdump data walking
-Date: Mon, 15 May 2006 11:47:43 -0400
+Return-Path: <mikey@ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] Fix pSeries identification in prom_init.c 
+In-reply-to: <1147672282.21291.92.camel@localhost.localdomain> 
+References: <1147671963.21291.91.camel@localhost.localdomain>
+	<1147672282.21291.92.camel@localhost.localdomain>
+Date: Mon, 15 May 2006 11:17:20 -0500
+Sender: mikey@ozlabs.org
+Message-Id: <20060515161810.E633C679EB@ozlabs.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, segher@gate.crashing.org
+Reply-To: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,22 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes a pointer addition bug in ftdump and handles endian  
-issue.
+> > The OF trampoline code prom_init.c still needs to identify IBM
+> > pSeries (PAPR) machines in order to run some platform specific code
+> > on them like instanciating the TCE tables. The code doing that
+> > detection was changed recently in 2.6.17 early stages but was done
+> > slightly incorrectly. It should be testing for an exact match of
+> > "chrp" and it currently tests for anything that begins with
+> > "chrp". That means it will incorrectly match with platforms using
+> > Maple-like device-trees and have open firmware. This fixes it by
+> > using strcmp instead of strncmp to match what the actual platform
+> > detection code does.
+> 
+> Michael, I noticed you changed strcmp to strncmp, any reason why you
+> did that ?
 
-Signed-off-by: Jimi Xenidis <jimix@watson.ibm.com>
+To be safe if we are returned a non terminated string.  I'd not realised
+the case you've mentioned.
+
+How much we should trust firmware?  With strcpy, should we explicitly
+terminate the string first (I removed one of these originally)?  Patch
+below, compiled not run.
+
+-
+
+The OF trampoline code prom_init.c still needs to identify IBM pSeries
+(PAPR) machines in order to run some platform specific code on them like
+instantiating the TCE tables. The code doing that detection was changed
+recently in 2.6.17 early stages but was done slightly incorrectly. It
+should be testing for an exact match of "chrp" and it currently tests
+for anything that begins with "chrp". That means it will incorrectly
+match with platforms using Maple-like device-trees and have open
+firmware. This fixes it by using strcmp instead of strncmp to match what
+the actual platform detection code does.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
-diff --git a/ftdump.c b/ftdump.c
-index 4d4354b..7e643c8 100644
---- a/ftdump.c
-+++ b/ftdump.c
-@@ -67,7 +67,8 @@ static void print_data(const void *data,
-	} else if ((len % 4) == 0) {
-		printf(" = <");
-		for (i = 0; i < len; i += 4)
--			printf("%08x%s", *((uint32_t *)data + i),
-+			printf("%08x%s",
-+			       be32_to_cpu(*((uint32_t *)((ulong)data + i))),
-			       i < (len - 4) ? " " : "");
-		printf(">");
-	} else {
+
+ arch/powerpc/kernel/prom_init.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-powerpc/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- linux-2.6-powerpc.orig/arch/powerpc/kernel/prom_init.c
++++ linux-2.6-powerpc/arch/powerpc/kernel/prom_init.c
+@@ -1636,7 +1636,8 @@ static int __init prom_find_machine_type
+ 			   compat, sizeof(compat)-1);
+ 	if (len <= 0)
+ 		return PLATFORM_GENERIC;
+-	if (strncmp(compat, RELOC("chrp"), 4))
++	compat[len] = 0;
++	if (strcmp(compat, RELOC("chrp")))
+ 		return PLATFORM_GENERIC;
+ 
+ 	/* Default to pSeries. We need to know if we are running LPAR */
