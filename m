@@ -1,30 +1,30 @@
 Return-Path: <schihei@de.ibm.com>
-Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 484F867B79
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 03:41:16 +1000 (EST)
+	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3140967C57
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 03:41:25 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.6/8.13.6) with ESMTP id k4FHfDma100454
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 17:41:13 GMT
+	by mtagate4.de.ibm.com (8.13.6/8.13.6) with ESMTP id k4FHfLBi183022
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 17:41:21 GMT
 Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
 	[9.149.165.212])
 	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k4FHgdvT080406
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:42:39 +0200
+	k4FHgmvT091108
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:42:48 +0200
 Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
 	by d12av01.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k4FHfC7F025306
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:41:12 +0200
-Message-ID: <4468BD52.8080506@de.ibm.com>
-Date: Mon, 15 May 2006 19:41:38 +0200
+	k4FHfLPV025411
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:41:21 +0200
+Message-ID: <4468BD5B.1060406@de.ibm.com>
+Date: Mon, 15 May 2006 19:41:47 +0200
 From: Heiko J Schick <schihei@de.ibm.com>
 MIME-Version: 1.0
 To: openib-general@openib.org, Christoph Raisch <RAISCH@de.ibm.com>,
 	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>,
 	schihei@de.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/16] ehca: InfiniBand query and multicast functionality
+Subject: [PATCH 05/16] ehca: common include files
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,22 +38,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
 
 
-  drivers/infiniband/hw/ehca/ehca_hca.c   |  282 ++++++++++++++++++++++++++++++++
-  drivers/infiniband/hw/ehca/ehca_mcast.c |  194 ++++++++++++++++++++++
-  2 files changed, 476 insertions(+)
+  drivers/infiniband/hw/ehca/ehca_iverbs.h |  181 +++++++++++++
+  drivers/infiniband/hw/ehca/ehca_tools.h  |  411 +++++++++++++++++++++++++++++++
+  2 files changed, 592 insertions(+)
 
 
 
---- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/ehca_hca.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/ehca_hca.c	2006-05-02 10:55:26.000000000 +0200
-@@ -0,0 +1,282 @@
+--- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/ehca_iverbs.h	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/ehca_iverbs.h	2006-04-28 14:20:08.000000000 +0200
+@@ -0,0 +1,181 @@
 +/*
 + *  IBM eServer eHCA Infiniband device driver for Linux on POWER
 + *
-+ *  HCA query functions
++ *  Function definitions for internal functions
 + *
 + *  Authors: Heiko J Schick <schickhj@de.ibm.com>
-+ *           Christoph Raisch <raisch@de.ibm.com>
++ *           Dietmar Decker <ddecker@de.ibm.com>
 + *
 + *  Copyright (c) 2005 IBM Corporation
 + *
@@ -88,265 +88,162 @@ Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
 + * POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#undef DEB_PREFIX
-+#define DEB_PREFIX "shca"
++#ifndef __EHCA_IVERBS_H__
++#define __EHCA_IVERBS_H__
 +
-+#include "ehca_tools.h"
++#include "ehca_classes.h"
 +
-+#include "hcp_if.h"
++int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props);
 +
-+int ehca_query_device(struct ib_device *ibdev, struct ib_device_attr *props)
-+{
-+	int ret = 0;
-+	struct ehca_shca *shca;
-+	struct hipz_query_hca *rblock;
++int ehca_query_port(struct ib_device *ibdev, u8 port,
++		    struct ib_port_attr *props);
 +
-+	EDEB_EN(7, "");
++int ehca_query_pkey(struct ib_device *ibdev, u8 port, u16 index, u16 * pkey);
 +
-+	memset(props, 0, sizeof(struct ib_device_attr));
-+	shca = container_of(ibdev, struct ehca_shca, ib_device);
++int ehca_query_gid(struct ib_device *ibdev, u8 port, int index,
++		   union ib_gid *gid);
 +
-+	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	if (!rblock) {
-+		EDEB_ERR(4, "Can't allocate rblock memory.");
-+		ret = -ENOMEM;
-+		goto query_device0;
-+	}
++int ehca_modify_port(struct ib_device *ibdev, u8 port, int port_modify_mask,
++		     struct ib_port_modify *props);
 +
-+	if (hipz_h_query_hca(shca->ipz_hca_handle, rblock) != H_SUCCESS) {
-+		EDEB_ERR(4, "Can't query device properties");
-+		ret = -EINVAL;
-+		goto query_device1;
-+	}
-+	props->fw_ver          = rblock->hw_ver;
-+	props->max_mr_size     = rblock->max_mr_size;
-+	props->vendor_id       = rblock->vendor_id >> 8;
-+	props->vendor_part_id  = rblock->vendor_part_id >> 16;
-+	props->hw_ver          = rblock->hw_ver;
-+	props->max_qp          = min_t(int, rblock->max_qp, INT_MAX);
-+	props->max_qp_wr       = min_t(int, rblock->max_wqes_wq, INT_MAX);
-+	props->max_sge         = min_t(int, rblock->max_sge, INT_MAX);
-+	props->max_sge_rd      = min_t(int, rblock->max_sge_rd, INT_MAX);
-+	props->max_cq          = min_t(int, rblock->max_cq, INT_MAX);
-+	props->max_cqe         = min_t(int, rblock->max_cqe, INT_MAX);
-+	props->max_mr          = min_t(int, rblock->max_mr, INT_MAX);
-+	props->max_mw          = min_t(int, rblock->max_mw, INT_MAX);
-+	props->max_pd          = min_t(int, rblock->max_pd, INT_MAX);
-+	props->max_ah          = min_t(int, rblock->max_ah, INT_MAX);
-+	props->max_fmr         = min_t(int, rblock->max_mr, INT_MAX);
-+	props->max_srq         = 0;
-+	props->max_srq_wr      = 0;
-+	props->max_srq_sge     = 0;
-+	props->max_pkeys       = 16;
-+	props->local_ca_ack_delay
-+		= rblock->local_ca_ack_delay;
-+	props->max_raw_ipv6_qp
-+		= min_t(int, rblock->max_raw_ipv6_qp, INT_MAX);
-+	props->max_raw_ethy_qp
-+		= min_t(int, rblock->max_raw_ethy_qp, INT_MAX);
-+	props->max_mcast_grp
-+		= min_t(int, rblock->max_mcast_grp, INT_MAX);
-+	props->max_mcast_qp_attach
-+		= min_t(int, rblock->max_mcast_qp_attach, INT_MAX);
-+	props->max_total_mcast_qp_attach
-+		= min_t(int, rblock->max_total_mcast_qp_attach, INT_MAX);
++struct ib_pd *ehca_alloc_pd(struct ib_device *device,
++			    struct ib_ucontext *context,
++			    struct ib_udata *udata);
 +
-+query_device1:
-+	kfree(rblock);
++int ehca_dealloc_pd(struct ib_pd *pd);
 +
-+query_device0:
-+	EDEB_EX(7, "ret=%x", ret);
++struct ib_ah *ehca_create_ah(struct ib_pd *pd, struct ib_ah_attr *ah_attr);
 +
-+	return ret;
-+}
++int ehca_modify_ah(struct ib_ah *ah, struct ib_ah_attr *ah_attr);
 +
-+int ehca_query_port(struct ib_device *ibdev,
-+		    u8 port, struct ib_port_attr *props)
-+{
-+	int ret = 0;
-+	struct ehca_shca *shca;
-+	struct hipz_query_port *rblock;
++int ehca_query_ah(struct ib_ah *ah, struct ib_ah_attr *ah_attr);
 +
-+	EDEB_EN(7, "port=%x", port);
++int ehca_destroy_ah(struct ib_ah *ah);
 +
-+	memset(props, 0, sizeof(struct ib_port_attr));
-+	shca = container_of(ibdev, struct ehca_shca, ib_device);
++struct ib_mr *ehca_get_dma_mr(struct ib_pd *pd, int mr_access_flags);
 +
-+	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	if (!rblock) {
-+		EDEB_ERR(4, "Can't allocate rblock memory.");
-+		ret = -ENOMEM;
-+		goto query_port0;
-+	}
++struct ib_mr *ehca_reg_phys_mr(struct ib_pd *pd,
++			       struct ib_phys_buf *phys_buf_array,
++			       int num_phys_buf,
++			       int mr_access_flags, u64 *iova_start);
 +
-+	if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != H_SUCCESS) {
-+		EDEB_ERR(4, "Can't query port properties");
-+		ret = -EINVAL;
-+		goto query_port1;
-+	}
++struct ib_mr *ehca_reg_user_mr(struct ib_pd *pd,
++			       struct ib_umem *region,
++			       int mr_access_flags, struct ib_udata *udata);
 +
-+	props->state = rblock->state;
++int ehca_rereg_phys_mr(struct ib_mr *mr,
++		       int mr_rereg_mask,
++		       struct ib_pd *pd,
++		       struct ib_phys_buf *phys_buf_array,
++		       int num_phys_buf, int mr_access_flags, u64 *iova_start);
 +
-+	switch (rblock->max_mtu) {
-+	case 0x1:
-+		props->active_mtu = props->max_mtu = IB_MTU_256;
-+		break;
-+	case 0x2:
-+		props->active_mtu = props->max_mtu = IB_MTU_512;
-+		break;
-+	case 0x3:
-+		props->active_mtu = props->max_mtu = IB_MTU_1024;
-+		break;
-+	case 0x4:
-+		props->active_mtu = props->max_mtu = IB_MTU_2048;
-+		break;
-+	case 0x5:
-+		props->active_mtu = props->max_mtu = IB_MTU_4096;
-+		break;
-+	default:
-+		EDEB_ERR(4, "Unknown MTU size: %x.", rblock->max_mtu);
-+	}
++int ehca_query_mr(struct ib_mr *mr, struct ib_mr_attr *mr_attr);
 +
-+	props->gid_tbl_len     = rblock->gid_tbl_len;
-+	props->max_msg_sz      = rblock->max_msg_sz;
-+	props->bad_pkey_cntr   = rblock->bad_pkey_cntr;
-+	props->qkey_viol_cntr  = rblock->qkey_viol_cntr;
-+	props->pkey_tbl_len    = rblock->pkey_tbl_len;
-+	props->lid             = rblock->lid;
-+	props->sm_lid          = rblock->sm_lid;
-+	props->lmc             = rblock->lmc;
-+	props->sm_sl           = rblock->sm_sl;
-+	props->subnet_timeout  = rblock->subnet_timeout;
-+	props->init_type_reply = rblock->init_type_reply;
++int ehca_dereg_mr(struct ib_mr *mr);
 +
-+	props->active_width    = IB_WIDTH_12X;
-+	props->active_speed    = 0x1;
++struct ib_mw *ehca_alloc_mw(struct ib_pd *pd);
 +
-+query_port1:
-+	kfree(rblock);
++int ehca_bind_mw(struct ib_qp *qp, struct ib_mw *mw,
++		 struct ib_mw_bind *mw_bind);
 +
-+query_port0:
-+	EDEB_EX(7, "ret=%x", ret);
++int ehca_dealloc_mw(struct ib_mw *mw);
 +
-+	return ret;
-+}
++struct ib_fmr *ehca_alloc_fmr(struct ib_pd *pd,
++			      int mr_access_flags,
++			      struct ib_fmr_attr *fmr_attr);
 +
-+int ehca_query_pkey(struct ib_device *ibdev, u8 port, u16 index, u16 *pkey)
-+{
-+	int ret = 0;
-+	struct ehca_shca *shca;
-+	struct hipz_query_port *rblock;
++int ehca_map_phys_fmr(struct ib_fmr *fmr,
++		      u64 *page_list, int list_len, u64 iova);
 +
-+	EDEB_EN(7, "port=%x index=%x", port, index);
++int ehca_unmap_fmr(struct list_head *fmr_list);
 +
-+	if (index > 16) {
-+		EDEB_ERR(4, "Invalid index: %x.", index);
-+		ret = -EINVAL;
-+		goto query_pkey0;
-+	}
++int ehca_dealloc_fmr(struct ib_fmr *fmr);
 +
-+	shca = container_of(ibdev, struct ehca_shca, ib_device);
++enum ehca_eq_type {
++	EHCA_EQ = 0, /* Event Queue              */
++	EHCA_NEQ     /* Notification Event Queue */
++};
 +
-+	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	if (!rblock) {
-+		EDEB_ERR(4,  "Can't allocate rblock memory.");
-+		ret = -ENOMEM;
-+		goto query_pkey0;
-+	}
++int ehca_create_eq(struct ehca_shca *shca, struct ehca_eq *eq,
++		   enum ehca_eq_type type, const u32 length);
 +
-+	if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != H_SUCCESS) {
-+		EDEB_ERR(4, "Can't query port properties");
-+		ret = -EINVAL;
-+		goto query_pkey1;
-+	}
++int ehca_destroy_eq(struct ehca_shca *shca, struct ehca_eq *eq);
 +
-+	memcpy(pkey, &rblock->pkey_entries + index, sizeof(u16));
++void *ehca_poll_eq(struct ehca_shca *shca, struct ehca_eq *eq);
 +
-+query_pkey1:
-+	kfree(rblock);
 +
-+query_pkey0:
-+	EDEB_EX(7, "ret=%x", ret);
++struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe,
++			     struct ib_ucontext *context,
++			     struct ib_udata *udata);
 +
-+	return ret;
-+}
++int ehca_destroy_cq(struct ib_cq *cq);
 +
-+int ehca_query_gid(struct ib_device *ibdev, u8 port,
-+		   int index, union ib_gid *gid)
-+{
-+	int ret = 0;
-+	struct ehca_shca *shca;
-+	struct hipz_query_port *rblock;
++int ehca_resize_cq(struct ib_cq *cq, int cqe, struct ib_udata *udata);
 +
-+	EDEB_EN(7, "port=%x index=%x", port, index);
++int ehca_poll_cq(struct ib_cq *cq, int num_entries, struct ib_wc *wc);
 +
-+	if (index > 255) {
-+		EDEB_ERR(4, "Invalid index: %x.", index);
-+		ret = -EINVAL;
-+		goto query_gid0;
-+	}
++int ehca_peek_cq(struct ib_cq *cq, int wc_cnt);
 +
-+	shca = container_of(ibdev, struct ehca_shca, ib_device);
++int ehca_req_notify_cq(struct ib_cq *cq, enum ib_cq_notify cq_notify);
 +
-+	rblock = kzalloc(H_CB_ALIGNMENT, GFP_KERNEL);
-+	if (!rblock) {
-+		EDEB_ERR(4, "Can't allocate rblock memory.");
-+		ret = -ENOMEM;
-+		goto query_gid0;
-+	}
++struct ib_qp *ehca_create_qp(struct ib_pd *pd,
++			     struct ib_qp_init_attr *init_attr,
++			     struct ib_udata *udata);
 +
-+	if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != H_SUCCESS) {
-+		EDEB_ERR(4, "Can't query port properties");
-+		ret = -EINVAL;
-+		goto query_gid1;
-+	}
++int ehca_destroy_qp(struct ib_qp *qp);
 +
-+	memcpy(&gid->raw[0], &rblock->gid_prefix, sizeof(u64));
-+	memcpy(&gid->raw[8], &rblock->guid_entries[index], sizeof(u64));
++int ehca_modify_qp(struct ib_qp *ibqp, struct ib_qp_attr *attr, int attr_mask);
 +
-+query_gid1:
-+	kfree(rblock);
++int ehca_query_qp(struct ib_qp *qp, struct ib_qp_attr *qp_attr,
++		  int qp_attr_mask, struct ib_qp_init_attr *qp_init_attr);
 +
-+query_gid0:
-+	EDEB_EX(7, "ret=%x GID=%lx%lx", ret,
-+		*(u64 *) & gid->raw[0],
-+		*(u64 *) & gid->raw[8]);
++int ehca_post_send(struct ib_qp *qp, struct ib_send_wr *send_wr,
++		   struct ib_send_wr **bad_send_wr);
 +
-+	return ret;
-+}
++int ehca_post_recv(struct ib_qp *qp, struct ib_recv_wr *recv_wr,
++		   struct ib_recv_wr **bad_recv_wr);
 +
-+int ehca_modify_port(struct ib_device *ibdev,
-+		     u8 port, int port_modify_mask,
-+		     struct ib_port_modify *props)
-+{
-+	int ret = 0;
++u64 ehca_define_sqp(struct ehca_shca *shca, struct ehca_qp *ibqp,
++		    struct ib_qp_init_attr *qp_init_attr);
 +
-+	EDEB_EN(7, "port=%x", port);
++int ehca_attach_mcast(struct ib_qp *qp, union ib_gid *gid, u16 lid);
 +
-+	/* Not implemented yet. */
++int ehca_detach_mcast(struct ib_qp *qp, union ib_gid *gid, u16 lid);
 +
-+	EDEB_EX(7, "ret=%x", ret);
++struct ib_ucontext *ehca_alloc_ucontext(struct ib_device *device,
++					struct ib_udata *udata);
 +
-+	return ret;
-+}
---- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/ehca_mcast.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/ehca_mcast.c	2006-05-15 09:54:24.000000000 +0200
-@@ -0,0 +1,194 @@
++int ehca_dealloc_ucontext(struct ib_ucontext *context);
++
++int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma);
++
++void ehca_poll_eqs(unsigned long data);
++
++int ehca_mmap_nopage(u64 foffset,u64 length,void **mapped,
++		     struct vm_area_struct **vma);
++
++int ehca_mmap_register(u64 physical,void **mapped,
++		       struct vm_area_struct **vma);
++
++int ehca_munmap(unsigned long addr, size_t len);
++
++#endif
+--- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/ehca_tools.h	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/ehca_tools.h	2006-05-03 13:44:15.000000000 +0200
+@@ -0,0 +1,411 @@
 +/*
 + *  IBM eServer eHCA Infiniband device driver for Linux on POWER
 + *
-+ *  mcast  functions
++ *  auxiliary functions
 + *
-+ *  Authors: Khadija Souissi <souissik@de.ibm.com>
-+ *           Waleri Fomin <fomin@de.ibm.com>
-+ *           Reinhard Ernst <rernst@de.ibm.com>
++ *  Authors: Christoph Raisch <raisch@de.ibm.com>
 + *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
++ *           Khadija Souissi <souissik@de.ibm.com>
++ *           Waleri Fomin <fomin@de.ibm.com>
 + *           Heiko J Schick <schickhj@de.ibm.com>
 + *
 + *  Copyright (c) 2005 IBM Corporation
 + *
-+ *  All rights reserved.
-+ *
 + *  This source code is distributed under a dual license of GPL v2.0 and OpenIB
 + *  BSD.
 + *
@@ -376,153 +273,372 @@ Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
 + * POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#define DEB_PREFIX "mcas"
 +
++#ifndef EHCA_TOOLS_H
++#define EHCA_TOOLS_H
++
++#include <linux/kernel.h>
++#include <linux/spinlock.h>
++#include <linux/delay.h>
++#include <linux/idr.h>
++#include <linux/kthread.h>
++#include <linux/mm.h>
++#include <linux/mman.h>
 +#include <linux/module.h>
-+#include <linux/err.h>
-+#include "ehca_classes.h"
-+#include "ehca_tools.h"
-+#include "ehca_qes.h"
-+#include "ehca_iverbs.h"
++#include <linux/moduleparam.h>
++#include <linux/vmalloc.h>
++#include <linux/version.h>
 +
-+#include "hcp_if.h"
++#include <asm/abs_addr.h>
++#include <asm/ibmebus.h>
++#include <asm/io.h>
++#include <asm/pgtable.h>
 +
-+#define MAX_MC_LID 0xFFFE
-+#define MIN_MC_LID 0xC000	/* Multicast limits */
-+#define EHCA_VALID_MULTICAST_GID(gid)  ((gid)[0] == 0xFF)
-+#define EHCA_VALID_MULTICAST_LID(lid)  (((lid) >= MIN_MC_LID) && ((lid) <= MAX_MC_LID))
++#define EHCA_EDEB_TRACE_MASK_SIZE 32
++extern u8 ehca_edeb_mask[EHCA_EDEB_TRACE_MASK_SIZE];
++#define EDEB_ID_TO_U32(str4) (str4[3] | (str4[2] << 8) | (str4[1] << 16) | \
++			      (str4[0] << 24))
 +
-+int ehca_attach_mcast(struct ib_qp *ibqp, union ib_gid *gid, u16 lid)
++static inline u64 ehca_edeb_filter(const u32 level,
++				   const u32 id, const u32 line)
 +{
-+	struct ehca_qp *my_qp = NULL;
-+	struct ehca_shca *shca = NULL;
-+	union ib_gid my_gid;
-+	u64 h_ret = H_SUCCESS;
-+	int ret = 0;
++	u64 ret = 0;
++	u32 filenr = 0;
++	u32 filter_level = 9;
++	u32 dynamic_level = 0;
 +
-+	EHCA_CHECK_ADR(ibqp);
-+	EHCA_CHECK_ADR(gid);
-+
-+	my_qp = container_of(ibqp, struct ehca_qp, ib_qp);
-+
-+	EHCA_CHECK_QP(my_qp);
-+	if (ibqp->qp_type != IB_QPT_UD) {
-+		EDEB_ERR(4, "invalid qp_type %x gid, ret=%x",
-+			 ibqp->qp_type, EINVAL);
-+		return -EINVAL;
++	/* This is code written for the gcc -O2 optimizer which should colapse
++	 * to two single ints filter_level is the first level kicked out by
++	 * compiler means trace everythin below 6. */
++	if (id == EDEB_ID_TO_U32("ehav")) {
++		filenr = 0x01;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("clas")) {
++		filenr = 0x02;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("cqeq")) {
++		filenr = 0x03;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("shca")) {
++		filenr = 0x05;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("eirq")) {
++		filenr = 0x06;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("lMad")) {
++		filenr = 0x07;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("mcas")) {
++		filenr = 0x08;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("mrmw")) {
++		filenr = 0x09;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("vpd ")) {
++		filenr = 0x0a;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("e_qp")) {
++		filenr = 0x0b;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("uqes")) {
++		filenr = 0x0c;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("PHYP")) {
++		filenr = 0x0d;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("hcpi")) {
++		filenr = 0x0e;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("iptz")) {
++		filenr = 0x0f;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("spta")) {
++		filenr = 0x10;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("simp")) {
++		filenr = 0x11;
++		filter_level = 8;
++	}
++	if (id == EDEB_ID_TO_U32("reqs")) {
++		filenr = 0x12;
++		filter_level = 8;
 +	}
 +
-+	shca = container_of(ibqp->pd->device, struct ehca_shca, ib_device);
-+	EHCA_CHECK_ADR(shca);
-+
-+	if (!(EHCA_VALID_MULTICAST_GID(gid->raw))) {
-+		EDEB_ERR(4, "gid is not valid mulitcast gid ret=%x",
-+			 EINVAL);
-+		return -EINVAL;
-+	} else if ((lid < MIN_MC_LID) || (lid > MAX_MC_LID)) {
-+		EDEB_ERR(4, "lid=%x is not valid mulitcast lid ret=%x",
-+			 lid, EINVAL);
-+		return -EINVAL;
++	if ((filenr - 1) > sizeof(ehca_edeb_mask)) {
++		filenr = 0;
 +	}
 +
-+	memcpy(&my_gid.raw, gid->raw, sizeof(union ib_gid));
-+
-+	h_ret = hipz_h_attach_mcqp(shca->ipz_hca_handle,
-+				     my_qp->ipz_qp_handle,
-+				     my_qp->galpas.kernel,
-+				     lid, my_gid.global.subnet_prefix,
-+				     my_gid.global.interface_id);
-+	if (h_ret != H_SUCCESS) {
-+		EDEB_ERR(4,
-+			 "ehca_qp=%p qp_num=%x hipz_h_attach_mcqp() failed "
-+			 "h_ret=%lx", my_qp, ibqp->qp_num, h_ret);
++	if (filenr == 0) {
++		filter_level = 9;
++	} /* default */
++	ret = filenr * 0x10000 + line;
++	if (filter_level <= level) {
++		return ret | 0x100000000L; /* this is the flag to not trace */
 +	}
-+	ret = ehca2ib_return_code(h_ret);
-+
-+	EDEB_EX(7, "mcast attach ret=%x\n"
-+		   "ehca_qp=%p qp_num=%x  lid=%x\n"
-+		   "my_gid=  %x %x %x %x\n"
-+		   "         %x %x %x %x\n"
-+		   "         %x %x %x %x\n"
-+		   "         %x %x %x %x\n",
-+		   ret, my_qp, ibqp->qp_num, lid,
-+		   my_gid.raw[0], my_gid.raw[1],
-+		   my_gid.raw[2], my_gid.raw[3],
-+		   my_gid.raw[4], my_gid.raw[5],
-+		   my_gid.raw[6], my_gid.raw[7],
-+		   my_gid.raw[8], my_gid.raw[9],
-+		   my_gid.raw[10], my_gid.raw[11],
-+		   my_gid.raw[12], my_gid.raw[13],
-+		   my_gid.raw[14], my_gid.raw[15]);
-+
++	dynamic_level = ehca_edeb_mask[filenr];
++	if (likely(dynamic_level <= level)) {
++		ret = ret | 0x100000000L;
++	};
 +	return ret;
 +}
 +
-+int ehca_detach_mcast(struct ib_qp *ibqp, union ib_gid *gid, u16 lid)
++#ifdef EHCA_USE_HCALL_KERNEL
++#ifdef CONFIG_PPC_PSERIES
++
++#include <asm/paca.h>
++
++/**
++ * IS_EDEB_ON - Checks if debug is on for the given level.
++ */
++#define IS_EDEB_ON(level) \
++    ((ehca_edeb_filter(level, EDEB_ID_TO_U32(DEB_PREFIX), __LINE__) & 0x100000000L)==0)
++
++#define EDEB_P_GENERIC(level,idstring,format,args...) \
++do { \
++	u64 ehca_edeb_filterresult =					\
++		ehca_edeb_filter(level, EDEB_ID_TO_U32(DEB_PREFIX), __LINE__);\
++	if ((ehca_edeb_filterresult & 0x100000000L) == 0)		\
++		printk("PU%04x %08x:%s " idstring " "format "\n",	\
++		       get_paca()->paca_index, (u32)(ehca_edeb_filterresult), \
++		       __func__,  ##args);				\
++} while (1 == 0)
++
++#elif REAL_HCALL
++
++#define EDEB_P_GENERIC(level,idstring,format,args...) \
++do { \
++	u64 ehca_edeb_filterresult =					\
++		ehca_edeb_filter(level, EDEB_ID_TO_U32(DEB_PREFIX), __LINE__); \
++	if ((ehca_edeb_filterresult & 0x100000000L) == 0)		\
++		printk("%08x:%s " idstring " "format "\n",	\
++			(u32)(ehca_edeb_filterresult), \
++			__func__,  ##args); \
++} while (1 == 0)
++
++#endif
++#else
++
++#define IS_EDEB_ON(level) (1)
++
++#define EDEB_P_GENERIC(level,idstring,format,args...) \
++do { \
++	printk("%s " idstring " "format "\n",	\
++	       __func__,  ##args);		\
++} while (1 == 0)
++
++#endif
++
++/**
++ * EDEB - Trace output macro.
++ * @level tracelevel
++ * @format optional format string, use "" if not desired
++ * @args printf like arguments for trace, use %Lx for u64, %x for u32
++ *       %p for pointer
++ */
++#define EDEB(level,format,args...) \
++	EDEB_P_GENERIC(level,"",format,##args)
++#define EDEB_ERR(level,format,args...) \
++	EDEB_P_GENERIC(level,"HCAD_ERROR ",format,##args)
++#define EDEB_EN(level,format,args...) \
++	EDEB_P_GENERIC(level,">>>",format,##args)
++#define EDEB_EX(level,format,args...) \
++	EDEB_P_GENERIC(level,"<<<",format,##args)
++
++/**
++ * EDEB macro to dump a memory block, whose length is n*8 bytes.
++ * Each line has the following layout:
++ * <format string> adr=X ofs=Y <8 bytes hex> <8 bytes hex>
++ */
++#define EDEB_DMP(level,adr,len,format,args...) \
++	do {				       \
++		unsigned int x;			      \
++		unsigned int l = (unsigned int)(len); \
++		unsigned char *deb = (unsigned char*)(adr);	\
++		for (x = 0; x < l; x += 16) { \
++		        EDEB(level, format " adr=%p ofs=%04x %016lx %016lx", \
++			     ##args, deb, x, *((u64 *)&deb[0]), *((u64 *)&deb[8])); \
++			deb += 16; \
++		} \
++	} while (0)
++
++/* define a bitmask, little endian version */
++#define EHCA_BMASK(pos,length) (((pos)<<16)+(length))
++/* define a bitmask, the ibm way... */
++#define EHCA_BMASK_IBM(from,to) (((63-to)<<16)+((to)-(from)+1))
++/* internal function, don't use */
++#define EHCA_BMASK_SHIFTPOS(mask) (((mask)>>16)&0xffff)
++/* internal function, don't use */
++#define EHCA_BMASK_MASK(mask) (0xffffffffffffffffULL >> ((64-(mask))&0xffff))
++/* return value shifted and masked by mask\n
++ * variable|=HCA_BMASK_SET(MY_MASK,0x4711) ORs the bits in variable\n
++ * variable&=~HCA_BMASK_SET(MY_MASK,-1) clears the bits from the mask
++ * in variable
++ */
++#define EHCA_BMASK_SET(mask,value) \
++	((EHCA_BMASK_MASK(mask) & ((u64)(value)))<<EHCA_BMASK_SHIFTPOS(mask))
++/* extract a parameter from value by mask\n
++ * param=EHCA_BMASK_GET(MY_MASK,value)
++ */
++#define EHCA_BMASK_GET(mask,value) \
++	( EHCA_BMASK_MASK(mask)& (((u64)(value))>>EHCA_BMASK_SHIFTPOS(mask)))
++
++#define PARANOIA_MODE
++#ifdef PARANOIA_MODE
++
++#define EHCA_CHECK_ADR_P(adr)					\
++	if (unlikely(adr == 0)) {					\
++		EDEB_ERR(4, "adr=%p check failed line %i", adr,	\
++			 __LINE__);				\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_CHECK_ADR(adr)					\
++	if (unlikely(adr == 0)) {					\
++		EDEB_ERR(4, "adr=%p check failed line %i", adr,	\
++			 __LINE__);				\
++		return -EFAULT; }
++
++#define EHCA_CHECK_DEVICE_P(device)				\
++	if (unlikely(device == 0)) {				\
++		EDEB_ERR(4, "device=%p check failed", device);	\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_CHECK_DEVICE(device)				\
++	if (unlikely(device == 0)) {				\
++		EDEB_ERR(4, "device=%p check failed", device);	\
++		return -EFAULT; }
++
++#define EHCA_CHECK_PD(pd)				\
++	if (unlikely(pd == 0)) {				\
++		EDEB_ERR(4, "pd=%p check failed", pd);	\
++		return -EFAULT; }
++
++#define EHCA_CHECK_PD_P(pd)				\
++	if (unlikely(pd == 0)) {				\
++		EDEB_ERR(4, "pd=%p check failed", pd);	\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_CHECK_AV(av)				\
++	if (unlikely(av == 0)) {				\
++		EDEB_ERR(4, "av=%p check failed", av);	\
++		return -EFAULT; }
++
++#define EHCA_CHECK_AV_P(av)				\
++	if (unlikely(av == 0)) {				\
++		EDEB_ERR(4, "av=%p check failed", av);	\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_CHECK_CQ(cq)				\
++	if (unlikely(cq == 0)) {				\
++		EDEB_ERR(4, "cq=%p check failed", cq);	\
++		return -EFAULT; }
++
++#define EHCA_CHECK_CQ_P(cq)				\
++	if (unlikely(cq == 0)) {				\
++		EDEB_ERR(4, "cq=%p check failed", cq);	\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_CHECK_EQ(eq)				\
++	if (unlikely(eq == 0)) {				\
++		EDEB_ERR(4, "eq=%p check failed", eq);	\
++		return -EFAULT; }
++
++#define EHCA_CHECK_EQ_P(eq)				\
++	if (unlikely(eq == 0)) {				\
++		EDEB_ERR(4, "eq=%p check failed", eq);	\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_CHECK_QP(qp)				\
++	if (unlikely(qp == 0)) {				\
++		EDEB_ERR(4, "qp=%p check failed", qp);	\
++		return -EFAULT; }
++
++#define EHCA_CHECK_QP_P(qp)				\
++	if (unlikely(qp == 0)) {				\
++		EDEB_ERR(4, "qp=%p check failed", qp);	\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_CHECK_MR(mr)				\
++	if (unlikely(mr == 0)) {				\
++		EDEB_ERR(4, "mr=%p check failed", mr);	\
++		return -EFAULT; }
++
++#define EHCA_CHECK_MR_P(mr)				\
++	if (unlikely(mr == 0)) {				\
++		EDEB_ERR(4, "mr=%p check failed", mr);	\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_CHECK_MW(mw)				\
++	if (unlikely(mw == 0)) {				\
++		EDEB_ERR(4, "mw=%p check failed", mw);	\
++		return -EFAULT; }
++
++#define EHCA_CHECK_MW_P(mw)				\
++	if (unlikely(mw == 0)) {				\
++		EDEB_ERR(4, "mw=%p check failed", mw);	\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_CHECK_FMR(fmr)					\
++	if (unlikely(fmr == 0)) {					\
++		EDEB_ERR(4, "fmr=%p check failed", fmr);	\
++		return -EFAULT; }
++
++#define EHCA_CHECK_FMR_P(fmr)					\
++	if (unlikely(fmr == 0)) {					\
++		EDEB_ERR(4, "fmr=%p check failed", fmr);	\
++		return ERR_PTR(-EFAULT); }
++
++#define EHCA_REGISTER_PD(device,pd)
++#define EHCA_REGISTER_AV(pd,av)
++#define EHCA_DEREGISTER_PD(PD)
++#define EHCA_DEREGISTER_AV(av)
++#else
++#define EHCA_CHECK_DEVICE_P(device)
++
++#define EHCA_CHECK_PD(pd)
++#define EHCA_REGISTER_PD(device,pd)
++#define EHCA_DEREGISTER_PD(PD)
++#endif
++
++/**
++ * ehca_adr_bad - Handle to be used for adress translation mechanisms,
++ * currently a placeholder.
++ */
++static inline int ehca_adr_bad(void *adr)
 +{
-+	struct ehca_qp *my_qp = NULL;
-+	struct ehca_shca *shca = NULL;
-+	union ib_gid my_gid;
-+	u64 h_ret = H_SUCCESS;
-+	int ret = 0;
-+
-+	EHCA_CHECK_ADR(ibqp);
-+	EHCA_CHECK_ADR(gid);
-+
-+	my_qp = container_of(ibqp, struct ehca_qp, ib_qp);
-+
-+	EHCA_CHECK_QP(my_qp);
-+	if (ibqp->qp_type != IB_QPT_UD) {
-+		EDEB_ERR(4, "invalid qp_type %x gid, ret=%x",
-+			 ibqp->qp_type, EINVAL);
-+		return -EINVAL;
-+	}
-+
-+	shca = container_of(ibqp->pd->device, struct ehca_shca, ib_device);
-+	EHCA_CHECK_ADR(shca);
-+
-+	if (!(EHCA_VALID_MULTICAST_GID(gid->raw))) {
-+		EDEB_ERR(4, "gid is not valid mulitcast gid ret=%x",
-+			 EINVAL);
-+		return -EINVAL;
-+	} else if ((lid < MIN_MC_LID) || (lid > MAX_MC_LID)) {
-+		EDEB_ERR(4, "lid=%x is not valid mulitcast lid ret=%x",
-+			 lid, EINVAL);
-+		return -EINVAL;
-+	}
-+
-+	EDEB_EN(7, "dgid=%p qp_numl=%x lid=%x",
-+		gid, ibqp->qp_num, lid);
-+
-+	memcpy(&my_gid.raw, gid->raw, sizeof(union ib_gid));
-+
-+	h_ret = hipz_h_detach_mcqp(shca->ipz_hca_handle,
-+				     my_qp->ipz_qp_handle,
-+				     my_qp->galpas.kernel,
-+				     lid, my_gid.global.subnet_prefix,
-+				     my_gid.global.interface_id);
-+	if (h_ret != H_SUCCESS) {
-+		EDEB_ERR(4,
-+			 "ehca_qp=%p qp_num=%x hipz_h_detach_mcqp() failed "
-+			 "h_ret=%lx", my_qp, ibqp->qp_num, h_ret);
-+	}
-+	ret = ehca2ib_return_code(h_ret);
-+
-+	EDEB_EX(7, "mcast detach ret=%x\n"
-+		"ehca_qp=%p qp_num=%x  lid=%x\n"
-+		"my_gid=  %x %x %x %x\n"
-+		"         %x %x %x %x\n"
-+		"         %x %x %x %x\n"
-+		"         %x %x %x %x\n",
-+		ret, my_qp, ibqp->qp_num, lid,
-+		my_gid.raw[0], my_gid.raw[1],
-+		my_gid.raw[2], my_gid.raw[3],
-+		my_gid.raw[4], my_gid.raw[5],
-+		my_gid.raw[6], my_gid.raw[7],
-+		my_gid.raw[8], my_gid.raw[9],
-+		my_gid.raw[10], my_gid.raw[11],
-+		my_gid.raw[12], my_gid.raw[13],
-+		my_gid.raw[14], my_gid.raw[15]);
-+
-+	return ret;
++	return !adr;
 +}
++
++/**
++ * ehca2ib_return_code - Returns ib return code corresponding to the given
++ * ehca return code.
++ */
++static inline int ehca2ib_return_code(u64 ehca_rc)
++{
++	switch (ehca_rc) {
++	case H_SUCCESS:
++		return 0;
++	case H_BUSY:
++		return -EBUSY;
++	case H_NO_MEM:
++		return -ENOMEM;
++	default:
++		return -EINVAL;
++	}
++}
++
++#endif /* EHCA_TOOLS_H */
