@@ -1,24 +1,21 @@
-Return-Path: <apw@shadowen.org>
-Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hellhawk.shadowen.org",
-	Issuer "hellhawk.shadowen.org" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0D717679E1
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 18:35:45 +1000 (EST)
-Message-ID: <44683A09.2060404@shadowen.org>
-Date: Mon, 15 May 2006 09:21:29 +0100
-From: Andy Whitcroft <apw@shadowen.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id CE574679F6
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 18:43:51 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Mon, 15 May 2006 10:38:47 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix ide-pmac sysfs entry
+Message-ID: <20060515083847.GA5229@iram.es>
+References: <1147676318.21291.105.camel@localhost.localdomain>
+	<20060515000810.487b834e.akpm@osdl.org>
+	<1147677830.21291.114.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 5/6] Have ia64 use add_active_range() and
-	free_area_init_nodes
-References: <20060508141030.26912.93090.sendpatchset@skynet>	<20060508141211.26912.48278.sendpatchset@skynet>
-	<20060514203158.216a966e.akpm@osdl.org>
-In-Reply-To: <20060514203158.216a966e.akpm@osdl.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linuxppc-dev@ozlabs.org,
-	Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
-	bob.picco@hp.com, ak@suse.de, linux-mm@kvack.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1147677830.21291.114.camel@localhost.localdomain>
+Cc: Andrew Morton <akpm@osdl.org>, Pete Popov <ppopov@embeddedalley.com>,
+	B.Zolnierkiewicz@elka.pw.edu.pl, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,122 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
-> Mel Gorman <mel@csn.ul.ie> wrote:
+On Mon, May 15, 2006 at 05:23:50PM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2006-05-15 at 00:08 -0700, Andrew Morton wrote:
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > >
+> > > It looks like the generic ide code now wants ide_init_hwif_ports() to
+> > > set the parent struct device into the ide_hw structure (new field ?).
+> > > Without this, the mac ide code can cause the ide probing code to explode
+> > > in flames in sysfs registration due to what looks like a stale pointer
+> > > in there (happens when removing/re-inserting one of the hotswap media
+> > > bays on some laptops).
+> > > 
+> > 
+> > You don't sound very confident.
 > 
->>Size zones and holes in an architecture independent manner for ia64.
->>
+> Well, the problem is fixed with my change, I'd like to have Bart
+> confirmation that's its the right approach. It looks like it is but that
+> code is fairly intricated :)
 > 
+> > afaict things went bad in October last year.  hw_regs_t.dev was added here:
+> > 
+> > http://www.kernel.org/git/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=26a940e21752e0de8f068f77dad606a7d1986937
+> > 
+> > but that only converted one driver to initialse ->dev.
+> > 
+> > How come things didn't break then?  Did some later change cause the
+> > problems?
 > 
-> This one makes my ia64 die very early in boot.   The trace is pretty useless.
+> Well, for one, very few drivers cause ide_unregister nor rely on those
+> old mecanism... it seems that the way I initialize things at boot works
+> fine, it's when I unregister/re-register via the hotswap bay that things
+> go bunk.
 > 
-> config at http://www.zip.com.au/~akpm/linux/patches/stuff/config-ia64
-> 
-> EFI v1.10 by INTEL: SALsystab=0x3fe4c8c0 ACPI=0x3ff84000 ACPI 2.0=0x3ff83000 MP0
-> Early serial console at I/O port 0x2f8 (options '9600n8')
-> SAL 3.1: Intel Corp                       SR870BN4                         vers0
-> SAL Platform features: BusLock IRQ_Redirection
-> SAL: AP wakeup using external interrupt vector 0xf0
-> No logical to physical processor mapping available
-> iosapic_system_init: Disabling PC-AT compatible 8259 interrupts
-> ACPI: Local APIC address c0000000fee00000
-> PLATFORM int CPEI (0x3): GSI 22 (level, low) -> CPU 0 (0xc618) vector 30
-> register_intr: changing vector 39 from IO-SAPIC-edge to IO-SAPIC-level
-> 4 CPUs available, 4 CPUs total
-> MCA related initialization done
-> node 0 zone DMA missaligned start pfn, enable UNALIGNED_ZONE_BOUNDRIES
-> node 0 zone DMA32 missaligned start pfn, enable UNALIGNED_ZONE_BOUNDRIES
-> node 0 zone Normal missaligned start pfn, enable UNALIGNED_ZONE_BOUNDRIES
-> node 0 zone HighMem missaligned start pfn, enable UNALIGNED_ZONE_BOUNDRIES
-> SMP: Allowing 4 CPUs, 0 hotplug CPUs
-> Built 1 zonelists
-> Kernel command line: BOOT_IMAGE=scsi0:\EFI\redhat\vmlinuz-2.6.17-rc4-mm1 root=/o
-> PID hash table entries: 4096 (order: 12, 32768 bytes)
-> Console: colour VGA+ 80x25
-> Dentry cache hash table entries: 131072 (order: 6, 1048576 bytes)
-> Inode-cache hash table entries: 65536 (order: 5, 524288 bytes)
-> Placing software IO TLB between 0x4a30000 - 0x8a30000
-> Unable to handle kernel NULL pointer dereference (address 0000000000000008)
-> swapper[0]: Oops 8813272891392 [1]
-> Modules linked in:
-> 
-> Pid: 0, CPU 0, comm:              swapper
-> psr : 00001010084a6010 ifs : 800000000000060f ip  : [<a0000001000e6750>]    Notd
-> ip is at __free_pages_ok+0x190/0x3c0
-> unat: 0000000000000000 pfs : 000000000000060f rsc : 0000000000000003
-> rnat: 0000000000ffffff bsps: 00000000000002f9 pr  : 80000000afb5956b
-> ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70433f
-> csd : 0930ffff00090000 ssd : 0930ffff00090000
-> b0  : a0000001000e6660 b6  : e00000003fe52940 b7  : a000000100790120
-> f6  : 1003e6db6db6db6db6db7 f7  : 1003e000000000006dec0
-> f8  : 1003e000000000000fb80 f9  : 1003e000000000006e080
-> f10 : 1003e000000000000fb40 f11 : 1003e000000000006dec0
-> r1  : a000000100af2db0 r2  : 0000000000000001 r3  : 0000000000000000
-> r8  : a0000001008f3d38 r9  : 0000000000004000 r10 : 0000000000370400
-> r11 : 0000000000004000 r12 : a0000001007b7e10 r13 : a0000001007b0000
-> r14 : 0000000000000001 r15 : 0000000100000001 r16 : 0000000100000001
-> r17 : 0000000100000001 r18 : 0000000000001041 r19 : 0000000000000000
-> r20 : e00000000149df00 r21 : 0000000100000000 r22 : 0000000055555155
-> r23 : 00000000ffffffff r24 : e00000000149df08 r25 : 1555555555555155
-> r26 : 0000000000000032 r27 : 0000000000000000 r28 : 0000000000000008
-> r29 : 0000000000001041 r30 : 0000000000001041 r31 : 0000000000000001
-> Unable to handle kernel NULL pointer dereference (address 0000000000000000)
-> swapper[0]: Oops 8813272891392 [2]
-> Modules linked in:
-> 
-> Pid: 0, CPU 0, comm:              swapper
-> psr : 0000101008022018 ifs : 8000000000000287 ip  : [<a0000001001236c0>]    Notd
-> ip is at kmem_cache_alloc+0x40/0x100
-> unat: 0000000000000000 pfs : 0000000000000712 rsc : 0000000000000003
-> rnat: 0000000000000000 bsps: 0000000000000000 pr  : 80000000afb59967
-> ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70033f
-> csd : 0930ffff00090000 ssd : 0930ffff00090000
-> b0  : a00000010003e450 b6  : a000000100001b50 b7  : a00000010003f320
-> f6  : 1003e9e3779b97f4a7c16 f7  : 0ffdb8000000000000000
-> f8  : 1003e000000000000007f f9  : 1003e0000000000000379
-> f10 : 1003e6db6db6db6db6db7 f11 : 1003e000000000000007f
-> r1  : a000000100af2db0 r2  : 0000000000000000 r3  : 0000000000000000
-> r8  : 0000000000000000 r9  : 0000000000000000 r10 : a0000001007b0f24
-> r11 : 0000000000000000 r12 : a0000001007b7280 r13 : a0000001007b0000
-> r14 : 0000000000000000 r15 : 0000000000000000 r16 : a0000001007b7310
-> r17 : 0000000000000000 r18 : a0000001007b7478 r19 : 0000000000000000
-> r20 : 0000000000000000 r21 : 0000000000000018 r22 : 0000000000000000
-> r23 : 0000000000000000 r24 : 0000000000000000 r25 : a0000001007b7308
-> r26 : 000000007fffffff r27 : a000000100825520 r28 : a0000001008f3c40
-> r29 : a000000100816ca8 r30 : 0000000000000018 r31 : 0000000000000018
-> 
-> 
-> 
-> (gdb) l *0xa0000001000e6750
-> 0xa0000001000e6750 is in __free_pages_ok (mm.h:324).
-> 319     extern void FASTCALL(__page_cache_release(struct page *));
-> 320     
-> 321     static inline int page_count(struct page *page)
-> 322     {
-> 323             if (unlikely(PageCompound(page)))
-> 324                     page = (struct page *)page_private(page);
-> 325             return atomic_read(&page->_count);
-> 326     }
-> 327     
-> 328     static inline void get_page(struct page *page)
-> 
-> 
-> Note the misaligned pfns.
-> 
-> Andy's (misspelled) CONFIG_UNALIGNED_ZONE_BOUNDRIES patch didn't actually
-> include an update to any Kconfig files.  But hacking that in by hand didn't
-> help.
+> It's possible that it got broken back then and not noticed since ... or
+> another change actually made _use_ of that field... not sure, Bart might
+> confirm. The Mac laptops with those hotswap bays are fairly old and I
+> haven't tested for some time. I just did after getting user reports, and
+> users of old machines like that tend to use stable distro kernels which
+> tend to be fairly old...
 
-Interesting.  You are correct there was no config component, at the time
-I didn't have direct evidence that any architecture needed it, only that
-we had an unchecked requirement on zones, a requirement that had only
-recently arrived with the changes to free buddy detection.  I note that
-MAX_ORDER is 17 for ia64 so that probabally accounts for the
-missalignment.  It is clear that the reporting is slightly over-zelous
-as I am reporting zero-sized zones.  I'll get that fixed and patch to
-you.  I'll also have a look at the patch as added to -mm and try and get
-the rest of the spelling sorted :-/.
+Actually I have one of these, and regularly use it and update 
+the kernel to the latest git once or twice per month, but I 
+typically have two batteries and have not swapped in the 
+media bay under Linux for a long time.
 
-I'll go see if we currently have a machine to test this config on.
+If you are interested, I could test the patch when I find 
+some time (not today: my 8 year old son went to the hospital
+for an emergency last Thursday, he is cured now and should 
+come out today).
 
--apw
+	Regards,
+	Gabriel
