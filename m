@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E158367B41
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 15:51:40 +1000 (EST)
-Subject: Re: [PATCH] Fix pSeries identification in prom_init.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1147671963.21291.91.camel@localhost.localdomain>
-References: <1147671963.21291.91.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 15 May 2006 15:51:22 +1000
-Message-Id: <1147672282.21291.92.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Michael Neuling <mikey@neuling.org>
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
+	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 0D4DF67B42
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 16:08:18 +1000 (EST)
+In-Reply-To: <1147657558.21291.65.camel@localhost.localdomain>
+References: <87wtcplejw.fsf@blackdown.de>
+	<17510.55656.607530.491585@zot.electricrain.com>
+	<1147657558.21291.65.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <D0930F4F-DF46-47FF-B33C-0BE313CC81DB@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: Load average 1.0 on idle machine
+Date: Mon, 15 May 2006 02:08:13 -0400
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, "Brian D. Carlstrom" <bdc@carlstrom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-05-15 at 15:46 +1000, Benjamin Herrenschmidt wrote:
-> The OF trampoline code prom_init.c still needs to identify IBM pSeries
-> (PAPR) machines in order to run some platform specific code on them like
-> instanciating the TCE tables. The code doing that detection was changed
-> recently in 2.6.17 early stages but was done slightly incorrectly. It
-> should be testing for an exact match of "chrp" and it currently tests
-> for anything that begins with "chrp". That means it will incorrectly
-> match with platforms using Maple-like device-trees and have open
-> firmware. This fixes it by using strcmp instead of strncmp to match what
-> the actual platform detection code does.
 
-Michael, I noticed you changed strcmp to strncmp, any reason why you did
-that ?
+On May 14, 2006, at 9:45 PM, Benjamin Herrenschmidt wrote:
 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> Paul, if you are happy with that, please send upsteam ASAP.
-> 
-> Index: linux-work/arch/powerpc/kernel/prom_init.c
-> ===================================================================
-> --- linux-work.orig/arch/powerpc/kernel/prom_init.c	2006-05-02 10:51:33.000000000 +1000
-> +++ linux-work/arch/powerpc/kernel/prom_init.c	2006-05-15 15:37:03.000000000 +1000
-> @@ -1636,7 +1636,7 @@
->  			   compat, sizeof(compat)-1);
->  	if (len <= 0)
->  		return PLATFORM_GENERIC;
-> -	if (strncmp(compat, RELOC("chrp"), 4))
-> +	if (strcmp(compat, RELOC("chrp")))
->  		return PLATFORM_GENERIC;
->  
->  	/* Default to pSeries. We need to know if we are running LPAR */
-> 
+> ....   For now, consider
+> the load avergage value bogus :)
+
+It's not bogus :-)  If you happen to schedule periodic
+tasks that are sampled with load average computes,
+or sleep them "uninterrupible", they are counted in
+the load average.
+
+
+	-- Dan
