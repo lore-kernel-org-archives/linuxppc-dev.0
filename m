@@ -2,29 +2,29 @@ Return-Path: <schihei@de.ibm.com>
 Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8523267BAD
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 03:43:00 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id E3EDC681B7
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 03:43:07 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate3.de.ibm.com (8.13.6/8.13.6) with ESMTP id k4FHgrJp120600
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 17:42:53 GMT
+	by mtagate3.de.ibm.com (8.13.6/8.13.6) with ESMTP id k4FHh2Y3076296
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 17:43:02 GMT
 Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
 	[9.149.165.212])
 	by d12nrmr1607.megacenter.de.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k4FHiKvT151516
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:44:20 +0200
+	k4FHiSvT137766
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:44:28 +0200
 Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
 	by d12av01.megacenter.de.ibm.com (8.12.11/8.13.3) with ESMTP id
-	k4FHgrGP026364
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:42:53 +0200
-Message-ID: <4468BDB7.6060106@de.ibm.com>
-Date: Mon, 15 May 2006 19:43:19 +0200
+	k4FHh1TY026504
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 May 2006 19:43:02 +0200
+Message-ID: <4468BDBF.6060703@de.ibm.com>
+Date: Mon, 15 May 2006 19:43:27 +0200
 From: Heiko J Schick <schihei@de.ibm.com>
 MIME-Version: 1.0
 To: openib-general@openib.org, Christoph Raisch <RAISCH@de.ibm.com>,
 	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>,
 	schihei@de.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 15/16] ehca: PHYP abstraction layer
+Subject: [PATCH 16/16] ehca: integration in Linux kernel build system
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -38,202 +38,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Signed-off-by: Heiko J Schick <schickhj@de.ibm.com>
 
 
-  drivers/infiniband/hw/ehca/hcp_phyp.c |   92 ++++++++++++++++++++++++++++++++
-  drivers/infiniband/hw/ehca/hcp_phyp.h |   95 ++++++++++++++++++++++++++++++++++
-  2 files changed, 187 insertions(+)
+  drivers/infiniband/hw/ehca/Kconfig  |    6 ++++++
+  drivers/infiniband/hw/ehca/Makefile |   16 ++++++++++++++++
+  2 files changed, 22 insertions(+)
 
 
 
---- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/hcp_phyp.h	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/hcp_phyp.h	2006-05-02 12:48:48.000000000 +0200
-@@ -0,0 +1,95 @@
-+/*
-+ *  IBM eServer eHCA Infiniband device driver for Linux on POWER
-+ *
-+ *  Firmware calls
-+ *
-+ *  Authors: Christoph Raisch <raisch@de.ibm.com>
-+ *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-+ *           Waleri Fomin <fomin@de.ibm.com>
-+ *           Gerd Bayer <gerd.bayer@de.ibm.com>
-+ *
-+ *  Copyright (c) 2005 IBM Corporation
-+ *
-+ *  All rights reserved.
-+ *
-+ *  This source code is distributed under a dual license of GPL v2.0 and OpenIB
-+ *  BSD.
-+ *
-+ * OpenIB BSD License
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *
-+ * Redistributions of source code must retain the above copyright notice, this
-+ * list of conditions and the following disclaimer.
-+ *
-+ * Redistributions in binary form must reproduce the above copyright notice,
-+ * this list of conditions and the following disclaimer in the documentation
-+ * and/or other materials
-+ * provided with the distribution.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-+ * POSSIBILITY OF SUCH DAMAGE.
-+ */
+--- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/Kconfig	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/Kconfig	2006-04-28 13:32:08.000000000 +0200
+@@ -0,0 +1,6 @@
++config INFINIBAND_EHCA
++       tristate "eHCA support"
++       depends on IBMEBUS && INFINIBAND
++       ---help---
++       This is a low level device driver for the IBM
++       GX based Host channel adapters (HCAs)
+--- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/Makefile	2006-04-28 13:31:25.000000000 +0200
+@@ -0,0 +1,16 @@
++#  Authors: Heiko J Schick <schickhj@de.ibm.com>
++#           Christoph Raisch <raisch@de.ibm.com>
++#
++#  Copyright (c) 2005 IBM Corporation
++#
++#  All rights reserved.
++#
++#  This source code is distributed under a dual license of GPL v2.0 and OpenIB BSD.
 +
-+#ifndef __HCP_PHYP_H__
-+#define __HCP_PHYP_H__
++obj-$(CONFIG_INFINIBAND_EHCA) += hcad_mod.o
 +
++hcad_mod-objs = ehca_main.o ehca_hca.o ehca_mcast.o ehca_pd.o ehca_av.o ehca_eq.o \
++		ehca_cq.o ehca_qp.o ehca_sqp.o ehca_mrmw.o ehca_reqs.o ehca_irq.o \
++		ehca_uverbs.o hcp_if.o hcp_phyp.o ipz_pt_fn.o
 +
-+/* eHCA page (mapped into memory)
-+    resource to access eHCA register pages in CPU address space
-+*/
-+struct h_galpa {
-+	u64 fw_handle;
-+	/* for pSeries this is a 64bit memory address where
-+	   I/O memory is mapped into CPU address space (kv) */
-+};
-+
-+/*
-+   resource to access eHCA address space registers, all types
-+*/
-+struct h_galpas {
-+	u32 pid;		/*PID of userspace galpa checking */
-+	struct h_galpa user;	/* user space accessible resource,
-+				   set to 0 if unused */
-+	struct h_galpa kernel;	/* kernel space accessible resource,
-+				   set to 0 if unused */
-+};
-+
-+static inline u64 hipz_galpa_load(struct h_galpa galpa, u32 offset)
-+{
-+	u64 addr = galpa.fw_handle + offset;
-+	u64 out;
-+	EDEB_EN(7, "addr=%lx offset=%x ", addr, offset);
-+	out = *(u64 *) addr;
-+	EDEB_EX(7, "addr=%lx value=%lx", addr, out);
-+	return out;
-+}
-+
-+static inline void hipz_galpa_store(struct h_galpa galpa, u32 offset, u64 value)
-+{
-+	u64 addr = galpa.fw_handle + offset;
-+	EDEB(7, "addr=%lx offset=%x value=%lx", addr,
-+	     offset, value);
-+	*(u64 *) addr = value;
-+}
-+
-+int hcp_galpas_ctor(struct h_galpas *galpas,
-+		    u64 paddr_kernel, u64 paddr_user);
-+
-+int hcp_galpas_dtor(struct h_galpas *galpas);
-+
-+int hcall_map_page(u64 physaddr, u64 * mapaddr);
-+
-+int hcall_unmap_page(u64 mapaddr);
-+
-+#endif
---- linux-2.6.17-rc2-orig/drivers/infiniband/hw/ehca/hcp_phyp.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.17-rc2/drivers/infiniband/hw/ehca/hcp_phyp.c	2006-05-03 13:44:00.000000000 +0200
-@@ -0,0 +1,92 @@
-+/*
-+ *  IBM eServer eHCA Infiniband device driver for Linux on POWER
-+ *
-+ *   load store abstraction for ehca register access with tracing
-+ *
-+ *  Authors: Christoph Raisch <raisch@de.ibm.com>
-+ *           Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-+ *
-+ *  Copyright (c) 2005 IBM Corporation
-+ *
-+ *  All rights reserved.
-+ *
-+ *  This source code is distributed under a dual license of GPL v2.0 and OpenIB
-+ *  BSD.
-+ *
-+ * OpenIB BSD License
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *
-+ * Redistributions of source code must retain the above copyright notice, this
-+ * list of conditions and the following disclaimer.
-+ *
-+ * Redistributions in binary form must reproduce the above copyright notice,
-+ * this list of conditions and the following disclaimer in the documentation
-+ * and/or other materials
-+ * provided with the distribution.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-+ * POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#define DEB_PREFIX "PHYP"
-+
-+#include "ehca_classes.h"
-+#include "hipz_hw.h"
-+
-+int hcall_map_page(u64 physaddr, u64 *mapaddr)
-+{
-+	*mapaddr = (u64)(ioremap(physaddr, EHCA_PAGESIZE));
-+
-+	EDEB(7, "ioremap physaddr=%lx mapaddr=%lx", physaddr, *mapaddr);
-+	return 0;
-+}
-+
-+int hcall_unmap_page(u64 mapaddr)
-+{
-+	EDEB(7, "mapaddr=%lx", mapaddr);
-+	iounmap((volatile void __iomem*)mapaddr);
-+	return 0;
-+}
-+
-+int hcp_galpas_ctor(struct h_galpas *galpas,
-+		    u64 paddr_kernel, u64 paddr_user)
-+{
-+	int ret = hcall_map_page(paddr_kernel, &galpas->kernel.fw_handle);
-+	if (ret)
-+		return ret;
-+
-+	galpas->user.fw_handle = paddr_user;
-+
-+	EDEB(7, "paddr_kernel=%lx paddr_user=%lx galpas->kernel=%lx"
-+	     " galpas->user=%lx",
-+	     paddr_kernel, paddr_user, galpas->kernel.fw_handle,
-+	     galpas->user.fw_handle);
-+
-+	return ret;
-+}
-+
-+int hcp_galpas_dtor(struct h_galpas *galpas)
-+{
-+	int ret = 0;
-+
-+	if (galpas->kernel.fw_handle)
-+		ret = hcall_unmap_page(galpas->kernel.fw_handle);
-+
-+	if (ret)
-+		return ret;
-+
-+	galpas->user.fw_handle = galpas->kernel.fw_handle = 0;
-+
-+	return ret;
-+}
++CFLAGS += -DEHCA_USE_HCALL -DEHCA_USE_HCALL_KERNEL
