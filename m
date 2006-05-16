@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DFCEC679F6
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 08:03:54 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 643AC679F6
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 08:04:28 +1000 (EST)
 Subject: Re: [Alsa-devel] [RFC] alsa integer control ranges
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <s5h7j4m40kf.wl%tiwai@suse.de>
+To: Jaroslav Kysela <perex@suse.cz>
+In-Reply-To: <Pine.LNX.4.61.0605161430220.9330@tm8103.perex-int.cz>
 References: <1147780945.29795.110.camel@johannes>
-	<s5h7j4m40kf.wl%tiwai@suse.de>
+	<Pine.LNX.4.61.0605161430220.9330@tm8103.perex-int.cz>
 Content-Type: text/plain
-Date: Wed, 17 May 2006 08:03:43 +1000
-Message-Id: <1147817023.6753.5.camel@localhost.localdomain>
+Date: Wed, 17 May 2006 08:04:18 +1000
+Message-Id: <1147817058.6753.7.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Johannes Berg <johannes@sipsolutions.net>,
@@ -27,41 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-05-16 at 14:27 +0200, Takashi Iwai wrote:
-> At Tue, 16 May 2006 14:02:20 +0200,
-> Johannes Berg wrote:
-> > 
+On Tue, 2006-05-16 at 14:31 +0200, Jaroslav Kysela wrote:
+> On Tue, 16 May 2006, Johannes Berg wrote:
+> 
 > > Apparently all alsa userspace programs including alsamixer suck. Hence,
 > > this patch is required to make them work properly. Why is it so hard to
 > > do these additions/subtractions in the program or maybe even in the alsa
 > > library? The alsa libraries already think they know better and mess up
 > > all kinds of things.
 > 
-> It's a pretty stupid question to ask why you are stupid :)
-> 
-> I don't think it's alsa-lib that prevents the negative or non-zero
-> integer range.  The fact amixer works implies that it's an
-> app-specific bug.  But I'm not 100% sure and need more
-> inside-looking.
+> It's better to fix apps, if they are broken.
 
-Well, the problem I think is that pretty much all apps but amixer (and
-alsamixer whch works too for me at least) are bogus. It would have been
-good if Alsa had a more explicit specification that those values are not
-to be interpreted in the old OSS range :) In fact, best would have been
-to have the control structure carry a "unit" which a set of known units,
-one being dB, since the natural way of specifying an attenuation on any
-serious audio HW is dB and is negative... 
-
-> > What are your opinions on this? Should this be required? And if so, why
-> > do we even have the value.integer.min when we can't use it anyway? 
-> 
-> Right now, the range 0-max would make your life easier, I guess.
-> 
-> The min value is an API definition, and implemented and worked once.
-> But no drivers used yet.  So, there might be a breakage.  It's of
-> course to be fixed.
-
-There is a lack of serious/professional audio drivers in the linux world
-unfortunately... 
+Problem is, they are currently all broken (pretty much) and thus unless
+we want to release a driver that won't work with any current distros,
+we'll have to whack the ranges :(
 
 Ben.
