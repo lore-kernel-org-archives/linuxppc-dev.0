@@ -1,12 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <perex@suse.cz>
+Received: from gate.perex.cz (gate.perex.cz [85.132.177.35])
+	by ozlabs.org (Postfix) with ESMTP id 4E9A0679E9
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 May 2006 22:49:36 +1000 (EST)
+Date: Tue, 16 May 2006 14:31:00 +0200 (CEST)
+From: Jaroslav Kysela <perex@suse.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [Alsa-devel] [RFC] alsa integer control ranges
+In-Reply-To: <1147780945.29795.110.camel@johannes>
+Message-ID: <Pine.LNX.4.61.0605161430220.9330@tm8103.perex-int.cz>
+References: <1147780945.29795.110.camel@johannes>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17513.50957.847622.644000@cargo.ozlabs.ibm.com>
-Date: Tue, 16 May 2006 22:35:25 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: please pull powerpc.git 'merge' branch
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	ALSA development <alsa-devel@alsa-project.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,74 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Tue, 16 May 2006, Johannes Berg wrote:
 
-Please do a pull from the "merge" branch of
+> Apparently all alsa userspace programs including alsamixer suck. Hence,
+> this patch is required to make them work properly. Why is it so hard to
+> do these additions/subtractions in the program or maybe even in the alsa
+> library? The alsa libraries already think they know better and mess up
+> all kinds of things.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+It's better to fix apps, if they are broken.
 
-Two more small bug-fixes for powerpc.  I have put the full commit
-messages and patches below.
+						Jaroslav
 
-Thanks,
-Paul.
-
-commit 3de620e8394406fd01f450b8c6e3e74464e81a78
-Author: Anton Blanchard <anton@samba.org>
-Date:   Wed May 10 13:05:54 2006 +1000
-
-    [PATCH] powerpc: fix kernel version display on pseries boxes
-    
-    We are displaying the wrong thing on the operator panel (2x40
-    character LCD).  This got broken in commit cebb21b5, when UTS_RELEASE
-    got changed to system_utsname.version.
-    
-    Signed-off-by: Anton Blanchard <anton@samba.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 5eb55ef..5f79f01 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -255,7 +255,7 @@ static int __init pSeries_init_panel(voi
- {
- 	/* Manually leave the kernel version on the panel. */
- 	ppc_md.progress("Linux ppc64\n", 0);
--	ppc_md.progress(system_utsname.version, 0);
-+	ppc_md.progress(system_utsname.release, 0);
- 
- 	return 0;
- }
-
-commit cb6b2eb9bcf2f61e84dc0b55ef7e3d4923842313
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Mon May 15 15:46:03 2006 +1000
-
-    [PATCH] Fix pSeries identification in prom_init.c
-    
-    The OF trampoline code prom_init.c still needs to identify IBM pSeries
-    (PAPR) machines in order to run some platform specific code on them like
-    instanciating the TCE tables. The code doing that detection was changed
-    recently in 2.6.17 early stages but was done slightly incorrectly. It
-    should be testing for an exact match of "chrp" and it currently tests
-    for anything that begins with "chrp". That means it will incorrectly
-    match with platforms using Maple-like device-trees and have open
-    firmware. This fixes it by using strcmp instead of strncmp to match what
-    the actual platform detection code does.
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 078fb55..2d80653 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1636,7 +1636,7 @@ #ifdef CONFIG_PPC64
- 			   compat, sizeof(compat)-1);
- 	if (len <= 0)
- 		return PLATFORM_GENERIC;
--	if (strncmp(compat, RELOC("chrp"), 4))
-+	if (strcmp(compat, RELOC("chrp")))
- 		return PLATFORM_GENERIC;
- 
- 	/* Default to pSeries. We need to know if we are running LPAR */
+-----
+Jaroslav Kysela <perex@suse.cz>
+Linux Kernel Sound Maintainer
+ALSA Project, SUSE Labs
