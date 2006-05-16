@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 7F851679A6
+Return-Path: <JayasriS@aaesys.com>
+Received: from aae-exchange.aaesys.com (mail.aaesys.com [67.131.247.41])
+	by ozlabs.org (Postfix) with ESMTP id 5E7D2679EF
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 May 2006 06:26:03 +1000 (EST)
-To: pito50@hotmail.com
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Unable to boot a kernel on a MPC8560 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 16 May 2006 15:12:54 -0000."
-	<BAY105-F10857BC9DB3B958AC19C8D8EA00@phx.gbl>
-Date: Tue, 16 May 2006 22:26:00 +0200
-Sender: wd@denx.de
-Message-Id: <20060516202600.9181D35363E@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 17 May 2006 09:30:32 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: Common Flash Interface v1.4(P30) and MTD support in Linux-2.4.16
+	kernel
+Date: Tue, 16 May 2006 16:18:25 -0700
+Message-ID: <E76D631A87C2874E895D1639A1CEDB962AF95D@aae-exchange.aaesys.com>
+From: "Jayasri Sangu" <JayasriS@aaesys.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,31 +22,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <BAY105-F10857BC9DB3B958AC19C8D8EA00@phx.gbl> you wrote:
-> 
-> first of all, I am a newbie in embedded linux systems.
+Hi,
 
-Seems you are also a newbie when it comes to posting to mailing lists
-in general. Posting  the  same  question  several  times  to  several
-mailing    lists    is    not    a    good    idea.    Please    read
-http://www.catb.org/%7eesr/faqs/smart-questions.html
+    Does linux-2.4.16 kernel MTD support the Intel P30 flash ?
 
+If not what are the solutions ?
 
-> The boot loader is U-Boot.
-...
-> Here is the result of one of my tests :
-> -> niot 0
-...
-> -> nbo 0
+Thanks
+Jayasri=20
 
-These are definitely no U-Boot commands. 
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-He's dead, Jim
-	-- McCoy, "The Devil in the Dark", stardate 3196.1
+Come see us at CommunicAsia 2006 http://www.communicasia.com/
+June 20-23, 2006 in Singapore at the US International Pavilion booth =
+6F1-03
