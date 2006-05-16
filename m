@@ -1,32 +1,16 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx026.isp.belgacom.be (outmx026.isp.belgacom.be
-	[195.238.4.91])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2A2DA679E9
+Return-Path: <mickael_corveller@hotmail.com>
+Received: from hotmail.com (bay105-f10.bay105.hotmail.com [65.54.224.20])
+	by ozlabs.org (Postfix) with ESMTP id AFD93679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 May 2006 01:09:29 +1000 (EST)
-Received: from outmx026.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx026.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k4GF9MK5012266
-	for <linuxppc-embedded@ozlabs.org>; Tue, 16 May 2006 17:09:22 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx026.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k4GF9C5j012140
-	for <linuxppc-embedded@ozlabs.org>; Tue, 16 May 2006 17:09:15 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+	Wed, 17 May 2006 01:30:00 +1000 (EST)
+Message-ID: <BAY105-F10857BC9DB3B958AC19C8D8EA00@phx.gbl>
+From: "CORVELLER Mickael" <mickael_corveller@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8248 goes berserk when printing messages on the SMC console
-Date: Tue, 16 May 2006 17:09:36 +0200
-References: <200605151828.22727.laurent.pinchart@tbox.biz>
-In-Reply-To: <200605151828.22727.laurent.pinchart@tbox.biz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200605161709.36387.laurent.pinchart@tbox.biz>
+Subject: Unable to boot a kernel on a MPC8560
+Date: Tue, 16 May 2006 15:12:54 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Reply-To: pito50@hotmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,55 +21,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hello,
 
-after further investigation, I found out that my SMC problem is probably=20
-caused by cache issues.
+first of all, I am a newbie in embedded linux systems.
 
-> The SMC console works fine in U-Boot. 115200 8N1, no problem there.
->
-> When booting a Linux 2.6.16 kernel, the processor doesn't print anything =
-on
-> the console and seems to hang. Further analysis with a BDI2000 reveals the
-> following.
->
-> - The CPU is stuck in cpm_uart_console_write, checking for
->
-> while ((bdp->cbd_sc & BD_SC_READY) !=3D 0);
->
->   At that point, most of the external and internal memory read as 0 (SDRA=
-M,
-> flash, ...). A few memory locations contain values different than 0, and I
-> suspect those to come directly from the cache.
+I'm trying to boot a board based on a MPC8560 (with a e500 core).
 
-The only memory locations that aren't filled with 0 when read from the BDI =
-are=20
-the ones present in D-cache lines. Accessing unmapped memory doesn't fail a=
-nd=20
-returns 0.
+I'm using a RS232 console via a debug module connected to the SCC1 port of 
+the 8560.
 
-> - If I break right before setting the BD_SC_READY flag and run using step=
-i,
-> random characters are sent on the serial port. Measuring the baudrate usi=
-ng
-> an oscilloscope confirms that it has been correctly configured. Only the
-> data is wrong.
+The boot loader is U-Boot.
 
-=46rom http://www.freescale.com/webapp/sps/utils/SingleFaq.jsp?FAQ-19683.xml
+It appears that the transfert of the kernel from the host to target is OK 
+(I'm using TFTP).
 
-"Note. If the core is in the debug mode then the cache content will not be=
-=20
-updated by the snooping."
+Problems begin when I try to execute the kernel. The system appears to be 
+frozen.
 
-I tried to clear the GBL bit in the SMC TFCR register to disable memory=20
-snooping. This solved part of the problem, as the CPU doesn't hang anymore,=
-=20
-but the data sent on the serial port are garbage. I suppose that's a normal=
-=20
-behaviour once the D-cache is enabled.
+I don't know if the board is really frozen or if I have "only" lost the 
+console.
 
-This leads me to believe that I have a cache issue. Has anyone experienced =
-the=20
-same problem ?
+I suspect that my error is situated in the load/execution addresses.
 
-Laurent Pinchart
+I've tried different couples of values : 0/0, 100000/100000, 10000/10000, 
+200000/200000, etc...
+
+I've also tried different file format (uImage, zImage.elf, zImage.s ...)
+
+I've tried two distributions : ELINOS and DENX.
+
+I don't know what's happened because I lose the console .
+
+Here is the result of one of my tests :
+-> niot 0
+Client IP Address (0 for unknown)       = 192.168.001.126 ?
+Client address mask (0 for unknown)     = 255.255.255.000 ?
+Server IP Address (0 for unknown)       = 192.168.001.127 ?
+File Format S(rec)/I(ntel)/B(in)/E(lf)  = B ? e
+Boot File Name    (NULL for unknown)    = pimage ? zimage.elf
+Boot File Load address                  = 80000 ? 0
+Boot File Execution address             = 80000 ? 100000
+Data update in progress...
+-> nbo 0
+Initialize ETH 0 in progress...
+Physical link is up at 100f.
+
+TFTP parameters :
+Client IP Address               192.168.001.126
+Server IP Address               192.168.001.127
+Boot File Format                E
+Boot File Name                  zimage.elf
+Boot File Load address          0
+Boot File Execution address     100000
+TFTP load in progress...
+Packets :     2065
+ELF information :
+Loading  .text         @ 0x00800000 :    18620 bytes
+Loading  .data         @ 0x00805000 :   966656 bytes
+Clearing .bss          @ 0x008F1000 :     8500 bytes
+Bytes received = 1057082, Bytes loaded = 0
+Low address = 800000, High address = 7FFFFF
+
+After that, the console is died !
+
+I could use some help in trying to understand what's going on.
+
+Regards,
+Mickaël
