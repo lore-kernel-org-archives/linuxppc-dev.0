@@ -1,17 +1,17 @@
-Return-Path: <nreddy@netenrich.com>
-Received: from mail.netenrich.com (mail.netenrich.com [204.13.82.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A92C2679A6
+Return-Path: <eberhard.stoll@berghof.com>
+Received: from mail92.messagelabs.com (mail92.messagelabs.com [194.106.220.51])
+	by ozlabs.org (Postfix) with SMTP id 2D4CE679EB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 May 2006 21:54:15 +1000 (EST)
-Message-ID: <34616.61.95.208.2.1147781429.squirrel@61.95.208.2>
-Date: Tue, 16 May 2006 05:10:29 -0700 (PDT)
-Subject: "Need help to configure DNS on the Embedded system"
-From: nreddy@netenrich.com
-To: linuxppc-embedded@ozlabs.org
+	Tue, 16 May 2006 23:43:11 +1000 (EST)
+Message-ID: <4469D55E.50105@berghof.com>
+Date: Tue, 16 May 2006 15:36:30 +0200
+From: Eberhard Stoll <eberhard.stoll@berghof.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+CC: linuxppc-embedded@ozlabs.org
+Subject: Re: "Need help to configure DNS on the Embedded system"
+References: <34616.61.95.208.2.1147781429.squirrel@61.95.208.2>
+In-Reply-To: <34616.61.95.208.2.1147781429.squirrel@61.95.208.2>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,23 +22,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+Which C library do you use?
+Did you setup /etc/hosts.conf correctly?
+It should look like this:
+---
+   order hosts, bind
+   multi on
+---
 
- I am working on implementing wget future on my Embedded device.
- So i downloaded free wget sources (version 1.10.2) and compiled for my
-system.
-My system is walnut based one(IBM405EP processor). But wget is working if
-i specify IP when i try to download some file from my support site(i gave
-IP of support site), but when i specify like www.support.netenrich.com, it
-is not able to resolve.
+If you use glibc you shold add 'dns' to /etc/nsswitch.conf file like that:
+---
+   ...
+   hosts: files dns
+   networks: files dns
+   ...
+---
+This will tell glibc to look for hostnames in /etc/hosts and via dns.
+Additionally glibc needs the two libraries libresolv and libnss_dns for
+this setting to work!
 
- I Modified /etc/resolve.conf, but still it says unable to resolve .
-
- I am using MontaVista Linux Kernel 2.4.20.
-
-can some one let me know how to configure the DNS on any embedded systems.
-I have gone through some of the meterial available on the net, but could
-not resolve it.
-
-Thanks in Advance,
-Nagi Reddy.C
+Good luck
+Eberhard
