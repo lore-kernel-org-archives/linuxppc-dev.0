@@ -1,17 +1,17 @@
-Return-Path: <steve.yang@windriver.com>
-Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 14625679FB
+Return-Path: <nreddy@netenrich.com>
+Received: from mail.netenrich.com (mail.netenrich.com [204.13.82.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A92C2679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 May 2006 09:04:13 +1000 (EST)
+	Tue, 16 May 2006 21:54:15 +1000 (EST)
+Message-ID: <34616.61.95.208.2.1147781429.squirrel@61.95.208.2>
+Date: Tue, 16 May 2006 05:10:29 -0700 (PDT)
+Subject: "Need help to configure DNS on the Embedded system"
+From: nreddy@netenrich.com
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Routing problem
-Date: Mon, 15 May 2006 09:08:15 -0700
-Message-ID: <D9055C0A0A86BD4E89AD96A89EA767DB09C061@ALA-MAIL03.corp.ad.wrs.com>
-From: "Yang, Steve" <steve.yang@windriver.com>
-To: "Antonio Di Bacco" <antonio.dibacco@aruba.it>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,38 +22,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Antonio,
+Hi All,
 
-Try this:
+ I am working on implementing wget future on my Embedded device.
+ So i downloaded free wget sources (version 1.10.2) and compiled for my
+system.
+My system is walnut based one(IBM405EP processor). But wget is working if
+i specify IP when i try to download some file from my support site(i gave
+IP of support site), but when i specify like www.support.netenrich.com, it
+is not able to resolve.
 
-  sysctl net.ipv4.ip_forward=3D1=20
+ I Modified /etc/resolve.conf, but still it says unable to resolve .
 
-Regards,=20
-Steve Yang
-510-749-4535 Alameda
-AIM: steveyang4535
+ I am using MontaVista Linux Kernel 2.4.20.
 
------Original Message-----
-From: linuxppc-embedded-bounces+syang=3Dwindriver.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+syang=3Dwindriver.com@ozlabs.org] On
-Behalf Of Antonio Di Bacco
-Sent: Friday, May 12, 2006 1:53 PM
-To: linuxppc-embedded@ozlabs.org
-Subject: Routing problem
+can some one let me know how to configure the DNS on any embedded systems.
+I have gone through some of the meterial available on the net, but could
+not resolve it.
 
-Hi all,
-
-I have a board with an MPC880 using the tow FECs as two ethernet
-interfaces. I tried to enable the ip forwarding with no success. I have
-issued  "echo 1=20
-> /proc/sys/net/ipv4/ip_forward", is it sufficient to make Linux work as
-
-> a
-router?
-
-Bye,
-Antonio.=20
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Thanks in Advance,
+Nagi Reddy.C
