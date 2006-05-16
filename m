@@ -1,17 +1,18 @@
-Return-Path: <walt.wimer@timesys.com>
-Received: from postfix.timesys.com (mail.timesys.com [65.117.135.102])
-	by ozlabs.org (Postfix) with ESMTP id 2A4D5679F3
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 7F851679A6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 May 2006 04:45:46 +1000 (EST)
-Subject: Re: Unable to boot a kernel on a MPC8560
-From: "Walter L. Wimer III" <walt.wimer@timesys.com>
+	Wed, 17 May 2006 06:26:03 +1000 (EST)
 To: pito50@hotmail.com
-In-Reply-To: <BAY105-F10857BC9DB3B958AC19C8D8EA00@phx.gbl>
-References: <BAY105-F10857BC9DB3B958AC19C8D8EA00@phx.gbl>
-Content-Type: text/plain
-Date: Tue, 16 May 2006 14:39:14 -0400
-Message-Id: <1147804754.14881.21.camel@excalibur.timesys.com>
-Mime-Version: 1.0
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Unable to boot a kernel on a MPC8560 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 16 May 2006 15:12:54 -0000."
+	<BAY105-F10857BC9DB3B958AC19C8D8EA00@phx.gbl>
+Date: Tue, 16 May 2006 22:26:00 +0200
+Sender: wd@denx.de
+Message-Id: <20060516202600.9181D35363E@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,47 +24,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-05-16 at 15:12 +0000, CORVELLER Mickael wrote:
+In message <BAY105-F10857BC9DB3B958AC19C8D8EA00@phx.gbl> you wrote:
+> 
+> first of all, I am a newbie in embedded linux systems.
+
+Seems you are also a newbie when it comes to posting to mailing lists
+in general. Posting  the  same  question  several  times  to  several
+mailing    lists    is    not    a    good    idea.    Please    read
+http://www.catb.org/%7eesr/faqs/smart-questions.html
+
+
 > The boot loader is U-Boot.
-> 
-[...]
-> 
+...
 > Here is the result of one of my tests :
 > -> niot 0
-> Client IP Address (0 for unknown)       = 192.168.001.126 ?
-> Client address mask (0 for unknown)     = 255.255.255.000 ?
-> Server IP Address (0 for unknown)       = 192.168.001.127 ?
-> File Format S(rec)/I(ntel)/B(in)/E(lf)  = B ? e
-> Boot File Name    (NULL for unknown)    = pimage ? zimage.elf
-> Boot File Load address                  = 80000 ? 0
-> Boot File Execution address             = 80000 ? 100000
-> Data update in progress...
+...
 > -> nbo 0
-> Initialize ETH 0 in progress...
-> Physical link is up at 100f.
-> 
-> TFTP parameters :
-> Client IP Address               192.168.001.126
-> Server IP Address               192.168.001.127
-> Boot File Format                E
-> Boot File Name                  zimage.elf
-> Boot File Load address          0
-> Boot File Execution address     100000
-> TFTP load in progress...
-> Packets :     2065
-> ELF information :
-> Loading  .text         @ 0x00800000 :    18620 bytes
-> Loading  .data         @ 0x00805000 :   966656 bytes
-> Clearing .bss          @ 0x008F1000 :     8500 bytes
-> Bytes received = 1057082, Bytes loaded = 0
-> Low address = 800000, High address = 7FFFFF
-> 
-> After that, the console is died !
 
+These are definitely no U-Boot commands. 
 
-Um, this doesn't look like U-Boot.  This looks like an old Motorola
-bootloader like MOTLoad....
+Best regards,
 
+Wolfgang Denk
 
-Walt Wimer
-TimeSys Corporation
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+He's dead, Jim
+	-- McCoy, "The Devil in the Dark", stardate 3196.1
