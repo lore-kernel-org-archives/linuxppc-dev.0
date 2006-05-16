@@ -1,15 +1,21 @@
-Return-Path: <dwm@austin.ibm.com>
-Message-Id: <200605162040.k4GKeUsY007712@falcon10.austin.ibm.com>
-In-reply-to: <1147810848.4115.33.camel@enki.eridu> 
-References: <200604280605.k3S65tjv012348@bebe.enoyolf.org> 
-To: Paul Nasrat <pnasrat@redhat.com>
-Subject: Re: [PATCH] yaboot: enable boot from iscsi target via ethernet
-	devices on js20.
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3ED53679F2
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 08:01:07 +1000 (EST)
+Subject: Re: [RFC] alsa integer control ranges
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1147780945.29795.110.camel@johannes>
+References: <1147780945.29795.110.camel@johannes>
+Content-Type: text/plain
+Date: Wed, 17 May 2006 08:00:56 +1000
+Message-Id: <1147816857.6753.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Tue, 16 May 2006 15:40:30 -0500
-From: Doug Maxey <dwm@austin.ibm.com>
-Cc: yaboot-devel@ozlabs.org, Linux PowerPC List <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	ALSA development <alsa-devel@alsa-project.org>,
+	Benjamin Berg <benjamin@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,70 +25,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2006-05-16 at 14:02 +0200, Johannes Berg wrote:
+> Apparently all alsa userspace programs including alsamixer suck. Hence,
+> this patch is required to make them work properly. Why is it so hard to
+> do these additions/subtractions in the program or maybe even in the alsa
+> library? The alsa libraries already think they know better and mess up
+> all kinds of things.
 
-On Tue, 16 May 2006 16:20:47 EDT, Paul Nasrat wrote:
->On Fri, 2006-04-28 at 01:05 -0500, Doug Maxey wrote:
->> Certain levels of JS20 firmware will allow the system to boot from an
->> iscsi target.  System OFW accomplishes this by setting up a virtual
->> disk device with parameters.  These parameters, when passed back to
->> OFW by yaboot, directs the FW to use virtual device over the ethernet
->> port that will then access iscsi target as a block device.  This patch
->> extracts those parameters from the property of the virtual device and
->> passes them back to OFW to indicate the kernel is to be retrieved via
->> the iscsi protocol.
->> 
->> Signed-off-by: Doug Maxey <dwm@austin.ibm.com>
->
->Sorry for the delay in getting back to you - a few initial questions:
+alsamixer works for me with negative ranges... but all other apps don't
+and there are various bugs, I blame apps converted from OSS....
 
-np.  been on vacation the last 10 days.  Switzerland is nice, and Milan 
-is cool. :)
-
->
->> diff --git a/second/file.c b/second/file.c
->
->> @@ -185,16 +188,45 @@ parse_device_path(char *imagepath, char 
->>  
->>       if (!imagepath)
->>  	  return 0;
->> +
->> +      /*
->> +       * Do preliminary checking for an iscsi device; it may appear as
->> +       * pure a network device (device_type == "network") if this is
->> +       * ISWI.  This is the case on IBM systems doing an iscsi OFW
->> +       * boot.
->> +       */
->> +     if (strstr(imagepath, ",iscsi"))
->
->Is the , always guaranteed to be there - eg if I have boot
->eth1:iscsi,ISCSIARGS  won't this check fail.
-
-Yes, with the above command line this would fail. 
-
-My point of reference are the bindings that we cannot yet talk about 
-here, yet.  The device args would always be followed by a comma.  I suppose 
-that we could just reference the string "iscsi", but then some wag 
-would want to create some other property that included "iscsi" as a 
-substring.  Maybe append a comma?
-
-
->
->> diff --git a/second/prom.c b/second/prom.c
->> index 5ec06b8..9bc5415 100644
->> --- a/second/prom.c
->> +++ b/second/prom.c
->> @@ -174,6 +174,9 @@ prom_get_devtype (char *device)
->>       int        result;
->>       char       tmp[64];
->>  
->> +     if (strstr(device, ",iscsi"))
->> +	  device = strcpy(tmp, "/vdevice/gscsi/disk");
->> +
->
->Ditto here.
-
-likewise.  Maybe make it a #define so it would be common.
-
->
->Paul
->
+> What are your opinions on this? Should this be required? And if so, why
+> do we even have the value.integer.min when we can't use it anyway? 
+> 
+> The code this patch applies against is in
+> http://johannes.sipsolutions.net/snd-aoa.git/ but that isn't all too
+> relevant, the patch serves just as an illustration of what is wrong
+> here.
+> 
+> Thanks,
+> johannes
+> 
+> --- snd-aoa.orig/aoa/codecs/onyx/snd-aoa-codec-onyx.c	2006-05-16 12:13:39.663950213 +0200
+> +++ snd-aoa/aoa/codecs/onyx/snd-aoa-codec-onyx.c	2006-05-16 12:14:13.698643898 +0200
+> @@ -102,8 +102,8 @@ static int onyx_snd_vol_info(struct snd_
+>  {
+>  	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
+>  	uinfo->count = 2;
+> -	uinfo->value.integer.min = -128;
+> -	uinfo->value.integer.max = -1;
+> +	uinfo->value.integer.min = -128+128;
+> +	uinfo->value.integer.max = -1+128;
+>  	return 0;
+>  }
+>  
+> @@ -115,8 +115,8 @@ static int onyx_snd_vol_get(struct snd_k
+>  
+>  	onyx_read_register(onyx, ONYX_REG_DAC_ATTEN_LEFT, &l);
+>  	onyx_read_register(onyx, ONYX_REG_DAC_ATTEN_RIGHT, &r);
+> -	ucontrol->value.integer.value[0] = l;
+> -	ucontrol->value.integer.value[1] = r;
+> +	ucontrol->value.integer.value[0] = l+128;
+> +	ucontrol->value.integer.value[1] = r+128;
+>  	return 0;
+>  }
+>  
+> @@ -125,8 +125,8 @@ static int onyx_snd_vol_put(struct snd_k
+>  {
+>  	struct onyx *onyx = snd_kcontrol_chip(kcontrol);
+>  
+> -	onyx_write_register(onyx, ONYX_REG_DAC_ATTEN_LEFT, ucontrol->value.integer.value[0]);
+> -	onyx_write_register(onyx, ONYX_REG_DAC_ATTEN_RIGHT, ucontrol->value.integer.value[1]);
+> +	onyx_write_register(onyx, ONYX_REG_DAC_ATTEN_LEFT, ucontrol->value.integer.value[0]-128);
+> +	onyx_write_register(onyx, ONYX_REG_DAC_ATTEN_RIGHT, ucontrol->value.integer.value[1]-128);
+>  	/* FIXME: we could be checking if anything changed */
+>  	return 1;
+>  }
+> @@ -145,8 +145,8 @@ static int onyx_snd_inputgain_info(struc
+>  {
+>  	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
+>  	uinfo->count = 1;
+> -	uinfo->value.integer.min = 3;
+> -	uinfo->value.integer.max = 28;
+> +	uinfo->value.integer.min = 3-3;
+> +	uinfo->value.integer.max = 28-3;
+>  	return 0;
+>  }
+>  
+> @@ -157,7 +157,7 @@ static int onyx_snd_inputgain_get(struct
+>  	u8 ig;
+>  
+>  	onyx_read_register(onyx, ONYX_REG_ADC_CONTROL, &ig);
+> -	ucontrol->value.integer.value[0] = ig & ONYX_ADC_PGA_GAIN_MASK;
+> +	ucontrol->value.integer.value[0] = (ig & ONYX_ADC_PGA_GAIN_MASK)-3;
+>  	return 0;
+>  }
+>  
+> @@ -169,7 +169,7 @@ static int onyx_snd_inputgain_put(struct
+>  
+>  	onyx_read_register(onyx, ONYX_REG_ADC_CONTROL, &val);
+>  	val &= ~ONYX_ADC_PGA_GAIN_MASK;
+> -	val |= ucontrol->value.integer.value[0] & ONYX_ADC_PGA_GAIN_MASK;
+> +	val |= (ucontrol->value.integer.value[0]+3) & ONYX_ADC_PGA_GAIN_MASK;
+>  	onyx_write_register(onyx, ONYX_REG_ADC_CONTROL, val);
+>  	return 1;
+>  }
+> 
