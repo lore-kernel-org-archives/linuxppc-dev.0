@@ -2,18 +2,28 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7489067A2E
+	by ozlabs.org (Postfix) with ESMTP id 9237667A3F
 	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 22:06:10 +1000 (EST)
-Subject: snd-aoa status update / automatic driver loading
+Subject: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
 From: Johannes Berg <johannes@sipsolutions.net>
-To: debian-powerpc <debian-powerpc@lists.debian.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1145307118.3912.11.camel@localhost.localdomain>
+References: <878xq51t61.fsf@briny.internal.ondioline.org>
+	<je1wvxo70l.fsf@sykes.suse.de>
+	<1145220233.9833.11.camel@localhost.localdomain>
+	<je7j5phz9j.fsf@sykes.suse.de>
+	<1145231658.9833.17.camel@localhost.localdomain>
+	<je3bgdhwre.fsf@sykes.suse.de>
+	<1145233812.9833.21.camel@localhost.localdomain>
+	<je1wvwfh7s.fsf@sykes.suse.de>
+	<1145307118.3912.11.camel@localhost.localdomain>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-wB/tYAI9+58wst9kgTiE"
-Date: Wed, 17 May 2006 12:09:24 +0200
-Message-Id: <1147860564.14395.6.camel@johannes>
+	boundary="=-uHPh8IJcjE1Aros/asIs"
+Date: Wed, 17 May 2006 12:34:32 +0200
+Message-Id: <1147862072.14395.25.camel@johannes>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,82 +34,76 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-wB/tYAI9+58wst9kgTiE
+--=-uHPh8IJcjE1Aros/asIs
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hey,
 
-Currently snd-aoa is known to work on the following machines:
-* PowerBook5,8
-* PowerBook5,7
-* PowerMac8,1
-* PowerMac8,2
-* 17" October 2005 PowerBook (don't know the number)
-* PowerMac11,2
-* PowerBook6,8
-and my
-* PowerBook5,6
+> > request_mem_region(80000000 - 80000fff, i2sbus control)
+> >=20
+> >       80000000-8007ffff : 0.80000000:mac-io
+> >         8000002c-8000002f : 0.0000004c:fans
+> >         80000030-80000033 : 0.0000004c:fans
+> >         80000034-80000037 : 0.0000004c:fans
+> >         8000004c-8000004f : 0.0000004c:fans
+> >         80000050-8000008a : 0.00000050:gpio
 
-People with those machines are encouraged to use and stress-test it, it
-also provides much better hardware support than snd-powermac, for
-example it can actually reprogram the hardware if you have a 48KHz file
-instead of having to digitally downsample it to 44.1KHz like required
-with snd-powermac in most cases.
+> Look like the bugs in the device-tree I told you about ...
 
-Note that the big missing feature is headphone/line-in/line-out
-autodetection at the moment, so if you rely on that don't use snd-aoa
-for the moment.
+Ben, is it safe to just hardcode 0x80010000-0x80010fff? Or hardcode
+0x10000-0x10fff and have it do the translation depending on the
+device-tree node, iow assume that the 'reg' property is bogus and
+essentially replace it with one that contains the values
+  0x00010000 0x00001000 (buggy one seems to be 0x00000000 0x00001000)
+  0x00008000 0x00000100
+  0x00008100 0x00000100
+and then go from there? Even then though, I have no idea how to do the
+ranges translation for the node. Maybe we should just fix up the reg
+property in the device-tree for the affected machine(s)?
 
-There are apparently some cases where it loses interrupts and then the
-sound is garbled, my brother's investigating that at the moment, it
-doesn't happen with my powerbook nor with my powermac.
+Btw, it doesn't look like snd-powermac handles this correctly, it only
+ever handles the rx/tx specially and also takes the control io area
+straight from the device tree.
 
-Note that Topaz chips (optical input usually, though I think there's a
-version where it does optical output too, probably the tas/topaz
-combinations I heard about) are not supported yet as I don't have any
-optical hardware except for my PowerMac11,2 and haven't written any code
-for the required clock recovering and switching. If you want to see it
-supported (and don't want to write the code yourself) your best bet is
-probably to send me some hardware that has a controllable optical
-output ;) If you want to write the code yourself talk to me first
-please.
+Andreas, you'll probably be able to get a bit further by inserting the
+following code in front of the loop in i2sbus-core.c line 162, and
+removing the of_address_to_resource call inside the loop.
 
-But the other reason for writing this mail is that I finally found the
-last remaining bug that prevented sound module autoloading! :)
+  dev->resources[0].start =3D 0x80010000;
+  dev->resources[0].end   =3D 0x80010fff;
+  dev->resources[1].start =3D 0x80008000;
+  dev->resources[1].end   =3D 0x800080ff;
+  dev->resources[2].start =3D 0x80008100;
+  dev->resources[2].end   =3D 0x800081ff;
 
-Now, when you boot, mac-io is already built-in so provides the i2s
-device, which my i2sbus module binds to. Since udev synthesizes events,
-i2sbus gets loaded automatically. Now, i2sbus creates uevents on its
-own, with the layout number given as the MODALIAS. Hence, the layout
-fabric module is loaded because it has an alias for all the layouts it
-handles, and it in turn requests all the codec modules that it requires.
-Also, this means that 'modprobe i2sbus' will suffice to get the driver
-up and running without a reboot, provided that all modules are
-installed.
+But I'm not sure that is correct on all machines (in fact, I'm not
+perfectly sure it is correct on your machine).
 
-Have fun,
+After that, you'll probably still not have usable sound though because I
+know nothing about the layout-id of your machine. If I have support for
+your codec already, that should be easy though.
+
 johannes
 
---=-wB/tYAI9+58wst9kgTiE
+--=-uHPh8IJcjE1Aros/asIs
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARGr2UaVg1VMiehFYAQIAABAAtaidoI6FVJdhlJpBnVac9Dx6wpcsH/r6
-5LulsaDEoBeBg6Ttia9zklbz+lrC2dFD/nT6HTIe8bV8+5weX8AS72owTdujmeLE
-ipGS7nna/259zzdRHx09o5887NSk2xQOmHKxXc9ssrnkyMfIjLMfIjiDoHo9xWZV
-mJ5dHvrnpkhCCpH8QROHsHpJ4EVPP3/Zpw/DdbdTW+73QCU2Xo/PSwpSIm/8FLF1
-AkDGGXyF8ohNIfgls7M4XBESET07u7fPAWcs3/+yL+q7bj+w+9uAYEOMz3VUFWoz
-kIcre2ibxngW5o4zRb+XEOwB64dAVeWInOF+B3TDuIAYvcl2cg+MTKeJ1zKnaFZv
-6vx7TK328mvOllMXk93e22+ZfQ17Xe0bge68ZbopuVtYXTGBGh9IPVaoGPSa1kKX
-zCthJsPYs+xpASjWe5aa4+3xjUY5oUBF51IXR7gshSynlYyRyE5R2IrxEdW2VImf
-DHZ6jmxOoAtRWkA1UAGdeCKtP7XxdGPgsDWnRPXzRnhON3yPCuL6VPwsM0j6nplo
-ql7PEwbpGshdDdmBXtc20e3yq0W2F/9yjXjHeNqvsUQn+wCHQxNbHO4AjAU/6V0C
-Xs3NxiaOI7FzXE6Ych0mHul5izG858cBCweLJgaOBkSj095MiNGucg7HuO/ziRgN
-COT4ZQDr4Ag=
-=9byp
+iQIVAwUARGr8NqVg1VMiehFYAQJTPQ//aZH34PLLNcXZ21jqscy8DclWWlMtZz56
+0++WtaQtfG3E9a9sXVM0RHuNy1fCPYgpR8wdgnDqwxhbozTT0PNt6B/Yj/7l3DXV
+EoOJxzJJmGT1duO6RldzPTr9av9PK2sZyoZ9DebpKsTcLi0a+tr9WPdseMF/4u2N
+tgcA0+xPhf8/Y7z0N1qoRlQwsKs0THv5I8fSnIEpbtbFpWzfE5rg50nrKbjeHFIH
+DckLH9eDFX7+f2MUQEu33MgyZKcJziCNpjeLFSR5zb2gxRWR2x8qGFlB2FVRxFT+
+wdYtj/Lh/EnfXsnICgvewGdn5scAVt5cUeyH7p39MC5Hi+Y3wMOhdGW92EVQ95cu
+2iGYp3+nU+ke8jWq2fsDGYhz7WMOZM9aValgFBJ0X92+ftR5zvWfMzU79h3JRhmh
+sgJJPK5xibqXGadPddXucJ5WgETrmZLcfkQ7/hpmVA/8kR/STKz5DLM9Fk7Oz+74
+gayQ/7jc1gYVqTGI+vcMt8DKzZ3iQGsZv3+htEKzT3ybetZf6eLmaXDdV2PD7cPW
+r3eiAm8/3qKTGktivmQfuXgFqjzu37jAl/bP4tB9Dj3RUjBxybBRqrKUrFQipFp6
+NQRbpbgUsP+IbDPMjdeoiz0jXHPfpbOgyAZv9m5jexIFvrpnYFhoj+sfPaZiKlRr
+THp9pDtMOyQ=
+=sBEn
 -----END PGP SIGNATURE-----
 
---=-wB/tYAI9+58wst9kgTiE--
+--=-uHPh8IJcjE1Aros/asIs--
