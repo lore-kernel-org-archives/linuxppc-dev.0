@@ -1,13 +1,13 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from ms-smtp-03.nyroc.rr.com (ms-smtp-03.nyroc.rr.com [24.24.2.57])
-	by ozlabs.org (Postfix) with ESMTP id 7441C67B5F
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 20:00:23 +1000 (EST)
-Date: Wed, 17 May 2006 06:00:09 -0400 (EDT)
+	by ozlabs.org (Postfix) with ESMTP id 312DA67C85
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 20:01:06 +1000 (EST)
+Date: Wed, 17 May 2006 06:01:01 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC PATCH 06/09] robust VM per_cpu i386 bootmem
+Subject: [RFC PATCH 07/09] robust VM per_cpu i386 VM area
 In-Reply-To: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0605170559410.8408@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.58.0605170600250.8408@gandalf.stny.rr.com>
 References: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -37,52 +37,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch was to get my VM percpu working on my laptop.  This patch
-still needs work to handle NUMA and other types of X86 architectures.
+This patch allocates the percpu VM area using the fix addresses.
+It defines currently 1 meg per cpu.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-Index: linux-2.6.16-test/arch/i386/mm/init.c
+Index: linux-2.6.16-test/include/asm-i386/fixmap.h
 ===================================================================
---- linux-2.6.16-test.orig/arch/i386/mm/init.c	2006-05-17 04:32:28.000000000 -0400
-+++ linux-2.6.16-test/arch/i386/mm/init.c	2006-05-17 04:58:37.000000000 -0400
-@@ -772,3 +772,39 @@ void free_initrd_mem(unsigned long start
- 	}
- }
+--- linux-2.6.16-test.orig/include/asm-i386/fixmap.h	2006-05-17 04:32:27.000000000 -0400
++++ linux-2.6.16-test/include/asm-i386/fixmap.h	2006-05-17 04:59:34.000000000 -0400
+@@ -32,6 +32,10 @@
+ #include <asm/kmap_types.h>
  #endif
+
++/* One meg per cpu of VM space */
++#define PERCPU_PAGES 256
++#define PERCPU_SIZE (PERCPU_PAGES << PAGE_SHIFT)
 +
-+/*
-+ * The following three functions are to impement per_cpu variables
-+ * into VM.  per_cpu variables are initialized very early on startup
-+ * and before memory management. So the per_cpu initialization needs
-+ * a way to allocate pages using bootmem.
-+ */
-+pud_t __init *pud_boot_alloc(struct mm_struct *mm, pgd_t *pgd,
-+			     unsigned long addr, int cpu)
-+{
-+	return (pud_t*)pgd;
-+}
-+
-+pmd_t __init *pmd_boot_alloc(struct mm_struct *mm, pud_t *pud,
-+			     unsigned long addr, int cpu)
-+{
-+	return pmd_offset(pud, addr);
-+}
-+
-+/* FIXME - handle NUMA handling with the CPU parameter */
-+pte_t __init *pte_boot_alloc(struct mm_struct *mm, pmd_t *pmd,
-+			     unsigned long addr, int cpu)
-+{
-+	pte_t *pte;
-+
-+	if (pmd_none(*pmd)) {
-+		pte = alloc_bootmem_pages(PAGE_SIZE);
-+		if (!pte)
-+			return NULL;
-+		mm->nr_ptes++;
-+		set_pmd(pmd, __pmd(__pa(pte) | _PAGE_TABLE));
-+	} else
-+		pte = pte_offset_kernel(pmd, addr);
-+
-+	return pte;
-+}
+ /*
+  * Here we define all the compile-time 'special' virtual
+  * addresses. The point is to have a constant address at
+@@ -83,6 +87,8 @@ enum fixed_addresses {
+ #ifdef CONFIG_PCI_MMCONFIG
+ 	FIX_PCIE_MCFG,
+ #endif
++	FIX_PERCPU_BEGIN,
++	FIX_PERCPU_END = FIX_PERCPU_BEGIN+(PERCPU_PAGES*NR_CPUS)-1,
+ 	__end_of_permanent_fixed_addresses,
+ 	/* temporary boot-time mappings, used before ioremap() is functional */
+ #define NR_FIX_BTMAPS	16
