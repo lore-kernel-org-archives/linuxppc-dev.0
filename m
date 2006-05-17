@@ -1,21 +1,20 @@
-Return-Path: <chainsaw@gentoo.org>
-Received: from smtp2.irishbroadband.ie (smtp2.irishbroadband.ie [62.231.32.13])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "smtp2.irishbroadband.ie",
-	Issuer "smtp2.irishbroadband.ie" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1C8CD679F9
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 05:57:32 +1000 (EST)
-Message-ID: <446B721D.8020203@gentoo.org>
-Date: Wed, 17 May 2006 19:57:33 +0100
-From: Tony Vroon <chainsaw@gentoo.org>
-MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: snd-aoa status update / automatic driver loading
-References: <1147860564.14395.6.camel@johannes>
-In-Reply-To: <1147860564.14395.6.camel@johannes>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+Return-Path: <eparis@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id D282767A04
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 05:59:33 +1000 (EST)
+Subject: Re: [PATCH] Fix do_mlock so page alignment is to hugepage
+	boundries when needed
+From: Eric Paris <eparis@redhat.com>
+To: Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0605171840310.14529@blonde.wat.veritas.com>
+References: <1147885316.26468.15.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0605171840310.14529@blonde.wat.veritas.com>
+Content-Type: text/plain
+Date: Wed, 17 May 2006 15:59:24 -0400
+Message-Id: <1147895964.26468.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,72 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Johannes Berg wrote:
-> Hey,
+On Wed, 2006-05-17 at 18:42 +0100, Hugh Dickins wrote:
+> On Wed, 17 May 2006, Eric Paris wrote:
+> > sys_m{,un}lock and do_mlock all align memory references and the length
+> > of the mlock given by userspace to page boundaries.  If the page being
+> > mlocked is a hugepage instead of a normal page the start and finish of
+> > the mlock will still only be aligned to normal page boundaries.
+> > Ultimately upon the process exiting we will eventually call unmap_vmas
+> > which will call unmap_hugepage_range for all of the ranges.
+> > unmap_hugepage_range checks to make sure the beginning and the end of
+> > the range are actually hugepage aligned and if not will BUG().  Since we
+> > only aligned to a normal page boundary the end of the first range and
+> > the beginning of the second will likely (unless userspace passed of
+> > values already hugepage aligned) not be hugepage aligned and thus we
+> > bomb.
 > 
-> Currently snd-aoa is known to work on the following machines:
-> * PowerBook5,8
-> * PowerBook5,7
-> * PowerMac8,1
-> * PowerMac8,2
-> * 17" October 2005 PowerBook (don't know the number)
-
-That would be the PowerBook 5,9 (confirmed working, that's what I have).
-
-> * PowerMac11,2
-> * PowerBook6,8
-> and my
-> * PowerBook5,6
-
-> People with those machines are encouraged to use and stress-test it, it
-> also provides much better hardware support than snd-powermac, for
-> example it can actually reprogram the hardware if you have a 48KHz file
-> instead of having to digitally downsample it to 44.1KHz like required
-> with snd-powermac in most cases.
-
-When writing documentation, you might want to add that the ALSA-plugin
-in XMMS & Audacious requires a period time of 100ms instead of the
-default of 50ms, as otherwise the sou*click*nd is n*click*ot ver*click*y
-good.
-(A look at the current code of that plugin, to see how the volume
-control code can be fixed would be highly appreciated)
-
-> There are apparently some cases where it loses interrupts and then the
-> sound is garbled, my brother's investigating that at the moment, it
-> doesn't happen with my powerbook nor with my powermac.
-
-Not seen this, although I must say it does not resume from sleep as
-gracefully as I have seen you describe it.
-
-> But the other reason for writing this mail is that I finally found the
-> last remaining bug that prevented sound module autoloading! :)
-
-Much appreciated, thank you :)
-
-> Now, when you boot, mac-io is already built-in so provides the i2s
-> device, which my i2sbus module binds to. Since udev synthesizes events,
-> i2sbus gets loaded automatically. Now, i2sbus creates uevents on its
-> own, with the layout number given as the MODALIAS. Hence, the layout
-> fabric module is loaded because it has an alias for all the layouts it
-> handles, and it in turn requests all the codec modules that it requires.
-> Also, this means that 'modprobe i2sbus' will suffice to get the driver
-> up and running without a reboot, provided that all modules are
-> installed.
+> When did you test this?  It should have been fixed in 2.6.11 onwards
+> by split_vma()'s simple:
 > 
-> Have fun,
-> johannes
+> 	if (is_vm_hugetlb_page(vma) && (addr & ~HPAGE_MASK))
+> 		return -EINVAL;
+> 
+> Hugh
 
-Regards,
-Tony V.
-(Chainsaw)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3-ecc0.1.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+You're right.  My initial BUG() problem was on pre 2.6.11.  I wrote this
+patch and tested that it worked on 2.6.16 to allow the test program I
+described to run successfully.  Admittedly this is the first time I
+tested on unpatched 2.6.16 and as you said the mlock will fail with
+"Invalid Argument" instead of BUG().  So the panic is gone post 2.6.11,
+but the problem remains.  We still are rounding incorrectly for
+hugepages in the sys_mlock and do_mlock functions.
 
-iD8DBQFEa3Icp5vW4rUFj5oRAuFXAJwMgzHiZLal33irvZt6qtDbo1L+rQCbBb4d
-KF5TAISi/CUHYj+ZqJjPpFE=
-=ptuO
------END PGP SIGNATURE-----
+This patch still solves the problem of the kernel currently being more
+restrictive on what we accept from userspace for the length of the mlock
+if it is a hugepage rather than a regular page.  With a regular page we
+will round the value from userspace and happily go about our business of
+mlocking.  For a hugepage it just rejects it if userspace doesn't align
+it themselves.  This allows the kernel to do the same work for hugepages
+that it does for normal pages.
+
+-Eric
