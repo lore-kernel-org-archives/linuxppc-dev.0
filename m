@@ -1,21 +1,36 @@
-Return-Path: <roto@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id ECEF1679FB
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 01:35:46 +1000 (EST)
-Date: Wed, 17 May 2006 17:38:00 +0200
-From: Wolfgang Pfeiffer <roto@gmx.net>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [Alsa-devel] [RFC] alsa integer control ranges
-Message-ID: <20060517153800.GA2894@localhost>
-References: <1147780945.29795.110.camel@johannes>
-	<1147791186.13948.109.camel@mindpipe>
-	<1147791315.983.21.camel@johannes>
+Return-Path: <christoph@schroedinger.engr.sgi.com>
+Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
+	by ozlabs.org (Postfix) with ESMTP id 2C08C67A63
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 01:50:55 +1000 (EST)
+Date: Wed, 17 May 2006 08:49:08 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC PATCH 00/09] robust VM per_cpu variables
+In-Reply-To: <Pine.LNX.4.58.0605171104100.13160@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.64.0605170846190.13337@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
+	<Pine.LNX.4.64.0605170744360.13021@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.58.0605171104100.13160@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1147791315.983.21.camel@johannes>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	ALSA development <alsa-devel@alsa-project.org>,
-	Lee Revell <rlrevell@joe-job.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
+	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
+	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
+	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	benedict.gaster@superh.com, sam@ravnborg.org, bjornw@axis.com,
+	kenneth.w.chen@intel.com, Ingo Molnar <mingo@elte.hu>,
+	kiran@scalex86.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+	grundler@parisc-linux.org, arnd@arndb.de,
+	Rusty Russell <rusty@rustcorp.com.au>, starvik@axis.com,
+	Linus Torvalds <torvalds@osdl.org>,
+	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
+	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
+	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
+	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
+	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
+	parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +40,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 16, 2006 at 04:55:15PM +0200, Johannes Berg wrote:
-> On Tue, 2006-05-16 at 10:53 -0400, Lee Revell wrote:
-> 
-> > Ummm... what problem is this patch fixing?
-> 
-> The problems that
-> (a) kmix, gnome-alsamixer, gnome-volume-control and others can't
->     properly use the playback volume control because it has a range
->     that doesn't start at 0
+On Wed, 17 May 2006, Steven Rostedt wrote:
 
-True if you only use kmix, that via 'ps ax' shows up as something like this:
+> OK, now I'm just rambling. I don't know,  have any other ideas on making
+> this more robust?  Or is this all in vain, and I should spend my evenings
+> walking around this beautiful town of Karlsruhe ;)
 
-[ ... ] kmix [kdeinit] -caption KMix -icon kmix -miniicon kmix
+Well I'd like to see a comprehensive solution including a fix for the 
+problems with allocper_cpu() allocations (allocper_cpu has to allocate 
+memory for potential processors... which could be a lot on 
+some types of systems and its allocated somewhere not on the nodes of the 
+processor since they may not yet be online).
 
-But if you - separately and additionally - add the "Sound Mixer"
-applet to the KDE kicker (the panel) *plus* make sure you split the
-volume control slider for the "Sound Mixer" channel you have a working
-volume control .. :)
-At least this is how it works here, with 
-"Kmix Panel Applet 2.6 (Using KDE 3.5.2)", and on Debian unstable .. 
-
-If I play with these apps there seem to be glitches, so they do not
-seem to work "properly". But with a bit of fiddling between what KDE
-calls "Sound Mixer" and "Kmix" (both actually seem to be part of the
-same application, i.e. kmix) you should have a working volume slider
-... 
-
-HTH
-
-Best Regards
-Wolfgang
-
--- 
-Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
-http://profiles.yahoo.com/wolfgangpfeiffer
-
-Key ID: E3037113
-http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
+Wish I could be back home in Germany to talk a walk with you. Are you 
+coming to the OLS?
