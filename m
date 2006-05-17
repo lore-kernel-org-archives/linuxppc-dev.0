@@ -1,20 +1,30 @@
-Return-Path: <eparis@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id D282767A04
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 05:59:33 +1000 (EST)
-Subject: Re: [PATCH] Fix do_mlock so page alignment is to hugepage
-	boundries when needed
-From: Eric Paris <eparis@redhat.com>
-To: Hugh Dickins <hugh@veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0605171840310.14529@blonde.wat.veritas.com>
-References: <1147885316.26468.15.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0605171840310.14529@blonde.wat.veritas.com>
-Content-Type: text/plain
-Date: Wed, 17 May 2006 15:59:24 -0400
-Message-Id: <1147895964.26468.35.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9C828679F7
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 06:14:35 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
+References: <878xq51t61.fsf@briny.internal.ondioline.org>
+	<je1wvxo70l.fsf@sykes.suse.de>
+	<1145220233.9833.11.camel@localhost.localdomain>
+	<je7j5phz9j.fsf@sykes.suse.de>
+	<1145231658.9833.17.camel@localhost.localdomain>
+	<je3bgdhwre.fsf@sykes.suse.de>
+	<1145233812.9833.21.camel@localhost.localdomain>
+	<je1wvwfh7s.fsf@sykes.suse.de>
+	<1145307118.3912.11.camel@localhost.localdomain>
+	<1147862072.14395.25.camel@johannes> <je3bf85twf.fsf@sykes.suse.de>
+Date: Wed, 17 May 2006 22:14:29 +0200
+In-Reply-To: <je3bf85twf.fsf@sykes.suse.de> (Andreas Schwab's message of "Wed,
+	17 May 2006 21:32:48 +0200")
+Message-ID: <jeu07o4dei.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-05-17 at 18:42 +0100, Hugh Dickins wrote:
-> On Wed, 17 May 2006, Eric Paris wrote:
-> > sys_m{,un}lock and do_mlock all align memory references and the length
-> > of the mlock given by userspace to page boundaries.  If the page being
-> > mlocked is a hugepage instead of a normal page the start and finish of
-> > the mlock will still only be aligned to normal page boundaries.
-> > Ultimately upon the process exiting we will eventually call unmap_vmas
-> > which will call unmap_hugepage_range for all of the ranges.
-> > unmap_hugepage_range checks to make sure the beginning and the end of
-> > the range are actually hugepage aligned and if not will BUG().  Since we
-> > only aligned to a normal page boundary the end of the first range and
-> > the beginning of the second will likely (unless userspace passed of
-> > values already hugepage aligned) not be hugepage aligned and thus we
-> > bomb.
-> 
-> When did you test this?  It should have been fixed in 2.6.11 onwards
-> by split_vma()'s simple:
-> 
-> 	if (is_vm_hugetlb_page(vma) && (addr & ~HPAGE_MASK))
-> 		return -EINVAL;
-> 
-> Hugh
+Andreas Schwab <schwab@suse.de> writes:
 
-You're right.  My initial BUG() problem was on pre 2.6.11.  I wrote this
-patch and tested that it worked on 2.6.16 to allow the test program I
-described to run successfully.  Admittedly this is the first time I
-tested on unpatched 2.6.16 and as you said the mlock will fail with
-"Invalid Argument" instead of BUG().  So the panic is gone post 2.6.11,
-but the problem remains.  We still are rounding incorrectly for
-hugepages in the sys_mlock and do_mlock functions.
+> Johannes Berg <johannes@sipsolutions.net> writes:
+>
+>> Andreas, you'll probably be able to get a bit further by inserting the
+>> following code in front of the loop in i2sbus-core.c line 162, and
+>> removing the of_address_to_resource call inside the loop.
+>>
+>>   dev->resources[0].start = 0x80010000;
+>>   dev->resources[0].end   = 0x80010fff;
+>>   dev->resources[1].start = 0x80008000;
+>>   dev->resources[1].end   = 0x800080ff;
+>>   dev->resources[2].start = 0x80008100;
+>>   dev->resources[2].end   = 0x800081ff;
+>>
+>> But I'm not sure that is correct on all machines (in fact, I'm not
+>> perfectly sure it is correct on your machine).
+>
+> I have the following sound resources in /proc/iomem:
+>
+>         80008000-800083ff : 0.00010000:i2s
+>           80008000-800083ff : Sound DMA
+>         80010000-80010fff : 0.00010000:i2s
+>           80010000-80010fff : Sound Control
+>
+> I'm not sure whether the first mapping should be split, but I don't know
+> much about how resource mappings work.
 
-This patch still solves the problem of the kernel currently being more
-restrictive on what we accept from userspace for the length of the mlock
-if it is a hugepage rather than a regular page.  With a regular page we
-will round the value from userspace and happily go about our business of
-mlocking.  For a hugepage it just rejects it if userspace doesn't align
-it themselves.  This allows the kernel to do the same work for hugepages
-that it does for normal pages.
+It definitely didn't work.
 
--Eric
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
