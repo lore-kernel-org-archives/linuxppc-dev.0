@@ -1,19 +1,19 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
-	by ozlabs.org (Postfix) with ESMTP id 2C08C67A63
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 01:50:55 +1000 (EST)
-Date: Wed, 17 May 2006 08:49:08 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Steven Rostedt <rostedt@goodmis.org>
+Return-Path: <rostedt@goodmis.org>
+Received: from ms-smtp-04.nyroc.rr.com (ms-smtp-04.nyroc.rr.com [24.24.2.58])
+	by ozlabs.org (Postfix) with ESMTP id D7C25679F6
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 01:56:42 +1000 (EST)
+Date: Wed, 17 May 2006 11:56:27 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Christoph Lameter <clameter@sgi.com>
 Subject: Re: [RFC PATCH 00/09] robust VM per_cpu variables
-In-Reply-To: <Pine.LNX.4.58.0605171104100.13160@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.64.0605170846190.13337@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0605170846190.13337@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.58.0605171152190.15798@gandalf.stny.rr.com>
 References: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
 	<Pine.LNX.4.64.0605170744360.13021@schroedinger.engr.sgi.com>
 	<Pine.LNX.4.58.0605171104100.13160@gandalf.stny.rr.com>
+	<Pine.LNX.4.64.0605170846190.13337@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
 Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
 	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
 	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
@@ -40,17 +40,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 17 May 2006, Steven Rostedt wrote:
+On Wed, 17 May 2006, Christoph Lameter wrote:
 
-> OK, now I'm just rambling. I don't know,  have any other ideas on making
-> this more robust?  Or is this all in vain, and I should spend my evenings
-> walking around this beautiful town of Karlsruhe ;)
+> On Wed, 17 May 2006, Steven Rostedt wrote:
+>
+> > OK, now I'm just rambling. I don't know,  have any other ideas on making
+> > this more robust?  Or is this all in vain, and I should spend my evenings
+> > walking around this beautiful town of Karlsruhe ;)
+>
+> Well I'd like to see a comprehensive solution including a fix for the
+> problems with allocper_cpu() allocations (allocper_cpu has to allocate
+> memory for potential processors... which could be a lot on
+> some types of systems and its allocated somewhere not on the nodes of the
+> processor since they may not yet be online).
 
-Well I'd like to see a comprehensive solution including a fix for the 
-problems with allocper_cpu() allocations (allocper_cpu has to allocate 
-memory for potential processors... which could be a lot on 
-some types of systems and its allocated somewhere not on the nodes of the 
-processor since they may not yet be online).
+OK, now you're beyond what I'm working with ;)  No hot plug CPUs for me.
+Well, at least not yet!
 
-Wish I could be back home in Germany to talk a walk with you. Are you 
-coming to the OLS?
+>
+> Wish I could be back home in Germany to talk a walk with you. Are you
+> coming to the OLS?
+
+I'm just here on business. Will be back home in the States on Saturday.
+
+Yep, I'll be at OLS.  Hopefully we can get a group together to do some
+brainstorming.
+
+Thanks,
+
+-- Steve
