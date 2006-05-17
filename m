@@ -1,36 +1,19 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from ms-smtp-03.nyroc.rr.com (ms-smtp-03.nyroc.rr.com [24.24.2.57])
-	by ozlabs.org (Postfix) with ESMTP id 973D767A00
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 21:31:45 +1000 (EST)
-Date: Wed, 17 May 2006 07:31:38 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Andi Kleen <ak@suse.de>
-Subject: Re: [RFC PATCH 01/09] robust VM per_cpu core
-In-Reply-To: <200605171308.56203.ak@suse.de>
-Message-ID: <Pine.LNX.4.58.0605170727500.10446@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
-	<200605171117.06060.ak@suse.de>
-	<Pine.LNX.4.58.0605170640280.8408@gandalf.stny.rr.com>
-	<200605171308.56203.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
-	linux-ia64@vger.kernel.org,
-	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, sam@ravnborg.org,
-	bjornw@axis.com, kenneth.w.chen@intel.com,
-	Ingo Molnar <mingo@elte.hu>, kiran@scalex86.org,
-	clameter@sgi.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-	grundler@parisc-linux.org, arnd@arndb.de,
-	Rusty Russell <rusty@rustcorp.com.au>, starvik@axis.com,
-	Linus Torvalds <torvalds@osdl.org>,
-	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
-	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
-	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
-	parisc-linux@parisc-linux.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7489067A2E
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 22:06:10 +1000 (EST)
+Subject: snd-aoa status update / automatic driver loading
+From: Johannes Berg <johannes@sipsolutions.net>
+To: debian-powerpc <debian-powerpc@lists.debian.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-wB/tYAI9+58wst9kgTiE"
+Date: Wed, 17 May 2006 12:09:24 +0200
+Message-Id: <1147860564.14395.6.camel@johannes>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,57 +24,82 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wed, 17 May 2006, Andi Kleen wrote:
+--=-wB/tYAI9+58wst9kgTiE
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> On Wednesday 17 May 2006 12:46, Steven Rostedt wrote:
-> >
-> > On Wed, 17 May 2006, Andi Kleen wrote:
-> >
-> > >
-> > > > As well as the following three functions:
-> > > >
-> > > > pud_t *pud_boot_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long addr,
-> > > >                      int cpu);
-> > > > pmd_t *pmd_boot_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr,
-> > > >                      int cpu);
-> > > > pte_t *pte_boot_alloc(struct mm_struct *mm, pmd_t *pmd, unsigned long addr,
-> > > >                      int cpu);
-> > >
-> > > I'm not sure you can just put them like this into generic code. Some
-> > > architectures are doing strange things with them.
-> >
-> > Hmm, like what?
->
-> Mostly managing their software TLBs I think.
+Hey,
 
-Wait. "into generic code"?  Do you mean that we can't use them in generic
-code.  The are not defined there, but are defined in the arch. They are
-just used like the p*_alloc (without boot) equivalents (from vmalloc.c).
+Currently snd-aoa is known to work on the following machines:
+* PowerBook5,8
+* PowerBook5,7
+* PowerMac8,1
+* PowerMac8,2
+* 17" October 2005 PowerBook (don't know the number)
+* PowerMac11,2
+* PowerBook6,8
+and my
+* PowerBook5,6
 
->
-> > >
-> > > And we already have boot_ioremap on some architectures. Why is that not
-> > > enough?
-> >
-> > I thought about using boot_ioremap, but it seems to be an abuse.  Since
-> > I'm not mapping io, but actual memory pages.
->
-> We already use it for memory, e.g. for mapping some BIOS tables.
->
-> > So the solution to that
-> > seemed more of a hack.  I then would need to worry about grabbing pages
-> > that were node specific
->
-> alloc_bootmem_node
->
-> > and getting the physical addresses.
->
-> virt_to_phys()
->
-> [ + hacks to handle 32bit NUMA unfortunately ]
+People with those machines are encouraged to use and stress-test it, it
+also provides much better hardware support than snd-powermac, for
+example it can actually reprogram the hardware if you have a 48KHz file
+instead of having to digitally downsample it to 44.1KHz like required
+with snd-powermac in most cases.
 
-With the archs defining their own p*_boot_alloc functions, there shouldn't
-be any hacks.  The arch can figure out what to do. I didn't want any hacks
-in the generic code.
+Note that the big missing feature is headphone/line-in/line-out
+autodetection at the moment, so if you rely on that don't use snd-aoa
+for the moment.
 
--- Steve
+There are apparently some cases where it loses interrupts and then the
+sound is garbled, my brother's investigating that at the moment, it
+doesn't happen with my powerbook nor with my powermac.
+
+Note that Topaz chips (optical input usually, though I think there's a
+version where it does optical output too, probably the tas/topaz
+combinations I heard about) are not supported yet as I don't have any
+optical hardware except for my PowerMac11,2 and haven't written any code
+for the required clock recovering and switching. If you want to see it
+supported (and don't want to write the code yourself) your best bet is
+probably to send me some hardware that has a controllable optical
+output ;) If you want to write the code yourself talk to me first
+please.
+
+But the other reason for writing this mail is that I finally found the
+last remaining bug that prevented sound module autoloading! :)
+
+Now, when you boot, mac-io is already built-in so provides the i2s
+device, which my i2sbus module binds to. Since udev synthesizes events,
+i2sbus gets loaded automatically. Now, i2sbus creates uevents on its
+own, with the layout number given as the MODALIAS. Hence, the layout
+fabric module is loaded because it has an alias for all the layouts it
+handles, and it in turn requests all the codec modules that it requires.
+Also, this means that 'modprobe i2sbus' will suffice to get the driver
+up and running without a reboot, provided that all modules are
+installed.
+
+Have fun,
+johannes
+
+--=-wB/tYAI9+58wst9kgTiE
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARGr2UaVg1VMiehFYAQIAABAAtaidoI6FVJdhlJpBnVac9Dx6wpcsH/r6
+5LulsaDEoBeBg6Ttia9zklbz+lrC2dFD/nT6HTIe8bV8+5weX8AS72owTdujmeLE
+ipGS7nna/259zzdRHx09o5887NSk2xQOmHKxXc9ssrnkyMfIjLMfIjiDoHo9xWZV
+mJ5dHvrnpkhCCpH8QROHsHpJ4EVPP3/Zpw/DdbdTW+73QCU2Xo/PSwpSIm/8FLF1
+AkDGGXyF8ohNIfgls7M4XBESET07u7fPAWcs3/+yL+q7bj+w+9uAYEOMz3VUFWoz
+kIcre2ibxngW5o4zRb+XEOwB64dAVeWInOF+B3TDuIAYvcl2cg+MTKeJ1zKnaFZv
+6vx7TK328mvOllMXk93e22+ZfQ17Xe0bge68ZbopuVtYXTGBGh9IPVaoGPSa1kKX
+zCthJsPYs+xpASjWe5aa4+3xjUY5oUBF51IXR7gshSynlYyRyE5R2IrxEdW2VImf
+DHZ6jmxOoAtRWkA1UAGdeCKtP7XxdGPgsDWnRPXzRnhON3yPCuL6VPwsM0j6nplo
+ql7PEwbpGshdDdmBXtc20e3yq0W2F/9yjXjHeNqvsUQn+wCHQxNbHO4AjAU/6V0C
+Xs3NxiaOI7FzXE6Ych0mHul5izG858cBCweLJgaOBkSj095MiNGucg7HuO/ziRgN
+COT4ZQDr4Ag=
+=9byp
+-----END PGP SIGNATURE-----
+
+--=-wB/tYAI9+58wst9kgTiE--
