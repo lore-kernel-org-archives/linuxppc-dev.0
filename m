@@ -1,13 +1,13 @@
 Return-Path: <rostedt@goodmis.org>
 Received: from ms-smtp-01.nyroc.rr.com (ms-smtp-01.nyroc.rr.com [24.24.2.55])
-	by ozlabs.org (Postfix) with ESMTP id D7C1767A58
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 19:58:34 +1000 (EST)
-Date: Wed, 17 May 2006 05:58:28 -0400 (EDT)
+	by ozlabs.org (Postfix) with ESMTP id D3ADF67AA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 19:59:34 +1000 (EST)
+Date: Wed, 17 May 2006 05:59:28 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC PATCH 04/09] robust VM per_cpu main startup
+Subject: [RFC PATCH 05/09] robust VM per_cpu module
 In-Reply-To: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0605170557580.8408@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.58.0605170558370.8408@gandalf.stny.rr.com>
 References: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -37,20 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch disables the generic setup if __ARCH_HAS_VM_PERCPU defined.
+This patch performs a check on the return value of percpu_modcopy
+for the module load.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-Index: linux-2.6.16-test/init/main.c
+Index: linux-2.6.16-test/kernel/module.c
 ===================================================================
---- linux-2.6.16-test.orig/init/main.c	2006-05-17 04:32:28.000000000 -0400
-+++ linux-2.6.16-test/init/main.c	2006-05-17 04:57:45.000000000 -0400
-@@ -324,7 +324,7 @@ static inline void smp_prepare_cpus(unsi
+--- linux-2.6.16-test.orig/kernel/module.c	2006-05-17 04:32:28.000000000 -0400
++++ linux-2.6.16-test/kernel/module.c	2006-05-17 04:57:53.000000000 -0400
+@@ -1819,8 +1819,11 @@ static struct module *load_module(void _
+ 	sort_extable(extable, extable + mod->num_exentries);
 
- #else
+ 	/* Finally, copy percpu area over. */
+-	percpu_modcopy(mod->percpu, (void *)sechdrs[pcpuindex].sh_addr,
+-		       sechdrs[pcpuindex].sh_size);
++	err = percpu_modcopy(mod->percpu, (void *)sechdrs[pcpuindex].sh_addr,
++			     sechdrs[pcpuindex].sh_size);
++
++	if (err < 0)
++		goto cleanup;
 
--#ifdef __GENERIC_PER_CPU
-+#if defined(__GENERIC_PER_CPU) && !defined(__ARCH_HAS_VM_PERCPU)
- unsigned long __per_cpu_offset[NR_CPUS];
-
- EXPORT_SYMBOL(__per_cpu_offset);
+ 	add_kallsyms(mod, sechdrs, symindex, strindex, secstrings);
