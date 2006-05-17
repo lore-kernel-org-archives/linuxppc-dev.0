@@ -1,14 +1,16 @@
 Return-Path: <rostedt@goodmis.org>
-Received: from ms-smtp-01.nyroc.rr.com (ms-smtp-01.nyroc.rr.com [24.24.2.55])
-	by ozlabs.org (Postfix) with ESMTP id 9D08A67A41
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 19:55:07 +1000 (EST)
-Date: Wed, 17 May 2006 05:54:39 -0400 (EDT)
+Received: from ms-smtp-02.nyroc.rr.com (ms-smtp-02.nyroc.rr.com [24.24.2.56])
+	by ozlabs.org (Postfix) with ESMTP id 3B05667A5C
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 19:56:18 +1000 (EST)
+Date: Wed, 17 May 2006 05:56:00 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC PATCH 00/09] robust VM per_cpu variables
-Message-ID: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
+Subject: [RFC PATCH 01/09] robust VM per_cpu core
+In-Reply-To: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.58.0605170555190.8408@gandalf.stny.rr.com>
+References: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-688922444-1147859679=:8408"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
 	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
 	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
@@ -35,121 +37,333 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
 
---8323328-688922444-1147859679=:8408
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+This is the VM per_cpu core patch.  It includes the mm/per_cpu.c file
+that is used to initialize and update per_cpu variables at startup
+and module load.
 
-(I tried to include all arch maintianers and memory maintainers, if I
-missed someone, please let me know).
+To use this, the arch must define CONFIG_HAS_VM_PERCPU and
+__ARCH_HAS_VM_PERCPU.
 
+Also the following must be defined:
 
-OK, as promised, I've got a working VM percpu solution.
+PERCPU_START - start of the percpu VM area
+PERCPU_SIZE - size of the percpu VM area for each CPU so that the
+		total size would be PERCPU_SIZE * NR_CPUS
 
-A little history: please read the thread http://lkml.org/lkml/2006/4/14/137
+As well as the following three functions:
 
-Preivously I noticed that the per_cpu variables were implemented with
-a little hack that Rusty Russell wrote up.  I call it a hack because,
-for modules an arbitrary number was used to hold all per_cpu variables
-that would be used in the kernel or in modules.  If this number was too
-big, you waste the memory that is allocated for it, and if it were
-too small, you wont be able to load all the modules that are required.
+pud_t *pud_boot_alloc(struct mm_struct *mm, pgd_t *pgd, unsigned long addr,
+                     int cpu);
+pmd_t *pmd_boot_alloc(struct mm_struct *mm, pud_t *pud, unsigned long addr,
+                     int cpu);
+pte_t *pte_boot_alloc(struct mm_struct *mm, pmd_t *pmd, unsigned long addr,
+                     int cpu);
 
-My first attempt to fix this introduced another dereference, to allow
-for modules to allocate their own memory.  This was quickly shot down,
-and for good reason, because dereferences kill performance, and don't
-play nice with large SMP systems that depend on per_cpu being fast.
+The above functions are to allocate page tables from bootmem because the
+percpu is initialized right after setup_arch in init/main.c
 
-But that first attempt had one benefit.  It had good responses on how
-to actually fix the problem.  Without the first try, I would not have
-tried this approach.
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-So what is this solution?
-
-I now place the per_cpu variables into VM, such that the pages are
-only allocated when needed. All the architecture needs to do is
-supply a VM address range, size for each CPU to use (note this
-implementation expects all the VM CPU areas to be together), and
-three functions to allow for allocating page tables at bootup.
-
-The bootup page table allocations are needed because the percpu
-variables are used before the system initializes the memory. So
-bootmem is needed to load the page tables.
-
-But that's it!  No more hacks for architectures with lots of CPUS and
-NUMA to implement their own percpu algorithms.  They just supply the
-functions to allocate the variables, and the memory will be loaded
-appropriately.  So all architectures with VM can use the generic
-solution.  Does the main-line kernel support any architectures that
-doesn't have a VM?
-
-Another benefit is that this approach removes the one redirection that
-was already used in the generic solution.  Since the virtual memory
-of the architecture for the per_cpu is static, the calculation to
-find the variable is done with constants.  So this is another win
-for this solution.
-
-So the three things that this patch gives us are:
-
-1) Robust per_cpu.  No more guessing the size of the per_cpu variable
-   sections.  Default VM is 1 Meg per cpu.  If you use more than that
-   I guess you're SOL.
-
-2) Generic solution for all architectures.  No more fancy hacks to
-   get the per cpu offest.
-
-3) Removes the inderection of the current per_cpu generic solution.
-
-The set of patches that I have implement this for the i386 architecture
-and lays out the ground work for others.  The i386 implementation I did
-was mainly a hack.  Nick Piggin suggested that before I do too much
-work, I should post my stuff and ask for comments.  That's what I'm doing
-now.
-
-This patch set works for my laptop (P4 HT) and I haven't tested
-it with any other configuration.  The implementation that I did for
-i386 was only to get it to work and is not flexible.  It needs much
-better implementation, and I ask for help with that.
-
-I basically concentrated to the core stuff.  Another nice thing about
-this patch set is that it needs both CONFIG_HAS_VM_PERCPU and
-__ARCH_HAS_VM_PERCPU to take advantage of the VM percpu implementation.
-Without these set, it defaults to the old usage.  This way we
-can slowly implement each architecture, in an incremental fashion.
-
-OK, let'er rip. Flame me, yell at me, curse me, but please give me
-feedback.
-
-Thanks for your time.
-
--- Steve
-
-PS. The attached module was used to test this patch on my laptop.
-
-
---8323328-688922444-1147859679=:8408
-Content-Type: TEXT/x-csrc; charset=US-ASCII; name="per_cpu.c"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.58.0605170554390.8408@gandalf.stny.rr.com>
-Content-Description: 
-Content-Disposition: attachment; filename="per_cpu.c"
-
-I2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KI2luY2x1ZGUgPGxpbnV4L3Bl
-cmNwdS5oPg0KDQojZGVmaW5lIEJJR19TSVpFIDQyMDANCkRFRklORV9QRVJf
-Q1BVKGludCAsIGJpZ2FycmF5W0JJR19TSVpFXSk7DQoNCnN0YXRpYyBpbnQg
-X19pbml0IHBlcmNwdV9pbml0KHZvaWQpDQp7DQoJaW50IGksIHg7DQoJZm9y
-IChpPTA7IGNwdV9wb3NzaWJsZShpKSA7IGkrKykNCgkJZm9yICh4PTA7IHgg
-PCBCSUdfU0laRTsgeCsrKSB7DQoJCQlpZiAoISh4JTEwMCkpDQoJCQkJcHJp
-bnRrKCJwcm9jZXNzaW5nICVkOiVkXG4iLCBpLCB4KTsNCgkJCXBlcl9jcHUo
-YmlnYXJyYXlbeF0sIGkpID0gMTAwMDAgKyB4Ow0KCQl9DQoJcmV0dXJuIDA7
-DQp9DQoNCnN0YXRpYyB2b2lkIF9fZXhpdCBwZXJjcHVfZXhpdCh2b2lkKQ0K
-ew0KCWludCBpOw0KDQoJZm9yIChpPTE7IGkgPCBCSUdfU0laRTsgaSA8PD0g
-MSkNCgkJcHJpbnRrKCJiaWdhcnJheVslZF0gPSAlZFxuIiwgaSwgcGVyX2Nw
-dShiaWdhcnJheVtpXSwwKSk7DQp9DQoNCm1vZHVsZV9pbml0KHBlcmNwdV9p
-bml0KTsNCm1vZHVsZV9leGl0KHBlcmNwdV9leGl0KTsNCg0KTU9EVUxFX0FV
-VEhPUigiTXkgbmFtZSBoZXJlIik7DQpNT0RVTEVfREVTQ1JJUFRJT04oInBl
-cmNwdSEiKTsNCk1PRFVMRV9MSUNFTlNFKCJHUEwiKTsNCg0K
-
---8323328-688922444-1147859679=:8408--
+Index: linux-2.6.16-test/mm/percpu.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.16-test/mm/percpu.c	2006-05-17 04:39:52.000000000 -0400
+@@ -0,0 +1,287 @@
++/*
++ *  linux/mm/percpu.c
++ *
++ *  Copyright (C) 2006 Steven Rostedt <rostedt@goodmis.org>
++ *
++ *  Some of this code was influenced by mm/vmalloc.c
++ *
++ *  The percpu variables need to always have the same offset from one CPU to
++ *  the next no matter if the percpu variable is defined in the kernel or
++ *  inside a module.  So to guarentee that the offset is the same for both,
++ *  they are mapped into virtual memory.
++ *
++ *  Since the percpu variables are used before memory is initialized, the
++ *  inital setup must be done with bootmem, and thus vmalloc code can not be
++ *  used.
++ *
++ *  Credits:
++ *  -------
++ *   This goes to lots of people that inspired me on LKML, and responded to
++ *   my first (horrible) implementation of robust per_cpu variables.
++ *
++ *   Also many thanks to Rusty Russell in his generic per_cpu implementation.
++ */
++
++#include <linux/mm.h>
++#include <linux/module.h>
++#include <linux/highmem.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++#include <linux/interrupt.h>
++
++#include <linux/bootmem.h>
++
++#include <asm/uaccess.h>
++#include <asm/tlbflush.h>
++
++static int __init percpu_boot_alloc(unsigned long addr, unsigned long size,
++				    int node);
++
++/*
++ * percpu_allocated keeps track of the actual allocated memory. It
++ * always points to the page after the last page in VM that was allocated.
++ *
++ * Yes this is also a per_cpu variable :)
++ * It gets updated after the copys are made.
++ */
++static DEFINE_PER_CPU(unsigned long, percpu_allocated);
++
++static char * __init per_cpu_allocate_init(unsigned long size, int cpu)
++{
++	unsigned long addr;
++
++	addr = PERCPU_START+(cpu*PERCPU_SIZE);
++	BUG_ON(percpu_boot_alloc(addr, size, cpu));
++
++	return (char*)addr;
++
++}
++
++/**
++ *	setup_per_cpu_areas  - initialization of VM per_cpu variables
++ *
++ *	Allocate pages in VM for the per_cpu variables
++ *	of the kernel.
++ */
++void __init setup_per_cpu_areas(void)
++{
++	unsigned long size, i;
++	char *ptr;
++
++	/* Copy section for each CPU (we discard the original) */
++	size = ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES);
++
++	for (i = 0; i < NR_CPUS; i++, ptr += size) {
++		ptr = per_cpu_allocate_init(size, i);
++		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
++		wmb();
++		per_cpu(percpu_allocated, i) =
++			PAGE_ALIGN((unsigned long)ptr + size);
++	}
++}
++
++static __init int percpu_boot_pte_alloc(pmd_t *pmd, unsigned long addr,
++					  unsigned long end, int node)
++{
++	pte_t *pte;
++
++	pte = pte_boot_alloc(&init_mm, pmd, addr, node);
++	if (!pte)
++		return -ENOMEM;
++	do {
++		void *page;
++		WARN_ON(!pte_none(*pte));
++		page = alloc_bootmem_pages(PAGE_SIZE);
++		if (!page)
++			return -ENOMEM;
++		set_pte_at(&init_mm, addr, pte, mk_pte(virt_to_page(page),
++						       PAGE_KERNEL));
++	} while (pte++, addr += PAGE_SIZE, addr < end);
++	return 0;
++}
++
++static __init int percpu_boot_pmd_alloc(pud_t *pud, unsigned long addr,
++					unsigned long end, int node)
++{
++	pmd_t *pmd;
++	unsigned long next;
++
++	pmd = pmd_boot_alloc(&init_mm, pud, addr, node);
++	if (!pud)
++		return -ENOMEM;
++	do {
++		next = pmd_addr_end(addr, end);
++		if (percpu_boot_pte_alloc(pmd, addr, next, node))
++			return -ENOMEM;
++	} while (pmd++, addr = next, addr < end);
++	return 0;
++}
++
++static __init int percpu_boot_pud_alloc(pgd_t *pgd, unsigned long addr,
++					unsigned long end, int node)
++{
++	pud_t *pud;
++	unsigned long next;
++
++	pud = pud_boot_alloc(&init_mm, pgd, addr, node);
++	if (!pud)
++		return -ENOMEM;
++	do {
++		next = pud_addr_end(addr, end);
++		if (percpu_boot_pmd_alloc(pud, addr, next, node))
++			return -ENOMEM;
++	} while (pud++, addr = next, addr < end);
++	return 0;
++}
++
++static int __init percpu_boot_alloc(unsigned long addr, unsigned long size,
++				    int node)
++{
++	pgd_t *pgd;
++	unsigned long end = addr + size;
++	unsigned long next;
++	int err;
++
++	pgd = pgd_offset_k(addr);
++	do {
++		next = pgd_addr_end(addr, end);
++		err = percpu_boot_pud_alloc(pgd, addr, next, node);
++		if (err)
++			break;
++	} while (pgd++, addr = next, addr < end);
++	return err;
++}
++
++static __init int percpu_pte_alloc(pmd_t *pmd, unsigned long addr,
++				   unsigned long end, int node)
++{
++	pte_t *pte;
++
++	pte = pte_alloc_kernel(pmd, addr);
++	if (!pte)
++		return -ENOMEM;
++	do {
++		void *page;
++		if (unlikely(!pte_none(*pte))) {
++			printk("bad pte: %p->%p\n", pte, (void*)pte_val(*pte));
++			BUG();
++			return -EFAULT;
++		}
++		page = (void*)__get_free_page(GFP_KERNEL);
++		if (!page)
++			return -ENOMEM;
++		set_pte_at(&init_mm, addr, pte, mk_pte(virt_to_page(page),
++						       PAGE_KERNEL));
++	} while (pte++, addr += PAGE_SIZE, addr < end);
++	__flush_tlb();
++	return 0;
++}
++
++static __init int percpu_pmd_alloc(pud_t *pud, unsigned long addr,
++				   unsigned long end, int node)
++{
++	pmd_t *pmd;
++	unsigned long next;
++
++	pmd = pmd_alloc(&init_mm, pud, addr);
++	if (!pmd)
++		return -ENOMEM;
++	do {
++		next = pmd_addr_end(addr, end);
++		if (percpu_pte_alloc(pmd, addr, next, node))
++			return -ENOMEM;
++	} while (pmd++, addr = next, addr < end);
++	return 0;
++}
++
++static __init int percpu_pud_alloc(pgd_t *pgd, unsigned long addr,
++				   unsigned long end, int node)
++{
++	pud_t *pud;
++	unsigned long next;
++
++	pud = pud_alloc(&init_mm, pgd, addr);
++	if (!pud)
++		return -ENOMEM;
++	do {
++		next = pud_addr_end(addr, end);
++		if (percpu_pmd_alloc(pud, addr, next, node))
++			return -ENOMEM;
++	} while (pud++, addr = next, addr < end);
++	return 0;
++}
++
++static int percpu_alloc(unsigned long addr, unsigned long size,
++			int node)
++{
++	pgd_t *pgd;
++	unsigned long end = addr + size;
++	unsigned long next;
++	int err;
++
++	pgd = pgd_offset_k(addr);
++	do {
++		next = pgd_addr_end(addr, end);
++		err = percpu_pud_alloc(pgd, addr, next, node);
++		if (err)
++			break;
++	} while (pgd++, addr = next, addr < end);
++	return err;
++}
++
++static int percpu_module_update(void *pcpudst, unsigned long size, int cpu)
++{
++	int err = 0;
++	/*
++	 * These two local variables are only used to keep the code
++	 * looking simpler.  Since this function is only called on
++	 * module load, it's not time critical.
++	 */
++	unsigned long needed_address = (unsigned long)
++		((pcpudst) + __PERCPU_OFFSET_ADDRESS(cpu)+size);
++	unsigned long allocated = per_cpu(percpu_allocated, cpu);
++
++	if (allocated < needed_address) {
++		unsigned long alloc = needed_address - allocated;
++		err = percpu_alloc(allocated, alloc, cpu);
++		if (!err)
++			per_cpu(percpu_allocated, cpu) =
++				PAGE_ALIGN(needed_address);
++	}
++	return err;
++}
++
++/**
++ *	per_cpu_modcopy  -  copy and allocate module VM per_cpu variables
++ *
++ *	@pcpudst:	Destination of module per_cpu section
++ *	@src:		Source of module per_cpu data section
++ *	@size:		Size of module per_cpu data section
++ *
++ *	Copy the module's data per_cpu section into each VM per_cpu section
++ *	stored in the kernel.  If need be, allocate more pages in VM
++ *	if they are not yet allocated.
++ *
++ *	protected by module_mutex
++ */
++int percpu_modcopy(void *pcpudst, void *src, unsigned long size)
++{
++	unsigned int i;
++	int err = 0;
++
++	for (i = 0; i < NR_CPUS; i++)
++		if (cpu_possible(i)) {
++			err = percpu_module_update(pcpudst, size, i);
++			if (err)
++				break;
++			memcpy((pcpudst)+__PERCPU_OFFSET_ADDRESS(i),
++			       (src), (size));
++		}
++	return err;
++}
++
++/*
++ * We use the __per_cpu_start for the indexing of
++ * per_cpu variables, even in modules.
++ */
++EXPORT_SYMBOL(__per_cpu_start);
+Index: linux-2.6.16-test/mm/Makefile
+===================================================================
+--- linux-2.6.16-test.orig/mm/Makefile	2006-05-17 04:32:27.000000000 -0400
++++ linux-2.6.16-test/mm/Makefile	2006-05-17 04:39:52.000000000 -0400
+@@ -22,3 +22,4 @@ obj-$(CONFIG_SLOB) += slob.o
+ obj-$(CONFIG_SLAB) += slab.o
+ obj-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
+ obj-$(CONFIG_FS_XIP) += filemap_xip.o
++obj-$(CONFIG_HAS_VM_PERCPU) += percpu.o
+\ No newline at end of file
