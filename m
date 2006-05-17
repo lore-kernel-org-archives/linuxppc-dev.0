@@ -1,21 +1,20 @@
 Return-Path: <tie-fei.zang@freescale.com>
 Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id B245967C02
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 20:14:05 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 3EBB767BA4
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 20:14:14 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k4HAOBox004092
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 03:24:11 -0700 (MST)
+	k4HAOLQt004137
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 03:24:21 -0700 (MST)
 Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
 	[10.192.130.11])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k4HAGaNr016711
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 05:16:37 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD46730626D61C@zch01exm40.ap.freescale.net>
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k4HAGQJe014790
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 05:16:28 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD46730626D61D@zch01exm40.ap.freescale.net>
 From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH/2.6.17-rc4 2/10] Powerpc: Add Tundra Semiconductor tsi108
-	macro define
-Date: Wed, 17 May 2006 18:13:55 +0800
+Subject: [PATCH/2.6.17-rc4 3/10] Powerpc: Add tsi108 common function
+Date: Wed, 17 May 2006 18:14:00 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="gb2312"
@@ -30,268 +29,257 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add Tundra Semiconductor tsi108 host bridge common and irq macro define
+Add Tundra Semiconductor tsi108 host bridge common function support.
 
 Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
 Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>
 
 ---
 
- include/asm-powerpc/tsi108.h     |  106 +++++++++++++++++++++++++++++++
- include/asm-powerpc/tsi108_irq.h |  131 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 237 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-powerpc/tsi108.h
- create mode 100644 include/asm-powerpc/tsi108_irq.h
+ arch/powerpc/sysdev/Makefile        |    1 
+ arch/powerpc/sysdev/tsi108_common.c |  224 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 225 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/tsi108_common.c
 
-d7b3cf7ba073991ce7c2fac268d21f8bd43d6962
-diff --git a/include/asm-powerpc/tsi108.h b/include/asm-powerpc/tsi108.h
+ab3b477b5924d2c9cbf6ba3ae4d95fe333c9bad9
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 4c2b356..8c0afb7 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -8,3 +8,4 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_PPC_83xx)		+= ipic.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
++obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_common.o tsi108_pic.o
+diff --git a/arch/powerpc/sysdev/tsi108_common.c b/arch/powerpc/sysdev/tsi108_common.c
 new file mode 100644
-index 0000000..ed9ec36
+index 0000000..3c55f99
 --- /dev/null
-+++ b/include/asm-powerpc/tsi108.h
-@@ -0,0 +1,106 @@
++++ b/arch/powerpc/sysdev/tsi108_common.c
+@@ -0,0 +1,224 @@
 +/*
-+ * include/asm-ppc/tsi108.h
++ * arch/ppc/syslib/tsi108_common.c
 + *
-+ * common routine and memory layout for Tundra TSI108(Grendel) host bridge
-+ * memory controller.
++ * Common routines for Tundra Semiconductor TSI108 host bridge.
 + *
-+ * Author: Jacob Pan (jacob.pan@freescale.com)
-+ *	   Alex Bounine (alexandreb@tundra.com)
-+ * 2004 (c) Freescale Semiconductor Inc.  This file is licensed under
-+ * the terms of the GNU General Public License version 2.  This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
++ * 2004-2005 (c) Tundra Semiconductor Corp.
++ * Author: Alex Bounine (alexandreb@tundra.com)
++ *
++ * This program is free software; you can redistribute it and/or modify it 
++ * under the terms of the GNU General Public License as published by the Free 
++ * Software Foundation; either version 2 of the License, or (at your option) 
++ * any later version.
++ * 
++ * This program is distributed in the hope that it will be useful, but WITHOUT 
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for 
++ * more details.
++ * 
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 59 
++ * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 + */
-+#ifndef __PPC_KERNEL_TSI108_H
-+#define __PPC_KERNEL_TSI108_H
 +
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/pci.h>
++#include <linux/slab.h>
++
++#include <asm/byteorder.h>
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/uaccess.h>
++#include <asm/machdep.h>
 +#include <asm/pci-bridge.h>
++#include <asm/tsi108.h>
++#include <asm/prom.h>
 +
-+/* Size of entire register space */
-+#define TSI108_REG_SIZE		(0x10000)
++u32 tsi108_pci_cfg_base;
 +
-+/* Sizes of register spaces for individual blocks */
-+#define TSI108_HLP_SIZE		0x1000
-+#define TSI108_PCI_SIZE		0x1000
-+#define TSI108_CLK_SIZE		0x1000
-+#define TSI108_PB_SIZE		0x1000
-+#define TSI108_SD_SIZE		0x1000
-+#define TSI108_DMA_SIZE		0x1000
-+#define TSI108_ETH_SIZE		0x1000
-+#define TSI108_I2C_SIZE		0x400
-+#define TSI108_MPIC_SIZE	0x400
-+#define TSI108_UART0_SIZE	0x200
-+#define TSI108_GPIO_SIZE	0x200
-+#define TSI108_UART1_SIZE	0x200
++#undef TSI108_PCI_DEBUG
 +
-+/* Offsets within Tsi108(A) CSR space for individual blocks */
-+#define TSI108_HLP_OFFSET	0x0000
-+#define TSI108_PCI_OFFSET	0x1000
-+#define TSI108_CLK_OFFSET	0x2000
-+#define TSI108_PB_OFFSET	0x3000
-+#define TSI108_SD_OFFSET	0x4000
-+#define TSI108_DMA_OFFSET	0x5000
-+#define TSI108_ETH_OFFSET	0x6000
-+#define TSI108_I2C_OFFSET	0x7000
-+#define TSI108_MPIC_OFFSET	0x7400
-+#define TSI108_UART0_OFFSET	0x7800
-+#define TSI108_GPIO_OFFSET	0x7A00
-+#define TSI108_UART1_OFFSET	0x7C00
++#define tsi_mk_config_addr(bus, devfunc, offset) \
++	(((bus)<<16) | ((devfunc)<<8) | (offset & 0xfc)| tsi108_pci_cfg_base)
 +
-+/* Tsi108 registers used by common code components */
-+#define TSI108_PCI_CSR		(0x004)
-+#define TSI108_PCI_IRP_CFG_CTL	(0x180)
-+#define TSI108_PCI_IRP_STAT	(0x184)
-+#define TSI108_PCI_IRP_ENABLE	(0x188)
-+#define TSI108_PCI_IRP_INTAD	(0x18C)
++static phys_addr_t tsi108_csr_base = -1;
 +
-+#define TSI108_PCI_IRP_STAT_P_INT	(0x00400000)
-+
-+#define TSI108_CG_PWRUP_STATUS	(0x234)
-+
-+#define TSI108_PB_ISR		(0x00C)
-+#define TSI108_PB_ERRCS		(0x404)
-+#define TSI108_PB_AERR		(0x408)
-+
-+#define TSI108_PB_ERRCS_ES		(1 << 1)
-+#define TSI108_PB_ISR_PBS_RD_ERR	(1 << 8)
-+
-+#define TBL_END 0
-+
-+/* Global variables */
-+
-+extern u32 tsi108_pci_cfg_base;
-+/* Exported functions */
-+
-+extern int tsi108_bridge_init(struct pci_controller *hose, uint phys_csr_base);
-+extern unsigned long tsi108_get_mem_size(void);
-+extern unsigned long tsi108_get_cpu_clk(void);
-+extern unsigned long tsi108_get_sdc_clk(void);
-+extern int tsi108_direct_write_config(struct pci_bus *bus, unsigned int devfn,
-+				      int offset, int len, u32 val);
-+extern int tsi108_direct_read_config(struct pci_bus *bus, unsigned int devfn,
-+				     int offset, int len, u32 * val);
-+extern void tsi108_clear_pci_error(u32 pci_cfg_base);
-+
-+extern phys_addr_t get_csrbase(void);
-+
-+typedef struct {
-+	u32 regs;		/* hw registers base address */
-+	u32 phyregs;		/* phy registers base address */
-+	u16 phy;		/* phy address */
-+	u16 irq_num;		/* irq number */
-+} hw_info;
-+
-+extern u32 get_vir_csrbase(void);
-+
-+extern inline u32 tsi108_read_reg(u32 reg_offset)
++phys_addr_t get_csrbase(void)
 +{
-+	return in_be32((volatile u32 *)(get_vir_csrbase() + reg_offset));
++	struct device_node *tsi;
++
++	if (tsi108_csr_base != -1)
++		return tsi108_csr_base;
++
++	tsi = of_find_node_by_type(NULL, "tsi-bridge");
++	if (tsi) {
++		unsigned int size;
++		void *prop = get_property(tsi, "reg", &size);
++		tsi108_csr_base = of_translate_address(tsi, prop);
++		of_node_put(tsi);
++	};
++	return tsi108_csr_base;
 +}
 +
-+extern inline void tsi108_write_reg(u32 reg_offset, u32 val)
++u32 get_vir_csrbase(void)
 +{
-+	out_be32((volatile u32 *)(get_vir_csrbase() + reg_offset), val);
++	return (u32) (ioremap(get_csrbase(), 0x10000));
 +}
 +
-+#endif				/* __PPC_KERNEL_TSI108_H */
-diff --git a/include/asm-powerpc/tsi108_irq.h b/include/asm-powerpc/tsi108_irq.h
-new file mode 100644
-index 0000000..2f7e8d8
---- /dev/null
-+++ b/include/asm-powerpc/tsi108_irq.h
-@@ -0,0 +1,131 @@
-+/*
-+ * (C) Copyright 2005 Tundra Semiconductor Corp.
-+ * Alex Bounine, <alexandreb@tundra.com).
-+ *
-+ * See file CREDITS for list of people who contributed to this
-+ * project.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ */
++EXPORT_SYMBOL(get_csrbase);
++EXPORT_SYMBOL(get_vir_csrbase);
 +
 +/*
-+ * asm-ppc/tsi108_irq.h - definitions for interrupt controller
-+ * initialization and external interrupt demultiplexing on TSI108EMU/SVB boards.
++ * Prosessor Bus Clock (in MHz) defined by CG_PB_SELECT
++ * (based on recommended Tsi108 reference clock 33MHz)
 + */
-+
-+#ifndef _ASM_PPC_TSI108_IRQ_H
-+#define _ASM_PPC_TSI108_IRQ_H
++static int pb_clk_sel[8] = { 0, 0, 183, 100, 133, 167, 200, 233 };
 +
 +/*
-+ * Tsi108 interrupts
++ * SDRAM Clock (in MHz) defined by CG_SD_SELECT
++ * (based on recommended Tsi108 reference clock 33MHz)
 + */
-+#ifndef TSI108_IRQ_BASE
-+#define TSI108_IRQ_BASE		0
++static int sd_clk_sel[2][8] = {
++	{0, 0, 183, 100, 133, 167, 200, 233},	/* SYNC */
++	{0, 0, 0, 0, 133, 160, 200, 0}	/* ASYNC */
++};
++
++int
++tsi108_direct_write_config(struct pci_bus *bus, unsigned int devfunc,
++			   int offset, int len, u32 val)
++{
++	volatile unsigned char *cfg_addr;
++
++	cfg_addr = (unsigned char *)(tsi_mk_config_addr(bus->number,
++							devfunc, offset) |
++				     (offset & 0x03));
++
++#ifdef TSI108_PCI_DEBUG
++	printk("PCI CFG write : ");
++	printk("%d:0x%x:0x%x ", bus->number, devfunc, offset);
++	printk("%d ADDR=0x%08x ", len, (uint) cfg_addr);
++	printk("data = 0x%08x\n", val);
 +#endif
 +
-+#define TSI108_IRQ(x)		(TSI108_IRQ_BASE + (x))
++	switch (len) {
++	case 1:
++		out_8((u8 *) cfg_addr, val);
++		break;
++	case 2:
++		out_le16((u16 *) cfg_addr, val);
++		break;
++	default:
++		out_le32((u32 *) cfg_addr, val);
++		break;
++	}
 +
-+#define TSI108_MAX_VECTORS	(36 + 4)	/* 36 sources + PCI INT demux */
-+#define MAX_TASK_PRIO	0xF
++	return PCIBIOS_SUCCESSFUL;
++}
 +
-+#define TSI108_IRQ_SPURIOUS	(TSI108_MAX_VECTORS)
++void tsi108_clear_pci_error(u32 pci_cfg_base)
++{
++	u32 err_stat, err_addr, pci_stat;
 +
-+#define DEFAULT_PRIO_LVL	10	/* initial priority level */
++	/*
++	 * Quietly clear PB and PCI error flags set as result
++	 * of PCI/X configuration read requests.
++	 */
 +
-+/* Interrupt vectors assignment to external and internal 
-+ * sources of requests. */
++	/* Read PB Error Log Registers */
 +
-+/* EXTERNAL INTERRUPT SOURCES */
++	err_stat = tsi108_read_reg(TSI108_PB_OFFSET + TSI108_PB_ERRCS);
++	err_addr = tsi108_read_reg(TSI108_PB_OFFSET + TSI108_PB_AERR);
 +
-+#define IRQ_TSI108_EXT_INT0	TSI108_IRQ(0)	/* External Source at INT[0] */
-+#define IRQ_TSI108_EXT_INT1	TSI108_IRQ(1)	/* External Source at INT[1] */
-+#define IRQ_TSI108_EXT_INT2	TSI108_IRQ(2)	/* External Source at INT[2] */
-+#define IRQ_TSI108_EXT_INT3	TSI108_IRQ(3)	/* External Source at INT[3] */
++	if (err_stat & TSI108_PB_ERRCS_ES) {
++		/* Clear error flag */
++		tsi108_write_reg(TSI108_PB_OFFSET + TSI108_PB_ERRCS,
++				 TSI108_PB_ERRCS_ES);
 +
-+/* INTERNAL INTERRUPT SOURCES */
++		/* Clear read error reported in PB_ISR */
++		tsi108_write_reg(TSI108_PB_OFFSET + TSI108_PB_ISR,
++				 TSI108_PB_ISR_PBS_RD_ERR);
 +
-+#define IRQ_TSI108_RESERVED0	TSI108_IRQ(4)	/* Reserved IRQ */
-+#define IRQ_TSI108_RESERVED1	TSI108_IRQ(5)	/* Reserved IRQ */
-+#define IRQ_TSI108_RESERVED2	TSI108_IRQ(6)	/* Reserved IRQ */
-+#define IRQ_TSI108_RESERVED3	TSI108_IRQ(7)	/* Reserved IRQ */
-+#define IRQ_TSI108_DMA0		TSI108_IRQ(8)	/* DMA0 */
-+#define IRQ_TSI108_DMA1		TSI108_IRQ(9)	/* DMA1 */
-+#define IRQ_TSI108_DMA2		TSI108_IRQ(10)	/* DMA2 */
-+#define IRQ_TSI108_DMA3		TSI108_IRQ(11)	/* DMA3 */
-+#define IRQ_TSI108_UART0	TSI108_IRQ(12)	/* UART0 */
-+#define IRQ_TSI108_UART1	TSI108_IRQ(13)	/* UART1 */
-+#define IRQ_TSI108_I2C		TSI108_IRQ(14)	/* I2C */
-+#define IRQ_TSI108_GPIO		TSI108_IRQ(15)	/* GPIO */
-+#define IRQ_TSI108_GIGE0	TSI108_IRQ(16)	/* GIGE0 */
-+#define IRQ_TSI108_GIGE1	TSI108_IRQ(17)	/* GIGE1 */
-+#define IRQ_TSI108_RESERVED4	TSI108_IRQ(18)	/* Reserved IRQ */
-+#define IRQ_TSI108_HLP		TSI108_IRQ(19)	/* HLP */
-+#define IRQ_TSI108_SDRAM	TSI108_IRQ(20)	/* SDC */
-+#define IRQ_TSI108_PROC_IF	TSI108_IRQ(21)	/* Processor IF */
-+#define IRQ_TSI108_RESERVED5	TSI108_IRQ(22)	/* Reserved IRQ */
-+#define IRQ_TSI108_PCI		TSI108_IRQ(23)	/* PCI/X block */
++		/* Clear PCI/X bus cfg errors if applicable */
++		if ((err_addr & 0xFF000000) == pci_cfg_base) {
++			pci_stat =
++			    tsi108_read_reg(TSI108_PCI_OFFSET + TSI108_PCI_CSR);
++			tsi108_write_reg(TSI108_PCI_OFFSET + TSI108_PCI_CSR,
++					 pci_stat);
++		}
++	}
 +
-+#define IRQ_TSI108_MBOX0	TSI108_IRQ(24)	/* Mailbox 0 register */
-+#define IRQ_TSI108_MBOX1	TSI108_IRQ(25)	/* Mailbox 1 register */
-+#define IRQ_TSI108_MBOX2	TSI108_IRQ(26)	/* Mailbox 2 register */
-+#define IRQ_TSI108_MBOX3	TSI108_IRQ(27)	/* Mailbox 3 register */
++	return;
++}
 +
-+#define IRQ_TSI108_DBELL0	TSI108_IRQ(28)	/* Doorbell 0 */
-+#define IRQ_TSI108_DBELL1	TSI108_IRQ(29)	/* Doorbell 1 */
-+#define IRQ_TSI108_DBELL2	TSI108_IRQ(30)	/* Doorbell 2 */
-+#define IRQ_TSI108_DBELL3	TSI108_IRQ(31)	/* Doorbell 3 */
++#define __tsi108_read_pci_config(x, addr, op)		\
++	__asm__ __volatile__(				\
++		"	"op" %0,0,%1\n"		\
++		"1:	eieio\n"			\
++		"2:\n"					\
++		".section .fixup,\"ax\"\n"		\
++		"3:	li %0,-1\n"			\
++		"	b 2b\n"				\
++		".section __ex_table,\"a\"\n"		\
++		"	.align 2\n"			\
++		"	.long 1b,3b\n"			\
++		".text"					\
++		: "=r"(x) : "r"(addr))
 +
-+#define IRQ_TSI108_TIMER0	TSI108_IRQ(32)	/* Global Timer 0 */
-+#define IRQ_TSI108_TIMER1	TSI108_IRQ(33)	/* Global Timer 1 */
-+#define IRQ_TSI108_TIMER2	TSI108_IRQ(34)	/* Global Timer 2 */
-+#define IRQ_TSI108_TIMER3	TSI108_IRQ(35)	/* Global Timer 3 */
++int
++tsi108_direct_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
++			  int len, u32 * val)
++{
++	volatile unsigned char *cfg_addr;
++	u32 temp;
 +
-+/*
-+ * PCI bus INTA# - INTD# lines demultiplexor
-+ */
-+#define IRQ_PCI_INTAD_BASE	TSI108_IRQ(36)
-+#define IRQ_PCI_INTA		(IRQ_PCI_INTAD_BASE + 0)
-+#define IRQ_PCI_INTB		(IRQ_PCI_INTAD_BASE + 1)
-+#define IRQ_PCI_INTC		(IRQ_PCI_INTAD_BASE + 2)
-+#define IRQ_PCI_INTD		(IRQ_PCI_INTAD_BASE + 3)
-+#define NUM_PCI_IRQS		(4)
++	cfg_addr = (unsigned char *)(tsi_mk_config_addr(bus->number,
++							devfn,
++							offset) | (offset &
++								   0x03));
 +
-+/* number of entries in vector dispatch table */
-+#define IRQ_TSI108_TAB_SIZE	(TSI108_MAX_VECTORS + 1)
++	switch (len) {
++	case 1:
++		__tsi108_read_pci_config(temp, cfg_addr, "lbzx");
++		break;
++	case 2:
++		__tsi108_read_pci_config(temp, cfg_addr, "lhbrx");
++		break;
++	default:
++		__tsi108_read_pci_config(temp, cfg_addr, "lwbrx");
++		break;
++	}
 +
-+/* Mapping of MPIC outputs to processors' interrupt pins */
++	*val = temp;
 +
-+#define IDIR_INT_OUT0		0x1
-+#define IDIR_INT_OUT1		0x2
-+#define IDIR_INT_OUT2		0x4
-+#define IDIR_INT_OUT3		0x8
++#ifdef TSI108_PCI_DEBUG
++	if ((0xFFFFFFFF != temp) && (0xFFFF != temp) && (0xFF != temp)) {
++		printk("PCI CFG read : ");
++		printk("%d:0x%x:0x%x ", bus->number, devfn, offset);
++		printk("%d ADDR=0x%08x ", len, (uint) cfg_addr);
++		printk("data = 0x%x\n", *val);
++	}
++#endif
++	return PCIBIOS_SUCCESSFUL;
++}
 +
-+/*---------------------------------------------------------------
-+ * IRQ line configuration parameters */
++unsigned long tsi108_get_cpu_clk(void)
++{
++	/* Detect PB clock freq. */
++	u32 i = tsi108_read_reg(TSI108_CLK_OFFSET + TSI108_CG_PWRUP_STATUS);
 +
-+/* Interrupt delivery modes */
-+typedef enum {
-+	TSI108_IRQ_DIRECTED,
-+	TSI108_IRQ_DISTRIBUTED,
-+} TSI108_IRQ_MODE;
++	i = (i >> 16) & 0x07;	/* Get PB PLL multiplier */
++	return (pb_clk_sel[i] * 1000000);
++}
 +
-+/*--------------------------------------------------------------- */
-+/* Error codes */
++unsigned long tsi108_get_sdc_clk(void)
++{
++	u32 i, k;
 +
-+#define MPIC_OK		0
-+#define MPIC_ERROR	1
-+
-+#endif				/*  _ASM_PPC_TSI108_IRQ_H */
++	/* Get SDC/PB clock freq. from CG settings */
++	i = tsi108_read_reg(TSI108_CLK_OFFSET + TSI108_CG_PWRUP_STATUS);
++	k = (i >> 16) & 0x07;	/* Get PB PLL multiplier */
++	i = (i >> 20) & 0x07;	/* Get SDC PLL multiplier */
++	k = (k == i) ? 0 : 1;	/* sync/async configuration */
++	return (sd_clk_sel[k][i] * 1000000);
++}
 -- 
 1.3.0
