@@ -1,10 +1,11 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 17 May 2006 18:00:41 +1000
-Subject: [PATCH 1/5] powerpc: Make early xmon logic immune to location of
-	early parsing
-Message-Id: <1147852841.148164.91320074069.qpush@concordia>
+Date: Wed, 17 May 2006 18:00:45 +1000
+Subject: [PATCH 2/5] powerpc: Parse early parameters early,
+	rather than sorta early
+In-Reply-To: <1147852841.148164.91320074069.qpush@concordia>
+Message-Id: <20060517080044.A2214679EF@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,78 +16,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently early_xmon() calls directly into debugger() if xmon=early is passed.
-This ties the invocation of early xmon to the location of parse_early_param(),
-which might change.
+Currently we have call parse_early_param() earliyish, but not really very
+early. In particular, it's not early enough to do things like mem=x or
+crashkernel=blah, which is annoying.
 
-Tested on P5 LPAR and F50.
+So do it earlier. I've checked all the early param handlers, and none of them
+look like they should have any trouble with this. I haven't tested the
+booke_wdt ones though.
+
+On 32-bit we were doing the CONFIG_CMDLINE logic twice, so don't.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/kernel/setup-common.c |    3 ++-
- arch/powerpc/kernel/setup.h        |    1 +
- arch/powerpc/kernel/setup_32.c     |    3 +++
- arch/powerpc/kernel/setup_64.c     |    3 +++
- 4 files changed, 9 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/prom.c     |    5 +++++
+ arch/powerpc/kernel/setup_32.c |   14 ++------------
+ arch/powerpc/kernel/setup_64.c |    5 -----
+ 3 files changed, 7 insertions(+), 17 deletions(-)
 
-Index: to-merge/arch/powerpc/kernel/setup-common.c
+Index: to-merge/arch/powerpc/kernel/prom.c
 ===================================================================
---- to-merge.orig/arch/powerpc/kernel/setup-common.c
-+++ to-merge/arch/powerpc/kernel/setup-common.c
-@@ -443,6 +443,7 @@ void __init smp_setup_cpu_maps(void)
- }
- #endif /* CONFIG_SMP */
+--- to-merge.orig/arch/powerpc/kernel/prom.c
++++ to-merge/arch/powerpc/kernel/prom.c
+@@ -1292,6 +1292,11 @@ void __init early_init_devtree(void *par
+ 	lmb_init();
+ 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+ 	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
++
++	/* Save command line for /proc/cmdline and then parse parameters */
++	strlcpy(saved_command_line, cmd_line, COMMAND_LINE_SIZE);
++	parse_early_param();
++
+ 	lmb_enforce_memory_limit(memory_limit);
+ 	lmb_analyze();
  
-+int __initdata do_early_xmon;
- #ifdef CONFIG_XMON
- static int __init early_xmon(char *p)
- {
-@@ -456,7 +457,7 @@ static int __init early_xmon(char *p)
- 			return 0;
- 	}
- 	xmon_init(1);
--	debugger(NULL);
-+	do_early_xmon = 1;
- 
- 	return 0;
- }
-Index: to-merge/arch/powerpc/kernel/setup.h
-===================================================================
---- to-merge.orig/arch/powerpc/kernel/setup.h
-+++ to-merge/arch/powerpc/kernel/setup.h
-@@ -2,5 +2,6 @@
- #define _POWERPC_KERNEL_SETUP_H
- 
- void check_for_initrd(void);
-+extern int do_early_xmon;
- 
- #endif /* _POWERPC_KERNEL_SETUP_H */
 Index: to-merge/arch/powerpc/kernel/setup_32.c
 ===================================================================
 --- to-merge.orig/arch/powerpc/kernel/setup_32.c
 +++ to-merge/arch/powerpc/kernel/setup_32.c
-@@ -296,6 +296,9 @@ void __init setup_arch(char **cmdline_p)
+@@ -131,12 +131,6 @@ void __init machine_init(unsigned long d
+ 	/* Do some early initialization based on the flat device tree */
+ 	early_init_devtree(__va(dt_ptr));
  
- 	parse_early_param();
+-	/* Check default command line */
+-#ifdef CONFIG_CMDLINE
+-	if (cmd_line[0] == 0)
+-		strlcpy(cmd_line, CONFIG_CMDLINE, sizeof(cmd_line));
+-#endif /* CONFIG_CMDLINE */
+-
+ 	probe_machine();
  
-+	if (do_early_xmon)
-+		debugger(NULL);
+ #ifdef CONFIG_6xx
+@@ -237,6 +231,8 @@ void __init setup_arch(char **cmdline_p)
+ {
+ 	extern void do_init_bootmem(void);
+ 
++	*cmdline_p = cmd_line;
 +
- 	/* set up the bootmem stuff with available memory */
- 	do_init_bootmem();
- 	if ( ppc_md.progress ) ppc_md.progress("setup_arch: bootmem", 0x3eab);
+ 	/* so udelay does something sensible, assume <= 1000 bogomips */
+ 	loops_per_jiffy = 500000000 / HZ;
+ 
+@@ -290,12 +286,6 @@ void __init setup_arch(char **cmdline_p)
+ 	init_mm.end_data = (unsigned long) _edata;
+ 	init_mm.brk = klimit;
+ 
+-	/* Save unparsed command line copy for /proc/cmdline */
+-	strlcpy(saved_command_line, cmd_line, COMMAND_LINE_SIZE);
+-	*cmdline_p = cmd_line;
+-
+-	parse_early_param();
+-
+ 	if (do_early_xmon)
+ 		debugger(NULL);
+ 
 Index: to-merge/arch/powerpc/kernel/setup_64.c
 ===================================================================
 --- to-merge.orig/arch/powerpc/kernel/setup_64.c
 +++ to-merge/arch/powerpc/kernel/setup_64.c
-@@ -425,6 +425,9 @@ void __init setup_system(void)
+@@ -420,11 +420,6 @@ void __init setup_system(void)
+ 	 */
+ 	register_early_udbg_console();
  
- 	parse_early_param();
- 
-+	if (do_early_xmon)
-+		debugger(NULL);
-+
- 	check_smt_enabled();
- 	smp_setup_cpu_maps();
+-	/* Save unparsed command line copy for /proc/cmdline */
+-	strlcpy(saved_command_line, cmd_line, COMMAND_LINE_SIZE);
+-
+-	parse_early_param();
+-
+ 	if (do_early_xmon)
+ 		debugger(NULL);
  
