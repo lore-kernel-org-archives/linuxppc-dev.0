@@ -1,36 +1,22 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from ms-smtp-04.nyroc.rr.com (ms-smtp-04.nyroc.rr.com [24.24.2.58])
-	by ozlabs.org (Postfix) with ESMTP id D7C25679F6
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 01:56:42 +1000 (EST)
-Date: Wed, 17 May 2006 11:56:27 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [RFC PATCH 00/09] robust VM per_cpu variables
-In-Reply-To: <Pine.LNX.4.64.0605170846190.13337@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.58.0605171152190.15798@gandalf.stny.rr.com>
-References: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
-	<Pine.LNX.4.64.0605170744360.13021@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.58.0605171104100.13160@gandalf.stny.rr.com>
-	<Pine.LNX.4.64.0605170846190.13337@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
-	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
-	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	benedict.gaster@superh.com, sam@ravnborg.org, bjornw@axis.com,
-	kenneth.w.chen@intel.com, Ingo Molnar <mingo@elte.hu>,
-	kiran@scalex86.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-	grundler@parisc-linux.org, arnd@arndb.de,
-	Rusty Russell <rusty@rustcorp.com.au>, starvik@axis.com,
-	Linus Torvalds <torvalds@osdl.org>,
-	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
-	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
-	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
-	parisc-linux@parisc-linux.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E2C21679F6
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 02:04:47 +1000 (EST)
+In-Reply-To: <9FCDBA58F226D911B202000BDBAD46730626D623@zch01exm40.ap.freescale.net>
+References: <9FCDBA58F226D911B202000BDBAD46730626D623@zch01exm40.ap.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7415A060-C717-4592-92AC-5863002404FC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH/2.6.17-rc4 6/10]  Add  Tundra pci vendor and device ID
+Date: Wed, 17 May 2006 11:04:52 -0500
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
+	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,32 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 17 May 2006, Christoph Lameter wrote:
 
-> On Wed, 17 May 2006, Steven Rostedt wrote:
+On May 17, 2006, at 5:14 AM, Zang Roy-r61911 wrote:
+
+> Add Tundra Semiconductor pci host bridge vendor ID and device ID
 >
-> > OK, now I'm just rambling. I don't know,  have any other ideas on making
-> > this more robust?  Or is this all in vain, and I should spend my evenings
-> > walking around this beautiful town of Karlsruhe ;)
+> Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
+> Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>
+
+Did you guys submit http://pciids.sourceforge.net/ ?
+
+- k
+
+> ---
 >
-> Well I'd like to see a comprehensive solution including a fix for the
-> problems with allocper_cpu() allocations (allocper_cpu has to allocate
-> memory for potential processors... which could be a lot on
-> some types of systems and its allocated somewhere not on the nodes of the
-> processor since they may not yet be online).
-
-OK, now you're beyond what I'm working with ;)  No hot plug CPUs for me.
-Well, at least not yet!
-
+>  include/linux/pci_ids.h |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 >
-> Wish I could be back home in Germany to talk a walk with you. Are you
-> coming to the OLS?
-
-I'm just here on business. Will be back home in the States on Saturday.
-
-Yep, I'll be at OLS.  Hopefully we can get a group together to do some
-brainstorming.
-
-Thanks,
-
--- Steve
+> 14bddf6670ca982d5cee57afa472d2199e2170fc
+> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+> index d6fe048..c39fcfc 100644
+> --- a/include/linux/pci_ids.h
+> +++ b/include/linux/pci_ids.h
+> @@ -2276,3 +2276,7 @@ #define PCI_DEVICE_ID_RME_DIGI32	0x9896
+>  #define PCI_DEVICE_ID_RME_DIGI32_PRO	0x9897
+>  #define PCI_DEVICE_ID_RME_DIGI32_8	0x9898
+>
+> +#define PCI_VENDOR_ID_TUNDRA		0x10e3
+> +#define PCI_DEVICE_ID_TUNDRA_CA91C042	0x0000
+> +#define PCI_DEVICE_ID_TUNDRA_TSI108	0x0108
+> +#define PCI_DEVICE_ID_TUNDRA_TSI109	0xA108
+> -- 
+> 1.3.0
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
