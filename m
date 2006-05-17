@@ -1,13 +1,13 @@
 Return-Path: <rostedt@goodmis.org>
-Received: from ms-smtp-03.nyroc.rr.com (ms-smtp-03.nyroc.rr.com [24.24.2.57])
-	by ozlabs.org (Postfix) with ESMTP id 312DA67C85
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 20:01:06 +1000 (EST)
-Date: Wed, 17 May 2006 06:01:01 -0400 (EDT)
+Received: from ms-smtp-02.nyroc.rr.com (ms-smtp-02.nyroc.rr.com [24.24.2.56])
+	by ozlabs.org (Postfix) with ESMTP id E925267B2D
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 20:01:32 +1000 (EST)
+Date: Wed, 17 May 2006 06:01:26 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC PATCH 07/09] robust VM per_cpu i386 VM area
+Subject: [RFC PATCH 08/09] robust VM per_cpu i386 header
 In-Reply-To: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.58.0605170600250.8408@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.58.0605170601090.8408@gandalf.stny.rr.com>
 References: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -37,32 +37,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch allocates the percpu VM area using the fix addresses.
-It defines currently 1 meg per cpu.
+This patch adds the __ARCH_HAS_VM_PERCPU to i386 and defines
+the PERCPU_START macro.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-Index: linux-2.6.16-test/include/asm-i386/fixmap.h
+Index: linux-2.6.16-test/include/asm-i386/percpu.h
 ===================================================================
---- linux-2.6.16-test.orig/include/asm-i386/fixmap.h	2006-05-17 04:32:27.000000000 -0400
-+++ linux-2.6.16-test/include/asm-i386/fixmap.h	2006-05-17 04:59:34.000000000 -0400
-@@ -32,6 +32,10 @@
- #include <asm/kmap_types.h>
- #endif
+--- linux-2.6.16-test.orig/include/asm-i386/percpu.h	2006-05-17 04:32:27.000000000 -0400
++++ linux-2.6.16-test/include/asm-i386/percpu.h	2006-05-17 05:00:00.000000000 -0400
+@@ -1,6 +1,16 @@
+ #ifndef __ARCH_I386_PERCPU__
+ #define __ARCH_I386_PERCPU__
 
-+/* One meg per cpu of VM space */
-+#define PERCPU_PAGES 256
-+#define PERCPU_SIZE (PERCPU_PAGES << PAGE_SHIFT)
++#ifdef CONFIG_HAS_VM_PERCPU
++#define  __ARCH_HAS_VM_PERCPU
++#include <asm/fixmap.h>
 +
- /*
-  * Here we define all the compile-time 'special' virtual
-  * addresses. The point is to have a constant address at
-@@ -83,6 +87,8 @@ enum fixed_addresses {
- #ifdef CONFIG_PCI_MMCONFIG
- 	FIX_PCIE_MCFG,
- #endif
-+	FIX_PERCPU_BEGIN,
-+	FIX_PERCPU_END = FIX_PERCPU_BEGIN+(PERCPU_PAGES*NR_CPUS)-1,
- 	__end_of_permanent_fixed_addresses,
- 	/* temporary boot-time mappings, used before ioremap() is functional */
- #define NR_FIX_BTMAPS	16
++/*
++ * Virtual address space for the percpu area.
++ */
++#define PERCPU_START (__fix_to_virt(FIX_PERCPU_END))
++#endif /* CONFIG_HAS_VM_PERCPU */
++
+ #include <asm-generic/percpu.h>
+
+ #endif /* __ARCH_I386_PERCPU__ */
