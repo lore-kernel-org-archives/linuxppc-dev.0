@@ -1,17 +1,21 @@
-Return-Path: <xenidis@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.231])
-	by ozlabs.org (Postfix) with ESMTP id DBB10679FB
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 01:11:11 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id i4so246712wra
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 08:11:10 -0700 (PDT)
-Mime-Version: 1.0 (Apple Message framework v750)
-Message-Id: <4025245D-6BAB-41D3-ADB6-2748741F223E@watson.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linuxppc-dev@ozlabs.org
-Subject: [patch] udb_printf() formatting attribute
-Date: Wed, 17 May 2006 11:04:56 -0400
-From: Jimi Xenidis <jimix@pobox.com>
-Sender: Jimi Xenidis <xenidis@gmail.com>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id ECEF1679FB
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 01:35:46 +1000 (EST)
+Date: Wed, 17 May 2006 17:38:00 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [Alsa-devel] [RFC] alsa integer control ranges
+Message-ID: <20060517153800.GA2894@localhost>
+References: <1147780945.29795.110.camel@johannes>
+	<1147791186.13948.109.camel@mindpipe>
+	<1147791315.983.21.camel@johannes>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1147791315.983.21.camel@johannes>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	ALSA development <alsa-devel@alsa-project.org>,
+	Lee Revell <rlrevell@joe-job.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch allows the compiler to catch any printf-like mismatches  
-for udbg_printf().
-After some brute force building I've only found issues with my own  
-code and lparcfg.c
-It could break some developers, but IMHO that would be goodness.
+On Tue, May 16, 2006 at 04:55:15PM +0200, Johannes Berg wrote:
+> On Tue, 2006-05-16 at 10:53 -0400, Lee Revell wrote:
+> 
+> > Ummm... what problem is this patch fixing?
+> 
+> The problems that
+> (a) kmix, gnome-alsamixer, gnome-volume-control and others can't
+>     properly use the playback volume control because it has a range
+>     that doesn't start at 0
 
-Signed-off-by: Jimi Xenidis <jimix@watson.ibm.com>
----
-diff -r 0163968f7fce arch/powerpc/kernel/lparcfg.c
---- a/arch/powerpc/kernel/lparcfg.c	Tue May 16 15:55:19 2006 -0400
-+++ b/arch/powerpc/kernel/lparcfg.c	Wed May 17 10:43:55 2006 -0400
-@@ -521,10 +521,10 @@ static ssize_t lparcfg_write(struct file
-	current_weight = (resource >> 5 * 8) & 0xFF;
--	pr_debug("%s: current_entitled = %lu, current_weight = %lu\n",
-+	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
-		 __FUNCTION__, current_entitled, current_weight);
--	pr_debug("%s: new_entitled = %lu, new_weight = %lu\n",
-+	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
-		 __FUNCTION__, *new_entitled_ptr, *new_weight_ptr);
-	retval = plpar_hcall_norets(H_SET_PPP, *new_entitled_ptr,
-diff -r 0163968f7fce include/asm-powerpc/udbg.h
---- a/include/asm-powerpc/udbg.h	Tue May 16 15:55:19 2006 -0400
-+++ b/include/asm-powerpc/udbg.h	Wed May 17 10:43:55 2006 -0400
-@@ -23,7 +23,8 @@ extern int udbg_read(char *buf, int bufl
-extern int udbg_read(char *buf, int buflen);
-extern void register_early_udbg_console(void);
--extern void udbg_printf(const char *fmt, ...);
-+extern void udbg_printf(const char *fmt, ...)
-+	__attribute__ ((format (printf, 1, 2)));
-extern void udbg_progress(char *s, unsigned short hex);
-extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
+True if you only use kmix, that via 'ps ax' shows up as something like this:
+
+[ ... ] kmix [kdeinit] -caption KMix -icon kmix -miniicon kmix
+
+But if you - separately and additionally - add the "Sound Mixer"
+applet to the KDE kicker (the panel) *plus* make sure you split the
+volume control slider for the "Sound Mixer" channel you have a working
+volume control .. :)
+At least this is how it works here, with 
+"Kmix Panel Applet 2.6 (Using KDE 3.5.2)", and on Debian unstable .. 
+
+If I play with these apps there seem to be glitches, so they do not
+seem to work "properly". But with a bit of fiddling between what KDE
+calls "Sound Mixer" and "Kmix" (both actually seem to be part of the
+same application, i.e. kmix) you should have a working volume slider
+... 
+
+HTH
+
+Best Regards
+Wolfgang
+
+-- 
+Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
