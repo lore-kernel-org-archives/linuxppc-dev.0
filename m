@@ -2,17 +2,17 @@ Return-Path: <jimix@watson.ibm.com>
 Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC9BA679FB
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 04:31:28 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id CE08367B2A
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 04:31:36 +1000 (EST)
 In-Reply-To: <20060517160053.GE10310@localdomain>
 References: <4025245D-6BAB-41D3-ADB6-2748741F223E@watson.ibm.com>
 	<20060517160053.GE10310@localdomain>
 Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E3730607-3FEE-42FD-9963-7AFCE25606C1@watson.ibm.com>
+Message-Id: <2D34BC49-D5FE-437C-9874-F551A5F8CA6A@watson.ibm.com>
 From: Jimi Xenidis <jimix@watson.ibm.com>
 Subject: Re: [patch] udb_printf() formatting attribute
-Date: Wed, 17 May 2006 14:31:19 -0400
+Date: Wed, 17 May 2006 14:30:07 -0400
 To: Nathan Lynch <ntl@pobox.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
