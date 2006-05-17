@@ -1,20 +1,21 @@
 Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 17EB367D53
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 20:14:34 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k4HBU8Jk022909
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 05:30:08 -0600 (MDT)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9D15667E10
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 20:14:44 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k4HAUid4023957
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 03:30:44 -0700 (MST)
 Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
 	[10.192.130.11])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k4HAH6Vp016788
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 05:17:07 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD46730626D625@zch01exm40.ap.freescale.net>
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k4HAQNpQ020065
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 05:26:24 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD46730626D628@zch01exm40.ap.freescale.net>
 From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH/2.6.17-rc4 8/10]  Add  tsi108 8250 serial support
-Date: Wed, 17 May 2006 18:14:27 +0800
+Subject: [PATCH/2.6.17-rc4 10/10]  bugs fix for marvell SATA on powerpc pl
+	atform
+Date: Wed, 17 May 2006 18:14:35 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="gb2312"
@@ -29,111 +30,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch contains changes to the serial device driver specific for integrated
-serial port in Tsi108 Host Bridge.
+Fix Marvell SATA driver bugs on PowerPC platform: 
+SATA device can't work for the problem on little-endian mode.
+U-Boot can't find SATA device after kernel reboots.
 
-Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
-Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>
+Signed-off-by: Hongjun cheng	<hong-jun.chen@reescale.com>
+Signed-off-by: Roy Zang		<tie-fei.zang@freescale.com>
 
 >From nobody Mon Sep 17 00:00:00 2001
 From: roy zang <tie-fei.zang@freescale.com>
-Date: Tue May 16 15:26:02 2006 +0800
-Subject: [PATCH] Add tsi108 serial support
+Date: Tue May 16 15:25:23 2006 +0800
+Subject: [PATCH] Fix bugs on powerpc platform for mv sata driver
 
 ---
 
- drivers/serial/8250.c |   17 +++++++++++++++++
- 1 files changed, 17 insertions(+), 0 deletions(-)
+ drivers/scsi/sata_mv.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
 
-6cb950357e9970afa671d59f172dbc4b03f11560
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index bbf78aa..c12f516 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -723,7 +723,9 @@ static int broken_efr(struct uart_8250_p
- static void autoconfig_16550a(struct uart_8250_port *up)
+d82ac19d259f8487a31105eaf844a93cbd9008e8
+diff --git a/drivers/scsi/sata_mv.c b/drivers/scsi/sata_mv.c
+index d5fdcb9..4166422 100644
+--- a/drivers/scsi/sata_mv.c
++++ b/drivers/scsi/sata_mv.c
+@@ -1032,6 +1032,9 @@ static inline void mv_crqb_pack_cmd(u16 
  {
- 	unsigned char status1, status2;
-+#ifndef CONFIG_TSI108_BRIDGE
- 	unsigned int iersave;
-+#endif
- 
- 	up->port.type = PORT_16550A;
- 	up->capabilities |= UART_CAP_FIFO;
-@@ -833,6 +835,7 @@ static void autoconfig_16550a(struct uar
- 	 * trying to write and read a 1 just to make sure it's not
- 	 * already a 1 and maybe locked there before we even start start.
- 	 */
-+#ifndef CONFIG_TSI108_BRIDGE
- 	iersave = serial_in(up, UART_IER);
- 	serial_outp(up, UART_IER, iersave & ~UART_IER_UUE);
- 	if (!(serial_in(up, UART_IER) & UART_IER_UUE)) {
-@@ -859,6 +862,7 @@ static void autoconfig_16550a(struct uar
- 		DEBUG_AUTOCONF("Couldn't force IER_UUE to 0 ");
- 	}
- 	serial_outp(up, UART_IER, iersave);
+ 	*cmdw = data | (addr << CRQB_CMD_ADDR_SHIFT) | CRQB_CMD_CS |
+ 		(last ? CRQB_CMD_LAST : 0);
++#ifdef CONFIG_PPC
++	*cmdw = cpu_to_le16(*cmdw);
 +#endif
  }
  
- /*
-@@ -1348,7 +1352,12 @@ static irqreturn_t serial8250_interrupt(
- 
- 		up = list_entry(l, struct uart_8250_port, list);
- 
-+#ifdef CONFIG_TSI108_BRIDGE /* for TSI108_REV_Z1 errata U2 */
-+		/* read IIR as part of 32-bit word */
-+		iir = (in_be32((u32 *)(up->port.membase + UART_RX)) >> 8) & 0xff;
-+#else
- 		iir = serial_in(up, UART_IIR);
-+#endif
- 		if (!(iir & UART_IIR_NO_INT)) {
- 			serial8250_handle_port(up, regs);
- 
-@@ -1529,7 +1538,9 @@ static int serial8250_startup(struct uar
+ /**
+@@ -1567,13 +1570,18 @@ static void mv5_read_preamp(struct mv_ho
+ static void mv5_enable_leds(struct mv_host_priv *hpriv, void __iomem *mmio)
  {
- 	struct uart_8250_port *up = (struct uart_8250_port *)port;
- 	unsigned long flags;
-+#ifndef CONFIG_TSI108_BRIDGE
- 	unsigned char lsr, iir;
-+#endif
- 	int retval;
- 
- 	up->capabilities = uart_config[up->port.type].flags;
-@@ -1567,7 +1578,9 @@ #endif
- 	 */
- 	(void) serial_inp(up, UART_LSR);
- 	(void) serial_inp(up, UART_RX);
-+#ifndef CONFIG_TSI108_BRIDGE /* for TSI108_REV_Z1 errata U2 */
- 	(void) serial_inp(up, UART_IIR);
-+#endif
- 	(void) serial_inp(up, UART_MSR);
- 
- 	/*
-@@ -1634,6 +1647,7 @@ #endif
- 
- 	serial8250_set_mctrl(&up->port, up->port.mctrl);
- 
-+#ifndef CONFIG_TSI108_BRIDGE
- 	/*
- 	 * Do a quick test to see if we receive an
- 	 * interrupt when we enable the TX irq.
-@@ -1652,6 +1666,7 @@ #endif
- 	} else {
- 		up->bugs &= ~UART_BUG_TXEN;
- 	}
+ 	u32 tmp;
+-
++#ifndef CONFIG_PPC
+ 	writel(0, mmio + MV_GPIO_PORT_CTL);
 +#endif
  
- 	spin_unlock_irqrestore(&up->port.lock, flags);
+ 	/* FIXME: handle MV_HP_ERRATA_50XXB2 errata */
  
-@@ -1678,7 +1693,9 @@ #endif
- 	 */
- 	(void) serial_inp(up, UART_LSR);
- 	(void) serial_inp(up, UART_RX);
-+#ifndef CONFIG_TSI108_BRIDGE /* for TSI108_REV_Z1 errata U2 */
- 	(void) serial_inp(up, UART_IIR);
+ 	tmp = readl(mmio + MV_PCI_EXP_ROM_BAR_CTL);
++#ifdef CONFIG_PPC
++	tmp &= ~(1 << 0);
++#else	
+ 	tmp |= ~(1 << 0);
 +#endif
- 	(void) serial_inp(up, UART_MSR);
+ 	writel(tmp, mmio + MV_PCI_EXP_ROM_BAR_CTL);
+ }
  
- 	return 0;
 -- 
 1.3.0
