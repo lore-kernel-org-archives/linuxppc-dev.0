@@ -1,19 +1,17 @@
-Return-Path: <roto@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 10B3C679EF
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 08:17:27 +1000 (EST)
-Date: Thu, 18 May 2006 00:19:46 +0200
-From: Wolfgang Pfeiffer <roto@gmx.net>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: snd-aoa status update / automatic driver loading
-Message-ID: <20060517221945.GA2902@localhost>
-References: <1147860564.14395.6.camel@johannes>
-	<20060517215412.GA4504@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060517215412.GA4504@localhost>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH][resend] udbg_printf() formatting attribute
+From: Michael Ellerman <michael@ellerman.id.au>
+To: jimix@watson.ibm.com
+In-Reply-To: <E1FgORv-0001dS-Hu@heater.watson.ibm.com>
+References: <E1FgORv-0001dS-Hu@heater.watson.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-SzcKw9VYBr1Hfw8yA0XD"
+Date: Thu, 18 May 2006 09:36:03 +1000
+Message-Id: <1147908963.7360.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,124 +21,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 17, 2006 at 11:54:12PM +0200, Wolfgang Pfeiffer wrote:
-> 
-> 
-> # lsmod | grep -i snd   [again slightly edited]
-> snd_aoa_codec_onyx     12736  2 
-> snd_aoa_fabric_layout     7716  2 
-> snd_aoa                 8076  2 snd_aoa_codec_onyx,snd_aoa_fabric_layout
-> snd_pcm_oss            45824  0 
-> snd_mixer_oss          19392  1 snd_pcm_oss
-> snd_pcm                89060  2 i2sbus,snd_pcm_oss
-> snd_timer              22468  1 snd_pcm
-> snd_page_alloc          8744  1 snd_pcm
-> soundbus                6436  2 snd_aoa_fabric_layout,i2sbus
-> snd                    60148  12 snd_aoa_codec_onyx,
-> 				 snd_aoa_fabric_layout,snd_aoa,i2sbus,
-> 				 snd_pcm_oss,snd_mixer_oss,snd_pcm,snd_timer
-> soundcore               8612  1 snd
-> 
-> 
-> [do you see modules that are not needed anymore with the new snd-aoa,
-> with the hardware I have?]
 
-Update:
+--=-SzcKw9VYBr1Hfw8yA0XD
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-changed /etc/modules to explicitly load only i2sbus:
+On Wed, 2006-05-17 at 12:00 -0400, jimix@watson.ibm.com wrote:
+> Sorry, Previous patch was munged by MTA.
+>=20
+> This patch allows the compiler to catch any printf-like mismatches for
+> udbg_printf().  After some brute force building I've only found issues
+> with my own code and lparcfg.c It could break some developers, but
+> IMHO that would be goodness.
+>=20
+> Signed-off-by: Jimi Xenidis <jimix@watson.ibm.com>
+>=20
+> ---
+>=20
+> diff -r 0163968f7fce arch/powerpc/kernel/lparcfg.c
+> --- a/arch/powerpc/kernel/lparcfg.c	Tue May 16 15:55:19 2006 -0400
+> +++ b/arch/powerpc/kernel/lparcfg.c	Wed May 17 11:55:21 2006 -0400
+> @@ -521,10 +521,10 @@ static ssize_t lparcfg_write(struct file
+> =20
+>  	current_weight =3D (resource >> 5 * 8) & 0xFF;
+> =20
+> -	pr_debug("%s: current_entitled =3D %lu, current_weight =3D %lu\n",
+> +	pr_debug("%s: current_entitled =3D %lu, current_weight =3D %u\n",
+>  		 __FUNCTION__, current_entitled, current_weight);
+> =20
+> -	pr_debug("%s: new_entitled =3D %lu, new_weight =3D %lu\n",
+> +	pr_debug("%s: new_entitled =3D %lu, new_weight =3D %u\n",
+>  		 __FUNCTION__, *new_entitled_ptr, *new_weight_ptr);
 
---------------------
-# /etc/modules: kernel modules to load at boot time.
-#
-# This file contains the names of kernel modules that should be loaded
-# at boot time, one per line. Lines beginning with "#" are ignored.
+But pr_debug() calls printk, not udbg_printf() ?
 
-apm_emu
-ide-cd
-#ide-disk
-#ide-generic
-sbp2
-i2c-powermac
-#snd-powermac
+cheers
 
-#snd-aoa:
-#soundbus
-i2sbus
-#snd-aoa
-#snd-aoa-fabric-layout
-#snd-aoa-codec-onyx
-# End snd-aoa
+> =20
+>  	retval =3D plpar_hcall_norets(H_SET_PPP, *new_entitled_ptr,
+> diff -r 0163968f7fce include/asm-powerpc/udbg.h
+> --- a/include/asm-powerpc/udbg.h	Tue May 16 15:55:19 2006 -0400
+> +++ b/include/asm-powerpc/udbg.h	Wed May 17 11:55:21 2006 -0400
+> @@ -23,7 +23,8 @@ extern int udbg_read(char *buf, int bufl
+>  extern int udbg_read(char *buf, int buflen);
+> =20
+>  extern void register_early_udbg_console(void);
+> -extern void udbg_printf(const char *fmt, ...);
+> +extern void udbg_printf(const char *fmt, ...)
+> +	__attribute__ ((format (printf, 1, 2)));
+>  extern void udbg_progress(char *s, unsigned short hex);
+> =20
+>  extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
 
-cpufreq_performance
-cpufreq_powersave
-sr_mod
-therm_adt746x
--------------------
+--=20
+Michael Ellerman
+IBM OzLabs
 
-.. which seems enough to load the rest of the needed snd modules:
-After the change above [following op. slightly edited]:
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
----------------------
-# lsmod | grep -i snd
-snd_aoa_codec_onyx     12736  2 
-snd_aoa_fabric_layout     7716  1 
-snd_aoa                 8076  2 snd_aoa_codec_onyx,snd_aoa_fabric_layout
-snd_pcm_oss            45824  0 
-snd_mixer_oss          19392  1 snd_pcm_oss
-snd_pcm                89060  2 i2sbus,snd_pcm_oss
-snd_timer              22468  1 snd_pcm
-snd_page_alloc          8744  1 snd_pcm
-soundbus                6436  2 snd_aoa_fabric_layout,i2sbus
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-snd                    60148  10 snd_aoa_codec_onyx,
-				 snd_aoa_fabric_layout,snd_aoa,i2sbus,
-				 snd_pcm_oss,snd_mixer_oss,snd_pcm,snd_timer
+--=-SzcKw9VYBr1Hfw8yA0XD
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-soundcore               8612  1 snd
+iD8DBQBEa7NjdSjSd0sB4dIRArGgAKCtAU7sdmwPOmlz//W27ORlRy+mwwCfetiT
+vpDyMkqu1MQjwFDTB8i+BGI=
+=2xAS
+-----END PGP SIGNATURE-----
 
----------------------
-
-
-> 
-> 
-> /etc/modules:
-> -------------------------
-> # /etc/modules: kernel modules to load at boot time.
-> #
-> # This file contains the names of kernel modules that should be loaded
-> # at boot time, one per line. Lines beginning with "#" are ignored.
-> 
-> apm_emu
-> ide-cd
-> #ide-disk
-> #ide-generic
-> sbp2
-> i2c-powermac
-> #snd-powermac
-> 
-> #snd-aoa:
-> soundbus
-> i2sbus
-> snd-aoa
-> snd-aoa-fabric-layout
-> snd-aoa-codec-onyx
-> # End snd-aoa
-> 
-> cpufreq_performance
-> cpufreq_powersave
-> sr_mod
-> therm_adt746x
-> 
-> ------------------------
-
-HTH
-
-Regards
-Wolfgang
--- 
-Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
-http://profiles.yahoo.com/wolfgangpfeiffer
-
-Key ID: E3037113
-http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
+--=-SzcKw9VYBr1Hfw8yA0XD--
