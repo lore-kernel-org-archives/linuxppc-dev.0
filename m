@@ -1,19 +1,26 @@
-Return-Path: <trini@kernel.crashing.org>
-Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
-	by ozlabs.org (Postfix) with ESMTP id C57C4679EF
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 07:29:56 +1000 (EST)
-Date: Wed, 17 May 2006 14:29:55 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/5] powerpc: Make early xmon logic immune to location of
-	early parsing
-Message-ID: <20060517212955.GA31362@smtp.west.cox.net>
-References: <1147852841.148164.91320074069.qpush@concordia>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1147852841.148164.91320074069.qpush@concordia>
-Cc: linuxppc-dev@ozlabs.org, Kumar Gala <kumar.gala@freescale.com>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3E504679F3
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 07:42:03 +1000 (EST)
+Subject: Re: [Alsa-devel] [RFC] alsa integer control ranges
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Takashi Iwai <tiwai@suse.de>
+In-Reply-To: <s5hd5ec4yn7.wl%tiwai@suse.de>
+References: <1147780945.29795.110.camel@johannes>
+	<s5h7j4m40kf.wl%tiwai@suse.de>
+	<1147817023.6753.5.camel@localhost.localdomain>
+	<s5hy7x10y5t.wl%tiwai@suse.de> <1147868218.15507.4.camel@johannes>
+	<s5hd5ec4yn7.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Thu, 18 May 2006 07:41:52 +1000
+Message-Id: <1147902112.10703.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	ALSA development <alsa-devel@alsa-project.org>,
+	Benjamin Berg <benjamin@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +30,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, May 17, 2006 at 06:00:41PM +1000, Michael Ellerman wrote:
+On Wed, 2006-05-17 at 14:35 +0200, Takashi Iwai wrote:
 
-> Currently early_xmon() calls directly into debugger() if xmon=early is passed.
-> This ties the invocation of early xmon to the location of parse_early_param(),
-> which might change.
-> 
-> Tested on P5 LPAR and F50.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> The question is where to implement a huge table or a complex
+> conversion function -- whether in the driver or in alsa-lib.
 
-Please no, parse_early_param() is there so things like xmon or kgdb can
-be dropped into as soon as we're able to parse any params that might be
-usable early on.
+The lib of course
 
--- 
-Tom Rini
+Ben.
