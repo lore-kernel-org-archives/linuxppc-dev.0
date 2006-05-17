@@ -1,17 +1,18 @@
-Return-Path: <hugh_dickins@symantec.com>
-Received: from silver.veritas.com (silver.veritas.com [143.127.12.111])
-	by ozlabs.org (Postfix) with ESMTP id AA548679F2
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 03:52:40 +1000 (EST)
-Date: Wed, 17 May 2006 18:42:32 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH] Fix do_mlock so page alignment is to hugepage boundries
-	when needed
-In-Reply-To: <1147885316.26468.15.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0605171840310.14529@blonde.wat.veritas.com>
+Return-Path: <eparis@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id 29EA9679F7
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 04:20:57 +1000 (EST)
+Subject: Re: [PATCH] Fix do_mlock so page alignment is to hugepage
+	boundries when needed
+From: Eric Paris <eparis@redhat.com>
+To: Christoph Lameter <clameter@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0605171020390.13767@schroedinger.engr.sgi.com>
 References: <1147885316.26468.15.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	<Pine.LNX.4.64.0605171020390.13767@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Wed, 17 May 2006 14:20:53 -0400
+Message-Id: <1147890053.26468.22.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
 	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,24 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 17 May 2006, Eric Paris wrote:
-> sys_m{,un}lock and do_mlock all align memory references and the length
-> of the mlock given by userspace to page boundaries.  If the page being
-> mlocked is a hugepage instead of a normal page the start and finish of
-> the mlock will still only be aligned to normal page boundaries.
-> Ultimately upon the process exiting we will eventually call unmap_vmas
-> which will call unmap_hugepage_range for all of the ranges.
-> unmap_hugepage_range checks to make sure the beginning and the end of
-> the range are actually hugepage aligned and if not will BUG().  Since we
-> only aligned to a normal page boundary the end of the first range and
-> the beginning of the second will likely (unless userspace passed of
-> values already hugepage aligned) not be hugepage aligned and thus we
-> bomb.
+On Wed, 2006-05-17 at 10:24 -0700, Christoph Lameter wrote:
+> On Wed, 17 May 2006, Eric Paris wrote:
+> 
+> > --- linux-2.6.16.14/include/asm-sparc64/page.h.paris
+> > +++ linux-2.6.16.14/include/asm-sparc64/page.h
+> > @@ -104,6 +104,8 @@ typedef unsigned long pgprot_t;
+> >  #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
+> >  #define ARCH_HAS_SETCLEAR_HUGE_PTE
+> >  #define ARCH_HAS_HUGETLB_PREFAULT_HOOK
+> > +/* to align the pointer to the (next) page boundary when dealing with hugepages*/
+> > +#define HPAGE_ALIGN(addr)       (((addr)+HPAGE_SIZE-1)&HPAGE_MASK)
+> >  #endif
+> 
+> Could you put the definition of HPAGE_ALIGN into include/linux/hugetlb.h 
+> to avoid modifying all the page.h files?
 
-When did you test this?  It should have been fixed in 2.6.11 onwards
-by split_vma()'s simple:
+I could, I was just following the example of PAGE_ALIGN which was in all
+the page.h files.  But since it really is a nonarch specific hugepage
+only macro maybe that is a better place for it.
 
-	if (is_vm_hugetlb_page(vma) && (addr & ~HPAGE_MASK))
-		return -EINVAL;
+If other results come back positive I'll repost with that change if
+others think it best.
 
-Hugh
+-Eric
