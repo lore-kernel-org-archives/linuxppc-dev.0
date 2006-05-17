@@ -1,38 +1,19 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
-	by ozlabs.org (Postfix) with ESMTP id BCC9667A07
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 03:41:33 +1000 (EST)
-Date: Wed, 17 May 2006 10:40:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH 00/09] robust VM per_cpu variables
-In-Reply-To: <Pine.LNX.4.58.0605171152190.15798@gandalf.stny.rr.com>
-Message-ID: <Pine.LNX.4.64.0605171038160.13767@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.58.0605170547490.8408@gandalf.stny.rr.com>
-	<Pine.LNX.4.64.0605170744360.13021@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.58.0605171104100.13160@gandalf.stny.rr.com>
-	<Pine.LNX.4.64.0605170846190.13337@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.58.0605171152190.15798@gandalf.stny.rr.com>
+Return-Path: <hugh_dickins@symantec.com>
+Received: from silver.veritas.com (silver.veritas.com [143.127.12.111])
+	by ozlabs.org (Postfix) with ESMTP id AA548679F2
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 03:52:40 +1000 (EST)
+Date: Wed, 17 May 2006 18:42:32 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH] Fix do_mlock so page alignment is to hugepage boundries
+	when needed
+In-Reply-To: <1147885316.26468.15.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0605171840310.14529@blonde.wat.veritas.com>
+References: <1147885316.26468.15.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
-	David Mosberger-Tang <davidm@hpl.hp.com>, linux-ia64@vger.kernel.org,
-	Martin Mares <mj@atrey.karlin.mff.cuni.cz>, spyro@f2s.com,
-	Joe Taylor <joe@tensilica.com>, Andi Kleen <ak@suse.de>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	benedict.gaster@superh.com, sam@ravnborg.org, bjornw@axis.com,
-	kenneth.w.chen@intel.com, Ingo Molnar <mingo@elte.hu>,
-	kiran@scalex86.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-	grundler@parisc-linux.org, arnd@arndb.de,
-	Rusty Russell <rusty@rustcorp.com.au>, starvik@axis.com,
-	Linus Torvalds <torvalds@osdl.org>,
-	Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
-	Chris Zankel <chris@zankel.net>, tony.luck@intel.com,
-	LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org,
-	Marc Gauthier <marc@tensilica.com>, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, linux390@de.ibm.com, davem@davemloft.net,
-	parisc-linux@parisc-linux.org
+Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,17 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 17 May 2006, Steven Rostedt wrote:
+On Wed, 17 May 2006, Eric Paris wrote:
+> sys_m{,un}lock and do_mlock all align memory references and the length
+> of the mlock given by userspace to page boundaries.  If the page being
+> mlocked is a hugepage instead of a normal page the start and finish of
+> the mlock will still only be aligned to normal page boundaries.
+> Ultimately upon the process exiting we will eventually call unmap_vmas
+> which will call unmap_hugepage_range for all of the ranges.
+> unmap_hugepage_range checks to make sure the beginning and the end of
+> the range are actually hugepage aligned and if not will BUG().  Since we
+> only aligned to a normal page boundary the end of the first range and
+> the beginning of the second will likely (unless userspace passed of
+> values already hugepage aligned) not be hugepage aligned and thus we
+> bomb.
 
-> > Well I'd like to see a comprehensive solution including a fix for the
-> > problems with allocper_cpu() allocations (allocper_cpu has to allocate
-> > memory for potential processors... which could be a lot on
-> > some types of systems and its allocated somewhere not on the nodes of the
-> > processor since they may not yet be online).
-> 
-> OK, now you're beyond what I'm working with ;)  No hot plug CPUs for me.
-> Well, at least not yet!
+When did you test this?  It should have been fixed in 2.6.11 onwards
+by split_vma()'s simple:
 
-You need to at least consider how this could be handled by the per_cpu 
-memory manangement. The VM thingie with dynamic per cpu memory would allow 
-a fixup of allocpercpu.
+	if (is_vm_hugetlb_page(vma) && (addr & ~HPAGE_MASK))
+		return -EINVAL;
+
+Hugh
