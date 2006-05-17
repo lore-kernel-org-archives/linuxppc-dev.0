@@ -1,21 +1,20 @@
 Return-Path: <tie-fei.zang@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 6147B67C39
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id A3ADE67D43
 	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 20:14:34 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k4HAUXoW023917
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 03:30:33 -0700 (MST)
+	k4HAUYt7023922
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 03:30:34 -0700 (MST)
 Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
 	[10.192.130.11])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k4HAQ9b5021826
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 05:26:10 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD46730626D624@zch01exm40.ap.freescale.net>
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k4HAQDma020038
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 05:26:14 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD46730626D623@zch01exm40.ap.freescale.net>
 From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH/2.6.17-rc4 7/10]  Powerpc: workaround for tsi108 pci confi
-	g read exception
-Date: Wed, 17 May 2006 18:14:23 +0800
+Subject: [PATCH/2.6.17-rc4 6/10]  Add  Tundra pci vendor and device ID
+Date: Wed, 17 May 2006 18:14:21 +0800
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="gb2312"
@@ -30,41 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Workaround for Tundra Semiconductor tsi108 host bridge pci config read
-exception
+Add Tundra Semiconductor pci host bridge vendor ID and device ID
 
 Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
 Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>
 
 ---
 
- arch/powerpc/kernel/traps.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ include/linux/pci_ids.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-0575fbe21e4f1045528bb91ec4b34bb7955c4a92
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 064a525..7468d76 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -262,6 +262,19 @@ #if defined(CONFIG_PPC_PMAC) && defined(
- 		}
- 	}
- #endif /* CONFIG_PPC_PMAC && CONFIG_PPC32 */
-+
-+#ifdef CONFIG_TSI108_BRIDGE
-+	extern void tsi108_clear_pci_cfg_error(void);
-+	const struct exception_table_entry *entry;
-+
-+	/* Are we prepared to handle this fault?  */
-+	if ((entry = search_exception_tables(regs->nip)) != NULL) {
-+		tsi108_clear_pci_cfg_error();
-+		regs->msr |= MSR_RI;
-+		regs->nip = entry->fixup;
-+		return 1;
-+	}
-+#endif /* CONFIG_TSI108_BRIDGE */
- 	return 0;
- }
+14bddf6670ca982d5cee57afa472d2199e2170fc
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index d6fe048..c39fcfc 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2276,3 +2276,7 @@ #define PCI_DEVICE_ID_RME_DIGI32	0x9896
+ #define PCI_DEVICE_ID_RME_DIGI32_PRO	0x9897
+ #define PCI_DEVICE_ID_RME_DIGI32_8	0x9898
  
++#define PCI_VENDOR_ID_TUNDRA		0x10e3
++#define PCI_DEVICE_ID_TUNDRA_CA91C042	0x0000
++#define PCI_DEVICE_ID_TUNDRA_TSI108	0x0108
++#define PCI_DEVICE_ID_TUNDRA_TSI109	0xA108
 -- 
 1.3.0
