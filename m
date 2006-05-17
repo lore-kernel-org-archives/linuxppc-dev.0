@@ -1,20 +1,20 @@
-Return-Path: <eparis@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
-	by ozlabs.org (Postfix) with ESMTP id 29EA9679F7
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 04:20:57 +1000 (EST)
-Subject: Re: [PATCH] Fix do_mlock so page alignment is to hugepage
-	boundries when needed
-From: Eric Paris <eparis@redhat.com>
-To: Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0605171020390.13767@schroedinger.engr.sgi.com>
-References: <1147885316.26468.15.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0605171020390.13767@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Wed, 17 May 2006 14:20:53 -0400
-Message-Id: <1147890053.26468.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
-	linuxppc-dev@ozlabs.org
+Return-Path: <jimix@watson.ibm.com>
+Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BC9BA679FB
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 04:31:28 +1000 (EST)
+In-Reply-To: <20060517160053.GE10310@localdomain>
+References: <4025245D-6BAB-41D3-ADB6-2748741F223E@watson.ibm.com>
+	<20060517160053.GE10310@localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E3730607-3FEE-42FD-9963-7AFCE25606C1@watson.ibm.com>
+From: Jimi Xenidis <jimix@watson.ibm.com>
+Subject: Re: [patch] udb_printf() formatting attribute
+Date: Wed, 17 May 2006 14:31:19 -0400
+To: Nathan Lynch <ntl@pobox.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-05-17 at 10:24 -0700, Christoph Lameter wrote:
-> On Wed, 17 May 2006, Eric Paris wrote:
-> 
-> > --- linux-2.6.16.14/include/asm-sparc64/page.h.paris
-> > +++ linux-2.6.16.14/include/asm-sparc64/page.h
-> > @@ -104,6 +104,8 @@ typedef unsigned long pgprot_t;
-> >  #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
-> >  #define ARCH_HAS_SETCLEAR_HUGE_PTE
-> >  #define ARCH_HAS_HUGETLB_PREFAULT_HOOK
-> > +/* to align the pointer to the (next) page boundary when dealing with hugepages*/
-> > +#define HPAGE_ALIGN(addr)       (((addr)+HPAGE_SIZE-1)&HPAGE_MASK)
-> >  #endif
-> 
-> Could you put the definition of HPAGE_ALIGN into include/linux/hugetlb.h 
-> to avoid modifying all the page.h files?
 
-I could, I was just following the example of PAGE_ALIGN which was in all
-the page.h files.  But since it really is a nonarch specific hugepage
-only macro maybe that is a better place for it.
+On May 17, 2006, at 12:00 PM, Nathan Lynch wrote:
 
-If other results come back positive I'll repost with that change if
-others think it best.
-
--Eric
+> Jimi Xenidis wrote:
+>> This patch allows the compiler to catch any printf-like mismatches
+>> for udbg_printf().
+>> After some brute force building I've only found issues with my own
+>> code and lparcfg.c
+>> It could break some developers, but IMHO that would be goodness.
+>>
+>> Signed-off-by: Jimi Xenidis <jimix@watson.ibm.com>
+>> ---
+>> diff -r 0163968f7fce arch/powerpc/kernel/lparcfg.c
+>> --- a/arch/powerpc/kernel/lparcfg.c	Tue May 16 15:55:19 2006 -0400
+>> +++ b/arch/powerpc/kernel/lparcfg.c	Wed May 17 10:43:55 2006 -0400
+>> @@ -521,10 +521,10 @@ static ssize_t lparcfg_write(struct file
+>> 	current_weight = (resource >> 5 * 8) & 0xFF;
+>> -	pr_debug("%s: current_entitled = %lu, current_weight = %lu\n",
+>> +	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
+>> 		 __FUNCTION__, current_entitled, current_weight);
+>> -	pr_debug("%s: new_entitled = %lu, new_weight = %lu\n",
+>> +	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
+>> 		 __FUNCTION__, *new_entitled_ptr, *new_weight_ptr);
+>> 	retval = plpar_hcall_norets(H_SET_PPP, *new_entitled_ptr,
+>
+> Does this really fix a bug?  What warnings are you able to get gcc to
+> emit?
+>
+My sniff test that resulted in this patch was a manual build of all  
+arch/powerpc dirs with -DDEBUG added to CFLAGS.
+To see these particular warnings simply add a #define DEBUG before  
+the includes of this file you will get:
+.../linux-2.6/arch/powerpc/kernel/lparcfg.c: In function  
+`lparcfg_write':
+.../linux-2.6/arch/powerpc/kernel/lparcfg.c:524: warning: long  
+unsigned int format, different type arg (arg 4)
+.../linux-2.6/arch/powerpc/kernel/lparcfg.c:527: warning: long  
+unsigned int format, different type arg (arg 4)
