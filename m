@@ -1,38 +1,30 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F40C2679EB
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 04:48:32 +1000 (EST)
-Received: from sp1n294en1.watson.ibm.com (sp1n294en1.watson.ibm.com
-	[129.34.20.40])
-	by igw2.watson.ibm.com (8.12.11.20060308/8.13.1/8.13.1-2005-04-25 igw)
-	with ESMTP id k4HImvSE026859
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 14:48:57 -0400
-Received: from sp1n294en1.watson.ibm.com (localhost [127.0.0.1])
-	by sp1n294en1.watson.ibm.com (8.11.7-20030924/8.11.7/01-14-2004_2) with
-	ESMTP id k4HImSH31882
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 14:48:28 -0400
-Received: from mgsmtp00.watson.ibm.com (mgsmtp00.watson.ibm.com [9.2.40.58])
-	by sp1n294en1.watson.ibm.com (8.11.7-20030924/8.11.7/01-14-2004_1) with
-	ESMTP id k4HImR372518
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 14:48:27 -0400
-Received: from kitch0.watson.ibm.com (kitch0.watson.ibm.com [9.2.224.107])
-	by mgsmtp00.watson.ibm.com (8.12.11/8.12.11/2005/09/01) with ESMTP id
-	k4HGqku7028316
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 12:52:46 -0400
-Received: from heater.watson.ibm.com (heater.watson.ibm.com [9.2.222.55])
-	by kitch0.watson.ibm.com (AIX5.1/8.11.6p2/8.11.0/03-06-2002) with ESMTP
-	id k4HFwQm37636
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 May 2006 11:58:26 -0400
-Received: from jimix by heater.watson.ibm.com with local (Exim 4.60)
-	(envelope-from <jimix@watson.ibm.com>) id 1FgORv-0001dS-Hu
-	for linuxppc-dev@ozlabs.org; Wed, 17 May 2006 12:00:35 -0400
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH][resend] udbg_printf() formatting attribute
-Message-Id: <E1FgORv-0001dS-Hu@heater.watson.ibm.com>
-From: jimix@watson.ibm.com
-Date: Wed, 17 May 2006 12:00:35 -0400
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DAF1A679F4
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 05:32:58 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
+References: <878xq51t61.fsf@briny.internal.ondioline.org>
+	<je1wvxo70l.fsf@sykes.suse.de>
+	<1145220233.9833.11.camel@localhost.localdomain>
+	<je7j5phz9j.fsf@sykes.suse.de>
+	<1145231658.9833.17.camel@localhost.localdomain>
+	<je3bgdhwre.fsf@sykes.suse.de>
+	<1145233812.9833.21.camel@localhost.localdomain>
+	<je1wvwfh7s.fsf@sykes.suse.de>
+	<1145307118.3912.11.camel@localhost.localdomain>
+	<1147862072.14395.25.camel@johannes>
+Date: Wed, 17 May 2006 21:32:48 +0200
+In-Reply-To: <1147862072.14395.25.camel@johannes> (Johannes Berg's message of
+	"Wed, 17 May 2006 12:34:32 +0200")
+Message-ID: <je3bf85twf.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,43 +34,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry, Previous patch was munged by MTA.
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-This patch allows the compiler to catch any printf-like mismatches for
-udbg_printf().  After some brute force building I've only found issues
-with my own code and lparcfg.c It could break some developers, but
-IMHO that would be goodness.
+> Andreas, you'll probably be able to get a bit further by inserting the
+> following code in front of the loop in i2sbus-core.c line 162, and
+> removing the of_address_to_resource call inside the loop.
+>
+>   dev->resources[0].start = 0x80010000;
+>   dev->resources[0].end   = 0x80010fff;
+>   dev->resources[1].start = 0x80008000;
+>   dev->resources[1].end   = 0x800080ff;
+>   dev->resources[2].start = 0x80008100;
+>   dev->resources[2].end   = 0x800081ff;
+>
+> But I'm not sure that is correct on all machines (in fact, I'm not
+> perfectly sure it is correct on your machine).
 
-Signed-off-by: Jimi Xenidis <jimix@watson.ibm.com>
+I have the following sound resources in /proc/iomem:
 
----
+        80008000-800083ff : 0.00010000:i2s
+          80008000-800083ff : Sound DMA
+        80010000-80010fff : 0.00010000:i2s
+          80010000-80010fff : Sound Control
 
-diff -r 0163968f7fce arch/powerpc/kernel/lparcfg.c
---- a/arch/powerpc/kernel/lparcfg.c	Tue May 16 15:55:19 2006 -0400
-+++ b/arch/powerpc/kernel/lparcfg.c	Wed May 17 11:55:21 2006 -0400
-@@ -521,10 +521,10 @@ static ssize_t lparcfg_write(struct file
- 
- 	current_weight = (resource >> 5 * 8) & 0xFF;
- 
--	pr_debug("%s: current_entitled = %lu, current_weight = %lu\n",
-+	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
- 		 __FUNCTION__, current_entitled, current_weight);
- 
--	pr_debug("%s: new_entitled = %lu, new_weight = %lu\n",
-+	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
- 		 __FUNCTION__, *new_entitled_ptr, *new_weight_ptr);
- 
- 	retval = plpar_hcall_norets(H_SET_PPP, *new_entitled_ptr,
-diff -r 0163968f7fce include/asm-powerpc/udbg.h
---- a/include/asm-powerpc/udbg.h	Tue May 16 15:55:19 2006 -0400
-+++ b/include/asm-powerpc/udbg.h	Wed May 17 11:55:21 2006 -0400
-@@ -23,7 +23,8 @@ extern int udbg_read(char *buf, int bufl
- extern int udbg_read(char *buf, int buflen);
- 
- extern void register_early_udbg_console(void);
--extern void udbg_printf(const char *fmt, ...);
-+extern void udbg_printf(const char *fmt, ...)
-+	__attribute__ ((format (printf, 1, 2)));
- extern void udbg_progress(char *s, unsigned short hex);
- 
- extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
+I'm not sure whether the first mapping should be split, but I don't know
+much about how resource mappings work.
+
+> After that, you'll probably still not have usable sound though because I
+> know nothing about the layout-id of your machine. If I have support for
+> your codec already, that should be easy though.
+
+The layout id is 36, and it has both line out and headphone, detected as a
+Snapper.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
