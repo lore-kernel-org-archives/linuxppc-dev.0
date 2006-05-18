@@ -1,22 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 282BC679FB
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 17:19:48 +1000 (EST)
-Subject: RE: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
-	448h pc2 (Taiga) platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673062C05CC@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD4673062C05CC@zch01exm40.ap.freescale.net>
-Content-Type: text/plain
-Date: Thu, 18 May 2006 17:19:41 +1000
-Message-Id: <1147936781.17679.103.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 7B4EB679FB
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 17:22:03 +1000 (EST)
+Date: Thu, 18 May 2006 17:21:26 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: the iSeries vio lan driver changed device type
+Message-Id: <20060518172126.01b9d977.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+So the IOMMU table building code needs to match.
 
-> Well , should I register this data to a platform device or the Ethernet 
-> driver get the information from device-tree directly?
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
 
-You probably want to define a bus structure (/soc might work even if
-it's not strictly a /soc) or use of_platform device to link a
-device-tree node to a driver instance. You can create as many nodes as
-you have devices and provide all the additional infos you need including
-interrupt routing via the device-tree.
+ arch/powerpc/kernel/vio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Ben.
+This patch is relative to the four iSeries vio patches I sent on Moday.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+af5dbd2219106b6ce52b075485fca3c2a08cec58
+diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+index ac5c7bf..b559cbd 100644
+--- a/arch/powerpc/kernel/vio.c
++++ b/arch/powerpc/kernel/vio.c
+@@ -71,7 +71,7 @@ static struct iommu_table *vio_build_iom
+ {
+ #ifdef CONFIG_PPC_ISERIES
+ 	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
+-		if (strcmp(dev->type, "vlan") == 0)
++		if (strcmp(dev->type, "network") == 0)
+ 			return &veth_iommu_table;
+ 		return &vio_iommu_table;
+ 	} else
+-- 
+1.3.1.ge923
