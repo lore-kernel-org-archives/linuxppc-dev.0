@@ -1,18 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17517.2088.150094.338667@cargo.ozlabs.ibm.com>
-Date: Fri, 19 May 2006 09:50:00 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: Re: [RFC/PATCH] Make powerpc64 use __thread for per-cpu variables
-In-Reply-To: <20060510.171127.42619262.davem@davemloft.net>
-References: <20060510154702.GA28938@twiddle.net>
-	<17506.29128.591758.502430@cargo.ozlabs.ibm.com>
-	<17506.31456.68099.57515@cargo.ozlabs.ibm.com>
-	<20060510.171127.42619262.davem@davemloft.net>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, amodra@bigpond.net, rth@twiddle.net
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 182B267A65
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 09:53:17 +1000 (EST)
+In-Reply-To: <1147988040.2692.40.camel@basalt.austin.ibm.com>
+References: <1147988040.2692.40.camel@basalt.austin.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1F39785F-7897-4820-9A67-07448CAD9DC6@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch] fix RTC/NVRAM accesses on Maple
+Date: Fri, 19 May 2006 01:53:05 +0200
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David S. Miller writes:
+> +	isa_ranges[0] = 0x1;
+> +	isa_ranges[1] = 0x0;
+> +	isa_ranges[2] = 0x0;
+> +	isa_ranges[3] = 0x0;
+> +	isa_ranges[4] = 0x0;
+> +	isa_ranges[5] = 0x00010000;
+> +	prom_setprop(isa, "/ht@0/isa@4", "ranges",
+> +		     isa_ranges, sizeof(isa_ranges));
 
-> If you have to hide the operation so deeply like this, maybe you can
-> do something similar to sparc64, by explicitly doing the per-cpu fixed
-> register and offsets, and still get the single instruction relocs that
-> powerpc can do for up to 64K by doing something like:
-> 
-> 	&per_cpu_blah - &per_cpu_base
-> 
-> to calculate the offset.
+isa_ranges[2] = 0x01002000;
 
-I don't know how to tell gcc that (&per_cpu_blah - &per_cpu_base) is a
-quantity that the linker can compute and that will fit into a 16-bit
-offset.  If I use an inline asm, then I have to generate the address
-and let gcc dereference it, because __get_cpu_var is used both as an
-lvalue and an rvalue.  That means two instructions where one would
-suffice.  So there doesn't seem to be a way to get the optimal code,
-unless the gcc folks are willing to add a -fkernel or something for
-us. :)
+isa_ranges[5] looks suspicious as well; the value you put in
+means that *no* (16-bit, which is all that 8111 supports) legacy
+I/O sits on any other than the LPC bus; so no 8111 ATA support,
+for example.
 
-Paul.
+Showing only I/O ranges in the "ranges" property means that no
+devices below the "isa" node sit on memory space; is that true
+for the Maple device tree?  (The node for the flash chip,
+specifically, if it exists in their tree at all).  If not, I'll
+dig out the proper "ranges" value for it tomorrow (it depends on
+hardware settings on their SIO chip, I have no idea what they
+set it to right now :-) ).
+
+I'm sure this all works for your kernel right now, but if you're
+fixing up, let's fix it properly :-)
+
+
+Segher
