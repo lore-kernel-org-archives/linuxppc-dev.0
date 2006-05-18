@@ -1,14 +1,26 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 515F667A00
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 18:03:02 +1000 (EST)
-Date: Thu, 18 May 2006 10:03:01 +0200 (MEST)
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 1F2BA67A00
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 18:05:21 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k4I8PCtt014056
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 01:25:12 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k4I85IFb000558
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 03:05:19 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD4673062C07EC@zch01exm40.ap.freescale.net>
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
+	448h pc2 (Taiga) platform
+Date: Thu, 18 May 2006 16:05:16 +0800
 MIME-Version: 1.0
-Subject: mm/rmap.c incompatible with ppc/kernel/dma-mapping.c?
-Message-ID: <32470.1147939381@www074.gmx.net>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,49 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-Since I managed to compile in not cache coherent DMA support in the AmigaOne
-Linux kernel, the system crashes whenever I try to view a movie for example
-in totem or VLC. The following log snipped is the only debug information I
-could extract, because most of the time the system hard locks  and can only
-be reactivated with a hardware reset.
-
-May 12 00:04:17 localhost kernel: kernel BUG in page_add_file_rmap at
-mm/rmap.c:387!
-May 12 00:04:17 localhost kernel: Oops: Exception in kernel mode, sig: 5
-[#1]
-May 12 00:04:17 localhost kernel: NIP: C004968C LR: C0044CB8 SP: D2C77E20
-REGS: d2c77d70 TRAP: 0700    Not tainted
-May 12 00:04:17 localhost kernel: MSR: 00029032 EE: 1 PR: 0 FP: 0 ME: 1
-IR/DR: 11
-May 12 00:04:17 localhost kernel: TASK = d4918000[2900] 'totem' THREAD:
-d2c76000Last syscall: 246
-May 12 00:04:17 localhost kernel: GPR00: 00000001 D2C77E20 D4918000 C0D02720
-00000000 D27B02A0 02000000 D4FE4400
-May 12 00:04:17 localhost kernel: GPR08: C03D0000 38139785 00000000 38139785
-24048444 10054698 00000000 10171158
-May 12 00:04:17 localhost kernel: GPR16: 00000000 00000000 0EADDD7C 00015F90
-000001F6 315B1970 33CA8000 D4D6BBA0
-May 12 00:04:17 localhost kernel: GPR24: 00000000 00000000 02000000 D4B7D33C
-33CA8000 C0D02720 38139785 D2888220
-May 12 00:04:17 localhost kernel: NIP [c004968c] page_add_file_rmap+0x8/0x78
-May 12 00:04:17 localhost kernel: LR [c0044cb8] do_no_page+0x1cc/0x37c
-May 12 00:04:17 localhost kernel: Call trace:
-May 12 00:04:17 localhost kernel:  [c004503c] handle_mm_fault+0xf4/0x174
-May 12 00:04:17 localhost kernel:  [c0012100] do_page_fault+0x140/0x398
-May 12 00:04:17 localhost kernel:  [c0008178] handle_page_fault+0xc/0x80
-
-I tested this with kernel 2.6.8 and 2.6.14.2. Both show the same behavior.
-Is this a known problem on PPC systems with desktop CPUs? What about others 
-PPC boards that have 6xx/7xxx cpus and not cache coherent northbridges?
-
-Thanks in advance!
-
-regards,
-
-Gerhard
-
--- 
-Echte DSL-Flatrate dauerhaft für 0,- Euro*!
-"Feel free" mit GMX DSL! http://www.gmx.net/de/go/dsl
+> 
+> > The tsi108 serial port is not a sub node of "soc".  well, any way,
+> > I can try soc!
+> 
+> What is it ? Where is it ? "soc" is a bit of a generic name for
+> something in the device-tree in fact... we might want to 
+> define a way to
+> expose any bus via some kind of soc mecanism even if it's not a root
+> bus.
+> 
+> 
+Should I just use add_legacy_soc_port() instead of a new function
+add_legacy_tsi_port()?
+--- arch/powerpc/kernel/legacy_serial.c.orig	Thu May 18 15:35:19 2006
++++ arch/powerpc/kernel/legacy_serial.c	Thu May 18 15:50:38 2006
+@@ -302,6 +302,17 @@ void __init find_legacy_serial_ports(voi
+ 		of_node_put(isa);
+ 	}
+ 
++	/* First fill our array with tsi-bridge ports */
++	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16550")) != NULL;) {
++		struct device_node *tsi = of_get_parent(np);
++		if (tsi && !strcmp(tsi->type, "tsi-bridge")) {
++			index = add_legacy_soc_port(np, np);
++			if (index >= 0 && np == stdout)
++				legacy_serial_console = index;
++		}
++		of_node_put(tsi);
++	}
++	
+ #ifdef CONFIG_PCI
+ 	/* Next, try to locate PCI ports */
+ 	for (np = NULL; (np = of_find_all_nodes(np));) 
