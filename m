@@ -1,20 +1,30 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 784B967B28
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 22:22:31 +1000 (EST)
-In-Reply-To: <1147908963.7360.1.camel@localhost.localdomain>
-References: <E1FgORv-0001dS-Hu@heater.watson.ibm.com>
-	<1147908963.7360.1.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg=pgp-sha1; boundary="Apple-Mail-7--3476992"
-Message-Id: <34FAC3E5-F717-4640-B094-312C8773852E@watson.ibm.com>
-From: Jimi Xenidis <jimix@watson.ibm.com>
-Subject: Re: [PATCH][resend] udbg_printf() formatting attribute
-Date: Thu, 18 May 2006 08:22:10 -0400
-To: michael@ellerman.id.au
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 25EFC67A3F
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 22:48:28 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
+References: <878xq51t61.fsf@briny.internal.ondioline.org>
+	<je1wvxo70l.fsf@sykes.suse.de>
+	<1145220233.9833.11.camel@localhost.localdomain>
+	<je7j5phz9j.fsf@sykes.suse.de>
+	<1145231658.9833.17.camel@localhost.localdomain>
+	<je3bgdhwre.fsf@sykes.suse.de>
+	<1145233812.9833.21.camel@localhost.localdomain>
+	<je1wvwfh7s.fsf@sykes.suse.de>
+	<1145307118.3912.11.camel@localhost.localdomain>
+	<1147862072.14395.25.camel@johannes> <je3bf85twf.fsf@sykes.suse.de>
+	<1147948758.15507.52.camel@johannes>
+Date: Thu, 18 May 2006 14:48:22 +0200
+In-Reply-To: <1147948758.15507.52.camel@johannes> (Johannes Berg's message of
+	"Thu, 18 May 2006 12:39:18 +0200")
+Message-ID: <jek68jqz1l.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,49 +35,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---Apple-Mail-7--3476992
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-
-On May 17, 2006, at 7:36 PM, Michael Ellerman wrote:
-
-> On Wed, 2006-05-17 at 12:00 -0400, jimix@watson.ibm.com wrote:
->> -	pr_debug("%s: current_entitled = %lu, current_weight = %lu\n",
->> +	pr_debug("%s: current_entitled = %lu, current_weight = %u\n",
->>  		 __FUNCTION__, current_entitled, current_weight);
->>
->> -	pr_debug("%s: new_entitled = %lu, new_weight = %lu\n",
->> +	pr_debug("%s: new_entitled = %lu, new_weight = %u\n",
->>  		 __FUNCTION__, *new_entitled_ptr, *new_weight_ptr);
+> On Wed, 2006-05-17 at 21:32 +0200, Andreas Schwab wrote:
 >
-> But pr_debug() calls printk, not udbg_printf() ?
+>> I have the following sound resources in /proc/iomem:
+>> 
+>>         80008000-800083ff : 0.00010000:i2s
+>>           80008000-800083ff : Sound DMA
+>>         80010000-80010fff : 0.00010000:i2s
+>>           80010000-80010fff : Sound Control
+>> 
+>> I'm not sure whether the first mapping should be split, but I don't know
+>> much about how resource mappings work.
+>
+> That looks like you have snd-powermac loaded
 
-Now _thats_ funny!
-Then I'm so happy to have found and fixed this compiler warning :)
+Yes, that's while I had that loaded.  Of course, I unloaded it before I
+tried snd-aoa.
 
->> -extern void udbg_printf(const char *fmt, ...);
->> +extern void udbg_printf(const char *fmt, ...)
->> +	__attribute__ ((format (printf, 1, 2)));
+>> The layout id is 36, and it has both line out and headphone, detected as a
+>> Snapper.
+>
+> Hmm. What's that again? tas3004 or 3001? I'll look at the OSX layout
+> file.
 
-I believe this chunk is still goodness as it will catch format issues  
-for developers.
--JX
+I think it's a tas3004.
 
---Apple-Mail-7--3476992
-content-type: application/pgp-signature; x-mac-type=70674453;
-	name=PGP.sig
-content-description: This is a digitally signed message part
-content-disposition: inline; filename=PGP.sig
-content-transfer-encoding: 7bit
+Andreas.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (Darwin)
-
-iD8DBQFEbGb4d/h5j14PFR4RAqZZAKCvNEzUMSl0jkbZfDX7AkbltSPcMgCeI90D
-WuONACQnXwPlSrl4ivETdMs=
-=7i7B
------END PGP SIGNATURE-----
-
---Apple-Mail-7--3476992--
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
