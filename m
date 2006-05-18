@@ -1,21 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EE2C767A79
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 09:38:37 +1000 (EST)
-In-Reply-To: <7cb1293c0605181456p3c1726e2n56942dfbd4217f70@mail.gmail.com>
-References: <7cb1293c0605181456p3c1726e2n56942dfbd4217f70@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DACD852C-7C2C-47DD-A02C-D7EE3720C37D@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: PPC host with a PCI root-complex
-Date: Fri, 19 May 2006 01:38:25 +0200
-To: "Srinivas Murthy" <codevana@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17517.2088.150094.338667@cargo.ozlabs.ibm.com>
+Date: Fri, 19 May 2006 09:50:00 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: Re: [RFC/PATCH] Make powerpc64 use __thread for per-cpu variables
+In-Reply-To: <20060510.171127.42619262.davem@davemloft.net>
+References: <20060510154702.GA28938@twiddle.net>
+	<17506.29128.591758.502430@cargo.ozlabs.ibm.com>
+	<17506.31456.68099.57515@cargo.ozlabs.ibm.com>
+	<20060510.171127.42619262.davem@davemloft.net>
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org, amodra@bigpond.net, rth@twiddle.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> We have a ppc host with a PCI root-complex across which there are  
-> multiple PCI end points.
->
-> An application running on the ppc host reading one of the device  
-> memory regions (not DMA access but direct CPU read) causes a parity  
-> error on the PCI interface controller.
->
-> We think that the error should be propagated up as a machine-check  
-> which is considered a non-recoverable system-wide error. However  
-> with multiple PCI devices present we think that this is too generic  
-> and could be reduced to be a critical-error which could be  
-> recovered from.
->
-> Are there any other approaches/thoughts keeping in mind that this  
-> is PPC host and we're running a PCI-rootcomplex interface?
+David S. Miller writes:
 
-You can handle the machine check in a platform-specific way --
-see ppc_md.machine_check_exception().
+> If you have to hide the operation so deeply like this, maybe you can
+> do something similar to sparc64, by explicitly doing the per-cpu fixed
+> register and offsets, and still get the single instruction relocs that
+> powerpc can do for up to 64K by doing something like:
+> 
+> 	&per_cpu_blah - &per_cpu_base
+> 
+> to calculate the offset.
 
+I don't know how to tell gcc that (&per_cpu_blah - &per_cpu_base) is a
+quantity that the linker can compute and that will fit into a 16-bit
+offset.  If I use an inline asm, then I have to generate the address
+and let gcc dereference it, because __get_cpu_var is used both as an
+lvalue and an rvalue.  That means two instructions where one would
+suffice.  So there doesn't seem to be a way to get the optimal code,
+unless the gcc folks are willing to add a -fkernel or something for
+us. :)
 
-Segher
+Paul.
