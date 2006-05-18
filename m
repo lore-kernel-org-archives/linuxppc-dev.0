@@ -1,19 +1,20 @@
-Return-Path: <joern@wohnheim.fh-wedel.de>
-Received: from wohnheim.fh-wedel.de (wohnheim.fh-wedel.de [213.39.233.138])
-	by ozlabs.org (Postfix) with ESMTP id 3215567A45
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 03:41:31 +1000 (EST)
-Date: Thu, 18 May 2006 19:41:12 +0200
-From: =?iso-8859-1?Q?J=F6rn?= Engel <joern@wohnheim.fh-wedel.de>
-To: Heiko J Schick <schihei@de.ibm.com>
-Subject: Re: [PATCH 01/16] ehca: module infrastructure
-Message-ID: <20060518174112.GB26113@wohnheim.fh-wedel.de>
-References: <4468BD39.3010008@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <4468BD39.3010008@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 3460A67A64
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 04:15:29 +1000 (EST)
+Date: Thu, 18 May 2006 20:17:48 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: snd-aoa status update / automatic driver loading
+Message-ID: <20060518181748.GA2836@localhost>
+References: <1147860564.14395.6.camel@johannes>
+	<20060517215412.GA4504@localhost> <20060517221945.GA2902@localhost>
+	<1147947192.15507.40.camel@johannes>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1147947192.15507.40.camel@johannes>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,86 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 15 May 2006 19:41:13 +0200, Heiko J Schick wrote:
-> + *  This source code is distributed under a dual license of GPL v2.0 and 
-> OpenIB
+On Thu, May 18, 2006 at 12:13:12PM +0200, Johannes Berg wrote:
+> On Thu, 2006-05-18 at 00:19 +0200, Wolfgang Pfeiffer wrote:
+> 
+> > changed /etc/modules to explicitly load only i2sbus:
+> 
+> Even that should not be necessary.
 
-Your mailer is still mangling long lines, it seems.  If you need a
-quick solution, I could offer you a gmail invite.
+True. Just tested it (i.e. booted the machine) with this /etc/modules file:
 
-> +
-> +	EDEB_EX(7, "ret=%x", ret);
-> +
-> +	return ret;
-> +
-> +create_aqp1:
-> +	ib_destroy_cq(sport->ibcq_aqp1);
-> +
-> +	EDEB_EX(7, "ret=%x", ret);
-> +
-> +	return ret;
-> +}
+----------------
+# /etc/modules: kernel modules to load at boot time.
+#
+# This file contains the names of kernel modules that should be loaded
+# at boot time, one per line. Lines beginning with "#" are ignored.
 
-Those two cases could be combined with a goto.  Saves a tiny amount of
-rodata.
+apm_emu
+ide-cd
+#ide-disk
+#ide-generic
+sbp2
+i2c-powermac
+#snd-powermac
 
-> +#define EHCA_RESOURCE_ATTR(name)                                           
-> \
-> +static ssize_t  ehca_show_##name(struct device *dev,                       
-> \
+#snd-aoa:
+#soundbus
+#i2sbus
+#snd-aoa
+#snd-aoa-fabric-layout
+#snd-aoa-codec-onyx
+# End snd-aoa
 
-You have spaces instead of tabs in the lines the mailer mangled.
+cpufreq_performance
+cpufreq_powersave
+sr_mod
+therm_adt746x
 
-> +                                                                           
-> \
-> +	data = rblock->name;                                               \
-> +	kfree(rblock);                                                     \
-> +									   \
-> +	if ((strcmp(#name, "num_ports") == 0) && (ehca_nr_ports == 1))	   \
-> +		return snprintf(buf, 256, "1\n");			   \
-> +	else								   \
-> +		return snprintf(buf, 256, "%d\n", data);		   \
-> +									   \
+-----------------
 
-Is rblock->num_ports uninitialized when (ehca_nr_ports == 1)?  Looks
-rather odd.
+And this is lsmod, after booting with he file above (op. slightly
+edited for better readability):
 
-> +	shca = (struct ehca_shca *)ib_alloc_device(sizeof(*shca));
+# lsmod | grep snd
 
-A quick grep showed that every single return value of
-ib_alloc_device() has a cast.
-Roland, can't you just change ib_alloc_device() to return void*?
+snd_aoa_codec_onyx     12736  2 
+snd_aoa_fabric_layout     7716  1 
+snd_aoa                 8076  2 snd_aoa_codec_onyx,snd_aoa_fabric_layout
+snd_pcm_oss            45824  0 
+snd_mixer_oss          19392  1 snd_pcm_oss
+snd_pcm                89060  2 i2sbus,snd_pcm_oss
+snd_timer              22468  1 snd_pcm
+snd_page_alloc          8744  1 snd_pcm
+soundbus                6436  2 snd_aoa_fabric_layout,i2sbus
+snd                    60148  10 snd_aoa_codec_onyx,
+				 snd_aoa_fabric_layout,snd_aoa,i2sbus,
+				 snd_pcm_oss,snd_mixer_oss,snd_pcm,snd_timer
+soundcore               8612  1 snd
 
-> +static struct of_device_id ehca_device_table[] =
-> +{
-> +	{
-> +		.name       = "lhca",
-> +		.compatible = "IBM,lhca",
-> +	},
-> +	{},
-> +};
 
-Is the extra element needed?
+BTW: Is there a way to let 'alsaconf' detect the soundcard on this
+PB5,8 ?
+So far that's impossible, as it seems. But this could also be
+related to mistakes I made in my modules files, or wherever.
 
-> +	if ((ret = ehca_create_slab_caches(&ehca_module))) {
-> +		EDEB_ERR(4, "Cannot create SLAB caches");
-> +		ret = -ENOMEM;
-> +		goto module_init1;
-> +	}
+That's why I changed a few files today below /etc/modprobe.d/ and
+/etc/modutils/ that still had a few instances calling snd-powermac:
+I simply replaced 'snd-powermac' with i2sbus resp. (IIRC)
+snd-aoa. To no avail so far: alsaconf still does not detect any
+soundcard .. 
 
-	ret = try_something()
-	if (ret) {
-		...
-	}
+Status quo:
 
-> +	ehca_module.timer.data = (unsigned long)(void*)&ehca_module;
+$ grep -irs i2sbus /etc/         
+/etc/modprobe.d/alsa-base:install i2sbus /sbin/modprobe --ignore-install i2sbus $CMDLINE_OPTS && /lib/alsa/modprobe-post-install i2sbus
+/etc/modprobe.d/sound:alias snd-card-0 i2sbus
+/etc/modutils/alsa-base:post-install i2sbus /lib/alsa/modprobe-post-install i2sbus
 
-Why the double cast?
+Anything wrong up there?
 
-Jörn
+Best Regards
+Wolfgang
+
 
 -- 
-Fancy algorithms are slow when n is small, and n is usually small.
-Fancy algorithms have big constants. Until you know that n is
-frequently going to be big, don't get fancy.
--- Rob Pike
+Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
