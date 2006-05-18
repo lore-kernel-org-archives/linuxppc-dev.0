@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA03E67A60
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 11:03:24 +1000 (EST)
-Subject: Re: [PATCH/2.6.17-rc4 10/10]  bugs fix for marvell SATA on powerpc
-	pl atform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD46730626D628@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD46730626D628@zch01exm40.ap.freescale.net>
-Content-Type: text/plain
-Date: Thu, 18 May 2006 11:03:17 +1000
-Message-Id: <1147914197.10703.70.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao06.cox.net (fed1rmmtao06.cox.net [68.230.241.33])
+	by ozlabs.org (Postfix) with ESMTP id A976367A45
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 11:08:28 +1000 (EST)
+Date: Wed, 17 May 2006 18:08:26 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/5] powerpc: Make early xmon logic immune to location of
+	early parsing
+Message-ID: <20060518010826.GO22868@smtp.west.cox.net>
+References: <1147852841.148164.91320074069.qpush@concordia>
+	<20060517212955.GA31362@smtp.west.cox.net>
+	<1147910586.7360.8.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1147910586.7360.8.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-05-17 at 18:14 +0800, Zang Roy-r61911 wrote:
-> Fix Marvell SATA driver bugs on PowerPC platform: 
-> SATA device can't work for the problem on little-endian mode.
-> U-Boot can't find SATA device after kernel reboots.
+On Thu, May 18, 2006 at 10:03:05AM +1000, Michael Ellerman wrote:
+> On Wed, 2006-05-17 at 14:29 -0700, Tom Rini wrote:
+> > On Wed, May 17, 2006 at 06:00:41PM +1000, Michael Ellerman wrote:
+> > 
+> > > Currently early_xmon() calls directly into debugger() if xmon=early is passed.
+> > > This ties the invocation of early xmon to the location of parse_early_param(),
+> > > which might change.
+> > > 
+> > > Tested on P5 LPAR and F50.
+> > > 
+> > > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > 
+> > Please no, parse_early_param() is there so things like xmon or kgdb can
+> > be dropped into as soon as we're able to parse any params that might be
+> > usable early on.
+> 
+> Sure, did you read the rest of the series? I want to parse parameters
+> eariler, so early that xmon isn't ready to run when we parse them, so I
+> have to defer jumping into xmon until after xmon is initialised. The net
+> effect on when xmon runs is zero. Or did I miss your point?
 
-As Kumar says -> Jeff is the maintainer. But I do have a couple of
-comments still...
+My point would be that xmon should either be fixed to work that early or
+parse things a bit later as a regular param.  I know the current system
+is flawed but I really don't like the idea (especially as a comaintainer
+of kgdb) of having to do a special plug here or there for one param
+because we parse early stuff too early, but regular stuff not early
+enough (which is why Andrew Morton got me to poke at the early param
+stuff a while back and then I think Rusty did something better, or
+something along those lines, anyhow).
 
-> @@ -1032,6 +1032,9 @@ static inline void mv_crqb_pack_cmd(u16 
->  {
->  	*cmdw = data | (addr << CRQB_CMD_ADDR_SHIFT) | CRQB_CMD_CS |
->  		(last ? CRQB_CMD_LAST : 0);
-> +#ifdef CONFIG_PPC
-> +	*cmdw = cpu_to_le16(*cmdw);
-> +#endif
->  }
+I'm just trying to avoid getting back into the situation we had before
+parse_early_param().
 
-Why an ifdef here ? The cpu_to_le16 should probably be unconditional.
-And even if for some weird reason you wanted to ifdef it, why PPC ? and
-what about other BE architectures ?
- 
->  /**
-> @@ -1567,13 +1570,18 @@ static void mv5_read_preamp(struct mv_ho
->  static void mv5_enable_leds(struct mv_host_priv *hpriv, void __iomem *mmio)
->  {
->  	u32 tmp;
-> -
-> +#ifndef CONFIG_PPC
->  	writel(0, mmio + MV_GPIO_PORT_CTL);
-> +#endif
-
-You'll have to do better here too... I don't wee why when compiled on
-PPC, this driver should "magically" not clear those bits... At the very
-least, you should test the machine type if you want to do something
-specific to your platform, but first, you'll have to convince Jeff why
-this change has to be done in the first place and if there is a better
-way to handle it.
-
->  	/* FIXME: handle MV_HP_ERRATA_50XXB2 errata */
->  
->  	tmp = readl(mmio + MV_PCI_EXP_ROM_BAR_CTL);
-> +#ifdef CONFIG_PPC
-> +	tmp &= ~(1 << 0);
-> +#else	
->  	tmp |= ~(1 << 0);
-> +#endif
->  	writel(tmp, mmio + MV_PCI_EXP_ROM_BAR_CTL);
->  }
-
-Looks to me like the initial code was bogus, thus the #ifdef shouldn't
-be necessary neither, and even if it was, an ifdef CONFIG_PPC would be
-the wrong approach for what I think should be ovious enough reasons...
-
-Ben.
+-- 
+Tom Rini
