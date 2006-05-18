@@ -1,19 +1,27 @@
-Return-Path: <markc@mail.com>
-Received: from smtp1.us4.outblaze.com (smtp1.us4.outblaze.com [205.158.62.78])
-	by ozlabs.org (Postfix) with SMTP id 6EE4A67B3F
+Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
+Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
+	[131.188.3.181]) by ozlabs.org (Postfix) with ESMTP id C66F267B4D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 May 2006 00:22:26 +1000 (EST)
-Message-ID: <009401c67a86$79463b50$6401a8c0@CHUCK2>
-From: "Mark Chambers" <markc@mail.com>
-To: "Gosiuua" <gosiuua@gmail.com>,
-	<linuxppc-embedded@ozlabs.org>
-References: <ee10e9f40605180640g12a2671bo530c3ccbba8b3829@mail.gmail.com>
-	<ee10e9f40605180656q58f989bcg562b48d765afdba5@mail.gmail.com>
-Subject: Re: About BDI2000 and mpc8247
-Date: Thu, 18 May 2006 10:22:18 -0400
+	Fri, 19 May 2006 00:33:33 +1000 (EST)
+Received: from fau-vscan-1.rrze.uni-erlangen.de ([131.188.3.181]
+	[131.188.3.181]) by faurelaysmart-1.rrze.uni-erlangen.de with
+	ESMTP for linuxppc-embedded@ozlabs.org;
+	Thu, 18 May 2006 16:32:51 +0200
+Received: from max71.rrze.uni-erlangen.de ([131.188.3.181])
+	by fau-vscan-1.rrze.uni-erlangen.de (fau-vscan-1.rrze.uni-erlangen.de
+	[131.188.2.91]) (amavisd-new)
+	with ESMTP id 09847-09 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 May 2006 16:32:51 +0200 (MEST)
+Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
+	smtp-auth.uni-erlangen.de with ESMTP for
+	linuxppc-embedded@ozlabs.org; Thu, 18 May 2006 16:32:51 +0200
+Message-Id: <446C8593.1070603@cs.fau.de>
+Date: Thu, 18 May 2006 16:32:51 +0200
+From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+To: linuxppc-embedded@ozlabs.org
+Subject: MPC8xx USB SOF microcode patch
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +33,14 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
+Hello,
 
-> Hello List..
-> 
-> i have a develop board based on mpc8247. It has no eeprom to restore
-> hareware configure word and i have to use default config word
-> 0x00000000.
-> my bdi config file:
-> 
-<snip>
-> - Waiting for target stop failed
-> - TARGET: Break at boot vector failed, freeze forced
-> /*****/
-> 
-> 
-> BDI can't bread the CPU and i don't know what can i do!
-> Any one can help me?
-> _______________________________________________
+I am using linux 2.6.15 and try to get the MPC875 USB controller 
+working. I just checked if the microcode patch in 
+arch/ppc/8xx_io/micropatch.c for CONFIG_USB_SOF_UCODE_PATCH set 
+corresponds with the newest microcode patch for mpc8xx, downloadable 
+from freescale: They differ slighly, is it an older (working) version or 
+where is it from ?
 
-I have had the same issue.  You need lines similar to the following
-in your bdi config file to stop the watchdog timer.  Then you will
-need other lines to set various registers to match your hardware
-bus widths, etc.
-
-[INIT]
-; init core register
-WREG    MSR             0x00001042      ;MSR  : ME,RI, exceptions high
-WM32    0x000101a8 0xf0000000 ;move internal space 
-WM32 0xf0010004 0xFFFFFFC1 ;SYPCR: disable watchdog
-
-Mark C.
+ciao
+josef
