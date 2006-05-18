@@ -1,30 +1,30 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <laurent.pinchart@tbox.biz>
+Received: from outmx021.isp.belgacom.be (outmx021.isp.belgacom.be
+	[195.238.4.202])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31AB267A3D
+	by ozlabs.org (Postfix) with ESMTP id DC7EA67A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 May 2006 03:08:41 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1FgPVY-0007vb-3o
-	for linuxppc-embedded@ozlabs.org; Wed, 17 May 2006 19:08:24 +0200
-Received: from icarus.icarus.com ([64.105.89.2])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 17 May 2006 19:08:24 +0200
-Received: from steve by icarus.icarus.com with local (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Wed, 17 May 2006 19:08:24 +0200
-To: linuxppc-embedded@ozlabs.org
-From: Stephen Williams <steve@icarus.com>
-Subject: Re: Bigphysarea vs. kernel 2.4.32 and PPC405GPr
-Date: Wed, 17 May 2006 10:07:57 -0700
-Message-ID: <e4fl9d$rka$1@sea.gmane.org>
-References: <e435rv$62q$1@sea.gmane.org> <200605150835.48745.jgeissel@gmx.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-In-Reply-To: <200605150835.48745.jgeissel@gmx.net>
-Sender: news <news@sea.gmane.org>
+	Thu, 18 May 2006 22:32:38 +1000 (EST)
+Received: from outmx021.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx021.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k4ICWVJp009969
+	for <linuxppc-embedded@ozlabs.org>; Thu, 18 May 2006 14:32:31 +0200
+	(envelope-from <laurent.pinchart@tbox.biz>)
+Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
+	[194.78.198.49])
+	by outmx021.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k4ICWSD4009936
+	for <linuxppc-embedded@ozlabs.org>; Thu, 18 May 2006 14:32:28 +0200
+	(envelope-from <laurent.pinchart@tbox.biz>)
+From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: I2C bus issues on MPC8248
+Date: Thu, 18 May 2006 14:33:58 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200605181433.58481.laurent.pinchart@tbox.biz>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,52 +35,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi everybody,
 
-That works nicely, thanks. I was under the mistaken impression that
-the bigphysarea routines returned a physical address.
+I'm trying to use the MPC8248 hardware I2C bus in a 2.6.16 kernel. The mailing 
+list archives mention a driver for the MPC8260 
+(http://ozlabs.org/pipermail/linuxppc-embedded/2006-May/022837.html) which I 
+modified to reflect the memory map differences between the MPC8260 and the 
+MPC8248, as mentionned in the e-mail.
 
-So now I can report that the bigphysarea patch works great on PPC
-kernels 2.4.32+
+The good news is that the driver works. The bad news is that it doesn't work 
+correctly.
 
-Arno Geissel wrote:
-> Try
-> 
->       rc = remap_page_range(vma->vm_start,
->  			    virt_to_phys(heap_map_base),
->  			    npages*PAGE_SIZE,
->  			    vma->vm_page_prot);
-> 
-> Arno
-> 
->> I'm trying to use the bigphysarea patch to help me allocate big
->> physical chunks of memory for use by some custom embedded devices.
->> I've applied the bigphysarea-2.4.20 patch and built, no trouble,
->> and I've got it to config for my PPC. I can see at boot time that
->> the bigphysarea is getting its pages.
->>
->> I'm trying to use a mmap call to the driver to map a chunk of this
->> memory into the process. The mmap for the driver has this:
->>
->>       pgprot_val(vma->vm_page_prot) |= _PAGE_NO_CACHE;
->>       vma->vm_flags |= VM_RESERVED;
->>
->>       npages = (vma->vm_end - vma->vm_start) / PAGE_SIZE;
->>       heap_map_base = bigphysarea_alloc_pages(npages, 1, GFP_KERNEL);
->>
->>       printk("XXXX Map base=%p, %ld pages\n", heap_map_base, npages);
->>
->>       rc = remap_page_range(vma->vm_start,
->> 			    (unsigned long)heap_map_base,
->> 			    npages*PAGE_SIZE,
->> 			    vma->vm_page_prot);
->>
->> The mmap returns without an error, but any access to the mapped
->> region gets me an immediate "Oops: machine check, sig: 7". I don't
->> see it. Where is the stupid mistake that I'm invariably making?
+The Linux I2C layer probes the I2C bus for peripherals when drivers are 
+loaded. The probing function writes a single byte with the device address and 
+check if the data is acked. I monitored the SCL and SDA lines using an 
+oscilloscope, and found out that 5 bytes are written to the device (address + 
+4 data bytes) instead of a single one. The first 4 bytes are acked, the last 
+isn't. After further investigation, I found out that the cpm_iic_write() 
+function in drivers/i2c/busses/i2c-mpc8260.c fills two buffer descriptors, 
+the second one having cbd_datlen set to zero:
 
+tbdf[0].cbd_bufaddr = __pa(tb);
+tbdf[0].cbd_datlen = 1;
+tbdf[0].cbd_sc = BD_SC_READY | BD_IIC_START;
 
--- 
-Steve Williams                "The woods are lovely, dark and deep.
-steve at icarus.com           But I have promises to keep,
-http://www.icarus.com         and lines to code before I sleep,
-http://www.picturel.com       And lines to code before I sleep."
+tbdf[1].cbd_bufaddr = __pa(buf);
+tbdf[1].cbd_datlen = count;
+tbdf[1].cbd_sc = BD_SC_READY | BD_SC_INTRPT | BD_SC_LAST | BD_SC_WRAP;
+
+Still, 5 bytes are sent on the bus. I suspected a CPM bug when cbd_datlen is 
+equal to zero, so I modified the first buffer descriptor to set the 
+BD_SC_LAST in cbd_sc when count is zero:
+
+tbdf[0].cbd_bufaddr = __pa(tb);
+tbdf[0].cbd_datlen = 1;
+tbdf[0].cbd_sc = count ? BD_SC_READY | BD_IIC_START :
+                 BD_SC_READY | BD_IIC_START | BD_SC_INTRPT |
+                 BD_SC_LAST | BD_SC_WRAP;
+
+Using that code, no data is sent on the bus, the BD_SC_READY bit is never 
+cleared and no interrupt is generated. Once again I suspected a CPM bug when 
+writing a single byte on the bus, so I increased cbd_datlen to 2:
+
+tbdf[0].cbd_bufaddr = __pa(tb);
+tbdf[0].cbd_datlen = 2;
+tbdf[0].cbd_sc = count ? BD_SC_READY | BD_IIC_START :
+                 BD_SC_READY | BD_IIC_START | BD_SC_INTRPT |
+                 BD_SC_LAST | BD_SC_WRAP;
+
+This worked, and two bytes were written on the bus, leading me to believe that 
+the CPM was at fault.
+
+Has anyone noticed the same behaviour ? Is there a workaround available ? I 
+tried searching Freescale's website for CPM microcode updates but haven't 
+found anything related to the I2C controller.
+
+Laurent Pinchart
