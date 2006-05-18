@@ -1,28 +1,19 @@
-Return-Path: <agl@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1EC1C679F6
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 01:24:08 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k4IFO55K019628
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 11:24:05 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k4IFO5kO235890
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 11:24:05 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k4IFO5uZ027668
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 11:24:05 -0400
-Subject: [RFD] Hugetlb: Allowing hugetlb regions to be closed
-From: Adam Litke <agl@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Thu, 18 May 2006 10:23:58 -0500
-Message-Id: <1147965839.24029.229.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH][resend] udbg_printf() formatting attribute
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Jimi Xenidis <jimix@watson.ibm.com>
+In-Reply-To: <34FAC3E5-F717-4640-B094-312C8773852E@watson.ibm.com>
+References: <E1FgORv-0001dS-Hu@heater.watson.ibm.com>
+	<1147908963.7360.1.camel@localhost.localdomain>
+	<34FAC3E5-F717-4640-B094-312C8773852E@watson.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-mfhCpqm0V/VLTuLqdxDx"
+Date: Fri, 19 May 2006 01:56:45 +1000
+Message-Id: <1147967806.8469.10.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: libhugetlbfs-devel@lists.sourceforge.net
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,26 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Please correct me if I am wrong in any of the following...
 
-On powerpc, once a region of the address space has been 'opened' for use
-with hugetlb pages this region can never again contain normal pages for
-the remaining life of the process -- even if all hugetlb mappings have
-been unmapped from this region.
+--=-mfhCpqm0V/VLTuLqdxDx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The above approach is nice and simple, but a bit restrictive too.  Would
-people be opposed to a patch which provides methods for closing low/high
-hugetlb areas and logic in arch_get_unmapped_area() to perform the
-closing?  My thought would be to try closing only in the full_search:
-case (so the fast path is left untouched.
+On Thu, 2006-05-18 at 08:22 -0400, Jimi Xenidis wrote:
+> On May 17, 2006, at 7:36 PM, Michael Ellerman wrote:
+>=20
+> > On Wed, 2006-05-17 at 12:00 -0400, jimix@watson.ibm.com wrote:
+> >> -	pr_debug("%s: current_entitled =3D %lu, current_weight =3D %lu\n",
+> >> +	pr_debug("%s: current_entitled =3D %lu, current_weight =3D %u\n",
+> >>  		 __FUNCTION__, current_entitled, current_weight);
+> >>
+> >> -	pr_debug("%s: new_entitled =3D %lu, new_weight =3D %lu\n",
+> >> +	pr_debug("%s: new_entitled =3D %lu, new_weight =3D %u\n",
+> >>  		 __FUNCTION__, *new_entitled_ptr, *new_weight_ptr);
+> >
+> > But pr_debug() calls printk, not udbg_printf() ?
+>=20
+> Now _thats_ funny!
+> Then I'm so happy to have found and fixed this compiler warning :)
 
-As for why I want this... I have an application (libhugetlbfs), which
-provides hugetlb pages to applications in an abstracted manner.  There
-are situations where the library creates a hugetlb area and needs to
-later replace it with normal pages.  The main case this will happen is
-for a hugetlb-backed malloc area.  
+Haha, nice one Jimi :D
 
-Thoughts?
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+> >> -extern void udbg_printf(const char *fmt, ...);
+> >> +extern void udbg_printf(const char *fmt, ...)
+> >> +	__attribute__ ((format (printf, 1, 2)));
+>=20
+> I believe this chunk is still goodness as it will catch format issues =20
+> for developers.
+
+I'm actually hoping to get rid of udbg_printf(), but if I can't we
+should stick this in I guess. The real problem IMHO is that debug
+printks rot because they're rarely compiled, not sure what to do about
+that.
+
+cheers
+
+--=20
+Michael Ellerman
+IBM OzLabs
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-mfhCpqm0V/VLTuLqdxDx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.2.2 (GNU/Linux)
+
+iD8DBQBEbJk9dSjSd0sB4dIRAnz+AJwPxuBsvAW0KrTCdznsBcCARvOpBwCdF0r+
+EgAhJHlIRaoXYQJWR2J8b68=
+=WoTg
+-----END PGP SIGNATURE-----
+
+--=-mfhCpqm0V/VLTuLqdxDx--
