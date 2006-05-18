@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 271D867A44
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 10:56:40 +1000 (EST)
-Subject: Re: [PATCH/2.6.17-rc4 7/10]  Powerpc: workaround for tsi108 pci
-	confi g read exception
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD46730626D624@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD46730626D624@zch01exm40.ap.freescale.net>
-Content-Type: text/plain
-Date: Thu, 18 May 2006 10:56:32 +1000
-Message-Id: <1147913792.10703.61.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 4F0E167A5F
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 10:59:25 +1000 (EST)
+Date: Thu, 18 May 2006 03:01:44 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: snd-aoa status update / automatic driver loading
+Message-ID: <20060518010144.GC2902@localhost>
+References: <1147860564.14395.6.camel@johannes>
+	<20060517215412.GA4504@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060517215412.GA4504@localhost>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com
+	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,46 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-05-17 at 18:14 +0800, Zang Roy-r61911 wrote:
-> Workaround for Tundra Semiconductor tsi108 host bridge pci config read
-> exception
+On Wed, May 17, 2006 at 11:54:12PM +0200, Wolfgang Pfeiffer wrote:
 
-Use ppc_md.machine_check_exception instead of modifying the generic
-traps.c. Also make sure you can't configure your chip not to issue
-machine checks on target/master aborts on config space accesses....
+> 
+> 4:
+> 
+> I can hear two sound files at the same time: Didn't work at the first
+> try. I then installed again /etc/asound.conf, that I copied from my
+> old ti-IV-Book (Not being sure tho' whether this really is such a good
+> idea .... : 
 
-Ben.
+And the file below wasn't written by me. Not sure tho' where I found it
+once   ...
 
-> Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
-> Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>
 > 
-> ---
+> -------------------------------
+> pcm.!default {
+> 	type plug
+> 	slave.pcm asymer
+> }
 > 
->  arch/powerpc/kernel/traps.c |   13 +++++++++++++
->  1 files changed, 13 insertions(+), 0 deletions(-)
+> pcm.dmixer {
+> 	type dmix
+> 	ipc_key 1977
+> 	ipc_perm 666
+> #	ipc_key_add_uid true
+> 	slowptr true
+> 	slave {
+> 		pcm "hw:0"
+
+> [ ... ]
+
+> 	capture_ports {
+> 		0 alsa_pcm:capture_1
+> 		1 alsa_pcm:capture_2
+> 	}
+> }
 > 
-> 0575fbe21e4f1045528bb91ec4b34bb7955c4a92
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 064a525..7468d76 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -262,6 +262,19 @@ #if defined(CONFIG_PPC_PMAC) && defined(
->  		}
->  	}
->  #endif /* CONFIG_PPC_PMAC && CONFIG_PPC32 */
-> +
-> +#ifdef CONFIG_TSI108_BRIDGE
-> +	extern void tsi108_clear_pci_cfg_error(void);
-> +	const struct exception_table_entry *entry;
-> +
-> +	/* Are we prepared to handle this fault?  */
-> +	if ((entry = search_exception_tables(regs->nip)) != NULL) {
-> +		tsi108_clear_pci_cfg_error();
-> +		regs->msr |= MSR_RI;
-> +		regs->nip = entry->fixup;
-> +		return 1;
-> +	}
-> +#endif /* CONFIG_TSI108_BRIDGE */
->  	return 0;
->  }
->  
+> # These are for alsa-oss
+> pcm.dsp0 pcm.default
+> ctl.mixer0 "hw:0"
+> ------------------------------
+
+Wolfgang
+
+-- 
+Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
