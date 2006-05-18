@@ -1,24 +1,19 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 5AAF267A0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 16:57:21 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k4I77SHC012297
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 00:07:28 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k4I6vGpJ005270
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 01:57:18 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673062C05CC@zch01exm40.ap.freescale.net>
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kumar Gala
-	<galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6CB2A67A75
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 16:59:33 +1000 (EST)
 Subject: RE: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
 	448h pc2 (Taiga) platform
-Date: Thu, 18 May 2006 14:57:12 +0800
-MIME-Version: 1.0
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673062C0563@zch01exm40.ap.freescale.net>
+References: <9FCDBA58F226D911B202000BDBAD4673062C0563@zch01exm40.ap.freescale.net>
 Content-Type: text/plain
+Date: Thu, 18 May 2006 16:59:24 +1000
+Message-Id: <1147935564.17679.91.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com,
 	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
@@ -31,32 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
-> On Wed, 2006-05-17 at 08:45 -0500, Kumar Gala wrote:
-> 
-> > > +#ifdef TSI108_ETH
-> > > +hw_info hw_info_table[TSI108_ETH_MAX_PORTS + 1] = {
-> > > +	{TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET,
-> > > +	 TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET,
-> > > +	 TSI108_PHY0_ADDR, IRQ_TSI108_GIGE0},
-> > > +
-> > > +	{TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET + 0x400,
-> > > +	 TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET,
-> > > +	 TSI108_PHY1_ADDR, IRQ_TSI108_GIGE1},
-> > > +
-> > > +	{TBL_END, TBL_END, TBL_END, TBL_END}
-> > > +};
-> > > +#endif
-> > 
-> > This table looks problematic.  Look at using something like a  
-> > platform device.
-> 
-> Bzzzt ... wrong answer :) That's a textbook example of stuff 
-> that should
-> be provided via the device-tree.
-> 
-> 
 
-Well , should I register this data to a platform device or the Ethernet 
-driver get the information from device-tree directly?
-Roy
+> The tsi108 serial port is not a sub node of "soc".  well, any way,
+> I can try soc!
+
+What is it ? Where is it ? "soc" is a bit of a generic name for
+something in the device-tree in fact... we might want to define a way to
+expose any bus via some kind of soc mecanism even if it's not a root
+bus.
