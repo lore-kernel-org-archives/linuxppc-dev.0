@@ -1,19 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH][resend] udbg_printf() formatting attribute
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Jimi Xenidis <jimix@watson.ibm.com>
-In-Reply-To: <34FAC3E5-F717-4640-B094-312C8773852E@watson.ibm.com>
-References: <E1FgORv-0001dS-Hu@heater.watson.ibm.com>
-	<1147908963.7360.1.camel@localhost.localdomain>
-	<34FAC3E5-F717-4640-B094-312C8773852E@watson.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-mfhCpqm0V/VLTuLqdxDx"
-Date: Fri, 19 May 2006 01:56:45 +1000
-Message-Id: <1147967806.8469.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8BFAF67A00
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 02:00:54 +1000 (EST)
+Message-ID: <446C9219.4080300@pobox.com>
+Date: Thu, 18 May 2006 11:26:17 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH/2.6.17-rc4 10/10]  bugs fix for marvell SATA on powerp
+	c pl atform
+References: <9FCDBA58F226D911B202000BDBAD46730626DE6E@zch01exm40.ap.freescale.net>
+	<1147935734.17679.93.camel@localhost.localdomain>
+In-Reply-To: <1147935734.17679.93.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Alexandre.Bounine@tundra.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,64 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Benjamin Herrenschmidt wrote:
+> On Thu, 2006-05-18 at 12:03 +0800, Zang Roy-r61911 wrote:
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: 2006年5月17日 21:28
+>> To: Zang Roy-r61911
+>> Cc: Paul Mackerras; linuxppc-dev list; Alexandre.Bounine@tundra.com; Yang Xin-Xin-r48390
+>> Subject: Re: [PATCH/2.6.17-rc4 10/10] bugs fix for marvell SATA on powerpc pl atform
+> 
+> Copying here the comments I already made so Jeff gets them...
+> 
+>> @@ -1032,6 +1032,9 @@ static inline void mv_crqb_pack_cmd(u16 
+>>  {
+>>       *cmdw = data | (addr << CRQB_CMD_ADDR_SHIFT) | CRQB_CMD_CS |
+>>               (last ? CRQB_CMD_LAST : 0);
+>> +#ifdef CONFIG_PPC
+>> +     *cmdw = cpu_to_le16(*cmdw);
+>> +#endif
+>>  }
+> 
+> Why an ifdef here ? The cpu_to_le16 should probably be unconditional.
+> And even if for some weird reason you wanted to ifdef it, why PPC ? and
+> what about other BE architectures ?
+>  
+>>  /**
+>> @@ -1567,13 +1570,18 @@ static void mv5_read_preamp(struct mv_ho
+>>  static void mv5_enable_leds(struct mv_host_priv *hpriv, void __iomem
+> *mmio)
+>>  {
+>>       u32 tmp;
+>> -
+>> +#ifndef CONFIG_PPC
+>>       writel(0, mmio + MV_GPIO_PORT_CTL);
+>> +#endif
+> 
+> You'll have to do better here too... I don't wee why when compiled on
+> PPC, this driver should "magically" not clear those bits... At the very
+> least, you should test the machine type if you want to do something
+> specific to your platform, but first, you'll have to convince Jeff why
+> this change has to be done in the first place and if there is a better
+> way to handle it.
 
---=-mfhCpqm0V/VLTuLqdxDx
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Correct...  it does seem some bugs were found, but #ifdef powerpc is 
+certainly out of the question.  We want the driver to work without 
+ifdefs on all platforms.
 
-On Thu, 2006-05-18 at 08:22 -0400, Jimi Xenidis wrote:
-> On May 17, 2006, at 7:36 PM, Michael Ellerman wrote:
->=20
-> > On Wed, 2006-05-17 at 12:00 -0400, jimix@watson.ibm.com wrote:
-> >> -	pr_debug("%s: current_entitled =3D %lu, current_weight =3D %lu\n",
-> >> +	pr_debug("%s: current_entitled =3D %lu, current_weight =3D %u\n",
-> >>  		 __FUNCTION__, current_entitled, current_weight);
-> >>
-> >> -	pr_debug("%s: new_entitled =3D %lu, new_weight =3D %lu\n",
-> >> +	pr_debug("%s: new_entitled =3D %lu, new_weight =3D %u\n",
-> >>  		 __FUNCTION__, *new_entitled_ptr, *new_weight_ptr);
-> >
-> > But pr_debug() calls printk, not udbg_printf() ?
->=20
-> Now _thats_ funny!
-> Then I'm so happy to have found and fixed this compiler warning :)
-
-Haha, nice one Jimi :D
-
-> >> -extern void udbg_printf(const char *fmt, ...);
-> >> +extern void udbg_printf(const char *fmt, ...)
-> >> +	__attribute__ ((format (printf, 1, 2)));
->=20
-> I believe this chunk is still goodness as it will catch format issues =20
-> for developers.
-
-I'm actually hoping to get rid of udbg_printf(), but if I can't we
-should stick this in I guess. The real problem IMHO is that debug
-printks rot because they're rarely compiled, not sure what to do about
-that.
-
-cheers
-
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-mfhCpqm0V/VLTuLqdxDx
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
-
-iD8DBQBEbJk9dSjSd0sB4dIRAnz+AJwPxuBsvAW0KrTCdznsBcCARvOpBwCdF0r+
-EgAhJHlIRaoXYQJWR2J8b68=
-=WoTg
------END PGP SIGNATURE-----
-
---=-mfhCpqm0V/VLTuLqdxDx--
+	Jeff
