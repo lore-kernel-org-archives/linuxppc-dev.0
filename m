@@ -1,22 +1,23 @@
-Return-Path: <dean@bong.com.au>
-Received: from aramaki.bong.com.au (aramaki.bong.com.au [203.91.232.99])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CF2FA67A04
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 10:39:55 +1000 (EST)
-Message-ID: <446BC258.1070302@bong.com.au>
-Date: Thu, 18 May 2006 10:39:52 +1000
-From: Dean Hamstead <dean@bong.com.au>
-MIME-Version: 1.0
-To: Wolfgang Pfeiffer <roto@gmx.net>
-Subject: Re: snd-aoa status update / automatic driver loading
-References: <1147860564.14395.6.camel@johannes>
-	<20060517215412.GA4504@localhost> <446BA3FF.5050308@bong.com.au>
-	<20060518002800.GB2902@localhost>
-In-Reply-To: <20060518002800.GB2902@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+	by ozlabs.org (Postfix) with ESMTP id AFEE867A3E
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 10:41:18 +1000 (EST)
+Subject: Re: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for
+	mpc7448h pc2 (Taiga) platform
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <AF039DA5-BAED-4646-904A-18BE025989AD@kernel.crashing.org>
+References: <9FCDBA58F226D911B202000BDBAD46730626D619@zch01exm40.ap.freescale.net>
+	<AF039DA5-BAED-4646-904A-18BE025989AD@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 18 May 2006 10:41:07 +1000
+Message-Id: <1147912867.10703.42.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Alexandre.Bounine@tundra.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-they are running about a 30 min test with a variety of
-audio and so forth so test for distortion.
+On Wed, 2006-05-17 at 08:45 -0500, Kumar Gala wrote:
 
-they are hoping people will use oss and alsa, as well
-as oss emulation and report back on what worked and what
-didnt etc
+> > +#ifdef TSI108_ETH
+> > +hw_info hw_info_table[TSI108_ETH_MAX_PORTS + 1] = {
+> > +	{TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET,
+> > +	 TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET,
+> > +	 TSI108_PHY0_ADDR, IRQ_TSI108_GIGE0},
+> > +
+> > +	{TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET + 0x400,
+> > +	 TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET,
+> > +	 TSI108_PHY1_ADDR, IRQ_TSI108_GIGE1},
+> > +
+> > +	{TBL_END, TBL_END, TBL_END, TBL_END}
+> > +};
+> > +#endif
+> 
+> This table looks problematic.  Look at using something like a  
+> platform device.
 
-Dean
-
-Wolfgang Pfeiffer wrote:
-> On Thu, May 18, 2006 at 08:30:23AM +1000, Dean Hamstead wrote:
->> perhaps a comprehensive sound test would be in order, akin perhaps to 
->> the one the winehq chaps are doing right now
-> 
-> Not being sure if I got that one ... :)
-> 
-> Regards
-> Wolfgang
-> 
+Bzzzt ... wrong answer :) That's a textbook example of stuff that should
+be provided via the device-tree.
