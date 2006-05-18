@@ -1,26 +1,21 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 8CF1267A64
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 20:49:15 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k4IB96SK023777
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 04:09:06 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k4IAnC1U000472
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 05:49:13 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673062C0AD2@zch01exm40.ap.freescale.net>
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
-	448h pc2 (Taiga) platform
-Date: Thu, 18 May 2006 18:49:10 +0800
+Return-Path: <hugh_dickins@symantec.com>
+Received: from gold.veritas.com (gold.veritas.com [143.127.12.110])
+	by ozlabs.org (Postfix) with ESMTP id A642667A65
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 21:13:56 +1000 (EST)
+Date: Thu, 18 May 2006 12:13:50 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH] Fix do_mlock so page alignment is to hugepage boundries
+	when needed
+In-Reply-To: <1147895964.26468.35.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0605181151120.6559@blonde.wat.veritas.com>
+References: <1147885316.26468.15.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0605171840310.14529@blonde.wat.veritas.com>
+	<1147895964.26468.35.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: discuss@x86-64.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,32 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
-> On Thu, 2006-05-18 at 18:21 +0800, Zang Roy-r61911 wrote:
-> >  > On Thu, 2006-05-18 at 15:12 +0800, Zang Roy-r61911 wrote:
-> > > > > I'm not repeating Kumar's comments about that CONFIG_7xxx 
-> > > > > thing and that
-> > > > > 7xxx/ directory, it should all go.
-> > > > > 
-> > > > 
-> > > > Should I move my code to embedded6xx?
-> > > 
-> > > Probably for now yes.
-> > 
-> > I can migrate my code to embedded6xx technically. In fact, 
-> > I can move it into anywhere in the arch/powerpc/platforms. 
-> > While for mpc7448hpc2(taiga) board, it is not a embedded 
-> > application board. It is a high performance server! It seems
-> > odd to put code there :). What's your opinion?
+On Wed, 17 May 2006, Eric Paris wrote:
 > 
-> I think we should do a platform/generic for boards that don't 
-> need more
-> than a single platform file, which I think will be the case 
-> once we are
-> done with your port ;)
-> 
-> Ben.
-> 
-> 
-I will implement my board port as early as I can  
-according to the feedback :).
+> This patch still solves the problem of the kernel currently being more
+> restrictive on what we accept from userspace for the length of the mlock
+> if it is a hugepage rather than a regular page.  With a regular page we
+> will round the value from userspace and happily go about our business of
+> mlocking.  For a hugepage it just rejects it if userspace doesn't align
+> it themselves.  This allows the kernel to do the same work for hugepages
+> that it does for normal pages.
+
+You do have a point that there's an inconsistency there.  But we could
+argue a long time what's inconsistent with what - I'd say it's mlock
+being inconsistent with mprotect, munmap, msync, madvise, etc.  I
+don't see an outright reason to change from the current behaviour.
+
+You do realize that there's almost no point in mlocking a hugepage area
+anyway?  (I wrote that first without the "almost", but now with hugepage
+faulting, it does provide another way to fault in all the pages at once.)
+
+Hugh
