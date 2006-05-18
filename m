@@ -1,24 +1,29 @@
-Return-Path: <liml@rtr.ca>
-Received: from mail.rtr.ca (rtr.ca [64.26.128.89])
-	by ozlabs.org (Postfix) with ESMTP id DE43667A3F
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 07:37:05 +1000 (EST)
-Message-ID: <446CE900.9070802@rtr.ca>
-Date: Thu, 18 May 2006 17:37:04 -0400
-From: Mark Lord <liml@rtr.ca>
-MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH/2.6.17-rc4 10/10]  bugs fix for marvell SATA on powerp
-	c pl atform
-References: <9FCDBA58F226D911B202000BDBAD46730626DE6E@zch01exm40.ap.freescale.net>
-	<1147935734.17679.93.camel@localhost.localdomain>
-	<446C9219.4080300@pobox.com> <446CDE26.8090504@rtr.ca>
-	<446CE217.2070703@pobox.com>
-In-Reply-To: <446CE217.2070703@pobox.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Alexandre.Bounine@tundra.com, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 50F21679FC
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 07:49:39 +1000 (EST)
+Subject: Re: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <jek68jqz1l.fsf@sykes.suse.de>
+References: <878xq51t61.fsf@briny.internal.ondioline.org>
+	<je1wvxo70l.fsf@sykes.suse.de>
+	<1145220233.9833.11.camel@localhost.localdomain>
+	<je7j5phz9j.fsf@sykes.suse.de>
+	<1145231658.9833.17.camel@localhost.localdomain>
+	<je3bgdhwre.fsf@sykes.suse.de>
+	<1145233812.9833.21.camel@localhost.localdomain>
+	<je1wvwfh7s.fsf@sykes.suse.de>
+	<1145307118.3912.11.camel@localhost.localdomain>
+	<1147862072.14395.25.camel@johannes> <je3bf85twf.fsf@sykes.suse.de>
+	<1147948758.15507.52.camel@johannes>  <jek68jqz1l.fsf@sykes.suse.de>
+Content-Type: text/plain
+Date: Fri, 19 May 2006 07:49:32 +1000
+Message-Id: <1147988972.5192.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,13 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jeff Garzik wrote:
->
-> I'm happy that you have an updated internal driver, but that helps no 
-> one else.
 
-Yikes!  Mine own words, echoed back at me!
+> > Hmm. What's that again? tas3004 or 3001? I'll look at the OSX layout
+> > file.
+> 
+> I think it's a tas3004.
 
-I'll organize some patches for you Friday.
+Those G5s have tas3004 + topaz afaik (possilby using 2 busses). Check
+the layout-id's :)
 
-Cheers
+Ben
