@@ -1,19 +1,21 @@
-Return-Path: <hollis@penguinppc.org>
-Received: from pop-siberian.atl.sa.earthlink.net
-	(pop-siberian.atl.sa.earthlink.net [207.69.195.71])
-	by ozlabs.org (Postfix) with ESMTP id BE95E67A73
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 12:25:50 +1000 (EST)
-Subject: Re: [patch] fix RTC/NVRAM accesses on Maple
-From: Hollis Blanchard <hollis@penguinppc.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17516.64514.854281.64425@cargo.ozlabs.ibm.com>
-References: <1147988040.2692.40.camel@basalt.austin.ibm.com>
-	<17516.64514.854281.64425@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 18 May 2006 21:25:36 -0500
-Message-Id: <1148005536.26609.7.camel@diesel>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 818D3679F3
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 13:24:18 +1000 (EST)
+In-Reply-To: <1147936929.17679.106.camel@localhost.localdomain>
+References: <9FCDBA58F226D911B202000BDBAD4673062C064E@zch01exm40.ap.freescale.net>
+	<1147936929.17679.106.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2800AE5B-623D-4F1A-99A4-A67EF89A0D77@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
+	448h pc2 (Taiga) platform
+Date: Thu, 18 May 2006 15:49:35 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Alexandre.Bounine@tundra.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-05-19 at 08:58 +1000, Paul Mackerras wrote:
-> 
-> It would look better as:
-> 
-> #ifdef CONFIG_PPC_MAPLE
-> /* PIBS Version 1.05.0000 04/26/2005 has an incorrect /ht/isa/ranges property.
->  * The values are bad, and it doesn't even have the right number of cells. */
-> static void __init fixup_device_tree_maple(void)
-> {
-> 	... etc ...
-> }
-> #else
-> #define fixup_device_tree_maple()
-> #endif
-> 
-> #if defined(CONFIG_PPC64) && defined(CONFIG_PPC_PMAC)
-> static void __init fixup_device_tree_pmac(void)
-> {
-> 	... etc ...
-> }
-> #else
-> #define fixup_device_tree_pmac()
-> #endif
-> 
-> static void __init fixup_device_tree(void)
-> {
-> 	fixup_device_tree_maple();
-> 	fixup_device_tree_pmac();
-> }
-> 
-> Care to redo the patch?
 
-If you really think that looks better, sure. :)
+On May 18, 2006, at 02:22, Benjamin Herrenschmidt wrote:
 
--Hollis
+> On Thu, 2006-05-18 at 15:12 +0800, Zang Roy-r61911 wrote:
+>>> I'm not repeating Kumar's comments about that CONFIG_7xxx
+>>> thing and that
+>>> 7xxx/ directory, it should all go.
+>>>
+>>
+>> Should I move my code to embedded6xx?
+>
+> Probably for now yes.
+>
+>> I will get rid of those tables.  I can see that in file
+>>  arch/powerpc/platforms/85xx/mpc85xx_ads.c (2.6.17-rc4), there is
+>> a similar table. Should it be removed in future :)?
+>
+> Yes. And somebody beaten up for letting that stuff leak into
+> arch/powerpc :)
+>
+>>> Yes, please do so, we will not accept a board that does the above :)
+>>
+>> I just do the same thing as 85xx :).
+>
+> Yes and I intend to LART Kumar seriously for that next time I meet
+> him :)
+
+
+So some of this needs to be moved into u-boot (look at my patches to  
+u-boot for the 85xx CDS support, and support in the current  
+powerpc.git tree).  A lot of the PCI initialization is now there.   
+However, the interrupt maps, while properly setup in the current 85xx  
+u-boot oftree.dts files, is currently meaningless.  I may be wrong,  
+but I thought support for getting the map from the flat-dev tree was  
+still pending....
