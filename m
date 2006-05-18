@@ -1,23 +1,13 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4714067A3A
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 20:23:23 +1000 (EST)
-Subject: Re: snd-aoa status update / automatic driver loading
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Eddy =?iso-8859-2?Q?Petri=BAor?= <eddy.petrisor@gmail.com>
-In-Reply-To: <60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
-References: <1147860564.14395.6.camel@johannes>
-	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-u0ojfOnD9ADp+PcTrzo9"
-Date: Thu, 18 May 2006 12:23:04 +0200
-Message-Id: <1147947784.15507.46.camel@johannes>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+Return-Path: <tie-fei.zang@freescale.com>
+Message-ID: <9FCDBA58F226D911B202000BDBAD4673062C0A9D@zch01exm40.ap.freescale.net>
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Mark A. Greer"
+	<mgreer@mvista.com>
+Subject: RE: [HACK] add sandpoint + flattened dt support to arch/powerpc/b oot
+Date: Thu, 18 May 2006 18:24:28 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +18,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-u0ojfOnD9ADp+PcTrzo9
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index 6729c98..de09eac 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -323,7 +323,10 @@ config PPC_ISERIES
+> >  
+> >  config EMBEDDED6xx
+> >  	bool "Embedded 6xx/7xx/7xxx-based board"
+> > -	depends on PPC32 && BROKEN
+> > +	depends on PPC32
+> > +	select PPC_UDBG_16550
+> > +	select MPIC
+> > +	select MPIC_SERIAL
+> 
+> Not totally related to your patch but I'm tempted to turn that into a
+> "Generic 6xx/7xx/7xxx" rather than "embedded" if we manage to always
+> avoid board specific code most of the time, but instead add necessary
+> bits in the device-tree. We still need a per-board Kconfig option I
+> think that will just select the necessary bits and pieces 
+> (and more than
+> one can be selected at one time). Also, I think right now, 
+> the embedded
+> stuff is +/- exclusive from the MULTIPLATFORM stuff, that 
+> must be fixed
+> asap. We are all living in the same kernel now :)
 
-On Thu, 2006-05-18 at 10:25 +0300, Eddy Petri=C5=9For wrote:
-
-> Any chance for 5,2 ? What is needed for it? Codec only?
-
-I don't know. If you try loading the modules, the kernel will tell you
-something about an unhandled layout id. Alternatively, you can find the
-layout-id file in your /proc/device-tree/ and tell me the number in it.
-The rest I can figure out.
-
-johannes
-
---=-u0ojfOnD9ADp+PcTrzo9
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIVAwUARGxLBqVg1VMiehFYAQLYIRAAwTHsA8FDFywMscIQRadkmegCykSB2dtC
-V0g+eFJY/IMclmrDmgeuHE0Z5ApUgdbGdN2a7OJ9Zmz+wfmDPf2PIIdx9o6QdkwY
-RoU7FNnl69OuUeSjp89os6l/yU/EBfon3VYlevScYgugF11SCIbbvE6XCiEn1Rio
-6kJECy73kk96PwPuGlrE77Am2tEYkaDYbTZ1NHNzYS3al1bSRS3E8+i7JEA8qsqm
-NZFEc4sMBJEgFc4P8nPK9kbj95qO/aFA9x6xQN3QVDcRdIqzEMhK43hTRR/DehGz
-sS5EIYFeSv/QjGgPSICuQg1iXYlftqp51rqgCKR7BmGc12SVKPF3A+cQpJN3jbEC
-u9NT2kedtRvtzTVVFGY2rkToRRPLNYMgeFczRKR9Aa1W3wnZZ5TMHO8LhJbiQ0Aq
-yOBQml3CocpN9RQNRlH/RmeY1a8DGbGYKdXI//SpnQSH4nSaUQonOILwv/0Iwyd6
-xrCCsYtaEoohl/8XcEe7Zu16W4wwZaotItfS9m7OrheeKOIns+Yfj5UnFZSmglsg
-gjWLZrK+gswuLs0sfZwnU6YObS3OLymmUMY4QYNGLIP3BDJUio8/TStdXu5F/LEF
-IvNdxqFYJ5bW2+7Bdzco7s+M36m/1fFt++6zqZoHLzr4OHp24J159lVt0d8g1Ez+
-DFT+gU3SViQ=
-=72PX
------END PGP SIGNATURE-----
-
---=-u0ojfOnD9ADp+PcTrzo9--
+config Embedded6xx is not accurate. It can not cover all the 
+board with 7xx/7xxx based processor.
