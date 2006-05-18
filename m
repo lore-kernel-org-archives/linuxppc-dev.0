@@ -1,17 +1,14 @@
-Return-Path: <codevana@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.232])
-	by ozlabs.org (Postfix) with ESMTP id 14A0C67A05
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 08:13:07 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 36so511712wra
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 15:13:06 -0700 (PDT)
-Message-ID: <7cb1293c0605181456p3c1726e2n56942dfbd4217f70@mail.gmail.com>
-Date: Thu, 18 May 2006 14:56:31 -0700
-From: "Srinivas Murthy" <codevana@gmail.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: PPC host with a PCI root-complex
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_123171_910140.1147989391677"
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17516.64514.854281.64425@cargo.ozlabs.ibm.com>
+Date: Fri, 19 May 2006 08:58:10 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [patch] fix RTC/NVRAM accesses on Maple
+In-Reply-To: <1147988040.2692.40.camel@basalt.austin.ibm.com>
+References: <1147988040.2692.40.camel@basalt.austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +18,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_123171_910140.1147989391677
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hollis Blanchard writes:
 
-Hi,
+> This patch adds ifdefs mid-file, but some were already present anyways,
+> and I don't see a better way.
 
-We have a ppc host with a PCI root-complex across which there are multiple
-PCI end points.
+It would look better as:
 
-An application running on the ppc host reading one of the device memory
-regions (not DMA access but direct CPU read) causes a parity error on the
-PCI interface controller.
+#ifdef CONFIG_PPC_MAPLE
+/* PIBS Version 1.05.0000 04/26/2005 has an incorrect /ht/isa/ranges property.
+ * The values are bad, and it doesn't even have the right number of cells. */
+static void __init fixup_device_tree_maple(void)
+{
+	... etc ...
+}
+#else
+#define fixup_device_tree_maple()
+#endif
 
-We think that the error should be propagated up as a machine-check which is
-considered a non-recoverable system-wide error. However with multiple PCI
-devices present we think that this is too generic and could be reduced to b=
-e
-a critical-error which could be recovered from.
+#if defined(CONFIG_PPC64) && defined(CONFIG_PPC_PMAC)
+static void __init fixup_device_tree_pmac(void)
+{
+	... etc ...
+}
+#else
+#define fixup_device_tree_pmac()
+#endif
 
-Are there any other approaches/thoughts keeping in mind that this is PPC
-host and we're running a PCI-rootcomplex interface?
+static void __init fixup_device_tree(void)
+{
+	fixup_device_tree_maple();
+	fixup_device_tree_pmac();
+}
+
+Care to redo the patch?
 
 Thanks,
-_Srinivas
-
-------=_Part_123171_910140.1147989391677
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-<div>Hi,</div>
-<div>&nbsp;</div>
-<div>We have a ppc host with a PCI root-complex across which there are mult=
-iple PCI end&nbsp;points.</div>
-<div>&nbsp;</div>
-<div>An application running on the ppc host&nbsp;reading one of the device =
-memory regions (not DMA access but direct CPU read)&nbsp;causes a parity er=
-ror on the PCI interface controller.</div>
-<div>&nbsp;</div>
-<div>We think that the error should be propagated up as a machine-check whi=
-ch is considered a non-recoverable system-wide error. However with multiple=
- PCI devices present we think that this is too generic and could be reduced=
- to be a critical-error which could be recovered from.
-</div>
-<div>&nbsp;</div>
-<div>Are there any other approaches/thoughts keeping in mind that this is P=
-PC host and we're running a PCI-rootcomplex interface?</div>
-<div>&nbsp;</div>
-<div>Thanks,</div>
-<div>_Srinivas</div>
-<div>&nbsp;</div>
-<div>&nbsp;</div>
-
-------=_Part_123171_910140.1147989391677--
+Paul.
