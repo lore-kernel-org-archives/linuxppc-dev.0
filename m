@@ -1,23 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <jimix@watson.ibm.com>
+Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7F7BE67A3F
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 02:43:46 +1000 (EST)
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673062C05CC@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD4673062C05CC@zch01exm40.ap.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v749.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <25D61E59-D69E-4C0C-BA98-162822DB02B1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
-	448h pc2 (Taiga) platform
-Date: Thu, 18 May 2006 11:43:59 -0500
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-Cc: Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 2B94A67A63
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 02:52:33 +1000 (EST)
+In-Reply-To: <1147967806.8469.10.camel@localhost.localdomain>
+References: <E1FgORv-0001dS-Hu@heater.watson.ibm.com>
+	<1147908963.7360.1.camel@localhost.localdomain>
+	<34FAC3E5-F717-4640-B094-312C8773852E@watson.ibm.com>
+	<1147967806.8469.10.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg=pgp-sha1; boundary="Apple-Mail-8-12719978"
+Message-Id: <68EF7C38-A8DB-445A-BC7F-439102E19BB9@watson.ibm.com>
+From: Jimi Xenidis <jimix@watson.ibm.com>
+Subject: Re: [PATCH][resend] udbg_printf() formatting attribute
+Date: Thu, 18 May 2006 12:52:07 -0400
+To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--Apple-Mail-8-12719978
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
 
-On May 18, 2006, at 1:57 AM, Zang Roy-r61911 wrote:
 
+On May 18, 2006, at 11:56 AM, Michael Ellerman wrote:
 >
->> On Wed, 2006-05-17 at 08:45 -0500, Kumar Gala wrote:
->>
->>>> +#ifdef TSI108_ETH
->>>> +hw_info hw_info_table[TSI108_ETH_MAX_PORTS + 1] = {
->>>> +	{TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET,
->>>> +	 TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET,
->>>> +	 TSI108_PHY0_ADDR, IRQ_TSI108_GIGE0},
->>>> +
->>>> +	{TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET + 0x400,
->>>> +	 TSI108_CSR_ADDR_PHYS + TSI108_ETH_OFFSET,
->>>> +	 TSI108_PHY1_ADDR, IRQ_TSI108_GIGE1},
->>>> +
->>>> +	{TBL_END, TBL_END, TBL_END, TBL_END}
->>>> +};
->>>> +#endif
->>>
->>> This table looks problematic.  Look at using something like a
->>> platform device.
->>
->> Bzzzt ... wrong answer :) That's a textbook example of stuff
->> that should
->> be provided via the device-tree.
->>
->>
->
-> Well , should I register this data to a platform device or the  
-> Ethernet
-> driver get the information from device-tree directly?
+> I'm actually hoping to get rid of udbg_printf(), but if I can't we
+> should stick this in I guess. The real problem IMHO is that debug
+> printks rot because they're rarely compiled, not sure what to do about
+> that.
 
-I'd say the later.  Ben mentioned use of of_device which will allow  
-you to do that more directly.  I used platform_device to maintain the  
-fact that we had existing drivers to support that were using it already.
+Yeah, debug code always has that problem.  But I must say, whenever I  
+work with the x86 guys and I see how long they are _blind_ when they  
+boot it blows my mind.  Lets hope we don't go there.
+-JX
 
-- k
+--Apple-Mail-8-12719978
+content-type: application/pgp-signature; x-mac-type=70674453;
+	name=PGP.sig
+content-description: This is a digitally signed message part
+content-disposition: inline; filename=PGP.sig
+content-transfer-encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (Darwin)
+
+iD8DBQFEbKZHd/h5j14PFR4RAhfoAJ9FCG47NBGBEMHtKBLIDRYqrDKBHACgru1S
+7HlGQriAj7pXbv6K6AzgiUg=
+=Uehz
+-----END PGP SIGNATURE-----
+
+--Apple-Mail-8-12719978--
