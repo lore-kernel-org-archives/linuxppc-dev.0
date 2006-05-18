@@ -1,12 +1,26 @@
 Return-Path: <tie-fei.zang@freescale.com>
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673062C0AC6@zch01exm40.ap.freescale.net>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 8CF1267A64
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 20:49:15 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k4IB96SK023777
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 04:09:06 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k4IAnC1U000472
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 05:49:13 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD4673062C0AD2@zch01exm40.ap.freescale.net>
 From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [HACK] add sandpoint + flattened dt support to arch/powerpc/b oot
-Date: Thu, 18 May 2006 18:47:10 +0800
+Subject: RE: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
+	448h pc2 (Taiga) platform
+Date: Thu, 18 May 2006 18:49:10 +0800
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
+	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,45 +31,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
  
-> On Thu, 2006-05-18 at 18:24 +0800, Zang Roy-r61911 wrote:
-> > > > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > > > index 6729c98..de09eac 100644
-> > > > --- a/arch/powerpc/Kconfig
-> > > > +++ b/arch/powerpc/Kconfig
-> > > > @@ -323,7 +323,10 @@ config PPC_ISERIES
-> > > >  
-> > > >  config EMBEDDED6xx
-> > > >  	bool "Embedded 6xx/7xx/7xxx-based board"
-> > > > -	depends on PPC32 && BROKEN
-> > > > +	depends on PPC32
-> > > > +	select PPC_UDBG_16550
-> > > > +	select MPIC
-> > > > +	select MPIC_SERIAL
+> On Thu, 2006-05-18 at 18:21 +0800, Zang Roy-r61911 wrote:
+> >  > On Thu, 2006-05-18 at 15:12 +0800, Zang Roy-r61911 wrote:
+> > > > > I'm not repeating Kumar's comments about that CONFIG_7xxx 
+> > > > > thing and that
+> > > > > 7xxx/ directory, it should all go.
+> > > > > 
+> > > > 
+> > > > Should I move my code to embedded6xx?
 > > > 
-> > > Not totally related to your patch but I'm tempted to turn 
-> that into a
-> > > "Generic 6xx/7xx/7xxx" rather than "embedded" if we 
-> manage to always
-> > > avoid board specific code most of the time, but instead 
-> add necessary
-> > > bits in the device-tree. We still need a per-board 
-> Kconfig option I
-> > > think that will just select the necessary bits and pieces 
-> > > (and more than
-> > > one can be selected at one time). Also, I think right now, 
-> > > the embedded
-> > > stuff is +/- exclusive from the MULTIPLATFORM stuff, that 
-> > > must be fixed
-> > > asap. We are all living in the same kernel now :)
+> > > Probably for now yes.
 > > 
-> > config Embedded6xx is not accurate. It can not cover all the 
-> > board with 7xx/7xxx based processor.
+> > I can migrate my code to embedded6xx technically. In fact, 
+> > I can move it into anywhere in the arch/powerpc/platforms. 
+> > While for mpc7448hpc2(taiga) board, it is not a embedded 
+> > application board. It is a high performance server! It seems
+> > odd to put code there :). What's your opinion?
 > 
-> Forget about CONFIG_EMBEDDED6xx, just do your own CONFIG_BOARDNAME for
-> now, the processor is irrelevant as long as it's a 6xx/7xx/7xxx
-> derivative.
+> I think we should do a platform/generic for boards that don't 
+> need more
+> than a single platform file, which I think will be the case 
+> once we are
+> done with your port ;)
 > 
 > Ben.
 > 
 > 
-I can just do as your suggestion!
+I will implement my board port as early as I can  
+according to the feedback :).
