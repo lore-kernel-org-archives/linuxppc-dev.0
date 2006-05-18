@@ -1,27 +1,28 @@
-Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
-Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
-	[131.188.3.181]) by ozlabs.org (Postfix) with ESMTP id C66F267B4D
+Return-Path: <steven.scholz@imc-berlin.de>
+Received: from mail.imc-berlin.de (mail.imc-berlin.de [217.110.46.186])
+	by ozlabs.org (Postfix) with ESMTP id E234C679F8
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 May 2006 00:33:33 +1000 (EST)
-Received: from fau-vscan-1.rrze.uni-erlangen.de ([131.188.3.181]
-	[131.188.3.181]) by faurelaysmart-1.rrze.uni-erlangen.de with
-	ESMTP for linuxppc-embedded@ozlabs.org;
-	Thu, 18 May 2006 16:32:51 +0200
-Received: from max71.rrze.uni-erlangen.de ([131.188.3.181])
-	by fau-vscan-1.rrze.uni-erlangen.de (fau-vscan-1.rrze.uni-erlangen.de
-	[131.188.2.91]) (amavisd-new)
-	with ESMTP id 09847-09 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 May 2006 16:32:51 +0200 (MEST)
-Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
-	smtp-auth.uni-erlangen.de with ESMTP for
-	linuxppc-embedded@ozlabs.org; Thu, 18 May 2006 16:32:51 +0200
-Message-Id: <446C8593.1070603@cs.fau.de>
-Date: Thu, 18 May 2006 16:32:51 +0200
-From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
+	Fri, 19 May 2006 01:29:27 +1000 (EST)
+Received: from mailserver.berlin.imc-berlin.de
+	(mailserver.berlin.imc-berlin.de [10.0.0.19])
+	by mail.imc-berlin.de (Postfix) with ESMTP id B06A32F022
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 May 2006 17:10:44 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id E8E141E20AF
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 May 2006 17:10:43 +0200 (CEST)
+Received: from [10.0.2.10] (scholz.berlin.imc-berlin.de [10.0.2.10])
+	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id 191861E2027
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 May 2006 17:10:43 +0200 (CEST)
+Message-ID: <446C8E70.3040601@imc-berlin.de>
+Date: Thu, 18 May 2006 17:10:40 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: MPC8xx USB SOF microcode patch
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: MPC8xx: resolution of gettimeofday() ?
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,15 +33,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi all,
 
-Hello,
+what is the resolution of gettimeofday() for an MPC8xx?
 
-I am using linux 2.6.15 and try to get the MPC875 USB controller 
-working. I just checked if the microcode patch in 
-arch/ppc/8xx_io/micropatch.c for CONFIG_USB_SOF_UCODE_PATCH set 
-corresponds with the newest microcode patch for mpc8xx, downloadable 
-from freescale: They differ slighly, is it an older (working) version or 
-where is it from ?
+IIUC then the "decrementer" is used to generate the timer interrupts every 10ms.
 
-ciao
-josef
+This decrementer runs at cpuclk/16. Thus with 80MHz CPU clock has a
+resolution of 16/80MHz = 200ns and overflows every 50000 ticks.
+
+But is this decrementer used to update xtime?
+Will gettimeofday() have a resolution of 200ns?
+
+How about linux 2.4 where xtime is a "struct timeval" rather then "struct
+timespec"?
+
+This trivial test programm
+
+	struct timeval first, next;
+	double diff;
+
+	gettimeofday(&first, NULL);
+	do {
+		gettimeofday(&next, NULL);
+	} while (first.tv_usec == next.tv_usec &&
+		 first.tv_sec == next.tv_sec);
+
+	diff  = ((double)  next.tv_sec - (double) first.tv_sec) * 1e6;
+	diff +=  (double) (next.tv_usec - first.tv_usec);
+
+	printf ("Resolution gettimeofday() = %g µs\n", diff);
+
+says it's between 13 - 16 µs on a linux-2.4.20. Could that be? how does this
+relate to the decrementer frequency?
+
+Thanks a million!
+
+--
+Steven
