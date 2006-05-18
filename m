@@ -1,30 +1,20 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx021.isp.belgacom.be (outmx021.isp.belgacom.be
-	[195.238.4.202])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DC7EA67A79
+Return-Path: <gosiuua@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.237])
+	by ozlabs.org (Postfix) with ESMTP id 22AA967A5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 May 2006 22:32:38 +1000 (EST)
-Received: from outmx021.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx021.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k4ICWVJp009969
-	for <linuxppc-embedded@ozlabs.org>; Thu, 18 May 2006 14:32:31 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx021.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k4ICWSD4009936
-	for <linuxppc-embedded@ozlabs.org>; Thu, 18 May 2006 14:32:28 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: I2C bus issues on MPC8248
-Date: Thu, 18 May 2006 14:33:58 +0200
+	Fri, 19 May 2006 00:03:24 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 36so412180wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 May 2006 07:03:23 -0700 (PDT)
+Message-ID: <ee10e9f40605180656q58f989bcg562b48d765afdba5@mail.gmail.com>
+Date: Thu, 18 May 2006 21:56:25 +0800
+From: Gosiuua <gosiuua@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: About BDI2000 and mpc8247
+In-Reply-To: <ee10e9f40605180640g12a2671bo530c3ccbba8b3829@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200605181433.58481.laurent.pinchart@tbox.biz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <ee10e9f40605180640g12a2671bo530c3ccbba8b3829@mail.gmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,59 +25,122 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+Hello List..
 
-I'm trying to use the MPC8248 hardware I2C bus in a 2.6.16 kernel. The mailing 
-list archives mention a driver for the MPC8260 
-(http://ozlabs.org/pipermail/linuxppc-embedded/2006-May/022837.html) which I 
-modified to reflect the memory map differences between the MPC8260 and the 
-MPC8248, as mentionned in the e-mail.
+ i have a develop board based on mpc8247. It has no eeprom to restore
+hareware configure word and i have to use default config word
+0x00000000.
+ my bdi config file:
 
-The good news is that the driver works. The bad news is that it doesn't work 
-correctly.
+[TARGET]
+CPUTYPE     8270                ;the CPU type (603EV,750,8240,8260)
+JTAGCLOCK   1                   ;use 16 MHz JTAG clock
+BOOTADDR    0xfff00100          ;boot address used for start-up break
+WORKSPACE   0x00000000          ;workspace in target RAM for fast
+download and data cache flushing
+BDIMODE     AGENT               ;the BDI working mode (LOADONLY |
+AGENT | GATEWAY)
 
-The Linux I2C layer probes the I2C bus for peripherals when drivers are 
-loaded. The probing function writes a single byte with the device address and 
-check if the data is acked. I monitored the SCL and SDA lines using an 
-oscilloscope, and found out that 5 bytes are written to the device (address + 
-4 data bytes) instead of a single one. The first 4 bytes are acked, the last 
-isn't. After further investigation, I found out that the cpm_iic_write() 
-function in drivers/i2c/busses/i2c-mpc8260.c fills two buffer descriptors, 
-the second one having cbd_datlen set to zero:
+BAUDRATE    115200                ;baudrate for gateway mode or
+virtual IO
+BREAKMODE   SOFT                ;<AGENT> SOFT or HARD, HARD uses PPC
+hardware breakpoint
+VECTOR      CATCH               ;<AGENT> catch unhandled exceptions
 
-tbdf[0].cbd_bufaddr = __pa(tb);
-tbdf[0].cbd_datlen = 1;
-tbdf[0].cbd_sc = BD_SC_READY | BD_IIC_START;
 
-tbdf[1].cbd_bufaddr = __pa(buf);
-tbdf[1].cbd_datlen = count;
-tbdf[1].cbd_sc = BD_SC_READY | BD_SC_INTRPT | BD_SC_LAST | BD_SC_WRAP;
+DCACHE      NOFLUSH            ;<AGENT> data cache flushing (FLUSH |
+NOFLUSH)
+MEMBASE     0                   ;<AGENT> base of target memory
+MEMSIZE     0x00004000          ;<AGENT> size of target memory, 64M
 
-Still, 5 bytes are sent on the bus. I suspected a CPM bug when cbd_datlen is 
-equal to zero, so I modified the first buffer descriptor to set the 
-BD_SC_LAST in cbd_sc when count is zero:
 
-tbdf[0].cbd_bufaddr = __pa(tb);
-tbdf[0].cbd_datlen = 1;
-tbdf[0].cbd_sc = count ? BD_SC_READY | BD_IIC_START :
-                 BD_SC_READY | BD_IIC_START | BD_SC_INTRPT |
-                 BD_SC_LAST | BD_SC_WRAP;
+POOLBASE    0x00000000          ;<AGENT> base of host controlled target mem=
+ory
+POOLSIZE    0x00004000          ;<AGENT> size of host controlled
+target memory
 
-Using that code, no data is sent on the bus, the BD_SC_READY bit is never 
-cleared and no interrupt is generated. Once again I suspected a CPM bug when 
-writing a single byte on the bus, so I increased cbd_datlen to 2:
+ When i connect BDI2000(bdiwind_cop, firmware 1.13, logic 1.02 ) to
+the board, the following messages
 
-tbdf[0].cbd_bufaddr = __pa(tb);
-tbdf[0].cbd_datlen = 2;
-tbdf[0].cbd_sc = count ? BD_SC_READY | BD_IIC_START :
-                 BD_SC_READY | BD_IIC_START | BD_SC_INTRPT |
-                 BD_SC_LAST | BD_SC_WRAP;
+are printed, then it have no response!
+/************************************************************/
+- TARGET: processing power-up delay
+- TARGET: processing user reset request
+- BDI asserts HRESET
+- Reset JTAG controller passed
+- Bypass check: 0x55 =3D> 0xAA
+- Bypass check: 0x55 =3D> 0xAA
+- JTAG exists check passed
+- Target PVR is 0x80822014
+- Target SVR is 0x00000000
+- COP status is 0x01
+- Check running state passed
+- BDI scans COP freeze command
+- BDI removes HRESET
+- COP status is 0x05
+- Check stopped state passed
+- Check LSRL length passed
+- BDI sets breakpoint at 0xFFF00100
+- BDI resumes program execution
+- COP status is 0x01
+- Waiting for target stop failed
+- TARGET: Break at boot vector failed, freeze forced
+- TARGET: Target PVR is 0x80822014
+- TARGET: resetting target passed
+- TARGET: processing target startup ....
+/***/
 
-This worked, and two bytes were written on the bus, leading me to believe that 
-the CPM was at fault.
 
-Has anyone noticed the same behaviour ? Is there a workaround available ? I 
-tried searching Freescale's website for CPM microcode updates but haven't 
-found anything related to the I2C controller.
+ When i set CPUTYPE to 8260, the following messages are printed continously=
+:
 
-Laurent Pinchart
+/**************************************************************************=
+****/
+- TARGET: processing power-up delay
+- TARGET: processing user reset request
+- BDI asserts HRESET
+- Reset JTAG controller passed
+- Bypass check: 0x55 =3D> 0xAA
+- Bypass check: 0x55 =3D> 0xAA
+- JTAG exists check passed
+- Target PVR is 0x80822014
+- COP status is 0x01
+- Check running state passed
+- BDI scans COP freeze command
+- BDI removes HRESET
+- COP status is 0x05
+- Check stopped state passed
+- Check LSRL length passed
+- BDI sets breakpoint at 0xFFF00100
+- BDI resumes program execution
+- COP status is 0x01
+- Waiting for target stop failed
+- TARGET: Break at boot vector failed, freeze forced
+- TARGET: Target PVR is 0x80822014
+- TARGET: resetting target passed
+- TARGET: processing target startup ....
+- TARGET: processing target startup passed
+*** TARGET: reset detected, restarting target
+- BDI asserts HRESET
+- Reset JTAG controller passed
+- Bypass check: 0x55 =3D> 0xAA
+- Bypass check: 0x55 =3D> 0xAA
+- JTAG exists check passed
+- Target PVR is 0x80822014
+- COP status is 0x01
+- Check running state passed
+- BDI scans COP freeze command
+- BDI removes HRESET
+- COP status is 0x05
+- Check stopped state passed
+- Check LSRL length passed
+- BDI sets breakpoint at 0xFFF00100
+- BDI resumes program execution
+- COP status is 0x01
+- Waiting for target stop failed
+- TARGET: Break at boot vector failed, freeze forced
+/*****/
+
+
+ BDI can't bread the CPU and i don't know what can i do!
+ Any one can help me?
