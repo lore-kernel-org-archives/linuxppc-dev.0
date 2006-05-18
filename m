@@ -2,19 +2,18 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C9AB367A04
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 20:13:21 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A58A967A07
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 20:15:10 +1000 (EST)
 Subject: Re: snd-aoa status update / automatic driver loading
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Wolfgang Pfeiffer <roto@gmx.net>
-In-Reply-To: <20060517221945.GA2902@localhost>
-References: <1147860564.14395.6.camel@johannes>
-	<20060517215412.GA4504@localhost>  <20060517221945.GA2902@localhost>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <jey7x04edq.fsf@sykes.suse.de>
+References: <1147860564.14395.6.camel@johannes> <jey7x04edq.fsf@sykes.suse.de>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-K5wByc/4Uk8zVZqHWiyO"
-Date: Thu, 18 May 2006 12:13:12 +0200
-Message-Id: <1147947192.15507.40.camel@johannes>
+	boundary="=-Vb1uq03TcJgQeUSQu8Nh"
+Date: Thu, 18 May 2006 12:14:47 +0200
+Message-Id: <1147947287.15507.43.camel@johannes>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	debian-powerpc <debian-powerpc@lists.debian.org>
@@ -28,37 +27,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-K5wByc/4Uk8zVZqHWiyO
+--=-Vb1uq03TcJgQeUSQu8Nh
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2006-05-18 at 00:19 +0200, Wolfgang Pfeiffer wrote:
+On Wed, 2006-05-17 at 21:53 +0200, Andreas Schwab wrote:
 
-> changed /etc/modules to explicitly load only i2sbus:
+> 	/* PowerBook6,7 */
+> 	{ .layout_id =3D 92,
+> 	  .codecs[0] =3D {
+> 		.name =3D "tas",
+> 		.connections =3D tas_connections_nolineout,
+> 	  },
+> 	},
 
-Even that should not be necessary.
+Thanks, I'll add that.
+
+Autodetection will come some time too :)
 
 johannes
 
---=-K5wByc/4Uk8zVZqHWiyO
+--=-Vb1uq03TcJgQeUSQu8Nh
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARGxItqVg1VMiehFYAQJE1w/8CdPoTs3EgPO8pu2y7kEh9ySpf99VZ6SC
-DJTBsOF+5NGx6y+pR4zM6pNu0JJA5fO1eK4AmiXE8cPWwcChS/meJBbajfynRqP7
-dfvCG6UPxgK+LNbur/S8psmwF7FILoVniFyDeL/JdYAkzcksHKFdXiry28wKlG01
-0cPi4FwfmrcZJMcaKvBaSgcJaEr78GJkg0BzoCtY4lt7is4tykKlqo71hCAh2zIP
-VoI0mIMPGKQxLYmLv1U2nfjG9U6X9X7/7a6SuM5GTeepZaEDL7/S5PHSPQuFyJLo
-Nonxmj4qPYsjufGBkZnRBTCY9rkocHgK4qd//kTae2K9ms5dl89oYY+NOCUuRgLd
-mueuiKgFOXvUy1ZszVX9ZR3yDUCOIfIjfiaXyY999a1zJagEY+WJrBW1uuyF1NND
-UZVOJOz/6dgN6XXYhAI94Escw7ox9RFWyPyxNRTs2mznQ+ieMpIiF8ETLj5PnNSg
-AP0ArYzvXZioyW8DbMRDVxJR7zU0RMUAcpq2ZCJmJ6no51JtNNVstJeSJfMXLIVM
-Gt9Njzf0A5UkGvcyvxhMGVwRuAPPCB5293DcZpw9rmZeJTZTadOUgEYRkLfPRQly
-urdIbrsN+sbtWQpkgn7Kt+q1thrcD9OWN2+kGoCtgNfmqzbU45zMOzp6/w+9floi
-vhiklJtSZZQ=
-=I3Tt
+iQIVAwUARGxJFaVg1VMiehFYAQKfxhAAoO9+Cke2Gqmsx3Ry3X7IlqX/pMZY3v2H
+WCC2u17rdxh2z7sPBBpREzc6UXM/zMUNeA9bKhNh0N0D2HOuu3MHPBJ7D7cmR8ks
+XtERq2JXuE0J9D5dMddeoYHZqP/xsvLaV9cT+6IuUN+sbsvAY+3OkJYY/7Ag64l5
+dA3/bxnSPTCQMD1D8maSgRgYmAFnLKy9JaFdh7Xz4eG+2G5rst+PUrOExXJz1llI
+0oNz6fiznCTHrtG9KxQYw2isQNvjnNGwjrQtq8+vzrx/emWXzBNQorJEH5MjEbAg
+yNsdjRclMCZ9a2AbNmk3sxhQCUAahQE9K6hFSQPwbS4YYLO3wka8H1a5Q4pXrTE2
+XvaYY8Rhgqb9YKCmQHWzKez/c9cirviHnLyuillpIPX+shb+11fNASbaXkY5XNjn
+eVqtYic9a8NzJdtznXD5nWMFmGCVQtjKVipMWFCdemCYzQIP9BZt7ATzGS4KWCzI
+EzyJ4b97dtiGgXNCW373LvhOTf8I6xn2SQ7mKqFD2foEeDYpIhVT5DO3t/vHc6/g
+F+6anRF1CV3KYWAB312lacKmzVaLhD29JV0f/+SkE9zHQxfM90+5SZcWEkz+P76y
+xj2iyGidC0I5peVZ7/tqrU7nNKNFUR0+CQbIXTt0tgkh6nTVNa/CdkExCR6D5BIt
+8WL6tPS2ICA=
+=jx6g
 -----END PGP SIGNATURE-----
 
---=-K5wByc/4Uk8zVZqHWiyO--
+--=-Vb1uq03TcJgQeUSQu8Nh--
