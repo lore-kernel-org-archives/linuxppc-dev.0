@@ -1,14 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17516.64514.854281.64425@cargo.ozlabs.ibm.com>
-Date: Fri, 19 May 2006 08:58:10 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: [patch] fix RTC/NVRAM accesses on Maple
-In-Reply-To: <1147988040.2692.40.camel@basalt.austin.ibm.com>
-References: <1147988040.2692.40.camel@basalt.austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20060518171159.GD8220@pb15.lixom.net>
+References: <1147933251.463191.267166640873.qpush@pokey>
+	<20060518171159.GD8220@pb15.lixom.net>
+Mime-Version: 1.0 (Apple Message framework v749.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <06890505-B9A0-42B9-A713-A035FBCBDD1B@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] powerpc: Add of_parse_dma_window()
+Date: Fri, 19 May 2006 01:11:51 +0200
+To: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,40 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hollis Blanchard writes:
+> Acked-by: Olof Johansson <olof@lixom.net>
+>
+> (I'm assuming you've booted it on POWER4 LPAR and JS20, I don't
+> have access to either to make sure it doesn't break there. Main worry
+> would be if it lacked ibm,#dma*-properties for some reason.)
 
-> This patch adds ifdefs mid-file, but some were already present anyways,
-> and I don't see a better way.
+The code seems to be resilient against that.  Haven't tested though.
 
-It would look better as:
 
-#ifdef CONFIG_PPC_MAPLE
-/* PIBS Version 1.05.0000 04/26/2005 has an incorrect /ht/isa/ranges property.
- * The values are bad, and it doesn't even have the right number of cells. */
-static void __init fixup_device_tree_maple(void)
-{
-	... etc ...
-}
-#else
-#define fixup_device_tree_maple()
-#endif
-
-#if defined(CONFIG_PPC64) && defined(CONFIG_PPC_PMAC)
-static void __init fixup_device_tree_pmac(void)
-{
-	... etc ...
-}
-#else
-#define fixup_device_tree_pmac()
-#endif
-
-static void __init fixup_device_tree(void)
-{
-	fixup_device_tree_maple();
-	fixup_device_tree_pmac();
-}
-
-Care to redo the patch?
-
-Thanks,
-Paul.
+Segher
