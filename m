@@ -1,22 +1,32 @@
-Return-Path: <paul@briny.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id D690A679FF
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 23:25:47 +1000 (EST)
-From: Paul Collins <paul@briny.ondioline.org>
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A117D67A04
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 23:30:35 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
 To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: snd-aoa status update / automatic driver loading
-References: <1147860564.14395.6.camel@johannes>
-	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
-	<1147947784.15507.46.camel@johannes>
-Date: Fri, 19 May 2006 23:20:29 +1000
-In-Reply-To: <1147947784.15507.46.camel@johannes> (Johannes Berg's message of
-	"Thu, 18 May 2006 12:23:04 +0200")
-Message-ID: <87wtcirw0y.fsf@briny.internal.ondioline.org>
+Subject: Re: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
+References: <878xq51t61.fsf@briny.internal.ondioline.org>
+	<je1wvxo70l.fsf@sykes.suse.de>
+	<1145220233.9833.11.camel@localhost.localdomain>
+	<je7j5phz9j.fsf@sykes.suse.de>
+	<1145231658.9833.17.camel@localhost.localdomain>
+	<je3bgdhwre.fsf@sykes.suse.de>
+	<1145233812.9833.21.camel@localhost.localdomain>
+	<je1wvwfh7s.fsf@sykes.suse.de>
+	<1145307118.3912.11.camel@localhost.localdomain>
+	<1147862072.14395.25.camel@johannes> <je3bf85twf.fsf@sykes.suse.de>
+	<1147948758.15507.52.camel@johannes> <jek68jqz1l.fsf@sykes.suse.de>
+	<1148042866.3864.3.camel@johannes.berg>
+Date: Fri, 19 May 2006 15:30:30 +0200
+In-Reply-To: <1148042866.3864.3.camel@johannes.berg> (Johannes Berg's message
+	of "Fri, 19 May 2006 14:47:46 +0200")
+Message-ID: <jey7wynnux.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: list <linuxppc-dev@ozlabs.org>, linuxppc-dev,
-	Eddy =?utf-8?Q?Petri=C5=9For?= <eddy.petrisor@gmail.com>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +38,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Johannes Berg <johannes@sipsolutions.net> writes:
 
-> On Thu, 2006-05-18 at 10:25 +0300, Eddy Petri=C5=9For wrote:
+> On Thu, 2006-05-18 at 14:48 +0200, Andreas Schwab wrote:
 >
->> Any chance for 5,2 ? What is needed for it? Codec only?
+>> Yes, that's while I had that loaded.  Of course, I unloaded it before I
+>> tried snd-aoa.
 >
-> I don't know. If you try loading the modules, the kernel will tell you
-> something about an unhandled layout id. Alternatively, you can find the
-> layout-id file in your /proc/device-tree/ and tell me the number in it.
-> The rest I can figure out.
+> Ok, but is that the correct stuff, i.e. does it work?
 
-I have a PowerBook5,4 here and I'd be happy to test support for it.
-The hardware is identified by snd-powermac as "PowerMac Snapper" and
-the layout ID appears to be "3".
+Sorry, I can't quite figure out what "it" refers to in your question.
 
-[briny(device-tree)] od -c pci@f2000000/mac-io@17/i2s@10000/i2s-a@10000/sou=
-nd/layout-id
-0000000  \0  \0  \0   3
-0000004
+Andreas.
 
---=20
-Dag vijandelijk luchtschip de huismeester is dood
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
