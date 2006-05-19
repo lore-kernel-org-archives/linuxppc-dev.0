@@ -1,26 +1,15 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (unknown [192.88.158.102])
-	by ozlabs.org (Postfix) with ESMTP id CC0A467A5B
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 17:03:24 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k4J7NERT018784
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 00:23:14 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k4J73Iwc025567
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 02:03:19 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673063153CB@zch01exm40.ap.freescale.net>
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH/2.6.17-rc4  0/10]  powerpc: add mpc7448hpc2 (Taiga) bo
-	ard  support
-Date: Fri, 19 May 2006 15:03:15 +0800
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 81B63679F2
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 17:07:57 +1000 (EST)
+Date: Fri, 19 May 2006 16:42:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 01/14] powerpc: tidy up iseries/pci.c
+Message-Id: <20060519164249.2dc43bc4.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,208 +19,243 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 
-> On May 17, 2006, at 5:13 AM, Zang Roy-r61911 wrote:
-> 
-> > Hi, Paul
-> >
-> > 	This series of patch adds mpc7448hpc2 (taiga) board support in  
-> > arch/powerpc.
-> > 	Tsi108 chip of Tundra Semiconductor is also supported.
-> >
-> > Roy Zang
-> 
-> Can you post your .dts for us to take a look at.  I know Mark Greer  
-> is looking at support for the 105/6/7 family of bridges and the 10x  
-> family should have consistent flat device trees.
-> 
-> - kumar
-> 
-/*
- * MPC7448HPC2 (Taiga) board Device Tree Source
- *
- * Copyright 2006 Freescale Semiconductor Inc.
- * 2006 Roy Zang <Roy Zang at freescale.com>.
- *
- * This program is free software; you can redistribute  it and/or modify it
- * under  the terms of  the GNU General  Public License as published by the
- * Free Software Foundation;  either version 2 of the  License, or (at your
- * option) any later version.
- */
+Remove some unused counters.
 
+No need to allocate iomm_table and iobar_table, which means that
+iomm_table_initialize is not longer needed.
 
-/ {
-	model = "mpc7448hpc2";
-	compatible = "mpc74xx";
-	#address-cells = <1>;
-	#size-cells = <1>;
-	linux,phandle = <100>;
+Use kzalloc where sensible.
 
-	cpus {
-		#cpus = <1>;
-		#address-cells = <1>;
-		#size-cells =<0>;
-		linux,phandle = <200>;
-				
-		PowerPC,7448@0 {
-			device_type = "cpu";
-			reg = <0>;
-			d-cache-line-size = <20>;	// 32 bytes
-			i-cache-line-size = <20>;	// 32 bytes
-			d-cache-size = <8000>;		// L1, 32K bytes
-			i-cache-size = <8000>;		// L1, 32K bytes
-			timebase-frequency = <0>;	// 33 MHz, from uboot
-			clock-frequency = <0>;		// From U-Boot
-			bus-frequency = <0>;		// From U-Boot
-			32-bit;
-			linux,phandle = <201>;
-			linux,boot-cpu;
-		};
-	};
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
 
-	memory {
-		device_type = "memory";
-		linux,phandle = <300>;
-		reg = <00000000 20000000	// DDR2   512M at 0
-		       >;
-	};
+ arch/powerpc/platforms/iseries/pci.c |   78 +++++-----------------------------
+ 1 files changed, 11 insertions(+), 67 deletions(-)
 
-  	tsi108@c0000000 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		#interrupt-cells = <2>;
-		device_type = "tsi-bridge";
-		ranges = <00000000 c0000000 00010000>;
-		reg = <c0000000 00010000>;
-		bus-frequency = <0>;
+This series of patches are intenede to put the iSeries PCI devices into
+the flattened device tree.  Built and run on an iSeries 270 with a single
+PCI ethernet.  Built for pSeries_defconfig.
 
-		i2c@7000 {
-			interrupt-parent = <7400>;
-			interrupts = <E 3>;
-			reg = <7000 400>;
-			device_type = "i2c";
-			compatible  = "tsi-i2c";
-		};
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-		mdio@6000 {
-			device_type = "mdio";
-			compatible = "tsi-ethernet";	
-
-			ethernet-phy@6000 {
-				linux,phandle = <6000>;
-				interrupt-parent = <7400>;
-				interrupts = <2 1>;
-				reg = <6000 50>;
-				device_type = "ethernet-phy";
-			};
-
-			ethernet-phy@6400 {
-				linux,phandle = <6400>;
-				interrupt-parent = <7400>;
-				interrupts = <2 1>;
-				reg = <6400 50>;
-				device_type = "ethernet-phy";
-			};
-
-		};
-
-		ethernet@6200 {
-			#size-cells = <0>;
-			device_type = "network";
-			model = "TSI-ETH";		
-			compatible = "tsi-ethernet";	
-			reg = <6200 200>;
-			address = [ 00 06 D2 00 00 01 ];
-			interrupts = <10 3 10 3 10 3>;
-			interrupt-parent = <7400>;
-			phy-handle = <6000>;
-		};
-
-		ethernet@6600 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			device_type = "network";
-			model = "TSI-ETH";		
-			compatible = "tsi-ethernet";	
-			reg = <6600 200>;
-			address = [ 00 06 D2 00 00 02 ];
-			interrupts = <11 3 11 3 11 3>;
-			interrupt-parent = <7400>;
-			phy-handle = <6400>;
-		};
-
-		serial@7808 {
-			device_type = "serial";
-			compatible = "ns16550";
-			reg = <7808 200>;
-			clock-frequency = <3f6b5a00>;
-			interrupts = <c 3>;
-			interrupt-parent = <7400>;
-		};
-
-		serial@7c08 {
-			device_type = "serial";
-			compatible = "ns16550";
-			reg = <7c08 200>;
-			clock-frequency = <3f6b5a00>;
-			interrupts = <d 3>;
-			interrupt-parent = <7400>;
-		};
-
-	  	pic@7400 {
-			linux,phandle = <7400>;
-			clock-frequency = <0>;
-			interrupt-controller;
-			#address-cells = <0>;
-			#interrupt-cells = <2>;
-			reg = <7400 400>;
-			built-in;
-			compatible = "chrp,open-pic";
-			device_type = "open-pic";
-                       	big-endian;
-		};
-		pci@1000 {
-			compatible = "tsi10x";
-			device_type = "pci";
-			linux,phandle = <1000>;
-			#interrupt-cells = <1>;
-			#size-cells = <2>;
-			#address-cells = <3>;
-			reg = <1000 1000>;
-			bus-range = <0 0>;
-			ranges = <02000000 0 e0000000 e0000000 0 1A000000	
-				  01000000 0 00000000 fa000000 0 00010000>;
-			clock-frequency = <7f28154>;
-			interrupt-parent = <7400>;
-			interrupts = <8 0>;
-			interrupt-map-mask = <f800 0 0 7>;
-			interrupt-map = <
-
-				/* IDSEL 0x11 */
-				8800 0 0 1 7400 24 0
-				8800 0 0 2 7400 25 0
-				8800 0 0 3 7400 26 0
-				8800 0 0 4 7400 27 0
-
-				/* IDSEL 0x12 */
-				9000 0 0 1 7400 25 0
-				9000 0 0 2 7400 26 0
-				9000 0 0 3 7400 27 0
-				9000 0 0 4 7400 24 0
-
-				/* IDSEL 0x13 */
-				9800 0 0 1 7400 26 0
-				9800 0 0 2 7400 27 0
-				9800 0 0 3 7400 24 0
-				9800 0 0 4 7400 25 0
-
-				/* IDSEL 0x14 */
-				a000 0 0 1 7400 27 0
-				a000 0 0 2 7400 24 0
-				a000 0 0 3 7400 25 0
-				a000 0 0 4 7400 26 0
-				>;
-		};
-	};
-
-};
+039fac4f522c6207625993cd79bb2164dc0b91f1
+diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
+index 428ffb5..91a9474 100644
+--- a/arch/powerpc/platforms/iseries/pci.c
++++ b/arch/powerpc/platforms/iseries/pci.c
+@@ -57,15 +57,6 @@ LIST_HEAD(iSeries_Global_Device_List);
+ 
+ static int DeviceCount;
+ 
+-/* Counters and control flags. */
+-static long Pci_Io_Read_Count;
+-static long Pci_Io_Write_Count;
+-#if 0
+-static long Pci_Cfg_Read_Count;
+-static long Pci_Cfg_Write_Count;
+-#endif
+-static long Pci_Error_Count;
+-
+ static int Pci_Retry_Max = 3;	/* Only retry 3 times  */
+ static int Pci_Error_Flag = 1;	/* Set Retry Error on. */
+ 
+@@ -79,41 +70,19 @@ #define IOMM_TABLE_MAX_ENTRIES	1024
+ #define IOMM_TABLE_ENTRY_SIZE	0x0000000000400000UL
+ #define BASE_IO_MEMORY		0xE000000000000000UL
+ 
+-static unsigned long max_io_memory = 0xE000000000000000UL;
++static unsigned long max_io_memory = BASE_IO_MEMORY;
+ static long current_iomm_table_entry;
+ 
+ /*
+  * Lookup Tables.
+  */
+-static struct device_node **iomm_table;
+-static u8 *iobar_table;
++static struct device_node *iomm_table[IOMM_TABLE_MAX_ENTRIES];
++static u8 iobar_table[IOMM_TABLE_MAX_ENTRIES];
+ 
+-/*
+- * Static and Global variables
+- */
+-static char *pci_io_text = "iSeries PCI I/O";
++static const char pci_io_text[] = "iSeries PCI I/O";
+ static DEFINE_SPINLOCK(iomm_table_lock);
+ 
+ /*
+- * iomm_table_initialize
+- *
+- * Allocates and initalizes the Address Translation Table and Bar
+- * Tables to get them ready for use.  Must be called before any
+- * I/O space is handed out to the device BARs.
+- */
+-static void iomm_table_initialize(void)
+-{
+-	spin_lock(&iomm_table_lock);
+-	iomm_table = kmalloc(sizeof(*iomm_table) * IOMM_TABLE_MAX_ENTRIES,
+-			GFP_KERNEL);
+-	iobar_table = kmalloc(sizeof(*iobar_table) * IOMM_TABLE_MAX_ENTRIES,
+-			GFP_KERNEL);
+-	spin_unlock(&iomm_table_lock);
+-	if ((iomm_table == NULL) || (iobar_table == NULL))
+-		panic("PCI: I/O tables allocation failed.\n");
+-}
+-
+-/*
+  * iomm_table_allocate_entry
+  *
+  * Adds pci_dev entry in address translation table
+@@ -140,9 +109,8 @@ static void iomm_table_allocate_entry(st
+ 	 */
+ 	spin_lock(&iomm_table_lock);
+ 	bar_res->name = pci_io_text;
+-	bar_res->start =
++	bar_res->start = BASE_IO_MEMORY +
+ 		IOMM_TABLE_ENTRY_SIZE * current_iomm_table_entry;
+-	bar_res->start += BASE_IO_MEMORY;
+ 	bar_res->end = bar_res->start + bar_size - 1;
+ 	/*
+ 	 * Allocate the number of table entries needed for BAR.
+@@ -154,7 +122,7 @@ static void iomm_table_allocate_entry(st
+ 		++current_iomm_table_entry;
+ 	}
+ 	max_io_memory = BASE_IO_MEMORY +
+-		(IOMM_TABLE_ENTRY_SIZE * current_iomm_table_entry);
++		IOMM_TABLE_ENTRY_SIZE * current_iomm_table_entry;
+ 	spin_unlock(&iomm_table_lock);
+ }
+ 
+@@ -171,13 +139,10 @@ static void iomm_table_allocate_entry(st
+  */
+ static void allocate_device_bars(struct pci_dev *dev)
+ {
+-	struct resource *bar_res;
+ 	int bar_num;
+ 
+-	for (bar_num = 0; bar_num <= PCI_ROM_RESOURCE; ++bar_num) {
+-		bar_res = &dev->resource[bar_num];
++	for (bar_num = 0; bar_num <= PCI_ROM_RESOURCE; ++bar_num)
+ 		iomm_table_allocate_entry(dev, bar_num);
+-	}
+ }
+ 
+ /*
+@@ -205,10 +170,9 @@ static struct device_node *build_device_
+ 	struct device_node *node;
+ 	struct pci_dn *pdn;
+ 
+-	node = kmalloc(sizeof(struct device_node), GFP_KERNEL);
++	node = kzalloc(sizeof(struct device_node), GFP_KERNEL);
+ 	if (node == NULL)
+ 		return NULL;
+-	memset(node, 0, sizeof(struct device_node));
+ 	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
+ 	if (pdn == NULL) {
+ 		kfree(node);
+@@ -224,7 +188,7 @@ static struct device_node *build_device_
+ }
+ 
+ /*
+- * unsigned long __init find_and_init_phbs(void)
++ * iSeries_pcibios_init
+  *
+  * Description:
+  *   This function checks for all possible system PCI host bridges that connect
+@@ -232,7 +196,7 @@ static struct device_node *build_device_
+  *   ownership status.  A pci_controller is built for any bus which is partially
+  *   owned or fully owned by this guest partition.
+  */
+-unsigned long __init find_and_init_phbs(void)
++void iSeries_pcibios_init(void)
+ {
+ 	struct pci_controller *phb;
+ 	HvBusNumber bus;
+@@ -263,18 +227,6 @@ unsigned long __init find_and_init_phbs(
+ 			printk(KERN_ERR "Unexpected Return on Probe(0x%04X): 0x%04X",
+ 			       bus, ret);
+ 	}
+-	return 0;
+-}
+-
+-/*
+- * iSeries_pcibios_init
+- *
+- * Chance to initialize and structures or variable before PCI Bus walk.
+- */
+-void iSeries_pcibios_init(void)
+-{
+-	iomm_table_initialize();
+-	find_and_init_phbs();
+ }
+ 
+ /*
+@@ -331,8 +283,7 @@ static void scan_PHB_slots(struct pci_co
+ 	int IdSel;
+ 	const int MaxAgents = 8;
+ 
+-	DevInfo = (struct HvCallPci_DeviceInfo*)
+-		kmalloc(sizeof(struct HvCallPci_DeviceInfo), GFP_KERNEL);
++	DevInfo = kmalloc(sizeof(struct HvCallPci_DeviceInfo), GFP_KERNEL);
+ 	if (DevInfo == NULL)
+ 		return;
+ 
+@@ -622,7 +573,6 @@ static int CheckReturnCode(char *TextHdr
+ 	if (ret != 0)  {
+ 		struct pci_dn *pdn = PCI_DN(DevNode);
+ 
+-		++Pci_Error_Count;
+ 		(*retry)++;
+ 		printk("PCI: %s: Device 0x%04X:%02X  I/O Error(%2d): 0x%04X\n",
+ 				TextHdr, pdn->busno, pdn->devfn,
+@@ -704,7 +654,6 @@ u8 iSeries_Read_Byte(const volatile void
+ 		return 0xff;
+ 	}
+ 	do {
+-		++Pci_Io_Read_Count;
+ 		HvCall3Ret16(HvCallPciBarLoad8, &ret, dsa, BarOffset, 0);
+ 	} while (CheckReturnCode("RDB", DevNode, &retry, ret.rc) != 0);
+ 
+@@ -734,7 +683,6 @@ u16 iSeries_Read_Word(const volatile voi
+ 		return 0xffff;
+ 	}
+ 	do {
+-		++Pci_Io_Read_Count;
+ 		HvCall3Ret16(HvCallPciBarLoad16, &ret, dsa,
+ 				BarOffset, 0);
+ 	} while (CheckReturnCode("RDW", DevNode, &retry, ret.rc) != 0);
+@@ -765,7 +713,6 @@ u32 iSeries_Read_Long(const volatile voi
+ 		return 0xffffffff;
+ 	}
+ 	do {
+-		++Pci_Io_Read_Count;
+ 		HvCall3Ret16(HvCallPciBarLoad32, &ret, dsa,
+ 				BarOffset, 0);
+ 	} while (CheckReturnCode("RDL", DevNode, &retry, ret.rc) != 0);
+@@ -803,7 +750,6 @@ void iSeries_Write_Byte(u8 data, volatil
+ 		return;
+ 	}
+ 	do {
+-		++Pci_Io_Write_Count;
+ 		rc = HvCall4(HvCallPciBarStore8, dsa, BarOffset, data, 0);
+ 	} while (CheckReturnCode("WWB", DevNode, &retry, rc) != 0);
+ }
+@@ -831,7 +777,6 @@ void iSeries_Write_Word(u16 data, volati
+ 		return;
+ 	}
+ 	do {
+-		++Pci_Io_Write_Count;
+ 		rc = HvCall4(HvCallPciBarStore16, dsa, BarOffset, swab16(data), 0);
+ 	} while (CheckReturnCode("WWW", DevNode, &retry, rc) != 0);
+ }
+@@ -859,7 +804,6 @@ void iSeries_Write_Long(u32 data, volati
+ 		return;
+ 	}
+ 	do {
+-		++Pci_Io_Write_Count;
+ 		rc = HvCall4(HvCallPciBarStore32, dsa, BarOffset, swab32(data), 0);
+ 	} while (CheckReturnCode("WWL", DevNode, &retry, rc) != 0);
+ }
+-- 
+1.3.1.ge923
