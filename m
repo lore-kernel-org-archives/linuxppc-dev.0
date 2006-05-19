@@ -1,16 +1,32 @@
-Return-Path: <olof@lixom.net>
-Date: Fri, 19 May 2006 11:18:22 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Cell and new CPU feature bits
-Message-ID: <20060519161822.GL8220@pb15.lixom.net>
-References: <1148011621.13249.7.camel@localhost.localdomain>
-	<200605191211.18737.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200605191211.18737.arnd@arndb.de>
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <linas@austin.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 76A8167A66
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 02:23:57 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k4JGNZGQ028529
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 12:23:35 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k4JGNZYH014658
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 10:23:35 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k4JGNZK4004516
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 10:23:35 -0600
+Date: Fri, 19 May 2006 11:23:10 -0500
+To: Srinivas Murthy <codevana@gmail.com>
+Subject: Re: PPC host with a PCI root-complex
+Message-ID: <20060519162310.GI12135@austin.ibm.com>
+References: <7cb1293c0605181456p3c1726e2n56942dfbd4217f70@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7cb1293c0605181456p3c1726e2n56942dfbd4217f70@mail.gmail.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,25 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 19, 2006 at 12:11:18PM +0200, Arnd Bergmann wrote:
-> On Friday 19 May 2006 06:07, Benjamin Herrenschmidt wrote:
-> >  - Extended implementation of dcbt. (Another bit ? Or sould we just have
-> > a "CELL" bit ? In which case should it cover the altivec additions too
-> > or are those likely to exist in future non-Cell processors ?)
+On Thu, May 18, 2006 at 02:56:31PM -0700, Srinivas Murthy wrote:
+> Hi,
 > 
-> Isn't that already covered by PPC_FEATURE_CELL? Git log shows
+> We have a ppc host with a PCI root-complex across which there are multiple
+> PCI end points.
+> 
+> An application running on the ppc host reading one of the device memory
+> regions (not DMA access but direct CPU read) causes a parity error on the
+> PCI interface controller.
+> 
+> We think that the error should be propagated up as a machine-check which is
+> considered a non-recoverable system-wide error. However with multiple PCI
+> devices present we think that this is too generic and could be reduced to be
+> a critical-error which could be recovered from.
 
-First, please don't use the cell bit for this since other processors
-seem to implement the same things.
+The "PCI Error Recovery" API was created to deal with this kind of a
+situation. See Documentation/pci-error-recovery.txt
 
-Second, the quoted information is 6 months old, and seemingly stale by
-now. When Paulus pushed the POWER6 patch, he switched from the notion
-of it signifying processor model to being base arch version. See:
+In breif: if something like a PCI parity error is detected by the
+hardware, then some arch-specific code runs; for example,
+ arch/powerpc/platforms/pseries/eeh.c.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2006-April/022525.html
+This code notifies the PCI device driver (via generic callbacks in
+include/linux/pci.h) about the error. The device driver may ask the
+arch to have the pci device/bus/link/etc/ get reset, or not.  If/when
+the PCI bus/link is back to normal, the PCI device driver is notified
+via callback, and resumes normal operation.
 
-(My patch to rename the existing POWER* bits to ARCH_2_* wasn't picked
-up, I'll resend)
+If you have questions/suggestions, let me know, I've been maintaining 
+this code, and am interested in seeing how well it can be adapted
+to a broader range of hardware.
 
-
--Olof
+--linas
