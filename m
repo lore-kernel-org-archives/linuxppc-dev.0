@@ -1,32 +1,24 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <mel@csn.ul.ie>
+Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 94E0367A05
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 23:48:35 +1000 (EST)
-Subject: Re: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jey7wynnux.fsf@sykes.suse.de>
-References: <878xq51t61.fsf@briny.internal.ondioline.org>
-	<je1wvxo70l.fsf@sykes.suse.de>
-	<1145220233.9833.11.camel@localhost.localdomain>
-	<je7j5phz9j.fsf@sykes.suse.de>
-	<1145231658.9833.17.camel@localhost.localdomain>
-	<je3bgdhwre.fsf@sykes.suse.de>
-	<1145233812.9833.21.camel@localhost.localdomain>
-	<je1wvwfh7s.fsf@sykes.suse.de>
-	<1145307118.3912.11.camel@localhost.localdomain>
-	<1147862072.14395.25.camel@johannes> <je3bf85twf.fsf@sykes.suse.de>
-	<1147948758.15507.52.camel@johannes> <jek68jqz1l.fsf@sykes.suse.de>
-	<1148042866.3864.3.camel@johannes.berg> <jey7wynnux.fsf@sykes.suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-wEaj5+PxDwdcuO70Su/V"
-Date: Fri, 19 May 2006 15:48:32 +0200
-Message-Id: <1148046512.3864.17.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 08B3167A3E
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:03:19 +1000 (EST)
+Date: Fri, 19 May 2006 15:03:10 +0100 (IST)
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 5/6] Have ia64 use add_active_range() and
+	free_area_init_nodes
+In-Reply-To: <20060514203158.216a966e.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.64.0605191447060.29077@skynet.skynet.ie>
+References: <20060508141030.26912.93090.sendpatchset@skynet>
+	<20060508141211.26912.48278.sendpatchset@skynet>
+	<20060514203158.216a966e.akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linuxppc-dev@ozlabs.org,
+	ak@suse.de, bob.picco@hp.com, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,53 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 14 May 2006, Andrew Morton wrote:
 
---=-wEaj5+PxDwdcuO70Su/V
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Mel Gorman <mel@csn.ul.ie> wrote:
+>>
+>> Size zones and holes in an architecture independent manner for ia64.
+>>
+>
+> This one makes my ia64 die very early in boot.   The trace is pretty useless.
+>
+> config at http://www.zip.com.au/~akpm/linux/patches/stuff/config-ia64
+>
 
-On Fri, 2006-05-19 at 15:30 +0200, Andreas Schwab wrote:
+An indirect fix for this has been set out with a patchset with the subject 
+"[PATCH 0/2] Fixes for node alignment and flatmem assumptions" . For 
+arch-independent-zone-sizing, the issue was that FLATMEM assumes that 
+NODE_DATA(0)->node_start_pfn == 0. This is not the case with 
+arch-independent-zone-sizing and IA64. With arch-independent-zone-sizing, 
+a nodes node_start_pfn will be at the first valid PFN.
 
-> >> Yes, that's while I had that loaded.  Of course, I unloaded it before =
-I
-> >> tried snd-aoa.
-> >
-> > Ok, but is that the correct stuff, i.e. does it work?
->=20
-> Sorry, I can't quite figure out what "it" refers to in your question.
+> <log snipped>
+>
+> Note the misaligned pfns.
+>
 
-Sorry. I was trying to ask if you get sound with snd-powermac, i.e. if
-the items
+You will still get the message about misaligned PFNs on IA64. This is 
+because the lowest zone starts at the lowest available PFN which may not 
+be 0 or any other aligned number. It shouldn't make a different - or at 
+least I couldn't cause any problems.
 
->>         80008000-800083ff : 0.00010000:i2s
->>           80008000-800083ff : Sound DMA
->>         80010000-80010fff : 0.00010000:i2s
->>           80010000-80010fff : Sound Control
-
-are correct. I'll have to investigate a bit more what happens on your
-machine.
-
-johannes
-
---=-wEaj5+PxDwdcuO70Su/V
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIVAwUARG3MraVg1VMiehFYAQLT3g/9GkLblbdgqWAWU3dkMugVI+fkB+b1Xcw9
-iWVZaPf62nGRaATPFlXZWig9UvOgmgAyr6yFgfEN/tgtPbUCapnlGsE6ps0OZWPh
-nx1kRnPKArrAFdr7lEe5oFz41oAKT0HuiXAMuVW+EGIm9AiaeyfiHBNdIAE/o0lB
-HXa6qZWIfsCj8FV10reKGsdI2LYgxAkz1owqvn2uJ2DWIXmJb7eUt4ANo1u72ZNJ
-95UVmBziI5z2tKkumAXcmd11kzLBEaG2dU8tTj79y1vciKVb82OgsNa1ZPUm4cG8
-kfESeHBvhFZJtAaEPLZ5Qo+TCJaic3SzfquNiVW8t7PLChXFM69lCUORyGV+mnGG
-TpoDjcz2f7YZFskJWBvIXY2OqmSbenLp46wbd/I108EbaH1wGKh3SWURHZQchbjI
-Pp9Astlj/eCKNfQW+/IqAvi8E9t1DPWB54DQeid2vwUaWy2EaHeT43DcYr1tCkaJ
-o/e3lKh/Vdg8mCCkaALn6l3xTGjjeTcAickweTsJDkFAMxljK33YdJZAVOhEDEhS
-X/on+PM71ZHMx8wIgfdXOwBY9GpWdz6LYM9PUg/7PqWdMEy+kEHVij8ReSM3rqf+
-W6lRbpFlWjOnjnKEE+U/hiCmUb+TXadeHnK1Va8UnvTtWpmOMfcobBVlOusAjtbp
-XFZikSbpiY8=
-=23Q5
------END PGP SIGNATURE-----
-
---=-wEaj5+PxDwdcuO70Su/V--
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
