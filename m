@@ -1,26 +1,33 @@
-Return-Path: <apw@shadowen.org>
-Received: from hellhawk.shadowen.org (hellhawk.shadowen.org [80.68.90.175])
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hellhawk.shadowen.org",
-	Issuer "hellhawk.shadowen.org" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id E7B3A67A40
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:24:45 +1000 (EST)
-Message-ID: <446DD4CA.30606@shadowen.org>
-Date: Fri, 19 May 2006 15:23:06 +0100
-From: Andy Whitcroft <apw@shadowen.org>
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6929767A40
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:30:24 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
+References: <878xq51t61.fsf@briny.internal.ondioline.org>
+	<je1wvxo70l.fsf@sykes.suse.de>
+	<1145220233.9833.11.camel@localhost.localdomain>
+	<je7j5phz9j.fsf@sykes.suse.de>
+	<1145231658.9833.17.camel@localhost.localdomain>
+	<je3bgdhwre.fsf@sykes.suse.de>
+	<1145233812.9833.21.camel@localhost.localdomain>
+	<je1wvwfh7s.fsf@sykes.suse.de>
+	<1145307118.3912.11.camel@localhost.localdomain>
+	<1147862072.14395.25.camel@johannes> <je3bf85twf.fsf@sykes.suse.de>
+	<1147948758.15507.52.camel@johannes> <jek68jqz1l.fsf@sykes.suse.de>
+	<1148042866.3864.3.camel@johannes.berg> <jey7wynnux.fsf@sykes.suse.de>
+	<1148046512.3864.17.camel@johannes.berg>
+Date: Fri, 19 May 2006 16:30:19 +0200
+In-Reply-To: <1148046512.3864.17.camel@johannes.berg> (Johannes Berg's message
+	of "Fri, 19 May 2006 15:48:32 +0200")
+Message-ID: <jer72qnl38.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 5/6] Have ia64 use add_active_range() and
-	free_area_init_nodes
-References: <20060508141030.26912.93090.sendpatchset@skynet>
-	<20060508141211.26912.48278.sendpatchset@skynet>
-	<20060514203158.216a966e.akpm@osdl.org>
-	<Pine.LNX.4.64.0605191447060.29077@skynet.skynet.ie>
-In-Reply-To: <Pine.LNX.4.64.0605191447060.29077@skynet.skynet.ie>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Andrew Morton <akpm@osdl.org>, davej@codemonkey.org.uk, tony.luck@intel.com,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	bob.picco@hp.com, ak@suse.de, linux-mm@kvack.org
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,42 +37,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mel Gorman wrote:
-> On Sun, 14 May 2006, Andrew Morton wrote:
-> 
->> Mel Gorman <mel@csn.ul.ie> wrote:
->>
->>>
->>> Size zones and holes in an architecture independent manner for ia64.
->>>
->>
->> This one makes my ia64 die very early in boot.   The trace is pretty
->> useless.
->>
->> config at http://www.zip.com.au/~akpm/linux/patches/stuff/config-ia64
->>
-> 
-> An indirect fix for this has been set out with a patchset with the
-> subject "[PATCH 0/2] Fixes for node alignment and flatmem assumptions" .
-> For arch-independent-zone-sizing, the issue was that FLATMEM assumes
-> that NODE_DATA(0)->node_start_pfn == 0. This is not the case with
-> arch-independent-zone-sizing and IA64. With
-> arch-independent-zone-sizing, a nodes node_start_pfn will be at the
-> first valid PFN.
-> 
->> <log snipped>
->>
->> Note the misaligned pfns.
->>
-> 
-> You will still get the message about misaligned PFNs on IA64. This is
-> because the lowest zone starts at the lowest available PFN which may not
-> be 0 or any other aligned number. It shouldn't make a different - or at
-> least I couldn't cause any problems.
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-With the updates I sent out to the zone alignment checks yesterday this
-should now be ignored correctly without comment.  The first zone is
-allowed to be misaligned because we expect alignment of the mem_map.
-With bob picco's patch from your set we ensure it is so.
+> On Fri, 2006-05-19 at 15:30 +0200, Andreas Schwab wrote:
+>
+>> >> Yes, that's while I had that loaded.  Of course, I unloaded it before I
+>> >> tried snd-aoa.
+>> >
+>> > Ok, but is that the correct stuff, i.e. does it work?
+>> 
+>> Sorry, I can't quite figure out what "it" refers to in your question.
+>
+> Sorry. I was trying to ask if you get sound with snd-powermac, i.e. if
+> the items
+>
+>>>         80008000-800083ff : 0.00010000:i2s
+>>>           80008000-800083ff : Sound DMA
+>>>         80010000-80010fff : 0.00010000:i2s
+>>>           80010000-80010fff : Sound Control
+>
+> are correct.
 
--apw
+Yes, sound is fully supported by snd-powermac on my system.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
