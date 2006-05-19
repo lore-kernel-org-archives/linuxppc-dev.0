@@ -1,25 +1,19 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw02.freescale.net (unknown [192.88.158.103])
-	by ozlabs.org (Postfix) with ESMTP id AE95867A6C
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 11:46:01 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k4J21rFv010696
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 19:01:53 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k4J1jlNO021413
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 May 2006 20:45:48 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673062C0ED4@zch01exm40.ap.freescale.net>
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Return-Path: <hollis@penguinppc.org>
+Received: from pop-siberian.atl.sa.earthlink.net
+	(pop-siberian.atl.sa.earthlink.net [207.69.195.71])
+	by ozlabs.org (Postfix) with ESMTP id BE95E67A73
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 12:25:50 +1000 (EST)
+Subject: Re: [patch] fix RTC/NVRAM accesses on Maple
+From: Hollis Blanchard <hollis@penguinppc.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: RE: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
-	448h pc2 (Taiga) platform
-Date: Fri, 19 May 2006 09:45:45 +0800
-MIME-Version: 1.0
+In-Reply-To: <17516.64514.854281.64425@cargo.ozlabs.ibm.com>
+References: <1147988040.2692.40.camel@basalt.austin.ibm.com>
+	<17516.64514.854281.64425@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Cc: Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
-	Alexandre.Bounine@tundra.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: Thu, 18 May 2006 21:25:36 -0500
+Message-Id: <1148005536.26609.7.camel@diesel>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Zang Roy-r61911 writes:
+On Fri, 2006-05-19 at 08:58 +1000, Paul Mackerras wrote:
 > 
-> > I can migrate my code to embedded6xx technically. In fact, 
-> > I can move it into anywhere in the arch/powerpc/platforms. 
-> > While for mpc7448hpc2(taiga) board, it is not a embedded 
-> > application board. It is a high performance server! It seems
-> > odd to put code there :). What's your opinion?
+> It would look better as:
 > 
-> What sort of machine(s) is this board used in?  Or what machines will
-> it be in?
+> #ifdef CONFIG_PPC_MAPLE
+> /* PIBS Version 1.05.0000 04/26/2005 has an incorrect /ht/isa/ranges property.
+>  * The values are bad, and it doesn't even have the right number of cells. */
+> static void __init fixup_device_tree_maple(void)
+> {
+> 	... etc ...
+> }
+> #else
+> #define fixup_device_tree_maple()
+> #endif
 > 
-> Paul.
+> #if defined(CONFIG_PPC64) && defined(CONFIG_PPC_PMAC)
+> static void __init fixup_device_tree_pmac(void)
+> {
+> 	... etc ...
+> }
+> #else
+> #define fixup_device_tree_pmac()
+> #endif
 > 
-mpc7448hpc2 (taiga) board is a high-performance PowerPC 
-server reference design,which is optimized for high speed throughput
-between the processor (mpc7448 or 7447A) and the memory, disk drive 
-and Ethernet port subsystems.
+> static void __init fixup_device_tree(void)
+> {
+> 	fixup_device_tree_maple();
+> 	fixup_device_tree_pmac();
+> }
+> 
+> Care to redo the patch?
 
-mpc7448hpc2 (taiga) is designed to the micro-ATX chassis, 
-allowing it to be used in 1U or 2U rack-mount chassis' , as well as 
-in standard ATX/Micro-ATX chassis.
+If you really think that looks better, sure. :)
 
-Roy
+-Hollis
