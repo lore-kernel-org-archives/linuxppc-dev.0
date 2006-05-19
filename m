@@ -1,21 +1,27 @@
-Return-Path: <paul@briny.ondioline.org>
-Received: from jenny.ondioline.org (jenny.ondioline.org [66.220.1.122])
-	by ozlabs.org (Postfix) with ESMTP id 4287A67A5F
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:43:54 +1000 (EST)
-From: Paul Collins <paul@briny.ondioline.org>
-To: Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 81BB267A5F
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:49:55 +1000 (EST)
 Subject: Re: snd-aoa status update / automatic driver loading
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Collins <paul@briny.ondioline.org>
+In-Reply-To: <87zmhef57o.fsf@briny.internal.ondioline.org>
 References: <1147860564.14395.6.camel@johannes>
 	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
 	<1147947784.15507.46.camel@johannes>
 	<87wtcirw0y.fsf@briny.internal.ondioline.org>
 	<1148046418.3864.14.camel@johannes.berg>
-Date: Sat, 20 May 2006 00:40:27 +1000
-Message-ID: <87zmhef57o.fsf@briny.internal.ondioline.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	<87zmhef57o.fsf@briny.internal.ondioline.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-sCZG246nigEpo3johGOS"
+Date: Fri, 19 May 2006 16:49:49 +0200
+Message-Id: <1148050189.6228.13.camel@johannes.berg>
+Mime-Version: 1.0
 Cc: debian-powerpc <debian-powerpc@lists.debian.org>,
-	Eddy =?utf-8?Q?Petri=C5=9For?= <eddy.petrisor@gmail.com>,
+	Eddy =?iso-8859-2?Q?Petri=BAor?= <eddy.petrisor@gmail.com>,
 	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,104 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg <johannes@sipsolutions.net> writes:
 
-> On Fri, 2006-05-19 at 23:20 +1000, Paul Collins wrote:
->
->> I have a PowerBook5,4 here and I'd be happy to test support for it.
->> The hardware is identified by snd-powermac as "PowerMac Snapper" and
->> the layout ID appears to be "3".
->
-> Try downloading snd-aoa and in snd-aoa-fabric-layout.c change the two
-> occurrences of '70' to '3'. If it works, let me know and I'll add the
-> proper entry for it.
+--=-sCZG246nigEpo3johGOS
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-When I probed i2sbus nothing much seemed to happen, so I added a
-printk to see what layout ID was being returned, and I'm getting 51,
-not 3 as found in the device tree.  However, when I use 51 instead of
-3 in those two places, I still don't get much happening.
+On Sat, 2006-05-20 at 00:40 +1000, Paul Collins wrote:
 
-Here's the dmesg after "modprobe i2sbus":
+> Here's the dmesg after "modprobe i2sbus":
+>=20
+> May 20 00:35:51 briny kernel: i2sbus: mapped i2s control registers
+> May 20 00:35:51 briny kernel: i2sbus: control register contents:
+> May 20 00:35:51 briny kernel: i2sbus:    fcr0 =3D 0x0
+> May 20 00:35:51 briny kernel: i2sbus:    cell_control =3D 0x0
+> May 20 00:35:51 briny kernel: i2sbus:    fcr2 =3D 0x4ef1c25
+> May 20 00:35:51 briny kernel: i2sbus:    fcr3 =3D 0x0
+> May 20 00:35:51 briny kernel: i2sbus:    clock_control =3D 0x0
+> May 20 00:35:51 briny kernel: layout id is 51
 
-May 20 00:35:51 briny kernel: i2sbus: mapped i2s control registers
-May 20 00:35:51 briny kernel: i2sbus: control register contents:
-May 20 00:35:51 briny kernel: i2sbus:    fcr0 = 0x0
-May 20 00:35:51 briny kernel: i2sbus:    cell_control = 0x0
-May 20 00:35:51 briny kernel: i2sbus:    fcr2 = 0x4ef1c25
-May 20 00:35:51 briny kernel: i2sbus:    fcr3 = 0x0
-May 20 00:35:51 briny kernel: i2sbus:    clock_control = 0x0
-May 20 00:35:51 briny kernel: layout id is 51
-May 20 00:35:51 briny kernel: i2sbus control destroyed
+Did you have the changed modules installed? Otherwise you'd also have to
+manually load snd_aoa_fabric_layout and possibly snd_aoa_codec_tas or
+so. If you had them installed the MODULE_ALIAS("sound-layout-51");
+should have made it load automatically.
 
-And lsmod:
+johannes
 
-Module                  Size  Used by
-i2sbus                 21632  0 
-soundbus                8132  1 i2sbus
-radeon                129896  0 
-drm                    82968  1 radeon
-snd_usb_audio          90624  0 
-snd_usb_lib            19232  1 snd_usb_audio
-snd_rawmidi            29280  1 snd_usb_lib
-snd_hwdep              11012  1 snd_usb_audio
-hci_usb                14164  3 
-snd_pcm_oss            50816  0 
-snd_pcm               103588  3 i2sbus,snd_usb_audio,snd_pcm_oss
-snd_timer              27140  1 snd_pcm
-snd_page_alloc         11432  1 snd_pcm
-pcmcia                 45776  0 
-ehci_hcd               37224  0 
-bcm43xx               448916  0 
-ieee80211softmac       32384  1 bcm43xx
-uninorth_agp           11112  1 
-agpgart                38484  2 drm,uninorth_agp
-ohci_hcd               24452  0 
-ieee80211              36776  2 bcm43xx,ieee80211softmac
-ieee80211_crypt         6880  1 ieee80211
-yenta_socket           30412  1 
-rsrc_nonstatic         13472  1 yenta_socket
-pcmcia_core            49592  3 pcmcia,yenta_socket,rsrc_nonstatic
+--=-sCZG246nigEpo3johGOS
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Here are the changes I made.
+-----BEGIN PGP SIGNATURE-----
 
-diff --git a/aoa/fabrics/snd-aoa-fabric-layout.c b/aoa/fabrics/snd-aoa-fabric-layout.c
-index 65cda87..180dca4 100644
---- a/aoa/fabrics/snd-aoa-fabric-layout.c
-+++ b/aoa/fabrics/snd-aoa-fabric-layout.c
-@@ -84,7 +84,7 @@ MODULE_ALIAS("sound-layout-64");
- MODULE_ALIAS("sound-layout-65");
- MODULE_ALIAS("sound-layout-68");
- MODULE_ALIAS("sound-layout-69");
--MODULE_ALIAS("sound-layout-70");
-+MODULE_ALIAS("sound-layout-51");
- MODULE_ALIAS("sound-layout-72");
- MODULE_ALIAS("sound-layout-86");
- MODULE_ALIAS("sound-layout-84");
-@@ -214,7 +214,7 @@ static struct layout layouts[] = {
- 	  },
- 	  .busname = "digital in", .pcmid = 1 },
- 	/* Early 2005 PowerBook */
--	{ .layout_id = 70,
-+	{ .layout_id = 51,
- 	  .codecs[0] = {
- 		.name = "tas",
- 		.connections = tas_connections_nolineout,
-diff --git a/soundbus/i2sbus/i2sbus-core.c b/soundbus/i2sbus/i2sbus-core.c
-index f6463cb..ff5b52e 100644
---- a/soundbus/i2sbus/i2sbus-core.c
-+++ b/soundbus/i2sbus/i2sbus-core.c
-@@ -130,7 +130,10 @@ static int i2sbus_add_dev(struct macio_d
- 		u32 *layout_id;
- 		layout_id = (u32*) get_property(sound, "layout-id", NULL);
- 		if (layout_id) {
-+			printk(KERN_INFO "layout id is %d\n", *layout_id);
- 			snprintf(dev->sound.modalias, 32, "sound-layout-%d", *layout_id);
-+		} else {
-+			printk(KERN_INFO "no layout id!?\n");
- 		}
- 	}
- 
+iQIVAwUARG3bC6Vg1VMiehFYAQJTCA//Unf5Fe1qymvFXT3OhtfyT16wHkk8p5Or
+rR4KbjOk3Cn3B0EVztuYsXdnWPgD1Co0jBfi6vFqS0GR42+AbvfG6FVsgzHO6ZS6
+XK5TGCpT2171nGIjsHmTsXzRtGy4X1Smayyx1Bzz7Qz4zycCWNMTeL4oJ9DMhTGo
+1Gee5kP0dA7LOT/NMQuUrtfJ6iR2oCqXcCE4ZafHB47759EzpsXWS5MzKG3Mic2B
+83jPHJKoNm1Xjz5pJAvV5rYjp89qekcokHQ6LDfuQBcGYTBcp9sWMVOKoi405BCz
+JuQ75UNqdUVeWhgFr64pMy0SWx/7oVdO5+qOSXKzknjIOz/ZC4CTkhMcuxBVrjMo
+BJlqb0Djdl1lN451jM7uFMOhIrQZmQqUYjW6DXd93pxbYnDsrTS/hqz1h2Qlm2PP
+EkEV+N8BUXb37/hNd3sCyEJkIo3KqO8GvKWOCn1Cjhv7sdnaUyTErv/V9YJNiOYJ
+XpnDkOAJrLy1tqfl0PZGbpUkm127BEMt3ld8Ch+aeh0g2txuVYn2uvRnPS10Dztv
+qT93sPTkvRHENRk2oWab12E/mWBz+LTXVds8ykgM0NywO1Bgu3Jix6SjnrnxJAVV
+VF1eyIEDXlMEbcSP5VLq5knf2VXBSrcLYgpEfoUVLx9aMWq9ULZRBSzx56PJwnon
+i5EzLgKYhpc=
+=0igk
+-----END PGP SIGNATURE-----
 
-
--- 
-Dag vijandelijk luchtschip de huismeester is dood
+--=-sCZG246nigEpo3johGOS--
