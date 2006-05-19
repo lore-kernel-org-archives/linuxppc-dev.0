@@ -1,20 +1,24 @@
-Return-Path: <roto@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id AFDC067B91
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:38:09 +1000 (EST)
-Date: Fri, 19 May 2006 16:40:28 +0200
-From: Wolfgang Pfeiffer <roto@gmx.net>
-To: Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BEA2867A5D
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:41:25 +1000 (EST)
 Subject: Re: snd-aoa status update / automatic driver loading
-Message-ID: <20060519144028.GA2831@localhost>
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Wolfgang Pfeiffer <roto@gmx.net>
+In-Reply-To: <20060519144028.GA2831@localhost>
 References: <1147860564.14395.6.camel@johannes>
 	<20060517215412.GA4504@localhost> <20060517221945.GA2902@localhost>
-	<1147947192.15507.40.camel@johannes>
-	<20060518181748.GA2836@localhost>
+	<1147947192.15507.40.camel@johannes> <20060518181748.GA2836@localhost>
 	<1148043018.3864.6.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1148043018.3864.6.camel@johannes.berg>
+	<20060519144028.GA2831@localhost>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-xeZQM8xQWe5zPJw8F+gd"
+Date: Fri, 19 May 2006 16:40:58 +0200
+Message-Id: <1148049658.6228.11.camel@johannes.berg>
+Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,30 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 19, 2006 at 02:50:18PM +0200, Johannes Berg wrote:
-> On Thu, 2006-05-18 at 20:17 +0200, Wolfgang Pfeiffer wrote:
-> 
-> > BTW: Is there a way to let 'alsaconf' detect the soundcard on this
-> > PB5,8 ?
-> > So far that's impossible, as it seems. But this could also be
-> > related to mistakes I made in my modules files, or wherever.
-> 
-> No idea, but I don't see why you'd want alsaconf to figure it out 
 
-... because it's the job of alsaconf, too, to figure that
-out. IINM. And because I thought it might help to mention the issue,
-when I was already at it .. :)
+--=-xeZQM8xQWe5zPJw8F+gd
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-But yes, it does not bother me if the kernel itself knows what's going
-on .. :)
+On Fri, 2006-05-19 at 16:40 +0200, Wolfgang Pfeiffer wrote:
 
-Best Regards
-Wolfgang
+> ... because it's the job of alsaconf, too, to figure that
+> out. IINM. And because I thought it might help to mention the issue,
+> when I was already at it .. :)
 
+:)
+I never used alsaconf, and frankly, for PCI cards and anything else
+that's sensible I don't see the point since the kernel along with
+hotplugging can get it just to work. With ISA, well, yea, maybe. Or does
+alsaconf have any other function than detecting the hardware and loading
+the right modules?
 
--- 
-Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
-http://profiles.yahoo.com/wolfgangpfeiffer
+johannes
 
-Key ID: E3037113
-http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
+--=-xeZQM8xQWe5zPJw8F+gd
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARG3Y96Vg1VMiehFYAQJvgxAAmWt9JZ22SMiToUoMbW1dJOEak4w7SONp
+PpkdBleY2993YrzbYkVKtB9ouiXb6fOmNudmRbq9Xi6MgVjZ0GVanNFmey89uVMw
+U208D0O/NIlN36grJhboCDrrN+L/g7daoIErwdqIqgMIMdozJlDipUhcI6P/eC40
+FVBLTYvrCwzuE5YrruJz5heCPZehOcN9hVPZeyqG7bcU8oHg7Gr05z86JtUGb+2b
+NQzwZJy0Mr0kJHwre7PI4TYk8PwS31sQXqYlX/KXWkfVEIOuBDpG1MYTxLzJAch+
+xtrBrNp2ZswP4Ox76ovF0EVw1B/qEuiiXaviBBGbZuCRIYsrS3NFbShtSGHNpGvM
+Ynar4Na5FiMy2yGkH7dpKaaOw/Bgb5TOu0s+P/JCzZ/iozsZGueVGSV94ahliajm
+nGULjZnTWEcy2NjLA4/1QLY8FlbavcBQeuoUdCTnqzd1IXyy4kqPLBakpaJrjsTi
+nhODmtiK7m0bRfIXkbStIebTVBbRR8qvpdAmFJa03Dl02VnVzB3SqvA5NiWrKMJY
+c99BS4uvOWonTzNgWThawx2LRtvqD4jRCv6vECbbSmLSuq50zDYK2YvEF0j8R6cZ
+Zy/JG5EFKVik+JfHCw0u/2A4jryD4CDf5+C8wzXbscFl18Q8XVgHimOmJdiUe6Ck
+CUoeqOKsW0Y=
+=Oxr0
+-----END PGP SIGNATURE-----
+
+--=-xeZQM8xQWe5zPJw8F+gd--
