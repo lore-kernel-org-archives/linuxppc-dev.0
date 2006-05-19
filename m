@@ -1,17 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2C16B67A40
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 15:24:36 +1000 (EST)
-Subject: pci-OF-bus-map deprecation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 19 May 2006 15:24:28 +1000
-Message-Id: <1148016268.13249.14.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <pinskia@physics.uc.edu>
+In-Reply-To: <20060519051939.GJ8220@pb15.lixom.net>
+References: <1148011621.13249.7.camel@localhost.localdomain>
+	<20060519051939.GJ8220@pb15.lixom.net>
+Mime-Version: 1.0 (Apple Message framework v746.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <11D4E003-85A4-48A0-9654-BEAE5600B89C@physics.uc.edu>
+From: Andrew Pinski <pinskia@physics.uc.edu>
+Subject: Re: [Cbe-oss-dev] Cell and new CPU feature bits
+Date: Thu, 18 May 2006 22:27:17 -0700
+To: Olof Johansson <olof@lixom.net>
+Cc: cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,24 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-For 32 bits machines with Open Firmware, we used to create a
-pci-OF-bus-map property in the device-tree that provided a mapping
-between linux and Open Firmware PCI bus numbers (since on some platforms
-like PowerMac, we still renumber PCI busses).
 
-This property is no longer necessary as
+On May 18, 2006, at 10:19 PM, Olof Johansson wrote:
 
- - Nowadays, we have sysfs and the PCI devices in there do have a full
-Open Firmware device path exposed as a "devspec" file in their sysfs
-directories
- - I don't think anybody ever used that property in userland :)
+>>  - Lack of data stream instructions. Until now, it was assumed that
+>> those were tied to the presence
+>>    of an Altivec (and they are documented in the Altivec manual).  
+>> Maybe
+>> we should split that to a
+>>    new bit. I don't know if existing applications use them though, if
+>> they do, there will be a
+>>    problem to get them updated as the new bit isn't present on older
+>> kernels...
+>
+> I'm assuming you mean the instructions described under "AltiVec Memory
+> Bandwidth Management" in secion 5.2 of the Altivec PEM -- dst, dstt,
+> dstst, dss and dssall?
 
-This mail is mostly to make sure of the later. I intend to get rid of it
-in 2.6.18 (that's early, but as I said, I think nobody uses it anyway. I
-intended to use it in some X stuff I never ended up actually
-implementing...)
+They are nops on the Cell though.  They are also microcoded on the 970.
+>
+> If you're referring to the extended dcbt that includes streaming hints
+> (as documented in the 64-bit PEM, but not in PPC book2 2.02), then a
+> separate bit is likely needed -- obviously at least 970 seems to
+> implement them.
 
-It only concerns 32 bits ppc machines with OF, and only the ones that
-renumber busses, which means basically only PowerMacs.
+Yes they are implemented on the 970.
 
-Ben.
+Thanks,
+Andrew Pinski
