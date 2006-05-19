@@ -1,16 +1,17 @@
-Return-Path: <olof@lixom.net>
-Date: Fri, 19 May 2006 00:19:39 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Cell and new CPU feature bits
-Message-ID: <20060519051939.GJ8220@pb15.lixom.net>
-References: <1148011621.13249.7.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1148011621.13249.7.camel@localhost.localdomain>
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2C16B67A40
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 15:24:36 +1000 (EST)
+Subject: pci-OF-bus-map deprecation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 19 May 2006 15:24:28 +1000
+Message-Id: <1148016268.13249.14.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,72 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 19, 2006 at 02:07:01PM +1000, Benjamin Herrenschmidt wrote:
-> The Cell has a couple of "features" that should be exposed to userland
-> in a way or another. That raises some questions however about how those
-> should be done. Among others that come to mind:
+For 32 bits machines with Open Firmware, we used to create a
+pci-OF-bus-map property in the device-tree that provided a mapping
+between linux and Open Firmware PCI bus numbers (since on some platforms
+like PowerMac, we still renumber PCI busses).
 
-Good questions, to make things scale when going from here on out
-(including new products from various companies in the PPC arena), more
-fine-grained features would certainly be useful.
+This property is no longer necessary as
 
->  - The timebase errata (should we use a separate aux vector for "bugs"
-> than for "features" ?
+ - Nowadays, we have sysfs and the PCI devices in there do have a full
+Open Firmware device path exposed as a "devspec" file in their sysfs
+directories
+ - I don't think anybody ever used that property in userland :)
 
-How are other userspace-exposed erratas normally handled? How are they
-handled on other architectures? Adding it to the feature aux table
-sounds like a bad idea.
+This mail is mostly to make sure of the later. I intend to get rid of it
+in 2.6.18 (that's early, but as I said, I think nobody uses it anyway. I
+intended to use it in some X stuff I never ended up actually
+implementing...)
 
->  - Additional Altivec instructions (load/store right/left). A new
-> feature bit for these ?
->  - Lack of data stream instructions. Until now, it was assumed that
-> those were tied to the presence
->    of an Altivec (and they are documented in the Altivec manual). Maybe
-> we should split that to a
->    new bit. I don't know if existing applications use them though, if
-> they do, there will be a 
->    problem to get them updated as the new bit isn't present on older
-> kernels...
+It only concerns 32 bits ppc machines with OF, and only the ones that
+renumber busses, which means basically only PowerMacs.
 
-I'm assuming you mean the instructions described under "AltiVec Memory
-Bandwidth Management" in secion 5.2 of the Altivec PEM -- dst, dstt,
-dstst, dss and dssall?
-
-Since they're explicitly part of the Altivec ISA, not the PPC ISA,
-I don't see a need for a separate feature bit for them. They are not
-marked as optional in the version I'm looking at right now (2.0).
-
->  - Extended implementation of dcbt. (Another bit ? Or sould we just have
-> a "CELL" bit ? In which
->    case should it cover the altivec additions too or are those likely to
-> exist in future non-Cell 
->    processors ?)
-
-If you're referring to the extended dcbt that includes streaming hints
-(as documented in the 64-bit PEM, but not in PPC book2 2.02), then a
-separate bit is likely needed -- obviously at least 970 seems to
-implement them.
-
->  - Not strictly Cell specific but we currently don't expose the support
-> for optional instructions
->    fres and frsqte (which are supported by Cell)
-> 
-> Part of the problem is that we only have 32 userland feature bits and
-> for some reason decided to put the microarchitecture in there, thus we
-> are running out fast...
-
- From what I understood by Paul's choice of feature naming (see the
-POWER6 patch discussions), PPC_ARCH_2_05 and similar will mean base
-architecture version implemented and should not be used to assume
-anything about optional features.
-
-So, with that as a base, there will need to be a way to
-indicate which optional features are available, plus what possible
-extensions/implementation-specific features are there, at least if they
-are common to more than one implementation/processor version. Bit arrays
-seem to be the New Way of doing it between firmware and kernel, maybe
-the same can/should be used for kernel->userspace? Can the aux vectors
-be of arbitrary length?
-
-
--Olof
+Ben.
