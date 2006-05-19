@@ -1,13 +1,13 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6929767A40
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:30:24 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A5B8F67A44
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:32:22 +1000 (EST)
 Subject: Re: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <jer72qnl38.fsf@sykes.suse.de>
 References: <878xq51t61.fsf@briny.internal.ondioline.org>
 	<je1wvxo70l.fsf@sykes.suse.de>
 	<1145220233.9833.11.camel@localhost.localdomain>
@@ -20,13 +20,13 @@ References: <878xq51t61.fsf@briny.internal.ondioline.org>
 	<1147862072.14395.25.camel@johannes> <je3bf85twf.fsf@sykes.suse.de>
 	<1147948758.15507.52.camel@johannes> <jek68jqz1l.fsf@sykes.suse.de>
 	<1148042866.3864.3.camel@johannes.berg> <jey7wynnux.fsf@sykes.suse.de>
-	<1148046512.3864.17.camel@johannes.berg>
-Date: Fri, 19 May 2006 16:30:19 +0200
-In-Reply-To: <1148046512.3864.17.camel@johannes.berg> (Johannes Berg's message
-	of "Fri, 19 May 2006 15:48:32 +0200")
-Message-ID: <jer72qnl38.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	<1148046512.3864.17.camel@johannes.berg> <jer72qnl38.fsf@sykes.suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-vGI5dKhK0c4m/AMjDWyL"
+Date: Fri, 19 May 2006 16:32:18 +0200
+Message-Id: <1148049138.6228.5.camel@johannes.berg>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,33 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg <johannes@sipsolutions.net> writes:
 
-> On Fri, 2006-05-19 at 15:30 +0200, Andreas Schwab wrote:
->
->> >> Yes, that's while I had that loaded.  Of course, I unloaded it before I
->> >> tried snd-aoa.
->> >
->> > Ok, but is that the correct stuff, i.e. does it work?
->> 
->> Sorry, I can't quite figure out what "it" refers to in your question.
->
-> Sorry. I was trying to ask if you get sound with snd-powermac, i.e. if
-> the items
->
->>>         80008000-800083ff : 0.00010000:i2s
->>>           80008000-800083ff : Sound DMA
->>>         80010000-80010fff : 0.00010000:i2s
->>>           80010000-80010fff : Sound Control
->
-> are correct.
+--=-vGI5dKhK0c4m/AMjDWyL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yes, sound is fully supported by snd-powermac on my system.
+On Fri, 2006-05-19 at 16:30 +0200, Andreas Schwab wrote:
 
-Andreas.
+> Yes, sound is fully supported by snd-powermac on my system.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Alright, I'll look at it then.
+
+johannes
+
+--=-vGI5dKhK0c4m/AMjDWyL
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARG3W76Vg1VMiehFYAQIKyxAAgDPQlLeXsHxSZ9rCjXN71RjhBWXooXxD
+qsIIwcdsYhlulFKfyDyePvxOVJup4ZqDwBM7K5p4CUF0VvQl5/6X9UWljGZIEaCR
+Uc1Dt7nNez1Egx727i8VnuF8RQK7+eFE4jUw53WgGXYQFgIAjf2IlvzAtz318+07
+oqOYL/n0phQXJSnCkR+n3Wa9rQ4W1fFTcWVs84jz+Bak+jTXFuN61MFgHrAeeZra
+kiEdP4QULSLuHes8r6FfstDDcaIVXGJGtG4Y3nwxv7Q5x8nIA7dOHpaMcEYqkVXp
+lEnafeVu803hjHFx6fR4eY/uzXbGxemq5FOU9Lp5GwkJbSVqQXfZr5a4VRhSI7Iu
+amgAeV9lb2xsGmqezvtfFKLJW2OcFG0CJHGbOKe6E7sQDsU37DsnMCgEGk0JaLgp
+dyv4BVpY9q2Lkm+HcHyyah8j/Jt5/Yjvba985sSGGOi2q3QQ9rDp6baXiJavfpTo
+lzzGPb3rwcD3YqZeUhjpHbDrKo+7uk9mH+y8GmqE42BBcQZNRjBqrWMhZsBSSUHI
+37UwyG63gHeXtUsd8oV1YE+bXunaCb1/uEF+EmzRMf/X638h5fkZ6RAGTIVIij1y
+UlpRLYakOSBgVZ+mrUWugHR44BUMYruqGUXs4kwBWxjouCv464R2q5PiV/EfEsqt
+Eo2/rD4SCp8=
+=YV90
+-----END PGP SIGNATURE-----
+
+--=-vGI5dKhK0c4m/AMjDWyL--
