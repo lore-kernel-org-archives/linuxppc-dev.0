@@ -1,12 +1,13 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 47AE367B83
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 17:09:42 +1000 (EST)
-Date: Fri, 19 May 2006 16:51:57 +1000
+	by ozlabs.org (Postfix) with ESMTP id 8F4CB67CF9
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 17:09:53 +1000 (EST)
+Date: Fri, 19 May 2006 16:53:11 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 06/14] powerpc: remove LogicalSlot from pci_dn
-Message-Id: <20060519165157.2d636a98.sfr@canb.auug.org.au>
+Subject: [PATCH 07/14] powerpc: iSeries PCI devices can now have a devpsec
+	attribute
+Message-Id: <20060519165311.37b445a3.sfr@canb.auug.org.au>
 In-Reply-To: <20060519164249.2dc43bc4.sfr@canb.auug.org.au>
 References: <20060519164249.2dc43bc4.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -21,89 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-As we now store enough information in the device_node.
-
-Also the Flags field was not used either, do remove that.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
 
- arch/powerpc/platforms/iseries/iommu.c |    5 ++++-
- arch/powerpc/platforms/iseries/pci.c   |    8 --------
- include/asm-powerpc/pci-bridge.h       |    4 ----
- 3 files changed, 4 insertions(+), 13 deletions(-)
+ arch/powerpc/kernel/pci_64.c |    7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-bf52061e7db75eb167e5f7749d706614de5bcc81
-diff --git a/arch/powerpc/platforms/iseries/iommu.c b/arch/powerpc/platforms/iseries/iommu.c
-index 75a5a1e..a992f6a 100644
---- a/arch/powerpc/platforms/iseries/iommu.c
-+++ b/arch/powerpc/platforms/iseries/iommu.c
-@@ -162,10 +162,13 @@ void iommu_devnode_init_iSeries(struct d
- {
- 	struct iommu_table *tbl;
- 	struct pci_dn *pdn = PCI_DN(dn);
-+	u32 *lsn = (u32 *)get_property(dn, "linux,logical-slot-number", NULL);
-+
-+	BUG_ON(lsn == NULL);
- 
- 	tbl = kmalloc(sizeof(struct iommu_table), GFP_KERNEL);
- 
--	iommu_table_getparms_iSeries(pdn->busno, pdn->LogicalSlot, 0, tbl);
-+	iommu_table_getparms_iSeries(pdn->busno, *lsn, 0, tbl);
- 
- 	/* Look for existing tce table */
- 	pdn->iommu_table = iommu_table_find(tbl);
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index edaafbb..86a8698 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -191,7 +191,6 @@ void iSeries_pcibios_init(void)
- 		for (dn = NULL; (dn = of_get_next_child(node, dn)) != NULL;) {
- 			struct pci_dn *pdn;
- 			u32 *reg;
--			u32 *lsn;
- 
- 			reg = (u32 *)get_property(dn, "reg", NULL);
- 			if (reg == NULL) {
-@@ -203,12 +202,6 @@ void iSeries_pcibios_init(void)
- 				printk(KERN_DEBUG "no subbus property!\n");
- 				continue;
- 			}
--			lsn = (u32 *)get_property(dn,
--					"linux,logical-slot-number", NULL);
--			if (lsn == NULL) {
--				printk(KERN_DEBUG "no logical-slot-number\n");
--				continue;
--			}
- 
- 			pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
- 			if (pdn == NULL)
-@@ -218,7 +211,6 @@ void iSeries_pcibios_init(void)
- 			pdn->busno = bus;
- 			pdn->devfn = (reg[0] >> 8) & 0xff;
- 			pdn->bussubno = *busp;
--			pdn->LogicalSlot = *lsn;
- 		}
- 	}
+bfe21d083414576fccd84ead574adffea99968c1
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index e1b3b3e..30a4e6a 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -886,8 +886,8 @@ int pci_mmap_page_range(struct pci_dev *
+ 	return ret;
  }
-diff --git a/include/asm-powerpc/pci-bridge.h b/include/asm-powerpc/pci-bridge.h
-index 09079e4..84a3075 100644
---- a/include/asm-powerpc/pci-bridge.h
-+++ b/include/asm-powerpc/pci-bridge.h
-@@ -78,10 +78,6 @@ #endif
- 	struct	iommu_table *iommu_table;	/* for phb's or bridges */
- 	struct	pci_dev *pcidev;	/* back-pointer to the pci device */
- 	struct	device_node *node;	/* back-pointer to the device_node */
--#ifdef CONFIG_PPC_ISERIES
--	int	Flags;			/* Possible flags(disable/bist)*/
--	u8	LogicalSlot;		/* Hv Slot Index for Tces */
--#endif
- 	u32	config_space[16];	/* saved PCI config space */
- };
  
+-#ifdef CONFIG_PPC_MULTIPLATFORM
+-static ssize_t pci_show_devspec(struct device *dev, struct device_attribute *attr, char *buf)
++static ssize_t pci_show_devspec(struct device *dev,
++		struct device_attribute *attr, char *buf)
+ {
+ 	struct pci_dev *pdev;
+ 	struct device_node *np;
+@@ -899,13 +899,10 @@ static ssize_t pci_show_devspec(struct d
+ 	return sprintf(buf, "%s", np->full_name);
+ }
+ static DEVICE_ATTR(devspec, S_IRUGO, pci_show_devspec, NULL);
+-#endif /* CONFIG_PPC_MULTIPLATFORM */
+ 
+ void pcibios_add_platform_entries(struct pci_dev *pdev)
+ {
+-#ifdef CONFIG_PPC_MULTIPLATFORM
+ 	device_create_file(&pdev->dev, &dev_attr_devspec);
+-#endif /* CONFIG_PPC_MULTIPLATFORM */
+ }
+ 
+ #ifdef CONFIG_PPC_MULTIPLATFORM
 -- 
 1.3.1.ge923
