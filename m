@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id AC09C67A75
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 17:10:12 +1000 (EST)
-Date: Fri, 19 May 2006 16:54:42 +1000
+	by ozlabs.org (Postfix) with ESMTP id 803C367DBC
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 17:10:33 +1000 (EST)
+Date: Fri, 19 May 2006 16:55:53 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 08/14] powerpc: clean up iSeries PCI probe
-Message-Id: <20060519165442.75e40d7c.sfr@canb.auug.org.au>
+Subject: [PATCH 09/14] powerpc: make iSeries flat device tree stuff static
+Message-Id: <20060519165553.147f39aa.sfr@canb.auug.org.au>
 In-Reply-To: <20060519164249.2dc43bc4.sfr@canb.auug.org.au>
 References: <20060519164249.2dc43bc4.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -22,126 +22,162 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Only scan the host bridges and then use the existing pci_devs_phb_init()
-routine.
-
-Also fix typo in setup of reg property.
-
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
 
- arch/powerpc/kernel/pci_dn.c           |    6 +++++
- arch/powerpc/platforms/iseries/pci.c   |   42 +++++++++++---------------------
- arch/powerpc/platforms/iseries/setup.c |    2 +-
- 3 files changed, 21 insertions(+), 29 deletions(-)
+ arch/powerpc/platforms/iseries/setup.c |   40 ++++++++++++++++++--------------
+ 1 files changed, 22 insertions(+), 18 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-979e33e7df3519bb4bbc550ad7e52b5ad2b30221
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 12c4c9e..1c18953 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -31,6 +31,7 @@ #include <asm/prom.h>
- #include <asm/pci-bridge.h>
- #include <asm/pSeries_reconfig.h>
- #include <asm/ppc-pci.h>
-+#include <asm/firmware.h>
- 
- /*
-  * Traverse_func that inits the PCI fields of the device node.
-@@ -59,6 +60,11 @@ static void * __devinit update_dn_pci_in
- 		pdn->busno = (regs[0] >> 16) & 0xff;
- 		pdn->devfn = (regs[0] >> 8) & 0xff;
- 	}
-+	if (firmware_has_feature(FW_FEATURE_ISERIES)) {
-+		u32 *busp = (u32 *)get_property(dn, "linux,subbus", NULL);
-+		if (busp)
-+			pdn->bussubno = *busp;
-+	}
- 
- 	pdn->pci_ext_config_space = (type && *type == 1);
- 	return NULL;
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index 86a8698..35bcc98 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -166,13 +166,21 @@ static void pci_Log_Error(char *Error_Te
- void iSeries_pcibios_init(void)
- {
- 	struct pci_controller *phb;
--	struct device_node *node;
--	struct device_node *dn;
-+	struct device_node *root = of_find_node_by_path("/");
-+	struct device_node *node = NULL;
- 
--	for_each_node_by_type(node, "pci") {
-+	if (root == NULL) {
-+		printk(KERN_CRIT "iSeries_pcibios_init: can't find root "
-+				"of device tree\n");
-+		return;
-+	}
-+	while ((node = of_get_next_child(root, node)) != NULL) {
- 		HvBusNumber bus;
- 		u32 *busp;
- 
-+		if ((node->type == NULL) || (strcmp(node->type, "pci") != 0))
-+			continue;
-+
- 		busp = (u32 *)get_property(node, "bus-range", NULL);
- 		if (busp == NULL)
- 			continue;
-@@ -186,33 +194,11 @@ void iSeries_pcibios_init(void)
- 		phb->first_busno = bus;
- 		phb->last_busno = bus;
- 		phb->ops = &iSeries_pci_ops;
-+	}
- 
--		/* Find and connect the devices. */
--		for (dn = NULL; (dn = of_get_next_child(node, dn)) != NULL;) {
--			struct pci_dn *pdn;
--			u32 *reg;
--
--			reg = (u32 *)get_property(dn, "reg", NULL);
--			if (reg == NULL) {
--				printk(KERN_DEBUG "no reg property!\n");
--				continue;
--			}
--			busp = (u32 *)get_property(dn, "linux,subbus", NULL);
--			if (busp == NULL) {
--				printk(KERN_DEBUG "no subbus property!\n");
--				continue;
--			}
-+	of_node_put(root);
- 
--			pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
--			if (pdn == NULL)
--				return;
--			dn->data = pdn;
--			pdn->node = dn;
--			pdn->busno = bus;
--			pdn->devfn = (reg[0] >> 8) & 0xff;
--			pdn->bussubno = *busp;
--		}
--	}
-+	pci_devs_phb_init();
- }
- 
- /*
+ef5523ad5d01ff256b792ef5a44719c4a56771d9
 diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
-index d83f5ed..0f49412 100644
+index 0f49412..9586414 100644
 --- a/arch/powerpc/platforms/iseries/setup.c
 +++ b/arch/powerpc/platforms/iseries/setup.c
-@@ -1073,7 +1073,7 @@ static void scan_bridge_slot(struct iser
- 				snprintf(buf, sizeof(buf), "pci@%x,%d",
- 						PCI_SLOT(devfn), function);
- 			dt_start_node(dt, buf);
--			reg[0] = (bus << 18) | (devfn << 8);
-+			reg[0] = (bus << 16) | (devfn << 8);
- 			reg[1] = 0;
- 			reg[2] = 0;
- 			reg[3] = 0;
+@@ -723,9 +723,9 @@ struct iseries_flat_dt {
+ 	struct blob strings;
+ };
+ 
+-struct iseries_flat_dt iseries_dt;
++static struct iseries_flat_dt iseries_dt;
+ 
+-void dt_init(struct iseries_flat_dt *dt)
++static void dt_init(struct iseries_flat_dt *dt)
+ {
+ 	dt->header.off_mem_rsvmap =
+ 		offsetof(struct iseries_flat_dt, reserve_map);
+@@ -748,7 +748,7 @@ void dt_init(struct iseries_flat_dt *dt)
+ 	dt->reserve_map[1] = 0;
+ }
+ 
+-void dt_check_blob(struct blob *b)
++static void dt_check_blob(struct blob *b)
+ {
+ 	if (b->next >= (unsigned long)&b->next) {
+ 		DBG("Ran out of space in flat device tree blob!\n");
+@@ -756,7 +756,7 @@ void dt_check_blob(struct blob *b)
+ 	}
+ }
+ 
+-void dt_push_u32(struct iseries_flat_dt *dt, u32 value)
++static void dt_push_u32(struct iseries_flat_dt *dt, u32 value)
+ {
+ 	*((u32*)dt->dt.next) = value;
+ 	dt->dt.next += sizeof(u32);
+@@ -764,15 +764,17 @@ void dt_push_u32(struct iseries_flat_dt 
+ 	dt_check_blob(&dt->dt);
+ }
+ 
+-void dt_push_u64(struct iseries_flat_dt *dt, u64 value)
++#ifdef notyet
++static void dt_push_u64(struct iseries_flat_dt *dt, u64 value)
+ {
+ 	*((u64*)dt->dt.next) = value;
+ 	dt->dt.next += sizeof(u64);
+ 
+ 	dt_check_blob(&dt->dt);
+ }
++#endif
+ 
+-unsigned long dt_push_bytes(struct blob *blob, char *data, int len)
++static unsigned long dt_push_bytes(struct blob *blob, char *data, int len)
+ {
+ 	unsigned long start = blob->next - (unsigned long)blob->data;
+ 
+@@ -784,7 +786,7 @@ unsigned long dt_push_bytes(struct blob 
+ 	return start;
+ }
+ 
+-void dt_start_node(struct iseries_flat_dt *dt, char *name)
++static void dt_start_node(struct iseries_flat_dt *dt, char *name)
+ {
+ 	dt_push_u32(dt, OF_DT_BEGIN_NODE);
+ 	dt_push_bytes(&dt->dt, name, strlen(name) + 1);
+@@ -792,7 +794,7 @@ void dt_start_node(struct iseries_flat_d
+ 
+ #define dt_end_node(dt) dt_push_u32(dt, OF_DT_END_NODE)
+ 
+-void dt_prop(struct iseries_flat_dt *dt, char *name, char *data, int len)
++static void dt_prop(struct iseries_flat_dt *dt, char *name, char *data, int len)
+ {
+ 	unsigned long offset;
+ 
+@@ -811,37 +813,39 @@ void dt_prop(struct iseries_flat_dt *dt,
+ 	dt_push_bytes(&dt->dt, data, len);
+ }
+ 
+-void dt_prop_str(struct iseries_flat_dt *dt, char *name, char *data)
++static void dt_prop_str(struct iseries_flat_dt *dt, char *name, char *data)
+ {
+ 	dt_prop(dt, name, data, strlen(data) + 1); /* + 1 for NULL */
+ }
+ 
+-void dt_prop_u32(struct iseries_flat_dt *dt, char *name, u32 data)
++static void dt_prop_u32(struct iseries_flat_dt *dt, char *name, u32 data)
+ {
+ 	dt_prop(dt, name, (char *)&data, sizeof(u32));
+ }
+ 
+-void dt_prop_u64(struct iseries_flat_dt *dt, char *name, u64 data)
++static void dt_prop_u64(struct iseries_flat_dt *dt, char *name, u64 data)
+ {
+ 	dt_prop(dt, name, (char *)&data, sizeof(u64));
+ }
+ 
+-void dt_prop_u64_list(struct iseries_flat_dt *dt, char *name, u64 *data, int n)
++static void dt_prop_u64_list(struct iseries_flat_dt *dt, char *name, u64 *data, int n)
+ {
+ 	dt_prop(dt, name, (char *)data, sizeof(u64) * n);
+ }
+ 
+-void dt_prop_u32_list(struct iseries_flat_dt *dt, char *name, u32 *data, int n)
++static void dt_prop_u32_list(struct iseries_flat_dt *dt, char *name, u32 *data, int n)
+ {
+ 	dt_prop(dt, name, (char *)data, sizeof(u32) * n);
+ }
+ 
+-void dt_prop_empty(struct iseries_flat_dt *dt, char *name)
++#ifdef notyet
++static void dt_prop_empty(struct iseries_flat_dt *dt, char *name)
+ {
+ 	dt_prop(dt, name, NULL, 0);
+ }
++#endif
+ 
+-void dt_cpus(struct iseries_flat_dt *dt)
++static void dt_cpus(struct iseries_flat_dt *dt)
+ {
+ 	unsigned char buf[32];
+ 	unsigned char *p;
+@@ -895,7 +899,7 @@ void dt_cpus(struct iseries_flat_dt *dt)
+ 	dt_end_node(dt);
+ }
+ 
+-void dt_model(struct iseries_flat_dt *dt)
++static void dt_model(struct iseries_flat_dt *dt)
+ {
+ 	char buf[16] = "IBM,";
+ 
+@@ -913,7 +917,7 @@ void dt_model(struct iseries_flat_dt *dt
+ 	dt_prop_str(dt, "compatible", "IBM,iSeries");
+ }
+ 
+-void dt_vdevices(struct iseries_flat_dt *dt)
++static void dt_vdevices(struct iseries_flat_dt *dt)
+ {
+ 	u32 reg = 0;
+ 	HvLpIndexMap vlan_map;
+@@ -1203,7 +1207,7 @@ static void dt_pci_devices(struct iserie
+ 	}
+ }
+ 
+-void build_flat_dt(struct iseries_flat_dt *dt, unsigned long phys_mem_size)
++static void build_flat_dt(struct iseries_flat_dt *dt, unsigned long phys_mem_size)
+ {
+ 	u64 tmp[2];
+ 
 -- 
 1.3.1.ge923
