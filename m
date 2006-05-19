@@ -2,22 +2,22 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 47C3E679F5
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 22:46:44 +1000 (EST)
-Received: from [84.135.205.239] (helo=johannes.berg)
-	by sipsolutions.net with esmtpsa (TLS-1.0:RSA_ARCFOUR_MD5:16)
-	(Exim 4.61) (envelope-from <johannes@sipsolutions.net>)
-	id 1Fh4NL-0003hV-Of
-	for linuxppc-dev@ozlabs.org; Fri, 19 May 2006 13:46:40 +0100
-Subject: i2sbus transfer foo
+	by ozlabs.org (Postfix) with ESMTP id 14B03679EA
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 22:47:26 +1000 (EST)
+Subject: Re: snd-aoa status update / automatic driver loading
 From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Tony Vroon <chainsaw@gentoo.org>
+In-Reply-To: <446B721D.8020203@gentoo.org>
+References: <1147860564.14395.6.camel@johannes> <446B721D.8020203@gentoo.org>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-9BFMAD0Rho3c3KeDPcml"
-Date: Fri, 19 May 2006 13:36:52 +0200
-Message-Id: <1148038613.15507.193.camel@johannes>
+	boundary="=-n0dCRPCNERRsRbT8JW5Y"
+Date: Fri, 19 May 2006 12:22:07 +0200
+Message-Id: <1148034127.15507.178.camel@johannes>
 Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Benjamin Berg <benjamin@sipsolutions.net>,
+	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,125 +28,131 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-9BFMAD0Rho3c3KeDPcml
+--=-n0dCRPCNERRsRbT8JW5Y
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Sorry for the vague subject :) I don't really know what to say...
+On Wed, 2006-05-17 at 19:57 +0100, Tony Vroon wrote:
 
-Let me introduce some things first. First of all, the i2sbus controllers
-Apple has in their mac-io chip are capable of doing (among others we
-don't care about) 16-bit transfers in 32x and 64x i2s modes, and 24-bit
-transfers in 64x i2s mode. For the latter, the chip requires that the
-inputs are actually 32-bit aligned, which means that it's a bit weird
-that it doesn't actually transfer all the 32 bits. But that's another
-issue, maybe there's a way to make it transfer 32 bits that I don't
-know. Or maybe it even does and we just don't have a codec capable of
-using or creating data in those remaining 8 bits.
+> When writing documentation, you might want to add that the ALSA-plugin
+> in XMMS & Audacious requires a period time of 100ms instead of the
+> default of 50ms, as otherwise the sou*click*nd is n*click*ot ver*click*y
+> good.
+> (A look at the current code of that plugin, to see how the volume
+> control code can be fixed would be highly appreciated)
 
-Anyway, let's dive right in, here's a sample capture where I was
-capturing an 880Hz sine wave generated with gstreamer on another machine
-via a direct cable:
+How's that related to snd-aoa? You can currently buffer up to 131072
+bytes which at 96KHz and 32 bits is ~171ms. At the regular 44100Hz/16bit
+it is ~743ms. But you can easily increase that in i2sbus-pcm.c line
+126ff:
+        /* these are somewhat arbitrary */
+        hw->buffer_bytes_max =3D 131072;
+        hw->period_bytes_min =3D 256;
+        hw->period_bytes_max =3D 16384;
+The thing is just that this memory area is essentially mlock()ed so if I
+did indeed allow 16k per period and 32 periods the stream would mlock
+512K. What would others say is appropriate?
 
-00007910  f8 36 48 00 f7 a1 cc 00  f7 a1 cc 00 f7 2e ea 00  |.6H...........=
-..|
-00007920  f7 2e ea 00 f6 df 58 00  f6 df 58 00 f6 b4 ee 00  |......X...X...=
-..|
-00007930  f6 b4 ee 00 f6 af 78 00  f6 af 78 00 f6 cf 59 00  |......x...x...=
-Y.|
+Ah then again I can see how this might be related to snd-aoa -- we only
+update the pcm position on each period so maybe we should increase the
+minimum number of periods. Can you try that? Go into i2sbus-pcm.c line
+130 and change
+        hw->periods_min =3D 3;
+to maybe 6. Or just try binary search for  smallest value that makes it
+work (if it ever does, but I think it should, if this is indeed the
+issue). Indeed, at 50ms buffer you have just 8820 bytes which can even
+be divided by 3 so that probably means that xmms used 3 periods. Maybe
+that's a bit tight. Do you see the same issue with snd-powermac? (it
+uses the same period setup)
 
-The hexdump above is directly from the DMA memory area, not gone through
-alsa, I made a debugfs file that gives me access to the buffer area
-straight away.
+> Not seen this, although I must say it does not resume from sleep as
+> gracefully as I have seen you describe it.
 
-Let me start arecord again:
-$ arecord -r 44100 -f S32_LE -c2 > /tmp/test.wav
+What happens? I just fixed tas resume from sleep (by completely
+re-initialising the codec) and something similar should be done for the
+onyx probably (or do I do that already?) for suspend to disk, but other
+than that... Oh I just realised that it'll lose some sound due to
+restarting the dma command ring at the beginning. Hmm. I suppose I can
+change that easily, will have to do some testing.
 
-Dumping the dma area again yields:
-00008680  e4 00 ff bd e4 00 fe 93  22 00 fe 93 22 00 fd 6f  |........"...".=
-.o|
-00008690  2b 00 fd 6f 2b 00 fc 55  62 00 fc 55 62 00 fb 49  |+..o+..Ub..Ub.=
-.I|
-000086a0  76 00 fb 49 76 00 fa 52  49 00 fa 52 49 00 f9 71  |v..Iv..RI..RI.=
-.q|
-000086b0  1f 00 f9 71 1f 00 f8 aa  2c 00 f8 aa 2c 00 f7 ff  |...q....,...,.=
-..|
-and a 3rd time:
-0000ff60  00 07 3a 12 00 06 6f 77  00 06 6f 77 00 05 89 d9  |..:...ow..ow..=
-..|
-0000ff70  00 05 89 d9 00 04 8e 73  00 04 8e 73 00 03 80 4a  |.......s...s..=
-.J|
-0000ff80  00 03 80 4a 00 02 64 b0  00 02 64 b0 00 01 3e c0  |...J..d...d...=
->.|
-0000ff90  00 01 3e c0 00 00 16 65  00 00 16 65 00 fe ea b6  |..>....e...e..=
-..|
-4th time it's like 3rd, 5th like first, but 6th time:
-0000bc60  e8 39 00 00 13 60 00 00  13 60 00 01 3d 96 00 01  |.9...`...`..=
-=3D...|
-0000bc70  3d 96 00 02 63 55 00 02  63 55 00 03 7f f5 00 03  |=3D...cU..cU..=
-....|
-0000bc80  7f f5 00 04 8b 73 00 04  8b 73 00 05 87 84 00 05  |.....s...s....=
-..|
-0000bc90  87 84 00 06 6d cc 00 06  6d cc 00 07 37 ae 00 07  |....m...m...7.=
-..|
+Benjamin (Berg), can we do that even with the lost interrupt issue?
 
-See the problem?
+Maybe both of these issues can be fixed by using the frame count
+register instead to count how many samples were played? Below is a small
+patch to print out a lot of frame count numbers, Benjamin, I'd
+appreciate if you could look how this interacted with the lost
+interrupts.
 
-When I actually manage to have it aligned like in #3 above,
-SNDRV_PCM_FORMAT_S24_BE would be correct. And in that case, I once even
-got a nice wav file that audacity can downsample to 16 bit and play
-properly. But in all other cases I get mangled sound for obvious
-reasons.
+Note that for this to work we'd of course have to sample the frame count
+register right before starting the DMA engine, it increases even while
+we're not playing because we don't stop the clocks. We probably should
+do that too for powersaving. Humm. Lots to do :) Oh and this probably
+means that yes, it works fine even when we do lose interrupts.=20
 
-The correct data layout seems to be the first though, because when I
-transfer that *to* the chip for playback (by making i2sbus announce
-32bit big-endian format to alsa) I get proper sound with the correct
-volume, hence I just changed i2sbus to always announce 16 and 32-bit BE
-formats which also no longer mangles sound with gstreamer (except for
-clicking every once a while on some streams[1]).
-
-Oh, and note that those 4 cases aren't all possible cases. If you think
-about it you'll notice that there are 8 cases because we have two
-channels. I think I even mixed them in the dumps above, not sure.
-
-Some looking at snd-powermac code later I now changed the i2sbus code to
-do a dbdma-programmed engine stop in hope that would synchronize (as a
-comment in snd-powermac implies) but that doesn't seem to be correct
-either. I now more often get the first case though not all the time.
-
-I'm out of ideas. I don't have a clue how to get this thing synchronized
-properly. If anyone has a solution let me know, otherwise I'll probably
-just disable 24-bit recording for good, then at least the chances of
-getting sound that makes sense (even if left and right might be
-switched) are 1/2 as opposed to 1/4 assuming even distribution... Also,
-the question is why this does not happen on playback, or at least so
-much less frequently that I haven't seen it yet...
+Alternatively we could use the register just to detect if we lost
+interrupts, i.e. calculate how many frames we have per period and then
+see if the frame count increased approximately by that much (I've seen
++- a few frames probably due to timing, with higher samplerates we'll
+probably see a bit more error) and if it increased by much more we could
+estimate how many interrupts we lost. What do you think?
 
 johannes
 
-[1] only happens with gstreamer on some streams, and then only if I use
-alsasink without giving it the latency-time option, even if I give it
-the default it doesn't click. very strange.
+--- snd-aoa.orig/soundbus/i2sbus/i2sbus-pcm.c	2006-05-19 12:10:16.919474526=
+ +0200
++++ snd-aoa/soundbus/i2sbus/i2sbus-pcm.c	2006-05-19 12:11:22.119474526 +020=
+0
+@@ -488,12 +488,17 @@ static snd_pcm_uframes_t i2sbus_pcm_poin
+ static inline void handle_interrupt(struct i2sbus_dev *i2sdev, int in)
+ {
+ 	struct pcm_info *pi;
++	u32 fc;
+=20
+ 	get_pcm_info(i2sdev, in, &pi, NULL);
+ 	if (!pi->substream) {
+ 		printk(KERN_INFO "i2sbus: got %s irq while not active!\n", in?"rx":"tx")=
+;
+ 		return;
+ 	}
++	fc =3D in_le32(&i2sdev->intfregs->frame_count);
++	printk(KERN_DEBUG "i2sbus: frame count is %d\n", fc);
++	printk(KERN_DEBUG "i2sbus: delta fc =3D %d\n", fc - i2sdev->fc);
++	i2sdev->fc =3D fc;
+ 	pi->current_period =3D (pi->current_period+1) % (pi->periods);
+ 	snd_pcm_period_elapsed(pi->substream);
+ }
+--- snd-aoa.orig/soundbus/i2sbus/i2sbus.h	2006-05-19 12:10:16.919474526 +02=
+00
++++ snd-aoa/soundbus/i2sbus/i2sbus.h	2006-05-19 12:11:22.119474526 +0200
+@@ -50,6 +50,7 @@ struct i2sbus_dev {
+ 	struct macio_dev *macio;
+ 	struct i2sbus_control *control;
+ 	volatile struct i2s_interface_regs __iomem *intfregs;
++	u32 fc;
+=20
+ 	int resource_allocated; /* bitmask of resources */
+ 	struct resource resources[3];
 
---=-9BFMAD0Rho3c3KeDPcml
+
+--=-n0dCRPCNERRsRbT8JW5Y
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARG2t06Vg1VMiehFYAQK/PBAAnj/EcTctP9Wp5GbRxGHLnMvpd6QOls40
-dLOlPlxnjqFkXKaV12TRyb72s7moFiRAAmQjo9rGTj6ifJJhibroVZVRmtf7nay1
-gZuf1uHfZEQ1iIMaBsmDr+jtkHYq41zdmVhQEemChmKTQungxj2l+rsqUaPNoQmS
-f6DWc7JHKeHdLXn7TTeQ2AzNGTR5l2w9gFejsIWbr+7g2hsSrFb5MwIOJe/Jywe2
-ET0TugVRf0pyhdyw2BPlgthxLEMXs0lzXBkhEz8vB24JLjbLq/1KYkGzIfZJC/jE
-SOQY0dLmebgl0Nc1zKrUmhVdb7Um8tQabuTG198vkoO5HEIX5ksEZkn4cHwFTEYP
-JiG9AFsZVXSAAm4PXMTN9lUYrTcczahjwva+DPdE54LVVLhU2TUJRJT3RUTWvuqo
-wUb/Om7IO0IcmFdigx4zvuGyqzD4s+7cXUcxvrq3BYPy51bYN8AB9z39Xl9S40mB
-DKHp/Z1LeDrXBrCE+3TJmMT46kaTY56bvsmGQEL/Y45UUYYHwNUwZmnlhyYWAGoh
-wd0I2oBWgxU2M+JLccomS/zYz/th2HikM13v0vTO3L/VMs73B0/I2/bCQABu01vt
-Pcj96vGnDVRNFxKeJpjLviHnN6sZQelDK2GBE0P+VaFfsqzb4NTq2ByLyPGqpPf3
-NL0ep6ZIvvg=
-=o86k
+iQIVAwUARG2cTaVg1VMiehFYAQKyHw/+KjPPnKj3Jv8pkRKpTpAVkJkUMgr7iefT
+GaZ4DBf3k+ENYo83PGr9uI28gWVTVAjIETZvLw+wTMFB3r6dXWGlUJtP/12M9Sdq
+QfUV+eVtFNwykPRCeIDi/wgOOGwGUqS0YqxdinhST6dSd/wAR3wVQdc/dX6MRfWq
+jPtWUSIFTv8MFQ21biM+0CPZ8mJCvutJ7Vpup0b9I9tl42Hy6wYsCaaeUmFtgq+G
+V3pcYCsag2g+BnRCbcpzFLSiHt9GOKEe7+GDM7zHeZL/P9ra+OqVTIDk91NGUCji
+WJ2aYvRRnzIggZE4e1nMofCQbu6LENv+uTLF9qX513hD65/3gMGynBZ+hvPrkhes
+59o37MlBk/DQmqt9raPc/vYzd/pL1l8jsZiOaaBRtq1P5DjEXj3t4qcrIuMTqACN
+KMLywuBMqWp8w9vuoXbYB00ks5xOs62MscCdNFi6oGFG09LbUBe5UsC3YkXhhhJ7
+urs+IeJL6No0ax6+GY0T5vu72HXPDuwZGDhHQFjtBsQOw8p2X50h7L297PudKus0
+OMSUX1B27kXLGcj+WuVLmnlC6/RY2wRG5PVrk2r53HACwhEDhbPt2WPeQEACo5oe
+l8SAH2eyzWme3I3uvjXT5XnCSh/QuRxJ7Ob6QVL2tMg+g3Ugy0VTV9gB5wVeOAFu
+oggdGXBDx5Y=
+=tLLU
 -----END PGP SIGNATURE-----
 
---=-9BFMAD0Rho3c3KeDPcml--
+--=-n0dCRPCNERRsRbT8JW5Y--
