@@ -1,33 +1,26 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A5B8F67A44
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:32:22 +1000 (EST)
-Subject: Re: PowerMac7,3 sound (was: PowerBook5,4 -- no sound?)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jer72qnl38.fsf@sykes.suse.de>
-References: <878xq51t61.fsf@briny.internal.ondioline.org>
-	<je1wvxo70l.fsf@sykes.suse.de>
-	<1145220233.9833.11.camel@localhost.localdomain>
-	<je7j5phz9j.fsf@sykes.suse.de>
-	<1145231658.9833.17.camel@localhost.localdomain>
-	<je3bgdhwre.fsf@sykes.suse.de>
-	<1145233812.9833.21.camel@localhost.localdomain>
-	<je1wvwfh7s.fsf@sykes.suse.de>
-	<1145307118.3912.11.camel@localhost.localdomain>
-	<1147862072.14395.25.camel@johannes> <je3bf85twf.fsf@sykes.suse.de>
-	<1147948758.15507.52.camel@johannes> <jek68jqz1l.fsf@sykes.suse.de>
-	<1148042866.3864.3.camel@johannes.berg> <jey7wynnux.fsf@sykes.suse.de>
-	<1148046512.3864.17.camel@johannes.berg> <jer72qnl38.fsf@sykes.suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-vGI5dKhK0c4m/AMjDWyL"
-Date: Fri, 19 May 2006 16:32:18 +0200
-Message-Id: <1148049138.6228.5.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AE22767A58
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 00:33:17 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Paul Collins <paul@briny.ondioline.org>
+Subject: Re: snd-aoa status update / automatic driver loading
+References: <1147860564.14395.6.camel@johannes>
+	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
+	<1147947784.15507.46.camel@johannes>
+	<87wtcirw0y.fsf@briny.internal.ondioline.org>
+Date: Fri, 19 May 2006 16:33:11 +0200
+In-Reply-To: <87wtcirw0y.fsf@briny.internal.ondioline.org> (Paul Collins's
+	message of "Fri, 19 May 2006 23:20:29 +1000")
+Message-ID: <jemzdenkyg.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Cc: list <linuxppc-dev@ozlabs.org>, Johannes Berg <johannes@sipsolutions.net>,
+	debian-powerpc <debian-powerpc@lists.debian.org>,
+	Eddy =?iso-8859-2?Q?Petri=BAor?= <eddy.petrisor@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,38 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Paul Collins <paul@briny.ondioline.org> writes:
 
---=-vGI5dKhK0c4m/AMjDWyL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Johannes Berg <johannes@sipsolutions.net> writes:
+>
+>> On Thu, 2006-05-18 at 10:25 +0300, Eddy Petri=BAor wrote:
+>>
+>>> Any chance for 5,2 ? What is needed for it? Codec only?
+>>
+>> I don't know. If you try loading the modules, the kernel will tell you
+>> something about an unhandled layout id. Alternatively, you can find the
+>> layout-id file in your /proc/device-tree/ and tell me the number in it.
+>> The rest I can figure out.
+>
+> I have a PowerBook5,4 here and I'd be happy to test support for it.
+> The hardware is identified by snd-powermac as "PowerMac Snapper" and
+> the layout ID appears to be "3".
+>
+> [briny(device-tree)] od -c pci@f2000000/mac-io@17/i2s@10000/i2s-a@10000/s=
+ound/layout-id
+> 0000000  \0  \0  \0   3
+> 0000004
 
-On Fri, 2006-05-19 at 16:30 +0200, Andreas Schwab wrote:
+Apparently the layout-id on your system is 51 (decimal).
 
-> Yes, sound is fully supported by snd-powermac on my system.
+Andreas.
 
-Alright, I'll look at it then.
-
-johannes
-
---=-vGI5dKhK0c4m/AMjDWyL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIVAwUARG3W76Vg1VMiehFYAQIKyxAAgDPQlLeXsHxSZ9rCjXN71RjhBWXooXxD
-qsIIwcdsYhlulFKfyDyePvxOVJup4ZqDwBM7K5p4CUF0VvQl5/6X9UWljGZIEaCR
-Uc1Dt7nNez1Egx727i8VnuF8RQK7+eFE4jUw53WgGXYQFgIAjf2IlvzAtz318+07
-oqOYL/n0phQXJSnCkR+n3Wa9rQ4W1fFTcWVs84jz+Bak+jTXFuN61MFgHrAeeZra
-kiEdP4QULSLuHes8r6FfstDDcaIVXGJGtG4Y3nwxv7Q5x8nIA7dOHpaMcEYqkVXp
-lEnafeVu803hjHFx6fR4eY/uzXbGxemq5FOU9Lp5GwkJbSVqQXfZr5a4VRhSI7Iu
-amgAeV9lb2xsGmqezvtfFKLJW2OcFG0CJHGbOKe6E7sQDsU37DsnMCgEGk0JaLgp
-dyv4BVpY9q2Lkm+HcHyyah8j/Jt5/Yjvba985sSGGOi2q3QQ9rDp6baXiJavfpTo
-lzzGPb3rwcD3YqZeUhjpHbDrKo+7uk9mH+y8GmqE42BBcQZNRjBqrWMhZsBSSUHI
-37UwyG63gHeXtUsd8oV1YE+bXunaCb1/uEF+EmzRMf/X638h5fkZ6RAGTIVIij1y
-UlpRLYakOSBgVZ+mrUWugHR44BUMYruqGUXs4kwBWxjouCv464R2q5PiV/EfEsqt
-Eo2/rD4SCp8=
-=YV90
------END PGP SIGNATURE-----
-
---=-vGI5dKhK0c4m/AMjDWyL--
+--=20
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstra=DFe 5, 90409 N=FCrnberg, Germany
+PGP key fingerprint =3D 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
