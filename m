@@ -1,17 +1,22 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id E9CA967A67
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3B3BA67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 May 2006 02:56:29 +1000 (EST)
-Subject: I2C bus issues on MPC8248
-From: Heiko Schocher <hs@denx.de>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: 
-Content-Type: text/plain
-Date: Fri, 19 May 2006 18:37:26 +0200
-Message-Id: <1148056646.5943.20.camel@Zeus.EmbLux>
+	Sat, 20 May 2006 03:55:16 +1000 (EST)
+Date: Fri, 19 May 2006 10:55:13 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Steven Scholz <steven.scholz@imc-berlin.de>
+Subject: Re: MPC8xx: resolution of gettimeofday() ?
+Message-ID: <20060519175513.GA12121@gate.ebshome.net>
+References: <446C8E70.3040601@imc-berlin.de>
+	<20060518164812.GA21075@gate.ebshome.net>
+	<446D7CFA.5060505@imc-berlin.de>
 Mime-Version: 1.0
-Reply-To: hs@denx.de
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <446D7CFA.5060505@imc-berlin.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,53 +27,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Laurent,
-
-on Thu, 18 May 2006 14:33:58, Laurent Pinchart wrote:
-> I'm trying to use the MPC8248 hardware I2C bus in a 2.6.16 kernel. The
-> mailing 
-> list archives mention a driver for the MPC8260 
-> (http://ozlabs.org/pipermail/linuxppc-embedded/2006-May/022837.html) which I 
-> modified to reflect the memory map differences between the MPC8260 and the 
-> MPC8248, as mentionned in the e-mail.
+On Fri, May 19, 2006 at 10:08:26AM +0200, Steven Scholz wrote:
+> Eugene,
 > 
-> The good news is that the driver works. The bad news is that it doesn't work 
-
-OK.
-
-> correctly.
-
-:-(
-
-> The Linux I2C layer probes the I2C bus for peripherals when drivers are 
-> loaded. The probing function writes a single byte with the device address and 
-> check if the data is acked. I monitored the SCL and SDA lines using an 
-[...]
-> Using that code, no data is sent on the bus, the BD_SC_READY bit is never 
-> cleared and no interrupt is generated. Once again I suspected a CPM bug when 
-> writing a single byte on the bus, so I increased cbd_datlen to 2:
+> >> what is the resolution of gettimeofday() for an MPC8xx?
+> >>
+> >> IIUC then the "decrementer" is used to generate the timer interrupts every 10ms.
+> >>
+> >> This decrementer runs at cpuclk/16. Thus with 80MHz CPU clock has a
+> >> resolution of 16/80MHz = 200ns and overflows every 50000 ticks.
+> >>
+> >> But is this decrementer used to update xtime?
+> >> Will gettimeofday() have a resolution of 200ns?
+> >>
+> >> How about linux 2.4 where xtime is a "struct timeval" rather then "struct
+> >> timespec"?
+> >>
+> > 
+> > Usually on PPC we use timebase to interpolate time between Decrementer 
+> > interrupts. In this case gettimeofday resolution is determined by 
+> > timebase resolution which is quite high (megahertz range).
 > 
-> tbdf[0].cbd_bufaddr = __pa(tb);
-> tbdf[0].cbd_datlen = 2;
-> tbdf[0].cbd_sc = count ? BD_SC_READY | BD_IIC_START :
->                  BD_SC_READY | BD_IIC_START | BD_SC_INTRPT |
->                  BD_SC_LAST | BD_SC_WRAP;
-> 
-> This worked, and two bytes were written on the bus, leading me to believe that 
-> the CPM was at fault.
+> Sorry. I don't understand. What do you mean with "timebase"? Is there a
+> second timer/counter?
 
-I don t know, if this is a CPM Bug, but it seems so to me ...
+PowerPC has a facility called timebase. This is 64-bit counter which 
+can be accessed using special instructions (mftb, mftbu on 32-bit PPC).
+Counter resolution depends on particular chip implementation, some 
+use core clock, other use bus clock...
 
-> Has anyone noticed the same behaviour ? Is there a workaround available ? I 
-> tried searching Freescale's website for CPM microcode updates but haven't 
-> found anything related to the I2C controller.
+It's similar to the time-stamp counter in Intel CPUs (accessed 
+with rdtsc instruction).
 
-Yes, Holger Speck had the same problem. He solved it by doing the following:
+Please, refer to PPC arch manuals for more information. Also, if you 
+really interested in how gettimeofday() is implemented, why don't you 
+look at the source code yourself?
 
-If the cpm_iic_write is called with count = 0. He made a read with count = 1
-
-I think this is safer than writing 2 Bytes to the Slave.
-Could you try this?
-
-Best regards
-Heiko
+-- 
+Eugene
