@@ -1,32 +1,22 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3F6E667A60
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 May 2006 09:00:52 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k4JN0mOr019633
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 19:00:48 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k4JN0mOK209260
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 19:00:48 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11/8.13.3) with ESMTP id k4JN0mMM004404
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 May 2006 19:00:48 -0400
-Date: Fri, 19 May 2006 18:00:47 -0500
-To: Srinivas Murthy <codevana@gmail.com>
-Subject: Re: PPC host with a PCI root-complex
-Message-ID: <20060519230047.GM12135@austin.ibm.com>
-References: <7cb1293c0605181456p3c1726e2n56942dfbd4217f70@mail.gmail.com>
-	<20060519162310.GI12135@austin.ibm.com>
-	<7cb1293c0605191428n57c18a60h5b86863d729cd9b9@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7cb1293c0605191428n57c18a60h5b86863d729cd9b9@mail.gmail.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <mmeswani@utep.edu>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C67BA3.DAFC95B0"
+Subject: RE: Information for setting up SMT related parameters on linux 2.6.16
+	on POWER5
+Date: Fri, 19 May 2006 18:25:11 -0600
+Message-ID: <C26C730943E01145B4F89E37FE0A022002BBC76F@itdsrvmail02.utep.edu>
+References: <17498.60066.92373.6527@cargo.ozlabs.ibm.com>
+	<445BE729.80903@am.sony.com>
+	<C26C730943E01145B4F89E37FE0A022002BBC74B@itdsrvmail02.utep.edu>
+	<1147118619.8664.44.camel@localhost.localdomain>
+	<18583972-9E29-4B52-BF2E-53102F1794EB@kernel.crashing.org>
+From: "Meswani, Mitesh" <mmeswani@utep.edu>
+To: "Segher Boessenkool" <segher@kernel.crashing.org>,
+	<will_schmidt@vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org,
+	Arnd Bergmann <arnd.bergmann%ibmde.RSCS@BLDVMB.POK.IBM.COM>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,67 +26,149 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 19, 2006 at 02:28:29PM -0700, Srinivas Murthy wrote:
-> 
-> On a PPC (44x) platform, following an error such as parity error detected by
-> the PCI root complex, should we cause a bus error (causing a machine-check
-> exception) or complete the bus transaction normally but trigger a critical
-> interrupt? Note that these are two diff types of interrupts as seen by the
-> CPU with the machine check having the highest NMI priority.
+This is a multi-part message in MIME format.
 
-I can't answer that question; I'd say that's a platform implementation
-question that each platform has to decide on thier own.  If you have a 
-recoverable machine check, and can take it and recover from it, then
-I suppose that's a reasonable choice. But I've never dealt with that.
+------_=_NextPart_001_01C67BA3.DAFC95B0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> If the parity error detection was a result of say a memory read operation by
-> the core to a PCI device, there might be a several cycle diff between the
-> read and the cpu being interrupted (with the critical interrupt handler).
-> This may result in data corruption, etc. Is this a valid concern to have?
+Hello Segher and Will=20
+=20
+I tried using these macros on some applications and they dont seem to =
+have any effect. I am running everything as root, and have been using =
+bind processor commands to ensure that a task is assigned to a logical =
+cpu. Since I am running SPEC CPU benchmarks I was exepecting to see a =
+difference in run times, CPI when running two seperate SPEC apps on SMT =
+threads.=20
+=20
+Is there some thing else I need to do to make sure that the processor =
+takes the hint to "lower the HMT priority " , I am executing them from a =
+regular shell which I assume has user level priority.=20
+=20
+=20
+Thanks
+Mitesh=20
+=20
+=20
 
-Yes. Sort of. Maybe. In the early days of getting pci error handling 
-to work, it became clear that there were lots of pci devices with weak 
-firmware or buggy hardware that were dma'ing to all sorts of wild adresses, 
-and/or doing other bad things (mangled PCI split transactions, etc). 
-We became painfully aware of this, because our pci bridges flagged any DMA 
-to any page that hadn't been expressly mapped (as well as a bunch of
-other PCI errors).  Seems that these devices had been busy corrupting
-memory and whatever else for years, and no one noticed before, because 
-no one had a stringent, error checking PCI bridge.  Is data corruption
-important? Yes. Have you been living with it for years, and not noticing
-it? Yes.
+Mitesh R. Meswani=20
+Ph.D. Candidate=20
+Research Associate, PLS2 Group
+Room 106 F, Department of Computer Science
+The University of Texas at El Paso,=20
+El Paso, Texas 79968
+Tel: 915 747 8012 (O)
+Email: mmeswani@utep.edu
 
-(Most of those I dealt with have been fixed, either in the Linux device
-driver, the device firmware, or in one case, a hardware change, (I assume
-some gate array fixup)).
+________________________________
 
-> What is the normal approach to deal with this issue in an "enterprise" or
-> high-end environment?
+From: Segher Boessenkool [mailto:segher@kernel.crashing.org]
+Sent: Mon 5/8/2006 5:04 PM
+To: will_schmidt@vnet.ibm.com
+Cc: Meswani, Mitesh; linuxppc-dev@ozlabs.org; Arnd Bergmann; =
+linux-kernel@vger.kernel.org; cbe-oss-dev@ozlabs.org
+Subject: Re: Information for setting up SMT related parameters on linux =
+2.6.16 on POWER5
 
-On IBM pSeries, the PCI-Host bridge stops the transaction; I don't know 
-the details at the hardware level; I presume its some abort or termination.
-In principle, the corrupted data never makes it to system memory or CPU.
-If the CPU is reading, 0xffffffff is returned, as are all future reads. 
-All writes are dropped on the floor.  DMA's are also cut off.  
 
-On pSeries, there's no interrupt generated on error. Rather, if the 
-device gets an unexpected 0xffffff on read, it can query the firmware 
-for the PCI bridge state, and proceed from there.  Typical scenario 
-is that an error occurred during DMA, long ago; the device driver gets 
-a dma-complete interrupt from pci device, and discovers upon reading
-that the device interrupt status register is all 0xffff... During 
-recovery, that hunk of incomplete dma data is discarded. 
 
-The point here is that its potentially OK to allow corrupted data into
-systm memory, as long as its at the right address, and as long as the 
-device driver can nuke it before it has gotten to other consumers. 
-If you ar getting parity erorrs on DMA addresses, then ... :-) 
+> the HMT_* macros are telling firmware that "this processor thread=20
+> should
+> run at this priority".  Typically used when we're waiting on a=20
+> spinlock.
+> I.e. When we are waiting on a spinlock, we hit the HMT_low macro to=20
+> drop
+> our threads priority, allowing the other thread to use those extra
+> cycles finish it's stuff quicker, and maybe even release the lock=20
+> we're
+> waiting for.          HMT_* is all within the kernel though, no=20
+> exposure
+> to userspace apps.
 
-PCI Express does something else, and I don't quite understand what.
-Part of thier mechanism involves an interrupt, although its somehow 
-wired that on MMIO read, the interrupt gets to the CPU before the
-MMIO read completes. Some chunk of it seems x86/itanium-centric.
-The Intel guys have been trying to figure out how to implement this, 
-but haven't done so yet.
+Actually, those macros translate straight into a single machine insn.
+No firmware is involved.  See include/asm-powerpc/processor.h.  For
+example:
 
---linas
+#define HMT_very_low()   asm volatile("or 31,31,31   # very low=20
+priority")
+
+You can use those same macros from user space, although it is CPU
+implementation dependent which priorities you can actually set (you
+probably can do low and medium priority).
+
+
+Segher
+
+
+
+
+------_=_NextPart_001_01C67BA3.DAFC95B0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<HTML dir=3Dltr><HEAD><TITLE>Re: Information for setting up SMT related =
+parameters on linux 2.6.16 on POWER5</TITLE>=0A=
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
+<META content=3D"MSHTML 6.00.5296.0" name=3DGENERATOR><BASE href=3DHEAD>=0A=
+<BODY>=0A=
+<DIV id=3DidOWAReplyText9297 dir=3Dltr>=0A=
+<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 size=3D2>Hello Segher =
+and Will </FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2>I tried using these macros on =
+some applications and they dont seem to have any effect. I am running =
+everything as root, and have been using bind processor commands to =
+ensure that a task is assigned to a logical cpu. Since I am running SPEC =
+CPU benchmarks I was exepecting to see a difference in run times, CPI =
+when running two seperate SPEC apps on SMT threads. </FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2>Is there some thing else I =
+need to do to make sure that the processor takes the hint to "lower the =
+HMT priority " , I am executing them from a regular shell which I assume =
+has user level priority. </FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2>Thanks</FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial size=3D2>Mitesh </FONT></DIV>=0A=
+<DIV dir=3Dltr><FONT face=3DArial color=3D#000000 =
+size=3D2></FONT>&nbsp;</DIV></DIV>=0A=
+<DIV id=3DidSignature53388 dir=3Dltr><FONT face=3DArial color=3D#000000 =
+size=3D2>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV><BR>Mitesh R.&nbsp;Meswani <BR>Ph.D. Candidate </DIV>=0A=
+<DIV>Research Associate, PLS2 Group</DIV>=0A=
+<DIV>Room 106 F, Department of Computer Science</DIV>=0A=
+<DIV>The University of Texas at El Paso, </DIV>=0A=
+<DIV>El Paso, Texas 79968<BR>Tel: 915 747 8012 (O)</DIV>=0A=
+<DIV>Email: mmeswani@utep.edu</FONT></DIV></DIV>=0A=
+<DIV dir=3Dltr><BR>=0A=
+<HR tabIndex=3D-1>=0A=
+<FONT face=3DTahoma size=3D2><B>From:</B> Segher Boessenkool =
+[mailto:segher@kernel.crashing.org]<BR><B>Sent:</B> Mon 5/8/2006 5:04 =
+PM<BR><B>To:</B> will_schmidt@vnet.ibm.com<BR><B>Cc:</B> Meswani, =
+Mitesh; linuxppc-dev@ozlabs.org; Arnd Bergmann; =
+linux-kernel@vger.kernel.org; cbe-oss-dev@ozlabs.org<BR><B>Subject:</B> =
+Re: Information for setting up SMT related parameters on linux 2.6.16 on =
+POWER5<BR></FONT><BR></DIV>=0A=
+<DIV>=0A=
+<P><FONT size=3D2>&gt; the HMT_* macros are telling firmware that "this =
+processor thread&nbsp;<BR>&gt; should<BR>&gt; run at this =
+priority".&nbsp; Typically used when we're waiting on a&nbsp;<BR>&gt; =
+spinlock.<BR>&gt; I.e. When we are waiting on a spinlock, we hit the =
+HMT_low macro to&nbsp;<BR>&gt; drop<BR>&gt; our threads priority, =
+allowing the other thread to use those extra<BR>&gt; cycles finish it's =
+stuff quicker, and maybe even release the lock&nbsp;<BR>&gt; =
+we're<BR>&gt; waiting =
+for.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; HMT_* is all =
+within the kernel though, no&nbsp;<BR>&gt; exposure<BR>&gt; to userspace =
+apps.<BR><BR>Actually, those macros translate straight into a single =
+machine insn.<BR>No firmware is involved.&nbsp; See =
+include/asm-powerpc/processor.h.&nbsp; For<BR>example:<BR><BR>#define =
+HMT_very_low()&nbsp;&nbsp; asm volatile("or 31,31,31&nbsp;&nbsp; # very =
+low&nbsp;<BR>priority")<BR><BR>You can use those same macros from user =
+space, although it is CPU<BR>implementation dependent which priorities =
+you can actually set (you<BR>probably can do low and medium =
+priority).<BR><BR><BR>Segher<BR><BR></FONT></P></DIV></BODY></HTML>
+------_=_NextPart_001_01C67BA3.DAFC95B0--
