@@ -1,21 +1,23 @@
-Return-Path: <benjamin@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 36F91679F5
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 May 2006 01:17:12 +1000 (EST)
-Subject: Re: snd-aoa status update / automatic driver loading
-From: Benjamin Berg <benjamin@sipsolutions.net>
-To: charles-debian-nospam@plessy.org
-In-Reply-To: <20060518004141.GC1552@kunpuu.plessy.org>
-References: <1147860564.14395.6.camel@johannes>
-	<200605180002.01669.borge@arivene.net>
-	<20060518004141.GC1552@kunpuu.plessy.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Sat, 20 May 2006 16:57:12 +0200
-Message-Id: <1148137032.3407.12.camel@localhost>
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DFB8E679EA
+	for <linuxppc-dev@ozlabs.org>; Sun, 21 May 2006 06:59:55 +1000 (EST)
+Date: Sat, 20 May 2006 13:59:22 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 4/6] Have x86_64 use add_active_range() and
+	free_area_init_nodes
+Message-Id: <20060520135922.129a481d.akpm@osdl.org>
+In-Reply-To: <20060508141151.26912.15976.sendpatchset@skynet>
+References: <20060508141030.26912.93090.sendpatchset@skynet>
+	<20060508141151.26912.15976.sendpatchset@skynet>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, debian-powerpc@lists.debian.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linux-mm@kvack.org,
+	mel@csn.ul.ie, ak@suse.de, bob.picco@hp.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,89 +27,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-18-05 at 09:41 +0900, Charles Plessy wrote:=20
-> Hi all,
->=20
-> just a "me too" mail:
->=20
-> Le Thu, May 18, 2006 at 12:02:01AM +0200, B=C3=B8rge Holen a =C3=A9crit :
-> > I can also remember half way throught a ogg/mp3 playlist when it also=20
-> > scrambled the output, this has only happened ONCE.
->=20
-> I experience the same on my 8,1 powermac, but more systematically. It
-> takes usually more than one hour of continuous listening before it
-> happens, and then it happens sort of stochastically. I am not using
-> anything else than xmms, so I did not figure out if it is a xmms or a
-> driver problem. Stop/Starting the listening stops the scrambling.
+Mel Gorman <mel@csn.ul.ie> wrote:
+>
+> 
+> Size zones and holes in an architecture independent manner for x86_64.
+> 
+> 
 
-This is exactly the problem that I have experienced since a while now.
-The problem is that some interrupts get lost. This results in a broken
-address calculation and the new data is written to the wrong place.
+I found a .config which triggers the cant-map-acpitables problem.
 
-The attached patch fixes this by checking the 'frame_count'.
-What I don't really understand is, that the first time the interrupt
-gets executed, the frame_count is 8 _less_ of what I would have expected
-My guess is that the dma controller reads the last 32 bytes, and then
-the interrupt gets fired.
 
-diff --git a/soundbus/i2sbus/i2sbus-pcm.c b/soundbus/i2sbus/i2sbus-pcm.c
-index 9eadf83..8511234 100644
---- a/soundbus/i2sbus/i2sbus-pcm.c
-+++ b/soundbus/i2sbus/i2sbus-pcm.c
-@@ -440,6 +440,11 @@ static int i2sbus_pcm_trigger(struct i2s
- 			return -ENXIO;
- 		}
-=20
-+		/* get the current frame_count - 32 bytes. This is just guessed,
-+		   but it seems that the interrupt triggers as soon as the last 32 bytes
-+		   are cached or something. */
-+		pi->frame_count =3D in_le32(&i2sdev->intfregs->frame_count) - 0x20 / (pi=
-->substream->runtime->sample_bits / 8);
-+
- 		/* wake up the chip with the next descriptor */
- 		out_le32(&pi->dbdma->control, (RUN|WAKE) | ((RUN|WAKE)<<16));
- 		/* off you go! */
-@@ -488,13 +493,29 @@ static snd_pcm_uframes_t i2sbus_pcm_poin
- static inline void handle_interrupt(struct i2sbus_dev *i2sdev, int in)
- {
- 	struct pcm_info *pi;
-+	u32 fc;
-+	u32 delta;
-=20
- 	get_pcm_info(i2sdev, in, &pi, NULL);
- 	if (!pi->substream) {
- 		printk(KERN_INFO "i2sbus: got %s irq while not active!\n", in?"rx":"tx")=
-;
- 		return;
- 	}
--	pi->current_period =3D (pi->current_period+1) % (pi->periods);
-+=09
-+	fc =3D in_le32(&i2sdev->intfregs->frame_count);
-+	/* a counter overflow does not change the calculation. */
-+	delta =3D fc - pi->frame_count;
-+=09
-+	if (delta <=3D pi->substream->runtime->period_size) {
-+		pi->current_period =3D pi->current_period + 1;
-+		delta =3D 0;
-+	} else while (delta >=3D pi->substream->runtime->period_size) {
-+		pi->current_period =3D pi->current_period + 1;
-+		delta =3D delta - pi->substream->runtime->period_size;
-+	}
-+=09
-+	pi->frame_count =3D fc - delta;
-+	pi->current_period =3D pi->current_period % pi->periods;
- 	snd_pcm_period_elapsed(pi->substream);
- }
-=20
-diff --git a/soundbus/i2sbus/i2sbus.h b/soundbus/i2sbus/i2sbus.h
-index b054e02..f5d16aa 100644
---- a/soundbus/i2sbus/i2sbus.h
-+++ b/soundbus/i2sbus/i2sbus.h
-@@ -41,6 +41,7 @@ struct pcm_info {
- 	struct snd_pcm_substream *substream;
- 	int current_period;
- 	int periods;
-+	u32 frame_count;
- 	struct dbdma_command_mem dbdma_ring;
- 	volatile struct dbdma_regs __iomem *dbdma;
- };
+With that .config, and without this patch:
+
+Linux version 2.6.17-rc4-mm2 (akpm@box) (gcc version 4.1.0 20060304 (Red Hat 4.6
+BIOS-provided physical RAM map:                                                
+ BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+ BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 00000000ca605000 (usable)  
+ BIOS-e820: 00000000ca605000 - 00000000ca680000 (ACPI NVS)
+ BIOS-e820: 00000000ca680000 - 00000000cb5ef000 (usable)  
+ BIOS-e820: 00000000cb5ef000 - 00000000cb5fc000 (reserved)
+ BIOS-e820: 00000000cb5fc000 - 00000000cb6a2000 (usable)  
+ BIOS-e820: 00000000cb6a2000 - 00000000cb6eb000 (ACPI NVS)
+ BIOS-e820: 00000000cb6eb000 - 00000000cb6ef000 (usable)  
+ BIOS-e820: 00000000cb6ef000 - 00000000cb6ff000 (ACPI data)
+ BIOS-e820: 00000000cb6ff000 - 00000000cb700000 (usable)   
+ BIOS-e820: 00000000cb700000 - 00000000cc000000 (reserved)
+ BIOS-e820: 00000000ffe00000 - 0000000100000000 (reserved)
+ BIOS-e820: 0000000100000000 - 0000000130000000 (usable)  
+DMI 2.4 present.                                        
+ACPI: PM-Timer IO Port: 0x408
+ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
+Processor #0 6:15 APIC version 20                 
+ACPI: LAPIC (acpi_id[0x02] lapic_id[0x01] enabled)
+Processor #1 6:15 APIC version 20                 
+ACPI: LAPIC (acpi_id[0x03] lapic_id[0x82] disabled)
+ACPI: LAPIC (acpi_id[0x04] lapic_id[0x83] disabled)
+ACPI: LAPIC_NMI (acpi_id[0x01] dfl dfl lint[0x1])  
+ACPI: LAPIC_NMI (acpi_id[0x02] dfl dfl lint[0x1])
+ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
+IOAPIC[0]: apic_id 2, version 32, address 0xfec00000, GSI 0-23
+ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)      
+
+
+With that .config, and with this patch:
+
+Bootdata ok (command line is ro root=LABEL=/ earlyprintk=serial,ttyS0,9600,keep netconsole=4444@192.168.2.4/eth0,5147@192.168.2.33/00:0D:56:C6:C6:CC)
+Linux version 2.6.17-rc4-mm2 (akpm@box) (gcc version 4.1.0 20060304 (Red Hat 4.1.0-3)) #33 SMP Sat May 20 12:08:03 PDT 2006
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+ BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 00000000ca605000 (usable)
+ BIOS-e820: 00000000ca605000 - 00000000ca680000 (ACPI NVS)
+ BIOS-e820: 00000000ca680000 - 00000000cb5ef000 (usable)
+ BIOS-e820: 00000000cb5ef000 - 00000000cb5fc000 (reserved)
+ BIOS-e820: 00000000cb5fc000 - 00000000cb6a2000 (usable)
+ BIOS-e820: 00000000cb6a2000 - 00000000cb6eb000 (ACPI NVS)
+ BIOS-e820: 00000000cb6eb000 - 00000000cb6ef000 (usable)
+ BIOS-e820: 00000000cb6ef000 - 00000000cb6ff000 (ACPI data)
+ BIOS-e820: 00000000cb6ff000 - 00000000cb700000 (usable)
+ BIOS-e820: 00000000cb700000 - 00000000cc000000 (reserved)
+ BIOS-e820: 00000000ffe00000 - 0000000100000000 (reserved)
+ BIOS-e820: 0000000100000000 - 0000000130000000 (usable)
+Too many memory regions, truncating
+Too many memory regions, truncating
+Too many memory regions, truncating
+DMI 2.4 present.
+ACPI: Unable to map RSDT header
+Intel MultiProcessor Specification v1.4
+    Virtual Wire compatibility mode.
+OEM ID:  Product ID:  APIC at: 0xFEE00000
+
+
+ACPI disables itself.
+
+Good .config: http://www.zip.com.au/~akpm/linux/patches/stuff/config-good
+Bad .config: http://www.zip.com.au/~akpm/linux/patches/stuff/config-bad
+
+
+The handling of MAX_ACTIVE_REGIONS is unpleasing, sorry.  In my setup it is
+5.  But we _really_ only support 4 regions.  So for a start it is misnamed.
+The maximum number of regions we support is actually MAX_ACTIVE_REGIONS-1.
+And this is a config option too!  So the user must specify
+CONFIG_MAX_ACTIVE_REGIONS as the number of active regions plus one, for the
+terminating region which has end_pfn=0.  It's weird.
+
+I would not consider this code to be adequately commented.  Please raise a
+patch which comments the major functions - what they do, why they do it,
+any caveats or implementations details.  A few lines each - don't overdo
+it.  Details such as whether the various end_pfn's are inclusive or
+exclusive are important, as is a description of the return value.
+
+Anyway, I just don't get how this code can work.  We have an e820 map with
+up to 128 entries (this machine has ten) and we're trying to scrunch that
+all into the four-entry early_node_map[].
+
+With config-good we're set up for NUMA, CONFIG_NODES_SHIFT=6.  So
+MAX_ACTIVE_REGIONS is enormous.  But it's quite wrong that we're using
+number-of-zones*number-of-nodes to size a data structure which has to
+accommodate all the entries in the e820 map.  These things aren't related.
+
+
+On my little x86 PC:
+
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009bc00 (usable)
+ BIOS-e820: 000000000009bc00 - 000000000009c000 (reserved)
+ BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000000ffc0000 (usable)
+ BIOS-e820: 000000000ffc0000 - 000000000fff8000 (ACPI data)
+ BIOS-e820: 000000000fff8000 - 0000000010000000 (ACPI NVS)
+ BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+ BIOS-e820: 00000000ffb80000 - 00000000ffc00000 (reserved)
+ BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
+0MB HIGHMEM available.
+255MB LOWMEM available.
+found SMP MP-table at 000ff780
+Range (nid 0) 0 -> 65472, max 4
+On node 0 totalpages: 65472
+  DMA zone: 4096 pages, LIFO batch:0
+  Normal zone: 61376 pages, LIFO batch:15
+
+So here, the architecture code only called add_active_range() the once, for
+the entire memory map.  But on the x86_64 add_active_range() was called
+once per e820 entry.  I'm dimly starting to realise that this is perhaps
+the problem - the weird-looking definition of MAX_ACTIVE_REGIONS _expects_
+the architecture to call add_active_range() with a start_pfn/end_pfn which
+describes the entire range of pfns for each zone in each node.  Even if
+that span includes not-present pfns.  Would that be correct?  I didn't see
+a comment in there describing this design (I do go on).
+
+If so, perhaps the bug is that the x86_64 code isn't doing that.  And that
+x86 isn't doing it for some people either.
+
+Anyway.  From the implementation I can see what the code is doing.  But I
+see no description of what it is _supposed_ to be doing.  (The process of
+finding differences between these two things is known as "debugging").  I
+could kludge things by setting MAX_ACTIVE_REGIONS to 1000000, but enough. 
+I look forward to the next version ;)
