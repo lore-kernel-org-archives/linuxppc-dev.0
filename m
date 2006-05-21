@@ -1,20 +1,16 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 91409679FD
+Return-Path: <antonio.dibacco@aruba.it>
+Received: from smtpa4.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id AB307679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 May 2006 05:36:23 +1000 (EST)
-To: jabir.kannath@wipro.com
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: To connect USB Bluetooth Dongle with embedded linux platform MPC
-	5200 Lite
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 19 May 2006 21:23:15 +0530."
-	<41CB8F9678E6F0498DA096429793FA850D2379@blr-m3-msg.wipro.com>
-Date: Fri, 19 May 2006 21:15:26 +0200
-Sender: wd@denx.de
-Message-Id: <20060519191526.E1B7B3525D9@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 22 May 2006 02:58:43 +1000 (EST)
+From: Antonio Di Bacco <antonio.dibacco@aruba.it>
+To: linuxppc-embedded@ozlabs.org
+Subject: HDLC ENET over SCC3
+Date: Sun, 21 May 2006 18:57:33 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200605211857.34024.antonio.dibacco@aruba.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,19 +21,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <41CB8F9678E6F0498DA096429793FA850D2379@blr-m3-msg.wipro.com> you wrote:
-> 
-> We are in need of re-building Linux kernel 2.4.25 to support USB
-> Bluetooth Dongle for the embedded platform MPC 5200 Lite.
+I'm using Denk kernel 2.4.25 and eldk 3.1.1
+Is is supporting HDLC over SCC3?
 
-Have you checked that your BT dongle is really working in Linux? See
-http://www.qbik.ch/usb/devices/search_res.php?pattern=bluetooth
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-An armed society is a polite society.
+Bye,
+Antonio.
