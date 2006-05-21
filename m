@@ -1,25 +1,23 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D5716679E1
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2006 05:09:08 +1000 (EST)
-Date: Sun, 21 May 2006 12:08:43 -0700
-From: Andrew Morton <akpm@osdl.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 4/6] Have x86_64 use add_active_range() and
-	free_area_init_nodes
-Message-Id: <20060521120843.43babdc7.akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64.0605211528390.16327@skynet.skynet.ie>
-References: <20060508141030.26912.93090.sendpatchset@skynet>
-	<20060508141151.26912.15976.sendpatchset@skynet>
-	<20060520135922.129a481d.akpm@osdl.org>
-	<Pine.LNX.4.64.0605211528390.16327@skynet.skynet.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linux-mm@kvack.org,
-	ak@suse.de, bob.picco@hp.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 5A685679E1
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2006 07:31:05 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Sun, 21 May 2006 23:30:56 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix ide-pmac sysfs entry
+Message-ID: <20060521213056.GA25721@iram.es>
+References: <1147676318.21291.105.camel@localhost.localdomain>
+	<20060515000810.487b834e.akpm@osdl.org>
+	<1147677830.21291.114.camel@localhost.localdomain>
+	<20060515083847.GA5229@iram.es>
+	<1147683156.21291.118.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1147683156.21291.118.camel@localhost.localdomain>
+Cc: Andrew Morton <akpm@osdl.org>, Pete Popov <ppopov@embeddedalley.com>,
+	B.Zolnierkiewicz@elka.pw.edu.pl, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,165 +27,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mel Gorman <mel@csn.ul.ie> wrote:
->
-
-> > Anyway, I just don't get how this code can work.  We have an e820 map with
-> > up to 128 entries (this machine has ten) and we're trying to scrunch that
-> > all into the four-entry early_node_map[].
-> >
+On Mon, May 15, 2006 at 06:52:36PM +1000, Benjamin Herrenschmidt wrote:
 > 
-> Missing E820MAX was a mistake. On x86_64, CONFIG_MAX_ACTIVE_REGIONS should 
-> have been used. I didn't expect x86_64 to have so many memory holes.
-
-x86 uses 128 e820 slots too.
-
->
-> > On my little x86 PC:
-> >
-> > BIOS-provided physical RAM map:
-> > BIOS-e820: 0000000000000000 - 000000000009bc00 (usable)
-> > BIOS-e820: 000000000009bc00 - 000000000009c000 (reserved)
-> > BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-> > BIOS-e820: 0000000000100000 - 000000000ffc0000 (usable)
-> > BIOS-e820: 000000000ffc0000 - 000000000fff8000 (ACPI data)
-> > BIOS-e820: 000000000fff8000 - 0000000010000000 (ACPI NVS)
-> > BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
-> > BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-> > BIOS-e820: 00000000ffb80000 - 00000000ffc00000 (reserved)
-> > BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
-> > 0MB HIGHMEM available.
-> > 255MB LOWMEM available.
-> > found SMP MP-table at 000ff780
-> > Range (nid 0) 0 -> 65472, max 4
-> > On node 0 totalpages: 65472
-> >  DMA zone: 4096 pages, LIFO batch:0
-> >  Normal zone: 61376 pages, LIFO batch:15
-> >
-> > So here, the architecture code only called add_active_range() the once, for
-> > the entire memory map.
->
-> Because in this case, the architecture reported that there was just one 
-> range of available pages with no holes.
-
-So..  we're registering a simgle blob of pfns which includes the "reserved"
-memory as well as the "ACPI data" and the "ACPI NVS" (with an apparent
-off-by-one here).
-
-How come the machine still works?  I guess the architecture went and marked
-those pfns reserved.
-
-> > If so, perhaps the bug is that the x86_64 code isn't doing that.  And that
->  > x86 isn't doing it for some people either.
->  >
+> > Actually I have one of these, and regularly use it and update 
+> > the kernel to the latest git once or twice per month, but I 
+> > typically have two batteries and have not swapped in the 
+> > media bay under Linux for a long time.
+> > 
+> > If you are interested, I could test the patch when I find 
+> > some time (not today: my 8 year old son went to the hospital
+> > for an emergency last Thursday, he is cured now and should 
+> > come out today).
 > 
->  I'm hoping in this case that having MAX_ACTIVE_REGIONS match E820MAX will 
->  fix the issue on your machine.
+> Any test is welcome, glad to know your son is well !
 
-I expect it will.
+The one liner works here, I can no more solidly hang
+the machine. There is still a bunch of error messages
+on drive removal though:
 
-One does wonder whether it's worth all this fuss though.  It's only a
-24-byte structure and it's all thrown away in free_initmem().  One _could_
-just go and do
+mediabay0: switching to 7
+mediabay0: powering down
+media bay 0 is empty
+Unregistering mb 0 ide, index:2
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: DMA disabled
+hde: ATAPI reset complete
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: ATAPI reset complete
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: ATAPI reset complete
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+hde: ATAPI reset complete
+hde: status error: status=0x00 { }
+ide: failed opcode was: unknown
+mediabay0: end of power down
 
-	#define MAX_ACTIVE_REGIONS 10000
+On insertion there are also a few messages
+but they seem normal:
 
-and be happy.
+mediabay0: switching to 3
+mediabay0: powering up
+mediabay0: enabling (kind:3)
+mediabay0: waiting reset (kind:3)
+mediabay0: waiting IDE reset (kind:3)
+mediabay0: waiting IDE ready (kind:3)
+mediabay 0, registering IDE...
+Probing IDE interface ide2...
+hde: LG DVD-ROM DRN-8080B, ATAPI CD/DVD-ROM drive
+hde: Enabling MultiWord DMA 2
+ide2 at 0xf1022000-0xf1022007,0xf1022160 on irq 20
+hde: ATAPI 24X DVD-ROM drive, 512kB Cache, DMA
+media-bay 0 is ide2
+mediabay 0 IDE ready
 
-> I'm still confused why Christian's failed 
->  to boot with the patch backed out though.
-
-He didn't get any "Too many memory regions" messages, so it's something
-different.
-
-Maybe he hit my off-by-one on his "ACPI data"?
-
-hm, I didn't mention this in the earlier email.   On my x86 I have
-
-  BIOS-provided physical RAM map:
-  BIOS-e820: 0000000000000000 - 000000000009bc00 (usable)
-  BIOS-e820: 000000000009bc00 - 000000000009c000 (reserved)
-  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
-  BIOS-e820: 0000000000100000 - 000000000ffc0000 (usable)
-  BIOS-e820: 000000000ffc0000 - 000000000fff8000 (ACPI data)
-  BIOS-e820: 000000000fff8000 - 0000000010000000 (ACPI NVS)
-  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
-  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
-  BIOS-e820: 00000000ffb80000 - 00000000ffc00000 (reserved)
-  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
-
-I added some debug and saw that add_active_range() was getting a
-start_pfn=0 and an end_pfn which corresponds with 0x0fffc000.  So my "ACPI
-NVS" is getting chopped off.
-
-If Christian is seeing a similar thing then his "ACPI data" will be getting
-only part-registered.
-
-I'd suggest that the next rev be liberal in its printking.  This is the
-debug patch I used:
-
- mm/page_alloc.c |   25 +++++++++++++++++++++----
- 1 file changed, 21 insertions(+), 4 deletions(-)
-
-diff -puN mm/page_alloc.c~a mm/page_alloc.c
---- devel/mm/page_alloc.c~a	2006-05-20 13:19:58.000000000 -0700
-+++ devel-akpm/mm/page_alloc.c	2006-05-20 13:20:42.000000000 -0700
-@@ -2463,22 +2463,36 @@ void __init add_active_range(unsigned in
- 						unsigned long end_pfn)
- {
- 	unsigned int i;
--	printk(KERN_DEBUG "Range (%d) %lu -> %lu\n", nid, start_pfn, end_pfn);
-+
-+	printk("Range (nid %d) %lu -> %lu, max %d\n",
-+			nid, start_pfn, end_pfn, MAX_ACTIVE_REGIONS - 1);
- 
- 	/* Merge with existing active regions if possible */
- 	for (i = 0; early_node_map[i].end_pfn; i++) {
--		if (early_node_map[i].nid != nid)
-+		printk("i=%d early_node_map[i].nid=%d "
-+				"early_node_map[i].start_pfn=%lu "
-+				"early_node_map[i].end_pfn=%lu",
-+			i, early_node_map[i].nid,
-+			early_node_map[i].start_pfn,
-+			early_node_map[i].end_pfn);
-+
-+		if (early_node_map[i].nid != nid) {
-+			printk(" continue 1\n");
- 			continue;
-+		}
- 
- 		/* Skip if an existing region covers this new one */
- 		if (start_pfn >= early_node_map[i].start_pfn &&
--				end_pfn <= early_node_map[i].end_pfn)
-+				end_pfn <= early_node_map[i].end_pfn) {
-+			printk(" return 1\n");
- 			return;
-+		}
- 
- 		/* Merge forward if suitable */
- 		if (start_pfn <= early_node_map[i].end_pfn &&
- 				end_pfn > early_node_map[i].end_pfn) {
- 			early_node_map[i].end_pfn = end_pfn;
-+			printk(" return 2\n");
- 			return;
- 		}
- 
-@@ -2486,13 +2500,16 @@ void __init add_active_range(unsigned in
- 		if (start_pfn < early_node_map[i].end_pfn &&
- 				end_pfn >= early_node_map[i].start_pfn) {
- 			early_node_map[i].start_pfn = start_pfn;
-+			printk(" return 3\n");
- 			return;
- 		}
-+		printk("\n");
- 	}
- 
- 	/* Leave last entry NULL, we use range.end_pfn to terminate the walk */
- 	if (i >= MAX_ACTIVE_REGIONS - 1) {
--		printk(KERN_ERR "Too many memory regions, truncating\n");
-+		printk(KERN_ERR "More than %d memory regions, truncating\n",
-+				MAX_ACTIVE_REGIONS - 1);
- 		return;
- 	}
- 
-_
+	Regards,
+	Gabriel
