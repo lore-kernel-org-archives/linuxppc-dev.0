@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 375CF67A2E
+Return-Path: <markc@mail.com>
+Received: from smtp1.us4.outblaze.com (smtp1.us4.outblaze.com [205.158.62.78])
+	by ozlabs.org (Postfix) with SMTP id D41B467A5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 06:59:00 +1000 (EST)
-To: Igor Luri <iluri@fagorautomation.es>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: CRAMFS: Error -3 while decompressing! 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 22 May 2006 11:40:18 +0200."
-	<44718702.1070809@fagorautomation.es>
-Date: Mon, 22 May 2006 22:58:58 +0200
-Sender: wd@denx.de
-Message-Id: <20060522205858.5CC443525D9@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 23 May 2006 06:59:03 +1000 (EST)
+Message-ID: <00f901c67de2$865e0f70$6501a8c0@CHUCK2>
+From: "Mark Chambers" <markc@mail.com>
+To: "Evan Cofsky" <evan@theunixman.com>,
+	<linuxppc-embedded@ozlabs.org>
+References: <20060522200248.GG341278@valinor.arda.theunixman.com>
+Subject: Re: BDI 2000 and MPC 8250 Problem
+Date: Mon, 22 May 2006 16:58:48 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="iso-8859-1";
+	reply-type=original
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,34 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <44718702.1070809@fagorautomation.es> you wrote:
+
+
+> I'm experiencing the following error with a BDI 2000 connected to the
+> JTAG port on a A&M Rattler 8250 board.  I was wondering if this is a
+> hardware problem, or if I have the wrong configuration set up.  The
+> following are a telnet session transcript, the BDI configuration file,
+> and the register configuration file.
 > 
-> We have a mpc5200liteB evaluation board with u-boot 1.1.4 and linux 
-> 2.4.25 from Denx.  We have grabed a cramfs  root fs on a mtd partition 
-> and we are able to boot linux without problems:
-...
-> However, we are not able to boot linux with the same rootfs image (with 
-> the u-boot header) loaded from RAM.
+> Thanks
 > 
->         setenv bootargs root=/dev/rw rw console=ttyS0 console=ttyS0
->         init=/sbin/init ip=on
+> BDI Telnet Session Transcript (repeats endlessly):
+> 
+> - TARGET: processing user reset request
+> *** TARGET: resetting target failed
+> # PPC: unexpected response from target
+> - TARGET: target will be restarted in 10 sec
+> 
+> rattler8250pci.cfg:
+> 
+> ;bdiGDB configuration file for rattler
+> ; ------------------------------------------------------
+> ;
+> [INIT]
+> ;WREG    MSR             0x00001002      ; set up MSR
+> ;WSPR    1008            0               ; turn off caches
+ === > > WM32    0x000101A8      0x00f00000      ; IMMR == 0xFF000000
 
-What's /dev/rw ???
-
-> and CRAMFS image is built with correct endianess:
-
-Ummm.. Why would you want to use a cramfs file system in a ramdisk
-image? This iseems to be a truely pessimal combination of features to
-me. Please see
-http://www.denx.de/wiki/view/DULG/RootFileSystemDesignAndBuilding for
-some hints...
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Life sucks, but it's better than the alternative."
-- Peter da Silva
+Type, or are you setting IMMR to 0xf0000000 ?
