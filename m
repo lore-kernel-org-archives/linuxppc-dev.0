@@ -1,19 +1,33 @@
-Return-Path: <iluri@fagorautomation.es>
-Received: from correo2.sarenet.es (correo2.sarenet.es [194.30.0.12])
-	by ozlabs.org (Postfix) with ESMTP id C9F63679E6
+Return-Path: <steven.scholz@imc-berlin.de>
+Received: from mail.imc-berlin.de (mail.imc-berlin.de [217.110.46.186])
+	by ozlabs.org (Postfix) with ESMTP id 7FD67679FD
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 May 2006 20:36:27 +1000 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by correo2.sarenet.es (Postfix) with ESMTP id 2C58F368A6
+	Mon, 22 May 2006 21:03:57 +1000 (EST)
+Received: from mailserver.berlin.imc-berlin.de
+	(mailserver.berlin.imc-berlin.de [10.0.0.19])
+	by mail.imc-berlin.de (Postfix) with ESMTP id 3099A2F022
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 May 2006 12:36:10 +0200 (CEST)
-Message-ID: <44718702.1070809@fagorautomation.es>
-Date: Mon, 22 May 2006 11:40:18 +0200
-From: Igor Luri <iluri@fagorautomation.es>
+	Mon, 22 May 2006 13:03:53 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id 24BFB1E20E1
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 22 May 2006 13:03:53 +0200 (CEST)
+Received: from [10.0.2.10] (scholz.berlin.imc-berlin.de [10.0.2.10])
+	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id 4CC071E2027
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 22 May 2006 13:03:52 +0200 (CEST)
+Message-ID: <44719A96.2020309@imc-berlin.de>
+Date: Mon, 22 May 2006 13:03:50 +0200
+From: Steven Scholz <steven.scholz@imc-berlin.de>
 MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: CRAMFS: Error -3 while decompressing!
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: MPC8xx: resolution of gettimeofday() ?
+References: <446C8E70.3040601@imc-berlin.de>
+	<20060518164812.GA21075@gate.ebshome.net>
+	<446D7CFA.5060505@imc-berlin.de>
+	<20060519175513.GA12121@gate.ebshome.net>
+In-Reply-To: <20060519175513.GA12121@gate.ebshome.net>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,103 +38,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all!
+Eugene,
 
-We have a mpc5200liteB evaluation board with u-boot 1.1.4 and linux 
-2.4.25 from Denx.  We have grabed a cramfs  root fs on a mtd partition 
-and we are able to boot linux without problems:
+>>> Usually on PPC we use timebase to interpolate time between Decrementer 
+>>> interrupts. In this case gettimeofday resolution is determined by 
+>>> timebase resolution which is quite high (megahertz range).
+>> Sorry. I don't understand. What do you mean with "timebase"? Is there a
+>> second timer/counter?
+> 
+> PowerPC has a facility called timebase. This is 64-bit counter which 
+> can be accessed using special instructions (mftb, mftbu on 32-bit PPC).
+> Counter resolution depends on particular chip implementation, some 
+> use core clock, other use bus clock...
+> 
+> It's similar to the time-stamp counter in Intel CPUs (accessed 
+> with rdtsc instruction).
+Thanks very much for clearing this!
 
-    setenv bootargs root=/dev/mtdblock4 rw rootfstype=cramfs
-    console=ttyS0 console=ttyS0 init=/sbin/init ip=on
-    ....
-    NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-    VFS: Mounted root (cramfs
-    filesystem).                                                                         
+> Please, refer to PPC arch manuals for more information. Also, if you 
+> really interested in how gettimeofday() is implemented, why don't you 
+> look at the source code yourself?
+I tried. But it's not obvious. Not for me anyway.
 
-    Freeing unused kernel memory: 96k
-    init                                                                         
-                                                                                                                                                                                                                                         
-
-    BusyBox v1.00 (2006.03.06-10:43+0000) Built-in shell
-    (ash)                                                     
-    Enter 'help' for a list of built-in commands.           
-    #
-
-
-However, we are not able to boot linux with the same rootfs image (with 
-the u-boot header) loaded from RAM.
-
-        setenv bootargs root=/dev/rw rw console=ttyS0 console=ttyS0
-        init=/sbin/init ip=on
-
-        ## Booting image at 00500000 ...
-           Image Name:   Linux-2.4.25-rthal5-TRACE
-           Created:      2006-05-11   9:37:52 UTC
-           Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-           Data Size:    1000166 Bytes = 976.7 kB
-           Load Address: 00000000
-           Entry Point:  00000000
-           Verifying Checksum ... OK
-           Uncompressing Kernel Image ... OK
-        ## Loading RAMDisk Image at 01000000 ...
-           Image Name:   Ramdisk Image
-           Created:      2006-05-22   8:12:03 UTC
-           Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-           Data Size:    1191936 Bytes =  1.1 MB
-           Load Address: 00000000
-           Entry Point:  00000000
-           Verifying Checksum ... OK
-           Loading Ramdisk to 0fe22000, end 0ff45000 ... OK
-        Memory BAT mapping: BAT2=256Mb, BAT3=0Mb, residual: 0Mb
-        Linux version 2.4.25-rthal5-TRACE (igor@ILURI_LINUX) (gcc
-        version 3.3.6) #300 jue may 11 11:33:57 CEST 2006
-        On node 0 totalpages: 65536
-        zone(0): 65536 pages.
-        zone(1): 0 pages.
-
-        ....
-        NET4: Unix domain sockets 1.0/SMP for Linux
-        NET4.0.                                                             
-        RAMDISK: cramfs filesystem found at block
-        0                                                                   
-         
-        RAMDISK: Loading 1164 blocks [1 disk] into ram disk...
-        done.                                                    
-        Freeing initrd memory: 1164k
-        freed                                                                            
-         
-        VFS: Mounted root (cramfs filesystem)
-        readonly.                                                               
-         
-        Freeing unused kernel memory: 96k
-        init                                                                        
-         
-        Error -3 while
-        decompressing!                                                                                 
-         
-        c0224e84(1616147664)->c0214000(4096)                                                                          
-         
-        Error -3 while
-        decompressing!                                                                                 
-         
-        c02286d8(-965246762)->cff41000(4096)                                                                          
-         
-        Kernel panic: No init found.  Try passing init= option to
-        kernel.                                               
-         <0>Rebooting in 180 seconds..                         
-
-We have configured linux with option " Board uses U-Boot CONFIG_UBOOT " 
-and CRAMFS image is built with correct endianess:
-
-    file initrd.cramfs
-
-    Linux Compressed ROM File System data, big endian size 1191936
-    version #2 sorted_dirs CRC 0xac3c8f59, edition 0, 719 blocks, 433 files
-
-
-We suspect it could be related with the SDRAM, but we are lost here.
-
-Someone knows what we are doing wrong? Any help would be appretiated.
-
-
-Thanks in advance.
+-- 
+Steven
