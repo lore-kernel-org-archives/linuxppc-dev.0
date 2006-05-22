@@ -1,17 +1,20 @@
-Return-Path: <nreddy@netenrich.com>
-Received: from mail.netenrich.com (mail.netenrich.com [204.13.82.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9F934679E9
+Return-Path: <thiagogalesi@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id 72785679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 May 2006 22:20:08 +1000 (EST)
-Message-ID: <45530.61.95.208.2.1148300461.squirrel@61.95.208.2>
-Date: Mon, 22 May 2006 05:21:01 -0700 (PDT)
-Subject: "How to change the Magic number"
-From: nreddy@netenrich.com
-To: u-boot-users@lists.sourceforge.net
+	Mon, 22 May 2006 22:27:05 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id j3so1148909ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 22 May 2006 05:27:03 -0700 (PDT)
+Message-ID: <82ecf08e0605220527r4033cff2xbba8a60646f9dfc2@mail.gmail.com>
+Date: Mon, 22 May 2006 09:27:03 -0300
+From: "Thiago Galesi" <thiagogalesi@gmail.com>
+To: "Laurent Pinchart" <laurent.pinchart@tbox.biz>
+Subject: Preferred way to configure MTD physical mapping and partitioning
+In-Reply-To: <200605221232.14880.laurent.pinchart@tbox.biz>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200605221232.14880.laurent.pinchart@tbox.biz>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,22 +26,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi ALL,
+What about configuring it in kernel configuration (using make
+menuconfig for example). Most of the configurations can be done
+through there (position, size, width, etc)?
 
- I have a specific requirement to change the Magic number of the linux
-kernel in my embedded system.
+Only if you have something out of the ordinary it would be advisable
+to use a driver.
 
- I cound see the Magic number is defined in U-boot files:
- 1.include/image.h:#define IH_MAGIC        0x27051956
- 2.cpu/ppc4xx/start.S:     .long   0x27051956
+If you give us more detail we'll be able to help you better
 
-  So i can modify in u-boot to make it compatible to my Kernel (i am using
-montavista linux version 2.4.20), but i am not able to see this kindof
-info anywhere in the kernel source files.
-If anyone knows how the linux magic number is generated and what are the
-files
- need modifications inorder to change magic number please let me know.
+BTW, you can partition your flash via cmdline
+
+Cheers :)
 
 
-Thnaks in Advance,
-Nagi
+
+-- 
+-
+Thiago Galesi
