@@ -1,33 +1,18 @@
-Return-Path: <steven.scholz@imc-berlin.de>
-Received: from mail.imc-berlin.de (mail.imc-berlin.de [217.110.46.186])
-	by ozlabs.org (Postfix) with ESMTP id 7FD67679FD
+Return-Path: <nreddy@netenrich.com>
+Received: from mail.netenrich.com (mail.netenrich.com [204.13.82.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9F934679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 May 2006 21:03:57 +1000 (EST)
-Received: from mailserver.berlin.imc-berlin.de
-	(mailserver.berlin.imc-berlin.de [10.0.0.19])
-	by mail.imc-berlin.de (Postfix) with ESMTP id 3099A2F022
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 May 2006 13:03:53 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id 24BFB1E20E1
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 May 2006 13:03:53 +0200 (CEST)
-Received: from [10.0.2.10] (scholz.berlin.imc-berlin.de [10.0.2.10])
-	by mailserver.berlin.imc-berlin.de (Postfix) with ESMTP id 4CC071E2027
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 May 2006 13:03:52 +0200 (CEST)
-Message-ID: <44719A96.2020309@imc-berlin.de>
-Date: Mon, 22 May 2006 13:03:50 +0200
-From: Steven Scholz <steven.scholz@imc-berlin.de>
+	Mon, 22 May 2006 22:20:08 +1000 (EST)
+Message-ID: <45530.61.95.208.2.1148300461.squirrel@61.95.208.2>
+Date: Mon, 22 May 2006 05:21:01 -0700 (PDT)
+Subject: "How to change the Magic number"
+From: nreddy@netenrich.com
+To: u-boot-users@lists.sourceforge.net
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8xx: resolution of gettimeofday() ?
-References: <446C8E70.3040601@imc-berlin.de>
-	<20060518164812.GA21075@gate.ebshome.net>
-	<446D7CFA.5060505@imc-berlin.de>
-	<20060519175513.GA12121@gate.ebshome.net>
-In-Reply-To: <20060519175513.GA12121@gate.ebshome.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,27 +23,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Eugene,
+Hi ALL,
 
->>> Usually on PPC we use timebase to interpolate time between Decrementer 
->>> interrupts. In this case gettimeofday resolution is determined by 
->>> timebase resolution which is quite high (megahertz range).
->> Sorry. I don't understand. What do you mean with "timebase"? Is there a
->> second timer/counter?
-> 
-> PowerPC has a facility called timebase. This is 64-bit counter which 
-> can be accessed using special instructions (mftb, mftbu on 32-bit PPC).
-> Counter resolution depends on particular chip implementation, some 
-> use core clock, other use bus clock...
-> 
-> It's similar to the time-stamp counter in Intel CPUs (accessed 
-> with rdtsc instruction).
-Thanks very much for clearing this!
+ I have a specific requirement to change the Magic number of the linux
+kernel in my embedded system.
 
-> Please, refer to PPC arch manuals for more information. Also, if you 
-> really interested in how gettimeofday() is implemented, why don't you 
-> look at the source code yourself?
-I tried. But it's not obvious. Not for me anyway.
+ I cound see the Magic number is defined in U-boot files:
+ 1.include/image.h:#define IH_MAGIC        0x27051956
+ 2.cpu/ppc4xx/start.S:     .long   0x27051956
 
--- 
-Steven
+  So i can modify in u-boot to make it compatible to my Kernel (i am using
+montavista linux version 2.4.20), but i am not able to see this kindof
+info anywhere in the kernel source files.
+If anyone knows how the linux magic number is generated and what are the
+files
+ need modifications inorder to change magic number please let me know.
+
+
+Thnaks in Advance,
+Nagi
