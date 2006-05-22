@@ -1,16 +1,21 @@
-Return-Path: <poseidon21@post.sk>
-Received: from burn.post.sk (out.post.sk [85.248.69.136])
-	by ozlabs.org (Postfix) with ESMTP id 4397967A2E
+Return-Path: <SRS0+6268839a6384cbb21a2e+1002+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 710A9679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 07:34:32 +1000 (EST)
-Message-ID: <4472281A.000001.06545@kamasutra>
+	Tue, 23 May 2006 07:51:03 +1000 (EST)
+Subject: Re: Viable PPC platform?
+From: David Woodhouse <dwmw2@infradead.org>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20060509223113.5715D353DB1@atlas.denx.de>
+References: <20060509223113.5715D353DB1@atlas.denx.de>
+Content-Type: text/plain
+Date: Mon, 22 May 2006 22:51:13 +0100
+Message-Id: <1148334674.10288.30.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-	Charset = "ISO-8859-2"
-From: a b <poseidon21@post.sk>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Re: SCC1 as serial console
-Date: 22 May 2006 23:07:38 +0200 (CEST)
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,8 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-experiment
+On Wed, 2006-05-10 at 00:31 +0200, Wolfgang Denk wrote:
+> And if somebody wants to see facts and numbers, please see
+> http://www.denx.de/wiki/view/DULG/RootFileSystemSelection
 
+Out of interest, how old is that JFFS2 test? If it's with the ancient
+code in the 2.4 kernel, you'll get a _lot_ of improvement by using the
+2.6 kernel.
 
-__________
-http://auto.sme.sk - V¹etko o autách (novinky, testy, autosalón, auto¹kola, porovnaj si auto)
+It looks like it took about 13 seconds to mount the onboard 8MiB flash.
+I can mount 512MiB of flash in 7.9 seconds with the current kernel, with
+a 400MHz AMD Geode.
+
+There's more work going on right now to reduce the memory usage too.
+
+-- 
+dwmw2
