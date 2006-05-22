@@ -1,24 +1,22 @@
-Return-Path: <Dai.Haruki@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 5BFB9679A6
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2006 21:18:51 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k4M1wOeR003546
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 May 2006 18:58:24 -0700 (MST)
-Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
-	[10.64.32.14])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k4M1cOR2017209
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 May 2006 20:38:24 -0500 (CDT)
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao05.cox.net (fed1rmmtao05.cox.net [68.230.241.34])
+	by ozlabs.org (Postfix) with ESMTP id 9070D67A44
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2006 00:26:05 +1000 (EST)
+Date: Mon, 22 May 2006 07:26:03 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/5] powerpc: Make early xmon logic immune to location of
+	early parsing
+Message-ID: <20060522142603.GC32112@smtp.west.cox.net>
+References: <1147852841.148164.91320074069.qpush@concordia>
+	<20060517212955.GA31362@smtp.west.cox.net>
+	<1147910586.7360.8.camel@localhost.localdomain>
+	<20060518010826.GO22868@smtp.west.cox.net>
+	<1148281388.24345.40.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] Gianfar SKB Recycling Support
-Date: Sun, 21 May 2006 18:38:26 -0700
-Message-ID: <18AEF66AFDF06F4CAAA1D419D000FD33524DED@az33exm24.fsl.freescale.net>
-From: "Haruki Dai-r35557" <Dai.Haruki@freescale.com>
-To: "Stephen Hemminger" <shemminger@osdl.org>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1148281388.24345.40.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,58 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Stephen Hemminger [mailto:shemminger@osdl.org]=20
-> Sent: Saturday, May 20, 2006 2:48 AM
-> To: Haruki Dai-r35557
-> Cc: netdev@vger.kernel.org; Fleming Andy-afleming; Kumar=20
-> Gala; Haruki Dai-r35557
-> Subject: Re: [PATCH] Gianfar SKB Recycling Support
->=20
-> On Wed, 17 May 2006 15:45:14 -0700
-> "Haruki Dai-r35557" <Dai.Haruki@freescale.com> wrote:
->=20
-> > This patch improves the IP forwarding throughput of
-> > the Freescale TSEC/eTSEC Gianfar driver. By recycling
-> > the Socket buffer and Data buffer, reduce the unnecessary
-> > memory allocation and de-allocation in the forwarding
-> > processing chain.
-> >=20
-> > Signed-off-by: Dai Haruki <dai.haruki@freescale.com>
-> > Signed-off-by: Andy Fleming <afleming@freescale.com>
-> >=20
->=20
-> In case the general impression wasn't clear from the earlier comments.
-> This patch is an interesting benchmark tweak, but unlikely to ever
-> make it into the mainline kernel. The kernel needs to be a general
-> purpose system and deal with multiple types of hardware and resource
-> control.
->=20
-> But don't give up looking at performance. If you can find ways to
-> speed up the overall socket buffer handling without breaking existing
-> semantics; then the patches would be positively received.
->
+On Mon, May 22, 2006 at 05:03:08PM +1000, Michael Ellerman wrote:
+[snip]
+> But as far as xmon and kgdb is concerned it really shouldn't matter that
+> the parsing is happening earlier. Instead of calling directly into
+> xmon/kgdb from the parsing code you set a global which is tested later.
 
-I admit the explanation of the implementation is indeed unclear. I will
-put the recycling mechanism explanation. Is it better put as the
-driver's comment? Or, the separate document like, say,
-Document/net/skb_recycling.txt?
+Yes, so instead of one method of telling the kernel we want to have kgdb
+asap, and one method of implementing that on all architectures we have
+the command line parsed sometimes (and we just drop right in), other
+architectures we need to write something to set a flag we check later,
+and someone else writes something different for this on yet another
+platform and we're back to where we started from.  That's my fear :)
 
-Just in case, I need to confirm that the patch is rejected even though
-the expalanation is added?=20
-
-I will surely work for making this mechanism more generic to the other
-interface. I want to make sure that this patch is not the purpose of
-benchmark tweak. This recycling mechanism makes the Linux's position in
-the packet forwarding application better compare to the other
-proprietary OS/Stack in terms of the throughput performance.=20
-=20
- For the gianfar user, this patch also improves interrupt response under
-the situation when previous gianfar tied up with the a lot of TX hw
-interrupt even under NAPI (current gianfar NAPI implementation only help
-Rx side since we have separate interrupt line). I will separate the
-gianfar specific improvement, and post to this list again.
-
-
-
-- Dai
+-- 
+Tom Rini
