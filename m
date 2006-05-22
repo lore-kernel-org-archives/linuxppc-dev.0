@@ -1,24 +1,16 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 26912679E2
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2006 04:46:18 +1000 (EST)
-Received: from Relay1.suse.de (mail2.suse.de [195.135.221.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mx1.suse.de (Postfix) with ESMTP id 73212EFF9
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 May 2006 20:46:13 +0200 (CEST)
-Date: Mon, 22 May 2006 20:46:12 +0200
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: pseries softreset on cpus in 32bit mode
-Message-ID: <20060522184612.GA15282@suse.de>
-References: <20060522164111.GA14462@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20060522164111.GA14462@suse.de>
+Return-Path: <alex_rosenberg@playstation.sony.com>
+In-Reply-To: <20060519081654.GB22952@iram.es>
+References: <1148011621.13249.7.camel@localhost.localdomain>
+	<20060519081654.GB22952@iram.es>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <995508C0-6D30-479A-8ED5-C28CC0143DB7@playstation.sony.com>
+From: Alex Rosenberg <alex_rosenberg@playstation.sony.com>
+Subject: Re: [Cbe-oss-dev] Cell and new CPU feature bits
+Date: Mon, 22 May 2006 12:46:23 -0700
+To: Gabriel Paubert <paubert@iram.es>
+Cc: cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,103 +20,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- On Mon, May 22, Olaf Hering wrote:
+On May 19, 2006, at 1:16 AM, Gabriel Paubert wrote:
 
-> 
-> Consider a simple app like this, which is placed as '/init' in an initrd
-> cpio archive:
-> 
-> hello32.c
-> 
-> #include <stdio.h>                                                                                                              
-> int main(void) {
->         printf("foobar\n");
->         asm("li 31,0; b .\n");
->         return 0;
-> }
+> On Fri, May 19, 2006 at 02:07:01PM +1000, Benjamin Herrenschmidt  
+> wrote:
+>> The Cell has a couple of "features" that should be exposed to  
+>> userland
+>> in a way or another. That raises some questions however about how  
+>> those
+>> should be done. Among others that come to mind:
+>>
+>>  - The timebase errata (should we use a separate aux vector for  
+>> "bugs"
+>> than for "features" ?
+>
+> Is this bug really going to be exposed in the wild or is it
+> an early silicon bug that will only bite early-testers?
 
-Modified the userland app to init some registers with a fixed value, and
-ran a kernel with the debug patch below. It gets into bad_stack from
-decrementer_common = c000000000003400. 3200 is coming from 
-c000000000003200 <system_reset_common>:
+Is this or any other errata published somewhere? I didn't think they  
+were.
 
-So what does that mean? Should a softreset disable interrupts?
+>>  - Additional Altivec instructions (load/store right/left). A new
+>> feature bit for these ?
+>
+> Yes. So IBM was not happy with Altivec instructions to generate
+> vsel control words and got their inspiration from MIPS?
 
-Linux version 2.6.17-rc4-g353b28ba-dirty (olaf@pomegranate) (gcc version 4.1.0 (SUSE Linux)) #13 SMP Mon May 22 20:38:56 CEST 2006
-[boot]0012 Setup Arch
-Top of RAM: 0x1e000000, Total RAM: 0x1e000000
-Memory hole size: 0MB
-PPC64 nvram contains 16384 bytes
-Using default idle loop
-[boot]0015 Setup Done
-Built 1 zonelists
-Kernel command line:  root=/dev/hda2  xmon=on quiet
-foobar
-Bad kernel stack pointer ffad3ad0 at 3200
-cpu 0x1: Vector: c000000007a5ef10  at [c000000007a5ed40]
-    pc: 0000000000003200
-    lr: 0000000010000338
-    sp: ffad3ad0
-   msr: 40001032
-  current = 0xc00000000ffc67e0
-  paca    = 0xc00000000053a100
-    pid   = 1, comm = init
-enter ? for help
-1:mon> r
-R00 = 0000000010000338   R16 = c0000000004470e8
-R01 = 00000000ffad3ad0   R17 = 0000000000000000
-R02 = 000000001009c470   R18 = 00000000000413cd
-R03 = 0000000007aceff8   R19 = 0000000000507ab8
-R04 = 000000001002489c   R20 = 0000000000000042
-R05 = 0000000040000042   R21 = 0000000000000042
-R06 = 0000000000004000   R22 = 0000000000000042
-R07 = 000000001000b100   R23 = 0000000000000042
-R08 = 000000000000f932   R24 = 0000000000000042
-R09 = 0000000000000000   R25 = 0000000000000042
-R10 = 0000000000000000   R26 = 0000000000000042
-R11 = 0000000000000000   R27 = 0000000000000042
-R12 = 00000000200fffff   R28 = 0000000000000042
-R13 = c00000000053a100   R29 = 0000000000003420
-R14 = c000000000448a38   R30 = 0000000000003200
-R15 = 4000000002010000   R31 = 0000000010000368
-pc  = 0000000000003200
-lr  = 0000000010000338
-msr = 0000000040001032   cr  = 20000042
-ctr = 0000000000032ddc   xer = 00000000200fffff   trap = c000000007a5ef10
-1:mon> 
+I think you can blame Waternoose for this, not Cell.
 
+>>  - Not strictly Cell specific but we currently don't expose the  
+>> support
+>> for optional instructions
+>>    fres and frsqte (which are supported by Cell)
+>
+> Should be exposed IMHO. But these instructions have been present
+> in a lot of PPC processors AFAIR, they are in my original 603 and
+> 604 manuals from 1994 (fsel is also marked as optional and is not
+> implemented on the 601, but I'm not sure it's really supported
+> anymore). I don't know about Power processors.
 
-Index: linux-2.6/arch/powerpc/kernel/head_64.S
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/head_64.S
-+++ linux-2.6/arch/powerpc/kernel/head_64.S
-@@ -269,7 +269,12 @@ exception_marker:
-        subi    r1,r1,INT_FRAME_SIZE;   /* alloc frame on kernel stack  */ \
-        beq-    1f;                                                        \
-        ld      r1,PACAKSAVE(r13);      /* kernel stack to use          */ \
--1:     cmpdi   cr1,r1,0;               /* check if r1 is in userspace  */ \
-+1:                                     \
-+       cmpdi   cr1,r29,0x42;           \
-+       bne     cr1,2f;                 \
-+       li      r29,2f@l;               \
-+2:                                     \
-+       cmpdi   cr1,r1,0;               /* check if r1 is in userspace  */ \
-        bge-    cr1,bad_stack;          /* abort if it is               */ \
-        std     r9,_CCR(r1);            /* save CR in stackframe        */ \
-        std     r11,_NIP(r1);           /* save SRR0 in stackframe      */ \
-@@ -600,6 +605,7 @@ slb_miss_user_pseries:
- system_reset_fwnmi:
-        HMT_MEDIUM
-        mtspr   SPRN_SPRG1,r13          /* save r13 */
-+       mfspr   r31,SPRN_SRR0
-        EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, system_reset_common)
- 
-        .globl machine_check_fwnmi
-@@ -842,6 +848,7 @@ bad_stack:
-        std     r9,_CCR(r1)
-        std     r10,GPR1(r1)
-        std     r11,_NIP(r1)
-+       mr      r30,r11
-        std     r12,_MSR(r1)
-        mfspr   r11,SPRN_DAR
-        mfspr   r12,SPRN_DSISR
+Our solution back at Apple was to put OF properties on the CPU node  
+for each optional feature. e.g. for fres and frsqrte we put  
+"graphics" since that's the official term for that group of optional  
+instructions. We also put in "data-streams" instead of presuming that  
+dss, etc. were always part of "altivec". These properties nicely fit  
+into our Gestalt() API where "ppcf" had 32 bits to describe these to  
+userland software.
+
+-----------------------------------------
+Alex Rosenberg
+Runtime Lead, Tools & Technology team
+Sony Computer Entertainment America, Inc.
