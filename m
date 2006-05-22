@@ -1,17 +1,19 @@
-Return-Path: <trini@kernel.crashing.org>
-Date: Mon, 22 May 2006 15:22:27 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [HACK] add sandpoint + flattened dt support to arch/powerpc/boot
-Message-ID: <20060522222227.GR32112@smtp.west.cox.net>
-References: <20060518002142.GA23182@mag.az.mvista.com>
-	<1147960021.7607.5.camel@localhost.localdomain>
-	<20060519003730.GA7338@mag.az.mvista.com>
-	<1147999765.8515.6.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1147999765.8515.6.camel@localhost.localdomain>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <jdl@freescale.com>
+Received: from az33egw01.freescale.net (unknown [192.88.158.102])
+	by ozlabs.org (Postfix) with ESMTP id 18DC3679E0
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2006 10:05:17 +1000 (EST)
+Subject: Re: [PATCH] powerpc: Auto reserve of device tree blob
+From: Jon Loeliger <jdl@freescale.com>
+To: Michael Neuling <mikey@neuling.org>
+In-Reply-To: <20060518220408.49C6567A44@ozlabs.org>
+References: <5148225C-AE27-4365-A1C2-40C46491AF0D@watson.ibm.com>
+	<20060518220408.49C6567A44@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1148315146.17549.8.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Mon, 22 May 2006 11:25:47 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,31 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, May 19, 2006 at 10:49:25AM +1000, Michael Ellerman wrote:
-> On Thu, 2006-05-18 at 17:37 -0700, Mark A. Greer wrote:
-> > On Thu, May 18, 2006 at 08:47:01AM -0500, Matthew McClintock wrote:
-> > > On Wed, 2006-05-17 at 17:21 -0700, Mark A. Greer wrote:
-> > > > +void *
-> > > > +dt_find_prop_by_name(void *dt_blob, char *full_name, u32 *val_sizep) 
-> > > 
-> > > Is there a reason you are not using of_get_flat_dt_prop() instead of
-> > > implementing your own version?
-> > 
-> > Yes.  One is in the kernel, one isn't.  Or, are you asking why I didn't
-> > just copy the kernel code?  If so, I probably should have.
-> > 
-> > Hrm, we almost need a library of code shared between the kernel &
-> > the bootwrapper.  Sort of illegal but it would save duplicating code
-> > like the flat dt code.
-> > 
-> > Comments?
+On Thu, 2006-05-18 at 17:03, Michael Neuling wrote:
+> From: Jimi Xenidis <jimix@watson.ibm.com>
 > 
-> Yeah we do. And it's not illegal IMHO as two of our boot wrappers
-> (prom_init and the iSeries one) are linked with the kernel anyway.
+> A devtree compiler (dtc) generated devtree blob is "relocatable" and so
+> does not contain a reserved_map entry for the blob itself.  This means
+> that if passed to Linux, Linux will not get lmb_reserve() the blob and
+> it could be over.  The following patch will explicitly reserve the
+> "blob" as it was given to us and stops prom_init.c from creating a
+> reserved mapping for the blob.
+> 
+> NOTE: that the dtc/kexec should not generate the blob reservation entry.
+> Although if they do, LMB reserver handles overlaps.
 
-And on all architectures (practically) the zlib inflate code is shared
-between kernel and bootstuff.  So it's not unprecidented to do the ugly
-define abstractions to let you easily share code as needed.
+The current DTC does not issue the memory reservation request.
+As discussed earlier, it is now relying on the kernel
+to do a reservation for the itself.  While I've not seen
+it applied yet, I am assuming that Jimi's patch from 14 April
+is what is needed here and will be applied.  (Maybe it
+just needs a "Signed-off" to make it happen.  Dunno.)
 
--- 
-Tom Rini
+Thanks,
+jdl
