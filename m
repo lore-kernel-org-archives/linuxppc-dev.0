@@ -3,17 +3,17 @@ Received: from pentafluge.infradead.org (pentafluge.infradead.org
 	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E81967A2E
+	by ozlabs.org (Postfix) with ESMTP id 7717867A3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 08:20:54 +1000 (EST)
-Subject: Re: Viable PPC platform?
+	Tue, 23 May 2006 08:35:18 +1000 (EST)
+Subject: Re: Preferred way to configure MTD physical mapping and partitioning
 From: David Woodhouse <dwmw2@infradead.org>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20060522221556.E60273526CA@atlas.denx.de>
-References: <20060522221556.E60273526CA@atlas.denx.de>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 22 May 2006 23:21:00 +0100
-Message-Id: <1148336460.10288.37.camel@shinybook.infradead.org>
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
+In-Reply-To: <200605221232.14880.laurent.pinchart@tbox.biz>
+References: <200605221232.14880.laurent.pinchart@tbox.biz>
+Content-Type: text/plain
+Date: Mon, 22 May 2006 23:35:22 +0100
+Message-Id: <1148337323.10288.40.camel@shinybook.infradead.org>
 Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -26,15 +26,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-05-23 at 00:15 +0200, Wolfgang Denk wrote:
-> But then, a 400 MHz Geode is a bit faster than a 50 MHz 8xx, probably
-> not only in terms of CPU performance but  also  in  terms  of  memory
-> bandwidth.
+On Mon, 2006-05-22 at 12:32 +0200, Laurent Pinchart wrote:
+> - adding a board specific "driver" in drivers/mtd/maps and handle all mapping 
+> manually
+> - adding board specific MTD configuration in arch/ppc/platforms with calls to 
+> physmap_set_partitions() and physmap_configure()
+> - adding board specific MTD configuration in arch/ppc/platforms with a call to 
+> physmap_set_partitions(), and using the CONFIG_MTD_PHYSMAP option with 
+> physical mapping values provided in the kernel configuration.
+> 
+> Could anyone comment on the preferred approach ?
 
-It's actually NAND flash, and the bandwidth sucks (the flash controller
-on the Geode companion chip is quite slow). We're getting about 3 MiB/s
-from it, although we _ought_ to be able to get 3½. I'm playing with
-JFFS2 some more before I go back to tweaking the NAND drivers though.
+None of the above. The physmap driver in the MTD git tree already works
+with a platform_device, instead of needing a call to physmap_configure()
+or manual configuration at build time. Either register a
+platform_device, or preferably extend it to use an of_device too.
 
 -- 
 dwmw2
