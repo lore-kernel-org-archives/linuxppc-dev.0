@@ -1,17 +1,20 @@
-Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 8D9CC67A70
+Return-Path: <rick.moleres@xilinx.com>
+Received: from outbound1-ash-R.bigfish.com (outbound-ash.frontbridge.com
+	[206.16.192.249])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4311C67B33
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 09:52:44 +1000 (EST)
-Date: Tue, 23 May 2006 16:54:49 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Phil Nitschke <Phil.Nitschke@avalon.com.au>
-Subject: Re: pmppc7448/mv64x60 DMA from PCI to memory
-Message-ID: <20060523235449.GB1536@mag.az.mvista.com>
-References: <1148395804.21475.53.camel@toby.int.avalon.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1148395804.21475.53.camel@toby.int.avalon.com.au>
+	Wed, 24 May 2006 09:56:24 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C67EAE.EA627DBB"
+Subject: RE: question about linux with Xilinx ML-403
+Date: Tue, 23 May 2006 15:21:54 -0600
+Message-ID: <689CB232690D8D4E97DA6C76DA098E6C0252AB7B@XCO-EXCHVS1.xlnx.xilinx.com>
+From: "Rick Moleres" <rick.moleres@xilinx.com>
+To: "Ming Liu" <eemingliu@hotmail.com>,
+	"rick.moleres" <rick.moleres@xilinx.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,81 +26,351 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Phil,
+This is a multi-part message in MIME format.
 
-On Wed, May 24, 2006 at 12:20:04AM +0930, Phil Nitschke wrote:
-> I've written a collection of simple routines to program the Marvell IDMA
-> controller, for example:
->     mv64x6x_init_dma_channel();
->     mv64x6x_set_dma_mode();
->     mv64x6x_set_src_addr();
->     mv64x6x_set_dst_addr();
->     mv64x6x_set_dma_count();
->     mv64x6x_enable_dma();
-> or rather more simply:
->     mv64x6x_memcpy_dma(dst_handle, src_handle, size);
+------_=_NextPart_001_01C67EAE.EA627DBB
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Listing routine names but no code doesn't really help.
+Ming,
 
-> This works OK for copying from a memory to memory, where the buffers are
-> allocated using:
->     src = dma_alloc_noncoherent(NULL, BUF_SZ, &src_handle, GFP_KERNEL);
-> The src_handle is passed directly to mv64x6x_set_src_addr();
-> 
-> But when the src address is the FIFO on the PCI bus, I don't know how to
+=20
 
-Do you really mean a FIFO?  If so, that would explain a lot...
+-----Original Message-----
+From: Ming Liu [mailto:eemingliu@hotmail.com]=20
+Sent: Tuesday, May 23, 2006 3:42 AM
+To: rick.moleres
+Cc: linuxppc-embedded@ozlabs.org
+Subject: question about linux with Xilinx ML-403
 
-> get the IDMA controller to play nicely.  The FIFO sits in the middle of
-> the PCI device's I/O mem range 0x9fe00000 - 0x9fffffff.  I've programmed
-> and enabled a 5th address window in the IDMA controller which
-> encompasses the 0x200000 bytes of the PCI memory range, and I'm not
-> seeing any address violation or address miss errors.  The PCI->memory
-> DMA "completes" without any traffic every touching the PCI bus, so
-> obviously I need to do something else/differently.
+=20
 
-You say that you don't see any PCI traffic.  Does that mean you
-have a PCI analyzer and that you are sure that its set up correctly?
-If so, then you have something botched in your IDMA->PCI window setup
-or in the pgming of the DMA itself (e.g., in your descriptor(s)).
+Hi Rick,
 
-Also, set the SrcHold bit [3] of the channel control reg (low).
-If its really a FIFO, you are--or will be once you get your windows
-and descriptors set up correctly--reading the FIFO once then
-incrementing past it.
+> Yes, we have a driver for the PLB TEMAC (different than the GSRD LL
 
-> For this scenario, can anyone tell me:
->         * Should I be using the same src address as that reported via
->         the 'lspci' command - this _is_ the PCI bus address, isn't it?
+> TEMAC) for Linux 2.4 (MontaVista Linux 2.4.20) that's shipped in EDK
 
-"man lspci" (read up on the '-b' option)
+> 8.1.1, and MontaVista is on the verge of publishing a driver for PLB
 
->         * Do I have to do anything special to tell the IDMA controller
->         to source data from the PCI bus and shift it into memory?
+> TEMAC for Linux 2.6. (I believe it came across this mailing list a few
 
-You're talking to a *FIFO* which means you read all the data from one
-address and write all the data to one, probably different, address.
-Its not normal PCI memory, you don't increment through it.  Its a
-register of a FIFO that's in PCI memory space.  That's why you need
-to tell the IDMA ctlr to "hold" and read/write to the same address
-each time.
+> weeks ago)
 
->         * Looking through mv64x60.c in the 2.6.16 kernel, I note that 4
->         of the 8 possible IDMA address windows are configured (for each
->         of the 512 MB DRAM on our processor card).
+=20
 
-No they aren't.  They're configured (or not) according to the setup info
-that you pass in.
+I have generated the BSP by EDK 8.1.1 for my project in ML403(hardcore=20
 
-> Do I need to add
->         tests to my source and destination regions, to determine if they
->         cross one of the 512 MB regions, and hence will require a
->         different CSx line (and thus the DMA will need to be broken into
->         two transactions), or does kernel already take care to ensure
->         allocated regions will not cross these boundaries?
+Temac and PLB Temac included). I noticed that there is a directory
+called=20
 
-No.  You need to do what's appropriate for the hardware that you are
-essentially writing a driver for.  YOU are supposed to know what the
-limitations of your hardware are.  Even if you don't have a manual... ;)
+Xilinx_gige in the directory of /drivers/net. Is this the driver for=20
 
-Mark
+MontaVista Linux2.4.20?
+
+=20
+
+Yes, this is the PLB TEMAC driver for Linux 2.4.20.  In EDK 8.1.x, the
+temac driver and Makefile are copied to drivers/net/xilinx_gige.  This
+xilinx_gige directory is not available in the MVL 3.1 Preview Kit, only
+in the full Professional kit.  We put the temac driver here mostly to
+take advantage of the JUMBO_FRAME_SUPPORT in kernel configuration.
+
+=20
+
+ I copied the BSP and overwrote the original one in=20
+
+the linux kernel directory (in the kernel directory, there is only a=20
+
+directory called Xilinx_enet, no Xilinx_gige. So I just copied=20
+
+Xilinx_gige.). However, my problem is in the menuconfig item of Network=20
+
+Device Support->1000Mbit ethernet, there is not any option to choose and
+
+
+enable the Xilinx on-chip ethernet. Is this a problem of MontaVista
+Linux=20
+
+3.1 Preview Kit, or my problem?  And What shall I do to enable the
+tri-mode=20
+
+Temac in my platform? Thanks for your answer.=20
+
+=20
+
+Our best recommendation is to use the drivers/net/xilinx_enet directory
+for the temac driver and just enable the Xilinx 10/100 Ethernet in
+menuconfig.  If you want jumbo frame support, modify adapter.c in the
+driver to define the CONFIG_XILINX_GIGE_JUMBO constant.
+
+=20
+
+Note that Linux 2.6 support for the temac should be available from
+MontaVista soon and a driver was pushed to this mailing list in March.
+There will be support for MV Linux 2.6 in EDK 8.2.1 (around August).
+
+=20
+
+=20
+
+Thanks,
+
+Rick
+
+=20
+
+
+------_=_NextPart_001_01C67EAE.EA627DBB
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 77.95pt 1.0in 77.95pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:
+10.0pt'>Ming,<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:
+10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>-----Original Message-----<br>
+From: Ming Liu [mailto:eemingliu@hotmail.com] <br>
+Sent: Tuesday, May 23, 2006 3:42 AM<br>
+To: rick.moleres<br>
+Cc: linuxppc-embedded@ozlabs.org<br>
+Subject: question about linux with Xilinx ML-403</span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>Hi Rick,<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>&gt; Yes, we have a driver for the PLB TEMAC
+(different than the GSRD LL<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>&gt; TEMAC) for Linux 2.4 (MontaVista Linux =
+2.4.20)
+that's shipped in EDK<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>&gt; 8.1.1, and MontaVista is on the verge of
+publishing a driver for PLB<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>&gt; TEMAC for Linux 2.6. (I believe it came =
+across
+this mailing list a few<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>&gt; weeks ago)<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>I have generated the BSP by EDK 8.1.1 for my =
+project
+in ML403(hardcore <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>Temac and PLB Temac included). I noticed that =
+there is
+a directory called <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>Xilinx_gige in the directory of /drivers/net. =
+Is this
+the driver for <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>MontaVista =
+Linux2.4.20?<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:
+10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:
+10.0pt'>Yes, this is the PLB TEMAC driver for Linux 2.4.20. &nbsp;In EDK =
+8.1.x,
+the temac driver and Makefile are copied to drivers/net/xilinx_gige. =
+&nbsp;This
+xilinx_gige directory is not available in the MVL 3.1 Preview Kit, only =
+in the full
+Professional kit. &nbsp;We put the temac driver here mostly to take =
+advantage
+of the JUMBO_FRAME_SUPPORT in kernel =
+configuration.<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:
+10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>&nbsp;I copied the BSP and overwrote the =
+original one
+in <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>the linux kernel directory (in the kernel =
+directory,
+there is only a <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>directory called Xilinx_enet, no Xilinx_gige. =
+So I
+just copied <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>Xilinx_gige.). However, my problem is in the
+menuconfig item of Network <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>Device Support-&gt;1000Mbit ethernet, there =
+is not any
+option to choose and <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>enable the Xilinx on-chip ethernet. Is this a =
+problem
+of MontaVista Linux <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>3.1 Preview Kit, or my problem?&nbsp; And =
+What shall I
+do to enable the tri-mode <o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
+face=3D"Courier New"><span
+style=3D'font-size:10.0pt'>Temac in my platform? Thanks for your answer. =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
+style=3D'font-size:
+10.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
+New"><span
+style=3D'font-size:10.0pt;color:black'>Our best recommendation is to use =
+the
+drivers/net/xilinx_enet directory for the temac driver and just enable =
+the Xilinx
+10/100 Ethernet in menuconfig. &nbsp;If you want jumbo frame support, =
+modify
+adapter.c in the driver to define the CONFIG_XILINX_GIGE_JUMBO =
+constant.<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
+New"><span
+style=3D'font-size:10.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p=
+>
+
+<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
+New"><span
+style=3D'font-size:10.0pt;color:black'>Note that Linux 2.6 support for =
+the temac should
+be available from MontaVista soon and a driver was pushed to this =
+mailing list
+in March. &nbsp;There will be support for MV Linux 2.6 in EDK 8.2.1 =
+(around
+August).<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
+New"><span
+style=3D'font-size:10.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p=
+>
+
+<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
+New"><span
+style=3D'font-size:10.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p=
+>
+
+<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
+New"><span
+style=3D'font-size:10.0pt;color:black'>Thanks,<o:p></o:p></span></font></=
+p>
+
+<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
+New"><span
+style=3D'font-size:10.0pt;color:black'>Rick<o:p></o:p></span></font></p>
+
+<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
+New"><span
+style=3D'font-size:10.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p=
+>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C67EAE.EA627DBB--
