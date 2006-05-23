@@ -1,16 +1,18 @@
-Return-Path: <trini@kernel.crashing.org>
-Date: Mon, 22 May 2006 18:13:19 -0700
-From: Tom Rini <trini@kernel.crashing.org>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [HACK] add sandpoint + flattened dt support to arch/powerpc/boot
-Message-ID: <20060523011319.GU32112@smtp.west.cox.net>
-References: <20060518002142.GA23182@mag.az.mvista.com>
-	<1147930376.17679.72.camel@localhost.localdomain>
-	<20060523005846.GA15797@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060523005846.GA15797@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <hollis@penguinppc.org>
+Received: from pop-satin.atl.sa.earthlink.net (pop-satin.atl.sa.earthlink.net
+	[207.69.195.63]) by ozlabs.org (Postfix) with ESMTP id AE775679A6
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2006 13:12:13 +1000 (EST)
+Date: Mon, 22 May 2006 22:11:38 -0500
+From: Hollis Blanchard <hollis@penguinppc.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: snd-aoa status update / automatic driver loading
+Message-ID: <20060522221138.683790c2@diesel>
+In-Reply-To: <1147860564.14395.6.camel@johannes>
+References: <1147860564.14395.6.camel@johannes>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,41 +22,90 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 22, 2006 at 05:58:46PM -0700, Mark A. Greer wrote:
+On Wed, 17 May 2006 12:09:24 +0200
+Johannes Berg <johannes@sipsolutions.net> wrote:
+> 
+> Currently snd-aoa is known to work on the following machines:
+> * PowerBook5,8
+> * PowerBook5,7
+> * PowerMac8,1
+> * PowerMac8,2
+> * 17" October 2005 PowerBook (don't know the number)
+> * PowerMac11,2
+> * PowerBook6,8
+> and my
+> * PowerBook5,6
+> 
+> People with those machines are encouraged to use and stress-test it,
+> it also provides much better hardware support than snd-powermac, for
+> example it can actually reprogram the hardware if you have a 48KHz
+> file instead of having to digitally downsample it to 44.1KHz like
+> required with snd-powermac in most cases.
 
-[snip]
-> All of the boards would likely have to be of the same "class".
-> Where "class" would be:
-> 	1) OF system
-> 	2) e300 core + PQIIPro (e.g., 83xx)
-> 	3) e500 core + PQIII (e.g., 85xx)
-> 	4) 6xx/7xx/74xx + mpc10x (e.g., sandpoint)
-> etc.  Something like that, anyway--maybe there are only "OF" and
-> "non-OF'?
+The "auto-loading" stuff doesn't seem to be working for me on my
+PowerMac11,2, with a fresh git clone as of right now. What is the base
+module that should load all the others? After a "make install", I still
+had to modprobe almost everything by hand (`find ./snd-aoa -name \*.ko`
+in the source directory to get a list).
 
-That's more limiting than we strictly need, I think.  So long as we keep
-the instructions that can't/aren't run-time nop'd over, or already done
-in a way they don't run on the wrong core (ie ARCH=ppc and sandpoint
-running fine on both 745x and 750), it should be (guessing a bit on the
-64bit cpus):
-1) 6xx/7xx/74xx/8xxx
-2) 4xx
-3) 8xx
-4) 970
-5) cell
-6) etc
+When the driver finally did completely load, I saw this in dmesg:
+snd-aoa-codec-tas: found keywest-i2c-bus, checking if tas chip is on it
+snd-aoa-codec-tas: created and attached tas instance
+snd-aoa-codec-tas: found keywest-i2c-bus, checking if tas chip is on it
+snd-aoa-codec-tas: created and attached tas instance
+snd: Unknown layout ID 0x44
+i2sbus: mapped i2s control registers
+i2sbus: control register contents:
+i2sbus:    fcr0 = 0x8000056
+i2sbus:    cell_control = 0x5b43831a
+i2sbus:    fcr2 = 0xe7008000
+i2sbus:    fcr3 = 0x72009607
+i2sbus:    clock_control = 0x0
+i2sbus: found i2s controller
+snd-aoa-fabric-layout: found bus with layout 68 (using)
+snd-aoa: fabric didn't like codec tas
+snd-aoa: fabric didn't like codec tas
+snd-aoa-codec-onyx: found pcm3052
+snd-aoa-fabric-layout: platform-onyx-codec-ref doesn't match!
+snd-aoa: fabric didn't like codec onyx
+snd-aoa-codec-onyx: created and attached onyx instance
+snd-aoa-codec-onyx: found pcm3052
+snd-aoa-fabric-layout: can use this codec
+snd-aoa-codec-onyx: attached to onyx codec via i2c
+snd-aoa-codec-onyx: created and attached onyx instance
+serial format: 0x41190000
+dws: 0x2000200
+i2sbus: found i2s controller
+snd-aoa-fabric-layout: found bus with layout 69 (using)
+snd-aoa-fabric-layout: platform-onyx-codec-ref doesn't match!
+snd-aoa: fabric didn't like codec onyx
+snd-aoa: fabric didn't like codec tas
+snd-aoa: fabric didn't like codec tas
+serial format: 0x41100000
+dws: 0x0
+all codec info:
+        formats = 0x808
+        rates = 0x7fe
 
-Or so.  IOW, so long as we can either nop out, or possibly better yet,
-have the compiler get things right (use Makefile/Kconfig magic to get
-the LCD -mcpu=/-mtune= option so we run right).  Things like PPC_BOARD1
-and PPC_BOARD2 would then select PQIII core stuff, MPC10X core stuff,
-TSI108 core stuff, GT64x60 core stuff, and so on.  And maybe 8xxx has to
-be split into BookE/non-BookE, at least to start with, for head*.S
-reasons.
+For the record, there are two "layout-id" properties in my device tree,
+as discussed in this patch:
+http://patchwork.ozlabs.org/linuxppc/patch?id=4867
 
-As a reminder to all, this also lets us say that if we just pick
-PPC_8548CDS then only the stuff required for the 8548CDS would be
-compiled into the kernel.
+Ultimately, snd_aoa_codec_onyx seems to be the happy module. Only the
+headphone jack was enabled; I had to use GNOME's "Volume Control" panel
+applet to enable speakers or line out (both of which work).
 
--- 
-Tom Rini
+However, volume control doesn't work at all, for both line-out and
+headphone jacks. Should it?
+
+Also, it would be helpful if the git tree were better publicized
+somewhere (e.g. http://johannes.sipsolutions.net/). I had to dig through a LOT of mails to find the source.
+	mkdir snd-aoa
+	cd snd-aoa/
+	git clone http://johannes.sipsolutions.net/snd-aoa.git/ 
+	cd snd-aoa/ 
+	make
+
+-Hollis
+
+P.S. Thanks for working on this Johannes!
