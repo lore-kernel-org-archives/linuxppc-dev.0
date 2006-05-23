@@ -1,15 +1,22 @@
-Return-Path: <tsawyer@broadcom.com>
-Received: from sandmail.sandburst.com (sandmail.sandburst.com [216.57.132.42])
-	by ozlabs.org (Postfix) with ESMTP id 4450267B70
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 914F167B35
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 22:48:06 +1000 (EST)
-Message-ID: <44730484.4090208@broadcom.com>
-Date: Tue, 23 May 2006 08:48:04 -0400
-From: "Travis B. Sawyer" <tsawyer@broadcom.com>
+	Tue, 23 May 2006 22:59:43 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id j3so1406562ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 23 May 2006 05:59:41 -0700 (PDT)
+Message-ID: <528646bc0605230553o72bd9d85r6d95580fdaaf9a72@mail.gmail.com>
+Date: Tue, 23 May 2006 06:53:34 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Ming Liu" <eemingliu@hotmail.com>
+Subject: Re: Tri-mode or gigebit ethernet support problem in ML403
+In-Reply-To: <BAY110-F197CC0259C9877D5B47F3B29B0@phx.gbl>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Problem mapping GPIO regs on ppc440gx
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <BAY110-F197CC0259C9877D5B47F3B29B0@phx.gbl>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,61 +27,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Greetings:
+On 5/23/06, Ming Liu <eemingliu@hotmail.com> wrote:
+> Hi Grant,
+> I want to ask you a problem about the 1000M ethernet support. Now I am
+> trying to integrate a linux (2.4 or 2.6) in my ML403 platform, with
+> tri-mode ethernet support. And I have downloaded many versions of linux,
+> including linuxppc_2_4_devel, MontaVista linux 3.1 Preview
+> Kit(v2.4.20_mvl31-ml300), and linux-xilinx-26. Unfortunately, I didn't fi=
+nd
+> any option in the menuconfig item Network Device Support->ethernet
+> (1000Mbit) for me to enable the 1000M ethernet in all three versions.
 
-We've been using a 2.4.30 kernel (with numerous patches) on a AMCC 440gx
-custom built board for quite some time now.
+I hate to be the bearer of bad news, but AFAIK non of the public trees
+have a driver for the TEMAC.  Xilinx EDK 8.1 does include drivers for
+the TEMAC and it *should* generate a working BSP for MontaVista Linux
+3.1 (patched 2.4 kernel).  It should also work with the linuxppc-2.4
+tree.
 
-We're building some new hardware that forces us to go to a 2.6 kernel.
-So, I've downloaded 2.6.16.16 from kernel.org and am porting everything
-forward from our 2.4.30 kernel.
+If you want it on a 2.6, you'll need to port the driver.  Regardless,
+the Xilinx driver code is NOT GPL'd, so beware.
 
-The problem lies in mapping the GPIO regs of the 440 to user space using
-/dev/mem:
+> So I have the following questions to ask.
+>
+> 1. With Xilinx Virtex 4 tri-mode ethernet MAC support, which version of
+> Linux shall I use? I think I should choose a version with Xilinx On-chip
+> Ethernet supported in the 1000M ethernet item in menuconfig.
 
-    gpio_fd = open("/dev/mem", O_RDWR | O_SYNC);
+Both Linux 2.4 and 2.6 are usable.  You've got some work to do to port
+the driver in either case.
 
-    if (0 > gpio_fd) {
-        perror("mbGpioGet(): Unable to open gpio");
-        return(-1);
-    }
+> 2. Assume that you can provide me a proper version. Shall I use Xilinx ED=
+K
+> to generate the BSP for my platform and copy the source code to overwrite
+> the drivers in the original version. Then configure the kernel and enable
+> 1000M ethernet (choose Xilinx on-chip ethernet). Then compile the
+> kernel...... Are these steps correct?
 
-    addr = (ppc440_gpio_regs_t *)mmap(0, getpagesize() * 2,
-                                      PROT_READ | PROT_WRITE,
-                                      MAP_SHARED, gpio_fd,
-                                      (off_t)(0x40000000));
+The TEMAC and EMAC are totally different devices, and I haven't looked
+to see if TEMAC driver uses the same API, but it is probably a good
+starting point.
 
-    if (MAP_FAILED == addr) {
-        perror("mbGpioGet(): map error");
-        close(gpio_fd);
-        return(-1);
-    }
+Cheers,
+g.
 
-    pGpioRegs = (ppc440_gpio_regs_t *)((uint32_t)addr + 0x700);
-
-    data = pGpioRegs->in & (MB_GPIO_PRI_N_K | MB_GPIO_SEC_PRES_K);
-
-    munmap(0, sizeof(ppc440_gpio_regs_t));
-    close(gpio_fd);
-
-The data I get back is 0.  Always.  /SEC_PRES_K should be 1 in this case.
-
-(gdb) print /x addr
-$7 = 0x30015000
-(gdb) print /x pGpioRegs
-$8 = 0x30015700
-
-
-Checking /proc/<PID>/map shows the mapping:
-30015000-30019000 rw-p 30015000 00:00 0
-
-
-On a board running the 2.4.30 kernel, I show the SAME entry in 
-/proc/<PID>/map
-but I do get data back.
-
-Any idea what I'm doing wrong here?
-
-TIA,
-
-Travis Sawyer
+--=20
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
