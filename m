@@ -1,19 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 715B367B14
+Return-Path: <lk99336@pobox.sk>
+Received: from rohlik.mail-atlas.net (rohlik.mail-atlas.net [212.47.13.83])
+	by ozlabs.org (Postfix) with ESMTP id 4CBD167A5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 21:04:45 +1000 (EST)
-To: "IGOR LURI" <iluri@fagorautomation.es>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: CRAMFS: Error -3 while decompressing! 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 23 May 2006 12:15:25 +0200."
-	<918EB199DDDFFA42BEA2EB3A1C6021F3D49640@correo.fagorautomation.net>
-Date: Tue, 23 May 2006 13:04:43 +0200
-Sender: wd@denx.de
-Message-Id: <20060523110443.452953525D9@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 23 May 2006 22:03:35 +1000 (EST)
+Received: from rohlik ([127.0.0.1]) by rohlik.mail-atlas.net
+	for linuxppc-embedded@ozlabs.org; Tue, 23 May 2006 14:02:49 +0200
+From: "=?windows-1250?B?TGFkaXNsYXYgS2xlbm92aeg=?=" <lk99336@pobox.sk>
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <3348e5d9925e49e2badcd00d615156b4@pobox.sk>
+Date: Tue, 23 May 2006 14:02:49 +0200
+Subject: UART DRIVER on 2.6.15
+MIME-Version: 1.0
+Content-type: text/plain; charset=windows-1250
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,30 +22,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <918EB199DDDFFA42BEA2EB3A1C6021F3D49640@correo.fagorautomation.net> you wrote:
-> 
-> We would want to use a Compact Flash card with VFAT file system to boot
-> our system, so we need to store a linux kernel image and an initrd image
-> on it.
+Hi,
+just a simple question, is uart driver for kernel 2=2E6=2E15 complete=2E=
+=20
+There are some parts like:
+ void scc1_lineif(struct uart_cpm_port *pinfo)
+{
+        /* XXX SCC1: insert port configuration here */
+        pinfo->brg =3D 1;
+}
+=2E=2E=2E=2E
+that seems to incomplete=2E Am I able to do something with SCC1 with th=
+e current cpm_uart code?
 
-Did you read http://www.denx.de/wiki/view/DULG/RootFileSystemInAReadOnlyFile ???
+Maybe stupid question, is there any way (is it possible) to import old =
+uart driver from kernel 2=2E4=2Ex to kernel 2=2E6=2Ex
 
-> U-Boot can load linux kernel image and initrd from Compact Flash to RAM.
-
-No need to waste memory on a (big) ramdisk.
-
-> We haven't choose already the initrd file system type, but CRAMFS is an
-> option. However, as I mentioned in the previos message, a CRAMFS initrd
-> doesn´t boot in our board.
-
-cramfs makes no sense on a ramdisk image. Use ext2.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-In theory, there is no difference between  theory  and  practice.  In
-practice, however, there is.
+Regards,
+Ladislav Klenovic
