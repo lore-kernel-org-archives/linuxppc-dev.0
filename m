@@ -1,27 +1,19 @@
-Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
-Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
-	[131.188.3.181]) by ozlabs.org (Postfix) with ESMTP id BB9C467A44
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 53B7567B1F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 01:41:04 +1000 (EST)
-Received: from fau-vscan-1.rrze.uni-erlangen.de ([131.188.3.181]
-	[131.188.3.181]) by faurelaysmart-1.rrze.uni-erlangen.de with
-	ESMTP for linuxppc-embedded@ozlabs.org;
-	Tue, 23 May 2006 17:40:27 +0200
-Received: from max71.rrze.uni-erlangen.de ([131.188.3.181])
-	by fau-vscan-1.rrze.uni-erlangen.de (fau-vscan-1.rrze.uni-erlangen.de
-	[131.188.2.91]) (amavisd-new)
-	with ESMTP id 16381-04 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 17:40:27 +0200 (MEST)
-Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
-	smtp-auth.uni-erlangen.de with ESMTP for
-	linuxppc-embedded@ozlabs.org; Tue, 23 May 2006 17:40:26 +0200
-Message-Id: <44732CEA.9030604@cs.fau.de>
-Date: Tue, 23 May 2006 17:40:26 +0200
-From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: MPC8xx Debugging: function call vs. no function call
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 May 2006 08:32:35 +1000 (EST)
+Date: Tue, 23 May 2006 15:34:37 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Assaf Hoffman <hoffman@marvell.com>
+Subject: Re: Setting I&D cache enable in the same mtspr instruction
+Message-ID: <20060523223437.GA1536@mag.az.mvista.com>
+References: <B9FFC3F97441D04093A504CEA31B7C41A39491@msilexch01.marvell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <B9FFC3F97441D04093A504CEA31B7C41A39491@msilexch01.marvell.com>
+Cc: Ronen Shitrit <rshitrit@marvell.com>, Rita Shtern <rita@marvell.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,38 +24,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Tue, May 23, 2006 at 12:55:46PM +0300, Assaf Hoffman wrote:
+> Attached.
+> Thanks.
 
-Hello,
+Er, how about a *patch* place inline (as in, not as an attachment).
 
-I am not yet pretty familiar with 8xx system programming, so maybe you 
-could give me some debugging hint. My C code which programs the the CPM 
-(USB) has to execute the following commands:
+Thanks,
 
-    eieio();
-    usbregs->usb_uscom = 0x80 | 0;
-    mb();
-
-
-If i put those instructions in an new function, the CPM behaves as 
-wished, elsewise it depends on the remaining code. E.g. the number of 
-NOP machine code instructions before make a difference:
-
-1.)
-   ...< remaining C function code>
-   __asm__("nop\n\t");
-    eieio();
-    usbregs->usb_uscom = 0x80 | 0;
-    mb();
-   ... <other code>
-
-2.)
-   ...< remaining C function code>
-   __asm__("nop\n\t");
-   __asm__("nop\n\t");
-    eieio();
-    usbregs->usb_uscom = 0x80 | 0;
-    mb();
-   ... <other code>
-
-Every hint howto find my mistake is appreciated! Thanks
-Josef
+Mark
