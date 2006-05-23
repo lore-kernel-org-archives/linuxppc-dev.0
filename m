@@ -1,16 +1,20 @@
-Return-Path: <Phil.Nitschke@avalon.com.au>
-Received: from ash25e.internode.on.net (ash25e.internode.on.net
-	[203.16.214.182]) by ozlabs.org (Postfix) with ESMTP id 1526C67B21
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id C6769679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 00:50:05 +1000 (EST)
-Subject: pmppc7448/mv64x60 DMA from PCI to memory
-From: Phil Nitschke <Phil.Nitschke@avalon.com.au>
+	Wed, 24 May 2006 01:11:29 +1000 (EST)
+Received: from vitb.ru.mvista.com ([10.150.0.9])
+	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id k4NFBPs05788
+	for <linuxppc-embedded@ozlabs.org>; Tue, 23 May 2006 20:11:25 +0500
+Date: Tue, 23 May 2006 19:11:26 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 24 May 2006 00:20:04 +0930
-Message-Id: <1148395804.21475.53.camel@toby.int.avalon.com.au>
+Subject: Re: UART DRIVER on 2.6.15
+Message-ID: <20060523191126.2d54583d@vitb.ru.mvista.com>
+In-Reply-To: <3348e5d9925e49e2badcd00d615156b4@pobox.sk>
+References: <3348e5d9925e49e2badcd00d615156b4@pobox.sk>
 Mime-Version: 1.0
-Reply-To: Phil.Nitschke@avalon.com.au
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,81 +25,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 23 May 2006 14:02:49 +0200
+"Ladislav Klenovič" <lk99336@pobox.sk> wrote:
 
-I'm working on a project using this processor:
-http://www.artesyncp.com/products/PmPPC7448.html
-on a custom VME carrier, as shown below.  We're wanting to suck
-large amounts of data from a PCI device which _cannot_ perform
-bus-mastered DMA (it is a PCI Target only).
+> Hi,
+> just a simple question, is uart driver for kernel 2.6.15 complete. 
+> There are some parts like:
+>  void scc1_lineif(struct uart_cpm_port *pinfo)
+> {
+>         /* XXX SCC1: insert port configuration here */
+>         pinfo->brg = 1;
+> }
+> ....
+> that seems to incomplete. Am I able to do something with SCC1 with the current cpm_uart code?
+> 
+> Maybe stupid question, is there any way (is it possible) to import old uart driver from kernel 2.4.x to kernel 2.6.x
+> 
 
-The Marvell Chip used by the PmPPC7448 is this one:
-  http://www.marvell.com/products/communication/Discovery%20MV64460%
-20FINAL.pdf
+It is clear, that per-board tune-up is too specific to be kept within drivers/ and now it is accomplished in the board setup code. 
 
-I've written a collection of simple routines to program the Marvell IDMA
-controller, for example:
-    mv64x6x_init_dma_channel();
-    mv64x6x_set_dma_mode();
-    mv64x6x_set_src_addr();
-    mv64x6x_set_dst_addr();
-    mv64x6x_set_dma_count();
-    mv64x6x_enable_dma();
-or rather more simply:
-    mv64x6x_memcpy_dma(dst_handle, src_handle, size);
-
-This works OK for copying from a memory to memory, where the buffers are
-allocated using:
-    src = dma_alloc_noncoherent(NULL, BUF_SZ, &src_handle, GFP_KERNEL);
-The src_handle is passed directly to mv64x6x_set_src_addr();
-
-But when the src address is the FIFO on the PCI bus, I don't know how to
-get the IDMA controller to play nicely.  The FIFO sits in the middle of
-the PCI device's I/O mem range 0x9fe00000 - 0x9fffffff.  I've programmed
-and enabled a 5th address window in the IDMA controller which
-encompasses the 0x200000 bytes of the PCI memory range, and I'm not
-seeing any address violation or address miss errors.  The PCI->memory
-DMA "completes" without any traffic every touching the PCI bus, so
-obviously I need to do something else/differently.
-
-For this scenario, can anyone tell me:
-        * Should I be using the same src address as that reported via
-        the 'lspci' command - this _is_ the PCI bus address, isn't it?
-        
-        * Do I have to do anything special to tell the IDMA controller
-        to source data from the PCI bus and shift it into memory?
-        
-        * Looking through mv64x60.c in the 2.6.16 kernel, I note that 4
-        of the 8 possible IDMA address windows are configured (for each
-        of the 512 MB DRAM on our processor card).  Do I need to add
-        tests to my source and destination regions, to determine if they
-        cross one of the 512 MB regions, and hence will require a
-        different CSx line (and thus the DMA will need to be broken into
-        two transactions), or does kernel already take care to ensure
-        allocated regions will not cross these boundaries?
-        
-TIA for any help that anyone can offer.
+Just have a look at arch/ppc/platforms/mps866ads_setup.c The thing you'll have to do is implement the pin tune-up for your board in a function, and set the callback pointer to it - it will be executed at the time UART initializes its resources.
 
 -- 
-Phil
-
-       +--------------------------------------------------+
-       |            Custom VME64x Carrier Card            |
-       |  +-------------------+    +-------------------+  |
-       |  | Artesyn PmPPC7448 |    | Altera FPGA       |  |
-       |  |                   |    |                   |  |
-       |  |+-----------------+|    |+-----------------+|  |
-       |  ||Marvell MV64460  ||    || Altera PCI I/F  ||  |
-       |  ||(NOT coherent    ||    ||(non-prefetchable)|  |
-       |  || cache)  (+IDMA) ||    ||       FIFO      ||  |
-       |  |+--------#--------+|    |+---------#-------+|  |
-       |  +---------#---------+    +----------#--------+  |
-       |            #         PCI Bus         #           |
-       |   ###########################################    |
-       +--------------------------------------------------+
-
-p.s. Since my driver was developed using documentation obtained from
-Marvell under a very restrictive NDA, I cannot release it as open source
-just yet.  Marvell's Vice President and General Counsel is currently
-reviewing the matter, and I expect to hear from them in the next couple
-weeks.
+Sincerely, 
+Vitaly
