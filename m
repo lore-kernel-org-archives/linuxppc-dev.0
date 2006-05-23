@@ -1,17 +1,15 @@
-Return-Path: <lk99336@pobox.sk>
-Received: from rohlik.mail-atlas.net (rohlik.mail-atlas.net [212.47.13.83])
-	by ozlabs.org (Postfix) with ESMTP id 4CBD167A5D
+Return-Path: <tsawyer@broadcom.com>
+Received: from sandmail.sandburst.com (sandmail.sandburst.com [216.57.132.42])
+	by ozlabs.org (Postfix) with ESMTP id 4450267B70
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 22:03:35 +1000 (EST)
-Received: from rohlik ([127.0.0.1]) by rohlik.mail-atlas.net
-	for linuxppc-embedded@ozlabs.org; Tue, 23 May 2006 14:02:49 +0200
-From: "=?windows-1250?B?TGFkaXNsYXYgS2xlbm92aeg=?=" <lk99336@pobox.sk>
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <3348e5d9925e49e2badcd00d615156b4@pobox.sk>
-Date: Tue, 23 May 2006 14:02:49 +0200
-Subject: UART DRIVER on 2.6.15
+	Tue, 23 May 2006 22:48:06 +1000 (EST)
+Message-ID: <44730484.4090208@broadcom.com>
+Date: Tue, 23 May 2006 08:48:04 -0400
+From: "Travis B. Sawyer" <tsawyer@broadcom.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=windows-1250
+To: linuxppc-embedded@ozlabs.org
+Subject: Problem mapping GPIO regs on ppc440gx
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,21 +20,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-just a simple question, is uart driver for kernel 2=2E6=2E15 complete=2E=
-=20
-There are some parts like:
- void scc1_lineif(struct uart_cpm_port *pinfo)
-{
-        /* XXX SCC1: insert port configuration here */
-        pinfo->brg =3D 1;
-}
-=2E=2E=2E=2E
-that seems to incomplete=2E Am I able to do something with SCC1 with th=
-e current cpm_uart code?
+Greetings:
 
-Maybe stupid question, is there any way (is it possible) to import old =
-uart driver from kernel 2=2E4=2Ex to kernel 2=2E6=2Ex
+We've been using a 2.4.30 kernel (with numerous patches) on a AMCC 440gx
+custom built board for quite some time now.
 
-Regards,
-Ladislav Klenovic
+We're building some new hardware that forces us to go to a 2.6 kernel.
+So, I've downloaded 2.6.16.16 from kernel.org and am porting everything
+forward from our 2.4.30 kernel.
+
+The problem lies in mapping the GPIO regs of the 440 to user space using
+/dev/mem:
+
+    gpio_fd = open("/dev/mem", O_RDWR | O_SYNC);
+
+    if (0 > gpio_fd) {
+        perror("mbGpioGet(): Unable to open gpio");
+        return(-1);
+    }
+
+    addr = (ppc440_gpio_regs_t *)mmap(0, getpagesize() * 2,
+                                      PROT_READ | PROT_WRITE,
+                                      MAP_SHARED, gpio_fd,
+                                      (off_t)(0x40000000));
+
+    if (MAP_FAILED == addr) {
+        perror("mbGpioGet(): map error");
+        close(gpio_fd);
+        return(-1);
+    }
+
+    pGpioRegs = (ppc440_gpio_regs_t *)((uint32_t)addr + 0x700);
+
+    data = pGpioRegs->in & (MB_GPIO_PRI_N_K | MB_GPIO_SEC_PRES_K);
+
+    munmap(0, sizeof(ppc440_gpio_regs_t));
+    close(gpio_fd);
+
+The data I get back is 0.  Always.  /SEC_PRES_K should be 1 in this case.
+
+(gdb) print /x addr
+$7 = 0x30015000
+(gdb) print /x pGpioRegs
+$8 = 0x30015700
+
+
+Checking /proc/<PID>/map shows the mapping:
+30015000-30019000 rw-p 30015000 00:00 0
+
+
+On a board running the 2.4.30 kernel, I show the SAME entry in 
+/proc/<PID>/map
+but I do get data back.
+
+Any idea what I'm doing wrong here?
+
+TIA,
+
+Travis Sawyer
