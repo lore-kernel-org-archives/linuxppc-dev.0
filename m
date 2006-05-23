@@ -1,13 +1,13 @@
 Return-Path: <eemingliu@hotmail.com>
-Received: from hotmail.com (bay110-f2.bay110.hotmail.com [65.54.229.12])
-	by ozlabs.org (Postfix) with ESMTP id 0F53667A5B
+Received: from hotmail.com (bay110-f22.bay110.hotmail.com [65.54.229.32])
+	by ozlabs.org (Postfix) with ESMTP id 0355C67A66
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 19:41:32 +1000 (EST)
-Message-ID: <BAY110-F242391FBDFC307ED50604B29B0@phx.gbl>
+	Tue, 23 May 2006 19:41:57 +1000 (EST)
+Message-ID: <BAY110-F2231E37CC5318220F41F8AB29B0@phx.gbl>
 From: "Ming Liu" <eemingliu@hotmail.com>
 To: rick.moleres@xilinx.com
 Subject: question about linux with Xilinx ML-403
-Date: Tue, 23 May 2006 09:41:30 +0000
+Date: Tue, 23 May 2006 09:41:52 +0000
 Mime-Version: 1.0
 Content-Type: text/plain; charset=gb2312; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
@@ -44,4 +44,4 @@ BR
 Ming
 
 _________________________________________________________________
-免费下载 MSN Explorer:   http://explorer.msn.com/lccn/  
+享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
