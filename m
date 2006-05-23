@@ -1,20 +1,15 @@
-Return-Path: <ktdann@gmail.com>
-Received: from nz-out-0102.google.com (nz-out-0102.google.com [64.233.162.197])
-	by ozlabs.org (Postfix) with ESMTP id D7C2C679E9
+Return-Path: <eemingliu@hotmail.com>
+Received: from hotmail.com (bay110-f1.bay110.hotmail.com [65.54.229.11])
+	by ozlabs.org (Postfix) with ESMTP id 901E1679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 18:17:53 +1000 (EST)
-Received: by nz-out-0102.google.com with SMTP id j2so1197224nzf
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 May 2006 01:17:52 -0700 (PDT)
-Message-ID: <9b7ca6570605230111r5c85e254y8c00b3519af097b0@mail.gmail.com>
-Date: Tue, 23 May 2006 17:11:19 +0900
-From: "Daniel Ann" <ktdann@gmail.com>
-To: "=?ISO-8859-2?Q?Ladislav_Klenovi=E8?=" <lk99336@pobox.sk>
-Subject: Re: HOW TO REPLY ON POST?
-In-Reply-To: <ea091fb452d44c86be254e3c0238a3a1@pobox.sk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-References: <ea091fb452d44c86be254e3c0238a3a1@pobox.sk>
+	Tue, 23 May 2006 18:22:48 +1000 (EST)
+Message-ID: <BAY110-F197CC0259C9877D5B47F3B29B0@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: grant.likely@secretlab.ca
+Subject: Tri-mode or gigebit ethernet support problem in ML403
+Date: Tue, 23 May 2006 08:22:46 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,17 +21,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-U2ltcGx5IGNsaWNrIG9uICJyZXBseSB0byBhbGwiIGJ1dHRvbiBpZiB5b3UgYXJlIG9uIEdVSS4g
-T3RoZXJ3aXNlLAp5b3UgbWlnaHQgaGF2ZSB0byByZWFkIHVwIG9uIHlvdXIgbWFpbCB2aWV3ZXIg
-Y29tbWFuZHMsIHdoaWNoIGRvZXMKc2ltaWxhci4KCk5vcm1hbGx5ICJyZXBseSIgb3IgInJlcGx5
-IHRvIGFsbCIgd2lsbCBtYWludGFpbiB0aGUgb3JpZ2luYWwgc3ViamVjdApvZiB0aGUgZW1haWwg
-eW91IGFyZSByZXBseWluZyB0by4gKE5vcm1hbGx5IHRoZXkgcHJlcGVuZCAiUkU6IikgQW5kCnRo
-ZW4gaXRzIHVwIHRvIHRoZSBtYWlsaW5nIGxpc3QgZGFlbW9uIHRvIHNvcnQgaXQgaW4gb3V0IGJ5
-IHRocmVhZC4KTWFnaWMgaGFwcGVucyBhdCB0aGUgbWFpbGluZyBsaXN0IGRhZW1vbiBpZiBhbGwg
-Z29lcyB3ZWxsLgoKQ2hlZXJzLAoKT24gNS8yMy8wNiwgTGFkaXNsYXYgS2xlbm92aeggPGxrOTkz
-MzZAcG9ib3guc2s+IHdyb3RlOgo+IEhpLAo+IHNvcnJ5IGZvciB0aGUgc3R1cGlkIHF1ZXN0aW9u
-LCBidXQgaG93IHRvIHJlcGx5IG9uIHBvc3QgKGNvbnRpbnVlIGluIHRocmVhZCk/Cj4KPgo+IF9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4gTGludXhwcGMt
-ZW1iZWRkZWQgbWFpbGluZyBsaXN0Cj4gTGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZwo+IGh0
-dHBzOi8vb3psYWJzLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBjLWVtYmVkZGVkCj4KCgot
-LSAKRGFuaWVsCg==
+Hi Grant,
+I want to ask you a problem about the 1000M ethernet support. Now I am 
+trying to integrate a linux (2.4 or 2.6) in my ML403 platform, with 
+tri-mode ethernet support. And I have downloaded many versions of linux, 
+including linuxppc_2_4_devel, MontaVista linux 3.1 Preview 
+Kit(v2.4.20_mvl31-ml300), and linux-xilinx-26. Unfortunately, I didn't find 
+any option in the menuconfig item Network Device Support->ethernet 
+(1000Mbit) for me to enable the 1000M ethernet in all three versions. So I 
+have the following questions to ask.
+
+1. With Xilinx Virtex 4 tri-mode ethernet MAC support, which version of 
+Linux shall I use? I think I should choose a version with Xilinx On-chip 
+Ethernet supported in the 1000M ethernet item in menuconfig. 
+
+2. Assume that you can provide me a proper version. Shall I use Xilinx EDK 
+to generate the BSP for my platform and copy the source code to overwrite 
+the drivers in the original version. Then configure the kernel and enable 
+1000M ethernet (choose Xilinx on-chip ethernet). Then compile the 
+kernel...... Are these steps correct? 
+
+Thanks for your help. I am really confused about this problem. Also others 
+who can help me are welcome. :)
+
+Best Regards
+Ming
+
+_________________________________________________________________
+享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
