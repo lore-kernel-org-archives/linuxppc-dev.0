@@ -1,20 +1,27 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id C6769679E6
+Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
+Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
+	[131.188.3.181]) by ozlabs.org (Postfix) with ESMTP id BB9C467A44
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 01:11:29 +1000 (EST)
-Received: from vitb.ru.mvista.com ([10.150.0.9])
-	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id k4NFBPs05788
-	for <linuxppc-embedded@ozlabs.org>; Tue, 23 May 2006 20:11:25 +0500
-Date: Tue, 23 May 2006 19:11:26 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Wed, 24 May 2006 01:41:04 +1000 (EST)
+Received: from fau-vscan-1.rrze.uni-erlangen.de ([131.188.3.181]
+	[131.188.3.181]) by faurelaysmart-1.rrze.uni-erlangen.de with
+	ESMTP for linuxppc-embedded@ozlabs.org;
+	Tue, 23 May 2006 17:40:27 +0200
+Received: from max71.rrze.uni-erlangen.de ([131.188.3.181])
+	by fau-vscan-1.rrze.uni-erlangen.de (fau-vscan-1.rrze.uni-erlangen.de
+	[131.188.2.91]) (amavisd-new)
+	with ESMTP id 16381-04 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 23 May 2006 17:40:27 +0200 (MEST)
+Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
+	smtp-auth.uni-erlangen.de with ESMTP for
+	linuxppc-embedded@ozlabs.org; Tue, 23 May 2006 17:40:26 +0200
+Message-Id: <44732CEA.9030604@cs.fau.de>
+Date: Tue, 23 May 2006 17:40:26 +0200
+From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: UART DRIVER on 2.6.15
-Message-ID: <20060523191126.2d54583d@vitb.ru.mvista.com>
-In-Reply-To: <3348e5d9925e49e2badcd00d615156b4@pobox.sk>
-References: <3348e5d9925e49e2badcd00d615156b4@pobox.sk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: MPC8xx Debugging: function call vs. no function call
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,27 +32,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 23 May 2006 14:02:49 +0200
-"Ladislav Klenovič" <lk99336@pobox.sk> wrote:
 
-> Hi,
-> just a simple question, is uart driver for kernel 2.6.15 complete. 
-> There are some parts like:
->  void scc1_lineif(struct uart_cpm_port *pinfo)
-> {
->         /* XXX SCC1: insert port configuration here */
->         pinfo->brg = 1;
-> }
-> ....
-> that seems to incomplete. Am I able to do something with SCC1 with the current cpm_uart code?
-> 
-> Maybe stupid question, is there any way (is it possible) to import old uart driver from kernel 2.4.x to kernel 2.6.x
-> 
+Hello,
 
-It is clear, that per-board tune-up is too specific to be kept within drivers/ and now it is accomplished in the board setup code. 
+I am not yet pretty familiar with 8xx system programming, so maybe you 
+could give me some debugging hint. My C code which programs the the CPM 
+(USB) has to execute the following commands:
 
-Just have a look at arch/ppc/platforms/mps866ads_setup.c The thing you'll have to do is implement the pin tune-up for your board in a function, and set the callback pointer to it - it will be executed at the time UART initializes its resources.
+    eieio();
+    usbregs->usb_uscom = 0x80 | 0;
+    mb();
 
--- 
-Sincerely, 
-Vitaly
+
+If i put those instructions in an new function, the CPM behaves as 
+wished, elsewise it depends on the remaining code. E.g. the number of 
+NOP machine code instructions before make a difference:
+
+1.)
+   ...< remaining C function code>
+   __asm__("nop\n\t");
+    eieio();
+    usbregs->usb_uscom = 0x80 | 0;
+    mb();
+   ... <other code>
+
+2.)
+   ...< remaining C function code>
+   __asm__("nop\n\t");
+   __asm__("nop\n\t");
+    eieio();
+    usbregs->usb_uscom = 0x80 | 0;
+    mb();
+   ... <other code>
+
+Every hint howto find my mistake is appreciated! Thanks
+Josef
