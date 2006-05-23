@@ -1,16 +1,21 @@
-Return-Path: <toralf.foerster@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 7603C67B42
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2006 22:45:46 +1000 (EST)
-From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: linville@tuxdriver.com
-Subject: Fwd: Re: net/ieee80211/softmac/ieee80211softmac_io.c:464: warning:
-	'ieee80211softmac_send_ctl_frame' defined but not used
-Date: Tue, 23 May 2006 14:45:39 +0200
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3055047.fcpR84OWpo";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200605231445.43205.toralf.foerster@gmx.de>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ACD3E67A6F
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 May 2006 22:56:09 +1000 (EST)
+Subject: Re: Fwd: Re: net/ieee80211/softmac/ieee80211softmac_io.c:464:
+	warning: 'ieee80211softmac_send_ctl_frame' defined but not used
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+In-Reply-To: <200605231445.43205.toralf.foerster@gmx.de>
+References: <200605231445.43205.toralf.foerster@gmx.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-aW3pFdFoZqfevhQjjEzX"
+Date: Tue, 23 May 2006 14:55:53 +0200
+Message-Id: <1148388953.25971.17.camel@johannes>
+Mime-Version: 1.0
 Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,93 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---nextPart3055047.fcpR84OWpo
-Content-Type: text/plain;
-  charset="iso-8859-1"
+
+--=-aW3pFdFoZqfevhQjjEzX
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
+On Tue, 2006-05-23 at 14:45 +0200, Toralf F=C3=B6rster wrote:
 
+> Here is a patch applicable fotr the current git kernel:
 
-=2D---------  Weitergeleitete Nachricht  ----------
+Not really. Please read http://linux.yyz.us/patch-format.html
 
-Subject: Re: net/ieee80211/softmac/ieee80211softmac_io.c:464:=20
-warning: 'ieee80211softmac_send_ctl_frame' defined but not used
-Date: Tuesday 23 May 2006 14:33
-=46rom: Johannes Berg <johannes@sipsolutions.net>
-To: Toralf F=F6rster <toralf.foerster@gmx.de>
-Cc: linuxppc-dev@ozlabs.org
+> --- net/ieee80211/softmac/ieee80211softmac_io.c 2006-05-23 14:41:19.00000=
+0000=20
+> +0200
+> +++ net/ieee80211/softmac/ieee80211softmac_io.c_orig    2006-05-23=20
 
-On Mon, 2006-05-22 at 19:48 +0200, Toralf F=F6rster wrote:
-> While playing with various kernel config I observed the warning above
-> compiling 2.6.17-rc4-git10.
-
-Yeah, known 'bug', we have that code there but never use it. Feel free
-to submit a patch (to John Linville, CC netdev and softmac-dev) to
-remove it.
+It's also the wrong way around.
 
 johannes
 
-=2D------------------------------------------------------
-
-Here is a patch applicable fotr the current git kernel:
-
-n22 ~ # cat patch_softmac
-=2D-- net/ieee80211/softmac/ieee80211softmac_io.c 2006-05-23 14:41:19.00000=
-0000=20
-+0200
-+++ net/ieee80211/softmac/ieee80211softmac_io.c_orig    2006-05-23=20
-14:40:44.000000000 +0200
-@@ -456,3 +456,31 @@
-        return IEEE80211_2ADDR_LEN;
- }
-
-+
-+/* Sends a control packet */
-+static int
-+ieee80211softmac_send_ctl_frame(struct ieee80211softmac_device *mac,
-+       struct ieee80211softmac_network *net, u32 type, u32 arg)
-+{
-+       void *pkt =3D NULL;
-+       u32 pkt_size =3D 0;
-+
-+       switch(type) {
-+       case IEEE80211_STYPE_RTS:
-+       case IEEE80211_STYPE_CTS:
-+               pkt_size =3D ieee80211softmac_rts_cts((struct=20
-ieee80211_hdr_2addr **)(&pkt), mac, net, type);
-+               break;
-+       default:
-+               printkl(KERN_DEBUG PFX "Unsupported Control Frame type: %i\=
-n",=20
-type);
-+               return -EINVAL;
-+       }
-+
-+       if(pkt_size =3D=3D 0)
-+               return -ENOMEM;
-+
-+       /* Send the packet to the ieee80211 layer for tx */
-+       ieee80211_tx_frame(mac->ieee, (struct ieee80211_hdr *) pkt, pkt_siz=
-e);
-+
-+       kfree(pkt);
-+       return 0;
-+}
-
-=2D-=20
-MfG/Sincerely
-Toralf F=F6rster
-
---nextPart3055047.fcpR84OWpo
-Content-Type: application/pgp-signature
+--=-aW3pFdFoZqfevhQjjEzX
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQBEcwP3hyrlCH22naMRAgMkAJ9Zc8kkYG9G9L6apZ4qnj2LUM6dLACgpKQA
-d/ADmFWp4zWvZacF0kkLLbg=
-=e5x1
+iQIVAwUARHMGV6Vg1VMiehFYAQKpTQ/+OiaHpUTNaThAfOwgZPAr6icWSsfJLHPt
+fD9V5pxQeFdo8HIqURMHXMLuC3dOoihnYZo46JjqCdtCWYYN40OqkVCaCB3uCBZs
+2ceA763P0PZtOh+KWNGXJi4Uc/+IXKOsr2YMYIbZMVEQC0uB4GVv8NihMFh6fDqk
+gfa6dA5UReZ4RQXLQSlagolr59I4mZZra0oiwSJecra4RRHlGmVkD7XS9MkbgfQW
+PTwBeZWGMBCWVIguQ3Gg+uU9k50blLorPG3QKhejpfyq7ttZwSngPsCwnggywC2C
+RhxY/t3pjjW6WiSgSFC8sTr59Dtxq4dRDyjvHS/DYr52ATPpxaSRZOTg0+/i4BDW
+uxuLJviJgyuzbz61AtvTH+bC715HlRMZwmoe6OnB3pQpA2yGJX033bCUK9n0KLWv
+Dehf4b6qIA96fFc7vyj/Xb82LDFgNLyM4jXKH/3XeJwCW6IQqxhm+aIh10eLaSy8
+67OWiDuUaIiTfxtM6kfOAJA4xP0e53B5SThvAxTU0fZ29Ep4iDXKPXUQaNnQ7xmL
+94TGVgIdc7lfa21A2gCZbnZBu8go6DCnf1/psw4VoKQyinOE0KnkZmxGlMbxA09K
+FvkmeY3h9HcqXM+LELyCEX5dqYiqhRkdP07XzYL6zes1N0VaO0LN3vhr5tadaOVG
+PZoNsBP5lJA=
+=jKZg
 -----END PGP SIGNATURE-----
 
---nextPart3055047.fcpR84OWpo--
+--=-aW3pFdFoZqfevhQjjEzX--
