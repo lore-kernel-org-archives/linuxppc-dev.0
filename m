@@ -1,18 +1,15 @@
-Return-Path: <stelian@popies.net>
-Received: from sd291.sivit.org (sd291.sivit.org [194.146.225.122])
-	by ozlabs.org (Postfix) with ESMTP id 4AB9167B2E
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 May 2006 20:26:50 +1000 (EST)
-Subject: Re: [PATCH] make ams work with latest kernels
-From: Stelian Pop <stelian@popies.net>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1148383943.25971.2.camel@johannes>
-References: <1148383943.25971.2.camel@johannes>
-Content-Type: text/plain; charset=ISO-8859-15
-Date: Wed, 24 May 2006 12:04:29 +0200
-Message-Id: <1148465069.6723.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <afleming@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 89D2367A5B
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 08:57:34 +1000 (EST)
+Date: Wed, 24 May 2006 17:57:25 -0500 (CDT)
+From: Andy Fleming <afleming@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Fix oprofile support for e500 in arch/powerpc
+Message-ID: <Pine.LNX.4.61.0605241749530.19494@ld0175-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,623 +19,735 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Le mardi 23 mai 2006 à 13:32 +0200, Johannes Berg a écrit :
-> For those who don't know: ams, written by Stelian Pop, is a driver for
-> the motion sensor present in some PowerBooks (the series the
-> PowerBook5,6 falls into, later ones have a slightly different one the
-> driver doesn't handle).
-> 
-> Even though we still don't seem to have a client that can actually use
-> this data (something to actually tell the hd to protect itself) I
-> updated the ams code to compile against the latest linux kernel
-> versions. I also fixed a buglet (the interrupt handler should return
-> IRQ_HANDLED even if the init flag isn't set yet since we own the
-> interrupts, they can't be shared).
+Fixed a compile error in building the 85xx support with oprofile, and in 
+the process cleaned up some issues with the fsl_booke performance monitor 
+code.
 
-Version 0.3 of ams (from http://popies.net/ams/) already had all those
-changes :)
+Signed-off-by: Andy Fleming <afleming@freescale.com>
 
-The latest version (0.4) has some additionnal changes (fixes a double
-free induced by the use of input_free_device(), some other more cosmetic
-changes).
+* Reorganized FSL Book-E performance monitoring code so that the 7450
+  wouldn't be built if the e500 was, and cleaned it up so it was more 
+  self-contained.
 
-> Stelian and all, how about adding this driver to linux? hdaps seems to
-> be there even if it too doesn't serve a useful purpose at this time.
+* Added a cpu_setup function for FSL Book-E.  The original
+  cpu_setup function prototype had no arguments, assuming that
+  the reg_setup function would copy the required information into
+  variables which represented the registers.  This was silly for
+  e500, since it has 1 register per counter (rather than 3 for
+  all counters), so the code has been restructured to have
+  cpu_setup take the current counter config array as an argument,
+  with op_powerpc_setup() invoking op_powerpc_cpu_setup() through
+  on_each_cpu(), and op_powerpc_cpu_setup() invoking the
+  model-specific cpu_setup function with an argument.  The
+  argument is ignored on all other platforms at present.
 
-Ah, I wasn't aware that hdaps was already in. Oh, in this case let's
-submit it. 
-
-Here it comes, along with proper kernel integration (Johannes, I've kept
-your Signed-off-by since the code is almost the same, feel free to
-disagree loudly if you must :) ).
-
----
-From: Stelian Pop <stelian@popies.net>
-
-This driver provides support for the Apple Motion Sensor (ams),
-which provides an accelerometer and other misc. data.
-Some Apple PowerBooks (the series the PowerBook5,6 falls into,
-later ones have a slightly different one the driver doesn't handle)
-are supported. The accelerometer data is readable via sysfs.
-
-This driver also provides an absolute input class device, allowing
-the laptop to act as a pinball machine-esque joystick.
-
-In the future (once the proper API exist in the block layer) this
-driver will tell the laptop disk to protect its heads in the event
-of a catastrophic fall.
-
-Signed-off-by: Stelian Pop <stelian@popies.net>
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+* Fixed a confusing line where a trinary operator only had two
+  arguments
 
 ---
 
- drivers/hwmon/ams.c    |  519 +++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/hwmon/Kconfig  |   17 +
- drivers/hwmon/Makefile |    1
- 3 files changed, 537 insertions(+)
+ arch/powerpc/kernel/Makefile               |    1 
+ arch/powerpc/kernel/perfmon_fsl_booke.c    |  222 ----------------------------
+ arch/powerpc/kernel/pmc.c                  |    2 
+ arch/powerpc/oprofile/Makefile             |    2 
+ arch/powerpc/oprofile/common.c             |   10 +
+ arch/powerpc/oprofile/op_model_7450.c      |    2 
+ arch/powerpc/oprofile/op_model_fsl_booke.c |  170 +++++++++++++++++----
+ arch/powerpc/oprofile/op_model_power4.c    |    2 
+ arch/powerpc/oprofile/op_model_rs64.c      |    2 
+ include/asm-powerpc/oprofile_impl.h        |   87 +++++++++++
+ include/asm-powerpc/pmc.h                  |   13 --
+ 11 files changed, 234 insertions(+), 279 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/perfmon_fsl_booke.c
 
-diff -r e292f327d882 drivers/hwmon/Kconfig
---- a/drivers/hwmon/Kconfig	Wed May 24 11:35:02 2006 +0200
-+++ b/drivers/hwmon/Kconfig	Wed May 24 11:44:34 2006 +0200
-@@ -450,6 +450,23 @@ config SENSORS_HDAPS
- 	  Say Y here if you have an applicable laptop and want to experience
- 	  the awesome power of hdaps.
+a53f64aff10cd90f1813fa316d89703c13419db3
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 803858e..a08c348 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -38,7 +38,6 @@ obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6x
+ obj-$(CONFIG_TAU)		+= tau_6xx.o
+ obj32-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_32.o
+ obj32-$(CONFIG_MODULES)		+= module_32.o
+-obj-$(CONFIG_E500)		+= perfmon_fsl_booke.o
  
-+config SENSORS_AMS
-+	tristate "Apple Motion Sensor (ams)"
-+	depends on HWMON && INPUT && PPC32
-+	default n
-+	help
-+	  This driver provides support for the Apple Motion Sensor (ams),
-+	  which provides an accelerometer and other misc. data.
-+	  Some Apple PowerBooks (the series the PowerBook5,6 falls into,
-+	  later ones have a slightly different one the driver doesn't handle)
-+	  are supported. The accelerometer data is readable via sysfs.
-+
-+	  This driver also provides an absolute input class device, allowing
-+	  the laptop to act as a pinball machine-esque joystick.
-+
-+	  Say Y here if you have an applicable laptop and want to experience
-+	  the awesome power of ams.
-+
- config HWMON_DEBUG_CHIP
- 	bool "Hardware Monitoring Chip debugging messages"
- 	depends on HWMON
-diff -r e292f327d882 drivers/hwmon/Makefile
---- a/drivers/hwmon/Makefile	Wed May 24 11:35:02 2006 +0200
-+++ b/drivers/hwmon/Makefile	Wed May 24 11:44:34 2006 +0200
-@@ -16,6 +16,7 @@ obj-$(CONFIG_SENSORS_ADM1026)	+= adm1026
- obj-$(CONFIG_SENSORS_ADM1026)	+= adm1026.o
- obj-$(CONFIG_SENSORS_ADM1031)	+= adm1031.o
- obj-$(CONFIG_SENSORS_ADM9240)	+= adm9240.o
-+obj-$(CONFIG_SENSORS_AMS)	+= ams.o
- obj-$(CONFIG_SENSORS_ATXP1)	+= atxp1.o
- obj-$(CONFIG_SENSORS_DS1621)	+= ds1621.o
- obj-$(CONFIG_SENSORS_F71805F)	+= f71805f.o
-diff -r e292f327d882 drivers/hwmon/ams.c
---- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/drivers/hwmon/ams.c	Wed May 24 11:44:34 2006 +0200
-@@ -0,0 +1,519 @@
-+/*
-+ * Apple Motion Sensor driver
-+ *
-+ * Copyright (C) 2005 Stelian Pop (stelian@popies.net)
-+ *
-+ * Clean room implementation based on the reverse engineered OSX driver by
-+ * Johannes Berg <johannes@sipsolutions.net>, documentation available at
-+ * http://johannes.sipsolutions.net/PowerBook/Apple_Motion_Sensor_Specification
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <linux/i2c.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/input.h>
-+#include <linux/kthread.h>
-+
-+#include <asm/of_device.h>
-+#include <asm/pmac_feature.h>
-+
-+MODULE_DESCRIPTION("Apple Motion Sensor driver");
-+MODULE_AUTHOR("Stelian Pop");
-+MODULE_LICENSE("GPL");
-+
-+static unsigned int mouse;
-+module_param(mouse, bool, 0);
-+MODULE_PARM_DESC(mouse, "enable the input class device on module load");
-+
-+/* AMS registers */
-+#define	AMS_COMMAND	0x00	/* command register */
-+#define AMS_STATUS	0x01	/* status register */
-+#define AMS_CTRL1	0x02	/* read control 1 (number of values) */
-+#define AMS_CTRL2	0x03	/* read control 2 (offset?) */
-+#define AMS_CTRL3	0x04	/* read control 3 (size of each value?) */
-+#define AMS_DATA1	0x05	/* read data 1 */
-+#define AMS_DATA2	0x06	/* read data 2 */
-+#define AMS_DATA3	0x07	/* read data 3 */
-+#define AMS_DATA4	0x08	/* read data 4 */
-+#define AMS_DATAX	0x20	/* data X */
-+#define AMS_DATAY	0x21	/* data Y */
-+#define AMS_DATAZ	0x22	/* data Z */
-+#define AMS_FREEFALL	0x24	/* freefall int control */
-+#define AMS_SHOCK	0x25	/* shock int control */
-+#define AMS_SENSLOW	0x26	/* sensitivity low limit */
-+#define AMS_SENSHIGH	0x27	/* sensitivity high limit */
-+#define AMS_CTRLX	0x28	/* control X */
-+#define AMS_CTRLY	0x29	/* control Y */
-+#define AMS_CTRLZ	0x2A	/* control Z */
-+#define AMS_UNKNOWN1	0x2B	/* unknown 1 */
-+#define AMS_UNKNOWN2	0x2C	/* unknown 2 */
-+#define AMS_UNKNOWN3	0x2D	/* unknown 3 */
-+#define AMS_VENDOR	0x2E	/* vendor */
-+
-+/* AMS commands - use with the AMS_COMMAND register */
-+enum ams_cmd {
-+	AMS_CMD_NOOP = 0,
-+	AMS_CMD_VERSION,
-+	AMS_CMD_READMEM,
-+	AMS_CMD_WRITEMEM,
-+	AMS_CMD_ERASEMEM,
-+	AMS_CMD_READEE,
-+	AMS_CMD_WRITEEE,
-+	AMS_CMD_RESET,
-+	AMS_CMD_START,
-+};
-+
-+struct ams {
-+	char			init;		/* has it been initialized ? */
-+	int			bus;		/* i2c bus */
-+	int			address;	/* i2c address */
-+	struct i2c_client	client;		/* i2c client */
-+	struct of_device	*of_dev;	/* sysfs device */
-+	char			vflag;		/* use orient1 or orient2 ? */
-+	u32			orient1;	/* orientation words */
-+	u32			orient2;
-+	int			irq1;		/* first irq line */
-+	int			irq2;		/* second irq line */
-+	struct work_struct	worker;		/* worker thread */
-+	struct input_dev	*idev;		/* input device */
-+	int			xcalib;		/* calibrated null value for x */
-+	int			ycalib;		/* calibrated null value for y */
-+	struct task_struct	*kthread;	/* kthread for input */
-+};
-+
-+static struct ams ams;
-+
-+static int ams_attach(struct i2c_adapter *adapter);
-+static int ams_detach(struct i2c_adapter *adapter);
-+
-+static struct i2c_driver ams_driver = {
-+	.driver = {
-+		.name	= "ams",
-+		.owner	= THIS_MODULE,
-+	},
-+	.attach_adapter	= ams_attach,
-+	.detach_adapter	= ams_detach,
-+};
-+
-+static inline s32 ams_read(u8 reg)
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ 
+diff --git a/arch/powerpc/kernel/perfmon_fsl_booke.c b/arch/powerpc/kernel/perfmon_fsl_booke.c
+deleted file mode 100644
+index 32455df..0000000
+--- a/arch/powerpc/kernel/perfmon_fsl_booke.c
++++ /dev/null
+@@ -1,222 +0,0 @@
+-/* kernel/perfmon_fsl_booke.c
+- * Freescale Book-E Performance Monitor code
+- *
+- * Author: Andy Fleming
+- * Copyright (c) 2004 Freescale Semiconductor, Inc
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/errno.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/mm.h>
+-#include <linux/stddef.h>
+-#include <linux/unistd.h>
+-#include <linux/ptrace.h>
+-#include <linux/slab.h>
+-#include <linux/user.h>
+-#include <linux/a.out.h>
+-#include <linux/interrupt.h>
+-#include <linux/config.h>
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/prctl.h>
+-
+-#include <asm/pgtable.h>
+-#include <asm/uaccess.h>
+-#include <asm/system.h>
+-#include <asm/io.h>
+-#include <asm/reg.h>
+-#include <asm/xmon.h>
+-#include <asm/pmc.h>
+-
+-static inline u32 get_pmlca(int ctr);
+-static inline void set_pmlca(int ctr, u32 pmlca);
+-
+-static inline u32 get_pmlca(int ctr)
+-{
+-	u32 pmlca;
+-
+-	switch (ctr) {
+-		case 0:
+-			pmlca = mfpmr(PMRN_PMLCA0);
+-			break;
+-		case 1:
+-			pmlca = mfpmr(PMRN_PMLCA1);
+-			break;
+-		case 2:
+-			pmlca = mfpmr(PMRN_PMLCA2);
+-			break;
+-		case 3:
+-			pmlca = mfpmr(PMRN_PMLCA3);
+-			break;
+-		default:
+-			panic("Bad ctr number\n");
+-	}
+-
+-	return pmlca;
+-}
+-
+-static inline void set_pmlca(int ctr, u32 pmlca)
+-{
+-	switch (ctr) {
+-		case 0:
+-			mtpmr(PMRN_PMLCA0, pmlca);
+-			break;
+-		case 1:
+-			mtpmr(PMRN_PMLCA1, pmlca);
+-			break;
+-		case 2:
+-			mtpmr(PMRN_PMLCA2, pmlca);
+-			break;
+-		case 3:
+-			mtpmr(PMRN_PMLCA3, pmlca);
+-			break;
+-		default:
+-			panic("Bad ctr number\n");
+-	}
+-}
+-
+-void init_pmc_stop(int ctr)
+-{
+-	u32 pmlca = (PMLCA_FC | PMLCA_FCS | PMLCA_FCU |
+-			PMLCA_FCM1 | PMLCA_FCM0);
+-	u32 pmlcb = 0;
+-
+-	switch (ctr) {
+-		case 0:
+-			mtpmr(PMRN_PMLCA0, pmlca);
+-			mtpmr(PMRN_PMLCB0, pmlcb);
+-			break;
+-		case 1:
+-			mtpmr(PMRN_PMLCA1, pmlca);
+-			mtpmr(PMRN_PMLCB1, pmlcb);
+-			break;
+-		case 2:
+-			mtpmr(PMRN_PMLCA2, pmlca);
+-			mtpmr(PMRN_PMLCB2, pmlcb);
+-			break;
+-		case 3:
+-			mtpmr(PMRN_PMLCA3, pmlca);
+-			mtpmr(PMRN_PMLCB3, pmlcb);
+-			break;
+-		default:
+-			panic("Bad ctr number!\n");
+-	}
+-}
+-
+-void set_pmc_event(int ctr, int event)
+-{
+-	u32 pmlca;
+-
+-	pmlca = get_pmlca(ctr);
+-
+-	pmlca = (pmlca & ~PMLCA_EVENT_MASK) |
+-		((event << PMLCA_EVENT_SHIFT) &
+-		 PMLCA_EVENT_MASK);
+-
+-	set_pmlca(ctr, pmlca);
+-}
+-
+-void set_pmc_user_kernel(int ctr, int user, int kernel)
+-{
+-	u32 pmlca;
+-
+-	pmlca = get_pmlca(ctr);
+-
+-	if(user)
+-		pmlca &= ~PMLCA_FCU;
+-	else
+-		pmlca |= PMLCA_FCU;
+-
+-	if(kernel)
+-		pmlca &= ~PMLCA_FCS;
+-	else
+-		pmlca |= PMLCA_FCS;
+-
+-	set_pmlca(ctr, pmlca);
+-}
+-
+-void set_pmc_marked(int ctr, int mark0, int mark1)
+-{
+-	u32 pmlca = get_pmlca(ctr);
+-
+-	if(mark0)
+-		pmlca &= ~PMLCA_FCM0;
+-	else
+-		pmlca |= PMLCA_FCM0;
+-
+-	if(mark1)
+-		pmlca &= ~PMLCA_FCM1;
+-	else
+-		pmlca |= PMLCA_FCM1;
+-
+-	set_pmlca(ctr, pmlca);
+-}
+-
+-void pmc_start_ctr(int ctr, int enable)
+-{
+-	u32 pmlca = get_pmlca(ctr);
+-
+-	pmlca &= ~PMLCA_FC;
+-
+-	if (enable)
+-		pmlca |= PMLCA_CE;
+-	else
+-		pmlca &= ~PMLCA_CE;
+-
+-	set_pmlca(ctr, pmlca);
+-}
+-
+-void pmc_start_ctrs(int enable)
+-{
+-	u32 pmgc0 = mfpmr(PMRN_PMGC0);
+-
+-	pmgc0 &= ~PMGC0_FAC;
+-	pmgc0 |= PMGC0_FCECE;
+-
+-	if (enable)
+-		pmgc0 |= PMGC0_PMIE;
+-	else
+-		pmgc0 &= ~PMGC0_PMIE;
+-
+-	mtpmr(PMRN_PMGC0, pmgc0);
+-}
+-
+-void pmc_stop_ctrs(void)
+-{
+-	u32 pmgc0 = mfpmr(PMRN_PMGC0);
+-
+-	pmgc0 |= PMGC0_FAC;
+-
+-	pmgc0 &= ~(PMGC0_PMIE | PMGC0_FCECE);
+-
+-	mtpmr(PMRN_PMGC0, pmgc0);
+-}
+-
+-void dump_pmcs(void)
+-{
+-	printk("pmgc0: %x\n", mfpmr(PMRN_PMGC0));
+-	printk("pmc\t\tpmlca\t\tpmlcb\n");
+-	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC0),
+-			mfpmr(PMRN_PMLCA0), mfpmr(PMRN_PMLCB0));
+-	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC1),
+-			mfpmr(PMRN_PMLCA1), mfpmr(PMRN_PMLCB1));
+-	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC2),
+-			mfpmr(PMRN_PMLCA2), mfpmr(PMRN_PMLCB2));
+-	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC3),
+-			mfpmr(PMRN_PMLCA3), mfpmr(PMRN_PMLCB3));
+-}
+-
+-EXPORT_SYMBOL(init_pmc_stop);
+-EXPORT_SYMBOL(set_pmc_event);
+-EXPORT_SYMBOL(set_pmc_user_kernel);
+-EXPORT_SYMBOL(set_pmc_marked);
+-EXPORT_SYMBOL(pmc_start_ctr);
+-EXPORT_SYMBOL(pmc_start_ctrs);
+-EXPORT_SYMBOL(pmc_stop_ctrs);
+-EXPORT_SYMBOL(dump_pmcs);
+diff --git a/arch/powerpc/kernel/pmc.c b/arch/powerpc/kernel/pmc.c
+index e6fb194..63b79dc 100644
+--- a/arch/powerpc/kernel/pmc.c
++++ b/arch/powerpc/kernel/pmc.c
+@@ -72,7 +72,7 @@ int reserve_pmc_hardware(perf_irq_t new_
+ 	}
+ 
+ 	pmc_owner_caller = __builtin_return_address(0);
+-	perf_irq = new_perf_irq ? : dummy_perf;
++	perf_irq = new_perf_irq ? new_perf_irq : dummy_perf;
+ 
+  out:
+ 	spin_unlock(&pmc_owner_lock);
+diff --git a/arch/powerpc/oprofile/Makefile b/arch/powerpc/oprofile/Makefile
+index f5f9859..ef0dda3 100644
+--- a/arch/powerpc/oprofile/Makefile
++++ b/arch/powerpc/oprofile/Makefile
+@@ -9,4 +9,4 @@ DRIVER_OBJS := $(addprefix ../../../driv
+ oprofile-y := $(DRIVER_OBJS) common.o backtrace.o
+ oprofile-$(CONFIG_PPC64) += op_model_rs64.o op_model_power4.o
+ oprofile-$(CONFIG_FSL_BOOKE) += op_model_fsl_booke.o
+-oprofile-$(CONFIG_PPC32) += op_model_7450.o
++oprofile-$(CONFIG_6xx) += op_model_7450.o
+diff --git a/arch/powerpc/oprofile/common.c b/arch/powerpc/oprofile/common.c
+index 5b1de7e..b2cb8b1 100644
+--- a/arch/powerpc/oprofile/common.c
++++ b/arch/powerpc/oprofile/common.c
+@@ -33,6 +33,11 @@ static void op_handle_interrupt(struct p
+ 	model->handle_interrupt(regs, ctr);
+ }
+ 
++static void op_powerpc_cpu_setup(void *dummy)
 +{
-+	return i2c_smbus_read_byte_data(&ams.client, reg);
++	model->cpu_setup(ctr);
 +}
 +
-+static inline int ams_write(u8 reg, u8 value)
+ static int op_powerpc_setup(void)
+ {
+ 	int err;
+@@ -46,7 +51,7 @@ static int op_powerpc_setup(void)
+ 	model->reg_setup(ctr, &sys, model->num_counters);
+ 
+ 	/* Configure the registers on all cpus.  */
+-	on_each_cpu(model->cpu_setup, NULL, 0, 1);
++	on_each_cpu(op_powerpc_cpu_setup, NULL, 0, 1);
+ 
+ 	return 0;
+ }
+@@ -138,7 +143,8 @@ #ifdef CONFIG_PPC64
+ 		case PPC_OPROFILE_POWER4:
+ 			model = &op_model_power4;
+ 			break;
+-#else
++#endif
++#ifdef CONFIG_6xx
+ 		case PPC_OPROFILE_G4:
+ 			model = &op_model_7450;
+ 			break;
+diff --git a/arch/powerpc/oprofile/op_model_7450.c b/arch/powerpc/oprofile/op_model_7450.c
+index e0491c3..169316d 100644
+--- a/arch/powerpc/oprofile/op_model_7450.c
++++ b/arch/powerpc/oprofile/op_model_7450.c
+@@ -81,7 +81,7 @@ static void pmc_stop_ctrs(void)
+ 
+ /* Configures the counters on this CPU based on the global
+  * settings */
+-static void fsl7450_cpu_setup(void *unused)
++static void fsl7450_cpu_setup(struct op_counter_config *ctr)
+ {
+ 	/* freeze all counters */
+ 	pmc_stop_ctrs();
+diff --git a/arch/powerpc/oprofile/op_model_fsl_booke.c b/arch/powerpc/oprofile/op_model_fsl_booke.c
+index 93d63e6..f5234d2 100644
+--- a/arch/powerpc/oprofile/op_model_fsl_booke.c
++++ b/arch/powerpc/oprofile/op_model_fsl_booke.c
+@@ -32,42 +32,152 @@ static unsigned long reset_value[OP_MAX_
+ static int num_counters;
+ static int oprofile_running;
+ 
+-static inline unsigned int ctr_read(unsigned int i)
++static void init_pmc_stop(int ctr)
+ {
+-	switch(i) {
+-		case 0:
+-			return mfpmr(PMRN_PMC0);
+-		case 1:
+-			return mfpmr(PMRN_PMC1);
+-		case 2:
+-			return mfpmr(PMRN_PMC2);
+-		case 3:
+-			return mfpmr(PMRN_PMC3);
+-		default:
+-			return 0;
+-	}
+-}
++	u32 pmlca = (PMLCA_FC | PMLCA_FCS | PMLCA_FCU |
++			PMLCA_FCM1 | PMLCA_FCM0);
++	u32 pmlcb = 0;
+ 
+-static inline void ctr_write(unsigned int i, unsigned int val)
+-{
+-	switch(i) {
++	switch (ctr) {
+ 		case 0:
+-			mtpmr(PMRN_PMC0, val);
++			mtpmr(PMRN_PMLCA0, pmlca);
++			mtpmr(PMRN_PMLCB0, pmlcb);
+ 			break;
+ 		case 1:
+-			mtpmr(PMRN_PMC1, val);
++			mtpmr(PMRN_PMLCA1, pmlca);
++			mtpmr(PMRN_PMLCB1, pmlcb);
+ 			break;
+ 		case 2:
+-			mtpmr(PMRN_PMC2, val);
++			mtpmr(PMRN_PMLCA2, pmlca);
++			mtpmr(PMRN_PMLCB2, pmlcb);
+ 			break;
+ 		case 3:
+-			mtpmr(PMRN_PMC3, val);
++			mtpmr(PMRN_PMLCA3, pmlca);
++			mtpmr(PMRN_PMLCB3, pmlcb);
+ 			break;
+ 		default:
+-			break;
++			panic("Bad ctr number!\n");
+ 	}
+ }
+ 
++static void set_pmc_event(int ctr, int event)
 +{
-+	return i2c_smbus_write_byte_data(&ams.client, reg, value);
++	u32 pmlca;
++
++	pmlca = get_pmlca(ctr);
++
++	pmlca = (pmlca & ~PMLCA_EVENT_MASK) |
++		((event << PMLCA_EVENT_SHIFT) &
++		 PMLCA_EVENT_MASK);
++
++	set_pmlca(ctr, pmlca);
 +}
 +
-+static int ams_cmd(enum ams_cmd cmd)
++static void set_pmc_user_kernel(int ctr, int user, int kernel)
 +{
-+	s32 result;
++	u32 pmlca;
++
++	pmlca = get_pmlca(ctr);
++
++	if(user)
++		pmlca &= ~PMLCA_FCU;
++	else
++		pmlca |= PMLCA_FCU;
++
++	if(kernel)
++		pmlca &= ~PMLCA_FCS;
++	else
++		pmlca |= PMLCA_FCS;
++
++	set_pmlca(ctr, pmlca);
++}
++
++static void set_pmc_marked(int ctr, int mark0, int mark1)
++{
++	u32 pmlca = get_pmlca(ctr);
++
++	if(mark0)
++		pmlca &= ~PMLCA_FCM0;
++	else
++		pmlca |= PMLCA_FCM0;
++
++	if(mark1)
++		pmlca &= ~PMLCA_FCM1;
++	else
++		pmlca |= PMLCA_FCM1;
++
++	set_pmlca(ctr, pmlca);
++}
++
++static void pmc_start_ctr(int ctr, int enable)
++{
++	u32 pmlca = get_pmlca(ctr);
++
++	pmlca &= ~PMLCA_FC;
++
++	if (enable)
++		pmlca |= PMLCA_CE;
++	else
++		pmlca &= ~PMLCA_CE;
++
++	set_pmlca(ctr, pmlca);
++}
++
++static void pmc_start_ctrs(int enable)
++{
++	u32 pmgc0 = mfpmr(PMRN_PMGC0);
++
++	pmgc0 &= ~PMGC0_FAC;
++	pmgc0 |= PMGC0_FCECE;
++
++	if (enable)
++		pmgc0 |= PMGC0_PMIE;
++	else
++		pmgc0 &= ~PMGC0_PMIE;
++
++	mtpmr(PMRN_PMGC0, pmgc0);
++}
++
++static void pmc_stop_ctrs(void)
++{
++	u32 pmgc0 = mfpmr(PMRN_PMGC0);
++
++	pmgc0 |= PMGC0_FAC;
++
++	pmgc0 &= ~(PMGC0_PMIE | PMGC0_FCECE);
++
++	mtpmr(PMRN_PMGC0, pmgc0);
++}
++
++static void dump_pmcs(void)
++{
++	printk("pmgc0: %x\n", mfpmr(PMRN_PMGC0));
++	printk("pmc\t\tpmlca\t\tpmlcb\n");
++	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC0),
++			mfpmr(PMRN_PMLCA0), mfpmr(PMRN_PMLCB0));
++	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC1),
++			mfpmr(PMRN_PMLCA1), mfpmr(PMRN_PMLCB1));
++	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC2),
++			mfpmr(PMRN_PMLCA2), mfpmr(PMRN_PMLCB2));
++	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC3),
++			mfpmr(PMRN_PMLCA3), mfpmr(PMRN_PMLCB3));
++}
++
++static void fsl_booke_cpu_setup(struct op_counter_config *ctr)
++{
 +	int i;
 +
-+	ams_write(AMS_COMMAND, cmd);
-+	for (i = 0; i < 10; i++) {
-+		mdelay(5);
-+		result = ams_read(AMS_COMMAND);
-+		if (result == 0 || result & 0x80)
++	/* freeze all counters */
++	pmc_stop_ctrs();
++
++	for (i = 0;i < num_counters;i++) {
++		init_pmc_stop(i);
++
++		set_pmc_event(i, ctr[i].event);
++
++		set_pmc_user_kernel(i, ctr[i].user, ctr[i].kernel);
++	}
++}
+ 
+ static void fsl_booke_reg_setup(struct op_counter_config *ctr,
+ 			     struct op_system_config *sys,
+@@ -77,23 +187,14 @@ static void fsl_booke_reg_setup(struct o
+ 
+ 	num_counters = num_ctrs;
+ 
+-	/* freeze all counters */
+-	pmc_stop_ctrs();
+-
+ 	/* Our counters count up, and "count" refers to
+ 	 * how much before the next interrupt, and we interrupt
+ 	 * on overflow.  So we calculate the starting value
+ 	 * which will give us "count" until overflow.
+ 	 * Then we set the events on the enabled counters */
+-	for (i = 0; i < num_counters; ++i) {
++	for (i = 0; i < num_counters; ++i)
+ 		reset_value[i] = 0x80000000UL - ctr[i].count;
+ 
+-		init_pmc_stop(i);
+-
+-		set_pmc_event(i, ctr[i].event);
+-
+-		set_pmc_user_kernel(i, ctr[i].user, ctr[i].kernel);
+-	}
+ }
+ 
+ static void fsl_booke_start(struct op_counter_config *ctr)
+@@ -105,8 +206,8 @@ static void fsl_booke_start(struct op_co
+ 	for (i = 0; i < num_counters; ++i) {
+ 		if (ctr[i].enabled) {
+ 			ctr_write(i, reset_value[i]);
+-			/* Set Each enabled counterd to only
+-			 * count when the Mark bit is not set */
++			/* Set each enabled counter to only
++			 * count when the Mark bit is *not* set */
+ 			set_pmc_marked(i, 1, 0);
+ 			pmc_start_ctr(i, 1);
+ 		} else {
+@@ -177,6 +278,7 @@ static void fsl_booke_handle_interrupt(s
+ 
+ struct op_powerpc_model op_model_fsl_booke = {
+ 	.reg_setup		= fsl_booke_reg_setup,
++	.cpu_setup		= fsl_booke_cpu_setup,
+ 	.start			= fsl_booke_start,
+ 	.stop			= fsl_booke_stop,
+ 	.handle_interrupt	= fsl_booke_handle_interrupt,
+diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprofile/op_model_power4.c
+index 4c2beab..08cbf10 100644
+--- a/arch/powerpc/oprofile/op_model_power4.c
++++ b/arch/powerpc/oprofile/op_model_power4.c
+@@ -96,7 +96,7 @@ static inline int mmcra_must_set_sample(
+ 	return 0;
+ }
+ 
+-static void power4_cpu_setup(void *unused)
++static void power4_cpu_setup(struct op_counter_config *ctr)
+ {
+ 	unsigned int mmcr0 = mmcr0_val;
+ 	unsigned long mmcra = mmcra_val;
+diff --git a/arch/powerpc/oprofile/op_model_rs64.c b/arch/powerpc/oprofile/op_model_rs64.c
+index 042f8f4..19c5ee0 100644
+--- a/arch/powerpc/oprofile/op_model_rs64.c
++++ b/arch/powerpc/oprofile/op_model_rs64.c
+@@ -102,7 +102,7 @@ static void rs64_reg_setup(struct op_cou
+ 	/* XXX setup user and kernel profiling */
+ }
+ 
+-static void rs64_cpu_setup(void *unused)
++static void rs64_cpu_setup(struct op_counter_config *ctr)
+ {
+ 	unsigned int mmcr0;
+ 
+diff --git a/include/asm-powerpc/oprofile_impl.h b/include/asm-powerpc/oprofile_impl.h
+index 5b33994..07a10e5 100644
+--- a/include/asm-powerpc/oprofile_impl.h
++++ b/include/asm-powerpc/oprofile_impl.h
+@@ -42,7 +42,7 @@ struct op_powerpc_model {
+ 	void (*reg_setup) (struct op_counter_config *,
+ 			   struct op_system_config *,
+ 			   int num_counters);
+-	void (*cpu_setup) (void *);
++	void (*cpu_setup) (struct op_counter_config *);
+ 	void (*start) (struct op_counter_config *);
+ 	void (*stop) (void);
+ 	void (*handle_interrupt) (struct pt_regs *,
+@@ -121,7 +121,90 @@ #endif
+ 		break;
+ 	}
+ }
+-#endif /* !CONFIG_FSL_BOOKE */
++#else /* CONFIG_FSL_BOOKE */
++static inline u32 get_pmlca(int ctr)
++{
++	u32 pmlca;
++
++	switch (ctr) {
++		case 0:
++			pmlca = mfpmr(PMRN_PMLCA0);
++			break;
++		case 1:
++			pmlca = mfpmr(PMRN_PMLCA1);
++			break;
++		case 2:
++			pmlca = mfpmr(PMRN_PMLCA2);
++			break;
++		case 3:
++			pmlca = mfpmr(PMRN_PMLCA3);
++			break;
++		default:
++			panic("Bad ctr number\n");
++	}
++
++	return pmlca;
++}
++
++static inline void set_pmlca(int ctr, u32 pmlca)
++{
++	switch (ctr) {
++		case 0:
++			mtpmr(PMRN_PMLCA0, pmlca);
++			break;
++		case 1:
++			mtpmr(PMRN_PMLCA1, pmlca);
++			break;
++		case 2:
++			mtpmr(PMRN_PMLCA2, pmlca);
++			break;
++		case 3:
++			mtpmr(PMRN_PMLCA3, pmlca);
++			break;
++		default:
++			panic("Bad ctr number\n");
++	}
++}
++
++static inline unsigned int ctr_read(unsigned int i)
++{
++	switch(i) {
++		case 0:
++			return mfpmr(PMRN_PMC0);
++		case 1:
++			return mfpmr(PMRN_PMC1);
++		case 2:
++			return mfpmr(PMRN_PMC2);
++		case 3:
++			return mfpmr(PMRN_PMC3);
++		default:
 +			return 0;
 +	}
-+	return -1;
 +}
 +
-+static void ams_sensors(s8 *x, s8 *y, s8 *z)
++static inline void ctr_write(unsigned int i, unsigned int val)
 +{
-+	u32 orient;
-+
-+	*x = ams_read(AMS_DATAX);
-+	*y = ams_read(AMS_DATAY);
-+	*z = ams_read(AMS_DATAZ);
-+
-+	orient = ams.vflag ? ams.orient2 : ams.orient1;
-+	if (orient & 0x80) {
-+		s8 tmp = *x;
-+		*x = *y;
-+		*y = tmp;
-+	}
-+	if (orient & 0x04)
-+		*z = ~*z;
-+	if (orient & 0x02)
-+		*y = ~*y;
-+	if (orient & 0x01)
-+		*x = ~*x;
-+
-+	/* printk(KERN_DEBUG "ams: Sensors (%d, %d, %d)\n", *x, *y, *z); */
-+}
-+
-+static ssize_t ams_show_x(struct device *dev, struct device_attribute *attr,
-+			  char *buf)
-+{
-+	int retval;
-+	s8 x, y, z;
-+
-+	ams_sensors(&x, &y, &z);
-+	retval = snprintf(buf, PAGE_SIZE, "%d\n", x);
-+	return retval;
-+}
-+static DEVICE_ATTR(x, S_IRUGO, ams_show_x, NULL);
-+
-+static ssize_t ams_show_y(struct device *dev, struct device_attribute *attr,
-+			  char *buf)
-+{
-+	int retval;
-+	s8 x, y, z;
-+
-+	ams_sensors(&x, &y, &z);
-+	retval = snprintf(buf, PAGE_SIZE, "%d\n", y);
-+	return retval;
-+}
-+static DEVICE_ATTR(y, S_IRUGO, ams_show_y, NULL);
-+
-+static ssize_t ams_show_z(struct device *dev, struct device_attribute *attr,
-+			  char *buf)
-+{
-+	int retval;
-+	s8 x, y, z;
-+
-+	ams_sensors(&x, &y, &z);
-+	retval = snprintf(buf, PAGE_SIZE, "%d\n", z);
-+	return retval;
-+}
-+
-+static DEVICE_ATTR(z, S_IRUGO, ams_show_z, NULL);
-+
-+static int ams_mouse_kthread(void *data)
-+{
-+	s8 x, y, z;
-+
-+	while (!kthread_should_stop()) {
-+		ams_sensors(&x, &y, &z);
-+
-+		input_report_abs(ams.idev, ABS_X, x - ams.xcalib);
-+		input_report_abs(ams.idev, ABS_Y, y - ams.ycalib);
-+
-+		input_sync(ams.idev);
-+
-+		msleep(25);
-+	}
-+	return 0;
-+}
-+
-+static void ams_mouse_enable(void)
-+{
-+	s8 x, y, z;
-+
-+	if (ams.idev)
-+		return;
-+
-+	ams_sensors(&x, &y, &z);
-+	ams.xcalib = x;
-+	ams.ycalib = y;
-+
-+	ams.idev = input_allocate_device();
-+	if (!ams.idev)
-+		return;
-+
-+	ams.idev->name = "Apple Motion Sensor";
-+	ams.idev->id.bustype = BUS_I2C;
-+	ams.idev->id.vendor = 0;
-+
-+	input_set_abs_params(ams.idev, ABS_X, -50, 50, 3, 0);
-+	input_set_abs_params(ams.idev, ABS_Y, -50, 50, 3, 0);
-+
-+	set_bit(EV_ABS, ams.idev->evbit);
-+	set_bit(EV_KEY, ams.idev->evbit);
-+	set_bit(BTN_TOUCH, ams.idev->keybit);
-+
-+	if (input_register_device(ams.idev)) {
-+		input_free_device(ams.idev);
-+		ams.idev = NULL;
-+		return;
-+	}
-+
-+	ams.kthread = kthread_run(ams_mouse_kthread, NULL, "kams");
-+	if (IS_ERR(ams.kthread)) {
-+		input_unregister_device(ams.idev);
-+		ams.idev = NULL;
-+		return;
++	switch(i) {
++		case 0:
++			mtpmr(PMRN_PMC0, val);
++			break;
++		case 1:
++			mtpmr(PMRN_PMC1, val);
++			break;
++		case 2:
++			mtpmr(PMRN_PMC2, val);
++			break;
++		case 3:
++			mtpmr(PMRN_PMC3, val);
++			break;
++		default:
++			break;
 +	}
 +}
 +
-+static void ams_mouse_disable(void)
-+{
-+	if (!ams.idev)
-+		return;
 +
-+	kthread_stop(ams.kthread);
++#endif /* CONFIG_FSL_BOOKE */
 +
-+	input_unregister_device(ams.idev);
-+
-+	ams.idev = NULL;
-+}
-+
-+static ssize_t ams_show_mouse(struct device *dev, struct device_attribute *attr,
-+			      char *buf)
-+{
-+	return sprintf(buf, "%d\n", mouse);
-+}
-+
-+static ssize_t ams_store_mouse(struct device *dev, struct device_attribute *attr,
-+			       const char *buf, size_t count)
-+{
-+	if (sscanf(buf, "%d\n", &mouse) != 1)
-+		return -EINVAL;
-+
-+	mouse = !!mouse;
-+
-+	if (mouse)
-+		ams_mouse_enable();
-+	else
-+		ams_mouse_disable();
-+
-+	return count;
-+}
-+static DEVICE_ATTR(mouse, S_IRUGO | S_IWUSR, ams_show_mouse, ams_store_mouse);
-+
-+static void ams_worker(void *data)
-+{
-+	/* TODO: park hard disk drives like OSX ? */
-+	if (ams_read(AMS_FREEFALL) & 0x80)
-+		printk(KERN_INFO "ams: freefall interrupt\n");
-+	if (ams_read(AMS_SHOCK) & 0x80)
-+		printk(KERN_INFO "ams: shock interrupt\n");
-+
-+	ams_write(AMS_FREEFALL, 0);
-+	ams_write(AMS_SHOCK, 0);
-+}
-+
-+static irqreturn_t ams_interrupt(int irq, void *devid, struct pt_regs *regs)
-+{
-+	if (ams.init)
-+		schedule_work(&ams.worker);
-+	return IRQ_HANDLED;
-+}
-+
-+static int ams_attach(struct i2c_adapter *adapter)
-+{
-+	int vmaj, vmin;
-+	unsigned long bus;
-+
-+	if (ams.init)
-+		return 0;
-+
-+	if (strncmp(adapter->name, "uni-n", 5))
-+		return -ENODEV;
-+	bus = simple_strtoul(adapter->name + 6, NULL, 10);
-+	if (bus != ams.bus)
-+		return -ENODEV;
-+
-+	ams.client.addr = ams.address;
-+	ams.client.adapter = adapter;
-+	ams.client.driver = &ams_driver;
-+	strcpy(ams.client.name, "Apple Motion Sensor");
-+
-+	if (ams_cmd(AMS_CMD_RESET)) {
-+		printk(KERN_INFO "ams: Failed to reset the device\n");
-+		return -ENODEV;
-+	}
-+
-+	if (ams_cmd(AMS_CMD_START)) {
-+		printk(KERN_INFO "ams: Failed to start the device\n");
-+		return -ENODEV;
-+	}
-+
-+	/* get version/vendor information */
-+	ams_write(AMS_CTRL1, 0x02);
-+	ams_write(AMS_CTRL2, 0x85);
-+	ams_write(AMS_CTRL3, 0x01);
-+
-+	ams_cmd(AMS_CMD_READMEM);
-+
-+	vmaj = ams_read(AMS_DATA1);
-+	vmin = ams_read(AMS_DATA2);
-+	if (vmaj != 1 || vmin != 52) {
-+		printk(KERN_INFO "ams: Incorrect device version (%d.%d)\n",
-+		       vmaj, vmin);
-+		return -ENODEV;
-+	}
-+
-+	ams_cmd(AMS_CMD_VERSION);
-+
-+	vmaj = ams_read(AMS_DATA1);
-+	vmin = ams_read(AMS_DATA2);
-+	if (vmaj != 0 || vmin != 1) {
-+		printk(KERN_INFO "ams: Incorrect firmware version (%d.%d)\n",
-+		       vmaj, vmin);
-+		return -ENODEV;
-+	}
-+
-+	if (ams_read(AMS_VENDOR) & 0x10)
-+		ams.vflag = 1;
-+
-+	/* write initial values */
-+	ams_write(AMS_SENSLOW, 0x15);
-+	ams_write(AMS_SENSHIGH, 0x60);
-+	ams_write(AMS_CTRLX, 0x08);
-+	ams_write(AMS_CTRLY, 0x0F);
-+	ams_write(AMS_CTRLZ, 0x4F);
-+	ams_write(AMS_UNKNOWN1, 0x14);
-+
-+	ams_write(AMS_FREEFALL, 0);
-+	ams_write(AMS_SHOCK, 0);
-+
-+	/* enable interrupts */
-+	ams_write(AMS_CTRLX, 0x88);
-+	ams_write(AMS_CTRLY, 0x8F);
-+	ams_write(AMS_CTRLZ, 0xCF);
-+
-+	if (i2c_attach_client(&ams.client)) {
-+		printk(KERN_INFO "ams: Failed to attach the client\n");
-+		return -ENODEV;
-+	}
-+
-+	if (mouse)
-+		ams_mouse_enable();
-+
-+	ams.init = 1;
-+
-+	printk(KERN_INFO "ams: Apple Motion Sensor enabled\n");
-+
-+	return 0;
-+}
-+
-+static int ams_detach(struct i2c_adapter *adapter)
-+{
-+	if (!ams.init)
-+		return 0;
-+
-+	if (ams.idev)
-+		ams_mouse_disable();
-+
-+	i2c_detach_client(&ams.client);
-+
-+	/* disable and ack interrupts */
-+	ams_write(AMS_CTRLX, 0x08);
-+	ams_write(AMS_CTRLY, 0x0F);
-+	ams_write(AMS_CTRLZ, 0x4F);
-+	ams_write(AMS_FREEFALL, 0);
-+	ams_write(AMS_SHOCK, 0);
-+
-+	ams.init = 0;
-+
-+	printk(KERN_INFO "ams: Apple Motion Sensor disabled\n");
-+
-+	return 0;
-+}
-+
-+static int __init ams_init(void)
-+{
-+	struct device_node* np;
-+	u32 *prop;
-+
-+	np = of_find_node_by_name(NULL, "accelerometer");
-+	if (!np)
-+		return -ENODEV;
-+	if (!device_is_compatible(np, "AAPL,accelerometer_1"))
-+		return -ENODEV;
-+
-+	prop = (u32 *)get_property(np, "orientation", NULL);
-+	if (!prop)
-+		return -EIO;
-+	ams.orient1 = *prop;
-+	ams.orient2 = *(prop + 1);
-+
-+	prop = (u32 *)get_property(np, "reg", NULL);
-+	if (!prop)
-+		return -ENODEV;
-+
-+	/* look for bus either by path or using "reg" */
-+	if (strstr(np->full_name, "/i2c-bus@") != NULL) {
-+		const char *tmp_bus = (strstr(np->full_name, "/i2c-bus@") + 9);
-+		ams.bus = tmp_bus[0]-'0';
-+	} else {
-+		ams.bus = ((*prop) >> 8) & 0x0f;
-+	}
-+	ams.address = ((*prop) & 0xff) >> 1;
-+
-+	np = of_find_node_by_name(NULL, "accelerometer-1");
-+	if (!np || np->n_intrs < 1)
-+		return -ENODEV;
-+
-+	ams.irq1 = np->intrs[0].line;
-+
-+	np = of_find_node_by_name(NULL, "accelerometer-2");
-+	if (!np || np->n_intrs < 1)
-+		return -ENODEV;
-+
-+	ams.irq2 = np->intrs[0].line;
-+
-+	if (request_irq(ams.irq1, ams_interrupt, 0, "accelerometer-1",
-+			NULL < 0))
-+		return -ENODEV;
-+
-+	if (request_irq(ams.irq2, ams_interrupt, 0, "accelerometer-2",
-+			NULL < 0)) {
-+		free_irq(ams.irq1, NULL);
-+		return -ENODEV;
-+	}
-+
-+	INIT_WORK(&ams.worker, ams_worker, NULL);
-+
-+	if ((ams.of_dev = of_platform_device_create(np, "ams", NULL)) == NULL) {
-+		free_irq(ams.irq1, NULL);
-+		free_irq(ams.irq2, NULL);
-+		return -ENODEV;
-+	}
-+
-+	device_create_file(&ams.of_dev->dev, &dev_attr_x);
-+	device_create_file(&ams.of_dev->dev, &dev_attr_y);
-+	device_create_file(&ams.of_dev->dev, &dev_attr_z);
-+	device_create_file(&ams.of_dev->dev, &dev_attr_mouse);
-+
-+	if (i2c_add_driver(&ams_driver) < 0) {
-+		free_irq(ams.irq1, NULL);
-+		free_irq(ams.irq2, NULL);
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
-+static void __exit ams_exit(void)
-+{
-+	i2c_del_driver(&ams_driver);
-+
-+	free_irq(ams.irq1, NULL);
-+	free_irq(ams.irq2, NULL);
-+
-+	device_remove_file(&ams.of_dev->dev, &dev_attr_x);
-+	device_remove_file(&ams.of_dev->dev, &dev_attr_y);
-+	device_remove_file(&ams.of_dev->dev, &dev_attr_z);
-+	device_remove_file(&ams.of_dev->dev, &dev_attr_mouse);
-+
-+	of_device_unregister(ams.of_dev);
-+}
-+
-+module_init(ams_init);
-+module_exit(ams_exit);
-
+ 
+ extern void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth);
+ 
+diff --git a/include/asm-powerpc/pmc.h b/include/asm-powerpc/pmc.h
+index 07d6a42..8588be6 100644
+--- a/include/asm-powerpc/pmc.h
++++ b/include/asm-powerpc/pmc.h
+@@ -32,18 +32,5 @@ #ifdef CONFIG_PPC64
+ void power4_enable_pmcs(void);
+ #endif
+ 
+-#ifdef CONFIG_FSL_BOOKE
+-void init_pmc_stop(int ctr);
+-void set_pmc_event(int ctr, int event);
+-void set_pmc_user_kernel(int ctr, int user, int kernel);
+-void set_pmc_marked(int ctr, int mark0, int mark1);
+-void pmc_start_ctr(int ctr, int enable);
+-void pmc_start_ctrs(int enable);
+-void pmc_stop_ctrs(void);
+-void dump_pmcs(void);
+-
+-extern struct op_powerpc_model op_model_fsl_booke;
+-#endif
+-
+ #endif /* __KERNEL__ */
+ #endif /* _POWERPC_PMC_H */
 -- 
-Stelian Pop <stelian@popies.net>
+1.3.0
