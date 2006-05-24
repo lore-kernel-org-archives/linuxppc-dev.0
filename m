@@ -2,18 +2,23 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8566467B21
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 May 2006 19:43:33 +1000 (EST)
-Subject: via-pmu runs device_power_down in atomic context
+	by ozlabs.org (Postfix) with ESMTP id 0314667B22
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 May 2006 19:43:35 +1000 (EST)
+Subject: Re: snd-aoa status update / automatic driver loading
 From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Hollis Blanchard <hollis@penguinppc.org>
+In-Reply-To: <1148395617.3434.0.camel@diesel>
+References: <1147860564.14395.6.camel@johannes>
+	<20060522221138.683790c2@diesel>  <1148387282.25971.8.camel@johannes>
+	<1148395617.3434.0.camel@diesel>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-6sBRP9PCe4ccFmDHtpfy"
-Date: Wed, 24 May 2006 10:01:01 +0200
-Message-Id: <1148457661.11734.9.camel@johannes>
+	boundary="=-2R/CpLr945jIU+MnE7yr"
+Date: Wed, 24 May 2006 11:41:23 +0200
+Message-Id: <1148463688.11734.16.camel@johannes>
 Mime-Version: 1.0
-Cc: cpufreq@lists.linux.org.uk
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,82 +29,63 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-6sBRP9PCe4ccFmDHtpfy
+--=-2R/CpLr945jIU+MnE7yr
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hey,
+On Tue, 2006-05-23 at 09:46 -0500, Hollis Blanchard wrote:
 
-Everytime I suspend my powerbook, I see the following trace:
+> Yeah, I'm not sure how I was supposed to know that i2sbus was the magic
+> module.=20
 
-[10655.887546] BUG: sleeping function called from invalid context at includ=
-e/linux/rwsem.h:43
-[10655.887558] in_atomic():0, irqs_disabled():1
-[10655.887562] Call Trace:
-[10655.887565] [C581BD20] [C00081E8] show_stack+0x50/0x190 (unreliable)
-[10655.887582] [C581BD50] [C0023BB0] __might_sleep+0xcc/0xe8
-[10655.887592] [C581BD60] [C0038290] blocking_notifier_call_chain+0x2c/0xc0
-[10655.887606] [C581BD80] [C01E90C0] cpufreq_suspend+0x130/0x148
-[10655.887616] [C581BDB0] [C019D9E8] sysdev_suspend+0x10c/0x300
-[10655.887627] [C581BDF0] [C01A3888] device_power_down+0x74/0xac
-[10655.887636] [C581BE10] [C01B1264] pmac_suspend_devices+0x98/0x188
-[10655.887643] [C581BE30] [C01B18F0] pmu_ioctl+0x59c/0xbc0
-[10655.887649] [C581BED0] [C008E898] do_ioctl+0x80/0x84
-[10655.887660] [C581BEE0] [C008E928] vfs_ioctl+0x8c/0x48c
-[10655.887666] [C581BF10] [C008ED68] sys_ioctl+0x40/0x74
-[10655.887673] [C581BF40] [C000F3A4] ret_from_syscall+0x0/0x38
+Heh, yeah, sorry. Thing is, if you'd have just installed the modules and
+rebooted, it would have worked :)
 
-The might_sleep() comes from down_read() and this happens because
-blocking_notifier_call_chain calls it, it is also commented to run in
-process context so this is all proper.
+> That seems to be working now. Again, from PowerMac11,2:
 
-However, it obviously isn't run at process context. Looking why, I see
-this in via-pmu.c:
-        /* We can now disable MSR_EE. This code of course works properly on=
-ly
-         * on UP machines... For SMP, if we ever implement sleep, we'll hav=
-e to
-         * stop the "other" CPUs way before we do all that stuff.
-         */
-        local_irq_disable();
+Yeah looks fine, except I just fixed a very stupid bug in the i2sbus
+module. Please don't try to remove it after loading, until you upgrade
+to the current version.
 
-        /* Broadcast power down irq
-         * This isn't that useful in most cases (only directly wired device=
-s can
-         * use this but still... This will take care of sysdev's as well, s=
-o
-         * we exit from here with local irqs disabled and PIC off.
-         */
-        ret =3D device_power_down(PMSG_SUSPEND);
 
-Apparently this was a deliberate decision.
+> This is probably just because I loaded all the modules I could find.
 
-So the question is: which is correct? I can test and submit a patch to
-fix the issue at either end; if cpufreq is wrong I'd move from a
-blocking_ to an atomic_notifier_call_chain, if via-pmu.c is wrong I'd
-call device_power_down earlier...
+I tried changing the tas module to detect if the codec *really is
+present*, but failed. There's some code in there, but I'll solicit some
+help with that later.
+
+> Volume control does indeed work when the tas module isn't loaded.
+
+Interesting, but good to know. I'd have thought that the fabric would
+not take the codec into use. Will see if I can fix that.
+
+> Could you also add a sample modules.conf? For example, users should be
+> told to remove snd-powermac.
+
+Good point. Everything else should not be necessary though, since the
+i2sbus module should automatically load due to having a macio modalias.
 
 johannes
 
---=-6sBRP9PCe4ccFmDHtpfy
+--=-2R/CpLr945jIU+MnE7yr
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARHQSuqVg1VMiehFYAQKPsw/8DlLqPPzVdbtTU+FRxuUvxXjsckraZOur
-fffdgssSAI8uNM3tQsIivcTb3+u7DNqxbUqHSV2SA3KzTdo6KRqWVs2E3sVTTJE7
-z2I/yEB0depwKniWYsm6qUUJouBMMSk4OVQHTbhAvdbwgT3fykm17ITOL4PO6bbp
-QCAj7h4w2bP7Uayq043/XEDB8peqocSFOJ2fEV+mccMmY7XzBvGIkzgniGLTH+nV
-OV3/8YmUs3nQ7BQEoTHK7R2bSyTSJdfmA8kYlZma5P+rP6tl6WI6hhIl2Lc0Cpd9
-YBGuQsNAnBtE3DYXzGfSPdcarCB9lfuOlncQv0lxbXddLKzuRRvikKptpSWl126e
-RA0GRKPkFsSTNXfrVWp1oGh+vqFRhg2Me+WM4M+BOjiWfbabUdbAFdMwoy3xkEoH
-GZcnLZOFr16QTdXArj/nmlk3zW9uVH6jQHElyZsQR9qCVNqctF9n6WweLOFwI1k6
-e12oiNWdUu3pA20KkpCs+huZV+2dYg64EPfUV+ywCnFILhiyYExY/dEhsjrpzVRK
-4VXZxaxTEAHeptBIxe0yPo2esuXuZm8OsagQt7jBxzBPE9AzIWfc490HV34BA9BC
-g/lxB7Rue4yi17rMl+Rsv8RuEPi6V+lKz0jEeBz74AqTNKI0eZws0H4u6/paBquF
-W5QOSD7Paho=
-=DHVt
+iQIVAwUARHQqQKVg1VMiehFYAQKJHBAAkl7t1WnkC5dR+++jVI8HCthOG+MG0z0M
+6h2tInvtjQDWiog170aJIKzlGHg8LCuynchPgHhwVKGurI+tBNLvCDZ2BxH/GTNw
+YoI0pMm52eRYM2IK25kwwfPrfIcEVtLtU+9y94duoG6beOLn+pfEWDpnk4qY4RuZ
+JSVcMMaaBB21z3KO36Rcgyv7NkaTjivzuAbQA231xrJKDXlBMxhS7RpYGmqPn8lK
+VFfnTz5GV2Q6qBRLmuYMlM3WC+nO51+OeAB9ZFNazlBKj/t9gG2WYD4L+DJPOhTR
+QY3jvUO+gH/cNJTw5Gh9PWsMXn/viDPek23uLyKqaxR8oKb9rCcHrhuJx1oqABhN
+BGNFzY2shN0YGkQc7cMMAvJMRYVXlbYTdFmBMGJtFQuv58+tVjYOO6/uwwKwTcRA
+COER/eKPb8Bw9OpGffiRURwRVaiciYIlcgUQ2zXOd6Dg6qk/iuqFgLqm+fwiCC6Z
+W/C0+kTSktvqP8JvbSKbJ5sUyQ5+ogewxUThkD90XBF/nVQQ3B+lCsP2ZcGHiWwG
+RF3NtYA7bRxz7MSZRWXXpPxDdYlMq/hdxhKmxIz4taN57+nlC+F2NuPaIc30qE4X
+lcR/kUC/3o7RCKzfj7fGU/Nav8Tigntx4u07cCKl8Z+F8ocmPhZP9mKQL4NmdRDf
+zy7VuL1qDoQ=
+=JTWN
 -----END PGP SIGNATURE-----
 
---=-6sBRP9PCe4ccFmDHtpfy--
+--=-2R/CpLr945jIU+MnE7yr--
