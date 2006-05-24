@@ -1,17 +1,18 @@
-Return-Path: <malik_mca2000@yahoo.co.in>
-Received: from web8408.mail.in.yahoo.com (web8408.mail.in.yahoo.com
-	[202.43.219.156]) by ozlabs.org (Postfix) with SMTP id 00FE5679E9
+Return-Path: <rbelaire@ciena.com>
+Received: from mdmxm02.ciena.com (LIN1-118-39-27.ciena.com [63.118.39.27])
+	by ozlabs.org (Postfix) with ESMTP id 665E4679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 22:30:10 +1000 (EST)
-Message-ID: <20060524123007.34251.qmail@web8408.mail.in.yahoo.com>
-Date: Wed, 24 May 2006 13:30:06 +0100 (BST)
-From: sandeep malik <malik_mca2000@yahoo.co.in>
-Subject: Re: Help Needed: floating point used in kernel (task=c0398410,
-	pc=3184)
-To: Roger Larsson <roger.larsson@norran.net>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <200605241148.38708.roger.larsson@norran.net>
+	Thu, 25 May 2006 02:13:27 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-258835653-1148473806=:33888"
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: I2C bus issues on MPC8248
+Date: Wed, 24 May 2006 12:00:52 -0400
+Message-ID: <2C9CFFBFF7E53D4A9B1343C338550498019F663D@onmxm01.ciena.com>
+From: "Belaire, Ron" <rbelaire@ciena.com>
+To: "Laurent Pinchart" <laurent.pinchart@tbox.biz>,
+	<hs@denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,89 +23,105 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-258835653-1148473806=:33888
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+I'm also attempting to use the i2c patch on a MPC8247 and have a couple
+of questions:
 
- 
-  >It might be the application who runs, calls kernel for output, drivers used
->for output uses floating point.
->No application running => no floating point exceptions...
-Yes even I do agree with this point.....and need ur help how to check this coz
-  the main reason is that the error is not consistently coming from one particular point but the location keeps on changing......
-  if we try to debug and remove from one point it start coming from some other point in the application......
-   
-  >Some driver, most likely your if you have made any yourself is
->using floating point.
->serial, console, ethernet drivers?
-No I am not running any such drivers which are new and can be suspected 
-  all the drivers used are fully tested and working well with all other applications...
-   
-  >pc = 3184 (in hex)
->Now check your System.map
->The routine with the closest lower address is your main suspect,
->the use of inlines can blur this...
->(the task pointer is not that useful, they should have converted it
->to process id)
-  Even this pc value is very less. I think it should be in the range of c0000000 - c0233e38(range I got from system.map file)....
-  if we think pc is returning the four LSB's even then it is not giving any such clue 
-  as there are only ISR's defined in arc/ppc/kernel/head.S which are lying close to this address
-   
-   
-  Regards,
-  Malik
+Is i2c-core.c still used with this patch since it appears to be using
+the platform bus?
 
-Roger Larsson <roger.larsson@norran.net> wrote:
-  On onsdag 24 maj 2006 10.14, you wrote:
-> Hi Roger...
-> Thanks for your response.....but in my case the application is causing
-> this error....
-It might be the application who runs, calls kernel for output, drivers used
-for output uses floating point.
-No application running => no floating point exceptions...
+I'm enabling MPC82xx_CPM_I2C and setting platform_notify but never get a
+callback.  What triggers the callback?
 
-> The result was exactly what is expected.....so i think this is not
-> related to floating point but might be some other issue......
-Some driver, most likely your if you have made any yourself is
-using floating point.
-serial, console, ethernet drivers?
+I get /sys/bus/platform/fsl-cpm-i2c appearing but fsl_ic2_probe is never
+called.  What triggers the probe?
 
+I'm obviously new to the platform bus and think that I am missing
+something, so anything would help.
 
+Best regards,
+
+Ron Belaire
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+rbelaire=3Dciena.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+rbelaire=3Dciena.com@ozlabs.org] On
+Behalf Of Laurent Pinchart
+Sent: May 22, 2006 5:06 AM
+To: hs@denx.de
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: I2C bus issues on MPC8248
+
+Hi Heiko,
+
+> > I'm trying to use the MPC8248 hardware I2C bus in a 2.6.16 kernel.=20
+> > The mailing list archives mention a driver for the MPC8260
+> > (http://ozlabs.org/pipermail/linuxppc-embedded/2006-May/022837.html)
+> > which I modified to reflect the memory map differences between the=20
+> > MPC8260 and the MPC8248, as mentionned in the e-mail.
+> >
+> > The good news is that the driver works. The bad news is that it=20
+> > doesn't work
 >
-> Are there any other scenarios which can lead to this message????
+> OK.
+>
+> > correctly.
+> >
+> :-(
+> :
+> > The Linux I2C layer probes the I2C bus for peripherals when drivers=20
+> > are loaded. The probing function writes a single byte with the=20
+> > device address and check if the data is acked. I monitored the SCL=20
+> > and SDA lines using an
+>
+> [...]
+>
+> > Using that code, no data is sent on the bus, the BD_SC_READY bit is=20
+> > never cleared and no interrupt is generated. Once again I suspected=20
+> > a CPM bug when writing a single byte on the bus, so I increased
+cbd_datlen to 2:
+> >
+> > tbdf[0].cbd_bufaddr =3D __pa(tb);
+> > tbdf[0].cbd_datlen =3D 2;
+> > tbdf[0].cbd_sc =3D count ? BD_SC_READY | BD_IIC_START :
+> >                  BD_SC_READY | BD_IIC_START | BD_SC_INTRPT |
+> >                  BD_SC_LAST | BD_SC_WRAP;
+> >
+> > This worked, and two bytes were written on the bus, leading me to=20
+> > believe that the CPM was at fault.
+>
+> I don t know, if this is a CPM Bug, but it seems so to me ...
 
-Not unless the exception is setup wrong - I would not bet on that.
+I've contacted Freescale's technical support about that issue. They
+answered that 0-byte buffer descriptors are not legal (even though no
+documentation states so), and that the address byte is output on the I2C
+bus when the next byte is written to the internal TX FIFO, making it
+impossible to send a single byte on the bus. Basically, that's a
+"feature", and they don't intend to fix it.
 
-Lets trace it:
-> > floating point used in kernel (task=c0398410, pc=3184)
-This message is generated in ./arch/ppc/kernel/head.S
+> > Has anyone noticed the same behaviour ? Is there a workaround
+available ?
+> > I tried searching Freescale's website for CPM microcode updates but=20
+> > haven't found anything related to the I2C controller.
+>
+> Yes, Holger Speck had the same problem. He solved it by doing the
+> following:
+>
+> If the cpm_iic_write is called with count =3D 0. He made a read with=20
+> count =3D
+> 1
+>
+> I think this is safer than writing 2 Bytes to the Slave.
+> Could you try this?
 
-pc = 3184 (in hex)
-Now check your System.map
-The routine with the closest lower address is your main suspect,
-the use of inlines can blur this...
-(the task pointer is not that useful, they should have converted it
-to process id)
+I've tried that with success. The I2C bus still gets stuck from time to
+time, I'll try to investigate that.
 
-/RogerL
+Thanks for your help.
 
+Best regards,
 
-				
----------------------------------
-  Yahoo! India Answers Share what your know-how and wisdom
- Send free SMS to your Friends on Mobile from your Yahoo! Messenger Download now
---0-258835653-1148473806=:33888
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<div>&nbsp;</div>  <div>&gt;It might be the application who runs, calls kernel for output, drivers used<BR>&gt;for output uses floating point.<BR>&gt;No application running =&gt; no floating point exceptions...<BR>Yes even I do agree with this point.....and need ur help how to check this coz</div>  <div>the main reason is that the error is not consistently coming from one particular point but the location keeps on changing......</div>  <div>if we try to debug and remove from one point it start coming from some other point in the application......</div>  <div>&nbsp;</div>  <div>&gt;Some driver, most likely your if you have made any yourself is<BR>&gt;using floating point.<BR>&gt;serial, console, ethernet drivers?<BR>No I am not running any such drivers which are new and can be suspected </div>  <div>all the drivers used are fully tested and working well with all other applications...</div>  <div>&nbsp;</div>  <div>&gt;pc = 3184 (in hex)<BR>&gt;Now check your
- System.map<BR>&gt;The routine with the closest lower address is your main suspect,<BR>&gt;the use of inlines can blur this...<BR>&gt;(the task pointer is not that useful, they should have converted it<BR>&gt;to process id)</div>  <div>Even this pc value is very less. I think it should be in the range of c0000000 - c0233e38(range&nbsp;I got from system.map file)....</div>  <div>if we think pc is returning the four LSB's even then it is not giving any such clue </div>  <div>as there are only ISR's defined in arc/ppc/kernel/head.S which are lying close to this address</div>  <div>&nbsp;</div>  <div>&nbsp;</div>  <div>Regards,</div>  <div>Malik<BR><BR><B><I>Roger Larsson &lt;roger.larsson@norran.net&gt;</I></B> wrote:</div>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">On onsdag 24 maj 2006 10.14, you wrote:<BR>&gt; Hi Roger...<BR>&gt; Thanks for your response.....but in my case the application is causing<BR>&gt; this
- error....<BR>It might be the application who runs, calls kernel for output, drivers used<BR>for output uses floating point.<BR>No application running =&gt; no floating point exceptions...<BR><BR>&gt; The result was exactly what is expected.....so i think this is not<BR>&gt; related to floating point but might be some other issue......<BR>Some driver, most likely your if you have made any yourself is<BR>using floating point.<BR>serial, console, ethernet drivers?<BR><BR><BR>&gt;<BR>&gt; Are there any other scenarios which can lead to this message????<BR><BR>Not unless the exception is setup wrong - I would not bet on that.<BR><BR>Lets trace it:<BR>&gt; &gt; floating point used in kernel (task=c0398410, pc=3184)<BR>This message is generated in ./arch/ppc/kernel/head.S<BR><BR>pc = 3184 (in hex)<BR>Now check your System.map<BR>The routine with the closest lower address is your main suspect,<BR>the use of inlines can blur this...<BR>(the task pointer is not that useful, they
- should have converted it<BR>to process id)<BR><BR>/RogerL<BR></BLOCKQUOTE><BR><p>
-	
-
-	
-		<hr size=1></hr> 
- <a href="http://us.rd.yahoo.com/mail/in/mailanswersshare/*http://in.answers.yahoo.com/">Yahoo! India Answers</a> Share what your know-how and wisdom<br> 
-Send free SMS to your Friends on Mobile from your Yahoo! Messenger <a href="http://us.rd.yahoo.com/mail/in/freesms/*http://messenger.yahoo.com/download.php">Download now</a>
---0-258835653-1148473806=:33888--
+Laurent Pinchart
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
