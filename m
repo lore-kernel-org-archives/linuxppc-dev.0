@@ -2,26 +2,22 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 86D5A67CF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 May 2006 19:44:06 +1000 (EST)
-Subject: Re: snd-aoa status update / automatic driver loading
+	by ozlabs.org (Postfix) with ESMTP id 898CA67B3C
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 May 2006 20:09:22 +1000 (EST)
+Subject: Re: [PATCH] make ams work with latest kernels
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1148422544.13249.96.camel@localhost.localdomain>
-References: <1147860564.14395.6.camel@johannes>
-	<446B721D.8020203@gentoo.org>  <1148034127.15507.178.camel@johannes>
-	<1148169389.13249.44.camel@localhost.localdomain>
-	<1148280172.6228.79.camel@johannes.berg>
-	<1148422544.13249.96.camel@localhost.localdomain>
+To: Stelian Pop <stelian@popies.net>
+In-Reply-To: <1148465069.6723.26.camel@localhost.localdomain>
+References: <1148383943.25971.2.camel@johannes>
+	<1148465069.6723.26.camel@localhost.localdomain>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-jozGK26R0akBOjwmasOX"
-Date: Wed, 24 May 2006 11:42:57 +0200
-Message-Id: <1148463777.11734.19.camel@johannes>
+	boundary="=-ej3EoGGJMroCynMboPkt"
+Date: Wed, 24 May 2006 12:09:05 +0200
+Message-Id: <1148465350.11734.33.camel@johannes>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Benjamin Berg <benjamin@sipsolutions.net>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,53 +28,52 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-jozGK26R0akBOjwmasOX
+--=-ej3EoGGJMroCynMboPkt
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2006-05-24 at 08:15 +1000, Benjamin Herrenschmidt wrote:
-> > Right, that's how snd-powermac does it. It has the nasty side-effect of
-> > polluting the cache a lot though, since dbdma commands are 16 bytes
-> > long. Am I wrong?
->=20
-> You don't have that much DBDMA commands that it would pollute the cache
-> _a lot_ :)=20
+On Wed, 2006-05-24 at 12:04 +0200, Stelian Pop wrote:
 
-Ah, yeah, I guess so. Well I do have 32 dbdma commands, them being
-spaced up in 16-bytes means 16 cachelines, no? I'm not sure how the
-cache is wired up ...
+> Version 0.3 of ams (from http://popies.net/ams/) already had all those
+> changes :)
 
-> > Alsa calls this thing the 'pointer' :) The frame counter we currently
-> > use is the frame counter register of the i2s bus controller, and I don'=
-t
-> > see why we shouldn't do that instead of reading back all the dbdma
-> > command status fields.
->=20
-> If you manage to have it properly in sync, that may work too.
+Oh heh. :I downloaded the 2 version a while ago and forgot to check for
+updates before fixing it up.
 
-Seems to work fine so far, even if bcm43xx kills a few interrupts ;)
+> The latest version (0.4) has some additionnal changes (fixes a double
+> free induced by the use of input_free_device(), some other more cosmetic
+> changes).
+
+Nice :)
+
+> Here it comes, along with proper kernel integration (Johannes, I've kept
+> your Signed-off-by since the code is almost the same, feel free to
+> disagree loudly if you must :) ).
+
+:)
+Patch looks good, thanks.
 
 johannes
 
---=-jozGK26R0akBOjwmasOX
+--=-ej3EoGGJMroCynMboPkt
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARHQqnaVg1VMiehFYAQJ9rA/9Gu3oPdOK0FKS61x0wh6z54HIteAeVS3c
-msqL+hXGRVPHAd7xNs+otSKDGy2OHxyo9GUMUPVy4AR+ePX9q7PhzboXltiGaa7J
-uSgEtRAjqF7mHHYbYUsVeZFOE69sho+jFa4Hu2a3X5xcvI9X3XwheQ8BMFgn+ReZ
-ZF+F9ahbeUEKry7WNxYk6g9sT2u97HFB0NXb6CMWQ1gLMRtZCyPXBYBXIkt31SH7
-C1Ruxq/24h1O/ZigGkzID7BVXkH/QqdiQpBcls4ZQmq3/Re9ee2XEGbQWAZoN7ru
-A4WIEynRxzh66+0of2F7uVv0E7cngMIM5GUOHndsgjcOi/GcPUTY9sQZ4sgrEJ53
-5z4QW3D+0wvt1sB0UO6TkxPqJIeVBk+jX01RO9bpO4kycixHJRqWx31EnEo1DR0s
-H7Ab4uakzj1oJPnonVrwU5Kdfc0HDVbWmQjMGhKV6Yxuwmp+6/fESXm0l8wfT+yL
-NbWpz56QEwZvzwMadjjZwMN5LZAsbBj50GDFNUyl/7e2v75IESlUg7epycHoWKO1
-s/90Dln/KAW/h998YesRsfo0VcW/1+GMVNUMcaXun6db5lxHddB1kN+ABhwyLckn
-c42u4vCt5cYiPKiG+2HHz/Il/xnV90X1hLZ7+YJ59pZlapuuRW8Z4OfqlJc+ZOp3
-4NaiNXWwMug=
-=Q7B7
+iQIVAwUARHQwvqVg1VMiehFYAQKIcg//aBgdH0EWod+vJ5FD1I+uW2hkgMORNKjK
+D+9eqiBUOMRUl4wVtUptDsNH9EaX3lI/owfh/4u6ZrduwLqR75VhO4Mt0IRmpsrL
+tyRyBNSmJjzT2hn12IrNXmMaRnpisvSLhrs8SawGbZ0uadKlyaw0Z5cDCoykhqMC
+C+yLUtOKrGsHc2uQ1zac9Ks6tOlNlhlPZKkx/W/HRCcY5lgFO1VGfmK2r6n2Ft6p
+i3MdeejEV55T/9wk3Rv7G4qbJ8rTo5cMsKwqhKIxmFBggYQNtNE0Q0d9MkKawGLY
+A56A1lA+RcVHSoXqxRrUK86gq7pEr2aDYuQ/XqJ14qdI3zY6N0NRiMQol8tOrcx/
+9a2sUi3qQ+VwQnW7g1OEaenGMG78L4+II32gXbEG4y5gn9FaGyfBUJVq1L9BroIV
+5mafRhaVQMHMk8tKmoYgdsDpeML5K4/5hR/JSJ6rqYqeM/kU28+GSQ6SK70/a6gN
+uHlSTBzy7RRD05x+WsmssdnvxUAVYK+lw/ODjSAb7mYU3xn/pRKut/u/jwQMd/zS
+mlKxP+UKPxeHy6XMikPbu9KL3U4cktpd8qObiXS2j8QaotKuxZxTdL12+OGL0dXh
+n9sYREg6+6FPCpO1HBkfviHzq07ekgMiD0K2Uj/mnnVvYntQqet5yX7lSELjoOGv
+pxh71P5sNog=
+=uGSo
 -----END PGP SIGNATURE-----
 
---=-jozGK26R0akBOjwmasOX--
+--=-ej3EoGGJMroCynMboPkt--
