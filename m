@@ -1,26 +1,19 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 1CC5267B1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 May 2006 17:23:44 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k4O7dwHM013590
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 May 2006 00:39:58 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k4O7NdRp008349
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 May 2006 02:23:41 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD467306425AB9@zch01exm40.ap.freescale.net>
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
-	448h pc2 (Taiga) platform
-Date: Wed, 24 May 2006 15:23:37 +0800
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
-	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8566467B21
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 May 2006 19:43:33 +1000 (EST)
+Subject: via-pmu runs device_power_down in atomic context
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-6sBRP9PCe4ccFmDHtpfy"
+Date: Wed, 24 May 2006 10:01:01 +0200
+Message-Id: <1148457661.11734.9.camel@johannes>
+Mime-Version: 1.0
+Cc: cpufreq@lists.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,213 +24,82 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> On May 18, 2006, at 3:05 AM, Zang Roy-r61911 wrote:
-> 
-> >>
-> >>> The tsi108 serial port is not a sub node of "soc".  well, 
-> any way, I 
-> >>> can try soc!
-> >>
-> >> What is it ? Where is it ? "soc" is a bit of a generic name for 
-> >> something in the device-tree in fact... we might want to 
-> define a way 
-> >> to expose any bus via some kind of soc mecanism even if it's not a 
-> >> root bus.
-> >>
-> >>
-> > Should I just use add_legacy_soc_port() instead of a new function 
-> > add_legacy_tsi_port()?
-> 
-> I think seeing your dts will help here.  We need to have a 
-> concept of a "bridge" that may be similar to an "soc".
-mpc7448hpc2 dts :
-/*
- * MPC7448HPC2 (Taiga) board Device Tree Source
- *
- * Copyright 2006 Freescale Semiconductor Inc.
- * 2006 Roy Zang <Roy Zang at freescale.com>.
- *
- * This program is free software; you can redistribute  it and/or modify it
- * under  the terms of  the GNU General  Public License as published by the
- * Free Software Foundation;  either version 2 of the  License, or (at your
- * option) any later version.
- */
+--=-6sBRP9PCe4ccFmDHtpfy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+Hey,
 
-/ {
-	model = "mpc7448hpc2";
-	compatible = "mpc74xx";
-	#address-cells = <1>;
-	#size-cells = <1>;
-	linux,phandle = <100>;
+Everytime I suspend my powerbook, I see the following trace:
 
-	cpus {
-		#cpus = <1>;
-		#address-cells = <1>;
-		#size-cells =<0>;
-		linux,phandle = <200>;
-				
-		PowerPC,7448@0 {
-			device_type = "cpu";
-			reg = <0>;
-			d-cache-line-size = <20>;	// 32 bytes
-			i-cache-line-size = <20>;	// 32 bytes
-			d-cache-size = <8000>;		// L1, 32K bytes
-			i-cache-size = <8000>;		// L1, 32K bytes
-			timebase-frequency = <0>;	// 33 MHz, from uboot
-			clock-frequency = <0>;		// From U-Boot
-			bus-frequency = <0>;		// From U-Boot
-			32-bit;
-			linux,phandle = <201>;
-			linux,boot-cpu;
-		};
-	};
+[10655.887546] BUG: sleeping function called from invalid context at includ=
+e/linux/rwsem.h:43
+[10655.887558] in_atomic():0, irqs_disabled():1
+[10655.887562] Call Trace:
+[10655.887565] [C581BD20] [C00081E8] show_stack+0x50/0x190 (unreliable)
+[10655.887582] [C581BD50] [C0023BB0] __might_sleep+0xcc/0xe8
+[10655.887592] [C581BD60] [C0038290] blocking_notifier_call_chain+0x2c/0xc0
+[10655.887606] [C581BD80] [C01E90C0] cpufreq_suspend+0x130/0x148
+[10655.887616] [C581BDB0] [C019D9E8] sysdev_suspend+0x10c/0x300
+[10655.887627] [C581BDF0] [C01A3888] device_power_down+0x74/0xac
+[10655.887636] [C581BE10] [C01B1264] pmac_suspend_devices+0x98/0x188
+[10655.887643] [C581BE30] [C01B18F0] pmu_ioctl+0x59c/0xbc0
+[10655.887649] [C581BED0] [C008E898] do_ioctl+0x80/0x84
+[10655.887660] [C581BEE0] [C008E928] vfs_ioctl+0x8c/0x48c
+[10655.887666] [C581BF10] [C008ED68] sys_ioctl+0x40/0x74
+[10655.887673] [C581BF40] [C000F3A4] ret_from_syscall+0x0/0x38
 
-	memory {
-		device_type = "memory";
-		linux,phandle = <300>;
-		reg = <00000000 20000000	// DDR2   512M at 0
-		       >;
-	};
+The might_sleep() comes from down_read() and this happens because
+blocking_notifier_call_chain calls it, it is also commented to run in
+process context so this is all proper.
 
-  	tsi108@c0000000 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		#interrupt-cells = <2>;
-		device_type = "tsi-bridge";
-		ranges = <00000000 c0000000 00010000>;
-		reg = <c0000000 00010000>;
-		bus-frequency = <0>;
+However, it obviously isn't run at process context. Looking why, I see
+this in via-pmu.c:
+        /* We can now disable MSR_EE. This code of course works properly on=
+ly
+         * on UP machines... For SMP, if we ever implement sleep, we'll hav=
+e to
+         * stop the "other" CPUs way before we do all that stuff.
+         */
+        local_irq_disable();
 
-		i2c@7000 {
-			interrupt-parent = <7400>;
-			interrupts = <E 3>;
-			reg = <7000 400>;
-			device_type = "i2c";
-			compatible  = "tsi-i2c";
-		};
+        /* Broadcast power down irq
+         * This isn't that useful in most cases (only directly wired device=
+s can
+         * use this but still... This will take care of sysdev's as well, s=
+o
+         * we exit from here with local irqs disabled and PIC off.
+         */
+        ret =3D device_power_down(PMSG_SUSPEND);
 
-		mdio@6000 {
-			device_type = "mdio";
-			compatible = "tsi-ethernet";	// FIXME
+Apparently this was a deliberate decision.
 
-			ethernet-phy@6000 {
-				linux,phandle = <6000>;
-				interrupt-parent = <7400>;
-				interrupts = <2 1>;
-				reg = <6000 50>;
-				device_type = "ethernet-phy";
-			};
+So the question is: which is correct? I can test and submit a patch to
+fix the issue at either end; if cpufreq is wrong I'd move from a
+blocking_ to an atomic_notifier_call_chain, if via-pmu.c is wrong I'd
+call device_power_down earlier...
 
-			ethernet-phy@6400 {
-				linux,phandle = <6400>;
-				interrupt-parent = <7400>;
-				interrupts = <2 1>;
-				reg = <6400 50>;
-				device_type = "ethernet-phy";
-			};
+johannes
 
-		};
+--=-6sBRP9PCe4ccFmDHtpfy
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-		ethernet@6200 {
-			#size-cells = <0>;
-			device_type = "network";
-			model = "TSI-ETH";		// FIXME
-			compatible = "tsi-ethernet";	// FIXME
-			reg = <6200 200>;
-			address = [ 00 06 D2 00 00 01 ];
-			interrupts = <10 3 10 3 10 3>;
-			interrupt-parent = <7400>;
-			phy-handle = <6000>;
-		};
+-----BEGIN PGP SIGNATURE-----
 
-		ethernet@6600 {
-			#address-cells = <1>;
-			#size-cells = <0>;
-			device_type = "network";
-			model = "TSI-ETH";		// FIXME
-			compatible = "tsi-ethernet";	// FIXME
-			reg = <6600 200>;
-			address = [ 00 06 D2 00 00 02 ];
-			interrupts = <11 3 11 3 11 3>;
-			interrupt-parent = <7400>;
-			phy-handle = <6400>;
-		};
+iQIVAwUARHQSuqVg1VMiehFYAQKPsw/8DlLqPPzVdbtTU+FRxuUvxXjsckraZOur
+fffdgssSAI8uNM3tQsIivcTb3+u7DNqxbUqHSV2SA3KzTdo6KRqWVs2E3sVTTJE7
+z2I/yEB0depwKniWYsm6qUUJouBMMSk4OVQHTbhAvdbwgT3fykm17ITOL4PO6bbp
+QCAj7h4w2bP7Uayq043/XEDB8peqocSFOJ2fEV+mccMmY7XzBvGIkzgniGLTH+nV
+OV3/8YmUs3nQ7BQEoTHK7R2bSyTSJdfmA8kYlZma5P+rP6tl6WI6hhIl2Lc0Cpd9
+YBGuQsNAnBtE3DYXzGfSPdcarCB9lfuOlncQv0lxbXddLKzuRRvikKptpSWl126e
+RA0GRKPkFsSTNXfrVWp1oGh+vqFRhg2Me+WM4M+BOjiWfbabUdbAFdMwoy3xkEoH
+GZcnLZOFr16QTdXArj/nmlk3zW9uVH6jQHElyZsQR9qCVNqctF9n6WweLOFwI1k6
+e12oiNWdUu3pA20KkpCs+huZV+2dYg64EPfUV+ywCnFILhiyYExY/dEhsjrpzVRK
+4VXZxaxTEAHeptBIxe0yPo2esuXuZm8OsagQt7jBxzBPE9AzIWfc490HV34BA9BC
+g/lxB7Rue4yi17rMl+Rsv8RuEPi6V+lKz0jEeBz74AqTNKI0eZws0H4u6/paBquF
+W5QOSD7Paho=
+=DHVt
+-----END PGP SIGNATURE-----
 
-		serial@7808 {
-			device_type = "serial";
-			compatible = "ns16550";
-			reg = <7808 200>;
-			clock-frequency = <3f6b5a00>;
-			interrupts = <c 3>;
-			interrupt-parent = <7400>;
-		};
-
-		serial@7c08 {
-			device_type = "serial";
-			compatible = "ns16550";
-			reg = <7c08 200>;
-			clock-frequency = <3f6b5a00>;
-			interrupts = <d 3>;
-			interrupt-parent = <7400>;
-		};
-
-	  	pic@7400 {
-			linux,phandle = <7400>;
-			clock-frequency = <0>;
-			interrupt-controller;
-			#address-cells = <0>;
-			#interrupt-cells = <2>;
-			reg = <7400 400>;
-			built-in;
-			compatible = "chrp,open-pic";
-			device_type = "open-pic";
-                       	big-endian;
-		};
-		pci@1000 {
-			compatible = "tsi10x";
-			device_type = "pci";
-			linux,phandle = <1000>;
-			#interrupt-cells = <1>;
-			#size-cells = <2>;
-			#address-cells = <3>;
-			reg = <1000 1000>;
-			bus-range = <0 0>;
-			ranges = <02000000 0 e0000000 e0000000 0 1A000000	
-				  01000000 0 00000000 fa000000 0 00010000>;
-			clock-frequency = <7f28154>;
-			interrupt-parent = <7400>;
-			interrupts = <8 0>;
-			interrupt-map-mask = <f800 0 0 7>;
-			interrupt-map = <
-
-				/* IDSEL 0x11 */
-				8800 0 0 1 7400 24 0
-				8800 0 0 2 7400 25 0
-				8800 0 0 3 7400 26 0
-				8800 0 0 4 7400 27 0
-
-				/* IDSEL 0x12 */
-				9000 0 0 1 7400 25 0
-				9000 0 0 2 7400 26 0
-				9000 0 0 3 7400 27 0
-				9000 0 0 4 7400 24 0
-
-				/* IDSEL 0x13 */
-				9800 0 0 1 7400 26 0
-				9800 0 0 2 7400 27 0
-				9800 0 0 3 7400 24 0
-				9800 0 0 4 7400 25 0
-
-				/* IDSEL 0x14 */
-				a000 0 0 1 7400 27 0
-				a000 0 0 2 7400 24 0
-				a000 0 0 3 7400 25 0
-				a000 0 0 4 7400 26 0
-				>;
-		};
-	};
-
-};
-
- 
+--=-6sBRP9PCe4ccFmDHtpfy--
