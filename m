@@ -1,16 +1,20 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from hotmail.com (bay110-f24.bay110.hotmail.com [65.54.229.34])
-	by ozlabs.org (Postfix) with ESMTP id E4ED767A6D
+Return-Path: <rick.moleres@xilinx.com>
+Received: from outbound2-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E08B5679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 May 2006 04:36:06 +1000 (EST)
-Message-ID: <BAY110-F24D7A35E974A204660E196B2980@phx.gbl>
-In-Reply-To: <689CB232690D8D4E97DA6C76DA098E6C02594618@XCO-EXCHVS1.xlnx.xilinx.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: rick.moleres@xilinx.com
+	Thu, 25 May 2006 04:54:55 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="GB2312"
 Subject: RE: question about linux with Xilinx ML-403
-Date: Wed, 24 May 2006 18:36:01 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+Date: Wed, 24 May 2006 12:52:02 -0600
+Message-ID: <689CB232690D8D4E97DA6C76DA098E6C025946F6@XCO-EXCHVS1.xlnx.xilinx.com>
+From: "Rick Moleres" <rick.moleres@xilinx.com>
+To: "Ming Liu" <eemingliu@hotmail.com>,
+	"rick.moleres" <rick.moleres@xilinx.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,8 +26,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+
+Ming,
+
+Another option for you may be to get MontaVista's latest linuxppc-2.4 =
+kernel tree from source.mvista.com (using rsync), which I believe has =
+the xilinx_gige directory and menuconfig entries.
+
+-Rick
+
+-----Original Message-----
+From: Ming Liu [mailto:eemingliu@hotmail.com]=20
+Sent: Wednesday, May 24, 2006 12:36 PM
+To: rick.moleres
+Cc: linuxppc-embedded@ozlabs.org
+Subject: RE: question about linux with Xilinx ML-403
+
 Dear Rick,
-OK. I will try that. However I cannot promise to finish this very soon 
+OK. I will try that. However I cannot promise to finish this very soon=20
 because I am a novice. :) I will let you know if there is any result.
 
 Thanks for your method.
@@ -33,7 +53,7 @@ Ming
 
 
 >From: "Rick Moleres" <rick.moleres@xilinx.com>
->To: "Ming Liu" <eemingliu@hotmail.com>,   "rick.moleres" 
+>To: "Ming Liu" <eemingliu@hotmail.com>,   "rick.moleres"=20
 <rick.moleres@xilinx.com>
 >CC: <linuxppc-embedded@ozlabs.org>
 >Subject: RE: question about linux with Xilinx ML-403
@@ -47,7 +67,8 @@ Ming
 >
 >
 >
-> >Our best recommendation is to use the drivers/net/xilinx_enet directory
+> >Our best recommendation is to use the drivers/net/xilinx_enet =
+directory
 >
 > >for the temac driver and just enable the Xilinx 10/100 Ethernet in
 >
@@ -79,7 +100,8 @@ Ming
 >Right - you would need to copy the xtemac* files and the Makefile over,
 >and would have to change the Makefile to make sure it produces
 >xilinx_enet.o instead of xilinx_gige.o.  We haven't tried this, but we
->don't think there's any reason this shouldn't work.  Can you let us know
+>don't think there's any reason this shouldn't work.  Can you let us =
+know
 >how it goes?
 >
 >
@@ -92,4 +114,4 @@ Ming
 >
 
 _________________________________________________________________
-√‚∑—œ¬‘ÿ MSN Explorer:   http://explorer.msn.com/lccn/  
+=C3=E2=B7=D1=CF=C2=D4=D8 MSN Explorer:   http://explorer.msn.com/lccn/ =20
