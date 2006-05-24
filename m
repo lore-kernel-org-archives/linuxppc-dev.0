@@ -1,28 +1,16 @@
-Return-Path: <jourdan@enib.fr>
-Received: from alto.enib.fr (alto.enib.fr [195.221.233.5])
-	by ozlabs.org (Postfix) with ESMTP id ED85F67B2E
+Return-Path: <vbordug@ru.mvista.com>
+Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AB30467A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 May 2006 03:15:38 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by alto.enib.fr (Postfix) with ESMTP id AC4F0EF1EE
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 18:54:00 +0200 (CEST)
-Received: from alto.enib.fr ([127.0.0.1])
-	by localhost (alto.enib.fr [127.0.0.1]) (amavisd-new,
-	port 10024) with ESMTP
-	id 27386-06 for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 18:54:00 +0200 (CEST)
-Received: from webmail.enib.fr (localhost.localdomain [127.0.0.1])
-	by alto.enib.fr (Postfix) with ESMTP id 8F777EF17F
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 18:54:00 +0200 (CEST)
-Message-ID: <3799.194.3.133.184.1148489640.squirrel@webmail.enib.fr>
-Date: Wed, 24 May 2006 18:54:00 +0200 (CEST)
-Subject: Can't get CoralP drivers to work
-From: jourdan@enib.fr
-To: linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+	Thu, 25 May 2006 03:40:27 +1000 (EST)
+To: Paul Mackerras <paulus@samba.org>
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH] ppc32 CPM_UART: various fixes for pq2 uart users
+Date: Wed, 24 May 2006 21:40:18 +0400
+Message-Id: <20060524174018.15173.67998.stgit@vitb.ru.mvista.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,33 +21,185 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello
 
-I have a MPC8260 processor card with a Coral-P evaluation board (rev 4.0).
-My system do not have keyboard nor mouse (i use the serial console).
+This fixes various odd things that missed update together with cpm_uart
+platform_device move. Unified resources names, restructurisation, etc.
+Also, addressed issue with recent phys/virt translation rework. Being
+cache-coherent, CPM2's do alloc_bootmem() for the console stuff, and it was
+used to treat console buffer descriptor mapping 1:1 (as in CPM1 case),
+which is definitely wrong.
 
-I use linux kernel 2.4.25 & 2.6.9.
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+---
 
-For kernel 2.4.25 :
+ arch/ppc/platforms/mpc8272ads_setup.c   |   10 +++++-----
+ arch/ppc/syslib/pq2_devices.c           |   16 ++++++++--------
+ arch/ppc/syslib/pq2_sys.c               |    8 ++++----
+ drivers/serial/cpm_uart/cpm_uart_core.c |    8 +++++---
+ drivers/serial/cpm_uart/cpm_uart_cpm2.c |    2 +-
+ 5 files changed, 23 insertions(+), 21 deletions(-)
 
-I'm trying to get the framebuffer driver to work. During the boot the
-driver loads fine but the monitor remains blank (no video signal). If i
-try to `cat /dev/urandom > /dev/fb/0` nothing happens.
-
-I compiled an Xserver (Release 6.9), and the x11 drivers for the coralp.
-When I start X, it says that it can not open tty0 (indeed it doesn't
-exists).
-
-For kernel 2.6.9 :
-
-When I start X, it complains about virtual terminals but doesn't stop. It
-loads the x11_mb86290 driver then stop because it can't find a valid
-framebuffer driver. Is it mandatory to have the mb86290fb driver worknig
-in order to get the x11_mb86290 driver ?
-
-I guess it just a configuration problem but I can figure it out. I added
-the support for virtual terminals in my kernel (X seems to need it) but I
-don't have ttyN entries in /dev. If I add them manually, they can not be
-opened.
-
-Thanks for your help.
+diff --git a/arch/ppc/platforms/mpc8272ads_setup.c b/arch/ppc/platforms/mpc8272ads_setup.c
+index e62b757..abb7154 100644
+--- a/arch/ppc/platforms/mpc8272ads_setup.c
++++ b/arch/ppc/platforms/mpc8272ads_setup.c
+@@ -279,11 +279,11 @@ static int mpc8272ads_platform_notify(st
+ 	static const struct platform_notify_dev_map dev_map[] = {
+ 		{
+ 			.bus_id = "fsl-cpm-fcc",
+-			.rtn = mpc8272ads_fixup_enet_pdata
++			.rtn = mpc8272ads_fixup_enet_pdata,
+ 		},
+ 		{
+ 			.bus_id = "fsl-cpm-scc:uart",
+-			.rtn = mpc
++			.rtn = mpc8272ads_fixup_uart_pdata,
+ 		},
+ 		{
+ 			.bus_id = NULL
+@@ -335,15 +335,15 @@ struct platform_device* early_uart_get_p
+ 	struct platform_device* pdev = NULL;
+ 	if(index) { /*assume SCC4 here*/
+ 		pdev = &ppc_sys_platform_devices[MPC82xx_CPM_SCC4];
+-		pinfo = &mpc8272<F12>_uart_pdata[1];
++		pinfo = &mpc8272_uart_pdata[fsid_scc4_uart];
+ 	} else { /*over SCC1*/
+ 		pdev = &ppc_sys_platform_devices[MPC82xx_CPM_SCC1];
+-		pinfo = &mpc8272_uart_pdata[0];
++		pinfo = &mpc8272_uart_pdata[fsid_scc1_uart];
+ 	}
+ 
+ 	pinfo->uart_clk = bd->bi_intfreq;
+ 	pdev->dev.platform_data = pinfo;
+-	ppc_sys_fixup_mem_resource(pdev, IMAP_ADDR);
++	ppc_sys_fixup_mem_resource(pdev, CPM_MAP_ADDR);
+ 	return NULL;
+ }
+ 
+diff --git a/arch/ppc/syslib/pq2_devices.c b/arch/ppc/syslib/pq2_devices.c
+index 0636aed..8692d00 100644
+--- a/arch/ppc/syslib/pq2_devices.c
++++ b/arch/ppc/syslib/pq2_devices.c
+@@ -121,13 +121,13 @@ struct platform_device ppc_sys_platform_
+ 		.num_resources	 = 3,
+ 		.resource = (struct resource[]) {
+ 			{
+-				.name	= "scc_mem",
++				.name	= "regs",
+ 				.start	= 0x11A00,
+ 				.end	= 0x11A1F,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
+-				.name	= "scc_pram",
++				.name	= "pram",
+ 				.start	= 0x8000,
+ 				.end	= 0x80ff,
+ 				.flags	= IORESOURCE_MEM,
+@@ -145,13 +145,13 @@ struct platform_device ppc_sys_platform_
+ 		.num_resources	 = 3,
+ 		.resource = (struct resource[]) {
+ 			{
+-				.name	= "scc_mem",
++				.name	= "regs",
+ 				.start	= 0x11A20,
+ 				.end	= 0x11A3F,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
+-				.name	= "scc_pram",
++				.name	= "pram",
+ 				.start	= 0x8100,
+ 				.end	= 0x81ff,
+ 				.flags	= IORESOURCE_MEM,
+@@ -169,13 +169,13 @@ struct platform_device ppc_sys_platform_
+ 		.num_resources	 = 3,
+ 		.resource = (struct resource[]) {
+ 			{
+-				.name 	= "scc_mem",
++				.name 	= "regs",
+ 				.start	= 0x11A40,
+ 				.end	= 0x11A5F,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
+-				.name	= "scc_pram",
++				.name	= "pram",
+ 				.start	= 0x8200,
+ 				.end	= 0x82ff,
+ 				.flags	= IORESOURCE_MEM,
+@@ -193,13 +193,13 @@ struct platform_device ppc_sys_platform_
+ 		.num_resources	 = 3,
+ 		.resource = (struct resource[]) {
+ 			{
+-				.name	= "scc_mem",
++				.name	= "regs",
+ 				.start	= 0x11A60,
+ 				.end	= 0x11A7F,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
+-				.name	= "scc_pram",
++				.name	= "pram",
+ 				.start	= 0x8300,
+ 				.end	= 0x83ff,
+ 				.flags	= IORESOURCE_MEM,
+diff --git a/arch/ppc/syslib/pq2_sys.c b/arch/ppc/syslib/pq2_sys.c
+index 433b0fa..fee8948 100644
+--- a/arch/ppc/syslib/pq2_sys.c
++++ b/arch/ppc/syslib/pq2_sys.c
+@@ -139,13 +139,13 @@ struct ppc_sys_spec ppc_sys_specs[] = {
+ 		.ppc_sys_name	= "8272",
+ 		.mask		= 0x0000ff00,
+ 		.value		= 0x00000c00,
+-		.num_devices	= 11,
++		.num_devices	= 12,
+ 		.device_list = (enum ppc_sys_devices[])
+ 		{
+ 			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_SCC1,
+-			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SMC1,
+-			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
+-			MPC82xx_CPM_USB, MPC82xx_SEC1,
++			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SCC4,
++			MPC82xx_CPM_SMC1, MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI,
++			MPC82xx_CPM_I2C, MPC82xx_CPM_USB, MPC82xx_SEC1,
+ 		},
+ 	},
+ 	/* below is a list of the 8280 family of processors */
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index 969f949..5cba59a 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1164,14 +1164,16 @@ static int __init cpm_uart_console_setup
+ 	struct fs_uart_platform_info *pdata;
+ 	struct platform_device* pdev = early_uart_get_pdev(co->index);
+ 
+-	port =
+-	    (struct uart_port *)&cpm_uart_ports[cpm_uart_port_map[co->index]];
+-	pinfo = (struct uart_cpm_port *)port;
+ 	if (!pdev) {
+ 		pr_info("cpm_uart: console: compat mode\n");
+ 		/* compatibility - will be cleaned up */
+ 		cpm_uart_init_portdesc();
++	}
+ 
++	port =
++	    (struct uart_port *)&cpm_uart_ports[cpm_uart_port_map[co->index]];
++	pinfo = (struct uart_cpm_port *)port;
++	if (!pdev) {
+ 		if (pinfo->set_lineif)
+ 			pinfo->set_lineif(pinfo);
+ 	} else {
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index 4b2de08..cdba128 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -213,7 +213,7 @@ int cpm_uart_allocbuf(struct uart_cpm_po
+ 	    L1_CACHE_ALIGN(pinfo->tx_nrfifos * pinfo->tx_fifosize);
+ 	if (is_con) {
+ 		mem_addr = alloc_bootmem(memsz);
+-		dma_addr = mem_addr;
++		dma_addr = virt_to_bus(mem_addr);
+ 	}
+ 	else
+ 		mem_addr = dma_alloc_coherent(NULL, memsz, &dma_addr,
