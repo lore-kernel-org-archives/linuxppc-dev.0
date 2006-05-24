@@ -1,20 +1,24 @@
-Return-Path: <roger.larsson@norran.net>
-Received: from mail.skekraft.net (ns.skekraft.net [213.199.96.131])
-	by ozlabs.org (Postfix) with ESMTP id 09AB467B24
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 15AAB67B24
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 19:48:42 +1000 (EST)
-From: Roger Larsson <roger.larsson@norran.net>
-To: sandeep malik <malik_mca2000@yahoo.co.in>,
-	linuxppc-embedded@ozlabs.org
-Subject: Re: Help Needed: floating point used in kernel (task=c0398410,
-	pc=3184)
-Date: Wed, 24 May 2006 11:48:38 +0200
-References: <20060524081447.12399.qmail@web8410.mail.in.yahoo.com>
-In-Reply-To: <20060524081447.12399.qmail@web8410.mail.in.yahoo.com>
+	Wed, 24 May 2006 19:49:11 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k4OA5Q6g013116 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 May 2006 03:05:26 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k4O9n85d024072
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 May 2006 04:49:09 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD467308148A@zch01exm40.ap.freescale.net>
+From: Li Yang-r58472 <LeoLi@freescale.com>
+To: "'tony'" <hangtoo@163.com>, linuxppc-embedded@ozlabs.org
+Subject: RE: delay programming
+Date: Wed, 24 May 2006 17:48:58 +0800
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200605241148.38708.roger.larsson@norran.net>
+Content-Type: text/plain
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,35 +29,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On onsdag 24 maj 2006 10.14, you wrote:
-> Hi Roger...
->   Thanks for your response.....but in my case the application is causing
-> this error....
-It might be the application who runs, calls kernel for output, drivers used
-for output uses floating point.
-No application running => no floating point exceptions...
+That depends on how accurate you want.  Sleep() functions can't be too accurate 
+for Linux schedule characteristic.  To get best accuracy, you can use hardware
+timer.  udelay() is a choice which reduces the overall system performance.
 
->   The result was exactly what is expected.....so i think this is not
-> related to floating point but might be some other issue......
-Some driver, most likely your if you have made any yourself is
-using floating point.
-  serial, console, ethernet drivers?
+Best Regards,
+Leo
 
 
->
->   Are there any other scenarios which can lead to this message????
-
-Not unless the exception is setup wrong - I would not bet on that.
-
-Lets trace it:
-> >   floating point used in kernel (task=c0398410, pc=3184)
-This message is generated in ./arch/ppc/kernel/head.S
-
-pc = 3184 (in hex)
-Now check your System.map
-The routine with the closest lower address is your main suspect,
-the use of inlines can blur this...
-(the task pointer is not that useful, they should have converted it
-to process id)
-
-/RogerL
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org] On Behalf
+> Of tony
+> Sent: Wednesday, May 24, 2006 5:24 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: delay programming
+> 
+> 
+> hi all
+> 	I want to delay 1ms in the program,
+> 	does usleep(1000) works accurate?
+> 	any good idea?
+> 
+> regards
+> tony
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
