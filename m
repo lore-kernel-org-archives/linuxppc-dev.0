@@ -1,19 +1,28 @@
-Return-Path: <kkboyanov@gmail.com>
-Received: from wx-out-0102.google.com (wx-out-0102.google.com [66.249.82.194])
-	by ozlabs.org (Postfix) with ESMTP id A543E67B14
+Return-Path: <jourdan@enib.fr>
+Received: from alto.enib.fr (alto.enib.fr [195.221.233.5])
+	by ozlabs.org (Postfix) with ESMTP id ED85F67B2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 May 2006 03:11:46 +1000 (EST)
-Received: by wx-out-0102.google.com with SMTP id t5so533818wxc
+	Thu, 25 May 2006 03:15:38 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by alto.enib.fr (Postfix) with ESMTP id AC4F0EF1EE
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 10:11:44 -0700 (PDT)
-Message-ID: <929bf310605241005q1987845di@mail.gmail.com>
-Date: Wed, 24 May 2006 19:05:32 +0200
-From: "Konstantin Boyanov" <kkboyanov@gmail.com>
+	Wed, 24 May 2006 18:54:00 +0200 (CEST)
+Received: from alto.enib.fr ([127.0.0.1])
+	by localhost (alto.enib.fr [127.0.0.1]) (amavisd-new,
+	port 10024) with ESMTP
+	id 27386-06 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 May 2006 18:54:00 +0200 (CEST)
+Received: from webmail.enib.fr (localhost.localdomain [127.0.0.1])
+	by alto.enib.fr (Postfix) with ESMTP id 8F777EF17F
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 May 2006 18:54:00 +0200 (CEST)
+Message-ID: <3799.194.3.133.184.1148489640.squirrel@webmail.enib.fr>
+Date: Wed, 24 May 2006 18:54:00 +0200 (CEST)
+Subject: Can't get CoralP drivers to work
+From: jourdan@enib.fr
 To: linuxppc-embedded@ozlabs.org
-Subject: VME driver problem on MVME6100
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_47599_4848032.1148490332826"
+Content-Type: text/plain;charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,82 +33,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_47599_4848032.1148490332826
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hello
 
-Hi there,
+I have a MPC8260 processor card with a Coral-P evaluation board (rev 4.0).
+My system do not have keyboard nor mouse (i use the serial console).
 
-These days I'm trying to "bring up" a VME driver on a Motorola SBC but I'm
-getting in some troubles.
-Actually there are no problems with the driver itself, methinks, it loads
-correctly and everithing seems to be fine.
-But when I try to create an outbound window, in order to "talk" some other
-boards in the crate I get this:
+I use linux kernel 2.4.25 & 2.6.9.
 
-__ioremap(): phys addr 01000000 is RAM lr d100be34
-mode 0
-vmedrv: No memory for outbound window
-testout: VME_IOCTL_SET_OUTBOUND failed.  Errno =3D 12
+For kernel 2.4.25 :
 
-I'm not sure I understand all of this anyways... Except that there is no
-sufficient memory to map for the outbound window.
-That's what this test is supposed to do is to open the appropriate devices
-for the VME bus (in this case /dev/vme_m[0-7]), configure the outbound
-windows from 0 through 6 (the 7th is reserved) and then verifies that data
-can be read through these outbound windows.
-I'm using an VME driver downloaded from vmelinux.org and here is the source
-of the test program I'm trying to run ->
-http://www-zeuthen.desy.de/~boyanov/testOutWindow.txt<http://www-zeuthen.de=
-sy.de/%7Eboyanov/testOutWindow.txt>
+I'm trying to get the framebuffer driver to work. During the boot the
+driver loads fine but the monitor remains blank (no video signal). If i
+try to `cat /dev/urandom > /dev/fb/0` nothing happens.
 
-I'm sorry for the newb question, but any ideas what is going wrong?
-Thank you.
+I compiled an Xserver (Release 6.9), and the x11 drivers for the coralp.
+When I start X, it says that it can not open tty0 (indeed it doesn't
+exists).
 
-Kind regards,
-Konstantin Boyanov
+For kernel 2.6.9 :
 
-------=_Part_47599_4848032.1148490332826
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+When I start X, it complains about virtual terminals but doesn't stop. It
+loads the x11_mb86290 driver then stop because it can't find a valid
+framebuffer driver. Is it mandatory to have the mb86290fb driver worknig
+in order to get the x11_mb86290 driver ?
 
-Hi there,<br>
-<br>
-These days I'm trying to &quot;bring up&quot; a VME driver on a Motorola SB=
-C but I'm getting in some troubles.<br>
-Actually there are no problems with the driver itself, methinks, it loads c=
-orrectly and everithing seems to be fine.<br>
-But when I try to create an outbound window, in order to &quot;talk&quot; s=
-ome other boards in the crate I get this:<br>
-<br>
-__ioremap(): phys addr 01000000 is RAM lr d100be34<br>
-mode 0<br>
-vmedrv: No memory for outbound window<br>
-testout: VME_IOCTL_SET_OUTBOUND failed.&nbsp; Errno =3D 12<br>
-<br>
-I'm not sure I understand all of this anyways... Except that there is no su=
-fficient memory to map for the outbound window.<br>
-That's what this test is supposed to do is to open the appropriate
-devices for the VME bus (in this case /dev/vme_m[0-7]), configure the
-outbound windows from 0 through 6 (the 7th is reserved) and then
-verifies that data can be read through these outbound windows.<br>
-I'm using an VME driver downloaded from <a href=3D"http://vmelinux.org" tar=
-get=3D"_blank" onclick=3D"return top.js.OpenExtLink(window,event,this)">vme=
-linux.org</a> and here is the
-source of the test program I'm trying to run -&gt;
-<a href=3D"http://www-zeuthen.desy.de/%7Eboyanov/testOutWindow.txt" target=
-=3D"_blank" onclick=3D"return top.js.OpenExtLink(window,event,this)">http:/=
-/www-zeuthen.desy.de/~boyanov/testOutWindow.txt</a><br>
-<br>
-I'm sorry for the newb question, but any ideas what is going wrong?<br>
-Thank you.<br>
-<br>
-Kind regards,<br>
-Konstantin Boyanov<br>
+I guess it just a configuration problem but I can figure it out. I added
+the support for virtual terminals in my kernel (X seems to need it) but I
+don't have ttyN entries in /dev. If I add them manually, they can not be
+opened.
 
-
-
-
-------=_Part_47599_4848032.1148490332826--
+Thanks for your help.
