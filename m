@@ -1,16 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AB30467A6C
+Return-Path: <carlos@kenati.com>
+Received: from mail.kenati.com (unknown [69.90.147.196])
+	by ozlabs.org (Postfix) with ESMTP id 55A2D679FC
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 May 2006 03:40:27 +1000 (EST)
-To: Paul Mackerras <paulus@samba.org>
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH] ppc32 CPM_UART: various fixes for pq2 uart users
-Date: Wed, 24 May 2006 21:40:18 +0400
-Message-Id: <20060524174018.15173.67998.stgit@vitb.ru.mvista.com>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Thu, 25 May 2006 04:00:43 +1000 (EST)
+Message-ID: <44749FF9.3020608@kenati.com>
+Date: Wed, 24 May 2006 11:03:37 -0700
+From: Carlos Munoz <carlos@kenati.com>
+MIME-Version: 1.0
+To: Roger Larsson <roger.larsson@norran.net>
+Subject: Re: Help Needed: floating point used in kernel (task=c0398410,
+	pc=3184)
+References: <20060524061205.53935.qmail@web8405.mail.in.yahoo.com>
+	<200605240850.24333.roger.larsson@norran.net>
+In-Reply-To: <200605240850.24333.roger.larsson@norran.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,185 +25,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Roger Larsson wrote:
 
-This fixes various odd things that missed update together with cpm_uart
-platform_device move. Unified resources names, restructurisation, etc.
-Also, addressed issue with recent phys/virt translation rework. Being
-cache-coherent, CPM2's do alloc_bootmem() for the console stuff, and it was
-used to treat console buffer descriptor mapping 1:1 (as in CPM1 case),
-which is definitely wrong.
+>On onsdag 24 maj 2006 08.12, sandeep malik wrote:
+>  
+>
+>>Hi All...
+>>
+>>  I am trying to run an application compiled with gcc toolchain gcc--3.4.3
+>>and glibc -2.3.4 on PPC 8325 board running Linux 2.6.11....but some how I
+>>am getting following error....
+>>
+>>  floating point used in kernel (task=c0398410, pc=3184)
+>>  floating point used in kernel (task=c0398410, pc=3184)
+>>  floating point used in kernel (task=c0398410, pc=3184)
+>>  floating point used in kernel (task=c0398410, pc=3184)
+>>  floating point used in kernel (task=c0398410, pc=3184)
+>>  floating point used in kernel (task=c0398410, pc=3184)
+>>
+>>  I was suspecting this error might be because the hardware is not
+>>supporting floating point operations and hence i tried a simple program in
+>>which I intentionally did some floating point operation but that program
+>>was running as expected. 
+>>    
+>>
+>No, the warning is more serious than that.
+>
+>Linux does not save floating point registers when entering kernel.
+>It might even optimize not to store/reload when doing a context switch.
+>
+>If your kernel module is using floating point in your kernel code.
+>It will probably work on a processor not having floating point but will
+>break in mysterious ways on one supporting hardware floating point.
+>
+>Do not use floating point in kernel. If you still have to you must take
+>extremely care.
+>  Turn off kernel preemption.
+>  Save FP registers.
+>  Do your stuff.
+>  Reload FP registers.
+>  Turn on preemption.
+>But the question is why would you have to?
+>Simple calculations can be done in fixed point, and complex calculations
+>does not belong in the kernel.
+>
+>/RogerL
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>  
+>
+Hi Sandeep,
 
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
----
+I had the same problem as you. The processor I was using didn't have fp 
+support, so what I did was link the kernel with the gcc library and I 
+got it to work. However, as Roger said it would break on processors with 
+fp support. In the long run I looked at the floating point calculations 
+(log2 in my case) and was able to do the same math with fixed point.
 
- arch/ppc/platforms/mpc8272ads_setup.c   |   10 +++++-----
- arch/ppc/syslib/pq2_devices.c           |   16 ++++++++--------
- arch/ppc/syslib/pq2_sys.c               |    8 ++++----
- drivers/serial/cpm_uart/cpm_uart_core.c |    8 +++++---
- drivers/serial/cpm_uart/cpm_uart_cpm2.c |    2 +-
- 5 files changed, 23 insertions(+), 21 deletions(-)
+Can you post the floating point calculations you need to do ? Someone 
+here might be able to do the same using fix point.
 
-diff --git a/arch/ppc/platforms/mpc8272ads_setup.c b/arch/ppc/platforms/mpc8272ads_setup.c
-index e62b757..abb7154 100644
---- a/arch/ppc/platforms/mpc8272ads_setup.c
-+++ b/arch/ppc/platforms/mpc8272ads_setup.c
-@@ -279,11 +279,11 @@ static int mpc8272ads_platform_notify(st
- 	static const struct platform_notify_dev_map dev_map[] = {
- 		{
- 			.bus_id = "fsl-cpm-fcc",
--			.rtn = mpc8272ads_fixup_enet_pdata
-+			.rtn = mpc8272ads_fixup_enet_pdata,
- 		},
- 		{
- 			.bus_id = "fsl-cpm-scc:uart",
--			.rtn = mpc
-+			.rtn = mpc8272ads_fixup_uart_pdata,
- 		},
- 		{
- 			.bus_id = NULL
-@@ -335,15 +335,15 @@ struct platform_device* early_uart_get_p
- 	struct platform_device* pdev = NULL;
- 	if(index) { /*assume SCC4 here*/
- 		pdev = &ppc_sys_platform_devices[MPC82xx_CPM_SCC4];
--		pinfo = &mpc8272<F12>_uart_pdata[1];
-+		pinfo = &mpc8272_uart_pdata[fsid_scc4_uart];
- 	} else { /*over SCC1*/
- 		pdev = &ppc_sys_platform_devices[MPC82xx_CPM_SCC1];
--		pinfo = &mpc8272_uart_pdata[0];
-+		pinfo = &mpc8272_uart_pdata[fsid_scc1_uart];
- 	}
- 
- 	pinfo->uart_clk = bd->bi_intfreq;
- 	pdev->dev.platform_data = pinfo;
--	ppc_sys_fixup_mem_resource(pdev, IMAP_ADDR);
-+	ppc_sys_fixup_mem_resource(pdev, CPM_MAP_ADDR);
- 	return NULL;
- }
- 
-diff --git a/arch/ppc/syslib/pq2_devices.c b/arch/ppc/syslib/pq2_devices.c
-index 0636aed..8692d00 100644
---- a/arch/ppc/syslib/pq2_devices.c
-+++ b/arch/ppc/syslib/pq2_devices.c
-@@ -121,13 +121,13 @@ struct platform_device ppc_sys_platform_
- 		.num_resources	 = 3,
- 		.resource = (struct resource[]) {
- 			{
--				.name	= "scc_mem",
-+				.name	= "regs",
- 				.start	= 0x11A00,
- 				.end	= 0x11A1F,
- 				.flags	= IORESOURCE_MEM,
- 			},
- 			{
--				.name	= "scc_pram",
-+				.name	= "pram",
- 				.start	= 0x8000,
- 				.end	= 0x80ff,
- 				.flags	= IORESOURCE_MEM,
-@@ -145,13 +145,13 @@ struct platform_device ppc_sys_platform_
- 		.num_resources	 = 3,
- 		.resource = (struct resource[]) {
- 			{
--				.name	= "scc_mem",
-+				.name	= "regs",
- 				.start	= 0x11A20,
- 				.end	= 0x11A3F,
- 				.flags	= IORESOURCE_MEM,
- 			},
- 			{
--				.name	= "scc_pram",
-+				.name	= "pram",
- 				.start	= 0x8100,
- 				.end	= 0x81ff,
- 				.flags	= IORESOURCE_MEM,
-@@ -169,13 +169,13 @@ struct platform_device ppc_sys_platform_
- 		.num_resources	 = 3,
- 		.resource = (struct resource[]) {
- 			{
--				.name 	= "scc_mem",
-+				.name 	= "regs",
- 				.start	= 0x11A40,
- 				.end	= 0x11A5F,
- 				.flags	= IORESOURCE_MEM,
- 			},
- 			{
--				.name	= "scc_pram",
-+				.name	= "pram",
- 				.start	= 0x8200,
- 				.end	= 0x82ff,
- 				.flags	= IORESOURCE_MEM,
-@@ -193,13 +193,13 @@ struct platform_device ppc_sys_platform_
- 		.num_resources	 = 3,
- 		.resource = (struct resource[]) {
- 			{
--				.name	= "scc_mem",
-+				.name	= "regs",
- 				.start	= 0x11A60,
- 				.end	= 0x11A7F,
- 				.flags	= IORESOURCE_MEM,
- 			},
- 			{
--				.name	= "scc_pram",
-+				.name	= "pram",
- 				.start	= 0x8300,
- 				.end	= 0x83ff,
- 				.flags	= IORESOURCE_MEM,
-diff --git a/arch/ppc/syslib/pq2_sys.c b/arch/ppc/syslib/pq2_sys.c
-index 433b0fa..fee8948 100644
---- a/arch/ppc/syslib/pq2_sys.c
-+++ b/arch/ppc/syslib/pq2_sys.c
-@@ -139,13 +139,13 @@ struct ppc_sys_spec ppc_sys_specs[] = {
- 		.ppc_sys_name	= "8272",
- 		.mask		= 0x0000ff00,
- 		.value		= 0x00000c00,
--		.num_devices	= 11,
-+		.num_devices	= 12,
- 		.device_list = (enum ppc_sys_devices[])
- 		{
- 			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_SCC1,
--			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SMC1,
--			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI, MPC82xx_CPM_I2C,
--			MPC82xx_CPM_USB, MPC82xx_SEC1,
-+			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SCC4,
-+			MPC82xx_CPM_SMC1, MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI,
-+			MPC82xx_CPM_I2C, MPC82xx_CPM_USB, MPC82xx_SEC1,
- 		},
- 	},
- 	/* below is a list of the 8280 family of processors */
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index 969f949..5cba59a 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -1164,14 +1164,16 @@ static int __init cpm_uart_console_setup
- 	struct fs_uart_platform_info *pdata;
- 	struct platform_device* pdev = early_uart_get_pdev(co->index);
- 
--	port =
--	    (struct uart_port *)&cpm_uart_ports[cpm_uart_port_map[co->index]];
--	pinfo = (struct uart_cpm_port *)port;
- 	if (!pdev) {
- 		pr_info("cpm_uart: console: compat mode\n");
- 		/* compatibility - will be cleaned up */
- 		cpm_uart_init_portdesc();
-+	}
- 
-+	port =
-+	    (struct uart_port *)&cpm_uart_ports[cpm_uart_port_map[co->index]];
-+	pinfo = (struct uart_cpm_port *)port;
-+	if (!pdev) {
- 		if (pinfo->set_lineif)
- 			pinfo->set_lineif(pinfo);
- 	} else {
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-index 4b2de08..cdba128 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-@@ -213,7 +213,7 @@ int cpm_uart_allocbuf(struct uart_cpm_po
- 	    L1_CACHE_ALIGN(pinfo->tx_nrfifos * pinfo->tx_fifosize);
- 	if (is_con) {
- 		mem_addr = alloc_bootmem(memsz);
--		dma_addr = mem_addr;
-+		dma_addr = virt_to_bus(mem_addr);
- 	}
- 	else
- 		mem_addr = dma_alloc_coherent(NULL, memsz, &dma_addr,
+Thanks,
+
+
+Carlos
