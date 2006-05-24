@@ -1,21 +1,15 @@
-Return-Path: <rick.moleres@xilinx.com>
-Received: from outbound1-ash-R.bigfish.com (outbound-ash.frontbridge.com
-	[206.16.192.249])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4311C67B33
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 May 2006 09:56:24 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C67EAE.EA627DBB"
-Subject: RE: question about linux with Xilinx ML-403
-Date: Tue, 23 May 2006 15:21:54 -0600
-Message-ID: <689CB232690D8D4E97DA6C76DA098E6C0252AB7B@XCO-EXCHVS1.xlnx.xilinx.com>
-From: "Rick Moleres" <rick.moleres@xilinx.com>
-To: "Ming Liu" <eemingliu@hotmail.com>,
-	"rick.moleres" <rick.moleres@xilinx.com>
-Cc: linuxppc-embedded@ozlabs.org
+Return-Path: <Phil.Nitschke@avalon.com.au>
+Subject: Re: pmppc7448/mv64x60 DMA from PCI to memory
+From: Phil Nitschke <Phil.Nitschke@avalon.com.au>
+To: linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+In-Reply-To: <20060523235449.GB1536@mag.az.mvista.com>
+References: <1148395804.21475.53.camel@toby.int.avalon.com.au>
+	<20060523235449.GB1536@mag.az.mvista.com>
+Content-Type: text/plain
+Date: Wed, 24 May 2006 11:53:54 +0930
+Message-Id: <1148437434.4876.64.camel@lamorak.int.avalon.com.au>
+Mime-Version: 1.0
+Reply-To: Phil.Nitschke@avalon.com.au
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,351 +20,197 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01C67EAE.EA627DBB
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-Ming,
-
-=20
-
------Original Message-----
-From: Ming Liu [mailto:eemingliu@hotmail.com]=20
-Sent: Tuesday, May 23, 2006 3:42 AM
-To: rick.moleres
-Cc: linuxppc-embedded@ozlabs.org
-Subject: question about linux with Xilinx ML-403
-
-=20
-
-Hi Rick,
-
-> Yes, we have a driver for the PLB TEMAC (different than the GSRD LL
-
-> TEMAC) for Linux 2.4 (MontaVista Linux 2.4.20) that's shipped in EDK
-
-> 8.1.1, and MontaVista is on the verge of publishing a driver for PLB
-
-> TEMAC for Linux 2.6. (I believe it came across this mailing list a few
-
-> weeks ago)
-
-=20
-
-I have generated the BSP by EDK 8.1.1 for my project in ML403(hardcore=20
-
-Temac and PLB Temac included). I noticed that there is a directory
-called=20
-
-Xilinx_gige in the directory of /drivers/net. Is this the driver for=20
-
-MontaVista Linux2.4.20?
-
-=20
-
-Yes, this is the PLB TEMAC driver for Linux 2.4.20.  In EDK 8.1.x, the
-temac driver and Makefile are copied to drivers/net/xilinx_gige.  This
-xilinx_gige directory is not available in the MVL 3.1 Preview Kit, only
-in the full Professional kit.  We put the temac driver here mostly to
-take advantage of the JUMBO_FRAME_SUPPORT in kernel configuration.
-
-=20
-
- I copied the BSP and overwrote the original one in=20
-
-the linux kernel directory (in the kernel directory, there is only a=20
-
-directory called Xilinx_enet, no Xilinx_gige. So I just copied=20
-
-Xilinx_gige.). However, my problem is in the menuconfig item of Network=20
-
-Device Support->1000Mbit ethernet, there is not any option to choose and
-
-
-enable the Xilinx on-chip ethernet. Is this a problem of MontaVista
-Linux=20
-
-3.1 Preview Kit, or my problem?  And What shall I do to enable the
-tri-mode=20
-
-Temac in my platform? Thanks for your answer.=20
-
-=20
-
-Our best recommendation is to use the drivers/net/xilinx_enet directory
-for the temac driver and just enable the Xilinx 10/100 Ethernet in
-menuconfig.  If you want jumbo frame support, modify adapter.c in the
-driver to define the CONFIG_XILINX_GIGE_JUMBO constant.
-
-=20
-
-Note that Linux 2.6 support for the temac should be available from
-MontaVista soon and a driver was pushed to this mailing list in March.
-There will be support for MV Linux 2.6 in EDK 8.2.1 (around August).
-
-=20
-
-=20
-
-Thanks,
-
-Rick
-
-=20
-
-
-------_=_NextPart_001_01C67EAE.EA627DBB
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 77.95pt 1.0in 77.95pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>Ming,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>-----Original Message-----<br>
-From: Ming Liu [mailto:eemingliu@hotmail.com] <br>
-Sent: Tuesday, May 23, 2006 3:42 AM<br>
-To: rick.moleres<br>
-Cc: linuxppc-embedded@ozlabs.org<br>
-Subject: question about linux with Xilinx ML-403</span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>Hi Rick,<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>&gt; Yes, we have a driver for the PLB TEMAC
-(different than the GSRD LL<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>&gt; TEMAC) for Linux 2.4 (MontaVista Linux =
-2.4.20)
-that's shipped in EDK<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>&gt; 8.1.1, and MontaVista is on the verge of
-publishing a driver for PLB<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>&gt; TEMAC for Linux 2.6. (I believe it came =
-across
-this mailing list a few<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>&gt; weeks ago)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>I have generated the BSP by EDK 8.1.1 for my =
-project
-in ML403(hardcore <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>Temac and PLB Temac included). I noticed that =
-there is
-a directory called <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>Xilinx_gige in the directory of /drivers/net. =
-Is this
-the driver for <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>MontaVista =
-Linux2.4.20?<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>Yes, this is the PLB TEMAC driver for Linux 2.4.20. &nbsp;In EDK =
-8.1.x,
-the temac driver and Makefile are copied to drivers/net/xilinx_gige. =
-&nbsp;This
-xilinx_gige directory is not available in the MVL 3.1 Preview Kit, only =
-in the full
-Professional kit. &nbsp;We put the temac driver here mostly to take =
-advantage
-of the JUMBO_FRAME_SUPPORT in kernel =
-configuration.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>&nbsp;I copied the BSP and overwrote the =
-original one
-in <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>the linux kernel directory (in the kernel =
-directory,
-there is only a <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>directory called Xilinx_enet, no Xilinx_gige. =
-So I
-just copied <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>Xilinx_gige.). However, my problem is in the
-menuconfig item of Network <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>Device Support-&gt;1000Mbit ethernet, there =
-is not any
-option to choose and <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>enable the Xilinx on-chip ethernet. Is this a =
-problem
-of MontaVista Linux <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>3.1 Preview Kit, or my problem?&nbsp; And =
-What shall I
-do to enable the tri-mode <o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText style=3D'margin-left:.5in'><font size=3D2 =
-face=3D"Courier New"><span
-style=3D'font-size:10.0pt'>Temac in my platform? Thanks for your answer. =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
-New"><span
-style=3D'font-size:10.0pt;color:black'>Our best recommendation is to use =
-the
-drivers/net/xilinx_enet directory for the temac driver and just enable =
-the Xilinx
-10/100 Ethernet in menuconfig. &nbsp;If you want jumbo frame support, =
-modify
-adapter.c in the driver to define the CONFIG_XILINX_GIGE_JUMBO =
-constant.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
-New"><span
-style=3D'font-size:10.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p=
->
-
-<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
-New"><span
-style=3D'font-size:10.0pt;color:black'>Note that Linux 2.6 support for =
-the temac should
-be available from MontaVista soon and a driver was pushed to this =
-mailing list
-in March. &nbsp;There will be support for MV Linux 2.6 in EDK 8.2.1 =
-(around
-August).<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
-New"><span
-style=3D'font-size:10.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p=
->
-
-<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
-New"><span
-style=3D'font-size:10.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p=
->
-
-<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
-New"><span
-style=3D'font-size:10.0pt;color:black'>Thanks,<o:p></o:p></span></font></=
-p>
-
-<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
-New"><span
-style=3D'font-size:10.0pt;color:black'>Rick<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 color=3Dblack face=3D"Courier =
-New"><span
-style=3D'font-size:10.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p=
->
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C67EAE.EA627DBB--
+On Tue, 2006-05-23 at 16:54 -0700, Mark A. Greer wrote:
+
+> You say that you don't see any PCI traffic.  Does that mean you
+> have a PCI analyzer and that you are sure that its set up correctly?
+
+I don't have a PCI analyzer, however the JTAG used to program the PCI
+device has been configured to display 4 K samples of PCI bus signals
+(about 20 microsecs?) around the time of an interrupt which results in
+the DMA being requested.  Since my last post, I have managed to see some
+traffic, but the PCI STOP# line is asserted, so I'm not seeing any data
+being read.  I'll investigate further...
+
+> If so, then you have something botched in your IDMA->PCI window setup
+
+Quite possibly.  The patch below shows how I've set this window up.  It
+is not intended as a 'final' piece of code, so please forgive the magic
+numbers.  Could you review this for me?
+
+> or in the pgming of the DMA itself (e.g., in your descriptor(s)).
+
+Well the memory to memory DMA is working OK.  I just didn't know what
+the correct procedure was for determining the bus address of the FIFO.
+For example, this mapping returns a dma handle which does not work:
+
+    fifo_dma_handle = pci_map_single(dev, my_card.bar1+fifo_address[0],
+                                     FIFO_SIZE, PCI_DMA_FROMDEVICE);
+
+Whereas without DMA I would just use this:
+    ioread32_rep(my_card.bar1 + fifo_address[0], buf, 6);
+
+Was I misguided in trying to use pci_map_single in this way?
+
+> Also, set the SrcHold bit [3] of the channel control reg (low).
+> If its really a FIFO, you are--or will be once you get your windows
+> and descriptors set up correctly--reading the FIFO once then
+> incrementing past it.
+
+I can either address it as a FIFO, or as a memory range.  I can read
+from any address in the range and it returns the "next FIFO value".
+Anyway, I've tried both src address hold settings...
+
+> > For this scenario, can anyone tell me:
+> >         * Should I be using the same src address as that reported via
+> >         the 'lspci' command - this _is_ the PCI bus address, isn't it?
+> 
+> "man lspci" (read up on the '-b' option)
+
+I cannot see any difference with the '-b' flag.  Maybe that is the way
+of things on my architecture?
+
+> >         * Looking through mv64x60.c in the 2.6.16 kernel, I note that 4
+> >         of the 8 possible IDMA address windows are configured (for each
+> >         of the 512 MB DRAM on our processor card).
+> 
+> No they aren't.  They're configured (or not) according to the setup info
+> that you pass in.
+
+OK.  I also note there are several cases where this is used in
+mv64x60.c:
+
+        for (i=0; i<3; i++)
+
+Why is 3 used in these loops, and not some other constant like
+MV64360_xxxxx_WINDOWS (which are usually 4, not 3)?
+
+> > Do I need to add
+> >         tests to my source and destination regions, to determine if they
+> >         cross one of the 512 MB regions, and hence will require a
+> >         different CSx line (and thus the DMA will need to be broken into
+> >         two transactions), or does kernel already take care to ensure
+> >         allocated regions will not cross these boundaries?
+> 
+> No.  You need to do what's appropriate for the hardware that you are
+> essentially writing a driver for.  YOU are supposed to know what the
+> limitations of your hardware are.  
+
+OK, I know how my hardware is configured, but when trying to write a
+generic driver, perhaps I need to have the mv64x60.c code remember the
+CSx barriers, e.g. in the mv64x60_chip_info, so the IDMA engine can
+access it.  Do you think this would be possible/beneficial?
+
+Thanks again,
+
+-- 
+Phil
+
+Here is the patch to configure IDMA to PCI window(s):
+
+--- linux-2.6.16/arch/ppc/syslib/mv64x60.c      2006-03-20
+16:23:29.000000000 +1030
++++ linux-2.6.16-patched/arch/ppc/syslib/mv64x60.c      2006-05-23
+16:33:52.000000000 +0930
+@@ -535,6 +581,7 @@
+                mv64x60_config_pci_params(bh->hose_a, &si->pci_0);
+
+                mv64x60_config_cpu2pci_windows(bh, &si->pci_0, 0);
++                mv64x60_config_idma2pci_windows(bh, &si->pci_0, 0);
+                mv64x60_config_pci2mem_windows(bh, bh->hose_a,
+&si->pci_0, 0,
+                        mem_windows);
+                bh->ci->set_pci2regs_window(bh, bh->hose_a, 0,
+@@ -548,6 +595,7 @@
+                mv64x60_config_pci_params(bh->hose_b, &si->pci_1);
+
+                mv64x60_config_cpu2pci_windows(bh, &si->pci_1, 1);
++                mv64x60_config_idma2pci_windows(bh, &si->pci_1, 1);
+                mv64x60_config_pci2mem_windows(bh, bh->hose_b,
+&si->pci_1, 1,
+                        mem_windows);
+                bh->ci->set_pci2regs_window(bh, bh->hose_b, 1,
+@@ -1136,6 +1188,42 @@
+                        bh->ci->disable_window_32bit(bh, win_tab[bus][i
++1]);
+ }
+
++static u32 idma_tab_xtra[MV64x60_CPU2MEM_WINDOWS] __initdata = {
++        MV64x60_IDMA2MEM_0_WIN, MV64x60_IDMA2MEM_1_WIN,
++        MV64x60_IDMA2MEM_2_WIN, MV64x60_IDMA2MEM_3_WIN,
++};
++
++void __init
++mv64x60_config_idma2pci_windows(struct mv64x60_handle *bh,
++        struct mv64x60_pci_info *pi, u32 bus)
++{
++        u32     attributes, unit_id;
++        int     i;
++
++       /* Target Unit IDs: PCI0 = 3, PCI1 = 4. */
++       unit_id = bus ? 0x4 : 0x3;
++       /* 0x1d == No swap data, PCI-X NS attribute asserted, PCI memory
++        * space, PCIx_REQ64n asserted according to requested data size.
+*/
++       attributes = (0x1d << 8) | unit_id;
++
++        for (i=0; i<3; i++)
++                if (pi->pci_mem[i].size > 0) {
++                        mv64x60_set_32bit_window(bh, idma_tab_xtra[i],
++                                pi->pci_mem[i].cpu_base,
+pi->pci_mem[i].size,
++                                attributes);
++                        bh->ci->enable_window_32bit(bh,
+idma_tab_xtra[i]);
++                        /* Give idma r/w access to PCI memory region */
++                        mv64x60_set_bits(bh,
+MV64360_IDMA2MEM_ACC_PROT_0,
++                                (0x3 << (i << 1)));
++                        mv64x60_set_bits(bh,
+MV64360_IDMA2MEM_ACC_PROT_1,
++                                (0x3 << (i << 1)));
++                        mv64x60_set_bits(bh,
+MV64360_IDMA2MEM_ACC_PROT_2,
++                                (0x3 << (i << 1)));
++                        mv64x60_set_bits(bh,
+MV64360_IDMA2MEM_ACC_PROT_3,
++                                (0x3 << (i << 1)));
++                }
++}
++
+ /*
+
+*****************************************************************************
+  *
+@@ -2220,8 +2311,8 @@
+ };
+
+ static u32 idma_tab[MV64x60_CPU2MEM_WINDOWS] __initdata = {
+-       MV64x60_IDMA2MEM_0_WIN, MV64x60_IDMA2MEM_1_WIN,
+-       MV64x60_IDMA2MEM_2_WIN, MV64x60_IDMA2MEM_3_WIN,
++        MV64x60_IDMA2MEM_4_WIN, MV64x60_IDMA2MEM_5_WIN,
++        MV64x60_IDMA2MEM_6_WIN, MV64x60_IDMA2MEM_7_WIN,
+ };
+
+ static u32 dram_selects[MV64x60_CPU2MEM_WINDOWS] __initdata =
+@@ -2285,13 +2376,13 @@
+
+                        /* Give idma r/w access to memory region */
+                        mv64x60_set_bits(bh,
+MV64360_IDMA2MEM_ACC_PROT_0,
+-                               (0x3 << (i << 1)));
++                                (0x3 << ((i+4) << 1)));
+                        mv64x60_set_bits(bh,
+MV64360_IDMA2MEM_ACC_PROT_1,
+-                               (0x3 << (i << 1)));
++                                (0x3 << ((i+4) << 1)));
+                        mv64x60_set_bits(bh,
+MV64360_IDMA2MEM_ACC_PROT_2,
+-                               (0x3 << (i << 1)));
++                                (0x3 << ((i+4) << 1)));
+                        mv64x60_set_bits(bh,
+MV64360_IDMA2MEM_ACC_PROT_3,
+-                               (0x3 << (i << 1)));
++                                (0x3 << ((i+4) << 1)));
+                }
+ }
