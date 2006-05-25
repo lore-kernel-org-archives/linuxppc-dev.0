@@ -2,19 +2,19 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 57DD867A44
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 22:37:17 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 3182667A5B
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 22:42:00 +1000 (EST)
 Subject: Re: [snd] looking for layout-ids
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jefyiy9tds.fsf@sykes.suse.de>
+To: Ken Moffat <zarniwhoop@ntlworld.com>
+In-Reply-To: <20060525123247.GA19308@deepthought.linux.bogus>
 References: <1148553785.11759.12.camel@johannes.berg>
-	<jefyiy9tds.fsf@sykes.suse.de>
+	<20060525123247.GA19308@deepthought.linux.bogus>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-djb3U3C28w9W7pQljgwZ"
-Date: Thu, 25 May 2006 14:37:00 +0200
-Message-Id: <1148560620.11759.20.camel@johannes.berg>
+	boundary="=-nf6CIXKP3+RMXhF7BII+"
+Date: Thu, 25 May 2006 14:41:48 +0200
+Message-Id: <1148560908.11759.25.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	debian-powerpc <debian-powerpc@lists.debian.org>
@@ -28,57 +28,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-djb3U3C28w9W7pQljgwZ
+--=-nf6CIXKP3+RMXhF7BII+
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
+Hey,
 
-> > In order to replace snd-powermac for the newer machines where the
-> > 'sound' node has the 'layout-id' property, I'm looking for testers on
-> > machines that have a layout-id [1] property with one of the following
-> > values: 0x24
->=20
-> That would be mine, but it has the problem of the broken device tree, so
-> i2sbus doesn't work yet.
+>  How about 0x3c and 0x3d (PowerMac9,1) ?  I can't see anything in
+> snd-aoa-fabric-layout that matches 60 or 61.  I last tried to play
+> with this a few weeks ago, but gave up with what I assumed were
+> config problems (undefined symbols) and had too many other things to
+> get on with.
 
-Ah, right. I'll have to check with Ben a bit more when he comes back. He
-seemed to have half of a plan ;)
+undefined symbols are usually because alsa isn't configured, or snd-pcm
+isn't loaded.
 
-> > [2] Before you ask: I will not do this before snd-aoa supports headphon=
-e
-> > detection :)
->=20
-> Another important feature would be DRC, IMHO.
+>  Certainly, this is one of the machines where loading snd-powermac
+> is catastrophic.
 
-Yeah, I guess, but that's only doable with the tas codec. I don't think
-it's hard, if anyone wnats to try: the tas datasheet is in my
-repository, and all you need to do is modify the tas codec to show the
-controls for that. Could also use some bass/treble controls.
+Catastrophic? How so? Anyway, I don't care much :)
 
-If we want DRC even for the other machines, that's an alsa userspace
-thing since it needs a soft-DSP then.
+Anyway, if you want to give it a spin, try the latest snd-aoa (see
+http://johannes.sipsolutions.net/Projects/snd-aoa/ for a description).
+It should report an unknown layout, which are those two ones you
+described above. I think you probably have a tas and topaz combination,
+so if you get i2sbus to load, I might be able to give you a patch to
+test.
 
 johannes
 
---=-djb3U3C28w9W7pQljgwZ
+--=-nf6CIXKP3+RMXhF7BII+
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARHWk6qVg1VMiehFYAQKWRQ/+PBxBrw9UdiSYB/aaVPU+98fGCdE4cj4V
-upIypoWRsuOhJXDqB35Sy63eZtUcpG5EOc/FNI6vmnixlc5m1p1wOqEITMkfAXB5
-/dB30VzVgicWmZKushqIR9guxezHEG/huA1uInfmDWBPex3e2T3VTu6CvK4lRfdP
-58XwK3mB/kSsj2y/iyqsFuJ06DhLwNDAho71eeywlSkr2iABYU7jIOJdmnOm1ah/
-t0icoaJsZFo/VtPVvK4dIdPLC2r8/CxrghmqRDQyeAZCuhLQw6rgnOFtFLFobl2Z
-V2UqI3K6x7OdJfnz9iP9oRjJMbrtKga84sBdYQgAB0/RqGb255X017h8MoN2ghgm
-ecPgl9s9txJ9NHdnfSz1FfvQRgHInGFpJz2B9b0+x2VDsU6E1RGML69C36ln1vMc
-oo1RfOvnhLzxw2yrFjgZivSPG92uzBZykxViDXD0IK1HnWdb1qLpSO024s/r4IFe
-JHvLwcejhTHVBVM3AYM6qKf/vO4IHSah7xdo9l5/d+tMhAlokOt3r1buzDziyoBn
-exzMCnHUKQUCEMQkwX0DqGliZmgo5M4RdxIqQEQ5j5CeWg4WS2SItLsMDb+jh1Xv
-55tt1WNi2K2IQ5chXKVXZQDgfR9rzD9wMkcMRU+cmaqhZDjdlxZk2SFffb8ORbyr
-UE2jTt7R7W8=
-=MuSt
+iQIVAwUARHWmCqVg1VMiehFYAQIe0hAAs8KzS4XK0nrURGAmTWGyZidYUuFst5Xd
+FjNea0fRM7P1Hyh9I9D3SZ/Gz3YiqLT6vVbkHL7GdsEslaIgVluEHUifYqyVnZTh
+fDKdJ0MqL/zEKExT1pl0bnbpnSjAiqqWJ5mken1so86V6iYHH1ypfQIK07HLSJR/
+QpUjqYFpsHL7Gf9xyjGkUjPEXgRkNNbBrPA/bmbqallB7tCsXxnkVBl9CupR7Kij
+3tYLNqyksY6GhNeR8bX/jtCLtFQy5aVDyohfiaoo1UedQz5DZJXyOTOVEcNUzasy
+9QruijoxpvnugEEONDnM3ub0jFJ0auqL4OqopKvtXE+5tEgTQQYkBjfejQ7HwNBR
+jJZwNZQ++PnZ+NBi+C+v4vGOjkQn5fVoL442juTKrbG0XIHtZxEM2XIxOd+8YK8Q
+ub4BTUdvelPiHqV0ddS2jfxcGYtjQgQkqImgXA7ECGtLH4VIBEBNh0l1okMGRZIz
+NNmHwa/46yv3uGSzOtWGfrk/vIcH5LnRWlZnOWKcBJbAGHL8MJGZucS1k3IFY9wL
+Gim86j3Aic4npWpAgsP5EieB4z+VdUek5h0cKg/nu60TuKmws/8w1imocU5a08O/
+UnwG6Hb4idyxBzhLj55k+jgnpBh3mgeUUJ9cWEJ83rFW7QLksStkI78liLufn7pJ
+UAlzFvsh9xQ=
+=azfW
 -----END PGP SIGNATURE-----
 
---=-djb3U3C28w9W7pQljgwZ--
+--=-nf6CIXKP3+RMXhF7BII+--
