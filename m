@@ -1,17 +1,18 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from hotmail.com (bay110-f38.bay110.hotmail.com [65.54.229.48])
-	by ozlabs.org (Postfix) with ESMTP id 1B18767A41
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 May 2006 08:32:40 +1000 (EST)
-Message-ID: <BAY110-F38031F97902F021D52A669B2980@phx.gbl>
-In-Reply-To: <689CB232690D8D4E97DA6C76DA098E6C025946F6@XCO-EXCHVS1.xlnx.xilinx.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: rick.moleres@xilinx.com
-Subject: RE: question about linux with Xilinx ML-403
-Date: Wed, 24 May 2006 22:32:35 +0000
+Return-Path: <Phil.Nitschke@avalon.com.au>
+Subject: Re: pmppc7448/mv64x60 DMA from PCI to memory
+From: Phil Nitschke <Phil.Nitschke@avalon.com.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20060524205216.GB11130@mag.az.mvista.com>
+References: <1148395804.21475.53.camel@toby.int.avalon.com.au>
+	<20060523235449.GB1536@mag.az.mvista.com>
+	<1148437434.4876.64.camel@lamorak.int.avalon.com.au>
+	<20060524205216.GB11130@mag.az.mvista.com>
+Content-Type: text/plain
+Date: Thu, 25 May 2006 09:51:24 +0930
+Message-Id: <1148516484.4876.90.camel@lamorak.int.avalon.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Cc: linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+Reply-To: Phil.Nitschke@avalon.com.au
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,116 +23,79 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Rick,
-Yes. I have downloaded the linuxppc-2.4 kernel. There is really the temac 
-support. Thanks a lot for your information. 
+On Wed, 2006-05-24 at 13:52 -0700, Mark A. Greer wrote:
+> On Wed, May 24, 2006 at 11:53:54AM +0930, Phil Nitschke wrote:
+> > On Tue, 2006-05-23 at 16:54 -0700, Mark A. Greer wrote:
+> > 
+> > > You say that you don't see any PCI traffic.  Does that mean you
+> > > have a PCI analyzer and that you are sure that its set up correctly?
+> > 
+> > I don't have a PCI analyzer, however the JTAG used to program the PCI
+> > device has been configured to display 4 K samples of PCI bus signals
+> > (about 20 microsecs?) around the time of an interrupt which results in
+> > the DMA being requested.  Since my last post, I have managed to see some
+> > traffic, but the PCI STOP# line is asserted, so I'm not seeing any data
+> > being read.  I'll investigate further...
 
-Also. MontaVista will release the pro 4.0 based on 2.6 in the end of this 
-month. I think in this version, Temac will be included. Temac will be more 
-popularly supported in the following versions, I think. 
+It turns out that the PCI device firmware was not responding correctly
+to MRL and MRM (memory read multiple) PCI commands, but was working for
+MR... Fixed now, and DMA from PCI is working.  Just looking at byte
+order today.
 
-Regards
-Ming
+> > OK.  I also note there are several cases where this is used in
+> > mv64x60.c:
+> > 
+> >         for (i=0; i<3; i++)
+> > 
+> > Why is 3 used in these loops, and not some other constant like
+> > MV64360_xxxxx_WINDOWS (which are usually 4, not 3)?
+> 
+> Different things.  The "i<3;" are when looping through windows that are 
+> related to a struct pci_controller's mem_resource.
 
+OK.
 
->From: "Rick Moleres" <rick.moleres@xilinx.com>
->To: "Ming Liu" <eemingliu@hotmail.com>,   "rick.moleres" 
-<rick.moleres@xilinx.com>
->CC: <linuxppc-embedded@ozlabs.org>
->Subject: RE: question about linux with Xilinx ML-403
->Date: Wed, 24 May 2006 12:52:02 -0600
->
->
->Ming,
->
->Another option for you may be to get MontaVista's latest linuxppc-2.4 
-kernel tree from source.mvista.com (using rsync), which I believe has the 
-xilinx_gige directory and menuconfig entries.
->
->-Rick
->
->-----Original Message-----
->From: Ming Liu [mailto:eemingliu@hotmail.com]
->Sent: Wednesday, May 24, 2006 12:36 PM
->To: rick.moleres
->Cc: linuxppc-embedded@ozlabs.org
->Subject: RE: question about linux with Xilinx ML-403
->
->Dear Rick,
->OK. I will try that. However I cannot promise to finish this very soon
->because I am a novice. :) I will let you know if there is any result.
->
->Thanks for your method.
->
->BR
->Ming
->
->
-> >From: "Rick Moleres" <rick.moleres@xilinx.com>
-> >To: "Ming Liu" <eemingliu@hotmail.com>,   "rick.moleres"
-><rick.moleres@xilinx.com>
-> >CC: <linuxppc-embedded@ozlabs.org>
-> >Subject: RE: question about linux with Xilinx ML-403
-> >Date: Wed, 24 May 2006 10:25:10 -0600
-> >
-> >
-> >
-> >Ming,
-> >
-> >
-> >
-> >
-> >
-> > >Our best recommendation is to use the drivers/net/xilinx_enet 
-directory
-> >
-> > >for the temac driver and just enable the Xilinx 10/100 Ethernet in
-> >
-> > >menuconfig.
-> >
-> >
-> >
-> >I am not so clear with this. Do you mean that I just copy the source
-> >code
-> >
-> >in the directory of xilinx_gige generated by EDK into the directory of
-> >
-> >xilinx_enet in linux2.4.20, and then enable the Xilinx 10/100 ethernet
-> >in
-> >
-> >the menuconfig? Can this method realize the 1000M ethernet? The source
-> >code
-> >
-> >file names for Temac (xtemac_xxx.c or .h) are different with the ones
-> >for
-> >
-> >emac (xemac_xxx.c or .h). Can the xtemac files be recognized by the
-> >linux
-> >
-> >kernel?
-> >
-> >
-> >
-> >Right - you would need to copy the xtemac* files and the Makefile over,
-> >and would have to change the Makefile to make sure it produces
-> >xilinx_enet.o instead of xilinx_gige.o.  We haven't tried this, but we
-> >don't think there's any reason this shouldn't work.  Can you let us know
-> >how it goes?
-> >
-> >
-> >
-> >
-> >
-> >
-> >
-> >
-> >
->
->_________________________________________________________________
->免费下载 MSN Explorer:   http://explorer.msn.com/lccn/
->
->
->
+> > > > Do I need to add
+> > > >         tests to my source and destination regions, to determine if they
+> > > >         cross one of the 512 MB regions, and hence will require a
+> > > >         different CSx line (and thus the DMA will need to be broken into
+> > > >         two transactions), or does kernel already take care to ensure
+> > > >         allocated regions will not cross these boundaries?
+> > > 
+> > > No.  You need to do what's appropriate for the hardware that you are
+> > > essentially writing a driver for.  YOU are supposed to know what the
+> > > limitations of your hardware are.  
+> > 
+> > OK, I know how my hardware is configured, but when trying to write a
+> > generic driver, perhaps I need to have the mv64x60.c code remember the
+> > CSx barriers, e.g. in the mv64x60_chip_info, so the IDMA engine can
+> > access it.  Do you think this would be possible/beneficial?
+> 
+> No.  Just set up and enable an IDMA window to access all of pci mem space
+> and be done with it.
 
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+No, this is different.  The patch I posted does map all the PCI mem
+space as you've suggested.  The problem I'm trying to avoid is if the
+IDMA engine tries to transfer data from this PCI mem region into a
+buffer that crosses one of the DRAM address windows (and hence uses
+different CSn lines).  Then the transfer needs to be broken into two
+separate DMAs.  But if this information is not stored in the chip info,
+how is the DMA driver to know where the memory boundaries are (except by
+reading the already programmed windows and deducing these boundaries)?
+
+> I didn't go through this in great detail but it looks like you have
+> the right idea (IMHO).  Although, I don't know why you didn't just
+> use windows 4-7 for the idma->pci mappings and leave the idma->mem code
+> alone.
+
+Two reasons (however flaky).  The lower 4 windows have an upper 32-bit
+address register, so it is better to leave these for users (lucky
+bastards!) that have more than 4 GB address space.  Secondly, the IDMA
+supports the address override feature (which I was trying to use in
+desperation when nothing was working for me), wherein the transaction
+target interface, attributes and upper 32-bit address are taken from
+BAR1, BAR2 or BAR3.  So I thought it would be better to leave these
+alone.
+
+-- 
+Phil
