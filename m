@@ -1,24 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AACAA67A76
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 15:54:13 +1000 (EST)
-Subject: Re: [Fwd: Re: via-pmu runs device_power_down in atomic context]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-In-Reply-To: <1148535984.13249.253.camel@localhost.localdomain>
-References: <1148531830.13249.237.camel@localhost.localdomain>
-	<20060524215917.230af218.akpm@osdl.org>
-	<1148534398.13249.246.camel@localhost.localdomain>
-	<20060524223658.6fc797f5.akpm@osdl.org>
-	<1148535984.13249.253.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 25 May 2006 15:53:56 +1000
-Message-Id: <1148536437.13249.262.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net,
-	stern@rowland.harvard.edu, cpufreq@lists.linux.org.uk
+Return-Path: <eddy.petrisor@gmail.com>
+Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.180])
+	by ozlabs.org (Postfix) with ESMTP id 4F30267A42
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 17:27:47 +1000 (EST)
+Received: by py-out-1112.google.com with SMTP id c39so2343515pyd
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 00:27:46 -0700 (PDT)
+Message-ID: <60381eeb0605250021t17ff3299l74fc59993c683306@mail.gmail.com>
+Date: Thu, 25 May 2006 10:21:12 +0300
+From: "=?UTF-8?Q?Eddy_Petri=C5=9For?=" <eddy.petrisor@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>,
+	"linuxppc-dev list" <linuxppc-dev@ozlabs.org>,
+	debian-powerpc <debian-powerpc@lists.debian.org>
+Subject: Re: snd-aoa status update / automatic driver loading
+In-Reply-To: <20060523154137.GA3205@spring.luon.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <1147860564.14395.6.camel@johannes>
+	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
+	<1147947784.15507.46.camel@johannes>
+	<87wtcirw0y.fsf@briny.internal.ondioline.org>
+	<20060523154137.GA3205@spring.luon.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,50 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-05-25 at 15:46 +1000, Benjamin Herrenschmidt wrote:
-> > This requirement to keep interrupts off in there breaks things again and
-> > again and again and again.  And this time: again.
-> 
-> Where else ?
-> 
-> If you look at this function it's _designed_ for interrupts off ! the
-> driver suspend have the option of deferring their suspend() callback
-> until after irqs have been turned off (needed for legacy stuff afaik but
-> rarely used) and the sysdev's are very low level things whose suspend
-> and resume callbacks should be called after that point as well. 
-
-BTW. The root of the problem with cpufreq is it's upside down design :)
-Well, not all of it, but the fact that it registers a sysdev. It's not
-the "midlayer" (ugh) business to register devices and hook things like
-PM events to pass them down to actual drivers. It should be the cpufreq
-drivers themselves that attach to the device model in a way or another
-and "instanciate" the ability to control the cpu frequency, passing
-along their struct device.
-
-The driver itself should pick the right type of "device" to attach to
-(sysdev's are just weird beast and were a bad idea in the first place
-since they aren't even struct device).
-
-But then, iirc, that's because we also did the cpu stuff in sysfs upside
-down too ... :)
-
-Now, wether the cpufreq notifier might end up calling things that will
-sleep or not ... hrm... that's an interesting issue. Part of the problem
-is that because cpufreq is a sysdev, it will be called so late in the
-suspend process, pretty much everything else is asleep. So I'm quite
-confident that things attaching to the cpufreq notifiers other than bits
-of cpufreq itself are likely to break anyway. Is it documented anywhere
-that registering a cpufreq notifier might cause it to be called in
-atomic context or very later in the suspend process (possibly after the
-interrupt controller hs been put down) ?
-
-Yes it's messy, no I don't have a miracle solution, but I think here the
-proper way to fix it in the long run is for cpufreq not to be a sysdev
-or anything like that and to stop trying to do the suspend/resume thing
-for the drivers. Drivers are in charge, they get to create the device of
-whatever type it is and get the suspend/resume events whenever they are
-sent. cpufreq can then provide maybe "helpers" to help work out what to
-do at suspend and/or resume time but with the knowledge that for some
-drivers maybe, this will happen in atomic context.
-
-Ben.
+T24gNS8yMy8wNiwgU2pvZXJkIFNpbW9ucyA8c2pvZXJkQHNwcmluZy5sdW9uLm5ldD4gd3JvdGU6
+Cj4gT24gRnJpLCBNYXkgMTksIDIwMDYgYXQgMTE6MjA6MjlQTSArMTAwMCwgUGF1bCBDb2xsaW5z
+IHdyb3RlOgo+ID4gSm9oYW5uZXMgQmVyZyA8am9oYW5uZXNAc2lwc29sdXRpb25zLm5ldD4gd3Jp
+dGVzOgo+ID4KPiA+ID4gT24gVGh1LCAyMDA2LTA1LTE4IGF0IDEwOjI1ICswMzAwLCBFZGR5IFBl
+dHJpPz9vciB3cm90ZToKPiA+ID4KPiA+ID4+IEFueSBjaGFuY2UgZm9yIDUsMiA/IFdoYXQgaXMg
+bmVlZGVkIGZvciBpdD8gQ29kZWMgb25seT8KPiA+ID4KPiA+ID4gSSBkb24ndCBrbm93LiBJZiB5
+b3UgdHJ5IGxvYWRpbmcgdGhlIG1vZHVsZXMsIHRoZSBrZXJuZWwgd2lsbCB0ZWxsIHlvdQo+ID4g
+PiBzb21ldGhpbmcgYWJvdXQgYW4gdW5oYW5kbGVkIGxheW91dCBpZC4gQWx0ZXJuYXRpdmVseSwg
+eW91IGNhbiBmaW5kIHRoZQo+ID4gPiBsYXlvdXQtaWQgZmlsZSBpbiB5b3VyIC9wcm9jL2Rldmlj
+ZS10cmVlLyBhbmQgdGVsbCBtZSB0aGUgbnVtYmVyIGluIGl0Lgo+ID4gPiBUaGUgcmVzdCBJIGNh
+biBmaWd1cmUgb3V0Lgo+Cj4gSSB3YW50ZWQgdG8gdGVzdCBvbiBteSBQb3dlckJvb2s1LDIuIFVo
+Zm9ydHVuYXRlbHkgaSBjYW4ndCBmaW5kIG5vIGxheW91dC1pZAo+IGZpbGUgZm9yIHRoZSBzb3Vu
+ZCBkZXZpY2Ugb3IgYW55IG90aGVyIGxheW91dC1pZCBmaWxlIGZvciB0aGF0IG1hdHRlcjoKClNh
+bWUgbWFjaGluZSBoZXJlOyBJIGhhdmUgY2xvbmVkIHRoZSBhb2EgcmVwbyBhbmQgIm1hZGUiIGl0
+LgpJbnNtb2QgZGlkbid0IHdvcmsgb24gYW55IG90aGVyIG1vZHVsZSBidXQgdGhlIHRoZSBzb3Vu
+ZGJ1cywgYW5kCnJlc3VsdGVkIGluIGEgbWlzc2luZyBzeW1ib2wuCgpUaGlzIGlzIG9uIGEgMi4x
+Ni4xNyBrZXJuZWwKCgotLSAKUmVnYXJkcywKRWRkeVAKPT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09CiJJbWFnaW5hdGlvbiBpcyBtb3JlIGltcG9ydGFudCB0aGFu
+IGtub3dsZWRnZSIgQS5FaW5zdGVpbgo=
