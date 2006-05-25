@@ -1,22 +1,17 @@
-Return-Path: <eddy.petrisor@gmail.com>
-Received: from wx-out-0102.google.com (wx-out-0102.google.com [66.249.82.199])
-	by ozlabs.org (Postfix) with ESMTP id 4D67067A44
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 03:51:57 +1000 (EST)
-Received: by wx-out-0102.google.com with SMTP id s17so652956wxc
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 10:51:56 -0700 (PDT)
-Message-ID: <60381eeb0605251044i79e155f2s62fb30b93432510e@mail.gmail.com>
-Date: Thu, 25 May 2006 20:44:54 +0300
-From: "=?UTF-8?Q?Eddy_Petri=C5=9For?=" <eddy.petrisor@gmail.com>
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Subject: Re: snd-aoa status update / automatic driver loading
-In-Reply-To: <1147947784.15507.46.camel@johannes>
+Return-Path: <stern@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+	by ozlabs.org (Postfix) with SMTP id 52C7167A45
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 03:53:53 +1000 (EST)
+Date: Thu, 25 May 2006 13:53:44 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Make cpufreq_transition_notifier a raw notifier
+In-Reply-To: <1148575497.24946.40.camel@cashmere.sps.mot.com>
+Message-ID: <Pine.LNX.4.44L0.0605251332260.8473-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-References: <1147860564.14395.6.camel@johannes>
-	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
-	<1147947784.15507.46.camel@johannes>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	johannes@sipsolutions.net, cpufreq@lists.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +21,118 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gNS8xOC8wNiwgSm9oYW5uZXMgQmVyZyA8am9oYW5uZXNAc2lwc29sdXRpb25zLm5ldD4gd3Jv
-dGU6Cj4gT24gVGh1LCAyMDA2LTA1LTE4IGF0IDEwOjI1ICswMzAwLCBFZGR5IFBldHJpxZ9vciB3
-cm90ZToKPgo+ID4gQW55IGNoYW5jZSBmb3IgNSwyID8gV2hhdCBpcyBuZWVkZWQgZm9yIGl0PyBD
-b2RlYyBvbmx5Pwo+Cj4gSSBkb24ndCBrbm93LiBJZiB5b3UgdHJ5IGxvYWRpbmcgdGhlIG1vZHVs
-ZXMsIHRoZSBrZXJuZWwgd2lsbCB0ZWxsIHlvdQo+IHNvbWV0aGluZyBhYm91dCBhbiB1bmhhbmRs
-ZWQgbGF5b3V0IGlkLiBBbHRlcm5hdGl2ZWx5LCB5b3UgY2FuIGZpbmQgdGhlCj4gbGF5b3V0LWlk
-IGZpbGUgaW4geW91ciAvcHJvYy9kZXZpY2UtdHJlZS8gYW5kIHRlbGwgbWUgdGhlIG51bWJlciBp
-biBpdC4KPiBUaGUgcmVzdCBJIGNhbiBmaWd1cmUgb3V0LgoKSSBhbSBub3Qgc3VyZSBpZiB5b3Ug
-Y2FuIG1ha2UgX25vd18gc29tZXRoaWduIG91dCBvZiB0aGlzIGluZm8sIGJ1dCBJCmd1ZXNzIHRo
-aXMgaXMgd2lsbCBub3QgaHVydDoKCmh0dHA6Ly9saXN0cy5kZWJpYW4ub3JnL2RlYmlhbi1wb3dl
-cnBjLzIwMDYvMDQvbXNnMDAwNTkuaHRtbApodHRwOi8vbGlzdHMuZGViaWFuLm9yZy9kZWJpYW4t
-cG93ZXJwYy8yMDA2LzA0L21zZzAwMDYzLmh0bWwKCi0tIApSZWdhcmRzLApFZGR5UAo9PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIkltYWdpbmF0aW9uIGlzIG1v
-cmUgaW1wb3J0YW50IHRoYW4ga25vd2xlZGdlIiBBLkVpbnN0ZWluCg==
+The cpufreq code has problems with atomic vs. blocking notifier calls and
+enabling vs. disabling interrupts (show up on pmac).  As a temporary
+band-aid, this patch (as697) makes the cpufreq_transition_notifier_list
+into a raw notifier.
+
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+
+---
+
+On Thu, 25 May 2006, Jon Loeliger wrote:
+
+> On Thu, 2006-05-25 at 09:44, Andrew Morton wrote:
+> 
+> > > In essence, the problem seemed to be that the cpufreq notifier chain is
+> > > sometimes expected to be blocking and sometimes expected to be atomic,
+> > > based on the "val" code passed to notifier_call_chain.  The cleanest
+> > > solution would be to split the single notifier chain into two chains,
+> > > one always blocking and the other always atomic.
+> > > 
+> > > Somebody who knows more about cpufreq than I do will have to make that
+> > > change.
+> > > 
+> > 
+> > I wouldn't describe the cpufreq project as a teeming hive of frenetic
+> > activity, and we need something pronto.
+> > 
+> > We could go back to a raw_notifier and be as buggy as we used to be.
+> 
+> It _is_ actively being pursued today for a cleaned up
+> implementation.  If there are issues or requirements
+> here, we should really pass them on to the linux-pm list.
+> 
+> Thanks,
+> jdl
+
+Here's the patch Andrew asked for.  I have no idea whether it will solve 
+any of these problems, and I'm certain that in the long run we shouldn't 
+keep it.  Perhaps it will at least help stabilize 2.6.17.
+
+It's up to you guys to see if the patch helps at all and to decide whether 
+or not it should be applied.
+
+Alan Stern
+
+
+Index: usb-2.6/drivers/cpufreq/cpufreq.c
+===================================================================
+--- usb-2.6.orig/drivers/cpufreq/cpufreq.c
++++ usb-2.6/drivers/cpufreq/cpufreq.c
+@@ -50,10 +50,9 @@ static void handle_update(void *data);
+  * validation process for a new CPU frequency policy; the
+  * "transition" list for kernel code that needs to handle
+  * changes to devices when the CPU clock speed changes.
+- * The mutex locks both lists.
+  */
+ static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
+-static BLOCKING_NOTIFIER_HEAD(cpufreq_transition_notifier_list);
++static RAW_NOTIFIER_HEAD(cpufreq_transition_notifier_list);
+ 
+ 
+ static LIST_HEAD(cpufreq_governor_list);
+@@ -263,14 +262,14 @@ void cpufreq_notify_transition(struct cp
+ 				freqs->old = policy->cur;
+ 			}
+ 		}
+-		blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
++		raw_notifier_call_chain(&cpufreq_transition_notifier_list,
+ 				CPUFREQ_PRECHANGE, freqs);
+ 		adjust_jiffies(CPUFREQ_PRECHANGE, freqs);
+ 		break;
+ 
+ 	case CPUFREQ_POSTCHANGE:
+ 		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+-		blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
++		raw_notifier_call_chain(&cpufreq_transition_notifier_list,
+ 				CPUFREQ_POSTCHANGE, freqs);
+ 		if (likely(policy) && likely(policy->cpu == freqs->cpu))
+ 			policy->cur = freqs->new;
+@@ -1014,7 +1013,7 @@ static int cpufreq_suspend(struct sys_de
+ 		freqs.old = cpu_policy->cur;
+ 		freqs.new = cur_freq;
+ 
+-		blocking_notifier_call_chain(&cpufreq_transition_notifier_list,
++		raw_notifier_call_chain(&cpufreq_transition_notifier_list,
+ 				    CPUFREQ_SUSPENDCHANGE, &freqs);
+ 		adjust_jiffies(CPUFREQ_SUSPENDCHANGE, &freqs);
+ 
+@@ -1095,7 +1094,7 @@ static int cpufreq_resume(struct sys_dev
+ 			freqs.old = cpu_policy->cur;
+ 			freqs.new = cur_freq;
+ 
+-			blocking_notifier_call_chain(
++			raw_notifier_call_chain(
+ 					&cpufreq_transition_notifier_list,
+ 					CPUFREQ_RESUMECHANGE, &freqs);
+ 			adjust_jiffies(CPUFREQ_RESUMECHANGE, &freqs);
+@@ -1141,7 +1140,7 @@ int cpufreq_register_notifier(struct not
+ 
+ 	switch (list) {
+ 	case CPUFREQ_TRANSITION_NOTIFIER:
+-		ret = blocking_notifier_chain_register(
++		ret = raw_notifier_chain_register(
+ 				&cpufreq_transition_notifier_list, nb);
+ 		break;
+ 	case CPUFREQ_POLICY_NOTIFIER:
+@@ -1173,7 +1172,7 @@ int cpufreq_unregister_notifier(struct n
+ 
+ 	switch (list) {
+ 	case CPUFREQ_TRANSITION_NOTIFIER:
+-		ret = blocking_notifier_chain_unregister(
++		ret = raw_notifier_chain_unregister(
+ 				&cpufreq_transition_notifier_list, nb);
+ 		break;
+ 	case CPUFREQ_POLICY_NOTIFIER:
