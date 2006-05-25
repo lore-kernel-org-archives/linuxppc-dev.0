@@ -1,18 +1,17 @@
-Return-Path: <Phil.Nitschke@avalon.com.au>
-Subject: Re: pmppc7448/mv64x60 DMA from PCI to memory
-From: Phil Nitschke <Phil.Nitschke@avalon.com.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <20060524205216.GB11130@mag.az.mvista.com>
-References: <1148395804.21475.53.camel@toby.int.avalon.com.au>
-	<20060523235449.GB1536@mag.az.mvista.com>
-	<1148437434.4876.64.camel@lamorak.int.avalon.com.au>
-	<20060524205216.GB11130@mag.az.mvista.com>
-Content-Type: text/plain
-Date: Thu, 25 May 2006 09:51:24 +0930
-Message-Id: <1148516484.4876.90.camel@lamorak.int.avalon.com.au>
-Mime-Version: 1.0
-Cc: linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
-Reply-To: Phil.Nitschke@avalon.com.au
+Return-Path: <hangtoo@163.com>
+Received: from m13-85.163.com (m13-85.163.com [220.181.13.85])
+	by ozlabs.org (Postfix) with SMTP id 4759167A42
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 25 May 2006 17:26:15 +1000 (EST)
+MIME-Version: 1.0
+Message-ID: <44755859.0000CD.04146@bj163app85.163.com>
+Date: Thu, 25 May 2006 15:10:17 +0800 (CST)
+From: "hangtoo" <hangtoo@163.com>
+To: "li yang-r58472" <leoli@freescale.com>
+Subject: Re: RE: delay programming
+Content-Type: Multipart/Alternative;
+	boundary="Boundary-=_PlqGWezynSiVDAfNzPRfMipmAPIP"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,79 +22,110 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-05-24 at 13:52 -0700, Mark A. Greer wrote:
-> On Wed, May 24, 2006 at 11:53:54AM +0930, Phil Nitschke wrote:
-> > On Tue, 2006-05-23 at 16:54 -0700, Mark A. Greer wrote:
-> > 
-> > > You say that you don't see any PCI traffic.  Does that mean you
-> > > have a PCI analyzer and that you are sure that its set up correctly?
-> > 
-> > I don't have a PCI analyzer, however the JTAG used to program the PCI
-> > device has been configured to display 4 K samples of PCI bus signals
-> > (about 20 microsecs?) around the time of an interrupt which results in
-> > the DMA being requested.  Since my last post, I have managed to see some
-> > traffic, but the PCI STOP# line is asserted, so I'm not seeing any data
-> > being read.  I'll investigate further...
 
-It turns out that the PCI device firmware was not responding correctly
-to MRL and MRM (memory read multiple) PCI commands, but was working for
-MR... Fixed now, and DMA from PCI is working.  Just looking at byte
-order today.
+--Boundary-=_PlqGWezynSiVDAfNzPRfMipmAPIP
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
-> > OK.  I also note there are several cases where this is used in
-> > mv64x60.c:
-> > 
-> >         for (i=0; i<3; i++)
-> > 
-> > Why is 3 used in these loops, and not some other constant like
-> > MV64360_xxxxx_WINDOWS (which are usually 4, not 3)?
+hi,
+    yes,you are right.the usleep didn't give out accurate delay.so I make a delay funtion to fix it.
+   thank you for you help.:)
+regards
+tony
+ 
+
+
+That depends on how accurate you want.  Sleep() functions can't be too accurate 
+for Linux schedule characteristic.  To get best accuracy, you can use hardware
+timer.  udelay() is a choice which reduces the overall system performance.
+
+Best Regards,
+Leo
+
+
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org] On Behalf
+> Of tony
+> Sent: Wednesday, May 24, 2006 5:24 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: delay programming
 > 
-> Different things.  The "i<3;" are when looping through windows that are 
-> related to a struct pci_controller's mem_resource.
-
-OK.
-
-> > > > Do I need to add
-> > > >         tests to my source and destination regions, to determine if they
-> > > >         cross one of the 512 MB regions, and hence will require a
-> > > >         different CSx line (and thus the DMA will need to be broken into
-> > > >         two transactions), or does kernel already take care to ensure
-> > > >         allocated regions will not cross these boundaries?
-> > > 
-> > > No.  You need to do what's appropriate for the hardware that you are
-> > > essentially writing a driver for.  YOU are supposed to know what the
-> > > limitations of your hardware are.  
-> > 
-> > OK, I know how my hardware is configured, but when trying to write a
-> > generic driver, perhaps I need to have the mv64x60.c code remember the
-> > CSx barriers, e.g. in the mv64x60_chip_info, so the IDMA engine can
-> > access it.  Do you think this would be possible/beneficial?
 > 
-> No.  Just set up and enable an IDMA window to access all of pci mem space
-> and be done with it.
+> hi all
+> 	I want to delay 1ms in the program,
+> 	does usleep(1000) works accurate?
+> 	any good idea?
+> 
+> regards
+> tony
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-No, this is different.  The patch I posted does map all the PCI mem
-space as you've suggested.  The problem I'm trying to avoid is if the
-IDMA engine tries to transfer data from this PCI mem region into a
-buffer that crosses one of the DRAM address windows (and hence uses
-different CSn lines).  Then the transfer needs to be broken into two
-separate DMAs.  But if this information is not stored in the chip info,
-how is the DMA driver to know where the memory boundaries are (except by
-reading the already programmed windows and deducing these boundaries)?
+--Boundary-=_PlqGWezynSiVDAfNzPRfMipmAPIP
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
 
-> I didn't go through this in great detail but it looks like you have
-> the right idea (IMHO).  Although, I don't know why you didn't just
-> use windows 4-7 for the idma->pci mappings and leave the idma->mem code
-> alone.
+<DIV>hi,</DIV>
+<DIV>&nbsp;&nbsp;&nbsp; yes,you are right.the usleep didn't give out accu=
+rate delay.so I make a delay funtion to fix it.</DIV>
+<DIV>&nbsp;&nbsp; thank you for you help.:)</DIV>
+<DIV>regards</DIV>
+<DIV>tony</DIV>
+<DIV>&nbsp;</DIV>
+<DIV><BR><BR><PRE style=3D"WIDTH: 100%; WORD-WRAP: break-word">That depen=
+ds on how accurate you want.  Sleep() functions can't be too accurate=20
+for Linux schedule characteristic.  To get best accuracy, you can use har=
+dware
+timer.  udelay() is a choice which reduces the overall system performance=
+=2E
 
-Two reasons (however flaky).  The lower 4 windows have an upper 32-bit
-address register, so it is better to leave these for users (lucky
-bastards!) that have more than 4 GB address space.  Secondly, the IDMA
-supports the address override feature (which I was trying to use in
-desperation when nothing was working for me), wherein the transaction
-target interface, attributes and upper 32-bit address are taken from
-BAR1, BAR2 or BAR3.  So I thought it would be better to leave these
-alone.
+Best Regards,
+Leo
 
--- 
-Phil
+
+&gt; -----Original Message-----
+&gt; From: linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org
+&gt; [<A href=3D"mailto:linuxppc-embedded-bounces+leoli=3Dfreescale.com@o=
+zlabs.org" target=3D_new>mailto:linuxppc-embedded-bounces+leoli=3Dfreesca=
+le.com@ozlabs.org</A>] On Behalf
+&gt; Of tony
+&gt; Sent: Wednesday, May 24, 2006 5:24 PM
+&gt; To: linuxppc-embedded@ozlabs.org
+&gt; Subject: delay programming
+&gt;=20
+&gt;=20
+&gt; hi all
+&gt; =09I want to delay 1ms in the program,
+&gt; =09does usleep(1000) works accurate?
+&gt; =09any good idea?
+&gt;=20
+&gt; regards
+&gt; tony
+&gt;=20
+&gt;=20
+&gt; _______________________________________________
+&gt; Linuxppc-embedded mailing list
+&gt; Linuxppc-embedded@ozlabs.org
+&gt; https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+</PRE><!-- CoreMail Version 2.5 Copyright (c) 2002-2006 www.mailtech.cn -=
+-></DIV><br><!-- footer --><br><br><br><br><br><div style=3D"border-botto=
+m:1px solid #999"></div><br>
+
+=09<font color=3D"black" style=3D"font-size:14.8px">=C4=E3 =B2=BB =CF=EB =
+=CA=D4 =CA=D4 =BD=F1 =CF=C4 =D7=EE =A1=B0=BF=E1=A1=B1 =B5=C4 =D3=CA =CF=E4=
+ =C2=F0 =A3=BF</font>
+=09<br>
+=09 <a href=3D"http://www.126.com/" target=3D"_blank" style=3D"font-size:=
+13px;line-height:160%;color:blue">=D4=CC =BA=AD =D6=D0 =BB=AA =B4=AB =CD=B3=
+ =CE=C4 =BB=AF =D3=DA =CA=C0 =BD=E7 =D2=BB =C1=F7 =BF=C6 =BC=BC =D6=AE =D6=
+=D0=A3=AC=B4=B4 =D0=C2 Ajax =BC=BC =CA=F5=A3=AC126 =A1=B0D =BC=C6 =BB=AE=A1=
+=B1=BB=F0 =C8=C8 =CC=E5 =D1=E9 =D6=D0 =A3=A1
+</a>
+
+
+--Boundary-=_PlqGWezynSiVDAfNzPRfMipmAPIP--
