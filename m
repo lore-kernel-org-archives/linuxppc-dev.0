@@ -2,22 +2,24 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 98A1B67A63
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 04:44:05 +1000 (EST)
-Subject: Re: [PATCH] Make cpufreq_transition_notifier a raw notifier
+	by ozlabs.org (Postfix) with ESMTP id 3DDB567A63
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 04:47:58 +1000 (EST)
+Subject: Re: snd-aoa status update / automatic driver loading
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-In-Reply-To: <Pine.LNX.4.44L0.0605251332260.8473-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0605251332260.8473-100000@iolanthe.rowland.org>
+To: Eddy =?iso-8859-2?Q?Petri=BAor?= <eddy.petrisor@gmail.com>
+In-Reply-To: <60381eeb0605251044i79e155f2s62fb30b93432510e@mail.gmail.com>
+References: <1147860564.14395.6.camel@johannes>
+	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
+	<1147947784.15507.46.camel@johannes>
+	<60381eeb0605251044i79e155f2s62fb30b93432510e@mail.gmail.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-tGfjN9Jh4zUGpPv1rte4"
-Date: Thu, 25 May 2006 20:41:29 +0200
-Message-Id: <1148582489.11759.42.camel@johannes.berg>
+	boundary="=-5lKv6B1jfNA1HEhMNqSe"
+Date: Thu, 25 May 2006 20:47:46 +0200
+Message-Id: <1148582866.11759.45.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	cpufreq@lists.linux.org.uk
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,45 +30,49 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-tGfjN9Jh4zUGpPv1rte4
-Content-Type: text/plain
+--=-5lKv6B1jfNA1HEhMNqSe
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2006-05-25 at 13:53 -0400, Alan Stern wrote:
-
-> Here's the patch Andrew asked for.  I have no idea whether it will solve=20
-> any of these problems, and I'm certain that in the long run we shouldn't=20
-> keep it.  Perhaps it will at least help stabilize 2.6.17.
+On Thu, 2006-05-25 at 20:44 +0300, Eddy Petri=C5=9For wrote:
+> On 5/18/06, Johannes Berg <johannes@sipsolutions.net> wrote:
+> > On Thu, 2006-05-18 at 10:25 +0300, Eddy Petri=C5=9For wrote:
+> >
+> > > Any chance for 5,2 ? What is needed for it? Codec only?
+> >
+> > I don't know. If you try loading the modules, the kernel will tell you
+> > something about an unhandled layout id. Alternatively, you can find the
+> > layout-id file in your /proc/device-tree/ and tell me the number in it.
+> > The rest I can figure out.
 >=20
-> It's up to you guys to see if the patch helps at all and to decide whethe=
-r=20
-> or not it should be applied.
+> I am not sure if you can make _now_ somethign out of this info, but I
+> guess this is will not hurt:
 
-Maybe I should note that I don't actually have seen any problems because
-of this, the kernel just warns about it. I guess that's because the
-semaphore won't ever actually be contended at that point.
+Hrm, I keep forgetting that you don't have a layout-id property... I
+need to sort some things, been doing so much other stuff that I lost
+track. Sorry.
 
 johannes
 
---=-tGfjN9Jh4zUGpPv1rte4
+--=-5lKv6B1jfNA1HEhMNqSe
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARHX6VqVg1VMiehFYAQL6JRAAorE3YEO4n3oKutCXO4RvksGYJ6uPmKx7
-/TSPrkR4/iBfh2Wu5NQX7MisGBmEASEoFD2nEQVOY2xs65G0wI5vG3YAM8C35SKG
-9vUZRXbXUDlYuBiCSo9ACxFMsl5qTV1IhMaZLjtcyDrihDBOJq0msLErvCZb3mPc
-FOTBf27B3EatrM+HFXyrDbiqNQMlCNOJ2ixqmlvAKfyXttj6lFXMgcYhLTxw1yeD
-pMRRiyM6aI01dlRaMQ1h2rGMcVitXXC23Nuf2WO+CONj5jWX2punOIhjhkTu+SRc
-udY4mq0V/VH4DRA1ppqKJAkuycRkUXvzNi8qpTB20ZMn8MWcAQNW3m/OyOPxO1Ug
-bHQ3mH4Sw3XQ21sE+g72GQ3V6TTfdmNz1M/iw65BrGbmDAm5XAJiHobuxXHdKc7m
-/eafmWrFstyLS+bk3RxSmfy4Xijd7f93ZJlReAw+Gag2dLY15t0lO4kMRtuHqeom
-cbbng6TJ0whUk94kKi5+oH6t2KKJYu4BrFM6Hhg9g4ce2SoYhTedzYBAA0mldrh/
-u8Jiz80ZZRVs6WXpMtA5bCllVWvrDH/9ayyYf7zdCPYNdKugCk61i/x3GwBCaVjI
-EpHxgcW6V167f6ChnvhpEmLoydDG70MJ8sVbZngKLRsUMju6+GRvARJvUHDqNqTj
-XV8v/3H3OmM=
-=r/jT
+iQIVAwUARHX70KVg1VMiehFYAQJbmw/+ImSlR9tEx0UEktXBjWixe/QWjEqZibQU
+Iudy//pG0ws0KzZ27A5Qa+1TZ1LsIDb45nGiuZ7rLpKF7op3fc+2vr1uTXhqkElh
+eeRL+TVFE1lMOSZi6SoXgdSH9wwtHvHGz0i0c5pw0QpSRfQ2cWhgzP3dy5o2WnKe
+YmAOT9yMiCy2U7EaaSCyiP8grGvnI779Gm1FA3pgpJ7AJmeA5/GpJK+MslJF5vbB
+J0IF41EBw9oniOwLCcoD/QJ6epPoQLQBjQTBbRVOyFx3g4T60HS/I697ZKpADkUI
+UWoaa3htS93i7p2ngogfDnTsRY+O5/CZBbKCkFRLQlXnOdLDsvNkeB9dUHDIPL8N
+wWt0QQvz+KQea6AjbVoYZL+r3blTAFOrAOZMsLnoQ612Qk9Q0J7FNsGTNT2BSkcE
+HnzTjUoes1dBCFsaRVDNfTIaY6+Tbp4nzHbUL9oe4NtMcocmuOa2k3VjDC11as3z
+XceCNwJ948bM86NU9KbiRyb3TNNh6Yz7sPYwkJ2HDma0tbAdo4UBsa+bIqQIZr1J
+uXZVUBcJp+OnE534rHTPTJh8R6+4x5ezoD1qMJq40ke8mrDLTvBL6jZ4TYZVDPId
+7JzbmStmfuMc6/nLkvIBBabIWNhBowK751wT06y9nzJBbWlzi2lEsdM6bYgFpXMk
+tOm/DvMXC1k=
+=+ClE
 -----END PGP SIGNATURE-----
 
---=-tGfjN9Jh4zUGpPv1rte4--
+--=-5lKv6B1jfNA1HEhMNqSe--
