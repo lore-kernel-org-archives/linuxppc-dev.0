@@ -1,25 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 94DD867AC7
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 18:00:24 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 33B1967A41
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 19:43:28 +1000 (EST)
 Subject: Re: snd-aoa status update / automatic driver loading
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1148463777.11734.19.camel@johannes>
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Eddy =?iso-8859-2?Q?Petri=BAor?= <eddy.petrisor@gmail.com>
+In-Reply-To: <60381eeb0605250021t17ff3299l74fc59993c683306@mail.gmail.com>
 References: <1147860564.14395.6.camel@johannes>
-	<446B721D.8020203@gentoo.org>  <1148034127.15507.178.camel@johannes>
-	<1148169389.13249.44.camel@localhost.localdomain>
-	<1148280172.6228.79.camel@johannes.berg>
-	<1148422544.13249.96.camel@localhost.localdomain>
-	<1148463777.11734.19.camel@johannes>
-Content-Type: text/plain
-Date: Thu, 25 May 2006 18:00:03 +1000
-Message-Id: <1148544004.13249.270.camel@localhost.localdomain>
+	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
+	<1147947784.15507.46.camel@johannes>
+	<87wtcirw0y.fsf@briny.internal.ondioline.org>
+	<20060523154137.GA3205@spring.luon.net>
+	<60381eeb0605250021t17ff3299l74fc59993c683306@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-dkSA1VzUQuWNBTVvERCh"
+Date: Thu, 25 May 2006 11:43:19 +0200
+Message-Id: <1148550200.11759.2.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Benjamin Berg <benjamin@sipsolutions.net>,
 	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,31 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-05-24 at 11:42 +0200, Johannes Berg wrote:
-> On Wed, 2006-05-24 at 08:15 +1000, Benjamin Herrenschmidt wrote:
-> > > Right, that's how snd-powermac does it. It has the nasty side-effect of
-> > > polluting the cache a lot though, since dbdma commands are 16 bytes
-> > > long. Am I wrong?
-> > 
-> > You don't have that much DBDMA commands that it would pollute the cache
-> > _a lot_ :) 
-> 
-> Ah, yeah, I guess so. Well I do have 32 dbdma commands, them being
-> spaced up in 16-bytes means 16 cachelines, no? I'm not sure how the
-> cache is wired up ...
 
-On a 32 bits CPU yes.
+--=-dkSA1VzUQuWNBTVvERCh
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-> > > Alsa calls this thing the 'pointer' :) The frame counter we currently
-> > > use is the frame counter register of the i2s bus controller, and I don't
-> > > see why we shouldn't do that instead of reading back all the dbdma
-> > > command status fields.
-> > 
-> > If you manage to have it properly in sync, that may work too.
-> 
-> Seems to work fine so far, even if bcm43xx kills a few interrupts ;)
+On Thu, 2006-05-25 at 10:21 +0300, Eddy Petri=C5=9For wrote:
 
-So it's bcm's fault ? Did you do a bit of analysis ? that would be
-useful...
+> Same machine here; I have cloned the aoa repo and "made" it.
+> Insmod didn't work on any other module but the the soundbus, and
+> resulted in a missing symbol.
 
-Ben.
+You probably forgot to load snd-pcm.
+
+johannes
+
+--=-dkSA1VzUQuWNBTVvERCh
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARHV8NaVg1VMiehFYAQLfmRAAwHrC+FplXbnWUOk6GCXLJ1IU4x6t0iUi
+eleE5iDdnHlSM7sObFz12yPm05HWXgu3X0ECwvYmvX4QAZTjfBwPOUDZ0oJk47g8
+RUJ4fIgN4SQSOwodVG5F+PvmuOKoLcyA8Wd4aAul3op/ViKBcRwuO4ZIDbjezlGI
+LmYi/AjttPlhLJzh1WiYMBvST6XHQzimhKTN3abbhLmUquL40Ug7kawta6BsMSYb
+8ZoZSbD9hNo9cmWB1ryEaLzrJ1/2QVz+0+BnOGK4/h+2qjNGqMZBrFb5hle9Qoth
+0EhXcqtOrAsSo+YuZq8s4mh9M7tnjNiO5urKgeRCmC3EvU1wM0KyjZOVDoWsX0dw
+v+C9kgexGi1fTNGwRaYLeQJPztlObjiN5GlAt8oAlD07C5lUIhYvlXmFRegEQSKW
+NhCWYRODex1u/U3+hG5jlJ4z554/JWTXkkx1hgwLnQSL1piVsBKttDJHvETUw1z1
+VWBeqaFe8j4RFGhAlApMKhKoy7lmIGgMWZDWR7904mSN7CV4xexI+aubjRepnYDG
+Nd1vwhaVvIi3X1v0qY5lECOiYsnjB7lGMD+VF4HU+f8nUdICfU3+4YYFBQKfXicD
+gMlDCJm1XOEAWmYSgRoXffphn7YAmYpw5dvw0NCDB87dJktEg4fJu1fcLohhrVly
+in3AgbfQvfU=
+=Ny9o
+-----END PGP SIGNATURE-----
+
+--=-dkSA1VzUQuWNBTVvERCh--
