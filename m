@@ -1,15 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 89D2367A5B
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 08:57:34 +1000 (EST)
-Date: Wed, 24 May 2006 17:57:25 -0500 (CDT)
-From: Andy Fleming <afleming@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix oprofile support for e500 in arch/powerpc
-Message-ID: <Pine.LNX.4.61.0605241749530.19494@ld0175-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5AD7567A41
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 12:30:45 +1000 (EST)
+Subject: Re: via-pmu runs device_power_down in atomic context
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1148457661.11734.9.camel@johannes>
+References: <1148457661.11734.9.camel@johannes>
+Content-Type: text/plain
+Date: Thu, 25 May 2006 12:28:15 +1000
+Message-Id: <1148524096.13249.119.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, cpufreq@lists.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,735 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fixed a compile error in building the 85xx support with oprofile, and in 
-the process cleaned up some issues with the fsl_booke performance monitor 
-code.
+On Wed, 2006-05-24 at 10:01 +0200, Johannes Berg wrote:
+> Hey,
+> 
+> Everytime I suspend my powerbook, I see the following trace:
+> 
+> [10655.887546] BUG: sleeping function called from invalid context at include/linux/rwsem.h:43
+> [10655.887558] in_atomic():0, irqs_disabled():1
+> [10655.887562] Call Trace:
+> [10655.887565] [C581BD20] [C00081E8] show_stack+0x50/0x190 (unreliable)
+> [10655.887582] [C581BD50] [C0023BB0] __might_sleep+0xcc/0xe8
+> [10655.887592] [C581BD60] [C0038290] blocking_notifier_call_chain+0x2c/0xc0
+> [10655.887606] [C581BD80] [C01E90C0] cpufreq_suspend+0x130/0x148
+> [10655.887616] [C581BDB0] [C019D9E8] sysdev_suspend+0x10c/0x300
+> [10655.887627] [C581BDF0] [C01A3888] device_power_down+0x74/0xac
+> [10655.887636] [C581BE10] [C01B1264] pmac_suspend_devices+0x98/0x188
+> [10655.887643] [C581BE30] [C01B18F0] pmu_ioctl+0x59c/0xbc0
+> [10655.887649] [C581BED0] [C008E898] do_ioctl+0x80/0x84
+> [10655.887660] [C581BEE0] [C008E928] vfs_ioctl+0x8c/0x48c
+> [10655.887666] [C581BF10] [C008ED68] sys_ioctl+0x40/0x74
+> [10655.887673] [C581BF40] [C000F3A4] ret_from_syscall+0x0/0x38
+> 
+> The might_sleep() comes from down_read() and this happens because
+> blocking_notifier_call_chain calls it, it is also commented to run in
+> process context so this is all proper.
 
-Signed-off-by: Andy Fleming <afleming@freescale.com>
+device_power_down should be called with interrupts off, thus the PMU
+driver is fine. It's a misnamed function, it calls the sysdev's suspend
+and those should be called with irq off. I think the problem is more due
+to some cpufreq or notifier change that somebody done to recent kernels
+and that added some might_sleep.... I wonder why. 
 
-* Reorganized FSL Book-E performance monitoring code so that the 7450
-  wouldn't be built if the e500 was, and cleaned it up so it was more 
-  self-contained.
+Andrew, what's up there ? What is this new
+"blocking_notifier_call_chain" thing ? notifiers use to not use
+semaphores and not be blocking... at least powermac implementation of
+cpufreq relies on that.
 
-* Added a cpu_setup function for FSL Book-E.  The original
-  cpu_setup function prototype had no arguments, assuming that
-  the reg_setup function would copy the required information into
-  variables which represented the registers.  This was silly for
-  e500, since it has 1 register per counter (rather than 3 for
-  all counters), so the code has been restructured to have
-  cpu_setup take the current counter config array as an argument,
-  with op_powerpc_setup() invoking op_powerpc_cpu_setup() through
-  on_each_cpu(), and op_powerpc_cpu_setup() invoking the
-  model-specific cpu_setup function with an argument.  The
-  argument is ignored on all other platforms at present.
-
-* Fixed a confusing line where a trinary operator only had two
-  arguments
-
----
-
- arch/powerpc/kernel/Makefile               |    1 
- arch/powerpc/kernel/perfmon_fsl_booke.c    |  222 ----------------------------
- arch/powerpc/kernel/pmc.c                  |    2 
- arch/powerpc/oprofile/Makefile             |    2 
- arch/powerpc/oprofile/common.c             |   10 +
- arch/powerpc/oprofile/op_model_7450.c      |    2 
- arch/powerpc/oprofile/op_model_fsl_booke.c |  170 +++++++++++++++++----
- arch/powerpc/oprofile/op_model_power4.c    |    2 
- arch/powerpc/oprofile/op_model_rs64.c      |    2 
- include/asm-powerpc/oprofile_impl.h        |   87 +++++++++++
- include/asm-powerpc/pmc.h                  |   13 --
- 11 files changed, 234 insertions(+), 279 deletions(-)
- delete mode 100644 arch/powerpc/kernel/perfmon_fsl_booke.c
-
-a53f64aff10cd90f1813fa316d89703c13419db3
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 803858e..a08c348 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -38,7 +38,6 @@ obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6x
- obj-$(CONFIG_TAU)		+= tau_6xx.o
- obj32-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_32.o
- obj32-$(CONFIG_MODULES)		+= module_32.o
--obj-$(CONFIG_E500)		+= perfmon_fsl_booke.o
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
- 
-diff --git a/arch/powerpc/kernel/perfmon_fsl_booke.c b/arch/powerpc/kernel/perfmon_fsl_booke.c
-deleted file mode 100644
-index 32455df..0000000
---- a/arch/powerpc/kernel/perfmon_fsl_booke.c
-+++ /dev/null
-@@ -1,222 +0,0 @@
--/* kernel/perfmon_fsl_booke.c
-- * Freescale Book-E Performance Monitor code
-- *
-- * Author: Andy Fleming
-- * Copyright (c) 2004 Freescale Semiconductor, Inc
-- *
-- *  This program is free software; you can redistribute it and/or
-- *  modify it under the terms of the GNU General Public License
-- *  as published by the Free Software Foundation; either version
-- *  2 of the License, or (at your option) any later version.
-- */
--
--#include <linux/errno.h>
--#include <linux/sched.h>
--#include <linux/kernel.h>
--#include <linux/mm.h>
--#include <linux/stddef.h>
--#include <linux/unistd.h>
--#include <linux/ptrace.h>
--#include <linux/slab.h>
--#include <linux/user.h>
--#include <linux/a.out.h>
--#include <linux/interrupt.h>
--#include <linux/config.h>
--#include <linux/init.h>
--#include <linux/module.h>
--#include <linux/prctl.h>
--
--#include <asm/pgtable.h>
--#include <asm/uaccess.h>
--#include <asm/system.h>
--#include <asm/io.h>
--#include <asm/reg.h>
--#include <asm/xmon.h>
--#include <asm/pmc.h>
--
--static inline u32 get_pmlca(int ctr);
--static inline void set_pmlca(int ctr, u32 pmlca);
--
--static inline u32 get_pmlca(int ctr)
--{
--	u32 pmlca;
--
--	switch (ctr) {
--		case 0:
--			pmlca = mfpmr(PMRN_PMLCA0);
--			break;
--		case 1:
--			pmlca = mfpmr(PMRN_PMLCA1);
--			break;
--		case 2:
--			pmlca = mfpmr(PMRN_PMLCA2);
--			break;
--		case 3:
--			pmlca = mfpmr(PMRN_PMLCA3);
--			break;
--		default:
--			panic("Bad ctr number\n");
--	}
--
--	return pmlca;
--}
--
--static inline void set_pmlca(int ctr, u32 pmlca)
--{
--	switch (ctr) {
--		case 0:
--			mtpmr(PMRN_PMLCA0, pmlca);
--			break;
--		case 1:
--			mtpmr(PMRN_PMLCA1, pmlca);
--			break;
--		case 2:
--			mtpmr(PMRN_PMLCA2, pmlca);
--			break;
--		case 3:
--			mtpmr(PMRN_PMLCA3, pmlca);
--			break;
--		default:
--			panic("Bad ctr number\n");
--	}
--}
--
--void init_pmc_stop(int ctr)
--{
--	u32 pmlca = (PMLCA_FC | PMLCA_FCS | PMLCA_FCU |
--			PMLCA_FCM1 | PMLCA_FCM0);
--	u32 pmlcb = 0;
--
--	switch (ctr) {
--		case 0:
--			mtpmr(PMRN_PMLCA0, pmlca);
--			mtpmr(PMRN_PMLCB0, pmlcb);
--			break;
--		case 1:
--			mtpmr(PMRN_PMLCA1, pmlca);
--			mtpmr(PMRN_PMLCB1, pmlcb);
--			break;
--		case 2:
--			mtpmr(PMRN_PMLCA2, pmlca);
--			mtpmr(PMRN_PMLCB2, pmlcb);
--			break;
--		case 3:
--			mtpmr(PMRN_PMLCA3, pmlca);
--			mtpmr(PMRN_PMLCB3, pmlcb);
--			break;
--		default:
--			panic("Bad ctr number!\n");
--	}
--}
--
--void set_pmc_event(int ctr, int event)
--{
--	u32 pmlca;
--
--	pmlca = get_pmlca(ctr);
--
--	pmlca = (pmlca & ~PMLCA_EVENT_MASK) |
--		((event << PMLCA_EVENT_SHIFT) &
--		 PMLCA_EVENT_MASK);
--
--	set_pmlca(ctr, pmlca);
--}
--
--void set_pmc_user_kernel(int ctr, int user, int kernel)
--{
--	u32 pmlca;
--
--	pmlca = get_pmlca(ctr);
--
--	if(user)
--		pmlca &= ~PMLCA_FCU;
--	else
--		pmlca |= PMLCA_FCU;
--
--	if(kernel)
--		pmlca &= ~PMLCA_FCS;
--	else
--		pmlca |= PMLCA_FCS;
--
--	set_pmlca(ctr, pmlca);
--}
--
--void set_pmc_marked(int ctr, int mark0, int mark1)
--{
--	u32 pmlca = get_pmlca(ctr);
--
--	if(mark0)
--		pmlca &= ~PMLCA_FCM0;
--	else
--		pmlca |= PMLCA_FCM0;
--
--	if(mark1)
--		pmlca &= ~PMLCA_FCM1;
--	else
--		pmlca |= PMLCA_FCM1;
--
--	set_pmlca(ctr, pmlca);
--}
--
--void pmc_start_ctr(int ctr, int enable)
--{
--	u32 pmlca = get_pmlca(ctr);
--
--	pmlca &= ~PMLCA_FC;
--
--	if (enable)
--		pmlca |= PMLCA_CE;
--	else
--		pmlca &= ~PMLCA_CE;
--
--	set_pmlca(ctr, pmlca);
--}
--
--void pmc_start_ctrs(int enable)
--{
--	u32 pmgc0 = mfpmr(PMRN_PMGC0);
--
--	pmgc0 &= ~PMGC0_FAC;
--	pmgc0 |= PMGC0_FCECE;
--
--	if (enable)
--		pmgc0 |= PMGC0_PMIE;
--	else
--		pmgc0 &= ~PMGC0_PMIE;
--
--	mtpmr(PMRN_PMGC0, pmgc0);
--}
--
--void pmc_stop_ctrs(void)
--{
--	u32 pmgc0 = mfpmr(PMRN_PMGC0);
--
--	pmgc0 |= PMGC0_FAC;
--
--	pmgc0 &= ~(PMGC0_PMIE | PMGC0_FCECE);
--
--	mtpmr(PMRN_PMGC0, pmgc0);
--}
--
--void dump_pmcs(void)
--{
--	printk("pmgc0: %x\n", mfpmr(PMRN_PMGC0));
--	printk("pmc\t\tpmlca\t\tpmlcb\n");
--	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC0),
--			mfpmr(PMRN_PMLCA0), mfpmr(PMRN_PMLCB0));
--	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC1),
--			mfpmr(PMRN_PMLCA1), mfpmr(PMRN_PMLCB1));
--	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC2),
--			mfpmr(PMRN_PMLCA2), mfpmr(PMRN_PMLCB2));
--	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC3),
--			mfpmr(PMRN_PMLCA3), mfpmr(PMRN_PMLCB3));
--}
--
--EXPORT_SYMBOL(init_pmc_stop);
--EXPORT_SYMBOL(set_pmc_event);
--EXPORT_SYMBOL(set_pmc_user_kernel);
--EXPORT_SYMBOL(set_pmc_marked);
--EXPORT_SYMBOL(pmc_start_ctr);
--EXPORT_SYMBOL(pmc_start_ctrs);
--EXPORT_SYMBOL(pmc_stop_ctrs);
--EXPORT_SYMBOL(dump_pmcs);
-diff --git a/arch/powerpc/kernel/pmc.c b/arch/powerpc/kernel/pmc.c
-index e6fb194..63b79dc 100644
---- a/arch/powerpc/kernel/pmc.c
-+++ b/arch/powerpc/kernel/pmc.c
-@@ -72,7 +72,7 @@ int reserve_pmc_hardware(perf_irq_t new_
- 	}
- 
- 	pmc_owner_caller = __builtin_return_address(0);
--	perf_irq = new_perf_irq ? : dummy_perf;
-+	perf_irq = new_perf_irq ? new_perf_irq : dummy_perf;
- 
-  out:
- 	spin_unlock(&pmc_owner_lock);
-diff --git a/arch/powerpc/oprofile/Makefile b/arch/powerpc/oprofile/Makefile
-index f5f9859..ef0dda3 100644
---- a/arch/powerpc/oprofile/Makefile
-+++ b/arch/powerpc/oprofile/Makefile
-@@ -9,4 +9,4 @@ DRIVER_OBJS := $(addprefix ../../../driv
- oprofile-y := $(DRIVER_OBJS) common.o backtrace.o
- oprofile-$(CONFIG_PPC64) += op_model_rs64.o op_model_power4.o
- oprofile-$(CONFIG_FSL_BOOKE) += op_model_fsl_booke.o
--oprofile-$(CONFIG_PPC32) += op_model_7450.o
-+oprofile-$(CONFIG_6xx) += op_model_7450.o
-diff --git a/arch/powerpc/oprofile/common.c b/arch/powerpc/oprofile/common.c
-index 5b1de7e..b2cb8b1 100644
---- a/arch/powerpc/oprofile/common.c
-+++ b/arch/powerpc/oprofile/common.c
-@@ -33,6 +33,11 @@ static void op_handle_interrupt(struct p
- 	model->handle_interrupt(regs, ctr);
- }
- 
-+static void op_powerpc_cpu_setup(void *dummy)
-+{
-+	model->cpu_setup(ctr);
-+}
-+
- static int op_powerpc_setup(void)
- {
- 	int err;
-@@ -46,7 +51,7 @@ static int op_powerpc_setup(void)
- 	model->reg_setup(ctr, &sys, model->num_counters);
- 
- 	/* Configure the registers on all cpus.  */
--	on_each_cpu(model->cpu_setup, NULL, 0, 1);
-+	on_each_cpu(op_powerpc_cpu_setup, NULL, 0, 1);
- 
- 	return 0;
- }
-@@ -138,7 +143,8 @@ #ifdef CONFIG_PPC64
- 		case PPC_OPROFILE_POWER4:
- 			model = &op_model_power4;
- 			break;
--#else
-+#endif
-+#ifdef CONFIG_6xx
- 		case PPC_OPROFILE_G4:
- 			model = &op_model_7450;
- 			break;
-diff --git a/arch/powerpc/oprofile/op_model_7450.c b/arch/powerpc/oprofile/op_model_7450.c
-index e0491c3..169316d 100644
---- a/arch/powerpc/oprofile/op_model_7450.c
-+++ b/arch/powerpc/oprofile/op_model_7450.c
-@@ -81,7 +81,7 @@ static void pmc_stop_ctrs(void)
- 
- /* Configures the counters on this CPU based on the global
-  * settings */
--static void fsl7450_cpu_setup(void *unused)
-+static void fsl7450_cpu_setup(struct op_counter_config *ctr)
- {
- 	/* freeze all counters */
- 	pmc_stop_ctrs();
-diff --git a/arch/powerpc/oprofile/op_model_fsl_booke.c b/arch/powerpc/oprofile/op_model_fsl_booke.c
-index 93d63e6..f5234d2 100644
---- a/arch/powerpc/oprofile/op_model_fsl_booke.c
-+++ b/arch/powerpc/oprofile/op_model_fsl_booke.c
-@@ -32,42 +32,152 @@ static unsigned long reset_value[OP_MAX_
- static int num_counters;
- static int oprofile_running;
- 
--static inline unsigned int ctr_read(unsigned int i)
-+static void init_pmc_stop(int ctr)
- {
--	switch(i) {
--		case 0:
--			return mfpmr(PMRN_PMC0);
--		case 1:
--			return mfpmr(PMRN_PMC1);
--		case 2:
--			return mfpmr(PMRN_PMC2);
--		case 3:
--			return mfpmr(PMRN_PMC3);
--		default:
--			return 0;
--	}
--}
-+	u32 pmlca = (PMLCA_FC | PMLCA_FCS | PMLCA_FCU |
-+			PMLCA_FCM1 | PMLCA_FCM0);
-+	u32 pmlcb = 0;
- 
--static inline void ctr_write(unsigned int i, unsigned int val)
--{
--	switch(i) {
-+	switch (ctr) {
- 		case 0:
--			mtpmr(PMRN_PMC0, val);
-+			mtpmr(PMRN_PMLCA0, pmlca);
-+			mtpmr(PMRN_PMLCB0, pmlcb);
- 			break;
- 		case 1:
--			mtpmr(PMRN_PMC1, val);
-+			mtpmr(PMRN_PMLCA1, pmlca);
-+			mtpmr(PMRN_PMLCB1, pmlcb);
- 			break;
- 		case 2:
--			mtpmr(PMRN_PMC2, val);
-+			mtpmr(PMRN_PMLCA2, pmlca);
-+			mtpmr(PMRN_PMLCB2, pmlcb);
- 			break;
- 		case 3:
--			mtpmr(PMRN_PMC3, val);
-+			mtpmr(PMRN_PMLCA3, pmlca);
-+			mtpmr(PMRN_PMLCB3, pmlcb);
- 			break;
- 		default:
--			break;
-+			panic("Bad ctr number!\n");
- 	}
- }
- 
-+static void set_pmc_event(int ctr, int event)
-+{
-+	u32 pmlca;
-+
-+	pmlca = get_pmlca(ctr);
-+
-+	pmlca = (pmlca & ~PMLCA_EVENT_MASK) |
-+		((event << PMLCA_EVENT_SHIFT) &
-+		 PMLCA_EVENT_MASK);
-+
-+	set_pmlca(ctr, pmlca);
-+}
-+
-+static void set_pmc_user_kernel(int ctr, int user, int kernel)
-+{
-+	u32 pmlca;
-+
-+	pmlca = get_pmlca(ctr);
-+
-+	if(user)
-+		pmlca &= ~PMLCA_FCU;
-+	else
-+		pmlca |= PMLCA_FCU;
-+
-+	if(kernel)
-+		pmlca &= ~PMLCA_FCS;
-+	else
-+		pmlca |= PMLCA_FCS;
-+
-+	set_pmlca(ctr, pmlca);
-+}
-+
-+static void set_pmc_marked(int ctr, int mark0, int mark1)
-+{
-+	u32 pmlca = get_pmlca(ctr);
-+
-+	if(mark0)
-+		pmlca &= ~PMLCA_FCM0;
-+	else
-+		pmlca |= PMLCA_FCM0;
-+
-+	if(mark1)
-+		pmlca &= ~PMLCA_FCM1;
-+	else
-+		pmlca |= PMLCA_FCM1;
-+
-+	set_pmlca(ctr, pmlca);
-+}
-+
-+static void pmc_start_ctr(int ctr, int enable)
-+{
-+	u32 pmlca = get_pmlca(ctr);
-+
-+	pmlca &= ~PMLCA_FC;
-+
-+	if (enable)
-+		pmlca |= PMLCA_CE;
-+	else
-+		pmlca &= ~PMLCA_CE;
-+
-+	set_pmlca(ctr, pmlca);
-+}
-+
-+static void pmc_start_ctrs(int enable)
-+{
-+	u32 pmgc0 = mfpmr(PMRN_PMGC0);
-+
-+	pmgc0 &= ~PMGC0_FAC;
-+	pmgc0 |= PMGC0_FCECE;
-+
-+	if (enable)
-+		pmgc0 |= PMGC0_PMIE;
-+	else
-+		pmgc0 &= ~PMGC0_PMIE;
-+
-+	mtpmr(PMRN_PMGC0, pmgc0);
-+}
-+
-+static void pmc_stop_ctrs(void)
-+{
-+	u32 pmgc0 = mfpmr(PMRN_PMGC0);
-+
-+	pmgc0 |= PMGC0_FAC;
-+
-+	pmgc0 &= ~(PMGC0_PMIE | PMGC0_FCECE);
-+
-+	mtpmr(PMRN_PMGC0, pmgc0);
-+}
-+
-+static void dump_pmcs(void)
-+{
-+	printk("pmgc0: %x\n", mfpmr(PMRN_PMGC0));
-+	printk("pmc\t\tpmlca\t\tpmlcb\n");
-+	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC0),
-+			mfpmr(PMRN_PMLCA0), mfpmr(PMRN_PMLCB0));
-+	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC1),
-+			mfpmr(PMRN_PMLCA1), mfpmr(PMRN_PMLCB1));
-+	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC2),
-+			mfpmr(PMRN_PMLCA2), mfpmr(PMRN_PMLCB2));
-+	printk("%8x\t%8x\t%8x\n", mfpmr(PMRN_PMC3),
-+			mfpmr(PMRN_PMLCA3), mfpmr(PMRN_PMLCB3));
-+}
-+
-+static void fsl_booke_cpu_setup(struct op_counter_config *ctr)
-+{
-+	int i;
-+
-+	/* freeze all counters */
-+	pmc_stop_ctrs();
-+
-+	for (i = 0;i < num_counters;i++) {
-+		init_pmc_stop(i);
-+
-+		set_pmc_event(i, ctr[i].event);
-+
-+		set_pmc_user_kernel(i, ctr[i].user, ctr[i].kernel);
-+	}
-+}
- 
- static void fsl_booke_reg_setup(struct op_counter_config *ctr,
- 			     struct op_system_config *sys,
-@@ -77,23 +187,14 @@ static void fsl_booke_reg_setup(struct o
- 
- 	num_counters = num_ctrs;
- 
--	/* freeze all counters */
--	pmc_stop_ctrs();
--
- 	/* Our counters count up, and "count" refers to
- 	 * how much before the next interrupt, and we interrupt
- 	 * on overflow.  So we calculate the starting value
- 	 * which will give us "count" until overflow.
- 	 * Then we set the events on the enabled counters */
--	for (i = 0; i < num_counters; ++i) {
-+	for (i = 0; i < num_counters; ++i)
- 		reset_value[i] = 0x80000000UL - ctr[i].count;
- 
--		init_pmc_stop(i);
--
--		set_pmc_event(i, ctr[i].event);
--
--		set_pmc_user_kernel(i, ctr[i].user, ctr[i].kernel);
--	}
- }
- 
- static void fsl_booke_start(struct op_counter_config *ctr)
-@@ -105,8 +206,8 @@ static void fsl_booke_start(struct op_co
- 	for (i = 0; i < num_counters; ++i) {
- 		if (ctr[i].enabled) {
- 			ctr_write(i, reset_value[i]);
--			/* Set Each enabled counterd to only
--			 * count when the Mark bit is not set */
-+			/* Set each enabled counter to only
-+			 * count when the Mark bit is *not* set */
- 			set_pmc_marked(i, 1, 0);
- 			pmc_start_ctr(i, 1);
- 		} else {
-@@ -177,6 +278,7 @@ static void fsl_booke_handle_interrupt(s
- 
- struct op_powerpc_model op_model_fsl_booke = {
- 	.reg_setup		= fsl_booke_reg_setup,
-+	.cpu_setup		= fsl_booke_cpu_setup,
- 	.start			= fsl_booke_start,
- 	.stop			= fsl_booke_stop,
- 	.handle_interrupt	= fsl_booke_handle_interrupt,
-diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprofile/op_model_power4.c
-index 4c2beab..08cbf10 100644
---- a/arch/powerpc/oprofile/op_model_power4.c
-+++ b/arch/powerpc/oprofile/op_model_power4.c
-@@ -96,7 +96,7 @@ static inline int mmcra_must_set_sample(
- 	return 0;
- }
- 
--static void power4_cpu_setup(void *unused)
-+static void power4_cpu_setup(struct op_counter_config *ctr)
- {
- 	unsigned int mmcr0 = mmcr0_val;
- 	unsigned long mmcra = mmcra_val;
-diff --git a/arch/powerpc/oprofile/op_model_rs64.c b/arch/powerpc/oprofile/op_model_rs64.c
-index 042f8f4..19c5ee0 100644
---- a/arch/powerpc/oprofile/op_model_rs64.c
-+++ b/arch/powerpc/oprofile/op_model_rs64.c
-@@ -102,7 +102,7 @@ static void rs64_reg_setup(struct op_cou
- 	/* XXX setup user and kernel profiling */
- }
- 
--static void rs64_cpu_setup(void *unused)
-+static void rs64_cpu_setup(struct op_counter_config *ctr)
- {
- 	unsigned int mmcr0;
- 
-diff --git a/include/asm-powerpc/oprofile_impl.h b/include/asm-powerpc/oprofile_impl.h
-index 5b33994..07a10e5 100644
---- a/include/asm-powerpc/oprofile_impl.h
-+++ b/include/asm-powerpc/oprofile_impl.h
-@@ -42,7 +42,7 @@ struct op_powerpc_model {
- 	void (*reg_setup) (struct op_counter_config *,
- 			   struct op_system_config *,
- 			   int num_counters);
--	void (*cpu_setup) (void *);
-+	void (*cpu_setup) (struct op_counter_config *);
- 	void (*start) (struct op_counter_config *);
- 	void (*stop) (void);
- 	void (*handle_interrupt) (struct pt_regs *,
-@@ -121,7 +121,90 @@ #endif
- 		break;
- 	}
- }
--#endif /* !CONFIG_FSL_BOOKE */
-+#else /* CONFIG_FSL_BOOKE */
-+static inline u32 get_pmlca(int ctr)
-+{
-+	u32 pmlca;
-+
-+	switch (ctr) {
-+		case 0:
-+			pmlca = mfpmr(PMRN_PMLCA0);
-+			break;
-+		case 1:
-+			pmlca = mfpmr(PMRN_PMLCA1);
-+			break;
-+		case 2:
-+			pmlca = mfpmr(PMRN_PMLCA2);
-+			break;
-+		case 3:
-+			pmlca = mfpmr(PMRN_PMLCA3);
-+			break;
-+		default:
-+			panic("Bad ctr number\n");
-+	}
-+
-+	return pmlca;
-+}
-+
-+static inline void set_pmlca(int ctr, u32 pmlca)
-+{
-+	switch (ctr) {
-+		case 0:
-+			mtpmr(PMRN_PMLCA0, pmlca);
-+			break;
-+		case 1:
-+			mtpmr(PMRN_PMLCA1, pmlca);
-+			break;
-+		case 2:
-+			mtpmr(PMRN_PMLCA2, pmlca);
-+			break;
-+		case 3:
-+			mtpmr(PMRN_PMLCA3, pmlca);
-+			break;
-+		default:
-+			panic("Bad ctr number\n");
-+	}
-+}
-+
-+static inline unsigned int ctr_read(unsigned int i)
-+{
-+	switch(i) {
-+		case 0:
-+			return mfpmr(PMRN_PMC0);
-+		case 1:
-+			return mfpmr(PMRN_PMC1);
-+		case 2:
-+			return mfpmr(PMRN_PMC2);
-+		case 3:
-+			return mfpmr(PMRN_PMC3);
-+		default:
-+			return 0;
-+	}
-+}
-+
-+static inline void ctr_write(unsigned int i, unsigned int val)
-+{
-+	switch(i) {
-+		case 0:
-+			mtpmr(PMRN_PMC0, val);
-+			break;
-+		case 1:
-+			mtpmr(PMRN_PMC1, val);
-+			break;
-+		case 2:
-+			mtpmr(PMRN_PMC2, val);
-+			break;
-+		case 3:
-+			mtpmr(PMRN_PMC3, val);
-+			break;
-+		default:
-+			break;
-+	}
-+}
-+
-+
-+#endif /* CONFIG_FSL_BOOKE */
-+
- 
- extern void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth);
- 
-diff --git a/include/asm-powerpc/pmc.h b/include/asm-powerpc/pmc.h
-index 07d6a42..8588be6 100644
---- a/include/asm-powerpc/pmc.h
-+++ b/include/asm-powerpc/pmc.h
-@@ -32,18 +32,5 @@ #ifdef CONFIG_PPC64
- void power4_enable_pmcs(void);
- #endif
- 
--#ifdef CONFIG_FSL_BOOKE
--void init_pmc_stop(int ctr);
--void set_pmc_event(int ctr, int event);
--void set_pmc_user_kernel(int ctr, int user, int kernel);
--void set_pmc_marked(int ctr, int mark0, int mark1);
--void pmc_start_ctr(int ctr, int enable);
--void pmc_start_ctrs(int enable);
--void pmc_stop_ctrs(void);
--void dump_pmcs(void);
--
--extern struct op_powerpc_model op_model_fsl_booke;
--#endif
--
- #endif /* __KERNEL__ */
- #endif /* _POWERPC_PMC_H */
--- 
-1.3.0
+> However, it obviously isn't run at process context. Looking why, I see
+> this in via-pmu.c:
+>         /* We can now disable MSR_EE. This code of course works properly only
+>          * on UP machines... For SMP, if we ever implement sleep, we'll have to
+>          * stop the "other" CPUs way before we do all that stuff.
+>          */
+>         local_irq_disable();
+> 
+>         /* Broadcast power down irq
+>          * This isn't that useful in most cases (only directly wired devices can
+>          * use this but still... This will take care of sysdev's as well, so
+>          * we exit from here with local irqs disabled and PIC off.
+>          */
+>         ret = device_power_down(PMSG_SUSPEND);
+> 
+> Apparently this was a deliberate decision.
+> 
+> So the question is: which is correct? I can test and submit a patch to
+> fix the issue at either end; if cpufreq is wrong I'd move from a
+> blocking_ to an atomic_notifier_call_chain, if via-pmu.c is wrong I'd
+> call device_power_down earlier...
+> 
+> johannes
