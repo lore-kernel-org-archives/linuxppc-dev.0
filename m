@@ -2,20 +2,18 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B8A867AC5
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 20:05:38 +1000 (EST)
-Subject: Re: PowerMac: force only suspend-to-disk to be valid
+	by ozlabs.org (Postfix) with ESMTP id 83FF067A79
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 20:43:20 +1000 (EST)
+Subject: [snd] looking for layout-ids
 From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1146562296.3858.9.camel@localhost>
-References: <1146562296.3858.9.camel@localhost>
+To: debian-powerpc <debian-powerpc@lists.debian.org>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-w7yre0see/suGEfB0DUi"
-Date: Thu, 25 May 2006 12:05:27 +0200
-Message-Id: <1148551527.11759.10.camel@johannes.berg>
+	boundary="=-kODGrmzodTlulyxJAcb1"
+Date: Thu, 25 May 2006 12:43:05 +0200
+Message-Id: <1148553785.11759.12.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,74 +24,59 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-w7yre0see/suGEfB0DUi
+--=-kODGrmzodTlulyxJAcb1
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2006-05-02 at 11:31 +0200, Johannes Berg wrote:
-> This patch adds the .valid callback to pm_ops on PowerMac so that only th=
-e
-> suspend to disk state can be entered. Note that just returning 0 would
-> suffice since the upper layers don't pass PM_SUSPEND_DISK down, but I thi=
-nk
-> they ought to be passing it down since they do really need support (or
-> am I mistaken again?) so we handle it there regardless.
+Hey,
 
-No one ever seemed to care about this patch, can we queue it up for
-2.6.18? I suppose it's too late now for 2.6.17 even if it fixes the
-long-standing but that on ppc, /sys/power/state kills the machine.
+In order to replace snd-powermac for the newer machines where the
+'sound' node has the 'layout-id' property, I'm looking for testers on
+machines that have a layout-id [1] property with one of the following
+values: 0x24, 0x29, 0x33, 0x50 and 0x3a.
 
-[quoted patch for reference]
+Once I have all these, I will, along with submitting snd-aoa [2], submit
+a patch to snd-powermac that makes it refuse loading in presence of a
+layout-id property as a first step to migrate to snd-aoa.
 
-> --- wireless-dev.orig/arch/powerpc/platforms/powermac/setup.c	2006-05-02 =
-10:57:32.101509438 +0200
-> +++ wireless-dev/arch/powerpc/platforms/powermac/setup.c	2006-05-02 10:58=
-:44.491509438 +0200
-> @@ -463,11 +463,23 @@ static int pmac_pm_finish(suspend_state_
->  	return 0;
->  }
-> =20
-> +static int pmac_pm_valid(suspend_state_t state)
-> +{
-> +	switch (state) {
-> +	case PM_SUSPEND_DISK:
-> +		return 1;
-> +	/* can't do any other states via generic mechanism yet */
-> +	default:
-> +		return 0;
-> +	}
-> +}
-> +
->  static struct pm_ops pmac_pm_ops =3D {
->  	.pm_disk_mode	=3D PM_DISK_SHUTDOWN,
->  	.prepare	=3D pmac_pm_prepare,
->  	.enter		=3D pmac_pm_enter,
->  	.finish		=3D pmac_pm_finish,
-> +	.valid		=3D pmac_pm_valid,
->  };
-> =20
->  #endif /* CONFIG_SOFTWARE_SUSPEND */
+At the same time, I'll probably make i2sbus refuse attaching to a device
+unless there's a layout-id property so that it doesn't claim devices aoa
+doesn't handle yet.
+
+johannes
+
+[1] to find your layout-id, execute the following:
+
+  find /proc/device-tree/ -name layout-id | xargs hexdump -e '1/4 "0x%x\n"'
+
+If you get no output, you have no layout-id property. If you do get
+output, it will look like this:
+  0x46
+This is the layout-id of your sound node.
+
+[2] Before you ask: I will not do this before snd-aoa supports headphone
+detection :)
 
 
---=-w7yre0see/suGEfB0DUi
+--=-kODGrmzodTlulyxJAcb1
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARHWBZaVg1VMiehFYAQLeIRAAkyMD8uC8iWiSYn6ao1+LavXHPvGzOWRg
-0kNkInZCnn5VnvH1p0dwSNuLkbF5Pucf4IXSciOYkidjI3pX9lI7iMi3PoFjGxma
-dg07Qk6W5c1iNTPjmMWFFiAoN5j+MHEnh+J/Q4xDvh5zKkq+W/SM7sGz0hN1ctJu
-eaztWRIPswcxi5Ksivqx5+o0A7vDmRKMnjyPjpkdtc3wA2YX7VoOvw6xUg5s6pJm
-y2/Fr9Kl/Zjr1ICNsTOJkKhQmwDb3UjUpUXpH9UtXJE8pgKddDKXhchWJ9Bi0foQ
-F6A78RsXqLXxxElwQeswSu+vzhYiQcySvtqALh4FqqFiLXIO7SEIAwh8G009Zzzv
-wYzLO/RkjWGQxA5f7Cgw9wERREKY/Q/0roBpJDMh4x3SnY2LRYfzpAsEbh/ouaUE
-jlgAipadmWPEyJp5tYlr7ZqlmwRnhdpfyl/3tv4RFUtB354o2YuBfEaoMvxrYN5j
-9SqLkQe5r6Zi0gXiaTin7ejl/wPeAiu69QrL/V0nAyuxkFYbJCk8Z5lGpTITF/EH
-OOgykDBrnJylKBrIPFncxIPflMw7QALaWfMbzKxzcYN2A56p/0g1W5kQdQjcLVXs
-KdQNgmZgJ47hICi7+7DKDjxPeeKKjo+gcwMde+LCxaHrlMw1tkxIgantiA1ULC03
-GWXaqlDYP3o=
-=B8Hh
+iQIVAwUARHWKN6Vg1VMiehFYAQKO/RAAuqYZ4o0SLZKoa01rDjFmJomqBQu19IwV
+C+swkh3KSx/mIqx1S+SCvYg/BHGw3p5IACO+oanj0+UH7VzjLG2024Je/ifwl19G
+2wGJEugqD8+8/zE6/BbUkauId/OOVr45bIU/DoFelLNK7Yu9x28yKeWlkfqrYe7h
+sUn5tXf4hqDi+ogw15+c+vGZMC0K7gYlv2oj2tdfjg98xuwYFN0ueIxY3LZcPNpw
+yFzZxHOMthGHfBvEfWn6uSTZHg1YXezRB8TrnZ/ctxFUkTDSZV3zZavfjxi7dgad
+iP1se9mlQnfKv7mpVcKhPiGwQX/BYKI3T8jpAIXqgvruJKMBTot1h9s936jWr0SM
+P9SXLMz9pTP6TsLVWO6CTYc44/sUDL9psZbFXHwHbHc416LK6qmIWL4ZzrMXEyME
+y6XAYCnbObPDSNr5cphVLFyUqKmBGGGjYxrnpzYrSpnC9ZPm7uGENmvtui0qz4al
+YwKqve7TPKPz53Hb59a05Y/1FjcjURMvD3krvhIj31glsgyC/tKNHsdQW2bAVvr0
+L12DGbMKgLIDcqbXTy3ltuM8mmtEnPAq8CEouEAnDYHE9H8hpXBBpvFCrJBZxYLa
++GOTZodFUkFXzu+ok3O12Kn7ZOsm34aglOMfwH7+hFfxE79xr6DHSHm3Pc+gGbcO
+z6sL/ND4c0I=
+=sRbY
 -----END PGP SIGNATURE-----
 
---=-w7yre0see/suGEfB0DUi--
+--=-kODGrmzodTlulyxJAcb1--
