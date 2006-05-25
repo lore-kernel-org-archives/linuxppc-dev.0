@@ -1,13 +1,13 @@
 Return-Path: <paul.gortmaker@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 7BBDA67A42
+	by ozlabs.org (Postfix) with ESMTP id 5C37767A42
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 May 2006 04:22:06 +1000 (EST)
-Date: Thu, 25 May 2006 14:22:04 -0400
+	Fri, 26 May 2006 04:25:38 +1000 (EST)
+Date: Thu, 25 May 2006 14:25:33 -0400
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH 1/5] Updates for WRS SBC82xx boards
-Message-ID: <20060525182204.GC679@windriver.com>
+Subject: [PATCH 2/5] Updates for WRS SBC82xx boards
+Message-ID: <20060525182533.GD679@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: p_gortmaker@yahoo.com
@@ -22,82 +22,67 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-patch1: sbc82xx-diff0
-	- replace NR_SIU_INTS with NR_CPM_INTS
+patch2: sbc82xx-PCI-diff1
+	- allow m82xx_pci.c to be used by other platforms that have
+	  their own map_irq
+
+I'm open to doing this another way if desired -- I just went for the
+minimal impact on the existing code with this.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
+
 diff -ur orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c
---- orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c	2006-01-02 22:21:10.000000000 -0500
-+++ linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c	2006-02-07 16:22:28.000000000 -0500
-@@ -74,7 +74,7 @@
- {
- 	unsigned long flags;
- 
--	irq_nr -= NR_SIU_INTS;
-+	irq_nr -= NR_CPM_INTS;
- 
- 	spin_lock_irqsave(&sbc82xx_i8259_lock, flags);
- 	sbc82xx_i8259_mask |= 1 << irq_nr;
-@@ -88,7 +88,7 @@
- {
- 	unsigned long flags;
- 
--	irq_nr -= NR_SIU_INTS;
-+	irq_nr -= NR_CPM_INTS;
- 
- 	spin_lock_irqsave(&sbc82xx_i8259_lock, flags);
- 	sbc82xx_i8259_mask |= 1 << irq_nr;
-@@ -100,7 +100,7 @@
- {
- 	unsigned long flags;
- 
--	irq_nr -= NR_SIU_INTS;
-+	irq_nr -= NR_CPM_INTS;
- 
- 	spin_lock_irqsave(&sbc82xx_i8259_lock, flags);
- 	sbc82xx_i8259_mask &= ~(1 << irq_nr);
-@@ -142,7 +142,7 @@
- 			return IRQ_HANDLED;
- 		}
+--- orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c	2006-02-09 16:20:35.000000000 -0500
++++ linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.c	2006-02-09 16:01:40.000000000 -0500
+@@ -198,7 +198,7 @@
  	}
--	__do_IRQ(NR_SIU_INTS + irq, regs);
-+	__do_IRQ(NR_CPM_INTS + irq, regs);
- 	return IRQ_HANDLED;
  }
  
-@@ -173,7 +173,7 @@
- 	}
- 	
- 	/* Set up the interrupt handlers for the i8259 IRQs */
--	for (i = NR_SIU_INTS; i < NR_SIU_INTS + 8; i++) {
-+	for (i = NR_CPM_INTS; i < NR_CPM_INTS + 8; i++) {
-                 irq_desc[i].handler = &sbc82xx_i8259_ic;
- 		irq_desc[i].status |= IRQ_LEVEL;
- 	}
+-static int sbc82xx_pci_map_irq(struct pci_dev *dev, unsigned char idsel,
++int pq2pci_map_irq(struct pci_dev *dev, unsigned char idsel,
+ 			       unsigned char pin)
+ {
+ 	static char pci_irq_table[][4] = {
+@@ -247,7 +247,7 @@
+ 	callback_init_IRQ	= ppc_md.init_IRQ;
+ 
+ 	ppc_md.init_IRQ		= sbc82xx_init_IRQ;
+-	ppc_md.pci_map_irq	= sbc82xx_pci_map_irq;
++	ppc_md.pci_map_irq	= pq2pci_map_irq;
+ #ifdef CONFIG_GEN_RTC
+ 	ppc_md.time_init        = NULL;
+ 	ppc_md.get_rtc_time     = NULL;
 diff -ur orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h
---- orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h	2006-01-02 22:21:10.000000000 -0500
-+++ linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h	2006-02-07 14:48:03.000000000 -0500
-@@ -24,13 +24,14 @@
+--- orig/linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h	2006-02-09 16:20:35.000000000 -0500
++++ linux-2.6.16rc2/arch/ppc/platforms/sbc82xx.h	2006-02-09 16:35:05.000000000 -0500
+@@ -24,6 +24,7 @@
  
  #define BOOTROM_RESTART_ADDR      ((uint)0x40000104)
  
--#define SBC82xx_PC_IRQA (NR_SIU_INTS+0)
--#define SBC82xx_PC_IRQB (NR_SIU_INTS+1)
--#define SBC82xx_MPC185_IRQ (NR_SIU_INTS+2)
--#define SBC82xx_ATM_IRQ (NR_SIU_INTS+3)
--#define SBC82xx_PIRQA (NR_SIU_INTS+4)
--#define SBC82xx_PIRQB (NR_SIU_INTS+5)
--#define SBC82xx_PIRQC (NR_SIU_INTS+6)
--#define SBC82xx_PIRQD (NR_SIU_INTS+7)
-+#define SBC82xx_PC_IRQA		(NR_CPM_INTS+0)
-+#define SBC82xx_PC_IRQB		(NR_CPM_INTS+1)
-+#define SBC82xx_MPC185_IRQ	(NR_CPM_INTS+2)
-+#define SBC82xx_ATM_IRQ		(NR_CPM_INTS+3)
-+
-+#define SBC82xx_PIRQA		(NR_CPM_INTS+4)
-+#define SBC82xx_PIRQB		(NR_CPM_INTS+5)
-+#define SBC82xx_PIRQC		(NR_CPM_INTS+6)
-+#define SBC82xx_PIRQD		(NR_CPM_INTS+7)
++#define HAVE_OWN_PQ2PCI_IRQ
+ #define SBC82xx_PC_IRQA		(NR_CPM_INTS+0)
+ #define SBC82xx_PC_IRQB		(NR_CPM_INTS+1)
+ #define SBC82xx_MPC185_IRQ	(NR_CPM_INTS+2)
+diff -ur orig/linux-2.6.16rc2/arch/ppc/syslib/m82xx_pci.c linux-2.6.16rc2/arch/ppc/syslib/m82xx_pci.c
+--- orig/linux-2.6.16rc2/arch/ppc/syslib/m82xx_pci.c	2006-01-02 22:21:10.000000000 -0500
++++ linux-2.6.16rc2/arch/ppc/syslib/m82xx_pci.c	2006-02-09 14:35:10.000000000 -0500
+@@ -51,6 +51,10 @@
+  * Interrupt routing
+  */
  
- #endif /* __PPC_SBC82xx_H__ */
++#ifdef HAVE_OWN_PQ2PCI_IRQ
++extern int
++pq2pci_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin);
++#else 
+ static inline int
+ pq2pci_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
+ {
+@@ -172,6 +176,7 @@
+ 	setup_irq(PCI_INT_TO_SIU, &pq2pci_irqaction);
+ 	return;
+ }
++#endif	/* HAVE_OWN_PQ2PCI_IRQ */
+ 
+ static int
+ pq2pci_exclude_device(u_char bus, u_char devfn)
