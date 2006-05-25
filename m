@@ -2,25 +2,27 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33B1967A41
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 19:43:28 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 3648167AC5
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 19:43:27 +1000 (EST)
 Subject: Re: snd-aoa status update / automatic driver loading
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Eddy =?iso-8859-2?Q?Petri=BAor?= <eddy.petrisor@gmail.com>
-In-Reply-To: <60381eeb0605250021t17ff3299l74fc59993c683306@mail.gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1148544004.13249.270.camel@localhost.localdomain>
 References: <1147860564.14395.6.camel@johannes>
-	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
-	<1147947784.15507.46.camel@johannes>
-	<87wtcirw0y.fsf@briny.internal.ondioline.org>
-	<20060523154137.GA3205@spring.luon.net>
-	<60381eeb0605250021t17ff3299l74fc59993c683306@mail.gmail.com>
+	<446B721D.8020203@gentoo.org>  <1148034127.15507.178.camel@johannes>
+	<1148169389.13249.44.camel@localhost.localdomain>
+	<1148280172.6228.79.camel@johannes.berg>
+	<1148422544.13249.96.camel@localhost.localdomain>
+	<1148463777.11734.19.camel@johannes>
+	<1148544004.13249.270.camel@localhost.localdomain>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-dkSA1VzUQuWNBTVvERCh"
-Date: Thu, 25 May 2006 11:43:19 +0200
-Message-Id: <1148550200.11759.2.camel@johannes.berg>
+	boundary="=-9zCgB0rekHq8jzA1eaNJ"
+Date: Thu, 25 May 2006 11:42:47 +0200
+Message-Id: <1148550168.11759.0.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Benjamin Berg <benjamin@sipsolutions.net>,
 	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -32,39 +34,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-dkSA1VzUQuWNBTVvERCh
-Content-Type: text/plain; charset=utf-8
+--=-9zCgB0rekHq8jzA1eaNJ
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2006-05-25 at 10:21 +0300, Eddy Petri=C5=9For wrote:
+On Thu, 2006-05-25 at 18:00 +1000, Benjamin Herrenschmidt wrote:
 
-> Same machine here; I have cloned the aoa repo and "made" it.
-> Insmod didn't work on any other module but the the soundbus, and
-> resulted in a missing symbol.
+> So it's bcm's fault ? Did you do a bit of analysis ? that would be
+> useful...
 
-You probably forgot to load snd-pcm.
+I kinda assumed the list was lagging again and my brother had already
+posted the solution. Yes, bcm does some measuring stuff that keeps
+interrupts disabled for lots of milliseconds (25 or something). It's
+being fixed.
+
+I still think, however, that we ought to be able to deal with lost
+interrupts.
 
 johannes
 
---=-dkSA1VzUQuWNBTVvERCh
+--=-9zCgB0rekHq8jzA1eaNJ
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARHV8NaVg1VMiehFYAQLfmRAAwHrC+FplXbnWUOk6GCXLJ1IU4x6t0iUi
-eleE5iDdnHlSM7sObFz12yPm05HWXgu3X0ECwvYmvX4QAZTjfBwPOUDZ0oJk47g8
-RUJ4fIgN4SQSOwodVG5F+PvmuOKoLcyA8Wd4aAul3op/ViKBcRwuO4ZIDbjezlGI
-LmYi/AjttPlhLJzh1WiYMBvST6XHQzimhKTN3abbhLmUquL40Ug7kawta6BsMSYb
-8ZoZSbD9hNo9cmWB1ryEaLzrJ1/2QVz+0+BnOGK4/h+2qjNGqMZBrFb5hle9Qoth
-0EhXcqtOrAsSo+YuZq8s4mh9M7tnjNiO5urKgeRCmC3EvU1wM0KyjZOVDoWsX0dw
-v+C9kgexGi1fTNGwRaYLeQJPztlObjiN5GlAt8oAlD07C5lUIhYvlXmFRegEQSKW
-NhCWYRODex1u/U3+hG5jlJ4z554/JWTXkkx1hgwLnQSL1piVsBKttDJHvETUw1z1
-VWBeqaFe8j4RFGhAlApMKhKoy7lmIGgMWZDWR7904mSN7CV4xexI+aubjRepnYDG
-Nd1vwhaVvIi3X1v0qY5lECOiYsnjB7lGMD+VF4HU+f8nUdICfU3+4YYFBQKfXicD
-gMlDCJm1XOEAWmYSgRoXffphn7YAmYpw5dvw0NCDB87dJktEg4fJu1fcLohhrVly
-in3AgbfQvfU=
-=Ny9o
+iQIVAwUARHV8FaVg1VMiehFYAQJypg//Q/uyZD2nBmZmqte7QsmJ4hjfOjP8H+T7
+iCPlFUDiC26VLpkd4to03TuoCMrgCNgv2h22bitUyrrVxouO/C707OCLLRTPzhW/
+dMdanchRBomlBSD/EPUZdA2QcNpIWM/sYctsMCYZUTQtTG95BQRcDR46ggL+C3z+
+hlPPvN1ajNRNniq3ef/9eYebIlFZSWAqKcb7P0O4Ayny866i4QwJzPTewyk6Rmwk
+9mGcCwbNY8anUyRZcX91FX/DSFinDaiYxr1bRdCe/23PkcCrn+L25HvlX45Vq2GL
+TFIjereGYtgJwSbz2Us5ZacN9dNJy49S/l3Ym+On8HiGh+0qmHK3zTx0o/ret6Je
+AWFW8iiY9NHpfhClejHdSNoLlwo1osJsD0P2nMV17pe24Fn9eNK+MVXGN2JrNBtg
+obenHtETdAa5Uu20iHhMpQazm1IA7WgFSw4pw/PUZXEh77M/3mkoOjnJ3v3rpvKP
+C4sbHPRYgZZ4I8iO4dcH1dCFgaLySrWnxh83enTa/eECk1goGsjazQbVeXl9024N
+A/Xb1zmCUcCfUIFmP1kpJM1sN2sUecGlkNGXT1ptZViHvPAPhORv0FgrPXDm8pDW
+7EytsvZiOhXVlCi8CeVnK5VZNeGGwAJieloRxvQgp/098KbZOx+cPABhAarew3Ch
+lPa41M1gs5k=
+=EyEB
 -----END PGP SIGNATURE-----
 
---=-dkSA1VzUQuWNBTVvERCh--
+--=-9zCgB0rekHq8jzA1eaNJ--
