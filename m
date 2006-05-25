@@ -1,21 +1,22 @@
-Return-Path: <jdl@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id CFEBA67A42
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 02:47:52 +1000 (EST)
-Subject: Re: [Fwd: Re: via-pmu runs device_power_down in atomic context]
-From: Jon Loeliger <jdl@freescale.com>
-To: Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20060525074412.19a03c22.akpm@osdl.org>
-References: <20060524215917.230af218.akpm@osdl.org>
-	<Pine.LNX.4.44L0.0605251005450.6990-100000@iolanthe.rowland.org>
-	<20060525074412.19a03c22.akpm@osdl.org>
-Content-Type: text/plain
-Message-Id: <1148575497.24946.40.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0
-Date: Thu, 25 May 2006 11:44:57 -0500
-Cc: cpufreq@lists.linux.org.uk, johannes@sipsolutions.net,
-	Alan Stern <stern@rowland.harvard.edu>,
-	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <eddy.petrisor@gmail.com>
+Received: from wx-out-0102.google.com (wx-out-0102.google.com [66.249.82.199])
+	by ozlabs.org (Postfix) with ESMTP id 4D67067A44
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 03:51:57 +1000 (EST)
+Received: by wx-out-0102.google.com with SMTP id s17so652956wxc
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 10:51:56 -0700 (PDT)
+Message-ID: <60381eeb0605251044i79e155f2s62fb30b93432510e@mail.gmail.com>
+Date: Thu, 25 May 2006 20:44:54 +0300
+From: "=?UTF-8?Q?Eddy_Petri=C5=9For?=" <eddy.petrisor@gmail.com>
+To: "Johannes Berg" <johannes@sipsolutions.net>
+Subject: Re: snd-aoa status update / automatic driver loading
+In-Reply-To: <1147947784.15507.46.camel@johannes>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <1147860564.14395.6.camel@johannes>
+	<60381eeb0605180025v2495715scb345d7067518ecc@mail.gmail.com>
+	<1147947784.15507.46.camel@johannes>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-05-25 at 09:44, Andrew Morton wrote:
-
-> > In essence, the problem seemed to be that the cpufreq notifier chain is
-> > sometimes expected to be blocking and sometimes expected to be atomic,
-> > based on the "val" code passed to notifier_call_chain.  The cleanest
-> > solution would be to split the single notifier chain into two chains,
-> > one always blocking and the other always atomic.
-> > 
-> > Somebody who knows more about cpufreq than I do will have to make that
-> > change.
-> > 
-> 
-> I wouldn't describe the cpufreq project as a teeming hive of frenetic
-> activity, and we need something pronto.
-> 
-> We could go back to a raw_notifier and be as buggy as we used to be.
-
-It _is_ actively being pursued today for a cleaned up
-implementation.  If there are issues or requirements
-here, we should really pass them on to the linux-pm list.
-
-Thanks,
-jdl
+T24gNS8xOC8wNiwgSm9oYW5uZXMgQmVyZyA8am9oYW5uZXNAc2lwc29sdXRpb25zLm5ldD4gd3Jv
+dGU6Cj4gT24gVGh1LCAyMDA2LTA1LTE4IGF0IDEwOjI1ICswMzAwLCBFZGR5IFBldHJpxZ9vciB3
+cm90ZToKPgo+ID4gQW55IGNoYW5jZSBmb3IgNSwyID8gV2hhdCBpcyBuZWVkZWQgZm9yIGl0PyBD
+b2RlYyBvbmx5Pwo+Cj4gSSBkb24ndCBrbm93LiBJZiB5b3UgdHJ5IGxvYWRpbmcgdGhlIG1vZHVs
+ZXMsIHRoZSBrZXJuZWwgd2lsbCB0ZWxsIHlvdQo+IHNvbWV0aGluZyBhYm91dCBhbiB1bmhhbmRs
+ZWQgbGF5b3V0IGlkLiBBbHRlcm5hdGl2ZWx5LCB5b3UgY2FuIGZpbmQgdGhlCj4gbGF5b3V0LWlk
+IGZpbGUgaW4geW91ciAvcHJvYy9kZXZpY2UtdHJlZS8gYW5kIHRlbGwgbWUgdGhlIG51bWJlciBp
+biBpdC4KPiBUaGUgcmVzdCBJIGNhbiBmaWd1cmUgb3V0LgoKSSBhbSBub3Qgc3VyZSBpZiB5b3Ug
+Y2FuIG1ha2UgX25vd18gc29tZXRoaWduIG91dCBvZiB0aGlzIGluZm8sIGJ1dCBJCmd1ZXNzIHRo
+aXMgaXMgd2lsbCBub3QgaHVydDoKCmh0dHA6Ly9saXN0cy5kZWJpYW4ub3JnL2RlYmlhbi1wb3dl
+cnBjLzIwMDYvMDQvbXNnMDAwNTkuaHRtbApodHRwOi8vbGlzdHMuZGViaWFuLm9yZy9kZWJpYW4t
+cG93ZXJwYy8yMDA2LzA0L21zZzAwMDYzLmh0bWwKCi0tIApSZWdhcmRzLApFZGR5UAo9PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KIkltYWdpbmF0aW9uIGlzIG1v
+cmUgaW1wb3J0YW50IHRoYW4ga25vd2xlZGdlIiBBLkVpbnN0ZWluCg==
