@@ -2,28 +2,20 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3648167AC5
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 19:43:27 +1000 (EST)
-Subject: Re: snd-aoa status update / automatic driver loading
+	by ozlabs.org (Postfix) with ESMTP id 4B8A867AC5
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 May 2006 20:05:38 +1000 (EST)
+Subject: Re: PowerMac: force only suspend-to-disk to be valid
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1148544004.13249.270.camel@localhost.localdomain>
-References: <1147860564.14395.6.camel@johannes>
-	<446B721D.8020203@gentoo.org>  <1148034127.15507.178.camel@johannes>
-	<1148169389.13249.44.camel@localhost.localdomain>
-	<1148280172.6228.79.camel@johannes.berg>
-	<1148422544.13249.96.camel@localhost.localdomain>
-	<1148463777.11734.19.camel@johannes>
-	<1148544004.13249.270.camel@localhost.localdomain>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1146562296.3858.9.camel@localhost>
+References: <1146562296.3858.9.camel@localhost>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-9zCgB0rekHq8jzA1eaNJ"
-Date: Thu, 25 May 2006 11:42:47 +0200
-Message-Id: <1148550168.11759.0.camel@johannes.berg>
+	boundary="=-w7yre0see/suGEfB0DUi"
+Date: Thu, 25 May 2006 12:05:27 +0200
+Message-Id: <1148551527.11759.10.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Benjamin Berg <benjamin@sipsolutions.net>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+Cc: Andrew Morton <akpm@osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,44 +26,74 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-9zCgB0rekHq8jzA1eaNJ
+--=-w7yre0see/suGEfB0DUi
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2006-05-25 at 18:00 +1000, Benjamin Herrenschmidt wrote:
+On Tue, 2006-05-02 at 11:31 +0200, Johannes Berg wrote:
+> This patch adds the .valid callback to pm_ops on PowerMac so that only th=
+e
+> suspend to disk state can be entered. Note that just returning 0 would
+> suffice since the upper layers don't pass PM_SUSPEND_DISK down, but I thi=
+nk
+> they ought to be passing it down since they do really need support (or
+> am I mistaken again?) so we handle it there regardless.
 
-> So it's bcm's fault ? Did you do a bit of analysis ? that would be
-> useful...
+No one ever seemed to care about this patch, can we queue it up for
+2.6.18? I suppose it's too late now for 2.6.17 even if it fixes the
+long-standing but that on ppc, /sys/power/state kills the machine.
 
-I kinda assumed the list was lagging again and my brother had already
-posted the solution. Yes, bcm does some measuring stuff that keeps
-interrupts disabled for lots of milliseconds (25 or something). It's
-being fixed.
+[quoted patch for reference]
 
-I still think, however, that we ought to be able to deal with lost
-interrupts.
+> --- wireless-dev.orig/arch/powerpc/platforms/powermac/setup.c	2006-05-02 =
+10:57:32.101509438 +0200
+> +++ wireless-dev/arch/powerpc/platforms/powermac/setup.c	2006-05-02 10:58=
+:44.491509438 +0200
+> @@ -463,11 +463,23 @@ static int pmac_pm_finish(suspend_state_
+>  	return 0;
+>  }
+> =20
+> +static int pmac_pm_valid(suspend_state_t state)
+> +{
+> +	switch (state) {
+> +	case PM_SUSPEND_DISK:
+> +		return 1;
+> +	/* can't do any other states via generic mechanism yet */
+> +	default:
+> +		return 0;
+> +	}
+> +}
+> +
+>  static struct pm_ops pmac_pm_ops =3D {
+>  	.pm_disk_mode	=3D PM_DISK_SHUTDOWN,
+>  	.prepare	=3D pmac_pm_prepare,
+>  	.enter		=3D pmac_pm_enter,
+>  	.finish		=3D pmac_pm_finish,
+> +	.valid		=3D pmac_pm_valid,
+>  };
+> =20
+>  #endif /* CONFIG_SOFTWARE_SUSPEND */
 
-johannes
 
---=-9zCgB0rekHq8jzA1eaNJ
+--=-w7yre0see/suGEfB0DUi
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARHV8FaVg1VMiehFYAQJypg//Q/uyZD2nBmZmqte7QsmJ4hjfOjP8H+T7
-iCPlFUDiC26VLpkd4to03TuoCMrgCNgv2h22bitUyrrVxouO/C707OCLLRTPzhW/
-dMdanchRBomlBSD/EPUZdA2QcNpIWM/sYctsMCYZUTQtTG95BQRcDR46ggL+C3z+
-hlPPvN1ajNRNniq3ef/9eYebIlFZSWAqKcb7P0O4Ayny866i4QwJzPTewyk6Rmwk
-9mGcCwbNY8anUyRZcX91FX/DSFinDaiYxr1bRdCe/23PkcCrn+L25HvlX45Vq2GL
-TFIjereGYtgJwSbz2Us5ZacN9dNJy49S/l3Ym+On8HiGh+0qmHK3zTx0o/ret6Je
-AWFW8iiY9NHpfhClejHdSNoLlwo1osJsD0P2nMV17pe24Fn9eNK+MVXGN2JrNBtg
-obenHtETdAa5Uu20iHhMpQazm1IA7WgFSw4pw/PUZXEh77M/3mkoOjnJ3v3rpvKP
-C4sbHPRYgZZ4I8iO4dcH1dCFgaLySrWnxh83enTa/eECk1goGsjazQbVeXl9024N
-A/Xb1zmCUcCfUIFmP1kpJM1sN2sUecGlkNGXT1ptZViHvPAPhORv0FgrPXDm8pDW
-7EytsvZiOhXVlCi8CeVnK5VZNeGGwAJieloRxvQgp/098KbZOx+cPABhAarew3Ch
-lPa41M1gs5k=
-=EyEB
+iQIVAwUARHWBZaVg1VMiehFYAQLeIRAAkyMD8uC8iWiSYn6ao1+LavXHPvGzOWRg
+0kNkInZCnn5VnvH1p0dwSNuLkbF5Pucf4IXSciOYkidjI3pX9lI7iMi3PoFjGxma
+dg07Qk6W5c1iNTPjmMWFFiAoN5j+MHEnh+J/Q4xDvh5zKkq+W/SM7sGz0hN1ctJu
+eaztWRIPswcxi5Ksivqx5+o0A7vDmRKMnjyPjpkdtc3wA2YX7VoOvw6xUg5s6pJm
+y2/Fr9Kl/Zjr1ICNsTOJkKhQmwDb3UjUpUXpH9UtXJE8pgKddDKXhchWJ9Bi0foQ
+F6A78RsXqLXxxElwQeswSu+vzhYiQcySvtqALh4FqqFiLXIO7SEIAwh8G009Zzzv
+wYzLO/RkjWGQxA5f7Cgw9wERREKY/Q/0roBpJDMh4x3SnY2LRYfzpAsEbh/ouaUE
+jlgAipadmWPEyJp5tYlr7ZqlmwRnhdpfyl/3tv4RFUtB354o2YuBfEaoMvxrYN5j
+9SqLkQe5r6Zi0gXiaTin7ejl/wPeAiu69QrL/V0nAyuxkFYbJCk8Z5lGpTITF/EH
+OOgykDBrnJylKBrIPFncxIPflMw7QALaWfMbzKxzcYN2A56p/0g1W5kQdQjcLVXs
+KdQNgmZgJ47hICi7+7DKDjxPeeKKjo+gcwMde+LCxaHrlMw1tkxIgantiA1ULC03
+GWXaqlDYP3o=
+=B8Hh
 -----END PGP SIGNATURE-----
 
---=-9zCgB0rekHq8jzA1eaNJ--
+--=-w7yre0see/suGEfB0DUi--
