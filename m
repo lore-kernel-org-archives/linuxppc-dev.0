@@ -1,13 +1,13 @@
 Return-Path: <paul.gortmaker@windriver.com>
 Received: from mail.wrs.com (mail.windriver.com [147.11.1.11])
-	by ozlabs.org (Postfix) with ESMTP id 4F4EE67A5C
+	by ozlabs.org (Postfix) with ESMTP id 9C69767A5C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 May 2006 04:26:59 +1000 (EST)
-Date: Thu, 25 May 2006 14:26:57 -0400
+	Fri, 26 May 2006 04:30:39 +1000 (EST)
+Date: Thu, 25 May 2006 14:30:38 -0400
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH 3/5] Updates for WRS SBC82xx boards
-Message-ID: <20060525182656.GE679@windriver.com>
+Subject: [PATCH 4/5] Updates for WRS SBC82xx boards
+Message-ID: <20060525183036.GF679@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: p_gortmaker@yahoo.com
@@ -21,42 +21,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+patch4: sbc82xx-mchk-pci9.diff1
+	- restore machine check disable for PCI9 that was in earlier
+	  m8260_pci.c
 
-patch3: sbc82xx-CONFIG.diff1
-	- add CONFIG_SBC82xx alongside CONFIG_PQ2FADS where required.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
 
 
---- linux-2.6.16_rc5/arch/ppc/syslib/m82xx_pci.c.orig	2006-02-27 14:55:41.000000000 -0500
-+++ linux-2.6.16_rc5/arch/ppc/syslib/m82xx_pci.c	2006-02-27 15:02:01.000000000 -0500
-@@ -238,7 +238,7 @@
- 		SIUMCR_APPC10 | SIUMCR_CS10PC00 |
- 		SIUMCR_BCTLC00 | SIUMCR_MMR11 ;
- 
--#elif defined CONFIG_PQ2FADS
-+#elif defined(CONFIG_PQ2FADS) || defined(CONFIG_SBC82xx)
- 	/*
- 	 * Setting required to enable IRQ1-IRQ7 (SIUMCR [DPPC]),
- 	 * and local bus for PCI (SIUMCR [LBPC]).
-@@ -292,7 +292,7 @@
- #if defined CONFIG_ADS8272
- 	/* PCI int highest prio */
- 	immap->im_siu_conf.siu_82xx.sc_ppc_alrh = 0x01236745;
--#elif defined CONFIG_PQ2FADS
-+#elif defined(CONFIG_PQ2FADS) || defined(CONFIG_SBC82xx)
- 	immap->im_siu_conf.siu_82xx.sc_ppc_alrh = 0x03124567;
+--- linux-2.6.16_rc5/arch/ppc/syslib/m82xx_pci.c.orig	2006-02-27 15:02:01.000000000 -0500
++++ linux-2.6.16_rc5/arch/ppc/syslib/m82xx_pci.c	2006-02-27 16:05:20.000000000 -0500
+@@ -227,6 +227,11 @@
+ 	immap->im_memctl.memc_pcibr1  = M82xx_PCI_SEC_WND_BASE | PCIBR_ENABLE;
  #endif
- 	/* park bus on PCI */
-@@ -380,7 +380,10 @@
- 			IORESOURCE_IO | 1, "PCI I/O");
  
- 	ppc_md.pci_exclude_device = pq2pci_exclude_device;
-+
-+#ifndef CONFIG_SBC82xx
- 	hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
++#ifdef CONFIG_8260_PCI9 
++	/* Disable machine check on no response or target abort */
++        immap->im_pci.pci_emr = cpu_to_le32(0x1fe7);
 +#endif
- 
- 	ppc_md.pci_map_irq = pq2pci_map_irq;
- 	ppc_md.pcibios_fixup = NULL;
++
+ #if defined CONFIG_ADS8272
+ 	immap->im_siu_conf.siu_82xx.sc_siumcr =
+ 		(immap->im_siu_conf.siu_82xx.sc_siumcr &
