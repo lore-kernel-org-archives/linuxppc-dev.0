@@ -2,21 +2,21 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E07AC67A70
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 08:25:07 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9D0A367A66
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 09:03:01 +1000 (EST)
 Subject: Re: [snd] looking for layout-ids
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Ken Moffat <zarniwhoop@ntlworld.com>
-In-Reply-To: <20060525221111.GB27181@deepthought.linux.bogus>
+In-Reply-To: <20060525224905.GA28647@deepthought.linux.bogus>
 References: <1148553785.11759.12.camel@johannes.berg>
 	<20060525123247.GA19308@deepthought.linux.bogus>
 	<1148560908.11759.25.camel@johannes.berg>
 	<20060525221111.GB27181@deepthought.linux.bogus>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-+lEZKiRToRPBERmecMGY"
-Date: Fri, 26 May 2006 00:24:51 +0200
-Message-Id: <1148595891.11759.48.camel@johannes.berg>
+	<1148595891.11759.48.camel@johannes.berg>
+	<20060525224905.GA28647@deepthought.linux.bogus>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 26 May 2006 01:02:49 +0200
+Message-Id: <1148598169.11759.65.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	debian-powerpc <debian-powerpc@lists.debian.org>
@@ -29,58 +29,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2006-05-25 at 23:49 +0100, Ken Moffat wrote:
+> > >   CC [M]  /home/ken/snd-aoa/soundbus/core.o
+> > > In file included from /home/ken/snd-aoa/soundbus/soundbus.h:12,
+> > >                  from /home/ken/snd-aoa/soundbus/core.c:12:
+> > > include/sound/pcm.h:59: warning: =E2=80=98struct snd_pcm_substream=E2=
+=80=99 declared
+> > > inside parameter list
+> > > include/sound/pcm.h:59: warning: its scope is only this definition
+> > > or declaration, which is probably not what you want
+> > > include/sound/pcm.h:60: warning: =E2=80=98struct snd_pcm_substream=E2=
+=80=99 declared
+> > > inside parameter list
+> >=20
+> > Nah, those should not happen. What kernel are you building against?
+> >=20
+>  2.6.17-rc5.  I had similar messages when I first tried snd-aoa,
+> which would have been around 2.6.16.5.
 
---=-+lEZKiRToRPBERmecMGY
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hm, ok, I'm currently testing against 2.6.17-rc4 so that ought to be
+fine unless they had a large alsa code drop which can't really be
+between -rc4 and -rc5 :)
 
-On Thu, 2006-05-25 at 23:11 +0100, Ken Moffat wrote:
+>  Must be the headers causing the problem then.  I wonder if it's
+> somehow using userspace headers - I might have had some 'unvalidated'
+> headers in /usr/include/sound [1].  Will take a look tomorrow,
+> although I've installed alsa lib after building snd-aoa, so that
+> probably updated the headers.
 
->  it seemed to build fine with this morning's git.  There were some
-> messages during the build which might be important (I'm using
-> gcc-4.1.0) but I guess they are probably standard alsa things :
->=20
->   CC [M]  /home/ken/snd-aoa/soundbus/core.o
-> In file included from /home/ken/snd-aoa/soundbus/soundbus.h:12,
->                  from /home/ken/snd-aoa/soundbus/core.c:12:
-> include/sound/pcm.h:59: warning: =E2=80=98struct snd_pcm_substream=E2=80=
-=99 declared
-> inside parameter list
-> include/sound/pcm.h:59: warning: its scope is only this definition
-> or declaration, which is probably not what you want
-> include/sound/pcm.h:60: warning: =E2=80=98struct snd_pcm_substream=E2=80=
-=99 declared
-> inside parameter list
+Very strange, I don't think it should be trying to include *anything*
+from /usr/include for userspace. And the line numbers match the kernel
+line numbers.
 
-Nah, those should not happen. What kernel are you building against?
+But looking at the header file again, I don't quite understand why it
+should even work at all.
 
-> i2sbus: !!!!! WARNING !!!!!
-> i2sbus: control: couldn't allocate resource
-> i2sbus: going ahead anyway
+It (pcm.h) first uses struct snd_pcm_substream:
+struct snd_pcm_ops {
+        int (*open)(struct snd_pcm_substream *substream);
+        int (*close)(struct snd_pcm_substream *substream);
+(these are the lines that give the warnings above)
 
-That's fine. Everyone gets it :)
+and then defines it much much later in line 344... Odd. I suppose gcc
+4.1.0 is more struct. Try adding to pcm.h, around line 57, just the
+definition like so:
+
+struct snd_pcm_substream;
+
+In any case, I don't think that's the actual problem. I think the point
+is that your machine isn't supported yet, can you try the patch below?
+
+But please let me know if _noheadphones is correct, it probably isn't
+and you need to tell me what connectors you have on the outside of the
+box.
 
 johannes
 
---=-+lEZKiRToRPBERmecMGY
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIVAwUARHYusaVg1VMiehFYAQLrBhAAsFTeFxIcqPG638UbjKIHXAUZMUcTMUsL
-jfv6Ga8LaKK++NeB90qeRIhcJKBEOJ07MDknb/IWe0lda+iJ9qPn9KJeMskILXr5
-bQDUkcC3DnZbElLS7zcv2e62F93dQ2DeWI8A1vIRLyzhg/dmoXdPaQZA+sTErjzm
-+kJquhKuz73wBinSzv9hH/XTrDIyTpwql9DXQi0BeO3krxR3LhBMPj4vxwBwvWZt
-EtdqZ642NtdQ4MLzGfa7sQOQBchR+w2Qarxp05l5Qe0knuplgwMheDWZLPQXO2+x
-t9M1Q1pCTd7Qe8bGvHK2XuuDliTe6Fvp1QUUjwpYvG3viQ9y+H9b/Us5Q3bBr3nr
-OH74ex05KgVAtScEliVCyG+/u3IDqBHhuBX+0saLC8+hEHRTcn2FoGE/+/1CwgXl
-P2RAtk9Fruyw//EqKJRIYVeesY94cpQykW8Uy5fIcWgZcan6lwP9j5ODp2vrQ5qg
-ipCw41/6x8/T73K3pl98yblyVgXJOjgPqRbtj5JjoonsQW3Tmv69xD2pFm1Sw5IS
-jEbRRwWGhT+tPFdZwT/XYkUTQ7ckFtR8z/3Wf2+vTMDSRzqgSTJAIWqeToJZNkDc
-AkrkgB/EYCVKqudki+4Kr+LQGd2OD4TUMdkzMfOeUsl3IiscUWm4C16wxwaTACTx
-5j2EEisVA98=
-=Alu1
------END PGP SIGNATURE-----
-
---=-+lEZKiRToRPBERmecMGY--
+--- snd-aoa.orig/aoa/fabrics/snd-aoa-fabric-layout.c	2006-05-26 01:01:17.18=
+9771119 +0200
++++ snd-aoa/aoa/fabrics/snd-aoa-fabric-layout.c	2006-05-26 01:01:42.8197711=
+19 +0200
+@@ -80,6 +80,8 @@ struct layout {
+=20
+ MODULE_ALIAS("sound-layout-82");
+ MODULE_ALIAS("sound-layout-45");
++MODULE_ALIAS("sound-layout-60");
++MODULE_ALIAS("sound-layout-61");
+ MODULE_ALIAS("sound-layout-64");
+ MODULE_ALIAS("sound-layout-65");
+ MODULE_ALIAS("sound-layout-68");
+@@ -161,6 +163,21 @@ static struct layout layouts[] =3D {
+ 		.connections =3D NULL /* TBD */,
+ 	  },
+ 	},
++	/* PowerMac9,1 */
++	{ .layout_id =3D 60,
++	  .flags =3D LAYOUT_FLAG_COMBO_LINEOUT_SPDIF,
++	  .codecs[0] =3D {
++		.name =3D "onyx",
++		.connections =3D onyx_connections_noheadphones,
++	  },
++	},
++	/* PowerMac9,1 */
++	{ .layout_id =3D 61,
++	  .codecs[0] =3D {
++		.name =3D "topaz",
++		.connections =3D NULL, /* TBD */
++	  },
++	},
+ 	/* PowerBook5,7 */
+ 	{ .layout_id =3D 64,
+ 	  .flags =3D LAYOUT_FLAG_COMBO_LINEOUT_SPDIF,
