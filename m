@@ -1,17 +1,19 @@
-Return-Path: <malik_mca2000@yahoo.co.in>
-Received: from web8413.mail.in.yahoo.com (web8413.mail.in.yahoo.com
-	[202.43.219.101]) by ozlabs.org (Postfix) with SMTP id 6781B67A79
+Return-Path: <nsundar@fulcrummicro.com>
+Received: from smtp.fulcrummicro.com (smtp.fulcrummicro.com [66.59.247.212])
+	by ozlabs.org (Postfix) with ESMTP id C757067A77
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 May 2006 00:00:42 +1000 (EST)
-Message-ID: <20060526140039.63913.qmail@web8413.mail.in.yahoo.com>
-Date: Fri, 26 May 2006 15:00:39 +0100 (BST)
-From: sandeep malik <malik_mca2000@yahoo.co.in>
-Subject: Re: Help Needed: floating point used in kernel (task=c0398410,
-	pc=3184)
-To: Roger Larsson <roger.larsson@norran.net>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <200605260949.48627.roger.larsson@norran.net>
+	Sat, 27 May 2006 00:54:11 +1000 (EST)
+Received: from [10.0.0.61] (hamilcar.internal.avlsi.com [10.0.0.61])
+	by smtp.fulcrummicro.com (Postfix) with ESMTP id 4F2B22A2B4E
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 26 May 2006 07:33:12 -0700 (PDT)
+Message-ID: <447711A7.5060200@fulcrummicro.com>
+Date: Fri, 26 May 2006 07:33:11 -0700
+From: Naru Sundar <nsundar@fulcrummicro.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: linuxppc-embedded@ozlabs.org
+Subject: 2.6 (eldk) - I2C constants
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,59 +24,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Roger,
+Hello folks, I'm porting a 2.4 driver over to 2.6 and noted some 
+weirdness in the I2C headers.  I thought it was worth checking out here.
 
-The kernel is not linked with uClibc/glibc its user
-application only which is linked with uClibc/glibc....
-What i am able to conclude is that the library
-internall might be using floating point operations and
-might be genrating some floating point instructions
-which are not handled by our board....and that might
-be the reason....or this error might be mapped in a
-generic way such that it is getting flashed in some
-particular scenarios.....
-I might be wrong but as of now i don't have any other
-explaination as now after linking with glibs the
-application is working fine.....
+include/linux/i2c.h in 2.4 defined the following constants:
+#define I2C_M_TEN   0x10    /* we have a ten bit chip address   */
+#define I2C_M_RD    0x01
+#define I2C_M_WR        0x00    /* For readable code!                   */
+#define I2C_M_NOSTART   0x4000
+#define I2C_M_REV_DIR_ADDR  0x2000
 
-Regards,
-Malik
+in ELDK 2.6 source drop I have (2.6.15), the I2C_M_WR constant was removed.
 
---- Roger Larsson <roger.larsson@norran.net> wrote:
+Any thoughts? I can declare that constant locally in the driver, but 
+since these were standard I2C message constants I thought something
+odd was up (or am I missing something obvious).
 
-> On fredag 26 maj 2006 09.38, you wrote:
-> > Hi Roger,
-> >
-> >   The problem has been resolved...the issue was in
-> the make
-> > file.....actually we were cpmiling the code with
-> gclibc and linking it with
-> > uClibc which was causing the problem.....But this
-> was real test i faced
-> > till now as all the tricks realted to the message
-> were failed.....any ways
-> > thanks for ur help.... 
-> >   Regards,
-> >   Malik
-> 
-> Now I am confused!
-> 
-> How could this cause
-> "floating point used in kernel (task=c0398410,
-> pc=3184)"
-> 
-> Both uClibc and gclibc are user land libraries. They
-> should not be able to
-> cause an kernel floating point operation. No user
-> land code should be able
-> to do this!
-> 
-> Or is it your kernel linked with uClibc/gclibc? I do
-> not think that is the
-> right thing to do...
-> 
-> /RogerL
-> 
+Thanks
 
-
-Send instant messages to your online friends http://in.messenger.yahoo.com 
+--
+Naru Sundar <nsundar@fulcrummicro.com>
+Fulcrum Microsystems
+http://www.fulcrummicro.com
