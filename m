@@ -1,17 +1,21 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5EBF567B16
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 May 2006 01:12:20 +1000 (EST)
-Date: Fri, 26 May 2006 16:12:14 +0100
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Compile failure fix for ppc on 2.6.17-rc4-mm3 (2nd attempt)
-Message-ID: <20060526151214.GA5190@skynet.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-From: mel@csn.ul.ie (Mel Gorman)
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Return-Path: <olof@lixom.net>
+Date: Fri, 26 May 2006 08:16:49 -0700
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Cell and new CPU feature bits
+Message-ID: <20060526151649.GA5067@pb15.lixom.net>
+References: <1148011621.13249.7.camel@localhost.localdomain>
+	<20060519051939.GJ8220@pb15.lixom.net>
+	<1148624357.8089.88.camel@localhost.localdomain>
+	<20060526064341.GA6183@pb15.lixom.net>
+	<1148628831.8089.107.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1148628831.8089.107.camel@localhost.localdomain>
+From: Olof Johansson <olof@lixom.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, Steve Munroe <sjmunroe@us.ibm.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Olof Johansson <olof@lixom.net>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(Resending with Andrew's email address correct this time)
+On Fri, May 26, 2006 at 05:33:51PM +1000, Benjamin Herrenschmidt wrote:
 
-For the last few -mm releases, kernels built for an old RS6000 failed to
-compile with the message;
+> > Do we see this likely to be used in "global userspace", or more likely
+> > in the processor-specific glibc sections? If it's in the
+> > processor-specific ones, maybe we should have a per-processor bitfield
+> > with erratas/features instead of a global one. That'd make allocation
+> > easier too.
+> 
+> Do we have to deal with that many errata that affect userland ? It's
+> generally an area where processors are fairly well validated... I don't
+> think we need to scale up that much on this one.
 
-arch/powerpc/kernel/built-in.o(.init.text+0x77b4): In function `vrsqrtefp':
-: undefined reference to `__udivdi3'
-arch/powerpc/kernel/built-in.o(.init.text+0x7800): In function `vrsqrtefp':
-: undefined reference to `__udivdi3'
-make: *** [.tmp_vmlinux1] Error 1
+Right, amount of erratas should be limited. BUt the amount of features
+can be larger, especially as they grow over time and never go away.
 
-2.6.17-rc5 is not affected but I didn't search for the culprit patch in
--mm. The following patch adds an implementation of __udivdi3 for plain old
-ppc32. This may not be the correct fix as Google tells me that __udivdi3
-has been replaced by calls to do_div() in a number of cases. There was no
-obvious way to do that for vrsqrtefp, hence this workaround. The patch should
-be acked, rejected or replaced by a ppc expert.
+> > > Yes, I think a new CPU feature bit for that too is needed. Not much of
+> > > these left...
+> > 
+> > Well, are these instructions architected in some later version past
+> > 2.02? If so, the bit is only needed on the older processors -- yet again
+> > a case for sub-feature/errata bitmasks.
+> 
+> I have to check but I suspect it's still optional.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Ok. Features like that tend to be implementation-specific in the firt
+processor they show up in, and later make it into the architecture.
+That's why I'm asking. :-)
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.17-rc5-clean/arch/powerpc/lib/Makefile linux-2.6.17-rc5-udivdi3_ppc/arch/powerpc/lib/Makefile
---- linux-2.6.17-rc5-clean/arch/powerpc/lib/Makefile	2006-05-25 02:50:17.000000000 +0100
-+++ linux-2.6.17-rc5-udivdi3_ppc/arch/powerpc/lib/Makefile	2006-05-26 13:17:15.000000000 +0100
-@@ -4,7 +4,7 @@
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-y			:= string.o strcase.o
--obj-$(CONFIG_PPC32)	+= div64.o copy_32.o checksum_32.o
-+obj-$(CONFIG_PPC32)	+= div64.o copy_32.o checksum_32.o udivdi3.o
- endif
- 
- obj-y			+= bitops.o
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.17-rc5-clean/arch/powerpc/lib/udivdi3.c linux-2.6.17-rc5-udivdi3_ppc/arch/powerpc/lib/udivdi3.c
---- linux-2.6.17-rc5-clean/arch/powerpc/lib/udivdi3.c	2006-05-26 13:17:22.000000000 +0100
-+++ linux-2.6.17-rc5-udivdi3_ppc/arch/powerpc/lib/udivdi3.c	2006-05-26 13:25:26.000000000 +0100
-@@ -0,0 +1,15 @@
-+/*
-+ * Simple __udivdi3 function which doesn't use FPU.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <asm-generic/div64.h>
-+
-+u64 __udivdi3(u64 n, u64 d)
-+{
-+	if (d & ~0xffffffff)
-+		panic("Need true 64-bit/64-bit division");
-+	return __div64_32(&n, (u32)d);
-+}
-+
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+-Olof
