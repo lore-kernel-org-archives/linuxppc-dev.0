@@ -1,20 +1,22 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
-	by ozlabs.org (Postfix) with ESMTP id 366F167AA0
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 May 2006 06:06:49 +1000 (EST)
-To: Heiko J Schick <schihei@de.ibm.com>
-Subject: Re: [openib-general] [PATCH 06/16] ehca: interrupt handling routines
-References: <4468BD63.6070509@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 26 May 2006 13:06:44 -0700
-In-Reply-To: <4468BD63.6070509@de.ibm.com> (Heiko J. Schick's message of "Mon,
-	15 May 2006 19:41:55 +0200")
-Message-ID: <ada3bewh7or.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
-	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7220A67A77
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 May 2006 07:42:05 +1000 (EST)
+Subject: Re: [snd] looking for layout-ids
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Eddy =?UTF-8?Q?Petri=C5=9For?= <eddy.petrisor@gmail.com>
+In-Reply-To: <60381eeb0605260902p4420757ai3669aba711122014@mail.gmail.com>
+References: <1148553785.11759.12.camel@johannes.berg>
+	<60381eeb0605260902p4420757ai3669aba711122014@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 27 May 2006 07:41:43 +1000
+Message-Id: <1148679703.8089.162.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	debian-powerpc <debian-powerpc@lists.debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > +	for_each_online_cpu(cpu) {
- > +		task = create_comp_task(pool, cpu);
- > +		if (task) {
- > +			kthread_bind(task, cpu);
- > +			wake_up_process(task);
- > +		}
- > +	}
+On Fri, 2006-05-26 at 19:02 +0300, Eddy Petrişor wrote:
+> On 5/25/06, Johannes Berg <johannes@sipsolutions.net> wrote:
+> > Hey,
+> 
+> Hi,
+> 
+> > [1] to find your layout-id, execute the following:
+> >
+> >   find /proc/device-tree/ -name layout-id | xargs hexdump -e '1/4 "0x%x\n"'
+> >
+> > If you get no output, you have no layout-id property. If you do get
+> 
+> What are the plans for machines without layout-id, like the 5,2 model?
+> Will there be any alsa/aoa support at some point?
 
-How does this creation of a thread pool work with respect to CPU
-hotplug?  What happens if a CPU goes away?  How about if only one CPU
-is running when the driver is loaded, and then 15 more are hot-added?
+There will be, but let's get the ones with layout-id first since
+snd-powermac should work on the older ones.
 
- > +	for (i = 0; i < NR_CPUS; i++) {
- > +		if (cpu_online(i))
- > +			destroy_comp_task(pool, i);
- > +	}
-
-And it seems in the destroy function, you will possibly leak threads
-or try to kill a non-existent thread if the set of online CPUs has
-changed since the driver started...
-
- - R.
+Ben.
