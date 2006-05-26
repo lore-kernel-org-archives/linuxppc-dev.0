@@ -1,23 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA88C67A5C
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 17:28:29 +1000 (EST)
-Subject: Re: [snd] looking for layout-ids
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1148606268.8089.12.camel@localhost.localdomain>
-References: <1148553785.11759.12.camel@johannes.berg>
-	<1148606268.8089.12.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-eii52smJxYU3NHL76fOt"
-Date: Fri, 26 May 2006 09:28:04 +0200
-Message-Id: <1148628484.16989.3.camel@johannes.berg>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: Cell and new CPU feature bits
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20060526064341.GA6183@pb15.lixom.net>
+References: <1148011621.13249.7.camel@localhost.localdomain>
+	<20060519051939.GJ8220@pb15.lixom.net>
+	<1148624357.8089.88.camel@localhost.localdomain>
+	<20060526064341.GA6183@pb15.lixom.net>
+Content-Type: text/plain
+Date: Fri, 26 May 2006 17:33:51 +1000
+Message-Id: <1148628831.8089.107.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>, Steve Munroe <sjmunroe@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,47 +24,59 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-eii52smJxYU3NHL76fOt
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > I think a new feature bit is the way to go but we need to start now
+> > about how to extend our feature bit facility, maybe by defining an
+> > AT_HWCAP2 ? Steve, what is your position there ?
+> 
+> And what happens when that gets full? Or can we make that one dynamic in
+> size?
 
-On Fri, 2006-05-26 at 11:17 +1000, Benjamin Herrenschmidt wrote:
+You can't make AT_* entries dynamic, though we can be ugly and have them
+contain an offset to some space on the stack with a blob, though that
+would require serious hacks in the kernel's binfmt_elf I suppose. Even
+if it's a bit ugly, there is no fundamental problem with adding
+AT_HWCAP2 and maybe later 3 etc... A given bit is defined to be in a
+given one of these, thus apps who know about a bit that is in AT_HWCAP-N
+(and are looking for it) will also know about AT_HWCAP-N. Still ugly
+tho.
 
-> I think we need to be careful about a couple other things:
->=20
->  - We need non-pmf GPIO. Some layout-id based machines do need that,
-> like the mac mini
+> > Thus should we add a feature bit documenting the existence of those
+> > instructions or should we use an errata bit (provided we define
+> > something for passing them as suggested above) ?
+> 
+> Only if there's truly uses for it. Do we really want to allocate global
+> bits for every errata that every vendor introduces?
 
-Yeah, I saw that, but I need more insight into how that should work with
-a feature call or so...
+If they affect userland, yes.
 
->  - I'm tempted to rename soundbus/i2sbus to snd-aoa-soundbus and
-> snd-aoa-i2sbus (at least the module names) for now.=20
+> Do we see this likely to be used in "global userspace", or more likely
+> in the processor-specific glibc sections? If it's in the
+> processor-specific ones, maybe we should have a per-processor bitfield
+> with erratas/features instead of a global one. That'd make allocation
+> easier too.
 
-Yeah, I guess that ought to be done. Not just the module names, also the
-sysfs visible part (though that's easy).
+Do we have to deal with that many errata that affect userland ? It's
+generally an area where processors are fairly well validated... I don't
+think we need to scale up that much on this one.
 
-johannes
+> I.e. a main feature bitmask like we have now (architecture base
+> version), and a sub-bitmask with the optional features. That also avoids
+> the issue of allocating a global bit for something that is a feature in
+> version X but non-optional in X+1, you can never "get that bit back".
 
---=-eii52smJxYU3NHL76fOt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Could be. Steve, what do you think ?
 
------BEGIN PGP SIGNATURE-----
+> > Yes, I think a new CPU feature bit for that too is needed. Not much of
+> > these left...
+> 
+> Well, are these instructions architected in some later version past
+> 2.02? If so, the bit is only needed on the older processors -- yet again
+> a case for sub-feature/errata bitmasks.
 
-iQIVAwUARHauAKVg1VMiehFYAQL6sQ/8DvltS0+e68bMqpS72UykLhqYgIX3BSz4
-keNORre3FytcrX9hEiVmUWTkI5nR8aecI7ByNzXLhZaKrKeT337zXe/KJYYLyvHG
-xVlVi6gfFef94rgRTHa4ObqAsa8ONmxBGiD9bKDjUmgoe6nSL3kR1H3bXmZgAfLe
-QRTonIg07HoBw3qgsevyj90iDsnc24w32Ner+aeSHk1vg46XRy+Rc5AfIS5aSztq
-m8jXVA25lX17j+eFHUP+MAH4tJFq6e135efco3VksDIUqV2PdazRYn+TXtxPRqhx
-1ZTZ7sW/uIktPmC7ieXkCbBaquRt+K7SHZvN9Cdmm5T+LeIKuu6CdFnNZaKHEood
-O+x3diAo/xW7JIlVJG4vLav4xoSk5PM/O+gHYF4ykULWDMMxmMQhbPrJPa+/3krt
-dR3z56X/pnK21K1Q/Y01hZfrzyr334oHlKDNUgF6WDK0aFYufjGT6/zNXI+BGsyL
-XTQ3bag7EViF1jwQzr3AKHq8KAEaHkp2Qv09KxDZYOKDXsJVcM9yP9coyhgsdOF1
-X2uVkqKBOLRmzPmAyHYDIavI/ykmSf1G31zvg0Qmos9oynbOL36z5oPq+TK4ntDX
-97m+Qsa7QgkW5YjnL3AulnzPdhSNZf1lTFyDqsU/CzjUWUDU0u8iz+UnSHOZ7SEW
-S7Jtl7450KY=
-=hIMo
------END PGP SIGNATURE-----
+I have to check but I suspect it's still optional.
 
---=-eii52smJxYU3NHL76fOt--
+> [rest is good discussion but I don't have much input on it at this time.
+> Something gestalt-like could be good, it'd help remove some of the
+> current limits on bitmap sizes, etc]
+
+Ben.
