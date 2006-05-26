@@ -2,16 +2,16 @@ Return-Path: <mel@csn.ul.ie>
 Received: from holly.csn.ul.ie (holly.csn.ul.ie [193.1.99.76])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CBD4267B15
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 May 2006 01:07:46 +1000 (EST)
-Date: Fri, 26 May 2006 16:07:38 +0100
+	by ozlabs.org (Postfix) with ESMTP id 5EBF567B16
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 May 2006 01:12:20 +1000 (EST)
+Date: Fri, 26 May 2006 16:12:14 +0100
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Compile failure fix for ppc on 2.6.17-rc4-mm3
-Message-ID: <20060526150738.GA4708@skynet.ie>
+Subject: [PATCH] Compile failure fix for ppc on 2.6.17-rc4-mm3 (2nd attempt)
+Message-ID: <20060526151214.GA5190@skynet.ie>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-15
 From: mel@csn.ul.ie (Mel Gorman)
-Cc: apkm@osdl.org, linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,6 +20,8 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+(Resending with Andrew's email address correct this time)
 
 For the last few -mm releases, kernels built for an old RS6000 failed to
 compile with the message;
