@@ -1,23 +1,17 @@
-Return-Path: <kkboyanov@gmail.com>
-Received: from wx-out-0102.google.com (wx-out-0102.google.com [66.249.82.194])
-	by ozlabs.org (Postfix) with ESMTP id A2AC967B18
+Return-Path: <malik_mca2000@yahoo.co.in>
+Received: from web8405.mail.in.yahoo.com (web8405.mail.in.yahoo.com
+	[202.43.219.153]) by ozlabs.org (Postfix) with SMTP id 8D04767A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 May 2006 09:33:56 +1000 (EST)
-Received: by wx-out-0102.google.com with SMTP id s17so701088wxc
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 May 2006 16:33:55 -0700 (PDT)
-Message-ID: <929bf310605251633y110bb24br@mail.gmail.com>
-Date: Fri, 26 May 2006 01:33:55 +0200
-From: "Konstantin Boyanov" <kkboyanov@gmail.com>
+	Fri, 26 May 2006 17:45:59 +1000 (EST)
+Message-ID: <20060526074557.92475.qmail@web8405.mail.in.yahoo.com>
+Date: Fri, 26 May 2006 08:45:56 +0100 (BST)
+From: sandeep malik <malik_mca2000@yahoo.co.in>
+Subject: RE: Help Needed: floating point used in kernel (task=c0398410,
+	pc =3184)
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: VME driver problem on MVME6100
-In-Reply-To: <929bf310605251200s66106eaer@mail.gmail.com>
+In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673026FD914@zch01exm40.ap.freescale.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_15637_2226465.1148600035139"
-References: <929bf310605250923i1924c12bj@mail.gmail.com>
-	<007501c6801c$3b86fde0$0400a8c0@DLAPTOP>
-	<929bf310605251200s66106eaer@mail.gmail.com>
+Content-Type: multipart/alternative; boundary="0-1377189162-1148629556=:92388"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,184 +22,67 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_15637_2226465.1148600035139
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+--0-1377189162-1148629556=:92388
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-2006/5/25, Konstantin Boyanov <kkboyanov@gmail.com>:
->
-> Hi again,
->
-> The problem persist even with the new driver for 2.6 ... :(
-> It is obvious that the driver cannot allocate memory for the window... It
-> fails that thing called __ioremap(), whatever it might be used for:
->
-> [mvme6100]# vme_setoutboundwin -h
-> vme_setoutboundwin
-> Usage: vme_setoutboundwin <options>
->         -w <window>     window(where 0<=3Dwindow<=3D6)
->         -m <mode>       address mode (where
-> 0=3DA16,1=3DA24,2=3DA32,3=3DA64,4=3DCRCSR)
->         -p <protocol>   protocol (where
-> 1=3DSCT,2=3DBLT,4=3DMBLT,8=3D2eVME,0x10=3D2eSST)
->         -a <VME addr>   VME address
->         -d <data width> data width (8, 16, 32, 64)
->         -s <window size>        window size (where 0 < window_size <=3D
-> 0x400000)
->         -v              Be more verbose
->         -h              Give this (short) help
->
-> [mvme6100]# vme_setoutboundwin -w0 -m0 -p8 -a0x8800 -d16 -s400000 -v
-> window =3D 0, mode =3D 0 protocol 0x8 vme_addr =3D 0x8800 data width =3D =
-16
-> __ioremap(): phys addr 01000000 is RAM lr d100be34
-> vmedrv: No memory for outbound window
-> ioctl VME_IOCTL_SET_OUTBOUND failed.: Cannot allocate memory
->
-> While searching on the web for information about __ioremap I found this:
->
-> /*
->  * Remap an arbitrary physical address space into the kernel virtual
->  * address space. Needed when the kernel wants to access high addresses
->  * directly.
->  *
->
->  * NOTE! We need to allow non-page-aligned mappings too: we will obviousl=
-y
->  * have to convert them into an offset in a page-aligned mapping, but the
->  * caller shouldn't need to know that small detail.
->  */
->
->
->  And another thing - people should not be using __ioremap() unless they
-> have a _good_ _reason_ in their driver.  They should be using ioremap()
-> instead.  __ioremap() is an architecture implementation detail which
->
-> has no interface stability guarantees _at all_.
->
-> How's that? So it seems that the kernel can't translate the accesses to
-> the VME bus propperly. Any ideas how to fix that?
-> Actually I cant figure out why configuring a single outbound window is so
-> damn tough to achieve.e maybe I'm missing some crutial settings. I tried
-> to set up the window attribute register, and the outbound translation off=
-set
-> register in the hope to fit in the needed size for the window, but again
-> failed. I'm trying to get frustrated about that...
->
-> Best regards,
-> Konstantin
->
->  P.S. I forgot to say that on the target I'm booting a bare kernel with
-not much functionality. Could it be that there are missing some settings fo=
-r
-the virtual memory management, which are crutial for the VME driver? I mean
-the above message "phys addr 01000000 is RAM lr d100be34" is somehow
-connected to misconfiguration (or lack of it at all) for the virtual memory
-pages? That's what I can think of som late in the night...
-Thank you anyways.
+.Hi All...
+   
+  The problem has been resolved and was no where related to the hardware or software using the floating points....Actually it was associated with wrong linkage....the code was being compiled with gclibc and linked with uClibc....so sometime it was working and sometime it was failing and that too at various different points......
+  Thanks everyone for ur help.....
+   
+  Regards,
+  Malik 
+  .
 
-Best regards,
-Konstantin
+Liu Dave-r63238 <DaveLiu@freescale.com> wrote:
+  Malik,
 
-------=_Part_15637_2226465.1148600035139
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Because PPC8325 have NO float point unit, so please compile all of source code with gcc 8325 compiler
+or use fixed simulate. The source code includs kernel, and filesystem.
 
-<br><br><div><span class=3D"gmail_quote">2006/5/25, Konstantin Boyanov &lt;=
-<a href=3D"mailto:kkboyanov@gmail.com">kkboyanov@gmail.com</a>&gt;:</span><=
-blockquote class=3D"gmail_quote" style=3D"border-left: 1px solid rgb(204, 2=
-04, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Hi again,<br>
-<br>
-The problem persist even with the new driver for 2.6 ... :(<br>
-It is obvious that the driver cannot allocate memory for the window...
-It fails that thing called __ioremap(), whatever it might be used for:<br>
-<br>
-<div style=3D"margin-left: 40px;">[mvme6100]# vme_setoutboundwin -h<br>
-vme_setoutboundwin<br>
-Usage: vme_setoutboundwin &lt;options&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -w &lt;window&gt;&nbsp;&nbsp;&nb=
-sp;&nbsp; window(where 0&lt;=3Dwindow&lt;=3D6)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -m
-&lt;mode&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; address mode (where
-0=3DA16,1=3DA24,2=3DA32,3=3DA64,4=3DCRCSR)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -p
-&lt;protocol&gt;&nbsp;&nbsp; protocol (where
-1=3DSCT,2=3DBLT,4=3DMBLT,8=3D2eVME,0x10=3D2eSST)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -a &lt;VME addr&gt;&nbsp;&nbsp; =
-VME address<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -d &lt;data width&gt; data width=
- (8, 16, 32, 64)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -s &lt;window
-size&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; window size (where 0
-&lt; window_size &lt;=3D 0x400000)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--v&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;
-Be more verbose<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;
-Give this (short) help<br>
-<br>
-[mvme6100]# vme_setoutboundwin -w0 -m0 -p8 -a0x8800 -d16 -s400000 -v<br>
-window =3D 0, mode =3D 0 protocol 0x8 vme_addr =3D 0x8800 data width =3D 16
-<span class=3D"q"><br>
-__ioremap(): phys addr 01000000 is RAM lr d100be34
-<br></span><span class=3D"q">
-vmedrv: No memory for outbound window
-<br></span>
-ioctl VME_IOCTL_SET_OUTBOUND failed.: Cannot allocate memory
-<br>
-</div>
-<br>
-While searching on the web for information about __ioremap I found this:<br=
->
-<pre style=3D"margin-left: 40px;"><font size=3D"-1">/*<br> * Remap an arbit=
-rary physical address space into the kernel virtual<br> * address space. Ne=
-eded when the kernel wants to access high addresses<br> * directly.<br> *<b=
-r>
-<br> * NOTE! We need to allow non-page-aligned mappings too: we will obviou=
-sly<br> * have to convert them into an offset in a page-aligned mapping, bu=
-t the<br> * caller shouldn't need to know that small detail.<br> */</font>
-</pre>
+Dave
+
+-----Original Message-----
+
+Hi All...
+
+I am trying to run an application compiled with gcc toolchain gcc--3.4.3 and glibc -2.3.4 on PPC 8325 board running Linux 2.6.11....but some how I am getting following error....
+
+floating point used in kernel (task=c0398410, pc=3184)
+floating point used in kernel (task=c0398410, pc=3184)
+floating point used in kernel (task=c0398410, pc=3184)
+floating point used in kernel (task=c0398410, pc=3184)
+floating point used in kernel (task=c0398410, pc=3184)
+floating point used in kernel (task=c0398410, pc=3184)
+
+I was suspecting this error might be because the hardware is not supporting floating point operations and hence i tried a simple program in which I intentionally did some floating point operation but that program was running as expected. So i concluded that it is not a problem related to floating point operations....I even tried compiling the application with classic ppc compiler(Ver 3.4.3) with -msoft-float option enabled, but still the results were same......
+
+After these errors i am not able to get control of the system. If anyone who faced this or any such related issue please help me out like what could be probable reason for this error and what all options i have to debug this issue.....
+
+Thanks & Regards,
+Malik
 
 
-<div style=3D"margin-left: 40px;"><br>
-</div>
+Yahoo! India Answers Share what your know-how and wisdom
+Send free SMS to your Friends on Mobile from your Yahoo! Messenger Download now
 
-<pre style=3D"margin-left: 40px;">And another thing - people should not be =
-using __ioremap() unless they<br>have a _good_ _reason_ in their driver.  T=
-hey should be using ioremap()<br>instead.  __ioremap() is an architecture i=
-mplementation detail which
-<br><br>has no interface stability guarantees _at all_.</pre>
-How's that? So it seems that the kernel can't translate the accesses to the=
- VME bus propperly. Any ideas how to fix that?<br>
-Actually I cant figure out why configuring a single outbound window is
-so damn tough to achieve.e maybe I'm missing some crutial settings. I
-tried to set up the window attribute register, and the outbound
-translation offset register in the hope to fit in the needed size for
-the window, but again failed. I'm trying to get frustrated about that...<br=
->
-<br>
-Best regards,<br><span class=3D"sg">
-Konstantin<br>
-<br>
 
-</span></blockquote></div>&nbsp;P.S. I forgot to say that on the target
-I'm booting a bare kernel with not much functionality. Could it be that
-there are missing some settings for the virtual memory management,
-which are crutial for the VME driver? I mean the above message <span class=
-=3D"q">&quot;phys
-addr 01000000 is RAM lr d100be34&quot; is somehow connected to
-misconfiguration (or lack of it at all) for the virtual memory pages?
-That's what I can think of som late in the night...<br>
-Thank you anyways.<br>
-<br>
-Best regards,<br>
-Konstantin<br>
-</span><br>
+				
+---------------------------------
+  Yahoo! India Answers Share what your know-how and wisdom
+ Send free SMS to your Friends on Mobile from your Yahoo! Messenger Download now
+--0-1377189162-1148629556=:92388
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-------=_Part_15637_2226465.1148600035139--
+<div>.Hi All...</div>  <div>&nbsp;</div>  <div>The problem has been resolved and was no where related to the hardware or software using the floating points....Actually it was associated with wrong linkage....the code was being compiled with gclibc and linked with uClibc....so sometime it was working and sometime it was failing and that too at various different points......</div>  <div>Thanks everyone for ur help.....</div>  <div>&nbsp;</div>  <div>Regards,</div>  <div>Malik&nbsp;</div>  <div>.<BR><BR><B><I>Liu Dave-r63238 &lt;DaveLiu@freescale.com&gt;</I></B> wrote:</div>  <BLOCKQUOTE class=replbq style="PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #1010ff 2px solid">Malik,<BR><BR>Because PPC8325 have NO float point unit, so please compile all of source code with gcc 8325 compiler<BR>or use fixed simulate. The source code includs kernel, and filesystem.<BR><BR>Dave<BR><BR>-----Original Message-----<BR><BR>Hi All...<BR><BR>I am trying to run an application compiled with
+ gcc toolchain gcc--3.4.3 and glibc -2.3.4 on PPC 8325 board running Linux 2.6.11....but some how I am getting following error....<BR><BR>floating point used in kernel (task=c0398410, pc=3184)<BR>floating point used in kernel (task=c0398410, pc=3184)<BR>floating point used in kernel (task=c0398410, pc=3184)<BR>floating point used in kernel (task=c0398410, pc=3184)<BR>floating point used in kernel (task=c0398410, pc=3184)<BR>floating point used in kernel (task=c0398410, pc=3184)<BR><BR>I was suspecting this error might be because the hardware is not supporting floating point operations and hence i tried a simple program in which I intentionally did some floating point operation but that program was running as expected. So i concluded that it is not a problem related to floating point operations....I even tried compiling the application with classic ppc compiler(Ver 3.4.3) with -msoft-float option enabled, but still the results were same......<BR><BR>After these errors i am
+ not able to get control of the system. If anyone who faced this or any such related issue please help me out like what could be probable reason for this error and what all options i have to debug this issue.....<BR><BR>Thanks &amp; Regards,<BR>Malik<BR><BR><BR>Yahoo! India Answers Share what your know-how and wisdom<BR>Send free SMS to your Friends on Mobile from your Yahoo! Messenger Download now<BR></BLOCKQUOTE><BR><p>
+	
+
+	
+		<hr size=1></hr> 
+ <a href="http://us.rd.yahoo.com/mail/in/mailanswersshare/*http://in.answers.yahoo.com/">Yahoo! India Answers</a> Share what your know-how and wisdom<br> 
+Send free SMS to your Friends on Mobile from your Yahoo! Messenger <a href="http://us.rd.yahoo.com/mail/in/freesms/*http://messenger.yahoo.com/download.php">Download now</a>
+--0-1377189162-1148629556=:92388--
