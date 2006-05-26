@@ -1,21 +1,20 @@
-Return-Path: <linville@tuxdriver.com>
-Received: from ra.tuxdriver.com (ra.tuxdriver.com [24.172.12.4])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29F9467AA0
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 May 2006 05:44:24 +1000 (EST)
-Date: Fri, 26 May 2006 15:24:37 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Subject: Re: [PATCH,
-	2.6.17-rc4-git10] ieee80211softmac_io.c: fix warning "defined but not
-	used"
-Message-ID: <20060526192432.GC32487@tuxdriver.com>
-References: <200605231549.43430.toralf.foerster@gmx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200605231549.43430.toralf.foerster@gmx.de>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id 366F167AA0
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 May 2006 06:06:49 +1000 (EST)
+To: Heiko J Schick <schihei@de.ibm.com>
+Subject: Re: [openib-general] [PATCH 06/16] ehca: interrupt handling routines
+References: <4468BD63.6070509@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 26 May 2006 13:06:44 -0700
+In-Reply-To: <4468BD63.6070509@de.ibm.com> (Heiko J. Schick's message of "Mon,
+	15 May 2006 19:41:55 +0200")
+Message-ID: <ada3bewh7or.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	linuxppc-dev@ozlabs.org, Christoph Raisch <RAISCH@de.ibm.com>,
+	Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>, Marcus Eder <MEDER@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 23, 2006 at 03:49:40PM +0200, Toralf Förster wrote:
-> Got this compiler warning today and Johannes Berg <johannes@sipsolutions.net> wrote:
-> 
-> Yeah, known 'bug', we have that code there but never use it. Feel free
-> to submit a patch (to John Linville, CC netdev and softmac-dev) to
-> remove it.
-> 
-> Signed-off-by: Toralf Foerster <toralf.foerster@gmx.de>
+ > +	for_each_online_cpu(cpu) {
+ > +		task = create_comp_task(pool, cpu);
+ > +		if (task) {
+ > +			kthread_bind(task, cpu);
+ > +			wake_up_process(task);
+ > +		}
+ > +	}
 
-This patch is whitespace-damaged.  Please teach your mailer not to
-convert tabs to spaces and resubmit.
+How does this creation of a thread pool work with respect to CPU
+hotplug?  What happens if a CPU goes away?  How about if only one CPU
+is running when the driver is loaded, and then 15 more are hot-added?
 
-Thanks!
+ > +	for (i = 0; i < NR_CPUS; i++) {
+ > +		if (cpu_online(i))
+ > +			destroy_comp_task(pool, i);
+ > +	}
 
-John
+And it seems in the destroy function, you will possibly leak threads
+or try to kill a non-existent thread if the set of online CPUs has
+changed since the driver started...
 
-> --- linux-2.6.17-rc4-git10-pcie-rme9652/net/ieee80211/softmac/ieee80211softmac_io.c.old 2006-05-12 09:44:47.000000000 +0200
-> +++ linux-2.6.17-rc4-git10-pcie-rme9652/net/ieee80211/softmac/ieee80211softmac_io.c     2006-05-23 15:16:38.000000000 +0200
-> @@ -456,31 +456,3 @@
->         return IEEE80211_2ADDR_LEN;
->  }
-> 
-> -
-> -/* Sends a control packet */
-> -static int
-> -ieee80211softmac_send_ctl_frame(struct ieee80211softmac_device *mac,
-> -       struct ieee80211softmac_network *net, u32 type, u32 arg)
-> -{
-> -       void *pkt = NULL;
-> -       u32 pkt_size = 0;
-
-<snip>
-
--- 
-John W. Linville
-linville@tuxdriver.com
+ - R.
