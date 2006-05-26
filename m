@@ -1,22 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jgarzik@pobox.com>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 958AD67A70
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 17:59:42 +1000 (EST)
-Subject: Re: [snd] looking for layout-ids
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1148628484.16989.3.camel@johannes.berg>
-References: <1148553785.11759.12.camel@johannes.berg>
-	<1148606268.8089.12.camel@localhost.localdomain>
-	<1148628484.16989.3.camel@johannes.berg>
-Content-Type: text/plain
-Date: Fri, 26 May 2006 17:59:19 +1000
-Message-Id: <1148630360.8089.128.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	debian-powerpc <debian-powerpc@lists.debian.org>
+	by ozlabs.org (Postfix) with ESMTP id C939667A76
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 18:56:16 +1000 (EST)
+Message-ID: <4476C2A0.3030308@pobox.com>
+Date: Fri, 26 May 2006 04:56:00 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+MIME-Version: 1.0
+To: Sven Luther <sven.luther@wanadoo.fr>
+Subject: Re: [PATCH/2.6.17-rc4 10/10]  bugs fix for marvell SATA on powerp
+	c pl atform
+References: <9FCDBA58F226D911B202000BDBAD46730626DE6E@zch01exm40.ap.freescale.net>
+	<1147935734.17679.93.camel@localhost.localdomain>
+	<446C9219.4080300@pobox.com> <446CDE26.8090504@rtr.ca>
+	<20060526083931.GA23938@powerlinux.fr>
+In-Reply-To: <20060526083931.GA23938@powerlinux.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Alexandre.Bounine@tundra.com, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, Mark Lord <liml@rtr.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,82 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-05-26 at 09:28 +0200, Johannes Berg wrote:
-> On Fri, 2006-05-26 at 11:17 +1000, Benjamin Herrenschmidt wrote:
+Sven Luther wrote:
+> On Thu, May 18, 2006 at 04:50:46PM -0400, Mark Lord wrote:
+>> Jeff Garzik wrote:
+>>> Benjamin Herrenschmidt wrote:
+>>>> On Thu, 2006-05-18 at 12:03 +0800, Zang Roy-r61911 wrote:
+>> ..
+>>>>> @@ -1567,13 +1570,18 @@ static void mv5_read_preamp(struct mv_ho
+>>>>>  static void mv5_enable_leds(struct mv_host_priv *hpriv, void __iomem
+>>>> *mmio)
+>>>>>  {
+>>>>>       u32 tmp;
+>>>>> -
+>>>>> +#ifndef CONFIG_PPC
+>>>>>       writel(0, mmio + MV_GPIO_PORT_CTL);
+>>>>> +#endif
+>>>> You'll have to do better here too... I don't wee why when compiled on
+>>>> PPC, this driver should "magically" not clear those bits... At the very
+>>>> least, you should test the machine type if you want to do something
+>>>> specific to your platform, but first, you'll have to convince Jeff why
+>>>> this change has to be done in the first place and if there is a better
+>>>> way to handle it.
+>>> Correct...  it does seem some bugs were found, but #ifdef powerpc is 
+>>> certainly out of the question.  We want the driver to work without 
+>>> ifdefs on all platforms.
+>> Yup.  I have a powerpc platform here with PCI-X, and a PCI-X Marvell card
+>> to try in it.  So I'll pick up these changes and try to integrate them a
+>> little more nicely in my internal updated driver, and then pass it on to Jeff.
 > 
-> > I think we need to be careful about a couple other things:
-> > 
-> >  - We need non-pmf GPIO. Some layout-id based machines do need that,
-> > like the mac mini
+> Hi, ...
 > 
-> Yeah, I saw that, but I need more insight into how that should work with
-> a feature call or so...
-
-Well, look at the tumbler code. The address you pass to the feature call
-is the GPIO offset from the beginning of mac-io. Since Apple stuff isn't
-always consistent, you have 2 ways of getting to it:
-
- - Use the "reg" property as normally expected... except that Apple has
-bugs there where that property contains an offset that is either
-relative to the beginning of the GPIO block (which itself is at 0x50 in
-mac-io) or to the beginning of mac-io. It _seems_ however that they are
-consistent with the bug in the sense that most GPIOs are relative to the
-GPIO block except the audio ones that are relative to the beginning of
-mac-io. The "trick" you can use is that since the GPIO block is less
-than 0x50 bytes long, you can take the value of "reg" and do something
-like:
-
-	offset = (reg >= 0x50) ? reg : (reg + 0x50);
-
-It's ugly but will work I think will all incarnations of mac-io
-
- - Specifically for audio-GPIOs it seems that they also have an
-AAPL,address property that contains the physical address of the GPIO
-within mac-io. For example, headphone-detect on the mac-mini contains:
-
-	AAPL,address     80000067
-
-In that case, what you can do is take that property and strip off the
-top bits
-
-	offset = aapl_addr & 0xff;
-
-In both case, the resulting offset can then be passed to the feature
-calls to access the GPIOs. Now there is the problem of the format of the
-8 bits value you read/write. It's not exactly the same between keylargo
-and k2/shasta (wether you have a G5 or not). However, since the later
-always use platform functions afaik, it's a non-issue and thus you only
-have to handle the old-style ones.
-
-#define KEYLARGO_GPIO_OUTPUT_ENABLE     0x04
-#define KEYLARGO_GPIO_OUTOUT_DATA       0x01
-#define KEYLARGO_GPIO_INPUT_DATA        0x02
-
-So to configure a GPIO as an input, make sure 0x04 is cleared. You can
-read the input value then on bit 0x02. For some GPIOs, you want to leave
-them as open collector (that is asserted to 0 or floating). In that
-case, asserted to 0 is 0x04 (output enabled set to 1 and output data set
-to 0) and floating (high-Z) is 0x00 (configurd as input). If you want to
-always assert the GPIO, then use 0x04 and 0x05 as 0 and 1 values. (Look
-what darwin does there).
-
-You may want to have a look at the gpio code from Ben Collins too,
-though it could be simplified now that we only deal with old-style ones.
-On those old-style ones, there is a property "audio-gpio-active-state"
-that gives you the polarity of the output.
-
-In addition, look for "has-anded-reset" property (in the "sound" node).
-Some platforms have that to tell you that setting both mutes at the same
-time resets the codec. Thus you may have to be especially careful. Have
-also a look at AppleMacRISC2PE since I think it adds or removes that
-property on some machines.
-
-> >  - I'm tempted to rename soundbus/i2sbus to snd-aoa-soundbus and
-> > snd-aoa-i2sbus (at least the module names) for now. 
+> I am trying to use a Marvell 88SX5081 based card here in my pegasos machine,
+> and i never got it working with the libata driver, even with the patches Zang
+> provided (and 2.6.16 though, maybe i should update to a newer version). The
+> marvell provided driver worked though at some time.
 > 
-> Yeah, I guess that ought to be done. Not just the module names, also the
-> sysfs visible part (though that's easy).
+> Would it be possible to have access to your work, in order to not duplicate
+> effort or something ? 
 
-Yup.
+Do you have any debug output (see top of libata.h)?
 
-Ben.
+	Jeff
