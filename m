@@ -1,18 +1,29 @@
-Return-Path: <ntl@pobox.com>
-Received: from gretel.pobox.com (gretel.pobox.com [208.58.1.197])
-	by ozlabs.org (Postfix) with ESMTP id 4E48867A77
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 May 2006 00:15:59 +1000 (EST)
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by gretel.pobox.com (Postfix) with ESMTP id 3CC612AC909E
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 10:03:05 -0400 (EDT)
-Date: Fri, 26 May 2006 09:02:27 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC/PATCH] powersave_nap cleanup
-Message-ID: <20060526140227.GE8934@localdomain>
+Return-Path: <sven.luther@wanadoo.fr>
+Received: from smtp11.wanadoo.fr (smtp11.wanadoo.fr [193.252.22.31])
+	by ozlabs.org (Postfix) with ESMTP id 97D5167A77
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 May 2006 00:20:50 +1000 (EST)
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf1103.wanadoo.fr (SMTP Server) with ESMTP id 845A61C000A0
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 May 2006 16:20:47 +0200 (CEST)
+Date: Fri, 26 May 2006 16:15:35 +0200
+To: Mark Lord <liml@rtr.ca>
+Subject: Re: [PATCH/2.6.17-rc4 10/10] bugs fix for marvell SATA on powerp c pl
+	atform
+Message-ID: <20060526141535.GA7084@powerlinux.fr>
+References: <9FCDBA58F226D911B202000BDBAD46730626DE6E@zch01exm40.ap.freescale.net>
+	<1147935734.17679.93.camel@localhost.localdomain>
+	<446C9219.4080300@pobox.com> <446CDE26.8090504@rtr.ca>
+	<20060526083931.GA23938@powerlinux.fr> <4476E964.90509@rtr.ca>
+	<20060526114245.GA32330@powerlinux.fr> <44770065.8070907@rtr.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: multipart/mixed; boundary="J2SCkAp4GZ/dPZZf"
+In-Reply-To: <44770065.8070907@rtr.ca>
+From: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Alexandre.Bounine@tundra.com, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
+	Jeff Garzik <jgarzik@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,194 +33,112 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[ Please consider for 2.6.18. ]
 
-Instead of having the machdep_calls.power_save routines (such as
-ppc6xx_idle and power4_idle) individually check the value of the
-powersave_nap sysctl variable, we can have the newly-consolidated idle
-loop check the value of powersave_nap when deciding whether to call
-machdep_calls.power_save.  In this way, a platform can implement a
-machdep_calls.power_save method but still have threads go low-priority
-when idle if the user has set powersave_nap to 0.
+--J2SCkAp4GZ/dPZZf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Rename machdep_calls.power_save to machdep_calls.powersave_nap to make
-more apparent the connection with the powersave_nap sysctl.
+On Fri, May 26, 2006 at 09:19:33AM -0400, Mark Lord wrote:
+> Sven Luther wrote:
+> >On Fri, May 26, 2006 at 07:41:24AM -0400, Mark Lord wrote:
+> >>All of the relevant bits of "my work" are now in Jeff's upstream libata 
+> >>tree,
+> >>from the recently posted sata_mv patches.
+> >
+> >Ok. can i use this tree with a 2.6.16 base ?
+> 
+> Not as-is.  Here (attached) is a patch for 2.6.16.17+ that updates
+> the sata_mv driver to the latest source.  Completely untested,
+> but it does compile.
+> 
+> I will hopefully test it later today, but in the meanwhile, have a go at it.
 
-Add some documentation to machdep_calls.powersave_nap to more
-completely describe its intended use.
+And here is attached my dmesg output. The last bit of mv_host_intr was when i
+tried to access the partition table of the disk with parted.
 
-Change cpu_idle to call ppc_md.powersave_nap only when the
-powersave_nap sysctl is set.
+Friendly,
 
-Remove tests of the powersave_nap variable from the ppc6xx_idle and
-power4_idle routines.
+Sven Luther
 
-Set powersave_nap to 1 by default on pSeries when the shared processor
-firmware feature is present, preserving current behavior.
+--J2SCkAp4GZ/dPZZf
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="dmesg-2.6.16-mv_sata.gz"
+Content-Transfer-Encoding: base64
 
-Remove a superfluous declaration of powersave_nap from
-platforms/powermac/feature.c.
+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
+cmFhPAAA
 
-
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
-
-
-diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
-index d491052..09bd0cf 100644
---- a/arch/powerpc/kernel/idle.c
-+++ b/arch/powerpc/kernel/idle.c
-@@ -53,7 +53,7 @@ void cpu_idle(void)
- 		while (!need_resched() && !cpu_should_die()) {
- 			ppc64_runlatch_off();
- 
--			if (ppc_md.power_save) {
-+			if (ppc_md.powersave_nap && powersave_nap) {
- 				clear_thread_flag(TIF_POLLING_NRFLAG);
- 				/*
- 				 * smp_mb is so clearing of TIF_POLLING_NRFLAG
-@@ -64,7 +64,7 @@ void cpu_idle(void)
- 
- 				/* check again after disabling irqs */
- 				if (!need_resched() && !cpu_should_die())
--					ppc_md.power_save();
-+					ppc_md.powersave_nap();
- 
- 				local_irq_enable();
- 				set_thread_flag(TIF_POLLING_NRFLAG);
-diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
-index b45fa0e..c685a8d 100644
---- a/arch/powerpc/kernel/idle_6xx.S
-+++ b/arch/powerpc/kernel/idle_6xx.S
-@@ -1,5 +1,5 @@
- /*
-- *  This file contains the power_save function for 6xx & 7xxx CPUs
-+ *  This file contains the powersave_nap function for 6xx & 7xxx CPUs
-  *  rewritten in assembler
-  *
-  *  Warning ! This code assumes that if your machine has a 750fx
-@@ -74,11 +74,6 @@ BEGIN_FTR_SECTION
- 	lwz	r4,CPU_SPEC_FEATURES(r4)
- 	andi.	r0,r4,CPU_FTR_CAN_NAP
- 	beq	1f
--	/* Now check if user or arch enabled NAP mode */
--	lis	r4,powersave_nap@ha
--	lwz	r4,powersave_nap@l(r4)
--	cmpwi	0,r4,0
--	beq	1f
- 	lis	r3,HID0_NAP@h
- 1:	
- END_FTR_SECTION_IFSET(CPU_FTR_CAN_NAP)
-diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
-index d85c7c9..14e3c18 100644
---- a/arch/powerpc/kernel/idle_power4.S
-+++ b/arch/powerpc/kernel/idle_power4.S
-@@ -1,5 +1,5 @@
- /*
-- *  This file contains the power_save function for 970-family CPUs.
-+ *  This file contains the powersave_nap function for 970-family CPUs.
-  *
-  *  This program is free software; you can redistribute it and/or
-  *  modify it under the terms of the GNU General Public License
-@@ -24,12 +24,6 @@ _GLOBAL(power4_idle)
- BEGIN_FTR_SECTION
- 	blr
- END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
--	/* Now check if user or arch enabled NAP mode */
--	LOAD_REG_ADDRBASE(r3,powersave_nap)
--	lwz	r4,ADDROFF(powersave_nap)(r3)
--	cmpwi	0,r4,0
--	beqlr
--
- 	/* Go to NAP now */
- BEGIN_FTR_SECTION
- 	DSSALL
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 69ac257..57af9c4 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -142,7 +142,7 @@ void __init machine_init(unsigned long d
- #ifdef CONFIG_6xx
- 	if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
- 	    cpu_has_feature(CPU_FTR_CAN_NAP))
--		ppc_md.power_save = ppc6xx_idle;
-+		ppc_md.powersave_nap = ppc6xx_idle;
- #endif
- 
- 	if (ppc_md.progress)
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index 24c0aef..eaa4c65 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -292,7 +292,7 @@ define_machine(maple_md) {
-        	.get_rtc_time		= maple_get_rtc_time,
-       	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= maple_progress,
--	.power_save		= power4_idle,
-+	.powersave_nap		= power4_idle,
- #ifdef CONFIG_KEXEC
- 	.machine_kexec		= default_machine_kexec,
- 	.machine_kexec_prepare	= default_machine_kexec_prepare,
-diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
-index a5063cd..b9a45df 100644
---- a/arch/powerpc/platforms/powermac/feature.c
-+++ b/arch/powerpc/platforms/powermac/feature.c
-@@ -53,7 +53,6 @@
- extern int powersave_lowspeed;
- #endif
- 
--extern int powersave_nap;
- extern struct device_node *k2_skiplist[2];
- 
- /*
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index 4d15e39..66e6a21 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -740,7 +740,7 @@ define_machine(powermac) {
- 	.progress		= udbg_progress,
- #ifdef CONFIG_PPC64
- 	.pci_probe_mode		= pmac_pci_probe_mode,
--	.power_save		= power4_idle,
-+	.powersave_nap		= power4_idle,
- 	.enable_pmcs		= power4_enable_pmcs,
- #ifdef CONFIG_KEXEC
- 	.machine_kexec		= default_machine_kexec,
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 5f79f01..d094e9d 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -236,11 +236,13 @@ static void __init pSeries_setup_arch(vo
- 		vpa_init(boot_cpuid);
- 		if (get_lppaca()->shared_proc) {
- 			printk(KERN_INFO "Using shared processor idle loop\n");
--			ppc_md.power_save = pseries_shared_idle_sleep;
-+			ppc_md.powersave_nap = pseries_shared_idle_sleep;
- 		} else {
- 			printk(KERN_INFO "Using dedicated idle loop\n");
--			ppc_md.power_save = pseries_dedicated_idle_sleep;
-+			ppc_md.powersave_nap = pseries_dedicated_idle_sleep;
- 		}
-+		/* We want this on by default. */
-+		powersave_nap = 1;
- 	} else {
- 		printk(KERN_INFO "Using default idle loop\n");
- 	}
-diff --git a/include/asm-powerpc/machdep.h b/include/asm-powerpc/machdep.h
-index 0f9254c..721fbe2 100644
---- a/include/asm-powerpc/machdep.h
-+++ b/include/asm-powerpc/machdep.h
-@@ -160,10 +160,11 @@ struct machdep_calls {
- 	void		(*idle_loop)(void);
- 
- 	/*
--	 * Function for waiting for work with reduced power in idle loop;
--	 * called with interrupts disabled.
-+	 * Function for waiting for work with reduced power and/or cpu
-+	 * utilization in idle loop; called with interrupts disabled.
-+	 * Can be overriden by the powersave_nap sysctl.
- 	 */
--	void		(*power_save)(void);
-+	void		(*powersave_nap)(void);
- 
- 	/* Function to enable performance monitor counters for this
- 	   platform, called once per cpu. */
+--J2SCkAp4GZ/dPZZf--
