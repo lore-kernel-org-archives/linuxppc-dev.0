@@ -1,19 +1,16 @@
-Return-Path: <nsundar@fulcrummicro.com>
-Received: from smtp.fulcrummicro.com (smtp.fulcrummicro.com [66.59.247.212])
-	by ozlabs.org (Postfix) with ESMTP id C757067A77
+Return-Path: <jlange@vmetro.com>
+Received: from PLATO2.vmetro.com (mail.vmetro.com [12.45.175.115])
+	by ozlabs.org (Postfix) with ESMTP id 1698F67A77
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 May 2006 00:54:11 +1000 (EST)
-Received: from [10.0.0.61] (hamilcar.internal.avlsi.com [10.0.0.61])
-	by smtp.fulcrummicro.com (Postfix) with ESMTP id 4F2B22A2B4E
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 May 2006 07:33:12 -0700 (PDT)
-Message-ID: <447711A7.5060200@fulcrummicro.com>
-Date: Fri, 26 May 2006 07:33:11 -0700
-From: Naru Sundar <nsundar@fulcrummicro.com>
+	Sat, 27 May 2006 07:07:31 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: 2.6 (eldk) - I2C constants
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C68107.167BC3FF"
+Subject: 440gx dma transfer with no data change at dest
+Date: Fri, 26 May 2006 15:58:06 -0500
+Message-ID: <724DC56D023CFE469ADB035983F15BFC0132CB5F@PLATO2.vmetro.com>
+From: "John Lange" <jlange@vmetro.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +21,118 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello folks, I'm porting a 2.4 driver over to 2.6 and noted some 
-weirdness in the I2C headers.  I thought it was worth checking out here.
+This is a multi-part message in MIME format.
 
-include/linux/i2c.h in 2.4 defined the following constants:
-#define I2C_M_TEN   0x10    /* we have a ten bit chip address   */
-#define I2C_M_RD    0x01
-#define I2C_M_WR        0x00    /* For readable code!                   */
-#define I2C_M_NOSTART   0x4000
-#define I2C_M_REV_DIR_ADDR  0x2000
+------_=_NextPart_001_01C68107.167BC3FF
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-in ELDK 2.6 source drop I have (2.6.15), the I2C_M_WR constant was removed.
+Hi Kevin
 
-Any thoughts? I can declare that constant locally in the driver, but 
-since these were standard I2C message constants I thought something
-odd was up (or am I missing something obvious).
+=20
 
-Thanks
+I saw a posting from March where you were asking about problems doing
+memory to memory DMA transfers with the ppc4xx_dma module of Linux.  I'm
+curious if you figured out that issue.  Would you be kind enough to
+share how you fixed the issue you were having?  I would sure appreciate
+a snippet of working example code if it's not proprietary.
 
---
-Naru Sundar <nsundar@fulcrummicro.com>
-Fulcrum Microsystems
-http://www.fulcrummicro.com
+=20
+
+Best regards,
+
+John
+
+=20
+
+
+------_=_NextPart_001_01C68107.167BC3FF
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:.9in 66.25pt .9in 66.25pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi Kevin<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I saw a posting from March where you were asking =
+about
+problems doing memory to memory DMA transfers with the ppc4xx_dma module =
+of
+Linux.&nbsp; I&#8217;m curious if you figured out that issue.&nbsp; =
+Would you be kind
+enough to share how you fixed the issue you were having?&nbsp; I would =
+sure appreciate
+a snippet of working example code if it&#8217;s not =
+proprietary.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Best regards,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>John<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C68107.167BC3FF--
