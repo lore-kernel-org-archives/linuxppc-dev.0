@@ -1,16 +1,17 @@
-Return-Path: <s.maiti@tcs.com>
-Received: from inkolg01.tcs.com (inkolg01.tcs.com [203.197.96.54])
-	by ozlabs.org (Postfix) with ESMTP id 99FA667A76
+Return-Path: <malik_mca2000@yahoo.co.in>
+Received: from web8413.mail.in.yahoo.com (web8413.mail.in.yahoo.com
+	[202.43.219.101]) by ozlabs.org (Postfix) with SMTP id 6781B67A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 May 2006 21:10:23 +1000 (EST)
-To: linuxppc-embedded@ozlabs.org
-Subject: Help Needed: PHY Driver
+	Sat, 27 May 2006 00:00:42 +1000 (EST)
+Message-ID: <20060526140039.63913.qmail@web8413.mail.in.yahoo.com>
+Date: Fri, 26 May 2006 15:00:39 +0100 (BST)
+From: sandeep malik <malik_mca2000@yahoo.co.in>
+Subject: Re: Help Needed: floating point used in kernel (task=c0398410,
+	pc=3184)
+To: Roger Larsson <roger.larsson@norran.net>, linuxppc-embedded@ozlabs.org
+In-Reply-To: <200605260949.48627.roger.larsson@norran.net>
 MIME-Version: 1.0
-From: s.maiti@tcs.com
-Message-ID: <OFD4594A4D.EAFDB8EA-ON6525717A.003CE390-6525717A.003D5EB9@tcs.com>
-Date: Fri, 26 May 2006 16:40:58 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 003D5E436525717A_="
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,72 +22,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 003D5E436525717A_=
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
+Hi Roger,
 
-Hi all,
+The kernel is not linked with uClibc/glibc its user
+application only which is linked with uClibc/glibc....
+What i am able to conclude is that the library
+internall might be using floating point operations and
+might be genrating some floating point instructions
+which are not handled by our board....and that might
+be the reason....or this error might be mapped in a
+generic way such that it is getting flashed in some
+particular scenarios.....
+I might be wrong but as of now i don't have any other
+explaination as now after linking with glibs the
+application is working fine.....
 
-In our custom board (MPC8260) there is a child card, which is having the 
-PHY chip DM256, and is being memory mapped with the processor via CS 7 and 
-they are connected via local bus. 
-Now my question is what nessary changes I have to make in linux tree for 
-thi purpose.
+Regards,
+Malik
 
-Thanks in advance.
+--- Roger Larsson <roger.larsson@norran.net> wrote:
 
-Souvik Maiti
-Tata Consultancy Services Limited
-Mailto: s.maiti@tcs.com
-Website: http://www.tcs.com
-=====-----=====-----=====
-Notice: The information contained in this e-mail
-message and/or attachments to it may contain 
-confidential or privileged information. If you are 
-not the intended recipient, any dissemination, use, 
-review, distribution, printing or copying of the 
-information contained in this e-mail message 
-and/or attachments to it are strictly prohibited. If 
-you have received this communication in error, 
-please notify us by reply e-mail or telephone and 
-immediately and permanently delete the message 
-and any attachments. Thank you
-
-
-
---=_alternative 003D5E436525717A_=
-Content-Transfer-Encoding: 7bit
-Content-Type: text/html; charset="us-ascii"
-
-
-<br><font size=2 face="sans-serif">Hi all,</font>
-<br>
-<br><font size=2 face="sans-serif">In our custom board (MPC8260) there
-is a child card, which is having the PHY chip DM256, and is being memory
-mapped with the processor via CS 7 and they are connected via local bus.
-</font>
-<br><font size=2 face="sans-serif">Now my question is what nessary changes
-I have to make in linux tree for thi purpose.</font>
-<br>
-<br><font size=2 face="sans-serif">Thanks in advance.</font>
-<br><font size=2 face="sans-serif"><br>
-Souvik Maiti<br>
-Tata Consultancy Services Limited<br>
-Mailto: s.maiti@tcs.com<br>
-Website: http://www.tcs.com</font><pre>=====-----=====-----=====
-Notice: The information contained in this e-mail
-message and/or attachments to it may contain 
-confidential or privileged information. If you are 
-not the intended recipient, any dissemination, use, 
-review, distribution, printing or copying of the 
-information contained in this e-mail message 
-and/or attachments to it are strictly prohibited. If 
-you have received this communication in error, 
-please notify us by reply e-mail or telephone and 
-immediately and permanently delete the message 
-and any attachments. Thank you
+> On fredag 26 maj 2006 09.38, you wrote:
+> > Hi Roger,
+> >
+> >   The problem has been resolved...the issue was in
+> the make
+> > file.....actually we were cpmiling the code with
+> gclibc and linking it with
+> > uClibc which was causing the problem.....But this
+> was real test i faced
+> > till now as all the tricks realted to the message
+> were failed.....any ways
+> > thanks for ur help.... 
+> >   Regards,
+> >   Malik
+> 
+> Now I am confused!
+> 
+> How could this cause
+> "floating point used in kernel (task=c0398410,
+> pc=3184)"
+> 
+> Both uClibc and gclibc are user land libraries. They
+> should not be able to
+> cause an kernel floating point operation. No user
+> land code should be able
+> to do this!
+> 
+> Or is it your kernel linked with uClibc/gclibc? I do
+> not think that is the
+> right thing to do...
+> 
+> /RogerL
+> 
 
 
-</pre>
---=_alternative 003D5E436525717A_=--
+Send instant messages to your online friends http://in.messenger.yahoo.com 
