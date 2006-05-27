@@ -1,16 +1,16 @@
-Return-Path: <jlange@vmetro.com>
-Received: from PLATO2.vmetro.com (mail.vmetro.com [12.45.175.115])
-	by ozlabs.org (Postfix) with ESMTP id 1698F67A77
+Return-Path: <muneeswaranp@hcl.in>
+Received: from rose.ctd.hcltech.com (rose.ctd.hcltech.com [202.54.64.23])
+	by ozlabs.org (Postfix) with ESMTP id 5700D67AC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 May 2006 07:07:31 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C68107.167BC3FF"
-Subject: 440gx dma transfer with no data change at dest
-Date: Fri, 26 May 2006 15:58:06 -0500
-Message-ID: <724DC56D023CFE469ADB035983F15BFC0132CB5F@PLATO2.vmetro.com>
-From: "John Lange" <jlange@vmetro.com>
+	Sat, 27 May 2006 15:55:17 +1000 (EST)
+Message-ID: <012301731C23DE4DBFE035647C68F1CC0331C84F@sindhu.ctd.hcltech.com>
+From: "Muneeswaran P - TLS, Chennai" <muneeswaranp@hcl.in>
 To: <linuxppc-embedded@ozlabs.org>
+Subject: Howto allocate non-cacheable memory
+Date: Sat, 27 May 2006 11:08:05 +0530
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,118 +21,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi,
 
-------_=_NextPart_001_01C68107.167BC3FF
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+How to allocate non-cacheable kernel memory ?
 
-Hi Kevin
-
-=20
-
-I saw a posting from March where you were asking about problems doing
-memory to memory DMA transfers with the ppc4xx_dma module of Linux.  I'm
-curious if you figured out that issue.  Would you be kind enough to
-share how you fixed the issue you were having?  I would sure appreciate
-a snippet of working example code if it's not proprietary.
-
-=20
-
-Best regards,
-
-John
-
-=20
+Pls help me.
 
 
-------_=_NextPart_001_01C68107.167BC3FF
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	I am writing device driver (kernel 2.6 ) for PCI-X card.
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+	Pls clarify the following doubts:
+	1. DPRAM is memory mapped to PCI-X card.
+	2. I have to transfer data from main memory to DPRAM using bus
+master concept and vice-versa.
+	3. How to make this memory area as non-cacheable one ?=20
+	4. Whether DMA mapping (pci_map_single() call ) should be done for
+both DPRAM and main memory ?
+	   4.a) I will get the physical address of DPRAM memory (memory
+mapped to PCI-X card) from BAR-0 register. Can i use this physical =
+addres
+directly for data transer using bus master (without pci_map_single() =
+call.)
+?
+	   4.b)  How to make main memory area as non-cacheable one ?
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:.9in 66.25pt .9in 66.25pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
 
-</head>
+Regards,
+Munees.
+DISCLAIMER=20
+The contents of this e-mail and any attachment(s) are confidential and =
+intended for the=20
 
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+named recipient(s) only. It shall not attach any liability on the =
+originator or HCL or its=20
 
-<div class=3DSection1>
+affiliates. Any views or opinions presented in this email are solely =
+those of the author and=20
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi Kevin<o:p></o:p></span></font></p>
+may not necessarily reflect the opinions of HCL or its affiliates. Any =
+form of reproduction,=20
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+dissemination, copying, disclosure, modification, distribution and / or =
+publication of this=20
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I saw a posting from March where you were asking =
-about
-problems doing memory to memory DMA transfers with the ppc4xx_dma module =
-of
-Linux.&nbsp; I&#8217;m curious if you figured out that issue.&nbsp; =
-Would you be kind
-enough to share how you fixed the issue you were having?&nbsp; I would =
-sure appreciate
-a snippet of working example code if it&#8217;s not =
-proprietary.<o:p></o:p></span></font></p>
+message without the prior written consent of the author of this e-mail =
+is strictly=20
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+prohibited. If you have received this email in error please delete it =
+and notify the sender=20
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Best regards,<o:p></o:p></span></font></p>
+immediately. Before opening any mail and attachments please check them =
+for viruses and=20
 
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>John<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C68107.167BC3FF--
+defect.
