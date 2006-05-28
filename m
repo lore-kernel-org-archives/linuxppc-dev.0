@@ -1,18 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id CDE8167A0E
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 May 2006 22:04:38 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7820267A3E
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 May 2006 22:07:55 +1000 (EST)
+Date: Sun, 28 May 2006 14:07:48 +0200
+From: Olaf Hering <olh@suse.de>
+To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH] powerpc: add dmesg command to xmon
-Date: Sun, 28 May 2006 14:04:25 +0200
-References: <20060528104621.GA7126@suse.de>
-In-Reply-To: <20060528104621.GA7126@suse.de>
-MIME-Version: 1.0
-Message-Id: <200605281404.26070.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: Olaf Hering <olh@suse.de>
+Message-ID: <20060528120748.GA7608@suse.de>
+References: <20060528104621.GA7126@suse.de> <200605281404.26070.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <200605281404.26070.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gU3VuZGF5IDI4IE1heSAyMDA2IDEyOjQ2LCBPbGFmIEhlcmluZyB3cm90ZToKPiArc3RhdGlj
-IGludCB4bW9uX2luaXRfZG1lc2codm9pZCkKPiArewo+ICugoKCgoKCgY29uc3QgY2hhciAqKnA7
-Cj4gK6CgoKCgoKBjb25zdCBpbnQgKmk7Cj4gK6CgoKCgoKBjb25zdCB1bnNpZ25lZCBsb25nICps
-Owo+ICsKPiAroKCgoKCgoGlmICgheG1vbl9sb2dfYnVmICYmIHNldGptcChidXNfZXJyb3Jfam1w
-KSA9PSAwKSB7Cj4gK6CgoKCgoKCgoKCgoKCgoGNhdGNoX21lbW9yeV9lcnJvcnMgPSAxOwo+ICug
-oKCgoKCgoKCgoKCgoKBzeW5jKCk7Cj4gKwo+ICugoKCgoKCgoKCgoKCgoKBwID0gKGNvbnN0IGNo
-YXIgKiopa2FsbHN5bXNfbG9va3VwX25hbWUoImxvZ19idWYiKTsKPiAroKCgoKCgoKCgoKCgoKCg
-aWYgKHApIHsKPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB4bW9uX2xvZ19idWYgPSAqcDsKPiAr
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBzeW5jKCk7Cj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-X19kZWxheSgyMDApOwo+ICugoKCgoKCgoKCgoKCgoKB9Cj4gKwo+ICugoKCgoKCgoKCgoKCgoKBp
-ID0gKGNvbnN0IGludCAqKWthbGxzeW1zX2xvb2t1cF9uYW1lKCJsb2dfYnVmX2xlbiIpOwo+ICug
-oKCgoKCgoKCgoKCgoKBpZiAoaSkgewo+ICugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoHhtb25fbG9n
-X2J1Zl9sZW4gPSAqaTsKPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBzeW5jKCk7Cj4gK6CgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgX19kZWxheSgyMDApOwo+ICugoKCgoKCgoKCgoKCgoKB9Cj4gKwo+
-ICugoKCgoKCgoKCgoKCgoKBsID0gKGNvbnN0IHVuc2lnbmVkIGxvbmcgKilrYWxsc3ltc19sb29r
-dXBfbmFtZSgibG9nX2VuZCIpOwo+ICugoKCgoKCgoKCgoKCgoKBpZiAobCkgewo+ICugoKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoHhtb25fbG9nX2VuZCA9ICpsOwo+ICugoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgoHN5bmMoKTsKPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKBfX2RlbGF5KDIwMCk7Cj4gK6Cg
-oKCgoKCgoKCgoKCgoH0KPiArCj4gK6CgoKCgoKCgoKCgoKCgoGwgPSAoY29uc3QgdW5zaWduZWQg
-bG9uZyAqKWthbGxzeW1zX2xvb2t1cF9uYW1lKCJsb2dnZWRfY2hhcnMiKTsKPiAroKCgoKCgoKCg
-oKCgoKCgaWYgKGwpIHsKPiAroKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB4bW9uX2xvZ2dlZF9jaGFy
-cyA9ICpsOwo+ICugoKCgoKCgoKCgoKCgoKCgoKCgoKCgoHN5bmMoKTsKPiAroKCgoKCgoKCgoKCg
-oKCgoKCgoKCgoKBfX2RlbGF5KDIwMCk7Cj4gK6CgoKCgoKCgoKCgoKCgoH0KPiArCj4gK6CgoKCg
-oKB9Cj4gK6CgoKCgoKBjYXRjaF9tZW1vcnlfZXJyb3JzID0gMDsKPiAroKCgoKCgoHJldHVybiAh
-IXhtb25fbG9nX2J1ZjsKClRoaXMgd2hvbGUgZnVuY3Rpb24gbG9va3MgZmlzaHkgdG8gbWUuIEl0
-IHNlZW1zIHVubmVjZXNzYXJpbHkgcnVkZSB0byBtZSB0bwp1c2Uga2FsbHN5bXNfbG9va3VwX25h
-bWUgaW4gb3JkZXIgdG8gZ2V0IGF0IGEgc3RhdGljIHZhcmlhYmxlIGZyb20gYW5vdGhlcgpmaWxl
-LiBDYW4ndCB5b3UgaW5zdGVhZCBhZGQgYSBnbG9iYWwgZnVuY3Rpb24gdG8ga2VybmVsL3ByaW50
-ay5jIHRvIHJldHVybgp0aGUgYnVmZmVyPwoKQWxzbywgd2hhdCdzIHRoZSBwdXJwb3NlIG9mIHRo
-ZSBzeW5jL19fZGVsYXkgY29kZSBpbiBoZXJlPyBJZiB5b3UgdXNlIHRoYXQKdG8gY2hlY2sgZm9y
-IGEgcG9zc2libGUgbWFjaGluZSBjaGVjayB0aGF0IG1heSBoYXZlIGhhcHBlbmVkLCB3aHkgbm90
-IGluCnRoZSBjYXNlIHdoZXJlIHRoZSBsb29rdXAgZmFpbHM/CgoJQXJuZCA8PjwK
+ On Sun, May 28, Arnd Bergmann wrote:
+
+> This whole function looks fishy to me. It seems unnecessarily rude to me to
+> use kallsyms_lookup_name in order to get at a static variable from another
+> file. Can't you instead add a global function to kernel/printk.c to return
+> the buffer?
+
+Its possible, but it wont end up in Linus tree.
+
+> Also, what's the purpose of the sync/__delay code in here? If you use that
+> to check for a possible machine check that may have happened, why not in
+> the case where the lookup fails?
+
+I just copied the other usages. Accessing the dmesg buffer itself may
+need similar checks.
