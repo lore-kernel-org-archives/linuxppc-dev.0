@@ -2,14 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9139967A64
+	by ozlabs.org (Postfix) with ESMTP id 8EC1C67A63
 	for <linuxppc-dev@ozlabs.org>; Mon, 29 May 2006 05:02:46 +1000 (EST)
-Message-Id: <20060528190123.977484000@johannes.berg>
+Message-Id: <20060528190124.579130000@johannes.berg>
 References: <20060528190026.754474000@johannes.berg>
-Date: Sun, 28 May 2006 21:00:27 +0200
+Date: Sun, 28 May 2006 21:00:28 +0200
 From: Johannes Berg <johannes@sipsolutions.net>
 To: alsa-devel@alsa-project.org
-Subject: [RFC 1/7] snd-aoa: add aoa header files
+Subject: [RFC 2/7] snd-aoa: add aoa core
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,188 +21,379 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds header files to use for communication between the various
-parts of aoa.
+This patch adds the core of aoa, in itself pretty useless, but providing
+useful functions to other modules.
 
 --- /dev/null
-+++ b/sound/aoa/aoa-gpio.h
-@@ -0,0 +1,44 @@
-+/*
-+ * Apple Onboard Audio GPIO definitions
-+ *
-+ * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
-+ *
-+ * GPL v2, can be found in COPYING.
-+ */
-+
-+#ifndef __AOA_GPIO_H
-+#define __AOA_GPIO_H
-+#include <asm/prom.h>
-+
-+struct gpio_runtime;
-+struct gpio_methods {
-+	/* for initialisation/de-initialisation of the GPIO layer */
-+	void (*init)(struct gpio_runtime *rt);
-+	void (*exit)(struct gpio_runtime *rt);
-+
-+	/* turn off headphone, speakers, lineout */
-+	void (*all_amps_off)(struct gpio_runtime *rt);
-+	/* turn headphone, speakers, lineout back to previous setting */
-+	void (*all_amps_restore)(struct gpio_runtime *rt);
-+
-+	void (*set_headphone)(struct gpio_runtime *rt, int on);
-+	void (*set_speakers)(struct gpio_runtime *rt, int on);
-+	void (*set_lineout)(struct gpio_runtime *rt, int on);
-+
-+	int (*get_headphone)(struct gpio_runtime *rt);
-+	int (*get_speakers)(struct gpio_runtime *rt);
-+	int (*get_lineout)(struct gpio_runtime *rt);
-+
-+	void (*set_hw_reset)(struct gpio_runtime *rt, int on);
-+};
-+
-+struct gpio_runtime {
-+	/* to be assigned by fabric */
-+	struct device_node *node;
-+	/* since everyone needs this pointer anyway... */
-+	struct gpio_methods *methods;
-+	/* to be used by the gpio implementation */
-+	int implementation_private;
-+};
-+
-+#endif /* __AOA_GPIO_H */
++++ b/sound/aoa/core/Makefile
+@@ -0,0 +1,4 @@
++obj-$(CONFIG_SND_AOA) += snd-aoa.o
++snd-aoa-objs := snd-aoa-core.o \
++		snd-aoa-alsa.o \
++		snd-aoa-gpio-pmf.o
 --- /dev/null
-+++ b/sound/aoa/aoa.h
-@@ -0,0 +1,130 @@
++++ b/sound/aoa/core/snd-aoa-alsa.c
+@@ -0,0 +1,91 @@
 +/*
-+ * Apple Onboard Audio definitions
++ * Apple Onboard Audio Alsa helpers
++ *
++ * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPL v2, can be found in COPYING.
++ */
++#include <linux/module.h>
++#include "snd-aoa-alsa.h"
++
++static struct aoa_card *aoa_card;
++
++int aoa_alsa_init(char *name, struct module *mod)
++{
++	struct snd_card *alsa_card;
++	int err;
++
++	if (aoa_card)
++		/* cannot be EEXIST due to usage in aoa_fabric_register */
++		return -EBUSY;
++
++	alsa_card = snd_card_new(-1, name, mod, sizeof(struct aoa_card));
++	if (!alsa_card)
++		return -ENOMEM;
++	aoa_card = alsa_card->private_data;
++	aoa_card->alsa_card = alsa_card;
++	strncpy(alsa_card->driver, "AppleOnbdAudio", sizeof(alsa_card->driver));
++	strncpy(alsa_card->shortname, name, sizeof(alsa_card->shortname));
++	strncpy(alsa_card->longname, name, sizeof(alsa_card->longname));
++	strncpy(alsa_card->mixername, name, sizeof(alsa_card->mixername));
++	err = snd_card_register(aoa_card->alsa_card);
++	if (err < 0) {
++		printk(KERN_ERR "snd-aoa: couldn't register alsa card\n");
++		snd_card_free(aoa_card->alsa_card);
++		aoa_card = NULL;
++		return err;
++	}
++	return 0;
++}
++
++struct snd_card *aoa_get_card(void)
++{
++	if (aoa_card)
++		return aoa_card->alsa_card;
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(aoa_get_card);
++
++void aoa_alsa_cleanup(void)
++{
++	if (aoa_card) {
++		snd_card_free(aoa_card->alsa_card);
++		aoa_card = NULL;
++	}
++}
++
++int aoa_snd_device_new(snd_device_type_t type,
++        void * device_data, struct snd_device_ops * ops)
++{
++	struct snd_card *card = aoa_get_card();
++	int err;
++	
++	if (!card) return -ENOMEM;
++
++	err = snd_device_new(card, type, device_data, ops);
++	if (err) {
++		printk(KERN_ERR "snd-aoa: failed to create snd device (%d)\n", err);
++		return err;
++	}
++	err = snd_device_register(card, device_data);
++	if (err) {
++		printk(KERN_ERR "snd-aoa: failed to register snd device (%d)\n", err);
++		printk(KERN_ERR "snd-aoa: have you forgotten the dev_register callback?\n");
++		snd_device_free(card, device_data);
++	}
++	return err;
++}
++EXPORT_SYMBOL_GPL(aoa_snd_device_new);
++
++int aoa_snd_ctl_add(struct snd_kcontrol* control)
++{
++	int err;
++
++	if (!aoa_card) return -ENODEV;
++
++	err = snd_ctl_add(aoa_card->alsa_card, control);
++	if (err)
++		printk(KERN_ERR "snd-aoa: failed to add alsa control (%d)\n", err);
++	return err;
++}
++EXPORT_SYMBOL_GPL(aoa_snd_ctl_add);
+--- /dev/null
++++ b/sound/aoa/core/snd-aoa-alsa.h
+@@ -0,0 +1,17 @@
++/*
++ * Apple Onboard Audio Alsa private helpers
 + *
 + * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
 + *
 + * GPL v2, can be found in COPYING.
 + */
 +
-+#ifndef __AOA_H
-+#define __AOA_H
-+#include <asm/prom.h>
++#ifndef __SND_AOA_ALSA_H
++#define __SND_AOA_ALSA_H
++/* FIXME */
++#include "../aoa.h"
++
++extern int aoa_alsa_init(char *name, struct module *mod);
++extern void aoa_alsa_cleanup(void);
++
++#endif /* __SND_AOA_ALSA_H */
+--- /dev/null
++++ b/sound/aoa/core/snd-aoa-core.c
+@@ -0,0 +1,153 @@
++/*
++ * Apple Onboard Audio driver core
++ *
++ * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPL v2, can be found in COPYING.
++ */
++
++#include <linux/init.h>
 +#include <linux/module.h>
-+/* So apparently there's a reason for requiring driver.h to be included first! */
-+#include <sound/driver.h>
-+#include <sound/core.h>
-+#include <sound/asound.h>
-+#include <sound/control.h>
-+#include "aoa-gpio.h"
-+#include "soundbus/soundbus.h"
++#include <linux/list.h>
++#include "../aoa.h"
++#include "snd-aoa-alsa.h"
 +
-+#define MAX_CODEC_NAME_LEN	32
++MODULE_DESCRIPTION("Apple Onboard Audio Sound Driver");
++MODULE_AUTHOR("Johannes Berg <johannes@sipsolutions.net>");
++MODULE_LICENSE("GPL");
 +
-+struct aoa_codec {
-+	char	name[MAX_CODEC_NAME_LEN];
++/* We allow only one fabric. This simplifies things,
++ * and more don't really make that much sense */
++static struct aoa_fabric *fabric;
++static LIST_HEAD(codec_list);
 +
-+	struct module *owner;
++static void attach_codec_to_fabric(struct aoa_codec *c)
++{
++	int err;
 +
-+	/* called when the fabric wants to init this codec.
-+	 * Do alsa card manipulations from here. */
-+	int (*init)(struct aoa_codec *codec);
++	if (!try_module_get(c->owner))
++		return;
++	/* found_codec has to be assigned */
++	err = -ENOENT;
++	if (fabric->found_codec)
++		err = fabric->found_codec(c);
++	if (err) {
++		module_put(c->owner);
++		printk("snd-aoa: fabric didn't like codec %s\n", c->name);
++		return;
++	}
++	c->fabric = fabric;
 +
-+	/* called when the fabric is done with the codec.
-+	 * The alsa card will be cleaned up so don't bother. */
-+	void (*exit)(struct aoa_codec *codec);
++	err = 0;
++	if (c->init)
++		err = c->init(c);
++	if (err) {
++		printk("snd-aoa: codec %s didn't init\n", c->name);
++		c->fabric = NULL;
++		if (fabric->remove_codec)
++			fabric->remove_codec(c);
++		module_put(c->owner);
++		return;
++	}
++	if (fabric->attached_codec)
++		fabric->attached_codec(c);
++}
 +
-+	/* May be NULL, but can be used by the fabric.
-+	 * Refcounting is the codec driver's responsibility */
-+	struct device_node *node;
++int aoa_codec_register(struct aoa_codec *codec)
++{
++	list_add(&codec->list, &codec_list);
++	if (fabric)
++		attach_codec_to_fabric(codec);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(aoa_codec_register);
 +
-+	/* assigned by fabric before init() is called, points
-+	 * to the soundbus device. Cannot be NULL. */
-+	struct soundbus_dev *soundbus_dev;
++void aoa_codec_unregister(struct aoa_codec *codec)
++{
++	list_del(&codec->list);
++	if (codec->fabric && codec->exit)
++		codec->exit(codec);
++	if (fabric && fabric->remove_codec)
++		fabric->remove_codec(codec);
++	codec->fabric = NULL;
++	module_put(codec->owner);
++}
++EXPORT_SYMBOL_GPL(aoa_codec_unregister);
 +
-+	/* assigned by the fabric before init() is called, points
-+	 * to the fabric's gpio runtime record for the relevant
-+	 * device. */
-+	struct gpio_runtime *gpio;
++int aoa_fabric_register(struct aoa_fabric *new_fabric)
++{
++	struct aoa_codec *c;
++	int err;
 +
-+	/* assigned by the fabric before init() is called, contains
-+	 * a codec specific bitmask of what outputs and inputs are
-+	 * actually connected */
-+	u32 connected;
++	/* allow querying for presence of fabric
++	 * (i.e. do this test first!) */
++	if (new_fabric == fabric) {
++		err = -EALREADY;
++		goto attach;
++	}
++	if (fabric)
++		return -EEXIST;
++	if (!new_fabric)
++		return -EINVAL;
 +
-+	/* data the fabric can associate with this structure */
-+	void *fabric_data;
++	err = aoa_alsa_init(new_fabric->name, new_fabric->owner);
++	if (err) {
++		return err;
++	}
++	fabric = new_fabric;
 +
-+	/* private! */
-+	struct list_head list;
-+	struct aoa_fabric *fabric;
++ attach:
++	list_for_each_entry(c, &codec_list, list) {
++		if (c->fabric != fabric)
++			attach_codec_to_fabric(c);
++	}
++	return err;
++}
++EXPORT_SYMBOL_GPL(aoa_fabric_register);
++
++void aoa_fabric_unregister(struct aoa_fabric *old_fabric)
++{
++	struct aoa_codec *c;
++
++	if (fabric != old_fabric)
++		return;
++
++	list_for_each_entry(c, &codec_list, list) {
++		if (c->fabric)
++			aoa_fabric_unlink_codec(c);
++	}
++
++	aoa_alsa_cleanup();
++
++	fabric = NULL;
++}
++EXPORT_SYMBOL_GPL(aoa_fabric_unregister);
++
++void aoa_fabric_unlink_codec(struct aoa_codec *codec)
++{
++	if (!codec->fabric) {
++		printk(KERN_ERR "snd-aoa: fabric unassigned in aoa_fabric_unlink_codec\n");
++		dump_stack();
++		return;
++	}
++	if (codec->exit)
++		codec->exit(codec);
++	if (codec->fabric->remove_codec)
++		codec->fabric->remove_codec(codec);
++	codec->fabric = NULL;
++	module_put(codec->owner);
++}
++EXPORT_SYMBOL_GPL(aoa_fabric_unlink_codec);
++
++static int __init aoa_init(void)
++{
++	return 0;
++}
++
++static void __exit aoa_exit(void)
++{
++	aoa_alsa_cleanup();
++}
++
++module_init(aoa_init);
++module_exit(aoa_exit);
+--- /dev/null
++++ b/sound/aoa/core/snd-aoa-gpio-pmf.c
+@@ -0,0 +1,91 @@
++/*
++ * Apple Onboard Audio pmf GPIOs
++ *
++ * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPL v2, can be found in COPYING.
++ */
++
++#include <asm/pmac_feature.h>
++#include <asm/pmac_pfunc.h>
++#include "../aoa.h"
++
++#define PMF_GPIO(name, bit)					\
++static void pmf_gpio_set_##name(struct gpio_runtime *rt, int on)\
++{								\
++	struct pmf_args args = { .count = 1, .u[0].v = !on };	\
++								\
++	if (unlikely(!rt)) return;				\
++	pmf_call_function(rt->node, #name "-mute", &args);	\
++	rt->implementation_private &= ~(1<<bit);		\
++	rt->implementation_private |= (!!on << bit);		\
++}								\
++static int pmf_gpio_get_##name(struct gpio_runtime *rt)		\
++{								\
++	if (unlikely(!rt)) return 0;				\
++	return (rt->implementation_private>>bit)&1;		\
++}
++
++PMF_GPIO(headphone, 0);
++PMF_GPIO(amp, 1);
++PMF_GPIO(lineout, 2);
++
++static void pmf_gpio_set_hw_reset(struct gpio_runtime *rt, int on)
++{
++	struct pmf_args args = { .count = 1, .u[0].v = !!on };
++
++	if (unlikely(!rt)) return;
++	pmf_call_function(rt->node, "hw-reset", &args);
++}
++
++static void pmf_gpio_all_amps_off(struct gpio_runtime *rt)
++{
++	int saved;
++
++	if (unlikely(!rt)) return;
++	saved = rt->implementation_private;
++	pmf_gpio_set_headphone(rt, 0);
++	pmf_gpio_set_amp(rt, 0);
++	pmf_gpio_set_lineout(rt, 0);
++	rt->implementation_private = saved;
++}
++
++static void pmf_gpio_all_amps_restore(struct gpio_runtime *rt)
++{
++	int s;
++
++	if (unlikely(!rt)) return;
++	s = rt->implementation_private;
++	pmf_gpio_set_headphone(rt, (s>>0)&1);
++	pmf_gpio_set_amp(rt, (s>>1)&1);
++	pmf_gpio_set_lineout(rt, (s>>2)&1);
++}
++
++static void pmf_gpio_init(struct gpio_runtime *rt)
++{
++	pmf_gpio_all_amps_off(rt);
++	rt->implementation_private = 0;
++}
++
++static void pmf_gpio_exit(struct gpio_runtime *rt)
++{
++	pmf_gpio_all_amps_off(rt);
++	rt->implementation_private = 0;
++}
++
++static struct gpio_methods methods = {
++	.init			= pmf_gpio_init,
++	.exit			= pmf_gpio_exit,
++	.all_amps_off		= pmf_gpio_all_amps_off,
++	.all_amps_restore	= pmf_gpio_all_amps_restore,
++	.set_headphone		= pmf_gpio_set_headphone,
++	.set_speakers		= pmf_gpio_set_amp,
++	.set_lineout		= pmf_gpio_set_lineout,
++	.set_hw_reset		= pmf_gpio_set_hw_reset,
++	.get_headphone		= pmf_gpio_get_headphone,
++	.get_speakers		= pmf_gpio_get_amp,
++	.get_lineout		= pmf_gpio_get_lineout,
 +};
 +
-+/* return 0 on success */
-+extern int
-+aoa_codec_register(struct aoa_codec *codec);
-+extern void
-+aoa_codec_unregister(struct aoa_codec *codec);
-+
-+#define MAX_LAYOUT_NAME_LEN	32
-+
-+struct aoa_fabric {
-+	char	name[MAX_LAYOUT_NAME_LEN];
-+
-+	struct module *owner;
-+
-+	/* once codecs register, they are passed here after.
-+	 * They are of course not initialised, since the
-+	 * fabric is responsible for initialising some fields
-+	 * in the codec structure! */
-+	int (*found_codec)(struct aoa_codec *codec);
-+	/* called for each codec when it is removed,
-+	 * also in the case that aoa_fabric_unregister
-+	 * is called and all codecs are removed
-+	 * from this fabric.
-+	 * Also called if found_codec returned 0 but
-+	 * the codec couldn't initialise. */
-+	void (*remove_codec)(struct aoa_codec *codec);
-+	/* If found_codec returned 0, and the codec
-+	 * could be initialised, this is called. */
-+	void (*attached_codec)(struct aoa_codec *codec);
-+};
-+
-+/* return 0 on success, -EEXIST if another fabric is
-+ * registered, -EALREADY if the same fabric is registered.
-+ * Passing NULL can be used to test for the presence
-+ * of another fabric, if -EALREADY is returned there is
-+ * no other fabric present.
-+ * In the case that the function returns -EALREADY
-+ * and the fabric passed is not NULL, all codecs
-+ * that are not assigned yet are passed to the fabric
-+ * again for reconsideration. */
-+extern int
-+aoa_fabric_register(struct aoa_fabric *fabric);
-+
-+/* it is vital to call this when the fabric exits!
-+ * When calling, the remove_codec will be called
-+ * for all codecs, unless it is NULL. */
-+extern void
-+aoa_fabric_unregister(struct aoa_fabric *fabric);
-+
-+/* if for some reason you want to get rid of a codec
-+ * before the fabric is removed, use this.
-+ * Note that remove_codec is called for it! */
-+extern void
-+aoa_fabric_unlink_codec(struct aoa_codec *codec);
-+
-+/* alsa help methods */
-+struct aoa_card {
-+	struct snd_card *alsa_card;
-+};
-+        
-+extern int aoa_snd_device_new(snd_device_type_t type,
-+	void * device_data, struct snd_device_ops * ops);
-+extern struct snd_card *aoa_get_card(void);
-+extern int aoa_snd_ctl_add(struct snd_kcontrol* control);
-+
-+/* GPIO stuff */
-+extern struct gpio_methods *pmf_gpio_methods;
-+/* extern struct gpio_methods *map_gpio_methods; */
-+
-+#endif /* __AOA_H */
++struct gpio_methods *pmf_gpio_methods = &methods;
++EXPORT_SYMBOL_GPL(pmf_gpio_methods);
 
 --
