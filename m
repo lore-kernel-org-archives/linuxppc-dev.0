@@ -1,23 +1,22 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from relay04s.clb.oleane.net (relay04s.clb.oleane.net
-	[213.56.31.142]) by ozlabs.org (Postfix) with ESMTP id BF46367A41
+Return-Path: <thiagogalesi@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id BD7DF679E6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 May 2006 01:57:04 +1000 (EST)
-Received: from smtp3.clb.oleane.net (smtp3.clb.oleane.net [213.56.31.19])
-	by relay04s.clb.oleane.net with ESMTP id k4TFrftY020207
-	for <linuxppc-embedded@ozlabs.org>; Mon, 29 May 2006 17:57:02 +0200
-Received: from GEG2400 ([194.3.133.184]) (authenticated)
-	by smtp3.clb.oleane.net with ESMTP id k4TFYbvN001620
-	for <linuxppc-embedded@ozlabs.org>; Mon, 29 May 2006 17:34:40 +0200
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Linux kernel thread with Linux 2.6.x
-Date: Mon, 29 May 2006 17:35:13 +0200
-Message-ID: <000201c68335$7c594b90$5201a8c0@GEG2400>
+	Tue, 30 May 2006 03:13:18 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id j3so619584ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 29 May 2006 10:13:16 -0700 (PDT)
+Message-ID: <82ecf08e0605291013t7bd1627bg92d13908b3d0b7b7@mail.gmail.com>
+Date: Mon, 29 May 2006 14:13:16 -0300
+From: "Thiago Galesi" <thiagogalesi@gmail.com>
+To: "Laurent Lagrange" <lagrange@fr.oleane.com>
+Subject: Re: Linux kernel thread with Linux 2.6.x
+In-Reply-To: <000201c68335$7c594b90$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <000001c65d85$5e699890$5201a8c0@GEG2400>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <000001c65d85$5e699890$5201a8c0@GEG2400>
+	<000201c68335$7c594b90$5201a8c0@GEG2400>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,22 +27,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>
+> As the interrupt handler can't be scheduled, I have made a kernel thread
+> which waits forever on a semaphore.
+> This semaphore is set when a received packet interrupt occured.
 
-Hello everybody,
+You should look into tasklets for this. Not that your system is not
+OK, but, as you said it, it's not fast enough.
 
-I'm writing a custom network driver based on a MPC8260 FCC device for a
-2.6.9 linux kernel.
-In this driver, I need to use specific buffer allocation functions which use
-down and up semaphore functions.
-
-As the interrupt handler can't be scheduled, I have made a kernel thread
-which waits forever on a semaphore.
-This semaphore is set when a received packet interrupt occured. All that
-mechanism works but the performances
-are very poor.
-
-Is there any solution to increase the kthread priority in the scheduler ?
-Is there another solution than the semaphore to quickly wake up a kthread ?
-
-Thanks a lot for your help.
-Laurent
+Note that you still have some limitations using tasklets, but it's
+more flexible than Interrupt handlers.
