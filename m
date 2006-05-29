@@ -1,18 +1,21 @@
-Return-Path: <roto@gmx.net>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id DCC1667A60
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 08:17:31 +1000 (EST)
-Date: Tue, 30 May 2006 00:17:30 +0200
-From: Wolfgang Pfeiffer <roto@gmx.net>
+Return-Path: <mostrows@watson.ibm.com>
+Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7DD3F67A63
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 09:08:53 +1000 (EST)
+Subject: Re: [RFC/PATCH 0/8] Overhaul of virt IRQ configuration. / Kill
+	ppc64_interrupt_controller.
+From: Michal Ostrowski <mostrows@watson.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Done] Re: snd-aoa: Sound gone after snd-aoa updates, on PB5,8
-Message-ID: <20060529221730.GA3138@localhost>
-References: <20060529020027.GA3107@localhost> <20060529021756.GB3107@localhost>
-	<1148869725.3918.12.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1148869725.3918.12.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1148938117.5959.24.camel@localhost.localdomain>
+References: <1148935262.25048.31.camel@brick>
+	<1148938117.5959.24.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 29 May 2006 19:08:35 -0400
+Message-Id: <1148944116.25048.78.camel@brick>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,93 +25,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi All
-
-Sorry for responding a bit late: I had to leave the house today ...
-
-
-On Mon, May 29, 2006 at 12:28:45PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2006-05-29 at 04:17 +0200, Wolfgang Pfeiffer wrote:
-> > On Mon, May 29, 2006 at 04:00:27AM +0200, Wolfgang Pfeiffer wrote:
-> > > 
-> > > Hi
-> > > 
-> > > After some updates from http://johannes.sipsolutions.net/snd-aoa.git/
-> > > in the last few hours/minutes sound's gone here. Without changing
-> > > sound settings intentionally here. 
-> > > 
-> > > 
-> > 
-> > On Debian/unstable:
-> > After downgrading libasound2 from 1.0.11-6 to 1.0.11-3 I have sound
-> > again: 1.0.11-6 was, IINM, installed a few hours ago, which
-> >  - as it seems - broke sound here.
+On Tue, 2006-05-30 at 07:28 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2006-05-29 at 16:41 -0400, Michal Ostrowski wrote:
+> > The following set of patches is aimed at killing the
+> > ppc64_interrupt_controller global variable, and similarly that various
+> > global variables used to tweak the parameters of virtual IRQ re-mapping.
+> > Instead each platform can use a single function to configure IRQ
+> > re-mapping in "init_early()".
 > 
-> Have you tested that it wasn't just the renaming/re-ordering of some
-> controls ? Alsa is pretty bad with that, you may just have to go back to
-> alsamixer and reset some controls after updating the driver.
+>  .../...
+> 
+> Hi ! Interesting.. I've start looking at reworking that with a slightly
+> different approach though...
+> 
 
-That's what I tried after reading your mail:
+I'm in total agreement with your assessment of where things should go.
 
-$ apt-cache policy libasound2
-libasound2:
-  Installed: 1.0.11-6
-  Candidate: 1.0.11-6
+My main motivation here was to kill ppc64_interrupt_controller and to
+consolidate our knowledge of the requirements of the different platforms
+into a single interface (i.e. virt_irq_config). 
 
-The problem is: with libasound2 1.0.11-6 I cannot even *start* 
-alsamixer:
+As such I see this patch as either a first step, or clean-up along-side,
+the changes you're considering.
 
-------------------------
-$ alsamixer
-ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL default
+I did consider at first making more changes than published here; in
+particular to address the offsetting issue you and Paul have commented
+on.  
 
-alsamixer: function snd_ctl_open failed for default: No such file or directory
--------------------------
+Current code such as:
 
-----------------------------
-$ alsamixer -c 0  
-ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+        virq = virt_irq_create_mapping(irq[0]);
 
-alsamixer: function snd_ctl_open failed for hw:0: No such file or directory
----------------------------
+        ...
 
-amixer:
-
-------------------------
-$ amixer -dD controls
-ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL controls
-amixer: Mixer attach controls error: No such file or directory
----------------------------
+        np->intrs[intrcount].line = irq_offset_up(virq);
 
 
-But the last 2 examples may hint amixer at least sees some sound card:
+Should be more like:
 
----------------
-$ amixer -c 1 controls
-Invalid card number.
-Usage: amixer <options> [command]
-
-Available options:
-
-[ ... ]
----------------------
+        np->intrs[intrcount].line = virt_irq_create_mapping(irq[0]);
 
 
--------------------
-$ amixer -c 0 controls
-ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
-amixer: Control hw:0 open error: No such file or directory
------------------------
+(Where the knowledge regarding all remapping/offsetting is embedded
+behind the remapping interfaces.  We should kill irq_offset_{up,down}
+and replace them with things such as real_irq_to_virt() and
+virt_irq_to_real().)
 
-Suggestions? Did I miss something?
 
-Thanks in anticipation
+The patches I've sent out were not intended to deal with this, as I
+wanted to keep the change set focused and small. However, things similar
+to what you've outlined I've been keeping in mind as potential follow-on
+work; and I had intended these patches to facilitate that.
 
-Best Regards
-Wolfgang
+
 -- 
-Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
-http://profiles.yahoo.com/wolfgangpfeiffer
-
-Key ID: E3037113
-http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
+Michal Ostrowski <mostrows@watson.ibm.com>
