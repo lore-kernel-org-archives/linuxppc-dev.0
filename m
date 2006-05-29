@@ -1,17 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 5D39467A5D
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 06:50:59 +1000 (EST)
-Date: Mon, 29 May 2006 15:50:03 -0500
-To: mostrows@watson.ibm.com
-Subject: Re: [PATCH 7/8] Cleaner checks for MPIC on pSeries.
-Message-ID: <20060529205003.GA5101@pb15.lixom.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7877167A5F
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 07:28:47 +1000 (EST)
+Subject: Re: [RFC/PATCH 0/8] Overhaul of virt IRQ configuration. / Kill
+	ppc64_interrupt_controller.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michal Ostrowski <mostrows@watson.ibm.com>
+In-Reply-To: <1148935262.25048.31.camel@brick>
 References: <1148935262.25048.31.camel@brick>
-	<11489353263834-git-send-email-mostrows@watson.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11489353263834-git-send-email-mostrows@watson.ibm.com>
-From: Olof Johansson <olof@lixom.net>
+Content-Type: text/plain
+Date: Tue, 30 May 2006 07:28:36 +1000
+Message-Id: <1148938117.5959.24.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,73 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 29, 2006 at 04:42:06PM -0400, mostrows@watson.ibm.com wrote:
-> Instead of checking the pSeries_mpic pointer, use a wrapper
-> (pSeries_uses_mpic()) that tells us what we want to know.
+On Mon, 2006-05-29 at 16:41 -0400, Michal Ostrowski wrote:
+> The following set of patches is aimed at killing the
+> ppc64_interrupt_controller global variable, and similarly that various
+> global variables used to tweak the parameters of virtual IRQ re-mapping.
+> Instead each platform can use a single function to configure IRQ
+> re-mapping in "init_early()".
 
-You might as well kill the SillyCaps while you're at it.
+ .../...
 
--Olof
+Hi ! Interesting.. I've start looking at reworking that with a slightly
+different approach though...
 
+We need irq controller instances (which we get from the genirq patch
+from Ingo & Thomas Gleixner), and we decided that interrupt controller
+nodes are mandatory in the device-tree thus we can do something like:
 
-> --
-> Signed-off-by: Michal Ostrowski <mostrows@watson.ibm.com>
-> 
-> ---
-> 
->  arch/powerpc/kernel/rtas_pci.c         |    2 +-
->  arch/powerpc/platforms/pseries/setup.c |    2 +-
->  include/asm-powerpc/mpic.h             |    6 ++++++
->  3 files changed, 8 insertions(+), 2 deletions(-)
-> 
-> 082a93566e954ce0cc945b89aced0b28feb7ee60
-> diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-> index e1dbd53..2a6b729 100644
-> --- a/arch/powerpc/kernel/rtas_pci.c
-> +++ b/arch/powerpc/kernel/rtas_pci.c
-> @@ -322,7 +322,7 @@ unsigned long __init find_and_init_phbs(
->  		pci_setup_phb_io(phb, index == 0);
->  #ifdef CONFIG_PPC_PSERIES
->  		/* XXX This code need serious fixing ... --BenH */
-> -		if (pSeries_mpic) {
-> +		if (pSeries_uses_mpic()) {
->  			int addr = root_size_cells * (index + 2) - 1;
->  			mpic_assign_isu(pSeries_mpic, index, opprop[addr]);
->  		}
-> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-> index 4ff127b..551da6a 100644
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -536,7 +536,7 @@ static void pseries_kexec_cpu_down(int c
->  		}
->  	}
->  
-> -	if (pSeries_mpic)
-> +	if (pSeries_uses_mpic())
->  		mpic_teardown_this_cpu(secondary);
->  	else
->  		xics_teardown_cpu(secondary);
-> diff --git a/include/asm-powerpc/mpic.h b/include/asm-powerpc/mpic.h
-> index 6b9e781..1f1b2eb 100644
-> --- a/include/asm-powerpc/mpic.h
-> +++ b/include/asm-powerpc/mpic.h
-> @@ -287,5 +287,11 @@ extern int mpic_get_irq(struct pt_regs *
->  /* global mpic for pSeries */
->  extern struct mpic *pSeries_mpic;
->  
-> +#ifdef CONFIG_MPIC
-> +#define pSeries_uses_mpic() (pSeries_mpic != NULL)
-> +#else
-> +#define pSeries_uses_mpic() 0
-> +#endif
-> +
->  #endif /* __KERNEL__ */
->  #endif	/* _ASM_POWERPC_MPIC_H */
-> -- 
-> 1.1.4.g0b63-dirty
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+- Each interrupt controller instance, when allocated, requests a certain
+number of interrupts and gets that allocated (gets an offset allocated).
+It can locally use the virtual irq remapping too, I'm still toying with
+the best way to deal with that. This interrupt controller structure is
+associated to the device-node of the controller (or the root node of the
+tree if no controller node is found)
+
+ - Interrupt 0..15 are reserved. 0 is always invalid. Only ISA PICs that
+carry legacy devices can request those (by passing a special flag to the
+allocation routine). Any other gets remapped (including powermac MPICs).
+That will avoid endless problems that we never properly solved with
+legacy drivers and the fact that Linus decided that 0 should be the
+invalid interrupt number on all platforms
+
+ - Provide in prom_parse.c functions for obtaining the PIC node and
+local interrupt number of a given device based on a passed-in array
+matching the semantics of an "interrupts" property and a parent node.
+Along with a helper that may just take a child node. The former is
+needed for PCI devices that have no device node. Provide a
+pci_ppc_map_interrupt() that takes a pci_dev and does the interrupt
+mapping, either by using the standard OF approach if a device-node is
+present, or walking up the PCI tree while doing standard swizzling until
+it reaches a device node
+
+ - Mapping from a virtual number to a local number can be done by a
+helper that does the offset and possible virq mapping if requested by
+the controller. Same goes with inverse mapping. Mapping is done locally
+by the controller code using that helper.
+
+Ben.
