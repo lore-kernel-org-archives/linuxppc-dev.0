@@ -1,12 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 63006679E6
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 May 2006 12:00:29 +1000 (EST)
+Date: Mon, 29 May 2006 04:00:27 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: snd-aoa: Sound gone after snd-aoa updates, on PB5,8
+Message-ID: <20060529020027.GA3107@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17530.10536.360165.757328@cargo.ozlabs.ibm.com>
-Date: Mon, 29 May 2006 08:50:16 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: please pull powerpc.git 'merge' branch again
-Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,42 +19,126 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
 
-Please do another pull from the "merge" branch of
+Hi
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+After some updates from http://johannes.sipsolutions.net/snd-aoa.git/
+in the last few hours/minutes sound's gone here. Without changing
+sound settings intentionally here. 
 
-Guennadi Liakhovetski pointed out a typo in arch/ppc/kernel/asm-offsets.c
-that really should be fixed for 2.6.17, so here is a commit to fix
-it.  The patch and commit message are below.
 
-Thanks,
-Paul.
+$ cat /proc/cpuinfo 
+processor       : 0
+cpu             : 7447A, altivec supported
+clock           : 833.333000MHz
+revision        : 0.5 (pvr 8003 0105)
+bogomips        : 16.57
+timebase        : 8320000
+platform        : PowerMac
+machine         : PowerBook5,8
+motherboard     : PowerBook5,8 MacRISC3 Power Macintosh 
+detected as     : 287 (PowerBook G4 15")
+pmac flags      : 00000019
+L2 cache        : 512K unified
+pmac-generation : NewWorld
 
-commit b82e8005af14b51600714971e0c6420c4e334a50
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Mon May 29 08:42:34 2006 +1000
 
-    ppc: Fix typo in TI_LOCAL_FLAGS definition
-    
-    A typo crept in with commit ea1e847cc202e805769c3c46ba5e5c53714068a1
-    which defined TI_LOCAL_FLAGS to be the offset of the `flags' field
-    of struct thread_info, rather than the `local_flags' field.  This
-    fixes it.  The typo was pointed out by Guennadi Liakhovetski.
-    
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+/var/log/boot:
 
-diff --git a/arch/ppc/kernel/asm-offsets.c b/arch/ppc/kernel/asm-offsets.c
-index cc7c4ae..2f5c5e1 100644
---- a/arch/ppc/kernel/asm-offsets.c
-+++ b/arch/ppc/kernel/asm-offsets.c
-@@ -134,7 +134,7 @@ #endif /* CONFIG_SPE */
- 	DEFINE(TI_TASK, offsetof(struct thread_info, task));
- 	DEFINE(TI_EXECDOMAIN, offsetof(struct thread_info, exec_domain));
- 	DEFINE(TI_FLAGS, offsetof(struct thread_info, flags));
--	DEFINE(TI_LOCAL_FLAGS, offsetof(struct thread_info, flags));
-+	DEFINE(TI_LOCAL_FLAGS, offsetof(struct thread_info, local_flags));
- 	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
- 	DEFINE(TI_PREEMPT, offsetof(struct thread_info, preempt_count));
- 
+Mon May 29 03:08:52 2006: ^[[9;0]^[[14;0]Setting up ALSA...warning: 'alsactl restore' failed with error message 'ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: alsactl: set_controls:1088: snd_ctl_open error: No such file or directory'...ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL hw:0
+Mon May 29 03:08:52 2006: amixer: Mixer attach hw:0 error: No such file or directory
+Mon May 29 03:08:52 2006: done.
+
+Excerpts from /var/log/kern.log:
+--------------------------------------
+May 29 03:08:54 debby1-6 kernel: [   24.296157] i2sbus: !!!!! WARNING !!!!!
+May 29 03:08:54 debby1-6 kernel: [   24.305857] i2sbus: control: couldn't allocate resource
+May 29 03:08:54 debby1-6 kernel: [   24.315558] i2sbus: going ahead
+anyway
+
+May 29 03:08:54 debby1-6 kernel: [   25.140174] snd-aoa-fabric-layout: found bus with layout 82 (using)
+
+May 29 03:08:54 debby1-6 kernel: [   34.230912] snd-aoa-codec-onyx: found pcm3052
+May 29 03:08:54 debby1-6 kernel: [   34.232445] snd-aoa-fabric-layout: can use this codec
+May 29 03:08:54 debby1-6 kernel: [   34.307453] snd-aoa-codec-onyx: attached to onyx codec via i2c
+May 29 03:08:54 debby1-6 kernel: [   34.318072] snd-aoa-codec-onyx: created and attached onyx instance
+May 29 03:08:54 debby1-6 kernel: [   34.318080] PowerMac i2c bus mac-io 0 registered
+May 29 03:08:54 debby1-6 kernel: [   34.336045] PowerMac i2c bus uni-n 0 registered
+-------------------------------------
+
+
+After the first errors (that is: No sound at all), I removed
+asound.conf and asound.names in /etc/ completely, just to make sure I
+have no mistakes in these files - to no avail so far. Kernel is
+still the same as all the last 2 weeks or so, where alsa/snd-aoa
+worked.
+
+ uname -a 
+Linux debby1-6 2.6.17-rc3-gf358166a-dirty #1 Fri May 12 01:13:36 CEST
+2006 ppc GNU/Linux
+
+# modinfo snd-aoa
+filename:       /lib/modules/2.6.17-rc3-gf358166a-dirty/kernel/sound/aoa/snd-aoa.ko
+description:    Apple Onboard Audio Sound Driver
+author:         Johannes Berg <johannes@sipsolutions.net>
+license:        GPL..
+vermagic:       2.6.17-rc3-gf358166a-dirty mod_unload gcc-4.1
+depends:        sndation.
+srcversion:     2944C7BBEA1A2A72E3A8183
+
+/etc/modprobe.d/sound:
+-----------------
+alias snd-card-0 i2sbus
+#alias snd-card-0 snd-powermac
+#options snd-powermac index=0
+-------------------
+
+Hints?
+
+Best Regards
+Wolfgang
+-- 
+Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
