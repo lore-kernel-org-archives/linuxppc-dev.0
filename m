@@ -1,20 +1,17 @@
-Return-Path: <jourdan@enib.fr>
-Received: from alto.enib.fr (alto.enib.fr [195.221.233.5])
-	by ozlabs.org (Postfix) with ESMTP id 861D3679FC
+Return-Path: <hoffman@marvell.com>
+Received: from il.marvell.com (shoshil.marvell.com [199.203.130.250])
+	by ozlabs.org (Postfix) with ESMTP id 10C2867A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 29 May 2006 20:25:27 +1000 (EST)
-Message-ID: <1758.194.3.133.184.1148897976.squirrel@webmail.enib.fr>
-In-Reply-To: <20060529091257.686CB3525D9@atlas.denx.de>
-References: Your message of "Mon, 29 May 2006 09:34:00 +0200."            
-	<1402.194.3.133.184.1148888040.squirrel@webmail.enib.fr>
-	<20060529091257.686CB3525D9@atlas.denx.de>
-Date: Mon, 29 May 2006 12:19:36 +0200 (CEST)
-Subject: Re: Can't get CoralP drivers to work
-From: jourdan@enib.fr
-To: "Wolfgang Denk" <wd@denx.de>
+	Mon, 29 May 2006 20:59:24 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C6830E.EC60A583"
+Subject: RE: Setting I&D cache enable in the same mtspr instruction
+Date: Mon, 29 May 2006 13:59:14 +0300
+Message-ID: <B9FFC3F97441D04093A504CEA31B7C41A62B2F@msilexch01.marvell.com>
+From: "Assaf Hoffman" <hoffman@marvell.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Cc: Ronen Shitrit <rshitrit@marvell.com>, Rita Shtern <rita@marvell.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,37 +22,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> In message <1402.194.3.133.184.1148888040.squirrel@webmail.enib.fr> you
-> wrote:
->>
->> This seems ok to me but I don't have any video signal. My screen remains
->> blank.
->
-> What's your boot arguments? Where is  your  console  device,  on  the
-> serial port or on the frame buffer?
+This is a multi-part message in MIME format.
 
-My boot arguments :
-# more /proc/cmdline
-console=tty0 console=ttyS1,9600 devfs=mount ip=bootp root=/dev/nfs rw
+------_=_NextPart_001_01C6830E.EC60A583
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-My console is on the serial port (ttyS1 on SMC2).
+Hi,
+Attached...
 
->> xf86OpenConsole: Cannot open /dev/tty0 (No such file or directory)
->> ...
->
-> Did you enable all of the following options in your kernel config?
->
-> 	CONFIG_FB=y
-> 	CONFIG_DUMMY_CONSOLE=y
-> 	CONFIG_FB_MB86290=y
-> 	CONFIG_FBCON_ADVANCED=y
-> 	CONFIG_FBCON_CFB16=y
-> 	CONFIG_FBCON_FONTS=y
-> 	CONFIG_FONT_8x8=y
-> 	CONFIG_FONT_8x16=y
-> 	CONFIG_VT=y
-> 	CONFIG_VT_CONSOLE=y
->
-> My guess is that CONFIG_VT and/or CONFIG_VT_CONSOLE might be missing.
+-----Original Message-----
+From: Mark A. Greer [mailto:mgreer@mvista.com]=20
+Sent: Wednesday, May 24, 2006 1:35 AM
+To: Assaf Hoffman
+Cc: Mark A. Greer; linuxppc-embedded@ozlabs.org; Rita Shtern; Ronen
+Shitrit
+Subject: Re: Setting I&D cache enable in the same mtspr instruction
 
-All those options are enabled.
+On Tue, May 23, 2006 at 12:55:46PM +0300, Assaf Hoffman wrote:
+> Attached.
+> Thanks.
+
+Er, how about a *patch* place inline (as in, not as an attachment).
+
+Thanks,
+
+Mark
+
+------_=_NextPart_001_01C6830E.EC60A583
+Content-Type: application/octet-stream;
+	name="cpu_setup_6xx.patch"
+Content-Transfer-Encoding: base64
+Content-Description: cpu_setup_6xx.patch
+Content-Disposition: attachment;
+	filename="cpu_setup_6xx.patch"
+
+LS0tIC4uL2Rvd25sb2Fkcy9rZXJuZWxzL2xpbnV4LTIuNi4xMi42L2FyY2gvcHBjL2tlcm5lbC9j
+cHVfc2V0dXBfNnh4X3BhdGNoLlMJMjAwNi0wNS0yOSAxMzo1MzowNy4wMDAwMDAwMDAgKzAzMDAK
+KysrIC4uL2Rvd25sb2Fkcy9rZXJuZWxzL2xpbnV4LTIuNi4xMi42L2FyY2gvcHBjL2tlcm5lbC9j
+cHVfc2V0dXBfNnh4LlMJMjAwNS0wOC0yOSAxOTo1NToyNy4wMDAwMDAwMDAgKzAzMDAKQEAgLTc5
+LDE5ICs3OSwxNyBAQAogLyogRW5hYmxlIGNhY2hlcyBmb3IgNjAzJ3MsIDYwNCwgNzUwICYgNzQw
+MCAqLwogc2V0dXBfY29tbW9uX2NhY2hlczoKIAltZnNwcglyMTEsU1BSTl9ISUQwCi0Jb3JpCXI4
+LHIxMSxISUQwX0RDRQogCWFuZGkuCXIwLHIxMSxISUQwX0RDRQorCW9yaQlyMTEscjExLEhJRDBf
+SUNFfEhJRDBfRENFCisJb3JpCXI4LHIxMSxISUQwX0lDRkkKIAlibmUJMWYJCQkvKiBkb24ndCBp
+bnZhbGlkYXRlIHRoZSBELWNhY2hlICovCiAJb3JpCXI4LHI4LEhJRDBfRENJCQkvKiB1bmxlc3Mg
+aXQgd2Fzbid0IGVuYWJsZWQgKi8KIDE6CXN5bmMKIAltdHNwcglTUFJOX0hJRDAscjgJCS8qIGVu
+YWJsZSBhbmQgaW52YWxpZGF0ZSBjYWNoZXMgKi8KIAlzeW5jCi0Jb3JpCXI4LHIxMSxISUQwX0lD
+RXxISUQwX0RDRXxISUQwX0lDRkkKLQlpc3luYwotCXN5bmMKLQltdHNwcglTUFJOX0hJRDAscjgJ
+CS8qIGVuYWJsZSBhbmQgaW52YWxpZGF0ZSBJbnN0cnVjdGlvbiBjYWNoZSAqLworCW10c3ByCVNQ
+Uk5fSElEMCxyMTEJCS8qIGVuYWJsZSBjYWNoZXMgKi8KIAlzeW5jCi0JCQorCWlzeW5jCiAJYmxy
+CiAKIC8qIDYwNCwgNjA0ZSwgNjA0ZXYsIC4uLgo=
+
+------_=_NextPart_001_01C6830E.EC60A583--
