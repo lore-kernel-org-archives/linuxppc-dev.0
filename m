@@ -1,21 +1,23 @@
-Return-Path: <jeanwelly@126.com>
-Received: from m5-141.126.com (m5-141.126.com [202.108.5.141])
-	by ozlabs.org (Postfix) with SMTP id 54B8067A41
+Return-Path: <lagrange@fr.oleane.com>
+Received: from relay04s.clb.oleane.net (relay04s.clb.oleane.net
+	[213.56.31.142]) by ozlabs.org (Postfix) with ESMTP id BF46367A41
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 May 2006 00:53:37 +1000 (EST)
-Date: Mon, 29 May 2006 22:22:32 +0800
-From: "jeanwelly" <jeanwelly@126.com>
-To: "Becky Bruce" <Becky.Bruce@freescale.com>
-References: <200604242151091399377@126.com>
-	<9866A56E-AF4C-477D-A035-E6D6A78A75D3@freescale.com>
-	<200604252303190264825@126.com>
-	<4819ACC0-1281-487B-B290-C55071E1EC27@freescale.com>
-Subject: Re: Re: PPC exception 0x320
-Message-ID: <200605292222280467864@126.com>
-Mime-Version: 1.0
+	Tue, 30 May 2006 01:57:04 +1000 (EST)
+Received: from smtp3.clb.oleane.net (smtp3.clb.oleane.net [213.56.31.19])
+	by relay04s.clb.oleane.net with ESMTP id k4TFrftY020207
+	for <linuxppc-embedded@ozlabs.org>; Mon, 29 May 2006 17:57:02 +0200
+Received: from GEG2400 ([194.3.133.184]) (authenticated)
+	by smtp3.clb.oleane.net with ESMTP id k4TFYbvN001620
+	for <linuxppc-embedded@ozlabs.org>; Mon, 29 May 2006 17:34:40 +0200
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Linux kernel thread with Linux 2.6.x
+Date: Mon, 29 May 2006 17:35:13 +0200
+Message-ID: <000201c68335$7c594b90$5201a8c0@GEG2400>
+MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="gb2312"
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+	charset="us-ascii"
+In-Reply-To: <000001c65d85$5e699890$5201a8c0@GEG2400>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,46 +29,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-SGkgQmVja3kgQnJ1Y2UsDQpTb3JyeSBmb3IgbGF0ZSByZXNwb25zZS4gSSBnb3QgbWFpbCB0cmFm
-ZmljLi4uDQoNCkkgZW5jb3VudGVyZWQgdGhlIGV4Y2VwdGlvbiAweDMyMCB3aGljaCBjYXVzZWQg
-dGhlIFBQQyBjYXJkIGNyYXNoLiBCYXNlZCBvbiBteSB1bmRlcnN0YW5kaW5nLCBJIHRoaW5rIGV4
-Y2VwdGlvbiBpcyBhIEhXIGJlaGF2aW91ciwgc28gSSBndWVzcyB0aGVyZSBtYXliZSBleGlzdCBz
-b21lIHJlZmVyZW5jZSBvbiBhbGwgdGhlIHN1cHBvcnRlZCBleGNlcHRpb25zIG9mIHNvbWUgdmVy
-c2lvbiBvZiBQUEMuIERvIHlvdSBrbm93IHRoaXM/DQoNCk15IHN5c3RlbSB0YWtlIHRoYXQgZXhj
-ZXB0aW9uIGFzIGFuICJ1bmtub3duIGV4Y2VwdGlvbiIgYW5kIGNyYXNoIHRoZSBjYXJkLiBTbywg
-SSB0aGluayB0aGUgZXhjZXB0aW9uIGlzIGZyb20gdGhlIFBQQyBDUFUsIGJ1dCBkb24ndCB0aGUg
-Y29uY3JldGUgbWVhbmluZ3MuDQoNCkFwcHJlY2lhdGUgeW91ciBzdWdnZXN0aW9ucy4NCi0tLQ0K
-SmVhbndlbGx5DQoNCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCg0K
-PklzIHRoZXJlIHNvbWUgZXJyb3IgbWVzc2FnZSB5b3UgY2FuIHNob3cgbWU/DQo+DQo+LUINCj4N
-Cj5PbiBBcHIgMjUsIDIwMDYsIGF0IDEwOjAzIEFNLCBqZWFud2VsbHkgd3JvdGU6DQo+DQo+PiBI
-aSBCZWNreSBCcnVjZSwNCj4+IEknbSB1c2luZyBQUEMgNzUwLi4uIEp1c3QgYXMgeW91IHNhaWQs
-IDB4MzAwIGlzIGZvciBEU0ksIGFuZCBJICANCj4+IGd1ZXNzIHRoZXkgYXJlIGEgc2V0IG9mIGV4
-Y2VwdGlvbnMsIG5vdCBqdXN0IG9uZS4gQW5kIDB4MzIwIGlzIG9uZSAgDQo+PiBvZiB0aGVtLg0K
-Pj4gSSBnb3QgYSBib2FyZCBjcmFzaCwgYW5kIFBQQyBhbGFybWVkIGV4Y2VwdGlvbiAweDMyMC4g
-Q291bGQgeW91ICANCj4+IHNob3cgbWUgdGhlIG1lY2hhbmlzbSBvZiBoYW5kbGluZyBvZiBhIHNw
-ZWNpYWwgZXhjZXB0aW9uIG5vdCBvbmUgc2V0Lg0KPj4gCQ0KPj4NCj4+ID09PT09PT0gMjAwNi0w
-NC0yNSAwMjo1MzozNSDE+tTawLTQxdbQ0LS1wKO6PT09PT09PQ0KPj4NCj4+PiBDb3VsZCB5b3Ug
-dHJ5IHRvIGJlIG1vcmUgc3BlY2lmaWM/ICBXaGF0IHByb2Nlc3NvciBkbyB5b3UgaGF2ZSwgd2hh
-dA0KPj4+IGxpbnV4IHZlcnNpb24gYXJlIHlvdSBydW5uaW5nLCBhbmQgd2hhdCBkbyB5b3UgbWVh
-biBleGFjdGx5IHdoZW4geW91DQo+Pj4gc2F5IHlvdSAiZW5jb3VudGVyZWQgUFBDIGV4Y2VwdGlv
-biAweDMyMCI/ICBBcyBmYXIgYXMgSSBrbm93LCB0aGUNCj4+PiBwb3dlcnBjIGFyY2hpdGVjdHVy
-ZSBkb2VzIG5vdCBkZWZpbmUgYW4gZXhjZXB0aW9uIDB4MzIwLiAgMHgzMDAgaXMNCj4+PiB1c3Vh
-bGx5IERTSSBvbiBjbGFzc2ljIHBvd2VycGMgcGFydHMuICBCb29rRSBwYXJ0cyBoYW5kbGUgdGhp
-bmdzDQo+Pj4gZGlmZmVyZW50bHkuDQo+Pj4NCj4+PiBUaGFua3MsDQo+Pj4gLUJlY2t5DQo+Pj4N
-Cj4+PiBPbiBBcHIgMjQsIDIwMDYsIGF0IDg6NTEgQU0sIGplYW53ZWxseSB3cm90ZToNCj4+Pg0K
-Pj4+PiBIaSwNCj4+Pj4gSSBlbmNvdW50ZXJlZCBQUEMgZXhjZXB0aW9uIDB4MzIwLCBidXQgZG9u
-J3Qga25vdyB3aGF0IGl0IGZvci4gQW55DQo+Pj4+IG9uZSBjb3VsZCBoZWxwIG1lIG9uIHRoaXM/
-DQo+Pj4+IFRoYW5rcyENCj4+Pj4gIAkJCQkNCj4+Pj4NCj4+Pj4goaGhoaGhoaGhoaGhoaGhoWpl
-YW53ZWxseQ0KPj4+PiChoaGhoaGhoaGhoaGhoaGhamVhbndlbGx5QDEyNi5jb20NCj4+Pj4goaGh
-oaGhoaGhoaGhoaGhoaGhoaEyMDA2LTA0LTI0DQo+Pj4+IF9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fDQo+Pj4+IExpbnV4cHBjLWVtYmVkZGVkIG1haWxpbmcg
-bGlzdA0KPj4+PiBMaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQo+Pj4+IGh0dHBzOi8vb3ps
-YWJzLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4cHBjLWVtYmVkZGVkDQo+Pj4NCj4+Pg0KPj4+
-IC4NCj4+DQo+PiA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0NCj4+IAkJ
-CQ0KPj4NCj4+IKGhoaGhoaGhoaGhoaGhoaHWwg0KPj4gwPGjoQ0KPj4NCj4+IAkJCQkNCj4+IKGh
-oaGhoaGhoaGhoaGhoaFqZWFud2VsbHkNCj4+IKGhoaGhoaGhoaGhoaGhoaFqZWFud2VsbHlAMTI2
-LmNvbQ0KPj4goaGhoaGhoaGhoaGhoaGhoaGhoaEyMDA2LTA0LTI1DQo+Pg0KPg0KPg0KPi4NCg0K
-PSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9ID0gPSA9DQoJCQkNCg0KoaGhoaGhoaGh
-oaGhoaGhodbCDQrA8aOhDQogDQoJCQkJIA0KoaGhoaGhoaGhoaGhoaGhoWplYW53ZWxseQ0KoaGh
-oaGhoaGhoaGhoaGhoWplYW53ZWxseUAxMjYuY29tDQqhoaGhoaGhoaGhoaGhoaGhoaGhoTIwMDYt
-MDUtMjkNCg0K
+Hello everybody,
+
+I'm writing a custom network driver based on a MPC8260 FCC device for a
+2.6.9 linux kernel.
+In this driver, I need to use specific buffer allocation functions which use
+down and up semaphore functions.
+
+As the interrupt handler can't be scheduled, I have made a kernel thread
+which waits forever on a semaphore.
+This semaphore is set when a received packet interrupt occured. All that
+mechanism works but the performances
+are very poor.
+
+Is there any solution to increase the kthread priority in the scheduler ?
+Is there another solution than the semaphore to quickly wake up a kthread ?
+
+Thanks a lot for your help.
+Laurent
