@@ -1,13 +1,22 @@
-Return-Path: <Jeff.Fellin@rflelect.com>
+Return-Path: <adgospod@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.228])
+	by ozlabs.org (Postfix) with ESMTP id 0527C67B34
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 31 May 2006 07:22:29 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 69so131612wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 30 May 2006 14:22:28 -0700 (PDT)
+Message-ID: <bdfc5d6e0605301415x6928563cub526c1497deed337@mail.gmail.com>
+Date: Tue, 30 May 2006 17:15:44 -0400
+From: "Andy Gospodarek" <andy@greyhouse.net>
+Sender: adgospod@gmail.com
+To: "Anantharaman Chetan-W16155" <Chetan.S.Anantharaman@motorola.com>
 Subject: Re: execve of /sbin/init fails
-To: Chetan.S.Anantharaman@motorola.com
-Message-ID: <OF32D825BB.6DBF6685-ON8525717E.0072AF23@teal.com>
-From: Jeff.Fellin@rflelect.com
-Date: Tue, 30 May 2006 16:54:51 -0400
+In-Reply-To: <EDF27F298D4B03498AE0C249A941DFF803D6DE@de01exm68.ds.mot.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=UTF-8
-Cc: linuxppc-embedded-bounces+jeff.fellin=rflelect.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <EDF27F298D4B03498AE0C249A941DFF803D6DE@de01exm68.ds.mot.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -18,54 +27,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgDQogICAgICAgICAgICAgICAgICAgICAgIkFuYW50aGFy
-YW1hbiBDaGV0YW4tVzE2MTU1IiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCiAgICAg
-ICAgICAgICAgICAgICAgICA8Q2hldGFuLlMuQW5hbnRoYXJhbWFuQG1vdG9yb2xhLmNvbT4gICAg
-ICAgICAgICAgICAgICAgICAgVG86ICAgICAgIDxsaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3Jn
-PiAgICAgICAgICAgICAgICAgIA0KICAgICAgICAgICAgICAgICAgICAgIFNlbnQgYnk6ICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjYzogICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQogICAgICAgICAg
-ICAgICAgICAgICAgbGludXhwcGMtZW1iZWRkZWQtYm91bmNlcytqZWZmLmZlbGxpbj1yZmxlbGVj
-dC5jb20gICAgICAgIFN1YmplY3Q6ICBleGVjdmUgb2YgL3NiaW4vaW5pdCBmYWlscyAgICAgICAg
-ICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICBAb3psYWJzLm9yZyAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAg
-ICAwNS8zMC8yMDA2IDE1OjU5ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQogICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAN
-Cg0KDQoNCg0KDQoNCg0KDQo+SGksDQo+SSBhbSB0cnlpbmcgdG8gYnJpbmcgdXAgYSBjdXN0b20g
-Ym9hcmQgd2l0aCBhIFBQQzQwNSBwcm9jZXNzb3IgcnVubmluZw0KTGludXggMi40LjIwIChNb250
-YVZpc3RhIFJlbGVhc2UpIGFuZCBhbSA+aGF2aW5nIHByb2JsZW1zIHdpdGggdGhlIGNhbGwgdG8N
-CmV4ZWN2ZSjigJwvc2Jpbi9pbml04oCdLCBhcmd2X2luaXQsIGVudnBfaW5pdCkgbm90IHJldHVy
-bmluZyBpbiB0aGUgZmlsZQ0KbWFpbi5jLiBUaGUgcHJvY2Vzc29yID5qdXN0IGhhbmdzIGFuZCB0
-aGVyZSBpcyBubyBvdXRwdXQgb24gdGhlIHRlcm1pbmFsLiBJDQpoYXZlIHRyaWVkIHRvIHNlZSBp
-ZiBJIGNhbiBydW4g4oCcYmluL3No4oCdIGFuZCBldmVuIHRoaXMgZXhlY3ZlIGNhbGwgZG9lcyA+
-bm90DQpyZXR1cm4uIFNvbWUgdGhpbmdzIGFib3V0IHRoZSBib2FyZCBhcmUsIHRoZSBuZXR3b3Jr
-aW5nIG9wdGlvbiBoYXMgYmVlbg0KZGlzYWJsZWQgaW4gdGhlIExpbnV4IC5jb25maWcgZmlsZS4g
-SSBhbSA+cnVubmluZyBVLUJvb3QgMS4xLjEgYXMgdGhlDQpib290bG9hZGVyIGFuZCBhbSBkb3du
-bG9hZGluZyB0aGUgdUltYWdlIChjb21wcmVzc2VkIGtlcm5lbCkgYW5kIHRoZQ0KaW5pdHJkLmJv
-b3QgPihmaWxlc3lzdGVtKSBpbnRvIFJBTSBhbmQgYWNjZXNzaW5nIHRoZSBmaWxlc3lzdGVtIGlu
-IFJBTS4NCiBDaGV0YW4sIEkgd291bGQgY2hlY2sgdGhlIGNvbnRlbnRzIG9mIHRoZSBpbml0cmQg
-ZmlsZXN5c3RlbSB5b3UgY3JlYXRlZCB0bw0KdmVyaWZ5IHRoZSBmaWxlcyBhcmUgaW4gdGhlIGlt
-YWdlLiBJZiB0aGV5IGFyZSBtb25pdG9yIHRoZSBjb25zb2xlIG91dHB1dA0KdG8gdmVyZml5IHRo
-ZSByYW1kaXNrIGZpbGVzeXN0ZW0gaXMgZm91bmQgYW5kIGluc3RhbGxlZCBpbnRvIHJhbS4NCkpl
-ZmYgRmVsbGluDQoNCj5BbnkgaGVscCBhcyB0byB3aGF0IGNvdWxkIGJlIGNhdXNpbmcgdGhpcyB0
-byBoYXBwZW4gb3IgaG93IHRvIGRlYnVnIHRoaXMNCmlzc3VlIHdvdWxkIGJlIGFwcHJlY2lhdGVk
-LiBBbHNvLCBJ4oCZdmUgdHJpZWQgPnRvIGNhcHR1cmUgdGhlIHJldHVybiB2YWx1ZQ0Kb2YgdGhl
-IGV4ZWN2ZSBjYWxsIGJ1dCBzaW5jZSB0aGUgY2FsbCBkb2VzIG5vdCByZXR1cm4sIHRoaXMgaGFz
-IG5vdCBoZWxwZWQNCmFueS4NCg0KVGhhbmtzLA0KQ2hldGFuIEFuYW50aGFyYW1hbg0KDQogX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCkxpbnV4cHBjLWVt
-YmVkZGVkIG1haWxpbmcgbGlzdA0KTGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KaHR0cHM6
-Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQNCg==
+You could also try compiling init statically.  I've had success with
+that in the past until I figured out what the actual problem was.
+
+
+On 5/30/06, Anantharaman Chetan-W16155
+<Chetan.S.Anantharaman@motorola.com> wrote:
+>
+>
+>
+>
+> Hi,
+>
+> I am trying to bring up a custom board with a PPC405 processor running Linux
+> 2.4.20 (MontaVista Release) and am having problems with the call to
+> execve("/sbin/init", argv_init, envp_init) not returning in the file main.c.
+> The processor just hangs and there is no output on the terminal. I have
+> tried to see if I can run "bin/sh" and even this execve call does not
+> return. Some things about the board are, the networking option has been
+> disabled in the Linux .config file. I am running U-Boot 1.1.1 as the
+> bootloader and am downloading the uImage (compressed kernel) and the
+> initrd.boot (filesystem) into RAM and accessing the filesystem in RAM.
+>
+>
+>
+> Any help as to what could be causing this to happen or how to debug this
+> issue would be appreciated. Also, I've tried to capture the return value of
+> the execve call but since the call does not return, this has not helped any.
+>
+>
+>
+> Thanks,
+>
+> Chetan Anantharaman
+>
+>
+>
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
