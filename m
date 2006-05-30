@@ -1,32 +1,21 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx007.isp.belgacom.be (outmx007.isp.belgacom.be
-	[195.238.5.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B8B5E67A5B
+Return-Path: <jourdan@enib.fr>
+Received: from alto.enib.fr (alto.enib.fr [195.221.233.5])
+	by ozlabs.org (Postfix) with ESMTP id 7058567A0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 May 2006 19:27:21 +1000 (EST)
-Received: from outmx007.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx007.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k4U9RDFG011718
-	for <linuxppc-embedded@ozlabs.org>; Tue, 30 May 2006 11:27:14 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx007.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k4U9R8iw011653
-	for <linuxppc-embedded@ozlabs.org>; Tue, 30 May 2006 11:27:08 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [SOLVED] LXT973 support (dual PHY with single MDIO)
-Date: Tue, 30 May 2006 11:28:48 +0200
-References: <200605301048.01209.laurent.pinchart@tbox.biz>
-In-Reply-To: <200605301048.01209.laurent.pinchart@tbox.biz>
+	Tue, 30 May 2006 19:45:29 +1000 (EST)
+Message-ID: <1664.194.3.133.184.1148981963.squirrel@webmail.enib.fr>
+In-Reply-To: <1758.194.3.133.184.1148897976.squirrel@webmail.enib.fr>
+References: Your message of "Mon, 29 May 2006 09:34:00 +0200."               
+	<1402.194.3.133.184.1148888040.squirrel@webmail.enib.fr>   
+	<20060529091257.686CB3525D9@atlas.denx.de>
+	<1758.194.3.133.184.1148897976.squirrel@webmail.enib.fr>
+Date: Tue, 30 May 2006 11:39:23 +0200 (CEST)
+Subject: Re: Can't get CoralP drivers to work
+From: jourdan@enib.fr
+To: "Wolfgang Denk" <wd@denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200605301128.48580.laurent.pinchart@tbox.biz>
+Content-Type: text/plain;charset=iso-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,12 +26,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+>> In message <1402.194.3.133.184.1148888040.squirrel@webmail.enib.fr> you
+>> wrote:
+>>>
+>>> This seems ok to me but I don't have any video signal. My screen
+>>> remains
+>>> blank.
+>>
+>> What's your boot arguments? Where is  your  console  device,  on  the
+>> serial port or on the frame buffer?
+>
+> My boot arguments :
+> # more /proc/cmdline
+> console=tty0 console=ttyS1,9600 devfs=mount ip=bootp root=/dev/nfs rw
+>
+> My console is on the serial port (ttyS1 on SMC2).
+>
+>>> xf86OpenConsole: Cannot open /dev/tty0 (No such file or directory)
+>>> ...
+>>
+>> Did you enable all of the following options in your kernel config?
+>>
+>> 	CONFIG_FB=y
+>> 	CONFIG_DUMMY_CONSOLE=y
+>> 	CONFIG_FB_MB86290=y
+>> 	CONFIG_FBCON_ADVANCED=y
+>> 	CONFIG_FBCON_CFB16=y
+>> 	CONFIG_FBCON_FONTS=y
+>> 	CONFIG_FONT_8x8=y
+>> 	CONFIG_FONT_8x16=y
+>> 	CONFIG_VT=y
+>> 	CONFIG_VT_CONSOLE=y
+>>
+>> My guess is that CONFIG_VT and/or CONFIG_VT_CONSOLE might be missing.
+>
+> All those options are enabled.
+>
 
-once again, posting to a mailing list helped me solving my problem. It should 
-have been obvious that the MDIO bus is really a bus, and can as such support 
-several devices. The issue was that the drivers/net/fs_enet driver set 
-bus->phy_mask to ~0x9, and the LXT973 uses addresses 0 and 1. Address 1 thus 
-never got probed. What's the reason for probing addresses 0 and 3 only ?
+As I said earlier, when the driver loads, my monitor don't receive any
+video signal. I can force it by calling at the end of the initialization
+of the driver :
+  reg = MB86290FB_READ_DISP_REGISTER(GDC_DISP_REG_EXT_MODE);
+  MB86290FB_WRITE_DISP_REGISTER(GDC_DISP_REG_EXT_MODE, reg | 0x80010000);
+This command enables the display, and "garbage" appears on the monitor.
 
-Laurent Pinchart
+Then if i do :
+# cat /dev/urandom > /dev/fb0
+I should see dummy pixels on the screen but in fact nothing happens. This
+is still the same garbage on the screen.
+
+I use a custom processor card based on a MPC8270. I can't figure out if
+the problem comes from the configuration of my kernel (all the needed
+options are enabled) or if it is in the code of the initialisation of my
+platform.
+
+This is the first time I try to use framebuffer graphics, so I'm new with
+it. Can the framebuffer work from a serial console on a platform without
+keyboard ?
+
+Thanks for your help.
