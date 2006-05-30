@@ -1,18 +1,27 @@
-Return-Path: <jwu@neuros.com.cn>
-Received: from neuros.com.cn (unknown [222.76.229.178])
-	by ozlabs.org (Postfix) with ESMTP id 223A567A40
+Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
+Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
+	[131.188.3.181]) by ozlabs.org (Postfix) with ESMTP id 43D1867A0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 May 2006 13:19:04 +1000 (EST)
-Subject: Re: compact flash driver
-From: John Wu <jwu@neuros.com.cn>
-To: KokHow Teh <KokHow.Teh@marconi.com>
-In-Reply-To: <OFC57CB4FF.BA62E59F-ON4825717D.0019F306@uk.marconicomms.com>
-References: <OFC57CB4FF.BA62E59F-ON4825717D.0019F306@uk.marconicomms.com>
-Content-Type: text/plain
-Date: Wed, 31 May 2006 11:18:21 +0800
-Message-Id: <1149045501.4189.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Tue, 30 May 2006 17:46:07 +1000 (EST)
+Received: from fau-vscan-1.rrze.uni-erlangen.de ([131.188.3.181]
+	[131.188.3.181]) by faurelaysmart-1.rrze.uni-erlangen.de with
+	ESMTP for linuxppc-embedded@ozlabs.org;
+	Tue, 30 May 2006 09:45:47 +0200
+Received: from max71.rrze.uni-erlangen.de ([131.188.3.181])
+	by fau-vscan-1.rrze.uni-erlangen.de (fau-vscan-1.rrze.uni-erlangen.de
+	[131.188.2.91]) (amavisd-new)
+	with ESMTP id 26608-05-2 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 30 May 2006 09:45:47 +0200 (MEST)
+Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
+	smtp-auth.uni-erlangen.de with ESMTP for
+	linuxppc-embedded@ozlabs.org; Tue, 30 May 2006 09:45:46 +0200
+Message-Id: <447BF82A.8000503@cs.fau.de>
+Date: Tue, 30 May 2006 09:45:46 +0200
+From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: undefined symbols of modules
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,21 +32,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-05-29 at 12:45 +0800, KokHow Teh wrote:
-> 
-> >Dear sir
-> >Do you have compact flash card driver supported in u-boot.I need it.If
->                                                     ^^^^^^
-> You have posted your question to the wrong list.
-> 
-> >you don't have it .Can you tell me how the CF card initialize if you
-> >know how to initialize it?
-> 
-> Ask more specific question as to what hardware platform you are using.
-> Specifically, which CF controller....
-> 
-> 
-> 
+Hello,
 
+when i try to compile my kernel extension as modul, i get some undefined 
+references. But a look in System.map shows, that the relevant symbols 
+are defined in the main kernel. Why then those undefined references ?
 
- Hardware platform is dm320. Specifically is CF 3.0 memory mode.
+Any hint is appreciated!
+bye
+
+Josef
+
+make ARCH=ppc -C linux modules
+make[1]: Entering directory `/scratch-local/esm/linux'
+  CHK     include/linux/version.h
+  Building modules, stage 2.
+  MODPOST
+*** Warning: "cpm_load_patch" [drivers/usb/host/m82xx-hcd.ko] undefined!
+*** Warning: "cpmp" [drivers/usb/host/m82xx-hcd.ko] undefined!
