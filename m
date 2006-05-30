@@ -1,18 +1,20 @@
-Return-Path: <jfaslist@yahoo.fr>
-Received: from smtp008.mail.ukl.yahoo.com (smtp008.mail.ukl.yahoo.com
-	[217.12.11.62]) by ozlabs.org (Postfix) with SMTP id 6FA5667A40
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 20:46:09 +1000 (EST)
-Message-ID: <447C20C4.50804@yahoo.fr>
-Date: Tue, 30 May 2006 12:39:00 +0200
-From: jfaslist <jfaslist@yahoo.fr>
+Return-Path: <roto@gmx.net>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 8650867A62
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 21:23:17 +1000 (EST)
+Date: Tue, 30 May 2006 13:23:14 +0200
+From: Wolfgang Pfeiffer <roto@gmx.net>
+To: Michel =?iso-8859-15?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: [Done #2] Re: snd-aoa: Sound gone after snd-aoa updates, on PB5, 8
+Message-ID: <20060530112314.GA3250@localhost>
+References: <20060529020027.GA3107@localhost> <20060529021756.GB3107@localhost>
+	<1148869725.3918.12.camel@localhost.localdomain>
+	<20060529221730.GA3138@localhost>
+	<1148975072.27856.294.camel@thor.lorrainebruecke.local>
 MIME-Version: 1.0
-To: Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: [patch] fix RTC/NVRAM accesses on Maple
-References: <1147988040.2692.40.camel@basalt.austin.ibm.com>	<17516.64514.854281.64425@cargo.ozlabs.ibm.com>
-	<1148593014.15517.32.camel@basalt.austin.ibm.com>
-In-Reply-To: <1148593014.15517.32.camel@basalt.austin.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <1148975072.27856.294.camel@thor.lorrainebruecke.local>
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,32 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-So the RTC/NVRAM patch is no longer needed for the Maple?
-Thanks
--jf simon
+On Tue, May 30, 2006 at 09:44:32AM +0200, Michel Dänzer wrote:
+> On Tue, 2006-05-30 at 00:17 +0200, Wolfgang Pfeiffer wrote:
+> > 
+> > The problem is: with libasound2 1.0.11-6 I cannot even *start* 
+> > alsamixer:
+> > 
+> > ------------------------
+> > $ alsamixer
+> > ALSA lib control.c:816:(snd_ctl_open_noupdate) Invalid CTL default
+> > 
+> > alsamixer: function snd_ctl_open failed for default: No such file or directory
+> 
+> See http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=369478 and friends.
 
-Hollis Blanchard wrote:
+Thanks. 
 
->On Fri, 2006-05-19 at 08:58 +1000, Paul Mackerras wrote:
->  
->
->>Care to redo the patch?
->>    
->>
->
->After some offline discussion, I think we're in agreement that these
->properties are fine, since Linux's device tree code can't handle
->multiple ranges. Right Segher?
->
->  
->
+And the bug already seems to be fixed with a new version: I just
+installed it (libasound2 1.0.11-7) and at least alsamixer and amixer
+started without error. Plus: Restarting the KDE sound system after
+installing this new version also worked liked a charm.
 
+Thanks to everyone involved :)
 
-	
+Best Regards
+Wolfgang
 
-	
-		
-___________________________________________________________________________ 
-Yahoo! Mail réinvente le mail ! Découvrez le nouveau Yahoo! Mail et son interface révolutionnaire.
-http://fr.mail.yahoo.com
+-- 
+Wolfgang Pfeiffer: /ICQ: 286585973/ + + +  /AIM: crashinglinux/
+http://profiles.yahoo.com/wolfgangpfeiffer
+
+Key ID: E3037113
+http://keyserver.mine.nu/pks/lookup?search=0xE3037113&fingerprint=on
