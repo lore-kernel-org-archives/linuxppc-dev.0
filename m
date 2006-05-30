@@ -1,19 +1,19 @@
-Return-Path: <bcook@bpointsys.com>
-Received: from bpointsys.com (70-253-197-251.ded.swbell.net [70.253.197.251])
-	by ozlabs.org (Postfix) with ESMTP id 6B3FD67A66
+Return-Path: <mgreer@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 9449F67AC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 May 2006 01:12:21 +1000 (EST)
-From: Brent Cook <bcook@bpointsys.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: regarding mvme6100 on kernel 2.6.13
-Date: Tue, 30 May 2006 10:12:07 -0500
-References: <20060530140929.88FBD3384B@ws7-3.us4.outblaze.com>
-In-Reply-To: <20060530140929.88FBD3384B@ws7-3.us4.outblaze.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200605301012.07607.bcook@bpointsys.com>
-Cc: "Kiran Kumar.A" <kiranf5@lycos.com>
+	Wed, 31 May 2006 04:25:34 +1000 (EST)
+Date: Tue, 30 May 2006 11:27:46 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Roger Larsson <roger.larsson@norran.net>
+Subject: Re: Setting I&D cache enable in the same mtspr instruction
+Message-ID: <20060530182746.GA26830@mag.az.mvista.com>
+References: <B9FFC3F97441D04093A504CEA31B7C41A62B2F@msilexch01.marvell.com>
+	<200605291415.14908.roger.larsson@norran.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200605291415.14908.roger.larsson@norran.net>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,38 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 30 May 2006 09:09, Kiran Kumar.A wrote:
-> Hi all,
->
-> I'm porting mvme6100 for 2.6.13.
-> But its hanging after "Now Booting the kernel.."
->
-> Can anybody guide me in this regard.
->
-> thanks and regards
+On Mon, May 29, 2006 at 02:15:14PM +0200, Roger Larsson wrote:
+> Is the patch reversed?
 
-Eh, it's probably not hanging at all - you're just not seeing anything because 
-the device naming scheme changed and the serial console not getting 
-initialized correctly. Be sure that in your platform_notify function has 
-a '.' in the platform device name - this was added around 2.6.11 or so.
+Sure looks like it.
 
-An example from another board I have:
+> diff -Naur old new > patch
+> 
+> And what about comments, are they all still valid?
+> "enable and invalidate caches" is now only Data cache...
+> 
+> In cases when I am writing code like this I try to
+> include the reason why it is not "optimized" together
+> in one write... (or soon someone will do that optimization).
 
-static int xes_mv64x60_platform_notify(struct device *dev)
-{
-    static struct {
-        char *bus_id;
-        void ((*rtn) (struct platform_device * pdev));
-    } dev_map[] = {
-#ifdef CONFIG_SERIAL_MPSC
-        {
-        MPSC_CTLR_NAME ".0", xes_mv64x60_fixup_mpsc_pdata}, {
-        MPSC_CTLR_NAME ".1", xes_mv64x60_fixup_mpsc_pdata},
-#endif
+Good point.
 
-}
+> /RogerL
 
-Also, be sure to enable early boot messages - they help a lot. Also, don't 
-overlook setting console=ttyMM0,9600 in the kernel args.
+Also, please send the patches *inline*.
 
- - Brent
+Mark
