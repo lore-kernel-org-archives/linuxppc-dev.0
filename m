@@ -1,19 +1,19 @@
-Return-Path: <Behre.Frederik@litef.de>
-Received: from proxy03.litef.de (mail.litef.de [193.101.168.104])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B749F67A66
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id D650F67AA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 May 2006 17:50:04 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: AW: MPC8270 on Microsys PM827 Kernel 2.6 Oops: kernel access of bad
-	area, sig: 11 [#1]
-Date: Wed, 31 May 2006 09:49:58 +0200
-Message-ID: <CC692F5386B0AA47A62B7484A7CA2B6D02C4CFCC@frmx1.litef.de>
-From: "Behre, Frederik - LT" <Behre.Frederik@litef.de>
-To: <wd@denx.de>
+	Wed, 31 May 2006 19:39:45 +1000 (EST)
+In-Reply-To: <20060530182250.6ec4fb3b@vitb.ru.mvista.com>
+References: <200605301048.01209.laurent.pinchart@tbox.biz>
+	<200605301128.48580.laurent.pinchart@tbox.biz>
+	<20060530182250.6ec4fb3b@vitb.ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C3212297-C765-46A0-B29C-C95EEFC1E17F@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [SOLVED] LXT973 support (dual PHY with single MDIO)
+Date: Tue, 30 May 2006 11:23:42 -0500
+To: Vitaly Bordug <vbordug@ru.mvista.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,42 +25,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for answer me.=20
-I want to install Xenomai on this mpc8270. Therefor I need 2.6.14 =
-,because I need the adeos patch.=20
 
-Thanks for helping me
+On May 30, 2006, at 09:22, Vitaly Bordug wrote:
 
-Freddy
+> On Tue, 30 May 2006 11:28:48 +0200
+> Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
+>
+>> Hi,
+>>
+>> once again, posting to a mailing list helped me solving my  
+>> problem. It should
+>> have been obvious that the MDIO bus is really a bus, and can as  
+>> such support
+>> several devices. The issue was that the drivers/net/fs_enet driver  
+>> set
+>> bus->phy_mask to ~0x9, and the LXT973 uses addresses 0 and 1.  
+>> Address 1 thus
+>> never got probed. What's the reason for probing addresses 0 and 3  
+>> only ?
+>
+> The reason is obvious: bitbang read of PHY id with not-existent  
+> PHY, does not return expected (0, iirc), that confuse mdio bus  
+> device-driver bound (it assumes error and returns -1), and prevents  
+> from probing other phys. So, as that seems to be a "feature" on  
+> CPM2 only, we are working that around specifying phy_mask to  
+> prevent probing inexistent phys w/over bitbang thing.
 
 
+Hopefully, this isn't being set in the driver, but is set in the  
+board code, instead.  This is a board-specific setting.
 
------Urspr=FCngliche Nachricht-----
-Von: wd@denx.de [mailto:wd@denx.de]=20
-Gesendet: Dienstag, 30. Mai 2006 22:44
-An: Behre, Frederik - LT
-Cc: linuxppc-embedded@ozlabs.org
-Betreff: Re: MPC8270 on Microsys PM827 Kernel 2.6 Oops: kernel access of =
-bad area, sig: 11 [#1]
-
-In message <CC692F5386B0AA47A62B7484A7CA2B6D02B52CB0@frmx1.litef.de> you =
-wrote:
->=20
-> I compile my kernel with
-> pm82x_deconfig and PCI disabled.
-...
-> MPC8260 Reset Status: External Soft, External Hard
-
-Why do you use pm82x_deconfig with a MPC8260  processor?  You  should =
-use pm826_deconfig instead.
-
-Best regards,
-
-Wolfgang Denk
-
---
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de =
-That's the thing about people who think  they  hate  computers.  What =
-they really hate is lousy programmers.
-- Larry Niven and Jerry Pournelle in "Oath of Fealty"
+Andy
