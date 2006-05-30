@@ -1,18 +1,39 @@
-Return-Path: <mgreer@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 747AD67AC5
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 06:39:37 +1000 (EST)
-Date: Tue, 30 May 2006 13:41:51 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: mostrows@watson.ibm.com
-Subject: Re: [PATCH] Provide mechanism for editing builtin command-line in
-	zImage binary.
-Message-ID: <20060530204151.GA31567@mag.az.mvista.com>
-References: <11489544631499-git-send-email-mostrows@watson.ibm.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1AE5267B2B
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 07:04:55 +1000 (EST)
+Received: from e4.ny.us.ibm.com (e4.pok.ibm.com [9.56.232.144])
+	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k4UGwRio030815
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 12:58:28 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k4UGwLpq015194
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 12:58:21 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k4UGwKHG088548
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 12:58:20 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k4UGwKmH003887
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 May 2006 12:58:20 -0400
+Date: Tue, 30 May 2006 11:58:19 -0500
+To: Olaf Hering <olh@suse.de>
+Subject: Re: [PATCH] powerpc: add dmesg command to xmon
+Message-ID: <20060530165819.GB7021@austin.ibm.com>
+References: <20060528104621.GA7126@suse.de> <200605281404.26070.arnd@arndb.de>
+	<20060528120748.GA7608@suse.de> <200605281812.09308.arnd@arndb.de>
+	<20060529175834.GA31082@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11489544631499-git-send-email-mostrows@watson.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20060529175834.GA31082@suse.de>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Linus Torvalds <torvalds@osdl.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,28 +43,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, May 29, 2006 at 10:01:03PM -0400, mostrows@watson.ibm.com wrote:
-> zImage will store the builtin command-line in a dedicated section, allowing
-> it to be easily identified and edited with user-space tools.
->
-> zImage will set /chosen/bootargs to the stored builtin command-line setting,
-> if /chosen/bootargs is empty (emulating the behavior in prom_init.c).
+On Mon, May 29, 2006 at 07:58:34PM +0200, Olaf Hering wrote:
+>  On Sun, May 28, Arnd Bergmann wrote:
 > 
-> Use of this mechanism avoids the need to modify firmware or rely on a
-> bootloader to customize kernel arguments (and overall system
-> behavior).  The command line can be edited as needed when a zImage is
-> copied to a TFTP staging area for download by firmware.
+> > On Sunday 28 May 2006 14:07, Olaf Hering wrote:
+> > > > This whole function looks fishy to me. It seems unnecessarily rude to me to
+> > > > use kallsyms_lookup_name in order to get at a static variable from another
+> > > > file. Can't you instead add a global function to kernel/printk.c to return
+> > > > the buffer?
+> > > 
+> > > Its possible, but it wont end up in Linus tree.
+> > 
+> > Hmm, so the idea is that because Linus doesn't like kernel debuggers, we just
+> > obfuscate the code for any improvements to xmon and hope he doesn't notice?
+> 
+> So lets just ask again for support in generic code for a dmesg command in xmon:
+> 
+> http://lkml.org/lkml/2004/10/28/32
 
-Why do this?  Why not get rid of storing the cmdline in the zImage altogether?  
+I'd been planning to pester Torvalds/LKML on a regular basis until the
+patch (or something else suitable) went in. Clearly, I'd failed to do
+this. 
 
-We already have equivalent functionality by storing it in the dt's
-/chosen/bootargs so why this unnecessary complexity?
+--linas
 
-Add some code to edit the /chosen/bootargs at zImage runtime (just like
-arch/ppc used to) and we're covered.  AFAICT, we're already adding a tool
-to tack on flat dt's to an already existing zImage so you're not doing
-anything we can't--or won't--do already.
-
-Agree?
-
-Mark
+p.s. Belated apologies for failing to mention KDB; I assumed it would be 
+"obvious" to those who know, and that by not mentioning KDB explicitly, 
+I thought that the patch would have a better chance of acceptance (which
+I expected to be low). Silly me. 
