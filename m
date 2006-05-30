@@ -1,20 +1,17 @@
-Return-Path: <jourdan@enib.fr>
-Received: from alto.enib.fr (alto.enib.fr [195.221.233.5])
-	by ozlabs.org (Postfix) with ESMTP id 7058567A0E
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp10.clb.oleane.net (smtp10.clb.oleane.net [213.56.31.32])
+	by ozlabs.org (Postfix) with ESMTP id 0961B67B3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 May 2006 19:45:29 +1000 (EST)
-Message-ID: <1664.194.3.133.184.1148981963.squirrel@webmail.enib.fr>
-In-Reply-To: <1758.194.3.133.184.1148897976.squirrel@webmail.enib.fr>
-References: Your message of "Mon, 29 May 2006 09:34:00 +0200."               
-	<1402.194.3.133.184.1148888040.squirrel@webmail.enib.fr>   
-	<20060529091257.686CB3525D9@atlas.denx.de>
-	<1758.194.3.133.184.1148897976.squirrel@webmail.enib.fr>
-Date: Tue, 30 May 2006 11:39:23 +0200 (CEST)
-Subject: Re: Can't get CoralP drivers to work
-From: jourdan@enib.fr
-To: "Wolfgang Denk" <wd@denx.de>
+	Tue, 30 May 2006 19:45:39 +1000 (EST)
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: "'Thiago Galesi'" <thiagogalesi@gmail.com>
+Subject: RE: Linux kernel thread with Linux 2.6.x
+Date: Tue, 30 May 2006 11:46:09 +0200
+Message-ID: <000a01c683cd$e3f29ca0$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <82ecf08e0605291013t7bd1627bg92d13908b3d0b7b7@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,62 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->> In message <1402.194.3.133.184.1148888040.squirrel@webmail.enib.fr> you
->> wrote:
->>>
->>> This seems ok to me but I don't have any video signal. My screen
->>> remains
->>> blank.
->>
->> What's your boot arguments? Where is  your  console  device,  on  the
->> serial port or on the frame buffer?
->
-> My boot arguments :
-> # more /proc/cmdline
-> console=tty0 console=ttyS1,9600 devfs=mount ip=bootp root=/dev/nfs rw
->
-> My console is on the serial port (ttyS1 on SMC2).
->
->>> xf86OpenConsole: Cannot open /dev/tty0 (No such file or directory)
->>> ...
->>
->> Did you enable all of the following options in your kernel config?
->>
->> 	CONFIG_FB=y
->> 	CONFIG_DUMMY_CONSOLE=y
->> 	CONFIG_FB_MB86290=y
->> 	CONFIG_FBCON_ADVANCED=y
->> 	CONFIG_FBCON_CFB16=y
->> 	CONFIG_FBCON_FONTS=y
->> 	CONFIG_FONT_8x8=y
->> 	CONFIG_FONT_8x16=y
->> 	CONFIG_VT=y
->> 	CONFIG_VT_CONSOLE=y
->>
->> My guess is that CONFIG_VT and/or CONFIG_VT_CONSOLE might be missing.
->
-> All those options are enabled.
->
+Hi,
 
-As I said earlier, when the driver loads, my monitor don't receive any
-video signal. I can force it by calling at the end of the initialization
-of the driver :
-  reg = MB86290FB_READ_DISP_REGISTER(GDC_DISP_REG_EXT_MODE);
-  MB86290FB_WRITE_DISP_REGISTER(GDC_DISP_REG_EXT_MODE, reg | 0x80010000);
-This command enables the display, and "garbage" appears on the monitor.
+Thanks for your answer, but a tasklet runs in interrupt context
+(in_interrupt() != 0) so it doesn't support schedule() call
+included in "down" semaphore function.
 
-Then if i do :
-# cat /dev/urandom > /dev/fb0
-I should see dummy pixels on the screen but in fact nothing happens. This
-is still the same garbage on the screen.
+Any other idea ?
 
-I use a custom processor card based on a MPC8270. I can't figure out if
-the problem comes from the configuration of my kernel (all the needed
-options are enabled) or if it is in the code of the initialisation of my
-platform.
+Laurent.
 
-This is the first time I try to use framebuffer graphics, so I'm new with
-it. Can the framebuffer work from a serial console on a platform without
-keyboard ?
-
-Thanks for your help.
+> -----Message d'origine-----
+> De : Thiago Galesi [mailto:thiagogalesi@gmail.com]
+> Envoyé : lun. 29 mai 2006 18:13
+> À : Laurent Lagrange
+> Cc : linuxppc-embedded@ozlabs.org
+> Objet : Re: Linux kernel thread with Linux 2.6.x
+>
+>
+> >
+> > As the interrupt handler can't be scheduled, I have made a
+> kernel thread
+> > which waits forever on a semaphore.
+> > This semaphore is set when a received packet interrupt occured.
+>
+> You should look into tasklets for this. Not that your system is not
+> OK, but, as you said it, it's not fast enough.
+>
+> Note that you still have some limitations using tasklets, but it's
+> more flexible than Interrupt handlers.
+>
+>
