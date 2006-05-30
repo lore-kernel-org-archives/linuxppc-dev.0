@@ -1,27 +1,20 @@
-Return-Path: <Josef.Angermeier@informatik.uni-erlangen.de>
-Received: from max71.rrze.uni-erlangen.de (max71.rrze.uni-erlangen.de
-	[131.188.3.181]) by ozlabs.org (Postfix) with ESMTP id 43D1867A0E
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id AAE03679FF
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 May 2006 17:46:07 +1000 (EST)
-Received: from fau-vscan-1.rrze.uni-erlangen.de ([131.188.3.181]
-	[131.188.3.181]) by faurelaysmart-1.rrze.uni-erlangen.de with
-	ESMTP for linuxppc-embedded@ozlabs.org;
-	Tue, 30 May 2006 09:45:47 +0200
-Received: from max71.rrze.uni-erlangen.de ([131.188.3.181])
-	by fau-vscan-1.rrze.uni-erlangen.de (fau-vscan-1.rrze.uni-erlangen.de
-	[131.188.2.91]) (amavisd-new)
-	with ESMTP id 26608-05-2 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 May 2006 09:45:47 +0200 (MEST)
-Received: from [131.188.51.43] ([131.188.51.43] [131.188.51.43]) by
-	smtp-auth.uni-erlangen.de with ESMTP for
-	linuxppc-embedded@ozlabs.org; Tue, 30 May 2006 09:45:46 +0200
-Message-Id: <447BF82A.8000503@cs.fau.de>
-Date: Tue, 30 May 2006 09:45:46 +0200
-From: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: undefined symbols of modules
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 30 May 2006 18:06:24 +1000 (EST)
+Date: Tue, 30 May 2006 01:06:21 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
+Subject: Re: undefined symbols of modules
+Message-ID: <20060530080621.GA16186@gate.ebshome.net>
+References: <447BF82A.8000503@cs.fau.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <447BF82A.8000503@cs.fau.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,21 +25,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Tue, May 30, 2006 at 09:45:46AM +0200, Josef Angermeier wrote:
+> Hello,
+> 
+> when i try to compile my kernel extension as modul, i get some undefined 
+> references. But a look in System.map shows, that the relevant symbols 
+> are defined in the main kernel. Why then those undefined references ?
 
-when i try to compile my kernel extension as modul, i get some undefined 
-references. But a look in System.map shows, that the relevant symbols 
-are defined in the main kernel. Why then those undefined references ?
+Symbol must be exported to be available for modules, just being listed 
+in System.map isn't enough.
 
-Any hint is appreciated!
-bye
+Try adding EXPORT_SYMBOL(...) for those "undefined" references.
 
-Josef
-
-make ARCH=ppc -C linux modules
-make[1]: Entering directory `/scratch-local/esm/linux'
-  CHK     include/linux/version.h
-  Building modules, stage 2.
-  MODPOST
-*** Warning: "cpm_load_patch" [drivers/usb/host/m82xx-hcd.ko] undefined!
-*** Warning: "cpmp" [drivers/usb/host/m82xx-hcd.ko] undefined!
+-- 
+Eugene
