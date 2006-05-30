@@ -1,20 +1,13 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9FFFB67B1F
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 May 2006 06:43:44 +1000 (EST)
-To: "Behre, Frederik - LT" <Behre.Frederik@litef.de>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: MPC8270 on Microsys PM827 Kernel 2.6 Oops: kernel access of bad
-	area, sig: 11 [#1]
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 30 May 2006 14:46:21 +0200."
-	<CC692F5386B0AA47A62B7484A7CA2B6D02B52CB0@frmx1.litef.de>
-Date: Tue, 30 May 2006 22:43:42 +0200
-Sender: wd@denx.de
-Message-Id: <20060530204342.82BBC3525D9@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+Return-Path: <Jeff.Fellin@rflelect.com>
+Subject: Re: execve of /sbin/init fails
+To: Chetan.S.Anantharaman@motorola.com
+Message-ID: <OF32D825BB.6DBF6685-ON8525717E.0072AF23@teal.com>
+From: Jeff.Fellin@rflelect.com
+Date: Tue, 30 May 2006 16:54:51 -0400
+MIME-Version: 1.0
+Content-type: text/plain; charset=UTF-8
+Cc: linuxppc-embedded-bounces+jeff.fellin=rflelect.com@ozlabs.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,23 +18,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <CC692F5386B0AA47A62B7484A7CA2B6D02B52CB0@frmx1.litef.de> you wrote:
-> 
-> I compile my kernel with 
-> pm82x_deconfig and PCI disabled.
-...
-> MPC8260 Reset Status: External Soft, External Hard
-
-Why do you use pm82x_deconfig with a MPC8260  processor?  You  should
-use pm826_deconfig instead.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-That's the thing about people who think  they  hate  computers.  What
-they really hate is lousy programmers.
-- Larry Niven and Jerry Pournelle in "Oath of Fealty"
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgDQogICAgICAgICAgICAgICAgICAgICAgIkFuYW50aGFy
+YW1hbiBDaGV0YW4tVzE2MTU1IiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCiAgICAg
+ICAgICAgICAgICAgICAgICA8Q2hldGFuLlMuQW5hbnRoYXJhbWFuQG1vdG9yb2xhLmNvbT4gICAg
+ICAgICAgICAgICAgICAgICAgVG86ICAgICAgIDxsaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3Jn
+PiAgICAgICAgICAgICAgICAgIA0KICAgICAgICAgICAgICAgICAgICAgIFNlbnQgYnk6ICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjYzogICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQogICAgICAgICAg
+ICAgICAgICAgICAgbGludXhwcGMtZW1iZWRkZWQtYm91bmNlcytqZWZmLmZlbGxpbj1yZmxlbGVj
+dC5jb20gICAgICAgIFN1YmplY3Q6ICBleGVjdmUgb2YgL3NiaW4vaW5pdCBmYWlscyAgICAgICAg
+ICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICBAb3psYWJzLm9yZyAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAg
+ICAwNS8zMC8yMDA2IDE1OjU5ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQogICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAN
+Cg0KDQoNCg0KDQoNCg0KDQo+SGksDQo+SSBhbSB0cnlpbmcgdG8gYnJpbmcgdXAgYSBjdXN0b20g
+Ym9hcmQgd2l0aCBhIFBQQzQwNSBwcm9jZXNzb3IgcnVubmluZw0KTGludXggMi40LjIwIChNb250
+YVZpc3RhIFJlbGVhc2UpIGFuZCBhbSA+aGF2aW5nIHByb2JsZW1zIHdpdGggdGhlIGNhbGwgdG8N
+CmV4ZWN2ZSjigJwvc2Jpbi9pbml04oCdLCBhcmd2X2luaXQsIGVudnBfaW5pdCkgbm90IHJldHVy
+bmluZyBpbiB0aGUgZmlsZQ0KbWFpbi5jLiBUaGUgcHJvY2Vzc29yID5qdXN0IGhhbmdzIGFuZCB0
+aGVyZSBpcyBubyBvdXRwdXQgb24gdGhlIHRlcm1pbmFsLiBJDQpoYXZlIHRyaWVkIHRvIHNlZSBp
+ZiBJIGNhbiBydW4g4oCcYmluL3No4oCdIGFuZCBldmVuIHRoaXMgZXhlY3ZlIGNhbGwgZG9lcyA+
+bm90DQpyZXR1cm4uIFNvbWUgdGhpbmdzIGFib3V0IHRoZSBib2FyZCBhcmUsIHRoZSBuZXR3b3Jr
+aW5nIG9wdGlvbiBoYXMgYmVlbg0KZGlzYWJsZWQgaW4gdGhlIExpbnV4IC5jb25maWcgZmlsZS4g
+SSBhbSA+cnVubmluZyBVLUJvb3QgMS4xLjEgYXMgdGhlDQpib290bG9hZGVyIGFuZCBhbSBkb3du
+bG9hZGluZyB0aGUgdUltYWdlIChjb21wcmVzc2VkIGtlcm5lbCkgYW5kIHRoZQ0KaW5pdHJkLmJv
+b3QgPihmaWxlc3lzdGVtKSBpbnRvIFJBTSBhbmQgYWNjZXNzaW5nIHRoZSBmaWxlc3lzdGVtIGlu
+IFJBTS4NCiBDaGV0YW4sIEkgd291bGQgY2hlY2sgdGhlIGNvbnRlbnRzIG9mIHRoZSBpbml0cmQg
+ZmlsZXN5c3RlbSB5b3UgY3JlYXRlZCB0bw0KdmVyaWZ5IHRoZSBmaWxlcyBhcmUgaW4gdGhlIGlt
+YWdlLiBJZiB0aGV5IGFyZSBtb25pdG9yIHRoZSBjb25zb2xlIG91dHB1dA0KdG8gdmVyZml5IHRo
+ZSByYW1kaXNrIGZpbGVzeXN0ZW0gaXMgZm91bmQgYW5kIGluc3RhbGxlZCBpbnRvIHJhbS4NCkpl
+ZmYgRmVsbGluDQoNCj5BbnkgaGVscCBhcyB0byB3aGF0IGNvdWxkIGJlIGNhdXNpbmcgdGhpcyB0
+byBoYXBwZW4gb3IgaG93IHRvIGRlYnVnIHRoaXMNCmlzc3VlIHdvdWxkIGJlIGFwcHJlY2lhdGVk
+LiBBbHNvLCBJ4oCZdmUgdHJpZWQgPnRvIGNhcHR1cmUgdGhlIHJldHVybiB2YWx1ZQ0Kb2YgdGhl
+IGV4ZWN2ZSBjYWxsIGJ1dCBzaW5jZSB0aGUgY2FsbCBkb2VzIG5vdCByZXR1cm4sIHRoaXMgaGFz
+IG5vdCBoZWxwZWQNCmFueS4NCg0KVGhhbmtzLA0KQ2hldGFuIEFuYW50aGFyYW1hbg0KDQogX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCkxpbnV4cHBjLWVt
+YmVkZGVkIG1haWxpbmcgbGlzdA0KTGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KaHR0cHM6
+Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQNCg==
