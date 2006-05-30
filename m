@@ -1,28 +1,20 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx007.isp.belgacom.be (outmx007.isp.belgacom.be
-	[195.238.5.234])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF36D67B28
+Return-Path: <kiranf5@lycos.com>
+Received: from webmail-outgoing.us4.outblaze.com
+	(webmail-outgoing2.us4.outblaze.com [205.158.62.67])
+	by ozlabs.org (Postfix) with ESMTP id 5083C67B36
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 May 2006 23:38:28 +1000 (EST)
-Received: from outmx007.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx007.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k4UDcLFD012022
-	for <linuxppc-embedded@ozlabs.org>; Tue, 30 May 2006 15:38:21 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: fs_enet segfaults when adding network interface to bridge
-Date: Tue, 30 May 2006 15:39:55 +0200
-References: <200605301351.11967.laurent.pinchart@tbox.biz>
-	<20060530172700.198bba36@vitb.ru.mvista.com>
-In-Reply-To: <20060530172700.198bba36@vitb.ru.mvista.com>
+	Wed, 31 May 2006 00:09:35 +1000 (EST)
+Received: from unknown (unknown [192.168.8.90])
+	by webmail-outgoing.us4.outblaze.com (Postfix) with QMQP id
+	6E9411800E0A for <linuxppc-embedded@ozlabs.org>;
+	Tue, 30 May 2006 14:09:32 +0000 (GMT)
+Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200605301539.55319.laurent.pinchart@tbox.biz>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+From: "Kiran Kumar.A" <kiranf5@lycos.com>
+To: linuxppc-embedded@ozlabs.org
+Date: Tue, 30 May 2006 09:09:29 -0500
+Subject: regarding mvme6100 on kernel 2.6.13
+Message-Id: <20060530140929.88FBD3384B@ws7-3.us4.outblaze.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,73 +25,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> > Hi everybody,
-> >
-> > I ran into a segfault in the fs_enet driver when adding the network
-> > interface to an ethernet bridge. This only happens when the interface is
-> > down.
-> >
-> > ----- Kernel version -----
-> > Linux tbox-cp11 2.6.17-rc3-g7f02f290-dirty #549 Tue May 30 13:25:37 CEST
-> > 2006 ppc unknown
-> > (from main linux-2.6 git repository)
-> > ----- End of kernel version -----
-> >
-> > ----- Oops report -----
-> > Oops: kernel access of bad area, sig: 11 [#1]
-> > NIP: C0109884 LR: C010D420 CTR: 00000000
-> > REGS: c027d7f0 TRAP: 0300   Tainted: P       (2.6.17-rc3-g7f02f290-dirty)
-> > MSR: 00009032 <EE,ME,IR,DR>  CR: 24000222  XER: 00000000
-> > DAR: 00000140, DSISR: 20000000
-> > TASK = c0851090[42] 'brctl' THREAD: c027c000
-> > GPR00: C010D414 C027D8A0 C0851090 00000000 C027D8D0 FFFFFFFF F00000A0
-> > EFFFFFFF GPR08: C026E380 C0210000 00000000 C0230000 C0210000 1001D150
-> > 00FFE000 00000001 GPR16: FFFFFFFF 00000000 007FFF00 7FDD0AC0 00000000
-> > 10072C94 7FDD0AD8 10072CA4 GPR24: 00000000 10000A48 00000000 C027D8D0
-> > C027D8D0 C08A1A60 C027DC50 C08A1800 NIP [C0109884]
-> > phy_ethtool_gset+0x0/0x48
-> > LR [C010D420] fs_get_settings+0x34/0x48
-> > Call Trace:
-> > [C027D8A0] [C010D414] fs_get_settings+0x28/0x48 (unreliable)
-> > [C027D8C0] [C013DDC0] dev_ethtool+0x9bc/0x13c8
-> > [C027DC40] [C018CBC0] port_cost+0x58/0x108
-> > [C027DCB0] [C018D3E8] br_add_if+0x174/0x2f4
-> > [C027DCE0] [C018D9AC] add_del_if+0x94/0x98
-> > [C027DD00] [C018DD68] br_dev_ioctl+0x70/0xae4
-> > [C027DE00] [C013B42C] dev_ifsioc+0x17c/0x404
-> > [C027DE20] [C013BA4C] dev_ioctl+0x398/0x4e8
-> > [C027DEB0] [C012EEFC] sock_ioctl+0x154/0x220
-> > [C027DEE0] [C0067164] do_ioctl+0x88/0x9c
-> > [C027DEF0] [C0067230] vfs_ioctl+0xb8/0x3f0
-> > [C027DF10] [C00675A8] sys_ioctl+0x40/0x74
-> > [C027DF40] [C00040E0] ret_from_syscall+0x0/0x38
-> > Instruction dump:
-> > 7c0803a6 4e800020 2f800000 409eff78 4bffffb8 8804000e 2b800001 40bdff70
-> > 3860ffea 4bffffd4 61200040 4bffff84 <81230140> 91240004 80030144 90040008
-> > ----- End of oops report -----
-> >
-> > ----- Source lines -----
-> > [C0109884] phy_ethtool_gset+0x0/0x48 (drivers/net/phy/phy.c:290)
-> > [C010D414] fs_get_settings+0x28/0x48
-> > (drivers/net/fs_enet/fs_enet-main.c:885) [C013DDC0]
-> > dev_ethtool+0x9bc/0x13c8 (net/core/ethtool.c:122)
-> > [C018CBC0] port_cost+0x58/0x108 (net/bridge/br_if.c:54)
-> > ----- End of source lines -----
-> >
-> > phy_ethtool_gset segfaults when trying to access phydev->supported
-> > because phydev is NULL.
-> >
-> > As I'm not familiar with the fs_enet driver, I'm looking for advices
-> > regarding what to fix and how to fix it.
->
-> IIRC, fs_enet got bound to phydev only being ->up. So in down state, phydev
-> may be either null, or last assigned (need to have a look into source to
-> tell for certain). So what is the proper behavior from your point of view?
+Hi all,
 
-I have no idea :-) What I know is that the driver should not segfault when 
-asked to report the port speed. Either we should return an error or have the 
-phy device bound to fs_enet at all time. It might also be a bridge issue, 
-maybe the bridge code should turn the interface up before reading its speed. 
-How do other ethernet drivers proceed ?
+I'm porting mvme6100 for 2.6.13.=20
+But its hanging after "Now Booting the kernel.."
 
-Laurent Pinchart
+Can anybody guide me in this regard.
+
+thanks and regards
+
+
+
+
+
+
+
+
+--=20
+_______________________________________________
+
+Search for businesses by name, location, or phone number.  -Lycos Yellow Pa=
+ges
+
+http://r.lycos.com/r/yp_emailfooter/http://yellowpages.lycos.com/default.as=
+p?SRC=3Dlycos10
