@@ -1,22 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 00E4767B36
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 08:13:12 +1000 (EST)
-Subject: Re: [RFC/PATCH 0/8] Overhaul of virt IRQ configuration. / Kill
-	ppc64_interrupt_controller.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michal Ostrowski <mostrows@watson.ibm.com>
-In-Reply-To: <1148997289.25048.153.camel@brick>
-References: <1148935262.25048.31.camel@brick>
-	<1148938117.5959.24.camel@localhost.localdomain>
-	<1148997289.25048.153.camel@brick>
-Content-Type: text/plain
-Date: Wed, 31 May 2006 08:13:05 +1000
-Message-Id: <1149027185.9986.46.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@ozlabs.org>
+To: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@freescale.com>
+From: Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] dtc: add setting of physical boot cpu 
+In-reply-to: <20060518170017.B15E367A6C@ozlabs.org> 
+References: <20060518035734.2B2CA67A6D@ozlabs.org>
+	<7AC7793A-74F3-4596-BF28-19BCA9E388CF@watson.ibm.com>
+	<20060518170017.B15E367A6C@ozlabs.org>
+Date: Wed, 31 May 2006 08:31:51 +1000
+Sender: mikey@ozlabs.org
+Message-Id: <20060530223309.9AB7667B3E@ozlabs.org>
+Reply-To: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,121 +19,207 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+dtc always sets the physical boot CPU to 0xfeedbeef.  Add a -b option to
+set this.    Also add warnings when using the wrong property with the
+wrong blob version.  
 
-> A PIC would not need to reserve anything is when it is allocated.  Only
-> when interrupt numbers need to be presented to generic kernel code is a
-> virq number required.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-We could have completely sparse allocation indeed and any virt number
-matching any PIC but I don't like that too much. Complicates things
-unnecessarily don't you think ? I like irq numbers to be somewhat stable
-on a given platform :) Helps debugging & diagnosing problems...
+---
+Retransmission with updated warnings after discussion with Jimi.
 
-> One can use irq_desc->chip_data to easily go from virq -> (PIC, line).
-> The PIC then maintains an array to map each of it's lines to virq.  
-> This allows for all re-mappings to always be arbitrary in nature and
-> still allows for O(1) look-up in either direction.
+ dtc.c      |   14 ++++++++++----
+ dtc.h      |    8 +++++---
+ flattree.c |   16 ++++++++++------
+ livetree.c |   17 ++++++++++++-----
+ 4 files changed, 37 insertions(+), 18 deletions(-)
 
-I'll think about it, but I'm really tempted to keep simple ranges for
-now... we'll see.
-
-> >  - Interrupt 0..15 are reserved. 0 is always invalid. Only ISA PICs that
-> > carry legacy devices can request those (by passing a special flag to the
-> > allocation routine). 
-> 
-> Always create an ISA PIC that immediately requests lines 0..15.
-
-Well, if we use your suggested "sparse" allocation method, then yes, we
-need to request them right away before anything else. But I'd like to
-start with the range allocation in which case simply reserving that
-range for use by whatever PIC says "I'm the legacy ISA PIC" is enough.
-
-> Should one actually exists, we can associate the ISA PIC with the
-> appropriate device node.  Should ISA devices exist, once they request
-> interrupts (using (PIC,line) as arguments) we'll short-circuit virq
-> allocation since all ISA PIC mappings already exists.
-
-I'm not sure I understand there. ISA devices don't "request interrupts
-using (PCI,line)" or whatever... we don't necessarily know in advance.
-Part of the reasoning here is to also make sure that if no ISA PIC
-allocated 0...15 then a stupid legacy driver loaded by the user will
-fail it's call to request_irq()
-
-> Then there's no need to special case anything (and all other interrupts
-> are forced to be remapped out of the 0..15 range, without an explicit
-> "offset" concept).
-
-/me is a bit dubious...
-
-> > Any other gets remapped (including powermac MPICs).
-> > That will avoid endless problems that we never properly solved with
-> > legacy drivers and the fact that Linus decided that 0 should be the
-> > invalid interrupt number on all platforms
-> > 
-> >  - Provide in prom_parse.c functions for obtaining the PIC node and
-> > local interrupt number of a given device based on a passed-in array
-> > matching the semantics of an "interrupts" property and a parent node.
-> > Along with a helper that may just take a child node. The former is
-> > needed for PCI devices that have no device node. Provide a
-> > pci_ppc_map_interrupt() that takes a pci_dev and does the interrupt
-> > mapping, either by using the standard OF approach if a device-node is
-> > present, or walking up the PCI tree while doing standard swizzling until
-> > it reaches a device node
-> 
-> How is this different from the current use of map_interrupt() in
-> finish_node_interrupts()?  
-
-Slightly... basically cleaned up version of it.
-
-> It seems to me that it would be better to have the struct device_node
-> store the raw interrupt vector data as presented in the dev tree
-> (without remapping) along with a pointer to the struct device_node for
-> the appropriate PIC.
-
-I don't understand what you have in mind. Remember we are working with
-cases where devices may not have a node. There is no such thing as "an
-interrupt == a node" anyway. Beside, I want to _remove_ anything in
-struct device_node that isn't specifically the node linkage and property
-list. All the pre-parsed junk has to go.
-
-> Later on, when we need to provide interrupt lines to the PCI device
-> structures (e.g. pci_read_irq_line()) we have the PIC and the raw
-> interrupt vectors identified and we ask the PIC to provide us with a
-> kernel/virt IRQ.
-
-Yah, well, in order to have the PIC and the raw IRQ identified, we have
-to do the algorithm I described :) Not sure how your scheme differs
-except maybe by putting things in the device node itself... We do have a
-void * there though we can use for non-PCI devices, thus if the PIC node
-is always guaranteed _not_ to be a PCI device, we can use that to get
-the PIC quickly but old MPICs are PCI devices afaik, and beside, that is
-not a performance critical path.
-
-> Deferring the remapping of the interrupt vectors to this later time
-> should allow for some simplification opportunities. All code that
-> handles device nodes would not need to deal with offsets or remapping,
-
-I still don't see what you mean here.... the only things that has to
-deal with offset and/or remapping are the PIC code itself when it gets
-called with virtual numbers and the binding of a device to an irq when
-going from the raw number to the virtual number.
-
-> only when IRQ information crosses the boundary between powerpc and
-> generic code would one need to be aware of the need to re-map (i.e.
-> dev->irq = ??? and ppc_md.get_irq(regs);/ __do_IRQ() interactions ).  
-> Since arbitrary re-mappings need to be supported, the reservation of
-> vectors 0..15 can be hidden as a re-mapping implementation detail.
-> Consequently one could eliminate irq_offset_up() and irq_offset_down()
-> altogether.
-
-I'm not sure how your scheme differs from what I have in mind at this
-point except from the fact that you'll shuffle interrupt numbers way
-more than I intend to. I suppose it _might_ be simpler to go through the
-virt irq remapper once rather than having both a set of ranges +
-eventually the remapper, and I've thought about using the remapper for
-everything too, but I'd still like to keep the concept of ranges, thus
-I'm tempted to still allocate all irqs for a given controller
-continuously in the remapper when instanciating the PIC rather than when
-actually looking for IRQs....
-
-Ben.
+Index: dtc/dtc.c
+===================================================================
+--- dtc.orig/dtc.c
++++ dtc/dtc.c
+@@ -95,6 +95,8 @@ static void usage(void)
+ 	fprintf(stderr, "\t\tBlob version to produce, defaults to 3 (relevant for dtb\n\t\tand asm output only)\n");
+ 	fprintf(stderr, "\t-R <number>\n");
+ 	fprintf(stderr, "\t\tMake space for <number> reserve map entries (relevant for \n\t\tdtb and asm output only)\n");
++	fprintf(stderr, "\t-b <number>\n");
++	fprintf(stderr, "\t\tSet the physical boot cpu\n");
+ 	fprintf(stderr, "\t-f\n");
+ 	fprintf(stderr, "\t\tForce - try to produce output even if the input tree has errors\n");
+ 	exit(2);
+@@ -113,8 +115,9 @@ int main(int argc, char *argv[])
+ 	FILE *outf = NULL;
+ 	int outversion = 3;
+ 	int reservenum = 1;
++	int boot_cpuid_phys = 0xfeedbeef;
+ 
+-	while ((opt = getopt(argc, argv, "I:O:o:V:R:f")) != EOF) {
++	while ((opt = getopt(argc, argv, "I:O:o:V:R:fb:")) != EOF) {
+ 		switch (opt) {
+ 		case 'I':
+ 			inform = optarg;
+@@ -134,6 +137,9 @@ int main(int argc, char *argv[])
+ 		case 'f':
+ 			force = 1;
+ 			break;
++		case 'b':
++			boot_cpuid_phys = strtol(optarg, NULL, 0);
++			break;
+ 		default:
+ 			usage();
+ 		}
+@@ -167,7 +173,7 @@ int main(int argc, char *argv[])
+ 	if (! bi || ! bi->dt)
+ 		die("Couldn't read input tree\n");
+ 
+-	if (! check_device_tree(bi->dt)) {
++	if (! check_device_tree(bi->dt, outversion, boot_cpuid_phys)) {
+ 		fprintf(stderr, "Input tree has errors\n");
+ 		if (! force)
+ 			exit(1);
+@@ -185,9 +191,9 @@ int main(int argc, char *argv[])
+ 	if (streq(outform, "dts")) {
+ 		dt_to_source(outf, bi);
+ 	} else if (streq(outform, "dtb")) {
+-		dt_to_blob(outf, bi, outversion);
++		dt_to_blob(outf, bi, outversion, boot_cpuid_phys);
+ 	} else if (streq(outform, "asm")) {
+-		dt_to_asm(outf, bi, outversion);
++		dt_to_asm(outf, bi, outversion, boot_cpuid_phys);
+ 	} else if (streq(outform, "null")) {
+ 		/* do nothing */
+ 	} else {
+Index: dtc/dtc.h
+===================================================================
+--- dtc.orig/dtc.h
++++ dtc/dtc.h
+@@ -178,7 +178,7 @@ struct node *chain_node(struct node *fir
+ void add_property(struct node *node, struct property *prop);
+ void add_child(struct node *parent, struct node *child);
+ 
+-int check_device_tree(struct node *dt);
++int check_device_tree(struct node *dt, int outversion, int boot_cpuid_phys);
+ 
+ /* Boot info (tree plus memreserve information */
+ 
+@@ -207,8 +207,10 @@ struct boot_info *build_boot_info(struct
+ 
+ /* Flattened trees */
+ 
+-void dt_to_blob(FILE *f, struct boot_info *bi, int version);
+-void dt_to_asm(FILE *f, struct boot_info *bi, int version);
++void dt_to_blob(FILE *f, struct boot_info *bi, int version,
++		int boot_cpuid_phys);
++void dt_to_asm(FILE *f, struct boot_info *bi, int version,
++	       int boot_cpuid_phys);
+ 
+ struct boot_info *dt_from_blob(FILE *f);
+ 
+Index: dtc/flattree.c
+===================================================================
+--- dtc.orig/flattree.c
++++ dtc/flattree.c
+@@ -301,7 +301,8 @@ static struct data flatten_reserve_list(
+ }
+ static void make_bph(struct boot_param_header *bph,
+ 		     struct version_info *vi,
+-		     int reservesize, int dtsize, int strsize)
++		     int reservesize, int dtsize, int strsize,
++		     int boot_cpuid_phys)
+ {
+ 	int reserve_off;
+ 
+@@ -324,12 +325,13 @@ static void make_bph(struct boot_param_h
+ 				     + dtsize + strsize);
+ 		
+ 	if (vi->flags & FTF_BOOTCPUID)
+-		bph->boot_cpuid_phys = 0xfeedbeef;
++		bph->boot_cpuid_phys = cpu_to_be32(boot_cpuid_phys);
+ 	if (vi->flags & FTF_STRTABSIZE)
+ 		bph->size_dt_strings = cpu_to_be32(strsize);
+ }
+ 
+-void dt_to_blob(FILE *f, struct boot_info *bi, int version)
++void dt_to_blob(FILE *f, struct boot_info *bi, int version,
++		int boot_cpuid_phys)
+ {
+ 	struct version_info *vi = NULL;
+ 	int i;
+@@ -355,7 +357,8 @@ void dt_to_blob(FILE *f, struct boot_inf
+ 	reservebuf = flatten_reserve_list(bi->reservelist, vi);
+ 
+ 	/* Make header */
+-	make_bph(&bph, vi, reservebuf.len, dtbuf.len, strbuf.len);
++	make_bph(&bph, vi, reservebuf.len, dtbuf.len, strbuf.len,
++		 boot_cpuid_phys);
+ 
+ 	fwrite(&bph, vi->hdr_size, 1, f);
+ 
+@@ -395,7 +398,7 @@ static void dump_stringtable_asm(FILE *f
+ 	}
+ }
+ 
+-void dt_to_asm(FILE *f, struct boot_info *bi, int version)
++void dt_to_asm(FILE *f, struct boot_info *bi, int version, int boot_cpuid_phys)
+ {
+ 	struct version_info *vi = NULL;
+ 	int i;
+@@ -434,7 +437,8 @@ void dt_to_asm(FILE *f, struct boot_info
+ 		vi->last_comp_version);
+ 
+ 	if (vi->flags & FTF_BOOTCPUID)
+-		fprintf(f, "\t.long\t0xdeadbeef\t/*boot_cpuid_phys*/\n");
++		fprintf(f, "\t.long\t%i\t/*boot_cpuid_phys*/\n",
++			boot_cpuid_phys);
+ 
+ 	if (vi->flags & FTF_STRTABSIZE)
+ 		fprintf(f, "\t.long\t_%s_strings_end - _%s_strings_start\t/* size_dt_strings */\n",
+Index: dtc/livetree.c
+===================================================================
+--- dtc.orig/livetree.c
++++ dtc/livetree.c
+@@ -456,7 +456,7 @@ static int check_root(struct node *root)
+ 	return ok;
+ }
+ 
+-static int check_cpus(struct node *root)
++static int check_cpus(struct node *root, int outversion, int boot_cpuid_phys)
+ {
+ 	struct node *cpus, *cpu;
+ 	struct property *prop;
+@@ -518,8 +518,15 @@ static int check_cpus(struct node *root)
+ 		}
+ 	}
+ 
+-	if (! bootcpu)
+-		WARNMSG("No cpu has \"linux,boot-cpu\" property\n");
++	if (outversion < 2) {
++		if (! bootcpu)
++			WARNMSG("No cpu has \"linux,boot-cpu\" property\n");
++	} else {
++		if (bootcpu)
++			WARNMSG("\"linux,boot-cpu\" property is deprecated in blob version 2 or higher\n");
++		if (boot_cpuid_phys == 0xfeedbeef)
++			WARNMSG("physical boot CPU not set.  Use -b option to set\n");
++	}
+ 
+ 	return ok;	
+ }
+@@ -697,7 +704,7 @@ static void fixup_phandles(struct node *
+ 		fixup_phandles(root, child);
+ }
+ 
+-int check_device_tree(struct node *dt)
++int check_device_tree(struct node *dt, int outversion, int boot_cpuid_phys)
+ {
+ 	int ok = 1;
+ 
+@@ -713,7 +720,7 @@ int check_device_tree(struct node *dt)
+ 		return 0;
+ 
+ 	ok = ok && check_root(dt);
+-	ok = ok && check_cpus(dt);
++	ok = ok && check_cpus(dt, outversion, boot_cpuid_phys);
+ 	ok = ok && check_memory(dt);
+ 	ok = ok && check_chosen(dt);
+ 	if (! ok)
