@@ -1,39 +1,25 @@
-Return-Path: <mkravetz@us.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <mostrows@watson.ibm.com>
+Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 71DB4679E2
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 06:41:31 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k4VKfSrb020756
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 16:41:28 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k4VKfSDF136656
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 16:41:28 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k4VKfSJv027924
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 16:41:28 -0400
-Received: from localhost.localdomain (dyn9047021124.beaverton.ibm.com
-	[9.47.21.124])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k4VKfRnH027861
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 16:41:27 -0400
-Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
-	by localhost.localdomain (8.13.6/8.13.4) with ESMTP id k4VKfij4009907
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 13:41:44 -0700
-Received: (from mkravetz@localhost)
-	by localhost.localdomain (8.13.6/8.13.6/Submit) id k4VKfi3h009906
-	for linuxppc-dev@ozlabs.org; Wed, 31 May 2006 13:41:44 -0700
-Date: Wed, 31 May 2006 13:41:44 -0700
-From: Mike Kravetz <kravetz@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Collecting hypervisor call stats
-Message-ID: <20060531204144.GA7909@w-mikek2.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D662067A42
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 07:04:58 +1000 (EST)
+Subject: Re: [PATCH] Provide mechanism for editing builtin command-line in
+	zImage binary.
+From: Michal Ostrowski <mostrows@watson.ibm.com>
+To: Matthew McClintock <msm@freescale.com>
+In-Reply-To: <1149107718.8379.48.camel@localhost.localdomain>
+References: <11489544631499-git-send-email-mostrows@watson.ibm.com>
+	<20060530204151.GA31567@mag.az.mvista.com>
+	<1149023558.6507.15.camel@brick>
+	<20060531200419.GA17052@mag.az.mvista.com>
+	<1149107204.6507.97.camel@brick>
+	<1149107718.8379.48.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 31 May 2006 17:04:36 -0400
+Message-Id: <1149109476.6507.115.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,24 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We would like to add code that gathers statistics about hypervisor calls.
-It would keep track of things like # of calls made for each opcode as well
-as time spent processing the calls.
+On Wed, 2006-05-31 at 15:35 -0500, Matthew McClintock wrote:
+> On Wed, 2006-05-31 at 16:26 -0400, Michal Ostrowski wrote:
+> > I've had some experience with trying to edit existing OF trees (i.e.
+> > take a G5 OF tree and alter it to reflect the fact that the OS has a
+> > hypervisor between it and the HW).  It's not a pleasant experience.
+> > 
+> > Thus for OF based systems I'd be very wary of trying to edit the OF
+> > tree
+> > in arbitrary ways prior to Linux seeing it. 
+> 
+> Out of curiosity what was hard about it? 
 
-The 'obvious' place to gather such statistics would be from within the
-routines making hcalls in hvCall.S.  Once thing that I have noticed is
-the following comment at the beginning hvCall.S:
+Well, suppose that you want to remove a particular device from an OF
+tree.  At what point are you certain that you've completely removed all
+references to it?
 
- * NOTE: this file will go away when we move to inline this work.
+I've always been concerned that there are some properties remaining in
+the tree that may refer to the node I am removing (resulting in an
+inconsistent tree).  If you're working with one particular FW provider
+then you may come up with code that does it right, but such code may not
+necessarily catch all the extensions provided by another FW provider.  
 
-So, it appears someone thought/thinks these routines should be inlined.  
-I assume this is for performance reasons?  If this is the case, then I
-suspect gathering of statistics (which would introduce overhead) would
-meet resistance?
+I've found Apple and IBM FW like to do things in different ways.  In
+particular IBM FW likes to add "ibm,*" properties and you'd have to know
+the meaning of all such properties to ensure you've caught all
+references to the device you're pruning.
 
-Comments about the feasibility of adding such statistic gathering code
-would be appreciated.
+Like with most things, getting a solution to solve your immediate
+problem is easy; a perfect, general solution is much, much more
+difficult.
 
-Thanks,
+
+(Granted, some things, such as adding a new "memory" node are pretty
+easy to do.)
+
+> Also it is worth mentioning
+> some systems don't have to privilege of having a OF tree ready to go by
+> the time Linux starts.
+
+For such systems I think the right approach is to provide a
+DTC-generated OF tree (provided that one ensures that we don't skip
+important parts of prom_init.c).
+
+
+
 -- 
-Mike
+Michal Ostrowski <mostrows@watson.ibm.com>
