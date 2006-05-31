@@ -1,26 +1,15 @@
-Return-Path: <Chetan.S.Anantharaman@motorola.com>
-Received: from motgate4.mot.com (motgate4.mot.com [144.189.100.102])
-	by ozlabs.org (Postfix) with ESMTP id BF3CC679E1
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53511.mail.yahoo.com (web53511.mail.yahoo.com
+	[206.190.39.65]) by ozlabs.org (Postfix) with SMTP id 76DF467A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Jun 2006 07:47:34 +1000 (EST)
-Received: from az33exr03.mot.com (az33exr03.mot.com [10.64.251.233])
-	by motgate4.mot.com (8.12.11/Motgate4) with ESMTP id k4VLlWQ0001363
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 May 2006 14:47:32 -0700 (MST)
-Received: from de01exm68.ds.mot.com (de01exm68.am.mot.com [10.176.8.24])
-	by az33exr03.mot.com (8.13.1/8.13.0) with ESMTP id k4VLlVGx004774
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 May 2006 16:47:32 -0500 (CDT)
+	Thu,  1 Jun 2006 07:49:05 +1000 (EST)
+Message-ID: <20060531214224.52756.qmail@web53511.mail.yahoo.com>
+Date: Wed, 31 May 2006 14:42:24 -0700 (PDT)
+From: roger blofeld <blofeldus@yahoo.com>
+Subject: Help with MPC5200 + Bestcomm + Local Plus Bus
+To: linuxppc embedded <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Linux 2.4 Kernel on Xilinx Virtex4 FX100's PPC
-Date: Wed, 31 May 2006 17:47:31 -0400
-Message-ID: <EDF27F298D4B03498AE0C249A941DFF803D6E8@de01exm68.ds.mot.com>
-In-Reply-To: <528646bc0605311235n171f889g135e074685b578bc@mail.gmail.com>
-From: "Anantharaman Chetan-W16155" <Chetan.S.Anantharaman@motorola.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,39 +20,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Was the port done on a FX100 FPGA? Also, what PVR number does the PPC405
-indicate?
-Thanks,
-Chetan
+Hi
+ I have a custom board which is essentially an icecube with an FPGA on
+the local bus. I have a driver which pulls data from the FPGA in
+response to interrupts using memcpy_fromio(). I would like to reduce
+the CPU usage.
 
------Original Message-----
-From: glikely@gmail.com [mailto:glikely@gmail.com] On Behalf Of Grant
-Likely
-Sent: Wednesday, May 31, 2006 2:35 PM
-To: Anantharaman Chetan-W16155
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Linux 2.4 Kernel on Xilinx Virtex4 FX100's PPC
+Has anyone used bestcomm to move data from LPB to memory? Is there an
+example anywhere? From the app note AN2604 it looks like writing a
+bestcomm task is difficult at best. Perhaps it is possible to re-use
+the ethernet rx task for this purpose?
 
-On 5/31/06, Anantharaman Chetan-W16155
-<Chetan.S.Anantharaman@motorola.com> wrote:
->
-> Has anyone successfully ported a Linux 2.4 Kernel on a Xilinx Virtex-4
-FX
-> series FPGA's, PPC405 processor?
+I'm using mainline 2.6.16.18 with Sylvain's patches for
+ethernet/bestcomm/ide. (BTW, will that code make it into the mainline
+any time soon?)
 
-Linux on the V4-FX is well supported.  Xilinx has an app node
-describing how to modify the linuxppc-2.4 tree to work on the V4-FX.
-You can find out how to get the tree here:
+Thanks in advance for any advice
+-roger
 
-http://www.penguinppc.org/kernel/
 
-I've got both 2.4 & 2.6 happily running on my ML403 board here.
-
-Cheers,
-g.
-
---=20
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
