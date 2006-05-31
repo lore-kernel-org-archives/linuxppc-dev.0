@@ -1,20 +1,22 @@
-Return-Path: <aidan@nicta.com.au>
-Received: from mail09.syd.optusnet.com.au (mail09.syd.optusnet.com.au
-	[211.29.132.190])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7E4EB67A79
+Return-Path: <glikely@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id AAF6E67B18
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Jun 2006 08:22:33 +1000 (EST)
-Message-ID: <447E1725.4010908@nicta.com.au>
-Date: Thu, 01 Jun 2006 08:22:29 +1000
-From: Aidan Williams <aidan@nicta.com.au>
-MIME-Version: 1.0
-To: Anantharaman Chetan-W16155 <Chetan.S.Anantharaman@motorola.com>
+	Thu,  1 Jun 2006 08:33:48 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id l23so258479nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 31 May 2006 15:33:46 -0700 (PDT)
+Message-ID: <528646bc0605311533u147797fdhd5178420bc2f0b4b@mail.gmail.com>
+Date: Wed, 31 May 2006 16:33:46 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Anantharaman Chetan-W16155" <Chetan.S.Anantharaman@motorola.com>
 Subject: Re: Linux 2.4 Kernel on Xilinx Virtex4 FX100's PPC
-References: <EDF27F298D4B03498AE0C249A941DFF803D6E6@de01exm68.ds.mot.com>
-In-Reply-To: <EDF27F298D4B03498AE0C249A941DFF803D6E6@de01exm68.ds.mot.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <EDF27F298D4B03498AE0C249A941DFF803D6E8@de01exm68.ds.mot.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <528646bc0605311235n171f889g135e074685b578bc@mail.gmail.com>
+	<EDF27F298D4B03498AE0C249A941DFF803D6E8@de01exm68.ds.mot.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,19 +28,14 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Anantharaman Chetan-W16155 wrote:
-> Has anyone successfully ported a Linux 2.4 Kernel on a Xilinx Virtex-4 
-> FX series FPGA’s, PPC405 processor?
-> 
+On 5/31/06, Anantharaman Chetan-W16155
+<Chetan.S.Anantharaman@motorola.com> wrote:
+> Was the port done on a FX100 FPGA?
 
-Yes, see 
-http://ozlabs.org/pipermail/linuxppc-embedded/2006-April/022583.html
+No; but AFAIK, the ppc hardcore is identical for all FX parts.  The
+FX100 shoudn't be a problem.
 
-Note that there are silicon bugs that prevent caches being used in some 
-chips.
+> Also, what PVR number does the PPC405 indicate?
 
-> More specifically, the FX100 FPGA?
-
-I don't have one of those, sorry.
-
-- aidan
+Core#0>rd pvr
+pvr: 0x20011430  536941616
