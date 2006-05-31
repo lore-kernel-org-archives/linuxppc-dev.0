@@ -1,19 +1,16 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D48EE67B17
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 19:23:39 +1000 (EST)
-Subject: [RFT] snd-aoa has headphone and line-out detection now
-From: Johannes Berg <johannes@sipsolutions.net>
-To: debian-powerpc <debian-powerpc@lists.debian.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-m3PaPWgEumFsrtgI5rim"
-Date: Wed, 31 May 2006 11:23:16 +0200
-Message-Id: <1149067396.8877.19.camel@johannes>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <jan.veldeman@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id 2EA2467B15
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 19:26:44 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id j3so1127560ugf
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 02:26:42 -0700 (PDT)
+Message-ID: <ef135be40605310219n5d900fan897995551ea63fca@mail.gmail.com>
+Date: Wed, 31 May 2006 11:19:59 +0200
+From: "Jan Veldeman" <jan.veldeman@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: unresolved symbol dma_spin_lock with CONFIG_DEBUG_SPINLOCK enabled
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,77 +20,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
---=-m3PaPWgEumFsrtgI5rim
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+when compiling for a platform without CONFIG_GENERIC_ISA_DMA set and with
+CONFIG_DEBUG_SPINLOCK enabled, the linker complains about an unresolved symbol
+to dma_spin_lock (which is declared in kernel/dma.c but doesn't get compiled).
+Without CONFIG_DEBUG_SPINLOCK, these statements are removed by the compiler,
+so that dma_spin_lock isn't referenced.
 
-Hey,
+I see 3 possible solutions for this problem:
 
-I committed the code necessary in snd-aoa to support headphone and
-line-out detection, but I need help with one thing:
+1. compile in kernel/dma.c when CONFIG_DEBUG_SPINLOCK is enabled
 
-When you plug in an optical connector into the combo thingie, is a
-regular interrupt generated? Since nothing will actually be printed out,
-I suggest the following method to find out:
-
-1) start alsamixer
-2) enable all outputs
-3) plug in optical connector into the headphone/line-out plug
-4) observe if anything changes
-5) remove optical connector again
-6) disable all outputs
-7) plug in optical connector again
-8) reply to this mail telling me what happens in alsamixer when doing it
-
-If nothing happens then I suppose no interrupt is generated, otherwise,
-there must be. But I'll need to change the code a bit in any case.
-
-The headphone detection is intentionally not doing much, for one it
-reports the current state in the mixer element 'Headphone Detected', and
-you get the choice of switching to headphone on detect, which also turns
-off all the others, and enables speakers when removing. Also, the
-initial status is based on it.
-
-If you want more options, run a userspace daemon that listens to changes
-on 'Headphone Detected' and changes stuff appropriately. Keep in mind
-that it must disable the automatic handling then. And no, I haven't
-written one :)
-
-johannes
-
-PS: For those who care, here are some technical details:
-(1) I decided not to make the fabric handle *all* the interrupts
-     because that gets messy quickly with the allowed transfer items.
-     Also, it is hard to handle because sometimes some inputs are
-     mutually exclusive, while outputs controlled by amps are not, etc.
-(2) I will need to change the code so that the fabric handles all the
-     outputs, that is move the S/PDIF control to the fabric and have
-     the codec have a call for enabling/disabling it... Yes, this is
-     going into the direction of having the fabric control all of it,
-     but see (1). Maybe that code will enable having the fabric control
-     it all, I dunno.
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 58908f9..6cab2a3 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -15,6 +15,7 @@ obj-$(CONFIG_FUTEX) += futex.o
+ ifeq ($(CONFIG_COMPAT),y)
+ obj-$(CONFIG_FUTEX) += futex_compat.o
+ endif
++obj-$(CONFIG_DEBUG_SPINLOCK) += dma.o
+ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
+ obj-$(CONFIG_SMP) += cpu.o spinlock.o
+ obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
 
 
---=-m3PaPWgEumFsrtgI5rim
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+as it's a debug build, the extra space shouldn't mind.
+It will also solve similar problems for other architectures (if they exist, I
+didn't check this)
 
------BEGIN PGP SIGNATURE-----
+2. stub the claim/release_dma_lock in include/asm-powerpc/dma.h
 
-iQIVAwUARH1ggqVg1VMiehFYAQKf8w//ZDCGAn5w+AG4OCQTLs7ULErzdIZU6Uet
-5PSQtVUsXlJOhEZvgPHFkStWfQPckrNNBu97vZgj8RLbEsodks7G9VySBQ4wdGC4
-NYnNdNlw3+sV0SMGpLCXzKOE4old9Gedp/YtlDVe9mDL51pg4v8APO0F45Ycng7k
-M7UW9pfgPAhIyXXD0dz6fpxww+KOr6ShkUsIxPDvJQYDskxXGihQlqNhH0fcLyeE
-8ixSII5TGgcrmrYzFDP8TuWohDzDP8XPVVXEUvoK8pWVHftvExSA2vbkCngij13i
-6W+MGvvux15/ZC7uBTLt/snbeh5gPCWdDtn6jut1SAwArkp9CTgRtqtBDM0e4stW
-QlWS8FyIN1XFbeDOdF1ftToL7K6fEj4KZ22CSj298v4+YKF+3z179UzYVFu/ZfQm
-BGSB6wDuusSMpSPz0mVE9mcTzUAZZXyqq+v79FNXODDn6JiSqc143OCaLMXdo9As
-1WPe1tCzhoMuwBCE1HeAL9wnpElJpC/2GcbpLlNIUZMzywnzPTzMFmUO0sOVvFO5
-z/Hs7+YpRzcGmVuN9iRpigvzj939ChIv0/ur93lq4d/ziw9QtXfShZ8dgl+nOBlR
-c2R/+ksjueUZ9fxYZk3uexoUz9mixa/9OLyDfnsRW6u1uieyyWvh+XpWeZ4K7CjX
-S6VjGt3yKkg=
-=+Edu
------END PGP SIGNATURE-----
+diff --git a/include/asm-powerpc/dma.h b/include/asm-powerpc/dma.h
+index 4bb57fe..de5efc7 100644
+--- a/include/asm-powerpc/dma.h
++++ b/include/asm-powerpc/dma.h
+@@ -182,6 +182,8 @@ extern long ppc_cs4232_dma, ppc_cs4232_d
 
---=-m3PaPWgEumFsrtgI5rim--
+ #define DMA_AUTOINIT           0x10
+
++#ifdef CONFIG_GENERIC_ISA_DMA
++
+ extern spinlock_t dma_spin_lock;
+
+ static __inline__ unsigned long claim_dma_lock(void)
+@@ -196,6 +198,22 @@ static __inline__ void release_dma_lock(
+        spin_unlock_irqrestore(&dma_spin_lock, flags);
+ }
+
++#else /* CONFIG_GENERIC_ISA_DMA */
++
++/* dma_spin_lock isn't declared because kernel/dma.c doesn't get compiled,
++ * so stub these functions */
++
++static __inline__ unsigned long claim_dma_lock(void)
++{
++       return 0;
++}
++
++static __inline__ void release_dma_lock(unsigned long flags)
++{
++}
++
++#endif /* CONFIG_GENERIC_ISA_DMA */
++
+ /* enable/disable a specific DMA channel */
+ static __inline__ void enable_dma(unsigned int dmanr)
+ {
+
+but this just doesn't feel right
+
+3. fix the driver using claim_dma_lock on platforms without
+    CONFIG_GENERIC_ISA_DMA
+
+This just looks like a lot of work and would make it harder for drivers.
+
+Any suggestions/remarks?
+
+Best regards,
+Jan
