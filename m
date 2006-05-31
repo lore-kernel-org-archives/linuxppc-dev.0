@@ -1,16 +1,21 @@
-Return-Path: <Chetan.S.Anantharaman@motorola.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: execve of /sbin/init fails
-Date: Tue, 30 May 2006 18:16:27 -0400
-Message-ID: <EDF27F298D4B03498AE0C249A941DFF803D6DF@de01exm68.ds.mot.com>
-In-Reply-To: <OF32D825BB.6DBF6685-ON8525717E.0072AF23@teal.com>
-From: "Anantharaman Chetan-W16155" <Chetan.S.Anantharaman@motorola.com>
-To: <Jeff.Fellin@rflelect.com>, "Steve Iribarne \(GMail\)" <netstv@gmail.com>,
-	<adgospod@gmail.com>
-Cc: linuxppc-embedded-bounces+jeff.fellin=rflelect.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id AE1CB67B3C
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 31 May 2006 10:58:14 +1000 (EST)
+Date: Wed, 31 May 2006 04:58:04 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Andy Fleming <afleming@freescale.com>
+Subject: Re: fs_enet segfaults when adding network interface to bridge
+Message-ID: <20060531045804.3948d738@localhost.localdomain>
+In-Reply-To: <C7B65358-8BEF-42E7-A11C-3FBC501BB324@freescale.com>
+References: <200605301351.11967.laurent.pinchart@tbox.biz>
+	<20060530172700.198bba36@vitb.ru.mvista.com>
+	<200605301539.55319.laurent.pinchart@tbox.biz>
+	<C7B65358-8BEF-42E7-A11C-3FBC501BB324@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,124 +26,119 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for your reply. Yes, the file /sbin/init is in the ramdisk file
-system with execute permissions on it. I am running Busybox (how can I
-check the version?), but my /sbin/init is not Busybox's init.
+On Tue, 30 May 2006 16:54:42 -0500
+Andy Fleming <afleming@freescale.com> wrote:
 
-One thing I'd like to mention is, I have used the same ramdisk
-filesystem and the same version of Linux 2.4 kernel and U-Boot
-bootloader and have been able to successfully execute the /sbin/init.
-This board has a Xilinx Virtex 2 Pro FPGA with a PPC405. On my new
-board, with a Xilinx Virtex 4 FX100 FPGA, with the kernel running on a
-PPC405 and the same filesystem, the execve of /sbin/init "hangs". By
-hangs, I mean there is no output on the console after the below output
-and it does not return (which indicates that it has not encountered an
-error of some sort, since execve returns on error only). So, I am not
-sure where it is stuck and is there any way to tell where it's stuck at?
+> 
+> On May 30, 2006, at 08:39, Laurent Pinchart wrote:
+> 
+> >>> Hi everybody,
+> >>>
+> >>> I ran into a segfault in the fs_enet driver when adding the
+> >>> network interface to an ethernet bridge. This only happens when
+> >>> the interface is
+> >>> down.
+> >>>
+> >>> ----- Kernel version -----
+> >>> Linux tbox-cp11 2.6.17-rc3-g7f02f290-dirty #549 Tue May 30  
+> >>> 13:25:37 CEST
+> >>> 2006 ppc unknown
+> >>> (from main linux-2.6 git repository)
+> >>> ----- End of kernel version -----
+> >>>
+> >>> ----- Oops report -----
+> >>> Oops: kernel access of bad area, sig: 11 [#1]
+> >>> NIP: C0109884 LR: C010D420 CTR: 00000000
+> >>> REGS: c027d7f0 TRAP: 0300   Tainted: P       (2.6.17-rc3- 
+> >>> g7f02f290-dirty)
+> >>> MSR: 00009032 <EE,ME,IR,DR>  CR: 24000222  XER: 00000000
+> >>> DAR: 00000140, DSISR: 20000000
+> >>> TASK = c0851090[42] 'brctl' THREAD: c027c000
+> >>> GPR00: C010D414 C027D8A0 C0851090 00000000 C027D8D0 FFFFFFFF  
+> >>> F00000A0
+> >>> EFFFFFFF GPR08: C026E380 C0210000 00000000 C0230000 C0210000  
+> >>> 1001D150
+> >>> 00FFE000 00000001 GPR16: FFFFFFFF 00000000 007FFF00 7FDD0AC0  
+> >>> 00000000
+> >>> 10072C94 7FDD0AD8 10072CA4 GPR24: 00000000 10000A48 00000000  
+> >>> C027D8D0
+> >>> C027D8D0 C08A1A60 C027DC50 C08A1800 NIP [C0109884]
+> >>> phy_ethtool_gset+0x0/0x48
+> >>> LR [C010D420] fs_get_settings+0x34/0x48
+> >>> Call Trace:
+> >>> [C027D8A0] [C010D414] fs_get_settings+0x28/0x48 (unreliable)
+> >>> [C027D8C0] [C013DDC0] dev_ethtool+0x9bc/0x13c8
+> >>> [C027DC40] [C018CBC0] port_cost+0x58/0x108
+> >>> [C027DCB0] [C018D3E8] br_add_if+0x174/0x2f4
+> >>> [C027DCE0] [C018D9AC] add_del_if+0x94/0x98
+> >>> [C027DD00] [C018DD68] br_dev_ioctl+0x70/0xae4
+> >>> [C027DE00] [C013B42C] dev_ifsioc+0x17c/0x404
+> >>> [C027DE20] [C013BA4C] dev_ioctl+0x398/0x4e8
+> >>> [C027DEB0] [C012EEFC] sock_ioctl+0x154/0x220
+> >>> [C027DEE0] [C0067164] do_ioctl+0x88/0x9c
+> >>> [C027DEF0] [C0067230] vfs_ioctl+0xb8/0x3f0
+> >>> [C027DF10] [C00675A8] sys_ioctl+0x40/0x74
+> >>> [C027DF40] [C00040E0] ret_from_syscall+0x0/0x38
+> >>> Instruction dump:
+> >>> 7c0803a6 4e800020 2f800000 409eff78 4bffffb8 8804000e 2b800001  
+> >>> 40bdff70
+> >>> 3860ffea 4bffffd4 61200040 4bffff84 <81230140> 91240004 80030144  
+> >>> 90040008
+> >>> ----- End of oops report -----
+> >>>
+> >>> ----- Source lines -----
+> >>> [C0109884] phy_ethtool_gset+0x0/0x48 (drivers/net/phy/phy.c:290)
+> >>> [C010D414] fs_get_settings+0x28/0x48
+> >>> (drivers/net/fs_enet/fs_enet-main.c:885) [C013DDC0]
+> >>> dev_ethtool+0x9bc/0x13c8 (net/core/ethtool.c:122)
+> >>> [C018CBC0] port_cost+0x58/0x108 (net/bridge/br_if.c:54)
+> >>> ----- End of source lines -----
+> >>>
+> >>> phy_ethtool_gset segfaults when trying to access phydev->supported
+> >>> because phydev is NULL.
+> >>>
+> >>> As I'm not familiar with the fs_enet driver, I'm looking for
+> >>> advices regarding what to fix and how to fix it.
+> >>
+> >> IIRC, fs_enet got bound to phydev only being ->up. So in down  
+> >> state, phydev
+> >> may be either null, or last assigned (need to have a look into  
+> >> source to
+> >> tell for certain). So what is the proper behavior from your point  
+> >> of view?
+> >
+> > I have no idea :-) What I know is that the driver should not  
+> > segfault when
+> > asked to report the port speed. Either we should return an error
+> > or have the
+> > phy device bound to fs_enet at all time. It might also be a bridge  
+> > issue,
+> > maybe the bridge code should turn the interface up before reading  
+> > its speed.
+> > How do other ethernet drivers proceed ?
+> 
+> 
+> Well, gianfar only invokes phy_ethtool_gset() after checking to see  
+> that phydev is not NULL.  fs_enet should do this as well.  It may be  
+> preferable to move that check into phy_ethtool_gset().  Certainly a  
+> workable solution, though I'm inclined to feel that the PHY layer  
+> should be able to assume that a given PHY exists.  The sort of  
+> problem also exists if you try to use ethtool to find the ring sizes  
+> before the device has been opened.
+> 
+> Anyway, the easy fix is for fs_enet to check for NULL before calling  
+> phy_ethtool_gset().
+> 
+Andy,
 
-Hope this above info and below screen capture provide a bit more
-background to the issue.
+Thanks for pointing it out, I was just going to seek into gianfar
+behavior. 
 
+That issue seems not the only problem - there are plenty of cases I
+saw, where if initially PHY got failed to be bound, fs_enet seems to
+be really unhappy with phydev == NULL and direct dereferences of the
+latter. 
 
-Below is a capture of the screen output:
-Linux NET4.0 for Linux 2.4
-Based upon Swansea University Computer Society NET3.039
-OCP uart ver 1.6.2 init complete
-LSP Revision 42
-ikconfig 0.5 with /proc/ikconfig
-Starting kswapd
-Disabling the Out Of Memory Killer
-Journalled Block Device driver loaded
-devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
-devfs: boot_options: 0x1
-pty: 256 Unix98 ptys configured
-Serial driver version 5.05c (2001-07-08) with no serial options enabled
-ttyS00 at 0xfdfff003 (irq =3D 22) is a 16550A
-xgpio #0 at 0x50000000 mapped to 0xC5000000
-RAMDISK driver initialized: 16 RAM disks of 16384K size 1024 blocksize
-loop: loaded (max 8 devices)
-Tracer: Initialization complete
-RAMDISK: Compressed image found at block 0
-Freeing initrd memory: 5104k freed
-EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
-VFS: Mounted root (ext2 filesystem).
-Mounted devfs on /dev
-Freeing unused kernel memory: 40k init
+I'll try to address that stuff as time permits...
 
-
-
------Original Message-----
-From: Jeff.Fellin@rflelect.com [mailto:Jeff.Fellin@rflelect.com]=20
-Sent: Tuesday, May 30, 2006 3:55 PM
-To: Anantharaman Chetan-W16155
-Cc: linuxppc-embedded@ozlabs.org;
-linuxppc-embedded-bounces+jeff.fellin=3Drflelect.com@ozlabs.org
-Subject: Re: execve of /sbin/init fails
-
-=20
-
-                      "Anantharaman Chetan-W16155"
-
-                      <Chetan.S.Anantharaman@motorola.com>
-To:       <linuxppc-embedded@ozlabs.org>                 =20
-                      Sent by:
-cc:                                                      =20
-                      =
-linuxppc-embedded-bounces+jeff.fellin=3Drflelect.com
-Subject:  execve of /sbin/init fails                     =20
-                      @ozlabs.org
-
-=20
-
-=20
-
-                      05/30/2006 15:59
-
-=20
-
-=20
-
-
-
-
-
-
-
-
-
-
->Hi,
->I am trying to bring up a custom board with a PPC405 processor running
-Linux 2.4.20 (MontaVista Release) and am >having problems with the call
-to
-execve("/sbin/init", argv_init, envp_init) not returning in the file
-main.c. The processor >just hangs and there is no output on the
-terminal. I
-have tried to see if I can run "bin/sh" and even this execve call does
->not
-return. Some things about the board are, the networking option has been
-disabled in the Linux .config file. I am >running U-Boot 1.1.1 as the
-bootloader and am downloading the uImage (compressed kernel) and the
-initrd.boot >(filesystem) into RAM and accessing the filesystem in RAM.
- Chetan, I would check the contents of the initrd filesystem you created
-to
-verify the files are in the image. If they are monitor the console
-output
-to verfiy the ramdisk filesystem is found and installed into ram.
-Jeff Fellin
-
->Any help as to what could be causing this to happen or how to debug
-this
-issue would be appreciated. Also, I've tried >to capture the return
-value
-of the execve call but since the call does not return, this has not
-helped
-any.
-
-Thanks,
-Chetan Anantharaman
-
- _______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-Vitaly
