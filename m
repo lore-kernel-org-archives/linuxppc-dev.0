@@ -2,16 +2,16 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F077A67A79
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 19:12:45 +1000 (EST)
-Subject: pmf_register_irq_client gives sleep with locks held warning
+	by ozlabs.org (Postfix) with ESMTP id D48EE67B17
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 19:23:39 +1000 (EST)
+Subject: [RFT] snd-aoa has headphone and line-out detection now
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: debian-powerpc <debian-powerpc@lists.debian.org>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-mBwZKgt7makVm2aK0Rxp"
-Date: Tue, 30 May 2006 22:19:00 +0200
-Message-Id: <1149020341.5128.7.camel@johannes>
+	boundary="=-m3PaPWgEumFsrtgI5rim"
+Date: Wed, 31 May 2006 11:23:16 +0200
+Message-Id: <1149067396.8877.19.camel@johannes>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,60 +24,76 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-mBwZKgt7makVm2aK0Rxp
+--=-m3PaPWgEumFsrtgI5rim
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hey,
 
-When testing headphone detection stuff I got this:
+I committed the code necessary in snd-aoa to support headphone and
+line-out detection, but I need help with one thing:
 
-[  634.218762] BUG: sleeping function called from invalid context at mm/sla=
-b.c:2794
-[  634.218774] in_atomic():0, irqs_disabled():1
-[  634.218777] Call Trace:
-[  634.218779] [D67ADC00] [C00085F8] show_stack+0x50/0x190 (unreliable)
-[  634.218794] [D67ADC30] [C0024030] __might_sleep+0xcc/0xe8
-[  634.218804] [D67ADC40] [C0076C04] __kmalloc+0xf4/0xf8
-[  634.218815] [D67ADC60] [C00B37D4] proc_create+0x9c/0xe8
-[  634.218827] [D67ADC90] [C00B3930] proc_mkdir_mode+0x2c/0x88
-[  634.218833] [D67ADCB0] [C005227C] register_handler_proc+0xe4/0xfc
-[  634.218844] [D67ADD50] [C0051D70] setup_irq+0x118/0x16c
-[  634.218850] [D67ADD70] [C0051E68] request_irq+0xa4/0xb8
-[  634.218855] [D67ADDA0] [C0020BA0] macio_do_gpio_irq_enable+0x40/0x50
-[  634.218860] [D67ADDB0] [C00208BC] pmf_register_irq_client+0x88/0x9c
-[..., not important]
+When you plug in an optical connector into the combo thingie, is a
+regular interrupt generated? Since nothing will actually be printed out,
+I suggest the following method to find out:
 
-The problem obviously is that request_irq via setup_irq and ... may
-sleep via kmalloc, while pmf_register_irq_client spin_lock_irqsave()s
-around the call.
+1) start alsamixer
+2) enable all outputs
+3) plug in optical connector into the headphone/line-out plug
+4) observe if anything changes
+5) remove optical connector again
+6) disable all outputs
+7) plug in optical connector again
+8) reply to this mail telling me what happens in alsamixer when doing it
 
-The solution is probably to use spin_lock() instead of
-spin_lock_irqsave() here.
+If nothing happens then I suppose no interrupt is generated, otherwise,
+there must be. But I'll need to change the code a bit in any case.
 
-Comments?
+The headphone detection is intentionally not doing much, for one it
+reports the current state in the mixer element 'Headphone Detected', and
+you get the choice of switching to headphone on detect, which also turns
+off all the others, and enables speakers when removing. Also, the
+initial status is based on it.
+
+If you want more options, run a userspace daemon that listens to changes
+on 'Headphone Detected' and changes stuff appropriately. Keep in mind
+that it must disable the automatic handling then. And no, I haven't
+written one :)
 
 johannes
 
---=-mBwZKgt7makVm2aK0Rxp
+PS: For those who care, here are some technical details:
+(1) I decided not to make the fabric handle *all* the interrupts
+     because that gets messy quickly with the allowed transfer items.
+     Also, it is hard to handle because sometimes some inputs are
+     mutually exclusive, while outputs controlled by amps are not, etc.
+(2) I will need to change the code so that the fabric handles all the
+     outputs, that is move the S/PDIF control to the fabric and have
+     the codec have a call for enabling/disabling it... Yes, this is
+     going into the direction of having the fabric control all of it,
+     but see (1). Maybe that code will enable having the fabric control
+     it all, I dunno.
+
+
+--=-m3PaPWgEumFsrtgI5rim
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARHyosqVg1VMiehFYAQKpfw//cNoYNwLVgC6PFnHS8v0Z2RjfHBBrJ8pL
-JXzsT1ddiAIuPaIwiuoFOl5K57zFSFDldqsH3MwuIC/NZ3k0aMjT8r46mTn8GdVi
-2VhiBIbDwlfHK9UL8NoQHHlwvD6R6WUxWUh0VuZUUa8S63g+feNwKcziVMK7/uq9
-7rTEcPZgXP2SHnERQkM8kPVK5DLgNtHVlxK7rkLJLq8Uk0U9DP/ifJQ9ZSzca+ow
-MXzaWC8LI9+MPVFfl0hkeqBxi+UXLL0sNLVnNER2y3v/5xRevtYCPiCSmtV9pDzx
-KsmzcwXZtmkM2UqEZjNN3pXEf5bNTFZvroCAAIG+G7Iab3X8hvekwQDTrsTYEZ68
-UYZ1YFHNYTorRON34Y3/kwAs4BYZZHVJd+oaiBUWvl/iSaPCk/HZ1+sDxDSzaBjA
-WSJ43jcV3rRHY4LIqvpnSRza8z0yRPV5nlWLmDiMqzyH5zQh2Pz3vIiEpoOCaFNT
-sTqrIRtKYun17AkUTLGlE65j1bec/80p97hWp40prKWcYSSrb5nrfZ1KEKcw5wFF
-DmhZCA0J4iWngB97J3mLnmxEnfuAfe93jxqziF19W14VcfhgW+lxuToa9Vgevr+S
-AJ1AlOWLz7RKNKKS0BHhQk167pXcRfDAOVrgnWR69mqn1MU4R48PTyz5VbAkevP9
-Fhop49GG7as=
-=oI4e
+iQIVAwUARH1ggqVg1VMiehFYAQKf8w//ZDCGAn5w+AG4OCQTLs7ULErzdIZU6Uet
+5PSQtVUsXlJOhEZvgPHFkStWfQPckrNNBu97vZgj8RLbEsodks7G9VySBQ4wdGC4
+NYnNdNlw3+sV0SMGpLCXzKOE4old9Gedp/YtlDVe9mDL51pg4v8APO0F45Ycng7k
+M7UW9pfgPAhIyXXD0dz6fpxww+KOr6ShkUsIxPDvJQYDskxXGihQlqNhH0fcLyeE
+8ixSII5TGgcrmrYzFDP8TuWohDzDP8XPVVXEUvoK8pWVHftvExSA2vbkCngij13i
+6W+MGvvux15/ZC7uBTLt/snbeh5gPCWdDtn6jut1SAwArkp9CTgRtqtBDM0e4stW
+QlWS8FyIN1XFbeDOdF1ftToL7K6fEj4KZ22CSj298v4+YKF+3z179UzYVFu/ZfQm
+BGSB6wDuusSMpSPz0mVE9mcTzUAZZXyqq+v79FNXODDn6JiSqc143OCaLMXdo9As
+1WPe1tCzhoMuwBCE1HeAL9wnpElJpC/2GcbpLlNIUZMzywnzPTzMFmUO0sOVvFO5
+z/Hs7+YpRzcGmVuN9iRpigvzj939ChIv0/ur93lq4d/ziw9QtXfShZ8dgl+nOBlR
+c2R/+ksjueUZ9fxYZk3uexoUz9mixa/9OLyDfnsRW6u1uieyyWvh+XpWeZ4K7CjX
+S6VjGt3yKkg=
+=+Edu
 -----END PGP SIGNATURE-----
 
---=-mBwZKgt7makVm2aK0Rxp--
+--=-m3PaPWgEumFsrtgI5rim--
