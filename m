@@ -1,21 +1,20 @@
-Return-Path: <mostrows@watson.ibm.com>
-Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D429967AC7
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 06:27:05 +1000 (EST)
+Return-Path: <msm@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id EB52D67AC7
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 06:35:30 +1000 (EST)
 Subject: Re: [PATCH] Provide mechanism for editing builtin command-line in
 	zImage binary.
-From: Michal Ostrowski <mostrows@watson.ibm.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-In-Reply-To: <20060531200419.GA17052@mag.az.mvista.com>
+From: Matthew McClintock <msm@freescale.com>
+To: Michal Ostrowski <mostrows@watson.ibm.com>
+In-Reply-To: <1149107204.6507.97.camel@brick>
 References: <11489544631499-git-send-email-mostrows@watson.ibm.com>
 	<20060530204151.GA31567@mag.az.mvista.com>
 	<1149023558.6507.15.camel@brick>
 	<20060531200419.GA17052@mag.az.mvista.com>
+	<1149107204.6507.97.camel@brick>
 Content-Type: text/plain
-Date: Wed, 31 May 2006 16:26:43 -0400
-Message-Id: <1149107204.6507.97.camel@brick>
+Date: Wed, 31 May 2006 15:35:18 -0500
+Message-Id: <1149107718.8379.48.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,39 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-05-31 at 13:04 -0700, Mark A. Greer wrote:
-> On Tue, May 30, 2006 at 05:12:37PM -0400, Michal Ostrowski wrote:
-> > On Tue, 2006-05-30 at 13:41 -0700, Mark A. Greer wrote:
-> > > On Mon, May 29, 2006 at 10:01:03PM -0400, mostrows@watson.ibm.com wrote:
-
-
-> > I'm curious how the tacked-on dt is expected to interact with the real
-> > FW dt,
+On Wed, 2006-05-31 at 16:26 -0400, Michal Ostrowski wrote:
+> I've had some experience with trying to edit existing OF trees (i.e.
+> take a G5 OF tree and alter it to reflect the fact that the OS has a
+> hypervisor between it and the HW).  It's not a pleasant experience.
 > 
-> That's a good question.  I was thinking that a tacked on dt would be a
-> complete replacement for whatever dt came from the fw (but extracting
-> some info like /memory props).  That probably works okay for non-OF
-> systems but may not work for OF systems b/c there is so much more info
-> in the OF dt.  Someone who knows about OF will have to speak up here.
-> 
+> Thus for OF based systems I'd be very wary of trying to edit the OF
+> tree
+> in arbitrary ways prior to Linux seeing it. 
 
-I've had some experience with trying to edit existing OF trees (i.e.
-take a G5 OF tree and alter it to reflect the fact that the OS has a
-hypervisor between it and the HW).  It's not a pleasant experience.
+Out of curiosity what was hard about it? Also it is worth mentioning
+some systems don't have to privilege of having a OF tree ready to go by
+the time Linux starts.
 
-Thus for OF based systems I'd be very wary of trying to edit the OF tree
-in arbitrary ways prior to Linux seeing it.
-
-> > and in particular how you would expect the interrogation
-> > of /chosen/bootargs in prom_init.c (using prom_getprop()) to pick up the
-> > command line value I specify in the tacked-on dt.
-> 
-> If a flattened dt is used instead of an OF dt the prom_init code isn't used.
-
-If we always skip prom_init.c code then we may skip stuff like TCE
-allocation which is only ever done on the first boot (and never on
-kexec).  
-
-
--- 
-Michal Ostrowski <mostrows@watson.ibm.com>
+-Matthew
