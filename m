@@ -1,15 +1,21 @@
-Return-Path: <blofeldus@yahoo.com>
-Received: from web53511.mail.yahoo.com (web53511.mail.yahoo.com
-	[206.190.39.65]) by ozlabs.org (Postfix) with SMTP id 76DF467A64
+Return-Path: <aidan@nicta.com.au>
+Received: from mail09.syd.optusnet.com.au (mail09.syd.optusnet.com.au
+	[211.29.132.190])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7E4EB67A79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Jun 2006 07:49:05 +1000 (EST)
-Message-ID: <20060531214224.52756.qmail@web53511.mail.yahoo.com>
-Date: Wed, 31 May 2006 14:42:24 -0700 (PDT)
-From: roger blofeld <blofeldus@yahoo.com>
-Subject: Help with MPC5200 + Bestcomm + Local Plus Bus
-To: linuxppc embedded <linuxppc-embedded@ozlabs.org>
+	Thu,  1 Jun 2006 08:22:33 +1000 (EST)
+Message-ID: <447E1725.4010908@nicta.com.au>
+Date: Thu, 01 Jun 2006 08:22:29 +1000
+From: Aidan Williams <aidan@nicta.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+To: Anantharaman Chetan-W16155 <Chetan.S.Anantharaman@motorola.com>
+Subject: Re: Linux 2.4 Kernel on Xilinx Virtex4 FX100's PPC
+References: <EDF27F298D4B03498AE0C249A941DFF803D6E6@de01exm68.ds.mot.com>
+In-Reply-To: <EDF27F298D4B03498AE0C249A941DFF803D6E6@de01exm68.ds.mot.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,26 +26,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
- I have a custom board which is essentially an icecube with an FPGA on
-the local bus. I have a driver which pulls data from the FPGA in
-response to interrupts using memcpy_fromio(). I would like to reduce
-the CPU usage.
+Anantharaman Chetan-W16155 wrote:
+> Has anyone successfully ported a Linux 2.4 Kernel on a Xilinx Virtex-4 
+> FX series FPGA’s, PPC405 processor?
+> 
 
-Has anyone used bestcomm to move data from LPB to memory? Is there an
-example anywhere? From the app note AN2604 it looks like writing a
-bestcomm task is difficult at best. Perhaps it is possible to re-use
-the ethernet rx task for this purpose?
+Yes, see 
+http://ozlabs.org/pipermail/linuxppc-embedded/2006-April/022583.html
 
-I'm using mainline 2.6.16.18 with Sylvain's patches for
-ethernet/bestcomm/ide. (BTW, will that code make it into the mainline
-any time soon?)
+Note that there are silicon bugs that prevent caches being used in some 
+chips.
 
-Thanks in advance for any advice
--roger
+> More specifically, the FX100 FPGA?
 
+I don't have one of those, sorry.
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+- aidan
