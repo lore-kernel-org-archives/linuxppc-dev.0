@@ -1,13 +1,31 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17534.7026.169023.420733@cargo.ozlabs.ibm.com>
-Date: Thu, 1 Jun 2006 08:40:50 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Mike Kravetz <kravetz@us.ibm.com>
+Return-Path: <mkravetz@us.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3FC0467B23
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 08:58:00 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k4VMvv09028777
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 18:57:57 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k4VMvvDF119732
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 18:57:57 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k4VMvvf4017749
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 18:57:57 -0400
+Date: Wed, 31 May 2006 15:58:13 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: Collecting hypervisor call stats
-In-Reply-To: <20060531204144.GA7909@w-mikek2.ibm.com>
+Message-ID: <20060531225813.GC7909@w-mikek2.ibm.com>
 References: <20060531204144.GA7909@w-mikek2.ibm.com>
+	<17534.7026.169023.420733@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17534.7026.169023.420733@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,29 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mike Kravetz writes:
+On Thu, Jun 01, 2006 at 08:40:50AM +1000, Paul Mackerras wrote:
+> I think that gathering those statistics would be useful.  I suggest
+> you use a per-cpu array for them, to reduce the performance impact.
 
-> We would like to add code that gathers statistics about hypervisor calls.
-> It would keep track of things like # of calls made for each opcode as well
-> as time spent processing the calls.
-> 
-> The 'obvious' place to gather such statistics would be from within the
-> routines making hcalls in hvCall.S.  Once thing that I have noticed is
-> the following comment at the beginning hvCall.S:
-> 
->  * NOTE: this file will go away when we move to inline this work.
+Yes, that is a must do.
 
-I suspect that's a very old comment. :)
+We need to get a timestamp before and after the call.  mftb should do
+the trick.  Also, I'd prefer to have the code that stuffs the values
+into the array be C.  So, the decision is to have the assembly code
+call out to the C routine -OR- create wrappers for the assembly routines.
+I much prefer C wrappers to touching the assembly.
 
-> So, it appears someone thought/thinks these routines should be inlined.  
-> I assume this is for performance reasons?  If this is the case, then I
-> suspect gathering of statistics (which would introduce overhead) would
-> meet resistance?
-> 
-> Comments about the feasibility of adding such statistic gathering code
-> would be appreciated.
-
-I think that gathering those statistics would be useful.  I suggest
-you use a per-cpu array for them, to reduce the performance impact.
-
-Paul.
+-- 
+Mike
