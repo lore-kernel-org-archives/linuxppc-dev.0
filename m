@@ -1,19 +1,26 @@
-Return-Path: <Becky.Bruce@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 18FEF67B30
+Return-Path: <Chetan.S.Anantharaman@motorola.com>
+Received: from motgate3.mot.com (motgate3.mot.com [144.189.100.103])
+	by ozlabs.org (Postfix) with ESMTP id E540C67B2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Jun 2006 09:04:52 +1000 (EST)
-In-Reply-To: <B9FFC3F97441D04093A504CEA31B7C41A62B2F@msilexch01.marvell.com>
-References: <B9FFC3F97441D04093A504CEA31B7C41A62B2F@msilexch01.marvell.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <687F6669-B58A-404A-9AC2-EDC34107F0EC@freescale.com>
-From: Becky Bruce <Becky.Bruce@freescale.com>
-Subject: Re: Setting I&D cache enable in the same mtspr instruction
-Date: Wed, 31 May 2006 18:06:43 -0500
-To: Assaf Hoffman <hoffman@marvell.com>
-Cc: linuxppc-embedded@ozlabs.org, Rita Shtern <rita@marvell.com>,
-	Ronen Shitrit <rshitrit@marvell.com>
+	Thu,  1 Jun 2006 09:14:23 +1000 (EST)
+Received: from az33exr04.mot.com (az33exr04.mot.com [10.64.251.234])
+	by motgate3.mot.com (8.12.11/Motgate3) with ESMTP id k4VNEM67029092
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 31 May 2006 16:14:22 -0700 (MST)
+Received: from de01exm68.ds.mot.com (de01exm68.am.mot.com [10.176.8.24])
+	by az33exr04.mot.com (8.13.1/8.13.0) with ESMTP id k4VNELUn008246
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 31 May 2006 18:14:21 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Linux 2.4 Kernel on Xilinx Virtex4 FX100's PPC
+Date: Wed, 31 May 2006 19:14:20 -0400
+Message-ID: <EDF27F298D4B03498AE0C249A941DFF803D6EA@de01exm68.ds.mot.com>
+In-Reply-To: <528646bc0605311235n171f889g135e074685b578bc@mail.gmail.com>
+From: "Anantharaman Chetan-W16155" <Chetan.S.Anantharaman@motorola.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,29 +31,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Grant,=20
+Can you please provide a link or perhaps point me to the app node that
+Xilinx has to modify linuxppc-2.4 tree for V4-FX.
+Thanks,=20
+Chetan
 
-I think we need to hold off on this particular patch for a few days.   
-I took a look at the manual section you're referencing here, and sure  
-enough, it says that you shouldn't set both bits in the same mtspr  
-instruction.  The manual says this in more than one place, in fact.   
-However, that seemed a little bit odd to me, so I talked with a few  
-of the hardware designers for the 745x family.  They assure me that  
-the manual statement is false.  The normal code that sets ICE/ICFI/ 
-DCE/DCFI all on one mtspr should be fully functional on this  
-processor family.  I'm still working on confirming this and getting  
-some history on *why* the manual says that, but for now I'd say it's  
-a pretty good bet that the manual is in error.  I will let you know  
-if I find out this is not the case.
+-----Original Message-----
+From: glikely@gmail.com [mailto:glikely@gmail.com] On Behalf Of Grant
+Likely
+Sent: Wednesday, May 31, 2006 2:35 PM
+To: Anantharaman Chetan-W16155
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Linux 2.4 Kernel on Xilinx Virtex4 FX100's PPC
 
-You are correct, though, in that an isync is needed prior to the  
-write of HID0[ICE]. It's probably missing because it's not listed in  
-the synchronization table in chapter 2 of the manual.
+On 5/31/06, Anantharaman Chetan-W16155
+<Chetan.S.Anantharaman@motorola.com> wrote:
+>
+> Has anyone successfully ported a Linux 2.4 Kernel on a Xilinx Virtex-4
+FX
+> series FPGA's, PPC405 processor?
 
-For what it's worth, as soon as I can confirm this, I will make sure  
-the publications team here at Freescale is made aware of the error so  
-it can be corrected in the next printing of the manual.  I will also  
-have the synchronization table updated as it also has incorrect  
-information.
+Linux on the V4-FX is well supported.  Xilinx has an app node
+describing how to modify the linuxppc-2.4 tree to work on the V4-FX.
+You can find out how to get the tree here:
 
-Thanks,
-B
+http://www.penguinppc.org/kernel/
+
+I've got both 2.4 & 2.6 happily running on my ML403 board here.
+
+Cheers,
+g.
+
+--=20
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
