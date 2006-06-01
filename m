@@ -1,35 +1,21 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A467C67B20
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 14:34:25 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k514YNuN026585
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jun 2006 00:34:23 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k514YNFT171614
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 22:34:23 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k514YMru006755
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 22:34:22 -0600
-In-Reply-To: <20060531204144.GA7909@w-mikek2.ibm.com>
-References: <20060531204144.GA7909@w-mikek2.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AEFF6654-C958-42F7-93CF-64103B015CB1@watson.ibm.com>
-From: Jimi Xenidis <jimix@watson.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8F04F67B27
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 15:26:25 +1000 (EST)
 Subject: Re: Collecting hypervisor call stats
-Date: Thu, 1 Jun 2006 00:34:29 -0400
-To: Mike Kravetz <kravetz@us.ibm.com>, Chris Yeoh <yeohc@au1.ibm.com>,
-	Bryan Rosenburg <rosnbrg@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mike Kravetz <kravetz@us.ibm.com>
+In-Reply-To: <20060531225813.GC7909@w-mikek2.ibm.com>
+References: <20060531204144.GA7909@w-mikek2.ibm.com>
+	<17534.7026.169023.420733@cargo.ozlabs.ibm.com>
+	<20060531225813.GC7909@w-mikek2.ibm.com>
+Content-Type: text/plain
+Date: Thu, 01 Jun 2006 15:26:16 +1000
+Message-Id: <1149139576.28307.28.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,35 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-IIRC, chris and bryan have done some work to track this, they may  
-have some code to contribute.
-On May 31, 2006, at 4:41 PM, Mike Kravetz wrote:
+On Wed, 2006-05-31 at 15:58 -0700, Mike Kravetz wrote:
+> On Thu, Jun 01, 2006 at 08:40:50AM +1000, Paul Mackerras wrote:
+> > I think that gathering those statistics would be useful.  I suggest
+> > you use a per-cpu array for them, to reduce the performance impact.
+> 
+> Yes, that is a must do.
+> 
+> We need to get a timestamp before and after the call.  mftb should do
+> the trick.  Also, I'd prefer to have the code that stuffs the values
+> into the array be C.  So, the decision is to have the assembly code
+> call out to the C routine -OR- create wrappers for the assembly routines.
+> I much prefer C wrappers to touching the assembly.
 
-> We would like to add code that gathers statistics about hypervisor  
-> calls.
-> It would keep track of things like # of calls made for each opcode  
-> as well
-> as time spent processing the calls.
->
-> The 'obvious' place to gather such statistics would be from within the
-> routines making hcalls in hvCall.S.  Once thing that I have noticed is
-> the following comment at the beginning hvCall.S:
->
->  * NOTE: this file will go away when we move to inline this work.
->
-> So, it appears someone thought/thinks these routines should be  
-> inlined.
-> I assume this is for performance reasons?  If this is the case, then I
-> suspect gathering of statistics (which would introduce overhead) would
-> meet resistance?
->
-> Comments about the feasibility of adding such statistic gathering code
-> would be appreciated.
->
-> Thanks,
-> -- 
-> Mike
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Argh... yet another use of mftb for which I'll need a cell specific
+workaround :(
+
+Ben.
