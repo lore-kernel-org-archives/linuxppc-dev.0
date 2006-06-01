@@ -1,16 +1,17 @@
-Return-Path: <cyeoh@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17534.30511.192632.558778@localhost.localdomain>
-Date: Thu, 1 Jun 2006 15:12:15 +1000
-From: "Christopher Yeoh" <cyeoh@samba.org>
-To: Mike Kravetz <kravetz@us.ibm.com>
-Subject: Re: Collecting hypervisor call stats
-In-Reply-To: <AEFF6654-C958-42F7-93CF-64103B015CB1@watson.ibm.com>
-References: <20060531204144.GA7909@w-mikek2.ibm.com>
-	<AEFF6654-C958-42F7-93CF-64103B015CB1@watson.ibm.com>
-Cc: Chris Yeoh <yeohc@au1.ibm.com>, Bryan Rosenburg <rosnbrg@us.ibm.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 08B8167B1F
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 23:06:01 +1000 (EST)
+Message-Id: <20060601115845.923706000@sipsolutions.net>
+References: <20060601115844.343214000@sipsolutions.net>
+Date: Thu, 01 Jun 2006 13:58:46 +0200
+From: Johannes Berg <johannes@sipsolutions.net>
+To: alsa-devel@alsa-project.org
+Subject: [RFC 2/8] snd-aoa: add aoa core
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,601 +21,523 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At 2006/6/1 00:34-0400  Jimi Xenidis writes:
-> IIRC, chris and bryan have done some work to track this, they may  
-> have some code to contribute.
-> On May 31, 2006, at 4:41 PM, Mike Kravetz wrote:
-> 
+This patch adds the core of aoa, in itself pretty useless, but providing
+useful functions to other modules.
 
-Hi Mike,
-
-Here's a patch we've used for collecting hcall counts and times.  I
-think I have a perl script lying around somewhere that helps process
-the (per cpu) data a bit. I'm not sure where I put it at the moment,
-but give me a ping if you're interested and I'll have another look.
-
-Regards,
-
-Chris
--- 
-cyeoh@au.ibm.com
-IBM OzLabs Linux Development Group
-Canberra, Australia
-diff -urpN -X linux-2.6.15.6/Documentation/dontdiff linux-2.6.15.6.ref/arch/powerpc/kernel/sysfs.c linux-2.6.15.6.hcall/arch/powerpc/kernel/sysfs.c
---- linux-2.6.15.6.ref/arch/powerpc/kernel/sysfs.c	2006-03-06 06:07:54.000000000 +1100
-+++ linux-2.6.15.6.hcall/arch/powerpc/kernel/sysfs.c	2006-04-05 13:56:47.000000000 +1000
-@@ -338,6 +338,213 @@ static ssize_t show_physical_id(struct s
- }
- static SYSDEV_ATTR(physical_id, 0444, show_physical_id, NULL);
- 
+--- /dev/null
++++ b/sound/aoa/core/Makefile
+@@ -0,0 +1,4 @@
++obj-$(CONFIG_SND_AOA) += snd-aoa.o
++snd-aoa-objs := snd-aoa-core.o \
++		snd-aoa-alsa.o \
++		snd-aoa-gpio-pmf.o
+--- /dev/null
++++ b/sound/aoa/core/snd-aoa-core.c
+@@ -0,0 +1,153 @@
++/*
++ * Apple Onboard Audio driver core
++ *
++ * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPL v2, can be found in COPYING.
++ */
 +
-+DECLARE_PER_CPU(unsigned long[NUM_HCALL_TYPES], hcall_type_count);
-+DECLARE_PER_CPU(unsigned long[NUM_HCALL_TYPES], hcall_type_time);
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/list.h>
++#include "../aoa.h"
++#include "snd-aoa-alsa.h"
 +
-+static ssize_t store_hcall_stats(struct sys_device *dev,
-+				 const char *buf,
-+				 size_t count)
++MODULE_DESCRIPTION("Apple Onboard Audio Sound Driver");
++MODULE_AUTHOR("Johannes Berg <johannes@sipsolutions.net>");
++MODULE_LICENSE("GPL");
++
++/* We allow only one fabric. This simplifies things,
++ * and more don't really make that much sense */
++static struct aoa_fabric *fabric;
++static LIST_HEAD(codec_list);
++
++static void attach_codec_to_fabric(struct aoa_codec *c)
 +{
-+    struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+    int i;
++	int err;
 +
-+    // Clear counters
-+    for (i=0; i<NUM_HCALL_TYPES; i++) {
-+	per_cpu(hcall_type_count, cpu->sysdev.id)[i] = 0;
-+	per_cpu(hcall_type_time, cpu->sysdev.id)[i] = 0;
-+    }
-+    return count;
++	if (!try_module_get(c->owner))
++		return;
++	/* found_codec has to be assigned */
++	err = -ENOENT;
++	if (fabric->found_codec)
++		err = fabric->found_codec(c);
++	if (err) {
++		module_put(c->owner);
++		printk("snd-aoa: fabric didn't like codec %s\n", c->name);
++		return;
++	}
++	c->fabric = fabric;
++
++	err = 0;
++	if (c->init)
++		err = c->init(c);
++	if (err) {
++		printk("snd-aoa: codec %s didn't init\n", c->name);
++		c->fabric = NULL;
++		if (fabric->remove_codec)
++			fabric->remove_codec(c);
++		module_put(c->owner);
++		return;
++	}
++	if (fabric->attached_codec)
++		fabric->attached_codec(c);
 +}
 +
-+static ssize_t show_hcall_stats(struct sys_device *dev, char *buf)
++int aoa_codec_register(struct aoa_codec *codec)
 +{
-+    struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+
-+    return snprintf(buf, PAGE_SIZE,
-+		    "H_REMOVE\t%lu\t%lu\n"
-+		    "H_ENTER\t%lu\t%lu\n"
-+		    "H_READ\t%lu\t%lu\n"
-+		    "H_CLEAR_MOD\t%lu\t%lu\n"
-+		    "H_CLEAR_REF\t%lu\t%lu\n"
-+		    "H_PROTECT\t%lu\t%lu\n"
-+		    "H_GET_TCE\t%lu\t%lu\n"
-+		    "H_PUT_TCE\t%lu\t%lu\n"
-+		    "H_SET_SPRG0\t%lu\t%lu\n"
-+		    "H_SET_DABR\t%lu\t%lu\n"
-+		    "H_PAGE_INIT\t%lu\t%lu\n"
-+		    "H_SET_ASR\t%lu\t%lu\n"
-+		    "H_ASR_ON\t%lu\t%lu\n"
-+		    "H_ASR_OFF\t%lu\t%lu\n"
-+		    "H_LOGICAL_CI_LOAD\t%lu\t%lu\n"
-+		    "H_LOGICAL_CI_STORE\t%lu\t%lu\n"
-+		    "H_LOGICAL_CACHE_LOAD\t%lu\t%lu\n"
-+		    "H_LOGICAL_CACHE_STORE\t%lu\t%lu\n"
-+		    "H_LOGICAL_ICBI\t%lu\t%lu\n"
-+		    "H_LOGICAL_DCBF\t%lu\t%lu\n"
-+		    "H_GET_TERM_CHAR\t%lu\t%lu\n"
-+		    "H_PUT_TERM_CHAR\t%lu\t%lu\n"
-+		    "H_REAL_TO_LOGICAL\t%lu\t%lu\n"
-+		    "H_HYPERVISOR_DATA\t%lu\t%lu\n"
-+		    "H_EOI\t%lu\t%lu\n"
-+		    "H_CPPR\t%lu\t%lu\n"
-+		    "H_IPI\t%lu\t%lu\n"
-+		    "H_IPOLL\t%lu\t%lu\n"
-+		    "H_XIRR\t%lu\t%lu\n"
-+		    "H_PERFMON\t%lu\t%lu\n"
-+		    "H_MIGRATE_DMA\t%lu\t%lu\n"
-+		    "H_REGISTER_VPA\t%lu\t%lu\n"
-+		    "H_CEDE\t%lu\t%lu\n"
-+		    "H_CONFER\t%lu\t%lu\n"
-+		    "H_PROD\t%lu\t%lu\n"
-+		    "H_GET_PPP\t%lu\t%lu\n"
-+		    "H_SET_PPP\t%lu\t%lu\n"
-+		    "H_PURR\t%lu\t%lu\n"
-+		    "H_PIC\t%lu\t%lu\n"
-+		    "H_REG_CRQ\t%lu\t%lu\n"
-+		    "H_FREE_CRQ\t%lu\t%lu\n"
-+		    "H_VIO_SIGNAL\t%lu\t%lu\n"
-+		    "H_SEND_CRQ\t%lu\t%lu\n"
-+		    "H_COPY_RDMA\t%lu\t%lu\n"
-+		    "H_STUFF_TCE\t%lu\t%lu\n"
-+		    "H_PUT_TCE_INDIRECT\t%lu\t%lu\n"
-+		    "H_VTERM_PARTNER_INFO\t%lu\t%lu\n"
-+		    "H_REGISTER_VTERM\t%lu\t%lu\n"
-+		    "H_FREE_VTERM\t%lu\t%lu\n"
-+		    "H_POLL_PENDING\t%lu\t%lu\n"
-+		    "H_REGISTER_LOGICAL_LAN\t%lu\t%lu\n"
-+		    "H_FREE_LOGICAL_LAN\t%lu\t%lu\n"
-+		    "H_ADD_LOGICAL_LAN_BUFFER\t%lu\t%lu\n"
-+		    "H_SEND_LOGICAL_LAN\t%lu\t%lu\n"
-+		    "H_MULTICAST_CTRL\t%lu\t%lu\n"
-+		    "H_CHANGE_LOGICAL_LAN_MAC\t%lu\t%lu\n",
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[0],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[0],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[1],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[1],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[2],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[2],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[3],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[3],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[4],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[4],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[5],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[5],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[6],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[6],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[7],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[7],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[8],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[8],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[9],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[9],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[10],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[10],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[11],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[11],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[12],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[12],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[13],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[13],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[14],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[14],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[15],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[15],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[16],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[16],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[17],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[17],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[18],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[18],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[19],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[19],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[20],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[20],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[21],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[21],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[22],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[22],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[23],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[23],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[24],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[24],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[25],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[25],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[26],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[26],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[27],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[27],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[28],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[28],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[29],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[29],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[30],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[30],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[31],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[31],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[32],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[32],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[33],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[33],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[34],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[34],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[35],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[35],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[36],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[36],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[37],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[37],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[38],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[38],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[39],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[39],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[40],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[40],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[41],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[41],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[42],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[42],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[43],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[43],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[44],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[44],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[45],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[45],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[46],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[46],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[47],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[47],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[48],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[48],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[49],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[49],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[50],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[50],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[51],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[51],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[52],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[52],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[53],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[53],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[54],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[54],
-+		    per_cpu(hcall_type_count,cpu->sysdev.id)[55],
-+		    per_cpu(hcall_type_time,cpu->sysdev.id)[55]);
-+}
-+
-+static SYSDEV_ATTR(hcall_stats, 0666, show_hcall_stats, store_hcall_stats);
-+
-+static int __init hcall_stats_data_init(void)
-+{
-+    int cpu;
-+
-+    for_each_cpu(cpu) {
-+		struct cpu *c = &per_cpu(cpu_devices, cpu);
-+		sysdev_create_file(&c->sysdev, &attr_hcall_stats);
-+    }
-+    return 0;
-+}
-+
- static int __init topology_init(void)
- {
- 	int cpu;
-@@ -378,6 +585,7 @@ static int __init topology_init(void)
- 			register_cpu_online(cpu);
- 	}
- 
--	return 0;
-+	return hcall_stats_data_init();
- }
- __initcall(topology_init);
-+
-diff -urpN -X linux-2.6.15.6/Documentation/dontdiff linux-2.6.15.6.ref/arch/powerpc/platforms/pseries/hvCall.S linux-2.6.15.6.hcall/arch/powerpc/platforms/pseries/hvCall.S
---- linux-2.6.15.6.ref/arch/powerpc/platforms/pseries/hvCall.S	2006-03-06 06:07:54.000000000 +1100
-+++ linux-2.6.15.6.hcall/arch/powerpc/platforms/pseries/hvCall.S	2006-04-05 13:52:20.000000000 +1000
-@@ -27,7 +27,7 @@
- 			unsigned long *out2,		R9
- 			unsigned long *out3);		R10
-  */
--_GLOBAL(plpar_hcall)
-+_GLOBAL(plpar_hcall_real)
- 	HMT_MEDIUM
- 
- 	mfcr	r0
-@@ -53,10 +53,15 @@ _GLOBAL(plpar_hcall)
- 	blr				/* return r3 = status */
- 
- 
--/* Simple interface with no output values (other than status) */
- _GLOBAL(plpar_hcall_norets)
- 	HMT_MEDIUM
- 
-+	b plpar_hcall_norets_C
-+	
-+/* Simple interface with no output values (other than status) */
-+_GLOBAL(plpar_hcall_norets_real)
-+	HMT_MEDIUM
-+
- 	mfcr	r0
- 	stw	r0,8(r1)
- 
-@@ -78,7 +83,7 @@ _GLOBAL(plpar_hcall_norets)
- 			unsigned long arg8,		112(R1)
- 			unsigned long *out1);		120(R1)
-  */
--_GLOBAL(plpar_hcall_8arg_2ret)
-+_GLOBAL(plpar_hcall_8arg_2ret_real)
- 	HMT_MEDIUM
- 
- 	mfcr	r0
-@@ -104,7 +109,7 @@ _GLOBAL(plpar_hcall_8arg_2ret)
- 		 	unsigned long *out3,		R10
- 		 	unsigned long *out4);		112(R1)
-  */
--_GLOBAL(plpar_hcall_4out)
-+_GLOBAL(plpar_hcall_4out_real)
- 	HMT_MEDIUM
- 
- 	mfcr	r0
-diff -urpN -X linux-2.6.15.6/Documentation/dontdiff linux-2.6.15.6.ref/arch/powerpc/platforms/pseries/lpar.c linux-2.6.15.6.hcall/arch/powerpc/platforms/pseries/lpar.c
---- linux-2.6.15.6.ref/arch/powerpc/platforms/pseries/lpar.c	2006-03-06 06:07:54.000000000 +1100
-+++ linux-2.6.15.6.hcall/arch/powerpc/platforms/pseries/lpar.c	2006-04-05 13:54:48.000000000 +1000
-@@ -532,3 +532,286 @@ void hpte_init_lpar(void)
- 
- 	htab_finish_init();
- }
-+
-+DEFINE_PER_CPU(unsigned long[NUM_HCALL_TYPES], hcall_type_count);
-+DEFINE_PER_CPU(unsigned long[NUM_HCALL_TYPES], hcall_type_time);
-+
-+/* From ibmveth.h */
-+/* hcall numbers */
-+#define H_VIO_SIGNAL             0x104
-+#define H_REGISTER_LOGICAL_LAN   0x114
-+#define H_FREE_LOGICAL_LAN       0x118
-+#define H_ADD_LOGICAL_LAN_BUFFER 0x11C
-+#define H_SEND_LOGICAL_LAN       0x120
-+#define H_MULTICAST_CTRL         0x130
-+#define H_CHANGE_LOGICAL_LAN_MAC 0x14C
-+
-+inline int map_hcall_to_index(unsigned long opcode)
-+{
-+    switch (opcode) {
-+    case H_REMOVE:
++	list_add(&codec->list, &codec_list);
++	if (fabric)
++		attach_codec_to_fabric(codec);
 +	return 0;
-+    case H_ENTER:
-+	return 1;
-+    case H_READ:
-+	return 2;
-+    case H_CLEAR_MOD:
-+	return 3;
-+    case H_CLEAR_REF:
-+	return 4;
-+    case H_PROTECT:
-+	return 5;
-+    case H_GET_TCE:
-+	return 6;
-+    case H_PUT_TCE:
-+	return 7;
-+    case H_SET_SPRG0:
-+	return 8;
-+    case H_SET_DABR:
-+	return 9;
-+    case H_PAGE_INIT:
-+	return 10;
-+    case H_SET_ASR:
-+	return 11;
-+    case H_ASR_ON:
-+	return 12;
-+    case H_ASR_OFF:
-+	return 13;
-+    case H_LOGICAL_CI_LOAD:
-+	return 14;
-+    case H_LOGICAL_CI_STORE:
-+	return 15;
-+    case H_LOGICAL_CACHE_LOAD:
-+	return 16;
-+    case H_LOGICAL_CACHE_STORE:
-+	return 17;
-+    case H_LOGICAL_ICBI:
-+	return 18;
-+    case H_LOGICAL_DCBF:
-+	return 19;
-+    case H_GET_TERM_CHAR:
-+	return 20;
-+    case H_PUT_TERM_CHAR:
-+	return 21;
-+    case H_REAL_TO_LOGICAL:
-+	return 22;
-+    case H_HYPERVISOR_DATA:
-+	return 23;
-+    case H_EOI:
-+	return 24;
-+    case H_CPPR:
-+	return 25;
-+    case H_IPI:
-+	return 26;
-+    case H_IPOLL:
-+	return 27;
-+    case H_XIRR:
-+	return 28;
-+    case H_PERFMON:
-+	return 29;
-+    case H_MIGRATE_DMA:
-+	return 30;
-+    case H_REGISTER_VPA:
-+	return 31;
-+    case H_CEDE:
-+	return 32;
-+    case H_CONFER:
-+	return 33;
-+    case H_PROD:
-+	return 34;
-+    case H_GET_PPP:
-+	return 35;
-+    case H_SET_PPP:
-+	return 36;
-+    case H_PURR:
-+	return 37;
-+    case H_PIC:
-+	return 38;
-+    case H_REG_CRQ:
-+	return 39;
-+    case H_FREE_CRQ:
-+	return 40;
-+    case H_VIO_SIGNAL:
-+	return 41;
-+    case H_SEND_CRQ:
-+	return 42;
-+    case H_COPY_RDMA:
-+	return 43;
-+    case H_STUFF_TCE:
-+	return 44;
-+    case H_PUT_TCE_INDIRECT:
-+	return 45;
-+    case H_VTERM_PARTNER_INFO:
-+	return 46;
-+    case H_REGISTER_VTERM:
-+	return 47;
-+    case H_FREE_VTERM:
-+	return 48;
-+    case H_POLL_PENDING:
-+	return 49;
-+    case H_REGISTER_LOGICAL_LAN:
-+	return 50;
-+    case H_FREE_LOGICAL_LAN:
-+	return 51;
-+    case H_ADD_LOGICAL_LAN_BUFFER:
-+	return 52;
-+    case H_SEND_LOGICAL_LAN:
-+	return 53;
-+    case H_MULTICAST_CTRL:
-+	return 54;
-+    case H_CHANGE_LOGICAL_LAN_MAC:
-+	return 55;
-+    default:
-+	printk("Unknown hcall %ld\n", opcode);
++}
++EXPORT_SYMBOL_GPL(aoa_codec_register);
++
++void aoa_codec_unregister(struct aoa_codec *codec)
++{
++	list_del(&codec->list);
++	if (codec->fabric && codec->exit)
++		codec->exit(codec);
++	if (fabric && fabric->remove_codec)
++		fabric->remove_codec(codec);
++	codec->fabric = NULL;
++	module_put(codec->owner);
++}
++EXPORT_SYMBOL_GPL(aoa_codec_unregister);
++
++int aoa_fabric_register(struct aoa_fabric *new_fabric)
++{
++	struct aoa_codec *c;
++	int err;
++
++	/* allow querying for presence of fabric
++	 * (i.e. do this test first!) */
++	if (new_fabric == fabric) {
++		err = -EALREADY;
++		goto attach;
++	}
++	if (fabric)
++		return -EEXIST;
++	if (!new_fabric)
++		return -EINVAL;
++
++	err = aoa_alsa_init(new_fabric->name, new_fabric->owner);
++	if (err)
++		return err;
++
++	fabric = new_fabric;
++
++ attach:
++	list_for_each_entry(c, &codec_list, list) {
++		if (c->fabric != fabric)
++			attach_codec_to_fabric(c);
++	}
++	return err;
++}
++EXPORT_SYMBOL_GPL(aoa_fabric_register);
++
++void aoa_fabric_unregister(struct aoa_fabric *old_fabric)
++{
++	struct aoa_codec *c;
++
++	if (fabric != old_fabric)
++		return;
++
++	list_for_each_entry(c, &codec_list, list) {
++		if (c->fabric)
++			aoa_fabric_unlink_codec(c);
++	}
++
++	aoa_alsa_cleanup();
++
++	fabric = NULL;
++}
++EXPORT_SYMBOL_GPL(aoa_fabric_unregister);
++
++void aoa_fabric_unlink_codec(struct aoa_codec *codec)
++{
++	if (!codec->fabric) {
++		printk(KERN_ERR "snd-aoa: fabric unassigned in aoa_fabric_unlink_codec\n");
++		dump_stack();
++		return;
++	}
++	if (codec->exit)
++		codec->exit(codec);
++	if (codec->fabric->remove_codec)
++		codec->fabric->remove_codec(codec);
++	codec->fabric = NULL;
++	module_put(codec->owner);
++}
++EXPORT_SYMBOL_GPL(aoa_fabric_unlink_codec);
++
++static int __init aoa_init(void)
++{
 +	return 0;
-+    }
 +}
 +
-+extern long plpar_hcall_real(unsigned long opcode,
-+			     unsigned long arg1,
-+			     unsigned long arg2,
-+			     unsigned long arg3,
-+			     unsigned long arg4,
-+			     unsigned long *out1,
-+			     unsigned long *out2,
-+			     unsigned long *out3);
-+
-+long plpar_hcall(unsigned long opcode, unsigned long arg1,
-+			unsigned long arg2, unsigned long arg3,
-+			unsigned long arg4, unsigned long *out1,
-+			unsigned long *out2, unsigned long *out3)
++static void __exit aoa_exit(void)
 +{
-+    long retcode;
-+    unsigned long t_entry;
-+    int opcode_index;
-+    
-+    opcode_index = map_hcall_to_index(opcode);
-+    
-+    t_entry = mfspr(SPRN_PURR);
-+    barrier();
-+    
-+    retcode = plpar_hcall_real(opcode, arg1, arg2, arg3, arg4,
-+			       out1, out2, out3);
-+    
-+    barrier();
-+    get_cpu_var(hcall_type_count)[opcode_index]++;
-+    put_cpu_var(hcall_type_count);
-+    get_cpu_var(hcall_type_time)[opcode_index] += mfspr(SPRN_PURR) - t_entry;
-+    put_cpu_var(hcall_type_time);
-+    
-+    return retcode;
++	aoa_alsa_cleanup();
++}
++
++module_init(aoa_init);
++module_exit(aoa_exit);
+--- /dev/null
++++ b/sound/aoa/core/snd-aoa-gpio-pmf.c
+@@ -0,0 +1,231 @@
++/*
++ * Apple Onboard Audio pmf GPIOs
++ *
++ * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPL v2, can be found in COPYING.
++ */
++
++#include <asm/pmac_feature.h>
++#include <asm/pmac_pfunc.h>
++#include "../aoa.h"
++
++#define PMF_GPIO(name, bit)					\
++static void pmf_gpio_set_##name(struct gpio_runtime *rt, int on)\
++{								\
++	struct pmf_args args = { .count = 1, .u[0].v = !on };	\
++								\
++	if (unlikely(!rt)) return;				\
++	pmf_call_function(rt->node, #name "-mute", &args);	\
++	rt->implementation_private &= ~(1<<bit);		\
++	rt->implementation_private |= (!!on << bit);		\
++}								\
++static int pmf_gpio_get_##name(struct gpio_runtime *rt)		\
++{								\
++	if (unlikely(!rt)) return 0;				\
++	return (rt->implementation_private>>bit)&1;		\
++}
++
++PMF_GPIO(headphone, 0);
++PMF_GPIO(amp, 1);
++PMF_GPIO(lineout, 2);
++
++static void pmf_gpio_set_hw_reset(struct gpio_runtime *rt, int on)
++{
++	struct pmf_args args = { .count = 1, .u[0].v = !!on };
++
++	if (unlikely(!rt)) return;
++	pmf_call_function(rt->node, "hw-reset", &args);
++}
++
++static void pmf_gpio_all_amps_off(struct gpio_runtime *rt)
++{
++	int saved;
++
++	if (unlikely(!rt)) return;
++	saved = rt->implementation_private;
++	pmf_gpio_set_headphone(rt, 0);
++	pmf_gpio_set_amp(rt, 0);
++	pmf_gpio_set_lineout(rt, 0);
++	rt->implementation_private = saved;
++}
++
++static void pmf_gpio_all_amps_restore(struct gpio_runtime *rt)
++{
++	int s;
++
++	if (unlikely(!rt)) return;
++	s = rt->implementation_private;
++	pmf_gpio_set_headphone(rt, (s>>0)&1);
++	pmf_gpio_set_amp(rt, (s>>1)&1);
++	pmf_gpio_set_lineout(rt, (s>>2)&1);
++}
++
++static void pmf_handle_notify(void *data)
++{
++	struct gpio_notification *notif = data;
++
++	mutex_lock(&notif->mutex);
++	if (notif->notify)
++		notif->notify(notif->data);
++	mutex_unlock(&notif->mutex);
++}
++
++static void pmf_gpio_init(struct gpio_runtime *rt)
++{
++	pmf_gpio_all_amps_off(rt);
++	rt->implementation_private = 0;
++	INIT_WORK(&rt->headphone_notify.work, pmf_handle_notify, &rt->headphone_notify);
++	INIT_WORK(&rt->line_in_notify.work, pmf_handle_notify, &rt->line_in_notify);
++	INIT_WORK(&rt->line_out_notify.work, pmf_handle_notify, &rt->line_out_notify);
++	mutex_init(&rt->headphone_notify.mutex);
++	mutex_init(&rt->line_in_notify.mutex);
++	mutex_init(&rt->line_out_notify.mutex);
++}
++
++static void pmf_gpio_exit(struct gpio_runtime *rt)
++{
++	pmf_gpio_all_amps_off(rt);
++	rt->implementation_private = 0;
++	if (rt->headphone_notify.gpio_private)
++		pmf_unregister_irq_client(rt->headphone_notify.gpio_private);
++	if (rt->line_in_notify.gpio_private)
++		pmf_unregister_irq_client(rt->line_in_notify.gpio_private);
++	if (rt->line_out_notify.gpio_private)
++		pmf_unregister_irq_client(rt->line_out_notify.gpio_private);
++	cancel_delayed_work(&rt->headphone_notify.work);
++	cancel_delayed_work(&rt->line_in_notify.work);
++	cancel_delayed_work(&rt->line_out_notify.work);
++	flush_scheduled_work();
++	mutex_destroy(&rt->headphone_notify.mutex);
++	mutex_destroy(&rt->line_in_notify.mutex);
++	mutex_destroy(&rt->line_out_notify.mutex);
++}
++
++void pmf_handle_notify_irq(void *data)
++{
++	struct gpio_notification *notif = data;
++
++	schedule_work(&notif->work);
++}
++
++static int pmf_set_notify(struct gpio_runtime *rt,
++			  enum notify_type type,
++			  notify_func_t notify,
++			  void *data)
++{
++	struct gpio_notification *notif;
++	notify_func_t old;
++	struct pmf_irq_client *irq_client;
++	char *name;
++	int err = -EBUSY;
++
++	switch (type) {
++	case AOA_NOTIFY_HEADPHONE:
++		notif = &rt->headphone_notify;
++		name = "headphone-detect";
++		break;
++	case AOA_NOTIFY_LINE_IN:
++		notif = &rt->line_in_notify;
++		name = "linein-detect";
++		break;
++	case AOA_NOTIFY_LINE_OUT:
++		notif = &rt->line_out_notify;
++		name = "lineout-detect";
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	mutex_lock(&notif->mutex);
++
++	old = notif->notify;
++
++	if (!old && !notify) {
++		err = 0;
++		goto out_unlock;
++	}
++
++	if (old && notify) {
++		if (old == notify && notif->data == data)
++			err = 0;
++		goto out_unlock;
++	}
++
++	if (old && !notify) {
++		irq_client = notif->gpio_private;
++		pmf_unregister_irq_client(irq_client);
++		kfree(irq_client);
++		notif->gpio_private = NULL;
++	}
++	if (!old && notify) {
++		irq_client = kzalloc(sizeof(struct pmf_irq_client),
++				     GFP_KERNEL);
++		irq_client->data = notif;
++		irq_client->handler = pmf_handle_notify_irq;
++		irq_client->owner = THIS_MODULE;
++		err = pmf_register_irq_client(rt->node,
++					      name,
++					      irq_client);
++		if (err) {
++			printk(KERN_ERR "snd-aoa: gpio layer failed to"
++					" register %s irq (%d)\n", name, err);
++			kfree(irq_client);
++			goto out_unlock;
++		}
++		notif->gpio_private = irq_client;
++	}
++	notif->notify = notify;
++	notif->data = data;
++
++	err = 0;
++ out_unlock:
++	mutex_unlock(&notif->mutex);
++	return err;
++}
++
++static int pmf_get_detect(struct gpio_runtime *rt,
++			  enum notify_type type)
++{
++	char *name;
++	int err = -EBUSY, ret;
++	struct pmf_args args = { .count = 1, .u[0].p = &ret };
++
++	switch (type) {
++	case AOA_NOTIFY_HEADPHONE:
++		name = "headphone-detect";
++		break;
++	case AOA_NOTIFY_LINE_IN:
++		name = "linein-detect";
++		break;
++	case AOA_NOTIFY_LINE_OUT:
++		name = "lineout-detect";
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	err = pmf_call_function(rt->node, name, &args);
++	if (err)
++		return err;
++	return ret;
++}
++
++static struct gpio_methods methods = {
++	.init			= pmf_gpio_init,
++	.exit			= pmf_gpio_exit,
++	.all_amps_off		= pmf_gpio_all_amps_off,
++	.all_amps_restore	= pmf_gpio_all_amps_restore,
++	.set_headphone		= pmf_gpio_set_headphone,
++	.set_speakers		= pmf_gpio_set_amp,
++	.set_lineout		= pmf_gpio_set_lineout,
++	.set_hw_reset		= pmf_gpio_set_hw_reset,
++	.get_headphone		= pmf_gpio_get_headphone,
++	.get_speakers		= pmf_gpio_get_amp,
++	.get_lineout		= pmf_gpio_get_lineout,
++	.set_notify		= pmf_set_notify,
++	.get_detect		= pmf_get_detect,
 +};
 +
-+extern long plpar_hcall_norets_real(unsigned long opcode, ...);
++struct gpio_methods *pmf_gpio_methods = &methods;
++EXPORT_SYMBOL_GPL(pmf_gpio_methods);
+--- /dev/null
++++ b/sound/aoa/core/snd-aoa-alsa.h
+@@ -0,0 +1,17 @@
++/*
++ * Apple Onboard Audio Alsa private helpers
++ *
++ * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPL v2, can be found in COPYING.
++ */
 +
-+long plpar_hcall_norets_C(unsigned long opcode,
-+			  unsigned long arg1,
-+			  unsigned long arg2,
-+			  unsigned long arg3,
-+			  unsigned long arg4,
-+			  unsigned long arg5,
-+			  unsigned long arg6) 
++#ifndef __SND_AOA_ALSA_H
++#define __SND_AOA_ALSA_H
++/* FIXME */
++#include "../aoa.h"
++
++extern int aoa_alsa_init(char *name, struct module *mod);
++extern void aoa_alsa_cleanup(void);
++
++#endif /* __SND_AOA_ALSA_H */
+--- /dev/null
++++ b/sound/aoa/core/snd-aoa-alsa.c
+@@ -0,0 +1,95 @@
++/*
++ * Apple Onboard Audio Alsa helpers
++ *
++ * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPL v2, can be found in COPYING.
++ */
++#include <linux/module.h>
++#include "snd-aoa-alsa.h"
++
++static int index = -1;
++module_param(index, int, 0444);
++MODULE_PARM_DESC(index, "index for AOA sound card.");
++
++static struct aoa_card *aoa_card;
++
++int aoa_alsa_init(char *name, struct module *mod)
 +{
-+    long retcode;
-+    unsigned long t_entry;
-+    int opcode_index;
-+    
-+    opcode_index = map_hcall_to_index(opcode);
-+    t_entry = mfspr(SPRN_PURR);
-+    barrier();
++	struct snd_card *alsa_card;
++	int err;
 +
-+    retcode = plpar_hcall_norets_real(opcode, arg1, arg2, arg3, arg4,
-+				      arg5, arg6);
++	if (aoa_card)
++		/* cannot be EEXIST due to usage in aoa_fabric_register */
++		return -EBUSY;
 +
-+    barrier();
-+    get_cpu_var(hcall_type_count)[opcode_index]++;
-+    put_cpu_var(hcall_type_count);
-+    get_cpu_var(hcall_type_time)[opcode_index] += mfspr(SPRN_PURR) - t_entry;
-+    put_cpu_var(hcall_type_time);
-+
-+    return retcode;
++	alsa_card = snd_card_new(index, name, mod, sizeof(struct aoa_card));
++	if (!alsa_card)
++		return -ENOMEM;
++	aoa_card = alsa_card->private_data;
++	aoa_card->alsa_card = alsa_card;
++	strlcpy(alsa_card->driver, "AppleOnbdAudio", sizeof(alsa_card->driver)-1);
++	strlcpy(alsa_card->shortname, name, sizeof(alsa_card->shortname)-1);
++	strlcpy(alsa_card->longname, name, sizeof(alsa_card->longname)-1);
++	strlcpy(alsa_card->mixername, name, sizeof(alsa_card->mixername)-1);
++	err = snd_card_register(aoa_card->alsa_card);
++	if (err < 0) {
++		printk(KERN_ERR "snd-aoa: couldn't register alsa card\n");
++		snd_card_free(aoa_card->alsa_card);
++		aoa_card = NULL;
++		return err;
++	}
++	return 0;
 +}
 +
-+extern long plpar_hcall_8arg_2ret_real(unsigned long opcode,
-+				       unsigned long arg1,
-+				       unsigned long arg2,
-+				       unsigned long arg3,
-+				       unsigned long arg4,
-+				       unsigned long arg5,
-+				       unsigned long arg6,
-+				       unsigned long arg7,
-+				       unsigned long arg8,
-+				       unsigned long *out1);
-+
-+long plpar_hcall_8arg_2ret(unsigned long opcode,
-+			   unsigned long arg1,
-+		  	   unsigned long arg2,
-+			   unsigned long arg3,
-+			   unsigned long arg4,
-+			   unsigned long arg5,
-+			   unsigned long arg6,
-+			   unsigned long arg7,
-+			   unsigned long arg8,
-+			   unsigned long *out1)
++struct snd_card *aoa_get_card(void)
 +{
-+    long retcode;
-+    unsigned long t_entry;
-+    int opcode_index;
-+    
-+    opcode_index = map_hcall_to_index(opcode);
-+    t_entry = mfspr(SPRN_PURR);
-+    barrier();
++	if (aoa_card)
++		return aoa_card->alsa_card;
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(aoa_get_card);
 +
-+    retcode = plpar_hcall_8arg_2ret_real(opcode, arg1, arg2, arg3, arg4,
-+					 arg5, arg6, arg7, arg8, out1);
-+
-+    barrier();
-+    get_cpu_var(hcall_type_count)[opcode_index]++;
-+    put_cpu_var(hcall_type_count);
-+    get_cpu_var(hcall_type_time)[opcode_index] += mfspr(SPRN_PURR) - t_entry;
-+    put_cpu_var(hcall_type_time);
-+
-+    return retcode;
++void aoa_alsa_cleanup(void)
++{
++	if (aoa_card) {
++		snd_card_free(aoa_card->alsa_card);
++		aoa_card = NULL;
++	}
 +}
 +
-+extern long plpar_hcall_4out_real(unsigned long opcode,
-+				  unsigned long arg1,
-+				  unsigned long arg2,
-+				  unsigned long arg3,
-+				  unsigned long arg4,
-+				  unsigned long *out1,
-+				  unsigned long *out2,
-+				  unsigned long *out3,
-+				  unsigned long *out4);
-+
-+long plpar_hcall_4out(unsigned long opcode,
-+		      unsigned long arg1,
-+		      unsigned long arg2,
-+		      unsigned long arg3,
-+		      unsigned long arg4,
-+		      unsigned long *out1,
-+		      unsigned long *out2,
-+		      unsigned long *out3,
-+		      unsigned long *out4)
++int aoa_snd_device_new(snd_device_type_t type,
++        void * device_data, struct snd_device_ops * ops)
 +{
-+    long retcode;
-+    unsigned long t_entry;
-+    int opcode_index;
-+    
-+    opcode_index = map_hcall_to_index(opcode);
-+    t_entry = mfspr(SPRN_PURR);
-+    barrier();
++	struct snd_card *card = aoa_get_card();
++	int err;
++	
++	if (!card) return -ENOMEM;
 +
-+    retcode = plpar_hcall_4out_real(opcode, arg1, arg2, arg3, arg4,
-+				    out1, out2, out3, out4);
-+
-+    barrier();
-+    get_cpu_var(hcall_type_count)[opcode_index]++;
-+    put_cpu_var(hcall_type_count);
-+    get_cpu_var(hcall_type_time)[opcode_index] += mfspr(SPRN_PURR) - t_entry;
-+    put_cpu_var(hcall_type_time);
-+
-+    return retcode;
++	err = snd_device_new(card, type, device_data, ops);
++	if (err) {
++		printk(KERN_ERR "snd-aoa: failed to create snd device (%d)\n", err);
++		return err;
++	}
++	err = snd_device_register(card, device_data);
++	if (err) {
++		printk(KERN_ERR "snd-aoa: failed to register snd device (%d)\n", err);
++		printk(KERN_ERR "snd-aoa: have you forgotten the dev_register callback?\n");
++		snd_device_free(card, device_data);
++	}
++	return err;
 +}
++EXPORT_SYMBOL_GPL(aoa_snd_device_new);
 +
++int aoa_snd_ctl_add(struct snd_kcontrol* control)
++{
++	int err;
 +
-diff -urpN -X linux-2.6.15.6/Documentation/dontdiff linux-2.6.15.6.ref/include/asm-powerpc/hvcall.h linux-2.6.15.6.hcall/include/asm-powerpc/hvcall.h
---- linux-2.6.15.6.ref/include/asm-powerpc/hvcall.h	2006-03-06 06:07:54.000000000 +1100
-+++ linux-2.6.15.6.hcall/include/asm-powerpc/hvcall.h	2006-04-05 13:59:22.000000000 +1000
-@@ -116,6 +116,11 @@
- 
- #ifndef __ASSEMBLY__
- 
++	if (!aoa_card) return -ENODEV;
 +
-+#define NUM_HCALL_TYPES 56
-+/* Some are in ibmveth.h */
-+
-+
- /* plpar_hcall() -- Generic call interface using above opcodes
-  *
-  * The actual call interface is a hypervisor call instruction with
++	err = snd_ctl_add(aoa_card->alsa_card, control);
++	if (err)
++		printk(KERN_ERR "snd-aoa: failed to add alsa control (%d)\n", err);
++	return err;
++}
++EXPORT_SYMBOL_GPL(aoa_snd_ctl_add);
+
+--
