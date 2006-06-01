@@ -1,20 +1,23 @@
-Return-Path: <cdumoulin@ics-ltd.com>
-Received: from mx2.magma.ca (mx2.magma.ca [206.191.0.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7F1A167A3F
+Return-Path: <peter.ryser@xilinx.com>
+Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3445267A58
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Jun 2006 03:00:37 +1000 (EST)
-Received: from www-webmail1.magma.ca (www-webmail1.magma.ca [206.191.0.225])
-	by mx2.magma.ca (8.13.6/8.13.0) with ESMTP id k51H0XA5026415
-	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Jun 2006 13:00:34 -0400
-Date: Thu, 1 Jun 2006 13:00:32 -0400
-Message-Id: <200606011700.k51H0WJw014425@www-webmail1.magma.ca>
-To: linuxppc-embedded@ozlabs.org
-From: "Chris Dumoulin" <cdumoulin@ics-ltd.com>
-Subject: memset hangs part way through; called from early_init
-Mime-Version: 1.0
-Content-Type: text/plain
+	Fri,  2 Jun 2006 03:06:02 +1000 (EST)
+Message-ID: <447F1E48.10808@xilinx.com>
+Date: Thu, 01 Jun 2006 10:05:12 -0700
+From: Peter Ryser <peter.ryser@xilinx.com>
+MIME-Version: 1.0
+To: Aidan Williams <aidan@nicta.com.au>
+Subject: Re: Linux 2.4 Kernel on Xilinx Virtex4 FX100's PPC
+References: <EDF27F298D4B03498AE0C249A941DFF803D6E6@de01exm68.ds.mot.com>
+	<447E1725.4010908@nicta.com.au>
+In-Reply-To: <447E1725.4010908@nicta.com.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: Anantharaman Chetan-W16155 <Chetan.S.Anantharaman@motorola.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,116 +28,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
-I'm running a V2Pro-based development board, and I'm working on a linux 2.6.15 port.
-Currently, the board hangs in the early_init function. Specifically, at the following line:
-memset_io(PTRRELOC(&__bss_start), 0, _end - __bss_start);
+There are some silicon issues on the PPC405 in V4 with PVR 0x20011430=20
+which are documented in Xilinx solution record 20658. All these issues=20
+are fixed in silicon where the PPC405 has a PVR of 0x20011470.
 
-This memset_io() call eventually calls memset() (from arch/ppc/lib/string.S) to zero the
-region of memory. Using a BDI2000, I'm able to step through the assembly and see that
-within memset, it enters a two-instruction loop where it is writing zeros to consecutive
-memory locations. Everything is going fine, but after 10 or 20 iterations of the loop
-(it's not consistent), everything blows up.
+Said that it's not true that the caches cannot be used in silicon with=20
+PVR 0x20011430. The problem is a corner case which does not show in=20
+typical designs.
 
-GDB reports the following:
-------------------------------
-(gdb) stepi
-
-Program received signal SIG110, Real-time event 110.
-0xc000b3e8 in memset ()
-(gdb)
-------------------------------
-
-The BDI2000 reports the following:
-------------------------------
-*** MMU: address translation for 0xC000B3E8 failed
-*** MMU: address translation for 0xC000B3E4 failed
-*** MMU: address translation for 0xC000B3E8 failed
-*** MMU: address translation for 0xC000B3E4 failed
-*** MMU: address translation for 0xC000B3B0 failed
-*** MMU: address translation for 0xDEADBEEF failed
-*** MMU: address translation for 0xDEADBEEB failed
-*** MMU: address translation for 0xDEADBEEF failed
-*** MMU: address translation for 0xDEADBEEB failed
-*** MMU: address translation for 0x00000000 failed
-*** MMU: address translation for 0xDEADBEEF failed
-*** MMU: address translation for 0xDEADBEEB failed
-*** MMU: address translation for 0xDEADBEEF failed
-*** MMU: address translation for 0xDEADBEEB failed
-*** MMU: address translation for 0x00000000 failed
-------------------------------
-
-Here is my BDI2000 configuration file:
-------------------------------
-[INIT]
+- Peter
 
 
+Aidan Williams wrote:
 
-[TARGET]
-
-JTAGCLOCK   0                   ;use 16 MHz JTAG clock
-
-CPUTYPE     405 		;the used target CPU type
-
-BDIMODE     AGENT   	        ;the BDI working mode (LOADONLY | AGENT)
-
-
-BREAKMODE   HARD      	        ;SOFT or HARD, HARD uses PPC hardware breakpoint
-
-STEPMODE    HWBP                ;JTAG or HWBP, HWPB uses one or two hardware breakpoints
-
-
-MMU         XLAT 0xC0000000     ;enable virtual address mode
-
-PTBASE      0x000000f0          ;address where kernel/user stores pointer to page table
-
-STARTUP     RESET
-
-
-
-
-[HOST]
-
-IP          192.9.200.213
-
-
-FILE        ppcboot.bin
-
-FORMAT      BIN 0xfff80000 ;0x200000
-
-START       0xfff80000 ; 0x200000
-
-LOAD        MANUAL              ;load code MANUAL or AUTO after reset
-
-DEBUGPORT   2001
-
-DUMP        dump.bin            ;Linux: dump.bin must already exist and public writable
-
-
-
-[FLASH]
-
-WORKSPACE   0xffffd000
-
-CHIPTYPE    STRATAX16
-
-BUSWIDTH    16
-
-CHIPSIZE    0x400000
-
-
-[REGS]
-
-IDCR1	0x010	0x011	;MEMCFGADR and MEMCFGDATA
-
-IDCR2	0x012	0x013	;EBCCFGADR and EBCCFGDATA
-
-IDCR3	0x014	0x015	;KIAR and KIDR
-
-FILE    reg405gp.def
-------------------------------
-
-Any ideas would be appreciated.
-
-Regards,
-Chris Dumoulin
+>Anantharaman Chetan-W16155 wrote:
+> =20
+>
+>>Has anyone successfully ported a Linux 2.4 Kernel on a Xilinx Virtex-4=20
+>>FX series FPGA=92s, PPC405 processor?
+>>
+>>   =20
+>>
+>
+>Yes, see=20
+>http://ozlabs.org/pipermail/linuxppc-embedded/2006-April/022583.html
+>
+>Note that there are silicon bugs that prevent caches being used in some=20
+>chips.
+>
+> =20
+>
+>>More specifically, the FX100 FPGA?
+>>   =20
+>>
+>
+>I don't have one of those, sorry.
+>
+>- aidan
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+> =20
+>
