@@ -1,20 +1,20 @@
-Return-Path: <jourdan@enib.fr>
-Received: from alto.enib.fr (alto.enib.fr [195.221.233.5])
-	by ozlabs.org (Postfix) with ESMTP id ED8EC67A3E
+Return-Path: <cdumoulin@ics-ltd.com>
+Received: from mx2.magma.ca (mx2.magma.ca [206.191.0.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7F1A167A3F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Jun 2006 01:39:03 +1000 (EST)
-Message-ID: <2586.194.3.133.184.1149175949.squirrel@webmail.enib.fr>
-In-Reply-To: <20060530203221.236923525D9@atlas.denx.de>
-References: Your message of "Tue, 30 May 2006 11:39:23 +0200."            
-	<1664.194.3.133.184.1148981963.squirrel@webmail.enib.fr>
-	<20060530203221.236923525D9@atlas.denx.de>
-Date: Thu, 1 Jun 2006 17:32:29 +0200 (CEST)
-Subject: Re: Can't get CoralP drivers to work (fixed)
-From: jourdan@enib.fr
-To: "Wolfgang Denk" <wd@denx.de>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+	Fri,  2 Jun 2006 03:00:37 +1000 (EST)
+Received: from www-webmail1.magma.ca (www-webmail1.magma.ca [206.191.0.225])
+	by mx2.magma.ca (8.13.6/8.13.0) with ESMTP id k51H0XA5026415
+	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Jun 2006 13:00:34 -0400
+Date: Thu, 1 Jun 2006 13:00:32 -0400
+Message-Id: <200606011700.k51H0WJw014425@www-webmail1.magma.ca>
+To: linuxppc-embedded@ozlabs.org
+From: "Chris Dumoulin" <cdumoulin@ics-ltd.com>
+Subject: memset hangs part way through; called from early_init
+Mime-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,25 +25,116 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello guys
+Hi All,
+I'm running a V2Pro-based development board, and I'm working on a linux 2.6.15 port.
+Currently, the board hangs in the early_init function. Specifically, at the following line:
+memset_io(PTRRELOC(&__bss_start), 0, _end - __bss_start);
 
-I had time to dig into the kernel code and I discovered the origin of my
-problem. As I said in a previous post, we use a custom processor card
-based on a mpc8270. In the initialisation of our board was missing the
-following line :
+This memset_io() call eventually calls memset() (from arch/ppc/lib/string.S) to zero the
+region of memory. Using a BDI2000, I'm able to step through the assembly and see that
+within memset, it enters a two-instruction loop where it is writing zeros to consecutive
+memory locations. Everything is going fine, but after 10 or 20 iterations of the loop
+(it's not consistent), everything blows up.
 
-conswitchp = &dummy_con;
+GDB reports the following:
+------------------------------
+(gdb) stepi
 
-That's all !
+Program received signal SIG110, Real-time event 110.
+0xc000b3e8 in memset ()
+(gdb)
+------------------------------
 
-Now it works fine.
+The BDI2000 reports the following:
+------------------------------
+*** MMU: address translation for 0xC000B3E8 failed
+*** MMU: address translation for 0xC000B3E4 failed
+*** MMU: address translation for 0xC000B3E8 failed
+*** MMU: address translation for 0xC000B3E4 failed
+*** MMU: address translation for 0xC000B3B0 failed
+*** MMU: address translation for 0xDEADBEEF failed
+*** MMU: address translation for 0xDEADBEEB failed
+*** MMU: address translation for 0xDEADBEEF failed
+*** MMU: address translation for 0xDEADBEEB failed
+*** MMU: address translation for 0x00000000 failed
+*** MMU: address translation for 0xDEADBEEF failed
+*** MMU: address translation for 0xDEADBEEB failed
+*** MMU: address translation for 0xDEADBEEF failed
+*** MMU: address translation for 0xDEADBEEB failed
+*** MMU: address translation for 0x00000000 failed
+------------------------------
 
-I still have a little problem : video output signals seems to be very low.
-I have to set the maximum contrast and luminosity to see something. I
-tried on different monitors, the problem is the same.
+Here is my BDI2000 configuration file:
+------------------------------
+[INIT]
 
-The board is configured to use the rgb analog signals from the coral, not
-from the dac.
 
-Are there any jumpers or register to tweak the video signal levels ? I
-can't find it in the hardware manual...
+
+[TARGET]
+
+JTAGCLOCK   0                   ;use 16 MHz JTAG clock
+
+CPUTYPE     405 		;the used target CPU type
+
+BDIMODE     AGENT   	        ;the BDI working mode (LOADONLY | AGENT)
+
+
+BREAKMODE   HARD      	        ;SOFT or HARD, HARD uses PPC hardware breakpoint
+
+STEPMODE    HWBP                ;JTAG or HWBP, HWPB uses one or two hardware breakpoints
+
+
+MMU         XLAT 0xC0000000     ;enable virtual address mode
+
+PTBASE      0x000000f0          ;address where kernel/user stores pointer to page table
+
+STARTUP     RESET
+
+
+
+
+[HOST]
+
+IP          192.9.200.213
+
+
+FILE        ppcboot.bin
+
+FORMAT      BIN 0xfff80000 ;0x200000
+
+START       0xfff80000 ; 0x200000
+
+LOAD        MANUAL              ;load code MANUAL or AUTO after reset
+
+DEBUGPORT   2001
+
+DUMP        dump.bin            ;Linux: dump.bin must already exist and public writable
+
+
+
+[FLASH]
+
+WORKSPACE   0xffffd000
+
+CHIPTYPE    STRATAX16
+
+BUSWIDTH    16
+
+CHIPSIZE    0x400000
+
+
+[REGS]
+
+IDCR1	0x010	0x011	;MEMCFGADR and MEMCFGDATA
+
+IDCR2	0x012	0x013	;EBCCFGADR and EBCCFGDATA
+
+IDCR3	0x014	0x015	;KIAR and KIDR
+
+FILE    reg405gp.def
+------------------------------
+
+Any ideas would be appreciated.
+
+Regards,
+Chris Dumoulin
