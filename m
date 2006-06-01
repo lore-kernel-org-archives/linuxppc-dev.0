@@ -1,15 +1,22 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id A6BEC67A66
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2006 07:10:26 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: SII3124-2
-Date: Thu, 1 Jun 2006 16:10:24 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0189DDFF@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 19E2A67A3F
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2006 07:57:36 +1000 (EST)
+Subject: Re: Collecting hypervisor call stats
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+In-Reply-To: <200606012014.20467.arnd.bergmann@de.ibm.com>
+References: <20060531204144.GA7909@w-mikek2.ibm.com>
+	<20060531225813.GC7909@w-mikek2.ibm.com>
+	<1149139576.28307.28.camel@localhost.localdomain>
+	<200606012014.20467.arnd.bergmann@de.ibm.com>
+Content-Type: text/plain
+Date: Fri, 02 Jun 2006 07:57:23 +1000
+Message-Id: <1149199043.16202.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Has anybody been successful in getting a SII3124-2 based SATA controller
-to work under PPC?
+On Thu, 2006-06-01 at 20:14 +0200, Arnd Bergmann wrote:
+> On Thursday 01 June 2006 07:26, Benjamin Herrenschmidt wrote:
+> > 
+> > > We need to get a timestamp before and after the call.  mftb should do
+> > > the trick.  Also, I'd prefer to have the code that stuffs the values
+> > > into the array be C.  So, the decision is to have the assembly code
+> > > call out to the C routine -OR- create wrappers for the assembly routines.
+> > > I much prefer C wrappers to touching the assembly.
+> > 
+> > Argh... yet another use of mftb for which I'll need a cell specific
+> > workaround 
+> 
+> I guess for statistics, we should rather avoid that overhead (and
+> document the fact that we did on purpose).
 
-I have a eval board that I tried on two different freescale boards (a
-MPC8266ADS board and a MPC8560ADS board).
-Kernel 2.6.16.16.
+Well.. if we can at one point "detect" the totally bogus value (the
+timestamp going massively backward) and fix it up there, ok. Might be an
+option.
 
-Here is the relevant output from the kernel.
+> How fast is mftb really? Would that be significant compared to the
+> time spent in a fast hcall?
 
-ata1: SATA max UDMA/100 cmd 0xD1010000 ctl 0x0 bmdma 0x0 irq 115
-ata2: SATA max UDMA/100 cmd 0xD1012000 ctl 0x0 bmdma 0x0 irq 115
-ata3: SATA max UDMA/100 cmd 0xD1014000 ctl 0x0 bmdma 0x0 irq 115
-ata4: SATA max UDMA/100 cmd 0xD1016000 ctl 0x0 bmdma 0x0 irq 115
-ata1: SATA link down (SStatus 0)
-scsi0 : sata_sil24
-ata2: SATA link up 3.0 Gbps (SStatus 123)
-sata_sil24 ata2: SRST failed, disabling port
-scsi1 : sata_sil24
-ata3: SATA link down (SStatus 0)
-scsi2 : sata_sil24
-ata4: SATA link down (SStatus 0)
-scsi3 : sata_sil24
+Not sure, I would expect a few dozens cycles at least though... 
 
-I added debug output to see the content of the Command Error register.
-It is set to 26 which according to the datasheet for the 3124-1 (I am
-running a -2), is PLDCMDERRORMASTERABORT, "A PCI Master Abort occurred
-while the SiI3124 was fetching a Port Request Block (PRB) from host
-memory."
+Ben.
