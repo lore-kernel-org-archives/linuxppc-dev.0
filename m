@@ -1,19 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jimix@watson.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2502767B20
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 10:59:48 +1000 (EST)
-Subject: Re: pmf_register_irq_client gives sleep with locks held warning
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1149020341.5128.7.camel@johannes>
-References: <1149020341.5128.7.camel@johannes>
-Content-Type: text/plain
-Date: Thu, 01 Jun 2006 10:59:34 +1000
-Message-Id: <1149123574.15446.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A467C67B20
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Jun 2006 14:34:25 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k514YNuN026585
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jun 2006 00:34:23 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k514YNFT171614
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 22:34:23 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k514YMru006755
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 May 2006 22:34:22 -0600
+In-Reply-To: <20060531204144.GA7909@w-mikek2.ibm.com>
+References: <20060531204144.GA7909@w-mikek2.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <AEFF6654-C958-42F7-93CF-64103B015CB1@watson.ibm.com>
+From: Jimi Xenidis <jimix@watson.ibm.com>
+Subject: Re: Collecting hypervisor call stats
+Date: Thu, 1 Jun 2006 00:34:29 -0400
+To: Mike Kravetz <kravetz@us.ibm.com>, Chris Yeoh <yeohc@au1.ibm.com>,
+	Bryan Rosenburg <rosnbrg@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,91 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-05-30 at 22:19 +0200, Johannes Berg wrote:
-> Hi,
-> 
-> When testing headphone detection stuff I got this:
-> 
-> [  634.218762] BUG: sleeping function called from invalid context at mm/slab.c:2794
-> [  634.218774] in_atomic():0, irqs_disabled():1
-> [  634.218777] Call Trace:
-> [  634.218779] [D67ADC00] [C00085F8] show_stack+0x50/0x190 (unreliable)
-> [  634.218794] [D67ADC30] [C0024030] __might_sleep+0xcc/0xe8
-> [  634.218804] [D67ADC40] [C0076C04] __kmalloc+0xf4/0xf8
-> [  634.218815] [D67ADC60] [C00B37D4] proc_create+0x9c/0xe8
-> [  634.218827] [D67ADC90] [C00B3930] proc_mkdir_mode+0x2c/0x88
-> [  634.218833] [D67ADCB0] [C005227C] register_handler_proc+0xe4/0xfc
-> [  634.218844] [D67ADD50] [C0051D70] setup_irq+0x118/0x16c
-> [  634.218850] [D67ADD70] [C0051E68] request_irq+0xa4/0xb8
-> [  634.218855] [D67ADDA0] [C0020BA0] macio_do_gpio_irq_enable+0x40/0x50
-> [  634.218860] [D67ADDB0] [C00208BC] pmf_register_irq_client+0x88/0x9c
-> [..., not important]
+IIRC, chris and bryan have done some work to track this, they may  
+have some code to contribute.
+On May 31, 2006, at 4:41 PM, Mike Kravetz wrote:
 
-That's a bug in the PowerMac PMF code. What about this patch ?
-
-This fixes request_irq() potentially called from atomic context.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Index: linux-work/arch/powerpc/platforms/powermac/pfunc_core.c
-===================================================================
---- linux-work.orig/arch/powerpc/platforms/powermac/pfunc_core.c	2006-04-19 15:04:38.000000000 +1000
-+++ linux-work/arch/powerpc/platforms/powermac/pfunc_core.c	2006-06-01 10:58:57.000000000 +1000
-@@ -11,6 +11,7 @@
- #include <linux/kernel.h>
- #include <linux/spinlock.h>
- #include <linux/module.h>
-+#include <linux/mutex.h>
- 
- #include <asm/semaphore.h>
- #include <asm/prom.h>
-@@ -546,6 +547,7 @@
- 
- static LIST_HEAD(pmf_devices);
- static spinlock_t pmf_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_MUTEX(pmf_irq_mutex);
- 
- static void pmf_release_device(struct kref *kref)
- {
-@@ -864,15 +866,17 @@
- 
- 	spin_lock_irqsave(&pmf_lock, flags);
- 	func = __pmf_find_function(target, name, PMF_FLAGS_INT_GEN);
--	if (func == NULL) {
--		spin_unlock_irqrestore(&pmf_lock, flags);
-+	if (func)
-+		func = pmf_get_function(func);
-+	spin_unlock_irqrestore(&pmf_lock, flags);
-+	if (func == NULL)
- 		return -ENODEV;
--	}
-+	mutex_lock(&pmf_irq_mutex);
- 	if (list_empty(&func->irq_clients))
- 		func->dev->handlers->irq_enable(func);
- 	list_add(&client->link, &func->irq_clients);
- 	client->func = func;
--	spin_unlock_irqrestore(&pmf_lock, flags);
-+	mutex_unlock(&pmf_irq_mutex);
- 
- 	return 0;
- }
-@@ -881,16 +885,16 @@
- void pmf_unregister_irq_client(struct pmf_irq_client *client)
- {
- 	struct pmf_function *func = client->func;
--	unsigned long flags;
- 
- 	BUG_ON(func == NULL);
- 
--	spin_lock_irqsave(&pmf_lock, flags);
-+	mutex_lock(&pmf_irq_mutex);
- 	client->func = NULL;
- 	list_del(&client->link);
- 	if (list_empty(&func->irq_clients))
- 		func->dev->handlers->irq_disable(func);
--	spin_unlock_irqrestore(&pmf_lock, flags);
-+	mutex_unlock(&pmf_irq_mutex);
-+	pmf_put_function(func);
- }
- EXPORT_SYMBOL_GPL(pmf_unregister_irq_client);
- 
+> We would like to add code that gathers statistics about hypervisor  
+> calls.
+> It would keep track of things like # of calls made for each opcode  
+> as well
+> as time spent processing the calls.
+>
+> The 'obvious' place to gather such statistics would be from within the
+> routines making hcalls in hvCall.S.  Once thing that I have noticed is
+> the following comment at the beginning hvCall.S:
+>
+>  * NOTE: this file will go away when we move to inline this work.
+>
+> So, it appears someone thought/thinks these routines should be  
+> inlined.
+> I assume this is for performance reasons?  If this is the case, then I
+> suspect gathering of statistics (which would introduce overhead) would
+> meet resistance?
+>
+> Comments about the feasibility of adding such statistic gathering code
+> would be appreciated.
+>
+> Thanks,
+> -- 
+> Mike
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
