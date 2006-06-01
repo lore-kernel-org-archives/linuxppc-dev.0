@@ -1,34 +1,14 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 13CF667AC7
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2006 04:14:27 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k51IENLr028948
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jun 2006 14:14:23 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k51IEM9J113244
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jun 2006 14:14:22 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k51IELej027014
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jun 2006 14:14:21 -0400
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Collecting hypervisor call stats
-Date: Thu, 1 Jun 2006 20:14:20 +0200
-References: <20060531204144.GA7909@w-mikek2.ibm.com>
-	<20060531225813.GC7909@w-mikek2.ibm.com>
-	<1149139576.28307.28.camel@localhost.localdomain>
-In-Reply-To: <1149139576.28307.28.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200606012014.20467.arnd.bergmann@de.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <dwm@austin.ibm.com>
+Message-Id: <200606012056.k51KuUOP008931@falcon10.austin.ibm.com>
+In-reply-to: <200605162040.k4GKeUsY007712@falcon10.austin.ibm.com> 
+References: <200604280605.k3S65tjv012348@bebe.enoyolf.org> 
+Subject: Re: [PATCH] yaboot: enable boot from iscsi target via ethernet
+	devices on js20.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Thu, 01 Jun 2006 15:56:30 -0500
+From: Doug Maxey <dwm@austin.ibm.com>
+Cc: yaboot-devel@ozlabs.org, Linux PowerPC List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,22 +18,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 01 June 2006 07:26, Benjamin Herrenschmidt wrote:
->=20
-> > We need to get a timestamp before and after the call. =A0mftb should do
-> > the trick. =A0Also, I'd prefer to have the code that stuffs the values
-> > into the array be C. =A0So, the decision is to have the assembly code
-> > call out to the C routine -OR- create wrappers for the assembly routine=
-s.
-> > I much prefer C wrappers to touching the assembly.
->=20
-> Argh... yet another use of mftb for which I'll need a cell specific
-> workaround=20
 
-I guess for statistics, we should rather avoid that overhead (and
-document the fact that we did on purpose).
+On Tue, 16 May 2006 15:40:30 CDT, Doug Maxey wrote:
+>
+>On Tue, 16 May 2006 16:20:47 EDT, Paul Nasrat wrote:
+>>On Fri, 2006-04-28 at 01:05 -0500, Doug Maxey wrote:
+>>> Certain levels of JS20 firmware will allow the system to boot from an
+>>> iscsi target.  System OFW accomplishes this by setting up a virtual
+>>> disk device with parameters.  These parameters, when passed back to
+>>> OFW by yaboot, directs the FW to use virtual device over the ethernet
+>>> port that will then access iscsi target as a block device.  This patch
+>>> extracts those parameters from the property of the virtual device and
+>>> passes them back to OFW to indicate the kernel is to be retrieved via
+>>> the iscsi protocol.
+>>> 
+>>> Signed-off-by: Doug Maxey <dwm@austin.ibm.com>
+>>
+>>Sorry for the delay in getting back to you - a few initial questions:
+>
+>np.  been on vacation the last 10 days.  Switzerland is nice, and Milan 
+>is cool. :)
+>
+>>
+>>> diff --git a/second/file.c b/second/file.c
+>>
+>>> @@ -185,16 +188,45 @@ parse_device_path(char *imagepath, char 
+>>>  
+>>>       if (!imagepath)
+>>>  	  return 0;
+>>> +
+>>> +      /*
+>>> +       * Do preliminary checking for an iscsi device; it may appear as
+>>> +       * pure a network device (device_type == "network") if this is
+>>> +       * ISWI.  This is the case on IBM systems doing an iscsi OFW
+>>> +       * boot.
+>>> +       */
+>>> +     if (strstr(imagepath, ",iscsi"))
+>>
+>>Is the , always guaranteed to be there - eg if I have boot
+>>eth1:iscsi,ISCSIARGS  won't this check fail.
+>
+>Yes, with the above command line this would fail. 
+>
+>My point of reference are the bindings that we cannot yet talk about 
+>here, yet.  The device args would always be followed by a comma.  I suppose 
+>that we could just reference the string "iscsi", but then some wag 
+>would want to create some other property that included "iscsi" as a 
+>substring.  Maybe append a comma?
 
-How fast is mftb really? Would that be significant compared to the
-time spent in a fast hcall?
+Any preferences on this?  
 
-	Arnd <><
+I have another, more radical solution.  
+
+Adding a parser that understands the full device path and that can 
+return the elements neatly packaged.  Film at 11. 
+
+>
+>
+>>
+>>> diff --git a/second/prom.c b/second/prom.c
+>>> index 5ec06b8..9bc5415 100644
+>>> --- a/second/prom.c
+>>> +++ b/second/prom.c
+>>> @@ -174,6 +174,9 @@ prom_get_devtype (char *device)
+>>>       int        result;
+>>>       char       tmp[64];
+>>>  
+>>> +     if (strstr(device, ",iscsi"))
+>>> +	  device = strcpy(tmp, "/vdevice/gscsi/disk");
+>>> +
+>>
+>>Ditto here.
+>
+>likewise.  Maybe make it a #define so it would be common.
+>
+>>
+>>Paul
+>>
+
+++doug
