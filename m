@@ -1,19 +1,18 @@
-Return-Path: <ebs@ebshome.net>
-Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 93BF367A2E
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 72FE267A5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Jun 2006 05:51:33 +1000 (EST)
-Date: Thu, 1 Jun 2006 12:51:29 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Chris Dumoulin <cdumoulin@ics-ltd.com>
-Subject: Re: Pinned TLB entries with 2.6 linux kernel on PPC4xx
-Message-ID: <20060601195129.GA15262@gate.ebshome.net>
-References: <447F4021.5030109@ics-ltd.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <447F4021.5030109@ics-ltd.com>
+	Fri,  2 Jun 2006 06:32:45 +1000 (EST)
+To: "Chris Dumoulin" <cdumoulin@ics-ltd.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: memset hangs part way through; called from early_init 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 01 Jun 2006 13:00:32 EDT."
+	<200606011700.k51H0WJw014425@www-webmail1.magma.ca>
+Date: Thu, 01 Jun 2006 22:32:43 +0200
+Sender: wd@denx.de
+Message-Id: <20060601203243.83B43353B06@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,17 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 01, 2006 at 03:29:37PM -0400, Chris Dumoulin wrote:
-> Does the idea of creating pinned TLB entries (ones that will never be 
-> overwritten) make sense for a PPC4xx (specifically PPC405) 2.6 linux 
-> kernel? If so, how would this be accomplished?
+In message <200606011700.k51H0WJw014425@www-webmail1.magma.ca> you wrote:
+>
+> Currently, the board hangs in the early_init function. Specifically, at the following line:
+> memset_io(PTRRELOC(&__bss_start), 0, _end - __bss_start);
+...
+> Any ideas would be appreciated.
 
-44x kernel already pins some TLB entries, 40x may use this approach to 
-increase performance (I use this in my internal 2.4 tree 
-quite successfully).
+See http://www.denx.de/wiki/view/DULG/LinuxCrashesRandomly
 
-Old 2.4 trees (linuxppc-2.4 or devel_2_4) have TLB pinning support 
-for 40x, you can look at the implementation there.
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Eugene
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+A princess should not be afraid -- not with a brave knight to protect
+her.
+	-- McCoy, "Shore Leave", stardate 3025.3
