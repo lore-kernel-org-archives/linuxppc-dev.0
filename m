@@ -1,27 +1,17 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id AD39C67B24
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2006 18:33:24 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k528nubU008766
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 01:49:56 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k528XKFd027025
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 03:33:21 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673026FD938@zch01exm40.ap.freescale.net>
-From: Liu Dave-r63238 <DaveLiu@freescale.com>
-To: "'Benjamin Herrenschmidt'" <benh@kernel.crashing.org>, Zang Roy-r61911
-	<tie-fei.zang@freescale.com>
-Subject: RE: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
-	448h pc2 (Taiga) platform
-Date: Fri, 2 Jun 2006 16:33:12 +0800 
-MIME-Version: 1.0
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 60E20679FD
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2006 20:54:33 +1000 (EST)
+Subject: snd-aoa: using feature calls for GPIOs
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
+Date: Thu, 01 Jun 2006 20:42:22 +0200
+Message-Id: <1149187342.7875.9.camel@johannes>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,35 +21,384 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > I had hoped to get the pci configure base address by ioremap, but 
-> > failed. the tsi108 register locates at 0xc000,0000 
-> ~0xC001,0000. It is 
-> > OK to access them by ioremap. While pci configure access need to 
-> > ioremap 0xfb00,0000 ~0xfc00,0000. I traced my code, when I 
-> do ioremap, 
-> > there is no bat match, I get the virtual address from 
-> ioremap_bot. the 
-> > init ioremap_bot is 0xfe000000. When I do tsi108_csr_vir_base = 
-> > ioremap(0xfb000000,0x1000000), the ioremap_bot is 
-> 0xfdffe000 ( I get 
-> > the serial port ioremap steal some space), tsi108_csr_vir_base = 
-> > 0xfdfee000, I can not access the configure space with this address.
-> 
-> What happens if you try ?
-> 
-> > While if I use bat0 or bat1 to map my tsi108 register space, the 
-> > ioremap_bot will keep to 0xfe000000 until I do 
-> tsi108_csr_vir_base = 
-> > ioremap(0xfb000000,0x1000000) then I get  tsi108_csr_vir_base = 
-> > 0xfd000000. Everything is OK.
-> 
-> Both should work fine
-> 
-> Ben.
-> 
+Hi,
 
-The smallest BAT size of 74xx is 128KB, but the MPC7448_HPC2_NVRAM_SIZE
-Is 0x8000 (32KB) you set in your code. I suggest you set the
-MPC7448_HPC2_NVRAM_SIZE is 0x20000, try it.
+The following patch ought to add the possibility of using feature calls
+for the GPIOs instead of platform functions. Note that it doesn't
+actually hook up the new gpio functions, that needs to be done in the
+fabric.
 
-Dave
+However, the whole thing doesn't work for me yet. In fact, as soon as I
+try using this patch, I need to reboot my computer to make the tas react
+again to i2c commands. Very strange.
+
+I looked into snd-powermac, and it does very weird things with the
+GPIOs. I notice, for example, the following code:
+        base = (u32 *)get_property(node, "audio-gpio-active-state", NULL);
+        if (base) {
+                gp->active_state = *base;
+                gp->active_val = (*base) ? 0x5 : 0x4;
+                gp->inactive_val = (*base) ? 0x4 : 0x5;
+
+As far as I can see that's bogus. The 0x4/0x5 values aren't ever
+actually written to the register, they are just the software values
+Darwin uses for unmute/mute (or was it reset/run?).
+
+I don't see where this comes from, looking at Darwin gives you that all
+GPIO writes in PlatformInterfaceGPIO_Mapped are either 0 or 1 depending
+on the activestate value and using assertGPIO/negateGPIO. I think the
+4/5 comes from confusing the kGPIO_* values with what is actually
+written to the register.
+
+Also, snd-powermac says: "Try to find the active state, default to 0 !".
+That isn't what Darwin does, it defaults to 1.
+
+Anyway, I'm sure I'm doing something stupid in there and just can't find
+it, I even 'disassembled' all the platform functions I have to see what
+happens in them, and they also write 0 or 1 just like the code below...
+Maybe I got some offsets wrong?
+
+--- snd-aoa.orig/aoa.h	2006-06-01 20:29:56.252070199 +0200
++++ snd-aoa/aoa.h	2006-06-01 20:31:03.972070199 +0200
+@@ -125,6 +125,7 @@ extern int aoa_snd_ctl_add(struct snd_kc
+ 
+ /* GPIO stuff */
+ extern struct gpio_methods *pmf_gpio_methods;
++extern struct gpio_methods *ftr_gpio_methods;
+ /* extern struct gpio_methods *map_gpio_methods; */
+ 
+ #endif /* __AOA_H */
+--- snd-aoa.orig/core/Makefile	2006-06-01 20:29:56.252070199 +0200
++++ snd-aoa/core/Makefile	2006-06-01 20:31:03.972070199 +0200
+@@ -1,4 +1,5 @@
+ obj-$(CONFIG_SND_AOA) += snd-aoa.o
+ snd-aoa-objs := snd-aoa-core.o \
+ 		snd-aoa-alsa.o \
+-		snd-aoa-gpio-pmf.o
++		snd-aoa-gpio-pmf.o \
++		snd-aoa-gpio-feature.o
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ snd-aoa/core/snd-aoa-gpio-feature.c	2006-06-01 20:31:03.992070199 +0200
+@@ -0,0 +1,322 @@
++/*
++ * Apple Onboard Audio feature call GPIO control
++ *
++ * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPL v2, can be found in COPYING.
++ */
++
++#include <asm/pmac_feature.h>
++#include <linux/interrupt.h>
++#include "../aoa.h"
++
++static int headphone_mute_gpio;
++static int amp_mute_gpio;
++static int lineout_mute_gpio;
++static int hw_reset_gpio;
++static int lineout_detect_gpio;
++static int headphone_detect_gpio;
++static int linein_detect_gpio;
++
++static int headphone_mute_gpio_activestate;
++static int amp_mute_gpio_activestate;
++static int lineout_mute_gpio_activestate;
++static int hw_reset_gpio_activestate;
++static int lineout_detect_gpio_activestate;
++static int headphone_detect_gpio_activestate;
++static int linein_detect_gpio_activestate;
++
++static int lineout_detect_irq;
++static int linein_detect_irq;
++static int headphone_detect_irq;
++
++static void get_gpio(char *name, int *gpioptr, int *gpioactiveptr)
++{
++	struct device_node *np;
++	u32 *reg;
++
++	*gpioptr = -1;
++
++	np = of_find_node_by_name(NULL, name);
++	if (!np)
++		return;
++
++	reg = (u32 *)get_property(np, "reg", NULL);
++	if (!reg)
++		return;
++
++	*gpioptr = *reg;
++
++	/* this is a hack, usually the GPIOs 'reg' property
++	 * should have the offset based from the GPIO space
++	 * which is at 0x50, but apparently not always... */
++	if (*gpioptr < 0x50)
++		*gpioptr += 0x50;
++
++	reg = (u32 *)get_property(np, "audio-gpio-active-state", NULL);
++	if (!reg)
++		*gpioactiveptr = 1;
++	else
++		*gpioactiveptr = *reg;
++
++	printk(KERN_DEBUG "gpio %s = %d (active = %d)\n", name, *gpioptr, *gpioactiveptr);
++}
++
++static void get_irq(char *name, int *irqptr)
++{
++	struct device_node *np;
++
++	*irqptr = -1;
++	np = of_find_node_by_name(NULL, name);
++	if (!np)
++		return;
++	if (np->n_intrs != 1)
++		return;
++	*irqptr = np->intrs[0].line;
++
++	printk(KERN_DEBUG "got %s irq = %d\n", name, *irqptr);
++}
++
++#define SWITCH_GPIO(name, on)					\
++	((on)?(name##_gpio_activestate==0?0:1):(name##_gpio_activestate==0?1:0))
++
++#define FTR_GPIO(name, bit)					\
++static void ftr_gpio_set_##name(struct gpio_runtime *rt, int on)\
++{								\
++	if (unlikely(!rt)) return;				\
++								\
++	if (name##_mute_gpio < 0)				\
++		return;						\
++								\
++	pmac_call_feature(PMAC_FTR_WRITE_GPIO, NULL,		\
++			  name##_mute_gpio,			\
++			  SWITCH_GPIO(name##_mute, on));	\
++								\
++	rt->implementation_private &= ~(1<<bit);		\
++	rt->implementation_private |= (!!on << bit);		\
++}								\
++static int ftr_gpio_get_##name(struct gpio_runtime *rt)		\
++{								\
++	if (unlikely(!rt)) return 0;				\
++	return (rt->implementation_private>>bit)&1;		\
++}
++
++FTR_GPIO(headphone, 0);
++FTR_GPIO(amp, 1);
++FTR_GPIO(lineout, 2);
++
++static void ftr_gpio_set_hw_reset(struct gpio_runtime *rt, int on)
++{
++	if (unlikely(!rt)) return;
++	if (hw_reset_gpio < 0)
++		return;
++
++	pmac_call_feature(PMAC_FTR_WRITE_GPIO, NULL,
++			  hw_reset_gpio, SWITCH_GPIO(hw_reset, on));
++}
++
++static void ftr_gpio_all_amps_off(struct gpio_runtime *rt)
++{
++	int saved;
++
++	if (unlikely(!rt)) return;
++	saved = rt->implementation_private;
++	ftr_gpio_set_headphone(rt, 0);
++	ftr_gpio_set_amp(rt, 0);
++	ftr_gpio_set_lineout(rt, 0);
++	rt->implementation_private = saved;
++}
++
++static void ftr_gpio_all_amps_restore(struct gpio_runtime *rt)
++{
++	int s;
++
++	if (unlikely(!rt)) return;
++	s = rt->implementation_private;
++	ftr_gpio_set_headphone(rt, (s>>0)&1);
++	ftr_gpio_set_amp(rt, (s>>1)&1);
++	ftr_gpio_set_lineout(rt, (s>>2)&1);
++}
++
++static void ftr_handle_notify(void *data)
++{
++	struct gpio_notification *notif = data;
++
++	mutex_lock(&notif->mutex);
++	if (notif->notify)
++		notif->notify(notif->data);
++	mutex_unlock(&notif->mutex);
++}
++
++static void ftr_gpio_init(struct gpio_runtime *rt)
++{
++	get_gpio("headphone-mute", &headphone_mute_gpio,
++				   &headphone_mute_gpio_activestate);
++	get_gpio("amp-mute", &amp_mute_gpio,
++			     &amp_mute_gpio_activestate);
++	get_gpio("lineout-mute", &lineout_mute_gpio,
++				 &lineout_mute_gpio_activestate);
++	get_gpio("hw-reset", &hw_reset_gpio,
++			     &hw_reset_gpio_activestate);
++	get_gpio("headphone-detect", &headphone_detect_gpio,
++				     &headphone_detect_gpio_activestate);
++	get_gpio("lineout-detect", &lineout_detect_gpio,
++				   &lineout_detect_gpio_activestate);
++	get_gpio("linein-detect", &linein_detect_gpio,
++				  &linein_detect_gpio_activestate);
++
++	get_irq("headphone-detect", &headphone_detect_irq);
++	get_irq("lineout-detect", &lineout_detect_irq);
++	get_irq("linein-detect", &linein_detect_irq);
++
++	ftr_gpio_all_amps_off(rt);
++	rt->implementation_private = 0;
++	INIT_WORK(&rt->headphone_notify.work, ftr_handle_notify, &rt->headphone_notify);
++	INIT_WORK(&rt->line_in_notify.work, ftr_handle_notify, &rt->line_in_notify);
++	INIT_WORK(&rt->line_out_notify.work, ftr_handle_notify, &rt->line_out_notify);
++	mutex_init(&rt->headphone_notify.mutex);
++	mutex_init(&rt->line_in_notify.mutex);
++	mutex_init(&rt->line_out_notify.mutex);
++}
++
++static void ftr_gpio_exit(struct gpio_runtime *rt)
++{
++	ftr_gpio_all_amps_off(rt);
++	rt->implementation_private = 0;
++	if (rt->headphone_notify.notify)
++		free_irq(headphone_detect_irq, &rt->headphone_notify);
++	if (rt->line_in_notify.gpio_private)
++		free_irq(linein_detect_irq, &rt->line_in_notify);
++	if (rt->line_out_notify.gpio_private)
++		free_irq(lineout_detect_irq, &rt->line_out_notify);
++	cancel_delayed_work(&rt->headphone_notify.work);
++	cancel_delayed_work(&rt->line_in_notify.work);
++	cancel_delayed_work(&rt->line_out_notify.work);
++	flush_scheduled_work();
++	mutex_destroy(&rt->headphone_notify.mutex);
++	mutex_destroy(&rt->line_in_notify.mutex);
++	mutex_destroy(&rt->line_out_notify.mutex);
++}
++
++irqreturn_t ftr_handle_notify_irq(int xx, void *data, struct pt_regs *regs)
++{
++	struct gpio_notification *notif = data;
++
++	schedule_work(&notif->work);
++
++	return IRQ_HANDLED;
++}
++
++static int ftr_set_notify(struct gpio_runtime *rt,
++			  enum notify_type type,
++			  notify_func_t notify,
++			  void *data)
++{
++	struct gpio_notification *notif;
++	notify_func_t old;
++	int irq;
++	char *name;
++	int err = -EBUSY;
++
++	switch (type) {
++	case AOA_NOTIFY_HEADPHONE:
++		notif = &rt->headphone_notify;
++		name = "headphone-detect";
++		irq = headphone_detect_irq;
++		break;
++	case AOA_NOTIFY_LINE_IN:
++		notif = &rt->line_in_notify;
++		name = "linein-detect";
++		irq = linein_detect_irq;
++		break;
++	case AOA_NOTIFY_LINE_OUT:
++		notif = &rt->line_out_notify;
++		name = "lineout-detect";
++		irq = lineout_detect_irq;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	if (irq == -1)
++		return -ENODEV;
++
++	mutex_lock(&notif->mutex);
++
++	old = notif->notify;
++
++	if (!old && !notify) {
++		err = 0;
++		goto out_unlock;
++	}
++
++	if (old && notify) {
++		if (old == notify && notif->data == data)
++			err = 0;
++		goto out_unlock;
++	}
++
++	if (old && !notify) {
++		free_irq(irq, notif);
++	}
++	if (!old && notify) {
++		request_irq(irq, ftr_handle_notify_irq, 0, name, notif);
++	}
++	notif->notify = notify;
++	notif->data = data;
++
++	err = 0;
++ out_unlock:
++	mutex_unlock(&notif->mutex);
++	return err;
++}
++
++static int ftr_get_detect(struct gpio_runtime *rt,
++			  enum notify_type type)
++{
++	int gpio, ret, active;
++
++	switch (type) {
++	case AOA_NOTIFY_HEADPHONE:
++		gpio = headphone_detect_gpio;
++		active = headphone_detect_gpio_activestate;
++		break;
++	case AOA_NOTIFY_LINE_IN:
++		gpio = linein_detect_gpio;
++		active = linein_detect_gpio_activestate;
++		break;
++	case AOA_NOTIFY_LINE_OUT:
++		gpio = lineout_detect_gpio;
++		active = lineout_detect_gpio_activestate;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	if (gpio == -1)
++		return -ENODEV;
++
++	ret = pmac_call_feature(PMAC_FTR_READ_GPIO, NULL, gpio, 0);
++	if (ret < 0)
++		return ret;
++	return ((ret >> 1) & 1) == active;
++}
++
++static struct gpio_methods methods = {
++	.init			= ftr_gpio_init,
++	.exit			= ftr_gpio_exit,
++	.all_amps_off		= ftr_gpio_all_amps_off,
++	.all_amps_restore	= ftr_gpio_all_amps_restore,
++	.set_headphone		= ftr_gpio_set_headphone,
++	.set_speakers		= ftr_gpio_set_amp,
++	.set_lineout		= ftr_gpio_set_lineout,
++	.set_hw_reset		= ftr_gpio_set_hw_reset,
++	.get_headphone		= ftr_gpio_get_headphone,
++	.get_speakers		= ftr_gpio_get_amp,
++	.get_lineout		= ftr_gpio_get_lineout,
++	.set_notify		= ftr_set_notify,
++	.get_detect		= ftr_get_detect,
++};
++
++struct gpio_methods *ftr_gpio_methods = &methods;
++EXPORT_SYMBOL_GPL(ftr_gpio_methods);
