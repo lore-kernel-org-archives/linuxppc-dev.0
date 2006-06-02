@@ -1,22 +1,34 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 518F467AA0
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jun 2006 00:56:16 +1000 (EST)
-Subject: Re: [Alsa-devel] [RFC 0/8] snd-aoa: add snd-aoa
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Takashi Iwai <tiwai@suse.de>
-In-Reply-To: <s5hodxb4o00.wl%tiwai@suse.de>
-References: <20060601115844.343214000@sipsolutions.net>
-	<s5hodxb4o00.wl%tiwai@suse.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-gZCFBh2hfw8JFcxnaAzT"
-Date: Fri, 02 Jun 2006 16:56:05 +0200
-Message-Id: <1149260165.11092.32.camel@johannes.berg>
+Return-Path: <mjw@us.ibm.com>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9372567A3D
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jun 2006 01:06:25 +1000 (EST)
+Received: from e3.ny.us.ibm.com ([192.168.1.103])
+	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k52Ero2w010936
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 10:53:51 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k52ErjpS017738
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 10:53:45 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k52Erjqs097270
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 10:53:45 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k52ErjvZ024988
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 10:53:45 -0400
+Subject: [PATCH] fix make rpm for powerpc
+From: Mike Wolf <mjw@us.ibm.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 02 Jun 2006 09:53:42 -0500
+Message-Id: <1149260023.13835.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +38,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The default target for most powerpc platforms is zImage.  The
+zImage however is in arch/powerpc/boot and the mkspec script
+was set up to get the kernel from the top level of the kernel 
+tree.  This patch copies vmlinux to arch/powerpc/boot and then
+copies the kernel to the tmp directory so the rpm can be made.
 
---=-gZCFBh2hfw8JFcxnaAzT
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Mike Wolf <mjw@us.ibm.com>
 
-On Fri, 2006-06-02 at 16:43 +0200, Takashi Iwai wrote:
 
-> As already posted, there are small glitches, but it looks otherwise
-> good enough to merge.
+=============
 
-Right, I'll post updates (also have a few small changes locally)
-
-> Would you like to commit the patches as one changeset or separate?
-
-I guess it doesn't make much sense to commit them in separate changesets
-as they depend on each other, I just split it up for making it easier to
-review.
-
-> Anyway, please provide a changelog and a signed-off-by line for proper
-> commit.
-
-Obviously, but I didn't think that was necessary for review.
-
-Also, what with further development? I have this in a git tree and will
-continue using it, should I just push patches regularly?
-
-johannes
-
---=-gZCFBh2hfw8JFcxnaAzT
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIUAwUARIBRg6Vg1VMiehFYAQKRdQ/406DWeYf9ylUFoLdaR6OvLI8fmBggTsGN
-3FSsejolaAXR22HeSya/QUMmiRcAB6DZggoKp6t2qq6PQrkQiQoCsu8pvwg2faEi
-L81V49Z279xPvMnQdvUitHMZ3zajNEACVBW4RfaYN2vbbjlqjuWRDfKRQUnT+GO7
-BcNx9SOwbSVu0IMDdGCG4LsRh5k3nhTpJy57GEZU+p8qAh4Gz3e1Xd2SCwqd+JXQ
-/x3HV0BTqk/rzPdj1Dz1KwI9RUd1Pkqt5Xlizv+w99q66To1klTnv+32EPqF0gKc
-j3ghqKvHXIrrrFzoj6H4nV4uOTdUBV6TI8+cD0Jcw6Zv4VhPakfVzt+UdU+XJQze
-TmPQntBjAwpAmNeI406zDLc0cfpsF+/Vs4LaCibpk7BVEEZmrmsPVjY5HLyffy8+
-D6P0lFFP5mzAZCbtWx2c9Qb0SNitgPtBiVx2A9u1HbyIkoc6aoqdAWgi6XjTkwZd
-zF9Pb1mcKTE55ZqhwfrY1a2SvsykjijuUkYo4FeGn+DGAuVnXhOPvhYNt1WDfYcy
-zSSu37nk9b52DmGnSOWckavwMZB02XDfIvRrItlltPQ/8N12/NOT66j4Y5RY3n3T
-9fiRxaDbobz3RD8oCh5Xg+euozdORX44oO6XcgcCAysc6nOCKs+DoqU3wh6uanfA
-W1DimntB9g==
-=GxjG
------END PGP SIGNATURE-----
-
---=-gZCFBh2hfw8JFcxnaAzT--
+--- linux.orig/scripts/package/mkspec	2006-05-21 23:22:53.000000000 -0500
++++ linux/scripts/package/mkspec	2006-05-22 15:13:56.000000000 -0500
+@@ -73,8 +73,13 @@
+ echo 'cp $KBUILD_IMAGE $RPM_BUILD_ROOT'"/boot/efi/vmlinuz-$KERNELRELEASE"
+ echo 'ln -s '"efi/vmlinuz-$KERNELRELEASE" '$RPM_BUILD_ROOT'"/boot/"
+ echo "%else"
++echo "%ifarch ppc64"
++echo "cp vmlinux arch/powerpc/boot"
++echo "cp arch/powerpc/boot/"'$KBUILD_IMAGE $RPM_BUILD_ROOT'"/boot/vmlinuz-$KERNELRELEASE"
++echo "%else"
+ echo 'cp $KBUILD_IMAGE $RPM_BUILD_ROOT'"/boot/vmlinuz-$KERNELRELEASE"
+ echo "%endif"
++echo "%endif"
+ 
+ echo 'cp System.map $RPM_BUILD_ROOT'"/boot/System.map-$KERNELRELEASE"
+ 
