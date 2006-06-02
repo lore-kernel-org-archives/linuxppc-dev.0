@@ -1,23 +1,19 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw01.freescale.net (unknown [192.88.158.102])
-	by ozlabs.org (Postfix) with ESMTP id 0EA5867A77
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2006 17:29:33 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k527nocg002151
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 00:49:50 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k527TJn0012228
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 02:29:21 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673066CF5BE@zch01exm40.ap.freescale.net>
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4DB3F67A79
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2006 17:32:58 +1000 (EST)
 Subject: RE: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
 	448h pc2 (Taiga) platform
-Date: Fri, 2 Jun 2006 15:29:12 +0800 
-MIME-Version: 1.0
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673066CF5BE@zch01exm40.ap.freescale.net>
+References: <9FCDBA58F226D911B202000BDBAD4673066CF5BE@zch01exm40.ap.freescale.net>
 Content-Type: text/plain
+Date: Fri, 02 Jun 2006 17:32:44 +1000
+Message-Id: <1149233565.16202.62.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
 	Paul Mackerras <paulus@samba.org>, Alexandre.Bounine@tundra.com
@@ -31,34 +27,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> > +static void __init mpc7448_hpc2_map_io(void) {
-> > +	/* PCI IO  mapping */
-> > +	io_block_mapping(MPC7448_HPC2_PCI_IO_BASE_VIRT,
-> > +			 MPC7448_HPC2_PCI_IO_BASE_PHYS, 
-> 0x00800000, _PAGE_IO);
-> > +	/* Tsi108 CSR mapping */
-> > +	io_block_mapping(TSI108_CSR_ADDR_VIRT, TSI108_CSR_ADDR_PHYS,
-> > +			 0x100000, _PAGE_IO);
-> > +
-> > +	/* PCI Config mapping */
-> > +	io_block_mapping(MPC7448_HPC2_PCI_CFG_BASE_VIRT,
-> > +			 MPC7448_HPC2_PCI_CFG_BASE_PHYS,
-> > +			 MPC7448_HPC2_PCI_CFG_SIZE, _PAGE_IO);
-> > +
-> > +	tsi108_pci_cfg_base = MPC7448_HPC2_PCI_CFG_BASE_VIRT;
-> > +	/* NVRAM mapping */
-> > +	io_block_mapping(MPC7448_HPC2_NVRAM_BASE_ADDR,
-> > +			 MPC7448_HPC2_NVRAM_BASE_ADDR, 
-> MPC7448_HPC2_NVRAM_SIZE,
-> > +			 _PAGE_IO);
-> > +}
+> If I really need to use bat0 or bat1( I see that the general mmu use bat2 and bat3, 
+> where should I set up them?
 > 
-> io_block_mapping is bad ! see endless discussions in the 
-> archives of why ... Use ioremap.
+> For tsi108 pci configuration access, I need to map 16Mbyte 
+> physical address.  If I do not use an extra bat, I can not get the correct 
+> virtual address use ioremap.
 
-If I really need to use bat0 or bat1( I see that the general mmu use bat2 and bat3, 
-where should I set up them?
+What do you mean ? An ioremap will work, it will give you any virtual
+address, you just have to store that in a global instead of hard coding
+it. Hard coded virtual addresses are bad. Especially for things like PCI
+config space that really isn't performance sensitive.
 
-For tsi108 pci configuration access, I need to map 16Mbyte 
-physical address.  If I do not use an extra bat, I can not get the correct 
-virtual address use ioremap.
+Ben.
