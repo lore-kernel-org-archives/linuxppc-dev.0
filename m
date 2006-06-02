@@ -1,20 +1,17 @@
-Return-Path: <christoph@schroedinger.engr.sgi.com>
-Received: from omx1.americas.sgi.com (omx1-ext.sgi.com [192.48.179.11])
-	by ozlabs.org (Postfix) with ESMTP id 38BBF679E7
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jun 2006 06:06:52 +1000 (EST)
-Date: Fri, 2 Jun 2006 13:06:43 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-To: Adam Litke <agl@us.ibm.com>
-Subject: Re: [PATCH] hugetlb: powerpc: Actively close unused htlb regions on
-	vma close
-In-Reply-To: <1149257287.9693.6.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0606021301300.5492@schroedinger.engr.sgi.com>
-References: <1149257287.9693.6.camel@localhost.localdomain>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id B8A7667A41
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jun 2006 06:19:04 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Sender: Christoph Lameter <christoph@schroedinger.engr.sgi.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C68681.CA18E5D6"
+Subject: [PATCH 2.6.16.16] sata_sil24: SII3124 sata driver endian problem
+Date: Fri, 2 Jun 2006 15:19:02 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0189DE08@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B0189DDFF@ismail.innsys.innovsys.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: <jgarzik@pobox.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +21,106 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2 Jun 2006, Adam Litke wrote:
+This is a multi-part message in MIME format.
 
-> The following patch introduces a architecture-specific vm_ops.close()
-> hook.  For all architectures besides powerpc, this is a no-op.  On
-> powerpc, the low and high segments are scanned to locate empty hugetlb
-> segments which can be made available for normal mappings.  Comments?
+------_=_NextPart_001_01C68681.CA18E5D6
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-IA64 has similar issues and uses the hook suggested by Hugh. However, we 
-have a permanently reserved memory area. I am a bit surprised about the 
-need to make address space available for normal mappings. Is this for 32 
-bit powerpc support?
+> -----Original Message-----
+> From: Rune Torgersen
+> Sent: Thursday, June 01, 2006 16:10
+> To: linuxppc-dev@ozlabs.org
+> Subject: SII3124-2
+>=20
+> Has anybody been successful in getting a SII3124-2 based SATA=20
+> controller
+> to work under PPC?
+>=20
+> I have a eval board that I tried on two different freescale boards (a
+> MPC8266ADS board and a MPC8560ADS board).
+> Kernel 2.6.16.16.
+>=20
+> Here is the relevant output from the kernel.
+>=20
+> ata1: SATA max UDMA/100 cmd 0xD1010000 ctl 0x0 bmdma 0x0 irq 115
+> ata2: SATA max UDMA/100 cmd 0xD1012000 ctl 0x0 bmdma 0x0 irq 115
+> ata3: SATA max UDMA/100 cmd 0xD1014000 ctl 0x0 bmdma 0x0 irq 115
+> ata4: SATA max UDMA/100 cmd 0xD1016000 ctl 0x0 bmdma 0x0 irq 115
+> ata1: SATA link down (SStatus 0)
+> scsi0 : sata_sil24
+> ata2: SATA link up 3.0 Gbps (SStatus 123)
+> sata_sil24 ata2: SRST failed, disabling port
+> scsi1 : sata_sil24
+> ata3: SATA link down (SStatus 0)
+> scsi2 : sata_sil24
+> ata4: SATA link down (SStatus 0)
+> scsi3 : sata_sil24
+>=20
+> I added debug output to see the content of the Command Error register.
+> It is set to 26 which according to the datasheet for the 3124-1 (I am
+> running a -2), is PLDCMDERRORMASTERABORT, "A PCI Master Abort occurred
+> while the SiI3124 was fetching a Port Request Block (PRB) from host
+> memory."
 
-void hugetlb_free_pgd_range(struct mmu_gather **tlb,
-                        unsigned long addr, unsigned long end,
-                        unsigned long floor, unsigned long ceiling)
-{
-        /*
-         * This is called to free hugetlb page tables.
-         *
-         * The offset of these addresses from the base of the hugetlb
-         * region must be scaled down by HPAGE_SIZE/PAGE_SIZE so that
-         * the standard free_pgd_range will free the right page tables.
-         *
-         * If floor and ceiling are also in the hugetlb region, they
-         * must likewise be scaled down; but if outside, left unchanged.
-         */
+There is an endian issue in the sil24 driver.=20
+The follwing pathc seems to fix it for me. (it is also attached in case
+the mailer borks it for me)
 
-        addr = htlbpage_to_page(addr);
-        end  = htlbpage_to_page(end);
-        if (REGION_NUMBER(floor) == RGN_HPAGE)
-                floor = htlbpage_to_page(floor);
-        if (REGION_NUMBER(ceiling) == RGN_HPAGE)
-                ceiling = htlbpage_to_page(ceiling);
+Signed-off-by: Rune Torgersen <runet@innovsys.com>
 
-        free_pgd_range(tlb, addr, end, floor, ceiling);
-}
+Index: linux-innsys-2.6.16.16/drivers/scsi/sata_sil24.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-innsys-2.6.16.16/drivers/scsi/sata_sil24.c	(revision 101)
++++ linux-innsys-2.6.16.16/drivers/scsi/sata_sil24.c	(working copy)
+@@ -446,7 +446,7 @@
+ 	 */
+ 	msleep(10);
+=20
+-	prb->ctrl =3D PRB_CTRL_SRST;
++	prb->ctrl =3D cpu_to_le16(PRB_CTRL_SRST);
+ 	prb->fis[1] =3D 0; /* no PM yet */
+=20
+ 	writel((u32)paddr, port + PORT_CMD_ACTIVATE);
+@@ -537,9 +537,9 @@
+=20
+ 		if (qc->tf.protocol !=3D ATA_PROT_ATAPI_NODATA) {
+ 			if (qc->tf.flags & ATA_TFLAG_WRITE)
+-				prb->ctrl =3D PRB_CTRL_PACKET_WRITE;
++				prb->ctrl =3D
+cpu_to_le16(PRB_CTRL_PACKET_WRITE);
+ 			else
+-				prb->ctrl =3D PRB_CTRL_PACKET_READ;
++				prb->ctrl =3D
+cpu_to_le16(PRB_CTRL_PACKET_READ);
+ 		} else
+ 			prb->ctrl =3D 0;
+=20
+
+------_=_NextPart_001_01C68681.CA18E5D6
+Content-Type: application/octet-stream;
+	name="sil24_endian_patch"
+Content-Transfer-Encoding: base64
+Content-Description: sil24_endian_patch
+Content-Disposition: attachment;
+	filename="sil24_endian_patch"
+
+SW5kZXg6IGxpbnV4LWlubnN5cy0yLjYuMTYuMTYvZHJpdmVycy9zY3NpL3NhdGFfc2lsMjQuYwo9
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09Ci0tLSBsaW51eC1pbm5zeXMtMi42LjE2LjE2L2RyaXZlcnMvc2NzaS9zYXRhX3Np
+bDI0LmMJKHJldmlzaW9uIDEwMSkKKysrIGxpbnV4LWlubnN5cy0yLjYuMTYuMTYvZHJpdmVycy9z
+Y3NpL3NhdGFfc2lsMjQuYwkod29ya2luZyBjb3B5KQpAQCAtNDQ2LDcgKzQ0Niw3IEBACiAJICov
+CiAJbXNsZWVwKDEwKTsKIAotCXByYi0+Y3RybCA9IFBSQl9DVFJMX1NSU1Q7CisJcHJiLT5jdHJs
+ID0gY3B1X3RvX2xlMTYoUFJCX0NUUkxfU1JTVCk7CiAJcHJiLT5maXNbMV0gPSAwOyAvKiBubyBQ
+TSB5ZXQgKi8KIAogCXdyaXRlbCgodTMyKXBhZGRyLCBwb3J0ICsgUE9SVF9DTURfQUNUSVZBVEUp
+OwpAQCAtNTM3LDkgKzUzNyw5IEBACiAKIAkJaWYgKHFjLT50Zi5wcm90b2NvbCAhPSBBVEFfUFJP
+VF9BVEFQSV9OT0RBVEEpIHsKIAkJCWlmIChxYy0+dGYuZmxhZ3MgJiBBVEFfVEZMQUdfV1JJVEUp
+Ci0JCQkJcHJiLT5jdHJsID0gUFJCX0NUUkxfUEFDS0VUX1dSSVRFOworCQkJCXByYi0+Y3RybCA9
+IGNwdV90b19sZTE2KFBSQl9DVFJMX1BBQ0tFVF9XUklURSk7CiAJCQllbHNlCi0JCQkJcHJiLT5j
+dHJsID0gUFJCX0NUUkxfUEFDS0VUX1JFQUQ7CisJCQkJcHJiLT5jdHJsID0gY3B1X3RvX2xlMTYo
+UFJCX0NUUkxfUEFDS0VUX1JFQUQpOwogCQl9IGVsc2UKIAkJCXByYi0+Y3RybCA9IDA7CiAK
+
+------_=_NextPart_001_01C68681.CA18E5D6--
