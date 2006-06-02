@@ -1,19 +1,15 @@
-Return-Path: <mmporter@cox.net>
-Received: from fed1rmmtao04.cox.net (fed1rmmtao04.cox.net [68.230.241.35])
-	by ozlabs.org (Postfix) with ESMTP id BAB7067A44
+Return-Path: <almoeli@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 4023167B14
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Jun 2006 06:53:49 +1000 (EST)
-Date: Thu, 1 Jun 2006 13:53:46 -0700
-From: Matt Porter <mporter@embeddedalley.com>
-To: Chris Dumoulin <cdumoulin@ics-ltd.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: Pinned TLB entries with 2.6 linux kernel on PPC4xx
-Message-ID: <20060601135346.A23836@cox.net>
-References: <447F4021.5030109@ics-ltd.com>
-	<20060601195129.GA15262@gate.ebshome.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060601195129.GA15262@gate.ebshome.net>;
-	from ebs@ebshome.net on Thu, Jun 01, 2006 at 12:51:29PM -0700
+	Fri,  2 Jun 2006 18:56:08 +1000 (EST)
+Message-ID: <447FFD1E.6030208@gmx.de>
+Date: Fri, 02 Jun 2006 10:55:58 +0200
+From: almoeli@gmx.de
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: USB on MPC8349 with MPH controller
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +20,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 01, 2006 at 12:51:29PM -0700, Eugene Surovegin wrote:
-> On Thu, Jun 01, 2006 at 03:29:37PM -0400, Chris Dumoulin wrote:
-> > Does the idea of creating pinned TLB entries (ones that will never be 
-> > overwritten) make sense for a PPC4xx (specifically PPC405) 2.6 linux 
-> > kernel? If so, how would this be accomplished?
-> 
-> 44x kernel already pins some TLB entries, 40x may use this approach to 
-> increase performance (I use this in my internal 2.4 tree 
-> quite successfully).
-> 
-> Old 2.4 trees (linuxppc-2.4 or devel_2_4) have TLB pinning support 
-> for 40x, you can look at the implementation there.
+Hi,
 
-The partial kernel lowmem pinning for ppc405 was deprecated in favor
-of having all of kernel lowmem covered by large pages and then large
-TLBs loaded on tlb misses. This is regarding 2.6, of course.
+im using kernel 2.6.16.18 with the ehci-fsl and a patch from this list
+to get USB working.
+So SCCR and SICRL register are set correctly.
+The external connected PHY is a SMSC 3300-EZK which has an ULPI interface.
+If I configure the USB controller of the MPC8349 to use the DR
+controller, port 1 can be used with low, full and high speed devices
+without any errors.
+But if the USB controller is switched to MPH, the port 0 and port 1
+cannot read the device descriptor.
+Error message is:
 
-It can also be extended to handle arbitrary areas other than kernel
-lowmem.
+fsl-usb2-mph: devpath1 ep0in 3strikes
+fsl-usb2-mph: devpath1 ep0in 3strikes
+fsl-usb2-mph: devpath1 ep0in 3strikes
+usb1-1: device decriptor read/64, error -71
 
--Matt
+Does anyone know this problem or knows a solution?
+
+Oliver
