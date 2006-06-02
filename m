@@ -1,15 +1,16 @@
-Return-Path: <almoeli@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 4023167B14
+Return-Path: <antonio.dibacco@aruba.it>
+Received: from smtpa4.aruba.it (smtpa4.aruba.it [62.149.128.201])
+	by ozlabs.org (Postfix) with SMTP id 5776967B24
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Jun 2006 18:56:08 +1000 (EST)
-Message-ID: <447FFD1E.6030208@gmx.de>
-Date: Fri, 02 Jun 2006 10:55:58 +0200
-From: almoeli@gmx.de
-MIME-Version: 1.0
+	Fri,  2 Jun 2006 19:20:52 +1000 (EST)
+From: Antonio Di Bacco <antonio.dibacco@aruba.it>
 To: linuxppc-embedded@ozlabs.org
-Subject: USB on MPC8349 with MPH controller
-Content-Type: text/plain; charset=ISO-8859-15
+Subject: MPC880 cannot use SCC4 together with FECs
+Date: Fri, 2 Jun 2006 11:21:57 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200606021121.57625.antonio.dibacco@aruba.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,24 +21,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+This is a question for a Freescale guy or anyone that already used the MPC880.
+I'm using an MPC880, both the FECs are used and SMC1, SMC2 and SCC3 are 
+currently being used too. Now I need to use the SCC4 as an asynchronous 
+serial port (only two pins) but my hardware engineer is saying that is not 
+possible because pins are missing. I cannot believe this, they told me that 
+RXD4 could use pins: PA11 or PD8 or PE25 but actually PA11 is used by the 
+first FEC for MII1-TXD0,
+PD8 for MDC and PE25 for second FEC MII2-TXD3.
 
-im using kernel 2.6.16.18 with the ehci-fsl and a patch from this list
-to get USB working.
-So SCCR and SICRL register are set correctly.
-The external connected PHY is a SMSC 3300-EZK which has an ULPI interface.
-If I configure the USB controller of the MPC8349 to use the DR
-controller, port 1 can be used with low, full and high speed devices
-without any errors.
-But if the USB controller is switched to MPH, the port 0 and port 1
-cannot read the device descriptor.
-Error message is:
+Is this correct?
 
-fsl-usb2-mph: devpath1 ep0in 3strikes
-fsl-usb2-mph: devpath1 ep0in 3strikes
-fsl-usb2-mph: devpath1 ep0in 3strikes
-usb1-1: device decriptor read/64, error -71
-
-Does anyone know this problem or knows a solution?
-
-Oliver
+Bye,
+Antonio.
+ 
