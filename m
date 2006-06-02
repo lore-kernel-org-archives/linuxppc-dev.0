@@ -1,16 +1,19 @@
-Return-Path: <tim.martin@viasat.com>
-Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
-	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id A3A7967A58
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 181B667A45
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Jun 2006 03:33:46 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: MPC85xx PCI transfer disconnect
-Date: Fri, 2 Jun 2006 10:33:45 -0700
-Message-ID: <821B2170E9E7F04FA38DF7EC21DE48710538852E@VCAEXCH01.hq.corp.viasat.com>
-From: "Martin, Tim" <tim.martin@viasat.com>
-To: "Liu Dave-r63238" <DaveLiu@freescale.com>, <linuxppc-embedded@ozlabs.org>
+	Sat,  3 Jun 2006 06:45:43 +1000 (EST)
+To: Antonio Di Bacco <antonio.dibacco@aruba.it>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: 8xx spi completion sometime doesn't generate an interrupt 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 02 Jun 2006 17:08:48 +0200."
+	<200606021708.48814.antonio.dibacco@aruba.it>
+Date: Fri, 02 Jun 2006 22:45:40 +0200
+Sender: wd@denx.de
+Message-Id: <20060602204540.BE50D353A57@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,37 +24,61 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-More information...
+In message <200606021708.48814.antonio.dibacco@aruba.it> you wrote:
+> As far I understood the spi bus device of mpc8xx works independently from the 
+> attached device (in my case a dataflash m25pe80). Thus I don't understand why 
+> sometime when I start an SPI transfer I don't receive an interrupt for the 
+> completion of this operation. I wait 50 ms for this interrupt and sometime it 
+> doesn't happen. Anyone had a similar problem?
 
-> > Did you enable Memory Read Multiple command of your PCI master?
->=20
-> Thanks for the clue.  I'm trying to figure out how to do this.  The
-PCI
-> master is a Tundra TSI148 VME-PCI bridge.  The documentation says it
-> supports the PCI read multiple cycle, but so far I haven't found a
-> register to specifically configure it.  I'll check the C/BE lines to
-see
-> if a PCI read multiple cycle is being issued.
->=20
+Yes, this is known problem, especially if you are runnign the SPI bus
+with higher data transfer rates and/or high CPM load. Check  the  FSL
+knowledge base; it contains pretty clear statements about what SPI is
+*not*  designed  for  - especially, it was not designed for any high-
+bandwidth data transfers.
 
-After grepping through the Tundra documentation more closely, I found
-this tidbit:
+See for example  FAQ-8992:
 
-"Memory read multiple: The memory read multiple command is used when the
-requested byte count is greater than 32 bytes."
+        The physical clocking speed of the SPI can be up to 12 MHz.
+        However, it only has a 16-bit holding register. Thus, the 12
+        Mbit/sec rate can only be sustained for 16 bits. If you need
+        to transmit more than 2-bytes of data at that clocking rate,
+        you must put the data into separate BDs and set the data
+        length to 2 and set the L bit in each BD. If you are using a
+        character length of 16-bits, the maximum clocking rate is 3.1
+        Mbit/sec. If you are using a character length of 8 bits, the
+        maximum is 500 Kbits/sec. Note that 500 Kbits/sec is the
+        maximum throughput when no other peripherals (SCCs, SMCs) are
+        being used. Load on those peripherals will further reduce the
+        maximum data rate through the SPI. See the question in the
+        SCC area related to maximum data rate calculations.
+
+ 
+Ok, this was for a 25 MHz (?) 68360 so you get somewhat better  rates
+with an 8xx at higher CPU/CPM clocks - but the problem is essentially
+still present.
+
+See also FAQ-10566. And especially FAQ-10335, which comes to a point:
+
+        The SPI data rate is based upon the load of the CPM. The SPI
+        was not designed to be a high-bandwidth channel. It can run
+	    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        very quickly for bursts of up to 16-bits. But the peripheral
+        has no FIFO and low priority in the MPC860 and thus you
+        cannot burst lots of data quickly through the interface.
 
 
-> I have confirmed that 64 bytes are being transferred before the
-MPC85xx
-> disconnects the transfer.  If the PCI master initiates a 32 byte or 64
-> byte read, the MPC85xx does not disconnect the transfer.
->=20
+Been there before, and yes, we've been bitten, too. No way to fix.
 
-After scaning more logic analyzer captures, I noticed that occasionally
-the MPC85xx inserts additional wait states (by deasserting TRDY#) after
-only 32 bytes have been transferred.  So it definitely appears that (the
-way I have things configured now) there's a 20-80ns delay after 1 cache
-line is read, and the MPC85xx disconnects transfers that are larger than
-2 cache lines.
+Best regards,
 
-Tim
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+In a business, marketroids, salespukes, and  lawyers  have  different
+goals from those who actually do work and produce something. Usually,
+is  is the former who triumph over the latter, due to the simple rule
+that those who print the money make the rules.
+         -- Tom Christiansen in <5jdcls$b04$2@csnews.cs.colorado.edu>
