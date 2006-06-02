@@ -1,18 +1,15 @@
-Return-Path: <Kallol_Biswas@pmc-sierra.com>
-Received: from mother.pmc-sierra.bc.ca (mother.pmc-sierra.com [216.241.224.12])
-	by ozlabs.org (Postfix) with SMTP id DECAC67A3E
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2006 11:46:12 +1000 (EST)
-Received: from bby1exi01.pmc_nt.nt.pmc-sierra.bc.ca
-	(bby1exi01.pmc-sierra.bc.ca [216.241.231.251])
-	by ogmios.pmc-sierra.bc.ca (8.13.3/8.12.7) with ESMTP id k521kAIc002444
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Jun 2006 18:46:10 -0700
-Message-ID: <478F19F21671F04298A2116393EEC3D527404B@sjc1exm08.pmc_nt.nt.pmc-sierra.bc.ca>
-From: Kallol Biswas <Kallol_Biswas@pmc-sierra.com>
-To: External List <linuxppc-dev@ozlabs.org>
-Subject: RE: How to find out what a process has been doing on a PPC-440 sy stem
-Date: Thu, 1 Jun 2006 18:45:30 -0700 
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id DD9C067B1C
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Jun 2006 14:04:35 +1000 (EST)
+Date: Thu, 1 Jun 2006 23:04:26 -0500
+To: paulus@samba.org
+Subject: [PATCH] [2.6.18] U4 DART improvements
+Message-ID: <20060602040426.GA28528@pb15.lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +19,142 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->From ksp it is very easy to find all the register values. Just read _switch() macro.
+Hi Paul,
 
------Original Message-----
-From: Kallol Biswas 
-Sent: Thursday, June 01, 2006 6:02 PM
-To: 'External List'
-Subject: RE: How to find out what a process has been doing on a PPC-440 system
-
-There is a tsk->thread.ksp (kernel stack pointer) but tsk->thread.regs is null. Next job is to get the register values from the ksp. If anyone has done it before it will save me some time.
-
------Original Message-----
-From: Kallol Biswas 
-Sent: Thursday, June 01, 2006 5:47 PM
-To: Kallol Biswas; External List
-Subject: RE: How to find out what a process has been doing on a PPC-440 system
-
-I think reading the .*switch() macros/functions we can get the answers.
-
------Original Message-----
-From: linuxppc-dev-bounces+biswaska=pmc-sierra.com@ozlabs.org [mailto:linuxppc-dev-bounces+biswaska=pmc-sierra.com@ozlabs.org] On Behalf Of Kallol Biswas
-Sent: Thursday, June 01, 2006 5:36 PM
-To: External List
-Subject: How to find out what a process has been doing on a PPC-440 system
-
-Hi,
-   I have a list of processes running in a linux system (2.6.11 kernel).
-One of the processes invokes send() system call and does not return.
-The command "ps" shows that the process is in "RUNNING" state. With an ICE
-I could dump each process structures and all the fields, but can't find a way to get the stack trace for each process. Not sure how contexts are saved on ppc-4xx kernel. It seems that they are saved in kernel stack. How do we
-get the top of the stack from the task_struct pointers? How to find out
-where in kernel send() blocks (not sleeping/scheduled)?
-
-Kallol
+I've given this a good beating tonight, since I finally got a pci-e
+ethernet card for the new g5 to do loopback with. Profiles looked good,
+I think we're good to go for 2.6.18 with this, especially if it gets
+in early for extra testing.
 
 
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-Olof
+
+---
+
+Implement single-entry TLB invalidations in the U4 DART.
+
+Simple benchmarking with loopback flood pings of various sizes show that
+the previous flush-all code will spend ~5% of the time in flush, while
+the new selective invalidations will spend about an order of magnitude
+less in the same code path.
+
+This could possibly mean that invalidations larger than, say, 16
+entries would better be handled in bulk, but until we have a workload
+that actually shows problems or bottlenecks let's keep doing single
+invalidations at all mapping sizes.
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+
+diff --git a/arch/powerpc/sysdev/dart.h b/arch/powerpc/sysdev/dart.h
+index c2d0576..1c8817c 100644
+Index: 2.6.17-rc5-git8/arch/powerpc/sysdev/dart.h
+===================================================================
+--- 2.6.17-rc5-git8.orig/arch/powerpc/sysdev/dart.h
++++ 2.6.17-rc5-git8/arch/powerpc/sysdev/dart.h
+@@ -47,8 +47,12 @@
+ /* U4 registers */
+ #define DART_BASE_U4_BASE_MASK	0xffffff
+ #define DART_BASE_U4_BASE_SHIFT	0
+-#define DART_CNTL_U4_FLUSHTLB	0x20000000
+ #define DART_CNTL_U4_ENABLE	0x80000000
++#define DART_CNTL_U4_IONE	0x40000000
++#define DART_CNTL_U4_FLUSHTLB	0x20000000
++#define DART_CNTL_U4_IDLE	0x10000000
++#define DART_CNTL_U4_PAR_EN	0x08000000
++#define DART_CNTL_U4_IONE_MASK	0x07ffffff
+ #define DART_SIZE_U4_SIZE_MASK	0x1fff
+ #define DART_SIZE_U4_SIZE_SHIFT	0
+ 
+Index: 2.6.17-rc5-git8/arch/powerpc/sysdev/dart_iommu.c
+===================================================================
+--- 2.6.17-rc5-git8.orig/arch/powerpc/sysdev/dart_iommu.c
++++ 2.6.17-rc5-git8/arch/powerpc/sysdev/dart_iommu.c
+@@ -101,8 +101,8 @@ retry:
+ 	if (l == (1L << limit)) {
+ 		if (limit < 4) {
+ 			limit++;
+-		        reg = DART_IN(DART_CNTL);
+-		        reg &= ~inv_bit;
++			reg = DART_IN(DART_CNTL);
++			reg &= ~inv_bit;
+ 			DART_OUT(DART_CNTL, reg);
+ 			goto retry;
+ 		} else
+@@ -111,11 +111,40 @@ retry:
+ 	}
+ }
+ 
++static inline void dart_tlb_invalidate_one(unsigned long bus_rpn)
++{
++	unsigned int reg;
++	unsigned int l, limit;
++
++	reg = DART_CNTL_U4_ENABLE | DART_CNTL_U4_IONE |
++		(bus_rpn & DART_CNTL_U4_IONE_MASK);
++	DART_OUT(DART_CNTL, reg);
++	mb();
++
++	limit = 0;
++wait_more:
++	l = 0;
++	while ((DART_IN(DART_CNTL) & DART_CNTL_U4_IONE) && l < (1L << limit)) {
++		rmb();
++		l++;
++	}
++
++	if (l == (1L << limit)) {
++		if (limit < 4) {
++			limit++;
++			goto wait_more;
++		} else
++			panic("DART: TLB did not flush after waiting a long "
++			      "time. Buggy U4 ?");
++	}
++}
++
+ static void dart_flush(struct iommu_table *tbl)
+ {
+-	if (dart_dirty)
++	if (dart_dirty) {
+ 		dart_tlb_invalidate_all();
+-	dart_dirty = 0;
++		dart_dirty = 0;
++	}
+ }
+ 
+ static void dart_build(struct iommu_table *tbl, long index,
+@@ -124,6 +153,7 @@ static void dart_build(struct iommu_tabl
+ {
+ 	unsigned int *dp;
+ 	unsigned int rpn;
++	long l;
+ 
+ 	DBG("dart: build at: %lx, %lx, addr: %x\n", index, npages, uaddr);
+ 
+@@ -135,7 +165,8 @@ static void dart_build(struct iommu_tabl
+ 	/* On U3, all memory is contigous, so we can move this
+ 	 * out of the loop.
+ 	 */
+-	while (npages--) {
++	l = npages;
++	while (l--) {
+ 		rpn = virt_to_abs(uaddr) >> DART_PAGE_SHIFT;
+ 
+ 		*(dp++) = DARTMAP_VALID | (rpn & DARTMAP_RPNMASK);
+@@ -143,7 +174,14 @@ static void dart_build(struct iommu_tabl
+ 		uaddr += DART_PAGE_SIZE;
+ 	}
+ 
+-	dart_dirty = 1;
++	if (dart_is_u4) {
++		rpn = index;
++		mb(); /* make sure all updates have reached memory */
++		while (npages--)
++			dart_tlb_invalidate_one(rpn++);
++	} else {
++		dart_dirty = 1;
++	}
+ }
+ 
+ 
