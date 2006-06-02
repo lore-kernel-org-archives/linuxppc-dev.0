@@ -2,30 +2,30 @@ Return-Path: <agl@us.ibm.com>
 Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2271767A42
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jun 2006 02:47:37 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by ozlabs.org (Postfix) with ESMTP id 6579067A5B
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jun 2006 02:49:57 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
 	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k52GlYua027952
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 12:47:34 -0400
+	k52GnpLT004823
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 12:49:51 -0400
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
-	k52GlXLi108022
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 12:47:33 -0400
+	by d01relay02.pok.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id
+	k52Gnoqs141546
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 12:49:50 -0400
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
 	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k52GlXUT029784
-	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 12:47:33 -0400
+	k52Gno8W004802
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Jun 2006 12:49:50 -0400
 Subject: Re: [PATCH] hugetlb: powerpc: Actively close unused htlb regions
 	on vma close
 From: Adam Litke <agl@us.ibm.com>
-To: Dave Hansen <haveblue@us.ibm.com>
-In-Reply-To: <1149261452.16665.86.camel@localhost.localdomain>
+To: Hugh Dickins <hugh@veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0606021737310.26864@blonde.wat.veritas.com>
 References: <1149257287.9693.6.camel@localhost.localdomain>
-	<1149261452.16665.86.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606021737310.26864@blonde.wat.veritas.com>
 Content-Type: text/plain
-Date: Fri, 02 Jun 2006 11:47:11 -0500
-Message-Id: <1149266831.9693.24.camel@localhost.localdomain>
+Date: Fri, 02 Jun 2006 11:49:28 -0500
+Message-Id: <1149266969.9693.27.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
 	linux-kernel@vger.kernel.org, linux-mm@kvack.org
@@ -38,131 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-06-02 at 08:17 -0700, Dave Hansen wrote:
-> On Fri, 2006-06-02 at 09:08 -0500, Adam Litke wrote:
-> >  #define HAVE_ARCH_UNMAPPED_AREA
-> >  #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
-> > +#define ARCH_HAS_HUGETLB_CLOSE_VMA
-> >  
-> >  #endif
-> >  
-> > diff -upN reference/include/linux/hugetlb.h
-> > current/include/linux/hugetlb.h
-> > --- reference/include/linux/hugetlb.h
-> > +++ current/include/linux/hugetlb.h
-> > @@ -85,6 +85,12 @@ pte_t huge_ptep_get_and_clear(struct mm_
-> >  void hugetlb_prefault_arch_hook(struct mm_struct *mm);
-> >  #endif
-> >  
-> > +#ifndef ARCH_HAS_HUGETLB_CLOSE_VMA
-> > +#define arch_hugetlb_close_vma(x)      0
-> > +#else
-> > +void arch_hugetlb_close_vma(struct vm_area_struct *vma);
-> > +#endif
+On Fri, 2006-06-02 at 17:43 +0100, Hugh Dickins wrote:
+> On Fri, 2 Jun 2006, Adam Litke wrote:
+> > 
+> > On powerpc, each segment can contain pages of only one size.  When a
+> > hugetlb mapping is requested, a segment is located and marked for use
+> > with huge pages.  This is a uni-directional operation -- hugetlb
+> > segments are never marked for use again with normal pages.  For long
+> > running processes which make use of a combination of normal and hugetlb
+> > mappings, this behavior can unduly constrain the virtual address space.
+> > 
+> > The following patch introduces a architecture-specific vm_ops.close()
+> > hook.  For all architectures besides powerpc, this is a no-op.  On
+> > powerpc, the low and high segments are scanned to locate empty hugetlb
+> > segments which can be made available for normal mappings.  Comments?
 > 
-> Please don't do this ARCH_HAS stuff.  Use Kconfig at the very least.
-> You could also have an arch-specific htlb vma init function that could
-> be used for other things in the future. 
+> Wouldn't hugetlb_free_pgd_range be a better place to do that kind of
+> thing, all within arch/powerpc, no need for arch_hugetlb_close_vma etc?
 
-That's how the rest of the hugetlb arch hooks are implemented.
-
-> > @@ -297,7 +297,6 @@ void hugetlb_free_pgd_range(struct mmu_g
-> >         start = addr;
-> >         pgd = pgd_offset((*tlb)->mm, addr);
-> >         do {
-> > -               BUG_ON(! in_hugepage_area((*tlb)->mm->context, addr));
-> >                 next = pgd_addr_end(addr, end);
-> >                 if (pgd_none_or_clear_bad(pgd))
-> >                         continue;
-> 
-> Why does this BUG() go away?
-
-Since the area is 'closed' to huge pages before the page tables are torn
-down, it is no longer a bug to have huge ptes in a non-hugetlb region.
-
-> > +/*
-> > + * Called when tearing down a hugetlb vma.  See if we can free up any
-> > + * htlb areas so normal pages can be mapped there again.
-> > + */
-> > +void arch_hugetlb_close_vma(struct vm_area_struct *vma)
-> > +{
-> > +       struct mm_struct *mm = vma->vm_mm;
-> > +       unsigned long i;
-> > +       struct slb_flush_info fi;
-> > +       u16 inuse, hiflush, loflush;
-> > +
-> > +       if (!mm)
-> > +               return;
-> 
-> Why is this check necessary?  Do kernel threads use vmas? ;)
-
-Paranoia got the best of me here.  I have a habit of checking for null
-before dereferencing pointers.  But as you suggest, it should be safe to
-remove.
-
-> > +       inuse = mm->context.low_htlb_areas;
-> > +       for (i = 0; i < NUM_LOW_AREAS; i++)
-> > +               if (prepare_low_area_for_htlb(mm, i) == 0)
-> > +                       inuse &= ~(1 << i);
-> 
-> Why check _all_ the areas?  Shouldn't the check just be for the current
-> VMA's area?  Also, prepare_low_area_for_htlb() is a pretty silly
-> function name, especially for its use here.  Especially because you are
-> tearing down a htlb area.  low_area_contains_vma() is a bit more apt.
-
-Checking all the areas does make the code simpler (if a fair bit less
-efficient).  I suppose I could only check htlb-enabled areas as a simple
-optimization.  But checking only those regions affected by this vma
-might not be that bad.
-
-Yes I agree about the function names.  Originally I was planning to
-rename these in a different patch, but I suppose those changes can be
-folded into this already small patch.
-
-> My first thought about what this function is that it should probably be
-> asking the question, "is the VMA that I'm closing right now that last
-> one in this segment?"
-> 
-> > +       loflush = inuse ^ mm->context.low_htlb_areas;
-> > +       mm->context.low_htlb_areas = inuse;
-> 
-> This bit fiddling should really be done in some helper functions.  It
-> isn't immediately and completely obvious what this is doing.  
-> 
-> > +       inuse = mm->context.high_htlb_areas;
-> 
-> Are you re-using "inuse"?  How about a different variable name for a
-> different use?
-> 
-> > +       for (i = 0; i < NUM_HIGH_AREAS; i++)
-> > +               if (prepare_high_area_for_htlb(mm, i) == 0)
-> > +                       inuse &= ~(1 << i);
-> > +       hiflush = inuse ^ mm->context.high_htlb_areas;
-> > +       mm->context.high_htlb_areas = inuse;
-> 
-> This, combined with the other loop, completely rebuild the mm->context's
-> view into htlb state, right?  Isn't that a bit excessive?
-
-Ok.  These bit flipping operations might benefit from some abstraction
-to share more code with the 'open' cases.  Point conceded.
-
-> > +       /* the context changes must make it to memory before the flush,
-> > +        * so that further SLB misses do the right thing. */
-> > +       mb();
-> > +       fi.mm = mm;
-> > +       if ((fi.newareas = loflush))
-> > +               on_each_cpu(flush_low_segments, &fi, 0, 1);
-> > +       if ((fi.newareas = hiflush))
-> > +               on_each_cpu(flush_high_segments, &fi, 0, 1);
-> > +}
-> 
-> Yikes!  Think about a pathological program here.  It mmap()s 1 htlb
-> area, then unmaps it quickly, over and over.  What will that perform
-> like here?  
-
-Well, it will only flush segments on cpus currently executing on the
-same mm.  So said pathological program would only be slowing itself down
-(with the exception of the interrupt overhead).
+Hmm.  Interesting idea.  I'll take a look.
 
 -- 
 Adam Litke - (agl at us.ibm.com)
