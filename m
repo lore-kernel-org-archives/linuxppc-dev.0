@@ -2,23 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EDD7367A5C
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jun 2006 10:36:16 +1000 (EST)
-Subject: Re: [PATCH/2.6.17-rc4 1/10] Powerpc: Add general support for mpc7
-	448h pc2 (Taiga) platform
+	by ozlabs.org (Postfix) with ESMTP id 64AC867AC7
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jun 2006 10:40:50 +1000 (EST)
+Subject: Re: [PATCH] [2.6.18] U4 DART improvements
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <259AC268-6D75-4EEF-962E-BDBC6D76BC02@kernel.crashing.org>
-References: <9FCDBA58F226D911B202000BDBAD4673066CF774@zch01exm40.ap.freescale.net>
-	<259AC268-6D75-4EEF-962E-BDBC6D76BC02@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <61e1e9d0ada7e9648b8590cfac2b67b9@kernel.crashing.org>
+References: <20060602040426.GA28528@pb15.lixom.net>
+	<61e1e9d0ada7e9648b8590cfac2b67b9@kernel.crashing.org>
 Content-Type: text/plain
-Date: Sat, 03 Jun 2006 10:36:00 +1000
-Message-Id: <1149294960.7972.10.camel@localhost.localdomain>
+Date: Sat, 03 Jun 2006 10:40:38 +1000
+Message-Id: <1149295238.7972.12.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Alexandre.Bounine@tundra.com, Liu Dave-r63238 <DaveLiu@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-06-02 at 09:50 -0500, Kumar Gala wrote:
-> On Jun 2, 2006, at 3:20 AM, Zang Roy-r61911 wrote:
+On Fri, 2006-06-02 at 14:44 +0200, Segher Boessenkool wrote:
+> Hi Olof,
 > 
-> >
-> >> How much RAM do you have ? Maybe you are running out of
-> >> virtual space ?
-> >>
-> >> Ben.
-> >>
-> >>
-> >
-> > 512MBytes
+> Looks good.  One request:
 > 
-> If I understand things, there is a 16M region for PCI config space.   
-> You could look at just doing the ioremap for each chunk when its  
-> needed via the low level calls.
+> > +static inline void dart_tlb_invalidate_one(unsigned long bus_rpn)
+> > +{
+> > +	unsigned int reg;
+> > +	unsigned int l, limit;
+> > +
+> > +	reg = DART_CNTL_U4_ENABLE | DART_CNTL_U4_IONE |
+> > +		(bus_rpn & DART_CNTL_U4_IONE_MASK);
+> > +	DART_OUT(DART_CNTL, reg);
+> > +	mb();
+> 
+> Could you please comment the memory barriers, to say exactly _why_ a
+> certain barrier is needed?  I can't see why wmb() wouldn't work here,
+> for example (note I'm not saying it would -- I just don't see why it
+> wouldn't).
+> 
+> Same goes for every single memory barrier in the whole kernel source
+> code, but I have to start somewhere, heh.
 
-PCI config access is called with locks held, it can't ioremap.
+In fact I doubt we need a barrier at all...
 
 Ben.
