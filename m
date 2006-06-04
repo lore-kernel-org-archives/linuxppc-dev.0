@@ -1,19 +1,22 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 5C99A67A2E
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Jun 2006 13:28:21 +1000 (EST)
-Date: Fri, 2 Jun 2006 22:28:08 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [2.6.18] U4 DART improvements
-Message-ID: <20060603032808.GE28528@pb15.lixom.net>
-References: <20060602040426.GA28528@pb15.lixom.net>
-	<61e1e9d0ada7e9648b8590cfac2b67b9@kernel.crashing.org>
-	<1149295238.7972.12.camel@localhost.localdomain>
-MIME-Version: 1.0
+Return-Path: <adobriyan@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
+	by ozlabs.org (Postfix) with ESMTP id F0DB4679FB
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Jun 2006 02:17:05 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id l36so1321670nfa
+	for <linuxppc-dev@ozlabs.org>; Sun, 04 Jun 2006 09:17:04 -0700 (PDT)
+Date: Sun, 4 Jun 2006 20:11:24 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 2.6.16.16] sata_sil24: SII3124 sata driver endian problem
+Message-ID: <20060604161124.GA7587@martell.zuzino.mipt.ru>
+References: <DCEAAC0833DD314AB0B58112AD99B93B0189DDFF@ismail.innsys.innovsys.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B0189DE08@ismail.innsys.innovsys.com>
+	<20060602163035.05ab7c71.akpm@osdl.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1149295238.7972.12.camel@localhost.localdomain>
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+In-Reply-To: <20060602163035.05ab7c71.akpm@osdl.org>
+Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jun 03, 2006 at 10:40:38AM +1000, Benjamin Herrenschmidt wrote:
+On Fri, Jun 02, 2006 at 04:30:35PM -0700, Andrew Morton wrote:
+> > There is an endian issue in the sil24 driver.
+> > The follwing pathc seems to fix it for me. (it is also attached in case
+> > the mailer borks it for me)
+> >
+> > Signed-off-by: Rune Torgersen <runet@innovsys.com>
+> >
+> > Index: linux-innsys-2.6.16.16/drivers/scsi/sata_sil24.c
+> > ===================================================================
+> > --- linux-innsys-2.6.16.16/drivers/scsi/sata_sil24.c	(revision 101)
+> > +++ linux-innsys-2.6.16.16/drivers/scsi/sata_sil24.c	(working copy)
+> > @@ -446,7 +446,7 @@
+> >  	 */
+> >  	msleep(10);
+> >
+> > -	prb->ctrl = PRB_CTRL_SRST;
+> > +	prb->ctrl = cpu_to_le16(PRB_CTRL_SRST);
+> >  	prb->fis[1] = 0; /* no PM yet */
+> >
+> >  	writel((u32)paddr, port + PORT_CMD_ACTIVATE);
+> > @@ -537,9 +537,9 @@
+> >
+> >  		if (qc->tf.protocol != ATA_PROT_ATAPI_NODATA) {
+> >  			if (qc->tf.flags & ATA_TFLAG_WRITE)
+> > -				prb->ctrl = PRB_CTRL_PACKET_WRITE;
+> > +				prb->ctrl =
+> > cpu_to_le16(PRB_CTRL_PACKET_WRITE);
+> >  			else
+> > -				prb->ctrl = PRB_CTRL_PACKET_READ;
+> > +				prb->ctrl =
+> > cpu_to_le16(PRB_CTRL_PACKET_READ);
 
-> In fact I doubt we need a barrier at all...
+Are there some other fields that should be marked?
 
-Yeah, I'm not sure what I was thinking. There's need for a barrier
-before the invalidation to make sure that a stale entry doesn't get
-re-entered into the TLB, and it's already done before the call. I have
-no good explanation for why I added that one.
+[PATCH] sata_sil24: endian annotations
 
-I'll respin, test and repost the patch tomorrow.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
+ drivers/scsi/sata_sil24.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
--Olof
+--- a/drivers/scsi/sata_sil24.c
++++ b/drivers/scsi/sata_sil24.c
+@@ -37,7 +37,7 @@
+  * Port request block (PRB) 32 bytes
+  */
+ struct sil24_prb {
+-	u16	ctrl;
++	__le16	ctrl;
+ 	u16	prot;
+ 	u32	rx_cnt;
+ 	u8	fis[6 * 4];
+@@ -47,9 +47,9 @@ struct sil24_prb {
+  * Scatter gather entry (SGE) 16 bytes
+  */
+ struct sil24_sge {
+-	u64	addr;
+-	u32	cnt;
+-	u32	flags;
++	__le64	addr;
++	__le32	cnt;
++	__le32	flags;
+ };
+ 
+ /*
