@@ -1,17 +1,17 @@
 Return-Path: <Kallol_Biswas@pmc-sierra.com>
-Received: from mother.pmc-sierra.bc.ca (mother.pmc-sierra.com [216.241.224.12])
-	by ozlabs.org (Postfix) with SMTP id DD7D667A5B
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jun 2006 08:08:51 +1000 (EST)
+Received: from father.pmc-sierra.bc.ca (father.pmc-sierra.com [216.241.224.13])
+	by ozlabs.org (Postfix) with SMTP id 93E3067A3F
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jun 2006 09:05:18 +1000 (EST)
 Received: from bby1exi01.pmc_nt.nt.pmc-sierra.bc.ca
 	(bby1exi01.pmc-sierra.bc.ca [216.241.231.251])
 	by ogyruan.pmc-sierra.bc.ca (8.13.3/8.12.7) with ESMTP id
-	k55M8mgS005158
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jun 2006 15:08:49 -0700
-Message-ID: <478F19F21671F04298A2116393EEC3D5274202@sjc1exm08.pmc_nt.nt.pmc-sierra.bc.ca>
+	k55N5GoJ024810
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Jun 2006 16:05:16 -0700
+Message-ID: <478F19F21671F04298A2116393EEC3D527421D@sjc1exm08.pmc_nt.nt.pmc-sierra.bc.ca>
 From: Kallol Biswas <Kallol_Biswas@pmc-sierra.com>
 To: linuxppc-dev@ozlabs.org
-Subject: FW: process starvation with 2.6 scheduler
-Date: Mon, 5 Jun 2006 15:08:47 -0700 
+Subject: RE: process starvation with 2.6 scheduler
+Date: Mon, 5 Jun 2006 16:05:10 -0700 
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,6 +22,21 @@ List-Post: <mailto:linuxppc-dev@ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+
+Some more information:
+
+For the active process:
+            Last_ran 0x190458787
+            Timestamp: 0x190458787
+For the starved process:
+            Last_ran: 0x14dc18cfd
+            Timestamp: 0x14dc18cfd
+
+-----Original Message-----
+From: Kallol Biswas 
+Sent: Monday, June 05, 2006 3:09 PM
+To: 'linuxppc-dev@ozlabs.org'
+Subject: FW: process starvation with 2.6 scheduler
 
 
 
@@ -68,7 +83,7 @@ For Active  Process:
   Dynamic priority: 118
   Static priority: 120
   Preempt_count: 0x20100
-  Flags = 0
+  Thread_info->flags = 0
   State = 0 (TASK_RUNNING)
 
 For Starved Process:
@@ -77,7 +92,7 @@ For Starved Process:
   Dynamic priority: 120
   Static priority: 120
   Preempt_count: 0x10000000 (PREEMPT_ACTIVE is set)
-  Flags = 0 
+  Thread_info->flags = 0 
   State = 0 (TASK_RUNNING)
 
 
