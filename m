@@ -1,23 +1,19 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 9564B67A44
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (unknown [192.88.158.102])
+	by ozlabs.org (Postfix) with ESMTP id 9B17267A60
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Jun 2006 11:39:45 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k561oEtN001369
-	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Jun 2006 18:50:15 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k561deTp018653
-	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Jun 2006 20:39:42 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673026FD940@zch01exm40.ap.freescale.net>
-From: Liu Dave-r63238 <DaveLiu@freescale.com>
-To: "'Naru Sundar'" <nsundar@fulcrummicro.com>, linuxppc-embedded@ozlabs.org
-Subject: RE: ppc85xx DMA
-Date: Tue, 6 Jun 2006 09:39:29 +0800 
-MIME-Version: 1.0
-Content-Type: text/plain
+	Tue,  6 Jun 2006 12:39:50 +1000 (EST)
+In-Reply-To: <200606032255.05997.antonio.dibacco@aruba.it>
+References: <c91756f0606030438y62772d89ib43f613cd5373739@mail.gmail.com>
+	<200606032255.05997.antonio.dibacco@aruba.it>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <75593F2C-863B-4B19-8DD3-D3AD41180947@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: Making Two ethernet interfaces up in Linux
+Date: Mon, 5 Jun 2006 10:12:22 -0500
+To: Antonio Di Bacco <antonio.dibacco@aruba.it>
+Cc: Shantanu Nalage <shantanu.nalage@gmail.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,24 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Dear sirs,
-> 
-> I am trying to add a DMA transfer component to my driver on 
-> linux 2.6 on a ppc 8541.  Following the steps listed in the 
-> reference manual, I write the SAR, SATR, DAR, DATR and BCR 
-> registers before cycling the bit in the MR register to start 
-> the transfer.
-> 
-What is the DMA transfer mode? Is direct or chaining mode?
 
-> The SR register though indicates a transfer error as soon as 
-> I write the DAR register.  Clearly I've gotten the mapping 
-> wrong. I know what the address I am trying to write to in 
-> kernel space is, what is unclear is what address the DAR 
-> register is expecting.
-> 
+On Jun 3, 2006, at 15:55, Antonio Di Bacco wrote:
 
-Did you ioremap the DMA register space?
-The DAR register need the physical address
+>>          We are trying to port Linux on Xilinx Board XUPV2Pro  
+>> which is
+>> similar in most aspects to the Xilinx ML300 board. Linux is up and
+>> running for the original board i.e. having only one ethrnet  
+>> interface.
+>> Now since we wanted to have the board working as router, we  
+>> designed a
+>> daughter board with two ethernet phy interfaces. The MACs required  
+>> for
+>> that are instantiated in Xilinx ....
+>
+> You have already the driver for the first MAC, then you should  
+> start from that
+> modifying the init procedure for example and all the others. Your  
+> driver
+> should initialize both the MACs and also create two devices calling
+> init_etherdev tow times. If you post your driver I can suggest what to
+> change. It is not so difficult.
 
-Dave
+
+Generally, it's better to modify the driver so it can be used to  
+control any number of instances of the same ethernet hardware.  Then  
+instantiate 2 (or how many you like) instances of the device, using  
+the device layer (typically done in the board-specific code).
