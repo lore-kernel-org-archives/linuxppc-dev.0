@@ -1,19 +1,23 @@
-Return-Path: <antonio.dibacco@aruba.it>
-Received: from smtpa4.aruba.it (smtpa4.aruba.it [62.149.128.201])
-	by ozlabs.org (Postfix) with SMTP id E4CF667A2E
+Return-Path: <DaveLiu@freescale.com>
+Received: from az33egw01.freescale.net (unknown [192.88.158.102])
+	by ozlabs.org (Postfix) with ESMTP id 730A6679E0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  4 Jun 2006 06:53:59 +1000 (EST)
-From: Antonio Di Bacco <antonio.dibacco@aruba.it>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Making Two ethernet interfaces up in Linux
-Date: Sat, 3 Jun 2006 22:55:05 +0200
-References: <c91756f0606030438y62772d89ib43f613cd5373739@mail.gmail.com>
-In-Reply-To: <c91756f0606030438y62772d89ib43f613cd5373739@mail.gmail.com>
+	Tue,  6 Jun 2006 07:47:43 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k55AsRov011539
+	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Jun 2006 03:54:27 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k55AXmbg016830
+	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Jun 2006 05:33:50 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD4673026FD93F@zch01exm40.ap.freescale.net>
+From: Liu Dave-r63238 <DaveLiu@freescale.com>
+To: "'Martin, Tim'" <tim.martin@viasat.com>, linuxppc-embedded@ozlabs.org
+Subject: RE: MPC85xx PCI transfer disconnect
+Date: Mon, 5 Jun 2006 18:33:45 +0800 
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200606032255.05997.antonio.dibacco@aruba.it>
-Cc: Shantanu Nalage <shantanu.nalage@gmail.com>
+Content-Type: text/plain
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,18 +28,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->          We are trying to port Linux on Xilinx Board XUPV2Pro which is
-> similar in most aspects to the Xilinx ML300 board. Linux is up and
-> running for the original board i.e. having only one ethrnet interface.
-> Now since we wanted to have the board working as router, we designed a
-> daughter board with two ethernet phy interfaces. The MACs required for
-> that are instantiated in Xilinx ....
+ 
+> After scaning more logic analyzer captures, I noticed that 
+> occasionally the MPC85xx inserts additional wait states (by 
+> deasserting TRDY#) after only 32 bytes have been transferred. 
+>  So it definitely appears that (the way I have things 
+> configured now) there's a 20-80ns delay after 1 cache line is 
+> read, and the MPC85xx disconnects transfers that are larger 
+> than 2 cache lines.
+> 
 
-You have already the driver for the first MAC, then you should start from that 
-modifying the init procedure for example and all the others. Your driver 
-should initialize both the MACs and also create two devices calling 
-init_etherdev tow times. If you post your driver I can suggest what to 
-change. It is not so difficult. 
+There is one description about MRM cmd in the MPC85xx user manual.
+[Memory read multiple] 
+Similar to the memory-read command, but also causes a
+prefetch of the next cache line (32 bytes).
 
-Bye,
-Antonio.
+How many masters in your PCI system? 
+Maybe, you can tune the master latency timer of Tsi148 to get more bandwidth.
+The latecy timer is locate at configuration space of your master.
+
+Dave
