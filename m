@@ -1,18 +1,19 @@
-Return-Path: <Clive.Jenkins@xerox.com>
-Received: from wvmler4.mail.xerox.com (wvmler4.mail.xerox.com [13.8.138.219])
+Return-Path: <hpa@zytor.com>
+Received: from terminus.zytor.com (terminus.zytor.com [192.83.249.54])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wvmler4.mail.xerox.com",
-	Issuer "wvmler4.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4400B67B31
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 03:51:41 +1000 (EST)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7F9D667B31
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 04:22:03 +1000 (EST)
+Message-ID: <4485C7A7.8050507@zytor.com>
+Date: Tue, 06 Jun 2006 11:21:27 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Intercept System call using Kernel  module is 2.6 kernel
-Date: Tue, 6 Jun 2006 18:14:19 +0100
-Message-ID: <35786B99AB3FDC45A821572461791973AC873D@gbrwgceumf01.eu.xerox.net>
-From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-To: "Meswani, Mitesh" <mmeswani@utep.edu>, <linuxppc-dev@ozlabs.org>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: Base address of executables - weirdness?
+References: <4485A279.4050403@zytor.com> <20060606173343.GE9294@austin.ibm.com>
+In-Reply-To: <20060606173343.GE9294@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,35 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->        x=3Dmitesh_func();=20
->        printf("mitesh_func returned %d\n",x);
+Linas Vepstas wrote:
+> On Tue, Jun 06, 2006 at 08:42:49AM -0700, H. Peter Anvin wrote:
+>> I'm trying to track down an odd issue with klibc on ppc32.
+>>
+>> Until recently, binaries linked with ld defaulted to a base address of 
+>> 0x10000000+SIZEOF_HEADERS.  However, recently I've gotten a couple of 
+>> reports -- and I've been able to confirm this on my FC5 system -- that 
+>> some versions of ld links at 0x01800000+SIZEOF_HEADERS.  Needless to 
+>> say, this is more than a bit confusing, *especially* since "ld -verbose" 
+>> still reports:
+>>
+>>      PROVIDE (__executable_start = 0x10000000); . = 0x10000000 + 
+>> SIZEOF_HEADERS;
+>>
+>> ... at the top of the linker script.
+>>
+>> I'm rather baffled.  Has anyone else seen this, and/or have any other 
+>> explanation?
+> 
+> Googling "0x01800000 linux ppc" brings up some interesting but old hits.
+> 
+> However, I swear I saw someone suggest a patch last week that changed
+> 0x10000000 to 0x01800000 somewhere, (vmlinux.lds ??) as a proposed cure
+> for a bug. Sorry, I deleted it.
+> 
 
-The first thing would be to change your user-space program
-to print the error number from errno after your "system call".
+Well, it's worse than I previously surmised.  I can't seem to find any combination of 
+options which work on both affected and unaffected binutils.  This is a real mess.
 
-        x=3Dmitesh_func();=20
-        printf("mitesh_func returned %d, errno=3D%d\n",x,errno);
-
-Or you can use perror() -- look it up.
-
-Clive
- =20
-
-
-4) I verify from the system logs that when I insmod the kernel module I
-get all the print statements. I verified from the logs  that the address
-of the sys_call_table is correctly passed and from /proc/kallsysms I can
-see that my function mitesh_func has been defined and has the address as
-indicated in the logs.=20
-
-The problem is that when I execute my user app I expect to see two
-things:=20
- a) I should see a message in the log "Executing mitesh_func..." and=20
- b) A return value of 2=20
-
-However I get an error value -1 returned.=20
-
-Any help and ideas are highly appreciated. =20
-
-Thank you in advance,=20
-Mitesh=20
+	-hpa
