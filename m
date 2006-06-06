@@ -1,19 +1,25 @@
-Return-Path: <salvatore.cusenza@gmail.com>
-Received: from hu-out-0102.google.com (hu-out-0102.google.com [72.14.214.197])
-	by ozlabs.org (Postfix) with ESMTP id A8CD9679FD
+Return-Path: <hbruegge@rockwellcollins.com>
+Received: from fw01.rockwellcollins.com (fw01.rockwellcollins.com
+	[205.175.225.1]) by ozlabs.org (Postfix) with ESMTP id 191C667A65
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Jun 2006 18:19:45 +1000 (EST)
-Received: by hu-out-0102.google.com with SMTP id 28so655784hub
+	Tue,  6 Jun 2006 18:38:50 +1000 (EST)
+From: <hbruegge@rockwellcollins.com>
+Received: from vs02.rockwellcollins.com (localhost [127.0.0.1])
+	by localhost.rockwellcollins.com (Postfix) with ESMTP id 14D9531884
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 06 Jun 2006 01:19:42 -0700 (PDT)
-Message-ID: <9252a64b0606060113v696adbb7ib43ad95836c0724b@mail.gmail.com>
-Date: Tue, 6 Jun 2006 10:13:38 +0200
-From: "salvatore cusenza" <salvatore.cusenza@gmail.com>
+	Tue,  6 Jun 2006 03:08:55 -0500 (CDT)
+Received: from crnotes2.rockwellcollins.com (crnotes2.rockwellcollins.com
+	[131.198.64.109])
+	by vs02.rockwellcollins.com (Postfix) with ESMTP id EBD0C3187B
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  6 Jun 2006 03:08:54 -0500 (CDT)
 To: linuxppc-embedded@ozlabs.org
-Subject: eth0: tx queue full
+Subject: Using RS232 Terminal as input device
 MIME-Version: 1.0
+Message-ID: <OF62BECBA0.4F3D8E04-ONC1257185.00247B21-C1257185.002CC13C@rockwellcollins.com>
+Date: Tue, 6 Jun 2006 10:08:51 +0200
 Content-Type: multipart/alternative;
-	boundary="----=_Part_10134_21755587.1149581618295"
+	boundary="=_alternative 002CC12AC1257185_="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,58 +30,85 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_10134_21755587.1149581618295
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Dies ist eine mehrteilige Nachricht im MIME-Format.
+--=_alternative 002CC12AC1257185_=
+Content-Type: text/plain; charset="US-ASCII"
 
-At runtime during the usual life of my board (MPC852 and linux-2.4.20 Denk's
-distribution)
- I have experienced the following crash:
+Hi all
 
 
-eth0: tx queue full!.
-eth0: tx queue full!.
-eth0: tx queue full!.
+I am using the kernel (2.6.15) in an ppc-based embedded system through a 
+serial console on ttyS0 with no problems.
 
-Oops: kernel access of bad area, sig: 11
-NIP: C000D440 XER: 00000000 LR: C00BB040 SP: C0C9BC10 REGS: c0c9bb60 TRAP:
-0300    Tainted: P
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 00001F9D, DSISR: 000000E4
-TASK = c0c9a000[145] 'L5421' Last syscall: 4
-last math 00000000 last altivec 00000000
-GPR00: 00000000 C0C9BC10 C0C9A000 C0F56D70 00001F99 0000003C C0F56D6C
-00000007
-GPR08: 00000001 0000003C 00000000 C0F56DB0 C0D83C3C 10071D28 00000000
-C3120000
-GPR16: C311CB04 C311C8D8 C311C754 C0170000 C3120000 C311CB30 00000001
-C0169DA0
-GPR24: F0000E00 00001F9D C0F58400 0000003C 00000040 C2080100 C0F58200
-C0F501B0
-Call backtrace:
-C00BAF8C C00BABC8 C0005848 C3119448 C31194C0 C31194F8 C00066F8
-C0011A48 C00BA8FC C00CADD8 C00C3F00 C0016B50 C00AFE4C C00B4B94
-C00B5EF4 C003571C C000457C 0FFD5E4C 0FEDB8DC 0FEDB284 1003B5B8
-1003D558 1003A88C 0FED34A4 0FED32D0 0FFCFEE4 0FD5F590
-Kernel panic: Aiee, killing interrupt handler!
-In interrupt handler - not syncing
- <0>Rebooting in 180 seconds..
+Now I attached a graphic card to the system, which is correctly 
+recognized and initialised by the Kernel. If I add "console=tty0 
+console=ttyS0,57600" to the bootargs, I have the boot messages of the 
+kernel on the screen and a login on the ttyS0.
+
+What I now want to do is to disable the serial console and use the 
+graphic card as output and the raw character data (ASCII) coming in from 
+the terminal connected to the rs232 as input.
+
+I have a login on the screen, if I delete the line console=ttyS0,57600 
+from the bootargs, but unfortunately no input if a key is pressed on the 
+terminal keyboard.
 
 
-Could you suggest me something to investigate?
+So my problem and question is, apart from not totally understanding the 
+input device system of 2.6.x ;-)
+Has anyone ever done that?
+Is it just a kernel configuration problem? If so what modules have to be 
+compiled in?
+Are there any good documentaion about the new input device system ?
 
-------=_Part_10134_21755587.1149581618295
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Basically I am totally confused ;-), so any ideas are appreciated.
 
-<div>At runtime during the usual life of my board (MPC852 and linux-2.4.20 Denk's distribution)</div>
-<div>&nbsp;I have experienced the following crash:<br><br><br>eth0: tx queue full!.</div>
-<div>eth0: tx queue full!.<br>eth0: tx queue full!.<br><br>Oops: kernel access of bad area, sig: 11<br>NIP: C000D440 XER: 00000000 LR: C00BB040 SP: C0C9BC10 REGS: c0c9bb60 TRAP: 0300&nbsp;&nbsp;&nbsp; Tainted: P<br>MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-<br>DAR: 00001F9D, DSISR: 000000E4<br>TASK = c0c9a000[145] 'L5421' Last syscall: 4<br>last math 00000000 last altivec 00000000<br>GPR00: 00000000 C0C9BC10 C0C9A000 C0F56D70 00001F99 0000003C C0F56D6C 00000007<br>GPR08: 00000001 0000003C 00000000 C0F56DB0 C0D83C3C 10071D28 00000000 C3120000
-<br>GPR16: C311CB04 C311C8D8 C311C754 C0170000 C3120000 C311CB30 00000001 C0169DA0<br>GPR24: F0000E00 00001F9D C0F58400 0000003C 00000040 C2080100 C0F58200 C0F501B0<br>Call backtrace:<br>C00BAF8C C00BABC8 C0005848 C3119448 C31194C0 C31194F8 C00066F8
-<br>C0011A48 C00BA8FC C00CADD8 C00C3F00 C0016B50 C00AFE4C C00B4B94<br>C00B5EF4 C003571C C000457C 0FFD5E4C 0FEDB8DC 0FEDB284 1003B5B8<br>1003D558 1003A88C 0FED34A4 0FED32D0 0FFCFEE4 0FD5F590<br>Kernel panic: Aiee, killing interrupt handler!
-<br>In interrupt handler - not syncing<br>&nbsp;&lt;0&gt;Rebooting in 180 seconds..<br><br><br>Could you suggest me something to investigate?<br>&nbsp;</div>
+Cheers
 
-------=_Part_10134_21755587.1149581618295--
+Harald
+
+--=_alternative 002CC12AC1257185_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2><tt>Hi all<br>
+<br>
+<br>
+I am using the kernel (2.6.15) in an ppc-based embedded system through
+a <br>
+serial console on ttyS0 with no problems.<br>
+<br>
+Now I attached a graphic card to the system, which is correctly <br>
+recognized and initialised by the Kernel. If I add &quot;console=tty0 <br>
+console=ttyS0,57600&quot; to the bootargs, I have the boot messages of
+the <br>
+kernel on the screen and a login on the ttyS0.<br>
+<br>
+What I now want to do is to disable the serial console and use the <br>
+graphic card as output and the raw character data (ASCII) coming in from
+<br>
+the terminal connected to the rs232 as input.<br>
+<br>
+I have a login on the screen, if I delete the line console=ttyS0,57600
+<br>
+from the bootargs, but unfortunately no input if a key is pressed on the
+<br>
+terminal keyboard.<br>
+<br>
+</tt></font>
+<br><font size=2><tt>So my problem and question is, apart from not totally
+understanding the input device system of 2.6.x ;-)</tt></font>
+<br><font size=2><tt>Has anyone ever done that?</tt></font>
+<br><font size=2><tt>Is it just a kernel configuration problem? If so what
+modules have to be compiled in?</tt></font>
+<br><font size=2><tt>Are there any good documentaion about the new input
+device system ?</tt></font>
+<br>
+<br><font size=2><tt>Basically I am totally confused ;-), so any ideas
+are appreciated.<br>
+<br>
+Cheers<br>
+<br>
+Harald<br>
+</tt></font>
+--=_alternative 002CC12AC1257185_=--
