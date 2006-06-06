@@ -1,25 +1,24 @@
-Return-Path: <hbruegge@rockwellcollins.com>
-Received: from fw01.rockwellcollins.com (fw01.rockwellcollins.com
-	[205.175.225.1]) by ozlabs.org (Postfix) with ESMTP id 191C667A65
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 79CBE67B6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Jun 2006 18:38:50 +1000 (EST)
-From: <hbruegge@rockwellcollins.com>
-Received: from vs02.rockwellcollins.com (localhost [127.0.0.1])
-	by localhost.rockwellcollins.com (Postfix) with ESMTP id 14D9531884
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Jun 2006 03:08:55 -0500 (CDT)
-Received: from crnotes2.rockwellcollins.com (crnotes2.rockwellcollins.com
-	[131.198.64.109])
-	by vs02.rockwellcollins.com (Postfix) with ESMTP id EBD0C3187B
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Jun 2006 03:08:54 -0500 (CDT)
-To: linuxppc-embedded@ozlabs.org
-Subject: Using RS232 Terminal as input device
+	Tue,  6 Jun 2006 20:06:00 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k56AGTlI003590
+	for <linuxppc-embedded@ozlabs.org>; Tue, 6 Jun 2006 03:16:29 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k56A5uSU003303
+	for <linuxppc-embedded@ozlabs.org>; Tue, 6 Jun 2006 05:05:57 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD46730814A3@zch01exm40.ap.freescale.net>
+From: Li Yang-r58472 <LeoLi@freescale.com>
+To: "'salvatore cusenza'" <salvatore.cusenza@gmail.com>,
+	linuxppc-embedded@ozlabs.org
+Subject: RE: eth0: tx queue full
+Date: Tue, 6 Jun 2006 18:05:48 +0800 
 MIME-Version: 1.0
-Message-ID: <OF62BECBA0.4F3D8E04-ONC1257185.00247B21-C1257185.002CC13C@rockwellcollins.com>
-Date: Tue, 6 Jun 2006 10:08:51 +0200
-Content-Type: multipart/alternative;
-	boundary="=_alternative 002CC12AC1257185_="
+Content-Type: text/plain
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,85 +29,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dies ist eine mehrteilige Nachricht im MIME-Format.
---=_alternative 002CC12AC1257185_=
-Content-Type: text/plain; charset="US-ASCII"
+Can you repeat the problem?  Kernel 2.4.20 is considerable old even for 
+2.4 series.  Could you try to replace the fec driver from latest 2.4 kernel?
 
-Hi all
+Best Regards,
+Leo
 
-
-I am using the kernel (2.6.15) in an ppc-based embedded system through a 
-serial console on ttyS0 with no problems.
-
-Now I attached a graphic card to the system, which is correctly 
-recognized and initialised by the Kernel. If I add "console=tty0 
-console=ttyS0,57600" to the bootargs, I have the boot messages of the 
-kernel on the screen and a login on the ttyS0.
-
-What I now want to do is to disable the serial console and use the 
-graphic card as output and the raw character data (ASCII) coming in from 
-the terminal connected to the rs232 as input.
-
-I have a login on the screen, if I delete the line console=ttyS0,57600 
-from the bootargs, but unfortunately no input if a key is pressed on the 
-terminal keyboard.
-
-
-So my problem and question is, apart from not totally understanding the 
-input device system of 2.6.x ;-)
-Has anyone ever done that?
-Is it just a kernel configuration problem? If so what modules have to be 
-compiled in?
-Are there any good documentaion about the new input device system ?
-
-Basically I am totally confused ;-), so any ideas are appreciated.
-
-Cheers
-
-Harald
-
---=_alternative 002CC12AC1257185_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><font size=2><tt>Hi all<br>
-<br>
-<br>
-I am using the kernel (2.6.15) in an ppc-based embedded system through
-a <br>
-serial console on ttyS0 with no problems.<br>
-<br>
-Now I attached a graphic card to the system, which is correctly <br>
-recognized and initialised by the Kernel. If I add &quot;console=tty0 <br>
-console=ttyS0,57600&quot; to the bootargs, I have the boot messages of
-the <br>
-kernel on the screen and a login on the ttyS0.<br>
-<br>
-What I now want to do is to disable the serial console and use the <br>
-graphic card as output and the raw character data (ASCII) coming in from
-<br>
-the terminal connected to the rs232 as input.<br>
-<br>
-I have a login on the screen, if I delete the line console=ttyS0,57600
-<br>
-from the bootargs, but unfortunately no input if a key is pressed on the
-<br>
-terminal keyboard.<br>
-<br>
-</tt></font>
-<br><font size=2><tt>So my problem and question is, apart from not totally
-understanding the input device system of 2.6.x ;-)</tt></font>
-<br><font size=2><tt>Has anyone ever done that?</tt></font>
-<br><font size=2><tt>Is it just a kernel configuration problem? If so what
-modules have to be compiled in?</tt></font>
-<br><font size=2><tt>Are there any good documentaion about the new input
-device system ?</tt></font>
-<br>
-<br><font size=2><tt>Basically I am totally confused ;-), so any ideas
-are appreciated.<br>
-<br>
-Cheers<br>
-<br>
-Harald<br>
-</tt></font>
---=_alternative 002CC12AC1257185_=--
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org] On Behalf
+> Of salvatore cusenza
+> Sent: Tuesday, June 06, 2006 4:14 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: eth0: tx queue full
+> 
+> At runtime during the usual life of my board (MPC852 and linux-2.4.20 Denk's
+> distribution)
+>  I have experienced the following crash:
+> 
+> 
+> eth0: tx queue full!.
+> eth0: tx queue full!.
+> eth0: tx queue full!.
+> 
+> Oops: kernel access of bad area, sig: 11
+> NIP: C000D440 XER: 00000000 LR: C00BB040 SP: C0C9BC10 REGS: c0c9bb60 TRAP: 0300
+> Tainted: P
+> MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> DAR: 00001F9D, DSISR: 000000E4
+> TASK = c0c9a000[145] 'L5421' Last syscall: 4
+> last math 00000000 last altivec 00000000
+> GPR00: 00000000 C0C9BC10 C0C9A000 C0F56D70 00001F99 0000003C C0F56D6C 00000007
+> GPR08: 00000001 0000003C 00000000 C0F56DB0 C0D83C3C 10071D28 00000000 C3120000
+> GPR16: C311CB04 C311C8D8 C311C754 C0170000 C3120000 C311CB30 00000001 C0169DA0
+> GPR24: F0000E00 00001F9D C0F58400 0000003C 00000040 C2080100 C0F58200 C0F501B0
+> Call backtrace:
+> C00BAF8C C00BABC8 C0005848 C3119448 C31194C0 C31194F8 C00066F8
+> C0011A48 C00BA8FC C00CADD8 C00C3F00 C0016B50 C00AFE4C C00B4B94
+> C00B5EF4 C003571C C000457C 0FFD5E4C 0FEDB8DC 0FEDB284 1003B5B8
+> 1003D558 1003A88C 0FED34A4 0FED32D0 0FFCFEE4 0FD5F590
+> Kernel panic: Aiee, killing interrupt handler!
+> In interrupt handler - not syncing
+>  <0>Rebooting in 180 seconds..
+> 
+> 
+> Could you suggest me something to investigate?
+> 
