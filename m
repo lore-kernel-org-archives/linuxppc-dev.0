@@ -1,23 +1,22 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from az33egw01.freescale.net (unknown [192.88.158.102])
-	by ozlabs.org (Postfix) with ESMTP id 730A6679E0
+Return-Path: <nsundar@fulcrummicro.com>
+Received: from smtp.fulcrummicro.com (smtp.fulcrummicro.com [66.59.247.212])
+	by ozlabs.org (Postfix) with ESMTP id 0113C679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Jun 2006 07:47:43 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k55AsRov011539
-	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Jun 2006 03:54:27 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k55AXmbg016830
-	for <linuxppc-embedded@ozlabs.org>; Mon, 5 Jun 2006 05:33:50 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673026FD93F@zch01exm40.ap.freescale.net>
-From: Liu Dave-r63238 <DaveLiu@freescale.com>
-To: "'Martin, Tim'" <tim.martin@viasat.com>, linuxppc-embedded@ozlabs.org
-Subject: RE: MPC85xx PCI transfer disconnect
-Date: Mon, 5 Jun 2006 18:33:45 +0800 
-MIME-Version: 1.0
-Content-Type: text/plain
+	Tue,  6 Jun 2006 10:55:39 +1000 (EST)
+Received: from lab3.internal.avlsi.com (lab3.internal.avlsi.com [10.0.0.79])
+	by smtp.fulcrummicro.com (Postfix) with ESMTP id 5F38E2A2B2E
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon,  5 Jun 2006 17:55:36 -0700 (PDT)
+Received: (from nsundar@localhost)
+	by lab3.internal.avlsi.com (8.13.6/8.12.8/Submit) id k560tZJN021139
+	for linuxppc-embedded@ozlabs.org; Mon, 5 Jun 2006 17:55:35 -0700
+Date: Mon, 5 Jun 2006 17:55:35 -0700
+From: Naru Sundar <nsundar@fulcrummicro.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: ppc85xx DMA
+Message-ID: <20060606005535.GB18144@fulcrummicro.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,23 +27,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- 
-> After scaning more logic analyzer captures, I noticed that 
-> occasionally the MPC85xx inserts additional wait states (by 
-> deasserting TRDY#) after only 32 bytes have been transferred. 
->  So it definitely appears that (the way I have things 
-> configured now) there's a 20-80ns delay after 1 cache line is 
-> read, and the MPC85xx disconnects transfers that are larger 
-> than 2 cache lines.
-> 
+Dear sirs,
 
-There is one description about MRM cmd in the MPC85xx user manual.
-[Memory read multiple] 
-Similar to the memory-read command, but also causes a
-prefetch of the next cache line (32 bytes).
+I am trying to add a DMA transfer component to my driver on linux 2.6 on a
+ppc 8541.  Following the steps listed in the reference manual, I write the
+SAR, SATR, DAR, DATR and BCR registers before cycling the bit in the MR
+register to start the transfer.
 
-How many masters in your PCI system? 
-Maybe, you can tune the master latency timer of Tsi148 to get more bandwidth.
-The latecy timer is locate at configuration space of your master.
+The SR register though indicates a transfer error as soon as I write the
+DAR register.  Clearly I've gotten the mapping wrong. I know what the
+address I am trying to write to in kernel space is, what is unclear is
+what address the DAR register is expecting.
 
-Dave
+Any help would be appreciated
+
+-naru
