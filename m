@@ -1,19 +1,21 @@
-Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [192.83.249.54])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2B0FB67B47
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 07:22:07 +1000 (EST)
-Message-ID: <4485F1F5.7070506@zytor.com>
-Date: Tue, 06 Jun 2006 14:21:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: Base address of executables - weirdness?
-References: <4485A279.4050403@zytor.com> <jeirne56kn.fsf@sykes.suse.de>
-In-Reply-To: <jeirne56kn.fsf@sykes.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 0DAA767A6F
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 09:09:13 +1000 (EST)
+Subject: RE: [PATCH/2.6.17-rc4 4/10]Powerpc:  Add tsi108 pic support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexandre Bounine <Alexandre.Bounine@tundra.com>
+In-Reply-To: <8A1F97E8A7ACE847B1DB69DFDCBC6E807D634E@caribou.pc.tundra.com>
+References: <8A1F97E8A7ACE847B1DB69DFDCBC6E807D634E@caribou.pc.tundra.com>
+Content-Type: text/plain
+Date: Wed, 07 Jun 2006 09:08:58 +1000
+Message-Id: <1149635338.27572.76.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
-> 
->> Until recently, binaries linked with ld defaulted to a base address of 
->> 0x10000000+SIZEOF_HEADERS.  However, recently I've gotten a couple of 
->> reports -- and I've been able to confirm this on my FC5 system -- that 
->> some versions of ld links at 0x01800000+SIZEOF_HEADERS.
-> 
-> You are probably using the wrong linker emulation.  There are three
-> emulations enabled when building binutils for ppc-linux, but only the
-> elf32ppclinux emulation it the right one that uses 0x10000000 for the base
-> address.
-> 
+On Tue, 2006-06-06 at 10:45 -0400, Alexandre Bounine wrote:
 
-Hm.  Well, it's using the default one, but perhaps I should try to specify an explicit -m 
-option.  Sure enough, that did the trick.
+> We have a level-signalled irq from the cascaded PCI interrupt controller. If I do EOI at 
+> this time, level request will not have chance to be cleared (unless all PCI interrupts have
+> an SA_INTERRUPT flag) and result in recurring interrupts. 
 
-THANKS!
+Hrm... Ok, when the cascade is a 8259 or an MPIC, we don't have that
+problem despite the output also being level... I think that's because
+the cascade handler itself will mask the cascade interrupt (on MPIC,
+reading the irq does an ack which will mask that priority level). If
+your cascaded controller doesn't act this way, you may need something a
+bit different in your cascade handler rather than changing mpic.
 
-	-hpa
+However, I wouldn't bother too much. As I said, this is all changing a
+lot at the moment as I'm porting powerpc to Ingo Molnar and Thomas
+Gleixner's new "genirq" layer. Cascade handling will be different and
+taken out of MPIC, so you'll be able to implement it the way your want
+(with much greater control on what happens) without changing the MPIC
+driver.
+
+I'll have patches posted on the list in a few days hopefully.
+
+> I chose to have an individual flag instead of checking model ID to avoid multiple checks within ISR
+> (in case if we have more that one mpic version requiring this option). I also expect that it may be
+> useful for any external level-signalling cascades connected to MPIC.      
+
+As I said above, I think it can just go away with the port to genirq.
+
+> Motivation is the same as above - I just do not want to have multiple ID checks here. I agree that it is
+> driven by mpic type (model ID) only. I can remove this one if you do not expect any
+> new "broken" MPICs on horizon.  
+
+Well, I do expect broken ones but not with that specific issue :)
+
+Cheers,
+Ben.
