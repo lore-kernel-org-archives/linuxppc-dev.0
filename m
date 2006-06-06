@@ -1,38 +1,14 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1C67A67A6C
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 05:47:36 +1000 (EST)
-Received: from e3.ny.us.ibm.com (e3.pok.ibm.com [9.56.232.143])
-	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k56HXtBd008087
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jun 2006 13:33:56 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k56HXopC032458
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jun 2006 13:33:50 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k56HXo1f249906
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jun 2006 13:33:50 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k56HXoTQ012538
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Jun 2006 13:33:50 -0400
-Date: Tue, 6 Jun 2006 12:33:43 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Base address of executables - weirdness?
-Message-ID: <20060606173343.GE9294@austin.ibm.com>
-References: <4485A279.4050403@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4485A279.4050403@zytor.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tobias.netzel@t-online.de>
+Received: from mailout02.sul.t-online.com (mailout02.sul.t-online.com
+	[194.25.134.17]) by ozlabs.org (Postfix) with ESMTP id 44B7067B43
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 06:34:26 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+Message-Id: <3426ac53fe29bd5e395310d5d49a0d80@t-online.de>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+To: linuxppc-dev@ozlabs.org
+From: Tobias Netzel <tobias.netzel@t-online.de>
+Subject: 2.4 kernel scheduling (?) problems
+Date: Tue, 6 Jun 2006 20:29:35 +0200
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,28 +18,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 06, 2006 at 08:42:49AM -0700, H. Peter Anvin wrote:
-> I'm trying to track down an odd issue with klibc on ppc32.
-> 
-> Until recently, binaries linked with ld defaulted to a base address of 
-> 0x10000000+SIZEOF_HEADERS.  However, recently I've gotten a couple of 
-> reports -- and I've been able to confirm this on my FC5 system -- that 
-> some versions of ld links at 0x01800000+SIZEOF_HEADERS.  Needless to 
-> say, this is more than a bit confusing, *especially* since "ld -verbose" 
-> still reports:
-> 
->      PROVIDE (__executable_start = 0x10000000); . = 0x10000000 + 
-> SIZEOF_HEADERS;
-> 
-> ... at the top of the linker script.
-> 
-> I'm rather baffled.  Has anyone else seen this, and/or have any other 
-> explanation?
+Hello all,
 
-Googling "0x01800000 linux ppc" brings up some interesting but old hits.
+I'm new to this list - hoping you will help me with the 2.4 kernel, 
+although it's old now.
+I'm improving hardware support for the NuBus PMacs. The NuBus Pmacs are 
+68k Macs with a PPC CPU and a different bus bridge/memory controller.
+The NuBus PMac port is something like a hack to the PPC architecture 
+using some things from the PMac platform.
+An open firmware device tree is emulated as far as needed. We use the 
+same PMU driver (although I hacked it a bit because we directly route 
+the PMU interrupts), ADB and RTC driver and the same functions to 
+calibrate the decrementer using the VIA timer.
 
-However, I swear I saw someone suggest a patch last week that changed
-0x10000000 to 0x01800000 somewhere, (vmlinux.lds ??) as a proposed cure
-for a bug. Sorry, I deleted it.
+The problem I got is that for example during SCSI transfers (I'm using 
+an old scanner) neither the X screen gets updated nor does the system 
+respond to any interrupts but the NMI.
+Debugging messages through the serial port are still sent. So I have to 
+wait until the whole transfer is done. The kernel only receives 
+interrupts after a SCSI command has finished and before a new one is 
+sent. The data from the scanner is transfered in blocks of 32 kB.
+The behaviour is similar when I do an performance test using "dd" or 
+"hdparm" on the IDE CD-ROM drive. Burning CDs using that IDE drive 
+works but causes the same problem as when scanning with the SCSI 
+scanner.
+With the IDE hard disk I don't get this problem.
+When I run "top" during those problem transfers the CPU utilization by 
+the system is higher than 95% ("top" hardly gets updated) - I doubt 
+that this is necessary as on the NuBus PMacs the PPC CPUs (and 
+especially the 217 MHz G3 with 512 kB L2 cache I'm using) should be 
+idle most of the time waiting for the slow 33 MHz system bus.
+The strange thing is that the CPU misses all interrupts (except the 
+NMI) although interrupts aren't turned off in the CPU (otherwise the 
+PMU would shut us down and the NMI wouldn't work). I also tried to use 
+a timer to poll the interrupt controllers but the interrupt handling 
+routines also only find one pending interrupt in 10 seconds even when I 
+constantly move the mouse and hit keys.
+At first I thought this was something caused by the hardware but in 
+MacOS 9 the SCSI driver doesn't block anything.
 
---linas 
+But is it possible that this is because of something like scheduling 
+problems of the kernel?
+And if so might updating to the 2.6 kernel fix that issue?
+
+Tobias
