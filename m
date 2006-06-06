@@ -2,16 +2,16 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 00DF367B43
+	by ozlabs.org (Postfix) with ESMTP id 057A467B46
 	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 21:38:49 +1000 (EST)
-Subject: [snd-aoa] looking for layout-id 41
+Subject: [snd-aoa] more layout IDs
 From: Johannes Berg <johannes@sipsolutions.net>
 To: debian-powerpc <debian-powerpc@lists.debian.org>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-FGHE9lrEHF/Gs4NXkQjf"
-Date: Tue, 06 Jun 2006 20:15:58 +0200
-Message-Id: <1149617758.32002.24.camel@johannes>
+	boundary="=-TGIp/IFy61jJCF63aV9U"
+Date: Tue, 06 Jun 2006 22:19:12 +0200
+Message-Id: <1149625152.32002.38.camel@johannes>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,51 +24,53 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-FGHE9lrEHF/Gs4NXkQjf
+--=-TGIp/IFy61jJCF63aV9U
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hey,
+I have tentatively added support for these layout-IDs to snd-aoa:
 
-I found all the other layout IDs (that is to say those that snd-powermac
-supports) and except the powermac7,2/3 they are supported and have been
-tested but this one is still missing. If you have such a machine, please
-try out snd-aoa and report if it works, I think it should. Also, please
-tell me if you have any platform-* properties in your device tree
-(contact me privately if you need help with that).
+36	tas
+47 48	onyx/topaz
+49 50	onyx/topaz
+56 57	onyx/topaz
+62	onyx/topaz on a single bus
+66 67	onyx/topaz
+76	tas/topaz on a single bus
+90	tas
+94	onyx
+96	onyx
+98	toonie
+100	onyx/topaz on a single bus
 
-Again, here's how to get your layout-id:
+If you have one of those, please test :) I based the info on the
+Info.plist from Apple (thanks to xsltproc & python), so this should be
+all possible layout IDs that Apple ever had.
 
-find /proc/device-tree -name layout-id | xargs hexdump -e '1/4 "%d\n"'
-
-(in decimal, if nothing is printed out you don't have one, snd-aoa
-doesn't handle that yet)
-
-Even if no one shows up with this machine I'll probably go ahead with
-the snd-powermac deprecation for layout-id based machines as soon as we
-have the pm72/3 thing figured out.
+Again, to find your layout-id:
+  find /proc/device-tree -name layout-id | xargs hexdump -e '1/4 "%d\n"'
 
 johannes
 
---=-FGHE9lrEHF/Gs4NXkQjf
+--=-TGIp/IFy61jJCF63aV9U
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARIXGW6Vg1VMiehFYAQIEWBAAp5X0gv6TwzJniMeTD9/FOb4bKYbIpTCJ
-6P4dmbq6hvLVkPzzgxHXs89MKDCc2at++mxOrjbiVL2+mq4CtbFpZQ7GQ3QtP8Cw
-Lh6k/b46lHX7uO4hV1HXLu3fkq9coAbVUmhMp9Dk5XX8Pc6Z112kdDAC1lk8iQys
-sXUF3e7uE2eKlymxx4VDq3CsGAPsRGGNHaWXZVZDigY/CrQdAFVhmPiRJ9qihKLa
-9iq3gd4SUgJ8yFQFREU7SES8buujNStSJ62imeXQHPGLCQ8+qz6Y/s0qU98CVnoI
-3mfcZK5temSu1lzAuZp/2QPbBPGbmSkOKhsi2a/vtP4jOMTWacLNhM/5YUkPLjhn
-StYIkSPrsM/5kOSXU9sWf1wvN+XfRhD2U9Jfloo2Ueo9ZhzNIuG2/PFw5xGishhx
-xRYYIHfqchafkG5TEsqnryK41gIsesqYuWQ10XyBzvEjNROzM+TnyEQVHt6+5YT7
-TxJdXmnWe71h0+OQuaAWWHUUztWP/CVE1axr7pPW13lMzC5ADfNf/uK6oDQGbqQS
-YjOFRV8DD4qp4SdJOTovZko8rgsIIAf/6hI2HRMSY2qWZEDBqkuRvv+Tl+ccZDUe
-KJgXZaAqX8gGPdBd5OY84MpfRYy5789ItRIBf+t85/VpjRZd7uG3zMXVWcZnWywY
-Bg7BKeYFDPo=
-=WwUy
+iQIVAwUARIXjPqVg1VMiehFYAQIQHxAAqr1E4JvL58w4Pn8/F4h6Q8giGIEmES5B
+YHS71WxDeuL6rjk4XuaZRz4uz8zim0JaOB00eJZgG5y4HcfzMgZ83FRex7TujlCT
+tyEd3xum+hTpoQu/D4gFzjDS6LissZatq9SpkdAPGoKMzcg6RtRlq8iXNGrcbNyS
+i+xobKW+f7ACnhqlEjU7sCIuNcWMYFD7S/Qjafd3jEnU7xkbo2vQncf608t+CXVj
+Osj9xIo1ZbwNHmPmLbsxZsz+4Nid2orIQ3HlsjO+pRpJZ/8feNqHFHPsEle+LCH3
+r3Bgbk6J80wYXIY3Uz8U3QYAblt9BVDezq/LM6BoTe6OHs55hmkTSr7V2ETtZ+hV
+/O7ZhtLQViG6NG7q4Hv0ynM5HD7j1EPSr4AWx1A7SFDfkVCq/37RSqAg1w6pFbmz
+mQNiIQ251GC4pMUrvxyLO3d2tJsOcM/e/BGIJVPN3S0YO7rds5FWBOulr8xgEFXg
+2ipqvBP3avRNZ5blwzYDcDVNGGoHdduJlfhdW9rfA8Roqux3MCvLJjCuVdQ49aDR
+nEU2OxNZlCDtGjoiQi6mHx5/nBsInNtvr9XV+VvWbhPk8tYBhncyokXL+uJBqllE
+4MTcvYObx/coXNe81Lg6IBNpcxxpBZHJxv1bMQB99lNxfVB155aXemo0OB2IlLvb
+++wLax6jhb0=
+=IgM0
 -----END PGP SIGNATURE-----
 
---=-FGHE9lrEHF/Gs4NXkQjf--
+--=-TGIp/IFy61jJCF63aV9U--
