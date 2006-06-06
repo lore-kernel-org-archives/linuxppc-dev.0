@@ -1,19 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 2F49567B2D
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 03:48:47 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Intercept System call using Kernel  module is 2.6 kernel
-Date: Tue, 6 Jun 2006 19:48:56 +0200
-References: <C26C730943E01145B4F89E37FE0A022002BBC7A2@itdsrvmail02.utep.edu>
-	<C26C730943E01145B4F89E37FE0A022002BBC7A6@itdsrvmail02.utep.edu>
-In-Reply-To: <C26C730943E01145B4F89E37FE0A022002BBC7A6@itdsrvmail02.utep.edu>
+Return-Path: <Clive.Jenkins@xerox.com>
+Received: from wvmler4.mail.xerox.com (wvmler4.mail.xerox.com [13.8.138.219])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wvmler4.mail.xerox.com",
+	Issuer "wvmler4.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 4400B67B31
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 03:51:41 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200606061948.56627.arnd@arndb.de>
-Cc: "Meswani, Mitesh" <mmeswani@utep.edu>
+	charset="us-ascii"
+Subject: RE: Intercept System call using Kernel  module is 2.6 kernel
+Date: Tue, 6 Jun 2006 18:14:19 +0100
+Message-ID: <35786B99AB3FDC45A821572461791973AC873D@gbrwgceumf01.eu.xerox.net>
+From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+To: "Meswani, Mitesh" <mmeswani@utep.edu>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Am Tuesday 06 June 2006 18:25 schrieb Meswani, Mitesh:
-> Any help and ideas are highly appreciated. =C2=A0
+>        x=3Dmitesh_func();=20
+>        printf("mitesh_func returned %d\n",x);
 
-Tell your professor that the task you were given is=20
+The first thing would be to change your user-space program
+to print the error number from errno after your "system call".
 
-a) pointless, as you wouldn't use this kind of thing to
-   solve an actual problem other than bad OS design
-   homework.
-b) not a correct approach regarding maintainability, since
-   you can't tell for an arbitrary kernel version if
-   the particular syscall you're abusing is now used for
-   something else.
+        x=3Dmitesh_func();=20
+        printf("mitesh_func returned %d, errno=3D%d\n",x,errno);
 
-As a replacement task, choose one or more of the following:
+Or you can use perror() -- look it up.
 
-=2D implement a syscall by _recompiling_ the kernel and call
-  that from your user application.
-=2D write a misc device driver that exposes a device to
-  do ioctl() on.
-=2D create a file in each of sysfs, procfs and debugfs to
-  do your operation on, using read() and write().
-=2D use a netlink socket for a two way communication with
-  a kernel module.
+Clive
+ =20
 
-	Arnd <><
+
+4) I verify from the system logs that when I insmod the kernel module I
+get all the print statements. I verified from the logs  that the address
+of the sys_call_table is correctly passed and from /proc/kallsysms I can
+see that my function mitesh_func has been defined and has the address as
+indicated in the logs.=20
+
+The problem is that when I execute my user app I expect to see two
+things:=20
+ a) I should see a message in the log "Executing mitesh_func..." and=20
+ b) A return value of 2=20
+
+However I get an error value -1 returned.=20
+
+Any help and ideas are highly appreciated. =20
+
+Thank you in advance,=20
+Mitesh=20
