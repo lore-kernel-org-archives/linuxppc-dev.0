@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 12D7D67A5C
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jun 2006 20:17:13 +1000 (EST)
-Subject: RE: [PATCH/2.6.17-rc4 4/10]Powerpc:  Add tsi108 pic support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673067CD108@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD4673067CD108@zch01exm40.ap.freescale.net>
-Content-Type: text/plain
-Date: Tue, 06 Jun 2006 20:17:03 +1000
-Message-Id: <1149589023.27572.52.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id AAC2867A60
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Jun 2006 21:17:39 +1000 (EST)
+Subject: Re: [Alsa-devel] [RFC 4/8] snd-aoa: add i2sbus
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Takashi Iwai <tiwai@suse.de>
+In-Reply-To: <s5hr7274ox2.wl%tiwai@suse.de>
+References: <20060601115844.343214000@sipsolutions.net>
+	<20060601115847.420788000@sipsolutions.net>
+	<s5hr7274ox2.wl%tiwai@suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-KjFbz8B5FOc++tHUqs9w"
+Date: Tue, 06 Jun 2006 13:17:27 +0200
+Message-Id: <1149592647.5928.49.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: Alexandre Bounine <Alexandre.Bounine@tundra.com>,
-	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>,
-	Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,110 +27,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-06-06 at 17:43 +0800, Zang Roy-r61911 wrote:
 
-> Update Tsi108 implementation of MPIC.
-> Any comment? 
-> 
-> Integrate Tundra Semiconductor tsi108 host bridge interrupt controller 
-> to mpic arch.
+--=-KjFbz8B5FOc++tHUqs9w
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Looks much better :) Still a few things... 
+On Fri, 2006-06-02 at 16:23 +0200, Takashi Iwai wrote:
+> > +	if (I2S_CLOCK_SPEED_18MHz % rate =3D=3D 0) {
+> > +		if ((I2S_CLOCK_SPEED_18MHz / rate) % mclk =3D=3D 0) {
+>=20
+> Equivalent with "I2S_CLOCK_SPEED_18MHZ % (rate * mclk) =3D=3D 0" ?
 
-> +	mpic = mpic_alloc(mpic_paddr,
-> +			MPIC_PRIMARY | MPIC_BIG_ENDIAN | MPIC_WANTS_RESET |
-> +			MPIC_SPV_EOI | MPIC_CASC_NOEOI | 
-> +			MPIC_MOD_ID(MPIC_ID_TSI108),
-> +			0, /* num_sources used */
-> +			TSI108_IRQ_BASE,
-> +			0, /* num_sources used */
-> +			NR_IRQS - 4 /* XXXX */,
-> +			mpc7448_hpc2_pic_initsenses,
-> +			sizeof(mpc7448_hpc2_pic_initsenses), "Tsi108_PIC");
+Yeah, I guess, never really thought about that, just wrote it down the
+way I thought to do it :) That said, I think it's more readable if
+written that way, do you want me to change it regardless?
 
-That's a hell lot of new flags... I'm not sure we need that many or a
-single TSI108 one that encloses all the new ones. Also, I'm not sure we
-need that model ID encoding thing. Let's do things simple, besides, I
-don't want to encourage HW folks into doing the same kind of contraption
-in the future (btw, tell the TSI folks for me that they had a BAD BAD
-BAD idea to muck around with the base design that way, especially
-changing the register map in incompatible ways for no good reason).
+> > +	list_for_each_entry(cii, &sdev->codec_list, list) {
+> > +		if (cii->codec->open) {
+> > +			err =3D cii->codec->open(cii, pi->substream);
+> > +			if (err) {
+> > +				result =3D err;
+> > +				goto out_unlock;
+>=20
+> What happens if the first code is opened but fail the secondary?
+> No need to close the first?
 
-> +	/* Configure MPIC outputs to CPU0 */
-> +	tsi108_write_reg(TSI108_MPIC_OFFSET + 0x30c, 0);
->  }
+Yes, that needs to be done, good catch.
 
-It doesn't use the standard multiple processor outputs mecanism of
-MPIC ?
- 
-> +static struct mpic_info mpic_infos[] = {
-> +	[0] = {	/* Original OpenPIC compatible MPIC */
-> +	.greg_base	= MPIC_GREG_BASE,
-> +	.greg_frr0	= MPIC_GREG_FEATURE_0,
-> +	.greg_config0	= MPIC_GREG_GLOBAL_CONF_0,
-> +	.greg_vendor_id	= MPIC_GREG_VENDOR_ID,
-> +	.greg_ipi_vp0	= MPIC_GREG_IPI_VECTOR_PRI_0,
-> +	.greg_ipi_stride	= MPIC_GREG_IPI_STRIDE,
-> +	.greg_spurious	= MPIC_GREG_SPURIOUS,
-> +	.greg_tfrr	= MPIC_GREG_TIMER_FREQ,
-> +
+> > +	/* well, we really should support scatter/gather DMA */
+> > +	/* FIXME FIXME FIXME: If this fails, we BUG() when the alsa layer
+> > +	 * later tries to allocate memory. Apparently we should be setting
+> > +	 * some device pointer for that ...
+> > +	 */
+> > +	snd_pcm_lib_preallocate_pages_for_all(
+> > +		dev->pcm, SNDRV_DMA_TYPE_DEV,
+> > +		snd_dma_pci_data(macio_get_pci_dev(i2sdev->macio)),
+> > +		64 * 1024, 64 * 1024);
+>=20
+> Is the comment true?  Yes, you have to set the device pointer via
+> snd_pcm_lib_preallocate*().  But it must be OK even if preallocate
+> fails.
 
-   .../...
+Hah, I don't know actually, I didn't know you set the pointer using this
+function, when I wrote the comment I just had forgotten the preallocate
+call!
+Does that mean that _preallocate_pages_for_all() has the side effect of
+setting the pointer? If so, imho that's pretty bad.
 
-It's a bit sad to have to go all the way to doing such tables, but I
-suspect it's probably the best way to handle it at this point. Send more
-nastygrams to the HW folks for me.
+> > +static irqreturn_t i2sbus_bus_intr(int irq, void *devid, struct pt_reg=
+s *regs)
+> > +{
+> > +	struct i2sbus_dev *dev =3D devid;
+> > +	u32 intreg;
+> > +
+> > +	spin_lock(&dev->low_lock);
+> > +	intreg =3D in_le32(&dev->intfregs->intr_ctl);
+> > +
+> > +	printk(KERN_INFO "i2sbus: interrupt, intr reg is 0x%x!\n", intreg);
+>=20
+> Should this be really always printed?
 
->  	mpic->num_sources = 0; /* so far */
->  	mpic->senses = senses;
->  	mpic->senses_count = senses_count;
-> +	mpic->hw_set = &mpic_infos[MPIC_GET_MOD_ID(flags)];
+no, gone.
 
-Well... the model ID thing might not be that a bad idea in the end :) I
-need to think about it. I might have to deal with yet another MPIC that
-has another regiser map (yeah yeah, TSI aren't the only ones to not get
-it)... 
+johannes
 
-  .../...
+--=-KjFbz8B5FOc++tHUqs9w
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> @@ -963,7 +1043,7 @@ int mpic_get_one_irq(struct mpic *mpic, 
->  {
->  	u32 irq;
->  
-> -	irq = mpic_cpu_read(MPIC_CPU_INTACK) & MPIC_VECPRI_VECTOR_MASK;
-> +	irq = mpic_cpu_read(mpic->hw_set->cpu_intack) & mpic->hw_set->irq_vpr_vector;
->  #ifdef DEBUG_LOW
->  	DBG("%s: get_one_irq(): %d\n", mpic->name, irq);
->  #endif
-> @@ -972,11 +1052,18 @@ #ifdef DEBUG_LOW
->  		DBG("%s: cascading ...\n", mpic->name);
->  #endif
->  		irq = mpic->cascade(regs, mpic->cascade_data);
-> -		mpic_eoi(mpic);
-> +#ifdef DEBUG_LOW
-> +		DBG("%s: cascaded irq: %d\n", mpic->name, irq);
-> +#endif
-> +		if (!(mpic->flags & MPIC_CASC_NOEOI))
-> +			mpic_eoi(mpic);
->  		return irq;
->  	}
+-----BEGIN PGP SIGNATURE-----
 
-Can you tell me why you need the above ? (Why you aren't EOI'ing the
-cascade ?) Note that the cascade handling is going away from mpic anyway
-with the port to genirq that I'll publish later this week for 2.6.18 and
-it will almost be handled as a normal interrupt...
+iQIVAwUARIVkRaVg1VMiehFYAQIOKw//enAomSW1wrwpBmtdgsg9CG57c8oPv/2Z
+pfjWwSOGYE905+A2K0oRsJ5rWfTuKY9LYy2hIaT+RqT9rw/lwlzGfe4XUy18A1hH
+PaLlfic4BaD5NAEYO4NS1L4RzJBvX5FkYOCopZAV8mP/MK9i+Ir9//kPsFfETXp1
+ynH50ykjAwgbTwb5xgHvzId9gN9AfOGobQBRSaEoGDcm3bERwaRIZkShFyAUv8Z0
+pNzJfGP+qVV9Y6yUB56X+kf6yWkc2sRphfKXCoTXzl68PXmolMioEzh1/psKUS1a
+rFCUe6r7zXp0US7jLrODJfTqcTJpGnJDDdBinraHBFLP+ctyG5ZaRxRdwnTqUJjd
+Azp4i0TXzjPn+a7Rsn+qA/+tCwBmjZESORdN3EMqbGb72Ibah+9zScl+ca4C7oA7
+ZvG+/gRRHMZTSj7w0/roAc7hbiduqlpwRWBGlyVId2mcMqpcUw7eHrCMlGl6baYh
+igs1r61as0KXGKM6gYNzLAfyM03O9wtO2bA4px+rpRRNPO+IYc595Dx4W1XXjLIC
++CyNSU8spfjZldSnp6v5Q9u4W1UcD33S60eFmtkEwQwQKr+qLkDCmnlqDHWbaZu8
+MU2cyNlJI7yvYqB6brXI6e/OhAOLnHO4QC0W11CFlYHNpCEIif0JA+W7beDQ3Oyf
+ZnBX+/+k7tY=
+=hGoV
+-----END PGP SIGNATURE-----
 
-> -	if (unlikely(irq == MPIC_VEC_SPURRIOUS))
-> +	if (unlikely(irq == MPIC_VEC_SPURRIOUS)) {
-> +		if (mpic->flags & MPIC_SPV_EOI)
-> +			mpic_eoi(mpic);
->  		return -1;
-> +	}
-
-I think the above thing could just test the model ID. It's unlikely that
-another implementation need the same "feature", so just test the model
-ID rather than adding a flag and if we ever have another model with the
-same "feature", then we'll go back to adding a flag :)
-
-Cheers,
-Ben.
+--=-KjFbz8B5FOc++tHUqs9w--
