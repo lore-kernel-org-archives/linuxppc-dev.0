@@ -1,29 +1,29 @@
 Return-Path: <moilanen@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 507E467B7F
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 07:23:32 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k57LNTfh011110
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A792E67B81
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 07:34:01 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k57LXw6W017353
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 17:23:29 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k57LNSSd290216
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 17:33:58 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k57LXsnZ134426
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:23:28 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k57LNS0X009459
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:23:28 -0600
-Date: Wed, 7 Jun 2006 16:15:10 -0500
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:33:54 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k57LXw9c022201
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:33:58 -0600
+Date: Wed, 7 Jun 2006 16:25:40 -0500
 From: Jake Moilanen <moilanen@austin.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3] MSI power abstraction
-Message-Id: <20060607161510.00ecc442.moilanen@austin.ibm.com>
+Subject: [PATCH 3/3] RTAS MSI
+Message-Id: <20060607162540.f53bc270.moilanen@austin.ibm.com>
 In-Reply-To: <20060607160212.1203d9ea.moilanen@austin.ibm.com>
 References: <20060607160212.1203d9ea.moilanen@austin.ibm.com>
 Mime-Version: 1.0
@@ -38,75 +38,233 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Instead of trying to make PPC64 MSI fit in a Intel-centric MSI layer, a
-simple short-term solution is to hook the pci_{en/dis}able_msi() calls
-and make a machdep call.
+This provides support for the pSeries RTAS interfaces for MSI.  
 
-The rest of the MSI functions are superfluous for what is needed at this
-time.  Many of which can have machdep calls added as needed.
-
-Ben and Michael Ellerman are looking into rewrite the MSI layer to be
-more generic.  However, in the meantime this works as a interim
-solution.
+It follows the altix conventions, and is based on top of the altix patch.
 
 Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
 
-Index: 2.6/arch/powerpc/kernel/irq.c
+Index: 2.6/drivers/pci/Makefile
 ===================================================================
---- 2.6.orig/arch/powerpc/kernel/irq.c	2006-06-07 15:23:41.000000000 -0500
-+++ 2.6/arch/powerpc/kernel/irq.c	2006-06-07 15:29:32.000000000 -0500
-@@ -47,6 +47,7 @@
- #include <linux/cpumask.h>
- #include <linux/profile.h>
- #include <linux/bitops.h>
+--- 2.6.orig/drivers/pci/Makefile	2006-06-07 15:29:55.000000000 -0500
++++ 2.6/drivers/pci/Makefile	2006-06-07 15:59:28.000000000 -0500
+@@ -26,7 +26,14 @@
+ obj-$(CONFIG_PPC64) += setup-bus.o
+ obj-$(CONFIG_MIPS) += setup-bus.o setup-irq.o
+ obj-$(CONFIG_X86_VISWS) += setup-irq.o
+-obj-$(CONFIG_PCI_MSI) += msi.o
++
++msiobj-$(CONFIG_X86) += msi.o msi-apic.o msi-intel.o
++msiobj-$(CONFIG_IA64) += msi.o msi-apic.o msi-intel.o
++msiobj-$(CONFIG_IA64_GENERIC) += msi.o msi-altix.o
++msiobj-$(CONFIG_IA64_SGI_SN2) += msi.o msi-altix.o
++msiobj-$(CONFIG_PPC_PSERIES) += msi-rtas.o
++
++obj-$(CONFIG_PCI_MSI) += $(msiobj-y)
+ 
+ #
+ # ACPI Related PCI FW Functions
+Index: 2.6/drivers/pci/msi-rtas.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ 2.6/drivers/pci/msi-rtas.c	2006-06-07 15:59:59.000000000 -0500
+@@ -0,0 +1,162 @@
++/*
++ * Jake Moilanen <moilanen@austin.ibm.com>
++ * Copyright (C) 2006 IBM
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; version 2 of the
++ * License.
++ *
++ */
++
 +#include <linux/pci.h>
- 
- #include <asm/uaccess.h>
- #include <asm/system.h>
-@@ -436,6 +437,30 @@
- }
- EXPORT_SYMBOL(do_softirq);
- 
-+#ifdef CONFIG_PCI_MSI
-+int pci_enable_msi(struct pci_dev * pdev)
++#include <linux/irq.h>
++#include <asm/rtas.h>
++#include <asm/hw_irq.h>
++
++int rtas_enable_msi(struct pci_dev* pdev)
 +{
-+	if (ppc_md.enable_msi)
-+		return ppc_md.enable_msi(pdev);
-+	else
-+		return -1;
++	static int seq_num = 1;
++	int i;
++	int rc;
++	int query_token = rtas_token("ibm,query-interrupt-source-number");
++	int devfn;
++	int busno;
++	u32 *reg;
++	int reglen;
++	int ret[3];
++	int dummy;
++	unsigned int virq;
++	unsigned int addr;
++	unsigned long buid = -1;
++	unsigned long wait_time;
++	struct device_node * dn;
++
++	BUG_ON(!pdev);
++
++	dn = pci_device_to_OF_node(pdev);
++
++	if (!of_find_property(dn, "ibm,req#msi", &dummy))
++		return -ENOENT;
++
++	reg = (u32 *) get_property(dn, "reg", &reglen);
++	if (reg == NULL || reglen < 20)
++		return -ENXIO;
++
++	devfn = (reg[0] >> 8) & 0xff;
++	busno = (reg[0] >> 16) & 0xff;
++
++	buid = get_phb_buid(dn->parent);
++	addr = (busno << 16) | (devfn << 8);
++
++	while (1) {
++		rc = rtas_call(rtas_token("ibm,change-msi"), 6, 3, ret, addr,
++			       buid >> 32, buid & 0xffffffff,
++			       0, 0, seq_num);
++
++		if (!rc)
++			break;
++		else if (rc == RTAS_BUSY)
++			udelay(1);
++		else if (rtas_is_extended_busy(rc)) {
++			wait_time = rtas_extended_busy_delay_time(rc);
++			udelay(wait_time * 1000);
++		} else {
++			printk(KERN_WARNING "error[%d]: getting the number of "
++			       "MSI interrupts for %s\n", rc, dn->name);
++			return -EIO;
++		}
++
++		seq_num = ret[1];
++	}
++
++	/* Return if there's no MSI interrupts */
++	if (!ret[0])
++		return -ENOENT;
++
++	dn->n_intrs = ret[0];
++
++	dn->intrs = kmalloc(dn->n_intrs * sizeof(*(dn->intrs)), GFP_KERNEL);
++	if (!dn->intrs) {
++		printk(KERN_WARNING "rtas_enable_msi: can't allocate space\n");
++		return -ENOMEM;
++	}
++
++	for (i = 0; i < dn->n_intrs; i++) {
++		rc = rtas_call(query_token, 4, 3, ret, addr,
++			       buid >> 32, buid & 0xffffffff, i);
++
++		if (!rc) {
++			virq = virt_irq_create_mapping(ret[0]);
++
++			dn->intrs[i].line = irq_offset_up(virq);
++			dn->intrs[i].sense = ret[1];
++		} else {
++			printk(KERN_WARNING "error[%d]: query-interrupt-source-number for %s\n",
++			       rc, dn->name);
++		}
++	}
++
++	/* Just give the first vector out for now */
++	pdev->irq = dn->intrs[0].line;
++
++	return 0;
 +}
 +
-+void pci_disable_msi(struct pci_dev * pdev)
++void rtas_disable_msi(struct pci_dev* pdev)
 +{
-+	if (ppc_md.disable_msi)
-+		ppc_md.disable_msi(pdev);
++	static int seq_num = 1;
++	struct device_node * dn;
++	int rc;
++	int devfn;
++	int busno;
++	u32 *reg;
++	int reglen;
++	int ret[3];
++	int dummy;
++	unsigned int addr;
++	unsigned long buid = -1;
++	unsigned long wait_time;
++
++	BUG_ON(!pdev);
++
++	dn = pci_device_to_OF_node(pdev);
++
++	if (!of_find_property(dn, "ibm,req#msi", &dummy))
++		return;
++
++	reg = (u32 *) get_property(dn, "reg", &reglen);
++	if (reg == NULL || reglen < 20)
++		return;
++
++	devfn = (reg[0] >> 8) & 0xff;
++	busno = (reg[0] >> 16) & 0xff;
++
++	buid = get_phb_buid(dn->parent);
++	addr = (busno << 16) | (devfn << 8);
++
++	while (1) {
++		rc = rtas_call(rtas_token("ibm,change-msi"), 6, 3, ret, addr,
++			       buid >> 32, buid & 0xffffffff,
++			       2, 0, seq_num);
++
++		if (!rc)
++			break;
++		else if (rc == RTAS_BUSY)
++			udelay(1);
++		else if (rtas_is_extended_busy(rc)) {
++			wait_time = rtas_extended_busy_delay_time(rc);
++			udelay(wait_time * 1000);
++		} else {
++			printk(KERN_WARNING "error[%d]: setting the number of "
++			       "MSI interrupts for %s\n", rc, dn->name);
++			return;
++		}
++
++		seq_num = ret[1];
++	}
++
++	dn->n_intrs = 0;
++
++	kfree(dn->intrs);
 +}
-+
-+void pci_scan_msi_device(struct pci_dev *dev) {}
-+int pci_enable_msix(struct pci_dev* dev, struct msix_entry *entries, int nvec) {return -1;}
-+void pci_disable_msix(struct pci_dev *dev) {}
-+void msi_remove_pci_irq_vectors(struct pci_dev *dev) {}
-+void disable_msi_mode(struct pci_dev *dev, int pos, int type) {}
-+void pci_no_msi(void) {}
-+
-+#endif
-+
- #ifdef CONFIG_PPC64
- static int __init setup_noirqdistrib(char *str)
- {
-Index: 2.6/include/asm-powerpc/machdep.h
+Index: 2.6/drivers/pci/Kconfig
 ===================================================================
---- 2.6.orig/include/asm-powerpc/machdep.h	2006-06-07 15:23:41.000000000 -0500
-+++ 2.6/include/asm-powerpc/machdep.h	2006-06-07 15:24:48.000000000 -0500
-@@ -238,6 +238,11 @@
- 	 */
- 	void (*machine_kexec)(struct kimage *image);
- #endif /* CONFIG_KEXEC */
-+
-+#ifdef CONFIG_PCI_MSI
-+	int (*enable_msi)(struct pci_dev *pdev);
-+	void (*disable_msi)(struct pci_dev *pdev);
-+#endif /* CONFIG_PCI_MSI */
- };
+--- 2.6.orig/drivers/pci/Kconfig	2006-06-07 15:29:55.000000000 -0500
++++ 2.6/drivers/pci/Kconfig	2006-06-07 15:59:28.000000000 -0500
+@@ -4,7 +4,7 @@
+ config PCI_MSI
+ 	bool "Message Signaled Interrupts (MSI and MSI-X)"
+ 	depends on PCI
+-	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64
++	depends on (X86_LOCAL_APIC && X86_IO_APIC) || IA64 || PPC_PSERIES
+ 	help
+ 	   This allows device drivers to enable MSI (Message Signaled
+ 	   Interrupts).  Message Signaled Interrupts enable a device to
+Index: 2.6/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- 2.6.orig/arch/powerpc/platforms/pseries/setup.c	2006-06-07 15:29:55.000000000 -0500
++++ 2.6/arch/powerpc/platforms/pseries/setup.c	2006-06-07 15:59:28.000000000 -0500
+@@ -78,6 +78,8 @@
+ #endif
  
- extern void power4_idle(void);
+ extern void find_udbg_vterm(void);
++extern int rtas_enable_msi(struct pci_dev* pdev);
++extern void rtas_disable_msi(struct pci_dev * pdev);
+ 
+ int fwnmi_active;  /* TRUE if an FWNMI handler is present */
+ 
+@@ -205,6 +207,10 @@
+ 	} else {
+ 		ppc_md.init_IRQ       = xics_init_IRQ;
+ 		ppc_md.get_irq        = xics_get_irq;
++#ifdef CONFIG_PCI_MSI
++		ppc_md.enable_msi	= rtas_enable_msi;
++		ppc_md.disable_msi	= rtas_disable_msi;
++#endif
+ 	}
+ 
+ #ifdef CONFIG_SMP
