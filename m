@@ -1,22 +1,14 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3826A67B70
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 01:42:18 +1000 (EST)
-Subject: Re: [RFC 07/12] snd-aoa: add tas codec
-From: Johannes Berg <johannes@sipsolutions.net>
-To: alsa-devel@alsa-project.org
-In-Reply-To: <20060607130914.735290000@sipsolutions.net>
-References: <20060607130909.584205000@sipsolutions.net>
-	<20060607130914.735290000@sipsolutions.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-qAsHBdp2bbyUDSGfVa8p"
-Date: Wed, 07 Jun 2006 17:42:07 +0200
-Message-Id: <1149694927.3925.4.camel@johannes>
+Return-Path: <titof3000@hotmail.com>
+Received: from hotmail.com (bay109-f5.bay109.hotmail.com [64.4.19.15])
+	by ozlabs.org (Postfix) with ESMTP id 13E5467B7C
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 01:47:42 +1000 (EST)
+Message-ID: <BAY109-F5B7EE1B27D613DA2C4281AC8A0@phx.gbl>
+From: "Christophe Simon" <titof3000@hotmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Linux kernel 2.6 on IBM RS/6000 7025-F40
+Date: Wed, 07 Jun 2006 15:30:37 +0000
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, netstar@gatheringofgray.com
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,48 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi there,
 
---=-qAsHBdp2bbyUDSGfVa8p
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Did someone succeeded in compiling a running 2.6 kernel on an IBM RS/6000 
+7025-F40 (PReP arch) ? I have one of these machines, and it runs with a 
+2.4.22 kernel built using the instructions gathered on 
+http://www.solinno.co.uk/7043-140/
 
-> +		/* older machines have no 'codec' node with a 'compatible'
-> +		 * property that says 'tas3004', they just have a 'deq'
-> +		 * node without any such property... */
-> +		if (strcmp(dev->name, "deq") =3D=3D 0) {
-> +			u32 *addr;
-> +			printk(KERN_DEBUG PFX "found 'deq' node\n");
-> +			addr =3D (u32 *) get_property(dev, "i2c-address", NULL);
-> +			if (!addr)
-> +				continue;
-> +			/* now, if the address doesn't match any of the two
-> +			 * that a tas3004 can have, we cannot handle this.
-> +			 * I doubt it ever happens but hey. */
-> +			if (*addr !=3D 0x34 && *addr !=3D 0x35)
+It seems that this machine is quite problematic.
 
-And I fixed the obvious bug here now.
+I tried to compile my own kernel with a stock 2.6.16.19, and after that 
+2.6.7 patched with the files I found for the 2.6.7 (at 
+http://www.solinno.co.uk/7043-140/files/2.6.7/), but the system refuses to 
+boot with those twoo kernels  (the machine reboots or freezes before writing 
+any piece of information on the console...).
 
-johannes
+The site seems not to move anymore, and I'd like to have a 2.6 kernel 
+running because of his better performances ans extended functionalities, and 
+I'd like not to be stalled on 2.4.22 kernel...
 
---=-qAsHBdp2bbyUDSGfVa8p
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+I crawled the web hours and hours (Google is my friend, but it didn't help 
+me...) and I didn't find anything...
 
------BEGIN PGP SIGNATURE-----
+Could someone help me !
 
-iQIVAwUARIbzy6Vg1VMiehFYAQKmAg//c/bHTg4/yEP/rubtOv/h+Q7vT/J42/Wv
-2D2mk7cXd0Z5NT9hvueG/4eizhJVcrqp4xTLTrzoZcTL4fmjPvpudpanMucOzgDO
-/nqsuN2s+sArwUhXMVWnden0XtNe1ABpAHMo9qJJuUK4v0A3yPZVhpIyxNZBsxFA
-PzDzfEq39b/TvYSOhCX947g3GQeYgxpe3cXxLIUePu1MwIcdNeGYIq6U6M+A0wAT
-cKtDYTHvbWU2I6gTTL+IRzI+3QTWTmc8kAECRsLMz3ySbppQNQGhB8QMSLWwZ9/s
-RMyDwaQMKXGtzCYDsXiu4npHB8UlR9upl47Jl2cUel7vjMAn1aZ0hhhFVpQ10hUX
-A6Kts7WV4j8DHdTsC/gG9guNNbYh2w+Px9XqOh4QSjMhQQvJmo/4KLOqn0XLTLJW
-oNbi7rkVjbxrnHr+RsqvQWhyLM2Ah8S1x8GalwOLFkDG7jyMlPohsaTgZQbkZtyR
-1DcbFyCxYdCEme9ALE9Y9EiMk0hUt++gPHaUPwz9l00PeSISfMdMnxbzRXJd0yfm
-QGoPWYX5CigE85H/rXlVwgyX23ynpIDKBlLBZaf6sgEEyL8iNghxREnrHm9WyIFE
-KfAcr95aXCIqbKKvA+NdExNw4tEXAE6UtetffzbTyHiyP9nS2xtW5P7i2urget8t
-vdyZgt6+hvw=
-=uV6g
------END PGP SIGNATURE-----
+Thanks a lot !
 
---=-qAsHBdp2bbyUDSGfVa8p--
+Christophe SIMON
+
+_________________________________________________________________
+Windows Live Messenger : venez tester la version bêta ! 
+http://www.ideas.live.com/programpage.aspx?versionId=0eccd94b-eb48-497c-8e60-c6313f7ebb73
