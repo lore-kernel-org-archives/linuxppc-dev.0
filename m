@@ -1,16 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17543.18414.871090.185796@cargo.ozlabs.ibm.com>
-Date: Thu, 8 Jun 2006 07:41:02 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 2/3] powerpc: Implement support for setting little-endian
-	mode via prctl
-In-Reply-To: <20060607173320.GB5661@pb15.lixom.net>
-References: <17542.28368.426967.127506@cargo.ozlabs.ibm.com>
-	<20060607173320.GB5661@pb15.lixom.net>
-Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org
+Return-Path: <jdl@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id A5659679E9
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 08:36:20 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k57Mr3MR027535
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:53:03 -0700 (MST)
+Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k57MaI5V001238
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 17:36:18 -0500 (CDT)
+Subject: [PATCH 0/10] Add MPC8641 HPCN Platform
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1149719542.23938.181.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Wed, 07 Jun 2006 17:32:22 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,19 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson writes:
+This series of patches introduces the MPC8641 HPCN platform.
 
-> >  #define CPU_FTR_LOCKLESS_TLBIE		ASM_CONST(0x0)
-> >  #define CPU_FTR_MMCRA_SIHV		ASM_CONST(0x0)
-> >  #define CPU_FTR_CI_LARGE_PAGE		ASM_CONST(0x0)
-> > +#define CPU_FTR_PAUSE_ZERO              ASM_CONST(0x0)
-> >  #define CPU_FTR_PURR			ASM_CONST(0x0)
-> >  #endif
-> 
-> This seems to have snuck in from something else. It's not used anywhere.
+Please consider this for addition into the 2.6.18 queue.
 
-Yes, early on I noticed that this one was missing from the dummy
-definitions for 32-bit and cleaned it up as I went past.  I'll remove
-that hunk.
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
+Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+Signed-off-by: Wei Zhang <Wei.Zhang@freescale.com>
+Signed-off-by: Jeff Brown <Jeff.Brown@freescale.com>
+Signed-off-by: Kriston Carson <KristonCarson@freescale.com>
 
-Paul.
+
+ arch/powerpc/Kconfig                        |   15 
+ arch/powerpc/platforms/Makefile             |    1 
+ arch/powerpc/platforms/86xx/Makefile        |    7 
+ arch/powerpc/platforms/86xx/Kconfig         |   46 +
+ drivers/i2c/busses/Kconfig                  |    4 
+
+ arch/powerpc/platforms/86xx/misc.c          |   50 +
+ arch/powerpc/platforms/86xx/mpc8641_hpcn.c  |   52 ++
+ arch/powerpc/platforms/86xx/mpc8641_hpcn.h  |   54 ++
+ arch/powerpc/platforms/86xx/mpc86xx.h       |   31 +
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c  |  313 +++++++++
+
+ arch/powerpc/platforms/86xx/pci.c           |  213 ++++++
+ arch/powerpc/platforms/86xx/pex.c           |  173 +++++
+
+ arch/powerpc/kernel/cpu_setup_6xx.S         |    2 
+
+ arch/powerpc/kernel/cputable.c              |   12 
+ arch/powerpc/kernel/head_32.S               |   15 
+ arch/powerpc/sysdev/i8259.c                 |    5 
+
+ include/asm-powerpc/immap_86xx.h            |  199 ++++++
+ include/asm-powerpc/irq.h                   |   88 +++
+ include/asm-powerpc/mpc86xx.h               |   95 +++
+ include/asm-powerpc/reg.h                   |    1 
+
+ include/asm-ppc/io.h                        |    2 
+ include/asm-ppc/ppc_sys.h                   |    2 
+ include/asm-ppc/serial.h                    |    2 
+
+ arch/powerpc/configs/mpc8641_hpcn_defconfig |  923 +++++++++++++++++++++++++++
+
+ drivers/net/Kconfig                         |    6 
+ drivers/net/phy/Kconfig                     |    5 
+ drivers/net/phy/Makefile                    |    1 
+ drivers/net/phy/vitesse.c                   |  136 ++++
+
+ arch/powerpc/kernel/prom.c                  |   13 
+
+ 29 files changed, 2457 insertions(+), 9 deletions(-)
