@@ -1,21 +1,21 @@
 Return-Path: <jdl@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id A5659679E9
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 08:36:20 +1000 (EST)
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 686CE67B96
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 08:38:02 +1000 (EST)
 Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k57Mr3MR027535
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:53:03 -0700 (MST)
+	k57MskBd028056
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:54:46 -0700 (MST)
 Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k57MaI5V001238
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 17:36:18 -0500 (CDT)
-Subject: [PATCH 0/10] Add MPC8641 HPCN Platform
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k57Mc0xU001825
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 17:38:00 -0500 (CDT)
+Subject: [PATCH 1/10] Add the mpc8641 hpcn Kconfig and Makefiles.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1149719542.23938.181.camel@cashmere.sps.mot.com>
+Message-Id: <1149719645.23938.184.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Wed, 07 Jun 2006 17:32:22 -0500
+Date: Wed, 07 Jun 2006 17:34:05 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,55 +25,160 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This series of patches introduces the MPC8641 HPCN platform.
 
-Please consider this for addition into the 2.6.18 queue.
-
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
 Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
-Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
-Signed-off-by: Wei Zhang <Wei.Zhang@freescale.com>
-Signed-off-by: Jeff Brown <Jeff.Brown@freescale.com>
-Signed-off-by: Kriston Carson <KristonCarson@freescale.com>
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+
+---
+
+ arch/powerpc/Kconfig                 |   15 ++++++++++-
+ arch/powerpc/platforms/Makefile      |    1 +
+ arch/powerpc/platforms/86xx/Makefile |    7 +++++
+ arch/powerpc/platforms/86xx/Kconfig  |   46 ++++++++++++++++++++++++++++++++++
+ drivers/i2c/busses/Kconfig           |    4 +--
+ 5 files changed, 69 insertions(+), 4 deletions(-)
 
 
- arch/powerpc/Kconfig                        |   15 
- arch/powerpc/platforms/Makefile             |    1 
- arch/powerpc/platforms/86xx/Makefile        |    7 
- arch/powerpc/platforms/86xx/Kconfig         |   46 +
- drivers/i2c/busses/Kconfig                  |    4 
-
- arch/powerpc/platforms/86xx/misc.c          |   50 +
- arch/powerpc/platforms/86xx/mpc8641_hpcn.c  |   52 ++
- arch/powerpc/platforms/86xx/mpc8641_hpcn.h  |   54 ++
- arch/powerpc/platforms/86xx/mpc86xx.h       |   31 +
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c  |  313 +++++++++
-
- arch/powerpc/platforms/86xx/pci.c           |  213 ++++++
- arch/powerpc/platforms/86xx/pex.c           |  173 +++++
-
- arch/powerpc/kernel/cpu_setup_6xx.S         |    2 
-
- arch/powerpc/kernel/cputable.c              |   12 
- arch/powerpc/kernel/head_32.S               |   15 
- arch/powerpc/sysdev/i8259.c                 |    5 
-
- include/asm-powerpc/immap_86xx.h            |  199 ++++++
- include/asm-powerpc/irq.h                   |   88 +++
- include/asm-powerpc/mpc86xx.h               |   95 +++
- include/asm-powerpc/reg.h                   |    1 
-
- include/asm-ppc/io.h                        |    2 
- include/asm-ppc/ppc_sys.h                   |    2 
- include/asm-ppc/serial.h                    |    2 
-
- arch/powerpc/configs/mpc8641_hpcn_defconfig |  923 +++++++++++++++++++++++++++
-
- drivers/net/Kconfig                         |    6 
- drivers/net/phy/Kconfig                     |    5 
- drivers/net/phy/Makefile                    |    1 
- drivers/net/phy/vitesse.c                   |  136 ++++
-
- arch/powerpc/kernel/prom.c                  |   13 
-
- 29 files changed, 2457 insertions(+), 9 deletions(-)
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 75ba0ec..e708401 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -141,6 +141,15 @@ config PPC_85xx
+ 	select FSL_SOC
+ 	select 85xx
+ 
++config PPC_86xx
++	bool "Freescale 86xx"
++	select 6xx
++	select FSL_SOC
++	select PPC_FPU
++	select ALTIVEC
++	help
++	  The Freescale E600 SoCs have 74xx cores.
++
+ config 40x
+ 	bool "AMCC 40x"
+ 
+@@ -549,6 +558,7 @@ source arch/powerpc/platforms/embedded6x
+ source arch/powerpc/platforms/4xx/Kconfig
+ source arch/powerpc/platforms/83xx/Kconfig
+ source arch/powerpc/platforms/85xx/Kconfig
++source arch/powerpc/platforms/86xx/Kconfig
+ source arch/powerpc/platforms/8xx/Kconfig
+ source arch/powerpc/platforms/cell/Kconfig
+ 
+@@ -780,6 +790,7 @@ config GENERIC_ISA_DMA
+ 
+ config PPC_I8259
+ 	bool
++	default y if PPC_86xx
+ 	default n
+ 
+ config PPC_INDIRECT_PCI
+@@ -802,8 +813,8 @@ config MCA
+ 	bool
+ 
+ config PCI
+-	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_MPC52xx || (EMBEDDED && PPC_ISERIES)
+-	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx && !PPC_85xx
++	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx || PPC_MPC52xx || (EMBEDDED && PPC_ISERIES)
++	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx && !PPC_85xx && !PPC_86xx
+ 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
+ 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
+ 	help
+diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
+index c4f6b0d..2928636 100644
+--- a/arch/powerpc/platforms/Makefile
++++ b/arch/powerpc/platforms/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_PPC_CHRP)		+= chrp/
+ obj-$(CONFIG_4xx)		+= 4xx/
+ obj-$(CONFIG_PPC_83xx)		+= 83xx/
+ obj-$(CONFIG_PPC_85xx)		+= 85xx/
++obj-$(CONFIG_PPC_86xx)		+= 86xx/
+ obj-$(CONFIG_PPC_PSERIES)	+= pseries/
+ obj-$(CONFIG_PPC_ISERIES)	+= iseries/
+ obj-$(CONFIG_PPC_MAPLE)		+= maple/
+diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
+new file mode 100644
+index 0000000..8a237a1
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/Makefile
+@@ -0,0 +1,7 @@
++#
++# Makefile for the PowerPC 86xx linux kernel.
++#
++
++obj-$(CONFIG_PPC_86xx)		+= mpc86xx_hpcn.o misc.o
++obj-$(CONFIG_MPC8641_HPCN)	+= mpc8641_hpcn.o
++obj-$(CONFIG_PCI)		+= pci.o pex.o
+diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
+new file mode 100644
+index 0000000..b8924e7
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/Kconfig
+@@ -0,0 +1,46 @@
++menu "Platform Support"
++	depends on PPC_86xx
++
++choice
++	prompt "Machine Type"
++	default MPC8641_HPCN
++
++config MPC8641_HPCN
++	bool "Freescale MPC8641 HPCN"
++	help
++	  This option enables support for the MPC8641 HPCN board.
++
++endchoice
++
++
++config MPC8641
++	bool
++	select PPC_INDIRECT_PCI
++	select PPC_UDBG_16550
++	default y if MPC8641_HPCN
++
++config MPIC
++	bool
++	default y
++
++config PPC_INDIRECT_PCI_BE
++	bool
++	depends on PPC_86xx
++	default y
++
++config PEX
++	bool "PCI Express support"
++	depends on PCI && PPC_86xx
++	default y
++
++config I8259_LEVEL_TRIGGER
++	bool
++	depends on MPC8641
++	default y
++
++config PPC_STD_MMU
++	bool
++	depends on PPC_86xx
++	default y
++
++endmenu
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index d6d4494..fbeae82 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -252,12 +252,12 @@ config I2C_POWERMAC
+ 	  will be called i2c-powermac.
+ 
+ config I2C_MPC
+-	tristate "MPC107/824x/85xx/52xx"
++	tristate "MPC107/824x/85xx/52xx/86xx"
+ 	depends on I2C && PPC32
+ 	help
+ 	  If you say yes to this option, support will be included for the
+ 	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245 and
+-	  MPC85xx family processors. The driver may also work on 52xx
++	  MPC85xx/MPC8641 family processors. The driver may also work on 52xx
+ 	  family processors, though interrupts are known not to work.
+ 
+ 	  This driver can also be built as a module.  If so, the module
