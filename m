@@ -1,26 +1,22 @@
-Return-Path: <ak@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EE35A67B47
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 01:20:35 +1000 (EST)
-From: Andi Kleen <ak@suse.de>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/5] Sizing zones and holes in an architecture independent
-	manner V7
-Date: Wed, 7 Jun 2006 17:20:22 +0200
-References: <20060606134710.21419.48239.sendpatchset@skynet.skynet.ie>
-	<200606071216.24640.ak@suse.de>
-	<Pine.LNX.4.64.0606071118230.20653@skynet.skynet.ie>
-In-Reply-To: <Pine.LNX.4.64.0606071118230.20653@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200606071720.22242.ak@suse.de>
-Cc: Andrew Morton <akpm@osdl.org>, davej@codemonkey.org.uk, tony.luck@intel.com,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	bob.picco@hp.com, linuxppc-dev@ozlabs.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3826A67B70
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 01:42:18 +1000 (EST)
+Subject: Re: [RFC 07/12] snd-aoa: add tas codec
+From: Johannes Berg <johannes@sipsolutions.net>
+To: alsa-devel@alsa-project.org
+In-Reply-To: <20060607130914.735290000@sipsolutions.net>
+References: <20060607130909.584205000@sipsolutions.net>
+	<20060607130914.735290000@sipsolutions.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-qAsHBdp2bbyUDSGfVa8p"
+Date: Wed, 07 Jun 2006 17:42:07 +0200
+Message-Id: <1149694927.3925.4.camel@johannes>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, netstar@gatheringofgray.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,13 +27,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Ok, while true, I'm not sure how it affects performance. The only "real" 
-> value affected by present_pages is the number of patches that are 
-> allocated in batches to the per-cpu allocator.
+--=-qAsHBdp2bbyUDSGfVa8p
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-It affects the low/high water marks in the VM zone balancer.
+> +		/* older machines have no 'codec' node with a 'compatible'
+> +		 * property that says 'tas3004', they just have a 'deq'
+> +		 * node without any such property... */
+> +		if (strcmp(dev->name, "deq") =3D=3D 0) {
+> +			u32 *addr;
+> +			printk(KERN_DEBUG PFX "found 'deq' node\n");
+> +			addr =3D (u32 *) get_property(dev, "i2c-address", NULL);
+> +			if (!addr)
+> +				continue;
+> +			/* now, if the address doesn't match any of the two
+> +			 * that a tas3004 can have, we cannot handle this.
+> +			 * I doubt it ever happens but hey. */
+> +			if (*addr !=3D 0x34 && *addr !=3D 0x35)
 
-Especially for the 16MB DMA zone it can make a difference if you
-account 4MB kernel in there or not.
+And I fixed the obvious bug here now.
 
--Andi
+johannes
+
+--=-qAsHBdp2bbyUDSGfVa8p
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARIbzy6Vg1VMiehFYAQKmAg//c/bHTg4/yEP/rubtOv/h+Q7vT/J42/Wv
+2D2mk7cXd0Z5NT9hvueG/4eizhJVcrqp4xTLTrzoZcTL4fmjPvpudpanMucOzgDO
+/nqsuN2s+sArwUhXMVWnden0XtNe1ABpAHMo9qJJuUK4v0A3yPZVhpIyxNZBsxFA
+PzDzfEq39b/TvYSOhCX947g3GQeYgxpe3cXxLIUePu1MwIcdNeGYIq6U6M+A0wAT
+cKtDYTHvbWU2I6gTTL+IRzI+3QTWTmc8kAECRsLMz3ySbppQNQGhB8QMSLWwZ9/s
+RMyDwaQMKXGtzCYDsXiu4npHB8UlR9upl47Jl2cUel7vjMAn1aZ0hhhFVpQ10hUX
+A6Kts7WV4j8DHdTsC/gG9guNNbYh2w+Px9XqOh4QSjMhQQvJmo/4KLOqn0XLTLJW
+oNbi7rkVjbxrnHr+RsqvQWhyLM2Ah8S1x8GalwOLFkDG7jyMlPohsaTgZQbkZtyR
+1DcbFyCxYdCEme9ALE9Y9EiMk0hUt++gPHaUPwz9l00PeSISfMdMnxbzRXJd0yfm
+QGoPWYX5CigE85H/rXlVwgyX23ynpIDKBlLBZaf6sgEEyL8iNghxREnrHm9WyIFE
+KfAcr95aXCIqbKKvA+NdExNw4tEXAE6UtetffzbTyHiyP9nS2xtW5P7i2urget8t
+vdyZgt6+hvw=
+=uV6g
+-----END PGP SIGNATURE-----
+
+--=-qAsHBdp2bbyUDSGfVa8p--
