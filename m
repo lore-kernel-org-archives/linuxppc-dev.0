@@ -1,10 +1,37 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 07 Jun 2006 17:10:09 +1000
-Subject: [PATCH 2/2] powerpc: Cleanup hvc_rtas.c a little
-Message-Id: <20060607071009.4E65567B4A@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Return-Path: <arnd.bergmann@de.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 38F9A67B46
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 19:31:09 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k579V5hp022629
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 05:31:06 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k579V5M9165080
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 05:31:05 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k579V4bM006413
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 05:31:05 -0400
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Add udbg-immortal kernel option
+Date: Wed, 7 Jun 2006 11:31:02 +0200
+References: <1149645981.27572.96.camel@localhost.localdomain>
+	<20060607022412.GA5661@pb15.lixom.net>
+	<1149653947.27572.113.camel@localhost.localdomain>
+In-Reply-To: <1149653947.27572.113.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200606071131.03281.arnd.bergmann@de.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, Benjamin Herrenschmidt <benh@au1.ibm.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,104 +41,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A few cleanups in hvc_rtas.c:
- 1. Remove unused RTASCONS_PUT_ATTEMPTS
- 2. Remove unused rtascons_put_delay.
- 3. Use i as a loop counter like everyone else on earth.
- 4. Remove pointless variables, eg. x = foo; if (x) return something_else;
- 5. Whitespace cleanups and formatting.
+On Wednesday 07 June 2006 06:19, Benjamin Herrenschmidt wrote:
+> No way :) Besides, that's how it should be done in french :)
+>=20
+So you mean, like this?
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
-
- drivers/char/hvc_rtas.c |   37 ++++++++++++++++---------------------
- 1 file changed, 16 insertions(+), 21 deletions(-)
-
-Index: cell/drivers/char/hvc_rtas.c
-===================================================================
---- cell.orig/drivers/char/hvc_rtas.c
-+++ cell/drivers/char/hvc_rtas.c
-@@ -41,37 +41,28 @@
- #define hvc_rtas_cookie 0x67781e15
- struct hvc_struct *hvc_rtas_dev;
- 
--#define RTASCONS_PUT_ATTEMPTS  16
--
- static int rtascons_put_char_token = RTAS_UNKNOWN_SERVICE;
- static int rtascons_get_char_token = RTAS_UNKNOWN_SERVICE;
--static int rtascons_put_delay = 100;
--module_param_named(put_delay, rtascons_put_delay, int, 0644);
- 
--static inline int hvc_rtas_write_console(uint32_t vtermno, const char *buf, int count)
-+static inline int hvc_rtas_write_console(uint32_t vtermno, const char *buf,
-+		int count)
+Index: linux-work/arch/powerpc/kernel/udbg.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=2D-- linux-work.orig/arch/powerpc/kernel/udbg.c	2006-05-31 14:13:59.000000=
+000 +1000
++++ linux-work/arch/powerpc/kernel/udbg.c	2006-05-31 14:48:07.000000000 +10=
+00
+@@ -141,12 +142,14 @@ static int early_console_initialized;
+=20
+ void __init disable_early_printk(void)
  {
--	int done;
-+	int i;
- 
--	/* if there is more than one character to be displayed, wait a bit */
--	for (done = 0; done < count; done++) {
--		int result;
--		result = rtas_call(rtascons_put_char_token, 1, 1, NULL, buf[done]);
--		if (result)
-+	for (i = 0; i < count; i++) {
-+		if (rtas_call(rtascons_put_char_token, 1, 1, NULL, buf[i]))
- 			break;
- 	}
--	/* the calling routine expects to receive the number of bytes sent */
--	return done;
-+
-+	return i;
+=2D#if 1
+ 	if (!early_console_initialized)
+ 		return;
++	if (strstr(saved_command_line, "udbg-immortel")) {
++		printk(KERN_INFO "console t=F4t immortel !\n");
++		return;
++	}
+ 	unregister_console(&udbg_console);
+ 	early_console_initialized =3D 0;
+=2D#endif
  }
- 
- static int hvc_rtas_read_console(uint32_t vtermno, char *buf, int count)
- {
--	int i;
-+	int i, c;
- 
- 	for (i = 0; i < count; i++) {
--		int c, err;
--
--		err = rtas_call(rtascons_get_char_token, 0, 2, &c);
--		if (err)
-+		if (rtas_call(rtascons_get_char_token, 0, 2, &c))
- 			break;
- 
- 		buf[i] = c;
-@@ -106,7 +97,9 @@ static int hvc_rtas_init(void)
- 	hp = hvc_alloc(hvc_rtas_cookie, NO_IRQ, &hvc_rtas_get_put_ops);
- 	if (IS_ERR(hp))
- 		return PTR_ERR(hp);
-+
- 	hvc_rtas_dev = hp;
-+
- 	return 0;
- }
- module_init(hvc_rtas_init);
-@@ -114,8 +107,8 @@ module_init(hvc_rtas_init);
- /* This will tear down the tty portion of the driver */
- static void __exit hvc_rtas_exit(void)
- {
--	/* Really the fun isn't over until the worker thread breaks down and the
--	 * tty cleans up */
-+	/* Really the fun isn't over until the worker thread breaks down and
-+	 * the tty cleans up */
- 	if (hvc_rtas_dev)
- 		hvc_remove(hvc_rtas_dev);
- }
-@@ -127,12 +120,14 @@ static int hvc_rtas_console_init(void)
- 	rtascons_put_char_token = rtas_token("put-term-char");
- 	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
- 		return -EIO;
-+
- 	rtascons_get_char_token = rtas_token("get-term-char");
- 	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
- 		return -EIO;
- 
--	hvc_instantiate(hvc_rtas_cookie, 0, &hvc_rtas_get_put_ops );
-+	hvc_instantiate(hvc_rtas_cookie, 0, &hvc_rtas_get_put_ops);
- 	add_preferred_console("hvc", 0, NULL);
-+
- 	return 0;
- }
- console_initcall(hvc_rtas_console_init);
+=20
+ /* called by setup_system */
