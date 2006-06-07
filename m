@@ -1,16 +1,20 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id E7F0267B1E
+Return-Path: <hlrprasad@tataelxsi.co.in>
+Received: from mail.tataelxsi.co.in (mail.tataelxsi.co.in [203.200.1.48])
+	(using TLSv1 with cipher DES-CBC3-SHA (168/168 bits))
+	(Client CN "myname.my.domain",
+	Issuer "www.mirapoint.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 878B367B37
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Jun 2006 08:13:38 +1000 (EST)
+	Wed,  7 Jun 2006 15:42:14 +1000 (EST)
+From: Ram Prasad H L <hlrprasad@tataelxsi.co.in>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Problem in PCI with MPC5200B
+Date: Wed, 7 Jun 2006 11:05:16 +0530
+Message-ID: <000d01c689f4$281750c0$4129320a@telxsi.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: 82xx CPM commands
-Date: Tue, 6 Jun 2006 17:13:35 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0189DE17@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-embedded@ozlabs.org>
+	charset="iso-8859-1"
+Reply-To: Ram Prasad H L <hlrprasad@tataelxsi.co.in>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,33 +25,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi.
+hi all,
+	We are using a customised board which is based on
+	the reference design of lite5200B. But our board is customised by adding
+	a PCI-PCI Bridge on the primary bus. On the secondary bus we have added
+	a DSP(DM642) along with 2 PCI slots, which are routed through
+	bridge (PCI2250) to MPC5200B.
 
-Besause of some weird system hangs we have seen, I am wondering if the
-CPM command register may need a lock around it.
+	As far as software is concerned we are using "mpc5200_lite_K26-BSP-b30"
+	BSP downloaded from freescale's website for lite5200B. This BSP has a
+	u-boot-1.1.3 and linux kernel-2.6.11.7. As far as u-boot is concerned
+	the PCI devices are allocated and assigned with proper resources (BAR's)
+	which come under the range for Mem region(40000000 - 4fffffff) and I/O
+	region (50000000 - 50ffffff). But during the boot process of linux we
+	are getting the following errors:
 
-In one of our drivers we can end up writing a CPM command every
-millisecond on worst case during an error condition.
-Sometimes during that error condition the whole CPU locks up. (or rather
-it spins in an interrupt somewhere).
 
-After looking at all the other places in the kernel the CPM command
-register gets written, I am convinced that there does exists conditions
-where we might accidentally write to the command register while some
-other thread/irq is writing/waiting for command completion.
+****************************************************************************
+***
+	PCI: Probing PCI hardware
+	PCI: Cannot allocate resource region 1 of PCI bridge 1
+	PCI: bridge 1 resource 1 moved to 4ff00000..4fffffff
+	PCI: Cannot allocate resource region 2 of PCI bridge 1
+	PCI: bridge 1 resource 2 moved to 4fe00000..4fefffff
+	PCI: Failed to allocate mem resource #0: 400000 @ 50000000 for 0000:01:08.0
+	PCI: Failed to allocate mem resource #1: 800000 @ 50000000 for 0000:01:08.0
+	PCI: Failed to allocate I/O resource #2: 10 @ 1000 for 0000:01:08.0
 
-The code in all paces looks like:
+****************************************************************************
+****
 
-	cp->cp_cpcr =3D mk_cr_cmd(SOME COMMAND);
-	while (cp->cp_cpcr & CPM_CR_FLG);
+	where 0000:01:08.0 is the dev function address for DM642(DSP).
 
-I think we might need a lock around it.
-local_irq_save() woild work, but would lock the whole CPU while the CPM
-command completes (which can take 200 CPM clock cycles, avg 40 according
-to maual)
+	I'm stuck up with this problem since long time. Plz help me in giving some
+pointers
+	for overcoming this problem as i'm a newbie to linux-pci. Any patches for
+the kernel
+	2.6.11.7 which can resolve the above problem would be of great help.
 
-Easiest way would probaby be to have a (inline) function that does the
-lock/write/wait/unlock.
 
-There is a couple of places that does a udelay between the write and the
-wait.
+Thanks and regards,
+Ramprasad
+
+
+
+The information contained in this electronic message and any attachments to this message are intended for the exclusive use of the addressee(s)and may contain confidential or privileged information. If you are not the intended recipient, please notify the sender or administrator@tataelxsi.co.in
