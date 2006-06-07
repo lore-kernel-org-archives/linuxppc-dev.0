@@ -1,29 +1,17 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx026.isp.belgacom.be (outmx026.isp.belgacom.be
-	[195.238.4.91])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 79A25679FC
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
+	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id F0A2A67B44
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Jun 2006 00:09:19 +1000 (EST)
-Received: from outmx026.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx026.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k57E9AiS010511
-	for <linuxppc-embedded@ozlabs.org>; Wed, 7 Jun 2006 16:09:10 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: *** PROBABLY SPAM *** Re: CPM_UART should allocate DPRAM for SMCx
-	parameter RAM on MPC82xx
-Date: Wed, 7 Jun 2006 16:10:51 +0200
+	Thu,  8 Jun 2006 02:34:24 +1000 (EST)
+In-Reply-To: <200606071434.08905.laurent.pinchart@tbox.biz>
 References: <200606071434.08905.laurent.pinchart@tbox.biz>
-	<200606071539.57394.laurent.pinchart@tbox.biz>
-	<20060607174931.766eda5d@vitb.ru.mvista.com>
-In-Reply-To: <20060607174931.766eda5d@vitb.ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200606071610.51465.laurent.pinchart@tbox.biz>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <B2526A5D-F9F5-4E79-9003-46B9803971D9@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: CPM_UART should allocate DPRAM for SMCx parameter RAM on MPC82xx
+Date: Wed, 7 Jun 2006 12:34:27 -0400
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -35,15 +23,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> As I said, SMC offsets relative to pram things are screwed for PQ2.
-> That needs to be fixed. It is assumed, that for each SMC ready-for-use
-> offset should be defined in pram resource (as for 8xx). There is no need to
-> dpalloc/dpfree because the idea is that pram thing should be fixed to
-> prevent confusion. So the odd offset for SMC devices in pq2_devices.c
-> should be replaced with correct values (which should be
-> dpram_start+PROFF_SMCx - have a look at 8xx as reference)
 
-Ok. dpram[PROFF_SMCx_BASE] must still be set to the values returned by 
-platform_get_resource_byname(). Where should that be done ?
+On Jun 7, 2006, at 8:34 AM, Laurent Pinchart wrote:
 
-Laurent Pinchart
+> I'm not sure how to fix the problem
+
+They way this _used_ to work is the DPRAM memory allocator
+knew the SMCs had allocated the lower 128 bytes of DPRAM and
+it never would allocate this space to anyone else (and it should not
+free it either).  The constant #defined values for the SMC base
+address would work just fine and could be assigned as part of
+the SMC uart initialization.  Due to the alignment restrictions and
+no reason to relocate this space anywhere else, this still seems
+to be the most efficient method.
+
+
+	-- Dan
