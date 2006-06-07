@@ -1,21 +1,21 @@
 Return-Path: <jdl@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 70A3967BA1
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 08:39:08 +1000 (EST)
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 2011B67BA2
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 08:41:00 +1000 (EST)
 Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
 	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k57MxoKV024328
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:59:50 -0700 (MST)
+	k57N1gGU024713
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 16:01:43 -0700 (MST)
 Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k57Md5qr002142
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 17:39:05 -0500 (CDT)
-Subject: [PATCH 2/10] Add the MPC8641 HPCN platform files.
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k57MewfJ002571
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 17:40:58 -0500 (CDT)
+Subject: [PATCH 3/10] Add MPC8641 HPCN PCI and PCI-Express files.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1149719710.23938.187.camel@cashmere.sps.mot.com>
+Message-Id: <1149719823.23938.190.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Wed, 07 Jun 2006 17:35:10 -0500
+Date: Wed, 07 Jun 2006 17:37:04 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,237 +28,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
 Signed-off-by: Wei Zhang <Wei.Zhang@freescale.com>
+Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
 
 ---
 
- arch/powerpc/platforms/86xx/misc.c         |   50 ++++
- arch/powerpc/platforms/86xx/mpc8641_hpcn.c |   52 +++++
- arch/powerpc/platforms/86xx/mpc8641_hpcn.h |   54 +++++
- arch/powerpc/platforms/86xx/mpc86xx.h      |   31 +++
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |  313 ++++++++++++++++++++++++++++
- 5 files changed, 500 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/86xx/pci.c |  213 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/pex.c |  173 ++++++++++++++++++++++++++++++
+ 2 files changed, 386 insertions(+), 0 deletions(-)
 
 
-diff --git a/arch/powerpc/platforms/86xx/misc.c b/arch/powerpc/platforms/86xx/misc.c
+diff --git a/arch/powerpc/platforms/86xx/pci.c b/arch/powerpc/platforms/86xx/pci.c
 new file mode 100644
-index 0000000..82d981c
+index 0000000..eff6f28
 --- /dev/null
-+++ b/arch/powerpc/platforms/86xx/misc.c
-@@ -0,0 +1,50 @@
++++ b/arch/powerpc/platforms/86xx/pci.c
+@@ -0,0 +1,213 @@
 +/*
-+ * MPC86XX generic code
-+ *
-+ * Author: Xianghua Xiao <x.xiao@freescale.com>
-+ *
-+ * Copyright 2006 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/irq.h>
-+#include <linux/module.h>
-+#include <asm/irq.h>
-+#include <asm/io.h>
-+
-+
-+void
-+mpc86xx_restart(char *cmd)
-+{
-+	void __iomem *rstcr;
-+
-+	local_irq_disable();
-+
-+	/* Assert reset request to Reset Control Register */
-+	rstcr = ioremap(get_immrbase() + MPC86XX_RSTCR_OFFSET, 0x100);
-+	out_be32(rstcr, 0x2);
-+
-+	/* not reached */
-+}
-+
-+
-+long __init
-+mpc86xx_time_init(void)
-+{
-+	unsigned int temp;
-+
-+	/* Set the time base to zero */
-+	mtspr(SPRN_TBWL, 0);
-+	mtspr(SPRN_TBWU, 0);
-+
-+	temp = mfspr(SPRN_HID0);
-+	temp |= HID0_TBEN;
-+	mtspr(SPRN_HID0, temp);
-+	asm volatile("isync");
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/platforms/86xx/mpc8641_hpcn.c b/arch/powerpc/platforms/86xx/mpc8641_hpcn.c
-new file mode 100644
-index 0000000..655e2b8
---- /dev/null
-+++ b/arch/powerpc/platforms/86xx/mpc8641_hpcn.c
-@@ -0,0 +1,52 @@
-+/*
-+ * MPC8641 HPCN board specific routines
-+ *
-+ * Author: Xianghua Xiao <x.xiao@freescale.com>
-+ *
-+ * Copyright 2006 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+
-+#include <asm/pgtable.h>
-+#include <asm/page.h>
-+#include <asm/pci-bridge.h>
-+#include <asm-powerpc/mpic.h>
-+#include <asm/mpc86xx.h>
-+
-+#include "mpc86xx.h"
-+
-+
-+#ifdef CONFIG_SMP
-+static void __init
-+smp_8641_kick_cpu(int nr)
-+{
-+	*(unsigned long *)KERNELBASE = nr;
-+	asm volatile("dcbf 0,%0"::"r"(KERNELBASE):"memory");
-+	printk("CPU%d released, waiting\n",nr);
-+}
-+
-+static void __init
-+smp_8641_setup_cpu(int cpu_nr)
-+{
-+	mpic_setup_this_cpu();
-+}
-+
-+
-+struct smp_ops_t smp_8641_ops = {
-+	.message_pass = smp_mpic_message_pass,
-+	.probe = smp_mpic_probe,
-+	.kick_cpu = smp_8641_kick_cpu,
-+	.setup_cpu = smp_8641_setup_cpu,
-+	.take_timebase = smp_generic_take_timebase,
-+	.give_timebase = smp_generic_give_timebase,
-+};
-+#endif /* CONFIG_SMP */
-diff --git a/arch/powerpc/platforms/86xx/mpc8641_hpcn.h b/arch/powerpc/platforms/86xx/mpc8641_hpcn.h
-new file mode 100644
-index 0000000..4ba5b4c
---- /dev/null
-+++ b/arch/powerpc/platforms/86xx/mpc8641_hpcn.h
-@@ -0,0 +1,54 @@
-+/*
-+ * MPC8641 HPCN board definitions
-+ *
-+ * Copyright 2006 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ *
-+ * Author: Xianghua Xiao <x.xiao@freescale.com>
-+ */
-+
-+#ifndef __MPC8641_HPCN_H__
-+#define __MPC8641_HPCN_H__
-+
-+#include <linux/config.h>
-+#include <linux/init.h>
-+
-+/* PCI interrupt controller */
-+#define PIRQA		3
-+#define PIRQB		4
-+#define PIRQC		5
-+#define PIRQD		6
-+#define PIRQ7		7
-+#define PIRQE		9
-+#define PIRQF		10
-+#define PIRQG		11
-+#define PIRQH		12
-+
-+/* PEX memory map */
-+#define MPC86XX_PEX_LOWER_IO        0x00000000
-+#define MPC86XX_PEX_UPPER_IO        0x00ffffff
-+
-+#define MPC86XX_PEX_LOWER_MEM       0x80000000
-+#define MPC86XX_PEX_UPPER_MEM       0x9fffffff
-+
-+#define MPC86XX_PEX_IO_BASE         0xe2000000
-+#define MPC86XX_PEX_MEM_OFFSET      0x00000000
-+
-+#define MPC86XX_PEX_IO_SIZE         0x01000000
-+
-+#define PEX1_CFG_ADDR_OFFSET    (0x8000)
-+#define PEX1_CFG_DATA_OFFSET    (0x8004)
-+
-+#define PEX2_CFG_ADDR_OFFSET    (0x9000)
-+#define PEX2_CFG_DATA_OFFSET    (0x9004)
-+
-+#define MPC86xx_PEX_OFFSET PEX1_CFG_ADDR_OFFSET
-+#define MPC86xx_PEX_SIZE	(0x1000)
-+
-+#define MPC86XX_RSTCR_OFFSET	(0xe00b0)	/* Reset Control Register */
-+
-+#endif	/* __MPC8641_HPCN_H__ */
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h b/arch/powerpc/platforms/86xx/mpc86xx.h
-new file mode 100644
-index 0000000..7cc45d4
---- /dev/null
-+++ b/arch/powerpc/platforms/86xx/mpc86xx.h
-@@ -0,0 +1,31 @@
-+/*
-+ * Copyright 2006 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#ifndef __MPC86XX_H__
-+#define __MPC86XX_H__
-+
-+/*
-+ * Declaration for the various functions exported by the
-+ * mpc86xx_* files. Mostly for use by mpc86xx_setup().
-+ */
-+
-+extern void mpc86xx_restart(char *cmd);
-+extern long __init mpc86xx_time_init(void);
-+
-+extern int __init add_bridge(struct device_node *dev);
-+
-+extern void __init setup_indirect_pex(struct pci_controller* hose,
-+				      u32 cfg_addr, u32 cfg_data);
-+extern void __init setup_indirect_pex_nomap(struct pci_controller* hose,
-+					    void __iomem * cfg_addr,
-+					    void __iomem * cfg_data);
-+
-+extern struct smp_ops_t smp_8641_ops;
-+
-+#endif	/* __MPC86XX_H__ */
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-new file mode 100644
-index 0000000..1374f27
---- /dev/null
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -0,0 +1,313 @@
-+/*
-+ * MPC86xx HPCN board specific routines
++ * MPC86XX pci setup code
 + *
 + * Recode: ZHANG WEI <wei.zhang@freescale.com>
 + * Initial author: Xianghua Xiao <x.xiao@freescale.com>
@@ -272,301 +59,380 @@ index 0000000..1374f27
 + */
 +
 +#include <linux/config.h>
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/module.h>
++#include <linux/init.h>
 +#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/root_dev.h>
++#include <linux/serial.h>
 +
 +#include <asm/system.h>
-+#include <asm/time.h>
-+#include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/mpc86xx.h>
++#include <asm/atomic.h>
++#include <asm/io.h>
 +#include <asm/prom.h>
-+#include <mm/mmu_decl.h>
-+#include <asm/udbg.h>
-+#include <asm/i8259.h>
-+
-+#include <asm/mpic.h>
-+
++#include <asm/immap_86xx.h>
++#include <asm/pci-bridge.h>
 +#include <sysdev/fsl_soc.h>
 +
 +#include "mpc86xx.h"
 +
-+#ifndef CONFIG_PCI
-+unsigned long isa_io_base = 0;
-+unsigned long isa_mem_base = 0;
-+unsigned long pci_dram_offset = 0;
-+#endif
-+
-+
-+/*
-+ * Internal interrupts are all Level Sensitive, and Positive Polarity
-+ */
-+
-+static u_char mpc86xx_hpcn_openpic_initsenses[] __initdata = {
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  0: Reserved */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  1: MCM */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  2: DDR DRAM */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  3: LBIU */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  4: DMA 0 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  5: DMA 1 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  6: DMA 2 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  7: DMA 3 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  8: PEX1 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  9: PEX2 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 10: Reserved */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 11: Reserved */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 12: DUART2 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 13: TSEC 1 Transmit */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 14: TSEC 1 Receive */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 15: TSEC 3 transmit */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 16: TSEC 3 receive */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 17: TSEC 3 error */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 18: TSEC 1 Receive/Transmit Error */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 19: TSEC 2 Transmit */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 20: TSEC 2 Receive */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 21: TSEC 4 transmit */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 22: TSEC 4 receive */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 23: TSEC 4 error */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 24: TSEC 2 Receive/Transmit Error */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 25: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 26: DUART1 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 27: I2C */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 28: Performance Monitor */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 29: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 30: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 31: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 32: SRIO error/write-port unit */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 33: SRIO outbound doorbell */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 34: SRIO inbound doorbell */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 35: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 36: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 37: SRIO outbound message unit 1 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 38: SRIO inbound message unit 1 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 39: SRIO outbound message unit 2 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 40: SRIO inbound message unit 2 */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 41: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 42: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 43: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 44: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 45: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 46: Unused */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 47: Unused */
-+	0x0,						/* External  0: */
-+	0x0,						/* External  1: */
-+	0x0,						/* External  2: */
-+	0x0,						/* External  3: */
-+	0x0,						/* External  4: */
-+	0x0,						/* External  5: */
-+	0x0,						/* External  6: */
-+	0x0,						/* External  7: */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External  8: Pixis FPGA */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* External  9: ULI 8259 INTR Cascade */
-+	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 10: Quad ETH PHY */
-+	0x0,						/* External 11: */
-+	0x0,
-+	0x0,
-+	0x0,
-+	0x0,
-+};
-+
-+
-+void __init
-+mpc86xx_hpcn_init_IRQ(void)
-+{
-+	struct mpic *mpic1;
-+	phys_addr_t OpenPIC_PAddr;
-+
-+	/* Determine the Physical Address of the OpenPIC regs */
-+	OpenPIC_PAddr = get_immrbase() + MPC86xx_OPENPIC_OFFSET;
-+
-+	/* Alloc mpic structure and per isu has 16 INT entries. */
-+	mpic1 = mpic_alloc(OpenPIC_PAddr,
-+			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+			16, MPC86xx_OPENPIC_IRQ_OFFSET, 0, 250,
-+			mpc86xx_hpcn_openpic_initsenses,
-+			sizeof(mpc86xx_hpcn_openpic_initsenses),
-+			" MPIC     ");
-+	BUG_ON(mpic1 == NULL);
-+
-+	/* 48 Internal Interrupts */
-+	mpic_assign_isu(mpic1, 0, OpenPIC_PAddr + 0x10200);
-+	mpic_assign_isu(mpic1, 1, OpenPIC_PAddr + 0x10400);
-+	mpic_assign_isu(mpic1, 2, OpenPIC_PAddr + 0x10600);
-+
-+	/* 16 External interrupts */
-+	mpic_assign_isu(mpic1, 3, OpenPIC_PAddr + 0x10000);
-+
-+	mpic_init(mpic1);
 +
 +#ifdef CONFIG_PEX
-+	mpic_setup_cascade(MPC86xx_IRQ_EXT9, i8259_irq_cascade, NULL);
-+	i8259_init(0, I8259_OFFSET);
-+#endif
-+}
-+
-+
-+
-+#ifdef CONFIG_PCI
-+/*
-+ * interrupt routing
-+ */
-+
-+int
-+mpc86xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
-+{
-+	static char pci_irq_table[][4] = {
-+		/*
-+		 *      PCI IDSEL/INTPIN->INTLINE
-+		 *       A      B      C      D
-+		 */
-+		{PIRQA, PIRQB, PIRQC, PIRQD},   /* IDSEL 17 -- PCI Slot 1 */
-+		{PIRQB, PIRQC, PIRQD, PIRQA},	/* IDSEL 18 -- PCI Slot 2 */
-+		{0, 0, 0, 0},			/* IDSEL 19 */
-+		{0, 0, 0, 0},			/* IDSEL 20 */
-+		{0, 0, 0, 0},			/* IDSEL 21 */
-+		{0, 0, 0, 0},			/* IDSEL 22 */
-+		{0, 0, 0, 0},			/* IDSEL 23 */
-+		{0, 0, 0, 0},			/* IDSEL 24 */
-+		{0, 0, 0, 0},			/* IDSEL 25 */
-+		{0, 0, 0, 0},			/* IDSEL 26 */
-+		{PIRQC, 0, 0, 0},		/* IDSEL 27 -- LAN */
-+		{PIRQE, PIRQF, PIRQH, PIRQ7},	/* IDSEL 28 -- USB 1.1 */
-+		{PIRQE, PIRQF, PIRQG, 0},	/* IDSEL 29 -- Audio & Modem */
-+		{PIRQH, 0, 0, 0},		/* IDSEL 30 -- LPC & PMU*/
-+		{PIRQD, 0, 0, 0},		/* IDSEL 31 -- ATA */
-+	};
-+
-+	const long min_idsel = 17, max_idsel = 31, irqs_per_slot = 4;
-+	return PCI_IRQ_TABLE_LOOKUP + I8259_OFFSET;
-+}
-+
-+
-+int
-+mpc86xx_exclude_device(u_char bus, u_char devfn)
-+{
-+#if !defined(CONFIG_PEX)
-+	if (bus == 0 && PCI_SLOT(devfn) == 0)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+#endif
-+
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+#endif /* CONFIG_PCI */
-+
-+
 +static void __init
-+mpc86xx_hpcn_setup_arch(void)
++mpc86xx_setup_pex(struct pci_controller *hose)
 +{
-+	struct device_node *np;
++	volatile struct ccsr_pex *pex;
++	u16 cmd;
++	unsigned int temps;
++	phys_addr_t immr;
 +
-+#ifdef CONFIG_SMP
-+	phys_addr_t mcm_paddr;
-+	void *mcm_vaddr = NULL;
-+	unsigned long vaddr;
-+#endif
++	immr = get_immrbase();
 +
-+	if (ppc_md.progress)
-+		ppc_md.progress("mpc86xx_hpcn_setup_arch()", 0);
++	pex = ioremap(immr + MPC86xx_PEX_OFFSET, MPC86xx_PEX_SIZE);
 +
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (np != 0) {
-+		unsigned int *fp;
++	early_read_config_word(hose, 0, 0, PCI_COMMAND, &cmd);
++	cmd |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY
++	    | PCI_COMMAND_IO;
++	early_write_config_word(hose, 0, 0, PCI_COMMAND, cmd);
 +
-+		fp = (int *)get_property(np, "clock-frequency", NULL);
-+		if (fp != 0)
-+			loops_per_jiffy = *fp / HZ;
-+		else
-+			loops_per_jiffy = 50000000 / HZ;
-+		of_node_put(np);
-+	}
++	early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0x80);
 +
-+#ifdef CONFIG_PEX
-+	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+		add_bridge(np);
++	/* PEX Bus, Fix the MPC8641D host bridge's location to bus 0xFF. */
++	early_read_config_dword(hose, 0, 0, PCI_PRIMARY_BUS, &temps);
++	temps = (temps & 0xff000000) | (0xff) | (0x0 << 8) | (0xfe << 16);
++	early_write_config_dword(hose, 0, 0, PCI_PRIMARY_BUS, temps);
 +
-+	ppc_md.pci_swizzle = common_swizzle;
-+	ppc_md.pci_map_irq = mpc86xx_map_irq;
-+	ppc_md.pci_exclude_device = mpc86xx_exclude_device;
-+#endif
++	/* Disable all windows (except pexowar0 since its ignored) */
++	pex->pexowar1 = 0;
++	pex->pexowar2 = 0;
++	pex->pexowar3 = 0;
++	pex->pexowar4 = 0;
++	pex->pexiwar1 = 0;
++	pex->pexiwar2 = 0;
++	pex->pexiwar3 = 0;
 +
-+	printk("HPCN board with 86xx from Freescale Semiconductor\n");
++	/* Setup Phys:PEX 1:1 outbound mem window @ MPC86XX_PEX_LOWER_MEM */
++	pex->pexotar1 = (MPC86XX_PEX_LOWER_MEM >> 12) & 0x000fffff;
++	pex->pexotear1 = 0x00000000;
++	pex->pexowbar1 = (MPC86XX_PEX_LOWER_MEM >> 12) & 0x000fffff;
++	/* Enable, Mem R/W */
++	pex->pexowar1 = 0x80044000 |
++		(__ilog2(MPC86XX_PEX_UPPER_MEM - MPC86XX_PEX_LOWER_MEM + 1) - 1);
 +
-+#ifdef  CONFIG_ROOT_NFS
-+	ROOT_DEV = Root_NFS;
-+#else
-+	ROOT_DEV = Root_HDA1;
-+#endif
++	/* Setup outboud IO windows @ MPC86XX_PEX_IO_BASE */
++	pex->pexotar2 = (MPC86XX_PEX_LOWER_IO >> 12) & 0x000fffff;
++	pex->pexotear2 = 0x00000000;
++	pex->pexowbar2 = (MPC86XX_PEX_IO_BASE >> 12) & 0x000fffff;
++	/* Enable, IO R/W */
++	pex->pexowar2 = 0x80088000 | (__ilog2(MPC86XX_PEX_IO_SIZE) - 1);
 +
-+#ifdef CONFIG_SMP
-+  	/* Release Core 1 in boot holdoff */
-+	mcm_paddr = get_immrbase() + MPC86xx_MCM_OFFSET;
-+	mcm_vaddr = ioremap(mcm_paddr, MPC86xx_MCM_SIZE);
-+
-+	vaddr = (unsigned long)mcm_vaddr +  MCM_PORT_CONFIG_OFFSET;
-+	out_be32((volatile unsigned *)vaddr, CPU_ALL_RELEASED);
-+	smp_ops = &smp_8641_ops;
-+#endif
++	/* Setup 2G inbound Memory Window @ 0 */
++	pex->pexitar1 = 0x00000000;
++	pex->pexiwbar1 = 0x00000000;
++	/* Enable, Prefetch, Local Mem, Snoop R/W, 2G */
++	pex->pexiwar1 = 0xa0f5501e;
 +}
 +
-+
-+void
-+mpc86xx_hpcn_show_cpuinfo(struct seq_file *m)
++int __init add_bridge(struct device_node *dev)
 +{
-+	uint pvid, svid, phid1;
-+	uint memsize = total_memory;
++	int len;
++	struct pci_controller *hose;
++	struct resource rsrc;
++	int *bus_range;
++	int has_address = 0;
 +
-+	pvid = mfspr(SPRN_PVR);
-+	svid = mfspr(SPRN_SVR);
++	pr_debug("Adding PEX host bridge %s\n", dev->full_name);
 +
-+	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
++	/* Fetch host bridge registers address */
++	has_address = (of_address_to_resource(dev, 0, &rsrc) == 0);
 +
-+	switch (pvid & 0xffff0000) {
-+	case PVR_8641:
-+		seq_printf(m, "Machine\t\t: HPCN 8641 Board\n");
-+		break;
-+	default:
-+		seq_printf(m, "Machine\t\t: unknown\n");
-+		break;
-+	}
-+	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
-+	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
++	/* Get bus range if any */
++	bus_range = (int *) get_property(dev, "bus-range", &len);
++	if (bus_range == NULL || len < 2 * sizeof(int))
++		printk(KERN_WARNING "Can't get bus-range for %s, assume"
++		       " bus 0\n", dev->full_name);
 +
-+	/* Display cpu Pll setting */
-+	phid1 = mfspr(SPRN_HID1);
-+	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
++	hose = pcibios_alloc_controller();
++	if (!hose)
++		return -ENOMEM;
++	hose->arch_data = dev;
++	hose->set_cfg_type = 1;
 +
-+	/* Display the amount of memory */
-+	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
-+}
++	/* last_busno = 0xfe cause by PEX bug */
++	hose->first_busno = bus_range ? bus_range[0] : 0x0;
++	hose->last_busno = bus_range ? bus_range[1] : 0xfe;
 +
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init mpc86xx_hpcn_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
++	setup_indirect_pex(hose, rsrc.start, rsrc.start + 0x4);
 +
-+	if (of_flat_dt_is_compatible(root, "mpc86xx"))
-+		return 1;	/* Looks good */
++	/* Setup the first PEX controller. */
++	if ((rsrc.start & 0xfffff) == 0x8000)
++		mpc86xx_setup_pex(hose);
++
++	printk(KERN_INFO "Found MPC86xx PEX host bridge at 0x%08lx. "
++	       "Firmware bus number: %d->%d\n",
++		rsrc.start, hose->first_busno, hose->last_busno);
++
++	pr_debug(" ->Hose at 0x%p, cfg_addr=0x%p,cfg_data=0x%p\n",
++		hose, hose->cfg_addr, hose->cfg_data);
++
++	/* Interpret the "ranges" property */
++	/* This also maps the I/O region and sets isa_io/mem_base */
++	pci_process_bridge_OF_ranges(hose, dev, 1);
 +
 +	return 0;
 +}
++#endif /* CONFIG_PEX */
 +
-+define_machine(mpc86xx_hpcn) {
-+	.name			= "MPC86xx HPCN",
-+	.probe			= mpc86xx_hpcn_probe,
-+	.setup_arch		= mpc86xx_hpcn_setup_arch,
-+	.init_IRQ		= mpc86xx_hpcn_init_IRQ,
-+	.show_cpuinfo		= mpc86xx_hpcn_show_cpuinfo,
-+	.get_irq		= mpic_get_irq,
-+	.restart		= mpc86xx_restart,
-+	.time_init		= mpc86xx_time_init,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
++static void __devinit quirk_ali1575(struct pci_dev *dev)
++{
++	/*
++	 * ALI1575 interrupts route table setup:
++	 *
++	 * IRQ pin   IRQ#
++	 * PIRQA ---- 3
++	 * PIRQB ---- 4
++	 * PIRQC ---- 5
++	 * PIRQD ---- 6
++	 * PIRQE ---- 9
++	 * PIRQF ---- 10
++	 * PIRQG ---- 11
++	 * PIRQH ---- 12
++	 *
++	 * interrupts for PCI slot0 -- PIRQA / PIRQB / PIRQC / PIRQD
++	 *                PCI slot1 -- PIRQB / PIRQC / PIRQD / PIRQA
++	 */
++	pci_write_config_dword(dev, 0x48, 0xb9317542);
++
++	/* USB 1.1 OHCI controller 1, interrupt: PIRQE */
++	pci_write_config_byte(dev, 0x86, 0x0c);
++
++	/* USB 1.1 OHCI controller 2, interrupt: PIRQF */
++	pci_write_config_byte(dev, 0x87, 0x0d);
++
++	/* USB 1.1 OHCI controller 3, interrupt: PIRQH */
++	pci_write_config_byte(dev, 0x88, 0x0f);
++
++	/* USB 2.0 controller, interrupt: PIRQ7 */
++	pci_write_config_byte(dev, 0x74, 0x06);
++
++	/* Audio controller, interrupt: PIRQE */
++	pci_write_config_byte(dev, 0x8a, 0x0c);
++
++	/* Modem controller, interrupt: PIRQF */
++	pci_write_config_byte(dev, 0x8b, 0x0d);
++
++	/* HD audio controller, interrupt: PIRQG */
++	pci_write_config_byte(dev, 0x8c, 0x0e);
++
++	/* Serial ATA interrupt: PIRQD */
++	pci_write_config_byte(dev, 0x8d, 0x0b);
++
++	/* SMB interrupt: PIRQH */
++	pci_write_config_byte(dev, 0x8e, 0x0f);
++
++	/* PMU ACPI SCI interrupt: PIRQH */
++	pci_write_config_byte(dev, 0x8f, 0x0f);
++
++}
++
++static void __devinit quirk_uli5288(struct pci_dev *dev)
++{
++	unsigned char c;
++
++	pci_read_config_byte(dev,0x83,&c);
++	c |= 0x80;
++	pci_write_config_byte(dev, 0x83, c);
++
++	pci_write_config_byte(dev, 0x09, 0x01);
++	pci_write_config_byte(dev, 0x0a, 0x06);
++
++	pci_read_config_byte(dev,0x83,&c);
++	c &= 0x7f;
++	pci_write_config_byte(dev, 0x83, c);
++
++	pci_read_config_byte(dev,0x84,&c);
++	c |= 0x01;
++	pci_write_config_byte(dev, 0x84, c);
++}
++
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x1575, quirk_ali1575);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5288, quirk_uli5288);
++
+diff --git a/arch/powerpc/platforms/86xx/pex.c b/arch/powerpc/platforms/86xx/pex.c
+new file mode 100644
+index 0000000..2624d3c
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/pex.c
+@@ -0,0 +1,173 @@
++/*
++ * Support for indirect PCI bridges.
++ *
++ * Copyright (C) 1998 Gabriel Paubert.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * "Temporary" MPC8548 Errata file -
++ * The standard indirect_pci code should work with future silicon versions.
++ */
++
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/delay.h>
++#include <linux/string.h>
++#include <linux/init.h>
++#include <linux/bootmem.h>
++
++#include <asm/io.h>
++#include <asm/prom.h>
++#include <asm/pci-bridge.h>
++#include <asm/machdep.h>
++
++#include "mpc86xx.h"
++
++#define PCI_CFG_OUT out_be32
++
++/* ERRATA PCI-Ex 14 PEX Controller timeout */
++#define PEX_FIX		out_be32(hose->cfg_addr+0x4, 0x0400ffff)
++
++
++static int
++indirect_read_config_pex(struct pci_bus *bus, unsigned int devfn, int offset,
++		     int len, u32 *val)
++{
++	struct pci_controller *hose = bus->sysdata;
++	volatile void __iomem *cfg_data;
++	u32 temp;
++
++	if (ppc_md.pci_exclude_device)
++		if (ppc_md.pci_exclude_device(bus->number, devfn))
++			return PCIBIOS_DEVICE_NOT_FOUND;
++
++	/* Possible artifact of CDCpp50937 needs further investigation */
++	if (devfn != 0x0 && bus->number == 0xff)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	PEX_FIX;
++	if (bus->number == 0xff) {
++		PCI_CFG_OUT(hose->cfg_addr,
++			    (0x80000000 | ((offset & 0xf00) << 16) |
++			     ((bus->number - hose->bus_offset) << 16)
++			     | (devfn << 8) | ((offset & 0xfc) )));
++	} else {
++		PCI_CFG_OUT(hose->cfg_addr,
++			    (0x80000001 | ((offset & 0xf00) << 16) |
++			     ((bus->number - hose->bus_offset) << 16)
++			     | (devfn << 8) | ((offset & 0xfc) )));
++	}
++
++	/*
++	 * Note: the caller has already checked that offset is
++	 * suitably aligned and that len is 1, 2 or 4.
++	 */
++	/* ERRATA PCI-Ex 12 - Configuration Address/Data Alignment */
++	cfg_data = hose->cfg_data;
++	PEX_FIX;
++	temp = in_le32(cfg_data);
++	switch (len) {
++	case 1:
++		*val = (temp >> (((offset & 3))*8)) & 0xff;
++		break;
++	case 2:
++		*val = (temp >> (((offset & 3))*8)) & 0xffff;
++		break;
++	default:
++		*val = temp;
++		break;
++	}
++	return PCIBIOS_SUCCESSFUL;
++}
++
++static int
++indirect_write_config_pex(struct pci_bus *bus, unsigned int devfn, int offset,
++		      int len, u32 val)
++{
++	struct pci_controller *hose = bus->sysdata;
++	volatile void __iomem *cfg_data;
++	u32 temp;
++
++	if (ppc_md.pci_exclude_device)
++		if (ppc_md.pci_exclude_device(bus->number, devfn))
++			return PCIBIOS_DEVICE_NOT_FOUND;
++
++	/* Possible artifact of CDCpp50937 needs further investigation */
++	if (devfn != 0x0 && bus->number == 0xff)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	PEX_FIX;
++	if (bus->number == 0xff) {
++		PCI_CFG_OUT(hose->cfg_addr,
++			    (0x80000000 | ((offset & 0xf00) << 16) |
++			     ((bus->number - hose->bus_offset) << 16)
++			     | (devfn << 8) | ((offset & 0xfc) )));
++	} else {
++		PCI_CFG_OUT(hose->cfg_addr,
++			    (0x80000001 | ((offset & 0xf00) << 16) |
++			     ((bus->number - hose->bus_offset) << 16)
++			     | (devfn << 8) | ((offset & 0xfc) )));
++        }
++
++	/*
++	 * Note: the caller has already checked that offset is
++	 * suitably aligned and that len is 1, 2 or 4.
++	 */
++	/* ERRATA PCI-Ex 12 - Configuration Address/Data Alignment */
++	cfg_data = hose->cfg_data;
++	switch (len) {
++	case 1:
++		PEX_FIX;
++		temp = in_le32(cfg_data);
++		temp = (temp & ~(0xff << ((offset & 3) * 8))) |
++			(val << ((offset & 3) * 8));
++		PEX_FIX;
++		out_le32(cfg_data, temp);
++		break;
++	case 2:
++		PEX_FIX;
++		temp = in_le32(cfg_data);
++		temp = (temp & ~(0xffff << ((offset & 3) * 8)));
++		temp |= (val << ((offset & 3) * 8)) ;
++		PEX_FIX;
++		out_le32(cfg_data, temp);
++		break;
++	default:
++		PEX_FIX;
++		out_le32(cfg_data, val);
++		break;
++	}
++	PEX_FIX;
++	return PCIBIOS_SUCCESSFUL;
++}
++
++static struct pci_ops indirect_pex_ops = {
++	indirect_read_config_pex,
++	indirect_write_config_pex
 +};
 +
++void __init
++setup_indirect_pex_nomap(struct pci_controller* hose, void __iomem * cfg_addr,
++	void __iomem * cfg_data)
++{
++	hose->cfg_addr = cfg_addr;
++	hose->cfg_data = cfg_data;
++	hose->ops = &indirect_pex_ops;
++}
++
++void __init
++setup_indirect_pex(struct pci_controller* hose, u32 cfg_addr, u32 cfg_data)
++{
++	unsigned long base = cfg_addr & PAGE_MASK;
++	void __iomem *mbase, *addr, *data;
++
++	mbase = ioremap(base, PAGE_SIZE);
++	addr = mbase + (cfg_addr & ~PAGE_MASK);
++	if ((cfg_data & PAGE_MASK) != base)
++		mbase = ioremap(cfg_data & PAGE_MASK, PAGE_SIZE);
++	data = mbase + (cfg_data & ~PAGE_MASK);
++	setup_indirect_pex_nomap(hose, addr, data);
++}
