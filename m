@@ -1,22 +1,18 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id ABEFE67B43
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Jun 2006 09:43:56 +1000 (EST)
-Date: Tue, 6 Jun 2006 16:43:11 -0700
-From: Andrew Morton <akpm@osdl.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 0/5] Sizing zones and holes in an architecture
-	independent manner V7
-Message-Id: <20060606164311.27d4af98.akpm@osdl.org>
-In-Reply-To: <20060606134710.21419.48239.sendpatchset@skynet.skynet.ie>
-References: <20060606134710.21419.48239.sendpatchset@skynet.skynet.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: davej@codemonkey.org.uk, tony.luck@intel.com, linux-mm@kvack.org,
-	mel@csn.ul.ie, ak@suse.de, bob.picco@hp.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <cyeoh@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17542.9980.803879.151529@localhost.localdomain>
+Date: Wed, 7 Jun 2006 11:08:12 +1000
+From: "Christopher Yeoh" <cyeoh@samba.org>
+To: Mike Kravetz <kravetz@us.ibm.com>
+Subject: Re: Collecting hypervisor call stats
+In-Reply-To: <20060606164646.GA3161@w-mikek2.ibm.com>
+References: <20060531204144.GA7909@w-mikek2.ibm.com>
+	<AEFF6654-C958-42F7-93CF-64103B015CB1@watson.ibm.com>
+	<17534.30511.192632.558778@localhost.localdomain>
+	<20060606164646.GA3161@w-mikek2.ibm.com>
+Cc: Chris Yeoh <yeohc@au1.ibm.com>, Bryan Rosenburg <rosnbrg@us.ibm.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue,  6 Jun 2006 14:47:10 +0100 (IST)
-Mel Gorman <mel@csn.ul.ie> wrote:
+At 2006/6/6 09:46-0700  Mike Kravetz writes:
+> On Thu, Jun 01, 2006 at 03:12:15PM +1000, Christopher Yeoh wrote:
+> > Here's a patch we've used for collecting hcall counts and times.
+> 
+> Thanks for the patch/code Chris!  I'm using this as a basis for something
+> that we may want to merge into the tree.  Just a couple of questions.
+> 
+> Your 'wrappers' have the following general form:
+> 
+> 
+> Can you explain the need for barrier(s) before and after the call to the
+> real routine?  It usually takes me a couple days of thought to figure out
+> exactly where these are needed. :)
 
-> This is V7 of the patchset to size zones and memory holes in an
-> architecture-independent manner.
+Ah oops, it turns out I was wrong and they're not necessary after all.
 
-I hope this won't deprive me of my 4 kbyte highmem zone.
+> The use of get_cpu_var/put_cpu_var result in disabling/enabling preemption.
+> I can understand why this would be desirable to assure the accuracy of the
+> statistics.  But, I was wondering if the desired accuracy is worth the added
+> overhead.  My thought was to make these as lightweight as possible and
+> sacrifice some accuracy if necessary.  After all, no 'internal decisions' are
+> being made because of this data.  It is simply exposed to user land.
+> Thoughts?
 
-I won't merge these patches for rc6-mm1 - we already have a few problems in
-this area which I don't think anyone understands yet.
+For what we were using them for at the time we weren't really
+concerned about a small degradation in performance and were more
+interested in accuracy. I guess I'd recommend doing some benchmarking
+to see what difference they really make.
+
+Chris
+-- 
+cyeoh@au.ibm.com
+IBM OzLabs Linux Development Group
+Canberra, Australia
