@@ -1,21 +1,26 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (colo.jdl.com [66.118.10.122])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F411467B6C
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 01:20:06 +1000 (EST)
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] dtc: add setting of physical boot cpu 
-In-Reply-To: Your message of "Wed, 31 May 2006 08:31:51 +1000."
-	<20060530223309.9AB7667B3E@ozlabs.org>
-References: <20060518035734.2B2CA67A6D@ozlabs.org>
-	<7AC7793A-74F3-4596-BF28-19BCA9E388CF@watson.ibm.com>
-	<20060518170017.B15E367A6C@ozlabs.org>
-	<20060530223309.9AB7667B3E@ozlabs.org>
-Date: Wed, 07 Jun 2006 09:49:43 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1FnzLr-0007Ot-NL@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ak@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EE35A67B47
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 01:20:35 +1000 (EST)
+From: Andi Kleen <ak@suse.de>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 0/5] Sizing zones and holes in an architecture independent
+	manner V7
+Date: Wed, 7 Jun 2006 17:20:22 +0200
+References: <20060606134710.21419.48239.sendpatchset@skynet.skynet.ie>
+	<200606071216.24640.ak@suse.de>
+	<Pine.LNX.4.64.0606071118230.20653@skynet.skynet.ie>
+In-Reply-To: <Pine.LNX.4.64.0606071118230.20653@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200606071720.22242.ak@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, davej@codemonkey.org.uk, tony.luck@intel.com,
+	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+	bob.picco@hp.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +30,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Michael Neuling mumbled:
-> dtc always sets the physical boot CPU to 0xfeedbeef.  Add a -b option to
-> set this.    Also add warnings when using the wrong property with the
-> wrong blob version.  
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Applied and pushed out to:
+> Ok, while true, I'm not sure how it affects performance. The only "real" 
+> value affected by present_pages is the number of patches that are 
+> allocated in batches to the per-cpu allocator.
 
-     http://www.jdl.com/git_repos
+It affects the low/high water marks in the VM zone balancer.
 
-Sorry for the hang time.
+Especially for the 16MB DMA zone it can make a difference if you
+account 4MB kernel in there or not.
 
-Thanks,
-jdl
+-Andi
