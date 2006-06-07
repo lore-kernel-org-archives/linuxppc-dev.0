@@ -1,29 +1,29 @@
 Return-Path: <moilanen@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1B77767B37
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 07:14:06 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e31.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k57LE4kq027378
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 507E467B7F
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 07:23:32 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k57LNTfh011110
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 17:14:04 -0400
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 17:23:29 -0400
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k57LDxDl250720
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k57LNSSd290216
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:13:59 -0600
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:23:28 -0600
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k57LE36B012431
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:14:03 -0600
-Date: Wed, 7 Jun 2006 16:05:46 -0500
+	k57LNS0X009459
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Jun 2006 15:23:28 -0600
+Date: Wed, 7 Jun 2006 16:15:10 -0500
 From: Jake Moilanen <moilanen@austin.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] PCIe device_type pciex
-Message-Id: <20060607160546.3ec7d581.moilanen@austin.ibm.com>
+Subject: [PATCH 2/3] MSI power abstraction
+Message-Id: <20060607161510.00ecc442.moilanen@austin.ibm.com>
 In-Reply-To: <20060607160212.1203d9ea.moilanen@austin.ibm.com>
 References: <20060607160212.1203d9ea.moilanen@austin.ibm.com>
 Mime-Version: 1.0
@@ -38,50 +38,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds support to recognize the PCIe device_type "pciex" and made
-the portdrv buildable.
+Instead of trying to make PPC64 MSI fit in a Intel-centric MSI layer, a
+simple short-term solution is to hook the pci_{en/dis}able_msi() calls
+and make a machdep call.
+
+The rest of the MSI functions are superfluous for what is needed at this
+time.  Many of which can have machdep calls added as needed.
+
+Ben and Michael Ellerman are looking into rewrite the MSI layer to be
+more generic.  However, in the meantime this works as a interim
+solution.
 
 Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
 
-
-Index: 2.6/arch/powerpc/Kconfig
+Index: 2.6/arch/powerpc/kernel/irq.c
 ===================================================================
---- 2.6.orig/arch/powerpc/Kconfig	2006-05-31 15:33:57.000000000 -0500
-+++ 2.6/arch/powerpc/Kconfig	2006-05-31 15:34:10.000000000 -0500
-@@ -849,6 +849,8 @@
+--- 2.6.orig/arch/powerpc/kernel/irq.c	2006-06-07 15:23:41.000000000 -0500
++++ 2.6/arch/powerpc/kernel/irq.c	2006-06-07 15:29:32.000000000 -0500
+@@ -47,6 +47,7 @@
+ #include <linux/cpumask.h>
+ #include <linux/profile.h>
+ #include <linux/bitops.h>
++#include <linux/pci.h>
  
- endchoice
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+@@ -436,6 +437,30 @@
+ }
+ EXPORT_SYMBOL(do_softirq);
  
-+source "drivers/pci/pcie/Kconfig"
++#ifdef CONFIG_PCI_MSI
++int pci_enable_msi(struct pci_dev * pdev)
++{
++	if (ppc_md.enable_msi)
++		return ppc_md.enable_msi(pdev);
++	else
++		return -1;
++}
 +
- source "drivers/pci/Kconfig"
- 
- source "drivers/pcmcia/Kconfig"
-Index: 2.6/arch/powerpc/kernel/pci_64.c
-===================================================================
---- 2.6.orig/arch/powerpc/kernel/pci_64.c	2006-05-31 15:33:57.000000000 -0500
-+++ 2.6/arch/powerpc/kernel/pci_64.c	2006-05-31 15:34:10.000000000 -0500
-@@ -396,7 +396,7 @@
- 
- 	dev->current_state = 4;		/* unknown power state */
- 
--	if (!strcmp(type, "pci")) {
-+	if (!strcmp(type, "pci") || !strcmp(type, "pciex")) {
- 		/* a PCI-PCI bridge */
- 		dev->hdr_type = PCI_HEADER_TYPE_BRIDGE;
- 		dev->rom_base_reg = PCI_ROM_ADDRESS1;
-Index: 2.6/arch/powerpc/kernel/rtas_pci.c
-===================================================================
---- 2.6.orig/arch/powerpc/kernel/rtas_pci.c	2006-05-31 15:33:57.000000000 -0500
-+++ 2.6/arch/powerpc/kernel/rtas_pci.c	2006-05-31 15:34:10.000000000 -0500
-@@ -313,7 +313,9 @@
- 	for (node = of_get_next_child(root, NULL);
- 	     node != NULL;
- 	     node = of_get_next_child(root, node)) {
--		if (node->type == NULL || strcmp(node->type, "pci") != 0)
++void pci_disable_msi(struct pci_dev * pdev)
++{
++	if (ppc_md.disable_msi)
++		ppc_md.disable_msi(pdev);
++}
 +
-+		if (node->type == NULL || (strcmp(node->type, "pci") != 0 &&
-+					   strcmp(node->type, "pciex") != 0))
- 			continue;
++void pci_scan_msi_device(struct pci_dev *dev) {}
++int pci_enable_msix(struct pci_dev* dev, struct msix_entry *entries, int nvec) {return -1;}
++void pci_disable_msix(struct pci_dev *dev) {}
++void msi_remove_pci_irq_vectors(struct pci_dev *dev) {}
++void disable_msi_mode(struct pci_dev *dev, int pos, int type) {}
++void pci_no_msi(void) {}
++
++#endif
++
+ #ifdef CONFIG_PPC64
+ static int __init setup_noirqdistrib(char *str)
+ {
+Index: 2.6/include/asm-powerpc/machdep.h
+===================================================================
+--- 2.6.orig/include/asm-powerpc/machdep.h	2006-06-07 15:23:41.000000000 -0500
++++ 2.6/include/asm-powerpc/machdep.h	2006-06-07 15:24:48.000000000 -0500
+@@ -238,6 +238,11 @@
+ 	 */
+ 	void (*machine_kexec)(struct kimage *image);
+ #endif /* CONFIG_KEXEC */
++
++#ifdef CONFIG_PCI_MSI
++	int (*enable_msi)(struct pci_dev *pdev);
++	void (*disable_msi)(struct pci_dev *pdev);
++#endif /* CONFIG_PCI_MSI */
+ };
  
- 		phb = pcibios_alloc_controller(node);
+ extern void power4_idle(void);
