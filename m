@@ -1,9 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 07 Jun 2006 17:10:03 +1000
-Subject: [PATCH 1/2] powerpc: Make rtas console _much_ faster
-Message-Id: <20060607071008.96CD567B49@ozlabs.org>
+Date: Wed, 07 Jun 2006 17:10:09 +1000
+Subject: [PATCH 2/2] powerpc: Cleanup hvc_rtas.c a little
+Message-Id: <20060607071009.4E65567B4A@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,57 +14,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently the hvc_rtas driver is painfully slow to use. Our "benchmark" is
-ls -R /etc, which spits out about 27866 characters. The theoretical maximum
-speed would be about 2.2 seconds, the current code takes ~50 seconds.
-
-The core of the problem is that sometimes when the tty layer asks us to push
-characters the firmware isn't able to handle some or all of them, and so
-returns an error. The current code sees this and just returns to the tty code
-with the buffer half sent.
-
-The khvcd thread will eventually wake up and try to push more characters, which
-will usually work because by then the firmware's had time to make room. But
-the khvcd thread only wakes up every 10 milliseconds, which isn't fast enough.
-
-So change the khvcd thread logic so that if there's an incomplete write we
-yield() and then immediately try writing again. Doing so makes POLL_QUICK and
-POLL_WRITE synonymous, so remove POLL_QUICK.
-
-With this patch our "benchmark" takes ~2.8 seconds.
+A few cleanups in hvc_rtas.c:
+ 1. Remove unused RTASCONS_PUT_ATTEMPTS
+ 2. Remove unused rtascons_put_delay.
+ 3. Use i as a loop counter like everyone else on earth.
+ 4. Remove pointless variables, eg. x = foo; if (x) return something_else;
+ 5. Whitespace cleanups and formatting.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- drivers/char/hvc_console.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/char/hvc_rtas.c |   37 ++++++++++++++++---------------------
+ 1 file changed, 16 insertions(+), 21 deletions(-)
 
-Index: to-merge/drivers/char/hvc_console.c
+Index: cell/drivers/char/hvc_rtas.c
 ===================================================================
---- to-merge.orig/drivers/char/hvc_console.c
-+++ to-merge/drivers/char/hvc_console.c
-@@ -553,7 +553,6 @@ static int hvc_chars_in_buffer(struct tt
+--- cell.orig/drivers/char/hvc_rtas.c
++++ cell/drivers/char/hvc_rtas.c
+@@ -41,37 +41,28 @@
+ #define hvc_rtas_cookie 0x67781e15
+ struct hvc_struct *hvc_rtas_dev;
  
- #define HVC_POLL_READ	0x00000001
- #define HVC_POLL_WRITE	0x00000002
--#define HVC_POLL_QUICK	0x00000004
+-#define RTASCONS_PUT_ATTEMPTS  16
+-
+ static int rtascons_put_char_token = RTAS_UNKNOWN_SERVICE;
+ static int rtascons_get_char_token = RTAS_UNKNOWN_SERVICE;
+-static int rtascons_put_delay = 100;
+-module_param_named(put_delay, rtascons_put_delay, int, 0644);
  
- static int hvc_poll(struct hvc_struct *hp)
+-static inline int hvc_rtas_write_console(uint32_t vtermno, const char *buf, int count)
++static inline int hvc_rtas_write_console(uint32_t vtermno, const char *buf,
++		int count)
  {
-@@ -568,6 +567,7 @@ static int hvc_poll(struct hvc_struct *h
- 	/* Push pending writes */
- 	if (hp->n_outbuf > 0)
- 		hvc_push(hp);
+-	int done;
++	int i;
+ 
+-	/* if there is more than one character to be displayed, wait a bit */
+-	for (done = 0; done < count; done++) {
+-		int result;
+-		result = rtas_call(rtascons_put_char_token, 1, 1, NULL, buf[done]);
+-		if (result)
++	for (i = 0; i < count; i++) {
++		if (rtas_call(rtascons_put_char_token, 1, 1, NULL, buf[i]))
+ 			break;
+ 	}
+-	/* the calling routine expects to receive the number of bytes sent */
+-	return done;
 +
- 	/* Reschedule us if still some write pending */
- 	if (hp->n_outbuf > 0)
- 		poll_mask |= HVC_POLL_WRITE;
-@@ -680,7 +680,7 @@ int khvcd(void *unused)
- 			poll_mask |= HVC_POLL_READ;
- 		if (hvc_kicked)
- 			continue;
--		if (poll_mask & HVC_POLL_QUICK) {
-+		if (poll_mask & HVC_POLL_WRITE) {
- 			yield();
- 			continue;
- 		}
++	return i;
+ }
+ 
+ static int hvc_rtas_read_console(uint32_t vtermno, char *buf, int count)
+ {
+-	int i;
++	int i, c;
+ 
+ 	for (i = 0; i < count; i++) {
+-		int c, err;
+-
+-		err = rtas_call(rtascons_get_char_token, 0, 2, &c);
+-		if (err)
++		if (rtas_call(rtascons_get_char_token, 0, 2, &c))
+ 			break;
+ 
+ 		buf[i] = c;
+@@ -106,7 +97,9 @@ static int hvc_rtas_init(void)
+ 	hp = hvc_alloc(hvc_rtas_cookie, NO_IRQ, &hvc_rtas_get_put_ops);
+ 	if (IS_ERR(hp))
+ 		return PTR_ERR(hp);
++
+ 	hvc_rtas_dev = hp;
++
+ 	return 0;
+ }
+ module_init(hvc_rtas_init);
+@@ -114,8 +107,8 @@ module_init(hvc_rtas_init);
+ /* This will tear down the tty portion of the driver */
+ static void __exit hvc_rtas_exit(void)
+ {
+-	/* Really the fun isn't over until the worker thread breaks down and the
+-	 * tty cleans up */
++	/* Really the fun isn't over until the worker thread breaks down and
++	 * the tty cleans up */
+ 	if (hvc_rtas_dev)
+ 		hvc_remove(hvc_rtas_dev);
+ }
+@@ -127,12 +120,14 @@ static int hvc_rtas_console_init(void)
+ 	rtascons_put_char_token = rtas_token("put-term-char");
+ 	if (rtascons_put_char_token == RTAS_UNKNOWN_SERVICE)
+ 		return -EIO;
++
+ 	rtascons_get_char_token = rtas_token("get-term-char");
+ 	if (rtascons_get_char_token == RTAS_UNKNOWN_SERVICE)
+ 		return -EIO;
+ 
+-	hvc_instantiate(hvc_rtas_cookie, 0, &hvc_rtas_get_put_ops );
++	hvc_instantiate(hvc_rtas_cookie, 0, &hvc_rtas_get_put_ops);
+ 	add_preferred_console("hvc", 0, NULL);
++
+ 	return 0;
+ }
+ console_initcall(hvc_rtas_console_init);
