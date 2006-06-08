@@ -1,12 +1,11 @@
-Return-Path: <huseyin_yeter1977@mynet.com>
-Message-ID: <38999.85.96.191.29.1149757074.mynet@webmail22.mynet.com>
-Date: Thu, 8 Jun 2006 11:57:54 +0300 (EEST)
-Subject: 
-From: "huseyin_yeter1977" <huseyin_yeter1977@mynet.com>
+Return-Path: <eemingliu@hotmail.com>
+Message-ID: <BAY110-F1B771BD82DFE542552C0BB28B0@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
 To: Linuxppc-embedded@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; charset=ISO-8859-9;
-	boundary="----=_20060608115754_13476"
+Subject: a problem of kernel-module version mismatch.
+Date: Thu, 08 Jun 2006 13:27:15 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,15 +16,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_20060608115754_13476
-Content-Type: text/plain; charset="ISO-8859-9"
-Content-Transfer-Encoding: 8bit
+Hello everyone,
+Now I am trying to cross-compile the driver for a customed FIFO peripheral 
+in my design. My embedded platform is Xilinx ML403 development board 
+(Virtex4) and the host linux is suse 64-bit. I use the cross-compiler to 
+compile the driver source files provided by Xilinx EDK. But the problem 
+happens:
 
-thank you
-------=_20060608115754_13476
-Content-Type: text/html; charset="ISO-8859-9"
-Content-Transfer-Encoding: 8bit
+# insmod FIFO.o
+insmod: kernel-module version mismatch
+        FIFO.o was compiled for kernel version
+        while this kernel is version 2.4.26
 
-<html><body><DIV>thank you</DIV>
-</body></html>
-------=_20060608115754_13476--
+If I use "-f" option, it shows:
+
+insmod: kernel-module version mismatch
+        FIFO.o was compiled for kernel version
+        while this kernel is version 2.4.26
+insmod: unresolved symbol XIo_In32
+insmod: unresolved symbol XIO_Out32
+
+My embedded linux kernel version is 2.4.26. My compiler is 
+"powerpc-405-linux-gnu-gcc 3.4.1". I don't know how the version mismatch 
+happened. Shall I change another cross-compiler version? I will appreciate 
+a lot if someone could tell me how to solve it. Thanks a lot.
+
+Regards
+Ming
+
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
