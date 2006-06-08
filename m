@@ -1,24 +1,14 @@
-Return-Path: <cdumoulin@ics-ltd.com>
-Received: from mx3-2.spamtrap.magma.ca (mx3-2.spamtrap.magma.ca
-	[209.217.78.169])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 81EFA67C01
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Jun 2006 03:20:10 +1000 (EST)
-Received: from mail2.magma.ca (mail2.internal.magma.ca [10.0.10.12])
-	by mx3-2.spamtrap.magma.ca (8.13.0/8.13.1) with ESMTP id k58HJsTi019258
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 Jun 2006 13:19:54 -0400
-Received: from [192.9.200.156] ([64.26.174.130]) (authenticated bits=0)
-	by mail2.magma.ca (Magma's Mail Server) with ESMTP id k58HJqON009000
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 Jun 2006 13:19:53 -0400
-Message-ID: <44885C45.7020009@ics-ltd.com>
-Date: Thu, 08 Jun 2006 13:20:05 -0400
-From: Chris Dumoulin <cdumoulin@ics-ltd.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: VFS: Cannot open root device ...
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <jianfei616@hotmail.com>
+Message-ID: <BAY113-F70D5359537D7DC16B4678988B0@phx.gbl>
+In-Reply-To: <912A1A11-36AB-4E68-BC29-7F584270C4F0@freescale.com>
+From: "Guo Jaffe" <jianfei616@hotmail.com>
+To: afleming@freescale.com
+Subject: Re: does Gianfar Ethernet Controller Version 1.1 support MARVELL
+	88E1111?
+Date: Fri, 09 Jun 2006 01:51:59 +0800
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,39 +19,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm trying to port a 2.6 kernel to a V2Pro-based board that I've got. I 
-get the following output when trying to boot:
+Hi Andy,
 
-RAMDISK: Compressed image found at block 0
-VFS: Mounted root (ext2 filesystem).
-VFS: Cannot open root device "<NULL>" or unknown-block(0,0)
-Please append a correct "root=" boot option
-Kernel panic - not syncing: VFS: Unable to mount root fs on 
-unknown-block(0,0)
+Thank you for your information. So the driver is not the issue, but better 
+to upgraded.
 
-I'm trying to use an initrd RAMDISK, and I've made sure that RAMDISK and 
-initrd support are both enabled in the kernel configuration. Any ideas 
-would be appreciated.
+I will check the board once more. The PHY doesn't work because the 8bit bus 
+between MAC and PHY is locked(TX_EN and RX_DV all disabled from the scope's 
+view) and also you can't see any signals exist at the Magnetic side(nor LED 
+signals). It seems that only MDC/MDIO and CLOCK reference pin works. The 
+PHY's ID must be read from MDC/MDIO interface and Clocks are right showed 
+on the scope.
 
-Cheers,
-Chris Dumoulin
--- 
-*--Christopher Dumoulin--*
-Software Team Leader
+Best Regards,
+Jaffe
 
-<http://ics-ltd.com/>
-<http://ics-ltd.com/>
 
-Interactive Circuits and Systems Ltd.
-5430 Canotek Road
-Ottawa, ON
-K1J 9G2
-(613)749-9241
-1-800-267-9794 (USA only)
-
-------------------------------------------------------------------------
-This e-mail is private and confidential and is for the addressee only. 
-If misdirected, please notify us by telephone and confirm that it has 
-been deleted from your system and any hard copies destroyed. You are 
-strictly prohibited from using, printing, distributing or disseminating 
-it or any information contained in it save to the intended recipient.
+>From: Andy Fleming <afleming@freescale.com>
+>To: 郁 剑非 <jianfei616@hotmail.com>
+>CC: Linuxppc-embedded@ozlabs.org
+>Subject: Re: does Gianfar Ethernet Controller Version 1.1 support MARVELL 
+88E1111?
+>Date: Thu, 8 Jun 2006 11:15:32 -0500
+>
+>
+>On Jun 8, 2006, at 02:43, 郁 剑非 wrote:
+>
+>>Hi all,
+>>I'm debugging my board with MPC 8540 and marvell 88e1111 designed  
+>>on it.
+>>I'm sure the hardware connection is correct, and the phy's ID could 
+>>  be read
+>>through terminal port. But anyway, phy can not work. I wonder if it 
+>>  is the
+>>driver's problem? Since the Gianfar Ethernet Controller Version 1.1
+>>surpport 88e1011s, but some 88e1111's registers are different from
+>>88e1011s'. Actually I'm a new guy to Linux. Has anybody ever used  
+>>88e1111
+>>phy in Linux envirenmemt? Please
+>>give me some points. Thank you!
+>>I have read the Gianfar ethernet controller driver, but it's  
+>>difficult for
+>>me to find out the sofware flow.
+>
+>
+>It would be better if you upgraded to the latest kernel.  The PHY  
+>subsystem in the driver has changed significantly since version 1.1  
+>of the driver.  What leads you to believe that the PHY doesn't work? 
+>   What errors do you see?  I'm fairly certain the 88e1111 works 
+>with  the 88e1011 driver, but it's been a while.
+>
