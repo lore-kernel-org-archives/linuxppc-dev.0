@@ -1,15 +1,22 @@
 Return-Path: <jdl@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 3707E67C3E
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 08:06:33 +1000 (EST)
-Subject: [PATCH 8/10] Add Vitesse 8244 PHY for MPC8641 HPCN platform.
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 80CB667C57
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 08:07:48 +1000 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k58MSWIK029888
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jun 2006 15:28:32 -0700 (MST)
+Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k58M7kRu022520
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jun 2006 17:07:47 -0500 (CDT)
+Subject: [PATCH 9/10 v2] Prevent duplicate memory reservations for the
+	Device Tree blob itself.
 From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	netdev@vger.kernel.org, jeff@garzik.org
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1149804137.23938.292.camel@cashmere.sps.mot.com>
+Message-Id: <1149804226.23938.295.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Thu, 08 Jun 2006 17:02:18 -0500
+Date: Thu, 08 Jun 2006 17:03:46 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,179 +27,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Signed-off-by: Kriston Carson <KristonCarson@freescale.com>
-Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
-Acked-by: Jeff Garzik <jeff@garzik.org>
 
 ---
 
- drivers/net/Kconfig       |    6 +-
- drivers/net/phy/Kconfig   |    5 ++
- drivers/net/phy/Makefile  |    1 
- drivers/net/phy/vitesse.c |  112 +++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 121 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/prom.c |   13 +++++++++++--
+ 1 files changed, 11 insertions(+), 2 deletions(-)
 
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index bdaaad8..c1c2758 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2179,11 +2179,11 @@ config SPIDER_NET
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 969f4ab..0a2c2cb 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -1264,13 +1264,16 @@ static void __init early_reserve_mem(voi
+ {
+ 	u64 base, size;
+ 	u64 *reserve_map;
++	unsigned long self_base;
++	unsigned long self_size;
  
- config GIANFAR
- 	tristate "Gianfar Ethernet"
--	depends on 85xx || 83xx
-+	depends on 85xx || 83xx || PPC_86xx
- 	select PHYLIB
- 	help
--	  This driver supports the Gigabit TSEC on the MPC85xx 
--	  family of chips, and the FEC on the 8540
-+	  This driver supports the Gigabit TSEC on the MPC83xx, MPC85xx,
-+	  and MPC86xx family of chips, and the FEC on the 8540.
+ 	reserve_map = (u64 *)(((unsigned long)initial_boot_params) +
+ 					initial_boot_params->off_mem_rsvmap);
  
- config GFAR_NAPI
- 	bool "NAPI Support"
-diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
-index fa39b94..76e51b1 100644
---- a/drivers/net/phy/Kconfig
-+++ b/drivers/net/phy/Kconfig
-@@ -44,6 +44,11 @@ config CICADA_PHY
- 	depends on PHYLIB
- 	---help---
- 	  Currently supports the cis8204
-+config VITESSE_PHY
-+        tristate "Drivers for the Vitesse PHYs"
-+        depends on PHYLIB
-+        ---help---
-+          Currently supports the vsc8244
+ 	/* before we do anything, lets reserve the dt blob */
+-	lmb_reserve(__pa((unsigned long)initial_boot_params),
+-		    initial_boot_params->totalsize);
++	self_base = __pa((unsigned long)initial_boot_params);
++	self_size = initial_boot_params->totalsize;
++	lmb_reserve(self_base, self_size);
  
- endmenu
- 
-diff --git a/drivers/net/phy/Makefile b/drivers/net/phy/Makefile
-index e4116a5..a8d066e 100644
---- a/drivers/net/phy/Makefile
-+++ b/drivers/net/phy/Makefile
-@@ -8,3 +8,4 @@ obj-$(CONFIG_DAVICOM_PHY)	+= davicom.o
- obj-$(CONFIG_CICADA_PHY)	+= cicada.o
- obj-$(CONFIG_LXT_PHY)		+= lxt.o
- obj-$(CONFIG_QSEMI_PHY)		+= qsemi.o
-+obj-$(CONFIG_VITESSE_PHY)	+= vitesse.o
-diff --git a/drivers/net/phy/vitesse.c b/drivers/net/phy/vitesse.c
-new file mode 100644
-index 0000000..ffd215d
---- /dev/null
-+++ b/drivers/net/phy/vitesse.c
-@@ -0,0 +1,112 @@
-+/*
-+ * Driver for Vitesse PHYs
-+ *
-+ * Author: Kriston Carson
-+ *
-+ * Copyright (c) 2005 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ *
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/mii.h>
-+#include <linux/ethtool.h>
-+#include <linux/phy.h>
-+
-+/* Vitesse Extended Control Register 1 */
-+#define MII_VSC8244_EXT_CON1           0x17
-+#define MII_VSC8244_EXTCON1_INIT       0x0000
-+
-+/* Vitesse Interrupt Mask Register */
-+#define MII_VSC8244_IMASK		0x19
-+#define MII_VSC8244_IMASK_IEN		0x8000
-+#define MII_VSC8244_IMASK_SPEED		0x4000
-+#define MII_VSC8244_IMASK_LINK		0x2000
-+#define MII_VSC8244_IMASK_DUPLEX	0x1000
-+#define MII_VSC8244_IMASK_MASK		0xf000
-+
-+/* Vitesse Interrupt Status Register */
-+#define MII_VSC8244_ISTAT		0x1a
-+#define MII_VSC8244_ISTAT_STATUS	0x8000
-+#define MII_VSC8244_ISTAT_SPEED		0x4000
-+#define MII_VSC8244_ISTAT_LINK		0x2000
-+#define MII_VSC8244_ISTAT_DUPLEX	0x1000
-+
-+/* Vitesse Auxiliary Control/Status Register */
-+#define MII_VSC8244_AUX_CONSTAT        	0x1c
-+#define MII_VSC8244_AUXCONSTAT_INIT    	0x0004
-+#define MII_VSC8244_AUXCONSTAT_DUPLEX  	0x0020
-+#define MII_VSC8244_AUXCONSTAT_SPEED   	0x0018
-+#define MII_VSC8244_AUXCONSTAT_GBIT    	0x0010
-+#define MII_VSC8244_AUXCONSTAT_100     	0x0008
-+
-+MODULE_DESCRIPTION("Vitesse PHY driver");
-+MODULE_AUTHOR("Kriston Carson");
-+MODULE_LICENSE("GPL");
-+
-+static int vsc824x_config_init(struct phy_device *phydev)
-+{
-+	int err;
-+
-+	err = phy_write(phydev, MII_VSC8244_AUX_CONSTAT,
-+			MII_VSC8244_AUXCONSTAT_INIT);
-+	if (err < 0)
-+		return err;
-+
-+	err = phy_write(phydev, MII_VSC8244_EXT_CON1,
-+			MII_VSC8244_EXTCON1_INIT);
-+	return err;
-+}
-+
-+static int vsc824x_ack_interrupt(struct phy_device *phydev)
-+{
-+	int err = phy_read(phydev, MII_VSC8244_ISTAT);
-+
-+	return (err < 0) ? err : 0;
-+}
-+
-+static int vsc824x_config_intr(struct phy_device *phydev)
-+{
-+	int err;
-+
-+	if (phydev->interrupts == PHY_INTERRUPT_ENABLED)
-+		err = phy_write(phydev, MII_VSC8244_IMASK,
-+				MII_VSC8244_IMASK_MASK);
-+	else
-+		err = phy_write(phydev, MII_VSC8244_IMASK, 0);
-+	return err;
-+}
-+
-+/* Vitesse 824x */
-+static struct phy_driver vsc8244_driver = {
-+	.phy_id		= 0x000fc6c2,
-+	.name		= "Vitesse VSC8244",
-+	.phy_id_mask	= 0x000fffc0,
-+	.features	= PHY_GBIT_FEATURES,
-+	.flags		= PHY_HAS_INTERRUPT,
-+	.config_init	= &vsc824x_config_init,
-+	.config_aneg	= &genphy_config_aneg,
-+	.read_status	= &genphy_read_status,
-+	.ack_interrupt	= &vsc824x_ack_interrupt,
-+	.config_intr	= &vsc824x_config_intr,
-+	.driver 	= { .owner = THIS_MODULE,},
-+};
-+
-+static int __init vsc8244_init(void)
-+{
-+	return phy_driver_register(&vsc8244_driver);
-+}
-+
-+static void __exit vsc8244_exit(void)
-+{
-+	phy_driver_unregister(&vsc8244_driver);
-+}
-+
-+module_init(vsc8244_init);
-+module_exit(vsc8244_exit);
+ #ifdef CONFIG_PPC32
+ 	/* 
+@@ -1286,6 +1289,9 @@ #ifdef CONFIG_PPC32
+ 			size_32 = *(reserve_map_32++);
+ 			if (size_32 == 0)
+ 				break;
++			/* skip if the reservation is for the blob */
++			if (base_32 == self_base && size_32 == self_size)
++				continue;
+ 			DBG("reserving: %x -> %x\n", base_32, size_32);
+ 			lmb_reserve(base_32, size_32);
+ 		}
+@@ -1297,6 +1303,9 @@ #endif
+ 		size = *(reserve_map++);
+ 		if (size == 0)
+ 			break;
++		/* skip if the reservation is for the blob */
++		if (base == self_base && size == self_size)
++			continue;
+ 		DBG("reserving: %llx -> %llx\n", base, size);
+ 		lmb_reserve(base, size);
+ 	}
