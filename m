@@ -1,12 +1,20 @@
-Return-Path: <mikey@ozlabs.org>
-To: paulus@samba.org
-From: Michael Neuling <mikey@neuling.org>
-Subject: [PATCH] powerpc: oprofile support for POWER6 
-Date: Thu, 08 Jun 2006 14:42:34 +1000
-Sender: mikey@ozlabs.org
-Message-Id: <20060608044238.B53FB67BAD@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: Michael Neuling <mikey@neuling.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 922AD67BAE
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Jun 2006 14:44:20 +1000 (EST)
+In-Reply-To: <1149719645.23938.184.camel@cashmere.sps.mot.com>
+References: <1149719645.23938.184.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <0EC9507F-27EE-46E4-A92A-E4150A2FA312@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/10] Add the mpc8641 hpcn Kconfig and Makefiles.
+Date: Wed, 7 Jun 2006 23:44:36 -0500
+To: Jon Loeliger <jdl@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,214 +24,188 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-POWER6 moves some of the MMCRA bits and also requires some bits to be
-cleared each PMU interrupt.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Acked-by: Anton Blanchard <anton@samba.org>
----
-Paul: for your post 2.6.17 queue.  Updated with comments from Segher.
+On Jun 7, 2006, at 5:34 PM, Jon Loeliger wrote:
 
- arch/powerpc/kernel/cputable.c          |   13 ++++++++++-
- arch/powerpc/oprofile/op_model_power4.c |   37 ++++++++++++--------------------
- include/asm-powerpc/cputable.h          |   11 ++++++---
- include/asm-powerpc/reg.h               |    4 +++
- 4 files changed, 39 insertions(+), 26 deletions(-)
+>
+> Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+>
+> ---
+>
+>  arch/powerpc/Kconfig                 |   15 ++++++++++-
+>  arch/powerpc/platforms/Makefile      |    1 +
+>  arch/powerpc/platforms/86xx/Makefile |    7 +++++
+>  arch/powerpc/platforms/86xx/Kconfig  |   46 +++++++++++++++++++++++ 
+> +++++++++++
+>  drivers/i2c/busses/Kconfig           |    4 +--
+>  5 files changed, 69 insertions(+), 4 deletions(-)
+>
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 75ba0ec..e708401 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -141,6 +141,15 @@ config PPC_85xx
+>  	select FSL_SOC
+>  	select 85xx
+>
+> +config PPC_86xx
+> +	bool "Freescale 86xx"
+> +	select 6xx
+> +	select FSL_SOC
+> +	select PPC_FPU
+> +	select ALTIVEC
+> +	help
+> +	  The Freescale E600 SoCs have 74xx cores.
+> +
+>  config 40x
+>  	bool "AMCC 40x"
+>
+> @@ -549,6 +558,7 @@ source arch/powerpc/platforms/embedded6x
+>  source arch/powerpc/platforms/4xx/Kconfig
+>  source arch/powerpc/platforms/83xx/Kconfig
+>  source arch/powerpc/platforms/85xx/Kconfig
+> +source arch/powerpc/platforms/86xx/Kconfig
+>  source arch/powerpc/platforms/8xx/Kconfig
+>  source arch/powerpc/platforms/cell/Kconfig
+>
+> @@ -780,6 +790,7 @@ config GENERIC_ISA_DMA
+>
+>  config PPC_I8259
+>  	bool
+> +	default y if PPC_86xx
+>  	default n
 
-Index: linux-2.6-powerpc/arch/powerpc/kernel/cputable.c
-===================================================================
---- linux-2.6-powerpc.orig/arch/powerpc/kernel/cputable.c
-+++ linux-2.6-powerpc/arch/powerpc/kernel/cputable.c
-@@ -236,6 +236,11 @@ struct cpu_spec	cpu_specs[] = {
- 		.num_pmcs		= 6,
- 		.oprofile_cpu_type	= "ppc64/power5",
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
-+		/* SIHV / SIPR bits are implemented on POWER4+ (GQ)
-+		 * and above but only works on POWER5 and above
-+		 */
-+		.oprofile_mmcra_sihv	= MMCRA_SIHV,
-+		.oprofile_mmcra_sipr	= MMCRA_SIPR,
- 		.platform		= "power5",
- 	},
- 	{	/* Power5 GS */
-@@ -249,6 +254,8 @@ struct cpu_spec	cpu_specs[] = {
- 		.num_pmcs		= 6,
- 		.oprofile_cpu_type	= "ppc64/power5+",
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
-+		.oprofile_mmcra_sihv	= MMCRA_SIHV,
-+		.oprofile_mmcra_sipr	= MMCRA_SIPR,
- 		.platform		= "power5+",
- 	},
- 	{	/* Power6 */
-@@ -259,9 +266,13 @@ struct cpu_spec	cpu_specs[] = {
- 		.cpu_user_features	= COMMON_USER_POWER6,
- 		.icache_bsize		= 128,
- 		.dcache_bsize		= 128,
--		.num_pmcs		= 6,
-+		.num_pmcs		= 8,
- 		.oprofile_cpu_type	= "ppc64/power6",
- 		.oprofile_type		= PPC_OPROFILE_POWER4,
-+ 		.oprofile_mmcra_sihv	= POWER6_MMCRA_SIHV,
-+ 		.oprofile_mmcra_sipr	= POWER6_MMCRA_SIPR,
-+ 		.oprofile_mmcra_clear	= POWER6_MMCRA_THRM |
-+ 			POWER6_MMCRA_OTHER,
- 		.platform		= "power6",
- 	},
- 	{	/* Cell Broadband Engine */
-Index: linux-2.6-powerpc/arch/powerpc/oprofile/op_model_power4.c
-===================================================================
---- linux-2.6-powerpc.orig/arch/powerpc/oprofile/op_model_power4.c
-+++ linux-2.6-powerpc/arch/powerpc/oprofile/op_model_power4.c
-@@ -24,10 +24,6 @@
- static unsigned long reset_value[OP_MAX_COUNTER];
- 
- static int oprofile_running;
--static int mmcra_has_sihv;
--/* Unfortunately these bits vary between CPUs */
--static unsigned long mmcra_sihv = MMCRA_SIHV;
--static unsigned long mmcra_sipr = MMCRA_SIPR;
- 
- /* mmcr values are set in power4_reg_setup, used in power4_cpu_setup */
- static u32 mmcr0_val;
-@@ -41,16 +37,6 @@ static void power4_reg_setup(struct op_c
- 	int i;
- 
- 	/*
--	 * SIHV / SIPR bits are only implemented on POWER4+ (GQ) and above.
--	 * However we disable it on all POWER4 until we verify it works
--	 * (I was seeing some strange behaviour last time I tried).
--	 *
--	 * It has been verified to work on POWER5 so we enable it there.
--	 */
--	if (cpu_has_feature(CPU_FTR_MMCRA_SIHV))
--		mmcra_has_sihv = 1;
--
--	/*
- 	 * The performance counter event settings are given in the mmcr0,
- 	 * mmcr1 and mmcra values passed from the user in the
- 	 * op_system_config structure (sys variable).
-@@ -202,18 +188,19 @@ static unsigned long get_pc(struct pt_re
- 	unsigned long mmcra;
- 
- 	/* Cant do much about it */
--	if (!mmcra_has_sihv)
-+	if (!cur_cpu_spec->oprofile_mmcra_sihv)
- 		return pc;
- 
- 	mmcra = mfspr(SPRN_MMCRA);
- 
- 	/* Were we in the hypervisor? */
--	if (firmware_has_feature(FW_FEATURE_LPAR) && (mmcra & mmcra_sihv))
-+	if (firmware_has_feature(FW_FEATURE_LPAR) &&
-+	    (mmcra & cur_cpu_spec->oprofile_mmcra_sihv))
- 		/* function descriptor madness */
- 		return *((unsigned long *)hypervisor_bucket);
- 
- 	/* We were in userspace, nothing to do */
--	if (mmcra & mmcra_sipr)
-+	if (mmcra & cur_cpu_spec->oprofile_mmcra_sipr)
- 		return pc;
- 
- #ifdef CONFIG_PPC_RTAS
-@@ -235,15 +222,14 @@ static unsigned long get_pc(struct pt_re
- 	return pc;
- }
- 
--static int get_kernel(unsigned long pc)
-+static int get_kernel(unsigned long pc, unsigned long mmcra)
- {
- 	int is_kernel;
- 
--	if (!mmcra_has_sihv) {
-+	if (!cur_cpu_spec->oprofile_mmcra_sihv) {
- 		is_kernel = is_kernel_addr(pc);
- 	} else {
--		unsigned long mmcra = mfspr(SPRN_MMCRA);
--		is_kernel = ((mmcra & mmcra_sipr) == 0);
-+		is_kernel = ((mmcra & cur_cpu_spec->oprofile_mmcra_sipr) == 0);
- 	}
- 
- 	return is_kernel;
-@@ -257,9 +243,12 @@ static void power4_handle_interrupt(stru
- 	int val;
- 	int i;
- 	unsigned int mmcr0;
-+	unsigned long mmcra;
-+
-+	mmcra = mfspr(SPRN_MMCRA);
- 
- 	pc = get_pc(regs);
--	is_kernel = get_kernel(pc);
-+	is_kernel = get_kernel(pc, mmcra);
- 
- 	/* set the PMM bit (see comment below) */
- 	mtmsrd(mfmsr() | MSR_PMM);
-@@ -287,6 +276,10 @@ static void power4_handle_interrupt(stru
- 	 */
- 	mmcr0 &= ~MMCR0_PMAO;
- 
-+	/* Clear the appropriate bits in the MMCRA */
-+	mmcra &= ~cur_cpu_spec->oprofile_mmcra_clear;
-+	mtspr(SPRN_MMCRA, mmcra);
-+
- 	/*
- 	 * now clear the freeze bit, counting will not start until we
- 	 * rfid from this exception, because only at that point will
-Index: linux-2.6-powerpc/include/asm-powerpc/cputable.h
-===================================================================
---- linux-2.6-powerpc.orig/include/asm-powerpc/cputable.h
-+++ linux-2.6-powerpc/include/asm-powerpc/cputable.h
-@@ -69,6 +69,13 @@ struct cpu_spec {
- 	/* Processor specific oprofile operations */
- 	enum powerpc_oprofile_type oprofile_type;
- 
-+	/* Bit locations inside the mmcra change */
-+	unsigned long	oprofile_mmcra_sihv;
-+	unsigned long	oprofile_mmcra_sipr;
-+
-+	/* Bits to clear during an oprofile exception */
-+	unsigned long	oprofile_mmcra_clear;
-+
- 	/* Name of processor class, for the ELF AT_PLATFORM entry */
- 	char		*platform;
- };
-@@ -117,7 +124,6 @@ extern void do_cpu_ftr_fixups(unsigned l
- #define CPU_FTR_SMT			ASM_CONST(0x0000010000000000)
- #define CPU_FTR_COHERENT_ICACHE		ASM_CONST(0x0000020000000000)
- #define CPU_FTR_LOCKLESS_TLBIE		ASM_CONST(0x0000040000000000)
--#define CPU_FTR_MMCRA_SIHV		ASM_CONST(0x0000080000000000)
- #define CPU_FTR_CI_LARGE_PAGE		ASM_CONST(0x0000100000000000)
- #define CPU_FTR_PAUSE_ZERO		ASM_CONST(0x0000200000000000)
- #define CPU_FTR_PURR			ASM_CONST(0x0000400000000000)
-@@ -134,7 +140,6 @@ extern void do_cpu_ftr_fixups(unsigned l
- #define CPU_FTR_SMT			ASM_CONST(0x0)
- #define CPU_FTR_COHERENT_ICACHE		ASM_CONST(0x0)
- #define CPU_FTR_LOCKLESS_TLBIE		ASM_CONST(0x0)
--#define CPU_FTR_MMCRA_SIHV		ASM_CONST(0x0)
- #define CPU_FTR_CI_LARGE_PAGE		ASM_CONST(0x0)
- #define CPU_FTR_PURR			ASM_CONST(0x0)
- #endif
-@@ -320,7 +325,7 @@ extern void do_cpu_ftr_fixups(unsigned l
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
- 	    CPU_FTR_COHERENT_ICACHE | CPU_FTR_LOCKLESS_TLBIE | \
--	    CPU_FTR_MMCRA_SIHV | CPU_FTR_PURR)
-+	    CPU_FTR_PURR)
- #define CPU_FTRS_POWER6 (CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-Index: linux-2.6-powerpc/include/asm-powerpc/reg.h
-===================================================================
---- linux-2.6-powerpc.orig/include/asm-powerpc/reg.h
-+++ linux-2.6-powerpc/include/asm-powerpc/reg.h
-@@ -443,6 +443,10 @@
- #define   MMCRA_SIHV	0x10000000UL /* state of MSR HV when SIAR set */
- #define   MMCRA_SIPR	0x08000000UL /* state of MSR PR when SIAR set */
- #define   MMCRA_SAMPLE_ENABLE 0x00000001UL /* enable sampling */
-+#define   POWER6_MMCRA_SIHV   0x0000040000000000ULL
-+#define   POWER6_MMCRA_SIPR   0x0000020000000000ULL
-+#define   POWER6_MMCRA_THRM	0x00000020UL
-+#define   POWER6_MMCRA_OTHER	0x0000000EUL
- #define SPRN_PMC1	787
- #define SPRN_PMC2	788
- #define SPRN_PMC3	789
+This dependancy seems too generic, shouldn't it be based on some  
+board (its not like 86xx actually has an i8259 in it).
+
+>
+>  config PPC_INDIRECT_PCI
+> @@ -802,8 +813,8 @@ config MCA
+>  	bool
+>
+>  config PCI
+> -	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx ||  
+> PPC_MPC52xx || (EMBEDDED && PPC_ISERIES)
+> -	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx && ! 
+> PPC_85xx
+> +	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx ||  
+> PPC_86xx || PPC_MPC52xx || (EMBEDDED && PPC_ISERIES)
+> +	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx && ! 
+> PPC_85xx && !PPC_86xx
+>  	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
+>  	default PCI_QSPAN if !4xx && !CPM2 && 8xx
+>  	help
+> diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/ 
+> platforms/Makefile
+> index c4f6b0d..2928636 100644
+> --- a/arch/powerpc/platforms/Makefile
+> +++ b/arch/powerpc/platforms/Makefile
+> @@ -9,6 +9,7 @@ obj-$(CONFIG_PPC_CHRP)		+= chrp/
+>  obj-$(CONFIG_4xx)		+= 4xx/
+>  obj-$(CONFIG_PPC_83xx)		+= 83xx/
+>  obj-$(CONFIG_PPC_85xx)		+= 85xx/
+> +obj-$(CONFIG_PPC_86xx)		+= 86xx/
+>  obj-$(CONFIG_PPC_PSERIES)	+= pseries/
+>  obj-$(CONFIG_PPC_ISERIES)	+= iseries/
+>  obj-$(CONFIG_PPC_MAPLE)		+= maple/
+> diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/ 
+> platforms/86xx/Makefile
+> new file mode 100644
+> index 0000000..8a237a1
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/86xx/Makefile
+> @@ -0,0 +1,7 @@
+> +#
+> +# Makefile for the PowerPC 86xx linux kernel.
+> +#
+> +
+> +obj-$(CONFIG_PPC_86xx)		+= mpc86xx_hpcn.o misc.o
+
+Seems like mpc86xx_hpcn.o is board specific code and should move down  
+one line.
+
+> +obj-$(CONFIG_MPC8641_HPCN)	+= mpc8641_hpcn.o
+> +obj-$(CONFIG_PCI)		+= pci.o pex.o
+> diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/ 
+> platforms/86xx/Kconfig
+> new file mode 100644
+> index 0000000..b8924e7
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/86xx/Kconfig
+> @@ -0,0 +1,46 @@
+> +menu "Platform Support"
+> +	depends on PPC_86xx
+> +
+> +choice
+> +	prompt "Machine Type"
+> +	default MPC8641_HPCN
+> +
+> +config MPC8641_HPCN
+> +	bool "Freescale MPC8641 HPCN"
+> +	help
+> +	  This option enables support for the MPC8641 HPCN board.
+> +
+> +endchoice
+> +
+> +
+> +config MPC8641
+> +	bool
+> +	select PPC_INDIRECT_PCI
+> +	select PPC_UDBG_16550
+> +	default y if MPC8641_HPCN
+> +
+> +config MPIC
+> +	bool
+> +	default y
+> +
+> +config PPC_INDIRECT_PCI_BE
+> +	bool
+> +	depends on PPC_86xx
+> +	default y
+> +
+> +config PEX
+> +	bool "PCI Express support"
+> +	depends on PCI && PPC_86xx
+> +	default y
+> +
+> +config I8259_LEVEL_TRIGGER
+> +	bool
+> +	depends on MPC8641
+> +	default y
+
+again, seems like it should depend on a board & not MPC8641
+
+> +
+> +config PPC_STD_MMU
+> +	bool
+> +	depends on PPC_86xx
+> +	default y
+> +
+> +endmenu
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index d6d4494..fbeae82 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -252,12 +252,12 @@ config I2C_POWERMAC
+>  	  will be called i2c-powermac.
+>
+>  config I2C_MPC
+> -	tristate "MPC107/824x/85xx/52xx"
+> +	tristate "MPC107/824x/85xx/52xx/86xx"
+>  	depends on I2C && PPC32
+>  	help
+>  	  If you say yes to this option, support will be included for the
+>  	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245 and
+> -	  MPC85xx family processors. The driver may also work on 52xx
+> +	  MPC85xx/MPC8641 family processors. The driver may also work on  
+> 52xx
+>  	  family processors, though interrupts are known not to work.
+>
+>  	  This driver can also be built as a module.  If so, the module
+
+should probably separate this out into its own patch for the I2C  
+maintainer.
+
+- k
