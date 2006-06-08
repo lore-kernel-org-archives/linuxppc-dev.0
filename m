@@ -1,21 +1,21 @@
 Return-Path: <jdl@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 784B567C42
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 08:04:29 +1000 (EST)
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 680C867C68
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 08:05:05 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	k58MLEDV000090
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jun 2006 15:21:14 -0700 (MST)
+	k58MLoB1000231
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jun 2006 15:21:50 -0700 (MST)
 Received: from [10.82.19.2] (cashmere.am.freescale.net [10.82.19.2])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k58M4QpA021649
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jun 2006 17:04:27 -0500 (CDT)
-Subject: [PATCH 6/10 v2] Add 8641 Register space and IRQ definitions.
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k58M52QL021804
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Jun 2006 17:05:02 -0500 (CDT)
+Subject: [PATCH 7/10 v2] Add default mpc8641_hpcn config file.
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1149804025.23938.287.camel@cashmere.sps.mot.com>
+Message-Id: <1149804061.23938.289.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Thu, 08 Jun 2006 17:00:26 -0500
+Date: Thu, 08 Jun 2006 17:01:01 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,371 +27,937 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
-Signed-off-by: Jeff Brown <Jeff.Brown@freescale.com>
-Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
+Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
 
 ---
 
- include/asm-powerpc/immap_86xx.h |  199 ++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/irq.h        |   88 +++++++++++++++++
- include/asm-powerpc/mpc86xx.h    |   47 +++++++++
- 3 files changed, 334 insertions(+), 0 deletions(-)
+ arch/powerpc/configs/mpc8641_hpcn_defconfig |  920 +++++++++++++++++++++++++++
+ 1 files changed, 920 insertions(+), 0 deletions(-)
 
 
-diff --git a/include/asm-powerpc/immap_86xx.h b/include/asm-powerpc/immap_86xx.h
+diff --git a/arch/powerpc/configs/mpc8641_hpcn_defconfig b/arch/powerpc/configs/mpc8641_hpcn_defconfig
 new file mode 100644
-index 0000000..d905b66
+index 0000000..1113a7c
 --- /dev/null
-+++ b/include/asm-powerpc/immap_86xx.h
-@@ -0,0 +1,199 @@
-+/*
-+ * MPC86xx Internal Memory Map
-+ *
-+ * Author: Jeff Brown
-+ *
-+ * Copyright 2004 Freescale Semiconductor, Inc
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ *
-+ */
++++ b/arch/powerpc/configs/mpc8641_hpcn_defconfig
+@@ -0,0 +1,920 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.17-rc4
++# Thu Jun  8 09:24:18 2006
++#
++# CONFIG_PPC64 is not set
++CONFIG_PPC32=y
++CONFIG_PPC_MERGE=y
++CONFIG_MMU=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_PPC=y
++CONFIG_EARLY_PRINTK=y
++CONFIG_GENERIC_NVRAM=y
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
++CONFIG_PPC_OF=y
++CONFIG_PPC_UDBG_16550=y
++CONFIG_GENERIC_TBSYNC=y
++# CONFIG_DEFAULT_UIMAGE is not set
 +
-+#ifndef __ASM_POWERPC_IMMAP_86XX_H__
-+#define __ASM_POWERPC_IMMAP_86XX_H__
-+#ifdef __KERNEL__
++#
++# Processor support
++#
++# CONFIG_CLASSIC32 is not set
++# CONFIG_PPC_52xx is not set
++# CONFIG_PPC_82xx is not set
++# CONFIG_PPC_83xx is not set
++# CONFIG_PPC_85xx is not set
++CONFIG_PPC_86xx=y
++# CONFIG_40x is not set
++# CONFIG_44x is not set
++# CONFIG_8xx is not set
++# CONFIG_E200 is not set
++CONFIG_6xx=y
++CONFIG_PPC_FPU=y
++CONFIG_ALTIVEC=y
++CONFIG_PPC_STD_MMU=y
++CONFIG_PPC_STD_MMU_32=y
++CONFIG_SMP=y
++CONFIG_NR_CPUS=2
 +
-+/* Eventually this should define all the IO block registers in 86xx */
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_LOCK_KERNEL=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
 +
-+/* PCI Registers */
-+typedef struct ccsr_pci {
-+	uint	cfg_addr;	/* 0x.000 - PCI Configuration Address Register */
-+	uint	cfg_data;	/* 0x.004 - PCI Configuration Data Register */
-+	uint	int_ack;	/* 0x.008 - PCI Interrupt Acknowledge Register */
-+	char	res1[3060];
-+	uint	potar0;		/* 0x.c00 - PCI Outbound Transaction Address Register 0 */
-+	uint	potear0;	/* 0x.c04 - PCI Outbound Translation Extended Address Register 0 */
-+	uint	powbar0;	/* 0x.c08 - PCI Outbound Window Base Address Register 0 */
-+	char	res2[4];
-+	uint	powar0;		/* 0x.c10 - PCI Outbound Window Attributes Register 0 */
-+	char	res3[12];
-+	uint	potar1;		/* 0x.c20 - PCI Outbound Transaction Address Register 1 */
-+	uint	potear1;	/* 0x.c24 - PCI Outbound Translation Extended Address Register 1 */
-+	uint	powbar1;	/* 0x.c28 - PCI Outbound Window Base Address Register 1 */
-+	char	res4[4];
-+	uint	powar1;		/* 0x.c30 - PCI Outbound Window Attributes Register 1 */
-+	char	res5[12];
-+	uint	potar2;		/* 0x.c40 - PCI Outbound Transaction Address Register 2 */
-+	uint	potear2;	/* 0x.c44 - PCI Outbound Translation Extended Address Register 2 */
-+	uint	powbar2;	/* 0x.c48 - PCI Outbound Window Base Address Register 2 */
-+	char	res6[4];
-+	uint	powar2;		/* 0x.c50 - PCI Outbound Window Attributes Register 2 */
-+	char	res7[12];
-+	uint	potar3;		/* 0x.c60 - PCI Outbound Transaction Address Register 3 */
-+	uint	potear3;	/* 0x.c64 - PCI Outbound Translation Extended Address Register 3 */
-+	uint	powbar3;	/* 0x.c68 - PCI Outbound Window Base Address Register 3 */
-+	char	res8[4];
-+	uint	powar3;		/* 0x.c70 - PCI Outbound Window Attributes Register 3 */
-+	char	res9[12];
-+	uint	potar4;		/* 0x.c80 - PCI Outbound Transaction Address Register 4 */
-+	uint	potear4;	/* 0x.c84 - PCI Outbound Translation Extended Address Register 4 */
-+	uint	powbar4;	/* 0x.c88 - PCI Outbound Window Base Address Register 4 */
-+	char	res10[4];
-+	uint	powar4;		/* 0x.c90 - PCI Outbound Window Attributes Register 4 */
-+	char	res11[268];
-+	uint	pitar3;		/* 0x.da0 - PCI Inbound Translation Address Register 3  */
-+	char	res12[4];
-+	uint	piwbar3;	/* 0x.da8 - PCI Inbound Window Base Address Register 3 */
-+	uint	piwbear3;	/* 0x.dac - PCI Inbound Window Base Extended Address Register 3 */
-+	uint	piwar3;		/* 0x.db0 - PCI Inbound Window Attributes Register 3 */
-+	char	res13[12];
-+	uint	pitar2;		/* 0x.dc0 - PCI Inbound Translation Address Register 2  */
-+	char	res14[4];
-+	uint	piwbar2;	/* 0x.dc8 - PCI Inbound Window Base Address Register 2 */
-+	uint	piwbear2;	/* 0x.dcc - PCI Inbound Window Base Extended Address Register 2 */
-+	uint	piwar2;		/* 0x.dd0 - PCI Inbound Window Attributes Register 2 */
-+	char	res15[12];
-+	uint	pitar1;		/* 0x.de0 - PCI Inbound Translation Address Register 1  */
-+	char	res16[4];
-+	uint	piwbar1;	/* 0x.de8 - PCI Inbound Window Base Address Register 1 */
-+	char	res17[4];
-+	uint	piwar1;		/* 0x.df0 - PCI Inbound Window Attributes Register 1 */
-+	char	res18[12];
-+	uint	err_dr;		/* 0x.e00 - PCI Error Detect Register */
-+	uint	err_cap_dr;	/* 0x.e04 - PCI Error Capture Disable Register */
-+	uint	err_en;		/* 0x.e08 - PCI Error Enable Register */
-+	uint	err_attrib;	/* 0x.e0c - PCI Error Attributes Capture Register */
-+	uint	err_addr;	/* 0x.e10 - PCI Error Address Capture Register */
-+	uint	err_ext_addr;	/* 0x.e14 - PCI Error Extended Address Capture Register */
-+	uint	err_dl;		/* 0x.e18 - PCI Error Data Low Capture Register */
-+	uint	err_dh;		/* 0x.e1c - PCI Error Data High Capture Register */
-+	uint	gas_timr;	/* 0x.e20 - PCI Gasket Timer Register */
-+	uint	pci_timr;	/* 0x.e24 - PCI Timer Register */
-+	char	res19[472];
-+} ccsr_pci_t;
++#
++# General setup
++#
++CONFIG_LOCALVERSION=""
++# CONFIG_LOCALVERSION_AUTO is not set
++# CONFIG_SWAP is not set
++# CONFIG_SYSVIPC is not set
++# CONFIG_POSIX_MQUEUE is not set
++# CONFIG_BSD_PROCESS_ACCT is not set
++CONFIG_SYSCTL=y
++# CONFIG_AUDIT is not set
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++# CONFIG_CPUSETS is not set
++# CONFIG_RELAY is not set
++CONFIG_INITRAMFS_SOURCE=""
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_EMBEDDED=y
++CONFIG_KALLSYMS=y
++# CONFIG_KALLSYMS_ALL is not set
++CONFIG_KALLSYMS_EXTRA_PASS=y
++CONFIG_HOTPLUG=y
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++# CONFIG_ELF_CORE is not set
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_SHMEM=y
++# CONFIG_SLAB is not set
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
++CONFIG_SLOB=y
 +
-+/* PCI Express Registers */
-+typedef struct ccsr_pex {
-+	uint    pex_config_addr;        /* 0x.000 - PCI Express Configuration Address Register */
-+	uint    pex_config_data;        /* 0x.004 - PCI Express Configuration Data Register */
-+	char    res1[4];
-+	uint    pex_otb_cpl_tor;        /* 0x.00c - PCI Express Outbound completion timeout register */
-+	uint    pex_conf_tor;           /* 0x.010 - PCI Express configuration timeout register */
-+	char    res2[12];
-+	uint    pex_pme_mes_dr;         /* 0x.020 - PCI Express PME and message detect register */
-+	uint    pex_pme_mes_disr;       /* 0x.024 - PCI Express PME and message disable register */
-+	uint    pex_pme_mes_ier;        /* 0x.028 - PCI Express PME and message interrupt enable register */
-+	uint    pex_pmcr;               /* 0x.02c - PCI Express power management command register */
-+	char    res3[3024];
-+	uint    pexotar0;               /* 0x.c00 - PCI Express outbound translation address register 0 */
-+	uint    pexotear0;              /* 0x.c04 - PCI Express outbound translation extended address register 0*/
-+	char    res4[8];
-+	uint    pexowar0;               /* 0x.c10 - PCI Express outbound window attributes register 0*/
-+	char    res5[12];
-+	uint    pexotar1;               /* 0x.c20 - PCI Express outbound translation address register 1 */
-+	uint    pexotear1;              /* 0x.c24 - PCI Express outbound translation extended address register 1*/
-+	uint    pexowbar1;              /* 0x.c28 - PCI Express outbound window base address register 1*/
-+	char    res6[4];
-+	uint    pexowar1;               /* 0x.c30 - PCI Express outbound window attributes register 1*/
-+	char    res7[12];
-+	uint    pexotar2;               /* 0x.c40 - PCI Express outbound translation address register 2 */
-+	uint    pexotear2;              /* 0x.c44 - PCI Express outbound translation extended address register 2*/
-+	uint    pexowbar2;              /* 0x.c48 - PCI Express outbound window base address register 2*/
-+	char    res8[4];
-+	uint    pexowar2;               /* 0x.c50 - PCI Express outbound window attributes register 2*/
-+	char    res9[12];
-+	uint    pexotar3;               /* 0x.c60 - PCI Express outbound translation address register 3 */
-+	uint    pexotear3;              /* 0x.c64 - PCI Express outbound translation extended address register 3*/
-+	uint    pexowbar3;              /* 0x.c68 - PCI Express outbound window base address register 3*/
-+	char    res10[4];
-+	uint    pexowar3;               /* 0x.c70 - PCI Express outbound window attributes register 3*/
-+	char    res11[12];
-+	uint    pexotar4;               /* 0x.c80 - PCI Express outbound translation address register 4 */
-+	uint    pexotear4;              /* 0x.c84 - PCI Express outbound translation extended address register 4*/
-+	uint    pexowbar4;              /* 0x.c88 - PCI Express outbound window base address register 4*/
-+	char    res12[4];
-+	uint    pexowar4;               /* 0x.c90 - PCI Express outbound window attributes register 4*/
-+	char    res13[12];
-+	char    res14[256];
-+	uint    pexitar3;               /* 0x.da0 - PCI Express inbound translation address register 3 */
-+	char    res15[4];
-+	uint    pexiwbar3;              /* 0x.da8 - PCI Express inbound window base address register 3 */
-+	uint    pexiwbear3;             /* 0x.dac - PCI Express inbound window base extended address register 3 */
-+	uint    pexiwar3;               /* 0x.db0 - PCI Express inbound window attributes register 3 */
-+	char    res16[12];
-+	uint    pexitar2;               /* 0x.dc0 - PCI Express inbound translation address register 2 */
-+	char    res17[4];
-+	uint    pexiwbar2;              /* 0x.dc8 - PCI Express inbound window base address register 2 */
-+	uint    pexiwbear2;             /* 0x.dcc - PCI Express inbound window base extended address register 2 */
-+	uint    pexiwar2;               /* 0x.dd0 - PCI Express inbound window attributes register 2 */
-+	char    res18[12];
-+	uint    pexitar1;               /* 0x.de0 - PCI Express inbound translation address register 2 */
-+	char    res19[4];
-+	uint    pexiwbar1;              /* 0x.de8 - PCI Express inbound window base address register 2 */
-+	uint    pexiwbear1;             /* 0x.dec - PCI Express inbound window base extended address register 2 */
-+	uint    pexiwar1;               /* 0x.df0 - PCI Express inbound window attributes register 2 */
-+	char    res20[12];
-+	uint    pex_err_dr;             /* 0x.e00 - PCI Express error detect register */
-+	char    res21[4];
-+	uint    pex_err_en;             /* 0x.e08 - PCI Express error interrupt enable register */
-+	char    res22[4];
-+	uint    pex_err_disr;           /* 0x.e10 - PCI Express error disable register */
-+	char    res23[12];
-+	uint    pex_err_cap_stat;       /* 0x.e20 - PCI Express error capture status register */
-+	char    res24[4];
-+	uint    pex_err_cap_r0;         /* 0x.e28 - PCI Express error capture register 0 */
-+	uint    pex_err_cap_r1;         /* 0x.e2c - PCI Express error capture register 0 */
-+	uint    pex_err_cap_r2;         /* 0x.e30 - PCI Express error capture register 0 */
-+	uint    pex_err_cap_r3;         /* 0x.e34 - PCI Express error capture register 0 */
-+} ccsr_pex_t;
++#
++# Loadable module support
++#
++# CONFIG_MODULES is not set
 +
-+/* Global Utility Registers */
-+typedef struct ccsr_guts {
-+	uint	porpllsr;	/* 0x.0000 - POR PLL Ratio Status Register */
-+	uint	porbmsr;	/* 0x.0004 - POR Boot Mode Status Register */
-+	uint	porimpscr;	/* 0x.0008 - POR I/O Impedance Status and Control Register */
-+	uint	pordevsr;	/* 0x.000c - POR I/O Device Status Register */
-+	uint	pordbgmsr;	/* 0x.0010 - POR Debug Mode Status Register */
-+	char	res1[12];
-+	uint	gpporcr;	/* 0x.0020 - General-Purpose POR Configuration Register */
-+	char	res2[12];
-+	uint	gpiocr;		/* 0x.0030 - GPIO Control Register */
-+	char	res3[12];
-+	uint	gpoutdr;	/* 0x.0040 - General-Purpose Output Data Register */
-+	char	res4[12];
-+	uint	gpindr;		/* 0x.0050 - General-Purpose Input Data Register */
-+	char	res5[12];
-+	uint	pmuxcr;		/* 0x.0060 - Alternate Function Signal Multiplex Control */
-+	char	res6[12];
-+	uint	devdisr;	/* 0x.0070 - Device Disable Control */
-+	char	res7[12];
-+	uint	powmgtcsr;	/* 0x.0080 - Power Management Status and Control Register */
-+	char	res8[12];
-+	uint	mcpsumr;	/* 0x.0090 - Machine Check Summary Register */
-+	char	res9[12];
-+	uint	pvr;		/* 0x.00a0 - Processor Version Register */
-+	uint	svr;		/* 0x.00a4 - System Version Register */
-+	char	res10[3416];
-+	uint	clkocr;		/* 0x.0e00 - Clock Out Select Register */
-+	char	res11[12];
-+	uint	ddrdllcr;	/* 0x.0e10 - DDR DLL Control Register */
-+	char	res12[12];
-+	uint	lbcdllcr;	/* 0x.0e20 - LBC DLL Control Register */
-+	char	res13[61916];
-+} ccsr_guts_t;
++#
++# Block layer
++#
++# CONFIG_LBD is not set
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_LSF is not set
 +
-+#endif /* __ASM_POWERPC_IMMAP_86XX_H__ */
-+#endif /* __KERNEL__ */
-diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
-index 7bc6d73..997d2e8 100644
---- a/include/asm-powerpc/irq.h
-+++ b/include/asm-powerpc/irq.h
-@@ -348,6 +348,94 @@ #define	SIU_INT_PC2		((uint)0x3d+CPM_IRQ
- #define	SIU_INT_PC1		((uint)0x3e+CPM_IRQ_OFFSET)
- #define	SIU_INT_PC0		((uint)0x3f+CPM_IRQ_OFFSET)
- 
-+#elif defined(CONFIG_PPC_86xx)
-+#include <asm/mpc86xx.h>
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++# CONFIG_IOSCHED_AS is not set
++CONFIG_IOSCHED_DEADLINE=y
++# CONFIG_IOSCHED_CFQ is not set
++# CONFIG_DEFAULT_AS is not set
++CONFIG_DEFAULT_DEADLINE=y
++# CONFIG_DEFAULT_CFQ is not set
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="deadline"
++CONFIG_MPIC=y
++# CONFIG_WANT_EARLY_SERIAL is not set
++CONFIG_PPC_INDIRECT_PCI_BE=y
 +
-+#define NR_EPIC_INTS 48
-+#ifndef NR_8259_INTS
-+#define NR_8259_INTS 16 /*ULI 1575 can route 12 interrupts */
-+#endif
-+#define NUM_8259_INTERRUPTS NR_8259_INTS
++#
++# Platform Support
++#
++CONFIG_MPC8641_HPCN=y
++CONFIG_MPC8641=y
++CONFIG_PEX=y
++CONFIG_I8259_LEVEL_TRIGGER=y
 +
-+#ifndef I8259_OFFSET
-+#define I8259_OFFSET 0
-+#endif
++#
++# Kernel options
++#
++CONFIG_HIGHMEM=y
++# CONFIG_HZ_100 is not set
++# CONFIG_HZ_250 is not set
++CONFIG_HZ_1000=y
++CONFIG_HZ=1000
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_PREEMPT_BKL=y
++CONFIG_BINFMT_ELF=y
++# CONFIG_BINFMT_MISC is not set
++# CONFIG_IRQ_ALL_CPUS is not set
++CONFIG_ARCH_FLATMEM_ENABLE=y
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++CONFIG_SPLIT_PTLOCK_CPUS=4
++CONFIG_PROC_DEVICETREE=y
++# CONFIG_CMDLINE_BOOL is not set
++# CONFIG_PM is not set
++# CONFIG_SECCOMP is not set
++CONFIG_ISA_DMA_API=y
 +
-+#define NR_IRQS 256
++#
++# Bus options
++#
++CONFIG_GENERIC_ISA_DMA=y
++CONFIG_PPC_I8259=y
++CONFIG_PPC_INDIRECT_PCI=y
++CONFIG_FSL_SOC=y
++CONFIG_PCI=y
++CONFIG_PCI_DOMAINS=y
++# CONFIG_PCI_DEBUG is not set
 +
-+/* Internal IRQs on MPC86xx OpenPIC */
++#
++# PCCARD (PCMCIA/CardBus) support
++#
++# CONFIG_PCCARD is not set
 +
-+#ifndef MPC86xx_OPENPIC_IRQ_OFFSET
-+#define MPC86xx_OPENPIC_IRQ_OFFSET NR_8259_INTS
-+#endif
++#
++# PCI Hotplug Support
++#
++# CONFIG_HOTPLUG_PCI is not set
 +
-+/* The 48 internal sources */
-+#define MPC86xx_IRQ_NULL        ( 0 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_MCM         ( 1 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DDR         ( 2 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_LBC         ( 3 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DMA0        ( 4 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DMA1        ( 5 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DMA2        ( 6 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DMA3        ( 7 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_PEX1        ( 8 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_PEX2        ( 9 + MPC86xx_OPENPIC_IRQ_OFFSET)
++#
++# Advanced setup
++#
++# CONFIG_ADVANCED_OPTIONS is not set
 +
-+/* no 10,11 */
-+#define MPC86xx_IRQ_UART2       (12 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC1_TX    (13 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC1_RX    (14 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC3_TX    (15 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC3_RX    (16 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC3_ERROR (17 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC1_ERROR (18 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC2_TX    (19 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC2_RX    (20 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC4_TX    (21 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC4_RX    (22 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC4_ERROR (23 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC2_ERROR (24 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+/* no 25 */
-+#define MPC86xx_IRQ_UART1       (26 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_IIC         (27 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_PERFMON       (28 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+/* no 29,30,31 */
-+#define MPC86xx_IRQ_SRIO_ERROR    (32 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_OUT_BELL (33 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_IN_BELL  (34 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+/* no 35,36 */
-+#define MPC86xx_IRQ_SRIO_OUT_MSG1 (37 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_IN_MSG1  (38 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_OUT_MSG2 (39 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_IN_MSG2  (40 + MPC86xx_OPENPIC_IRQ_OFFSET)
++#
++# Default settings for advanced configuration options are used
++#
++CONFIG_HIGHMEM_START=0xfe000000
++CONFIG_LOWMEM_SIZE=0x30000000
++CONFIG_KERNEL_START=0xc0000000
++CONFIG_TASK_SIZE=0x80000000
++CONFIG_BOOT_LOAD=0x00800000
 +
-+/* The 12 external interrupt lines */
-+#define MPC86xx_IRQ_EXT_BASE	48
-+#define MPC86xx_IRQ_EXT0	(0 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT1	(1 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT2	(2 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT3	(3 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT4	(4 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT5	(5 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT6	(6 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT7	(7 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT8	(8 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT9	(9 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT10	(10 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT11	(11 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
++#
++# Networking
++#
++CONFIG_NET=y
 +
- #else /* CONFIG_40x + CONFIG_8xx */
- /*
-  * this is the # irq's for all ppc arch's (pmac/chrp/prep)
-diff --git a/include/asm-powerpc/mpc86xx.h b/include/asm-powerpc/mpc86xx.h
-new file mode 100644
-index 0000000..d0a6718
---- /dev/null
-+++ b/include/asm-powerpc/mpc86xx.h
-@@ -0,0 +1,47 @@
-+/*
-+ * MPC86xx definitions
-+ *
-+ * Author: Jeff Brown
-+ *
-+ * Copyright 2004 Freescale Semiconductor, Inc
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
++#
++# Networking options
++#
++# CONFIG_NETDEBUG is not set
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=y
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++# CONFIG_IP_MULTICAST is not set
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
++CONFIG_IP_PNP_RARP=y
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_ARPD is not set
++# CONFIG_SYN_COOKIES is not set
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++# CONFIG_INET_TUNNEL is not set
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_BIC=y
++CONFIG_IPV6=y
++# CONFIG_IPV6_PRIVACY is not set
++# CONFIG_IPV6_ROUTER_PREF is not set
++# CONFIG_INET6_AH is not set
++# CONFIG_INET6_ESP is not set
++# CONFIG_INET6_IPCOMP is not set
++# CONFIG_INET6_XFRM_TUNNEL is not set
++# CONFIG_INET6_TUNNEL is not set
++# CONFIG_IPV6_TUNNEL is not set
++# CONFIG_NETFILTER is not set
 +
-+#ifdef __KERNEL__
-+#ifndef __ASM_POWERPC_MPC86xx_H__
-+#define __ASM_POWERPC_MPC86xx_H__
++#
++# DCCP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_DCCP is not set
 +
-+#include <linux/config.h>
-+#include <asm/mmu.h>
++#
++# SCTP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_SCTP is not set
 +
-+#ifdef CONFIG_PPC_86xx
++#
++# TIPC Configuration (EXPERIMENTAL)
++#
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_NET_DIVERT is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
 +
-+#ifdef CONFIG_MPC8641_HPCN
-+#include <platforms/86xx/mpc8641_hpcn.h>
-+#endif
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
 +
-+#define _IO_BASE        isa_io_base
-+#define _ISA_MEM_BASE   isa_mem_base
-+#ifdef CONFIG_PCI
-+#define PCI_DRAM_OFFSET pci_dram_offset
-+#else
-+#define PCI_DRAM_OFFSET 0
-+#endif
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_IEEE80211 is not set
 +
-+#define CPU0_BOOT_RELEASE 0x01000000
-+#define CPU1_BOOT_RELEASE 0x02000000
-+#define CPU_ALL_RELEASED (CPU0_BOOT_RELEASE | CPU1_BOOT_RELEASE)
-+#define MCM_PORT_CONFIG_OFFSET 0x1010
++#
++# Device Drivers
++#
 +
-+/* Offset from CCSRBAR */
-+#define MPC86xx_OPENPIC_OFFSET	(0x40000)
-+#define MPC86xx_MCM_OFFSET      (0x00000)
-+#define MPC86xx_MCM_SIZE        (0x02000)
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++CONFIG_FW_LOADER=y
++# CONFIG_DEBUG_DRIVER is not set
 +
-+#endif /* CONFIG_PPC_86xx */
-+#endif /* __ASM_POWERPC_MPC86xx_H__ */
-+#endif /* __KERNEL__ */
++#
++# Connector - unified userspace <-> kernelspace linker
++#
++# CONFIG_CONNECTOR is not set
++
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
++
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
++
++#
++# Plug and Play support
++#
++
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++CONFIG_BLK_DEV_LOOP=y
++# CONFIG_BLK_DEV_CRYPTOLOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_SX8 is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=131072
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
++
++#
++# ATA/ATAPI/MFM/RLL support
++#
++# CONFIG_IDE is not set
++
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++# CONFIG_SCSI is not set
++
++#
++# Multi-device support (RAID and LVM)
++#
++# CONFIG_MD is not set
++
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
++
++#
++# IEEE 1394 (FireWire) support
++#
++# CONFIG_IEEE1394 is not set
++
++#
++# I2O device support
++#
++# CONFIG_I2O is not set
++
++#
++# Macintosh device drivers
++#
++# CONFIG_WINDFARM is not set
++
++#
++# Network device support
++#
++CONFIG_NETDEVICES=y
++CONFIG_DUMMY=y
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++
++#
++# ARCnet devices
++#
++# CONFIG_ARCNET is not set
++
++#
++# PHY device support
++#
++CONFIG_PHYLIB=y
++
++#
++# MII PHY device drivers
++#
++# CONFIG_MARVELL_PHY is not set
++# CONFIG_DAVICOM_PHY is not set
++# CONFIG_QSEMI_PHY is not set
++# CONFIG_LXT_PHY is not set
++# CONFIG_CICADA_PHY is not set
++CONFIG_VITESSE_PHY=y
++
++#
++# Ethernet (10 or 100Mbit)
++#
++CONFIG_NET_ETHERNET=y
++CONFIG_MII=y
++# CONFIG_HAPPYMEAL is not set
++# CONFIG_SUNGEM is not set
++# CONFIG_CASSINI is not set
++# CONFIG_NET_VENDOR_3COM is not set
++
++#
++# Tulip family network device support
++#
++# CONFIG_NET_TULIP is not set
++# CONFIG_HP100 is not set
++# CONFIG_NET_PCI is not set
++
++#
++# Ethernet (1000 Mbit)
++#
++# CONFIG_ACENIC is not set
++# CONFIG_DL2K is not set
++# CONFIG_E1000 is not set
++# CONFIG_NS83820 is not set
++# CONFIG_HAMACHI is not set
++# CONFIG_YELLOWFIN is not set
++# CONFIG_R8169 is not set
++# CONFIG_SIS190 is not set
++# CONFIG_SKGE is not set
++# CONFIG_SKY2 is not set
++# CONFIG_SK98LIN is not set
++# CONFIG_TIGON3 is not set
++# CONFIG_BNX2 is not set
++CONFIG_GIANFAR=y
++# CONFIG_GFAR_NAPI is not set
++
++#
++# Ethernet (10000 Mbit)
++#
++# CONFIG_CHELSIO_T1 is not set
++# CONFIG_IXGB is not set
++# CONFIG_S2IO is not set
++
++#
++# Token Ring devices
++#
++# CONFIG_TR is not set
++
++#
++# Wireless LAN (non-hamradio)
++#
++# CONFIG_NET_RADIO is not set
++
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_SHAPER is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Telephony Support
++#
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++
++#
++# Userland interfaces
++#
++# CONFIG_INPUT_MOUSEDEV is not set
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_TSDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
++
++#
++# Hardware I/O ports
++#
++CONFIG_SERIO=y
++CONFIG_SERIO_I8042=y
++CONFIG_SERIO_SERPORT=y
++# CONFIG_SERIO_PCIPS2 is not set
++CONFIG_SERIO_LIBPS2=y
++# CONFIG_SERIO_RAW is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++CONFIG_VT=y
++CONFIG_VT_CONSOLE=y
++CONFIG_HW_CONSOLE=y
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_PCI=y
++CONFIG_SERIAL_8250_NR_UARTS=2
++CONFIG_SERIAL_8250_RUNTIME_UARTS=2
++CONFIG_SERIAL_8250_EXTENDED=y
++CONFIG_SERIAL_8250_MANY_PORTS=y
++CONFIG_SERIAL_8250_SHARE_IRQ=y
++CONFIG_SERIAL_8250_DETECT_IRQ=y
++CONFIG_SERIAL_8250_RSA=y
++
++#
++# Non-8250 serial port support
++#
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++# CONFIG_SERIAL_JSM is not set
++CONFIG_UNIX98_PTYS=y
++# CONFIG_LEGACY_PTYS is not set
++
++#
++# IPMI
++#
++# CONFIG_IPMI_HANDLER is not set
++
++#
++# Watchdog Cards
++#
++# CONFIG_WATCHDOG is not set
++# CONFIG_NVRAM is not set
++# CONFIG_GEN_RTC is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++
++#
++# Ftape, the floppy tape device driver
++#
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++# CONFIG_RAW_DRIVER is not set
++
++#
++# TPM devices
++#
++# CONFIG_TCG_TPM is not set
++# CONFIG_TELCLOCK is not set
++
++#
++# I2C support
++#
++CONFIG_I2C=y
++# CONFIG_I2C_CHARDEV is not set
++
++#
++# I2C Algorithms
++#
++# CONFIG_I2C_ALGOBIT is not set
++# CONFIG_I2C_ALGOPCF is not set
++# CONFIG_I2C_ALGOPCA is not set
++
++#
++# I2C Hardware Bus support
++#
++# CONFIG_I2C_ALI1535 is not set
++# CONFIG_I2C_ALI1563 is not set
++# CONFIG_I2C_ALI15X3 is not set
++# CONFIG_I2C_AMD756 is not set
++# CONFIG_I2C_AMD8111 is not set
++# CONFIG_I2C_I801 is not set
++# CONFIG_I2C_I810 is not set
++# CONFIG_I2C_PIIX4 is not set
++CONFIG_I2C_MPC=y
++# CONFIG_I2C_NFORCE2 is not set
++# CONFIG_I2C_PARPORT_LIGHT is not set
++# CONFIG_I2C_PROSAVAGE is not set
++# CONFIG_I2C_SAVAGE4 is not set
++# CONFIG_I2C_SIS5595 is not set
++# CONFIG_I2C_SIS630 is not set
++# CONFIG_I2C_SIS96X is not set
++# CONFIG_I2C_VIA is not set
++# CONFIG_I2C_VIAPRO is not set
++# CONFIG_I2C_VOODOO3 is not set
++# CONFIG_I2C_PCA_ISA is not set
++
++#
++# Miscellaneous I2C Chip support
++#
++# CONFIG_SENSORS_DS1337 is not set
++# CONFIG_SENSORS_DS1374 is not set
++CONFIG_SENSORS_EEPROM=y
++# CONFIG_SENSORS_PCF8574 is not set
++# CONFIG_SENSORS_PCA9539 is not set
++# CONFIG_SENSORS_PCF8591 is not set
++# CONFIG_SENSORS_M41T00 is not set
++# CONFIG_SENSORS_MAX6875 is not set
++# CONFIG_I2C_DEBUG_CORE is not set
++# CONFIG_I2C_DEBUG_ALGO is not set
++# CONFIG_I2C_DEBUG_BUS is not set
++# CONFIG_I2C_DEBUG_CHIP is not set
++
++#
++# SPI support
++#
++# CONFIG_SPI is not set
++# CONFIG_SPI_MASTER is not set
++
++#
++# Dallas's 1-wire bus
++#
++# CONFIG_W1 is not set
++
++#
++# Hardware Monitoring support
++#
++# CONFIG_HWMON is not set
++# CONFIG_HWMON_VID is not set
++
++#
++# Misc devices
++#
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Digital Video Broadcasting Devices
++#
++# CONFIG_DVB is not set
++
++#
++# Graphics support
++#
++# CONFIG_FB is not set
++
++#
++# Console display driver support
++#
++CONFIG_VGA_CONSOLE=y
++# CONFIG_VGACON_SOFT_SCROLLBACK is not set
++CONFIG_DUMMY_CONSOLE=y
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# USB support
++#
++CONFIG_USB_ARCH_HAS_HCD=y
++CONFIG_USB_ARCH_HAS_OHCI=y
++CONFIG_USB_ARCH_HAS_EHCI=y
++# CONFIG_USB is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++
++#
++# USB Gadget Support
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# MMC/SD Card support
++#
++# CONFIG_MMC is not set
++
++#
++# LED devices
++#
++# CONFIG_NEW_LEDS is not set
++
++#
++# LED drivers
++#
++
++#
++# LED Triggers
++#
++
++#
++# InfiniBand support
++#
++# CONFIG_INFINIBAND is not set
++
++#
++# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
++#
++
++#
++# Real Time Clock
++#
++# CONFIG_RTC_CLASS is not set
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++# CONFIG_EXT2_FS_XATTR is not set
++# CONFIG_EXT2_FS_XIP is not set
++CONFIG_EXT3_FS=y
++CONFIG_EXT3_FS_XATTR=y
++# CONFIG_EXT3_FS_POSIX_ACL is not set
++# CONFIG_EXT3_FS_SECURITY is not set
++CONFIG_JBD=y
++# CONFIG_JBD_DEBUG is not set
++CONFIG_FS_MBCACHE=y
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_OCFS2_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_ROMFS_FS is not set
++# CONFIG_INOTIFY is not set
++# CONFIG_QUOTA is not set
++# CONFIG_DNOTIFY is not set
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_SYSFS=y
++CONFIG_TMPFS=y
++# CONFIG_HUGETLB_PAGE is not set
++CONFIG_RAMFS=y
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_CRAMFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Network File Systems
++#
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++# CONFIG_NFS_V3_ACL is not set
++# CONFIG_NFS_V4 is not set
++# CONFIG_NFS_DIRECTIO is not set
++CONFIG_NFSD=y
++# CONFIG_NFSD_V3 is not set
++CONFIG_NFSD_TCP=y
++CONFIG_ROOT_NFS=y
++CONFIG_LOCKD=y
++CONFIG_LOCKD_V4=y
++CONFIG_EXPORTFS=y
++CONFIG_NFS_COMMON=y
++CONFIG_SUNRPC=y
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++# CONFIG_9P_FS is not set
++
++#
++# Partition Types
++#
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_ACORN_PARTITION is not set
++# CONFIG_OSF_PARTITION is not set
++# CONFIG_AMIGA_PARTITION is not set
++# CONFIG_ATARI_PARTITION is not set
++# CONFIG_MAC_PARTITION is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_BSD_DISKLABEL is not set
++# CONFIG_MINIX_SUBPARTITION is not set
++# CONFIG_SOLARIS_X86_PARTITION is not set
++# CONFIG_UNIXWARE_DISKLABEL is not set
++CONFIG_LDM_PARTITION=y
++# CONFIG_LDM_DEBUG is not set
++# CONFIG_SGI_PARTITION is not set
++# CONFIG_ULTRIX_PARTITION is not set
++# CONFIG_SUN_PARTITION is not set
++# CONFIG_KARMA_PARTITION is not set
++# CONFIG_EFI_PARTITION is not set
++
++#
++# Native Language Support
++#
++CONFIG_NLS=y
++CONFIG_NLS_DEFAULT="iso8859-1"
++# CONFIG_NLS_CODEPAGE_437 is not set
++# CONFIG_NLS_CODEPAGE_737 is not set
++# CONFIG_NLS_CODEPAGE_775 is not set
++# CONFIG_NLS_CODEPAGE_850 is not set
++# CONFIG_NLS_CODEPAGE_852 is not set
++# CONFIG_NLS_CODEPAGE_855 is not set
++# CONFIG_NLS_CODEPAGE_857 is not set
++# CONFIG_NLS_CODEPAGE_860 is not set
++# CONFIG_NLS_CODEPAGE_861 is not set
++# CONFIG_NLS_CODEPAGE_862 is not set
++# CONFIG_NLS_CODEPAGE_863 is not set
++# CONFIG_NLS_CODEPAGE_864 is not set
++# CONFIG_NLS_CODEPAGE_865 is not set
++# CONFIG_NLS_CODEPAGE_866 is not set
++# CONFIG_NLS_CODEPAGE_869 is not set
++# CONFIG_NLS_CODEPAGE_936 is not set
++# CONFIG_NLS_CODEPAGE_950 is not set
++# CONFIG_NLS_CODEPAGE_932 is not set
++# CONFIG_NLS_CODEPAGE_949 is not set
++# CONFIG_NLS_CODEPAGE_874 is not set
++# CONFIG_NLS_ISO8859_8 is not set
++# CONFIG_NLS_CODEPAGE_1250 is not set
++# CONFIG_NLS_CODEPAGE_1251 is not set
++# CONFIG_NLS_ASCII is not set
++# CONFIG_NLS_ISO8859_1 is not set
++# CONFIG_NLS_ISO8859_2 is not set
++# CONFIG_NLS_ISO8859_3 is not set
++# CONFIG_NLS_ISO8859_4 is not set
++# CONFIG_NLS_ISO8859_5 is not set
++# CONFIG_NLS_ISO8859_6 is not set
++# CONFIG_NLS_ISO8859_7 is not set
++# CONFIG_NLS_ISO8859_9 is not set
++# CONFIG_NLS_ISO8859_13 is not set
++# CONFIG_NLS_ISO8859_14 is not set
++# CONFIG_NLS_ISO8859_15 is not set
++# CONFIG_NLS_KOI8_R is not set
++# CONFIG_NLS_KOI8_U is not set
++# CONFIG_NLS_UTF8 is not set
++
++#
++# Library routines
++#
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++CONFIG_CRC32=y
++# CONFIG_LIBCRC32C is not set
++
++#
++# Instrumentation Support
++#
++# CONFIG_PROFILING is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++# CONFIG_MAGIC_SYSRQ is not set
++CONFIG_DEBUG_KERNEL=y
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_DETECT_SOFTLOCKUP=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_KOBJECT is not set
++# CONFIG_DEBUG_HIGHMEM is not set
++# CONFIG_DEBUG_INFO is not set
++# CONFIG_DEBUG_FS is not set
++# CONFIG_DEBUG_VM is not set
++# CONFIG_UNWIND_INFO is not set
++CONFIG_FORCED_INLINING=y
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_DEBUGGER is not set
++# CONFIG_BDI_SWITCH is not set
++# CONFIG_BOOTX_TEXT is not set
++# CONFIG_PPC_EARLY_DEBUG is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++
++#
++# Cryptographic options
++#
++# CONFIG_CRYPTO is not set
++
++#
++# Hardware crypto devices
++#
