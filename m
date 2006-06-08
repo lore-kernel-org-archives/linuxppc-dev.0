@@ -1,21 +1,17 @@
-Return-Path: <rick.moleres@xilinx.com>
-Received: from outbound2-ash-R.bigfish.com (outbound-ash.frontbridge.com
-	[206.16.192.249])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 6EAB267BEC
+Return-Path: <eemingliu@hotmail.com>
+Received: from hotmail.com (bay110-f15.bay110.hotmail.com [65.54.229.25])
+	by ozlabs.org (Postfix) with ESMTP id 6460167BF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Jun 2006 01:31:14 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Making Two ethernet interfaces up in Linux
-Date: Thu, 8 Jun 2006 09:30:58 -0600
-Message-ID: <689CB232690D8D4E97DA6C76DA098E6C026792FD@XCO-EXCHVS1.xlnx.xilinx.com>
-From: "Rick Moleres" <rick.moleres@xilinx.com>
-To: "Shantanu Nalage" <shantanu.nalage@gmail.com>,
-	"Antonio Di Bacco" <antonio.dibacco@aruba.it>,
-	<linuxppc-embedded@ozlabs.org>
+	Fri,  9 Jun 2006 01:54:03 +1000 (EST)
+Message-ID: <BAY110-F15241A28F638236FD2E3E4B28B0@phx.gbl>
+In-Reply-To: <200606081725.37621.arnd.bergmann@de.ibm.com>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: arnd.bergmann@de.ibm.com
+Subject: Re: a problem of kernel-module version mismatch.
+Date: Thu, 08 Jun 2006 15:54:00 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,60 +22,122 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Shantanu,
+Dear Arnd,
+Thanks a lot for your help. Now I have solved the problem of version 
+mismatch. The reason is I haven't include the sentence of "#define MODULE". 
 
-Can you post the xemac_g.c file in the xilinx_enet directory?  Also,
-which version of the EDK are you using?  There was a bug in EDK 7.x that
-prevented multiple Ethernet interfaces from working properly.
 
-It would also be helpful to see xparameters_ml300.h from the
-arch/ppc/platforms/xilinx_ocp directory.
+However the problem of unresolved symbol XIo_In32 and XIo_Out32 still 
+exists. I will try to solve it following your suggestion. If any question, 
+I will ask you again. Thanks a lot for your help.
 
-Thanks,
--Rick
+Regards
+Ming
 
------Original Message-----
-From: linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org] On
-Behalf Of Shantanu Nalage
-Sent: Wednesday, June 07, 2006 11:16 PM
-To: Antonio Di Bacco; linuxppc-embedded@ozlabs.org
-Subject: Re: Making Two ethernet interfaces up in Linux
 
-Thanks for the reply.
-The driver which we are using for the ethernet is provided by Xilinx.
-In the Linux kernel source, it is located in net/xilinx_enet
-directory. We are attaching the adapter file for the driver provided
-by Xilinx for the ethernet.
-When we gave a first try, it showed two ethernet interfaces eth0 and
-eth1 as an output of ifconfig command but only eth0 works, when eth1
-is disabled. When both interfaces are up, neither interface works.
-While even when eth0 is disabled, eth1 interface doesn't work.
-
-With regards,
-Shantanu.
-
-On 6/4/06, Antonio Di Bacco <antonio.dibacco@aruba.it> wrote:
-> >          We are trying to port Linux on Xilinx Board XUPV2Pro which
-is
-> > similar in most aspects to the Xilinx ML300 board. Linux is up and
-> > running for the original board i.e. having only one ethrnet
-interface.
-> > Now since we wanted to have the board working as router, we designed
-a
-> > daughter board with two ethernet phy interfaces. The MACs required
+>From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+>To: "Ming Liu" <eemingliu@hotmail.com>
+>CC: linuxppc-embedded@ozlabs.org
+>Subject: Re: a problem of kernel-module version mismatch.
+>Date: Thu, 8 Jun 2006 17:25:37 +0200
+>
+>On Thursday 08 June 2006 15:52, Ming Liu wrote:
+> > >The easiest way is usually to put the driver in your source tree
+> > >and compile everything together. That also makes it easier to
+> > >distribute the complete source tree to your users.
+> >
+> > Sorry that I am a novice in Linux. I don't know how can I put the 
+driver in
+> > my source tree and compile everything together. It looks like that 
+there is
+> > no option in the menuconfig to choose a specially customed peripheral. 
+So I
+> > think I only can include the customed peripheral as a module. Could you
+> > please say in a detail on how to do that?
+>
+>The most simple way would be to put it into linux/drivers/misc and add it
+>to the Makefile in there.
+>
+> > > > insmod: unresolved symbol XIo_In32
+> > > > insmod: unresolved symbol XIO_Out32
+> > >
+> > >that looks like part of your module is missing. Try to find where 
+thses
+> > >functions are defined in there and why that isn't compiled.
+> >
+> > It's very strange because I have checked the source. In the header file 
+of
+> > xio.h, there are the following sentences,
+> >
+> > /************************** Function Prototypes
+> > ******************************/
+> >
+> > /* The following functions allow the software to be transportable 
+across
+> > ? processors which may use memory mapped I/O or I/O which is mapped 
+into a
+> > ? seperate address space such as X86. 燭he functions are better suited 
 for
-> > that are instantiated in Xilinx ....
+> > ? debugging and are therefore the default implementation. Macros can
+> > instead
+> > ? be used if USE_IO_MACROS is defined.
+> > ?/
+> > #ifndef USE_IO_MACROS
 >
-> You have already the driver for the first MAC, then you should start
-from that
-> modifying the init procedure for example and all the others. Your
-driver
-> should initialize both the MACs and also create two devices calling
-> init_etherdev tow times. If you post your driver I can suggest what to
-> change. It is not so difficult.
+>The comment tells you that you either need to implement these functions
+>youself or #define USE_IO_MACROS in the code before this.
 >
-> Bye,
-> Antonio.
+> > /* Functions */
+> > Xuint8 XIo_In8(XIo_Address InAddress);
+> > Xuint16 XIo_In16(XIo_Address InAddress);
+> > Xuint32 XIo_In32(XIo_Address InAddress);
+> >
+> > void XIo_Out8(XIo_Address OutAddress, Xuint8 Value);
+> > void XIo_Out16(XIo_Address OutAddress, Xuint16 Value);
+> > void XIo_Out32(XIo_Address OutAddress, Xuint32 Value);
+> >
+> > #else
+> >
+> > /* The following macros allow optimized I/O operations for memory 
+mapped
+> > I/O
+> > ? Note that the SYNCHRONIZE_IO may be moved by the compiler during
+> > ? optimization.
+> > ?/
+> >
+> > #define XIo_In8(InputPtr) ?*(volatile Xuint8 ?)(InputPtr));
+> > SYNCHRONIZE_IO;
+> > #define XIo_In16(InputPtr) (*(volatile Xuint16 *)(InputPtr));
+> > SYNCHRONIZE_IO;
+> > #define XIo_In32(InputPtr) (*(volatile Xuint32 *)(InputPtr));
+> > SYNCHRONIZE_IO;
+> >
+> > #define XIo_Out8(OutputPtr, Value) 燶
+> > ??{ (*(volatile Xuint8 ?)(OutputPtr) = Value); SYNCHRONIZE_IO; }
+> > #define XIo_Out16(OutputPtr, Value) \
+> > ??{ (*(volatile Xuint16 *)(OutputPtr) = Value); SYNCHRONIZE_IO; }
+> > #define XIo_Out32(OutputPtr, Value) \
+> > ??{ (*(volatile Xuint32 *)(OutputPtr) = Value); SYNCHRONIZE_IO; }
+> >
+> > #endif
 >
+>These macros are probably broken on powerpc.
 >
+> >
+> > I think these are the defination of XIo_In32 and XIo_Out32. Also, 
+during
+> > the compilation, there is no error to complain that "XIo_In32 or 
+XIo_Out32
+> > undeclared".
+> >
+>
+>I would suggest you remove that part of the header file completely, and
+>replace it with:
+>
+>#define XIo_In32(p) in_le32(x)
+>#define XIO_Out32(p,v) out_le32(p, v)
+>
+>	Arnd <><
+
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
