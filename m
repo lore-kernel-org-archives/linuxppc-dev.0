@@ -1,15 +1,22 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17545.17329.227226.926906@cargo.ozlabs.ibm.com>
-Date: Fri, 9 Jun 2006 19:47:29 +1000
+Message-ID: <17545.16696.195276.334774@cargo.ozlabs.ibm.com>
+Date: Fri, 9 Jun 2006 19:36:56 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: mostrows@watson.ibm.com
-Subject: Re: [PATCH] Provide mechanism for editing builtin command-line in
-	zImage binary.
-In-Reply-To: <11489544631499-git-send-email-mostrows@watson.ibm.com>
-References: <11489544631499-git-send-email-mostrows@watson.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+To: mel@csn.ul.ie (Mel Gorman)
+Subject: Re: [PATCH] Compile failure fix for ppc on 2.6.17-rc4-mm3 (2nd
+	attempt)
+In-Reply-To: <20060529190515.GA17608@skynet.ie>
+References: <20060526151214.GA5190@skynet.ie>
+	<20060526094924.10efc515.akpm@osdl.org>
+	<20060529154923.GA9025@skynet.ie>
+	<2ebd96e4a7ea753273b2c5f856ba8c7a@kernel.crashing.org>
+	<Pine.LNX.4.64.0605291825500.11234@skynet.skynet.ie>
+	<c6414fc4b2c627791a49085bf8eea7e8@kernel.crashing.org>
+	<20060529190515.GA17608@skynet.ie>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, vgoyal@in.ibm.com,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,30 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michal Ostrowski writes:
+Mel Gorman writes:
 
-> -BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
-> +BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj) -I$(O)/include -I$(O)/include2\
-> +			-D__KERNEL__
+> +	res->end = -(-res->end & ~(unsigned long)mask); \
+> +	res->end += mask; \
 
-I don't like this; we are trying to keep the boot wrapper separate,
-not make it more dependent on the rest of the kernel.
+I think this is equivalent to
 
-> +#include <linux/autoconf.h>
-> +#include <asm/setup.h>
+	res->end = (res->end + mask) | mask;
 
-We don't really need COMMAND_LINE_SIZE here - nothing says the command
-line from the firmware or the boot wrapper *has* to be the same size
-as the kernel's command-line buffer.
+and I have to say the latter seems more understandable to me (and
+doesn't need a cast) ...
 
-> +static char builtin_cmdline[COMMAND_LINE_SIZE]
-> +		__attribute__((section("__builtin_cmdline"))) = CONFIG_CMDLINE;
-> +#endif
-
-If CONFIG_CMDLINE is set, then the kernel image *already* has the
-default in it, and we don't need another copy here.  Just make your
-buffer here some fixed, known size and uninitialized (i.e. all
-zeroes).  Do the setprop if the /chosen/bootargs is empty and your
-buffer has been edited to be non-null.
-
+Regards,
 Paul.
