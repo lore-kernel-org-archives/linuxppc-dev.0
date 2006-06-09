@@ -1,11 +1,11 @@
 Return-Path: <jianfei616@hotmail.com>
-Message-ID: <BAY113-F48AF982B29842D6A8C85598880@phx.gbl>
-In-Reply-To: <15BDF877-21B2-40BD-A5F6-9CD83E5BB2CE@freescale.com>
+Message-ID: <BAY113-F3053BE1E61055DC5EFB9FF98880@phx.gbl>
+In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673026FD945@zch01exm40.ap.freescale.net>
 From: "Guo Jaffe" <jianfei616@hotmail.com>
-To: afleming@freescale.com, DaveLiu@freescale.com
-Subject: Re: does Gianfar Ethernet Controller Version 1.1 support MARVELL
+To: DaveLiu@freescale.com, afleming@freescale.com
+Subject: RE: does Gianfar Ethernet Controller Version 1.1 support MARVELL
 	88E1111?
-Date: Fri, 09 Jun 2006 22:56:25 +0800
+Date: Fri, 09 Jun 2006 23:43:37 +0800
 Mime-Version: 1.0
 Content-Type: text/plain; charset=gb2312; format=flowed
 Cc: Linuxppc-embedded@ozlabs.org
@@ -19,38 +19,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Dave,
 
+The PHY ID I read is MARVELL 88E1101(1410cc2)
 
+Today I took the MPC 8540 off the board, and checked the two GMII phy chips 
+alone. I manually pulled up the phys's RST pins when the cable was in 
+position. But the link LED still can't light up. So it turned out not the 
+driver's problem. 
 
->From: Andy Fleming <afleming@freescale.com>
->To: Guo Jaffe <jianfei616@hotmail.com>
->CC: Linuxppc-embedded@ozlabs.org
->Subject: Re: does Gianfar Ethernet Controller Version 1.1 support MARVELL 
-88E1111?
->Date: Thu, 8 Jun 2006 14:25:44 -0500
+The hardware configuration of 88E1111 is GMII to copper, Auto-Neg, 
+advertise all capabilities, prefer Master.
+
+The PHY's power is correct and clean. And for interface between TESC and 
+PHY I think even TESC power is set for 3.3V environment it still can work 
+with the 88e1111 whose VDD is 2.5V. Because the datasheet of 88e1111 says 
+that input pins are 3.3V tolerant. Am I right?
+
+regards,
+Jaffe
+
+----------------------------------------------------------------------------
+
+>As you said, the MDIO bus looks like well. If the PHY address it is right,
+>You can read the PHY ID from PHY. What is the PHY ID you read?
 >
+>Please check the hardware status
 >
->On Jun 8, 2006, at 12:51, Guo Jaffe wrote:
+>1) 8540 hardware reset configuration for GMII interface;
+>Make sure it is GMII interface.
 >
->>Hi Andy,
->>
->>Thank you for your information. So the driver is not the issue, but 
->>  better to upgraded.
->>
->>I will check the board once more. The PHY doesn't work because the  
->>8bit bus between MAC and PHY is locked(TX_EN and RX_DV all disabled 
->>  from the scope's view) and also you can't see any signals exist 
->>at  the Magnetic side(nor LED signals). It seems that only MDC/MDIO 
->>and  CLOCK reference pin works. The PHY's ID must be read from 
->>MDC/MDIO  interface and Clocks are right showed on the scope.
+>2) MARVELL 88E1111 configuration and GMII interface connection.
+>You can reference the 8540 ref board.
 >
+>3)TSEC and PHY power
 >
->But what error are you getting?  What are the symptoms of your  
->problem?  The GMII interface (the 8-bit bus) is inconsequential to  
->PHY configuration and management.  Only the MDC/MDIO bus is used.   
->Therefore the PHY id should be quite readable.  What version of 
->Linux  are you using?  Please describe what the kernel prints out 
->when you  boot, and when you try to bring up the interface (assuming 
->you don't  do that at boot).
+>4)The 125M reference clock---GTX_CLK125, This looks
+>well as you said.
 >
->Andy
+>5)The GTX_CLK for GMII transmit clock, and TX_CLK for MII transmit clock.
+>What speed ethernet does the TSEC  connect to? 1000Mbps or 100Mbps?
+>
+>6) The RX_CLK for receive clock.
+>
+>7)Of cause, need check the RX_DV and TX_EN to see if have some traffic.
+>
+>-Dave
