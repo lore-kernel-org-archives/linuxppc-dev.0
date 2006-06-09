@@ -1,39 +1,20 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+Return-Path: <cdumoulin@ics-ltd.com>
+Received: from mx6-6.spamtrap.magma.ca (mx6-6.spamtrap.magma.ca
+	[209.217.78.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E713667B16
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7E9A367A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Jun 2006 02:13:24 +1000 (EST)
-Received: from e4.ny.us.ibm.com ([192.168.1.104])
-	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k59EIvjO024325
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-embedded@ozlabs.org>; Fri, 9 Jun 2006 10:18:57 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k59EIrOL004176
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-embedded@ozlabs.org>; Fri, 9 Jun 2006 10:18:53 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k59EIrPL180286
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>; Fri, 9 Jun 2006 10:18:53 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k59EIqR3001012
-	for <linuxppc-embedded@ozlabs.org>; Fri, 9 Jun 2006 10:18:52 -0400
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: "Ming Liu" <eemingliu@hotmail.com>
-Subject: Re: a problem of kernel-module version mismatch.
-Date: Fri, 9 Jun 2006 16:18:50 +0200
-References: <BAY110-F337711EB19C0B1D8417B18B2880@phx.gbl>
-In-Reply-To: <BAY110-F337711EB19C0B1D8417B18B2880@phx.gbl>
+	Sat, 10 Jun 2006 02:14:53 +1000 (EST)
+Message-ID: <44899E7C.7080903@ics-ltd.com>
+Date: Fri, 09 Jun 2006 12:14:52 -0400
+From: Chris Dumoulin <cdumoulin@ics-ltd.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="gb2312"
-Message-Id: <200606091618.51169.arnd.bergmann@de.ibm.com>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: help with inittab
+References: <20060608214239.A71EE35265D@atlas.denx.de>
+In-Reply-To: <20060608214239.A71EE35265D@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -45,15 +26,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 09 June 2006 16:07, Ming Liu wrote:
-> Are in_le32 and out_le32 two functions defined by the kernel to input and 
-> output 32-bit data? When we define XIo_In32 and XIo_Out32 as them, which is 
-> we use out_le32 and in_le32 to input and output data, they are still not 
-> resolvable. Any other suggestions? Thanks a lot.
+I've now determined that my kernel seems to stop in the following line 
+of code, in the function init(void * unused), in init/main.c:
+run_init_process("/sbin/init");
+I've determined that it stops at this call by stepping through the code 
+with a BDI2000.
 
-They should be defined in include/asm-powerpc/io.h, include <asm/io.h>
-to get the definition.
-If your kernel is too old, they may not be there however, so you need
-to use readl/writel or inl/outl, also defined in that file.
+My boot arguments are:
+console=ttyS0,57600n8 ip=off root=/dev/ram0 rw
 
-	Arnd <><
+My current inittab is:
+::sysinit:/etc/rc.sh
+::ctrlaltdel:/sbin/reboot
+::shutdown:/sbin/swapoff -a
+::shutdown:/bin/umount -a -r
+::restart:/sbin/init
+::respawn:/bin/sh
+
+I've tried adding an "echo" command to the /etc/rc.sh script that is 
+called, but I don't see any output. I've also trying changing the 
+::sysinit line in inittab to point to some non-existent script, to see 
+if I'll get some error message, but I still see nothing. Is it possible 
+that /sbin/init is dying before it gets to the point of reading inittab?
+Any ideas?
+
+Regards,
+Chris Dumoulin
+
+
+Wolfgang Denk wrote:
+
+>In message <44888B92.40409@ics-ltd.com> you wrote:
+>  
+>
+>>I am using the linux kernel 2.6.15 and initrd ramdisk image from ELDK 
+>>4.0. Currently, I seem to be able to boot without errors, but after the 
+>>root filesystem is mounted, things just stop.
+>>    
+>>
+>
+>And  what's  your  console  device?  Are  you  passing  any  console=
+>arguments  on  the  command  line?  Is the corresponding device entry
+>present in the /dev/directory?
+>
+>Best regards,
+>
+>Wolfgang Denk
+>
+>  
+>
+
+-- 
+*--Christopher Dumoulin--*
+Software Team Leader
+
+<http://ics-ltd.com/>
+<http://ics-ltd.com/>
+
+Interactive Circuits and Systems Ltd.
+5430 Canotek Road
+Ottawa, ON
+K1J 9G2
+(613)749-9241
+1-800-267-9794 (USA only)
+
+------------------------------------------------------------------------
+This e-mail is private and confidential and is for the addressee only. 
+If misdirected, please notify us by telephone and confirm that it has 
+been deleted from your system and any hard copies destroyed. You are 
+strictly prohibited from using, printing, distributing or disseminating 
+it or any information contained in it save to the intended recipient.
