@@ -1,15 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17545.11572.518355.586057@cargo.ozlabs.ibm.com>
-Date: Fri, 9 Jun 2006 18:11:32 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Olaf Hering <olh@suse.de>
-Subject: Re: [PATCH] force 64bit mode in system_reset_fwnmi for broken POWER4
-	firmware
-In-Reply-To: <20060523130717.GA22364@suse.de>
-References: <20060522164111.GA14462@suse.de> <20060523130717.GA22364@suse.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-235-friday.dmz.nerim.net
+	[195.5.254.235]) by ozlabs.org (Postfix) with ESMTP id D837F67C5A
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 17:54:28 +1000 (EST)
+Received: from kraid.nerim.net (smtp-105-friday.nerim.net [62.4.16.105])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 2EFC439FBD
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 09:54:15 +0200 (CEST)
+Date: Fri, 9 Jun 2006 09:54:21 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC] I2C-MPC: Fix up error handling
+Message-Id: <20060609095421.7157dc53.khali@linux-fr.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,12 +22,149 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering writes:
+Hi all,
 
-> The reason is that system_reset_fwnmi is called in 32bit mode. Forcing
-> 64bit mode fixes the corrupt NIP for me. JS20 and p690 are affected,
-> seems to work on p550 and JS21.
+Could anyone please comment on this i2c-mpc patch, and give it some
+testing on different systems? I'm fine with the error propagation
+fixes, but less fine with the random resets being added, and rather
+unhappy with the "retry once more just in case" thing, which I think,
+if really needed, should instead be implemented using the standard
+i2c_adapter.retries mechanism.
 
-What was the LTC bugzilla number for this again?
+Thanks.
 
-Paul.
+From: Kumar Gala <galak@kernel.crashing.org>
+
+* If we have an Unfinished (MCF) or Arbitration Lost (MAL) error and
+  the bus is still busy reset the controller.  This prevents the
+  controller from getting in a hung state for transactions for other
+  devices.
+
+* Fixed up propogating the errors from i2c_wait.
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
+
+ drivers/i2c/busses/i2c-mpc.c |   43 +++++++++++++++++++++++----------
+ 1 file changed, 31 insertions(+), 12 deletions(-)
+
+diff -puN drivers/i2c/busses/i2c-mpc.c~i2c-mpc-fix-up-error-handling drivers/i2c/busses/i2c-mpc.c
+--- devel/drivers/i2c/busses/i2c-mpc.c~i2c-mpc-fix-up-error-handling	2006-06-01 20:22:55.000000000 -0700
++++ devel-akpm/drivers/i2c/busses/i2c-mpc.c	2006-06-01 20:22:55.000000000 -0700
+@@ -115,11 +115,20 @@ static int i2c_wait(struct mpc_i2c *i2c,
+ 
+ 	if (!(x & CSR_MCF)) {
+ 		pr_debug("I2C: unfinished\n");
++
++		/* reset the controller if the bus is still busy */
++		if (x & CSR_MBB)
++			writeccr(i2c, 0);
++
+ 		return -EIO;
+ 	}
+ 
+ 	if (x & CSR_MAL) {
+ 		pr_debug("I2C: MAL\n");
++
++		/* reset the controller if the bus is still busy */
++		if (x & CSR_MBB)
++			writeccr(i2c, 0);
+ 		return -EIO;
+ 	}
+ 
+@@ -160,7 +169,7 @@ static void mpc_i2c_stop(struct mpc_i2c 
+ static int mpc_write(struct mpc_i2c *i2c, int target,
+ 		     const u8 * data, int length, int restart)
+ {
+-	int i;
++	int i, ret;
+ 	unsigned timeout = i2c->adap.timeout;
+ 	u32 flags = restart ? CCR_RSTA : 0;
+ 
+@@ -172,15 +181,17 @@ static int mpc_write(struct mpc_i2c *i2c
+ 	/* Write target byte */
+ 	writeb((target << 1), i2c->base + MPC_I2C_DR);
+ 
+-	if (i2c_wait(i2c, timeout, 1) < 0)
+-		return -1;
++	ret = i2c_wait(i2c, timeout, 1);
++	if (ret < 0)
++		return ret;
+ 
+ 	for (i = 0; i < length; i++) {
+ 		/* Write data byte */
+ 		writeb(data[i], i2c->base + MPC_I2C_DR);
+ 
+-		if (i2c_wait(i2c, timeout, 1) < 0)
+-			return -1;
++		ret = i2c_wait(i2c, timeout, 1);
++		if (ret < 0)
++			return ret;
+ 	}
+ 
+ 	return 0;
+@@ -190,7 +201,7 @@ static int mpc_read(struct mpc_i2c *i2c,
+ 		    u8 * data, int length, int restart)
+ {
+ 	unsigned timeout = i2c->adap.timeout;
+-	int i;
++	int i, ret;
+ 	u32 flags = restart ? CCR_RSTA : 0;
+ 
+ 	/* Start with MEN */
+@@ -201,8 +212,9 @@ static int mpc_read(struct mpc_i2c *i2c,
+ 	/* Write target address byte - this time with the read flag set */
+ 	writeb((target << 1) | 1, i2c->base + MPC_I2C_DR);
+ 
+-	if (i2c_wait(i2c, timeout, 1) < 0)
+-		return -1;
++	ret = i2c_wait(i2c, timeout, 1);
++	if (ret < 0)
++		return ret;
+ 
+ 	if (length) {
+ 		if (length == 1)
+@@ -214,8 +226,9 @@ static int mpc_read(struct mpc_i2c *i2c,
+ 	}
+ 
+ 	for (i = 0; i < length; i++) {
+-		if (i2c_wait(i2c, timeout, 0) < 0)
+-			return -1;
++		ret = i2c_wait(i2c, timeout, 0);
++		if (ret < 0)
++			return ret;
+ 
+ 		/* Generate txack on next to last byte */
+ 		if (i == length - 2)
+@@ -246,8 +259,13 @@ static int mpc_xfer(struct i2c_adapter *
+ 			return -EINTR;
+ 		}
+ 		if (time_after(jiffies, orig_jiffies + HZ)) {
+-			pr_debug("I2C: timeout\n");
+-			return -EIO;
++			writeccr(i2c, 0);
++
++			/* try one more time before we error */
++			if (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
++				pr_debug("I2C: timeout\n");
++				return -EIO;
++			}
+ 		}
+ 		schedule();
+ 	}
+@@ -325,6 +343,7 @@ static int fsl_i2c_probe(struct platform
+ 			goto fail_irq;
+ 		}
+ 
++	writeccr(i2c, 0);
+ 	mpc_i2c_setclock(i2c);
+ 	platform_set_drvdata(pdev, i2c);
+ 
+_
+
+
+-- 
+Jean Delvare
