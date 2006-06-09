@@ -1,19 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 87C8E67C57
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 10:12:22 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 1ABE667C18
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 14:16:10 +1000 (EST)
+Subject: Re: [PATCH 2/10 v2] Add the MPC8641 HPCN platform files.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jon Loeliger <jdl@freescale.com>
 In-Reply-To: <1149803821.23938.278.camel@cashmere.sps.mot.com>
 References: <1149803821.23938.278.camel@cashmere.sps.mot.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7C04ECC1-C563-4A8D-9FE8-16F36168DFC1@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/10 v2] Add the MPC8641 HPCN platform files.
-Date: Thu, 8 Jun 2006 19:12:43 -0500
-To: Jon Loeliger <jdl@freescale.com>
+Content-Type: text/plain
+Date: Fri, 09 Jun 2006 14:15:58 +1000
+Message-Id: <1149826559.12687.41.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,55 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2006-06-08 at 16:57 -0500, Jon Loeliger wrote:
 
-On Jun 8, 2006, at 4:57 PM, Jon Loeliger wrote:
-
->
-> Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
-> Signed-off-by: Wei Zhang <Wei.Zhang@freescale.com>
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
->
-> ---
->
->  arch/powerpc/platforms/86xx/misc.c         |   51 +++++
->  arch/powerpc/platforms/86xx/mpc8641_hpcn.c |   52 +++++
->  arch/powerpc/platforms/86xx/mpc8641_hpcn.h |   54 +++++
->  arch/powerpc/platforms/86xx/mpc86xx.h      |   31 +++
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |  304 +++++++++++++++++ 
-> +++++++++++
->  5 files changed, 492 insertions(+), 0 deletions(-)
->
->
-> diff --git a/arch/powerpc/platforms/86xx/misc.c b/arch/powerpc/ 
-> platforms/86xx/misc.c
-> new file mode 100644
-> index 0000000..01c5e9b
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/86xx/misc.c
-> @@ -0,0 +1,51 @@
-> +/*
-> + * MPC86XX generic code
-> + *
-> + * Author: Xianghua Xiao <x.xiao@freescale.com>
-> + *
-> + * Copyright 2006 Freescale Semiconductor Inc.
-> + *
-> + * This program is free software; you can redistribute  it and/or  
-> modify it
-> + * under  the terms of  the GNU General  Public License as  
-> published by the
-> + * Free Software Foundation;  either version 2 of the  License, or  
-> (at your
-> + * option) any later version.
-> + */
-> +
-> +#include <linux/irq.h>
-> +#include <linux/module.h>
-> +#include <asm/irq.h>
-> +#include <asm/io.h>
-> +
-> +#include <sysdev/fsl_soc.h>
-> +
 > +void
 > +mpc86xx_restart(char *cmd)
 > +{
@@ -86,8 +38,10 @@ On Jun 8, 2006, at 4:57 PM, Jon Loeliger wrote:
 > +
 > +	/* not reached */
 > +}
-> +
-> +
+
+ioremap with irq disabled isn't great....  You should do the ioremap
+once at boot.
+
 > +long __init
 > +mpc86xx_time_init(void)
 > +{
@@ -104,47 +58,12 @@ On Jun 8, 2006, at 4:57 PM, Jon Loeliger wrote:
 > +
 > +	return 0;
 > +}
-> diff --git a/arch/powerpc/platforms/86xx/mpc8641_hpcn.c b/arch/ 
-> powerpc/platforms/86xx/mpc8641_hpcn.c
-> new file mode 100644
-> index 0000000..655e2b8
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/86xx/mpc8641_hpcn.c
-> @@ -0,0 +1,52 @@
 
-how about renaming this smp.c and make it for config'd generic on  
-86xx & SMP
+Overall, that file is too small :) Move those into your setup.c and make
+those static... Also time_init() is too late to enable the timebase
+imho. You should have it enabled as soon as possible, possibly as soon
+as the cpu setup gets run (though you don't have to initialize it to 0)
 
-> +/*
-> + * MPC8641 HPCN board specific routines
-> + *
-> + * Author: Xianghua Xiao <x.xiao@freescale.com>
-> + *
-> + * Copyright 2006 Freescale Semiconductor Inc.
-> + *
-> + * This program is free software; you can redistribute  it and/or  
-> modify it
-> + * under  the terms of  the GNU General  Public License as  
-> published by the
-> + * Free Software Foundation;  either version 2 of the  License, or  
-> (at your
-> + * option) any later version.
-> + */
-> +
-> +#include <linux/config.h>
-> +#include <linux/stddef.h>
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +
-> +#include <asm/pgtable.h>
-> +#include <asm/page.h>
-> +#include <asm/pci-bridge.h>
-> +#include <asm-powerpc/mpic.h>
-> +#include <asm/mpc86xx.h>
-> +
-> +#include "mpc86xx.h"
-> +
-> +
 > +#ifdef CONFIG_SMP
 > +static void __init
 > +smp_8641_kick_cpu(int nr)
@@ -170,8 +89,10 @@ how about renaming this smp.c and make it for config'd generic on
 > +	.give_timebase = smp_generic_give_timebase,
 > +};
 > +#endif /* CONFIG_SMP */
-> diff --git a/arch/powerpc/platforms/86xx/mpc8641_hpcn.h b/arch/ 
-> powerpc/platforms/86xx/mpc8641_hpcn.h
+
+This file could/should be called *_smp.c and not need #ifdef's :)
+
+> diff --git a/arch/powerpc/platforms/86xx/mpc8641_hpcn.h b/arch/powerpc/platforms/86xx/mpc8641_hpcn.h
 > new file mode 100644
 > index 0000000..4ba5b4c
 > --- /dev/null
@@ -182,12 +103,9 @@ how about renaming this smp.c and make it for config'd generic on
 > + *
 > + * Copyright 2006 Freescale Semiconductor Inc.
 > + *
-> + * This program is free software; you can redistribute  it and/or  
-> modify it
-> + * under  the terms of  the GNU General  Public License as  
-> published by the
-> + * Free Software Foundation;  either version 2 of the  License, or  
-> (at your
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
 > + * option) any later version.
 > + *
 > + * Author: Xianghua Xiao <x.xiao@freescale.com>
@@ -222,10 +140,6 @@ how about renaming this smp.c and make it for config'd generic on
 > +
 > +#define MPC86XX_PEX_IO_SIZE         0x01000000
 > +
-
-PEX offsets are generic and should be moved to such a more generic  
-86xx location.
-
 > +#define PEX1_CFG_ADDR_OFFSET    (0x8000)
 > +#define PEX1_CFG_DATA_OFFSET    (0x8004)
 > +
@@ -235,14 +149,13 @@ PEX offsets are generic and should be moved to such a more generic
 > +#define MPC86xx_PEX_OFFSET PEX1_CFG_ADDR_OFFSET
 > +#define MPC86xx_PEX_SIZE	(0x1000)
 > +
-
-this also seems 86xx & not hpcn specific.
-
 > +#define MPC86XX_RSTCR_OFFSET	(0xe00b0)	/* Reset Control Register */
-> +
+
+Most of the values above should probably be retreived from the
+device-tree.
+
 > +#endif	/* __MPC8641_HPCN_H__ */
-> diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h b/arch/powerpc/ 
-> platforms/86xx/mpc86xx.h
+> diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h b/arch/powerpc/platforms/86xx/mpc86xx.h
 > new file mode 100644
 > index 0000000..7cc45d4
 > --- /dev/null
@@ -251,12 +164,9 @@ this also seems 86xx & not hpcn specific.
 > +/*
 > + * Copyright 2006 Freescale Semiconductor Inc.
 > + *
-> + * This program is free software; you can redistribute  it and/or  
-> modify it
-> + * under  the terms of  the GNU General  Public License as  
-> published by the
-> + * Free Software Foundation;  either version 2 of the  License, or  
-> (at your
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
 > + * option) any later version.
 > + */
 > +
@@ -270,21 +180,25 @@ this also seems 86xx & not hpcn specific.
 > +
 > +extern void mpc86xx_restart(char *cmd);
 > +extern long __init mpc86xx_time_init(void);
-> +
+
+As I suggested before, the 2 above should be static in your setup file.
+
 > +extern int __init add_bridge(struct device_node *dev);
-> +
+
+Aren't we exposing that already via some header ?
+
 > +extern void __init setup_indirect_pex(struct pci_controller* hose,
 > +				      u32 cfg_addr, u32 cfg_data);
-> +extern void __init setup_indirect_pex_nomap(struct pci_controller*  
-> hose,
+> +extern void __init setup_indirect_pex_nomap(struct pci_controller* hose,
 > +					    void __iomem * cfg_addr,
 > +					    void __iomem * cfg_data);
 > +
 > +extern struct smp_ops_t smp_8641_ops;
-> +
+
+See my comments about the PCI stuff with the PCI patch.
+
 > +#endif	/* __MPC86XX_H__ */
-> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/ 
-> powerpc/platforms/86xx/mpc86xx_hpcn.c
+> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
 > new file mode 100644
 > index 0000000..d413e95
 > --- /dev/null
@@ -298,12 +212,9 @@ this also seems 86xx & not hpcn specific.
 > + *
 > + * Copyright 2006 Freescale Semiconductor Inc.
 > + *
-> + * This program is free software; you can redistribute  it and/or  
-> modify it
-> + * under  the terms of  the GNU General  Public License as  
-> published by the
-> + * Free Software Foundation;  either version 2 of the  License, or  
-> (at your
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
 > + * option) any later version.
 > + */
 > +
@@ -344,11 +255,9 @@ this also seems 86xx & not hpcn specific.
 > + */
 > +
 > +static u_char mpc86xx_hpcn_openpic_initsenses[] __initdata = {
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  0:  
-> Reserved */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  0: Reserved */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  1: MCM */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  2: DDR  
-> DRAM */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  2: DDR DRAM */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  3: LBIU */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  4: DMA 0 */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  5: DMA 1 */
@@ -356,59 +265,37 @@ this also seems 86xx & not hpcn specific.
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  7: DMA 3 */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  8: PEX1 */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal  9: PEX2 */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 10:  
-> Reserved */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 11:  
-> Reserved */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 10: Reserved */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 11: Reserved */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 12: DUART2 */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 13: TSEC 1  
-> Transmit */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 14: TSEC 1  
-> Receive */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 15: TSEC 3  
-> transmit */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 16: TSEC 3  
-> receive */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 17: TSEC 3  
-> error */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 18: TSEC 1  
-> Receive/Transmit Error */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 19: TSEC 2  
-> Transmit */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 20: TSEC 2  
-> Receive */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 21: TSEC 4  
-> transmit */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 22: TSEC 4  
-> receive */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 23: TSEC 4  
-> error */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 24: TSEC 2  
-> Receive/Transmit Error */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 13: TSEC 1 Transmit */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 14: TSEC 1 Receive */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 15: TSEC 3 transmit */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 16: TSEC 3 receive */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 17: TSEC 3 error */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 18: TSEC 1 Receive/Transmit Error */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 19: TSEC 2 Transmit */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 20: TSEC 2 Receive */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 21: TSEC 4 transmit */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 22: TSEC 4 receive */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 23: TSEC 4 error */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 24: TSEC 2 Receive/Transmit Error */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 25: Unused */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 26: DUART1 */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 27: I2C */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 28:  
-> Performance Monitor */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 28: Performance Monitor */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 29: Unused */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 30: Unused */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 31: Unused */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 32: SRIO  
-> error/write-port unit */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 33: SRIO  
-> outbound doorbell */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 34: SRIO  
-> inbound doorbell */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 32: SRIO error/write-port unit */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 33: SRIO outbound doorbell */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 34: SRIO inbound doorbell */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 35: Unused */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 36: Unused */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 37: SRIO  
-> outbound message unit 1 */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 38: SRIO  
-> inbound message unit 1 */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 39: SRIO  
-> outbound message unit 2 */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 40: SRIO  
-> inbound message unit 2 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 37: SRIO outbound message unit 1 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 38: SRIO inbound message unit 1 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 39: SRIO outbound message unit 2 */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 40: SRIO inbound message unit 2 */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 41: Unused */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 42: Unused */
 > +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* Internal 43: Unused */
@@ -424,20 +311,21 @@ this also seems 86xx & not hpcn specific.
 > +	0x0,						/* External  5: */
 > +	0x0,						/* External  6: */
 > +	0x0,						/* External  7: */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External  8: Pixis  
-> FPGA */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* External  9: ULI  
-> 8259 INTR Cascade */
-> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 10: Quad  
-> ETH PHY */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External  8: Pixis FPGA */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* External  9: ULI 8259 INTR Cascade */
+> +	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* External 10: Quad ETH PHY */
 > +	0x0,						/* External 11: */
 > +	0x0,
 > +	0x0,
 > +	0x0,
 > +	0x0,
 > +};
-> +
-> +
+
+All of the above should of course come from the device-tree. 2.6.18 will
+have the support for having interrupt routing from it without having
+nodes for all devices. I'll post it to the list in a week or so, I'm
+coding right now :)
+
 > +void __init
 > +mpc86xx_hpcn_init_IRQ(void)
 > +{
@@ -446,7 +334,20 @@ this also seems 86xx & not hpcn specific.
 > +
 > +	/* Determine the Physical Address of the OpenPIC regs */
 > +	OpenPIC_PAddr = get_immrbase() + MPC86xx_OPENPIC_OFFSET;
-> +
+
+Do you really _need_ studly caps ? I know we did that before but you
+don't have to copy ugly stuff :)
+
+In general, you -need- a device node for the interrupt controller. It
+will be made mandatory by the new code. You'll have to provide proper
+interrupt informations in your device-tree (it's easy, really). Your
+host PCI bridge shall have the interrupt-map for all the slots lines and
+your on chip devices have proper interrupt routing info, and all shall
+have your interrupt controller node as the interrupt parent.
+
+If you get that right, it will be very easy to "just work" with my new
+code.
+
 > +	/* Alloc mpic structure and per isu has 16 INT entries. */
 > +	mpic1 = mpic_alloc(OpenPIC_PAddr,
 > +			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
@@ -460,10 +361,19 @@ this also seems 86xx & not hpcn specific.
 > +	mpic_assign_isu(mpic1, 0, OpenPIC_PAddr + 0x10200);
 > +	mpic_assign_isu(mpic1, 1, OpenPIC_PAddr + 0x10400);
 > +	mpic_assign_isu(mpic1, 2, OpenPIC_PAddr + 0x10600);
-> +
+
+I haven't looked in detail at your memory map, but do you need separate
+ISUs ? They seem to be quite close together to me... Also, you should
+invent properties in the mpic node for some of those things, like
+big-endian (like apple does) indicating it's a big endian openpic,
+etc... If you manage to get close enough to spec & common usage, you
+might not even need your own init function at all in the future.
+
 > +	/* 16 External interrupts */
 > +	mpic_assign_isu(mpic1, 3, OpenPIC_PAddr + 0x10000);
-> +
+
+That looks like you used ISUs in order to "re-order" them... why ?
+
 > +	mpic_init(mpic1);
 > +
 > +#ifdef CONFIG_PEX
@@ -471,17 +381,15 @@ this also seems 86xx & not hpcn specific.
 > +	i8259_init(0, I8259_OFFSET);
 > +#endif
 > +}
-> +
-> +
-> +
-> +#ifdef CONFIG_PCI
-> +/*
-> + * interrupt routing
-> + */
-> +
+
+Cascade handling is changing with my genirq port. It will be easy to
+adapt though. Same comments howveer, you should have a device-tree node
+for the 8259 (under an ISA bridge, those shall really be in the
+device-tree). In general, on-board bridges should be in the device-tree,
+only slots or standardly routed child PCI devices need not.
+
 > +int
-> +mpc86xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned  
-> char pin)
+> +mpc86xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
 > +{
 > +	static char pci_irq_table[][4] = {
 > +		/*
@@ -508,7 +416,9 @@ this also seems 86xx & not hpcn specific.
 > +	const long min_idsel = 17, max_idsel = 31, irqs_per_slot = 4;
 > +	return PCI_IRQ_TABLE_LOOKUP + I8259_OFFSET;
 > +}
-> +
+
+All of the above shall be in the device-tree.
+
 > +
 > +int
 > +mpc86xx_exclude_device(u_char bus, u_char devfn)
@@ -521,7 +431,8 @@ this also seems 86xx & not hpcn specific.
 > +	return PCIBIOS_SUCCESSFUL;
 > +}
 > +#endif /* CONFIG_PCI */
-> +
+
+Hrm... not sure I like that much but let's ignore it for now.
 > +
 > +static void __init
 > +mpc86xx_hpcn_setup_arch(void)
@@ -548,7 +459,11 @@ this also seems 86xx & not hpcn specific.
 > +			loops_per_jiffy = 50000000 / HZ;
 > +		of_node_put(np);
 > +	}
-> +
+
+The above looks dodgy... powerpc uses the timebase frequency for delays
+anyway, lpj will be initialized by the bogomips code, and should but
+unused mostly nowadays anyway.
+
 > +#ifdef CONFIG_PEX
 > +	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
 > +		add_bridge(np);
@@ -557,7 +472,13 @@ this also seems 86xx & not hpcn specific.
 > +	ppc_md.pci_map_irq = mpc86xx_map_irq;
 > +	ppc_md.pci_exclude_device = mpc86xx_exclude_device;
 > +#endif
-> +
+
+I'm not sure I like this CONFIG_PEX (in general). Just use CONFIG_PCI
+for now all over the place. PCI-E has it's own binding that we don't
+quite respect yet but will do and all of that will be in the
+device-tree. However, as far as the kernel is concerned, this is all
+under CONFIG_PCI.
+
 > +	printk("HPCN board with 86xx from Freescale Semiconductor\n");
 > +
 > +#ifdef  CONFIG_ROOT_NFS
@@ -573,13 +494,14 @@ this also seems 86xx & not hpcn specific.
 > +
 > +	vaddr = (unsigned long)mcm_vaddr +  MCM_PORT_CONFIG_OFFSET;
 > +	out_be32((volatile unsigned *)vaddr, CPU_ALL_RELEASED);
-
-uugh, clean this up.
-
 > +	smp_ops = &smp_8641_ops;
 > +#endif
 > +}
-> +
+
+Instead of ifdef's, just do a mpc86xx_smp_init() and put it somewhere
+with the other SMP things in the file that contains them (and remove the
+#ifdef's there too, just only build the file if CONFIG_SMP is set).
+
 > +
 > +void
 > +mpc86xx_hpcn_show_cpuinfo(struct seq_file *m)
@@ -589,21 +511,21 @@ uugh, clean this up.
 > +
 > +	pvid = mfspr(SPRN_PVR);
 > +	svid = mfspr(SPRN_SVR);
-> +
+>
 > +	seq_printf(m, "Vendor\t\t: Freescale Semiconductor\n");
 > +	seq_printf(m, "Machine\t\t: MPC86xx HPCN Board\n");
 > +	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
 > +	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
-> +
+
+The PVR is probably a duplicate and the SVR should be added to per-cpu
+info instead.
+
 > +	/* Display cpu Pll setting */
 > +	phid1 = mfspr(SPRN_HID1);
 > +	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
 > +
 > +	/* Display the amount of memory */
 > +	seq_printf(m, "Memory\t\t: %d MB\n", memsize / (1024 * 1024));
-
-What does 'cat /proc/cpuinfo' look like?
-
 > +}
 > +
 > +/*
@@ -631,8 +553,8 @@ What does 'cat /proc/cpuinfo' look like?
 > +	.calibrate_decr		= generic_calibrate_decr,
 > +	.progress		= udbg_progress,
 > +};
->
->
+> 
+> 
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
