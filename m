@@ -1,18 +1,17 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from sccrmhc14.comcast.net (sccrmhc14.comcast.net [63.240.77.84])
-	by ozlabs.org (Postfix) with ESMTP id 188F767C15
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 7DC8B67C43
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Jun 2006 09:18:45 +1000 (EST)
-Message-ID: <4488ADF0.2030003@dlasys.net>
-Date: Thu, 08 Jun 2006 19:08:32 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Fri,  9 Jun 2006 10:11:48 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Debugging tools
-References: <200606011700.k51H0WJw014425@www-webmail1.magma.ca>
-In-Reply-To: <200606011700.k51H0WJw014425@www-webmail1.magma.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: dhlii@comcast.net
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Debugging tools
+Date: Thu, 8 Jun 2006 17:11:45 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE4871054F1FCA@VCAEXCH01.hq.corp.viasat.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: <dhlii@comcast.net>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,23 +22,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>=20
+>     I was hoping to be able to bring up gdb, download an elf file to
+the
+> target and step through a program to see where it is going off the
+rails.
+>=20
 
-    I have encountered one of the rare instances where I need/want more
-debugging resources than an LED on an IO port.
+Assuming you have the Xilinx EDK tools installed, there is a program
+called xmd that acts as a standalone debugger or can communicate with
+gdb over a socket.
 
-    I am looking for some recommendations as well as understanding of
-the lighter weight debugging tools that are available.
-    I am dealing with a Xilinx V4 PPC405  FPGA. It is hosted in a
-computer running Windows XP. Aparently there is a JTAG port
-    on the device that emulates a JTAG parallel port on LPT3 on the host
-side.
+>     A bit of research suggests that there are gdbservers that bridge
+> between gdb and JTAG. But all the links I have found to rproxy seem to
+> be broken, and those for gdbproxy seem to be
+>     for other processors.
 
-    I was hoping to be able to bring up gdb, download an elf file to the
-target and step through a program to see where it is going off the rails.
+EDK builds example programs when you use the BSB.  You can download and
+debug these programs as a test.  From EDK 7.1, Tools->Software Debugger.
 
-    A bit of research suggests that there are gdbservers that bridge
-between gdb and JTAG. But all the links I have found to rproxy seem to
-be broken, and those for gdbproxy seem to be
-    for other processors.
-
-  
+Tim
