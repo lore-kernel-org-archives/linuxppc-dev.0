@@ -1,19 +1,21 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kellthuzad.dmz.nerim.net (smtp-dmz-235-friday.dmz.nerim.net
-	[195.5.254.235]) by ozlabs.org (Postfix) with ESMTP id 3966E67C56
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 18:10:20 +1000 (EST)
-Received: from mallaury.nerim.net (smtp-105-friday.noc.nerim.net [62.4.17.105])
-	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id D197639EE9
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 09:37:31 +0200 (CEST)
-Date: Fri, 9 Jun 2006 09:37:37 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH 10/10 v2] Document I2C_MPC option for 86xx too.
-Message-Id: <20060609093737.f66d5a41.khali@linux-fr.org>
-In-Reply-To: <1149804296.23938.298.camel@cashmere.sps.mot.com>
-References: <1149804296.23938.298.camel@cashmere.sps.mot.com>
+Return-Path: <olh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C871367C18
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 19:04:46 +1000 (EST)
+Date: Fri, 9 Jun 2006 11:04:41 +0200
+From: Olaf Hering <olh@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] force 64bit mode in system_reset_fwnmi for broken POWER4
+	firmware
+Message-ID: <20060609090441.GA22410@suse.de>
+References: <20060522164111.GA14462@suse.de> <20060523130717.GA22364@suse.de>
+	<17545.11572.518355.586057@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <17545.11572.518355.586057@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,48 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Jon,
+ On Fri, Jun 09, Paul Mackeras wrote:
 
-Please add a paragraph explaining what the patch does. It will be used
-as the git commit message.
-
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> Olaf Hering writes:
 > 
-> ---
->  drivers/i2c/busses/Kconfig |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> > The reason is that system_reset_fwnmi is called in 32bit mode. Forcing
+> > 64bit mode fixes the corrupt NIP for me. JS20 and p690 are affected,
+> > seems to work on p550 and JS21.
 > 
-> 
-> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-> index d6d4494..fbeae82 100644
-> --- a/drivers/i2c/busses/Kconfig
-> +++ b/drivers/i2c/busses/Kconfig
-> @@ -252,12 +252,12 @@ config I2C_POWERMAC
->  	  will be called i2c-powermac.
->  
->  config I2C_MPC
-> -	tristate "MPC107/824x/85xx/52xx"
-> +	tristate "MPC107/824x/85xx/52xx/86xx"
+> What was the LTC bugzilla number for this again?
 
-Maybe leave 52xx at the end, as it seems to be special?
-
->  	depends on I2C && PPC32
->  	help
->  	  If you say yes to this option, support will be included for the
->  	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245 and
-> -	  MPC85xx family processors. The driver may also work on 52xx
-> +	  MPC85xx/MPC8641 family processors. The driver may also work on 52xx
->  	  family processors, though interrupts are known not to work.
->  
->  	  This driver can also be built as a module.  If so, the module
-> 
-
-This isn't very consistent, you first say 86xx as if several chips were
-supported, then only list the MPC8641. Also, "MPC85xx family" made
-sense but "MPC8641 family" doesn't.
-
-When fixed, do you expect me to take that patch, or will it be merged
-through the powerpc git tree?
-
--- 
-Jean Delvare
+LTC22581, the last comments confirm that firmware leaves the cpu in
+32bit mode.
