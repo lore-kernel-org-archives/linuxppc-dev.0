@@ -1,13 +1,18 @@
-Return-Path: <prohit99@rediffmail.com>
-Date: 9 Jun 2006 09:19:41 -0000
-Message-ID: <20060609091941.21460.qmail@webmail53.rediffmail.com>
-MIME-Version: 1.0
-From: "rohitash panda" <prohit99@rediffmail.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: unsubscribe
-Content-type: multipart/alternative;
-	boundary="Next_1149844781---0-202.54.124.174-21457"
-Reply-To: rohitash panda <prohit99@rediffmail.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 9 Jun 2006 11:49:50 +0300
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] hugetlb: powerpc: Actively close unused htlb regions on
+	vma close
+Message-ID: <20060609084950.GA30625@localhost.localdomain>
+References: <1149257287.9693.6.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606021301300.5492@schroedinger.engr.sgi.com>
+	<1149281841.9693.39.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0606021407580.6179@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0606021407580.6179@schroedinger.engr.sgi.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,30 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- This is a multipart mime message
 
+On Fri, Jun 02, 2006 at 02:08:27PM -0700, Christoph Lameter wrote:
+> On Fri, 2 Jun 2006, Adam Litke wrote:
+> 
+> > The real reason I want to "close" hugetlb regions (even on 64bit
+> > platforms) is so a process can replace a previous hugetlb mapping with
+> > normal pages when huge pages become scarce.  An example would be the
+> > hugetlb morecore (malloc) feature in libhugetlbfs :)
+> 
+> Well that approach wont work on IA64 it seems.
 
---Next_1149844781---0-202.54.124.174-21457
-Content-type: text/plain;
-	charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Yes, but there's not much that can be done about that.
 
-  =0A=0A=0AAbility is what you are capable of doing. =0D=0A=0D=0AMotivation=
- determines what you do. =0D=0A=0D=0AAttitude determines how well you do it=
-.=20
---Next_1149844781---0-202.54.124.174-21457
-Content-type: text/html;
-	charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-<P>=0A&nbsp; <BR>=0A=0A</P>=0A=0A=0AAbility is&nbsp;what you&nbsp;are capab=
-le&nbsp;of doing.&nbsp;=0D<br>=0A=0D<br>=0AMotivation determines&nbsp;what =
-you&nbsp;do. =0D<br>=0A=0D<br>=0AAttitude determines&nbsp;how well&nbsp;you=
- do&nbsp;it. <br><br>=0A<a href=3D"http://adworks.rediff.com/cgi-bin/AdWork=
-s/sigclick.cgi/www.rediff.com/signature-home.htm/1507191490@Middle5?PARTNER=
-=3D3"><IMG SRC=3D"http://adworks.rediff.com/cgi-bin/AdWorks/sigimpress.cgi/=
-www.rediff.com/signature-home.htm/1963059423@Middle5?OAS_query=3Dnull&PARTN=
-ER=3D3" BORDER=3D0 VSPACE=3D0 HSPACE=3D0></a>=0A
---Next_1149844781---0-202.54.124.174-21457--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
