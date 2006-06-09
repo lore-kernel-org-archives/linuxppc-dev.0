@@ -1,18 +1,18 @@
 Return-Path: <jdl@jdl.com>
-Received: from jdl.com (www.jdl.com [66.118.10.122])
+Received: from jdl.com (jdl.com [66.118.10.122])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5AEBD67C34
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jun 2006 02:06:11 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 929DE67B1C
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jun 2006 02:09:56 +1000 (EST)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 5/10 v2] Add 8641 CPU and i8259 Setup 
-In-Reply-To: Your message of "Fri, 09 Jun 2006 14:23:09 +1000."
-	<1149826989.12687.50.camel@localhost.localdomain>
-References: <1149803956.23938.284.camel@cashmere.sps.mot.com>
-	<1149826989.12687.50.camel@localhost.localdomain>
-Date: Fri, 09 Jun 2006 11:05:30 -0500
+Subject: Re: [PATCH 3/10 v2] Add MPC8641 HPCN PCI and PCI-Express files. 
+In-Reply-To: Your message of "Fri, 09 Jun 2006 14:33:15 +1000."
+	<1149827596.12687.53.camel@localhost.localdomain>
+References: <1149803866.23938.280.camel@cashmere.sps.mot.com>
+	<1149827596.12687.53.camel@localhost.localdomain>
+Date: Fri, 09 Jun 2006 11:09:51 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1FojUI-0004N5-E7@jdl.com>
+Message-Id: <E1FojYV-0004O8-L0@jdl.com>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,35 +24,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day Benjamin Herrenschmidt mumbled:
+> On Thu, 2006-06-08 at 16:57 -0500, Jon Loeliger wrote:
+> > Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
+> > Signed-off-by: Wei Zhang <Wei.Zhang@freescale.com>
+> > Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+> > Signed-off-by: Jon Loeliger <jdl@freescale.com>
 > 
-> [A bunch of SMP issues.]
+> There are various things in this code that duplicate names used by other
+> platforms and thus makes the board unsuitable for use in a common
+> kernel. That needs to be fixed. Try avoiding too generic names. Also,
+> PCI Express shall be named "pcie" and not "pex" :)
 > 
-> The above is wrong, it prevents using the same kernel image on another
-> platform.
-
-> Same comment above... #ifdef is bad. You are entering from 0x100 with
-> address translation not disabled ?
-
-> > +	bl	clear_bats
-> >  	bl	load_up_mmu
+> I don't have time at the moment to go too deep in the details here.
 > 
-> Why do you need to call clear_bats here ? load_up_mmu should load BATs.
-> If it doesn't handle the high BATs, then fix it :) 
+> Ben.
 
-> > +#ifdef CONFIG_I8259_LEVEL_TRIGGER
-> > +	outb(0xfa, 0x4d0); /* level triggered */
-> > +	outb(0xde, 0x4d1);
-> > +#endif
-> 
-> Another change that breaks multiplatform... Can you explain precisely
-> what you are trying to acheive here ? If necessary, we can add an
-> argument to i8259_init. Or you could do the above in your platform
-> code ... though I agree it would be a bit ugly :) 
+I will also prefix some routines with mpc86xx_ to avoid
+the generic names problems.  But I'm not sure which other
+platforms you expect this one kernel image to run on.
+Specifically, this pcie code is very similar to the 8548
+family, but not exactly the same.
 
-OK.  I don't have direct answers in hand for some of
-these questions and issues.  I'll get with original
-authors and see what we can do clean this up!
+My understanding is that we are shooting for a single 86xx
+family kernel image here, with this 8641 HPCN platform being
+the first such port.
 
-Thanks!
+I will s/pex/pcie/g and rename files accordingly.
 
 jdl
