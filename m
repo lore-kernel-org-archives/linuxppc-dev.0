@@ -1,25 +1,18 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from calculon.skynet.ie (calculon.skynet.ie [193.1.99.88])
+Return-Path: <mostrows@watson.ibm.com>
+Received: from igw2.watson.ibm.com (igw2.watson.ibm.com [129.34.20.6])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C181367C06
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 22:57:52 +1000 (EST)
-Date: Fri, 9 Jun 2006 13:57:43 +0100
-To: Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 0/5] Sizing zones and holes in an architecture independent
-	manner V7
-Message-ID: <20060609125742.GA31718@skynet.ie>
-References: <20060606134710.21419.48239.sendpatchset@skynet.skynet.ie>
-	<200606071216.24640.ak@suse.de>
-	<Pine.LNX.4.64.0606071118230.20653@skynet.skynet.ie>
-	<200606071720.22242.ak@suse.de>
+	by ozlabs.org (Postfix) with ESMTP id 3C7DB67C14
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 23:05:50 +1000 (EST)
+Subject: [PATCH] Editable kernel command-line in zImage binary.
+In-Reply-To: <17545.17329.227226.926906@cargo.ozlabs.ibm.com>
+Date: Fri, 9 Jun 2006 09:06:12 -0400
+Message-Id: <11498583723378-git-send-email-mostrows@watson.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <200606071720.22242.ak@suse.de>
-From: mel@csn.ul.ie (Mel Gorman)
-Cc: Andrew Morton <akpm@osdl.org>, davej@codemonkey.org.uk, tony.luck@intel.com,
-	linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	bob.picco@hp.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: linuxppc-dev@ozlabs.org, paulus@samba.org
+From: mostrows@watson.ibm.com
+Reply-To: mostrows@watson.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,198 +22,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On (07/06/06 17:20), Andi Kleen didst pronounce:
-> 
-> > Ok, while true, I'm not sure how it affects performance. The only "real" 
-> > value affected by present_pages is the number of patches that are 
-> > allocated in batches to the per-cpu allocator.
-> 
-> It affects the low/high water marks in the VM zone balancer.
-> 
-> Especially for the 16MB DMA zone it can make a difference if you
-> account 4MB kernel in there or not.
-> 
+zImage will set /chosen/bootargs (if it is otherwise empty) with the
+contents of a buffer in the section "__builtin_cmdline".  This permits
+tools to edit zImage binaries to set the command-line eventually
+processed by vmlinux.
 
-Ok, the following patch will account for memmap usage on all
-architectures. Optionally, a set_dma_reserve() may be called to account
-for pages in ZONE_DMA that will never be usable. In this patch, only
-x86_64 uses it.
+--
+Signed-off-by: Michal Ostrowski <mostrows@watson.ibm.com>
 
-After this patch is applied, the zone->present_pages figures are very
-similar before and after arch-independent zone-sizing and the watermarks
-are the same.
+---
 
+ arch/powerpc/boot/main.c |   27 +++++++++++++++++++++++++++
+ arch/powerpc/boot/prom.h |    7 +++++++
+ 2 files changed, 34 insertions(+), 0 deletions(-)
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.17-rc6-mm1-105-ia64_use_init_nodes/arch/x86_64/mm/init.c linux-2.6.17-rc6-mm1-106-account_kernel_mmap/arch/x86_64/mm/init.c
---- linux-2.6.17-rc6-mm1-105-ia64_use_init_nodes/arch/x86_64/mm/init.c	2006-06-08 13:45:07.000000000 +0100
-+++ linux-2.6.17-rc6-mm1-106-account_kernel_mmap/arch/x86_64/mm/init.c	2006-06-09 09:18:55.000000000 +0100
-@@ -660,8 +660,10 @@ void __init reserve_bootmem_generic(unsi
- #else       		
- 	reserve_bootmem(phys, len);    
- #endif
--	if (phys+len <= MAX_DMA_PFN*PAGE_SIZE)
-+	if (phys+len <= MAX_DMA_PFN*PAGE_SIZE) {
- 		dma_reserve += len / PAGE_SIZE;
-+		set_dma_reserve(dma_reserve);
-+	}
- }
+40bea6ace95796a1575437d6dfdbef671012ffc1
+diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
+index 816446f..c65a7ba 100644
+--- a/arch/powerpc/boot/main.c
++++ b/arch/powerpc/boot/main.c
+@@ -33,6 +33,14 @@ extern char _vmlinux_end[];
+ extern char _initrd_start[];
+ extern char _initrd_end[];
  
- int kern_addr_valid(unsigned long addr) 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.17-rc6-mm1-105-ia64_use_init_nodes/include/linux/mm.h linux-2.6.17-rc6-mm1-106-account_kernel_mmap/include/linux/mm.h
---- linux-2.6.17-rc6-mm1-105-ia64_use_init_nodes/include/linux/mm.h	2006-06-08 13:42:53.000000000 +0100
-+++ linux-2.6.17-rc6-mm1-106-account_kernel_mmap/include/linux/mm.h	2006-06-09 09:18:55.000000000 +0100
-@@ -969,6 +969,7 @@ extern void free_bootmem_with_active_reg
- 						unsigned long max_low_pfn);
- extern void sparse_memory_present_with_active_regions(int nid);
- #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
-+extern void set_dma_reserve(unsigned long new_dma_reserve);
- extern void memmap_init_zone(unsigned long, int, unsigned long, unsigned long);
- extern void setup_per_zone_pages_min(void);
- extern void mem_init(void);
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.17-rc6-mm1-105-ia64_use_init_nodes/mm/page_alloc.c linux-2.6.17-rc6-mm1-106-account_kernel_mmap/mm/page_alloc.c
---- linux-2.6.17-rc6-mm1-105-ia64_use_init_nodes/mm/page_alloc.c	2006-06-08 13:42:53.000000000 +0100
-+++ linux-2.6.17-rc6-mm1-106-account_kernel_mmap/mm/page_alloc.c	2006-06-09 09:18:55.000000000 +0100
-@@ -88,6 +88,7 @@ int min_free_kbytes = 1024;
- 
- unsigned long __meminitdata nr_kernel_pages;
- unsigned long __meminitdata nr_all_pages;
-+unsigned long __initdata dma_reserve;
- 
- #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
-   /*
-@@ -2459,6 +2460,20 @@ unsigned long __init zone_absent_pages_i
- 				arch_zone_lowest_possible_pfn[zone_type],
- 				arch_zone_highest_possible_pfn[zone_type]);
- }
-+
-+/* Return the zone index a PFN is in */
-+int memmap_zone_idx(struct page *lmem_map)
-+{
-+	int i;
-+	unsigned long phys_addr = virt_to_phys(lmem_map);
-+	unsigned long pfn = phys_addr >> PAGE_SHIFT;
-+
-+	for (i = 0; i < MAX_NR_ZONES; i++)
-+		if (pfn < arch_zone_highest_possible_pfn[i])
-+			break;
-+
-+	return i;
-+}
- #else
- static inline unsigned long zone_spanned_pages_in_node(int nid,
- 					unsigned long zone_type,
-@@ -2476,6 +2491,11 @@ static inline unsigned long zone_absent_
- 
- 	return zholes_size[zone_type];
- }
-+
-+static inline int memmap_zone_idx(struct page *lmem_map)
-+{
-+	return MAX_NR_ZONES;
-+}
- #endif
- 
- static void __init calculate_node_totalpages(struct pglist_data *pgdat,
-@@ -2499,6 +2519,58 @@ static void __init calculate_node_totalp
- 							realtotalpages);
- }
- 
-+#ifdef CONFIG_FLAT_NODE_MEM_MAP
-+/* Account for mem_map for CONFIG_FLAT_NODE_MEM_MAP */
-+unsigned long __meminit account_memmap(struct pglist_data *pgdat,
-+						int zone_index)
-+{
-+	unsigned long pages = 0;
-+	if (zone_index == memmap_zone_idx(pgdat->node_mem_map)) {
-+		pages = pgdat->node_spanned_pages;
-+		pages = (pages * sizeof(struct page)) >> PAGE_SHIFT;
-+		printk(KERN_DEBUG "%lu pages used for memmap\n", pages);
-+	}
-+	return pages;
-+}
-+#else
-+/* Account for mem_map for CONFIG_SPARSEMEM */
-+unsigned long account_memmap(struct pglist_data *pgdat, int zone_index)
-+{
-+	unsigned long pages = 0;
-+	unsigned long memmap_pfn;
-+	struct page *memmap_addr;
-+	int pnum;
-+	unsigned long pgdat_startpfn, pgdat_endpfn;
-+	struct mem_section *section;
-+
-+	pgdat_startpfn = pgdat->node_start_pfn;
-+	pgdat_endpfn = pgdat_startpfn + pgdat->node_spanned_pages;
-+
-+	/* Go through valid sections looking for memmap */
-+	for (pnum = 0; pnum < NR_MEM_SECTIONS; pnum++) {
-+		if (!valid_section_nr(pnum))
-+			continue;
-+
-+		section = __nr_to_section(pnum);
-+		if (!section_has_mem_map(section))
-+			continue;
-+
-+		memmap_addr = __section_mem_map_addr(section);
-+		memmap_pfn = (unsigned long)memmap_addr >> PAGE_SHIFT;
-+
-+		if (memmap_pfn < pgdat_startpfn || memmap_pfn >= pgdat_endpfn)
-+			continue;
-+
-+		if (zone_index == memmap_zone_idx(memmap_addr))
-+			pages += (PAGES_PER_SECTION * sizeof(struct page));
-+	}
-+
-+	pages >>= PAGE_SHIFT;
-+	printk(KERN_DEBUG "%lu pages used for SPARSE memmap\n", pages);
-+	return pages;
-+}
-+#endif
-+
- /*
-  * Set up the zone data structures:
-  *   - mark all pages reserved
-@@ -2525,6 +2597,15 @@ static void __meminit free_area_init_cor
- 		size = zone_spanned_pages_in_node(nid, j, zones_size);
- 		realsize = size - zone_absent_pages_in_node(nid, j,
- 								zholes_size);
-+
-+		realsize -= account_memmap(pgdat, j);
-+		/* Account for reserved DMA pages */
-+		if (j == ZONE_DMA && realsize > dma_reserve) {
-+			realsize -= dma_reserve;
-+			printk(KERN_DEBUG "%lu pages DMA reserved\n",
-+								dma_reserve);
-+		}
-+
- 		if (j < ZONE_HIGHMEM)
- 			nr_kernel_pages += realsize;
- 		nr_all_pages += realsize;
-@@ -2849,6 +2930,21 @@ void __init free_area_init_nodes(unsigne
- }
- #endif /* CONFIG_ARCH_POPULATES_NODE_MAP */
- 
-+/**
-+ * set_dma_reserve - Account the specified number of pages reserved in ZONE_DMA
-+ * @new_dma_reserve - The number of pages to mark reserved
-+ *
-+ * The per-cpu batchsize and zone watermarks are determined by present_pages.
-+ * In the DMA zone, a significant percentage may be consumed by kernel image
-+ * and other unfreeable allocations which can skew the watermarks badly. This
-+ * function may optionally be used to account for unfreeable pages in
-+ * ZONE_DMA. The effect will be lower watermarks and smaller per-cpu batchsize
++/* A buffer that may be edited by tools operating on a zImage binary so as to
++ * edit the command line passed to vmlinux (by setting /chosen/bootargs).
++ * The buffer is put in it's own section so that tools may locate it easier.
 + */
-+void __init set_dma_reserve(unsigned long new_dma_reserve)
++static char builtin_cmdline[512]
++	__attribute__((section("__builtin_cmdline")));
++
++
+ struct addr_range {
+ 	unsigned long addr;
+ 	unsigned long size;
+@@ -204,6 +212,23 @@ static int is_elf32(void *hdr)
+ 	return 1;
+ }
+ 
++void export_cmdline(void* chosen_handle)
 +{
-+	dma_reserve = new_dma_reserve;
++        int len;
++        char cmdline[2] = { 0, 0 };
++
++	if (builtin_cmdline[0] == 0) 
++		return;
++
++        len = getprop(chosen_handle, "bootargs", cmdline, sizeof(cmdline));
++        if (len > 0 && cmdline[0] != 0) 
++		return;
++
++	setprop(chosen_handle, "bootargs", builtin_cmdline,
++		strlen(builtin_cmdline) + 1);
 +}
 +
- #ifndef CONFIG_NEED_MULTIPLE_NODES
- static bootmem_data_t contig_bootmem_data;
- struct pglist_data contig_page_data = { .bdata = &contig_bootmem_data };
-
++
+ void start(unsigned long a1, unsigned long a2, void *promptr, void *sp)
+ {
+ 	int len;
+@@ -289,6 +314,8 @@ void start(unsigned long a1, unsigned lo
+ 		memmove((void *)vmlinux.addr,(void *)vmlinuz.addr,vmlinuz.size);
+ 	}
+ 
++	export_cmdline(chosen_handle);
++
+ 	/* Skip over the ELF header */
+ #ifdef DEBUG
+ 	printf("... skipping 0x%lx bytes of ELF header\n\r",
+diff --git a/arch/powerpc/boot/prom.h b/arch/powerpc/boot/prom.h
+index 3e2ddd4..a57b184 100644
+--- a/arch/powerpc/boot/prom.h
++++ b/arch/powerpc/boot/prom.h
+@@ -31,4 +31,11 @@ static inline int getprop(void *phandle,
+ 	return call_prom("getprop", 4, 1, phandle, name, buf, buflen);
+ }
+ 
++
++static inline int setprop(void *phandle, const char *name,
++			  void *buf, int buflen)
++{
++	return call_prom("setprop", 4, 1, phandle, name, buf, buflen);
++}
++
+ #endif				/* _PPC_BOOT_PROM_H_ */
 -- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.1.4.g0b63-dirty
