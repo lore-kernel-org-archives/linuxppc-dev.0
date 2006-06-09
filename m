@@ -1,22 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17545.16696.195276.334774@cargo.ozlabs.ibm.com>
-Date: Fri, 9 Jun 2006 19:36:56 +1000
+Message-ID: <17545.15326.767523.342562@cargo.ozlabs.ibm.com>
+Date: Fri, 9 Jun 2006 19:14:06 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: mel@csn.ul.ie (Mel Gorman)
-Subject: Re: [PATCH] Compile failure fix for ppc on 2.6.17-rc4-mm3 (2nd
-	attempt)
-In-Reply-To: <20060529190515.GA17608@skynet.ie>
-References: <20060526151214.GA5190@skynet.ie>
-	<20060526094924.10efc515.akpm@osdl.org>
-	<20060529154923.GA9025@skynet.ie>
-	<2ebd96e4a7ea753273b2c5f856ba8c7a@kernel.crashing.org>
-	<Pine.LNX.4.64.0605291825500.11234@skynet.skynet.ie>
-	<c6414fc4b2c627791a49085bf8eea7e8@kernel.crashing.org>
-	<20060529190515.GA17608@skynet.ie>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, vgoyal@in.ibm.com,
-	linux-kernel@vger.kernel.org
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [RFC/PATCH] powersave_nap cleanup
+In-Reply-To: <20060526140227.GE8934@localdomain>
+References: <20060526140227.GE8934@localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +18,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mel Gorman writes:
+Nathan Lynch writes:
 
-> +	res->end = -(-res->end & ~(unsigned long)mask); \
-> +	res->end += mask; \
+> Rename machdep_calls.power_save to machdep_calls.powersave_nap to make
+> more apparent the connection with the powersave_nap sysctl.
 
-I think this is equivalent to
+Hmmm, it's possibly a bit confusing to have a variable and a function
+with the same name...
 
-	res->end = (res->end + mask) | mask;
-
-and I have to say the latter seems more understandable to me (and
-doesn't need a cast) ...
-
-Regards,
 Paul.
