@@ -1,18 +1,14 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id 9336767B5A
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jun 2006 03:33:51 +1000 (EST)
-Date: Fri, 9 Jun 2006 12:33:26 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC/PATCH] powersave_nap cleanup
-Message-ID: <20060609173326.GA8934@localdomain>
-References: <20060526140227.GE8934@localdomain>
-	<17545.15326.767523.342562@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17545.15326.767523.342562@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id B0F1167C2C
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jun 2006 04:01:44 +1000 (EST)
+Date: Fri, 09 Jun 2006 20:01:42 +0200
+Content-Type: text/plain; charset="iso-8859-1"
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+Message-ID: <20060608205048.113800@gmx.net>
+MIME-Version: 1.0
+Subject: RFC: dma_mmap_coherent() for powerpc/ppc architecture and ALSA?
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Nathan Lynch writes:
-> 
-> > Rename machdep_calls.power_save to machdep_calls.powersave_nap to make
-> > more apparent the connection with the powersave_nap sysctl.
-> 
-> Hmmm, it's possibly a bit confusing to have a variable and a function
-> with the same name...
+Hi,
 
-Heh, I thought you had suggested doing that, maybe I misunderstood.
+I'm trying to adapt Linux for the AmigaOne, which is a G3/G4 PPC desktop system with a non cache coherent northbridge (MAI ArticiaS), a VIA82C686B southbridge and the U-boot firmware. Due to the cache coherency problem I compiled in the CONFIG_NOT_COHERENT_CACHE option (arch/ppc/kernel/dma-mapping.c) in the AmigaOne Linux kernel.
 
-So, what to do?  Leave the machdep_calls.power_save name as it is?
+While that fixes the DMA data corruption problem, it causes a kernel oops or a complete system lookup after starting sound playback. With kernel versions =<2.6.14 the oops messages refered to a BUG() entry in mm/rmap.c. Therefore I tried out a newer kernel (2.6.16.15), where the oops refers to the ALSA function snd_pcm_mmap_data_nopage() implemented in pcm_native.c.
+
+Well, after searching a while in some old linux kernel threads, I found this thread here:
+http://www.thisishull.net/showthread.php?t=22080&page=3&pp=10
+
+Based on the information in this thread, I came to the conclusion that ALSA simply won't work on non cache coherent architectures (except ARM), because the generic DMA API was never expanded to support the functionality required by ALSA (namely mapping dma pages into user space with dma_mmap_coherent()).
+
+This leads me to the question, if there are any plans to include the dma_mmap_coherent() function (for powerpc/ppc and/or any other platform) in one of the next kernel versions and if an adapation of the ALSA drivers is planned. Or is there a simple way (hack) to fix this problem?
+
+Thanks!
+
+Regards,
+
+Gerhard
+
+-- 
+--
+-- email : gerhard_pircher -AT- gmx -DOT- net
+--
+
+Echte DSL-Flatrate dauerhaft für 0,- Euro*!
+"Feel free" mit GMX DSL! http://www.gmx.net/de/go/dsl
