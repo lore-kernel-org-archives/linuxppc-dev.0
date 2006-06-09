@@ -1,14 +1,19 @@
-Return-Path: <DaveLiu@freescale.com>
-Message-ID: <9FCDBA58F226D911B202000BDBAD4673026FD945@zch01exm40.ap.freescale.net>
-From: Liu Dave-r63238 <DaveLiu@freescale.com>
-To: Fleming Andy-afleming <afleming@freescale.com>, Guo Jaffe
-	<jianfei616@hotmail.com>
-Subject: RE: does Gianfar Ethernet Controller Version 1.1 support MARVELL
-	88E1111?
-Date: Fri, 9 Jun 2006 11:35:06 +0800 
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2B62F67A60
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  9 Jun 2006 17:40:18 +1000 (EST)
+To: "Denny" <jxnuxdy@163.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Help -- failed to boot up kernel on PPC40 5 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 09 Jun 2006 10:11:29 +0800."
+	<4488D8D1.00003F.15159@bj163app14.163.com>
+Date: Fri, 09 Jun 2006 09:40:15 +0200
+Sender: wd@denx.de
+Message-Id: <20060609074015.DBB7535363E@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,55 +24,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> On Jun 8, 2006, at 12:51, Guo Jaffe wrote:
+In message <4488D8D1.00003F.15159@bj163app14.163.com> you wrote:
 > 
-> > Hi Andy,
-> >
-> > Thank you for your information. So the driver is not the issue, but
-> > better to upgraded.
-> >
-> > I will check the board once more. The PHY doesn't work because the
-> > 8bit bus between MAC and PHY is locked(TX_EN and RX_DV all 
-> disabled  
-> > from the scope's view) and also you can't see any signals exist at  
-> > the Magnetic side(nor LED signals). It seems that only 
-> MDC/MDIO and  
-> > CLOCK reference pin works. The PHY's ID must be read from MDC/MDIO  
-> > interface and Clocks are right showed on the scope.
-> 
-> 
-> But what error are you getting?  What are the symptoms of your  
-> problem?  The GMII interface (the 8-bit bus) is inconsequential to  
-> PHY configuration and management.  Only the MDC/MDIO bus is used.   
-> Therefore the PHY id should be quite readable.  What version 
-> of Linux  
-> are you using?  Please describe what the kernel prints out when you  
-> boot, and when you try to bring up the interface (assuming you don't  
-> do that at boot).
-> 
-> Andy
+>       I use the linux 2.6.14 of your website, and compile it with the ELDK4.0 succesfully, but when I download it to my PPC405 board, it stopped after initialized the MMU, and encounter an exception in "_start_here".
 
-As you said, the MDIO bus looks like well. If the PHY address it is right,
-You can read the PHY ID from PHY. What is the PHY ID you read?
+Is this a standard AMCC eval board, or a custom board? Which one?
 
-Please check the hardware status
+Best regards,
 
-1) 8540 hardware reset configuration for GMII interface;
-Make sure it is GMII interface.
+Wolfgang Denk
 
-2) MARVELL 88E1111 configuration and GMII interface connection.
-You can reference the 8540 ref board.
- 
-3)TSEC and PHY power
-
-4)The 125M reference clock---GTX_CLK125, This looks
-well as you said.
-
-5)The GTX_CLK for GMII transmit clock, and TX_CLK for MII transmit clock.
-What speed ethernet does the TSEC  connect to? 1000Mbps or 100Mbps?
-
-6) The RX_CLK for receive clock.
-
-7)Of cause, need check the RX_DV and TX_EN to see if have some traffic.
-
--Dave
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Those who hate and fight must stop themselves -- otherwise it is  not
+stopped.
+	-- Spock, "Day of the Dove", stardate unknown
