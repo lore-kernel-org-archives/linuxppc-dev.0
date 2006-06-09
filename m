@@ -1,18 +1,20 @@
 Return-Path: <khali@linux-fr.org>
 Received: from kellthuzad.dmz.nerim.net (smtp-dmz-235-friday.dmz.nerim.net
-	[195.5.254.235]) by ozlabs.org (Postfix) with ESMTP id D837F67C5A
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 17:54:28 +1000 (EST)
-Received: from kraid.nerim.net (smtp-105-friday.nerim.net [62.4.16.105])
-	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 2EFC439FBD
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 09:54:15 +0200 (CEST)
-Date: Fri, 9 Jun 2006 09:54:21 +0200
+	[195.5.254.235]) by ozlabs.org (Postfix) with ESMTP id 3966E67C56
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 18:10:20 +1000 (EST)
+Received: from mallaury.nerim.net (smtp-105-friday.noc.nerim.net [62.4.17.105])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id D197639EE9
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Jun 2006 09:37:31 +0200 (CEST)
+Date: Fri, 9 Jun 2006 09:37:37 +0200
 From: Jean Delvare <khali@linux-fr.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC] I2C-MPC: Fix up error handling
-Message-Id: <20060609095421.7157dc53.khali@linux-fr.org>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH 10/10 v2] Document I2C_MPC option for 86xx too.
+Message-Id: <20060609093737.f66d5a41.khali@linux-fr.org>
+In-Reply-To: <1149804296.23938.298.camel@cashmere.sps.mot.com>
+References: <1149804296.23938.298.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Sylvain Munaut <tnt@246tNt.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,149 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Hi Jon,
 
-Could anyone please comment on this i2c-mpc patch, and give it some
-testing on different systems? I'm fine with the error propagation
-fixes, but less fine with the random resets being added, and rather
-unhappy with the "retry once more just in case" thing, which I think,
-if really needed, should instead be implemented using the standard
-i2c_adapter.retries mechanism.
+Please add a paragraph explaining what the patch does. It will be used
+as the git commit message.
 
-Thanks.
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> 
+> ---
+>  drivers/i2c/busses/Kconfig |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> 
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index d6d4494..fbeae82 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -252,12 +252,12 @@ config I2C_POWERMAC
+>  	  will be called i2c-powermac.
+>  
+>  config I2C_MPC
+> -	tristate "MPC107/824x/85xx/52xx"
+> +	tristate "MPC107/824x/85xx/52xx/86xx"
 
-From: Kumar Gala <galak@kernel.crashing.org>
+Maybe leave 52xx at the end, as it seems to be special?
 
-* If we have an Unfinished (MCF) or Arbitration Lost (MAL) error and
-  the bus is still busy reset the controller.  This prevents the
-  controller from getting in a hung state for transactions for other
-  devices.
+>  	depends on I2C && PPC32
+>  	help
+>  	  If you say yes to this option, support will be included for the
+>  	  built-in I2C interface on the MPC107/Tsi107/MPC8240/MPC8245 and
+> -	  MPC85xx family processors. The driver may also work on 52xx
+> +	  MPC85xx/MPC8641 family processors. The driver may also work on 52xx
+>  	  family processors, though interrupts are known not to work.
+>  
+>  	  This driver can also be built as a module.  If so, the module
+> 
 
-* Fixed up propogating the errors from i2c_wait.
+This isn't very consistent, you first say 86xx as if several chips were
+supported, then only list the MPC8641. Also, "MPC85xx family" made
+sense but "MPC8641 family" doesn't.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: Greg KH <greg@kroah.com>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
----
-
- drivers/i2c/busses/i2c-mpc.c |   43 +++++++++++++++++++++++----------
- 1 file changed, 31 insertions(+), 12 deletions(-)
-
-diff -puN drivers/i2c/busses/i2c-mpc.c~i2c-mpc-fix-up-error-handling drivers/i2c/busses/i2c-mpc.c
---- devel/drivers/i2c/busses/i2c-mpc.c~i2c-mpc-fix-up-error-handling	2006-06-01 20:22:55.000000000 -0700
-+++ devel-akpm/drivers/i2c/busses/i2c-mpc.c	2006-06-01 20:22:55.000000000 -0700
-@@ -115,11 +115,20 @@ static int i2c_wait(struct mpc_i2c *i2c,
- 
- 	if (!(x & CSR_MCF)) {
- 		pr_debug("I2C: unfinished\n");
-+
-+		/* reset the controller if the bus is still busy */
-+		if (x & CSR_MBB)
-+			writeccr(i2c, 0);
-+
- 		return -EIO;
- 	}
- 
- 	if (x & CSR_MAL) {
- 		pr_debug("I2C: MAL\n");
-+
-+		/* reset the controller if the bus is still busy */
-+		if (x & CSR_MBB)
-+			writeccr(i2c, 0);
- 		return -EIO;
- 	}
- 
-@@ -160,7 +169,7 @@ static void mpc_i2c_stop(struct mpc_i2c 
- static int mpc_write(struct mpc_i2c *i2c, int target,
- 		     const u8 * data, int length, int restart)
- {
--	int i;
-+	int i, ret;
- 	unsigned timeout = i2c->adap.timeout;
- 	u32 flags = restart ? CCR_RSTA : 0;
- 
-@@ -172,15 +181,17 @@ static int mpc_write(struct mpc_i2c *i2c
- 	/* Write target byte */
- 	writeb((target << 1), i2c->base + MPC_I2C_DR);
- 
--	if (i2c_wait(i2c, timeout, 1) < 0)
--		return -1;
-+	ret = i2c_wait(i2c, timeout, 1);
-+	if (ret < 0)
-+		return ret;
- 
- 	for (i = 0; i < length; i++) {
- 		/* Write data byte */
- 		writeb(data[i], i2c->base + MPC_I2C_DR);
- 
--		if (i2c_wait(i2c, timeout, 1) < 0)
--			return -1;
-+		ret = i2c_wait(i2c, timeout, 1);
-+		if (ret < 0)
-+			return ret;
- 	}
- 
- 	return 0;
-@@ -190,7 +201,7 @@ static int mpc_read(struct mpc_i2c *i2c,
- 		    u8 * data, int length, int restart)
- {
- 	unsigned timeout = i2c->adap.timeout;
--	int i;
-+	int i, ret;
- 	u32 flags = restart ? CCR_RSTA : 0;
- 
- 	/* Start with MEN */
-@@ -201,8 +212,9 @@ static int mpc_read(struct mpc_i2c *i2c,
- 	/* Write target address byte - this time with the read flag set */
- 	writeb((target << 1) | 1, i2c->base + MPC_I2C_DR);
- 
--	if (i2c_wait(i2c, timeout, 1) < 0)
--		return -1;
-+	ret = i2c_wait(i2c, timeout, 1);
-+	if (ret < 0)
-+		return ret;
- 
- 	if (length) {
- 		if (length == 1)
-@@ -214,8 +226,9 @@ static int mpc_read(struct mpc_i2c *i2c,
- 	}
- 
- 	for (i = 0; i < length; i++) {
--		if (i2c_wait(i2c, timeout, 0) < 0)
--			return -1;
-+		ret = i2c_wait(i2c, timeout, 0);
-+		if (ret < 0)
-+			return ret;
- 
- 		/* Generate txack on next to last byte */
- 		if (i == length - 2)
-@@ -246,8 +259,13 @@ static int mpc_xfer(struct i2c_adapter *
- 			return -EINTR;
- 		}
- 		if (time_after(jiffies, orig_jiffies + HZ)) {
--			pr_debug("I2C: timeout\n");
--			return -EIO;
-+			writeccr(i2c, 0);
-+
-+			/* try one more time before we error */
-+			if (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
-+				pr_debug("I2C: timeout\n");
-+				return -EIO;
-+			}
- 		}
- 		schedule();
- 	}
-@@ -325,6 +343,7 @@ static int fsl_i2c_probe(struct platform
- 			goto fail_irq;
- 		}
- 
-+	writeccr(i2c, 0);
- 	mpc_i2c_setclock(i2c);
- 	platform_set_drvdata(pdev, i2c);
- 
-_
-
+When fixed, do you expect me to take that patch, or will it be merged
+through the powerpc git tree?
 
 -- 
 Jean Delvare
