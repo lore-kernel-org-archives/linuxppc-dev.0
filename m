@@ -1,12 +1,25 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sat, 10 Jun 2006 23:14:51 +1000
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fix HV bit handling on non partitioned machines
-Message-ID: <20060610131451.GS23891@krispykreme>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B96BB67C76
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jun 2006 23:52:12 +1000 (EST)
+In-Reply-To: <1149890843.12687.66.camel@localhost.localdomain>
+References: <1149803821.23938.278.camel@cashmere.sps.mot.com>
+	<1149826559.12687.41.camel@localhost.localdomain>
+	<E1FojK9-0004AD-DN@jdl.com>
+	<1149890843.12687.66.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <DCA4FA55-CA67-4367-9ABE-823538EB38FA@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/10 v2] Add the MPC8641 HPCN platform files.
+Date: Sat, 10 Jun 2006 15:52:00 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,26 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>> Cascade handling is changing with my genirq port. It will be easy to
+>>> adapt though. Same comments howveer, you should have a device- 
+>>> tree node
+>>> for the 8259 (under an ISA bridge, those shall really be in the
+>>> device-tree). In general, on-board bridges should be in the  
+>>> device-tree,
+>>> only slots or standardly routed child PCI devices need not.
+>>
+>> Can you send me an example?
+>
+> I'll try to dig something. Power3 at least has MPIC<->8259 cascade, as
+> do some IBM blades when running bare metal kernels.
 
-On non partitioned machines we currently set the HV bit in kernel space
-only. It turns out we are supposed to maintain the HV bit in both user
-and kernel space.
+On the blades, the 8259 isn't cascaded to the MPIC.  And we disable
+it completely anyway ;-)
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
 
-Index: build/include/asm-powerpc/reg.h
-===================================================================
---- build.orig/include/asm-powerpc/reg.h	2006-05-27 10:02:39.000000000 +1000
-+++ build/include/asm-powerpc/reg.h	2006-05-27 10:09:46.000000000 +1000
-@@ -93,8 +93,8 @@
- #define MSR_LE		__MASK(MSR_LE_LG)	/* Little Endian */
- 
- #ifdef CONFIG_PPC64
--#define MSR_		MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF
--#define MSR_KERNEL      MSR_ | MSR_SF | MSR_HV
-+#define MSR_		MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_ISF |MSR_HV
-+#define MSR_KERNEL      MSR_ | MSR_SF
- 
- #define MSR_USER32	MSR_ | MSR_PR | MSR_EE
- #define MSR_USER64	MSR_USER32 | MSR_SF
+Segher
