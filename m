@@ -2,20 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AB85067C52
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jun 2006 08:11:38 +1000 (EST)
-Subject: Re: [PATCH 3/10 v2] Add MPC8641 HPCN PCI and PCI-Express files.
+	by ozlabs.org (Postfix) with ESMTP id 731DA67A41
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jun 2006 10:03:31 +1000 (EST)
+Subject: Re: pmf_register_irq_client gives sleep with locks held warning
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jon Loeliger <jdl@jdl.com>
-In-Reply-To: <E1FojYV-0004O8-L0@jdl.com>
-References: <1149803866.23938.280.camel@cashmere.sps.mot.com>
-	<1149827596.12687.53.camel@localhost.localdomain>
-	<E1FojYV-0004O8-L0@jdl.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1149793098.11525.34.camel@johannes>
+References: <1149020341.5128.7.camel@johannes>
+	<1149123574.15446.15.camel@localhost.localdomain>
+	<1149793098.11525.34.camel@johannes>
 Content-Type: text/plain
-Date: Sat, 10 Jun 2006 08:11:22 +1000
-Message-Id: <1149891083.12687.72.camel@localhost.localdomain>
+Date: Sat, 10 Jun 2006 10:03:04 +1000
+Message-Id: <1149897784.12687.87.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +25,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-06-09 at 11:09 -0500, Jon Loeliger wrote:
-> So, like, the other day Benjamin Herrenschmidt mumbled:
-> > On Thu, 2006-06-08 at 16:57 -0500, Jon Loeliger wrote:
-> > > Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
-> > > Signed-off-by: Wei Zhang <Wei.Zhang@freescale.com>
-> > > Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
-> > > Signed-off-by: Jon Loeliger <jdl@freescale.com>
-> > 
-> > There are various things in this code that duplicate names used by other
-> > platforms and thus makes the board unsuitable for use in a common
-> > kernel. That needs to be fixed. Try avoiding too generic names. Also,
-> > PCI Express shall be named "pcie" and not "pex" :)
-> > 
-> > I don't have time at the moment to go too deep in the details here.
-> > 
-> > Ben.
+On Thu, 2006-06-08 at 20:58 +0200, Johannes Berg wrote:
+> On Thu, 2006-06-01 at 10:59 +1000, Benjamin Herrenschmidt wrote:
 > 
-> I will also prefix some routines with mpc86xx_ to avoid
-> the generic names problems.  But I'm not sure which other
-> platforms you expect this one kernel image to run on.
-> Specifically, this pcie code is very similar to the 8548
-> family, but not exactly the same.
+> > This fixes request_irq() potentially called from atomic context.
+> > [...]
+> 
+> Sorry, almost forgot about this.
+> 
+> I don't think your patch is right, it seems to me that now
+> pmf_unregister_irq_client races against pmf_do_irq: what happens when an
+> interrupt comes in right in the middle of the list_del()?
 
-It's a policy. On powerpc, MULTIPLATFORM will be the default. One can
-build an image that boots a powermac, a pseries and your machines. The
-user doesn't _have_ to but the possibility is there. Might be useful in
-the long run for embedded distros. It also force us into staying clean
-and that's a good thing in general.
+Yeah, possibly... too late for 2.6.17 tho.
 
-> My understanding is that we are shooting for a single 86xx
-> family kernel image here, with this 8641 HPCN platform being
-> the first such port.
->
-> I will s/pex/pcie/g and rename files accordingly.
+> By the way, what do I do when like this I change a patch? Do I rely on
+> your Signed-off-by and simply put mine instead (like I did now)?
 
-There is no compelling reason to prevent a true multiplatform kernel
-since it's not a different enough CPU (like 4xx or 8xx would be), thus
-it shall be in the common config. That's something that we need to fix
-about Kumar couple of initial ports to arch/powerpc too.
+You add yours.
 
-Ben
+> Anyway, here's a changed patch that illustrates my point. I've tested it
+> and it works and as expected fixes the problem :)
+
+Too late :)
+
+Cheers,
+Ben.
+
+> ---
+> This fixes request_irq() being called with interrupts disabled in the
+> powermac platform function code when registering the first irq client
+> for a given platform function.
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> 
+> --- a/arch/powerpc/platforms/powermac/pfunc_core.c
+> +++ b/arch/powerpc/platforms/powermac/pfunc_core.c
+> @@ -11,6 +11,7 @@ #include <linux/delay.h>
+>  #include <linux/kernel.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/module.h>
+> +#include <linux/mutex.h>
+>  
+>  #include <asm/semaphore.h>
+>  #include <asm/prom.h>
+> @@ -546,6 +547,7 @@ struct pmf_device {
+>  
+>  static LIST_HEAD(pmf_devices);
+>  static spinlock_t pmf_lock = SPIN_LOCK_UNLOCKED;
+> +static DEFINE_MUTEX(pmf_irq_mutex);
+>  
+>  static void pmf_release_device(struct kref *kref)
+>  {
+> @@ -864,16 +866,25 @@ int pmf_register_irq_client(struct devic
+>  
+>  	spin_lock_irqsave(&pmf_lock, flags);
+>  	func = __pmf_find_function(target, name, PMF_FLAGS_INT_GEN);
+> -	if (func == NULL) {
+> -		spin_unlock_irqrestore(&pmf_lock, flags);
+> +	if (func)
+> +		func = pmf_get_function(func);
+> +	spin_unlock_irqrestore(&pmf_lock, flags);
+> +	if (func == NULL)
+>  		return -ENODEV;
+> -	}
+> +
+> +	/* guard against manipulations of list */
+> +	mutex_lock(&pmf_irq_mutex);
+>  	if (list_empty(&func->irq_clients))
+>  		func->dev->handlers->irq_enable(func);
+> +
+> +	/* guard against pmf_do_irq while changing list */
+> +	spin_lock_irqsave(&pmf_lock, flags);
+>  	list_add(&client->link, &func->irq_clients);
+> -	client->func = func;
+>  	spin_unlock_irqrestore(&pmf_lock, flags);
+>  
+> +	client->func = func;
+> +	mutex_unlock(&pmf_irq_mutex);
+> +
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(pmf_register_irq_client);
+> @@ -885,12 +896,19 @@ void pmf_unregister_irq_client(struct pm
+>  
+>  	BUG_ON(func == NULL);
+>  
+> -	spin_lock_irqsave(&pmf_lock, flags);
+> +	/* guard against manipulations of list */
+> +	mutex_lock(&pmf_irq_mutex);
+>  	client->func = NULL;
+> +
+> +	/* guard against pmf_do_irq while changing list */
+> +	spin_lock_irqsave(&pmf_lock, flags);
+>  	list_del(&client->link);
+> +	spin_unlock_irqrestore(&pmf_lock, flags);
+> +
+>  	if (list_empty(&func->irq_clients))
+>  		func->dev->handlers->irq_disable(func);
+> -	spin_unlock_irqrestore(&pmf_lock, flags);
+> +	mutex_unlock(&pmf_irq_mutex);
+> +	pmf_put_function(func);
+>  }
+>  EXPORT_SYMBOL_GPL(pmf_unregister_irq_client);
+>  
+> 
