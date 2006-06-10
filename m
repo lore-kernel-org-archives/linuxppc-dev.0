@@ -1,12 +1,12 @@
 Return-Path: <anton@ozlabs.org>
-Date: Sun, 11 Jun 2006 01:01:45 +1000
+Date: Sun, 11 Jun 2006 01:15:55 +1000
 From: Anton Blanchard <anton@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Link error when futexes are disabled on 64bit architectures
-Message-ID: <20060610150145.GU23891@krispykreme>
+Subject: [PATCH] powerpc: system call micro optimisation
+Message-ID: <20060610151555.GV23891@krispykreme>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: akpm@osdl.org
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,21 +17,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-If futexes are disabled we fail to link on ppc64.
+In the syscall path we currently have:
+
+       crclr   so
+       mfcr    r9
+
+If we shift the crclr up we can avoid a stall on some CPUs.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: kernel/kernel/exit.c
+Index: kernel/arch/powerpc/kernel/entry_64.S
 ===================================================================
---- kernel.orig/kernel/exit.c	2006-04-16 20:50:51.000000000 -0500
-+++ kernel/kernel/exit.c	2006-04-16 21:05:32.570315496 -0500
-@@ -906,7 +906,7 @@ fastcall NORET_TYPE void do_exit(long co
- 	}
- 	if (unlikely(tsk->robust_list))
- 		exit_robust_list(tsk);
--#ifdef CONFIG_COMPAT
-+#if defined(CONFIG_FUTEX) && defined(CONFIG_COMPAT)
- 	if (unlikely(tsk->compat_robust_list))
- 		compat_exit_robust_list(tsk);
- #endif
+--- kernel.orig/arch/powerpc/kernel/entry_64.S	2006-04-26 08:03:05.380651922 -0500
++++ kernel/arch/powerpc/kernel/entry_64.S	2006-04-26 08:03:28.076523958 -0500
+@@ -59,6 +59,7 @@ system_call_common:
+ 	beq-	1f
+ 	ld	r1,PACAKSAVE(r13)
+ 1:	std	r10,0(r1)
++	crclr	so
+ 	std	r11,_NIP(r1)
+ 	std	r12,_MSR(r1)
+ 	std	r0,GPR0(r1)
+@@ -77,7 +78,6 @@ system_call_common:
+ 	std	r11,GPR11(r1)
+ 	std	r11,GPR12(r1)
+ 	std	r9,GPR13(r1)
+-	crclr	so
+ 	mfcr	r9
+ 	mflr	r10
+ 	li	r11,0xc01
