@@ -1,9 +1,9 @@
 Return-Path: <anton@ozlabs.org>
-Date: Sat, 10 Jun 2006 20:53:06 +1000
+Date: Sat, 10 Jun 2006 20:58:08 +1000
 From: Anton Blanchard <anton@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: pcibus_to_node fixes
-Message-ID: <20060610105305.GM23891@krispykreme>
+Subject: [PATCH] powerpc: node local IOMMU tables
+Message-ID: <20060610105808.GN23891@krispykreme>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: paulus@samba.org
@@ -17,101 +17,168 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-of_node_to_nid returns -1 if the associativity cannot be found. This
-means pcibus_to_cpumask has to be careful not to pass a negative index into
-node_to_cpumask.
-
-Since pcibus_to_node could be used a lot, and of_node_to_nid is slow (it
-walks a list doing strcmps), lets also cache the node in the
-pci_controller struct.
+Allocate IOMMU tables node local.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: build/arch/powerpc/kernel/pci_64.c
+Index: build/arch/powerpc/kernel/iommu.c
 ===================================================================
---- build.orig/arch/powerpc/kernel/pci_64.c	2006-06-10 11:45:51.000000000 +1000
-+++ build/arch/powerpc/kernel/pci_64.c	2006-06-10 11:45:54.000000000 +1000
-@@ -227,8 +227,10 @@ struct pci_controller * pcibios_alloc_co
- 	pci_setup_pci_controller(phb);
- 	phb->arch_data = dev;
- 	phb->is_dynamic = mem_init_done;
--	if (dev)
-+	if (dev) {
-+		PHB_SET_NODE(phb, of_node_to_nid(dev));
- 		add_linux_pci_domain(dev, phb);
-+	}
- 	return phb;
- }
+--- build.orig/arch/powerpc/kernel/iommu.c	2006-05-27 10:01:01.000000000 +1000
++++ build/arch/powerpc/kernel/iommu.c	2006-05-27 10:05:56.000000000 +1000
+@@ -418,10 +418,11 @@ void iommu_unmap_sg(struct iommu_table *
+  * Build a iommu_table structure.  This contains a bit map which
+  * is used to manage allocation of the tce space.
+  */
+-struct iommu_table *iommu_init_table(struct iommu_table *tbl)
++struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+ {
+ 	unsigned long sz;
+ 	static int welcomed = 0;
++	struct page *page;
  
-@@ -1415,3 +1417,12 @@ long sys_pciconfig_iobase(long which, un
+ 	/* Set aside 1/4 of the table for large allocations. */
+ 	tbl->it_halfpoint = tbl->it_size * 3 / 4;
+@@ -429,10 +430,10 @@ struct iommu_table *iommu_init_table(str
+ 	/* number of bytes needed for the bitmap */
+ 	sz = (tbl->it_size + 7) >> 3;
  
- 	return -EOPNOTSUPP;
- }
-+
-+#ifdef CONFIG_NUMA
-+int pcibus_to_node(struct pci_bus *bus)
-+{
-+	struct pci_controller *phb = pci_bus_to_host(bus);
-+	return phb->node;
-+}
-+EXPORT_SYMBOL(pcibus_to_node);
-+#endif
-Index: build/include/asm-powerpc/pci-bridge.h
+-	tbl->it_map = (unsigned long *)__get_free_pages(GFP_ATOMIC, get_order(sz));
+-	if (!tbl->it_map)
++	page = alloc_pages_node(nid, GFP_ATOMIC, get_order(sz));
++	if (!page)
+ 		panic("iommu_init_table: Can't allocate %ld bytes\n", sz);
+-
++	tbl->it_map = page_address(page);
+ 	memset(tbl->it_map, 0, sz);
+ 
+ 	tbl->it_hint = 0;
+Index: build/arch/powerpc/platforms/pseries/iommu.c
 ===================================================================
---- build.orig/include/asm-powerpc/pci-bridge.h	2006-06-10 11:45:51.000000000 +1000
-+++ build/include/asm-powerpc/pci-bridge.h	2006-06-10 11:45:54.000000000 +1000
-@@ -6,6 +6,7 @@
- #include <asm-ppc/pci-bridge.h>
- #else
+--- build.orig/arch/powerpc/platforms/pseries/iommu.c	2006-05-27 10:02:39.000000000 +1000
++++ build/arch/powerpc/platforms/pseries/iommu.c	2006-05-27 10:08:16.000000000 +1000
+@@ -368,10 +368,11 @@ static void iommu_bus_setup_pSeries(stru
+ 	pci->phb->dma_window_size = 0x8000000ul;
+ 	pci->phb->dma_window_base_cur = 0x8000000ul;
  
-+#include <linux/config.h>
- #include <linux/pci.h>
- #include <linux/list.h>
+-	tbl = kmalloc(sizeof(struct iommu_table), GFP_KERNEL);
++	tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
++			   pci->phb->node);
  
-@@ -22,6 +23,7 @@
- struct pci_controller {
- 	struct pci_bus *bus;
- 	char is_dynamic;
-+	int node;
- 	void *arch_data;
- 	struct list_head list_node;
+ 	iommu_table_setparms(pci->phb, dn, tbl);
+-	pci->iommu_table = iommu_init_table(tbl);
++	pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
  
-@@ -165,6 +167,12 @@ static inline unsigned long pci_address_
- #define PCI_PROBE_NORMAL	0	/* Do normal PCI probing */
- #define PCI_PROBE_DEVTREE	1	/* Instantiate from device tree */
+ 	/* Divide the rest (1.75GB) among the children */
+ 	pci->phb->dma_window_size = 0x80000000ul;
+@@ -414,12 +415,12 @@ static void iommu_bus_setup_pSeriesLP(st
  
-+#ifdef CONFIG_NUMA
-+#define PHB_SET_NODE(PHB, NODE)		((PHB)->node = (NODE))
-+#else
-+#define PHB_SET_NODE(PHB, NODE)		((PHB)->node = -1)
-+#endif
-+
- #endif /* CONFIG_PPC64 */
- #endif /* __KERNEL__ */
+ 		ppci->bussubno = bus->number;
+ 
+-		tbl = (struct iommu_table *)kmalloc(sizeof(struct iommu_table),
+-						    GFP_KERNEL);
++		tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
++				   ppci->phb->node);
+ 
+ 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
+ 
+-		ppci->iommu_table = iommu_init_table(tbl);
++		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
+ 	}
+ 
+ 	if (pdn != dn)
+@@ -442,9 +443,11 @@ static void iommu_dev_setup_pSeries(stru
+ 	 */
+ 	if (!dev->bus->self) {
+ 		DBG(" --> first child, no bridge. Allocating iommu table.\n");
+-		tbl = kmalloc(sizeof(struct iommu_table), GFP_KERNEL);
++		tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
++				   PCI_DN(dn)->phb->node);
+ 		iommu_table_setparms(PCI_DN(dn)->phb, dn, tbl);
+-		PCI_DN(mydn)->iommu_table = iommu_init_table(tbl);
++		PCI_DN(dn)->iommu_table = iommu_init_table(tbl,
++						PCI_DN(dn)->phb->node);
+ 
+ 		return;
+ 	}
+@@ -526,12 +529,12 @@ static void iommu_dev_setup_pSeriesLP(st
+ 		/* iommu_table_setparms_lpar needs bussubno. */
+ 		pci->bussubno = pci->phb->bus->number;
+ 
+-		tbl = (struct iommu_table *)kmalloc(sizeof(struct iommu_table),
+-						    GFP_KERNEL);
++		tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
++				   pci->phb->node);
+ 
+ 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
+ 
+-		pci->iommu_table = iommu_init_table(tbl);
++		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+ 	}
+ 
+ 	if (pdn != dn)
+Index: build/arch/powerpc/sysdev/dart_iommu.c
+===================================================================
+--- build.orig/arch/powerpc/sysdev/dart_iommu.c	2006-05-27 10:01:01.000000000 +1000
++++ build/arch/powerpc/sysdev/dart_iommu.c	2006-05-27 10:05:56.000000000 +1000
+@@ -246,7 +246,7 @@ static void iommu_table_dart_setup(void)
+ 	iommu_table_dart.it_base = (unsigned long)dart_vbase;
+ 	iommu_table_dart.it_index = 0;
+ 	iommu_table_dart.it_blocksize = 1;
+-	iommu_init_table(&iommu_table_dart);
++	iommu_init_table(&iommu_table_dart, -1);
+ 
+ 	/* Reserve the last page of the DART to avoid possible prefetch
+ 	 * past the DART mapped area
+Index: build/arch/powerpc/platforms/iseries/iommu.c
+===================================================================
+--- build.orig/arch/powerpc/platforms/iseries/iommu.c	2006-05-27 10:02:39.000000000 +1000
++++ build/arch/powerpc/platforms/iseries/iommu.c	2006-05-27 10:05:56.000000000 +1000
+@@ -173,7 +173,7 @@ void iommu_devnode_init_iSeries(struct d
+ 	/* Look for existing tce table */
+ 	pdn->iommu_table = iommu_table_find(tbl);
+ 	if (pdn->iommu_table == NULL)
+-		pdn->iommu_table = iommu_init_table(tbl);
++		pdn->iommu_table = iommu_init_table(tbl, -1);
+ 	else
+ 		kfree(tbl);
+ }
+Index: build/include/asm-powerpc/iommu.h
+===================================================================
+--- build.orig/include/asm-powerpc/iommu.h	2006-05-27 10:01:01.000000000 +1000
++++ build/include/asm-powerpc/iommu.h	2006-05-27 10:05:56.000000000 +1000
+@@ -67,7 +67,8 @@ extern void iommu_free_table(struct devi
+ /* Initializes an iommu_table based in values set in the passed-in
+  * structure
+  */
+-extern struct iommu_table *iommu_init_table(struct iommu_table * tbl);
++extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
++					    int nid);
+ 
+ extern int iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 		struct scatterlist *sglist, int nelems, unsigned long mask,
+Index: build/arch/powerpc/kernel/vio.c
+===================================================================
+--- build.orig/arch/powerpc/kernel/vio.c	2006-05-27 10:02:39.000000000 +1000
++++ build/arch/powerpc/kernel/vio.c	2006-05-27 10:09:21.000000000 +1000
+@@ -60,9 +60,9 @@ static void __init iommu_vio_init(void)
+ 	vio_iommu_table = veth_iommu_table;
+ 	vio_iommu_table.it_offset += veth_iommu_table.it_size;
+ 
+-	if (!iommu_init_table(&veth_iommu_table))
++	if (!iommu_init_table(&veth_iommu_table, -1))
+ 		printk("Virtual Bus VETH TCE table failed.\n");
+-	if (!iommu_init_table(&vio_iommu_table))
++	if (!iommu_init_table(&vio_iommu_table, -1))
+ 		printk("Virtual Bus VIO TCE table failed.\n");
+ }
  #endif
-Index: build/include/asm-powerpc/topology.h
-===================================================================
---- build.orig/include/asm-powerpc/topology.h	2006-06-10 11:45:51.000000000 +1000
-+++ build/include/asm-powerpc/topology.h	2006-06-10 11:46:31.000000000 +1000
-@@ -32,13 +32,13 @@ static inline int node_to_first_cpu(int 
+@@ -98,7 +98,7 @@ static struct iommu_table *vio_build_iom
+ 		tbl->it_busno = 0;
+ 		tbl->it_type = TCE_VB;
  
- int of_node_to_nid(struct device_node *device);
+-		return iommu_init_table(tbl);
++		return iommu_init_table(tbl, -1);
+ 	}
+ }
  
--#ifdef CONFIG_PPC64
--#define pcibus_to_node(bus)	(of_node_to_nid(bus->sysdata))
--#define pcibus_to_cpumask(bus)	(node_to_cpumask(of_node_to_nid(bus->sysdata)))
--#else
--#define pcibus_to_node(node)    (-1)
--#define pcibus_to_cpumask(bus)	(cpu_online_map)
--#endif
-+struct pci_bus;
-+extern int pcibus_to_node(struct pci_bus *bus);
-+
-+#define pcibus_to_cpumask(bus)	(pcibus_to_node(bus) == -1 ? \
-+					CPU_MASK_ALL : \
-+					node_to_cpumask(pcibus_to_node(bus)) \
-+				)
- 
- /* sched_domains SD_NODE_INIT for PPC64 machines */
- #define SD_NODE_INIT (struct sched_domain) {		\
