@@ -1,12 +1,14 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sun, 11 Jun 2006 01:15:55 +1000
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: system call micro optimisation
-Message-ID: <20060610151555.GV23891@krispykreme>
+Return-Path: <mbligh@mbligh.org>
+Message-ID: <448ADDA1.7090608@mbligh.org>
+Date: Sat, 10 Jun 2006 07:56:33 -0700
+From: "Martin J. Bligh" <mbligh@mbligh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.16-rc6-mm2
+References: <20060609214024.2f7dd72c.akpm@osdl.org>
+In-Reply-To: <20060609214024.2f7dd72c.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc64-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,34 +18,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.17-rc6/2.6.17-rc6-mm2/
+> 
+> 
+> - Added the s390 git tree to the -mm lineup, as git-s390.patch (Martin
+>   Schwidefsky)
+> 
+> - ppc64 (on mac g5) fails to boot for me, due to changes in the powerpc tree.
 
-In the syscall path we currently have:
+Doesn't even build here.
 
-       crclr   so
-       mfcr    r9
+arch/powerpc/platforms/built-in.o(.text+0x1053c): In function 
+`.scanlog_read':
+: undefined reference to `.rtas_extended_busy_delay_time'
 
-If we shift the crclr up we can avoid a stall on some CPUs.
+Config:
+http://ftp.kernel.org/pub/linux/kernel/people/mbligh/config/abat/p570
+or
+http://ftp.kernel.org/pub/linux/kernel/people/mbligh/config/abat/power4
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
 
-Index: kernel/arch/powerpc/kernel/entry_64.S
-===================================================================
---- kernel.orig/arch/powerpc/kernel/entry_64.S	2006-04-26 08:03:05.380651922 -0500
-+++ kernel/arch/powerpc/kernel/entry_64.S	2006-04-26 08:03:28.076523958 -0500
-@@ -59,6 +59,7 @@ system_call_common:
- 	beq-	1f
- 	ld	r1,PACAKSAVE(r13)
- 1:	std	r10,0(r1)
-+	crclr	so
- 	std	r11,_NIP(r1)
- 	std	r12,_MSR(r1)
- 	std	r0,GPR0(r1)
-@@ -77,7 +78,6 @@ system_call_common:
- 	std	r11,GPR11(r1)
- 	std	r11,GPR12(r1)
- 	std	r9,GPR13(r1)
--	crclr	so
- 	mfcr	r9
- 	mflr	r10
- 	li	r11,0xc01
+The non-PPC64 machines seem to have done a clean run for the first time
+in a while ... yay!
+
+M.
