@@ -1,22 +1,21 @@
-Return-Path: <anton@ozlabs.org>
-Date: Sat, 10 Jun 2006 12:08:05 +1000
-From: Anton Blanchard <anton@samba.org>
-To: John Rose <johnrose@austin.ibm.com>
-Subject: Re: [PATCH] reorg RTAS delay code
-Message-ID: <20060610020805.GG23891@krispykreme>
-References: <1149103929.2524.8.camel@sinatra.austin.ibm.com>
-	<1149139866.28307.32.camel@localhost.localdomain>
-	<1149177349.9812.16.camel@sinatra.austin.ibm.com>
-	<1149200718.15158.0.camel@sinatra.austin.ibm.com>
-	<1149280229.18052.3.camel@sinatra.austin.ibm.com>
-	<20060602213308.GP8934@localdomain>
-	<1149543108.17307.6.camel@sinatra.austin.ibm.com>
-	<20060610020453.GF23891@krispykreme>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060610020453.GF23891@krispykreme>
-Cc: Paul Mackerras <paulus@samba.org>, Nathan Lynch <ntl@pobox.com>,
-	External List <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5E0A467BD5
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Jun 2006 16:30:37 +1000 (EST)
+Subject: Re: [PATCH] powerpc vdso updates
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20060610031543.GH23891@krispykreme>
+References: <1148961097.15722.11.camel@localhost.localdomain>
+	<20060610031543.GH23891@krispykreme>
+Content-Type: text/plain
+Date: Sat, 10 Jun 2006 16:30:26 +1000
+Message-Id: <1149921026.12687.112.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
-> Looks like you missed one:
+On Sat, 2006-06-10 at 13:15 +1000, Anton Blanchard wrote:
+> Hi Ben,
 > 
-> WARNING: ".rtas_extended_busy_delay_time" [arch/powerpc/platforms/pseries/scanlog.ko] undefined!
+> > This patch cleans up some locking & error handling in the ppc vdso and
+> > moves the vdso base pointer from the thread struct to the mm context
+> > where it more logically belongs. It brings the powerpc implementation
+> > closer to Ingo's new x86 one and also adds an arch_vma_name() function
+> > allowing to print [vsdo] in /proc/<pid>/maps if Ingo's x86 vdso patch is
+> > also applied.
+> 
+> Im getting this on the current powerpc git tree:
+> 
+> arch/powerpc/kernel/signal_32.c: In function 'handle_rt_signal':
+> arch/powerpc/kernel/signal_32.c:763: error: request for member
+> 'vdso_base' in something not a structure or union
+> 
+> It looks like we use the mm_context_t definition in asm-ppc/mmu.h for
+> 32bit ARCH=powerpc builds and need vdso_base there too.
 
-And a missing export:
+Yes, I have a patch almost ready for that.
 
-WARNING: ".rtas_busy_delay" [arch/powerpc/kernel/rtas_flash.ko] undefined!
-
-ANton
+Ben.
