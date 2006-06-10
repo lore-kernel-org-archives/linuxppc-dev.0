@@ -1,23 +1,23 @@
-Return-Path: <lkml@oxley.org>
-Received: from anchor-fallback-95.mail.demon.net
-	(anchor-fallback-95.mail.demon.net [194.217.242.82])
-	by ozlabs.org (Postfix) with ESMTP id E967C67C89
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Jun 2006 02:48:50 +1000 (EST)
-Received: from anchor-post-34.mail.demon.net ([194.217.242.92]:2459 "EHLO
-	anchor-post-34.mail.demon.net") by anchor-fallback-95.mail.demon.net
-	with ESMTP id S475180AbWFJPk3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linuxppc-dev@ozlabs.org>); Sat, 10 Jun 2006 15:40:29 +0000
-In-Reply-To: <448ADDA1.7090608@mbligh.org>
-References: <20060609214024.2f7dd72c.akpm@osdl.org>
-	<448ADDA1.7090608@mbligh.org>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <CB1D791E-E09E-4062-AC6D-A56A5187705D@oxley.org>
-From: Felix Oxley <lkml@oxley.org>
-Subject: Re: 2.6.16-rc6-mm2
-Date: Sat, 10 Jun 2006 16:40:24 +0100
-To: unlisted-recipients:; (no To-header on input)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1F960679E6
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Jun 2006 08:05:09 +1000 (EST)
+Subject: Re: pmf_register_irq_client gives sleep with locks held warning
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1149931638.3864.34.camel@johannes.berg>
+References: <1149020341.5128.7.camel@johannes>
+	<1149123574.15446.15.camel@localhost.localdomain>
+	<1149793098.11525.34.camel@johannes>
+	<1149897784.12687.87.camel@localhost.localdomain>
+	<1149931638.3864.34.camel@johannes.berg>
+Content-Type: text/plain
+Date: Sun, 11 Jun 2006 08:04:56 +1000
+Message-Id: <1149977097.12687.144.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sat, 2006-06-10 at 11:27 +0200, Johannes Berg wrote:
+> On Sat, 2006-06-10 at 10:03 +1000, Benjamin Herrenschmidt wrote:
+> 
+> > > I don't think your patch is right, it seems to me that now
+> > > pmf_unregister_irq_client races against pmf_do_irq: what happens when an
+> > > interrupt comes in right in the middle of the list_del()?
+> > 
+> > Yeah, possibly... too late for 2.6.17 tho.
+> 
+> That's ok, we don't have any in-kernel users anyway. Alas the alsa
+> people will be dissatisfied because they like to ship new drivers for
+> old kernels or something. Oh well, I don't care.
 
-On 10 Jun 2006, at 15:56, Martin J. Bligh wrote:
->
-> The non-PPC64 machines seem to have done a clean run for the first  
-> time
-> in a while ... yay!
->
+We still want people to build out-of-tree for 2.6.17 (please keep the
+git there for that), as it will take a while before 2.6.18 is here.
 
-Do you mean PowerBook G4 for example?
-I have a been unable to compile 2.6.17-rc6-mm2 on my PowerBook.
+The remaining possible bug in the pmf irq code is probably harmless in
+99.99% of the cases in practice :)
 
-As I, recently, reported here: http://lkml.org/lkml/2006/6/10/60
-
-Error is:
-CC      arch/powerpc/kernel/signal_32.o
-arch/powerpc/kernel/signal_32.c: In function ‘handle_rt_signal’:
-arch/powerpc/kernel/signal_32.c:763: error: request for member  
-‘vdso_base’ in
-something not a structure or union
-arch/powerpc/kernel/signal_32.c:766: error: request for member  
-‘vdso_base’ in
-something not a structure or union
-arch/powerpc/kernel/signal_32.c: In function ‘handle_signal’:
-arch/powerpc/kernel/signal_32.c:1037: error: request for member  
-‘vdso_base’ in
-something not a structure or union
-arch/powerpc/kernel/signal_32.c:1040: error: request for member  
-‘vdso_base’ in
-something not a structure or union
-make[1]: *** [arch/powerpc/kernel/signal_32.o] Error 1
-make: *** [arch/powerpc/kernel] Error 2
-
-Any ideas?
-Thanks,
-Felix
+Ben.
