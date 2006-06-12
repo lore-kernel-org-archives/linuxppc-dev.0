@@ -1,19 +1,24 @@
-Return-Path: <bcook@bpointsys.com>
-Received: from bpointsys.com (70-253-197-251.ded.swbell.net [70.253.197.251])
-	by ozlabs.org (Postfix) with ESMTP id 6E85267B15
+Return-Path: <stig@lizardlogic.co.uk>
+Received: from murano.lizardlogic.co.uk (unknown [195.10.246.108])
+	by ozlabs.org (Postfix) with ESMTP id 6A3BA67B1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 12 Jun 2006 23:30:42 +1000 (EST)
-From: Brent Cook <bcook@bpointsys.com>
+	Tue, 13 Jun 2006 03:19:03 +1000 (EST)
+Received: from [192.168.1.42] (horatio.newtec.dk [80.198.224.34])
+	by murano.lizardlogic.co.uk (Postfix) with ESMTP id 8C1721000BA
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 12 Jun 2006 17:57:28 +0100 (BST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <447F2C0E.1000306@xilinx.com>
+References: <EDF27F298D4B03498AE0C249A941DFF803D6E6@de01exm68.ds.mot.com>	
+	<447E1725.4010908@nicta.com.au> <447F1E48.10808@xilinx.com>
+	<528646bc0606011008o35096b43p42cc6aa9c0002f8c@mail.gmail.com>
+	<447F2C0E.1000306@xilinx.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3843e543d6792dd2752c060ad597194f@lizardlogic.co.uk>
+From: Stephen Telfer <stig@lizardlogic.co.uk>
+Subject: Re: Linux 2.4 Kernel on Xilinx Virtex4 FX100's PPC
+Date: Mon, 12 Jun 2006 17:57:27 +0100
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Jumbo ethernet frames on MVME6100
-Date: Mon, 12 Jun 2006 08:30:45 -0500
-References: <821B2170E9E7F04FA38DF7EC21DE487105550413@VCAEXCH01.hq.corp.viasat.com>
-In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE487105550413@VCAEXCH01.hq.corp.viasat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200606120830.45800.bcook@bpointsys.com>
-Cc: "Martin, Tim" <tim.martin@viasat.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +29,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 09 June 2006 19:57, Martin, Tim wrote:
-> I'm using Linux 2.6.6 with the Motorola Computer Group patch for the
-> MVME6100 available at
+I have been working on an FX60 part with PVR 0x20011430.  It has memory 
+attached to the PLB.  I have noticed some possible corruptions during 
+linux kernel boot that appear to follow a pattern.  If a variable is 
+stored immediately before a function call is made or returns, the 
+callee/caller when reading the value gets stale data.  Print the value 
+of the variable in-between and coherency returns.
+
+Does that sound like a known problem?  I went through the errata on 
+solution record 20658 but nothing looked like a good fit.  So I'm 
+assuming at the moment it's some stupid bug of my own...
+
+Any suggestions gratefully appreciated.
+
+Regards,
+Stig Telfer
+
+
+On 1 Jun 2006, at 19:03, Peter Ryser wrote:
+
+> It's a little bit more complicated than that but your statement is
+> basically correct.
 >
-> https://mcg.motorola.com/cfm/templates/swDetails.cfm?PageID=704&Software
-> ID=6&ProductID=202
+> - Peter
 >
-> and compiling with GCC from ELDK 3.1.1, although using the userspace
-> module utils (e.g. insmod) from ELDK 4.0.
-
-> The patch includes support for the Marvel gigabit ethernet part on the
-> board (MV64360?) which works for non-jumbo ethernet frames, but doesn't
-> receive (or even generate errors) if I send jumbo-ethernet frames.  I
-> haven't debugged this issue very long, but a cursory look through the
-> driver hints that jumbo frame support should be on (the port config
-> serial register PCSR has what I imagine to be okay bits).
 >
-> I'm ifconfiging the 2nd ethernet device with the command
-> ifconfig eth1 mtu 9000 192.168.1.1
+> Grant Likely wrote:
 >
-> I'm wondering if anyone else using an MVME6100 has gotten jumbo frame
-> support to work?
-
-I can say that the MV64x60 ethernet driver that got rolled into the mainline 
-kernel around the 2.6.11/12 timeframe does support jumbo frames for send and 
-receive. If that patch is anything like some patches I've seen for similar 
-products (based on old Marvel/Galileo reference code), I'd say your best-off 
-cherry-picking the HW-specific bits from the patch and trying to either 
-forward-port/add from scratch the board support to something >= 2.6.12 and 
-getting the improved MV64x60 support as a bonus, or backporting at least the 
-newer MV ethernet driver. Not only is the newer one _much_ simpler and easier 
-to read (like 3 or 4x shorter), but it would appear to work better as well.
-
-> Also, at what point did the Linux 2.6 kernel embedded PPC support start
-> working with GCC 4.x (e.g. GCC in ELDK 4.0).  I'm getting compiler
-> errors when I use GCC 4.x with this version of the kernel.
-
-No problems here with 2.6.11 through 17-rc6 on gcc 4.
-
- - Brent
+>> On 6/1/06, Peter Ryser <peter.ryser@xilinx.com> wrote:
+>>
+>>> There are some silicon issues on the PPC405 in V4 with PVR 0x20011430
+>>> which are documented in Xilinx solution record 20658. All these 
+>>> issues
+>>> are fixed in silicon where the PPC405 has a PVR of 0x20011470.
+>>>
+>>> Said that it's not true that the caches cannot be used in silicon 
+>>> with
+>>> PVR 0x20011430. The problem is a corner case which does not show in
+>>> typical designs.
+>>
+>>
+>> If I understand correctly, the cache issue only shows up with RAM
+>> attached to the OPB (instead of PLB).  Is that correct?
+>>
+>> Cheers,
+>> g.
+>>
+>>
+>
+>
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
