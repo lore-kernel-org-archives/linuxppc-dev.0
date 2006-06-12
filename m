@@ -1,14 +1,22 @@
-Return-Path: <jianfei616@hotmail.com>
-Message-ID: <BAY113-F3356266D183487A457F1AE988F0@phx.gbl>
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673026FD94A@zch01exm40.ap.freescale.net>
-From: "Guo Jaffe" <jianfei616@hotmail.com>
-To: DaveLiu@freescale.com
-Subject: RE: does Gianfar Ethernet Controller Version 1.1 support MARVELL
-	88E1111?
-Date: Mon, 12 Jun 2006 15:34:01 +0800
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: Linuxppc-embedded@ozlabs.org
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
+	by ozlabs.org (Postfix) with SMTP id E7A0B67A6F
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 12 Jun 2006 18:03:02 +1000 (EST)
+Received: from peko by sleipner.barco.com with local (Exim 4.60)
+	(envelope-from <jacmet@sunsite.dk>) id 1FphH2-0005l1-GE
+	for linuxppc-embedded@ozlabs.org; Mon, 12 Jun 2006 09:55:48 +0200
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Using RS232 Terminal as input device
+References: <OF62BECBA0.4F3D8E04-ONC1257185.00247B21-C1257185.002CC13C@rockwellcollins.com>
+	<Pine.LNX.4.60.0606070017490.3970@poirot.grange>
+Date: Mon, 12 Jun 2006 09:55:48 +0200
+In-Reply-To: <Pine.LNX.4.60.0606070017490.3970@poirot.grange> (Guennadi
+	Liakhovetski's message of "Sun, 11 Jun 2006 21:51:20 +0200")
+Message-ID: <8764j6n6yj.fsf@sleipner.barco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,46 +27,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Dave,
+>>>>> "Guennadi" == Guennadi Liakhovetski <g.liakhovetski@gmx.de> writes:
 
-"Do you have a low reset pulse to PHY before pull up the RSTn?"
-Yes, I do.
+Hi,
 
->From: Liu Dave-r63238 <DaveLiu@freescale.com>
->To: "'Guo Jaffe'" <jianfei616@hotmail.com>,        Fleming Andy-afleming 
-<afleming@freescale.com>
->CC: Linuxppc-embedded@ozlabs.org
->Subject: RE: does Gianfar Ethernet Controller Version 1.1 support MARVELL 
-88E1111?
->Date: Mon, 12 Jun 2006 12:46:15 +0800
->
-> >
-> > The PHY ID I read is MARVELL 88E1101(1410cc2)
-> >
->The MDIO bus is working well, the 88E1101's ID is 1410c6x,
->the 88E1111 is 1410ccx.
->
-> > Today I took the MPC 8540 off the board, and checked the two
-> > GMII phy chips
-> 
-> alone. I manually pulled up the phys's RST pins when the cable was in
-> > position. But the link LED still can't light up. So it turned
-> > out not the
-> > driver's problem.
-> >
->Do you have a low reset pulse to PHY before pull up the RSTn?
->
-> > The hardware configuration of 88E1111 is GMII to copper, Auto-Neg,
-> > advertise all capabilities, prefer Master.
-> >
-> > The PHY's power is correct and clean. And for interface
-> > between TESC and
-> > PHY I think even TESC power is set for 3.3V environment it
-> > still can work
-> > with the 88e1111 whose VDD is 2.5V. Because the datasheet of
-> > 88e1111 says
-> > that input pins are 3.3V tolerant. Am I right?
-> >
->You are right.
->
->-Dave
+Guennadi> Or, probably, an easier option - write a user-space daemon
+Guennadi> that reads from /dev/ttyS0 and sends events to uinput. With
+Guennadi> this you don't need any kernel drivers - just a user-space
+Guennadi> daemon.
+
+handhelds.org's kbdd is such a daemon. See
+http://handhelds.org/cgi-bin/cvsweb.cgi/apps/kbdd/
+
+-- 
+Bye, Peter Korsgaard
