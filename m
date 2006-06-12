@@ -1,24 +1,24 @@
-Return-Path: <stig@lizardlogic.co.uk>
-Received: from murano.lizardlogic.co.uk (unknown [195.10.246.108])
-	by ozlabs.org (Postfix) with ESMTP id 6A3BA67B1C
+Return-Path: <cdumoulin@ics-ltd.com>
+Received: from mx4-1.spamtrap.magma.ca (mx4-1.spamtrap.magma.ca
+	[209.217.78.176])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2DDCD67B21
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Jun 2006 03:19:03 +1000 (EST)
-Received: from [192.168.1.42] (horatio.newtec.dk [80.198.224.34])
-	by murano.lizardlogic.co.uk (Postfix) with ESMTP id 8C1721000BA
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 12 Jun 2006 17:57:28 +0100 (BST)
-Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <447F2C0E.1000306@xilinx.com>
-References: <EDF27F298D4B03498AE0C249A941DFF803D6E6@de01exm68.ds.mot.com>	
-	<447E1725.4010908@nicta.com.au> <447F1E48.10808@xilinx.com>
-	<528646bc0606011008o35096b43p42cc6aa9c0002f8c@mail.gmail.com>
-	<447F2C0E.1000306@xilinx.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3843e543d6792dd2752c060ad597194f@lizardlogic.co.uk>
-From: Stephen Telfer <stig@lizardlogic.co.uk>
-Subject: Re: Linux 2.4 Kernel on Xilinx Virtex4 FX100's PPC
-Date: Mon, 12 Jun 2006 17:57:27 +0100
+	Tue, 13 Jun 2006 05:57:13 +1000 (EST)
+Received: from mail2.magma.ca (mail2.internal.magma.ca [10.0.10.12])
+	by mx4-1.spamtrap.magma.ca (8.13.1/8.13.1) with ESMTP id k5CJv96F005443
+	for <linuxppc-embedded@ozlabs.org>; Mon, 12 Jun 2006 15:57:09 -0400
+Received: from [192.9.200.213] ([64.26.174.130]) (authenticated bits=0)
+	by mail2.magma.ca (Magma's Mail Server) with ESMTP id k5CJv6P9026142
+	for <linuxppc-embedded@ozlabs.org>; Mon, 12 Jun 2006 15:57:08 -0400
+Message-ID: <448DC718.1010700@ics-ltd.com>
+Date: Mon, 12 Jun 2006 15:57:12 -0400
+From: Chris Dumoulin <cdumoulin@ics-ltd.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
+Subject: How to determine IRQ w/ PPC045 (Virtex II Pro)?
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,57 +29,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have been working on an FX60 part with PVR 0x20011430.  It has memory 
-attached to the PLB.  I have noticed some possible corruptions during 
-linux kernel boot that appear to follow a pattern.  If a variable is 
-stored immediately before a function call is made or returns, the 
-callee/caller when reading the value gets stale data.  Print the value 
-of the variable in-between and coherency returns.
-
-Does that sound like a known problem?  I went through the errata on 
-solution record 20658 but nothing looked like a good fit.  So I'm 
-assuming at the moment it's some stupid bug of my own...
-
-Any suggestions gratefully appreciated.
+When writing device drivers for a 2.6 linux kernel running on a PPC405, 
+in a Virtex II Pro, how do I determine which IRQ to use in my call to 
+request_irq? I imagine that the IRQ will be directly dependent on how my 
+device's interrupt is connected to the interrupt controller I'm using, 
+but I don't know how to figure out the IRQ number. Any help would be 
+appreciated.
 
 Regards,
-Stig Telfer
+Chris Dumoulin
+-- 
+*--Christopher Dumoulin--*
+Software Team Leader
 
+<http://ics-ltd.com/>
+<http://ics-ltd.com/>
 
-On 1 Jun 2006, at 19:03, Peter Ryser wrote:
+Interactive Circuits and Systems Ltd.
+5430 Canotek Road
+Ottawa, ON
+K1J 9G2
+(613)749-9241
+1-800-267-9794 (USA only)
 
-> It's a little bit more complicated than that but your statement is
-> basically correct.
->
-> - Peter
->
->
-> Grant Likely wrote:
->
->> On 6/1/06, Peter Ryser <peter.ryser@xilinx.com> wrote:
->>
->>> There are some silicon issues on the PPC405 in V4 with PVR 0x20011430
->>> which are documented in Xilinx solution record 20658. All these 
->>> issues
->>> are fixed in silicon where the PPC405 has a PVR of 0x20011470.
->>>
->>> Said that it's not true that the caches cannot be used in silicon 
->>> with
->>> PVR 0x20011430. The problem is a corner case which does not show in
->>> typical designs.
->>
->>
->> If I understand correctly, the cache issue only shows up with RAM
->> attached to the OPB (instead of PLB).  Is that correct?
->>
->> Cheers,
->> g.
->>
->>
->
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+------------------------------------------------------------------------
+This e-mail is private and confidential and is for the addressee only. 
+If misdirected, please notify us by telephone and confirm that it has 
+been deleted from your system and any hard copies destroyed. You are 
+strictly prohibited from using, printing, distributing or disseminating 
+it or any information contained in it save to the intended recipient.
