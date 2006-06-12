@@ -1,19 +1,16 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 2C3A267B1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 00:42:56 +1000 (EST)
-Date: Mon, 12 Jun 2006 16:42:54 +0200
-Message-ID: <20060612144254.305930@gmx.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <s5hbqsyd4uz.wl%tiwai@suse.de>
-References: <20060610082223.321730@gmx.net> <s5hbqsyd4uz.wl%tiwai@suse.de>
-Subject: Re: Re: RFC: dma_mmap_coherent() for powerpc/ppc architecture and
-	ALSA?
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linuxppc-dev@ozlabs.org, rlrevell@joe-job.com,
-	alsa-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-Path: <pnasrat@redhat.com>
+Subject: Re: [PATCH] yaboot: enable boot from iscsi target via ethernet
+	devices on js20.
+From: Paul Nasrat <pnasrat@redhat.com>
+To: Doug Maxey <dwm@austin.ibm.com>
+In-Reply-To: <200606012056.k51KuUOP008931@falcon10.austin.ibm.com>
+References: <200604280605.k3S65tjv012348@bebe.enoyolf.org>
+	<200606012056.k51KuUOP008931@falcon10.austin.ibm.com>
+Content-Type: text/plain
+Date: Mon, 12 Jun 2006 10:46:38 -0400
+Message-Id: <1150123598.30925.9.camel@enki.eridu>
+Mime-Version: 1.0
+Cc: yaboot-devel@ozlabs.org, Linux PowerPC List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2006-06-01 at 15:56 -0500, Doug Maxey wrote:
+> On Tue, 16 May 2006 15:40:30 CDT, Doug Maxey wrote:
 
-> -------- Original-Nachricht --------
-> Datum: Mon, 12 Jun 2006 12:51:16 +0200
-> Von: Takashi Iwai <tiwai@suse.de>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> Betreff: Re: RFC: dma_mmap_coherent() for powerpc/ppc architecture and
-> ALSA?
+> >>Is the , always guaranteed to be there - eg if I have boot
+> >>eth1:iscsi,ISCSIARGS  won't this check fail.
+> >
+> >Yes, with the above command line this would fail. 
+> >
+> >My point of reference are the bindings that we cannot yet talk about 
+> >here, yet.  The device args would always be followed by a comma.  I suppose 
+> >that we could just reference the string "iscsi", but then some wag 
+> >would want to create some other property that included "iscsi" as a 
+> >substring.  Maybe append a comma?
 > 
-> > Well, implementing the dma_mmap_coherent() function isn't the
-> > problem, because it is already implemented for the ARM
-> > architecture.
+> Any preferences on this?  
+
+Both are kind of messy
+
+> I have another, more radical solution.  
 > 
-> Actually, I wrote dma_coherent_mmap patch long time ago but it has
-> been left forgotten.  The patch attached below seems applicable to
-> 2.6.17 tree, but I'm not sure whether it still works properly.
-> It's untested on most of architectures.
+> Adding a parser that understands the full device path and that can 
+> return the elements neatly packaged.  Film at 11. 
 
-Thanks, that helps me a lot!
+This sounds to be the better way to do things - and is probably more
+generally useful for other node types. Do you have any ideas on this?
 
-> > But as far as I understand this would require a rewrite of all the
-> > ALSA drivers (or at least a rewrite of the ALSA's DMA helper
-> > functions).
-> 
-> Yes.  The change of ALSA side has been also on my tree.  But it was
-> still pending since I'm not satisfied with the design yet.
-> If you're interested in it, let me know.  I'll post the patch.
-
-Yes, please! Then I can test, if the dma_mmap_coherent() patch works on
-my non cache coherent powerpc machine. Do you think the DMA Layer/ALSA patches will go upstream in one of the next ALSA/Linux kernel versions?
-
-Thanks!
-
-Gerhard
-
--- 
-
-
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+Paul
