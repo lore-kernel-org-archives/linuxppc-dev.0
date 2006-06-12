@@ -1,16 +1,43 @@
-Return-Path: <pnasrat@redhat.com>
-Subject: Re: [PATCH] yaboot: enable boot from iscsi target via ethernet
-	devices on js20.
-From: Paul Nasrat <pnasrat@redhat.com>
-To: Doug Maxey <dwm@austin.ibm.com>
-In-Reply-To: <200606012056.k51KuUOP008931@falcon10.austin.ibm.com>
-References: <200604280605.k3S65tjv012348@bebe.enoyolf.org>
-	<200606012056.k51KuUOP008931@falcon10.austin.ibm.com>
+Return-Path: <johnrose@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B9BC467B1F
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 02:19:13 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k5CGJ8Ms008512
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jun 2006 12:19:08 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k5CGIvlB186228
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jun 2006 10:18:57 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k5CGJ8Qu005370
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jun 2006 10:19:08 -0600
+Subject: Re: [PATCH] reorg RTAS delay code
+From: John Rose <johnrose@austin.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+In-Reply-To: <20060610020805.GG23891@krispykreme>
+References: <1149103929.2524.8.camel@sinatra.austin.ibm.com>
+	<1149139866.28307.32.camel@localhost.localdomain>
+	<1149177349.9812.16.camel@sinatra.austin.ibm.com>
+	<1149200718.15158.0.camel@sinatra.austin.ibm.com>
+	<1149280229.18052.3.camel@sinatra.austin.ibm.com>
+	<20060602213308.GP8934@localdomain>
+	<1149543108.17307.6.camel@sinatra.austin.ibm.com>
+	<20060610020453.GF23891@krispykreme>
+	<20060610020805.GG23891@krispykreme>
 Content-Type: text/plain
-Date: Mon, 12 Jun 2006 10:46:38 -0400
-Message-Id: <1150123598.30925.9.camel@enki.eridu>
+Message-Id: <1150129100.26374.5.camel@sinatra.austin.ibm.com>
 Mime-Version: 1.0
-Cc: yaboot-devel@ozlabs.org, Linux PowerPC List <linuxppc-dev@ozlabs.org>
+Date: Mon, 12 Jun 2006 11:18:20 -0500
+Cc: Paul Mackerras <paulus@samba.org>, Nathan Lynch <ntl@pobox.com>,
+	External List <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,30 +47,357 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-06-01 at 15:56 -0500, Doug Maxey wrote:
-> On Tue, 16 May 2006 15:40:30 CDT, Doug Maxey wrote:
 
-> >>Is the , always guaranteed to be there - eg if I have boot
-> >>eth1:iscsi,ISCSIARGS  won't this check fail.
-> >
-> >Yes, with the above command line this would fail. 
-> >
-> >My point of reference are the bindings that we cannot yet talk about 
-> >here, yet.  The device args would always be followed by a comma.  I suppose 
-> >that we could just reference the string "iscsi", but then some wag 
-> >would want to create some other property that included "iscsi" as a 
-> >substring.  Maybe append a comma?
-> 
-> Any preferences on this?  
+This patch attempts to handle RTAS "busy" return codes in a more simple
+and consistent manner.  Typical callers of RTAS shouldn't have to
+manage wait times and delay calls.
 
-Both are kind of messy
+This patch also changes the kernel to use msleep() rather than udelay()
+when a runtime delay is necessary.  This will avoid CPU soft lockups
+for extended delay conditions.
 
-> I have another, more radical solution.  
-> 
-> Adding a parser that understands the full device path and that can 
-> return the elements neatly packaged.  Film at 11. 
+Signed-off-by: John Rose <johnrose@austin.ibm.com>
 
-This sounds to be the better way to do things - and is probably more
-generally useful for other node types. Do you have any ideas on this?
+---
 
-Paul
+Resend - Addressed module build breaks.  Thanks Anton.
+
+Thanks-
+John
+
+---
+
+ 2_6_linus-johnrose/arch/powerpc/kernel/rtas-rtc.c           |   30 ++--
+ 2_6_linus-johnrose/arch/powerpc/kernel/rtas.c               |   86 +++++-------
+ 2_6_linus-johnrose/arch/powerpc/kernel/rtas_flash.c         |   25 ---
+ 2_6_linus-johnrose/arch/powerpc/platforms/pseries/scanlog.c |    6 
+ 2_6_linus-johnrose/include/asm-powerpc/rtas.h               |    8 -
+ 5 files changed, 61 insertions(+), 94 deletions(-)
+
+diff -puN arch/powerpc/kernel/rtas-rtc.c~rtas_delay_reorg arch/powerpc/kernel/rtas-rtc.c
+--- 2_6_linus/arch/powerpc/kernel/rtas-rtc.c~rtas_delay_reorg	2006-06-12 11:21:29.000000000 -0500
++++ 2_6_linus-johnrose/arch/powerpc/kernel/rtas-rtc.c	2006-06-12 11:21:29.000000000 -0500
+@@ -14,19 +14,20 @@
+ unsigned long __init rtas_get_boot_time(void)
+ {
+ 	int ret[8];
+-	int error, wait_time;
++	int error;
++	unsigned int wait_time;
+ 	u64 max_wait_tb;
+ 
+ 	max_wait_tb = get_tb() + tb_ticks_per_usec * 1000 * MAX_RTC_WAIT;
+ 	do {
+ 		error = rtas_call(rtas_token("get-time-of-day"), 0, 8, ret);
+-		if (error == RTAS_CLOCK_BUSY || rtas_is_extended_busy(error)) {
+-			wait_time = rtas_extended_busy_delay_time(error);
++
++		wait_time = rtas_busy_delay_time(error);
++		if (wait_time) {
+ 			/* This is boot time so we spin. */
+ 			udelay(wait_time*1000);
+-			error = RTAS_CLOCK_BUSY;
+ 		}
+-	} while (error == RTAS_CLOCK_BUSY && (get_tb() < max_wait_tb));
++	} while (wait_time && (get_tb() < max_wait_tb));
+ 
+ 	if (error != 0 && printk_ratelimit()) {
+ 		printk(KERN_WARNING "error: reading the clock failed (%d)\n",
+@@ -44,24 +45,25 @@ unsigned long __init rtas_get_boot_time(
+ void rtas_get_rtc_time(struct rtc_time *rtc_tm)
+ {
+         int ret[8];
+-	int error, wait_time;
++	int error;
++	unsigned int wait_time;
+ 	u64 max_wait_tb;
+ 
+ 	max_wait_tb = get_tb() + tb_ticks_per_usec * 1000 * MAX_RTC_WAIT;
+ 	do {
+ 		error = rtas_call(rtas_token("get-time-of-day"), 0, 8, ret);
+-		if (error == RTAS_CLOCK_BUSY || rtas_is_extended_busy(error)) {
++
++		wait_time = rtas_busy_delay_time(error);
++		if (wait_time) {
+ 			if (in_interrupt() && printk_ratelimit()) {
+ 				memset(rtc_tm, 0, sizeof(struct rtc_time));
+ 				printk(KERN_WARNING "error: reading clock"
+ 				       " would delay interrupt\n");
+ 				return;	/* delay not allowed */
+ 			}
+-			wait_time = rtas_extended_busy_delay_time(error);
+ 			msleep(wait_time);
+-			error = RTAS_CLOCK_BUSY;
+ 		}
+-	} while (error == RTAS_CLOCK_BUSY && (get_tb() < max_wait_tb));
++	} while (wait_time && (get_tb() < max_wait_tb));
+ 
+         if (error != 0 && printk_ratelimit()) {
+                 printk(KERN_WARNING "error: reading the clock failed (%d)\n",
+@@ -88,14 +90,14 @@ int rtas_set_rtc_time(struct rtc_time *t
+ 				  tm->tm_year + 1900, tm->tm_mon + 1,
+ 				  tm->tm_mday, tm->tm_hour, tm->tm_min,
+ 				  tm->tm_sec, 0);
+-		if (error == RTAS_CLOCK_BUSY || rtas_is_extended_busy(error)) {
++
++		wait_time = rtas_busy_delay_time(error);
++		if (wait_time) {
+ 			if (in_interrupt())
+ 				return 1;	/* probably decrementer */
+-			wait_time = rtas_extended_busy_delay_time(error);
+ 			msleep(wait_time);
+-			error = RTAS_CLOCK_BUSY;
+ 		}
+-	} while (error == RTAS_CLOCK_BUSY && (get_tb() < max_wait_tb));
++	} while (wait_time && (get_tb() < max_wait_tb));
+ 
+         if (error != 0 && printk_ratelimit())
+                 printk(KERN_WARNING "error: setting the clock failed (%d)\n",
+diff -puN arch/powerpc/kernel/rtas.c~rtas_delay_reorg arch/powerpc/kernel/rtas.c
+--- 2_6_linus/arch/powerpc/kernel/rtas.c~rtas_delay_reorg	2006-06-12 11:21:29.000000000 -0500
++++ 2_6_linus-johnrose/arch/powerpc/kernel/rtas.c	2006-06-12 11:21:29.000000000 -0500
+@@ -370,24 +370,36 @@ int rtas_call(int token, int nargs, int 
+ 	return ret;
+ }
+ 
+-/* Given an RTAS status code of 990n compute the hinted delay of 10^n
+- * (last digit) milliseconds.  For now we bound at n=5 (100 sec).
++/* For RTAS_BUSY (-2), delay for 1 millisecond.  For an extended busy status
++ * code of 990n, perform the hinted delay of 10^n (last digit) milliseconds.
+  */
+-unsigned int rtas_extended_busy_delay_time(int status)
++unsigned int rtas_busy_delay_time(int status)
+ {
+-	int order = status - 9900;
+-	unsigned long ms;
++	int order;
++	unsigned int ms = 0;
+ 
+-	if (order < 0)
+-		order = 0;	/* RTC depends on this for -2 clock busy */
+-	else if (order > 5)
+-		order = 5;	/* bound */
++	if (status == RTAS_BUSY) {
++		ms = 1;
++	} else if (status >= 9900 && status <= 9905) {
++		order = status - 9900;
++		for (ms = 1; order > 0; order--)
++			ms *= 10;
++	}
++
++	return ms;
++}
++
++/* For an RTAS busy status code, perform the hinted delay. */
++unsigned int rtas_busy_delay(int status)
++{
++	unsigned int ms;
+ 
+-	/* Use microseconds for reasonable accuracy */
+-	for (ms = 1; order > 0; order--)
+-		ms *= 10;
++	might_sleep();
++	ms = rtas_busy_delay_time(status);
++	if (ms)
++		msleep(ms);
+ 
+-	return ms; 
++	return ms;
+ }
+ 
+ int rtas_error_rc(int rtas_rc)
+@@ -438,22 +450,14 @@ int rtas_get_power_level(int powerdomain
+ int rtas_set_power_level(int powerdomain, int level, int *setlevel)
+ {
+ 	int token = rtas_token("set-power-level");
+-	unsigned int wait_time;
+ 	int rc;
+ 
+ 	if (token == RTAS_UNKNOWN_SERVICE)
+ 		return -ENOENT;
+ 
+-	while (1) {
++	do {
+ 		rc = rtas_call(token, 2, 2, setlevel, powerdomain, level);
+-		if (rc == RTAS_BUSY)
+-			udelay(1);
+-		else if (rtas_is_extended_busy(rc)) {
+-			wait_time = rtas_extended_busy_delay_time(rc);
+-			udelay(wait_time * 1000);
+-		} else
+-			break;
+-	}
++	} while (rtas_busy_delay(rc));
+ 
+ 	if (rc < 0)
+ 		return rtas_error_rc(rc);
+@@ -463,22 +467,14 @@ int rtas_set_power_level(int powerdomain
+ int rtas_get_sensor(int sensor, int index, int *state)
+ {
+ 	int token = rtas_token("get-sensor-state");
+-	unsigned int wait_time;
+ 	int rc;
+ 
+ 	if (token == RTAS_UNKNOWN_SERVICE)
+ 		return -ENOENT;
+ 
+-	while (1) {
++	do {
+ 		rc = rtas_call(token, 2, 2, state, sensor, index);
+-		if (rc == RTAS_BUSY)
+-			udelay(1);
+-		else if (rtas_is_extended_busy(rc)) {
+-			wait_time = rtas_extended_busy_delay_time(rc);
+-			udelay(wait_time * 1000);
+-		} else
+-			break;
+-	}
++	} while (rtas_busy_delay(rc));
+ 
+ 	if (rc < 0)
+ 		return rtas_error_rc(rc);
+@@ -488,23 +484,14 @@ int rtas_get_sensor(int sensor, int inde
+ int rtas_set_indicator(int indicator, int index, int new_value)
+ {
+ 	int token = rtas_token("set-indicator");
+-	unsigned int wait_time;
+ 	int rc;
+ 
+ 	if (token == RTAS_UNKNOWN_SERVICE)
+ 		return -ENOENT;
+ 
+-	while (1) {
++	do {
+ 		rc = rtas_call(token, 3, 1, NULL, indicator, index, new_value);
+-		if (rc == RTAS_BUSY)
+-			udelay(1);
+-		else if (rtas_is_extended_busy(rc)) {
+-			wait_time = rtas_extended_busy_delay_time(rc);
+-			udelay(wait_time * 1000);
+-		}
+-		else
+-			break;
+-	}
++	} while (rtas_busy_delay(rc));
+ 
+ 	if (rc < 0)
+ 		return rtas_error_rc(rc);
+@@ -555,13 +542,11 @@ void rtas_os_term(char *str)
+ 	do {
+ 		status = rtas_call(rtas_token("ibm,os-term"), 1, 1, NULL,
+ 				   __pa(rtas_os_term_buf));
++	} while (rtas_busy_delay(status));
+ 
+-		if (status == RTAS_BUSY)
+-			udelay(1);
+-		else if (status != 0)
+-			printk(KERN_EMERG "ibm,os-term call failed %d\n",
++	if (status != 0)
++		printk(KERN_EMERG "ibm,os-term call failed %d\n",
+ 			       status);
+-	} while (status == RTAS_BUSY);
+ }
+ 
+ static int ibm_suspend_me_token = RTAS_UNKNOWN_SERVICE;
+@@ -789,7 +774,8 @@ EXPORT_SYMBOL(rtas_token);
+ EXPORT_SYMBOL(rtas_call);
+ EXPORT_SYMBOL(rtas_data_buf);
+ EXPORT_SYMBOL(rtas_data_buf_lock);
+-EXPORT_SYMBOL(rtas_extended_busy_delay_time);
++EXPORT_SYMBOL(rtas_busy_delay);
++EXPORT_SYMBOL(rtas_busy_delay_time);
+ EXPORT_SYMBOL(rtas_get_sensor);
+ EXPORT_SYMBOL(rtas_get_power_level);
+ EXPORT_SYMBOL(rtas_set_power_level);
+diff -puN arch/powerpc/kernel/rtas_flash.c~rtas_delay_reorg arch/powerpc/kernel/rtas_flash.c
+--- 2_6_linus/arch/powerpc/kernel/rtas_flash.c~rtas_delay_reorg	2006-06-12 11:21:29.000000000 -0500
++++ 2_6_linus-johnrose/arch/powerpc/kernel/rtas_flash.c	2006-06-12 11:21:29.000000000 -0500
+@@ -365,20 +365,12 @@ static int rtas_excl_release(struct inod
+ 
+ static void manage_flash(struct rtas_manage_flash_t *args_buf)
+ {
+-	unsigned int wait_time;
+ 	s32 rc;
+ 
+-	while (1) {
++	do {
+ 		rc = rtas_call(rtas_token("ibm,manage-flash-image"), 1, 
+ 			       1, NULL, args_buf->op);
+-		if (rc == RTAS_RC_BUSY)
+-			udelay(1);
+-		else if (rtas_is_extended_busy(rc)) {
+-			wait_time = rtas_extended_busy_delay_time(rc);
+-			udelay(wait_time * 1000);
+-		} else
+-			break;
+-	}
++	} while (rtas_busy_delay(rc));
+ 
+ 	args_buf->status = rc;
+ }
+@@ -451,27 +443,18 @@ static ssize_t manage_flash_write(struct
+ static void validate_flash(struct rtas_validate_flash_t *args_buf)
+ {
+ 	int token = rtas_token("ibm,validate-flash-image");
+-	unsigned int wait_time;
+ 	int update_results;
+ 	s32 rc;	
+ 
+ 	rc = 0;
+-	while(1) {
++	do {
+ 		spin_lock(&rtas_data_buf_lock);
+ 		memcpy(rtas_data_buf, args_buf->buf, VALIDATE_BUF_SIZE);
+ 		rc = rtas_call(token, 2, 2, &update_results, 
+ 			       (u32) __pa(rtas_data_buf), args_buf->buf_size);
+ 		memcpy(args_buf->buf, rtas_data_buf, VALIDATE_BUF_SIZE);
+ 		spin_unlock(&rtas_data_buf_lock);
+-			
+-		if (rc == RTAS_RC_BUSY)
+-			udelay(1);
+-		else if (rtas_is_extended_busy(rc)) {
+-			wait_time = rtas_extended_busy_delay_time(rc);
+-			udelay(wait_time * 1000);
+-		} else
+-			break;
+-	}
++	} while (rtas_busy_delay(rc));
+ 
+ 	args_buf->status = rc;
+ 	args_buf->update_results = update_results;
+diff -puN include/asm-powerpc/rtas.h~rtas_delay_reorg include/asm-powerpc/rtas.h
+--- 2_6_linus/include/asm-powerpc/rtas.h~rtas_delay_reorg	2006-06-12 11:21:29.000000000 -0500
++++ 2_6_linus-johnrose/include/asm-powerpc/rtas.h	2006-06-12 11:21:29.000000000 -0500
+@@ -177,12 +177,8 @@ extern unsigned long rtas_get_boot_time(
+ extern void rtas_get_rtc_time(struct rtc_time *rtc_time);
+ extern int rtas_set_rtc_time(struct rtc_time *rtc_time);
+ 
+-/* Given an RTAS status code of 9900..9905 compute the hinted delay */
+-unsigned int rtas_extended_busy_delay_time(int status);
+-static inline int rtas_is_extended_busy(int status)
+-{
+-	return status >= 9900 && status <= 9909;
+-}
++extern unsigned int rtas_busy_delay_time(int status);
++extern unsigned int rtas_busy_delay(int status);
+ 
+ extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
+ 
+diff -puN arch/powerpc/platforms/pseries/scanlog.c~rtas_delay_reorg arch/powerpc/platforms/pseries/scanlog.c
+--- 2_6_linus/arch/powerpc/platforms/pseries/scanlog.c~rtas_delay_reorg	2006-06-12 11:21:29.000000000 -0500
++++ 2_6_linus-johnrose/arch/powerpc/platforms/pseries/scanlog.c	2006-06-12 11:21:29.000000000 -0500
+@@ -107,9 +107,9 @@ static ssize_t scanlog_read(struct file 
+ 			/* Break to sleep default time */
+ 			break;
+ 		    default:
+-			if (status > 9900 && status <= 9905) {
+-				wait_time = rtas_extended_busy_delay_time(status);
+-			} else {
++			/* Assume extended busy */
++			wait_time = rtas_busy_delay_time(status);
++			if (!wait_time) {
+ 				printk(KERN_ERR "scanlog: unknown error from rtas: %d\n", status);
+ 				return -EIO;
+ 			}
+
+_
