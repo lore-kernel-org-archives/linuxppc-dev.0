@@ -1,11 +1,26 @@
-Return-Path: <boutcher@cs.umn.edu>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 3533967B31
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 15:39:51 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k5D5oTaH024419
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jun 2006 22:50:29 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k5D5dlpn024973
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 00:39:49 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD4673069C3C3D@zch01exm40.ap.freescale.net>
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: RE: [PATCH/2.6.17-rc4 8/10]  Add  tsi108 8250 serial support
+Date: Tue, 13 Jun 2006 13:39:46 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17550.2960.198776.598118@hound.rchland.ibm.com>
-Date: Mon, 12 Jun 2006 19:49:20 -0500
-To: linuxppc64-dev@ozlabs.org
-Subject: [PATCH] powerpc: check firmware state before suspending
-From: boutcher@cs.umn.edu (Dave C Boutcher)
+Content-Type: text/plain
+Cc: Alexandre.Bounine@tundra.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, linux-serial@vger.kernel.org,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,96 +30,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> > 
+> > On May 17, 2006, at 5:14 AM, Zang Roy-r61911 wrote:
+> > 
+> > > This patch contains changes to the serial device driver 
+> specific for 
+> > > integrated serial port in Tsi108 Host Bridge.
+> 
+> There's no explaination about why this is required.  What is 
+> the problem?
+> Which changes relate directly to this problem and which 
+> changes are related to fixing some other issue not related to 
+> the errata?
+> 
+> Plus, every patch line is prefixed by "> "... patch doesn't like that.
 
-Currently the kernel blindly halts all the processors and calls the
-ibm,suspend-me rtas call.  If the firmware is not in the correct
-state, we then re-start all the processors and return.  It is much
-smarter to first check the firmware state, and only if it is waiting,
-call the ibm,suspend-me call.
+The reason is that the serial port on tsi108/9 is a bit difference with the 
+standard 8250 serial port. the patch deal with the difference.
+The prefixed ">" is caused by "Fw" the email. Sorry for that. The following 
+is the original patch.
 
----
+Signed-off-by: Alexandre Bounine <alexandreb@tundra.com>
+Signed-off-by: Roy Zang	<tie-fei.zang@freescale.com>
 
- arch/powerpc/kernel/rtas.c   |   22 ++++++++++++++++++++++
- include/asm-powerpc/hvcall.h |   10 ++++++++++
- include/asm-powerpc/rtas.h   |    1 +
- 3 files changed, 33 insertions(+), 0 deletions(-)
+ drivers/serial/8250.c |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
-579349d70b1395df6a139a0d1bc66b55ebc7a050
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 13496f3..fd15e3e 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -593,9 +593,31 @@ out:
- static int rtas_ibm_suspend_me(struct rtas_args *args)
- {
- 	int i;
-+	long state;
-+	long rc;
-+	unsigned long dummy;
+6cb950357e9970afa671d59f172dbc4b03f11560
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c index bbf78aa..c12f516 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -723,7 +723,9 @@ static int broken_efr(struct uart_8250_p  static void autoconfig_16550a(struct uart_8250_port *up)  {
+ 	unsigned char status1, status2;
++#ifndef CONFIG_TSI108_BRIDGE
+ 	unsigned int iersave;
++#endif
  
- 	struct rtas_suspend_me_data data;
+ 	up->port.type = PORT_16550A;
+ 	up->capabilities |= UART_CAP_FIFO;
+@@ -833,6 +835,7 @@ static void autoconfig_16550a(struct uar
+ 	 * trying to write and read a 1 just to make sure it's not
+ 	 * already a 1 and maybe locked there before we even start start.
+ 	 */
++#ifndef CONFIG_TSI108_BRIDGE
+ 	iersave = serial_in(up, UART_IER);
+ 	serial_outp(up, UART_IER, iersave & ~UART_IER_UUE);
+ 	if (!(serial_in(up, UART_IER) & UART_IER_UUE)) { @@ -859,6 +862,7 @@ static void autoconfig_16550a(struct uar
+ 		DEBUG_AUTOCONF("Couldn't force IER_UUE to 0 ");
+ 	}
+ 	serial_outp(up, UART_IER, iersave);
++#endif
+ }
  
-+	/* Make sure the state is valid */
-+	rc = plpar_hcall(H_VASI_STATE,
-+			 ((u64)args->args[0] << 32) | args->args[1],
-+			 0, 0, 0,
-+			 &state, &dummy, &dummy);
-+
-+	if (rc) {
-+		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned %ld\n",rc);
-+		return rc;
-+	} else if (state == H_VASI_ENABLED) {
-+		args->args[args->nargs] = RTAS_NOT_SUSPENDABLE;
-+		return 0;
-+	} else if (state != H_VASI_SUSPENDING) {
-+		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned state %ld\n",
-+		       state);
-+		args->args[args->nargs] = -1;
-+		return 0;
-+	}
-+
- 	data.waiting = 1;
- 	data.args = args;
+ /*
+@@ -1348,7 +1352,12 @@ static irqreturn_t serial8250_interrupt(
  
-diff --git a/include/asm-powerpc/hvcall.h b/include/asm-powerpc/hvcall.h
-index 6cc7e1f..0d3c4e8 100644
---- a/include/asm-powerpc/hvcall.h
-+++ b/include/asm-powerpc/hvcall.h
-@@ -102,6 +102,15 @@
- #define H_PP1			(1UL<<(63-62))
- #define H_PP2			(1UL<<(63-63))
+ 		up = list_entry(l, struct uart_8250_port, list);
  
-+/* VASI States */
-+#define H_VASI_INVALID          0
-+#define H_VASI_ENABLED          1
-+#define H_VASI_ABORTED          2
-+#define H_VASI_SUSPENDING       3
-+#define H_VASI_SUSPENDED        4
-+#define H_VASI_RESUMED          5
-+#define H_VASI_COMPLETED        6
-+
- /* DABRX flags */
- #define H_DABRX_HYPERVISOR	(1UL<<(63-61))
- #define H_DABRX_KERNEL		(1UL<<(63-62))
-@@ -190,6 +199,7 @@
- #define H_QUERY_INT_STATE       0x1E4
- #define H_POLL_PENDING		0x1D8
- #define H_JOIN			0x298
-+#define H_VASI_STATE            0x2A4
- #define H_ENABLE_CRQ		0x2B0
++#ifdef CONFIG_TSI108_BRIDGE /* for TSI108_REV_Z1 errata U2 */
++		/* read IIR as part of 32-bit word */
++		iir = (in_be32((u32 *)(up->port.membase + UART_RX)) >> 8) & 0xff; 
++#else
+ 		iir = serial_in(up, UART_IIR);
++#endif
+ 		if (!(iir & UART_IIR_NO_INT)) {
+ 			serial8250_handle_port(up, regs);
  
- #ifndef __ASSEMBLY__
-diff --git a/include/asm-powerpc/rtas.h b/include/asm-powerpc/rtas.h
-index a3b4e55..02e213e 100644
---- a/include/asm-powerpc/rtas.h
-+++ b/include/asm-powerpc/rtas.h
-@@ -24,6 +24,7 @@
- #define RTAS_RMOBUF_MAX (64 * 1024)
+@@ -1529,7 +1538,9 @@ static int serial8250_startup(struct uar  {
+ 	struct uart_8250_port *up = (struct uart_8250_port *)port;
+ 	unsigned long flags;
++#ifndef CONFIG_TSI108_BRIDGE
+ 	unsigned char lsr, iir;
++#endif
+ 	int retval;
  
- /* RTAS return status codes */
-+#define RTAS_NOT_SUSPENDABLE	-9004
- #define RTAS_BUSY		-2    /* RTAS Busy */
- #define RTAS_EXTENDED_DELAY_MIN	9900
- #define RTAS_EXTENDED_DELAY_MAX	9905
--- 
-1.2.4.gc98264
+ 	up->capabilities = uart_config[up->port.type].flags; @@ -1567,7 +1578,9 @@ #endif
+ 	 */
+ 	(void) serial_inp(up, UART_LSR);
+ 	(void) serial_inp(up, UART_RX);
++#ifndef CONFIG_TSI108_BRIDGE /* for TSI108_REV_Z1 errata U2 */
+ 	(void) serial_inp(up, UART_IIR);
++#endif
+ 	(void) serial_inp(up, UART_MSR);
+ 
+ 	/*
+@@ -1634,6 +1647,7 @@ #endif
+ 
+ 	serial8250_set_mctrl(&up->port, up->port.mctrl);
+ 
++#ifndef CONFIG_TSI108_BRIDGE
+ 	/*
+ 	 * Do a quick test to see if we receive an
+ 	 * interrupt when we enable the TX irq.
+@@ -1652,6 +1666,7 @@ #endif
+ 	} else {
+ 		up->bugs &= ~UART_BUG_TXEN;
+ 	}
++#endif
+ 
+ 	spin_unlock_irqrestore(&up->port.lock, flags);
+ 
+@@ -1678,7 +1693,9 @@ #endif
+ 	 */
+ 	(void) serial_inp(up, UART_LSR);
+ 	(void) serial_inp(up, UART_RX);
++#ifndef CONFIG_TSI108_BRIDGE /* for TSI108_REV_Z1 errata U2 */
+ 	(void) serial_inp(up, UART_IIR);
++#endif
+ 	(void) serial_inp(up, UART_MSR);
+ 
+ 	return 0;
+--
+1.3.0
