@@ -1,18 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17551.20066.365036.256580@cargo.ozlabs.ibm.com>
-Date: Wed, 14 Jun 2006 09:46:42 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: 32 bit userland on G5
-In-Reply-To: <1150241510.11159.159.camel@shinybook.infradead.org>
-References: <1150194348.9208.33.camel@johannes>
-	<1150202709.12423.21.camel@hades.cambridge.redhat.com>
-	<17551.16830.186314.247458@cargo.ozlabs.ibm.com>
-	<1150241510.11159.159.camel@shinybook.infradead.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0F6EF67B96
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 09:53:46 +1000 (EST)
+Subject: RE: OpenFirmware framebuffer
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: matt@genesi-usa.com
+In-Reply-To: <024901c68f06$4aa71f00$99dfdfdf@bakuhatsu.net>
+References: <024901c68f06$4aa71f00$99dfdfdf@bakuhatsu.net>
+Content-Type: text/plain
+Date: Wed, 14 Jun 2006 09:53:35 +1000
+Message-Id: <1150242815.13958.71.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, 'Nathan Lynch' <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse writes:
+On Tue, 2006-06-13 at 11:27 -0500, Matt Sealey wrote:
+> Gentoo 2.6.15-r5 from the 2006.0 install CD.
+> 
+> It says "Welcome to Linux gentoo-2.6.15-r5" and then I see four
+> lines, MSR, HID0 and hex printout of each.
+> 
+> That's it.
+> 
+> I get the usual messages spooled to the serial console. My args are;
+> 
+> boot cd /boot/pegasos console=ttyS1,115200,8n1 console=tty0 init=/linuxrc looptype=squashfs loop=/image.squashfs udev nodevfs cdroot
+> root=/dev/ram0 video=ofonly
 
-> 'Historical' being until about 4 years ago, around the time of
-> http://ecos.sourceware.org/ml/binutils/2002-05/msg00097.html ?
+Send us a copy of your dmesg log. Also, does the pegasos firmware
+creates a "display" node in OF with the right type and properties ?
 
-That's not the one I was talking about; that appears to be about
-marking the GOT and PLT as executable in the ELF file.  That may be
-enough in fact to allow us to turn off read-implies-exec, though.
-
-> We already did it in Fedora. We don't default to READ_IMPLIES_EXEC for
-> 32-bit processes on the 64-bit kernel.
-
-By patching include/asm-powerpc/elf.h?
-
-Paul.
+Ben.
