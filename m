@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+4b0c712caa3c71df7734+1024+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AB66D67B3C
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 09:25:04 +1000 (EST)
-Subject: Re: [PATCH] powerpc-genirq: Use generic_handle_irq()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-In-Reply-To: <1150202794.29294.5.camel@weaponx.rchland.ibm.com>
-References: <1150170472.13958.13.camel@localhost.localdomain>
-	<1150195883.5618.6.camel@vader.jdub.homelinux.org>
-	<1150202394.12423.16.camel@hades.cambridge.redhat.com>
-	<1150202794.29294.5.camel@weaponx.rchland.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 5217B67B15
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 09:31:36 +1000 (EST)
+Subject: Re: 32 bit userland on G5
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17551.16830.186314.247458@cargo.ozlabs.ibm.com>
+References: <1150194348.9208.33.camel@johannes>
+	<1150202709.12423.21.camel@hades.cambridge.redhat.com>
+	<17551.16830.186314.247458@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Wed, 14 Jun 2006 09:20:03 +1000
-Message-Id: <1150240803.13958.66.camel@localhost.localdomain>
+Date: Wed, 14 Jun 2006 00:31:49 +0100
+Message-Id: <1150241510.11159.159.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Ingo Molnar <mingo@elte.hu>,
-	David Woodhouse <dwmw2@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-06-13 at 07:46 -0500, Josh Boyer wrote:
-> On Tue, 2006-06-13 at 13:39 +0100, David Woodhouse wrote:
-> > On Tue, 2006-06-13 at 05:51 -0500, Josh Boyer wrote:
-> > > It does?  I only see arch/powerpc in the patch.  Is arch/ppc hiding
-> > > somewhere else?
-> > > 
-> > > And yes, arch/ppc still exists.  We can debate that later ;).
-> > 
-> > Did a maintainer step forward for it yet?
-> 
-> For arch/ppc?  Not that I'm aware of.  But that wasn't particularly my
-> point.  The email says "This patch updates the ppc and powerpc
-> architectures..." when it doesn't.
+On Wed, 2006-06-14 at 08:52 +1000, Paul Mackerras wrote:
+> Historically the PPC32 ELF ABI has used an executable PLT, containing
+> instructions constructed at runtime, located next to the BSS, and
+> without the corresponding program header entry indicating execute
+> permission.  Alan Modra devised a new way of doing the PLT which
+> doesn't require it to be executable, but of course it is only used in
+> programs that have been built since the new method went into the
+> toolchain (in fact all of the .o files being linked have to have been
+> compiled with the new method in order for it to be used).
 
-It does, check again :)
+'Historical' being until about 4 years ago, around the time of
+http://ecos.sourceware.org/ml/binutils/2002-05/msg00097.html ?
 
-Ben.
+> So if you are absolutely sure that every program you will ever want to
+> run on your kernel has been built with an up-to-date toolchain, you
+> can turn on enforcement of execute permissions for 32-bit processes.
+> It would be a "courageous" step (in the Yes Minister sense :) for a
+> distro to do it, IMHO. 
+
+We already did it in Fedora. We don't default to READ_IMPLIES_EXEC for
+32-bit processes on the 64-bit kernel.
+
+-- 
+dwmw2
