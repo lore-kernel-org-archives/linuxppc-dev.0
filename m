@@ -1,31 +1,17 @@
-Return-Path: <apw@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5098367B24
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 13:45:06 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5D3j3E4013700
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jun 2006 23:45:03 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k5D3iqjb287428
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jun 2006 21:44:52 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k5D3j36D022039
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Jun 2006 21:45:03 -0600
-Date: Mon, 12 Jun 2006 23:45:02 -0400
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix builtin command line interaction with firmware
-Message-ID: <20060613034502.GA15130@kvasir.watson.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 13DB167B22
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 13:48:27 +1000 (EST)
+Subject: [PATCH] powerpc-genirq: Use generic_handle_irq()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 13 Jun 2006 13:47:51 +1000
+Message-Id: <1150170472.13958.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Amos Waterland <apw@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,33 +21,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It seems that prom_init's early_cmdline_parse is broken on at least
-Apple 970 xserves and IBM JS20 blades with SLOF.  The firmware of these
-machines returns -1 and 1 respectively when getprop is called for the
-bootargs property of /chosen, causing Linux to ignore its builtin
-command line in favor of a null string.  This patch makes Linux use its
-builtin command line if getprop returns an error or a null string.
+This patch updates the ppc and powerpc architectures to use the new
+generic_handle_irq() so that interrupt controllers can be ported to the
+new genirq layer.
 
-Signed-off-by: Amos Waterland <apw@us.ibm.com>
-
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- arch/powerpc/kernel/prom_init.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Patch depends on Ingo/Thomas genirq patchset.
 
-0f0caf0342f39b4437dcb3e9f2f1d62bfb4e3e7d
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index f70bd09..2e63a90 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -574,7 +574,7 @@ static void __init early_cmdline_parse(v
- 	if ((long)_prom->chosen > 0)
- 		l = prom_getprop(_prom->chosen, "bootargs", p, COMMAND_LINE_SIZE-1);
- #ifdef CONFIG_CMDLINE
--	if (l == 0) /* dbl check */
-+	if (l <= 0 || p[0] == '\0') /* dbl check */
- 		strlcpy(RELOC(prom_cmd_line),
- 			RELOC(CONFIG_CMDLINE), sizeof(prom_cmd_line));
- #endif /* CONFIG_CMDLINE */
--- 
-1.0.4
+Index: linux-work/arch/powerpc/kernel/irq.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/irq.c	2006-06-05 15:29:37.000000000 +1000
++++ linux-work/arch/powerpc/kernel/irq.c	2006-06-05 15:50:53.000000000 +1000
+@@ -219,15 +219,19 @@ void do_IRQ(struct pt_regs *regs)
+ 		curtp = current_thread_info();
+ 		irqtp = hardirq_ctx[smp_processor_id()];
+ 		if (curtp != irqtp) {
++			struct irq_desc *desc = irq_desc + irq;
++			void *handler = desc->handle_irq;
++			if (handler == NULL)
++				handler = &__do_IRQ;
+ 			irqtp->task = curtp->task;
+ 			irqtp->flags = 0;
+-			call___do_IRQ(irq, regs, irqtp);
++			call_handle_irq(irq, desc, regs, irqtp, handler);
+ 			irqtp->task = NULL;
+ 			if (irqtp->flags)
+ 				set_bits(irqtp->flags, &curtp->flags);
+ 		} else
+ #endif
+-			__do_IRQ(irq, regs);
++			generic_handle_irq(irq, regs);
+ 	} else if (irq != -2)
+ 		/* That's not SMP safe ... but who cares ? */
+ 		ppc_spurious_interrupts++;
+Index: linux-work/arch/powerpc/kernel/misc_64.S
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/misc_64.S	2006-06-05 15:29:37.000000000 +1000
++++ linux-work/arch/powerpc/kernel/misc_64.S	2006-06-05 15:38:01.000000000 +1000
+@@ -89,12 +89,14 @@ _GLOBAL(call_do_softirq)
+ 	mtlr	r0
+ 	blr
+ 
+-_GLOBAL(call___do_IRQ)
++_GLOBAL(call_handle_irq)
++	ld	r8,0(r7)
+ 	mflr	r0
+ 	std	r0,16(r1)
+-	stdu	r1,THREAD_SIZE-112(r5)
+-	mr	r1,r5
+-	bl	.__do_IRQ
++	mtctr	r8
++	stdu	r1,THREAD_SIZE-112(r6)
++	mr	r1,r6
++	bctrl
+ 	ld	r1,0(r1)
+ 	ld	r0,16(r1)
+ 	mtlr	r0
+Index: linux-work/include/asm-powerpc/irq.h
+===================================================================
+--- linux-work.orig/include/asm-powerpc/irq.h	2006-06-05 15:29:37.000000000 +1000
++++ linux-work/include/asm-powerpc/irq.h	2006-06-05 15:50:53.000000000 +1000
+@@ -494,8 +494,8 @@ extern struct thread_info *softirq_ctx[N
+ 
+ extern void irq_ctx_init(void);
+ extern void call_do_softirq(struct thread_info *tp);
+-extern int call___do_IRQ(int irq, struct pt_regs *regs,
+-		struct thread_info *tp);
++extern int call_handle_irq(int irq, void *p1, void *p2,
++			   struct thread_info *tp, void *func);
+ 
+ #else
+ #define irq_ctx_init()
