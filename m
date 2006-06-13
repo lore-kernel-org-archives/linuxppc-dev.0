@@ -1,26 +1,22 @@
-Return-Path: <Chetan.S.Anantharaman@motorola.com>
-Received: from motgate8.mot.com (motgate8.mot.com [129.188.136.8])
-	by ozlabs.org (Postfix) with ESMTP id 1FF7D67B35
+Return-Path: <AZeffertt@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 875AF67B2C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Jun 2006 02:26:33 +1000 (EST)
-Received: from il06exr01.mot.com (il06exr01.mot.com [129.188.137.131])
-	by motgate8.mot.com (8.12.11/Motgate7) with ESMTP id k5DGQNqE007138
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Jun 2006 09:26:28 -0700 (MST)
-Received: from de01exm68.ds.mot.com (de01exm68.am.mot.com [10.176.8.24])
-	by il06exr01.mot.com (8.13.5/8.13.0) with ESMTP id k5DGQM6f021530
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Jun 2006 11:26:22 -0500 (CDT)
+	Wed, 14 Jun 2006 03:12:53 +1000 (EST)
+Received: from exchange.cbl.local (exchange.cambridgebroadband.com
+	[217.204.121.87])
+	by cambridgebroadband.com (8.12.8/8.12.8) with ESMTP id k5DGmPl5029763
+	for <linuxppc-embedded@ozlabs.org>; Tue, 13 Jun 2006 17:48:25 +0100
+Message-ID: <448EEC59.2010201@cambridgebroadband.com>
+Date: Tue, 13 Jun 2006 17:48:25 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Re: help with inittab
-Date: Tue, 13 Jun 2006 12:26:22 -0400
-Message-ID: <EDF27F298D4B03498AE0C249A941DFF803D70E@de01exm68.ds.mot.com>
-In-Reply-To: <mailman.9.1150164003.18626.linuxppc-embedded@ozlabs.org>
-From: "Anantharaman Chetan-W16155" <Chetan.S.Anantharaman@motorola.com>
-To: <dhlii@dlasys.net>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: No ttyS device at I/O port 0xfe004500 for console
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,67 +27,115 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I've tried what you've mentioned below, i.e removing the /sbin/init and
-just having the /bin/sh in the init/main.c file and I don't get a
-standalone shell. I am having a Linux 2.4 Kernel (Montavista 3.1)
-running on a PPC405 in a Xilinx Virtex4 FX100 FPGA.
+Hi list,
 
-You mentioned it could be a hardware problem. Are there any errata which
-could explain the h/w bug?=20
+I'm trying to boot a linux-2.6.11 kernel on a MPC83xx based board.  Through
+some experimentation I have found I need "console=uart,io,0xfe004500"
+in the kernel command line in order to get any output over the serial
+port.
+
+Half way through initialisation the kernel appears to swap from its "early"
+8250 serial driver to a "full" 8250 serial driver.  At this point it prints
+"No ttyS device at I/O port 0xfe004500 for console" and there is no
+further output.
+
+Does anyone have any idea what I may be doing wrong?
+
+BTW, here's the output that I do get.
+
+-------------------/snip--------------------------
+U-Boot 1.1.3 (FSL Development) (Jun 13 2006 - 14:01:25) MPC83XX
+
+Clock configuration:
+   Coherent System Bus:  132 MHz
+   Core:                 264 MHz
+   QE:                   198 MHz
+   Local Bus Controller: 132 MHz
+   Local Bus:             66 MHz
+   DDR:                  264 MHz
+   SEC:                  132 MHz
+   I2C1:                 132 MHz
+CPU: MPC8323E, Rev: 10 at 264 MHz
+Board: Freescale MPC832XEPB
+I2C:   ready
+DRAM:
+    DDR RAM: 128 MB
+FLASH: 16 MB
+In:    serial
+Out:   serial
+Err:   serial
+Net:   FSL GETH0
+Hit any key to stop autoboot:  0
+geth: PHY is Davicom DM9161A (181b8a0)
+FSL GETH0: Full Duplex
+FSL GETH0: Speed 100BT
+FSL GETH0: Link is up
+Using FSL GETH0 device
+TFTP from server 10.0.0.107; our IP address is 10.0.6.65
+Filename 'uImage'.
+Load address: 0x200000
+Loading: #################################################################
+          #################################################################
+          #################################################################
+          ##########
+done
+Bytes transferred = 1046491 (ff7db hex)
+## Booting image at 00200000 ...
+    Image Name:   Linux-2.6.11
+    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+    Data Size:    1046427 Bytes = 1021.9 kB
+    Load Address: 00000000
+    Entry Point:  00000000
+    Verifying Checksum ... OK
+    Uncompressing Kernel Image ... OK
+Linux version 2.6.11 (ajz@zambia) (gcc version 3.4.3) #5 Tue Jun 13 17:36:46 BST 2006
+Built 1 zonelists
+Kernel command line: root=/dev/nfs rw nfsroot=10.0.0.107:/opt/eldk/ppc_6xx ip=10.0.6.65:10.0.0.107:10.0.0.1:255.255.0.0:eth0:off console=uart,io,0xfe004500
+IPIC (128 IRQ sources, 8 External IRQs) at fe000700
+QE IC (64 IRQ sources) at fe100080
+PID hash table entries: 1024 (order: 10, 16384 bytes)
+Early serial console at I/O port 0xfe004500 (options '134')
+Dentry cache hash table entries: 32768 (order: 5, 131072 bytes)
+Inode-cache hash table entries: 16384 (order: 4, 65536 bytes)
+Memory: 127488k available (1724k kernel code, 432k data, 100k init, 0k highmem)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+NET: Registered protocol family 16
+SCSI subsystem initialized
+JFFS2 version 2.2. (C) 2001-2003 Red Hat, Inc.
+Generic RTC Driver v1.07
+Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing disabled
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered
+RAMDISK driver initialized: 16 RAM disks of 32768K size 1024 blocksize
+loop: loaded (max 8 devices)
+MPC832XE MDS flash device: 1000000 at ff000000 Partition number 5
+MPC832XE PB Flash Map Info: Found 1 x16 devices at 0x0 in 16-bit bank
+  Intel/Sharp Extended Query Table at 0x0031
+Using buffer write method
+cfi_cmdset_0001: Erase suspend on write enabled
+Creating 5 MTD partitions on "MPC832XE PB Flash Map Info":
+0x00000000-0x00020000 : "HRCW"
+0x00020000-0x00900000 : "JFFS2"
+0x00900000-0x00d00000 : "Ramdisk"
+0x00d00000-0x00f00000 : "Kernel"
+0x00f00000-0x01000000 : "U-Boot"
+MPC832XE MDS flash device initialized
+i2c /dev entries driver
+NET: Registered protocol family 2
+IP: routing cache hash table of 1024 buckets, 8Kbytes
+TCP established hash table entries: 8192 (order: 4, 65536 bytes)
+TCP bind hash table entries: 8192 (order: 3, 32768 bytes)
+TCP: Hash tables configured (established 8192 bind 8192)
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+No ttyS device at I/O port 0xfe004500 for console
+
+-------------------/snip--------------------------
 
 
-Thanks,
-Chetan Anantharaman
 
-----------------------------------------------------------------------
+TIA,
 
-Message: 1
-Date: Sun, 11 Jun 2006 22:02:02 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: help with inittab
-Cc: Chris Dumoulin <cdumoulin@ics-ltd.com>,
-	linuxppc-embedded@ozlabs.org
-Message-ID: <448CCB1A.409@dlasys.net>
-Content-Type: text/plain; charset=3DISO-8859-1
-
-  =20
-    For debugging or single user purposes you do not need to run init or
-have an inittab.
-    There have been several sugestions that there may be a hardware
-problem - there are a number that are possible.
-
-    I was stalled here for some time because my UartDriver was
-accidentally using the physical IO address instead of the virtual one
-    and I had created a temporary phys=3Dvirtual entry in the tbl that =
-was
-conveniently getting blow away just here.
-
-    You can try to isolate your problem by changing your boot ramdisk
-(inramfs or initrd)
-
-    Eliminate or rename /init /sbin/init /linuxrc and any of the other
-permutations that linux tries to execute in init/main.c they are all
-listed very near where you stopped.
-    make sure you have /bin/sh
-
-    reboot on that ramdisk  if you have an "init" related problem then
-you should get a standalone shell.
-    If you have a hardware problem you will likely still stop at the
-same place.
-  =20
-
-
-
-
---=20
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too
-numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It
-takes a touch of genius - and a lot of courage to move in the opposite
-direction."
-Albert Einstein
+Alex
