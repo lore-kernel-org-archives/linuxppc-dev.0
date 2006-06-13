@@ -1,20 +1,14 @@
-Return-Path: <SRS0+4b0c712caa3c71df7734+1024+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C02A067B39
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 07:33:00 +1000 (EST)
-Subject: Re: OpenFirmware framebuffer
-From: David Woodhouse <dwmw2@infradead.org>
-To: matt@genesi-usa.com
-In-Reply-To: <021501c68efd$bc311080$99dfdfdf@bakuhatsu.net>
-References: <021501c68efd$bc311080$99dfdfdf@bakuhatsu.net>
-Content-Type: text/plain
-Date: Tue, 13 Jun 2006 22:33:15 +0100
-Message-Id: <1150234395.11159.122.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17551.16363.218140.484114@cargo.ozlabs.ibm.com>
+Date: Wed, 14 Jun 2006 08:44:59 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: 32 bit userland on G5
+In-Reply-To: <1150194348.9208.33.camel@johannes>
+References: <1150194348.9208.33.camel@johannes>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +18,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-06-13 at 10:26 -0500, Matt Sealey wrote:
-> I just booted up my Pegasos and tried the offb driver for display and was
-> rather disappointed. It just displays 4 lines about HID0 and stuff and then
-> waits around. 
+Johannes Berg writes:
 
-I didn't think the Pegasos firmware supported framebuffer?
+> Since apparently the G5 honours no-execute permissions, shouldn't the 64
+> bit kernel set the READ_IMPLIES_EXEC personality flag for 32-bit
+> userland?
 
--- 
-dwmw2
+The elf_read_implies_exec() macro in include/asm-powerpc/elf.h
+achieves the same effect, I believe.
+
+Paul.
