@@ -1,19 +1,19 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 37EFB67B46
+Return-Path: <chuckmeade@mindspring.com>
+Received: from txslsmtp2.vzwmail.net (unknown [66.174.85.156])
+	by ozlabs.org (Postfix) with ESMTP id 1E5B967A5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Jun 2006 10:19:06 +1000 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'Chuck Meade'" <chuckmeade@mindspring.com>,
+	Wed, 14 Jun 2006 12:26:57 +1000 (EST)
+From: "Chuck Meade" <chuckmeade@mindspring.com>
+To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>,
 	"'Kumar Gala'" <galak@kernel.crashing.org>,
 	"'Alex Zeffertt'" <ajz@cambridgebroadband.com>
 Subject: RE: No ttyS device at I/O port 0xfe004500 for console
-Date: Wed, 14 Jun 2006 02:19:04 +0200
-Message-ID: <001301c68f48$24f80890$0e67a8c0@Jocke>
+Date: Tue, 13 Jun 2006 22:27:52 -0400
+Message-ID: <IIEEICKJLNEPBBDJICNGEEGDLDAA.chuckmeade@mindspring.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-In-Reply-To: <001201c68f44$962c1fa0$0e67a8c0@Jocke>
+In-Reply-To: <001301c68f48$24f80890$0e67a8c0@Jocke>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,41 +25,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- 
-> 
-> Hi Chuck
-> 
-> > 
-> > > > Hi Joakim,
-> > > > 
-> > > > Same here -- go into arch/ppc/platforms/83xx and edit file 
-> > > > mpc83xx_sys.c.
-> > > > If you are using the 8323e cpu, then you need to make sure
-> > > 
-> > > Yes, got one of those.
-> > >  
-> > > > that file has code to support the 8323E.  Mine didn't, so
-> > I got no
-> > > > platform devices initialized (no serial port, no Eth
-> > devs).  I added
-> > > > a block of code to support the 8323E (set mask to 
-> 0xffff0000 and 
-> > > > "value" to 0x80620000, then the device list for the 
-> 8323E).  Use 
-> > > > existing code there as a guide, it was not difficult once
-> > I figured
-> > > > out that this was the problem.
-> > > 
-> > > hmm, you don't have a patch handy?
-> > 
-> > Here you go:
-> 
-> Thanks, now it boot into the ramdisk and a get a login prompt 
-> and all, but I don't see any output during kernel 
-> startup(only a few garbage chars).
-> Tried the console params Alex sent but makes no difference. 
-> How does your cmdline look like?
+Hi Joakim,
 
-ahem, I forgot the obvious console=ttyS0. Now it works, thanks a lot
+> > > Here you go:
+> > 
+> > Thanks, now it boot into the ramdisk and a get a login prompt 
+> > and all, but I don't see any output during kernel 
+> > startup(only a few garbage chars).
+> > Tried the console params Alex sent but makes no difference. 
+> > How does your cmdline look like?
+> 
+> ahem, I forgot the obvious console=ttyS0. Now it works, thanks a lot
 
- Jocke
+Sure no problem.
+
+Chuck
