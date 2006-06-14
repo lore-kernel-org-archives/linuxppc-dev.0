@@ -1,18 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 529FA67B7B
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 17:23:31 +1000 (EST)
-Date: Wed, 14 Jun 2006 17:23:09 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: Re: [PATCH] powerpc: Use soft irq-disable on all 64-bit machines
-Message-Id: <20060614172309.59d7b76e.sfr@canb.auug.org.au>
-In-Reply-To: <20060614170840.3686cbad.sfr@canb.auug.org.au>
-References: <17551.33574.27019.305680@cargo.ozlabs.ibm.com>
-	<20060614170840.3686cbad.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 80B2467B81
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 17:24:12 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 2/3] powerpc: Instrument Hypervisor Calls: add wrappers
+Date: Wed, 14 Jun 2006 09:23:59 +0200
+References: <20060614034756.GA6759@monkey.ibm.com>
+	<20060614035258.GC6759@monkey.ibm.com>
+In-Reply-To: <20060614035258.GC6759@monkey.ibm.com>
+MIME-Version: 1.0
+Message-Id: <200606140923.59726.arnd@arndb.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, Christopher Yeoh <cyeoh@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,33 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 14 Jun 2006 17:08:40 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> Looks good.  A couple of small fixes below.
-
-Plus we want the below as well ...
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
-diff --git a/include/asm-powerpc/hw_irq.h b/include/asm-powerpc/hw_irq.h
-index db0ce76..dc5f1ec 100644
---- a/include/asm-powerpc/hw_irq.h
-+++ b/include/asm-powerpc/hw_irq.h
-@@ -8,6 +8,7 @@ #ifdef __KERNEL__
- 
- #include <linux/config.h>
- #include <linux/errno.h>
-+#include <linux/compiler.h>
- #include <asm/ptrace.h>
- #include <asm/processor.h>
- 
-@@ -25,6 +26,7 @@ static inline unsigned long local_irq_di
- {
- 	unsigned long flag = get_paca()->proc_enabled;
- 	get_paca()->proc_enabled = 0;
-+	barrier();
- 	return flag;
- }
- 
+T24gV2VkbmVzZGF5IDE0IEp1bmUgMjAwNiAwNTo1MiwgTWlrZSBLcmF2ZXR6IHdyb3RlOgoKPiCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25lZCBsb25nICpvdXQyLKCgoKCgoKCgoKCgoFI5
+Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgdW5zaWduZWQgbG9uZyAqb3V0Myk7oKCgoKCgoKCg
+oKBSMTAKPiCgICovCj4gKyNpZmRlZiBDT05GSUdfSENBTExfU1RBVFMKPiArX0dMT0JBTChwbHBh
+cl9oY2FsbF9iYXNlKQo+ICsjZWxzZQo+IKBfR0xPQkFMKHBscGFyX2hjYWxsKQo+ICsjZW5kaWYK
+PiCgoKCgoKCgoEhNVF9NRURJVU0KPiCgCj4goKCgoKCgoKBtZmNyoKCgoHIwCgpUaGUgYXNzZW1i
+bHkgZmlsZXMgYXJlIGFscmVhZHkgaGFyZCB0byByZWFkLiBDYW4gd2UgZG8gdGhpcyB3aXRob3V0
+CmFuIGV4dHJhICNpZmRlZiBpbiB0aGVyZSBmb3IgZXZlcnkgY2FsbD8KTW9yZW92ZXIsIHdoZW4g
+dXNpbmcgY3RhZ3Mgd2l0aCB5b3VyIHZlcnNpb24sIGxvb2tpbmcgZm9yIHBscGFyX2hjYWxsCndp
+bGwgZmluZCB0aGUgaW5zdHJ1bWVudGVkIHZlcnNpb24gb25seSwgd2hpY2ggbWF5IGJlIGV4dHJh
+IGNvbmZ1c2luZwp3aGVuIHRyeWluZyB0byB3b3JrIG91dCB0aGUgY2FsbCBjaGFpbi4KCj4gZGlm
+ZiAtTmF1cHIgbGludXgtMi42LjE3LXJjNi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL3BzZXJpZXMv
+aHZDYWxsX2luc3QuYyBsaW51eC0yLjYuMTctcmM2LndvcmsvYXJjaC9wb3dlcnBjL3BsYXRmb3Jt
+cy9wc2VyaWVzL2h2Q2FsbF9pbnN0LmMKPiAtLS0gbGludXgtMi42LjE3LXJjNi9hcmNoL3Bvd2Vy
+cGMvcGxhdGZvcm1zL3BzZXJpZXMvaHZDYWxsX2luc3QuYyAgICAgICAxOTcwLTAxLTAxIDAwOjAw
+OjAwLjAwMDAwMDAwMCArMDAwMAo+ICsrKyBsaW51eC0yLjYuMTctcmM2LndvcmsvYXJjaC9wb3dl
+cnBjL3BsYXRmb3Jtcy9wc2VyaWVzL2h2Q2FsbF9pbnN0LmMgIDIwMDYtMDYtMTMgMjE6Mzk6MjQu
+MDAwMDAwMDAwICswMDAwCi4uLgo+ICtleHRlcm4gbG9uZyBwbHBhcl9oY2FsbF9iYXNlICh1bnNp
+Z25lZCBsb25nIG9wY29kZSwKPiArIKAgoCCgIKAgoCCgIKAgoCB1bnNpZ25lZCBsb25nIGFyZzEs
+Cj4gKyCgIKAgoCCgIKAgoCCgIKAgdW5zaWduZWQgbG9uZyBhcmcyLAo+ICsgoCCgIKAgoCCgIKAg
+oCCgIHVuc2lnbmVkIGxvbmcgYXJnMywKPiArIKAgoCCgIKAgoCCgIKAgoCB1bnNpZ25lZCBsb25n
+IGFyZzQsCj4gKyCgIKAgoCCgIKAgoCCgIKAgdW5zaWduZWQgbG9uZyAqb3V0MSwKPiArIKAgoCCg
+IKAgoCCgIKAgoCB1bnNpZ25lZCBsb25nICpvdXQyLAo+ICsgoCCgIKAgoCCgIKAgoCCgIHVuc2ln
+bmVkIGxvbmcgKm91dDMpOwoKQXQgdGhlIHNhbWUgdGltZSwgdGhlIGRlY2xhcmF0aW9ucyBzaG91
+bGQgZ28gdG8gdGhlIGhlYWRlciBmaWxlLCBhcyB0aGV5CmFyZSBhbiBpbnRlcmZhY2UgYmV0d2Vl
+biB0d28gZmlsZXMuCgo+ICtleHRlcm4gbG9uZyBwbHBhcl9oY2FsbF9ub3JldHNfYmFzZSh1bnNp
+Z25lZCBsb25nIG9wY29kZSwgLi4uKTsKPiArCj4gK2xvbmcgcGxwYXJfaGNhbGxfbm9yZXRzX0Mo
+dW5zaWduZWQgbG9uZyBvcGNvZGUsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1
+bnNpZ25lZCBsb25nIGFyZzEsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNp
+Z25lZCBsb25nIGFyZzIsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25l
+ZCBsb25nIGFyZzMsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25lZCBs
+b25nIGFyZzQsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25lZCBsb25n
+IGFyZzUsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25lZCBsb25nIGFy
+ZzYpCj4gK3sKPiAroKCgoKCgoGxvbmcgcmM7Cj4gK6CgoKCgoKB1bnNpZ25lZCBsb25nIHRfYmVm
+b3JlID0gbWZzcHIoU1BSTl9QVVJSKTsKPiArCj4gK6CgoKCgoKByYyA9IHBscGFyX2hjYWxsX25v
+cmV0c19iYXNlKG9wY29kZSwgYXJnMSwgYXJnMiwgYXJnMywgYXJnNCwgYXJnNSwKPiAroKCgoKCg
+oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCCgIKAgYXJnNik7Cj4gKwo+ICugoKCgoKCgdXBkYXRl
+X3N0YXRzKG9wY29kZSwgdF9iZWZvcmUpOwo+ICugoKCgoKCgcmV0dXJuIHJjOwo+ICt9CgpNYXli
+ZSBhIGxpdHRsZSBjb21tZW50IGhpbnRpbmcgYWJvdXQgdGhlIG1hZ2ljIGdvaW5nIG9uIHVuZGVy
+bmVhdGggdGhpcz8KCj4gZGlmZiAtTmF1cHIgbGludXgtMi42LjE3LXJjNi9pbmNsdWRlL2FzbS1w
+b3dlcnBjL2h2Y2FsbC5oIGxpbnV4LTIuNi4xNy1yYzYud29yay9pbmNsdWRlL2FzbS1wb3dlcnBj
+L2h2Y2FsbC5oCj4gLS0tIGxpbnV4LTIuNi4xNy1yYzYvaW5jbHVkZS9hc20tcG93ZXJwYy9odmNh
+bGwuaKCgoKCgoKAyMDA2LTA2LTEzIDIxOjM4OjQ1LjAwMDAwMDAwMCArMDAwMAo+ICsrKyBsaW51
+eC0yLjYuMTctcmM2LndvcmsvaW5jbHVkZS9hc20tcG93ZXJwYy9odmNhbGwuaKCgMjAwNi0wNi0x
+MyAyMTozOToyNC4wMDAwMDAwMDAgKzAwMDAKPiBAQCAtMjkyLDYgKzI5MiwxMyBAQCBsb25nIHBs
+cGFyX2hjYWxsXzlhcmdfOXJldCh1bnNpZ25lZCBsb25nCj4goKCgoKCgoKCgoKCgoKCgoKCgoKCg
+oKCgIKAgdW5zaWduZWQgbG9uZyAqb3V0OCwKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgoCB1
+bnNpZ25lZCBsb25nICpvdXQ5KTsKPiCgCj4gKyNpZmRlZiBDT05GSUdfSENBTExfU1RBVFMKPiAr
+c3RydWN0IGhjYWxsX3N0YXRzIHsKPiAroKCgoKCgoHVuc2lnbmVkIGxvbmegoKBudW1fY2FsbHM7
+Cj4gK6CgoKCgoKB1bnNpZ25lZCBsb25noKCgdG90YWxfdGltZTsKPiArfTsKPiArI2VuZGlmIC8q
+IENPTkZJR19IQ0FMTF9TVEFUUyAqLwo+ICsKClRoYXQgcmVhbGx5IHNob3VsZG4ndCBuZWVkICNp
+ZmRlZi4gWW91IGNvdWxkIG1vdmUgaXQgdG8gaHZDYWxsX2luc3QuYwp0aG91Z2gsIHNpbmNlIGl0
+IGFwcGVhcnMgdG8gYmUgdXNlZCBvbmx5IGluIHRoZXJlIChwYXRjaCAzLzMgaGFzbid0CmNvbWUg
+dGhyb3VnaCB5ZXQsIGRvbid0IGtub3cgaWYgaXQncyB1c2VkIGVsc2V3aGVyZSBpbiB0aGF0KS4K
+CglBcm5kIDw+PAo=
