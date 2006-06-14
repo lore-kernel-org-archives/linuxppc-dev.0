@@ -1,23 +1,30 @@
-Return-Path: <AZeffertt@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
+Return-Path: <laurent.pinchart@tbox.biz>
+Received: from outmx022.isp.belgacom.be (outmx022.isp.belgacom.be
+	[195.238.4.203])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ECA2C67B8D
+	by ozlabs.org (Postfix) with ESMTP id 1F70B67BB2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Jun 2006 19:01:03 +1000 (EST)
-Message-ID: <448FD041.203@cambridgebroadband.com>
-Date: Wed, 14 Jun 2006 10:00:49 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+	Wed, 14 Jun 2006 19:23:55 +1000 (EST)
+Received: from outmx022.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k5E9NgPn008235
+	for <linuxppc-embedded@ozlabs.org>; Wed, 14 Jun 2006 11:23:42 +0200
+	(envelope-from <laurent.pinchart@tbox.biz>)
+Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
+	[194.78.198.49])
+	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k5E9NUBQ008082
+	for <linuxppc-embedded@ozlabs.org>; Wed, 14 Jun 2006 11:23:30 +0200
+	(envelope-from <laurent.pinchart@tbox.biz>)
+From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+To: linuxppc-embedded@ozlabs.org
+Subject: MMC/SD driver using SPI interface on MPC8248
+Date: Wed, 14 Jun 2006 11:25:08 +0200
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: No ttyS device at I/O port 0xfe004500 for console
-References: <IIEEICKJLNEPBBDJICNGCEFHLDAA.chuckmeade@mindspring.com>
-	<4E69849F-EC8B-48C0-9036-74EDCD14B2F5@kernel.crashing.org>
-In-Reply-To: <4E69849F-EC8B-48C0-9036-74EDCD14B2F5@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Joakim Tjernlund <joakim.tjernlund@transmode.se>,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200606141125.08298.laurent.pinchart@tbox.biz>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,54 +35,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->> Here you go:
-> 
-> Let me know if this fixes the issues you guys are seeing with your 83xx 
-> boards.  If so, I'll clean up this patch and push it upstream.
-> 
-> - k
+Hi everybody,
 
+I'm looking for an MMC/SD driver using the MPC8248 SPI interface. Does anyone 
+know if such a driver exist, or if some code has already been written ?
 
-Great, thank you!
+If no such project exists, could anyone outline the basic architecture of such 
+a driver ? As recent Linux kernels include an SPI class, I suppose I should 
+write a generic MMC/SD-SPI driver which would work with any SPI controller, 
+and write an SPI driver for the MPC8248 (which seem to have a similar 
+interface to the already supported MPC83xx). How should the generic 
+MMC/SD-SPI driver be mapped to specific SPI ports ?
 
-Your patch and the params "console=uart,io,0xfe004500 console=ttyS0" in
-the kernel command line do the trick.
+Best regards,
 
-Alex
-
-
-
-> 
->> --- mpc83xx_sys.c-ORIG    2006-06-13 17:54:36.577339832 -0400
->> +++ mpc83xx_sys.c    2006-06-13 17:56:02.394293672 -0400
->> @@ -136,6 +136,23 @@ struct ppc_sys_spec ppc_sys_specs[] = {
->>  #endif
->>          },
->>      },
->> +    {
->> +        .ppc_sys_name    = "8323E",
->> +        .mask        = 0xFFFF0000,
->> +        .value        = 0x80620000,
->> +#ifdef CONFIG_QE
->> +        .num_devices    = 4,
->> +#else
->> +        .num_devices    = 2,
->> +#endif
->> +        .device_list    = (enum ppc_sys_devices[])
->> +        {
->> +            MPC83xx_IIC1, MPC83xx_DUART,
->> +#ifdef CONFIG_QE
->> +            MPC83xx_QE_UCC3, MPC83xx_QE_UCC4,
->> +#endif
->> +        },
->> +    },
->>      {    /* default match */
->>          .ppc_sys_name    = "",
->>          .mask         = 0x00000000,
->>
->>
->> Regards,
->> Chuck
->>
-> 
+Laurent Pinchart
