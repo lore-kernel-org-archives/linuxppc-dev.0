@@ -1,30 +1,18 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx022.isp.belgacom.be (outmx022.isp.belgacom.be
-	[195.238.4.203])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1F70B67BB2
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id A0FED67B62
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Jun 2006 19:23:55 +1000 (EST)
-Received: from outmx022.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k5E9NgPn008235
-	for <linuxppc-embedded@ozlabs.org>; Wed, 14 Jun 2006 11:23:42 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
-	[194.78.198.49])
-	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k5E9NUBQ008082
-	for <linuxppc-embedded@ozlabs.org>; Wed, 14 Jun 2006 11:23:30 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
-To: linuxppc-embedded@ozlabs.org
-Subject: MMC/SD driver using SPI interface on MPC8248
-Date: Wed, 14 Jun 2006 11:25:08 +0200
+	Wed, 14 Jun 2006 22:38:03 +1000 (EST)
+Subject: RE: No ttyS device at I/O port 0xfe004500 for console
+Date: Wed, 14 Jun 2006 14:37:56 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200606141125.08298.laurent.pinchart@tbox.biz>
+	charset="US-ASCII"
+Message-ID: <F6AD7E21CDF4E145A44F61F43EE6D9397E9DAC@tmnt04.transmode.se>
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "Alex Zeffertt" <ajz@cambridgebroadband.com>,
+	"Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,18 +23,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody,
+=20
+> Kumar Gala wrote:
+> >> Here you go:
+> >=20
+> > Let me know if this fixes the issues you guys are seeing=20
+> with your 83xx=20
+> > boards.  If so, I'll clean up this patch and push it upstream.
+> >=20
+> > - k
+>=20
+>=20
+> Great, thank you!
+>=20
+> Your patch and the params "console=3Duart,io,0xfe004500=20
+> console=3DttyS0" in
+> the kernel command line do the trick.
 
-I'm looking for an MMC/SD driver using the MPC8248 SPI interface. Does anyone 
-know if such a driver exist, or if some code has already been written ?
+I think you should loose the "console=3Duart,io,0xfe004500", don't think
+it is needed
+sine the "console=3DttyS0" will override it.
 
-If no such project exists, could anyone outline the basic architecture of such 
-a driver ? As recent Linux kernels include an SPI class, I suppose I should 
-write a generic MMC/SD-SPI driver which would work with any SPI controller, 
-and write an SPI driver for the MPC8248 (which seem to have a similar 
-interface to the already supported MPC83xx). How should the generic 
-MMC/SD-SPI driver be mapped to specific SPI ports ?
+>=20
+> Alex
+>=20
+>=20
+> >> +        .device_list    =3D (enum ppc_sys_devices[])
+> >> +        {
+> >> +            MPC83xx_IIC1, MPC83xx_DUART,
+> >> +#ifdef CONFIG_QE
+> >> +            MPC83xx_QE_UCC3, MPC83xx_QE_UCC4,
+> >> +#endif
+> >> +        },
+> >> +    },
+> >>      {    /* default match */
+> >>          .ppc_sys_name    =3D "",
+> >>          .mask         =3D 0x00000000,
 
-Best regards,
+This device list appears to be common to all 8323E CPUs and to me this
+looks
+like a board unique list. Seems to that this list is better off in the=20
+mpc832xe_mds.c board file. That would make it easier for custom boards I
+think.
 
-Laurent Pinchart
+ Jocke
