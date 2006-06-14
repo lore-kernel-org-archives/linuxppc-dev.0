@@ -1,19 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 80B2467B81
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 17:24:12 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3] powerpc: Instrument Hypervisor Calls: add wrappers
-Date: Wed, 14 Jun 2006 09:23:59 +0200
-References: <20060614034756.GA6759@monkey.ibm.com>
-	<20060614035258.GC6759@monkey.ibm.com>
-In-Reply-To: <20060614035258.GC6759@monkey.ibm.com>
-MIME-Version: 1.0
-Message-Id: <200606140923.59726.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, Christopher Yeoh <cyeoh@samba.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1EE7767B89
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 18:35:36 +1000 (EST)
+Subject: Re: 32 bit userland on G5
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17551.16363.218140.484114@cargo.ozlabs.ibm.com>
+References: <1150194348.9208.33.camel@johannes>
+	<17551.16363.218140.484114@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-PdSby7GCKjWRknnW37qx"
+Date: Wed, 14 Jun 2006 10:35:19 +0200
+Message-Id: <1150274119.13958.8.camel@johannes>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,58 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gV2VkbmVzZGF5IDE0IEp1bmUgMjAwNiAwNTo1MiwgTWlrZSBLcmF2ZXR6IHdyb3RlOgoKPiCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25lZCBsb25nICpvdXQyLKCgoKCgoKCgoKCgoFI5
-Cj4goKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgdW5zaWduZWQgbG9uZyAqb3V0Myk7oKCgoKCgoKCg
-oKBSMTAKPiCgICovCj4gKyNpZmRlZiBDT05GSUdfSENBTExfU1RBVFMKPiArX0dMT0JBTChwbHBh
-cl9oY2FsbF9iYXNlKQo+ICsjZWxzZQo+IKBfR0xPQkFMKHBscGFyX2hjYWxsKQo+ICsjZW5kaWYK
-PiCgoKCgoKCgoEhNVF9NRURJVU0KPiCgCj4goKCgoKCgoKBtZmNyoKCgoHIwCgpUaGUgYXNzZW1i
-bHkgZmlsZXMgYXJlIGFscmVhZHkgaGFyZCB0byByZWFkLiBDYW4gd2UgZG8gdGhpcyB3aXRob3V0
-CmFuIGV4dHJhICNpZmRlZiBpbiB0aGVyZSBmb3IgZXZlcnkgY2FsbD8KTW9yZW92ZXIsIHdoZW4g
-dXNpbmcgY3RhZ3Mgd2l0aCB5b3VyIHZlcnNpb24sIGxvb2tpbmcgZm9yIHBscGFyX2hjYWxsCndp
-bGwgZmluZCB0aGUgaW5zdHJ1bWVudGVkIHZlcnNpb24gb25seSwgd2hpY2ggbWF5IGJlIGV4dHJh
-IGNvbmZ1c2luZwp3aGVuIHRyeWluZyB0byB3b3JrIG91dCB0aGUgY2FsbCBjaGFpbi4KCj4gZGlm
-ZiAtTmF1cHIgbGludXgtMi42LjE3LXJjNi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zL3BzZXJpZXMv
-aHZDYWxsX2luc3QuYyBsaW51eC0yLjYuMTctcmM2LndvcmsvYXJjaC9wb3dlcnBjL3BsYXRmb3Jt
-cy9wc2VyaWVzL2h2Q2FsbF9pbnN0LmMKPiAtLS0gbGludXgtMi42LjE3LXJjNi9hcmNoL3Bvd2Vy
-cGMvcGxhdGZvcm1zL3BzZXJpZXMvaHZDYWxsX2luc3QuYyAgICAgICAxOTcwLTAxLTAxIDAwOjAw
-OjAwLjAwMDAwMDAwMCArMDAwMAo+ICsrKyBsaW51eC0yLjYuMTctcmM2LndvcmsvYXJjaC9wb3dl
-cnBjL3BsYXRmb3Jtcy9wc2VyaWVzL2h2Q2FsbF9pbnN0LmMgIDIwMDYtMDYtMTMgMjE6Mzk6MjQu
-MDAwMDAwMDAwICswMDAwCi4uLgo+ICtleHRlcm4gbG9uZyBwbHBhcl9oY2FsbF9iYXNlICh1bnNp
-Z25lZCBsb25nIG9wY29kZSwKPiArIKAgoCCgIKAgoCCgIKAgoCB1bnNpZ25lZCBsb25nIGFyZzEs
-Cj4gKyCgIKAgoCCgIKAgoCCgIKAgdW5zaWduZWQgbG9uZyBhcmcyLAo+ICsgoCCgIKAgoCCgIKAg
-oCCgIHVuc2lnbmVkIGxvbmcgYXJnMywKPiArIKAgoCCgIKAgoCCgIKAgoCB1bnNpZ25lZCBsb25n
-IGFyZzQsCj4gKyCgIKAgoCCgIKAgoCCgIKAgdW5zaWduZWQgbG9uZyAqb3V0MSwKPiArIKAgoCCg
-IKAgoCCgIKAgoCB1bnNpZ25lZCBsb25nICpvdXQyLAo+ICsgoCCgIKAgoCCgIKAgoCCgIHVuc2ln
-bmVkIGxvbmcgKm91dDMpOwoKQXQgdGhlIHNhbWUgdGltZSwgdGhlIGRlY2xhcmF0aW9ucyBzaG91
-bGQgZ28gdG8gdGhlIGhlYWRlciBmaWxlLCBhcyB0aGV5CmFyZSBhbiBpbnRlcmZhY2UgYmV0d2Vl
-biB0d28gZmlsZXMuCgo+ICtleHRlcm4gbG9uZyBwbHBhcl9oY2FsbF9ub3JldHNfYmFzZSh1bnNp
-Z25lZCBsb25nIG9wY29kZSwgLi4uKTsKPiArCj4gK2xvbmcgcGxwYXJfaGNhbGxfbm9yZXRzX0Mo
-dW5zaWduZWQgbG9uZyBvcGNvZGUsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1
-bnNpZ25lZCBsb25nIGFyZzEsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNp
-Z25lZCBsb25nIGFyZzIsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25l
-ZCBsb25nIGFyZzMsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25lZCBs
-b25nIGFyZzQsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25lZCBsb25n
-IGFyZzUsCj4gK6CgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKB1bnNpZ25lZCBsb25nIGFy
-ZzYpCj4gK3sKPiAroKCgoKCgoGxvbmcgcmM7Cj4gK6CgoKCgoKB1bnNpZ25lZCBsb25nIHRfYmVm
-b3JlID0gbWZzcHIoU1BSTl9QVVJSKTsKPiArCj4gK6CgoKCgoKByYyA9IHBscGFyX2hjYWxsX25v
-cmV0c19iYXNlKG9wY29kZSwgYXJnMSwgYXJnMiwgYXJnMywgYXJnNCwgYXJnNSwKPiAroKCgoKCg
-oKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoCCgIKAgYXJnNik7Cj4gKwo+ICugoKCgoKCgdXBkYXRl
-X3N0YXRzKG9wY29kZSwgdF9iZWZvcmUpOwo+ICugoKCgoKCgcmV0dXJuIHJjOwo+ICt9CgpNYXli
-ZSBhIGxpdHRsZSBjb21tZW50IGhpbnRpbmcgYWJvdXQgdGhlIG1hZ2ljIGdvaW5nIG9uIHVuZGVy
-bmVhdGggdGhpcz8KCj4gZGlmZiAtTmF1cHIgbGludXgtMi42LjE3LXJjNi9pbmNsdWRlL2FzbS1w
-b3dlcnBjL2h2Y2FsbC5oIGxpbnV4LTIuNi4xNy1yYzYud29yay9pbmNsdWRlL2FzbS1wb3dlcnBj
-L2h2Y2FsbC5oCj4gLS0tIGxpbnV4LTIuNi4xNy1yYzYvaW5jbHVkZS9hc20tcG93ZXJwYy9odmNh
-bGwuaKCgoKCgoKAyMDA2LTA2LTEzIDIxOjM4OjQ1LjAwMDAwMDAwMCArMDAwMAo+ICsrKyBsaW51
-eC0yLjYuMTctcmM2LndvcmsvaW5jbHVkZS9hc20tcG93ZXJwYy9odmNhbGwuaKCgMjAwNi0wNi0x
-MyAyMTozOToyNC4wMDAwMDAwMDAgKzAwMDAKPiBAQCAtMjkyLDYgKzI5MiwxMyBAQCBsb25nIHBs
-cGFyX2hjYWxsXzlhcmdfOXJldCh1bnNpZ25lZCBsb25nCj4goKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oKCgIKAgdW5zaWduZWQgbG9uZyAqb3V0OCwKPiCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKAgoCB1
-bnNpZ25lZCBsb25nICpvdXQ5KTsKPiCgCj4gKyNpZmRlZiBDT05GSUdfSENBTExfU1RBVFMKPiAr
-c3RydWN0IGhjYWxsX3N0YXRzIHsKPiAroKCgoKCgoHVuc2lnbmVkIGxvbmegoKBudW1fY2FsbHM7
-Cj4gK6CgoKCgoKB1bnNpZ25lZCBsb25noKCgdG90YWxfdGltZTsKPiArfTsKPiArI2VuZGlmIC8q
-IENPTkZJR19IQ0FMTF9TVEFUUyAqLwo+ICsKClRoYXQgcmVhbGx5IHNob3VsZG4ndCBuZWVkICNp
-ZmRlZi4gWW91IGNvdWxkIG1vdmUgaXQgdG8gaHZDYWxsX2luc3QuYwp0aG91Z2gsIHNpbmNlIGl0
-IGFwcGVhcnMgdG8gYmUgdXNlZCBvbmx5IGluIHRoZXJlIChwYXRjaCAzLzMgaGFzbid0CmNvbWUg
-dGhyb3VnaCB5ZXQsIGRvbid0IGtub3cgaWYgaXQncyB1c2VkIGVsc2V3aGVyZSBpbiB0aGF0KS4K
-CglBcm5kIDw+PAo=
+
+--=-PdSby7GCKjWRknnW37qx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2006-06-14 at 08:44 +1000, Paul Mackerras wrote:
+
+> The elf_read_implies_exec() macro in include/asm-powerpc/elf.h
+> achieves the same effect, I believe.
+
+Even for mprotect()? It doesn't look like it does.
+
+johannes
+
+--=-PdSby7GCKjWRknnW37qx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARI/KRaVg1VMiehFYAQLjdw/5AarQgovuBRtX0ETSjg9IR0vk8syhjfui
+X9gbMA/rbUf0z+BNRVupXeCseSZPpw+6HBSslUeO6ajonsn6q06p/dezn0qBFV7N
+a5zz5iun/aj0kYkTpo/RBnTJ1XiLVQJTMr0CSa/91nQpVy1IHfF5FkO7Yz6aTiOc
+rPVJyOqscmUthJsWgSE7St+8IE/FpChLs7JJmCvcK8nYrbbAV9C11mxfSmiBKBbD
+8TUQdQ30jVaqVFysUY+z+lne6pmHz5J2jRuyQ9E4z/Aeq7bzJiy4tEqX/Xh4Aud1
+6VYF+RztWh70BLsL+qIPFiGvqLAJK7HHbvXGkVDDM59Xt0xN7UEnDgPFvcipuCjT
+14tktyC/kBVPCJrbVIBnT7+mv1ou4Cuyt0jXG6U2FAuACthhMydkFSA1v14kasoe
+e2i9DD7YBjoYa32UKOeyg/RTGCb66TQnyYc+Axgq1+SC4R5+c+uTfvj1kya3iOvV
++ISd4J+1p2TFEyZ4LcZo+kZAP47nRw7z7lQtq4QAyO9pu0iYSzpS/q+3Tpfy0uKv
+CnoPoJchTfUWr/xnhoBHXNKTQjaLJ5Ghz38y4BDyTWYkpH7d4WL43KccRgMuCgrv
+mV6ntyjxrOUo/M7G1W03HW7ueLBSsnp9pQkQmgOh8I3iWY2wheekF7/5q027lr+m
+jpO0r7T2ZvQ=
+=GnGl
+-----END PGP SIGNATURE-----
+
+--=-PdSby7GCKjWRknnW37qx--
