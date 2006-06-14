@@ -1,22 +1,20 @@
-Return-Path: <gmuruga@gdatech.com>
-Received: from darwaza.gdatech.com (darwaza.gdatech.com [66.237.41.98])
-	by ozlabs.org (Postfix) with ESMTP id 3F73E67B44
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id AB54767B67
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Jun 2006 05:04:10 +1000 (EST)
-Received: from darwaza.gdatech.com ([192.168.200.118])
-	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Abaca EPG outproxy filter
-	1.3.4.5154-maint13 $Rev: 5154 $) id r66e113336D-00-c875
-	for glikely@gmail.com linuxppc-embedded@ozlabs.org;
-	Wed, 14 Jun 2006 11:33:36 -0700
-Message-Id: <7.0.0.16.0.20060614113301.01d937d8@gdatech.com>
-Date: Wed, 14 Jun 2006 11:35:32 -0700
-To: linuxppc-embedded@ozlabs.org
-From: "G.Muruganandam" <gmuruga@gdatech.com>
-Subject: Xilinx SystemACE driver for 2.6
-Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====================_1133740796==.ALT"
-Cc: glikely@gmail.com
+	Thu, 15 Jun 2006 06:07:33 +1000 (EST)
+To: "Furxhi, Orges" <Orges.Furxhi@thyssenkrupp.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: USB flashdrive on Motorola MPC5200 (IceCube) board,
+	linux ke rnel 2.4.20
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 14 Jun 2006 10:36:11 CDT."
+	<162B449665D6D643AD9E1D50FC6F4B1403F16D5F@mdcexc05.na.ops.local>
+Date: Wed, 14 Jun 2006 22:07:31 +0200
+Sender: wd@denx.de
+Message-Id: <20060614200731.51722353C2B@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,67 +25,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=====================_1133740796==.ALT
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+In message <162B449665D6D643AD9E1D50FC6F4B1403F16D5F@mdcexc05.na.ops.local> you wrote:
+> I downloaded the kernel you recommended and now I am trying to build a UBoot
+> image that I can load unto flash.
+> I use the following commands: 
+> $ make mrproper
+> $ make menuconfig
+>   (select arch/ppc/configs/icecube_5200_defconfig file, exit and save)
+> $ make uImage
 
+Try instead:
 
-Hello g,
+	$ make mrproper
+	$ make icecube_5200_config
+	$ make oldconfig
+	$ make dep
+	$ make uImage
 
-I am looking for the answer to your question regarding the System ACE 
-driver under 2.6
-posted in the linuxppc-embedded@ozlabs.org.
+> Is there another sequence of make commands that I need to follow to create a
+> UBoot image?
 
-Pl let me know whether it is ported to 2.6.
+Not really.
 
-If yes, Would it be possible to share the source code?
+Note that above is for  the  old  Lite5200  board.  For  the  (newer)
+Lite5200B boards you must use latest version of U-Boot and Linux (top
+of  tree  from  our git repositories), and "make lite5200b_config" to
+start.
 
-Looking forward to hear from you.
+Best regards,
 
-Thanks
-G.Muruganandam
+Wolfgang Denk
 
-
-Earlier post:
-=========
-
-
-Has anybody ported the SystemACE driver from 2.4 to 2.6 yet?  If so,
-where can I pull a patch from?  Otherwise I'll start work on it.
-
-Thanks,
-g.
-
-
-
-
---=====================_1133740796==.ALT
-Content-Type: text/html; charset="us-ascii"
-
-<html>
-<body>
-<br>
-Hello g, <br><br>
-I am looking for the answer to your question regarding the System ACE
-driver under 2.6 <br>
-posted in the linuxppc-embedded@ozlabs.org.<br><br>
-Pl let me know whether it is ported to 2.6. <br><br>
-If yes, Would it be possible to share the source code?<br><br>
-Looking forward to hear from you. <br><br>
-Thanks<br>
-G.Muruganandam<br><br>
-<br>
-Earlier post:<br>
-=========<br><br>
-<br>
-<pre>Has anybody ported the SystemACE driver from 2.4 to 2.6 yet?&nbsp;
-If so,
-where can I pull a patch from?&nbsp; Otherwise I'll start work on it.
-
-Thanks,
-g.
-
-
-</body>
-</html>
-
---=====================_1133740796==.ALT--
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"The greatest warriors are the ones who fight for peace."
+- Holly Near
