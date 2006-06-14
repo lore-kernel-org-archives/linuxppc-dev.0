@@ -1,19 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <SRS0+4befd073f6bde5688508+1025+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0F6EF67B96
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 09:53:46 +1000 (EST)
-Subject: RE: OpenFirmware framebuffer
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: matt@genesi-usa.com
-In-Reply-To: <024901c68f06$4aa71f00$99dfdfdf@bakuhatsu.net>
-References: <024901c68f06$4aa71f00$99dfdfdf@bakuhatsu.net>
+	by ozlabs.org (Postfix) with ESMTP id 6107E67B30
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 10:04:00 +1000 (EST)
+Subject: Re: 32 bit userland on G5
+From: David Woodhouse <dwmw2@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17551.20066.365036.256580@cargo.ozlabs.ibm.com>
+References: <1150194348.9208.33.camel@johannes>
+	<1150202709.12423.21.camel@hades.cambridge.redhat.com>
+	<17551.16830.186314.247458@cargo.ozlabs.ibm.com>
+	<1150241510.11159.159.camel@shinybook.infradead.org>
+	<17551.20066.365036.256580@cargo.ozlabs.ibm.com>
 Content-Type: text/plain
-Date: Wed, 14 Jun 2006 09:53:35 +1000
-Message-Id: <1150242815.13958.71.camel@localhost.localdomain>
+Date: Wed, 14 Jun 2006 01:04:14 +0100
+Message-Id: <1150243455.11159.176.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, 'Nathan Lynch' <ntl@pobox.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2006-06-13 at 11:27 -0500, Matt Sealey wrote:
-> Gentoo 2.6.15-r5 from the 2006.0 install CD.
+On Wed, 2006-06-14 at 09:46 +1000, Paul Mackerras wrote:
+> > We already did it in Fedora. We don't default to READ_IMPLIES_EXEC 
+> > for 32-bit processes on the 64-bit kernel.
 > 
-> It says "Welcome to Linux gentoo-2.6.15-r5" and then I see four
-> lines, MSR, HID0 and hex printout of each.
-> 
-> That's it.
-> 
-> I get the usual messages spooled to the serial console. My args are;
-> 
-> boot cd /boot/pegasos console=ttyS1,115200,8n1 console=tty0 init=/linuxrc looptype=squashfs loop=/image.squashfs udev nodevfs cdroot
-> root=/dev/ram0 video=ofonly
+> By patching include/asm-powerpc/elf.h? 
 
-Send us a copy of your dmesg log. Also, does the pegasos firmware
-creates a "display" node in OF with the right type and properties ?
+By patching fs/binfmt_elf.c -- it's part of the exec-shield patch.
+http://cvs.fedora.redhat.com/viewcvs/devel/kernel/linux-2.6-execshield.patch?rev=1.20&view=auto
 
-Ben.
+shinybook /home/dwmw2 $ cat foo.c
+int foo[2] = { 0x3860005a, 0x4e800020 };
+int main(void)
+{
+        int (*foofn)(void) = (void *)foo;
+        int f = foofn();
+        printf("%x\n", f);
+}
+shinybook /home/dwmw2 $ ./foo
+5a
+shinybook /home/dwmw2 $ scp foo pmac: ; ssh pmac
+foo                                             100% 9996     9.8KB/s
+00:00
+Last login: Wed Jun 14 00:58:26 2006 from shinybook-bcm.infradead.org
+pmac /home/dwmw2 $ ./foo
+Segmentation fault
+pmac /home/dwmw2 $ setarch ppc -X ./foo
+5a
+
+-- 
+dwmw2
