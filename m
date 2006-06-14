@@ -1,20 +1,17 @@
-Return-Path: <chuckmeade@mindspring.com>
-Received: from txslsmtp1.vzwmail.net (unknown [66.174.85.155])
-	by ozlabs.org (Postfix) with ESMTP id 1992967A41
+Return-Path: <jeff@theptrgroup.com>
+Received: from mail.theptrgroup.com (mail.theptrgroup.com [209.183.211.17])
+	by ozlabs.org (Postfix) with ESMTP id A7B2467A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Jun 2006 00:03:29 +1000 (EST)
-From: "Chuck Meade" <chuckmeade@mindspring.com>
-To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>,
-	"Alex Zeffertt" <ajz@cambridgebroadband.com>,
-	"Kumar Gala" <galak@kernel.crashing.org>,
-	"Chuck Meade \(mindspring\)" <chuckmeade@mindspring.com>
-Subject: RE: No ttyS device at I/O port 0xfe004500 for console
-Date: Wed, 14 Jun 2006 10:04:18 -0400
-Message-ID: <IIEEICKJLNEPBBDJICNGAEHHLDAA.chuckmeade@mindspring.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <F6AD7E21CDF4E145A44F61F43EE6D9397E9DAC@tmnt04.transmode.se>
+	Thu, 15 Jun 2006 00:11:56 +1000 (EST)
+Subject: Re: regarding xilinx system ace in linux-2.6
+From: Jeff Angielski <jeff@theptrgroup.com>
+To: rahul <rahul.theraja@gmail.com>
+In-Reply-To: <448F9188.8010201@gmail.com>
+References: <448F90FF.4080901@gmail.com>  <448F9188.8010201@gmail.com>
+Content-Type: text/plain
+Date: Wed, 14 Jun 2006 10:14:55 -0400
+Message-Id: <1150294495.7839.4.camel@sumo-jaa.nrl.navy.mil>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,40 +23,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> I think you should loose the "console=uart,io,0xfe004500", don't think
-> it is needed
-> sine the "console=ttyS0" will override it.
+On Wed, 2006-06-14 at 10:03 +0530, rahul wrote:
+> Hi all
+> I would like to know if anyone in the group or otherwise using Xilinx's
+> System ACE MPU interface to read/write to Compact Flash card on their
+> hardware ?
+> I came to know the code is implemented in linux-2.4  but i want to have 
+> it in linux-2.6
 
-I agree.  I use "console=ttyS0,115200".
+Last I heard was that Xilinx was working on the linux 2.6
+implementation.  
 
-> > >> +        .device_list    = (enum ppc_sys_devices[])
-> > >> +        {
-> > >> +            MPC83xx_IIC1, MPC83xx_DUART,
-> > >> +#ifdef CONFIG_QE
-> > >> +            MPC83xx_QE_UCC3, MPC83xx_QE_UCC4,
-> > >> +#endif
-> > >> +        },
-> > >> +    },
-> > >>      {    /* default match */
-> > >>          .ppc_sys_name    = "",
-> > >>          .mask         = 0x00000000,
-> 
-> This device list appears to be common to all 8323E CPUs and to me this
-> looks
-> like a board unique list. Seems to that this list is better off in the 
-> mpc832xe_mds.c board file. That would make it easier for custom boards I
-> think.
-> 
->  Jocke
+You should contact your Xilinx representative to find out the current
+status of that effort and/or where you can get the source code.
 
-Whatever is decided here is fine by me -- I followed the style of the 
-existing code when adding this code block.  The current 2.6.17 kernel has
-the device lists in this same file, for the CPU variants that are supported
-in the "public tree".
 
-But you are right, the CPU itself has more UCCs, and other peripherals, than
-shown here.  These are just the ones that are used by the existing platform
-device drivers I am aware of.  If you know of any additions to make to this
-list for the 8323E let us know.
-
-Chuck
+Jeff Angielski
+The PTR Group
