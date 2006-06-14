@@ -1,35 +1,22 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9955567B5E
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 00:59:12 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5EEx86p012845
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 10:59:09 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k5EEuE6H245954
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 10:59:09 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k5EEkpTJ021496
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 10:47:03 -0400
-In-Reply-To: <20060614034756.GA6759@monkey.ibm.com>
-References: <20060614034756.GA6759@monkey.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <113C7744-9B0B-497C-AAB5-895B54228B14@watson.ibm.com>
-From: Jimi Xenidis <jimix@watson.ibm.com>
-Subject: [RFC] New hcall mechanism Was: [PATCH 0/3] powerpc: Instrument
-	Hypervisor Calls
-Date: Wed, 14 Jun 2006 10:39:55 -0400
-To: Mike Kravetz <kravetz@us.ibm.com>
-Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Christopher Yeoh <cyeoh@samba.org>
+Return-Path: <adrian@humboldt.co.uk>
+Received: from mail.humboldt.co.uk (mail.humboldt.co.uk [80.68.93.146])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9034C67B85
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 01:46:51 +1000 (EST)
+Subject: RE: [PATCH/2.6.17-rc4 8/10]  Add  tsi108 8250 serial support
+From: Adrian Cox <adrian@humboldt.co.uk>
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+In-Reply-To: <9FCDBA58F226D911B202000BDBAD4673069C3C3D@zch01exm40.ap.freescale.net>
+References: <9FCDBA58F226D911B202000BDBAD4673069C3C3D@zch01exm40.ap.freescale.net>
+Content-Type: text/plain
+Date: Wed, 14 Jun 2006 15:25:28 +0100
+Message-Id: <1150295128.6552.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Alexandre.Bounine@tundra.com, Russell King <rmk+lkml@arm.linux.org.uk>,
+	linux-kernel@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, linux-serial@vger.kernel.org,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,80 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Looking at this patch set, it reminds me how IMNSHO the plpar calling  
-mechanism in Linux are a little arcane.
-When we were writing "toy" OSes for hypervisors we had the following  
-assembly:
+On Tue, 2006-06-13 at 13:39 +0800, Zang Roy-r61911 wrote:
 
-### NOTE: this code does not accommodate passing args in r11 & r12  
-(arg 8 and 9),
-### and 'in' could be used to streamline the fetching of r11 & r12  
-from the stack where the ABI has placed them.
-#define PAPR(in, out, name, func_code)	\
-	_GLOBAL(name);	 		\
-         /* profiling code here */		\
-	std r3,-GPR_WIDTH(r1); 		\
-	li r3,func_code; 		\
-	HSC;				\
-         /* profiling code here */		\
-	ld r12,-GPR_WIDTH(r1);		\
-	cmpi 0,r12,0;			\
-         bne ret	## out;	/* only store regs if r12 != NULL,  
-indicating the caller does not care about the return value */ \
-	b ret0
+> The reason is that the serial port on tsi108/9 is a bit difference with the 
+> standard 8250 serial port. the patch deal with the difference.
+> The prefixed ">" is caused by "Fw" the email. Sorry for that. The following 
+> is the original patch.
 
-ret7:	std r10, 6 * GPR_WIDTH(r12)
-ret6:	std r9, 5 * GPR_WIDTH(r12)
-ret5:	std r8, 4 * GPR_WIDTH(r12)
-ret4:	std r7, 3 * GPR_WIDTH(r12)
-ret3:	std r6, 2 * GPR_WIDTH(r12)
-ret2:	std r5, 1 * GPR_WIDTH(r12)
-ret1:	std r4, 0 * GPR_WIDTH(r12)
-	nop
-ret0:	blr
-	
-PAPR(4, 1,papr_enter, H_ENTER)
-...
+The problem I see is that the code uses a CONFIG option, to change the
+behaviour of the generic 8250 driver. What happens if somebody adds a
+PCI serial card to a tsi108 based machine?
 
-This allowes for the C interface for H_ENTER to be:
-   long papr_enter(ulong *slot, ulong flags, ulong hpte_group, ulong  
-hpte_v, ulong hpte_r);
+Perhaps you should define a new value for uart_8250_port.port.iotype,
+and add code to serial_in and serial_out to handle the IIR register.
 
-making the call:
-   ulong slot;
-   lapr_rc = papr_enter(&slot, flags, hpte_group, hpte_v, hpte_r);
-Rather than:
-   ulong slot, dummy0, dummy1;
-   lpar_rc = plpar_hcall(H_ENTER, flags, hpte_group, hpte_v, hpte_r,  
-&slot, &dummy0, &dummy1);
-
-The latter saving pointers to stack variables on the stack before the  
-call.
-
-A mechanism such as this could also make the profiling far simpler  
-and efficient as the profiling code get generated by the PAPR() macro  
-above.
-I is also possible to generate the prototypes from the PAPR()  
-statements above.
-
-
-Comments welcome?
--JX
-
-On Jun 13, 2006, at 11:47 PM, Mike Kravetz wrote:
-
-> This patch series adds instrumentation to Hypervisor calls.  Code and
-> ideas were taken from the patch set provided by Christopher Yeoh.
->
-> The idea is to put all instrumentation code behind a configuration
-> option so that it can easily be added/removed.  The instrumentation
-> code is kept to a minimum in the hopes that it's impact to performance
-> will not be noticed.  Statistics are made available via files in  
-> sysfs.
->
-> -- 
-> Mike
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-- 
+Adrian Cox <adrian@humboldt.co.uk>
