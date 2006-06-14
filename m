@@ -1,16 +1,15 @@
-Return-Path: <titof3000@hotmail.com>
-Received: from hotmail.com (bay109-f30.bay109.hotmail.com [64.4.19.40])
-	by ozlabs.org (Postfix) with ESMTP id 61CCD67A79
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 21:44:01 +1000 (EST)
-Message-ID: <BAY109-F30823DA7AB0F9132888482AC8D0@phx.gbl>
-In-Reply-To: <1149827915.12687.55.camel@localhost.localdomain>
-From: "Christophe Simon" <titof3000@hotmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: Linux kernel 2.6 on IBM RS/6000 7025-F40
-Date: Wed, 14 Jun 2006 11:43:55 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <matthias.fuchs@esd-electronics.com>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id A9FC367B64
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 22:36:19 +1000 (EST)
+Message-ID: <44900005.70508@esd-electronics.com>
+Date: Wed, 14 Jun 2006 14:24:37 +0200
+From: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] ppc32: fix CPCI405 board support
+Content-Type: multipart/mixed; boundary="------------040405040000050205040604"
+Cc: paulus@samba.org2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,119 +19,318 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------040405040000050205040604
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
 Hi,
 
-Sorry, I was long. I tried to boot my 7025-F40 with this kernel 
-http://www.solinno.co.uk/7043-140/files/2.6.9-rc2/ (the novga version) but 
-the I have a kernel panic while booting. Here's what is printed out on my 
-terminal :
+this patch brings the CPCI405 board support up to date and fixes several 
+outstanding issues:
 
-********************************************************************
-loaded at:     01000400 0116BF4C
-relocated to:  00800000 0096BB4C
-zimage at:     00805A30 009623BC
-avail ram:     00400000 00800000
+      -add bios_fixup()
+      -enable RTC only when CONFIG_GEN_RTC defined
+      -corrected CompactPCI interrupt map
+      -added cpci405_early_serial_map for correct UART clocking
+      -removed unused code
 
-Linux/PPC load: console=tty0 console=ttyS0 root=/dev/sda3
-Uncompressing Linux...done.
-Now booting the kernel
-Total memory = 384MB; using 1024kB for hash table (at c0400000)
-Linux version 2.6.9-rc2 (leigh@george) (gcc version 3.3.2) #5 Wed Sep 15 
-14:43:1
-9 BST 2004
-PReP architecture
-IBM planar ID: ff
-MPIC at 0xdffc0000 (0x1ffc0000), length 0x00040000 mapped to 0xeffbf000
-Built 1 zonelists
-Kernel command line: console=tty0 console=ttyS0 root=/dev/sda3
-OpenPIC Version 1.0 (4 CPUs and 16 IRQ sources) at effbf000
-OpenPIC timer frequency is 4.166666 MHz
-PID hash table entries: 2048 (order: 11, 32768 bytes)
-time_init: decrementer frequency = 16.662524 MHz
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Memory: 385024k available (2240k kernel code, 1004k data, 164k init, 0k 
-highmem)
-Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
-NET: Registered protocol family 16
-PCI: Probing PCI hardware
-Machine check in kernel mode.
-Caused by (from SRR1=c9030): Unknown values in msr
-Oops: machine check, sig: 7 [#1]
-NIP: C001AA28 LR: C02F8734 SP: C03F1F70 REGS: c03f1ec0 TRAP: 0200    Not 
-tainted
-MSR: 000c9030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-TASK = c082dba0[1] 'swapper' THREAD: c03f0000Last syscall: 120
-GPR00: C02F8720 C03F1F70 C082DBA0 C0252DF8 C0252D7C C0330000 C0340000 
-448FE150
-GPR08: C0330000 C0330000 00000005 80800864 24000028 00000000 00000000 
-00000000
-GPR16: 00000000 00000000 00000000 00000000 A5040113 00000000 00000000 
-00000000
-GPR24: 00000000 00C1AA00 40000000 2F646576 00000000 C0330000 00000001 
-00000000
-Call trace: [c02f378c]  [c02ee690]  [c0003b8c]  [c000a96c]
-Kernel panic - not syncing: Attempted to kill init!
-<0>Rebooting in 180 seconds..
-********************************************************************
+Matthias
 
-After that I tried with a stock 2.6.16.19 kernel thinking that perhaps this 
-machine was integrated, but noting appears on the terminal (not even the 
-"Linux/PPC load:" statement...) and the server reboots, and reboots again...
-
-Is it from any help ?
-
-Is there something to do to have a working 2.6 kernel on an 7025-F40 ?
-
-Thanks a lot
-
-Christophe SIMON
+Signed-off-by: Matthias Fuchs <matthias.fuchs@esd-electronics.com>
 
 
 
+--------------040405040000050205040604
+Content-Type: text/plain;
+ name="cpci405_uptodate_2006_06_14.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cpci405_uptodate_2006_06_14.patch"
 
->From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->To: Christophe Simon <titof3000@hotmail.com>
->CC: linuxppc-dev@ozlabs.org
->Subject: Re: Linux kernel 2.6 on IBM RS/6000 7025-F40
->Date: Fri, 09 Jun 2006 14:38:35 +1000
->
->On Wed, 2006-06-07 at 15:30 +0000, Christophe Simon wrote:
-> > Hi there,
-> >
-> > Did someone succeeded in compiling a running 2.6 kernel on an IBM 
->RS/6000
-> > 7025-F40 (PReP arch) ? I have one of these machines, and it runs with a
-> > 2.4.22 kernel built using the instructions gathered on
-> > http://www.solinno.co.uk/7043-140/
-> >
-> > It seems that this machine is quite problematic.
-> >
-> > I tried to compile my own kernel with a stock 2.6.16.19, and after that
-> > 2.6.7 patched with the files I found for the 2.6.7 (at
-> > http://www.solinno.co.uk/7043-140/files/2.6.7/), but the system refuses 
->to
-> > boot with those twoo kernels  (the machine reboots or freezes before 
->writing
-> > any piece of information on the console...).
-> >
-> > The site seems not to move anymore, and I'd like to have a 2.6 kernel
-> > running because of his better performances ans extended functionalities, 
->and
-> > I'd like not to be stalled on 2.4.22 kernel...
-> >
-> > I crawled the web hours and hours (Google is my friend, but it didn't 
->help
-> > me...) and I didn't find anything...
->
->I've successfully booted a 43p, I don't know about F40 though. What is
->the last message on the console when you try to boot the kernel ?
->
->Ben.
->
->
+Bring CPCI405 board support up to date
+    -add bios_fixup()
+    -enable RTC only when CONFIG_GEN_RTC defined
+    -corrected CompactPCI interrupt map
+    -added cpci405_early_serial_map for correct UART clocking
+    -removed unused code
 
-_________________________________________________________________
-MSN Hotmail sur i-mode™ : envoyez et recevez des e-mails depuis votre 
-téléphone portable ! http://www.msn.fr/hotmailimode/
+---
+commit dc0ce6e05de6309219d9c97bcfdf7a632fcbc57b
+tree b9265b8ec2935a5a8a8890a81f8bb2b381920bf3
+parent 128e6ced247cda88f96fa9f2e4ba8b2c4a681560
+author Matthias Fuchs <matthias.fuchs@esd-electronics.com> Wed, 14 Jun 2006 09:26:32 +0200
+committer Matthias Fuchs <matthias.fuchs@esd-electronics.com> Wed, 14 Jun 2006 09:26:32 +0200
+
+ arch/ppc/platforms/4xx/Kconfig   |    2 -
+ arch/ppc/platforms/4xx/cpci405.c |  139 +++++++++++++++++++++++++++++++++++---
+ arch/ppc/platforms/4xx/cpci405.h |   30 +++-----
+ 3 files changed, 140 insertions(+), 31 deletions(-)
+
+diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
+index 174ddbc..293bd48 100644
+--- a/arch/ppc/platforms/4xx/Kconfig
++++ b/arch/ppc/platforms/4xx/Kconfig
+@@ -183,7 +183,7 @@ config IBM_EMAC4
+ 
+ config BIOS_FIXUP
+ 	bool
+-	depends on BUBINGA || EP405 || SYCAMORE || WALNUT
++	depends on BUBINGA || EP405 || SYCAMORE || WALNUT || CPCI405
+ 	default y
+ 
+ # OAK doesn't exist but wanted to keep this around for any future 403GCX boards
+diff --git a/arch/ppc/platforms/4xx/cpci405.c b/arch/ppc/platforms/4xx/cpci405.c
+index 6571e39..42cb3f6 100644
+--- a/arch/ppc/platforms/4xx/cpci405.c
++++ b/arch/ppc/platforms/4xx/cpci405.c
+@@ -1,10 +1,12 @@
+ /*
+  * Board setup routines for the esd CPCI-405 cPCI Board.
+  *
+- * Author: Stefan Roese
+- *         stefan.roese@esd-electronics.com
++ * Copyright 2001-2006 esd electronic system design - hannover germany
+  *
+- * Copyright 2001 esd electronic system design - hannover germany
++ * Authors: Matthias Fuchs
++ *          matthias.fuchs@esd-electronics.com
++ *          Stefan Roese
++ *          stefan.roese@esd-electronics.com
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -20,9 +22,17 @@ #include <asm/system.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
+ #include <asm/todc.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
+ #include <asm/ocp.h>
++#include <asm/ibm_ocp_pci.h>
++#include <platforms/4xx/ibm405gp.h>
+ 
++#ifdef CONFIG_GEN_RTC
+ void *cpci405_nvram;
++#endif
++
++extern bd_t __res;
+ 
+ /*
+  * Some IRQs unique to CPCI-405.
+@@ -36,18 +46,69 @@ ppc405_map_irq(struct pci_dev *dev, unsi
+ 	 *      A       B       C       D
+ 	 */
+ 	{
+-		{28,	28,	28,	28},	/* IDSEL 15 - cPCI slot 8 */
+-		{29,	29,	29,	29},	/* IDSEL 16 - cPCI slot 7 */
+-		{30,	30,	30,	30},	/* IDSEL 17 - cPCI slot 6 */
+-		{27,	27,	27,	27},	/* IDSEL 18 - cPCI slot 5 */
+-		{28,	28,	28,	28},	/* IDSEL 19 - cPCI slot 4 */
+-		{29,	29,	29,	29},	/* IDSEL 20 - cPCI slot 3 */
+-		{30,	30,	30,	30},	/* IDSEL 21 - cPCI slot 2 */
++		{28,	29,	30,	27},	/* IDSEL 15 - cPCI slot 8 */
++		{29,	30,	27,	28},	/* IDSEL 16 - cPCI slot 7 */
++		{30,	27,	28,	29},	/* IDSEL 17 - cPCI slot 6 */
++		{27,	28,	29,	30},	/* IDSEL 18 - cPCI slot 5 */
++		{28,	29,	30,	27},	/* IDSEL 19 - cPCI slot 4 */
++		{29,	30,	27,	28},	/* IDSEL 20 - cPCI slot 3 */
++		{30,	27,	28,	29},	/* IDSEL 21 - cPCI slot 2 */
+         };
+ 	const long min_idsel = 15, max_idsel = 21, irqs_per_slot = 4;
+ 	return PCI_IRQ_TABLE_LOOKUP;
+ };
+ 
++/* The serial clock for the chip is an internal clock determined by
++ * different clock speeds/dividers.
++ * Calculate the proper input baud rate and setup the serial driver.
++ */
++static void __init
++cpci405_early_serial_map(void)
++{
++	u32 uart_div;
++	int uart_clock;
++	struct uart_port port;
++
++         /* Calculate the serial clock input frequency
++          *
++          * The uart clock is the cpu frequency (provided in the board info
++          * structure) divided by the external UART Divisor.
++          */
++	uart_div = ((mfdcr(DCRN_CHCR_BASE) & CHR0_UDIV) >> 1) + 1;
++	uart_clock = __res.bi_procfreq / uart_div;
++
++	/* Setup serial port access */
++	memset(&port, 0, sizeof(port));
++#if defined(CONFIG_UART0_TTYS0)
++	port.membase = (void*)UART0_IO_BASE;
++	port.irq = UART0_INT;
++#else
++	port.membase = (void*)UART1_IO_BASE;
++	port.irq = UART1_INT;
++#endif
++	port.uartclk = uart_clock;
++	port.regshift = 0;
++	port.iotype = UPIO_MEM;
++	port.flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST;
++	port.line = 0;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 0 failed\n");
++	}
++#if defined(CONFIG_UART0_TTYS0)
++	port.membase = (void*)UART1_IO_BASE;
++	port.irq = UART1_INT;
++#else
++	port.membase = (void*)UART0_IO_BASE;
++	port.irq = UART0_INT;
++#endif
++	port.line = 1;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 1 failed\n");
++	}
++}
++
+ void __init
+ cpci405_setup_arch(void)
+ {
+@@ -55,14 +116,68 @@ cpci405_setup_arch(void)
+ 
+ 	ibm_ocp_set_emac(0, 0);
+ 
+-	TODC_INIT(TODC_TYPE_MK48T35, cpci405_nvram, cpci405_nvram, cpci405_nvram, 8);
++        cpci405_early_serial_map();
++
++#ifdef CONFIG_GEN_RTC
++	TODC_INIT(TODC_TYPE_MK48T35, 
++		  cpci405_nvram, cpci405_nvram, cpci405_nvram, 8);
++#endif
++}
++
++void __init
++bios_fixup(struct pci_controller *hose, struct pcil0_regs *pcip)
++{
++	unsigned int bar_response, bar;
++
++	/* Disable region first */
++	out_le32((void *) &(pcip->pmm[0].ma), 0x00000000);
++	/* PLB starting addr, PCI: 0x80000000 */
++	out_le32((void *) &(pcip->pmm[0].la), 0x80000000);
++	/* PCI start addr, 0x80000000 */
++	out_le32((void *) &(pcip->pmm[0].pcila), PPC405_PCI_MEM_BASE);
++	/* 512MB range of PLB to PCI */
++	out_le32((void *) &(pcip->pmm[0].pciha), 0x00000000);
++	/* Enable no pre-fetch, enable region */
++	out_le32((void *) &(pcip->pmm[0].ma), ((0xffffffff -
++						(PPC405_PCI_UPPER_MEM -
++						 PPC405_PCI_MEM_BASE)) | 0x01));
++
++	/* Disable region one */
++	out_le32((void *) &(pcip->pmm[1].ma), 0x00000000);
++	out_le32((void *) &(pcip->pmm[1].la), 0x00000000);
++	out_le32((void *) &(pcip->pmm[1].pcila), 0x00000000);
++	out_le32((void *) &(pcip->pmm[1].pciha), 0x00000000);
++	out_le32((void *) &(pcip->pmm[1].ma), 0x00000000);
++	out_le32((void *) &(pcip->ptm1ms), 0x00000001);
++
++	/* Disable region two */
++	out_le32((void *) &(pcip->pmm[2].ma), 0x00000000);
++	out_le32((void *) &(pcip->pmm[2].la), 0x00000000);
++	out_le32((void *) &(pcip->pmm[2].pcila), 0x00000000);
++	out_le32((void *) &(pcip->pmm[2].pciha), 0x00000000);
++	out_le32((void *) &(pcip->pmm[2].ma), 0x00000000);
++	out_le32((void *) &(pcip->ptm2ms), 0x00000000);
++	out_le32((void *) &(pcip->ptm2la), 0x00000000);
++
++	/* Zero config bars */
++	for (bar = PCI_BASE_ADDRESS_1; bar <= PCI_BASE_ADDRESS_2; bar += 4) {
++		early_write_config_dword(hose, hose->first_busno,
++					 PCI_FUNC(hose->first_busno), bar,
++					 0x00000000);
++		early_read_config_dword(hose, hose->first_busno,
++					PCI_FUNC(hose->first_busno), bar,
++					&bar_response);
++	}
+ }
+ 
+ void __init
+ cpci405_map_io(void)
+ {
+ 	ppc4xx_map_io();
++
++#ifdef CONFIG_GEN_RTC
+ 	cpci405_nvram = ioremap(CPCI405_NVRAM_PADDR, CPCI405_NVRAM_SIZE);
++#endif
+ }
+ 
+ void __init
+@@ -74,9 +189,11 @@ platform_init(unsigned long r3, unsigned
+ 	ppc_md.setup_arch = cpci405_setup_arch;
+ 	ppc_md.setup_io_mappings = cpci405_map_io;
+ 
++#ifdef CONFIG_GEN_RTC
+ 	ppc_md.time_init = todc_time_init;
+ 	ppc_md.set_rtc_time = todc_set_rtc_time;
+ 	ppc_md.get_rtc_time = todc_get_rtc_time;
+ 	ppc_md.nvram_read_val = todc_direct_read_val;
+ 	ppc_md.nvram_write_val = todc_direct_write_val;
++#endif
+ }
+diff --git a/arch/ppc/platforms/4xx/cpci405.h b/arch/ppc/platforms/4xx/cpci405.h
+index e27f7cb..f5a5c0c 100644
+--- a/arch/ppc/platforms/4xx/cpci405.h
++++ b/arch/ppc/platforms/4xx/cpci405.h
+@@ -1,37 +1,29 @@
+ /*
+  * CPCI-405 board specific definitions
+  *
+- * Copyright (c) 2001 Stefan Roese (stefan.roese@esd-electronics.com)
++ * Copyright 2001-2006 esd electronic system design - hannover germany
++ *
++ * Authors: Matthias Fuchs
++ *          matthias.fuchs@esd-electronics.com
++ *          Stefan Roese
++ *          stefan.roese@esd-electronics.com
+  */
+ 
+ #ifdef __KERNEL__
+-#ifndef __ASM_CPCI405_H__
+-#define __ASM_CPCI405_H__
++#ifndef __CPCI405_H__
++#define __CPCI405_H__
+ 
+ #include <linux/config.h>
+-
+-/* We have a 405GP core */
+ #include <platforms/4xx/ibm405gp.h>
+-
+ #include <asm/ppcboot.h>
+ 
+-#ifndef __ASSEMBLY__
+-/* Some 4xx parts use a different timebase frequency from the internal clock.
+-*/
+-#define bi_tbfreq bi_intfreq
+-
+ /* Map for the NVRAM space */
+ #define CPCI405_NVRAM_PADDR	((uint)0xf0200000)
+ #define CPCI405_NVRAM_SIZE	((uint)32*1024)
+ 
+-#ifdef CONFIG_PPC405GP_INTERNAL_CLOCK
+-#define BASE_BAUD		201600
+-#else
+-#define BASE_BAUD		691200
+-#endif
++#define BASE_BAUD		0
+ 
+-#define PPC4xx_MACHINE_NAME "esd CPCI-405"
++#define PPC4xx_MACHINE_NAME     "esd CPCI-405"
+ 
+-#endif /* !__ASSEMBLY__ */
+-#endif	/* __ASM_CPCI405_H__ */
++#endif	/* __CPCI405_H__ */
+ #endif /* __KERNEL__ */
+
+
+
+--------------040405040000050205040604--
