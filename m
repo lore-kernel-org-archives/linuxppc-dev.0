@@ -1,33 +1,11 @@
-Return-Path: <dwilder@us.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 92B9E67B46
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 11:17:29 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5E1HPlG029835
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 21:17:25 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k5E1HDan293698
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 19:17:13 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k5E1HPxk030322
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 19:17:25 -0600
-Message-ID: <448F6D59.7020801@us.ibm.com>
-Date: Tue, 13 Jun 2006 18:58:49 -0700
-From: David Wilder <dwilder@us.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, fastboot@lists.osdl.org, paulus@samba.org,
-	akpm@osdl.org, Haren Myneni <hbabu@us.ibm.com>
-Subject: [PATCH] powerpc: Adding the use of the firmware soft-reset-nmi to
-	kdump.
-Content-Type: multipart/mixed; boundary="------------020905040301060801040601"
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17551.33574.27019.305680@cargo.ozlabs.ibm.com>
+Date: Wed, 14 Jun 2006 13:31:50 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Use soft irq-disable on all 64-bit machines
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,458 +15,456 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020905040301060801040601
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
+This patch extends the soft interrupt-disable strategy used on iSeries
+so that it applies to all 64-bit machines.  Basically, the idea is
+that local_irq_disable() and related functions don't actually change
+the MSR_EE (external interrupt enable) bit in the MSR, they just clear
+a per-cpu "interrupts enabled" flag.  If an interrupt does come along,
+the exception prolog code notices that interrupts are supposed to be
+disabled.  It then clears a per-cpu "interrupts are actually enabled"
+flag, and returns from the interrupt with MSR_EE clear.
 
--I am reposting this patch based on comments from Paul Mackerras and 
-Michael Ellerman requesting updated documentation.
+Then, when interrupts later get enabled, we noticed that the
+"interrupts are actually enabled" flag got cleared, and set it and the
+MSR_EE bit in the MSR.
 
--This patch is build against 2.6.17-rc6-git5 with the following patch 
-applied first.
-http://lists.osdl.org/pipermail/fastboot/2006-May/002947.html
-The above patch must be applied first to prevent a collision in 
-include/linux/kexec.h
+This should result in improved performance, since setting and clearing
+the MSR_EE bit in the MSR can be much more expensive than setting and
+clearing a per-cpu flag in memory.  This also reduces the
+iSeries-specific differences in the code.
 
--My patch includes mostly powerpc specific changes plus a small generic 
-change in kernel/kexec.h
-
-- Patch Description
-With this patch, kdump uses the firmware soft-rest NMI for two purposes:
-1) Initiate the kdump (take a crash dump) by issuing a soft-reset.
-2) Break a CPU out of a deadlock condition that is detected during kdump 
-processing.
-
-When a soft-reset is initiated each CPU will enter 
-system_reset_exception() and set its corresponding bit in the global 
-bit-array cpus_in_sr then call die(). When die() finds the CPU’s bit set 
-in cpu_in_sr crash_kexec() is called to initiate a crash dump. The first 
-CPU to enter crash_kexec() is called the “crashing CPU”. All other CPUs 
-are “secondary CPUs”. The secondary CPU’s pass through to 
-crash_kexec_secondary() and sleep. The crashing CPU waits for all CPUs 
-to enter via soft-reset then boots the kdump kernel (see 
-crash_soft_reset_check())
-
-When the system crashes due to a panic or exception, crash_kexec() is 
-called by panic() or die(). The crashing CPU sends an IPI to all other 
-CPUs to notify them of the pending shutdown. If a CPU is in a deadlock 
-or hung state with interrupts disabled, the IPI will not be delivered. 
-The result being, that the kdump kernel is not booted. This problem is 
-solved with the use of a firmware generated soft-reset. After the 
-crashing_cpu has issued the IPI, it waits for 10 sec for all CPUs to 
-enter crash_ipi_callback(). A CPU signifies its entry to 
-crash_ipi_callback() by setting its corresponding bit in the 
-cpus_in_crash bit array. After 10 sec, if one or more CPUs have not set 
-their bit in cpus_in_crash we assume that the CPU(s) is deadlocked. The 
-operator is then prompted to generate a soft-reset to break the 
-deadlock. Each CPU enters the soft reset handler as described above.
-
-Two conditions must be handled at this point:
-1) The system crashed because the operator generated a soft-reset. See 
-#1 above.
-2) The system had crashed before the soft-reset was generated ( in the 
-case of a Panic or oops…).
-
-The first CPU to enter crash_kexec() uses the state of the kexec_lock to 
-determine this state. If kexec_lock is already held then condition 2 is 
-true and crash_kexec_secondary() is called, else; this CPU is flagged as 
-the crashing CPU, the kexec_lock is acquired and crash_kexec() proceeds 
-as described above.
-
-Each additional CPUs responding to the soft-reset will pass through 
-crash_kexec() to kexec_secondary(). All secondary CPUs call 
-crash_ipi_callback() readying them self's for the shutdown. When ready 
-they clear their bit in cpus_in_sr. The crashing CPU waits in 
-kexec_secondary() until all other CPUs have cleared their bits in 
-cpus_in_sr. The kexec kernel boot is then started.
-
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
-Signed-off-by: David Wilder <dwilder@us.ibm.com>
--- 
-
-David Wilder
-IBM Linux Technology Center
-Beaverton, Oregon, USA 
-dwilder@us.ibm.com
-(503)578-3789
-
-
---------------020905040301060801040601
-Content-Type: text/x-patch;
- name="ppc64-softreset-in-k-dump-2.6.17-rc6-git5.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ppc64-softreset-in-k-dump-2.6.17-rc6-git5.patch"
-
-diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-index 778f22f..d84ca6b 100644
---- a/arch/powerpc/kernel/crash.c
-+++ b/arch/powerpc/kernel/crash.c
-@@ -23,9 +23,11 @@
- #include <linux/elfcore.h>
- #include <linux/init.h>
- #include <linux/types.h>
-+#include <linux/irq.h>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index ff29405..178a725 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -119,6 +119,7 @@ #ifdef CONFIG_PPC64
+ 	DEFINE(PACAR1, offsetof(struct paca_struct, saved_r1));
+ 	DEFINE(PACATOC, offsetof(struct paca_struct, kernel_toc));
+ 	DEFINE(PACAPROCENABLED, offsetof(struct paca_struct, proc_enabled));
++	DEFINE(PACAHARDIRQEN, offsetof(struct paca_struct, hard_enabled));
+ 	DEFINE(PACASLBCACHE, offsetof(struct paca_struct, slb_cache));
+ 	DEFINE(PACASLBCACHEPTR, offsetof(struct paca_struct, slb_cache_ptr));
+ 	DEFINE(PACACONTEXTID, offsetof(struct paca_struct, context.id));
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 19ad5c6..434461a 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -29,9 +29,7 @@ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/cputable.h>
  
- #include <asm/processor.h>
- #include <asm/machdep.h>
-+#include <asm/kexec.h>
- #include <asm/kdump.h>
- #include <asm/lmb.h>
- #include <asm/firmware.h>
-@@ -40,6 +42,7 @@
+-#ifdef CONFIG_PPC_ISERIES
+ #define DO_SOFT_DISABLE
+-#endif
  
- /* This keeps a track of which one is crashing cpu. */
- int crashing_cpu = -1;
-+static cpumask_t cpus_in_crash = CPU_MASK_NONE;
- 
- static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
- 							       size_t data_len)
-@@ -97,34 +100,66 @@ static void crash_save_this_cpu(struct p
- }
- 
- #ifdef CONFIG_SMP
--static atomic_t waiting_for_crash_ipi;
-+static atomic_t enter_on_soft_reset = ATOMIC_INIT(0);
- 
- void crash_ipi_callback(struct pt_regs *regs)
- {
- 	int cpu = smp_processor_id();
- 
--	if (cpu == crashing_cpu)
--		return;
--
- 	if (!cpu_online(cpu))
- 		return;
- 
--	if (ppc_md.kexec_cpu_down)
--		ppc_md.kexec_cpu_down(1, 1);
--
- 	local_irq_disable();
-+	if (!cpu_isset(cpu, cpus_in_crash))
-+		crash_save_this_cpu(regs, cpu);
-+	cpu_set(cpu, cpus_in_crash);
- 
--	crash_save_this_cpu(regs, cpu);
--	atomic_dec(&waiting_for_crash_ipi);
-+	/*
-+	 * Entered via soft-reset - could be the kdump  
-+	 * process is invoked using soft-reset or user activated
-+	 * it if some CPU did not respond to an IPI.
-+	 * For soft-reset, the secondary CPU can enter this func
-+	 * twice. 1 - using IPI, and 2. soft-reset.
-+	 * Tell the kexec CPU that entered via soft-reset and ready 
-+	 * to go down.
-+	 */
-+	if (cpu_isset(cpu, cpus_in_sr)) {
-+		cpu_clear(cpu, cpus_in_sr);
-+		atomic_inc(&enter_on_soft_reset);
-+	} 
-+		
-+	/*
-+	 * Starting the kdump boot.
-+	 * This barrier is needed to make sure that all CPUs are stopped.
-+	 * If not, soft-reset will be invoked to bring other CPUs. 
-+	 */
-+	while (!cpu_isset(crashing_cpu, cpus_in_crash)) 
-+		cpu_relax();
-+	
-+	if (ppc_md.kexec_cpu_down)
-+		ppc_md.kexec_cpu_down(1, 1);
- 	kexec_smp_wait();
- 	/* NOTREACHED */
- }
- 
--static void crash_kexec_prepare_cpus(void)
-+/*
-+ * Wait until all CPUs are entered via soft-reset.
-+ */
-+static void crash_soft_reset_check(int cpu)
-+{
-+	unsigned int ncpus = num_online_cpus() - 1;/* Excluding the panic cpu */
-+
-+	cpu_clear(cpu, cpus_in_sr);
-+	while (atomic_read(&enter_on_soft_reset) != ncpus)
-+		cpu_relax();
-+}
-+	
-+	
-+static void crash_kexec_prepare_cpus(int cpu)
- {
- 	unsigned int msecs;
- 
--	atomic_set(&waiting_for_crash_ipi, num_online_cpus() - 1);
-+	unsigned int ncpus = num_online_cpus() - 1;/* Excluding the panic cpu */
- 
- 	crash_send_ipi(crash_ipi_callback);
- 	smp_wmb();
-@@ -132,14 +167,13 @@ static void crash_kexec_prepare_cpus(voi
- 	/*
- 	 * FIXME: Until we will have the way to stop other CPUSs reliabally,
- 	 * the crash CPU will send an IPI and wait for other CPUs to
--	 * respond. If not, proceed the kexec boot even though we failed to
--	 * capture other CPU states.
-+	 * respond.
- 	 * Delay of at least 10 seconds.
- 	 */
--	printk(KERN_ALERT "Sending IPI to other cpus...\n");
-+	printk(KERN_EMERG "Sending IPI to other cpus...\n");
- 	msecs = 10000;
--	while ((atomic_read(&waiting_for_crash_ipi) > 0) && (--msecs > 0)) {
--		barrier();
-+	while ((cpus_weight(cpus_in_crash) < ncpus) && (--msecs > 0)) {
-+		cpu_relax();
- 		mdelay(1);
- 	}
- 
-@@ -148,18 +182,71 @@ static void crash_kexec_prepare_cpus(voi
- 	/*
- 	 * FIXME: In case if we do not get all CPUs, one possibility: ask the
- 	 * user to do soft reset such that we get all.
--	 * IPI handler is already set by the panic cpu initially. Therefore,
--	 * all cpus could invoke this handler from die() and the panic CPU
--	 * will call machine_kexec() directly from this handler to do
--	 * kexec boot.
--	 */
--	if (atomic_read(&waiting_for_crash_ipi))
--		printk(KERN_ALERT "done waiting: %d cpus not responding\n",
--			atomic_read(&waiting_for_crash_ipi));
-+	 * Soft-reset will be used until better mechanism is implemented.
-+	 */
-+	if (cpus_weight(cpus_in_crash) < ncpus) {
-+		printk(KERN_EMERG "done waiting: %d cpu(s) not responding\n",
-+			ncpus - cpus_weight(cpus_in_crash));
-+		printk(KERN_EMERG "Activate soft-reset to stop other cpu(s)\n");
-+		cpus_in_sr = CPU_MASK_NONE;
-+		atomic_set(&enter_on_soft_reset, 0);
-+		while (cpus_weight(cpus_in_crash) < ncpus)
-+			cpu_relax();
-+	}
-+	/*
-+	 * Make sure all CPUs are entered via soft-reset if the kdump is
-+	 * invoked using soft-reset.
-+	 */
-+	if (cpu_isset(cpu, cpus_in_sr)) 
-+		crash_soft_reset_check(cpu);
- 	/* Leave the IPI callback set */
- }
-+
-+/*
-+ * This function will be called by secondary cpus or by kexec cpu 
-+ * if soft-reset is activated to stop some CPUs.
-+ */
-+void crash_kexec_secondary(struct pt_regs *regs)
-+{
-+	int cpu = smp_processor_id();
-+	unsigned long flags;
-+	int msecs = 5;
-+
-+	local_irq_save(flags);
-+	/* Wait 5ms if the kexec CPU is not entered yet. */
-+	while (crashing_cpu < 0) {
-+		if (--msecs < 0) {
-+			/*
-+			 * Either kdump image is not loaded or
-+			 * kdump process is not started - Probably xmon
-+			 * exited using 'x'(exit and recover) or 
-+			 * kexec_should_crash() failed for all running tasks.
-+			 */
-+			cpu_clear(cpu, cpus_in_sr);
-+			local_irq_restore(flags);
-+			return;
-+		}
-+		mdelay(1);
-+		cpu_relax();
-+	}
-+	if (cpu == crashing_cpu) {
-+		/*
-+		 * Panic CPU will enter this func only via soft-reset.
-+		 * Wait until all secondary CPUs entered and
-+		 * then start kexec boot.
-+		 */
-+		crash_soft_reset_check(cpu);
-+		cpu_set(crashing_cpu, cpus_in_crash);
-+		if (ppc_md.kexec_cpu_down)
-+			ppc_md.kexec_cpu_down(1, 0);
-+		machine_kexec(kexec_crash_image);
-+		/* NOTREACHED */
-+	}
-+	crash_ipi_callback(regs);
-+}
-+
- #else
--static void crash_kexec_prepare_cpus(void)
-+static void crash_kexec_prepare_cpus(int cpu)
- {
- 	/*
- 	 * move the secondarys to us so that we can copy
-@@ -170,6 +257,10 @@ static void crash_kexec_prepare_cpus(voi
- 	smp_release_cpus();
- }
- 
-+void crash_kexec_secondary(struct pt_regs *regs)
-+{
-+	cpus_in_sr = CPU_MASK_NONE;
-+}
- #endif
- 
- void default_machine_crash_shutdown(struct pt_regs *regs)
-@@ -186,14 +277,14 @@ void default_machine_crash_shutdown(stru
- 	 */
- 	local_irq_disable();
- 
--	if (ppc_md.kexec_cpu_down)
--		ppc_md.kexec_cpu_down(1, 0);
--
- 	/*
- 	 * Make a note of crashing cpu. Will be used in machine_kexec
- 	 * such that another IPI will not be sent.
- 	 */
- 	crashing_cpu = smp_processor_id();
--	crash_kexec_prepare_cpus();
- 	crash_save_this_cpu(regs, crashing_cpu);
-+	crash_kexec_prepare_cpus(crashing_cpu);
-+	cpu_set(crashing_cpu, cpus_in_crash);
-+	if (ppc_md.kexec_cpu_down)
-+		ppc_md.kexec_cpu_down(1, 0);
- }
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 064a525..d3c6402 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -51,9 +51,13 @@
- #include <asm/firmware.h>
- #include <asm/processor.h>
- #endif
-+#include <asm/kexec.h>
- 
- #ifdef CONFIG_PPC64	/* XXX */
- #define _IO_BASE	pci_io_base
-+#ifdef CONFIG_KEXEC
-+cpumask_t cpus_in_sr = CPU_MASK_NONE;
-+#endif
- #endif
- 
- #ifdef CONFIG_DEBUGGER
-@@ -96,7 +100,7 @@ static DEFINE_SPINLOCK(die_lock);
- 
- int die(const char *str, struct pt_regs *regs, long err)
- {
--	static int die_counter, crash_dump_start = 0;
-+	static int die_counter;
- 
- 	if (debugger(regs))
- 		return 1;
-@@ -128,22 +132,13 @@ int die(const char *str, struct pt_regs 
- 	print_modules();
- 	show_regs(regs);
- 	bust_spinlocks(0);
--
--	if (!crash_dump_start && kexec_should_crash(current)) {
--		crash_dump_start = 1;
--		spin_unlock_irq(&die_lock);
--		crash_kexec(regs);
--		/* NOTREACHED */
--	}
- 	spin_unlock_irq(&die_lock);
--	if (crash_dump_start)
--		/*
--		 * Only for soft-reset: Other CPUs will be responded to an IPI
--		 * sent by first kexec CPU.
--		 */
--		for(;;)
--			;
- 
-+	if (kexec_should_crash(current) ||
-+		kexec_sr_activated(smp_processor_id()))
-+		crash_kexec(regs);
-+	crash_kexec_secondary(regs);
-+		
- 	if (in_interrupt())
- 		panic("Fatal exception in interrupt");
- 
-@@ -205,6 +200,10 @@ void system_reset_exception(struct pt_re
- 		if (ppc_md.system_reset_exception(regs))
- 			return;
- 	}
-+	
-+#ifdef CONFIG_KEXEC
-+	cpu_set(smp_processor_id(), cpus_in_sr);
-+#endif
- 
- 	die("System Reset", regs, SIGABRT);
- 
-diff --git a/include/asm-powerpc/kexec.h b/include/asm-powerpc/kexec.h
-index 6a2af2f..2a35215 100644
---- a/include/asm-powerpc/kexec.h
-+++ b/include/asm-powerpc/kexec.h
-@@ -31,9 +31,9 @@
- #define KEXEC_ARCH KEXEC_ARCH_PPC
- #endif
- 
-+#ifndef __ASSEMBLY__
- #ifdef CONFIG_KEXEC
- 
--#ifndef __ASSEMBLY__
- #ifdef __powerpc64__
  /*
-  * This function is responsible for capturing register states if coming
-@@ -114,6 +114,11 @@ extern void kexec_smp_wait(void);	/* get
- extern void __init kexec_setup(void);
- extern int crashing_cpu;
- extern void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *));
-+extern cpumask_t cpus_in_sr;
-+static inline int kexec_sr_activated(int cpu)
-+{
-+	return cpu_isset(cpu,cpus_in_sr);
-+}
- #endif /* __powerpc64 __ */
+  * System calls.
+@@ -97,9 +95,9 @@ #ifdef CONFIG_PPC_ISERIES
+ 	andi.	r10,r12,MSR_PR		/* from kernel */
+ 	crand	4*cr0+eq,4*cr1+eq,4*cr0+eq
+ 	beq	hardware_interrupt_entry
++#endif
+ 	lbz	r10,PACAPROCENABLED(r13)
+ 	std	r10,SOFTE(r1)
+-#endif
+ 	mfmsr	r11
+ 	ori	r11,r11,MSR_EE
+ 	mtmsrd	r11,1
+@@ -454,8 +452,8 @@ #else /* !CONFIG_PREEMPT */
+ #endif
  
- struct kimage;
-@@ -123,8 +128,15 @@ extern int default_machine_kexec_prepare
- extern void default_machine_crash_shutdown(struct pt_regs *regs);
+ restore:
+-#ifdef CONFIG_PPC_ISERIES
+ 	ld	r5,SOFTE(r1)
++#ifdef CONFIG_PPC_ISERIES
+ 	cmpdi	0,r5,0
+ 	beq	4f
+ 	/* Check for pending interrupts (iSeries) */
+@@ -472,8 +470,9 @@ #ifdef CONFIG_PPC_ISERIES
+ 	bl	.do_IRQ
+ 	b	.ret_from_except_lite		/* loop back and handle more */
  
- extern void machine_kexec_simple(struct kimage *image);
-+extern void crash_kexec_secondary(struct pt_regs *regs);
-+extern int overlaps_crashkernel(unsigned long start, unsigned long size);
-+extern void reserve_crashkernel(void);
-+
-+#else /* !CONFIG_KEXEC */
-+static inline int kexec_sr_activated(int cpu) { return 0; }
-+static inline void crash_kexec_secondary(struct pt_regs *regs) { }
+-4:	stb	r5,PACAPROCENABLED(r13)
++4:
+ #endif
++	stb	r5,PACAPROCENABLED(r13)
  
--#endif /* ! __ASSEMBLY__ */
- #endif /* CONFIG_KEXEC */
-+#endif /* ! __ASSEMBLY__ */
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_KEXEC_H */
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index f99d69c..950559d 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -1042,7 +1042,6 @@ asmlinkage long compat_sys_kexec_load(un
- 
- void crash_kexec(struct pt_regs *regs)
- {
--	struct kimage *image;
- 	int locked;
- 
- 
-@@ -1056,12 +1055,11 @@ void crash_kexec(struct pt_regs *regs)
+ 	ld	r3,_MSR(r1)
+ 	andi.	r0,r3,MSR_RI
+@@ -530,20 +529,15 @@ #ifdef CONFIG_PREEMPT
+ 	/* Check that preempt_count() == 0 and interrupts are enabled */
+ 	lwz	r8,TI_PREEMPT(r9)
+ 	cmpwi	cr1,r8,0
+-#ifdef CONFIG_PPC_ISERIES
+ 	ld	r0,SOFTE(r1)
+ 	cmpdi	r0,0
+-#else
+-	andi.	r0,r3,MSR_EE
+-#endif
+ 	crandc	eq,cr1*4+eq,eq
+ 	bne	restore
+ 	/* here we are preempting the current task */
+ 1:
+-#ifdef CONFIG_PPC_ISERIES
+ 	li	r0,1
+ 	stb	r0,PACAPROCENABLED(r13)
+-#endif
++	stb	r0,PACAHARDIRQEN(r13)
+ 	ori	r10,r10,MSR_EE
+ 	mtmsrd	r10,1		/* reenable interrupts */
+ 	bl	.preempt_schedule
+@@ -626,8 +620,7 @@ _GLOBAL(enter_rtas)
+ 	/* There is no way it is acceptable to get here with interrupts enabled,
+ 	 * check it with the asm equivalent of WARN_ON
  	 */
- 	locked = xchg(&kexec_lock, 1);
- 	if (!locked) {
--		image = xchg(&kexec_crash_image, NULL);
--		if (image) {
-+		if (kexec_crash_image) {
- 			struct pt_regs fixed_regs;
- 			crash_setup_regs(&fixed_regs, regs);
- 			machine_crash_shutdown(&fixed_regs);
--			machine_kexec(image);
-+			machine_kexec(kexec_crash_image);
- 		}
- 		xchg(&kexec_lock, 0);
- 	}
-
---------------020905040301060801040601--
+-	mfmsr	r6
+-	andi.	r0,r6,MSR_EE
++	lbz	r0,PACAPROCENABLED(r13)
+ 1:	tdnei	r0,0
+ .section __bug_table,"a"
+ 	.llong	1b,__LINE__ + 0x1000000, 1f, 2f
+@@ -636,7 +629,13 @@ _GLOBAL(enter_rtas)
+ 1:	.asciz	__FILE__
+ 2:	.asciz "enter_rtas"
+ .previous
+-	
++
++	/* Hard-disable interrupts */
++	mfmsr	r6
++	rldicl	r7,r6,48,1
++	rotldi	r7,r7,16
++	mtmsrd	r7,1
++
+ 	/* Unfortunately, the stack pointer and the MSR are also clobbered,
+ 	 * so they are saved in the PACA which allows us to restore
+ 	 * our original state after RTAS returns.
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index b7d1404..26729e9 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -35,9 +35,7 @@ #include <asm/hvcall.h>
+ #include <asm/iseries/lpar_map.h>
+ #include <asm/thread_info.h>
+ 
+-#ifdef CONFIG_PPC_ISERIES
+ #define DO_SOFT_DISABLE
+-#endif
+ 
+ /*
+  * We layout physical memory as follows:
+@@ -296,7 +294,9 @@ #define EXCEPTION_PROLOG_COMMON(n, area)
+ 	std	r9,_LINK(r1);						   \
+ 	mfctr	r10;			/* save CTR in stackframe	*/ \
+ 	std	r10,_CTR(r1);						   \
++	lbz	r10,PACAPROCENABLED(r13);				   \
+ 	mfspr	r11,SPRN_XER;		/* save XER in stackframe	*/ \
++	std	r10,SOFTE(r1);						   \
+ 	std	r11,_XER(r1);						   \
+ 	li	r9,(n)+1;						   \
+ 	std	r9,_TRAP(r1);		/* set trap number		*/ \
+@@ -315,6 +315,34 @@ label##_pSeries:					\
+ 	HMT_MEDIUM;					\
+ 	mtspr	SPRN_SPRG1,r13;		/* save r13 */	\
+ 	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common)
++
++#define MASKABLE_EXCEPTION_PSERIES(n, label)				\
++	. = n;								\
++	.globl label##_pSeries;						\
++label##_pSeries:							\
++	HMT_MEDIUM;							\
++	mtspr	SPRN_SPRG1,r13;		/* save r13 */			\
++	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
++	std	r9,PACA_EXGEN+EX_R9(r13);	/* save r9, r10 */	\
++	std	r10,PACA_EXGEN+EX_R10(r13);				\
++	lbz	r10,PACAPROCENABLED(r13);				\
++	mfcr	r9;							\
++	cmpwi	r10,0;							\
++	beq	masked_interrupt;					\
++	mfspr	r10,SPRN_SPRG1;						\
++	std	r10,PACA_EXGEN+EX_R13(r13);				\
++	std	r11,PACA_EXGEN+EX_R11(r13);				\
++	std	r12,PACA_EXGEN+EX_R12(r13);				\
++	clrrdi	r12,r13,32;		/* get high part of &label */	\
++	mfmsr	r10;							\
++	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
++	LOAD_HANDLER(r12,label##_common)				\
++	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
++	mtspr	SPRN_SRR0,r12;						\
++	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
++	mtspr	SPRN_SRR1,r10;						\
++	rfid;								\
++	b	.	/* prevent speculative execution */
+ 
+ #define STD_EXCEPTION_ISERIES(n, label, area)		\
+ 	.globl label##_iSeries;				\
+@@ -338,19 +366,22 @@ label##_iSeries:							\
+ 	b	label##_common;						\
+ 
+ #ifdef DO_SOFT_DISABLE
++#ifndef CONFIG_PPC_ISERIES
+ #define DISABLE_INTS				\
+-	lbz	r10,PACAPROCENABLED(r13);	\
+ 	li	r11,0;				\
+-	std	r10,SOFTE(r1);			\
++	stb	r11,PACAPROCENABLED(r13);	\
++	stb	r10,PACAHARDIRQEN(r13)
++#else
++#define DISABLE_INTS				\
++	li	r11,0;				\
+ 	mfmsr	r10;				\
+ 	stb	r11,PACAPROCENABLED(r13);	\
+ 	ori	r10,r10,MSR_EE;			\
+ 	mtmsrd	r10,1
++#endif
+ 
+ #define ENABLE_INTS				\
+-	lbz	r10,PACAPROCENABLED(r13);	\
+ 	mfmsr	r11;				\
+-	std	r10,SOFTE(r1);			\
+ 	ori	r11,r11,MSR_EE;			\
+ 	mtmsrd	r11,1
+ 
+@@ -505,11 +536,11 @@ #endif /* __DISABLED__ */
+ 	mfspr	r12,SPRN_SRR1		/* and SRR1 */
+ 	b	.slb_miss_realmode	/* Rel. branch works in real mode */
+ 
+-	STD_EXCEPTION_PSERIES(0x500, hardware_interrupt)
++	MASKABLE_EXCEPTION_PSERIES(0x500, hardware_interrupt)
+ 	STD_EXCEPTION_PSERIES(0x600, alignment)
+ 	STD_EXCEPTION_PSERIES(0x700, program_check)
+ 	STD_EXCEPTION_PSERIES(0x800, fp_unavailable)
+-	STD_EXCEPTION_PSERIES(0x900, decrementer)
++	MASKABLE_EXCEPTION_PSERIES(0x900, decrementer)
+ 	STD_EXCEPTION_PSERIES(0xa00, trap_0a)
+ 	STD_EXCEPTION_PSERIES(0xb00, trap_0b)
+ 
+@@ -552,8 +583,25 @@ system_call_pSeries:
+ /*** pSeries interrupt support ***/
+ 
+ 	/* moved from 0xf00 */
+-	STD_EXCEPTION_PSERIES(., performance_monitor)
++	MASKABLE_EXCEPTION_PSERIES(., performance_monitor)
+ 
++/*
++ * An interrupt came in while soft-disabled; clear EE in SRR1,
++ * clear paca->hard_enabled and return.
++ */
++masked_interrupt:
++	stb	r10,PACAHARDIRQEN(r13)
++	mtcrf	0x80,r9
++	ld	r9,PACA_EXGEN+EX_R9(r13)
++	mfspr	r10,SPRN_SRR1
++	rldicl	r10,r10,48,1		/* clear MSR_EE */
++	rotldi	r10,r10,16
++	mtspr	SPRN_SRR1,r10
++	ld	r10,PACA_EXGEN+EX_R10(r13)
++	mfspr	r13,SPRN_SPRG1
++	rfid
++	b	.
++
+ 	.align	7
+ _GLOBAL(do_stab_bolted_pSeries)
+ 	mtcrf	0x80,r12
+@@ -902,7 +950,8 @@ #endif
+ 	REST_8GPRS(2, r1)
+ 
+ 	mfmsr	r10
+-	clrrdi	r10,r10,2		/* clear RI (LE is 0 already) */
++	rldicl	r10,r10,48,1		/* clear EE */
++	rldicr	r10,r10,16,61		/* clear RI (LE is 0 already) */
+ 	mtmsrd	r10,1
+ 
+ 	mtspr	SPRN_SRR1,r12
+@@ -1800,8 +1849,11 @@ _GLOBAL(__secondary_start)
+ 	/* enable MMU and jump to start_secondary */
+ 	LOAD_REG_ADDR(r3, .start_secondary_prolog)
+ 	LOAD_REG_IMMEDIATE(r4, MSR_KERNEL)
+-#ifdef DO_SOFT_DISABLE
++#ifdef CONFIG_PPC_ISERIES
+ 	ori	r4,r4,MSR_EE
++#else
++	stb	r7,PACAPROCENABLED(r13)
++	stb	r7,PACAHARDIRQEN(r13)
+ #endif
+ 	mtspr	SPRN_SRR0,r3
+ 	mtspr	SPRN_SRR1,r4
+@@ -1953,9 +2005,11 @@ _STATIC(start_here_common)
+ 
+ 	/* Load up the kernel context */
+ 5:
+-#ifdef DO_SOFT_DISABLE
+ 	li	r5,0
+ 	stb	r5,PACAPROCENABLED(r13)	/* Soft Disabled */
++#ifndef CONFIG_PPC_ISERIES
++	stb	r5,PACAHARDIRQEN(r13)	/* hard-disabled too */
++#else
+ 	mfmsr	r5
+ 	ori	r5,r5,MSR_EE		/* Hard Enabled */
+ 	mtmsrd	r5
+diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
+index d85c7c9..5571136 100644
+--- a/arch/powerpc/kernel/idle_power4.S
++++ b/arch/powerpc/kernel/idle_power4.S
+@@ -31,7 +31,14 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+ 	beqlr
+ 
+ 	/* Go to NAP now */
+-BEGIN_FTR_SECTION
++	mfmsr	r7
++	rldicl	r0,r7,48,1
++	rotldi	r0,r0,16
++	mtmsrd	r0,1			/* hard-disable interrupts */
++	li	r0,1
++	stb	r0,PACAPROCENABLED(r13)	/* we'll hard-enable shortly */
++	stb	r0,PACAHARDIRQEN(r13)
++BEGIN_FTR_SECTION
+ 	DSSALL
+ 	sync
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+@@ -39,7 +46,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	ld	r8,TI_LOCAL_FLAGS(r9)	/* set napping bit */
+ 	ori	r8,r8,_TLF_NAPPING	/* so when we take an exception */
+ 	std	r8,TI_LOCAL_FLAGS(r9)	/* it will return to our caller */
+-	mfmsr	r7
+ 	ori	r7,r7,MSR_EE
+ 	oris	r7,r7,MSR_POW@h
+ 1:	sync
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 57d560c..2936640 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -90,6 +90,20 @@ EXPORT_SYMBOL(irq_desc);
+ 
+ int distribute_irqs = 1;
+ u64 ppc64_interrupt_controller;
++
++#ifndef CONFIG_PPC_ISERIES
++void local_irq_restore(unsigned long en)
++{
++	get_paca()->proc_enabled = en;
++	if (!en || get_paca()->hard_enabled)
++		return;
++	/* need to hard-enable interrupts here */
++	get_paca()->hard_enabled = en;
++	if ((int)mfspr(SPRN_DEC) < 0)
++		mtspr(SPRN_DEC, 1);
++	hard_irq_enable();
++}
++#endif /* CONFIG_PPC_ISERIES */
+ #endif /* CONFIG_PPC64 */
+ 
+ int show_interrupts(struct seq_file *p, void *v)
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 4b052ae..38109a3 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -50,6 +50,10 @@ #ifdef  CONFIG_8xx
+ #include <asm/commproc.h>
+ #endif
+ 
++#ifdef CONFIG_PPC64
++EXPORT_SYMBOL(local_irq_restore);
++#endif
++
+ #ifdef CONFIG_PPC32
+ extern void transfer_to_handler(void);
+ extern void do_IRQ(struct pt_regs *regs);
+diff --git a/arch/powerpc/platforms/iseries/ksyms.c b/arch/powerpc/platforms/iseries/ksyms.c
+index a220084..2430848 100644
+--- a/arch/powerpc/platforms/iseries/ksyms.c
++++ b/arch/powerpc/platforms/iseries/ksyms.c
+@@ -19,9 +19,3 @@ EXPORT_SYMBOL(HvCall4);
+ EXPORT_SYMBOL(HvCall5);
+ EXPORT_SYMBOL(HvCall6);
+ EXPORT_SYMBOL(HvCall7);
+-
+-#ifdef CONFIG_SMP
+-EXPORT_SYMBOL(local_get_flags);
+-EXPORT_SYMBOL(local_irq_disable);
+-EXPORT_SYMBOL(local_irq_restore);
+-#endif
+diff --git a/arch/powerpc/platforms/iseries/misc.S b/arch/powerpc/platforms/iseries/misc.S
+index 7641fc7..385a627 100644
+--- a/arch/powerpc/platforms/iseries/misc.S
++++ b/arch/powerpc/platforms/iseries/misc.S
+@@ -19,18 +19,6 @@ #include <asm/ppc_asm.h>
+ 
+ 	.text
+ 
+-/* unsigned long local_save_flags(void) */
+-_GLOBAL(local_get_flags)
+-	lbz	r3,PACAPROCENABLED(r13)
+-	blr
+-
+-/* unsigned long local_irq_disable(void) */
+-_GLOBAL(local_irq_disable)
+-	lbz	r3,PACAPROCENABLED(r13)
+-	li	r4,0
+-	stb	r4,PACAPROCENABLED(r13)
+-	blr			/* Done */
+-
+ /* void local_irq_restore(unsigned long flags) */
+ _GLOBAL(local_irq_restore)
+ 	lbz	r5,PACAPROCENABLED(r13)
+diff --git a/include/asm-powerpc/hw_irq.h b/include/asm-powerpc/hw_irq.h
+index 26b89d8..f231264 100644
+--- a/include/asm-powerpc/hw_irq.h
++++ b/include/asm-powerpc/hw_irq.h
+@@ -13,10 +13,21 @@ #include <asm/processor.h>
+ 
+ extern void timer_interrupt(struct pt_regs *);
+ 
+-#ifdef CONFIG_PPC_ISERIES
++#ifdef CONFIG_PPC64
++#include <asm/paca.h>
+ 
+-extern unsigned long local_get_flags(void);
+-extern unsigned long local_irq_disable(void);
++static inline unsigned long local_get_flags(void)
++{
++	return get_paca()->proc_enabled;
++}
++
++static inline unsigned long local_irq_disable(void)
++{
++	unsigned long flag = get_paca()->proc_enabled;
++	get_paca()->proc_enabled = 0;
++	return flag;
++}
++
+ extern void local_irq_restore(unsigned long);
+ 
+ #define local_irq_enable()	local_irq_restore(1)
+@@ -24,6 +35,9 @@ #define local_save_flags(flags)	((flags)
+ #define local_irq_save(flags)	((flags) = local_irq_disable())
+ 
+ #define irqs_disabled()		(local_get_flags() == 0)
++
++#define hard_irq_enable()	__mtmsrd(mfmsr() | MSR_EE, 1)
++#define hard_irq_disable()	__mtmsrd(mfmsr() & ~MSR_EE, 1)
+ 
+ #else
+ 
+@@ -82,7 +96,7 @@ #define local_save_flags(flags)	((flags)
+ #define local_irq_save(flags)	local_irq_save_ptr(&flags)
+ #define irqs_disabled()		((mfmsr() & MSR_EE) == 0)
+ 
+-#endif /* CONFIG_PPC_ISERIES */
++#endif /* CONFIG_PPC64 */
+ 
+ #define mask_irq(irq)						\
+ 	({							\
+diff --git a/include/asm-powerpc/paca.h b/include/asm-powerpc/paca.h
+index 1740635..75a219c 100644
+--- a/include/asm-powerpc/paca.h
++++ b/include/asm-powerpc/paca.h
+@@ -94,6 +94,7 @@ #endif /* CONFIG_PPC_ISERIES */
+ 	u64 saved_r1;			/* r1 save for RTAS calls */
+ 	u64 saved_msr;			/* MSR saved here by enter_rtas */
+ 	u8 proc_enabled;		/* irq soft-enable flag */
++	u8 hard_enabled;		/* set if irqs are enabled in MSR */
+ 
+ 	/* Stuff for accurate time accounting */
+ 	u64 user_time;			/* accumulated usermode TB ticks */
