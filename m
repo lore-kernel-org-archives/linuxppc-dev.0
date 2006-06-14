@@ -1,23 +1,16 @@
-Return-Path: <iluri@fagorautomation.es>
-Received: from smtp2.sarenet.es (orhi.sarenet.es [192.148.167.5])
-	by ozlabs.org (Postfix) with ESMTP id 5479E67B6E
+Return-Path: <pdfdoc15@yahoo.com>
+Received: from web37109.mail.mud.yahoo.com (web37109.mail.mud.yahoo.com
+	[209.191.85.111]) by ozlabs.org (Postfix) with SMTP id 77BF567B87
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Jun 2006 01:45:41 +1000 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by smtp2.sarenet.es (Postfix) with ESMTP id 3CEA51853A
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Jun 2006 17:45:38 +0200 (CEST)
-Message-ID: <44902FF9.10502@fagorautomation.es>
-Date: Wed, 14 Jun 2006 17:49:13 +0200
-From: Igor Luri <iluri@fagorautomation.es>
+	Thu, 15 Jun 2006 02:40:25 +1000 (EST)
+Message-ID: <20060614164023.83004.qmail@web37109.mail.mud.yahoo.com>
+Date: Wed, 14 Jun 2006 09:40:23 -0700 (PDT)
+From: Om Vadlapatla <pdfdoc15@yahoo.com>
+Subject: board initialization problem
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>,
+	"U-Boot-Users@lists.sourceforge.net" <U-Boot-Users@lists.sourceforge.net>
 MIME-Version: 1.0
-To: "Furxhi, Orges" <Orges.Furxhi@thyssenkrupp.com>
-Subject: Re: USB flashdrive on Motorola MPC5200 (IceCube) board, linux 		kernel
-	2.4.20
-References: <162B449665D6D643AD9E1D50FC6F4B1403F16D5F@mdcexc05.na.ops.local>
-In-Reply-To: <162B449665D6D643AD9E1D50FC6F4B1403F16D5F@mdcexc05.na.ops.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed; boundary="0-1228222616-1150303223=:82247"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,592 +21,382 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We use the following secuence, after linux kernel is configured:
+--0-1228222616-1150303223=:82247
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Content-Id: 
+Content-Disposition: inline
 
-make clean
-make dep
-make uImage
+K0: Original Montavista kernel
+K1: Kernel without D-cache Adapted for 4x60(SDH 2/6
+ch)
+K2: Kernel with D-cache enabled for 4160 (SDH 6 ch)
 
+Difference between K1 & K2: 
+1. D-cache (~/kernel2.4.17/arch/ppc/kernel/head.S)
+here only one line difference.
 
+2. Page table & cache buffer allocation
+(~/kernel2.4.17/arch/ppc/8260_io/comproc.c)
+I can send the difference only 4 lines only setting
+the  buffer arrays.
 
+Target: 4160 (compat SDH unit)
+Abatron: Jtag Debugger 
 
+fw4x60.cfg: old config file for Abatron
+fw8270.cfg: new config file for Abatron
 
-Furxhi, Orges wrote:
+The tests tried using U-BOOT:
 
->I downloaded the kernel you recommended and now I am trying to build a UBoot
->image that I can load unto flash.
->I use the following commands: 
->$ make mrproper
->$ make menuconfig
->  (select arch/ppc/configs/icecube_5200_defconfig file, exit and save)
->$ make uImage
->
->I can not find the UBoot image (/arch/ppc/boot/images/)
->I get the following error message after I execute $ make uImage:
->...
->/bin/sh: line 1: scripts/mkdep: Invalid argument
->make: *** [dep-files] Error 126
->
->Is there another sequence of make commands that I need to follow to create a
->UBoot image?
-> 
->
->Thanks,
->
->Orges
->
->-----Original Message-----
->From: Igor Luri [mailto:iluri@fagorautomation.es] 
->Sent: Wednesday, June 14, 2006 8:57 AM
->To: Furxhi, Orges
->Cc: linuxppc-embedded@ozlabs.org
->Subject: Re: USB flashdrive on Motorola MPC5200 (IceCube) board, linux
->kernel 2.4.20
->
->It is posible that your kernel uses old USB code. We also have an 
->Icecube board, the same board a yours, with linux 2.4.25 version from 
->DENX and USB works well.
->
->You can try with this kernel:
->
->ftp://ftp.denx.de/pub/linux/linuxppc_2_4_devel-2006-04-06-1735.tar.bz2
->
->
->Hope this helps.
->
->
->Furxhi, Orges wrote:
->
->  
->
->>Thank you for your help.
->>
->>I am using a Memorex travel drive 2.0 (512 MB), and I also have a
->>Intelligent Stick 2.0 from GE. 
->>When I plug in the Memorex stick the following appears on the terminal :
->>	# hub.c: new USB device builtin-1, assigned address 2
->>	usb.c: USB device not accepting new address=2 (error=-110)
->>	hub.c: new USB device builtin-1, assigned address 3
->>	usb.c: USB device not accepting new address=3 (error=-110)
->>
->>When I plug in the GE stick nothing shows on the terminal, but when I
->>    
->>
->remove
->  
->
->>it the following message comes up: 
->>	# hub.c: connect-debounce failed, port 1 disabled
->>
->>Both the USB flash drives work on my Dell PC with RedHat 9.0 (2.4.20
->>kernel).
->>
->>Orges
->> 
->>
->>
->>-----Original Message-----
->>From: Igor Luri [mailto:iluri@fagorautomation.es] 
->>Sent: Wednesday, June 14, 2006 3:07 AM
->>To: Furxhi, Orges
->>Cc: linuxppc-embedded@ozlabs.org
->>Subject: Re: USB flashdrive on Motorola MPC5200 (IceCube) board, linux
->>kernel 2.4.20
->>
->>What kind of USB flash drive are you using? Linux doesn't detect your 
->>device.
->>
->>When you plug/unplug a USB device you have to get something like this:
->>
->>           hub.c: new USB device 0-1, assigned address 2
->>           scsi0 : SCSI emulation for USB Mass Storage devices
->>           Vendor: Model: USB DISK Pro Rev: 1.00
->>           Type: Direct-Access ANSI SCSI revision: 02
->>           Attached scsi removable disk sda at scsi0, channel 0, id 0,
->>           lun 0
->>           SCSI device sda: 240640 512-byte hdwr sectors (123 MB)
->>           sda: Write Protect is off
->>           sda: sda1
->>
->>           usb.c: USB disconnect on device 0-1 address 2
->>
->>
->>Are you sure that this device is supported in your Linux configuration?
->>
->>
->>
->>Furxhi, Orges wrote:
->>
->> 
->>
->>    
->>
->>>Hi all,
->>>
->>>I have been trying for days now to get my usb flashdrive to work on my 
->>>Motorola MPC5200 (IceCube) board running on the 2.4.20 linux kernel. I 
->>>have followed the instruction in this Flash Memory HOWTO article 
->>>(http://www.tldp.org/HOWTO/Flash-Memory-HOWTO/index.html), but I have 
->>>had no success.
->>>
->>>When I mount the usbfs filesystem (mount -t usbfs none /proc/bus/usb/) 
->>>the following 3 items are created in the /proc/bus/usb/ directory:
->>>
->>>dr-xr-xr-x 1 root root 0 Jan 1 00:12 001
->>>
->>>-r--r--r-- 1 root root 0 Jan 1 00:12 devices
->>>
->>>-r--r--r-- 1 root root 0 Jan 1 00:12 drivers
->>>
->>># cat devices shows:
->>>
->>>T: Bus=01 Lev=00 Prnt=00 Port=00 Cnt=00 Dev#= 1 Spd=12 MxCh= 2
->>>
->>>B: Alloc= 0/900 us ( 0%), #Int= 0, #Iso= 0
->>>
->>>D: Ver= 1.10 Cls=09(hub ) Sub=00 Prot=00 MxPS= 8 #Cfgs= 1
->>>
->>>P: Vendor=0000 ProdID=0000 Rev= 0.00
->>>
->>>S: Product=USB OHCI Root Hub
->>>
->>>S: SerialNumber=f0001000
->>>
->>>C:* #Ifs= 1 Cfg#= 1 Atr=40 MxPwr= 0mA
->>>
->>>I: If#= 0 Alt= 0 #EPs= 1 Cls=09(hub ) Sub=00 Prot=00 Driver=hub
->>>
->>>E: Ad=81(I) Atr=03(Int.) MxPS= 2 Ivl=255ms
->>>
->>># cat drivers shows
->>>
->>>usbdevfs
->>>
->>>hub
->>>
->>>usb-storage
->>>
->>>In the this Flash Memory-HOWTO it is mentioned that the usb-storage-x 
->>>directory will be created in the /proc/scsi/ directory, but I do not 
->>>see it on my system. Also the contents of /proc/scsi/scsi are 
->>>"Attached devices: none".
->>>
->>>Following are my boot up messages:
->>>
->>>U-Boot 1.1.4 (Mar 21 2006 - 15:07:57)
->>>
->>>CPU: MPC5200 v1.2 at 462 MHz
->>>
->>>Bus 132 MHz, IPB 66 MHz, PCI 33 MHz
->>>
->>>Board: Motorola MPC5200 (IceCube)
->>>
->>>I2C: 85 kHz, ready
->>>
->>>DRAM: 64 MB
->>>
->>>FLASH: 8 MB
->>>
->>>In: serial
->>>
->>>Out: serial
->>>
->>>Err: serial
->>>
->>>Net: FEC ETHERNET
->>>
->>>Type "run flash_nfs" to mount root filesystem over NFS
->>>
->>>Hit any key to stop autoboot: 0
->>>
->>>## Booting image at ff900000 ...
->>>
->>>Image Name: Linux-2.4.20_mvl31-lite5200
->>>
->>>Created: 2006-06-13 21:40:05 UTC
->>>
->>>Image Type: PowerPC Linux Kernel Image (gzip compressed)
->>>
->>>Data Size: 989480 Bytes = 966.3 kB
->>>
->>>Load Address: 00000000
->>>
->>>Entry Point: 00000000
->>>
->>>Verifying Checksum ... OK
->>>
->>>Uncompressing Kernel Image ... OK
->>>
->>>Memory BAT mapping: BAT2=64Mb, BAT3=0Mb, residual: 0Mb
->>>
->>>Linux version 2.4.20_mvl31-lite5200 (ofurxhi@mdc58503) (gcc version 
->>>3.3.1 (Monta
->>>
->>>Vista 3.3.1-7.0.13.0500039 2005-01-12)) #11 Tue Jun 13 16:32:09 CDT 2006
->>>
->>>On node 0 totalpages: 16384
->>>
->>>zone(0): 16384 pages.
->>>
->>>zone(1): 0 pages.
->>>
->>>zone(2): 0 pages.
->>>
->>>Kernel command line: root=/dev/mtdblock2 rw rootfstype=jffs2 
->>>ip=192.168.0.7:192.
->>>
->>>168.0.2:192.168.0.2:255.255.255.0:cpua::off
->>>
->>>frequencies: cpu=461995100, bus=131998608, ipb=65999304, pci=32999652
->>>
->>>Calibrating delay loop... 307.20 BogoMIPS
->>>
->>>Memory: 62460k available (1540k kernel code, 524k data, 240k init, 0k 
->>>highmem)
->>>
->>>Dentry cache hash table entries: 8192 (order: 4, 65536 bytes)
->>>
->>>Inode cache hash table entries: 4096 (order: 3, 32768 bytes)
->>>
->>>Mount-cache hash table entries: 1024 (order: 1, 8192 bytes)
->>>
->>>Buffer-cache hash table entries: 4096 (order: 2, 16384 bytes)
->>>
->>>Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
->>>
->>>POSIX conformance testing by UNIFIX
->>>
->>>PCI: Probing PCI hardware
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:00.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:01.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:02.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:03.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:04.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:05.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:06.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:07.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:08.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:09.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:0a.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:0b.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:0c.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:0d.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:0e.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:0f.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:10.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:11.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:12.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:13.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:14.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:15.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:16.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:17.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:18.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:19.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:1a.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:1b.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:1c.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:1d.0
->>>
->>>PCI: Cannot allocate resource region 1 of device 00:1e.0
->>>
->>>Linux NET4.0 for Linux 2.4
->>>
->>>Based upon Swansea University Computer Society NET3.039
->>>
->>>Initializing RT netlink socket
->>>
->>>LSP Revision 52
->>>
->>>ikconfig 0.5 with /proc/ikconfig
->>>
->>>Starting kswapd
->>>
->>>Disabling the Out Of Memory Killer
->>>
->>>Journalled Block Device driver loaded
->>>
->>>devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
->>>
->>>devfs: boot_options: 0x1
->>>
->>>JFFS version 1.0, (C) 1999, 2000 Axis Communications AB
->>>
->>>JFFS2 version 2.1. (C) 2001, 2002 Red Hat, Inc., designed by Axis 
->>>Communications
->>>
->>>AB.
->>>
->>>pty: 256 Unix98 ptys configured
->>>
->>>RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
->>>
->>>loop: loaded (max 8 devices)
->>>
->>>Universal TUN/TAP device driver 1.5 (C)1999-2002 Maxim Krasnyansky
->>>
->>>SCSI subsystem driver Revision: 1.00
->>>
->>>kmod: failed to exec /sbin/modprobe -s -k scsi_hostadapter, errno = 2
->>>
->>>kmod: failed to exec /sbin/modprobe -s -k scsi_hostadapter, errno = 2
->>>
->>>NO QRY response
->>>
->>>cfi_cmdset_0001: Erase suspend on write enabled
->>>
->>>Using buffer write method
->>>
->>>Icecube flash bank 0: Using static image partition definition
->>>
->>>Creating 3 MTD partitions on "Icecube Bank 0":
->>>
->>>0x00000000-0x00100000 : "u-boot"
->>>
->>>0x00100000-0x00200000 : "kernel"
->>>
->>>0x00200000-0x00800000 : "jffs2"
->>>
->>>usb.c: registered new driver usbdevfs
->>>
->>>usb.c: registered new driver hub
->>>
->>>usb-ohci.c: USB OHCI at membase 0xf0001000, IRQ 44
->>>
->>>usb.c: new USB bus registered, assigned bus number 1
->>>
->>>Product: USB OHCI Root Hub
->>>
->>>SerialNumber: f0001000
->>>
->>>hub.c: USB hub found
->>>
->>>hub.c: 2 ports detected
->>>
->>>Initializing USB Mass Storage driver...
->>>
->>>usb.c: registered new driver usb-storage
->>>
->>>USB Mass Storage support registered.
->>>
->>>eth0: Phy @ 0x0, type LXT971 (0x001378e2)
->>>
->>>NET4: Linux TCP/IP 1.0 for NET4.0
->>>
->>>IP Protocols: ICMP, UDP, TCP, IGMP
->>>
->>>IP: routing cache hash table of 512 buckets, 4Kbytes
->>>
->>>TCP: Hash tables configured (established 4096 bind 8192)
->>>
->>>eth0: config: auto-negotiation off, 100HDX, 10HDX.
->>>
->>>IP-Config: Complete:
->>>
->>>device=eth0, addr=192.168.0.7, mask=255.255.255.0, gw=192.168.0.2,
->>>
->>>host=cpua, domain=, nis-domain=(none),
->>>
->>>bootserver=192.168.0.2, rootserver=192.168.0.2, rootpath=
->>>
->>>NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
->>>
->>>Empty flash at 0x0000fffc ends at 0x00010000
->>>
->>>CLEANMARKER node found at 0x00010000, not first node in block (0x00000000)
->>>
->>>Empty flash at 0x0002fffc ends at 0x00030000
->>>
->>>CLEANMARKER node found at 0x00030000, not first node in block (0x00020000)
->>>
->>>Empty flash at 0x0004fffc ends at 0x00050000
->>>
->>>CLEANMARKER node found at 0x00050000, not first node in block (0x00040000)
->>>
->>>Empty flash at 0x0006fffc ends at 0x00070000
->>>
->>>CLEANMARKER node found at 0x00070000, not first node in block (0x00060000)
->>>
->>>Empty flash at 0x0008fffc ends at 0x00090000
->>>
->>>CLEANMARKER node found at 0x00090000, not first node in block (0x00080000)
->>>
->>>Empty flash at 0x000afffc ends at 0x000b0000
->>>
->>>CLEANMARKER node found at 0x000b0000, not first node in block (0x000a0000)
->>>
->>>Empty flash at 0x000cfffc ends at 0x000d0000
->>>
->>>CLEANMARKER node found at 0x000d0000, not first node in block (0x000c0000)
->>>
->>>Empty flash at 0x000efffc ends at 0x000f0000
->>>
->>>CLEANMARKER node found at 0x000f0000, not first node in block (0x000e0000)
->>>
->>>Empty flash at 0x0010fffc ends at 0x00110000
->>>
->>>CLEANMARKER node found at 0x00110000, not first node in block (0x00100000)
->>>
->>>Empty flash at 0x0012fffc ends at 0x00130000
->>>
->>>CLEANMARKER node found at 0x00130000, not first node in block (0x00120000)
->>>
->>>Empty flash at 0x0014fffc ends at 0x00150000
->>>
->>>CLEANMARKER node found at 0x00150000, not first node in block (0x00140000)
->>>
->>>Empty flash at 0x0016fffc ends at 0x00170000
->>>
->>>CLEANMARKER node found at 0x00170000, not first node in block (0x00160000)
->>>
->>>Empty flash at 0x0018fffc ends at 0x00190000
->>>
->>>CLEANMARKER node found at 0x00190000, not first node in block (0x00180000)
->>>
->>>Empty flash at 0x001afffc ends at 0x001b0000
->>>
->>>CLEANMARKER node found at 0x001b0000, not first node in block (0x001a0000)
->>>
->>>Empty flash at 0x001cfffc ends at 0x001d0000
->>>
->>>CLEANMARKER node found at 0x001d0000, not first node in block (0x001c0000)
->>>
->>>Empty flash at 0x001efffc ends at 0x001f0000
->>>
->>>CLEANMARKER node found at 0x001f0000, not first node in block (0x001e0000)
->>>
->>>Empty flash at 0x0020fffc ends at 0x00210000
->>>
->>>CLEANMARKER node found at 0x00210000, not first node in block (0x00200000)
->>>
->>>Empty flash at 0x0022fffc ends at 0x00230000
->>>
->>>CLEANMARKER node found at 0x00230000, not first node in block (0x00220000)
->>>
->>>Empty flash at 0x0024fffc ends at 0x00250000
->>>
->>>CLEANMARKER node found at 0x00250000, not first node in block (0x00240000)
->>>
->>>Empty flash at 0x0026fffc ends at 0x00270000
->>>
->>>CLEANMARKER node found at 0x00270000, not first node in block (0x00260000)
->>>
->>>VFS: Mounted root (jffs2 filesystem).
->>>
->>>Mounted devfs on /dev
->>>
->>>Freeing unused kernel memory: 240k init
->>>
->>>serial console detected. Disabling virtual terminals.
->>>
->>>init started: BusyBox v0.60.3 (2004.01.09-22:53+0000) multi-call binary
->>>
->>>Initializing iocspi
->>>
->>>Warning: loading /lib/modules/iocspim.o will taint the kernel: no license
->>>
->>>See http://www.tux.org/lkml/#export-tainted for information about 
->>>tainted modu
->>>
->>>les
->>>
->>>iocspi: release_20060418
->>>
->>>iocspi: major 254.
->>>
->>>Module iocspim loaded, with warnings
->>>
->>>Initializing canspi
->>>
->>>Warning: loading /lib/modules/canspim.o will taint the kernel: no license
->>>
->>>See http://www.tux.org/lkml/#export-tainted for information about 
->>>tainted modu
->>>
->>>les
->>>
->>>canspi: init_module()
->>>
->>>canspi: init_module(): sema_init
->>>
->>>canspi: init_module(): register_chrdev
->>>
->>>canspi: major 253.
->>>
->>>canspi: micro_config()
->>>
->>>canspi: micro_config: PSC request_irq failed (0)
->>>
->>>canspi: micro_config psc=f0002400 cdm=f0000200 gpio=f0000b00 
->>>portcfg=10051004
->>>
->>>Module canspim loaded, with warnings
->>>
->>>Initializing iocdrv
->>>
->>>Warning: loading /lib/modules/iocdrvm.o will taint the kernel: no license
->>>
->>>See http://www.tux.org/lkml/#export-tainted for information about 
->>>tainted modu
->>>
->>>les
->>>
->>>iocdrv: release_20060502
->>>
->>>iocdrv: major 252.
->>>
->>>Module iocdrvm loaded, with warnings
->>>
->>>System initialized
->>>
->>>MontaVista(R) Linux(R) Professional Edition 3.1
->>>
->>>cpua login:
->>>
->>>Any help would be highly appreciated.
->>>
->>>Thank you,
->>>
->>>Orges Furxhi
->>>
->>>------------------------------------------------------------------------
->>>
->>>_______________________________________________
->>>Linuxppc-embedded mailing list
->>>Linuxppc-embedded@ozlabs.org
->>>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>>
->>>   
->>>
->>>      
->>>
+1. Loaded K1 onto target independent of Abatron
+
+2. Loaded K2 onto target with Abatron fw8270.cfg 
+   
+     ran busy looptest for K1 & K2 result: K2 40 times
+faster
+
+3. Tried to load K2 to target without Abatron result:
+Failed
+
+Conclusions & comments:
+
+There are significant differences between fw4x60.cfg &
+fw8270.cfg.
+These differences need to be incorporated in the new
+Kernel (OR I am not sure about it but may be into the
+Boot-loader).
+
+Core Initialization file in kernel: 
+~/kernel2.4.17/arch/ppc/kernel/head.S
+
+Speculated changes:
+~/kernel2.4.17/arch/ppc/8260_io/comproc.c
+It was speculated that the cached buffers triggered
+the exception. And commproc.c was modified to make
+those buffers uncacheable. But that made things worse:
+invalidate_dcache_range() and flush_tlb_page() cause
+another exception to occur (not identified).
+
+U-boot initialization files:
+~/u-boot/cpu/mpc8260 
+start.S, cpu_init.c
+
+Both these files in u-boot are  meant to initialize
+the core & MMU.
+
+If the config changes need to go into the kernel I am
+not sure if it is the head.S file.
+
+If the config changes need to go into the boot loader
+I am not sure while the kernel opperates if there will
+be any unpredictable behaviour.
+
+Irrespective of where the changes go, the main task is
+to analize each difference between fw4x60.cfg &
+fw8270.cfg and develope the initialization code. 
+
+If any one has another plan of action please let me
+know, I appreciate guidance. 
+
+Attached are the two config files.
+
+Sincerely,
+Om Vadlapatla
+
+PS:- All I need is to load the new kernel with out a
+glitch coz I can do it with the Abatron pluged in.
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
+--0-1228222616-1150303223=:82247
+Content-Type: text/plain; name="fw4x60.cfg.txt"
+Content-Description: 1384370366-fw4x60.cfg.txt
+Content-Disposition: inline; filename="fw4x60.cfg.txt"
+
+; -----------------------------------------------------------------------------
+; Abatron bdiGDB configuration file for the FW4X60 platform
+; single board computer running MontaVista Linux.
+;
+; The physical memory map is as follows:
+;       0x00000000 - 0x0FFFFFFF         256MB 60x SDRAM on CS1 and CS2
+;       0x30000000 - 0x33FFFFFF         64MB local SDRAM on CS5
+;       0x40000000 - 0x41FFFFFF         32MB FPGA on CS6
+;       0x50000000 - 0x50FFFFFF         16MB RTC on CS7
+;       0x80000000 - 0x80007FFF         32KB IDE on CS9
+;       0xF0000000 - 0xF001FFFF         128KB MPC8260 internal memory
+;       0xFFE00000 - 0xFFFFFFFF         2MB Flash on CS0
+; -----------------------------------------------------------------------------
+;
+[INIT]
+WM32    0x000101A8      0xF0000000      ; IMMR (relocate internal memory)
+WREG    MSR             0x00000000      ; clear MSR
+;WM32   0xF0010000      0x0A200000      ; SIUMCR
+WM32    0xF0010004      0xFFFFFFC3      ; SYPCR (no watchdog)
+WM32    0xF0010C80      0x00000001      ; SCCR
+WM32    0xF0010024      0x80808000      ; BCR
+WM8     0xF0010028      0x26            ; PPC_ACR:
+WM32    0xF0010040      0x00004000      ; TESCR1:
+WM32    0xF0010048      0x00004000      ; L_TESCR1:
+;
+;
+; Memory controller
+WM32    0xF0010104      0xFF000C54      ; OR0
+WM32    0xF0010100      0xFF001001      ; BR0
+;WM32   0xF0010100      0xFFE01001      ; BR0
+;WM32   0xF0010104      0xFFE00844      ; OR0
+WM32    0xF0010134      0xFE000008      ; OR6 FPGA
+WM32    0xF0010130      0x40001001      ; BR6
+WM32    0xF001013C      0xFF000C0C      ; OR7 RTC
+WM32    0xF0010138      0x50001001      ; BR7
+WM32    0xF001014C      0xFFFF8008      ; OR9 IDE
+WM32    0xF0010148      0x80001001      ; BR9
+;
+;
+; Initialize the SDRAM on the 60x bus.
+;
+WM32    0xF001010C      0xF8002B00      ; OR1
+WM32    0xF0010108      0x00000049      ; BR1
+WM32    0xF0010114      0xF8002B00      ; OR2
+WM32    0xF0010110      0x08000049      ; BR2
+WM16    0xF0010184      0x4000          ; MPTPR
+WM8     0xF001019C      0x7             ; PSRT
+WM32    0xF0010190      0xAAAE245E      ; PSDMR: Precharge all banks
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM32    0xF0010190      0x8AAE245E      ; PSDMR: CBR Refresh
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM32    0xF0010190      0x9AAE245E      ; PSDMR: Mode Register Write
+WM8     0x00000000      0xFF            ; Access SDRAM
+WM32    0xF0010190      0xC2AE245E      ; PSDMR: Normal operation and refresh enable
+;
+; Initialize the SDRAM on the local bus.
+;
+WM32    0xF001012C      0xFC002D00      ; OR5
+WM32    0xF0010128      0x30001861      ; BR5
+WM8     0xF00101A4      0x7             ; LSRT
+WM32    0xF0010194      0xAA6A2556      ; LSDMR: Precharge all banks
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM32    0xF0010194      0x8A6A2556      ; LSDMR: CBR Refresh
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM32    0xF0010194      0x9A6A2556      ; LSDMR: Mode Register Write
+WM8     0x30000000      0xFF            ; Access SDRAM
+WM32    0xF0010194      0xC26A2556      ; LSDMR: Normal operation and refresh enable
+;
+WM16    0x50800206      0x2000          ; Disable flash write protection
+;
+;
+[TARGET]
+CPUTYPE         8270                    ; 603EV, 750, 8240, 8260, 750CX, or 7400
+BDIMODE         AGENT                   ; LOADONLY or AGENT
+STARTUP         RESET                   ; RESET, STOP, or RUN
+JTAGCLOCK       3                       ; 0=16.6MHz, 1=8.3MHz, 2=5.5MHz, 3=4.1MHz
+BOOTADDR        0xFFF00100              ; 0xFFF00100 or 0x00000100
+WORKSPACE       0x00000000              ; use SDRAM for 256 byte workspace
+BREAKMODE       HARD                    ; SOFT or HARD
+VECTOR          CATCH                   ; catch unhandled exceptions
+DCACHE          NOFLUSH                 ; FLUSH or NOFLUSH
+POWERUP         3000
+WAKEUP          3000
+MMU             XLAT 0xC0000000         ; kernel virtual base address
+PTBASE          0x000000F0              ; address of page table pointer array
+SIO             7 9600
+;
+;
+;
+[FLASH]
+CHIPTYPE        AM29BX16                ; AM29F, AM29BX8, AM29BX16, I28BX8, I28BX16,
+                                        ; AT49, AT49X8, AT49X16, STRATAX8, STRATAX16
+CHIPSIZE        0x200000                ; size of one flash chip in bytes
+BUSWIDTH        16                      ; flash bus width (8, 16, 32, or 64)
+WORKSPACE       0xF0000000              ; use MPC8270 internal RAM for 2KB workspace
+ERASE           0xFFE00000 CHIP         ; erase entire Flash SIMM
+;
+;
+;
+[HOST]
+IP              172.30.10.7             ; IP address of tftp server
+FILE            vmlinuz-est-sbc8260
+FORMAT          IMAGE 0x0               ; SREC, BIN, AOUT, ELF, IMAGE, or ROM
+LOAD            MANUAL                  ; MANUAL or AUTO
+DEBUGPORT       2001                    ; TCP port number for GDB
+PROMPT          FW4X60>                 ; Telnet prompt string
+DUMP            dump.bin                ; default filename for DUMP command
+;
+;
+;
+[REGS]
+DMM1            0xF0000000
+FILE            abatron/reg8260.def
+
+--0-1228222616-1150303223=:82247
+Content-Type: application/octet-stream; name="FW8270.CFG"
+Content-Transfer-Encoding: base64
+Content-Description: 1432833698-FW8270.CFG
+Content-Disposition: attachment; filename="FW8270.CFG"
+
+OyBiZGlHREIgY29uZmlndXJhdGlvbiBmaWxlIGZvciBNUEM4MjcwDQo7IC0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+DQo7DQpbSU5JVF0NCjsgaW5pdCBjb3JlIHJlZ2lzdGVyKE1BU1RFUikNCldS
+RUcgICAgTVNSICAgICAgICAgICAgIDB4MDAwMDAwMDAgICAgICA7Y2xlYXIg
+TVNSDQo7V00zMgkweEYwMDEwMUE4CTB4RjAwMDAwMDAJO0lNTVIgOiBpbnRl
+cm5hbCBzcGFjZSBAIDB4RjAwMDAwMDANCldNMzIJMHhGMDAxMDAwNAkweEZG
+RkZGRkMzCTtTWVBDUjogZGlzYWJsZSB3YXRjaGRvZw0KV00zMgkweEYwMDEw
+MDI0CTB4ODA4MDAwMDAJO0JDUjoNCldNOAkweEYwMDEwMDI4CTB4MjYJO1BQ
+Q19BQ1I6DQpXTTMyCTB4RjAwMTAwNDAJMHgwMDAwNDAwMAk7VEVTQ1IxOg0K
+V00zMgkweEYwMDEwMDQ4CTB4MDAwMDQwMDAJO0xfVEVTQ1IxOg0KO1dNMzIJ
+MHhGMDAxMEM4MAkweDAwMDAwMDAxCTtTQ0NSIDogbm9ybWFsIG9wZXJhdGlv
+bg0KDQo7IGluaXQgbWVtb3J5IGNvbnRyb2xsZXIobWFzdGVyKQ0KV00zMgkw
+eEYwMDEwMTA0CTB4RkZFMDBDNTQJO09SMDogRmxhc2ggMk1CLCBDUyBlYXJs
+eSBuZWdhdGUsIDUgdy5zLiwgVGltaW5nIHJlbGF4DQpXTTMyCTB4RjAwMTAx
+MDAJMHhGRkUwMTAwMQk7QlIwOiBGbGFzaCBAMHhGRjAwMDAwMCwgMTZiaXQs
+IG5vIHBhcml0eQ0KV00zMgkweEYwMDEwMTBDCTB4RjgwMDJCMDAJO09SMTog
+MTI4TUJZVEUNCldNMzIJMHhGMDAxMDEwOAkweDAwMDAwMDQxCTtCUjE6IDYw
+eC1CVVMNCldNMzIJMHhGMDAxMDExNAkweEY4MDAyQjAwCTtPUjI6IDEyOE1C
+WVRFIHJpa2kgY2hnIGZjLT5mOA0KV00zMgkweEYwMDEwMTEwCTB4MDgwMDAw
+NDEJO0JSMjogNjB4LUJVUw0KO1dNMzIJMHhGMDAxMDExQwkweDAwMDAwMDAw
+CTtPUjM6IDY0TUJZVEUNCjtXTTMyCTB4RjAwMTAxMTgJMHgwMDAwMDAwMAk7
+QlIzOiA2MHgtQlVTDQpXTTMyCTB4RjAwMTAxMkMJMHhGQzAwMkYwMAk7T1I1
+OiA2NE1CWVRFDQpXTTMyCTB4RjAwMTAxMjgJMHgzMDAwMTg2MQk7QlI1OiBM
+T0NBTC1CVVMNCldNMzIJMHhGMDAxMDEzNAkweEZDMDAwMDA4CTtPUjY6IE1B
+SU5JLU8NCldNMzIJMHhGMDAxMDEzMAkweDQwMDAxMDAxCTtCUjY6IDYweC1C
+VVMNCldNMzIJMHhGMDAxMDEzQwkweEZGMDAwQzBDCTtPUjc6IEZQR0EtSU8N
+CldNMzIJMHhGMDAxMDEzOAkweDUwMDAxMDAxCTtCUjc6IDRNQllURQ0KO1dN
+MzIJMHhGMDAxMDE0NAkweEZGRkMwMTAwCTtPUjg6IEZVTUVJLW5hcGENCjtX
+TTMyCTB4RjAwMTAxNDAJMHg1ODAwMTA4MQk7QlI4OiBGVU1FSS1uYXBhDQpX
+TTMyCTB4RjAwMTAxNEMJMHhGRkZGMDAwOAk7T1I5OiBDLUZMQVNIDQpXTTMy
+CTB4RjAwMTAxNDgJMHg4MDAwMTAwMQk7QlI5OiA2MHgtQlVTDQoNCjsgaW5p
+dCBjb3JlIHJlZ2lzdGVyKFNMQVZFKQ0KO1dSRUcgICAgTVNSICAgICAgICAg
+ICAgIDB4MDAwMDAwMDAgICAgICA7Y2xlYXIgTVNSDQo7V00zMgkweEZGMDEw
+MUE4CTB4RkYwMDAwMDAJO0lNTVIgOiBpbnRlcm5hbCBzcGFjZSBAIDB4RjAw
+MDAwMDANCldNMzIJMHhGRjAxMDAwNAkweEZGRkZGRkMzCTtTWVBDUjogZGlz
+YWJsZSB3YXRjaGRvZw0KV00zMgkweEZGMDEwMDI0CTB4ODA4MDAwMDAJO0JD
+UjoNCldNOAkweEZGMDEwMDI4CTB4MjcJO1BQQ19BQ1I6DQpXTTMyCTB4RkYw
+MTAwNDAJMHgwMDAwNDAwMAk7VEVTQ1IxOg0KV00zMgkweEZGMDEwMDQ4CTB4
+MDAwMDQwMDAJO0xfVEVTQ1IxOg0KO1dNMzIJMHhGRjAxMEM4MAkweDAwMDAw
+MDAxCTtTQ0NSIDogbm9ybWFsIG9wZXJhdGlvbg0KDQoNCjsgaW5pdCBTRFJB
+TSBJbml0IChQUEMgYnVzKSBmb3IgQ1MxJjINCldNMTYJMHhGMDAxMDE4NAkw
+eEYwMDAJICAgICAgICA7TVBUUFINCldNOAkweEYwMDEwMTlDCTB4RjAJICAg
+ICAgICA7UFNSVA0KV00zMgkweEYwMDEwMTkwCTB4QUIyREI0QUUJO1BTRE1S
+OiBQcmVjaGFyZ2UgYWxsIGJhbmtzDQpXTTgJMHgwMDAwMDAwMAkweEZGCSAg
+ICAgICAgO0FjY2VzcyBTRFJBTQ0KV004CTB4MDgwMDAwMDAJMHhGRgkgICAg
+ICAgIDtBY2Nlc3MgU0RSQU0NCldNMzIJMHhGMDAxMDE5MAkweDhCMkRCNEFF
+CTtQU0RNUjogQ0JSIFJlZnJlc2gNCldNOAkweDAwMDAwMDAwCTB4RkYJICAg
+ICAgICA7QWNjZXNzIFNEUkFNDQpXTTgJMHgwMDAwMDAwMAkweEZGCSAgICAg
+ICAgO0FjY2VzcyBTRFJBTQ0KV004CTB4MDAwMDAwMDAJMHhGRgkgICAgICAg
+IDtBY2Nlc3MgU0RSQU0NCldNOAkweDAwMDAwMDAwCTB4RkYJICAgICAgICA7
+QWNjZXNzIFNEUkFNDQpXTTgJMHgwMDAwMDAwMAkweEZGCSAgICAgICAgO0Fj
+Y2VzcyBTRFJBTQ0KV004CTB4MDAwMDAwMDAJMHhGRgkgICAgICAgIDtBY2Nl
+c3MgU0RSQU0NCldNOAkweDAwMDAwMDAwCTB4RkYJICAgICAgICA7QWNjZXNz
+IFNEUkFNDQpXTTgJMHgwMDAwMDAwMAkweEZGCSAgICAgICAgO0FjY2VzcyBT
+RFJBTQ0KV004CTB4MDgwMDAwMDAJMHhGRgkgICAgICAgIDtBY2Nlc3MgU0RS
+QU0NCldNOAkweDA4MDAwMDAwCTB4RkYJICAgICAgICA7QWNjZXNzIFNEUkFN
+DQpXTTgJMHgwODAwMDAwMAkweEZGCSAgICAgICAgO0FjY2VzcyBTRFJBTQ0K
+V004CTB4MDgwMDAwMDAJMHhGRgkgICAgICAgIDtBY2Nlc3MgU0RSQU0NCldN
+OAkweDA4MDAwMDAwCTB4RkYJICAgICAgICA7QWNjZXNzIFNEUkFNDQpXTTgJ
+MHgwODAwMDAwMAkweEZGCSAgICAgICAgO0FjY2VzcyBTRFJBTQ0KV004CTB4
+MDgwMDAwMDAJMHhGRgkgICAgICAgIDtBY2Nlc3MgU0RSQU0NCldNOAkweDA4
+MDAwMDAwCTB4RkYJICAgICAgICA7QWNjZXNzIFNEUkFNDQpXTTMyCTB4RjAw
+MTAxOTAJMHg5QjJEQjRBRQk7UFNETVI6IE1vZGUgU2V0DQpXTTgJMHgwMDA4
+ODExMAkweEZGCSAgICAgICAgO0FjY2VzcyBTRFJBTQ0KV004CTB4MDgwODgx
+MTAJMHhGRgkgICAgICAgIDtBY2Nlc3MgU0RSQU0NCldNMzIJMHhGMDAxMDE5
+MAkweGMzMkRCNEFFCTtQU0RNUjogZW5hYmxlIHJlZnJlc2gsIG5vcm1hbCBv
+cGVyYXRpb24NCg0KDQpXTTE2CTB4NTA4MDAyMDYJMHgyMDAwCSAgICAgICAg
+O2ZsYXNoLXByb3RlY3QtZGlzYWJsZQ0KDQo7IGluaXQgU0RSQU0gSW5pdCAo
+TE9DQUwgYnVzKSBmb3IgQ1M1DQpXTTgJMHhGMDAxMDFBNAkweEYwCSAgICAg
+ICAgO0xTUlQNCldNMzIJMHhGMDAxMDE5NAkweEFCNDFCNEFFCTtMU0RNUjog
+UHJlY2hhcmdlIGFsbCBiYW5rcw0KV004CTB4MzAwMDAwMDAJMHhGRgkgICAg
+ICAgIDtBY2Nlc3MgU0RSQU0NCldNMzIJMHhGMDAxMDE5NAkweDhCNDFCNEFF
+CTtMU0RNUjogQ0JSIFJlZnJlc2gNCldNOAkweDMwMDAwMDAwCTB4RkYJICAg
+ICAgICA7QWNjZXNzIFNEUkFNDQpXTTgJMHgzMDAwMDAwMAkweEZGCSAgICAg
+ICAgO0FjY2VzcyBTRFJBTQ0KV004CTB4MzAwMDAwMDAJMHhGRgkgICAgICAg
+IDtBY2Nlc3MgU0RSQU0NCldNOAkweDMwMDAwMDAwCTB4RkYJICAgICAgICA7
+QWNjZXNzIFNEUkFNDQpXTTgJMHgzMDAwMDAwMAkweEZGCSAgICAgICAgO0Fj
+Y2VzcyBTRFJBTQ0KV004CTB4MzAwMDAwMDAJMHhGRgkgICAgICAgIDtBY2Nl
+c3MgU0RSQU0NCldNOAkweDMwMDAwMDAwCTB4RkYJICAgICAgICA7QWNjZXNz
+IFNEUkFNDQpXTTgJMHgzMDAwMDAwMAkweEZGCSAgICAgICAgO0FjY2VzcyBT
+RFJBTQ0KV00zMgkweEYwMDEwMTk0CTB4OUI0MUI0QUUJO0xTRE1SOiBNb2Rl
+IFNldA0KV004CTB4MzAwNDQwODgJMHhGRgkgICAgICAgIDtBY2Nlc3MgU0RS
+QU0NCldNMzIJMHhGMDAxMDE5NAkweEMzNDFCNEFFCTtMU0RNUjogZW5hYmxl
+IHJlZnJlc2gsIG5vcm1hbCBvcGVyYXRpb24NCg0KOyBpbml0IG1lbW9yeSBj
+b250cm9sbGVyKHNsYXZlKQ0KO1dNMzIJMHhGRjAxMDEwNAkweEZGRTAwQzU0
+CTtPUjA6IEZsYXNoIDJNQiwgQ1MgZWFybHkgbmVnYXRlLCA1IHcucy4sIFRp
+bWluZyByZWxheA0KV00zMgkweEZGMDEwMTAwCTB4MDAwMDAwMDAJO0JSMDog
+Rmxhc2ggQDB4RkYwMDAwMDAsIDE2Yml0LCBubyBwYXJpdHkNCjtXTTMyCTB4
+RkYwMTAxMEMJMHhGODAwMkIwMAk7T1IxOiAxMjhNQllURQ0KO1dNMzIJMHhG
+RjAxMDEwOAkweDAwMDAwMDQxCTtCUjE6IDYweC1CVVMNCjtXTTMyCTB4RkYw
+MTAxMTQJMHhGODAwMkIwMAk7T1IyOiAxMjhNQllURSByaWtpIGNoZyBmYy0+
+ZjgNCjtXTTMyCTB4RkYwMTAxMTAJMHgwODAwMDA0MQk7QlIyOiA2MHgtQlVT
+DQo7V00zMgkweEZGMDEwMTFDCTB4MDAwMDAwMDAJO09SMzogNjRNQllURQ0K
+O1dNMzIJMHhGRjAxMDExOAkweDAwMDAwMDAwCTtCUjM6IDYweC1CVVMNCjtX
+TTMyCTB4RkYwMTAxMkMJMHhGQzAwMkYwMAk7T1I1OiA2NE1CWVRFDQo7V00z
+MgkweEZGMDEwMTI4CTB4MzAwMDE4NjEJO0JSNTogTE9DQUwtQlVTDQo7V00z
+MgkweEZGMDEwMTM0CTB4RkMwMDAwMDgJO09SNjogTUFJTkktTw0KO1dNMzIJ
+MHhGRjAxMDEzMAkweDQwMDAxMDAxCTtCUjY6IDYweC1CVVMNCjtXTTMyCTB4
+RkYwMTAxM0MJMHhGRjAwMEMwQwk7T1I3OiBGUEdBLUlPDQo7V00zMgkweEZG
+MDEwMTM4CTB4NTAwMDEwMDEJO0JSNzogNE1CWVRFDQo7V00zMgkweEZGMDEw
+MTQ0CTB4RkZGQzAxMDAJO09SODogRlVNRUktbmFwYQ0KO1dNMzIJMHhGRjAx
+MDE0MAkweDU4MDAxMDgxCTtCUjg6IEZVTUVJLW5hcGENCjtXTTMyCTB4RkYw
+MTAxNEMJMHhGRkZGMDAwOAk7T1I5OiBDLUZMQVNIDQo7V00zMgkweEZGMDEw
+MTQ4CTB4ODAwMDEwMDEJO0JSOTogNjB4LUJVUw0KDQoNCg0KDQpbVEFSR0VU
+XQ0KQ1BVVFlQRSAgICAgODI3MCAgICAgICAgO3RoZSBDUFUgdHlwZSAoNjAz
+RVYsNzUwLDgyNDAsODI2MCkNCkpUQUdDTE9DSyAgIDAgICAgICAgICAgIDt1
+c2UgMTYgTUh6IEpUQUcgY2xvY2sNCkJPT1RBRERSICAgIDB4ZmZmMDAxMDAg
+IDtib290IGFkZHJlc3MgdXNlZCBmb3Igc3RhcnQtdXAgYnJlYWsNCldPUktT
+UEFDRSAgIDB4MGUwMDAwMDAJO3dvcmtzcGFjZSBpbiB0YXJnZXQgUkFNIGZv
+ciBmYXN0IGRvd25sb2FkDQpCRElNT0RFICAgICBBR0VOVCAgICAgCTt0aGUg
+QkRJIHdvcmtpbmcgbW9kZSAoTE9BRE9OTFkgfCBBR0VOVCB8IEdBVEVXQVkp
+DQpCUkVBS01PREUgICBTT0ZUICAgICAgCTtTT0ZUIG9yIEhBUkQsIEhBUkQg
+dXNlcyBQUEMgaGFyZHdhcmUgYnJlYWtwb2ludHMNCjtTVEVQTU9ERSAgICBI
+V0JQICAgICAgICA7VFJBQ0Ugb3IgSFdCUCwgSFdQQiB1c2VzIGEgaGFyZHdh
+cmUgYnJlYWtwb2ludA0KVkVDVE9SICAgICAgQ0FUQ0ggICAgICAgO2NhdGNo
+IHVuaGFuZGxlZCBleGNlcHRpb25zDQpEQ0FDSEUgICAgICBOT0ZMVVNICTtk
+YXRhIGNhY2hlIGZsdXNoaW5nIChGTFVTSCB8IE5PRkxVU0gpDQo7TU1VICAg
+ICAgICAgWExBVCAgICAgICAgO3RyYW5zbGF0ZSBlZmZlY3RpdmUgdG8gcGh5
+c2ljYWwgYWRkcmVzcw0KUE9XRVJVUCAgICAgMTAwMCAgICAgICAgO3N0YXJ0
+IGRlbGF5IGFmdGVyIHBvd2VyLXVwIGRldGVjdGVkIGluIG1zDQo7UkVHTElT
+VCAgICAgU1BSICAgICAgICAgO3NlbGVjdCByZWdpc3RlciB0byB0cmFuc2Zl
+ciB0byBHREINCjtSRUdMSVNUICAgICBBTEwgICAgICAgICA7c2VsZWN0IHJl
+Z2lzdGVyIHRvIHRyYW5zZmVyIHRvIEdEQg0KO1ZJTyAgICAgICAgIDcgOTYw
+MCAgICAgICA7VENQIHBvcnQgZm9yIHZpcnR1YWwgSU8sIEJDU1IxOiBlbmFi
+bGUgUlMyMzItMSAhISENCjtTSU8gICAgICAgICA3IDk2MDAgICAgICAgO1RD
+UCBwb3J0IGZvciBzZXJpYWwgSU8sIGNoZWNrIEJDU1IxOiBlbmFibGUgUlMy
+MzItMSAhISENCg0KW0hPU1RdDQpJUCAgICAgICAgICAxOTIuMTY4LjAuMw0K
+RklMRSAgICAgICAgRDpcY3lnd2luXGhvbWVccmlraVxyYW0tdGVzdC1kYXRh
+XG1ha2VfYmluX2luY18yNTZNLmJpbg0KRk9STUFUICAgICAgQklOIDB4MDAw
+MDAwMDANCkxPQUQgICAgICAgIE1BTlVBTCAgICAgIDtsb2FkIGNvZGUgTUFO
+VUFMIG9yIEFVVE8gYWZ0ZXIgcmVzZXQNCkRFQlVHUE9SVCAgIDIwMDENClBS
+T01QVCAgICAgIE1QQzgyNzA+CTtuZXcgcHJvbXB0IGZvciBUZWxuZXQNCkRV
+TVAgICAgICAgIEQ6XGN5Z3dpblxob21lXHJpa2lcdGVtcFxkdW1wLmJpbg0K
+DQpbRkxBU0hdDQpDSElQVFlQRSAgICBBTTI5QlgxNiAgICAgIDtGbGFzaCB0
+eXBlIChBTTI5RiB8IEFNMjlCWDggfCBBTTI5QlgxNiB8IEkyOEJYOCB8IEky
+OEJYMTYpDQo7Q0hJUFRZUEUgICAgQU0yOUJYOA0KQ0hJUFNJWkUgICAgMHgy
+MDAwMDAgICAgO1RoZSBzaXplIG9mIG9uZSBmbGFzaCBjaGlwIGluIGJ5dGVz
+IChlLmcuIEFNMjlGMDEwID0gMHgyMDAwMCkNCkJVU1dJRFRIICAgIDE2ICAg
+ICAgICAgIDtUaGUgd2lkdGggb2YgdGhlIGZsYXNoIG1lbW9yeSBidXMgaW4g
+Yml0cyAoOCB8IDE2IHwgMzIgfCA2NCkNCjtXT1JLU1BBQ0UgICAweDA0NzAw
+MDAwICA7d29ya3NwYWNlIGluIGR1YWwgcG9ydCBSQU0NCldPUktTUEFDRSAg
+IDB4MDAwMDAwMDAgIDt3b3Jrc3BhY2UgaW4gU0RSQU0NCjtGSUxFICAgICAg
+ICBFOlx0b3JuYWRvXHRhcmdldFxjb25maWdcYWRzODI2MFx0ZXN0LmhleCAg
+O1RoZSBmaWxlIHRvIHByb2dyYW0NCkZPUk1BVCAgICAgIEJJTg0KRklMRSAg
+ICAgICAgRDpcdGZ0cGJvb3RcdS1ib290LmJpbg0KOw0KRVJBU0UgICAgICAg
+MHhGRkUwMDAwMCBDSElQIDtFUkFTRSBXSE9MRSBDSElQDQoNCltSRUdTXQ0K
+RE1NMSAgICAgICAgMHhGMDAwMDAwMA0KRklMRSAgICAgICAgQzpcQkRJXENP
+TkZJR1xyZWc4MjcwLmRlZg0KDQo=
+
+--0-1228222616-1150303223=:82247--
