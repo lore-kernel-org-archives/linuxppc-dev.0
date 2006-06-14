@@ -2,32 +2,32 @@ Return-Path: <mkravetz@us.ibm.com>
 Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7F13267B5D
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 15:07:07 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2306267B66
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 15:59:00 +1000 (EST)
 Received: from e3.ny.us.ibm.com (e3.pok.ibm.com [9.56.232.143])
 	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5E3sV6H026834
+	k5E3r82Q026448
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 23:54:32 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 23:53:09 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
 	by e3.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5E3sNdB003470
+	k5E3r0vS000599
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 23:54:24 -0400
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 23:53:00 -0400
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k5E3sN5o284368
+	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k5E3r0uc285006
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 23:54:23 -0400
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 23:53:00 -0400
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
 	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k5E3sMQp029650
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 23:54:23 -0400
-Date: Tue, 13 Jun 2006 20:54:20 -0700
+	k5E3r0iE027827
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Jun 2006 23:53:00 -0400
+Date: Tue, 13 Jun 2006 20:52:58 -0700
 From: Mike Kravetz <kravetz@us.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/3] powerpc: Instrument Hypervisor Calls: add sysfs files
-Message-ID: <20060614035420.GD6759@monkey.ibm.com>
+Subject: [PATCH 2/3] powerpc: Instrument Hypervisor Calls: add wrappers
+Message-ID: <20060614035258.GC6759@monkey.ibm.com>
 References: <20060614034756.GA6759@monkey.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -42,62 +42,376 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make statistics available via files in sysfs.
+Add wrappers which perform the actual hypervisor call instrumentation.
 
 -- 
 Signed-off-by: Mike Kravetz <kravetz@us.ibm.com>
 
 
-diff -Naupr linux-2.6.17-rc6/arch/powerpc/kernel/sysfs.c linux-2.6.17-rc6.work/arch/powerpc/kernel/sysfs.c
---- linux-2.6.17-rc6/arch/powerpc/kernel/sysfs.c	2006-06-06 00:57:02.000000000 +0000
-+++ linux-2.6.17-rc6.work/arch/powerpc/kernel/sysfs.c	2006-06-13 21:42:32.000000000 +0000
-@@ -356,6 +356,39 @@ static ssize_t show_physical_id(struct s
- }
- static SYSDEV_ATTR(physical_id, 0444, show_physical_id, NULL);
+diff -Naupr linux-2.6.17-rc6/arch/powerpc/Kconfig.debug linux-2.6.17-rc6.work/arch/powerpc/Kconfig.debug
+--- linux-2.6.17-rc6/arch/powerpc/Kconfig.debug	2006-06-06 00:57:02.000000000 +0000
++++ linux-2.6.17-rc6.work/arch/powerpc/Kconfig.debug	2006-06-13 21:39:24.000000000 +0000
+@@ -18,6 +18,16 @@ config DEBUG_STACK_USAGE
  
+ 	  This option will slow down process creation somewhat.
+ 
++config HCALL_STATS
++	bool "Hypervisor call instrumentation"
++	depends on PPC_PSERIES
++	help
++	  Adds code to keep track of number of hypervisor calls made and
++	  the amount of time spent in hypervisor calls.
++
++	  This option will add a small amount of overhead to all hypervisor
++	  calls.
++
+ config DEBUGGER
+ 	bool "Enable debugger hooks"
+ 	depends on DEBUG_KERNEL
+diff -Naupr linux-2.6.17-rc6/arch/powerpc/platforms/pseries/Makefile linux-2.6.17-rc6.work/arch/powerpc/platforms/pseries/Makefile
+--- linux-2.6.17-rc6/arch/powerpc/platforms/pseries/Makefile	2006-06-06 00:57:02.000000000 +0000
++++ linux-2.6.17-rc6.work/arch/powerpc/platforms/pseries/Makefile	2006-06-13 21:39:24.000000000 +0000
+@@ -9,3 +9,4 @@ obj-$(CONFIG_EEH)	+= eeh.o eeh_cache.o e
+ 
+ obj-$(CONFIG_HVC_CONSOLE)	+= hvconsole.o
+ obj-$(CONFIG_HVCS)		+= hvcserver.o
++obj-$(CONFIG_HCALL_STATS)	+= hvCall_inst.o
+diff -Naupr linux-2.6.17-rc6/arch/powerpc/platforms/pseries/hvCall.S linux-2.6.17-rc6.work/arch/powerpc/platforms/pseries/hvCall.S
+--- linux-2.6.17-rc6/arch/powerpc/platforms/pseries/hvCall.S	2006-06-06 00:57:02.000000000 +0000
++++ linux-2.6.17-rc6.work/arch/powerpc/platforms/pseries/hvCall.S	2006-06-13 21:39:24.000000000 +0000
+@@ -25,7 +25,11 @@
+ 			unsigned long *out2,		R9
+ 			unsigned long *out3);		R10
+  */
 +#ifdef CONFIG_HCALL_STATS
-+DECLARE_PER_CPU(struct hcall_stats[MAX_HCALL_OPCODES+1], hcall_stats);
++_GLOBAL(plpar_hcall_base)
++#else
+ _GLOBAL(plpar_hcall)
++#endif
+ 	HMT_MEDIUM
+ 
+ 	mfcr	r0
+@@ -52,7 +56,15 @@ _GLOBAL(plpar_hcall)
+ 
+ 
+ /* Simple interface with no output values (other than status) */
++#ifdef CONFIG_HCALL_STATS
+ _GLOBAL(plpar_hcall_norets)
++	b	plpar_hcall_norets_C
 +
-+static ssize_t show_hcall_stats(struct sys_device *dev, char *buf)
++
++_GLOBAL(plpar_hcall_norets_base)
++#else
++_GLOBAL(plpar_hcall_norets)
++#endif
+ 	HMT_MEDIUM
+ 
+ 	mfcr	r0
+@@ -76,7 +88,11 @@ _GLOBAL(plpar_hcall_norets)
+ 			unsigned long arg8,		112(R1)
+ 			unsigned long *out1);		120(R1)
+  */
++#ifdef CONFIG_HCALL_STATS
++_GLOBAL(plpar_hcall_8arg_2ret_base)
++#else
+ _GLOBAL(plpar_hcall_8arg_2ret)
++#endif
+ 	HMT_MEDIUM
+ 
+ 	mfcr	r0
+@@ -102,7 +118,11 @@ _GLOBAL(plpar_hcall_8arg_2ret)
+ 		 	unsigned long *out3,		R10
+ 		 	unsigned long *out4);		112(R1)
+  */
++#ifdef CONFIG_HCALL_STATS
++_GLOBAL(plpar_hcall_4out_base)
++#else
+ _GLOBAL(plpar_hcall_4out)
++#endif
+ 	HMT_MEDIUM
+ 
+ 	mfcr	r0
+@@ -144,7 +164,11 @@ _GLOBAL(plpar_hcall_4out)
+ 			 unsigned long *out6,		102(R1)
+ 			 unsigned long *out7);		100(R1)
+ */
++#ifdef CONFIG_HCALL_STATS
++_GLOBAL(plpar_hcall_7arg_7ret_base)
++#else
+ _GLOBAL(plpar_hcall_7arg_7ret)
++#endif
+ 	HMT_MEDIUM
+ 
+ 	mfcr	r0
+@@ -193,7 +217,11 @@ _GLOBAL(plpar_hcall_7arg_7ret)
+ 			 unsigned long *out8,		 94(R1)
+ 		         unsigned long *out9,            92(R1)
+ */
++#ifdef CONFIG_HCALL_STATS
++_GLOBAL(plpar_hcall_9arg_9ret_base)
++#else
+ _GLOBAL(plpar_hcall_9arg_9ret)
++#endif
+ 	HMT_MEDIUM
+ 
+ 	mfcr	r0
+diff -Naupr linux-2.6.17-rc6/arch/powerpc/platforms/pseries/hvCall_inst.c linux-2.6.17-rc6.work/arch/powerpc/platforms/pseries/hvCall_inst.c
+--- linux-2.6.17-rc6/arch/powerpc/platforms/pseries/hvCall_inst.c	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.17-rc6.work/arch/powerpc/platforms/pseries/hvCall_inst.c	2006-06-13 21:39:24.000000000 +0000
+@@ -0,0 +1,239 @@
++/*
++ * Copyright (C) 2006 Mike Kravetz IBM Corporation
++ *
++ * Hypervisor Call Instrumentation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/percpu.h>
++#include <asm/hvcall.h>
++
++DEFINE_PER_CPU(struct hcall_stats[MAX_HCALL_OPCODES+1], hcall_stats);
++
++static inline void update_stats(unsigned long opcode, unsigned long t_before)
 +{
-+	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-+	struct hcall_stats *hs = per_cpu(hcall_stats, cpu->sysdev.id);
-+	size_t rc = 0;
-+	size_t b_written = 0;
-+	size_t b_remain = PAGE_SIZE;
-+	unsigned long i;
++	unsigned long op_index= opcode >> 2;
++	struct hcall_stats *hs = &__get_cpu_var(hcall_stats[op_index]);
 +
-+	for (i=0; i<MAX_HCALL_OPCODES+1; i++){
-+		if (!hs[i].num_calls)
-+			continue;
++	/* racey, but acceptable for non-critical stats */
++	hs->total_time += (mfspr(SPRN_PURR) - t_before);
++	hs->num_calls++;
++}
 +
-+		b_written = snprintf(buf+rc, b_remain,
-+				"%lu %lu %lu\n",
-+				i<<2, hs[i].num_calls, hs[i].total_time);
++extern long plpar_hcall_base (unsigned long opcode,
++                 unsigned long arg1,
++                 unsigned long arg2,
++                 unsigned long arg3,
++                 unsigned long arg4,
++                 unsigned long *out1,
++                 unsigned long *out2,
++                 unsigned long *out3);
 +
-+		if (b_written >= b_remain)
-+			break;	/* end of buffer */
++long plpar_hcall(unsigned long opcode,
++                 unsigned long arg1,
++                 unsigned long arg2,
++                 unsigned long arg3,
++                 unsigned long arg4,
++                 unsigned long *out1,
++                 unsigned long *out2,
++                 unsigned long *out3)
++{
++	long rc;
++	unsigned long t_before = mfspr(SPRN_PURR);
 +
-+		rc += b_written;
-+		b_remain -= b_written;
-+	}
++	rc = plpar_hcall_base(opcode, arg1, arg2, arg3, arg4, out1, out2, out3);
 +
++	update_stats(opcode, t_before);
 +	return rc;
 +}
 +
-+static SYSDEV_ATTR(hcall_stats, 0666, show_hcall_stats, NULL);
++extern long plpar_hcall_norets_base(unsigned long opcode, ...);
++
++long plpar_hcall_norets_C(unsigned long opcode,
++				unsigned long arg1,
++				unsigned long arg2,
++				unsigned long arg3,
++				unsigned long arg4,
++				unsigned long arg5,
++				unsigned long arg6)
++{
++	long rc;
++	unsigned long t_before = mfspr(SPRN_PURR);
++
++	rc = plpar_hcall_norets_base(opcode, arg1, arg2, arg3, arg4, arg5,
++				     arg6);
++
++	update_stats(opcode, t_before);
++	return rc;
++}
++
++extern long plpar_hcall_8arg_2ret_base(unsigned long opcode,
++                           unsigned long arg1,
++                           unsigned long arg2,
++                           unsigned long arg3,
++                           unsigned long arg4,
++                           unsigned long arg5,
++                           unsigned long arg6,
++                           unsigned long arg7,
++                           unsigned long arg8,
++                           unsigned long *out1);
++
++long plpar_hcall_8arg_2ret(unsigned long opcode,
++                           unsigned long arg1,
++                           unsigned long arg2,
++                           unsigned long arg3,
++                           unsigned long arg4,
++                           unsigned long arg5,
++                           unsigned long arg6,
++                           unsigned long arg7,
++                           unsigned long arg8,
++                           unsigned long *out1)
++{
++	long rc;
++	unsigned long t_before = mfspr(SPRN_PURR);
++
++	rc = plpar_hcall_8arg_2ret_base(opcode, arg1, arg2, arg3, arg4, arg5,
++					arg6, arg7, arg8, out1);
++
++	update_stats(opcode, t_before);
++	return rc;
++}
++
++extern long plpar_hcall_4out_base(unsigned long opcode,
++                      unsigned long arg1,
++                      unsigned long arg2,
++                      unsigned long arg3,
++                      unsigned long arg4,
++                      unsigned long *out1,
++                      unsigned long *out2,
++                      unsigned long *out3,
++                      unsigned long *out4);
++
++long plpar_hcall_4out(unsigned long opcode,
++                      unsigned long arg1,
++                      unsigned long arg2,
++                      unsigned long arg3,
++                      unsigned long arg4,
++                      unsigned long *out1,
++                      unsigned long *out2,
++                      unsigned long *out3,
++                      unsigned long *out4)
++{
++	long rc;
++	unsigned long t_before = mfspr(SPRN_PURR);
++
++	rc = plpar_hcall_4out_base(opcode, arg1, arg2, arg3, arg4, out1,
++				   out2, out3, out4);
++
++	update_stats(opcode, t_before);
++	return rc;
++}
++
++extern long plpar_hcall_7arg_7ret_base(unsigned long opcode,
++                           unsigned long arg1,
++                           unsigned long arg2,
++                           unsigned long arg3,
++                           unsigned long arg4,
++                           unsigned long arg5,
++                           unsigned long arg6,
++                           unsigned long arg7,
++                           unsigned long *out1,
++                           unsigned long *out2,
++                           unsigned long *out3,
++                           unsigned long *out4,
++                           unsigned long *out5,
++                           unsigned long *out6,
++                           unsigned long *out7);
++
++long plpar_hcall_7arg_7ret(unsigned long opcode,
++                           unsigned long arg1,
++                           unsigned long arg2,
++                           unsigned long arg3,
++                           unsigned long arg4,
++                           unsigned long arg5,
++                           unsigned long arg6,
++                           unsigned long arg7,
++                           unsigned long *out1,
++                           unsigned long *out2,
++                           unsigned long *out3,
++                           unsigned long *out4,
++                           unsigned long *out5,
++                           unsigned long *out6,
++                           unsigned long *out7)
++{
++	long rc;
++	unsigned long t_before = mfspr(SPRN_PURR);
++
++	rc = plpar_hcall_7arg_7ret_base(opcode, arg1, arg2, arg3, arg4, arg5,
++					arg6, arg7, out1, out2, out3, out4,
++					out5, out6, out7);
++
++	update_stats(opcode, t_before);
++	return rc;
++}
++
++extern long plpar_hcall_9arg_9ret_base(unsigned long opcode,
++                           unsigned long arg1,
++                           unsigned long arg2,
++                           unsigned long arg3,
++                           unsigned long arg4,
++                           unsigned long arg5,
++                           unsigned long arg6,
++                           unsigned long arg7,
++                           unsigned long arg8,
++                           unsigned long arg9,
++                           unsigned long *out1,
++                           unsigned long *out2,
++                           unsigned long *out3,
++                           unsigned long *out4,
++                           unsigned long *out5,
++                           unsigned long *out6,
++                           unsigned long *out7,
++                           unsigned long *out8,
++                           unsigned long *out9);
++
++long plpar_hcall_9arg_9ret(unsigned long opcode,
++                           unsigned long arg1,
++                           unsigned long arg2,
++                           unsigned long arg3,
++                           unsigned long arg4,
++                           unsigned long arg5,
++                           unsigned long arg6,
++                           unsigned long arg7,
++                           unsigned long arg8,
++                           unsigned long arg9,
++                           unsigned long *out1,
++                           unsigned long *out2,
++                           unsigned long *out3,
++                           unsigned long *out4,
++                           unsigned long *out5,
++                           unsigned long *out6,
++                           unsigned long *out7,
++                           unsigned long *out8,
++                           unsigned long *out9)
++{
++	long rc;
++	unsigned long t_before = mfspr(SPRN_PURR);
++
++	rc = plpar_hcall_9arg_9ret_base(opcode, arg1, arg2, arg3, arg4, arg5,
++					arg6, arg7, arg8, arg9, out1, out2,
++					out3, out4, out5, out6, out7, out8,
++					out9);
++
++	update_stats(opcode, t_before);
++	return rc;
++}
+diff -Naupr linux-2.6.17-rc6/include/asm-powerpc/hvcall.h linux-2.6.17-rc6.work/include/asm-powerpc/hvcall.h
+--- linux-2.6.17-rc6/include/asm-powerpc/hvcall.h	2006-06-13 21:38:45.000000000 +0000
++++ linux-2.6.17-rc6.work/include/asm-powerpc/hvcall.h	2006-06-13 21:39:24.000000000 +0000
+@@ -292,6 +292,13 @@ long plpar_hcall_9arg_9ret(unsigned long
+ 			   unsigned long *out8,
+ 			   unsigned long *out9);
+ 
++#ifdef CONFIG_HCALL_STATS
++struct hcall_stats {
++	unsigned long	num_calls;
++	unsigned long	total_time;
++};
 +#endif /* CONFIG_HCALL_STATS */
 +
- static int __init topology_init(void)
- {
- 	int cpu;
-@@ -390,6 +423,9 @@ static int __init topology_init(void)
- 			register_cpu(c, cpu, parent);
- 
- 			sysdev_create_file(&c->sysdev, &attr_physical_id);
-+#ifdef CONFIG_HCALL_STATS
-+			sysdev_create_file(&c->sysdev, &attr_hcall_stats);
-+#endif
- 		}
- 
- 		if (cpu_online(cpu))
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_HVCALL_H */
