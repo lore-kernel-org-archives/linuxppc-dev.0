@@ -1,21 +1,12 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id D04CF67B5E
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 21:11:29 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3] powerpc: Instrument Hypervisor Calls: add wrappers
-Date: Thu, 15 Jun 2006 13:09:39 +0200
-References: <20060614034756.GA6759@monkey.ibm.com>
-	<20060614224040.GH26750@localdomain>
-	<20060614235217.GA3876@monkey.ibm.com>
-In-Reply-To: <20060614235217.GA3876@monkey.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Message-Id: <200606151309.40360.arnd@arndb.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, Nathan Lynch <ntl@pobox.com>,
-	Paul Mackerras <paulus@samba.org>, Christopher Yeoh <cyeoh@samba.org>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17553.16736.157418.936815@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Jun 2006 21:15:44 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: [PATCH] powerpc: Fix 64k pages on non-partitioned machines
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +16,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 15 June 2006 01:52, Mike Kravetz wrote:
-> I'm really wondering what would be the best way to make these stats
-> available to userspace. =A0As mentioned, putting them into sysfs would
-> violate the one value/one file rule. =A0The use of /proc is discouraged.
-> debugfs was mentioned, but I have never used it. =A0Noticed that debugfs
-> was enabled in the default config (at least for pseries). =A0Looks like
-> that would be the best alternative. =A0Agree?
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Debugfs sounds good. If you use one file per hcall, it's probably as
-easy as
+The page size encoding passed to tlbie is incorrect for new-style
+large pages.  This fixes it.  This doesn't affect anything on older
+machines because mmu_psize_defs[psize].penc (the page size encoding)
+is 0 for 4k and 16M pages (the two are distinguished by a separate "is
+a large page" bit).
 
-static u64 hcall_stats_get(void *data)
-{
-	unsigned long index =3D (unsigned long)data;
-	return read_hcall_count(index);
-}
-DEFINE_SIMPLE_ATTRIBUTE(hcall_fops, hcall_stats_get, NULL, "%llu\n");
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+Linus, without this patch, we can't use 64k pages on Cell systems.  If
+you could apply this before 2.6.17 is released, that would be good.
+If not, I'll send it in post 2.6.17.
 
-void hcall_stats_create(void)
-{
-	unsigned long i;
-	struct dentry *dir;
+Paul.
 
-	dir =3D debugfs_create_dir("hcall_stats", NULL);
-	for (i=3D0; i <=3D MAX_HCALL_OPCODES; i++) {
-		char name[16];
-		sprintf(name, "%d", i << 2);
-		debugfs_create_file(name, 0444, dir, (void *)i, &hcall_fops);
-	}
-}
-
-	Arnd <><
+Index: linus-2.6/arch/powerpc/mm/hash_native_64.c
+===================================================================
+--- linus-2.6.orig/arch/powerpc/mm/hash_native_64.c
++++ linus-2.6/arch/powerpc/mm/hash_native_64.c
+@@ -52,7 +52,7 @@ static inline void __tlbie(unsigned long
+ 	default:
+ 		penc = mmu_psize_defs[psize].penc;
+ 		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
+-		va |= (0x7f >> (8 - penc)) << 12;
++		va |= penc << 12;
+ 		asm volatile("tlbie %0,1" : : "r" (va) : "memory");
+ 		break;
+ 	}
+@@ -74,7 +74,7 @@ static inline void __tlbiel(unsigned lon
+ 	default:
+ 		penc = mmu_psize_defs[psize].penc;
+ 		va &= ~((1ul << mmu_psize_defs[psize].shift) - 1);
+-		va |= (0x7f >> (8 - penc)) << 12;
++		va |= penc << 12;
+ 		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
+ 			     : : "r"(va) : "memory");
+ 		break;
