@@ -1,16 +1,31 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.178])
-	by ozlabs.org (Postfix) with ESMTP id 4FE5567C60
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 07:20:49 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id m51so503218pye
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 14:20:48 -0700 (PDT)
-Message-ID: <c3d0340b0606151414q6d218554j255fa74a68a5c9af@mail.gmail.com>
-Date: Thu, 15 Jun 2006 14:14:17 -0700
-From: "Shawn Jin" <shawnxjin@gmail.com>
-To: ppcembed <linuxppc-embedded@ozlabs.org>, ppcdev <linuxppc-dev@ozlabs.org>
-Subject: MSI support on Linux PCI implementation for Ocotea
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <linas@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C423867B75
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 08:15:31 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k5FMFS7R022937
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 18:15:28 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k5FMFSdh261528
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 18:15:28 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k5FMFSqH003945
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 18:15:28 -0400
+Date: Thu, 15 Jun 2006 17:15:27 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH]: powerpc: pseries: Print PCI slot location code on failure
+Message-ID: <20060615221527.GD12389@austin.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,34 +35,97 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-I'm looking at the linux PCI implementation, especially MSI support
-for Ocotea. And I have some observations and questions about it. Maybe
-somebody here can shed some light on them. Thanks.
+Resending an older patch (from 28 April) that seems to have fallen
+through the cracks, its not in mailine, is not in -mm and its not
+controversial (its mostly a printk change). Tested.
 
-1. Obviously MSI is supported in Linux 2.6.x, maybe even in 2.4.x. But
-MSI implementation seems to support only IOxAPIC on x86 or IA64
-architectures, though the implemenation is in generic drivers/pci
-tree.
+--linas
 
-2. Why is the message data defined in a such way shown as follows? Or
-does it just follow IOxAPIC's design? Further question is who defines
-the format of the message data. The PCI/PCIe specs don't say anything
-about the content of the message data register.
+The PCI error recovery code will printk diagnostic info when
+a PCI error event occurs. Change the messages to include the slot
+location code, which is how most sysadmins will know the device.
 
-struct msg_data {
-	__u32	vector		:  8;
-	__u32	delivery_mode	:  3;	/* 000b: FIXED | 001b: lowest prior */
-	__u32	reserved_1	:  3;
-	__u32	level		:  1;	/* 0: deassert | 1: assert */
-	__u32	trigger		:  1;	/* 0: edge | 1: level */
-	__u32	reserved_2	: 16;
-} __attribute__ ((packed));
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-3. How is the pci subsystem initialized on a PPC platform? Is there
-any existing document discussing PCI subsystem? Of course I've been
-doing a lot internet search and couldn't find too much useful infor.
+----
+ arch/powerpc/platforms/pseries/eeh_driver.c |   33 ++++++++++++++++------------
+ 1 files changed, 20 insertions(+), 13 deletions(-)
 
-Thanks a lot,
--Shawn.
+Index: linux-2.6.17-rc6-mm2/arch/powerpc/platforms/pseries/eeh_driver.c
+===================================================================
+--- linux-2.6.17-rc6-mm2.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2006-06-13 18:13:26.000000000 -0500
++++ linux-2.6.17-rc6-mm2/arch/powerpc/platforms/pseries/eeh_driver.c	2006-06-14 17:42:46.000000000 -0500
+@@ -261,16 +261,20 @@ struct pci_dn * handle_eeh_events (struc
+ 	struct pci_bus *frozen_bus;
+ 	int rc = 0;
+ 	enum pci_ers_result result = PCI_ERS_RESULT_NONE;
+-	const char *pci_str, *drv_str;
++	const char *location, *pci_str, *drv_str;
+ 
+ 	frozen_dn = find_device_pe(event->dn);
+ 	frozen_bus = pcibios_find_pci_bus(frozen_dn);
+ 
+ 	if (!frozen_dn) {
+-		printk(KERN_ERR "EEH: Error: Cannot find partition endpoint for %s\n",
+-		        pci_name(event->dev));
++
++		location = (char *) get_property(event->dn, "ibm,loc-code", NULL);
++		printk(KERN_ERR "EEH: Error: Cannot find partition endpoint "
++		                "for location=%s pci addr=%s\n",
++		        location, pci_name(event->dev));
+ 		return NULL;
+ 	}
++	location = (char *) get_property(frozen_dn, "ibm,loc-code", NULL);
+ 
+ 	/* There are two different styles for coming up with the PE.
+ 	 * In the old style, it was the highest EEH-capable device
+@@ -282,8 +286,9 @@ struct pci_dn * handle_eeh_events (struc
+ 		frozen_bus = pcibios_find_pci_bus (frozen_dn->parent);
+ 
+ 	if (!frozen_bus) {
+-		printk(KERN_ERR "EEH: Cannot find PCI bus for %s\n",
+-		        frozen_dn->full_name);
++		printk(KERN_ERR "EEH: Cannot find PCI bus "
++		        "for location=%s dn=%s\n",
++		        location, frozen_dn->full_name);
+ 		return NULL;
+ 	}
+ 
+@@ -318,8 +323,9 @@ struct pci_dn * handle_eeh_events (struc
+ 
+ 	eeh_slot_error_detail(frozen_pdn, 1 /* Temporary Error */);
+ 	printk(KERN_WARNING
+-	   "EEH: This PCI device has failed %d times since last reboot: %s - %s\n",
+-		frozen_pdn->eeh_freeze_count, drv_str, pci_str);
++	   "EEH: This PCI device has failed %d times since last reboot: "
++		"location=%s driver=%s pci addr=%s\n",
++		frozen_pdn->eeh_freeze_count, location, drv_str, pci_str);
+ 
+ 	/* Walk the various device drivers attached to this slot through
+ 	 * a reset sequence, giving each an opportunity to do what it needs
+@@ -368,17 +374,18 @@ excess_failures:
+ 	 * due to actual, failed cards.
+ 	 */
+ 	printk(KERN_ERR
+-	   "EEH: PCI device %s - %s has failed %d times \n"
+-	   "and has been permanently disabled.  Please try reseating\n"
+-	   "this device or replacing it.\n",
+-		drv_str, pci_str, frozen_pdn->eeh_freeze_count);
++	   "EEH: PCI device at location=%s driver=%s pci addr=%s \n"
++		"has failed %d times and has been permanently disabled. \n"
++		"Please try reseating this device or replacing it.\n",
++		location, drv_str, pci_str, frozen_pdn->eeh_freeze_count);
+ 	goto perm_error;
+ 
+ hard_fail:
+ 	printk(KERN_ERR
+-	   "EEH: Unable to recover from failure of PCI device %s - %s\n"
++	   "EEH: Unable to recover from failure of PCI device "
++	   "at location=%s driver=%s pci addr=%s \n"
+ 	   "Please try reseating this device or replacing it.\n",
+-		drv_str, pci_str);
++		location, drv_str, pci_str);
+ 
+ perm_error:
+ 	eeh_slot_error_detail(frozen_pdn, 2 /* Permanent Error */);
