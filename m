@@ -1,18 +1,17 @@
-Return-Path: <jotken@softadvances.com>
-Received: from smtpauth04.mail.atl.earthlink.net
-	(smtpauth04.mail.atl.earthlink.net [209.86.89.64])
-	by ozlabs.org (Postfix) with ESMTP id 6C88267B69
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 91DEA67B75
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Jun 2006 22:17:45 +1000 (EST)
-Message-ID: <44914FEB.6040704@softadvances.com>
-Date: Thu, 15 Jun 2006 07:17:47 -0500
-From: John Otken <jotken@softadvances.com>
-MIME-Version: 1.0
+	Thu, 15 Jun 2006 22:53:44 +1000 (EST)
+Date: Thu, 15 Jun 2006 16:53:44 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
 To: Laurent Pinchart <laurent.pinchart@tbox.biz>
 Subject: Re: Binding FCC interfaces to device names in reverse order
-References: <200606151359.02966.laurent.pinchart@tbox.biz>
+Message-ID: <20060615165344.7db8444e@vitb.ru.mvista.com>
 In-Reply-To: <200606151359.02966.laurent.pinchart@tbox.biz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200606151359.02966.laurent.pinchart@tbox.biz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,10 +23,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Does it work if you plug a cable into both Ethernets?  If so, then
-your PHYs might not be correctly mapped.
+On Thu, 15 Jun 2006 13:59:02 +0200
+Laurent Pinchart <laurent.pinchart@tbox.biz> wrote:
 
-Laurent Pinchart wrote:
 > Hello,
 > 
 > I'm trying to change the order in which the MPC8248 FCC devices are bound to 
@@ -51,6 +49,10 @@ Laurent Pinchart wrote:
 > data is received by the kernel.
 > 
 > Does anyone know why changing the device ids breaks the fs_enet driver ?
+
+Obviously, because board-specific platform_data fixup use that id field to detect what soc device is that - fcc1 or fcc2 this case. So the phy's will be wrong-assigned, as well as other stuff. 
+
+To change order pdevs are registered, you may try to disable all the fccs at the startup, and then enable them after ppc_sys_init, or just shoot enable-disable seq (this was't tested at all, but supposed to work).
 > 
 > Laurent Pinchart
 > _______________________________________________
@@ -58,3 +60,9 @@ Laurent Pinchart wrote:
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 > 
+> 
+
+
+-- 
+Sincerely, 
+Vitaly
