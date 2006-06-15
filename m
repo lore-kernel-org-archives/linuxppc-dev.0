@@ -1,31 +1,44 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <johnrose@austin.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C423867B75
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 08:15:31 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5FMFS7R022937
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D4BBE67B54
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 08:33:10 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k5FMX7po008491
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 18:15:28 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k5FMFSdh261528
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 18:33:07 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k5FMWqNe293994
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 18:15:28 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k5FMFSqH003945
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 18:15:28 -0400
-Date: Thu, 15 Jun 2006 17:15:27 -0500
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 16:32:52 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k5FMX7Dv002337
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 16:33:07 -0600
+Subject: [PATCH] powerpc: RTAS delay, fix module build breaks
+From: John Rose <johnrose@austin.ibm.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH]: powerpc: pseries: Print PCI slot location code on failure
-Message-ID: <20060615221527.GD12389@austin.ibm.com>
+In-Reply-To: <17553.4390.79327.634945@cargo.ozlabs.ibm.com>
+References: <1149103929.2524.8.camel@sinatra.austin.ibm.com>
+	<1149139866.28307.32.camel@localhost.localdomain>
+	<1149177349.9812.16.camel@sinatra.austin.ibm.com>
+	<1149200718.15158.0.camel@sinatra.austin.ibm.com>
+	<1149280229.18052.3.camel@sinatra.austin.ibm.com>
+	<20060602213308.GP8934@localdomain>
+	<1149543108.17307.6.camel@sinatra.austin.ibm.com>
+	<20060610020453.GF23891@krispykreme>
+	<20060610020805.GG23891@krispykreme>
+	<1150129100.26374.5.camel@sinatra.austin.ibm.com>
+	<17553.4390.79327.634945@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Message-Id: <1150410735.3164.4.camel@sinatra.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Date: Thu, 15 Jun 2006 17:32:15 -0500
+Cc: External List <linuxppc-dev@ozlabs.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,97 +48,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Export both news RTAS delay functions, and change the scanlog module to
+use the new delay functions.
 
-Resending an older patch (from 28 April) that seems to have fallen
-through the cracks, its not in mailine, is not in -mm and its not
-controversial (its mostly a printk change). Tested.
+Signed-off-by: John Rose <johnrose@austin.ibm.com>
 
---linas
+---
 
-The PCI error recovery code will printk diagnostic info when
-a PCI error event occurs. Change the messages to include the slot
-location code, which is how most sysadmins will know the device.
+Respun against the powerpc git tree.  Thanks Paul.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+ 2_6_ppc-johnrose/arch/powerpc/kernel/rtas.c               |    1 +
+ 2_6_ppc-johnrose/arch/powerpc/platforms/pseries/scanlog.c |    6 +++---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-----
- arch/powerpc/platforms/pseries/eeh_driver.c |   33 ++++++++++++++++------------
- 1 files changed, 20 insertions(+), 13 deletions(-)
+diff -puN arch/powerpc/kernel/rtas.c~finish_delay_reorg arch/powerpc/kernel/rtas.c
+--- 2_6_ppc/arch/powerpc/kernel/rtas.c~finish_delay_reorg	2006-06-15 17:27:20.000000000 -0500
++++ 2_6_ppc-johnrose/arch/powerpc/kernel/rtas.c	2006-06-15 17:28:11.000000000 -0500
+@@ -797,6 +797,7 @@ EXPORT_SYMBOL(rtas_call);
+ EXPORT_SYMBOL(rtas_data_buf);
+ EXPORT_SYMBOL(rtas_data_buf_lock);
+ EXPORT_SYMBOL(rtas_busy_delay_time);
++EXPORT_SYMBOL(rtas_busy_delay);
+ EXPORT_SYMBOL(rtas_get_sensor);
+ EXPORT_SYMBOL(rtas_get_power_level);
+ EXPORT_SYMBOL(rtas_set_power_level);
+diff -puN arch/powerpc/platforms/pseries/scanlog.c~finish_delay_reorg arch/powerpc/platforms/pseries/scanlog.c
+--- 2_6_ppc/arch/powerpc/platforms/pseries/scanlog.c~finish_delay_reorg	2006-06-15 17:28:30.000000000 -0500
++++ 2_6_ppc-johnrose/arch/powerpc/platforms/pseries/scanlog.c	2006-06-15 17:29:30.000000000 -0500
+@@ -107,9 +107,9 @@ static ssize_t scanlog_read(struct file 
+ 			/* Break to sleep default time */
+ 			break;
+ 		    default:
+-			if (status > 9900 && status <= 9905) {
+-				wait_time = rtas_extended_busy_delay_time(status);
+-			} else {
++			/* Assume extended busy */
++			wait_time = rtas_busy_delay_time(status);
++			if (!wait_time) {
+ 				printk(KERN_ERR "scanlog: unknown error from rtas: %d\n", status);
+ 				return -EIO;
+ 			}
 
-Index: linux-2.6.17-rc6-mm2/arch/powerpc/platforms/pseries/eeh_driver.c
-===================================================================
---- linux-2.6.17-rc6-mm2.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2006-06-13 18:13:26.000000000 -0500
-+++ linux-2.6.17-rc6-mm2/arch/powerpc/platforms/pseries/eeh_driver.c	2006-06-14 17:42:46.000000000 -0500
-@@ -261,16 +261,20 @@ struct pci_dn * handle_eeh_events (struc
- 	struct pci_bus *frozen_bus;
- 	int rc = 0;
- 	enum pci_ers_result result = PCI_ERS_RESULT_NONE;
--	const char *pci_str, *drv_str;
-+	const char *location, *pci_str, *drv_str;
- 
- 	frozen_dn = find_device_pe(event->dn);
- 	frozen_bus = pcibios_find_pci_bus(frozen_dn);
- 
- 	if (!frozen_dn) {
--		printk(KERN_ERR "EEH: Error: Cannot find partition endpoint for %s\n",
--		        pci_name(event->dev));
-+
-+		location = (char *) get_property(event->dn, "ibm,loc-code", NULL);
-+		printk(KERN_ERR "EEH: Error: Cannot find partition endpoint "
-+		                "for location=%s pci addr=%s\n",
-+		        location, pci_name(event->dev));
- 		return NULL;
- 	}
-+	location = (char *) get_property(frozen_dn, "ibm,loc-code", NULL);
- 
- 	/* There are two different styles for coming up with the PE.
- 	 * In the old style, it was the highest EEH-capable device
-@@ -282,8 +286,9 @@ struct pci_dn * handle_eeh_events (struc
- 		frozen_bus = pcibios_find_pci_bus (frozen_dn->parent);
- 
- 	if (!frozen_bus) {
--		printk(KERN_ERR "EEH: Cannot find PCI bus for %s\n",
--		        frozen_dn->full_name);
-+		printk(KERN_ERR "EEH: Cannot find PCI bus "
-+		        "for location=%s dn=%s\n",
-+		        location, frozen_dn->full_name);
- 		return NULL;
- 	}
- 
-@@ -318,8 +323,9 @@ struct pci_dn * handle_eeh_events (struc
- 
- 	eeh_slot_error_detail(frozen_pdn, 1 /* Temporary Error */);
- 	printk(KERN_WARNING
--	   "EEH: This PCI device has failed %d times since last reboot: %s - %s\n",
--		frozen_pdn->eeh_freeze_count, drv_str, pci_str);
-+	   "EEH: This PCI device has failed %d times since last reboot: "
-+		"location=%s driver=%s pci addr=%s\n",
-+		frozen_pdn->eeh_freeze_count, location, drv_str, pci_str);
- 
- 	/* Walk the various device drivers attached to this slot through
- 	 * a reset sequence, giving each an opportunity to do what it needs
-@@ -368,17 +374,18 @@ excess_failures:
- 	 * due to actual, failed cards.
- 	 */
- 	printk(KERN_ERR
--	   "EEH: PCI device %s - %s has failed %d times \n"
--	   "and has been permanently disabled.  Please try reseating\n"
--	   "this device or replacing it.\n",
--		drv_str, pci_str, frozen_pdn->eeh_freeze_count);
-+	   "EEH: PCI device at location=%s driver=%s pci addr=%s \n"
-+		"has failed %d times and has been permanently disabled. \n"
-+		"Please try reseating this device or replacing it.\n",
-+		location, drv_str, pci_str, frozen_pdn->eeh_freeze_count);
- 	goto perm_error;
- 
- hard_fail:
- 	printk(KERN_ERR
--	   "EEH: Unable to recover from failure of PCI device %s - %s\n"
-+	   "EEH: Unable to recover from failure of PCI device "
-+	   "at location=%s driver=%s pci addr=%s \n"
- 	   "Please try reseating this device or replacing it.\n",
--		drv_str, pci_str);
-+		location, drv_str, pci_str);
- 
- perm_error:
- 	eeh_slot_error_detail(frozen_pdn, 2 /* Permanent Error */);
+_
