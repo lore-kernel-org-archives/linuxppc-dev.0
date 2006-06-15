@@ -1,38 +1,26 @@
-Return-Path: <mkravetz@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7068E67B73
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 09:52:20 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5ENqH6H024946
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 19:52:17 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k5ENqHwS263874
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 19:52:17 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k5ENqGm2010150
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 19:52:17 -0400
-Date: Wed, 14 Jun 2006 16:52:17 -0700
-From: Mike Kravetz <kravetz@us.ibm.com>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH 2/3] powerpc: Instrument Hypervisor Calls: add wrappers
-Message-ID: <20060614235217.GA3876@monkey.ibm.com>
-References: <20060614034756.GA6759@monkey.ibm.com>
-	<20060614035258.GC6759@monkey.ibm.com>
-	<20060614144230.GE26750@localdomain>
-	<17552.36563.460775.131555@cargo.ozlabs.ibm.com>
-	<20060614224040.GH26750@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060614224040.GH26750@localdomain>
-Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Christopher Yeoh <cyeoh@samba.org>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 0608F67B5D
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 13:27:43 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k5F3cOMX007678
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 20:38:24 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k5F3Rcwv011835
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Jun 2006 22:27:40 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD467306A5F987@zch01exm40.ap.freescale.net>
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Adrian Cox <adrian@humboldt.co.uk>
+Subject: RE: [PATCH/2.6.17-rc4 8/10]  Add  tsi108 8250 serial support
+Date: Thu, 15 Jun 2006 11:27:30 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Alexandre.Bounine@tundra.com, Russell King <rmk+lkml@arm.linux.org.uk>,
+	linux-kernel@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, linux-serial@vger.kernel.org,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,17 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 14, 2006 at 05:40:40PM -0500, Nathan Lynch wrote:
-> Makes sense... then perhaps the stats shouldn't be exported in per-cpu
-> files in sysfs, and the kernel should calculate and report the totals
-> to userspace in some other form.
+> On Tue, 2006-06-13 at 13:39 +0800, Zang Roy-r61911 wrote:
+> 
+> > The reason is that the serial port on tsi108/9 is a bit difference 
+> > with the standard 8250 serial port. the patch deal with the 
+> difference.
+> > The prefixed ">" is caused by "Fw" the email. Sorry for that. The 
+> > following is the original patch.
+> 
+> The problem I see is that the code uses a CONFIG option, to 
+> change the behaviour of the generic 8250 driver. What happens 
+> if somebody adds a PCI serial card to a tsi108 based machine?
 
-I'm really wondering what would be the best way to make these stats
-available to userspace.  As mentioned, putting them into sysfs would
-violate the one value/one file rule.  The use of /proc is discouraged.
-debugfs was mentioned, but I have never used it.  Noticed that debugfs
-was enabled in the default config (at least for pseries).  Looks like
-that would be the best alternative.  Agree?
+I do not like CONFIG option:). It might be a problem in the environment you suggesting.
 
--- 
-Mike
+> 
+> Perhaps you should define a new value for 
+> uart_8250_port.port.iotype, and add code to serial_in and 
+> serial_out to handle the IIR register.
+I will consider it.
+> 
+> --
+> Adrian Cox <adrian@humboldt.co.uk>
+> 
