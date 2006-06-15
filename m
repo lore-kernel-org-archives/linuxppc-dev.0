@@ -1,35 +1,39 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <mkravetz@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 305FE67B79
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 23:10:00 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5FD9uX8010504
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6BFEB67B80
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 00:58:27 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k5FEwOr8012052
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 09:09:57 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k5FD9vvH173398
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 10:58:24 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k5FEwT4H107828
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 09:09:57 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k5FD9up2016122
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 09:09:57 -0400
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: enable CPU_FTR_CI_LARGE_PAGE for cell
-Date: Thu, 15 Jun 2006 15:09:16 +0200
-References: <17553.16736.157418.936815@cargo.ozlabs.ibm.com>
-	<200606151503.11198.arnd.bergmann@de.ibm.com>
-In-Reply-To: <200606151503.11198.arnd.bergmann@de.ibm.com>
-MIME-Version: 1.0
-Message-Id: <200606151509.16602.arnd.bergmann@de.ibm.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: torvalds@osdl.org, Paul Mackerras <paulus@samba.org>
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 08:58:29 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k5FEwN8u017544
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 08:58:23 -0600
+Date: Thu, 15 Jun 2006 07:58:26 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2/3] powerpc: Instrument Hypervisor Calls: add wrappers
+Message-ID: <20060615145826.GA3461@monkey.ibm.com>
+References: <20060614034756.GA6759@monkey.ibm.com>
+	<20060614224040.GH26750@localdomain>
+	<20060614235217.GA3876@monkey.ibm.com>
+	<200606151309.40360.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200606151309.40360.arnd@arndb.de>
+Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
+	Nathan Lynch <ntl@pobox.com>, Paul Mackerras <paulus@samba.org>,
+	Christopher Yeoh <cyeoh@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,21 +43,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Reflect the fact that the Cell Broadband Engine supports 64k
-pages by adding the bit to the CPU features.
+On Thu, Jun 15, 2006 at 01:09:39PM +0200, Arnd Bergmann wrote:
+> On Thursday 15 June 2006 01:52, Mike Kravetz wrote:
+> > I'm really wondering what would be the best way to make these stats
+> > available to userspace.  As mentioned, putting them into sysfs would
+> > violate the one value/one file rule.  The use of /proc is discouraged.
+> > debugfs was mentioned, but I have never used it.  Noticed that debugfs
+> > was enabled in the default config (at least for pseries).  Looks like
+> > that would be the best alternative.  Agree?
+> 
+> Debugfs sounds good. If you use one file per hcall, it's probably as
+> easy as
 
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
----
-Index: linus-2.6/include/asm-powerpc/cputable.h
-===================================================================
---- linus-2.6.orig/include/asm-powerpc/cputable.h
-+++ linus-2.6/include/asm-powerpc/cputable.h
-@@ -329,7 +329,7 @@ extern void do_cpu_ftr_fixups(unsigned l
- #define CPU_FTRS_CELL	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
--	    CPU_FTR_CTRL | CPU_FTR_PAUSE_ZERO)
-+	    CPU_FTR_CTRL | CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE)
- #define CPU_FTRS_COMPATIBLE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
- 	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2)
- #endif
+But does debugfs have the same one value/one file rule?  Thought I could
+dump all the data in a single debugfs file.
+
+-- 
+Mike
