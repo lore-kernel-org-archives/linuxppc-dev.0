@@ -1,24 +1,19 @@
-Return-Path: <cdumoulin@ics-ltd.com>
-Received: from mx6-6.spamtrap.magma.ca (mx6-6.spamtrap.magma.ca
-	[209.217.78.149])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC8EF67B70
+Return-Path: <dhlii@dlasys.net>
+Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [204.127.192.82])
+	by ozlabs.org (Postfix) with ESMTP id C693D67B64
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Jun 2006 07:38:15 +1000 (EST)
-Received: from mail1.magma.ca (mail1.internal.magma.ca [10.0.10.11])
-	by mx6-6.spamtrap.magma.ca (8.13.1/8.13.1) with ESMTP id k5FLaCjF003729
-	for <linuxppc-embedded@ozlabs.org>; Thu, 15 Jun 2006 17:36:12 -0400
-Received: from [192.9.200.156] ([64.26.174.130]) (authenticated bits=0)
-	by mail1.magma.ca (Magma's Mail Server) with ESMTP id k5FLc91i017507
-	for <linuxppc-embedded@ozlabs.org>; Thu, 15 Jun 2006 17:38:10 -0400
-Message-ID: <4491D34B.4060201@ics-ltd.com>
-Date: Thu, 15 Jun 2006 17:38:19 -0400
-From: Chris Dumoulin <cdumoulin@ics-ltd.com>
+	Fri, 16 Jun 2006 08:05:15 +1000 (EST)
+Message-ID: <4491D860.4050708@dlasys.net>
+Date: Thu, 15 Jun 2006 18:00:00 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Interrupt occurs but UIC0 MSR is still 0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: barbara Lynch-Hughes <blh1964@comcast.net>,
+	linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
+	Bill Lynch <bill@bsd1.com>, maryJean Glick <maryjeanglick@yahoo.com>
+Subject: Deerfield Internet connection
+Content-Type: multipart/alternative;
+	boundary="------------060203040501010908000302"
+Reply-To: dhlii@comcast.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,51 +24,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
-I'm working with a 2.6 linux kernel in a board with a PPC405 in a Virtex 
-II Pro FPGA. I'm trying to generate interrupts and handle them in a 
-device driver that I've written.
-Here is the sequence of events that happen currently:
-1. I generate an interrupt by setting registers in an interrupt 
-controller we've got in the FPGA (it's a Xilinx LogicCORE OPB Interrupt 
-Controller).
-2. The function do_IRQ, in arch/powerpc/kernel/irq.c, is called.
-3. ppc_md.get_irq is called from do_IRQ.
-4. ppc_md.get_irq points to ppc4xx_pic_get_irq in 
-arch/ppc/syslib/ppc4xx_pic.c.
-5. ppc4xx_pic_get_irq reads the MSR from UIC0 to determine the IRQ. In 
-my case, the MSR is all zero, so ppc4xx_pic_get_irq returns -1.
-6. After this, we return from the interrupt, and do_IRQ is called again 
-and again, going through the same steps indefinitely.
+This is a multi-part message in MIME format.
+--------------060203040501010908000302
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I've looked at the UIC0 registers, and the SR, MSR, and ER registers are 
-all 0. How can an interrupt be triggered, but all the UIC0 bits are 0? 
-Is it possible that I'm not actually accessing UIC0? I've got the 
-following in my arch/ppc/platforms/4xx/my_board.h file:
-#define DCRN_UIC0_BASE 0x0C0
-#define UIC0 DCRN_UIC0_BASE
+    Comcast finally installed internet at Deerfield.
+    There is a Linksys 802.11a+b+g Wireless Router in DTL's upstairs office.
+    The Wireless is setup using WEP security.
+    The ssid is "deerfield"
+    the WEP key is either "One Ring" or 40faad1ede
 
-Any ideas would be appreciated.
+    Barbara persuaded Comcast to bring in the service. I beleive it is
+on a month-month basis.
+   
+   
 
-Cheers,
-Chris Dumoulin
+
 -- 
-*--Christopher Dumoulin--*
-Software Team Leader
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-<http://ics-ltd.com/>
-<http://ics-ltd.com/>
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
 
-Interactive Circuits and Systems Ltd.
-5430 Canotek Road
-Ottawa, ON
-K1J 9G2
-(613)749-9241
-1-800-267-9794 (USA only)
 
-------------------------------------------------------------------------
-This e-mail is private and confidential and is for the addressee only. 
-If misdirected, please notify us by telephone and confirm that it has 
-been deleted from your system and any hard copies destroyed. You are 
-strictly prohibited from using, printing, distributing or disseminating 
-it or any information contained in it save to the intended recipient.
+--------------060203040501010908000302
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<font face="Arial">&nbsp;&nbsp;&nbsp; Comcast finally installed internet at Deerfield.<br>
+&nbsp;&nbsp;&nbsp; There is a Linksys 802.11a+b+g Wireless Router in DTL's upstairs
+office.<br>
+&nbsp;&nbsp;&nbsp; The Wireless is setup using WEP security.<br>
+&nbsp;&nbsp;&nbsp; The ssid is "deerfield"<br>
+&nbsp;&nbsp;&nbsp; the WEP key is either "One Ring" or 40faad1ede<br>
+<br>
+&nbsp;&nbsp;&nbsp; Barbara persuaded Comcast to bring in the service. I beleive it is
+on a month-month basis.<br>
+&nbsp;&nbsp;&nbsp; <br>
+&nbsp;&nbsp;&nbsp; <br>
+<br>
+<br>
+</font>
+<pre class="moz-signature" cols="72">-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       <a class="moz-txt-link-abbreviated" href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
+</pre>
+</body>
+</html>
+
+--------------060203040501010908000302--
