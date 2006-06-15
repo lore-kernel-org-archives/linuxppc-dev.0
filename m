@@ -1,31 +1,24 @@
-Return-Path: <hubert.loewenguth@thales-bm.com>
-Received: from thsmsgxrt11p.thalesgroup.com (thsmsgxrt11p.thalesgroup.com
-	[192.54.144.134]) by ozlabs.org (Postfix) with ESMTP id 492D167B83
+Return-Path: <gmuruga@gdatech.com>
+Received: from darwaza.gdatech.com (darwaza.gdatech.com [66.237.41.98])
+	by ozlabs.org (Postfix) with ESMTP id 28C3467B62
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Jun 2006 02:04:32 +1000 (EST)
-Received: from thsmsgirt21p.corp.thales (unknown [10.33.231.5])
-	by thsmsgxrt11p.thalesgroup.com (Postfix) with ESMTP id 18CC83C02D
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Jun 2006 18:04:31 +0200 (CEST)
-Received: from [10.33.231.31] (10.33.231.31) by thsmsgirt21p.corp.thales
-	(7.2.055.4) id 446456B6006D15CC for linuxppc-embedded@ozlabs.org;
-	Thu, 15 Jun 2006 18:04:29 +0200
-Received: from cnfplex.tbm.fr.thales (unknown [10.33.13.187])
-	by thsmsgirt11p.corp.thales (Postfix) with ESMTP id F15363C009
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Jun 2006 18:04:30 +0200 (CEST)
-Received: from [178.1.60.47] (178.1.60.47) by cnfplex.tbm.fr.thales (NPlex
-	6.5.026) id 448E4D3000003694 for linuxppc-embedded@ozlabs.org;
-	Thu, 15 Jun 2006 18:04:30 +0200
-Message-ID: <4491850A.8000608@thales-bm.com>
-Date: Thu, 15 Jun 2006 18:04:26 +0200
-From: "hubert.loewenguth" <hubert.loewenguth@thales-bm.com>
-MIME-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: cramfs and crontab timestamp
-References: <44917BF1.5070700@thales-bm.com>
-In-Reply-To: <44917BF1.5070700@thales-bm.com>
-Content-Type: multipart/mixed; boundary="------------030608060405030802010600"
+	Fri, 16 Jun 2006 05:25:17 +1000 (EST)
+Received: from darwaza.gdatech.com ([192.168.200.118])
+	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Abaca EPG outproxy filter
+	1.3.4.5154-maint13 $Rev: 5154 $) id r66f122516D-00-c875
+	for linuxppc-embedded@ozlabs.org prabhat_singh@satyam.com;
+	Thu, 15 Jun 2006 12:25:16 -0700
+Message-Id: <7.0.0.16.0.20060615122006.01d96cc8@gdatech.com>
+Date: Thu, 15 Jun 2006 12:27:11 -0700
+To: "Prabhat_Singh" <Prabhat_Singh@Satyam.com>, <linuxppc-embedded@ozlabs.org>
+From: "G.Muruganandam" <gmuruga@gdatech.com>
+Subject: Re: Problem in PCI initialization
+In-Reply-To: <D8595042F3765A4285B848A78A2C2ED10494917B@bsdmsg002.corp.sa
+	tyam.ad>
+References: <D8595042F3765A4285B848A78A2C2ED10494917B@bsdmsg002.corp.satyam.ad>
+Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=====================_1906578==.ALT"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,95 +29,326 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------030608060405030802010600
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+--=====================_1906578==.ALT
+Content-Type: text/plain; charset="iso-8859-1"; format=flowed
 Content-Transfer-Encoding: quoted-printable
 
-Hi
-Just a little precision: the /etc "copy/mount" is done before having=20
-start the cron process.
-Thanks again if you have an idea.
 
-hubert.loewenguth a =E9crit :
+Before testing the PCI in linux, you need to make=20
+sure that the PCI is working under u-boot with out any issues.
 
-> hi to the community
+Here are the check list.
+
+1. pci long command under u-boot should display=20
+the pci configuration registers of the device in PCI bus
+     consistently.
+
+2. Check the PCI BAR registers at offset=20
+0x10,0x14 and 0x18 are configured with proper values based on
+     whether it is a PCI memory mapped device or IO mapped device.
+
+3. Check the TLB setting under U-boot whether it=20
+is set correctly for the PCI memory and/or IO regions.
+    If you are using the u-boot 1.1.x, you should=20
+look at init.S for the particular board/cpu.
+
+Hope this helps!
+
+Thanks
+G.Muruganandam
+
+
+At 11:39 PM 6/14/2006, Prabhat_Singh wrote:
+>Content-class: urn:content-classes:message
+>Content-Transfer-Encoding: 7bit
+>Content-Type: multipart/alternative;
+>         boundary=3D"----_=3D_NextPart_001_01C69046.65DE2215"
 >
-> I'm not sure here is the good place for my question because it's not=20
-> related to the ppc architecture, but i try.
-> Here is my problem I don't understand:
-> I have an embended linux 2.4.20 on a 8260 ppc with a cramfs root=20
-> file-system I use since 1 year.
-> Everything works fine.
-> During the init process, the content of the /etc directory is copy in=20
-> a tmpfs file system and then then a tmpfs file-system is mounted on=20
-> /etc and fill with the old content.
-> (thanks to that, I can replace after some files in the /etc by other=20
-> specific files store in a little jffs part of the flash with the=20
-> customer specific configurations /etc configuration files).
+>Hi all
+>I am using MPC8248 based board which has got one PCI interface at 66 MHz .
 >
-> Recently, I've decided to add cron to this platform and something very=20
-> strange appear.
-> My /etc/crontab file is very simple:
+>I am not able to initialize PCI, I am really=20
+>clueless and getting the following errors.
 >
-> -----------------------------------------------
-> SHELL=3D/bin/sh
-> PATH=3D/sbin:/bin:/usr/sbin:/usr/bin
-> MAILTO=3D""
-> HOME=3D/
+>Can any one tell me what is wrong with this?
 >
-> #test of cron
-> * * * * * root echo date >>/tmp/essai
-> -----------------------------------------------
+>But I am initializing the pci in uboot also and=20
+>there in uboot able to detect the network card,=20
+>but while boot its give first time the machine=20
+>check exception and then its reseting itself and=20
+>then in second try it (uboot) is working fine.=20
+>Do the register sets in uboot is again read by=20
+>linux during linux PCI initialization?
 >
-> everything works fine when I boot on a nfs file-system.
-> But nothing is done (/tmp/essai not created) if I boot on the cramfs=20
-> file-system.
-> And what is the only difference beetwen the two startup:........ the=20
-> timestamp of the /etc/crontab (1/1/1970 for crontab coming from the=20
-> cramfs)
+>Someone please help.
 >
-> So I try something after having boot on cramfs:
-> echo "#toto">>/etc/crontab
+>## Booting image at ffd00000 ...
+>Image Name: Linux-2.4.28-1.3.1-517
+>Image Type: PowerPC Linux Kernel Image (gzip compressed)
+>Data Size: 643461 Bytes =3D 628.4 kB
+>Load Address: 00000000
+>Entry Point: 00000000
+>Verifying Checksum ... OK
+>Uncompressing Kernel Image ... OK
+>## Current stack ends at 0x01FAB390 =3D> set upper limit to 0x00800000
+>No initrd
+>## Transferring control to Linux (at address 00000000) ...
+>Memory BAT mapping: BAT2=3D32Mb, BAT3=3D0Mb, residual: 0Mb
 >
-> And ones  I have done this, the cron process start to work correctly,=20
-> creating and editing the /tmp/essai.
-> I know that cron verify if the /etc/crontab has changed every mn, so I=20
-> think this is the reason it works after, but why does it not see the=20
-> first crontab file ?
-> It's juste like the 1/1/1970 timestamp of /etc/crontab make him=20
-> invisible by cron.
+>Linux version 2.4.28-1.3.1-517=20
+>(root@localhost.localdomain) (gcc version 3.3.4)=20
+>#280 Tue Jun 13 16:17:02 IST 2006
 >
-> Does anyone having an idea or having already encounter this kind of=20
-> problem ?
-> I have find nothing on the web about this or a similar problem.
+>On node 0 totalpages: 8192
 >
-> Thanks for any help
+>zone(0): 8192 pages.
 >
+>zone(1): 0 pages.
+>
+>zone(2): 0 pages.
+>
+>Kernel command line: console=3DttyS0,115200 root=3D1f00
+>
+>Calibrating delay loop... 266.24 BogoMIPS
+>
+>Memory: 30712k available (1228k kernel code, 368k data, 64k init, 0k=
+ highmem)
+>
+>Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)
+>
+>Inode cache hash table entries: 2048 (order: 2, 16384 bytes)
+>
+>Mount cache hash table entries: 512 (order: 0, 4096 bytes)
+>
+>Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)
+>
+>Page-cache hash table entries: 8192 (order: 3, 32768 bytes)
+>
+>POSIX conformance testing by UNIFIX
+>
+>PCI: Probing PCI hardware
+>
+>Scanning bus 00
+>
+>Oops: kernel access of bad area, sig: 11
+>
+>NIP: C000C6DC XER: 00000000 LR: C0003FAC SP:=20
+>C0183DC0 REGS: c0183d10 TRAP: 0300 Not tainted
+>
+>MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+>
+>DAR: 00000024, DSISR: 20000000
+>
+>TASK =3D c023a000[14] '=A2p=C0 }=AC' Last syscall: -1
+>
+>last math 00000000 last altivec 00000000
+>
+>GPR00: 00000000 C0183DC0 C023A000 C0183E80=20
+>00000024 20000000 C0170000 00000439
+>
+>GPR08: 00000000 C0183D20 00000000 00000000=20
+>22004084 B5FFFFFF 01FF8000 007FFC1E
+>
+>GPR16: 00000001 00000000 FFFFFFFF 007FFC00=20
+>00001032 00183E70 00000000 C0003FAC
+>
+>GPR24: 00000000 00030001 00000008 20000000=20
+>C0183E80 00000024 00000024 00000008
+>
+>Call backtrace:
+>
+>C0019384 C0003FAC 00000000 C0003FAC 00000000 C0003FAC C0184214
+>
+>C0003FAC C0184380 C0003FAC C01844F0 C0003FAC C0184664 C0003FAC
+>
+>C01847D0 C0003FAC C0184940 C0003FAC C0184AB4 C0003FAC C0184C24
+>
+>C0003FAC C0184D94 C0003FAC C0184F04 C0003FAC C0185074 C0003FAC
+>
+>00000000 C0003FAC 00000000 C0003FAC 00000000
+>
+>Kernel panic: Aiee, killing interrupt handler!
+>
+>In interrupt handler - not syncing
+>
+><0>Rebooting in 180 seconds..
+>
+>
+>
+>DISCLAIMER:
+>This email (including any attachments) is=20
+>intended for the sole use of the intended=20
+>recipient/s and may contain material that is=20
+>CONFIDENTIAL AND PRIVATE COMPANY INFORMATION.=20
+>Any review or reliance by others or copying or=20
+>distribution or forwarding of any or all of the=20
+>contents in this message is STRICTLY PROHIBITED.=20
+>If you are not the intended recipient, please=20
+>contact the sender by email and delete all=20
+>copies; your cooperation in this regard is appreciated..
 >_______________________________________________
 >Linuxppc-embedded mailing list
 >Linuxppc-embedded@ozlabs.org
 >https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
 
---------------030608060405030802010600
-Content-Type: text/x-vcard; charset=utf-8;
- name="hubert.loewenguth.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="hubert.loewenguth.vcf"
+--=====================_1906578==.ALT
+Content-Type: text/html; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-begin:vcard
-fn:Hubert Loewenguth
-n:Loewenguth;Hubert
-org:Thales Broadcast & Multimedia
-adr:;;1 rue de l'hautil;Conflans Ste Honorine;;78700;France
-email;internet:hubert.loewenguth@thales-bm.com
-title:Software Engineer
-tel;work:01-34-90-37-56
-x-mozilla-html:TRUE
-version:2.1
-end:vcard
+<html>
+<body>
+<br>
+Before testing the PCI in linux, you need to make sure that the PCI is
+working under u-boot with out any issues. <br><br>
+Here are the check list.<br><br>
+1. pci long command under u-boot should display the pci configuration
+registers of the device in PCI bus <br>
+&nbsp;&nbsp;&nbsp; consistently.<br><br>
+2. Check the PCI BAR registers at offset 0x10,0x14 and 0x18 are
+configured with proper values based on <br>
+&nbsp;&nbsp;&nbsp; whether it is a PCI memory mapped device or IO mapped
+device. <br><br>
+3. Check the TLB setting under U-boot whether it is set correctly for the
+PCI memory and/or IO regions. <br>
+&nbsp;&nbsp; If you are using the u-boot 1.1.x, you should look at init.S
+for the particular board/cpu. <br><br>
+Hope this helps!<br><br>
+Thanks<br>
+G.Muruganandam<br>
+&nbsp; <br><br>
+At 11:39 PM 6/14/2006, Prabhat_Singh wrote:<br>
+<blockquote type=3Dcite class=3Dcite cite=3D"">Content-class:
+urn:content-classes:message<br>
+Content-Transfer-Encoding: 7bit<br>
+Content-Type: multipart/alternative;<br>
+<x-tab>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</x-tab>
+boundary=3D&quot;----_=3D_NextPart_001_01C69046.65DE2215&quot;<br><br>
+<font size=3D2>Hi all<br>
+I am using MPC8248 based board which has got one PCI interface at 66 MHz
+.<br>
+&nbsp;<br>
+I am not able to initialize PCI, I am really clueless and getting the
+following errors.<br>
+&nbsp;<br>
+Can any one tell me what is wrong with this?<br>
+&nbsp;<br>
+But I am initializing the pci in uboot also and there in uboot able to
+detect the network card, but while boot its give first time the machine
+check exception and then its reseting itself and then in second try it
+(uboot) is working fine. Do the register sets in uboot is again read by
+linux during linux PCI initialization?<br>
+&nbsp;<br>
+Someone please help.<br>
+&nbsp;<br>
+</font><font face=3D"Courier New, Courier" size=3D2>## Booting image at
+ffd00000 ...<br>
+Image Name: Linux-2.4.28-1.3.1-517<br>
+Image Type: PowerPC Linux Kernel Image (gzip compressed)<br>
+Data Size: 643461 Bytes =3D 628.4 kB<br>
+Load Address: 00000000<br>
+Entry Point: 00000000<br>
+Verifying Checksum ... OK<br>
+Uncompressing Kernel Image ... OK<br>
+## Current stack ends at 0x01FAB390 =3D&gt; set upper limit to
+0x00800000<br>
+No initrd<br>
+## Transferring control to Linux (at address 00000000) ...<br>
+Memory BAT mapping: BAT2=3D32Mb, BAT3=3D0Mb, residual: 0Mb<br>
+&nbsp;<br>
+Linux version 2.4.28-1.3.1-517 (root@localhost.localdomain) (gcc version
+3.3.4) #280 Tue Jun 13 16:17:02 IST 2006<br>
+&nbsp;<br>
+On node 0 totalpages: 8192<br>
+&nbsp;<br>
+zone(0): 8192 pages.<br>
+&nbsp;<br>
+zone(1): 0 pages.<br>
+&nbsp;<br>
+zone(2): 0 pages.<br>
+&nbsp;<br>
+Kernel command line: console=3DttyS0,115200 root=3D1f00<br>
+&nbsp;<br>
+Calibrating delay loop... 266.24 BogoMIPS<br>
+&nbsp;<br>
+Memory: 30712k available (1228k kernel code, 368k data, 64k init, 0k
+highmem)<br>
+&nbsp;<br>
+Dentry cache hash table entries: 4096 (order: 3, 32768 bytes)<br>
+&nbsp;<br>
+Inode cache hash table entries: 2048 (order: 2, 16384 bytes)<br>
+&nbsp;<br>
+Mount cache hash table entries: 512 (order: 0, 4096 bytes)<br>
+&nbsp;<br>
+Buffer cache hash table entries: 1024 (order: 0, 4096 bytes)<br>
+&nbsp;<br>
+Page-cache hash table entries: 8192 (order: 3, 32768 bytes)<br>
+&nbsp;<br>
+POSIX conformance testing by UNIFIX<br>
+&nbsp;<br>
+PCI: Probing PCI hardware<br>
+&nbsp;<br>
+Scanning bus 00<br>
+&nbsp;<br>
+Oops: kernel access of bad area, sig: 11<br>
+&nbsp;<br>
+NIP: C000C6DC XER: 00000000 LR: C0003FAC SP: C0183DC0 REGS: c0183d10
+TRAP: 0300 Not tainted<br>
+&nbsp;<br>
+MSR: 00001032 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11<br>
+&nbsp;<br>
+DAR: 00000024, DSISR: 20000000<br>
+&nbsp;<br>
+TASK =3D c023a000[14] '=A2p=C0 }=AC' Last syscall: -1 <br>
+&nbsp;<br>
+last math 00000000 last altivec 00000000<br>
+&nbsp;<br>
+GPR00: 00000000 C0183DC0 C023A000 C0183E80 00000024 20000000 C0170000
+00000439 <br>
+&nbsp;<br>
+GPR08: 00000000 C0183D20 00000000 00000000 22004084 B5FFFFFF 01FF8000
+007FFC1E <br>
+&nbsp;<br>
+GPR16: 00000001 00000000 FFFFFFFF 007FFC00 00001032 00183E70 00000000
+C0003FAC <br>
+&nbsp;<br>
+GPR24: 00000000 00030001 00000008 20000000 C0183E80 00000024 00000024
+00000008 <br>
+&nbsp;<br>
+Call backtrace: <br>
+&nbsp;<br>
+C0019384 C0003FAC 00000000 C0003FAC 00000000 C0003FAC C0184214 <br>
+&nbsp;<br>
+C0003FAC C0184380 C0003FAC C01844F0 C0003FAC C0184664 C0003FAC <br>
+&nbsp;<br>
+C01847D0 C0003FAC C0184940 C0003FAC C0184AB4 C0003FAC C0184C24 <br>
+&nbsp;<br>
+C0003FAC C0184D94 C0003FAC C0184F04 C0003FAC C0185074 C0003FAC <br>
+&nbsp;<br>
+00000000 C0003FAC 00000000 C0003FAC 00000000 <br>
+&nbsp;<br>
+Kernel panic: Aiee, killing interrupt handler!<br>
+&nbsp;<br>
+In interrupt handler - not syncing<br>
+&nbsp;<br>
+&lt;0&gt;Rebooting in 180 seconds..<br>
+</font>&nbsp;<br>
+&nbsp;<br>
+<br>
+DISCLAIMER:<br>
+This email (including any attachments) is intended for the sole use of
+the intended recipient/s and may contain material that is CONFIDENTIAL
+AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or
+copying or distribution or forwarding of any or all of the contents in
+this message is STRICTLY PROHIBITED. If you are not the intended
+recipient, please contact the sender by email and delete all copies; your
+cooperation in this regard is appreciated.. <br>
+_______________________________________________<br>
+Linuxppc-embedded mailing list<br>
+Linuxppc-embedded@ozlabs.org<br>
+<a href=3D"https://ozlabs.org/mailman/listinfo/linuxppc-embedded" eudora=3D"=
+autourl">
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a></blockquote>
+</body>
+</html>
 
-
---------------030608060405030802010600--
+--=====================_1906578==.ALT--
