@@ -1,19 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EA85A67B64
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 13:25:09 +1000 (EST)
-Date: Fri, 16 Jun 2006 13:24:39 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: Re: [PATCH] powerpc: Use soft irq-disable on all 64-bit machines
-Message-Id: <20060616132439.484c2ced.sfr@canb.auug.org.au>
-In-Reply-To: <20060614172309.59d7b76e.sfr@canb.auug.org.au>
-References: <17551.33574.27019.305680@cargo.ozlabs.ibm.com>
-	<20060614170840.3686cbad.sfr@canb.auug.org.au>
-	<20060614172309.59d7b76e.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <deepesh@india.tejasnetworks.com>
+Received: from anche.india.tejasnetworks.com (unknown [164.164.94.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0F91767B6C
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 19:06:45 +1000 (EST)
+Received: from localhost (unknown [127.0.0.1])
+	by anche.india.tejasnetworks.com (*****) with ESMTP id 38EC27394A
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 08:37:20 +0000 (UTC)
+Received: from anche.india.tejasnetworks.com ([127.0.0.1])
+	by localhost (anche [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 30709-05 for <linuxppc-dev@ozlabs.org>;
+	Fri, 16 Jun 2006 14:07:18 +0530 (IST)
+Received: from pop-mail (localhost [127.0.0.1])
+	by anche.india.tejasnetworks.com (*****) with ESMTP id 9DEB573946
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 14:07:18 +0530 (IST)
+Message-ID: <34765.192.168.90.80.1150447038.squirrel@pop-mail>
+Date: Fri, 16 Jun 2006 14:07:18 +0530 (IST)
+Subject: Block driver question (MPC852 with DoC)
+From: deepesh@india.tejasnetworks.com
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,39 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 14 Jun 2006 17:23:09 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> On Wed, 14 Jun 2006 17:08:40 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > Looks good.  A couple of small fixes below.
-> 
-> Plus we want the below as well ...
+Processor: MPC852
+OS : linuxppc-2.4.20 from denx
+DoC: Disk On Chip, A block device.
 
-And this ...
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 434461a..c6b0400 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -89,6 +89,8 @@ system_call_common:
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
- 	ld	r11,exception_marker@toc(r2)
- 	std	r11,-16(r9)		/* "regshere" marker */
-+	lbz	r10,PACAPROCENABLED(r13)
-+	std	r10,SOFTE(r1)
- #ifdef CONFIG_PPC_ISERIES
- 	/* Hack for handling interrupts when soft-enabling on iSeries */
- 	cmpdi	cr1,r0,0x5555		/* syscall 0x5555 */
-@@ -96,8 +98,6 @@ #ifdef CONFIG_PPC_ISERIES
- 	crand	4*cr0+eq,4*cr1+eq,4*cr0+eq
- 	beq	hardware_interrupt_entry
- #endif
--	lbz	r10,PACAPROCENABLED(r13)
--	std	r10,SOFTE(r1)
- 	mfmsr	r11
- 	ori	r11,r11,MSR_EE
- 	mtmsrd	r11,1
+We are using DiskOnChip on our board. And we have got a block driver from
+the vendor, which can be insmoded.
+
+The request function of the block driver:
+DeviceRequest() {
+   some error checkings;
+   list_add_tail(&queue,&requestsList);
+   wake_up(&waitQueueHead);
+}
+
+There is an kernel thread which does the final block read-writes to the
+disk on chip:
+
+IOKernelThread() {
+    while(1) {
+       set_current_state(TASK_INTERRUPTIBLE);
+       interruptible_sleep_on_timeout(&waitQueueHead,1);
+       while(!list_empty(&requestsList)) {
+          read/write to the disk;
+          list_del(&queue);
+       }
+    }
+
+}
+
+The list manipulations happen in the DeviceRequest and the IOKernelThread.
+Is there a potential chance of a race condition, when a timer interrupt
+occurs?
+
+Thank you,
+Deepesh
