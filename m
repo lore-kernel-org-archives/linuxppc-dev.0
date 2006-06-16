@@ -1,19 +1,20 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [204.127.192.82])
-	by ozlabs.org (Postfix) with ESMTP id C693D67B64
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [64.81.67.12])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0D06E67B7B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Jun 2006 08:05:15 +1000 (EST)
-Message-ID: <4491D860.4050708@dlasys.net>
-Date: Thu, 15 Jun 2006 18:00:00 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
-MIME-Version: 1.0
-To: barbara Lynch-Hughes <blh1964@comcast.net>,
-	linuxppc-embedded <linuxppc-embedded@ozlabs.org>,
-	Bill Lynch <bill@bsd1.com>, maryJean Glick <maryjeanglick@yahoo.com>
-Subject: Deerfield Internet connection
-Content-Type: multipart/alternative;
-	boundary="------------060203040501010908000302"
-Reply-To: dhlii@comcast.net
+	Fri, 16 Jun 2006 12:02:25 +1000 (EST)
+Date: Thu, 15 Jun 2006 19:02:21 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Chris Dumoulin <cdumoulin@ics-ltd.com>
+Subject: Re: Interrupt occurs but UIC0 MSR is still 0
+Message-ID: <20060616020221.GA3366@gate.ebshome.net>
+References: <4491D34B.4060201@ics-ltd.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4491D34B.4060201@ics-ltd.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,70 +25,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060203040501010908000302
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Thu, Jun 15, 2006 at 05:38:19PM -0400, Chris Dumoulin wrote:
+> Hi All,
+> I'm working with a 2.6 linux kernel in a board with a PPC405 in a Virtex 
+> II Pro FPGA. I'm trying to generate interrupts and handle them in a 
+> device driver that I've written.
+> Here is the sequence of events that happen currently:
+> 1. I generate an interrupt by setting registers in an interrupt 
+> controller we've got in the FPGA (it's a Xilinx LogicCORE OPB Interrupt 
+> Controller).
+> 2. The function do_IRQ, in arch/powerpc/kernel/irq.c, is called.
+> 3. ppc_md.get_irq is called from do_IRQ.
+> 4. ppc_md.get_irq points to ppc4xx_pic_get_irq in 
+> arch/ppc/syslib/ppc4xx_pic.c.
+> 5. ppc4xx_pic_get_irq reads the MSR from UIC0 to determine the IRQ. In 
+> my case, the MSR is all zero, so ppc4xx_pic_get_irq returns -1.
+> 6. After this, we return from the interrupt, and do_IRQ is called again 
+> and again, going through the same steps indefinitely.
 
-    Comcast finally installed internet at Deerfield.
-    There is a Linksys 802.11a+b+g Wireless Router in DTL's upstairs office.
-    The Wireless is setup using WEP security.
-    The ssid is "deerfield"
-    the WEP key is either "One Ring" or 40faad1ede
-
-    Barbara persuaded Comcast to bring in the service. I beleive it is
-on a month-month basis.
-   
-   
-
+I don't think ppc4xx_pic.c is correct file for Xilinx Virtex II Pro. 
+You should be using xilinx_pic.c probably.
 
 -- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
-
-
---------------060203040501010908000302
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-  <title></title>
-</head>
-<body bgcolor="#ffffff" text="#000000">
-<font face="Arial">&nbsp;&nbsp;&nbsp; Comcast finally installed internet at Deerfield.<br>
-&nbsp;&nbsp;&nbsp; There is a Linksys 802.11a+b+g Wireless Router in DTL's upstairs
-office.<br>
-&nbsp;&nbsp;&nbsp; The Wireless is setup using WEP security.<br>
-&nbsp;&nbsp;&nbsp; The ssid is "deerfield"<br>
-&nbsp;&nbsp;&nbsp; the WEP key is either "One Ring" or 40faad1ede<br>
-<br>
-&nbsp;&nbsp;&nbsp; Barbara persuaded Comcast to bring in the service. I beleive it is
-on a month-month basis.<br>
-&nbsp;&nbsp;&nbsp; <br>
-&nbsp;&nbsp;&nbsp; <br>
-<br>
-<br>
-</font>
-<pre class="moz-signature" cols="72">-- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       <a class="moz-txt-link-abbreviated" href="mailto:dhlii@dlasys.net">dhlii@dlasys.net</a> 	  <a class="moz-txt-link-freetext" href="http://www.dlasys.net">http://www.dlasys.net</a>
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
-</pre>
-</body>
-</html>
-
---------------060203040501010908000302--
+Eugene
