@@ -1,20 +1,19 @@
-Return-Path: <shawnxjin@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.181])
-	by ozlabs.org (Postfix) with ESMTP id D752667B71
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 10:45:24 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id m51so553553pye
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Jun 2006 17:45:23 -0700 (PDT)
-Message-ID: <c3d0340b0606151745w5bab060dq7ae6b7d74c59d074@mail.gmail.com>
-Date: Thu, 15 Jun 2006 17:45:22 -0700
-From: "Shawn Jin" <shawnxjin@gmail.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Re: MSI support on Linux PCI implementation for Ocotea
-In-Reply-To: <1150413771.7725.20.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <c3d0340b0606151414q6d218554j255fa74a68a5c9af@mail.gmail.com>
-	<1150413771.7725.20.camel@localhost.localdomain>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, ppcembed <linuxppc-embedded@ozlabs.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id EA85A67B64
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Jun 2006 13:25:09 +1000 (EST)
+Date: Fri, 16 Jun 2006 13:24:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: Re: [PATCH] powerpc: Use soft irq-disable on all 64-bit machines
+Message-Id: <20060616132439.484c2ced.sfr@canb.auug.org.au>
+In-Reply-To: <20060614172309.59d7b76e.sfr@canb.auug.org.au>
+References: <17551.33574.27019.305680@cargo.ozlabs.ibm.com>
+	<20060614170840.3686cbad.sfr@canb.auug.org.au>
+	<20060614172309.59d7b76e.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Hi ! What is Ocotea ! :)
-
-Did I spell it wrong?? I don't believe Ben doesn't know Ocotea.
-Hmmm...Ocotea again? Let me check if I really spelled it wrong. Hey,
-it's really Ocotea. ;)
-
-Of course, there is no such MSI support specific for Ocotea.
-
-> > 1. Obviously MSI is supported in Linux 2.6.x, maybe even in 2.4.x. But
-> > MSI implementation seems to support only IOxAPIC on x86 or IA64
-> > architectures, though the implemenation is in generic drivers/pci
-> > tree.
+On Wed, 14 Jun 2006 17:23:09 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 >
-> Exact. And it's also a pile of crap.
+> On Wed, 14 Jun 2006 17:08:40 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > Looks good.  A couple of small fixes below.
+> 
+> Plus we want the below as well ...
 
-;) I'm not in a position where I can either agree or disagree with
-you. :D But may I ask if ppc platform can make use of this crap in our
-PCI express testing? That is, are the functionalities of this crap
-working?
+And this ...
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> pci host bridges are initialized early, generally in setup_arch() and
-> the PCI bus is probed later. You can see the code in
-> arch/powerpc/kernel/pci_{32,64}.c
->
-> Now, regarding MSI, as you have noticed, the situation isn't great. I'm
-> currently in the middle of reworking our interrupt management (and
-> interrupt numbers allocation layer) and Michael Ellermann is looking at
-> the MSI issue in parallel.
->
-> We don't have a solution yet but are working on it.
-
-It's good to know the development status. What's the relationship
-between generic pci driver layer in drivers/pci and architecture
-specific implementation? One thing I notice is that architectures
-provide pcibios_init() and do resource allocation while the generic
-driver provides PCI generic functions such as pci_scan_device().
-
-Thanks,
--Shawn.
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 434461a..c6b0400 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -89,6 +89,8 @@ system_call_common:
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ 	ld	r11,exception_marker@toc(r2)
+ 	std	r11,-16(r9)		/* "regshere" marker */
++	lbz	r10,PACAPROCENABLED(r13)
++	std	r10,SOFTE(r1)
+ #ifdef CONFIG_PPC_ISERIES
+ 	/* Hack for handling interrupts when soft-enabling on iSeries */
+ 	cmpdi	cr1,r0,0x5555		/* syscall 0x5555 */
+@@ -96,8 +98,6 @@ #ifdef CONFIG_PPC_ISERIES
+ 	crand	4*cr0+eq,4*cr1+eq,4*cr0+eq
+ 	beq	hardware_interrupt_entry
+ #endif
+-	lbz	r10,PACAPROCENABLED(r13)
+-	std	r10,SOFTE(r1)
+ 	mfmsr	r11
+ 	ori	r11,r11,MSR_EE
+ 	mtmsrd	r11,1
