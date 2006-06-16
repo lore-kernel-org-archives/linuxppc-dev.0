@@ -1,16 +1,16 @@
-Return-Path: <rdreier@cisco.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: MSI support on Linux PCI implementation for Ocotea
-References: <c3d0340b0606151414q6d218554j255fa74a68a5c9af@mail.gmail.com>
-	<1150413771.7725.20.camel@localhost.localdomain>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 15 Jun 2006 16:31:01 -0700
-In-Reply-To: <1150413771.7725.20.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Fri, 16 Jun 2006 09:22:51 +1000")
-Message-ID: <ada3be6vvwq.fsf@cisco.com>
+Return-Path: <anton@ozlabs.org>
+Date: Fri, 16 Jun 2006 10:14:16 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: Re: [PATCH] powerpc: Fix 64k pages on non-partitioned machines
+Message-ID: <20060616001416.GD15141@krispykreme>
+References: <17553.16736.157418.936815@cargo.ozlabs.ibm.com>
+	<200606151508.46613.arnd.bergmann@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, ppcembed <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <200606151508.46613.arnd.bergmann@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, torvalds@osdl.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,9 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-    Benjamin> Hi ! What is Ocotea ! :)
 
-It's an eval board for some PowerPC 440 ... 440GX I think (which has
-the HW capability to support MSI on PCI-X iirc)
+Hi Arnd,
 
- - R.
+> Actually, I thought we decided to postpone 64k page support on cell
+> to 2.6.18 already. This patch alone is not enough to make it work,
+> at least one more fix is needed for being able to boot, while
+> the spu file system needs major changes for it.
+
+We are hitting the bug on other ppc64 systems too, so I think its worth
+fixing for 2.6.17.
+
+Anton
