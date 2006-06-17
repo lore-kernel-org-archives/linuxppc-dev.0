@@ -1,17 +1,14 @@
 Return-Path: <jdl@jdl.com>
-Received: from jdl.com (mail.jdl.com [66.118.10.122])
+Received: from jdl.com (colo.jdl.com [66.118.10.122])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2BC3067B50
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Jun 2006 08:52:57 +1000 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.44)
-	id 1Frjet-0004PA-J1
-	for linuxppc-dev@ozlabs.org; Sat, 17 Jun 2006 17:52:54 -0500
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 7/9 v3] Add 8641 Register space and IRQ definitions.
-Date: Sat, 17 Jun 2006 17:52:51 -0500
+	by ozlabs.org (Postfix) with ESMTP id 4B36367B4D
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Jun 2006 08:53:01 +1000 (EST)
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jeff@garzik.org
+Subject: [PATCH 9/9 v3] Add Vitesse 8244 PHY for MPC8641 HPCN platform.
+Date: Sat, 17 Jun 2006 17:52:55 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Frjet-0004PA-J1@jdl.com>
+Message-Id: <E1Frjex-0004PK-F6@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,370 +18,178 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Jeff Brown <Jeff.Brown@freescale.com>
+Signed-off-by: Kriston Carson <KristonCarson@freescale.com>
 Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
-
+Acked-by: Jeff Garzik <jeff@garzik.org>
 
 ---
 
- include/asm-powerpc/immap_86xx.h |  199 ++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/irq.h        |   86 ++++++++++++++++
- include/asm-powerpc/mpc86xx.h    |   47 +++++++++
- 3 files changed, 332 insertions(+), 0 deletions(-)
+ drivers/net/Kconfig       |    6 +-
+ drivers/net/phy/Kconfig   |    5 ++
+ drivers/net/phy/Makefile  |    1
+ drivers/net/phy/vitesse.c |  112 +++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 121 insertions(+), 3 deletions(-)
 
-diff --git a/include/asm-powerpc/immap_86xx.h b/include/asm-powerpc/immap_86xx.h
-new file mode 100644
-index 0000000..d905b66
---- /dev/null
-+++ b/include/asm-powerpc/immap_86xx.h
-@@ -0,0 +1,199 @@
-+/*
-+ * MPC86xx Internal Memory Map
-+ *
-+ * Author: Jeff Brown
-+ *
-+ * Copyright 2004 Freescale Semiconductor, Inc
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ *
-+ */
-+
-+#ifndef __ASM_POWERPC_IMMAP_86XX_H__
-+#define __ASM_POWERPC_IMMAP_86XX_H__
-+#ifdef __KERNEL__
-+
-+/* Eventually this should define all the IO block registers in 86xx */
-+
-+/* PCI Registers */
-+typedef struct ccsr_pci {
-+	uint	cfg_addr;	/* 0x.000 - PCI Configuration Address Register */
-+	uint	cfg_data;	/* 0x.004 - PCI Configuration Data Register */
-+	uint	int_ack;	/* 0x.008 - PCI Interrupt Acknowledge Register */
-+	char	res1[3060];
-+	uint	potar0;		/* 0x.c00 - PCI Outbound Transaction Address Register 0 */
-+	uint	potear0;	/* 0x.c04 - PCI Outbound Translation Extended Address Register 0 */
-+	uint	powbar0;	/* 0x.c08 - PCI Outbound Window Base Address Register 0 */
-+	char	res2[4];
-+	uint	powar0;		/* 0x.c10 - PCI Outbound Window Attributes Register 0 */
-+	char	res3[12];
-+	uint	potar1;		/* 0x.c20 - PCI Outbound Transaction Address Register 1 */
-+	uint	potear1;	/* 0x.c24 - PCI Outbound Translation Extended Address Register 1 */
-+	uint	powbar1;	/* 0x.c28 - PCI Outbound Window Base Address Register 1 */
-+	char	res4[4];
-+	uint	powar1;		/* 0x.c30 - PCI Outbound Window Attributes Register 1 */
-+	char	res5[12];
-+	uint	potar2;		/* 0x.c40 - PCI Outbound Transaction Address Register 2 */
-+	uint	potear2;	/* 0x.c44 - PCI Outbound Translation Extended Address Register 2 */
-+	uint	powbar2;	/* 0x.c48 - PCI Outbound Window Base Address Register 2 */
-+	char	res6[4];
-+	uint	powar2;		/* 0x.c50 - PCI Outbound Window Attributes Register 2 */
-+	char	res7[12];
-+	uint	potar3;		/* 0x.c60 - PCI Outbound Transaction Address Register 3 */
-+	uint	potear3;	/* 0x.c64 - PCI Outbound Translation Extended Address Register 3 */
-+	uint	powbar3;	/* 0x.c68 - PCI Outbound Window Base Address Register 3 */
-+	char	res8[4];
-+	uint	powar3;		/* 0x.c70 - PCI Outbound Window Attributes Register 3 */
-+	char	res9[12];
-+	uint	potar4;		/* 0x.c80 - PCI Outbound Transaction Address Register 4 */
-+	uint	potear4;	/* 0x.c84 - PCI Outbound Translation Extended Address Register 4 */
-+	uint	powbar4;	/* 0x.c88 - PCI Outbound Window Base Address Register 4 */
-+	char	res10[4];
-+	uint	powar4;		/* 0x.c90 - PCI Outbound Window Attributes Register 4 */
-+	char	res11[268];
-+	uint	pitar3;		/* 0x.da0 - PCI Inbound Translation Address Register 3  */
-+	char	res12[4];
-+	uint	piwbar3;	/* 0x.da8 - PCI Inbound Window Base Address Register 3 */
-+	uint	piwbear3;	/* 0x.dac - PCI Inbound Window Base Extended Address Register 3 */
-+	uint	piwar3;		/* 0x.db0 - PCI Inbound Window Attributes Register 3 */
-+	char	res13[12];
-+	uint	pitar2;		/* 0x.dc0 - PCI Inbound Translation Address Register 2  */
-+	char	res14[4];
-+	uint	piwbar2;	/* 0x.dc8 - PCI Inbound Window Base Address Register 2 */
-+	uint	piwbear2;	/* 0x.dcc - PCI Inbound Window Base Extended Address Register 2 */
-+	uint	piwar2;		/* 0x.dd0 - PCI Inbound Window Attributes Register 2 */
-+	char	res15[12];
-+	uint	pitar1;		/* 0x.de0 - PCI Inbound Translation Address Register 1  */
-+	char	res16[4];
-+	uint	piwbar1;	/* 0x.de8 - PCI Inbound Window Base Address Register 1 */
-+	char	res17[4];
-+	uint	piwar1;		/* 0x.df0 - PCI Inbound Window Attributes Register 1 */
-+	char	res18[12];
-+	uint	err_dr;		/* 0x.e00 - PCI Error Detect Register */
-+	uint	err_cap_dr;	/* 0x.e04 - PCI Error Capture Disable Register */
-+	uint	err_en;		/* 0x.e08 - PCI Error Enable Register */
-+	uint	err_attrib;	/* 0x.e0c - PCI Error Attributes Capture Register */
-+	uint	err_addr;	/* 0x.e10 - PCI Error Address Capture Register */
-+	uint	err_ext_addr;	/* 0x.e14 - PCI Error Extended Address Capture Register */
-+	uint	err_dl;		/* 0x.e18 - PCI Error Data Low Capture Register */
-+	uint	err_dh;		/* 0x.e1c - PCI Error Data High Capture Register */
-+	uint	gas_timr;	/* 0x.e20 - PCI Gasket Timer Register */
-+	uint	pci_timr;	/* 0x.e24 - PCI Timer Register */
-+	char	res19[472];
-+} ccsr_pci_t;
-+
-+/* PCI Express Registers */
-+typedef struct ccsr_pex {
-+	uint    pex_config_addr;        /* 0x.000 - PCI Express Configuration Address Register */
-+	uint    pex_config_data;        /* 0x.004 - PCI Express Configuration Data Register */
-+	char    res1[4];
-+	uint    pex_otb_cpl_tor;        /* 0x.00c - PCI Express Outbound completion timeout register */
-+	uint    pex_conf_tor;           /* 0x.010 - PCI Express configuration timeout register */
-+	char    res2[12];
-+	uint    pex_pme_mes_dr;         /* 0x.020 - PCI Express PME and message detect register */
-+	uint    pex_pme_mes_disr;       /* 0x.024 - PCI Express PME and message disable register */
-+	uint    pex_pme_mes_ier;        /* 0x.028 - PCI Express PME and message interrupt enable register */
-+	uint    pex_pmcr;               /* 0x.02c - PCI Express power management command register */
-+	char    res3[3024];
-+	uint    pexotar0;               /* 0x.c00 - PCI Express outbound translation address register 0 */
-+	uint    pexotear0;              /* 0x.c04 - PCI Express outbound translation extended address register 0*/
-+	char    res4[8];
-+	uint    pexowar0;               /* 0x.c10 - PCI Express outbound window attributes register 0*/
-+	char    res5[12];
-+	uint    pexotar1;               /* 0x.c20 - PCI Express outbound translation address register 1 */
-+	uint    pexotear1;              /* 0x.c24 - PCI Express outbound translation extended address register 1*/
-+	uint    pexowbar1;              /* 0x.c28 - PCI Express outbound window base address register 1*/
-+	char    res6[4];
-+	uint    pexowar1;               /* 0x.c30 - PCI Express outbound window attributes register 1*/
-+	char    res7[12];
-+	uint    pexotar2;               /* 0x.c40 - PCI Express outbound translation address register 2 */
-+	uint    pexotear2;              /* 0x.c44 - PCI Express outbound translation extended address register 2*/
-+	uint    pexowbar2;              /* 0x.c48 - PCI Express outbound window base address register 2*/
-+	char    res8[4];
-+	uint    pexowar2;               /* 0x.c50 - PCI Express outbound window attributes register 2*/
-+	char    res9[12];
-+	uint    pexotar3;               /* 0x.c60 - PCI Express outbound translation address register 3 */
-+	uint    pexotear3;              /* 0x.c64 - PCI Express outbound translation extended address register 3*/
-+	uint    pexowbar3;              /* 0x.c68 - PCI Express outbound window base address register 3*/
-+	char    res10[4];
-+	uint    pexowar3;               /* 0x.c70 - PCI Express outbound window attributes register 3*/
-+	char    res11[12];
-+	uint    pexotar4;               /* 0x.c80 - PCI Express outbound translation address register 4 */
-+	uint    pexotear4;              /* 0x.c84 - PCI Express outbound translation extended address register 4*/
-+	uint    pexowbar4;              /* 0x.c88 - PCI Express outbound window base address register 4*/
-+	char    res12[4];
-+	uint    pexowar4;               /* 0x.c90 - PCI Express outbound window attributes register 4*/
-+	char    res13[12];
-+	char    res14[256];
-+	uint    pexitar3;               /* 0x.da0 - PCI Express inbound translation address register 3 */
-+	char    res15[4];
-+	uint    pexiwbar3;              /* 0x.da8 - PCI Express inbound window base address register 3 */
-+	uint    pexiwbear3;             /* 0x.dac - PCI Express inbound window base extended address register 3 */
-+	uint    pexiwar3;               /* 0x.db0 - PCI Express inbound window attributes register 3 */
-+	char    res16[12];
-+	uint    pexitar2;               /* 0x.dc0 - PCI Express inbound translation address register 2 */
-+	char    res17[4];
-+	uint    pexiwbar2;              /* 0x.dc8 - PCI Express inbound window base address register 2 */
-+	uint    pexiwbear2;             /* 0x.dcc - PCI Express inbound window base extended address register 2 */
-+	uint    pexiwar2;               /* 0x.dd0 - PCI Express inbound window attributes register 2 */
-+	char    res18[12];
-+	uint    pexitar1;               /* 0x.de0 - PCI Express inbound translation address register 2 */
-+	char    res19[4];
-+	uint    pexiwbar1;              /* 0x.de8 - PCI Express inbound window base address register 2 */
-+	uint    pexiwbear1;             /* 0x.dec - PCI Express inbound window base extended address register 2 */
-+	uint    pexiwar1;               /* 0x.df0 - PCI Express inbound window attributes register 2 */
-+	char    res20[12];
-+	uint    pex_err_dr;             /* 0x.e00 - PCI Express error detect register */
-+	char    res21[4];
-+	uint    pex_err_en;             /* 0x.e08 - PCI Express error interrupt enable register */
-+	char    res22[4];
-+	uint    pex_err_disr;           /* 0x.e10 - PCI Express error disable register */
-+	char    res23[12];
-+	uint    pex_err_cap_stat;       /* 0x.e20 - PCI Express error capture status register */
-+	char    res24[4];
-+	uint    pex_err_cap_r0;         /* 0x.e28 - PCI Express error capture register 0 */
-+	uint    pex_err_cap_r1;         /* 0x.e2c - PCI Express error capture register 0 */
-+	uint    pex_err_cap_r2;         /* 0x.e30 - PCI Express error capture register 0 */
-+	uint    pex_err_cap_r3;         /* 0x.e34 - PCI Express error capture register 0 */
-+} ccsr_pex_t;
-+
-+/* Global Utility Registers */
-+typedef struct ccsr_guts {
-+	uint	porpllsr;	/* 0x.0000 - POR PLL Ratio Status Register */
-+	uint	porbmsr;	/* 0x.0004 - POR Boot Mode Status Register */
-+	uint	porimpscr;	/* 0x.0008 - POR I/O Impedance Status and Control Register */
-+	uint	pordevsr;	/* 0x.000c - POR I/O Device Status Register */
-+	uint	pordbgmsr;	/* 0x.0010 - POR Debug Mode Status Register */
-+	char	res1[12];
-+	uint	gpporcr;	/* 0x.0020 - General-Purpose POR Configuration Register */
-+	char	res2[12];
-+	uint	gpiocr;		/* 0x.0030 - GPIO Control Register */
-+	char	res3[12];
-+	uint	gpoutdr;	/* 0x.0040 - General-Purpose Output Data Register */
-+	char	res4[12];
-+	uint	gpindr;		/* 0x.0050 - General-Purpose Input Data Register */
-+	char	res5[12];
-+	uint	pmuxcr;		/* 0x.0060 - Alternate Function Signal Multiplex Control */
-+	char	res6[12];
-+	uint	devdisr;	/* 0x.0070 - Device Disable Control */
-+	char	res7[12];
-+	uint	powmgtcsr;	/* 0x.0080 - Power Management Status and Control Register */
-+	char	res8[12];
-+	uint	mcpsumr;	/* 0x.0090 - Machine Check Summary Register */
-+	char	res9[12];
-+	uint	pvr;		/* 0x.00a0 - Processor Version Register */
-+	uint	svr;		/* 0x.00a4 - System Version Register */
-+	char	res10[3416];
-+	uint	clkocr;		/* 0x.0e00 - Clock Out Select Register */
-+	char	res11[12];
-+	uint	ddrdllcr;	/* 0x.0e10 - DDR DLL Control Register */
-+	char	res12[12];
-+	uint	lbcdllcr;	/* 0x.0e20 - LBC DLL Control Register */
-+	char	res13[61916];
-+} ccsr_guts_t;
-+
-+#endif /* __ASM_POWERPC_IMMAP_86XX_H__ */
-+#endif /* __KERNEL__ */
-diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
-index 7bc6d73..7a76209 100644
---- a/include/asm-powerpc/irq.h
-+++ b/include/asm-powerpc/irq.h
-@@ -348,6 +348,92 @@ #define	SIU_INT_PC2		((uint)0x3d+CPM_IRQ
- #define	SIU_INT_PC1		((uint)0x3e+CPM_IRQ_OFFSET)
- #define	SIU_INT_PC0		((uint)0x3f+CPM_IRQ_OFFSET)
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index bdaaad8..c1c2758 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2179,11 +2179,11 @@ config SPIDER_NET
  
-+#elif defined(CONFIG_PPC_86xx)
-+#include <asm/mpc86xx.h>
-+
-+#define NR_EPIC_INTS 48
-+#ifndef NR_8259_INTS
-+#define NR_8259_INTS 16 /*ULI 1575 can route 12 interrupts */
-+#endif
-+#define NUM_8259_INTERRUPTS NR_8259_INTS
-+
-+#ifndef I8259_OFFSET
-+#define I8259_OFFSET 0
-+#endif
-+
-+#define NR_IRQS 256
-+
-+/* Internal IRQs on MPC86xx OpenPIC */
-+
-+#ifndef MPC86xx_OPENPIC_IRQ_OFFSET
-+#define MPC86xx_OPENPIC_IRQ_OFFSET NR_8259_INTS
-+#endif
-+
-+/* The 48 internal sources */
-+#define MPC86xx_IRQ_NULL        ( 0 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_MCM         ( 1 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DDR         ( 2 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_LBC         ( 3 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DMA0        ( 4 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DMA1        ( 5 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DMA2        ( 6 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_DMA3        ( 7 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+
-+/* no 10,11 */
-+#define MPC86xx_IRQ_UART2       (12 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC1_TX    (13 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC1_RX    (14 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC3_TX    (15 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC3_RX    (16 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC3_ERROR (17 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC1_ERROR (18 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC2_TX    (19 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC2_RX    (20 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC4_TX    (21 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC4_RX    (22 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC4_ERROR (23 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_TSEC2_ERROR (24 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+/* no 25 */
-+#define MPC86xx_IRQ_UART1       (26 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_IIC         (27 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_PERFMON       (28 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+/* no 29,30,31 */
-+#define MPC86xx_IRQ_SRIO_ERROR    (32 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_OUT_BELL (33 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_IN_BELL  (34 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+/* no 35,36 */
-+#define MPC86xx_IRQ_SRIO_OUT_MSG1 (37 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_IN_MSG1  (38 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_OUT_MSG2 (39 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_SRIO_IN_MSG2  (40 + MPC86xx_OPENPIC_IRQ_OFFSET)
-+
-+/* The 12 external interrupt lines */
-+#define MPC86xx_IRQ_EXT_BASE	48
-+#define MPC86xx_IRQ_EXT0	(0 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT1	(1 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT2	(2 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT3	(3 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT4	(4 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT5	(5 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT6	(6 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT7	(7 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT8	(8 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT9	(9 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT10	(10 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+#define MPC86xx_IRQ_EXT11	(11 + MPC86xx_IRQ_EXT_BASE \
-+		+ MPC86xx_OPENPIC_IRQ_OFFSET)
-+
- #else /* CONFIG_40x + CONFIG_8xx */
- /*
-  * this is the # irq's for all ppc arch's (pmac/chrp/prep)
-diff --git a/include/asm-powerpc/mpc86xx.h b/include/asm-powerpc/mpc86xx.h
+ config GIANFAR
+ 	tristate "Gianfar Ethernet"
+-	depends on 85xx || 83xx
++	depends on 85xx || 83xx || PPC_86xx
+ 	select PHYLIB
+ 	help
+-	  This driver supports the Gigabit TSEC on the MPC85xx 
+-	  family of chips, and the FEC on the 8540
++	  This driver supports the Gigabit TSEC on the MPC83xx, MPC85xx,
++	  and MPC86xx family of chips, and the FEC on the 8540.
+ 
+ config GFAR_NAPI
+ 	bool "NAPI Support"
+diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+index fa39b94..76e51b1 100644
+--- a/drivers/net/phy/Kconfig
++++ b/drivers/net/phy/Kconfig
+@@ -44,6 +44,11 @@ config CICADA_PHY
+ 	depends on PHYLIB
+ 	---help---
+ 	  Currently supports the cis8204
++config VITESSE_PHY
++        tristate "Drivers for the Vitesse PHYs"
++        depends on PHYLIB
++        ---help---
++          Currently supports the vsc8244
+ 
+ endmenu
+ 
+diff --git a/drivers/net/phy/Makefile b/drivers/net/phy/Makefile
+index e4116a5..a8d066e 100644
+--- a/drivers/net/phy/Makefile
++++ b/drivers/net/phy/Makefile
+@@ -8,3 +8,4 @@ obj-$(CONFIG_DAVICOM_PHY)	+= davicom.o
+ obj-$(CONFIG_CICADA_PHY)	+= cicada.o
+ obj-$(CONFIG_LXT_PHY)		+= lxt.o
+ obj-$(CONFIG_QSEMI_PHY)		+= qsemi.o
++obj-$(CONFIG_VITESSE_PHY)	+= vitesse.o
+diff --git a/drivers/net/phy/vitesse.c b/drivers/net/phy/vitesse.c
 new file mode 100644
-index 0000000..d0a6718
+index 0000000..ffd215d
 --- /dev/null
-+++ b/include/asm-powerpc/mpc86xx.h
-@@ -0,0 +1,47 @@
++++ b/drivers/net/phy/vitesse.c
+@@ -0,0 +1,112 @@
 +/*
-+ * MPC86xx definitions
++ * Driver for Vitesse PHYs
 + *
-+ * Author: Jeff Brown
++ * Author: Kriston Carson
 + *
-+ * Copyright 2004 Freescale Semiconductor, Inc
++ * Copyright (c) 2005 Freescale Semiconductor, Inc.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
 + * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
++ *
 + */
-+
-+#ifdef __KERNEL__
-+#ifndef __ASM_POWERPC_MPC86xx_H__
-+#define __ASM_POWERPC_MPC86xx_H__
 +
 +#include <linux/config.h>
-+#include <asm/mmu.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mii.h>
++#include <linux/ethtool.h>
++#include <linux/phy.h>
 +
-+#ifdef CONFIG_PPC_86xx
++/* Vitesse Extended Control Register 1 */
++#define MII_VSC8244_EXT_CON1           0x17
++#define MII_VSC8244_EXTCON1_INIT       0x0000
 +
-+#ifdef CONFIG_MPC8641_HPCN
-+#include <platforms/86xx/mpc8641_hpcn.h>
-+#endif
++/* Vitesse Interrupt Mask Register */
++#define MII_VSC8244_IMASK		0x19
++#define MII_VSC8244_IMASK_IEN		0x8000
++#define MII_VSC8244_IMASK_SPEED		0x4000
++#define MII_VSC8244_IMASK_LINK		0x2000
++#define MII_VSC8244_IMASK_DUPLEX	0x1000
++#define MII_VSC8244_IMASK_MASK		0xf000
 +
-+#define _IO_BASE        isa_io_base
-+#define _ISA_MEM_BASE   isa_mem_base
-+#ifdef CONFIG_PCI
-+#define PCI_DRAM_OFFSET pci_dram_offset
-+#else
-+#define PCI_DRAM_OFFSET 0
-+#endif
++/* Vitesse Interrupt Status Register */
++#define MII_VSC8244_ISTAT		0x1a
++#define MII_VSC8244_ISTAT_STATUS	0x8000
++#define MII_VSC8244_ISTAT_SPEED		0x4000
++#define MII_VSC8244_ISTAT_LINK		0x2000
++#define MII_VSC8244_ISTAT_DUPLEX	0x1000
 +
-+#define CPU0_BOOT_RELEASE 0x01000000
-+#define CPU1_BOOT_RELEASE 0x02000000
-+#define CPU_ALL_RELEASED (CPU0_BOOT_RELEASE | CPU1_BOOT_RELEASE)
-+#define MCM_PORT_CONFIG_OFFSET 0x1010
++/* Vitesse Auxiliary Control/Status Register */
++#define MII_VSC8244_AUX_CONSTAT        	0x1c
++#define MII_VSC8244_AUXCONSTAT_INIT    	0x0004
++#define MII_VSC8244_AUXCONSTAT_DUPLEX  	0x0020
++#define MII_VSC8244_AUXCONSTAT_SPEED   	0x0018
++#define MII_VSC8244_AUXCONSTAT_GBIT    	0x0010
++#define MII_VSC8244_AUXCONSTAT_100     	0x0008
 +
-+/* Offset from CCSRBAR */
-+#define MPC86xx_OPENPIC_OFFSET	(0x40000)
-+#define MPC86xx_MCM_OFFSET      (0x00000)
-+#define MPC86xx_MCM_SIZE        (0x02000)
++MODULE_DESCRIPTION("Vitesse PHY driver");
++MODULE_AUTHOR("Kriston Carson");
++MODULE_LICENSE("GPL");
 +
-+#endif /* CONFIG_PPC_86xx */
-+#endif /* __ASM_POWERPC_MPC86xx_H__ */
-+#endif /* __KERNEL__ */
++static int vsc824x_config_init(struct phy_device *phydev)
++{
++	int err;
++
++	err = phy_write(phydev, MII_VSC8244_AUX_CONSTAT,
++			MII_VSC8244_AUXCONSTAT_INIT);
++	if (err < 0)
++		return err;
++
++	err = phy_write(phydev, MII_VSC8244_EXT_CON1,
++			MII_VSC8244_EXTCON1_INIT);
++	return err;
++}
++
++static int vsc824x_ack_interrupt(struct phy_device *phydev)
++{
++	int err = phy_read(phydev, MII_VSC8244_ISTAT);
++
++	return (err < 0) ? err : 0;
++}
++
++static int vsc824x_config_intr(struct phy_device *phydev)
++{
++	int err;
++
++	if (phydev->interrupts == PHY_INTERRUPT_ENABLED)
++		err = phy_write(phydev, MII_VSC8244_IMASK,
++				MII_VSC8244_IMASK_MASK);
++	else
++		err = phy_write(phydev, MII_VSC8244_IMASK, 0);
++	return err;
++}
++
++/* Vitesse 824x */
++static struct phy_driver vsc8244_driver = {
++	.phy_id		= 0x000fc6c2,
++	.name		= "Vitesse VSC8244",
++	.phy_id_mask	= 0x000fffc0,
++	.features	= PHY_GBIT_FEATURES,
++	.flags		= PHY_HAS_INTERRUPT,
++	.config_init	= &vsc824x_config_init,
++	.config_aneg	= &genphy_config_aneg,
++	.read_status	= &genphy_read_status,
++	.ack_interrupt	= &vsc824x_ack_interrupt,
++	.config_intr	= &vsc824x_config_intr,
++	.driver 	= { .owner = THIS_MODULE,},
++};
++
++static int __init vsc8244_init(void)
++{
++	return phy_driver_register(&vsc8244_driver);
++}
++
++static void __exit vsc8244_exit(void)
++{
++	phy_driver_unregister(&vsc8244_driver);
++}
++
++module_init(vsc8244_init);
++module_exit(vsc8244_exit);
