@@ -1,17 +1,17 @@
 Return-Path: <jdl@jdl.com>
-Received: from jdl.com (mail.jdl.com [66.118.10.122])
+Received: from jdl.com (colo.jdl.com [66.118.10.122])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 79F7667B26
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Jun 2006 08:51:14 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D13E967B2D
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Jun 2006 08:52:38 +1000 (EST)
 Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.44)
-	id 1FrjdF-0004OG-M9
-	for linuxppc-dev@ozlabs.org; Sat, 17 Jun 2006 17:51:10 -0500
+	id 1Frjec-0004Oc-Ou
+	for linuxppc-dev@ozlabs.org; Sat, 17 Jun 2006 17:52:35 -0500
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Prevent duplicate lmb reservations for Device Tree blob.
-Date: Sat, 17 Jun 2006 17:51:09 -0500
+Subject: [PATCH 0/9 v3] Introduce the MPC8641 HPCN platform
+Date: Sat, 17 Jun 2006 17:52:34 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1FrjdF-0004OG-M9@jdl.com>
+Message-Id: <E1Frjec-0004Oc-Ou@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,55 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+
+This is the third posting of a series of patches
+that introduces the MPC8641 HPCN platform.  This
+version corrects all of the suggestions from Kumar,
+and shows an ACK from Jeff Garzik for the netdev
+related parts.  It also addresses all of the problems
+that Ben brought up related to multi-platform issues.
+It does not use IRQ settings from the device tree yet;
+that will come as a follow on patch when Ben's IRQ
+rewrite is more solid.
+
+Please consider this for addition into the 2.6.18 queue.
+
+Collectively:
+
 Signed-off-by: Jon Loeliger <jdl@freescale.com>
-
----
-We talked about preventing the device tree blob from being
-reserved multiple times.   This patch implements it.
-
- arch/powerpc/kernel/prom.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index d77d24a..6290232 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -1267,13 +1267,16 @@ static void __init early_reserve_mem(voi
- {
- 	u64 base, size;
- 	u64 *reserve_map;
-+	unsigned long self_base;
-+	unsigned long self_size;
- 
- 	reserve_map = (u64 *)(((unsigned long)initial_boot_params) +
- 					initial_boot_params->off_mem_rsvmap);
- 
- 	/* before we do anything, lets reserve the dt blob */
--	lmb_reserve(__pa((unsigned long)initial_boot_params),
--		    initial_boot_params->totalsize);
-+	self_base = __pa((unsigned long)initial_boot_params);
-+	self_size = initial_boot_params->totalsize;
-+	lmb_reserve(self_base, self_size);
- 
- #ifdef CONFIG_PPC32
- 	/* 
-@@ -1289,6 +1292,9 @@ #ifdef CONFIG_PPC32
- 			size_32 = *(reserve_map_32++);
- 			if (size_32 == 0)
- 				break;
-+			/* skip if the reservation is for the blob */
-+			if (base_32 == self_base && size_32 == self_size)
-+				continue;
- 			DBG("reserving: %x -> %x\n", base_32, size_32);
- 			lmb_reserve(base_32, size_32);
- 		}
-@@ -1300,6 +1306,9 @@ #endif
- 		size = *(reserve_map++);
- 		if (size == 0)
- 			break;
-+		/* skip if the reservation is for the blob */
-+		if (base == self_base && size == self_size)
-+			continue;
- 		DBG("reserving: %llx -> %llx\n", base, size);
- 		lmb_reserve(base, size);
- 	}
+Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
+Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+Signed-off-by: Wei Zhang <Wei.Zhang@freescale.com>
+Signed-off-by: Jeff Brown <Jeff.Brown@freescale.com>
+Signed-off-by: Kriston Carson <KristonCarson@freescale.com>
+Acked-by: Jeff Garzik <jeff@garzik.org>
