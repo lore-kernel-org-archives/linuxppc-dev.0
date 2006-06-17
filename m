@@ -1,17 +1,17 @@
 Return-Path: <jdl@jdl.com>
-Received: from jdl.com (colo.jdl.com [66.118.10.122])
+Received: from jdl.com (www.jdl.com [66.118.10.122])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D13E967B2D
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Jun 2006 08:52:38 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A055A67B4C
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Jun 2006 08:52:40 +1000 (EST)
 Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.44)
-	id 1Frjec-0004Oc-Ou
-	for linuxppc-dev@ozlabs.org; Sat, 17 Jun 2006 17:52:35 -0500
+	id 1Frjed-0004Of-T3
+	for linuxppc-dev@ozlabs.org; Sat, 17 Jun 2006 17:52:37 -0500
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 0/9 v3] Introduce the MPC8641 HPCN platform
-Date: Sat, 17 Jun 2006 17:52:34 -0500
+Subject: [PATCH 1/9 v3] Add the mpc8641 hpcn Kconfig and Makefiles.
+Date: Sat, 17 Jun 2006 17:52:35 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Frjec-0004Oc-Ou@jdl.com>
+Message-Id: <E1Frjed-0004Of-T3@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +21,131 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-This is the third posting of a series of patches
-that introduces the MPC8641 HPCN platform.  This
-version corrects all of the suggestions from Kumar,
-and shows an ACK from Jeff Garzik for the netdev
-related parts.  It also addresses all of the problems
-that Ben brought up related to multi-platform issues.
-It does not use IRQ settings from the device tree yet;
-that will come as a follow on patch when Ben's IRQ
-rewrite is more solid.
-
-Please consider this for addition into the 2.6.18 queue.
-
-Collectively:
-
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
 Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
-Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
-Signed-off-by: Wei Zhang <Wei.Zhang@freescale.com>
-Signed-off-by: Jeff Brown <Jeff.Brown@freescale.com>
-Signed-off-by: Kriston Carson <KristonCarson@freescale.com>
-Acked-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+
+---
+
+ arch/powerpc/Kconfig                 |   15 ++++++++++++--
+ arch/powerpc/platforms/Makefile      |    1 +
+ arch/powerpc/platforms/86xx/Kconfig  |   36 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/86xx/Makefile |   10 +++++++++
+ 4 files changed, 60 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 4ef2478..65f4cd1 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -141,6 +141,15 @@ config PPC_85xx
+ 	select FSL_SOC
+ 	select 85xx
+ 
++config PPC_86xx
++	bool "Freescale 86xx"
++	select 6xx
++	select FSL_SOC
++	select PPC_FPU
++	select ALTIVEC
++	help
++	  The Freescale E600 SoCs have 74xx cores.
++
+ config 40x
+ 	bool "AMCC 40x"
+ 
+@@ -549,6 +558,7 @@ source arch/powerpc/platforms/embedded6x
+ source arch/powerpc/platforms/4xx/Kconfig
+ source arch/powerpc/platforms/83xx/Kconfig
+ source arch/powerpc/platforms/85xx/Kconfig
++source arch/powerpc/platforms/86xx/Kconfig
+ source arch/powerpc/platforms/8xx/Kconfig
+ source arch/powerpc/platforms/cell/Kconfig
+ 
+@@ -780,6 +790,7 @@ config GENERIC_ISA_DMA
+ 
+ config PPC_I8259
+ 	bool
++	default y if MPC8641_HPCN
+ 	default n
+ 
+ config PPC_INDIRECT_PCI
+@@ -802,8 +813,8 @@ config MCA
+ 	bool
+ 
+ config PCI
+-	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_MPC52xx || (EMBEDDED && PPC_ISERIES)
+-	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx && !PPC_85xx
++	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx || PPC_MPC52xx || (EMBEDDED && PPC_ISERIES)
++	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx && !PPC_85xx && !PPC_86xx
+ 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
+ 	default PCI_QSPAN if !4xx && !CPM2 && 8xx
+ 	help
+diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
+index c4f6b0d..2928636 100644
+--- a/arch/powerpc/platforms/Makefile
++++ b/arch/powerpc/platforms/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_PPC_CHRP)		+= chrp/
+ obj-$(CONFIG_4xx)		+= 4xx/
+ obj-$(CONFIG_PPC_83xx)		+= 83xx/
+ obj-$(CONFIG_PPC_85xx)		+= 85xx/
++obj-$(CONFIG_PPC_86xx)		+= 86xx/
+ obj-$(CONFIG_PPC_PSERIES)	+= pseries/
+ obj-$(CONFIG_PPC_ISERIES)	+= iseries/
+ obj-$(CONFIG_PPC_MAPLE)		+= maple/
+diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
+new file mode 100644
+index 0000000..3a87863
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/Kconfig
+@@ -0,0 +1,36 @@
++menu "Platform Support"
++	depends on PPC_86xx
++
++choice
++	prompt "Machine Type"
++	default MPC8641_HPCN
++
++config MPC8641_HPCN
++	bool "Freescale MPC8641 HPCN"
++	help
++	  This option enables support for the MPC8641 HPCN board.
++
++endchoice
++
++
++config MPC8641
++	bool
++	select PPC_INDIRECT_PCI
++	select PPC_UDBG_16550
++	default y if MPC8641_HPCN
++
++config MPIC
++	bool
++	default y
++
++config PPC_INDIRECT_PCI_BE
++	bool
++	depends on PPC_86xx
++	default y
++
++config PPC_STD_MMU
++	bool
++	depends on PPC_86xx
++	default y
++
++endmenu
+diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
+new file mode 100644
+index 0000000..7be796c
+--- /dev/null
++++ b/arch/powerpc/platforms/86xx/Makefile
+@@ -0,0 +1,10 @@
++#
++# Makefile for the PowerPC 86xx linux kernel.
++#
++
++
++ifeq ($(CONFIG_PPC_86xx),y)
++obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
++endif
++obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
++obj-$(CONFIG_PCI)		+= pci.o mpc86xx_pcie.o
