@@ -1,10 +1,10 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20060619183404.817312000@klappe.arndb.de>
+Message-Id: <20060619183404.966781000@klappe.arndb.de>
 References: <20060619183315.653672000@klappe.arndb.de>
-Date: Mon, 19 Jun 2006 20:33:21 +0200
+Date: Mon, 19 Jun 2006 20:33:22 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 06/20] spufs: restore mapping of mssync register
+Subject: [patch 07/20] spufs: fix deadlock in spu_create error path
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,83 +16,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A recent change to the way that the mfc file gets mapped made it
-impossible to map the SPE Multi-Source Synchronization register
-into user space, but that may be needed by some applications.
+From: Michael Ellerman <michael@ellerman.id.au>
 
-This restores the missing functionality.
+spufs_rmdir tries to acquire the spufs root
+i_mutex, which is already held by spufs_create_thread.
+
+This was tracked as Bug #H9512.
 
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
 
-Index: powerpc.git/arch/powerpc/platforms/cell/spufs/file.c
+Index: powerpc.git/arch/powerpc/platforms/cell/spufs/inode.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/cell/spufs/file.c
-+++ powerpc.git/arch/powerpc/platforms/cell/spufs/file.c
-@@ -825,6 +825,55 @@ DEFINE_SIMPLE_ATTRIBUTE(spufs_signal2_ty
- 					spufs_signal2_type_set, "%llu");
+--- powerpc.git.orig/arch/powerpc/platforms/cell/spufs/inode.c
++++ powerpc.git/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -157,20 +157,12 @@ static void spufs_prune_dir(struct dentr
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ }
  
- #ifdef CONFIG_SPUFS_MMAP
-+static struct page *spufs_mss_mmap_nopage(struct vm_area_struct *vma,
-+					   unsigned long address, int *type)
-+{
-+	return spufs_ps_nopage(vma, address, type, 0x0000);
-+}
-+
-+static struct vm_operations_struct spufs_mss_mmap_vmops = {
-+	.nopage = spufs_mss_mmap_nopage,
-+};
-+
-+/*
-+ * mmap support for problem state MFC DMA area [0x0000 - 0x0fff].
-+ * Mapping this area requires that the application have CAP_SYS_RAWIO,
-+ * as these registers require special care when read/writing.
-+ */
-+static int spufs_mss_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	if (!(vma->vm_flags & VM_SHARED))
-+		return -EINVAL;
-+
-+	if (!capable(CAP_SYS_RAWIO))
-+		return -EPERM;
-+
-+	vma->vm_flags |= VM_RESERVED;
-+	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
-+				     | _PAGE_NO_CACHE);
-+
-+	vma->vm_ops = &spufs_mss_mmap_vmops;
-+	return 0;
-+}
-+#endif
-+
-+static int spufs_mss_open(struct inode *inode, struct file *file)
-+{
-+	struct spufs_inode_info *i = SPUFS_I(inode);
-+
-+	file->private_data = i->i_ctx;
-+	return nonseekable_open(inode, file);
-+}
-+
-+static struct file_operations spufs_mss_fops = {
-+	.open	 = spufs_mss_open,
-+#ifdef CONFIG_SPUFS_MMAP
-+	.mmap	 = spufs_mss_mmap,
-+#endif
-+};
-+
-+
-+#ifdef CONFIG_SPUFS_MMAP
- static struct page *spufs_mfc_mmap_nopage(struct vm_area_struct *vma,
- 					   unsigned long address, int *type)
++/* Caller must hold root->i_mutex */
+ static int spufs_rmdir(struct inode *root, struct dentry *dir_dentry)
  {
-@@ -1292,6 +1341,7 @@ struct tree_descr spufs_dir_contents[] =
- 	{ "signal2", &spufs_signal2_fops, 0666, },
- 	{ "signal1_type", &spufs_signal1_type, 0666, },
- 	{ "signal2_type", &spufs_signal2_type, 0666, },
-+	{ "mss", &spufs_mss_fops, 0666, },
- 	{ "mfc", &spufs_mfc_fops, 0666, },
- 	{ "cntl", &spufs_cntl_fops,  0666, },
- 	{ "npc", &spufs_npc_ops, 0666, },
+-	struct spu_context *ctx;
+-
+ 	/* remove all entries */
+-	mutex_lock(&root->i_mutex);
+ 	spufs_prune_dir(dir_dentry);
+-	mutex_unlock(&root->i_mutex);
+ 
+-	/* We have to give up the mm_struct */
+-	ctx = SPUFS_I(dir_dentry->d_inode)->i_ctx;
+-	spu_forget(ctx);
+-
+-	/* XXX Do we need to hold i_mutex here ? */
+ 	return simple_rmdir(root, dir_dentry);
+ }
+ 
+@@ -199,16 +191,23 @@ out:
+ 
+ static int spufs_dir_close(struct inode *inode, struct file *file)
+ {
++	struct spu_context *ctx;
+ 	struct inode *dir;
+ 	struct dentry *dentry;
+ 	int ret;
+ 
+ 	dentry = file->f_dentry;
+ 	dir = dentry->d_parent->d_inode;
++	ctx = SPUFS_I(dentry->d_inode)->i_ctx;
+ 
++	mutex_lock(&dir->i_mutex);
+ 	ret = spufs_rmdir(dir, dentry);
++	mutex_unlock(&dir->i_mutex);
+ 	WARN_ON(ret);
+ 
++	/* We have to give up the mm_struct */
++	spu_forget(ctx);
++
+ 	return dcache_dir_close(inode, file);
+ }
+ 
+@@ -324,8 +323,13 @@ long spufs_create_thread(struct nameidat
+ 	 * in error path of *_open().
+ 	 */
+ 	ret = spufs_context_open(dget(dentry), mntget(nd->mnt));
+-	if (ret < 0)
+-		spufs_rmdir(nd->dentry->d_inode, dentry);
++	if (ret < 0) {
++		WARN_ON(spufs_rmdir(nd->dentry->d_inode, dentry));
++		mutex_unlock(&nd->dentry->d_inode->i_mutex);
++		spu_forget(SPUFS_I(dentry->d_inode)->i_ctx);
++		dput(dentry);
++		goto out;
++	}
+ 
+ out_dput:
+ 	dput(dentry);
 
 --
