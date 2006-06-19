@@ -1,35 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3BC4C67A73
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 05:29:57 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5JJTp3C006989
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jun 2006 15:29:51 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k5JJU0lD117244
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jun 2006 13:30:00 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k5JJTp4g004811
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jun 2006 13:29:51 -0600
-Date: Mon, 19 Jun 2006 14:29:50 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH]: powerpc: pseries: Print PCI slot location code on failure
-Message-ID: <20060619192950.GB9200@austin.ibm.com>
-References: <20060615221527.GD12389@austin.ibm.com>
-	<17553.57932.127038.417630@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17553.57932.127038.417630@cargo.ozlabs.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <Becky.Bruce@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 42988679FF
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 05:55:36 +1000 (EST)
+In-Reply-To: <1150598731.23600.146.camel@localhost.localdomain>
+References: <1150598731.23600.146.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <EC61A880-9242-4BCE-B72D-8AFC038CD592@freescale.com>
+From: Becky Bruce <Becky.Bruce@freescale.com>
+Subject: Re: [RFC] Interrupt mapping documentation
+Date: Mon, 19 Jun 2006 14:57:46 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,109 +21,143 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jun 16, 2006 at 08:42:20AM +1000, Paul Mackerras wrote:
-> Linas Vepstas writes:
-> 
-> > Resending an older patch (from 28 April) that seems to have fallen
-> > through the cracks, its not in mailine, is not in -mm and its not
-> > controversial (its mostly a printk change). Tested.
-> 
-> I don't like doing printk on things that might be NULL (i.e. the
-> result of get_property).  Even though printk doesn't crash, it would
-> be nicer for the user to see "location=unknown" or something rather
-> than "location=<NULL>".
+Ben,
 
-Right. Revised patch below.
---------------
+Wow, you've been busy!  This mostly looks good to me - just a few  
+*minor* comments below. I've snipped out parts I'm not commenting on,  
+to shrink this email down.....
 
-[PATCH]: powerpc/pseries: Print PCI slot location code on failure
+>
+> +  g) interrupt controller
+> +
+> +  At least one interrupt controller shall be present somewhere in the
+> +  device-tree. It can be anywhere, it doesn't have to be a dedicated
+> +  node (could be the /soc node) though it's generally separate. See
+> +  chapter VII for a description of interrupt mapping and associated
+> +  properties.
+> +
 
-The PCI error recovery code will printk diagnostic info when
-a PCI error event occurs. Change the messages to include the slot
-location code, which is how most sysadmins will know the device.
+One concern is this stated requirement that a tree have an interrupt- 
+controller node.  It's not uncommon (in fact, I'm doing it right  
+now...) for FSL and some of our customers to build and run the kernel  
+on a simulator that has only a processor core, memory, and a memory- 
+mapped pseudo-terminal.  The terminal does not generate interrupts,  
+but is polled from the Decrementer interrupt.  So I do not have an  
+interrupt controller in the "system" at all.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+How are you planning to enforce this requirement?  I believe the dtc  
+I have right now warns me about no interrupt-controller node, but it  
+builds the tree anyway, and I can boot my kernel just fine.  If all  
+I'll need to do to get this working in the new world order is to add  
+an "interrupt-controller" property to my soc node, I can deal with  
+that.  I just don't want the kernel to konk out and refuse to boot if  
+it doesn't find any interrupts.
 
-----
- arch/powerpc/platforms/pseries/eeh_driver.c |   35 +++++++++++++++++-----------
- 1 files changed, 22 insertions(+), 13 deletions(-)
+>
+>  3) Representing devices without a current OF specification
+> @@ -1263,11 +1305,12 @@
+>
+>     Example :
+>
+> -	pic@40000 {
+> +	interrupt-controller@40000 {
+>  		linux,phandle = <40000>;
+>  		clock-frequency = <0>;
+>  		interrupt-controller;
+>  		#address-cells = <0>;
+> +		#interrupt-cells = <2>;
+>  		reg = <40000 40000>;
+>  		built-in;
+>  		compatible = "chrp,open-pic";
+> @@ -1445,6 +1488,314 @@
 
-Index: linux-2.6.17-rc6-mm2/arch/powerpc/platforms/pseries/eeh_driver.c
-===================================================================
---- linux-2.6.17-rc6-mm2.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2006-06-13 18:13:26.000000000 -0500
-+++ linux-2.6.17-rc6-mm2/arch/powerpc/platforms/pseries/eeh_driver.c	2006-06-16 13:51:44.000000000 -0500
-@@ -261,16 +261,22 @@ struct pci_dn * handle_eeh_events (struc
- 	struct pci_bus *frozen_bus;
- 	int rc = 0;
- 	enum pci_ers_result result = PCI_ERS_RESULT_NONE;
--	const char *pci_str, *drv_str;
-+	const char *location, *pci_str, *drv_str;
- 
- 	frozen_dn = find_device_pe(event->dn);
- 	frozen_bus = pcibios_find_pci_bus(frozen_dn);
- 
- 	if (!frozen_dn) {
--		printk(KERN_ERR "EEH: Error: Cannot find partition endpoint for %s\n",
--		        pci_name(event->dev));
-+
-+		location = (char *) get_property(event->dn, "ibm,loc-code", NULL);
-+		location = location ? location : "unknown"; 
-+		printk(KERN_ERR "EEH: Error: Cannot find partition endpoint "
-+		                "for location=%s pci addr=%s\n",
-+		        location, pci_name(event->dev));
- 		return NULL;
- 	}
-+	location = (char *) get_property(frozen_dn, "ibm,loc-code", NULL);
-+	location = location ? location : "unknown"; 
- 
- 	/* There are two different styles for coming up with the PE.
- 	 * In the old style, it was the highest EEH-capable device
-@@ -282,8 +288,9 @@ struct pci_dn * handle_eeh_events (struc
- 		frozen_bus = pcibios_find_pci_bus (frozen_dn->parent);
- 
- 	if (!frozen_bus) {
--		printk(KERN_ERR "EEH: Cannot find PCI bus for %s\n",
--		        frozen_dn->full_name);
-+		printk(KERN_ERR "EEH: Cannot find PCI bus "
-+		        "for location=%s dn=%s\n",
-+		        location, frozen_dn->full_name);
- 		return NULL;
- 	}
- 
-@@ -318,8 +325,9 @@ struct pci_dn * handle_eeh_events (struc
- 
- 	eeh_slot_error_detail(frozen_pdn, 1 /* Temporary Error */);
- 	printk(KERN_WARNING
--	   "EEH: This PCI device has failed %d times since last reboot: %s - %s\n",
--		frozen_pdn->eeh_freeze_count, drv_str, pci_str);
-+	   "EEH: This PCI device has failed %d times since last reboot: "
-+		"location=%s driver=%s pci addr=%s\n",
-+		frozen_pdn->eeh_freeze_count, location, drv_str, pci_str);
- 
- 	/* Walk the various device drivers attached to this slot through
- 	 * a reset sequence, giving each an opportunity to do what it needs
-@@ -368,17 +376,18 @@ excess_failures:
- 	 * due to actual, failed cards.
- 	 */
- 	printk(KERN_ERR
--	   "EEH: PCI device %s - %s has failed %d times \n"
--	   "and has been permanently disabled.  Please try reseating\n"
--	   "this device or replacing it.\n",
--		drv_str, pci_str, frozen_pdn->eeh_freeze_count);
-+	   "EEH: PCI device at location=%s driver=%s pci addr=%s \n"
-+		"has failed %d times and has been permanently disabled. \n"
-+		"Please try reseating this device or replacing it.\n",
-+		location, drv_str, pci_str, frozen_pdn->eeh_freeze_count);
- 	goto perm_error;
- 
- hard_fail:
- 	printk(KERN_ERR
--	   "EEH: Unable to recover from failure of PCI device %s - %s\n"
-+	   "EEH: Unable to recover from failure of PCI device "
-+	   "at location=%s driver=%s pci addr=%s \n"
- 	   "Please try reseating this device or replacing it.\n",
--		drv_str, pci_str);
-+		location, drv_str, pci_str);
- 
- perm_error:
- 	eeh_slot_error_detail(frozen_pdn, 2 /* Permanent Error */);
+
+I'm curious about why you chose to rename the pic node here - now we  
+have interrupt-controller as a device name, as well as an interrupt- 
+controller property inside the device.  Reading the rest of this doc,  
+the latter should be sufficient.  Is this just a stylistic decision?
+
+>
+> +1) Interrupt controllers
+> +------------------------
+> +
+> +An interrupt controller is identified by the presence of an empty
+> +"interrupt-controller" property in the node. It must also have those
+> +two required properties:
+> +
+> +    - linux,phandle : The normally optional phandle is required  
+> for an
+> +      interrupt controller node as that node will have to be
+> +      referrenced by phandle by other nodes (childs and nexus).
+> +    - #interrupt-cells : This property contains one cell indicating
+> +      the size of the child interrupt specifiers (number of
+> +      cells). For example, both ISA and OpenPIC standard specifiers
+> +      are 2 cells long (interrupt source number and trigger type)  
+> thus
+> +      the interrupt-controller node for these shall contain a
+> +      #interrupt-cells property with the value <2>.
+> +
+> +In addition, it needs that optional property if there is ever a nexus
+> +pointing to that controller:
+> +
+> +    - #address-cells : This is generally the value 0 for an interrupt
+> +      controller, the reason why this property is needed is described
+> +      in the documentation of an interrupt nexus.
+> +
+
+I think there is some potential for confusion to the reader about the  
+required use of #address-cells. In the original document, we talk  
+about how devices without an #address-cells property derive the value  
+from the parent:
+
+"In general, the format of an address for a device is defined by the
+parent bus type, based on the #address-cells and #size-cells
+property. In the absence of such a property, the parent's parent
+values are used, etc..."
+
+The additions in the patch specify new requirements that don't seem  
+to match up with the statement above.  In the new patch, #address- 
+cells is listed as a required node for interrupt-controller nodes,  
+there's no mention of inheritance from a parent, and in one place in  
+the Nexus section, it's stated that if there's no #address-cells node  
+the kernel assumes it's 0.
+
+I think the doc needs a bit of clarification in this area.
+
+>
+> +For example, if a bus has a #address-cells of 1 and a #interrupt- 
+> cells
+> +of 2, a device with those properties:
+> +
+> +   reg = <0xabcd1234>;
+> +   interrupts = <0x00000001 0x00000000 0x00000002 0x00000001>
+> +
+> +(That is a device with 2 interrupt specifiers in its "interrupts"
+> +property) would thus have the following interrupt unit
+> +specifiers for its two interrupts:
+> +
+> +	   0xabcd1234 0x00000001 0x00000000
+> +and
+> +	   0xabcd1234 0x00000002 0x00000001
+> +
+> +Now the "interrupt-map" property is defined as containing a list of:
+> +
+> + [ child interrupt unit specifier ] [ parent ] [ parent interrupt  
+> unit
+> + specifier ]
+> +
+> +That is, a concatenated list of entries containing:
+> +
+> +     - an interrupt unit specifier for a child device
+> +     - a phandle pointing to the interrupt-parent for that interrupt
+> +     - an interrupt unit specifier in the parent space for that
+> +       interrupt
+> +
+
+I think it would be useful to continue the example here, and show an  
+"interrupt-map" property definition with all the fields filled in.   
+Perhaps you were planning to do this as part of your PCI examples; if  
+so just ignore this.
+
+Thanks!
+-B
