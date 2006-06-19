@@ -1,17 +1,17 @@
 Return-Path: <jdl@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id D11BD67B15
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 00:04:56 +1000 (EST)
-Subject: Re: [PATCH 5/9 v3] Add the MPC8641 HPCN platform files.
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 82FA567B1B
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 00:07:02 +1000 (EST)
+Subject: Re: [PATCH 4/9 v3] Add starting of secondary 86xx CPUs.
 From: Jon Loeliger <jdl@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1150600056.23600.152.camel@localhost.localdomain>
-References: <E1Frjen-0004Oz-Hz@jdl.com>
-	<1150600056.23600.152.camel@localhost.localdomain>
+In-Reply-To: <1150599918.23600.150.camel@localhost.localdomain>
+References: <E1Frjem-0004Ou-2S@jdl.com>
+	<1150599918.23600.150.camel@localhost.localdomain>
 Content-Type: text/plain
-Message-Id: <1150725866.9022.5.camel@cashmere.sps.mot.com>
+Message-Id: <1150725998.9022.8.camel@cashmere.sps.mot.com>
 Mime-Version: 1.0
-Date: Mon, 19 Jun 2006 09:04:27 -0500
+Date: Mon, 19 Jun 2006 09:06:42 -0500
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
 	Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,17 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-06-17 at 22:07, Benjamin Herrenschmidt wrote:
+On Sat, 2006-06-17 at 22:05, Benjamin Herrenschmidt wrote:
 
+> > +BEGIN_FTR_SECTION
+> > +	LOAD_BAT(4,r3,r4,r5)
+> > +	LOAD_BAT(5,r3,r4,r5)
+> > +	LOAD_BAT(6,r3,r4,r5)
+> > +	LOAD_BAT(7,r3,r4,r5)
+> > +END_FTR_SECTION_IFSET(CPU_FTR_HAS_HIGH_BATS)
+> >  	blr
 > 
-> You don't have any way to freeze the timebase ? (No GPIO controlling
-> TBEN ?) It's pretty nasty to rely on software sync,
+> Looks good.
 
-I will investigate this option and follow up with a patch,
-assuming that there is a HW solution for your suggestion.
-
-> especially if it's supposed to be an example design ...
-
-Who said that? ;-)
+Excellent.  Thanks.
 
 jdl
