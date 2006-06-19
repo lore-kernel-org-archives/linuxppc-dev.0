@@ -1,10 +1,10 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20060619183404.360808000@klappe.arndb.de>
+Message-Id: <20060619183405.113782000@klappe.arndb.de>
 References: <20060619183315.653672000@klappe.arndb.de>
-Date: Mon, 19 Jun 2006 20:33:18 +0200
+Date: Mon, 19 Jun 2006 20:33:23 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 03/20] cell: update defconfig
+Subject: [patch 08/20] spufs: set up correct SLB entries for 64k pages
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,123 +16,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Enable some of the most requested features in defconfig
-and refresh with the latest powerpc.git Kconfig files.
+spufs currently knows only 4k pages and 16M hugetlb
+pages. Make it use the regular methods for deciding on
+the SLB bits.
 
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 ---
-Index: powerpc.git/arch/powerpc/configs/cell_defconfig
+Index: powerpc.git/arch/powerpc/platforms/cell/spu_base.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/configs/cell_defconfig
-+++ powerpc.git/arch/powerpc/configs/cell_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.16
--# Thu Mar 23 20:48:09 2006
-+# Linux kernel version: 2.6.17
-+# Mon Jun 19 17:23:03 2006
- #
- CONFIG_PPC64=y
- CONFIG_64BIT=y
-@@ -11,6 +11,7 @@ CONFIG_GENERIC_HARDIRQS=y
- CONFIG_RWSEM_XCHGADD_ALGORITHM=y
- CONFIG_GENERIC_HWEIGHT=y
- CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
- CONFIG_PPC=y
- CONFIG_EARLY_PRINTK=y
- CONFIG_COMPAT=y
-@@ -55,7 +56,7 @@ CONFIG_SYSCTL=y
- # CONFIG_AUDIT is not set
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
--# CONFIG_CPUSETS is not set
-+CONFIG_CPUSETS=y
- # CONFIG_RELAY is not set
- CONFIG_INITRAMFS_SOURCE=""
- CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-@@ -116,6 +117,7 @@ CONFIG_PPC_MULTIPLATFORM=y
- # CONFIG_PPC_PMAC is not set
- # CONFIG_PPC_MAPLE is not set
- CONFIG_PPC_CELL=y
-+CONFIG_PPC_SYSTEMSIM=y
- # CONFIG_U3_DART is not set
- CONFIG_PPC_RTAS=y
- # CONFIG_RTAS_ERROR_LOGGING is not set
-@@ -153,20 +155,24 @@ CONFIG_FORCE_MAX_ZONEORDER=13
- CONFIG_KEXEC=y
- # CONFIG_CRASH_DUMP is not set
- CONFIG_IRQ_ALL_CPUS=y
--# CONFIG_NUMA is not set
-+CONFIG_NUMA=y
-+CONFIG_NODES_SHIFT=4
- CONFIG_ARCH_SELECT_MEMORY_MODEL=y
--CONFIG_ARCH_FLATMEM_ENABLE=y
- CONFIG_ARCH_SPARSEMEM_ENABLE=y
- CONFIG_SELECT_MEMORY_MODEL=y
- # CONFIG_FLATMEM_MANUAL is not set
- # CONFIG_DISCONTIGMEM_MANUAL is not set
- CONFIG_SPARSEMEM_MANUAL=y
- CONFIG_SPARSEMEM=y
-+CONFIG_NEED_MULTIPLE_NODES=y
- CONFIG_HAVE_MEMORY_PRESENT=y
- # CONFIG_SPARSEMEM_STATIC is not set
- CONFIG_SPARSEMEM_EXTREME=y
--# CONFIG_MEMORY_HOTPLUG is not set
-+CONFIG_MEMORY_HOTPLUG=y
- CONFIG_SPLIT_PTLOCK_CPUS=4
-+CONFIG_MIGRATION=y
-+CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID=y
-+CONFIG_ARCH_MEMORY_PROBE=y
- # CONFIG_PPC_64K_PAGES is not set
- CONFIG_SCHED_SMT=y
- CONFIG_PROC_DEVICETREE=y
-@@ -183,6 +189,7 @@ CONFIG_GENERIC_ISA_DMA=y
- # CONFIG_PPC_INDIRECT_PCI is not set
- CONFIG_PCI=y
- CONFIG_PCI_DOMAINS=y
-+CONFIG_PCIEPORTBUS=y
- # CONFIG_PCI_DEBUG is not set
+--- powerpc.git.orig/arch/powerpc/platforms/cell/spu_base.c
++++ powerpc.git/arch/powerpc/platforms/cell/spu_base.c
+@@ -71,7 +71,7 @@ static int __spu_trap_data_seg(struct sp
+ {
+ 	struct spu_priv2 __iomem *priv2 = spu->priv2;
+ 	struct mm_struct *mm = spu->mm;
+-	u64 esid, vsid;
++	u64 esid, vsid, llp;
  
- #
-@@ -477,7 +484,7 @@ CONFIG_DM_MULTIPATH=m
- #
- CONFIG_NETDEVICES=y
- # CONFIG_DUMMY is not set
--# CONFIG_BONDING is not set
-+CONFIG_BONDING=y
- # CONFIG_EQUALIZER is not set
- # CONFIG_TUN is not set
+ 	pr_debug("%s\n", __FUNCTION__);
  
-@@ -625,6 +632,7 @@ CONFIG_SERIAL_NONSTANDARD=y
- # CONFIG_N_HDLC is not set
- # CONFIG_SPECIALIX is not set
- # CONFIG_SX is not set
-+# CONFIG_RIO is not set
- # CONFIG_STALDRV is not set
+@@ -91,9 +91,14 @@ static int __spu_trap_data_seg(struct sp
+ 	}
  
- #
-@@ -767,6 +775,7 @@ CONFIG_I2C_ALGOBIT=y
- # Multimedia devices
- #
- # CONFIG_VIDEO_DEV is not set
-+CONFIG_VIDEO_V4L2=y
+ 	esid = (ea & ESID_MASK) | SLB_ESID_V;
+-	vsid = (get_vsid(mm->context.id, ea) << SLB_VSID_SHIFT) | SLB_VSID_USER;
++#ifdef CONFIG_HUGETLB_PAGE
+ 	if (in_hugepage_area(mm->context, ea))
+-		vsid |= SLB_VSID_L;
++		llp = mmu_psize_defs[mmu_huge_psize].sllp;
++	else
++#endif
++		llp = mmu_psize_defs[mmu_virtual_psize].sllp;
++	vsid = (get_vsid(mm->context.id, ea) << SLB_VSID_SHIFT) |
++			SLB_VSID_USER | llp;
  
- #
- # Digital Video Broadcasting Devices
-@@ -1055,11 +1064,7 @@ CONFIG_DEBUGGER=y
- # CONFIG_XMON is not set
- CONFIG_IRQSTACKS=y
- # CONFIG_BOOTX_TEXT is not set
--# CONFIG_PPC_EARLY_DEBUG_LPAR is not set
--# CONFIG_PPC_EARLY_DEBUG_G5 is not set
--# CONFIG_PPC_EARLY_DEBUG_RTAS is not set
--# CONFIG_PPC_EARLY_DEBUG_MAPLE is not set
--# CONFIG_PPC_EARLY_DEBUG_ISERIES is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
+ 	out_be64(&priv2->slb_index_W, spu->slb_replace);
+ 	out_be64(&priv2->slb_vsid_RW, vsid);
+Index: powerpc.git/arch/powerpc/platforms/cell/spufs/switch.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/platforms/cell/spufs/switch.c
++++ powerpc.git/arch/powerpc/platforms/cell/spufs/switch.c
+@@ -718,13 +718,15 @@ static inline void invalidate_slbs(struc
  
- #
- # Security options
+ static inline void get_kernel_slb(u64 ea, u64 slb[2])
+ {
+-	slb[0] = (get_kernel_vsid(ea) << SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
+-	slb[1] = (ea & ESID_MASK) | SLB_ESID_V;
++	u64 llp;
+ 
+-	/* Large pages are used for kernel text/data, but not vmalloc.  */
+-	if (cpu_has_feature(CPU_FTR_16M_PAGE)
+-	    && REGION_ID(ea) == KERNEL_REGION_ID)
+-		slb[0] |= SLB_VSID_L;
++	if (REGION_ID(ea) == KERNEL_REGION_ID)
++		llp = mmu_psize_defs[mmu_linear_psize].sllp;
++	else
++		llp = mmu_psize_defs[mmu_virtual_psize].sllp;
++	slb[0] = (get_kernel_vsid(ea) << SLB_VSID_SHIFT) |
++		SLB_VSID_KERNEL | llp;
++	slb[1] = (ea & ESID_MASK) | SLB_ESID_V;
+ }
+ 
+ static inline void load_mfc_slb(struct spu *spu, u64 slb[2], int slbe)
 
 --
