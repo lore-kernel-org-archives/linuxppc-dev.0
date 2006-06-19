@@ -1,10 +1,10 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <20060619183405.113782000@klappe.arndb.de>
+Message-Id: <20060619183404.817312000@klappe.arndb.de>
 References: <20060619183315.653672000@klappe.arndb.de>
-Date: Mon, 19 Jun 2006 20:33:23 +0200
+Date: Mon, 19 Jun 2006 20:33:21 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [patch 08/20] spufs: set up correct SLB entries for 64k pages
+Subject: [patch 06/20] spufs: restore mapping of mssync register
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
 	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -16,67 +16,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-spufs currently knows only 4k pages and 16M hugetlb
-pages. Make it use the regular methods for deciding on
-the SLB bits.
+A recent change to the way that the mfc file gets mapped made it
+impossible to map the SPE Multi-Source Synchronization register
+into user space, but that may be needed by some applications.
+
+This restores the missing functionality.
 
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+
 ---
-Index: powerpc.git/arch/powerpc/platforms/cell/spu_base.c
+
+Index: powerpc.git/arch/powerpc/platforms/cell/spufs/file.c
 ===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/cell/spu_base.c
-+++ powerpc.git/arch/powerpc/platforms/cell/spu_base.c
-@@ -71,7 +71,7 @@ static int __spu_trap_data_seg(struct sp
- {
- 	struct spu_priv2 __iomem *priv2 = spu->priv2;
- 	struct mm_struct *mm = spu->mm;
--	u64 esid, vsid;
-+	u64 esid, vsid, llp;
+--- powerpc.git.orig/arch/powerpc/platforms/cell/spufs/file.c
++++ powerpc.git/arch/powerpc/platforms/cell/spufs/file.c
+@@ -825,6 +825,55 @@ DEFINE_SIMPLE_ATTRIBUTE(spufs_signal2_ty
+ 					spufs_signal2_type_set, "%llu");
  
- 	pr_debug("%s\n", __FUNCTION__);
- 
-@@ -91,9 +91,14 @@ static int __spu_trap_data_seg(struct sp
- 	}
- 
- 	esid = (ea & ESID_MASK) | SLB_ESID_V;
--	vsid = (get_vsid(mm->context.id, ea) << SLB_VSID_SHIFT) | SLB_VSID_USER;
-+#ifdef CONFIG_HUGETLB_PAGE
- 	if (in_hugepage_area(mm->context, ea))
--		vsid |= SLB_VSID_L;
-+		llp = mmu_psize_defs[mmu_huge_psize].sllp;
-+	else
+ #ifdef CONFIG_SPUFS_MMAP
++static struct page *spufs_mss_mmap_nopage(struct vm_area_struct *vma,
++					   unsigned long address, int *type)
++{
++	return spufs_ps_nopage(vma, address, type, 0x0000);
++}
++
++static struct vm_operations_struct spufs_mss_mmap_vmops = {
++	.nopage = spufs_mss_mmap_nopage,
++};
++
++/*
++ * mmap support for problem state MFC DMA area [0x0000 - 0x0fff].
++ * Mapping this area requires that the application have CAP_SYS_RAWIO,
++ * as these registers require special care when read/writing.
++ */
++static int spufs_mss_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	if (!(vma->vm_flags & VM_SHARED))
++		return -EINVAL;
++
++	if (!capable(CAP_SYS_RAWIO))
++		return -EPERM;
++
++	vma->vm_flags |= VM_RESERVED;
++	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
++				     | _PAGE_NO_CACHE);
++
++	vma->vm_ops = &spufs_mss_mmap_vmops;
++	return 0;
++}
 +#endif
-+		llp = mmu_psize_defs[mmu_virtual_psize].sllp;
-+	vsid = (get_vsid(mm->context.id, ea) << SLB_VSID_SHIFT) |
-+			SLB_VSID_USER | llp;
- 
- 	out_be64(&priv2->slb_index_W, spu->slb_replace);
- 	out_be64(&priv2->slb_vsid_RW, vsid);
-Index: powerpc.git/arch/powerpc/platforms/cell/spufs/switch.c
-===================================================================
---- powerpc.git.orig/arch/powerpc/platforms/cell/spufs/switch.c
-+++ powerpc.git/arch/powerpc/platforms/cell/spufs/switch.c
-@@ -718,13 +718,15 @@ static inline void invalidate_slbs(struc
- 
- static inline void get_kernel_slb(u64 ea, u64 slb[2])
++
++static int spufs_mss_open(struct inode *inode, struct file *file)
++{
++	struct spufs_inode_info *i = SPUFS_I(inode);
++
++	file->private_data = i->i_ctx;
++	return nonseekable_open(inode, file);
++}
++
++static struct file_operations spufs_mss_fops = {
++	.open	 = spufs_mss_open,
++#ifdef CONFIG_SPUFS_MMAP
++	.mmap	 = spufs_mss_mmap,
++#endif
++};
++
++
++#ifdef CONFIG_SPUFS_MMAP
+ static struct page *spufs_mfc_mmap_nopage(struct vm_area_struct *vma,
+ 					   unsigned long address, int *type)
  {
--	slb[0] = (get_kernel_vsid(ea) << SLB_VSID_SHIFT) | SLB_VSID_KERNEL;
--	slb[1] = (ea & ESID_MASK) | SLB_ESID_V;
-+	u64 llp;
- 
--	/* Large pages are used for kernel text/data, but not vmalloc.  */
--	if (cpu_has_feature(CPU_FTR_16M_PAGE)
--	    && REGION_ID(ea) == KERNEL_REGION_ID)
--		slb[0] |= SLB_VSID_L;
-+	if (REGION_ID(ea) == KERNEL_REGION_ID)
-+		llp = mmu_psize_defs[mmu_linear_psize].sllp;
-+	else
-+		llp = mmu_psize_defs[mmu_virtual_psize].sllp;
-+	slb[0] = (get_kernel_vsid(ea) << SLB_VSID_SHIFT) |
-+		SLB_VSID_KERNEL | llp;
-+	slb[1] = (ea & ESID_MASK) | SLB_ESID_V;
- }
- 
- static inline void load_mfc_slb(struct spu *spu, u64 slb[2], int slbe)
+@@ -1292,6 +1341,7 @@ struct tree_descr spufs_dir_contents[] =
+ 	{ "signal2", &spufs_signal2_fops, 0666, },
+ 	{ "signal1_type", &spufs_signal1_type, 0666, },
+ 	{ "signal2_type", &spufs_signal2_type, 0666, },
++	{ "mss", &spufs_mss_fops, 0666, },
+ 	{ "mfc", &spufs_mfc_fops, 0666, },
+ 	{ "cntl", &spufs_cntl_fops,  0666, },
+ 	{ "npc", &spufs_npc_ops, 0666, },
 
 --
