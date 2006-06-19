@@ -1,20 +1,12 @@
-Return-Path: <dwm@maxeymade.com>
-Received: from bebe.enoyolf.org (falcon30.maxeymade.com [24.173.215.190])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.maxeymade.com",
-	Issuer "ChainedSSL Certificate Authority" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CC09767A41
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 03:46:18 +1000 (EST)
-Received: from bebe.enoyolf.org (localhost.localdomain [127.0.0.1])
-	by bebe.enoyolf.org (8.13.6/8.13.6) with ESMTP id k5JHJhWc013728
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jun 2006 12:19:43 -0500
-To: linuxppc-dev@ozlabs.org
-Subject: OFW node names 
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Mon, 19 Jun 2006 12:19:43 -0500
-Message-ID: <20060619171943.7730@bebe.enoyolf.org>
-From: Doug Maxey <dwm@maxeymade.com>
+Return-Path: <arnd@arndb.de>
+Message-Id: <20060619183404.213201000@klappe.arndb.de>
+References: <20060619183315.653672000@klappe.arndb.de>
+Date: Mon, 19 Jun 2006 20:33:17 +0200
+From: arnd@arndb.de
+To: paulus@samba.org
+Subject: [patch 02/20] cell: fix interrupt priority handling
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +16,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Checking the priority field to test for irq validity is
+completely bogus and breaks with future external interrupt
+controllers.
 
-Howdy!
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-I'm looking at page 164 in the 1275-1994 at the "name" entry.
+---
 
-Does any platform known to use yaboot (or grub for that matter) use the
-preferred encoding of the manufacturer portion of the name property?
-How about the "ONNNNN" OUI from the RAC, or the uppercase VWXYZ company stock symbol?
+Index: powerpc.git/arch/powerpc/platforms/cell/interrupt.c
+===================================================================
+--- powerpc.git.orig/arch/powerpc/platforms/cell/interrupt.c
++++ powerpc.git/arch/powerpc/platforms/cell/interrupt.c
+@@ -117,8 +117,7 @@ static int iic_external_get_irq(struct c
+ 		 * One of these units can be connected
+ 		 * to an external interrupt controller.
+ 		 */
+-		if (pending.prio > 0x3f ||
+-		    pending.class != 2)
++		if (pending.class != 2)
+ 			break;
+ 		irq = IIC_EXT_OFFSET
+ 			+ spider_get_irq(node)
 
-My view has been limited to the IBM platform.  According to the 
-examples, this is a recommended practice.  I know IBM uses the 
-lowercase variant.
-
-If anyone has an example, please point me at tarball of the device tree.
-
-++doug
+--
