@@ -1,25 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-06.arcor-online.net
-	[151.189.21.46])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F2EF167B1D
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 09:07:05 +1000 (EST)
-In-Reply-To: <E1FsSmY-0000Oz-P2@jdl.com>
-References: <1150598731.23600.146.camel@localhost.localdomain>
-	<EC61A880-9242-4BCE-B72D-8AFC038CD592@freescale.com>
-	<3E324A7E-388E-4917-B380-B0831A5F9D19@kernel.crashing.org>
-	<E1FsSmY-0000Oz-P2@jdl.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <72C71D61-F43A-4644-BBE8-F8B3B8526195@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC] Interrupt mapping documentation 
-Date: Tue, 20 Jun 2006 01:07:00 +0200
-To: Jon Loeliger <jdl@jdl.com>
-Cc: Becky Bruce <Becky.Bruce@freescale.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (colo.jdl.com [66.118.10.122])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8EFA967B1D
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 09:11:43 +1000 (EST)
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 5/9 v3] Add the MPC8641 HPCN platform files. 
+In-Reply-To: Your message of "Tue, 20 Jun 2006 00:44:35 +0200."
+	<A609CF22-66E8-404C-A6F2-528BE097BF57@kernel.crashing.org>
+References: <E1Frjen-0004Oz-Hz@jdl.com>
+	<1150600056.23600.152.camel@localhost.localdomain>
+	<1150725866.9022.5.camel@cashmere.sps.mot.com>
+	<F34E213C-B073-4D85-A323-644340E3C09D@kernel.crashing.org>
+	<E1FsSOB-0000CE-2o@jdl.com>
+	<A609CF22-66E8-404C-A6F2-528BE097BF57@kernel.crashing.org>
+Date: Mon, 19 Jun 2006 18:11:39 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1FsSuB-0000Qc-P6@jdl.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,15 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Just *require* #address-cells for everything with addressable sub- 
->> nodes,
->> at least in DTC.  Doesn't cost much, and no confusion anymore.
->
-> Woot!  Send me a patch! :-)
+So, like, the other day Segher Boessenkool mumbled:
+> 
+> In that case you obviously need to sync the timebases, sure.
+> The firmware could be smart and do the sync at CPU start-up
+> time though.
 
-Noooo...  tiiiime...  And way too lazy.
+I am investigating this and, as I indicated to Ben, submit
+a follow up patch to  implement it if I figure out to do it.
 
-Could you pick this up, please?
+> In
+> some cases the kernel explicitly tells the firmware to start/
+> stop the timebases, that's better than the kernel having to
+> handle the nitty-gritty details itself already.
+> 
+> Thoughts?
 
+Well, by the time Linux is running, there is no more firmware
+available.  Linux is essentially autononomous at this stage,
+and I think it will have to arrange for the TB sync itself.
 
-Segher
+jdl
