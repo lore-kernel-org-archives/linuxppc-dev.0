@@ -1,22 +1,18 @@
-Return-Path: <tnt@246tNt.com>
-Received: from ns30619.ovh.net (ns30619.ovh.net [213.186.47.155])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CA24667B3C
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 3603D67B18
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 05:15:39 +1000 (EST)
-Message-ID: <20060620211529.vjpk2lsxakn4088s@webmail.bluenox.com>
-Date: Tue, 20 Jun 2006 21:15:29 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
-To: Trueskew <trueskew@gmail.com>
-Subject: RE: Using bestcomm in an external module (MPC5200B to be exact)
-References: <449745fa.427398dd.5764.ffffdf84@mx.gmail.com>
-In-Reply-To: <449745fa.427398dd.5764.ffffdf84@mx.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
+	Wed, 21 Jun 2006 05:27:58 +1000 (EST)
+To: =?iso-8859-1?B?Qmr2cm4g1nN0Ynk=?= <Bjorn.Ostby@combitech.se>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Lite5200 NFS mount issue 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 20 Jun 2006 10:15:28 +0200."
+	<BF8F9BE6CD17EB4B8C887AB03E6A9B0303F03C@CORPAPPL020.corp.saab.se>
+Date: Tue, 20 Jun 2006 21:27:53 +0200
+Sender: wd@denx.de
+Message-Id: <20060620192753.E1F6B353CA0@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,26 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-> -----Original Message-----
-> From: John Rigby [mailto:jcrigby@gmail.com]
-> Sent: Monday, June 19, 2006 2:33 PM
-> To: Trueskew
-> Cc: Andrey Volkov; linuxppc-embedded@ozlabs.org
-> Subject: Re: Using bestcomm in an external module (MPC5200B to be exact)
+In message <BF8F9BE6CD17EB4B8C887AB03E6A9B0303F03C@CORPAPPL020.corp.saab.se> you wrote:
 >
-> The next LTIB bsp for 5200b will use the Sylvain's bestcomm api.
+> I'm using u-boot 1.1.4 (CVS downloaded 2006-05-04) and ELDK 4.0. I've encountered 
+> problems when trying to mount a NFS root filesystem when using the Lite MPC5200
 
-Cool ;) But it's far from being my whole work. The foundation and a good
-cleanup pass comes from Dale and Andrey respectiverly.
+Which version of the Linux kernel is this? Make sure to  use  top  of
+tree in the git repository.
 
-Be sure to use the latest one I sent you though ;p
-BTW, I guess that means your fine with my last modifications ?
+Alternatively, use ELDK 3.1 1 which is better suited for a 2.4 kernel
+tree.
 
+Best regards,
 
-    Sylvain
+Wolfgang Denk
 
-
-
-----------------------------------------------------------------
-This message was sent using IMP, the Internet Messaging Program.
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+core error - bus dumped
