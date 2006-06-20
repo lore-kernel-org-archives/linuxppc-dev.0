@@ -1,20 +1,22 @@
-Return-Path: <john.bonesio@xilinx.com>
-Received: from outbound1-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
+Return-Path: <tnt@246tNt.com>
+Received: from ns30619.ovh.net (ns30619.ovh.net [213.186.47.155])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 12AAC67A60
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1019667A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 03:52:15 +1000 (EST)
+	Wed, 21 Jun 2006 05:03:50 +1000 (EST)
+Message-ID: <20060620210335.q9mgydr5ppkogsoo@webmail.bluenox.com>
+Date: Tue, 20 Jun 2006 21:03:35 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: Using bestcomm in an external module (MPC5200B to be exact)
+References: <4496b9a7.1d040e45.6737.ffff8473@mx.gmail.com>
+In-Reply-To: <4496b9a7.1d040e45.6737.ffff8473@mx.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: regarding xilinx system ace in linux-2.6
-Date: Tue, 20 Jun 2006 10:30:27 -0700
-Message-ID: <2FE3DBF1797A1443AAB3FA0EF6BF4EEC01C80D81@XSJ-EXCHVS1.xlnx.xilinx.com>
-From: "John Bonesio" <john.bonesio@xilinx.com>
-To: "Jeff Angielski" <jeff@theptrgroup.com>, "rahul" <rahul.theraja@gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,54 +27,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Quoting Trueskew <trueskew@gmail.com>:
 
-Xilinx has contracted MontaVista to create an LSP for the ML40x
-development boards for MVL Pro 4.0 (which uses the 2.6.10 kernel). This
-work is nearing completion. We (Xilinx) have also asked MontaVista to
-make those drivers available via open source, and MontaVista has agreed
-to this.
+> Hi Andrey,
+>
+> Thanks for the reply.  I did notice that a few weeks ago and was waiting f=
+or
+> the patch state to be changed from "New" to "Accepted".  Can you give me
+> more details on how you found out bestcomm won't be included in 2.6?  The
+> latest downloadable LTIB from Freescale for the Lite5200b includes bestcom=
+m
+> in several places, and the mpc52xx fec driver uses it, along with the ATA
+> driver that Sylvain provided a patch for.
+>
+> As for http://www.246tNt.com/mpc52xx/, it's been coming up "page not found=
+"
+> for me for those same few weeks when I've tried it off an on, and
+> www.246tNt.com just has a Welcome line in it.
 
-The LSP is anticipated to be available sometime before the end of this
-month. I'm not sure when the drivers will be made available to open
-source.
+Yes sorry about that ...
+server crash ... hard ... we kinda lost a lot. Hopefully =20
+gitbits.246tNt.com which host the bestcomm stuff is on another server.
 
-Hope this helps,
+I also have a newer / cleaner version of the patch. I've sent it to some
+dev (Dale, Andrey & John) for comments (any news on that guys ? or are you
+just fine with it ?)
 
-- John
-
-
-
------Original Message-----
-From: linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+jbonesio=3Dxilinx.com@ozlabs.org] On
-Behalf Of Jeff Angielski
-Sent: Wednesday, June 14, 2006 8:15 AM
-To: rahul
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: regarding xilinx system ace in linux-2.6
-
-On Wed, 2006-06-14 at 10:03 +0530, rahul wrote:
-> Hi all
-> I would like to know if anyone in the group or otherwise using
-Xilinx's
-> System ACE MPU interface to read/write to Compact Flash card on their
-> hardware ?
-> I came to know the code is implemented in linux-2.4  but i want to
-have=20
-> it in linux-2.6
-
-Last I heard was that Xilinx was working on the linux 2.6
-implementation. =20
-
-You should contact your Xilinx representative to find out the current
-status of that effort and/or where you can get the source code.
+But anyway, it's mainly internal cleanup and adapting drivers
+from the public version on my git tree to this newest/cleaner
+version is a 15 min work ;)
 
 
-Jeff Angielski
-The PTR Group
+Sylvain
 
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+----------------------------------------------------------------
+This message was sent using IMP, the Internet Messaging Program.
