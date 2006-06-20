@@ -1,15 +1,21 @@
-Return-Path: <grave@ipno.in2p3.fr>
-Received: from ipnmail.in2p3.fr (ipnmail.in2p3.fr [134.158.92.208])
-	by ozlabs.org (Postfix) with ESMTP id 16E3567B21
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 19:02:34 +1000 (EST)
-Subject: Gb Ethernet on xilinx gemac IP
-From: Xavier Grave <grave@ipno.in2p3.fr>
-To: linuxppc-embedded@ozlabs.org, ppc dev <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 20 Jun 2006 08:45:36 +0200
-Message-Id: <1150785936.17197.9.camel@ipnnarval>
-Mime-Version: 1.0
-Reply-To: grave@ipno.in2p3.fr
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8390367A79
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 19:50:53 +1000 (EST)
+In-Reply-To: <20060620084726.GC30974@krispykreme>
+References: <20060620084726.GC30974@krispykreme>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <D0B9DD42-E1D3-48E3-A90A-8F8B5718852F@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: support ibm,extended-*-frequency properties
+Date: Tue, 20 Jun 2006 11:50:17 +0200
+To: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,18 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Anton,
 
-I'm currently running linux with 10/100 MBits xilinx ethernet driver. I
-have a memec 2VP20 evaluation board.
-We have bought a PCOM2 module in order to have a Gb PHY. I have
-implemented an hardware to handle it but whatever linux version I take
-(2.4 from denx web site, 2.6.17 from kernel.org), I can't configure a Gb
-ethernet driver. And the 10/100 driver don't configure my Gb PHY...
+> Support the ibm,extended-*-frequency properties found in recent POWER5
+> firmware:
+>
+> cpus/PowerPC,POWER5@0/clock-frequency
+>                  59aa5880 (1504336000)
+> cpus/PowerPC,POWER5@0/ibm,extended-clock-frequency
+>                  00000000 59aa5880
+> cpus/PowerPC,POWER5@0/timebase-frequency
+>                  0b354b10 (188042000)
+> cpus/PowerPC,POWER5@0/ibm,extended-timebase-frequency
+>                  00000000 0b354b10
 
-I have compiled my linux kernel based on the ml300 configuration default
-config.
+Could you also allow the regular "timebase-frequency" property
+to consist of two cells, with the same semantics?  That's what
+some other systems do.  Hey, it'd simplify this code, if anything :-)
 
-Does anyone has an idea ?
+In fact, some kernel code already does this if I'm not mistaken
+(the Cell port, perhaps?)
 
-Thanks, xavier
+
+Segher
