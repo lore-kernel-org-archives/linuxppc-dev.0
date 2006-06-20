@@ -1,17 +1,21 @@
-Return-Path: <robinpv@aiware.co.jp>
-Received: from cat.aiware.co.jp (ml.aiware.jp [222.228.111.22])
-	by ozlabs.org (Postfix) with ESMTP id 5BA1767A62
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 20:15:31 +1000 (EST)
-Received: from [192.168.25.80] (neko.aiware.jp [222.228.111.24])
-	by cat.aiware.co.jp (Postfix) with ESMTP id E8A4CF4847
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 18:44:29 +0900 (JST)
-Message-ID: <4499152D.2040908@aiware.co.jp>
-Date: Wed, 21 Jun 2006 18:45:17 +0900
-From: robinpv <robinpv@aiware.co.jp>
-MIME-Version: 1.0
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 20D2F67A64
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 21:41:58 +1000 (EST)
+Received: from [131.234.76.225] (helo=dhcp-76-225.uni-paderborn.de)
+	by sipsolutions.net with esmtpsa (TLS-1.0:RSA_ARCFOUR_MD5:16)
+	(Exim 4.62) (envelope-from <johannes@sipsolutions.net>)
+	id 1Ft15m-0005FT-63
+	for linuxppc-dev@ozlabs.org; Wed, 21 Jun 2006 12:41:54 +0100
+Subject: [RFC] cpu hotplug in powermac g5
+From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev@ozlabs.org
-Subject: Linux ppc port problem
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain
+Date: Wed, 21 Jun 2006 01:22:49 +0200
+Message-Id: <1150845770.16662.7.camel@johannes>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,42 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi ,
-     I am trying to the port linux to the mpc5200 based board( Lite5200.)
-     I am using linux version 2.6.16.1.  I am getting the below message 
-after that, linux seems to he in hanged state
-     I debugged and found that the control is reaching the schedule() in 
-rest_init() which is the last function called in start_kernel().
-     I have set the command line arguements to "console=ttyPSC0,115200 
-root=/dev/ram0 rw ramdisk_size=16384"
-     Can you suggest, how to proceed or what could be the problem.
+The following patch seems to make cpu hotplugging mostly work on my quad
+powermac G5. The first part (platforms/powermac/smp.c) actually plugs in
+the right functions after which it already works, but the CPUs get
+warmer when offline than when online and idle.
 
-With regards
-Robin
+The modification in powerpc/kernel/smp.c makes the generic cpu die
+routine also do more power saving just like the idle loop. I have no
+idea if it is correct.
 
+There do seem to be some bugs with this, once a while I get a soft
+lockup detected but I can't figure out why/when it happened. Other than
+that, I can online/offline CPUs at will with this patch.
 
-## Booting image at ff000000 ...
-   Image Name:   Linux-2.6.16.1
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1301999 Bytes =  1.2 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Loading RAMDisk Image at ff200000 ...
-   Image Name:   ramdisk
-   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
-   Data Size:    2788700 Bytes =  2.7 MB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Loading Ramdisk to 03d05000, end 03fadd5c ... OK
-id mach(): done
-MMU:enter
-MMU:hw init
-MMU:mapin
-MMU:setio
-MMU:exit
-setup_arch: enter
-setup_arch: bootmem
-arch: exit
+--- linux-2.6-git.orig/arch/powerpc/platforms/powermac/smp.c	2006-06-20 23:23:17.731573780 +0200
++++ linux-2.6-git/arch/powerpc/platforms/powermac/smp.c	2006-06-21 00:20:47.189942635 +0200
+@@ -905,8 +905,15 @@ struct smp_ops_t core99_smp_ops = {
+ 	.setup_cpu	= smp_core99_setup_cpu,
+ 	.give_timebase	= smp_core99_give_timebase,
+ 	.take_timebase	= smp_core99_take_timebase,
+-#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
++#if defined(CONFIG_HOTPLUG_CPU)
++# if defined(CONFIG_PPC32)
+ 	.cpu_disable	= smp_core99_cpu_disable,
+ 	.cpu_die	= smp_core99_cpu_die,
++# endif
++# if defined(CONFIG_PPC64)
++	.cpu_disable	= generic_cpu_disable,
++	.cpu_die	= generic_cpu_die,
++	.cpu_enable	= generic_cpu_enable,
++# endif
+ #endif
+ };
+--- linux-2.6-git.orig/arch/powerpc/kernel/smp.c	2006-06-21 01:15:42.183256221 +0200
++++ linux-2.6-git/arch/powerpc/kernel/smp.c	2006-06-21 01:15:44.879231957 +0200
+@@ -441,8 +441,16 @@ void generic_mach_cpu_die(void)
+ 	printk(KERN_DEBUG "CPU%d offline\n", cpu);
+ 	__get_cpu_var(cpu_state) = CPU_DEAD;
+ 	smp_wmb();
+-	while (__get_cpu_var(cpu_state) != CPU_UP_PREPARE)
+-		cpu_relax();
++	while (__get_cpu_var(cpu_state) != CPU_UP_PREPARE) {
++		if (ppc_md.power_save) {
++			/* need we do more? what about TIF_POLLING_NRFLAG? */
++			ppc_md.power_save();
++		} else {
++			HMT_low();
++			HMT_very_low();
++		}
++		HMT_medium(); /* should be after loop? */
++	}
+ 
+ #ifdef CONFIG_PPC64
+ 	flush_tlb_pending();
