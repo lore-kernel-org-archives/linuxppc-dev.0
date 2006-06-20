@@ -1,11 +1,20 @@
-Return-Path: <dwilder@us.ibm.com>
-Message-ID: <4497445F.50700@us.ibm.com>
-Date: Mon, 19 Jun 2006 17:42:07 -0700
-From: David Wilder <dwilder@us.ibm.com>
-MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: Unable to handle kernel paging request in show_instructions
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <Becky.Bruce@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 3DA1B67B20
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 10:21:31 +1000 (EST)
+In-Reply-To: <1150759075.23600.297.camel@localhost.localdomain>
+References: <1150598731.23600.146.camel@localhost.localdomain>
+	<EC61A880-9242-4BCE-B72D-8AFC038CD592@freescale.com>
+	<3E324A7E-388E-4917-B380-B0831A5F9D19@kernel.crashing.org>
+	<1150759075.23600.297.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <40AABEB6-3467-4AFB-BC7B-08176EDD61E2@freescale.com>
+From: Becky Bruce <Becky.Bruce@freescale.com>
+Subject: Re: [RFC] Interrupt mapping documentation
+Date: Mon, 19 Jun 2006 19:23:40 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,56 +24,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I ran into the following problem during Oops processing:
 
-Oops: Exception in kernel mode, sig: 4 [#1]
-SMP NR_CPUS=128 NUMA PSERIES LPAR
-Modules linked in: pitrace sg scsi_mod nfs lockd nfs_acl sunrpc ipv6 
-apparmor aa match_pcre loop dm_mod tg3
-NIP: D000000000022014 LR: C000000000018FE4 CTR: C00000000036C718
-REGS: c00000000043faf0 TRAP: 0700   Tainted: G     U  
-(2.6.16.16-1.6-ppc64-wilder)
-MSR: 8000000000089432 <EE,ME,IR,DR>  CR: 24000088  XER: 000FFFFF
-TASK = c00000000048a660[0] 'swapper' THREAD: c00000000043c000 CPU: 0
-GPR00: C000000000018FE4 C00000000043FD70 C000000000624420 0000000000000000
-GPR04: C00000000048A990 0000000000006DFF 0000000024000082 C00000000000F0B0
-GPR08: 0000000000000000 C0000000004351C0 0000000001021A00 C000000001456BC0
-GPR12: D0000000004CC2B8 C00000000048AE80 0000000000000000 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: 4000000000400000 C00000000042BA00 C00000000042BEA8 C00000000042BC70
-GPR24: C00000000048AE80 000000000082BA00 0000000000000000 C000000000000000
-GPR28: 00000000FFFFFFFF C000000000629070 C0000000004C7BC8 C00000000F9F89D0
-NIP [D000000000022014] 0xd000000000022014
-LR [C000000000018FE4] .default_idle+0x98/0xcc
-Call Trace:
-[C00000000043FD70] [C000000000018FE4] .default_idle+0x98/0xcc (unreliable)
-[C00000000043FE00] [C000000000018F38] .cpu_idle+0x40/0x54
-[C00000000043FE70] [C000000000009274] .rest_init+0x44/0x5c
-[C00000000043FEF0] [C0000000003FC75C] .start_kernel+0x270/0x288
-[C00000000043FF90] [C000000000008594] .start_here_common+0x88/0x8c
-Instruction dump:
- >>>Unable to handle kernel paging request for data at address 
-0xd000000000021fe4
- >>>Faulting instruction address: 0xc00000000036b960
+On Jun 19, 2006, at 6:17 PM, Benjamin Herrenschmidt wrote:
 
-I don't care about the original oops, only the second fault because it 
-prevents kdump from starting.
+>
+>> If there's any interrupt in the dev tree, there should be an  
+>> interrupt
+>> controller.  If the requirement is more strict than that, that's a
+>> bug :-)
+>
+> Yes, I should make that clearer.
 
-The problem occures in show_instructions().  Show_instructions() takes 
-the NIP (D00000000002201) and subtracts some number so it points several 
-instructs before the failing instructions.  In this case the new value 
-is on a previous page and that page is not valid (it is not mapped).  
-When the new NIP is referenced we get a second fault.  
+Yes, please!  These things might seem obvious, but I've been burned  
+by somewhat arbitrary requirements enough in the past to be wary.    
+Paranoid, even :)
 
-show_instructions tries to validate addresses by checking if it is the 
-kernel segment (0xc.....) or the first vmalloc segment (0xD.......).  
-But in this case the validation passes even though the address is 
-invalid.   Any ideas how to fix this?  Is there a easy way to validate 
-if a page is valid before accessing it?
+>
+>> Most "real" device trees (on a "real" OF) do not have "interrupt-
+>> controller"
+>> as the name of their main interrupt controller nodes.  This sounds
+>> like a
+>> spec bug.
+>
+> I haven't specified that it _should_ be called interrupt- 
+> controller, but
+> it's generally called that way at least on chrp/pSeries and I think
+> there's an OF recommended practices RFC that says something around  
+> those
+> lines, so I changed the examples to reflect that.
 
--- 
-David Wilder
-IBM Linux Technology Center
-Beaverton, Oregon, USA 
-dwilder@us.ibm.com
-(503)578-3789
+If there's precedence for it, it's fine with me.  I was just curious  
+about why it changed.  Personally, I'd rather see it as "pic",  
+because that's more specific, and it's the actual device name, but  
+it's not keeping me up at night.....
+
+> In addition,
+> the default-to-parent thing is something I'll remove from the spec and
+> write that the absence of the property is undefined I think. We'll  
+> keep
+> the current behaviour in linux for now though.
+
+That also works for me.  I'd rather have to specify more stuff in the  
+tree and have it be crystal clear how it's interpreted and used.  So,  
+is this true for just #address-cells, or does it affect #size-cells  
+as well?
+
+>
+>>> The additions in the patch specify new requirements that don't seem
+>>> to match up with the statement above.  In the new patch, #address-
+>>> cells is listed as a required node for interrupt-controller nodes,
+>>> there's no mention of inheritance from a parent,
+>>
+>> Inheritance from the parent does not exist, in real OF.  Absence of
+>> #address-cells means "default to 2".  This needs to be fixed in DTC.
+>
+> Yes. Except that I will probably not do the "default to 2". The kernel
+> doesn't do it and there might still be things relying on the old
+> (broken) linux behaviour. Thus I'll probably spec it as undefined.
+
+Sounds good.  The dtc should probably throw an error (or at least a  
+warning) on this, so the trees get fixed.  I think I'd prefer to see  
+an error - that will keep this problem from propagating any further.
+
+>>
+>> Just *require* #address-cells for everything with addressable sub- 
+>> nodes,
+>> at least in DTC.  Doesn't cost much, and no confusion anymore.
+>
+> Yes. We should do that.
+
+I agree 100%.
+
+>
+> In the case of interrupt controllers/nexus, #address-cells is not for
+> addressable sub-nodes though but for defining the format of unit
+> interrupt specifiers for interrupt-childs which aren't necessary sub
+> nodes... confusing heh ?
+
+Um, yeah :)  I think with a little clarification it will be fine,  
+though.
+
+Thanks!
+-B
