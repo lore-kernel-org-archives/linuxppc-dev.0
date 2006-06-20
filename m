@@ -1,18 +1,22 @@
-Return-Path: <aidan@nicta.com.au>
-Received: from miews.nicta.com.au (dante.ken.nicta.com.au [203.143.161.64])
-	by ozlabs.org (Postfix) with ESMTP id B0E3567A67
+Return-Path: <Prabhat_Singh@Satyam.com>
+Received: from chnmail.satyam.com (chnmail.satyam.com [210.18.90.100])
+	by ozlabs.org (Postfix) with ESMTP id 59B6F67B1D
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 20 Jun 2006 16:14:21 +1000 (EST)
-Message-ID: <44978A6B.3020403@nicta.com.au>
-Date: Tue, 20 Jun 2006 15:40:59 +1000
-From: Aidan Williams <aidan@nicta.com.au>
+	Tue, 20 Jun 2006 16:23:11 +1000 (EST)
+Received: from blr.satyam.com (blr.satyam.com [208.220.245.73])
+	by che2.satyam.com (8.12.8/8.12.8) with ESMTP id k5K6K3E6015250
+	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Jun 2006 11:50:03 +0530
+Received: from Disclaimerbng.corp.satyam.ad (bng.satyam.com [172.19.57.211])
+	by blr.satyam.com (8.12.8/8.12.8) with ESMTP id k5K672qQ017170
+	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Jun 2006 11:37:02 +0530
 MIME-Version: 1.0
-To: "Martin, Tim" <tim.martin@viasat.com>
-Subject: Re: Linux on Virtex4
-References: <821B2170E9E7F04FA38DF7EC21DE48710573FD21@VCAEXCH01.hq.corp.viasat.com>
-In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE48710573FD21@VCAEXCH01.hq.corp.viasat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C69431.FF58846F"
+Subject: Exceptions during PCI initialization at u-boot
+Date: Tue, 20 Jun 2006 11:53:06 +0530
+Message-ID: <D8595042F3765A4285B848A78A2C2ED104A5353C@bsdmsg002.corp.satyam.ad>
+From: "Prabhat_Singh" <Prabhat_Singh@Satyam.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,380 +27,895 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-It's a cute little board isn't it!
+------_=_NextPart_001_01C69431.FF58846F
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
 
-In getting this board going we had to work around a silicon bug which 
-caused data corruption and forced us to run with caches off.
+Hi all
 
-See "Solution 13":
-http://www.xilinx.com/xlnx/xil_ans_display.jsp?iLanguageID=1&iCountryID=1&getPagePath=20658
-Check your PVR ..
+I am getting two exceptions, that you will find in log, at the
+pci_hose_read_config_byte memory is crashing that's I found in
+System.map. after second exception its boots properly. I have no clue
+whats happening. And why I am not able to read Configuration space of
+pci.=20
 
-I found that exercising the memory with a small C program reliably 
-caused the board to crash.
+>From where this exception is coming?
 
-My previous post including a patch for this board:
-http://ozlabs.org/pipermail/linuxppc-embedded/2006-April/022583.html
+Please help me out. What else I can check?
 
-.. and we're using the UartLite.
+=20
 
-- aidan
+=20
+
+VPN Router Board
+
+=20
+
+=20
+
+Vpn Router U-Boot 1.0.0 (Jun 19 2006 - 11:31:37)
+
+=20
+
+MPC8260 Reset Status: External Soft, External Hard
+
+=20
+
+MPC8260 Clock Configuration
+
+ - Bus-to-Core Mult 4x, VCO Div 2, 60x Bus Freq  25-75 , Core Freq
+100-300
+
+ - dfbrg 0, corecnf 0x1a, busdf 3, cpmdf 1, plldf 0, pllmf 3
+
+ - vco_out  400000000, scc_clk  100000000, brg_clk  100000000
+
+ - cpu_clk  400000000, cpm_clk  200000000, bus_clk  100000000
+
+=20
+
+CPU:   8272 (HiP7 Rev 14, Mask A.0 1K50M) at 400 MHz
+
+Board: VPN8248
+
+DRAM:  32 MB
+
+total length of code       216456l   34d88value of sdrambase+ramsize
+02000000=20
+
+Top of RAM usable for U-Boot at: 02000000
+
+Reserving 211k for U-Boot at: 01fcb000
+
+Reserving 128k for malloc() at: 01faae00
+
+Reserving 76 Bytes for Board Info at: 01faadb4
+
+Reserving 80 Bytes for Global Data at: 01faad64
+
+Stack Pointer at: 01faad48
+
+New Stack Pointer is: 01faad48
+
+value of ret 0=20
+
+Entering reloacte
+
+Now running in RAM - U-Boot at: 01fcb000
+
+POST memory POST memory PASSED
+
+PASSED
+
+FLASH: satyam : manufacturor ID =3D 200020satyam: id1=3D22df22df
+
+satyam: id2=3D0
+
+satyam: id3=3D80008
+
+16 MB
+
+PCI Autoconfig: Memory region: [14000000-1bffffff]
+
+PCI Autoconfig: I/O region: [1c000000-1dffffff]
+
+Bus Fault @ 0x01fd2df8, fixup 0x00000000
+
+Machine check in kernel mode.
+
+Caused by (from msr): regs 01faab60 Unknown values in msr
+
+NIP: 01FD2DF8 XER: 00000000 LR: 01FD2DF0 REGS: 01faab60 TRAP: 0200 DAR:
+01FE4DB8
+
+MSR: 00083002 EE: 0 PR: 0 FP: 1 ME: 1 IR/DR: 00
+
+=20
+
+GPR00: 01FD3A24 01FAAC50 FFFFFFFF 00000000 8000080C 00000002 01FAAC5E
+01C5D1FB=20
+
+GPR08: 01FD0084 F0010904 00000000 00000000 00000020 FFFFFFFF 01FF8000
+020CB000=20
+
+GPR16: FFFFFFFF FFFFFFFF FFFFFEFF FFFFFFFF 00000000 00000000 FFFFFFFF
+F0010D20=20
+
+GPR24: 00000000 00000000 01FFE39C 00000100 01FFE39C 01FAAD64 01FF8400
+00000800=20
+
+Call backtrace:=20
+
+01FD3A24 01FD3BF0 01FE8B84 01FE3E04 01FD3C64 01FCFE30 01FCE48C=20
+
+machine check
+
+VPN Router Board
+
+=20
+
+=20
+
+Vpn Router U-Boot 1.0.0 (Jun 19 2006 - 11:31:37)
+
+=20
+
+MPC8260 Reset Status:
+
+=20
+
+MPC8260 Clock Configuration
+
+ - Bus-to-Core Mult 4x, VCO Div 2, 60x Bus Freq  25-75 , Core Freq
+100-300
+
+ - dfbrg 0, corecnf 0x1a, busdf 3, cpmdf 1, plldf 0, pllmf 3
+
+ - vco_out  400000000, scc_clk  100000000, brg_clk  100000000
+
+ - cpu_clk  400000000, cpm_clk  200000000, bus_clk  100000000
+
+=20
+
+CPU:   8272 (HiP7 Rev 14, Mask A.0 1K50M) at 400 MHz
+
+Board: VPN8248
+
+DRAM:  32 MB
+
+total length of code       216456l   34d88value of sdrambase+ramsize
+02000000=20
+
+Top of RAM usable for U-Boot at: 02000000
+
+Reserving 211k for U-Boot at: 01fcb000
+
+Reserving 128k for malloc() at: 01faae00
+
+Reserving 76 Bytes for Board Info at: 01faadb4
+
+Reserving 80 Bytes for Global Data at: 01faad64
+
+Stack Pointer at: 01faad48
+
+New Stack Pointer is: 01faad48
+
+Entering reloacte
+
+Now running in RAM - U-Boot at: 01fcb000
+
+FLASH: satyam : manufacturor ID =3D 200020satyam: id1=3D22df22df
+
+PCI Autoconfig: Memory region: [14000000-1bffffff]
+
+PCI Autoconfig: I/O region: [1c000000-1dffffff]
+
+vendor=3D168c
+
+PCI Scan: Found Bus 0, Device 15, Function 0
+
+PCI Autoconfig: BAR 0, Mem, size=3D0x10000, address=3D0x14000000
+
+PCI Autoconfig: BAR 1, I/O, size=3D0xffffb000, No room in resource
+
+PCI:     00  0f  168c  0013  0200  00
+
+value of item =3D1
+
+In:    serial
+
+Out:   serial
+
+Err:   serial
+
+Chip Name  =3D 175a
+
+Chip Name  =3D 175c
+
+phy ID(0x02430d80) =3D 02430d80
+
+Level One/ICPLUS PHY Identied IC175C Revision 0
+
+Phy operating at 100 MBit/s in full-duplex mode
+
+Phy operating at 100 MBit/s in full-duplex mode
+
+U-Boot relocated to 01fcb000
+
+Net:   value of fec FCC2 ETHERNET=20
+
+FCC2 ETHERNET
+
+Hit any key to stop autoboot:  5 =08=08=08 4 =08=08=08 3 =08=08=08 0=20
+
+satyam=3D> =20
+
+=20
+
+Regards'
+
+Prabhat Singh
+
+=20
+
+=20
 
 
-Martin, Tim wrote:
-> I have been working with a small module made by Memec/Avnet
-> (FX12MM1-BASE) that has a Virtex-4 FX12 with some DDR SDRAM, a Gigabit
-> Ethernet PHY, some FLASH, etc.  I am using EDK 8.1 and generated the BSP
-> for MontaVista 3.1 "preview kit" (which is based on the 2.4.20 kernel).
-> This works, but occasionally panics while booting (doesn't panic all the
-> time, maybe 1/3 the time).  Examples of "good" boot and 2 "crash" boots
-> below.  We are using a root filesystem over NFS, and the panics seem to
-> always be after the file system is mounted.  I'm not sure if it is NFS
-> related or not.
-> 
-> I have also been working with the paulus 2.6 kernel tree (and I have
-> tried the MVL linux-xilinx-26 tree), but have not been able to get the
-> kernel to boot.  The primary problem there is that we are using the
-> uartlite instead of the full uart, and the patches I have found for
-> uartlite support don't work.  I can get the early serial messages to
-> work, but I don't know enough about the console and serial core to get
-> everything else working.  I am also getting panics that seem to be
-> non-serial related, but I haven't tracked it down yet.
-> 
-> So two questions:
-> 
-> 1) Is there anything obvious from the kernel panics below that I should
-> be looking for?  Just the answer "linux 2.4.20 is really fricken old,
-> upgrade" is probably the right answer.
-> 
-> 2) Does anyone have working UartLite support on a Virtex-4 FX12 design?
-> 
-> 
-> ------------ Examples of 2.4.20 good:
-> 
-> id mach(): done
-> MMU:enter
-> MMU:hw init
-> MMU:mapin
-> MMU:mapin_ram done
-> MMU:setio
-> MMU:exit
-> Linux version 2.4.20_mvl31-v4fx12 (ahamel@uhflinux) (gcc version 3.3.1
-> (MontaVista 3.3.1-3.0.10.6
-> setup_arch: enter
-> setup_arch: bootmem
-> Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc.
-> (source@mvista.com)
-> arch: exit
-> On node 0 totalpages: 16384
-> zone(0): 16384 pages.
-> zone(1): 0 pages.
-> zone(2): 0 pages.
-> Kernel command line: root=/dev/nfs
-> nfsroot=192.168.1.1:/opt/montavista/previewkit/ppc/405/target4
-> Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFF000
-> Calibrating delay loop... 197.01 BogoMIPS
-> Memory: 63268k available (1092k kernel code, 340k data, 60k init, 0k
-> highmem)
-> Dentry cache hash table entries: 8192 (order: 4, 65536 bytes)
-> Inode cache hash table entries: 4096 (order: 3, 32768 bytes)
-> Mount-cache hash table entries: 1024 (order: 1, 8192 bytes)
-> Buffer-cache hash table entries: 4096 (order: 2, 16384 bytes)
-> Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
-> POSIX conformance testing by UNIFIX
-> 
-> Linux NET4.0 for Linux 2.4
-> Based upon Swansea University Computer Society NET3.039
-> Initializing RT netlink socket
-> LSP Revision 42
-> ikconfig 0.5 with /proc/ikconfig
-> Starting kswapd
-> Disabling the Out Of Memory Killer
-> devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
-> devfs: boot_options: 0x1
-> pty: 256 Unix98 ptys configured
-> xgpio #0 at 0x40020000 mapped to 0xC5000000
-> xgpio #1 at 0x40040000 mapped to 0xC5011000
-> xgpio #2 at 0x40060000 mapped to 0xC5022000
-> xilinx_spi: got major number 254
-> xilinx_spi0 at 0x40800000 mapped to 0xC5033000, irq=29
-> RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
-> loop: loaded (max 8 devices)
-> XTemac: Device instance #0 found
-> eth0: XTemac: using fifo direct interrupt driven mode.
-> eth0: XTemac: PHY detected at address 4.
-> eth0: Xilinx TEMAC #0 at 0x80400000 mapped to 0xC5044000, irq=28
-> eth0: XTemac: id 1.0f, block id 5, type 8
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP, IGMP
-> IP: routing cache hash table of 512 buckets, 4Kbytes
-> TCP: Hash tables configured (established 4096 bind 8192)
-> eth0: XTemac: Options: 0xb8f0
-> eth0: XTemac: We renegotiated the speed to: 1000
-> eth0: XTemac: speed set to 1000Mb/s
-> Sending DHCP requests ., OK
-> IP-Config: Got DHCP answer from 192.168.1.1, my address is 192.168.1.75
-> IP-Config: Complete:
->       device=eth0, addr=192.168.1.75, mask=255.255.255.0,
-> gw=192.168.1.1,
->      host=192.168.1.75, domain=, nis-domain=(none),
->      bootserver=192.168.1.1, rootserver=192.168.1.1, rootpath=
-> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-> Looking up port of RPC 100003/2 on 192.168.1.1
-> Looking up port of RPC 100005/1 on 192.168.1.1
-> VFS: Mounted root (nfs filesystem).
-> Mounted devfs on /dev
-> Freeing unused kernel memory: 60k init
-> serial console detected.  Disabling virtual terminals.
-> init started:  BusyBox v0.60.2 (2004.04.30-17:49+0000) multi-call binary
-> 
-> Welcome to MontaVista Linux Preview Kit
-> 
-> Starting system...
-> mounting /proc: done.
-> Mounting '/' read-only: done.
-> brining up loopback interface: done.
-> Mounting /tmp: done.
-> Starting syslogd: done.
-> Starting klogd: done.
-> Starting inetd: done.
-> Starting thttpd: done.
-> System started.
-> 
-> MontaVista(R) Linux(R) Professional Edition 3.1, Preview Kit
-> 
-> 192.168.1.75 login:
-> 
-> ------ Example 1 of panic
-> 
-> id mach(): done
-> MMU:enter
-> MMU:hw init
-> MMU:mapin
-> MMU:mapin_ram done
-> MMU:setio
-> MMU:exit
-> Linux version 2.4.20_mvl31-v4fx12 (ahamel@uhflinux) (gcc version 3.3.1
-> (MontaVista 3.3.1-3.0.10.6
-> setup_arch: enter
-> setup_arch: bootmem
-> Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc.
-> (source@mvista.com)
-> arch: exit
-> On node 0 totalpages: 16384
-> zone(0): 16384 pages.
-> zone(1): 0 pages.
-> zone(2): 0 pages.
-> Kernel command line: root=/dev/nfs
-> nfsroot=192.168.1.1:/opt/montavista/previewkit/ppc/405/target4
-> Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFF000
-> Calibrating delay loop... 197.01 BogoMIPS
-> Memory: 63268k available (1092k kernel code, 340k data, 60k init, 0k
-> highmem)
-> Dentry cache hash table entries: 8192 (order: 4, 65536 bytes)
-> Inode cache hash table entries: 4096 (order: 3, 32768 bytes)
-> Mount-cache hash table entries: 1024 (order: 1, 8192 bytes)
-> Buffer-cache hash table entries: 4096 (order: 2, 16384 bytes)
-> Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
-> POSIX conformance testing by UNIFIX
-> 
-> Linux NET4.0 for Linux 2.4
-> Based upon Swansea University Computer Society NET3.039
-> Initializing RT netlink socket
-> LSP Revision 42
-> ikconfig 0.5 with /proc/ikconfig
-> Starting kswapd
-> Disabling the Out Of Memory Killer
-> devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
-> devfs: boot_options: 0x1
-> pty: 256 Unix98 ptys configured
-> xgpio #0 at 0x40020000 mapped to 0xC5000000
-> xgpio #1 at 0x40040000 mapped to 0xC5011000
-> xgpio #2 at 0x40060000 mapped to 0xC5022000
-> xilinx_spi: got major number 254
-> xilinx_spi0 at 0x40800000 mapped to 0xC5033000, irq=29
-> RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
-> loop: loaded (max 8 devices)
-> XTemac: Device instance #0 found
-> eth0: XTemac: using fifo direct interrupt driven mode.
-> eth0: XTemac: PHY detected at address 4.
-> eth0: Xilinx TEMAC #0 at 0x80400000 mapped to 0xC5044000, irq=28
-> eth0: XTemac: id 1.0f, block id 5, type 8
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP, IGMP
-> IP: routing cache hash table of 512 buckets, 4Kbytes
-> TCP: Hash tables configured (established 4096 bind 8192)
-> eth0: XTemac: Options: 0xb8f0
-> eth0: XTemac: We renegotiated the speed to: 1000
-> eth0: XTemac: speed set to 1000Mb/s
-> Sending DHCP requests ., OK
-> IP-Config: Got DHCP answer from 192.168.1.1, my address is 192.168.1.75
-> IP-Config: Complete:
->       device=eth0, addr=192.168.1.75, mask=255.255.255.0,
-> gw=192.168.1.1,
->      host=192.168.1.75, domain=, nis-domain=(none),
->      bootserver=192.168.1.1, rootserver=192.168.1.1, rootpath=
-> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-> Looking up port of RPC 100003/2 on 192.168.1.1
-> Looking up port of RPC 100005/1 on 192.168.1.1
-> VFS: Mounted root (nfs filesystem).
-> Mounted devfs on /dev
-> Freeing unused kernel memory: 60k init
-> nfs: server 192.168.1.1 not responding, still trying
-> Oops: kernel access of bad area, sig: 11
-> NIP: C00F05B4 XER: 20000000 LR: C00F0C80 SP: C0131C80 REGS: c0131bd0
-> TRAP: 0800    Not tainted
-> MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> DEAR: 00000045, ESR: 00000000
-> TASK = c0130020[0] 'swapper' Last syscall: 120
-> last math 00000000 last altivec 00000000
-> GPR00: C00CA728 C0131C80 C0130020 00000001 00001030 00000000 C02C9180
-> C023F9F8
-> GPR08: C02CA000 C0150000 00000003 00001DC7 84002022 1006E950 03FD0000
-> 00000000
-> GPR16: 00000001 00000001 FFFFFFFF 007FFF00 00001032 00131EE0 00000000
-> C0000000
-> GPR24: C0151D24 C02C90D0 C0150000 00000000 C0157F00 C02E8080 C02C90D8
-> C02E8080
-> Call backtrace:
-> C00F0A4C C00CA728 C00EED30 C00C2958 C00200DC C001BD20 C001BB9C
-> C001B868 C0005E48 C00047CC C00274E4 C0005D80 C0005D94 C0002434
-> C01425CC C000232C
-> Kernel panic: Aiee, killing interrupt handler!
-> In interrupt handler - not syncing
->  <0>Rebooting in 180 seconds..
-> 
-> ------- Example 2 of crash
-> id mach(): done
-> MMU:enter
-> MMU:hw init
-> MMU:mapin
-> MMU:mapin_ram done
-> MMU:setio
-> MMU:exit
-> Linux version 2.4.20_mvl31-v4fx12 (ahamel@uhflinux) (gcc version 3.3.1
-> (MontaVista 3.3.1-3.0.10.6
-> setup_arch: enter
-> setup_arch: bootmem
-> Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc.
-> (source@mvista.com)
-> arch: exit
-> On node 0 totalpages: 16384
-> zone(0): 16384 pages.
-> zone(1): 0 pages.
-> zone(2): 0 pages.
-> Kernel command line: root=/dev/nfs
-> nfsroot=192.168.1.1:/opt/montavista/previewkit/ppc/405/target4
-> Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFF000
-> Calibrating delay loop... 197.01 BogoMIPS
-> Memory: 63268k available (1092k kernel code, 340k data, 60k init, 0k
-> highmem)
-> Dentry cache hash table entries: 8192 (order: 4, 65536 bytes)
-> Inode cache hash table entries: 4096 (order: 3, 32768 bytes)
-> Mount-cache hash table entries: 1024 (order: 1, 8192 bytes)
-> Buffer-cache hash table entries: 4096 (order: 2, 16384 bytes)
-> Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
-> POSIX conformance testing by UNIFIX
-> 
-> Linux NET4.0 for Linux 2.4
-> Based upon Swansea University Computer Society NET3.039
-> Initializing RT netlink socket
-> LSP Revision 42
-> ikconfig 0.5 with /proc/ikconfig
-> Starting kswapd
-> Disabling the Out Of Memory Killer
-> devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
-> devfs: boot_options: 0x1
-> pty: 256 Unix98 ptys configured
-> xgpio #0 at 0x40020000 mapped to 0xC5000000
-> xgpio #1 at 0x40040000 mapped to 0xC5011000
-> xgpio #2 at 0x40060000 mapped to 0xC5022000
-> xilinx_spi: got major number 254
-> xilinx_spi0 at 0x40800000 mapped to 0xC5033000, irq=29
-> RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
-> loop: loaded (max 8 devices)
-> XTemac: Device instance #0 found
-> eth0: XTemac: using fifo direct interrupt driven mode.
-> eth0: XTemac: PHY detected at address 4.
-> eth0: Xilinx TEMAC #0 at 0x80400000 mapped to 0xC5044000, irq=28
-> eth0: XTemac: id 1.0f, block id 5, type 8
-> NET4: Linux TCP/IP 1.0 for NET4.0
-> IP Protocols: ICMP, UDP, TCP, IGMP
-> IP: routing cache hash table of 512 buckets, 4Kbytes
-> TCP: Hash tables configured (established 4096 bind 8192)
-> eth0: XTemac: Options: 0xb8f0
-> eth0: XTemac: We renegotiated the speed to: 1000
-> eth0: XTemac: speed set to 1000Mb/s
-> Sending DHCP requests ., OK
-> IP-Config: Got DHCP answer from 192.168.1.1, my address is 192.168.1.75
-> IP-Config: Complete:
->       device=eth0, addr=192.168.1.75, mask=255.255.255.0,
-> gw=192.168.1.1,
->      host=192.168.1.75, domain=, nis-domain=(none),
->      bootserver=192.168.1.1, rootserver=192.168.1.1, rootpath=
-> NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
-> Looking up port of RPC 100003/2 on 192.168.1.1
-> Looking up port of RPC 100005/1 on 192.168.1.1
-> VFS: Mounted root (nfs filesystem).
-> Mounted devfs on /dev
-> Freeing unused kernel memory: 60k init
-> serial console detected.  Disabling virtual terminals.
-> init started:  BusyBox v0.60.2 (2004.04.30-17:49+0000) multi-call binary
-> 
-> Welcome to MontaVista Linux Preview Kit
-> 
-> Starting system...
-> mounting /proc: done.
-> Mounting '/' read-only: done.
-> brining up loopback interface: done.
-> Mounting /tmp: done.
-> Starting syslogd: done.
-> Starting klogd: done.
-> Starting inetd: done.
-> Starting thttpd: done.
-> System started.
-> Oops: Exception in kernel mode, sig: 4
-> NIP: C010D660 XER: 00000000 LR: C010D6F0 SP: C3EB7E60 REGS: c3eb7db0
-> TRAP: 0700    Not tainted
-> MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = c3eb6000[48] 'insmod' Last syscall: 90
-> last math 00000000 last altivec 00000000
-> GPR00: 00000001 C3EB7E60 C3EB6000 C3F06CD8 C014F524 C014DAE0 C014DB00
-> C014DAF8
-> GPR08: C014D000 C3F06C78 0000001C C014D9D8 24022222 00000000 300277F8
-> 00000000
-> GPR16: 10001AA1 7FFFF118 00000030 C0150000 00000000 FFFFFFF4 00000002
-> 00000002
-> GPR24: 00100077 00000032 00000000 00000001 C014F524 C014DAF8 C3F06CD8
-> C014D9D8
-> Call backtrace:
-> C002A84C C0029684 C0029BC0 C0009DE0 C000459C 3000646C 30007784
-> 3000B810 3000CE68 3000C1F8 30002FE8 3000F7F0 30001FDC 30002434
-> 30010904
-> kernel BUG at mmap.c:1304!
-> Oops: Exception in kernel mode, sig: 4
-> NIP: C002AD48 XER: 00000000 LR: C002AD48 SP: C3EB7C60 REGS: c3eb7bb0
-> TRAP: 0700    Not tainted
-> MSR: 00009030 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> TASK = c3eb6000[48] 'insmod' Last syscall: 90
-> last math 00000000 last altivec 00000000
-> GPR00: C002AD48 C3EB7C60 C3EB6000 0000001B 00001030 00000001 00000F14
-> C0139D93
-> GPR08: 00000000 00000000 00000034 C3EB7B70 C0150000 00000000 300277F8
-> 00000000
-> GPR16: 10001AA1 7FFFF118 00000030 C0150000 00009032 03EB7DA0 00000000
-> C00047D4
-> GPR24: C0004BC4 C0150000 C0150000 00000000 00001000 7FFFF000 C014F520
-> 00000000
-> Call backtrace:
-> C002AD48 C0014684 C0019EE8 C000497C C00049EC C00047D4 C002A84C
-> C0029684 C0029BC0 C0009DE0 C000459C
-> 
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+DISCLAIMER:
+This email (including any attachments) is intended for the sole use of =
+the intended recipient/s and may contain material that is CONFIDENTIAL =
+AND PRIVATE COMPANY INFORMATION. Any review or reliance by others or =
+copying or distribution or forwarding of any or all of the contents in =
+this message is STRICTLY PROHIBITED. If you are not the intended =
+recipient, please contact the sender by email and delete all copies; =
+your cooperation in this regard is appreciated.
+
+------_=_NextPart_001_01C69431.FF58846F
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Hi =
+all<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>I am getting </span></font><font =
+color=3Dred><span
+style=3D'color:red'>two </span></font><font color=3Dblue><span =
+style=3D'color:blue'>exceptions,
+that you will find in log, at the pci_hose_read_config_byte memory is =
+crashing
+that&#8217;s I found in System.map. after second exception its boots =
+properly.
+I have no clue whats happening. And why I am not able to read =
+Configuration
+space of pci. <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>From where this exception is =
+coming?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Please help me out. What else I =
+can check?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>VPN Router =
+Board<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Vpn Router U-Boot 1.0.0 (Jun 19 =
+2006 -
+11:31:37)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>MPC8260 Reset Status: External =
+Soft,
+External Hard<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>MPC8260 Clock =
+Configuration<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>&nbsp;- Bus-to-Core Mult 4x, VCO =
+Div 2, 60x
+Bus Freq&nbsp; 25-75 , Core Freq 100-300<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>&nbsp;- dfbrg 0, corecnf 0x1a, =
+busdf 3,
+cpmdf 1, plldf 0, pllmf 3<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>&nbsp;- vco_out&nbsp; 400000000,
+scc_clk&nbsp; 100000000, brg_clk&nbsp; =
+100000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>&nbsp;- cpu_clk&nbsp; 400000000,
+cpm_clk&nbsp; 200000000, bus_clk&nbsp; =
+100000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>CPU:&nbsp;&nbsp; 8272 (HiP7 Rev =
+14, Mask
+A.0 1K50M) at 400 MHz<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Board: =
+VPN8248<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>DRAM:&nbsp; 32 =
+MB<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>total length of code
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 216456l&nbsp;&nbsp; 34d88value of
+sdrambase+ramsize 02000000 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Top of RAM usable for U-Boot at: =
+02000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Reserving 211k for U-Boot at: =
+01fcb000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Reserving 128k for malloc() at: =
+01faae00<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Reserving 76 Bytes for Board Info =
+at:
+01faadb4<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Reserving 80 Bytes for Global Data =
+at:
+01faad64<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Stack Pointer at: =
+01faad48<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>New Stack Pointer is: =
+01faad48<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>value of ret 0 =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Entering =
+reloacte<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Now running in RAM - U-Boot at: =
+01fcb000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>POST memory POST memory =
+PASSED<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>PASSED<o:p></o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>FLASH: satyam : manufacturor ID =
+=3D
+200020satyam: id1=3D22df22df<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>satyam: =
+id2=3D0<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>satyam: =
+id3=3D80008<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>16 MB<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>PCI Autoconfig: Memory region:
+[14000000-1bffffff]<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>PCI Autoconfig: I/O region:
+[1c000000-1dffffff]<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Bus Fault @ 0x01fd2df8, fixup =
+0x00000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Machine check in kernel =
+mode.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Caused by (from msr): regs =
+01faab60 Unknown
+values in msr<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>NIP: 01FD2DF8 XER: 00000000 LR: =
+01FD2DF0
+REGS: 01faab60 TRAP: 0200 DAR: 01FE4DB8<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>MSR: 00083002 EE: 0 PR: 0 FP: 1 =
+ME: 1
+IR/DR: 00<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>GPR00: 01FD3A24 01FAAC50 FFFFFFFF =
+00000000
+8000080C 00000002 01FAAC5E 01C5D1FB <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>GPR08: 01FD0084 F0010904 00000000 =
+00000000
+00000020 FFFFFFFF 01FF8000 020CB000 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>GPR16: FFFFFFFF FFFFFFFF FFFFFEFF =
+FFFFFFFF
+00000000 00000000 FFFFFFFF F0010D20 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>GPR24: 00000000 00000000 01FFE39C =
+00000100
+01FFE39C 01FAAD64 01FF8400 00000800 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Call backtrace: =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>01FD3A24 01FD3BF0 01FE8B84 =
+01FE3E04
+01FD3C64 01FCFE30 01FCE48C <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>machine =
+check<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>VPN Router =
+Board<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Vpn Router U-Boot 1.0.0 (Jun 19 =
+2006 -
+11:31:37)<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>MPC8260 Reset =
+Status:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>MPC8260 Clock =
+Configuration<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>&nbsp;- Bus-to-Core Mult 4x, VCO =
+Div 2, 60x
+Bus Freq&nbsp; 25-75 , Core Freq 100-300<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>&nbsp;- dfbrg 0, corecnf 0x1a, =
+busdf 3,
+cpmdf 1, plldf 0, pllmf 3<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>&nbsp;- vco_out&nbsp; 400000000,
+scc_clk&nbsp; 100000000, brg_clk&nbsp; =
+100000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>&nbsp;- cpu_clk&nbsp; 400000000,
+cpm_clk&nbsp; 200000000, bus_clk&nbsp; =
+100000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>CPU:&nbsp;&nbsp; 8272 (HiP7 Rev =
+14, Mask
+A.0 1K50M) at 400 MHz<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Board: =
+VPN8248<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>DRAM:&nbsp; 32 =
+MB<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>total length of code
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 216456l&nbsp;&nbsp; 34d88value of
+sdrambase+ramsize 02000000 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Top of RAM usable for U-Boot at: =
+02000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Reserving 211k for U-Boot at: =
+01fcb000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Reserving 128k for malloc() at: =
+01faae00<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Reserving 76 Bytes for Board Info =
+at:
+01faadb4<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Reserving 80 Bytes for Global Data =
+at:
+01faad64<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Stack Pointer at: =
+01faad48<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>New Stack Pointer is: =
+01faad48<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Entering =
+reloacte<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Now running in RAM - U-Boot at: =
+01fcb000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>FLASH: satyam : manufacturor ID =
+=3D
+200020satyam: id1=3D22df22df<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>PCI Autoconfig: Memory region:
+[14000000-1bffffff]<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>PCI Autoconfig: I/O region:
+[1c000000-1dffffff]<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>vendor=3D168c<o:p></o:p></span></fo=
+nt></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>PCI Scan: Found Bus 0, Device 15, =
+Function
+0<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>PCI Autoconfig: BAR 0, Mem, =
+size=3D0x10000,
+address=3D0x14000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>PCI Autoconfig: BAR 1, I/O,
+size=3D0xffffb000, No room in resource<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>PCI:&nbsp;&nbsp;&nbsp;&nbsp; =
+00&nbsp;
+0f&nbsp; 168c&nbsp; 0013&nbsp; 0200&nbsp; =
+00<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>value of item =
+=3D1<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>In:&nbsp;&nbsp;&nbsp; =
+serial<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Out:&nbsp;&nbsp; =
+serial<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Err:&nbsp;&nbsp; =
+serial<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Chip Name&nbsp; =3D =
+175a<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Chip Name&nbsp; =3D =
+175c<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>phy ID(0x02430d80) =3D =
+02430d80<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Level One/ICPLUS PHY Identied =
+IC175C
+Revision 0<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Phy operating at 100 MBit/s in =
+full-duplex
+mode<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Phy operating at 100 MBit/s in =
+full-duplex
+mode<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>U-Boot relocated to =
+01fcb000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Net:&nbsp;&nbsp; value of fec FCC2 =
+ETHERNET
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>FCC2 =
+ETHERNET<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Hit any key to stop =
+autoboot:&nbsp; 5 =08=08=08
+4 =08=08=08 3 =08=08=08 0 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'margin-bottom:12.0pt'><font size=3D3 =
+color=3Dblue
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;color:blue'>satyam=3D&gt;
+&nbsp;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'><o:p>&nbsp;</o:p></span></font></p>=
+
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Regards&#8217;<o:p></o:p></span></f=
+ont></p>
+
+<p class=3DMsoNormal><font size=3D3 color=3Dblue face=3D"Times New =
+Roman"><span
+style=3D'font-size:12.0pt;color:blue'>Prabhat =
+Singh<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
+style=3D'font-size:
+12.0pt'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+<p></p><p>DISCLAIMER:<br>This email (including any attachments) is =
+intended for the sole use of the intended recipient/s and may contain =
+material that is CONFIDENTIAL AND PRIVATE COMPANY INFORMATION. Any =
+review or reliance by others or copying or distribution or forwarding of =
+any or all of the contents in this message is STRICTLY PROHIBITED. If =
+you are not the intended recipient, please contact the sender by email =
+and delete all copies; your cooperation in this regard is =
+appreciated..</body>
+
+</html>
+
+------_=_NextPart_001_01C69431.FF58846F--
