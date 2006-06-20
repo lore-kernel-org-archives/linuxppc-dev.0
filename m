@@ -2,20 +2,19 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 20D2F67A64
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 21:41:58 +1000 (EST)
-Received: from [131.234.76.225] (helo=dhcp-76-225.uni-paderborn.de)
-	by sipsolutions.net with esmtpsa (TLS-1.0:RSA_ARCFOUR_MD5:16)
-	(Exim 4.62) (envelope-from <johannes@sipsolutions.net>)
-	id 1Ft15m-0005FT-63
-	for linuxppc-dev@ozlabs.org; Wed, 21 Jun 2006 12:41:54 +0100
-Subject: [RFC] cpu hotplug in powermac g5
+	by ozlabs.org (Postfix) with ESMTP id 4375367B4D
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 21:42:06 +1000 (EST)
+Subject: windfarm got signal
 From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 21 Jun 2006 01:22:49 +0200
-Message-Id: <1150845770.16662.7.camel@johannes>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-TyYiAJUUqNiSlVFUpOdW"
+Date: Wed, 21 Jun 2006 01:51:22 +0200
+Message-Id: <1150847482.16662.13.camel@johannes>
 Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	linux-pm <linux-pm@lists.osdl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,56 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following patch seems to make cpu hotplugging mostly work on my quad
-powermac G5. The first part (platforms/powermac/smp.c) actually plugs in
-the right functions after which it already works, but the CPUs get
-warmer when offline than when online and idle.
 
-The modification in powerpc/kernel/smp.c makes the generic cpu die
-routine also do more power saving just like the idle loop. I have no
-idea if it is correct.
+--=-TyYiAJUUqNiSlVFUpOdW
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-There do seem to be some bugs with this, once a while I get a soft
-lockup detected but I can't figure out why/when it happened. Other than
-that, I can online/offline CPUs at will with this patch.
+Hey,
 
---- linux-2.6-git.orig/arch/powerpc/platforms/powermac/smp.c	2006-06-20 23:23:17.731573780 +0200
-+++ linux-2.6-git/arch/powerpc/platforms/powermac/smp.c	2006-06-21 00:20:47.189942635 +0200
-@@ -905,8 +905,15 @@ struct smp_ops_t core99_smp_ops = {
- 	.setup_cpu	= smp_core99_setup_cpu,
- 	.give_timebase	= smp_core99_give_timebase,
- 	.take_timebase	= smp_core99_take_timebase,
--#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_HOTPLUG_CPU)
-+# if defined(CONFIG_PPC32)
- 	.cpu_disable	= smp_core99_cpu_disable,
- 	.cpu_die	= smp_core99_cpu_die,
-+# endif
-+# if defined(CONFIG_PPC64)
-+	.cpu_disable	= generic_cpu_disable,
-+	.cpu_die	= generic_cpu_die,
-+	.cpu_enable	= generic_cpu_enable,
-+# endif
- #endif
- };
---- linux-2.6-git.orig/arch/powerpc/kernel/smp.c	2006-06-21 01:15:42.183256221 +0200
-+++ linux-2.6-git/arch/powerpc/kernel/smp.c	2006-06-21 01:15:44.879231957 +0200
-@@ -441,8 +441,16 @@ void generic_mach_cpu_die(void)
- 	printk(KERN_DEBUG "CPU%d offline\n", cpu);
- 	__get_cpu_var(cpu_state) = CPU_DEAD;
- 	smp_wmb();
--	while (__get_cpu_var(cpu_state) != CPU_UP_PREPARE)
--		cpu_relax();
-+	while (__get_cpu_var(cpu_state) != CPU_UP_PREPARE) {
-+		if (ppc_md.power_save) {
-+			/* need we do more? what about TIF_POLLING_NRFLAG? */
-+			ppc_md.power_save();
-+		} else {
-+			HMT_low();
-+			HMT_very_low();
-+		}
-+		HMT_medium(); /* should be after loop? */
-+	}
- 
- #ifdef CONFIG_PPC64
- 	flush_tlb_pending();
+after cpu hotplug I decided to write some fake suspend routines for
+ppc64 that always fail to see what all the drivers would say... The
+first thing I saw was during the phase where all threads are stopped,
+that windfarm got a signal!
+
+Shortly after that, the fans were revved up fully but I guess that's
+expected if the wf control loop exits.
+
+So now I'm trying to see *why* it got a signal there. Any ideas? Is that
+expected with pm and windfarm just does the wrong thing there by taking
+the signal as a reason to exit the control thread?
+
+[code in question is windfarm_core.c:wf_thread_func]
+
+johannes
+
+--=-TyYiAJUUqNiSlVFUpOdW
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARJiJ+KVg1VMiehFYAQJKDg/6Aqi/XqErCaFSwdPMiR+qzEq3XRECUp6X
+eBNesiecBU156iJLNWDiiK55W9lbyPZl60GtNUzVQe2W8HzpjcXrujBWZgc9JMIg
+6dbk/5iQhzaCP4+l+NO/5W30De1fMzdoGecAzuUVJcr4I5jDE1KiqMYPV61W/DhO
+yCJagzGPv5LwS+1l9KZhDAIa/KrtLm3/SkDgUA9aYoiEHF6NjTTgWfvrmqqhosqh
+WLwMAsAaj6L5E3hxzsByCER19e7+9W4AWPh4ZCq/Gp8vAfIFstis5X9u5mjHuISh
+PUG2Y/zDrhIy3jWdakZMpe5TSNmJa8rohhofxhVo0YWV9NF2SoWFes9yTPRo32IB
+9bBPyHJvtl50l3f7JF3EWuxW8wxfIExda4fZfLOk4qoMdz5kmLUib9g6VD+1TBwM
+7uz+D9hOxBrDRIRJSQsWrWxiTNAlAgsyBtiAypbxoUG8M2S3VCNcRXTiRrKkf3Yg
+6i2p111hRoXxW/BclM5TRo0+7R/MVo7zJ/A0Kqa6CblgmNJqop/FHxjw5XSs1ZEG
+4D5/hfbkBtkEFHZYZR2kJkGYwN+DFnKPjj1EbKdoUjKxRwIkYyMjxj0zkflwdXoG
+CWQONctaG/xI2yyG6qW1ctwqFa6dTawVZQEWzxo5pyUQz2lqS4N/PEPc/NUqQIn3
+i+l1belAfvI=
+=zEDq
+-----END PGP SIGNATURE-----
+
+--=-TyYiAJUUqNiSlVFUpOdW--
