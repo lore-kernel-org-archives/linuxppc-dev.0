@@ -1,25 +1,17 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (colo.jdl.com [66.118.10.122])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2506267B1E
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 13:06:39 +1000 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.44)
-	id 1FsWZW-0001Qn-UL
-	for linuxppc-dev@ozlabs.org; Mon, 19 Jun 2006 22:06:35 -0500
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Subject: Re: [RFC] Interrupt mapping documentation 
-In-Reply-To: Your message of "Tue, 20 Jun 2006 02:39:27 +0200."
-	<D442541A-BD06-4641-A251-3D603E32FD4F@kernel.crashing.org>
-References: <1150598731.23600.146.camel@localhost.localdomain>
-	<EC61A880-9242-4BCE-B72D-8AFC038CD592@freescale.com>
-	<3E324A7E-388E-4917-B380-B0831A5F9D19@kernel.crashing.org>
-	<1150759075.23600.297.camel@localhost.localdomain>
-	<40AABEB6-3467-4AFB-BC7B-08176EDD61E2@freescale.com>
-	<D442541A-BD06-4641-A251-3D603E32FD4F@kernel.crashing.org>
-Date: Mon, 19 Jun 2006 22:06:34 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1FsWZW-0001Qn-UL@jdl.com>
+Return-Path: <codevana@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.227])
+	by ozlabs.org (Postfix) with ESMTP id D811367B26
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 13:10:21 +1000 (EST)
+Received: by wr-out-0506.google.com with SMTP id 37so1084696wra
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Jun 2006 20:10:19 -0700 (PDT)
+Message-ID: <7cb1293c0606192010o1c4ebbdfw3719fcef8dcefd94@mail.gmail.com>
+Date: Mon, 19 Jun 2006 20:10:19 -0700
+From: "Srinivas Murthy" <codevana@gmail.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Synch question 2.6.x
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_64283_8022425.1150773019635"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,14 +21,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Segher Boessenkool mumbled:
-> >>
-> >> Yes. We should do that.
-> >
-> > I agree 100%.
-> 
-> No dissenters anywhere?  Please?  Can't we have a fight?
+------=_Part_64283_8022425.1150773019635
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-There'll be no fighting in the War Room!
+Hi,
+ I have this 2.6.x kernel mode component for which I have question regarding
+the synch reqmt. between workqueues (or tasklets) and kernel threads. The
+kernel threads are created from within the kernel module and there is no
+user-mode side to them.
 
-jdl
+ I share some global data in the kernel space that is accessed by the kernel
+thread and a work queue (or a tasklet) (kicked off of an isr top-half and
+also off of a kernel thread).
+
+ Is there a need to synch access to this data if the preemption is off. What
+if the premption is turned on?
+
+ In the case of workq's, if the synch is reqd, are down_xx() up_xx(),
+primitives the right ones to use?
+
+Thanks much in advance.
+
+_Srinivas
+
+------=_Part_64283_8022425.1150773019635
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div>Hi,</div>
+<div>&nbsp;I have this 2.6.x kernel mode component for which I have question regarding the synch reqmt. between workqueues (or tasklets) and kernel threads. The kernel threads are created from within the kernel module and there is no user-mode side to them.
+</div>
+<div>&nbsp;</div>
+<div>&nbsp;I share some global data in the kernel space that is accessed by the kernel thread and a work queue (or a tasklet)&nbsp;(kicked off of an isr top-half and also off of a kernel thread).</div>
+<div>&nbsp;</div>
+<div>&nbsp;Is there a need to synch access to this data if the preemption is off. What if the premption is turned on?</div>
+<div>&nbsp;</div>
+<div>&nbsp;In the case of workq's, if the synch is reqd,&nbsp;are down_xx() up_xx(), primitives the right ones to use? </div>
+<div>&nbsp;</div>
+<div>Thanks much in advance.</div>
+<div>&nbsp;</div>
+<div>_Srinivas</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+
+------=_Part_64283_8022425.1150773019635--
