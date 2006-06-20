@@ -1,18 +1,15 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [Cbe-oss-dev] [patch 01/20] cell: add RAS support
-Date: Tue, 20 Jun 2006 18:26:53 +0200
-References: <20060619183315.653672000@klappe.arndb.de>
-	<20060619183404.144740000@klappe.arndb.de>
-	<20060620154304.GD4845@pb15.lixom.net>
-In-Reply-To: <20060620154304.GD4845@pb15.lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200606201826.54290.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, cbe-oss-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 20 Jun 2006 09:37:24 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] mpic: add support for serial mode interrupts
+Message-ID: <20060620163724.GB14711@mag.az.mvista.com>
+References: <20060619200811.GA15524@mag.az.mvista.com>
+	<1150776086.23600.329.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1150776086.23600.329.camel@localhost.localdomain>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 20 June 2006 17:43, Olof Johansson wrote:
+On Tue, Jun 20, 2006 at 02:01:26PM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2006-06-19 at 13:08 -0700, Mark A. Greer wrote:
+> > MPC10x-style interrupt controllers have a serial mode that allows
+> > several interrupts to be clocked in through one INT signal.
+> > 
+> > This patch adds the software support for that mode.
 > 
-> > This is a first version of support for the Cell BE "Reliability,
-> > Availability and Serviceability" features.
-> 
-> Does it really make sense to do this under a config option? I don't see
-> why anyone would not want to know that their machine is about to melt.
-> 
-You can only have that when running on bare metal. Machines that run
-on a hypervisor can't run that code.
+> You hard code the clock ratio...
 
-It probably makes sense to auto-select that option for CONFIG_CELL_BLADE
-though.
+Basically, I just brought what was already in ppc over to powerpc.
+I didn't really think about it much.
 
-	Arnd <><
+> why not add a separate call to be called after mpic_init,
+> something like mpic_set_serial_int(int mpic, int enable, int
+> clock_ratio) ?
+
+Yeah, that's a better way to do it.
+
+I'll make a new patch.
+
+Mark
