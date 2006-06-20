@@ -1,9 +1,9 @@
 Return-Path: <anton@ozlabs.org>
-Date: Tue, 20 Jun 2006 18:00:30 +1000
+Date: Tue, 20 Jun 2006 18:01:58 +1000
 From: Anton Blanchard <anton@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Dont look for class-code in pci children
-Message-ID: <20060620080029.GA30974@krispykreme>
+Subject: [PATCH] powerpc: Extra sanity check in EEH code
+Message-ID: <20060620080158.GB30974@krispykreme>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: paulus@samba.org
@@ -17,30 +17,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Looking for class-code in PCI children breaks with direct slots. Lets
-just count all children.
+From: Nathan Lynch <ntl@pobox.com>
 
+Don't dereference a device node that isn't there.  A "shouldn't
+happen" case, but someone ran into it with a possibly misconfigured
+device tree.
+
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
 Signed-off-by: Anton Blanchard <anton@samba.org>
-Acked-by: Olof Johansson <olof@lixom.net>
 ---
 
-Index: build/arch/powerpc/platforms/pseries/iommu.c
+Index: build/arch/powerpc/platforms/pseries/eeh_cache.c
 ===================================================================
---- build.orig/arch/powerpc/platforms/pseries/iommu.c	2006-06-10 19:52:32.000000000 +1000
-+++ build/arch/powerpc/platforms/pseries/iommu.c	2006-06-10 21:58:20.000000000 +1000
-@@ -331,13 +331,9 @@ static void iommu_bus_setup_pSeries(stru
- 	if (isa_dn_orig)
- 		of_node_put(isa_dn_orig);
+--- build.orig/arch/powerpc/platforms/pseries/eeh_cache.c	2006-06-08 10:57:36.000000000 +1000
++++ build/arch/powerpc/platforms/pseries/eeh_cache.c	2006-06-20 12:01:49.000000000 +1000
+@@ -304,6 +304,8 @@ void __init pci_addr_cache_build(void)
+ 		pci_addr_cache_insert_device(dev);
  
--	/* Count number of direct PCI children of the PHB.
--	 * All PCI device nodes have class-code property, so it's
--	 * an easy way to find them.
--	 */
-+	/* Count number of direct PCI children of the PHB. */
- 	for (children = 0, tmp = dn->child; tmp; tmp = tmp->sibling)
--		if (get_property(tmp, "class-code", NULL))
--			children++;
-+		children++;
- 
- 	DBG("Children: %d\n", children);
- 
+ 		dn = pci_device_to_OF_node(dev);
++		if (!dn)
++			continue;
+ 		pci_dev_get (dev);  /* matching put is in eeh_remove_device() */
+ 		PCI_DN(dn)->pcidev = dev;
+ 	}
