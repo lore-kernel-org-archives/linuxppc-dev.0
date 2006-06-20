@@ -2,20 +2,19 @@ Return-Path: <linuxppc-dev@tonarchiv.ch>
 Received: from hosting.substring.ch (hosting.substring.ch [80.242.134.171])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B96FB67B1C
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 23:15:11 +1000 (EST)
-Received: from [192.168.168.100] (i577B10BF.versanet.de [87.123.16.191])
-	(authenticated bits=0)
-	by hosting.substring.ch (8.13.5/8.13.5/SuSE Linux 0.6) with ESMTP id
-	k5KDExHe018987
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 15:15:04 +0200
-Message-ID: <4497F4D5.6010606@tonarchiv.ch>
-Date: Tue, 20 Jun 2006 15:15:01 +0200
+	by ozlabs.org (Postfix) with ESMTP id 7C6E967B34
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 23:27:55 +1000 (EST)
+Message-ID: <4497F7D4.7080603@tonarchiv.ch>
+Date: Tue, 20 Jun 2006 15:27:48 +0200
 From: Till Wimmer <linuxppc-dev@tonarchiv.ch>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: looking for L3CR value of Apple G4 QS 800MHz MP
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: L3 cache on Apple dual processor (7450 r 2.1) question
+References: <1150726624.4711.16.camel@localhost.localdomain>
+	<20060619143607.GB4845@pb15.lixom.net>
+In-Reply-To: <20060619143607.GB4845@pb15.lixom.net>
 Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Olof Johansson wrote:
 
-does somebody own a Apple G4 Quicksilver with the original dual 800MHz 
-processor board in it (2MB backside cache / processor)?
-Could you please send me the L3CR value when the L3 cache is enabled?
-
-Any help wold be much appreciated!
+>On Mon, Jun 19, 2006 at 04:17:04PM +0200, Till Wimmer wrote:
+>
+>  
+>
+>>Now my questions are:
+>>Is there anything else to do for getting the L3 cache working?
+>>How can i check if the L3 is enabled? E.g. is there a benchmark program
+>>which accounts for cache settings?
+>>    
+>>
+>
+>lmbench has testcases for memory latency testing.
+>  
+>
+Thank you for the hint, i tested it and the results are deflating:
+Most values are the same, but the communication bandwidths are worse 
+with the L3 cache enabled? Therefore i think that my L3CR settings are 
+wrong.
 
 bg
 Till
+
 
 -- 
 ********************************************************
