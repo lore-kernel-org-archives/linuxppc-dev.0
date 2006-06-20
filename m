@@ -1,20 +1,14 @@
-Return-Path: <linuxppc-dev@tonarchiv.ch>
-Received: from hosting.substring.ch (hosting.substring.ch [80.242.134.171])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7C6E967B34
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 23:27:55 +1000 (EST)
-Message-ID: <4497F7D4.7080603@tonarchiv.ch>
-Date: Tue, 20 Jun 2006 15:27:48 +0200
-From: Till Wimmer <linuxppc-dev@tonarchiv.ch>
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 20 Jun 2006 23:47:43 +1000
+From: Anton Blanchard <anton@samba.org>
+To: David Wilder <dwilder@us.ibm.com>
+Subject: Re: Unable to handle kernel paging request in show_instructions
+Message-ID: <20060620134742.GA2518@krispykreme>
+References: <4497445F.50700@us.ibm.com>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: L3 cache on Apple dual processor (7450 r 2.1) question
-References: <1150726624.4711.16.camel@localhost.localdomain>
-	<20060619143607.GB4845@pb15.lixom.net>
-In-Reply-To: <20060619143607.GB4845@pb15.lixom.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4497445F.50700@us.ibm.com>
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +18,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
 
->On Mon, Jun 19, 2006 at 04:17:04PM +0200, Till Wimmer wrote:
->
->  
->
->>Now my questions are:
->>Is there anything else to do for getting the L3 cache working?
->>How can i check if the L3 is enabled? E.g. is there a benchmark program
->>which accounts for cache settings?
->>    
->>
->
->lmbench has testcases for memory latency testing.
->  
->
-Thank you for the hint, i tested it and the results are deflating:
-Most values are the same, but the communication bandwidths are worse 
-with the L3 cache enabled? Therefore i think that my L3CR settings are 
-wrong.
+Hi David,
 
-bg
-Till
+> The problem occures in show_instructions().  Show_instructions() takes 
+> the NIP (D00000000002201) and subtracts some number so it points several 
+> instructs before the failing instructions.  In this case the new value 
+> is on a previous page and that page is not valid (it is not mapped).  
+> When the new NIP is referenced we get a second fault.  
+> 
+> show_instructions tries to validate addresses by checking if it is the 
+> kernel segment (0xc.....) or the first vmalloc segment (0xD.......).  
+> But in this case the validation passes even though the address is 
+> invalid.   Any ideas how to fix this?  Is there a easy way to validate 
+> if a page is valid before accessing it?
+
+Whats interesting is that bad_page_fault should have walked the
+exception tables and recovered, considering we have a __get_user call in
+show_instructions.
+
+While we should really understand why this failed, I suspect we should
+be tighter with our checking. It looks like __kernel_text_address()
+does what we want. Untested patch below.
+
+Anton
 
 
--- 
-********************************************************
-*        "Deutschland vor!" - Die WM Gegenhymne        *
-*  http://www.zittrige-haende.com/download/antiwm.mp3  *
-********************************************************
+Use __kernel_text_address when validating instruction addresses in the
+Oops code.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -342,13 +342,6 @@ #endif
+ 
+ static int instructions_to_print = 16;
+ 
+-#ifdef CONFIG_PPC64
+-#define BAD_PC(pc)	((REGION_ID(pc) != KERNEL_REGION_ID) && \
+-		         (REGION_ID(pc) != VMALLOC_REGION_ID))
+-#else
+-#define BAD_PC(pc)	((pc) < KERNELBASE)
+-#endif
+-
+ static void show_instructions(struct pt_regs *regs)
+ {
+ 	int i;
+@@ -367,7 +360,8 @@ static void show_instructions(struct pt_
+ 		 * bad address because the pc *should* only be a
+ 		 * kernel address.
+ 		 */
+-		if (BAD_PC(pc) || __get_user(instr, (unsigned int __user *)pc)) {
++		if (!__kernel_text_address(pc) ||
++		     __get_user(instr, (unsigned int __user *)pc)) {
+ 			printk("XXXXXXXX ");
+ 		} else {
+ 			if (regs->nip == pc)
