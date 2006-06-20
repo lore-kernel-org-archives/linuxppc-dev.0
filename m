@@ -1,15 +1,22 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 20 Jun 2006 09:37:24 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] mpic: add support for serial mode interrupts
-Message-ID: <20060620163724.GB14711@mag.az.mvista.com>
-References: <20060619200811.GA15524@mag.az.mvista.com>
-	<1150776086.23600.329.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1150776086.23600.329.camel@localhost.localdomain>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <Viswanatha.reddy@floreatinc.com>
+Received: from crc5.bmdc.emailsrvr.com (crc5.bmdc.emailsrvr.com
+	[204.119.252.29]) by ozlabs.org (Postfix) with ESMTP id 0841667B3D
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 02:58:13 +1000 (EST)
+Received: from smtp131.iad.emailsrvr.com (smtp121.iad.emailsrvr.com
+	[207.97.245.121])
+	by crc5.bmdc.emailsrvr.com (SMTP Server) with ESMTP id 5B68F38FA4
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 11:23:48 -0400 (EDT)
+Received: from webmail.alink.net (webmail2.r2.iad.emailsrvr.com [10.238.10.10])
+	by relay2.r2.iad.emailsrvr.com (SMTP Server) with ESMTP id 4A81B44E001
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 11:22:58 -0400 (EDT)
+Message-ID: <59175.10.238.10.70.1150816978.webmail@10.238.10.70>
+Date: Tue, 20 Jun 2006 11:22:58 -0400 (EDT)
+Subject: help reg:  transfer of files to target kernel from host(PC)
+From: "Viswanatha Reddy" <Viswanatha.reddy@floreatinc.com>
+To: linuxppc-dev@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Reply-To: Viswanatha.reddy@floreatinc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,24 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jun 20, 2006 at 02:01:26PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2006-06-19 at 13:08 -0700, Mark A. Greer wrote:
-> > MPC10x-style interrupt controllers have a serial mode that allows
-> > several interrupts to be clocked in through one INT signal.
-> > 
-> > This patch adds the software support for that mode.
-> 
-> You hard code the clock ratio...
 
-Basically, I just brought what was already in ppc over to powerpc.
-I didn't really think about it much.
 
-> why not add a separate call to be called after mpic_init,
-> something like mpic_set_serial_int(int mpic, int enable, int
-> clock_ratio) ?
 
-Yeah, that's a better way to do it.
+Hi,
 
-I'll make a new patch.
+We are working on powerPc 405EP taihu board.
 
-Mark
+Our work is to run the C code and debug the code on taihu board.
+
+for that we istalled ELDK ppc_4xx tools on host system(Which has Fedora
+core as OS). We are able to complile C file without board, generated
+target file.
+
+We configured NFS server successfully and able to transfer files to target
+after U-boot.
+
+Once we entered into the Linux of the kit, We are unable to load the files
+from NFS server, we are failed to mount the ELDK tools on Target machine.
+When we tried to Ping the server from the target it is pinging.
+
+ From the host(PC) we are communicating the target using Telnet.
+
+ To mount the files we are using the command:
+
+ mount -t nfs 192.168.1.18:/opt/eldk/ppc_4xx /mnt
+
+ We are getting the error saying
+
+ mount:  mounting 192.168.1.18:/opt/eldk/ppc_4xx on /mnt failed no such file
+ or directory.
+
+ please help us regarding this..
+
+Best Regards,
+Viswanath..
