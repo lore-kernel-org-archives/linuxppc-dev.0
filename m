@@ -1,29 +1,22 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (mail.jdl.com [66.118.10.122])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DE62E67B28
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 09:52:07 +1000 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.44)
-	id 1FsTXI-0000Wq-3s
-	for linuxppc-dev@ozlabs.org; Mon, 19 Jun 2006 18:52:04 -0500
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH 5/9 v3] Add the MPC8641 HPCN platform files. 
-In-Reply-To: Your message of "Tue, 20 Jun 2006 01:36:41 +0200."
-	<BF0ECF8F-8083-47E7-A0DB-76801C7E8ADD@kernel.crashing.org>
-References: <E1Frjen-0004Oz-Hz@jdl.com>
-	<1150600056.23600.152.camel@localhost.localdomain>
-	<1150725866.9022.5.camel@cashmere.sps.mot.com>
-	<F34E213C-B073-4D85-A323-644340E3C09D@kernel.crashing.org>
-	<E1FsSOB-0000CE-2o@jdl.com>
-	<A609CF22-66E8-404C-A6F2-528BE097BF57@kernel.crashing.org>
-	<E1FsSuB-0000Qc-P6@jdl.com>
-	<F5D6E2FC-CE35-4681-9F42-A1B4E2BFE097@kernel.crashing.org>
-	<E1FsTE0-0000U4-Mp@jdl.com>
-	<BF0ECF8F-8083-47E7-A0DB-76801C7E8ADD@kernel.crashing.org>
-Date: Mon, 19 Jun 2006 18:52:04 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1FsTXI-0000Wq-3s@jdl.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F15F767B29
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Jun 2006 10:00:51 +1000 (EST)
+In-Reply-To: <20060619233155.361570@bebe.enoyolf.org>
+References: <20060619171943.7730@bebe.enoyolf.org>
+	<20060619233155.361570@bebe.enoyolf.org>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4D16FE8A-739E-4341-9C31-4465CC9E0A38@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: OFW node names 
+Date: Tue, 20 Jun 2006 02:00:42 +0200
+To: Doug Maxey <dwm@maxeymade.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,16 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Segher Boessenkool mumbled:
-> So you start them with a GPIO?
+>> Apple sometimes uses AAPL.  Never seen the ONNNNNN thing.
+>
+> matches the US stock symbol, goodness.
 
-Yeah, magic system register write.
+Yeah.  Wow.  They also use "aapl", of course -- or nothing
+at all.  Or "apl" in at least one case.
 
->  Would it be feasible to
-> sync the time bases right there?  Constrain the ugliness
-> to just that one spot, as it were.  Although it ends up
-> with the same complexity, sigh.
+>>> My view has been limited to the IBM platform.  According to the
+>>> examples, this is a recommended practice.  I know IBM uses the
+>>> lowercase variant.
+>>
+>> Which _is_ allowed, although discouraged.
+>
+> Ok, but who enforces it?  Vendor polices themselves?  Right. :->
 
-That's the sort of thing I will be investigating, yep...
+If there is a comma, the part before the first comma is supposed
+to be a vendor identifier.  The actual format of that is allowed
+to be basically anything, even by the OF standard itself.  The
+less ambiguous formats are encouraged though...
 
-jdl
+
+Segher
