@@ -1,24 +1,19 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 91C2967AA0
+Return-Path: <rajanibabu@embeyond.com>
+Received: from mailstorage.nshosts.com (mailstorage.nshosts.com [69.80.208.31])
+	by ozlabs.org (Postfix) with ESMTP id 05E3367A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 17:55:20 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id j3so1691449ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 00:55:18 -0700 (PDT)
-Message-ID: <528646bc0606210055m71277d1fl66dacfa7cd7ed203@mail.gmail.com>
-Date: Wed, 21 Jun 2006 01:55:17 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: filippo.capurso@dave-tech.it
-Subject: Re: Linux on Virtex4
-In-Reply-To: <4498F1E7.5010900@dave-tech.it>
+	Wed, 21 Jun 2006 18:03:02 +1000 (EST)
+Received: from embeyond.com (unverified [69.80.208.20]) by
+	mailstorage.nshosts.com (Vircom SMTPRS 5.3.232) with ESMTP id
+	<B0101427573@mailstorage.nshosts.com> for
+	<linuxppc-embedded@ozlabs.org>; Wed, 21 Jun 2006 01:29:24 -0600
+Message-ID: <a2989a1080004219829d152dd5693be1.rajanibabu@embeyond.com>
+From: "Rajanibabu" <rajanibabu@embeyond.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: porting Linux 2.4 on ML403
+Date: Wed, 21 Jun 2006 01:33:06 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <821B2170E9E7F04FA38DF7EC21DE48710573FD21@VCAEXCH01.hq.corp.viasat.com>
-	<528646bc0606191638j64448168ia19d6a97ab81e648@mail.gmail.com>
-	<4498F1E7.5010900@dave-tech.it>
-Cc: linuxppc-embedded@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,24 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 6/21/06, Filippo Capurso <filippo.capurso@dave-tech.it> wrote:
-> Hi Grant,
->
-> I'm having some trouble with 2.6.17-rc6 kernel (wich incorporates your
-> patches for Xilinx ML403 board) and my ML403 board.
-> This is my message about this issue:
->
-> http://ozlabs.org/pipermail/linuxppc-embedded/2006-June/023321.html
+hi JF Hasson
+   I am trying to port linux 2=2E4 devel to ML403=2E iam using the links htt=
+p://splish=2Eee=2Ebyu=2Eedu/projects/LinuxFPGA/configuring=2Ehtm and http://=
+www=2Eklingauf=2Ede/v2p/index=2Ephtml=2E Using these links i have done the f=
+ollowing tasks=2E
+ 1=2E Build the kernel and created the system=2Eace file
+ 2=2E created 3 partitions in 512Mb Compact flash ie A=2Efat-16 (60Mb)
+                                                   B=2ELinux-swap (50Mb)
+                                                   C=2Eext3 (remaining 380Mb)=
 
-Yes, I had seen your message; but I'm not an expert on the 4xx mmu.  I
-haven't seen that behaviour on my board.
+ 3=2E copy system=2Eace to first partition i=2Ee fat-16=2E
 
-Double check your memory ranges.  Have you given the kernel real RAM?
+ when i put this compact flash on Board the red LED (Sysace error) is glowin=
+g=2E And iam connecting board in Windows-XP Platform=2E
 
-g.
+So Please help me to come out of this and Let me know the Procedure you foll=
+owed to successfully port Linux on ML403=2E
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Best Regards=20
+Rajanibabu
