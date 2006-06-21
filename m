@@ -1,19 +1,21 @@
-Return-Path: <rajanibabu@embeyond.com>
-Received: from mailstorage.nshosts.com (mailstorage.nshosts.com [69.80.208.31])
-	by ozlabs.org (Postfix) with ESMTP id 05E3367A3D
+Return-Path: <aidan@nicta.com.au>
+Received: from mail08.syd.optusnet.com.au (mail08.syd.optusnet.com.au
+	[211.29.132.189])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C90C867A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 18:03:02 +1000 (EST)
-Received: from embeyond.com (unverified [69.80.208.20]) by
-	mailstorage.nshosts.com (Vircom SMTPRS 5.3.232) with ESMTP id
-	<B0101427573@mailstorage.nshosts.com> for
-	<linuxppc-embedded@ozlabs.org>; Wed, 21 Jun 2006 01:29:24 -0600
-Message-ID: <a2989a1080004219829d152dd5693be1.rajanibabu@embeyond.com>
-From: "Rajanibabu" <rajanibabu@embeyond.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: porting Linux 2.4 on ML403
-Date: Wed, 21 Jun 2006 01:33:06 -0600
+	Wed, 21 Jun 2006 18:46:41 +1000 (EST)
+Message-ID: <4499076E.6000804@nicta.com.au>
+Date: Wed, 21 Jun 2006 18:46:38 +1000
+From: Aidan Williams <aidan@nicta.com.au>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+To: Rick Moleres <rick.moleres@xilinx.com>
+Subject: Re: Linux on Virtex4
+References: <689CB232690D8D4E97DA6C76DA098E6C027E6274@XCO-EXCHVS1.xlnx.xilinx.com>
+In-Reply-To: <689CB232690D8D4E97DA6C76DA098E6C027E6274@XCO-EXCHVS1.xlnx.xilinx.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org, "Martin, Tim" <tim.martin@viasat.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +26,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi JF Hasson
-   I am trying to port linux 2=2E4 devel to ML403=2E iam using the links htt=
-p://splish=2Eee=2Ebyu=2Eedu/projects/LinuxFPGA/configuring=2Ehtm and http://=
-www=2Eklingauf=2Ede/v2p/index=2Ephtml=2E Using these links i have done the f=
-ollowing tasks=2E
- 1=2E Build the kernel and created the system=2Eace file
- 2=2E created 3 partitions in 512Mb Compact flash ie A=2Efat-16 (60Mb)
-                                                   B=2ELinux-swap (50Mb)
-                                                   C=2Eext3 (remaining 380Mb)=
+Rick Moleres wrote:
+> There's also a Linux 2.4 patch provided with the ML403 PPC reference
+> design on the Xilinx website
+> (http://www.xilinx.com/products/boards/ml403/reference_designs.htm) that
+> takes care of a Virtex-4 PPC cache issue (CCR0 register).  Have you
+> applied this?
+> 
 
- 3=2E copy system=2Eace to first partition i=2Ee fat-16=2E
+Rick, which cache issue are you referring to?
 
- when i put this compact flash on Board the red LED (Sysace error) is glowin=
-g=2E And iam connecting board in Windows-XP Platform=2E
+I tried setting the CCR0 bits in accordance with:
 
-So Please help me to come out of this and Let me know the Procedure you foll=
-owed to successfully port Linux on ML403=2E
+   "Solution 10: CPU_213: Incorrect data might be
+    flushed from the data cache"
 
-Best Regards=20
-Rajanibabu
+but that didn't fix things in my case for the Avnet FX12 MiniModule.
+
+
+I'm pretty sure that the FX12-MM strikes:
+
+   "Solution 13: The return of a cacheline transaction that
+    is not target word first (non-target word first) can
+    cause data corruption in the PPC405 Core data cache in
+    Virtex-4 FX devices."
+
+For which the only solutions mentioned are to run without caches or get 
+a fixed chip.
+
+
+As I understand it, the memory controller for this board must be on the 
+OPB because the memory is 16-bit.  Is there any way to move the memory 
+controller to the PLB thus avoiding the cache problem (for RAM at least)?
+
+- aidan
