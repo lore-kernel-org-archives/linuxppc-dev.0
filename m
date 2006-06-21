@@ -1,30 +1,17 @@
-Return-Path: <DEEPAKCS@in.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3C38967B1B
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 19:18:36 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp04.au.ibm.com (8.13.6/8.13.5) with ESMTP id k5L9MUcF104100
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 19:22:30 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
-	by sd0109e.au.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id k5L9Ljcf126258
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 19:21:47 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k5L9HWrO024012
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 19:17:32 +1000
-Received: from d23m0178.in.ibm.com (d23m0178.in.ibm.com [9.182.53.20])
-	by d23av02.au.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k5L9GAR7020865
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 19:17:31 +1000
-Subject: Deepak C Shetty is out of the office.
-From: Deepak C Shetty <DEEPAKCS@in.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <OFE0AC22E9.174E0C17-ON65257194.0033A1DD-65257194.0033A1DD@in.ibm.com>
-Date: Wed, 21 Jun 2006 14:54:00 +0530
+Return-Path: <robinpv@aiware.co.jp>
+Received: from cat.aiware.co.jp (ml.aiware.jp [222.228.111.22])
+	by ozlabs.org (Postfix) with ESMTP id 5BA1767A62
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 20:15:31 +1000 (EST)
+Received: from [192.168.25.80] (neko.aiware.jp [222.228.111.24])
+	by cat.aiware.co.jp (Postfix) with ESMTP id E8A4CF4847
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 18:44:29 +0900 (JST)
+Message-ID: <4499152D.2040908@aiware.co.jp>
+Date: Wed, 21 Jun 2006 18:45:17 +0900
+From: robinpv <robinpv@aiware.co.jp>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+To: linuxppc-dev@ozlabs.org
+Subject: Linux ppc port problem
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,9 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi ,
+     I am trying to the port linux to the mpc5200 based board( Lite5200.)
+     I am using linux version 2.6.16.1.  I am getting the below message 
+after that, linux seems to he in hanged state
+     I debugged and found that the control is reaching the schedule() in 
+rest_init() which is the last function called in start_kernel().
+     I have set the command line arguements to "console=ttyPSC0,115200 
+root=/dev/ram0 rw ramdisk_size=16384"
+     Can you suggest, how to proceed or what could be the problem.
+
+With regards
+Robin
 
 
-
-
-I will be out of the office starting  21/06/2006 and will not return until
-03/07/2006.
+## Booting image at ff000000 ...
+   Image Name:   Linux-2.6.16.1
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1301999 Bytes =  1.2 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at ff200000 ...
+   Image Name:   ramdisk
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    2788700 Bytes =  2.7 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Loading Ramdisk to 03d05000, end 03fadd5c ... OK
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+MMU:exit
+setup_arch: enter
+setup_arch: bootmem
+arch: exit
