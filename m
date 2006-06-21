@@ -1,14 +1,17 @@
-Return-Path: <ggvozden@pppoe.ca>
-Message-ID: <002901c694d9$36c23870$6402a8c0@MASTER>
-From: "GORAN GVOZDENOVIC" <ggvozden@pppoe.ca>
-To: <grave@ipno.in2p3.fr>, <linuxppc-embedded@ozlabs.org>,
-	"ppc dev" <linuxppc-dev@ozlabs.org>
-References: <1150785936.17197.9.camel@ipnnarval>
-Subject: Re: Gb Ethernet on xilinx gemac IP
-Date: Tue, 20 Jun 2006 22:20:05 -0400
+Return-Path: <kelly@au1.ibm.com>
+From: Kelly Daly <kelly@au1.ibm.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] powerpc: disable OProfile for iSeries (take 2!)
+Date: Wed, 21 Jun 2006 13:52:55 +1000
+References: <200606211151.01386.kelly@au.ibm.com>
+	<1150859433.8293.9.camel@localhost.localdomain>
+In-Reply-To: <1150859433.8293.9.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-8859-1";
-	reply-type=original
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200606211352.55446.kelly@au.ibm.com>
+Cc: linuxppc64-dev@ozlabs.org, Kelly Daly <kelly@au1.ibm.com>, paulus@samba.org,
+	anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,68 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Xavier,
+This patch removes the changes from an earlier patch that disables
+oProfile for iSeries within the oProfile KConfig (submitted Feb 23,
+2006).  Checks within the arch init for iSeries, still allowing profiling
+for timer interrupts (using firmware_has_feature).
 
-Just wrapped up efforts to experiment with hard TEMAC support in 2.4 kernel 
-( previev kit from Montavista ). DENX 2.4  distro should not be different.
+Signed-off-by: Kelly Daly <kelly@au.ibm.com>
 
-Here are my experience with ML403 board:
+---
 
-Configure kernel for only eth driver offered for ML300 / ML403 ( soft EMAC - 
-10/100Mb on-chip eth ). After updating kernel tree with the BSP using xilinx 
-patch script for ML403, hard TEMAC driver will end up in 
-/drivers/net/xilinx_gige ( supported soft MAC driver ends up in 
-/drivers/net/xilinx_enet ).
-
->From here 2 options:
-a) rename xilinx_gige folder to xilinx_enet and build kernel
-b) modify config.in script for kernel network configuration and makefile for 
-building net driver by addidng new GIGE option
-
->From my undersanding part of driver code for gige ( adapter.c ) is PHY 
-specific and supports Marvel's PHY on ML403 board. Never looked more what it 
-does ( phy interface should be common to all PHYs ? ) but if you use 
-different PHY maybe you'll have to do some coding here ?!
-( look for the comments in the driver )
-
-Oh yes, my tree was missing gmii.h file ( found it throuh google - don't 
-remember from where - first google hit :) !
-
-Did some test measurement and comparison with soft EMAC against  hard TEMAC 
-+ PLB TEMAC and defualt SG DMA mode (3):
-Amazing performance increase: close to 100% on tcp ( netperf and netio shows 
-over 11000KB/s for max packet size of 32K on 100Mb link )
-
-Hope this helps !
-
-Goran,
-Waterloo,Canada
-
-
------ Original Message ----- 
-From: "Xavier Grave" <grave@ipno.in2p3.fr>
-To: <linuxppc-embedded@ozlabs.org>; "ppc dev" <linuxppc-dev@ozlabs.org>
-Sent: Tuesday, June 20, 2006 2:45 AM
-Subject: Gb Ethernet on xilinx gemac IP
-
-
-> Hi,
->
-> I'm currently running linux with 10/100 MBits xilinx ethernet driver. I
-> have a memec 2VP20 evaluation board.
-> We have bought a PCOM2 module in order to have a Gb PHY. I have
-> implemented an hardware to handle it but whatever linux version I take
-> (2.4 from denx web site, 2.6.17 from kernel.org), I can't configure a Gb
-> ethernet driver. And the 10/100 driver don't configure my Gb PHY...
->
-> I have compiled my linux kernel based on the ml300 configuration default
-> config.
->
-> Does anyone has an idea ?
->
-> Thanks, xavier
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded 
+diff -urdp linux-2.6.16.20/arch/powerpc/oprofile/Kconfig linux-2.6.16.20_kel/arch/powerpc/oprofile/Kconfig
+--- linux-2.6.16.20/arch/powerpc/oprofile/Kconfig	2006-06-06 03:18:23.000000000 +1000
++++ linux-2.6.16.20_kel/arch/powerpc/oprofile/Kconfig	2006-06-20 15:53:02.000000000 +1000
+@@ -1,5 +1,4 @@
+ config PROFILING
+-	depends on !PPC_ISERIES
+ 	bool "Profiling support (EXPERIMENTAL)"
+ 	help
+ 	  Say Y here to enable the extended profiling support mechanisms used
+diff -urp linux-2.6.16.20/arch/powerpc/oprofile/common.c linux-2.6.16.20_kel/arch/powerpc/oprofile/common.c
+--- linux-2.6.16.20/arch/powerpc/oprofile/common.c	2006-06-06 03:18:23.000000000 +1000
++++ linux-2.6.16.20_kel/arch/powerpc/oprofile/common.c	2006-06-21 13:42:14.000000000 +1000
+@@ -22,6 +22,7 @@
+ #include <asm/pmc.h>
+ #include <asm/cputable.h>
+ #include <asm/oprofile_impl.h>
++#include <asm/firmware.h>
+ 
+ static struct op_powerpc_model *model;
+ 
+@@ -138,6 +139,9 @@ int __init oprofile_arch_init(struct opr
+ 	if (!cur_cpu_spec->oprofile_cpu_type)
+ 		return -ENODEV;
+ 
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		return -ENODEV;
++
+ 	switch (cur_cpu_spec->oprofile_type) {
+ #ifdef CONFIG_PPC64
+ 		case PPC_OPROFILE_RS64:
