@@ -1,22 +1,18 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (mail.jdl.com [66.118.10.122])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8CB2367A6B
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 23:27:50 +1000 (EST)
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: please pull powerpc.git 'merge' branch 
-In-Reply-To: Your message of "Wed, 21 Jun 2006 08:08:28 CDT."
-	<86FC5258-6CA0-4AED-B346-3788DBE5E9F8@kernel.crashing.org>
-References: <17561.418.97341.74610@cargo.ozlabs.ibm.com>
-	<3F041A9D-F1D9-4FF9-977F-E09D924D0741@kernel.crashing.org>
-	<E1Ft2NP-0001ao-30@jdl.com>
-	<86FC5258-6CA0-4AED-B346-3788DBE5E9F8@kernel.crashing.org>
-Date: Wed, 21 Jun 2006 08:27:46 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Ft2kE-0001c4-Rt@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, torvalds@osdl.org,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id E8B0E67A6C
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2006 00:14:36 +1000 (EST)
+To: robinpv <robinpv@aiware.co.jp>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Linux ppc port problem 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 21 Jun 2006 18:45:17 +0900."
+	<4499152D.2040908@aiware.co.jp>
+Date: Wed, 21 Jun 2006 16:14:33 +0200
+Sender: wd@denx.de
+Message-Id: <20060621141433.E6484353A9B@atlas.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Kumar Gala mumbled:
-> 
-> I know you'll fix the issues. Its just that the usual model is to fix  
-> the issues before pushing upstream.
+In message <4499152D.2040908@aiware.co.jp> you wrote:
 >
-> Also, havent seen any comments on my last sent of responses on the  
-> patches :)
+>      I am trying to the port linux to the mpc5200 based board( Lite5200.)
 
-Well, where your comments are in conflict with Ben's, we'll let
-you two duke it out. :-)
+Why are you doing this? Why don't you use the existing code for  this
+board?
 
-Where things need to be fixed, we'll fix it.  (They really
-were minor things for the most part.)
+Best regards,
 
-In the one case where you suggested removing an #include,
-we can't; it is needed.
+Wolfgang Denk
 
-In the meantime, remember this is a _new_ board port.  It's not
-going to cause anyone undue stress with some form of breakage
-on the new board!
-
-Thanks,
-jdl
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+I mean, I . . . think to understand you, I just don't know  what  you
+are saying ...                        - Terry Pratchett, _Soul Music_
