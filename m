@@ -1,16 +1,21 @@
-Return-Path: <zhangke@ict.ac.cn>
-Received: from ict.ac.cn (webmail.ict.ac.cn [159.226.39.7])
-	by ozlabs.org (Postfix) with SMTP id C98ED67A3D
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 63A9867A5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 16:36:20 +1000 (EST)
-Date: Wed, 21 Jun 2006 14:29:38 +0800
-From: "Zhang Ke" <zhangke@ict.ac.cn>
-To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
-Subject: uboot and ppc405 
-Message-ID: <200606211429388287786@ict.ac.cn>
+	Wed, 21 Jun 2006 17:38:53 +1000 (EST)
+Date: Wed, 21 Jun 2006 11:38:43 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Gerhard Jaeger <g.jaeger@sysgo.com>
+Subject: Re: [PATCH 2/3] FS_ENET: use PAL for mii management
+Message-ID: <20060621113843.7d33bad3@localhost.localdomain>
+In-Reply-To: <200606210920.37295.g.jaeger@sysgo.com>
+References: <20060620145825.24807.310.stgit@vitb.ru.mvista.com>
+	<20060620145840.24807.30296.stgit@vitb.ru.mvista.com>
+	<200606210920.37295.g.jaeger@sysgo.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
+Content-Type: text/plain; charset=UTF-8
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,24 +26,83 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+На Wed, 21 Jun 2006 09:20:36 +0200
+Gerhard Jaeger <g.jaeger@sysgo.com> записано:
 
-I want to use Uboot in v2pro for booting linux from xilinx flash PROM. is it doable?
+> Hi,
+> 
+> On Tuesday 20 June 2006 16:58, Vitaly Bordug wrote:
+> > 
+> > This patch should update the fs_enet infrastructure to utilize
+> > Phy Abstraction Layer subsystem. Inside there are generic driver
+> > rehaul, board-specific portion to respect driver changes (for
+> > 8272ads and 866ads).
+> > 
+> > Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> > ---
+> > 
+> >  arch/ppc/platforms/mpc8272ads_setup.c |  154 ++++++----
+> >  arch/ppc/platforms/mpc866ads_setup.c  |  192 ++++++------
+> >  arch/ppc/platforms/mpc885ads_setup.c  |  179 ++++--------
+> >  arch/ppc/syslib/mpc8xx_devices.c      |    8 +
+> >  arch/ppc/syslib/mpc8xx_sys.c          |    6 
+> >  arch/ppc/syslib/pq2_devices.c         |    5 
+> >  arch/ppc/syslib/pq2_sys.c             |    3 
+> >  drivers/net/fs_enet/Makefile          |    6 
+> >  drivers/net/fs_enet/fec.h             |   42 +++
+> >  drivers/net/fs_enet/fs_enet-main.c    |  207 ++++++++-----
+> >  drivers/net/fs_enet/fs_enet-mii.c     |  507
+> > ---------------------------------
+> > drivers/net/fs_enet/fs_enet.h         |   40 ++-
+> > drivers/net/fs_enet/mac-fcc.c         |   10 -
+> > drivers/net/fs_enet/mac-fec.c         |  132 +--------
+> > drivers/net/fs_enet/mac-scc.c         |    4
+> > drivers/net/fs_enet/mii-bitbang.c     |  384
+> > +++++++++++++++---------- drivers/net/fs_enet/mii-fec.c         |
+> > 243 ++++++++++++++++ drivers/net/fs_enet/mii-fixed.c       |   92
+> > ------ include/asm-ppc/mpc8260.h             |    1
+> > include/asm-ppc/mpc8xx.h              |    1
+> > include/linux/fs_enet_pd.h            |   50 +-- 21 files changed,
+> > 983 insertions(+), 1283 deletions(-)
+> 
+> [SNIPSNAP]
+> > diff --git a/drivers/net/fs_enet/mii-bitbang.c
+> > b/drivers/net/fs_enet/mii-bitbang.c index 24a5e2e..145bf4c 100644
+> > --- a/drivers/net/fs_enet/mii-bitbang.c
+> > +++ b/drivers/net/fs_enet/mii-bitbang.c
+> > @@ -34,6 +34,7 @@
+> >  #include <linux/mii.h>
+> >  #include <linux/ethtool.h>
+> >  #include <linux/bitops.h>
+> > +#include <linux/platform_device.h>
+> >  
+> >  #include <asm/pgtable.h>
+> >  #include <asm/irq.h>
+> > @@ -41,6 +42,7 @@
+> >  
+> >  #include "fs_enet.h"
+> >  
+> > +
+> >  #ifdef CONFIG_8xx
+> >  static int bitbang_prep_bit(u8 **dirp, u8 **datp, u8 *mskp, int
+> > port, int bit) {
+> > @@ -106,64 +108,25 @@ static int bitbang_prep_bit(u8 **dirp, u
+> >  }
+> >  #endif
+> >  
+> > -#ifdef CONFIG_8260
+> > -static int bitbang_prep_bit(u8 **dirp, u8 **datp, u8 *mskp, int
+> > port, int bit) +static int bitbang_prep_bit(u8 **datp, u8 *mskp,
+> > +		struct fs_mii_bit *mii_bit)
+> 
+> is it possible, that in case of CONFIG_8xx you'll have two times this 
+> bitbang_prep_bit() function? 
+> 
+Hmm, yes, thanks for pointing that out. The problem is in other
+thing though - the bitbang stuff got unified so there should be no
+board-specific ifdefs like those.
 
-my board is a custom board, which has a XC2VP20, XCF32P, DDR, UART
+This issue must have missed the cleanup, I'll fix and redo the patches.
 
-at present, i can run a open core linux on the board by JTAG and UART. but i must use iMPACT to download bit file(about 0.97MB), use XMD to download elf file(about 4.43MB). this is too slow :(
-
-can i use flash PROM to store these two files? and when power on, the UBoot can download them automatically and orderly to FPGA?
-
-I found the XAPP542 from xilinx, but it use UBoot to config FPGA from the files stored in SystemACE Compact Flash Card. Unfortunately, my board does NOT has SystemACE:(
-
-I also want to ask you that whether my XCF32P(32 Mbit=4MB) is large enough for storing the whole things?
-
-
-Help me :(
-Thank you :)
-			
---------------
-Zhang Ke
-2006-06-21
+--
+Sincerely, Vitaly
