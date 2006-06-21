@@ -1,20 +1,20 @@
-Return-Path: <mb@bu3sch.de>
-Received: from bu3sch.de (static-ip-62-75-166-246.inaddr.intergenia.de
-	[62.75.166.246]) by ozlabs.org (Postfix) with ESMTP id C1B0767A45
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7BEBD67A42
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Jun 2006 07:20:35 +1000 (EST)
-From: Michael Buesch <mb@bu3sch.de>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: [PATCH 1/3] PAL: Support of the fixed PHY
-Date: Wed, 21 Jun 2006 22:48:27 +0200
-References: <20060621160950.4860.92979.stgit@vitb.ru.mvista.com>
-In-Reply-To: <20060621160950.4860.92979.stgit@vitb.ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200606212248.27836.mb@bu3sch.de>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, linuxppc-embedded@ozlabs.org
+	Thu, 22 Jun 2006 09:20:14 +1000 (EST)
+Received: from localhost.localdomain ([10.150.0.9])
+	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id k5LNKAs02437
+	for <linuxppc-embedded@ozlabs.org>; Thu, 22 Jun 2006 04:20:10 +0500
+Date: Thu, 22 Jun 2006 03:20:07 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: MPC8560 CPM drivers
+Message-ID: <20060622032007.0c605bd1@localhost.localdomain>
+In-Reply-To: <43EB80E07C42E1408726E4905FB96B0466C9CF@CYBORG3.cyclone.com>
+References: <43EB80E07C42E1408726E4905FB96B0466C9CF@CYBORG3.cyclone.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,142 +25,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 21 June 2006 18:09, Vitaly Bordug wrote:
+На Wed, 21 Jun 2006 15:57:14 -0400
+"Scott Coulter" <scott.coulter@cyclone.com> записано:
 
-> +static int fixed_mdio_update_regs(struct fixed_info *fixed)
-> +{
-> +	u16 *regs = fixed->regs;
-> +	u16 bmsr = 0;
-> +	u16 bmcr = 0;
-> +
-> +	if(!regs) {
-> +		printk(KERN_ERR "%s: regs not set up", __FUNCTION__);
-> +		return -1;
+> 
+> Hi everyone,
+> 
+> I have a MPC8560 driver availability question that perhaps someone can
+> answer.
+> 
+> My company has built a board for a customer with an MPC8560 on it.
+> The board has been designed so that the CPM can support several I/O
+> interfaces using an external PMC-Sierra COMET device.  Originally, the
+> customer was planning to use VxWorks and port an existing pSOS driver
+> that was written for the CPM on the MPC8260.  They are now inquiring
+> about linux driver support for the CPM.  I currently have version
+> 2.6.15 of the kernel running on the board.
+> 
+> Does anyone know what exists as far as driver support for the CPM on
+> the 8560?  Specifically, the customer is looking to run the CPM with
+> the following interfaces:
+> 
+> TDM T1
+> TDM E1
+> ATM T1
+> ATM E1
+> 
+> If there is currently no support, does anyone know if there are any
+> drivers in the works?
+> 
 
--EINVAL perhaps?
+I'm aware of http://mpc8260sar.sourceforge.net
 
-> +static int fixed_mdio_register_device(int number, int speed, int duplex)
-> +{
-> +	struct mii_bus *new_bus;
-> +	struct fixed_info *fixed;
-> +	struct phy_device *phydev;
-> +	int err = 0;
-> +
-> +	struct device* dev = kzalloc(sizeof(struct device), GFP_KERNEL);
-> +
-> +	if (NULL == dev)
-> +		return -EINVAL;
+and http://atm8260.sourceforge.net, that utilize ATM from CPM (cpm1
+and cpm2), but dunno if it is definitely the thing you are looking
+for... 
 
--ENOMEM here.
-
-> +	new_bus = kzalloc(sizeof(struct mii_bus), GFP_KERNEL);
-> +
-> +	if (NULL == new_bus) {
-> +		kfree(dev);
-> +		return -ENOMEM;
-> +	}
-> +	fixed = fixed_ptr = kzalloc(sizeof(struct fixed_info), GFP_KERNEL);
-> +
-> +	if (NULL == fixed) {
-> +		kfree(dev);
-> +		kfree(new_bus);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	fixed->regs = kzalloc(MII_REGS_NUM*sizeof(int), GFP_KERNEL);
-> +
-> +	if (NULL == fixed->regs) {
-> +		kfree(dev);
-> +		kfree(new_bus);
-> +		kfree (fixed);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	fixed->regs_num = MII_REGS_NUM;
-> +	fixed->phy_status.speed = speed;
-> +	fixed->phy_status.duplex = duplex;
-> +	fixed->phy_status.link = 1;
-> +
-> +	new_bus->name = "Fixed MII Bus",
-> +	new_bus->read = &fixed_mii_read,
-> +	new_bus->write = &fixed_mii_write,
-> +	new_bus->reset = &fixed_mii_reset,
-> +
-> +	/*set up workspace*/
-> +	fixed_mdio_update_regs(fixed);
-> +	new_bus->priv = fixed;
-> +
-> +	new_bus->dev = dev;
-> +	dev_set_drvdata(dev, new_bus);
-> +
-> +	/* create phy_device and register it on the mdio bus */
-> +	phydev = phy_device_create(new_bus, 0, 0);
-> +
-> +	/*
-> +	 Put the phydev pointer into the fixed pack so that bus read/write code could be able
-> +	 to access for instance attached netdev. Well it doesn't have  to do so, only in case
-> +	 of utilizing user-specified link-update...
-> +	 */
-> +	fixed->phydev = phydev;
-> +
-> +	if (IS_ERR(phydev)) {
-> +		err = PTR_ERR(-ENOMEM);
-> +		goto bus_register_fail;
-> +	}
-> +
-> +	phydev->irq = -1;
-> +	phydev->dev.bus = &mdio_bus_type;
-> +
-> +	if(number)
-> +		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> +				"fixed_%d@%d:%d", number, speed, duplex);
-> +	else
-> +		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
-> +				"fixed@%d:%d", speed, duplex);
-> +	phydev->bus = new_bus;
-> +
-> +	err = device_register(&phydev->dev);
-> +	if(err) {
-> +		printk(KERN_ERR "Phy %s failed to register\n",
-> +				phydev->dev.bus_id);
-> +		goto bus_register_fail;
-> +	}
-> +
-> +	/*
-> +	   the mdio bus has phy_id match... In order not to do it
-> +	   artificially, we are binding the driver here by hand;
-> +	   it will be the same
-> +	   for all the fixed phys anyway.
-> +	 */
-> +	down_write(&phydev->dev.bus->subsys.rwsem);
-> +
-> +	phydev->dev.driver = &fixed_mdio_driver.driver;
-> +
-> +	err = phydev->dev.driver->probe(&phydev->dev);
-> +	if(err < 0) {
-> +		printk(KERN_ERR "Phy %s: problems with fixed driver\n",
-> +				phydev->dev.bus_id);
-> +		up_write(&phydev->dev.bus->subsys.rwsem);
-> +		goto bus_register_fail;
-
-Probably need some additional error unwinding code.
-Of doesn't device_register() have to be reverted?
-What about phy_device_create()?
-
-> +	}
-> +
-> +	device_bind_driver(&phydev->dev);
-> +	up_write(&phydev->dev.bus->subsys.rwsem);
-> +
-> +	return 0;
-> +
-> +bus_register_fail:
-> +	kfree(dev);
-> +	kfree (fixed);
-> +	kfree(new_bus);
-> +
-> +	return err;
-> +}
-
--- 
-Greetings Michael.
+> Thanks in advance,
+> 
+> Scott
+> 
+> 
+> 
+> 
+> ___________________________________________________________________
+> 
+>   Scott N. Coulter
+>   Senior Software Engineer
+>   
+>   Cyclone Microsystems          
+>   370 James Street              Phone:  203.786.5536 ext. 118
+>   New Haven, CT 06513-3051      Email:  scott.coulter@cyclone.com
+>   U.S.A.                        Web:    http://www.cyclone.com
+> ___________________________________________________________________
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
