@@ -1,20 +1,24 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 737E767A5D
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 91C2967AA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 17:41:34 +1000 (EST)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 2/3] FS_ENET: use PAL for mii management
-Date: Wed, 21 Jun 2006 09:20:36 +0200
-References: <20060620145825.24807.310.stgit@vitb.ru.mvista.com>
-	<20060620145840.24807.30296.stgit@vitb.ru.mvista.com>
-In-Reply-To: <20060620145840.24807.30296.stgit@vitb.ru.mvista.com>
+	Wed, 21 Jun 2006 17:55:20 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id j3so1691449ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 21 Jun 2006 00:55:18 -0700 (PDT)
+Message-ID: <528646bc0606210055m71277d1fl66dacfa7cd7ed203@mail.gmail.com>
+Date: Wed, 21 Jun 2006 01:55:17 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: filippo.capurso@dave-tech.it
+Subject: Re: Linux on Virtex4
+In-Reply-To: <4498F1E7.5010900@dave-tech.it>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200606210920.37295.g.jaeger@sysgo.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <821B2170E9E7F04FA38DF7EC21DE48710573FD21@VCAEXCH01.hq.corp.viasat.com>
+	<528646bc0606191638j64448168ia19d6a97ab81e648@mail.gmail.com>
+	<4498F1E7.5010900@dave-tech.it>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,76 +29,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On 6/21/06, Filippo Capurso <filippo.capurso@dave-tech.it> wrote:
+> Hi Grant,
+>
+> I'm having some trouble with 2.6.17-rc6 kernel (wich incorporates your
+> patches for Xilinx ML403 board) and my ML403 board.
+> This is my message about this issue:
+>
+> http://ozlabs.org/pipermail/linuxppc-embedded/2006-June/023321.html
 
-On Tuesday 20 June 2006 16:58, Vitaly Bordug wrote:
-> 
-> This patch should update the fs_enet infrastructure to utilize
-> Phy Abstraction Layer subsystem. Inside there are generic driver rehaul,
-> board-specific portion to respect driver changes (for 8272ads and 866ads).
-> 
-> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-> ---
-> 
->  arch/ppc/platforms/mpc8272ads_setup.c |  154 ++++++----
->  arch/ppc/platforms/mpc866ads_setup.c  |  192 ++++++------
->  arch/ppc/platforms/mpc885ads_setup.c  |  179 ++++--------
->  arch/ppc/syslib/mpc8xx_devices.c      |    8 +
->  arch/ppc/syslib/mpc8xx_sys.c          |    6 
->  arch/ppc/syslib/pq2_devices.c         |    5 
->  arch/ppc/syslib/pq2_sys.c             |    3 
->  drivers/net/fs_enet/Makefile          |    6 
->  drivers/net/fs_enet/fec.h             |   42 +++
->  drivers/net/fs_enet/fs_enet-main.c    |  207 ++++++++-----
->  drivers/net/fs_enet/fs_enet-mii.c     |  507 ---------------------------------
->  drivers/net/fs_enet/fs_enet.h         |   40 ++-
->  drivers/net/fs_enet/mac-fcc.c         |   10 -
->  drivers/net/fs_enet/mac-fec.c         |  132 +--------
->  drivers/net/fs_enet/mac-scc.c         |    4 
->  drivers/net/fs_enet/mii-bitbang.c     |  384 +++++++++++++++----------
->  drivers/net/fs_enet/mii-fec.c         |  243 ++++++++++++++++
->  drivers/net/fs_enet/mii-fixed.c       |   92 ------
->  include/asm-ppc/mpc8260.h             |    1 
->  include/asm-ppc/mpc8xx.h              |    1 
->  include/linux/fs_enet_pd.h            |   50 +--
->  21 files changed, 983 insertions(+), 1283 deletions(-)
+Yes, I had seen your message; but I'm not an expert on the 4xx mmu.  I
+haven't seen that behaviour on my board.
 
-[SNIPSNAP]
-> diff --git a/drivers/net/fs_enet/mii-bitbang.c b/drivers/net/fs_enet/mii-bitbang.c
-> index 24a5e2e..145bf4c 100644
-> --- a/drivers/net/fs_enet/mii-bitbang.c
-> +++ b/drivers/net/fs_enet/mii-bitbang.c
-> @@ -34,6 +34,7 @@
->  #include <linux/mii.h>
->  #include <linux/ethtool.h>
->  #include <linux/bitops.h>
-> +#include <linux/platform_device.h>
->  
->  #include <asm/pgtable.h>
->  #include <asm/irq.h>
-> @@ -41,6 +42,7 @@
->  
->  #include "fs_enet.h"
->  
-> +
->  #ifdef CONFIG_8xx
->  static int bitbang_prep_bit(u8 **dirp, u8 **datp, u8 *mskp, int port, int bit)
->  {
-> @@ -106,64 +108,25 @@ static int bitbang_prep_bit(u8 **dirp, u
->  }
->  #endif
->  
-> -#ifdef CONFIG_8260
-> -static int bitbang_prep_bit(u8 **dirp, u8 **datp, u8 *mskp, int port, int bit)
-> +static int bitbang_prep_bit(u8 **datp, u8 *mskp,
-> +		struct fs_mii_bit *mii_bit)
+Double check your memory ranges.  Have you given the kernel real RAM?
 
-is it possible, that in case of CONFIG_8xx you'll have two times this 
-bitbang_prep_bit() function? 
-
-Gerhard
+g.
 
 -- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
