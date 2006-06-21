@@ -1,15 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 20 Jun 2006 21:22:42 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] mpic: add support for Time-Of-Day-Clock (TODC)
-Message-ID: <20060621042242.GA11544@mag.az.mvista.com>
-References: <20060619210040.GA17984@mag.az.mvista.com>
-	<1150852399.12507.34.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 21 Jun 2006 14:32:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kelly Daly <kelly@au1.ibm.com>
+Subject: Re: [PATCH] powerpc: disable OProfile for iSeries (take 2!)
+Message-Id: <20060621143236.14bc4e1e.sfr@canb.auug.org.au>
+In-Reply-To: <200606211352.55446.kelly@au.ibm.com>
+References: <200606211151.01386.kelly@au.ibm.com>
+	<1150859433.8293.9.camel@localhost.localdomain>
+	<200606211352.55446.kelly@au.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1150852399.12507.34.camel@localhost.localdomain>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__21_Jun_2006_14_32_36_+1000_06lMnq/599vQR=KX"
+Cc: linuxppc64-dev@ozlabs.org, kelly@au1.ibm.com, paulus@samba.org,
+	anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,19 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 21, 2006 at 11:13:18AM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2006-06-19 at 14:00 -0700, Mark A. Greer wrote:
-> > [Forgot to cc: linuxppc-dev the first time]
-> > 
-> > The todc code from arch/ppc supports many todc/rtc chips and is needed
-> > in arch/powerpc.  This patch adds the todc code to arch/powerpc.
-> 
-> Question... what does it have to do with mpic ? :)
+--Signature=_Wed__21_Jun_2006_14_32_36_+1000_06lMnq/599vQR=KX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Oops, nothing.  Cut & paste error.  Should read:
+On Wed, 21 Jun 2006 13:52:55 +1000 Kelly Daly <kelly@au1.ibm.com> wrote:
+>
+> This patch removes the changes from an earlier patch that disables
+> oProfile for iSeries within the oProfile KConfig (submitted Feb 23,
+> 2006).  Checks within the arch init for iSeries, still allowing profiling
+> for timer interrupts (using firmware_has_feature).
+>=20
+> Signed-off-by: Kelly Daly <kelly@au.ibm.com>
 
-[PATCH] todc: add support for Time-Of-Day-Clock (TODC)
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-or something like that.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Mark
+--Signature=_Wed__21_Jun_2006_14_32_36_+1000_06lMnq/599vQR=KX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQFEmMvkFdBgD/zoJvwRAmUEAJ9z45YxPmxeL5Z5g2hsTpetwcOhOQCgmEmH
+z7K5KAj/uzR16PKHxlWuwb0=
+=i5oi
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__21_Jun_2006_14_32_36_+1000_06lMnq/599vQR=KX--
