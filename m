@@ -1,19 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 21 Jun 2006 14:32:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kelly Daly <kelly@au1.ibm.com>
-Subject: Re: [PATCH] powerpc: disable OProfile for iSeries (take 2!)
-Message-Id: <20060621143236.14bc4e1e.sfr@canb.auug.org.au>
-In-Reply-To: <200606211352.55446.kelly@au.ibm.com>
-References: <200606211151.01386.kelly@au.ibm.com>
-	<1150859433.8293.9.camel@localhost.localdomain>
-	<200606211352.55446.kelly@au.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__21_Jun_2006_14_32_36_+1000_06lMnq/599vQR=KX"
-Cc: linuxppc64-dev@ozlabs.org, kelly@au1.ibm.com, paulus@samba.org,
-	anton@samba.org
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 09F7C67AA0
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 17:51:16 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k5L826Ei026736
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 01:02:06 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k5L7pCM5015916
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Jun 2006 02:51:14 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD467306C03C19@zch01exm40.ap.freescale.net>
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: RE:  [PATCH/2.6.17-rc6  0/4 v2]  powerpc: add mpc7448hpc2 (Taiga)
+	board support
+Date: Wed, 21 Jun 2006 15:51:10 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Alexandre.Bounine@tundra.com,
+	Yang Xin-Xin-r48390 <Xin-Xin.Yang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__21_Jun_2006_14_32_36_+1000_06lMnq/599vQR=KX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> -----Original Message-----
+> From: Zang Roy-r61911 
+> Sent: Tuesday, June 13, 2006 3:08 PM
+> To: 'Paul Mackerras'; 'Benjamin Herrenschmidt'
+> Cc: 'linuxppc-dev list'; Yang Xin-Xin-r48390; 
+> 'Alexandre.Bounine@tundra.com'; Zang Roy-r61911
+> Subject: [PATCH/2.6.17-rc6 0/4 v2] powerpc: add mpc7448hpc2 
+> (Taiga) board support 
+> 
+> 
+>  Hi, 
+>   	This series of patch adds mpc7448hpc2 (taiga) board 
+>  support in arch/powerpc.	
+>  	Tsi108 chip of Tundra Semiconductor is also supported.
+> 	The code has been revised according to the feedback.
+> 
+>  Roy Zang
+> 
 
-On Wed, 21 Jun 2006 13:52:55 +1000 Kelly Daly <kelly@au1.ibm.com> wrote:
->
-> This patch removes the changes from an earlier patch that disables
-> oProfile for iSeries within the oProfile KConfig (submitted Feb 23,
-> 2006).  Checks within the arch init for iSeries, still allowing profiling
-> for timer interrupts (using firmware_has_feature).
->=20
-> Signed-off-by: Kelly Daly <kelly@au.ibm.com>
-
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__21_Jun_2006_14_32_36_+1000_06lMnq/599vQR=KX
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQFEmMvkFdBgD/zoJvwRAmUEAJ9z45YxPmxeL5Z5g2hsTpetwcOhOQCgmEmH
-z7K5KAj/uzR16PKHxlWuwb0=
-=i5oi
------END PGP SIGNATURE-----
-
---Signature=_Wed__21_Jun_2006_14_32_36_+1000_06lMnq/599vQR=KX--
+Hi, Paul	
+	I  have not got any suggestion, since I submitted the "v2" version mpc7448hpc2 board support in arch/powerpc :).
+	In this submission I have addressed all the issues brought up in the "v1" submission.  So could you help me merge the patches into your git tree ?
+	If there is any comment, please tell me.
+	Thanks a lot!
+Roy
