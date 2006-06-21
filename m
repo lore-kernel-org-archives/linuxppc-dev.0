@@ -1,20 +1,20 @@
-Return-Path: <rick.moleres@xilinx.com>
-Received: from outbound1-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0D0DE67A60
+Return-Path: <mb@bu3sch.de>
+Received: from bu3sch.de (static-ip-62-75-166-246.inaddr.intergenia.de
+	[62.75.166.246]) by ozlabs.org (Postfix) with ESMTP id C1B0767A45
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Jun 2006 06:33:59 +1000 (EST)
+	Thu, 22 Jun 2006 07:20:35 +1000 (EST)
+From: Michael Buesch <mb@bu3sch.de>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: Re: [PATCH 1/3] PAL: Support of the fixed PHY
+Date: Wed, 21 Jun 2006 22:48:27 +0200
+References: <20060621160950.4860.92979.stgit@vitb.ru.mvista.com>
+In-Reply-To: <20060621160950.4860.92979.stgit@vitb.ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Linux on Virtex4
-Date: Wed, 21 Jun 2006 14:33:48 -0600
-Message-ID: <689CB232690D8D4E97DA6C76DA098E6C027E6946@XCO-EXCHVS1.xlnx.xilinx.com>
-From: "Rick Moleres" <rick.moleres@xilinx.com>
-To: "Aidan Williams" <aidan@nicta.com.au>
-Cc: "Martin, Tim" <tim.martin@viasat.com>, linuxppc-embedded@ozlabs.org
+  charset="iso-8859-15"
+Message-Id: <200606212248.27836.mb@bu3sch.de>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Jeff Garzik <jeff@garzik.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,83 +25,142 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Wednesday 21 June 2006 18:09, Vitaly Bordug wrote:
 
-Aiden,
+> +static int fixed_mdio_update_regs(struct fixed_info *fixed)
+> +{
+> +	u16 *regs = fixed->regs;
+> +	u16 bmsr = 0;
+> +	u16 bmcr = 0;
+> +
+> +	if(!regs) {
+> +		printk(KERN_ERR "%s: regs not set up", __FUNCTION__);
+> +		return -1;
 
-Looked into this and here's what I found out.  Only OPB_DDR supports
-16-bit DDR memory right now and there are no concrete plans to add
-16-bit support to PLB_DDR (it's been discussed, but nothing planned
-yet).  So the only workarounds for this silicon issue are the two you
-mentioned - run with caches off or get a fixed version of the chip (I
-don't know what Avnet's plans are for your board).
+-EINVAL perhaps?
 
--Rick
+> +static int fixed_mdio_register_device(int number, int speed, int duplex)
+> +{
+> +	struct mii_bus *new_bus;
+> +	struct fixed_info *fixed;
+> +	struct phy_device *phydev;
+> +	int err = 0;
+> +
+> +	struct device* dev = kzalloc(sizeof(struct device), GFP_KERNEL);
+> +
+> +	if (NULL == dev)
+> +		return -EINVAL;
 
+-ENOMEM here.
 
------Original Message-----
-From: linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org] On
-Behalf Of Rick Moleres
-Sent: Wednesday, June 21, 2006 12:10 PM
-To: Aidan Williams
-Cc: linuxppc-embedded@ozlabs.org; Martin, Tim
-Subject: RE: Linux on Virtex4
+> +	new_bus = kzalloc(sizeof(struct mii_bus), GFP_KERNEL);
+> +
+> +	if (NULL == new_bus) {
+> +		kfree(dev);
+> +		return -ENOMEM;
+> +	}
+> +	fixed = fixed_ptr = kzalloc(sizeof(struct fixed_info), GFP_KERNEL);
+> +
+> +	if (NULL == fixed) {
+> +		kfree(dev);
+> +		kfree(new_bus);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	fixed->regs = kzalloc(MII_REGS_NUM*sizeof(int), GFP_KERNEL);
+> +
+> +	if (NULL == fixed->regs) {
+> +		kfree(dev);
+> +		kfree(new_bus);
+> +		kfree (fixed);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	fixed->regs_num = MII_REGS_NUM;
+> +	fixed->phy_status.speed = speed;
+> +	fixed->phy_status.duplex = duplex;
+> +	fixed->phy_status.link = 1;
+> +
+> +	new_bus->name = "Fixed MII Bus",
+> +	new_bus->read = &fixed_mii_read,
+> +	new_bus->write = &fixed_mii_write,
+> +	new_bus->reset = &fixed_mii_reset,
+> +
+> +	/*set up workspace*/
+> +	fixed_mdio_update_regs(fixed);
+> +	new_bus->priv = fixed;
+> +
+> +	new_bus->dev = dev;
+> +	dev_set_drvdata(dev, new_bus);
+> +
+> +	/* create phy_device and register it on the mdio bus */
+> +	phydev = phy_device_create(new_bus, 0, 0);
+> +
+> +	/*
+> +	 Put the phydev pointer into the fixed pack so that bus read/write code could be able
+> +	 to access for instance attached netdev. Well it doesn't have  to do so, only in case
+> +	 of utilizing user-specified link-update...
+> +	 */
+> +	fixed->phydev = phydev;
+> +
+> +	if (IS_ERR(phydev)) {
+> +		err = PTR_ERR(-ENOMEM);
+> +		goto bus_register_fail;
+> +	}
+> +
+> +	phydev->irq = -1;
+> +	phydev->dev.bus = &mdio_bus_type;
+> +
+> +	if(number)
+> +		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
+> +				"fixed_%d@%d:%d", number, speed, duplex);
+> +	else
+> +		snprintf(phydev->dev.bus_id, BUS_ID_SIZE,
+> +				"fixed@%d:%d", speed, duplex);
+> +	phydev->bus = new_bus;
+> +
+> +	err = device_register(&phydev->dev);
+> +	if(err) {
+> +		printk(KERN_ERR "Phy %s failed to register\n",
+> +				phydev->dev.bus_id);
+> +		goto bus_register_fail;
+> +	}
+> +
+> +	/*
+> +	   the mdio bus has phy_id match... In order not to do it
+> +	   artificially, we are binding the driver here by hand;
+> +	   it will be the same
+> +	   for all the fixed phys anyway.
+> +	 */
+> +	down_write(&phydev->dev.bus->subsys.rwsem);
+> +
+> +	phydev->dev.driver = &fixed_mdio_driver.driver;
+> +
+> +	err = phydev->dev.driver->probe(&phydev->dev);
+> +	if(err < 0) {
+> +		printk(KERN_ERR "Phy %s: problems with fixed driver\n",
+> +				phydev->dev.bus_id);
+> +		up_write(&phydev->dev.bus->subsys.rwsem);
+> +		goto bus_register_fail;
 
+Probably need some additional error unwinding code.
+Of doesn't device_register() have to be reverted?
+What about phy_device_create()?
 
-Aiden,
+> +	}
+> +
+> +	device_bind_driver(&phydev->dev);
+> +	up_write(&phydev->dev.bus->subsys.rwsem);
+> +
+> +	return 0;
+> +
+> +bus_register_fail:
+> +	kfree(dev);
+> +	kfree (fixed);
+> +	kfree(new_bus);
+> +
+> +	return err;
+> +}
 
-The cache issue I was referring to is the errata 213 that you tried.
-I'll ask around regarding the silicon issue - I don't know if there is a
-workaround for this on that board.
-
--Rick
-
------Original Message-----
-From: Aidan Williams [mailto:aidan@nicta.com.au]=20
-Sent: Wednesday, June 21, 2006 2:47 AM
-To: Rick Moleres
-Cc: Martin, Tim; linuxppc-embedded@ozlabs.org
-Subject: Re: Linux on Virtex4
-
-Rick Moleres wrote:
-> There's also a Linux 2.4 patch provided with the ML403 PPC reference
-> design on the Xilinx website
-> (http://www.xilinx.com/products/boards/ml403/reference_designs.htm)
-that
-> takes care of a Virtex-4 PPC cache issue (CCR0 register).  Have you
-> applied this?
->=20
-
-Rick, which cache issue are you referring to?
-
-I tried setting the CCR0 bits in accordance with:
-
-   "Solution 10: CPU_213: Incorrect data might be
-    flushed from the data cache"
-
-but that didn't fix things in my case for the Avnet FX12 MiniModule.
-
-
-I'm pretty sure that the FX12-MM strikes:
-
-   "Solution 13: The return of a cacheline transaction that
-    is not target word first (non-target word first) can
-    cause data corruption in the PPC405 Core data cache in
-    Virtex-4 FX devices."
-
-For which the only solutions mentioned are to run without caches or get=20
-a fixed chip.
-
-
-As I understand it, the memory controller for this board must be on the=20
-OPB because the memory is 16-bit.  Is there any way to move the memory=20
-controller to the PLB thus avoiding the cache problem (for RAM at
-least)?
-
-- aidan
-
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+-- 
+Greetings Michael.
