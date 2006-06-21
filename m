@@ -1,21 +1,16 @@
-Return-Path: <filippo.capurso@dave-tech.it>
-Received: from dave-tech.it
-	(host46-203-static.38-85-b.business.telecomitalia.it [85.38.203.46])
-	by ozlabs.org (Postfix) with SMTP id D5DD167A42
+Return-Path: <zhangke@ict.ac.cn>
+Received: from ict.ac.cn (webmail.ict.ac.cn [159.226.39.7])
+	by ozlabs.org (Postfix) with SMTP id C98ED67A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 17:14:52 +1000 (EST)
-Message-ID: <4498F1E7.5010900@dave-tech.it>
-Date: Wed, 21 Jun 2006 09:14:47 +0200
-From: Filippo Capurso <filippo.capurso@dave-tech.it>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Linux on Virtex4
-References: <821B2170E9E7F04FA38DF7EC21DE48710573FD21@VCAEXCH01.hq.corp.viasat.com>
-	<528646bc0606191638j64448168ia19d6a97ab81e648@mail.gmail.com>
-In-Reply-To: <528646bc0606191638j64448168ia19d6a97ab81e648@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: filippo.capurso@dave-tech.it
+	Wed, 21 Jun 2006 16:36:20 +1000 (EST)
+Date: Wed, 21 Jun 2006 14:29:38 +0800
+From: "Zhang Ke" <zhangke@ict.ac.cn>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Subject: uboot and ppc405 
+Message-ID: <200606211429388287786@ict.ac.cn>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,45 +21,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
+Hi,
 
-I'm having some trouble with 2.6.17-rc6 kernel (wich incorporates your 
-patches for Xilinx ML403 board) and my ML403 board.
-This is my message about this issue:
+I want to use Uboot in v2pro for booting linux from xilinx flash PROM. is it doable?
 
-http://ozlabs.org/pipermail/linuxppc-embedded/2006-June/023321.html
+my board is a custom board, which has a XC2VP20, XCF32P, DDR, UART
 
-Could you help me please?
-Thanks in advance.
+at present, i can run a open core linux on the board by JTAG and UART. but i must use iMPACT to download bit file(about 0.97MB), use XMD to download elf file(about 4.43MB). this is too slow :(
 
-Filippo Capurso
+can i use flash PROM to store these two files? and when power on, the UBoot can download them automatically and orderly to FPGA?
 
-Grant Likely ha scritto:
-> On 6/19/06, Martin, Tim <tim.martin@viasat.com> wrote:
-> 
->>1) Is there anything obvious from the kernel panics below that I should
->>be looking for?  Just the answer "linux 2.4.20 is really fricken old,
->>upgrade" is probably the right answer.
-> 
-> 
-> I've seen kernel panics when booting large kernel images (>1.5M),
-> especially when I've welded the kernel image to a system.ace file for
-> booting via CF.  I haven't tracked down the root cause.  I use both
-> 2.4 and 2.6, and I've seen kernel panics with both.  In your case,
-> you'll need to decode the backtrace to find out where the kernel is
-> panicing
-> 
-> g.
-> 
+I found the XAPP542 from xilinx, but it use UBoot to config FPGA from the files stored in SystemACE Compact Flash Card. Unfortunately, my board does NOT has SystemACE:(
 
--- 
+I also want to ask you that whether my XCF32P(32 Mbit=4MB) is large enough for storing the whole things?
 
-DAVE Srl - Electronics System House
-via Forniz 2/1
-33080 Porcia (PN) - Italy
-Telephone: +39.0434.921215
-Telefax: +39.0434.1994030
-Freefax: +39.02.700520062
-web: www.dave-tech.it
-e-mail: filippo.capurso@dave-tech.it
-how to reach us: http://mail.map24.com/dave
+
+Help me :(
+Thank you :)
+			
+--------------
+Zhang Ke
+2006-06-21
