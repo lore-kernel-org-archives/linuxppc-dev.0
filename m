@@ -1,21 +1,30 @@
-Return-Path: <aidan@nicta.com.au>
-Received: from mail08.syd.optusnet.com.au (mail08.syd.optusnet.com.au
-	[211.29.132.189])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <laurent.pinchart@tbox.biz>
+Received: from outmx010.isp.belgacom.be (outmx010.isp.belgacom.be
+	[195.238.5.233])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C90C867A2E
+	by ozlabs.org (Postfix) with ESMTP id 7B93367A5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 18:46:41 +1000 (EST)
-Message-ID: <4499076E.6000804@nicta.com.au>
-Date: Wed, 21 Jun 2006 18:46:38 +1000
-From: Aidan Williams <aidan@nicta.com.au>
+	Wed, 21 Jun 2006 19:44:56 +1000 (EST)
+Received: from outmx010.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx010.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k5L9ijQe026454
+	for <linuxppc-embedded@ozlabs.org>; Wed, 21 Jun 2006 11:44:46 +0200
+	(envelope-from <laurent.pinchart@tbox.biz>)
+Received: from servernt.technotrade (49.198-78-194.adsl-fix.skynet.be
+	[194.78.198.49])
+	by outmx010.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id k5L9iaLv026336
+	for <linuxppc-embedded@ozlabs.org>; Wed, 21 Jun 2006 11:44:37 +0200
+	(envelope-from <laurent.pinchart@tbox.biz>)
+From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+To: linuxppc-embedded@ozlabs.org
+Subject: Adding an external interrupt controller
+Date: Wed, 21 Jun 2006 11:46:34 +0200
 MIME-Version: 1.0
-To: Rick Moleres <rick.moleres@xilinx.com>
-Subject: Re: Linux on Virtex4
-References: <689CB232690D8D4E97DA6C76DA098E6C027E6274@XCO-EXCHVS1.xlnx.xilinx.com>
-In-Reply-To: <689CB232690D8D4E97DA6C76DA098E6C027E6274@XCO-EXCHVS1.xlnx.xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org, "Martin, Tim" <tim.martin@viasat.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200606211146.34720.laurent.pinchart@tbox.biz>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,37 +35,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Rick Moleres wrote:
-> There's also a Linux 2.4 patch provided with the ML403 PPC reference
-> design on the Xilinx website
-> (http://www.xilinx.com/products/boards/ml403/reference_designs.htm) that
-> takes care of a Virtex-4 PPC cache issue (CCR0 register).  Have you
-> applied this?
-> 
+Hi everybody,
 
-Rick, which cache issue are you referring to?
+I'm trying to write a driver for a custom extension bus mapped in my MPC8248 
+memory space.
 
-I tried setting the CCR0 bits in accordance with:
+The bus has 32 interrupt lines which are handled by an interrupt controller 
+connected to a single external interrupt on the MPC8248.
 
-   "Solution 10: CPU_213: Incorrect data might be
-    flushed from the data cache"
+I've had a look at the Linux interrupt management code, but haven't found any 
+easy API to add an external interrupt controller. Could someone give me a few 
+pointers regarding how to proceed ? I would like to "register" the interrupt 
+controller with the interrupt management core, so that 
+request_irq()/free_irq() could be used with the extra interrupts.
 
-but that didn't fix things in my case for the Avnet FX12 MiniModule.
+Thanks in advance for your help.
 
+Best regards,
 
-I'm pretty sure that the FX12-MM strikes:
+Laurent Pinchart
 
-   "Solution 13: The return of a cacheline transaction that
-    is not target word first (non-target word first) can
-    cause data corruption in the PPC405 Core data cache in
-    Virtex-4 FX devices."
-
-For which the only solutions mentioned are to run without caches or get 
-a fixed chip.
-
-
-As I understand it, the memory controller for this board must be on the 
-OPB because the memory is 16-bit.  Is there any way to move the memory 
-controller to the PLB thus avoiding the cache problem (for RAM at least)?
-
-- aidan
+PS: If this is not architecture-specific and should be asked on the 
+linux-kernel mailing list, please let me know.
