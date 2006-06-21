@@ -1,19 +1,24 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 6EB5667B2C
+Return-Path: <DaveLiu@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 1C75B67A40
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Jun 2006 05:30:10 +1000 (EST)
-To: Kimmo Surakka <kimmo.surakka@oxinst.fi>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Lite5200 NFS mount issue 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 20 Jun 2006 15:03:27 +0300."
-	<200606201503.27928.kimmo.surakka@oxinst.fi>
-Date: Tue, 20 Jun 2006 21:30:08 +0200
-Sender: wd@denx.de
-Message-Id: <20060620193008.6A56E353CB4@atlas.denx.de>
-Cc: Bjorn.Ostby@combitech.se, linuxppc-embedded@ozlabs.org
+	Wed, 21 Jun 2006 15:21:59 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	k5L6cdFq025953 for <linuxppc-embedded@ozlabs.org>;
+	Wed, 21 Jun 2006 00:38:39 -0600 (MDT)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k5L5LsuY003045
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 21 Jun 2006 00:21:56 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD4673026FD951@zch01exm40.ap.freescale.net>
+From: Liu Dave-r63238 <DaveLiu@freescale.com>
+To: "'Prabhat_Singh'" <Prabhat_Singh@Satyam.com>, linuxppc-embedded@ozlabs.org
+Subject: RE: Exceptions during PCI initialization at u-boot
+Date: Wed, 21 Jun 2006 13:21:54 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +29,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200606201503.27928.kimmo.surakka@oxinst.fi> you wrote:
+Can you give me the more information of context? For example,
+What is the PCI initialize code you used? What is the PCI bus write operation?
+
+-Dave
+
+> -----Original Message-----
+> From: Prabhat_Singh [mailto:Prabhat_Singh@Satyam.com] 
+> Sent: Tuesday, June 20, 2006 8:19 PM
+> To: Liu Dave-r63238; linuxppc-embedded@ozlabs.org
+> Subject: RE: Exceptions during PCI initialization at u-boot
 > 
-> Try adding the ",tcp" to the kernel's "nfsroot=..." parameter, i.e. use 
-> commandline "root=/dev/nfs rw nfsroot=10.3.67.98:/opt/eldk_4_0/ppc_6xx,tcp 
-> ip=10.3.67.99:10.3.67.98:10.3.67.1:::eth0:off panic=1".
-
-This should not be necessary. If it does help,  this  means  you  are
-just covering a bug.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Those who hate and fight must stop themselves -- otherwise it is  not
-stopped.
-	-- Spock, "Day of the Dove", stardate unknown
+> 
+> Hi Dave,
+> Thanks for prompt response, it's really helped. 
+> 
+> By reading ESR (error status register) I found that machine 
+> check exception is coming because of "PCI parity error 
+> received on a write" bit 7 of ESR is getting set.
+> 
+> Can you tell me reason and the possible solution for this one.
+> 
+> Regards
+> Prabhat
+> 
