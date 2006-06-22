@@ -1,20 +1,23 @@
-Return-Path: <rjw@sisk.pl>
-Received: from ogre.sisk.pl (ogre.sisk.pl [217.79.144.158])
-	by ozlabs.org (Postfix) with ESMTP id 2C33D67A41
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2006 21:27:07 +1000 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A24F6679FF
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2006 21:35:24 +1000 (EST)
 Subject: Re: [linux-pm] windfarm got signal
-Date: Thu, 22 Jun 2006 13:03:19 +0200
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <1150974836.16258.29.camel@johannes>
 References: <1150847482.16662.13.camel@johannes>
 	<1150956123.3633.23.camel@localhost.localdomain>
-In-Reply-To: <1150956123.3633.23.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200606221303.19860.rjw@sisk.pl>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Johannes Berg <johannes@sipsolutions.net>, linux-pm@lists.osdl.org
+	<200606221303.19860.rjw@sisk.pl> <1150974836.16258.29.camel@johannes>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-/sAdrAZc/rURMiVNw6hm"
+Date: Thu, 22 Jun 2006 13:34:52 +0200
+Message-Id: <1150976092.16258.33.camel@johannes>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 22 June 2006 08:02, Benjamin Herrenschmidt wrote:
-> On Wed, 2006-06-21 at 01:51 +0200, Johannes Berg wrote:
-> > Hey,
-> > 
-> > after cpu hotplug I decided to write some fake suspend routines for
-> > ppc64 that always fail to see what all the drivers would say... The
-> > first thing I saw was during the phase where all threads are stopped,
-> > that windfarm got a signal!
-> > 
-> > Shortly after that, the fans were revved up fully but I guess that's
-> > expected if the wf control loop exits.
-> > 
-> > So now I'm trying to see *why* it got a signal there. Any ideas? Is that
-> > expected with pm and windfarm just does the wrong thing there by taking
-> > the signal as a reason to exit the control thread?
-> > 
-> > [code in question is windfarm_core.c:wf_thread_func]
-> 
-> I think it's the way the freezer works ... it sends a pseudo signal to
-> all kernel threads who are then supposed to do something like test for
-> PF_FREEZE or something like that.
 
-Yes.  More precisely, they are supposed to use try_to_freeze().
+--=-/sAdrAZc/rURMiVNw6hm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Please see Documentation/power/kernel_threads.txt.
+On Thu, 2006-06-22 at 13:13 +0200, Johannes Berg wrote:
 
-Greetings,
-Rafael
+> Thanks, I'll look and submit a patch. It does try_to_freeze() but also
+> checks for pending signals.
+
+Ah. The code is just in the wrong order:
+while (!kthread_should_stop()) {
+  try_to_freeze();
+  ...
+  schedule_timeout_interruptible(...);
+  if (signal_pending())
+    break;
+}
+
+Would it be correct to just move the try_to_freeze() before the
+signal_pending() statement?
+
+johannes
+
+--=-/sAdrAZc/rURMiVNw6hm
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARJqAWqVg1VMiehFYAQJ9nBAAttPDJ/s3q+YNip4cXggIdDAh9z6DUh4Y
+HDlEpQNf3ZHYRdMPglbdS/qplnNr+IEDSAEU9Q7+yfFiYy61DjtklDFKztIDcdf9
+XsSINiqlqgfy4L0zqsBU658m3VAJX9laAp35YbRULCpSFylrXSenWLhdgx3sNSdj
+z6oUcAadxkvquG1DzQaTaoGls+7wjw2TFKCh7ihYlOp+QVw/zDdVpCWPoamsrGsE
+zMRFf6njisWnXp4HNgLm7otcOlVRPJ8tbN8JrwDcJoSGHCEXqe7vAGVXDE8fWAZN
+B05OCOX7CvecdAzWdULNy4oDfmiCfNglQvnMEtW/RgAmeZtw45DooJJLlhreBQKB
+d2kUOxGb3kXlFRpyOo/WaYWjAoUFP5ljmg/5Ws6RXcdRTWXVovE0kH28bgF5liRM
+eUsVs33GOP9hlZjBX1bxaPslvX6dj0mr3zes+zsH1yULY37NeydwycZZJ/kIh4lj
+USwmTuiRlxbBDANZnGVQ7s5V1CC2ix9ppW1fbkHhb0orguyPm3PpUb+oStzcWrhW
+rg2GbL7vOJu9PvBIDvhV9+oaHUfOQxBQKZGS1bQ+Fq7B2t1OWzdgNnmFOOpwyLY6
+NZolY3sSw4AngWu1gdY+XrfFqr/mSuP9ak2TCSluvwL0ZfMoNRhCYDcPaayxVbAu
+vEnm+5/8Cc0=
+=RD6p
+-----END PGP SIGNATURE-----
+
+--=-/sAdrAZc/rURMiVNw6hm--
