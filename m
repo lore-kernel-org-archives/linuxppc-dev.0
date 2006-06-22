@@ -1,20 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <jimix@watson.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 647CF679A6
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2006 16:02:18 +1000 (EST)
-Subject: Re: windfarm got signal
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1150847482.16662.13.camel@johannes>
-References: <1150847482.16662.13.camel@johannes>
-Content-Type: text/plain
-Date: Thu, 22 Jun 2006 16:02:03 +1000
-Message-Id: <1150956123.3633.23.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linux-pm <linux-pm@lists.osdl.org>
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 042FF679FC
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2006 20:58:45 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k5MAwf1Y012109
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2006 06:58:41 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k5MAwq5f101802
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2006 04:58:52 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k5MAweQO004785
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Jun 2006 04:58:40 -0600
+In-Reply-To: <20060621235156.GA5414@pb15.lixom.net>
+References: <E1FtBvP-00026H-TC@kmac.watson.ibm.com>
+	<20060621235156.GA5414@pb15.lixom.net>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6BBF4F7C-1375-41FF-8D42-43BEC67194CC@watson.ibm.com>
+From: Jimi Xenidis <jimix@watson.ibm.com>
+Subject: Re: [PATCH] Don't access HID registers if running on a Hypervisor.
+Date: Thu, 22 Jun 2006 06:58:01 -0400
+To: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +39,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-06-21 at 01:51 +0200, Johannes Berg wrote:
-> Hey,
-> 
-> after cpu hotplug I decided to write some fake suspend routines for
-> ppc64 that always fail to see what all the drivers would say... The
-> first thing I saw was during the phase where all threads are stopped,
-> that windfarm got a signal!
-> 
-> Shortly after that, the fans were revved up fully but I guess that's
-> expected if the wf control loop exits.
-> 
-> So now I'm trying to see *why* it got a signal there. Any ideas? Is that
-> expected with pm and windfarm just does the wrong thing there by taking
-> the signal as a reason to exit the control thread?
-> 
-> [code in question is windfarm_core.c:wf_thread_func]
 
-I think it's the way the freezer works ... it sends a pseudo signal to
-all kernel threads who are then supposed to do something like test for
-PF_FREEZE or something like that.
+On Jun 21, 2006, at 7:51 PM, Olof Johansson wrote:
 
-Ben.
+> On Wed, Jun 21, 2006 at 07:15:55PM -0400, Jimi Xenidis wrote:
+>>
+>> The following patch avoids accessing Hypervisor privilege HID
+>> registers when running on a Hypervisor (MSR[HV]=0).
+>
+> I'm curious, why is this causing problems now?
+Every once in a while I run Xen on one of our simulators thats is  
+sensitive to this code that does this.
+First time we hit it (a while ago) we discovered that mtsdr1 was used  
+(even though a no-op)
+
+> JS20 has been running
+> that code with a hypervisor since a long time back.
+
+970s consider this a no-op (I believe an expensive one) especially  
+when you consider some of the synchronization issues around the mtspr  
+HIDx.
+And though this is 970 specific code, Cell and future processors,  
+will no longer allow writing to to these registers if !(MSR[0]=1 &&  
+MSR[PR]=0)
+
+-JX
