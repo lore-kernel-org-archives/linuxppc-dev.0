@@ -1,20 +1,23 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 7BEBD67A42
+Return-Path: <filippo.capurso@dave-tech.it>
+Received: from dave-tech.it
+	(host46-203-static.38-85-b.business.telecomitalia.it [85.38.203.46])
+	by ozlabs.org (Postfix) with SMTP id 3A9D8679E2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Jun 2006 09:20:14 +1000 (EST)
-Received: from localhost.localdomain ([10.150.0.9])
-	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id k5LNKAs02437
-	for <linuxppc-embedded@ozlabs.org>; Thu, 22 Jun 2006 04:20:10 +0500
-Date: Thu, 22 Jun 2006 03:20:07 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: MPC8560 CPM drivers
-Message-ID: <20060622032007.0c605bd1@localhost.localdomain>
-In-Reply-To: <43EB80E07C42E1408726E4905FB96B0466C9CF@CYBORG3.cyclone.com>
-References: <43EB80E07C42E1408726E4905FB96B0466C9CF@CYBORG3.cyclone.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Thu, 22 Jun 2006 17:32:57 +1000 (EST)
+Message-ID: <449A47A4.6030300@dave-tech.it>
+Date: Thu, 22 Jun 2006 09:32:52 +0200
+From: Filippo Capurso <filippo.capurso@dave-tech.it>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Linux on Virtex4
+References: <821B2170E9E7F04FA38DF7EC21DE48710573FD21@VCAEXCH01.hq.corp.viasat.com>	
+	<528646bc0606191638j64448168ia19d6a97ab81e648@mail.gmail.com>	
+	<4498F1E7.5010900@dave-tech.it>
+	<528646bc0606210055m71277d1fl66dacfa7cd7ed203@mail.gmail.com>
+In-Reply-To: <528646bc0606210055m71277d1fl66dacfa7cd7ed203@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: filippo.capurso@dave-tech.it
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,63 +28,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-На Wed, 21 Jun 2006 15:57:14 -0400
-"Scott Coulter" <scott.coulter@cyclone.com> записано:
+Hi Grant,
 
-> 
-> Hi everyone,
-> 
-> I have a MPC8560 driver availability question that perhaps someone can
-> answer.
-> 
-> My company has built a board for a customer with an MPC8560 on it.
-> The board has been designed so that the CPM can support several I/O
-> interfaces using an external PMC-Sierra COMET device.  Originally, the
-> customer was planning to use VxWorks and port an existing pSOS driver
-> that was written for the CPM on the MPC8260.  They are now inquiring
-> about linux driver support for the CPM.  I currently have version
-> 2.6.15 of the kernel running on the board.
-> 
-> Does anyone know what exists as far as driver support for the CPM on
-> the 8560?  Specifically, the customer is looking to run the CPM with
-> the following interfaces:
-> 
-> TDM T1
-> TDM E1
-> ATM T1
-> ATM E1
-> 
-> If there is currently no support, does anyone know if there are any
-> drivers in the works?
-> 
+Thank you for your kind answer.
 
-I'm aware of http://mpc8260sar.sourceforge.net
+> Yes, I had seen your message; but I'm not an expert on the 4xx mmu.  I
+> haven't seen that behaviour on my board.
+> 
+> Double check your memory ranges.  Have you given the kernel real RAM?
+I'll investigate further on that...
 
-and http://atm8260.sourceforge.net, that utilize ATM from CPM (cpm1
-and cpm2), but dunno if it is definitely the thing you are looking
-for... 
+Anyway, is your porting to the ML403 intended to work on Xilinx 
+reference design? I haven't exactly this design on my Virtex-4 because 
+I've remapped the flash memory to the end of the CPU address space in 
+order to execute automatically U-Boot after the configuration process... 
+also, obviously, I haven't any BRAM on this design (it was mapped at the 
+end of the address space).
+The only thing that I've done to recompile the kernel for my project is 
+replacing the xparameters_ml403.h file with the EDK generated one. Is 
+this correct? Other things to do? My aim just now is to get a working 
+kernel with serial port support only.
+Thank you.
 
-> Thanks in advance,
-> 
-> Scott
-> 
-> 
-> 
-> 
-> ___________________________________________________________________
-> 
->   Scott N. Coulter
->   Senior Software Engineer
->   
->   Cyclone Microsystems          
->   370 James Street              Phone:  203.786.5536 ext. 118
->   New Haven, CT 06513-3051      Email:  scott.coulter@cyclone.com
->   U.S.A.                        Web:    http://www.cyclone.com
-> ___________________________________________________________________
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
-> 
+Filippo Capurso
+
+-- 
+
+DAVE Srl - Electronics System House
+via Forniz 2/1
+33080 Porcia (PN) - Italy
+Telephone: +39.0434.921215
+Telefax: +39.0434.1994030
+Freefax: +39.02.700520062
+web: www.dave-tech.it
+e-mail: filippo.capurso@dave-tech.it
+how to reach us: http://mail.map24.com/dave
