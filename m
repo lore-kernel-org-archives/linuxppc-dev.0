@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 23 Jun 2006 18:17:32 +1000
-Subject: [PATCH] Make kexec_setup() a regular initcall
-Message-Id: <20060623081730.0864067BC3@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Date: Fri, 23 Jun 2006 18:20:09 +1000
+Subject: [PATCH 1/8] Setup the boot cpu's paca pointer in C rather than asm
+Message-Id: <20060623082006.9669B67A76@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,60 +14,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There's no reason kexec_setup() needs to be called explicitly from
-setup_system(), it can just be a regular initcall.
+There's no need to set the boot cpu paca in asm, so do it in C so us
+mere mortals can understand it.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/kernel/machine_kexec_64.c |    4 +++-
- arch/powerpc/kernel/setup_64.c         |    4 ----
- include/asm-powerpc/kexec.h            |    1 -
- 3 files changed, 3 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/head_64.S  |   11 -----------
+ arch/powerpc/kernel/setup_64.c |    9 ++++++++-
+ 2 files changed, 8 insertions(+), 12 deletions(-)
 
-Index: to-merge/arch/powerpc/kernel/machine_kexec_64.c
+Index: to-merge/arch/powerpc/kernel/head_64.S
 ===================================================================
---- to-merge.orig/arch/powerpc/kernel/machine_kexec_64.c
-+++ to-merge/arch/powerpc/kernel/machine_kexec_64.c
-@@ -378,11 +378,13 @@ static void __init export_crashk_values(
- 	of_node_put(node);
- }
+--- to-merge.orig/arch/powerpc/kernel/head_64.S
++++ to-merge/arch/powerpc/kernel/head_64.S
+@@ -1976,17 +1976,6 @@ _STATIC(start_here_common)
+ 	/* Not reached */
+ 	BUG_OPCODE
  
--void __init kexec_setup(void)
-+static int __init kexec_setup(void)
- {
- 	export_htab_values();
- 	export_crashk_values();
-+	return 0;
- }
-+__initcall(kexec_setup);
- 
- static int __init early_parse_crashk(char *p)
- {
+-/* Put the paca pointer into r13 and SPRG3 */
+-_GLOBAL(setup_boot_paca)
+-	LOAD_REG_IMMEDIATE(r3, boot_cpuid)
+-	lwz	r3,0(r3)
+-	LOAD_REG_IMMEDIATE(r4, paca) 	/* Get base vaddr of paca array	 */
+-	mulli	r3,r3,PACA_SIZE		/* Calculate vaddr of right paca */
+-	add	r13,r3,r4		/* for this processor.		 */
+-	mtspr	SPRN_SPRG3,r13
+-
+-	blr
+-
+ /*
+  * We put a few things here that have to be page-aligned.
+  * This stuff goes at the beginning of the bss, which is page-aligned.
 Index: to-merge/arch/powerpc/kernel/setup_64.c
 ===================================================================
 --- to-merge.orig/arch/powerpc/kernel/setup_64.c
 +++ to-merge/arch/powerpc/kernel/setup_64.c
-@@ -350,10 +350,6 @@ void __init setup_system(void)
- 	 */
- 	unflatten_device_tree();
+@@ -149,6 +149,13 @@ early_param("smt-enabled", early_smt_ena
+ #define check_smt_enabled()
+ #endif /* CONFIG_SMP */
  
--#ifdef CONFIG_KEXEC
--	kexec_setup();	/* requires unflattened device tree. */
--#endif
--
- 	/*
- 	 * Fill the ppc64_caches & systemcfg structures with informations
- 	 * retrieved from the device-tree. Need to be called before
-Index: to-merge/include/asm-powerpc/kexec.h
-===================================================================
---- to-merge.orig/include/asm-powerpc/kexec.h
-+++ to-merge/include/asm-powerpc/kexec.h
-@@ -112,7 +112,6 @@ static inline void crash_setup_regs(stru
- #ifdef __powerpc64__
- extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
- 					  master to copy new code to 0 */
--extern void __init kexec_setup(void);
- extern int crashing_cpu;
- extern void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *));
- #endif /* __powerpc64 __ */
++/* Put the paca pointer into r13 and SPRG3 */
++void __init setup_paca(int cpu)
++{
++	local_paca = &paca[cpu];
++	mtspr(SPRN_SPRG3, local_paca);
++}
++
+ /*
+  * Early initialization entry point. This is called by head.S
+  * with MMU translation disabled. We rely on the "feature" of
+@@ -183,7 +190,7 @@ void __init early_setup(unsigned long dt
+ 	early_init_devtree(__va(dt_ptr));
+ 
+ 	/* Now we know the logical id of our boot cpu, setup the paca. */
+-	setup_boot_paca();
++	setup_paca(boot_cpuid);
+ 
+ 	/* Fix up paca fields required for the boot cpu */
+ 	get_paca()->cpu_start = 1;
