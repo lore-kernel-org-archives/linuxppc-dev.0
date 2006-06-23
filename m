@@ -1,19 +1,17 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.de [213.165.64.21])
-	by ozlabs.org (Postfix) with SMTP id 5CB6F67AC5
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 09:49:44 +1000 (EST)
-Date: Sat, 24 Jun 2006 01:49:39 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: cpu power "management" for non-dfs chips with no pmu (for
-	instance, 750cxe and mpc7447 in pegasos)
-In-Reply-To: <E1Ftmcb-0007rG-QS@jdl.com>
-Message-ID: <Pine.LNX.4.60.0606240147560.15705@poirot.grange>
-References: <01ca01c696cd$2e453f30$99dfdfdf@bakuhatsu.net>
-	<E1Ftmcb-0007rG-QS@jdl.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 1557A67B33
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 09:59:08 +1000 (EST)
+Received: from localhost.localdomain ([10.150.0.9])
+	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id k5NNx6s03305
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 04:59:06 +0500
+Date: Sat, 24 Jun 2006 03:59:04 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 0/6] Add mpc8560 support to powerpc
+Message-ID: <20060624035904.162b0276@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 23 Jun 2006, Jon Loeliger wrote:
+This is a first preliminary series to move 8560ads to powerpc and hence finish 
+85xx family in terms of merge. Subsequient fs_enet patches are strictly required 
+for the following to work, but submitted here as reference only 
+(will be updated and sent to netdev shortly).
 
-> See?  You _are_ contributing already.  I encourage
-> you to hit the linux-pm@lists.osdl.org list for a spell!
-> 
-> You could start here:
-> 	https://lists.osdl.org/mailman/listinfo/linux-pm
+ATM not all points are adressed, there still may be bugs, but in general it works and have most
+of the SoC stuff (UARTs, Gig eth, 100BaseT FCC) as well as the PCI stuff.
 
-Sorry, I looked at the list archives and didn't find any search, could 
-you, please, post a link to the thread or the subject line?
+All the comments are greatly appreciated.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+--
+Sincerely, Vitaly
