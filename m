@@ -3,16 +3,16 @@ Received: from localhost.localdomain (cdma-41-194.msk.skylink.ru
 	[83.217.41.194])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 77F4C67B4D
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 09:46:41 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id F2BDE67B14
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 09:46:45 +1000 (EST)
 Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
-	by localhost.localdomain (8.13.6/8.13.6) with ESMTP id k5NNGtZ7006730
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 03:16:56 +0400
+	by localhost.localdomain (8.13.6/8.13.6) with ESMTP id k5NNH7fW006755
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 03:17:08 +0400
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 1/6] PAL: Support of the fixed PHY
-Date: Sat, 24 Jun 2006 03:16:55 +0400
-Message-Id: <20060623231655.6721.66947.stgit@localhost.localdomain>
+Subject: [PATCH 5/6] CPM_UART: unify clock sources
+Date: Sat, 24 Jun 2006 03:17:07 +0400
+Message-Id: <20060623231707.6721.43277.stgit@localhost.localdomain>
 In-Reply-To: <20060623231648.6721.3495.stgit@localhost.localdomain>
 References: <20060623231648.6721.3495.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -26,125 +26,167 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This makes it possible for HW PHY-less boards to utilize PAL goodies.
-Generic routines to connect to fixed PHY are provided, as well as ability
-to specify software callback that fills up link, speed, etc. information
-into PHY descriptor (the latter feature not tested so far).
+In order to make it possible to utilize the driver from arch/powerpc yet not
+breaking existing ppc users, clock sources are unfied via macro, and
+resources ioremapped.
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 ---
 
- drivers/net/phy/Kconfig      |   17 ++++++++++++++
- drivers/net/phy/phy_device.c |   51 +++++++++++++++++++++++++-----------------
- include/linux/phy.h          |    1 +
- 3 files changed, 48 insertions(+), 21 deletions(-)
+ drivers/serial/cpm_uart/cpm_uart_core.c |   11 ++++-------
+ drivers/serial/cpm_uart/cpm_uart_cpm2.c |   13 +++++++------
+ include/asm-powerpc/fs_pd.h             |   17 +++++++++++++++++
+ include/asm-ppc/fs_pd.h                 |   17 +++++++++++++++++
+ 4 files changed, 45 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
-index 76e51b1..e977fe1 100644
---- a/drivers/net/phy/Kconfig
-+++ b/drivers/net/phy/Kconfig
-@@ -50,5 +50,22 @@ config VITESSE_PHY
-         ---help---
-           Currently supports the vsc8244
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
+index 5cba59a..0507f74 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -47,6 +47,7 @@ #include <linux/fs_uart_pd.h>
+ #include <asm/io.h>
+ #include <asm/irq.h>
+ #include <asm/delay.h>
++#include <asm/fs_pd.h>
  
-+config FIXED_PHY
-+	tristate "Drivers for PHY emulation on fixed speed/link"
-+	depends on PHYLIB
-+	---help---
-+	  Adds the driver to PHY layer to cover the boards that do not have any PHY bound,
-+	  but with the ability to manipulate with speed/link in software. The relavant MII
-+	  speed/duplex parameters could be effectively handled in user-specified  fuction.
-+	  Currently tested with mpc866ads.
-+
-+config FIXED_MII_10_FDX
-+	bool "Emulation for 10M Fdx fixed PHY behavior"
-+	depends on FIXED_PHY
-+
-+config FIXED_MII_100_FDX
-+	bool "Emulation for 100M Fdx fixed PHY behavior"
-+	depends on FIXED_PHY
-+
- endmenu
+ #if defined(CONFIG_SERIAL_CPM_CONSOLE) && defined(CONFIG_MAGIC_SYSRQ)
+ #define SUPPORT_SYSRQ
+@@ -1045,11 +1046,11 @@ int cpm_uart_drv_get_platform_data(struc
  
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 7da0e3d..dfdafe9 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -46,6 +46,35 @@ static struct phy_driver genphy_driver;
- extern int mdio_bus_init(void);
- extern void mdio_bus_exit(void);
+ 	if (!(r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs")))
+ 		return -EINVAL;
+-	mem = r->start;
++	mem = ioremap(r->start, r->end - r->start + 1);
  
-+struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id)
-+{
-+	struct phy_device *dev;
-+	/* We allocate the device, and initialize the
-+	 * default values */
-+	dev = kcalloc(1, sizeof(*dev), GFP_KERNEL);
-+
-+	if (NULL == dev)
-+		return PTR_ERR(-ENOMEM);
-+
-+	dev->speed = 0;
-+	dev->duplex = -1;
-+	dev->pause = dev->asym_pause = 0;
-+	dev->link = 1;
-+
-+	dev->autoneg = AUTONEG_ENABLE;
-+
-+	dev->addr = addr;
-+	dev->phy_id = phy_id;
-+	dev->bus = bus;
-+
-+	dev->state = PHY_DOWN;
-+
-+	spin_lock_init(&dev->lock);
-+
-+	return dev;
-+}
-+EXPORT_SYMBOL(phy_device_create);
-+
- /* get_phy_device
-  *
-  * description: Reads the ID registers of the PHY at addr on the
-@@ -78,28 +107,8 @@ struct phy_device * get_phy_device(struc
- 	/* If the phy_id is all Fs, there is no device there */
- 	if (0xffffffff == phy_id)
- 		return NULL;
--
--	/* Otherwise, we allocate the device, and initialize the
--	 * default values */
--	dev = kcalloc(1, sizeof(*dev), GFP_KERNEL);
+ 	if (!(r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram")))
+ 		return -EINVAL;
+-	pram = r->start;
++	pram = ioremap(r->start, r->end - r->start + 1);
  
--	if (NULL == dev)
--		return ERR_PTR(-ENOMEM);
+ 	if(idx > fsid_smc2_uart) {
+ 		pinfo->sccp = (scc_t *)mem;
+@@ -1190,11 +1191,7 @@ static int __init cpm_uart_console_setup
+ 	if (options) {
+ 		uart_parse_options(options, &baud, &parity, &bits, &flow);
+ 	} else {
+-		bd_t *bd = (bd_t *) __res;
 -
--	dev->speed = 0;
--	dev->duplex = -1;
--	dev->pause = dev->asym_pause = 0;
--	dev->link = 1;
--
--	dev->autoneg = AUTONEG_ENABLE;
--
--	dev->addr = addr;
--	dev->phy_id = phy_id;
--	dev->bus = bus;
--
--	dev->state = PHY_DOWN;
--
--	spin_lock_init(&dev->lock);
-+	dev = phy_device_create(bus, addr, phy_id);
+-		if (bd->bi_baudrate)
+-			baud = bd->bi_baudrate;
+-		else
++		if ((baud = GET_BAUDRATE()) == -1)
+ 			baud = 9600;
+ 	}
  
- 	return dev;
- }
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index 331521a..9447a57 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -378,6 +378,7 @@ int phy_mii_ioctl(struct phy_device *phy
- 		struct mii_ioctl_data *mii_data, int cmd);
- int phy_start_interrupts(struct phy_device *phydev);
- void phy_print_status(struct phy_device *phydev);
-+struct phy_device* phy_device_create(struct mii_bus *bus, int addr, int phy_id);
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index cdba128..29b89f0 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -41,6 +41,7 @@ #include <linux/dma-mapping.h>
  
- extern struct bus_type mdio_bus_type;
- #endif /* __PHY_H */
+ #include <asm/io.h>
+ #include <asm/irq.h>
++#include <asm/fs_pd.h>
+ 
+ #include <linux/serial_core.h>
+ #include <linux/kernel.h>
+@@ -267,7 +268,7 @@ #ifdef CONFIG_SERIAL_CPM_SMC1
+ 	    (unsigned long)&cpm2_immr->im_smc[0];
+ 	cpm_uart_ports[UART_SMC1].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
+ 	cpm_uart_ports[UART_SMC1].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
+-	cpm_uart_ports[UART_SMC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SMC1].port.uartclk = FS_UART_CLK();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
+ #endif
+ 
+@@ -280,7 +281,7 @@ #ifdef CONFIG_SERIAL_CPM_SMC2
+ 	    (unsigned long)&cpm2_immr->im_smc[1];
+ 	cpm_uart_ports[UART_SMC2].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
+ 	cpm_uart_ports[UART_SMC2].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
+-	cpm_uart_ports[UART_SMC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SMC2].port.uartclk = FS_UART_CLK();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
+ #endif
+ 
+@@ -294,7 +295,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC1
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC1].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC1].port.uartclk = FS_UART_CLK();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
+ #endif
+ 
+@@ -308,7 +309,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC2
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC2].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC2].port.uartclk = FS_UART_CLK();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
+ #endif
+ 
+@@ -322,7 +323,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC3
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC3].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC3].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC3].port.uartclk = FS_UART_CLK();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
+ #endif
+ 
+@@ -336,7 +337,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC4
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC4].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC4].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC4].port.uartclk = FS_UART_CLK();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
+ #endif
+ 
+diff --git a/include/asm-powerpc/fs_pd.h b/include/asm-powerpc/fs_pd.h
+new file mode 100644
+index 0000000..b20d8da
+--- /dev/null
++++ b/include/asm-powerpc/fs_pd.h
+@@ -0,0 +1,17 @@
++/*
++ * Platform information definitions.
++ *
++ * 2006 (c) MontaVista Software, Inc.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#ifndef FS_PD_H
++#define FS_PD_H
++
++#define GET_BAUDRATE()	get_baudrate()
++#define FS_UART_CLK()	get_intfreq()
++
++#endif
+diff --git a/include/asm-ppc/fs_pd.h b/include/asm-ppc/fs_pd.h
+new file mode 100644
+index 0000000..b1d550b
+--- /dev/null
++++ b/include/asm-ppc/fs_pd.h
+@@ -0,0 +1,17 @@
++/*
++ * Platform information definitions.
++ *
++ * 2006 (c) MontaVista Software, Inc.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#ifndef FS_PD_H
++#define FS_PD_H
++
++#define GET_BAUDRATE()	(((bd_t *) __res)->bi_baudrate ? ((bd_t *) __res)->bi_baudrate : -1)
++#define FS_UART_CLK()	(((bd_t *) __res)->bi_intfreq)
++
++#endif
