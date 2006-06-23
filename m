@@ -1,9 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 23 Jun 2006 18:20:09 +1000
-Subject: [PATCH 1/8] Setup the boot cpu's paca pointer in C rather than asm
-Message-Id: <20060623082006.9669B67A76@ozlabs.org>
+Date: Fri, 23 Jun 2006 18:20:10 +1000
+Subject: [PATCH 2/8] Assume we're on cpu 0 in early boot
+Message-Id: <20060623082007.34A9867A79@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,62 +14,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There's no need to set the boot cpu paca in asm, so do it in C so us
-mere mortals can understand it.
+There's a small period early in boot where we don't know which cpu we're
+running on. That's ok, except that it means we have no paca, or more
+correctly that our paca pointer points somewhere random.
+
+So that we can safely call things like smp_processor_id(), we need a paca,
+so just assume we're on cpu 0. No code should _write_ to the paca before
+we've set the correct one up.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/kernel/head_64.S  |   11 -----------
- arch/powerpc/kernel/setup_64.c |    9 ++++++++-
- 2 files changed, 8 insertions(+), 12 deletions(-)
+ arch/powerpc/kernel/head_64.S |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
 Index: to-merge/arch/powerpc/kernel/head_64.S
 ===================================================================
 --- to-merge.orig/arch/powerpc/kernel/head_64.S
 +++ to-merge/arch/powerpc/kernel/head_64.S
-@@ -1976,17 +1976,6 @@ _STATIC(start_here_common)
- 	/* Not reached */
- 	BUG_OPCODE
+@@ -1583,9 +1583,6 @@ _GLOBAL(__start_initialization_multiplat
+ 	/* Setup some critical 970 SPRs before switching MMU off */
+ 	bl	.__970_cpu_preinit
  
--/* Put the paca pointer into r13 and SPRG3 */
--_GLOBAL(setup_boot_paca)
--	LOAD_REG_IMMEDIATE(r3, boot_cpuid)
--	lwz	r3,0(r3)
--	LOAD_REG_IMMEDIATE(r4, paca) 	/* Get base vaddr of paca array	 */
--	mulli	r3,r3,PACA_SIZE		/* Calculate vaddr of right paca */
--	add	r13,r3,r4		/* for this processor.		 */
--	mtspr	SPRN_SPRG3,r13
+-	/* cpu # */
+-	li	r24,0
 -
--	blr
--
- /*
-  * We put a few things here that have to be page-aligned.
-  * This stuff goes at the beginning of the bss, which is page-aligned.
-Index: to-merge/arch/powerpc/kernel/setup_64.c
-===================================================================
---- to-merge.orig/arch/powerpc/kernel/setup_64.c
-+++ to-merge/arch/powerpc/kernel/setup_64.c
-@@ -149,6 +149,13 @@ early_param("smt-enabled", early_smt_ena
- #define check_smt_enabled()
- #endif /* CONFIG_SMP */
+ 	/* Switch off MMU if not already */
+ 	LOAD_REG_IMMEDIATE(r4, .__after_prom_start - KERNELBASE)
+ 	add	r4,r4,r30
+@@ -1908,6 +1905,13 @@ _STATIC(start_here_multiplatform)
+ 	bl	.__save_cpu_setup
+ 	sync
  
-+/* Put the paca pointer into r13 and SPRG3 */
-+void __init setup_paca(int cpu)
-+{
-+	local_paca = &paca[cpu];
-+	mtspr(SPRN_SPRG3, local_paca);
-+}
++	/* Assume we're on cpu for now, we don't actually know yet.
++	 * The early setup code should not write to any paca fields until
++	 * after we've setup the correct paca. See early_setup() */
++	li	r24,0
++	li	r3,0
++	bl	.setup_paca
 +
- /*
-  * Early initialization entry point. This is called by head.S
-  * with MMU translation disabled. We rely on the "feature" of
-@@ -183,7 +190,7 @@ void __init early_setup(unsigned long dt
- 	early_init_devtree(__va(dt_ptr));
+ 	/* Do very early kernel initializations, including initial hash table,
+ 	 * stab and slb setup before we turn on relocation.	*/
  
- 	/* Now we know the logical id of our boot cpu, setup the paca. */
--	setup_boot_paca();
-+	setup_paca(boot_cpuid);
- 
- 	/* Fix up paca fields required for the boot cpu */
- 	get_paca()->cpu_start = 1;
