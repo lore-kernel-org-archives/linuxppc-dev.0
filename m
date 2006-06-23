@@ -1,19 +1,22 @@
 Return-Path: <jdl@jdl.com>
-Received: from jdl.com (mail.jdl.com [66.118.10.122])
+Received: from jdl.com (colo.jdl.com [66.118.10.122])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2093B67A65
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 00:06:14 +1000 (EST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Use IRQ and senses from OF-tree on 8641hpcn. 
+	by ozlabs.org (Postfix) with ESMTP id F33A967A66
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 00:11:30 +1000 (EST)
+Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.44)
+	id 1FtmNa-0007pV-57
+	for linuxppc-dev@ozlabs.org; Fri, 23 Jun 2006 09:11:27 -0500
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Subject: 8641 HPCN Flat Device Tree (was: [PATCH] Use IRQ and senses from
+	OF-tree on 8641hpcn.)
 In-Reply-To: Your message of "Fri, 23 Jun 2006 10:11:37 +1000."
 	<1151021497.4046.79.camel@localhost.localdomain>
 References: <1150999473.9022.79.camel@cashmere.sps.mot.com>
 	<1151021497.4046.79.camel@localhost.localdomain>
-Date: Fri, 23 Jun 2006 09:06:09 -0500
+Date: Fri, 23 Jun 2006 09:11:26 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1FtmIT-0007p2-KW@jdl.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Message-Id: <E1FtmNa-0007pV-57@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +26,351 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Benjamin Herrenschmidt mumbled:
-> 
-> > +	shift = __ilog2((~interrupt_mask[0] + 1) & 0xffff);
-> 
-> Nice hack :)
 
-We aim to please. :-)
+Folks,
 
-> But not something mergeable as it strictly relies on the specific format
-> of the interrupt map on that platform :)
+For reference, here is the complete MPC8641 HPCN Device Tree Source
+file that we have been using.  Please feel free to comment on it.
+(And yes, I know we need to change the ethernet "address" property
+names -- that's on the Big To Do List still (for all the FSL boards)).
 
-Hrm.
-
-> I have a generic parser on the way, it's hot and will be released for
-> public consumption later today or this week-end along with the rest of
-> the irq patches.
-
-Chomp, chomp.
-
-> I'll need you guys to help porting the few embedded boards already in
-> arch/powerpc.
-
-Of course.  We've also lined Andy Fleming up to help
-with some 85xx parts, and Kim Phillips to help with
-some 83xx parts.  (Hi guys!)
-
-BTW and for (your) references, I will follow up with
-the complete MPC8641 HPCN DTS file here!
-
-Thanks,
+Thanks!
 jdl
+
+PS -- This version matches up with assuming the
+        "Use IRQ and senses from OF-tree on 8641hpcn"
+    patch has been applied.
+
+
+
+/*
+ * MPC8641 HPCN Device Tree Source
+ *
+ * Copyright 2006 Freescale Semiconductor Inc.
+ *
+ * This program is free software; you can redistribute  it and/or modify it
+ * under  the terms of  the GNU General  Public License as published by the
+ * Free Software Foundation;  either version 2 of the  License, or (at your
+ * option) any later version.
+ */
+
+
+/ {
+	model = "MPC8641HPCN";
+	compatible = "mpc86xx";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	linux,phandle = <100>;
+
+	cpus {
+		#cpus = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		linux,phandle = <200>;
+
+		PowerPC,8641@0 {
+			device_type = "cpu";
+			reg = <0>;
+			d-cache-line-size = <20>;	// 32 bytes
+			i-cache-line-size = <20>;	// 32 bytes
+			d-cache-size = <8000>;		// L1, 32K
+			i-cache-size = <8000>;		// L1, 32K
+			timebase-frequency = <0>;	// 33 MHz, from uboot
+			bus-frequency = <0>;		// From uboot
+			clock-frequency = <0>;		// From uboot
+			32-bit;
+			linux,phandle = <201>;
+			linux,boot-cpu;
+		};
+		PowerPC,8641@1 {
+			device_type = "cpu";
+			reg = <1>;
+			d-cache-line-size = <20>;	// 32 bytes
+			i-cache-line-size = <20>;	// 32 bytes
+			d-cache-size = <8000>;		// L1, 32K
+			i-cache-size = <8000>;		// L1, 32K
+			timebase-frequency = <0>;	// 33 MHz, from uboot
+			bus-frequency = <0>;		// From uboot
+			clock-frequency = <0>;		// From uboot
+			32-bit;
+			linux,phandle = <202>;
+		};
+	};
+
+	memory {
+		device_type = "memory";
+		linux,phandle = <300>;
+		reg = <00000000 40000000>;	// 1G at 0x0
+	};
+
+	soc8641@f8000000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		#interrupt-cells = <2>;
+		device_type = "soc";
+		ranges = <0 f8000000 00100000>;
+		reg = <f8000000 00100000>;	// CCSRBAR 1M
+		bus-frequency = <0>;
+
+		i2c@3000 {
+			device_type = "i2c";
+			compatible = "fsl-i2c";
+			reg = <3000 100>;
+			interrupts = <2b 2>;
+			interrupt-parent = <40000>;
+			dfsrr;
+		};
+
+		i2c@3100 {
+			device_type = "i2c";
+			compatible = "fsl-i2c";
+			reg = <3100 100>;
+			interrupts = <2b 2>;
+			interrupt-parent = <40000>;
+			dfsrr;
+		};
+
+		mdio@24520 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			device_type = "mdio";
+			compatible = "gianfar";
+			reg = <24520 20>;
+			linux,phandle = <24520>;
+			ethernet-phy@0 {
+				linux,phandle = <2452000>;
+				interrupt-parent = <40000>;
+				interrupts = <4a 1>;
+				reg = <0>;
+				device_type = "ethernet-phy";
+			};
+			ethernet-phy@1 {
+				linux,phandle = <2452001>;
+				interrupt-parent = <40000>;
+				interrupts = <4a 1>;
+				reg = <1>;
+				device_type = "ethernet-phy";
+			};
+			ethernet-phy@2 {
+				linux,phandle = <2452002>;
+				interrupt-parent = <40000>;
+				interrupts = <4a 1>;
+				reg = <2>;
+				device_type = "ethernet-phy";
+			};
+			ethernet-phy@3 {
+				linux,phandle = <2452003>;
+				interrupt-parent = <40000>;
+				interrupts = <4a 1>;
+				reg = <3>;
+				device_type = "ethernet-phy";
+			};
+		};
+
+		ethernet@24000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			device_type = "network";
+			model = "TSEC";
+			compatible = "gianfar";
+			reg = <24000 1000>;
+			address = [ 00 E0 0C 00 73 00 ];
+			interrupts = <1d 2 1e 2 22 2>;
+			interrupt-parent = <40000>;
+			phy-handle = <2452000>;
+		};
+
+		ethernet@25000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			device_type = "network";
+			model = "TSEC";
+			compatible = "gianfar";
+			reg = <25000 1000>;
+			address = [ 00 E0 0C 00 73 01 ];
+			interrupts = <23 2 24 2 28 2>;
+			interrupt-parent = <40000>;
+			phy-handle = <2452001>;
+		};
+		
+		ethernet@26000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			device_type = "network";
+			model = "TSEC";
+			compatible = "gianfar";
+			reg = <26000 1000>;
+			address = [ 00 E0 0C 00 02 FD ];
+			interrupts = <1F 2 20 2 21 2>;
+			interrupt-parent = <40000>;
+			phy-handle = <2452002>;
+		};
+
+		ethernet@27000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			device_type = "network";
+			model = "TSEC";
+			compatible = "gianfar";
+			reg = <27000 1000>;
+			address = [ 00 E0 0C 00 03 FD ];
+			interrupts = <25 2 26 2 27 2>;
+			interrupt-parent = <40000>;
+			phy-handle = <2452003>;
+		};
+		serial@4500 {
+			device_type = "serial";
+			compatible = "ns16550";
+			reg = <4500 100>;
+			clock-frequency = <0>;
+			interrupts = <2a 2>;
+			interrupt-parent = <40000>;
+		};
+
+		serial@4600 {
+			device_type = "serial";
+			compatible = "ns16550";
+			reg = <4600 100>;
+			clock-frequency = <0>;
+			interrupts = <2a 2>;
+			interrupt-parent = <40000>;
+		};
+
+		pci@8000 {
+			compatible = "86xx";
+			device_type = "pci";
+			linux,phandle = <8000>;
+			#interrupt-cells = <1>;
+			#size-cells = <2>;
+			#address-cells = <3>;
+			reg = <8000 1000>;
+			bus-range = <0 fe>;
+			ranges = <02000000 0 80000000 80000000 0 20000000
+				  01000000 0 00000000 e2000000 0 00100000>;
+			clock-frequency = <1fca055>;
+			interrupt-parent = <40000>;
+			interrupts = <18 2>;
+			interrupt-map-mask = <f800 0 0 f>;
+			interrupt-map = <
+				/* IDSEL 0x11 */
+				8800 0 0 1 40000 3 0
+				8800 0 0 2 40000 4 0
+				8800 0 0 3 40000 5 0
+				8800 0 0 4 40000 6 0
+
+				/* IDSEL 0x12 */
+				9000 0 0 1 40000 4 0
+				9000 0 0 2 40000 5 0
+				9000 0 0 3 40000 6 0
+				9000 0 0 4 40000 3 0
+
+				/* IDSEL 0x13 */
+				9800 0 0 1 40000 0 0
+				9800 0 0 2 40000 0 0
+				9800 0 0 3 40000 0 0
+				9800 0 0 4 40000 0 0
+
+				/* IDSEL 0x14 */
+				a000 0 0 1 40000 0 0
+				a000 0 0 2 40000 0 0
+				a000 0 0 3 40000 0 0
+				a000 0 0 4 40000 0 0
+
+				/* IDSEL 0x15 */
+				a800 0 0 1 40000 0 0
+				a800 0 0 2 40000 0 0
+				a800 0 0 3 40000 0 0
+				a800 0 0 4 40000 0 0
+
+				/* IDSEL 0x16 */
+				b000 0 0 1 40000 0 0
+				b000 0 0 2 40000 0 0
+				b000 0 0 3 40000 0 0
+				b000 0 0 4 40000 0 0
+
+				/* IDSEL 0x17 */
+				b800 0 0 1 40000 0 0
+				b800 0 0 2 40000 0 0
+				b800 0 0 3 40000 0 0
+				b800 0 0 4 40000 0 0
+
+				/* IDSEL 0x18 */
+				c000 0 0 1 40000 0 0
+				c000 0 0 2 40000 0 0
+				c000 0 0 3 40000 0 0
+				c000 0 0 4 40000 0 0
+
+				/* IDSEL 0x19 */
+				c800 0 0 1 40000 0 0
+				c800 0 0 2 40000 0 0
+				c800 0 0 3 40000 0 0
+				c800 0 0 4 40000 0 0
+
+				/* IDSEL 0x1a */
+				d000 0 0 1 40000 6 0
+				d000 0 0 2 40000 3 0
+				d000 0 0 3 40000 4 0
+				d000 0 0 4 40000 5 0
+
+
+				/* IDSEL 0x1b */
+				d800 0 0 1 40000 5 0
+				d800 0 0 2 40000 0 0
+				d800 0 0 3 40000 0 0
+				d800 0 0 4 40000 0 0
+
+				/* IDSEL 0x1c */
+				e000 0 0 1 40000 9 0
+				e000 0 0 2 40000 a 0
+				e000 0 0 3 40000 c 0
+				e000 0 0 4 40000 7 0
+
+				/* IDSEL 0x1d */
+				e800 0 0 1 40000 9 0
+				e800 0 0 2 40000 a 0
+				e800 0 0 3 40000 b 0
+				e800 0 0 4 40000 0 0
+
+				/* IDSEL 0x1e */
+				f000 0 0 1 40000 c 0
+				f000 0 0 2 40000 0 0
+				f000 0 0 3 40000 0 0
+				f000 0 0 4 40000 0 0
+
+				/* IDSEL 0x1f */
+				f800 0 0 1 40000 6 0
+				f800 0 0 2 40000 0 0
+				f800 0 0 3 40000 0 0
+				f800 0 0 4 40000 0 0
+				>;
+		};
+		pic@40000 {
+			linux,phandle = <40000>;
+			clock-frequency = <0>;
+			interrupt-controller;
+			#address-cells = <0>;
+			#interrupt-cells = <2>;
+			reg = <40000 40000>;
+			built-in;
+			compatible = "chrp,open-pic";
+			device_type = "open-pic";
+                        big-endian;
+			interrupts = <
+				10 2 11 2 12 2 13 2
+				14 2 15 2 16 2 17 2
+				18 2 19 2 1a 2 1b 2
+				1c 2 1d 2 1e 2 1f 2
+				20 2 21 2 22 2 23 2
+				24 2 25 2 26 2 27 2
+				28 2 29 2 2a 2 2b 2
+				2c 2 2d 2 2e 2 2f 2
+				30 2 31 2 32 2 33 2
+				34 2 35 2 36 2 37 2
+				38 2 39 2 2a 2 3b 2
+				3c 2 3d 2 3e 2 3f 2
+				48 1 49 2 4a 1
+				>;
+			interrupt-parent = <40000>;
+		};
+	};
+};
