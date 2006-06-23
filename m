@@ -1,14 +1,12 @@
 Return-Path: <arnd@arndb.de>
-Message-Id: <200606232103.01362.arnd@arndb.de>
-Date: Fri, 23 Jun 2006 21:03:01 +0200
+Message-Id: <20060623185825.013037000@klappe.arndb.de>
+References: <20060623185746.037897000@klappe.arndb.de>
+Date: Fri, 23 Jun 2006 20:57:50 +0200
 From: arnd@arndb.de
 To: paulus@samba.org
-Subject: [PATCH 0/5] trivial spufs fixes
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
+Subject: [PATCH 4/5] spufs: fix class0 interrupt assignment
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,7 +16,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These bug fixes have come up since the previous submission.
-Please merge for 2.6.18.
+The class zero interrupt handling for spus
+was confusing alignment and error interrupts,
+so swap them.
 
-	Arnd <><
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Index: linus-2.6/arch/powerpc/platforms/cell/spu_base.c
+===================================================================
+--- linus-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
++++ linus-2.6/arch/powerpc/platforms/cell/spu_base.c
+@@ -168,12 +168,12 @@ spu_irq_class_0_bottom(struct spu *spu)
+ 
+ 	stat &= mask;
+ 
+-	if (stat & 1) /* invalid MFC DMA */
+-		__spu_trap_invalid_dma(spu);
+-
+-	if (stat & 2) /* invalid DMA alignment */
++	if (stat & 1) /* invalid DMA alignment */
+ 		__spu_trap_dma_align(spu);
+ 
++	if (stat & 2) /* invalid MFC DMA */
++		__spu_trap_invalid_dma(spu);
++
+ 	if (stat & 4) /* error on SPU */
+ 		__spu_trap_error(spu);
+ 
+
+--
