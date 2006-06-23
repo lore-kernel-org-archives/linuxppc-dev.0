@@ -1,29 +1,15 @@
-Return-Path: <laurent.pinchart@tbox.biz>
-Received: from outmx001.isp.belgacom.be (outmx001.isp.belgacom.be
-	[195.238.5.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E539167B17
+Return-Path: <morphicsk@yahoo.com>
+Received: from web36911.mail.mud.yahoo.com (web36911.mail.mud.yahoo.com
+	[209.191.85.79]) by ozlabs.org (Postfix) with SMTP id 235B2679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Jun 2006 20:16:30 +1000 (EST)
-Received: from outmx001.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx001.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k5NAGJtl028514
-	for <linuxppc-embedded@ozlabs.org>; Fri, 23 Jun 2006 12:16:19 +0200
-	(envelope-from <laurent.pinchart@tbox.biz>)
-From: Laurent Pinchart <laurent.pinchart@tbox.biz>
+	Fri, 23 Jun 2006 23:23:25 +1000 (EST)
+Message-ID: <20060623131644.23606.qmail@web36911.mail.mud.yahoo.com>
+Date: Fri, 23 Jun 2006 06:16:44 -0700 (PDT)
+From: Jagan <morphicsk@yahoo.com>
+Subject: Reg RISC timers in MPC 8260
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: entry point of kernel in RAM at 0x0c--linux tree file name
-Date: Fri, 23 Jun 2006 12:18:14 +0200
-References: <edd12c050606220146i57282781o2052679c8f6108ef@mail.gmail.com>
-	<200606221735.15761.laurent.pinchart@tbox.biz>
-	<edd12c050606230253u5842ea5bvd78d06f0354cb4bd@mail.gmail.com>
-In-Reply-To: <edd12c050606230253u5842ea5bvd78d06f0354cb4bd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=utf-8
-Message-Id: <200606231218.14788.laurent.pinchart@tbox.biz>
-Cc: Arun Kumar <arunkat@gmail.com>
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,38 +20,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Arun,
+Hi
 
-please keep the list posted when you reply.
+We have a requirement of starting a 1 millisecond
+periodic timer in kernel space . The OS is monta vista
+linux kernel version 2.4 and
+Target is MPC 8260 . We are planning to use the RISC
+timers in CPM
+module. Can anyone send some sample reference code for
+starting a
+periodic timer for 1 millisecond using the RISC
+timers?
 
-> Thanks for the response .I would also like to ask another query hoever
-> naive it might sound .I am using a Linux 2.4.1
+Thanks in Advance
+Morphics 
 
-That's very old. Can't you upgrade to 2.6 ?
-
-> wherein my entry point 
-> code at 0x0c expects at R3 ,R4,R5,R6 some parameters which I strongly
-> suspect to be residual record bi_rec *,start of initrd and end of initrd
-> sections as my kernel is crashing immediately after  MMU_init and I
-> suspect that machine _init that is done prior to  MMU_init expects __res
-> in R3 as a input parameter .Please confirm .
-
-Depending on your platform and boot loader, r3 to r7 are initialized with 
-different values. If you're using ppcboot, the kernel expects r3 to be 
-initialized with the residual record, right.
-
-> I am using ppcboot2..0.0 as my bootloader .
-
-That' very old too. You should upgrade to U-Boot.
-
-> Also I would like to know how can i enable serial console in these early
-> kernel initialsaiotns process. I am using a CONFIG_SANDPOINT(8260) on a
-> MPC 8245 platform and trying to port the code on MPC8245 platform .the
-> board has a very similar config as a SANDPOINT board .
-
-If I'm not mistaken, you can't enable a serial console that early. Do you have 
-a hardware debugger (BDI2000) ? If not, you could try LED debugging.
-
-Best regards,
-
-Laurent Pinchart
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
