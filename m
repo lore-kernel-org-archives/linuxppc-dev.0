@@ -1,9 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Fri, 23 Jun 2006 18:16:39 +1000
-Subject: [PATCH 2/2] Use ppc_md.hpte_insert() in htab_bolt_mapping()
-Message-Id: <20060623081636.9AE0567A73@ozlabs.org>
+Date: Fri, 23 Jun 2006 18:17:32 +1000
+Subject: [PATCH] Make kexec_setup() a regular initcall
+Message-Id: <20060623081730.0864067BC3@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,57 +14,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-With the ppc_md htab pointers setup earlier, we can use ppc_md.hpte_insert
-in htab_bolt_mapping(), rather than deciding which version to call by hand.
+There's no reason kexec_setup() needs to be called explicitly from
+setup_system(), it can just be a regular initcall.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/mm/hash_utils_64.c |   34 ++++++----------------------------
- 1 file changed, 6 insertions(+), 28 deletions(-)
+ arch/powerpc/kernel/machine_kexec_64.c |    4 +++-
+ arch/powerpc/kernel/setup_64.c         |    4 ----
+ include/asm-powerpc/kexec.h            |    1 -
+ 3 files changed, 3 insertions(+), 6 deletions(-)
 
-Index: to-merge/arch/powerpc/mm/hash_utils_64.c
+Index: to-merge/arch/powerpc/kernel/machine_kexec_64.c
 ===================================================================
---- to-merge.orig/arch/powerpc/mm/hash_utils_64.c
-+++ to-merge/arch/powerpc/mm/hash_utils_64.c
-@@ -167,34 +167,12 @@ int htab_bolt_mapping(unsigned long vsta
- 		hash = hpt_hash(va, shift);
- 		hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
+--- to-merge.orig/arch/powerpc/kernel/machine_kexec_64.c
++++ to-merge/arch/powerpc/kernel/machine_kexec_64.c
+@@ -378,11 +378,13 @@ static void __init export_crashk_values(
+ 	of_node_put(node);
+ }
  
--		/* The crap below can be cleaned once ppd_md.probe() can
--		 * set up the hash callbacks, thus we can just used the
--		 * normal insert callback here.
--		 */
--#ifdef CONFIG_PPC_ISERIES
--		if (machine_is(iseries))
--			ret = iSeries_hpte_insert(hpteg, va,
--						  paddr,
--						  tmp_mode,
--						  HPTE_V_BOLTED,
--						  psize);
--		else
+-void __init kexec_setup(void)
++static int __init kexec_setup(void)
+ {
+ 	export_htab_values();
+ 	export_crashk_values();
++	return 0;
+ }
++__initcall(kexec_setup);
+ 
+ static int __init early_parse_crashk(char *p)
+ {
+Index: to-merge/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/setup_64.c
++++ to-merge/arch/powerpc/kernel/setup_64.c
+@@ -350,10 +350,6 @@ void __init setup_system(void)
+ 	 */
+ 	unflatten_device_tree();
+ 
+-#ifdef CONFIG_KEXEC
+-	kexec_setup();	/* requires unflattened device tree. */
 -#endif
--#ifdef CONFIG_PPC_PSERIES
--		if (machine_is(pseries) && firmware_has_feature(FW_FEATURE_LPAR))
--			ret = pSeries_lpar_hpte_insert(hpteg, va,
--						       paddr,
--						       tmp_mode,
--						       HPTE_V_BOLTED,
--						       psize);
--		else
--#endif
--#ifdef CONFIG_PPC_MULTIPLATFORM
--			ret = native_hpte_insert(hpteg, va,
--						 paddr,
--						 tmp_mode, HPTE_V_BOLTED,
--						 psize);
--#endif
-+		DBG("htab_bolt_mapping: calling %p\n", ppc_md.hpte_insert);
-+
-+		BUG_ON(!ppc_md.hpte_insert);
-+		ret = ppc_md.hpte_insert(hpteg, va, paddr,
-+				tmp_mode, HPTE_V_BOLTED, psize);
-+
- 		if (ret < 0)
- 			break;
- 	}
+-
+ 	/*
+ 	 * Fill the ppc64_caches & systemcfg structures with informations
+ 	 * retrieved from the device-tree. Need to be called before
+Index: to-merge/include/asm-powerpc/kexec.h
+===================================================================
+--- to-merge.orig/include/asm-powerpc/kexec.h
++++ to-merge/include/asm-powerpc/kexec.h
+@@ -112,7 +112,6 @@ static inline void crash_setup_regs(stru
+ #ifdef __powerpc64__
+ extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
+ 					  master to copy new code to 0 */
+-extern void __init kexec_setup(void);
+ extern int crashing_cpu;
+ extern void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *));
+ #endif /* __powerpc64 __ */
