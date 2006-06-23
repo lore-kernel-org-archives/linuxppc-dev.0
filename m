@@ -3,16 +3,16 @@ Received: from localhost.localdomain (cdma-41-194.msk.skylink.ru
 	[83.217.41.194])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1426A67B46
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 09:46:48 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5F2AE67B2E
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 09:46:55 +1000 (EST)
 Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
-	by localhost.localdomain (8.13.6/8.13.6) with ESMTP id k5NNHAr6006761
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 03:17:11 +0400
+	by localhost.localdomain (8.13.6/8.13.6) with ESMTP id k5NNH2oh006743
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 03:17:02 +0400
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 6/6] [RFC] POWERPC: Add mpc8560 board support
-Date: Sat, 24 Jun 2006 03:17:10 +0400
-Message-Id: <20060623231710.6721.8447.stgit@localhost.localdomain>
+Subject: [PATCH 3/6] FS_ENET: use PAL for mii management (BSP part)
+Date: Sat, 24 Jun 2006 03:17:02 +0400
+Message-Id: <20060623231701.6721.21001.stgit@localhost.localdomain>
 In-Reply-To: <20060623231648.6721.3495.stgit@localhost.localdomain>
 References: <20060623231648.6721.3495.stgit@localhost.localdomain>
 Content-Type: text/plain; charset=utf-8; format=fixed
@@ -26,210 +26,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-This enables the mpc8560-specific bits in powerpc. The relevant cpm2 PIC
-and common utility were moved without or with minor changes, hereby not all
-the stuff have OF power utilized. Current functionality depends on the very
-latest fs_enet update, that will go through netdev (cc'd here as
-reference). Assuming all the preceeding stuff applied (PAL+fs_enet related
-+ CPM_UART update), the both TSEC eth ,FCC Eths, and both SCC UARTs are
-working. The relevant drivers are still capable to drive users in ppc,
-which was verified with 8272ADS (SCC uart+FCC eth).
+This patch should update the board-specific parts of fs_enet infrastructure to utilize
+Phy Abstraction Layer subsystem. Inside there are portions to respect driver changes for 
+8272ads, 885ads, 866ads, and 8560ads.
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 ---
 
- arch/powerpc/lib/Makefile                 |    5 +
- arch/powerpc/platforms/85xx/Kconfig       |   11 +
- arch/powerpc/platforms/85xx/Makefile      |    1 
- arch/powerpc/platforms/85xx/mpc8560_ads.h |   54 +++++
- arch/powerpc/platforms/85xx/mpc85xx_ads.c |  107 +++++++++++
- arch/powerpc/sysdev/Makefile              |    7 +
- arch/powerpc/sysdev/cpm2_common.c         |  197 ++++++++++++++++++++
- arch/powerpc/sysdev/cpm2_pic.c            |  181 ++++++++++++++++++
- arch/powerpc/sysdev/cpm2_pic.h            |    8 +
- arch/powerpc/sysdev/fsl_soc.c             |  290 +++++++++++++++++++++++++++++
- include/asm-ppc/cpm2.h                    |    2 
- 11 files changed, 860 insertions(+), 3 deletions(-)
+ arch/ppc/platforms/85xx/mpc8560_ads.c        |   89 ++++++++++++
+ arch/ppc/platforms/85xx/mpc85xx_ads_common.h |   19 +++
+ arch/ppc/platforms/mpc8272ads_setup.c        |  162 ++++++++++++----------
+ arch/ppc/platforms/mpc866ads_setup.c         |  192 +++++++++++++-------------
+ arch/ppc/platforms/mpc885ads_setup.c         |  177 +++++++++---------------
+ arch/ppc/platforms/pq2ads_pd.h               |   82 -----------
+ arch/ppc/syslib/mpc85xx_devices.c            |   89 ++++++++++++
+ arch/ppc/syslib/mpc8xx_devices.c             |    8 +
+ arch/ppc/syslib/mpc8xx_sys.c                 |    6 +
+ arch/ppc/syslib/pq2_devices.c                |    5 +
+ arch/ppc/syslib/pq2_sys.c                    |    3 
+ include/asm-ppc/cpm2.h                       |   95 +++++++++++++
+ include/asm-ppc/mpc8260.h                    |    1 
+ include/asm-ppc/mpc8xx.h                     |    1 
+ include/linux/fs_enet_pd.h                   |   54 +++----
+ 15 files changed, 585 insertions(+), 398 deletions(-)
 
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index ff70964..0993b3b 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -21,3 +21,8 @@ ifeq ($(CONFIG_PPC64),y)
- obj-$(CONFIG_SMP)	+= locks.o
- obj-$(CONFIG_DEBUG_KERNEL) += sstep.o
- endif
-+
-+# Temporary hack until we have migrated to asm-powerpc
-+ifeq ($(ARCH),powerpc)
-+obj-$(CONFIG_CPM2)	+= rheap.o
-+endif
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 454fc53..3d440de 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -11,6 +11,12 @@ config MPC8540_ADS
- 	help
- 	  This option enables support for the MPC 8540 ADS board
+diff --git a/arch/ppc/platforms/85xx/mpc8560_ads.c b/arch/ppc/platforms/85xx/mpc8560_ads.c
+index 0cb2e86..92c46d8 100644
+--- a/arch/ppc/platforms/85xx/mpc8560_ads.c
++++ b/arch/ppc/platforms/85xx/mpc8560_ads.c
+@@ -30,6 +30,7 @@ #include <linux/serial_core.h>
+ #include <linux/initrd.h>
+ #include <linux/module.h>
+ #include <linux/fsl_devices.h>
++#include <linux/fs_enet_pd.h>
  
-+config MPC8560_ADS
-+	bool "Freescale MPC8560 ADS"
-+	select DEFAULT_UIMAGE
-+	help
-+	  This option enables support for the MPC 8560 ADS board
-+
- config MPC85xx_CDS
- 	bool "Freescale MPC85xx CDS"
- 	select DEFAULT_UIMAGE
-@@ -25,6 +31,11 @@ config MPC8540
- 	select PPC_UDBG_16550
- 	select PPC_INDIRECT_PCI
- 	default y if MPC8540_ADS || MPC85xx_CDS
-+
-+config MPC8560
-+	bool
-+	select PPC_INDIRECT_PCI
-+	default y if MPC8560_ADS
- 
- config PPC_INDIRECT_PCI_BE
- 	bool
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 7615aa5..282f5d0 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -3,4 +3,5 @@ # Makefile for the PowerPC 85xx linux ke
- #
- obj-$(CONFIG_PPC_85xx)	+= misc.o pci.o
- obj-$(CONFIG_MPC8540_ADS) += mpc85xx_ads.o
-+obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
- obj-$(CONFIG_MPC85xx_CDS) += mpc85xx_cds.o
-diff --git a/arch/powerpc/platforms/85xx/mpc8560_ads.h b/arch/powerpc/platforms/85xx/mpc8560_ads.h
-new file mode 100644
-index 0000000..4ebe710
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/mpc8560_ads.h
-@@ -0,0 +1,54 @@
-+/*
-+ * MPC8560ADS board definitions
-+ *
-+ * Maintainer: Kumar Gala <galak@kernel.crashing.org>
-+ *
-+ * Copyright 2004 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ *
-+ */
-+
-+#ifndef __MACH_MPC8560ADS_H
-+#define __MACH_MPC8560ADS_H
-+
-+#include <linux/config.h>
-+#include <linux/initrd.h>
-+
-+#define BOARD_CCSRBAR		((uint)0xe0000000)
-+#define BCSR_ADDR		((uint)0xf8000000)
-+#define BCSR_SIZE		((uint)(32 * 1024))
-+
-+#define MPC85xx_CPM_OFFSET	(0x80000)
-+
-+/*XXX TODO: pull from OF*/
-+#define CPM_MAP_ADDR		(BOARD_CCSRBAR + MPC85xx_CPM_OFFSET)
-+
-+/* PCI interrupt controller */
-+#define PIRQA		MPC85xx_IRQ_EXT1
-+#define PIRQB		MPC85xx_IRQ_EXT2
-+#define PIRQC		MPC85xx_IRQ_EXT3
-+#define PIRQD		MPC85xx_IRQ_EXT4
-+
-+/* FCC1 Clock Source Configuration.  These can be
-+ * redefined in the board specific file.
-+ *    Can only choose from CLK9-12 */
-+#define F1_RXCLK       12
-+#define F1_TXCLK       11
-+
-+/* FCC2 Clock Source Configuration.  These can be
-+ * redefined in the board specific file.
-+ *    Can only choose from CLK13-16 */
-+#define F2_RXCLK       13
-+#define F2_TXCLK       14
-+
-+/* FCC3 Clock Source Configuration.  These can be
-+ * redefined in the board specific file.
-+ *    Can only choose from CLK13-16 */
-+#define F3_RXCLK       15
-+#define F3_TXCLK       16
-+
-+#endif				/* __MACH_MPC8560ADS_H */
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index 5eeff37..352d0ae 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-@@ -15,6 +15,7 @@ #include <linux/config.h>
- #include <linux/stddef.h>
- #include <linux/kernel.h>
- #include <linux/pci.h>
-+#include <linux/interrupt.h>
- #include <linux/kdev_t.h>
- #include <linux/delay.h>
- #include <linux/seq_file.h>
-@@ -30,6 +31,10 @@ #include <asm/mpic.h>
- #include <mm/mmu_decl.h>
- #include <asm/udbg.h>
- 
-+#ifdef CONFIG_CPM2
-+#include <asm/cpm2.h>
-+#endif
-+
- #include <sysdev/fsl_soc.h>
- #include "mpc85xx.h"
- 
-@@ -121,8 +126,25 @@ mpc85xx_exclude_device(u_char bus, u_cha
- }
- 
- #endif /* CONFIG_PCI */
-+
-+#ifdef CONFIG_CPM2
- 
-+static irqreturn_t cpm2_cascade(int irq, void *dev_id, struct pt_regs *regs)
-+{
-+	while ((irq = cpm2_get_irq(regs)) >= 0)
-+		__do_IRQ(irq, regs);
-+	return IRQ_HANDLED;
-+}
- 
-+static struct irqaction cpm2_irqaction = {
-+	.handler = cpm2_cascade,
-+	.flags = SA_INTERRUPT,
-+	.mask = CPU_MASK_NONE,
-+	.name = "cpm2_cascade",
-+};
-+
-+#endif /* CONFIG_CPM2 */
-+
- void __init mpc85xx_ads_pic_init(void)
- {
- 	struct mpic *mpic1;
-@@ -158,15 +180,91 @@ void __init mpc85xx_ads_pic_init(void)
- 	mpic_assign_isu(mpic1, 13, OpenPIC_PAddr + 0x10080);
- 	mpic_assign_isu(mpic1, 14, OpenPIC_PAddr + 0x10100);
- 	mpic_init(mpic1);
-+
-+#ifdef CONFIG_CPM2
-+	/* Setup CPM2 PIC */
-+
-+        cpm2_init_IRQ();
-+
-+	setup_irq(MPC85xx_IRQ_CPM, &cpm2_irqaction);
-+#endif
- }
- 
- /*
+ #include <asm/system.h>
+ #include <asm/pgtable.h>
+@@ -59,6 +60,71 @@ #include <syslib/ppc85xx_setup.h>
   * Setup the architecture
-- */
-+ */
+  *
+  */
 +static void init_fcc_ioports(void)
 +{
 +	struct immap *immap;
@@ -268,13 +104,13 @@ index 5eeff37..352d0ae 100644
 +	tempval |= (PB3_DIRB0 | PB3_DIRB1);
 +	out_be32(&io->iop_pparb, tempval);
 +
-+	tempval = in_be32(&io->iop_pdirc);
-+	tempval |= PC3_DIRC1;
-+	out_be32(&io->iop_pdirc, tempval);
++        tempval = in_be32(&io->iop_pdirc);
++        tempval |= PC3_DIRC1;
++        out_be32(&io->iop_pdirc, tempval);
 +
-+	tempval = in_be32(&io->iop_pparc);
-+	tempval |= PC3_DIRC1;
-+	out_be32(&io->iop_pparc, tempval);
++        tempval = in_be32(&io->iop_pparc);
++        tempval |= PC3_DIRC1;
++        out_be32(&io->iop_pparc, tempval);
 +
 +	/* Port C has clocks......  */
 +	tempval = in_be32(&io->iop_psorc);
@@ -295,794 +131,1386 @@ index 5eeff37..352d0ae 100644
 +	immap->im_cpmux.cmx_fcr &= ~(CPMUX_CLK_MASK);
 +	immap->im_cpmux.cmx_fcr |= CPMUX_CLK_ROUTE;
 +}
-+
- static void __init mpc85xx_ads_setup_arch(void)
- {
- 	struct device_node *cpu;
- 	struct device_node *np;
-+
-+	cpm2_reset();
  
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc85xx_ads_setup_arch()", 0);
-@@ -184,8 +282,13 @@ static void __init mpc85xx_ads_setup_arc
+ static void __init
+ mpc8560ads_setup_arch(void)
+@@ -67,6 +133,7 @@ mpc8560ads_setup_arch(void)
+ 	unsigned int freq;
+ 	struct gianfar_platform_data *pdata;
+ 	struct gianfar_mdio_data *mdata;
++	struct fs_platform_info *fpi;
+ 
+ 	cpm2_reset();
+ 
+@@ -109,6 +176,28 @@ #endif
+ 		pdata->bus_id = 0;
+ 		pdata->phy_id = 1;
+ 		memcpy(pdata->mac_addr, binfo->bi_enet1addr, 6);
++	}
++
++	init_fcc_ioports();
++	ppc_sys_device_remove(MPC85xx_CPM_FCC1);
++
++	fpi = (struct fs_platform_info *) ppc_sys_get_pdata(MPC85xx_CPM_FCC2);
++	if (fpi) {
++		memcpy(fpi->macaddr, binfo->bi_enet2addr, 6);
++		fpi->bus_id = "0:02";
++		fpi->phy_addr = 2;
++		fpi->dpram_offset = (u32)cpm2_immr->im_dprambase;
++		fpi->fcc_regs_c = (u32)&cpm2_immr->im_fcc_c[1];
++	}
++
++	fpi = (struct fs_platform_info *) ppc_sys_get_pdata(MPC85xx_CPM_FCC3);
++	if (fpi) {
++		memcpy(fpi->macaddr, binfo->bi_enet2addr, 6);
++		fpi->macaddr[5] += 1;
++		fpi->bus_id = "0:03";
++		fpi->phy_addr = 3;
++		fpi->dpram_offset = (u32)cpm2_immr->im_dprambase;
++		fpi->fcc_regs_c = (u32)&cpm2_immr->im_fcc_c[2];
  	}
  
- #ifdef CONFIG_PCI
-+
- 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
- 		add_bridge(np);
-+
-+#ifdef CONFIG_CPM2
-+	init_fcc_ioports();
-+#endif
+ #ifdef CONFIG_BLK_DEV_INITRD
+diff --git a/arch/ppc/platforms/85xx/mpc85xx_ads_common.h b/arch/ppc/platforms/85xx/mpc85xx_ads_common.h
+index de8d41a..86a4338 100644
+--- a/arch/ppc/platforms/85xx/mpc85xx_ads_common.h
++++ b/arch/ppc/platforms/85xx/mpc85xx_ads_common.h
+@@ -46,4 +46,23 @@ #define MPC85XX_PCI1_MEM_OFFSET	0x000000
  
- 	ppc_md.pci_swizzle = common_swizzle;
- 	ppc_md.pci_map_irq = mpc85xx_map_irq;
-@@ -240,5 +343,7 @@ define_machine(mpc85xx_ads) {
- 	.get_irq		= mpic_get_irq,
- 	.restart		= mpc85xx_restart,
- 	.calibrate_decr		= generic_calibrate_decr,
-+#ifndef CONFIG_CPM2
- 	.progress		= udbg_progress,
-+#endif
+ #define MPC85XX_PCI1_IO_SIZE	0x01000000
+ 
++/* FCC1 Clock Source Configuration.  These can be
++ * redefined in the board specific file.
++ *    Can only choose from CLK9-12 */
++#define F1_RXCLK       12
++#define F1_TXCLK       11
++
++/* FCC2 Clock Source Configuration.  These can be
++ * redefined in the board specific file.
++ *    Can only choose from CLK13-16 */
++#define F2_RXCLK       13
++#define F2_TXCLK       14
++
++/* FCC3 Clock Source Configuration.  These can be
++ * redefined in the board specific file.
++ *    Can only choose from CLK13-16 */
++#define F3_RXCLK       15
++#define F3_TXCLK       16
++
++
+ #endif				/* __MACH_MPC85XX_ADS_H__ */
+diff --git a/arch/ppc/platforms/mpc8272ads_setup.c b/arch/ppc/platforms/mpc8272ads_setup.c
+index abb7154..2a35fe2 100644
+--- a/arch/ppc/platforms/mpc8272ads_setup.c
++++ b/arch/ppc/platforms/mpc8272ads_setup.c
+@@ -56,66 +56,53 @@ static struct fs_uart_platform_info mpc8
+ 	},
  };
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index cef95b0..75dfe12 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -12,3 +12,10 @@ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
- obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_PPC_83xx)		+= ipic.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
-+
-+# Temporary hack until we have migrated to asm-powerpc
-+ifeq ($(ARCH),powerpc)
-+obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
-+endif
-+
-+#obj-$(CONFIG_CPM2)		+= cpm2/			Yuri
-diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
-new file mode 100644
-index 0000000..c755f65
---- /dev/null
-+++ b/arch/powerpc/sysdev/cpm2_common.c
-@@ -0,0 +1,197 @@
-+/*
-+ * General Purpose functions for the global management of the
-+ * 8260 Communication Processor Module.
-+ * Copyright (c) 1999 Dan Malek (dmalek@jlc.net)
-+ * Copyright (c) 2000 MontaVista Software, Inc (source@mvista.com)
-+ *	2.3.99 Updates
-+ *
-+ * In addition to the individual control of the communication
-+ * channels, there are a few functions that globally affect the
-+ * communication processor.
-+ *
-+ * Buffer descriptors must be allocated from the dual ported memory
-+ * space.  The allocator for that is here.  When the communication
-+ * process is reset, we reclaim the memory available.  There is
-+ * currently no deallocator for this memory.
-+ */
-+#include <linux/errno.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/param.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <asm/io.h>
-+#include <asm/irq.h>
-+#include <asm/mpc8260.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
-+#include <asm/cpm2.h>
-+#include <asm/rheap.h>
-+
-+static void cpm2_dpinit(void);
-+cpm_cpm2_t	*cpmp;		/* Pointer to comm processor space */
-+
-+/* We allocate this here because it is used almost exclusively for
-+ * the communication processor devices.
-+ */
-+cpm2_map_t *cpm2_immr;
-+
-+#define CPM_MAP_SIZE	(0x40000)	/* 256k - the PQ3 reserve this amount
-+					   of space for CPM as it is larger
-+					   than on PQ2 */
-+
-+void
-+cpm2_reset(void)
-+{
-+	cpm2_immr = (cpm2_map_t *)ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
-+
-+	/* Reclaim the DP memory for our use.
-+	 */
-+	cpm2_dpinit();
-+
-+	/* Tell everyone where the comm processor resides.
-+	 */
-+	cpmp = &cpm2_immr->im_cpm;
-+}
-+
-+/* Set a baud rate generator.  This needs lots of work.  There are
-+ * eight BRGs, which can be connected to the CPM channels or output
-+ * as clocks.  The BRGs are in two different block of internal
-+ * memory mapped space.
-+ * The baud rate clock is the system clock divided by something.
-+ * It was set up long ago during the initial boot phase and is
-+ * is given to us.
-+ * Baud rate clocks are zero-based in the driver code (as that maps
-+ * to port numbers).  Documentation uses 1-based numbering.
-+ */
-+#define BRG_INT_CLK	(get_brgfreq())
-+#define BRG_UART_CLK	(BRG_INT_CLK/16)
-+
-+/* This function is used by UARTS, or anything else that uses a 16x
-+ * oversampled clock.
-+ */
-+void
-+cpm_setbrg(uint brg, uint rate)
-+{
-+	volatile uint	*bp;
-+
-+	/* This is good enough to get SMCs running.....
-+	*/
-+	if (brg < 4) {
-+		bp = (uint *)&cpm2_immr->im_brgc1;
-+	}
-+	else {
-+		bp = (uint *)&cpm2_immr->im_brgc5;
-+		brg -= 4;
-+	}
-+	bp += brg;
-+	*bp = ((BRG_UART_CLK / rate) << 1) | CPM_BRG_EN;
-+}
-+
-+/* This function is used to set high speed synchronous baud rate
-+ * clocks.
-+ */
-+void
-+cpm2_fastbrg(uint brg, uint rate, int div16)
-+{
-+	volatile uint	*bp;
-+
-+	if (brg < 4) {
-+		bp = (uint *)&cpm2_immr->im_brgc1;
-+	}
-+	else {
-+		bp = (uint *)&cpm2_immr->im_brgc5;
-+		brg -= 4;
-+	}
-+	bp += brg;
-+	*bp = ((BRG_INT_CLK / rate) << 1) | CPM_BRG_EN;
-+	if (div16)
-+		*bp |= CPM_BRG_DIV16;
-+}
-+
-+/*
-+ * dpalloc / dpfree bits.
-+ */
-+static spinlock_t cpm_dpmem_lock;
-+/* 16 blocks should be enough to satisfy all requests
-+ * until the memory subsystem goes up... */
-+static rh_block_t cpm_boot_dpmem_rh_block[16];
-+static rh_info_t cpm_dpmem_info;
-+
-+static void cpm2_dpinit(void)
-+{
-+	spin_lock_init(&cpm_dpmem_lock);
-+
-+	/* initialize the info header */
-+	rh_init(&cpm_dpmem_info, 1,
-+			sizeof(cpm_boot_dpmem_rh_block) /
-+			sizeof(cpm_boot_dpmem_rh_block[0]),
-+			cpm_boot_dpmem_rh_block);
-+
-+	/* Attach the usable dpmem area */
-+	/* XXX: This is actually crap. CPM_DATAONLY_BASE and
-+	 * CPM_DATAONLY_SIZE is only a subset of the available dpram. It
-+	 * varies with the processor and the microcode patches activated.
-+	 * But the following should be at least safe.
-+	 */
-+	rh_attach_region(&cpm_dpmem_info, (void *)CPM_DATAONLY_BASE,
-+			CPM_DATAONLY_SIZE);
-+}
-+
-+/* This function returns an index into the DPRAM area.
-+ */
-+uint cpm_dpalloc(uint size, uint align)
-+{
-+	void *start;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cpm_dpmem_lock, flags);
-+	cpm_dpmem_info.alignment = align;
-+	start = rh_alloc(&cpm_dpmem_info, size, "commproc");
-+	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
-+
-+	return (uint)start;
-+}
-+EXPORT_SYMBOL(cpm_dpalloc);
-+
-+int cpm_dpfree(uint offset)
-+{
-+	int ret;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cpm_dpmem_lock, flags);
-+	ret = rh_free(&cpm_dpmem_info, (void *)offset);
-+	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(cpm_dpfree);
-+
-+/* not sure if this is ever needed */
-+uint cpm_dpalloc_fixed(uint offset, uint size, uint align)
-+{
-+	void *start;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cpm_dpmem_lock, flags);
-+	cpm_dpmem_info.alignment = align;
-+	start = rh_alloc_fixed(&cpm_dpmem_info, (void *)offset, size, "commproc");
-+	spin_unlock_irqrestore(&cpm_dpmem_lock, flags);
-+
-+	return (uint)start;
-+}
-+EXPORT_SYMBOL(cpm_dpalloc_fixed);
-+
-+void cpm_dpdump(void)
-+{
-+	rh_dump(&cpm_dpmem_info);
-+}
-+EXPORT_SYMBOL(cpm_dpdump);
-+
-+void *cpm_dpram_addr(uint offset)
-+{
-+	return (void *)&cpm2_immr->im_dprambase[offset];
-+}
-+EXPORT_SYMBOL(cpm_dpram_addr);
-diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
-new file mode 100644
-index 0000000..e0db594
---- /dev/null
-+++ b/arch/powerpc/sysdev/cpm2_pic.c
-@@ -0,0 +1,181 @@
-+/* The CPM2 internal interrupt controller.  It is usually
-+ * the only interrupt controller.
-+ * There are two 32-bit registers (high/low) for up to 64
-+ * possible interrupts.
-+ *
-+ * Now, the fun starts.....Interrupt Numbers DO NOT MAP
-+ * in a simple arithmetic fashion to mask or pending registers.
-+ * That is, interrupt 4 does not map to bit position 4.
-+ * We create two tables, indexed by vector number, to indicate
-+ * which register to use and which bit in the register to use.
-+ */
-+
-+#include <linux/stddef.h>
-+#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/signal.h>
-+#include <linux/irq.h>
-+
-+#include <asm/immap_cpm2.h>
-+#include <asm/mpc8260.h>
-+#include <asm/io.h>
-+
-+#include "cpm2_pic.h"
-+
-+static	u_char	irq_to_siureg[] = {
-+	1, 1, 1, 1, 1, 1, 1, 1,
-+	1, 1, 1, 1, 1, 1, 1, 1,
-+	0, 0, 0, 0, 0, 0, 0, 0,
-+	0, 0, 0, 0, 0, 0, 0, 0,
-+	1, 1, 1, 1, 1, 1, 1, 1,
-+	1, 1, 1, 1, 1, 1, 1, 1,
-+	0, 0, 0, 0, 0, 0, 0, 0,
-+	0, 0, 0, 0, 0, 0, 0, 0
+ 
+-static struct fs_mii_bus_info mii_bus_info = {
+-	.method                 = fsmii_bitbang,
+-	.id                     = 0,
+-	.i.bitbang = {
+-		.mdio_port	= fsiop_portc,
+-		.mdio_bit	= 18,
+-		.mdc_port	= fsiop_portc,
+-		.mdc_bit	= 19,
+-		.delay		= 1,
+-	},
+-};
+-
+-static struct fs_platform_info mpc82xx_fcc1_pdata = {
+-	.fs_no		= fsid_fcc1,
+-	.cp_page	= CPM_CR_FCC1_PAGE,
+-	.cp_block 	= CPM_CR_FCC1_SBLOCK,
+-	.clk_trx 	= (PC_F1RXCLK | PC_F1TXCLK),
+-	.clk_route	= CMX1_CLK_ROUTE,
+-	.clk_mask	= CMX1_CLK_MASK,
+-	.init_ioports 	= init_fcc1_ioports,
+-
+-	.phy_addr	= 0,
+-#ifdef PHY_INTERRUPT
+-	.phy_irq	= PHY_INTERRUPT,
+-#else
+-	.phy_irq	= -1;
+-#endif
+-	.mem_offset	= FCC1_MEM_OFFSET,
+-	.bus_info	= &mii_bus_info,
+-	.rx_ring	= 32,
+-	.tx_ring	= 32,
+-	.rx_copybreak	= 240,
+-	.use_napi	= 0,
+-	.napi_weight	= 17,
+-};
+-
+-static struct fs_platform_info mpc82xx_fcc2_pdata = {
+-	.fs_no		= fsid_fcc2,
+-	.cp_page	= CPM_CR_FCC2_PAGE,
+-	.cp_block 	= CPM_CR_FCC2_SBLOCK,
+-	.clk_trx 	= (PC_F2RXCLK | PC_F2TXCLK),
+-	.clk_route	= CMX2_CLK_ROUTE,
+-	.clk_mask	= CMX2_CLK_MASK,
+-	.init_ioports	= init_fcc2_ioports,
+-
+-	.phy_addr	= 3,
+-#ifdef PHY_INTERRUPT
+-	.phy_irq	= PHY_INTERRUPT,
+-#else
+-	.phy_irq	= -1;
+-#endif
+-	.mem_offset	= FCC2_MEM_OFFSET,
+-	.bus_info	= &mii_bus_info,
+-	.rx_ring	= 32,
+-	.tx_ring	= 32,
+-	.rx_copybreak	= 240,
+-	.use_napi	= 0,
+-	.napi_weight	= 17,
+-};
+-
++static struct fs_mii_bb_platform_info m82xx_mii_bb_pdata = {
++	.mdio_dat.bit	= 18,
++	.mdio_dir.bit	= 18,
++	.mdc_dat.bit	= 19,
++	.delay		= 1,
 +};
 +
-+/* bit numbers do not match the docs, these are precomputed so the bit for
-+ * a given irq is (1 << irq_to_siubit[irq]) */
-+static	u_char	irq_to_siubit[] = {
-+	 0, 15, 14, 13, 12, 11, 10,  9,
-+	 8,  7,  6,  5,  4,  3,  2,  1,
-+	 2,  1,  0, 14, 13, 12, 11, 10,
-+	 9,  8,  7,  6,  5,  4,  3,  0,
-+	31, 30, 29, 28, 27, 26, 25, 24,
-+	23, 22, 21, 20, 19, 18, 17, 16,
-+	16, 17, 18, 19, 20, 21, 22, 23,
-+	24, 25, 26, 27, 28, 29, 30, 31,
++static struct fs_platform_info mpc82xx_enet_pdata[] = {
++	[fsid_fcc1] = {
++		.fs_no		= fsid_fcc1,
++		.cp_page	= CPM_CR_FCC1_PAGE,
++		.cp_block 	= CPM_CR_FCC1_SBLOCK,
++
++		.clk_trx 	= (PC_F1RXCLK | PC_F1TXCLK),
++		.clk_route	= CMX1_CLK_ROUTE,
++		.clk_mask	= CMX1_CLK_MASK,
++		.init_ioports 	= init_fcc1_ioports,
++
++		.mem_offset	= FCC1_MEM_OFFSET,
++
++		.rx_ring	= 32,
++		.tx_ring	= 32,
++		.rx_copybreak	= 240,
++		.use_napi	= 0,
++		.napi_weight	= 17,
++		.bus_id		= "0:00",
++	},
++	[fsid_fcc2] = {
++		.fs_no		= fsid_fcc2,
++		.cp_page	= CPM_CR_FCC2_PAGE,
++		.cp_block 	= CPM_CR_FCC2_SBLOCK,
++		.clk_trx 	= (PC_F2RXCLK | PC_F2TXCLK),
++		.clk_route	= CMX2_CLK_ROUTE,
++		.clk_mask	= CMX2_CLK_MASK,
++		.init_ioports	= init_fcc2_ioports,
++
++		.mem_offset	= FCC2_MEM_OFFSET,
++
++		.rx_ring	= 32,
++		.tx_ring	= 32,
++		.rx_copybreak	= 240,
++		.use_napi	= 0,
++		.napi_weight	= 17,
++		.bus_id		= "0:03",
++	},
 +};
 +
-+static void cpm2_mask_irq(unsigned int irq_nr)
-+{
-+	int	bit, word;
-+	volatile uint	*simr;
+ static void init_fcc1_ioports(void)
+ {
+ 	struct io_port *io;
+@@ -209,20 +196,21 @@ static void __init mpc8272ads_fixup_enet
+ 	bd_t* bi = (void*)__res;
+ 	int fs_no = fsid_fcc1+pdev->id-1;
+ 
+-	mpc82xx_fcc1_pdata.dpram_offset = mpc82xx_fcc2_pdata.dpram_offset = (u32)cpm2_immr->im_dprambase;
+-	mpc82xx_fcc1_pdata.fcc_regs_c = mpc82xx_fcc2_pdata.fcc_regs_c = (u32)cpm2_immr->im_fcc_c;
+-
+-	switch(fs_no) {
+-		case fsid_fcc1:
+-			memcpy(&mpc82xx_fcc1_pdata.macaddr,bi->bi_enetaddr,6);
+-			pdev->dev.platform_data = &mpc82xx_fcc1_pdata;
+-		break;
+-		case fsid_fcc2:
+-			memcpy(&mpc82xx_fcc2_pdata.macaddr,bi->bi_enetaddr,6);
+-			mpc82xx_fcc2_pdata.macaddr[5] ^= 1;
+-			pdev->dev.platform_data = &mpc82xx_fcc2_pdata;
+-		break;
++	if(fs_no > ARRAY_SIZE(mpc82xx_enet_pdata)) {
++		return;
+ 	}
 +
-+	irq_nr -= CPM_IRQ_OFFSET;
++	mpc82xx_enet_pdata[fs_no].dpram_offset=
++			(u32)cpm2_immr->im_dprambase;
++	mpc82xx_enet_pdata[fs_no].fcc_regs_c =
++			(u32)cpm2_immr->im_fcc_c;
++	memcpy(&mpc82xx_enet_pdata[fs_no].macaddr,bi->bi_enetaddr,6);
 +
-+	bit = irq_to_siubit[irq_nr];
-+	word = irq_to_siureg[irq_nr];
++	/* prevent dup mac */
++	if(fs_no == fsid_fcc2)
++		mpc82xx_enet_pdata[fs_no].macaddr[5] ^= 1;
 +
-+	simr = &(cpm2_immr->im_intctl.ic_simrh);
-+	ppc_cached_irq_mask[word] &= ~(1 << bit);
-+	simr[word] = ppc_cached_irq_mask[word];
++	pdev->dev.platform_data = &mpc82xx_enet_pdata[fs_no];
+ }
+ 
+ static void mpc8272ads_fixup_uart_pdata(struct platform_device *pdev,
+@@ -272,6 +260,29 @@ static void init_scc4_uart_ioports(void)
+ 	setbits32(&immap->im_cpmux.cmx_scr,0x0000001b);
+ 
+ 	iounmap(immap);
 +}
 +
-+static void cpm2_unmask_irq(unsigned int irq_nr)
++static void __init mpc8272ads_fixup_mdio_pdata(struct platform_device *pdev,
++					      int idx)
 +{
-+	int	bit, word;
-+	volatile uint	*simr;
++	m82xx_mii_bb_pdata.irq[0] = PHY_INTERRUPT;
++	m82xx_mii_bb_pdata.irq[1] = -1;
++	m82xx_mii_bb_pdata.irq[2] = -1;
++	m82xx_mii_bb_pdata.irq[3] = PHY_INTERRUPT;
++	m82xx_mii_bb_pdata.irq[31] = -1;
 +
-+	irq_nr -= CPM_IRQ_OFFSET;
 +
-+	bit = irq_to_siubit[irq_nr];
-+	word = irq_to_siureg[irq_nr];
++	m82xx_mii_bb_pdata.mdio_dat.offset =
++				(u32)&cpm2_immr->im_ioport.iop_pdatc;
 +
-+	simr = &(cpm2_immr->im_intctl.ic_simrh);
-+	ppc_cached_irq_mask[word] |= 1 << bit;
-+	simr[word] = ppc_cached_irq_mask[word];
-+}
++	m82xx_mii_bb_pdata.mdio_dir.offset =
++				(u32)&cpm2_immr->im_ioport.iop_pdirc;
 +
-+static void cpm2_mask_and_ack(unsigned int irq_nr)
++	m82xx_mii_bb_pdata.mdc_dat.offset =
++				(u32)&cpm2_immr->im_ioport.iop_pdatc;
++
++
++	pdev->dev.platform_data = &m82xx_mii_bb_pdata;
+ }
+ 
+ static int mpc8272ads_platform_notify(struct device *dev)
+@@ -284,6 +295,10 @@ static int mpc8272ads_platform_notify(st
+ 		{
+ 			.bus_id = "fsl-cpm-scc:uart",
+ 			.rtn = mpc8272ads_fixup_uart_pdata,
++		},
++		{
++			.bus_id = "fsl-bb-mdio",
++			.rtn = mpc8272ads_fixup_mdio_pdata,
+ 		},
+ 		{
+ 			.bus_id = NULL
+@@ -319,6 +334,7 @@ #ifdef CONFIG_SERIAL_CPM_SCC4
+ 	ppc_sys_device_enable(MPC82xx_CPM_SCC4);
+ #endif
+ 
++	ppc_sys_device_enable(MPC82xx_MDIO_BB);
+ 
+ 	return 0;
+ }
+diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
+index d919dab..ed71dd9 100644
+--- a/arch/ppc/platforms/mpc866ads_setup.c
++++ b/arch/ppc/platforms/mpc866ads_setup.c
+@@ -1,10 +1,10 @@
+-/*arch/ppc/platforms/mpc885ads-setup.c
++/*arch/ppc/platforms/mpc866ads-setup.c
+  *
+- * Platform setup for the Freescale mpc885ads board
++ * Platform setup for the Freescale mpc866ads board
+  *
+  * Vitaly Bordug <vbordug@ru.mvista.com>
+  *
+- * Copyright 2005 MontaVista Software Inc.
++ * Copyright 2005-2006 MontaVista Software Inc.
+  *
+  * This file is licensed under the terms of the GNU General Public License
+  * version 2. This program is licensed "as is" without any warranty of any
+@@ -43,49 +43,36 @@ static void setup_scc1_ioports(void);
+ static void setup_smc1_ioports(void);
+ static void setup_smc2_ioports(void);
+ 
+-static struct fs_mii_bus_info fec_mii_bus_info = {
+-	.method = fsmii_fec,
+-	.id = 0,
+-};
+-
+-static struct fs_mii_bus_info scc_mii_bus_info = {
+-	.method = fsmii_fixed,
+-	.id = 0,
+-	.i.fixed.speed = 10,
+-	.i.fixed.duplex = 0,
+-};
++static struct fs_mii_fec_platform_info	mpc8xx_mdio_fec_pdata;
+ 
+-static struct fs_platform_info mpc8xx_fec_pdata[] = {
+-	{
+-	 .rx_ring = 128,
+-	 .tx_ring = 16,
+-	 .rx_copybreak = 240,
++static struct fs_mii_fec_platform_info mpc8xx_mdio_fec_pdata;
+ 
+-	 .use_napi = 1,
+-	 .napi_weight = 17,
++static struct fs_platform_info mpc8xx_enet_pdata[] = {
++	[fsid_fec1] = {
++		.rx_ring = 128,
++		.tx_ring = 16,
++		.rx_copybreak = 240,
+ 
+-	 .phy_addr = 15,
+-	 .phy_irq = -1,
++		.use_napi = 1,
++		.napi_weight = 17,
+ 
+-	 .use_rmii = 0,
++		.init_ioports = setup_fec1_ioports,
+ 
+-	 .bus_info = &fec_mii_bus_info,
+-	 }
+-};
++		.bus_id = "0:0f",
++		.has_phy = 1,
++	},
++	[fsid_scc1] = {
++		.rx_ring = 64,
++		.tx_ring = 8,
++		.rx_copybreak = 240,
++		.use_napi = 1,
++		.napi_weight = 17,
+ 
+-static struct fs_platform_info mpc8xx_scc_pdata = {
+-	.rx_ring = 64,
+-	.tx_ring = 8,
+-	.rx_copybreak = 240,
+ 
+-	.use_napi = 1,
+-	.napi_weight = 17,
++		.init_ioports = setup_scc1_ioports,
+ 
+-	.phy_addr = -1,
+-	.phy_irq = -1,
+-
+-	.bus_info = &scc_mii_bus_info,
+-
++		.bus_id = "fixed@100:1",
++	},
+ };
+ 
+ static struct fs_uart_platform_info mpc866_uart_pdata[] = {
+@@ -207,64 +194,7 @@ static void setup_scc1_ioports(void)
+ 	setbits32(&immap->im_cpm.cp_pbdir, PB_ENET_TENA);
+ 
+ }
+-
+-static void mpc866ads_fixup_enet_pdata(struct platform_device *pdev, int fs_no)
+-{
+-	struct fs_platform_info *fpi = pdev->dev.platform_data;
+-
+-	volatile cpm8xx_t *cp;
+-	bd_t *bd = (bd_t *) __res;
+-	char *e;
+-	int i;
+-
+-	/* Get pointer to Communication Processor */
+-	cp = cpmp;
+-	switch (fs_no) {
+-	case fsid_fec1:
+-		fpi = &mpc8xx_fec_pdata[0];
+-		fpi->init_ioports = &setup_fec1_ioports;
+ 
+-		break;
+-	case fsid_scc1:
+-		fpi = &mpc8xx_scc_pdata;
+-		fpi->init_ioports = &setup_scc1_ioports;
+-
+-		break;
+-	default:
+-		printk(KERN_WARNING"Device %s is not supported!\n", pdev->name);
+-		return;
+-	}
+-
+-	pdev->dev.platform_data = fpi;
+-	fpi->fs_no = fs_no;
+-
+-	e = (unsigned char *)&bd->bi_enetaddr;
+-	for (i = 0; i < 6; i++)
+-		fpi->macaddr[i] = *e++;
+-
+-	fpi->macaddr[5 - pdev->id]++;
+-
+-}
+-
+-static void mpc866ads_fixup_fec_enet_pdata(struct platform_device *pdev,
+-					   int idx)
+-{
+-	/* This is for FEC devices only */
+-	if (!pdev || !pdev->name || (!strstr(pdev->name, "fsl-cpm-fec")))
+-		return;
+-	mpc866ads_fixup_enet_pdata(pdev, fsid_fec1 + pdev->id - 1);
+-}
+-
+-static void mpc866ads_fixup_scc_enet_pdata(struct platform_device *pdev,
+-					   int idx)
+-{
+-	/* This is for SCC devices only */
+-	if (!pdev || !pdev->name || (!strstr(pdev->name, "fsl-cpm-scc")))
+-		return;
+-
+-	mpc866ads_fixup_enet_pdata(pdev, fsid_scc1 + pdev->id - 1);
+-}
+-
+ static void setup_smc1_ioports(void)
+ {
+ 	immap_t *immap = (immap_t *) IMAP_ADDR;
+@@ -315,7 +245,57 @@ #else
+ #endif
+ 
+ }
++
++static int ma_count = 0;
+ 
++static void mpc866ads_fixup_enet_pdata(struct platform_device *pdev, int fs_no)
 +{
-+	int	bit, word;
-+	volatile uint	*simr, *sipnr;
++	struct fs_platform_info *fpi;
 +
-+	irq_nr -= CPM_IRQ_OFFSET;
-+
-+	bit = irq_to_siubit[irq_nr];
-+	word = irq_to_siureg[irq_nr];
-+
-+	simr = &(cpm2_immr->im_intctl.ic_simrh);
-+	sipnr = &(cpm2_immr->im_intctl.ic_sipnrh);
-+	ppc_cached_irq_mask[word] &= ~(1 << bit);
-+	simr[word] = ppc_cached_irq_mask[word];
-+	sipnr[word] = 1 << bit;
-+}
-+
-+static void cpm2_end_irq(unsigned int irq_nr)
-+{
-+	int	bit, word;
-+	volatile uint	*simr;
-+
-+	if (!(irq_desc[irq_nr].status & (IRQ_DISABLED|IRQ_INPROGRESS))
-+			&& irq_desc[irq_nr].action) {
-+
-+		irq_nr -= CPM_IRQ_OFFSET;
-+		bit = irq_to_siubit[irq_nr];
-+		word = irq_to_siureg[irq_nr];
-+
-+		simr = &(cpm2_immr->im_intctl.ic_simrh);
-+		ppc_cached_irq_mask[word] |= 1 << bit;
-+		simr[word] = ppc_cached_irq_mask[word];
-+		/*
-+		 * Work around large numbers of spurious IRQs on PowerPC 82xx
-+		 * systems.
-+		 */
-+		mb();
-+	}
-+}
-+
-+static struct hw_interrupt_type cpm2_pic = {
-+	.typename = " CPM2 SIU ",
-+	.enable = cpm2_unmask_irq,
-+	.disable = cpm2_mask_irq,
-+	.ack = cpm2_mask_and_ack,
-+	.end = cpm2_end_irq,
-+};
-+
-+int cpm2_get_irq(struct pt_regs *regs)
-+{
-+	int irq;
-+        unsigned long bits;
-+
-+        /* For CPM2, read the SIVEC register and shift the bits down
-+         * to get the irq number.         */
-+        bits = cpm2_immr->im_intctl.ic_sivec;
-+        irq = bits >> 26;
-+
-+	if (irq == 0)
-+		return(-1);
-+	return irq+CPM_IRQ_OFFSET;
-+}
-+
-+void cpm2_init_IRQ(void)
-+{
++	volatile cpm8xx_t *cp;
++	bd_t *bd = (bd_t *) __res;
++	char *e;
 +	int i;
-+	u32 addr;
 +
-+	/* Clear the CPM IRQ controller, in case it has any bits set
-+	 * from the bootloader
-+	 */
++	/* Get pointer to Communication Processor */
++	cp = cpmp;
 +
-+	/* Mask out everything */
-+
-+	cpm2_immr->im_intctl.ic_simrh = 0x00000000;
-+	cpm2_immr->im_intctl.ic_simrl = 0x00000000;
-+
-+	wmb();
-+
-+	/* Ack everything */
-+	cpm2_immr->im_intctl.ic_sipnrh = 0xffffffff;
-+	cpm2_immr->im_intctl.ic_sipnrl = 0xffffffff;
-+	wmb();
-+
-+	/* Dummy read of the vector */
-+	i = cpm2_immr->im_intctl.ic_sivec;
-+	rmb();
-+
-+	/* Initialize the default interrupt mapping priorities,
-+	 * in case the boot rom changed something on us.
-+	 */
-+	cpm2_immr->im_intctl.ic_sicr = 0;
-+	cpm2_immr->im_intctl.ic_scprrh = 0x05309770;
-+	cpm2_immr->im_intctl.ic_scprrl = 0x05309770;
-+
-+
-+	/* Enable chaining to OpenPIC, and make everything level
-+	 */
-+	for (i = 0; i < NR_CPM_INTS; i++) {
-+		irq_desc[i+CPM_IRQ_OFFSET].handler = &cpm2_pic;
-+		irq_desc[i+CPM_IRQ_OFFSET].status |= IRQ_LEVEL;
++	if(fs_no > ARRAY_SIZE(mpc8xx_enet_pdata)) {
++		printk(KERN_ERR"No network-suitable #%d device on bus", fs_no);
++		return;
 +	}
++
++
++	fpi = &mpc8xx_enet_pdata[fs_no];
++	fpi->fs_no = fs_no;
++	pdev->dev.platform_data = fpi;
++
++	e = (unsigned char *)&bd->bi_enetaddr;
++	for (i = 0; i < 6; i++)
++		fpi->macaddr[i] = *e++;
++
++	fpi->macaddr[5] += ma_count++;
 +}
-diff --git a/arch/powerpc/sysdev/cpm2_pic.h b/arch/powerpc/sysdev/cpm2_pic.h
-new file mode 100644
-index 0000000..97cab8f
---- /dev/null
-+++ b/arch/powerpc/sysdev/cpm2_pic.h
-@@ -0,0 +1,8 @@
-+#ifndef _PPC_KERNEL_CPM2_H
-+#define _PPC_KERNEL_CPM2_H
 +
-+extern int cpm2_get_irq(struct pt_regs *regs);
++static void mpc866ads_fixup_fec_enet_pdata(struct platform_device *pdev,
++					   int idx)
++{
++	/* This is for FEC devices only */
++	if (!pdev || !pdev->name || (!strstr(pdev->name, "fsl-cpm-fec")))
++		return;
++	mpc866ads_fixup_enet_pdata(pdev, fsid_fec1 + pdev->id - 1);
++}
 +
-+extern void cpm2_init_IRQ(void);
++static void mpc866ads_fixup_scc_enet_pdata(struct platform_device *pdev,
++					   int idx)
++{
++	/* This is for SCC devices only */
++	if (!pdev || !pdev->name || (!strstr(pdev->name, "fsl-cpm-scc")))
++		return;
 +
-+#endif /* _PPC_KERNEL_CPM2_H */
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index ceb5846..bab202d 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -21,6 +21,8 @@ #include <linux/module.h>
++	mpc866ads_fixup_enet_pdata(pdev, fsid_scc1 + pdev->id - 1);
++}
++
+ static void __init mpc866ads_fixup_uart_pdata(struct platform_device *pdev,
+                                               int idx)
+ {
+@@ -360,6 +340,9 @@ static int mpc866ads_platform_notify(str
+ 
+ int __init mpc866ads_init(void)
+ {
++	bd_t *bd = (bd_t *) __res;
++	struct fs_mii_fec_platform_info* fmpi;
++
+ 	printk(KERN_NOTICE "mpc866ads: Init\n");
+ 
+ 	platform_notify = mpc866ads_platform_notify;
+@@ -367,11 +350,20 @@ int __init mpc866ads_init(void)
+ 	ppc_sys_device_initfunc();
+ 	ppc_sys_device_disable_all();
+ 
+-#ifdef MPC8xx_SECOND_ETH_SCC1
++#ifdef CONFIG_MPC8xx_SECOND_ETH_SCC1
+ 	ppc_sys_device_enable(MPC8xx_CPM_SCC1);
+ #endif
+ 	ppc_sys_device_enable(MPC8xx_CPM_FEC1);
++
++	ppc_sys_device_enable(MPC8xx_MDIO_FEC);
++
++	fmpi = ppc_sys_platform_devices[MPC8xx_MDIO_FEC].dev.platform_data =
++		&mpc8xx_mdio_fec_pdata;
+ 
++	fmpi->mii_speed = ((((bd->bi_intfreq + 4999999) / 2500000) / 2) & 0x3F) << 1;
++	/* No PHY interrupt line here */
++	fmpi->irq[0xf] = -1;
++
+ /* Since either of the uarts could be used as console, they need to ready */
+ #ifdef CONFIG_SERIAL_CPM_SMC1
+ 	ppc_sys_device_enable(MPC8xx_CPM_SMC1);
+@@ -382,6 +374,14 @@ #ifdef CONFIG_SERIAL_CPM_SMC
+ 	ppc_sys_device_enable(MPC8xx_CPM_SMC2);
+ 	ppc_sys_device_setfunc(MPC8xx_CPM_SMC2, PPC_SYS_FUNC_UART);
+ #endif
++	ppc_sys_device_enable(MPC8xx_MDIO_FEC);
++
++	fmpi = ppc_sys_platform_devices[MPC8xx_MDIO_FEC].dev.platform_data =
++		&mpc8xx_mdio_fec_pdata;
++
++	fmpi->mii_speed = ((((bd->bi_intfreq + 4999999) / 2500000) / 2) & 0x3F) << 1;
++	/* No PHY interrupt line here */
++	fmpi->irq[0xf] = -1;
+ 
+ 	return 0;
+ }
+diff --git a/arch/ppc/platforms/mpc885ads_setup.c b/arch/ppc/platforms/mpc885ads_setup.c
+index 4b88679..97b3002 100644
+--- a/arch/ppc/platforms/mpc885ads_setup.c
++++ b/arch/ppc/platforms/mpc885ads_setup.c
+@@ -39,8 +39,11 @@ extern unsigned char __res[];
+ static void setup_smc1_ioports(void);
+ static void setup_smc2_ioports(void);
+ 
+-static void __init mpc885ads_scc_phy_init(char);
+-
++static struct fs_mii_fec_platform_info	mpc8xx_mdio_fec_pdata;
++static void setup_fec1_ioports(void);
++static void setup_fec2_ioports(void);
++static void setup_scc3_ioports(void);
++
+ static struct fs_uart_platform_info mpc885_uart_pdata[] = {
+ 	[fsid_smc1_uart] = {
+ 		.brg		= 1,
+@@ -60,25 +63,10 @@ static struct fs_uart_platform_info mpc8
+ 		.rx_num_fifo	= 4,
+ 		.rx_buf_size	= 32,
+  	},
+-};
+-
+-static struct fs_mii_bus_info fec_mii_bus_info = {
+-	.method = fsmii_fec,
+-	.id = 0,
+-};
+-
+-static struct fs_mii_bus_info scc_mii_bus_info = {
+-#ifdef CONFIG_SCC_ENET_8xx_FIXED
+-	.method = fsmii_fixed,
+-#else
+-	.method = fsmii_fec,
+-#endif
+-
+-	.id = 0,
+ };
+ 
+-static struct fs_platform_info mpc8xx_fec_pdata[] = {
+-	{
++static struct fs_platform_info mpc8xx_enet_pdata[] = {
++	[fsid_fec1] = {
+ 	 .rx_ring = 128,
+ 	 .tx_ring = 16,
+ 	 .rx_copybreak = 240,
+@@ -86,47 +74,45 @@ static struct fs_platform_info mpc8xx_fe
+ 	 .use_napi = 1,
+ 	 .napi_weight = 17,
+ 
+-	 .phy_addr = 0,
+-	 .phy_irq = SIU_IRQ7,
++	 .init_ioports = setup_fec1_ioports,
+ 
+-	 .bus_info = &fec_mii_bus_info,
+-	 }, {
++          .bus_id = "0:00",
++          .has_phy = 1,
++	 },
++	[fsid_fec2] = {
+ 	     .rx_ring = 128,
+ 	     .tx_ring = 16,
+ 	     .rx_copybreak = 240,
+ 
+ 	     .use_napi = 1,
+ 	     .napi_weight = 17,
+-
+-	     .phy_addr = 1,
+-	     .phy_irq = SIU_IRQ7,
+ 
+-	     .bus_info = &fec_mii_bus_info,
+-	     }
+-};
++	     .init_ioports = setup_fec2_ioports,
+ 
+-static struct fs_platform_info mpc8xx_scc_pdata = {
+-	.rx_ring = 64,
+-	.tx_ring = 8,
+-	.rx_copybreak = 240,
++ 	     .bus_id = "0:01",
++ 	     .has_phy = 1,
++	     },
++	[fsid_scc3] = {
++		.rx_ring = 64,
++		.tx_ring = 8,
++		.rx_copybreak = 240,
+ 
+-	.use_napi = 1,
+-	.napi_weight = 17,
++		.use_napi = 1,
++		.napi_weight = 17,
+ 
+-	.phy_addr = 2,
+-#ifdef CONFIG_MPC8xx_SCC_ENET_FIXED
+-	.phy_irq = -1,
++		.init_ioports = setup_scc3_ioports,
++#ifdef CONFIG_FIXED_MII_10_FDX
++		.bus_id = "fixed@100:1",
+ #else
+-	.phy_irq = SIU_IRQ7,
+-#endif
+-
+-	.bus_info = &scc_mii_bus_info,
++		.bus_id = "0:02",
++ #endif
++	},
+ };
+ 
+ void __init board_init(void)
+ {
+-	volatile cpm8xx_t *cp = cpmp;
+-	unsigned int *bcsr_io;
++	cpm8xx_t *cp = cpmp;
++ 	unsigned int *bcsr_io;
+ 
+ #ifdef CONFIG_FS_ENET
+ 	immap_t *immap = (immap_t *) IMAP_ADDR;
+@@ -165,6 +151,14 @@ #ifdef CONFIG_FS_ENET
+ 	/* use MDC for MII (common) */
+ 	setbits16(&immap->im_ioport.iop_pdpar, 0x0080);
+ 	clrbits16(&immap->im_ioport.iop_pddir, 0x0080);
++	bcsr_io = ioremap(BCSR5, sizeof(unsigned long));
++	clrbits32(bcsr_io,BCSR5_MII1_EN);
++	clrbits32(bcsr_io,BCSR5_MII1_RST);
++#ifdef CONFIG_MPC8xx_SECOND_ETH_FEC2
++	clrbits32(bcsr_io,BCSR5_MII2_EN);
++	clrbits32(bcsr_io,BCSR5_MII2_RST);
++#endif
++	iounmap(bcsr_io);
+ #endif
+ }
+ 
+@@ -195,8 +189,8 @@ static void setup_fec2_ioports(void)
+ 	/* configure FEC2 pins */
+ 	setbits32(&immap->im_cpm.cp_pepar, 0x0003fffc);
+ 	setbits32(&immap->im_cpm.cp_pedir, 0x0003fffc);
+-	setbits32(&immap->im_cpm.cp_peso, 0x00037800);
+ 	clrbits32(&immap->im_cpm.cp_peso, 0x000087fc);
++	setbits32(&immap->im_cpm.cp_peso, 0x00037800);
+ 	clrbits32(&immap->im_cpm.cp_cptr, 0x00000080);
+ }
+ 
+@@ -214,6 +208,8 @@ static void setup_scc3_ioports(void)
+ 
+ 	/* Enable the PHY.
+ 	 */
++	clrbits32(bcsr_io+4, BCSR4_ETH10_RST);
++	udelay(1000);
+ 	setbits32(bcsr_io+4, BCSR4_ETH10_RST);
+ 	/* Configure port A pins for Txd and Rxd.
+ 	 */
+@@ -255,37 +251,38 @@ static void setup_scc3_ioports(void)
+ 	clrbits32(&immap->im_cpm.cp_pedir, PE_ENET_TENA);
+ 	setbits32(&immap->im_cpm.cp_peso, PE_ENET_TENA);
+ 
+-	setbits32(bcsr_io+1, BCSR1_ETHEN);
++	setbits32(bcsr_io+4, BCSR1_ETHEN);
+ 	iounmap(bcsr_io);
+ }
++
++static int mac_count = 0;
+ 
+ static void mpc885ads_fixup_enet_pdata(struct platform_device *pdev, int fs_no)
+ {
+-	struct fs_platform_info *fpi = pdev->dev.platform_data;
+-
+-	volatile cpm8xx_t *cp;
++ 	struct fs_platform_info *fpi;
+ 	bd_t *bd = (bd_t *) __res;
+ 	char *e;
+ 	int i;
++
++	if(fs_no > ARRAY_SIZE(mpc8xx_enet_pdata)) {
++		printk(KERN_ERR"No network-suitable #%d device on bus", fs_no);
++		return;
++	}
++
++	fpi = &mpc8xx_enet_pdata[fs_no];
+ 
+-	/* Get pointer to Communication Processor */
+-	cp = cpmp;
+ 	switch (fs_no) {
+ 	case fsid_fec1:
+-		fpi = &mpc8xx_fec_pdata[0];
+ 		fpi->init_ioports = &setup_fec1_ioports;
+ 		break;
+ 	case fsid_fec2:
+-		fpi = &mpc8xx_fec_pdata[1];
+ 		fpi->init_ioports = &setup_fec2_ioports;
+ 		break;
+ 	case fsid_scc3:
+-		fpi = &mpc8xx_scc_pdata;
+ 		fpi->init_ioports = &setup_scc3_ioports;
+-		mpc885ads_scc_phy_init(fpi->phy_addr);
+ 		break;
+ 	default:
+-    	        printk(KERN_WARNING"Device %s is not supported!\n", pdev->name);
++    	        printk(KERN_WARNING "Device %s is not supported!\n", pdev->name);
+ 	        return;
+ 	}
+ 
+@@ -296,7 +293,7 @@ static void mpc885ads_fixup_enet_pdata(s
+ 	for (i = 0; i < 6; i++)
+ 		fpi->macaddr[i] = *e++;
+ 
+-	fpi->macaddr[5 - pdev->id]++;
++	fpi->macaddr[5] += mac_count++;
+ 
+ }
+ 
+@@ -319,58 +316,6 @@ static void __init mpc885ads_fixup_scc_e
+ 	mpc885ads_fixup_enet_pdata(pdev, fsid_scc1 + pdev->id - 1);
+ }
+ 
+-/* SCC ethernet controller does not have MII management channel. FEC1 MII
+- * channel is used to communicate with the 10Mbit PHY.
+- */
+-
+-#define MII_ECNTRL_PINMUX        0x4
+-#define FEC_ECNTRL_PINMUX        0x00000004
+-#define FEC_RCNTRL_MII_MODE        0x00000004
+-
+-/* Make MII read/write commands.
+- */
+-#define mk_mii_write(REG, VAL, PHY_ADDR)    (0x50020000 | (((REG) & 0x1f) << 18) | \
+-                ((VAL) & 0xffff) | ((PHY_ADDR) << 23))
+-
+-static void mpc885ads_scc_phy_init(char phy_addr)
+-{
+-	volatile immap_t *immap;
+-	volatile fec_t *fecp;
+-	bd_t *bd;
+-
+-	bd = (bd_t *) __res;
+-	immap = (immap_t *) IMAP_ADDR;	/* pointer to internal registers */
+-	fecp = &(immap->im_cpm.cp_fec);
+-
+-	/* Enable MII pins of the FEC1
+-	 */
+-	setbits16(&immap->im_ioport.iop_pdpar, 0x0080);
+-	clrbits16(&immap->im_ioport.iop_pddir, 0x0080);
+-	/* Set MII speed to 2.5 MHz
+-	 */
+-	out_be32(&fecp->fec_mii_speed,
+-		 ((((bd->bi_intfreq + 4999999) / 2500000) / 2) & 0x3F) << 1);
+-
+-	/* Enable FEC pin MUX
+-	 */
+-	setbits32(&fecp->fec_ecntrl, MII_ECNTRL_PINMUX);
+-	setbits32(&fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);
+-
+-	out_be32(&fecp->fec_mii_data,
+-		 mk_mii_write(MII_BMCR, BMCR_ISOLATE, phy_addr));
+-	udelay(100);
+-	out_be32(&fecp->fec_mii_data,
+-		 mk_mii_write(MII_ADVERTISE,
+-			      ADVERTISE_10HALF | ADVERTISE_CSMA, phy_addr));
+-	udelay(100);
+-
+-	/* Disable FEC MII settings
+-	 */
+-	clrbits32(&fecp->fec_ecntrl, MII_ECNTRL_PINMUX);
+-	clrbits32(&fecp->fec_r_cntrl, FEC_RCNTRL_MII_MODE);
+-	out_be32(&fecp->fec_mii_speed, 0);
+-}
+-
+ static void setup_smc1_ioports(void)
+ {
+         immap_t *immap = (immap_t *) IMAP_ADDR;
+@@ -463,6 +408,9 @@ static int mpc885ads_platform_notify(str
+ 
+ int __init mpc885ads_init(void)
+ {
++	struct fs_mii_fec_platform_info* fmpi;
++	bd_t *bd = (bd_t *) __res;
++
+ 	printk(KERN_NOTICE "mpc885ads: Init\n");
+ 
+ 	platform_notify = mpc885ads_platform_notify;
+@@ -471,9 +419,18 @@ int __init mpc885ads_init(void)
+ 	ppc_sys_device_disable_all();
+ 
+ 	ppc_sys_device_enable(MPC8xx_CPM_FEC1);
++
++	ppc_sys_device_enable(MPC8xx_MDIO_FEC);
++	fmpi = ppc_sys_platform_devices[MPC8xx_MDIO_FEC].dev.platform_data =
++		&mpc8xx_mdio_fec_pdata;
++
++	fmpi->mii_speed = ((((bd->bi_intfreq + 4999999) / 2500000) / 2) & 0x3F) << 1;
++
++	/* No PHY interrupt line here */
++	fmpi->irq[0xf] = SIU_IRQ7;
+ 
+ #ifdef CONFIG_MPC8xx_SECOND_ETH_SCC3
+-	ppc_sys_device_enable(MPC8xx_CPM_SCC1);
++	ppc_sys_device_enable(MPC8xx_CPM_SCC3);
+ 
+ #endif
+ #ifdef CONFIG_MPC8xx_SECOND_ETH_FEC2
+diff --git a/arch/ppc/platforms/pq2ads_pd.h b/arch/ppc/platforms/pq2ads_pd.h
+index 8f14a43..672483d 100644
+--- a/arch/ppc/platforms/pq2ads_pd.h
++++ b/arch/ppc/platforms/pq2ads_pd.h
+@@ -29,86 +29,4 @@ #define F2_TXCLK	16
+ #define F3_RXCLK	13
+ #define F3_TXCLK	14
+ 
+-/* Automatically generates register configurations */
+-#define PC_CLK(x)	((uint)(1<<(x-1)))	/* FCC CLK I/O ports */
+-
+-#define CMXFCR_RF1CS(x)	((uint)((x-5)<<27))	/* FCC1 Receive Clock Source */
+-#define CMXFCR_TF1CS(x)	((uint)((x-5)<<24))	/* FCC1 Transmit Clock Source */
+-#define CMXFCR_RF2CS(x)	((uint)((x-9)<<19))	/* FCC2 Receive Clock Source */
+-#define CMXFCR_TF2CS(x) ((uint)((x-9)<<16))	/* FCC2 Transmit Clock Source */
+-#define CMXFCR_RF3CS(x)	((uint)((x-9)<<11))	/* FCC3 Receive Clock Source */
+-#define CMXFCR_TF3CS(x) ((uint)((x-9)<<8))	/* FCC3 Transmit Clock Source */
+-
+-#define PC_F1RXCLK	PC_CLK(F1_RXCLK)
+-#define PC_F1TXCLK	PC_CLK(F1_TXCLK)
+-#define CMX1_CLK_ROUTE	(CMXFCR_RF1CS(F1_RXCLK) | CMXFCR_TF1CS(F1_TXCLK))
+-#define CMX1_CLK_MASK	((uint)0xff000000)
+-
+-#define PC_F2RXCLK	PC_CLK(F2_RXCLK)
+-#define PC_F2TXCLK	PC_CLK(F2_TXCLK)
+-#define CMX2_CLK_ROUTE	(CMXFCR_RF2CS(F2_RXCLK) | CMXFCR_TF2CS(F2_TXCLK))
+-#define CMX2_CLK_MASK	((uint)0x00ff0000)
+-
+-#define PC_F3RXCLK	PC_CLK(F3_RXCLK)
+-#define PC_F3TXCLK	PC_CLK(F3_TXCLK)
+-#define CMX3_CLK_ROUTE	(CMXFCR_RF3CS(F3_RXCLK) | CMXFCR_TF3CS(F3_TXCLK))
+-#define CMX3_CLK_MASK	((uint)0x0000ff00)
+-
+-/* I/O Pin assignment for FCC1.  I don't yet know the best way to do this,
+- * but there is little variation among the choices.
+- */
+-#define PA1_COL		0x00000001U
+-#define PA1_CRS		0x00000002U
+-#define PA1_TXER	0x00000004U
+-#define PA1_TXEN	0x00000008U
+-#define PA1_RXDV	0x00000010U
+-#define PA1_RXER	0x00000020U
+-#define PA1_TXDAT	0x00003c00U
+-#define PA1_RXDAT	0x0003c000U
+-#define PA1_PSORA0	(PA1_RXDAT | PA1_TXDAT)
+-#define PA1_PSORA1	(PA1_COL | PA1_CRS | PA1_TXER | PA1_TXEN | \
+-		PA1_RXDV | PA1_RXER)
+-#define PA1_DIRA0	(PA1_RXDAT | PA1_CRS | PA1_COL | PA1_RXER | PA1_RXDV)
+-#define PA1_DIRA1	(PA1_TXDAT | PA1_TXEN | PA1_TXER)
+-
+-
+-/* I/O Pin assignment for FCC2.  I don't yet know the best way to do this,
+- * but there is little variation among the choices.
+- */
+-#define PB2_TXER	0x00000001U
+-#define PB2_RXDV	0x00000002U
+-#define PB2_TXEN	0x00000004U
+-#define PB2_RXER	0x00000008U
+-#define PB2_COL		0x00000010U
+-#define PB2_CRS		0x00000020U
+-#define PB2_TXDAT	0x000003c0U
+-#define PB2_RXDAT	0x00003c00U
+-#define PB2_PSORB0	(PB2_RXDAT | PB2_TXDAT | PB2_CRS | PB2_COL | \
+-		PB2_RXER | PB2_RXDV | PB2_TXER)
+-#define PB2_PSORB1	(PB2_TXEN)
+-#define PB2_DIRB0	(PB2_RXDAT | PB2_CRS | PB2_COL | PB2_RXER | PB2_RXDV)
+-#define PB2_DIRB1	(PB2_TXDAT | PB2_TXEN | PB2_TXER)
+-
+-
+-/* I/O Pin assignment for FCC3.  I don't yet know the best way to do this,
+- * but there is little variation among the choices.
+- */
+-#define PB3_RXDV	0x00004000U
+-#define PB3_RXER	0x00008000U
+-#define PB3_TXER	0x00010000U
+-#define PB3_TXEN	0x00020000U
+-#define PB3_COL		0x00040000U
+-#define PB3_CRS		0x00080000U
+-#define PB3_TXDAT	0x0f000000U
+-#define PB3_RXDAT	0x00f00000U
+-#define PB3_PSORB0	(PB3_RXDAT | PB3_TXDAT | PB3_CRS | PB3_COL | \
+-		PB3_RXER | PB3_RXDV | PB3_TXER | PB3_TXEN)
+-#define PB3_PSORB1	0
+-#define PB3_DIRB0	(PB3_RXDAT | PB3_CRS | PB3_COL | PB3_RXER | PB3_RXDV)
+-#define PB3_DIRB1	(PB3_TXDAT | PB3_TXEN | PB3_TXER)
+-
+-#define FCC_MEM_OFFSET(x) (CPM_FCC_SPECIAL_BASE + (x*128))
+-#define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0)
+-#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(1)
+-
+ #endif
+diff --git a/arch/ppc/syslib/mpc85xx_devices.c b/arch/ppc/syslib/mpc85xx_devices.c
+index 7735336..325136e 100644
+--- a/arch/ppc/syslib/mpc85xx_devices.c
++++ b/arch/ppc/syslib/mpc85xx_devices.c
+@@ -16,9 +16,11 @@ #include <linux/module.h>
  #include <linux/device.h>
- #include <linux/platform_device.h>
+ #include <linux/serial_8250.h>
  #include <linux/fsl_devices.h>
 +#include <linux/fs_enet_pd.h>
-+#include <linux/fs_uart_pd.h>
- 
- #include <asm/system.h>
- #include <asm/atomic.h>
-@@ -30,6 +32,10 @@ #include <asm/prom.h>
- #include <sysdev/fsl_soc.h>
- #include <mm/mmu_decl.h>
- 
-+#ifdef CONFIG_CPM2
+ #include <asm/mpc85xx.h>
+ #include <asm/irq.h>
+ #include <asm/ppc_sys.h>
 +#include <asm/cpm2.h>
-+#endif
-+
- static phys_addr_t immrbase = -1;
  
- phys_addr_t get_immrbase(void)
-@@ -43,7 +49,9 @@ phys_addr_t get_immrbase(void)
- 	if (soc) {
- 		unsigned int size;
- 		void *prop = get_property(soc, "reg", &size);
--		immrbase = of_translate_address(soc, prop);
-+
-+		if (prop)
-+			immrbase = of_translate_address(soc, prop);
- 		of_node_put(soc);
- 	};
+ /* We use offsets for IORESOURCE_MEM since we do not know at compile time
+  * what CCSRBAR is, will get fixed up by mach_mpc85xx_fixup
+@@ -82,6 +84,60 @@ static struct fsl_i2c_platform_data mpc8
+ 	.device_flags = FSL_I2C_DEV_SEPARATE_DFSRR,
+ };
  
-@@ -51,7 +59,79 @@ phys_addr_t get_immrbase(void)
- }
++static struct fs_platform_info mpc85xx_fcc1_pdata = {
++	.fs_no          = fsid_fcc1,
++	.cp_page        = CPM_CR_FCC1_PAGE,
++	.cp_block       = CPM_CR_FCC1_SBLOCK,
++
++	.rx_ring        = 32,
++	.tx_ring        = 32,
++	.rx_copybreak   = 240,
++	.use_napi       = 0,
++	.napi_weight    = 17,
++
++	.clk_mask	= CMX1_CLK_MASK,
++	.clk_route	= CMX1_CLK_ROUTE,
++	.clk_trx	= (PC_F1RXCLK | PC_F1TXCLK),
++
++	.mem_offset     = FCC1_MEM_OFFSET,
++};
++
++static struct fs_platform_info mpc85xx_fcc2_pdata = {
++	.fs_no          = fsid_fcc2,
++	.cp_page        = CPM_CR_FCC2_PAGE,
++	.cp_block       = CPM_CR_FCC2_SBLOCK,
++
++	.rx_ring        = 32,
++	.tx_ring        = 32,
++	.rx_copybreak   = 240,
++	.use_napi       = 0,
++	.napi_weight    = 17,
++
++	.clk_mask	= CMX2_CLK_MASK,
++	.clk_route	= CMX2_CLK_ROUTE,
++	.clk_trx	= (PC_F2RXCLK | PC_F2TXCLK),
++
++	.mem_offset     = FCC2_MEM_OFFSET,
++};
++
++static struct fs_platform_info mpc85xx_fcc3_pdata = {
++	.fs_no          = fsid_fcc3,
++	.cp_page        = CPM_CR_FCC3_PAGE,
++	.cp_block       = CPM_CR_FCC3_SBLOCK,
++
++	.rx_ring        = 32,
++	.tx_ring        = 32,
++	.rx_copybreak   = 240,
++	.use_napi       = 0,
++	.napi_weight    = 17,
++
++	.clk_mask	= CMX3_CLK_MASK,
++	.clk_route	= CMX3_CLK_ROUTE,
++	.clk_trx	= (PC_F3RXCLK | PC_F3TXCLK),
++
++	.mem_offset     = FCC3_MEM_OFFSET,
++};
++
+ static struct plat_serial8250_port serial_platform_data[] = {
+ 	[0] = {
+ 		.mapbase	= 0x4500,
+@@ -318,19 +374,28 @@ struct platform_device ppc_sys_platform_
+ 	[MPC85xx_CPM_FCC1] = {
+ 		.name = "fsl-cpm-fcc",
+ 		.id	= 1,
+-		.num_resources	 = 3,
++		.num_resources	 = 4,
++		.dev.platform_data = &mpc85xx_fcc1_pdata,
+ 		.resource = (struct resource[]) {
+ 			{
++				.name	= "fcc_regs",
+ 				.start	= 0x91300,
+ 				.end	= 0x9131F,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
++				.name   = "fcc_regs_c",
+ 				.start	= 0x91380,
+ 				.end	= 0x9139F,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
++				.name	= "fcc_pram",
++				.start	= 0x88400,
++				.end	= 0x884ff,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
+ 				.start	= SIU_INT_FCC1,
+ 				.end	= SIU_INT_FCC1,
+ 				.flags	= IORESOURCE_IRQ,
+@@ -340,19 +405,28 @@ struct platform_device ppc_sys_platform_
+ 	[MPC85xx_CPM_FCC2] = {
+ 		.name = "fsl-cpm-fcc",
+ 		.id	= 2,
+-		.num_resources	 = 3,
++		.num_resources	 = 4,
++		.dev.platform_data = &mpc85xx_fcc2_pdata,
+ 		.resource = (struct resource[]) {
+ 			{
++				.name	= "fcc_regs",
+ 				.start	= 0x91320,
+ 				.end	= 0x9133F,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
++				.name   = "fcc_regs_c",
+ 				.start	= 0x913A0,
+ 				.end	= 0x913CF,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
++				.name	= "fcc_pram",
++				.start	= 0x88500,
++				.end	= 0x885ff,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
+ 				.start	= SIU_INT_FCC2,
+ 				.end	= SIU_INT_FCC2,
+ 				.flags	= IORESOURCE_IRQ,
+@@ -362,16 +436,25 @@ struct platform_device ppc_sys_platform_
+ 	[MPC85xx_CPM_FCC3] = {
+ 		.name = "fsl-cpm-fcc",
+ 		.id	= 3,
+-		.num_resources	 = 3,
++		.num_resources	 = 4,
++		.dev.platform_data = &mpc85xx_fcc3_pdata,
+ 		.resource = (struct resource[]) {
+ 			{
++				.name	= "fcc_regs",
+ 				.start	= 0x91340,
+ 				.end	= 0x9135F,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
++				.name   = "fcc_regs_c",
+ 				.start	= 0x913D0,
+ 				.end	= 0x913FF,
++				.flags	= IORESOURCE_MEM,
++			},
++			{
++				.name	= "fcc_pram",
++				.start	= 0x88600,
++				.end	= 0x886ff,
+ 				.flags	= IORESOURCE_MEM,
+ 			},
+ 			{
+diff --git a/arch/ppc/syslib/mpc8xx_devices.c b/arch/ppc/syslib/mpc8xx_devices.c
+index 6f53638..cf5ab47 100644
+--- a/arch/ppc/syslib/mpc8xx_devices.c
++++ b/arch/ppc/syslib/mpc8xx_devices.c
+@@ -218,6 +218,14 @@ struct platform_device ppc_sys_platform_
+ 			},
+ 		},
+ 	},
++
++        [MPC8xx_MDIO_FEC] = {
++                .name = "fsl-cpm-fec-mdio",
++                .id = 0,
++                .num_resources = 0,
++
++        },
++
+ };
  
- EXPORT_SYMBOL(get_immrbase);
-+
-+static u32 brgfreq = -1;
-+
-+u32 get_brgfreq(void)
-+{
-+	struct device_node *node;
-+
-+	if (brgfreq != -1)
-+		return brgfreq;
-+
-+	node = of_find_node_by_type(NULL, "serial");
-+	if (node) {
-+		unsigned int size;
-+		unsigned int *prop = (unsigned int*)get_property(node, "clock-frequency", &size);
-+
-+		if (prop)
-+			brgfreq = *prop;
-+		of_node_put(node);
-+	};
-+
-+	return brgfreq;
-+}
-+
-+EXPORT_SYMBOL(get_brgfreq);
-+
-+static u32 fs_baudrate = -1;
-+
-+u32 get_baudrate(void)
-+{
-+	struct device_node *node;
+ static int __init mach_mpc8xx_fixup(struct platform_device *pdev)
+diff --git a/arch/ppc/syslib/mpc8xx_sys.c b/arch/ppc/syslib/mpc8xx_sys.c
+index eee2132..18ba1d7 100644
+--- a/arch/ppc/syslib/mpc8xx_sys.c
++++ b/arch/ppc/syslib/mpc8xx_sys.c
+@@ -22,7 +22,7 @@ struct ppc_sys_spec ppc_sys_specs[] = {
+ 		.ppc_sys_name	= "MPC86X",
+ 		.mask 		= 0xFFFFFFFF,
+ 		.value 		= 0x00000000,
+-		.num_devices	= 7,
++		.num_devices	= 8,
+ 		.device_list	= (enum ppc_sys_devices[])
+ 		{
+ 			MPC8xx_CPM_FEC1,
+@@ -32,13 +32,14 @@ struct ppc_sys_spec ppc_sys_specs[] = {
+ 			MPC8xx_CPM_SCC4,
+ 			MPC8xx_CPM_SMC1,
+ 			MPC8xx_CPM_SMC2,
++			MPC8xx_MDIO_FEC,
+ 		},
+ 	},
+ 	{
+ 		.ppc_sys_name	= "MPC885",
+ 		.mask 		= 0xFFFFFFFF,
+ 		.value 		= 0x00000000,
+-		.num_devices	= 8,
++		.num_devices	= 9,
+ 		.device_list	= (enum ppc_sys_devices[])
+ 		{
+ 			MPC8xx_CPM_FEC1,
+@@ -49,6 +50,7 @@ struct ppc_sys_spec ppc_sys_specs[] = {
+ 			MPC8xx_CPM_SCC4,
+ 			MPC8xx_CPM_SMC1,
+ 			MPC8xx_CPM_SMC2,
++			MPC8xx_MDIO_FEC,
+ 		},
+ 	},
+ 	{	/* default match */
+diff --git a/arch/ppc/syslib/pq2_devices.c b/arch/ppc/syslib/pq2_devices.c
+index 8692d00..fefbc21 100644
+--- a/arch/ppc/syslib/pq2_devices.c
++++ b/arch/ppc/syslib/pq2_devices.c
+@@ -369,6 +369,11 @@ struct platform_device ppc_sys_platform_
+ 			},
+ 		},
+ 	},
++	[MPC82xx_MDIO_BB] = {
++		.name = "fsl-bb-mdio",
++		.id = 0,
++		.num_resources = 0,
++	},
+ };
  
-+	if (fs_baudrate != -1)
-+		return fs_baudrate;
-+
-+	node = of_find_node_by_type(NULL, "serial");
-+	if (node) {
-+		unsigned int size;
-+		unsigned int *prop = (unsigned int*)get_property(node, "current-speed", &size);
-+
-+		if (prop)
-+			fs_baudrate = *prop;
-+		of_node_put(node);
-+	};
-+
-+	return fs_baudrate;
-+}
-+
-+EXPORT_SYMBOL(get_baudrate);
-+
-+static u32 intfreq = -1;
-+
-+u32 get_intfreq(void)
-+{
-+	struct device_node *node;
-+
-+	if (intfreq != -1)
-+		return intfreq;
-+
-+	node = of_find_node_by_type(NULL, "cpu");
-+	if (node) {
-+		unsigned int size;
-+		unsigned int *prop = (unsigned int*)get_property(node, "clock-frequency", &size);
-+		if (prop)
-+			intfreq = *prop;
-+		of_node_put(node);
-+	}
-+
-+	return intfreq;
-+}
-+
-+EXPORT_SYMBOL(get_intfreq);
-+
-+
- static int __init gfar_mdio_of_init(void)
- {
- 	struct device_node *np;
-@@ -491,3 +571,211 @@ err:
- }
- 
- arch_initcall(fsl_usb_dr_of_init);
-+
-+static const char *fcc_regs = "fcc_regs";
-+static const char *fcc_regs_c = "fcc_regs_c";
-+static const char *fcc_pram = "fcc_pram";
-+static char bus_id[9][BUS_ID_SIZE];
-+
-+static int __init fs_enet_of_init(void)
-+{
-+	struct device_node *np;
-+	unsigned int i;
-+	struct platform_device *fs_enet_dev;
-+	struct resource res;
-+	int ret;
-+
-+	for (np = NULL, i = 0;
-+	     (np = of_find_compatible_node(np, "network", "fs_enet")) != NULL;
-+	     i++) {
-+		struct resource r[4];
-+		struct device_node *phy, *mdio;
-+		struct fs_platform_info fs_enet_data;
-+		unsigned int *id, *phy_addr;
-+		void *mac_addr;
-+		phandle *ph;
-+		char *model;
-+
-+		memset(r, 0, sizeof(r));
-+		memset(&fs_enet_data, 0, sizeof(fs_enet_data));
-+
-+		ret = of_address_to_resource(np, 0, &r[0]);
-+		if (ret)
-+			goto err;
-+		r[0].name = fcc_regs;
-+
-+		ret = of_address_to_resource(np, 1, &r[1]);
-+		if (ret)
-+			goto err;
-+		r[1].name = fcc_pram;
-+
-+		ret = of_address_to_resource(np, 2, &r[2]);
-+		if (ret)
-+			goto err;
-+		r[2].name = fcc_regs_c;
-+
-+		r[3].start = np->intrs[0].line;
-+		r[3].end = np->intrs[0].line;
-+		r[3].flags = IORESOURCE_IRQ;
-+
-+		fs_enet_dev =
-+		    platform_device_register_simple("fsl-cpm-fcc", i, &r[0], 4);
-+
-+		if (IS_ERR(fs_enet_dev)) {
-+			ret = PTR_ERR(fs_enet_dev);
-+			goto err;
-+		}
-+
-+		model = get_property(np, "model", NULL);
-+		if (model == NULL) {
-+			ret = -ENODEV;
-+			goto unreg;
-+		}
-+
-+		mac_addr = get_property(np, "mac-address", NULL);
-+		memcpy(fs_enet_data.macaddr, mac_addr, 6);
-+
-+		ph = (phandle *) get_property(np, "phy-handle", NULL);
-+		phy = of_find_node_by_phandle(*ph);
-+
-+		if (phy == NULL) {
-+			ret = -ENODEV;
-+			goto unreg;
-+		}
-+
-+		phy_addr = (u32 *) get_property(phy, "reg", NULL);
-+		fs_enet_data.phy_addr = *phy_addr;
-+
-+		id = (u32 *) get_property(np, "device-id", NULL);
-+		fs_enet_data.fs_no = *id;
-+
-+		mdio = of_get_parent(phy);
-+                ret = of_address_to_resource(mdio, 0, &res);
-+                if (ret) {
-+                        of_node_put(phy);
-+                        of_node_put(mdio);
-+                        goto unreg;
-+                }
-+
-+		switch (*id) {
-+		case fsid_fcc1:
-+			fs_enet_data.mem_offset = FCC1_MEM_OFFSET,
-+			snprintf((char*)&bus_id[2], BUS_ID_SIZE, "%x:%02x", (u32)res.start, fs_enet_data.phy_addr);
-+			fs_enet_data.bus_id = (char*)&bus_id[2];
-+			fs_enet_data.cp_page = CPM_CR_FCC1_PAGE;
-+			fs_enet_data.cp_block = CPM_CR_FCC1_SBLOCK;
-+			break;
-+		case fsid_fcc2:
-+			fs_enet_data.mem_offset = FCC2_MEM_OFFSET,
-+			snprintf((char*)&bus_id[3], BUS_ID_SIZE, "%x:%02x", (u32)res.start, fs_enet_data.phy_addr);
-+			fs_enet_data.bus_id = (char*)&bus_id[3];
-+			fs_enet_data.cp_page = CPM_CR_FCC2_PAGE;
-+			fs_enet_data.cp_block = CPM_CR_FCC2_SBLOCK;
-+			break;
-+		case fsid_fcc3:
-+			fs_enet_data.mem_offset = FCC3_MEM_OFFSET,
-+			snprintf((char*)&bus_id[4], BUS_ID_SIZE, "%x:%02x", (u32)res.start, fs_enet_data.phy_addr);
-+			fs_enet_data.bus_id = (char*)&bus_id[4];
-+			fs_enet_data.cp_page = CPM_CR_FCC3_PAGE;
-+			fs_enet_data.cp_block = CPM_CR_FCC3_SBLOCK;
-+			break;
-+		}
-+
-+		if (strstr(model, "FCC")) {
-+			fs_enet_data.dpram_offset = (u32)cpm2_immr->im_dprambase;
-+			fs_enet_data.rx_ring = 32;
-+			fs_enet_data.tx_ring = 32;
-+			fs_enet_data.rx_copybreak = 240;
-+			fs_enet_data.use_napi = 0;
-+			fs_enet_data.napi_weight = 17;
-+		}
-+
-+		of_node_put(phy);
-+		of_node_put(mdio);
-+
-+		ret = platform_device_add_data(fs_enet_dev, &fs_enet_data,
-+					     sizeof(struct
-+						    fs_platform_info));
-+		if (ret)
-+			goto unreg;
-+	}
-+	return 0;
-+
-+unreg:
-+	platform_device_unregister(fs_enet_dev);
-+err:
-+	return ret;
-+}
-+
-+arch_initcall(fs_enet_of_init);
-+
-+static const char *scc_regs = "regs";
-+static const char *scc_pram = "pram";
-+
-+static int __init cpm_uart_of_init(void)
-+{
-+	struct device_node *np;
-+	unsigned int i;
-+	struct platform_device *cpm_uart_dev;
-+	int ret;
-+
-+
-+	for (np = NULL, i = 0;
-+	     (np = of_find_compatible_node(np, "serial", "cpm_uart")) != NULL;
-+	     i++) {
-+		struct resource r[3];
-+		struct fs_uart_platform_info cpm_uart_data;
-+		int *id;
-+
-+		memset(r, 0, sizeof(r));
-+		memset(&cpm_uart_data, 0, sizeof(cpm_uart_data));
-+
-+		ret = of_address_to_resource(np, 0, &r[0]);
-+		if (ret)
-+			goto err;
-+
-+		r[0].name = scc_regs;
-+
-+		ret = of_address_to_resource(np, 1, &r[1]);
-+		if (ret)
-+			goto err;
-+		r[1].name = scc_pram;
-+
-+		r[2].start = np->intrs[0].line;
-+		r[2].end = np->intrs[0].line;
-+		r[2].flags = IORESOURCE_IRQ;
-+
-+		cpm_uart_dev =
-+		    platform_device_register_simple("fsl-cpm-scc:uart", i, &r[0], 3);
-+
-+		if (IS_ERR(cpm_uart_dev)) {
-+			ret = PTR_ERR(cpm_uart_dev);
-+			goto err;
-+		}
-+
-+		id = get_property(np, "device-id", NULL);
-+		cpm_uart_data.fs_no = *id;
-+		cpm_uart_data.uart_clk = get_intfreq();
-+
-+		cpm_uart_data.tx_num_fifo = 4;
-+		cpm_uart_data.tx_buf_size = 32;
-+		cpm_uart_data.rx_num_fifo = 4;
-+		cpm_uart_data.rx_buf_size = 32;
-+
-+		ret =
-+		    platform_device_add_data(cpm_uart_dev, &cpm_uart_data,
-+					     sizeof(struct
-+						    fs_uart_platform_info));
-+		if (ret)
-+			goto unreg;
-+	}
-+
-+	return 0;
-+
-+unreg:
-+	platform_device_unregister(cpm_uart_dev);
-+err:
-+	return ret;
-+}
-+
-+arch_initcall(cpm_uart_of_init);
+ static int __init mach_mpc82xx_fixup(struct platform_device *pdev)
+diff --git a/arch/ppc/syslib/pq2_sys.c b/arch/ppc/syslib/pq2_sys.c
+index fee8948..f52600c 100644
+--- a/arch/ppc/syslib/pq2_sys.c
++++ b/arch/ppc/syslib/pq2_sys.c
+@@ -139,13 +139,14 @@ struct ppc_sys_spec ppc_sys_specs[] = {
+ 		.ppc_sys_name	= "8272",
+ 		.mask		= 0x0000ff00,
+ 		.value		= 0x00000c00,
+-		.num_devices	= 12,
++		.num_devices	= 13,
+ 		.device_list = (enum ppc_sys_devices[])
+ 		{
+ 			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2, MPC82xx_CPM_SCC1,
+ 			MPC82xx_CPM_SCC2, MPC82xx_CPM_SCC3, MPC82xx_CPM_SCC4,
+ 			MPC82xx_CPM_SMC1, MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI,
+ 			MPC82xx_CPM_I2C, MPC82xx_CPM_USB, MPC82xx_SEC1,
++			MPC82xx_MDIO_BB,
+ 		},
+ 	},
+ 	/* below is a list of the 8280 family of processors */
 diff --git a/include/asm-ppc/cpm2.h b/include/asm-ppc/cpm2.h
-index f6a7ff0..8e6840b 100644
+index c70344b..f6a7ff0 100644
 --- a/include/asm-ppc/cpm2.h
 +++ b/include/asm-ppc/cpm2.h
-@@ -1186,7 +1186,7 @@ #define PC3_DIRC1	(PC3_TXDAT)
- #define FCC_MEM_OFFSET(x) (CPM_FCC_SPECIAL_BASE + (x*128))
- #define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0)
- #define FCC2_MEM_OFFSET FCC_MEM_OFFSET(1)
--#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(2)
-+#define FCC3_MEM_OFFSET FCC_MEM_OFFSET(2)
+@@ -1093,5 +1093,100 @@ #endif
  
+ #define FCC_PSMR_RMII	((uint)0x00020000)	/* Use RMII interface */
+ 
++/* FCC iop & clock configuration. BSP code is responsible to define Fx_RXCLK & Fx_TXCLK
++ * in order to use clock-computing stuff below for the FCC x
++ */
++
++/* Automatically generates register configurations */
++#define PC_CLK(x)	((uint)(1<<(x-1)))	/* FCC CLK I/O ports */
++
++#define CMXFCR_RF1CS(x)	((uint)((x-5)<<27))	/* FCC1 Receive Clock Source */
++#define CMXFCR_TF1CS(x)	((uint)((x-5)<<24))	/* FCC1 Transmit Clock Source */
++#define CMXFCR_RF2CS(x)	((uint)((x-9)<<19))	/* FCC2 Receive Clock Source */
++#define CMXFCR_TF2CS(x) ((uint)((x-9)<<16))	/* FCC2 Transmit Clock Source */
++#define CMXFCR_RF3CS(x)	((uint)((x-9)<<11))	/* FCC3 Receive Clock Source */
++#define CMXFCR_TF3CS(x) ((uint)((x-9)<<8))	/* FCC3 Transmit Clock Source */
++
++#define PC_F1RXCLK	PC_CLK(F1_RXCLK)
++#define PC_F1TXCLK	PC_CLK(F1_TXCLK)
++#define CMX1_CLK_ROUTE	(CMXFCR_RF1CS(F1_RXCLK) | CMXFCR_TF1CS(F1_TXCLK))
++#define CMX1_CLK_MASK	((uint)0xff000000)
++
++#define PC_F2RXCLK	PC_CLK(F2_RXCLK)
++#define PC_F2TXCLK	PC_CLK(F2_TXCLK)
++#define CMX2_CLK_ROUTE	(CMXFCR_RF2CS(F2_RXCLK) | CMXFCR_TF2CS(F2_TXCLK))
++#define CMX2_CLK_MASK	((uint)0x00ff0000)
++
++#define PC_F3RXCLK	PC_CLK(F3_RXCLK)
++#define PC_F3TXCLK	PC_CLK(F3_TXCLK)
++#define CMX3_CLK_ROUTE	(CMXFCR_RF3CS(F3_RXCLK) | CMXFCR_TF3CS(F3_TXCLK))
++#define CMX3_CLK_MASK	((uint)0x0000ff00)
++
++#define CPMUX_CLK_MASK (CMX3_CLK_MASK | CMX2_CLK_MASK)
++#define CPMUX_CLK_ROUTE (CMX3_CLK_ROUTE | CMX2_CLK_ROUTE)
++
++#define CLK_TRX (PC_F3TXCLK | PC_F3RXCLK | PC_F2TXCLK | PC_F2RXCLK)
++
++/* I/O Pin assignment for FCC1.  I don't yet know the best way to do this,
++ * but there is little variation among the choices.
++ */
++#define PA1_COL		0x00000001U
++#define PA1_CRS		0x00000002U
++#define PA1_TXER	0x00000004U
++#define PA1_TXEN	0x00000008U
++#define PA1_RXDV	0x00000010U
++#define PA1_RXER	0x00000020U
++#define PA1_TXDAT	0x00003c00U
++#define PA1_RXDAT	0x0003c000U
++#define PA1_PSORA0	(PA1_RXDAT | PA1_TXDAT)
++#define PA1_PSORA1	(PA1_COL | PA1_CRS | PA1_TXER | PA1_TXEN | \
++		PA1_RXDV | PA1_RXER)
++#define PA1_DIRA0	(PA1_RXDAT | PA1_CRS | PA1_COL | PA1_RXER | PA1_RXDV)
++#define PA1_DIRA1	(PA1_TXDAT | PA1_TXEN | PA1_TXER)
++
++
++/* I/O Pin assignment for FCC2.  I don't yet know the best way to do this,
++ * but there is little variation among the choices.
++ */
++#define PB2_TXER	0x00000001U
++#define PB2_RXDV	0x00000002U
++#define PB2_TXEN	0x00000004U
++#define PB2_RXER	0x00000008U
++#define PB2_COL		0x00000010U
++#define PB2_CRS		0x00000020U
++#define PB2_TXDAT	0x000003c0U
++#define PB2_RXDAT	0x00003c00U
++#define PB2_PSORB0	(PB2_RXDAT | PB2_TXDAT | PB2_CRS | PB2_COL | \
++		PB2_RXER | PB2_RXDV | PB2_TXER)
++#define PB2_PSORB1	(PB2_TXEN)
++#define PB2_DIRB0	(PB2_RXDAT | PB2_CRS | PB2_COL | PB2_RXER | PB2_RXDV)
++#define PB2_DIRB1	(PB2_TXDAT | PB2_TXEN | PB2_TXER)
++
++
++/* I/O Pin assignment for FCC3.  I don't yet know the best way to do this,
++ * but there is little variation among the choices.
++ */
++#define PB3_RXDV	0x00004000U
++#define PB3_RXER	0x00008000U
++#define PB3_TXER	0x00010000U
++#define PB3_TXEN	0x00020000U
++#define PB3_COL		0x00040000U
++#define PB3_CRS		0x00080000U
++#define PB3_TXDAT	0x0f000000U
++#define PC3_TXDAT	0x00000010U
++#define PB3_RXDAT	0x00f00000U
++#define PB3_PSORB0	(PB3_RXDAT | PB3_TXDAT | PB3_CRS | PB3_COL | \
++		PB3_RXER | PB3_RXDV | PB3_TXER | PB3_TXEN)
++#define PB3_PSORB1	0
++#define PB3_DIRB0	(PB3_RXDAT | PB3_CRS | PB3_COL | PB3_RXER | PB3_RXDV)
++#define PB3_DIRB1	(PB3_TXDAT | PB3_TXEN | PB3_TXER)
++#define PC3_DIRC1	(PC3_TXDAT)
++
++/* Handy macro to specify mem for FCCs*/
++#define FCC_MEM_OFFSET(x) (CPM_FCC_SPECIAL_BASE + (x*128))
++#define FCC1_MEM_OFFSET FCC_MEM_OFFSET(0)
++#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(1)
++#define FCC2_MEM_OFFSET FCC_MEM_OFFSET(2)
++
  #endif /* __CPM2__ */
  #endif /* __KERNEL__ */
+diff --git a/include/asm-ppc/mpc8260.h b/include/asm-ppc/mpc8260.h
+index 6ba69a8..e4a897e 100644
+--- a/include/asm-ppc/mpc8260.h
++++ b/include/asm-ppc/mpc8260.h
+@@ -83,6 +83,7 @@ enum ppc_sys_devices {
+ 	MPC82xx_CPM_SMC2,
+ 	MPC82xx_CPM_USB,
+ 	MPC82xx_SEC1,
++	MPC82xx_MDIO_BB,
+ 	NUM_PPC_SYS_DEVS,
+ };
+ 
+diff --git a/include/asm-ppc/mpc8xx.h b/include/asm-ppc/mpc8xx.h
+index 3515a7f..8830dfe 100644
+--- a/include/asm-ppc/mpc8xx.h
++++ b/include/asm-ppc/mpc8xx.h
+@@ -111,6 +111,7 @@ enum ppc_sys_devices {
+ 	MPC8xx_CPM_SMC1,
+ 	MPC8xx_CPM_SMC2,
+ 	MPC8xx_CPM_USB,
++	MPC8xx_MDIO_FEC,
+ 	NUM_PPC_SYS_DEVS,
+ };
+ 
+diff --git a/include/linux/fs_enet_pd.h b/include/linux/fs_enet_pd.h
+index 783c476..74ed35a 100644
+--- a/include/linux/fs_enet_pd.h
++++ b/include/linux/fs_enet_pd.h
+@@ -69,36 +69,23 @@ enum fs_ioport {
+ 	fsiop_porte,
+ };
+ 
+-struct fs_mii_bus_info {
+-	int method;		/* mii method                  */
+-	int id;			/* the id of the mii_bus       */
+-	int disable_aneg;	/* if the controller needs to negothiate speed & duplex */
+-	int lpa; 		/* the default board-specific vallues will be applied otherwise */
+-
+-	union {
+-		struct {
+-			int duplex;
+-			int speed;
+-		} fixed;
+-
+-		struct {
+-			/* nothing */
+-		} fec;
+-		
+-		struct {
+-			/* nothing */
+-		} scc;
+-
+-		struct {
+-			int mdio_port;	/* port & bit for MDIO */
+-			int mdio_bit;
+-			int mdc_port;	/* port & bit for MDC  */
+-			int mdc_bit;
+-			int delay;	/* delay in us         */
+-		} bitbang;
+-	} i;
+-};
+-
++struct fs_mii_bit {
++	u32 offset;
++	u8 bit;
++	u8 polarity;
++};
++struct fs_mii_bb_platform_info {
++	struct fs_mii_bit 	mdio_dir;
++	struct fs_mii_bit 	mdio_dat;
++	struct fs_mii_bit	mdc_dat;
++	int mdio_port;	/* port & bit for MDIO */
++	int mdio_bit;
++	int mdc_port;	/* port & bit for MDC  */
++	int mdc_bit;
++	int delay;	/* delay in us         */
++	int irq[32]; 	/* irqs per phy's */
++};
++
+ struct fs_platform_info {
+ 	
+ 	void(*init_ioports)(void);
+@@ -119,6 +106,7 @@ struct fs_platform_info {
+ 	u32 device_flags;
+ 
+ 	int phy_addr;		/* the phy address (-1 no phy) */
++	const char*	bus_id;
+ 	int phy_irq;		/* the phy irq (if it exists)  */
+ 
+ 	const struct fs_mii_bus_info *bus_info;
+@@ -130,6 +118,10 @@ struct fs_platform_info {
+ 	int napi_weight;	/* NAPI weight                 */
+ 
+ 	int use_rmii;		/* use RMII mode 	       */
++	int has_phy;            /* if the network is phy container as well...*/
+ };
+-
++struct fs_mii_fec_platform_info {
++	u32 irq[32];
++	u32 mii_speed;
++};
+ #endif
