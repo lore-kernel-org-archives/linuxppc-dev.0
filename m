@@ -1,21 +1,19 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (mail.jdl.com [66.118.10.122])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9A23967A6D
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Jun 2006 23:59:04 +1000 (EST)
-From: "Matt Sealey" <matt@genesi-usa.com>
-To: "'Jon Loeliger'" <jdl@jdl.com>
-Subject: RE: cpu power "management" for non-dfs chips with no pmu (for
-	instance, 750cxe and mpc7447 in pegasos)
-Date: Fri, 23 Jun 2006 08:58:56 -0500
-Message-ID: <01ca01c696cd$2e453f30$99dfdfdf@bakuhatsu.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <E1FtlnK-0007Zt-Tx@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: matt@genesi-usa.com
+	by ozlabs.org (Postfix) with ESMTP id 2093B67A65
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 00:06:14 +1000 (EST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Use IRQ and senses from OF-tree on 8641hpcn. 
+In-Reply-To: Your message of "Fri, 23 Jun 2006 10:11:37 +1000."
+	<1151021497.4046.79.camel@localhost.localdomain>
+References: <1150999473.9022.79.camel@cashmere.sps.mot.com>
+	<1151021497.4046.79.camel@localhost.localdomain>
+Date: Fri, 23 Jun 2006 09:06:09 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1FtmIT-0007p2-KW@jdl.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,50 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-I have nothing real to contribute other than I would like to see it :)
-
-Before I asked I checked Google (as is expected of anyone these days)
-and found some discussions on debian-powerpc from 2002 but nobody
-really did anything and nothing really came of it. I know 4 years later
-all we have is powernowd which pokes up cpufreq which only supports
-DFS and certain kinds of Mac PMU. 
-
-ICTC is such a simple thing to support and you can slow down the CPU
-pretty comprehensively (from halving to 255x in theory) with an on and
-off flag. I am surprised nobody implemented a cpufreq governer even if
-it is totally useless and gives no perceivable benefits..
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
-
-
-> -----Original Message-----
-> From: Jon Loeliger [mailto:jdl@jdl.com] 
-> Sent: Friday, June 23, 2006 8:34 AM
-> To: matt@genesi-usa.com
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: cpu power "management" for non-dfs chips with no 
-> pmu (for instance, 750cxe and mpc7447 in pegasos) 
+So, like, the other day Benjamin Herrenschmidt mumbled:
 > 
-> So, like, the other day "Matt Sealey" mumbled:
-> > 
-> > I am basically trying to evaluate if we can do ANYTHING to reduce 
-> > power consumption of systems which are idle, as I have noticed that 
-> > ...
-> > 
-> > Comments? :)
+> > +	shift = __ilog2((~interrupt_mask[0] + 1) & 0xffff);
 > 
-> Hi Matt,
-> 
-> There is an effort afoot to revitalize some of the Linux 
-> Power Management issues, erm, currently going on over on the 
-> linux-pm list these days.  No immediate results (yet), but 
-> there is some concerted effort.  It should include some 
-> PowerPC presence.
-> 
-> Please feel free to contribute, of course. :-)
-> 
-> jdl
-> 
+> Nice hack :)
+
+We aim to please. :-)
+
+> But not something mergeable as it strictly relies on the specific format
+> of the interrupt map on that platform :)
+
+Hrm.
+
+> I have a generic parser on the way, it's hot and will be released for
+> public consumption later today or this week-end along with the rest of
+> the irq patches.
+
+Chomp, chomp.
+
+> I'll need you guys to help porting the few embedded boards already in
+> arch/powerpc.
+
+Of course.  We've also lined Andy Fleming up to help
+with some 85xx parts, and Kim Phillips to help with
+some 83xx parts.  (Hi guys!)
+
+BTW and for (your) references, I will follow up with
+the complete MPC8641 HPCN DTS file here!
+
+Thanks,
+jdl
