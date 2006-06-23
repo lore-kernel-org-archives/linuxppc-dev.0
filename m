@@ -1,22 +1,21 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [66.118.10.122])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <bbrv@genesi-usa.com>
+Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DBADE67B2A
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 01:31:17 +1000 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.44)
-	id 1Ftncn-0008Kb-PT
-	for linuxppc-dev@ozlabs.org; Fri, 23 Jun 2006 10:31:14 -0500
-To: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
-Subject: Re: 8641 open nits 
-In-Reply-To: Your message of "Fri, 23 Jun 2006 10:11:39 CDT."
-	<6C66805F-22DD-4EC2-B852-101BF1E84612@kernel.crashing.org>
-References: <E1Frjet-0004PA-J1@jdl.com>
-	<D9D3C577-D46A-47BA-A1E0-844B95061F57@kernel.crashing.org>
-	<6C66805F-22DD-4EC2-B852-101BF1E84612@kernel.crashing.org>
-Date: Fri, 23 Jun 2006 10:31:13 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Ftncn-0008Kb-PT@jdl.com>
+	by ozlabs.org (Postfix) with ESMTP id BCC6B67A5B
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 01:01:55 +1000 (EST)
+In-Reply-To: <E1Ftmcb-0007rG-QS@jdl.com>
+References: <01ca01c696cd$2e453f30$99dfdfdf@bakuhatsu.net>
+	<E1Ftmcb-0007rG-QS@jdl.com>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E11A25FA-3D47-49E6-8EBB-15A64C81C9C7@genesi-usa.com>
+From: Raquel Velasco and Bill Buck <bbrv@genesi-usa.com>
+Subject: Re: cpu power "management" for non-dfs chips with no pmu (for
+	instance, 750cxe and mpc7447 in pegasos)
+Date: Fri, 23 Jun 2006 09:38:07 -0500
+To: Jon Loeliger <jdl@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Kumar Gala mumbled:
-> Jon,
-> 
-> Any update on the following nits:
-> * duplication of entry in cputable
+Jon, we appreciate the effort that you, Kate and Becky are making. ;-)
+R&B
+On Jun 23, 2006, at 9:26 AM, Jon Loeliger wrote:
 
-Earlier, we discussed it internally, and there are a few
-issues differentiating the cores, so the sentiment was to
-leave it as is for now.
-
-> * include of <platforms/86xx/mpc8641_hpcn.h> in asm-powerpc/mpc86xx.h
-
-That has to stay unless the IRQ patch is applied first.
-Ben said "No" to that one so far.  The include stays for now.
-
-> * mpc86xx_exclude_device cleanup and movement to pci.c
-> * fixing up mpc86xx_hpcn_probe()
-
-Those are all going to be cleaned up pending Ben's IRQ rewrite.
-
-Thanks,
-jdl
+> So, like, the other day "Matt Sealey" mumbled:
+>>
+>> I have nothing real to contribute other than I would like to see  
+>> it :)
+>
+> Disbelief.  :-)
+>
+>> Before I asked I checked Google (as is expected of anyone these days)
+>> and found some discussions on debian-powerpc from 2002 but nobody
+>> really did anything and nothing really came of it. I know 4 years  
+>> later
+>> all we have is powernowd which pokes up cpufreq which only supports
+>> DFS and certain kinds of Mac PMU.
+>
+> Which is why it is all being revitalized now... :-)
+> There was a mini symposium a couple months ago that started
+> a few working groups to help kick start this back into viability.
+>
+>> ICTC is such a simple thing to support and you can slow down the CPU
+>> pretty comprehensively (from halving to 255x in theory) with an on  
+>> and
+>> off flag. I am surprised nobody implemented a cpufreq governer  
+>> even if
+>> it is totally useless and gives no perceivable benefits..
+>
+> See?  You _are_ contributing already.  I encourage
+> you to hit the linux-pm@lists.osdl.org list for a spell!
+>
+> You could start here:
+> 	https://lists.osdl.org/mailman/listinfo/linux-pm
+>
+> Thanks,
+> jdl
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
