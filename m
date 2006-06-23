@@ -2,19 +2,18 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 423E267A77
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 00:13:59 +1000 (EST)
-Subject: [PATCH] windfarm: proper try_to_freeze / signal_pending handling
+	by ozlabs.org (Postfix) with ESMTP id E56C567A76
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Jun 2006 00:13:58 +1000 (EST)
+Subject: [RFC] cpu hotplug in powermac g5
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1150847482.16662.13.camel@johannes>
-References: <1150847482.16662.13.camel@johannes>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <1150845770.16662.7.camel@johannes>
+References: <1150845770.16662.7.camel@johannes>
 Content-Type: text/plain
-Date: Fri, 23 Jun 2006 12:05:44 +0200
-Message-Id: <1151057144.7608.14.camel@localhost>
+Date: Fri, 23 Jun 2006 12:03:09 +0200
+Message-Id: <1151056989.7608.11.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	linux-pm <linux-pm@lists.osdl.org>
+Cc: Michael Buesch <mbuesch@freenet.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +23,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This seems to work for me:
+Never mind the previous patch :) This one works much better.
+
+Note that for software suspend, the generic cpu hotplug are not usable
+because they don't re-sync timebase etc. Hence, I here only use the
+generic die routines but the loop in which offline processors are is
+custom, and we use the regular CPU bring-up sequence instead of just
+exiting the loop.
+
 ---
-This patch makes windfarm handle signal_pending()/try_to_freeze()
-better.
+This patch makes CPU hotplug work on my pm11,2. It works by reusing the
+normal smp_core99_kick_cpu routine for wakeup, and introducing a new
+routine that offline CPUs idle in, which is modeled after the idle loop
+but has no way out (except for taking the soft reset exception triggered
+by kick_cpu). This is required because the generic cpu hotplug code
+doesn't completely re-initialise the CPU when bringing it online again,
+which is required for software suspend.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
---- linux-2.6-git.orig/drivers/macintosh/windfarm_core.c	2006-06-22 16:41:18.182172154 +0200
-+++ linux-2.6-git/drivers/macintosh/windfarm_core.c	2006-06-22 16:42:49.045354378 +0200
-@@ -93,8 +93,6 @@ static int wf_thread_func(void *data)
- 	DBG("wf: thread started\n");
+--- linux-2.6-git.orig/arch/powerpc/platforms/powermac/smp.c	2006-06-23 11:32:49.254352863 +0200
++++ linux-2.6-git/arch/powerpc/platforms/powermac/smp.c	2006-06-23 11:37:23.311886323 +0200
+@@ -895,7 +895,7 @@
+ 	cpu_dead[cpu] = 0;
+ }
  
- 	while(!kthread_should_stop()) {
--		try_to_freeze();
--
- 		if (time_after_eq(jiffies, next)) {
- 			wf_notify(WF_EVENT_TICK, NULL);
- 			if (wf_overtemp) {
-@@ -117,8 +115,8 @@ static int wf_thread_func(void *data)
- 		if (delay <= HZ)
- 			schedule_timeout_interruptible(delay);
+-#endif
++#endif /* CONFIG_HOTPLUG_CPU && CONFIG_PP32 */
  
--		/* there should be no signal, but oh well */
--		if (signal_pending(current)) {
-+		/* there should be no non-suspend signal, but oh well */
-+		if (signal_pending(current) && !try_to_freeze()) {
- 			printk(KERN_WARNING "windfarm: thread got sigl !\n");
- 			break;
- 		}
+ /* Core99 Macs (dual G4s and G5s) */
+ struct smp_ops_t core99_smp_ops = {
+@@ -905,8 +905,16 @@
+ 	.setup_cpu	= smp_core99_setup_cpu,
+ 	.give_timebase	= smp_core99_give_timebase,
+ 	.take_timebase	= smp_core99_take_timebase,
+-#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
++#if defined(CONFIG_HOTPLUG_CPU)
++# if defined(CONFIG_PPC32)
+ 	.cpu_disable	= smp_core99_cpu_disable,
+ 	.cpu_die	= smp_core99_cpu_die,
++# endif
++# if defined(CONFIG_PPC64)
++	.cpu_disable	= generic_cpu_disable,
++	.cpu_die	= generic_cpu_die,
++	/* intentionally do *NOT* assign cpu_enable,
++	 * the generic code will use kick_cpu then! */
++# endif
+ #endif
+ };
+--- linux-2.6-git.orig/arch/powerpc/platforms/powermac/setup.c	2006-06-23 11:32:49.309352368 +0200
++++ linux-2.6-git/arch/powerpc/platforms/powermac/setup.c	2006-06-23 11:38:31.484272766 +0200
+@@ -492,6 +492,9 @@
+ #ifdef CONFIG_SOFTWARE_SUSPEND
+ 	pm_set_ops(&pmac_pm_ops);
+ #endif /* CONFIG_SOFTWARE_SUSPEND */
++	/* this is udbg (which is __init) and we can later use it during
++	 * cpu hotplug (in smp_core99_kick_cpu) */
++	ppc_md.progress = NULL;
+ 	return 0;
+ }
+ 
+@@ -728,6 +731,32 @@
+ 		return PCI_PROBE_NORMAL;
+ 	return PCI_PROBE_DEVTREE;
+ }
++
++#ifdef CONFIG_HOTPLUG_CPU
++/* access per cpu vars from generic smp.c */
++DECLARE_PER_CPU(int, cpu_state);
++
++static void pmac_cpu_die(void)
++{
++	/* turn off as much as possible, we'll be
++	 * kicked out as this will only be invoked
++	 * on core99 platforms for now ... */
++	local_irq_disable();
++	printk(KERN_DEBUG "CPU#%d offline\n", smp_processor_id());
++	__get_cpu_var(cpu_state) = CPU_DEAD;
++	smp_wmb();
++	while (1) {
++		ppc64_runlatch_off();
++		if (ppc_md.power_save) {
++			ppc_md.power_save();
++		} else {
++			HMT_low();
++			HMT_very_low();
++		}
++	}
++}
++#endif
++
+ #endif
+ 
+ define_machine(powermac) {
+@@ -766,6 +795,6 @@
+ 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
+ #endif
+ #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC64)
+-	.cpu_die		= generic_mach_cpu_die,
++	.cpu_die		= pmac_cpu_die,
+ #endif
+ };
