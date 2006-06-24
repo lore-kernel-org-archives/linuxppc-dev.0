@@ -1,23 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [66.118.10.122])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 18D0E67A3A
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Jun 2006 01:50:14 +1000 (EST)
-In-Reply-To: <20060624192136.41e9987d@localhost.localdomain>
-References: <20060623231648.6721.3495.stgit@localhost.localdomain>
-	<20060623231707.6721.43277.stgit@localhost.localdomain>
-	<10C0FB27-7351-4578-9CE5-3EFA476C2661@kernel.crashing.org>
-	<20060624192136.41e9987d@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <64AF3E64-2E2E-492F-9A8E-31268219BA8C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 5/6] CPM_UART: unify clock sources
-Date: Sat, 24 Jun 2006 10:50:10 -0500
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id A4F0067A3D
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Jun 2006 02:16:58 +1000 (EST)
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: cpu power "management" for non-dfs chips with no pmu (for
+	instance, 750cxe and mpc7447 in pegasos)
+In-Reply-To: Your message of "Sat, 24 Jun 2006 01:49:39 +0200."
+	<Pine.LNX.4.60.0606240147560.15705@poirot.grange>
+References: <01ca01c696cd$2e453f30$99dfdfdf@bakuhatsu.net>
+	<E1Ftmcb-0007rG-QS@jdl.com>
+	<Pine.LNX.4.60.0606240147560.15705@poirot.grange>
+Date: Sat, 24 Jun 2006 11:16:51 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1FuAoV-0005iR-Id@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,46 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+So, like, the other day Guennadi Liakhovetski mumbled:
+> On Fri, 23 Jun 2006, Jon Loeliger wrote:
+> 
+> > See?  You _are_ contributing already.  I encourage
+> > you to hit the linux-pm@lists.osdl.org list for a spell!
+> > 
+> > You could start here:
+> > 	https://lists.osdl.org/mailman/listinfo/linux-pm
+> 
+> Sorry, I looked at the list archives and didn't find any search, could 
+> you, please, post a link to the thread or the subject line?
 
-On Jun 24, 2006, at 10:21 AM, Vitaly Bordug wrote:
+Perhaps there was some misunderstanding of what I was
+trying to say.
 
-> Kumar,
->
-> Thanks for feedback! My comment below.
->
-> On Sat, 24 Jun 2006 08:46:54 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> [snip]
->>> +
->>> +#ifndef FS_PD_H
->>> +#define FS_PD_H
->>> +
->>> +#define GET_BAUDRATE()	(((bd_t *) __res)->bi_baudrate ?
->>> ((bd_t *) __res)->bi_baudrate : -1)
->>> +#define FS_UART_CLK()	(((bd_t *) __res)->bi_intfreq)
->>> +
->>> +#endif
->>
->> We shouldn't hide these differences in a header like this.  As we
->> slowly try to removing things from arch/ppc.  Why not just add
->> platform data for these two pieces of data and set it up like we do
->> other platform data.
->>
-> That was my first guess as well, but:
-> The aim is yet moving to powerpc not to break existing ppc/ stuff.
-> So if alternatively platform_data may be utilized, all relevant ppc
-> stuff that uses cpm uart should be updated. While doing the driver
-> "platformize" trick, I made it possible to keep legacy behaviour
-> (pd-less), this is not going to afford such a thing.
->
-> IOW, I don't see much sense in updating ppc/ BSP files, just to keep
-> the right way. It does not look very neat now, but does the job of
-> moving FW and keeping existing stuff sane. If there is better approach
-> envisioned, I'll definitely follow..
+I am NOT saying that they have solved your question with
+regard to the 7447 or pagasos directly.  I have no specific
+thread to refer to you.
 
-Fair enough, then I would suggest getting ride of all this header/ 
-MACRO indirection and just implement these as functions with  
-different implementations in arch/powerpc vs arch/ppc.
+I AM saying that there is renewed interest in the topic of
+Linux Power Managament.  Questions, suggestions and interested
+parties should gather and discuss things on the linux-pm
+list host on osdl.org.  That is likely the best place to ask
+this question and get a feel for an answer.
 
-- k
+Thanks,
+jdl
