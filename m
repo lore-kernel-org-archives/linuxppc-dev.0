@@ -1,19 +1,12 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 7492A67B14
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Jun 2006 09:28:35 +1000 (EST)
-Date: Sat, 24 Jun 2006 16:23:50 -0700
-To: Haren Myneni <haren@us.ibm.com>
-Subject: Re: [PATCH] powerpc: kdump: Reserve the existing TCE mappings left by
-	the first kernel
-Message-ID: <20060624232350.GB11299@pb15.lixom.net>
-References: <449B8B9E.2050802@us.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <449B8B9E.2050802@us.ibm.com>
-From: Olof Johansson <olof@lixom.net>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Message-ID: <17566.32236.368906.227113@cargo.ozlabs.ibm.com>
+Date: Sun, 25 Jun 2006 22:13:32 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: akpm@osdl.org, mingo@elte.hu, schwidefsky@de.ibm.com
+Subject: [PATCH] Remove extra local_bh_disable/enable from arch do_softirq
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +16,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 22, 2006 at 11:35:10PM -0700, Haren Myneni wrote:
-> Paul, Olof,
-> 
-> tce_union got removed in powerpc.git tree. Hence reposting the patch 
-> created against this tree. This patch is implemented based on Olof's 
-> suggestion of reserving TCE entries and use only available ones in the 
-> kdump boot and tested on P5, P4, JS20 and JS21 machines.
-> 
-> If you are OK with this patch, please send it to upstream.
+At the moment, powerpc and s390 have their own versions of do_softirq
+which include local_bh_disable() and __local_bh_enable() calls.  They
+end up calling __do_softirq (in kernel/softirq.c) which also does
+local_bh_disable/enable.
 
-Looks good to me. Other platforms can add get_tce pointers later as
-needed.
+Apparently the two levels of disable/enable trigger a warning from
+some validation code that Ingo is working on, and he would like to see
+the outer level removed.  But to do that, we have to move the
+account_system_vtime calls that are currently in the arch do_softirq()
+implementations for powerpc and s390 into the generic __do_softirq()
+(this is a no-op for other archs because account_system_vtime is
+defined to be an empty inline function on all other archs).  This
+patch does that.
 
-> sending to remote machine). Hence, this patch will make sure that 
-> minimum of 2048 entries will be available such that kdump boot could be 
-> successful in some cases.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+The s390 change here needs to be acked by the s390 folks, in case
+there's a subtlety on s390 that I have missed.
 
-Heh, I was pretty sure 10 was way too little. Good to see a number.
-
-> Signed-off-by: Haren Myneni <haren@us.ibm.com>
-
-Acked-by: Olof Johansson <olof@lixom.net>
-
-
--Olof
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 40d4c14..2b52802 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -425,13 +425,8 @@ void do_softirq(void)
+ 
+ 	local_irq_save(flags);
+ 
+-	if (local_softirq_pending()) {
+-		account_system_vtime(current);
+-		local_bh_disable();
++	if (local_softirq_pending())
+ 		do_softirq_onstack();
+-		account_system_vtime(current);
+-		__local_bh_enable();
+-	}
+ 
+ 	local_irq_restore(flags);
+ }
+diff --git a/arch/s390/kernel/irq.c b/arch/s390/kernel/irq.c
+index 480b6a5..1eef509 100644
+--- a/arch/s390/kernel/irq.c
++++ b/arch/s390/kernel/irq.c
+@@ -69,10 +69,6 @@ asmlinkage void do_softirq(void)
+ 
+ 	local_irq_save(flags);
+ 
+-	account_system_vtime(current);
+-
+-	local_bh_disable();
+-
+ 	if (local_softirq_pending()) {
+ 		/* Get current stack pointer. */
+ 		asm volatile("la %0,0(15)" : "=a" (old));
+@@ -95,10 +91,6 @@ asmlinkage void do_softirq(void)
+ 			__do_softirq();
+ 	}
+ 
+-	account_system_vtime(current);
+-
+-	__local_bh_enable();
+-
+ 	local_irq_restore(flags);
+ }
+ 
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 336f92d..20922c5 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -81,6 +81,7 @@ asmlinkage void __do_softirq(void)
+ 
+ 	pending = local_softirq_pending();
+ 
++	account_system_vtime(current);
+ 	local_bh_disable();
+ 	cpu = smp_processor_id();
+ restart:
+@@ -109,6 +110,7 @@ restart:
+ 	if (pending)
+ 		wakeup_softirqd();
+ 
++	account_system_vtime(current);
+ 	__local_bh_enable();
+ }
+ 
