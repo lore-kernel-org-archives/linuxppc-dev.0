@@ -1,12 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17566.32236.368906.227113@cargo.ozlabs.ibm.com>
-Date: Sun, 25 Jun 2006 22:13:32 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: akpm@osdl.org, mingo@elte.hu, schwidefsky@de.ibm.com
-Subject: [PATCH] Remove extra local_bh_disable/enable from arch do_softirq
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (71-36-219-11.roch.qwest.net [71.36.219.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3CD80679E1
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Jun 2006 22:56:53 +1000 (EST)
+Subject: Current DTC home
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Sun, 25 Jun 2006 07:56:33 -0500
+Message-Id: <1151240193.7929.10.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,87 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At the moment, powerpc and s390 have their own versions of do_softirq
-which include local_bh_disable() and __local_bh_enable() calls.  They
-end up calling __do_softirq (in kernel/softirq.c) which also does
-local_bh_disable/enable.
+Hi,
 
-Apparently the two levels of disable/enable trigger a warning from
-some validation code that Ingo is working on, and he would like to see
-the outer level removed.  But to do that, we have to move the
-account_system_vtime calls that are currently in the arch do_softirq()
-implementations for powerpc and s390 into the generic __do_softirq()
-(this is a no-op for other archs because account_system_vtime is
-defined to be an empty inline function on all other archs).  This
-patch does that.
+I found multiple pages/trees while I was looking around for where the
+most current homepage/release for the DTC was.  So far, there's:
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-The s390 change here needs to be acked by the s390 folks, in case
-there's a subtlety on s390 that I have missed.
+http://dtc.ozlabs.org/
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 40d4c14..2b52802 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -425,13 +425,8 @@ void do_softirq(void)
- 
- 	local_irq_save(flags);
- 
--	if (local_softirq_pending()) {
--		account_system_vtime(current);
--		local_bh_disable();
-+	if (local_softirq_pending())
- 		do_softirq_onstack();
--		account_system_vtime(current);
--		__local_bh_enable();
--	}
- 
- 	local_irq_restore(flags);
- }
-diff --git a/arch/s390/kernel/irq.c b/arch/s390/kernel/irq.c
-index 480b6a5..1eef509 100644
---- a/arch/s390/kernel/irq.c
-+++ b/arch/s390/kernel/irq.c
-@@ -69,10 +69,6 @@ asmlinkage void do_softirq(void)
- 
- 	local_irq_save(flags);
- 
--	account_system_vtime(current);
--
--	local_bh_disable();
--
- 	if (local_softirq_pending()) {
- 		/* Get current stack pointer. */
- 		asm volatile("la %0,0(15)" : "=a" (old));
-@@ -95,10 +91,6 @@ asmlinkage void do_softirq(void)
- 			__do_softirq();
- 	}
- 
--	account_system_vtime(current);
--
--	__local_bh_enable();
--
- 	local_irq_restore(flags);
- }
- 
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 336f92d..20922c5 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -81,6 +81,7 @@ asmlinkage void __do_softirq(void)
- 
- 	pending = local_softirq_pending();
- 
-+	account_system_vtime(current);
- 	local_bh_disable();
- 	cpu = smp_processor_id();
- restart:
-@@ -109,6 +110,7 @@ restart:
- 	if (pending)
- 		wakeup_softirqd();
- 
-+	account_system_vtime(current);
- 	__local_bh_enable();
- }
- 
+which I think should be the homepage.  However it has no links to the
+git tree of which I found two:
+
+git://ozlabs.org/srv/projects/dtc/dtc.git
+
+and
+
+git://www.jdl.com/software/dtc.git
+
+So, where is the official tree currently at, and can we get a link to it
+from the dtc.ozlabs.org page?
+
+thx,
+josh
