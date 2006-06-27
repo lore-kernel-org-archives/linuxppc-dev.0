@@ -1,19 +1,19 @@
 Return-Path: <jxnuxdy@163.com>
 Received: from m13-63.163.com (m13-63.163.com [220.181.13.63])
-	by ozlabs.org (Postfix) with SMTP id 682F7679E6
+	by ozlabs.org (Postfix) with SMTP id 6FF4667A75
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Jun 2006 11:39:25 +1000 (EST)
+	Tue, 27 Jun 2006 11:49:00 +1000 (EST)
 MIME-Version: 1.0
-Message-ID: <44A08C45.000019.01725@bj163app63.163.com>
-Date: Tue, 27 Jun 2006 09:39:17 +0800 (CST)
+Message-ID: <44A08AEC.000113.30549@bj163app63.163.com>
+Date: Tue, 27 Jun 2006 09:33:32 +0800 (CST)
 From: "Denny" <jxnuxdy@163.com>
-To: wd@denx.de
+To: de@denx.de
 Subject: Need help on ftp and telnet in my Ramdisk
-References: <44A00EF4.6000109@gmail.com> <44A01925.9050100@ovro.caltech.edu>
-	<44A08AEC.000113.30549@bj163app63.163.com>
-In-Reply-To: <44A08AEC.000113.30549@bj163app63.163.com>
+References: <44A00EF4.6000109@gmail.com>
+ <44A01925.9050100@ovro.caltech.edu>
+In-Reply-To: <44A01925.9050100@ovro.caltech.edu>
 Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_WuBBHGyLKPqllqHzPrNotZmkHVga"
+	boundary="Boundary-=_XXsdWaSaBASpWYOJgIVBubiujCpP"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,12 +26,9 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---Boundary-=_WuBBHGyLKPqllqHzPrNotZmkHVga
+--Boundary-=_XXsdWaSaBASpWYOJgIVBubiujCpP
 Content-Type: text/plain; charset="gb2312"
 Content-Transfer-Encoding: 7bit
-
- 
- 
 
 Hi,
  
@@ -69,14 +66,10 @@ bash-3.00#
  
 Thanks!
 - Denny
- 
---Boundary-=_WuBBHGyLKPqllqHzPrNotZmkHVga
+--Boundary-=_XXsdWaSaBASpWYOJgIVBubiujCpP
 Content-Type: text/html; charset="gb2312"
 Content-Transfer-Encoding: quoted-printable
 
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>
 <DIV>Hi,</DIV>
 <DIV>&nbsp;</DIV>
 <DIV>&nbsp;&nbsp; 1. I copied the ftp and telnet commands to my /bin, and=
@@ -102,9 +95,8 @@ console /dev/ttyS1: '/bin/bash'<BR>Starting pid 32, console /dev/ttyS1: '=
 /bin/application'<BR>### Application running ...<BR>bash-3.00# </DIV>
 <DIV>&nbsp;</DIV>
 <DIV>Thanks!</DIV>
-<DIV>- Denny</DIV></DIV>
-<DIV>&nbsp;</DIV><SPAN ></SPAN><br><!-- footer --><br><br><br><br><br><di=
-v style=3D"border-bottom:1px solid #999"></div><br>
+<DIV>- Denny</DIV><SPAN ></SPAN><br><!-- footer --><br><br><br><br><br><d=
+iv style=3D"border-bottom:1px solid #999"></div><br>
 
 =09<font color=3D"black" style=3D"font-size:14.8px">=C4=E3 =B2=BB =CF=EB =
 =CA=D4 =CA=D4 =BD=F1 =CF=C4 =D7=EE =A1=B0=BF=E1=A1=B1 =B5=C4 =D3=CA =CF=E4=
@@ -118,4 +110,4 @@ v style=3D"border-bottom:1px solid #999"></div><br>
 </a>
 
 
---Boundary-=_WuBBHGyLKPqllqHzPrNotZmkHVga--
+--Boundary-=_XXsdWaSaBASpWYOJgIVBubiujCpP--
