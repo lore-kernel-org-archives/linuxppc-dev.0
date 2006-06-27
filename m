@@ -2,24 +2,23 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B8C5A67A3F
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 03:30:28 +1000 (EST)
-Subject: Re: [RFC 01/12] snd-powermac: no longer handle anything with a
-	layout-id property
+	by ozlabs.org (Postfix) with ESMTP id EBC6467A40
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 03:31:31 +1000 (EST)
+Subject: Re: [PATCH] convert powermac ide blink to new led infrastructure
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Andreas Schwab <schwab@suse.de>
-In-Reply-To: <jey7vjiqwv.fsf@sykes.suse.de>
-References: <20060607130909.584205000@sipsolutions.net>
-	<20060607130910.156412000@sipsolutions.net>
-	<jey7vjiqwv.fsf@sykes.suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1151394629.2350.64.camel@localhost.localdomain>
+References: <1149635136.32002.49.camel@johannes>
+	<1150884676.23386.6.camel@johannes>
+	<1151394629.2350.64.camel@localhost.localdomain>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-ROmvXrXBix9ymppYOuul"
-Date: Tue, 27 Jun 2006 19:30:13 +0200
-Message-Id: <1151429413.597.10.camel@localhost>
+	boundary="=-8dZ9V3tpXIsGy+nXm68f"
+Date: Tue, 27 Jun 2006 19:31:23 +0200
+Message-Id: <1151429483.597.12.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	netstar@gatheringofgray.com
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Richard Purdie <rpurdie@rpsys.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,41 +29,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-ROmvXrXBix9ymppYOuul
+--=-8dZ9V3tpXIsGy+nXm68f
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2006-06-26 at 22:49 +0200, Andreas Schwab wrote:
 
-> Can we get snd-powermac back as long as snd-aoa is lacking all those
-> features from snd-powermac?
+> Looks good. Only one nit: in pmu_led_set(), you should be able to test
+> if the requested state is identical to the current one and do nothing
+> without taking the lock no ?
+>=20
+> Or does the upper level LED infrastructure takes care of it ?
 
-I'll be fixing it next week after an exam on Friday, or if I don't go to
-Nuremburg next week (4h hacking on train :) ) then the week after.
-
-Until then, you can just revert that patch locally.
+I don't know, Richard? But yeah, I can do that too.
 
 johannes
 
---=-ROmvXrXBix9ymppYOuul
+--=-8dZ9V3tpXIsGy+nXm68f
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIVAwUARKFrI6Vg1VMiehFYAQJxog/+Pr7qJ6PB6xahnCthT8ds+y+N1Qtdexro
-GXoqgNcNUsXezbjl0sskH8Ch81s7PeAi4qogmhG8qAz0TDJ3Y5SVRhmNyPC4UCJa
-lGvEDr6iDeviT0q1kF830rjKZA08BwKlyhpeJeZVFRoPitl9lCMjDYxIxpD8/GH0
-ayceReiVU4PTmB7qKsBQelnwTRspetYAmnSxMZpwdaz1gcy0lpNs7JkyFvtY1zvi
-it5nGv8/2HYCwyLSIwiPT9JXn62G6lQ1omT2mvfFm+k/RmMLTlIhM9DvumqE8Hm5
-PRAouyzdxKdLyja1QeidS9g2tAAlrSCL6e5qVyFBP5sC6x6aFjUbgpnHwvMEZURQ
-HqrAEP1y0QJY7Q7E5cXiFv945f3Syeyw5MlvfgX9XOrroOUhDS6K2wsiyjzcVSoi
-YmMfcx0s68UsH0D/Nm6NC4iJ4vIBHhLp5SJ+lFcZMmd0vaRtXoAx1kWa2AITutTI
-zWQOF73ffhOpL+k9oSTaOtD3uTnSPZNRXZ/Ac50ZcSsI7aNNo5MhDhJxHmGznOV3
-ZxUDxIr1zWpt7a83gEawhg0T8PpbJDOxrcjl8pvQNDOLVzGa4AZdxn2JNkgvEUKg
-YO1r2z4uQ3OPSaoaXPqv7AIWWqC3ikxmc9U9WjzJXA+fZLmyiVZIav0TpC2sm8rT
-Nwc/tNZGRog=
-=FxNC
+iQIVAwUARKFraaVg1VMiehFYAQJLag/9EdIHuV7n5uj2bR50i9EZocqJWxfLuLLb
+BuVD2/bhUqnhOdG0SbM5SBdkgr5QEQtjILJrRmMaWOrC+Vdx8wOUrEPrsllmZ/EW
+a0ZwDNGdw+J1EfbxuYec1ZmBPuEJBryi5cK3I/lhaLrZ+92y0LDuuD3b/tchX9An
+r7YQbVFrih3tp4TkK1IrSGAPQpChrp803br0qL21BX8srDHROh/AEVIuNOvmLHoh
+ALdcWEpgMc0TbEtKi3dWgWz+6CvGHZWuGJYma+zobt0pa5MN6xKN7NOmwxZ8lNzG
+qaXeG7tB1rFUUlJqkJyqVaQSuGXMENnFCIJG0B+pdxl+6DJ8/AlUnShlLTMNl4gM
+6CyBSlZo2wWhm09KRsdfm+n7Kgjytzc3AQqGi6KL70MQeq9z4F+HQBXqwOWFkBcm
+aBoQPK71dD7gb2GLqEfV2Kfs6vDIphncaW3l2okCOdyGOA2C41uPHyYhHpI04/dJ
+fKzCO7eKbeL86ASkkYG7F95I9YkNFQkAcaQc1ndH4Fh31sY1cUKG6iOFwxaGBjZp
+VncVHSaU+pY6M3+l6CM28U+7iWbw/euAB9hqh3N2aJniL+ZhM2ZfcW0sq5RQUfbQ
+sFX4NIzmdyEM0KYk8qGxoeNpJHRBaOEfrRkXnUZkj7MEZSqdWb4+3wNwNpdJTRJR
+OqeBz0qHM6Y=
+=y0yv
 -----END PGP SIGNATURE-----
 
---=-ROmvXrXBix9ymppYOuul--
+--=-8dZ9V3tpXIsGy+nXm68f--
