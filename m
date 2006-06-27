@@ -1,25 +1,16 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4351267A75
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 01:32:50 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [Alsa-devel] [RFC 01/12] snd-powermac: no longer handle	anything
-	with a layout-id property
-References: <20060607130909.584205000@sipsolutions.net>
-	<20060607130910.156412000@sipsolutions.net>
-	<jey7vjiqwv.fsf@sykes.suse.de> <s5hac7yvfhe.wl%tiwai@suse.de>
-Date: Tue, 27 Jun 2006 17:32:34 +0200
-In-Reply-To: <s5hac7yvfhe.wl%tiwai@suse.de> (Takashi Iwai's message of "Tue,
-	27 Jun 2006 16:29:49 +0200")
-Message-ID: <jehd26aa25.fsf@sykes.suse.de>
+Return-Path: <mbligh@mbligh.org>
+Message-ID: <44A150C9.7020809@mbligh.org>
+Date: Tue, 27 Jun 2006 08:37:45 -0700
+From: "Martin J. Bligh" <mbligh@mbligh.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
-	alsa-devel@alsa-project.org, netstar@gatheringofgray.com
+To: "Martin J. Bligh" <mbligh@mbligh.org>
+Subject: Re: 2.6.17-mm2
+References: <449D5D36.3040102@google.com> <449FF3A2.8010907@mbligh.org>
+In-Reply-To: <449FF3A2.8010907@mbligh.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc64-dev@ozlabs.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	"Martin J. Bligh" <mbligh@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,28 +20,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Takashi Iwai <tiwai@suse.de> writes:
+Martin J. Bligh wrote:
+> Martin J. Bligh wrote:
+> 
+>> Panic on PPC64. I'm guessing it's the same as the i386 panics I sent
+>> you yesterday, just more cryptic ;-) But for the record ...
+>>
+>> http://test.kernel.org/abat/37737/debug/console.log
+>>
+>> cpu 0x2: Vector: 300 (Data Access) at [c0000000f99f78c0]
+>>     pc: c0000000000c6a34: .s_show+0x178/0x364
+>>     lr: c0000000000c696c: .s_show+0xb0/0x364
+>>     sp: c0000000f99f7b40
+>>    msr: 8000000000001032
+>>    dar: fd528000
+>>  dsisr: 40000000
+>>   current = 0xc0000000f23e0000
+>>   paca    = 0xc00000000046e300
+>>     pid   = 17653, comm = cp
+>> enter ? for help
+>>
+> 
+> Eeek, this is definitely an intermittent thing. I was trawling older
+> results, and it shows up (on PPC only) in 2.6.17-git10, so it's not
+> just an -mm thing ;-(
 
-> At Mon, 26 Jun 2006 22:49:04 +0200,
-> Andreas Schwab wrote:
->> 
->> Johannes Berg <johannes@sipsolutions.net> writes:
->> 
->> > This patch removes from snd-powermac the code that check for the layout-id
->> > and instead adds code that makes it refuse loading when a layout-id property
->> > is present, nothing that snd-aoa should be used.
->> 
->> Can we get snd-powermac back as long as snd-aoa is lacking all those
->> features from snd-powermac?
->
-> What functions are missing?
+OK, still happens in -mm3, though in a different workload now. I also
+get a new panic, that's maybe related but more informative
 
-Sound on PowerMac7,2, DRC on TAS, probably more.
 
-Andreas.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+cpu 0x0: Vector: 700 (Program Check) at [c0000000024938b0]
+     pc: c0000000000c3218: .free_block+0xe4/0x240
+     lr: c0000000000c3514: .drain_array+0xf4/0x170
+     sp: c000000002493b30
+    msr: 8000000000021032
+   current = 0xc0000000025457f0
+   paca    = 0xc0000000004f9f00
+     pid   = 14, comm = events/0
+kernel BUG in list_del at include/linux/list.h:160!
+
+Plus one with an actual backtrace from PPC64 that looks more like the
+i386 ones
+
+SMP NR_CPUS=32 NUMA
+Modules linked in:
+NIP: C0000000000A311C LR: C0000000000A30D4 CTR: C0000000000A3024
+REGS: c0000007725b38d0 TRAP: 0300   Not tainted  (2.6.17-mm3-autokern1)
+MSR: 8000000000001032 <ME,IR,DR>  CR: 28224424  XER: 00000000
+DAR: 000000077BCC6180, DSISR: 0000000040000000
+TASK = c00000002fc74670[29812] 'cp' THREAD: c0000007725b0000 CPU: 2
+GPR00: 0000000000000000 C0000007725B3B50 C00000000063B828 C00000001E303EC0
+GPR04: 0000000000000010 0000000000000000 0000000000000000 FFFFFFFFFFFFFFFD
+GPR08: 0000000000000001 0000000000000000 000000077BCC6180 0000000000000000
+GPR12: 0000000000000000 C00000000051FF80 0000000000000000 0000000000000001
+GPR16: 0000000000000000 0000000000000004 0000000000020000 0000000000000000
+GPR20: 0000000000000000 0000000000000000 C0000007759F9D00 0000000000000000
+GPR24: 0000000000000E42 0000000000000000 000000000000474A C00000001E30F300
+GPR28: 0000000000000000 0000000000000000 C000000000537288 C00000001E303E80
+NIP [C0000000000A311C] .s_show+0xf8/0x364
+LR [C0000000000A30D4] .s_show+0xb0/0x364
+Call Trace:
+[C0000007725B3B50] [C0000000000A3334] .s_show+0x310/0x364 (unreliable)
+[C0000007725B3C20] [C0000000000D5E84] .seq_read+0x2f4/0x450
+[C0000007725B3D00] [C0000000000AADF8] .vfs_read+0xe0/0x1b4
+[C0000007725B3D90] [C0000000000AAFD4] .sys_read+0x54/0x98
+[C0000007725B3E30] [C00000000000871C] syscall_exit+0x0/0x40
+Instruction dump:
+3b180001 7c004a78 79290020 7c0bfe70 7f5a4a14 7d600278 7c005850 54000ffe
+7c094038 2c090000 41820008 ebbe80b0 <e96a0000> 2fab0000 419e0008 7c005a2c
