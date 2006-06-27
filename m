@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A0F8167A58
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 08:44:10 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D441167A58
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 08:47:41 +1000 (EST)
 Subject: Re: cpu power "management" for non-dfs chips with no pmu (for
 	instance, 750cxe and mpc7447 in pegasos)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: matt@genesi-usa.com
-In-Reply-To: <018201c696b1$e942ba40$99dfdfdf@bakuhatsu.net>
-References: <018201c696b1$e942ba40$99dfdfdf@bakuhatsu.net>
+To: Jon Loeliger <jdl@jdl.com>
+In-Reply-To: <E1Ftmcb-0007rG-QS@jdl.com>
+References: <01ca01c696cd$2e453f30$99dfdfdf@bakuhatsu.net>
+	<E1Ftmcb-0007rG-QS@jdl.com>
 Content-Type: text/plain
-Date: Wed, 28 Jun 2006 08:43:57 +1000
-Message-Id: <1151448237.2350.98.camel@localhost.localdomain>
+Date: Wed, 28 Jun 2006 08:47:24 +1000
+Message-Id: <1151448444.2350.102.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,20 +26,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> I am basically trying to evaluate if we can do ANYTHING to reduce
-> power consumption of systems which are idle, as I have noticed that
-> for running firmware (sitting at a Forth prompt) and booting a
-> Linux kernel and doing some work (for instance a simple benchmark),
-> power consumption barely changes at all. The difference between an
-> idle G4 and a running G4 is negligible. RC5 makes a big difference
-> but it is heavily tuned. Most people won't run RC5 all the time to
-> stress the CPU to the level that it wants to draw a couple extra
-> watts, I think.
+> > ICTC is such a simple thing to support and you can slow down the CPU
+> > pretty comprehensively (from halving to 255x in theory) with an on and
+> > off flag. I am surprised nobody implemented a cpufreq governer even if
+> > it is totally useless and gives no perceivable benefits..
+> 
+> See?  You _are_ contributing already.  I encourage
+> you to hit the linux-pm@lists.osdl.org list for a spell!
 
-Well, I would expect the Idle G4 to have a fairly good PM in the first
-place due to the NAP mode... though we may not enable that on Pegasos.
-It depends if the bridge supports the proper protocol to handle
-snooping. The Discovery II is bad enough as it is, I wouldn't expect it
-to support that in a non-buggy way unfortunately.
+His question is very powerpc specific... I don't see the point of
+bringing ICTC related discussions to linux-pm...
+
+Now, we _did_ some experiemnts in the past and didn't see that much
+improvements. That might have changed though, since those 744x/745x CPUs
+cannot DOZE and we cannot use their NAP mode neither when idle on
+Pegasdos, in which case ICTC might have some use there...
+
+It's easy to tweak it, just test and tell us. I'm not sure if cpufreq is
+the right interface though as the cpu frequency isn't actually changing.
 
 Ben.
