@@ -1,15 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 94F9967A3E
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 04:15:01 +1000 (EST)
-Date: Tue, 27 Jun 2006 11:14:03 -0700
-To: paulus@samba.org
-Subject: [PATCH] powerpc: remove kconfig warning
-Message-ID: <20060627181403.GA5130@pb15.lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id F287E67A65
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 04:18:04 +1000 (EST)
+Subject: [PATCH] fix windfarm core thread wrt. signal handling
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1151394268.2350.61.camel@localhost.localdomain>
+References: <1150847482.16662.13.camel@johannes>
+	<1150956123.3633.23.camel@localhost.localdomain>
+	<200606221303.19860.rjw@sisk.pl> <1150974836.16258.29.camel@johannes>
+	<1150976092.16258.33.camel@johannes>
+	<1151394268.2350.61.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 27 Jun 2006 20:17:46 +0200
+Message-Id: <1151432266.4289.6.camel@localhost>
+Mime-Version: 1.0
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,21 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-scripts/kconfig/conf -s arch/powerpc/Kconfig
-arch/powerpc/Kconfig:416:warning: leading whitespace ignored
+This patch removes the signal_pending() from the windfarm core thread
+loop as it isn't necessary and messes up when there actually *is* a
+signal pending because we should enter the freezer.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-Index: linux-2.6/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6.orig/arch/powerpc/Kconfig
-+++ linux-2.6/arch/powerpc/Kconfig
-@@ -413,7 +413,7 @@ config PPC_CELL_NATIVE
- 	default n
+diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
+index ab3faa7..c05a838 100644
+--- a/drivers/macintosh/windfarm_core.c
++++ b/drivers/macintosh/windfarm_core.c
+@@ -116,12 +116,6 @@ static int wf_thread_func(void *data)
+ 		delay = next - jiffies;
+ 		if (delay <= HZ)
+ 			schedule_timeout_interruptible(delay);
+-
+-		/* there should be no signal, but oh well */
+-		if (signal_pending(current)) {
+-			printk(KERN_WARNING "windfarm: thread got sigl !\n");
+-			break;
+-		}
+ 	}
  
- config PPC_IBM_CELL_BLADE
--	bool "  IBM Cell Blade"
-+	bool "IBM Cell Blade"
- 	depends on PPC_MULTIPLATFORM && PPC64
- 	select PPC_CELL_NATIVE
- 	select PPC_RTAS
+ 	DBG("wf: thread stopped\n");
