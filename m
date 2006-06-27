@@ -1,16 +1,25 @@
-Return-Path: <mbligh@mbligh.org>
-Message-ID: <44A150C9.7020809@mbligh.org>
-Date: Tue, 27 Jun 2006 08:37:45 -0700
-From: "Martin J. Bligh" <mbligh@mbligh.org>
-MIME-Version: 1.0
-To: "Martin J. Bligh" <mbligh@mbligh.org>
-Subject: Re: 2.6.17-mm2
-References: <449D5D36.3040102@google.com> <449FF3A2.8010907@mbligh.org>
-In-Reply-To: <449FF3A2.8010907@mbligh.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc64-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	"Martin J. Bligh" <mbligh@google.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B8C5A67A3F
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 03:30:28 +1000 (EST)
+Subject: Re: [RFC 01/12] snd-powermac: no longer handle anything with a
+	layout-id property
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <jey7vjiqwv.fsf@sykes.suse.de>
+References: <20060607130909.584205000@sipsolutions.net>
+	<20060607130910.156412000@sipsolutions.net>
+	<jey7vjiqwv.fsf@sykes.suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ROmvXrXBix9ymppYOuul"
+Date: Tue, 27 Jun 2006 19:30:13 +0200
+Message-Id: <1151429413.597.10.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
+	netstar@gatheringofgray.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,72 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Martin J. Bligh wrote:
-> Martin J. Bligh wrote:
-> 
->> Panic on PPC64. I'm guessing it's the same as the i386 panics I sent
->> you yesterday, just more cryptic ;-) But for the record ...
->>
->> http://test.kernel.org/abat/37737/debug/console.log
->>
->> cpu 0x2: Vector: 300 (Data Access) at [c0000000f99f78c0]
->>     pc: c0000000000c6a34: .s_show+0x178/0x364
->>     lr: c0000000000c696c: .s_show+0xb0/0x364
->>     sp: c0000000f99f7b40
->>    msr: 8000000000001032
->>    dar: fd528000
->>  dsisr: 40000000
->>   current = 0xc0000000f23e0000
->>   paca    = 0xc00000000046e300
->>     pid   = 17653, comm = cp
->> enter ? for help
->>
-> 
-> Eeek, this is definitely an intermittent thing. I was trawling older
-> results, and it shows up (on PPC only) in 2.6.17-git10, so it's not
-> just an -mm thing ;-(
 
-OK, still happens in -mm3, though in a different workload now. I also
-get a new panic, that's maybe related but more informative
+--=-ROmvXrXBix9ymppYOuul
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, 2006-06-26 at 22:49 +0200, Andreas Schwab wrote:
 
+> Can we get snd-powermac back as long as snd-aoa is lacking all those
+> features from snd-powermac?
 
-cpu 0x0: Vector: 700 (Program Check) at [c0000000024938b0]
-     pc: c0000000000c3218: .free_block+0xe4/0x240
-     lr: c0000000000c3514: .drain_array+0xf4/0x170
-     sp: c000000002493b30
-    msr: 8000000000021032
-   current = 0xc0000000025457f0
-   paca    = 0xc0000000004f9f00
-     pid   = 14, comm = events/0
-kernel BUG in list_del at include/linux/list.h:160!
+I'll be fixing it next week after an exam on Friday, or if I don't go to
+Nuremburg next week (4h hacking on train :) ) then the week after.
 
-Plus one with an actual backtrace from PPC64 that looks more like the
-i386 ones
+Until then, you can just revert that patch locally.
 
-SMP NR_CPUS=32 NUMA
-Modules linked in:
-NIP: C0000000000A311C LR: C0000000000A30D4 CTR: C0000000000A3024
-REGS: c0000007725b38d0 TRAP: 0300   Not tainted  (2.6.17-mm3-autokern1)
-MSR: 8000000000001032 <ME,IR,DR>  CR: 28224424  XER: 00000000
-DAR: 000000077BCC6180, DSISR: 0000000040000000
-TASK = c00000002fc74670[29812] 'cp' THREAD: c0000007725b0000 CPU: 2
-GPR00: 0000000000000000 C0000007725B3B50 C00000000063B828 C00000001E303EC0
-GPR04: 0000000000000010 0000000000000000 0000000000000000 FFFFFFFFFFFFFFFD
-GPR08: 0000000000000001 0000000000000000 000000077BCC6180 0000000000000000
-GPR12: 0000000000000000 C00000000051FF80 0000000000000000 0000000000000001
-GPR16: 0000000000000000 0000000000000004 0000000000020000 0000000000000000
-GPR20: 0000000000000000 0000000000000000 C0000007759F9D00 0000000000000000
-GPR24: 0000000000000E42 0000000000000000 000000000000474A C00000001E30F300
-GPR28: 0000000000000000 0000000000000000 C000000000537288 C00000001E303E80
-NIP [C0000000000A311C] .s_show+0xf8/0x364
-LR [C0000000000A30D4] .s_show+0xb0/0x364
-Call Trace:
-[C0000007725B3B50] [C0000000000A3334] .s_show+0x310/0x364 (unreliable)
-[C0000007725B3C20] [C0000000000D5E84] .seq_read+0x2f4/0x450
-[C0000007725B3D00] [C0000000000AADF8] .vfs_read+0xe0/0x1b4
-[C0000007725B3D90] [C0000000000AAFD4] .sys_read+0x54/0x98
-[C0000007725B3E30] [C00000000000871C] syscall_exit+0x0/0x40
-Instruction dump:
-3b180001 7c004a78 79290020 7c0bfe70 7f5a4a14 7d600278 7c005850 54000ffe
-7c094038 2c090000 41820008 ebbe80b0 <e96a0000> 2fab0000 419e0008 7c005a2c
+johannes
+
+--=-ROmvXrXBix9ymppYOuul
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIVAwUARKFrI6Vg1VMiehFYAQJxog/+Pr7qJ6PB6xahnCthT8ds+y+N1Qtdexro
+GXoqgNcNUsXezbjl0sskH8Ch81s7PeAi4qogmhG8qAz0TDJ3Y5SVRhmNyPC4UCJa
+lGvEDr6iDeviT0q1kF830rjKZA08BwKlyhpeJeZVFRoPitl9lCMjDYxIxpD8/GH0
+ayceReiVU4PTmB7qKsBQelnwTRspetYAmnSxMZpwdaz1gcy0lpNs7JkyFvtY1zvi
+it5nGv8/2HYCwyLSIwiPT9JXn62G6lQ1omT2mvfFm+k/RmMLTlIhM9DvumqE8Hm5
+PRAouyzdxKdLyja1QeidS9g2tAAlrSCL6e5qVyFBP5sC6x6aFjUbgpnHwvMEZURQ
+HqrAEP1y0QJY7Q7E5cXiFv945f3Syeyw5MlvfgX9XOrroOUhDS6K2wsiyjzcVSoi
+YmMfcx0s68UsH0D/Nm6NC4iJ4vIBHhLp5SJ+lFcZMmd0vaRtXoAx1kWa2AITutTI
+zWQOF73ffhOpL+k9oSTaOtD3uTnSPZNRXZ/Ac50ZcSsI7aNNo5MhDhJxHmGznOV3
+ZxUDxIr1zWpt7a83gEawhg0T8PpbJDOxrcjl8pvQNDOLVzGa4AZdxn2JNkgvEUKg
+YO1r2z4uQ3OPSaoaXPqv7AIWWqC3ikxmc9U9WjzJXA+fZLmyiVZIav0TpC2sm8rT
+Nwc/tNZGRog=
+=FxNC
+-----END PGP SIGNATURE-----
+
+--=-ROmvXrXBix9ymppYOuul--
