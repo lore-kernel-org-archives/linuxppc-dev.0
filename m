@@ -1,20 +1,21 @@
 Return-Path: <jxnuxdy@163.com>
 Received: from m13-63.163.com (m13-63.163.com [220.181.13.63])
-	by ozlabs.org (Postfix) with SMTP id 517F967A5B
+	by ozlabs.org (Postfix) with SMTP id D4D2467B54
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Jun 2006 11:56:15 +1000 (EST)
+	Tue, 27 Jun 2006 11:56:18 +1000 (EST)
 MIME-Version: 1.0
-Message-ID: <44A08BA0.000020.01911@bj163app63.163.com>
-Date: Tue, 27 Jun 2006 09:36:32 +0800 (CST)
+Message-ID: <44A08C0E.000048.01906@bj163app63.163.com>
+Date: Tue, 27 Jun 2006 09:38:22 +0800 (CST)
 From: "Denny" <jxnuxdy@163.com>
-To: de@denx.de
+To: wd@denx.de
 Subject: Need help on adding a command to my ramdi
- sk
+  sk
 References: <44A00EF4.6000109@gmail.com> <44A01925.9050100@ovro.caltech.edu>
 	<44A08AEC.000113.30549@bj163app63.163.com>
-In-Reply-To: <44A08AEC.000113.30549@bj163app63.163.com>
+	<44A08BA0.000020.01911@bj163app63.163.com>
+In-Reply-To: <44A08BA0.000020.01911@bj163app63.163.com>
 Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_bjAvpuCZTsXOIKzIxZyBBbQWzdpJ"
+	boundary="Boundary-=_pXtacCkfoRBOjOnAJMIANQXOMphc"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,9 +28,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---Boundary-=_bjAvpuCZTsXOIKzIxZyBBbQWzdpJ
+--Boundary-=_pXtacCkfoRBOjOnAJMIANQXOMphc
 Content-Type: text/plain; charset="gb2312"
 Content-Transfer-Encoding: 7bit
+
+ 
+ 
 
 Hi, 
  
@@ -43,12 +47,13 @@ bash-3.00#
  
 - Denny
  
- 
- 
---Boundary-=_bjAvpuCZTsXOIKzIxZyBBbQWzdpJ
+--Boundary-=_pXtacCkfoRBOjOnAJMIANQXOMphc
 Content-Type: text/html; charset="gb2312"
 Content-Transfer-Encoding: quoted-printable
 
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>
 <DIV>Hi, </DIV>
 <DIV>&nbsp;</DIV>
 <DIV>&nbsp;&nbsp; Since there is no "ldd" command in busybox1.1.3, so I c=
@@ -59,9 +64,7 @@ my ramdisk ?</DIV>
 <DIV>bash-3.00# ldd /bin/ftp<BR>sh: applet not found<BR>bash-3.00# </DIV>
 <DIV>&nbsp;</DIV>
 <DIV>&nbsp;</DIV>
-<DIV>- Denny</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
+<DIV>- Denny</DIV></DIV>
 <DIV>&nbsp;</DIV><SPAN ></SPAN><br><!-- footer --><br><br><br><br><br><di=
 v style=3D"border-bottom:1px solid #999"></div><br>
 
@@ -77,4 +80,4 @@ v style=3D"border-bottom:1px solid #999"></div><br>
 </a>
 
 
---Boundary-=_bjAvpuCZTsXOIKzIxZyBBbQWzdpJ--
+--Boundary-=_pXtacCkfoRBOjOnAJMIANQXOMphc--
