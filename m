@@ -1,22 +1,29 @@
-Return-Path: <jxnuxdy@163.com>
-Received: from m13-17.163.com (m13-17.163.com [220.181.13.17])
-	by ozlabs.org (Postfix) with SMTP id E075E67A75
+Return-Path: <urwithsudheer@gmail.com>
+Received: from predator.gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id 6501167B26
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Jun 2006 16:42:54 +1000 (EST)
+	Tue, 27 Jun 2006 16:53:54 +1000 (EST)
+Received: from predator.gdatech.co.in (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id 163AC1242EF
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 27 Jun 2006 12:23:30 +0530 (IST)
+Received: from predator.gdatech.co.in ([192.168.0.3])
+	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Propel SE relay 1.0.0.3430
+	$Rev$) id r66r122329-01-2
+	for linuxppc-embedded@ozlabs.org; Tue, 27 Jun 2006 12:23:30 +0530
+Received: from mail.gdatech.co.in (unknown [192.168.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id A6BCE1242DE
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 27 Jun 2006 12:23:29 +0530 (IST)
+Message-ID: <44A0D5EF.7030807@gmail.com>
+Date: Tue, 27 Jun 2006 12:23:35 +0530
+From: sudheer <urwithsudheer@gmail.com>
 MIME-Version: 1.0
-Message-ID: <44A0CEFC.0000C6.31303@bj163app17.163.com>
-Date: Tue, 27 Jun 2006 14:23:56 +0800 (CST)
-From: "Denny" <jxnuxdy@163.com>
-To: "lee revell" <rlrevell@joe-job.com>
-Subject: Re: Re: Need help on ftp and telnet in my
-  Ramdisk
-References: <44A00EF4.6000109@gmail.com> <44A01925.9050100@ovro.caltech.edu>
-	<44A08AEC.000113.30549@bj163app63.163.com>
-	<1151373673.26257.194.camel@mindpipe>
-In-Reply-To: <1151373673.26257.194.camel@mindpipe>
-Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_PzNslaKjNOgjFWFGeShGwJgaikDZ"
-Cc: de@denx.de, linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org, dwh@ovro.caltech.edu
+Subject: Re: Need help ragarding MPC8360 Kernel bootup failure - got solved
+References: <44A00EF4.6000109@gmail.com>
+In-Reply-To: <44A00EF4.6000109@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,41 +34,130 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello All,
 
---Boundary-=_PzNslaKjNOgjFWFGeShGwJgaikDZ
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 7bit
+I got this problem sorted out.
+I have changed the bootargs at u-boot to
+setenv bootargs root=/dev/ram rw console=uart,io,0xfe004500
+Now i could boot the linux and login.
 
-Yes, it is the root cause, thanks Lee!
- 
-Thanks & Regards!
-- Denny
- 
- 
- 
---Boundary-=_PzNslaKjNOgjFWFGeShGwJgaikDZ
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-
-<DIV>Yes, it is the root cause, thanks Lee!</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Thanks&nbsp;&amp; Regards!</DIV>
-<DIV>- Denny</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV><SPAN ></SPAN><br><!-- footer --><br><br><br><br><br><di=
-v style=3D"border-bottom:1px solid #999"></div><br>
-
-=09<font color=3D"black" style=3D"font-size:14.8px">=C4=E3 =B2=BB =CF=EB =
-=CA=D4 =CA=D4 =BD=F1 =CF=C4 =D7=EE =A1=B0=BF=E1=A1=B1 =B5=C4 =D3=CA =CF=E4=
- =C2=F0 =A3=BF</font>
-=09<br>
-=09 <a href=3D"http://www.126.com/" target=3D"_blank" style=3D"font-size:=
-13px;line-height:160%;color:blue">=D4=CC =BA=AD =D6=D0 =BB=AA =B4=AB =CD=B3=
- =CE=C4 =BB=AF =D3=DA =CA=C0 =BD=E7 =D2=BB =C1=F7 =BF=C6 =BC=BC =D6=AE =D6=
-=D0=A3=AC=B4=B4 =D0=C2 Ajax =BC=BC =CA=F5=A3=AC126 =A1=B0D =BC=C6 =BB=AE=A1=
-=B1=BB=F0 =C8=C8 =CC=E5 =D1=E9 =D6=D0 =A3=A1
-</a>
+Thanks & Regards
+Sudheer
 
 
---Boundary-=_PzNslaKjNOgjFWFGeShGwJgaikDZ--
+
+sudheer wrote:
+
+>Hello all,
+>
+>I need help regarding the bootup of linux on MPC8360 MDS Board.
+>
+>After doing tftp the uImage from u-boot, with the bootm command  the 
+>kernel gets uncompressed and stops there.
+>The serial output from kernel could  not be seen.
+>
+>Source being used:
+> uboot - U-Boot-1.1.3
+> linux - Linux-2.6.11 supporting mpc8360epb.
+>board - MPC8360 MDS
+>
+>The dump is below:
+>
+>U-Boot 1.1.3 (ppc83xx-20050315-dev) (Dec 14 2005 - 09:37:59) MPC83XX
+>
+>Clock configuration:
+>  Coherent System Bus:  264 MHz
+>  Core:                 528 MHz
+>  QE:                   396 MHz
+>  Local Bus Controller: 264 MHz
+>  Local Bus:             66 MHz
+>  DDR:                  264 MHz
+>  DDR Secondary:        264 MHz
+>  I2C:                  264 MHz
+>CPU: MPC83xx, Rev: 20 at 528 MHz
+>Board: Freescale MPC8360EPB
+>I2C:   ready
+>DRAM:
+>   SDRAM on Local Bus: 64 MB
+>   DDR RAM: 256 MB
+>FLASH: 16 MB
+>In:    serial
+>Out:   serial
+>Err:   serial
+>Net:   FSL GETH0
+>Hit any key to stop autoboot:  0
+>=> printenv
+>bootcmd=setenv bootargs root=/dev/nfs rw nfsroot=$serverip:$rootpath
+>ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netrramboot=setenv
+>bootargs root=/dev/ram rw console=$consoledev,$baudrate $othbootargs;tftp
+>$ramdiskaddr $ramdiskfile;tftp $loarnfsboot=setenv bootargs root=/dev/nfs
+>rw nfsroot=$serverip:$rootpath
+>ip=$ipaddr:$serverip:$gatewayip:$netmask:$hostname:$netrbootdelay=6
+>baudrate=115200
+>loads_echo=1
+>ethaddr=00:04:9f:11:22:33
+>eth1addr=00:E0:0C:00:7D:01
+>hostname=unknown
+>loadaddr=200000
+>netdev=eth0
+>consoledev=ttyS0
+>ramdiskaddr=400000
+>ramdiskfile=ramfs.83xx
+>ethact=FSL GETH0
+>filesize=2d030a
+>fileaddr=20000
+>gatewayip=192.168.3.1
+>netmask=255.255.255.0
+>serverip=192.168.3.81
+>bootfile=/tftpboot/vmlinux.gz
+>ipaddr=192.168.3.253
+>stdin=serial
+>stdout=serial
+>stderr=serial
+>
+>Environment size: 1005/8188 bytes
+>=> setenv bootargs console=ttyS1 root=/dev/ram
+>=> tftp 200000 uImage_test
+>Auto negotiating done
+>switching to rgmii 100
+>duplexity: full
+>mac speed set to: 100
+>Using FSL GETH0 device
+>TFTP from server 192.168.3.81; our IP address is 192.168.3.253
+>Filename 'uImage_test'.
+>Load address: 0x200000
+>Loading: #################################################################
+>         #################################################################
+>         #################################################################
+>         #######
+>done
+>Bytes transferred = 1033098 (fc38a hex)
+>=> bootm 200000
+>## Booting image at 00200000 ...
+>   Image Name:   Linux-2.6.11.12
+>   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+>   Data Size:    1033034 Bytes = 1008.8 kB
+>   Load Address: 00000000
+>   Entry Point:  00000000
+>   Verifying Checksum ... OK
+>   Uncompressing Kernel Image ... OK
+>
+> CTRL-A Z for help |115200 8N1 | NOR | Minicom 2.00.0 | VT102 |      Offline
+>
+>------------
+>After Uncompressing kernel, nothing comes onto the minicom.
+>I have tried the console env in bootargs to ttyS0,  ttyS1, ttyCPM0, ttyCPM1, ttyUCC0. But could not succeed.
+>
+>Anyone Please help me in this regard.
+>
+>Thanks & Regards
+>Sudheer
+>
+>
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>  
+>
