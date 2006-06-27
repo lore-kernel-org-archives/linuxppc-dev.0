@@ -1,24 +1,11 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9361B679FD
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Jun 2006 06:49:26 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC 01/12] snd-powermac: no longer handle anything with a
-	layout-id property
-References: <20060607130909.584205000@sipsolutions.net>
-	<20060607130910.156412000@sipsolutions.net>
-Date: Mon, 26 Jun 2006 22:49:04 +0200
-In-Reply-To: <20060607130910.156412000@sipsolutions.net> (Johannes Berg's
-	message of "Wed, 07 Jun 2006 15:09:10 +0200")
-Message-ID: <jey7vjiqwv.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org,
-	netstar@gatheringofgray.com
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 27 Jun 2006 14:00:37 +1000
+Subject: [PATCH] Assume we're on cpu 0 in early boot
+In-Reply-To: <787248AD-2E47-454E-9F56-7E5350A9F184@watson.ibm.com>
+Message-Id: <20060627040036.469B767B28@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,19 +15,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg <johannes@sipsolutions.net> writes:
+There's a small period early in boot where we don't know which cpu we're
+running on. That's ok, except that it means we have no paca, or more
+correctly that our paca pointer points somewhere random.
 
-> This patch removes from snd-powermac the code that check for the layout-id
-> and instead adds code that makes it refuse loading when a layout-id property
-> is present, nothing that snd-aoa should be used.
+So that we can safely call things like smp_processor_id(), we need a paca,
+so just assume we're on cpu 0. No code should _write_ to the paca before
+we've set the correct one up.
 
-Can we get snd-powermac back as long as snd-aoa is lacking all those
-features from snd-powermac?
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-Andreas.
+ arch/powerpc/kernel/head_64.S |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Index: to-merge/arch/powerpc/kernel/head_64.S
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/head_64.S
++++ to-merge/arch/powerpc/kernel/head_64.S
+@@ -1583,9 +1583,6 @@ _GLOBAL(__start_initialization_multiplat
+ 	/* Setup some critical 970 SPRs before switching MMU off */
+ 	bl	.__970_cpu_preinit
+ 
+-	/* cpu # */
+-	li	r24,0
+-
+ 	/* Switch off MMU if not already */
+ 	LOAD_REG_IMMEDIATE(r4, .__after_prom_start - KERNELBASE)
+ 	add	r4,r4,r30
+@@ -1908,6 +1905,13 @@ _STATIC(start_here_multiplatform)
+ 	bl	.__save_cpu_setup
+ 	sync
+ 
++	/* Assume we're on cpu 0 for now, we don't actually know yet.
++	 * The early setup code should not write to any paca fields until
++	 * after we've setup the correct paca. See early_setup() */
++	li	r24,0
++	li	r3,0
++	bl	.setup_paca
++
+ 	/* Do very early kernel initializations, including initial hash table,
+ 	 * stab and slb setup before we turn on relocation.	*/
+ 
