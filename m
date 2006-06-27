@@ -1,19 +1,20 @@
 Return-Path: <jxnuxdy@163.com>
 Received: from m13-63.163.com (m13-63.163.com [220.181.13.63])
-	by ozlabs.org (Postfix) with SMTP id 6FF4667A75
+	by ozlabs.org (Postfix) with SMTP id 517F967A5B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Jun 2006 11:49:00 +1000 (EST)
+	Tue, 27 Jun 2006 11:56:15 +1000 (EST)
 MIME-Version: 1.0
-Message-ID: <44A08AEC.000113.30549@bj163app63.163.com>
-Date: Tue, 27 Jun 2006 09:33:32 +0800 (CST)
+Message-ID: <44A08BA0.000020.01911@bj163app63.163.com>
+Date: Tue, 27 Jun 2006 09:36:32 +0800 (CST)
 From: "Denny" <jxnuxdy@163.com>
 To: de@denx.de
-Subject: Need help on ftp and telnet in my Ramdisk
-References: <44A00EF4.6000109@gmail.com>
- <44A01925.9050100@ovro.caltech.edu>
-In-Reply-To: <44A01925.9050100@ovro.caltech.edu>
+Subject: Need help on adding a command to my ramdi
+ sk
+References: <44A00EF4.6000109@gmail.com> <44A01925.9050100@ovro.caltech.edu>
+	<44A08AEC.000113.30549@bj163app63.163.com>
+In-Reply-To: <44A08AEC.000113.30549@bj163app63.163.com>
 Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_XXsdWaSaBASpWYOJgIVBubiujCpP"
+	boundary="Boundary-=_bjAvpuCZTsXOIKzIxZyBBbQWzdpJ"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,77 +27,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---Boundary-=_XXsdWaSaBASpWYOJgIVBubiujCpP
+--Boundary-=_bjAvpuCZTsXOIKzIxZyBBbQWzdpJ
 Content-Type: text/plain; charset="gb2312"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+Hi, 
  
-   1. I copied the ftp and telnet commands to my /bin, and the needed library is also copied to my /lib, but they still don't work so far, can anybody tell me why, thanks!
+   Since there is no "ldd" command in busybox1.1.3, so I copied it from ELDK4.0 to my bin,
+but it didn't work, can anybody tell me how to add a new command to my ramdisk ?
  
- 
-logs:
-...
-RAMDISK: Compressed image found at block 0
-EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 120k init
-init started:  BusyBox v1.1.3 (2006.06.23-09:32+0000) multi-call binary
-Bad inittab entry: :reth0: link is up, 100 FDX
-Starting pid 23, console /dev/ttyS1: '/bin/application'
-Starting pid 24, console /dev/ttyS1: '/bin/bash'
-### Application running ...
-bash-3.00# ]
-bash: ]: command not found
-bash-3.00# 
-bash-3.00# 
-bash-3.00# 
-bash-3.00# 
-bash-3.00# ftp 192.168.65.143
-ftp: ftp/tcp: unknown service
-bash-3.00# telnet 192.168.65.143
-telnet: telnet: bad port
-Starting pid 29, console /dev/ttyS1: '/bin/application'
-Starting pid 30, console /dev/ttyS1: '/bin/bash'
-### Application running ...
-Starting pid 33, console /dev/ttyS1: '/bin/bash'
-Starting pid 32, console /dev/ttyS1: '/bin/application'
-### Application running ...
+bash-3.00# ldd /bin/ftp
+sh: applet not found
 bash-3.00# 
  
-Thanks!
+ 
 - Denny
---Boundary-=_XXsdWaSaBASpWYOJgIVBubiujCpP
+ 
+ 
+ 
+--Boundary-=_bjAvpuCZTsXOIKzIxZyBBbQWzdpJ
 Content-Type: text/html; charset="gb2312"
 Content-Transfer-Encoding: quoted-printable
 
-<DIV>Hi,</DIV>
+<DIV>Hi, </DIV>
 <DIV>&nbsp;</DIV>
-<DIV>&nbsp;&nbsp; 1. I copied the ftp and telnet commands to my /bin, and=
- the needed library is also copied to my /lib, but they still don't work =
-so far, can anybody tell me why, thanks!</DIV>
+<DIV>&nbsp;&nbsp; Since there is no "ldd" command in busybox1.1.3, so I c=
+opied it from ELDK4.0 to my bin,</DIV>
+<DIV>but it didn't work, can anybody tell me how to add a new command to =
+my ramdisk ?</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>bash-3.00# ldd /bin/ftp<BR>sh: applet not found<BR>bash-3.00# </DIV>
 <DIV>&nbsp;</DIV>
 <DIV>&nbsp;</DIV>
-<DIV>logs:</DIV>
-<DIV>...</DIV>
-<DIV>RAMDISK: Compressed image found at block 0<BR>EXT2-fs warning: mount=
-ing unchecked fs, running e2fsck is recommended<BR>VFS: Mounted root (ext=
-2 filesystem).<BR>Freeing unused kernel memory: 120k init<BR>init started=
-:&nbsp; BusyBox v1.1.3 (2006.06.23-09:32+0000) multi-call binary<BR>Bad i=
-nittab entry: :reth0: link is up, 100 FDX<BR>Starting pid 23, console /de=
-v/ttyS1: '/bin/application'<BR>Starting pid 24, console /dev/ttyS1: '/bin=
-/bash'<BR>### Application running ...<BR>bash-3.00# ]<BR>bash: ]: command=
- not found<BR>bash-3.00# <BR>bash-3.00# <BR>bash-3.00# <BR>bash-3.00# <BR=
->bash-3.00# ftp 192.168.65.143<BR>ftp: ftp/tcp: unknown service<BR>bash-3=
-=2E00# telnet 192.168.65.143<BR>telnet: telnet: bad port<BR>Starting pid =
-29, console /dev/ttyS1: '/bin/application'<BR>Starting pid 30, console /d=
-ev/ttyS1: '/bin/bash'<BR>### Application running ...<BR>Starting pid 33, =
-console /dev/ttyS1: '/bin/bash'<BR>Starting pid 32, console /dev/ttyS1: '=
-/bin/application'<BR>### Application running ...<BR>bash-3.00# </DIV>
+<DIV>- Denny</DIV>
 <DIV>&nbsp;</DIV>
-<DIV>Thanks!</DIV>
-<DIV>- Denny</DIV><SPAN ></SPAN><br><!-- footer --><br><br><br><br><br><d=
-iv style=3D"border-bottom:1px solid #999"></div><br>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;</DIV><SPAN ></SPAN><br><!-- footer --><br><br><br><br><br><di=
+v style=3D"border-bottom:1px solid #999"></div><br>
 
 =09<font color=3D"black" style=3D"font-size:14.8px">=C4=E3 =B2=BB =CF=EB =
 =CA=D4 =CA=D4 =BD=F1 =CF=C4 =D7=EE =A1=B0=BF=E1=A1=B1 =B5=C4 =D3=CA =CF=E4=
@@ -110,4 +77,4 @@ iv style=3D"border-bottom:1px solid #999"></div><br>
 </a>
 
 
---Boundary-=_XXsdWaSaBASpWYOJgIVBubiujCpP--
+--Boundary-=_bjAvpuCZTsXOIKzIxZyBBbQWzdpJ--
