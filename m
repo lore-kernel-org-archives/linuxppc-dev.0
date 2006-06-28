@@ -1,24 +1,17 @@
-Return-Path: <SRS0+c81ddf811d472c051b1d+1039+infradead.org+hch@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BCFE767C09
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 03:10:32 +1000 (EST)
-Date: Wed, 28 Jun 2006 18:10:27 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Subject: Re: [PATCH 4/7] powerpc: Add QE library qe_lib--ucc support
-Message-ID: <20060628171027.GC7162@infradead.org>
-References: <9FCDBA58F226D911B202000BDBAD467306E04FD5@zch01exm40.ap.freescale.net>
+Return-Path: <ostampflee@terrasoftsolutions.com>
+Received: from newhope.terraplex.com (newhope1.terraplex.com [66.7.161.2])
+	by ozlabs.org (Postfix) with ESMTP id AD5E567B80
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 03:50:32 +1000 (EST)
+Received: from [192.168.10.120] (unknown [192.168.10.120])
+	by newhope.terraplex.com (Postfix) with ESMTP id 7C35C358035
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 11:21:16 -0600 (MDT)
+Subject: vm_region_alloc failing
+From: Owen Stampflee <ostampflee@terrasoftsolutions.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 28 Jun 2006 10:21:18 -0700
+Message-Id: <1151515279.13982.12.camel@beast.terraplex.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD467306E04FD5@zch01exm40.ap.freescale.net>
-Cc: Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
-	"'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, 'Paul Mackerras' <paulus@samba.org>,
-	Gridish Shlomi-RM96313 <gridish@freescale.com>,
-	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,16 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +int ucc_set_qe_mux_mii_mng(int ucc_num)
-> +{
-> +	unsigned long flags;
-> +
-> +	local_irq_save(flags);
-> +	out_be32(&qe_immr->qmx.cmxgcr,
-> +		 ((in_be32(&qe_immr->qmx.cmxgcr) &
-> +		   ~QE_CMXGCR_MII_ENET_MNG) |
-> +		  (ucc_num << QE_CMXGCR_MII_ENET_MNG_SHIFT)));
-> +	local_irq_restore(flags);
+I am currently working on getting OFED (an Infiniband stack) working on
+an Extreme Engineering Xpdite4000
+( http://xes-inc.com/Products/XPedite4000/XPedite4000.html ) with 2.6.11
+(the vendor supplied kernel). 
 
-Using local_irq_save to protect hardware access is wrong.  Please use
-spinlocks.
+The IB code calls dma_alloc_consistant 1024 times which then calls
+vm_region_alloc. On the 501st iteration vm_region_alloc fails because
+addr is greater than end (nospc). 
+
+With that known, I am curious as to what would cause that type failure
+and what potential fixes there are for it.
+
+Thanks,
+Owen
