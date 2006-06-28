@@ -1,16 +1,22 @@
-Return-Path: <Agostino.Sette@technolabs.it>
-Received: from aquib01a.technolabs.priv (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id B228967B46
+Return-Path: <rza1@so-logic.co.at>
+Received: from webmail.so-logic.net (webmail.so-logic.net [62.99.208.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 94AB867B17
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Jun 2006 20:13:33 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: MPC852T help me for: Oops: kernel access of bad area, sig: 11
-Date: Wed, 28 Jun 2006 12:01:14 +0200
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E2AADA9@aquib01a>
-From: "SETTE AGOSTINO - technolabs" <Agostino.Sette@technolabs.it>
-To: <linuxppc-embedded@ozlabs.org>
+	Wed, 28 Jun 2006 22:56:15 +1000 (EST)
+Received: from webmail.so-logic.net (webmail.so-logic.net [62.99.208.151])
+	by webmail.so-logic.net (8.12.10/8.12.8) with ESMTP id k5SCEQF7039729
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 28 Jun 2006 14:14:26 +0200 (CEST)
+	(envelope-from rza1@so-logic.co.at)
+Message-Id: <200606281214.k5SCEQEf039728@webmail.so-logic.net>
+From: "Robert Zach" <rza1@so-logic.co.at>
+To: linuxppc-embedded@ozlabs.org
+Subject: no login prompt with ml403 + uartlite-->major numbers?
+Date: Wed, 28 Jun 2006 14:14:26 +0200
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="iso-8859-1"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,43 +27,103 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear,
+Hello! 
 
-Here is my problem,
+I use the "Standart" ml403 Design with the uartlite instead of the 
+uart16550... 
 
-Our environment is:
+my kernel parameters are:
+"console=ttl0 ip=off root=/dev/xsysace/disc0/part3 rw" 
 
-OS:       Linux-2.4.20
-platform: MPC852T
+It boots correctly, but i got no login prompt!!
+getty is started with init.
+my inittab looks like:
+...
+::respawn:/sbin/getty 9600 ttl0
+... 
 
-Oops: kernel access of bad area, sig: 11
-NIP: C000D440 XER: 00000000 LR: C00BB040 SP: C06BDE50 REGS: c06bdda0
-TRAP: 0300    Tainted: P
-MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-DAR: 0000205D, DSISR: 000000E4
-TASK =3D c06bc000[181] 'L5420' Last syscall: 78
-last math 00000000 last altivec 00000000
-GPR00: 00000000 C06BDE50 C06BC000 C0D074E0 00002059 0000003C C0D074DC
-00000007
-GPR08: 00000001 0000003C 00000000 C0D07520 82004084 101B3AF8 3052816C
-C3120000
-GPR16: C311CB04 C311C8D8 C311C754 C0170000 C3120000 C311CB30 00000001
-C0169DA0
-GPR24: F0000E00 0000205D C0F58400 0000003C 00000040 C2080100 C0F58200
-C0F50360
-Call backtrace:
-C00BAF8C C00BABC8 C0005848 C3119448 C3119918 C00047A8 100D8AC0
-100D6718 100C370C 100674AC 100639E4 1005ED18 10042638 10010E28
-1003AC34 1000DA34 100361EC 0FED34A4 0FED32D0 0FFCFEE4 0FD5F590
-Kernel panic: Aiee, killing interrupt handler!
-In interrupt handler - not syncing
- <0>Rebooting in 180 seconds..
+I use devfs. 
 
-How to debug and correct it? Plese help me!
 
-Thanks a lot!
--------------------------------------------
+Is the inittab entry correct?
+Which device is the uartlite in devfs? 
 
-Best Regards
+Which major numbers uses the uartlite? 
 
-Agostino Sette
+thanks in advanced!
+nice greetings,
+Robert Zach 
+
+ 
+
+
+loaded at:     00400000 004CC1E0
+board data at: 004C9138 004C9150
+relocated to:  0040530C 00405324
+zimage at:     004058D1 004C885F
+avail ram:     004CD000 04000000 
+
+Linux/PPC load: console=ttl0 ip=off root=/dev/xsysace/disc0/part3 rw
+Uncompressing Linux...done.
+Now booting the kernel
+Linux version 2.4.26 (sem03@escola06) (gcc version 3.4.1) #3 Wed Jun 28 
+13:19:30
+CEST 2006
+Xilinx Virtex-II Pro port (C) 2002 MontaVista Software, Inc. 
+(source@mvista.com)
+On node 0 totalpages: 16384
+zone(0): 16384 pages.
+zone(1): 0 pages.
+zone(2): 0 pages.
+Kernel command line: console=ttl0 ip=off root=/dev/xsysace/disc0/part3 rw
+Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFF000
+Calibrating delay loop... 299.82 BogoMIPS
+Memory: 62884k available (1420k kernel code, 400k data, 56k init, 0k 
+highmem)
+Dentry cache hash table entries: 8192 (order: 4, 65536 bytes)
+Inode cache hash table entries: 4096 (order: 3, 32768 bytes)
+Mount cache hash table entries: 512 (order: 0, 4096 bytes)
+Buffer cache hash table entries: 4096 (order: 2, 16384 bytes)
+Page-cache hash table entries: 16384 (order: 4, 65536 bytes)
+POSIX conformance testing by UNIFIX
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+Starting kswapd
+Journalled Block Device driver loaded
+devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: devfs_debug: 0x0
+devfs: boot_options: 0x1
+Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+pty: 256 Unix98 ptys configured
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+Partition check:
+xsysacea: p1 p2 p3
+System ACE at 0x41800000 mapped to 0xC5000000, irq=28, 500472KB
+eth0: using fifo mode.
+eth0: No PHY detected.  Assuming a PHY at address 0.
+eth0: Xilinx EMAC #0 at 0x40C00000 mapped to 0xC5013000, irq=31
+eth0: id 2.0h; block id 7, type 1
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 4096 bind 8192)
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS 2.4-0.9.19, 19 August 2002 on System ACE(254,3), internal journal
+EXT3-fs: recovery complete.
+EXT3-fs: mounted filesystem with ordered data mode.
+VFS: Mounted root (ext3 filesystem).
+Mounted devfs on /dev
+Freeing unused kernel memory: 56k init 
+
+XDS ML403 powerpc linux 2.4.26 Training 
+
+Starting system...
+Starting Network
+Start syslogd
+done.
+Start klogd
+done.
+System Started.
+eth0: Link carrier lost.
