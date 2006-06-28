@@ -1,23 +1,16 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id ED12C67B48
+Return-Path: <Agostino.Sette@technolabs.it>
+Received: from aquib01a.technolabs.priv (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id B228967B46
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Jun 2006 19:09:26 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id j3so2871706ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Jun 2006 02:09:22 -0700 (PDT)
-Message-ID: <528646bc0606280209m4ce91cb0wc3cab2f2d3aec1a7@mail.gmail.com>
-Date: Wed, 28 Jun 2006 03:09:22 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: dhlii@comcast.net
-Subject: Re: how to get individual patches
-In-Reply-To: <44A23488.7030606@dlasys.net>
+	Wed, 28 Jun 2006 20:13:33 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <86EC6E02268B3D4BA41C1B0C61FB14E60AFCD219@mdcexc01.na.ops.local>
-	<20060627212448.7d048b7a@White64> <44A23488.7030606@dlasys.net>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: MPC852T help me for: Oops: kernel access of bad area, sig: 11
+Date: Wed, 28 Jun 2006 12:01:14 +0200
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E2AADA9@aquib01a>
+From: "SETTE AGOSTINO - technolabs" <Agostino.Sette@technolabs.it>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,34 +21,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 6/28/06, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
->
->     The bsp I am working on works with 2.6.16.21 but fails with 2.6.17.
->
->     How can I find the individual patches that make up the transition
-> from 2.6.16.21 to 2.6.17 ?
+Dear,
 
-Unfortunately, there isn't a direct line between .16.21 and .17 which
-makes it complicated.  Does your bsp work with .16?  If so; you can
-use the 'git bisect' command to figure out exactly where the
-regression occured.
+Here is my problem,
 
-If it doesn't work on .16; you can do a bisect between .16 and .16.21
-to figure out what patch is missing between .16 and .17.
+Our environment is:
 
-$ git bisect good v2.6.16
-$ git bisect bad           # the head of the tree
-compile, test, etc.
-$ git bisect good|bad    # depends on whether it works or not
-compile, test, etc
-$ git bisect good|bad    # you get the idea... repeat until it's narrowed down
-$ git log                          # see where you are in the git tree.
+OS:       Linux-2.4.20
+platform: MPC852T
 
-Cheers,
-g.
+Oops: kernel access of bad area, sig: 11
+NIP: C000D440 XER: 00000000 LR: C00BB040 SP: C06BDE50 REGS: c06bdda0
+TRAP: 0300    Tainted: P
+MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+DAR: 0000205D, DSISR: 000000E4
+TASK =3D c06bc000[181] 'L5420' Last syscall: 78
+last math 00000000 last altivec 00000000
+GPR00: 00000000 C06BDE50 C06BC000 C0D074E0 00002059 0000003C C0D074DC
+00000007
+GPR08: 00000001 0000003C 00000000 C0D07520 82004084 101B3AF8 3052816C
+C3120000
+GPR16: C311CB04 C311C8D8 C311C754 C0170000 C3120000 C311CB30 00000001
+C0169DA0
+GPR24: F0000E00 0000205D C0F58400 0000003C 00000040 C2080100 C0F58200
+C0F50360
+Call backtrace:
+C00BAF8C C00BABC8 C0005848 C3119448 C3119918 C00047A8 100D8AC0
+100D6718 100C370C 100674AC 100639E4 1005ED18 10042638 10010E28
+1003AC34 1000DA34 100361EC 0FED34A4 0FED32D0 0FFCFEE4 0FD5F590
+Kernel panic: Aiee, killing interrupt handler!
+In interrupt handler - not syncing
+ <0>Rebooting in 180 seconds..
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+How to debug and correct it? Plese help me!
+
+Thanks a lot!
+-------------------------------------------
+
+Best Regards
+
+Agostino Sette
