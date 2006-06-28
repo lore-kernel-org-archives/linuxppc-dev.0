@@ -1,17 +1,19 @@
-Return-Path: <ostampflee@terrasoftsolutions.com>
-Received: from newhope.terraplex.com (newhope1.terraplex.com [66.7.161.2])
-	by ozlabs.org (Postfix) with ESMTP id AD5E567B80
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 03:50:32 +1000 (EST)
-Received: from [192.168.10.120] (unknown [192.168.10.120])
-	by newhope.terraplex.com (Postfix) with ESMTP id 7C35C358035
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 11:21:16 -0600 (MDT)
-Subject: vm_region_alloc failing
-From: Owen Stampflee <ostampflee@terrasoftsolutions.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 28 Jun 2006 10:21:18 -0700
-Message-Id: <1151515279.13982.12.camel@beast.terraplex.com>
+Return-Path: <akpm@osdl.org>
+Date: Wed, 28 Jun 2006 12:11:02 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: "Martin J. Bligh" <mbligh@google.com>
+Subject: Re: 2.6.17-mm2
+Message-Id: <20060628121102.638f08d9.akpm@osdl.org>
+In-Reply-To: <44A29582.7050403@google.com>
+References: <449D5D36.3040102@google.com> <449FF3A2.8010907@mbligh.org>
+	<44A150C9.7020809@mbligh.org>
+	<20060628034215.c3008299.akpm@osdl.org>
+	<20060628034748.018eecac.akpm@osdl.org>
+	<44A29582.7050403@google.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: jeremy@goop.org, drfickle@us.ibm.com, linux-kernel@vger.kernel.org,
+	mbligh@mbligh.org, linuxppc64-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,17 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am currently working on getting OFED (an Infiniband stack) working on
-an Extreme Engineering Xpdite4000
-( http://xes-inc.com/Products/XPedite4000/XPedite4000.html ) with 2.6.11
-(the vendor supplied kernel). 
+On Wed, 28 Jun 2006 07:43:14 -0700
+"Martin J. Bligh" <mbligh@google.com> wrote:
 
-The IB code calls dma_alloc_consistant 1024 times which then calls
-vm_region_alloc. On the 501st iteration vm_region_alloc fails because
-addr is greater than end (nospc). 
+> Andrew Morton wrote:
+> > On Wed, 28 Jun 2006 03:42:15 -0700
+> > Andrew Morton <akpm@osdl.org> wrote:
+> > 
+> > 
+> >>his is caused by the vsprintf() changes.  Right now, if you do
+> >>
+> >>	snprintf(buf, 4, "1111111111111");
+> >>
+> >>the memory at `buf' gets [31 31 31 31 00], which is not good.
+> >>
+> >>This'll plug it, but I didn't check very hard whether it still has any
+> >>off-by-ones, or if breaks the intent of Jeremy's patch.  I think it's OK..
+> 
+> Aha, you're a genius!
 
-With that known, I am curious as to what would cause that type failure
-and what potential fixes there are for it.
+That's not what my kids say.
 
-Thanks,
-Owen
+> How the hell did you figure that one out?
+
+Found a way to reproduce it - do `cat /proc/slabinfo > /dev/null' in a
+tight loop.  With that happening, a little two-way wasn't able to make
+it through `dbench 4' without soiling the upholstery.  Then bisection-searching.
