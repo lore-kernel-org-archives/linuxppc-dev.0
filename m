@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F1B9667A3F
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 11:56:12 +1000 (EST)
-Date: Wed, 28 Jun 2006 11:55:49 +1000
+	by ozlabs.org (Postfix) with ESMTP id A183067A0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 11:57:53 +1000 (EST)
+Date: Wed, 28 Jun 2006 11:57:28 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH] Consolidate some of kernel/misc*.S
-Message-Id: <20060628115549.64a00962.sfr@canb.auug.org.au>
+Subject: [PATCH] Make lparcfg.c work when both iseries and pseries are selected
+Message-Id: <20060628115728.17f1a04d.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -19,656 +19,177 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-There were some common functions (mainly i/o).
-
-Also some small white space cleanups and remove a couple of small unused
-functions.
-
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/Makefile  |    3 -
- arch/powerpc/kernel/misc.S    |  203 +++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/misc_32.S |  156 --------------------------------
- arch/powerpc/kernel/misc_64.S |  181 +------------------------------------
- 4 files changed, 209 insertions(+), 334 deletions(-)
+ arch/powerpc/kernel/lparcfg.c |   69 +++++++++++++++++++----------------------
+ 1 files changed, 32 insertions(+), 37 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 http://www.canb.auug.org.au/~sfr/
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 803858e..814f242 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -50,7 +50,8 @@ extra-$(CONFIG_FSL_BOOKE)	:= head_fsl_bo
- extra-$(CONFIG_8xx)		:= head_8xx.o
- extra-y				+= vmlinux.lds
+diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+index c02deaa..bcc358d 100644
+--- a/arch/powerpc/kernel/lparcfg.c
++++ b/arch/powerpc/kernel/lparcfg.c
+@@ -45,11 +45,9 @@ #define MODULE_NAME "lparcfg"
+ static struct proc_dir_entry *proc_ppc64_lparcfg;
+ #define LPARCFG_BUFF_SIZE 4096
  
--obj-y				+= time.o prom.o traps.o setup-common.o udbg.o
-+obj-y				+= time.o prom.o traps.o setup-common.o \
-+				   udbg.o misc.o
- obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
- obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
- obj-$(CONFIG_PPC_MULTIPLATFORM)	+= prom_init.o
-diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-new file mode 100644
-index 0000000..fc23040
---- /dev/null
-+++ b/arch/powerpc/kernel/misc.S
-@@ -0,0 +1,203 @@
-+/*
-+ * This file contains miscellaneous low-level functions.
-+ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
-+ *
-+ * Largely rewritten by Cort Dougan (cort@cs.nmt.edu)
-+ * and Paul Mackerras.
-+ *
-+ * Adapted for iSeries by Mike Corrigan (mikejc@us.ibm.com)
-+ * PPC64 updates by Dave Engebretsen (engebret@us.ibm.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <asm/ppc_asm.h>
-+
-+	.text
-+
-+#ifdef CONFIG_PPC64
-+#define IN_SYNC		twi	0,r5,0; isync
-+#define EIEIO_32
-+#define SYNC_64		sync
-+#else /* CONFIG_PPC32 */
-+#define IN_SYNC
-+#define EIEIO_32	eieio
-+#define SYNC_64
-+#endif
-+/*
-+ * Returns (address we are running at) - (address we were linked at)
-+ * for use before the text and data are mapped to KERNELBASE.
-+ */
-+
-+_GLOBAL(reloc_offset)
-+	mflr	r0
-+	bl	1f
-+1:	mflr	r3
-+	LOAD_REG_IMMEDIATE(r4,1b)
-+	subf	r3,r4,r3
-+	mtlr	r0
-+	blr
-+
-+/*
-+ * add_reloc_offset(x) returns x + reloc_offset().
-+ */
-+_GLOBAL(add_reloc_offset)
-+	mflr	r0
-+	bl	1f
-+1:	mflr	r5
-+	LOAD_REG_IMMEDIATE(r4,1b)
-+	subf	r5,r4,r5
-+	add	r3,r3,r5
-+	mtlr	r0
-+	blr
-+
-+/*
-+ * I/O string operations
-+ *
-+ * insb(port, buf, len)
-+ * outsb(port, buf, len)
-+ * insw(port, buf, len)
-+ * outsw(port, buf, len)
-+ * insl(port, buf, len)
-+ * outsl(port, buf, len)
-+ * insw_ns(port, buf, len)
-+ * outsw_ns(port, buf, len)
-+ * insl_ns(port, buf, len)
-+ * outsl_ns(port, buf, len)
-+ *
-+ * The *_ns versions don't do byte-swapping.
-+ */
-+_GLOBAL(_insb)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,1
-+	blelr-
-+00:	lbz	r5,0(r3)
-+	eieio
-+	stbu	r5,1(r4)
-+	bdnz	00b
-+	IN_SYNC
-+	blr
-+
-+_GLOBAL(_outsb)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,1
-+	blelr-
-+00:	lbzu	r5,1(r4)
-+	stb	r5,0(r3)
-+	EIEIO_32
-+	bdnz	00b
-+	SYNC_64
-+	blr
-+
-+_GLOBAL(_insw)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,2
-+	blelr-
-+00:	lhbrx	r5,0,r3
-+	eieio
-+	sthu	r5,2(r4)
-+	bdnz	00b
-+	IN_SYNC
-+	blr
-+
-+_GLOBAL(_outsw)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,2
-+	blelr-
-+00:	lhzu	r5,2(r4)
-+	EIEIO_32
-+	sthbrx	r5,0,r3
-+	bdnz	00b
-+	SYNC_64
-+	blr
-+
-+_GLOBAL(_insl)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,4
-+	blelr-
-+00:	lwbrx	r5,0,r3
-+	eieio
-+	stwu	r5,4(r4)
-+	bdnz	00b
-+	IN_SYNC
-+	blr
-+
-+_GLOBAL(_outsl)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,4
-+	blelr-
-+00:	lwzu	r5,4(r4)
-+	stwbrx	r5,0,r3
-+	EIEIO_32
-+	bdnz	00b
-+	SYNC_64
-+	blr
-+
-+#ifdef CONFIG_PPC32
-+_GLOBAL(__ide_mm_insw)
-+#endif
-+_GLOBAL(_insw_ns)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,2
-+	blelr-
-+00:	lhz	r5,0(r3)
-+	eieio
-+	sthu	r5,2(r4)
-+	bdnz	00b
-+	IN_SYNC
-+	blr
-+
-+#ifdef CONFIG_PPC32
-+_GLOBAL(__ide_mm_outsw)
-+#endif
-+_GLOBAL(_outsw_ns)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,2
-+	blelr-
-+00:	lhzu	r5,2(r4)
-+	sth	r5,0(r3)
-+	EIEIO_32
-+	bdnz	00b
-+	SYNC_64
-+	blr
-+
-+#ifdef CONFIG_PPC32
-+_GLOBAL(__ide_mm_insl)
-+#endif
-+_GLOBAL(_insl_ns)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,4
-+	blelr-
-+00:	lwz	r5,0(r3)
-+	eieio
-+	stwu	r5,4(r4)
-+	bdnz	00b
-+	IN_SYNC
-+	blr
-+
-+#ifdef CONFIG_PPC32
-+_GLOBAL(__ide_mm_outsl)
-+#endif
-+_GLOBAL(_outsl_ns)
-+	cmpwi	0,r5,0
-+	mtctr	r5
-+	subi	r4,r4,4
-+	blelr-
-+00:	lwzu	r5,4(r4)
-+	stw	r5,0(r3)
-+	EIEIO_32
-+	bdnz	00b
-+	SYNC_64
-+	blr
-+
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 01d3916..c74774e 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -61,32 +61,6 @@ _GLOBAL(mulhdu)
- 	blr
- 
+-#ifdef CONFIG_PPC_ISERIES
+-
  /*
-- * Returns (address we're running at) - (address we were linked at)
-- * for use before the text and data are mapped to KERNELBASE.
-- */
--_GLOBAL(reloc_offset)
--	mflr	r0
--	bl	1f
--1:	mflr	r3
--	LOAD_REG_IMMEDIATE(r4,1b)
--	subf	r3,r4,r3
--	mtlr	r0
--	blr
--
--/*
-- * add_reloc_offset(x) returns x + reloc_offset().
-- */
--_GLOBAL(add_reloc_offset)
--	mflr	r0
--	bl	1f
--1:	mflr	r5
--	LOAD_REG_IMMEDIATE(r4,1b)
--	subf	r5,r4,r5
--	add	r3,r3,r5
--	mtlr	r0
--	blr
--
--/*
-  * sub_reloc_offset(x) returns x - reloc_offset().
+- * For iSeries legacy systems, the PPA purr function is available from the
+- * emulated_time_base field in the paca.
++ * Track sum of all purrs across all processors. This is used to further
++ * calculate usage values by different applications
   */
- _GLOBAL(sub_reloc_offset)
-@@ -781,136 +755,6 @@ _GLOBAL(atomic_set_mask)
- 	blr
+ static unsigned long get_purr(void)
+ {
+@@ -57,30 +55,30 @@ static unsigned long get_purr(void)
+ 	int cpu;
+ 
+ 	for_each_possible_cpu(cpu) {
+-		sum_purr += lppaca[cpu].emulated_time_base;
++		if (firmware_has_feature(FW_FEATURE_ISERIES))
++			sum_purr += lppaca[cpu].emulated_time_base;
++		else {
++			struct cpu_usage *cu;
+ 
+-#ifdef PURR_DEBUG
+-		printk(KERN_INFO "get_purr for cpu (%d) has value (%ld) \n",
+-			cpu, lppaca[cpu].emulated_time_base);
+-#endif
++			cu = &per_cpu(cpu_usage_array, cpu);
++			sum_purr += cu->current_tb;
++		}
+ 	}
+ 	return sum_purr;
+ }
+ 
+-#define lparcfg_write NULL
++#ifdef CONFIG_PPC_ISERIES
  
  /*
-- * I/O string operations
-- *
-- * insb(port, buf, len)
-- * outsb(port, buf, len)
-- * insw(port, buf, len)
-- * outsw(port, buf, len)
-- * insl(port, buf, len)
-- * outsl(port, buf, len)
-- * insw_ns(port, buf, len)
-- * outsw_ns(port, buf, len)
-- * insl_ns(port, buf, len)
-- * outsl_ns(port, buf, len)
-- *
-- * The *_ns versions don't do byte-swapping.
-- */
--_GLOBAL(_insb)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,1
--	blelr-
--00:	lbz	r5,0(r3)
--	eieio
--	stbu	r5,1(r4)
--	bdnz	00b
--	blr
+  * Methods used to fetch LPAR data when running on an iSeries platform.
+  */
+-static int lparcfg_data(struct seq_file *m, void *v)
++static int iseries_lparcfg_data(struct seq_file *m, void *v)
+ {
+ 	unsigned long pool_id, lp_index;
+ 	int shared, entitled_capacity, max_entitled_capacity;
+ 	int processors, max_processors;
+ 	unsigned long purr = get_purr();
+ 
+-	seq_printf(m, "%s %s \n", MODULE_NAME, MODULE_VERS);
 -
--_GLOBAL(_outsb)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,1
--	blelr-
--00:	lbzu	r5,1(r4)
--	stb	r5,0(r3)
--	eieio
--	bdnz	00b
--	blr
+ 	shared = (int)(get_lppaca()->shared_proc);
+ 	seq_printf(m, "serial_number=%c%c%c%c%c%c%c\n",
+ 		   e2a(xItExtVpdPanel.mfgID[2]),
+@@ -213,22 +211,6 @@ static void h_pic(unsigned long *pool_id
+ 		log_plpar_hcall_return(rc, "H_PIC");
+ }
+ 
+-/* Track sum of all purrs across all processors. This is used to further */
+-/* calculate usage values by different applications                       */
 -
--_GLOBAL(_insw)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,2
--	blelr-
--00:	lhbrx	r5,0,r3
--	eieio
--	sthu	r5,2(r4)
--	bdnz	00b
--	blr
+-static unsigned long get_purr(void)
+-{
+-	unsigned long sum_purr = 0;
+-	int cpu;
+-	struct cpu_usage *cu;
 -
--_GLOBAL(_outsw)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,2
--	blelr-
--00:	lhzu	r5,2(r4)
--	eieio
--	sthbrx	r5,0,r3
--	bdnz	00b
--	blr
+-	for_each_possible_cpu(cpu) {
+-		cu = &per_cpu(cpu_usage_array, cpu);
+-		sum_purr += cu->current_tb;
+-	}
+-	return sum_purr;
+-}
 -
--_GLOBAL(_insl)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,4
--	blelr-
--00:	lwbrx	r5,0,r3
--	eieio
--	stwu	r5,4(r4)
--	bdnz	00b
--	blr
+ #define SPLPAR_CHARACTERISTICS_TOKEN 20
+ #define SPLPAR_MAXLENGTH 1026*(sizeof(char))
+ 
+@@ -333,7 +315,7 @@ #endif
+ 	return count;
+ }
+ 
+-static int lparcfg_data(struct seq_file *m, void *v)
++static int pseries_lparcfg_data(struct seq_file *m, void *v)
+ {
+ 	int partition_potential_processors;
+ 	int partition_active_processors;
+@@ -354,8 +336,6 @@ static int lparcfg_data(struct seq_file 
+ 			lp_index = *lp_index_ptr;
+ 	}
+ 
+-	seq_printf(m, "%s %s \n", MODULE_NAME, MODULE_VERS);
 -
--_GLOBAL(_outsl)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,4
--	blelr-
--00:	lwzu	r5,4(r4)
--	stwbrx	r5,0,r3
--	eieio
--	bdnz	00b
--	blr
--
--_GLOBAL(__ide_mm_insw)
--_GLOBAL(_insw_ns)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,2
--	blelr-
--00:	lhz	r5,0(r3)
--	eieio
--	sthu	r5,2(r4)
--	bdnz	00b
--	blr
--
--_GLOBAL(__ide_mm_outsw)
--_GLOBAL(_outsw_ns)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,2
--	blelr-
--00:	lhzu	r5,2(r4)
--	sth	r5,0(r3)
--	eieio
--	bdnz	00b
--	blr
--
--_GLOBAL(__ide_mm_insl)
--_GLOBAL(_insl_ns)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,4
--	blelr-
--00:	lwz	r5,0(r3)
--	eieio
--	stwu	r5,4(r4)
--	bdnz	00b
--	blr
--
--_GLOBAL(__ide_mm_outsl)
--_GLOBAL(_outsl_ns)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,4
--	blelr-
--00:	lwzu	r5,4(r4)
--	stw	r5,0(r3)
--	eieio
--	bdnz	00b
--	blr
--
--/*
-  * Extended precision shifts.
-  *
-  * Updated to be valid for shift counts from 0 to 63 inclusive.
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index 6bf4a46..580891c 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -1,14 +1,12 @@
+ 	seq_printf(m, "serial_number=%s\n", system_id);
+ 
+ 	seq_printf(m, "system_type=%s\n", model);
+@@ -456,6 +436,21 @@ static int lparcfg_data(struct seq_file 
+ 	return 0;
+ }
+ 
++#endif				/* CONFIG_PPC_PSERIES */
++
++static int lparcfg_data(struct seq_file *m, void *v)
++{
++	seq_printf(m, "%s %s \n", MODULE_NAME, MODULE_VERS);
++
++#ifdef CONFIG_PPC_ISERIES
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		return iseries_lparcfg_data(m, v);
++#endif
++#ifdef CONFIG_PPC_PSERIES
++	return pseries_lparcfg_data(m, v);
++#endif
++}
++
  /*
-- *  arch/powerpc/kernel/misc64.S
-- *
-  * This file contains miscellaneous low-level functions.
-  *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
-  *
-  * Largely rewritten by Cort Dougan (cort@cs.nmt.edu)
-  * and Paul Mackerras.
-  * Adapted for iSeries by Mike Corrigan (mikejc@us.ibm.com)
-- * PPC64 updates by Dave Engebretsen (engebret@us.ibm.com) 
-- * 
-+ * PPC64 updates by Dave Engebretsen (engebret@us.ibm.com)
-+ *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version
-@@ -30,41 +28,10 @@ #include <asm/thread_info.h>
+  * Interface for changing system parameters (variable capacity weight
+  * and entitled capacity).  Format of input is "param_name=value";
+@@ -469,6 +464,8 @@ static int lparcfg_data(struct seq_file 
+ static ssize_t lparcfg_write(struct file *file, const char __user * buf,
+ 			     size_t count, loff_t * off)
+ {
++	ssize_t retval = -ENOMEM;
++#ifdef CONFIG_PPC_PSERIES
+ 	char *kbuf;
+ 	char *tmp;
+ 	u64 new_entitled, *new_entitled_ptr = &new_entitled;
+@@ -479,8 +476,6 @@ static ssize_t lparcfg_write(struct file
+ 	unsigned long resource;
+ 	u8 current_weight;
  
- 	.text
+-	ssize_t retval = -ENOMEM;
+-
+ 	kbuf = kmalloc(count, GFP_KERNEL);
+ 	if (!kbuf)
+ 		goto out;
+@@ -546,11 +541,10 @@ static ssize_t lparcfg_write(struct file
  
--/*
-- * Returns (address we are running at) - (address we were linked at)
-- * for use before the text and data are mapped to KERNELBASE.
-- */
--
--_GLOBAL(reloc_offset)
--	mflr	r0
--	bl	1f
--1:	mflr	r3
--	LOAD_REG_IMMEDIATE(r4,1b)
--	subf	r3,r4,r3
--	mtlr	r0
--	blr
--
--/*
-- * add_reloc_offset(x) returns x + reloc_offset().
-- */
--_GLOBAL(add_reloc_offset)
--	mflr	r0
--	bl	1f
--1:	mflr	r5
--	LOAD_REG_IMMEDIATE(r4,1b)
--	subf	r5,r4,r5
--	add	r3,r3,r5
--	mtlr	r0
--	blr
--
- _GLOBAL(get_msr)
- 	mfmsr	r3
- 	blr
+ out:
+ 	kfree(kbuf);
++#endif				/* CONFIG_PPC_PSERIES */
+ 	return retval;
+ }
  
--_GLOBAL(get_dar)
--	mfdar	r3
--	blr
+-#endif				/* CONFIG_PPC_PSERIES */
 -
- _GLOBAL(get_srr0)
- 	mfsrr0  r3
- 	blr
-@@ -72,10 +39,6 @@ _GLOBAL(get_srr0)
- _GLOBAL(get_srr1)
- 	mfsrr1  r3
- 	blr
--	
--_GLOBAL(get_sp)
--	mr	r3,r1
--	blr
+ static int lparcfg_open(struct inode *inode, struct file *file)
+ {
+ 	return single_open(file, lparcfg_data, NULL);
+@@ -569,7 +563,8 @@ int __init lparcfg_init(void)
+ 	mode_t mode = S_IRUSR | S_IRGRP | S_IROTH;
  
- #ifdef CONFIG_IRQSTACKS
- _GLOBAL(call_do_softirq)
-@@ -281,144 +244,6 @@ _GLOBAL(__flush_dcache_icache)
- 	bdnz	1b
- 	isync
- 	blr
--	
--/*
-- * I/O string operations
-- *
-- * insb(port, buf, len)
-- * outsb(port, buf, len)
-- * insw(port, buf, len)
-- * outsw(port, buf, len)
-- * insl(port, buf, len)
-- * outsl(port, buf, len)
-- * insw_ns(port, buf, len)
-- * outsw_ns(port, buf, len)
-- * insl_ns(port, buf, len)
-- * outsl_ns(port, buf, len)
-- *
-- * The *_ns versions don't do byte-swapping.
-- */
--_GLOBAL(_insb)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,1
--	blelr-
--00:	lbz	r5,0(r3)
--	eieio
--	stbu	r5,1(r4)
--	bdnz	00b
--	twi	0,r5,0
--	isync
--	blr
--
--_GLOBAL(_outsb)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,1
--	blelr-
--00:	lbzu	r5,1(r4)
--	stb	r5,0(r3)
--	bdnz	00b
--	sync
--	blr	
--
--_GLOBAL(_insw)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,2
--	blelr-
--00:	lhbrx	r5,0,r3
--	eieio
--	sthu	r5,2(r4)
--	bdnz	00b
--	twi	0,r5,0
--	isync
--	blr
--
--_GLOBAL(_outsw)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,2
--	blelr-
--00:	lhzu	r5,2(r4)
--	sthbrx	r5,0,r3	
--	bdnz	00b
--	sync
--	blr	
--
--_GLOBAL(_insl)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,4
--	blelr-
--00:	lwbrx	r5,0,r3
--	eieio
--	stwu	r5,4(r4)
--	bdnz	00b
--	twi	0,r5,0
--	isync
--	blr
--
--_GLOBAL(_outsl)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,4
--	blelr-
--00:	lwzu	r5,4(r4)
--	stwbrx	r5,0,r3
--	bdnz	00b
--	sync
--	blr	
--
--/* _GLOBAL(ide_insw) now in drivers/ide/ide-iops.c */
--_GLOBAL(_insw_ns)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,2
--	blelr-
--00:	lhz	r5,0(r3)
--	eieio
--	sthu	r5,2(r4)
--	bdnz	00b
--	twi	0,r5,0
--	isync
--	blr
--
--/* _GLOBAL(ide_outsw) now in drivers/ide/ide-iops.c */
--_GLOBAL(_outsw_ns)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,2
--	blelr-
--00:	lhzu	r5,2(r4)
--	sth	r5,0(r3)
--	bdnz	00b
--	sync
--	blr	
--
--_GLOBAL(_insl_ns)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,4
--	blelr-
--00:	lwz	r5,0(r3)
--	eieio
--	stwu	r5,4(r4)
--	bdnz	00b
--	twi	0,r5,0
--	isync
--	blr
--
--_GLOBAL(_outsl_ns)
--	cmpwi	0,r5,0
--	mtctr	r5
--	subi	r4,r4,4
--	blelr-
--00:	lwzu	r5,4(r4)
--	stw	r5,0(r3)
--	bdnz	00b
--	sync
--	blr	
- 
- /*
-  * identify_cpu and calls setup_cpu
-@@ -563,6 +388,7 @@ _GLOBAL(real_writeb)
- 	blr
- #endif /* defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE) */
- 
-+#ifdef CONFIG_CPU_FREQ_PMAC64
- /*
-  * SCOM access functions for 970 (FX only for now)
-  *
-@@ -631,6 +457,7 @@ _GLOBAL(scom970_write)
- 	/* restore interrupts */
- 	mtmsrd	r5,1
- 	blr
-+#endif /* CONFIG_CPU_FREQ_PMAC64 */
- 
- 
- /*
+ 	/* Allow writing if we have FW_FEATURE_SPLPAR */
+-	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
++	if (firmware_has_feature(FW_FEATURE_SPLPAR) &&
++			!firmware_has_feature(FW_FEATURE_ISERIES)) {
+ 		lparcfg_fops.write = lparcfg_write;
+ 		mode |= S_IWUSR;
+ 	}
 -- 
 1.4.0
