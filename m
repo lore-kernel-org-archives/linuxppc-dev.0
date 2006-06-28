@@ -1,19 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id EE81067B16
+Return-Path: <AZeffertt@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E42CC67B46
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Jun 2006 17:51:08 +1000 (EST)
-To: "Denny" <jxnuxdy@163.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Can anyone tell me if it is a bug of the ELDK4.0? 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 28 Jun 2006 09:53:25 +0800."
-	<44A1E115.000001.12247@bj163app13.163.com>
-Date: Wed, 28 Jun 2006 09:51:06 +0200
-Sender: wd@denx.de
-Message-Id: <20060628075106.42791353B01@atlas.denx.de>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Wed, 28 Jun 2006 18:32:38 +1000 (EST)
+Message-ID: <44A23E9A.50004@cambridgebroadband.com>
+Date: Wed, 28 Jun 2006 09:32:26 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+MIME-Version: 1.0
+To: dhlii@comcast.net, linuxppc-embedded@ozlabs.org
+Subject: Re: how to get individual patches
+References: <86EC6E02268B3D4BA41C1B0C61FB14E60AFCD219@mdcexc01.na.ops.local>	<20060627212448.7d048b7a@White64>
+	<44A23488.7030606@dlasys.net>
+In-Reply-To: <44A23488.7030606@dlasys.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +26,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <44A1E115.000001.12247@bj163app13.163.com> you wrote:
+David H. Lynch Jr. wrote:
+>     The bsp I am working on works with 2.6.16.21 but fails with 2.6.17.
+>    
+>     How can I find the individual patches that make up the transition
+> from 2.6.16.21 to 2.6.17 ?
 > 
->      I failed to compile the uboot on my 440GP platform, I set the compile switch as "-m440 -mcpu=440",
+>     I guess I can use interdiff to create single patch to go from
+> 2.6.16.21 to 2.6.17 but I am really looking to get all the individual
+> patches so I can try to isolate exactly
+>     what is giving me trouble.
+> 
 
-Don't do this, then. The  ELDK  will  automatically  set  approproate
-compiler  options  as  needed,  depending  on  your  setting  of  the
-CROSS_COMPILE variable.
+For diffs of individual files between official kernel releases you can
+use
 
-All this is documented in the manual.
+	http://www.linuxhq.com/kernel/
 
-Just follow the instructions.
+It's really good!
 
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Half of the people in the world are below average.
+Alex
