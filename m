@@ -1,19 +1,19 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from sccrmhc11.comcast.net (sccrmhc11.comcast.net [63.240.77.81])
-	by ozlabs.org (Postfix) with ESMTP id 1014D67A6D
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id EE81067B16
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Jun 2006 17:49:33 +1000 (EST)
-Message-ID: <44A23488.7030606@dlasys.net>
-Date: Wed, 28 Jun 2006 03:49:28 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: how to get individual patches
-References: <86EC6E02268B3D4BA41C1B0C61FB14E60AFCD219@mdcexc01.na.ops.local>
-	<20060627212448.7d048b7a@White64>
-In-Reply-To: <20060627212448.7d048b7a@White64>
-Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: dhlii@comcast.net
+	Wed, 28 Jun 2006 17:51:08 +1000 (EST)
+To: "Denny" <jxnuxdy@163.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Can anyone tell me if it is a bug of the ELDK4.0? 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 28 Jun 2006 09:53:25 +0800."
+	<44A1E115.000001.12247@bj163app13.163.com>
+Date: Wed, 28 Jun 2006 09:51:06 +0200
+Sender: wd@denx.de
+Message-Id: <20060628075106.42791353B01@atlas.denx.de>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,23 +24,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In message <44A1E115.000001.12247@bj163app13.163.com> you wrote:
+> 
+>      I failed to compile the uboot on my 440GP platform, I set the compile switch as "-m440 -mcpu=440",
 
-    The bsp I am working on works with 2.6.16.21 but fails with 2.6.17.
-   
-    How can I find the individual patches that make up the transition
-from 2.6.16.21 to 2.6.17 ?
+Don't do this, then. The  ELDK  will  automatically  set  approproate
+compiler  options  as  needed,  depending  on  your  setting  of  the
+CROSS_COMPILE variable.
 
-    I guess I can use interdiff to create single patch to go from
-2.6.16.21 to 2.6.17 but I am really looking to get all the individual
-patches so I can try to isolate exactly
-    what is giving me trouble.
+All this is documented in the manual.
+
+Just follow the instructions.
+
+
+Best regards,
+
+Wolfgang Denk
 
 -- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Half of the people in the world are below average.
