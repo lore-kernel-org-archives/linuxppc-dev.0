@@ -1,22 +1,20 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id 0002D67B66
+Return-Path: <dhlii@dlasys.net>
+Received: from sccrmhc14.comcast.net (sccrmhc14.comcast.net [63.240.77.84])
+	by ozlabs.org (Postfix) with ESMTP id 9368067B62
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Jun 2006 01:06:46 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id j3so2977197ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Jun 2006 08:06:41 -0700 (PDT)
-Message-ID: <528646bc0606280806y2ec566b1rd0d5c07c9fcc0aaf@mail.gmail.com>
-Date: Wed, 28 Jun 2006 09:06:41 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Robert Zach" <rza1@so-logic.co.at>
-Subject: Re: no login prompt with ml403 + uartlite-->major numbers?
-In-Reply-To: <200606281214.k5SCEQEf039728@webmail.so-logic.net>
+	Thu, 29 Jun 2006 02:18:54 +1000 (EST)
+Message-ID: <44A2ABE9.1060309@dlasys.net>
+Date: Wed, 28 Jun 2006 12:18:49 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <200606281214.k5SCEQEf039728@webmail.so-logic.net>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: how to get individual patches
+References: <86EC6E02268B3D4BA41C1B0C61FB14E60AFCD219@mdcexc01.na.ops.local>	
+	<20060627212448.7d048b7a@White64> <44A23488.7030606@dlasys.net>
+	<528646bc0606280209m4ce91cb0wc3cab2f2d3aec1a7@mail.gmail.com>
+In-Reply-To: <528646bc0606280209m4ce91cb0wc3cab2f2d3aec1a7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: dhlii@comcast.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,59 +25,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 6/28/06, Robert Zach <rza1@so-logic.co.at> wrote:
-> Hello!
+Grant Likely wrote:
+> On 6/28/06, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
+>>
+>>     The bsp I am working on works with 2.6.16.21 but fails with 2.6.17.
+>>
+>>     How can I find the individual patches that make up the transition
+>> from 2.6.16.21 to 2.6.17 ?
 >
-> I use the "Standart" ml403 Design with the uartlite instead of the
-> uart16550...
+> Unfortunately, there isn't a direct line between .16.21 and .17 which
+> makes it complicated.  Does your bsp work with .16?  If so; you can
+> use the 'git bisect' command to figure out exactly where the
+> regression occured.
 >
-> my kernel parameters are:
-> "console=ttl0 ip=off root=/dev/xsysace/disc0/part3 rw"
+> If it doesn't work on .16; you can do a bisect between .16 and .16.21
+> to figure out what patch is missing between .16 and .17.
 >
-> It boots correctly, but i got no login prompt!!
-> getty is started with init.
-> my inittab looks like:
-> ...
-> ::respawn:/sbin/getty 9600 ttl0
+> $ git bisect good v2.6.16
+> $ git bisect bad           # the head of the tree
+> compile, test, etc.
+> $ git bisect good|bad    # depends on whether it works or not
+> compile, test, etc
+> $ git bisect good|bad    # you get the idea... repeat until it's
+> narrowed down
+> $ git log                          # see where you are in the git tree.
+    Thanks,
 
-Looks ok.  busybox I assume.  You might try:
+       At the moment I am not working out of a git tree - but I was
+previously.
+   
+       What I have works with everything from 2.6.15 through 2.6.16.21 -
+or atleast the 15+ odd interim steps I tried.
+    It fails if I go from 2.6.16 to 2.6.17.
 
-ttl0::respawn:/sbin/getty 9600 ttl0
+       I can probably actually check into why it is not working - looks
+alot like an ml403 mmu hang posted earlier (I am working with a Xilinx V4).
+    But I was hoping I could get away with brute force/divide and
+conquer and isolate it to a single patch before actually trying to
+figure out the problem.
 
-You could try just launching a shell on the console.  Then you can
-look around and see what's there:
-
-::respace:/bin/sh
-
-> ...
+    I am going to have to get better at git.
 >
-> I use devfs.
-
-Ugh.  You should turn off devfs and build a static /dev folder for the
-time being.  Otherwise you've got no idea if devfs is putting the
-right things into /dev.  If you *really* want to, you can go back to
-devfs later (but I don't recommend it).
-
-> Is the inittab entry correct?
-
-I think so
-
-> Which device is the uartlite in devfs?
-
-I don't know; read the source.  Look for where it registers with devfs
-to get the expected name.  Does the uartlite driver you're using even
-support devfs?
-
+> Cheers,
+> g.
 >
-> Which major numbers uses the uartlite?
 
-I don't know; it should be easy to find in the driver source
-
-Cheers,
-g.
 
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
