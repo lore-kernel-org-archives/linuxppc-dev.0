@@ -1,17 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 984AF67B18
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 18:01:29 +1000 (EST)
-Subject: snd-aoa issues & fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Content-Type: text/plain
-Date: Wed, 28 Jun 2006 18:01:17 +1000
-Message-Id: <1151481678.4044.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 4B10667A66
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 19:31:16 +1000 (EST)
+Date: Wed, 28 Jun 2006 02:30:30 -0700
+To: paulus@samba.org
+Subject: [PATCH] powerpc: Do a bit more cpu init cleanups (v3)
+Message-ID: <20060628093030.GF5130@pb15.lixom.net>
+References: <20060627192206.GB5130@pb15.lixom.net>
+	<20060628043822.GE5130@pb15.lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060628043822.GE5130@pb15.lixom.net>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,543 +22,674 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So I've been trying to fix snd-aoa for the G5s and found a few issues...
-I think I got most of it right, however I don't have any sound... I hear
-"clacs" when I toggle the mutes pretty much as expected and I see
-interrupts counting when playing sound but there is no actual sound in
-the speaker. I've verified that snd-powermac works on the same machine
-(PowerMac7,3 with tas codec). I've been toying with all the controls
-available in alsamixer, it didn't help. Sounds to me that there is
-nothing going out of the tas... maybe some mixer control that is not
-quite right, duno
+Last patch had two problems:
 
-- Redefinition of various FCR related bits in i2s-control. I've fixed
-that in the patch and used existing definitions. However, we still have
-a problem that we don't properly lock with pmac_feature for access to
-these. We need to either expose new feature calls now that we are
-upstream or expose the pmac_feature spinlock
+* cur_cpu_spec isn't available that early for processors that are
+  started from prom_init, so call it after release instead of before
+* Fumbled with the assembly
 
-- I noticed you don't call pmac_feature and don't set bits in FCR3
-etc... (enabling the 18Mhz clock for example). Is that normal ? You
-don't use that clock ? That's the only difference in FCR content that
-I've been able to spot between snd-powermac and snd-aoa but hacking it
-doesn't seem to make much difference.
+It's a wonder that it booted on powermac (which it did).
 
-- The fabric stuff needs a bit of cleanup... You seem to be fond of
-defining lotsa struct's :) Even when they don't contain much :) Triggers
-another problem below
+New version below:
 
-- I've had a crash with built-in snd-aoa at boot... The problem is that
-when built-in, there is no enforced ordering between module_init() calls
-except for link order... What happens here is that soundbus is last in
-the Makefile, thus we try to register soundbus devices before we
-register the bus type. I fixes that in the patch both by putting
-soundbus first in the Make
 
-- If i2sbus is loaded after the codec and fabric, the codec fails to
-initialize. I haven't tried to debug that one
 
-- The dmesg output could use some cleanup :)
 
-- The driver is trying to access non existing codecs on the i2c bus,
-that's a pretty bad idea.
+Cleanup CPU inits a bit more, Geoff Levand already did some earlier.
 
-I think we need to change the codec probe phase dramatically: 
+* Rename cpu_setup_power4.S to cpu_setup_ppc970.S
+* Move CPU state save to cpu_setup, since cpu_setup is only ever done
+  on cpu 0 on 64-bit and save is never done more than once.
+* Rename __restore_cpu_setup to __restore_cpu_ppc970 and add
+  function pointers to the cputable to use instead. Powermac always
+  has 970 so no need to check there. Call it a bit later so we have
+  cputables set up properly.
+* Rename __970_cpu_preinit to __cpu_preinit_ppc970 and check PVR before
+  calling it instead of in it, it's too early to use cputable.
+* Rename pSeries_secondary_smp_init to generic_secondary_smp_init since
+  everyone but powermac and iSeries use it.
 
-  1 - codec drivers register the i2c thingy as normal
-  2 - i2c kicks in, they do the current device-node and/or i2c bus name
-check and register
-      themselves with the core. They do not try to touch the hardware at
-this point
-  3 - fabric kicks in (or was already there). It checks the list of
-codecs registered when
-      loaded and gets notified of new ones added. If codec matches the
-layout, then codec
-      init is called
-  4 - codec init called by fabric. That is where we try to tap the
-hardware. Might fail in
-      which case the fabric doesn't try to use the codec
 
-(That is, there is a global list of registered codecs at the core, and a
-list of "active" codecs in the fabric or bus, whatever...)
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Here's my current patch:
 
-Index: linux-snd-aoa/sound/aoa/soundbus/i2sbus/i2sbus-core.c
+Index: linux-2.6/arch/powerpc/kernel/Makefile
 ===================================================================
---- linux-snd-aoa.orig/sound/aoa/soundbus/i2sbus/i2sbus-core.c	2006-06-26 12:29:38.000000000 +1000
-+++ linux-snd-aoa/sound/aoa/soundbus/i2sbus/i2sbus-core.c	2006-06-28 16:10:27.000000000 +1000
-@@ -7,13 +7,16 @@
-  */
- 
- #include <linux/module.h>
--#include <asm/macio.h>
--#include <asm/dbdma.h>
- #include <linux/pci.h>
- #include <linux/interrupt.h>
-+#include <linux/dma-mapping.h>
-+
- #include <sound/driver.h>
- #include <sound/core.h>
--#include <linux/dma-mapping.h>
-+
-+#include <asm/macio.h>
-+#include <asm/dbdma.h>
-+
- #include "../soundbus.h"
- #include "i2sbus.h"
- 
-@@ -24,6 +27,12 @@ MODULE_DESCRIPTION("Apple Soundbus: I2S 
-  * string that macio puts into the relevant device */
- MODULE_ALIAS("of:Ni2sTi2sC");
- 
-+static int force;
-+module_param(force, int, 0444);
-+MODULE_PARM_DESC(force, "Force loading i2sbus even when"
-+		 " no layout-id property is present");
-+
-+
- static struct of_device_id i2sbus_match[] = {
- 	{ .name = "i2s" },
- 	{ }
-@@ -73,7 +82,7 @@ static void i2sbus_release_dev(struct de
-  	if (i2sdev->intfregs) iounmap(i2sdev->intfregs);
-  	if (i2sdev->out.dbdma) iounmap(i2sdev->out.dbdma);
-  	if (i2sdev->in.dbdma) iounmap(i2sdev->in.dbdma);
--	for (i=0;i<3;i++)
-+	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++)
- 		if (i2sdev->allocated_resource[i])
- 			release_and_free_resource(i2sdev->allocated_resource[i]);
- 	free_dbdma_descriptor_ring(i2sdev, &i2sdev->out.dbdma_ring);
-@@ -101,10 +110,49 @@ static irqreturn_t i2sbus_bus_intr(int i
- 	return IRQ_HANDLED;
- }
- 
--static int force;
--module_param(force, int, 0444);
--MODULE_PARM_DESC(force, "Force loading i2sbus even when"
--			" no layout-id property is present");
-+/*
-+ * XXX FIXME: We have to test the layout_id's here to get the proper way
-+ * of mapping in various registers, thanks to bugs in Apple device-trees.
-+ * Ideally, that should be handled by the layout fabric but doing so would
-+ * require a little bit of shuffling around
-+ */
-+static int i2sbus_get_and_fixup_rsrc(struct device_node *np, int index,
-+				     int layout, struct resource *res)
-+{
-+	struct device_node *parent;
-+	int pindex, rc = -ENXIO;
-+	u32 *reg;
-+
-+	/* Machines with layout 76 and 36 (K2 based) have a weird device
-+	 * tree what we need to special case.
-+	 * Normal machines just fetch the resource from the i2s-X node.
-+	 * Darwin further divides normal machines into old and new layouts
-+	 * with a subtely different code path but that doesn't seem necessary
-+	 * in practice, they just bloated it. In addition, even on our K2
-+	 * case the i2s-modem node, if we ever want to handle it, uses the
-+	 * normal layout
-+	 */
-+	if (layout != 76 && layout != 36)
-+		return of_address_to_resource(np, index, res);
-+
-+	parent = of_get_parent(np);
-+	pindex = (index == aoa_resource_i2smmio) ? 0 : 1;
-+	rc = of_address_to_resource(parent, pindex, res);
-+	if (rc)
-+		goto bail;
-+	reg = (u32 *)get_property(np, "reg", NULL);
-+	if (reg == NULL) {
-+		rc = -ENXIO;
-+		goto bail;
-+	}
-+	res->start += reg[index * 2];
-+	res->end = res->start + reg[index * 2 + 1] - 1;
-+	printk("i2sbus rsrc %d -> %lx..%lx\n", index,
-+	       res->start, res->end);
-+ bail:
-+	of_node_put(parent);
-+	return rc;
-+}
- 
- /* FIXME: look at device node refcounting */
- static int i2sbus_add_dev(struct macio_dev *macio,
-@@ -113,7 +161,8 @@ static int i2sbus_add_dev(struct macio_d
- {
- 	struct i2sbus_dev *dev;
- 	struct device_node *child = NULL, *sound = NULL;
--	int i;
-+	struct resource *r;
-+	int i, layout = 0;
- 	static const char *rnames[] = { "i2sbus: %s (control)",
- 					"i2sbus: %s (tx)",
- 					"i2sbus: %s (rx)" };
-@@ -147,8 +196,9 @@ static int i2sbus_add_dev(struct macio_d
- 		u32 *layout_id;
- 		layout_id = (u32*) get_property(sound, "layout-id", NULL);
- 		if (layout_id) {
-+			layout = *layout_id;
- 			snprintf(dev->sound.modalias, 32,
--				 "sound-layout-%d", *layout_id);
-+				 "sound-layout-%d", layout);
- 			force = 1;
- 		}
- 	}
-@@ -180,20 +230,28 @@ static int i2sbus_add_dev(struct macio_d
- 
- 	for (i=0;i<3;i++) {
- 		dev->interrupts[i] = -1;
--		snprintf(dev->rnames[i], sizeof(dev->rnames[i]), rnames[i], np->name);
-+		snprintf(dev->rnames[i], sizeof(dev->rnames[i]), rnames[i],
-+			 np->name);
- 	}
- 	for (i=0;i<3;i++) {
--		if (request_irq(np->intrs[i].line, ints[i], 0, dev->rnames[i], dev))
-+		if (request_irq(np->intrs[i].line, ints[i], 0, dev->rnames[i],
-+				dev))
- 			goto err;
- 		dev->interrupts[i] = np->intrs[i].line;
- 	}
- 
--	for (i=0;i<3;i++) {
--		if (of_address_to_resource(np, i, &dev->resources[i]))
-+	/* Resource handling is problematic as some device-trees contain
-+	 * useless crap (ugh ugh ugh). We work around that here by calling
-+	 * specific functions for calculating the appropriate resources.
-+	 */
-+	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++) {
-+		if (i2sbus_get_and_fixup_rsrc(np,i,layout,&dev->resources[i]))
- 			goto err;
--		/* if only we could use our resource dev->resources[i]...
-+
-+		/* If only we could use our resource dev->resources[i]...
- 		 * but request_resource doesn't know about parents and
--		 * contained resources... */
-+		 * contained resources...
-+		 */
- 		dev->allocated_resource[i] = 
- 			request_mem_region(dev->resources[i].start,
- 					   dev->resources[i].end -
-@@ -205,12 +263,12 @@ static int i2sbus_add_dev(struct macio_d
- 		}
- 	}
- 	/* should do sanity checking here about length of them */
--	dev->intfregs = ioremap(dev->resources[0].start,
--				dev->resources[0].end-dev->resources[0].start+1);
--	dev->out.dbdma = ioremap(dev->resources[1].start,
--			 	 dev->resources[1].end-dev->resources[1].start+1);
--	dev->in.dbdma = ioremap(dev->resources[2].start,
--				dev->resources[2].end-dev->resources[2].start+1);
-+	r = &dev->resources[aoa_resource_i2smmio];
-+	dev->intfregs = ioremap(r->start, r->end - r->start + 1);
-+	r = &dev->resources[aoa_resource_txdbdma];
-+	dev->out.dbdma = ioremap(r->start, r->end - r->start + 1);
-+	r = &dev->resources[aoa_resource_rxdbdma];
-+	dev->in.dbdma = ioremap(r->start, r->end - r->start + 1);
- 	if (!dev->intfregs || !dev->out.dbdma || !dev->in.dbdma)
- 		goto err;
- 
-Index: linux-snd-aoa/sound/aoa/soundbus/i2sbus/i2sbus.h
+--- linux-2.6.orig/arch/powerpc/kernel/Makefile
++++ linux-2.6/arch/powerpc/kernel/Makefile
+@@ -16,7 +16,7 @@ obj-y				:= semaphore.o cputable.o ptrac
+ obj-y				+= vdso32/
+ obj-$(CONFIG_PPC64)		+= setup_64.o binfmt_elf32.o sys_ppc32.o \
+ 				   signal_64.o ptrace32.o \
+-				   paca.o cpu_setup_power4.o \
++				   paca.o cpu_setup_ppc970.o \
+ 				   firmware.o sysfs.o
+ obj-$(CONFIG_PPC64)		+= vdso64/
+ obj-$(CONFIG_ALTIVEC)		+= vecemu.o vector.o
+Index: linux-2.6/arch/powerpc/kernel/cpu_setup_power4.S
 ===================================================================
---- linux-snd-aoa.orig/sound/aoa/soundbus/i2sbus/i2sbus.h	2006-06-26 12:29:38.000000000 +1000
-+++ linux-snd-aoa/sound/aoa/soundbus/i2sbus/i2sbus.h	2006-06-28 15:16:40.000000000 +1000
-@@ -7,20 +7,22 @@
-  */
- #ifndef __I2SBUS_H
- #define __I2SBUS_H
--#include <asm/dbdma.h>
- #include <linux/interrupt.h>
--#include <sound/pcm.h>
- #include <linux/spinlock.h>
- #include <linux/mutex.h>
-+
-+#include <sound/pcm.h>
-+
- #include <asm/prom.h>
-+#include <asm/pmac_feature.h>
-+#include <asm/dbdma.h>
-+
- #include "i2sbus-interface.h"
--#include "i2sbus-control.h"
- #include "../soundbus.h"
- 
- struct i2sbus_control {
--	volatile struct i2s_control_regs __iomem *controlregs;
--	struct resource rsrc;
- 	struct list_head list;
-+	struct macio_chip *macio;
- };
- 
- #define MAX_DBDMA_COMMANDS	32
-@@ -45,6 +47,12 @@ struct pcm_info {
- 	volatile struct dbdma_regs __iomem *dbdma;
- };
- 
-+enum {
-+	aoa_resource_i2smmio = 0,
-+	aoa_resource_txdbdma,
-+	aoa_resource_rxdbdma,
-+};
-+
- struct i2sbus_dev {
- 	struct soundbus_dev sound;
- 	struct macio_dev *macio;
-Index: linux-snd-aoa/sound/aoa/soundbus/i2sbus/i2sbus-control.c
-===================================================================
---- linux-snd-aoa.orig/sound/aoa/soundbus/i2sbus/i2sbus-control.c	2006-06-26 12:29:38.000000000 +1000
-+++ linux-snd-aoa/sound/aoa/soundbus/i2sbus/i2sbus-control.c	2006-06-28 16:09:44.000000000 +1000
-@@ -6,12 +6,16 @@
-  * GPL v2, can be found in COPYING.
-  */
- 
--#include <asm/io.h>
-+#include <linux/kernel.h>
- #include <linux/delay.h>
-+
-+#include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/macio.h>
- #include <asm/pmac_feature.h>
- #include <asm/pmac_pfunc.h>
-+#include <asm/keylargo.h>
-+
- #include "i2sbus.h"
- 
- int i2sbus_control_init(struct macio_dev* dev, struct i2sbus_control **c)
-@@ -22,26 +26,12 @@ int i2sbus_control_init(struct macio_dev
- 
- 	INIT_LIST_HEAD(&(*c)->list);
- 
--	if (of_address_to_resource(dev->ofdev.node, 0, &(*c)->rsrc))
--		goto err;
--	/* we really should be using feature calls instead of mapping
--	 * these registers. It's safe for now since no one else is
--	 * touching them... */
--	(*c)->controlregs = ioremap((*c)->rsrc.start,
--				    sizeof(struct i2s_control_regs));
--	if (!(*c)->controlregs)
--		goto err;
--
-+	(*c)->macio = dev->bus->chip;
- 	return 0;
-- err:
--	kfree(*c);
--	*c = NULL;
--	return -ENODEV;
- }
- 
- void i2sbus_control_destroy(struct i2sbus_control *c)
- {
--	iounmap(c->controlregs);
- 	kfree(c);
- }
- 
-@@ -93,19 +83,20 @@ int i2sbus_control_enable(struct i2sbus_
- 			  struct i2sbus_dev *i2sdev)
- {
- 	struct pmf_args args = { .count = 0 };
--	int cc;
-+	struct macio_chip *macio = c->macio;
- 
- 	if (i2sdev->enable)
- 		return pmf_call_one(i2sdev->enable, &args);
- 
-+	printk("i2sbus_control_enable fallback\n");
-+	if (macio == NULL || macio->base == NULL)
-+		return -ENODEV;
- 	switch (i2sdev->bus_number) {
- 	case 0:
--		cc = in_le32(&c->controlregs->cell_control);
--		out_le32(&c->controlregs->cell_control, cc | CTRL_CLOCK_INTF_0_ENABLE);
-+		MACIO_BIS(KEYLARGO_FCR1, KL1_I2S0_ENABLE);
- 		break;
- 	case 1:
--		cc = in_le32(&c->controlregs->cell_control);
--		out_le32(&c->controlregs->cell_control, cc | CTRL_CLOCK_INTF_1_ENABLE);
-+		MACIO_BIS(KEYLARGO_FCR1, KL1_I2S1_ENABLE);
- 		break;
- 	default:
- 		return -ENODEV;
-@@ -118,7 +109,7 @@ int i2sbus_control_cell(struct i2sbus_co
- 			int enable)
- {
- 	struct pmf_args args = { .count = 0 };
--	int cc;
-+	struct macio_chip *macio = c->macio;
- 
- 	switch (enable) {
- 	case 0:
-@@ -133,18 +124,22 @@ int i2sbus_control_cell(struct i2sbus_co
- 		printk(KERN_ERR "i2sbus: INVALID CELL ENABLE VALUE\n");
- 		return -ENODEV;
- 	}
-+
-+	printk("i2sbus_control_cell fallback\n");
-+	if (macio == NULL || macio->base == NULL)
-+		return -ENODEV;
- 	switch (i2sdev->bus_number) {
- 	case 0:
--		cc = in_le32(&c->controlregs->cell_control);
--		cc &= ~CTRL_CLOCK_CELL_0_ENABLE;
--		cc |= enable * CTRL_CLOCK_CELL_0_ENABLE;
--		out_le32(&c->controlregs->cell_control, cc);
-+		if (enable)
-+			MACIO_BIS(KEYLARGO_FCR1, KL1_I2S0_CELL_ENABLE);
-+		else
-+			MACIO_BIC(KEYLARGO_FCR1, KL1_I2S0_CELL_ENABLE);
- 		break;
- 	case 1:
--		cc = in_le32(&c->controlregs->cell_control);
--		cc &= ~CTRL_CLOCK_CELL_1_ENABLE;
--		cc |= enable * CTRL_CLOCK_CELL_1_ENABLE;
--		out_le32(&c->controlregs->cell_control, cc);
-+		if (enable)
-+			MACIO_BIS(KEYLARGO_FCR1, KL1_I2S1_CELL_ENABLE);
-+		else
-+			MACIO_BIC(KEYLARGO_FCR1, KL1_I2S1_CELL_ENABLE);
- 		break;
- 	default:
- 		return -ENODEV;
-@@ -157,7 +152,7 @@ int i2sbus_control_clock(struct i2sbus_c
- 			 int enable)
- {
- 	struct pmf_args args = { .count = 0 };
--	int cc;
-+	struct macio_chip *macio = c->macio;
- 
- 	switch (enable) {
- 	case 0:
-@@ -172,18 +167,22 @@ int i2sbus_control_clock(struct i2sbus_c
- 		printk(KERN_ERR "i2sbus: INVALID CLOCK ENABLE VALUE\n");
- 		return -ENODEV;
- 	}
-+
-+	printk("i2sbus_control_clock fallback\n");
-+	if (macio == NULL || macio->base == NULL)
-+		return -ENODEV;
- 	switch (i2sdev->bus_number) {
- 	case 0:
--		cc = in_le32(&c->controlregs->cell_control);
--		cc &= ~CTRL_CLOCK_CLOCK_0_ENABLE;
--		cc |= enable * CTRL_CLOCK_CLOCK_0_ENABLE;
--		out_le32(&c->controlregs->cell_control, cc);
-+		if (enable)
-+			MACIO_BIS(KEYLARGO_FCR1, KL1_I2S0_CLK_ENABLE_BIT);
-+		else
-+			MACIO_BIC(KEYLARGO_FCR1, KL1_I2S0_CLK_ENABLE_BIT);
- 		break;
- 	case 1:
--		cc = in_le32(&c->controlregs->cell_control);
--		cc &= ~CTRL_CLOCK_CLOCK_1_ENABLE;
--		cc |= enable * CTRL_CLOCK_CLOCK_1_ENABLE;
--		out_le32(&c->controlregs->cell_control, cc);
-+		if (enable)
-+			MACIO_BIS(KEYLARGO_FCR1, KL1_I2S1_CLK_ENABLE_BIT);
-+		else
-+			MACIO_BIC(KEYLARGO_FCR1, KL1_I2S1_CLK_ENABLE_BIT);
- 		break;
- 	default:
- 		return -ENODEV;
-Index: linux-snd-aoa/sound/aoa/soundbus/i2sbus/i2sbus-control.h
-===================================================================
---- linux-snd-aoa.orig/sound/aoa/soundbus/i2sbus/i2sbus-control.h	2006-06-26 12:29:38.000000000 +1000
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,37 +0,0 @@
+--- linux-2.6.orig/arch/powerpc/kernel/cpu_setup_power4.S
++++ /dev/null
+@@ -1,216 +0,0 @@
 -/*
-- * i2sbus driver -- bus register definitions
+- * This file contains low level CPU setup functions.
+- *    Copyright (C) 2003 Benjamin Herrenschmidt (benh@kernel.crashing.org)
 - *
-- * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
 - *
-- * GPL v2, can be found in COPYING.
 - */
--#ifndef __I2SBUS_CONTROLREGS_H
--#define __I2SBUS_CONTROLREGS_H
 -
--/* i2s control registers, at least what we know about them */
+-#include <linux/config.h>
+-#include <asm/processor.h>
+-#include <asm/page.h>
+-#include <asm/cputable.h>
+-#include <asm/ppc_asm.h>
+-#include <asm/asm-offsets.h>
+-#include <asm/cache.h>
 -
--#define __PAD(m,n) u8 __pad##m[n]
--#define _PAD(line, n) __PAD(line, n)
--#define PAD(n) _PAD(__LINE__, (n))
--struct i2s_control_regs {
--	PAD(0x38);
--	__le32 fcr0;		/* 0x38 (unknown) */
--	__le32 cell_control;	/* 0x3c (fcr1) */
--	__le32 fcr2;		/* 0x40 (unknown) */
--	__le32 fcr3;		/* 0x44 (fcr3) */
--	__le32 clock_control;	/* 0x48 (unknown) */
--	PAD(4);
--	/* total size: 0x50 bytes */
--}  __attribute__((__packed__));
+-_GLOBAL(__970_cpu_preinit)
+-	/*
+-	 * Do nothing if not running in HV mode
+-	 */
+-	mfmsr	r0
+-	rldicl.	r0,r0,4,63
+-	beqlr
 -
--#define CTRL_CLOCK_CELL_0_ENABLE	(1<<10)
--#define CTRL_CLOCK_CLOCK_0_ENABLE	(1<<12)
--#define CTRL_CLOCK_SWRESET_0		(1<<11)
--#define CTRL_CLOCK_INTF_0_ENABLE	(1<<13)
+-	/*
+-	 * Deal only with PPC970 and PPC970FX.
+-	 */
+-	mfspr	r0,SPRN_PVR
+-	srwi	r0,r0,16
+-	cmpwi	r0,0x39
+-	beq	1f
+-	cmpwi	r0,0x3c
+-	beq	1f
+-	cmpwi	r0,0x44
+-	bnelr
+-1:
 -
--#define CTRL_CLOCK_CELL_1_ENABLE	(1<<17)
--#define CTRL_CLOCK_CLOCK_1_ENABLE	(1<<18)
--#define CTRL_CLOCK_SWRESET_1		(1<<19)
--#define CTRL_CLOCK_INTF_1_ENABLE	(1<<20)
+-	/* Make sure HID4:rm_ci is off before MMU is turned off, that large
+-	 * pages are enabled with HID4:61 and clear HID5:DCBZ_size and
+-	 * HID5:DCBZ32_ill
+-	 */
+-	li	r0,0
+-	mfspr	r3,SPRN_HID4
+-	rldimi	r3,r0,40,23	/* clear bit 23 (rm_ci) */
+-	rldimi	r3,r0,2,61	/* clear bit 61 (lg_pg_en) */
+-	sync
+-	mtspr	SPRN_HID4,r3
+-	isync
+-	sync
+-	mfspr	r3,SPRN_HID5
+-	rldimi	r3,r0,6,56	/* clear bits 56 & 57 (DCBZ*) */
+-	sync
+-	mtspr	SPRN_HID5,r3
+-	isync
+-	sync
 -
--#endif /* __I2SBUS_CONTROLREGS_H */
-Index: linux-snd-aoa/sound/aoa/Makefile
+-	/* Setup some basic HID1 features */
+-	mfspr	r0,SPRN_HID1
+-	li	r3,0x1200		/* enable i-fetch cacheability */
+-	sldi	r3,r3,44		/* and prefetch */
+-	or	r0,r0,r3
+-	mtspr	SPRN_HID1,r0
+-	mtspr	SPRN_HID1,r0
+-	isync
+-
+-	/* Clear HIOR */
+-	li	r0,0
+-	sync
+-	mtspr	SPRN_HIOR,0		/* Clear interrupt prefix */
+-	isync
+-	blr
+-
+-_GLOBAL(__setup_cpu_ppc970)
+-	mfspr	r0,SPRN_HID0
+-	li	r11,5			/* clear DOZE and SLEEP */
+-	rldimi	r0,r11,52,8		/* set NAP and DPM */
+-	mtspr	SPRN_HID0,r0
+-	mfspr	r0,SPRN_HID0
+-	mfspr	r0,SPRN_HID0
+-	mfspr	r0,SPRN_HID0
+-	mfspr	r0,SPRN_HID0
+-	mfspr	r0,SPRN_HID0
+-	mfspr	r0,SPRN_HID0
+-	sync
+-	isync
+-	blr
+-
+-/* Definitions for the table use to save CPU states */
+-#define CS_HID0		0
+-#define CS_HID1		8
+-#define	CS_HID4		16
+-#define CS_HID5		24
+-#define CS_SIZE		32
+-
+-	.data
+-	.balign	L1_CACHE_BYTES,0
+-cpu_state_storage:
+-	.space	CS_SIZE
+-	.balign	L1_CACHE_BYTES,0
+-	.text
+-
+-/* Called in normal context to backup CPU 0 state. This
+- * does not include cache settings. This function is also
+- * called for machine sleep. This does not include the MMU
+- * setup, BATs, etc... but rather the "special" registers
+- * like HID0, HID1, HID4, etc...
+- */
+-_GLOBAL(__save_cpu_setup)
+-	/* Some CR fields are volatile, we back it up all */
+-	mfcr	r7
+-
+-	/* Get storage ptr */
+-	LOAD_REG_IMMEDIATE(r5,cpu_state_storage)
+-
+-	/* We only deal with 970 for now */
+-	mfspr	r0,SPRN_PVR
+-	srwi	r0,r0,16
+-	cmpwi	r0,0x39
+-	beq	1f
+-	cmpwi	r0,0x3c
+-	beq	1f
+-	cmpwi	r0,0x44
+-	bne	2f
+-
+-1:	/* Save HID0,1,4 and 5 */
+-	mfspr	r3,SPRN_HID0
+-	std	r3,CS_HID0(r5)
+-	mfspr	r3,SPRN_HID1
+-	std	r3,CS_HID1(r5)
+-	mfspr	r3,SPRN_HID4
+-	std	r3,CS_HID4(r5)
+-	mfspr	r3,SPRN_HID5
+-	std	r3,CS_HID5(r5)
+-
+-2:
+-	mtcr	r7
+-	blr
+-
+-/* Called with no MMU context (typically MSR:IR/DR off) to
+- * restore CPU state as backed up by the previous
+- * function. This does not include cache setting
+- */
+-_GLOBAL(__restore_cpu_setup)
+-	/* Get storage ptr (FIXME when using anton reloc as we
+-	 * are running with translation disabled here
+-	 */
+-	LOAD_REG_IMMEDIATE(r5,cpu_state_storage)
+-
+-	/* We only deal with 970 for now */
+-	mfspr	r0,SPRN_PVR
+-	srwi	r0,r0,16
+-	cmpwi	r0,0x39
+-	beq	1f
+-	cmpwi	r0,0x3c
+-	beq	1f
+-	cmpwi	r0,0x44
+-	bnelr
+-
+-1:	/* Before accessing memory, we make sure rm_ci is clear */
+-	li	r0,0
+-	mfspr	r3,SPRN_HID4
+-	rldimi	r3,r0,40,23	/* clear bit 23 (rm_ci) */
+-	sync
+-	mtspr	SPRN_HID4,r3
+-	isync
+-	sync
+-
+-	/* Clear interrupt prefix */
+-	li	r0,0
+-	sync
+-	mtspr	SPRN_HIOR,0
+-	isync
+-
+-	/* Restore HID0 */
+-	ld	r3,CS_HID0(r5)
+-	sync
+-	isync
+-	mtspr	SPRN_HID0,r3
+-	mfspr	r3,SPRN_HID0
+-	mfspr	r3,SPRN_HID0
+-	mfspr	r3,SPRN_HID0
+-	mfspr	r3,SPRN_HID0
+-	mfspr	r3,SPRN_HID0
+-	mfspr	r3,SPRN_HID0
+-	sync
+-	isync
+-
+-	/* Restore HID1 */
+-	ld	r3,CS_HID1(r5)
+-	sync
+-	isync
+-	mtspr	SPRN_HID1,r3
+-	mtspr	SPRN_HID1,r3
+-	sync
+-	isync
+-
+-	/* Restore HID4 */
+-	ld	r3,CS_HID4(r5)
+-	sync
+-	isync
+-	mtspr	SPRN_HID4,r3
+-	sync
+-	isync
+-
+-	/* Restore HID5 */
+-	ld	r3,CS_HID5(r5)
+-	sync
+-	isync
+-	mtspr	SPRN_HID5,r3
+-	sync
+-	isync
+-	blr
+-
+Index: linux-2.6/arch/powerpc/kernel/cpu_setup_ppc970.S
 ===================================================================
---- linux-snd-aoa.orig/sound/aoa/Makefile	2006-06-26 12:29:38.000000000 +1000
-+++ linux-snd-aoa/sound/aoa/Makefile	2006-06-28 15:51:55.000000000 +1000
-@@ -1,4 +1,4 @@
- obj-$(CONFIG_SND_AOA) += core/
-+obj-$(CONFIG_SND_AOA_SOUNDBUS) += soundbus/
- obj-$(CONFIG_SND_AOA) += codecs/
- obj-$(CONFIG_SND_AOA) += fabrics/
--obj-$(CONFIG_SND_AOA_SOUNDBUS) += soundbus/
-Index: linux-snd-aoa/sound/aoa/codecs/snd-aoa-codec-onyx.c
+--- /dev/null
++++ linux-2.6/arch/powerpc/kernel/cpu_setup_ppc970.S
+@@ -0,0 +1,175 @@
++/*
++ * This file contains low level CPU setup functions.
++ *    Copyright (C) 2003 Benjamin Herrenschmidt (benh@kernel.crashing.org)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ */
++
++#include <linux/config.h>
++#include <asm/processor.h>
++#include <asm/page.h>
++#include <asm/cputable.h>
++#include <asm/ppc_asm.h>
++#include <asm/asm-offsets.h>
++#include <asm/cache.h>
++
++_GLOBAL(__cpu_preinit_ppc970)
++	/* Do nothing if not running in HV mode */
++	mfmsr	r0
++	rldicl.	r0,r0,4,63
++	beqlr
++
++	/* Make sure HID4:rm_ci is off before MMU is turned off, that large
++	 * pages are enabled with HID4:61 and clear HID5:DCBZ_size and
++	 * HID5:DCBZ32_ill
++	 */
++	li	r0,0
++	mfspr	r3,SPRN_HID4
++	rldimi	r3,r0,40,23	/* clear bit 23 (rm_ci) */
++	rldimi	r3,r0,2,61	/* clear bit 61 (lg_pg_en) */
++	sync
++	mtspr	SPRN_HID4,r3
++	isync
++	sync
++	mfspr	r3,SPRN_HID5
++	rldimi	r3,r0,6,56	/* clear bits 56 & 57 (DCBZ*) */
++	sync
++	mtspr	SPRN_HID5,r3
++	isync
++	sync
++
++	/* Setup some basic HID1 features */
++	mfspr	r0,SPRN_HID1
++	li	r3,0x1200		/* enable i-fetch cacheability */
++	sldi	r3,r3,44		/* and prefetch */
++	or	r0,r0,r3
++	mtspr	SPRN_HID1,r0
++	mtspr	SPRN_HID1,r0
++	isync
++
++	/* Clear HIOR */
++	li	r0,0
++	sync
++	mtspr	SPRN_HIOR,0		/* Clear interrupt prefix */
++	isync
++	blr
++
++/* Definitions for the table use to save CPU states */
++#define CS_HID0		0
++#define CS_HID1		8
++#define	CS_HID4		16
++#define CS_HID5		24
++#define CS_SIZE		32
++
++	.data
++	.balign	L1_CACHE_BYTES,0
++cpu_state_storage:
++	.space	CS_SIZE
++	.balign	L1_CACHE_BYTES,0
++	.text
++
++
++_GLOBAL(__setup_cpu_ppc970)
++	/* Do nothing if not running in HV mode */
++	mfmsr	r0
++	rldicl.	r0,r0,4,63
++	beqlr
++
++	mfspr	r0,SPRN_HID0
++	li	r11,5			/* clear DOZE and SLEEP */
++	rldimi	r0,r11,52,8		/* set NAP and DPM */
++	mtspr	SPRN_HID0,r0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	mfspr	r0,SPRN_HID0
++	sync
++	isync
++
++	/* Save away cpu state */
++	LOAD_REG_IMMEDIATE(r5,cpu_state_storage)
++
++	/* Save HID0,1,4 and 5 */
++	mfspr	r3,SPRN_HID0
++	std	r3,CS_HID0(r5)
++	mfspr	r3,SPRN_HID1
++	std	r3,CS_HID1(r5)
++	mfspr	r3,SPRN_HID4
++	std	r3,CS_HID4(r5)
++	mfspr	r3,SPRN_HID5
++	std	r3,CS_HID5(r5)
++
++	blr
++
++/* Called with no MMU context (typically MSR:IR/DR off) to
++ * restore CPU state as backed up by the previous
++ * function. This does not include cache setting
++ */
++_GLOBAL(__restore_cpu_ppc970)
++	/* Do nothing if not running in HV mode */
++	mfmsr	r0
++	rldicl.	r0,r0,4,63
++	beqlr
++
++	LOAD_REG_IMMEDIATE(r5,cpu_state_storage)
++	/* Before accessing memory, we make sure rm_ci is clear */
++	li	r0,0
++	mfspr	r3,SPRN_HID4
++	rldimi	r3,r0,40,23	/* clear bit 23 (rm_ci) */
++	sync
++	mtspr	SPRN_HID4,r3
++	isync
++	sync
++
++	/* Clear interrupt prefix */
++	li	r0,0
++	sync
++	mtspr	SPRN_HIOR,0
++	isync
++
++	/* Restore HID0 */
++	ld	r3,CS_HID0(r5)
++	sync
++	isync
++	mtspr	SPRN_HID0,r3
++	mfspr	r3,SPRN_HID0
++	mfspr	r3,SPRN_HID0
++	mfspr	r3,SPRN_HID0
++	mfspr	r3,SPRN_HID0
++	mfspr	r3,SPRN_HID0
++	mfspr	r3,SPRN_HID0
++	sync
++	isync
++
++	/* Restore HID1 */
++	ld	r3,CS_HID1(r5)
++	sync
++	isync
++	mtspr	SPRN_HID1,r3
++	mtspr	SPRN_HID1,r3
++	sync
++	isync
++
++	/* Restore HID4 */
++	ld	r3,CS_HID4(r5)
++	sync
++	isync
++	mtspr	SPRN_HID4,r3
++	sync
++	isync
++
++	/* Restore HID5 */
++	ld	r3,CS_HID5(r5)
++	sync
++	isync
++	mtspr	SPRN_HID5,r3
++	sync
++	isync
++	blr
++
+Index: linux-2.6/arch/powerpc/kernel/head_64.S
 ===================================================================
---- linux-snd-aoa.orig/sound/aoa/codecs/snd-aoa-codec-onyx.c	2006-06-26 12:29:38.000000000 +1000
-+++ linux-snd-aoa/sound/aoa/codecs/snd-aoa-codec-onyx.c	2006-06-28 15:37:17.000000000 +1000
-@@ -1080,6 +1080,7 @@ static int onyx_i2c_detach(struct i2c_cl
- 	struct onyx *onyx = container_of(client, struct onyx, i2c);
- 	int err;
+--- linux-2.6.orig/arch/powerpc/kernel/head_64.S
++++ linux-2.6/arch/powerpc/kernel/head_64.S
+@@ -152,7 +152,7 @@ _GLOBAL(__secondary_hold)
+ 	bne	100b
  
-+	printk("onyx_i2c_detach...\n");
- 	if ((err = i2c_detach_client(client)))
- 		return err;
- 	aoa_codec_unregister(&onyx->codec);
-Index: linux-snd-aoa/sound/aoa/soundbus/core.c
-===================================================================
---- linux-snd-aoa.orig/sound/aoa/soundbus/core.c	2006-06-26 12:29:38.000000000 +1000
-+++ linux-snd-aoa/sound/aoa/soundbus/core.c	2006-06-28 16:00:35.000000000 +1000
-@@ -194,16 +194,6 @@ static struct bus_type soundbus_bus_type
- 	.dev_attrs	= soundbus_dev_attrs,
- };
+ #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC)
+-	LOAD_REG_IMMEDIATE(r4, .pSeries_secondary_smp_init)
++	LOAD_REG_IMMEDIATE(r4, .generic_secondary_smp_init)
+ 	mtctr	r4
+ 	mr	r3,r24
+ 	bctr
+@@ -1473,19 +1473,17 @@ fwnmi_data_area:
+         . = 0x8000
  
--static int __init soundbus_init(void)
--{
--	return bus_register(&soundbus_bus_type);
--}
+ /*
+- * On pSeries, secondary processors spin in the following code.
++ * On pSeries and most other platforms, secondary processors spin
++ * in the following code.
+  * At entry, r3 = this processor's number (physical cpu id)
+  */
+-_GLOBAL(pSeries_secondary_smp_init)
++_GLOBAL(generic_secondary_smp_init)
+ 	mr	r24,r3
+ 	
+ 	/* turn on 64-bit mode */
+ 	bl	.enable_64b_mode
+ 	isync
+ 
+-	/* Copy some CPU settings from CPU 0 */
+-	bl	.__restore_cpu_setup
 -
--static void __exit soundbus_exit(void)
--{
--	bus_unregister(&soundbus_bus_type);
--}
+ 	/* Set up a paca value for this processor. Since we have the
+ 	 * physical cpu id in r24, we need to search the pacas to find
+ 	 * which logical id maps to our physical one.
+@@ -1511,15 +1509,28 @@ _GLOBAL(pSeries_secondary_smp_init)
+ 					/* start.			 */
+ 	sync
+ 
+-	/* Create a temp kernel stack for use before relocation is on.	*/
++#ifndef CONFIG_SMP
++	b	3b			/* Never go on non-SMP		 */
++#else
++	cmpwi	0,r23,0
++	beq	3b			/* Loop until told to go	 */
++
++	/* See if we need to call a cpu state restore handler */
++	LOAD_REG_IMMEDIATE(r23, cur_cpu_spec)
++	ld	r23,0(r23)
++	ld	r23,CPU_SPEC_RESTORE(r23)
++	cmpdi	0,r23,0
++	beq	4f
++	ld	r23,0(r23)
++	mtctr	r23
++	bctrl
++
++4:	/* Create a temp kernel stack for use before relocation is on.	*/
+ 	ld	r1,PACAEMERGSP(r13)
+ 	subi	r1,r1,STACK_FRAME_OVERHEAD
+ 
+-	cmpwi	0,r23,0
+-#ifdef CONFIG_SMP
+-	bne	.__secondary_start
++	b	.__secondary_start
+ #endif
+-	b 	3b			/* Loop until told to go	 */
+ 
+ #ifdef CONFIG_PPC_ISERIES
+ _STATIC(__start_initialization_iSeries)
+@@ -1600,7 +1611,16 @@ _GLOBAL(__start_initialization_multiplat
+ 	bl	.enable_64b_mode
+ 
+ 	/* Setup some critical 970 SPRs before switching MMU off */
+-	bl	.__970_cpu_preinit
++	mfspr	r0,SPRN_PVR
++	srwi	r0,r0,16
++	cmpwi	r0,0x39		/* 970 */
++	beq	1f
++	cmpwi	r0,0x3c		/* 970FX */
++	beq	1f
++	cmpwi	r0,0x44		/* 970MP */
++	bne	2f
++1:	bl	.__cpu_preinit_ppc970
++2:
+ 
+ 	/* cpu # */
+ 	li	r24,0
+@@ -1771,7 +1791,7 @@ _GLOBAL(pmac_secondary_start)
+ 	isync
+ 
+ 	/* Copy some CPU settings from CPU 0 */
+-	bl	.__restore_cpu_setup
++	bl	.__restore_cpu_ppc970
+ 
+ 	/* pSeries do that early though I don't think we really need it */
+ 	mfmsr	r3
+@@ -1921,12 +1941,6 @@ _STATIC(start_here_multiplatform)
+ 	mr	r5,r26
+ 	bl	.identify_cpu
+ 
+-	/* Save some low level config HIDs of CPU0 to be copied to
+-	 * other CPUs later on, or used for suspend/resume
+-	 */
+-	bl	.__save_cpu_setup
+-	sync
 -
- int soundbus_add_one(struct soundbus_dev *dev)
+ 	/* Do very early kernel initializations, including initial hash table,
+ 	 * stab and slb setup before we turn on relocation.	*/
+ 
+Index: linux-2.6/arch/powerpc/platforms/cell/smp.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/smp.c
++++ linux-2.6/arch/powerpc/platforms/cell/smp.c
+@@ -58,7 +58,7 @@
+  */
+ static cpumask_t of_spin_map;
+ 
+-extern void pSeries_secondary_smp_init(unsigned long);
++extern void generic_secondary_smp_init(unsigned long);
+ 
+ /**
+  * smp_startup_cpu() - start the given cpu
+@@ -75,7 +75,7 @@ static inline int __devinit smp_startup_
  {
- 	static int devcount;
-@@ -246,5 +236,15 @@ void soundbus_unregister_driver(struct s
- }
- EXPORT_SYMBOL_GPL(soundbus_unregister_driver);
+ 	int status;
+ 	unsigned long start_here = __pa((u32)*((unsigned long *)
+-					       pSeries_secondary_smp_init));
++					       generic_secondary_smp_init));
+ 	unsigned int pcpu;
+ 	int start_cpu;
  
--module_init(soundbus_init);
-+static int __init soundbus_init(void)
-+{
-+	return bus_register(&soundbus_bus_type);
-+}
-+
-+static void __exit soundbus_exit(void)
-+{
-+	bus_unregister(&soundbus_bus_type);
-+}
-+
-+subsys_initcall(soundbus_init);
- module_exit(soundbus_exit);
+Index: linux-2.6/arch/powerpc/platforms/pseries/smp.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/pseries/smp.c
++++ linux-2.6/arch/powerpc/platforms/pseries/smp.c
+@@ -63,7 +63,7 @@
+  */
+ static cpumask_t of_spin_map;
+ 
+-extern void pSeries_secondary_smp_init(unsigned long);
++extern void generic_secondary_smp_init(unsigned long);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ 
+@@ -271,7 +271,7 @@ static inline int __devinit smp_startup_
+ {
+ 	int status;
+ 	unsigned long start_here = __pa((u32)*((unsigned long *)
+-					       pSeries_secondary_smp_init));
++					       generic_secondary_smp_init));
+ 	unsigned int pcpu;
+ 	int start_cpu;
+ 
+Index: linux-2.6/arch/powerpc/kernel/asm-offsets.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/asm-offsets.c
++++ linux-2.6/arch/powerpc/kernel/asm-offsets.c
+@@ -241,6 +241,7 @@ int main(void)
+ 	DEFINE(CPU_SPEC_PVR_VALUE, offsetof(struct cpu_spec, pvr_value));
+ 	DEFINE(CPU_SPEC_FEATURES, offsetof(struct cpu_spec, cpu_features));
+ 	DEFINE(CPU_SPEC_SETUP, offsetof(struct cpu_spec, cpu_setup));
++	DEFINE(CPU_SPEC_RESTORE, offsetof(struct cpu_spec, cpu_restore));
+ 
+ #ifndef CONFIG_PPC64
+ 	DEFINE(pbe_address, offsetof(struct pbe, address));
+Index: linux-2.6/arch/powerpc/kernel/cputable.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/cputable.c
++++ linux-2.6/arch/powerpc/kernel/cputable.c
+@@ -40,7 +40,10 @@ extern void __setup_cpu_7400(unsigned lo
+ extern void __setup_cpu_7410(unsigned long offset, struct cpu_spec* spec);
+ extern void __setup_cpu_745x(unsigned long offset, struct cpu_spec* spec);
+ #endif /* CONFIG_PPC32 */
++#ifdef CONFIG_PPC64
+ extern void __setup_cpu_ppc970(unsigned long offset, struct cpu_spec* spec);
++extern void __restore_cpu_ppc970(void);
++#endif /* CONFIG_PPC64 */
+ 
+ /* This table only contains "desktop" CPUs, it need to be filled with embedded
+  * ones as well...
+@@ -185,6 +188,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_ppc970,
++		.cpu_restore		= __restore_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.platform		= "ppc970",
+@@ -200,6 +204,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_ppc970,
++		.cpu_restore		= __restore_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.platform		= "ppc970",
+@@ -215,6 +220,7 @@ struct cpu_spec	cpu_specs[] = {
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
+ 		.cpu_setup		= __setup_cpu_ppc970,
++		.cpu_restore		= __restore_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.platform		= "ppc970",
+Index: linux-2.6/include/asm-powerpc/cputable.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/cputable.h
++++ linux-2.6/include/asm-powerpc/cputable.h
+@@ -36,6 +36,7 @@
+ struct cpu_spec;
+ 
+ typedef	void (*cpu_setup_t)(unsigned long offset, struct cpu_spec* spec);
++typedef	void (*cpu_restore_t)(void);
+ 
+ enum powerpc_oprofile_type {
+ 	PPC_OPROFILE_INVALID = 0,
+@@ -65,6 +66,8 @@ struct cpu_spec {
+ 	 * BHT, SPD, etc... from head.S before branching to identify_machine
+ 	 */
+ 	cpu_setup_t	cpu_setup;
++	/* Used to restore cpu setup on secondary processors and at resume */
++	cpu_restore_t	cpu_restore;
+ 
+ 	/* Used by oprofile userspace to select the right counters */
+ 	char		*oprofile_cpu_type;
