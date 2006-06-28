@@ -1,25 +1,15 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 17AFF67B20
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 19:43:27 +1000 (EST)
-Subject: Re: [PATCH] convert powermac ide blink to new led infrastructure
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Richard Purdie <rpurdie@rpsys.net>
-In-Reply-To: <1151487483.15913.11.camel@localhost.localdomain>
-References: <1149635136.32002.49.camel@johannes>
-	<1150884676.23386.6.camel@johannes>
-	<1151394629.2350.64.camel@localhost.localdomain>
-	<1151429483.597.12.camel@localhost>
-	<1151487483.15913.11.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-9ayVnPKvGDM7M7b0lu6X"
-Date: Wed, 28 Jun 2006 11:43:04 +0200
-Message-Id: <1151487784.6612.3.camel@localhost>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 52A1567B44
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 19:50:50 +1000 (EST)
+Date: Wed, 28 Jun 2006 02:50:36 -0700
+To: paulus@samba.org
+Subject: [PATCH] powerpc: U4 DART improvements
+Message-ID: <20060628095036.GG5130@pb15.lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,36 +19,135 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Better late than never...
 
---=-9ayVnPKvGDM7M7b0lu6X
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Respin based on previous comment. Only remaining issue last time was an
+extra mb() that I've taken out.
 
-Richard,
 
-Thanks for the explanation. I'll respin the patch to implement caching.
+---
 
-johannes
+Implement single-entry TLB invalidations in the U4 DART.
 
---=-9ayVnPKvGDM7M7b0lu6X
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Simple benchmarking with loopback flood pings of various sizes show that
+the previous flush-all code will spend ~5% of the time in flush, while
+the new selective invalidations will spend about an order of magnitude
+less in the same code path.
 
------BEGIN PGP SIGNATURE-----
+This could possibly mean that invalidations larger than, say, 16
+entries would better be handled in bulk, but until we have a workload
+that actually shows problems or bottlenecks let's keep doing single
+invalidations at all mapping sizes.
 
-iQIVAwUARKJPJqVg1VMiehFYAQLi2g/9HOs1hR6LDSVVd9Wq8417ZX6mI3/0iVOC
-uEH3zglqApbErvEK1uzhzdIzmLONUVJ42gEvjp/yM7jaV7uAGaaGU5bFN48zobgY
-OjpMGZ3WukCEYzsQeG3mYDLcsQK0egHkUdHwaSZIHzlMK0tEPgmytEymjGpfulgI
-dx1FBlm6vjgeBlhyfzhFgXwvdZgUgKuma35P35y7GLuLOY6ju6QndI93mHCz+PIX
-m7V9whE67mSFYMcIBl4lCa/qaqqKK6w5HQZfyP98jm7X9/D7FfWqhAgbdzML2/Fx
-upMy/HwOiuZHGq40liXbP8GyPNEaDEVXgybTbysEI9TMU7/H3m15WcYdyNN7uh+p
-5oOdjXfNXA6w1M3sJcaKED5POVyaS6AbLakX5cvjIssDV3sbM8k/w0zSK0sr7YF1
-a9Bws3g2ZHsSyb4uM79WwMhHPbIe/Zh66ztPlCm0wJMDAAxPUJV6vwhrzwPFdb46
-kDzexUs8KPBYIQLnal5Uq6B0CAv2wntBz23i8vdjqtZvNcpNTstbj6scOHoO+NBn
-7UjPKJtOewtKX8hLPyizAK2Y2m7Y3/ixn7kRZh6g0+Fzw9Y2ftT4hPo4N+KacGR7
-daS9YKVs3NTAv8VswlAX2ekp3ApFtiL7a+ktkH+B+vESEnPz/9EsCOYB2Pg8KZc5
-8OYmY2t0OW8=
-=f0Y3
------END PGP SIGNATURE-----
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
---=-9ayVnPKvGDM7M7b0lu6X--
+
+Index: linux-2.6/arch/powerpc/sysdev/dart.h
+===================================================================
+--- linux-2.6.orig/arch/powerpc/sysdev/dart.h
++++ linux-2.6/arch/powerpc/sysdev/dart.h
+@@ -47,8 +47,12 @@
+ /* U4 registers */
+ #define DART_BASE_U4_BASE_MASK	0xffffff
+ #define DART_BASE_U4_BASE_SHIFT	0
+-#define DART_CNTL_U4_FLUSHTLB	0x20000000
+ #define DART_CNTL_U4_ENABLE	0x80000000
++#define DART_CNTL_U4_IONE	0x40000000
++#define DART_CNTL_U4_FLUSHTLB	0x20000000
++#define DART_CNTL_U4_IDLE	0x10000000
++#define DART_CNTL_U4_PAR_EN	0x08000000
++#define DART_CNTL_U4_IONE_MASK	0x07ffffff
+ #define DART_SIZE_U4_SIZE_MASK	0x1fff
+ #define DART_SIZE_U4_SIZE_SHIFT	0
+ 
+Index: linux-2.6/arch/powerpc/sysdev/dart_iommu.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/sysdev/dart_iommu.c
++++ linux-2.6/arch/powerpc/sysdev/dart_iommu.c
+@@ -101,8 +101,8 @@ retry:
+ 	if (l == (1L << limit)) {
+ 		if (limit < 4) {
+ 			limit++;
+-		        reg = DART_IN(DART_CNTL);
+-		        reg &= ~inv_bit;
++			reg = DART_IN(DART_CNTL);
++			reg &= ~inv_bit;
+ 			DART_OUT(DART_CNTL, reg);
+ 			goto retry;
+ 		} else
+@@ -111,11 +111,39 @@ retry:
+ 	}
+ }
+ 
++static inline void dart_tlb_invalidate_one(unsigned long bus_rpn)
++{
++	unsigned int reg;
++	unsigned int l, limit;
++
++	reg = DART_CNTL_U4_ENABLE | DART_CNTL_U4_IONE |
++		(bus_rpn & DART_CNTL_U4_IONE_MASK);
++	DART_OUT(DART_CNTL, reg);
++
++	limit = 0;
++wait_more:
++	l = 0;
++	while ((DART_IN(DART_CNTL) & DART_CNTL_U4_IONE) && l < (1L << limit)) {
++		rmb();
++		l++;
++	}
++
++	if (l == (1L << limit)) {
++		if (limit < 4) {
++			limit++;
++			goto wait_more;
++		} else
++			panic("DART: TLB did not flush after waiting a long "
++			      "time. Buggy U4 ?");
++	}
++}
++
+ static void dart_flush(struct iommu_table *tbl)
+ {
+-	if (dart_dirty)
++	if (dart_dirty) {
+ 		dart_tlb_invalidate_all();
+-	dart_dirty = 0;
++		dart_dirty = 0;
++	}
+ }
+ 
+ static void dart_build(struct iommu_table *tbl, long index,
+@@ -124,6 +152,7 @@ static void dart_build(struct iommu_tabl
+ {
+ 	unsigned int *dp;
+ 	unsigned int rpn;
++	long l;
+ 
+ 	DBG("dart: build at: %lx, %lx, addr: %x\n", index, npages, uaddr);
+ 
+@@ -135,7 +164,8 @@ static void dart_build(struct iommu_tabl
+ 	/* On U3, all memory is contigous, so we can move this
+ 	 * out of the loop.
+ 	 */
+-	while (npages--) {
++	l = npages;
++	while (l--) {
+ 		rpn = virt_to_abs(uaddr) >> DART_PAGE_SHIFT;
+ 
+ 		*(dp++) = DARTMAP_VALID | (rpn & DARTMAP_RPNMASK);
+@@ -143,7 +173,14 @@ static void dart_build(struct iommu_tabl
+ 		uaddr += DART_PAGE_SIZE;
+ 	}
+ 
+-	dart_dirty = 1;
++	if (dart_is_u4) {
++		rpn = index;
++		mb(); /* make sure all updates have reached memory */
++		while (npages--)
++			dart_tlb_invalidate_one(rpn++);
++	} else {
++		dart_dirty = 1;
++	}
+ }
+ 
+ 
