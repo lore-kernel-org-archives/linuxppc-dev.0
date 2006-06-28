@@ -1,21 +1,16 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0513067EFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 00:28:30 +1000 (EST)
-Date: Wed, 28 Jun 2006 16:21:42 +0200
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
-Subject: Re: backlight control broken in current Linus' and Paulus' trees
-Message-ID: <20060628142142.GA12278@hansmi.ch>
-References: <20060628133453.GA14876@cathedrallabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060628133453.GA14876@cathedrallabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mbligh@google.com>
+Message-ID: <44A29582.7050403@google.com>
+Date: Wed, 28 Jun 2006 07:43:14 -0700
+From: "Martin J. Bligh" <mbligh@google.com>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.17-mm2
+References: <449D5D36.3040102@google.com>	<449FF3A2.8010907@mbligh.org>	<44A150C9.7020809@mbligh.org>	<20060628034215.c3008299.akpm@osdl.org>
+	<20060628034748.018eecac.akpm@osdl.org>
+In-Reply-To: <20060628034748.018eecac.akpm@osdl.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: jeremy@goop.org, drfickle@us.ibm.com, linux-kernel@vger.kernel.org,
+	mbligh@mbligh.org, linuxppc64-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +20,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello
+Andrew Morton wrote:
+> On Wed, 28 Jun 2006 03:42:15 -0700
+> Andrew Morton <akpm@osdl.org> wrote:
+> 
+> 
+>>his is caused by the vsprintf() changes.  Right now, if you do
+>>
+>>	snprintf(buf, 4, "1111111111111");
+>>
+>>the memory at `buf' gets [31 31 31 31 00], which is not good.
+>>
+>>This'll plug it, but I didn't check very hard whether it still has any
+>>off-by-ones, or if breaks the intent of Jeremy's patch.  I think it's OK..
 
-On Wed, Jun 28, 2006 at 10:34:53AM -0300, Aristeu Sergio Rozanski Filho wro=
-te:
-> 	the backlight control is broken in my PowerBook6,8 in latest git
-> 	trees, both for pbbuttonsd (yes, I have CONFIG_PMAC_BACKLIGHT_LEGACY
-> 	enabled) and for fblevel. the last one also allows values be set
-> 	at least to 1000 and according to new code, it should be able to
-> 	reach 127.
+Aha, you're a genius! How the hell did you figure that one out?
 
-Legacy will stay 0-15, because that's what legacy is about. To use the
-new interface, you have to use the sysfs interface.
+Andy / Steve ... any chance one of you could kick this through the
+harness? Against -git10 or so, I'd think
 
-I've submitted another patch for legacy support last night which is now
-waiting for Linus to include it. Do you want me to send it to you
-directly or do you want to wait until it's in the git kernels?
+Thanks,
 
-Greets,
-Michael
+M.
 
---=20
-Gentoo Linux developer, http://hansmi.ch/, http://forkbomb.ch/
-< doogie> asuffield: how do you think dpkg was originally written?  :|
-< asuffield> by letting iwj get dangerously near a computer
-    	-- in #debian-devel
+> That diff was against an older kernel and doesn't apply.  This is against
+> mainline:
+> 
+> --- a/lib/vsprintf.c~vsnprintf-fix
+> +++ a/lib/vsprintf.c
+> @@ -259,7 +259,9 @@ int vsnprintf(char *buf, size_t size, co
+>  	int len;
+>  	unsigned long long num;
+>  	int i, base;
+> -	char *str, *end, c;
+> +	char *str;		/* Where we're writing to */
+> +	char *end;		/* The last byte we can write to */
+> +	char c;
+>  	const char *s;
+>  
+>  	int flags;		/* flags to number() */
+> @@ -283,12 +285,12 @@ int vsnprintf(char *buf, size_t size, co
+>  	}
+>  
+>  	str = buf;
+> -	end = buf + size;
+> +	end = buf + size - 1;
+>  
+>  	/* Make sure end is always >= buf */
+> -	if (end < buf) {
+> +	if (end < buf - 1) {
+>  		end = ((void *)-1);
+> -		size = end - buf;
+> +		size = end - buf + 1;
+>  	}
+>  
+>  	for (; *fmt ; ++fmt) {
+> @@ -494,7 +496,6 @@ int vsnprintf(char *buf, size_t size, co
+>  	/* the trailing null byte doesn't count towards the total */
+>  	return str-buf;
+>  }
+> -
+>  EXPORT_SYMBOL(vsnprintf);
+>  
+>  /**
+> _
+> 
