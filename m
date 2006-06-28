@@ -1,15 +1,17 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 52A1567B44
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 19:50:50 +1000 (EST)
-Date: Wed, 28 Jun 2006 02:50:36 -0700
-To: paulus@samba.org
-Subject: [PATCH] powerpc: U4 DART improvements
-Message-ID: <20060628095036.GG5130@pb15.lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <akpm@osdl.org>
+Date: Wed, 28 Jun 2006 03:42:15 -0700
+From: Andrew Morton <akpm@osdl.org>
+To: "Martin J. Bligh" <mbligh@mbligh.org>, Jeremy Fitzhardinge
+	<jeremy@goop.org>
+Subject: Re: 2.6.17-mm2
+Message-Id: <20060628034215.c3008299.akpm@osdl.org>
+In-Reply-To: <44A150C9.7020809@mbligh.org>
+References: <449D5D36.3040102@google.com> <449FF3A2.8010907@mbligh.org>
+	<44A150C9.7020809@mbligh.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc64-dev@ozlabs.org, linux-kernel@vger.kernel.org, mbligh@google.com,
+	mbligh@mbligh.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,135 +21,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Better late than never...
+On Tue, 27 Jun 2006 08:37:45 -0700
+"Martin J. Bligh" <mbligh@mbligh.org> wrote:
 
-Respin based on previous comment. Only remaining issue last time was an
-extra mb() that I've taken out.
+> SMP NR_CPUS=32 NUMA
+> Modules linked in:
+> NIP: C0000000000A311C LR: C0000000000A30D4 CTR: C0000000000A3024
+> REGS: c0000007725b38d0 TRAP: 0300   Not tainted  (2.6.17-mm3-autokern1)
+> MSR: 8000000000001032 <ME,IR,DR>  CR: 28224424  XER: 00000000
+> DAR: 000000077BCC6180, DSISR: 0000000040000000
+> TASK = c00000002fc74670[29812] 'cp' THREAD: c0000007725b0000 CPU: 2
+> GPR00: 0000000000000000 C0000007725B3B50 C00000000063B828 C00000001E303EC0
+> GPR04: 0000000000000010 0000000000000000 0000000000000000 FFFFFFFFFFFFFFFD
+> GPR08: 0000000000000001 0000000000000000 000000077BCC6180 0000000000000000
+> GPR12: 0000000000000000 C00000000051FF80 0000000000000000 0000000000000001
+> GPR16: 0000000000000000 0000000000000004 0000000000020000 0000000000000000
+> GPR20: 0000000000000000 0000000000000000 C0000007759F9D00 0000000000000000
+> GPR24: 0000000000000E42 0000000000000000 000000000000474A C00000001E30F300
+> GPR28: 0000000000000000 0000000000000000 C000000000537288 C00000001E303E80
+> NIP [C0000000000A311C] .s_show+0xf8/0x364
+> LR [C0000000000A30D4] .s_show+0xb0/0x364
+> Call Trace:
+> [C0000007725B3B50] [C0000000000A3334] .s_show+0x310/0x364 (unreliable)
+> [C0000007725B3C20] [C0000000000D5E84] .seq_read+0x2f4/0x450
+> [C0000007725B3D00] [C0000000000AADF8] .vfs_read+0xe0/0x1b4
+> [C0000007725B3D90] [C0000000000AAFD4] .sys_read+0x54/0x98
+> [C0000007725B3E30] [C00000000000871C] syscall_exit+0x0/0x40
 
+This is caused by the vsprintf() changes.  Right now, if you do
 
----
+	snprintf(buf, 4, "1111111111111");
 
-Implement single-entry TLB invalidations in the U4 DART.
+the memory at `buf' gets [31 31 31 31 00], which is not good.
 
-Simple benchmarking with loopback flood pings of various sizes show that
-the previous flush-all code will spend ~5% of the time in flush, while
-the new selective invalidations will spend about an order of magnitude
-less in the same code path.
+This'll plug it, but I didn't check very hard whether it still has any
+off-by-ones, or if breaks the intent of Jeremy's patch.  I think it's OK..
 
-This could possibly mean that invalidations larger than, say, 16
-entries would better be handled in bulk, but until we have a workload
-that actually shows problems or bottlenecks let's keep doing single
-invalidations at all mapping sizes.
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-
-Index: linux-2.6/arch/powerpc/sysdev/dart.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/dart.h
-+++ linux-2.6/arch/powerpc/sysdev/dart.h
-@@ -47,8 +47,12 @@
- /* U4 registers */
- #define DART_BASE_U4_BASE_MASK	0xffffff
- #define DART_BASE_U4_BASE_SHIFT	0
--#define DART_CNTL_U4_FLUSHTLB	0x20000000
- #define DART_CNTL_U4_ENABLE	0x80000000
-+#define DART_CNTL_U4_IONE	0x40000000
-+#define DART_CNTL_U4_FLUSHTLB	0x20000000
-+#define DART_CNTL_U4_IDLE	0x10000000
-+#define DART_CNTL_U4_PAR_EN	0x08000000
-+#define DART_CNTL_U4_IONE_MASK	0x07ffffff
- #define DART_SIZE_U4_SIZE_MASK	0x1fff
- #define DART_SIZE_U4_SIZE_SHIFT	0
+--- a/lib/vsprintf.c~c
++++ a/lib/vsprintf.c
+@@ -259,7 +259,9 @@ int vsnprintf(char *buf, size_t size, co
+ 	int len;
+ 	unsigned long long num;
+ 	int i, base;
+-	char *str, *end, c;
++	char *str;		/* Where we're writing to */
++	char *end;		/* The last byte we can write to */
++	char c;
+ 	const char *s;
  
-Index: linux-2.6/arch/powerpc/sysdev/dart_iommu.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/dart_iommu.c
-+++ linux-2.6/arch/powerpc/sysdev/dart_iommu.c
-@@ -101,8 +101,8 @@ retry:
- 	if (l == (1L << limit)) {
- 		if (limit < 4) {
- 			limit++;
--		        reg = DART_IN(DART_CNTL);
--		        reg &= ~inv_bit;
-+			reg = DART_IN(DART_CNTL);
-+			reg &= ~inv_bit;
- 			DART_OUT(DART_CNTL, reg);
- 			goto retry;
- 		} else
-@@ -111,11 +111,39 @@ retry:
- 	}
- }
- 
-+static inline void dart_tlb_invalidate_one(unsigned long bus_rpn)
-+{
-+	unsigned int reg;
-+	unsigned int l, limit;
-+
-+	reg = DART_CNTL_U4_ENABLE | DART_CNTL_U4_IONE |
-+		(bus_rpn & DART_CNTL_U4_IONE_MASK);
-+	DART_OUT(DART_CNTL, reg);
-+
-+	limit = 0;
-+wait_more:
-+	l = 0;
-+	while ((DART_IN(DART_CNTL) & DART_CNTL_U4_IONE) && l < (1L << limit)) {
-+		rmb();
-+		l++;
-+	}
-+
-+	if (l == (1L << limit)) {
-+		if (limit < 4) {
-+			limit++;
-+			goto wait_more;
-+		} else
-+			panic("DART: TLB did not flush after waiting a long "
-+			      "time. Buggy U4 ?");
-+	}
-+}
-+
- static void dart_flush(struct iommu_table *tbl)
- {
--	if (dart_dirty)
-+	if (dart_dirty) {
- 		dart_tlb_invalidate_all();
--	dart_dirty = 0;
-+		dart_dirty = 0;
-+	}
- }
- 
- static void dart_build(struct iommu_table *tbl, long index,
-@@ -124,6 +152,7 @@ static void dart_build(struct iommu_tabl
- {
- 	unsigned int *dp;
- 	unsigned int rpn;
-+	long l;
- 
- 	DBG("dart: build at: %lx, %lx, addr: %x\n", index, npages, uaddr);
- 
-@@ -135,7 +164,8 @@ static void dart_build(struct iommu_tabl
- 	/* On U3, all memory is contigous, so we can move this
- 	 * out of the loop.
- 	 */
--	while (npages--) {
-+	l = npages;
-+	while (l--) {
- 		rpn = virt_to_abs(uaddr) >> DART_PAGE_SHIFT;
- 
- 		*(dp++) = DARTMAP_VALID | (rpn & DARTMAP_RPNMASK);
-@@ -143,7 +173,14 @@ static void dart_build(struct iommu_tabl
- 		uaddr += DART_PAGE_SIZE;
+ 	int flags;		/* flags to number() */
+@@ -283,12 +285,12 @@ int vsnprintf(char *buf, size_t size, co
  	}
  
--	dart_dirty = 1;
-+	if (dart_is_u4) {
-+		rpn = index;
-+		mb(); /* make sure all updates have reached memory */
-+		while (npages--)
-+			dart_tlb_invalidate_one(rpn++);
-+	} else {
-+		dart_dirty = 1;
-+	}
- }
+ 	str = buf;
+-	end = buf + size;
++	end = buf + size - 1;
  
+ 	/* Make sure end is always >= buf */
+-	if (end < buf) {
++	if (end < buf - 1) {
+ 		end = ((void *) ~0ull);
+-		size = end - buf;
++		size = end - buf + 1;
+ 	}
  
+ 	for (; *fmt ; ++fmt) {
+_
