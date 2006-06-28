@@ -1,24 +1,19 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 05EC267A65
+Return-Path: <dhlii@dlasys.net>
+Received: from sccrmhc11.comcast.net (sccrmhc11.comcast.net [63.240.77.81])
+	by ozlabs.org (Postfix) with ESMTP id 1014D67A6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Jun 2006 15:27:50 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k5S5RnXL021959 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Jun 2006 22:27:49 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k5S5RljL006947
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Jun 2006 00:27:48 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD467306DD12EC@zch01exm40.ap.freescale.net>
-From: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-To: Florian Boelstler <euphoria@arcor.de>, linuxppc-embedded@ozlabs.org
-Subject: RE: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
-Date: Wed, 28 Jun 2006 13:27:46 +0800
+	Wed, 28 Jun 2006 17:49:33 +1000 (EST)
+Message-ID: <44A23488.7030606@dlasys.net>
+Date: Wed, 28 Jun 2006 03:49:28 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: linuxppc-embedded@ozlabs.org
+Subject: how to get individual patches
+References: <86EC6E02268B3D4BA41C1B0C61FB14E60AFCD219@mdcexc01.na.ops.local>
+	<20060627212448.7d048b7a@White64>
+In-Reply-To: <20060627212448.7d048b7a@White64>
+Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: dhlii@comcast.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,41 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> We did the hardware fix described in the BSP user's manual to 
-> make PCIe work (according to the manual section 2.1, step 3).
-> I.e.
->   1) removed R193 and R194 on the carrier card (rev 1.2)
->   2) removed RN1 on the CPU daughter card
->   2a) connected pad3 of RN1 to pin3 of U12 (IRQ0)
->   2b) connected pad2 of RN1 to pin4 of U12 (IRQ1)
-> 
-> Does this fix the interrupt polarity problem (as well)?
 
-Yes, I think so. You can plug a PCIe ethernet card to test it. 
+    The bsp I am working on works with 2.6.16.21 but fails with 2.6.17.
+   
+    How can I find the individual patches that make up the transition
+from 2.6.16.21 to 2.6.17 ?
 
-> 
-> We applied the provided kernel patch as well.
-> IMHO that patch just moves the local PCIe root-complex 
-> "out-of-space" so no detection of that one occurs any more.
-> This is what actually happens when "lspci" is run.
-> 
-> However we still don't see any devices behind the PCIe switch 
-> (e.g. a transparent PLX8516). It seems that the enumeration 
-> process (traversing through the bus hierarchy) in the kernel 
-> is somehow disabled.
+    I guess I can use interdiff to create single patch to go from
+2.6.16.21 to 2.6.17 but I am really looking to get all the individual
+patches so I can try to isolate exactly
+    what is giving me trouble.
 
-:-), Maybe it's need more study. Could you enable the DEBUG and post the kernel verbose message?
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
 
-> Bottom line: Only one device accessible at all on the PCIe port.
-> 
-> Any further ideas?
-> 
-> Thanks,
-> 
->    Florian
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
