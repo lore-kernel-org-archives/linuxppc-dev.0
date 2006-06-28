@@ -1,26 +1,28 @@
 Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 7326D67B64
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 00:23:08 +1000 (EST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 3D41B67BCE
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 00:23:13 +1000 (EST)
 Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k5SEN7Yl029482
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 07:23:07 -0700 (MST)
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k5SENBO6023466
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 07:23:11 -0700 (MST)
 Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
 	[10.192.130.11])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k5SEN4PW016220
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 09:23:05 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD467306E04FD2@zch01exm40.ap.freescale.net>
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k5SEN9gu016242
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 09:23:10 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD467306E04FD3@zch01exm40.ap.freescale.net>
 From: Li Yang-r58472 <LeoLi@freescale.com>
-To: "'Paul Mackerras'" <paulus@samba.org>
-Subject: [PATCH 1/7] powerpc: Add mpc8360epb platform support
-Date: Wed, 28 Jun 2006 22:23:03 +0800
+To: "'dwmw2@infradead.org'" <dwmw2@infradead.org>
+Subject: [PATCH 2/7] mtd: Add map file for mpc83xx boards
+Date: Wed, 28 Jun 2006 22:23:08 +0800
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
-	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>,
+Cc: Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
 	Yin Olivia-r63875 <Hong-Hua.Yin@freescale.com>,
-	"'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+	"'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org,
+	"'linux-mtd@lists.infradead.org'" <linux-mtd@lists.infradead.org>,
+	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,311 +32,199 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The patch adds mpc8360e MDS Processor Board support.
+Flash mapping file for MPC83xx MDS platforms.
 
-Signed-off-by: Li Yang <leoli@freescale.com>
 Signed-off-by: Yin Olivia <hong-hua.yin@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
 ---
- arch/powerpc/platforms/83xx/Kconfig       |   13 ++
- arch/powerpc/platforms/83xx/Makefile      |    1 
- arch/powerpc/platforms/83xx/mpc8360e_pb.c |  213 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/83xx/mpc8360e_pb.h |   31 ++++
- 4 files changed, 258 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
-index 7675e67..04c4508 100644
---- a/arch/powerpc/platforms/83xx/Kconfig
-+++ b/arch/powerpc/platforms/83xx/Kconfig
-@@ -16,6 +16,13 @@ config MPC834x_SYS
- 	  3 PCI slots.  The PIBs PCI initialization is the bootloader's
- 	  responsiblilty.
+ drivers/mtd/maps/Kconfig         |    6 +
+ drivers/mtd/maps/Makefile        |    1 
+ drivers/mtd/maps/mpc83xx_flash.c |  154 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 161 insertions(+), 0 deletions(-)
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index 7abd7fe..eac049e 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -631,5 +631,11 @@ config MTD_PLATRAM
  
-+config MPC8360E_PB
-+	bool "Freescale MPC8360E PB"
-+	select DEFAULT_UIMAGE
-+	select QUICC_ENGINE
+ 	  This selection automatically selects the map_ram driver.
+ 
++config MTD_MPC83xx
++	tristate "CFI Flash device map on MPC83xx MDS support"
++	depends on 83xx && MTD_CFI && MTD_PARTITIONS
 +	help
-+	  This option enables support for the MPC836x EMDS Processor Board.
-+
- endchoice
- 
- config MPC834x
-@@ -24,4 +31,10 @@ config MPC834x
- 	select PPC_INDIRECT_PCI
- 	default y if MPC834x_SYS
- 
-+config MPC836x
-+	bool
-+	select PPC_UDBG_16550
-+	select PPC_INDIRECT_PCI
-+	default y if MPC8360E_PB
++	  Freescale MPC83xx board uses CFI compliant flash.
 +
  endmenu
-diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/platforms/83xx/Makefile
-index 5c72367..0c9ea5c 100644
---- a/arch/powerpc/platforms/83xx/Makefile
-+++ b/arch/powerpc/platforms/83xx/Makefile
-@@ -4,3 +4,4 @@ #
- obj-y				:= misc.o
- obj-$(CONFIG_PCI)		+= pci.o
- obj-$(CONFIG_MPC834x_SYS)	+= mpc834x_sys.o
-+obj-$(CONFIG_MPC8360E_PB)	+= mpc8360e_pb.o
-diff --git a/arch/powerpc/platforms/83xx/mpc8360e_pb.c b/arch/powerpc/platforms/83xx/mpc8360e_pb.c
-new file mode 100644
-index 0000000..b4ddb0a
---- /dev/null
-+++ b/arch/powerpc/platforms/83xx/mpc8360e_pb.c
-@@ -0,0 +1,213 @@
-+/*
-+ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
-+ *
-+ * Author: Li Yang <LeoLi@freescale.com>
-+ *	   Yin Olivia <Hong-hua.Yin@freescale.com>
-+ *
-+ * Description:
-+ * MPC8360E MDS PB board specific routines. 
-+ *
-+ * Changelog: 
-+ * Jun 21, 2006	Initial version
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/stddef.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/pci.h>
-+#include <linux/kdev_t.h>
-+#include <linux/major.h>
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/seq_file.h>
-+#include <linux/root_dev.h>
-+#include <linux/initrd.h>
-+
-+#include <asm/system.h>
-+#include <asm/atomic.h>
-+#include <asm/time.h>
-+#include <asm/io.h>
-+#include <asm/machdep.h>
-+#include <asm/ipic.h>
-+#include <asm/bootinfo.h>
-+#include <asm/irq.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <sysdev/fsl_soc.h>
-+#ifdef CONFIG_QUICC_ENGINE
-+#include <asm/immap_qe.h>
-+#include <asm/qe_ic.h>
-+#endif				/* CONFIG_QUICC_ENGINE */
-+#include "mpc83xx.h"
-+#include "mpc8360e_pb.h"
-+
-+#undef DEBUG
-+
-+#ifdef DEBUG
-+#define DBG(fmt...) udbg_printf(fmt)
-+#else
-+#define DBG(fmt...)
-+#endif
-+
-+
-+#ifndef CONFIG_PCI
-+unsigned long isa_io_base = 0;
-+unsigned long isa_mem_base = 0;
-+#endif
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+extern void qe_reset(void);
-+extern int par_io_of_config(struct device_node *np);
-+#endif	/* CONFIG_QUICC_ENGINE */
-+
-+/* ************************************************************************
-+ *
-+ * Setup the architecture
-+ *
-+ */
-+static void __init mpc8360_sys_setup_arch(void)
-+{
-+	struct device_node *np;
-+	
-+#ifdef CONFIG_QUICC_ENGINE
-+	u8 *bcsr_regs;
-+#endif
-+
-+	if (ppc_md.progress)
-+		ppc_md.progress("mpc8360_sys_setup_arch()", 0);
-+
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (np != 0) {
-+		unsigned int *fp =
-+		    (int *)get_property(np, "clock-frequency", NULL);
-+		if (fp != 0)
-+			loops_per_jiffy = *fp / HZ;
-+		else
-+			loops_per_jiffy = 50000000 / HZ;
-+		of_node_put(np);
-+	}
-+#ifdef CONFIG_PCI
-+	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
-+		add_bridge(np);
-+
-+	ppc_md.pci_swizzle = common_swizzle;
-+	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
-+#endif
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	qe_reset();
-+
-+	for (np = NULL; (np = of_find_node_by_name(np, "ucc")) != NULL;)
-+		par_io_of_config(np);
-+	
-+	/* Reset the Ethernet PHY */
-+	bcsr_regs = (u8 *) ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
-+	bcsr_regs[9] &= ~0x20;
-+	udelay(1000);
-+	bcsr_regs[9] |= 0x20;
-+	iounmap(bcsr_regs);
-+
-+#endif				/* CONFIG_QUICC_ENGINE */
-+
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	if (initrd_start)
-+		ROOT_DEV = Root_RAM0;
-+	else
-+#endif
-+#ifdef  CONFIG_ROOT_NFS
-+		ROOT_DEV = Root_NFS;
-+#else
-+		ROOT_DEV = Root_HDA1;
-+#endif
-+}
-+
-+void __init mpc8360_sys_init_IRQ(void)
-+{
-+	u8 senses[8] = {
-+		0,		/* EXT 0 */
-+		IRQ_SENSE_LEVEL,	/* EXT 1 */
-+		IRQ_SENSE_LEVEL,	/* EXT 2 */
-+		0,		/* EXT 3 */
-+#ifdef CONFIG_PCI
-+		IRQ_SENSE_LEVEL,	/* EXT 4 */
-+		IRQ_SENSE_LEVEL,	/* EXT 5 */
-+		IRQ_SENSE_LEVEL,	/* EXT 6 */
-+		IRQ_SENSE_LEVEL,	/* EXT 7 */
-+#else
-+		0,		/* EXT 4 */
-+		0,		/* EXT 5 */
-+		0,		/* EXT 6 */
-+		0,		/* EXT 7 */
-+#endif
-+	};
-+
-+	ipic_init(get_immrbase() + 0x00700, 0, 0, senses, 8);
-+
-+	/* Initialize the default interrupt mapping priorities,
-+	 * in case the boot rom changed something on us.
-+	 */
-+	ipic_set_default_priority();
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	qe_ic_init(get_qe_base() + 0x00000080,
-+		   (QE_IC_LOW_SIGNAL | QE_IC_HIGH_SIGNAL), QE_IRQ_OFFSET);
-+#endif				/* CONFIG_QUICC_ENGINE */
-+}
-+
-+#if defined(CONFIG_I2C_MPC) && defined(CONFIG_SENSORS_DS1374)
-+extern ulong ds1374_get_rtc_time(void);
-+extern int ds1374_set_rtc_time(ulong);
-+
-+static int __init mpc8360_rtc_hookup(void)
-+{
-+	struct timespec tv;
-+
-+	ppc_md.get_rtc_time = ds1374_get_rtc_time;
-+	ppc_md.set_rtc_time = ds1374_set_rtc_time;
-+
-+	tv.tv_nsec = 0;
-+	tv.tv_sec = (ppc_md.get_rtc_time) ();
-+	do_settimeofday(&tv);
-+
-+	return 0;
-+}
-+
-+late_initcall(mpc8360_rtc_hookup);
-+#endif
-+
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init mpc8360_sys_probe(void)
-+{
-+	char *model = of_get_flat_dt_prop(of_get_flat_dt_root(),
-+					  "model", NULL);
-+	if (model == NULL)
-+		return 0;
-+	if (strcmp(model, "MPC8360EPB"))
-+		return 0;
-+
-+	DBG("MPC8360EMDS-PB found\n");
-+
-+	return 1;
-+}
-+
-+define_machine(mpc8360_sys) {
-+	.name 		= "MPC8360E PB",
-+	.probe 		= mpc8360_sys_probe,
-+	.setup_arch 	= mpc8360_sys_setup_arch,
-+	.init_IRQ 	= mpc8360_sys_init_IRQ,
-+	.get_irq 	= ipic_get_irq,
-+	.restart 	= mpc83xx_restart,
-+	.time_init 	= mpc83xx_time_init,
-+	.calibrate_decr	= generic_calibrate_decr,
-+	.progress 	= udbg_progress,
-+};
-diff --git a/arch/powerpc/platforms/83xx/mpc8360e_pb.h b/arch/powerpc/platforms/83xx/mpc8360e_pb.h
-new file mode 100644
-index 0000000..4243f4a
---- /dev/null
-+++ b/arch/powerpc/platforms/83xx/mpc8360e_pb.h
-@@ -0,0 +1,31 @@
-+/*
-+ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights reserved.
-+ *
-+ * Author: Li Yang <LeoLi@freescale.com>
-+ *	   Yin Olivia <Hong-hua.Yin@freescale.com>
-+ *
-+ * Description:
-+ * MPC8360E MDS PB board specific header. 
-+ *
-+ * Changelog: 
-+ * Jun 21, 2006	Initial version
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ *
-+ */
-+
-+#ifndef __MACH_MPC83XX_SYS_H__
-+#define __MACH_MPC83XX_SYS_H__
-+
-+#define BCSR_PHYS_ADDR		((uint)0xf8000000)
-+#define BCSR_SIZE		((uint)(32 * 1024))
-+
-+#define PIRQA	MPC83xx_IRQ_EXT4
-+#define PIRQB	MPC83xx_IRQ_EXT5
-+#define PIRQC	MPC83xx_IRQ_EXT6
-+#define PIRQD	MPC83xx_IRQ_EXT7
-+
-+#endif				/* __MACH_MPC83XX_SYS_H__ */
  
+diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
+index ab71f17..f0f8afd 100644
+--- a/drivers/mtd/maps/Makefile
++++ b/drivers/mtd/maps/Makefile
+@@ -71,3 +71,4 @@ obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
+ obj-$(CONFIG_MTD_OMAP_NOR)	+= omap_nor.o
+ obj-$(CONFIG_MTD_MTX1)		+= mtx-1_flash.o
+ obj-$(CONFIG_MTD_TQM834x)	+= tqm834x.o
++obj-$(CONFIG_MTD_MPC83xx)	+= mpc83xx_flash.o
+diff --git a/drivers/mtd/maps/mpc83xx_flash.c b/drivers/mtd/maps/mpc83xx_flash.c
+new file mode 100644
+index 0000000..84f058a
+--- /dev/null
++++ b/drivers/mtd/maps/mpc83xx_flash.c
+@@ -0,0 +1,154 @@
++/*
++ * Handle mapping of the flash on MPC83xx board
++ *
++ * Copyright (C) 2005 Freescale semicondutor
++ * 
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <asm/io.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/map.h>
++#include <linux/mtd/partitions.h>
++
++
++/* MPC8349MDS flash layout 
++ * 0 : 0xFE00 0000 - 0xFE01 FFFF : HRCW (128KB)
++ * 1 : 0xFE02 0000 - 0xFE5F FFFF : JFFS2 file system (5.875MB)
++ * 2 : 0xFE60 0000 - 0xFE6F FFFF : Kernel (1MB)
++ * 3 : 0xFE70 0000 - 0xFE7F FFFF : U-Boot (1MB)
++ */
++#ifdef CONFIG_MPC834x
++#define WINDOW_ADDR 0xFE000000
++#define WINDOW_SIZE 0x00800000
++#endif
++
++/* MPC8360EPB flash layout 
++ * 0 : 0xFE00 0000 - 0xFE01 FFFF : HRCW (128KB)
++ * 1 : 0xFE02 0000 - 0xFE8F FFFF : JFFS2 file system (8.875MB)
++ * 2 : 0xFE90 0000 - 0xFECF FFFF : Ramdisk file system (4MB)
++ * 3 : 0xFED0 0000 - 0xFEEF FFFF : Kernel (2MB)
++ * 4 : 0xFEF0 0000 - 0xFEFF FFFF : U-Boot (1MB)
++ */
++#ifdef CONFIG_MPC8360E_PB
++#define WINDOW_ADDR 0xFE000000
++#define WINDOW_SIZE 0x01000000
++#endif
++
++/* partition_info gives details on the logical partitions that the split the
++ * single flash device into. If the size if zero we use up to the end of the
++ * device. */
++static struct mtd_partition partition_info[]={
++	{
++		.name		= "HRCW",
++		.offset 	= 0,
++		.size		= 0x020000,
++		.mask_flags	= MTD_WRITEABLE
++	},
++	{
++		.name		= "JFFS2",
++		.offset		= MTDPART_OFS_APPEND,
++#ifdef CONFIG_MPC834x
++		.size		= 0x5E0000
++#endif
++#ifdef CONFIG_MPC8360E_PB
++		.size		= 0x8E0000
++#endif
++	},
++#ifdef CONFIG_MPC8360E_PB
++	{
++		.name           = "Ramdisk",
++		.offset         = MTDPART_OFS_APPEND,
++		.size           = 0x400000
++	},
++#endif
++	{
++		.name		= "Kernel",
++		.offset		= MTDPART_OFS_APPEND,
++#ifdef CONFIG_MPC834x
++		.size		= 0x100000
++#endif
++#ifdef CONFIG_MPC8360E_PB
++		.size		= 0x200000
++#endif
++	},
++	{
++		.name		= "U-Boot",
++		.offset		= MTDPART_OFS_APPEND,
++		.size		= 0x100000,
++		.mask_flags	= MTD_WRITEABLE
++    }
++};
++
++#define PARTITION_NUM (sizeof(partition_info)/sizeof(struct mtd_partition))
++
++static struct mtd_info *mymtd;
++
++
++struct map_info mpc83xx_map = {
++#ifdef CONFIG_MPC834x
++	.name		= "MPC8349MDS Flash Map Info",
++#endif
++#ifdef CONFIG_MPC8360E_PB
++	.name		= "MPC8360E PB Flash Map Info",
++#endif
++	.size		= WINDOW_SIZE,
++	.phys		= WINDOW_ADDR,
++	.bankwidth	= 2,
++};
++
++int __init init_mpc83xx_mtd(void)
++{
++	char *board;
++#ifdef CONFIG_MPC834x
++	board = "MPC8349MDS";
++#endif
++#ifdef CONFIG_MPC8360E_PB
++	board = "MPC8360E PB"; 
++#endif
++	printk(KERN_NOTICE "%s flash device: %x at %x Partition number %d\n",
++			board,WINDOW_SIZE, WINDOW_ADDR, PARTITION_NUM);
++	mpc83xx_map.virt = ioremap(WINDOW_ADDR, WINDOW_SIZE);
++
++	if (!mpc83xx_map.virt) {
++		printk("Failed to ioremap\n");
++		return -EIO;
++	}
++	simple_map_init(&mpc83xx_map);
++	
++	mymtd = do_map_probe("cfi_probe", &mpc83xx_map);
++	if (mymtd) {
++		mymtd->owner = THIS_MODULE;
++                add_mtd_partitions(mymtd, partition_info, PARTITION_NUM);
++		printk(KERN_NOTICE "%s flash device initialized\n", board);
++		return 0;
++	}
++
++	iounmap((void *)mpc83xx_map.virt);
++	return -ENXIO;
++}
++
++static void __exit cleanup_mpc83xx_mtd(void)
++{
++	if (mymtd) {
++		del_mtd_device(mymtd);
++		map_destroy(mymtd);
++	}
++	if (mpc83xx_map.virt) {
++		iounmap((void *)mpc83xx_map.virt);
++		mpc83xx_map.virt = 0;
++	}
++}
++
++module_init(init_mpc83xx_mtd);
++module_exit(cleanup_mpc83xx_mtd);
++
++MODULE_AUTHOR("FSL");
++MODULE_DESCRIPTION("MTD map driver for Freescale MPC83xx board");
++MODULE_LICENSE("GPL");
