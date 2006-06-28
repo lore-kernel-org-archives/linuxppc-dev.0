@@ -1,23 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-06.arcor-online.net
-	[151.189.21.46])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0B5E067B4C
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 21:16:07 +1000 (EST)
-In-Reply-To: <0107ED1F-B674-48C3-AA07-BDF9FD2F7678@kernel.crashing.org>
-References: <20060620084726.GC30974@krispykreme>
-	<0107ED1F-B674-48C3-AA07-BDF9FD2F7678@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ED690059-FBF9-4FC1-AC4B-D8D6A3D75148@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
+Return-Path: <anton@ozlabs.org>
+Date: Wed, 28 Jun 2006 21:28:45 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: support ibm,extended-*-frequency properties
-Date: Wed, 28 Jun 2006 13:15:48 +0200
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Anton Blanchard <anton@samba.org>
+Message-ID: <20060628112845.GE516@krispykreme>
+References: <20060620084726.GC30974@krispykreme>
+	<D0B9DD42-E1D3-48E3-A90A-8F8B5718852F@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <D0B9DD42-E1D3-48E3-A90A-8F8B5718852F@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,9 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Is it reasonable for cells to be greater than 1 on a 32-bit system?
+ 
+> Could you also allow the regular "timebase-frequency" property
+> to consist of two cells, with the same semantics?  That's what
+> some other systems do.  Hey, it'd simplify this code, if anything :-)
+> 
+> In fact, some kernel code already does this if I'm not mistaken
+> (the Cell port, perhaps?)
 
-Yes.
+Yeah it seems reasonable to just use the property size, I'll submit an
+incremental patch for that.
 
-
-Segher
+Anton
