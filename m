@@ -1,16 +1,23 @@
-Return-Path: <akpm@osdl.org>
-Date: Wed, 28 Jun 2006 03:47:48 -0700
-From: Andrew Morton <akpm@osdl.org>
-To: mbligh@mbligh.org, jeremy@goop.org, mbligh@google.com,
-	linux-kernel@vger.kernel.org, apw@shadowen.org, linuxppc64-dev@ozlabs.org
-Subject: Re: 2.6.17-mm2
-Message-Id: <20060628034748.018eecac.akpm@osdl.org>
-In-Reply-To: <20060628034215.c3008299.akpm@osdl.org>
-References: <449D5D36.3040102@google.com> <449FF3A2.8010907@mbligh.org>
-	<44A150C9.7020809@mbligh.org>
-	<20060628034215.c3008299.akpm@osdl.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0B5E067B4C
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Jun 2006 21:16:07 +1000 (EST)
+In-Reply-To: <0107ED1F-B674-48C3-AA07-BDF9FD2F7678@kernel.crashing.org>
+References: <20060620084726.GC30974@krispykreme>
+	<0107ED1F-B674-48C3-AA07-BDF9FD2F7678@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ED690059-FBF9-4FC1-AC4B-D8D6A3D75148@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: support ibm,extended-*-frequency properties
+Date: Wed, 28 Jun 2006 13:15:48 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,56 +27,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 28 Jun 2006 03:42:15 -0700
-Andrew Morton <akpm@osdl.org> wrote:
+> Is it reasonable for cells to be greater than 1 on a 32-bit system?
 
-> his is caused by the vsprintf() changes.  Right now, if you do
-> 
-> 	snprintf(buf, 4, "1111111111111");
-> 
-> the memory at `buf' gets [31 31 31 31 00], which is not good.
-> 
-> This'll plug it, but I didn't check very hard whether it still has any
-> off-by-ones, or if breaks the intent of Jeremy's patch.  I think it's OK..
+Yes.
 
-That diff was against an older kernel and doesn't apply.  This is against
-mainline:
 
---- a/lib/vsprintf.c~vsnprintf-fix
-+++ a/lib/vsprintf.c
-@@ -259,7 +259,9 @@ int vsnprintf(char *buf, size_t size, co
- 	int len;
- 	unsigned long long num;
- 	int i, base;
--	char *str, *end, c;
-+	char *str;		/* Where we're writing to */
-+	char *end;		/* The last byte we can write to */
-+	char c;
- 	const char *s;
- 
- 	int flags;		/* flags to number() */
-@@ -283,12 +285,12 @@ int vsnprintf(char *buf, size_t size, co
- 	}
- 
- 	str = buf;
--	end = buf + size;
-+	end = buf + size - 1;
- 
- 	/* Make sure end is always >= buf */
--	if (end < buf) {
-+	if (end < buf - 1) {
- 		end = ((void *)-1);
--		size = end - buf;
-+		size = end - buf + 1;
- 	}
- 
- 	for (; *fmt ; ++fmt) {
-@@ -494,7 +496,6 @@ int vsnprintf(char *buf, size_t size, co
- 	/* the trailing null byte doesn't count towards the total */
- 	return str-buf;
- }
--
- EXPORT_SYMBOL(vsnprintf);
- 
- /**
-_
+Segher
