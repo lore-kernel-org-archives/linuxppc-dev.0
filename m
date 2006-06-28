@@ -1,19 +1,17 @@
-Return-Path: <sonny@kevlar.burdell.org>
-Received: from kevlar.burdell.org (kevlar.burdell.org [66.92.73.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 572D767BE7
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 00:56:15 +1000 (EST)
-Date: Wed, 28 Jun 2006 10:56:09 -0400
-From: Sonny Rao <sonny@burdell.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: patches applied to powerpc.git
-Message-ID: <20060628145609.GA25323@kevlar.burdell.org>
-References: <17570.5424.521206.646305@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17570.5424.521206.646305@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <apw@shadowen.org>
+Message-ID: <44A29AF5.4010501@shadowen.org>
+Date: Wed, 28 Jun 2006 16:06:29 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+MIME-Version: 1.0
+To: "Martin J. Bligh" <mbligh@google.com>
+Subject: Re: 2.6.17-mm2
+References: <449D5D36.3040102@google.com>	<449FF3A2.8010907@mbligh.org>	<44A150C9.7020809@mbligh.org>	<20060628034215.c3008299.akpm@osdl.org>
+	<20060628034748.018eecac.akpm@osdl.org>
+	<44A29582.7050403@google.com>
+In-Reply-To: <44A29582.7050403@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Andrew Morton <akpm@osdl.org>, jeremy@goop.org, drfickle@us.ibm.com,
+	linux-kernel@vger.kernel.org, mbligh@mbligh.org, linuxppc64-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,11 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jun 28, 2006 at 03:35:44PM +1000, Paul Mackerras wrote:
-> The following patches have just been pushed to the powerpc.git
-> repository ("master" branch).  I'll ask Linus to pull them tomorrow
-> unless I hear any objections.  If you have patches that you want
-> upstream that aren't listed, bug me or the appropriate platform
-> maintainer about them.
+Martin J. Bligh wrote:
+> Andrew Morton wrote:
+> 
+>> On Wed, 28 Jun 2006 03:42:15 -0700
+>> Andrew Morton <akpm@osdl.org> wrote:
+>>
+>>
+>>> his is caused by the vsprintf() changes.  Right now, if you do
+>>>
+>>>     snprintf(buf, 4, "1111111111111");
+>>>
+>>> the memory at `buf' gets [31 31 31 31 00], which is not good.
+>>>
+>>> This'll plug it, but I didn't check very hard whether it still has any
+>>> off-by-ones, or if breaks the intent of Jeremy's patch.  I think it's
+>>> OK..
+> 
+> 
+> Aha, you're a genius! How the hell did you figure that one out?
+> 
+> Andy / Steve ... any chance one of you could kick this through the
+> harness? Against -git10 or so, I'd think
+> 
+> Thanks,
 
-What about "[PATCH] powerpc: fix idr locking in init_new_context" ?
+
+Suitibly kicked ... against 2.6.17-git10.
+
+-apw
