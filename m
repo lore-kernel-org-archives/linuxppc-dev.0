@@ -1,24 +1,21 @@
-Return-Path: <SRS0+2568b504cf8fbadfadf9+1039+infradead.org+dwmw2@canuck.srs.infradead.org>
-Received: from canuck.infradead.org (canuck.infradead.org [205.233.218.70])
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9EB7367A42
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 00:28:01 +1000 (EST)
-Subject: Re: [PATCH 2/7] mtd: Add map file for mpc83xx boards
-From: David Woodhouse <dwmw2@infradead.org>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD467306E04FD3@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD467306E04FD3@zch01exm40.ap.freescale.net>
-Content-Type: text/plain
-Date: Wed, 28 Jun 2006 15:27:41 +0100
-Message-Id: <1151504861.17134.39.camel@pmac.infradead.org>
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0513067EFB
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 00:28:30 +1000 (EST)
+Date: Wed, 28 Jun 2006 16:21:42 +0200
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Aristeu Sergio Rozanski Filho <aris@cathedrallabs.org>
+Subject: Re: backlight control broken in current Linus' and Paulus' trees
+Message-ID: <20060628142142.GA12278@hansmi.ch>
+References: <20060628133453.GA14876@cathedrallabs.org>
 Mime-Version: 1.0
-Cc: Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
-	Yin Olivia-r63875 <Hong-Hua.Yin@freescale.com>,
-	"'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org,
-	"'linux-mtd@lists.infradead.org'" <linux-mtd@lists.infradead.org>,
-	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060628133453.GA14876@cathedrallabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,15 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-06-28 at 22:23 +0800, Li Yang-r58472 wrote:
-> Flash mapping file for MPC83xx MDS platforms.
+Hello
 
-I'm not accepting any more individual map drivers unless they're
-absolutely necessary, which this one isn't.
+On Wed, Jun 28, 2006 at 10:34:53AM -0300, Aristeu Sergio Rozanski Filho wro=
+te:
+> 	the backlight control is broken in my PowerBook6,8 in latest git
+> 	trees, both for pbbuttonsd (yes, I have CONFIG_PMAC_BACKLIGHT_LEGACY
+> 	enabled) and for fblevel. the last one also allows values be set
+> 	at least to 1000 and according to new code, it should be able to
+> 	reach 127.
 
-Use a platform device and physmap. Or better still, extend physmap to
-handle of_devices too and just stick the flash information in the device
-tree.
+Legacy will stay 0-15, because that's what legacy is about. To use the
+new interface, you have to use the sysfs interface.
 
--- 
-dwmw2
+I've submitted another patch for legacy support last night which is now
+waiting for Linus to include it. Do you want me to send it to you
+directly or do you want to wait until it's in the git kernels?
+
+Greets,
+Michael
+
+--=20
+Gentoo Linux developer, http://hansmi.ch/, http://forkbomb.ch/
+< doogie> asuffield: how do you think dpkg was originally written?  :|
+< asuffield> by letting iwj get dangerously near a computer
+    	-- in #debian-devel
