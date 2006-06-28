@@ -1,20 +1,25 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 59DF867B69
+Return-Path: <ammubhai@gmail.com>
+Received: from mailgw.cs.york.ac.uk (mailgw.cs.york.ac.uk [144.32.40.3])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 427C267B59
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Jun 2006 03:48:27 +1000 (EST)
-Received: from vitb.ru.mvista.com ([10.150.0.9])
-	by buildserver.ru.mvista.com (8.11.6/8.11.6) with ESMTP id k5SHmQs27436
-	for <linuxppc-embedded@ozlabs.org>; Wed, 28 Jun 2006 22:48:26 +0500
-Date: Wed, 28 Jun 2006 21:48:41 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
+	Thu, 29 Jun 2006 04:21:15 +1000 (EST)
+Received: from minster.cs.york.ac.uk ([144.32.40.2])
+	by mailgw.cs.york.ac.uk with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.60) (envelope-from <ammubhai@gmail.com>) id 1FveAt-0006Bx-3D
+	for linuxppc-embedded@ozlabs.org; Wed, 28 Jun 2006 18:50:03 +0100
+Received: from pc112.ad.cs.york.ac.uk ([144.32.81.113])
+	by minster.cs.york.ac.uk with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.60) (envelope-from <ammubhai@gmail.com>) id 1FveAt-0002ys-E2
+	for linuxppc-embedded@ozlabs.org; Wed, 28 Jun 2006 18:50:03 +0100
+Message-ID: <44A2C14B.5070504@gmail.com>
+Date: Wed, 28 Jun 2006 18:50:03 +0100
+From: Ameet Patil <ammubhai@gmail.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: block after "io scheduler noop registered"
-Message-ID: <20060628214841.311060c6@vitb.ru.mvista.com>
-In-Reply-To: <J1KRSY$2A22F25EF5BB111FA515FFA9A4DCCD71@libero.it>
-References: <J1KRSY$2A22F25EF5BB111FA515FFA9A4DCCD71@libero.it>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: 2.6 kernel on XUPV2pro / ML300 board!
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,24 +30,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 28 Jun 2006 16:48:34 +0200
-"morelli.gab" <morelli.gab@libero.it> wrote:
+Hi,
+   I have a XUPV2Pro Xilinx Embedded PPC405 board which is similar in 
+many respects to the ML3XX series. With good support in the kernel 
+source tree, I was easily able to compile the 2.4.26 linux kernel to run 
+on it.
 
-> Hi All,
-> 
-> i,m upgrading the linux kernel 2.4 from 2.6, during the phase of restart on my card the system blocks on message "io scheduler noop registered".
-> the board mount MPC875 processor
-> 
-> 
-> ...
-> Serial: CPM driver $Revision: 0.01 $
-> ttyCPM0 at MMIO 0xf0000a80 (irq = 20) is a CPM UART
-> ttyCPM1 at MMIO 0xf0000a90 (irq = 19) is a CPM UART
-> io scheduler noop registered
-You should add the proper cpm uart initialization bits to the board-specific code, as say 885ads does (ppc/platforms/mpc885ads_setup.c). 
+However, I wanted 2.6 kernel to run on it. For some reason, the Xilinx 
+drivers and the OCP code went missing in the 2.6 kernel tree.
+Does anyone know why did 2.6 kernel drop the Xilinx ML300 board
+drivers (SysACE, Ethernet, Frame Buffer) which were present in the 2.4
+kernel code tree? It is because of porting issues?
 
-What experienced is uart misconfiguration which alters pins in a way the console doesn't like very much.
+Anyway, I have ported the old 2.4 Xilinx drivers (Sysace and Ethernet) 
+to 2.6.17.1 kernel. If anyone is interested to test them, please let me 
+know. I shall put out a patch soon...
 
--- 
-Sincerely, 
-Vitaly
+Thanks,
+-Ameet
