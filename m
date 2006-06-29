@@ -1,25 +1,24 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id DE00467A75
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 08:10:31 +1000 (EST)
-Date: Fri, 30 Jun 2006 02:10:17 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 1/7] powerpc: Add mpc8360epb platform support
-Message-ID: <20060630021017.18d0ddc3@localhost.localdomain>
-In-Reply-To: <E5D17B54-D345-4859-A9B0-62F038A694EF@freescale.com>
-References: <9FCDBA58F226D911B202000BDBAD467306E04FE2@zch01exm40.ap.freescale.net>
-	<8A7E4B7C-8744-47FF-90FA-9B68C5187CEE@freescale.com>
-	<20060629225131.43b9ed59@localhost.localdomain>
-	<C45A575E-1283-4299-A403-BE46B13AEF9C@freescale.com>
-	<20060629235625.5a8880a0@localhost.localdomain>
-	<E5D17B54-D345-4859-A9B0-62F038A694EF@freescale.com>
+Return-Path: <rlrevell@joe-job.com>
+Received: from viper.oldcity.dca.net (viper.oldcity.dca.net [216.158.38.4])
+	by ozlabs.org (Postfix) with SMTP id 6F52C679E0
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 08:26:16 +1000 (EST)
+Subject: Re: [Alsa-devel] [RFC 01/12] snd-powermac: no longer
+	handle	anything with a layout-id property
+From: Lee Revell <rlrevell@joe-job.com>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <jeu0631xpr.fsf@sykes.suse.de>
+References: <20060607130909.584205000@sipsolutions.net>
+	<20060607130910.156412000@sipsolutions.net>
+	<jey7vjiqwv.fsf@sykes.suse.de>
+	<s5hac7yvfhe.wl%tiwai@suse.de> <jehd26aa25.fsf@sykes.suse.de>
+	<jeu0631xpr.fsf@sykes.suse.de>
+Content-Type: text/plain
+Date: Thu, 29 Jun 2006 18:26:12 -0400
+Message-Id: <1151619973.22380.50.camel@mindpipe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"linux-kernel@vger.kernel.org Mailing List" <linux-kernel@vger.kernel.org>,
-	Yin Olivia-r63875 <Hong-Hua.Yin@freescale.com>,
-	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>
+Cc: Takashi Iwai <tiwai@suse.de>, linuxppc-dev@ozlabs.org,
+	Johannes Berg <johannes@sipsolutions.net>,
+	alsa-devel@alsa-project.org, netstar@gatheringofgray.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,111 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 29 Jun 2006 16:04:21 -0500
-Andy Fleming wrote:
-
+On Thu, 2006-06-29 at 23:03 +0200, Andreas Schwab wrote:
+> Andreas Schwab <schwab@suse.de> writes:
 > 
-> On Jun 29, 2006, at 14:56, Vitaly Bordug wrote:
-> 
-> > On Thu, 29 Jun 2006 14:18:51 -0500
-> > Andy Fleming wrote:
+> > Takashi Iwai <tiwai@suse.de> writes:
 > >
+> >> At Mon, 26 Jun 2006 22:49:04 +0200,
+> >> Andreas Schwab wrote:
+> >>> 
+> >>> Johannes Berg <johannes@sipsolutions.net> writes:
+> >>> 
+> >>> > This patch removes from snd-powermac the code that check for the layout-id
+> >>> > and instead adds code that makes it refuse loading when a layout-id property
+> >>> > is present, nothing that snd-aoa should be used.
+> >>> 
+> >>> Can we get snd-powermac back as long as snd-aoa is lacking all those
+> >>> features from snd-powermac?
 > >>
-> >> On Jun 29, 2006, at 13:51, Vitaly Bordug wrote:
-> >>
-> >>> On Thu, 29 Jun 2006 13:03:23 -0500
-> >>> Andy Fleming wrote:
-> >>>
-> >>> [snip]
-> >>>>>>> +	iounmap(bcsr_regs);
-> >>>>>>> +
-> >>>>>> And if we have a design, which do not contain real ethernet UCC
-> >>>>>> usage? Or UCC
-> >>>>>> geth is disabled somehow explicitly? Stuff like that normally
-> >>>>>> goes to the
-> >>>>>> callback that is going to be triggered upon Etherbet init.
-> >>>>> I will move it.
-> >>>>
-> >>>>
-> >>>> Wait...no.  I don't understand Vitaly's objection.  If someone
-> >>>> creates a board with an 8360 that doesn't use the UCC ethernet,
-> >>>> they can create a separate board file.  This is the
-> >>>> board-specific code, and it is perfectly acceptable for it to
-> >>>> reset the PHY like this. What ethernet callback could be used?
-> >>>>
-> >>>
-> >>> I am sort of against the unconditional trigger of the ethernet-
-> >>> specific stuff,
-> >>> dependless if UCC eth is really wanted in specific configuration.
-> >>>
-> >>> For stuff like that I'd make a function (to setup low-level
-> >>> stuff), and pass it
-> >>> via platform_info to the eth driver, so that really
-> >>> driver-specific things happen in driver context only.
-> >>>
-> >>> Yes this is board specific file, and virtually everything needed
-> >>> for the board can take place here.
-> >>> But usually BCSR acts as a toggle for a several things, and IOW, I
-> >>> see it more correct to trigger those stuff from the respective
-> >>> drivers (using a callback passed through platform_info)
-> >>
-> >>
-> >> Callbacks are fairly evil.  And the driver most certainly cannot
-> >> know about the BCSR, since there may or may not even *be* a BCSR on
-> >> any given board with a QE.  The PHY only needs to be reset once,
-> >> during initialization.  On some boards, there is no need to trigger
-> >> some sort of reset, or enable any PHYs.  I'm still not sure why
-> >> this should be the domain of the device driver, since it's a board
-> >> option.
-> >>
+> >> What functions are missing?
 > >
-> > Well. The driver does not need to know anything about bcsr. All it  
-> > needs to do is to execute the function pointer filled in bsp code,  
-> > if one exists (If nothing needs to be tweaked in bsp level for a  
-> > driver, just no need to fill that function pointer). For instance,  
-> > in PQ2 uart, usb and fcc need to be enabled by bcsr before could
-> > be actually utilized, so say fs_enet does all needed upon startup,  
-> > without messing with board setup code.
-> > The same does cpm uart...
-> >
-> > In case of this particular board, it is not that bad. But I
-> > dislike the concept to execute the code in common (for this board)
-> > path, not depending if UCC eth disabled in config explicitly.
+> > Sound on PowerMac7,2, DRC on TAS, probably more.
 > 
-> Well, let me try to see if I understand the two approaches being  
-> pondered:
-> 
-Yes, just right.
-
-> 1) Use a callback.
-> 
-> Inside the platform info device-specific structure, we create a  
-> callback.  Something like enet_info->board_init().  The board boots,  
-> and in the initialization function for that board, the callback is  
-> assigned to be a function which does the appropriate board-specific  
-> initialization.  Actually, it makes sure to do this for every device  
-> which requires such initialization.  Then, later, the devices are  
-> registered, and matched up with appropriate drivers.  Those drivers  
-> make sure to invoke enet_info->board_init() before they do anything  
-> hw related.
-> 
-> 2) Let board init code do it
-> 
-> The board boots, and in the initialization function for that board,  
-> it checks to see if the device exists (by searching the device
-> tree), and if so, does any board-specific initialization (in this
-> case, configuring the board register to enable the PHY for that
-> device). The devices are registered, and matched with appropriate
-> drivers. Those drivers operate, blissfully unaware that there was
-> ever any danger the board wasn't set up.
+> Another problem is that the sound device can only be opened once.
 > 
 
-Sounds fine, but there are some corner cases. 
-In case, really familiar to 8xx people, the board actually has devices, but 
-they simply do not operate simultaneously (because of hw, or there are conflicting pin options)
+What is the content of /proc/asound/cards?  The patches must have
+changed the card name and failed to create a matching config file
+in /usr/share/alsa/cards.
 
-So the only way to work in such a case is to craft proper kconfig for say, secondary Eth off, 2-nd uart on and vice versa.  BSP code could be aware of that, and make/do not make hw tweaks up to #ifdefs. The way for BSP code to put needed stuff into the function, hereby telling the driver to execute it upon setup before accessing hw seems more consistent way for me. 
-
-Again, I agree it may be extra for this particular board. But we are speaking about the concept... That sort of things is used within fs_enet and cpm_uart drivers already in the stock tree.
-
--Vitaly
+Lee
