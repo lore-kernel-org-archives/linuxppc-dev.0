@@ -3,19 +3,18 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E07FD67B68
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 15:08:20 +1000 (EST)
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD467306E19B76@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD467306E19B76@zch01exm40.ap.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id D073B67B56
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 15:11:01 +1000 (EST)
+In-Reply-To: <20060628211317.7b21d085.kim.phillips@freescale.com>
+References: <20060628211317.7b21d085.kim.phillips@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BDF5A6D5-E7F4-4CDF-9B34-13A66A0B7C99@kernel.crashing.org>
+Message-Id: <99F42AA0-3028-4C80-86C1-14A210C41229@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from 'for_paulus' branch of powerpc
-Date: Thu, 29 Jun 2006 00:08:02 -0500
-To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Add support for the Freescale MPC8349E-mITX eval board
+Date: Thu, 29 Jun 2006 00:10:56 -0500
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,487 +25,386 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 28, 2006, at 10:33 PM, Zhang Wei-r63237 wrote:
+On Jun 28, 2006, at 9:13 PM, Kim Phillips wrote:
 
->>
->> On Jun 28, 2006, at 1:26 AM, Zhang Wei-r63237 wrote:
->>
->>> Hi, Kumar,
->>>
->>> Why moving these codes from pci.c to mpc86xx_hpcn.c? It's
->> not must be.
->>> These functions relate to PCI device of MPC8641D HPCn platform.
->>> And we can also see the 'DECLARE_PCI_FIXUP_HEADER()' declaration in
->>> pci.c of Powermac platform.
->>
->> The point for moving is 86xx/pci.c should apply to all 86xx
->> systems, not just the HPCn system.
->>
->> - kumar
+> Add support for the Freescale MPC8349E-mITX eval board
 >
-> The codes of moving is for PCI devices, it's for HPCn system now,  
-> but it's also fit for the same PCI chips in the other 86xx system  
-> and the same chip should keep the same setting in 86xx platforms, I  
-> think so.
+> This is largely based on 8349 SYS code except that it uses the new  
+> rtc_class code in drivers/rtc instead of explicitly specifying the  
+> rtc chip.  SATA is untested, as this is work in progress.
 >
-> Even though other 86xx platforms have no these PCI chips, these  
-> codes will not take effect.
-
-Its code bloat for systems that dont need it.
-
-> And we can also see the similar solution in pSeries and PowerMac  
-> platforms pci.c file. The function 'fixup_winbond_82c105' in  
-> pseries/pci.c is for the Winbond 82c105 IDE controller on p610.  
-> (pSeries have only p610? :-D ) The function 'fixup_k2_sata' in  
-> powermac/pci.c is for K2-SATA. (K2-SATA chip is in all PowerMac  
-> machine? ;-) )
-
-Realize, powermac and pseries describe actual full systems, not  
-processor families like 86xx.
-
-> The moving will make the mpc86xx_hpcn.c more fat.
-
-That's all relative.
-
-- kumar
-
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
 >
-> Thanks,
-> Zhang Wei
+>  arch/powerpc/platforms/83xx/Kconfig       |   11 ++
+>  arch/powerpc/platforms/83xx/Makefile      |    1
+>  arch/powerpc/platforms/83xx/misc.c        |   52 +++++++++
+>  arch/powerpc/platforms/83xx/mpc834x_itx.c |  166 ++++++++++++++++++ 
+> +++++++++++
+>  arch/powerpc/platforms/83xx/mpc834x_itx.h |   23 ++++
+>  arch/powerpc/platforms/83xx/mpc83xx.h     |    5 +
+>  include/asm-ppc/mpc83xx.h                 |    4 +
+>  7 files changed, 261 insertions(+), 1 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/83xx/mpc834x_itx.c
+>  create mode 100644 arch/powerpc/platforms/83xx/mpc834x_itx.h
 >
->>
->>>> -----Original Message-----
->>>> From: linuxppc-dev-bounces+wei.zhang=freescale.com@ozlabs.org
->>>> [mailto:linuxppc-dev-bounces+wei.zhang=freescale.com@ozlabs.or
->>>> g] On Behalf Of Kumar Gala
->>>> Sent: Wednesday, June 28, 2006 2:01 PM
->>>> To: Paul Mackerras
->>>> Cc: linuxppc-dev@ozlabs.org; linux-kernel@vger.kernel.org
->>>> Subject: Please pull from 'for_paulus' branch of powerpc
->>>>
->>>> Please pull from 'for_paulus' branch of
->>>> master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git
->>>>
->>>> to receive the following updates:
->>>>
->>>>  arch/powerpc/kernel/cputable.c             |   12 --
->>>>  arch/powerpc/platforms/86xx/mpc86xx.h      |    8 +
->>>>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |  128
->>>> +++++++++++++++++++++++++--
->>>>  arch/powerpc/platforms/86xx/mpc86xx_smp.c  |    9 -
->>>>  arch/powerpc/platforms/86xx/pci.c          |  136
->>>> +----------------------------
->>>>  include/asm-powerpc/mpc86xx.h              |    4
->>>>  6 files changed, 138 insertions(+), 159 deletions(-)
->>>>
->>>> Kumar Gala:
->>>>       powerpc: minor cleanups for mpc86xx
->>>>
->>>> diff --git a/arch/powerpc/kernel/cputable.c
->>>> b/arch/powerpc/kernel/cputable.c index 1c11488..abf7d42 100644
->>>> --- a/arch/powerpc/kernel/cputable.c
->>>> +++ b/arch/powerpc/kernel/cputable.c
->>>> @@ -722,18 +722,6 @@ #if CLASSIC_PPC
->>>>  		.oprofile_type		= PPC_OPROFILE_G4,
->>>>  		.platform		= "ppc7450",
->>>>  	},
->>>> -        {       /* 8641 */
->>>> -               .pvr_mask               = 0xffffffff,
->>>> -               .pvr_value              = 0x80040010,
->>>> -               .cpu_name               = "8641",
->>>> -               .cpu_features           = CPU_FTRS_7447A,
->>>> -               .cpu_user_features      = COMMON_USER |
->>>> PPC_FEATURE_HAS_ALTIVEC_COMP,
->>>> -               .icache_bsize           = 32,
->>>> -               .dcache_bsize           = 32,
->>>> -               .num_pmcs               = 6,
->>>> -               .cpu_setup              = __setup_cpu_745x
->>>> -        },
->>>> -
->>>>  	{	/* 82xx (8240, 8245, 8260 are all 603e cores) */
->>>>  		.pvr_mask		= 0x7fff0000,
->>>>  		.pvr_value		= 0x00810000,
->>>> diff --git a/arch/powerpc/platforms/86xx/mpc86xx.h
->>>> b/arch/powerpc/platforms/86xx/mpc86xx.h
->>>> index e3c9e4f..2834462 100644
->>>> --- a/arch/powerpc/platforms/86xx/mpc86xx.h
->>>> +++ b/arch/powerpc/platforms/86xx/mpc86xx.h
->>>> @@ -15,11 +15,13 @@ #define __MPC86XX_H__
->>>>   * mpc86xx_* files. Mostly for use by mpc86xx_setup().
->>>>   */
->>>>
->>>> -extern int __init add_bridge(struct device_node *dev);
->>>> +extern int add_bridge(struct device_node *dev);
->>>>
->>>> -extern void __init setup_indirect_pcie(struct
->> pci_controller *hose,
->>>> +extern int mpc86xx_exclude_device(u_char bus, u_char devfn);
->>>> +
->>>> +extern void setup_indirect_pcie(struct pci_controller *hose,
->>>>  				       u32 cfg_addr, u32
->>>> cfg_data); -extern void __init
->>>> setup_indirect_pcie_nomap(struct pci_controller *hose,
->>>> +extern void setup_indirect_pcie_nomap(struct pci_controller *hose,
->>>>  					     void __iomem *cfg_addr,
->>>>  					     void __iomem *cfg_data);
->>>>
->>>> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
->>>> b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
->>>> index 483c21d..ac7f418 100644
->>>> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
->>>> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
->>>> @@ -36,6 +36,7 @@ #include <asm/mpic.h>  #include
->> <sysdev/fsl_soc.h>
->>>>
->>>>  #include "mpc86xx.h"
->>>> +#include "mpc8641_hpcn.h"
->>>>
->>>>  #ifndef CONFIG_PCI
->>>>  unsigned long isa_io_base = 0;
->>>> @@ -186,17 +187,130 @@ mpc86xx_map_irq(struct pci_dev *dev, uns
->>>>  	return PCI_IRQ_TABLE_LOOKUP + I8259_OFFSET;  }
->>>>
->>>> +static void __devinit quirk_ali1575(struct pci_dev *dev) {
->>>> +	unsigned short temp;
->>>> +
->>>> +	/*
->>>> +	 * ALI1575 interrupts route table setup:
->>>> +	 *
->>>> +	 * IRQ pin   IRQ#
->>>> +	 * PIRQA ---- 3
->>>> +	 * PIRQB ---- 4
->>>> +	 * PIRQC ---- 5
->>>> +	 * PIRQD ---- 6
->>>> +	 * PIRQE ---- 9
->>>> +	 * PIRQF ---- 10
->>>> +	 * PIRQG ---- 11
->>>> +	 * PIRQH ---- 12
->>>> +	 *
->>>> +	 * interrupts for PCI slot0 -- PIRQA / PIRQB / PIRQC / PIRQD
->>>> +	 *                PCI slot1 -- PIRQB / PIRQC / PIRQD / PIRQA
->>>> +	 */
->>>> +	pci_write_config_dword(dev, 0x48, 0xb9317542);
->>>> +
->>>> +	/* USB 1.1 OHCI controller 1, interrupt: PIRQE */
->>>> +	pci_write_config_byte(dev, 0x86, 0x0c);
->>>> +
->>>> +	/* USB 1.1 OHCI controller 2, interrupt: PIRQF */
->>>> +	pci_write_config_byte(dev, 0x87, 0x0d);
->>>> +
->>>> +	/* USB 1.1 OHCI controller 3, interrupt: PIRQH */
->>>> +	pci_write_config_byte(dev, 0x88, 0x0f);
->>>> +
->>>> +	/* USB 2.0 controller, interrupt: PIRQ7 */
->>>> +	pci_write_config_byte(dev, 0x74, 0x06);
->>>> +
->>>> +	/* Audio controller, interrupt: PIRQE */
->>>> +	pci_write_config_byte(dev, 0x8a, 0x0c);
->>>> +
->>>> +	/* Modem controller, interrupt: PIRQF */
->>>> +	pci_write_config_byte(dev, 0x8b, 0x0d);
->>>> +
->>>> +	/* HD audio controller, interrupt: PIRQG */
->>>> +	pci_write_config_byte(dev, 0x8c, 0x0e);
->>>> +
->>>> +	/* Serial ATA interrupt: PIRQD */
->>>> +	pci_write_config_byte(dev, 0x8d, 0x0b);
->>>> +
->>>> +	/* SMB interrupt: PIRQH */
->>>> +	pci_write_config_byte(dev, 0x8e, 0x0f);
->>>> +
->>>> +	/* PMU ACPI SCI interrupt: PIRQH */
->>>> +	pci_write_config_byte(dev, 0x8f, 0x0f);
->>>> +
->>>> +	/* Primary PATA IDE IRQ: 14
->>>> +	 * Secondary PATA IDE IRQ: 15
->>>> +	 */
->>>> +	pci_write_config_byte(dev, 0x44, 0x3d);
->>>> +	pci_write_config_byte(dev, 0x75, 0x0f);
->>>> +
->>>> +	/* Set IRQ14 and IRQ15 to legacy IRQs */
->>>> +	pci_read_config_word(dev, 0x46, &temp);
->>>> +	temp |= 0xc000;
->>>> +	pci_write_config_word(dev, 0x46, temp);
->>>> +
->>>> +	/* Set i8259 interrupt trigger
->>>> +	 * IRQ 3:  Level
->>>> +	 * IRQ 4:  Level
->>>> +	 * IRQ 5:  Level
->>>> +	 * IRQ 6:  Level
->>>> +	 * IRQ 7:  Level
->>>> +	 * IRQ 9:  Level
->>>> +	 * IRQ 10: Level
->>>> +	 * IRQ 11: Level
->>>> +	 * IRQ 12: Level
->>>> +	 * IRQ 14: Edge
->>>> +	 * IRQ 15: Edge
->>>> +	 */
->>>> +	outb(0xfa, 0x4d0);
->>>> +	outb(0x1e, 0x4d1);
->>>> +}
->>>>
->>>> -int
->>>> -mpc86xx_exclude_device(u_char bus, u_char devfn)
->>>> +static void __devinit quirk_uli5288(struct pci_dev *dev)
->>>>  {
->>>> -#if !defined(CONFIG_PCI)
->>>> -	if (bus == 0 && PCI_SLOT(devfn) == 0)
->>>> -		return PCIBIOS_DEVICE_NOT_FOUND;
->>>> -#endif
->>>> +	unsigned char c;
->>>> +
->>>> +	pci_read_config_byte(dev,0x83,&c);
->>>> +	c |= 0x80;
->>>> +	pci_write_config_byte(dev, 0x83, c);
->>>> +
->>>> +	pci_write_config_byte(dev, 0x09, 0x01);
->>>> +	pci_write_config_byte(dev, 0x0a, 0x06);
->>>> +
->>>> +	pci_read_config_byte(dev,0x83,&c);
->>>> +	c &= 0x7f;
->>>> +	pci_write_config_byte(dev, 0x83, c);
->>>>
->>>> -	return PCIBIOS_SUCCESSFUL;
->>>> +	pci_read_config_byte(dev,0x84,&c);
->>>> +	c |= 0x01;
->>>> +	pci_write_config_byte(dev, 0x84, c);
->>>>  }
->>>> +
->>>> +static void __devinit quirk_uli5229(struct pci_dev *dev) {
->>>> +	unsigned short temp;
->>>> +	pci_write_config_word(dev, 0x04, 0x0405);
->>>> +	pci_read_config_word(dev, 0x4a, &temp);
->>>> +	temp |= 0x1000;
->>>> +	pci_write_config_word(dev, 0x4a, temp); }
->>>> +
->>>> +static void __devinit early_uli5249(struct pci_dev *dev) {
->>>> +	unsigned char temp;
->>>> +	pci_write_config_word(dev, 0x04, 0x0007);
->>>> +	pci_read_config_byte(dev, 0x7c, &temp);
->>>> +	pci_write_config_byte(dev, 0x7c, 0x80);
->>>> +	pci_write_config_byte(dev, 0x09, 0x01);
->>>> +	pci_write_config_byte(dev, 0x7c, temp);
->>>> +	dev->class |= 0x1;
->>>> +}
->>>> +
->>>> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x1575,
->> quirk_ali1575);
->>>> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5288,
->> quirk_uli5288);
->>>> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5229,
->> quirk_uli5229);
->>>> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL, 0x5249, early_uli5249);
->>>>  #endif /* CONFIG_PCI */
->>>>
->>>>
->>>> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_smp.c
->>>> b/arch/powerpc/platforms/86xx/mpc86xx_smp.c
->>>> index 944ec4b..9cca3d1 100644
->>>> --- a/arch/powerpc/platforms/86xx/mpc86xx_smp.c
->>>> +++ b/arch/powerpc/platforms/86xx/mpc86xx_smp.c
->>>> @@ -34,8 +34,8 @@ extern unsigned long __secondary_hold_ac static
->>>> void __init  smp_86xx_release_core(int nr)  {
->>>> -	void *mcm_vaddr;
->>>> -	unsigned long vaddr, pcr;
->>>> +	__be32 __iomem *mcm_vaddr;
->>>> +	unsigned long pcr;
->>>>
->>>>  	if (nr < 0 || nr >= NR_CPUS)
->>>>  		return;
->>>> @@ -45,10 +45,9 @@ smp_86xx_release_core(int nr)
->>>>  	 */
->>>>  	mcm_vaddr = ioremap(get_immrbase() + MPC86xx_MCM_OFFSET,
->>>>  			    MPC86xx_MCM_SIZE);
->>>> -	vaddr = (unsigned long)mcm_vaddr +  MCM_PORT_CONFIG_OFFSET;
->>>> -	pcr = in_be32((volatile unsigned *)vaddr);
->>>> +	pcr = in_be32(mcm_vaddr + (MCM_PORT_CONFIG_OFFSET >> 2));
->>>>  	pcr |= 1 << (nr + 24);
->>>> -	out_be32((volatile unsigned *)vaddr, pcr);
->>>> +	out_be32(mcm_vaddr + (MCM_PORT_CONFIG_OFFSET >> 2), pcr);
->>>>  }
->>>>
->>>>
->>>> diff --git a/arch/powerpc/platforms/86xx/pci.c
->>>> b/arch/powerpc/platforms/86xx/pci.c
->>>> index 5180df7..0d8b340 100644
->>>> --- a/arch/powerpc/platforms/86xx/pci.c
->>>> +++ b/arch/powerpc/platforms/86xx/pci.c
->>>> @@ -122,15 +122,12 @@ static void __init setup_pcie_atmu(struc
->>>> static void __init mpc86xx_setup_pcie(struct pci_controller *hose,
->>>> u32 pcie_offset, u32 pcie_size)  {
->>>> -	volatile struct ccsr_pex *pcie;
->>>>  	u16 cmd;
->>>>  	unsigned int temps;
->>>>
->>>>  	DBG("PCIE host controller register offset 0x%08x, size
->> 0x%08x.\n",
->>>>  			pcie_offset, pcie_size);
->>>>
->>>> -	pcie = ioremap(pcie_offset, pcie_size);
->>>> -
->>>>  	early_read_config_word(hose, 0, 0, PCI_COMMAND, &cmd);
->>>>  	cmd |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER |
->> PCI_COMMAND_MEMORY
->>>>  	    | PCI_COMMAND_IO;
->>>> @@ -144,6 +141,14 @@ mpc86xx_setup_pcie(struct pci_controller
->>>>  	early_write_config_dword(hose, 0, 0, PCI_PRIMARY_BUS, temps);  }
->>>>
->>>> +int mpc86xx_exclude_device(u_char bus, u_char devfn) {
->>>> +	if (bus == 0 && PCI_SLOT(devfn) == 0)
->>>> +		return PCIBIOS_DEVICE_NOT_FOUND;
->>>> +
->>>> +	return PCIBIOS_SUCCESSFUL;
->>>> +}
->>>> +
->>>>  int __init add_bridge(struct device_node *dev)  {
->>>>  	int len;
->>>> @@ -198,128 +203,3 @@ int __init add_bridge(struct device_node
->>>>
->>>>  	return 0;
->>>>  }
->>>> -
->>>> -static void __devinit quirk_ali1575(struct pci_dev *dev) -{
->>>> -	unsigned short temp;
->>>> -
->>>> -	/*
->>>> -	 * ALI1575 interrupts route table setup:
->>>> -	 *
->>>> -	 * IRQ pin   IRQ#
->>>> -	 * PIRQA ---- 3
->>>> -	 * PIRQB ---- 4
->>>> -	 * PIRQC ---- 5
->>>> -	 * PIRQD ---- 6
->>>> -	 * PIRQE ---- 9
->>>> -	 * PIRQF ---- 10
->>>> -	 * PIRQG ---- 11
->>>> -	 * PIRQH ---- 12
->>>> -	 *
->>>> -	 * interrupts for PCI slot0 -- PIRQA / PIRQB / PIRQC / PIRQD
->>>> -	 *                PCI slot1 -- PIRQB / PIRQC / PIRQD / PIRQA
->>>> -	 */
->>>> -	pci_write_config_dword(dev, 0x48, 0xb9317542);
->>>> -
->>>> -	/* USB 1.1 OHCI controller 1, interrupt: PIRQE */
->>>> -	pci_write_config_byte(dev, 0x86, 0x0c);
->>>> -
->>>> -	/* USB 1.1 OHCI controller 2, interrupt: PIRQF */
->>>> -	pci_write_config_byte(dev, 0x87, 0x0d);
->>>> -
->>>> -	/* USB 1.1 OHCI controller 3, interrupt: PIRQH */
->>>> -	pci_write_config_byte(dev, 0x88, 0x0f);
->>>> -
->>>> -	/* USB 2.0 controller, interrupt: PIRQ7 */
->>>> -	pci_write_config_byte(dev, 0x74, 0x06);
->>>> -
->>>> -	/* Audio controller, interrupt: PIRQE */
->>>> -	pci_write_config_byte(dev, 0x8a, 0x0c);
->>>> -
->>>> -	/* Modem controller, interrupt: PIRQF */
->>>> -	pci_write_config_byte(dev, 0x8b, 0x0d);
->>>> -
->>>> -	/* HD audio controller, interrupt: PIRQG */
->>>> -	pci_write_config_byte(dev, 0x8c, 0x0e);
->>>> -
->>>> -	/* Serial ATA interrupt: PIRQD */
->>>> -	pci_write_config_byte(dev, 0x8d, 0x0b);
->>>> -
->>>> -	/* SMB interrupt: PIRQH */
->>>> -	pci_write_config_byte(dev, 0x8e, 0x0f);
->>>> -
->>>> -	/* PMU ACPI SCI interrupt: PIRQH */
->>>> -	pci_write_config_byte(dev, 0x8f, 0x0f);
->>>> -
->>>> -	/* Primary PATA IDE IRQ: 14
->>>> -	 * Secondary PATA IDE IRQ: 15
->>>> -	 */
->>>> -	pci_write_config_byte(dev, 0x44, 0x3d);
->>>> -	pci_write_config_byte(dev, 0x75, 0x0f);
->>>> -
->>>> -	/* Set IRQ14 and IRQ15 to legacy IRQs */
->>>> -	pci_read_config_word(dev, 0x46, &temp);
->>>> -	temp |= 0xc000;
->>>> -	pci_write_config_word(dev, 0x46, temp);
->>>> -
->>>> -	/* Set i8259 interrupt trigger
->>>> -	 * IRQ 3:  Level
->>>> -	 * IRQ 4:  Level
->>>> -	 * IRQ 5:  Level
->>>> -	 * IRQ 6:  Level
->>>> -	 * IRQ 7:  Level
->>>> -	 * IRQ 9:  Level
->>>> -	 * IRQ 10: Level
->>>> -	 * IRQ 11: Level
->>>> -	 * IRQ 12: Level
->>>> -	 * IRQ 14: Edge
->>>> -	 * IRQ 15: Edge
->>>> -	 */
->>>> -	outb(0xfa, 0x4d0);
->>>> -	outb(0x1e, 0x4d1);
->>>> -}
->>>> -
->>>> -static void __devinit quirk_uli5288(struct pci_dev *dev) -{
->>>> -	unsigned char c;
->>>> -
->>>> -	pci_read_config_byte(dev,0x83,&c);
->>>> -	c |= 0x80;
->>>> -	pci_write_config_byte(dev, 0x83, c);
->>>> -
->>>> -	pci_write_config_byte(dev, 0x09, 0x01);
->>>> -	pci_write_config_byte(dev, 0x0a, 0x06);
->>>> -
->>>> -	pci_read_config_byte(dev,0x83,&c);
->>>> -	c &= 0x7f;
->>>> -	pci_write_config_byte(dev, 0x83, c);
->>>> -
->>>> -	pci_read_config_byte(dev,0x84,&c);
->>>> -	c |= 0x01;
->>>> -	pci_write_config_byte(dev, 0x84, c);
->>>> -}
->>>> -
->>>> -static void __devinit quirk_uli5229(struct pci_dev *dev) -{
->>>> -	unsigned short temp;
->>>> -	pci_write_config_word(dev, 0x04, 0x0405);
->>>> -	pci_read_config_word(dev, 0x4a, &temp);
->>>> -	temp |= 0x1000;
->>>> -	pci_write_config_word(dev, 0x4a, temp);
->>>> -}
->>>> -
->>>> -static void __devinit early_uli5249(struct pci_dev *dev) -{
->>>> -	unsigned char temp;
->>>> -	pci_write_config_word(dev, 0x04, 0x0007);
->>>> -	pci_read_config_byte(dev, 0x7c, &temp);
->>>> -	pci_write_config_byte(dev, 0x7c, 0x80);
->>>> -	pci_write_config_byte(dev, 0x09, 0x01);
->>>> -	pci_write_config_byte(dev, 0x7c, temp);
->>>> -	dev->class |= 0x1;
->>>> -}
->>>> -
->>>> -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x1575,
->> quirk_ali1575);
->>>> -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL,
->>>> 0x5288, quirk_uli5288);
->>>> -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AL, 0x5229,
->> quirk_uli5229);
->>>> -DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_AL,
->>>> 0x5249, early_uli5249); diff --git
->>>> a/include/asm-powerpc/mpc86xx.h
->>>> b/include/asm-powerpc/mpc86xx.h index d0a6718..00d72a7 100644
->>>> --- a/include/asm-powerpc/mpc86xx.h
->>>> +++ b/include/asm-powerpc/mpc86xx.h
->>>> @@ -20,10 +20,6 @@ #include <asm/mmu.h>
->>>>
->>>>  #ifdef CONFIG_PPC_86xx
->>>>
->>>> -#ifdef CONFIG_MPC8641_HPCN
->>>> -#include <platforms/86xx/mpc8641_hpcn.h> -#endif
->>>> -
->>>>  #define _IO_BASE        isa_io_base
->>>>  #define _ISA_MEM_BASE   isa_mem_base
->>>>  #ifdef CONFIG_PCI
->>>>
->>>> _______________________________________________
->>>> Linuxppc-dev mailing list
->>>> Linuxppc-dev@ozlabs.org
->>>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->>>>
->>
+> 3182b4a50027d17badab0c7b8dc2fd4d8fc307b0
+> diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/ 
+> platforms/83xx/Kconfig
+> index 7675e67..5fe7b7f 100644
+> --- a/arch/powerpc/platforms/83xx/Kconfig
+> +++ b/arch/powerpc/platforms/83xx/Kconfig
+> @@ -16,12 +16,21 @@ config MPC834x_SYS
+>  	  3 PCI slots.  The PIBs PCI initialization is the bootloader's
+>  	  responsiblilty.
+>
+> +config MPC834x_ITX
+> +	bool "Freescale MPC834x ITX"
+> +	select DEFAULT_UIMAGE
+> +	help
+> +	  This option enables support for the MPC 834x ITX evaluation board.
+> +
+> +	  Be aware that PCI initialization is the bootloader's
+> +	  responsiblilty.
+> +
+>  endchoice
+>
+>  config MPC834x
+>  	bool
+>  	select PPC_UDBG_16550
+>  	select PPC_INDIRECT_PCI
+> -	default y if MPC834x_SYS
+> +	default y if MPC834x_SYS || MPC834x_ITX
+>
+>  endmenu
+> diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/ 
+> platforms/83xx/Makefile
+> index 5c72367..9387a11 100644
+> --- a/arch/powerpc/platforms/83xx/Makefile
+> +++ b/arch/powerpc/platforms/83xx/Makefile
+> @@ -4,3 +4,4 @@
+>  obj-y				:= misc.o
+>  obj-$(CONFIG_PCI)		+= pci.o
+>  obj-$(CONFIG_MPC834x_SYS)	+= mpc834x_sys.o
+> +obj-$(CONFIG_MPC834x_ITX)	+= mpc834x_itx.o
+> diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/ 
+> platforms/83xx/misc.c
+> index 1455bce..568a8f7 100644
+> --- a/arch/powerpc/platforms/83xx/misc.c
+> +++ b/arch/powerpc/platforms/83xx/misc.c
+> @@ -53,3 +53,55 @@ long __init mpc83xx_time_init(void)
+>
+>  	return 0;
+>  }
+> +
+> +#ifdef CONFIG_RTC_CLASS
+> +int mpc83xx_set_rtc_time(struct rtc_time *tm)
+> +{
+> +	int err;
+> +	struct class_device *class_dev =
+> +		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+> +
+> +	if (class_dev == NULL) {
+> +		printk("%s: unable to open rtc device (%s)\n",
+> +			__FUNCTION__, CONFIG_RTC_HCTOSYS_DEVICE);
+> +		return -ENODEV;
+> +	}
+> +
+> +	err = rtc_set_time(class_dev, tm);
+> +	if (err != 0)
+> +		dev_err(class_dev->dev,
+> +			"%s: unable to set the hardware clock\n",__FUNCTION__);
+> +
+> +	rtc_class_close(class_dev);
+> +
+> +	return 0;
+> +}
+> +
+> +void mpc83xx_get_rtc_time(struct rtc_time *tm)
+> +{
+> +	int err;
+> +	struct class_device *class_dev =
+> +		rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
+> +
+> +	if (class_dev == NULL) {
+> +		printk("%s: unable to open rtc device (%s)\n",
+> +			__FUNCTION__, CONFIG_RTC_HCTOSYS_DEVICE);
+> +		return;
+> +	}
+> +
+> +	err = rtc_read_time(class_dev, tm);
+> +	if (err == 0) {
+> +		err = rtc_valid_tm(tm);
+> +		if (err != 0)
+> +			dev_err(class_dev->dev,
+> +				"%s: invalid date/time\n",__FUNCTION__);
+> +	}
+> +	else
+> +		dev_err(class_dev->dev,
+> +			"%s: unable to read the hardware clock\n",__FUNCTION__);
+> +
+> +	rtc_class_close(class_dev);
+> +
+> +	return;
+> +}
+> +#endif /* CONFIG_RTC_CLASS */
+
+What is this trying to accomplish?  What RTC chip is on 834x ITC and  
+how's it connected?
+
+> diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.c b/arch/ 
+> powerpc/platforms/83xx/mpc834x_itx.c
+> new file mode 100644
+> index 0000000..0a3f58a
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.c
+> @@ -0,0 +1,166 @@
+> +/*
+> + * arch/powerpc/platforms/83xx/mpc834x_itx.c
+> + *
+> + * MPC834x ITX board specific routines
+> + *
+> + * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/config.h>
+> +#include <linux/stddef.h>
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/errno.h>
+> +#include <linux/reboot.h>
+> +#include <linux/pci.h>
+> +#include <linux/kdev_t.h>
+> +#include <linux/major.h>
+> +#include <linux/console.h>
+> +#include <linux/delay.h>
+> +#include <linux/seq_file.h>
+> +#include <linux/root_dev.h>
+> +
+> +#include <asm/system.h>
+> +#include <asm/atomic.h>
+> +#include <asm/time.h>
+> +#include <asm/io.h>
+> +#include <asm/machdep.h>
+> +#include <asm/ipic.h>
+> +#include <asm/bootinfo.h>
+> +#include <asm/irq.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <sysdev/fsl_soc.h>
+> +
+> +#include "mpc83xx.h"
+> +
+> +#ifndef CONFIG_PCI
+> +unsigned long isa_io_base = 0;
+> +unsigned long isa_mem_base = 0;
+> +#endif
+> +
+> +#ifdef CONFIG_PCI
+> +static int
+> +mpc83xx_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned  
+> char pin)
+> +{
+> +	static char pci_irq_table[][4] =
+> +	    /*
+> +	     *      PCI IDSEL/INTPIN->INTLINE
+> +	     *       A      B      C      D
+> +	     */
+> +	{
+> +		{PIRQB, PIRQC, PIRQD, PIRQA},	/* idsel 0x0e */
+> +		{PIRQA, PIRQB, PIRQC, PIRQD},	/* idsel 0x0f */
+> +		{PIRQC, PIRQD, PIRQA, PIRQB},	/* idsel 0x10 */
+> +	};
+> +
+> +	const long min_idsel = 0x0e, max_idsel = 0x10, irqs_per_slot = 4;
+> +	return PCI_IRQ_TABLE_LOOKUP;
+> +}
+> +#endif				/* CONFIG_PCI */
+> +
+> +/*  
+> ********************************************************************** 
+> **
+> + *
+> + * Setup the architecture
+> + *
+> + */
+> +static void __init mpc834x_itx_setup_arch(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	if (ppc_md.progress)
+> +		ppc_md.progress("mpc834x_itx_setup_arch()", 0);
+> +
+> +	np = of_find_node_by_type(NULL, "cpu");
+> +	if (np != 0) {
+> +		unsigned int *fp =
+> +		    (int *)get_property(np, "clock-frequency", NULL);
+> +		if (fp != 0)
+> +			loops_per_jiffy = *fp / HZ;
+> +		else
+> +			loops_per_jiffy = 50000000 / HZ;
+> +		of_node_put(np);
+> +	}
+> +#ifdef CONFIG_PCI
+> +	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+> +		add_bridge(np);
+> +
+> +	ppc_md.pci_swizzle = common_swizzle;
+> +	ppc_md.pci_map_irq = mpc83xx_map_irq;
+> +	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+> +#endif
+> +
+> +#ifdef  CONFIG_ROOT_NFS
+> +	ROOT_DEV = Root_NFS;
+> +#else
+> +	ROOT_DEV = Root_HDA1;
+> +#endif
+> +}
+> +
+> +void __init mpc834x_itx_init_IRQ(void)
+> +{
+> +	u8 senses[8] = {
+> +		0,			/* EXT 0 */
+> +		IRQ_SENSE_LEVEL,	/* EXT 1 */
+> +		IRQ_SENSE_LEVEL,	/* EXT 2 */
+> +		0,			/* EXT 3 */
+> +#ifdef CONFIG_PCI
+> +		IRQ_SENSE_LEVEL,	/* EXT 4 */
+> +		IRQ_SENSE_LEVEL,	/* EXT 5 */
+> +		IRQ_SENSE_LEVEL,	/* EXT 6 */
+> +		IRQ_SENSE_LEVEL,	/* EXT 7 */
+> +#else
+> +		0,			/* EXT 4 */
+> +		0,			/* EXT 5 */
+> +		0,			/* EXT 6 */
+> +		0,			/* EXT 7 */
+> +#endif
+> +	};
+> +
+> +	ipic_init(get_immrbase() + 0x00700, 0, 0, senses, 8);
+> +
+> +	/* Initialize the default interrupt mapping priorities,
+> +	 * in case the boot rom changed something on us.
+> +	 */
+> +	ipic_set_default_priority();
+> +}
+> +
+> +#ifdef CONFIG_RTC_CLASS
+> +static int __init mpc834x_rtc_hookup(void)
+> +{
+> +	ppc_md.get_rtc_time = mpc83xx_get_rtc_time;
+> +	ppc_md.set_rtc_time = mpc83xx_set_rtc_time;
+> +
+> +	return 0;
+> +}
+> +
+> +late_initcall(mpc834x_rtc_hookup);
+> +#endif
+> +
+> +/*
+> + * Called very early, MMU is off, device-tree isn't unflattened
+> + */
+> +static int __init mpc834x_itx_probe(void)
+> +{
+> +	/* We always match for now, eventually we should look at the flat
+> +	   dev tree to ensure this is the board we are suppose to run on
+> +	*/
+> +	return 1;
+> +}
+> +
+> +define_machine(mpc834x_itx) {
+> +	.name			= "MPC834x ITX",
+> +	.probe			= mpc834x_itx_probe,
+> +	.setup_arch		= mpc834x_itx_setup_arch,
+> +	.init_IRQ		= mpc834x_itx_init_IRQ,
+> +	.get_irq		= ipic_get_irq,
+> +	.restart		= mpc83xx_restart,
+> +	.time_init		= mpc83xx_time_init,
+> +	.calibrate_decr		= generic_calibrate_decr,
+> +	.progress		= udbg_progress,
+> +};
+> diff --git a/arch/powerpc/platforms/83xx/mpc834x_itx.h b/arch/ 
+> powerpc/platforms/83xx/mpc834x_itx.h
+> new file mode 100644
+> index 0000000..174ca4e
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/83xx/mpc834x_itx.h
+> @@ -0,0 +1,23 @@
+> +/*
+> + * arch/powerpc/platforms/83xx/mpc834x_itx.h
+> + *
+> + * MPC834X ITX common board definitions
+> + *
+> + * Maintainer: Kumar Gala <galak@kernel.crashing.org>
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + *
+> + */
+> +
+> +#ifndef __MACH_MPC83XX_ITX_H__
+> +#define __MACH_MPC83XX_ITX_H__
+> +
+> +#define PIRQA	MPC83xx_IRQ_EXT4
+> +#define PIRQB	MPC83xx_IRQ_EXT5
+> +#define PIRQC	MPC83xx_IRQ_EXT6
+> +#define PIRQD	MPC83xx_IRQ_EXT7
+> +
+> +#endif				/* __MACH_MPC83XX_ITX_H__ */
+> diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/ 
+> platforms/83xx/mpc83xx.h
+> index 01cae10..532a084 100644
+> --- a/arch/powerpc/platforms/83xx/mpc83xx.h
+> +++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+> @@ -3,6 +3,7 @@
+>
+>  #include <linux/init.h>
+>  #include <linux/device.h>
+> +#include <linux/rtc.h>
+>
+>  /*
+>   * Declaration for the various functions exported by the
+> @@ -13,5 +14,9 @@ extern int add_bridge(struct device_node
+>  extern int mpc83xx_exclude_device(u_char bus, u_char devfn);
+>  extern void mpc83xx_restart(char *cmd);
+>  extern long mpc83xx_time_init(void);
+> +#ifdef CONFIG_RTC_CLASS
+> +extern int mpc83xx_set_rtc_time(struct rtc_time *tm);
+> +extern void mpc83xx_get_rtc_time(struct rtc_time *tm);
+> +#endif
+>
+>  #endif				/* __MPC83XX_H__ */
+> diff --git a/include/asm-ppc/mpc83xx.h b/include/asm-ppc/mpc83xx.h
+> index 02ed2c3..80076be 100644
+> --- a/include/asm-ppc/mpc83xx.h
+> +++ b/include/asm-ppc/mpc83xx.h
+> @@ -25,6 +25,10 @@
+>  #include <platforms/83xx/mpc834x_sys.h>
+>  #endif
+>
+> +#ifdef CONFIG_MPC834x_ITX
+> +#include <platforms/83xx/mpc834x_itx.h>
+> +#endif
+> +
+
+This shouldn't be needed, its a hold over from arch/ppc
+
+>  #define _IO_BASE        isa_io_base
+>  #define _ISA_MEM_BASE   isa_mem_base
+>  #ifdef CONFIG_PCI
+> -- 
+> 1.2.4
