@@ -2,12 +2,12 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.76])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9098B67BB0
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 23:45:01 +1000 (EST)
-Date: Thu, 29 Jun 2006 08:27:52 -0500 (CDT)
-Message-Id: <200606291327.k5TDRq90098182@sullivan.realtime.net>
+	by ozlabs.org (Postfix) with ESMTP id E888F67BE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 23:45:02 +1000 (EST)
+Date: Thu, 29 Jun 2006 08:28:48 -0500 (CDT)
+Message-Id: <200606291328.k5TDSmrx098184@sullivan.realtime.net>
 From: Milton Miller <miltonm@bga.com>
-Subject: [4/5][POWERPC] boot: Makefile and linker scripts for zImage.kexec
+Subject: [5/5][POWERPC] boot: generate lds file from lds.S
 To: <linuxppc-dev@ozlabs.org>
 Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,194 +19,373 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Makefile and linker script changes to build zImage.kexec
+The zImage.kexec and zImage.kexec64 linker files are almost identical to
+the base elf file.   Use the lds.S -> ld rule to share the source.
 
-This patch is based after the if_changed_dep patch.
+Tell the linker the fils is in $(obj) not $(srctree)/$(src)
+zImage.coff.lds is different, it links the initrd and kernel in .data
+rather than as a seperate section and without alignment, keep it seperate
+for now.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 
 Index: kernel/arch/powerpc/boot/Makefile
 ===================================================================
---- kernel.orig/arch/powerpc/boot/Makefile	2006-06-29 05:45:56.343109131 -0500
-+++ kernel/arch/powerpc/boot/Makefile	2006-06-29 06:01:30.254334494 -0500
-@@ -32,12 +32,22 @@ OBJCOPY_MIB_ARGS  := -O aixcoff-rs6000 -
- zlib       := infblock.c infcodes.c inffast.c inflate.c inftrees.c infutil.c
- zlibheader := infblock.h infcodes.h inffast.h inftrees.h infutil.h
- linuxheader := zlib.h zconf.h zutil.h
-+linuxheader += stringify.h
+--- kernel.orig/arch/powerpc/boot/Makefile	2006-06-29 06:15:29.367203511 -0500
++++ kernel/arch/powerpc/boot/Makefile	2006-06-29 06:16:37.166736808 -0500
+@@ -83,7 +83,7 @@ quiet_cmd_bootas = BOOTAS  $@
+       cmd_bootas = $(CROSS32CC) -Wp,-MD,$(depfile) $(BOOTAFLAGS) -c -o $@ $<
  
--src-boot := crt0.S string.S prom.c stdio.c main.c div64.S
--src-boot += $(zlib)
-+src-common := string.S stdio.c main.c div64.S
-+src-common += $(zlib)
-+
-+src-boot := crt0.S prom.c  $(src-common)
- src-boot := $(addprefix $(obj)/, $(src-boot))
- obj-boot := $(addsuffix .o, $(basename $(src-boot)))
- 
-+src-kexec := crt0_kexec.S kexec.c $(src-common)
-+src-kexec := $(addprefix $(obj)/, $(src-kexec))
-+obj-kexec := $(addsuffix .o, $(basename $(src-kexec)))
-+
-+src-mult := $(sort $(src-boot) $(src-kexec))
-+obj-mult := $(sort $(obj-boot) $(obj-kexec))
-+
- BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
- 
- quiet_cmd_copy_zlib = COPY    $@
-@@ -61,7 +71,7 @@ $(addprefix $(obj)/,$(linuxheader)): $(o
- 	$(call if_changed,copy_linuxheader)
- 
- targets += $(zlib) $(zlibheader) $(linuxheader)
--targets += $(patsubst $(obj)/%,%, $(obj-boot))
-+targets += $(patsubst $(obj)/%,%, $(obj-mult))
- 
- # copy all headers before trying to build objects
- $(obj-boot):  $(addprefix $(obj)/,$(linuxheader) $(zlibheader))
-@@ -75,10 +85,10 @@ quiet_cmd_bootas = BOOTAS  $@
  quiet_cmd_bootld = BOOTLD  $@
-       cmd_bootld = $(CROSS32LD) -T $(srctree)/$(src)/$(3) -o $@ $(2)
+-      cmd_bootld = $(CROSS32LD) -T $(srctree)/$(src)/$(3) -o $@ $(2)
++      cmd_bootld = $(CROSS32LD) -T $(obj)/$(3) -o $@ $(2)
  
--$(patsubst %.c,%.o, $(filter %.c, $(src-boot))): %.o: %.c FORCE
-+$(patsubst %.c,%.o, $(filter %.c, $(src-mult))): %.o: %.c FORCE
+ $(patsubst %.c,%.o, $(filter %.c, $(src-mult))): %.o: %.c FORCE
  	$(call if_changed_dep,bootcc)
- 
--$(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S FORCE
-+$(patsubst %.S,%.o, $(filter %.S, $(src-mult))): %.o: %.S FORCE
- 	$(call if_changed_dep,bootas)
- 
- #-----------------------------------------------------------
-@@ -95,6 +105,7 @@ hostprogs-y		:= addnote addRamDisk hack-
- 
+@@ -106,6 +106,7 @@ hostprogs-y		:= addnote addRamDisk hack-
  targets += zImage.vmode zImage.initrd.vmode zImage zImage.initrd \
  	   zImage.coff zImage.initrd.coff miboot.image miboot.initrd.image \
-+	   zImage.kexec zImage.kexec.3264 zImage.kexec64 \
+ 	   zImage.kexec zImage.kexec.3264 zImage.kexec64 \
++	   zImage.lds zImage.kexec.lds zImage.kexec64.lds zImage.coff.lds \
  	   $(patsubst $(obj)/%,%, $(call obj-sec, $(required) $(initrd))) \
  	   $(patsubst $(obj)/%,%, $(call src-sec, $(required) $(initrd))) \
  	   $(patsubst $(obj)/%,%, $(call gz-sec, $(required) $(initrd))) \
-@@ -163,8 +174,36 @@ coffrdimg-$(CONFIG_PPC_PMAC)-$(CONFIG_PP
- mibootimg-$(CONFIG_PPC_PMAC)-$(CONFIG_PPC32) := $(obj)/miboot.image
- mibrdimg-$(CONFIG_PPC_PMAC)-$(CONFIG_PPC32)  := $(obj)/miboot.initrd.image
+@@ -159,12 +160,26 @@ $(call obj-sec, $(required) $(initrd)): 
+ 	$(call cmd,bootcc)
+ 	$(call cmd,addsection)
  
-+# The kexec entry point is valid for all kernels.  This zImage should work
-+# on all loaders (kexec or firmware) that do not use an openfirmware prom
-+# callback, assuming the memory node constraints are met.
-+#
-+# Build if CONFIG_KEXEC=y or on master make zImage.kexec.
-+#
-+kexecimg-$(CONFIG_KEXEC)-$(CONFIG_PPC64) += $(obj)/zImage.kexec64
-+kexecimg-$(CONFIG_KEXEC)-y               += $(obj)/zImage.kexec
++lds-fl := -P -C -Upowerpc
++CPPFLAGS_zImage.coff.lds	:= $(lds-fl)
++CPPFLAGS_zImage.lds		:= $(lds-fl) -D__entry__=_zimage_start
++CPPFLAGS_zImage.lds			+= -D__base__="4*1024*1024"
++CPPFLAGS_zImage.kexec.lds	:= $(lds-fl) -D__entry__=master -D__base__=0
++CPPFLAGS_zImage.kexec64.lds	:= $(lds-fl) -D__entry__=_master64 -D__base__=0
 +
-+# Build 64 bit and 32 bit package when 64 bit kernel is being built
-+$(obj)/zImage.kexec: $(filter-out $(obj)/zImage.kexec, $(kexecimg-y-y))
++$(addprefix $(obj)/, zImage.lds zImage.kexec.lds zImage.kexec64.lds): \
++		$(srctree)/$(src)/zImage.lds.S FORCE
++	$(call if_changed_dep,cpp_lds_S)
 +
-+$(obj)/zImage.kexec: obj-kexec += $(call obj-sec, $(required))
-+$(obj)/zImage.kexec: $(obj-kexec) $(srctree)/$(src)/zImage.kexec.lds \
-+		$(call obj-sec, $(required)) FORCE
-+	$(call if_changed,bootld,$(obj-kexec) $(call obj-sec, $(required)) \
-+			,zImage.kexec.lds)
++$(obj)/zImage.coff.lds:  $(srctree)/$(src)/$zImage.coff.lds.S FORCE
++	$(call if_changed_dep,cpp_lds_S)
 +
-+$(obj)/zImage.kexec.3264: obj-kexec += $(call obj-sec, $(required))
-+$(obj)/zImage.kexec.3264: $(obj-kexec) $(srctree)/$(src)/zImage.kexec64.lds \
-+		$(call obj-sec, $(required)) FORCE
-+	$(call if_changed,bootld,$(obj-kexec) $(call obj-sec, $(required)) \
-+			,zImage.kexec64.lds)
-+
-+OBJCOPYFLAGS_zImage.kexec64 := -I elf32-powerpc -O elf64-powerpc
-+$(obj)/zImage.kexec64: $(obj)/zImage.kexec.3264 FORCE
-+	$(call if_changed,objcopy,$< $@)
-+
- $(obj)/zImage: $(obj)/zImage.vmode $(obj)/addnote $(coffimage-y-y) \
--			$(mibootimg-y-y)
-+			$(mibootimg-y-y) $(kexecimg-y-y)
- 	@cp -f $< $@
+ $(obj)/zImage.vmode $(obj)/zImage.coff: obj-boot += $(call obj-sec, $(required))
+-$(obj)/zImage.vmode: $(call obj-sec, $(required)) $(obj-boot) $(srctree)/$(src)/zImage.lds
++$(obj)/zImage.vmode: $(call obj-sec, $(required)) $(obj-boot) $(obj)/zImage.lds
+ 	$(call cmd,bootld,$(obj-boot),zImage.lds)
+ 
+ $(obj)/zImage.initrd.vmode $(obj)/zImage.initrd.coff: obj-boot += $(call obj-sec, $(required) $(initrd))
+-$(obj)/zImage.initrd.vmode: $(call obj-sec, $(required) $(initrd)) $(obj-boot) $(srctree)/$(src)/zImage.lds
++$(obj)/zImage.initrd.vmode: $(call obj-sec, $(required) $(initrd)) $(obj-boot) $(obj)/zImage.lds
+ 	$(call cmd,bootld,$(obj-boot),zImage.lds)
+ 
+ # For 32-bit powermacs, build the COFF and miboot images
+@@ -187,13 +202,13 @@ kexecimg-$(CONFIG_KEXEC)-y              
+ $(obj)/zImage.kexec: $(filter-out $(obj)/zImage.kexec, $(kexecimg-y-y))
+ 
+ $(obj)/zImage.kexec: obj-kexec += $(call obj-sec, $(required))
+-$(obj)/zImage.kexec: $(obj-kexec) $(srctree)/$(src)/zImage.kexec.lds \
++$(obj)/zImage.kexec: $(obj-kexec) $(obj)/zImage.kexec.lds \
+ 		$(call obj-sec, $(required)) FORCE
+ 	$(call if_changed,bootld,$(obj-kexec) $(call obj-sec, $(required)) \
+ 			,zImage.kexec.lds)
+ 
+ $(obj)/zImage.kexec.3264: obj-kexec += $(call obj-sec, $(required))
+-$(obj)/zImage.kexec.3264: $(obj-kexec) $(srctree)/$(src)/zImage.kexec64.lds \
++$(obj)/zImage.kexec.3264: $(obj-kexec) $(obj)/zImage.kexec64.lds \
+ 		$(call obj-sec, $(required)) FORCE
+ 	$(call if_changed,bootld,$(obj-kexec) $(call obj-sec, $(required)) \
+ 			,zImage.kexec64.lds)
+@@ -213,12 +228,12 @@ $(obj)/zImage.initrd: $(obj)/zImage.init
  	$(call cmd,addnote)
  
-@@ -222,4 +261,4 @@ $(obj)/uImage: $(obj)/vmlinux.gz
- install: $(CONFIGURE) $(BOOTIMAGE)
- 	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" "$(BOOTIMAGE)"
+ $(obj)/zImage.coff: $(call obj-sec, $(required)) $(obj-boot) \
+-			$(srctree)/$(src)/zImage.coff.lds $(obj)/hack-coff
++			$(obj)/zImage.coff.lds $(obj)/hack-coff
+ 	$(call cmd,bootld,$(obj-boot),zImage.coff.lds)
+ 	$(call cmd,gencoff)
  
--clean-files += $(addprefix $(objtree)/, $(obj-boot) vmlinux.strip)
-+clean-files += $(addprefix $(objtree)/, $(obj-mult) vmlinux.strip)
-Index: kernel/arch/powerpc/Makefile
+ $(obj)/zImage.initrd.coff: $(call obj-sec, $(required) $(initrd)) $(obj-boot) \
+-			   $(srctree)/$(src)/zImage.coff.lds $(obj)/hack-coff
++			   $(obj)/zImage.coff.lds $(obj)/hack-coff
+ 	$(call cmd,bootld,$(obj-boot),zImage.coff.lds)
+ 	$(call cmd,gencoff)
+ 
+Index: kernel/arch/powerpc/boot/zImage.coff.lds
 ===================================================================
---- kernel.orig/arch/powerpc/Makefile	2006-06-29 05:24:59.721841947 -0500
-+++ kernel/arch/powerpc/Makefile	2006-06-29 05:51:17.300076495 -0500
-@@ -147,7 +147,7 @@ all: $(KBUILD_IMAGE)
- 
- CPPFLAGS_vmlinux.lds	:= -Upowerpc
- 
--BOOT_TARGETS = zImage zImage.initrd znetboot znetboot.initrd vmlinux.sm uImage vmlinux.bin
-+BOOT_TARGETS = zImage zImage.initrd zImage.kexec znetboot znetboot.initrd vmlinux.sm uImage vmlinux.bin
- 
- PHONY += $(BOOT_TARGETS)
- 
+--- kernel.orig/arch/powerpc/boot/zImage.coff.lds	2006-06-29 06:15:29.185232311 -0500
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,46 +0,0 @@
+-OUTPUT_ARCH(powerpc:common)
+-ENTRY(_start)
+-SECTIONS
+-{
+-  . = (5*1024*1024);
+-  _start = .;
+-  .text      :
+-  {
+-    *(.text)
+-    *(.fixup)
+-  }
+-  _etext = .;
+-  . = ALIGN(4096);
+-  .data    :
+-  {
+-    *(.rodata*)
+-    *(.data*)
+-    *(.sdata*)
+-    __got2_start = .;
+-    *(.got2)
+-    __got2_end = .;
+-
+-    _vmlinux_start =  .;
+-    *(.kernel:vmlinux.strip)
+-    _vmlinux_end =  .;
+-
+-    _initrd_start =  .;
+-    *(.kernel:initrd)
+-    _initrd_end =  .;
+-  }
+-
+-  . = ALIGN(4096);
+-  _edata  =  .;
+-  __bss_start = .;
+-  .bss       :
+-  {
+-   *(.sbss)
+-   *(.bss)
+-  }
+-  _end = . ;
+-
+-  /DISCARD/ :
+-  {
+-    *(.comment)
+-  }
+-}
+Index: kernel/arch/powerpc/boot/zImage.coff.lds.S
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ kernel/arch/powerpc/boot/zImage.coff.lds.S	2006-06-29 06:16:26.525823380 -0500
+@@ -0,0 +1,46 @@
++OUTPUT_ARCH(powerpc:common)
++ENTRY(_start)
++SECTIONS
++{
++  . = (5*1024*1024);
++  _start = .;
++  .text      :
++  {
++    *(.text)
++    *(.fixup)
++  }
++  _etext = .;
++  . = ALIGN(4096);
++  .data    :
++  {
++    *(.rodata*)
++    *(.data*)
++    *(.sdata*)
++    __got2_start = .;
++    *(.got2)
++    __got2_end = .;
++
++    _vmlinux_start =  .;
++    *(.kernel:vmlinux.strip)
++    _vmlinux_end =  .;
++
++    _initrd_start =  .;
++    *(.kernel:initrd)
++    _initrd_end =  .;
++  }
++
++  . = ALIGN(4096);
++  _edata  =  .;
++  __bss_start = .;
++  .bss       :
++  {
++   *(.sbss)
++   *(.bss)
++  }
++  _end = . ;
++
++  /DISCARD/ :
++  {
++    *(.comment)
++  }
++}
 Index: kernel/arch/powerpc/boot/zImage.kexec.lds
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/boot/zImage.kexec.lds	2006-06-29 06:01:30.125354912 -0500
-@@ -0,0 +1,51 @@
-+OUTPUT_ARCH(powerpc:common)
-+ENTRY(master)
-+SECTIONS
-+{
-+  . = 0;
-+  _start = .;
-+  .text      :
-+  {
-+    *(.text)
-+    *(.fixup)
-+  }
-+  _etext = .;
-+  . = ALIGN(4096);
-+  .data    :
-+  {
-+    *(.rodata*)
-+    *(.data*)
-+    *(.sdata*)
-+    __got2_start = .;
-+    *(.got2)
-+    __got2_end = .;
-+  }
-+
-+  . = ALIGN(4096);
-+  _vmlinux_start =  .;
-+  .kernel:vmlinux.strip : { *(.kernel:vmlinux.strip) }
-+  _vmlinux_end =  .;
-+
-+  . = ALIGN(4096);
-+  _initrd_start =  .;
-+  .kernel:initrd : { *(.kernel:initrd) }
-+  _initrd_end =  .;
-+
-+  . = ALIGN(4096);
-+  _edata  =  .;
-+
-+  . = ALIGN(4096);
-+  __stack_start =  .;
-+  .stack : { *(.stack) }
-+  __stack_end =  .;
-+
-+  . = ALIGN(4096);
-+  __bss_start = .;
-+  .bss       :
-+  {
-+   *(.sbss)
-+   *(.bss)
-+  }
-+  . = ALIGN(4096);
-+  _end = . ;
-+}
+--- kernel.orig/arch/powerpc/boot/zImage.kexec.lds	2006-06-29 06:15:29.238223924 -0500
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,51 +0,0 @@
+-OUTPUT_ARCH(powerpc:common)
+-ENTRY(master)
+-SECTIONS
+-{
+-  . = 0;
+-  _start = .;
+-  .text      :
+-  {
+-    *(.text)
+-    *(.fixup)
+-  }
+-  _etext = .;
+-  . = ALIGN(4096);
+-  .data    :
+-  {
+-    *(.rodata*)
+-    *(.data*)
+-    *(.sdata*)
+-    __got2_start = .;
+-    *(.got2)
+-    __got2_end = .;
+-  }
+-
+-  . = ALIGN(4096);
+-  _vmlinux_start =  .;
+-  .kernel:vmlinux.strip : { *(.kernel:vmlinux.strip) }
+-  _vmlinux_end =  .;
+-
+-  . = ALIGN(4096);
+-  _initrd_start =  .;
+-  .kernel:initrd : { *(.kernel:initrd) }
+-  _initrd_end =  .;
+-
+-  . = ALIGN(4096);
+-  _edata  =  .;
+-
+-  . = ALIGN(4096);
+-  __stack_start =  .;
+-  .stack : { *(.stack) }
+-  __stack_end =  .;
+-
+-  . = ALIGN(4096);
+-  __bss_start = .;
+-  .bss       :
+-  {
+-   *(.sbss)
+-   *(.bss)
+-  }
+-  . = ALIGN(4096);
+-  _end = . ;
+-}
 Index: kernel/arch/powerpc/boot/zImage.kexec64.lds
 ===================================================================
+--- kernel.orig/arch/powerpc/boot/zImage.kexec64.lds	2006-06-29 06:15:29.266219493 -0500
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,52 +0,0 @@
+-OUTPUT_ARCH(powerpc:common)
+-ENTRY(_master64)
+-SECTIONS
+-{
+-  . = 0;
+-  _start = .;
+-  .text      :
+-  {
+-    *(.text)
+-    *(.fixup)
+-  }
+-  _etext = .;
+-  . = ALIGN(4096);
+-  .data    :
+-  {
+-    *(.rodata*)
+-    *(.data*)
+-    *(.sdata*)
+-    __got2_start = .;
+-    *(.got2)
+-    __got2_end = .;
+-  }
+-
+-  . = ALIGN(4096);
+-  _vmlinux_start =  .;
+-  .kernel:vmlinux.strip : { *(.kernel:vmlinux.strip) }
+-  _vmlinux_end =  .;
+-
+-  . = ALIGN(4096);
+-  _initrd_start =  .;
+-  .kernel:initrd : { *(.kernel:initrd) }
+-  _initrd_end =  .;
+-
+-  . = ALIGN(4096);
+-  _edata  =  .;
+-
+-  . = ALIGN(4096);
+-  __stack_start =  .;
+-  .stack : { *(.stack) }
+-  __stack_end =  .;
+-
+-  . = ALIGN(4096);
+-  __bss_start = .;
+-  .bss       :
+-  {
+-   *(.sbss)
+-   *(.bss)
+-  }
+-  . = ALIGN(4096);
+-  _end = . ;
+-}
+-
+Index: kernel/arch/powerpc/boot/zImage.lds
+===================================================================
+--- kernel.orig/arch/powerpc/boot/zImage.lds	2006-06-29 06:15:29.295214904 -0500
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,46 +0,0 @@
+-OUTPUT_ARCH(powerpc:common)
+-ENTRY(_zimage_start)
+-SECTIONS
+-{
+-  . = (4*1024*1024);
+-  _start = .;
+-  .text      :
+-  {
+-    *(.text)
+-    *(.fixup)
+-  }
+-  _etext = .;
+-  . = ALIGN(4096);
+-  .data    :
+-  {
+-    *(.rodata*)
+-    *(.data*)
+-    *(.sdata*)
+-    __got2_start = .;
+-    *(.got2)
+-    __got2_end = .;
+-  }
+-
+-  . = ALIGN(4096);
+-  _vmlinux_start =  .;
+-  .kernel:vmlinux.strip : { *(.kernel:vmlinux.strip) }
+-  _vmlinux_end =  .;
+-
+-  . = ALIGN(4096);
+-  _initrd_start =  .;
+-  .kernel:initrd : { *(.kernel:initrd) }
+-  _initrd_end =  .;
+-
+-  . = ALIGN(4096);
+-  _edata  =  .;
+-
+-  . = ALIGN(4096);
+-  __bss_start = .;
+-  .bss       :
+-  {
+-   *(.sbss)
+-   *(.bss)
+-  }
+-  . = ALIGN(4096);
+-  _end = . ;
+-}
+Index: kernel/arch/powerpc/boot/zImage.lds.S
+===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ kernel/arch/powerpc/boot/zImage.kexec64.lds	2006-06-29 06:01:30.154350322 -0500
-@@ -0,0 +1,52 @@
++++ kernel/arch/powerpc/boot/zImage.lds.S	2006-06-29 06:16:26.529822747 -0500
+@@ -0,0 +1,51 @@
 +OUTPUT_ARCH(powerpc:common)
-+ENTRY(_master64)
++ENTRY(__entry__)
 +SECTIONS
 +{
-+  . = 0;
++  . = __base__;
 +  _start = .;
 +  .text      :
 +  {
@@ -253,4 +432,3 @@ Index: kernel/arch/powerpc/boot/zImage.kexec64.lds
 +  . = ALIGN(4096);
 +  _end = . ;
 +}
-+
