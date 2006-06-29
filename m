@@ -4,23 +4,23 @@ Received: from wip-cdctls-mx1.wipro.com (wip-cdctls-mx1.wipro.com
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "wip-cdctls-mx1.wipro.com",
 	Issuer "VeriSign Trust Network" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 58F0A67B60
+	by ozlabs.org (Postfix) with ESMTP id A7DF167B77
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Jun 2006 15:25:50 +1000 (EST)
+	Thu, 29 Jun 2006 15:26:59 +1000 (EST)
 Received: from wip-cdctls-mx1.wipro.com (localhost.localdomain [127.0.0.1])
-	by localhost (Postfix) with ESMTP id A09033C4050
+	by localhost (Postfix) with ESMTP id 3C8603C405E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Jun 2006 10:45:58 +0530 (IST)
+	Thu, 29 Jun 2006 10:20:18 +0530 (IST)
 Received: from chn-snr-bh2.wipro.com (chn-snr-bh2.wipro.com [10.145.50.92])
-	by wip-cdctls-mx1.wipro.com (Postfix) with ESMTP id 931363C400C
+	by wip-cdctls-mx1.wipro.com (Postfix) with ESMTP id 308733C4032
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Jun 2006 10:45:58 +0530 (IST)
+	Thu, 29 Jun 2006 10:20:18 +0530 (IST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C69B3C.780638FD"
-Subject: FW: unresolved symbol on target ... while insmod
-Date: Thu, 29 Jun 2006 10:55:45 +0530
-Message-ID: <6AD9F6A5F6E096408F0B703773355A07010F8F6B@CHN-SNR-MBX01.wipro.com>
+	boundary="----_=_NextPart_001_01C69B38.E1DCDE07"
+Subject: unresolved symbol on target ... while insmod
+Date: Thu, 29 Jun 2006 10:30:05 +0530
+Message-ID: <6AD9F6A5F6E096408F0B703773355A07010F8F4F@CHN-SNR-MBX01.wipro.com>
 From: <srideep.devireddy@wipro.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -35,24 +35,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C69B3C.780638FD
+------_=_NextPart_001_01C69B38.E1DCDE07
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-
-Thanks ... I am able to resolve the problem ...
-
-=0D
-
-________________________________
-
-From: Srideep DeviReddy (WT01 - Broadband Networks)=0D
-Sent: Thursday, June 29, 2006 10:30 AM
-To: 'linuxppc-embedded@ozlabs.org'
-Subject: unresolved symbol on target ... while insmod
-
-=0D
 
 Hello All ,
 
@@ -140,33 +127,21 @@ WARNING: Computer viruses can be transmitted via email. The recipient=
  transmitted by this email.
 =0D
 www.wipro.com
-------_=_NextPart_001_01C69B3C.780638FD
+------_=_NextPart_001_01C69B38.E1DCDE07
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=
-=3D"urn:schemas-microsoft-com:office:office" xmlns:w=
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" xmlns:w=
 =3D"urn:schemas-microsoft-com:office:word" xmlns=
 =3D"http://www.w3.org/TR/REC-html40">
 
 <head>
-<meta http-equiv=3DContent-Type content=3D"text/html; charset=3Dus-ascii">
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; charset=
+=3Dus-ascii">
 <meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<!--[if !mso]>
-<style>
-v\:* {behavior:url(#default#VML);}
-o\:* {behavior:url(#default#VML);}
-w\:* {behavior:url(#default#VML);}
-.shape {behavior:url(#default#VML);}
-</style>
-<![endif]-->
 <style>
 <!--
- /* Font Definitions */
- @font-face
-	{font-family:Tahoma;
-	panose-1:2 11 6 4 3 5 4 4 2 4;}
  /* Style Definitions */
  p.MsoNormal, li.MsoNormal, div.MsoNormal
 	{margin:0in;
@@ -180,11 +155,7 @@ a:visited, span.MsoHyperlinkFollowed
 	{color:purple;
 	text-decoration:underline;}
 span.EmailStyle17
-	{mso-style-type:personal;
-	color:black;}
-span.EmailStyle18
-	{mso-style-type:personal-reply;
-	font-family:Arial;
+	{mso-style-type:personal-compose;
 	color:black;}
 @page Section1
 	{size:8.5in 11.0in;
@@ -200,46 +171,6 @@ div.Section1
 
 <div class=3DSection1>
 
-<p class=3DMsoNormal><font size=3D2 color=3Dblack face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:black'>Thanks &#8230; I am able to resolve=
- the
-problem &#8230;<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dblack face=3DArial><span style=
-=3D'font-size:
-10.0pt;font-family:Arial;color:black'><o:p>&nbsp;</o:p></span></font></p>
-
-<div>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font=
- size=3D3
-face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
-
-<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span style=
-=3D'font-size:10.0pt;
-font-family:Tahoma;font-weight:bold'>From:</span></font></b><font size=3D2
-face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> Srideep
-DeviReddy (WT01 - Broadband Networks) <br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Thursday, June 29,=
- 2006
-10:30 AM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b>=
- 'linuxppc-embedded@ozlabs.org'<br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> unresolved symbol=
- on
-target ... while insmod</span></font><o:p></o:p></p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span style=
-=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
 <p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
  Roman"><span
 style=3D'font-size:12.0pt;color:black'>Hello All=
@@ -251,10 +182,11 @@ style=3D'font-size:12.0pt;color:black'><o:p>&nbsp;</o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
  Roman"><span
-style=3D'font-size:12.0pt;color:black'>&nbsp;I compiled a driver module
-&nbsp;using cross compiler for MPC8247 , now when I try to insert the=
- module in
-to the target&nbsp; I give me an error like <o:p></o:p></span></font></p>
+style=3D'font-size:12.0pt;color:black'>&nbsp;I compiled a driver module=
+ &nbsp;using cross
+compiler for MPC8247 , now when I try to insert the module in to the=
+ target&nbsp; I give
+me an error like <o:p></o:p></span></font></p>
 
 <p class=3DMsoNormal><font size=3D3 color=3Dblack face=3D"Times New=
  Roman"><span
@@ -429,4 +361,4 @@ WARNING: Computer viruses can be transmitted via email. The recipient=
  <br>
 www.wipro.com<br>
 </font></td></tr></table>
-------_=_NextPart_001_01C69B3C.780638FD--
+------_=_NextPart_001_01C69B38.E1DCDE07--
