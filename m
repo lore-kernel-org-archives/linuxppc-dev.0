@@ -1,16 +1,16 @@
 Return-Path: <tauanna@tiscali.it>
 Received: from mrqout2.tiscali.it (mrqout2.tiscali.it [195.130.225.12])
-	by ozlabs.org (Postfix) with ESMTP id D6C7B67A6C
+	by ozlabs.org (Postfix) with ESMTP id 867D467A6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Jun 2006 07:38:31 +1000 (EST)
-Received: from ps18 (10.39.75.88) by mail-1.mail.tiscali.sys (7.2.066.3)
-	id 448EDCF70002B488 for linuxppc-embedded@ozlabs.org;
-	Thu, 29 Jun 2006 23:38:30 +0200
-Message-ID: <15103018.1151617110190.JavaMail.root@ps18>
-Date: Thu, 29 Jun 2006 23:38:30 +0200 (CEST)
+	Fri, 30 Jun 2006 07:38:55 +1000 (EST)
+Received: from ps18 (10.39.75.88) by mail-6.mail.tiscali.sys (7.2.066.3)
+	id 448EDB750002B3BE for linuxppc-embedded@ozlabs.org;
+	Thu, 29 Jun 2006 23:29:31 +0200
+Message-ID: <29672631.1151616571867.JavaMail.root@ps18>
+Date: Thu, 29 Jun 2006 23:29:31 +0200 (CEST)
 From: "tauanna@tiscali.it" <tauanna@tiscali.it>
 To: linuxppc-embedded@ozlabs.org
-Subject: SMC1 Serial port blocks
+Subject: SMC1 serial port blocks
 MIME-Version: 1.0
 Content-Type: text/plain;charset="UTF-8"
 Reply-To: "tauanna@tiscali.it" <tauanna@tiscali.it>
