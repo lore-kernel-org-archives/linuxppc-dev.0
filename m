@@ -1,16 +1,30 @@
-Return-Path: <rocky.mussadi@tropos.com>
-Received: from iceblock01.tropos.com (iceblock01.troposnetworks.com
-	[12.108.168.187]) by ozlabs.org (Postfix) with SMTP id 7C93467A62
+Return-Path: <urwithsudheer@gmail.com>
+Received: from predator.gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id CD39967AC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Jun 2006 11:16:03 +1000 (EST)
+	Thu, 29 Jun 2006 12:45:30 +1000 (EST)
+Received: from predator.gdatech.co.in (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id C40131242F4
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 Jun 2006 08:14:56 +0530 (IST)
+Received: from predator.gdatech.co.in ([192.168.0.3])
+	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Propel SE relay 1.0.0.3430
+	$Rev$) id r66t081456-00-2
+	for linuxppc-embedded@ozlabs.org; Thu, 29 Jun 2006 08:14:56 +0530
+Received: from mail.gdatech.co.in (unknown [192.168.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id 1DB7C1242DB
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 29 Jun 2006 08:14:56 +0530 (IST)
+Message-ID: <44A33EB2.5020505@gmail.com>
+Date: Thu, 29 Jun 2006 08:15:06 +0530
+From: sudheer <urwithsudheer@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: Yosemite board w/ppc440ep NETDEV WATCHDOG: eth0: transmit timed out
-Date: Wed, 28 Jun 2006 18:10:28 -0700
-Message-ID: <FF22D8DA3CC478438280A45A7CFAD27A012310A0@ca-bay-exch-01.tropos.com>
-From: "Rocky Mussadi" <rocky.mussadi@tropos.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: Ameet Patil <ammubhai@gmail.com>
+Subject: Re: Xilinx SystemACE driver for 2.6
+References: <44A2C7CE.9070302@gmail.com>
+In-Reply-To: <44A2C7CE.9070302@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,24 +35,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Ameet,
+
+Your mail is not clear.
 
 
-Hi,
+Ameet Patil wrote:
 
-We are on the Yosemite reference board with IBM PPC440EP ver 2.0. On
-this board, if we pass traffic from eth0 to eth1 and back, we run into
-an eth0 and eth1 transmit lockup consistently. We use "nuttcp -T 2" to
-generate the traffic. The interfaces are operating at 100/full
-(autonegotiated). We have seen this with several different kernels up to
-kernel 2.6.17.  When the lockup occurs we see the message:
+>Hi,
+>   I have ported System Ace driver from 2.4 to 2.6. 
+>
+Hope you have ported System Ace Driver from 2.4 to 2.6.
 
-    NETDEV WATCHDOG: eth0: transmit timed out
+>Please post the patch soon.
+>  
+>
+Or else you are asking the group for  patch to port it.
+Please make it clear.
+I am looking for the same .
 
-The only way to recover is via reboot.
+Thanks
+Sudheer
 
-Please note, we are running no software on the board except for the
-kernel. This is the kernel that came with the reference board. The
-driver being used is the ibm_emac driver.
-
-Thanks for any help!
-Rocky
+>-Ameet
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>  
+>
