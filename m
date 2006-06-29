@@ -2,12 +2,12 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.76])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CC62467AA0
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 23:44:58 +1000 (EST)
-Date: Thu, 29 Jun 2006 08:25:20 -0500 (CDT)
-Message-Id: <200606291325.k5TDPK0f098172@sullivan.realtime.net>
+	by ozlabs.org (Postfix) with ESMTP id 2D69967B6A
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 23:44:59 +1000 (EST)
+Date: Thu, 29 Jun 2006 08:26:47 -0500 (CDT)
+Message-Id: <200606291326.k5TDQl7X098179@sullivan.realtime.net>
 From: Milton Miller <miltonm@bga.com>
-Subject: [1/5][POWERPC] boot: prepare for zImage.kexec
+Subject: [3/5][POWERPC] boot: use more Kbuild rules
 To: <linuxppc-dev@ozlabs.org>
 Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,128 +19,152 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch moves the initializations of prom variables to boot/prom.c
-to allow it to be replaced for kexec.   Kexec does not care about
-the stdout handle, but will care about the location of the device
-tree and will search for RTAS.
+Switch to if_changed_dep for bootcc, cmd for known rebuilds without deps,
+and if_changed for other commands.  Add FORCE for all if_changed rule uses.
+Make sure targets includes all generated files.
 
-It also checks if we stop trying to claim so that we print an error
-instead of storing to address -1.
+Move clean-files to targets for if_changed files.
+
+Rename OBJCOPYFLAGS to OBJCOPY_SEC_FLAGS so we can use $(objcopy) rule.
+
+Rename zliblinuxheader to linuxheader
+
+Remove explicit dependency of zlib files on zlib headers (if_changed_dep).
+Oops, kelace with all sources depend on generated headers, as the
+dependancy files don't exist on a clean compile.
+
+Note: the obj-sec .c files are created/touched when the content file changes.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 
-Index: kernel/arch/powerpc/boot/main.c
+Index: kernel/arch/powerpc/boot/Makefile
 ===================================================================
---- kernel.orig/arch/powerpc/boot/main.c	2006-06-29 02:14:51.347560058 -0500
-+++ kernel/arch/powerpc/boot/main.c	2006-06-29 02:14:57.344543429 -0500
-@@ -17,14 +17,12 @@
- #include "prom.h"
- #include "zlib.h"
+--- kernel.orig/arch/powerpc/boot/Makefile	2006-06-29 03:47:01.063847526 -0500
++++ kernel/arch/powerpc/boot/Makefile	2006-06-29 06:01:36.507278027 -0500
+@@ -25,16 +25,13 @@ HOSTCC		:= gcc
+ BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem \
+ 		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
+ BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+-OBJCOPYFLAGS    := contents,alloc,load,readonly,data
++OBJCOPY_SEC_FLAGS := contents,alloc,load,readonly,data
+ OBJCOPY_COFF_ARGS := -O aixcoff-rs6000 --set-start 0x500000
+ OBJCOPY_MIB_ARGS  := -O aixcoff-rs6000 -R .stab -R .stabstr -R .comment
  
--extern void flush_cache(void *, unsigned long);
+ zlib       := infblock.c infcodes.c inffast.c inflate.c inftrees.c infutil.c
+ zlibheader := infblock.h infcodes.h inffast.h inftrees.h infutil.h
+-zliblinuxheader := zlib.h zconf.h zutil.h
 -
--
- /* Value picked to match that used by yaboot */
- #define PROG_START	0x01400000	/* only used on 64-bit systems */
--#define RAM_END		(512<<20)	/* Fixme: use OF */
- #define	ONE_MB		0x100000
+-$(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
+-#$(addprefix $(obj)/,main.o): $(addprefix $(obj)/,zlib.h)
++linuxheader := zlib.h zconf.h zutil.h
  
-+unsigned long ram_end;		/* end of usable memory, set by init_prom */
+ src-boot := crt0.S string.S prom.c stdio.c main.c div64.S
+ src-boot += $(zlib)
+@@ -48,21 +45,26 @@ quiet_cmd_copy_zlib = COPY    $@
+ 
+ quiet_cmd_copy_zlibheader = COPY    $@
+       cmd_copy_zlibheader = sed "s@<linux/\([^>]\+\).*@\"\1\"@" $< > $@
 +
- extern char _start[];
- extern char __bss_start[];
- extern char _end[];
-@@ -119,7 +117,7 @@ static unsigned long try_claim(unsigned 
- {
- 	unsigned long addr = 0;
+ # stddef.h for NULL
+-quiet_cmd_copy_zliblinuxheader = COPY    $@
+-      cmd_copy_zliblinuxheader = sed "s@<linux/string.h>@\"string.h\"@;s@<linux/kernel.h>@<stddef.h>@;s@<linux/\([^>]\+\).*@\"\1\"@" $< > $@
++quiet_cmd_copy_linuxheader = COPY    $@
++      cmd_copy_linuxheader = sed "s@<linux/string.h>@\"string.h\"@;s@<linux/kernel.h>@<stddef.h>@;s@<linux/\([^>]\+\).*@\"\1\"@" $< > $@
  
--	for(; claim_base < RAM_END; claim_base += ONE_MB) {
-+	for(; claim_base < ram_end; claim_base += ONE_MB) {
- #ifdef DEBUG
- 		printf("    trying: 0x%08lx\n\r", claim_base);
- #endif
-@@ -127,7 +125,7 @@ static unsigned long try_claim(unsigned 
- 		if ((void *)addr != (void *)-1)
- 			break;
- 	}
--	if (addr == 0)
-+	if ((addr == 0) || (void *)addr == (void *)-1)
- 		return 0;
- 	claim_base = PAGE_ALIGN(claim_base + size);
- 	return addr;
-@@ -211,12 +209,7 @@ void start(unsigned long a1, unsigned lo
+-$(addprefix $(obj)/,$(zlib)): $(obj)/%: $(srctree)/lib/zlib_inflate/%
+-	$(call cmd,copy_zlib)
++$(addprefix $(obj)/,$(zlib)): $(obj)/%: $(srctree)/lib/zlib_inflate/% FORCE
++	$(call if_changed,copy_zlib)
  
- 	memset(__bss_start, 0, _end - __bss_start);
+-$(addprefix $(obj)/,$(zlibheader)): $(obj)/%: $(srctree)/lib/zlib_inflate/%
+-	$(call cmd,copy_zlibheader)
++$(addprefix $(obj)/,$(zlibheader)): $(obj)/%: $(srctree)/lib/zlib_inflate/% \
++		FORCE
++	$(call if_changed,copy_zlibheader)
  
--	prom = (int (*)(void *)) promptr;
--	chosen_handle = finddevice("/chosen");
--	if (chosen_handle == (void *) -1)
--		exit();
--	if (getprop(chosen_handle, "stdout", &stdout, sizeof(stdout)) != 4)
--		exit();
-+	init_prom(a1, a2, promptr);
+-$(addprefix $(obj)/,$(zliblinuxheader)): $(obj)/%: $(srctree)/include/linux/%
+-	$(call cmd,copy_zliblinuxheader)
++$(addprefix $(obj)/,$(linuxheader)): $(obj)/%: $(srctree)/include/linux/% FORCE
++	$(call if_changed,copy_linuxheader)
  
- 	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r", _start, sp);
+-clean-files := $(zlib) $(zlibheader) $(zliblinuxheader)
++targets += $(zlib) $(zlibheader) $(linuxheader)
++targets += $(patsubst $(obj)/%,%, $(obj-boot))
  
-@@ -297,6 +290,7 @@ void start(unsigned long a1, unsigned lo
- 	vmlinux.addr += elfoffset;
++# copy all headers before trying to build objects
++$(obj-boot):  $(addprefix $(obj)/,$(linuxheader) $(zlibheader))
  
- 	flush_cache((void *)vmlinux.addr, vmlinux.size);
-+	prom_smp_hook(vmlinux.addr);
+ quiet_cmd_bootcc = BOOTCC  $@
+       cmd_bootcc = $(CROSS32CC) -Wp,-MD,$(depfile) $(BOOTCFLAGS) -c -o $@ $<
+@@ -73,9 +75,10 @@ quiet_cmd_bootas = BOOTAS  $@
+ quiet_cmd_bootld = BOOTLD  $@
+       cmd_bootld = $(CROSS32LD) -T $(srctree)/$(src)/$(3) -o $@ $(2)
  
- 	kernel_entry = (kernel_entry_t)vmlinux.addr;
- #ifdef DEBUG
-Index: kernel/arch/powerpc/boot/prom.c
-===================================================================
---- kernel.orig/arch/powerpc/boot/prom.c	2006-06-29 02:14:51.379554992 -0500
-+++ kernel/arch/powerpc/boot/prom.c	2006-06-29 02:48:30.069204787 -0500
-@@ -16,6 +16,22 @@ int (*prom)(void *);
- phandle chosen_handle;
- ihandle stdout;
- 
-+void init_prom(unsigned long a1, unsigned long a2, void *p)
-+{
-+	prom = (int (*)(void *)) p;
-+	chosen_handle = finddevice("/chosen");
-+	if (chosen_handle == (void *) -1)
-+		exit();
-+	if (getprop(chosen_handle, "stdout", &stdout, sizeof(stdout)) != 4)
-+		exit();
-+	ram_end = (512<<20);	/* Fixme: use OF */
-+}
+-$(patsubst %.c,%.o, $(filter %.c, $(src-boot))): %.o: %.c
++$(patsubst %.c,%.o, $(filter %.c, $(src-boot))): %.o: %.c FORCE
+ 	$(call if_changed_dep,bootcc)
+-$(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S
 +
-+void prom_smp_hook(unsigned long kernel_start)
-+{
-+	return;
-+}
-+
- int call_prom(const char *service, int nargs, int nret, ...)
- {
- 	int i;
-Index: kernel/arch/powerpc/boot/prom.h
-===================================================================
---- kernel.orig/arch/powerpc/boot/prom.h	2006-06-29 02:14:51.429547077 -0500
-+++ kernel/arch/powerpc/boot/prom.h	2006-06-29 02:14:57.348542796 -0500
-@@ -12,8 +12,10 @@ int	call_prom(const char *service, int n
- int	call_prom_ret(const char *service, int nargs, int nret,
- 		      unsigned int *rets, ...);
++$(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S FORCE
+ 	$(call if_changed_dep,bootas)
  
--extern int write(void *handle, void *ptr, int nb);
--extern void *claim(unsigned long virt, unsigned long size, unsigned long aln);
-+void init_prom(unsigned long a1, unsigned long a2, void *p);
-+void prom_smp_hook(unsigned long kernel_start);
-+int write(void *handle, void *ptr, int nb);
-+void *claim(unsigned long virt, unsigned long size, unsigned long aln);
+ #-----------------------------------------------------------
+@@ -104,15 +107,16 @@ quiet_cmd_ramdisk = RAMDISK $@
+ quiet_cmd_stripvm = STRIP   $@
+       cmd_stripvm = $(STRIP) -s -R .comment $< -o $@
  
- static inline void exit(void)
- {
-@@ -31,4 +33,9 @@ static inline int getprop(void *phandle,
- 	return call_prom("getprop", 4, 1, phandle, name, buf, buflen);
- }
+-vmlinux.strip: vmlinux
++vmlinux.strip: vmlinux FORCE
+ 	$(call if_changed,stripvm)
+-$(obj)/vmlinux.initrd: vmlinux.strip $(obj)/addRamDisk $(obj)/ramdisk.image.gz
++$(obj)/vmlinux.initrd: vmlinux.strip $(obj)/addRamDisk \
++		$(obj)/ramdisk.image.gz FORCE
+ 	$(call if_changed,ramdisk)
  
+ quiet_cmd_addsection = ADDSEC  $@
+       cmd_addsection = $(CROSS32OBJCOPY) $@ \
+ 		--add-section=.kernel:$(strip $(patsubst $(obj)/kernel-%.o,%, $@))=$(patsubst %.o,%.gz, $@) \
+-		--set-section-flags=.kernel:$(strip $(patsubst $(obj)/kernel-%.o,%, $@))=$(OBJCOPYFLAGS)
++		--set-section-flags=.kernel:$(strip $(patsubst $(obj)/kernel-%.o,%, $@))=$(OBJCOPY_SEC_FLAGS)
+ 
+ quiet_cmd_addnote = ADDNOTE $@
+       cmd_addnote = $(obj)/addnote $@
+@@ -125,7 +129,13 @@ quiet_cmd_gencoff = COFF    $@
+       cmd_gencoff = $(OBJCOPY) $(OBJCOPY_COFF_ARGS) $@ && \
+ 		    $(obj)/hack-coff $@
+ 
+-$(call gz-sec, $(required)): $(obj)/kernel-%.gz: %
++# $(required) is built in $(objtree) not $(obj) so read cmd files manually
++cmd_files := $(wildcard $(foreach f,$(required),$(dir $(f)).$(notdir $(f)).cmd))
++ifneq ($(cmd_files),)
++  include $(cmd_files)
++endif
 +
-+extern unsigned long ram_end;		/* end of usable memory */
-+
-+extern void flush_cache(void *, unsigned long);
-+
- #endif				/* _PPC_BOOT_PROM_H_ */
++$(call gz-sec, $(required)): $(obj)/kernel-%.gz: % FORCE
+ 	$(call if_changed,gzip)
+ 
+ $(obj)/kernel-initrd.gz: $(obj)/ramdisk.image.gz
+@@ -135,7 +145,7 @@ $(call src-sec, $(required) $(initrd)): 
+ 	@touch $@
+ 
+ $(call obj-sec, $(required) $(initrd)): $(obj)/kernel-%.o: $(obj)/kernel-%.c
+-	$(call if_changed_dep,bootcc)
++	$(call cmd,bootcc)
+ 	$(call cmd,addsection)
+ 
+ $(obj)/zImage.vmode $(obj)/zImage.coff: obj-boot += $(call obj-sec, $(required))
+@@ -156,12 +166,12 @@ mibrdimg-$(CONFIG_PPC_PMAC)-$(CONFIG_PPC
+ $(obj)/zImage: $(obj)/zImage.vmode $(obj)/addnote $(coffimage-y-y) \
+ 			$(mibootimg-y-y)
+ 	@cp -f $< $@
+-	$(call if_changed,addnote)
++	$(call cmd,addnote)
+ 
+ $(obj)/zImage.initrd: $(obj)/zImage.initrd.vmode $(obj)/addnote \
+ 			$(coffrdimg-y-y) $(mibrdimg-y-y)
+ 	@cp -f $< $@
+-	$(call if_changed,addnote)
++	$(call cmd,addnote)
+ 
+ $(obj)/zImage.coff: $(call obj-sec, $(required)) $(obj-boot) \
+ 			$(srctree)/$(src)/zImage.coff.lds $(obj)/hack-coff
