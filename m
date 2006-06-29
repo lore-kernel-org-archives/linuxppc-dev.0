@@ -1,25 +1,19 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9418867AC6
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 07:04:21 +1000 (EST)
-In-Reply-To: <20060629235625.5a8880a0@localhost.localdomain>
-References: <9FCDBA58F226D911B202000BDBAD467306E04FE2@zch01exm40.ap.freescale.net>
-	<8A7E4B7C-8744-47FF-90FA-9B68C5187CEE@freescale.com>
-	<20060629225131.43b9ed59@localhost.localdomain>
-	<C45A575E-1283-4299-A403-BE46B13AEF9C@freescale.com>
-	<20060629235625.5a8880a0@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E5D17B54-D345-4859-A9B0-62F038A694EF@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 1/7] powerpc: Add mpc8360epb platform support
-Date: Thu, 29 Jun 2006 16:04:21 -0500
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: jeff@garzik.org, Yin Olivia-r63875 <Hong-Hua.Yin@freescale.com>,
-	"linux-kernel@vger.kernel.org Mailing List" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.21])
+	by ozlabs.org (Postfix) with SMTP id E01B067B17
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 07:15:17 +1000 (EST)
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Thu, 29 Jun 2006 23:15:13 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <s5hfyhopb0s.wl%tiwai@suse.de>
+Message-ID: <20060629211513.64980@gmx.net>
+MIME-Version: 1.0
+References: <20060628202753.198630@gmx.net> <s5hfyhopb0s.wl%tiwai@suse.de>
+Subject: Re: [Alsa-devel] RFC: dma_mmap_coherent() for powerpc/ppc architecture
+	and ALSA?
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linuxppc-dev@ozlabs.org, rlrevell@joe-job.com,
+	alsa-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,95 +24,39 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jun 29, 2006, at 14:56, Vitaly Bordug wrote:
+-------- Original-Nachricht --------
+Datum: Thu, 29 Jun 2006 11:27:15 +0200
+Von: Takashi Iwai <tiwai@suse.de>
+An: Gerhard Pircher <gerhard_pircher@gmx.net>
+Betreff: Re: [Alsa-devel] RFC: dma_mmap_coherent() for powerpc/ppc architecture and ALSA?
 
-> On Thu, 29 Jun 2006 14:18:51 -0500
-> Andy Fleming wrote:
->
->>
->> On Jun 29, 2006, at 13:51, Vitaly Bordug wrote:
->>
->>> On Thu, 29 Jun 2006 13:03:23 -0500
->>> Andy Fleming wrote:
->>>
->>> [snip]
->>>>>>> +	iounmap(bcsr_regs);
->>>>>>> +
->>>>>> And if we have a design, which do not contain real ethernet UCC
->>>>>> usage? Or UCC
->>>>>> geth is disabled somehow explicitly? Stuff like that normally
->>>>>> goes to the
->>>>>> callback that is going to be triggered upon Etherbet init.
->>>>> I will move it.
->>>>
->>>>
->>>> Wait...no.  I don't understand Vitaly's objection.  If someone
->>>> creates a board with an 8360 that doesn't use the UCC ethernet,
->>>> they can create a separate board file.  This is the board-specific
->>>> code, and it is perfectly acceptable for it to reset the PHY like
->>>> this. What ethernet callback could be used?
->>>>
->>>
->>> I am sort of against the unconditional trigger of the ethernet-
->>> specific stuff,
->>> dependless if UCC eth is really wanted in specific configuration.
->>>
->>> For stuff like that I'd make a function (to setup low-level
->>> stuff), and pass it
->>> via platform_info to the eth driver, so that really
->>> driver-specific things happen in driver context only.
->>>
->>> Yes this is board specific file, and virtually everything needed
->>> for the board can take place here.
->>> But usually BCSR acts as a toggle for a several things, and IOW, I
->>> see it more correct to trigger those stuff from the respective
->>> drivers (using a callback passed through platform_info)
->>
->>
->> Callbacks are fairly evil.  And the driver most certainly cannot
->> know about the BCSR, since there may or may not even *be* a BCSR on
->> any given board with a QE.  The PHY only needs to be reset once,
->> during initialization.  On some boards, there is no need to trigger
->> some sort of reset, or enable any PHYs.  I'm still not sure why this
->> should be the domain of the device driver, since it's a board option.
->>
->
-> Well. The driver does not need to know anything about bcsr. All it  
-> needs to do is to execute the function pointer filled in bsp code,  
-> if one exists (If nothing needs to be tweaked in bsp level for a  
-> driver, just no need to fill that function pointer). For instance,  
-> in PQ2 uart, usb and fcc need to be enabled by bcsr before could be  
-> actually utilized, so say fs_enet does all needed upon startup,  
-> without messing with board setup code.
-> The same does cpm uart...
->
-> In case of this particular board, it is not that bad. But I dislike  
-> the concept to execute the code in common (for this board) path,  
-> not depending if UCC eth disabled in config explicitly.
+> At Wed, 28 Jun 2006 22:27:53 +0200,
+> Gerhard Pircher wrote:
+> > 
+> > Hi,
+> > 
+> > It took a little bit longer to integrate the patch, as I didn't figure
+> out  first how to implement the __dma_mmap_coherent() function for PPC
+> systems with CONFIG_NOT_COHERENT_CACHE defined. :)
+> > 
+> > Unfortunately my system still crashes within snd_pcm_mmap_data_nopage() 
+> > (sound/core/pcm_native.c), as you can see below. I guess it tries to
+> remap 
+> > a DMA buffer allocated by the not cache coherent DMA memory allocation 
+> > function in arch/ppc/kernel/dma-mapping.c.
+> 
+> Strange, nopage will be never called if you apply my patch and modify
+> to use dma_mmap_coherent().
+> 
+> 
+> Takashi
+> 
+That's indeed strange! I'm sure that the new code is called by the sound drivers. Should snd_pcm_mmap_data_nopage() not be used at all anymore, or are there any cases that could still trigger a call of snd_pcm_mmap_data_nopage()?
 
-Well, let me try to see if I understand the two approaches being  
-pondered:
+Gerhard
 
-1) Use a callback.
+-- 
 
-Inside the platform info device-specific structure, we create a  
-callback.  Something like enet_info->board_init().  The board boots,  
-and in the initialization function for that board, the callback is  
-assigned to be a function which does the appropriate board-specific  
-initialization.  Actually, it makes sure to do this for every device  
-which requires such initialization.  Then, later, the devices are  
-registered, and matched up with appropriate drivers.  Those drivers  
-make sure to invoke enet_info->board_init() before they do anything  
-hw related.
 
-2) Let board init code do it
-
-The board boots, and in the initialization function for that board,  
-it checks to see if the device exists (by searching the device tree),  
-and if so, does any board-specific initialization (in this case,  
-configuring the board register to enable the PHY for that device).   
-The devices are registered, and matched with appropriate drivers.   
-Those drivers operate, blissfully unaware that there was ever any  
-danger the board wasn't set up.
-
-Andy
+Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
