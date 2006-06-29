@@ -1,22 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 676E067B64
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 04:51:45 +1000 (EST)
-Date: Thu, 29 Jun 2006 22:51:31 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 1/7] powerpc: Add mpc8360epb platform support
-Message-ID: <20060629225131.43b9ed59@localhost.localdomain>
-In-Reply-To: <8A7E4B7C-8744-47FF-90FA-9B68C5187CEE@freescale.com>
-References: <9FCDBA58F226D911B202000BDBAD467306E04FE2@zch01exm40.ap.freescale.net>
-	<8A7E4B7C-8744-47FF-90FA-9B68C5187CEE@freescale.com>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 02B0967B71
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 05:02:26 +1000 (EST)
+Date: Thu, 29 Jun 2006 14:02:17 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] Add support for the Freescale MPC8349E-mITX eval board
+Message-Id: <20060629140217.4a07f05a.kim.phillips@freescale.com>
+In-Reply-To: <B0F8A9DE-8841-4404-BF8D-D712322FB20E@kernel.crashing.org>
+References: <20060628211317.7b21d085.kim.phillips@freescale.com>
+	<99F42AA0-3028-4C80-86C1-14A210C41229@kernel.crashing.org>
+	<20060629095839.55cb8e5f.kim.phillips@freescale.com>
+	<B0F8A9DE-8841-4404-BF8D-D712322FB20E@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
-	Yin Olivia-r63875 <Hong-Hua.Yin@freescale.com>,
-	"'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, 'Paul Mackerras' <paulus@samba.org>,
-	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,34 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 29 Jun 2006 13:03:23 -0500
-Andy Fleming wrote:
+On Thu, 29 Jun 2006 11:38:04 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-[snip]
-> >>> +	iounmap(bcsr_regs);
+> 
+> > It removes rtc chip-specific code from the platform code.  It  
+> > accomplishes this by using the new "RTC-framework" glue.
+> 
+> I'm aware of the new RTC framework.
+> 
+> This code seems pretty generic for any RTC using the new framework.   
+> If so, we should put it somewhere more generic like setup.c
+> 
+yeah, I'd like to clean up some more of the existing rtc specific code and do that in one fell swoop..
+
+> > <snip>
+> >>> diff --git a/include/asm-ppc/mpc83xx.h b/include/asm-ppc/mpc83xx.h
+> >>> index 02ed2c3..80076be 100644
+> >>> --- a/include/asm-ppc/mpc83xx.h
+> >>> +++ b/include/asm-ppc/mpc83xx.h
+> >>> @@ -25,6 +25,10 @@
+> >>>  #include <platforms/83xx/mpc834x_sys.h>
+> >>>  #endif
+> >>>
+> >>> +#ifdef CONFIG_MPC834x_ITX
+> >>> +#include <platforms/83xx/mpc834x_itx.h>
+> >>> +#endif
 > >>> +
-> >> And if we have a design, which do not contain real ethernet UCC  
-> >> usage? Or UCC
-> >> geth is disabled somehow explicitly? Stuff like that normally
-> >> goes to the
-> >> callback that is going to be triggered upon Etherbet init.
-> > I will move it.
+> >>
+> >> This shouldn't be needed, its a hold over from arch/ppc
+> >>
+> > Unfortunately it won't build without it.
 > 
+> What's the build error?
 > 
-> Wait...no.  I don't understand Vitaly's objection.  If someone  
-> creates a board with an 8360 that doesn't use the UCC ethernet, they  
-> can create a separate board file.  This is the board-specific code,  
-> and it is perfectly acceptable for it to reset the PHY like this.   
-> What ethernet callback could be used?
-> 
+..
+  CC      arch/powerpc/platforms/83xx/mpc834x_itx.o
+arch/powerpc/platforms/83xx/mpc834x_itx.c: In function `mpc83xx_map_irq':
+arch/powerpc/platforms/83xx/mpc834x_itx.c:57: error: `PIRQB' undeclared (first use in this function)
+..
 
-I am sort of against the unconditional trigger of the ethernet-specific stuff,
-dependless if UCC eth is really wanted in specific configuration.
+which reminds me of wanting to adopt Benh's new irq stuff..
 
-For stuff like that I'd make a function (to setup low-level stuff), and pass it 
-via platform_info to the eth driver, so that really driver-specific things happen in driver context only.
-
-Yes this is board specific file, and virtually everything needed for the board can take place here. 
-But usually BCSR acts as a toggle for a several things, and IOW, I see it more correct to trigger those stuff from the respective drivers (using a callback passed through platform_info)
-
--Vitaly
+Kim
