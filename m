@@ -1,24 +1,26 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 3F6DE67B21
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 05:56:40 +1000 (EST)
-Date: Thu, 29 Jun 2006 23:56:25 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 1/7] powerpc: Add mpc8360epb platform support
-Message-ID: <20060629235625.5a8880a0@localhost.localdomain>
-In-Reply-To: <C45A575E-1283-4299-A403-BE46B13AEF9C@freescale.com>
-References: <9FCDBA58F226D911B202000BDBAD467306E04FE2@zch01exm40.ap.freescale.net>
-	<8A7E4B7C-8744-47FF-90FA-9B68C5187CEE@freescale.com>
-	<20060629225131.43b9ed59@localhost.localdomain>
-	<C45A575E-1283-4299-A403-BE46B13AEF9C@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
-	Yin Olivia-r63875 <Hong-Hua.Yin@freescale.com>,
-	"'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, 'Paul Mackerras' <paulus@samba.org>,
-	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A781F67A44
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 07:03:34 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [Alsa-devel] [RFC 01/12] snd-powermac: no longer handle	anything
+	with a layout-id property
+References: <20060607130909.584205000@sipsolutions.net>
+	<20060607130910.156412000@sipsolutions.net>
+	<jey7vjiqwv.fsf@sykes.suse.de> <s5hac7yvfhe.wl%tiwai@suse.de>
+	<jehd26aa25.fsf@sykes.suse.de>
+Date: Thu, 29 Jun 2006 23:03:12 +0200
+In-Reply-To: <jehd26aa25.fsf@sykes.suse.de> (Andreas Schwab's message of "Tue,
+	27 Jun 2006 17:32:34 +0200")
+Message-ID: <jeu0631xpr.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
+	alsa-devel@alsa-project.org, netstar@gatheringofgray.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,60 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 29 Jun 2006 14:18:51 -0500
-Andy Fleming wrote:
+Andreas Schwab <schwab@suse.de> writes:
 
-> 
-> On Jun 29, 2006, at 13:51, Vitaly Bordug wrote:
-> 
-> > On Thu, 29 Jun 2006 13:03:23 -0500
-> > Andy Fleming wrote:
-> >
-> > [snip]
-> >>>>> +	iounmap(bcsr_regs);
-> >>>>> +
-> >>>> And if we have a design, which do not contain real ethernet UCC
-> >>>> usage? Or UCC
-> >>>> geth is disabled somehow explicitly? Stuff like that normally
-> >>>> goes to the
-> >>>> callback that is going to be triggered upon Etherbet init.
-> >>> I will move it.
-> >>
-> >>
-> >> Wait...no.  I don't understand Vitaly's objection.  If someone
-> >> creates a board with an 8360 that doesn't use the UCC ethernet,
-> >> they can create a separate board file.  This is the board-specific
-> >> code, and it is perfectly acceptable for it to reset the PHY like
-> >> this. What ethernet callback could be used?
-> >>
-> >
-> > I am sort of against the unconditional trigger of the ethernet- 
-> > specific stuff,
-> > dependless if UCC eth is really wanted in specific configuration.
-> >
-> > For stuff like that I'd make a function (to setup low-level
-> > stuff), and pass it
-> > via platform_info to the eth driver, so that really
-> > driver-specific things happen in driver context only.
-> >
-> > Yes this is board specific file, and virtually everything needed  
-> > for the board can take place here.
-> > But usually BCSR acts as a toggle for a several things, and IOW, I  
-> > see it more correct to trigger those stuff from the respective  
-> > drivers (using a callback passed through platform_info)
-> 
-> 
-> Callbacks are fairly evil.  And the driver most certainly cannot
-> know about the BCSR, since there may or may not even *be* a BCSR on
-> any given board with a QE.  The PHY only needs to be reset once,
-> during initialization.  On some boards, there is no need to trigger
-> some sort of reset, or enable any PHYs.  I'm still not sure why this  
-> should be the domain of the device driver, since it's a board option.
-> 
+> Takashi Iwai <tiwai@suse.de> writes:
+>
+>> At Mon, 26 Jun 2006 22:49:04 +0200,
+>> Andreas Schwab wrote:
+>>> 
+>>> Johannes Berg <johannes@sipsolutions.net> writes:
+>>> 
+>>> > This patch removes from snd-powermac the code that check for the layout-id
+>>> > and instead adds code that makes it refuse loading when a layout-id property
+>>> > is present, nothing that snd-aoa should be used.
+>>> 
+>>> Can we get snd-powermac back as long as snd-aoa is lacking all those
+>>> features from snd-powermac?
+>>
+>> What functions are missing?
+>
+> Sound on PowerMac7,2, DRC on TAS, probably more.
 
-Well. The driver does not need to know anything about bcsr. All it needs to do is to execute the function pointer filled in bsp code, if one exists (If nothing needs to be tweaked in bsp level for a driver, just no need to fill that function pointer). For instance, in PQ2 uart, usb and fcc need to be enabled by bcsr before could be actually utilized, so say fs_enet does all needed upon startup, without messing with board setup code.
-The same does cpm uart... 
+Another problem is that the sound device can only be opened once.
 
-In case of this particular board, it is not that bad. But I dislike the concept to execute the code in common (for this board) path, not depending if UCC eth disabled in config explicitly.
+Andreas.
 
--Vitaly
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
