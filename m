@@ -1,22 +1,33 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 47BD267A65
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 22:53:11 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k5TD4A5v028267
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 06:04:10 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k5TCr4Gi021424
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 07:53:06 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD467306E04FE5@zch01exm40.ap.freescale.net>
-From: Li Yang-r58472 <LeoLi@freescale.com>
+Return-Path: <arnd.bergmann@de.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7EDE267A6C
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 23:25:59 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k5TDPtTu010220
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 09:25:55 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k5TDPtHC240052
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 09:25:55 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k5TDPtWR009203
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 09:25:55 -0400
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Add QE device tree definition
-Date: Thu, 29 Jun 2006 20:53:03 +0800
+Subject: Re: new IRQ work status
+Date: Thu, 29 Jun 2006 15:25:52 +0200
+References: <1151570165.28229.15.camel@localhost.localdomain>
+In-Reply-To: <1151570165.28229.15.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200606291525.53254.arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,247 +37,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is the device tree definition for QE SOC for Freescale CPUs.
+On Thursday 29 June 2006 10:36, Benjamin Herrenschmidt wrote:
+> http://gate.crashing.org/~benh/irq-WIP/
+> 
+> Comments welcome.
+> 
 
-I have discussed with Vitaly.  We agreed on having CPM and QE definition ultimately merged.  He will add in CPM specified definition later.
+Looks great!
 
-Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> -}
+> -
+>  /* Get an IRQ number from the pending state register of the IIC */
+> -int iic_get_irq(struct pt_regs *regs)
+> +unsigned int iic_get_irq(struct pt_regs *regs)
 
----
-Documentation/powerpc/booting-without-of.txt |  222 ++++++++++++++++++++++++++
- 1 files changed, 222 insertions(+), 0 deletions(-)
+Is unsigned the right thing here? NO_IRQ is defined as (-1).
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 217e517..096063f 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1442,6 +1442,227 @@ platforms are moved over to use the flat
-        };
- 
- 
-+   h) Freescale QUICC Engine module (QE)
-+   This represents qe module that is installed on PowerQUICC II Pro.
-+   Hopefully it will merge backward compatibility with CPM/CPM2.
-+   Basically, it is a bus of devices, that could act more or less
-+   as a complete entity (UCC, USB etc ). All of them should be siblings on 
-+   the "root" qe node, using the common properties from there.
-+   The description below applies to the the qe of MPC8360 and
-+   more nodes and properties would be extended in the future.	
-+
-+   1) Root QE device
-+
-+   Required properties:
-+   - device_type : should be "qe";
-+   - model : precise model of the QE, Can be "QE", "CPM", or "CPM2"
-+   - reg : Offset and length of the register set for the device.
-+   - bus-frequency : the clock frequency for QUICC Engine.
-+   
-+   Recommended properties
-+   - brg-frequency : the internal clock source frequency for baud-rate 
-+     generators in Hz.
-+
-+   Example:
-+	qe@e0100000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		device_type = "qe";
-+		model = "QE";
-+		ranges = <0 e0100000 00100000>;
-+		reg = <e0100000 480>;
-+		brg-frequency = <0>; 
-+		bus-frequency = <179A7B00>;
-+	}
-+
-+
-+   2) SPI (Serial Peripheral Interface)
-+
-+   Required properties:
-+   - device_type : should be "spi".
-+   - compatible : should be "fsl_spi".
-+   - mode : the spi operation mode, it can be "cpu" or "qe".
-+   - reg : offset to the register set and its length.
-+   - interrupts : <a b> where a is the interrupt number and b is a
-+     field that represents an encoding of the sense and level
-+     information for the interrupt.  This should be encoded based on
-+     the information in section 2) depending on the type of interrupt
-+     controller you have.
-+   - interrupt-parent : the phandle for the interrupt controller that
-+     services interrupts for this device.
-+
-+   Example:
-+	spi@4c0 {
-+		device_type = "spi";
-+		compatible = "fsl_spi";
-+		reg = <4c0 40>;
-+		interrupts = <82 0>;
-+		interrupt-parent = <700>;
-+		mode = "cpu"; 
-+	};
-+
-+
-+   3) USB (Universal Serial Bus Controller)
-+
-+   Required properties:
-+   - device_type : should be "usb".
-+   - compatible : could be "qe_udc" or "fhci-hcd".
-+   - model : the could be "host" or "slave".
-+   - reg : there will be two tuples of "address size".  The first tuple is
-+     offset and length of the device registers respectively; the second is
-+     offset and length of the device parameter RAM respectively.
-+   - interrupts : <a b> where a is the interrupt number and b is a
-+     field that represents an encoding of the sense and level
-+     information for the interrupt.  This should be encoded based on
-+     the information in section 2) depending on the type of interrupt
-+     controller you have.
-+   - interrupt-parent : the phandle for the interrupt controller that
-+     services interrupts for this device.
-+
-+   Example(slave):
-+	usb@6c0 {
-+		device_type = "usb";
-+		compatible = "qe_udc"; 
-+		reg = <6c0 40 8B00 100>;
-+		interrupts = <8b 0>;
-+		interrupt-parent = <700>;
-+		mode = "slave"; 
-+	};
-+
-+
-+   4) UCC (Unified Communications Controllers) 
-+
-+   Required properties:
-+   - device_type : should be "network", "hldc", "uart", "transparent"
-+    "bisync" or "atm".
-+   - compatible : could be "ucc_geth" or "fsl_atm" and so on.
-+   - model : should be "UCC".
-+   - device-id : the ucc number(1-8), corresponding to UCCx in UM.
-+   - reg : there will be two tuples of "address size".  The first tuple is
-+     offset and length of the device registers respectively; the second is
-+     offset and length of the device parameter RAM respectively.
-+   - interrupts : <a b> where a is the interrupt number and b is a
-+     field that represents an encoding of the sense and level
-+     information for the interrupt.  This should be encoded based on
-+     the information in section 2) depending on the type of interrupt
-+     controller you have.
-+   - interrupt-parent : the phandle for the interrupt controller that
-+     services interrupts for this device.
-+   - pio-handle : The phandle for the Parallel I/O port configuration.
-+
-+   Required properties for network device_type:
-+   - mac-address : list of bytes representing the ethernet address.
-+   - rx-clock : a string represents the UCC receive clock source.
-+     "brgx" : clock source is BRG1~BRG16 respectively;
-+     "clkx" : clock source is QE_CLK1~QE_CLK24 respectively.
-+     others : clock source is disabled;
-+   - tx-clock: a string represents the UCC transmit clock source;
-+     "brgx" : clock source is BRG1~BRG16 respectively;
-+     "clkx" : clock source is QE_CLK1~QE_CLK24 respectively.
-+     others : clock source is disabled;
-+   - phy-handle : The phandle for the PHY connected to this controller.
-+
-+   Example:
-+	ucc@2000 {
-+		device_type = "network";
-+		compatible = "ucc_geth";
-+		model = "UCC";
-+		device-id = <1>;
-+		reg = <2000 200 8400 100>;
-+		interrupts = <a0 0>;
-+		interrupt-parent = <700>;
-+		mac-address = [ 00 04 9f 00 23 23 ];
-+		rx-clock = "none"; 
-+		tx-clock = "clk9";
-+		phy-handle = <212000>;
-+		pio-handle = <140001>;
-+	};
-+
-+
-+   5) Parallel I/O Ports
-+   
-+   This node configures Parallel I/O ports for CPUs with QE support.
-+   The node should reside in the "soc" node of the tree.  For each 
-+   device that using parallel I/O ports, a child node should be created.
-+   See the definition of the Pin configuration nodes below for more 
-+   information.
-+
-+   Required properties:
-+   - device_type : should be "par_io".
-+   - reg : offset to the register set and its length.
-+
-+   Example:
-+	par_io@1400 {
-+		reg = <1400 100>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;		
-+		device_type = "par_io";
-+		ucc_pin@01 {
-+			......
-+		};
-+
-+
-+   6) Pin configuration nodes
-+
-+   Required properties:
-+   - linux,phandle : phandle of this node; likely referenced by a QE
-+     device.
-+   - pio-map : array of pin configurations.  Each pin is defined by 6
-+     integers.  The six numbers are respectively: port, pin, dir, 
-+     open_drain, assignment, has_irq.
-+     - port : port number of the pin; 0-6 represent port A-G in UM.
-+     - pin : pin number in the port.
-+     - dir : direction of the pin, should encode as follows:
-+
-+	0 = The pin is disabled
-+	1 = The pin is an output
-+	2 = The pin is an input
-+	3 = The pin is I/O
-+
-+     - open_drain : indicates the pin is normal or wired-OR:
-+
-+	0 = The pin is actively driven as an output
-+	1 = The pin is an open-drain driver. As an output, the pin is
-+	    driven active-low, otherwise it is three-stated.
-+
-+     - assignment : function number of the pin according to the Pin Assignment
-+       tables in User Manual.  Each pin can have up to 4 possible functions in
-+       QE and two options for CPM.
-+     - has_irq : indicates if the pin is used as source of exteral
-+       interrupts.
-+
-+   Example:
-+	ucc_pin@01 {
-+		linux,phandle = <140001>;
-+		pio-map = <
-+		/* port  pin  dir  open_drain  assignment  has_irq */
-+			0  3  1  0  1  0 	/* TxD0 */
-+			0  4  1  0  1  0 	/* TxD1 */
-+			0  5  1  0  1  0 	/* TxD2 */
-+			0  6  1  0  1  0 	/* TxD3 */
-+			1  6  1  0  3  0 	/* TxD4 */
-+			1  7  1  0  1  0 	/* TxD5 */
-+			1  9  1  0  2  0 	/* TxD6 */
-+			1  a  1  0  2  0 	/* TxD7 */
-+			0  9  2  0  1  0 	/* RxD0 */
-+			0  a  2  0  1  0 	/* RxD1 */
-+			0  b  2  0  1  0 	/* RxD2 */
-+			0  c  2  0  1  0 	/* RxD3 */
-+			0  d  2  0  1  0 	/* RxD4 */
-+			1  1  2  0  2  0 	/* RxD5 */
-+			1  0  2  0  2  0 	/* RxD6 */
-+			1  4  2  0  2  0 	/* RxD7 */
-+			0  7  1  0  1  0 	/* TX_EN */
-+			0  8  1  0  1  0 	/* TX_ER */
-+			0  f  2  0  1  0 	/* RX_DV */
-+			0  10 2  0  1  0 	/* RX_ER */
-+			0  0  2  0  1  0 	/* RX_CLK */
-+			2  9  1  0  3  0 	/* GTX_CLK - CLK10 */
-+			2  8  2  0  1  0>;	/* GTX125 - CLK9 */
-+	};
-+
-+
-    More devices will be defined as this spec matures.
- 
+> +
+> +/*
+> + * Hardcoded setup part to be compatible with older firmware. We don't
+> + * associate a device-node to the hosts in this case, which mean that
+> + * no mapping from the device-tree is supposed. That's ok as there is
+> + * none anyway
+> + */
+>  static int __init setup_iic_hardcoded(void)
+>  {
+
+I'd prefer to throw out the hardcoded part from the official tree
+completely. It's only needed on the very first FW versions that
+were shipped and those need some other patches that we never merged
+upstream anyway. So better move it to an extra patch that we keep
+external for some time and eventually drop.
+
+>  static irqreturn_t iic_ipi_action(int irq, void *dev_id, struct pt_regs
+> *regs) {
+> -	smp_message_recv(iic_irq_to_ipi(irq), regs);
+> +	int ipi = (int)(long)dev_id;
+> +	smp_message_recv(ipi, regs);
+>  	return IRQ_HANDLED;
+>  }
+
+Nice one. this looks a lot cleaner than looking at the irq number here.
+
+>  static void iic_request_ipi(int ipi, const char *name)
+>  {
+> -	int irq;
+> -
+> -	irq = iic_ipi_to_irq(ipi);
+> +	int node, virq;
+>
+> -	/* IPIs are marked SA_INTERRUPT as they must run with irqs
+> -	 * disabled */
+> -	set_irq_chip_and_handler(irq, &iic_chip, handle_percpu_irq);
+> -	request_irq(irq, iic_ipi_action, SA_INTERRUPT, name, NULL);
+> +	for (node = 0; node < IIC_NODE_COUNT; node++) {
+> +		char *rname;
+> +		if (iic_hosts[node] == NULL)
+> +			continue;
+> +		virq = irq_create_mapping(iic_hosts[node],
+> +					  iic_ipi_to_irq(ipi), 0);
+> +
+> +		if (virq == NO_IRQ) {
+> +			printk(KERN_ERR
+> +			       "iic: failed to map IPI %s on node %d\n",
+> +			       name, node);
+> +			continue;
+> +		}
+> +		rname = kzalloc(strlen(name) + 16, GFP_KERNEL);
+> +		if (rname)
+> +			sprintf(rname, "%s node %d", name, node);
+> +		else
+> +			rname = (char *)name;
+
+Considering that name is know to be rather short and we have a fixed
+number of these, can't we just put the strings into struct iic
+instead of doing the kzalloc?
+
+>  enum {
+> -	IIC_EXT_OFFSET   = 0x00, /* Start of south bridge IRQs */
+> -	IIC_EXT_CASCADE  = 0x20, /* There is no interrupt 32 on spider */
+> -	IIC_NUM_EXT      = 0x40, /* Number of south bridge IRQs */
+> -	IIC_SPE_OFFSET   = 0x40, /* Start of SPE interrupts */
+> -	IIC_CLASS_STRIDE = 0x10, /* SPE IRQs per class    */
+> -	IIC_IPI_OFFSET   = 0x70, /* Start of IPI IRQs */
+> -	IIC_NUM_IPIS     = 0x10, /* IRQs reserved for IPI */
+> -	IIC_NODE_STRIDE  = 0x80, /* Total IRQs per node   */
+> +	IIC_IRQ_INVALID		= 0xff,
+
+Where is IIC_IRQ_INVALID used?
+
+
+> +			}
+> +		} else if (device_is_compatible(dn, "sti,platform-spider-pic")
+> +			   && (chip < 2)) {
+> +			static long hard_coded_pics[] =
+> +				{ 0x24000008000, 0x34000008000 };
+> +			r.start = hard_coded_pics[chip];
+>  		} else
+
+See above about the hardcoded stuff.
+
+
+> @@ -664,11 +688,18 @@ static int __init create_spu(struct devi
+>  	if (ret)
+>  		goto out_free;
+>
+> +	/* XXX FIXME: Those node vs. nid things are crap, we need
+> +	 * only one information, but fixing that goes along with fixing
+> +	 * all of the node vs chip vs thread code all over the cell
+> +	 * platform. To do soon hopefully...
+> +	 */
+>  	spu->node = find_spu_node_id(spe);
+>  	spu->nid = of_node_to_nid(spe);
+>  	if (spu->nid == -1)
+>  		spu->nid = 0;
+
+The idea at some point was to keep the notion of nid (as in address
+on the inter-chip protocol) separate from the NUMA node ID, which
+may in theory be less fine-grained. Defining them to be the same
+at least requires the device tree to be very careful with the numbers
+in ibm,associativity properties to match the bus numbers.
+
+
+> Index: linux-work-mm/include/asm-powerpc/spu.h
+> ===================================================================
+> --- linux-work-mm.orig/include/asm-powerpc/spu.h	2006-06-23
+> 13:38:19.000000000 +1000 +++
+> linux-work-mm/include/asm-powerpc/spu.h	2006-06-29 16:32:35.000000000 +1000
+> @@ -117,7 +117,7 @@ struct spu {
+>  	struct list_head sched_list;
+>  	int number;
+>  	int nid;
+> -	u32 isrc;
+> +	unsigned int irqs[3];
+>  	u32 node;
+>  	u64 flags;
+>  	u64 dar;
+
+We've started exporting the isrc property in sysfs recently, so I think
+we need to keep that in here.
+
+	Arnd <><
