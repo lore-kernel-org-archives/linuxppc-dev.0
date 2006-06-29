@@ -1,12 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 47BD267A65
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 22:53:11 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k5TD4A5v028267
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 06:04:10 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k5TCr4Gi021424
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 07:53:06 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD467306E04FE5@zch01exm40.ap.freescale.net>
+From: Li Yang-r58472 <LeoLi@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Add QE device tree definition
+Date: Thu, 29 Jun 2006 20:53:03 +0800
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17571.47868.286977.635819@cargo.ozlabs.ibm.com>
-Date: Thu, 29 Jun 2006 21:35:24 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@osdl.org
-Subject: please pull powerpc.git 'master' branch
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,180 +26,247 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+This is the device tree definition for QE SOC for Freescale CPUs.
 
-Please do a pull from the "master" branch of
+I have discussed with Vitaly.  We agreed on having CPM and QE definition ultimately merged.  He will add in CPM specified definition later.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+Signed-off-by: Jiang Bo <Tanya.jiang@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 
-to get some more powerpc updates, as listed below.
+---
+Documentation/powerpc/booting-without-of.txt |  222 ++++++++++++++++++++++++++
+ 1 files changed, 222 insertions(+), 0 deletions(-)
 
-Thanks,
-Paul.
-
- arch/powerpc/Kconfig                              |   23 -
- arch/powerpc/Kconfig.debug                        |    9 
- arch/powerpc/configs/cell_defconfig               |    7 
- arch/powerpc/configs/mpc7448_hpc2_defconfig       |  923 +++++++++++++++++++++
- arch/powerpc/kernel/Makefile                      |    3 
- arch/powerpc/kernel/cpu_setup_power4.S            |   14 
- arch/powerpc/kernel/cputable.c                    |   12 
- arch/powerpc/kernel/crash.c                       |  147 +++
- arch/powerpc/kernel/head_64.S                     |   62 -
- arch/powerpc/kernel/iommu.c                       |   30 +
- arch/powerpc/kernel/legacy_serial.c               |   11 
- arch/powerpc/kernel/lparcfg.c                     |  147 ++-
- arch/powerpc/kernel/machine_kexec_64.c            |    4 
- arch/powerpc/kernel/misc.S                        |  203 +++++
- arch/powerpc/kernel/misc_32.S                     |  156 ----
- arch/powerpc/kernel/misc_64.S                     |  223 -----
- arch/powerpc/kernel/paca.c                        |    1 
- arch/powerpc/kernel/prom.c                        |   49 +
- arch/powerpc/kernel/rtas.c                        |  119 ++-
- arch/powerpc/kernel/setup_64.c                    |   22 -
- arch/powerpc/kernel/traps.c                       |   27 -
- arch/powerpc/kernel/udbg.c                        |    7 
- arch/powerpc/mm/hash_native_64.c                  |    3 
- arch/powerpc/mm/hash_utils_64.c                   |  106 +-
- arch/powerpc/mm/mmu_context_64.c                  |    2 
- arch/powerpc/platforms/86xx/Kconfig               |    6 
- arch/powerpc/platforms/86xx/Makefile              |    3 
- arch/powerpc/platforms/86xx/mpc8641_hpcn.h        |    1 
- arch/powerpc/platforms/86xx/mpc86xx.h             |    8 
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c        |  129 +++
- arch/powerpc/platforms/86xx/mpc86xx_smp.c         |   10 
- arch/powerpc/platforms/86xx/pci.c                 |  137 ---
- arch/powerpc/platforms/Makefile                   |    1 
- arch/powerpc/platforms/cell/Kconfig               |    2 
- arch/powerpc/platforms/cell/setup.c               |   16 
- arch/powerpc/platforms/cell/spu_base.c            |    8 
- arch/powerpc/platforms/cell/spufs/file.c          |   10 
- arch/powerpc/platforms/cell/spufs/switch.c        |    6 
- arch/powerpc/platforms/embedded6xx/Kconfig        |   15 
- arch/powerpc/platforms/embedded6xx/Makefile       |    4 
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |  335 ++++++++
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.h |   26 +
- arch/powerpc/platforms/iseries/dt.c               |    2 
- arch/powerpc/platforms/iseries/htab.c             |    4 
- arch/powerpc/platforms/iseries/lpevents.c         |   55 +
- arch/powerpc/platforms/iseries/proc.c             |    1 
- arch/powerpc/platforms/iseries/setup.c            |   19 
- arch/powerpc/platforms/maple/setup.c              |    7 
- arch/powerpc/platforms/powermac/setup.c           |    9 
- arch/powerpc/platforms/pseries/iommu.c            |   33 +
- arch/powerpc/platforms/pseries/lpar.c             |    4 
- arch/powerpc/platforms/pseries/setup.c            |   10 
- arch/powerpc/sysdev/Makefile                      |    2 
- arch/powerpc/sysdev/dart.h                        |    6 
- arch/powerpc/sysdev/dart_iommu.c                  |   49 +
- arch/powerpc/sysdev/todc.c                        |  392 +++++++++
- arch/powerpc/sysdev/tsi108_dev.c                  |  145 +++
- arch/powerpc/sysdev/tsi108_pci.c                  |  412 +++++++++
- drivers/ide/Kconfig                               |    9 
- drivers/ide/ppc/pmac.c                            |  125 ---
- drivers/macintosh/Kconfig                         |   12 
- drivers/macintosh/Makefile                        |    1 
- drivers/macintosh/via-pmu-led.c                   |  144 +++
- include/asm-powerpc/cputable.h                    |   48 -
- include/asm-powerpc/iseries/it_lp_queue.h         |   40 -
- include/asm-powerpc/kdump.h                       |    2 
- include/asm-powerpc/kexec.h                       |    9 
- include/asm-powerpc/machdep.h                     |    2 
- include/asm-powerpc/mmu.h                         |    1 
- include/asm-powerpc/mmu_context.h                 |    7 
- include/asm-powerpc/mpc86xx.h                     |    5 
- include/asm-powerpc/rtas.h                        |    3 
- include/asm-powerpc/time.h                        |    6 
- include/asm-powerpc/todc.h                        |  487 +++++++++++
- include/asm-powerpc/tsi108.h                      |  109 ++
- include/asm-powerpc/udbg.h                        |    3 
- kernel/kexec.c                                    |    6 
- 77 files changed, 4086 insertions(+), 1110 deletions(-)
- create mode 100644 arch/powerpc/configs/mpc7448_hpc2_defconfig
- create mode 100644 arch/powerpc/kernel/misc.S
- create mode 100644 arch/powerpc/platforms/embedded6xx/Makefile
- create mode 100644 arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
- create mode 100644 arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.h
- create mode 100644 arch/powerpc/sysdev/todc.c
- create mode 100644 arch/powerpc/sysdev/tsi108_dev.c
- create mode 100644 arch/powerpc/sysdev/tsi108_pci.c
- create mode 100644 drivers/macintosh/via-pmu-led.c
- create mode 100644 include/asm-powerpc/todc.h
- create mode 100644 include/asm-powerpc/tsi108.h
-
-Andrew Morton:
-      [POWERPC] powerpc: kconfig warning fix
-
-Arnd Bergmann:
-      [POWERPC] spufs: fix class0 interrupt assignment
-
-Benjamin Herrenschmidt:
-      [POWERPC] spufs: map mmio space as guarded into user space
-      [POWERPC] spufs: fix MFC command queue purge
-
-David Wilder:
-      [POWERPC] Add the use of the firmware soft-reset-nmi to kdump.
-
-Geoff Levand:
-      [POWERPC] spufs: fix memory hotplug dependency
-
-Haren Myneni:
-      [POWERPC] kdump: Reserve the existing TCE mappings left by the first kernel
-
-Jimi Xenidis:
-      [POWERPC] Don't access HID registers if running on a Hypervisor.
-      [POWERPC] Skip the "copy down" of the kernel if it is already at zero.
-
-Johannes Berg:
-      [POWERPC] Convert powermac ide blink to new led infrastructure
-
-Jon Loeliger:
-      [POWERPC] Remove redundant PPC_86XX check.
-      [POWERPC] Move I8259 selection under MPC8641HPCN board
-      [POWERPC] Remove redundant STD_MMU selection.
-      [POWERPC] Remove obsolete #include <linux/config.h>.
-
-Kumar Gala:
-      powerpc: minor cleanups for mpc86xx
-
-Mark A. Greer:
-      [POWERPC] todc: add support for Time-Of-Day-Clock
-
-Michael Ellerman:
-      [POWERPC] Remove remaining iSeries debugger cruft
-      [POWERPC] Export flat device tree via debugfs for debugging
-      [POWERPC] powerpc: Initialise ppc_md htab pointers earlier
-      [POWERPC] Use ppc_md.hpte_insert() in htab_bolt_mapping()
-      [POWERPC] Make kexec_setup() a regular initcall
-      [POWERPC] Setup the boot cpu's paca pointer in C rather than asm
-      [POWERPC] Make rtas_call() safe if RTAS hasn't been initialised
-      [POWERPC] Move RTAS exports next to their declarations
-      [POWERPC] Setup RTAS values earlier, to enable rtas_call() earlier
-      [POWERPC] Add udbg support for RTAS console
-      [POWERPC] Enable the RTAS udbg console on IBM Cell Blade
-      [POWERPC] Enable XMON in cell_defconfig
-      [POWERPC] Make sure smp_processor_id works very early in boot
-
-Olof Johansson:
-      [POWERPC] U4 DART improvements
-
-Paul Mackerras:
-      [POWERPC] Simplify the code defining the 64-bit CPU features
-      [POWERPC] Make sure we select CONFIG_NEW_LEDS if ADB_PMU_LED is set
-      [POWERPC] Correct the MAX_CONTEXT definition
-      [POWERPC] Use little-endian bit from firmware ibm,pa-features property
-
-Sonny Rao:
-      [POWERPC] Fix idr locking in init_new_context
-
-Stephen Rothwell:
-      [POWERPC] Clean up it_lp_queue.h
-      [POWERPC] update asm-powerpc/time.h
-      [POWERPC] Remove unused function call_with_mmu_off
-      [POWERPC] Consolidate some of kernel/misc*.S
-      [POWERPC] Make lparcfg.c work when both iseries and pseries are selected
-
-Zang Roy-r61911:
-      [POWERPC] Add general support for mpc7448hpc2 (Taiga) platform
-      [POWERPC] Add tsi108 pci and platform device data register function
-      [POWERPC] mpc7448hpc2 (taiga) board config file
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 217e517..096063f 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1442,6 +1442,227 @@ platforms are moved over to use the flat
+        };
+ 
+ 
++   h) Freescale QUICC Engine module (QE)
++   This represents qe module that is installed on PowerQUICC II Pro.
++   Hopefully it will merge backward compatibility with CPM/CPM2.
++   Basically, it is a bus of devices, that could act more or less
++   as a complete entity (UCC, USB etc ). All of them should be siblings on 
++   the "root" qe node, using the common properties from there.
++   The description below applies to the the qe of MPC8360 and
++   more nodes and properties would be extended in the future.	
++
++   1) Root QE device
++
++   Required properties:
++   - device_type : should be "qe";
++   - model : precise model of the QE, Can be "QE", "CPM", or "CPM2"
++   - reg : Offset and length of the register set for the device.
++   - bus-frequency : the clock frequency for QUICC Engine.
++   
++   Recommended properties
++   - brg-frequency : the internal clock source frequency for baud-rate 
++     generators in Hz.
++
++   Example:
++	qe@e0100000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <2>;
++		device_type = "qe";
++		model = "QE";
++		ranges = <0 e0100000 00100000>;
++		reg = <e0100000 480>;
++		brg-frequency = <0>; 
++		bus-frequency = <179A7B00>;
++	}
++
++
++   2) SPI (Serial Peripheral Interface)
++
++   Required properties:
++   - device_type : should be "spi".
++   - compatible : should be "fsl_spi".
++   - mode : the spi operation mode, it can be "cpu" or "qe".
++   - reg : offset to the register set and its length.
++   - interrupts : <a b> where a is the interrupt number and b is a
++     field that represents an encoding of the sense and level
++     information for the interrupt.  This should be encoded based on
++     the information in section 2) depending on the type of interrupt
++     controller you have.
++   - interrupt-parent : the phandle for the interrupt controller that
++     services interrupts for this device.
++
++   Example:
++	spi@4c0 {
++		device_type = "spi";
++		compatible = "fsl_spi";
++		reg = <4c0 40>;
++		interrupts = <82 0>;
++		interrupt-parent = <700>;
++		mode = "cpu"; 
++	};
++
++
++   3) USB (Universal Serial Bus Controller)
++
++   Required properties:
++   - device_type : should be "usb".
++   - compatible : could be "qe_udc" or "fhci-hcd".
++   - model : the could be "host" or "slave".
++   - reg : there will be two tuples of "address size".  The first tuple is
++     offset and length of the device registers respectively; the second is
++     offset and length of the device parameter RAM respectively.
++   - interrupts : <a b> where a is the interrupt number and b is a
++     field that represents an encoding of the sense and level
++     information for the interrupt.  This should be encoded based on
++     the information in section 2) depending on the type of interrupt
++     controller you have.
++   - interrupt-parent : the phandle for the interrupt controller that
++     services interrupts for this device.
++
++   Example(slave):
++	usb@6c0 {
++		device_type = "usb";
++		compatible = "qe_udc"; 
++		reg = <6c0 40 8B00 100>;
++		interrupts = <8b 0>;
++		interrupt-parent = <700>;
++		mode = "slave"; 
++	};
++
++
++   4) UCC (Unified Communications Controllers) 
++
++   Required properties:
++   - device_type : should be "network", "hldc", "uart", "transparent"
++    "bisync" or "atm".
++   - compatible : could be "ucc_geth" or "fsl_atm" and so on.
++   - model : should be "UCC".
++   - device-id : the ucc number(1-8), corresponding to UCCx in UM.
++   - reg : there will be two tuples of "address size".  The first tuple is
++     offset and length of the device registers respectively; the second is
++     offset and length of the device parameter RAM respectively.
++   - interrupts : <a b> where a is the interrupt number and b is a
++     field that represents an encoding of the sense and level
++     information for the interrupt.  This should be encoded based on
++     the information in section 2) depending on the type of interrupt
++     controller you have.
++   - interrupt-parent : the phandle for the interrupt controller that
++     services interrupts for this device.
++   - pio-handle : The phandle for the Parallel I/O port configuration.
++
++   Required properties for network device_type:
++   - mac-address : list of bytes representing the ethernet address.
++   - rx-clock : a string represents the UCC receive clock source.
++     "brgx" : clock source is BRG1~BRG16 respectively;
++     "clkx" : clock source is QE_CLK1~QE_CLK24 respectively.
++     others : clock source is disabled;
++   - tx-clock: a string represents the UCC transmit clock source;
++     "brgx" : clock source is BRG1~BRG16 respectively;
++     "clkx" : clock source is QE_CLK1~QE_CLK24 respectively.
++     others : clock source is disabled;
++   - phy-handle : The phandle for the PHY connected to this controller.
++
++   Example:
++	ucc@2000 {
++		device_type = "network";
++		compatible = "ucc_geth";
++		model = "UCC";
++		device-id = <1>;
++		reg = <2000 200 8400 100>;
++		interrupts = <a0 0>;
++		interrupt-parent = <700>;
++		mac-address = [ 00 04 9f 00 23 23 ];
++		rx-clock = "none"; 
++		tx-clock = "clk9";
++		phy-handle = <212000>;
++		pio-handle = <140001>;
++	};
++
++
++   5) Parallel I/O Ports
++   
++   This node configures Parallel I/O ports for CPUs with QE support.
++   The node should reside in the "soc" node of the tree.  For each 
++   device that using parallel I/O ports, a child node should be created.
++   See the definition of the Pin configuration nodes below for more 
++   information.
++
++   Required properties:
++   - device_type : should be "par_io".
++   - reg : offset to the register set and its length.
++
++   Example:
++	par_io@1400 {
++		reg = <1400 100>;
++		#address-cells = <1>;
++		#size-cells = <0>;		
++		device_type = "par_io";
++		ucc_pin@01 {
++			......
++		};
++
++
++   6) Pin configuration nodes
++
++   Required properties:
++   - linux,phandle : phandle of this node; likely referenced by a QE
++     device.
++   - pio-map : array of pin configurations.  Each pin is defined by 6
++     integers.  The six numbers are respectively: port, pin, dir, 
++     open_drain, assignment, has_irq.
++     - port : port number of the pin; 0-6 represent port A-G in UM.
++     - pin : pin number in the port.
++     - dir : direction of the pin, should encode as follows:
++
++	0 = The pin is disabled
++	1 = The pin is an output
++	2 = The pin is an input
++	3 = The pin is I/O
++
++     - open_drain : indicates the pin is normal or wired-OR:
++
++	0 = The pin is actively driven as an output
++	1 = The pin is an open-drain driver. As an output, the pin is
++	    driven active-low, otherwise it is three-stated.
++
++     - assignment : function number of the pin according to the Pin Assignment
++       tables in User Manual.  Each pin can have up to 4 possible functions in
++       QE and two options for CPM.
++     - has_irq : indicates if the pin is used as source of exteral
++       interrupts.
++
++   Example:
++	ucc_pin@01 {
++		linux,phandle = <140001>;
++		pio-map = <
++		/* port  pin  dir  open_drain  assignment  has_irq */
++			0  3  1  0  1  0 	/* TxD0 */
++			0  4  1  0  1  0 	/* TxD1 */
++			0  5  1  0  1  0 	/* TxD2 */
++			0  6  1  0  1  0 	/* TxD3 */
++			1  6  1  0  3  0 	/* TxD4 */
++			1  7  1  0  1  0 	/* TxD5 */
++			1  9  1  0  2  0 	/* TxD6 */
++			1  a  1  0  2  0 	/* TxD7 */
++			0  9  2  0  1  0 	/* RxD0 */
++			0  a  2  0  1  0 	/* RxD1 */
++			0  b  2  0  1  0 	/* RxD2 */
++			0  c  2  0  1  0 	/* RxD3 */
++			0  d  2  0  1  0 	/* RxD4 */
++			1  1  2  0  2  0 	/* RxD5 */
++			1  0  2  0  2  0 	/* RxD6 */
++			1  4  2  0  2  0 	/* RxD7 */
++			0  7  1  0  1  0 	/* TX_EN */
++			0  8  1  0  1  0 	/* TX_ER */
++			0  f  2  0  1  0 	/* RX_DV */
++			0  10 2  0  1  0 	/* RX_ER */
++			0  0  2  0  1  0 	/* RX_CLK */
++			2  9  1  0  3  0 	/* GTX_CLK - CLK10 */
++			2  8  2  0  1  0>;	/* GTX125 - CLK9 */
++	};
++
++
+    More devices will be defined as this spec matures.
+ 
