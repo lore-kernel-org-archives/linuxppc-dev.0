@@ -2,12 +2,12 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.76])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2D69967B6A
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 23:44:59 +1000 (EST)
-Date: Thu, 29 Jun 2006 08:26:47 -0500 (CDT)
-Message-Id: <200606291326.k5TDQl7X098179@sullivan.realtime.net>
+	by ozlabs.org (Postfix) with ESMTP id 9098B67BB0
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 23:45:01 +1000 (EST)
+Date: Thu, 29 Jun 2006 08:27:52 -0500 (CDT)
+Message-Id: <200606291327.k5TDRq90098182@sullivan.realtime.net>
 From: Milton Miller <miltonm@bga.com>
-Subject: [3/5][POWERPC] boot: use more Kbuild rules
+Subject: [4/5][POWERPC] boot: Makefile and linker scripts for zImage.kexec
 To: <linuxppc-dev@ozlabs.org>
 Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,152 +19,238 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Switch to if_changed_dep for bootcc, cmd for known rebuilds without deps,
-and if_changed for other commands.  Add FORCE for all if_changed rule uses.
-Make sure targets includes all generated files.
+The Makefile and linker script changes to build zImage.kexec
 
-Move clean-files to targets for if_changed files.
-
-Rename OBJCOPYFLAGS to OBJCOPY_SEC_FLAGS so we can use $(objcopy) rule.
-
-Rename zliblinuxheader to linuxheader
-
-Remove explicit dependency of zlib files on zlib headers (if_changed_dep).
-Oops, kelace with all sources depend on generated headers, as the
-dependancy files don't exist on a clean compile.
-
-Note: the obj-sec .c files are created/touched when the content file changes.
+This patch is based after the if_changed_dep patch.
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
 
 Index: kernel/arch/powerpc/boot/Makefile
 ===================================================================
---- kernel.orig/arch/powerpc/boot/Makefile	2006-06-29 03:47:01.063847526 -0500
-+++ kernel/arch/powerpc/boot/Makefile	2006-06-29 06:01:36.507278027 -0500
-@@ -25,16 +25,13 @@ HOSTCC		:= gcc
- BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem \
- 		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
--OBJCOPYFLAGS    := contents,alloc,load,readonly,data
-+OBJCOPY_SEC_FLAGS := contents,alloc,load,readonly,data
- OBJCOPY_COFF_ARGS := -O aixcoff-rs6000 --set-start 0x500000
- OBJCOPY_MIB_ARGS  := -O aixcoff-rs6000 -R .stab -R .stabstr -R .comment
- 
+--- kernel.orig/arch/powerpc/boot/Makefile	2006-06-29 05:45:56.343109131 -0500
++++ kernel/arch/powerpc/boot/Makefile	2006-06-29 06:01:30.254334494 -0500
+@@ -32,12 +32,22 @@ OBJCOPY_MIB_ARGS  := -O aixcoff-rs6000 -
  zlib       := infblock.c infcodes.c inffast.c inflate.c inftrees.c infutil.c
  zlibheader := infblock.h infcodes.h inffast.h inftrees.h infutil.h
--zliblinuxheader := zlib.h zconf.h zutil.h
--
--$(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
--#$(addprefix $(obj)/,main.o): $(addprefix $(obj)/,zlib.h)
-+linuxheader := zlib.h zconf.h zutil.h
+ linuxheader := zlib.h zconf.h zutil.h
++linuxheader += stringify.h
  
- src-boot := crt0.S string.S prom.c stdio.c main.c div64.S
- src-boot += $(zlib)
-@@ -48,21 +45,26 @@ quiet_cmd_copy_zlib = COPY    $@
- 
- quiet_cmd_copy_zlibheader = COPY    $@
-       cmd_copy_zlibheader = sed "s@<linux/\([^>]\+\).*@\"\1\"@" $< > $@
+-src-boot := crt0.S string.S prom.c stdio.c main.c div64.S
+-src-boot += $(zlib)
++src-common := string.S stdio.c main.c div64.S
++src-common += $(zlib)
 +
- # stddef.h for NULL
--quiet_cmd_copy_zliblinuxheader = COPY    $@
--      cmd_copy_zliblinuxheader = sed "s@<linux/string.h>@\"string.h\"@;s@<linux/kernel.h>@<stddef.h>@;s@<linux/\([^>]\+\).*@\"\1\"@" $< > $@
-+quiet_cmd_copy_linuxheader = COPY    $@
-+      cmd_copy_linuxheader = sed "s@<linux/string.h>@\"string.h\"@;s@<linux/kernel.h>@<stddef.h>@;s@<linux/\([^>]\+\).*@\"\1\"@" $< > $@
++src-boot := crt0.S prom.c  $(src-common)
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+ obj-boot := $(addsuffix .o, $(basename $(src-boot)))
  
--$(addprefix $(obj)/,$(zlib)): $(obj)/%: $(srctree)/lib/zlib_inflate/%
--	$(call cmd,copy_zlib)
-+$(addprefix $(obj)/,$(zlib)): $(obj)/%: $(srctree)/lib/zlib_inflate/% FORCE
-+	$(call if_changed,copy_zlib)
++src-kexec := crt0_kexec.S kexec.c $(src-common)
++src-kexec := $(addprefix $(obj)/, $(src-kexec))
++obj-kexec := $(addsuffix .o, $(basename $(src-kexec)))
++
++src-mult := $(sort $(src-boot) $(src-kexec))
++obj-mult := $(sort $(obj-boot) $(obj-kexec))
++
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
  
--$(addprefix $(obj)/,$(zlibheader)): $(obj)/%: $(srctree)/lib/zlib_inflate/%
--	$(call cmd,copy_zlibheader)
-+$(addprefix $(obj)/,$(zlibheader)): $(obj)/%: $(srctree)/lib/zlib_inflate/% \
-+		FORCE
-+	$(call if_changed,copy_zlibheader)
+ quiet_cmd_copy_zlib = COPY    $@
+@@ -61,7 +71,7 @@ $(addprefix $(obj)/,$(linuxheader)): $(o
+ 	$(call if_changed,copy_linuxheader)
  
--$(addprefix $(obj)/,$(zliblinuxheader)): $(obj)/%: $(srctree)/include/linux/%
--	$(call cmd,copy_zliblinuxheader)
-+$(addprefix $(obj)/,$(linuxheader)): $(obj)/%: $(srctree)/include/linux/% FORCE
-+	$(call if_changed,copy_linuxheader)
+ targets += $(zlib) $(zlibheader) $(linuxheader)
+-targets += $(patsubst $(obj)/%,%, $(obj-boot))
++targets += $(patsubst $(obj)/%,%, $(obj-mult))
  
--clean-files := $(zlib) $(zlibheader) $(zliblinuxheader)
-+targets += $(zlib) $(zlibheader) $(linuxheader)
-+targets += $(patsubst $(obj)/%,%, $(obj-boot))
- 
-+# copy all headers before trying to build objects
-+$(obj-boot):  $(addprefix $(obj)/,$(linuxheader) $(zlibheader))
- 
- quiet_cmd_bootcc = BOOTCC  $@
-       cmd_bootcc = $(CROSS32CC) -Wp,-MD,$(depfile) $(BOOTCFLAGS) -c -o $@ $<
-@@ -73,9 +75,10 @@ quiet_cmd_bootas = BOOTAS  $@
+ # copy all headers before trying to build objects
+ $(obj-boot):  $(addprefix $(obj)/,$(linuxheader) $(zlibheader))
+@@ -75,10 +85,10 @@ quiet_cmd_bootas = BOOTAS  $@
  quiet_cmd_bootld = BOOTLD  $@
        cmd_bootld = $(CROSS32LD) -T $(srctree)/$(src)/$(3) -o $@ $(2)
  
--$(patsubst %.c,%.o, $(filter %.c, $(src-boot))): %.o: %.c
-+$(patsubst %.c,%.o, $(filter %.c, $(src-boot))): %.o: %.c FORCE
+-$(patsubst %.c,%.o, $(filter %.c, $(src-boot))): %.o: %.c FORCE
++$(patsubst %.c,%.o, $(filter %.c, $(src-mult))): %.o: %.c FORCE
  	$(call if_changed_dep,bootcc)
--$(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S
-+
-+$(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S FORCE
+ 
+-$(patsubst %.S,%.o, $(filter %.S, $(src-boot))): %.o: %.S FORCE
++$(patsubst %.S,%.o, $(filter %.S, $(src-mult))): %.o: %.S FORCE
  	$(call if_changed_dep,bootas)
  
  #-----------------------------------------------------------
-@@ -104,15 +107,16 @@ quiet_cmd_ramdisk = RAMDISK $@
- quiet_cmd_stripvm = STRIP   $@
-       cmd_stripvm = $(STRIP) -s -R .comment $< -o $@
+@@ -95,6 +105,7 @@ hostprogs-y		:= addnote addRamDisk hack-
  
--vmlinux.strip: vmlinux
-+vmlinux.strip: vmlinux FORCE
- 	$(call if_changed,stripvm)
--$(obj)/vmlinux.initrd: vmlinux.strip $(obj)/addRamDisk $(obj)/ramdisk.image.gz
-+$(obj)/vmlinux.initrd: vmlinux.strip $(obj)/addRamDisk \
-+		$(obj)/ramdisk.image.gz FORCE
- 	$(call if_changed,ramdisk)
+ targets += zImage.vmode zImage.initrd.vmode zImage zImage.initrd \
+ 	   zImage.coff zImage.initrd.coff miboot.image miboot.initrd.image \
++	   zImage.kexec zImage.kexec.3264 zImage.kexec64 \
+ 	   $(patsubst $(obj)/%,%, $(call obj-sec, $(required) $(initrd))) \
+ 	   $(patsubst $(obj)/%,%, $(call src-sec, $(required) $(initrd))) \
+ 	   $(patsubst $(obj)/%,%, $(call gz-sec, $(required) $(initrd))) \
+@@ -163,8 +174,36 @@ coffrdimg-$(CONFIG_PPC_PMAC)-$(CONFIG_PP
+ mibootimg-$(CONFIG_PPC_PMAC)-$(CONFIG_PPC32) := $(obj)/miboot.image
+ mibrdimg-$(CONFIG_PPC_PMAC)-$(CONFIG_PPC32)  := $(obj)/miboot.initrd.image
  
- quiet_cmd_addsection = ADDSEC  $@
-       cmd_addsection = $(CROSS32OBJCOPY) $@ \
- 		--add-section=.kernel:$(strip $(patsubst $(obj)/kernel-%.o,%, $@))=$(patsubst %.o,%.gz, $@) \
--		--set-section-flags=.kernel:$(strip $(patsubst $(obj)/kernel-%.o,%, $@))=$(OBJCOPYFLAGS)
-+		--set-section-flags=.kernel:$(strip $(patsubst $(obj)/kernel-%.o,%, $@))=$(OBJCOPY_SEC_FLAGS)
- 
- quiet_cmd_addnote = ADDNOTE $@
-       cmd_addnote = $(obj)/addnote $@
-@@ -125,7 +129,13 @@ quiet_cmd_gencoff = COFF    $@
-       cmd_gencoff = $(OBJCOPY) $(OBJCOPY_COFF_ARGS) $@ && \
- 		    $(obj)/hack-coff $@
- 
--$(call gz-sec, $(required)): $(obj)/kernel-%.gz: %
-+# $(required) is built in $(objtree) not $(obj) so read cmd files manually
-+cmd_files := $(wildcard $(foreach f,$(required),$(dir $(f)).$(notdir $(f)).cmd))
-+ifneq ($(cmd_files),)
-+  include $(cmd_files)
-+endif
++# The kexec entry point is valid for all kernels.  This zImage should work
++# on all loaders (kexec or firmware) that do not use an openfirmware prom
++# callback, assuming the memory node constraints are met.
++#
++# Build if CONFIG_KEXEC=y or on master make zImage.kexec.
++#
++kexecimg-$(CONFIG_KEXEC)-$(CONFIG_PPC64) += $(obj)/zImage.kexec64
++kexecimg-$(CONFIG_KEXEC)-y               += $(obj)/zImage.kexec
 +
-+$(call gz-sec, $(required)): $(obj)/kernel-%.gz: % FORCE
- 	$(call if_changed,gzip)
- 
- $(obj)/kernel-initrd.gz: $(obj)/ramdisk.image.gz
-@@ -135,7 +145,7 @@ $(call src-sec, $(required) $(initrd)): 
- 	@touch $@
- 
- $(call obj-sec, $(required) $(initrd)): $(obj)/kernel-%.o: $(obj)/kernel-%.c
--	$(call if_changed_dep,bootcc)
-+	$(call cmd,bootcc)
- 	$(call cmd,addsection)
- 
- $(obj)/zImage.vmode $(obj)/zImage.coff: obj-boot += $(call obj-sec, $(required))
-@@ -156,12 +166,12 @@ mibrdimg-$(CONFIG_PPC_PMAC)-$(CONFIG_PPC
++# Build 64 bit and 32 bit package when 64 bit kernel is being built
++$(obj)/zImage.kexec: $(filter-out $(obj)/zImage.kexec, $(kexecimg-y-y))
++
++$(obj)/zImage.kexec: obj-kexec += $(call obj-sec, $(required))
++$(obj)/zImage.kexec: $(obj-kexec) $(srctree)/$(src)/zImage.kexec.lds \
++		$(call obj-sec, $(required)) FORCE
++	$(call if_changed,bootld,$(obj-kexec) $(call obj-sec, $(required)) \
++			,zImage.kexec.lds)
++
++$(obj)/zImage.kexec.3264: obj-kexec += $(call obj-sec, $(required))
++$(obj)/zImage.kexec.3264: $(obj-kexec) $(srctree)/$(src)/zImage.kexec64.lds \
++		$(call obj-sec, $(required)) FORCE
++	$(call if_changed,bootld,$(obj-kexec) $(call obj-sec, $(required)) \
++			,zImage.kexec64.lds)
++
++OBJCOPYFLAGS_zImage.kexec64 := -I elf32-powerpc -O elf64-powerpc
++$(obj)/zImage.kexec64: $(obj)/zImage.kexec.3264 FORCE
++	$(call if_changed,objcopy,$< $@)
++
  $(obj)/zImage: $(obj)/zImage.vmode $(obj)/addnote $(coffimage-y-y) \
- 			$(mibootimg-y-y)
+-			$(mibootimg-y-y)
++			$(mibootimg-y-y) $(kexecimg-y-y)
  	@cp -f $< $@
--	$(call if_changed,addnote)
-+	$(call cmd,addnote)
+ 	$(call cmd,addnote)
  
- $(obj)/zImage.initrd: $(obj)/zImage.initrd.vmode $(obj)/addnote \
- 			$(coffrdimg-y-y) $(mibrdimg-y-y)
- 	@cp -f $< $@
--	$(call if_changed,addnote)
-+	$(call cmd,addnote)
+@@ -222,4 +261,4 @@ $(obj)/uImage: $(obj)/vmlinux.gz
+ install: $(CONFIGURE) $(BOOTIMAGE)
+ 	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" "$(BOOTIMAGE)"
  
- $(obj)/zImage.coff: $(call obj-sec, $(required)) $(obj-boot) \
- 			$(srctree)/$(src)/zImage.coff.lds $(obj)/hack-coff
+-clean-files += $(addprefix $(objtree)/, $(obj-boot) vmlinux.strip)
++clean-files += $(addprefix $(objtree)/, $(obj-mult) vmlinux.strip)
+Index: kernel/arch/powerpc/Makefile
+===================================================================
+--- kernel.orig/arch/powerpc/Makefile	2006-06-29 05:24:59.721841947 -0500
++++ kernel/arch/powerpc/Makefile	2006-06-29 05:51:17.300076495 -0500
+@@ -147,7 +147,7 @@ all: $(KBUILD_IMAGE)
+ 
+ CPPFLAGS_vmlinux.lds	:= -Upowerpc
+ 
+-BOOT_TARGETS = zImage zImage.initrd znetboot znetboot.initrd vmlinux.sm uImage vmlinux.bin
++BOOT_TARGETS = zImage zImage.initrd zImage.kexec znetboot znetboot.initrd vmlinux.sm uImage vmlinux.bin
+ 
+ PHONY += $(BOOT_TARGETS)
+ 
+Index: kernel/arch/powerpc/boot/zImage.kexec.lds
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ kernel/arch/powerpc/boot/zImage.kexec.lds	2006-06-29 06:01:30.125354912 -0500
+@@ -0,0 +1,51 @@
++OUTPUT_ARCH(powerpc:common)
++ENTRY(master)
++SECTIONS
++{
++  . = 0;
++  _start = .;
++  .text      :
++  {
++    *(.text)
++    *(.fixup)
++  }
++  _etext = .;
++  . = ALIGN(4096);
++  .data    :
++  {
++    *(.rodata*)
++    *(.data*)
++    *(.sdata*)
++    __got2_start = .;
++    *(.got2)
++    __got2_end = .;
++  }
++
++  . = ALIGN(4096);
++  _vmlinux_start =  .;
++  .kernel:vmlinux.strip : { *(.kernel:vmlinux.strip) }
++  _vmlinux_end =  .;
++
++  . = ALIGN(4096);
++  _initrd_start =  .;
++  .kernel:initrd : { *(.kernel:initrd) }
++  _initrd_end =  .;
++
++  . = ALIGN(4096);
++  _edata  =  .;
++
++  . = ALIGN(4096);
++  __stack_start =  .;
++  .stack : { *(.stack) }
++  __stack_end =  .;
++
++  . = ALIGN(4096);
++  __bss_start = .;
++  .bss       :
++  {
++   *(.sbss)
++   *(.bss)
++  }
++  . = ALIGN(4096);
++  _end = . ;
++}
+Index: kernel/arch/powerpc/boot/zImage.kexec64.lds
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ kernel/arch/powerpc/boot/zImage.kexec64.lds	2006-06-29 06:01:30.154350322 -0500
+@@ -0,0 +1,52 @@
++OUTPUT_ARCH(powerpc:common)
++ENTRY(_master64)
++SECTIONS
++{
++  . = 0;
++  _start = .;
++  .text      :
++  {
++    *(.text)
++    *(.fixup)
++  }
++  _etext = .;
++  . = ALIGN(4096);
++  .data    :
++  {
++    *(.rodata*)
++    *(.data*)
++    *(.sdata*)
++    __got2_start = .;
++    *(.got2)
++    __got2_end = .;
++  }
++
++  . = ALIGN(4096);
++  _vmlinux_start =  .;
++  .kernel:vmlinux.strip : { *(.kernel:vmlinux.strip) }
++  _vmlinux_end =  .;
++
++  . = ALIGN(4096);
++  _initrd_start =  .;
++  .kernel:initrd : { *(.kernel:initrd) }
++  _initrd_end =  .;
++
++  . = ALIGN(4096);
++  _edata  =  .;
++
++  . = ALIGN(4096);
++  __stack_start =  .;
++  .stack : { *(.stack) }
++  __stack_end =  .;
++
++  . = ALIGN(4096);
++  __bss_start = .;
++  .bss       :
++  {
++   *(.sbss)
++   *(.bss)
++  }
++  . = ALIGN(4096);
++  _end = . ;
++}
++
