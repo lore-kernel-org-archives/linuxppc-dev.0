@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3FB0567B68
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 18:36:12 +1000 (EST)
-Received: from localhost.localdomain (localhost [127.0.0.1])
-	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id k5T8gXiH008489
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 03:42:34 -0500
-Subject: new IRQ work status
+	by ozlabs.org (Postfix) with ESMTP id 081A367B21
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 19:11:01 +1000 (EST)
+Subject: Re: Please pull from 'for_paulus' branch of powerpc
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <BDF5A6D5-E7F4-4CDF-9B34-13A66A0B7C99@kernel.crashing.org>
+References: <9FCDBA58F226D911B202000BDBAD467306E19B76@zch01exm40.ap.freescale.net>
+	<BDF5A6D5-E7F4-4CDF-9B34-13A66A0B7C99@kernel.crashing.org>
 Content-Type: text/plain
-Date: Thu, 29 Jun 2006 18:36:05 +1000
-Message-Id: <1151570165.28229.15.camel@localhost.localdomain>
+Date: Thu, 29 Jun 2006 19:10:52 +1000
+Message-Id: <1151572252.28229.21.camel@localhost.localdomain>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's a progress report on my new irq management work.
 
-I've ported pseries, iseries (well tested) and cell (barely tested) at
-this point, and tested various funky combinations of device-trees to
-validate as much as the core as possible. I still need to port over chrp
-and maple which are easy, and powermac which will be a bit more
-difficult as it relies a lot more on intrs/n_intrs in the device-nodes
-which I've now removed.
+> > Even though other 86xx platforms have no these PCI chips, these  
+> > codes will not take effect.
+> 
+> Its code bloat for systems that dont need it.
 
-Hopefully, it should be finished this week. The current serie of patch
-applies on top of 2.6.17-mm1. I will do a version on top of the powerpc
-tree as soon as the genirq port is upstream (which hopefully should
-happen soon, possibly tomorrow).
+Well... it depends :) If it's totally unlikely to ever have this chip in
+those platforms, then yes. But if it's common enough, it's fair to have
+the quirk in a generic place (provided that Whang is right and the fixup
+is indeed the same for all 86xx platforms)
 
-I don't yet want to post the patches on the list (too much), they can be
-found at:
-
-http://gate.crashing.org/~benh/irq-WIP/
-
-Comments welcome.
-
-Cheers,
 Ben.
