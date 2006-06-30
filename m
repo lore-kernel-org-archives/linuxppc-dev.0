@@ -1,18 +1,19 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 12CBC679E0
+Return-Path: <tauanna@tiscali.it>
+Received: from mrqout2.tiscali.it (mrqout2.tiscali.it [195.130.225.12])
+	by ozlabs.org (Postfix) with ESMTP id F19AB67A64
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Jul 2006 03:32:54 +1000 (EST)
-Message-ID: <44A560D1.9050509@ru.mvista.com>
-Date: Fri, 30 Jun 2006 21:35:13 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Sat,  1 Jul 2006 05:10:34 +1000 (EST)
+Received: from ps13 (10.39.75.83) by mail-10.mail.tiscali.sys (7.3.110.2)
+	id 4497D2AC0002A090 for linuxppc-embedded@ozlabs.org;
+	Fri, 30 Jun 2006 21:10:32 +0200
+Message-ID: <13853799.1151694631780.JavaMail.root@ps13>
+Date: Fri, 30 Jun 2006 21:10:31 +0200 (CEST)
+From: "tauanna@tiscali.it" <tauanna@tiscali.it>
+To: linuxppc-embedded@ozlabs.org
+Subject: rs232 endianness on PPC
 MIME-Version: 1.0
-To: Ming Liu <eemingliu@hotmail.com>
-Subject: Re: Xilinx SystemACE driver for 2.6
-References: <BAY110-F40223AFCCAA679FBC5A962B27D0@phx.gbl>
-In-Reply-To: <BAY110-F40223AFCCAA679FBC5A962B27D0@phx.gbl>
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;charset="UTF-8"
+Reply-To: "tauanna@tiscali.it" <tauanna@tiscali.it>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,24 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ming Liu wrote:
->>> My linux version is 2.6.16-rc5.
->> I don't think there is any issue with your kernel version apart from the
->> fact that 2.6.16- series posed considerable problem for me when trying
->> to configure a serial shell. The serial driver is BUGGY. So I use
->> 2.6.17.1 (latest release).
-> 
-> I use this version only because I want to implement the Temac driver in the 
-> link of 
-> http://ozlabs.org/pipermail/linuxppc-embedded/2006-March/022365.html It 
-> looks that the patches are specific for that version. 
+Hi,
 
-There is nothing special in the TEMAC driver that binds it to 2.6.16-rc5.
-The patch was generated against and tested with that kernel version. That's all.
-The patch will probably not apply cleanly to the more recent kernels. But
-otherwise it should work.
+when I write a byte on the SMC1 (MPC875) serial device (let us say 
+0x11) what should I expect on the output pin? First a 0 then 0, 0, 1, 
+0, 0, 0, 1 or the opposite. Is it different on a little endian CPU?
 
-In other words, feel free to use that TEMAC patch with the recent kernel.
+Bye,
+Antonio.
 
-Thanks,
-Andrei
+
+
+
+		
+Hai voglia di fare un viaggio, ma non sai dove andare?
+Scegli una delle nostre offerte HOTEL IN ITALIA E IN EUROPA da 50 euro.
+Prenota subito su Expedia.it e... buona vacanza!
+
+http://expedia.viaggi.tiscali.it/default.aspx?eapid=330-8 
+ 
+	
