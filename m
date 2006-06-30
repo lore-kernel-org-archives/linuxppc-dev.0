@@ -1,20 +1,17 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.21])
-	by ozlabs.org (Postfix) with SMTP id A2C3667B5E
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Jul 2006 04:21:46 +1000 (EST)
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Fri, 30 Jun 2006 20:21:44 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <s5hwtaz9fdr.wl%tiwai@suse.de>
-Message-ID: <20060630182144.27980@gmx.net>
-MIME-Version: 1.0
-References: <20060628202753.198630@gmx.net>	<s5hfyhopb0s.wl%tiwai@suse.de>
-	<20060629211513.64980@gmx.net> <s5hwtaz9fdr.wl%tiwai@suse.de>
-Subject: Re: [Alsa-devel] RFC: dma_mmap_coherent() for powerpc/ppc architecture
-	and ALSA?
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linuxppc-dev@ozlabs.org, rlrevell@joe-job.com,
-	alsa-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-Path: <mgreer@mvista.com>
+Date: Fri, 30 Jun 2006 11:27:54 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] todc: add support for Time-Of-Day-Clock
+Message-ID: <20060630182754.GB10178@mag.az.mvista.com>
+References: <20060628211320.GA13257@mag.az.mvista.com>
+	<4CD92C09-A759-4B7C-9EC3-06E1C723D923@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4CD92C09-A759-4B7C-9EC3-06E1C723D923@kernel.crashing.org>
+Cc: linuxppc-dev list <Linuxppc-dev@ozlabs.org>,
+	Kim Phillips <Kim.Phillips@freescale.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
--------- Original-Nachricht --------
-Datum: Fri, 30 Jun 2006 11:12:00 +0200
-Von: Takashi Iwai <tiwai@suse.de>
-An: Gerhard Pircher <gerhard_pircher@gmx.net>
-Betreff: Re: [Alsa-devel] RFC: dma_mmap_coherent() for powerpc/ppc architecture and ALSA?
+On Thu, Jun 29, 2006 at 11:34:04PM -0500, Kumar Gala wrote:
+> On Jun 28, 2006, at 4:13 PM, Mark A. Greer wrote:
 > 
-> What is the type of buffer are you using?  If it's a buffer
-> pre-allocated via snd_pcm_lib_preallocate*() with SNDRV_DMA_TYPE_DEV,
-> there should be no snd_pcm_mmap_data_nopage call.  For other types,
-> there can be.  For example, the patch still doesn't solve the problems
-> with drivers using sg-buffer.
+> >This is a resubmit with a proper subject and with all comments  
+> >addressed.
+> >Applies cleanly to powerpc.git  
+> >649e85797259162f7fdc696420e7492f20226f2d
+> >
+> >Mark
+> >--
+> >
+> >The todc code from arch/ppc supports many todc/rtc chips and is needed
+> >in arch/powerpc.  This patch adds the todc code to arch/powerpc.
+> >
+> >Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 > 
-I added a debug output and it shows a buffer of SNDRV_DMA_TYPE_DEV_SG type. Well, then I'll hack the kernel to use the normal DMA allocation functions for ALSA instead of the non cache coherent ones and will wait until the ALSA core has been adapted for dma_mmap_coherent().
+> Just noticed this and was wondering if you have looked at the new RTC  
+> subsystem and if we can move any of this over to use that?
 
-Or what would have to be done to get it working for SG buffers?
+Yes, its on the todo list.  
 
-Thanks!
+> Kim has a patch for the MPC834x ITC board that appear to provide a  
+> generic implementations of ppc_md.set_rtc_time, ppc.get_rtc_time  
+> using the RTC class code.
 
-Gerhard
+I saw that but had a chance to really look at it yet.  Eventually, todc
+should disappear.
 
--- 
-
-
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+Mark
