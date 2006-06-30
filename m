@@ -1,22 +1,20 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 81B3E67B22
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 13:40:42 +1000 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k5U3efIq016607
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 20:40:41 -0700 (MST)
-Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
-	[10.192.130.11])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k5U3ecOd027119
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Jun 2006 22:40:39 -0500 (CDT)
-Message-ID: <9FCDBA58F226D911B202000BDBAD467306E04FE8@zch01exm40.ap.freescale.net>
-From: Li Yang-r58472 <LeoLi@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [FYI] dts file for MPC8360EPB support
-Date: Fri, 30 Jun 2006 11:40:32 +0800
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 171F867B18
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Jun 2006 14:10:40 +1000 (EST)
+In-Reply-To: <9FCDBA58F226D911B202000BDBAD467306E04FE7@zch01exm40.ap.freescale.net>
+References: <9FCDBA58F226D911B202000BDBAD467306E04FE7@zch01exm40.ap.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <236B6905-5E41-492F-A0BD-735DE11760FF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add QE device tree definition
+Date: Thu, 29 Jun 2006 23:10:33 -0500
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,369 +24,155 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is the dts file to work with the platform support patch I just posted.
+[snip]
 
----
-/*
- * MPC8360E PB Device Tree Source
- *
- * Copyright 2006 Freescale Semiconductor Inc.
- *
- * This program is free software; you can redistribute  it and/or modify it
- * under  the terms of  the GNU General  Public License as published by the
- * Free Software Foundation;  either version 2 of the  License, or (at your
- * option) any later version.
- */
+>>> +   2) SPI (Serial Peripheral Interface)
+>>> +
+>>> +   Required properties:
+>>> +   - device_type : should be "spi".
+>>> +   - compatible : should be "fsl_spi".
+>>> +   - mode : the spi operation mode, it can be "cpu" or "qe".
+>>
+>> What does it mean for the spi to be in "qe" mode?
+> That means:
+> The SPI can operate in QE mode or in CPU mode. In QE mode SPI is  
+> compatible to the MPC826x SPI, and is controlled by QE RISC. In CPU  
+> mode, the SPI is controlled wholly by the CPU without any QE RISC  
+> intervention.
 
+In QE mode does software get involved at all?
 
-/*
-/memreserve/	00000000 1000000;
-*/
+>>> +   - reg : offset to the register set and its length.
+>>> +   - interrupts : <a b> where a is the interrupt number and b is a
+>>> +     field that represents an encoding of the sense and level
+>>> +     information for the interrupt.  This should be encoded  
+>>> based on
+>>> +     the information in section 2) depending on the type of  
+>>> interrupt
+>>> +     controller you have.
+>>> +   - interrupt-parent : the phandle for the interrupt controller  
+>>> that
+>>> +     services interrupts for this device.
+>>> +
+>>> +   Example:
+>>> +	spi@4c0 {
+>>> +		device_type = "spi";
+>>> +		compatible = "fsl_spi";
+>>> +		reg = <4c0 40>;
+>>> +		interrupts = <82 0>;
+>>> +		interrupt-parent = <700>;
+>>> +		mode = "cpu";
+>>> +	};
+>>> +
 
-/ {
-	model = "MPC8360EPB";
-	compatible = "MPC83xx";
-	#address-cells = <1>;
-	#size-cells = <1>;
-	linux,phandle = <100>;
+[snip]
 
-	cpus {
-		#cpus = <1>;
-		#address-cells = <1>;
-		#size-cells = <0>;
-		linux,phandle = <200>;
+>>> +   5) Parallel I/O Ports
+>>> +
+>>> +   This node configures Parallel I/O ports for CPUs with QE  
+>>> support.
+>>> +   The node should reside in the "soc" node of the tree.  For each
+>>> +   device that using parallel I/O ports, a child node should be
+>>> created.
+>>> +   See the definition of the Pin configuration nodes below for more
+>>> +   information.
+>>> +
+>>> +   Required properties:
+>>> +   - device_type : should be "par_io".
+>>> +   - reg : offset to the register set and its length.
+>>> +
+>>> +   Example:
+>>> +	par_io@1400 {
+>>> +		reg = <1400 100>;
+>>> +		#address-cells = <1>;
+>>> +		#size-cells = <0>;
+>>> +		device_type = "par_io";
+>>> +		ucc_pin@01 {
+>>> +			......
+>>> +		};
+>>> +
+>>
+>> Can you explain this further, I'm not getting the relationship
+>> between a par_io & ucc_pin.  An example maybe helpful.
+>
+> Each QE device needs to configure Parallel I/O Ports pin  
+> configuration in order to work, for example the configuration for  
+> ucc1 is ucc_pin@01.  par_io is a container for all these  
+> configurations and gives the base for parallel io port register.  I  
+> will paste dts file for 8360 to give an example.
 
-		PowerPC,8360@0 {
-			device_type = "cpu";
-			reg = <0>;
-			d-cache-line-size = <20>;	// 32 bytes
-			i-cache-line-size = <20>;	// 32 bytes
-			d-cache-size = <8000>;		// L1, 32K
-			i-cache-size = <8000>;		// L1, 32K
-			timebase-frequency = <3EF1480>;
-			bus-frequency = <FBC5200>;
-			clock-frequency = <1F78A400>;
-			32-bit;
-			linux,phandle = <201>;
-			linux,boot-cpu;
-		};
-	};
+Maybe its the name that's confusing me, ucc_pin@01 describes what  
+exactly?  A single pin? or all the pin configs for ucc 1?
 
-	memory {
-		device_type = "memory";
-		linux,phandle = <300>;
-		reg = <00000000 10000000>;
-	};
-
-	soc8360@e0000000 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		#interrupt-cells = <2>;
-		device_type = "soc";
-		ranges = <0 e0000000 00100000>;
-		reg = <e0000000 00000200>;
-		bus-frequency = <FBC5200>;
-
-		wdt@200 {
-			device_type = "watchdog";
-			compatible = "mpc83xx_wdt";
-			reg = <200 100>;
-		};
-
-		i2c@3000 {
-			device_type = "i2c";
-			compatible = "fsl-i2c";
-			reg = <3000 100>;
-			interrupts = <e 0>;
-			interrupt-parent = <700>;
-			dfsrr;
-		};
-
-		i2c@3100 {
-			device_type = "i2c";
-			compatible = "fsl-i2c";
-			reg = <3100 100>;
-			interrupts = <f 0>;
-			interrupt-parent = <700>;
-			dfsrr;
-		};
-
-		serial@4500 {
-			device_type = "serial";
-			compatible = "ns16550";
-			reg = <4500 100>; 
-			clock-frequency = <FBC5200>; 
-			interrupts = <9 0>;
-			interrupt-parent = <700>;
-		};
-
-		serial@4600 {
-			device_type = "serial";
-			compatible = "ns16550";
-			reg = <4600 100>;
-			clock-frequency = <FBC5200>; 
-			interrupts = <a 0>;
-			interrupt-parent = <700>;
-		};
-
-		crypto@30000 {
-			device_type = "crypto";
-			model = "SEC2";
-			compatible = "talitos";
-			reg = <30000 10000>;
-			interrupts = <b 0>;
-			interrupt-parent = <700>;
-			num-channels = <4>;
-			channel-fifo-len = <18>;
-			exec-units-mask = <0000007e>;
-			/* desc mask is for rev1.x, we need runtime fixup for >=2.x */
-			descriptor-types-mask = <01010ebf>;
-		};
-
-		pci@8500 {
-			linux,phandle = <8500>;
-			interrupt-map-mask = <f800 0 0 7>;
-			interrupt-map = <
-
-					/* IDSEL 0x11 AD17 */
-					 8800 0 0 1 700 14 0
-					 8800 0 0 2 700 15 0
-					 8800 0 0 3 700 16 0
-					 8800 0 0 4 700 17 0
-                                                                
-					/* IDSEL 0x12 AD18 */
-					 9000 0 0 1 700 16 0
-					 9000 0 0 2 700 17 0
-					 9000 0 0 3 700 14 0
-					 9000 0 0 4 700 15 0
-                                                                
-					/* IDSEL 0x13 AD19 */
-					 9800 0 0 1 700 17 0
-					 9800 0 0 2 700 14 0
-					 9800 0 0 3 700 15 0
-					 9800 0 0 4 700 16 0
-                                                                
-					/* IDSEL 0x15 AD21*/
-					 a800 0 0 1 700 14 0
-					 a800 0 0 2 700 15 0
-					 a800 0 0 3 700 16 0
-					 a800 0 0 4 700 17 0
-                                                                
-					/* IDSEL 0x16 AD22*/
-					 b000 0 0 1 700 17 0
-					 b000 0 0 2 700 14 0
-					 b000 0 0 3 700 15 0
-					 b000 0 0 4 700 16 0
-                                                                
-					/* IDSEL 0x17 AD23*/
-					 b800 0 0 1 700 16 0
-					 b800 0 0 2 700 17 0
-					 b800 0 0 3 700 14 0
-					 b800 0 0 4 700 15 0
-					                        
-					/* IDSEL 0x18 AD24*/
-					 c000 0 0 1 700 15 0
-					 c000 0 0 2 700 16 0
-					 c000 0 0 3 700 17 0
-					 c000 0 0 4 700 14 0>;
-			interrupt-parent = <700>;
-			interrupts = <42 0>;
-			bus-range = <0 0>;
-			ranges = <02000000 0 a0000000 a0000000 0 10000000
-				  42000000 0 80000000 80000000 0 10000000
-				  01000000 0 00000000 e2000000 0 00100000>; 
-			clock-frequency = <3f940aa>;
-			#interrupt-cells = <1>;
-			#size-cells = <2>;
-			#address-cells = <3>;
-			reg = <8500 100>;
-			compatible = "83xx";
-			device_type = "pci";
-		};
-
-
-// IPIC
-		pic@700 {
-			linux,phandle = <700>;
-			interrupt-controller;
-			#address-cells = <0>;
-			#interrupt-cells = <2>;
-			reg = <700 100>;
-			built-in;
-			device_type = "ipic";
-		};
-		
-		par_io@1400 {
-			reg = <1400 100>;
-			device_type = "par_io";
-			ucc_pin@01 {
-				linux,phandle = <140001>;
-				pio-map = <
-			/* port  pin  dir  open_drain  assignment  has_irq */
-					0  3  1  0  1  0 	/* TxD0 */
-					0  4  1  0  1  0 	/* TxD1 */
-					0  5  1  0  1  0 	/* TxD2 */
-					0  6  1  0  1  0 	/* TxD3 */
-					1  6  1  0  3  0 	/* TxD4 */
-					1  7  1  0  1  0 	/* TxD5 */
-					1  9  1  0  2  0 	/* TxD6 */
-					1  a  1  0  2  0 	/* TxD7 */
-					0  9  2  0  1  0 	/* RxD0 */
-					0  a  2  0  1  0 	/* RxD1 */
-					0  b  2  0  1  0 	/* RxD2 */
-					0  c  2  0  1  0 	/* RxD3 */
-					0  d  2  0  1  0 	/* RxD4 */
-					1  1  2  0  2  0 	/* RxD5 */
-					1  0  2  0  2  0 	/* RxD6 */
-					1  4  2  0  2  0 	/* RxD7 */
-					0  7  1  0  1  0 	/* TX_EN */
-					0  8  1  0  1  0 	/* TX_ER */
-					0  f  2  0  1  0 	/* RX_DV */
-					0  10 2  0  1  0 	/* RX_ER */
-					0  0  2  0  1  0 	/* RX_CLK */
-					2  9  1  0  3  0 	/* GTX_CLK - CLK10 */
-					2  8  2  0  1  0>;	/* GTX125 - CLK9 */
-			};
-			ucc_pin@02 {
-				linux,phandle = <140002>;
-				pio-map = <
-			/* port  pin  dir  open_drain  assignment  has_irq */
-					0  11 1  0  1  0   /* TxD0 */
-					0  12 1  0  1  0   /* TxD1 */
-					0  13 1  0  1  0   /* TxD2 */
-					0  14 1  0  1  0   /* TxD3 */
-					1  2  1  0  1  0   /* TxD4 */
-					1  3  1  0  2  0   /* TxD5 */
-					1  5  1  0  3  0   /* TxD6 */
-					1  8  1  0  3  0   /* TxD7 */
-					0  17 2  0  1  0   /* RxD0 */
-					0  18 2  0  1  0   /* RxD1 */
-					0  19 2  0  1  0   /* RxD2 */
-					0  1a 2  0  1  0   /* RxD3 */
-					0  1b 2  0  1  0   /* RxD4 */
-					1  c  2  0  2  0   /* RxD5 */
-					1  d  2  0  3  0   /* RxD6 */
-					1  b  2  0  2  0   /* RxD7 */
-					0  15 1  0  1  0   /* TX_EN */
-					0  16 1  0  1  0   /* TX_ER */
-					0  1d 2  0  1  0   /* RX_DV */
-					0  1e 2  0  1  0   /* RX_ER */
-					0  1f 2  0  1  0   /* RX_CLK */
-					2  2  1  0  2  0   /* GTX_CLK - CLK10 */
-					2  3  2  0  1  0   /* GTX125 - CLK4 */
-					0  1  3  0  2  0   /* MDIO */
-					0  2  1  0  1  0>; /* MDC */
-			};
-			
-		};
-	};
-
-// QE
-	qe@e0100000 {
-		#address-cells = <1>;
-		#size-cells = <1>;
-		#interrupt-cells = <2>;
-		device_type = "qe";
-		model = "QE";
-		ranges = <0 e0100000 00100000>;
-		reg = <e0100000 480>;
-		brg-frequency = <0>; 
-		bus-frequency = <179A7B00>;
-
-		spi@4c0 {
-			device_type = "spi";
-			compatible = "fsl_spi";
-			reg = <4c0 40>;
-			interrupts = <82 0>;
-			interrupt-parent = <700>;
-			mode = "cpu"; 
-		};
-
-		spi@500 {
-			device_type = "spi";
-			compatible = "fsl_spi";
-			reg = <500 40>;
-			interrupts = <81 0>;
-			interrupt-parent = <700>;
-			mode = "cpu"; 
-		};
-
-		brg@640 {
-			device_type = "brg";
-			reg = <668 4>; 
-		};
-
-		usb@6c0 {
-			device_type = "usb";
-			compatible = "qe_udc"; 
-			reg = <6c0 40>;
-			reg_pram = <8B00 100>;
-			interrupts = <8b 0>;
-			interrupt-parent = <700>;
-			mode = "slave"; 
-		};
-
-		ucc@2000 {
-			device_type = "network";
-			compatible = "ucc_geth";
-			model = "UCC";
-			device-id = <1>;
-			reg = <2000 200 8400 100>;
-			interrupts = <a0 0>;
-			interrupt-parent = <700>;
-			mac-address = [ 00 04 9f 00 23 23 ];
-			rx-clock = <0>; 
-			tx-clock = <19>;
-			phy-handle = <212000>;
-			pio-handle = <140001>;
-		};
-
-		ucc@3000 {
-			device_type = "network";
-			compatible = "ucc_geth";
-			model = "UCC";
-			device-id = <2>;
-			reg = <3000 200 8500 100>;
-			interrupts = <a1 0>;
-			interrupt-parent = <700>;
-			mac-address = [ 00 11 22 33 44 55 ];
-			rx-clock = <0>; 
-			tx-clock = <14>;
-			phy-handle = <212001>;
-			pio-handle = <140002>;
-		};
-
-		mdio@2120 { 
-			#address-cells = <1>;
-			#size-cells = <0>;
-			reg = <2120 18>;
-			device_type = "mdio";
-			compatible = "ucc_geth_phy";
-
-			ethernet-phy@00 {
-				linux,phandle = <212000>;
-				interrupt-parent = <700>;
-				interrupts = <11 1>;
-				reg = <0>;
-				device_type = "ethernet-phy";
-				interface = <6>; //ENET_1000_GMII 
-			};
-			ethernet-phy@01 {
-				linux,phandle = <212001>;
-				interrupt-parent = <700>;
-				interrupts = <12 1>;
-				reg = <1>;
-				device_type = "ethernet-phy";
-				interface = <6>; 
-			};
-		};
-		
-	};
-};
-
-
---
-Leo Li
-Freescale Semiconductor
-
-LeoLi@freescale.com 
+>>> +
+>>> +   6) Pin configuration nodes
+>>> +
+>>> +   Required properties:
+>>> +   - linux,phandle : phandle of this node; likely referenced by  
+>>> a QE
+>>> +     device.
+>>> +   - pio-map : array of pin configurations.  Each pin is defined  
+>>> by 6
+>>> +     integers.  The six numbers are respectively: port, pin, dir,
+>>> +     open_drain, assignment, has_irq.
+>>> +     - port : port number of the pin; 0-6 represent port A-G in UM.
+>>> +     - pin : pin number in the port.
+>>> +     - dir : direction of the pin, should encode as follows:
+>>> +
+>>> +	0 = The pin is disabled
+>>> +	1 = The pin is an output
+>>> +	2 = The pin is an input
+>>> +	3 = The pin is I/O
+>>> +
+>>> +     - open_drain : indicates the pin is normal or wired-OR:
+>>> +
+>>> +	0 = The pin is actively driven as an output
+>>> +	1 = The pin is an open-drain driver. As an output, the pin is
+>>> +	    driven active-low, otherwise it is three-stated.
+>>> +
+>>> +     - assignment : function number of the pin according to the
+>>> Pin Assignment
+>>> +       tables in User Manual.  Each pin can have up to 4 possible
+>>> functions in
+>>> +       QE and two options for CPM.
+>>> +     - has_irq : indicates if the pin is used as source of exteral
+>>> +       interrupts.
+>>> +
+>>> +   Example:
+>>> +	ucc_pin@01 {
+>>> +		linux,phandle = <140001>;
+>>> +		pio-map = <
+>>> +		/* port  pin  dir  open_drain  assignment  has_irq */
+>>> +			0  3  1  0  1  0 	/* TxD0 */
+>>> +			0  4  1  0  1  0 	/* TxD1 */
+>>> +			0  5  1  0  1  0 	/* TxD2 */
+>>> +			0  6  1  0  1  0 	/* TxD3 */
+>>> +			1  6  1  0  3  0 	/* TxD4 */
+>>> +			1  7  1  0  1  0 	/* TxD5 */
+>>> +			1  9  1  0  2  0 	/* TxD6 */
+>>> +			1  a  1  0  2  0 	/* TxD7 */
+>>> +			0  9  2  0  1  0 	/* RxD0 */
+>>> +			0  a  2  0  1  0 	/* RxD1 */
+>>> +			0  b  2  0  1  0 	/* RxD2 */
+>>> +			0  c  2  0  1  0 	/* RxD3 */
+>>> +			0  d  2  0  1  0 	/* RxD4 */
+>>> +			1  1  2  0  2  0 	/* RxD5 */
+>>> +			1  0  2  0  2  0 	/* RxD6 */
+>>> +			1  4  2  0  2  0 	/* RxD7 */
+>>> +			0  7  1  0  1  0 	/* TX_EN */
+>>> +			0  8  1  0  1  0 	/* TX_ER */
+>>> +			0  f  2  0  1  0 	/* RX_DV */
+>>> +			0  10 2  0  1  0 	/* RX_ER */
+>>> +			0  0  2  0  1  0 	/* RX_CLK */
+>>> +			2  9  1  0  3  0 	/* GTX_CLK - CLK10 */
+>>> +			2  8  2  0  1  0>;	/* GTX125 - CLK9 */
+>>> +	};
+>>> +
+>>> +
+>>>     More devices will be defined as this spec matures.
+>>>
+>>>
+>>> _______________________________________________
+>>> Linuxppc-dev mailing list
+>>> Linuxppc-dev@ozlabs.org
+>>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
