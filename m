@@ -1,20 +1,15 @@
-Return-Path: <hamidm@cyberwatch-security.com>
-Received: from mail11c.verio-web.com (mail11c.verio-web.com [204.202.242.55])
-	by ozlabs.org (Postfix) with SMTP id DC61A679FD
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp107.biz.mail.re2.yahoo.com (smtp107.biz.mail.re2.yahoo.com
+	[206.190.52.176]) by ozlabs.org (Postfix) with SMTP id B000E67A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  2 Jul 2006 06:13:26 +1000 (EST)
-Received: from mx27.stngva01.us.mxservers.net (204.202.242.104)
-	by mail11c.verio-web.com (RS ver 1.0.95vs) with SMTP id 4-0617894404
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  1 Jul 2006 16:06:45 -0400 (EDT)
-From: "Hamid Marshall" <hamidm@cyberwatch-security.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Booting 2.4 RT-Linux build from FSMlabs
-Date: Sat, 1 Jul 2006 13:06:50 -0700
+	Sun,  2 Jul 2006 07:20:20 +1000 (EST)
+Message-ID: <44A6E57A.3080302@qstreams.com>
+Date: Sat, 01 Jul 2006 17:13:30 -0400
+From: Ben Warren <bwarren@qstreams.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_001E_01C69D0F.380352D0"
-Message-ID: <20060701160645.GA61789@mail11c.verio-web.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: JFFS2 FS is read-only (not what I want)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,234 +20,135 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hello,
 
-------=_NextPart_000_001E_01C69D0F.380352D0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+When I boot from a JFFS2 file system on my eval board, the file system 
+is effectively read-only, and I can't figure out why.  I'm pretty sure 
+the kernel's configured for R/W MTD block access.  Any help is greatly 
+appreciated.
 
-I am working on a Lite5200B board with the U-Boot build dated April-2006.
-After loading of the uImage file which is 2.4 kernel RT-Linux build from FSM
-labs the board get hang up right after the decompressing the kernel, never
-getting to mach(). I looked at the memory dumps and with logic analyzer
-peeked at the address bus as well. Look like after the decompressing the
-kernel there is no entry to the main or init modules.
+The hardware in use is:
 
- 
+Freescale MPC8349EMDS eval board.
+8MB Q-flash with 64 uniform 128k sectors
 
-Has anyone encounter this problem before?
+Here are the symptoms:
 
- 
+# du -s
+265492  .                                    <-- only 265k of data
+# df
+Filesystem           1k-blocks      Used Available Use% Mounted on
+/dev/mtdblock4            2048      2048         0 100% /
+# mount
+/dev/mtdblock4 on / type jffs2 (rw)
+/proc on /proc type proc (rw)
 
-Thanks,
+Here's what the kernel spits out at boot-up:
 
- 
+***
+physmap flash device: 800000 at fe000000
+phys_mapped_flash: Found 1 x16 devices at 0x0 in 16-bit bank
+Command set type 1
+ Intel/Sharp Extended Query Table at 0x0031
+Using buffer write method
+cfi_cmdset_0001: Erase suspend on write enabled
+cmdlinepart partition parsing not available
+RedBoot partition parsing not available
+Using physmap partition definition
+Creating 6 MTD partitions on "phys_mapped_flash":
+0x00000000-0x00040000 : "u-boot"
+0x00040000-0x00080000 : "env"
+0x00080000-0x00280000 : "kernel"                       <-- kernel boots 
+from here
+0x00280000-0x00480000 : "initrd"                         <-- no initrd, 
+this is empty
+0x00480000-0x00680000 : "jffs2"                          <-- 2MB partition
+0x00680000-0x00800000 : "user"                          <-- empty
+***
 
- 
+I created the MTD partitions in a u-boot image that was pulled from the 
+GIT tree about a week ago, and my kernel is 2.6.17-based.  I wrote some 
+board init code that sets the MTD physical mappings. 
 
-## Booting image at 00200000 ...
-   Image Name:   Linux-2.6.16-rc1
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    658050 Bytes = 642.6 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
+Here are the MTD and JFFS2 parts of my .config file:
 
- 
+***
+# Memory Technology Devices (MTD)
+#
+CONFIG_MTD=y
+# CONFIG_MTD_DEBUG is not set
+# CONFIG_MTD_CONCAT is not set
+CONFIG_MTD_PARTITIONS=y
+# CONFIG_MTD_REDBOOT_PARTS is not set
+# CONFIG_MTD_CMDLINE_PARTS is not set
+#
+# User Modules And Translation Layers
+#
+CONFIG_MTD_CHAR=y
+CONFIG_MTD_BLOCK=y
+# CONFIG_FTL is not set
+# CONFIG_NFTL is not set
+# CONFIG_INFTL is not set
+# CONFIG_RFD_FTL is not set
+#
+# RAM/ROM/Flash chip drivers
+#
+CONFIG_MTD_CFI=y
+# CONFIG_MTD_JEDECPROBE is not set
+CONFIG_MTD_GEN_PROBE=y
+# CONFIG_MTD_CFI_ADV_OPTIONS is not set
+CONFIG_MTD_MAP_BANK_WIDTH_1=y
+CONFIG_MTD_MAP_BANK_WIDTH_2=y
+CONFIG_MTD_MAP_BANK_WIDTH_4=y
+# CONFIG_MTD_MAP_BANK_WIDTH_8 is not set
+# CONFIG_MTD_MAP_BANK_WIDTH_16 is not set
+# CONFIG_MTD_MAP_BANK_WIDTH_32 is not set
+CONFIG_MTD_CFI_I1=y
+CONFIG_MTD_CFI_I2=y
+# CONFIG_MTD_CFI_I4 is not set
+# CONFIG_MTD_CFI_I8 is not set
+CONFIG_MTD_CFI_INTELEXT=y
+# CONFIG_MTD_CFI_AMDSTD is not set
+CONFIG_MTD_CFI_STAA=y
+CONFIG_MTD_CFI_UTIL=y
+# CONFIG_MTD_RAM is not set
+# CONFIG_MTD_ROM is not set
+# CONFIG_MTD_ABSENT is not set
+# CONFIG_MTD_OBSOLETE_CHIPS is not set
+#
+# Mapping drivers for chip access
+#
+# CONFIG_MTD_COMPLEX_MAPPINGS is not set
+CONFIG_MTD_PHYSMAP=y
+CONFIG_MTD_PHYSMAP_START=0xFE000000
+CONFIG_MTD_PHYSMAP_LEN=0x800000
+CONFIG_MTD_PHYSMAP_BANKWIDTH=2
+# CONFIG_MTD_PLATRAM is not set
 
- 
+# CONFIG_JFFS_FS is not set
+CONFIG_JFFS2_FS=y
+CONFIG_JFFS2_FS_DEBUG=0
+# CONFIG_JFFS2_FS_WRITEBUFFER is not set
+# CONFIG_JFFS2_SUMMARY is not set
+# CONFIG_JFFS2_COMPRESSION_OPTIONS is not set
+CONFIG_JFFS2_ZLIB=y
+CONFIG_JFFS2_RTIME=y
+# CONFIG_JFFS2_RUBIN is not set
+***
 
- 
+The file system is the SELF that is included with DENX's ELDK, and built 
+as at:
+http://www.denx.de/wiki/view/DULG/RootFileSystemDesignAndBuilding
 
- 
+I used the following command to create the file system image, that was 
+then loaded at address 0xfe480000 via U-boot:
 
-Hamid Marshall
+ > mkfs.jffs2 -U -d rootfs -D rootfs_device.tab -b -e 0x20000 -o jffs2.img
 
- 
+I modified the table to name my serial devices /dev/ttyS0 and /dev/ttyS1
 
-Cyberwatch Communication
+thanks for the help.  Sorry if this is too verbose or includes the wrong 
+information.
 
-http://www.cyberwatch-security.com
-
- 
-
-
-------=_NextPart_000_001E_01C69D0F.380352D0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"City"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"place"/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p.MsoAutoSig, li.MsoAutoSig, div.MsoAutoSig
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-pre
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";}
-span.EmailStyle19
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I am working on a Lite5200B board with the U-Boot =
-build
-dated April-2006. After loading of the uImage file which is 2.4 kernel =
-RT-Linux
-build from FSM labs the board get hang up right after the decompressing =
-the
-kernel, never getting to mach(). I looked at the memory dumps and with =
-logic
-analyzer peeked at the address bus as well. Look like after the =
-decompressing
-the kernel there is no entry to the main or init =
-modules.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Has anyone encounter this problem =
-before?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<pre><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>## Booting image at 00200000 =
-...<o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&nbsp;&nbsp; Image Name:&nbsp;&nbsp; =
-Linux-2.6.16-rc1<o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC =
-Linux Kernel Image (gzip =
-compressed)<o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; =
-658050 Bytes =3D 642.6 kB<o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&nbsp;&nbsp; Load Address: =
-00000000<o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&nbsp;&nbsp; Entry Point:&nbsp; =
-00000000<o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&nbsp;&nbsp; Verifying Checksum ... =
-OK<o:p></o:p></span></font></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'>&nbsp;&nbsp; Uncompressing Kernel Image ... =
-OK<o:p></o:p></span></font></pre>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>Hamid <st1:City w:st=3D"on"><st1:place =
-w:st=3D"on">Marshall</st1:place></st1:City><o:p></o:p></span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>Cyberwatch Communication<o:p></o:p></span></font></p>
-
-<p class=3DMsoAutoSig><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>http://www.cyberwatch-security.com<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_001E_01C69D0F.380352D0--
+regards,
+Ben
