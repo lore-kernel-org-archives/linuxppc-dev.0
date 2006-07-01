@@ -1,15 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: Video Card to Lite5200
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20060701091507.EA1F4352681@atlas.denx.de>
-References: <20060701091507.EA1F4352681@atlas.denx.de>
-Content-Type: text/plain
-Date: Sat, 01 Jul 2006 19:29:39 +1000
-Message-Id: <1151746179.19419.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	roger blofeld <blofeldus@yahoo.com>, linuxppc-embedded@ozlabs.org
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.de [213.165.64.21])
+	by ozlabs.org (Postfix) with SMTP id 5727167A62
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Jul 2006 20:20:14 +1000 (EST)
+Received: from lyakh (helo=localhost)
+	by poirot.grange with local-esmtp (Exim 3.36 #1 (Debian))
+	id 1FwcaC-0002pd-00
+	for <linuxppc-dev@ozlabs.org>; Sat, 01 Jul 2006 12:20:12 +0200
+Date: Sat, 1 Jul 2006 12:20:12 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: ppc vs. powerpc status update, please
+Message-ID: <Pine.LNX.4.60.0607011215260.7912@poirot.grange>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2006-07-01 at 11:15 +0200, Wolfgang Denk wrote:
-> In message <1151709367.27137.4.camel@localhost.localdomain> you wrote:
-> >
-> > > I don;t know - the patches were submitted to this list  a  long  time
-> > > ago; we added them to our repository without any additional problems;
-> > > see http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
-> > 
-> > Any reason why you keep that repository instead of submiting the patches
-> > for proper upstream inclusion or to linuxppc-dev at least ?
-> 
-> We submit patches every now and then, as time permits.  My  intention
-> is to keep the differences between our tree and kernel.org minimal.
-> 
-> But you know how this goes: just adding support for a new board means
-> sending patches to the linuxppc_dev, mtd, i2c, usb,  lm_sensors,  ...
-> mailing  lists. Then you have to wait some time, then you resend. and
-> you have to keep track of all these things.  And  the  board  support
-> will  not  work  before the last piece of the puzze has been accepted
-> and merged and pushed upstream. All this takes a lot  of  effort  and
-> even  more  calendar time. We need a way to provide a solution to our
-> customers fast - that's why we maintain our own development branch.
-> 
-> I'd be happy if you could recommend a better approach to handle this.
+What's the _current_ trend with those 2 archs, specifically,respecting 
+embedded boards, the make ARCH=powerpc ***_defconfig for a board under ppc 
+"just should work" doesn't seem to hold and I didn't find any provisions 
+for that. (I read in an earlier post it "should"). Are ppc platforms still 
+supposed to migrate to under powerpc? I am not quite clear where to put 
+all board-specific stuff then, in that post it was told "you almost don't 
+need anything, just use device tree and a correct CPU support, and put 
+your specific _drivers_ somewhere". How is it in reality?
 
-Oh, it's fine to maintain a dev. branch, but I haven't seen you submit
-stuff to linuxppc-dev for some time so I wanted to make sure you were
-still on track :)
-
-Ben.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
