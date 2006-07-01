@@ -1,23 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ABE41679FF
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Jul 2006 19:00:22 +1000 (EST)
-Subject: RE: [PATCH 1/7] powerpc: Add mpc8360epb platform support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Yang-r58472 <LeoLi@freescale.com>
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD467306E04FF2@zch01exm40.ap.freescale.net>
-References: <9FCDBA58F226D911B202000BDBAD467306E04FF2@zch01exm40.ap.freescale.net>
-Content-Type: text/plain
-Date: Sat, 01 Jul 2006 19:00:04 +1000
-Message-Id: <1151744404.27137.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
-	Yin Olivia-r63875 <Hong-Hua.Yin@freescale.com>,
-	"'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, 'Paul Mackerras' <paulus@samba.org>,
-	Chu hanjin-r52514 <Hanjin.Chu@freescale.com>
+Return-Path: <wd@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Video Card to Lite5200 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 01 Jul 2006 09:16:07 +1000."
+	<1151709367.27137.4.camel@localhost.localdomain>
+Date: Sat, 01 Jul 2006 11:15:07 +0200
+Sender: wd@denx.de
+Message-Id: <20060701091507.EA1F4352681@atlas.denx.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	roger blofeld <blofeldus@yahoo.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,46 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-06-30 at 18:27 +0800, Li Yang-r58472 wrote:
-> > -----Original Message-----
-> > From: Vitaly Bordug [mailto:vbordug@ru.mvista.com]
-> > Sent: Thursday, June 29, 2006 12:59 AM
-> > To: Li Yang-r58472
-> > Cc: 'Paul Mackerras'; linuxppc-dev@ozlabs.org; Phillips Kim-R1AAHA; Chu
-> > hanjin-r52514; Yin Olivia-r63875; 'linux-kernel@vger.kernel.org'
-> > Subject: Re: [PATCH 1/7] powerpc: Add mpc8360epb platform support
-> > 
-> > On Wed, 28 Jun 2006 22:23:03 +0800
-> > Li Yang-r58472 <LeoLi@freescale.com> wrote:
-> > 
-> [snip]
-> > 
-> > >
-> > >  config MPC834x
-> > > @@ -24,4 +31,10 @@ config MPC834x
-> > >  	select PPC_INDIRECT_PCI
-> > >  	default y if MPC834x_SYS
-> > >
-> > > +config MPC836x
-> > > +	bool
-> > > +	select PPC_UDBG_16550
-> > 
-> > debug option made default?
+In message <1151709367.27137.4.camel@localhost.localdomain> you wrote:
+>
+> > I don;t know - the patches were submitted to this list  a  long  time
+> > ago; we added them to our repository without any additional problems;
+> > see http://www.denx.de/cgi-bin/gitweb.cgi?p=linux-2.6-denx.git
 > 
-> I'm afraid this is needed to boot.  83xx family platforms need it to initialize early console.  And it does appear in several defconfigs of other platforms.
+> Any reason why you keep that repository instead of submiting the patches
+> for proper upstream inclusion or to linuxppc-dev at least ?
 
-How so ? Why would having a serial console be mandatory ? Embedded might
-want to boot without a console and use the serial port for other things.
-This should be left as a config option (though you are welcome to put it
-in the defconfig for your platform)
- 
-> > > +	select PPC_INDIRECT_PCI
-> > > +	default y if MPC8360E_PB
-> > > +
-> > >  endmenu
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+We submit patches every now and then, as time permits.  My  intention
+is to keep the differences between our tree and kernel.org minimal.
+
+But you know how this goes: just adding support for a new board means
+sending patches to the linuxppc_dev, mtd, i2c, usb,  lm_sensors,  ...
+mailing  lists. Then you have to wait some time, then you resend. and
+you have to keep track of all these things.  And  the  board  support
+will  not  work  before the last piece of the puzze has been accepted
+and merged and pushed upstream. All this takes a lot  of  effort  and
+even  more  calendar time. We need a way to provide a solution to our
+customers fast - that's why we maintain our own development branch.
+
+I'd be happy if you could recommend a better approach to handle this.
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The management question ... is not _whether_ to build a pilot  system
+and  throw  it away. You _will_ do that. The only question is whether
+to plan in advance to build a throwaway, or to promise to deliver the
+throwaway to customers.       - Fred Brooks, "The Mythical Man Month"
