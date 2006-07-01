@@ -1,16 +1,20 @@
-Return-Path: <proclus@gnu-darwin.org>
-Received: from proclus (unknown [66.35.62.25])
-	by ozlabs.org (Postfix) with ESMTP id 744FF679E6
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 05:20:18 +1000 (EST)
-Received: from c-68-34-107-116.hsd1.md.comcast.net ([68.34.107.116]
-	helo=gnu-darwin.org) by proclus with esmtp (Exim 3.36 #1 (Debian))
-	id 1Fwl0r-0005fc-00
-	for <linuxppc-dev@ozlabs.org>; Sat, 01 Jul 2006 13:20:17 -0600
-To: linuxppc-dev@ozlabs.org
-Subject: FOSS, Science, and Public activism
-Message-Id: <20060701192013.559D26B0FD5@gnu-darwin.org>
-Date: Sat,  1 Jul 2006 15:20:13 -0400 (EDT)
-From: proclus@gnu-darwin.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4B2C2679A6
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 09:16:32 +1000 (EST)
+Subject: Re: faulty 64-bit resource printk fixup in macio_asic.c
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Collins <paul@briny.ondioline.org>
+In-Reply-To: <878xndqwph.fsf@briny.internal.ondioline.org>
+References: <878xndqwph.fsf@briny.internal.ondioline.org>
+Content-Type: text/plain
+Date: Sun, 02 Jul 2006 09:16:22 +1000
+Message-Id: <1151795782.19419.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Greg Kroah-Hartman <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,335 +24,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Sat, 2006-07-01 at 23:30 +1000, Paul Collins wrote:
+> Hi Greg,
+> 
+> The patch titled "64bit resource: fix up printks for resources in misc
+> drivers", committed as e29419fffceb8ec36def3c922040e1ca7bcd3de5 in
+> Linus's tree, causes my PowerBook to Oops early in boot and udev to
+> not function.
 
-(Sorry if you get more than one copy of this message, but I felt
-that it was urgent to get this important info out.)
+For now, I'd suggest reverting it. The MacIO resources always fit in 32
+bits, thus we can "use" that knowledge here and only print 8 digits.
 
-The values of freedom and openness are crucial to understanding 
-itself, so that civilization and public welfare now depend on 
-them, as I argue below.  These values may find their best 
-expression in the free and open source software (FOSS) movement, 
-and the foresightful example of FOSS developers should now be
-beneficially applied to many other disciplines in the context of a
-global and public Internet.
+Ben.
 
-It is crucial that we occasionally take time to discuss the
-reasons _why_ we release our source code, and this is one of 
-those occasions.  There are good reasons for the freedom and
-openness which are characteristics of FOSS development, reasons
-which should receive wider attention now that they can be readily
-communicated to other arenas.  The consequences of doing otherwise
-are often catastrophic.
-
-For example, it incomprehensible that Genentech could consider
-withdrawing a cheap cure for blindness (ARMD) from the market.
-
-http://lists.essential.org/pipermail/random-bits/2006-june/001374.html
-
-The mechanism of this drug is public knowledge.
-
-http://sourceforge.net/mailarchive/forum.php?thread_id=14183567&forum_id=6042
-
-This abhorrent situation is a great example of the kind of thing
-that will happen if people don't get behind the values of freedom
-and openness that we are espousing.  Please let Genentech know
-that you find what they are doing offensive.  Publicize the mechanism
-so that new compounds can be obtained as replacements.  For the 
-future, continued vociferous public activism is required to prevent
-such outrages from occurring in the future.
-
-It becomes clear that the compounds which come from common roots,
-fruits, and vegetables are a shared human heritage and the free and
-open source of the future.  Tannins are another interesting case in
-point, because as molecules, and as anti-oxidents, they are similar to
-resveratrol (resV), and that molecular mechanism has been anchored to
-the public domain via a prior art declaration.  It is a so-called
-CR-memetic, which may increase healthy human longevity by many
-decades.  Here are some links about it.
-
-Resveratrol mechanism posts from GNU-Darwin list
-http://proclus.gnu-darwin.org/gdposts.html
-
-CR protocol for human bodies
-http://proclus.gnu-darwin.org/bootstrap.html
-
-Here is some important recent news about it.
-
-http://www.imminst.org/forum/index.php?s=&act=print&client=printer&f=237&t=10749
-
-It is exciting to suppose that people can get off the pharmaceuticals
-that they are taking with calorie restriction or CR-memetics.  I
-personally am trying to get off the cholesterol drug Pravachol, a
-statin compound, starting a few of weeks ago.  Write me, and I'll let
-you know how it turns out.  From the article...
-
-"Fontana says ...  evidence of "younger" hearts in people on calorie
-restriction, suggest that humans on CR have the same adaptive
-responses as did animals whose rates of aging were slowed by CR."
-
-I think that it is time to look at the tannins in tobacco leaves.  
-There may be other treasures lurking there too.  As you may be
-aware there is ample public research into any possible beneficial
-compounds that may be obtained from tobacco leaves.  The mechanisms
-are there waiting to be discovered.  If you want to post them, just
-reply to me and I'd be delighted to host them.
-
-The public establishment of prior art is a time-honed method of
-entering inventions into the public domain.  We now have other
-methods at our disposal as well.   If you are planning to establish
-prior art against future CR-memetic related patents, you might want
-to have a look at www.creativecommons.org.  Perhaps it goes without
-saying at this point that you should please choose a license that
-provides for free and broad public access to your memetic.
-
-In that way you will assure that the public health is served by 
-anchoring them to the public common, where they cannot be exploited
-by those who would withhold them for their own profit.  The DRM 
-situation is precisely analogous to this.  Can you imagine doing
-science in a world where your ability to read and write your data is
-filtered through secret protocols that are hidden from you? I
-recommend the Defective By Design campaign to fight the outrage of
-DRM, which is incompatible with the scientific pursuit.
-
-http://www.defectivebydesign.org/
-
-It is clear that scientific tools must be demonstrably and
-penetratingly understood, or else our claims will likely be skewed
-and called into question.  Free and open source software is
-a great example of how to make your science verifiable to the
-public.  Establishing prior art against future patents is 
-another good one, which is precisely analogous in method, 
-making the result explicit to the public, free and open to all.
-Thank goodness for the free and open software movement, which
-gave us such a great example of how to serve the public in this
-manner.
-
-I am willing to grant that there are particular exceptions to
-these rules of freedom and openness, and such exceptions may be
-relatively harmless; however, let us posit the opposite, that
-freedom and openness are _not_ crucial to understanding.  Think of
-the implications.  When people are compelled to learn, they do not
-receive the intended message.  It is not understood correctly
-or completely.   When crucial facts are withheld from the people
-you are trying to teach they become paranoid, possibly unteachable. 
-Freedom and openness are obviously the best approach to understanding.
-
-This is not a metaphor for the pursuit of science, but a fact. 
-We are learning from nature, and it is ultimately required that
-our tools be demonstrably and penetratingly understood, or else
-we will receive incorrect lessons from nature.  Clearly this
-requires public access to the source code and more.  This 
-is why many of us are pressing for public access to scientific
-publications.
-
-Moreover FOSS tools are becoming ever more important to the
-pursuit of the scientific endeavor itself.  In our biophysics
-department we are obsolescing proprietary hardware and software
-in favor of open standards and free software, which is a
-widespread phenomenon in the science sector, and sure to continue.
-We build most of the workstations ourselves with commodity hardware,
-but we also have some clusters running Debian and FedoraCore.
-
-Some of you will know that I am the lead developer for the
-GNU-Darwin distribution.  GNU-Darwin has a FOSS operating system,
-which is getting alot of press these days.  Here is an example
-
-How Apple and Microsoft are advancing desktop Linux
-http://www.desktopLinux.com/news/ns7294331817.html
-
-I see the article as counter-productive against building a FOSS
-coalition that includes democracy, freedom, and public access 
-activists, Apple, GNU-Darwin, GNU, and GNU/Linux all linked
-together in spectrum.
-
-It is important to alert the whole FOSS community that Darwin
-cannot be classified as a free or open source operation system
-as of the Darwin-8 revision, because AppleACPIplatform-39 which
-is required to boot the system is proprietary.  It is notable that
-only the current version of Darwin from Apple is a non-free OS.
-GNU-Darwin has a free version, an earlier revision that includes
-the source code.  It is FOSS, and we call upon Apple to maintain
-Darwin as such, as it has been in the past.  We hope that the
-current situation with the kernel and ACPI driver will soon be
-remedied so that Darwin will continue as a FOSS OS.
-
-We are asking for free software developers to please write to the
-*nix core of Darwin, which is the core OS for both Mac OS X and
-GNU-Darwin OS.  Darwin OS, which underlies both systems, comprises
-parts from GNU, the BSD's, mach, plus Apple's substantial
-contributions to the free software community.  Be consistent with your
-philosophy and avoid linkage to proprietary binaries, such as OpenGL
-and CoreAudio, except when it is imperatively required in order to
-lead users to the values of software freedom.  Under that principle,
-another reason to maintain compatibility with the *nix core, is so
-that your code will be readily portable to new platforms and usable
-by free-software-only aficionados too.  
-
-GNU-Darwin OS is not an obsolete implementation of Darwin OS, or to be
-superseded by Mac OS X.  We are trying to lead users to freedom, not
-away from it.  By maintaining Darwin core compatibility your code will
-remain valuable as the marketplace and industry continues to evolve
-(trust me here), particularly as DRM-related problems continue to come
-forward. Of course, that means releasing your source code under a FOSS
-license, such as APSL.  Darwin OS is a free and open source operating
-system that is not going away, so try to focus your coding towards
-supporting that standard instead of proprietary software.
-
-Here is the essence of the current problem with Darwin OS.  Apple
-replaced working boot code with the following proprietary drivers, 
-which are required for the system to boot.
-
-Darwin-7:
-AppleAPIC.kext/
-Applei386genericplatform.kext/
-
-Darwin-8:
-AppleACPIplatform
-
-In addition the kernel (xnu) has been taken proprietary in the
-recent revisions.  We are not asking for Apple to give away such
-things, but rather to continue maintaining Darwin OS as FOSS, which
-it already was. 
-
-After repeated attempts by many FOSS developers to get this
-situation remedied, nothing has happened.  It is now time for us to
-better use the measures at our disposal in order to assure that
-Darwin OS remains free and open.  If you are unhappy that xnu and 
-the boot drivers have not been released, I would encourage you to
-spread your dissatisfaction to other forums, so that Apple will take
-notice and commit to a workable free and open Darwin OS from now on.  
-
-Moving on to coalition strategy now, some of you may not know that
-GNU/Linux system administration is one of my day jobs.  I manage a
-wide range of systems.  Here is a screen-shot of my work desktop, so
-that you can see I use the same tools at work that I use at home at
-night on GNU-Darwin.  (weekends too, so please read I am your friend)
-
-http://proclus.gnu-darwin.org/debian.html
-
-The only time that I ever use proprietary software is when I am trying
-to help other users learn free and open source free software.  I'm a 
-long time Apple and GNU/Linux user, and here is the old proof doc ;-}.
-
-http://proclus.tripod.com/indulge.html
-
-Now, it is embarrassing but, I want you to have a look at my cv.
-
-http://biophysics.med.jhmi.edu/love/thesis/cv6.html
-
-In all my years I have never used Microsoft Windows.  There are only
-two exceptions to this statement, where I was helping Windows users to
-access our servers at Hopkins.  Clearly, you can get a few things done
-without it ;-}.
-
-One of the primary reasons for founding GNU-Darwin was to help people
-to put Microsoft behind them,  and it is definitely possible to do it
-now.  You have many resources at your disposal to help you leave
-Microsoft behind.  Look at the link below to see what you can do
-with free software.  Apple, GNU-Darwin, GNU.org, and GNU/Linux will
-all help, and we are largely all helping together, because we have a
-shared foundation of free software.
-
-http://www.gnu-darwin.org/gdc/
-
-Microsoft is only one example.  That is why we are so insistent that
-Apple keep true to free and open source software principles.  We
-should ultimately try to leave all proprietary software behind us, so
-that we can participate fully in the freedom and openness of the
-internet culture and public domain.  What more do we need, when we
-have such a rich store of information and so many capable people at
-our sides?
-
-Finally, as a scientist, it is obvious to me that this situation is
-relevant current and ongoing discussion in the scientific community,
-and as such, it is also clear that many members of the various lists
-would be interested in the current state of Darwin with respect to
-FOSS and with respect to science.  
-
-Here is the crucial point.
-
-The principles of FOSS and scientific inquiry converge.  In
-practical terms, how else can you know is what happening in your
-experiments?  Free and open source software, open standards, best
-promote the scientific endeavor by mirroring its method, but also
-they assure that the work is accessible to the public.
-
-Freedom and openness are crucial to understanding, and foundational
-to the scientific endeavor, and they should not be compromised. 
-There are a few examples of exceptions, but clearly, this matter
-will find further debate in the appropriate forums.  We should not
-quell debate because a few people are offended or complaining.  
-- From a scientific perspective that would be incorrect.
-
-On that last point, I would suggest that Apple get on the right side
-of the debate, and they will make tremendous headway.  Now is the
-time.
-
-Some people will find this message annoying and divisive, and the
-delete button is ready at hand for them, but other people will find 
-it interesting and engaging.  All as you like.  Let us not quell
-discussion because a few people are annoyed.
-
-Some will call this a troll, but I hope that folks will see through
-such name-calling.  Trolls are mythological creatures, so don't
-believe in them.  Everyone has a right to have their opinion
-heard, even if those opinions are divisive or unpopular.  It is
-clear that the idea of trolls is being used to attack freedom of
-expression.  In fact, freedom of expression demands that we
-listen to the so-called-trolls sometimes, and if you are civil, it
-helps, so don't resort to name-calling. 
-
-On cross-posting; when there are matters of urgent importance that
-affect a broad range of subscriber lists, courtesy must sometimes
-take a back seat, and cross-posting is an example of that. 
-Cross-posting is to be encouraged when the subject of the post is on
-topic.  Each of the various lists will respond in the way that seems
-appropriate to the people in that forum, and the threads on the
-various lists will diverge accordingly.  As the threads diverge, the
-cross-posting addresses should be removed as needed.  Relevance to
-all people is an unattainable goal, but messages of the broadest
-applicability should have the broadest reach, and discussion should
-not be stymied because some find it irrelevant.  I have given this
-method due consideration; it is not trolling, not spam, not off-topic,
-and cross-posting is an example of something that is sometimes
-required according to the felt importance and relevance of a given
-subject matter.  
-
-In summary, Freedom and openness are now the bedrock of our
-civilization and public welfare depends on these values, so that we 
-should actively engage ourselves in preserving and making them happen.
-In keeping with these principles it is crucial to note that there are
-exceptions to etiquette, otherwise free expression will be overly
-channeled, damped, and ultimately suppressed in our forums.  This
-notion of courtesy will certainly receive additional consideration,
-but meanwhile, let us together get to work on the activism now.  
-
-Duly, I am amenable to valid criticism and able to respond, but please
-reply with kindness.  Obviously, feel free to write back, copy, or
-send these comments along to anyone else as you see fit.
-
-Regards,
-Michael L. Love Ph.D
-Department of Biophysics and Biophysical Chemistry
-School of Medicine
-Johns Hopkins University
-725 N. Wolfe Street
-Room 608B WBSB
-Baltimore MD 21205-2185
-
-Interoffice Mail: 608B WBSB, SoM
-
-office: 410-614-2267
-lab:    410-614-3179
-fax:    410-502-6910
-cell:   443-824-3451
-http://www.gnu-darwin.org/
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (Darwin)
-
-iD8DBQFEpIl6u0oI3iz5oZcRAtpQAJ9X7D6kq1vmWKXkG/3LBvx3gGrK1QCZAbgI
-8Ww6QABLiZtmFmS9Ekea5nI=
-=a0Oy
------END PGP SIGNATURE-----
+>   Unable to handle kernel paging request for data at address 0x6f000000
+>   Faulting instruction address: 0xc00c901c
+>   Oops: Kernel access of bad area, sig: 11 [#1]
+>   PREEMPT 
+>   Modules linked in:
+>   NIP: C00C901C LR: C00C901C CTR: C00C8F78
+>   REGS: efed5db0 TRAP: 0300   Not tainted  (2.6.17-g9262e914)
+>   MSR: 00009032 <EE,ME,IR,DR>  CR: 22000484  XER: 20000000
+>   DAR: 6F000000, DSISR: 40000000
+>   TASK = efe97240[378] 'udevtrigger' THREAD: efed4000
+>   GPR00: C00C901C EFED5E60 EFE97240 00000000 CFC0BB40 00010001 CFC0BB40 C02E9754 
+>   GPR08: 00000000 00000001 EFFE8EA4 EFED4000 44000428 1001D140 100D0000 100D0000 
+>   GPR16: 00000000 100EBF08 100D0000 100B0000 100D0000 100B0000 100EBEA8 100EC068 
+>   GPR24: 00000000 EFEEDA20 C0DF7880 EFED4000 CFC0BB40 EFEEDA20 C0DF78D0 6F000000 
+>   NIP [C00C901C] sysfs_open_file+0xa4/0x284
+>   LR [C00C901C] sysfs_open_file+0xa4/0x284
+>   Call Trace:
+>   [EFED5E60] [C00C901C] sysfs_open_file+0xa4/0x284 (unreliable)
+>   [EFED5E90] [C007D6A8] __dentry_open+0x108/0x2a4
+>   [EFED5EC0] [C007D988] do_filp_open+0x5c/0x78
+>   [EFED5F20] [C007D9FC] do_sys_open+0x58/0xf8
+>   [EFED5F40] [C000FDB8] ret_from_syscall+0x0/0x38
+>   --- Exception: c01 at 0xff248d8
+>       LR = 0xffb525c
+>   Instruction dump:
+>   3be0ffea 812b0050 83c90014 419e007c 2f9e0000 419e006c 83fe0004 2f9f0000 
+>   419e0080 38600001 4bf5b229 4809726d <801f0000> 3ba00000 2f800002 419e0024 
+>    <6>note: udevtrigger[378] exited with preempt_count 1
+> 
+> 
+> The only hunk of that commit affecting my configuration is this one,
+> which when reverted lets my machine work again.
+> 
+> diff --git a/drivers/macintosh/macio_asic.c b/drivers/macintosh/macio_asic.c
+> index 431bd37..c687ac7 100644
+> --- a/drivers/macintosh/macio_asic.c
+> +++ b/drivers/macintosh/macio_asic.c
+> @@ -428,10 +428,10 @@ #endif
+>  
+>  	/* MacIO itself has a different reg, we use it's PCI base */
+>  	if (np == chip->of_node) {
+> -		sprintf(dev->ofdev.dev.bus_id, "%1d.%08lx:%.*s",
+> +		sprintf(dev->ofdev.dev.bus_id, "%1d.%016llx:%.*s",
+>  			chip->lbus.index,
+>  #ifdef CONFIG_PCI
+> -			pci_resource_start(chip->lbus.pdev, 0),
+> +			(unsigned long long)pci_resource_start(chip->lbus.pdev, 0),
+>  #else
+>  			0, /* NuBus may want to do something better here */
+>  #endif
+> 
+> 
+> When applied, this hunk yields
+> 
+> 	/* MacIO itself has a different reg, we use it's PCI base */
+> 	if (np == chip->of_node) {
+> 		sprintf(dev->ofdev.dev.bus_id, "%1d.%016llx:%.*s",
+> 			chip->lbus.index,
+> #ifdef CONFIG_PCI
+> 			(unsigned long long)pci_resource_start(chip->lbus.pdev, 0),
+> #else
+> 			0, /* NuBus may want to do something better here */
+> #endif
+> 			MAX_NODE_NAME_SIZE, np->name);
+> 
+> 
+> Since dev->ofdev.dev is a struct device, bus_id is 20 bytes, of which
+> 19 are consumed by "%1d.%016llx:".  But the field width used by "%.*s"
+> is MAX_NODE_NAME_SIZE, which is 8.
+> 
+> drivers/macintosh/macio_asic.c:36:#define MAX_NODE_NAME_SIZE (BUS_ID_SIZE - 12)
+> 
+> So I think the sprintf overflows bus_id and clobbers the next few
+> bytes of struct device.
+> 
+> I'm not sure what the right thing to do is.  Making bus_id bigger will
+> cost everyone, but right now with bus_id at 20 bytes, there's no room
+> after the colon for any of np->name.
+> 
