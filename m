@@ -1,8 +1,15 @@
 Return-Path: <proclus@gnu-darwin.org>
-To: linuxppc64-dev@ozlabs.org
+Received: from proclus (unknown [66.35.62.25])
+	by ozlabs.org (Postfix) with ESMTP id 744FF679E6
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 05:20:18 +1000 (EST)
+Received: from c-68-34-107-116.hsd1.md.comcast.net ([68.34.107.116]
+	helo=gnu-darwin.org) by proclus with esmtp (Exim 3.36 #1 (Debian))
+	id 1Fwl0r-0005fc-00
+	for <linuxppc-dev@ozlabs.org>; Sat, 01 Jul 2006 13:20:17 -0600
+To: linuxppc-dev@ozlabs.org
 Subject: FOSS, Science, and Public activism
-Message-Id: <20060701192006.953616B0FD2@gnu-darwin.org>
-Date: Sat,  1 Jul 2006 15:20:06 -0400 (EDT)
+Message-Id: <20060701192013.559D26B0FD5@gnu-darwin.org>
+Date: Sat,  1 Jul 2006 15:20:13 -0400 (EDT)
 From: proclus@gnu-darwin.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
