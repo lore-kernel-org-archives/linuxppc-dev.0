@@ -1,18 +1,22 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [66.118.10.122])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E9D9367A3F
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 01:37:03 +1000 (EST)
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: ppc vs. powerpc status update, please 
-In-Reply-To: Your message of "Sat, 01 Jul 2006 12:20:12 +0200."
-	<Pine.LNX.4.60.0607011215260.7912@poirot.grange>
-References: <Pine.LNX.4.60.0607011215260.7912@poirot.grange> 
-Date: Sat, 01 Jul 2006 10:36:55 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1FwhWh-00040w-BB@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <pantelis.antoniou@gmail.com>
+Received: from smtp107.biz.mail.re2.yahoo.com (smtp107.biz.mail.re2.yahoo.com
+	[206.190.52.176]) by ozlabs.org (Postfix) with SMTP id 5EF87679FC
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 00:55:57 +1000 (EST)
+From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc:Fix rheap alignment problem
+Date: Sat, 1 Jul 2006 17:50:03 +0300
+References: <9FCDBA58F226D911B202000BDBAD467306E04FF6@zch01exm40.ap.freescale.net>
+	<20060701102557.GA14013@lst.de>
+	<C4F75531-D046-42EF-AAF7-D45B84DA1720@kernel.crashing.org>
+In-Reply-To: <C4F75531-D046-42EF-AAF7-D45B84DA1720@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200607011750.05019.pantelis.antoniou@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	"linux-kernel@vger.kernel.org mailing list" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Guennadi Liakhovetski mumbled:
-> What's the _current_ trend with those 2 archs, specifically,respecting 
-> embedded boards, the make ARCH=powerpc ***_defconfig for a board under ppc 
-> "just should work" doesn't seem to hold and I didn't find any provisions 
-> for that. (I read in an earlier post it "should"). Are ppc platforms still 
-> supposed to migrate to under powerpc? I am not quite clear where to put 
-> all board-specific stuff then, in that post it was told "you almost don't 
-> need anything, just use device tree and a correct CPU support, and put 
-> your specific _drivers_ somewhere". How is it in reality?
+On Saturday 01 July 2006 17:34, Kumar Gala wrote:
+> 
+> On Jul 1, 2006, at 5:25 AM, Christoph Hellwig wrote:
+> 
+> > On Sat, Jul 01, 2006 at 05:21:06PM +1000, Benjamin Herrenschmidt  
+> > wrote:
+> >> On Sat, 2006-07-01 at 14:35 +0800, Linux powerpc wrote:
+> >>> Yes, it was used for allocating dual port RAM for CPM.  And now  
+> >>> we are
+> >>> adding QE support to powerpc arch which need to use rheap(QE is next
+> >>> generation for CPM).  Please see the patches I <leoli@freescale.com>
+> >>> just posted for 8360epb support.  Moreover, previous CPM support is
+> >>> adding to powerpc arch too.
+> >>
+> >> Ok, well, I don't have anything specifically against that code, I was
+> >> just wondering if it may not duplicate something we already have (yet
+> >> another space allocator basically)...
+> >
+> > Yepp.  Without looking at the rheap allocator in deatail, any reason
+> > it can't use lib/genalloc.c?
+> 
+> Doing a quick glance at lib/genalloc.c I dont see any reason we  
+> couldn't use it.  However, Panto will know best, since he wrote rheap.
+> 
+> - k
+> 
 
-The trend is still happening.  Things should be migrated out
-of arch/ppc and into arch/powerpc.  For example, I just 
-introduced a new 86xx board port only under arch/powerpc.
+Hi there,
 
-Please feel free to help migrate support into arch/powerpc!
+RHEAP started life long before on 2.4 before genalloc was included in the kernel.
+The difference is only in the implementation, rheap uses double linked lists
+while genalloc uses per pool bitmaps. RHEAP is faster & conserves a bit more space 
+since it doesn't use a bitmap to track the chunks.
 
-jdl
+Since genalloc is the blessed linux thing it might be best to use that & remove
+rheap completely. Oh well...
+
+Regards
+
+Pantelis
