@@ -1,20 +1,35 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <mniyer@us.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B19F0679FF
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 01:16:57 +1000 (EST)
-In-Reply-To: <20060630185542.102af583.kim.phillips@freescale.com>
-References: <20060630185542.102af583.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D3DE039C-5E92-4A28-8485-4057C598661D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Documentation: correct values in MPC5848E SEC example node
-Date: Sat, 1 Jul 2006 10:16:50 -0500
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 25EBD67A6B
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 01:21:19 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k61FLG5P031971
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jul 2006 11:21:16 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k61FLGBS281628
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jul 2006 11:21:16 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k61FLFN0016188
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jul 2006 11:21:15 -0400
+Received: from d27mc103.rchland.ibm.com (d27mc103.rchland.ibm.com
+	[9.10.229.52])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k61FLFex016176
+	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jul 2006 11:21:15 -0400
+Subject: Murali N Iyer/Rochester/IBM is out of the office.
+From: Murali N Iyer <mniyer@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <OF369FD911.956E995B-ON8625719E.0054576E-8625719E.0054576F@us.ibm.com>
+Date: Sat, 1 Jul 2006 10:21:14 -0500
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,42 +39,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The patch still had typo issues in the comments.  5848 -> 8548.
 
-- k
+I will be out of the office starting  07/01/2006 and will not return until
+07/10/2006.
 
-On Jun 30, 2006, at 6:55 PM, Kim Phillips wrote:
-
-> (this patch had apparently slipped through the cracks)
->
-> Documentation: correct values in MPC5848E SEC example node
->
-> ---
-> commit 27ef8f30208ceb62c5387e834a335558e7e88c70
-> tree e96c74f732489115651ea00d0514e66e8050c60a
-> parent 1f4a90670bacbf61f2fcc19a9e0e78748c932a25
-> author Kim Phillips <kim.phillips@freescale.com> Tue, 02 May 2006  
-> 11:38:23 -0500
-> committer Kim Phillips <kim.phillips@freescale.com> Tue, 02 May  
-> 2006 11:38:23 -0500
->
->  Documentation/powerpc/booting-without-of.txt |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
-> Documentation/powerpc/booting-without-of.txt
-> index 217e517..3c62e66 100644
-> --- a/Documentation/powerpc/booting-without-of.txt
-> +++ b/Documentation/powerpc/booting-without-of.txt
-> @@ -1436,9 +1436,9 @@ platforms are moved over to use the flat
->                 interrupts = <1d 3>;
->                 interrupt-parent = <40000>;
->                 num-channels = <4>;
-> -               channel-fifo-len = <24>;
-> +               channel-fifo-len = <18>;
->                 exec-units-mask = <000000fe>;
-> -               descriptor-types-mask = <073f1127>;
-> +               descriptor-types-mask = <012b0ebf>;
->         };
->
->
+I will respond to your message(s) when I return. If you need immediate
+assistance you may contact my Manager Jeremy Balster at (507) 253-2483 or
+balster@us.ibm.com
