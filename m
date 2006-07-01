@@ -1,35 +1,18 @@
-Return-Path: <mniyer@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 25EBD67A6B
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 01:21:19 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k61FLG5P031971
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jul 2006 11:21:16 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k61FLGBS281628
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jul 2006 11:21:16 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k61FLFN0016188
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jul 2006 11:21:15 -0400
-Received: from d27mc103.rchland.ibm.com (d27mc103.rchland.ibm.com
-	[9.10.229.52])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k61FLFex016176
-	for <linuxppc-dev@ozlabs.org>; Sat, 1 Jul 2006 11:21:15 -0400
-Subject: Murali N Iyer/Rochester/IBM is out of the office.
-From: Murali N Iyer <mniyer@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <OF369FD911.956E995B-ON8625719E.0054576E-8625719E.0054576F@us.ibm.com>
-Date: Sat, 1 Jul 2006 10:21:14 -0500
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [66.118.10.122])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E9D9367A3F
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 01:37:03 +1000 (EST)
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: ppc vs. powerpc status update, please 
+In-Reply-To: Your message of "Sat, 01 Jul 2006 12:20:12 +0200."
+	<Pine.LNX.4.60.0607011215260.7912@poirot.grange>
+References: <Pine.LNX.4.60.0607011215260.7912@poirot.grange> 
+Date: Sat, 01 Jul 2006 10:36:55 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1FwhWh-00040w-BB@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,10 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+So, like, the other day Guennadi Liakhovetski mumbled:
+> What's the _current_ trend with those 2 archs, specifically,respecting 
+> embedded boards, the make ARCH=powerpc ***_defconfig for a board under ppc 
+> "just should work" doesn't seem to hold and I didn't find any provisions 
+> for that. (I read in an earlier post it "should"). Are ppc platforms still 
+> supposed to migrate to under powerpc? I am not quite clear where to put 
+> all board-specific stuff then, in that post it was told "you almost don't 
+> need anything, just use device tree and a correct CPU support, and put 
+> your specific _drivers_ somewhere". How is it in reality?
 
-I will be out of the office starting  07/01/2006 and will not return until
-07/10/2006.
+The trend is still happening.  Things should be migrated out
+of arch/ppc and into arch/powerpc.  For example, I just 
+introduced a new 86xx board port only under arch/powerpc.
 
-I will respond to your message(s) when I return. If you need immediate
-assistance you may contact my Manager Jeremy Balster at (507) 253-2483 or
-balster@us.ibm.com
+Please feel free to help migrate support into arch/powerpc!
+
+jdl
