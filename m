@@ -1,15 +1,20 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id ED24267A79
-	for <linuxppc-dev@ozlabs.org>; Sat,  1 Jul 2006 09:55:47 +1000 (EST)
-Date: Fri, 30 Jun 2006 18:55:42 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Documentation: correct values in MPC5848E SEC example node
-Message-Id: <20060630185542.102af583.kim.phillips@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 4349C67A62
+	for <linuxppc-dev@ozlabs.org>; Sat,  1 Jul 2006 14:15:49 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C69CC5.075BD621"
+Subject: RE: [PATCH] powerpc:Fix rheap alignment problem
+Date: Fri, 30 Jun 2006 23:13:28 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B07B36E@ismail.innsys.innovsys.com>
+References: <9FCDBA58F226D911B202000BDBAD467306E04FF6@zch01exm40.ap.freescale.net>
+	<1151709194.27137.2.camel@localhost.localdomain>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"Li Yang-r58472" <LeoLi@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(this patch had apparently slipped through the cracks)
+This is a multi-part message in MIME format.
 
-Documentation: correct values in MPC5848E SEC example node
+------_=_NextPart_001_01C69CC5.075BD621
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
----
-commit 27ef8f30208ceb62c5387e834a335558e7e88c70
-tree e96c74f732489115651ea00d0514e66e8050c60a
-parent 1f4a90670bacbf61f2fcc19a9e0e78748c932a25
-author Kim Phillips <kim.phillips@freescale.com> Tue, 02 May 2006 11:38:23 -0500
-committer Kim Phillips <kim.phillips@freescale.com> Tue, 02 May 2006 11:38:23 -0500
+From: Benjamin Herrenschmidt
+>What is this used for ? This rheap allocator ?
 
- Documentation/powerpc/booting-without-of.txt |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+It is used for allocating dual port RAM on 8xx and 82xx. (and probably =
+others that have a CPM)
+Most/all usage is still in ppc.
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 217e517..3c62e66 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1436,9 +1436,9 @@ platforms are moved over to use the flat
-                interrupts = <1d 3>;
-                interrupt-parent = <40000>;
-                num-channels = <4>;
--               channel-fifo-len = <24>;
-+               channel-fifo-len = <18>;
-                exec-units-mask = <000000fe>;
--               descriptor-types-mask = <073f1127>;
-+               descriptor-types-mask = <012b0ebf>;
-        };
- 
- 
+------_=_NextPart_001_01C69CC5.075BD621
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7233.69">
+<TITLE>RE: [PATCH] powerpc:Fix rheap alignment problem</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>From: Benjamin Herrenschmidt<BR>
+&gt;What is this used for ? This rheap allocator ?<BR>
+<BR>
+It is used for allocating dual port RAM on 8xx and 82xx. (and probably =
+others that have a CPM)<BR>
+Most/all usage is still in ppc.</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C69CC5.075BD621--
