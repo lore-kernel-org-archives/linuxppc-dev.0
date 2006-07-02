@@ -1,18 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B00FB67A62
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 11:55:19 +1000 (EST)
-Subject: [PATCH] powermac: Fix some 64b resource damage
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
-Content-Type: text/plain
-Date: Sun, 02 Jul 2006 11:55:03 +1000
-Message-Id: <1151805303.19419.15.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 4834467A64
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 13:54:59 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C69D8B.48ACF54D"
+Subject: RE: [PATCH] powerpc:Fix rheap alignment problem
+Date: Sat, 1 Jul 2006 22:54:57 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B07B36F@ismail.innsys.innovsys.com>
+References: <9FCDBA58F226D911B202000BDBAD467306E04FF6@zch01exm40.ap.freescale.net><20060701102557.GA14013@lst.de><C4F75531-D046-42EF-AAF7-D45B84DA1720@kernel.crashing.org>
+	<200607011750.05019.pantelis.antoniou@gmail.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Pantelis Antoniou" <pantelis.antoniou@gmail.com>,
+	"Kumar Gala" <galak@kernel.crashing.org>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Greg Kroah-Hartman <gregkh@suse.de>, Paul Mackerras <paulus@samba.org>
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,47 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The 64 bits resource patches did a bit of damage on PowerMac causing a
-buffer overflow in macio_asic and a warning in a sound driver. The
-former is fixed by reverting the sprintf of the bus_id to %08x as it was
-before. The bus_id used for macio devices is always a 32 bits value
-(macio always sits in 32 bits space) and since it's exposed to userland,
-the format of the string shouldn't be changed like that anyway. The
-second by using the proper type for printk.
+This is a multi-part message in MIME format.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-Linus, please apply asap since right now, PowerMac overflows kobject
-buffers on boot, pretty bad.
+------_=_NextPart_001_01C69D8B.48ACF54D
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
+From: Pantelis Antoniou
+Sent: Sat 7/1/2006 9:50 AM
+>Since genalloc is the blessed linux thing it might be best to use that =
+& remove
+>rheap completely. Oh well...
 
-Index: linux-irq-work/drivers/macintosh/macio_asic.c
-===================================================================
---- linux-irq-work.orig/drivers/macintosh/macio_asic.c	2006-07-02 11:46:53.000000000 +1000
-+++ linux-irq-work/drivers/macintosh/macio_asic.c	2006-07-02 11:47:37.000000000 +1000
-@@ -427,10 +427,10 @@
- 
- 	/* MacIO itself has a different reg, we use it's PCI base */
- 	if (np == chip->of_node) {
--		sprintf(dev->ofdev.dev.bus_id, "%1d.%016llx:%.*s",
-+		sprintf(dev->ofdev.dev.bus_id, "%1d.%08x:%.*s",
- 			chip->lbus.index,
- #ifdef CONFIG_PCI
--			(unsigned long long)pci_resource_start(chip->lbus.pdev, 0),
-+			(unsigned int)pci_resource_start(chip->lbus.pdev, 0),
- #else
- 			0, /* NuBus may want to do something better here */
- #endif
-Index: linux-irq-work/sound/ppc/pmac.c
-===================================================================
---- linux-irq-work.orig/sound/ppc/pmac.c	2006-07-02 11:46:53.000000000 +1000
-+++ linux-irq-work/sound/ppc/pmac.c	2006-07-02 11:48:40.000000000 +1000
-@@ -1170,7 +1170,7 @@
- 					       chip->rsrc[i].start + 1,
- 					       rnames[i]) == NULL) {
- 				printk(KERN_ERR "snd: can't request rsrc "
--				       " %d (%s: 0x%016lx:%016lx)\n",
-+				       " %d (%s: 0x%016llx:%016llx)\n",
- 				       i, rnames[i],
- 				       (unsigned long long)chip->rsrc[i].start,
- 				       (unsigned long long)chip->rsrc[i].end);
+Two problems with genalloc that I can see (for CPM programming):
+1) (minor) Does not have a way to specify alignment (genalloc does it =
+for you)
+2) (major problerm, at least for me) Does not have a way to allocate a =
+specified address in the pool.
+
+2 is needed esp when programming MCC drivers, since a lot of the =
+datastructures must be in DP RAM _and_ be in a specific spot. And if you =
+cannot tell the allocator that I am using a specific address, then the =
+allocator might very well give somebody else that portion of RAM. The =
+only solution without a fixed allocator is to allocate ALL memory in the =
+DP RAM and use your own allocator.=20
+
+------_=_NextPart_001_01C69D8B.48ACF54D
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7233.69">
+<TITLE>RE: [PATCH] powerpc:Fix rheap alignment problem</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>From: Pantelis Antoniou<BR>
+Sent: Sat 7/1/2006 9:50 AM<BR>
+&gt;Since genalloc is the blessed linux thing it might be best to use =
+that &amp; remove<BR>
+&gt;rheap completely. Oh well...<BR>
+<BR>
+Two problems with genalloc that I can see (for CPM programming):<BR>
+1) (minor) Does not have a way to specify alignment (genalloc does it =
+for you)<BR>
+2) (major problerm, at least for me) Does not have a way to allocate a =
+specified address in the pool.<BR>
+<BR>
+2 is needed esp when programming MCC drivers, since a lot of the =
+datastructures must be in DP RAM _and_ be in a specific spot. And if you =
+cannot tell the allocator that I am using a specific address, then the =
+allocator might very well give somebody else that portion of RAM. The =
+only solution without a fixed allocator is to allocate ALL memory in the =
+DP RAM and use your own allocator.<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C69D8B.48ACF54D--
