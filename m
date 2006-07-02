@@ -1,18 +1,21 @@
-Return-Path: <greg@kroah.com>
-Received: from perch.kroah.org (mail.kroah.org [69.55.234.183])
-	by ozlabs.org (Postfix) with ESMTP id D158067A65
-	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 14:57:24 +1000 (EST)
-Date: Sat, 1 Jul 2006 21:05:01 -0700
-From: Greg KH <gregkh@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powermac: Fix some 64b resource damage
-Message-ID: <20060702040501.GA10452@suse.de>
-References: <1151805303.19419.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1151805303.19419.15.camel@localhost.localdomain>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@osdl.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <pantelis.antoniou@gmail.com>
+Received: from smtp107.biz.mail.re2.yahoo.com (smtp107.biz.mail.re2.yahoo.com
+	[206.190.52.176]) by ozlabs.org (Postfix) with SMTP id E0EAE67A65
+	for <linuxppc-dev@ozlabs.org>; Sun,  2 Jul 2006 15:17:34 +1000 (EST)
+From: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+To: "Rune Torgersen" <runet@innovsys.com>
+Subject: Re: [PATCH] powerpc:Fix rheap alignment problem
+Date: Sun, 2 Jul 2006 08:18:26 +0300
+References: <9FCDBA58F226D911B202000BDBAD467306E04FF6@zch01exm40.ap.freescale.net>
+	<200607011750.05019.pantelis.antoniou@gmail.com>
+	<DCEAAC0833DD314AB0B58112AD99B93B07B36F@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B07B36F@ismail.innsys.innovsys.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200607020818.27603.pantelis.antoniou@gmail.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Jul 02, 2006 at 11:55:03AM +1000, Benjamin Herrenschmidt wrote:
-> The 64 bits resource patches did a bit of damage on PowerMac causing a
-> buffer overflow in macio_asic and a warning in a sound driver. The
-> former is fixed by reverting the sprintf of the bus_id to %08x as it was
-> before. The bus_id used for macio devices is always a 32 bits value
-> (macio always sits in 32 bits space) and since it's exposed to userland,
-> the format of the string shouldn't be changed like that anyway. The
-> second by using the proper type for printk.
+On Sunday 02 July 2006 06:54, Rune Torgersen wrote:
+> From: Pantelis Antoniou
+> Sent: Sat 7/1/2006 9:50 AM
+> >Since genalloc is the blessed linux thing it might be best to use that & remove
+> >rheap completely. Oh well...
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> Linus, please apply asap since right now, PowerMac overflows kobject
-> buffers on boot, pretty bad.
+> Two problems with genalloc that I can see (for CPM programming):
+> 1) (minor) Does not have a way to specify alignment (genalloc does it for you)
+> 2) (major problerm, at least for me) Does not have a way to allocate a specified address in the pool.
+> 
+> 2 is needed esp when programming MCC drivers, since a lot of the datastructures must be in DP RAM _and_ be in a specific spot. And if you cannot tell the allocator that I am using a specific address, then the allocator might very well give somebody else that portion of RAM. The only solution without a fixed allocator is to allocate ALL memory in the DP RAM and use your own allocator. 
+> 
 
-Acked by me, sorry about this.
+Yeah, that too.
 
-greg k-h
+Too bad there are no main tree drivers like that, but they do exist.
+
+One could conceivably hack genalloc to do that, but will end up with
+something complex too.
+
+BTW, there are other uEngine based architectures with similar alignment
+requirements.
+
+So in conclusion, for the in-tree drivers genalloc is sufficient as an cpm memory allocator.
+For some out of tree drivers, it is not.
+
+Pantelis
