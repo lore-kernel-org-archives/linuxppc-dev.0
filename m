@@ -1,29 +1,14 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3AB4067A3E
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jul 2006 23:32:10 +1000 (EST)
-Subject: Re: sound connector detection
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Dmitry Torokhov <dtor@insightbb.com>
-In-Reply-To: <200607022248.36459.dtor@insightbb.com>
-References: <1151671786.13412.6.camel@localhost>
-	<200607011609.59426.dtor@insightbb.com>
-	<1151832510.5536.32.camel@localhost.localdomain>
-	<200607022248.36459.dtor@insightbb.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-eIHtIe5jSEY7FC/Qm2bv"
-Date: Mon, 03 Jul 2006 15:31:41 +0200
-Message-Id: <1151933502.20701.40.camel@localhost>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 9347F67B65
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jul 2006 06:10:21 +1000 (EST)
+Date: Mon, 3 Jul 2006 15:10:14 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Documentation: correct values in MPC8548E SEC example node
+Message-Id: <20060703151014.770aaf98.kim.phillips@freescale.com>
 Mime-Version: 1.0
-Cc: Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Richard Purdie <rpurdie@rpsys.net>,
-	linux-input <linux-input@atrey.karlin.mff.cuni.cz>,
-	alsa-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,41 +18,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+(fixed 5848 -> 8548)
 
---=-eIHtIe5jSEY7FC/Qm2bv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Documentation: correct values in MPC8548E SEC example node
 
-On Sun, 2006-07-02 at 22:48 -0400, Dmitry Torokhov wrote:
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 
-> Maybe we should start looking into connector or a pure netlink
-> implementation.
+---
 
-Might not be a bad idea. Then again, the whole alsa API could work over
-netlink ;)
+ Documentation/powerpc/booting-without-of.txt |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-johannes
-
---=-eIHtIe5jSEY7FC/Qm2bv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARKkcO6Vg1VMiehFYAQI/HQ//flN1TNnPF2+gzjYTCPKvyp7tENth5sQB
-tX/0PtisK7saMisS2mdGh6tUJnjSPqY1pOo4rjMaNcEfynsh3OWh5oRSP6F6eVle
-Yde5dTqlH+KBiQqFZCKAC/mQKIbakkws+ewlQaIpMZ85defTLd6GSfRUsf/ILpso
-8SFYplOEXG1T8TtU3wcGbH16dkclttsaUpQ5Tv6zu9jhvciaUHvtonb9fq41bgZ6
-a0529FAKwk1gQc3w4BJFjGIXAvQjFZoqSGHTXXG18Jrd9ClxxK8iFtxAZ09wza7t
-cerWylefcYF16TRKxRVmshbyBbParz+E4mNg7yE7uCPqMWOPoNflETXZu75PwqRX
-oZ84H2k0B2EaIGPASoGE+ZYcT/ljMLv1emq1X5smcM6T1bUDglZvSQiWmpQ+HSKv
-QxehcMmzTdlZwT8MGzYowTZlaR/p4XeZu5vRtNT44WOI89DTBXCOP7+W02ytmgBE
-rzAz5xfJs50wC6wanHTCHNw19cjL3ysIctraAfU51avoZxt5KLRq9vP8lJPHJ7nx
-HXHuOrfFfxpeE0tLIeO4U8dDmsBdU0/32xDFZzXJLQxjIWK/R4VACRqiwRMYeFFY
-aL/DF8jKlqqM/TTmCQgutfec2BgUs6pmxSvCA5OxlZiH3E8YU2xwC2i8fflreMH6
-iUw4fyLiCcM=
-=yCmr
------END PGP SIGNATURE-----
-
---=-eIHtIe5jSEY7FC/Qm2bv--
+179e7f97a4ccee6d3a39af5fb422ab16e0beded8
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 217e517..3c62e66 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1436,9 +1436,9 @@ platforms are moved over to use the flat
+                interrupts = <1d 3>;
+                interrupt-parent = <40000>;
+                num-channels = <4>;
+-               channel-fifo-len = <24>;
++               channel-fifo-len = <18>;
+                exec-units-mask = <000000fe>;
+-               descriptor-types-mask = <073f1127>;
++               descriptor-types-mask = <012b0ebf>;
+        };
+ 
+ 
+-- 
+1.2.4
