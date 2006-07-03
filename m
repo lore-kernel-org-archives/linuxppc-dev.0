@@ -1,17 +1,16 @@
 Return-Path: <bwarren@qstreams.com>
-Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
-	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id DC33667B75
+Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
+	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 276EB679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Jul 2006 00:19:47 +1000 (EST)
-Subject: Re: JFFS2 FS is read-only (not what I want)
+	Tue,  4 Jul 2006 00:36:08 +1000 (EST)
+Subject: RE: JFFS2 FS is read-only (not what I want)
 From: Ben Warren <bwarren@qstreams.com>
-To: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
-In-Reply-To: <200607031241.27979.mathieu.deschamps@com2gether.net>
-References: <44A6E57A.3080302@qstreams.com>
-	<200607031241.27979.mathieu.deschamps@com2gether.net>
-Content-Type: multipart/alternative; boundary="=-SOEuVoAMtFQbOz+Tj3a9"
-Date: Mon, 03 Jul 2006 10:19:44 -0400
-Message-Id: <1151936384.12449.12.camel@saruman.qstreams.net>
+To: Anantharaman Chetan-W16155 <Chetan.S.Anantharaman@motorola.com>
+In-Reply-To: <EDF27F298D4B03498AE0C249A941DFF803D748@de01exm68.ds.mot.com>
+References: <EDF27F298D4B03498AE0C249A941DFF803D748@de01exm68.ds.mot.com>
+Content-Type: multipart/alternative; boundary="=-UsOq8GEroiKmTsnRKHjZ"
+Date: Mon, 03 Jul 2006 10:36:05 -0400
+Message-Id: <1151937365.12449.17.camel@saruman.qstreams.net>
 Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 Reply-To: bwarren@qstreams.com
@@ -26,73 +25,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---=-SOEuVoAMtFQbOz+Tj3a9
+--=-UsOq8GEroiKmTsnRKHjZ
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Mathieu,
+Chetan,
 
-Thanks for responding!
+On Mon, 2006-07-03 at 10:18 -0400, Anantharaman Chetan-W16155 wrote:
 
-On Mon, 2006-07-03 at 12:42 +0200, Mathieu Deschamps wrote:
-
-
-> >
-> Do you mean that you can't even created a void file on / as root ? Else
-> can you then put for instance text in it ? My point is can or can't you
-> first create a new fs node and then can you write to file your
-> changes, that's two possible causes.
-
-# pwd
-/
-# touch newfile
-touch: newfile: No space left on device
-#
-
-
-> Yes indeed what about drivers/mtd/maps/physmap.c ? your parts are
-> mask_flags:  MTD_WRITEB_WRITEABLE and not  MTD_CAP_ROM,
-> aren't they ?
+> Did you check to see if your flash banks are unlocked?
 > 
 
-My chip is pretty standard NOR type Flash, and gets recognized by CFI as
-using command set 0001.  It gets these flags:
-#define MTD_CAP_NORFLASH        (MTD_CLEAR_BITS|MTD_ERASEABLE)
+According to U-Boot, only the first four sectors are locked.  My JFFS2
+partition is in sectors 37-52 (1-based).  I'll definitely look more
+deeply into this, though.
 
-
-> > ***
-> > # Memory Technology Devices (MTD)
-> > #
-> > CONFIG_MTD=y
-> > # CONFIG_MTD_DEBUG is not set
-> > # CONFIG_MTD_CONCAT is not set
-> > CONFIG_MTD_PARTITIONS=y
-> > # CONFIG_MTD_REDBOOT_PARTS is not set
-> > # CONFIG_MTD_CMDLINE_PARTS is not set
-> >
-> [...]
-> > # CONFIG_JFFS_FS is not set
-> > CONFIG_JFFS2_FS=y
-> 
-> Better avoid redundacy but this is not a clue, I guess
-> make won't be fooled by this.
-> 
-
-Sorry, what's redundant here?  I just used 'make menuconfig', and
-hopefully it notices incorrect options.
-
-
-> 
-> IMHO, it's not a generation-time issue
-> 
-> >
-
-Good.  I'll keep plugging away with my BDI
-
-thanks again,
+thanks,
 Ben
 
---=-SOEuVoAMtFQbOz+Tj3a9
+--=-UsOq8GEroiKmTsnRKHjZ
 Content-Type: text/html; charset=utf-8
 Content-Transfer-Encoding: 7bit
 
@@ -103,74 +54,20 @@ Content-Transfer-Encoding: 7bit
   <META NAME="GENERATOR" CONTENT="GtkHTML/3.10.2">
 </HEAD>
 <BODY>
-Mathieu,<BR>
+Chetan,<BR>
 <BR>
-Thanks for responding!<BR>
-<BR>
-On Mon, 2006-07-03 at 12:42 +0200, Mathieu Deschamps wrote:<BR>
-<BR>
+On Mon, 2006-07-03 at 10:18 -0400, Anantharaman Chetan-W16155 wrote:
 <BLOCKQUOTE TYPE=CITE>
 <PRE>
-<FONT COLOR="#000000">&gt;</FONT>
-<FONT COLOR="#000000">Do you mean that you can't even created a void file on / as root ? Else</FONT>
-<FONT COLOR="#000000">can you then put for instance text in it ? My point is can or can't you</FONT>
-<FONT COLOR="#000000">first create a new fs node and then can you write to file your</FONT>
-<FONT COLOR="#000000">changes, that's two possible causes.</FONT>
-</PRE>
-</BLOCKQUOTE>
-# pwd<BR>
-/<BR>
-# touch newfile<BR>
-touch: newfile: No space left on device<BR>
-#<BR>
-<BR>
-<BLOCKQUOTE TYPE=CITE>
-<PRE>
-<FONT COLOR="#000000">Yes indeed what about drivers/mtd/maps/physmap.c ? your parts are</FONT>
-<FONT COLOR="#000000">mask_flags:  MTD_WRITEB_WRITEABLE and not  MTD_CAP_ROM,</FONT>
-<FONT COLOR="#000000">aren't they ?</FONT>
+<FONT COLOR="#000000">Did you check to see if your flash banks are unlocked?</FONT>
 
 </PRE>
 </BLOCKQUOTE>
-My chip is pretty standard NOR type Flash, and gets recognized by CFI as using command set 0001.&nbsp; It gets these flags:<BR>
-#define MTD_CAP_NORFLASH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (MTD_CLEAR_BITS|MTD_ERASEABLE)<BR>
+According to U-Boot, only the first four sectors are locked.&nbsp; My JFFS2 partition is in sectors 37-52 (1-based).&nbsp; I'll definitely look more deeply into this, though.<BR>
 <BR>
-<BLOCKQUOTE TYPE=CITE>
-<PRE>
-<FONT COLOR="#000000">&gt; ***</FONT>
-<FONT COLOR="#000000">&gt; # Memory Technology Devices (MTD)</FONT>
-<FONT COLOR="#000000">&gt; #</FONT>
-<FONT COLOR="#000000">&gt; CONFIG_MTD=y</FONT>
-<FONT COLOR="#000000">&gt; # CONFIG_MTD_DEBUG is not set</FONT>
-<FONT COLOR="#000000">&gt; # CONFIG_MTD_CONCAT is not set</FONT>
-<FONT COLOR="#000000">&gt; CONFIG_MTD_PARTITIONS=y</FONT>
-<FONT COLOR="#000000">&gt; # CONFIG_MTD_REDBOOT_PARTS is not set</FONT>
-<FONT COLOR="#000000">&gt; # CONFIG_MTD_CMDLINE_PARTS is not set</FONT>
-<FONT COLOR="#000000">&gt;</FONT>
-<FONT COLOR="#000000">[...]</FONT>
-<FONT COLOR="#000000">&gt; # CONFIG_JFFS_FS is not set</FONT>
-<FONT COLOR="#000000">&gt; CONFIG_JFFS2_FS=y</FONT>
-
-<FONT COLOR="#000000">Better avoid redundacy but this is not a clue, I guess</FONT>
-<FONT COLOR="#000000">make won't be fooled by this.</FONT>
-
-</PRE>
-</BLOCKQUOTE>
-Sorry, what's redundant here?&nbsp; I just used 'make menuconfig', and hopefully it notices incorrect options.<BR>
-<BR>
-<BLOCKQUOTE TYPE=CITE>
-<PRE>
-
-<FONT COLOR="#000000">IMHO, it's not a generation-time issue</FONT>
-
-<FONT COLOR="#000000">&gt;</FONT>
-</PRE>
-</BLOCKQUOTE>
-Good.&nbsp; I'll keep plugging away with my BDI<BR>
-<BR>
-thanks again,<BR>
+thanks,<BR>
 Ben
 </BODY>
 </HTML>
 
---=-SOEuVoAMtFQbOz+Tj3a9--
+--=-UsOq8GEroiKmTsnRKHjZ--
