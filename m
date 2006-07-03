@@ -3,20 +3,20 @@ Received: from ca1mail04.kla-tencor.com (mailout04.kla-tencor.com
 	[192.146.1.174])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BF239679FB
+	by ozlabs.org (Postfix) with ESMTP id A569D679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Jul 2006 16:43:04 +1000 (EST)
+	Mon,  3 Jul 2006 16:43:05 +1000 (EST)
 Received: from CA1EXBH01.adcorp.kla-tencor.com
 	(ca1exbh01.adcorp.kla-tencor.com [10.60.33.3])
 	by ca1mail04.kla-tencor.com (8.12.10/8.12.11) with ESMTP id
-	k635fE3a021419
-	for <linuxppc-embedded@ozlabs.org>; Sun, 2 Jul 2006 22:41:16 -0700
+	k635fZ3Y021431
+	for <linuxppc-embedded@ozlabs.org>; Sun, 2 Jul 2006 22:41:37 -0700
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C69E63.4C2402C1"
+	boundary="----_=_NextPart_001_01C69E63.56C45084"
 Subject: How do you set up a PPC440GX with a PHY on emac2 only?
-Date: Sun, 2 Jul 2006 22:41:14 -0700
-Message-ID: <91B22F93A880FA48879475E134D6F0BE386FD3@CA1EXCLV02.adcorp.kla-tencor.com>
+Date: Sun, 2 Jul 2006 22:41:32 -0700
+Message-ID: <91B22F93A880FA48879475E134D6F0BE386FD4@CA1EXCLV02.adcorp.kla-tencor.com>
 From: "Howard, Marc" <Marc.Howard@kla-tencor.com>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -31,7 +31,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C69E63.4C2402C1
+------_=_NextPart_001_01C69E63.56C45084
 Content-Type: text/plain;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -49,7 +49,7 @@ Thanks,
 
 Marc W. Howard
 
-------_=_NextPart_001_01C69E63.4C2402C1
+------_=_NextPart_001_01C69E63.56C45084
 Content-Type: text/html;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -83,4 +83,4 @@ Marc W. Howard<BR>
 
 </BODY>
 </HTML>
-------_=_NextPart_001_01C69E63.4C2402C1--
+------_=_NextPart_001_01C69E63.56C45084--
