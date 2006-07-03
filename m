@@ -1,30 +1,24 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <Marc.Howard@kla-tencor.com>
+Received: from ca1mail04.kla-tencor.com (mailout04.kla-tencor.com
+	[192.146.1.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 50088679FB
+	by ozlabs.org (Postfix) with ESMTP id BF239679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Jul 2006 16:38:32 +1000 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1FxI4c-00023K-3t
-	for linuxppc-embedded@ozlabs.org; Mon, 03 Jul 2006 08:38:22 +0200
-Received: from rusfw02.rohde-schwarz.com ([80.246.32.40])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 03 Jul 2006 08:38:22 +0200
-Received: from euphoria by rusfw02.rohde-schwarz.com with local (Gmexim 0.1
-	(Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Mon, 03 Jul 2006 08:38:22 +0200
-To: linuxppc-embedded@ozlabs.org
-From: Florian Boelstler <euphoria@arcor.de>
-Subject: Re: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
-Date: Mon, 03 Jul 2006 08:38:04 +0200
-Message-ID: <e8ae0b$35e$1@sea.gmane.org>
-References: <9FCDBA58F226D911B202000BDBAD467306DD12EC@zch01exm40.ap.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-In-Reply-To: <9FCDBA58F226D911B202000BDBAD467306DD12EC@zch01exm40.ap.freescale.net>
-Sender: news <news@sea.gmane.org>
+	Mon,  3 Jul 2006 16:43:04 +1000 (EST)
+Received: from CA1EXBH01.adcorp.kla-tencor.com
+	(ca1exbh01.adcorp.kla-tencor.com [10.60.33.3])
+	by ca1mail04.kla-tencor.com (8.12.10/8.12.11) with ESMTP id
+	k635fE3a021419
+	for <linuxppc-embedded@ozlabs.org>; Sun, 2 Jul 2006 22:41:16 -0700
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C69E63.4C2402C1"
+Subject: How do you set up a PPC440GX with a PHY on emac2 only?
+Date: Sun, 2 Jul 2006 22:41:14 -0700
+Message-ID: <91B22F93A880FA48879475E134D6F0BE386FD3@CA1EXCLV02.adcorp.kla-tencor.com>
+From: "Howard, Marc" <Marc.Howard@kla-tencor.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,32 +29,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C69E63.4C2402C1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
 Hi,
 
-Zhang Wei-r63237 schrieb:
-> Yes, I think so. You can plug a PCIe ethernet card to test it. 
+Does anyone have any pointers/tips on how to set up a ocotea-like =
+PPC440GX design with only a single gigabit (Cicada) PHY on emac2?  =
+Editing ocotea_set_emacdata() to just define a single PHY doesn't work =
+correctly.  It looks like this has something to do with the MII =
+communtications being on the ZMII bridge on emac0 but defining emac0 =
+doesn't help either.=20
 
-A single device always works.
+Thanks,
 
-> :-), Maybe it's need more study. Could you enable the DEBUG and post the kernel verbose message?
+Marc W. Howard
 
-We added lots of debug output and made some modifications (mostly delays 
-between calls to early_read_config_dword() and 
-early_write_config_dword() in pci_auto.c) and came to the conclusion 
-that generic bridge devices (PCIe-to-PCI), even in a cascaded setup of 
-three bridges, work fine.
+------_=_NextPart_001_01C69E63.4C2402C1
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-However a PCIe switch (PLX8516/8532) doesn't work. The MPC8548 only 
-detects a single device (i.e. primary side of the switch).
-We are going to analyze the problem more deeply soon. It seems that the 
-configuration space of that devices isn't properly set up.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7638.1">
+<TITLE>How do you set up a PPC440GX with a PHY on emac2 only?</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
 
-The provided patch doesn't make any difference, besides that it is moved 
-to a location where the PPC itself is not detected.
+<P><FONT SIZE=3D2>Hi,<BR>
+<BR>
+Does anyone have any pointers/tips on how to set up a ocotea-like =
+PPC440GX design with only a single gigabit (Cicada) PHY on emac2?&nbsp; =
+Editing ocotea_set_emacdata() to just define a single PHY doesn't work =
+correctly.&nbsp; It looks like this has something to do with the MII =
+communtications being on the ZMII bridge on emac0 but defining emac0 =
+doesn't help either.<BR>
+<BR>
+Thanks,<BR>
+<BR>
+Marc W. Howard<BR>
+</FONT>
+</P>
 
-Please keep us informed if there is any progress besides Freescale, as I 
-will do.
-
-Cheers,
-
-   Florian
+</BODY>
+</HTML>
+------_=_NextPart_001_01C69E63.4C2402C1--
