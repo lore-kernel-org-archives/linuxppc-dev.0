@@ -1,24 +1,20 @@
-Return-Path: <Chetan.S.Anantharaman@motorola.com>
-Received: from motgate4.mot.com (motgate4.mot.com [144.189.100.102])
-	by ozlabs.org (Postfix) with ESMTP id A9A8767B87
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
+	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 14F8167A2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Jul 2006 01:00:58 +1000 (EST)
-Received: from az33exr03.mot.com (az33exr03.mot.com [10.64.251.233])
-	by motgate4.mot.com (8.12.11/Motgate4) with ESMTP id k63F0l7d006431
-	for <linuxppc-embedded@ozlabs.org>; Mon, 3 Jul 2006 08:00:47 -0700 (MST)
-Received: from de01exm68.ds.mot.com (de01exm68.am.mot.com [10.176.8.24])
-	by az33exr03.mot.com (8.13.1/8.13.0) with ESMTP id k63F0kMW003282
-	for <linuxppc-embedded@ozlabs.org>; Mon, 3 Jul 2006 10:00:47 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C69EB1.76B04EBD"
-Subject: RE: JFFS2 FS is read-only (not what I want)
-Date: Mon, 3 Jul 2006 11:00:46 -0400
-Message-ID: <EDF27F298D4B03498AE0C249A941DFF803D749@de01exm68.ds.mot.com>
-In-Reply-To: <1151937365.12449.17.camel@saruman.qstreams.net>
-From: "Anantharaman Chetan-W16155" <Chetan.S.Anantharaman@motorola.com>
-To: <bwarren@qstreams.com>
+	Tue,  4 Jul 2006 05:44:52 +1000 (EST)
+Subject: Re: JFFS2 FS is read-only (not what I want)
+From: Ben Warren <bwarren@qstreams.com>
+To: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
+In-Reply-To: <200607031241.27979.mathieu.deschamps@com2gether.net>
+References: <44A6E57A.3080302@qstreams.com>
+	<200607031241.27979.mathieu.deschamps@com2gether.net>
+Content-Type: text/plain
+Date: Mon, 03 Jul 2006 15:38:11 -0400
+Message-Id: <1151955491.12449.32.camel@saruman.qstreams.net>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,209 +25,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Mathieu,
+> 
+> IMHO, it's not a generation-time issue
+> 
+This is starting to look to me like a generation-time issue.  I built
+another JFFS2 partition out of a random directory on my workstation, and
+it's behaving properly:
 
-------_=_NextPart_001_01C69EB1.76B04EBD
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+$mkfs.jffs2 -U -d util -b -e 0x20000 -o /tftpboot/prism/myutil.img
 
-Also as a side note, I think even if you unlock your banks/sectors in
-U-Boot, when the Linux kernel is launched I am not sure if the
-sectors/banks remain unlocked. You can also use the MTD Utils to unlock
-the device, erase the device, etc. in the shell.
+On the target, I booted from NFS and mounted both MTD images.  The
+original one is in /dev/mtdblock4 and the new one is at /dev/mtdblock3:
 
-=20
+bash-3.00# pwd
+/tmp
+bash-3.00# mkdir mnt1 mnt2
+bash-3.00# ll
+total 8
+drwxr-xr-x  2 root root 4096 Jul  3  2006 mnt1
+drwxr-xr-x  2 root root 4096 Jul  3  2006 mnt2
+bash-3.00# mount -t jffs2 -o rw,nolock /dev/mtdblock3 mnt1
+bash-3.00# mount -t jffs2 -o rw,nolock /dev/mtdblock4 mnt2
+bash-3.00# df
+Filesystem           1K-blocks      Used Available Use% Mounted on
+/dev/nfs              72054096  13245480  55148432  20% /
+/dev/mtdblock3            2048       592      1456  29% /tmp/mnt1
+/dev/mtdblock4            2048      2048         0 100% /tmp/mnt2
 
-Chetan
+As you can see, the new image is working fine.  Looks like I need to
+debug the root FS! 
 
-=20
+Thanks to all people who helped me out here!
 
-________________________________
-
-From: Ben Warren [mailto:bwarren@qstreams.com]=20
-Sent: Monday, July 03, 2006 9:36 AM
-To: Anantharaman Chetan-W16155
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: JFFS2 FS is read-only (not what I want)
-
-=20
-
-Chetan,
-
-On Mon, 2006-07-03 at 10:18 -0400, Anantharaman Chetan-W16155 wrote:=20
-
-=20
-Did you check to see if your flash banks are unlocked?
-=20
-
-According to U-Boot, only the first four sectors are locked.  My JFFS2
-partition is in sectors 37-52 (1-based).  I'll definitely look more
-deeply into this, though.
-
-thanks,
-Ben=20
-
-
-------_=_NextPart_001_01C69EB1.76B04EBD
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<!--[if !mso]>
-<style>
-v\:* {behavior:url(#default#VML);}
-o\:* {behavior:url(#default#VML);}
-w\:* {behavior:url(#default#VML);}
-.shape {behavior:url(#default#VML);}
-</style>
-<![endif]--><o:SmartTagType
- namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags" =
-name=3D"PersonName"/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Tahoma;
-	panose-1:2 11 6 4 3 5 4 4 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-pre
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";}
-span.EmailStyle18
-	{mso-style-type:personal-reply;
-	font-family:Arial;
-	color:navy;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Also as a side note, I think even =
-if you
-unlock your banks/sectors in U-Boot, when the Linux kernel is launched I =
-am not
-sure if the sectors/banks remain unlocked. You can also use the MTD =
-Utils to
-unlock the device, erase the device, etc. in the =
-shell.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Chetan<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<div>
-
-<div class=3DMsoNormal align=3Dcenter style=3D'text-align:center'><font =
-size=3D3
-face=3D"Times New Roman"><span style=3D'font-size:12.0pt'>
-
-<hr size=3D2 width=3D"100%" align=3Dcenter tabindex=3D-1>
-
-</span></font></div>
-
-<p class=3DMsoNormal><b><font size=3D2 face=3DTahoma><span =
-style=3D'font-size:10.0pt;
-font-family:Tahoma;font-weight:bold'>From:</span></font></b><font =
-size=3D2
-face=3DTahoma><span style=3D'font-size:10.0pt;font-family:Tahoma'> Ben =
-Warren
-[mailto:bwarren@qstreams.com] <br>
-<b><span style=3D'font-weight:bold'>Sent:</span></b> Monday, July 03, =
-2006 9:36
-AM<br>
-<b><span style=3D'font-weight:bold'>To:</span></b> Anantharaman =
-Chetan-W16155<br>
-<b><span style=3D'font-weight:bold'>Cc:</span></b> <st1:PersonName =
-w:st=3D"on">linuxppc-embedded@ozlabs.org</st1:PersonName><br>
-<b><span style=3D'font-weight:bold'>Subject:</span></b> RE: JFFS2 FS is =
-read-only
-(not what I want)</span></font><o:p></o:p></p>
-
-</div>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>Chetan,<br>
-<br>
-On Mon, 2006-07-03 at 10:18 -0400, Anantharaman Chetan-W16155 wrote: =
-<o:p></o:p></span></font></p>
-
-<pre><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></pre><pre><fon=
-t
-size=3D2 color=3Dblack face=3D"Courier New"><span =
-style=3D'font-size:10.0pt;color:black'>Did you check to see if your =
-flash banks are unlocked?</span></font><o:p></o:p></pre><pre><font
-size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:10.0pt'><o:p>&nbsp;</o:p></span></font></pre>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'>According to U-Boot, only the first four sectors are =
-locked.&nbsp; My
-JFFS2 partition is in sectors 37-52 (1-based).&nbsp; I'll definitely =
-look more
-deeply into this, though.<br>
-<br>
-thanks,<br>
-Ben <o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C69EB1.76B04EBD--
+cheers,
+Ben
+ 
