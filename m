@@ -1,24 +1,23 @@
-Return-Path: <Marc.Howard@kla-tencor.com>
-Received: from ca1mail04.kla-tencor.com (mailout04.kla-tencor.com
-	[192.146.1.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A569D679FB
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id C8EFE679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Jul 2006 16:43:05 +1000 (EST)
-Received: from CA1EXBH01.adcorp.kla-tencor.com
-	(ca1exbh01.adcorp.kla-tencor.com [10.60.33.3])
-	by ca1mail04.kla-tencor.com (8.12.10/8.12.11) with ESMTP id
-	k635fZ3Y021431
-	for <linuxppc-embedded@ozlabs.org>; Sun, 2 Jul 2006 22:41:37 -0700
+	Mon,  3 Jul 2006 17:54:36 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k637sXDT013789
+	for <linuxppc-embedded@ozlabs.org>; Mon, 3 Jul 2006 00:54:33 -0700 (MST)
+Received: from zch01exm40.ap.freescale.net (zch01exm40.ap.freescale.net
+	[10.192.130.11])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k637sVY2005104
+	for <linuxppc-embedded@ozlabs.org>; Mon, 3 Jul 2006 02:54:32 -0500 (CDT)
+Message-ID: <9FCDBA58F226D911B202000BDBAD467306F13A4B@zch01exm40.ap.freescale.net>
+From: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+To: Florian Boelstler <euphoria@arcor.de>, linuxppc-embedded@ozlabs.org
+Subject: RE: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
+Date: Mon, 3 Jul 2006 15:54:30 +0800 
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C69E63.56C45084"
-Subject: How do you set up a PPC440GX with a PHY on emac2 only?
-Date: Sun, 2 Jul 2006 22:41:32 -0700
-Message-ID: <91B22F93A880FA48879475E134D6F0BE386FD4@CA1EXCLV02.adcorp.kla-tencor.com>
-From: "Howard, Marc" <Marc.Howard@kla-tencor.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,58 +28,71 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi, 
 
-------_=_NextPart_001_01C69E63.56C45084
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+> -----Original Message-----
+> From: 
+> linuxppc-embedded-bounces+wei.zhang=freescale.com@ozlabs.org 
+> [mailto:linuxppc-embedded-bounces+wei.zhang=freescale.com@ozla
+> bs.org] On Behalf Of Florian Boelstler
+> Sent: Monday, July 03, 2006 2:38 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: Re: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
+> 
+> Hi,
+> 
+> Zhang Wei-r63237 schrieb:
+> > Yes, I think so. You can plug a PCIe ethernet card to test it. 
+> 
+> A single device always works.
+> 
+> > :-), Maybe it's need more study. Could you enable the DEBUG 
+> and post the kernel verbose message?
+> 
+> We added lots of debug output and made some modifications 
+> (mostly delays between calls to early_read_config_dword() and
+> early_write_config_dword() in pci_auto.c) and came to the 
+> conclusion that generic bridge devices (PCIe-to-PCI), even in 
+> a cascaded setup of three bridges, work fine.
 
-Hi,
+Yea, that's a good news.
 
-Does anyone have any pointers/tips on how to set up a ocotea-like =
-PPC440GX design with only a single gigabit (Cicada) PHY on emac2?  =
-Editing ocotea_set_emacdata() to just define a single PHY doesn't work =
-correctly.  It looks like this has something to do with the MII =
-communtications being on the ZMII bridge on emac0 but defining emac0 =
-doesn't help either.=20
+> 
+> However a PCIe switch (PLX8516/8532) doesn't work. The 
+> MPC8548 only detects a single device (i.e. primary side of 
+> the switch).
+> We are going to analyze the problem more deeply soon. It 
+> seems that the configuration space of that devices isn't 
+> properly set up.
 
-Thanks,
+Just a suggestion.
+Do you see below codes in mpc85xx_pex_errata.c(in read and write functions)?
+	if (devfn != 0x0) 
+		return PCIBIOS_DEVICE_NOT_FOUND;
+Change them to:
+	if (devfn != 0x0 && bus->number ==0) 
+		return PCIBIOS_DEVICE_NOT_FOUND;
+And try again. :-)
+(If you apply my patch, please use "if (devfn != 0x0 && bus->number ==0xff)" )
 
-Marc W. Howard
+> 
+> The provided patch doesn't make any difference, besides that 
+> it is moved to a location where the PPC itself is not detected.
+> 
+This patch fix an issue of MPC8641 PCI-Ex controller. It seems MPC8548 has no that issue. Well then fotget it.
 
-------_=_NextPart_001_01C69E63.56C45084
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Thanks!
+Zhang Wei
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">
-<TITLE>How do you set up a PPC440GX with a PHY on emac2 only?</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>Hi,<BR>
-<BR>
-Does anyone have any pointers/tips on how to set up a ocotea-like =
-PPC440GX design with only a single gigabit (Cicada) PHY on emac2?&nbsp; =
-Editing ocotea_set_emacdata() to just define a single PHY doesn't work =
-correctly.&nbsp; It looks like this has something to do with the MII =
-communtications being on the ZMII bridge on emac0 but defining emac0 =
-doesn't help either.<BR>
-<BR>
-Thanks,<BR>
-<BR>
-Marc W. Howard<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C69E63.56C45084--
+> Please keep us informed if there is any progress besides 
+> Freescale, as I will do.
+> 
+> Cheers,
+> 
+>    Florian
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
