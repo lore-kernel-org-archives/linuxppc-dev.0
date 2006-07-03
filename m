@@ -1,17 +1,18 @@
 Return-Path: <bwarren@qstreams.com>
-Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
-	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 14F8167A2E
+Received: from smtp107.biz.mail.re2.yahoo.com (smtp107.biz.mail.re2.yahoo.com
+	[206.190.52.176]) by ozlabs.org (Postfix) with SMTP id C8FD467B6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Jul 2006 05:44:52 +1000 (EST)
+	Tue,  4 Jul 2006 06:12:47 +1000 (EST)
 Subject: Re: JFFS2 FS is read-only (not what I want)
 From: Ben Warren <bwarren@qstreams.com>
 To: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
-In-Reply-To: <200607031241.27979.mathieu.deschamps@com2gether.net>
+In-Reply-To: <1151955491.12449.32.camel@saruman.qstreams.net>
 References: <44A6E57A.3080302@qstreams.com>
 	<200607031241.27979.mathieu.deschamps@com2gether.net>
-Content-Type: text/plain
-Date: Mon, 03 Jul 2006 15:38:11 -0400
-Message-Id: <1151955491.12449.32.camel@saruman.qstreams.net>
+	<1151955491.12449.32.camel@saruman.qstreams.net>
+Content-Type: multipart/alternative; boundary="=-9vi7df46Ll67XA6IWn8T"
+Date: Mon, 03 Jul 2006 16:12:44 -0400
+Message-Id: <1151957564.12449.39.camel@saruman.qstreams.net>
 Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 Reply-To: bwarren@qstreams.com
@@ -25,39 +26,53 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Mathieu,
-> 
-> IMHO, it's not a generation-time issue
-> 
-This is starting to look to me like a generation-time issue.  I built
-another JFFS2 partition out of a random directory on my workstation, and
-it's behaving properly:
 
-$mkfs.jffs2 -U -d util -b -e 0x20000 -o /tftpboot/prism/myutil.img
+--=-9vi7df46Ll67XA6IWn8T
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-On the target, I booted from NFS and mounted both MTD images.  The
-original one is in /dev/mtdblock4 and the new one is at /dev/mtdblock3:
+ On Mon, 2006-07-03 at 15:38 -0400, Ben Warren wrote:
 
-bash-3.00# pwd
-/tmp
-bash-3.00# mkdir mnt1 mnt2
-bash-3.00# ll
-total 8
-drwxr-xr-x  2 root root 4096 Jul  3  2006 mnt1
-drwxr-xr-x  2 root root 4096 Jul  3  2006 mnt2
-bash-3.00# mount -t jffs2 -o rw,nolock /dev/mtdblock3 mnt1
-bash-3.00# mount -t jffs2 -o rw,nolock /dev/mtdblock4 mnt2
-bash-3.00# df
-Filesystem           1K-blocks      Used Available Use% Mounted on
-/dev/nfs              72054096  13245480  55148432  20% /
-/dev/mtdblock3            2048       592      1456  29% /tmp/mnt1
-/dev/mtdblock4            2048      2048         0 100% /tmp/mnt2
 
-As you can see, the new image is working fine.  Looks like I need to
-debug the root FS! 
+> This is starting to look to me like a generation-time issue.  I built
+> another JFFS2 partition out of a random directory on my workstation, and
+> it's behaving properly:
 
-Thanks to all people who helped me out here!
+Sorry for filling people's inboxes, but it turns out the problem was
+between the chair and keyboard.  My JFFS2 partition was slightly less
+than 2MB, which I guess decompresses to > 2 MB, filling up the
+partition.  I must have been in the wrong directory when issuing the
+'du' command.  On the plus side, I've learned quite a bit about MTD and
+JFFS2 going through this exercise!
 
-cheers,
+regards,
 Ben
- 
+
+--=-9vi7df46Ll67XA6IWn8T
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
+<HTML>
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
+  <META NAME="GENERATOR" CONTENT="GtkHTML/3.10.2">
+</HEAD>
+<BODY>
+ On Mon, 2006-07-03 at 15:38 -0400, Ben Warren wrote:<BR>
+<BR>
+<BLOCKQUOTE TYPE=CITE>
+<PRE>
+<FONT COLOR="#000000">This is starting to look to me like a generation-time issue.  I built</FONT>
+<FONT COLOR="#000000">another JFFS2 partition out of a random directory on my workstation, and</FONT>
+<FONT COLOR="#000000">it's behaving properly:</FONT>
+</PRE>
+</BLOCKQUOTE>
+Sorry for filling people's inboxes, but it turns out the problem was between the chair and keyboard.&nbsp; My JFFS2 partition was slightly less than 2MB, which I guess decompresses to &gt; 2 MB, filling up the partition.&nbsp; I must have been in the wrong directory when issuing the 'du' command.&nbsp; On the plus side, I've learned quite a bit about MTD and JFFS2 going through this exercise!<BR>
+<BR>
+regards,<BR>
+Ben
+</BODY>
+</HTML>
+
+--=-9vi7df46Ll67XA6IWn8T--
