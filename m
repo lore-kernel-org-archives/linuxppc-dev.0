@@ -1,23 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 10EE567B54
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jul 2006 21:09:02 +1000 (EST)
-Subject: Re: [PATCH] powerpc:Fix rheap alignment problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-In-Reply-To: <200607020818.27603.pantelis.antoniou@gmail.com>
-References: <9FCDBA58F226D911B202000BDBAD467306E04FF6@zch01exm40.ap.freescale.net>
-	<200607011750.05019.pantelis.antoniou@gmail.com>
-	<DCEAAC0833DD314AB0B58112AD99B93B07B36F@ismail.innsys.innovsys.com>
-	<200607020818.27603.pantelis.antoniou@gmail.com>
-Content-Type: text/plain
-Date: Mon, 03 Jul 2006 21:08:49 +1000
-Message-Id: <1151924929.19419.51.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17577.2014.880854.217553@cargo.ozlabs.ibm.com>
+Date: Mon, 3 Jul 2006 22:04:46 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@osdl.org
+Subject: please pull powerpc.git 'master' branch
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,33 +16,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2006-07-02 at 08:18 +0300, Pantelis Antoniou wrote:
-> On Sunday 02 July 2006 06:54, Rune Torgersen wrote:
-> > From: Pantelis Antoniou
-> > Sent: Sat 7/1/2006 9:50 AM
-> > >Since genalloc is the blessed linux thing it might be best to use that & remove
-> > >rheap completely. Oh well...
-> > 
-> > Two problems with genalloc that I can see (for CPM programming):
-> > 1) (minor) Does not have a way to specify alignment (genalloc does it for you)
-> > 2) (major problerm, at least for me) Does not have a way to allocate a specified address in the pool.
-> > 
-> > 2 is needed esp when programming MCC drivers, since a lot of the datastructures must be in DP RAM _and_ be in a specific spot. And if you cannot tell the allocator that I am using a specific address, then the allocator might very well give somebody else that portion of RAM. The only solution without a fixed allocator is to allocate ALL memory in the DP RAM and use your own allocator. 
-> > 
-> 
-> Yeah, that too.
-> 
-> Too bad there are no main tree drivers like that, but they do exist.
-> 
-> One could conceivably hack genalloc to do that, but will end up with
-> something complex too.
-> 
-> BTW, there are other uEngine based architectures with similar alignment
-> requirements.
-> 
-> So in conclusion, for the in-tree drivers genalloc is sufficient as an cpm memory allocator.
-> For some out of tree drivers, it is not.
+Linus,
 
-Sounds like a good enough justification to keep rheap for now then.
+Please do a pull from the "master" branch of
 
-Ben.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
+
+to get Ben's patches moving powerpc over to genirq, and three other
+minor changes.  The kernel/irq/chip.c change has been acked by Ingo
+Molnar and Thomas Gleixner.
+
+Thanks,
+Paul.
+
+Benjamin Herrenschmidt:
+      [POWERPC] Fix various offb and BootX-related issues
+      [POWERPC] Fix booting on Momentum "Apache" board (a Maple derivative)
+      [POWERPC] Fix error handling in detecting legacy serial ports
+      [POWERPC] Update the SWIM3 (powermac) floppy driver
+      genirq: Allow fasteoi handler to retrigger disabled interrupts
+      [POWERPC] Use the genirq framework
+      [POWERPC] New device-tree interrupt parsing code
+      [POWERPC] Copy i8259 code back to arch/ppc
+      [POWERPC] Add new interrupt mapping core and change platforms to use it
+
+Dave Jones:
+      [POWERPC] fix implicit declaration on cell.
+
+Jeremy Kerr:
+      [POWERPC] change get_property to return void *
+
+Paul Mackerras:
+      [POWERPC] Add a default config for 32-bit CHRP machines
+
+ arch/powerpc/configs/chrp32_defconfig        | 1378 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/btext.c                  |   20 
+ arch/powerpc/kernel/ibmebus.c                |    9 
+ arch/powerpc/kernel/irq.c                    |  659 ++++++++++--
+ arch/powerpc/kernel/legacy_serial.c          |   57 +
+ arch/powerpc/kernel/misc_64.S                |   10 
+ arch/powerpc/kernel/pci_32.c                 |   37 +
+ arch/powerpc/kernel/pci_64.c                 |   33 -
+ arch/powerpc/kernel/prom.c                   |  454 ---------
+ arch/powerpc/kernel/prom_init.c              |   20 
+ arch/powerpc/kernel/prom_parse.c             |  443 ++++++++
+ arch/powerpc/kernel/rtas_pci.c               |   17 
+ arch/powerpc/kernel/setup_32.c               |    2 
+ arch/powerpc/kernel/setup_64.c               |   17 
+ arch/powerpc/kernel/vio.c                    |   12 
+ arch/powerpc/platforms/cell/interrupt.c      |  419 ++++----
+ arch/powerpc/platforms/cell/interrupt.h      |   19 
+ arch/powerpc/platforms/cell/setup.c          |   22 
+ arch/powerpc/platforms/cell/spider-pic.c     |  394 +++++--
+ arch/powerpc/platforms/cell/spu_base.c       |  119 +-
+ arch/powerpc/platforms/chrp/pci.c            |   11 
+ arch/powerpc/platforms/chrp/setup.c          |  101 +-
+ arch/powerpc/platforms/chrp/smp.c            |    1 
+ arch/powerpc/platforms/iseries/irq.c         |  105 +-
+ arch/powerpc/platforms/iseries/irq.h         |    2 
+ arch/powerpc/platforms/iseries/setup.c       |    8 
+ arch/powerpc/platforms/maple/pci.c           |   17 
+ arch/powerpc/platforms/maple/setup.c         |   94 +-
+ arch/powerpc/platforms/powermac/bootx_init.c |   33 +
+ arch/powerpc/platforms/powermac/low_i2c.c    |    9 
+ arch/powerpc/platforms/powermac/nvram.c      |    5 
+ arch/powerpc/platforms/powermac/pci.c        |   68 +
+ arch/powerpc/platforms/powermac/pfunc_base.c |   13 
+ arch/powerpc/platforms/powermac/pic.c        |  422 ++++----
+ arch/powerpc/platforms/powermac/pmac.h       |    2 
+ arch/powerpc/platforms/powermac/setup.c      |    3 
+ arch/powerpc/platforms/pseries/ras.c         |   82 +-
+ arch/powerpc/platforms/pseries/setup.c       |  244 +++--
+ arch/powerpc/platforms/pseries/smp.c         |   32 -
+ arch/powerpc/platforms/pseries/xics.c        |  718 ++++++++------
+ arch/powerpc/platforms/pseries/xics.h        |   17 
+ arch/powerpc/sysdev/Makefile                 |    5 
+ arch/powerpc/sysdev/i8259.c                  |  163 ++-
+ arch/powerpc/sysdev/mpic.c                   |  482 ++++++---
+ arch/ppc/syslib/Makefile                     |    2 
+ drivers/block/swim3.c                        |  230 ++--
+ drivers/char/hvsi.c                          |    7 
+ drivers/macintosh/macio-adb.c                |   19 
+ drivers/macintosh/macio_asic.c               |  152 ++-
+ drivers/macintosh/smu.c                      |    6 
+ drivers/macintosh/via-cuda.c                 |   24 
+ drivers/macintosh/via-pmu.c                  |   33 -
+ drivers/net/mace.c                           |    4 
+ drivers/serial/pmac_zilog.c                  |    6 
+ drivers/video/offb.c                         |  284 ++---
+ include/asm-powerpc/i8259.h                  |    8 
+ include/asm-powerpc/irq.h                    |  358 ++++++-
+ include/asm-powerpc/machdep.h                |    2 
+ include/asm-powerpc/mpic.h                   |   67 +
+ include/asm-powerpc/prom.h                   |   98 ++
+ include/asm-powerpc/spu.h                    |    1 
+ kernel/irq/chip.c                            |    5 
+ sound/aoa/core/snd-aoa-gpio-feature.c        |    7 
+ sound/aoa/soundbus/i2sbus/i2sbus-core.c      |    7 
+ sound/oss/dmasound/dmasound_awacs.c          |   16 
+ sound/ppc/pmac.c                             |   33 -
+ sound/ppc/tumbler.c                          |    8 
+ 67 files changed, 5412 insertions(+), 2743 deletions(-)
+ create mode 100644 arch/powerpc/configs/chrp32_defconfig
