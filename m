@@ -1,19 +1,29 @@
-Return-Path: <mathieu.deschamps@com2gether.net>
-Received: from mail.libertysurf.net (mx-out.libertysurf.net [213.36.80.91])
-	by ozlabs.org (Postfix) with ESMTP id 287B0679E0
+Return-Path: <jasonal00@googlemail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id 4D8DD67B55
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  3 Jul 2006 20:48:11 +1000 (EST)
-From: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
-To: Ben Warren <bwarren@qstreams.com>,
- linuxppc-embedded@ozlabs.org
-Subject: Re: JFFS2 FS is read-only (not what I want)
-Date: Mon, 3 Jul 2006 12:42:35 +0200
-References: <44A6E57A.3080302@qstreams.com>
-In-Reply-To: <44A6E57A.3080302@qstreams.com>
+	Mon,  3 Jul 2006 21:09:30 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id p77so623478nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 03 Jul 2006 04:09:29 -0700 (PDT)
+Message-ID: <b4ebaa9d0607030359x40aa86eap9139ecc3af6d3b9e@mail.gmail.com>
+Date: Mon, 3 Jul 2006 12:59:54 +0200
+From: "Qichen Huang" <jasonal00@googlemail.com>
+To: "Andrei Konovalov" <akonovalov@ru.mvista.com>
+Subject: Re: Problem with Xilinx Uart Lite
+In-Reply-To: <44A5178A.5050808@ru.mvista.com>
 MIME-Version: 1.0
-Message-Id: <200607031241.27979.mathieu.deschamps@com2gether.net>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: multipart/alternative;
+	boundary="----=_Part_30000_3291748.1151924394699"
+References: <b4ebaa9d0606290820y4dce2ce2x8d28007b1d591eef@mail.gmail.com>
+	<44A3F29F.8020507@ru.mvista.com>
+	<b4ebaa9d0606290959w528cac73qd0674c3b1de33a15@mail.gmail.com>
+	<44A41C6B.4080701@ru.mvista.com>
+	<b4ebaa9d0606291210p5c8284b9mec6ee8d3ed4b0ad8@mail.gmail.com>
+	<44A5040B.8020508@ru.mvista.com>
+	<b4ebaa9d0606300426v2a0b47d4mc49232dcacec19e3@mail.gmail.com>
+	<44A5178A.5050808@ru.mvista.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,94 +34,102 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Ben,
+------=_Part_30000_3291748.1151924394699
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Saturday 01 July 2006 23:13, Ben Warren wrote:
-> Hello,
->
-> When I boot from a JFFS2 file system on my eval board, the file system
-> is effectively read-only, and I can't figure out why.  I'm pretty sure
-> the kernel's configured for R/W MTD block access.  Any help is greatly
-> appreciated.
->
-Do you mean that you can't even created a void file on / as root ? Else
-can you then put for instance text in it ? My point is can or can't you
-first create a new fs node and then can you write to file your
-changes, that's two possible causes.
->
-> The hardware in use is:
->
-> Freescale MPC8349EMDS eval board.
-> 8MB Q-flash with 64 uniform 128k sectors
->
+Hello Andrei,
 
-[...]
+Thank you. I have tried this patch, but without luck, the system can not
+start, there's no login prompt.
+Boot stopps after starting system.
+The boot log looks like this:
 
-> # mount
-> /dev/mtdblock4 on / type jffs2 (rw)
-> /proc on /proc type proc (rw)
->
-[...]
->
-> I created the MTD partitions in a u-boot image that was pulled from the
+loaded at: 00400000 004C51E0
+board data at: 004C2138 004C2150
+relocated to: 0040530C 00405324
+zimage at: 00405811 004C1A00
+avail ram: 004C6000 04000000
 
-Yes indeed what about drivers/mtd/maps/physmap.c ? your parts are
-mask_flags:  MTD_WRITEB_WRITEABLE and not  MTD_CAP_ROM,
-aren't they ?
+Linux/PPC load: console=ttl0 ip=off root=/dev/xsysace/disc0/part3 rw
+Uncompressing Linux...done.
+Now booting the kernel
+......
 
-> GIT tree about a week ago, and my kernel is 2.6.17-based.  I wrote some
-> board init code that sets the MTD physical mappings.
->
-> Here are the MTD and JFFS2 parts of my .config file:
->
-> ***
-> # Memory Technology Devices (MTD)
-> #
-> CONFIG_MTD=y
-> # CONFIG_MTD_DEBUG is not set
-> # CONFIG_MTD_CONCAT is not set
-> CONFIG_MTD_PARTITIONS=y
-> # CONFIG_MTD_REDBOOT_PARTS is not set
-> # CONFIG_MTD_CMDLINE_PARTS is not set
->
-[...]
-> # CONFIG_JFFS_FS is not set
-> CONFIG_JFFS2_FS=y
+Welcome to ML300 powerpc linux 2.4.21, E.I.S. edition
 
-Better avoid redundacy but this is not a clue, I guess
-make won't be fooled by this.
+Starting system...
+mounting /proc: done.
+Mounting '/' read-write: mount: Cannot read /etc/mtab: No such file or
+directory
 
-> CONFIG_JFFS2_FS_DEBUG=0
-> # CONFIG_JFFS2_FS_WRITEBUFFER is not set
-> # CONFIG_JFFS2_SUMMARY is not set
-> # CONFIG_JFFS2_COMPRESSION_OPTIONS is not set
-> CONFIG_JFFS2_ZLIB=y
-> CONFIG_JFFS2_RTIME=y
-> # CONFIG_JFFS2_RUBIN is not set
-> ***
->
-> The file system is the SELF that is included with DENX's ELDK, and built
-> as at:
-> http://www.denx.de/wiki/view/DULG/RootFileSystemDesignAndBuilding
->
-> I used the following command to create the file system image, that was
->
-> then loaded at address 0xfe480000 via U-boot:
->  > mkfs.jffs2 -U -d rootfs -D rootfs_device.tab -b -e 0x20000 -o jffs2.img
->
-
-IMHO, it's not a generation-time issue
-
->
-[...]
+done.
+brining up loopback interface: done.
+Setup IP-address for eth0: done.
+Mounting /tmp: done.
+Starting syslogd: done.
+Starting klogd: done.
+Starting
 
 
-That's all I have for now. Good luck.
+Thanks,
+Qichen
+
+ps. Sorry, I forgot to post this to the mailing list.
 
 
-Regards,
+On 6/30/06, Andrei Konovalov <akonovalov@ru.mvista.com> wrote:
+>
+> Seeing a lot of ^M (LF) characters in the end of lines makes me think
+> you are using [Win]DOS.
+> This makes the patch to look somewhat funny - some of the lines terminated
+> with
+> <CR> only ("Unix style"), some - with <CR><LF> ("DOS style").
+>
+> Please try the attached patch. It should help.
+>
+> Thanks,
+> Andrei
+>
+> Qichen Huang wrote:
+> > Hello,
+> >
+> > attached is my xuartlite_serial.c
+> >
+> > Thanks,
+> > Qichen
+> >
+> > On 6/30/06, *Andrei Konovalov* <akonovalov@ru.mvista.com
+> > <mailto:akonovalov@ru.mvista.com>> wrote:
+> >
+> >      > Xilinx OS Independent Code XAssert: xuartlite.c:194
+> >      > Code may crash due to unhandled errors.
+> >
+> >     So this is inside XUartLite_Send().
+> >     Could you send me your xuartlite_serial.c?
+> >     Seems yours doesn't have one of the fixes.
+> >
+> >     Thanks,
+> >     Andrei
+>
+>
+>
 
-Mathieu Deschamps
-Com2gether Design Center
-Electronic and Embedded Engineering Services
-www.com2gether.net 
+------=_Part_30000_3291748.1151924394699
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hello Andrei,<br><br>Thank you. I have tried this patch, but without luck, the system can not start, there's no login prompt. <br>Boot stopps after starting system.<br>The boot log looks like this:<br><br>loaded at:     00400000 004C51E0
+<br>board data at: 004C2138 004C2150<br>relocated to:  0040530C 00405324<br>zimage at:     00405811 004C1A00<br>avail ram:     004C6000 04000000<br><br>Linux/PPC load: console=ttl0 ip=off root=/dev/xsysace/disc0/part3 rw<br>
+Uncompressing Linux...done.<br>Now booting the kernel<br>......<br><br>Welcome to ML300 powerpc linux 2.4.21, E.I.S. edition<br><br>Starting system...<br>mounting /proc: done.<br>Mounting '/' read-write: mount: Cannot read /etc/mtab: No such file or directory
+<br><br>done.<br>brining up loopback interface: done.<br>Setup IP-address for eth0: done.<br>Mounting /tmp: done.<br>Starting syslogd: done.<br>Starting klogd: done.<br>Starting<br><br><br>Thanks, <br>Qichen<br><br>ps. Sorry, I forgot to post this to the mailing list. 
+<br><br><br><div><span class="gmail_quote">On 6/30/06, <b class="gmail_sendername">Andrei Konovalov</b> &lt;<a href="mailto:akonovalov@ru.mvista.com">akonovalov@ru.mvista.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; margin-left: 0.80ex; border-left-color: #cccccc; border-left-width: 1px; border-left-style: solid; padding-left: 1ex">
+Seeing a lot of ^M (LF) characters in the end of lines makes me think<br>you are using [Win]DOS.<br>This makes the patch to look somewhat funny - some of the lines terminated with<br>&lt;CR&gt; only (&quot;Unix style&quot;), some - with &lt;CR&gt;&lt;LF&gt; (&quot;DOS style&quot;).
+<br><br>Please try the attached patch. It should help.<br><br>Thanks,<br>Andrei<br><br>Qichen Huang wrote:<br>&gt; Hello,<br>&gt;<br>&gt; attached is my xuartlite_serial.c<br>&gt;<br>&gt; Thanks,<br>&gt; Qichen<br>&gt;<br>
+&gt; On 6/30/06, *Andrei Konovalov* &lt;<a href="mailto:akonovalov@ru.mvista.com">akonovalov@ru.mvista.com</a><br>&gt; &lt;mailto:<a href="mailto:akonovalov@ru.mvista.com">akonovalov@ru.mvista.com</a>&gt;&gt; wrote:<br>&gt;
+<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt; Xilinx OS Independent Code XAssert: xuartlite.c:194<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&gt; Code may crash due to unhandled errors.<br>&gt;<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp; So this is inside XUartLite_Send().<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp; Could you send me your xuartlite_serial.c?
+<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp; Seems yours doesn't have one of the fixes.<br>&gt;<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp; Thanks,<br>&gt;&nbsp;&nbsp;&nbsp;&nbsp; Andrei<br><br><br></blockquote></div><br>
+
+------=_Part_30000_3291748.1151924394699--
