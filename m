@@ -1,16 +1,22 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailout.stusta.mhn.de (mailout.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with SMTP id AF55167B64
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jul 2006 10:28:08 +1000 (EST)
-Date: Tue, 4 Jul 2006 02:28:07 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Roy Zang <tie-fei.zang@freescale.com>
-Subject: -git: strange dependency for EMBEDDED6xx
-Message-ID: <20060704002806.GE26941@stusta.de>
+Return-Path: <aris@valeta.org>
+Received: from tinc.cathedrallabs.org (tinc.cathedrallabs.org [72.9.252.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 22FC167B6D
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jul 2006 12:01:20 +1000 (EST)
+Received: from tate.cathedrallabs.org
+	(201-25-166-92.ctame704.dsl.brasiltelecom.net.br [201.25.166.92])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by tinc.cathedrallabs.org (Postfix) with ESMTP id 26D0210009
+	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jul 2006 21:39:40 -0400 (EDT)
+Date: Mon, 3 Jul 2006 22:39:23 -0300
+From: Aristeu Sergio Rozanski Filho <aris@valeta.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powermac: defer work in backlight key press
+Message-ID: <20060704013923.GG27596@cathedrallabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,27 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit c5d56332fd6c2f0c7cf9d1f65416076f2711ea28 contained the following:
+powermac: defer work in backlight key press
 
- config EMBEDDED6xx
-        bool "Embedded 6xx/7xx/7xxx-based board"
--       depends on PPC32 && BROKEN
-+       depends on PPC32 && (BROKEN||BROKEN_ON_SMP)
+pmac_backlight_key() is called under interrupt context, can't use mutexes or
+semaphores, so defer the backlight level for later, as it's not critical
 
-This looks very strange.
+Signed-off-by: Aristeu S. Rozanski F. <aris@valeta.org>
 
-This dependency is equivalent to
-	depends on PPC32 && SMP=n
-
-Was this the intention?
-Or what else was the intention?
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Index: ppc-2.6/arch/powerpc/platforms/powermac/backlight.c
+===================================================================
+--- ppc-2.6.orig/arch/powerpc/platforms/powermac/backlight.c	2006-07-03 21:00:44.000000000 -0300
++++ ppc-2.6/arch/powerpc/platforms/powermac/backlight.c	2006-07-03 21:38:12.000000000 -0300
+@@ -15,6 +15,10 @@
+ 
+ #define OLD_BACKLIGHT_MAX 15
+ 
++static void pmac_backlight_key_worker(void *data);
++static DECLARE_WORK(pmac_backlight_key_work, pmac_backlight_key_worker, NULL);
++static int pmac_backlight_key_queued;
++
+ /* Protect the pmac_backlight variable */
+ DEFINE_MUTEX(pmac_backlight_mutex);
+ 
+@@ -71,7 +75,7 @@
+ 	return level;
+ }
+ 
+-static void pmac_backlight_key(int direction)
++static void pmac_backlight_key_worker(void *data)
+ {
+ 	mutex_lock(&pmac_backlight_mutex);
+ 	if (pmac_backlight) {
+@@ -82,7 +86,8 @@
+ 		props = pmac_backlight->props;
+ 
+ 		brightness = props->brightness +
+-			((direction?-1:1) * (props->max_brightness / 15));
++			((pmac_backlight_key_queued?-1:1) *
++			 (props->max_brightness / 15));
+ 
+ 		if (brightness < 0)
+ 			brightness = 0;
+@@ -97,6 +102,14 @@
+ 	mutex_unlock(&pmac_backlight_mutex);
+ }
+ 
++static void pmac_backlight_key(int direction)
++{
++	/* we can receive multiple interrupts here, but the scheduled work
++	 * will run only once, with the last value */
++	pmac_backlight_key_queued = direction;
++	schedule_work(&pmac_backlight_key_work);
++}
++
+ void pmac_backlight_key_up()
+ {
+ 	pmac_backlight_key(0);
