@@ -1,21 +1,19 @@
-Return-Path: <mathieu.deschamps@com2gether.net>
-Received: from mail.libertysurf.net (mx-out.libertysurf.net [213.36.80.91])
-	by ozlabs.org (Postfix) with ESMTP id F1C2767A3A
+Return-Path: <jxnuxdy@163.com>
+Received: from m13-88.163.com (m13-88.163.com [220.181.13.88])
+	by ozlabs.org (Postfix) with SMTP id 4EFEA67B5F
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  4 Jul 2006 18:59:21 +1000 (EST)
-From: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
-To: bwarren@qstreams.com
-Subject: Re: JFFS2 FS is read-only (not what I want)
-Date: Tue, 4 Jul 2006 10:59:44 +0200
-References: <44A6E57A.3080302@qstreams.com>
-	<1151955491.12449.32.camel@saruman.qstreams.net>
-	<1151957564.12449.39.camel@saruman.qstreams.net>
-In-Reply-To: <1151957564.12449.39.camel@saruman.qstreams.net>
+	Wed,  5 Jul 2006 00:39:41 +1000 (EST)
 MIME-Version: 1.0
-Message-Id: <200607041056.47824.mathieu.deschamps@com2gether.net>
-Content-Type: text/plain;
-  charset="utf-8"
-Cc: linuxppc-embedded@ozlabs.org
+Message-ID: <44AA7A14.0000A9.20221@bj163app88.163.com>
+Date: Tue, 4 Jul 2006 22:24:20 +0800 (CST)
+From: "Denny" <jxnuxdy@163.com>
+To: marc.howard@kla-tencor.com,linuxppc-embedded@ozlabs.org
+Subject: Re: How do you set up a PPC440GX with a P
+ HY on emac2 only?
+References: <91B22F93A880FA48879475E134D6F0BE386FD4@CA1EXCLV02.adcorp.kla-tencor.com>
+In-Reply-To: <91B22F93A880FA48879475E134D6F0BE386FD4@CA1EXCLV02.adcorp.kla-tencor.com>
+Content-Type: Multipart/Alternative;
+	boundary="Boundary-=_wlzkTvWYAuUScYcxXMTXFhmhWeKX"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +24,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Monday 03 July 2006 22:12, Ben Warren wrote:
->  On Mon, 2006-07-03 at 15:38 -0400, Ben Warren wrote:
-> > This is starting to look to me like a generation-time issue.  I built
-> > another JFFS2 partition out of a random directory on my workstation, and
-> > it's behaving properly:
->
-> Sorry for filling people's inboxes, but it turns out the problem was
-> between the chair and keyboard.  
 
-arf ! computer hardly ever suffer this problem :)
+--Boundary-=_wlzkTvWYAuUScYcxXMTXFhmhWeKX
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
->My JFFS2 partition was slightly less
-> than 2MB, which I guess decompresses to > 2 MB, filling up the
-> partition.  I must have been in the wrong directory when issuing the
-> 'du' command.  On the plus side, I've learned quite a bit about MTD and
-> JFFS2 going through this exercise!
->
-> regards,
-> Ben
+Also, I failed to setup my PHY on the emac0,can anyone tell me how to setup the PHY on PPC440GP, thanks!
+ 
+Thanks & regards!
+- Denny
+ 
+ 
+ 
+ 
+--Boundary-=_wlzkTvWYAuUScYcxXMTXFhmhWeKX
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
+
+<DIV>Also, I failed to setup my PHY on the emac0,can anyone tell me how t=
+o setup the PHY on PPC440GP, thanks!</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>Thanks &amp; regards!</DIV>
+<DIV>- Denny</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;</DIV><SPAN ></SPAN><br><!-- footer --><br><br><br><br><br><di=
+v style=3D"border-bottom:1px solid #999"></div><br>
+
+=09<font color=3D"black" style=3D"font-size:14.8px">=C4=E3 =B2=BB =CF=EB =
+=CA=D4 =CA=D4 =BD=F1 =CF=C4 =D7=EE =A1=B0=BF=E1=A1=B1 =B5=C4 =D3=CA =CF=E4=
+ =C2=F0 =A3=BF</font>
+=09<br>
+=09 <a href=3D"http://www.126.com/" target=3D"_blank" style=3D"font-size:=
+13px;line-height:160%;color:blue">=D4=CC =BA=AD =D6=D0 =BB=AA =B4=AB =CD=B3=
+ =CE=C4 =BB=AF =D3=DA =CA=C0 =BD=E7 =D2=BB =C1=F7 =BF=C6 =BC=BC =D6=AE =D6=
+=D0=A3=AC=B4=B4 =D0=C2 Ajax =BC=BC =CA=F5=A3=AC126 =A1=B0D =BC=C6 =BB=AE=A1=
+=B1=BB=F0 =C8=C8 =CC=E5 =D1=E9 =D6=D0 =A3=A1
+</a>
 
 
-Regards,
-mathdesc
-
-
-
--------
-I guess this illustrate a difference between knowledge and 
-understanding. The first without second is confusion, the second without
-first is a miss.
+--Boundary-=_wlzkTvWYAuUScYcxXMTXFhmhWeKX--
