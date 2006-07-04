@@ -1,10 +1,12 @@
-Return-Path: <jk@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-From: Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH 17/20] [powerpc,tmp_atmel] Constify & voidify get_property()
-Message-ID: 1151993427.2210.18@pokey
-Date: Tue,  4 Jul 2006 16:47:56 +1000 (EST)
-Cc: tpmdd_devel@lists.sourceforge.net
+Return-Path: <sfr@canb.auug.org.au>
+Date: Tue, 4 Jul 2006 16:58:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [PATCH 7/20] [powerpc,iseries] Constify & voidify get_property()
+Message-Id: <20060704165822.0a429eea.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,37 +16,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that get_property() returns a void *, there's no need to cast its
-return value. Also, treat the return value as const, so we can
-constify get_property later.
+On Tue,  4 Jul 2006 16:46:44 +1000 (EST) Jeremy Kerr <jk@ozlabs.org> wrote:
+>
+> Now that get_property() returns a void *, there's no need to cast its
+> return value. Also, treat the return value as const, so we can
+> constify get_property later.
+> 
+> iseries platform changes.
+> 
+> Built for iseries_defconfig
+> 
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
-tpm_atmel changes
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
----
-
- tpm_atmel.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/drivers/char/tpm/tpm_atmel.h
-===================================================================
---- linux-2.6.orig/drivers/char/tpm/tpm_atmel.h
-+++ linux-2.6/drivers/char/tpm/tpm_atmel.h
-@@ -37,7 +37,7 @@ static void __iomem * atmel_get_base_add
- {
- 	struct device_node *dn;
- 	unsigned long address, size;
--	unsigned int *reg;
-+	const unsigned int *reg;
- 	int reglen;
- 	int naddrc;
- 	int nsizec;
-@@ -52,7 +52,7 @@ static void __iomem * atmel_get_base_add
- 		return NULL;
- 	}
- 
--	reg = (unsigned int *) get_property(dn, "reg", &reglen);
-+	reg = get_property(dn, "reg", &reglen);
- 	naddrc = prom_n_addr_cells(dn);
- 	nsizec = prom_n_size_cells(dn);
- 
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
