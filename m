@@ -1,22 +1,17 @@
-Return-Path: <aris@valeta.org>
-Received: from tinc.cathedrallabs.org (tinc.cathedrallabs.org [72.9.252.66])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 22FC167B6D
-	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jul 2006 12:01:20 +1000 (EST)
-Received: from tate.cathedrallabs.org
-	(201-25-166-92.ctame704.dsl.brasiltelecom.net.br [201.25.166.92])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by tinc.cathedrallabs.org (Postfix) with ESMTP id 26D0210009
-	for <linuxppc-dev@ozlabs.org>; Mon,  3 Jul 2006 21:39:40 -0400 (EDT)
-Date: Mon, 3 Jul 2006 22:39:23 -0300
-From: Aristeu Sergio Rozanski Filho <aris@valeta.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powermac: defer work in backlight key press
-Message-ID: <20060704013923.GG27596@cathedrallabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	by ozlabs.org (Postfix) with ESMTP id 8283167B5A
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jul 2006 14:06:39 +1000 (EST)
+Subject: [PATCH] powerpc: Workaround Pegasos incorrect ISA "ranges"
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Tue, 04 Jul 2006 14:06:29 +1000
+Message-Id: <1151985990.13828.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,59 +21,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-powermac: defer work in backlight key press
+The Pegasos firmware doesn't create a valid "ranges" property for the
+ISA bridge, thus causing translation of ISA addresses and IO ports to
+fail. This fixes it, thus re-enabling proper early serial console to
+work on Pegasos.
 
-pmac_backlight_key() is called under interrupt context, can't use mutexes or
-semaphores, so defer the backlight level for later, as it's not critical
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Signed-off-by: Aristeu S. Rozanski F. <aris@valeta.org>
-
-Index: ppc-2.6/arch/powerpc/platforms/powermac/backlight.c
+Index: linux-irq-work/arch/powerpc/kernel/prom_init.c
 ===================================================================
---- ppc-2.6.orig/arch/powerpc/platforms/powermac/backlight.c	2006-07-03 21:00:44.000000000 -0300
-+++ ppc-2.6/arch/powerpc/platforms/powermac/backlight.c	2006-07-03 21:38:12.000000000 -0300
-@@ -15,6 +15,10 @@
+--- linux-irq-work.orig/arch/powerpc/kernel/prom_init.c	2006-07-04 12:57:37.000000000 +1000
++++ linux-irq-work/arch/powerpc/kernel/prom_init.c	2006-07-04 12:59:33.000000000 +1000
+@@ -2030,6 +2030,39 @@
+ #define fixup_device_tree_maple()
+ #endif
  
- #define OLD_BACKLIGHT_MAX 15
- 
-+static void pmac_backlight_key_worker(void *data);
-+static DECLARE_WORK(pmac_backlight_key_work, pmac_backlight_key_worker, NULL);
-+static int pmac_backlight_key_queued;
-+
- /* Protect the pmac_backlight variable */
- DEFINE_MUTEX(pmac_backlight_mutex);
- 
-@@ -71,7 +75,7 @@
- 	return level;
- }
- 
--static void pmac_backlight_key(int direction)
-+static void pmac_backlight_key_worker(void *data)
- {
- 	mutex_lock(&pmac_backlight_mutex);
- 	if (pmac_backlight) {
-@@ -82,7 +86,8 @@
- 		props = pmac_backlight->props;
- 
- 		brightness = props->brightness +
--			((direction?-1:1) * (props->max_brightness / 15));
-+			((pmac_backlight_key_queued?-1:1) *
-+			 (props->max_brightness / 15));
- 
- 		if (brightness < 0)
- 			brightness = 0;
-@@ -97,6 +102,14 @@
- 	mutex_unlock(&pmac_backlight_mutex);
- }
- 
-+static void pmac_backlight_key(int direction)
++#ifdef CONFIG_PPC_CHRP
++/* Pegasos lacks the "ranges" property in the isa node */
++static void __init fixup_device_tree_chrp(void)
 +{
-+	/* we can receive multiple interrupts here, but the scheduled work
-+	 * will run only once, with the last value */
-+	pmac_backlight_key_queued = direction;
-+	schedule_work(&pmac_backlight_key_work);
-+}
++	phandle isa;
++	u32 isa_ranges[6];
++	char *name;
++	int rc;
 +
- void pmac_backlight_key_up()
++	name = "/pci@80000000/isa@c";
++	isa = call_prom("finddevice", 1, 1, ADDR(name));
++	if (!PHANDLE_VALID(isa))
++		return;
++
++	rc = prom_getproplen(isa, "ranges");
++	if (rc != 0 && rc != PROM_ERROR)
++		return;
++
++	prom_printf("Fixing up missing ISA range on Pegasos...\n");
++
++	isa_ranges[0] = 0x1;
++	isa_ranges[1] = 0x0;
++	isa_ranges[2] = 0x01006000;
++	isa_ranges[3] = 0x0;
++	isa_ranges[4] = 0x0;
++	isa_ranges[5] = 0x00010000;
++	prom_setprop(isa, name, "ranges",
++			isa_ranges, sizeof(isa_ranges));
++}
++#else
++#define fixup_device_tree_chrp()
++#endif
++
+ #if defined(CONFIG_PPC64) && defined(CONFIG_PPC_PMAC)
+ static void __init fixup_device_tree_pmac(void)
  {
- 	pmac_backlight_key(0);
+@@ -2077,6 +2110,7 @@
+ static void __init fixup_device_tree(void)
+ {
+ 	fixup_device_tree_maple();
++	fixup_device_tree_chrp();
+ 	fixup_device_tree_pmac();
+ }
+ 
