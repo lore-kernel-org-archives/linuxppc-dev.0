@@ -1,17 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: "boot: mem=1024M" causes only one CPU is brought up in 2.6.17-mm4
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Raid Cheng <chenglei@gmail.com>
-In-Reply-To: <b7ddee480606300005p15367a6al4db562f8d0b885d9@mail.gmail.com>
-References: <b7ddee480606300005p15367a6al4db562f8d0b885d9@mail.gmail.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9B10567B32
+	for <linuxppc-dev@ozlabs.org>; Tue,  4 Jul 2006 18:07:37 +1000 (EST)
+Subject: Re: [PATCH] powermac: defer work in backlight key press
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Aristeu Sergio Rozanski Filho <aris@valeta.org>
+In-Reply-To: <20060704013923.GG27596@cathedrallabs.org>
+References: <20060704013923.GG27596@cathedrallabs.org>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-0x+o4N+T1OARVGxSVLVm"
-Date: Tue, 04 Jul 2006 17:18:29 +1000
-Message-Id: <1151997509.8681.31.camel@localhost.localdomain>
+	boundary="=-T7/EOeOeMysWYzm2WHSh"
+Date: Tue, 04 Jul 2006 10:06:59 +0200
+Message-Id: <1152000419.20701.48.camel@localhost>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,41 +26,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-0x+o4N+T1OARVGxSVLVm
+--=-T7/EOeOeMysWYzm2WHSh
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2006-06-30 at 15:05 +0800, Raid Cheng wrote:
-> I installed latest mm kernel 2.6.17-mm4 on ppc64 with RHEL4-U3.
-> When i tried to limit the memory to 1024M by modifying yaboot.conf or
-> typing on the boot line, I found some error messages in dmesg log
-> and only one CPU is brought up by checking /proc/cpuinfo.
+> =20
+> +	/* we can receive multiple interrupts here, but the scheduled work
+> +	 * will run only once, with the last value */
+> +	pmac_backlight_key_queued =3D direction;
 
-I've just posted a fix:
-"[PATCH] Fix mem=3D handling when the memory limit is > RMO".
+Shouldn't you be doing something like using the whole
+pmac_backlight_key_queued in the workqueue, then setting it to 0 there
+and using +=3D here? That way all keypresses will be adhered to.
 
-cheers
+johannes
 
---=20
-Michael Ellerman
-IBM OzLabs
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-0x+o4N+T1OARVGxSVLVm
+--=-T7/EOeOeMysWYzm2WHSh
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
+Comment: Johannes Berg (powerbook)
 
-iD8DBQBEqhZFdSjSd0sB4dIRAhT/AJoDZSy3f4p07ablwrmHSYcMnsSzEACfXULk
-Vuf3CpRIvaKZc6qf4sVXCLQ=
-=zoMp
+iQIVAwUARKohoaVg1VMiehFYAQIcnQ/9G//c9oM4c55a7S/rbq6czDh01R9Jd6xI
+3D5a178JKPNHkzlNu1YSMj5YeBOnFRkzSGvgkaThm+YKM6Yq4gdCdyEXZsUGRjQG
+C16/HBiGKjpWX5fN4HLMeiZwX/X2lfM18PUg5b46UiXq6COno6V+Ct5heiSIECSU
+7WZfcb70HfeF7ZMBuOGVIBNAmMuq+len/+oPaHFRHHQb9nyQHwM6bYhAKFZNifpQ
+5GcQepfkJNptbe2ezKVQ17/vYOml7eBcH93pu0ZIeAypZlxna8UD2GiA6jMcloBc
+DSSkJFnsJcKYhvleX/UpeztguvtlylWre54UtotTwNxxFukZVu4uhTNMga7GjRYU
+eJJ+yUMlW2/7DqCi7WaSlYZvPEi11f8hWfMvEJHKuCTk60bbs+OPfNu0RODTO49e
+AYwgk/Tzjq1egYrO1+EbpUqDsf+rjiE+Jf+w8JBw27vjiyna4QWsywjIoGQIti+9
+lKeeFk/6IOBe8pZhr+bLsM5UzxEX7F4N0C/1HM4x7Kh/xen6K3TG8eW/Oq2qJ9FY
+gFBTrrU7XlFoFqXEmx3z4o0R8JxpQrChn401yaaCB/Lx+E0qrWiw8MCIpPOvA0rK
+yGMFLe1HsmGnqgnxAUwVs2fwgvxBK45h6XOclo3lbK29H0OXv6QFMFBYavHPcSi4
+Pi7fd3qeMxw=
+=Nmj8
 -----END PGP SIGNATURE-----
 
---=-0x+o4N+T1OARVGxSVLVm--
+--=-T7/EOeOeMysWYzm2WHSh--
