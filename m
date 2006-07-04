@@ -1,19 +1,18 @@
-Return-Path: <jxnuxdy@163.com>
-Received: from m13-88.163.com (m13-88.163.com [220.181.13.88])
-	by ozlabs.org (Postfix) with SMTP id 4EFEA67B5F
+Return-Path: <lagrange@fr.oleane.com>
+Received: from smtp1.clb.oleane.net (smtp1.clb.oleane.net [213.56.31.17])
+	by ozlabs.org (Postfix) with ESMTP id 76BCF67B74
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Jul 2006 00:39:41 +1000 (EST)
+	Wed,  5 Jul 2006 01:36:25 +1000 (EST)
+From: "Laurent Lagrange" <lagrange@fr.oleane.com>
+To: <pantelis@embeddedalley.com>
+Subject: Linux 2.6.x  :  cpm_dpalloc alignment bug perhaps not fully resolved
+Date: Tue, 4 Jul 2006 17:37:29 +0200
+Message-ID: <000001c69f7f$c9227760$5201a8c0@GEG2400>
 MIME-Version: 1.0
-Message-ID: <44AA7A14.0000A9.20221@bj163app88.163.com>
-Date: Tue, 4 Jul 2006 22:24:20 +0800 (CST)
-From: "Denny" <jxnuxdy@163.com>
-To: marc.howard@kla-tencor.com,linuxppc-embedded@ozlabs.org
-Subject: Re: How do you set up a PPC440GX with a P
- HY on emac2 only?
-References: <91B22F93A880FA48879475E134D6F0BE386FD4@CA1EXCLV02.adcorp.kla-tencor.com>
-In-Reply-To: <91B22F93A880FA48879475E134D6F0BE386FD4@CA1EXCLV02.adcorp.kla-tencor.com>
-Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_wlzkTvWYAuUScYcxXMTXFhmhWeKX"
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <200601251814.17331.pantelis@embeddedalley.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,43 +24,95 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---Boundary-=_wlzkTvWYAuUScYcxXMTXFhmhWeKX
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 7bit
+Hello Pantelis,
 
-Also, I failed to setup my PHY on the emac0,can anyone tell me how to setup the PHY on PPC440GP, thanks!
- 
-Thanks & regards!
-- Denny
- 
- 
- 
- 
---Boundary-=_wlzkTvWYAuUScYcxXMTXFhmhWeKX
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
+Few months ago (25 January 2006), I sent a mail about an alignment bug in
+cpm_dpalloc.
+I applied and verified the provided patch. I was very satisfied with the
+result.
 
-<DIV>Also, I failed to setup my PHY on the emac0,can anyone tell me how t=
-o setup the PHY on PPC440GP, thanks!</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>Thanks &amp; regards!</DIV>
-<DIV>- Denny</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV><SPAN ></SPAN><br><!-- footer --><br><br><br><br><br><di=
-v style=3D"border-bottom:1px solid #999"></div><br>
+Today I port a driver from Linux 2.4 to Linux 2.6 and I have strange
+results.
 
-=09<font color=3D"black" style=3D"font-size:14.8px">=C4=E3 =B2=BB =CF=EB =
-=CA=D4 =CA=D4 =BD=F1 =CF=C4 =D7=EE =A1=B0=BF=E1=A1=B1 =B5=C4 =D3=CA =CF=E4=
- =C2=F0 =A3=BF</font>
-=09<br>
-=09 <a href=3D"http://www.126.com/" target=3D"_blank" style=3D"font-size:=
-13px;line-height:160%;color:blue">=D4=CC =BA=AD =D6=D0 =BB=AA =B4=AB =CD=B3=
- =CE=C4 =BB=AF =D3=DA =CA=C0 =BD=E7 =D2=BB =C1=F7 =BF=C6 =BC=BC =D6=AE =D6=
-=D0=A3=AC=B4=B4 =D0=C2 Ajax =BC=BC =CA=F5=A3=AC126 =A1=B0D =BC=C6 =BB=AE=A1=
-=B1=BB=F0 =C8=C8 =CC=E5 =D1=E9 =D6=D0 =A3=A1
-</a>
+The driver allocates rx and tx bds (8 bytes aligned) in the module_init for
+4 SCC ports.
+That is always right. Then one port is opened by an application and a user
+configuration
+is set via an ioctl (set_conf).
 
+This ioctl first frees the old bds :
+	cpm_dpfree(chan->rx_bd_offset);
+	cpm_dpfree(chan->tx_bd_offset);
+then allocates the new ones :
+	chan->rx_bd_offset = cpm_dpalloc(sizeof(cbd_t) * chan->conf.rx_bufnbr, 8);
+	chan->tx_bd_offset = cpm_dpalloc(sizeof(cbd_t) * chan->conf.tx_bufnbr, 8);
+with rx_bufnbr == 8 and tx_bufnbr == 2
 
---Boundary-=_wlzkTvWYAuUScYcxXMTXFhmhWeKX--
+module_init
+SCC1 rx_bd_offset=160
+SCC1 tx_bd_offset=1a8
+SCC2 rx_bd_offset=1c0
+SCC2 tx_bd_offset=208
+SCC3 rx_bd_offset=220
+SCC3 tx_bd_offset=260
+SCC4 rx_bd_offset=278
+SCC4 tx_bd_offset=2c0
+set_conf
+SCC1 rx_bd_offset=160
+SCC1 tx_bd_offset=1a4	-> ???
+
+module_init
+SCC1 rx_bd_offset=160
+SCC1 tx_bd_offset=1a8
+SCC2 rx_bd_offset=1c0
+SCC2 tx_bd_offset=208
+SCC3 rx_bd_offset=220
+SCC3 tx_bd_offset=260
+SCC4 rx_bd_offset=278
+SCC4 tx_bd_offset=2c0
+set_conf
+SCC2 rx_bd_offset=1c0
+SCC2 tx_bd_offset=202	-> ???
+
+module_init
+SCC1 rx_bd_offset=160
+SCC1 tx_bd_offset=1a8
+SCC2 rx_bd_offset=1c0
+SCC2 tx_bd_offset=208
+SCC3 rx_bd_offset=220
+SCC3 tx_bd_offset=260
+SCC4 rx_bd_offset=278
+SCC4 tx_bd_offset=2c0
+set_conf
+SCC3 rx_bd_offset=220
+SCC3 tx_bd_offset=260	-> ok
+
+module_init
+SCC1 rx_bd_offset=160
+SCC1 tx_bd_offset=1a8
+SCC2 rx_bd_offset=1c0
+SCC2 tx_bd_offset=208
+SCC3 rx_bd_offset=220
+SCC3 tx_bd_offset=260
+SCC4 rx_bd_offset=278
+SCC4 tx_bd_offset=2c0
+set_conf
+SCC4 rx_bd_offset=278
+SCC4 tx_bd_offset=2c0	-> ok
+
+WARNING : if I only uses the SCC1 port without allocating bds for the other
+ports,
+I can free and reallocate the bds for the SCC1 port as many times I want.
+
+module_init
+SCC1 rx_bd_offset=160
+SCC1 tx_bd_offset=1a8
+set_conf
+SCC1 rx_bd_offset=160
+SCC1 tx_bd_offset=1a8	-> ok
+
+Really, I don't understand how this can arise.
+Any idea ?
+
+Thanks
+Laurent
