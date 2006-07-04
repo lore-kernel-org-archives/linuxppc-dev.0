@@ -1,9 +1,9 @@
 Return-Path: <jk@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
 From: Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH 1/20] [powerpc] Remove linux,device properties
-Message-ID: 1151993427.2210.02@pokey
-Date: Tue,  4 Jul 2006 16:44:46 +1000 (EST)
+Subject: [PATCH 7/20] [powerpc,iseries] Constify & voidify get_property()
+Message-ID: 1151993427.2210.08@pokey
+Date: Tue,  4 Jul 2006 16:46:44 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,64 +13,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The linux,device property isn't used anywhere within the kernel, and
-since it's a kernel pointer, it's a little useless for userspace.
+Now that get_property() returns a void *, there's no need to cast its
+return value. Also, treat the return value as const, so we can
+constify get_property later.
 
-This change removes the code to create this property in
-of_device_register.
+iseries platform changes.
 
-Built for pmac32.
+Built for iseries_defconfig
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 ---
 
- of_device.c |   24 ------------------------
- 1 file changed, 24 deletions(-)
+ iommu.c |    2 +-
+ pci.c   |    9 ++++-----
+ 2 files changed, 5 insertions(+), 6 deletions(-)
 
-Index: linux-2.6/arch/powerpc/kernel/of_device.c
+Index: linux-2.6/arch/powerpc/platforms/iseries/iommu.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/of_device.c
-+++ linux-2.6/arch/powerpc/kernel/of_device.c
-@@ -189,27 +189,9 @@ void of_release_dev(struct device *dev)
- int of_device_register(struct of_device *ofdev)
+--- linux-2.6.orig/arch/powerpc/platforms/iseries/iommu.c
++++ linux-2.6/arch/powerpc/platforms/iseries/iommu.c
+@@ -162,7 +162,7 @@ void iommu_devnode_init_iSeries(struct d
  {
- 	int rc;
--	struct of_device **odprop;
+ 	struct iommu_table *tbl;
+ 	struct pci_dn *pdn = PCI_DN(dn);
+-	u32 *lsn = (u32 *)get_property(dn, "linux,logical-slot-number", NULL);
++	const u32 *lsn = get_property(dn, "linux,logical-slot-number", NULL);
  
- 	BUG_ON(ofdev->node == NULL);
+ 	BUG_ON(lsn == NULL);
  
--	odprop = (struct of_device **)get_property(ofdev->node, "linux,device", NULL);
--	if (!odprop) {
--		struct property *new_prop;
--	
--		new_prop = kmalloc(sizeof(struct property) + sizeof(struct of_device *),
--			GFP_KERNEL);
--		if (new_prop == NULL)
--			return -ENOMEM;
--		new_prop->name = "linux,device";
--		new_prop->length = sizeof(sizeof(struct of_device *));
--		new_prop->value = (unsigned char *)&new_prop[1];
--		odprop = (struct of_device **)new_prop->value;
--		*odprop = NULL;
--		prom_add_property(ofdev->node, new_prop);
--	}
--	*odprop = ofdev;
--
- 	rc = device_register(&ofdev->dev);
- 	if (rc)
- 		return rc;
-@@ -221,14 +203,8 @@ int of_device_register(struct of_device 
+Index: linux-2.6/arch/powerpc/platforms/iseries/pci.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/iseries/pci.c
++++ linux-2.6/arch/powerpc/platforms/iseries/pci.c
+@@ -176,12 +176,12 @@ void iSeries_pcibios_init(void)
+ 	}
+ 	while ((node = of_get_next_child(root, node)) != NULL) {
+ 		HvBusNumber bus;
+-		u32 *busp;
++		const u32 *busp;
  
- void of_device_unregister(struct of_device *ofdev)
- {
--	struct of_device **odprop;
--
- 	device_remove_file(&ofdev->dev, &dev_attr_devspec);
+ 		if ((node->type == NULL) || (strcmp(node->type, "pci") != 0))
+ 			continue;
  
--	odprop = (struct of_device **)get_property(ofdev->node, "linux,device", NULL);
--	if (odprop)
--		*odprop = NULL;
--
- 	device_unregister(&ofdev->dev);
- }
+-		busp = (u32 *)get_property(node, "bus-range", NULL);
++		busp = get_property(node, "bus-range", NULL);
+ 		if (busp == NULL)
+ 			continue;
+ 		bus = *busp;
+@@ -221,10 +221,9 @@ void __init iSeries_pci_final_fixup(void
  
+ 		if (node != NULL) {
+ 			struct pci_dn *pdn = PCI_DN(node);
+-			u32 *agent;
++			const u32 *agent;
+ 
+-			agent = (u32 *)get_property(node, "linux,agent-id",
+-					NULL);
++			agent = get_property(node, "linux,agent-id", NULL);
+ 			if ((pdn != NULL) && (agent != NULL)) {
+ 				u8 irq = iSeries_allocate_IRQ(pdn->busno, 0,
+ 						pdn->bussubno);
