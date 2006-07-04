@@ -1,8 +1,8 @@
 Return-Path: <jk@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
 From: Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH 7/20] [powerpc,iseries] Constify & voidify get_property()
-Message-ID: 1151993427.2210.08@pokey
+Subject: [PATCH 2/20] [powerpc] Use const qualifiers for prom parsing utilites
+Message-ID: 1151993427.2210.03@pokey
 Date: Tue,  4 Jul 2006 16:46:44 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -13,63 +13,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that get_property() returns a void *, there's no need to cast its
-return value. Also, treat the return value as const, so we can
-constify get_property later.
+The of_bus callbacks map and get_flags can be constified, as they don't
+alter the range or addr arguments. of_dump_addr and of_read_addr can
+also be constified.
 
-iseries platform changes.
-
-Built for iseries_defconfig
+Built for 32- and 64-bit powerpc
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 ---
 
- iommu.c |    2 +-
- pci.c   |    9 ++++-----
- 2 files changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/prom_parse.c |   22 ++++++++++++----------
+ include/asm-powerpc/prom.h       |    2 +-
+ 2 files changed, 13 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/arch/powerpc/platforms/iseries/iommu.c
+Index: linux-2.6/arch/powerpc/kernel/prom_parse.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/iseries/iommu.c
-+++ linux-2.6/arch/powerpc/platforms/iseries/iommu.c
-@@ -162,7 +162,7 @@ void iommu_devnode_init_iSeries(struct d
+--- linux-2.6.orig/arch/powerpc/kernel/prom_parse.c
++++ linux-2.6/arch/powerpc/kernel/prom_parse.c
+@@ -27,7 +27,7 @@
+ 
+ /* Debug utility */
+ #ifdef DEBUG
+-static void of_dump_addr(const char *s, u32 *addr, int na)
++static void of_dump_addr(const char *s, const u32 *addr, int na)
  {
- 	struct iommu_table *tbl;
- 	struct pci_dn *pdn = PCI_DN(dn);
--	u32 *lsn = (u32 *)get_property(dn, "linux,logical-slot-number", NULL);
-+	const u32 *lsn = get_property(dn, "linux,logical-slot-number", NULL);
+ 	printk("%s", s);
+ 	while(na--)
+@@ -35,7 +35,7 @@ static void of_dump_addr(const char *s, 
+ 	printk("\n");
+ }
+ #else
+-static void of_dump_addr(const char *s, u32 *addr, int na) { }
++static void of_dump_addr(const char *s, const u32 *addr, int na) { }
+ #endif
  
- 	BUG_ON(lsn == NULL);
  
-Index: linux-2.6/arch/powerpc/platforms/iseries/pci.c
+@@ -46,9 +46,10 @@ struct of_bus {
+ 	int		(*match)(struct device_node *parent);
+ 	void		(*count_cells)(struct device_node *child,
+ 				       int *addrc, int *sizec);
+-	u64		(*map)(u32 *addr, u32 *range, int na, int ns, int pna);
++	u64		(*map)(u32 *addr, const u32 *range,
++				int na, int ns, int pna);
+ 	int		(*translate)(u32 *addr, u64 offset, int na);
+-	unsigned int	(*get_flags)(u32 *addr);
++	unsigned int	(*get_flags)(const u32 *addr);
+ };
+ 
+ 
+@@ -65,7 +66,8 @@ static void of_bus_default_count_cells(s
+ 		*sizec = prom_n_size_cells(dev);
+ }
+ 
+-static u64 of_bus_default_map(u32 *addr, u32 *range, int na, int ns, int pna)
++static u64 of_bus_default_map(u32 *addr, const u32 *range,
++		int na, int ns, int pna)
+ {
+ 	u64 cp, s, da;
+ 
+@@ -93,7 +95,7 @@ static int of_bus_default_translate(u32 
+ 	return 0;
+ }
+ 
+-static unsigned int of_bus_default_get_flags(u32 *addr)
++static unsigned int of_bus_default_get_flags(const u32 *addr)
+ {
+ 	return IORESOURCE_MEM;
+ }
+@@ -118,7 +120,7 @@ static void of_bus_pci_count_cells(struc
+ 		*sizec = 2;
+ }
+ 
+-static u64 of_bus_pci_map(u32 *addr, u32 *range, int na, int ns, int pna)
++static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
+ {
+ 	u64 cp, s, da;
+ 
+@@ -143,7 +145,7 @@ static int of_bus_pci_translate(u32 *add
+ 	return of_bus_default_translate(addr + 1, offset, na - 1);
+ }
+ 
+-static unsigned int of_bus_pci_get_flags(u32 *addr)
++static unsigned int of_bus_pci_get_flags(const u32 *addr)
+ {
+ 	unsigned int flags = 0;
+ 	u32 w = addr[0];
+@@ -178,7 +180,7 @@ static void of_bus_isa_count_cells(struc
+ 		*sizec = 1;
+ }
+ 
+-static u64 of_bus_isa_map(u32 *addr, u32 *range, int na, int ns, int pna)
++static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
+ {
+ 	u64 cp, s, da;
+ 
+@@ -203,7 +205,7 @@ static int of_bus_isa_translate(u32 *add
+ 	return of_bus_default_translate(addr + 1, offset, na - 1);
+ }
+ 
+-static unsigned int of_bus_isa_get_flags(u32 *addr)
++static unsigned int of_bus_isa_get_flags(const u32 *addr)
+ {
+ 	unsigned int flags = 0;
+ 	u32 w = addr[0];
+Index: linux-2.6/include/asm-powerpc/prom.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/iseries/pci.c
-+++ linux-2.6/arch/powerpc/platforms/iseries/pci.c
-@@ -176,12 +176,12 @@ void iSeries_pcibios_init(void)
- 	}
- 	while ((node = of_get_next_child(root, node)) != NULL) {
- 		HvBusNumber bus;
--		u32 *busp;
-+		const u32 *busp;
+--- linux-2.6.orig/include/asm-powerpc/prom.h
++++ linux-2.6/include/asm-powerpc/prom.h
+@@ -198,7 +198,7 @@ extern int release_OF_resource(struct de
  
- 		if ((node->type == NULL) || (strcmp(node->type, "pci") != 0))
- 			continue;
  
--		busp = (u32 *)get_property(node, "bus-range", NULL);
-+		busp = get_property(node, "bus-range", NULL);
- 		if (busp == NULL)
- 			continue;
- 		bus = *busp;
-@@ -221,10 +221,9 @@ void __init iSeries_pci_final_fixup(void
- 
- 		if (node != NULL) {
- 			struct pci_dn *pdn = PCI_DN(node);
--			u32 *agent;
-+			const u32 *agent;
- 
--			agent = (u32 *)get_property(node, "linux,agent-id",
--					NULL);
-+			agent = get_property(node, "linux,agent-id", NULL);
- 			if ((pdn != NULL) && (agent != NULL)) {
- 				u8 irq = iSeries_allocate_IRQ(pdn->busno, 0,
- 						pdn->bussubno);
+ /* Helper to read a big number */
+-static inline u64 of_read_number(u32 *cell, int size)
++static inline u64 of_read_number(const u32 *cell, int size)
+ {
+ 	u64 r = 0;
+ 	while (size--)
