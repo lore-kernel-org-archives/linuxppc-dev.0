@@ -1,8 +1,8 @@
 Return-Path: <jk@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
 From: Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH 2/20] [powerpc] Use const qualifiers for prom parsing utilites
-Message-ID: 1151993427.2210.03@pokey
+Subject: [PATCH 20/20] [powerpc] Make get_property() return a const void *
+Message-ID: 1151993427.2210.21@pokey
 Date: Tue,  4 Jul 2006 16:46:44 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -13,119 +13,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The of_bus callbacks map and get_flags can be constified, as they don't
-alter the range or addr arguments. of_dump_addr and of_read_addr can
-also be constified.
+Previous changes have treated the return values of get_property as
+const, so now we can make the actual change to get_property(). There
+shouldn't be a need to cast the return values anymore.
 
-Built for 32- and 64-bit powerpc
+We will now get compiler warnings when property values are assigned to
+a non-const variable.
+
+If properties need to be updated, there's still the of_find_property
+function.
+
+Built for cell_defconfig, chrp32_defconfig, g5_defconfig,
+iseries_defconfig, maple_defconfig, pmac32_defconfig, ppc64_defconfig
+and pseries_defconfig.
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 ---
 
- arch/powerpc/kernel/prom_parse.c |   22 ++++++++++++----------
- include/asm-powerpc/prom.h       |    2 +-
- 2 files changed, 13 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/prom.c |    2 +-
+ include/asm-powerpc/prom.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/arch/powerpc/kernel/prom_parse.c
+Index: linux-2.6/arch/powerpc/kernel/prom.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/prom_parse.c
-+++ linux-2.6/arch/powerpc/kernel/prom_parse.c
-@@ -27,7 +27,7 @@
- 
- /* Debug utility */
- #ifdef DEBUG
--static void of_dump_addr(const char *s, u32 *addr, int na)
-+static void of_dump_addr(const char *s, const u32 *addr, int na)
+--- linux-2.6.orig/arch/powerpc/kernel/prom.c
++++ linux-2.6/arch/powerpc/kernel/prom.c
+@@ -1527,7 +1527,7 @@ struct property *of_find_property(struct
+  * Find a property with a given name for a given node
+  * and return the value.
+  */
+-void *get_property(struct device_node *np, const char *name, int *lenp)
++const void *get_property(struct device_node *np, const char *name, int *lenp)
  {
- 	printk("%s", s);
- 	while(na--)
-@@ -35,7 +35,7 @@ static void of_dump_addr(const char *s, 
- 	printk("\n");
- }
- #else
--static void of_dump_addr(const char *s, u32 *addr, int na) { }
-+static void of_dump_addr(const char *s, const u32 *addr, int na) { }
- #endif
- 
- 
-@@ -46,9 +46,10 @@ struct of_bus {
- 	int		(*match)(struct device_node *parent);
- 	void		(*count_cells)(struct device_node *child,
- 				       int *addrc, int *sizec);
--	u64		(*map)(u32 *addr, u32 *range, int na, int ns, int pna);
-+	u64		(*map)(u32 *addr, const u32 *range,
-+				int na, int ns, int pna);
- 	int		(*translate)(u32 *addr, u64 offset, int na);
--	unsigned int	(*get_flags)(u32 *addr);
-+	unsigned int	(*get_flags)(const u32 *addr);
- };
- 
- 
-@@ -65,7 +66,8 @@ static void of_bus_default_count_cells(s
- 		*sizec = prom_n_size_cells(dev);
- }
- 
--static u64 of_bus_default_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+static u64 of_bus_default_map(u32 *addr, const u32 *range,
-+		int na, int ns, int pna)
- {
- 	u64 cp, s, da;
- 
-@@ -93,7 +95,7 @@ static int of_bus_default_translate(u32 
- 	return 0;
- }
- 
--static unsigned int of_bus_default_get_flags(u32 *addr)
-+static unsigned int of_bus_default_get_flags(const u32 *addr)
- {
- 	return IORESOURCE_MEM;
- }
-@@ -118,7 +120,7 @@ static void of_bus_pci_count_cells(struc
- 		*sizec = 2;
- }
- 
--static u64 of_bus_pci_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+static u64 of_bus_pci_map(u32 *addr, const u32 *range, int na, int ns, int pna)
- {
- 	u64 cp, s, da;
- 
-@@ -143,7 +145,7 @@ static int of_bus_pci_translate(u32 *add
- 	return of_bus_default_translate(addr + 1, offset, na - 1);
- }
- 
--static unsigned int of_bus_pci_get_flags(u32 *addr)
-+static unsigned int of_bus_pci_get_flags(const u32 *addr)
- {
- 	unsigned int flags = 0;
- 	u32 w = addr[0];
-@@ -178,7 +180,7 @@ static void of_bus_isa_count_cells(struc
- 		*sizec = 1;
- }
- 
--static u64 of_bus_isa_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+static u64 of_bus_isa_map(u32 *addr, const u32 *range, int na, int ns, int pna)
- {
- 	u64 cp, s, da;
- 
-@@ -203,7 +205,7 @@ static int of_bus_isa_translate(u32 *add
- 	return of_bus_default_translate(addr + 1, offset, na - 1);
- }
- 
--static unsigned int of_bus_isa_get_flags(u32 *addr)
-+static unsigned int of_bus_isa_get_flags(const u32 *addr)
- {
- 	unsigned int flags = 0;
- 	u32 w = addr[0];
+ 	struct property *pp = of_find_property(np,name,lenp);
+ 	return pp ? pp->value : NULL;
 Index: linux-2.6/include/asm-powerpc/prom.h
 ===================================================================
 --- linux-2.6.orig/include/asm-powerpc/prom.h
 +++ linux-2.6/include/asm-powerpc/prom.h
-@@ -198,7 +198,7 @@ extern int release_OF_resource(struct de
- 
- 
- /* Helper to read a big number */
--static inline u64 of_read_number(u32 *cell, int size)
-+static inline u64 of_read_number(const u32 *cell, int size)
- {
- 	u64 r = 0;
- 	while (size--)
+@@ -160,7 +160,7 @@ extern void unflatten_device_tree(void);
+ extern void early_init_devtree(void *);
+ extern int device_is_compatible(struct device_node *device, const char *);
+ extern int machine_is_compatible(const char *compat);
+-extern void *get_property(struct device_node *node, const char *name,
++extern const void *get_property(struct device_node *node, const char *name,
+ 		int *lenp);
+ extern void print_properties(struct device_node *node);
+ extern int prom_n_addr_cells(struct device_node* np);
