@@ -1,9 +1,10 @@
 Return-Path: <jk@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
 From: Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH 11/20] [powerpc,maple] Constify & voidify get_property()
-Message-ID: 1151993427.2210.12@pokey
+Subject: [PATCH 15/20] [powerpc,netdevices] Constify & voidify get_property()
+Message-ID: 1151993427.2210.16@pokey
 Date: Tue,  4 Jul 2006 16:47:17 +1000 (EST)
+Cc: netdev@oss.sgi.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,155 +18,128 @@ Now that get_property() returns a void *, there's no need to cast its
 return value. Also, treat the return value as const, so we can
 constify get_property later.
 
-maple platform changes.
-
-Built for maple_defconfig
+powerpc-specific network device driver changes.
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 ---
 
- pci.c   |   20 +++++++++++---------
- setup.c |   27 ++++++++++-----------------
- 2 files changed, 21 insertions(+), 26 deletions(-)
+ bmac.c       |   13 ++++++++-----
+ mace.c       |    2 +-
+ spider_net.c |   12 ++++++------
+ sungem.c     |    2 +-
+ 4 files changed, 16 insertions(+), 13 deletions(-)
 
-Index: linux-2.6/arch/powerpc/platforms/maple/pci.c
+Index: linux-2.6/drivers/net/bmac.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/maple/pci.c
-+++ linux-2.6/arch/powerpc/platforms/maple/pci.c
-@@ -38,16 +38,16 @@ static struct pci_controller *u3_agp, *u
- static int __init fixup_one_level_bus_range(struct device_node *node, int higher)
+--- linux-2.6.orig/drivers/net/bmac.c
++++ linux-2.6/drivers/net/bmac.c
+@@ -1264,7 +1264,8 @@ static int __devinit bmac_probe(struct m
  {
- 	for (; node != 0;node = node->sibling) {
--		int * bus_range;
--		unsigned int *class_code;
-+		const int *bus_range;
-+		const unsigned int *class_code;
- 		int len;
+	int j, rev, ret;
+	struct bmac_data *bp;
+-	unsigned char *addr;
++	const unsigned char *prop_addr;
++	unsigned char addr[6];
+	struct net_device *dev;
+	int is_bmac_plus = ((int)match->data) != 0;
  
- 		/* For PCI<->PCI bridges or CardBus bridges, we go down */
--		class_code = (unsigned int *) get_property(node, "class-code", NULL);
-+		class_code = get_property(node, "class-code", NULL);
- 		if (!class_code || ((*class_code >> 8) != PCI_CLASS_BRIDGE_PCI &&
- 			(*class_code >> 8) != PCI_CLASS_BRIDGE_CARDBUS))
- 			continue;
--		bus_range = (int *) get_property(node, "bus-range", &len);
-+		bus_range = get_property(node, "bus-range", &len);
- 		if (bus_range != NULL && len > 2 * sizeof(int)) {
- 			if (bus_range[1] > higher)
- 				higher = bus_range[1];
-@@ -65,16 +65,18 @@ static int __init fixup_one_level_bus_ra
+@@ -1272,14 +1273,16 @@ static int __devinit bmac_probe(struct m
+		printk(KERN_ERR "BMAC: can't use, need 3 addrs and 3 intrs\n");
+		return -ENODEV;
+	}
+-	addr = get_property(macio_get_of_node(mdev), "mac-address", NULL);
+-	if (addr == NULL) {
+-		addr = get_property(macio_get_of_node(mdev), "local-mac-address", NULL);
+-		if (addr == NULL) {
++	prop_addr = get_property(macio_get_of_node(mdev), "mac-address", NULL);
++	if (prop_addr == NULL) {
++		prop_addr = get_property(macio_get_of_node(mdev),
++				"local-mac-address", NULL);
++		if (prop_addr == NULL) {
+			printk(KERN_ERR "BMAC: Can't get mac-address\n");
+			return -ENODEV;
+		}
+	}
++	memcpy(addr, prop_addr, sizeof(addr));
+ 
+	dev = alloc_etherdev(PRIV_BYTES);
+	if (!dev) {
+Index: linux-2.6/drivers/net/mace.c
+===================================================================
+--- linux-2.6.orig/drivers/net/mace.c
++++ linux-2.6/drivers/net/mace.c
+@@ -113,7 +113,7 @@ static int __devinit mace_probe(struct m
+	struct device_node *mace = macio_get_of_node(mdev);
+	struct net_device *dev;
+	struct mace_data *mp;
+-	unsigned char *addr;
++	const unsigned char *addr;
+	int j, rev, rc = -EBUSY;
+ 
+	if (macio_resource_count(mdev) != 3 || macio_irq_count(mdev) != 3) {
+Index: linux-2.6/drivers/net/sungem.c
+===================================================================
+--- linux-2.6.orig/drivers/net/sungem.c
++++ linux-2.6/drivers/net/sungem.c
+@@ -2896,7 +2896,7 @@ static int __devinit gem_get_device_addr
+	if (use_idprom)
+		memcpy(dev->dev_addr, idprom->id_ethaddr, 6);
+ #elif defined(CONFIG_PPC_PMAC)
+-	unsigned char *addr;
++	const unsigned char *addr;
+ 
+	addr = get_property(gp->of_node, "local-mac-address", NULL);
+	if (addr == NULL) {
+Index: linux-2.6/drivers/net/spider_net.c
+===================================================================
+--- linux-2.6.orig/drivers/net/spider_net.c
++++ linux-2.6/drivers/net/spider_net.c
+@@ -1812,10 +1812,10 @@ spider_net_setup_phy(struct spider_net_c
   */
- static void __init fixup_bus_range(struct device_node *bridge)
+ static int
+ spider_net_download_firmware(struct spider_net_card *card,
+-			     u8 *firmware_ptr)
++			     const void *firmware_ptr)
  {
--	int * bus_range;
-+	int *bus_range;
-+	struct property *prop;
- 	int len;
+ 	int sequencer, i;
+-	u32 *fw_ptr = (u32 *)firmware_ptr;
++	const u32 *fw_ptr = firmware_ptr;
  
- 	/* Lookup the "bus-range" property for the hose */
--	bus_range = (int *) get_property(bridge, "bus-range", &len);
--	if (bus_range == NULL || len < 2 * sizeof(int)) {
-+	prop = of_find_property(bridge, "bus-range", &len);
-+	if (prop == NULL  || prop->value == NULL || len < 2 * sizeof(int)) {
- 		printk(KERN_WARNING "Can't get bus-range for %s\n",
- 			       bridge->full_name);
- 		return;
- 	}
-+	bus_range = (int *)prop->value;
- 	bus_range[1] = fixup_one_level_bus_range(bridge->child, bus_range[1]);
- }
- 
-@@ -314,12 +316,12 @@ static int __init add_bridge(struct devi
- 	int len;
- 	struct pci_controller *hose;
- 	char* disp_name;
--	int *bus_range;
-+	const int *bus_range;
- 	int primary = 1;
- 
- 	DBG("Adding PCI host bridge %s\n", dev->full_name);
- 
--	bus_range = (int *) get_property(dev, "bus-range", &len);
-+	bus_range = get_property(dev, "bus-range", &len);
- 	if (bus_range == NULL || len < 2 * sizeof(int)) {
- 		printk(KERN_WARNING "Can't get bus-range for %s, assume bus 0\n",
- 		dev->full_name);
-Index: linux-2.6/arch/powerpc/platforms/maple/setup.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/maple/setup.c
-+++ linux-2.6/arch/powerpc/platforms/maple/setup.c
-@@ -99,8 +99,7 @@ static unsigned long maple_find_nvram_ba
- static void maple_restart(char *cmd)
+ 	/* stop sequencers */
+ 	spider_net_write_reg(card, SPIDER_NET_GSINIT,
+@@ -1872,7 +1872,7 @@ spider_net_init_firmware(struct spider_n
  {
- 	unsigned int maple_nvram_base;
--	unsigned int maple_nvram_offset;
--	unsigned int maple_nvram_command;
-+	const unsigned int *maple_nvram_offset, *maple_nvram_command;
- 	struct device_node *sp;
+ 	struct firmware *firmware = NULL;
+ 	struct device_node *dn;
+-	u8 *fw_prop = NULL;
++	const u8 *fw_prop = NULL;
+ 	int err = -ENOENT;
+ 	int fw_size;
  
- 	maple_nvram_base = maple_find_nvram_base();
-@@ -113,14 +112,12 @@ static void maple_restart(char *cmd)
- 		printk(KERN_EMERG "Maple: Unable to find Service Processor\n");
- 		goto fail;
- 	}
--	maple_nvram_offset = *(unsigned int*) get_property(sp,
--			"restart-addr", NULL);
--	maple_nvram_command = *(unsigned int*) get_property(sp,
--			"restart-value", NULL);
-+	maple_nvram_offset = get_property(sp, "restart-addr", NULL);
-+	maple_nvram_command = get_property(sp, "restart-value", NULL);
- 	of_node_put(sp);
+@@ -1898,7 +1898,7 @@ try_host_fw:
+ 	if (!dn)
+ 		goto out_err;
  
- 	/* send command */
--	outb_p(maple_nvram_command, maple_nvram_base + maple_nvram_offset);
-+	outb_p(*maple_nvram_command, maple_nvram_base + *maple_nvram_offset);
- 	for (;;) ;
-  fail:
- 	printk(KERN_EMERG "Maple: Manual Restart Required\n");
-@@ -129,8 +126,7 @@ static void maple_restart(char *cmd)
- static void maple_power_off(void)
- {
- 	unsigned int maple_nvram_base;
--	unsigned int maple_nvram_offset;
--	unsigned int maple_nvram_command;
-+	const unsigned int *maple_nvram_offset, *maple_nvram_command;
- 	struct device_node *sp;
+-	fw_prop = (u8 *)get_property(dn, "firmware", &fw_size);
++	fw_prop = get_property(dn, "firmware", &fw_size);
+ 	if (!fw_prop)
+ 		goto out_err;
  
- 	maple_nvram_base = maple_find_nvram_base();
-@@ -143,14 +139,12 @@ static void maple_power_off(void)
- 		printk(KERN_EMERG "Maple: Unable to find Service Processor\n");
- 		goto fail;
- 	}
--	maple_nvram_offset = *(unsigned int*) get_property(sp,
--			"power-off-addr", NULL);
--	maple_nvram_command = *(unsigned int*) get_property(sp,
--			"power-off-value", NULL);
-+	maple_nvram_offset = get_property(sp, "power-off-addr", NULL);
-+	maple_nvram_command = get_property(sp, "power-off-value", NULL);
- 	of_node_put(sp);
+@@ -2058,7 +2058,7 @@ spider_net_setup_netdev(struct spider_ne
+ 	struct net_device *netdev = card->netdev;
+ 	struct device_node *dn;
+ 	struct sockaddr addr;
+-	u8 *mac;
++	const u8 *mac;
  
- 	/* send command */
--	outb_p(maple_nvram_command, maple_nvram_base + maple_nvram_offset);
-+	outb_p(*maple_nvram_command, maple_nvram_base + *maple_nvram_offset);
- 	for (;;) ;
-  fail:
- 	printk(KERN_EMERG "Maple: Manual Power-Down Required\n");
-@@ -211,7 +205,7 @@ static void __init maple_init_early(void
- static void __init maple_init_IRQ(void)
- {
- 	struct device_node *root, *np, *mpic_node = NULL;
--	unsigned int *opprop;
-+	const unsigned int *opprop;
- 	unsigned long openpic_addr = 0;
- 	int naddr, n, i, opplen, has_isus = 0;
- 	struct mpic *mpic;
-@@ -234,8 +228,7 @@ static void __init maple_init_IRQ(void)
- 	/* Find address list in /platform-open-pic */
- 	root = of_find_node_by_path("/");
- 	naddr = prom_n_addr_cells(root);
--	opprop = (unsigned int *) get_property(root, "platform-open-pic",
--					       &opplen);
-+	opprop = get_property(root, "platform-open-pic", &opplen);
- 	if (opprop != 0) {
- 		openpic_addr = of_read_number(opprop, naddr);
- 		has_isus = (opplen > naddr);
+ 	SET_MODULE_OWNER(netdev);
+ 	SET_NETDEV_DEV(netdev, &card->pdev->dev);
+@@ -2089,7 +2089,7 @@ spider_net_setup_netdev(struct spider_ne
+ 	if (!dn)
+ 		return -EIO;
+ 
+-	mac = (u8 *)get_property(dn, "local-mac-address", NULL);
++	mac = get_property(dn, "local-mac-address", NULL);
+ 	if (!mac)
+ 		return -EIO;
+ 	memcpy(addr.sa_data, mac, ETH_ALEN);
