@@ -1,18 +1,19 @@
-Return-Path: <lagrange@fr.oleane.com>
-Received: from smtp6.clb.oleane.net (smtp6.clb.oleane.net [213.56.31.26])
-	by ozlabs.org (Postfix) with ESMTP id BB28A67B57
+Return-Path: <morelli.gab@virgilio.it>
+Received: from vsmtp3.tin.it (vsmtp3alice.tin.it [212.216.176.143])
+	by ozlabs.org (Postfix) with ESMTP id AD69267B5E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  5 Jul 2006 20:02:14 +1000 (EST)
-From: "Laurent Lagrange" <lagrange@fr.oleane.com>
-To: "'Pantelis Antoniou'" <pantelis@embeddedalley.com>
-Subject: RE: Linux 2.6.x : cpm_dpalloc alignment bug perhaps not fully resolved
-Date: Wed, 5 Jul 2006 12:03:17 +0200
-Message-ID: <000001c6a01a$4091d210$5201a8c0@GEG2400>
-MIME-Version: 1.0
+	Thu,  6 Jul 2006 02:12:01 +1000 (EST)
+Received: from mcmurphy (82.57.47.182) by vsmtp3.tin.it (7.2.072.1)
+	id 44AA775D0028FFA1 for linuxppc-embedded@ozlabs.org;
+	Wed, 5 Jul 2006 18:14:15 +0200
+Message-ID: <44AA775D0028FFA1@vsmtp3.tin.it> (added by postmaster@virgilio.it)
+Date: Wed, 5 Jul 2006 18:12:01 +0200
+From: "Gabriele" <morelli.gab@virgilio.it>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
+Subject: append a correct "root= boot option"
+Mime-Version: 1.0
 Content-Type: text/plain;
 	charset="iso-8859-1"
-In-Reply-To: <200607051238.18237.pantelis@embeddedalley.com>
-Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,22 +24,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+help me
 
+I upgrade  the linux Kernel from 2.4 to 2.6, but i don't succeed  to Configurate the mtd.
 
-> -----Message d'origine-----
-> De : Pantelis Antoniou [mailto:pantelis@embeddedalley.com]
-> Envoyé : mer. 5 juillet 2006 10:38
-> À : Laurent Lagrange
-> Cc : 'Li Yang-r58472'; linuxppc-embedded@ozlabs.org
-> Objet : Re: Linux 2.6.x : cpm_dpalloc alignment bug perhaps not fully
-> resolved
->
-> Should be a bug at the free. I'll take a look at it when I have a few
-> spare cycles.
->
-> Pantelis
->
-Yes, I think so.
-I'll try to get more details if I can help you.
-Best regards
-Laurent
+Creating 4 MTD partitions on "EVBOARD875-0":
+0x00000000-0x00060000 : "u-boot"
+0x00060000-0x00160000 : "kernel"
+0x00160000-0x004fa000 : "cramfs"
+mtd: partition "cramfs" doesn't end on an erase block -- force read-only
+0x00500000-0x00806000 : "jffs2"
+
+obtain the follw message:
+
+"Please append a correct "root= boot option"
+
+from what can to depend? 
+
+thanks to all 
+
+ Gabriele
+morelli.gab@virgilio.it
+2006-07-05
