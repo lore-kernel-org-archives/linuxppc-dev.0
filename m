@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 05 Jul 2006 14:39:42 +1000
-Subject: [RFC/PATCH 1/2] Move some kexec logic into machine_kexec.c
-Message-Id: <1152074382.592260.383409859049.qpush@concordia>
+Date: Wed, 05 Jul 2006 14:39:43 +1000
+Subject: [RFC/PATCH 2/2] Make crash.c work on 32-bit and 64-bit
+In-Reply-To: <1152074382.592260.383409859049.qpush@concordia>
+Message-Id: <20060705043943.9037567B56@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,156 +15,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-We're missing a few functions for kexec to compile on 32-bit. There's
-nothing really 64-bit specific about the 64-bit versions, so make them
-generic rather than adding empty definitions for 32-bit.
+To compile kexec on 32-bit we need a few more bits and pieces. Rather
+than add empty definitions, we can make crash.c work on 32-bit, with
+only a couple of kludges.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- arch/powerpc/kernel/machine_kexec.c    |   56 +++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/machine_kexec_64.c |   56 ---------------------------------
- 2 files changed, 56 insertions(+), 56 deletions(-)
+ arch/powerpc/kernel/Makefile           |    4 ++--
+ arch/powerpc/kernel/crash.c            |   11 +++++++++++
+ arch/powerpc/kernel/machine_kexec_64.c |    1 -
+ arch/powerpc/kernel/traps.c            |    3 ---
+ include/asm-powerpc/kexec.h            |    3 +--
+ 5 files changed, 14 insertions(+), 8 deletions(-)
 
-Index: to-merge/arch/powerpc/kernel/machine_kexec.c
+Index: to-merge/arch/powerpc/kernel/Makefile
 ===================================================================
---- to-merge.orig/arch/powerpc/kernel/machine_kexec.c
-+++ to-merge/arch/powerpc/kernel/machine_kexec.c
-@@ -13,6 +13,7 @@
- #include <linux/reboot.h>
- #include <linux/threads.h>
- #include <asm/machdep.h>
-+#include <asm/lmb.h>
+--- to-merge.orig/arch/powerpc/kernel/Makefile
++++ to-merge/arch/powerpc/kernel/Makefile
+@@ -67,9 +67,9 @@ pci64-$(CONFIG_PPC64)		+= pci_64.o pci_d
+ 				   pci_direct_iommu.o iomap.o
+ pci32-$(CONFIG_PPC32)		:= pci_32.o
+ obj-$(CONFIG_PCI)		+= $(pci64-y) $(pci32-y)
+-kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o crash.o
++kexec-$(CONFIG_PPC64)		:= machine_kexec_64.o
+ kexec-$(CONFIG_PPC32)		:= machine_kexec_32.o
+-obj-$(CONFIG_KEXEC)		+= machine_kexec.o $(kexec-y)
++obj-$(CONFIG_KEXEC)		+= machine_kexec.o crash.o $(kexec-y)
  
- void machine_crash_shutdown(struct pt_regs *regs)
- {
-@@ -59,3 +60,58 @@ NORET_TYPE void machine_kexec(struct kim
- 	}
- 	for(;;);
+ ifeq ($(CONFIG_PPC_ISERIES),y)
+ $(obj)/head_64.o: $(obj)/lparmap.s
+Index: to-merge/arch/powerpc/kernel/crash.c
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/crash.c
++++ to-merge/arch/powerpc/kernel/crash.c
+@@ -44,6 +44,7 @@
+ /* This keeps a track of which one is crashing cpu. */
+ int crashing_cpu = -1;
+ static cpumask_t cpus_in_crash = CPU_MASK_NONE;
++cpumask_t cpus_in_sr = CPU_MASK_NONE;
+ 
+ static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
+ 							       size_t data_len)
+@@ -139,7 +140,13 @@ void crash_ipi_callback(struct pt_regs *
+ 
+ 	if (ppc_md.kexec_cpu_down)
+ 		ppc_md.kexec_cpu_down(1, 1);
++
++#ifdef CONFIG_PPC64
+ 	kexec_smp_wait();
++#else
++	for (;;);	/* FIXME */
++#endif
++
+ 	/* NOTREACHED */
  }
-+
-+static int __init early_parse_crashk(char *p)
-+{
-+	unsigned long size;
-+
-+	if (!p)
-+		return 1;
-+
-+	size = memparse(p, &p);
-+
-+	if (*p == '@')
-+		crashk_res.start = memparse(p + 1, &p);
-+	else
-+		crashk_res.start = KDUMP_KERNELBASE;
-+
-+	crashk_res.end = crashk_res.start + size - 1;
-+
-+	return 0;
-+}
-+early_param("crashkernel", early_parse_crashk);
-+
-+void __init reserve_crashkernel(void)
-+{
-+	unsigned long size;
-+
-+	if (crashk_res.start == 0)
-+		return;
-+
-+	/* We might have got these values via the command line or the
-+	 * device tree, either way sanitise them now. */
-+
-+	size = crashk_res.end - crashk_res.start + 1;
-+
-+	if (crashk_res.start != KDUMP_KERNELBASE)
-+		printk("Crash kernel location must be 0x%x\n",
-+				KDUMP_KERNELBASE);
-+
-+	crashk_res.start = KDUMP_KERNELBASE;
-+	size = PAGE_ALIGN(size);
-+	crashk_res.end = crashk_res.start + size - 1;
-+
-+	/* Crash kernel trumps memory limit */
-+	if (memory_limit && memory_limit <= crashk_res.end) {
-+		memory_limit = crashk_res.end + 1;
-+		printk("Adjusted memory limit for crashkernel, now 0x%lx\n",
-+				memory_limit);
-+	}
-+
-+	lmb_reserve(crashk_res.start, size);
-+}
-+
-+int overlaps_crashkernel(unsigned long start, unsigned long size)
-+{
-+	return (start + size) > crashk_res.start && start <= crashk_res.end;
-+}
+ 
+@@ -255,7 +262,11 @@ static void crash_kexec_prepare_cpus(int
+ 	 *
+ 	 * do this if kexec in setup.c ?
+ 	 */
++#ifdef CONFIG_PPC64
+ 	smp_release_cpus();
++#else
++	/* FIXME */
++#endif
+ }
+ 
+ void crash_kexec_secondary(struct pt_regs *regs)
 Index: to-merge/arch/powerpc/kernel/machine_kexec_64.c
 ===================================================================
 --- to-merge.orig/arch/powerpc/kernel/machine_kexec_64.c
 +++ to-merge/arch/powerpc/kernel/machine_kexec_64.c
-@@ -21,7 +21,6 @@
- #include <asm/machdep.h>
- #include <asm/cacheflush.h>
- #include <asm/paca.h>
--#include <asm/lmb.h>
- #include <asm/mmu.h>
- #include <asm/sections.h>	/* _end */
- #include <asm/prom.h>
-@@ -385,58 +384,3 @@ static int __init kexec_setup(void)
- 	return 0;
+@@ -10,7 +10,6 @@
+  */
+ 
+ 
+-#include <linux/cpumask.h>
+ #include <linux/kexec.h>
+ #include <linux/smp.h>
+ #include <linux/thread_info.h>
+Index: to-merge/arch/powerpc/kernel/traps.c
+===================================================================
+--- to-merge.orig/arch/powerpc/kernel/traps.c
++++ to-merge/arch/powerpc/kernel/traps.c
+@@ -55,9 +55,6 @@
+ 
+ #ifdef CONFIG_PPC64	/* XXX */
+ #define _IO_BASE	pci_io_base
+-#ifdef CONFIG_KEXEC
+-cpumask_t cpus_in_sr = CPU_MASK_NONE;
+-#endif
+ #endif
+ 
+ #ifdef CONFIG_DEBUGGER
+Index: to-merge/include/asm-powerpc/kexec.h
+===================================================================
+--- to-merge.orig/include/asm-powerpc/kexec.h
++++ to-merge/include/asm-powerpc/kexec.h
+@@ -32,6 +32,7 @@
+ #endif
+ 
+ #ifndef __ASSEMBLY__
++#include <linux/cpumask.h>
+ 
+ #ifdef CONFIG_KEXEC
+ 
+@@ -109,7 +110,6 @@ static inline void crash_setup_regs(stru
+ 
+ #define MAX_NOTE_BYTES 1024
+ 
+-#ifdef __powerpc64__
+ extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
+ 					  master to copy new code to 0 */
+ extern int crashing_cpu;
+@@ -119,7 +119,6 @@ static inline int kexec_sr_activated(int
+ {
+ 	return cpu_isset(cpu,cpus_in_sr);
  }
- __initcall(kexec_setup);
--
--static int __init early_parse_crashk(char *p)
--{
--	unsigned long size;
--
--	if (!p)
--		return 1;
--
--	size = memparse(p, &p);
--
--	if (*p == '@')
--		crashk_res.start = memparse(p + 1, &p);
--	else
--		crashk_res.start = KDUMP_KERNELBASE;
--
--	crashk_res.end = crashk_res.start + size - 1;
--
--	return 0;
--}
--early_param("crashkernel", early_parse_crashk);
--
--void __init reserve_crashkernel(void)
--{
--	unsigned long size;
--
--	if (crashk_res.start == 0)
--		return;
--
--	/* We might have got these values via the command line or the
--	 * device tree, either way sanitise them now. */
--
--	size = crashk_res.end - crashk_res.start + 1;
--
--	if (crashk_res.start != KDUMP_KERNELBASE)
--		printk("Crash kernel location must be 0x%x\n",
--				KDUMP_KERNELBASE);
--
--	crashk_res.start = KDUMP_KERNELBASE;
--	size = PAGE_ALIGN(size);
--	crashk_res.end = crashk_res.start + size - 1;
--
--	/* Crash kernel trumps memory limit */
--	if (memory_limit && memory_limit <= crashk_res.end) {
--		memory_limit = crashk_res.end + 1;
--		printk("Adjusted memory limit for crashkernel, now 0x%lx\n",
--				memory_limit);
--	}
--
--	lmb_reserve(crashk_res.start, size);
--}
--
--int overlaps_crashkernel(unsigned long start, unsigned long size)
--{
--	return (start + size) > crashk_res.start && start <= crashk_res.end;
--}
+-#endif /* __powerpc64 __ */
+ 
+ struct kimage;
+ struct pt_regs;
