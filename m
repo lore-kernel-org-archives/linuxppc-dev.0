@@ -1,22 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1112A679E2
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jul 2006 19:10:25 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Xserve G5 thermal control fixes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20060706054639.GE5290@pb15.lixom.net>
-References: <1152162394.24632.58.camel@localhost.localdomain>
-	<20060706054639.GE5290@pb15.lixom.net>
-Content-Type: text/plain
-Date: Thu, 06 Jul 2006 19:10:13 +1000
-Message-Id: <1152177013.24632.71.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <horms@koto.vergenet.net>
+Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
+	by ozlabs.org (Postfix) with ESMTP id B010D679F0
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jul 2006 20:50:33 +1000 (EST)
+Date: Thu, 6 Jul 2006 19:15:22 +0900
+From: Horms <horms@verge.net.au>
+To: linuxppc-dev@ozlabs.org
+Subject: asdf
+Message-ID: <20060706101521.GE26612@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I have been looking at unifying the way that panic_on_oops logs
+what it is doing between the different architectures that implement it.
+The first cab off the rank is the patch below which removes a seemingly
+silly difference between the behaviour on 32 and 64 bit powerpc.
 
-> Doesn't it make more sense to keep this in the GIT log instead of in
-> the file? (I seem to remember Freescale getting similar comments on some
-> posted code just a few days ago :-)
-> 
-> Keeping version numbers for in-tree-only drivers isn't all that useful
-> either.
+I have not been able to test this as I do not have a ppc64 machine
+at my disposal. However I did test that it compiles thanks to
+the wonders of crosstool.
 
-Yeah, possibly.
+Signed-Off-By: Horms <horms@verge.net.au>
 
-Ben.
+ arch/powerpc/kernel/traps.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 52f5659..908231a 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -157,10 +157,8 @@ #endif
+ 		panic("Fatal exception in interrupt");
+ 
+ 	if (panic_on_oops) {
+-#ifdef CONFIG_PPC64
+ 		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
+ 		ssleep(5);
+-#endif
+ 		panic("Fatal exception");
+ 	}
+ 	do_exit(err);
