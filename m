@@ -2,17 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DAFBF679E2
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jul 2006 19:09:58 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 1112A679E2
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jul 2006 19:10:25 +1000 (EST)
 Subject: Re: [PATCH] powerpc: Xserve G5 thermal control fixes
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <CCA3F98E-8F8F-4003-87BA-8091F8AB668F@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20060706054639.GE5290@pb15.lixom.net>
 References: <1152162394.24632.58.camel@localhost.localdomain>
-	<CCA3F98E-8F8F-4003-87BA-8091F8AB668F@kernel.crashing.org>
+	<20060706054639.GE5290@pb15.lixom.net>
 Content-Type: text/plain
-Date: Thu, 06 Jul 2006 19:09:47 +1000
-Message-Id: <1152176987.24632.69.camel@localhost.localdomain>
+Date: Thu, 06 Jul 2006 19:10:13 +1000
+Message-Id: <1152177013.24632.71.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>,
@@ -26,18 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-07-06 at 07:37 +0200, Segher Boessenkool wrote:
-> > This patch also changes the fixed value of the slots fan for
-> > desktop G5s to 40% instead of 50%. It seems to still have a pretty  
-> > good
-> > airflow that way and is much less noisy.
-> 
-> Is this save when people have one of the ridiculously expensive
-> (and hot) video cards installed?  And perhaps even a few other
-> cards, too?
 
-Those cards are nvidia and they only get hot if you use the 3d which you
-can't do in linux/ppc (beside they have their own fan on the card
-anyway).
+> Doesn't it make more sense to keep this in the GIT log instead of in
+> the file? (I seem to remember Freescale getting similar comments on some
+> posted code just a few days ago :-)
+> 
+> Keeping version numbers for in-tree-only drivers isn't all that useful
+> either.
+
+Yeah, possibly.
 
 Ben.
