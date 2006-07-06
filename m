@@ -1,20 +1,16 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 12FFD679F0
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jul 2006 15:39:34 +1000 (EST)
-In-Reply-To: <1152162394.24632.58.camel@localhost.localdomain>
-References: <1152162394.24632.58.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CCA3F98E-8F8F-4003-87BA-8091F8AB668F@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Xserve G5 thermal control fixes
-Date: Thu, 6 Jul 2006 07:37:58 +0200
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id BC7D4679FD
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jul 2006 15:47:47 +1000 (EST)
+Date: Thu, 6 Jul 2006 00:46:39 -0500
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Xserve G5 thermal control fixes
+Message-ID: <20060706054639.GE5290@pb15.lixom.net>
+References: <1152162394.24632.58.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1152162394.24632.58.camel@localhost.localdomain>
+From: Olof Johansson <olof@lixom.net>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	Paul Mackerras <paulus@samba.org>,
 	Linux Kernel list <linux-kernel@vger.kernel.org>
@@ -27,14 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This patch also changes the fixed value of the slots fan for
-> desktop G5s to 40% instead of 50%. It seems to still have a pretty  
-> good
+On Thu, Jul 06, 2006 at 03:06:34PM +1000, Benjamin Herrenschmidt wrote:
+> The thermal control for the Xserve G5s had a few issues. For one, the
+> way to program the RPM fans speeds into the FCU is different between it
+> and the desktop models, which I didn't figure out until recently, and it
+> was missing a control loop for the slots fan, running it too fast. Both
+> of those problems were causing the machine to be much more noisy than
+> necessary. This patch also changes the fixed value of the slots fan for
+> desktop G5s to 40% instead of 50%. It seems to still have a pretty good
 > airflow that way and is much less noisy.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> Index: linux-irq-work/drivers/macintosh/therm_pm72.c
+> ===================================================================
+> --- linux-irq-work.orig/drivers/macintosh/therm_pm72.c	2006-07-05 14:46:11.000000000 +1000
+> +++ linux-irq-work/drivers/macintosh/therm_pm72.c	2006-07-06 14:42:31.000000000 +1000
+> @@ -95,6 +95,14 @@
+>   *	- Use min/max macros here or there
+>   *	- Latest darwin updated U3H min fan speed to 20% PWM
+>   *
+> + *  July. 06, 2006 : 1.3
+> + *	- Fix setting of RPM fans on Xserve G5 (they were going too fast)
+> + *      - Add missing slots fan control loop for Xserve G5
+> + *	- Lower fixed slots fan speed from 50% to 40% on desktop G5s. We
+> + *        still can't properly implement the control loop for these, so let's
+> + *        reduce the noise a little bit, it appears that 40% still gives us
+> + *        a pretty good air flow
+> + *
 
-Is this save when people have one of the ridiculously expensive
-(and hot) video cards installed?  And perhaps even a few other
-cards, too?
+Doesn't it make more sense to keep this in the GIT log instead of in
+the file? (I seem to remember Freescale getting similar comments on some
+posted code just a few days ago :-)
+
+Keeping version numbers for in-tree-only drivers isn't all that useful
+either.
 
 
-Segher
+-Olof
