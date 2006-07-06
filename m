@@ -1,24 +1,21 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 04CCF67B59
-	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jul 2006 22:00:31 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k66DHc4m017507
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Jul 2006 07:17:38 -0600 (MDT)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k66C0Coo018353
-	for <linuxppc-dev@ozlabs.org>; Thu, 6 Jul 2006 07:00:21 -0500 (CDT)
-Subject: [PATCH 3/3] Freescale QE UCC gigabit ethernet driver
-Date: Thu, 6 Jul 2006 20:02:41 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4DF20A@zch01exm20.fsl.freescale.net>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Andrew Morton" <akpm@osdl.org>, <jgarzik@pobox.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D602867B22
+	for <linuxppc-dev@ozlabs.org>; Thu,  6 Jul 2006 23:45:11 +1000 (EST)
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4DF208@zch01exm20.fsl.freescale.net>
+References: <4879B0C6C249214CBE7AB04453F84E4DF208@zch01exm20.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <FA983307-6A01-4FCB-A15A-ACC0E7B068A9@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] Freescale QE UCC gigabit ethernet driver
+Date: Thu, 6 Jul 2006 08:44:55 -0500
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Cc: Andrew Morton <akpm@osdl.org>, netdev@vger.kernel.org, jgarzik@pobox.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,2894 +25,2558 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Continues [PATCH 2/3] Freescale QE UCC gigabit ethernet driver
+Nack.  Here are some high level things that should be addressed:
+* There is a ton of debug code that should probably be stripped out,  
+such as dump_regs, etc..
+* The phy support should use the phylib instead
+* convert from being a platform_device to of_device
 
----
-+
-+static int ucc_geth_remove(struct device *device)
-+{
-+	struct net_device *dev =3D dev_get_drvdata(device);
-+	struct ucc_geth_private *ugeth =3D netdev_priv(dev);
-+
-+	dev_set_drvdata(device, NULL);
-+	ucc_geth_memclean(ugeth);
-+	free_netdev(dev);
-+
-+	return 0;
-+}
-+
-+/* Structure for a device driver */
-+static struct device_driver ucc_geth_driver =3D {
-+	.name =3D DRV_NAME,
-+	.bus =3D &platform_bus_type,
-+	.probe =3D ucc_geth_probe,
-+	.remove =3D ucc_geth_remove,
-+};
-+
-+static int __init ucc_geth_init(void)
-+{
-+	int i;
-+	printk(KERN_INFO "ucc_geth: " DRV_DESC "\n");
-+	for (i =3D 0; i < 8; i++)
-+		memcpy(&(ugeth_info[i]), &ugeth_primary_info,
-+		       sizeof(ugeth_primary_info));
-+
-+	return driver_register(&ucc_geth_driver);
-+}
-+
-+static void __exit ucc_geth_exit(void)
-+{
-+	driver_unregister(&ucc_geth_driver);
-+}
-+
-+module_init(ucc_geth_init);
-+module_exit(ucc_geth_exit);
-+
-+MODULE_AUTHOR("Freescale Semiconductor, Inc");
-+MODULE_DESCRIPTION(DRV_DESC);
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/net/ucc_geth.h b/drivers/net/ucc_geth.h
-new file mode 100644
-index 0000000..6eafd95
---- /dev/null
-+++ b/drivers/net/ucc_geth.h
-@@ -0,0 +1,1334 @@
-+/*
-+ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights
-reserved.
-+ *
-+ * Author: Shlomi Gridish <gridish@freescale.com>
-+ *
-+ * Description:
-+ * Internal header file for UCC Gigabit Ethernet unit routines.
-+ *
-+ * Changelog:
-+ * Jun 28, 2006 Li Yang <LeoLi@freescale.com>
-+ * - Rearrange code and style fixes
-+ *
-+ * This program is free software; you can redistribute  it and/or
-modify it
-+ * under  the terms of  the GNU General  Public License as published by
-the
-+ * Free Software Foundation;  either version 2 of the  License, or (at
-your
-+ * option) any later version.
-+ */
-+#ifndef __UCC_GETH_H__
-+#define __UCC_GETH_H__
-+
-+#include <linux/kernel.h>
-+#include <linux/list.h>
-+#include <linux/fsl_devices.h>
-+
-+#include <asm/immap_qe.h>
-+#include <asm/qe.h>
-+
-+#include <asm/ucc.h>
-+#include <asm/ucc_fast.h>
-+
-+#define NUM_TX_QUEUES                   8
-+#define NUM_RX_QUEUES                   8
-+#define NUM_BDS_IN_PREFETCHED_BDS       4
-+#define TX_IP_OFFSET_ENTRY_MAX          8
-+#define NUM_OF_PADDRS                   4
-+#define ENET_INIT_PARAM_MAX_ENTRIES_RX  9
-+#define ENET_INIT_PARAM_MAX_ENTRIES_TX  8
-+
-+typedef struct ucc_mii_mng {
-+	u32 miimcfg;		/* MII management configuration reg */
-+	u32 miimcom;		/* MII management command reg */
-+	u32 miimadd;		/* MII management address reg */
-+	u32 miimcon;		/* MII management control reg */
-+	u32 miimstat;		/* MII management status reg */
-+	u32 miimind;		/* MII management indication reg */
-+} __attribute__ ((packed)) ucc_mii_mng_t;
-+
-+typedef struct ucc_geth {
-+	ucc_fast_t uccf;
-+
-+	u32 maccfg1;		/* mac configuration reg. 1 */
-+	u32 maccfg2;		/* mac configuration reg. 2 */
-+	u32 ipgifg;		/* interframe gap reg.  */
-+	u32 hafdup;		/* half-duplex reg.  */
-+	u8 res1[0x10];
-+	ucc_mii_mng_t miimng;	/* MII management structure */
-+	u32 ifctl;		/* interface control reg */
-+	u32 ifstat;		/* interface statux reg */
-+	u32 macstnaddr1;	/* mac station address part 1 reg */
-+	u32 macstnaddr2;	/* mac station address part 2 reg */
-+	u8 res2[0x8];
-+	u32 uempr;		/* UCC Ethernet Mac parameter reg */
-+	u32 utbipar;		/* UCC tbi address reg */
-+	u16 uescr;		/* UCC Ethernet statistics control reg
-*/
-+	u8 res3[0x180 - 0x15A];
-+	u32 tx64;		/* Total number of frames (including bad
-+				   frames) transmitted that were exactly
-of the=20
-+				   minimal length (64 for un tagged, 68
-for
-+				   tagged, or with length exactly equal
-to the
-+				   parameter MINLength */
-+	u32 tx127;		/* Total number of frames (including bad
-+				   frames) transmitted that were between
-+				   MINLength (Including FCS length=3D=3D4)
-and 127
-+				   octets */
-+	u32 tx255;		/* Total number of frames (including bad
-+				   frames) transmitted that were between
-128
-+				   (Including FCS length=3D=3D4) and 255
-octets */
-+	u32 rx64;		/* Total number of frames received
-including
-+				   bad frames that were exactly of the
-mninimal=20
-+				   length (64 bytes) */
-+	u32 rx127;		/* Total number of frames (including bad
-+				   frames) received that were between
-MINLength=20
-+				   (Including FCS length=3D=3D4) and 127
-octets */
-+	u32 rx255;		/* Total number of frames (including bad
-+				   frames) received that were between
-128
-+				   (Including FCS length=3D=3D4) and 255
-octets */
-+	u32 txok;		/* Total number of octets residing in
-frames
-+				   that where involved in succesfull
-+				   transmission */
-+	u16 txcf;		/* Total number of PAUSE control frames
-+				   transmitted by this MAC */
-+	u8 res4[0x2];
-+	u32 tmca;		/* Total number of frames that were
-transmitted=20
-+				   succesfully with the group address
-bit set
-+				   that are not broadcast frames */
-+	u32 tbca;		/* Total number of frames transmitted
-+				   succesfully that had destination
-address
-+				   field equal to the broadcast address
-*/
-+	u32 rxfok;		/* Total number of frames received OK */
-+	u32 rxbok;		/* Total number of octets received OK */
-+	u32 rbyt;		/* Total number of octets received
-including
-+				   octets in bad frames. Must be
-implemented in=20
-+				   HW because it includes octets in
-frames that=20
-+				   never even reach the UCC */
-+	u32 rmca;		/* Total number of frames that were
-received
-+				   succesfully with the group address
-bit set
-+				   that are not broadcast frames */
-+	u32 rbca;		/* Total number of frames received
-succesfully
-+				   that had destination address equal to
-the
-+				   broadcast address */
-+	u32 scar;		/* Statistics carry register */
-+	u32 scam;		/* Statistics caryy mask register */
-+	u8 res5[0x200 - 0x1c4];
-+} __attribute__ ((packed)) ucc_geth_t;
-+
-+/* UCC GETH TEMODR Register */
-+#define TEMODER_TX_RMON_STATISTICS_ENABLE       0x0100	/* enable Tx
-statistics=20
-+							 */
-+#define TEMODER_SCHEDULER_ENABLE                0x2000	/* enable
-scheduler */
-+#define TEMODER_IP_CHECKSUM_GENERATE            0x0400	/* generate IPv4
-+							   checksums */
-+#define TEMODER_PERFORMANCE_OPTIMIZATION_MODE1  0x0200	/* enable
-performance
-+							   optimization
-+							   enhancement
-(mode1) */
-+#define TEMODER_RMON_STATISTICS                 0x0100	/* enable tx
-statistics=20
-+							 */
-+#define TEMODER_NUM_OF_QUEUES_SHIFT             (15-15)	/*
-Number of queues <<
-+							   shift */
-+
-+/* UCC GETH TEMODR Register */
-+#define REMODER_RX_RMON_STATISTICS_ENABLE       0x00001000	/*
-enable Rx
-+
-statistics */
-+#define REMODER_RX_EXTENDED_FEATURES            0x80000000	/*
-enable
-+
-extended
-+
-features */
-+#define REMODER_VLAN_OPERATION_TAGGED_SHIFT     (31-9 )	/* vlan
-operation
-+							   tagged <<
-shift */
-+#define REMODER_VLAN_OPERATION_NON_TAGGED_SHIFT (31-10)	/* vlan
-operation non
-+							   tagged <<
-shift */
-+#define REMODER_RX_QOS_MODE_SHIFT               (31-15)	/* rx
-QoS mode << shift=20
-+							 */
-+#define REMODER_RMON_STATISTICS                 0x00001000	/*
-enable rx
-+
-statistics */
-+#define REMODER_RX_EXTENDED_FILTERING           0x00000800	/*
-extended
-+
-filtering
-+								   vs.
-+
-mpc82xx-like=20
-+
-filtering */
-+#define REMODER_NUM_OF_QUEUES_SHIFT             (31-23)	/*
-Number of queues <<
-+							   shift */
-+#define REMODER_DYNAMIC_MAX_FRAME_LENGTH        0x00000008	/*
-enable
-+
-dynamic max
-+								   frame
-length=20
-+								 */
-+#define REMODER_DYNAMIC_MIN_FRAME_LENGTH        0x00000004	/*
-enable
-+
-dynamic min
-+								   frame
-length=20
-+								 */
-+#define REMODER_IP_CHECKSUM_CHECK               0x00000002	/* check
-IPv4
-+
-checksums */
-+#define REMODER_IP_ADDRESS_ALIGNMENT            0x00000001	/* align
-ip
-+
-address to
-+
-4-byte
-+
-boundary */
-+
-+/* UCC GETH Event Register */
-+#define UCCE_MPD                                0x80000000	/* Magic
-packet=20
-+
-detection */
-+#define UCCE_SCAR                               0x40000000
-+#define UCCE_GRA                                0x20000000	/* Tx
-graceful
-+								   stop
-+
-complete */
-+#define UCCE_CBPR                               0x10000000
-+#define UCCE_BSY                                0x08000000
-+#define UCCE_RXC                                0x04000000
-+#define UCCE_TXC                                0x02000000
-+#define UCCE_TXE                                0x01000000
-+#define UCCE_TXB7                               0x00800000
-+#define UCCE_TXB6                               0x00400000
-+#define UCCE_TXB5                               0x00200000
-+#define UCCE_TXB4                               0x00100000
-+#define UCCE_TXB3                               0x00080000
-+#define UCCE_TXB2                               0x00040000
-+#define UCCE_TXB1                               0x00020000
-+#define UCCE_TXB0                               0x00010000
-+#define UCCE_RXB7                               0x00008000
-+#define UCCE_RXB6                               0x00004000
-+#define UCCE_RXB5                               0x00002000
-+#define UCCE_RXB4                               0x00001000
-+#define UCCE_RXB3                               0x00000800
-+#define UCCE_RXB2                               0x00000400
-+#define UCCE_RXB1                               0x00000200
-+#define UCCE_RXB0                               0x00000100
-+#define UCCE_RXF7                               0x00000080
-+#define UCCE_RXF6                               0x00000040
-+#define UCCE_RXF5                               0x00000020
-+#define UCCE_RXF4                               0x00000010
-+#define UCCE_RXF3                               0x00000008
-+#define UCCE_RXF2                               0x00000004
-+#define UCCE_RXF1                               0x00000002
-+#define UCCE_RXF0                               0x00000001
-+
-+#define UCCE_RXBF_SINGLE_MASK                   (UCCE_RXF0)
-+#define UCCE_TXBF_SINGLE_MASK                   (UCCE_TXB0)
-+
-+#define UCCE_TXB         (UCCE_TXB7 | UCCE_TXB6 | UCCE_TXB5 | UCCE_TXB4
-| UCCE_TXB3 | UCCE_TXB2 | UCCE_TXB1 | UCCE_TXB0)
-+#define UCCE_RXB         (UCCE_RXB7 | UCCE_RXB6 | UCCE_RXB5 | UCCE_RXB4
-| UCCE_RXB3 | UCCE_RXB2 | UCCE_RXB1 | UCCE_RXB0)
-+#define UCCE_RXF         (UCCE_RXF7 | UCCE_RXF6 | UCCE_RXF5 | UCCE_RXF4
-| UCCE_RXF3 | UCCE_RXF2 | UCCE_RXF1 | UCCE_RXF0)
-+#define UCCE_OTHER       (UCCE_SCAR | UCCE_GRA  | UCCE_CBPR | UCCE_BSY
-| UCCE_RXC  | UCCE_TXC  | UCCE_TXE)
-+
-+/* UCC GETH UPSMR (Protocol Specific Mode Register) */
-+#define UPSMR_ECM                               0x04000000	/*
-Enable CAM
-+								   Miss
-or
-+
-Enable
-+
-Filtering
-+								   Miss
-*/
-+#define UPSMR_HSE                               0x02000000	/*
-Hardware
-+
-Statistics
-+
-Enable */
-+#define UPSMR_PRO                               0x00400000	/*
-Promiscuous */
-+#define UPSMR_CAP                               0x00200000	/* CAM
-polarity=20
-+								 */
-+#define UPSMR_RSH                               0x00100000	/*
-Receive
-+								   Short
-Frames=20
-+								 */
-+#define UPSMR_RPM                               0x00080000	/*
-Reduced Pin
-+								   Mode
-+
-interfaces */
-+#define UPSMR_R10M                              0x00040000	/*
-RGMII/RMII
-+								   10
-Mode */
-+#define UPSMR_RLPB                              0x00020000	/* RMII
-+
-Loopback
-+								   Mode
-*/
-+#define UPSMR_TBIM                              0x00010000	/*
-Ten-bit
-+
-Interface
-+								   Mode
-*/
-+#define UPSMR_RMM                               0x00001000	/*
-RMII/RGMII
-+								   Mode
-*/
-+#define UPSMR_CAM                               0x00000400	/* CAM
-Address
-+
-Matching */
-+#define UPSMR_BRO                               0x00000200	/*
-Broadcast
-+
-Address */
-+#define UPSMR_RES1                              0x00002000	/*
-Reserved
-+								   feild
-- must=20
-+								   be 1
-*/
-+
-+/* UCC GETH MACCFG1 (MAC Configuration 1 Register) */
-+#define MACCFG1_FLOW_RX                         0x00000020	/* Flow
-Control=20
-+								   Rx */
-+#define MACCFG1_FLOW_TX                         0x00000010	/* Flow
-Control=20
-+								   Tx */
-+#define MACCFG1_ENABLE_SYNCHED_RX               0x00000008	/* Rx
-Enable
-+
-synchronized=20
-+								   to Rx
-stream=20
-+								 */
-+#define MACCFG1_ENABLE_RX                       0x00000004	/*
-Enable Rx */
-+#define MACCFG1_ENABLE_SYNCHED_TX               0x00000002	/* Tx
-Enable
-+
-synchronized=20
-+								   to Tx
-stream=20
-+								 */
-+#define MACCFG1_ENABLE_TX                       0x00000001	/*
-Enable Tx */
-+
-+/* UCC GETH MACCFG2 (MAC Configuration 2 Register) */
-+#define MACCFG2_PREL_SHIFT                      (31 - 19)	/*
-Preamble
-+
-Length <<
-+								   shift
-*/
-+#define MACCFG2_PREL_MASK                       0x0000f000	/*
-Preamble
-+
-Length mask */
-+#define MACCFG2_SRP                             0x00000080	/* Soft
-Receive=20
-+
-Preamble */
-+#define MACCFG2_STP                             0x00000040	/* Soft
-+
-Transmit
-+
-Preamble */
-+#define MACCFG2_RESERVED_1                      0x00000020	/*
-Reserved -
-+								   must
-be set
-+								   to 1
-*/
-+#define MACCFG2_LC                              0x00000010	/*
-Length Check=20
-+								 */
-+#define MACCFG2_MPE                             0x00000008	/* Magic
-packet=20
-+
-detect */
-+#define MACCFG2_FDX                             0x00000001	/* Full
-Duplex */
-+#define MACCFG2_FDX_MASK                        0x00000001	/* Full
-Duplex
-+								   mask
-*/
-+#define MACCFG2_PAD_CRC                         0x00000004
-+#define MACCFG2_CRC_EN                          0x00000002
-+#define MACCFG2_PAD_AND_CRC_MODE_NONE           0x00000000	/*
-Neither
-+
-Padding
-+								   short
-frames=20
-+								   nor
-CRC */
-+#define MACCFG2_PAD_AND_CRC_MODE_CRC_ONLY       0x00000002	/*
-Append CRC
-+								   only
-*/
-+#define MACCFG2_PAD_AND_CRC_MODE_PAD_AND_CRC    0x00000004
-+#define MACCFG2_INTERFACE_MODE_NIBBLE           0x00000100	/*
-nibble mode
-+
-(MII/RMII/RGMII=20
-+
-10/100bps) */
-+#define MACCFG2_INTERFACE_MODE_BYTE             0x00000200	/* byte
-mode
-+
-(GMII/TBI/RTB/RGMII=20
-+
-1000bps ) */
-+#define MACCFG2_INTERFACE_MODE_MASK             0x00000300	/* mask
-+
-covering all=20
-+
-relevant
-+								   bits
-*/
-+
-+/* UCC GETH IPGIFG (Inter-frame Gap / Inter-Frame Gap Register) */
-+#define IPGIFG_NON_BACK_TO_BACK_IFG_PART1_SHIFT (31 -  7)	/* Non
-+
-back-to-back=20
-+								   inter
-frame
-+								   gap
-part 1.
-+								   <<
-shift */
-+#define IPGIFG_NON_BACK_TO_BACK_IFG_PART2_SHIFT (31 - 15)	/* Non
-+
-back-to-back=20
-+								   inter
-frame
-+								   gap
-part 2.
-+								   <<
-shift */
-+#define IPGIFG_MINIMUM_IFG_ENFORCEMENT_SHIFT    (31 - 23)	/*
-Mimimum IFG
-+
-Enforcement
-+								   <<
-shift */
-+#define IPGIFG_BACK_TO_BACK_IFG_SHIFT           (31 - 31)	/*
-back-to-back=20
-+								   inter
-frame
-+								   gap
-<< shift=20
-+								 */
-+#define IPGIFG_NON_BACK_TO_BACK_IFG_PART1_MAX   127	/* Non
-back-to-back
-+							   inter frame
-gap part=20
-+							   1. max val */
-+#define IPGIFG_NON_BACK_TO_BACK_IFG_PART2_MAX   127	/* Non
-back-to-back
-+							   inter frame
-gap part=20
-+							   2. max val */
-+#define IPGIFG_MINIMUM_IFG_ENFORCEMENT_MAX      255	/* Mimimum IFG
-+							   Enforcement
-max val */
-+#define IPGIFG_BACK_TO_BACK_IFG_MAX             127	/* back-to-back
-inter
-+							   frame gap max
-val */
-+#define IPGIFG_NBTB_CS_IPG_MASK                 0x7F000000
-+#define IPGIFG_NBTB_IPG_MASK                    0x007F0000
-+#define IPGIFG_MIN_IFG_MASK                     0x0000FF00
-+#define IPGIFG_BTB_IPG_MASK                     0x0000007F
-+
-+/* UCC GETH HAFDUP (Half Duplex Register) */
-+#define HALFDUP_ALT_BEB_TRUNCATION_SHIFT        (31 - 11)	/*
-Alternate
-+
-Binary
-+
-Exponential
-+
-Backoff
-+
-Truncation
-+								   <<
-shift */
-+#define HALFDUP_ALT_BEB_TRUNCATION_MAX          0xf	/* Alternate
-Binary
-+							   Exponential
-Backoff
-+							   Truncation
-max val */
-+#define HALFDUP_ALT_BEB                         0x00080000	/*
-Alternate
-+
-Binary
-+
-Exponential
-+
-Backoff */
-+#define HALFDUP_BACK_PRESSURE_NO_BACKOFF        0x00040000	/* Back
-+
-pressure no
-+
-backoff */
-+#define HALFDUP_NO_BACKOFF                      0x00020000	/* No
-Backoff */
-+#define HALFDUP_EXCESSIVE_DEFER                 0x00010000	/*
-Excessive
-+								   Defer
-*/
-+#define HALFDUP_MAX_RETRANSMISSION_SHIFT        (31 - 19)	/*
-Maximum
-+
-Retransmission=20
-+								   <<
-shift */
-+#define HALFDUP_MAX_RETRANSMISSION_MAX          0xf	/* Maximum
-+
-Retransmission max
-+							   val */
-+#define HALFDUP_COLLISION_WINDOW_SHIFT          (31 - 31)	/*
-Collision
-+
-Window <<
-+								   shift
-*/
-+#define HALFDUP_COLLISION_WINDOW_MAX            0x3f	/* Collision
-Window max=20
-+							   val */
-+#define HALFDUP_ALT_BEB_TR_MASK                 0x00F00000
-+#define HALFDUP_RETRANS_MASK                    0x0000F000
-+#define HALFDUP_COL_WINDOW_MASK                 0x0000003F
-+
-+/* UCC GETH UCCS (Ethernet Status Register) */
-+#define UCCS_BPR                                0x02	/* Back pressure
-(in
-+							   half duplex
-mode) */
-+#define UCCS_PAU                                0x02	/* Pause state
-(in full=20
-+							   duplex mode)
-*/
-+#define UCCS_MPD                                0x01	/* Magic Packet
-+							   Detected */
-+
-+/* UCC GETH MIIMCFG (MII Management Configuration Register) */
-+#define MIIMCFG_RESET_MANAGEMENT                0x80000000	/* Reset
-+
-management */
-+#define MIIMCFG_NO_PREAMBLE                     0x00000010	/*
-Preamble
-+
-suppress */
-+#define MIIMCFG_CLOCK_DIVIDE_SHIFT              (31 - 31)	/* clock
-divide=20
-+								   <<
-shift */
-+#define MIIMCFG_CLOCK_DIVIDE_MAX                0xf	/* clock divide
-max val=20
-+							 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_2    0x00000000	/*
-divide by 2 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_4    0x00000001	/*
-divide by 4 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_6    0x00000002	/*
-divide by 6 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_8    0x00000003	/*
-divide by 8 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_10   0x00000004	/*
-divide by 10=20
-+								 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_14   0x00000005	/*
-divide by 14=20
-+								 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_16   0x00000008	/*
-divide by 16=20
-+								 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_20   0x00000006	/*
-divide by 20=20
-+								 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_28   0x00000007	/*
-divide by 28=20
-+								 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_32   0x00000009	/*
-divide by 32=20
-+								 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_48   0x0000000a	/*
-divide by 48=20
-+								 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_64   0x0000000b	/*
-divide by 64=20
-+								 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_80   0x0000000c	/*
-divide by 80=20
-+								 */
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_112  0x0000000d	/*
-divide by
-+								   112
-*/
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_160  0x0000000e	/*
-divide by
-+								   160
-*/
-+#define MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_224  0x0000000f	/*
-divide by
-+								   224
-*/
-+
-+/* UCC GETH MIIMCOM (MII Management Command Register) */
-+#define MIIMCOM_SCAN_CYCLE                      0x00000002	/* Scan
-cycle */
-+#define MIIMCOM_READ_CYCLE                      0x00000001	/* Read
-cycle */
-+
-+/* UCC GETH MIIMADD (MII Management Address Register) */
-+#define MIIMADD_PHY_ADDRESS_SHIFT               (31 - 23)	/* PHY
-Address
-+								   <<
-shift */
-+#define MIIMADD_PHY_REGISTER_SHIFT              (31 - 31)	/* PHY
-Register=20
-+								   <<
-shift */
-+
-+/* UCC GETH MIIMCON (MII Management Control Register) */
-+#define MIIMCON_PHY_CONTROL_SHIFT               (31 - 31)	/* PHY
-Control
-+								   <<
-shift */
-+#define MIIMCON_PHY_STATUS_SHIFT                (31 - 31)	/* PHY
-Status
-+								   <<
-shift */
-+
-+/* UCC GETH MIIMIND (MII Management Indicator Register) */
-+#define MIIMIND_NOT_VALID                       0x00000004	/* Not
-valid */
-+#define MIIMIND_SCAN                            0x00000002	/* Scan
-in
-+
-progress */
-+#define MIIMIND_BUSY                            0x00000001
-+
-+/* UCC GETH IFSTAT (Interface Status Register) */
-+#define IFSTAT_EXCESS_DEFER                     0x00000200	/*
-Excessive
-+
-transmission=20
-+								   defer
-*/
-+
-+/* UCC GETH MACSTNADDR1 (Station Address Part 1 Register) */
-+#define MACSTNADDR1_OCTET_6_SHIFT               (31 -  7)	/*
-Station
-+
-address 6th
-+								   octet
-<<
-+								   shift
-*/
-+#define MACSTNADDR1_OCTET_5_SHIFT               (31 - 15)	/*
-Station
-+
-address 5th
-+								   octet
-<<
-+								   shift
-*/
-+#define MACSTNADDR1_OCTET_4_SHIFT               (31 - 23)	/*
-Station
-+
-address 4th
-+								   octet
-<<
-+								   shift
-*/
-+#define MACSTNADDR1_OCTET_3_SHIFT               (31 - 31)	/*
-Station
-+
-address 3rd
-+								   octet
-<<
-+								   shift
-*/
-+
-+/* UCC GETH MACSTNADDR2 (Station Address Part 2 Register) */
-+#define MACSTNADDR2_OCTET_2_SHIFT               (31 -  7)	/*
-Station
-+
-address 2nd
-+								   octet
-<<
-+								   shift
-*/
-+#define MACSTNADDR2_OCTET_1_SHIFT               (31 - 15)	/*
-Station
-+
-address 1st
-+								   octet
-<<
-+								   shift
-*/
-+
-+/* UCC GETH UEMPR (Ethernet Mac Parameter Register) */
-+#define UEMPR_PAUSE_TIME_VALUE_SHIFT            (31 - 15)	/* Pause
-time
-+								   value
-<<
-+								   shift
-*/
-+#define UEMPR_EXTENDED_PAUSE_TIME_VALUE_SHIFT   (31 - 31)	/*
-Extended
-+								   pause
-time
-+								   value
-<<
-+								   shift
-*/
-+
-+/* UCC GETH UTBIPAR (Ten Bit Interface Physical Address Register) */
-+#define UTBIPAR_PHY_ADDRESS_SHIFT               (31 - 31)	/* Phy
-address
-+								   <<
-shift */
-+#define UTBIPAR_PHY_ADDRESS_MASK                0x0000001f	/* Phy
-address
-+								   mask
-*/
-+
-+/* UCC GETH UESCR (Ethernet Statistics Control Register) */
-+#define UESCR_AUTOZ                             0x8000	/* Automatically
-zero
-+							   addressed
-+							   statistical
-counter
-+							   values */
-+#define UESCR_CLRCNT                            0x4000	/* Clear all
-statistics=20
-+							   counters */
-+#define UESCR_MAXCOV_SHIFT                      (15 -  7)	/* Max
-+
-Coalescing
-+								   Value
-<<
-+								   shift
-*/
-+#define UESCR_SCOV_SHIFT                        (15 - 15)	/*
-Status
-+
-Coalescing
-+								   Value
-<<
-+								   shift
-*/
-+
-+/* UCC GETH UDSR (Data Synchronization Register) */
-+#define UDSR_MAGIC                              0x067E
-+
-+typedef struct ucc_geth_thread_data_tx {
-+	u8 res0[104];
-+} __attribute__ ((packed)) ucc_geth_thread_data_tx_t;
-+
-+typedef struct ucc_geth_thread_data_rx {
-+	u8 res0[40];
-+} __attribute__ ((packed)) ucc_geth_thread_data_rx_t;
-+
-+/* Send Queue Queue-Descriptor */
-+typedef struct ucc_geth_send_queue_qd {
-+	u32 bd_ring_base;	/* pointer to BD ring base address */
-+	u8 res0[0x8];
-+	u32 last_bd_completed_address;	/* initialize to last entry in
-BD ring */
-+	u8 res1[0x30];
-+} __attribute__ ((packed)) ucc_geth_send_queue_qd_t;
-+
-+typedef struct ucc_geth_send_queue_mem_region {
-+	ucc_geth_send_queue_qd_t sqqd[NUM_TX_QUEUES];
-+} __attribute__ ((packed)) ucc_geth_send_queue_mem_region_t;
-+
-+typedef struct ucc_geth_thread_tx_pram {
-+	u8 res0[64];
-+} __attribute__ ((packed)) ucc_geth_thread_tx_pram_t;
-+
-+typedef struct ucc_geth_thread_rx_pram {
-+	u8 res0[128];
-+} __attribute__ ((packed)) ucc_geth_thread_rx_pram_t;
-+
-+#define THREAD_RX_PRAM_ADDITIONAL_FOR_EXTENDED_FILTERING        64
-+#define THREAD_RX_PRAM_ADDITIONAL_FOR_EXTENDED_FILTERING_8      64
-+#define THREAD_RX_PRAM_ADDITIONAL_FOR_EXTENDED_FILTERING_16     96
-+
-+typedef struct ucc_geth_scheduler {
-+	u16 cpucount0;		/* CPU packet counter */
-+	u16 cpucount1;		/* CPU packet counter */
-+	u16 cecount0;		/* QE packet counter */
-+	u16 cecount1;		/* QE packet counter */
-+	u16 cpucount2;		/* CPU packet counter */
-+	u16 cpucount3;		/* CPU packet counter */
-+	u16 cecount2;		/* QE packet counter */
-+	u16 cecount3;		/* QE packet counter */
-+	u16 cpucount4;		/* CPU packet counter */
-+	u16 cpucount5;		/* CPU packet counter */
-+	u16 cecount4;		/* QE packet counter */
-+	u16 cecount5;		/* QE packet counter */
-+	u16 cpucount6;		/* CPU packet counter */
-+	u16 cpucount7;		/* CPU packet counter */
-+	u16 cecount6;		/* QE packet counter */
-+	u16 cecount7;		/* QE packet counter */
-+	u32 weightstatus[NUM_TX_QUEUES];	/* accumulated weight
-factor */
-+	u32 rtsrshadow;		/* temporary variable handled by QE */
-+	u32 time;		/* temporary variable handled by QE */
-+	u32 ttl;		/* temporary variable handled by QE */
-+	u32 mblinterval;	/* max burst length interval */
-+	u16 nortsrbytetime;	/* normalized value of byte time in tsr
-units */
-+	u8 fracsiz;		/* radix 2 log value of denom. of
-+				   NorTSRByteTime */
-+	u8 res0[1];
-+	u8 strictpriorityq;	/* Strict Priority Mask register */
-+	u8 txasap;		/* Transmit ASAP register */
-+	u8 extrabw;		/* Extra BandWidth register */
-+	u8 oldwfqmask;		/* temporary variable handled by QE */
-+	u8 weightfactor[NUM_TX_QUEUES];
-+				      /**< weight factor for queues   */
-+	u32 minw;		/* temporary variable handled by QE */
-+	u8 res1[0x70 - 0x64];
-+} __attribute__ ((packed)) ucc_geth_scheduler_t;
-+
-+typedef struct ucc_geth_tx_firmware_statistics_pram {
-+	u32 sicoltx;		/* single collision */
-+	u32 mulcoltx;		/* multiple collision */
-+	u32 latecoltxfr;	/* late collision */
-+	u32 frabortduecol;	/* frames aborted due to transmit
-collision */
-+	u32 frlostinmactxer;	/* frames lost due to internal MAC error
-+				   transmission that are not counted on
-any
-+				   other counter */
-+	u32 carriersenseertx;	/* carrier sense error */
-+	u32 frtxok;		/* frames transmitted OK */
-+	u32 txfrexcessivedefer;	/* frames with defferal time greater
-than
-+				   specified threshold */
-+	u32 txpkts256;		/* total packets (including bad) between
-256
-+				   and 511 octets */
-+	u32 txpkts512;		/* total packets (including bad) between
-512
-+				   and 1023 octets */
-+	u32 txpkts1024;		/* total packets (including bad) between
-1024
-+				   and 1518 octets */
-+	u32 txpktsjumbo;	/* total packets (including bad) between
-1024
-+				   and MAXLength octets */
-+} __attribute__ ((packed)) ucc_geth_tx_firmware_statistics_pram_t;
-+
-+typedef struct ucc_geth_rx_firmware_statistics_pram {
-+	u32 frrxfcser;		/* frames with crc error */
-+	u32 fraligner;		/* frames with alignment error */
-+	u32 inrangelenrxer;	/* in range length error */
-+	u32 outrangelenrxer;	/* out of range length error */
-+	u32 frtoolong;		/* frame too long */
-+	u32 runt;		/* runt */
-+	u32 verylongevent;	/* very long event */
-+	u32 symbolerror;	/* symbol error */
-+	u32 dropbsy;		/* drop because of BD not ready */
-+	u8 res0[0x8];
-+	u32 mismatchdrop;	/* drop because of MAC filtering (e.g.
-address
-+				   or type mismatch) */
-+	u32 underpkts;		/* total frames less than 64 octets */
-+	u32 pkts256;		/* total frames (including bad) between
-256 and=20
-+				   511 octets */
-+	u32 pkts512;		/* total frames (including bad) between
-512 and=20
-+				   1023 octets */
-+	u32 pkts1024;		/* total frames (including bad) between
-1024
-+				   and 1518 octets */
-+	u32 pktsjumbo;		/* total frames (including bad) between
-1024
-+				   and MAXLength octets */
-+	u32 frlossinmacer;	/* frames lost because of internal MAC
-error
-+				   that is not counted in any other
-counter */
-+	u32 pausefr;		/* pause frames */
-+	u8 res1[0x4];
-+	u32 removevlan;		/* total frames that had their VLAN tag
-removed=20
-+				 */
-+	u32 replacevlan;	/* total frames that had their VLAN tag
-+				   replaced */
-+	u32 insertvlan;		/* total frames that had their VLAN tag
-+				   inserted */
-+} __attribute__ ((packed)) ucc_geth_rx_firmware_statistics_pram_t;
-+
-+typedef struct ucc_geth_rx_interrupt_coalescing_entry {
-+	u32 interruptcoalescingmaxvalue;	/* interrupt coalescing
-max
-+						   value */
-+	u32 interruptcoalescingcounter;	/* interrupt coalescing counter,
-+					   initialize to
-+					   interruptcoalescingmaxvalue
-*/
-+} __attribute__ ((packed)) ucc_geth_rx_interrupt_coalescing_entry_t;
-+
-+typedef struct ucc_geth_rx_interrupt_coalescing_table {
-+	ucc_geth_rx_interrupt_coalescing_entry_t
-coalescingentry[NUM_RX_QUEUES];
-+
-/**< interrupt coalescing entry */
-+} __attribute__ ((packed)) ucc_geth_rx_interrupt_coalescing_table_t;
-+
-+typedef struct ucc_geth_rx_prefetched_bds {
-+	qe_bd_t bd[NUM_BDS_IN_PREFETCHED_BDS];	/* prefetched bd */
-+} __attribute__ ((packed)) ucc_geth_rx_prefetched_bds_t;
-+
-+typedef struct ucc_geth_rx_bd_queues_entry {
-+	u32 bdbaseptr;		/* BD base pointer */
-+	u32 bdptr;		/* BD pointer */
-+	u32 externalbdbaseptr;	/* external BD base pointer */
-+	u32 externalbdptr;	/* external BD pointer */
-+} __attribute__ ((packed)) ucc_geth_rx_bd_queues_entry_t;
-+
-+typedef struct ucc_geth_tx_global_pram {
-+	u16 temoder;
-+	u8 res0[0x38 - 0x02];
-+	u32 sqptr;		/* a base pointer to send queue memory
-region */
-+	u32 schedulerbasepointer;	/* a base pointer to scheduler
-memory
-+					   region */
-+	u32 txrmonbaseptr;	/* base pointer to Tx RMON statistics
-counter */
-+	u32 tstate;		/* tx internal state. High byte contains
-+				   function code */
-+	u8 iphoffset[TX_IP_OFFSET_ENTRY_MAX];
-+	u32 vtagtable[0x8];	/* 8 4-byte VLAN tags */
-+	u32 tqptr;		/* a base pointer to the Tx Queues
-Memory
-+				   Region */
-+	u8 res2[0x80 - 0x74];
-+} __attribute__ ((packed)) ucc_geth_tx_global_pram_t;
-+
-+/* structure representing Extended Filtering Global Parameters in PRAM
-*/
-+typedef struct ucc_geth_exf_global_pram {
-+	u32 l2pcdptr;		/* individual address filter, high */
-+	u8 res0[0x10 - 0x04];
-+} __attribute__ ((packed)) ucc_geth_exf_global_pram_t;
-+
-+typedef struct ucc_geth_rx_global_pram {
-+	u32 remoder;		/* ethernet mode reg. */
-+	u32 rqptr;		/* base pointer to the Rx Queues Memory
-Region */
-+	u32 res0[0x1];
-+	u8 res1[0x20 - 0xC];
-+	u16 typeorlen;		/* cutoff point less than which,
-type/len field=20
-+				   is considered length */
-+	u8 res2[0x1];
-+	u8 rxgstpack;		/* acknowledgement on GRACEFUL STOP RX
-command */
-+	u32 rxrmonbaseptr;	/* base pointer to Rx RMON statistics
-counter */
-+	u8 res3[0x30 - 0x28];
-+	u32 intcoalescingptr;	/* Interrupt coalescing table pointer */
-+	u8 res4[0x36 - 0x34];
-+	u8 rstate;		/* rx internal state. High byte contains
-+				   function code */
-+	u8 res5[0x46 - 0x37];
-+	u16 mrblr;		/* max receive buffer length reg. */
-+	u32 rbdqptr;		/* base pointer to RxBD parameter table
-+				   description */
-+	u16 mflr;		/* max frame length reg. */
-+	u16 minflr;		/* min frame length reg. */
-+	u16 maxd1;		/* max dma1 length reg. */
-+	u16 maxd2;		/* max dma2 length reg. */
-+	u32 ecamptr;		/* external CAM address */
-+	u32 l2qt;		/* VLAN priority mapping table. */
-+	u32 l3qt[0x8];		/* IP priority mapping table. */
-+	u16 vlantype;		/* vlan type */
-+	u16 vlantci;		/* default vlan tci */
-+	u8 addressfiltering[64];	/* address filtering data
-structure */
-+	u32 exfGlobalParam;	/* base address for extended filtering
-global
-+				   parameters */
-+	u8 res6[0x100 - 0xC4];	/* Initialize to zero */
-+} __attribute__ ((packed)) ucc_geth_rx_global_pram_t;
-+
-+#define GRACEFUL_STOP_ACKNOWLEDGE_RX            0x01
-+
-+/* structure representing InitEnet command */
-+typedef struct ucc_geth_init_pram {
-+	u8 resinit1;
-+	u8 resinit2;
-+	u8 resinit3;
-+	u8 resinit4;
-+	u16 resinit5;
-+	u8 res1[0x1];
-+	u8 largestexternallookupkeysize;
-+	u32 rgftgfrxglobal;
-+	u32 rxthread[ENET_INIT_PARAM_MAX_ENTRIES_RX];	/* rx threads */
-+	u8 res2[0x38 - 0x30];
-+	u32 txglobal;		/* tx global */
-+	u32 txthread[ENET_INIT_PARAM_MAX_ENTRIES_TX];	/* tx threads */
-+	u8 res3[0x1];
-+} __attribute__ ((packed)) ucc_geth_init_pram_t;
-+
-+#define ENET_INIT_PARAM_RGF_SHIFT               (32 - 4)
-+#define ENET_INIT_PARAM_TGF_SHIFT               (32 - 8)
-+
-+#define ENET_INIT_PARAM_RISC_MASK               0x0000003f
-+#define ENET_INIT_PARAM_PTR_MASK                0x00ffffc0
-+#define ENET_INIT_PARAM_SNUM_MASK               0xff000000
-+#define ENET_INIT_PARAM_SNUM_SHIFT              24
-+
-+#define ENET_INIT_PARAM_MAGIC_RES_INIT1         0x06
-+#define ENET_INIT_PARAM_MAGIC_RES_INIT2         0x30
-+#define ENET_INIT_PARAM_MAGIC_RES_INIT3         0xff
-+#define ENET_INIT_PARAM_MAGIC_RES_INIT4         0x00
-+#define ENET_INIT_PARAM_MAGIC_RES_INIT5         0x0400
-+
-+/* structure representing 82xx Address Filtering Enet Address in PRAM
-*/
-+typedef struct ucc_geth_82xx_enet_address {
-+	u8 res1[0x2];
-+	u16 h;			/* address (MSB) */
-+	u16 m;			/* address */
-+	u16 l;			/* address (LSB) */
-+} __attribute__ ((packed)) ucc_geth_82xx_enet_address_t;
-+
-+/* structure representing 82xx Address Filtering PRAM */
-+typedef struct ucc_geth_82xx_address_filtering_pram {
-+	u32 iaddr_h;		/* individual address filter, high */
-+	u32 iaddr_l;		/* individual address filter, low */
-+	u32 gaddr_h;		/* group address filter, high */
-+	u32 gaddr_l;		/* group address filter, low */
-+	ucc_geth_82xx_enet_address_t taddr;
-+	ucc_geth_82xx_enet_address_t paddr[NUM_OF_PADDRS];
-+	u8 res0[0x40 - 0x38];
-+} __attribute__ ((packed)) ucc_geth_82xx_address_filtering_pram_t;
-+
-+/* GETH Tx firmware statistics structure, used when calling
-+   UCC_GETH_GetStatistics. */
-+typedef struct ucc_geth_tx_firmware_statistics {
-+	u32 sicoltx;		/* single collision */
-+	u32 mulcoltx;		/* multiple collision */
-+	u32 latecoltxfr;	/* late collision */
-+	u32 frabortduecol;	/* frames aborted due to transmit
-collision */
-+	u32 frlostinmactxer;	/* frames lost due to internal MAC error
-+				   transmission that are not counted on
-any
-+				   other counter */
-+	u32 carriersenseertx;	/* carrier sense error */
-+	u32 frtxok;		/* frames transmitted OK */
-+	u32 txfrexcessivedefer;	/* frames with defferal time greater
-than
-+				   specified threshold */
-+	u32 txpkts256;		/* total packets (including bad) between
-256
-+				   and 511 octets */
-+	u32 txpkts512;		/* total packets (including bad) between
-512
-+				   and 1023 octets */
-+	u32 txpkts1024;		/* total packets (including bad) between
-1024
-+				   and 1518 octets */
-+	u32 txpktsjumbo;	/* total packets (including bad) between
-1024
-+				   and MAXLength octets */
-+} __attribute__ ((packed)) ucc_geth_tx_firmware_statistics_t;
-+
-+/* GETH Rx firmware statistics structure, used when calling
-+   UCC_GETH_GetStatistics. */
-+typedef struct ucc_geth_rx_firmware_statistics {
-+	u32 frrxfcser;		/* frames with crc error */
-+	u32 fraligner;		/* frames with alignment error */
-+	u32 inrangelenrxer;	/* in range length error */
-+	u32 outrangelenrxer;	/* out of range length error */
-+	u32 frtoolong;		/* frame too long */
-+	u32 runt;		/* runt */
-+	u32 verylongevent;	/* very long event */
-+	u32 symbolerror;	/* symbol error */
-+	u32 dropbsy;		/* drop because of BD not ready */
-+	u8 res0[0x8];
-+	u32 mismatchdrop;	/* drop because of MAC filtering (e.g.
-address
-+				   or type mismatch) */
-+	u32 underpkts;		/* total frames less than 64 octets */
-+	u32 pkts256;		/* total frames (including bad) between
-256 and=20
-+				   511 octets */
-+	u32 pkts512;		/* total frames (including bad) between
-512 and=20
-+				   1023 octets */
-+	u32 pkts1024;		/* total frames (including bad) between
-1024
-+				   and 1518 octets */
-+	u32 pktsjumbo;		/* total frames (including bad) between
-1024
-+				   and MAXLength octets */
-+	u32 frlossinmacer;	/* frames lost because of internal MAC
-error
-+				   that is not counted in any other
-counter */
-+	u32 pausefr;		/* pause frames */
-+	u8 res1[0x4];
-+	u32 removevlan;		/* total frames that had their VLAN tag
-removed=20
-+				 */
-+	u32 replacevlan;	/* total frames that had their VLAN tag
-+				   replaced */
-+	u32 insertvlan;		/* total frames that had their VLAN tag
-+				   inserted */
-+} __attribute__ ((packed)) ucc_geth_rx_firmware_statistics_t;
-+
-+/* GETH hardware statistics structure, used when calling
-+   UCC_GETH_GetStatistics. */
-+typedef struct ucc_geth_hardware_statistics {
-+	u32 tx64;		/* Total number of frames (including bad
-+				   frames) transmitted that were exactly
-of the=20
-+				   minimal length (64 for un tagged, 68
-for
-+				   tagged, or with length exactly equal
-to the
-+				   parameter MINLength */
-+	u32 tx127;		/* Total number of frames (including bad
-+				   frames) transmitted that were between
-+				   MINLength (Including FCS length=3D=3D4)
-and 127
-+				   octets */
-+	u32 tx255;		/* Total number of frames (including bad
-+				   frames) transmitted that were between
-128
-+				   (Including FCS length=3D=3D4) and 255
-octets */
-+	u32 rx64;		/* Total number of frames received
-including
-+				   bad frames that were exactly of the
-mninimal=20
-+				   length (64 bytes) */
-+	u32 rx127;		/* Total number of frames (including bad
-+				   frames) received that were between
-MINLength=20
-+				   (Including FCS length=3D=3D4) and 127
-octets */
-+	u32 rx255;		/* Total number of frames (including bad
-+				   frames) received that were between
-128
-+				   (Including FCS length=3D=3D4) and 255
-octets */
-+	u32 txok;		/* Total number of octets residing in
-frames
-+				   that where involved in succesfull
-+				   transmission */
-+	u16 txcf;		/* Total number of PAUSE control frames
-+				   transmitted by this MAC */
-+	u32 tmca;		/* Total number of frames that were
-transmitted=20
-+				   succesfully with the group address
-bit set
-+				   that are not broadcast frames */
-+	u32 tbca;		/* Total number of frames transmitted
-+				   succesfully that had destination
-address
-+				   field equal to the broadcast address
-*/
-+	u32 rxfok;		/* Total number of frames received OK */
-+	u32 rxbok;		/* Total number of octets received OK */
-+	u32 rbyt;		/* Total number of octets received
-including
-+				   octets in bad frames. Must be
-implemented in=20
-+				   HW because it includes octets in
-frames that=20
-+				   never even reach the UCC */
-+	u32 rmca;		/* Total number of frames that were
-received
-+				   succesfully with the group address
-bit set
-+				   that are not broadcast frames */
-+	u32 rbca;		/* Total number of frames received
-succesfully
-+				   that had destination address equal to
-the
-+				   broadcast address */
-+} __attribute__ ((packed)) ucc_geth_hardware_statistics_t;
-+
-+/* UCC GETH Tx errors returned via TxConf callback */
-+#define TX_ERRORS_DEF      0x0200
-+#define TX_ERRORS_EXDEF    0x0100
-+#define TX_ERRORS_LC       0x0080
-+#define TX_ERRORS_RL       0x0040
-+#define TX_ERRORS_RC_MASK  0x003C
-+#define TX_ERRORS_RC_SHIFT 2
-+#define TX_ERRORS_UN       0x0002
-+#define TX_ERRORS_CSL      0x0001
-+
-+/* UCC GETH Rx errors returned via RxStore callback */
-+#define RX_ERRORS_CMR      0x0200
-+#define RX_ERRORS_M        0x0100
-+#define RX_ERRORS_BC       0x0080
-+#define RX_ERRORS_MC       0x0040
-+
-+/* Transmit BD. These are in addition to values defined in uccf. */
-+#define T_VID      0x003c0000	/* insert VLAN id index mask. */
-+#define T_DEF      (((u32) TX_ERRORS_DEF     ) << 16)
-+#define T_EXDEF    (((u32) TX_ERRORS_EXDEF   ) << 16)
-+#define T_LC       (((u32) TX_ERRORS_LC      ) << 16)
-+#define T_RL       (((u32) TX_ERRORS_RL      ) << 16)
-+#define T_RC_MASK  (((u32) TX_ERRORS_RC_MASK ) << 16)
-+#define T_UN       (((u32) TX_ERRORS_UN      ) << 16)
-+#define T_CSL      (((u32) TX_ERRORS_CSL     ) << 16)
-+#define T_ERRORS_REPORT  (T_DEF | T_EXDEF | T_LC | T_RL | T_RC_MASK \
-+		| T_UN | T_CSL)	/* transmit errors to report */
-+
-+/* Receive BD. These are in addition to values defined in uccf. */
-+#define R_LG    0x00200000	/* Frame length violation.  */
-+#define R_NO    0x00100000	/* Non-octet aligned frame.  */
-+#define R_SH    0x00080000	/* Short frame.  */
-+#define R_CR    0x00040000	/* CRC error.  */
-+#define R_OV    0x00020000	/* Overrun.  */
-+#define R_IPCH  0x00010000	/* IP checksum check failed. */
-+#define R_CMR   (((u32) RX_ERRORS_CMR  ) << 16)
-+#define R_M     (((u32) RX_ERRORS_M    ) << 16)
-+#define R_BC    (((u32) RX_ERRORS_BC   ) << 16)
-+#define R_MC    (((u32) RX_ERRORS_MC   ) << 16)
-+#define R_ERRORS_REPORT (R_CMR | R_M | R_BC | R_MC)	/* receive
-errors to
-+							   report */
-+#define R_ERRORS_FATAL  (R_LG  | R_NO | R_SH | R_CR | \
-+		R_OV | R_IPCH)	/* receive errors to discard */
-+
-+/* Alignments */
-+#define UCC_GETH_RX_GLOBAL_PRAM_ALIGNMENT	256
-+#define UCC_GETH_TX_GLOBAL_PRAM_ALIGNMENT       128
-+#define UCC_GETH_THREAD_RX_PRAM_ALIGNMENT       128
-+#define UCC_GETH_THREAD_TX_PRAM_ALIGNMENT       64
-+#define UCC_GETH_THREAD_DATA_ALIGNMENT          256	/* spec gives
-values
-+							   based on num
-of
-+							   threads, but
-always
-+							   using the
-maximum is=20
-+							   easier */
-+#define UCC_GETH_SEND_QUEUE_QUEUE_DESCRIPTOR_ALIGNMENT	32
-+#define UCC_GETH_SCHEDULER_ALIGNMENT		4	/* This is a
-guess */
-+#define UCC_GETH_TX_STATISTICS_ALIGNMENT	4	/* This is a
-guess */
-+#define UCC_GETH_RX_STATISTICS_ALIGNMENT	4	/* This is a
-guess */
-+#define UCC_GETH_RX_INTERRUPT_COALESCING_ALIGNMENT	4	/* This
-is a
-+								   guess
-*/
-+#define UCC_GETH_RX_BD_QUEUES_ALIGNMENT		8	/* This
-is a guess */
-+#define UCC_GETH_RX_PREFETCHED_BDS_ALIGNMENT	128	/* This is a
-guess */
-+#define UCC_GETH_RX_EXTENDED_FILTERING_GLOBAL_PARAMETERS_ALIGNMENT 4
-/* This=20
-+
-is a=20
-+
-guess
-+
-*/
-+#define UCC_GETH_RX_BD_RING_ALIGNMENT		32
-+#define UCC_GETH_TX_BD_RING_ALIGNMENT		32
-+#define UCC_GETH_MRBLR_ALIGNMENT		128
-+#define UCC_GETH_RX_BD_RING_SIZE_ALIGNMENT	4
-+#define UCC_GETH_TX_BD_RING_SIZE_MEMORY_ALIGNMENT	32
-+#define UCC_GETH_RX_DATA_BUF_ALIGNMENT		64
-+
-+#define UCC_GETH_TAD_EF                         0x80
-+#define UCC_GETH_TAD_V                          0x40
-+#define UCC_GETH_TAD_REJ                        0x20
-+#define UCC_GETH_TAD_VTAG_OP_RIGHT_SHIFT        2
-+#define UCC_GETH_TAD_VTAG_OP_SHIFT              6
-+#define UCC_GETH_TAD_V_NON_VTAG_OP              0x20
-+#define UCC_GETH_TAD_RQOS_SHIFT                 0
-+#define UCC_GETH_TAD_V_PRIORITY_SHIFT           5
-+#define UCC_GETH_TAD_CFI                        0x10
-+
-+#define UCC_GETH_VLAN_PRIORITY_MAX              8
-+#define UCC_GETH_IP_PRIORITY_MAX                64
-+#define UCC_GETH_TX_VTAG_TABLE_ENTRY_MAX        8
-+#define UCC_GETH_RX_BD_RING_SIZE_MIN            8
-+#define UCC_GETH_TX_BD_RING_SIZE_MIN            2
-+
-+#define UCC_GETH_SIZE_OF_BD                     QE_SIZEOF_BD
-+
-+/* Driver definitions */
-+#define TX_BD_RING_LEN                          0x10
-+#define RX_BD_RING_LEN                          0x10
-+#define UCC_GETH_DEV_WEIGHT                     TX_BD_RING_LEN
-+
-+#define TX_RING_MOD_MASK(size)                  (size-1)
-+#define RX_RING_MOD_MASK(size)                  (size-1)
-+
-+#define ENET_NUM_OCTETS_PER_ADDRESS             6
-+#define ENET_GROUP_ADDR                         0x01	/* Group address
-mask
-+							   for ethernet
-+							   addresses */
-+
-+#define TX_TIMEOUT                              (1*HZ)
-+#define SKB_ALLOC_TIMEOUT                       100000
-+#define PHY_INIT_TIMEOUT                        100000
-+#define PHY_CHANGE_TIME                         2
-+
-+/* Fast Ethernet (10/100 Mbps) */
-+#define UCC_GETH_URFS_INIT                      512	/* Rx virtual
-FIFO size=20
-+							 */
-+#define UCC_GETH_URFET_INIT                     256	/* 1/2 urfs */
-+#define UCC_GETH_URFSET_INIT                    384	/* 3/4 urfs */
-+#define UCC_GETH_UTFS_INIT                      512	/* Tx virtual
-FIFO size=20
-+							 */
-+#define UCC_GETH_UTFET_INIT                     256	/* 1/2 utfs */
-+#define UCC_GETH_UTFTT_INIT                     128
-+/* Gigabit Ethernet (1000 Mbps) */
-+#define UCC_GETH_URFS_GIGA_INIT                 4096/*2048*/	/* Rx
-virtual
-+								   FIFO
-size */
-+#define UCC_GETH_URFET_GIGA_INIT                2048/*1024*/	/* 1/2
-urfs */
-+#define UCC_GETH_URFSET_GIGA_INIT               3072/*1536*/	/* 3/4
-urfs */
-+#define UCC_GETH_UTFS_GIGA_INIT                 8192/*2048*/	/* Tx
-virtual
-+								   FIFO
-size */
-+#define UCC_GETH_UTFET_GIGA_INIT                4096/*1024*/	/* 1/2
-utfs */
-+#define UCC_GETH_UTFTT_GIGA_INIT                0x400/*0x40*/	/* */
-+
-+#define UCC_GETH_REMODER_INIT                   0	/* bits that
-must be
-+							   set */
-+#define UCC_GETH_TEMODER_INIT                   0xC000	/* bits that
-must */
-+#define UCC_GETH_UPSMR_INIT                     (UPSMR_RES1)	/* Start
-value
-+								   for
-this
-+
-register */
-+#define UCC_GETH_MACCFG1_INIT                   0
-+#define UCC_GETH_MACCFG2_INIT                   (MACCFG2_RESERVED_1)
-+#define UCC_GETH_MIIMCFG_MNGMNT_CLC_DIV_INIT
-(MIIMCFG_MANAGEMENT_CLOCK_DIVIDE_BY_112)
-+
-+/* Ethernet speed */
-+typedef enum enet_speed {
-+	ENET_SPEED_10BT,	/* 10 Base T */
-+	ENET_SPEED_100BT,	/* 100 Base T */
-+	ENET_SPEED_1000BT	/* 1000 Base T */
-+} enet_speed_e;
-+
-+/* Ethernet Address Type. */
-+typedef enum enet_addr_type {
-+	ENET_ADDR_TYPE_INDIVIDUAL,
-+	ENET_ADDR_TYPE_GROUP,
-+	ENET_ADDR_TYPE_BROADCAST
-+} enet_addr_type_e;
-+
-+/* TBI / MII Set Register */
-+typedef enum enet_tbi_mii_reg {
-+	ENET_TBI_MII_CR =3D 0x00,	/* Control (CR ) */
-+	ENET_TBI_MII_SR =3D 0x01,	/* Status (SR ) */
-+	ENET_TBI_MII_ANA =3D 0x04,	/* AN advertisement (ANA ) */
-+	ENET_TBI_MII_ANLPBPA =3D 0x05,	/* AN link partner base page
-ability
-+					   (ANLPBPA) */
-+	ENET_TBI_MII_ANEX =3D 0x06,	/* AN expansion (ANEX ) */
-+	ENET_TBI_MII_ANNPT =3D 0x07,	/* AN next page transmit (ANNPT
-) */
-+	ENET_TBI_MII_ANLPANP =3D 0x08,	/* AN link partner ability next
-page
-+					   (ANLPANP) */
-+	ENET_TBI_MII_EXST =3D 0x0F,	/* Extended status (EXST ) */
-+	ENET_TBI_MII_JD =3D 0x10,	/* Jitter diagnostics (JD ) */
-+	ENET_TBI_MII_TBICON =3D 0x11	/* TBI control (TBICON ) */
-+} enet_tbi_mii_reg_e;
-+
-+/* UCC GETH 82xx Ethernet Address Recognition Location */
-+typedef enum ucc_geth_enet_address_recognition_location {
-+	UCC_GETH_ENET_ADDRESS_RECOGNITION_LOCATION_STATION_ADDRESS,/*
-station=20
-+
-address */
-+	UCC_GETH_ENET_ADDRESS_RECOGNITION_LOCATION_PADDR_FIRST,	/*
-additional
-+
-station
-+
-address
-+
-paddr1 */
-+	UCC_GETH_ENET_ADDRESS_RECOGNITION_LOCATION_PADDR2,	/*
-additional
-+
-station
-+
-address
-+
-paddr2 */
-+	UCC_GETH_ENET_ADDRESS_RECOGNITION_LOCATION_PADDR3,	/*
-additional
-+
-station
-+
-address
-+
-paddr3 */
-+	UCC_GETH_ENET_ADDRESS_RECOGNITION_LOCATION_PADDR_LAST,	/*
-additional
-+
-station
-+
-address
-+
-paddr4 */
-+	UCC_GETH_ENET_ADDRESS_RECOGNITION_LOCATION_GROUP_HASH,	/* group
-hash */
-+	UCC_GETH_ENET_ADDRESS_RECOGNITION_LOCATION_INDIVIDUAL_HASH /*
-individual
-+
-hash */
-+} ucc_geth_enet_address_recognition_location_e;
-+
-+/* UCC GETH vlan operation tagged */
-+typedef enum ucc_geth_vlan_operation_tagged {
-+	UCC_GETH_VLAN_OPERATION_TAGGED_NOP =3D 0x0,	/* Tagged - nop
-*/
-+	UCC_GETH_VLAN_OPERATION_TAGGED_REPLACE_VID_PORTION_OF_Q_TAG
-+		=3D 0x1,	/* Tagged - replace vid portion of q tag */
-+
-UCC_GETH_VLAN_OPERATION_TAGGED_IF_VID0_REPLACE_VID_WITH_DEFAULT_VALUE
-+		=3D 0x2,	/* Tagged - if vid0 replace vid with default
-value  */
-+	UCC_GETH_VLAN_OPERATION_TAGGED_EXTRACT_Q_TAG_FROM_FRAME=20
-+		=3D 0x3	/* Tagged - extract q tag from frame */
-+} ucc_geth_vlan_operation_tagged_e;
-+
-+/* UCC GETH vlan operation non-tagged */
-+typedef enum ucc_geth_vlan_operation_non_tagged {
-+	UCC_GETH_VLAN_OPERATION_NON_TAGGED_NOP =3D 0x0,	/* Non tagged -
-nop */
-+	UCC_GETH_VLAN_OPERATION_NON_TAGGED_Q_TAG_INSERT =3D 0x1	/* Non
-tagged -=20
-+								   q tag
-insert=20
-+								 */
-+} ucc_geth_vlan_operation_non_tagged_e;
-+
-+/* UCC GETH Rx Quality of Service Mode */
-+typedef enum ucc_geth_qos_mode {
-+	UCC_GETH_QOS_MODE_DEFAULT =3D 0x0,	/* default queue */
-+	UCC_GETH_QOS_MODE_QUEUE_NUM_FROM_L2_CRITERIA =3D 0x1,	/* queue
-+
-determined
-+								   by L2
-+
-criteria */
-+	UCC_GETH_QOS_MODE_QUEUE_NUM_FROM_L3_CRITERIA =3D 0x2	/* queue
-+
-determined
-+								   by L3
-+
-criteria */
-+} ucc_geth_qos_mode_e;
-+
-+/* UCC GETH Statistics Gathering Mode - These are bit flags, 'or' them
-together=20
-+   for combined functionality */
-+typedef enum ucc_geth_statistics_gathering_mode {
-+	UCC_GETH_STATISTICS_GATHERING_MODE_NONE =3D 0x00000000,	/* No
-+
-statistics
-+
-gathering */
-+	UCC_GETH_STATISTICS_GATHERING_MODE_HARDWARE =3D 0x00000001,/*
-Enable=20
-+
-hardware=20
-+
-statistics=20
-+
-gathering=20
-+								  */
-+	UCC_GETH_STATISTICS_GATHERING_MODE_FIRMWARE_TX =3D
-0x00000004,/*Enable=20
-+
-firmware=20
-+								      tx
-+
-statistics
-+
-gathering=20
-+								     */
-+	UCC_GETH_STATISTICS_GATHERING_MODE_FIRMWARE_RX =3D 0x00000008/*
-Enable=20
-+
-firmware=20
-+								      rx
-+
-statistics
-+
-gathering=20
-+								    */
-+} ucc_geth_statistics_gathering_mode_e;
-+
-+/* UCC GETH Pad and CRC Mode - Note, Padding without CRC is not
-possible */
-+typedef enum ucc_geth_maccfg2_pad_and_crc_mode {
-+	UCC_GETH_PAD_AND_CRC_MODE_NONE=20
-+		=3D MACCFG2_PAD_AND_CRC_MODE_NONE,	/* Neither
-Padding=20
-+							   short frames=20
-+							   nor CRC */
-+	UCC_GETH_PAD_AND_CRC_MODE_CRC_ONLY
-+		=3D MACCFG2_PAD_AND_CRC_MODE_CRC_ONLY,	/* Append=20
-+							   CRC only */
-+	UCC_GETH_PAD_AND_CRC_MODE_PAD_AND_CRC =3D
-+	    MACCFG2_PAD_AND_CRC_MODE_PAD_AND_CRC
-+} ucc_geth_maccfg2_pad_and_crc_mode_e;
-+
-+/* UCC GETH upsmr Flow Control Mode */
-+typedef enum ucc_geth_flow_control_mode {
-+	UPSMR_AUTOMATIC_FLOW_CONTROL_MODE_NONE =3D 0x00000000,	/* No
-automatic=20
-+								   flow
-control=20
-+								 */
-+	UPSMR_AUTOMATIC_FLOW_CONTROL_MODE_PAUSE_WHEN_EMERGENCY=20
-+		=3D 0x00004000	/* Send pause frame when RxFIFO reaches
-its=20
-+				   emergency threshold */
-+} ucc_geth_flow_control_mode_e;
-+
-+/* UCC GETH number of threads */
-+typedef enum ucc_geth_num_of_threads {
-+	UCC_GETH_NUM_OF_THREADS_1 =3D 0x1,	/* 1 */
-+	UCC_GETH_NUM_OF_THREADS_2 =3D 0x2,	/* 2 */
-+	UCC_GETH_NUM_OF_THREADS_4 =3D 0x0,	/* 4 */
-+	UCC_GETH_NUM_OF_THREADS_6 =3D 0x3,	/* 6 */
-+	UCC_GETH_NUM_OF_THREADS_8 =3D 0x4	/* 8 */
-+} ucc_geth_num_of_threads_e;
-+
-+/* UCC GETH number of station addresses */
-+typedef enum ucc_geth_num_of_station_addresses {
-+	UCC_GETH_NUM_OF_STATION_ADDRESSES_1,	/* 1 */
-+	UCC_GETH_NUM_OF_STATION_ADDRESSES_5	/* 5 */
-+} ucc_geth_num_of_station_addresses_e;
-+
-+typedef u8 enet_addr_t[ENET_NUM_OCTETS_PER_ADDRESS];
-+
-+/* UCC GETH 82xx Ethernet Address Container */
-+typedef struct enet_addr_container {
-+	enet_addr_t address;	/* ethernet address */
-+	ucc_geth_enet_address_recognition_location_e location;	/*
-location in
-+								   82xx
-address=20
-+
-recognition
-+
-hardware */
-+	struct list_head node;
-+} enet_addr_container_t;
-+
-+#define ENET_ADDR_CONT_ENTRY(ptr) list_entry(ptr,
-enet_addr_container_t, node)
-+
-+/* UCC GETH Termination Action Descriptor (TAD) structure. */
-+typedef struct ucc_geth_tad_params {
-+	int rx_non_dynamic_extended_features_mode;
-+	int reject_frame;
-+	ucc_geth_vlan_operation_tagged_e vtag_op;
-+	ucc_geth_vlan_operation_non_tagged_e vnontag_op;
-+	ucc_geth_qos_mode_e rqos;
-+	u8 vpri;
-+	u16 vid;
-+} ucc_geth_tad_params_t;
-+
-+/* GETH protocol initialization structure */
-+typedef struct ucc_geth_info {
-+	ucc_fast_info_t uf_info;
-+	u8 numQueuesTx;
-+	u8 numQueuesRx;
-+	int ipCheckSumCheck;
-+	int ipCheckSumGenerate;
-+	int rxExtendedFiltering;
-+	u32 extendedFilteringChainPointer;
-+	u16 typeorlen;
-+	int dynamicMaxFrameLength;
-+	int dynamicMinFrameLength;
-+	u8 nonBackToBackIfgPart1;
-+	u8 nonBackToBackIfgPart2;
-+	u8 miminumInterFrameGapEnforcement;
-+	u8 backToBackInterFrameGap;
-+	int ipAddressAlignment;
-+	int lengthCheckRx;
-+	u32 mblinterval;
-+	u16 nortsrbytetime;
-+	u8 fracsiz;
-+	u8 strictpriorityq;
-+	u8 txasap;
-+	u8 extrabw;
-+	int miiPreambleSupress;
-+	u8 altBebTruncation;
-+	int altBeb;
-+	int backPressureNoBackoff;
-+	int noBackoff;
-+	int excessDefer;
-+	u8 maxRetransmission;
-+	u8 collisionWindow;
-+	int pro;
-+	int cap;
-+	int rsh;
-+	int rlpb;
-+	int cam;
-+	int bro;
-+	int ecm;
-+	int receiveFlowControl;
-+	u8 maxGroupAddrInHash;
-+	u8 maxIndAddrInHash;
-+	u8 prel;
-+	u16 maxFrameLength;
-+	u16 minFrameLength;
-+	u16 maxD1Length;
-+	u16 maxD2Length;
-+	u16 vlantype;
-+	u16 vlantci;
-+	u32 ecamptr;
-+	u32 eventRegMask;
-+	u16 pausePeriod;
-+	u16 extensionField;
-+	u8 phy_address;
-+	u32 board_flags;
-+	u32 phy_interrupt;
-+	u8 weightfactor[NUM_TX_QUEUES];
-+	u8 interruptcoalescingmaxvalue[NUM_RX_QUEUES];
-+	u8 l2qt[UCC_GETH_VLAN_PRIORITY_MAX];
-+	u8 l3qt[UCC_GETH_IP_PRIORITY_MAX];
-+	u32 vtagtable[UCC_GETH_TX_VTAG_TABLE_ENTRY_MAX];
-+	u8 iphoffset[TX_IP_OFFSET_ENTRY_MAX];
-+	u16 bdRingLenTx[NUM_TX_QUEUES];
-+	u16 bdRingLenRx[NUM_RX_QUEUES];
-+	enet_interface_e enet_interface;
-+	ucc_geth_num_of_station_addresses_e numStationAddresses;
-+	 qe_fltr_largest_external_tbl_lookup_key_size_e
-+	    largestexternallookupkeysize;
-+	ucc_geth_statistics_gathering_mode_e statisticsMode;
-+	ucc_geth_vlan_operation_tagged_e vlanOperationTagged;
-+	ucc_geth_vlan_operation_non_tagged_e vlanOperationNonTagged;
-+	ucc_geth_qos_mode_e rxQoSMode;
-+	ucc_geth_flow_control_mode_e aufc;
-+	ucc_geth_maccfg2_pad_and_crc_mode_e padAndCrc;
-+	ucc_geth_num_of_threads_e numThreadsTx;
-+	ucc_geth_num_of_threads_e numThreadsRx;
-+	qe_risc_allocation_e riscTx;
-+	qe_risc_allocation_e riscRx;
-+} ucc_geth_info_t;
-+
-+/* structure representing UCC GETH */
-+typedef struct ucc_geth_private {
-+	ucc_geth_info_t *ug_info;
-+	ucc_fast_private_t *uccf;
-+	struct net_device *dev;
-+	struct net_device_stats stats;	/* linux network statistics */
-+	ucc_geth_t *ug_regs;
-+	ucc_geth_init_pram_t *p_init_enet_param_shadow;
-+	ucc_geth_exf_global_pram_t *p_exf_glbl_param;
-+	u32 exf_glbl_param_offset;
-+	ucc_geth_rx_global_pram_t *p_rx_glbl_pram;
-+	u32 rx_glbl_pram_offset;
-+	ucc_geth_tx_global_pram_t *p_tx_glbl_pram;
-+	u32 tx_glbl_pram_offset;
-+	ucc_geth_send_queue_mem_region_t *p_send_q_mem_reg;
-+	u32 send_q_mem_reg_offset;
-+	ucc_geth_thread_data_tx_t *p_thread_data_tx;
-+	u32 thread_dat_tx_offset;
-+	ucc_geth_thread_data_rx_t *p_thread_data_rx;
-+	u32 thread_dat_rx_offset;
-+	ucc_geth_scheduler_t *p_scheduler;
-+	u32 scheduler_offset;
-+	ucc_geth_tx_firmware_statistics_pram_t *p_tx_fw_statistics_pram;
-+	u32 tx_fw_statistics_pram_offset;
-+	ucc_geth_rx_firmware_statistics_pram_t *p_rx_fw_statistics_pram;
-+	u32 rx_fw_statistics_pram_offset;
-+	ucc_geth_rx_interrupt_coalescing_table_t
-*p_rx_irq_coalescing_tbl;
-+	u32 rx_irq_coalescing_tbl_offset;
-+	ucc_geth_rx_bd_queues_entry_t *p_rx_bd_qs_tbl;
-+	u32 rx_bd_qs_tbl_offset;
-+	u8 *p_tx_bd_ring[NUM_TX_QUEUES];
-+	u32 tx_bd_ring_offset[NUM_TX_QUEUES];
-+	u8 *p_rx_bd_ring[NUM_RX_QUEUES];
-+	u32 rx_bd_ring_offset[NUM_RX_QUEUES];
-+	u8 *confBd[NUM_TX_QUEUES];
-+	u8 *txBd[NUM_TX_QUEUES];
-+	u8 *rxBd[NUM_RX_QUEUES];
-+	int badFrame[NUM_RX_QUEUES];
-+	u16 cpucount[NUM_TX_QUEUES];
-+	volatile u16 *p_cpucount[NUM_TX_QUEUES];
-+	int indAddrRegUsed[NUM_OF_PADDRS];
-+	enet_addr_t paddr[NUM_OF_PADDRS];
-+	u8 numGroupAddrInHash;
-+	u8 numIndAddrInHash;
-+	u8 numIndAddrInReg;
-+	int rx_extended_features;
-+	int rx_non_dynamic_extended_features;
-+	struct list_head conf_skbs;
-+	struct list_head group_hash_q;
-+	struct list_head ind_hash_q;
-+	u32 saved_uccm;
-+	spinlock_t lock;
-+	/* pointers to arrays of skbuffs for tx and rx */
-+	struct sk_buff **tx_skbuff[NUM_TX_QUEUES];
-+	struct sk_buff **rx_skbuff[NUM_RX_QUEUES];
-+	/* indices pointing to the next free sbk in skb arrays */
-+	u16 skb_curtx[NUM_TX_QUEUES];
-+	u16 skb_currx[NUM_RX_QUEUES];
-+	/* index of the first skb which hasn't been transmitted yet. */
-+	u16 skb_dirtytx[NUM_TX_QUEUES];
-+
-+	struct work_struct tq;
-+	struct timer_list phy_info_timer;
-+	struct ugeth_mii_info *mii_info;
-+	int oldspeed;
-+	int oldduplex;
-+	int oldlink;
-+} ucc_geth_private_t;
-+
-+#endif				/* __UCC_GETH_H__ */
-diff --git a/drivers/net/ucc_geth_phy.c b/drivers/net/ucc_geth_phy.c
-new file mode 100644
-index 0000000..6ea1dbe
---- /dev/null
-+++ b/drivers/net/ucc_geth_phy.c
-@@ -0,0 +1,801 @@
-+/*
-+ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights
-reserved.
-+ *
-+ * Author: Shlomi Gridish <gridish@freescale.com>
-+ *
-+ * Description:
-+ * UCC GETH Driver -- PHY handling
-+ *
-+ * Changelog:
-+ * Jun 28, 2006 Li Yang <LeoLi@freescale.com>
-+ * - Rearrange code and style fixes
-+ *
-+ * This program is free software; you can redistribute  it and/or
-modify it
-+ * under  the terms of  the GNU General  Public License as published by
-the
-+ * Free Software Foundation;  either version 2 of the  License, or (at
-your
-+ * option) any later version.
-+ *
-+ */
-+
-+#include <linux/config.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/string.h>
-+#include <linux/errno.h>
-+#include <linux/slab.h>
-+#include <linux/interrupt.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/netdevice.h>
-+#include <linux/etherdevice.h>
-+#include <linux/skbuff.h>
-+#include <linux/spinlock.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/version.h>
-+#include <linux/crc32.h>
-+#include <linux/mii.h>
-+#include <linux/ethtool.h>
-+
-+#include <asm/io.h>
-+#include <asm/irq.h>
-+#include <asm/uaccess.h>
-+
-+#include "ucc_geth.h"
-+#include "ucc_geth_phy.h"
-+#include <platforms/83xx/mpc8360e_pb.h>
-+
-+#define ugphy_printk(level, format, arg...)  \
-+        printk(level format "\n", ## arg)
-+
-+#define ugphy_dbg(format, arg...)            \
-+        ugphy_printk(KERN_DEBUG, format , ## arg)
-+#define ugphy_err(format, arg...)            \
-+        ugphy_printk(KERN_ERR, format , ## arg)
-+#define ugphy_info(format, arg...)           \
-+        ugphy_printk(KERN_INFO, format , ## arg)
-+#define ugphy_warn(format, arg...)           \
-+        ugphy_printk(KERN_WARNING, format , ## arg)
-+
-+#ifdef UGETH_VERBOSE_DEBUG
-+#define ugphy_vdbg ugphy_dbg
-+#else
-+#define ugphy_vdbg(fmt, args...) do { } while (0)
-+#endif				/* UGETH_VERBOSE_DEBUG */
-+
-+static void config_genmii_advert(struct ugeth_mii_info *mii_info);
-+static void genmii_setup_forced(struct ugeth_mii_info *mii_info);
-+static void genmii_restart_aneg(struct ugeth_mii_info *mii_info);
-+static int gbit_config_aneg(struct ugeth_mii_info *mii_info);
-+static int genmii_config_aneg(struct ugeth_mii_info *mii_info);
-+static int genmii_update_link(struct ugeth_mii_info *mii_info);
-+static int genmii_read_status(struct ugeth_mii_info *mii_info);
-+u16 phy_read(struct ugeth_mii_info *mii_info, u16 regnum);
-+void phy_write(struct ugeth_mii_info *mii_info, u16 regnum, u16 val);
-+
-+static u8 *bcsr_regs =3D NULL;
-+
-+/* Write value to the PHY for this device to the register at regnum, */
-+/* waiting until the write is done before it returns.  All PHY */
-+/* configuration has to be done through the TSEC1 MIIM regs */
-+void write_phy_reg(struct net_device *dev, int mii_id, int regnum, int
-value)
-+{
-+	ucc_geth_private_t *ugeth =3D netdev_priv(dev);
-+	ucc_mii_mng_t *mii_regs;
-+	enet_tbi_mii_reg_e mii_reg =3D (enet_tbi_mii_reg_e) regnum;
-+	u32 tmp_reg;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	spin_lock_irq(&ugeth->lock);
-+
-+	mii_regs =3D ugeth->mii_info->mii_regs;
-+
-+	/* Set this UCC to be the master of the MII managment */
-+	ucc_set_qe_mux_mii_mng(ugeth->ug_info->uf_info.ucc_num);
-+
-+	/* Stop the MII management read cycle */
-+	out_be32(&mii_regs->miimcom, 0);
-+	/* Setting up the MII Mangement Address Register */
-+	tmp_reg =3D ((u32) mii_id << MIIMADD_PHY_ADDRESS_SHIFT) | mii_reg;
-+	out_be32(&mii_regs->miimadd, tmp_reg);
-+
-+	/* Setting up the MII Mangement Control Register with the value
-*/
-+	out_be32(&mii_regs->miimcon, (u32) value);
-+
-+	/* Wait till MII management write is complete */
-+	while ((in_be32(&mii_regs->miimind)) & MIIMIND_BUSY)
-+		cpu_relax();
-+
-+	spin_unlock_irq(&ugeth->lock);
-+
-+	udelay(10000);
-+}
-+
-+/* Reads from register regnum in the PHY for device dev, */
-+/* returning the value.  Clears miimcom first.  All PHY */
-+/* configuration has to be done through the TSEC1 MIIM regs */
-+int read_phy_reg(struct net_device *dev, int mii_id, int regnum)
-+{
-+	ucc_geth_private_t *ugeth =3D netdev_priv(dev);
-+	ucc_mii_mng_t *mii_regs;
-+	enet_tbi_mii_reg_e mii_reg =3D (enet_tbi_mii_reg_e) regnum;
-+	u32 tmp_reg;
-+	u16 value;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	spin_lock_irq(&ugeth->lock);
-+
-+	mii_regs =3D ugeth->mii_info->mii_regs;
-+
-+	/* Setting up the MII Mangement Address Register */
-+	tmp_reg =3D ((u32) mii_id << MIIMADD_PHY_ADDRESS_SHIFT) | mii_reg;
-+	out_be32(&mii_regs->miimadd, tmp_reg);
-+
-+	/* Perform an MII management read cycle */
-+	out_be32(&mii_regs->miimcom, MIIMCOM_READ_CYCLE);
-+
-+	/* Wait till MII management write is complete */
-+	while ((in_be32(&mii_regs->miimind)) & MIIMIND_BUSY)
-+		cpu_relax();
-+
-+	udelay(10000);
-+
-+	/* Read MII management status  */
-+	value =3D (u16) in_be32(&mii_regs->miimstat);
-+	out_be32(&mii_regs->miimcom, 0);
-+	if (value =3D=3D 0xffff)
-+		ugphy_warn("read wrong value : mii_id %d,mii_reg %d,
-base %08x",
-+			   mii_id, mii_reg, (u32) &
-(mii_regs->miimcfg));
-+
-+	spin_unlock_irq(&ugeth->lock);
-+
-+	return (value);
-+}
-+
-+void mii_clear_phy_interrupt(struct ugeth_mii_info *mii_info)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	if (mii_info->phyinfo->ack_interrupt)
-+		mii_info->phyinfo->ack_interrupt(mii_info);
-+}
-+
-+void mii_configure_phy_interrupt(struct ugeth_mii_info *mii_info,
-+				 u32 interrupts)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	mii_info->interrupts =3D interrupts;
-+	if (mii_info->phyinfo->config_intr)
-+		mii_info->phyinfo->config_intr(mii_info);
-+}
-+
-+/* Writes MII_ADVERTISE with the appropriate values, after
-+ * sanitizing advertise to make sure only supported features
-+ * are advertised=20
-+ */
-+static void config_genmii_advert(struct ugeth_mii_info *mii_info)
-+{
-+	u32 advertise;
-+	u16 adv;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Only allow advertising what this PHY supports */
-+	mii_info->advertising &=3D mii_info->phyinfo->features;
-+	advertise =3D mii_info->advertising;
-+
-+	/* Setup standard advertisement */
-+	adv =3D phy_read(mii_info, MII_ADVERTISE);
-+	adv &=3D ~(ADVERTISE_ALL | ADVERTISE_100BASE4);
-+	if (advertise & ADVERTISED_10baseT_Half)
-+		adv |=3D ADVERTISE_10HALF;
-+	if (advertise & ADVERTISED_10baseT_Full)
-+		adv |=3D ADVERTISE_10FULL;
-+	if (advertise & ADVERTISED_100baseT_Half)
-+		adv |=3D ADVERTISE_100HALF;
-+	if (advertise & ADVERTISED_100baseT_Full)
-+		adv |=3D ADVERTISE_100FULL;
-+	phy_write(mii_info, MII_ADVERTISE, adv);
-+}
-+
-+static void genmii_setup_forced(struct ugeth_mii_info *mii_info)
-+{
-+	u16 ctrl;
-+	u32 features =3D mii_info->phyinfo->features;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	ctrl =3D phy_read(mii_info, MII_BMCR);
-+
-+	ctrl &=3D
-+	    ~(BMCR_FULLDPLX | BMCR_SPEED100 | BMCR_SPEED1000 |
-BMCR_ANENABLE);
-+	ctrl |=3D BMCR_RESET;
-+
-+	switch (mii_info->speed) {
-+	case SPEED_1000:
-+		if (features & (SUPPORTED_1000baseT_Half
-+				| SUPPORTED_1000baseT_Full)) {
-+			ctrl |=3D BMCR_SPEED1000;
-+			break;
-+		}
-+		mii_info->speed =3D SPEED_100;
-+	case SPEED_100:
-+		if (features & (SUPPORTED_100baseT_Half
-+				| SUPPORTED_100baseT_Full)) {
-+			ctrl |=3D BMCR_SPEED100;
-+			break;
-+		}
-+		mii_info->speed =3D SPEED_10;
-+	case SPEED_10:
-+		if (features & (SUPPORTED_10baseT_Half
-+				| SUPPORTED_10baseT_Full))
-+			break;
-+	default:		/* Unsupported speed! */
-+		ugphy_err("%s: Bad speed!", mii_info->dev->name);
-+		break;
-+	}
-+
-+	phy_write(mii_info, MII_BMCR, ctrl);
-+}
-+
-+/* Enable and Restart Autonegotiation */
-+static void genmii_restart_aneg(struct ugeth_mii_info *mii_info)
-+{
-+	u16 ctl;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	ctl =3D phy_read(mii_info, MII_BMCR);
-+	ctl |=3D (BMCR_ANENABLE | BMCR_ANRESTART);
-+	phy_write(mii_info, MII_BMCR, ctl);
-+}
-+
-+static int gbit_config_aneg(struct ugeth_mii_info *mii_info)
-+{
-+	u16 adv;
-+	u32 advertise;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	if (mii_info->autoneg) {
-+		/* Configure the ADVERTISE register */
-+		config_genmii_advert(mii_info);
-+		advertise =3D mii_info->advertising;
-+
-+		adv =3D phy_read(mii_info, MII_1000BASETCONTROL);
-+		adv &=3D ~(MII_1000BASETCONTROL_FULLDUPLEXCAP |
-+			 MII_1000BASETCONTROL_HALFDUPLEXCAP);
-+		if (advertise & SUPPORTED_1000baseT_Half)
-+			adv |=3D MII_1000BASETCONTROL_HALFDUPLEXCAP;
-+		if (advertise & SUPPORTED_1000baseT_Full)
-+			adv |=3D MII_1000BASETCONTROL_FULLDUPLEXCAP;
-+		phy_write(mii_info, MII_1000BASETCONTROL, adv);
-+
-+		/* Start/Restart aneg */
-+		genmii_restart_aneg(mii_info);
-+	} else
-+		genmii_setup_forced(mii_info);
-+
-+	return 0;
-+}
-+
-+static int genmii_config_aneg(struct ugeth_mii_info *mii_info)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	if (mii_info->autoneg) {
-+		config_genmii_advert(mii_info);
-+		genmii_restart_aneg(mii_info);
-+	} else
-+		genmii_setup_forced(mii_info);
-+
-+	return 0;
-+}
-+
-+static int genmii_update_link(struct ugeth_mii_info *mii_info)
-+{
-+	u16 status;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Do a fake read */
-+	phy_read(mii_info, MII_BMSR);
-+
-+	/* Read link and autonegotiation status */
-+	status =3D phy_read(mii_info, MII_BMSR);
-+	if ((status & BMSR_LSTATUS) =3D=3D 0)
-+		mii_info->link =3D 0;
-+	else
-+		mii_info->link =3D 1;
-+
-+	/* If we are autonegotiating, and not done,=20
-+	 * return an error */
-+	if (mii_info->autoneg && !(status & BMSR_ANEGCOMPLETE))
-+		return -EAGAIN;
-+
-+	return 0;
-+}
-+
-+static int genmii_read_status(struct ugeth_mii_info *mii_info)
-+{
-+	u16 status;
-+	int err;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Update the link, but return if there
-+	 * was an error */
-+	err =3D genmii_update_link(mii_info);
-+	if (err)
-+		return err;
-+
-+	if (mii_info->autoneg) {
-+		status =3D phy_read(mii_info, MII_LPA);
-+
-+		if (status & (LPA_10FULL | LPA_100FULL))
-+			mii_info->duplex =3D DUPLEX_FULL;
-+		else
-+			mii_info->duplex =3D DUPLEX_HALF;
-+		if (status & (LPA_100FULL | LPA_100HALF))
-+			mii_info->speed =3D SPEED_100;
-+		else
-+			mii_info->speed =3D SPEED_10;
-+		mii_info->pause =3D 0;
-+	}
-+	/* On non-aneg, we assume what we put in BMCR is the speed,
-+	 * though magic-aneg shouldn't prevent this case from occurring
-+	 */
-+
-+	return 0;
-+}
-+
-+static int marvell_init(struct ugeth_mii_info *mii_info)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	phy_write(mii_info, 0x14, 0x0cd2);
-+	phy_write(mii_info, MII_BMCR,
-+		  phy_read(mii_info, MII_BMCR) | BMCR_RESET);
-+	msleep(4000);
-+
-+	return 0;
-+}
-+
-+static int marvell_config_aneg(struct ugeth_mii_info *mii_info)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* The Marvell PHY has an errata which requires
-+	 * that certain registers get written in order
-+	 * to restart autonegotiation */
-+	phy_write(mii_info, MII_BMCR, BMCR_RESET);
-+
-+	phy_write(mii_info, 0x1d, 0x1f);
-+	phy_write(mii_info, 0x1e, 0x200c);
-+	phy_write(mii_info, 0x1d, 0x5);
-+	phy_write(mii_info, 0x1e, 0);
-+	phy_write(mii_info, 0x1e, 0x100);
-+
-+	gbit_config_aneg(mii_info);
-+
-+	return 0;
-+}
-+
-+static int marvell_read_status(struct ugeth_mii_info *mii_info)
-+{
-+	u16 status;
-+	int err;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Update the link, but return if there
-+	 * was an error */
-+	err =3D genmii_update_link(mii_info);
-+	if (err)
-+		return err;
-+
-+	/* If the link is up, read the speed and duplex */
-+	/* If we aren't autonegotiating, assume speeds=20
-+	 * are as set */
-+	if (mii_info->autoneg && mii_info->link) {
-+		int speed;
-+		status =3D phy_read(mii_info, MII_M1011_PHY_SPEC_STATUS);
-+
-+		/* Get the duplexity */
-+		if (status & MII_M1011_PHY_SPEC_STATUS_FULLDUPLEX)
-+			mii_info->duplex =3D DUPLEX_FULL;
-+		else
-+			mii_info->duplex =3D DUPLEX_HALF;
-+
-+		/* Get the speed */
-+		speed =3D status & MII_M1011_PHY_SPEC_STATUS_SPD_MASK;
-+		switch (speed) {
-+		case MII_M1011_PHY_SPEC_STATUS_1000:
-+			mii_info->speed =3D SPEED_1000;
-+			break;
-+		case MII_M1011_PHY_SPEC_STATUS_100:
-+			mii_info->speed =3D SPEED_100;
-+			break;
-+		default:
-+			mii_info->speed =3D SPEED_10;
-+			break;
-+		}
-+		mii_info->pause =3D 0;
-+	}
-+
-+	return 0;
-+}
-+
-+static int marvell_ack_interrupt(struct ugeth_mii_info *mii_info)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Clear the interrupts by reading the reg */
-+	phy_read(mii_info, MII_M1011_IEVENT);
-+
-+	return 0;
-+}
-+
-+static int marvell_config_intr(struct ugeth_mii_info *mii_info)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	if (mii_info->interrupts =3D=3D MII_INTERRUPT_ENABLED)
-+		phy_write(mii_info, MII_M1011_IMASK,
-MII_M1011_IMASK_INIT);
-+	else
-+		phy_write(mii_info, MII_M1011_IMASK,
-MII_M1011_IMASK_CLEAR);
-+
-+	return 0;
-+}
-+
-+static int cis820x_init(struct ugeth_mii_info *mii_info)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	phy_write(mii_info, MII_CIS8201_AUX_CONSTAT,
-+		  MII_CIS8201_AUXCONSTAT_INIT);
-+	phy_write(mii_info, MII_CIS8201_EXT_CON1,
-MII_CIS8201_EXTCON1_INIT);
-+
-+	return 0;
-+}
-+
-+static int cis820x_read_status(struct ugeth_mii_info *mii_info)
-+{
-+	u16 status;
-+	int err;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Update the link, but return if there
-+	 * was an error */
-+	err =3D genmii_update_link(mii_info);
-+	if (err)
-+		return err;
-+
-+	/* If the link is up, read the speed and duplex */
-+	/* If we aren't autonegotiating, assume speeds=20
-+	 * are as set */
-+	if (mii_info->autoneg && mii_info->link) {
-+		int speed;
-+
-+		status =3D phy_read(mii_info, MII_CIS8201_AUX_CONSTAT);
-+		if (status & MII_CIS8201_AUXCONSTAT_DUPLEX)
-+			mii_info->duplex =3D DUPLEX_FULL;
-+		else
-+			mii_info->duplex =3D DUPLEX_HALF;
-+
-+		speed =3D status & MII_CIS8201_AUXCONSTAT_SPEED;
-+
-+		switch (speed) {
-+		case MII_CIS8201_AUXCONSTAT_GBIT:
-+			mii_info->speed =3D SPEED_1000;
-+			break;
-+		case MII_CIS8201_AUXCONSTAT_100:
-+			mii_info->speed =3D SPEED_100;
-+			break;
-+		default:
-+			mii_info->speed =3D SPEED_10;
-+			break;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int cis820x_ack_interrupt(struct ugeth_mii_info *mii_info)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	phy_read(mii_info, MII_CIS8201_ISTAT);
-+
-+	return 0;
-+}
-+
-+static int cis820x_config_intr(struct ugeth_mii_info *mii_info)
-+{
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	if (mii_info->interrupts =3D=3D MII_INTERRUPT_ENABLED)
-+		phy_write(mii_info, MII_CIS8201_IMASK,
-MII_CIS8201_IMASK_MASK);
-+	else
-+		phy_write(mii_info, MII_CIS8201_IMASK, 0);
-+
-+	return 0;
-+}
-+
-+#define DM9161_DELAY 10
-+
-+static int dm9161_read_status(struct ugeth_mii_info *mii_info)
-+{
-+	u16 status;
-+	int err;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Update the link, but return if there
-+	 * was an error */
-+	err =3D genmii_update_link(mii_info);
-+	if (err)
-+		return err;
-+
-+	/* If the link is up, read the speed and duplex */
-+	/* If we aren't autonegotiating, assume speeds=20
-+	 * are as set */
-+	if (mii_info->autoneg && mii_info->link) {
-+		status =3D phy_read(mii_info, MII_DM9161_SCSR);
-+		if (status & (MII_DM9161_SCSR_100F |
-MII_DM9161_SCSR_100H))
-+			mii_info->speed =3D SPEED_100;
-+		else
-+			mii_info->speed =3D SPEED_10;
-+
-+		if (status & (MII_DM9161_SCSR_100F |
-MII_DM9161_SCSR_10F))
-+			mii_info->duplex =3D DUPLEX_FULL;
-+		else
-+			mii_info->duplex =3D DUPLEX_HALF;
-+	}
-+
-+	return 0;
-+}
-+
-+static int dm9161_config_aneg(struct ugeth_mii_info *mii_info)
-+{
-+	struct dm9161_private *priv =3D mii_info->priv;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	if (0 =3D=3D priv->resetdone)
-+		return -EAGAIN;
-+
-+	return 0;
-+}
-+
-+static void dm9161_timer(unsigned long data)
-+{
-+	struct ugeth_mii_info *mii_info =3D (struct ugeth_mii_info *)data;
-+	struct dm9161_private *priv =3D mii_info->priv;
-+	u16 status =3D phy_read(mii_info, MII_BMSR);
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	if (status & BMSR_ANEGCOMPLETE) {
-+		priv->resetdone =3D 1;
-+	} else
-+		mod_timer(&priv->timer, jiffies + DM9161_DELAY * HZ);
-+}
-+
-+static int dm9161_init(struct ugeth_mii_info *mii_info)
-+{
-+	struct dm9161_private *priv;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Allocate the private data structure */
-+	priv =3D kmalloc(sizeof(struct dm9161_private), GFP_KERNEL);
-+
-+	if (NULL =3D=3D priv)
-+		return -ENOMEM;
-+
-+	mii_info->priv =3D priv;
-+
-+	/* Reset is not done yet */
-+	priv->resetdone =3D 0;
-+
-+	phy_write(mii_info, MII_BMCR,
-+		  phy_read(mii_info, MII_BMCR) | BMCR_RESET);
-+
-+	phy_write(mii_info, MII_BMCR,
-+		  phy_read(mii_info, MII_BMCR) & ~BMCR_ISOLATE);
-+
-+	config_genmii_advert(mii_info);
-+	/* Start/Restart aneg */
-+	genmii_config_aneg(mii_info);
-+
-+	/* Start a timer for DM9161_DELAY seconds to wait
-+	 * for the PHY to be ready */
-+	init_timer(&priv->timer);
-+	priv->timer.function =3D &dm9161_timer;
-+	priv->timer.data =3D (unsigned long)mii_info;
-+	mod_timer(&priv->timer, jiffies + DM9161_DELAY * HZ);
-+
-+	return 0;
-+}
-+
-+static void dm9161_close(struct ugeth_mii_info *mii_info)
-+{
-+	struct dm9161_private *priv =3D mii_info->priv;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	del_timer_sync(&priv->timer);
-+	kfree(priv);
-+}
-+
-+static int dm9161_ack_interrupt(struct ugeth_mii_info *mii_info)
-+{
-+/* FIXME: This lines are for BUG fixing in the mpc8325.=20
-+Remove this from here when it's fixed */
-+	if (bcsr_regs =3D=3D NULL)
-+		bcsr_regs =3D (u8 *) ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
-+	bcsr_regs[14] |=3D 0x40;
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Clear the interrupts by reading the reg */
-+	phy_read(mii_info, MII_DM9161_INTR);
-+=09
-+
-+	return 0;
-+}
-+
-+static int dm9161_config_intr(struct ugeth_mii_info *mii_info)
-+{
-+/* FIXME: This lines are for BUG fixing in the mpc8325.=20
-+Remove this from here when it's fixed */
-+	if (bcsr_regs =3D=3D NULL) {
-+		bcsr_regs =3D (u8 *) ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
-+		bcsr_regs[14] &=3D ~0x40;
-+	}
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	if (mii_info->interrupts =3D=3D MII_INTERRUPT_ENABLED)
-+		phy_write(mii_info, MII_DM9161_INTR,
-MII_DM9161_INTR_INIT);
-+	else
-+		phy_write(mii_info, MII_DM9161_INTR,
-MII_DM9161_INTR_STOP);
-+
-+	return 0;
-+}
-+
-+/* Cicada 820x */
-+static struct phy_info phy_info_cis820x =3D {
-+	.phy_id =3D 0x000fc440,
-+	.name =3D "Cicada Cis8204",
-+	.phy_id_mask =3D 0x000fffc0,
-+	.features =3D MII_GBIT_FEATURES,
-+	.init =3D &cis820x_init,
-+	.config_aneg =3D &gbit_config_aneg,
-+	.read_status =3D &cis820x_read_status,
-+	.ack_interrupt =3D &cis820x_ack_interrupt,
-+	.config_intr =3D &cis820x_config_intr,
-+};
-+
-+static struct phy_info phy_info_dm9161 =3D {
-+	.phy_id =3D 0x0181b880,
-+	.phy_id_mask =3D 0x0ffffff0,
-+	.name =3D "Davicom DM9161E",
-+	.init =3D dm9161_init,
-+	.config_aneg =3D dm9161_config_aneg,
-+	.read_status =3D dm9161_read_status,
-+	.close =3D dm9161_close,
-+};
-+
-+static struct phy_info phy_info_dm9161a =3D {
-+	.phy_id =3D 0x0181b8a0,
-+	.phy_id_mask =3D 0x0ffffff0,
-+	.name =3D "Davicom DM9161A",
-+	.features =3D MII_BASIC_FEATURES,
-+	.init =3D dm9161_init,
-+	.config_aneg =3D dm9161_config_aneg,
-+	.read_status =3D dm9161_read_status,
-+	.ack_interrupt =3D dm9161_ack_interrupt,
-+	.config_intr =3D dm9161_config_intr,
-+	.close =3D dm9161_close,
-+};
-+
-+static struct phy_info phy_info_marvell =3D {
-+	.phy_id =3D 0x01410c00,
-+	.phy_id_mask =3D 0xffffff00,
-+	.name =3D "Marvell 88E11x1",
-+	.features =3D MII_GBIT_FEATURES,
-+	.init =3D &marvell_init,
-+	.config_aneg =3D &marvell_config_aneg,
-+	.read_status =3D &marvell_read_status,
-+	.ack_interrupt =3D &marvell_ack_interrupt,
-+	.config_intr =3D &marvell_config_intr,
-+};
-+
-+static struct phy_info phy_info_genmii =3D {
-+	.phy_id =3D 0x00000000,
-+	.phy_id_mask =3D 0x00000000,
-+	.name =3D "Generic MII",
-+	.features =3D MII_BASIC_FEATURES,
-+	.config_aneg =3D genmii_config_aneg,
-+	.read_status =3D genmii_read_status,
-+};
-+
-+static struct phy_info *phy_info[] =3D {
-+	&phy_info_cis820x,
-+	&phy_info_marvell,
-+	&phy_info_dm9161,
-+	&phy_info_dm9161a,
-+	&phy_info_genmii,
-+	NULL
-+};
-+
-+u16 phy_read(struct ugeth_mii_info *mii_info, u16 regnum)
-+{
-+	u16 retval;
-+	unsigned long flags;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	spin_lock_irqsave(&mii_info->mdio_lock, flags);
-+	retval =3D mii_info->mdio_read(mii_info->dev, mii_info->mii_id,
-regnum);
-+	spin_unlock_irqrestore(&mii_info->mdio_lock, flags);
-+
-+	return retval;
-+}
-+
-+void phy_write(struct ugeth_mii_info *mii_info, u16 regnum, u16 val)
-+{
-+	unsigned long flags;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	spin_lock_irqsave(&mii_info->mdio_lock, flags);
-+	mii_info->mdio_write(mii_info->dev, mii_info->mii_id, regnum,
-val);
-+	spin_unlock_irqrestore(&mii_info->mdio_lock, flags);
-+}
-+
-+/* Use the PHY ID registers to determine what type of PHY is attached
-+ * to device dev.  return a struct phy_info structure describing that
-PHY
-+ */
-+struct phy_info *get_phy_info(struct ugeth_mii_info *mii_info)
-+{
-+	u16 phy_reg;
-+	u32 phy_ID;
-+	int i;
-+	struct phy_info *theInfo =3D NULL;
-+	struct net_device *dev =3D mii_info->dev;
-+
-+	ugphy_vdbg("%s: IN", __FUNCTION__);
-+
-+	/* Grab the bits from PHYIR1, and put them in the upper half */
-+	phy_reg =3D phy_read(mii_info, MII_PHYSID1);
-+	phy_ID =3D (phy_reg & 0xffff) << 16;
-+
-+	/* Grab the bits from PHYIR2, and put them in the lower half */
-+	phy_reg =3D phy_read(mii_info, MII_PHYSID2);
-+	phy_ID |=3D (phy_reg & 0xffff);
-+
-+	/* loop through all the known PHY types, and find one that */
-+	/* matches the ID we read from the PHY. */
-+	for (i =3D 0; phy_info[i]; i++)
-+		if (phy_info[i]->phy_id =3D=3D (phy_ID &
-phy_info[i]->phy_id_mask)){
-+			theInfo =3D phy_info[i];
-+			break;
-+		}
-+
-+	/* This shouldn't happen, as we have generic PHY support */
-+	if (theInfo =3D=3D NULL) {
-+		ugphy_info("%s: PHY id %x is not supported!", dev->name,
-+			   phy_ID);
-+		return NULL;
-+	} else {
-+		ugphy_info("%s: PHY is %s (%x)", dev->name,
-theInfo->name,
-+			   phy_ID);
-+	}
-+
-+	return theInfo;
-+}
-diff --git a/drivers/net/ucc_geth_phy.h b/drivers/net/ucc_geth_phy.h
-new file mode 100644
-index 0000000..2f98b8f
---- /dev/null
-+++ b/drivers/net/ucc_geth_phy.h
-@@ -0,0 +1,217 @@
-+/*
-+ * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights
-reserved.
-+ *
-+ * Author: Shlomi Gridish <gridish@freescale.com>
-+ *
-+ * Description:
-+ * UCC GETH Driver -- PHY handling
-+ *
-+ * Changelog:
-+ * Jun 28, 2006 Li Yang <LeoLi@freescale.com>
-+ * - Rearrange code and style fixes
-+ *
-+ * This program is free software; you can redistribute  it and/or
-modify it
-+ * under  the terms of  the GNU General  Public License as published by
-the
-+ * Free Software Foundation;  either version 2 of the  License, or (at
-your
-+ * option) any later version.
-+ *
-+ */
-+#ifndef __UCC_GETH_PHY_H__
-+#define __UCC_GETH_PHY_H__
-+
-+#define MII_end ((u32)-2)
-+#define MII_read ((u32)-1)
-+
-+#define MIIMIND_BUSY            0x00000001
-+#define MIIMIND_NOTVALID        0x00000004
-+
-+#define UGETH_AN_TIMEOUT        2000
-+
-+/* 1000BT control (Marvell & BCM54xx at least) */
-+#define MII_1000BASETCONTROL                  0x09
-+#define MII_1000BASETCONTROL_FULLDUPLEXCAP    0x0200
-+#define MII_1000BASETCONTROL_HALFDUPLEXCAP    0x0100
-+
-+/* Cicada Extended Control Register 1 */
-+#define MII_CIS8201_EXT_CON1        0x17
-+#define MII_CIS8201_EXTCON1_INIT    0x0000
-+
-+/* Cicada Interrupt Mask Register */
-+#define MII_CIS8201_IMASK           0x19
-+#define MII_CIS8201_IMASK_IEN       0x8000
-+#define MII_CIS8201_IMASK_SPEED     0x4000
-+#define MII_CIS8201_IMASK_LINK      0x2000
-+#define MII_CIS8201_IMASK_DUPLEX    0x1000
-+#define MII_CIS8201_IMASK_MASK      0xf000
-+
-+/* Cicada Interrupt Status Register */
-+#define MII_CIS8201_ISTAT           0x1a
-+#define MII_CIS8201_ISTAT_STATUS    0x8000
-+#define MII_CIS8201_ISTAT_SPEED     0x4000
-+#define MII_CIS8201_ISTAT_LINK      0x2000
-+#define MII_CIS8201_ISTAT_DUPLEX    0x1000
-+
-+/* Cicada Auxiliary Control/Status Register */
-+#define MII_CIS8201_AUX_CONSTAT        0x1c
-+#define MII_CIS8201_AUXCONSTAT_INIT    0x0004
-+#define MII_CIS8201_AUXCONSTAT_DUPLEX  0x0020
-+#define MII_CIS8201_AUXCONSTAT_SPEED   0x0018
-+#define MII_CIS8201_AUXCONSTAT_GBIT    0x0010
-+#define MII_CIS8201_AUXCONSTAT_100     0x0008
-+
-+/* 88E1011 PHY Status Register */
-+#define MII_M1011_PHY_SPEC_STATUS               0x11
-+#define MII_M1011_PHY_SPEC_STATUS_1000          0x8000
-+#define MII_M1011_PHY_SPEC_STATUS_100           0x4000
-+#define MII_M1011_PHY_SPEC_STATUS_SPD_MASK      0xc000
-+#define MII_M1011_PHY_SPEC_STATUS_FULLDUPLEX    0x2000
-+#define MII_M1011_PHY_SPEC_STATUS_RESOLVED      0x0800
-+#define MII_M1011_PHY_SPEC_STATUS_LINK          0x0400
-+
-+#define MII_M1011_IEVENT                0x13
-+#define MII_M1011_IEVENT_CLEAR          0x0000
-+
-+#define MII_M1011_IMASK                 0x12
-+#define MII_M1011_IMASK_INIT            0x6400
-+#define MII_M1011_IMASK_CLEAR           0x0000
-+
-+#define MII_DM9161_SCR                  0x10
-+#define MII_DM9161_SCR_INIT             0x0610
-+
-+/* DM9161 Specified Configuration and Status Register */
-+#define MII_DM9161_SCSR                 0x11
-+#define MII_DM9161_SCSR_100F            0x8000
-+#define MII_DM9161_SCSR_100H            0x4000
-+#define MII_DM9161_SCSR_10F             0x2000
-+#define MII_DM9161_SCSR_10H             0x1000
-+
-+/* DM9161 Interrupt Register */
-+#define MII_DM9161_INTR                 0x15
-+#define MII_DM9161_INTR_PEND            0x8000
-+#define MII_DM9161_INTR_DPLX_MASK       0x0800
-+#define MII_DM9161_INTR_SPD_MASK        0x0400
-+#define MII_DM9161_INTR_LINK_MASK       0x0200
-+#define MII_DM9161_INTR_MASK            0x0100
-+#define MII_DM9161_INTR_DPLX_CHANGE     0x0010
-+#define MII_DM9161_INTR_SPD_CHANGE      0x0008
-+#define MII_DM9161_INTR_LINK_CHANGE     0x0004
-+#define MII_DM9161_INTR_INIT            0x0000
-+#define MII_DM9161_INTR_STOP    \
-+(MII_DM9161_INTR_DPLX_MASK | MII_DM9161_INTR_SPD_MASK \
-+ | MII_DM9161_INTR_LINK_MASK | MII_DM9161_INTR_MASK)
-+
-+/* DM9161 10BT Configuration/Status */
-+#define MII_DM9161_10BTCSR              0x12
-+#define MII_DM9161_10BTCSR_INIT         0x7800
-+
-+#define MII_BASIC_FEATURES    (SUPPORTED_10baseT_Half | \
-+                 SUPPORTED_10baseT_Full | \
-+                 SUPPORTED_100baseT_Half | \
-+                 SUPPORTED_100baseT_Full | \
-+                 SUPPORTED_Autoneg | \
-+                 SUPPORTED_TP | \
-+                 SUPPORTED_MII)
-+
-+#define MII_GBIT_FEATURES    (MII_BASIC_FEATURES | \
-+                 SUPPORTED_1000baseT_Half | \
-+                 SUPPORTED_1000baseT_Full)
-+
-+#define MII_READ_COMMAND                0x00000001
-+
-+#define MII_INTERRUPT_DISABLED          0x0
-+#define MII_INTERRUPT_ENABLED           0x1
-+/* Taken from mii_if_info and sungem_phy.h */
-+struct ugeth_mii_info {
-+	/* Information about the PHY type */
-+	/* And management functions */
-+	struct phy_info *phyinfo;
-+
-+	ucc_mii_mng_t *mii_regs;
-+
-+	/* forced speed & duplex (no autoneg)
-+	 * partner speed & duplex & pause (autoneg)
-+	 */
-+	int speed;
-+	int duplex;
-+	int pause;
-+
-+	/* The most recently read link state */
-+	int link;
-+
-+	/* Enabled Interrupts */
-+	u32 interrupts;
-+
-+	u32 advertising;
-+	int autoneg;
-+	int mii_id;
-+
-+	/* private data pointer */
-+	/* For use by PHYs to maintain extra state */
-+	void *priv;
-+
-+	/* Provided by host chip */
-+	struct net_device *dev;
-+
-+	/* A lock to ensure that only one thing can read/write
-+	 * the MDIO bus at a time */
-+	spinlock_t mdio_lock;
-+
-+	/* Provided by ethernet driver */
-+	int (*mdio_read) (struct net_device * dev, int mii_id, int reg);
-+	void (*mdio_write) (struct net_device * dev, int mii_id, int
-reg,
-+			    int val);
-+};
-+
-+/* struct phy_info: a structure which defines attributes for a PHY
-+ *
-+ * id will contain a number which represents the PHY.  During
-+ * startup, the driver will poll the PHY to find out what its
-+ * UID--as defined by registers 2 and 3--is.  The 32-bit result
-+ * gotten from the PHY will be ANDed with phy_id_mask to
-+ * discard any bits which may change based on revision numbers
-+ * unimportant to functionality
-+ *
-+ * There are 6 commands which take a ugeth_mii_info structure.
-+ * Each PHY must declare config_aneg, and read_status.
-+ */
-+struct phy_info {
-+	u32 phy_id;
-+	char *name;
-+	unsigned int phy_id_mask;
-+	u32 features;
-+
-+	/* Called to initialize the PHY */
-+	int (*init) (struct ugeth_mii_info * mii_info);
-+
-+	/* Called to suspend the PHY for power */
-+	int (*suspend) (struct ugeth_mii_info * mii_info);
-+
-+	/* Reconfigures autonegotiation (or disables it) */
-+	int (*config_aneg) (struct ugeth_mii_info * mii_info);
-+
-+	/* Determines the negotiated speed and duplex */
-+	int (*read_status) (struct ugeth_mii_info * mii_info);
-+
-+	/* Clears any pending interrupts */
-+	int (*ack_interrupt) (struct ugeth_mii_info * mii_info);
-+
-+	/* Enables or disables interrupts */
-+	int (*config_intr) (struct ugeth_mii_info * mii_info);
-+
-+	/* Clears up any memory if needed */
-+	void (*close) (struct ugeth_mii_info * mii_info);
-+};
-+
-+struct phy_info *get_phy_info(struct ugeth_mii_info *mii_info);
-+void write_phy_reg(struct net_device *dev, int mii_id, int regnum, int
-value);
-+int read_phy_reg(struct net_device *dev, int mii_id, int regnum);
-+void mii_clear_phy_interrupt(struct ugeth_mii_info *mii_info);
-+void mii_configure_phy_interrupt(struct ugeth_mii_info *mii_info,
-+				 u32 interrupts);
-+
-+struct dm9161_private {
-+	struct timer_list timer;
-+	int resetdone;
-+};
-+
-+#endif				/* __UCC_GETH_PHY_H__ */
+- kumar
+
+On Jul 6, 2006, at 7:02 AM, Li Yang-r58472 wrote:
+
+> This is a re-submission of the patch after some fix. First version of
+> the patch may be blocked by the list due to size problem.
+>
+> QE(QUICC Engine) is a new generation communication coprocessor, which
+> can be found on some of the latest Freescale PowerQUICC CPUs(e.g.
+> MPC8360).  The UCC(Unified Communications Controller) module of QE can
+> work as gigabit Ethernet device.  This patch provides driver for the
+> device.
+>
+> Signed-off-by: Shlomi Gridish <gridish@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+>
+> The patch is cut into 3 pieces for size reason.
+> ---
+>  drivers/net/Kconfig        |   27
+>  drivers/net/Makefile       |    3
+>  drivers/net/ucc_geth.c     | 4278
+> ++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/net/ucc_geth.h     | 1334 ++++++++++++++
+>  drivers/net/ucc_geth_phy.c |  801 ++++++++
+>  drivers/net/ucc_geth_phy.h |  217 ++
+>  6 files changed, 6660 insertions(+), 0 deletions(-)
+>
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index bdaaad8..b0f6e22 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2189,6 +2189,33 @@ config GFAR_NAPI
+>  	bool "NAPI Support"
+>  	depends on GIANFAR
+>
+> +config UCC_GETH
+> +	tristate "Freescale QE UCC GETH"
+> +	depends on QUICC_ENGINE && UCC_FAST
+> +	help
+> +	  This driver supports the Gigabit Ethernet mode of QE UCC.
+> +	  QE can be found on MPC836x CPUs.
+> +
+> +config UGETH_NAPI
+> +	bool "NAPI Support"
+> +	depends on UCC_GETH
+> +	
+> +config UGETH_MAGIC_PACKET
+> +	bool "Magic Packet detection support"
+> +	depends on UCC_GETH
+> +
+> +config UGETH_FILTERING
+> +	bool "Mac address filtering support"
+> +	depends on UCC_GETH
+> +
+> +config UGETH_TX_ON_DEMOND
+> +	bool "Transmit on Demond support"
+> +	depends on UCC_GETH
+> +
+> +config UGETH_HAS_GIGA
+> +	bool
+> +	depends on UCC_GETH && MPC836x
+> +
+>  config MV643XX_ETH
+>  	tristate "MV-643XX Ethernet support"
+>  	depends on MOMENCO_OCELOT_C || MOMENCO_JAGUAR_ATX || MV64360 ||
+> MOMENCO_OCELOT_3 || PPC_MULTIPLATFORM
+> diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+> index b90468a..2054033 100644
+> --- a/drivers/net/Makefile
+> +++ b/drivers/net/Makefile
+> @@ -18,6 +18,9 @@ gianfar_driver-objs := gianfar.o \
+>  		gianfar_mii.o \
+>  		gianfar_sysfs.o
+>
+> +obj-$(CONFIG_UCC_GETH) += ucc_geth_driver.o
+> +ucc_geth_driver-objs := ucc_geth.o ucc_geth_phy.o
+> +
+>  #
+>  # link order important here
+>  #
+> diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+> new file mode 100644
+> index 0000000..01cfca0
+> --- /dev/null
+> +++ b/drivers/net/ucc_geth.c
+> @@ -0,0 +1,4278 @@
+> +/*
+> + * Copyright (C) Freescale Semicondutor, Inc. 2006. All rights
+> reserved.
+> + *
+> + * Author: Shlomi Gridish <gridish@freescale.com>
+> + *
+> + * Description:
+> + * QE UCC Gigabit Ethernet Driver
+> + *
+> + * Changelog:
+> + * Jul 6, 2006 Li Yang <LeoLi@freescale.com>
+> + * - Rearrange code and style fixes
+> + *
+> + * This program is free software; you can redistribute  it and/or
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by
+> the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at
+> your
+> + * option) any later version.
+> + */
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/errno.h>
+> +#include <linux/slab.h>
+> +#include <linux/stddef.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/netdevice.h>
+> +#include <linux/etherdevice.h>
+> +#include <linux/skbuff.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/mm.h>
+> +#include <linux/ethtool.h>
+> +#include <linux/delay.h>
+> +#include <linux/dma-mapping.h>
+> +#include <linux/fsl_devices.h>
+> +#include <linux/ethtool.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/mii.h>
+> +
+> +#include <asm/uaccess.h>
+> +#include <asm/irq.h>
+> +#include <asm/io.h>
+> +#include <asm/immap_qe.h>
+> +#include <asm/qe.h>
+> +#include <asm/ucc.h>
+> +#include <asm/ucc_fast.h>
+> +
+> +#include "ucc_geth.h"
+> +#include "ucc_geth_phy.h"
+> +
+> +#undef DEBUG
+> +
+> +#define DRV_DESC "QE UCC Gigabit Ethernet Controller version:June 20,
+> 2006"
+> +#define DRV_NAME "ucc_geth"
+> +
+> +#define ugeth_printk(level, format, arg...)  \
+> +        printk(level format "\n", ## arg)
+> +
+> +#define ugeth_dbg(format, arg...)            \
+> +        ugeth_printk(KERN_DEBUG , format , ## arg)
+> +#define ugeth_err(format, arg...)            \
+> +        ugeth_printk(KERN_ERR , format , ## arg)
+> +#define ugeth_info(format, arg...)           \
+> +        ugeth_printk(KERN_INFO , format , ## arg)
+> +#define ugeth_warn(format, arg...)           \
+> +        ugeth_printk(KERN_WARNING , format , ## arg)
+> +
+> +#ifdef UGETH_VERBOSE_DEBUG
+> +#define ugeth_vdbg ugeth_dbg
+> +#else
+> +#define ugeth_vdbg(fmt, args...) do { } while (0)
+> +#endif				/* UGETH_VERBOSE_DEBUG */
+> +
+> +static DEFINE_SPINLOCK(ugeth_lock);
+> +
+> +static ucc_geth_info_t ugeth_primary_info = {
+> +	.uf_info = {
+> +		    .bd_mem_part = MEM_PART_SYSTEM,
+> +		    .rtsm = UCC_FAST_SEND_IDLES_BETWEEN_FRAMES,
+> +		    .max_rx_buf_length = 1536,
+> +/* FIXME: should be changed in run time for 1G and 100M */
+> +#ifdef CONFIG_UGETH_HAS_GIGA
+> +		    .urfs = UCC_GETH_URFS_GIGA_INIT,
+> +		    .urfet = UCC_GETH_URFET_GIGA_INIT,
+> +		    .urfset = UCC_GETH_URFSET_GIGA_INIT,
+> +		    .utfs = UCC_GETH_UTFS_GIGA_INIT,
+> +		    .utfet = UCC_GETH_UTFET_GIGA_INIT,
+> +		    .utftt = UCC_GETH_UTFTT_GIGA_INIT,
+> +#else
+> +		    .urfs = UCC_GETH_URFS_INIT,
+> +		    .urfet = UCC_GETH_URFET_INIT,
+> +		    .urfset = UCC_GETH_URFSET_INIT,
+> +		    .utfs = UCC_GETH_UTFS_INIT,
+> +		    .utfet = UCC_GETH_UTFET_INIT,
+> +		    .utftt = UCC_GETH_UTFTT_INIT,
+> +#endif
+> +		    .ufpt = 256,
+> +		    .mode = UCC_FAST_PROTOCOL_MODE_ETHERNET,
+> +		    .ttx_trx = UCC_FAST_GUMR_TRANSPARENT_TTX_TRX_NORMAL,
+> +		    .tenc = UCC_FAST_TX_ENCODING_NRZ,
+> +		    .renc = UCC_FAST_RX_ENCODING_NRZ,
+> +		    .tcrc = UCC_FAST_16_BIT_CRC,
+> +		    .synl = UCC_FAST_SYNC_LEN_NOT_USED,
+> +		    },
+> +	.numQueuesTx = 1,
+> +	.numQueuesRx = 1,
+> +	.extendedFilteringChainPointer = ((uint32_t) NULL),
+> +	.typeorlen = 3072 /*1536 */ ,
+> +	.nonBackToBackIfgPart1 = 0x40,
+> +	.nonBackToBackIfgPart2 = 0x60,
+> +	.miminumInterFrameGapEnforcement = 0x50,
+> +	.backToBackInterFrameGap = 0x60,
+> +	.mblinterval = 128,
+> +	.nortsrbytetime = 5,
+> +	.fracsiz = 1,
+> +	.strictpriorityq = 0xff,
+> +	.altBebTruncation = 0xa,
+> +	.excessDefer = 1,
+> +	.maxRetransmission = 0xf,
+> +	.collisionWindow = 0x37,
+> +	.receiveFlowControl = 1,
+> +	.maxGroupAddrInHash = 4,
+> +	.maxIndAddrInHash = 4,
+> +	.prel = 7,
+> +	.maxFrameLength = 1518,
+> +	.minFrameLength = 64,
+> +	.maxD1Length = 1520,
+> +	.maxD2Length = 1520,
+> +	.vlantype = 0x8100,
+> +	.ecamptr = ((uint32_t) NULL),
+> +	.eventRegMask = UCCE_OTHER,
+> +	.pausePeriod = 0xf000,
+> +	.interruptcoalescingmaxvalue = {1, 1, 1, 1, 1, 1, 1, 1},
+> +	.bdRingLenTx = {
+> +			TX_BD_RING_LEN,
+> +			TX_BD_RING_LEN,
+> +			TX_BD_RING_LEN,
+> +			TX_BD_RING_LEN,
+> +			TX_BD_RING_LEN,
+> +			TX_BD_RING_LEN,
+> +			TX_BD_RING_LEN,
+> +			TX_BD_RING_LEN},
+> +
+> +	.bdRingLenRx = {
+> +			RX_BD_RING_LEN,
+> +			RX_BD_RING_LEN,
+> +			RX_BD_RING_LEN,
+> +			RX_BD_RING_LEN,
+> +			RX_BD_RING_LEN,
+> +			RX_BD_RING_LEN,
+> +			RX_BD_RING_LEN,
+> +			RX_BD_RING_LEN},
+> +
+> +	.numStationAddresses = UCC_GETH_NUM_OF_STATION_ADDRESSES_1,
+> +	.largestexternallookupkeysize =
+> +	    QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_NONE,
+> +	.statisticsMode = UCC_GETH_STATISTICS_GATHERING_MODE_NONE,
+> +	.vlanOperationTagged = UCC_GETH_VLAN_OPERATION_TAGGED_NOP,
+> +	.vlanOperationNonTagged =
+> UCC_GETH_VLAN_OPERATION_NON_TAGGED_NOP,
+> +	.rxQoSMode = UCC_GETH_QOS_MODE_DEFAULT,
+> +	.aufc = UPSMR_AUTOMATIC_FLOW_CONTROL_MODE_NONE,
+> +	.padAndCrc = MACCFG2_PAD_AND_CRC_MODE_PAD_AND_CRC,
+> +	.numThreadsTx = UCC_GETH_NUM_OF_THREADS_4,
+> +	.numThreadsRx = UCC_GETH_NUM_OF_THREADS_4,
+> +	.riscTx = QE_RISC_ALLOCATION_RISC1_AND_RISC2,
+> +	.riscRx = QE_RISC_ALLOCATION_RISC1_AND_RISC2,
+> +};
+> +
+> +static ucc_geth_info_t ugeth_info[8];
+> +
+> +#ifdef DEBUG
+> +static void mem_disp(u8 *addr, int size)
+> +{
+> +	u8 *i;
+> +	int size16Aling = (size >> 4) << 4;
+> +	int size4Aling = (size >> 2) << 2;
+> +	int notAlign = 0;
+> +	if (size % 16)
+> +		notAlign = 1;
+> +
+> +	for (i = addr; (u32) i < (u32) addr + size16Aling; i += 16)
+> +		printk("0x%08x: %08x %08x %08x %08x\r\n",
+> +		       (u32) i,
+> +		       *((u32 *) (i)),
+> +		       *((u32 *) (i + 4)),
+> +		       *((u32 *) (i + 8)), *((u32 *) (i + 12)));
+> +	if (notAlign == 1)
+> +		printk("0x%08x: ", (u32) i);
+> +	for (; (u32) i < (u32) addr + size4Aling; i += 4)
+> +		printk("%08x ", *((u32 *) (i)));
+> +	for (; (u32) i < (u32) addr + size; i++)
+> +		printk("%02x", *((u8 *) (i)));
+> +	if (notAlign == 1)
+> +		printk("\r\n");
+> +}
+> +#endif /* DEBUG */
+> +
+> +#ifdef CONFIG_UGETH_FILTERING
+> +static void enqueue(struct list_head *node, struct list_head *lh)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(ugeth_lock, flags);
+> +	list_add_tail(node, lh);
+> +	spin_unlock_irqrestore(ugeth_lock, flags);
+> +}
+> +#endif /* CONFIG_UGETH_FILTERING */
+> +
+> +static struct list_head *dequeue(struct list_head *lh)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(ugeth_lock, flags);
+> +	if (!list_empty(lh)) {
+> +		struct list_head *node = lh->next;
+> +		list_del(node);
+> +		spin_unlock_irqrestore(ugeth_lock, flags);
+> +		return node;
+> +	} else {
+> +		spin_unlock_irqrestore(ugeth_lock, flags);
+> +		return NULL;
+> +	}
+> +}
+> +
+> +static int get_interface_details(enet_interface_e enet_interface,
+> +				 enet_speed_e *speed,
+> +				 int *r10m,
+> +				 int *rmm,
+> +				 int *rpm,
+> +				 int *tbi, int *limited_to_full_duplex)
+> +{
+> +	/* Analyze enet_interface according to Interface Mode
+> +	Configuration table */
+> +	switch (enet_interface) {
+> +	case ENET_10_MII:
+> +		*speed = ENET_SPEED_10BT;
+> +		break;
+> +	case ENET_10_RMII:
+> +		*speed = ENET_SPEED_10BT;
+> +		*r10m = 1;
+> +		*rmm = 1;
+> +		break;
+> +	case ENET_10_RGMII:
+> +		*speed = ENET_SPEED_10BT;
+> +		*rpm = 1;
+> +		*r10m = 1;
+> +		*limited_to_full_duplex = 1;
+> +		break;
+> +	case ENET_100_MII:
+> +		*speed = ENET_SPEED_100BT;
+> +		break;
+> +	case ENET_100_RMII:
+> +		*speed = ENET_SPEED_100BT;
+> +		*rmm = 1;
+> +		break;
+> +	case ENET_100_RGMII:
+> +		*speed = ENET_SPEED_100BT;
+> +		*rpm = 1;
+> +		*limited_to_full_duplex = 1;
+> +		break;
+> +	case ENET_1000_GMII:
+> +		*speed = ENET_SPEED_1000BT;
+> +		*limited_to_full_duplex = 1;
+> +		break;
+> +	case ENET_1000_RGMII:
+> +		*speed = ENET_SPEED_1000BT;
+> +		*rpm = 1;
+> +		*limited_to_full_duplex = 1;
+> +		break;
+> +	case ENET_1000_TBI:
+> +		*speed = ENET_SPEED_1000BT;
+> +		*tbi = 1;
+> +		*limited_to_full_duplex = 1;
+> +		break;
+> +	case ENET_1000_RTBI:
+> +		*speed = ENET_SPEED_1000BT;
+> +		*rpm = 1;
+> +		*tbi = 1;
+> +		*limited_to_full_duplex = 1;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +		break;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static struct sk_buff *get_new_skb(ucc_geth_private_t *ugeth, u8 *bd)
+> +{
+> +	struct sk_buff *skb = NULL;
+> +
+> +	skb = dev_alloc_skb(ugeth->ug_info->uf_info.max_rx_buf_length +
+> +				  UCC_GETH_RX_DATA_BUF_ALIGNMENT);
+> +
+> +	if (skb == NULL)
+> +		return NULL;
+> +
+> +	/* We need the data buffer to be aligned properly.  We will
+> reserve
+> +	 * as many bytes as needed to align the data properly
+> +	 */
+> +	skb_reserve(skb,
+> +		    UCC_GETH_RX_DATA_BUF_ALIGNMENT -
+> +		    (((unsigned)skb->data) &
+> (UCC_GETH_RX_DATA_BUF_ALIGNMENT -
+> +					      1)));
+> +
+> +	skb->dev = ugeth->dev;
+> +
+> +	BD_BUFFER_SET(bd,
+> +		      dma_map_single(NULL,
+> +				     skb->data,
+> +
+> ugeth->ug_info->uf_info.max_rx_buf_length +
+> +				     UCC_GETH_RX_DATA_BUF_ALIGNMENT,
+> +				     DMA_FROM_DEVICE));
+> +
+> +	BD_STATUS_AND_LENGTH_SET(bd,
+> +				 (R_E | R_I |
+> +				  (BD_STATUS_AND_LENGTH(bd) & R_W)));
+> +
+> +	return skb;
+> +}
+> +
+> +static int rx_bd_buffer_set(ucc_geth_private_t *ugeth, u8 rxQ)
+> +{
+> +	u8 *bd;
+> +	u32 bd_status;
+> +	struct sk_buff *skb;
+> +	int i;
+> +
+> +	bd = ugeth->p_rx_bd_ring[rxQ];
+> +	i = 0;
+> +
+> +	do {
+> +		bd_status = BD_STATUS_AND_LENGTH(bd);
+> +		skb = get_new_skb(ugeth, bd);
+> +
+> +		if (!skb)	/* If can not allocate data buffer,
+> +				abort. Cleanup will be elsewhere */
+> +			return -ENOMEM;
+> +
+> +		ugeth->rx_skbuff[rxQ][i] = skb;
+> +
+> +		/* advance the BD pointer */
+> +		bd += UCC_GETH_SIZE_OF_BD;
+> +		i++;
+> +	} while (!(bd_status & R_W));
+> +
+> +	return 0;
+> +}
+> +
+> +static int fill_init_enet_entries(ucc_geth_private_t *ugeth,
+> +				  volatile u32 *p_start,
+> +				  u8 num_entries,
+> +				  u32 thread_size,
+> +				  u32 thread_alignment,
+> +				  qe_risc_allocation_e risc,
+> +				  int skip_page_for_first_entry)
+> +{
+> +	u32 init_enet_offset;
+> +	u8 i;
+> +	int snum;
+> +
+> +	for (i = 0; i < num_entries; i++) {
+> +		if ((snum = qe_get_snum()) < 0) {
+> +			ugeth_err("fill_init_enet_entries: Can not get
+> SNUM.");
+> +			return snum;
+> +		}
+> +		if ((i == 0) && skip_page_for_first_entry)
+> +		/* First entry of Rx does not have page */
+> +			init_enet_offset = 0;
+> +		else {
+> +			init_enet_offset =
+> +			    qe_muram_alloc(thread_size,
+> thread_alignment);
+> +			if (IS_MURAM_ERR(init_enet_offset)) {
+> +				ugeth_err
+> +		("fill_init_enet_entries: Can not allocate DPRAM
+> memory.");
+> +				qe_put_snum((u8) snum);
+> +				return -ENOMEM;
+> +			}
+> +		}
+> +		*(p_start++) =
+> +		    ((u8) snum << ENET_INIT_PARAM_SNUM_SHIFT) |
+> init_enet_offset
+> +		    | risc;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int return_init_enet_entries(ucc_geth_private_t *ugeth,
+> +				    volatile u32 *p_start,
+> +				    u8 num_entries,
+> +				    qe_risc_allocation_e risc,
+> +				    int skip_page_for_first_entry)
+> +{
+> +	u32 init_enet_offset;
+> +	u8 i;
+> +	int snum;
+> +
+> +	for (i = 0; i < num_entries; i++) {
+> +		/* Check that this entry was actually valid --
+> +		needed in case failed in allocations */
+> +		if ((*p_start & ENET_INIT_PARAM_RISC_MASK) == risc) {
+> +			snum =
+> +			    (u32) (*p_start & ENET_INIT_PARAM_SNUM_MASK)
+>>>
+> +			    ENET_INIT_PARAM_SNUM_SHIFT;
+> +			qe_put_snum((u8) snum);
+> +			if (!((i == 0) && skip_page_for_first_entry)) {	
+> +			/* First entry of Rx does not have page */
+> +				init_enet_offset =
+> +				    (in_be32(p_start) &
+> +				     ENET_INIT_PARAM_PTR_MASK);
+> +				qe_muram_free(init_enet_offset);
+> +			}
+> +			*(p_start++) = 0;	/* Just for cosmetics */
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +#ifdef DEBUG
+> +static int dump_init_enet_entries(ucc_geth_private_t *ugeth,
+> +				  volatile u32 *p_start,
+> +				  u8 num_entries,
+> +				  u32 thread_size,
+> +				  qe_risc_allocation_e risc,
+> +				  int skip_page_for_first_entry)
+> +{
+> +	u32 init_enet_offset;
+> +	u8 i;
+> +	int snum;
+> +
+> +	for (i = 0; i < num_entries; i++) {
+> +		/* Check that this entry was actually valid --
+> +		needed in case failed in allocations */
+> +		if ((*p_start & ENET_INIT_PARAM_RISC_MASK) == risc) {
+> +			snum =
+> +			    (u32) (*p_start & ENET_INIT_PARAM_SNUM_MASK)
+>>>
+> +			    ENET_INIT_PARAM_SNUM_SHIFT;
+> +			qe_put_snum((u8) snum);
+> +			if (!((i == 0) && skip_page_for_first_entry)) {	
+> +			/* First entry of Rx does not have page */
+> +				init_enet_offset =
+> +				    (in_be32(p_start) &
+> +				     ENET_INIT_PARAM_PTR_MASK);
+> +				ugeth_info("Init enet entry %d:", i);
+> +				ugeth_info("Base address: 0x%08x",
+> +					   (u32)
+> +
+> qe_muram_addr(init_enet_offset));
+> +
+> mem_disp(qe_muram_addr(init_enet_offset),
+> +					 thread_size);
+> +			}
+> +			p_start++;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +#endif
+> +
+> +#ifdef CONFIG_UGETH_FILTERING
+> +static enet_addr_container_t *get_enet_addr_container(void)
+> +{
+> +	enet_addr_container_t *enet_addr_cont;
+> +
+> +	/* allocate memory */
+> +	enet_addr_cont = kmalloc(sizeof(enet_addr_container_t),
+> GFP_KERNEL);
+> +	if (!enet_addr_cont) {
+> +		ugeth_err("%s: No memory for enet_addr_container_t
+> object.",
+> +			  __FUNCTION__);
+> +		return NULL;
+> +	}
+> +
+> +	return enet_addr_cont;
+> +}
+> +#endif /* CONFIG_UGETH_FILTERING */
+> +
+> +static void put_enet_addr_container(enet_addr_container_t
+> *enet_addr_cont)
+> +{
+> +	kfree(enet_addr_cont);
+> +}
+> +
+> +#ifdef CONFIG_UGETH_FILTERING
+> +static int hw_add_addr_in_paddr(ucc_geth_private_t *ugeth,
+> +				enet_addr_t *p_enet_addr, u8 paddr_num)
+> +{
+> +	ucc_geth_82xx_address_filtering_pram_t *p_82xx_addr_filt;
+> +
+> +	if (!(paddr_num < NUM_OF_PADDRS)) {
+> +		ugeth_warn("%s: Illagel paddr_num.", __FUNCTION__);
+> +		return -EINVAL;
+> +	}
+> +
+> +	p_82xx_addr_filt =
+> +	    (ucc_geth_82xx_address_filtering_pram_t *)
+> ugeth->p_rx_glbl_pram->
+> +	    addressfiltering;
+> +
+> +	/* Ethernet frames are defined in Little Endian mode,    */
+> +	/* therefore to insert the address we reverse the bytes. */
+> +	out_be16(&p_82xx_addr_filt->paddr[paddr_num].h,
+> +		 (u16) (((u16) (((u16) ((*p_enet_addr)[5])) << 8)) |
+> +			(u16) (*p_enet_addr)[4]));
+> +	out_be16(&p_82xx_addr_filt->paddr[paddr_num].m,
+> +		 (u16) (((u16) (((u16) ((*p_enet_addr)[3])) << 8)) |
+> +			(u16) (*p_enet_addr)[2]));
+> +	out_be16(&p_82xx_addr_filt->paddr[paddr_num].l,
+> +		 (u16) (((u16) (((u16) ((*p_enet_addr)[1])) << 8)) |
+> +			(u16) (*p_enet_addr)[0]));
+> +
+> +	return 0;
+> +}
+> +#endif /* CONFIG_UGETH_FILTERING */
+> +
+> +static int hw_clear_addr_in_paddr(ucc_geth_private_t *ugeth, u8
+> paddr_num)
+> +{
+> +	ucc_geth_82xx_address_filtering_pram_t *p_82xx_addr_filt;
+> +
+> +	if (!(paddr_num < NUM_OF_PADDRS)) {
+> +		ugeth_warn("%s: Illagel paddr_num.", __FUNCTION__);
+> +		return -EINVAL;
+> +	}
+> +
+> +	p_82xx_addr_filt =
+> +	    (ucc_geth_82xx_address_filtering_pram_t *)
+> ugeth->p_rx_glbl_pram->
+> +	    addressfiltering;
+> +
+> +	/* Writing address ff.ff.ff.ff.ff.ff disables address
+> +	recognition for this register */
+> +	out_be16(&p_82xx_addr_filt->paddr[paddr_num].h, 0xffff);
+> +	out_be16(&p_82xx_addr_filt->paddr[paddr_num].m, 0xffff);
+> +	out_be16(&p_82xx_addr_filt->paddr[paddr_num].l, 0xffff);
+> +
+> +	return 0;
+> +}
+> +
+> +static void hw_add_addr_in_hash(ucc_geth_private_t *ugeth,
+> +				enet_addr_t *p_enet_addr)
+> +{
+> +	ucc_geth_82xx_address_filtering_pram_t *p_82xx_addr_filt;
+> +	u32 cecr_subblock;
+> +
+> +	p_82xx_addr_filt =
+> +	    (ucc_geth_82xx_address_filtering_pram_t *)
+> ugeth->p_rx_glbl_pram->
+> +	    addressfiltering;
+> +
+> +	cecr_subblock =
+> +
+> ucc_fast_get_qe_cr_subblock(ugeth->ug_info->uf_info.ucc_num);
+> +
+> +	/* Ethernet frames are defined in Little Endian mode,
+> +	therefor to insert */
+> +	/* the address to the hash (Big Endian mode), we reverse the
+> bytes.*/
+> +	out_be16(&p_82xx_addr_filt->taddr.h,
+> +		 (u16) (((u16) (((u16) ((*p_enet_addr)[5])) << 8)) |
+> +			(u16) (*p_enet_addr)[4]));
+> +	out_be16(&p_82xx_addr_filt->taddr.m,
+> +		 (u16) (((u16) (((u16) ((*p_enet_addr)[3])) << 8)) |
+> +			(u16) (*p_enet_addr)[2]));
+> +	out_be16(&p_82xx_addr_filt->taddr.l,
+> +		 (u16) (((u16) (((u16) ((*p_enet_addr)[1])) << 8)) |
+> +			(u16) (*p_enet_addr)[0]));
+> +
+> +	qe_issue_cmd(QE_SET_GROUP_ADDRESS, cecr_subblock,
+> +		     (u8) QE_CR_PROTOCOL_ETHERNET, 0);
+> +}
+> +
+> +#ifdef CONFIG_UGETH_MAGIC_PACKET
+> +static void magic_packet_detection_enable(ucc_geth_private_t *ugeth)
+> +{
+> +	ucc_fast_private_t *uccf;
+> +	ucc_geth_t *ug_regs;
+> +	u32 maccfg2, uccm;
+> +
+> +	uccf = ugeth->uccf;
+> +	ug_regs = ugeth->ug_regs;
+> +
+> +	/* Enable interrupts for magic packet detection */
+> +	uccm = in_be32(uccf->p_uccm);
+> +	uccm |= UCCE_MPD;
+> +	out_be32(uccf->p_uccm, uccm);
+> +
+> +	/* Enable magic packet detection */
+> +	maccfg2 = in_be32(&ug_regs->maccfg2);
+> +	maccfg2 |= MACCFG2_MPE;
+> +	out_be32(&ug_regs->maccfg2, maccfg2);
+> +}
+> +
+> +static void magic_packet_detection_disable(ucc_geth_private_t *ugeth)
+> +{
+> +	ucc_fast_private_t *uccf;
+> +	ucc_geth_t *ug_regs;
+> +	u32 maccfg2, uccm;
+> +
+> +	uccf = ugeth->uccf;
+> +	ug_regs = ugeth->ug_regs;
+> +
+> +	/* Disable interrupts for magic packet detection */
+> +	uccm = in_be32(uccf->p_uccm);
+> +	uccm &= ~UCCE_MPD;
+> +	out_be32(uccf->p_uccm, uccm);
+> +
+> +	/* Disable magic packet detection */
+> +	maccfg2 = in_be32(&ug_regs->maccfg2);
+> +	maccfg2 &= ~MACCFG2_MPE;
+> +	out_be32(&ug_regs->maccfg2, maccfg2);
+> +}
+> +#endif /* MAGIC_PACKET */
+> +
+> +static inline int compare_addr(enet_addr_t *addr1, enet_addr_t  
+> *addr2)
+> +{
+> +	return memcmp(addr1, addr2, ENET_NUM_OCTETS_PER_ADDRESS);
+> +}
+> +
+> +#ifdef DEBUG
+> +static void get_statistics(ucc_geth_private_t *ugeth,
+> +			   ucc_geth_tx_firmware_statistics_t *
+> +			   tx_firmware_statistics,
+> +			   ucc_geth_rx_firmware_statistics_t *
+> +			   rx_firmware_statistics,
+> +			   ucc_geth_hardware_statistics_t
+> *hardware_statistics)
+> +{
+> +	ucc_fast_t *uf_regs;
+> +	ucc_geth_t *ug_regs;
+> +	ucc_geth_tx_firmware_statistics_pram_t *p_tx_fw_statistics_pram;
+> +	ucc_geth_rx_firmware_statistics_pram_t *p_rx_fw_statistics_pram;
+> +
+> +	ug_regs = ugeth->ug_regs;
+> +	uf_regs = (ucc_fast_t *) ug_regs;
+> +	p_tx_fw_statistics_pram = ugeth->p_tx_fw_statistics_pram;
+> +	p_rx_fw_statistics_pram = ugeth->p_rx_fw_statistics_pram;
+> +
+> +	/* Tx firmware only if user handed pointer and driver actually
+> +	gathers Tx firmware statistics */
+> +	if (tx_firmware_statistics && p_tx_fw_statistics_pram) {
+> +		tx_firmware_statistics->sicoltx =
+> +		    in_be32(&p_tx_fw_statistics_pram->sicoltx);
+> +		tx_firmware_statistics->mulcoltx =
+> +		    in_be32(&p_tx_fw_statistics_pram->mulcoltx);
+> +		tx_firmware_statistics->latecoltxfr =
+> +		    in_be32(&p_tx_fw_statistics_pram->latecoltxfr);
+> +		tx_firmware_statistics->frabortduecol =
+> +		    in_be32(&p_tx_fw_statistics_pram->frabortduecol);
+> +		tx_firmware_statistics->frlostinmactxer =
+> +		    in_be32(&p_tx_fw_statistics_pram->frlostinmactxer);
+> +		tx_firmware_statistics->carriersenseertx =
+> +		    in_be32(&p_tx_fw_statistics_pram->carriersenseertx);
+> +		tx_firmware_statistics->frtxok =
+> +		    in_be32(&p_tx_fw_statistics_pram->frtxok);
+> +		tx_firmware_statistics->txfrexcessivedefer =
+> +
+> in_be32(&p_tx_fw_statistics_pram->txfrexcessivedefer);
+> +		tx_firmware_statistics->txpkts256 =
+> +		    in_be32(&p_tx_fw_statistics_pram->txpkts256);
+> +		tx_firmware_statistics->txpkts512 =
+> +		    in_be32(&p_tx_fw_statistics_pram->txpkts512);
+> +		tx_firmware_statistics->txpkts1024 =
+> +		    in_be32(&p_tx_fw_statistics_pram->txpkts1024);
+> +		tx_firmware_statistics->txpktsjumbo =
+> +		    in_be32(&p_tx_fw_statistics_pram->txpktsjumbo);
+> +	}
+> +
+> +	/* Rx firmware only if user handed pointer and driver actually
+> +	 * gathers Rx firmware statistics */
+> +	if (rx_firmware_statistics && p_rx_fw_statistics_pram) {
+> +		int i;
+> +		rx_firmware_statistics->frrxfcser =
+> +		    in_be32(&p_rx_fw_statistics_pram->frrxfcser);
+> +		rx_firmware_statistics->fraligner =
+> +		    in_be32(&p_rx_fw_statistics_pram->fraligner);
+> +		rx_firmware_statistics->inrangelenrxer =
+> +		    in_be32(&p_rx_fw_statistics_pram->inrangelenrxer);
+> +		rx_firmware_statistics->outrangelenrxer =
+> +		    in_be32(&p_rx_fw_statistics_pram->outrangelenrxer);
+> +		rx_firmware_statistics->frtoolong =
+> +		    in_be32(&p_rx_fw_statistics_pram->frtoolong);
+> +		rx_firmware_statistics->runt =
+> +		    in_be32(&p_rx_fw_statistics_pram->runt);
+> +		rx_firmware_statistics->verylongevent =
+> +		    in_be32(&p_rx_fw_statistics_pram->verylongevent);
+> +		rx_firmware_statistics->symbolerror =
+> +		    in_be32(&p_rx_fw_statistics_pram->symbolerror);
+> +		rx_firmware_statistics->dropbsy =
+> +		    in_be32(&p_rx_fw_statistics_pram->dropbsy);
+> +		for (i = 0; i < 0x8; i++)
+> +			rx_firmware_statistics->res0[i] =
+> +			    p_rx_fw_statistics_pram->res0[i];
+> +		rx_firmware_statistics->mismatchdrop =
+> +		    in_be32(&p_rx_fw_statistics_pram->mismatchdrop);
+> +		rx_firmware_statistics->underpkts =
+> +		    in_be32(&p_rx_fw_statistics_pram->underpkts);
+> +		rx_firmware_statistics->pkts256 =
+> +		    in_be32(&p_rx_fw_statistics_pram->pkts256);
+> +		rx_firmware_statistics->pkts512 =
+> +		    in_be32(&p_rx_fw_statistics_pram->pkts512);
+> +		rx_firmware_statistics->pkts1024 =
+> +		    in_be32(&p_rx_fw_statistics_pram->pkts1024);
+> +		rx_firmware_statistics->pktsjumbo =
+> +		    in_be32(&p_rx_fw_statistics_pram->pktsjumbo);
+> +		rx_firmware_statistics->frlossinmacer =
+> +		    in_be32(&p_rx_fw_statistics_pram->frlossinmacer);
+> +		rx_firmware_statistics->pausefr =
+> +		    in_be32(&p_rx_fw_statistics_pram->pausefr);
+> +		for (i = 0; i < 0x4; i++)
+> +			rx_firmware_statistics->res1[i] =
+> +			    p_rx_fw_statistics_pram->res1[i];
+> +		rx_firmware_statistics->removevlan =
+> +		    in_be32(&p_rx_fw_statistics_pram->removevlan);
+> +		rx_firmware_statistics->replacevlan =
+> +		    in_be32(&p_rx_fw_statistics_pram->replacevlan);
+> +		rx_firmware_statistics->insertvlan =
+> +		    in_be32(&p_rx_fw_statistics_pram->insertvlan);
+> +	}
+> +
+> +	/* Hardware only if user handed pointer and driver actually
+> +	gathers hardware statistics */
+> +	if (hardware_statistics && (in_be32(&uf_regs->upsmr) &
+> UPSMR_HSE)) {
+> +		hardware_statistics->tx64 = in_be32(&ug_regs->tx64);
+> +		hardware_statistics->tx127 = in_be32(&ug_regs->tx127);
+> +		hardware_statistics->tx255 = in_be32(&ug_regs->tx255);
+> +		hardware_statistics->rx64 = in_be32(&ug_regs->rx64);
+> +		hardware_statistics->rx127 = in_be32(&ug_regs->rx127);
+> +		hardware_statistics->rx255 = in_be32(&ug_regs->rx255);
+> +		hardware_statistics->txok = in_be32(&ug_regs->txok);
+> +		hardware_statistics->txcf = in_be16(&ug_regs->txcf);
+> +		hardware_statistics->tmca = in_be32(&ug_regs->tmca);
+> +		hardware_statistics->tbca = in_be32(&ug_regs->tbca);
+> +		hardware_statistics->rxfok = in_be32(&ug_regs->rxfok);
+> +		hardware_statistics->rxbok = in_be32(&ug_regs->rxbok);
+> +		hardware_statistics->rbyt = in_be32(&ug_regs->rbyt);
+> +		hardware_statistics->rmca = in_be32(&ug_regs->rmca);
+> +		hardware_statistics->rbca = in_be32(&ug_regs->rbca);
+> +	}
+> +}
+> +
+> +static void dump_bds(ucc_geth_private_t *ugeth)
+> +{
+> +	int i;
+> +	int length;
+> +
+> +	for (i = 0; i < ugeth->ug_info->numQueuesTx; i++) {
+> +		if (ugeth->p_tx_bd_ring[i]) {
+> +			length =
+> +			    (ugeth->ug_info->bdRingLenTx[i] *
+> +			     UCC_GETH_SIZE_OF_BD);
+> +			ugeth_info("TX BDs[%d]", i);
+> +			mem_disp(ugeth->p_tx_bd_ring[i], length);
+> +		}
+> +	}
+> +	for (i = 0; i < ugeth->ug_info->numQueuesRx; i++) {
+> +		if (ugeth->p_rx_bd_ring[i]) {
+> +			length =
+> +			    (ugeth->ug_info->bdRingLenRx[i] *
+> +			     UCC_GETH_SIZE_OF_BD);
+> +			ugeth_info("RX BDs[%d]", i);
+> +			mem_disp(ugeth->p_rx_bd_ring[i], length);
+> +		}
+> +	}
+> +}
+> +
+> +static void dump_regs(ucc_geth_private_t *ugeth)
+> +{
+> +	int i;
+> +
+> +	ugeth_info("UCC%d Geth registers:",
+> ugeth->ug_info->uf_info.ucc_num);
+> +	ugeth_info("Base address: 0x%08x", (u32) ugeth->ug_regs);
+> +
+> +	ugeth_info("maccfg1    : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->maccfg1,
+> +		   in_be32(&ugeth->ug_regs->maccfg1));
+> +	ugeth_info("maccfg2    : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->maccfg2,
+> +		   in_be32(&ugeth->ug_regs->maccfg2));
+> +	ugeth_info("ipgifg     : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->ipgifg,
+> +		   in_be32(&ugeth->ug_regs->ipgifg));
+> +	ugeth_info("hafdup     : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->hafdup,
+> +		   in_be32(&ugeth->ug_regs->hafdup));
+> +	ugeth_info("miimcfg    : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->miimng.miimcfg,
+> +		   in_be32(&ugeth->ug_regs->miimng.miimcfg));
+> +	ugeth_info("miimcom    : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->miimng.miimcom,
+> +		   in_be32(&ugeth->ug_regs->miimng.miimcom));
+> +	ugeth_info("miimadd    : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->miimng.miimadd,
+> +		   in_be32(&ugeth->ug_regs->miimng.miimadd));
+> +	ugeth_info("miimcon    : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->miimng.miimcon,
+> +		   in_be32(&ugeth->ug_regs->miimng.miimcon));
+> +	ugeth_info("miimstat   : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->miimng.miimstat,
+> +		   in_be32(&ugeth->ug_regs->miimng.miimstat));
+> +	ugeth_info("miimmind   : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->miimng.miimind,
+> +		   in_be32(&ugeth->ug_regs->miimng.miimind));
+> +	ugeth_info("ifctl      : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->ifctl,
+> +		   in_be32(&ugeth->ug_regs->ifctl));
+> +	ugeth_info("ifstat     : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->ifstat,
+> +		   in_be32(&ugeth->ug_regs->ifstat));
+> +	ugeth_info("macstnaddr1: addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->macstnaddr1,
+> +		   in_be32(&ugeth->ug_regs->macstnaddr1));
+> +	ugeth_info("macstnaddr2: addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->macstnaddr2,
+> +		   in_be32(&ugeth->ug_regs->macstnaddr2));
+> +	ugeth_info("uempr      : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->uempr,
+> +		   in_be32(&ugeth->ug_regs->uempr));
+> +	ugeth_info("utbipar    : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->utbipar,
+> +		   in_be32(&ugeth->ug_regs->utbipar));
+> +	ugeth_info("uescr      : addr - 0x%08x, val - 0x%04x",
+> +		   (u32) & ugeth->ug_regs->uescr,
+> +		   in_be16(&ugeth->ug_regs->uescr));
+> +	ugeth_info("tx64       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->tx64,
+> +		   in_be32(&ugeth->ug_regs->tx64));
+> +	ugeth_info("tx127      : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->tx127,
+> +		   in_be32(&ugeth->ug_regs->tx127));
+> +	ugeth_info("tx255      : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->tx255,
+> +		   in_be32(&ugeth->ug_regs->tx255));
+> +	ugeth_info("rx64       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->rx64,
+> +		   in_be32(&ugeth->ug_regs->rx64));
+> +	ugeth_info("rx127      : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->rx127,
+> +		   in_be32(&ugeth->ug_regs->rx127));
+> +	ugeth_info("rx255      : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->rx255,
+> +		   in_be32(&ugeth->ug_regs->rx255));
+> +	ugeth_info("txok       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->txok,
+> +		   in_be32(&ugeth->ug_regs->txok));
+> +	ugeth_info("txcf       : addr - 0x%08x, val - 0x%04x",
+> +		   (u32) & ugeth->ug_regs->txcf,
+> +		   in_be16(&ugeth->ug_regs->txcf));
+> +	ugeth_info("tmca       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->tmca,
+> +		   in_be32(&ugeth->ug_regs->tmca));
+> +	ugeth_info("tbca       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->tbca,
+> +		   in_be32(&ugeth->ug_regs->tbca));
+> +	ugeth_info("rxfok      : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->rxfok,
+> +		   in_be32(&ugeth->ug_regs->rxfok));
+> +	ugeth_info("rxbok      : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->rxbok,
+> +		   in_be32(&ugeth->ug_regs->rxbok));
+> +	ugeth_info("rbyt       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->rbyt,
+> +		   in_be32(&ugeth->ug_regs->rbyt));
+> +	ugeth_info("rmca       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->rmca,
+> +		   in_be32(&ugeth->ug_regs->rmca));
+> +	ugeth_info("rbca       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->rbca,
+> +		   in_be32(&ugeth->ug_regs->rbca));
+> +	ugeth_info("scar       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->scar,
+> +		   in_be32(&ugeth->ug_regs->scar));
+> +	ugeth_info("scam       : addr - 0x%08x, val - 0x%08x",
+> +		   (u32) & ugeth->ug_regs->scam,
+> +		   in_be32(&ugeth->ug_regs->scam));
+> +
+> +	if (ugeth->p_thread_data_tx) {
+> +		int numThreadsTxNumerical;
+> +		switch (ugeth->ug_info->numThreadsTx) {
+> +		case UCC_GETH_NUM_OF_THREADS_1:
+> +			numThreadsTxNumerical = 1;
+> +			break;
+> +		case UCC_GETH_NUM_OF_THREADS_2:
+> +			numThreadsTxNumerical = 2;
+> +			break;
+> +		case UCC_GETH_NUM_OF_THREADS_4:
+> +			numThreadsTxNumerical = 4;
+> +			break;
+> +		case UCC_GETH_NUM_OF_THREADS_6:
+> +			numThreadsTxNumerical = 6;
+> +			break;
+> +		case UCC_GETH_NUM_OF_THREADS_8:
+> +			numThreadsTxNumerical = 8;
+> +			break;
+> +		default:
+> +			numThreadsTxNumerical = 0;
+> +			break;
+> +		}
+> +
+> +		ugeth_info("Thread data TXs:");
+> +		ugeth_info("Base address: 0x%08x",
+> +			   (u32) ugeth->p_thread_data_tx);
+> +		for (i = 0; i < numThreadsTxNumerical; i++) {
+> +			ugeth_info("Thread data TX[%d]:", i);
+> +			ugeth_info("Base address: 0x%08x",
+> +				   (u32) & ugeth->p_thread_data_tx[i]);
+> +			mem_disp((u8 *) & ugeth->p_thread_data_tx[i],
+> +				 sizeof(ucc_geth_thread_data_tx_t));
+> +		}
+> +	}
+> +	if (ugeth->p_thread_data_rx) {
+> +		int numThreadsRxNumerical;
+> +		switch (ugeth->ug_info->numThreadsRx) {
+> +		case UCC_GETH_NUM_OF_THREADS_1:
+> +			numThreadsRxNumerical = 1;
+> +			break;
+> +		case UCC_GETH_NUM_OF_THREADS_2:
+> +			numThreadsRxNumerical = 2;
+> +			break;
+> +		case UCC_GETH_NUM_OF_THREADS_4:
+> +			numThreadsRxNumerical = 4;
+> +			break;
+> +		case UCC_GETH_NUM_OF_THREADS_6:
+> +			numThreadsRxNumerical = 6;
+> +			break;
+> +		case UCC_GETH_NUM_OF_THREADS_8:
+> +			numThreadsRxNumerical = 8;
+> +			break;
+> +		default:
+> +			numThreadsRxNumerical = 0;
+> +			break;
+> +		}
+> +
+> +		ugeth_info("Thread data RX:");
+> +		ugeth_info("Base address: 0x%08x",
+> +			   (u32) ugeth->p_thread_data_rx);
+> +		for (i = 0; i < numThreadsRxNumerical; i++) {
+> +			ugeth_info("Thread data RX[%d]:", i);
+> +			ugeth_info("Base address: 0x%08x",
+> +				   (u32) & ugeth->p_thread_data_rx[i]);
+> +			mem_disp((u8 *) & ugeth->p_thread_data_rx[i],
+> +				 sizeof(ucc_geth_thread_data_rx_t));
+> +		}
+> +	}
+> +	if (ugeth->p_exf_glbl_param) {
+> +		ugeth_info("EXF global param:");
+> +		ugeth_info("Base address: 0x%08x",
+> +			   (u32) ugeth->p_exf_glbl_param);
+> +		mem_disp((u8 *) ugeth->p_exf_glbl_param,
+> +			 sizeof(*ugeth->p_exf_glbl_param));
+> +	}
+> +	if (ugeth->p_tx_glbl_pram) {
+> +		ugeth_info("TX global param:");
+> +		ugeth_info("Base address: 0x%08x", (u32)
+> ugeth->p_tx_glbl_pram);
+> +		ugeth_info("temoder      : addr - 0x%08x, val - 0x%04x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->temoder,
+> +			   in_be16(&ugeth->p_tx_glbl_pram->temoder));
+> +		ugeth_info("sqptr        : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->sqptr,
+> +			   in_be32(&ugeth->p_tx_glbl_pram->sqptr));
+> +		ugeth_info("schedulerbasepointer: addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) &
+> ugeth->p_tx_glbl_pram->schedulerbasepointer,
+> +			   in_be32(&ugeth->p_tx_glbl_pram->
+> +				   schedulerbasepointer));
+> +		ugeth_info("txrmonbaseptr: addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->txrmonbaseptr,
+> +
+> in_be32(&ugeth->p_tx_glbl_pram->txrmonbaseptr));
+> +		ugeth_info("tstate       : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->tstate,
+> +			   in_be32(&ugeth->p_tx_glbl_pram->tstate));
+> +		ugeth_info("iphoffset[0] : addr - 0x%08x, val - 0x%02x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->iphoffset[0],
+> +			   ugeth->p_tx_glbl_pram->iphoffset[0]);
+> +		ugeth_info("iphoffset[1] : addr - 0x%08x, val - 0x%02x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->iphoffset[1],
+> +			   ugeth->p_tx_glbl_pram->iphoffset[1]);
+> +		ugeth_info("iphoffset[2] : addr - 0x%08x, val - 0x%02x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->iphoffset[2],
+> +			   ugeth->p_tx_glbl_pram->iphoffset[2]);
+> +		ugeth_info("iphoffset[3] : addr - 0x%08x, val - 0x%02x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->iphoffset[3],
+> +			   ugeth->p_tx_glbl_pram->iphoffset[3]);
+> +		ugeth_info("iphoffset[4] : addr - 0x%08x, val - 0x%02x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->iphoffset[4],
+> +			   ugeth->p_tx_glbl_pram->iphoffset[4]);
+> +		ugeth_info("iphoffset[5] : addr - 0x%08x, val - 0x%02x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->iphoffset[5],
+> +			   ugeth->p_tx_glbl_pram->iphoffset[5]);
+> +		ugeth_info("iphoffset[6] : addr - 0x%08x, val - 0x%02x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->iphoffset[6],
+> +			   ugeth->p_tx_glbl_pram->iphoffset[6]);
+> +		ugeth_info("iphoffset[7] : addr - 0x%08x, val - 0x%02x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->iphoffset[7],
+> +			   ugeth->p_tx_glbl_pram->iphoffset[7]);
+> +		ugeth_info("vtagtable[0] : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->vtagtable[0],
+> +
+> in_be32(&ugeth->p_tx_glbl_pram->vtagtable[0]));
+> +		ugeth_info("vtagtable[1] : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->vtagtable[1],
+> +
+> in_be32(&ugeth->p_tx_glbl_pram->vtagtable[1]));
+> +		ugeth_info("vtagtable[2] : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->vtagtable[2],
+> +
+> in_be32(&ugeth->p_tx_glbl_pram->vtagtable[2]));
+> +		ugeth_info("vtagtable[3] : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->vtagtable[3],
+> +
+> in_be32(&ugeth->p_tx_glbl_pram->vtagtable[3]));
+> +		ugeth_info("vtagtable[4] : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->vtagtable[4],
+> +
+> in_be32(&ugeth->p_tx_glbl_pram->vtagtable[4]));
+> +		ugeth_info("vtagtable[5] : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->vtagtable[5],
+> +
+> in_be32(&ugeth->p_tx_glbl_pram->vtagtable[5]));
+> +		ugeth_info("vtagtable[6] : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->vtagtable[6],
+> +
+> in_be32(&ugeth->p_tx_glbl_pram->vtagtable[6]));
+> +		ugeth_info("vtagtable[7] : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->vtagtable[7],
+> +
+> in_be32(&ugeth->p_tx_glbl_pram->vtagtable[7]));
+> +		ugeth_info("tqptr        : addr - 0x%08x, val - 0x%08x",
+> +			   (u32) & ugeth->p_tx_glbl_pram->tqptr,
+> +			   in_be32(&ugeth->p_tx_glbl_pram->tqptr));
+> +	}
+> +	if (ugeth->p_rx_glbl_pram) {
+> +		ugeth_info("RX global param:");
+> +		ugeth_info("Base address: 0x%08x", (u32)
+> ugeth->p_rx_glbl_pram);
+> +		ugeth_info("remoder         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->remoder,
+> +			   in_be32(&ugeth->p_rx_glbl_pram->remoder));
+> +		ugeth_info("rqptr           : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->rqptr,
+> +			   in_be32(&ugeth->p_rx_glbl_pram->rqptr));
+> +		ugeth_info("typeorlen       : addr - 0x%08x, val -
+> 0x%04x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->typeorlen,
+> +			   in_be16(&ugeth->p_rx_glbl_pram->typeorlen));
+> +		ugeth_info("rxgstpack       : addr - 0x%08x, val -
+> 0x%02x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->rxgstpack,
+> +			   ugeth->p_rx_glbl_pram->rxgstpack);
+> +		ugeth_info("rxrmonbaseptr   : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->rxrmonbaseptr,
+> +
+> in_be32(&ugeth->p_rx_glbl_pram->rxrmonbaseptr));
+> +		ugeth_info("intcoalescingptr: addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) &
+> ugeth->p_rx_glbl_pram->intcoalescingptr,
+> +
+> in_be32(&ugeth->p_rx_glbl_pram->intcoalescingptr));
+> +		ugeth_info("rstate          : addr - 0x%08x, val -
+> 0x%02x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->rstate,
+> +			   ugeth->p_rx_glbl_pram->rstate);
+> +		ugeth_info("mrblr           : addr - 0x%08x, val -
+> 0x%04x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->mrblr,
+> +			   in_be16(&ugeth->p_rx_glbl_pram->mrblr));
+> +		ugeth_info("rbdqptr         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->rbdqptr,
+> +			   in_be32(&ugeth->p_rx_glbl_pram->rbdqptr));
+> +		ugeth_info("mflr            : addr - 0x%08x, val -
+> 0x%04x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->mflr,
+> +			   in_be16(&ugeth->p_rx_glbl_pram->mflr));
+> +		ugeth_info("minflr          : addr - 0x%08x, val -
+> 0x%04x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->minflr,
+> +			   in_be16(&ugeth->p_rx_glbl_pram->minflr));
+> +		ugeth_info("maxd1           : addr - 0x%08x, val -
+> 0x%04x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->maxd1,
+> +			   in_be16(&ugeth->p_rx_glbl_pram->maxd1));
+> +		ugeth_info("maxd2           : addr - 0x%08x, val -
+> 0x%04x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->maxd2,
+> +			   in_be16(&ugeth->p_rx_glbl_pram->maxd2));
+> +		ugeth_info("ecamptr         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->ecamptr,
+> +			   in_be32(&ugeth->p_rx_glbl_pram->ecamptr));
+> +		ugeth_info("l2qt            : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->l2qt,
+> +			   in_be32(&ugeth->p_rx_glbl_pram->l2qt));
+> +		ugeth_info("l3qt[0]         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->l3qt[0],
+> +			   in_be32(&ugeth->p_rx_glbl_pram->l3qt[0]));
+> +		ugeth_info("l3qt[1]         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->l3qt[1],
+> +			   in_be32(&ugeth->p_rx_glbl_pram->l3qt[1]));
+> +		ugeth_info("l3qt[2]         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->l3qt[2],
+> +			   in_be32(&ugeth->p_rx_glbl_pram->l3qt[2]));
+> +		ugeth_info("l3qt[3]         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->l3qt[3],
+> +			   in_be32(&ugeth->p_rx_glbl_pram->l3qt[3]));
+> +		ugeth_info("l3qt[4]         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->l3qt[4],
+> +			   in_be32(&ugeth->p_rx_glbl_pram->l3qt[4]));
+> +		ugeth_info("l3qt[5]         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->l3qt[5],
+> +			   in_be32(&ugeth->p_rx_glbl_pram->l3qt[5]));
+> +		ugeth_info("l3qt[6]         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->l3qt[6],
+> +			   in_be32(&ugeth->p_rx_glbl_pram->l3qt[6]));
+> +		ugeth_info("l3qt[7]         : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->l3qt[7],
+> +			   in_be32(&ugeth->p_rx_glbl_pram->l3qt[7]));
+> +		ugeth_info("vlantype        : addr - 0x%08x, val -
+> 0x%04x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->vlantype,
+> +			   in_be16(&ugeth->p_rx_glbl_pram->vlantype));
+> +		ugeth_info("vlantci         : addr - 0x%08x, val -
+> 0x%04x",
+> +			   (u32) & ugeth->p_rx_glbl_pram->vlantci,
+> +			   in_be16(&ugeth->p_rx_glbl_pram->vlantci));
+> +		for (i = 0; i < 64; i++)
+> +			ugeth_info
+> +		    ("addressfiltering[%d]: addr - 0x%08x, val -
+> 0x%02x",
+> +			     i,
+> +			     (u32) &
+> ugeth->p_rx_glbl_pram->addressfiltering[i],
+> +
+> ugeth->p_rx_glbl_pram->addressfiltering[i]);
+> +		ugeth_info("exfGlobalParam  : addr - 0x%08x, val -
+> 0x%08x",
+> +			   (u32) &
+> ugeth->p_rx_glbl_pram->exfGlobalParam,
+> +
+> in_be32(&ugeth->p_rx_glbl_pram->exfGlobalParam));
+> +	}
+> +	if (ugeth->p_send_q_mem_reg) {
+> +		ugeth_info("Send Q memory registers:");
+> +		ugeth_info("Base address: 0x%08x",
+> +			   (u32) ugeth->p_send_q_mem_reg);
+> +		for (i = 0; i < ugeth->ug_info->numQueuesTx; i++) {
+> +			ugeth_info("SQQD[%d]:", i);
+> +			ugeth_info("Base address: 0x%08x",
+> +				   (u32) &
+> ugeth->p_send_q_mem_reg->sqqd[i]);
+> +			mem_disp((u8 *) &
+> ugeth->p_send_q_mem_reg->sqqd[i],
+> +				 sizeof(ucc_geth_send_queue_qd_t));
+> +		}
+> +	}
+> +	if (ugeth->p_scheduler) {
+> +		ugeth_info("Scheduler:");
+> +		ugeth_info("Base address: 0x%08x", (u32)
+> ugeth->p_scheduler);
+> +		mem_disp((u8 *) ugeth->p_scheduler,
+> +			 sizeof(*ugeth->p_scheduler));
+> +	}
+> +	if (ugeth->p_tx_fw_statistics_pram) {
+> +		ugeth_info("TX FW statistics pram:");
+> +		ugeth_info("Base address: 0x%08x",
+> +			   (u32) ugeth->p_tx_fw_statistics_pram);
+> +		mem_disp((u8 *) ugeth->p_tx_fw_statistics_pram,
+> +			 sizeof(*ugeth->p_tx_fw_statistics_pram));
+> +	}
+> +	if (ugeth->p_rx_fw_statistics_pram) {
+> +		ugeth_info("RX FW statistics pram:");
+> +		ugeth_info("Base address: 0x%08x",
+> +			   (u32) ugeth->p_rx_fw_statistics_pram);
+> +		mem_disp((u8 *) ugeth->p_rx_fw_statistics_pram,
+> +			 sizeof(*ugeth->p_rx_fw_statistics_pram));
+> +	}
+> +	if (ugeth->p_rx_irq_coalescing_tbl) {
+> +		ugeth_info("RX IRQ coalescing tables:");
+> +		ugeth_info("Base address: 0x%08x",
+> +			   (u32) ugeth->p_rx_irq_coalescing_tbl);
+> +		for (i = 0; i < ugeth->ug_info->numQueuesRx; i++) {
+> +			ugeth_info("RX IRQ coalescing table entry[%d]:",
+> i);
+> +			ugeth_info("Base address: 0x%08x",
+> +				   (u32) &
+> ugeth->p_rx_irq_coalescing_tbl->
+> +				   coalescingentry[i]);
+> +			ugeth_info
+> +		("interruptcoalescingmaxvalue: addr - 0x%08x, val -
+> 0x%08x",
+> +			     (u32) & ugeth->p_rx_irq_coalescing_tbl->
+> +
+> coalescingentry[i].interruptcoalescingmaxvalue,
+> +			     in_be32(&ugeth->p_rx_irq_coalescing_tbl->
+> +				     coalescingentry[i].
+> +				     interruptcoalescingmaxvalue));
+> +			ugeth_info
+> +		("interruptcoalescingcounter : addr - 0x%08x, val -
+> 0x%08x",
+> +			     (u32) & ugeth->p_rx_irq_coalescing_tbl->
+> +
+> coalescingentry[i].interruptcoalescingcounter,
+> +			     in_be32(&ugeth->p_rx_irq_coalescing_tbl->
+> +				     coalescingentry[i].
+> +				     interruptcoalescingcounter));
+> +		}
+> +	}
+> +	if (ugeth->p_rx_bd_qs_tbl) {
+> +		ugeth_info("RX BD QS tables:");
+> +		ugeth_info("Base address: 0x%08x", (u32)
+> ugeth->p_rx_bd_qs_tbl);
+> +		for (i = 0; i < ugeth->ug_info->numQueuesRx; i++) {
+> +			ugeth_info("RX BD QS table[%d]:", i);
+> +			ugeth_info("Base address: 0x%08x",
+> +				   (u32) & ugeth->p_rx_bd_qs_tbl[i]);
+> +			ugeth_info
+> +			    ("bdbaseptr        : addr - 0x%08x, val -
+> 0x%08x",
+> +			     (u32) & ugeth->p_rx_bd_qs_tbl[i].bdbaseptr,
+> +
+> in_be32(&ugeth->p_rx_bd_qs_tbl[i].bdbaseptr));
+> +			ugeth_info
+> +			    ("bdptr            : addr - 0x%08x, val -
+> 0x%08x",
+> +			     (u32) & ugeth->p_rx_bd_qs_tbl[i].bdptr,
+> +			     in_be32(&ugeth->p_rx_bd_qs_tbl[i].bdptr));
+> +			ugeth_info
+> +			    ("externalbdbaseptr: addr - 0x%08x, val -
+> 0x%08x",
+> +			     (u32) &
+> ugeth->p_rx_bd_qs_tbl[i].externalbdbaseptr,
+> +			     in_be32(&ugeth->p_rx_bd_qs_tbl[i].
+> +				     externalbdbaseptr));
+> +			ugeth_info
+> +			    ("externalbdptr    : addr - 0x%08x, val -
+> 0x%08x",
+> +			     (u32) &
+> ugeth->p_rx_bd_qs_tbl[i].externalbdptr,
+> +
+> in_be32(&ugeth->p_rx_bd_qs_tbl[i].externalbdptr));
+> +			ugeth_info("ucode RX Prefetched BDs:");
+> +			ugeth_info("Base address: 0x%08x",
+> +				   (u32)
+> +				   qe_muram_addr(in_be32
+> +
+> (&ugeth->p_rx_bd_qs_tbl[i].
+> +						  bdbaseptr)));
+> +			mem_disp((u8 *)
+> +				 qe_muram_addr(in_be32
+> +
+> (&ugeth->p_rx_bd_qs_tbl[i].
+> +						bdbaseptr)),
+> +				 sizeof(ucc_geth_rx_prefetched_bds_t));
+> +		}
+> +	}
+> +	if (ugeth->p_init_enet_param_shadow) {
+> +		int size;
+> +		ugeth_info("Init enet param shadow:");
+> +		ugeth_info("Base address: 0x%08x",
+> +			   (u32) ugeth->p_init_enet_param_shadow);
+> +		mem_disp((u8 *) ugeth->p_init_enet_param_shadow,
+> +			 sizeof(*ugeth->p_init_enet_param_shadow));
+> +
+> +		size = sizeof(ucc_geth_thread_rx_pram_t);
+> +		if (ugeth->ug_info->rxExtendedFiltering) {
+> +			size +=
+> +
+> THREAD_RX_PRAM_ADDITIONAL_FOR_EXTENDED_FILTERING;
+> +			if (ugeth->ug_info->largestexternallookupkeysize
+> ==
+> +			    QE_FLTR_TABLE_LOOKUP_KEY_SIZE_8_BYTES)
+> +				size +=
+> +
+> THREAD_RX_PRAM_ADDITIONAL_FOR_EXTENDED_FILTERING_8;
+> +			if (ugeth->ug_info->largestexternallookupkeysize
+> ==
+> +			    QE_FLTR_TABLE_LOOKUP_KEY_SIZE_16_BYTES)
+> +				size +=
+> +
+> THREAD_RX_PRAM_ADDITIONAL_FOR_EXTENDED_FILTERING_16;
+> +		}
+> +
+> +		dump_init_enet_entries(ugeth,
+> +
+> &(ugeth->p_init_enet_param_shadow->
+> +					 txthread[0]),
+> +				       ENET_INIT_PARAM_MAX_ENTRIES_TX,
+> +
+> sizeof(ucc_geth_thread_tx_pram_t),
+> +				       ugeth->ug_info->riscTx, 0);
+> +		dump_init_enet_entries(ugeth,
+> +
+> &(ugeth->p_init_enet_param_shadow->
+> +					 rxthread[0]),
+> +				       ENET_INIT_PARAM_MAX_ENTRIES_RX,
+> size,
+> +				       ugeth->ug_info->riscRx, 1);
+> +	}
+> +}
+> +#endif /* DEBUG */
+> +
+> +static void init_default_reg_vals(volatile u32 *upsmr_register,
+> +				  volatile u32 *maccfg1_register,
+> +				  volatile u32 *maccfg2_register)
+> +{
+> +	out_be32(upsmr_register, UCC_GETH_UPSMR_INIT);
+> +	out_be32(maccfg1_register, UCC_GETH_MACCFG1_INIT);
+> +	out_be32(maccfg2_register, UCC_GETH_MACCFG2_INIT);
+> +}
+> +
+> +static int init_half_duplex_params(int alt_beb,
+> +				   int back_pressure_no_backoff,
+> +				   int no_backoff,
+> +				   int excess_defer,
+> +				   u8 alt_beb_truncation,
+> +				   u8 max_retransmissions,
+> +				   u8 collision_window,
+> +				   volatile u32 *hafdup_register)
+> +{
+> +	u32 value = 0;
+> +
+> +	if ((alt_beb_truncation > HALFDUP_ALT_BEB_TRUNCATION_MAX) ||
+> +	    (max_retransmissions > HALFDUP_MAX_RETRANSMISSION_MAX) ||
+> +	    (collision_window > HALFDUP_COLLISION_WINDOW_MAX))
+> +		return -EINVAL;
+> +
+> +	value = (u32) (alt_beb_truncation <<
+> HALFDUP_ALT_BEB_TRUNCATION_SHIFT);
+> +
+> +	if (alt_beb)
+> +		value |= HALFDUP_ALT_BEB;
+> +	if (back_pressure_no_backoff)
+> +		value |= HALFDUP_BACK_PRESSURE_NO_BACKOFF;
+> +	if (no_backoff)
+> +		value |= HALFDUP_NO_BACKOFF;
+> +	if (excess_defer)
+> +		value |= HALFDUP_EXCESSIVE_DEFER;
+> +
+> +	value |= (max_retransmissions <<
+> HALFDUP_MAX_RETRANSMISSION_SHIFT);
+> +
+> +	value |= collision_window;
+> +
+> +	out_be32(hafdup_register, value);
+> +	return 0;
+> +}
+> +
+> +static int init_inter_frame_gap_params(u8 non_btb_cs_ipg,
+> +				       u8 non_btb_ipg,
+> +				       u8 min_ifg,
+> +				       u8 btb_ipg,
+> +				       volatile u32 *ipgifg_register)
+> +{
+> +	u32 value = 0;
+> +
+> +	/* Non-Back-to-back IPG part 1 should be <= Non-Back-to-back
+> +	IPG part 2 */
+> +	if (non_btb_cs_ipg > non_btb_ipg)
+> +		return -EINVAL;
+> +
+> +	if ((non_btb_cs_ipg > IPGIFG_NON_BACK_TO_BACK_IFG_PART1_MAX) ||
+> +	    (non_btb_ipg > IPGIFG_NON_BACK_TO_BACK_IFG_PART2_MAX) ||
+> +	    /*(min_ifg        > IPGIFG_MINIMUM_IFG_ENFORCEMENT_MAX) ||
+> */
+> +	    (btb_ipg > IPGIFG_BACK_TO_BACK_IFG_MAX))
+> +		return -EINVAL;
+> +
+> +	value |=
+> +	    ((non_btb_cs_ipg << IPGIFG_NON_BACK_TO_BACK_IFG_PART1_SHIFT)
+> &
+> +	     IPGIFG_NBTB_CS_IPG_MASK);
+> +	value |=
+> +	    ((non_btb_ipg << IPGIFG_NON_BACK_TO_BACK_IFG_PART2_SHIFT) &
+> +	     IPGIFG_NBTB_IPG_MASK);
+> +	value |=
+> +	    ((min_ifg << IPGIFG_MINIMUM_IFG_ENFORCEMENT_SHIFT) &
+> +	     IPGIFG_MIN_IFG_MASK);
+> +	value |= (btb_ipg & IPGIFG_BTB_IPG_MASK);
+> +
+> +	out_be32(ipgifg_register, value);
+> +	return 0;
+> +}
+> +
+> +static int init_flow_control_params(u32 automatic_flow_control_mode,
+> +				    int rx_flow_control_enable,
+> +				    int tx_flow_control_enable,
+> +				    u16 pause_period,
+> +				    u16 extension_field,
+> +				    volatile u32 *upsmr_register,
+> +				    volatile u32 *uempr_register,
+> +				    volatile u32 *maccfg1_register)
+> +{
+> +	u32 value = 0;
+> +
+> +	/* Set UEMPR register */
+> +	value = (u32) pause_period << UEMPR_PAUSE_TIME_VALUE_SHIFT;
+> +	value |= (u32) extension_field <<
+> UEMPR_EXTENDED_PAUSE_TIME_VALUE_SHIFT;
+> +	out_be32(uempr_register, value);
+> +
+> +	/* Set UPSMR register */
+> +	value = in_be32(upsmr_register);
+> +	value |= automatic_flow_control_mode;
+> +	out_be32(upsmr_register, value);
+> +
+> +	value = in_be32(maccfg1_register);
+> +	if (rx_flow_control_enable)
+> +		value |= MACCFG1_FLOW_RX;
+> +	if (tx_flow_control_enable)
+> +		value |= MACCFG1_FLOW_TX;
+> +	out_be32(maccfg1_register, value);
+> +
+> +	return 0;
+> +}
+> +
+> +static int init_hw_statistics_gathering_mode(int
+> enable_hardware_statistics,
+> +					     int
+> auto_zero_hardware_statistics,
+> +					     volatile u32
+> *upsmr_register,
+> +					     volatile u16
+> *uescr_register)
+> +{
+> +	u32 upsmr_value = 0;
+> +	u16 uescr_value = 0;
+> +	/* Enable hardware statistics gathering if requested */
+> +	if (enable_hardware_statistics) {
+> +		upsmr_value = in_be32(upsmr_register);
+> +		upsmr_value |= UPSMR_HSE;
+> +		out_be32(upsmr_register, upsmr_value);
+> +	}
+> +
+> +	/* Clear hardware statistics counters */
+> +	uescr_value = in_be16(uescr_register);
+> +	uescr_value |= UESCR_CLRCNT;
+> +	/* Automatically zero hardware statistics counters on read,
+> +	if requested */
+> +	if (auto_zero_hardware_statistics)
+> +		uescr_value |= UESCR_AUTOZ;
+> +	out_be16(uescr_register, uescr_value);
+> +
+> +	return 0;
+> +}
+> +
+> +static int init_firmware_statistics_gathering_mode(int
+> +		enable_tx_firmware_statistics,
+> +		int enable_rx_firmware_statistics,
+> +		volatile u32 *tx_rmon_base_ptr,
+> +		u32 tx_firmware_statistics_structure_address,
+> +		volatile u32 *rx_rmon_base_ptr,
+> +		u32 rx_firmware_statistics_structure_address,
+> +		volatile u16 *temoder_register,
+> +		volatile u32 *remoder_register)
+> +{
+> +	/* Note: this function does not check if */
+> +	/* the parameters it receives are NULL   */
+> +	u16 temoder_value;
+> +	u32 remoder_value;
+> +
+> +	if (enable_tx_firmware_statistics) {
+> +		out_be32(tx_rmon_base_ptr,
+> +			 tx_firmware_statistics_structure_address);
+> +		temoder_value = in_be16(temoder_register);
+> +		temoder_value |= TEMODER_TX_RMON_STATISTICS_ENABLE;
+> +		out_be16(temoder_register, temoder_value);
+> +	}
+> +
+> +	if (enable_rx_firmware_statistics) {
+> +		out_be32(rx_rmon_base_ptr,
+> +			 rx_firmware_statistics_structure_address);
+> +		remoder_value = in_be32(remoder_register);
+> +		remoder_value |= REMODER_RX_RMON_STATISTICS_ENABLE;
+> +		out_be32(remoder_register, remoder_value);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int init_mac_station_addr_regs(u8 address_byte_0,
+> +				      u8 address_byte_1,
+> +				      u8 address_byte_2,
+> +				      u8 address_byte_3,
+> +				      u8 address_byte_4,
+> +				      u8 address_byte_5,
+> +				      volatile u32
+> *macstnaddr1_register,
+> +				      volatile u32
+> *macstnaddr2_register)
+> +{
+> +	u32 value = 0;
+> +
+> +	/* Example: for a station address of 0x12345678ABCD, */
+> +	/* 0x12 is byte 0, 0x34 is byte 1 and so on and 0xCD is byte 5
+> */
+> +
+> +	/* MACSTNADDR1 Register: */
+> +
+> +	/* 0                      7   8                      15  */
+> +	/* station address byte 5     station address byte 4     */
+> +	/* 16                     23  24                     31  */
+> +	/* station address byte 3     station address byte 2     */
+> +	value |= (u32) ((address_byte_2 << 0) & 0x000000FF);
+> +	value |= (u32) ((address_byte_3 << 8) & 0x0000FF00);
+> +	value |= (u32) ((address_byte_4 << 16) & 0x00FF0000);
+> +	value |= (u32) ((address_byte_5 << 24) & 0xFF000000);
+> +
+> +	out_be32(macstnaddr1_register, value);
+> +
+> +	/* MACSTNADDR2 Register: */
+> +
+> +	/* 0                      7   8                      15  */
+> +	/* station address byte 1     station address byte 0     */
+> +	/* 16                     23  24                     31  */
+> +	/*         reserved                   reserved           */
+> +	value = 0;
+> +	value |= (u32) ((address_byte_0 << 16) & 0x00FF0000);
+> +	value |= (u32) ((address_byte_1 << 24) & 0xFF000000);
+> +
+> +	out_be32(macstnaddr2_register, value);
+> +
+> +	return 0;
+> +}
+> +
+> +static int init_mac_duplex_mode(int full_duplex,
+> +				int limited_to_full_duplex,
+> +				volatile u32 *maccfg2_register)
+> +{
+> +	u32 value = 0;
+> +
+> +	/* some interfaces must work in full duplex mode */
+> +	if ((full_duplex == 0) && (limited_to_full_duplex == 1))
+> +		return -EINVAL;
+> +
+> +	value = in_be32(maccfg2_register);
+> +
+> +	if (full_duplex)
+> +		value |= MACCFG2_FDX;
+> +	else
+> +		value &= ~MACCFG2_FDX;
+> +
+> +	out_be32(maccfg2_register, value);
+> +	return 0;
+> +}
+> +
+> +static int init_check_frame_length_mode(int length_check,
+> +					volatile u32 *maccfg2_register)
+> +{
+> +	u32 value = 0;
+> +
+> +	value = in_be32(maccfg2_register);
+> +
+> +	if (length_check)
+> +		value |= MACCFG2_LC;
+> +	else
+> +		value &= ~MACCFG2_LC;
+> +
+> +	out_be32(maccfg2_register, value);
+> +	return 0;
+> +}
+> +
+> +static int init_preamble_length(u8 preamble_length,
+> +				volatile u32 *maccfg2_register)
+> +{
+> +	u32 value = 0;
+> +
+> +	if ((preamble_length < 3) || (preamble_length > 7))
+> +		return -EINVAL;
+> +
+> +	value = in_be32(maccfg2_register);
+> +	value &= ~MACCFG2_PREL_MASK;
+> +	value |= (preamble_length << MACCFG2_PREL_SHIFT);
+> +	out_be32(maccfg2_register, value);
+> +	return 0;
+> +}
+> +
+> +static int init_mii_management_configuration(int reset_mgmt,
+> +					     int preamble_supress,
+> +					     volatile u32
+> *miimcfg_register,
+> +					     volatile u32
+> *miimind_register)
+> +{
+> +	unsigned int timeout = PHY_INIT_TIMEOUT;
+> +	u32 value = 0;
+> +
+> +	value = in_be32(miimcfg_register);
+> +	if (reset_mgmt) {
+> +		value |= MIIMCFG_RESET_MANAGEMENT;
+> +		out_be32(miimcfg_register, value);
+> +	}
+> +
+> +	value = 0;
+> +
+> +	if (preamble_supress)
+> +		value |= MIIMCFG_NO_PREAMBLE;
+> +
+> +	value |= UCC_GETH_MIIMCFG_MNGMNT_CLC_DIV_INIT;
+> +	out_be32(miimcfg_register, value);
+> +
+> +	/* Wait until the bus is free */
+> +	while ((in_be32(miimind_register) & MIIMIND_BUSY) && timeout--)
+> +		cpu_relax();
+> +
+> +	if (timeout <= 0) {
+> +		ugeth_err("%s: The MII Bus is stuck!", __FUNCTION__);
+> +		return -ETIMEDOUT;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int init_rx_parameters(int reject_broadcast,
+> +			      int receive_short_frames,
+> +			      int promiscuous, volatile u32
+> *upsmr_register)
+> +{
+> +	u32 value = 0;
+> +
+> +	value = in_be32(upsmr_register);
+> +
+> +	if (reject_broadcast)
+> +		value |= UPSMR_BRO;
+> +	else
+> +		value &= ~UPSMR_BRO;
+> +
+> +	if (receive_short_frames)
+> +		value |= UPSMR_RSH;
+> +	else
+> +		value &= ~UPSMR_RSH;
+> +
+> +	if (promiscuous)
+> +		value |= UPSMR_PRO;
+> +	else
+> +		value &= ~UPSMR_PRO;
+> +
+> +	out_be32(upsmr_register, value);
+> +
+> +	return 0;
+> +}
+> +
+> +static int init_max_rx_buff_len(u16 max_rx_buf_len,
+> +				volatile u16 *mrblr_register)
+> +{
+> +	/* max_rx_buf_len value must be a multiple of 128 */
+> +	if ((max_rx_buf_len == 0)
+> +	    || (max_rx_buf_len % UCC_GETH_MRBLR_ALIGNMENT))
+> +		return -EINVAL;
+> +
+> +	out_be16(mrblr_register, max_rx_buf_len);
+> +	return 0;
+> +}
+> +
+> +static int init_min_frame_len(u16 min_frame_length,
+> +			      volatile u16 *minflr_register,
+> +			      volatile u16 *mrblr_register)
+> +{
+> +	u16 mrblr_value = 0;
+> +
+> +	mrblr_value = in_be16(mrblr_register);
+> +	if (min_frame_length >= (mrblr_value - 4))
+> +		return -EINVAL;
+> +
+> +	out_be16(minflr_register, min_frame_length);
+> +	return 0;
+> +}
+> +
+> +static int adjust_enet_interface(ucc_geth_private_t *ugeth)
+> +{
+> +	ucc_geth_info_t *ug_info;
+> +	ucc_geth_t *ug_regs;
+> +	ucc_fast_t *uf_regs;
+> +	enet_speed_e speed;
+> +	int ret_val, rpm = 0, tbi = 0, r10m = 0, rmm =
+> +	    0, limited_to_full_duplex = 0;
+> +	u32 upsmr, maccfg2, utbipar, tbiBaseAddress;
+> +	u16 value;
+> +
+> +	ugeth_vdbg("%s: IN", __FUNCTION__);
+> +
+> +	ug_info = ugeth->ug_info;
+> +	ug_regs = ugeth->ug_regs;
+> +	uf_regs = ugeth->uccf->uf_regs;
+> +
+> +	/* Analyze enet_interface according to Interface Mode
+> Configuration
+> +	table */
+> +	ret_val =
+> +	    get_interface_details(ug_info->enet_interface, &speed,
+> &r10m, &rmm,
+> +				  &rpm, &tbi, &limited_to_full_duplex);
+> +	if (ret_val != 0) {
+> +		ugeth_err
+> +		  ("%s: half duplex not supported in requested
+> configuration.",
+> +		     __FUNCTION__);
+> +		return ret_val;
+> +	}
+> +
+> +	/*                    Set MACCFG2                    */
+> +	maccfg2 = in_be32(&ug_regs->maccfg2);
+> +	maccfg2 &= ~MACCFG2_INTERFACE_MODE_MASK;
+> +	if ((speed == ENET_SPEED_10BT) || (speed == ENET_SPEED_100BT))
+> +		maccfg2 |= MACCFG2_INTERFACE_MODE_NIBBLE;
+> +	else if (speed == ENET_SPEED_1000BT)
+> +		maccfg2 |= MACCFG2_INTERFACE_MODE_BYTE;
+> +	maccfg2 |= ug_info->padAndCrc;
+> +	out_be32(&ug_regs->maccfg2, maccfg2);
+> +
+> +	/*                    Set UPSMR                      */
+> +	upsmr = in_be32(&uf_regs->upsmr);
+> +	upsmr &= ~(UPSMR_RPM | UPSMR_R10M | UPSMR_TBIM | UPSMR_RMM);
+> +	if (rpm)
+> +		upsmr |= UPSMR_RPM;
+> +	if (r10m)
+> +		upsmr |= UPSMR_R10M;
+> +	if (tbi)
+> +		upsmr |= UPSMR_TBIM;
+> +	if (rmm)
+> +		upsmr |= UPSMR_RMM;
+> +	out_be32(&uf_regs->upsmr, upsmr);
+> +
+> +	/*                    Set UTBIPAR                    */
+> +	utbipar = in_be32(&ug_regs->utbipar);
+> +	utbipar &= ~UTBIPAR_PHY_ADDRESS_MASK;
+> +	if (tbi)
+> +		utbipar |=
+> +		    (ug_info->phy_address +
+> +		     ugeth->ug_info->uf_info.
+> +		     ucc_num) << UTBIPAR_PHY_ADDRESS_SHIFT;
+> +	else
+> +		utbipar |=
+> +		    (0x10 +
+> +		     ugeth->ug_info->uf_info.
+> +		     ucc_num) << UTBIPAR_PHY_ADDRESS_SHIFT;
+> +	out_be32(&ug_regs->utbipar, utbipar);
+> +
+> +	/* Disable autonegotiation in tbi mode, because by default it
+> +	comes up in autonegotiation mode. */
+> +	/* Note that this depends on proper setting in utbipar register.
+> */
+> +	if (tbi) {
+> +		tbiBaseAddress = in_be32(&ug_regs->utbipar);
+> +		tbiBaseAddress &= UTBIPAR_PHY_ADDRESS_MASK;
+> +		tbiBaseAddress >>= UTBIPAR_PHY_ADDRESS_SHIFT;
+> +		value =
+> +		    ugeth->mii_info->mdio_read(ugeth->dev, (u8)
+> tbiBaseAddress,
+> +					       ENET_TBI_MII_CR);
+> +		value &= ~0x1000;	/* Turn off autonegotiation */
+> +		ugeth->mii_info->mdio_write(ugeth->dev, (u8)
+> tbiBaseAddress,
+> +					    ENET_TBI_MII_CR, value);
+> +	}
+> +
+> +	ret_val = init_mac_duplex_mode(1,
+> +				       limited_to_full_duplex,
+> +				       &ug_regs->maccfg2);
+> +	if (ret_val != 0) {
+> +		ugeth_err
+> +		("%s: half duplex not supported in requested
+> configuration.",
+> +		     __FUNCTION__);
+> +		return ret_val;
+> +	}
+> +
+> +	init_check_frame_length_mode(ug_info->lengthCheckRx,
+> &ug_regs->maccfg2);
+> +
+> +	ret_val = init_preamble_length(ug_info->prel,
+> &ug_regs->maccfg2);
+> +	if (ret_val != 0) {
+> +		ugeth_err
+> +		    ("%s: Preamble length must be between 3 and 7
+> inclusive.",
+> +		     __FUNCTION__);
+> +		return ret_val;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/* Called every time the controller might need to be made
+> + * aware of new link state.  The PHY code conveys this
+> + * information through variables in the ugeth structure, and this
+> + * function converts those variables into the appropriate
+> + * register values, and can bring down the device if needed.
+> + */
+> +static void adjust_link(struct net_device *dev)
+> +{
+> +	ucc_geth_private_t *ugeth = netdev_priv(dev);
+> +	ucc_geth_t *ug_regs;
+> +	u32 tempval;
+> +	struct ugeth_mii_info *mii_info = ugeth->mii_info;
+> +
+> +	ug_regs = ugeth->ug_regs;
+> +
+> +	if (mii_info->link) {
+> +		/* Now we make sure that we can be in full duplex mode.
+> +		 * If not, we operate in half-duplex mode. */
+> +		if (mii_info->duplex != ugeth->oldduplex) {
+> +			if (!(mii_info->duplex)) {
+> +				tempval = in_be32(&ug_regs->maccfg2);
+> +				tempval &= ~(MACCFG2_FDX);
+> +				out_be32(&ug_regs->maccfg2, tempval);
+> +
+> +				ugeth_info("%s: Half Duplex",
+> dev->name);
+> +			} else {
+> +				tempval = in_be32(&ug_regs->maccfg2);
+> +				tempval |= MACCFG2_FDX;
+> +				out_be32(&ug_regs->maccfg2, tempval);
+> +
+> +				ugeth_info("%s: Full Duplex",
+> dev->name);
+> +			}
+> +
+> +			ugeth->oldduplex = mii_info->duplex;
+> +		}
+> +
+> +		if (mii_info->speed != ugeth->oldspeed) {
+> +			switch (mii_info->speed) {
+> +			case 1000:
+> +#ifdef CONFIG_MPC836x
+> +/* FIXME: This code is for 100Mbs BUG fixing,
+> +remove this when it is fixed!!! */
+> +				if (ugeth->ug_info->enet_interface ==
+> +				    ENET_1000_GMII)
+> +				/* Run the commands which initialize the
+> PHY */
+> +				{
+> +					tempval =
+> +					    (u32)
+> mii_info->mdio_read(ugeth->
+> +						dev, mii_info->mii_id,
+> 0x1b);
+> +					tempval |= 0x000f;
+> +					mii_info->mdio_write(ugeth->dev,
+> +						mii_info->mii_id, 0x1b,
+> +						(u16) tempval);
+> +					tempval =
+> +					    (u32)
+> mii_info->mdio_read(ugeth->
+> +						dev, mii_info->mii_id,
+> +						MII_BMCR);
+> +					mii_info->mdio_write(ugeth->dev,
+> +						mii_info->mii_id,
+> MII_BMCR,
+> +						(u16) (tempval |
+> BMCR_RESET));
+> +				} else if
+> (ugeth->ug_info->enet_interface ==
+> +					   ENET_1000_RGMII)
+> +				/* Run the commands which initialize the
+> PHY */
+> +				{
+> +					tempval =
+> +					    (u32)
+> mii_info->mdio_read(ugeth->
+> +						dev, mii_info->mii_id,
+> 0x1b);
+> +					tempval = (tempval & ~0x000f) |
+> 0x000b;
+> +					mii_info->mdio_write(ugeth->dev,
+> +						mii_info->mii_id, 0x1b,
+> +						(u16) tempval);
+> +					tempval =
+> +					    (u32)
+> mii_info->mdio_read(ugeth->
+> +						dev, mii_info->mii_id,
+> +						MII_BMCR);
+> +					mii_info->mdio_write(ugeth->dev,
+> +						mii_info->mii_id,
+> MII_BMCR,
+> +						(u16) (tempval |
+> BMCR_RESET));
+> +				}
+> +				msleep(4000);
+> +#endif				/* CONFIG_MPC8360 */
+> +				adjust_enet_interface(ugeth);
+> +				break;
+> +			case 100:
+> +			case 10:
+> +#ifdef CONFIG_MPC836x
+> +/* FIXME: This code is for 100Mbs BUG fixing,
+> +remove this lines when it will be fixed!!! */
+> +				ugeth->ug_info->enet_interface =
+> ENET_100_RGMII;
+> +				tempval =
+> +				    (u32)
+> mii_info->mdio_read(ugeth->dev,
+> +
+> mii_info->mii_id,
+> +							      0x1b);
+> +				tempval = (tempval & ~0x000f) | 0x000b;
+> +				mii_info->mdio_write(ugeth->dev,
+> +						     mii_info->mii_id,
+> 0x1b,
+> +						     (u16) tempval);
+> +				tempval =
+> +				    (u32)
+> mii_info->mdio_read(ugeth->dev,
+> +
+> mii_info->mii_id,
+> +							      MII_BMCR);
+> +				mii_info->mdio_write(ugeth->dev,
+> +						     mii_info->mii_id,
+> MII_BMCR,
+> +						     (u16) (tempval |
+> +
+> BMCR_RESET));
+> +				msleep(4000);
+> +#endif				/* CONFIG_MPC8360 */
+> +				adjust_enet_interface(ugeth);
+> +				break;
+> +			default:
+> +				ugeth_warn
+> +				    ("%s: Ack!  Speed (%d) is not
+> 10/100/1000!",
+> +				     dev->name, mii_info->speed);
+> +				break;
+> +			}
+> +
+> +			ugeth_info("%s: Speed %dBT", dev->name,
+> +				   mii_info->speed);
+> +
+> +			ugeth->oldspeed = mii_info->speed;
+> +		}
+> +
+> +		if (!ugeth->oldlink) {
+> +			ugeth_info("%s: Link is up", dev->name);
+> +			ugeth->oldlink = 1;
+> +			netif_carrier_on(dev);
+> +			netif_schedule(dev);
+> +		}
+> +	} else {
+> +		if (ugeth->oldlink) {
+> +			ugeth_info("%s: Link is down", dev->name);
+> +			ugeth->oldlink = 0;
+> +			ugeth->oldspeed = 0;
+> +			ugeth->oldduplex = -1;
+> +			netif_carrier_off(dev);
+> +		}
+> +	}
+> +}
+> +
+> +/* Configure the PHY for dev.
+> + * returns 0 if success.  -1 if failure
+> + */
+> +static int init_phy(struct net_device *dev)
+> +{
+> +	ucc_geth_private_t *ugeth = netdev_priv(dev);
+> +	struct phy_info *curphy;
+> +	ucc_mii_mng_t *mii_regs;
+> +	struct ugeth_mii_info *mii_info;
+> +	int err;
+> +
+> +	mii_regs = &ugeth->ug_regs->miimng;
+> +
+> +	ugeth->oldlink = 0;
+> +	ugeth->oldspeed = 0;
+> +	ugeth->oldduplex = -1;
+> +
+> +	mii_info = kmalloc(sizeof(struct ugeth_mii_info), GFP_KERNEL);
+> +
+> +	if (NULL == mii_info) {
+> +		ugeth_err("%s: Could not allocate mii_info", dev->name);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	mii_info->mii_regs = mii_regs;
+> +	mii_info->speed = SPEED_1000;
+> +	mii_info->duplex = DUPLEX_FULL;
+> +	mii_info->pause = 0;
+> +	mii_info->link = 0;
+> +
+> +	mii_info->advertising = (ADVERTISED_10baseT_Half |
+> +				 ADVERTISED_10baseT_Full |
+> +				 ADVERTISED_100baseT_Half |
+> +				 ADVERTISED_100baseT_Full |
+> +				 ADVERTISED_1000baseT_Full);
+> +	mii_info->autoneg = 1;
+> +
+> +	mii_info->mii_id = ugeth->ug_info->phy_address;
+> +
+> +	mii_info->dev = dev;
+> +
+> +	mii_info->mdio_read = &read_phy_reg;
+> +	mii_info->mdio_write = &write_phy_reg;
+> +
+> +	ugeth->mii_info = mii_info;
+> +
+> +	spin_lock_irq(&ugeth->lock);
+> +
+> +	/* Set this UCC to be the master of the MII managment */
+> +	ucc_set_qe_mux_mii_mng(ugeth->ug_info->uf_info.ucc_num);
+> +
+> +	if (init_mii_management_configuration(1,
+> +					      ugeth->ug_info->
+> +					      miiPreambleSupress,
+> +					      &mii_regs->miimcfg,
+> +					      &mii_regs->miimind)) {
+> +		ugeth_err("%s: The MII Bus is stuck!", dev->name);
+> +		err = -1;
+> +		goto bus_fail;
+> +	}
+> +
+> +	spin_unlock_irq(&ugeth->lock);
+> +
+> +	/* get info for this PHY */
+> +	curphy = get_phy_info(ugeth->mii_info);
+> +
+> +	if (curphy == NULL) {
+> +		ugeth_err("%s: No PHY found", dev->name);
+> +		err = -1;
+> +		goto no_phy;
+> +	}
+> +
+> +	mii_info->phyinfo = curphy;
+> +
+> +	/* Run the commands which initialize the PHY */
+> +	if (curphy->init) {
+> +		err = curphy->init(ugeth->mii_info);
+> +		if (err)
+> +			goto phy_init_fail;
+> +	}
+> +
+> +	return 0;
+> +
+> +      phy_init_fail:
+> +      no_phy:
+> +      bus_fail:
+> +	kfree(mii_info);
+> +
+> +	return err;
+> +}
+> +
+> +#ifdef CONFIG_UGETH_TX_ON_DEMOND
+> +static int ugeth_transmit_on_demand(ucc_geth_private_t *ugeth)
+> +{
+> +	ucc_fast_transmit_on_demand(ugeth->uccf);
+> +
+> +	return 0;
+> +}
+> +#endif
+> +
+> +static int ugeth_graceful_stop_tx(ucc_geth_private_t *ugeth)
+> +{
+> +	ucc_fast_private_t *uccf;
+> +	u32 cecr_subblock;
+> +	u32 temp;
+> +
+> +	uccf = ugeth->uccf;
+> +
+> +	/* Mask GRACEFUL STOP TX interrupt bit and clear it */
+> +	temp = in_be32(uccf->p_uccm);
+> +	temp &= ~UCCE_GRA;
+> +	out_be32(uccf->p_uccm, temp);
+> +	out_be32(uccf->p_ucce, UCCE_GRA);	/* clear by writing 1 */
+> +
+> +	/* Issue host command */
+> +	cecr_subblock =
+> +
+> ucc_fast_get_qe_cr_subblock(ugeth->ug_info->uf_info.ucc_num);
+> +	qe_issue_cmd(QE_GRACEFUL_STOP_TX, cecr_subblock,
+> +		     (u8) QE_CR_PROTOCOL_ETHERNET, 0);
+> +
+> +	/* Wait for command to complete */
+> +	do {
+> +		temp = in_be32(uccf->p_ucce);
+> +	} while (!(temp & UCCE_GRA));
+> +
+> +	uccf->stopped_tx = 1;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ugeth_graceful_stop_rx(ucc_geth_private_t * ugeth)
+> +{
+> +	ucc_fast_private_t *uccf;
+> +	u32 cecr_subblock;
+> +	u8 temp;
+> +
+> +	uccf = ugeth->uccf;
+> +
+> +	/* Clear acknowledge bit */
+> +	temp = ugeth->p_rx_glbl_pram->rxgstpack;
+> +	temp &= ~GRACEFUL_STOP_ACKNOWLEDGE_RX;
+> +	ugeth->p_rx_glbl_pram->rxgstpack = temp;
+> +
+> +	/* Keep issuing command and checking acknowledge bit until
+> +	it is asserted, according to spec */
+> +	do {
+> +		/* Issue host command */
+> +		cecr_subblock =
+> +		    ucc_fast_get_qe_cr_subblock(ugeth->ug_info->uf_info.
+> +						ucc_num);
+> +		qe_issue_cmd(QE_GRACEFUL_STOP_RX, cecr_subblock,
+> +			     (u8) QE_CR_PROTOCOL_ETHERNET, 0);
+> +
+> +		temp = ugeth->p_rx_glbl_pram->rxgstpack;
+> +	} while (!(temp & GRACEFUL_STOP_ACKNOWLEDGE_RX));
+> +
+> +	uccf->stopped_rx = 1;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ugeth_restart_tx(ucc_geth_private_t *ugeth)
+> +{
+> +	ucc_fast_private_t *uccf;
+> +	u32 cecr_subblock;
+> +
+> +	uccf = ugeth->uccf;
+> +
+> +	cecr_subblock =
+> +
+> ucc_fast_get_qe_cr_subblock(ugeth->ug_info->uf_info.ucc_num);
+> +	qe_issue_cmd(QE_RESTART_TX, cecr_subblock, (u8)
+> QE_CR_PROTOCOL_ETHERNET,
+> +		     0);
+> +	uccf->stopped_tx = 0;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ugeth_restart_rx(ucc_geth_private_t *ugeth)
+> +{
+> +	ucc_fast_private_t *uccf;
+> +	u32 cecr_subblock;
+> +
+> +	uccf = ugeth->uccf;
+> +
+> +	cecr_subblock =
+> +
+> ucc_fast_get_qe_cr_subblock(ugeth->ug_info->uf_info.ucc_num);
+> +	qe_issue_cmd(QE_RESTART_RX, cecr_subblock, (u8)
+> QE_CR_PROTOCOL_ETHERNET,
+> +		     0);
+> +	uccf->stopped_rx = 0;
+> +
+> +	return 0;
+> +}
+> +
+> +static int ugeth_enable(ucc_geth_private_t *ugeth, comm_dir_e mode)
+> +{
+> +	ucc_fast_private_t *uccf;
+> +	int enabled_tx, enabled_rx;
+> +
+> +	uccf = ugeth->uccf;
+> +
+> +	/* check if the UCC number is in range. */
+> +	if (ugeth->ug_info->uf_info.ucc_num >= UCC_MAX_NUM) {
+> +		ugeth_err("%s: ucc_num out of range.", __FUNCTION__);
+> +		return -EINVAL;
+> +	}
+> +
+> +	enabled_tx = uccf->enabled_tx;
+> +	enabled_rx = uccf->enabled_rx;
+> +
+> +	/* Get Tx and Rx going again, in case this channel was actively
+> +	disabled. */
+> +	if ((mode & COMM_DIR_TX) && (!enabled_tx) && uccf->stopped_tx)
+> +		ugeth_restart_tx(ugeth);
+> +	if ((mode & COMM_DIR_RX) && (!enabled_rx) && uccf->stopped_rx)
+> +		ugeth_restart_rx(ugeth);
+> +
+> +	ucc_fast_enable(uccf, mode);	/* OK to do even if not disabled
+> */
+> +
+> +	return 0;
+> +
+> +}
+> +
+> +static int ugeth_disable(ucc_geth_private_t * ugeth, comm_dir_e mode)
+> +{
+> +	ucc_fast_private_t *uccf;
+> +
+> +	uccf = ugeth->uccf;
+> +
+> +	/* check if the UCC number is in range. */
+> +	if (ugeth->ug_info->uf_info.ucc_num >= UCC_MAX_NUM) {
+> +		ugeth_err("%s: ucc_num out of range.", __FUNCTION__);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* Stop any transmissions */
+> +	if ((mode & COMM_DIR_TX) && uccf->enabled_tx &&
+> !uccf->stopped_tx)
+> +		ugeth_graceful_stop_tx(ugeth);
+> +
+> +	/* Stop any receptions */
+> +	if ((mode & COMM_DIR_RX) && uccf->enabled_rx &&
+> !uccf->stopped_rx)
+> +		ugeth_graceful_stop_rx(ugeth);
+> +
+> +	ucc_fast_disable(ugeth->uccf, mode); /* OK to do even if not
+> enabled */
+> +
+> +	return 0;
+> +}
+> +
+> +static void ugeth_dump_regs(ucc_geth_private_t *ugeth)
+> +{
+> +#ifdef DEBUG
+> +	ucc_fast_dump_regs(ugeth->uccf);
+> +	dump_regs(ugeth);
+> +	dump_bds(ugeth);
+> +#endif
+> +}
+> +
+> +#ifdef CONFIG_UGETH_FILTERING
+> +static int ugeth_ext_filtering_serialize_tad(ucc_geth_tad_params_t *
+> +					     p_UccGethTadParams,
+> +					     qe_fltr_tad_t *qe_fltr_tad)
+> +{
+> +	u16 temp;
+> +
+> +	/* Zero serialized TAD */
+> +	memset(qe_fltr_tad, 0, QE_FLTR_TAD_SIZE);
+> +
+> +	qe_fltr_tad->serialized[0] |= UCC_GETH_TAD_V;	/* Must have
+> this */
+> +	if (p_UccGethTadParams->rx_non_dynamic_extended_features_mode ||
+> +	    (p_UccGethTadParams->vtag_op !=
+> UCC_GETH_VLAN_OPERATION_TAGGED_NOP)
+> +	    || (p_UccGethTadParams->vnontag_op !=
+> +		UCC_GETH_VLAN_OPERATION_NON_TAGGED_NOP)
+> +	    )
+> +		qe_fltr_tad->serialized[0] |= UCC_GETH_TAD_EF;
+> +	if (p_UccGethTadParams->reject_frame)
+> +		qe_fltr_tad->serialized[0] |= UCC_GETH_TAD_REJ;
+> +	temp =
+> +	    (u16) (((u16) p_UccGethTadParams->
+> +		    vtag_op) << UCC_GETH_TAD_VTAG_OP_SHIFT);
+> +	qe_fltr_tad->serialized[0] |= (u8) (temp >> 8);	/* upper bits */
+> +
+> +	qe_fltr_tad->serialized[1] |= (u8) (temp & 0x00ff);	/* lower
+> bits */
+> +	if (p_UccGethTadParams->vnontag_op ==
+> +	    UCC_GETH_VLAN_OPERATION_NON_TAGGED_Q_TAG_INSERT)
+> +		qe_fltr_tad->serialized[1] |=
+> UCC_GETH_TAD_V_NON_VTAG_OP;
+> +	qe_fltr_tad->serialized[1] |=
+> +	    p_UccGethTadParams->rqos << UCC_GETH_TAD_RQOS_SHIFT;
+> +
+> +	qe_fltr_tad->serialized[2] |=
+> +	    p_UccGethTadParams->vpri << UCC_GETH_TAD_V_PRIORITY_SHIFT;
+> +	/* upper bits */
+> +	qe_fltr_tad->serialized[2] |= (u8) (p_UccGethTadParams->vid >>
+> 8);
+> +	/* lower bits */
+> +	qe_fltr_tad->serialized[3] |= (u8) (p_UccGethTadParams->vid &
+> 0x00ff);
+> +
+> +	return 0;
+> +}
+> +
+> +static enet_addr_container_t
+> +    *ugeth_82xx_filtering_get_match_addr_in_hash(ucc_geth_private_t
+> *ugeth,
+> +						 enet_addr_t
+> *p_enet_addr)
+> +{
+> +	enet_addr_container_t *enet_addr_cont;
+> +	struct list_head *p_lh;
+> +	u16 i, num;
+> +	int32_t j;
+> +	u8 *p_counter;
+> +
+> +	if ((*p_enet_addr)[0] & ENET_GROUP_ADDR) {
+> +		p_lh = &ugeth->group_hash_q;
+> +		p_counter = &(ugeth->numGroupAddrInHash);
+> +	} else {
+> +		p_lh = &ugeth->ind_hash_q;
+> +		p_counter = &(ugeth->numIndAddrInHash);
+> +	}
+> +
+> +	if (!p_lh)
+> +		return NULL;
+> +
+> +	num = *p_counter;
+> +
+> +	for (i = 0; i < num; i++) {
+> +		enet_addr_cont =
+> +		    (enet_addr_container_t *)
+> +		    ENET_ADDR_CONT_ENTRY(dequeue(p_lh));
+> +		for (j = ENET_NUM_OCTETS_PER_ADDRESS - 1; j >= 0; j--) {
+> +			if ((*p_enet_addr)[j] !=
+> (enet_addr_cont->address)[j])
+> +				break;
+> +			if (j == 0)
+> +				return enet_addr_cont;	/* Found */
+> +		}
+> +		enqueue(p_lh, &enet_addr_cont->node);	/* Put it back
+> */
+> +	}
+> +	return NULL;
+> +}
+> +
+> +static int ugeth_82xx_filtering_add_addr_in_hash(ucc_geth_private_t
+> *ugeth,
+> +						 enet_addr_t
+> *p_enet_addr)
+> +{
+> +	ucc_geth_enet_address_recognition_location_e location;
+> +	enet_addr_container_t *enet_addr_cont;
+> +	struct list_head *p_lh;
+> +	u8 i;
+> +	u32 limit;
+> +	u8 *p_counter;
+> +
+> +	if ((*p_enet_addr)[0] & ENET_GROUP_ADDR) {
+> +		p_lh = &ugeth->group_hash_q;
+> +		limit = ugeth->ug_info->maxGroupAddrInHash;
+> +		location =
+> +
+> UCC_GETH_ENET_ADDRESS_RECOGNITION_LOCATION_GROUP_HASH;
+> +		p_counter = &(ugeth->numGroupAddrInHash);
+> +	} else {
+> +		p_lh = &ugeth->ind_hash_q;
+> +		limit = ugeth->ug_info->maxIndAddrInHash;
+> +		location =
+> +
+> UCC_GETH_ENET_ADDRESS_RECOGNITION_LOCATION_INDIVIDUAL_HASH;
+> +		p_counter = &(ugeth->numIndAddrInHash);
+> +	}
+> +
+> +	if ((enet_addr_cont =
+> +	     ugeth_82xx_filtering_get_match_addr_in_hash(ugeth,
+> p_enet_addr))) {
+> +		list_add(p_lh, &enet_addr_cont->node);	/* Put it back
+> */
+> +		return 0;
+> +	}
+> +	if ((!p_lh) || (!(*p_counter < limit)))
+> +		return -EBUSY;
+> +	if (!(enet_addr_cont = get_enet_addr_container()))
+> +		return -ENOMEM;
+> +	for (i = 0; i < ENET_NUM_OCTETS_PER_ADDRESS; i++)
+> +		(enet_addr_cont->address)[i] = (*p_enet_addr)[i];
+> +	enet_addr_cont->location = location;
+> +	enqueue(p_lh, &enet_addr_cont->node);	/* Put it back */
+> +	++(*p_counter);
+> +
+> +	hw_add_addr_in_hash(ugeth, &(enet_addr_cont->address));
+> +
+> +	return 0;
+> +}
+> +
+> +static int ugeth_82xx_filtering_clear_addr_in_hash(ucc_geth_private_t
+> *ugeth,
+> +						   enet_addr_t
+> *p_enet_addr)
+> +{
+> +	ucc_geth_82xx_address_filtering_pram_t *p_82xx_addr_filt;
+> +	enet_addr_container_t *enet_addr_cont;
+> +	ucc_fast_private_t *uccf;
+> +	comm_dir_e comm_dir;
+> +	u16 i, num;
+> +	struct list_head *p_lh;
+> +	u32 *addr_h, *addr_l;
+> +	u8 *p_counter;
+> +
+> +	uccf = ugeth->uccf;
+> +
+> +	p_82xx_addr_filt =
+> +	    (ucc_geth_82xx_address_filtering_pram_t *)
+> ugeth->p_rx_glbl_pram->
+> +	    addressfiltering;
+> +
+> +	if (!
+> +	    (enet_addr_cont =
+> +	     ugeth_82xx_filtering_get_match_addr_in_hash(ugeth,
+> p_enet_addr)))
+> +		return -ENOENT;
+> +
+> +	/* It's been found and removed from the CQ. */
+> +	/* Now destroy its container */
+> +	put_enet_addr_container(enet_addr_cont);
+> +
+> +	if ((*p_enet_addr)[0] & ENET_GROUP_ADDR) {
+> +		addr_h = &(p_82xx_addr_filt->gaddr_h);
+> +		addr_l = &(p_82xx_addr_filt->gaddr_l);
+> +		p_lh = &ugeth->group_hash_q;
+> +		p_counter = &(ugeth->numGroupAddrInHash);
+> +	} else {
+> +		addr_h = &(p_82xx_addr_filt->iaddr_h);
+> +		addr_l = &(p_82xx_addr_filt->iaddr_l);
+> +		p_lh = &ugeth->ind_hash_q;
+> +		p_counter = &(ugeth->numIndAddrInHash);
+> +	}
+> +
+> +	comm_dir = 0;
+> +	if (uccf->enabled_tx)
+> +		comm_dir |= COMM_DIR_TX;
+> +	if (uccf->enabled_rx)
+> +		comm_dir |= COMM_DIR_RX;
+> +	if (comm_dir)
+> +		ugeth_disable(ugeth, comm_dir);
+> +
+> +	/* Clear the hash table. */
+> +	out_be32(addr_h, 0x00000000);
+> +	out_be32(addr_l, 0x00000000);
+> +
+> +	/* Add all remaining CQ elements back into hash */
+> +	num = --(*p_counter);
+> +	for (i = 0; i < num; i++) {
+> +		enet_addr_cont =
+> +		    (enet_addr_container_t *)
+> +		    ENET_ADDR_CONT_ENTRY(dequeue(p_lh));
+> +		hw_add_addr_in_hash(ugeth, &(enet_addr_cont->address));
+> +		enqueue(p_lh, &enet_addr_cont->node);	/* Put it back
+> */
+> +	}
+> +
+> +	if (comm_dir)
+> +		ugeth_enable(ugeth, comm_dir);
+> +
+> +	return 0;
+> +}
+> +#endif /* CONFIG_UGETH_FILTERING */
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
