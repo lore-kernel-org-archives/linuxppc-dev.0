@@ -2,14 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6896C67BC5
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Jul 2006 03:00:31 +1000 (EST)
-Message-Id: <20060707165534.533644000@sipsolutions.net>
+	by ozlabs.org (Postfix) with ESMTP id 703F467BE5
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Jul 2006 03:00:33 +1000 (EST)
+Message-Id: <20060707165530.005860000@sipsolutions.net>
 References: <20060707165207.877010000@sipsolutions.net>
-Date: Fri, 07 Jul 2006 18:52:19 +0200
+Date: Fri, 07 Jul 2006 18:52:10 +0200
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 12/12] aoa: tas: add missing bass/treble controls
+Subject: [PATCH 03/12] aoa: i2sbus: fix for PowerMac7,2 and 7,3
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,307 +20,211 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the bass/treble controls to snd-aoa that snd-powermac always
-had for tas3004 based machines.
+This patch cleans up the resource handling in i2sbus and adds
+workarounds for the broken device trees on the PowerMac7,2
+and 7,3.
+Some of this code will later move again when macio_asic is
+going to export all the sub-nodes too.
 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-fetch/sound/aoa/codecs/snd-aoa-codec-tas-basstreble.h	2006-07-07 18:15:40.800223603 +0200
-@@ -0,0 +1,134 @@
-+/*
-+ * This file is only included exactly once!
-+ *
-+ * The tables here are derived from the tas3004 datasheet,
-+ * modulo typo corrections and some smoothing...
-+ */
-+
-+#define TAS3004_TREBLE_MIN	0
-+#define TAS3004_TREBLE_MAX	72
-+#define TAS3004_BASS_MIN	0
-+#define TAS3004_BASS_MAX	72
-+#define TAS3004_TREBLE_ZERO	36
-+#define TAS3004_BASS_ZERO	36
-+
-+static u8 tas3004_treble_table[] = {
-+	150, /* -18 dB */
-+	149,
-+	148,
-+	147,
-+	146,
-+	145,
-+	144,
-+	143,
-+	142,
-+	141,
-+	140,
-+	139,
-+	138,
-+	137,
-+	136,
-+	135,
-+	134,
-+	133,
-+	132,
-+	131,
-+	130,
-+	129,
-+	128,
-+	127,
-+	126,
-+	125,
-+	124,
-+	123,
-+	122,
-+	121,
-+	120,
-+	119,
-+	118,
-+	117,
-+	116,
-+	115,
-+	114, /* 0 dB */
-+	113,
-+	112,
-+	111,
-+	109,
-+	108,
-+	107,
-+	105,
-+	104,
-+	103,
-+	101,
-+	99,
-+	98,
-+	96,
-+	93,
-+	91,
-+	89,
-+	86,
-+	83,
-+	81,
-+	77,
-+	74,
-+	71,
-+	67,
-+	63,
-+	59,
-+	54,
-+	49,
-+	44,
-+	38,
-+	32,
-+	26,
-+	19,
-+	10,
-+	4,
-+	2,
-+	1, /* +18 dB */
-+};
-+
-+static inline u8 tas3004_treble(int idx)
-+{
-+	return tas3004_treble_table[idx];
-+}
-+
-+/* I only save the difference here to the treble table
-+ * so that the binary is smaller...
-+ * I have also ignored completely differences of
-+ * +/- 1
-+ */
-+static s8 tas3004_bass_diff_to_treble[] = {
-+	2, /* 7 dB, offset 50 */
-+	2,
-+	2,
-+	2,
-+	2,
-+	1,
-+	2,
-+	2,
-+	2,
-+	3,
-+	4,
-+	4,
-+	5,
-+	6,
-+	7,
-+	8,
-+	9,
-+	10,
-+	11,
-+	14,
-+	13,
-+	8,
-+	1, /* 18 dB */
-+};
-+
-+static inline u8 tas3004_bass(int idx)
-+{
-+	u8 result = tas3004_treble_table[idx];
-+
-+	if (idx >= 50)
-+		result += tas3004_bass_diff_to_treble[idx-50];
-+	return result;
-+}
---- linux-2.6-fetch.orig/sound/aoa/codecs/snd-aoa-codec-tas.c	2006-07-07 18:10:09.470223603 +0200
-+++ linux-2.6-fetch/sound/aoa/codecs/snd-aoa-codec-tas.c	2006-07-07 18:25:07.330223603 +0200
-@@ -72,6 +72,7 @@ MODULE_DESCRIPTION("tas codec driver for
+--- linux-2.6-fetch.orig/sound/aoa/soundbus/i2sbus/i2sbus-core.c	2006-07-07 12:15:50.007697157 +0200
++++ linux-2.6-fetch/sound/aoa/soundbus/i2sbus/i2sbus-core.c	2006-07-07 12:15:51.277697157 +0200
+@@ -7,13 +7,16 @@
+  */
  
- #include "snd-aoa-codec-tas.h"
- #include "snd-aoa-codec-tas-gain-table.h"
-+#include "snd-aoa-codec-tas-basstreble.h"
- #include "../aoa.h"
- #include "../soundbus/soundbus.h"
+ #include <linux/module.h>
+-#include <asm/macio.h>
+-#include <asm/dbdma.h>
+ #include <linux/pci.h>
+ #include <linux/interrupt.h>
++#include <linux/dma-mapping.h>
++
+ #include <sound/driver.h>
+ #include <sound/core.h>
+-#include <linux/dma-mapping.h>
++
++#include <asm/macio.h>
++#include <asm/dbdma.h>
++
+ #include "../soundbus.h"
+ #include "i2sbus.h"
  
-@@ -87,6 +88,7 @@ struct tas {
- 				hw_enabled:1;
- 	u8			cached_volume_l, cached_volume_r;
- 	u8			mixer_l[3], mixer_r[3];
-+	u8			bass, treble;
- 	u8			acr;
- 	int			drc_range;
- };
-@@ -128,6 +130,22 @@ static void tas3004_set_drc(struct tas *
- 	tas_write_reg(tas, TAS_REG_DRC, 6, val);
+@@ -78,12 +81,12 @@ static void i2sbus_release_dev(struct de
+  	if (i2sdev->intfregs) iounmap(i2sdev->intfregs);
+  	if (i2sdev->out.dbdma) iounmap(i2sdev->out.dbdma);
+  	if (i2sdev->in.dbdma) iounmap(i2sdev->in.dbdma);
+-	for (i=0;i<3;i++)
++	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++)
+ 		if (i2sdev->allocated_resource[i])
+ 			release_and_free_resource(i2sdev->allocated_resource[i]);
+ 	free_dbdma_descriptor_ring(i2sdev, &i2sdev->out.dbdma_ring);
+ 	free_dbdma_descriptor_ring(i2sdev, &i2sdev->in.dbdma_ring);
+-	for (i=0;i<3;i++)
++	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++)
+ 		free_irq(i2sdev->interrupts[i], i2sdev);
+ 	i2sbus_control_remove_dev(i2sdev->control, i2sdev);
+ 	mutex_destroy(&i2sdev->lock);
+@@ -106,6 +109,50 @@ static irqreturn_t i2sbus_bus_intr(int i
+ 	return IRQ_HANDLED;
  }
  
-+static void tas_set_treble(struct tas *tas)
-+{
-+	u8 tmp;
 +
-+	tmp = tas3004_treble(tas->treble);
-+	tas_write_reg(tas, TAS_REG_TREBLE, 1, &tmp);
++/*
++ * XXX FIXME: We test the layout_id's here to get the proper way of
++ * mapping in various registers, thanks to bugs in Apple device-trees.
++ * We could instead key off the machine model and the name of the i2s
++ * node (i2s-a). This we'll do when we move it all to macio_asic.c
++ * and have that export items for each sub-node too.
++ */
++static int i2sbus_get_and_fixup_rsrc(struct device_node *np, int index,
++				     int layout, struct resource *res)
++{
++	struct device_node *parent;
++	int pindex, rc = -ENXIO;
++	u32 *reg;
++
++	/* Machines with layout 76 and 36 (K2 based) have a weird device
++	 * tree what we need to special case.
++	 * Normal machines just fetch the resource from the i2s-X node.
++	 * Darwin further divides normal machines into old and new layouts
++	 * with a subtely different code path but that doesn't seem necessary
++	 * in practice, they just bloated it. In addition, even on our K2
++	 * case the i2s-modem node, if we ever want to handle it, uses the
++	 * normal layout
++	 */
++	if (layout != 76 && layout != 36)
++		return of_address_to_resource(np, index, res);
++
++	parent = of_get_parent(np);
++	pindex = (index == aoa_resource_i2smmio) ? 0 : 1;
++	rc = of_address_to_resource(parent, pindex, res);
++	if (rc)
++		goto bail;
++	reg = (u32 *)get_property(np, "reg", NULL);
++	if (reg == NULL) {
++		rc = -ENXIO;
++		goto bail;
++	}
++	res->start += reg[index * 2];
++	res->end = res->start + reg[index * 2 + 1] - 1;
++ bail:
++	of_node_put(parent);
++	return rc;
 +}
 +
-+static void tas_set_bass(struct tas *tas)
-+{
-+	u8 tmp;
-+
-+	tmp = tas3004_bass(tas->bass);
-+	tas_write_reg(tas, TAS_REG_BASS, 1, &tmp);
-+}
-+
- static void tas_set_volume(struct tas *tas)
+ /* FIXME: look at device node refcounting */
+ static int i2sbus_add_dev(struct macio_dev *macio,
+ 			  struct i2sbus_control *control,
+@@ -113,7 +160,8 @@ static int i2sbus_add_dev(struct macio_d
  {
- 	u8 block[6];
-@@ -485,6 +503,89 @@ static struct snd_kcontrol_new capture_s
- 	.put = tas_snd_capture_source_put,
+ 	struct i2sbus_dev *dev;
+ 	struct device_node *child = NULL, *sound = NULL;
+-	int i;
++	struct resource *r;
++	int i, layout = 0, rlen;
+ 	static const char *rnames[] = { "i2sbus: %s (control)",
+ 					"i2sbus: %s (tx)",
+ 					"i2sbus: %s (rx)" };
+@@ -144,8 +192,9 @@ static int i2sbus_add_dev(struct macio_d
+ 		u32 *layout_id;
+ 		layout_id = (u32*) get_property(sound, "layout-id", NULL);
+ 		if (layout_id) {
++			layout = *layout_id;
+ 			snprintf(dev->sound.modalias, 32,
+-				 "sound-layout-%d", *layout_id);
++				 "sound-layout-%d", layout);
+ 			force = 1;
+ 		}
+ 	}
+@@ -175,23 +224,32 @@ static int i2sbus_add_dev(struct macio_d
+ 	dev->bus_number = np->name[4] - 'a';
+ 	INIT_LIST_HEAD(&dev->sound.codec_list);
+ 
+-	for (i=0;i<3;i++) {
++	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++) {
+ 		dev->interrupts[i] = -1;
+-		snprintf(dev->rnames[i], sizeof(dev->rnames[i]), rnames[i], np->name);
++		snprintf(dev->rnames[i], sizeof(dev->rnames[i]),
++			 rnames[i], np->name);
+ 	}
+-	for (i=0;i<3;i++) {
++	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++) {
+ 		int irq = irq_of_parse_and_map(np, i);
+ 		if (request_irq(irq, ints[i], 0, dev->rnames[i], dev))
+ 			goto err;
+ 		dev->interrupts[i] = irq;
+ 	}
+ 
+-	for (i=0;i<3;i++) {
+-		if (of_address_to_resource(np, i, &dev->resources[i]))
++
++	/* Resource handling is problematic as some device-trees contain
++	 * useless crap (ugh ugh ugh). We work around that here by calling
++	 * specific functions for calculating the appropriate resources.
++	 *
++	 * This will all be moved to macio_asic.c at one point
++	 */
++	for (i = aoa_resource_i2smmio; i <= aoa_resource_rxdbdma; i++) {
++		if (i2sbus_get_and_fixup_rsrc(np,i,layout,&dev->resources[i]))
+ 			goto err;
+-		/* if only we could use our resource dev->resources[i]...
++		/* If only we could use our resource dev->resources[i]...
+ 		 * but request_resource doesn't know about parents and
+-		 * contained resources... */
++		 * contained resources...
++		 */
+ 		dev->allocated_resource[i] = 
+ 			request_mem_region(dev->resources[i].start,
+ 					   dev->resources[i].end -
+@@ -202,13 +260,25 @@ static int i2sbus_add_dev(struct macio_d
+ 			goto err;
+ 		}
+ 	}
+-	/* should do sanity checking here about length of them */
+-	dev->intfregs = ioremap(dev->resources[0].start,
+-				dev->resources[0].end-dev->resources[0].start+1);
+-	dev->out.dbdma = ioremap(dev->resources[1].start,
+-			 	 dev->resources[1].end-dev->resources[1].start+1);
+-	dev->in.dbdma = ioremap(dev->resources[2].start,
+-				dev->resources[2].end-dev->resources[2].start+1);
++
++	r = &dev->resources[aoa_resource_i2smmio];
++	rlen = r->end - r->start + 1;
++	if (rlen < sizeof(struct i2s_interface_regs))
++		goto err;
++	dev->intfregs = ioremap(r->start, rlen);
++
++	r = &dev->resources[aoa_resource_txdbdma];
++	rlen = r->end - r->start + 1;
++	if (rlen < sizeof(struct dbdma_regs))
++		goto err;
++	dev->out.dbdma = ioremap(r->start, rlen);
++
++	r = &dev->resources[aoa_resource_rxdbdma];
++	rlen = r->end - r->start + 1;
++	if (rlen < sizeof(struct dbdma_regs))
++		goto err;
++	dev->in.dbdma = ioremap(r->start, rlen);
++
+ 	if (!dev->intfregs || !dev->out.dbdma || !dev->in.dbdma)
+ 		goto err;
+ 
+--- linux-2.6-fetch.orig/sound/aoa/soundbus/i2sbus/i2sbus.h	2006-07-07 12:15:40.337697157 +0200
++++ linux-2.6-fetch/sound/aoa/soundbus/i2sbus/i2sbus.h	2006-07-07 12:15:51.277697157 +0200
+@@ -45,6 +45,12 @@ struct pcm_info {
+ 	volatile struct dbdma_regs __iomem *dbdma;
  };
  
-+static int tas_snd_treble_info(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_info *uinfo)
-+{
-+	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
-+	uinfo->count = 1;
-+	uinfo->value.integer.min = TAS3004_TREBLE_MIN;
-+	uinfo->value.integer.max = TAS3004_TREBLE_MAX;
-+	return 0;
-+}
-+
-+static int tas_snd_treble_get(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct tas *tas = snd_kcontrol_chip(kcontrol);
-+
-+	ucontrol->value.integer.value[0] = tas->treble;
-+	return 0;
-+}
-+
-+static int tas_snd_treble_put(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct tas *tas = snd_kcontrol_chip(kcontrol);
-+
-+	if (tas->treble == ucontrol->value.integer.value[0])
-+		return 0;
-+
-+	tas->treble = ucontrol->value.integer.value[0];
-+	if (tas->hw_enabled)
-+		tas_set_treble(tas);
-+	return 1;
-+}
-+
-+static struct snd_kcontrol_new treble_control = {
-+	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
-+	.name = "Treble",
-+	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-+	.info = tas_snd_treble_info,
-+	.get = tas_snd_treble_get,
-+	.put = tas_snd_treble_put,
++enum {
++	aoa_resource_i2smmio = 0,
++	aoa_resource_txdbdma,
++	aoa_resource_rxdbdma,
 +};
 +
-+static int tas_snd_bass_info(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_info *uinfo)
-+{
-+	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
-+	uinfo->count = 1;
-+	uinfo->value.integer.min = TAS3004_BASS_MIN;
-+	uinfo->value.integer.max = TAS3004_BASS_MAX;
-+	return 0;
-+}
-+
-+static int tas_snd_bass_get(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct tas *tas = snd_kcontrol_chip(kcontrol);
-+
-+	ucontrol->value.integer.value[0] = tas->bass;
-+	return 0;
-+}
-+
-+static int tas_snd_bass_put(struct snd_kcontrol *kcontrol,
-+	struct snd_ctl_elem_value *ucontrol)
-+{
-+	struct tas *tas = snd_kcontrol_chip(kcontrol);
-+
-+	if (tas->bass == ucontrol->value.integer.value[0])
-+		return 0;
-+
-+	tas->bass = ucontrol->value.integer.value[0];
-+	if (tas->hw_enabled)
-+		tas_set_bass(tas);
-+	return 1;
-+}
-+
-+static struct snd_kcontrol_new bass_control = {
-+	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
-+	.name = "Bass",
-+	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,
-+	.info = tas_snd_bass_info,
-+	.get = tas_snd_bass_get,
-+	.put = tas_snd_bass_put,
-+};
- 
- static struct transfer_info tas_transfers[] = {
- 	{
-@@ -541,9 +642,10 @@ static int tas_reset_init(struct tas *ta
- 	tas3004_set_drc(tas);
- 
- 	/* Set treble & bass to 0dB */
--	tmp = 114;
--	tas_write_reg(tas, TAS_REG_TREBLE, 1, &tmp);
--	tas_write_reg(tas, TAS_REG_BASS, 1, &tmp);
-+	tas->treble = TAS3004_TREBLE_ZERO;
-+	tas->bass = TAS3004_BASS_ZERO;
-+	tas_set_treble(tas);
-+	tas_set_bass(tas);
- 
- 	tas->acr &= ~TAS_ACR_ANALOG_PDOWN;
- 	if (tas_write_reg(tas, TAS_REG_ACR, 1, &tas->acr))
-@@ -682,6 +784,14 @@ static int tas_init_codec(struct aoa_cod
- 	if (err)
- 		goto error;
- 
-+	err = aoa_snd_ctl_add(snd_ctl_new1(&treble_control, tas));
-+	if (err)
-+		goto error;
-+
-+	err = aoa_snd_ctl_add(snd_ctl_new1(&bass_control, tas));
-+	if (err)
-+		goto error;
-+
- 	return 0;
-  error:
- 	tas->codec.soundbus_dev->detach_codec(tas->codec.soundbus_dev, tas);
+ struct i2sbus_dev {
+ 	struct soundbus_dev sound;
+ 	struct macio_dev *macio;
 
 --
