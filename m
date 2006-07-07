@@ -1,20 +1,22 @@
-Return-Path: <ammubhai@gmail.com>
-Received: from mailgw.cs.york.ac.uk (mailgw.cs.york.ac.uk [144.32.40.3])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0609567B32
+Return-Path: <gturnock@ivhs.com>
+Received: from postfix.fpelectronics.com (gw.ivhs.com [66.46.242.98])
+	by ozlabs.org (Postfix) with ESMTP id 7E430679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  8 Jul 2006 01:58:42 +1000 (EST)
-Message-ID: <44AE83F6.2090702@gmail.com>
-Date: Fri, 07 Jul 2006 16:55:34 +0100
-From: Ameet Patil <ammubhai@gmail.com>
+	Sat,  8 Jul 2006 08:43:47 +1000 (EST)
+Received: from notes.fpelectronics.com (notes.fpelectronics.com [172.17.10.15])
+	by postfix.fpelectronics.com (Postfix) with ESMTP id 13F821D6285
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  7 Jul 2006 17:49:50 -0400 (EDT)
+Subject: MPC5200 boot giving "request_module: runaway loop modprobe
+	binfmt-4c46" errors
 MIME-Version: 1.0
-To: Ming Liu <eemingliu@hotmail.com>
-Subject: Re: Xilinx BSP for linux 2.6
-References: <BAY110-F2E51F50D2158DF44D3820B2740@phx.gbl>
-In-Reply-To: <BAY110-F2E51F50D2158DF44D3820B2740@phx.gbl>
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-embedded@ozlabs.org
+From: gturnock@ivhs.com
+To: linuxppc-embedded@ozlabs.org
+Date: Fri, 7 Jul 2006 18:15:53 -0400
+Message-ID: <OF8ECEFEB4.081DB077-ON852571A4.007A4DD5-852571A4.007A4DEE@fpelectronics.com>
+MIME-Version: 1.0
+Content-Type: text/html;
+	charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,157 +27,219 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Its the same link as before! I just updated the file!
-http://www.cs.york.ac.uk/rtslab/demos/amos/xupv2pro/patches/linuxppc-2.6.17_sysace.patch
-
--Ameet
-
-Ming Liu wrote:
-> Dear Ameet,
-> Could you please give me a copy of your new driver for SystemACE?
-> Regards
-> Ming
-> 
-> 
->> From: Ameet Patil <ammubhai@gmail.com>
->> To: Ming Liu <eemingliu@hotmail.com>
->> Subject: Re: Xilinx BSP for linux 2.6
->> Date: Fri, 07 Jul 2006 15:17:31 +0100
->>
->> Thats right! Sorry about the error! :-)
->>
->> Good luck with TEMAC!
->>
->> -Ameet
->>
->> Ming Liu wrote:
->> > Dear Ameet,
->> > OK. I found the problem. tts/0 should be a char device, not a block 
-> one.
->> > so it should be c not b. I neglected that and just copied your 
-> commands. :)
->> >
->> > Next, I will try to implement the Temac driver. If any information, I
->> > will let you know.
->> >
->> > Regards
->> > Ming
->> >
->> >
->> >> From: Ameet Patil <ammubhai@gmail.com>
->> >> To: Ming Liu <eemingliu@hotmail.com>
->> >> CC: linuxppc-embedded@ozlabs.org
->> >> Subject: Re: Xilinx BSP for linux 2.6
->> >> Date: Fri, 07 Jul 2006 13:42:42 +0100
->> >>
->> >> Hi Ming,
->> >>
->> >> Excellent News!
->> >>
->> >> Don't worry... the problem you are facing could be because of missing
->> >> device files in your /dev folder.
->> >>
->> >> Do as follows:
->> >> mount the CF card onto your PC and then goto the /dev folder on your
->> >> root filesystem in the card. Here run the following commands as root:
->> >> # mknod -m 660 console c 5 1
->> >> # mknod -m 660 xsa b 254 0
->> >> # mknod -m 660 xsa1 b 254 1
->> >> # mknod -m 660 xsa2 b 254 2
->> >> # mknod -m 660 xsa3 b 254 3
->> >> Now there should be a directory tts in your dev. If not create one
->> >> "mkdir tts". Then do this in the dev/tts folder,
->> >> # mknod -m 660 0 b 4 64
->> >>
->> >> > Also, when I compile the kernel, there is a error. That's in 
-> adapter.c
->> >> > file, undefined reference to "XAssert". I checked the source code 
-> and
->> >> I think you have the old patch. If you download the new one, the
->> >> compilation problem should not occur. But you resolved it yourself,...
->> >> which is good.
->> >>
->> >> Let me know if this works. I shall add this stuff in PART II of the
->> > article.
->> >>
->> >> -Ameet
->> >>
->> >> Ming Liu wrote:
->> >> > Dear Ameet,
->> >> > A good news is that now my 2.6 kernel is running in my ML403 board!
->> >> > According your guidance, first I made the kernel as simple as 
-> possible
->> >> > and it works well. Then I included the patch for SystemACE and here 
-> is
->> >> > the information shown on the hyper teminal:
->> >> >
->> >> >
->> >> > Linux/PPC load: console=ttyS0,9600 root=/dev/xsa3 [    0.000148]
->> >> > Console: colour dummy device 80x25
->> >> > [    0.000919] Dentry cache hash table entries: 16384 (order: 4, 
-> 65536
->> >> > bytes)
->> >> > [    0.002277] Inode-cache hash table entries: 8192 (order: 3, 32768
->> > bytes)
->> >> > [    0.012802] Memory: 63104k available (1340k kernel code, 384k 
-> data,
->> >> > 76k init,
->> >> > 0k highmem)
->> >> > [    0.230310] Mount-cache hash table entries: 512
->> >> > [    0.238305] VFS: Disk quotas dquot_6.5.1
->> >> > [    0.238516] Dquot-cache hash table entries: 1024 (order 0, 4096
->> > bytes)
->> >> > [    0.238817] JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
->> >> > [    0.239435] JFS: nTxBlock = 493, nTxLock = 3944
->> >> > [    0.241883] Initializing Cryptographic API
->> >> > [    0.241940] io scheduler noop registered (default)
->> >> > [    0.322864] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, 
-> IRQ
->> >> > sharing
->> >> > disabled
->> >> > [    0.324759] serial8250.0: ttyS0 at MMIO 0x40401003 (irq = 1) is a
->> > 16550A
->> >> > [    1.653644] RAMDISK driver initialized: 16 RAM disks of 65536K 
-> size
->> >> > 1024 bloc
->> >> > ksize
->> >> > [    1.745079] loop: loaded (max 8 devices)
->> >> > [    1.793392]  xsa: xsa1 xsa2 xsa3
->> >> > [    1.839262] mice: PS/2 mouse device common for all mice
->> >> > [    1.935059] VFS: Mounted root (ext2 filesystem) readonly.
->> >> > [    2.000037] Freeing unused kernel memory: 76k init
->> >> > [    2.075656] Warning: unable to open an initial console.
->> >> >
->> >> > I use xsa3 as the partition to store the file system. Now the file
->> >> > system is the old one for my 2.4 kernel generated by busybox. Then I
->> >> > think that's why the problem "unable to open an initial console" is
->> >> > generated. Do you have some suggestion on how to solve it? Thanks 
-> for
->> >> > your opinion.
->> >> > Also, when I compile the kernel, there is a error. That's in 
-> adapter.c
->> >> > file, undefined reference to "XAssert". I checked the source code 
-> and
->> >> > found that the function of XAssert is defined in the file
->> >> > xbasic_types.c, not the xbasic_types.h. So it cannot be included 
-> into
->> >> > adapter.c. And also in the makefile there is no dependency on
->> >> > xbasic_types.c. So I added the defination for this function in
->> >> > adapter.c, copying it from xbasic_types.c. It then worked well.
->> >> > Waiting for your guidance. You know, an expert's opinion is always
->> >> > useful for a novice, like me. :)
->> >> >
->> >> > Regards
->> >> > Ming
->> >> >
->> >> > _________________________________________________________________
->> >> > 免费下载 MSN Explorer:   http://explorer.msn.com/lccn/
->> >> >
->> >
->> > _________________________________________________________________
->> > 享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com
->> >
-> 
-> _________________________________________________________________
-> 免费下载 MSN Explorer:   http://explorer.msn.com/lccn 
-> 
+<FONT face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sans-serif" size=
+=3D2><P>Hi All,</P><P>I am currently attempting to get the 2.6 Linux Kernel=
+ ( Sylvain's&nbsp;Kernel from <A href=3D"http://gitbits.246tNt.com/gitbits/=
+linux-2.6-mpc52xx.git" target=3Dblank>http://gitbits.246tNt.com/gitbits/lin=
+ux-2.6-mpc52xx.git</A>) &nbsp;booting over NFS on a Freescale LITE5200 boar=
+d.&nbsp; At present, I have been able to successfully mount the rootfs over=
+ NFS, but am encountering the following issue... </P><P>After the kernel fr=
+ees the unused memory after the NFS mount, I get a string of </P><P><FONT f=
+ace=3D"Courier New">request=5Fmodule: runaway loop modprobe binfmt-4c46</FO=
+NT></P><P><FONT face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sans-ser=
+if">errors and the console appears to hang.&nbsp; Any help would be greatly=
+ appreciated!</FONT></P><P>A copy of the bootlog follows.</P><P>&nbsp;</P><=
+P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">U-Boot 1.1=
+.4 (May 1 2006 - 10:27:04)</FONT></P><P><FONT face=3D"Default Monospace,Cou=
+rier New,Courier,monospace">CPU: MPC5200 v1.2 at 396 MHz</FONT></P><P><FONT=
+ face=3D"Default Monospace,Courier New,Courier,monospace">Bus 132 MHz, IPB =
+66 MHz, PCI 33 MHz</FONT></P><P><FONT face=3D"Default Monospace,Courier New=
+,Courier,monospace">Board: Motorola MPC5200 (IceCube)</FONT></P><P><FONT fa=
+ce=3D"Default Monospace,Courier New,Courier,monospace">I2C: 85 kHz, ready</=
+FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">=
+DRAM: 64 MB</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courie=
+r,monospace">FLASH: 16 MB</FONT></P><P><FONT face=3D"Default Monospace,Cour=
+ier New,Courier,monospace">PCI: Bus Dev VenId DevId Class Int</FONT></P><P>=
+<FONT face=3D"Default Monospace,Courier New,Courier,monospace">00 1a 1057 5=
+803 0680 00</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courie=
+r,monospace">In: serial</FONT></P><P><FONT face=3D"Default Monospace,Courie=
+r New,Courier,monospace">Out: serial</FONT></P><P><FONT face=3D"Default Mon=
+ospace,Courier New,Courier,monospace">Err: serial</FONT></P><P><FONT face=
+=3D"Default Monospace,Courier New,Courier,monospace">Net: FEC ETHERNET</FON=
+T></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">IDE=
+: Bus 0: not available </FONT></P><P><FONT face=3D"Default Monospace,Courie=
+r New,Courier,monospace">Autostarting... Press any key to abort...</FONT></=
+P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">Hit any=
+ key to stop autoboot: 5 4 3 2 1 0</FONT></P><P><FONT face=3D"Default Monos=
+pace,Courier New,Courier,monospace">Using FEC ETHERNET device</FONT></P><P>=
+<FONT face=3D"Default Monospace,Courier New,Courier,monospace">TFTP from se=
+rver 192.168.0.39; our IP address is 192.168.0.50</FONT></P><P><FONT face=
+=3D"Default Monospace,Courier New,Courier,monospace">Filename '/tftpboot/MP=
+C5200=5F2=5F6/uImage'.</FONT></P><P><FONT face=3D"Default Monospace,Courier=
+ New,Courier,monospace">Load address: 0x200000</FONT></P><P><FONT face=3D"D=
+efault Monospace,Courier New,Courier,monospace">Loading: *=08##############=
+###################################################</FONT></P><P><FONT face=
+=3D"Default Monospace,Courier New,Courier,monospace">######################=
+###########################################</FONT></P><P><FONT face=3D"Defa=
+ult Monospace,Courier New,Courier,monospace">##############################=
+###################################</FONT></P><P><FONT face=3D"Default Mono=
+space,Courier New,Courier,monospace">######################################=
+########################</FONT></P><P><FONT face=3D"Default Monospace,Couri=
+er New,Courier,monospace">done</FONT></P><P><FONT face=3D"Default Monospace=
+,Courier New,Courier,monospace">Bytes transferred =3D 1314615 (140f37 hex)<=
+/FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace"=
+>ethaddr=3D00:04:9F:00:01:02</FONT></P><P><FONT face=3D"Default Monospace,C=
+ourier New,Courier,monospace">hostname=3Dmpc5200</FONT></P><P><FONT face=3D=
+"Default Monospace,Courier New,Courier,monospace">flash=5Fjffs2=3Drun jffs2=
+args;bootm ${kernel=5Faddr}</FONT></P><P><FONT face=3D"Default Monospace,Co=
+urier New,Courier,monospace">bootdelay=3D5</FONT></P><P><FONT face=3D"Defau=
+lt Monospace,Courier New,Courier,monospace">baudrate=3D115200</FONT></P><P>=
+<FONT face=3D"Default Monospace,Courier New,Courier,monospace">preboot=3Dec=
+ho;echo Autostarting... Press any key to abort...;echo</FONT></P><P><FONT f=
+ace=3D"Default Monospace,Courier New,Courier,monospace">autoload=3Dno</FONT=
+></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">etha=
+ct=3DFEC ETHERNET</FONT></P><P><FONT face=3D"Default Monospace,Courier New,=
+Courier,monospace">ramargs=3Dsetenv bootargs root=3D/dev/ram rw</FONT></P><=
+P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">jffs2args=
+=3Dsetenv bootargs root=3D/dev/mtdblock0 rw rootfstype=3Djffs2</FONT></P><P=
+><FONT face=3D"Default Monospace,Courier New,Courier,monospace">flash=5Fnfs=
+=3Drun nfsargs addip;bootm $(kernel=5Faddr)</FONT></P><P><FONT face=3D"Defa=
+ult Monospace,Courier New,Courier,monospace">flash=5Fself=3Drun ramargs add=
+ip;bootm $(kernel=5Faddr) $(ramdisk=5Faddr)</FONT></P><P><FONT face=3D"Defa=
+ult Monospace,Courier New,Courier,monospace">netdev=3Deth0</FONT></P><P><FO=
+NT face=3D"Default Monospace,Courier New,Courier,monospace">kernel=5Faddr=
+=3Dffd00000</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courie=
+r,monospace">bootcmd=3Drun net=5Fnfs</FONT></P><P><FONT face=3D"Default Mon=
+ospace,Courier New,Courier,monospace">net=5Fnfs=3Dtftp 200000 $(bootfile);r=
+un nfsargs addip;printenv;bootm</FONT></P><P><FONT face=3D"Default Monospac=
+e,Courier New,Courier,monospace">addip=3Dsetenv bootargs $(bootargs) ip=3D$=
+(ipaddr):$(serverip):$(gatewayip):$(netmask):$(hostname):$(netdev):off pani=
+c=3D5</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,mono=
+space">flash=5Fjff2=3Drun jffs2args; bootm $(kernel=5Faddr)</FONT></P><P><F=
+ONT face=3D"Default Monospace,Courier New,Courier,monospace">bootfile=3D/tf=
+tpboot/MPC5200=5F2=5F6/uImage</FONT></P><P><FONT face=3D"Default Monospace,=
+Courier New,Courier,monospace">root=5Fpath=3D/tftpboot/MPC5200=5F2=5F6/root=
+fs</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospa=
+ce">nfsargs=3Dsetenv bootargs console=3DttyPSC0,115200 root=3D/dev/nfs rw n=
+fsroot=3D$(serverip):$(root=5Fpath)</FONT></P><P><FONT face=3D"Default Mono=
+space,Courier New,Courier,monospace">stdin=3Dserial</FONT></P><P><FONT face=
+=3D"Default Monospace,Courier New,Courier,monospace">stdout=3Dserial</FONT>=
+</P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">stder=
+r=3Dserial</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier=
+,monospace">filesize=3D140f37</FONT></P><P><FONT face=3D"Default Monospace,=
+Courier New,Courier,monospace">fileaddr=3D200000</FONT></P><P><FONT face=3D=
+"Default Monospace,Courier New,Courier,monospace">netmask=3D255.255.255.0</=
+FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">=
+ipaddr=3D192.168.0.50</FONT></P><P><FONT face=3D"Default Monospace,Courier =
+New,Courier,monospace">serverip=3D192.168.0.39</FONT></P><P><FONT face=3D"D=
+efault Monospace,Courier New,Courier,monospace">bootargs=3Dconsole=3DttyPSC=
+0,115200 root=3D/dev/nfs rw nfsroot=3D192.168.0.39:/tftpboot/MPC5200=5F2=5F=
+6/rootfs ip=3D192.168.0.50:192.168.0.39::255.255.255.0:mpc5200:eth0:off pan=
+ic=3D5</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,mon=
+ospace">Environment size: 1198/65532 bytes</FONT></P><P><FONT face=3D"Defau=
+lt Monospace,Courier New,Courier,monospace">## Booting image at 00200000 ..=
+.</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospac=
+e">Image Name: Linux-2.6.16-mpc52xx-ga8651bf3-d</FONT></P><P><FONT face=3D"=
+Default Monospace,Courier New,Courier,monospace">Created: 2006-07-07 20:56:=
+15 UTC</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,mon=
+ospace">Image Type: PowerPC Linux Kernel Image (gzip compressed)</FONT></P>=
+<P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">Data Size=
+: 1314551 Bytes =3D 1.3 MB</FONT></P><P><FONT face=3D"Default Monospace,Cou=
+rier New,Courier,monospace">Load Address: 00000000</FONT></P><P><FONT face=
+=3D"Default Monospace,Courier New,Courier,monospace">Entry Point: 00000000<=
+/FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace"=
+>Verifying Checksum ... OK</FONT></P><P><FONT face=3D"Default Monospace,Cou=
+rier New,Courier,monospace">Uncompressing Kernel Image ... OK</FONT></P><P>=
+<FONT face=3D"Default Monospace,Courier New,Courier,monospace">id mach(): d=
+one</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monosp=
+ace">MMU:enter</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Cou=
+rier,monospace">MMU:hw init</FONT></P><P><FONT face=3D"Default Monospace,Co=
+urier New,Courier,monospace">MMU:mapin</FONT></P><P><FONT face=3D"Default M=
+onospace,Courier New,Courier,monospace">MMU:setio</FONT></P><P><FONT face=
+=3D"Default Monospace,Courier New,Courier,monospace">MMU:exit</FONT></P><P>=
+<FONT face=3D"Default Monospace,Courier New,Courier,monospace">setup=5Farch=
+: enter</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,mo=
+nospace">setup=5Farch: bootmem</FONT></P><P><FONT face=3D"Default Monospace=
+,Courier New,Courier,monospace">arch: exit</FONT></P><P><FONT face=3D"Defau=
+lt Monospace,Courier New,Courier,monospace">Linux version 2.6.16-mpc52xx-ga=
+8651bf3-dirty (gturnock@localhost.localdomain) (gcc version 4.0.0 (DENX ELD=
+K 4.0 4.0.0)) #4 Fri Jul 7 16:56:01 EDT 2006</FONT></P><P><FONT face=3D"Def=
+ault Monospace,Courier New,Courier,monospace">Built 1 zonelists</FONT></P><=
+P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">Kernel com=
+mand line: console=3DttyPSC0,115200 root=3D/dev/nfs rw nfsroot=3D192.168.0.=
+39:/tftpboot/MPC5200=5F2=5F6/rootfs ip=3D192.168.0.50:192.168.0.39::255.255=
+.255.0:mpc5200:eth0:off panic=3D5</FONT></P><P><FONT face=3D"Default Monosp=
+ace,Courier New,Courier,monospace">PID hash table entries: 512 (order: 9, 8=
+192 bytes)</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier=
+,monospace">Console: colour dummy device 80x25</FONT></P><P><FONT face=3D"D=
+efault Monospace,Courier New,Courier,monospace">Dentry cache hash table ent=
+ries: 16384 (order: 4, 65536 bytes)</FONT></P><P><FONT face=3D"Default Mono=
+space,Courier New,Courier,monospace">Inode-cache hash table entries: 8192 (=
+order: 3, 32768 bytes)</FONT></P><P><FONT face=3D"Default Monospace,Courier=
+ New,Courier,monospace">Memory: 62080k available (2052k kernel code, 608k d=
+ata, 104k init, 0k highmem)</FONT></P><P><FONT face=3D"Default Monospace,Co=
+urier New,Courier,monospace">Mount-cache hash table entries: 512</FONT></P>=
+<P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">NET: Regi=
+stered protocol family 16</FONT></P><P><FONT face=3D"Default Monospace,Cour=
+ier New,Courier,monospace"></FONT></P><P><FONT face=3D"Default Monospace,Co=
+urier New,Courier,monospace">PCI: Probing PCI hardware</FONT></P><P><FONT f=
+ace=3D"Default Monospace,Courier New,Courier,monospace">DMA: MPC52xx BestCo=
+mm driver</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,=
+monospace">MPC52xx BestComm inited</FONT></P><P><FONT face=3D"Default Monos=
+pace,Courier New,Courier,monospace">Generic PHY: Registered new driver</FON=
+T></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">JFS=
+: nTxBlock =3D 485, nTxLock =3D 3883</FONT></P><P><FONT face=3D"Default Mon=
+ospace,Courier New,Courier,monospace">Initializing Cryptographic API</FONT>=
+</P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">io sc=
+heduler noop registered</FONT></P><P><FONT face=3D"Default Monospace,Courie=
+r New,Courier,monospace">io scheduler anticipatory registered (default)</FO=
+NT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">io=
+ scheduler deadline registered</FONT></P><P><FONT face=3D"Default Monospace=
+,Courier New,Courier,monospace">io scheduler cfq registered</FONT></P><P><F=
+ONT face=3D"Default Monospace,Courier New,Courier,monospace">Serial: MPC52x=
+x PSC driver</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Couri=
+er,monospace">ttyPSC0 at MMIO 0xf0002000 (irq =3D 40) is a MPC52xx PSC</FON=
+T></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">RAM=
+DISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize</FONT></=
+P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">nbd: re=
+gistered device at major 43</FONT></P><P><FONT face=3D"Default Monospace,Co=
+urier New,Courier,monospace">LXT970: Registered new driver</FONT></P><P><FO=
+NT face=3D"Default Monospace,Courier New,Courier,monospace">LXT971: Registe=
+red new driver</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Cou=
+rier,monospace">eth0: Phy @ 0x0, type LXT971 (0x001378e2)</FONT></P><P><FON=
+T face=3D"Default Monospace,Courier New,Courier,monospace">mice: PS/2 mouse=
+ device common for all mice</FONT></P><P><FONT face=3D"Default Monospace,Co=
+urier New,Courier,monospace">NET: Registered protocol family 2</FONT></P><P=
+><FONT face=3D"Default Monospace,Courier New,Courier,monospace">IP route ca=
+che hash table entries: 1024 (order: 0, 4096 bytes)</FONT></P><P><FONT face=
+=3D"Default Monospace,Courier New,Courier,monospace">TCP established hash t=
+able entries: 4096 (order: 2, 16384 bytes)</FONT></P><P><FONT face=3D"Defau=
+lt Monospace,Courier New,Courier,monospace">TCP bind hash table entries: 40=
+96 (order: 2, 16384 bytes)</FONT></P><P><FONT face=3D"Default Monospace,Cou=
+rier New,Courier,monospace">TCP: Hash tables configured (established 4096 b=
+ind 4096)</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,=
+monospace">TCP reno registered</FONT></P><P><FONT face=3D"Default Monospace=
+,Courier New,Courier,monospace">TCP bic registered</FONT></P><P><FONT face=
+=3D"Default Monospace,Courier New,Courier,monospace">NET: Registered protoc=
+ol family 10</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Couri=
+er,monospace">IPv6 over IPv4 tunneling driver</FONT></P><P><FONT face=3D"De=
+fault Monospace,Courier New,Courier,monospace">eth0: config: auto-negotiati=
+on on, 100HDX, 10HDX.</FONT></P><P><FONT face=3D"Default Monospace,Courier =
+New,Courier,monospace">IP-Config: Complete:</FONT></P><P><FONT face=3D"Defa=
+ult Monospace,Courier New,Courier,monospace">device=3Deth0, addr=3D192.168.=
+0.50, mask=3D255.255.255.0, gw=3D255.255.255.255,</FONT></P><P><FONT face=
+=3D"Default Monospace,Courier New,Courier,monospace">host=3Dmpc5200, domain=
+=3D, nis-domain=3D(none),</FONT></P><P><FONT face=3D"Default Monospace,Cour=
+ier New,Courier,monospace">bootserver=3D192.168.0.39, rootserver=3D192.168.=
+0.39, rootpath=3D</FONT></P><P><FONT face=3D"Default Monospace,Courier New,=
+Courier,monospace">Looking up port of RPC 100003/2 on 192.168.0.39</FONT></=
+P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace">Looking=
+ up port of RPC 100005/1 on 192.168.0.39</FONT></P><P><FONT face=3D"Default=
+ Monospace,Courier New,Courier,monospace">VFS: Mounted root (nfs filesystem=
+).</FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospa=
+ce">Freeing unused kernel memory: 104k init</FONT></P><P><FONT face=3D"Defa=
+ult Monospace,Courier New,Courier,monospace">request=5Fmodule: runaway loop=
+ modprobe binfmt-4c46</FONT></P><P><FONT face=3D"Default Monospace,Courier =
+New,Courier,monospace">request=5Fmodule: runaway loop modprobe binfmt-4c46<=
+/FONT></P><P><FONT face=3D"Default Monospace,Courier New,Courier,monospace"=
+>request=5Fmodule: runaway loop modprobe binfmt-4c46</FONT></P><P><FONT fac=
+e=3D"Default Monospace,Courier New,Courier,monospace">request=5Fmodule: run=
+away loop modprobe binfmt-4c46</FONT></P><P><FONT face=3D"Default Monospace=
+,Courier New,Courier,monospace">request=5Fmodule: runaway loop modprobe bin=
+fmt-4c46</FONT></P><P>&nbsp;</P><P>Any assistance would be greatly apprecia=
+ted</P><P>Glenn</P><DIV><BR></DIV><DIV>------------------------------------=
+----------<BR>Glenn Turnock<BR>Software Engineer<BR>MarkIV Industries - IVH=
+S Division<BR>6020 Ambler Drive<BR>Mississauga, Ontario<BR>Canada <BR>L4W 2=
+P1<BR><BR>Tel: 905-624-3025 x1295<BR>Fax: 905-624-4572<BR><BR><A href=3D"ma=
+ilto:gturnock@ivhs.com" target=3Dblank >gturnock@ivhs.com</A><BR></DIV></FO=
+NT>=
