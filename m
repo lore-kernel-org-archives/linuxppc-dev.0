@@ -1,21 +1,22 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 74FC067B56
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Jul 2006 18:49:15 +1000 (EST)
-Subject: Re: snd-aoa: g5 tas codec problems
-From: Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <akpm@osdl.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.4])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 15D0367B53
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Jul 2006 18:52:51 +1000 (EST)
+Date: Fri, 7 Jul 2006 01:52:37 -0700
+From: Andrew Morton <akpm@osdl.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1152258426.9862.44.camel@localhost.localdomain>
-References: <1152258426.9862.44.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-UomaFieYQfqyDy49U9KL"
-Date: Fri, 07 Jul 2006 10:49:08 +0200
-Message-Id: <1152262148.15068.30.camel@localhost>
+Subject: Re: G5 troubles booting powerpc-git (July 6)
+Message-Id: <20060707015237.68c768f2.akpm@osdl.org>
+In-Reply-To: <1152260824.9862.57.camel@localhost.localdomain>
+References: <1152197602.14547.10.camel@farscape.rchland.ibm.com>
+	<1152226587.9862.19.camel@localhost.localdomain>
+	<20060707012330.f1dea5ac.akpm@osdl.org>
+	<1152260824.9862.57.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, alsa-devel@alsa-project.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +26,86 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 07 Jul 2006 18:27:04 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
---=-UomaFieYQfqyDy49U9KL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Fri, 2006-07-07 at 01:23 -0700, Andrew Morton wrote:
+> > On Fri, 07 Jul 2006 08:56:27 +1000
+> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > 
+> > > If you look at arch/powerpc/kernel/irq.c from line 479:
+> > > 
+> > > 	/* Check if mapping already exist, if it does, call
+> > > 	 * host->ops->map() to update the flags
+> > > 	 */
+> > > 	virq = irq_find_mapping(host, hwirq);
+> > > 	if (virq != IRQ_NONE) {
+> > > 		pr_debug("irq: -> existing mapping on virq %d\n", virq);
+> > > 		host->ops->map(host, virq, hwirq, flags);
+> > > 		return virq;
+> > > 	}
+> > > 
+> > > What if you comment out the host->ops->map(...) call in there ? Does it
+> > > help ?
+> > 
+> > No, there's no change in behaviour.
+> 
+> Doh ! Ok, looks like a different issue. Can you try this patch ? Please,
+> do _not_ apply it to your tree as, as it is it will break non-powermac.
+> It's some work I'm doing to clean up a couple of rough edges in my irq
+> rework and fix a little misdesign.
+> 
+> If it doesn't fix it, then it's indeed a completely different issue that I'll have to track down tomorrow
+> hopefully.
 
-On Fri, 2006-07-07 at 17:47 +1000, Benjamin Herrenschmidt wrote:
-> Also, we should try
-> (if not already the case) to cache our clock/i2s state so that
-> subsequent prepare() don't try to change things that are already ok.=20
+Needs this to compile:
 
-I do that, the function reads the dws and sfr registers and exits early
-if they match.
+diff -puN arch/powerpc/platforms/pseries/ras.c~a-fix arch/powerpc/platforms/pseries/ras.c
+--- a/arch/powerpc/platforms/pseries/ras.c~a-fix
++++ a/arch/powerpc/platforms/pseries/ras.c
+@@ -93,8 +93,7 @@ static void request_ras_irqs(struct devi
+ 		for (i = 0; i < opicplen; i++) {
+ 			if (count > 15)
+ 				break;
+-			virqs[count] = irq_create_mapping(NULL, *(opicprop++),
+-							 IRQ_TYPE_NONE);
++			virqs[count] = irq_create_mapping(NULL, *(opicprop++));
+ 			if (virqs[count] == NO_IRQ)
+ 				printk(KERN_ERR "Unable to allocate interrupt "
+ 				       "number for %s\n", np->full_name);
+diff -puN arch/powerpc/platforms/pseries/xics.c~a-fix arch/powerpc/platforms/pseries/xics.c
+--- a/arch/powerpc/platforms/pseries/xics.c~a-fix
++++ a/arch/powerpc/platforms/pseries/xics.c
+@@ -757,7 +757,7 @@ void xics_request_IPIs(void)
+ {
+ 	unsigned int ipi;
+ 
+-	ipi = irq_create_mapping(xics_host, XICS_IPI, 0);
++	ipi = irq_create_mapping(xics_host, XICS_IPI);
+ 	BUG_ON(ipi == NO_IRQ);
+ 
+ 	/*
+diff -puN drivers/char/hvsi.c~a-fix drivers/char/hvsi.c
+--- a/drivers/char/hvsi.c~a-fix
++++ a/drivers/char/hvsi.c
+@@ -1299,7 +1299,7 @@ static int __init hvsi_console_init(void
+ 		hp->inbuf_end = hp->inbuf;
+ 		hp->state = HVSI_CLOSED;
+ 		hp->vtermno = *vtermno;
+-		hp->virq = irq_create_mapping(NULL, irq[0], 0);
++		hp->virq = irq_create_mapping(NULL, irq[0]);
+ 		if (hp->virq == NO_IRQ) {
+ 			printk(KERN_ERR "%s: couldn't create irq mapping for 0x%x\n",
+ 				__FUNCTION__, irq[0]);
+_
 
-johannes
+But it still doesn't help.
 
---=-UomaFieYQfqyDy49U9KL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+These:
 
-iQIVAwUARK4gAqVg1VMiehFYAQLeKQ/9G3nI8+chYsXcB/yeZZtFkpk6+9LtQumc
-IoiHKV0EFSRDb0e0ebWiK7YtJpSnp1LWnDZGLvx+RcfPLAK+lozFQkGKGT619413
-Vk4dkHUKEnNwTLQDlgOD+vZMp9ScnIfrRKnfd9HacBkZyD96z+N7gL52QUaYXKfL
-MzKqnDpMjbMN/qQbGsDQhPeuMMhtOXiI4NOwekfuYPRrzzXDhRaBHsDWkoZVmS6/
-qzXGADl9dNB2PLmjCf5WrOtt4Qb3roG8A/XgS61J90uZwOJiTAjNpEiwwSmP2hqn
-ohqTFmqQ6AtFE8WkI1WXUS8YQsHAlaB3oBWzp6q7cY+kzg6/yiC812M9VMsNvabv
-wKbzRyjeszZP3xO0HSQ8ueU+yPMJn3UXTB2oBHVcMe4ku04KOU60JO3esQQOmH9E
-tCGW4/Qb2Mqlc3SyFW4B9ojL95ozfaHez3Bua0/BKNHOsAHxE7ijLULqxoW49vZ5
-kiKEDDPdUddcDU0+oNfRn46g7cjiBRPtwyOXg8xrMtpvuLP8M0VjS2AgNrPnhzg4
-3jlB4oYWa/w8aMYGFGAdBy8ZQ8c64Ptzg5WpQiVtXNMIwwbgH/l3E1cSQPLFzIRQ
-iaSo8SCZ4dQwzR3sBrmSe8cAxOFeSw2kmzq3Dspq6zuU+DfUeXlHMN3QvdtXlZ0u
-bOfm6UyE2kw=
-=AfNX
------END PGP SIGNATURE-----
+arch/powerpc/sysdev/i8259.c:222: warning: initialization from incompatible pointer type
+arch/powerpc/platforms/pseries/xics.c:555: warning: initialization from incompatible pointer type
+arch/powerpc/platforms/pseries/xics.c:561: warning: initialization from incompatible pointer type
 
---=-UomaFieYQfqyDy49U9KL--
+look like super-serious box-killers.  Hope I'm not using either of those.
