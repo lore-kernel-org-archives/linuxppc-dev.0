@@ -1,19 +1,23 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 121FD67A3F
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Jul 2006 21:39:18 +1000 (EST)
-Subject: Re: patches added to powerpc.git tree
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17582.17835.641485.233064@cargo.ozlabs.ibm.com>
-References: <17582.17835.641485.233064@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-xTzoFCoaQzXCYvX9im7u"
-Date: Fri, 07 Jul 2006 13:39:06 +0200
-Message-Id: <1152272346.15068.39.camel@localhost>
+	by ozlabs.org (Postfix) with ESMTP id 5DF6D67B52
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Jul 2006 21:45:33 +1000 (EST)
+Subject: Re: G5 troubles booting powerpc-git (July 6)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@osdl.org>
+In-Reply-To: <20060707021137.7f5dd182.akpm@osdl.org>
+References: <1152197602.14547.10.camel@farscape.rchland.ibm.com>
+	<1152226587.9862.19.camel@localhost.localdomain>
+	<20060707012330.f1dea5ac.akpm@osdl.org>
+	<1152260824.9862.57.camel@localhost.localdomain>
+	<20060707015237.68c768f2.akpm@osdl.org>
+	<1152262667.9862.64.camel@localhost.localdomain>
+	<20060707021137.7f5dd182.akpm@osdl.org>
+Content-Type: text/plain
+Date: Fri, 07 Jul 2006 21:45:10 +1000
+Message-Id: <1152272710.9862.74.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,44 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2006-07-07 at 02:11 -0700, Andrew Morton wrote:
+> On Fri, 07 Jul 2006 18:57:47 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > 
+> > In the meantime, try on your quad using a g5_defconfig
+> 
+> I tried it with your recently-sent patch applied.  It still dies in
+> smu_sensors_init().
 
---=-xTzoFCoaQzXCYvX9im7u
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Do you have lockdep ? There have been some changes to the completion
+stuff, I'm wondering if the DECLARE_COMPLETION in windfarm_smu_sensors.c
+need to be change to DECLARE_COMLETION_ONSTACK... (And other similars in
+windfarm_*).
 
-On Fri, 2006-07-07 at 21:29 +1000, Paul Mackerras wrote:
+I haven't had a chance to test yet but I'll audit through all the
+powerpc uses of DECLARE_COMPLETION since I use DECLARE_COMPLETION on
+stack variables often.
 
-> Johannes Berg:
->       [POWERPC] fix up front-LED Kconfig
-
-Thanks for picking this up.
-
-I notice you haven't picked up Andreas' irq conversion fix, was that
-intentional? Or did I miss it going in elsewhere?
-
-Thanks,
-johannes
-
---=-xTzoFCoaQzXCYvX9im7u
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARK5H2KVg1VMiehFYAQLwHg//WG4fvCtGt7P/aE151h5+qg5pVgD0h4O4
-Bmpa8TDXV2sYNlaTyoCPthxAdB2Ua63rE7Jk2jZG2D+llf3tkIS0UCdsylbhg8ng
-+RnJ7YxRDSPWXtyUMzvBowKPeJyGzqttahLP3Sd7loEQ2QcE3/CtjG/Bhw10ZRTc
-5Stwpq1So0+d7PnpWrt23lvESe3A0x21ikVslk2TrjloTUNUw+/o4wtiJWpv0RYv
-ibeRx9O/0OxIxHejbiOwlbfPBvieZCzoN62w5BkPbfzCpqVCTsCP8yHJMarOjbY4
-Xo6jLe4fSt7+8kWekTn45SH/eKaxawhntkVBGczQKsMdual5ZxbMjURCMVzxsceE
-Padftrk6JN137PfD/3ThJgCzhKuQlFNPj3wjwLBNAoqzH7iyL3cBQ3HCOhvv+9Xr
-SodZwFLLmBp/2ndNOBLMkZkm8gwlwjJYh4NOs6MmZV3MX7sbxSQRJKf6EDTUp6aO
-i11CfYXfM7tgfePT8woLngVzkg+23/aP+kWbkuIbUKPjccis6w9gJITcE2vmiZDm
-20F+0m4XsUwmZlaqHzZjqziiTkpaB9IqJZv3Ix+HQXNzdrnJd2onhac5fenH/p48
-AUNYpQH6I9j7QJOZUvyFg3UfPPaHv8P5YFr2Nk2+TyAklCVTSYWya8uZkn50rGCK
-bTrR2I/f/Mw=
-=/4Vs
------END PGP SIGNATURE-----
-
---=-xTzoFCoaQzXCYvX9im7u--
+Ben.
