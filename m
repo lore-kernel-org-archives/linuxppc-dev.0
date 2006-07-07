@@ -1,17 +1,20 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 07A2D67B5E
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Jul 2006 03:18:43 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: snd-aoa: Add sound-layout-36 alias
-Date: Fri, 07 Jul 2006 19:18:28 +0200
-Message-ID: <jed5chjpuj.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DCBE367B83
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Jul 2006 03:22:51 +1000 (EST)
+Subject: Re: [Alsa-devel] snd-aoa: Add sound-layout-36 alias
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <jed5chjpuj.fsf@sykes.suse.de>
+References: <jed5chjpuj.fsf@sykes.suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-06oe114Aa8UEjoXTlbDL"
+Date: Fri, 07 Jul 2006 19:22:23 +0200
+Message-Id: <1152292943.4792.12.camel@localhost>
+Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,29 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Andreas Schwab <schwab@suse.de>
 
----
- sound/aoa/fabrics/snd-aoa-fabric-layout.c |    1 +
- 1 file changed, 1 insertion(+)
+--=-06oe114Aa8UEjoXTlbDL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Index: linux-2.6.17-git13/sound/aoa/fabrics/snd-aoa-fabric-layout.c
-===================================================================
---- linux-2.6.17-git13.orig/sound/aoa/fabrics/snd-aoa-fabric-layout.c	2006-06-29 00:59:52.000000000 +0200
-+++ linux-2.6.17-git13/sound/aoa/fabrics/snd-aoa-fabric-layout.c	2006-06-29 01:06:02.000000000 +0200
-@@ -77,6 +77,7 @@ struct layout {
- 	int pcmid;
- };
- 
-+MODULE_ALIAS("sound-layout-36");
- MODULE_ALIAS("sound-layout-41");
- MODULE_ALIAS("sound-layout-45");
- MODULE_ALIAS("sound-layout-51");
+On Fri, 2006-07-07 at 19:18 +0200, Andreas Schwab wrote:
+> =20
+> +MODULE_ALIAS("sound-layout-36");
 
-Andreas.
+Heh. I just sent a patch (in my series) that adds all the ones that were
+still missing :)
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+johannes
+
+--=-06oe114Aa8UEjoXTlbDL
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARK6YTaVg1VMiehFYAQIfKA/9HU/bNfjzPN9Nym9Ooze2Cwhpp+tSLKxG
+/87T9INkxL6y+IMPE0pOrVk9m5Eq7M/WB1XeimIxBo7206MrBMoBkDUaHNK1/gwH
+zzUwzkjROfVL8mZJ49dogJSKdRMj+RlJaDZmVRtu9OGNmWBCbH59Tfkrf8xoDsE5
+ZE0pMNMmUPmkV7VzYhoo59f20GJ+T1iSZm8hTeBXhcQuy+mzIubvgNZxBRjF3ngO
+uTNfY+m2fTVFGiyHtQ95pUtRMRFfNSv2HEYIRTCYM6+/47kvg+uqZr4Vj6Z7J2co
+ynEJ8PtpLk/EmAo36ZkoOHa4JoM1wmdoF0Y9/58vqSuY+CGsNbdtjbL1+BNLiU7B
+GZLU1SycNAokJuzlIM1E1Ak0N7Ru+/kh8dJat80FeJVhmTjRBqRw1yqjPhAsKdKo
+MqmaYCSoCIacNczixuo/lO5L5WEoaGOmo+QTbhyyAJo2zTsmOoGf++f9To+K0ZdX
+/6i6bwT9NhA0KHWSRBSTEpyFH5wPg60q1Fq1XuruqJrr7eDgPWD1n5WQBQaPDEHZ
+Bk8ek8FlNBH4h4VTzVJGlYhTAjL7WUjlHCpiNMMB/uGBm4Qn0L1aRfFiTkqq6WzA
+zPGOMts/2pBLMM+uLhx7enWkdqKSxZD1W+sxsHFZ9m9aKJuyyEzIuJjRa8wvlrDd
++DmSaZBD+sM=
+=Do4l
+-----END PGP SIGNATURE-----
+
+--=-06oe114Aa8UEjoXTlbDL--
