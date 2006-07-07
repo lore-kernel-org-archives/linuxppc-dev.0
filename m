@@ -1,11 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17582.17835.641485.233064@cargo.ozlabs.ibm.com>
-Date: Fri, 7 Jul 2006 21:29:47 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: patches added to powerpc.git tree
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 121FD67A3F
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Jul 2006 21:39:18 +1000 (EST)
+Subject: Re: patches added to powerpc.git tree
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17582.17835.641485.233064@cargo.ozlabs.ibm.com>
+References: <17582.17835.641485.233064@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-xTzoFCoaQzXCYvX9im7u"
+Date: Fri, 07 Jul 2006 13:39:06 +0200
+Message-Id: <1152272346.15068.39.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,60 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following patches have been pushed to the powerpc.git tree (master
-branch):
 
-Benjamin Herrenschmidt:
-      [POWERPC] Workaround Pegasos incorrect ISA "ranges"
-      [POWERPC] Fix 32 bits warning in prom_init.c
-      [POWERPC] Fix non-MPIC CHRPs with CONFIG_SMP set
-      [POWERPC] Fix default clock for udbg_16550
-      [POWERPC] Fix legacy_serial.c error handling on 32 bits
-      [POWERPC] Add briq support to CHRP
-      [POWERPC] Add support for briq front panel
-      [POWERPC] More offb/bootx fixes
-      [POWERPC] Xserve G5 thermal control fixes
-      [POWERPC] Add cpufreq support for Xserve G5
+--=-xTzoFCoaQzXCYvX9im7u
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Jeremy Kerr:
-      [POWERPC] Remove linux,device properties
-      [POWERPC] Use const qualifiers for prom parsing utilites
-      [POWERPC] Remove linux,pci-domain properties
+On Fri, 2006-07-07 at 21:29 +1000, Paul Mackerras wrote:
 
-Johannes Berg:
-      [POWERPC] fix up front-LED Kconfig
+> Johannes Berg:
+>       [POWERPC] fix up front-LED Kconfig
 
-Michael Ellerman:
-      [POWERPC] Fix mem= handling when the memory limit is > RMO size
+Thanks for picking this up.
 
-Niels Kristian Bech Jensen:
-      [POWERPC] Add -fno-stack-protector to BOOTCFLAGS in arch/powerpc/boot/Makefile.
+I notice you haven't picked up Andreas' irq conversion fix, was that
+intentional? Or did I miss it going in elsewhere?
 
- arch/powerpc/Kconfig                         |    2 
- arch/powerpc/boot/Makefile                   |    4 
- arch/powerpc/configs/pmac32_defconfig        |  112 ++++++++-
- arch/powerpc/kernel/legacy_serial.c          |   13 +
- arch/powerpc/kernel/of_device.c              |   24 --
- arch/powerpc/kernel/pci_64.c                 |   39 ---
- arch/powerpc/kernel/prom_init.c              |   42 ++++
- arch/powerpc/kernel/prom_parse.c             |   22 +-
- arch/powerpc/kernel/smp.c                    |   24 +-
- arch/powerpc/kernel/udbg_16550.c             |    6 -
- arch/powerpc/mm/lmb.c                        |    3 
- arch/powerpc/platforms/chrp/pci.c            |   42 +++-
- arch/powerpc/platforms/chrp/setup.c          |   39 +++
- arch/powerpc/platforms/powermac/bootx_init.c |   35 ++-
- arch/powerpc/platforms/powermac/cpufreq_64.c |   78 ++++---
- drivers/char/Kconfig                         |   14 +
- drivers/char/Makefile                        |    1 
- drivers/char/briq_panel.c                    |  268 +++++++++++++++++++++++
- drivers/ide/Kconfig                          |   14 -
- drivers/macintosh/Kconfig                    |    9 +
- drivers/macintosh/therm_pm72.c               |  218 +++++++++++++++++-
- drivers/macintosh/therm_pm72.h               |   33 +++
- drivers/macintosh/via-pmu-led.c              |    2 
- drivers/video/offb.c                         |  307 ++++++++++++++------------
- include/asm-powerpc/processor.h              |    1 
- include/asm-powerpc/prom.h                   |    2 
- 26 files changed, 1023 insertions(+), 331 deletions(-)
- create mode 100644 drivers/char/briq_panel.c
+Thanks,
+johannes
+
+--=-xTzoFCoaQzXCYvX9im7u
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARK5H2KVg1VMiehFYAQLwHg//WG4fvCtGt7P/aE151h5+qg5pVgD0h4O4
+Bmpa8TDXV2sYNlaTyoCPthxAdB2Ua63rE7Jk2jZG2D+llf3tkIS0UCdsylbhg8ng
++RnJ7YxRDSPWXtyUMzvBowKPeJyGzqttahLP3Sd7loEQ2QcE3/CtjG/Bhw10ZRTc
+5Stwpq1So0+d7PnpWrt23lvESe3A0x21ikVslk2TrjloTUNUw+/o4wtiJWpv0RYv
+ibeRx9O/0OxIxHejbiOwlbfPBvieZCzoN62w5BkPbfzCpqVCTsCP8yHJMarOjbY4
+Xo6jLe4fSt7+8kWekTn45SH/eKaxawhntkVBGczQKsMdual5ZxbMjURCMVzxsceE
+Padftrk6JN137PfD/3ThJgCzhKuQlFNPj3wjwLBNAoqzH7iyL3cBQ3HCOhvv+9Xr
+SodZwFLLmBp/2ndNOBLMkZkm8gwlwjJYh4NOs6MmZV3MX7sbxSQRJKf6EDTUp6aO
+i11CfYXfM7tgfePT8woLngVzkg+23/aP+kWbkuIbUKPjccis6w9gJITcE2vmiZDm
+20F+0m4XsUwmZlaqHzZjqziiTkpaB9IqJZv3Ix+HQXNzdrnJd2onhac5fenH/p48
+AUNYpQH6I9j7QJOZUvyFg3UfPPaHv8P5YFr2Nk2+TyAklCVTSYWya8uZkn50rGCK
+bTrR2I/f/Mw=
+=/4Vs
+-----END PGP SIGNATURE-----
+
+--=-xTzoFCoaQzXCYvX9im7u--
