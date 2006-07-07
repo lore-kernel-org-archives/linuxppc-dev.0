@@ -1,15 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17582.14607.647659.803383@cargo.ozlabs.ibm.com>
-Date: Fri, 7 Jul 2006 20:35:59 +1000
+Message-ID: <17582.14562.991790.920984@cargo.ozlabs.ibm.com>
+Date: Fri, 7 Jul 2006 20:35:14 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [1/5][POWERPC] boot: prepare for zImage.kexec
-In-Reply-To: <200607012346.k61NkWXL006760@sullivan.realtime.net>
-References: <kexec-zImage-try2@bga.com>
-	<200607012346.k61NkWXL006760@sullivan.realtime.net>
-Cc: linuxppc-dev@ozlabs.org, Sam Ravnborg <sam@ravnborg.org>
+To: Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [PATCH 15/20] [powerpc,
+	netdevices] Constify & voidify get_property()
+In-Reply-To: <98457831@toto.iv>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org, netdev@oss.sgi.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,15 +18,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Milton Miller writes:
+Jeremy Kerr writes:
 
-> This patch moves the initializations of prom variables to boot/prom.c
-> to allow it to be replaced for kexec.   Kexec does not care about
-> the stdout handle, but will care about the location of the device
-> tree and will search for RTAS.
+> powerpc-specific network device driver changes.
 
-Unfortunately it doesn't apply now because of other changes to
-boot.h.  Please respin the series against the powerpc.git tree.
+For some reason, the whitespace got munged on this one.  There were
+some rejects on some of the other patches due to some of Ben H's
+patches.  Please fix them and move the include/linux/platform_device.h
+change into the same patch as the drivers/base/platform.c change.
 
-Thanks,
+I have applied patches 1-3.  Please resubmit the rest.
+
+Regards,
 Paul.
