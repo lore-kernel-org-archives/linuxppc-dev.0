@@ -2,33 +2,20 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EB1AE679F0
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Jul 2006 18:40:59 +1000 (EST)
-Subject: Re: [Alsa-devel] [RFC 01/12] snd-powermac: no longer
-	handle	anything with a layout-id property
+	by ozlabs.org (Postfix) with ESMTP id 74FC067B56
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Jul 2006 18:49:15 +1000 (EST)
+Subject: Re: snd-aoa: g5 tas codec problems
 From: Johannes Berg <johannes@sipsolutions.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1152260861.9862.59.camel@localhost.localdomain>
-References: <20060607130909.584205000@sipsolutions.net>
-	<20060607130910.156412000@sipsolutions.net>
-	<jey7vjiqwv.fsf@sykes.suse.de>
-	<s5hac7yvfhe.wl%tiwai@suse.de> <jehd26aa25.fsf@sykes.suse.de>
-	<jeu0631xpr.fsf@sykes.suse.de> <1151619973.22380.50.camel@mindpipe>
-	<jehd231rjx.fsf@sykes.suse.de>
-	<1152250720.9862.32.camel@localhost.localdomain>
-	<1152259477.15068.15.camel@localhost>
-	<1152260005.9862.53.camel@localhost.localdomain>
-	<1152260564.15068.20.camel@localhost>
-	<1152260861.9862.59.camel@localhost.localdomain>
+In-Reply-To: <1152258426.9862.44.camel@localhost.localdomain>
+References: <1152258426.9862.44.camel@localhost.localdomain>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-A9GKFKA1KJeB9uJDkN3b"
-Date: Fri, 07 Jul 2006 10:40:48 +0200
-Message-Id: <1152261648.15068.23.camel@localhost>
+	boundary="=-UomaFieYQfqyDy49U9KL"
+Date: Fri, 07 Jul 2006 10:49:08 +0200
+Message-Id: <1152262148.15068.30.camel@localhost>
 Mime-Version: 1.0
-Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
-	netstar@gatheringofgray.com, linuxppc-dev@ozlabs.org,
-	Lee Revell <rlrevell@joe-job.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,40 +26,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-A9GKFKA1KJeB9uJDkN3b
+--=-UomaFieYQfqyDy49U9KL
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2006-07-07 at 18:27 +1000, Benjamin Herrenschmidt wrote:
+On Fri, 2006-07-07 at 17:47 +1000, Benjamin Herrenschmidt wrote:
+> Also, we should try
+> (if not already the case) to cache our clock/i2s state so that
+> subsequent prepare() don't try to change things that are already ok.=20
 
-> Well, when the master volume shows up, softvol can "unplug" itself :)
-
-Hmm, not a bad idea, that way there's always a master volume. And when
-some cards have an unusable master volume then softvol could be forced
-to superimpose via the config file.
+I do that, the function reads the dws and sfr registers and exits early
+if they match.
 
 johannes
 
---=-A9GKFKA1KJeB9uJDkN3b
+--=-UomaFieYQfqyDy49U9KL
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iQIVAwUARK4eDaVg1VMiehFYAQLy3A//YkihwnQkSLgcedaYzk35KJB0/4RCTdFD
-dXVVjRtx0knc+3xRgm58R81np9nErn9hjEy8V7odofuYf0GeXRBvo7XjiwyTFgJS
-xcAcXpISx/lVuC8srpxyucDUIAXUILt2BwzJn+ChOtryFnPZ9/2mH+rtAzd8yMos
-JxOQUsZXTlcVrtimRHlmga9uAD0p66t0CiwWHcvf2+g0/eDpTDsLTLGVYAcZwlai
-SC8XLviJpKbAugPwgmo2N45EmVdZZ/yKNEs5bakgVzQ5xJM7uDxUfEl6jHvJxDpp
-sNzu7z6Sm4mFSfMLo2o6Hc47etzuga1MRnjLzvE4yWxonp5AUc8NFiN/RBu8bca9
-hgP7SkhZCxGv8CVz5o17dLP8QSySgynJgAOcYDYw/Acxd2udTQVhVk4bx0i7Lg7P
-hWicekBE11KhzM1hFj0hV6T8LT3eC49yT1pd8NH0RL4nAblHEo3q/8Dw9Mba0v5k
-pBRRlkP6e/od59sFz9WHTjvtRdizzMBOZiMmAQeoq+27SpUmsvoIgXckfoEIyY0k
-PuFLXhZ8RyNV39o6tqf0eGRWLIf+FYyXCO37eOjD4F7K1gZPu43xATpKP2orBtK9
-YNjXZs+UYD63gzItgToh3ED5C3LfvXGItbxZtqrDJdYcuJaz178lPjfS2Ju3Hu0w
-Zzf8unDUUTg=
-=TWuS
+iQIVAwUARK4gAqVg1VMiehFYAQLeKQ/9G3nI8+chYsXcB/yeZZtFkpk6+9LtQumc
+IoiHKV0EFSRDb0e0ebWiK7YtJpSnp1LWnDZGLvx+RcfPLAK+lozFQkGKGT619413
+Vk4dkHUKEnNwTLQDlgOD+vZMp9ScnIfrRKnfd9HacBkZyD96z+N7gL52QUaYXKfL
+MzKqnDpMjbMN/qQbGsDQhPeuMMhtOXiI4NOwekfuYPRrzzXDhRaBHsDWkoZVmS6/
+qzXGADl9dNB2PLmjCf5WrOtt4Qb3roG8A/XgS61J90uZwOJiTAjNpEiwwSmP2hqn
+ohqTFmqQ6AtFE8WkI1WXUS8YQsHAlaB3oBWzp6q7cY+kzg6/yiC812M9VMsNvabv
+wKbzRyjeszZP3xO0HSQ8ueU+yPMJn3UXTB2oBHVcMe4ku04KOU60JO3esQQOmH9E
+tCGW4/Qb2Mqlc3SyFW4B9ojL95ozfaHez3Bua0/BKNHOsAHxE7ijLULqxoW49vZ5
+kiKEDDPdUddcDU0+oNfRn46g7cjiBRPtwyOXg8xrMtpvuLP8M0VjS2AgNrPnhzg4
+3jlB4oYWa/w8aMYGFGAdBy8ZQ8c64Ptzg5WpQiVtXNMIwwbgH/l3E1cSQPLFzIRQ
+iaSo8SCZ4dQwzR3sBrmSe8cAxOFeSw2kmzq3Dspq6zuU+DfUeXlHMN3QvdtXlZ0u
+bOfm6UyE2kw=
+=AfNX
 -----END PGP SIGNATURE-----
 
---=-A9GKFKA1KJeB9uJDkN3b--
+--=-UomaFieYQfqyDy49U9KL--
