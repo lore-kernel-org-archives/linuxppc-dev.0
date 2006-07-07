@@ -2,14 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A65CA67BBA
-	for <linuxppc-dev@ozlabs.org>; Sat,  8 Jul 2006 03:00:23 +1000 (EST)
-Message-Id: <20060707165530.406861000@sipsolutions.net>
+	by ozlabs.org (Postfix) with ESMTP id 64D6067B58
+	for <linuxppc-dev@ozlabs.org>; Sat,  8 Jul 2006 03:00:25 +1000 (EST)
+Message-Id: <20060707165531.614016000@sipsolutions.net>
 References: <20060707165207.877010000@sipsolutions.net>
-Date: Fri, 07 Jul 2006 18:52:11 +0200
+Date: Fri, 07 Jul 2006 18:52:14 +0200
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/12] aoa: fix when all is built into the kernel
+Subject: [PATCH 07/12] aoa fabric layout: clean up messages
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,58 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes initialisation issues when all of aoa is built
-into the kernel by re-ordering the link order in the Makefile
-and making the soundbus use subsys_initcall so it is initialised
-earlier.
+This patch cleans up the printk's in the layout fabric and also
+makes it display which type of GPIO access it is going to use.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
---- linux-2.6-fetch.orig/sound/aoa/Makefile	2006-07-07 12:15:40.067697157 +0200
-+++ linux-2.6-fetch/sound/aoa/Makefile	2006-07-07 12:15:52.407697157 +0200
-@@ -1,4 +1,4 @@
- obj-$(CONFIG_SND_AOA) += core/
--obj-$(CONFIG_SND_AOA) += codecs/
--obj-$(CONFIG_SND_AOA) += fabrics/
- obj-$(CONFIG_SND_AOA_SOUNDBUS) += soundbus/
-+obj-$(CONFIG_SND_AOA) += fabrics/
-+obj-$(CONFIG_SND_AOA) += codecs/
---- linux-2.6-fetch.orig/sound/aoa/soundbus/core.c	2006-07-07 12:15:40.137697157 +0200
-+++ linux-2.6-fetch/sound/aoa/soundbus/core.c	2006-07-07 12:15:52.407697157 +0200
-@@ -194,16 +194,6 @@ static struct bus_type soundbus_bus_type
- 	.dev_attrs	= soundbus_dev_attrs,
- };
+--- linux-2.6-fetch.orig/sound/aoa/fabrics/snd-aoa-fabric-layout.c	2006-07-07 12:15:39.497697157 +0200
++++ linux-2.6-fetch/sound/aoa/fabrics/snd-aoa-fabric-layout.c	2006-07-07 12:15:55.057697157 +0200
+@@ -950,11 +950,12 @@ static int aoa_fabric_layout_probe(struc
+ 	layout_id = (unsigned int *) get_property(sound, "layout-id", NULL);
+ 	if (!layout_id)
+ 		goto outnodev;
+-	printk(KERN_INFO "snd-aoa-fabric-layout: found bus with layout %d ", *layout_id);
++	printk(KERN_INFO "snd-aoa-fabric-layout: found bus with layout %d\n",
++	       *layout_id);
  
--static int __init soundbus_init(void)
--{
--	return bus_register(&soundbus_bus_type);
--}
--
--static void __exit soundbus_exit(void)
--{
--	bus_unregister(&soundbus_bus_type);
--}
--
- int soundbus_add_one(struct soundbus_dev *dev)
- {
- 	static int devcount;
-@@ -246,5 +236,15 @@ void soundbus_unregister_driver(struct s
- }
- EXPORT_SYMBOL_GPL(soundbus_unregister_driver);
+ 	layout = find_layout_by_id(*layout_id);
+ 	if (!layout) {
+-		printk("(no idea how to handle)\n");
++		printk(KERN_ERR "snd-aoa-fabric-layout: unknown layout\n");
+ 		goto outnodev;
+ 	}
  
--module_init(soundbus_init);
-+static int __init soundbus_init(void)
-+{
-+	return bus_register(&soundbus_bus_type);
-+}
-+
-+static void __exit soundbus_exit(void)
-+{
-+	bus_unregister(&soundbus_bus_type);
-+}
-+
-+subsys_initcall(soundbus_init);
- module_exit(soundbus_exit);
+@@ -972,15 +973,17 @@ static int aoa_fabric_layout_probe(struc
+ 	case 51: /* PowerBook5,4 */
+ 	case 58: /* Mac Mini */
+ 		ldev->gpio.methods = ftr_gpio_methods;
++		printk(KERN_DEBUG
++		       "snd-aoa-fabric-layout: Using direct GPIOs\n");
+ 		break;
+ 	default:
+ 		ldev->gpio.methods = pmf_gpio_methods;
++		printk(KERN_DEBUG
++		       "snd-aoa-fabric-layout: Using PMF GPIOs\n");
+ 	}
+ 	ldev->selfptr_headphone.ptr = ldev;
+ 	ldev->selfptr_lineout.ptr = ldev;
+ 	sdev->ofdev.dev.driver_data = ldev;
+-
+-	printk("(using)\n");
+ 	list_add(&ldev->list, &layouts_list);
+ 	layouts_list_items++;
+ 
 
 --
