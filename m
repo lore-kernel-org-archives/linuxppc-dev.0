@@ -1,25 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5DF6D67B52
-	for <linuxppc-dev@ozlabs.org>; Fri,  7 Jul 2006 21:45:33 +1000 (EST)
-Subject: Re: G5 troubles booting powerpc-git (July 6)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@osdl.org>
-In-Reply-To: <20060707021137.7f5dd182.akpm@osdl.org>
-References: <1152197602.14547.10.camel@farscape.rchland.ibm.com>
-	<1152226587.9862.19.camel@localhost.localdomain>
-	<20060707012330.f1dea5ac.akpm@osdl.org>
-	<1152260824.9862.57.camel@localhost.localdomain>
-	<20060707015237.68c768f2.akpm@osdl.org>
-	<1152262667.9862.64.camel@localhost.localdomain>
-	<20060707021137.7f5dd182.akpm@osdl.org>
-Content-Type: text/plain
-Date: Fri, 07 Jul 2006 21:45:10 +1000
-Message-Id: <1152272710.9862.74.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 4632D67A3F
+	for <linuxppc-dev@ozlabs.org>; Fri,  7 Jul 2006 23:19:54 +1000 (EST)
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4DF278@zch01exm20.fsl.freescale.net>
+References: <4879B0C6C249214CBE7AB04453F84E4DF278@zch01exm20.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <02206875-0FBA-4390-A8AC-14D5446EBA50@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] Freescale QE UCC gigabit ethernet driver
+Date: Fri, 7 Jul 2006 08:19:37 -0500
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Cc: Andrew Morton <akpm@osdl.org>, netdev@vger.kernel.org, jgarzik@pobox.com,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,23 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2006-07-07 at 02:11 -0700, Andrew Morton wrote:
-> On Fri, 07 Jul 2006 18:57:47 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > 
-> > In the meantime, try on your quad using a g5_defconfig
-> 
-> I tried it with your recently-sent patch applied.  It still dies in
-> smu_sensors_init().
 
-Do you have lockdep ? There have been some changes to the completion
-stuff, I'm wondering if the DECLARE_COMPLETION in windfarm_smu_sensors.c
-need to be change to DECLARE_COMLETION_ONSTACK... (And other similars in
-windfarm_*).
+On Jul 7, 2006, at 3:59 AM, Li Yang-r58472 wrote:
 
-I haven't had a chance to test yet but I'll audit through all the
-powerpc uses of DECLARE_COMPLETION since I use DECLARE_COMPLETION on
-stack variables often.
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Thursday, July 06, 2006 9:45 PM
+>> To: Li Yang-r58472
+>> Cc: Andrew Morton; jgarzik@pobox.com; netdev@vger.kernel.org;
+>> linuxppc-dev@ozlabs.org
+>> Subject: Re: [PATCH 1/3] Freescale QE UCC gigabit ethernet driver
+>>
+>> Nack.  Here are some high level things that should be addressed:
+>> * There is a ton of debug code that should probably be stripped out,
+>> such as dump_regs, etc..
+>
+> The reason I left these debug code in is that, QE is very flexible.
+> User probably needs to fine tune parameters for their own application.
+> It will be good to give them some clue doing that.  It's fine to  
+> remove
+> them, if you do think they are too verbose.
 
-Ben.
+Then I suggest you look at debugfs.
+
+>> * The phy support should use the phylib instead
+>
+> I'll do this when I do get some time. ;)
+>> * convert from being a platform_device to of_device
+>
+> I'm not up against moving to use of_device.  But why are we putting
+> extra effort in closing the door to backward compatibility with ppc
+> arch, and doesn't provide any new feature. ;)
+
+Because the intent is for arch/ppc to go away in the future.  You are  
+introducing a new driver and a new platform, this is the ideal time  
+for us to use of_device.  The benefits are that the driver is the  
+ideal place to parse the details of the device node rather than  
+platform code in arch/powerpc.
+
+- kumar
