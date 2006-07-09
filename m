@@ -1,19 +1,20 @@
-Return-Path: <ammubhai@gmail.com>
-Received: from mailgw.cs.york.ac.uk (mailgw.cs.york.ac.uk [144.32.40.3])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 03E2767B56
+	by ozlabs.org (Postfix) with ESMTP id 696B4679E1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  9 Jul 2006 20:58:25 +1000 (EST)
-Message-ID: <44B0E0B1.2070608@gmail.com>
-Date: Sun, 09 Jul 2006 11:55:45 +0100
-From: Ameet Patil <ammubhai@gmail.com>
-MIME-Version: 1.0
-To: Ming Liu <eemingliu@hotmail.com>
-Subject: Re: Kernel hangs after "Now booting the kernel".
-References: <BAY110-F31063B8294E4D0F3D164F6B2750@phx.gbl>
-In-Reply-To: <BAY110-F31063B8294E4D0F3D164F6B2750@phx.gbl>
-Content-Type: text/plain; charset=GB2312
+	Sun,  9 Jul 2006 22:31:57 +1000 (EST)
+Subject: Re: MPC5200 boot giving "request_module: runaway loop modprobe
+	binfmt-4c46" errors
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: gturnock@ivhs.com
+In-Reply-To: <OF8ECEFEB4.081DB077-ON852571A4.007A4DD5-852571A4.007A4DEE@fpelectronics.com>
+References: <OF8ECEFEB4.081DB077-ON852571A4.007A4DD5-852571A4.007A4DEE@fpelectronics.com>
+Content-Type: text/plain
+Date: Sun, 09 Jul 2006 22:31:48 +1000
+Message-Id: <1152448308.4128.35.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,38 +26,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Ming,
-   Check if the kernel boot options are set right? (ie.
-console=ttyS0,9600 root=/dev/xsa3). Sometimes the configuration is lost.
-If this is intact, then another thing to try is to start from the
-beginning: make mrproper and then make menuconfig, etc.
+On Fri, 2006-07-07 at 18:15 -0400, gturnock@ivhs.com wrote:
+> Hi All,
+> 
+> I am currently attempting to get the 2.6 Linux Kernel
+> ( Sylvain's Kernel from
+> http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx.git)  booting over
+> NFS on a Freescale LITE5200 board.  At present, I have been able to
+> successfully mount the rootfs over NFS, but am encountering the
+> following issue... 
+> 
+> After the kernel frees the unused memory after the NFS mount, I get a
+> string of 
+> 
+> request_module: runaway loop modprobe binfmt-4c46
+> 
+> errors and the console appears to hang.  Any help would be greatly
+> appreciated!
 
-I have not looked into TEMAC patch yet, but don't think it would affect
-your serial output messages. Double check the boot options and whether
-you have included support for legacy serial device/ console on serial
-deivce.
+Are you sure you are trying to boot a ppc NFS root ? :) Looks to me like
+you are trying to boot an x86 one...
 
--Ameet
-
-Ming Liu wrote:
-> Dear Ameet,
-> I really feel so sorry to take away much time from you. However, there 
-> are really so many strange problems for my system.
-> 
-> I tried to implement the Temac option and recompiled the kernel. Then 
-> when I boot the kernel from CF card, after the information "Now booting 
-> the kernel", it hangs. I canceled the Temac again and recompiled the 
-> kernel, restoring the former condition, this problem still existed. It's 
-> so strange.
-> 
-> Any suggestion to solve this? Of course, suggestions from other friends 
-> are also appreciated.
-> 
-> Thanks a lot again for your great help!
-> 
-> Regards
-> Ming
-> 
-> _________________________________________________________________
-> 与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn 
-> 
+Ben.
