@@ -1,23 +1,14 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from calculon.skynet.ie (calculon.skynet.ie [193.1.99.88])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E560967B56
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 01:32:38 +1000 (EST)
-Date: Sun, 9 Jul 2006 16:32:32 +0100 (IST)
-From: Mel Gorman <mel@csn.ul.ie>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 0/6] Sizing zones and holes in an architecture independent
-	manner V8
-In-Reply-To: <20060708114201.GA9419@osiris.boeblingen.de.ibm.com>
-Message-ID: <Pine.LNX.4.64.0607091624560.28189@skynet.skynet.ie>
-References: <20060708111042.28664.14732.sendpatchset@skynet.skynet.ie>
-	<20060708114201.GA9419@osiris.boeblingen.de.ibm.com>
+Return-Path: <pheidius1@yahoo.com>
+Received: from web35812.mail.mud.yahoo.com (web35812.mail.mud.yahoo.com
+	[66.163.179.181]) by ozlabs.org (Postfix) with SMTP id EC970679E0
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 03:15:50 +1000 (EST)
+Message-ID: <20060709170909.90774.qmail@web35812.mail.mud.yahoo.com>
+Date: Sun, 9 Jul 2006 10:09:09 -0700 (PDT)
+From: Paul Smith <pheidius1@yahoo.com>
+Subject: setup arch
+To: linuxppc-dev@ozlabs.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: akpm@osdl.org, davej@codemonkey.org.uk, tony.luck@intel.com,
-	linux-mm@kvack.org, ak@suse.de, bob.picco@hp.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-526651294-1152464949=:87739"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,49 +18,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 8 Jul 2006, Heiko Carstens wrote:
+--0-526651294-1152464949=:87739
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-> On Sat, Jul 08, 2006 at 12:10:42PM +0100, Mel Gorman wrote:
->> There are differences in the zone sizes for x86_64 as the arch-specific code
->> for x86_64 accounts the kernel image and the starting mem_maps as memory
->> holes but the architecture-independent code accounts the memory as present.
->
-> Shouldn't this be the same for all architectures?
+I hesitate to lay this one out here because you all
+are way over my head. The regular forums have not
+responded to this in any meaningful way.
+Hi, 
 
-The comment in the mail is inaccurate because patch 6/6 will account for 
-the kernel image and mem_map as holes for all architectures if it is 
-merged. The patch could be submitted independent of arch-independent 
-zone-sizing.
 
-> Or to put it in other words:
-> why does only x86_64 account the kernel image as memory hole?
->
+Box: 
+Quad 2.5 PPC 
+4.5 GB non ecc 533 Ram 
+RocketRaid2320 
+Nvida 6600 256mb 
 
->From Andi Kleen's mails in the thread "[PATCH 0/5] Sizing zones and holes 
-in an architecture independent manner V7"
 
->>> Begin extract <<<
+software resources: 
+install-ppc64-minimal-2006.0.iso 
+install-ppc64-minimal-2006.0.iso.DIGESTS 
+install-ppc64-minimal-2006.0.iso.CONTENTS 
+install-ppc64-universal-2006.0-32ul.iso 
+install-ppc64-universal-2006.0-32ul.iso.DIGESTS 
+install-ppc64-universal-2006.0-32ul.iso.CONTENTS 
 
-> Why is it a performance regression if the image and memmap is accounted
-> for as holes? How are those regions different from any other kernel
-> allocation or bootmem allocations for example which are not accounted as
-> holes?
+Checksum.app 
 
-They are comparatively big and cannot be freed.
 
->If you are sure that it makes a measurable difference to performance,
 
-There was at least one benchmark/use case where it made a significant
-difference, can't remember the exact numbers though.
+I am still stuck on this installation attempt. 
+Here is a recap of the situation: 
 
-It affects the low/high water marks in the VM zone balancer.
+Both the minimal .iso
+images(install-ppc64-minimal-2006.0.iso) and the
+universal.iso(install-ppc64-universal-2006.0-32ul.iso)have
+been checksummed and check out good. 
+I zereod out my cd media in both cases to make sure I
+had no media damage that might cause corruption of the
+images. 
 
-Especially for the 16MB DMA zone it can make a difference if you
-account 4MB kernel in there or not.
+When I boot from either the minimal or uninversal ppc
+64 ect. ect. I get to a black screen that says: 
 
->>> End extract <<<
+Welcome to the the Genntoo 2006 PPC install-CD. This
+cd allows you to install on 64 bit apple and IBM
+Hardware either a 32 or 64 bit user land, running on
+top of a 64 bit kernal. Please refer to help on the cd
+to learn more about this install-cd. 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Gentoo Installation Handbook http://ppc64.gentoo.org 
+further info http;// ppc64gentoo.org 
+Bugs: "bugs.gentoo.org(Cc ppc64@gentoo.org) 
+IRC :#gentoo-ppc64 on IRC.freenode.net 
+pesss tab to shoow the kernals. welcome to yaboot
+version 1.3.11 
+enter "help to get some basic usage information 
+
+Boot: 
+
+if I push enter it says "loading kernal" 
+Elf64 ramdisk loaded 
+(then something else real quick) 
+
+then I hang in a grey screen that says 
+Cf00100 
+MM Init 
+CF000012 
+MM Init Done 
+Cf000012 
+Setup Arch 
+The machine just hangs here with the fans running
+pretty fast 
+
+When I press tab the kernal that is available is: 
+
+G5 G5-ttyS0,57600 
+
+I know you are not really supposed to guess when you
+are asking for help but the above is all the hard data
+I know to give. 
+I was looking at arch.app and it seems as if this is
+the architecture part of the kernal. 
+Given that this is very new hardware is it possible
+that there is either a bug in the image or that this
+hardware is not yet supported? 
+Anyone have any ideas?
+
+
+ 		
+---------------------------------
+Want to be your own boss? Learn how on  Yahoo! Small Business. 
+--0-526651294-1152464949=:87739
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+I hesitate to lay this one out here because you all<BR>are way over my head. The regular forums have not<BR>responded to this in any meaningful way.<BR>Hi, <BR><BR><BR>Box: <BR>Quad 2.5 PPC <BR>4.5 GB non ecc 533 Ram <BR>RocketRaid2320 <BR>Nvida 6600 256mb <BR><BR><BR>software resources: <BR>install-ppc64-minimal-2006.0.iso <BR>install-ppc64-minimal-2006.0.iso.DIGESTS <BR>install-ppc64-minimal-2006.0.iso.CONTENTS <BR>install-ppc64-universal-2006.0-32ul.iso <BR>install-ppc64-universal-2006.0-32ul.iso.DIGESTS <BR>install-ppc64-universal-2006.0-32ul.iso.CONTENTS <BR><BR>Checksum.app <BR><BR><BR><BR>I am still stuck on this installation attempt. <BR>Here is a recap of the situation: <BR><BR>Both the minimal .iso<BR>images(install-ppc64-minimal-2006.0.iso) and the<BR>universal.iso(install-ppc64-universal-2006.0-32ul.iso)have<BR>been checksummed and check out good. <BR>I zereod out my cd media in both cases to make sure I<BR>had no media damage that might cause corruption of
+ the<BR>images. <BR><BR>When I boot from either the minimal or uninversal ppc<BR>64 ect. ect. I get to a black screen that says: <BR><BR>Welcome to the the Genntoo 2006 PPC install-CD. This<BR>cd allows you to install on 64 bit apple and IBM<BR>Hardware either a 32 or 64 bit user land, running on<BR>top of a 64 bit kernal. Please refer to help on the cd<BR>to learn more about this install-cd. <BR><BR>Gentoo Installation Handbook <A href="http://ppc64.gentoo.org/" target=_blank><FONT color=#003399>http://ppc64.gentoo.org </FONT></A><BR>further info http;// ppc64gentoo.org <BR>Bugs: "bugs.gentoo.org(Cc <A href="http://us.f358.mail.yahoo.com/ym/Compose?To=ppc64@gentoo.org&amp;YY=28308&amp;order=down&amp;sort=date&amp;pos=0&amp;view=a&amp;head=b"><FONT color=#003399>ppc64@gentoo.org</FONT></A>) <BR>IRC :#gentoo-ppc64 on IRC.freenode.net <BR>pesss tab to shoow the kernals. welcome to yaboot<BR>version 1.3.11 <BR>enter "help to get some basic usage information <BR><BR>Boot:
+ <BR><BR>if I push enter it says "loading kernal" <BR>Elf64 ramdisk loaded <BR>(then something else real quick) <BR><BR>then I hang in a grey screen that says <BR>Cf00100 <BR>MM Init <BR>CF000012 <BR>MM Init Done <BR>Cf000012 <BR>Setup Arch <BR>The machine just hangs here with the fans running<BR>pretty fast <BR><BR>When I press tab the kernal that is available is: <BR><BR>G5 G5-ttyS0,57600 <BR><BR>I know you are not really supposed to guess when you<BR>are asking for help but the above is all the hard data<BR>I know to give. <BR>I was looking at arch.app and it seems as if this is<BR>the architecture part of the kernal. <BR>Given that this is very new hardware is it possible<BR>that there is either a bug in the image or that this<BR>hardware is not yet supported? <BR>Anyone have any ideas?<BR><BR><p>&#32;
+		<hr size=1>Want to be your own boss? Learn how on <a href="http://us.rd.yahoo.com/evt=41244/*http://smallbusiness.yahoo.com/r-index"> Yahoo! Small Business.</a> 
+
+--0-526651294-1152464949=:87739--
