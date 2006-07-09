@@ -1,16 +1,19 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc1-s33.bay0.hotmail.com (bay0-omc1-s33.bay0.hotmail.com
-	[65.54.246.105]) by ozlabs.org (Postfix) with ESMTP id 0537467B52
+Return-Path: <ammubhai@gmail.com>
+Received: from mailgw.cs.york.ac.uk (mailgw.cs.york.ac.uk [144.32.40.3])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 03E2767B56
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  9 Jul 2006 01:17:18 +1000 (EST)
-Message-ID: <BAY110-F31063B8294E4D0F3D164F6B2750@phx.gbl>
-In-Reply-To: <44AE83F6.2090702@gmail.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: ammubhai@gmail.com
-Subject: Kernel hangs after "Now booting the kernel".
-Date: Sat, 08 Jul 2006 15:17:14 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+	Sun,  9 Jul 2006 20:58:25 +1000 (EST)
+Message-ID: <44B0E0B1.2070608@gmail.com>
+Date: Sun, 09 Jul 2006 11:55:45 +0100
+From: Ameet Patil <ammubhai@gmail.com>
+MIME-Version: 1.0
+To: Ming Liu <eemingliu@hotmail.com>
+Subject: Re: Kernel hangs after "Now booting the kernel".
+References: <BAY110-F31063B8294E4D0F3D164F6B2750@phx.gbl>
+In-Reply-To: <BAY110-F31063B8294E4D0F3D164F6B2750@phx.gbl>
+Content-Type: text/plain; charset=GB2312
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,23 +25,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Ameet,
-I really feel so sorry to take away much time from you. However, there are 
-really so many strange problems for my system.
+Hi Ming,
+   Check if the kernel boot options are set right? (ie.
+console=ttyS0,9600 root=/dev/xsa3). Sometimes the configuration is lost.
+If this is intact, then another thing to try is to start from the
+beginning: make mrproper and then make menuconfig, etc.
 
-I tried to implement the Temac option and recompiled the kernel. Then when 
-I boot the kernel from CF card, after the information "Now booting the 
-kernel", it hangs. I canceled the Temac again and recompiled the kernel, 
-restoring the former condition, this problem still existed. It's so 
-strange.
+I have not looked into TEMAC patch yet, but don't think it would affect
+your serial output messages. Double check the boot options and whether
+you have included support for legacy serial device/ console on serial
+deivce.
 
-Any suggestion to solve this? Of course, suggestions from other friends are 
-also appreciated.
+-Ameet
 
-Thanks a lot again for your great help!
-
-Regards
-Ming
-
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+Ming Liu wrote:
+> Dear Ameet,
+> I really feel so sorry to take away much time from you. However, there 
+> are really so many strange problems for my system.
+> 
+> I tried to implement the Temac option and recompiled the kernel. Then 
+> when I boot the kernel from CF card, after the information "Now booting 
+> the kernel", it hangs. I canceled the Temac again and recompiled the 
+> kernel, restoring the former condition, this problem still existed. It's 
+> so strange.
+> 
+> Any suggestion to solve this? Of course, suggestions from other friends 
+> are also appreciated.
+> 
+> Thanks a lot again for your great help!
+> 
+> Regards
+> Ming
+> 
+> _________________________________________________________________
+> 与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn 
+> 
