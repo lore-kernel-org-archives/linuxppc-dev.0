@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 87B7067B54
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jul 2006 07:19:43 +1000 (EST)
-Subject: Re: [PATCH] Make snd-aoa cope with lack of line-output-detect property
+	by ozlabs.org (Postfix) with ESMTP id 31E38679FB
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jul 2006 07:43:45 +1000 (EST)
+Subject: Re: ppc -> powerpc porting
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1152537082.30697.37.camel@localhost>
-References: <17586.19091.512322.908434@cargo.ozlabs.ibm.com>
-	<1152537082.30697.37.camel@localhost>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+In-Reply-To: <Pine.LNX.4.60.0607102135330.10561@poirot.grange>
+References: <DCEAAC0833DD314AB0B58112AD99B93B0189DE5E@ismail.innsys.innovsys.com>
+	<20060710214158.1d8dcf2c@vitb.ru.mvista.com>
+	<Pine.LNX.4.60.0607102135330.10561@poirot.grange>
 Content-Type: text/plain
-Date: Tue, 11 Jul 2006 07:19:35 +1000
-Message-Id: <1152566375.1576.104.camel@localhost.localdomain>
+Date: Tue, 11 Jul 2006 07:43:37 +1000
+Message-Id: <1152567817.1576.114.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-07-10 at 15:11 +0200, Johannes Berg wrote:
-> On Mon, 2006-07-10 at 22:39 +1000, Paul Mackerras wrote:
-> > The snd-aoa stuff falls over on my G4 powerbook (1.5GHz Albook) with a
-> > null pointer dereference in of_find_property.  It turns out that this
-> > was because it couldn't find a device node for the line-output detect
-> > GPIO.  This patch fixes it.
+On Mon, 2006-07-10 at 21:43 +0200, Guennadi Liakhovetski wrote:
+> On Mon, 10 Jul 2006, Vitaly Bordug wrote:
 > 
-> That's interesting. I thought I was running this code. Hmm :>
+> > On Mon, 10 Jul 2006 12:14:24 -0500
+> > "Rune Torgersen" <runet@innovsys.com> wrote:
+> > 
+> > > To make my life a little easier: Does anybody have a list of stuff to
+> > > watch out for/need to do when porting a board from ppc to powerpc?
+> > > The board uses a Freescale 8265 and runs under 2.6.17, using platfrom
+> > > device support for accessing fs_enet driver.
+> 
+> Look at Documentation/powerpc/booting-without-of.txt - 
 
-Slightly different model I suppose, 5,4 vs. 5,6 no ? Paul, can you send
-Johannes a dumb of your device-tree ?
+You guys be careful, if you use OpenPIC/MPIC, that there is an error in
+that documentation for the interrupt specifier definition. I'll send an
+updated documentation soon with some more details about the OF interrupt
+tree, but in the meantime, the proper sense encoding for MPIC is:
 
-> I should probably drop the get_irq function completely and do that in
-> line. And yes, that should be NO_IRQ I guess. I'll prepare a patch
-> later.
+ 0 = rising edge
+ 1 = negative level
+ 2 = positive level
+ 3 = falling edge
 
+Cheers,
 Ben.
