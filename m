@@ -1,19 +1,22 @@
-Return-Path: <benavi@marvell.com>
-Received: from il.marvell.com (shoshil.marvell.com [199.203.130.250])
-	by ozlabs.org (Postfix) with ESMTP id DEE08679E2
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
+	by ozlabs.org (Postfix) with ESMTP id 4D0E4679E9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  9 Jul 2006 23:47:14 +1000 (EST)
-Received: from msilexch01.marvell.com (msilexch01.il.marvell.com [10.4.5.104])
-	by il.marvell.com (8.13.1/8.13.1) with ESMTP id k69Dl9Km002555
-	for <linuxppc-embedded@ozlabs.org>; Sun, 9 Jul 2006 16:47:09 +0300 (IDT)
+	Mon, 10 Jul 2006 16:52:23 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id j3so3101425ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 09 Jul 2006 23:52:21 -0700 (PDT)
+Message-ID: <528646bc0607092352j4c5d2bdagd1d03169f4edc042@mail.gmail.com>
+Date: Mon, 10 Jul 2006 00:52:20 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Sass, Ronald" <rsass@uncc.edu>
+Subject: Re: linux-2.6.17.4 and Xilinx Virtex
+In-Reply-To: <1A3FF4C9782A1249BDFC2FF2B5749C98150E1100@EXEVS01.its.uncc.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: board hangs during reboot
-Date: Sun, 9 Jul 2006 16:46:54 +0300
-Message-ID: <3DBBCC5C2604704D9351456CFE118AC10460F146@msilexch01.marvell.com>
-From: "Eran Ben-Avi" <benavi@marvell.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1A3FF4C9782A1249BDFC2FF2B5749C98150E1100@EXEVS01.its.uncc.edu>
+Cc: rsass@ittc.ku.edu, linuxppc-embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,36 +27,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Let's move this conversation over to the linuxppc-embedded mailing list
 
+On 7/8/06, Sass, Ronald <rsass@uncc.edu> wrote:
+>
+> Hello Grant,
+>
+>  I noticed that somewhere between 2.6.11 and 2.6.17 you started
+>  adding support to the Linux kernel for some Virtex-* based boards
+>  to the Linux kernel.  I've got some hacked up kernel mods for the
+>  ML-310 (and soon) ML-410 boards that I am trying to clean up for
+>  sharing.  I've never directly contributed to the kernel, so all of
+>  this is new to me.  I had a couple of questions about the direction
+>  you are taking:
 
-Hi,
+I've got some things that I still need to clean up.  As it stands
+right now, I've done some brain-dead stuff with the ppc_sys
+infrastructure which I really should fix.
 
-When I tried to restart the board (using reboot command), after all
-services being shut down
-the board hangs .The last printed line is "Restarting system." .
-I implemented the restart api as follows:
+>
+>  (1)  I noticed that you restructured
+> arch/ppc/platforms/4xx/xparameters
+>       to support multiple boards.  That's cool.  Do you use XPS/EDK to
+>       update these files or do you just change the xparameters.h `by
+>       hand' for each base system?
 
-            u32 jumpaddr=3D0xfff00100;
-	u32 defaultmsr=3DMSR_IP;
+No; unfortunately EDK does not support generating a BSP for linux 2.6.
+ I generate a 2.4 bsp into a clean directory and then copy
+xparameters_ml300.h into the 2.6 tree.
 
-	_disable_interrupts();
+>  (2)  I also noticed that the CONFIG_XILINX_VIRTEX_II_PRO (and files
+>       arch/ppc/platforms/4xx/virtex_ii_pro.[ch]) changed to
+> be just
+>       CONFIG_XILINX_VIRTEX (and
+> arch/ppc/platforms/4xx/virtex.[ch]).
+>       Is this change intended to be more generic to support V2P,
+>       V-4, and V-5 devices?
 
-	__asm__ __volatile__("\n\
-	mtspr   26, %1  /* SRR0 */
-	mtspr   27, %0  /* SRR1 */
-	rfi"
-	:
-	: "r" (defaultmsr), "r" (jumpaddr));
-=09
-            /*
-	 * Not reached
-	 */
+Yes
 
+>  (3)  I also noticed that even though CONFIG_XILINX_VIRTEX was added,
+>       the option CONFIG_XILINX_VIRTEX_II_PRO is still in the .config
+>       file.  As far as I can tell, the "VIRTEX_II_PRO" option is not
+>       referenced in the source.  Should it be removed?
 
-I'm using IBM750Gl cpu .
+I don't think so; but others may disagree.  The macro is convenient
+for determining exactly which virtex part is being compiled for.  Plus
+it give a clean dependancy hierarchy from board->part->part family.  I
+left it in as a mirror to the XILINX_VIRTEX_4 macro which is in use.
 
-Does anyone familiar with this ?
+>
+>  Thanks for taking the initative here!  Do you know, is there anyone
+>  else trying to formally incorporate Xilinx boards into the stock
+>  kernel.org source tree?
 
-Regards,
+I hear rumors that MontaVista will be merging their virtex-II/virtex-4
+support into mainline real-soon-now.
 
-Eran.
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
