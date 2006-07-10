@@ -1,20 +1,19 @@
-Return-Path: <jxnuxdy@163.com>
-Received: from m13-12.163.com (m13-12.163.com [220.181.13.12])
-	by ozlabs.org (Postfix) with SMTP id B3F3367B67
+Return-Path: <gturnock@ivhs.com>
+Received: from postfix.fpelectronics.com (gw.ivhs.com [66.46.242.98])
+	by ozlabs.org (Postfix) with ESMTP id 17EAF67B60
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 10 Jul 2006 21:41:50 +1000 (EST)
+	Mon, 10 Jul 2006 23:45:30 +1000 (EST)
+Subject: Re: MPC5200 boot giving "request_module: runaway loop
+	modprobe	binfmt-4c46" errors
 MIME-Version: 1.0
-Message-ID: <44B23CEF.0000D8.12869@bj163app12.163.com>
-Date: Mon, 10 Jul 2006 19:41:35 +0800 (CST)
-From: "Denny" <jxnuxdy@163.com>
-To: "stefan roese" <sr@denx.de>,linuxppc-embedded@ozlabs.org
-Subject: Re: Re: Failed to initialize the ethernet
-  on PPC4 40GP
-References: <44B220CB.000108.31873@bj163app12.163.com>
-	<200607101242.29359.sr@denx.de>
-In-Reply-To: <200607101242.29359.sr@denx.de>
-Content-Type: Multipart/Alternative;
-	boundary="Boundary-=_BEVThOPsLOXWODFuuaBRidvlwcMw"
+From: gturnock@ivhs.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 10 Jul 2006 09:48:34 -0400
+Message-ID: <OF2410ED27.EB33683B-ON852571A7.004BDB70-852571A7.004BDB94@fpelectronics.com>
+MIME-Version: 1.0
+Content-Type: text/html;
+	charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org, gturnock@ivhs.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,52 +24,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
---Boundary-=_BEVThOPsLOXWODFuuaBRidvlwcMw
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 7bit
-
-Sorry, It is the UBoot question, I will address this to the UBoot maillist the next time!
-After I add the environment valiable "ipaddr", this message disappeared,but the ethernet still not work (the MII on my custom board work on RMII mode).
-u-boot => tftp 0x100000 u-boot.bin
-miiphy_register: non unique device name 'ppc_4xx_eth0'
-PHY speed read failed, assuming 10bT
-PHY duplex read failed, assuming half duplex
-ENET Speed is 10 Mbps - HALF duplex connection
-TFTP from server 192.168.65.235; our IP address is 192.168.65.239
-Filename 'u-boot.bin'.
-Load address: 0x100000
-Loading: T T T T T T T T T T 
-Retry count exceeded; starting again
-- Denny
---Boundary-=_BEVThOPsLOXWODFuuaBRidvlwcMw
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: quoted-printable
-
-<P>Sorry, It is the UBoot question, I will address this to the UBoot mail=
-list the next time!</P>
-<P>After I add the environment valiable "ipaddr", this message disappeare=
-d,but the ethernet still not work (the MII&nbsp;on&nbsp;my custom board w=
-ork on RMII mode).</P>
-<P>u-boot =3D&gt; tftp 0x100000 u-boot.bin<BR>miiphy_register: non unique=
- device name 'ppc_4xx_eth0'<BR>PHY speed read failed, assuming 10bT<BR>PH=
-Y duplex read failed, assuming half duplex<BR>ENET Speed is 10 Mbps - HAL=
-F duplex connection<BR>TFTP from server 192.168.65.235; our IP address is=
- 192.168.65.239<BR>Filename 'u-boot.bin'.<BR>Load address: 0x100000<BR>Lo=
-ading: T T T T T T T T T T <BR>Retry count exceeded; starting again</P>
-<P>- Denny</P><br><!-- footer --><br><br><br><br><br><div style=3D"border=
--bottom:1px solid #999"></div><br>
-
-=09<font color=3D"black" style=3D"font-size:14.8px">=CF=EB =D2=AA =CC=E5 =
-=D1=E9 =D2=BB =CF=C2 =B3=AC =B4=F3 =B3=AC =BF=EC =B5=C4 =C3=E2 =B7=D1 =D3=
-=CA =CF=E4 =C2=F0 =A3=BF</font>
-=09<br>
-=09 <a href=3D"http://www.126.com/" target=3D"_blank" style=3D"font-size:=
-13px;line-height:160%;color:blue">=CD=F8 =D2=D7 3G =C3=E2 =B7=D1 =D3=CA =A3=
-=AC=C7=C0 =D7=A2 =D4=D9 =B5=C3 280 =D5=D7 =B4=F3 =C8=DD =C1=BF =CD=F8 =C5=
-=CC =A3=AC=BF=EC =C0=B4 =CC=E5 =D1=E9 =D3=CA =CF=E4 =BC=AB =CB=D9 =D6=AE =
-=C2=C3
-</a>
-
-
---Boundary-=_BEVThOPsLOXWODFuuaBRidvlwcMw--
+<FONT face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sans-serif" size=
+=3D2><DIV><DIV><DIV>Hi Ben,</DIV><DIV>&nbsp;</DIV><DIV>Thanks for your ques=
+tion... As far as I can tell... Yes ;).&nbsp; The board is a LITE5200 Evalu=
+ation board from Freescale.&nbsp; I am, however, booting from an x86 host r=
+unning FC5.&nbsp; Now having said that, I have taken (what I think) are all=
+ the proper steps to cross compile all the necessary bits (kernel modules, =
+busybox, tinylogin, etc)... Hmm something I've missed perhaps?</DIV><DIV>&n=
+bsp;</DIV><DIV>Cheers</DIV><DIV>Glenn.</DIV><DIV><BR>&nbsp;</DIV><FONT colo=
+r=3D#990099>-----Benjamin Herrenschmidt &lt;benh@kernel.crashing.org&gt; wr=
+ote: -----<BR><BR></FONT><blockquote style=3D"PADDING-RIGHT: 0px; PADDING-L=
+EFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #000000 2px solid; MARGIN-RIGHT: 0=
+px">To: gturnock@ivhs.com<BR>From: Benjamin Herrenschmidt &lt;benh@kernel.c=
+rashing.org&gt;<BR>Date: 07/09/2006 08:31AM<BR>cc: linuxppc-embedded@ozlabs=
+.org<BR>Subject: Re: MPC5200 boot giving "request=5Fmodule: runaway loop mo=
+dprobe	binfmt-4c46" errors<BR><BR><FONT face=3Dmonospace size=3D2>On Fri, 2=
+006-07-07 at 18:15 -0400, gturnock@ivhs.com wrote:<BR>&gt; Hi All,<BR>&gt; =
+<BR>&gt; I am currently attempting to get the 2.6 Linux Kernel<BR>&gt; ( Sy=
+lvain's Kernel from<BR>&gt; <A href=3D"http://gitbits.246tnt.com/gitbits/li=
+nux-2.6-mpc52xx.git" target=3Dblank  >http://gitbits.246tNt.com/gitbits/lin=
+ux-2.6-mpc52xx.git</A>) &nbsp;booting over<BR>&gt; NFS on a Freescale LITE5=
+200 board. &nbsp;At present, I have been able to<BR>&gt; successfully mount=
+ the rootfs over NFS, but am encountering the<BR>&gt; following issue... <B=
+R>&gt; <BR>&gt; After the kernel frees the unused memory after the NFS moun=
+t, I get a<BR>&gt; string of <BR>&gt; <BR>&gt; request=5Fmodule: runaway lo=
+op modprobe binfmt-4c46<BR>&gt; <BR>&gt; errors and the console appears to =
+hang. &nbsp;Any help would be greatly<BR>&gt; appreciated!<BR><BR>Are you s=
+ure you are trying to boot a ppc NFS root ? :) Looks to me like<BR>you are =
+trying to boot an x86 one...<BR><BR>Ben.<BR><BR><BR></FONT></blockquote><br=
+></DIV></DIV></FONT>=
