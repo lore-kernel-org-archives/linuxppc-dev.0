@@ -1,15 +1,20 @@
-Return-Path: <runet@innovsys.com>
-Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
-	by ozlabs.org (Postfix) with ESMTP id 8E59567C2D
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jul 2006 06:38:09 +1000 (EST)
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 80087679F0
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jul 2006 06:49:59 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mike Kravetz <kravetz@us.ibm.com>
+Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
+Date: Mon, 10 Jul 2006 22:49:49 +0200
+References: <20060622225609.GA4877@w-mikek2.ibm.com>
+	<20060710203510.GA30793@w-mikek2.ibm.com>
+In-Reply-To: <20060710203510.GA30793@w-mikek2.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: FW: ppc -> powerpc porting
-Date: Mon, 10 Jul 2006 15:38:08 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0189DE61@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linuxppc-dev@ozlabs.org>
+  charset="iso-8859-1"
+Message-Id: <200607102249.50630.arnd@arndb.de>
+Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
+	Nathan Lynch <ntl@pobox.com>, Christopher Yeoh <cyeoh@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,18 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Monday 10 July 2006 22:35, Mike Kravetz wrote:
+> On Thu, Jun 22, 2006 at 03:56:09PM -0700, Mike Kravetz wrote:
+> > This version addresses all comments received except Arnd's issue
+> > with an #ifdef for each function in the assembly file.
+> 
+> I was thinking of changing the names of all the assembly routines from
+> plpar_hcall_*() to plpar_hcall_*_asm().  The instrumented version of the
+> routines would be named plpar_hcall_*_inst().  Then, the header file
+> would contain definitions such as:
+> 
+> #ifdef CONFIG_HCALL_STATS
+> #define plpar_hcall_*()		plpar_hcall_*_inst()
+> .
+> #else
+> #define plpar_hcall_*()		plpar_hcall_*_asm()
+> .
+> #endif
+> 
+> Is that any better than all the individual #ifdefs in the .S file?  Is it
+> still too ugly?
+> 
 
-> From: Vitaly Bordug [mailto:vbordug@ru.mvista.com]=20
-> Sent: Monday, July 10, 2006 12:42
-> We have mpc8272 under arch/powerpc as work-in-progress,=20
-> latest fs_enet being merged now.
->=20
-> I think it'll be a week or 2 before first submit, so it may=20
-> make sense just to wait a bit :)
+I guess it's better to have the #ifdef in the header file, but then
+again, you could just as well save some source lines doing
 
-Ok. I sor of used the ppc version of the 8272 to get fs_enet working.=20
-fs_enet is not my main concern. My concern is everything else... OF
-tree, new IRQ code (we have two local IRQ muxes in FPGA modeled afrer
-the PCI mux on 8266ADS). Our current port is running on 2.6.12. We have
-a 2.6 17 port working, but have not started using it yet. I want to wait
-until we have ported to powerpc/=20
+#ifndef CONFIG_HCALL_STATS
+#define plpar_hcalldef(x) plpar_call_ ## x ## _asm
+#else
+#define plpar_hcalldef(x) plpar_call_ ## x ## _inst
+#endif
+
+#define plpar_call_foo plpar_hcalldef(foo)
+
+	Arnd <><
