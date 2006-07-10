@@ -1,35 +1,17 @@
-Return-Path: <mkravetz@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 38B0167B6A
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jul 2006 06:35:00 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6AKYumc007555
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 16:34:56 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k6AKY63P308460
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 14:34:06 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k6AKYtF1025683
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 14:34:55 -0600
-Date: Mon, 10 Jul 2006 13:35:10 -0700
-From: Mike Kravetz <kravetz@us.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
-Message-ID: <20060710203510.GA30793@w-mikek2.ibm.com>
-References: <20060622225609.GA4877@w-mikek2.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060622225609.GA4877@w-mikek2.ibm.com>
-Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, Christopher Yeoh <cyeoh@samba.org>,
-	Nathan Lynch <ntl@pobox.com>, Arnd Bergmann <arnd@arndb.de>
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id C61EA67B73
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jul 2006 06:36:45 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: ppc -> powerpc porting
+Date: Mon, 10 Jul 2006 15:36:43 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B0189DE60@ismail.innsys.innovsys.com>
+In-Reply-To: <20060710214158.1d8dcf2c@vitb.ru.mvista.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Vitaly Bordug" <vbordug@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,28 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jun 22, 2006 at 03:56:09PM -0700, Mike Kravetz wrote:
-> This version addresses all comments received except Arnd's issue
-> with an #ifdef for each function in the assembly file.
+> From: Vitaly Bordug [mailto:vbordug@ru.mvista.com]=20
+> Sent: Monday, July 10, 2006 12:42
+> We have mpc8272 under arch/powerpc as work-in-progress,=20
+> latest fs_enet being merged now.
+>=20
+> I think it'll be a week or 2 before first submit, so it may=20
+> make sense just to wait a bit :)
 
-I was thinking of changing the names of all the assembly routines from
-plpar_hcall_*() to plpar_hcall_*_asm().  The instrumented version of the
-routines would be named plpar_hcall_*_inst().  Then, the header file
-would contain definitions such as:
-
-#ifdef CONFIG_HCALL_STATS
-#define plpar_hcall_*()		plpar_hcall_*_inst()
-.
-#else
-#define plpar_hcall_*()		plpar_hcall_*_asm()
-.
-#endif
-
-Is that any better than all the individual #ifdefs in the .S file?  Is it
-still too ugly?
-
-I'm open to any suggestions.
-
-Thanks,
--- 
-Mike
+Ok. I sor of used the ppc version of the 8272 to get fs_enet working.=20
+fs_enet is not my main concern. My concern is everything else... OF
+tree, new IRQ code (we have two local IRQ muxes in FPGA modeled afrer
+the PCI mux on 8266ADS). Our current port is running on 2.6.12. We have
+a 2.6 17 port working, but have not started using it yet. I want to wait
+until we have ported to powerpc/=20
