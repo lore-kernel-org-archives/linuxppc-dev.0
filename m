@@ -1,11 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17586.19091.512322.908434@cargo.ozlabs.ibm.com>
-Date: Mon, 10 Jul 2006 22:39:47 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: [PATCH] Make snd-aoa cope with lack of line-output-detect property
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D524267B66
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 23:00:12 +1000 (EST)
+Subject: Re: patches added to powerpc.git tree
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17586.18872.10354.559506@cargo.ozlabs.ibm.com>
+References: <17582.17835.641485.233064@cargo.ozlabs.ibm.com>
+	<1152272346.15068.39.camel@localhost>
+	<17586.18872.10354.559506@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-oN4Dv5ArqXB6fN2hpFUz"
+Date: Mon, 10 Jul 2006 15:00:00 +0200
+Message-Id: <1152536400.30697.30.camel@localhost>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,36 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The snd-aoa stuff falls over on my G4 powerbook (1.5GHz Albook) with a
-null pointer dereference in of_find_property.  It turns out that this
-was because it couldn't find a device node for the line-output detect
-GPIO.  This patch fixes it.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
+--=-oN4Dv5ArqXB6fN2hpFUz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/sound/aoa/core/snd-aoa-gpio-feature.c b/sound/aoa/core/snd-aoa-gpio-feature.c
-index 7ae0c0b..e35a1c6 100644
---- a/sound/aoa/core/snd-aoa-gpio-feature.c
-+++ b/sound/aoa/core/snd-aoa-gpio-feature.c
-@@ -112,7 +112,10 @@ static struct device_node *get_gpio(char
- 
- static void get_irq(struct device_node * np, int *irqptr)
- {
--	*irqptr = irq_of_parse_and_map(np, 0);
-+	if (np)
-+		*irqptr = irq_of_parse_and_map(np, 0);
-+	else
-+		*irqptr = -1;	/* XXX should this be NO_IRQ? */
- }
- 
- /* 0x4 is outenable, 0x1 is out, thus 4 or 5 */
-@@ -322,7 +325,7 @@ static int ftr_set_notify(struct gpio_ru
- 		return -EINVAL;
- 	}
- 
--	if (irq == -1)
-+	if (irq == -1)		/* XXX should this be NO_IRQ? */
- 		return -ENODEV;
- 
- 	mutex_lock(&notif->mutex);
+On Mon, 2006-07-10 at 22:36 +1000, Paul Mackerras wrote:
+
+> I assumed it would go via the alsa tree...
+
+It couldn't because it depends on stuff that isn't in the alsa tree.
+
+> Do you want it to go via the powerpc tree?  I'm on vacation and 1000km
+> from home, so the latency would be pretty long. :)
+
+No, went through Andrew now.
+
+johannes
+
+--=-oN4Dv5ArqXB6fN2hpFUz
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUARLJPTqVg1VMiehFYAQLs4RAAuP5aXor3l+O4WLWPd/15cUE/CzrcjyFX
+2oArnlyJSNrQdUPSkcxYFeQ91Fohja35uHMb+EPB32DnMXD8fLJYSARgzkzj9BRD
+tq1/AQ12VF5vVnxCEPcdlyCTOq63fWYMLdg9PlbJ2TwZt2AGQmX6wtyf36Cpb2vA
+6ZZx82/OahwJGOPjB2WsjQv0WeI3HE2iq37hZ8xEChGGvdq+EXz/9rFjLSQHMFRE
+d+dLrjfBu8jZSVFOAZ+TwSJvQtGH7zpCt1+jtI5MXVdSnfPJEpFmLmcUJzJrHeUb
+zooQ8uyJPapRsVYnWP5cH5c9v1pOXilRrhcj+IoMJh6Utg+GWWGSUGapKEt56vfX
++Lqtr9+uhbPbKxWXjTZv9ReZ77wLrQuCoZKi25/XsBEeCOf+qLyaeUJnvxol6Zbq
+HrCvwlxq/5u5zmPfNy2jg4C0H2y0N1f9/Fx61tqiyy3x/FxoeSIWTNhXTjNyplD5
+JmAi4bRskLkERMvRP137Etn45LGQnC7rK/mVOvLXPixwgk2GKiS7/3B/k/EqQHGE
+hJqfXvOd0NBXwGEX7Ku7vOnWhEyoeJ53UmjFhrwH+zmvz5zRKQriEMcBfvE71WsP
+OdL38fkVMi7WgVK+Lq9zcMSfwJbALzWm9Gm2lVHw+hO09HDfMTDwf4UY/D9QxjsF
+xGPQ9OP99Uk=
+=tRmG
+-----END PGP SIGNATURE-----
+
+--=-oN4Dv5ArqXB6fN2hpFUz--
