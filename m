@@ -1,17 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D228D67B8A
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 16:45:08 +1000 (EST)
-Subject: [POWERPC] Add cpufreq support for Xserve G5
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Date: Mon, 10 Jul 2006 16:44:54 +1000
-Message-Id: <1152513894.1576.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <zhangsb@rcs-9000.com>
+Received: from RCS-9000.COM (unknown [218.94.131.104])
+	by ozlabs.org (Postfix) with ESMTP id 6A55567B52
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 17:46:00 +1000 (EST)
+From: "zhangshaobo" <zhangsb@rcs-9000.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: pls help me!
+Date: Mon, 10 Jul 2006 15:32:38 +0800
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_002F_01C6A436.132F3D10"
+Message-Id: <200607101538593.SM01784@stridenote>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,223 +19,395 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The Xserve G5 are capable of frequency switching like other desktop G5s.
-This enables it. It also fix a Kconfig issue which prevented from
-building the G5 cpufreq support if CONFIG_PMAC_SMU was not set (the
-first version of that driver only worked with SMU based macs, but this
-isn't the case anymore).
+This is a multi-part message in MIME format.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+------=_NextPart_000_002F_01C6A436.132F3D10
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-This is an updated version of the patch currently in the powerpc.git
-tree fixing
-a stupid typo which broke cpufreq support on SMU based machines.
+Hi, all
 
-Index: linux-irq-work/arch/powerpc/Kconfig
-===================================================================
---- linux-irq-work.orig/arch/powerpc/Kconfig	2006-07-06 16:43:32.000000000 +1000
-+++ linux-irq-work/arch/powerpc/Kconfig	2006-07-06 16:53:36.000000000 +1000
-@@ -504,7 +504,7 @@
+         I meet a very difficult problem about ppc linux run on MPC5200. my
+linux version is 2.4.18.
+
+         When i run my application for some time, the linux operation system
+will reset to jump to the uboot and restart linux,. When it happen, I can
+capture  hreset and sreset signal using oscillograph. Additional, when linux
+reset , it have two results: one is enter machine check exception and some
+debug information is outputted, the other is nothing is to be outputted. The
+debug information is following:
+
  
- config CPU_FREQ_PMAC64
- 	bool "Support for some Apple G5s"
--	depends on CPU_FREQ && PMAC_SMU && PPC64
-+	depends on CPU_FREQ && PPC64
- 	select CPU_FREQ_TABLE
- 	help
- 	  This adds support for frequency switching on Apple iMac G5,
-Index: linux-irq-work/arch/powerpc/platforms/powermac/cpufreq_64.c
-===================================================================
---- linux-irq-work.orig/arch/powerpc/platforms/powermac/cpufreq_64.c	2006-07-06 16:43:32.000000000 +1000
-+++ linux-irq-work/arch/powerpc/platforms/powermac/cpufreq_64.c	2006-07-10 13:04:22.000000000 +1000
-@@ -10,6 +10,8 @@
-  * that is iMac G5 and latest single CPU desktop.
-  */
+
+Machine check in kernel mode.
+
+Caused by (from SRR1=41030): Transfer error ack signal
+
+Oops: machine check, sig: 7
+
+NIP: C009E934 XER: 00000000 LR: C009E924 SP: C014F1E0 REGS: c014f130 TRAP:
+0200    Not tainted
+
+MSR: 00041030 EE: 0 PR: 0 FP: 0 ME: 1 IR/DR: 11
+
+TASK = c014d480[0] 'swapper' Last syscall: 120 
+
+last math c3c30000 last altivec 00000000
+
+GPR00: 00000001 C014F1E0 C014D480 00000083 00009032 00000000 00000000
+00000010 
+
+GPR08: 00000000 40000000 00000000 00000000 C3E5E9E4 1010D5DC 03FCA000
+007FFF6C 
+
+GPR16: 00000000 00000001 007FFF00 03FC4660 00001032 0014F350 00000000
+C0176314 
+
+GPR24: C0176314 00000000 00000000 0000076C C0160000 F0000D8C 00000070
+C3E5E960 
+
+Call backtrace: 
+
+C3E5EA68 C009F030 C001D9A4 C0019430 C00192BC C0018F80 C00057C0 
+
+C0003E40 C0005544 C0005558 C0003918 C0164590 000035F0 
+
+MPC5xxx_FEC_IEVENT_RFIFO_ERROR
+
+Kernel panic: Aiee, killing interrupt handler!
+
+In interrupt handler - not syncing
+
  
-+#undef DEBUG
-+
- #include <linux/module.h>
- #include <linux/types.h>
- #include <linux/errno.h>
-@@ -30,13 +32,7 @@
- #include <asm/smu.h>
- #include <asm/pmac_pfunc.h>
+
+Can you help me ? I will waiting for your answer , thanks anyway.
+
  
--#undef DEBUG
--
--#ifdef DEBUG
--#define DBG(fmt...) printk(fmt)
--#else
--#define DBG(fmt...)
--#endif
-+#define DBG(fmt...) pr_debug(fmt)
- 
- /* see 970FX user manual */
- 
-@@ -82,8 +78,6 @@
- /* Power mode data is an array of the 32 bits PCR values to use for
-  * the various frequencies, retrieved from the device-tree
-  */
--static u32 *g5_pmode_data;
--static int g5_pmode_max;
- static int g5_pmode_cur;
- 
- static void (*g5_switch_volt)(int speed_mode);
-@@ -93,6 +87,11 @@
- static DEFINE_MUTEX(g5_switch_mutex);
- 
- 
-+#ifdef CONFIG_PMAC_SMU
-+
-+static u32 *g5_pmode_data;
-+static int g5_pmode_max;
-+
- static struct smu_sdbp_fvt *g5_fvt_table;	/* table of op. points */
- static int g5_fvt_count;			/* number of op. points */
- static int g5_fvt_cur;				/* current op. point */
-@@ -210,6 +209,16 @@
- }
- 
- /*
-+ * Fake voltage switching for platforms with missing support
-+ */
-+
-+static void g5_dummy_switch_volt(int speed_mode)
-+{
-+}
-+
-+#endif /* CONFIG_PMAC_SMU */
-+
-+/*
-  * Platform function based voltage switching for PowerMac7,2 & 7,3
-  */
- 
-@@ -248,6 +257,9 @@
- 	struct pmf_args args;
- 	u32 done = 0;
- 	unsigned long timeout;
-+	int rc;
-+
-+	DBG("g5_pfunc_switch_freq(%d)\n", speed_mode);
- 
- 	/* If frequency is going up, first ramp up the voltage */
- 	if (speed_mode < g5_pmode_cur)
-@@ -255,9 +267,12 @@
- 
- 	/* Do it */
- 	if (speed_mode == CPUFREQ_HIGH)
--		pmf_call_one(pfunc_cpu_setfreq_high, NULL);
-+		rc = pmf_call_one(pfunc_cpu_setfreq_high, NULL);
- 	else
--		pmf_call_one(pfunc_cpu_setfreq_low, NULL);
-+		rc = pmf_call_one(pfunc_cpu_setfreq_low, NULL);
-+
-+	if (rc)
-+		printk(KERN_WARNING "cpufreq: pfunc switch error %d\n", rc);
- 
- 	/* It's an irq GPIO so we should be able to just block here,
- 	 * I'll do that later after I've properly tested the IRQ code for
-@@ -296,13 +311,6 @@
- 	return val ? CPUFREQ_HIGH : CPUFREQ_LOW;
- }
- 
--/*
-- * Fake voltage switching for platforms with missing support
-- */
--
--static void g5_dummy_switch_volt(int speed_mode)
--{
--}
- 
- /*
-  * Common interface to the cpufreq core
-@@ -375,6 +383,8 @@
- };
- 
- 
-+#ifdef CONFIG_PMAC_SMU
-+
- static int __init g5_neo2_cpufreq_init(struct device_node *cpus)
- {
- 	struct device_node *cpunode;
-@@ -525,6 +535,9 @@
- 	return rc;
- }
- 
-+#endif /* CONFIG_PMAC_SMU */
-+
-+
- static int __init g5_pm72_cpufreq_init(struct device_node *cpus)
- {
- 	struct device_node *cpuid = NULL, *hwclock = NULL, *cpunode = NULL;
-@@ -533,6 +546,9 @@
- 	u64 max_freq, min_freq, ih, il;
- 	int has_volt = 1, rc = 0;
- 
-+	DBG("cpufreq: Initializing for PowerMac7,2, PowerMac7,3 and"
-+	    " RackMac3,1...\n");
-+
- 	/* Get first CPU node */
- 	for (cpunode = NULL;
- 	     (cpunode = of_get_next_child(cpus, cpunode)) != NULL;) {
-@@ -636,6 +652,15 @@
- 	 */
- 	ih = *((u32 *)(eeprom + 0x10));
- 	il = *((u32 *)(eeprom + 0x20));
-+
-+	/* Check for machines with no useful settings */
-+	if (il == ih) {
-+		printk(KERN_WARNING "cpufreq: No low frequency mode available"
-+		       " on this model !\n");
-+		rc = -ENODEV;
-+		goto bail;
-+	}
-+
- 	min_freq = 0;
- 	if (ih != 0 && il != 0)
- 		min_freq = (max_freq * il) / ih;
-@@ -643,7 +668,7 @@
- 	/* Sanity check */
- 	if (min_freq >= max_freq || min_freq < 1000) {
- 		printk(KERN_ERR "cpufreq: Can't calculate low frequency !\n");
--		rc = -ENODEV;
-+		rc = -ENXIO;
- 		goto bail;
- 	}
- 	g5_cpu_freqs[0].frequency = max_freq;
-@@ -690,16 +715,10 @@
- 	return rc;
- }
- 
--static int __init g5_rm31_cpufreq_init(struct device_node *cpus)
--{
--	/* NYI */
--	return 0;
--}
--
- static int __init g5_cpufreq_init(void)
- {
- 	struct device_node *cpus;
--	int rc;
-+	int rc = 0;
- 
- 	cpus = of_find_node_by_path("/cpus");
- 	if (cpus == NULL) {
-@@ -708,12 +727,13 @@
- 	}
- 
- 	if (machine_is_compatible("PowerMac7,2") ||
--	    machine_is_compatible("PowerMac7,3"))
-+	    machine_is_compatible("PowerMac7,3") ||
-+	    machine_is_compatible("RackMac3,1"))
- 		rc = g5_pm72_cpufreq_init(cpus);
--	else if (machine_is_compatible("RackMac3,1"))
--		rc = g5_rm31_cpufreq_init(cpus);
-+#ifdef CONFIG_PMAC_SMU
- 	else
- 		rc = g5_neo2_cpufreq_init(cpus);
-+#endif /* CONFIG_PMAC_SMU */
- 
- 	of_node_put(cpus);
- 	return rc;
+
+
+------=_NextPart_000_002F_01C6A436.132F3D10
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:p=3D"urn:schemas-microsoft-com:office:powerpoint" =
+xmlns:oa=3D"urn:schemas-microsoft-com:office:activation" =
+xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"chsdate" downloadurl=3D""/>
+<o:SmartTagType =
+namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
+ name=3D"chmetcnv" downloadurl=3D""/>
+<!--[if !mso]>
+<style>
+st1\:*{behavior:url(#default#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:&#23435;&#20307;;
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+@font-face
+	{font-family:"\@&#23435;&#20307;";
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	text-align:justify;
+	text-justify:inter-ideograph;
+	font-size:10.5pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+ /* Page Definitions */
+ @page Section1
+	{size:595.3pt 841.9pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;
+	layout-grid:15.6pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DZH-CN link=3Dblue vlink=3Dpurple =
+style=3D'text-justify-trim:punctuation'>
+
+<div class=3DSection1 style=3D'layout-grid:15.6pt'>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>Hi, =
+all<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US =
+style=3D'font-size:9.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;
+I meet a very difficult problem about ppc linux run on MPC5200. my linux
+version is <st1:chsdate IsROCDate=3D"False" IsLunarDate=3D"False" =
+Day=3D"30"
+Month=3D"12" Year=3D"1899" =
+w:st=3D"on">2.4.18</st1:chsdate>.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US =
+style=3D'font-size:9.0pt;font-family:Arial'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;
+When i run my application for some time, the linux operation system will =
+reset
+to jump to the uboot and restart linux,. When it happen, I can =
+capture&nbsp;
+hreset and sreset signal using oscillograph. Additional, when linux =
+reset , it
+have two results: one is enter machine check exception and some debug
+information is outputted, the other is nothing is to be outputted. The =
+debug
+information is following:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US =
+style=3D'font-size:9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fon=
+t></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>Machine check =
+in kernel
+mode.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>Caused by (from
+SRR1=3D41030): Transfer error ack signal<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>Oops: machine =
+check, sig:
+7<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>NIP: C009E934 =
+XER: 00000000
+LR: C009E924 SP: C<st1:chmetcnv TCSC=3D"0" NumberType=3D"1" =
+Negative=3D"False"
+HasSpace=3D"False" SourceValue=3D"14" UnitName=3D"F" =
+w:st=3D"on">014F</st1:chmetcnv>1E0
+REGS: c<st1:chmetcnv TCSC=3D"0" NumberType=3D"1" Negative=3D"False" =
+HasSpace=3D"False"
+SourceValue=3D"14" UnitName=3D"F" w:st=3D"on">014f</st1:chmetcnv>130 =
+TRAP:
+0200&nbsp;&nbsp;&nbsp; Not tainted<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>MSR: 00041030 =
+EE: 0 PR: 0
+FP: 0 ME: 1 IR/DR: 11<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>TASK =3D =
+c014d480[0]
+'swapper' Last syscall: 120 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>last math =
+c<st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" =
+SourceValue=3D"3"
+UnitName=3D"C" w:st=3D"on">3c</st1:chmetcnv>30000 last altivec =
+00000000<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>GPR00: =
+<st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"True" =
+SourceValue=3D"1"
+UnitName=3D"C" w:st=3D"on">00000001 C</st1:chmetcnv><st1:chmetcnv =
+TCSC=3D"0"
+NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" =
+SourceValue=3D"14" UnitName=3D"F"
+w:st=3D"on">014F</st1:chmetcnv>1E<st1:chmetcnv TCSC=3D"0" =
+NumberType=3D"1"
+Negative=3D"False" HasSpace=3D"True" SourceValue=3D"0" UnitName=3D"C" =
+w:st=3D"on">0 C</st1:chmetcnv>014D480
+00000083 00009032 00000000 00000000 00000010 =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>GPR08: 00000000 =
+40000000
+00000000 <st1:chmetcnv TCSC=3D"0" NumberType=3D"1" Negative=3D"False" =
+HasSpace=3D"True"
+SourceValue=3D"0" UnitName=3D"C" w:st=3D"on">00000000 =
+C</st1:chmetcnv>3E5E9E4
+1010D5DC 03FCA000 007FFF<st1:chmetcnv TCSC=3D"0" NumberType=3D"1" =
+Negative=3D"False"
+HasSpace=3D"False" SourceValue=3D"6" UnitName=3D"C" =
+w:st=3D"on">6C</st1:chmetcnv> <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>GPR16: 00000000 =
+00000001
+007FFF00 03FC4660 00001032 <st1:chmetcnv TCSC=3D"0" NumberType=3D"1"
+Negative=3D"False" HasSpace=3D"False" SourceValue=3D"14" UnitName=3D"F" =
+w:st=3D"on">0014F</st1:chmetcnv>350
+<st1:chmetcnv TCSC=3D"0" NumberType=3D"1" Negative=3D"False" =
+HasSpace=3D"True"
+SourceValue=3D"0" UnitName=3D"C" w:st=3D"on">00000000 =
+C</st1:chmetcnv>0176314 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>GPR24: C0176314 =
+00000000
+00000000 <st1:chmetcnv TCSC=3D"0" NumberType=3D"1" Negative=3D"False" =
+HasSpace=3D"False"
+SourceValue=3D"76" UnitName=3D"C" w:st=3D"on">0000076C</st1:chmetcnv> =
+C<st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"True" =
+SourceValue=3D"160000"
+UnitName=3D"F" w:st=3D"on">0160000 F</st1:chmetcnv>0000D<st1:chmetcnv =
+TCSC=3D"0"
+NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" SourceValue=3D"8" =
+UnitName=3D"C"
+w:st=3D"on">8C</st1:chmetcnv> <st1:chmetcnv TCSC=3D"0" NumberType=3D"1"
+Negative=3D"False" HasSpace=3D"True" SourceValue=3D"70" UnitName=3D"C" =
+w:st=3D"on">00000070
+ C</st1:chmetcnv>3E5E960 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>Call backtrace: =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US =
+style=3D'font-size:9.0pt;font-family:Arial'>C3E5EA<st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"True" =
+SourceValue=3D"68"
+UnitName=3D"C" w:st=3D"on">68 C</st1:chmetcnv><st1:chmetcnv TCSC=3D"0" =
+NumberType=3D"1"
+Negative=3D"False" HasSpace=3D"False" SourceValue=3D"9" UnitName=3D"F" =
+w:st=3D"on">009F</st1:chmetcnv><st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"True" =
+SourceValue=3D"30"
+UnitName=3D"C" w:st=3D"on">030 C</st1:chmetcnv>001D<st1:chmetcnv =
+TCSC=3D"0"
+NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" SourceValue=3D"9" =
+UnitName=3D"a"
+w:st=3D"on">9A</st1:chmetcnv><st1:chmetcnv TCSC=3D"0" NumberType=3D"1"
+Negative=3D"False" HasSpace=3D"True" SourceValue=3D"4" UnitName=3D"C" =
+w:st=3D"on">4 C</st1:chmetcnv><st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"True" =
+SourceValue=3D"19430"
+UnitName=3D"C" w:st=3D"on">0019430 C</st1:chmetcnv>00192BC =
+C<st1:chmetcnv TCSC=3D"0"
+NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" =
+SourceValue=3D"18" UnitName=3D"F"
+w:st=3D"on">0018F</st1:chmetcnv><st1:chmetcnv TCSC=3D"0" =
+NumberType=3D"1"
+Negative=3D"False" HasSpace=3D"True" SourceValue=3D"80" UnitName=3D"C" =
+w:st=3D"on">80 C</st1:chmetcnv><st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" =
+SourceValue=3D"57"
+UnitName=3D"C" w:st=3D"on">00057C</st1:chmetcnv>0 =
+<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US =
+style=3D'font-size:9.0pt;font-family:Arial'>C0003E<st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"True" =
+SourceValue=3D"40"
+UnitName=3D"C" w:st=3D"on">40 C</st1:chmetcnv><st1:chmetcnv TCSC=3D"0" =
+NumberType=3D"1"
+Negative=3D"False" HasSpace=3D"True" SourceValue=3D"5544" UnitName=3D"C" =
+w:st=3D"on">0005544
+ C</st1:chmetcnv><st1:chmetcnv TCSC=3D"0" NumberType=3D"1" =
+Negative=3D"False"
+HasSpace=3D"True" SourceValue=3D"5558" UnitName=3D"C" =
+w:st=3D"on">0005558 C</st1:chmetcnv><st1:chmetcnv
+TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"True" =
+SourceValue=3D"3918"
+UnitName=3D"C" w:st=3D"on">0003918 C</st1:chmetcnv>0164590 <st1:chmetcnv =
+TCSC=3D"0"
+NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" =
+SourceValue=3D"35" UnitName=3D"F"
+w:st=3D"on">000035F</st1:chmetcnv>0 <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US =
+style=3D'font-size:9.0pt;font-family:Arial'>MPC5xxx_FEC_IEVENT_RFIFO_ERRO=
+R<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>Kernel panic: =
+Aiee,
+killing interrupt handler!<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>In interrupt =
+handler - not
+syncing<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US =
+style=3D'font-size:9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></fon=
+t></p>
+
+<p class=3DMsoNormal style=3D'layout-grid-mode:char'><font size=3D1 =
+face=3DArial><span
+lang=3DEN-US style=3D'font-size:9.0pt;font-family:Arial'>Can you help me =
+? I will
+waiting for your answer , thanks anyway.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
+style=3D'font-size:
+9.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_002F_01C6A436.132F3D10--
