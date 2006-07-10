@@ -1,21 +1,37 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AA6D467B6D
-	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 23:11:29 +1000 (EST)
-Subject: Re: [PATCH] Make snd-aoa cope with lack of line-output-detect property
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17586.19091.512322.908434@cargo.ozlabs.ibm.com>
-References: <17586.19091.512322.908434@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-hSSt/oVgDMdw6pST1sQX"
-Date: Mon, 10 Jul 2006 15:11:22 +0200
-Message-Id: <1152537082.30697.37.camel@localhost>
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3B57867B5F
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 23:21:25 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6ADLLvO026537
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 09:21:21 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6ADLL5w246516
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 09:21:21 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6ADLKtU011816
+	for <linuxppc-dev@ozlabs.org>; Mon, 10 Jul 2006 09:21:20 -0400
+Subject: Re: Linux v2.6.18-rc1
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1152441242.4128.33.camel@localhost.localdomain>
+References: <Pine.LNX.4.64.0607052115210.12404@g5.osdl.org>
+	<pan.2006.07.07.15.41.35.528827@us.ibm.com>
+	<1152441242.4128.33.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 10 Jul 2006 08:21:12 -0500
+Message-Id: <1152537672.28828.4.camel@farscape.rchland.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Steve Fox <drfickle@us.ibm.com>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,46 +41,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 2006-09-07 at 20:34 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2006-07-07 at 10:41 -0500, Steve Fox wrote:
+> > We've got a ppc64 machine that won't boot with this due to an IDE error.
+> 
+> What machine precisely ?
 
---=-hSSt/oVgDMdw6pST1sQX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I see a slightly more verbose version on a JS20 blade. 
 
-On Mon, 2006-07-10 at 22:39 +1000, Paul Mackerras wrote:
-> The snd-aoa stuff falls over on my G4 powerbook (1.5GHz Albook) with a
-> null pointer dereference in of_find_property.  It turns out that this
-> was because it couldn't find a device node for the line-output detect
-> GPIO.  This patch fixes it.
+hda: dma_timer_expiry: dma status == 0x24
+hda: DMA interrupt recovery
+hda: lost interrupt
 
-That's interesting. I thought I was running this code. Hmm :>
 
-I should probably drop the get_irq function completely and do that in
-line. And yes, that should be NO_IRQ I guess. I'll prepare a patch
-later.
 
-Thanks,
-johannes
-
---=-hSSt/oVgDMdw6pST1sQX
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUARLJR+KVg1VMiehFYAQL6zw/+JxgM4NgckBV1Rc/+z4gZX0ftsLS/TEdU
-xdPveq4mJ8hyYOL3SS5ClRynie58Jm7SWcnkNds4J4t2yUceaISQhtmjS3eZpkhH
-Na1DBZZlrKDu43uo3QsyGp5FvnT4WBDTZnnl8W2b35nceacHoNoFdEv0sOJWBn1N
-/3C2eu0xznKZZN0whwr2itgRjr+nv7hWUH1y1hp3lblEFRRHFDb/sQdHG3Fnvmgj
-EVfCfJ+xdJH2pwUBhv7ABw+Pbg23QMRni9ALARP75TAA5TO3z+EIGrq/KkGxckNX
-Kh4ZTC3T4/LCIhECInwe+qOa2Xz1vwfyEYaVSluQGw4ZekfsG37qPckqg8Y4AZwI
-gj87u9qD2hKocfZbXPCwFfadrTXgbwhKYLJYIaEYyGLbAP4/t6d+KobNo3jz4u2A
-ydWtlsEch6F4iElQard5IMkoXu023YO95jwS1bJsaru2cSBk0k973hklp3Fom80N
-sTTzbTP9ai+ToJuqkcEeFqUkGMFc81ICjadot3WFRkbCjys8Y4Gw5MzdE/HlBSXW
-dJ4G8gnvBFb8spDOLiXkHKSq79A7SKlcbG12VLsFSk+S6D/cK3U9YwhNYS+AgYjK
-ECJpU4kKTt53OpuBH5remFBI5HQj2xO7L/d0Zwct8FwG86L1dppKIRbNiVagNw1+
-X0KO4C1HrQs=
-=PW4j
------END PGP SIGNATURE-----
-
---=-hSSt/oVgDMdw6pST1sQX--
+> 
+> > [snip]
+> > Freeing unused kernel memory: 256k freed
+> >  running (1:2) /init autobench_args: ABAT:1152213829
+> > 
+> > creating device nodes .hda: lost interrupt
+> > hda: lost interrupt
+> > hda: lost interrupt
+> > hda: lost interrupt
+> > hda: lost interrupt
+> > hda: lost interrupt
+> > hda: lost interrupt
+> > hda: lost interrupt
+> > hda: lost interrupt
+> > 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
