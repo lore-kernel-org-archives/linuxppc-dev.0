@@ -1,21 +1,19 @@
-Return-Path: <claus.gindhart@kontron.com>
-Received: from mail.kontron-modular.com (mail.e2brain.de [62.159.155.200])
-	by ozlabs.org (Postfix) with ESMTP id 4D0BE67A3A
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id DC5CF67B54
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Jul 2006 22:02:02 +1000 (EST)
-From: Claus Gindhart <claus.gindhart@kontron-modular.com>
+	Tue, 11 Jul 2006 22:32:13 +1000 (EST)
+Message-ID: <44B39284.60505@ru.mvista.com>
+Date: Tue, 11 Jul 2006 15:59:00 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
 To: rahul <rahul.theraja@gmail.com>
 Subject: Re: regarding lspci
-Date: Tue, 11 Jul 2006 14:04:24 +0200
-References: <44B36F85.3010703@gmail.com>
-	<200607111147.21820.claus.gindhart@kontron-modular.com>
+References: <44B36F85.3010703@gmail.com>	<200607111147.21820.claus.gindhart@kontron-modular.com>
 	<44B381B7.1030500@gmail.com>
 In-Reply-To: <44B381B7.1030500@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200607111404.25437.claus.gindhart@kontron-modular.com>
-Cc: ilugc@ae.iitm.ac.in, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,52 +24,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Rahul,
+Hello.
 
-Maybe, its better, if you do the modification by hand. This has the advantage, 
-that you know, what happens.
+rahul wrote:
 
-Just, search for the following lines
---------------8-<----------------------
-sys=`uname -s`
-rel=`uname -r`
-if [ "$sys" = "AIX" -a -x /usr/bin/oslevel -a -x /usr/sbin/lsattr ]
-then
-      rel=`/usr/bin/oslevel`
-      proc=`/usr/sbin/lsdev -C -c processor -S available -F name | head -1`
-      cpu=`/usr/sbin/lsattr -F value -l $proc -a type | sed 's/_.*//'`
-else
-      cpu=`uname -m | sed 's/^i.86$/i386/;s/^sun4u$/sparc64/'`
-fi
-echo " $sys/$cpu $rel"
---------------8-<----------------------
+> I am facing some problem in applying the patch.
 
-Comment them out; they can not work, when cross compiling, because they try to 
-detect Kernel version and architecture by using host tools
+> I have copied the pacth to a file "patch-pciutils"
 
-Then, add the following lines
+> [root@localhost pciutils-2.1.11]# file patch-pciutils
+> patch-pciutils: 'diff' output text
+> [root@localhost pciutils-2.1.11]#
+> when i gave the command :
+> [root@localhost pciutils-2.1.11]# patch -p1 patch-pciutils
+> .
+> .
+> Nothing happens even after 3/4 minutes...so i am stopping it by ctrl+c.
+> None of the files are edited.
 
---------------8-<----------------------
-sys=Linux
-rel=2.6.13 (or whatever Kernel version you have)
-cpu=ppc
---------------8-<----------------------
+    No wonder, patch(1) expects the patch to be fed thru stdin, so you should 
+have typed:
 
+patch -p1 < patch-pciutils
 
+> Thanks & Regards
+> Rahul
 
--- 
-Mit freundlichen Gruessen / Best regards
-
-Claus Gindhart
-SW R&D
-Kontron Modular Computers
-phone :++49 (0)8341-803-374
-mailto:claus.gindhart@kontron-modular.com
-http://www.kontron.com
-
------BEGIN GEEK CODE BLOCK-----
-  Version: 3.1
-  GU d- s++:>++:+ a+ C++$ !U !P L++>$ E-- W+(-) N- o?
-  K? w !O !M V !PS PE- Y+ PGP+ t 5? X R* tv- b+ DI+++
-  D-- G e++> h--- !r x+++
-------END GEEK CODE BLOCK------
+WBR, Sergei
