@@ -1,19 +1,26 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id DC5CF67B54
+Return-Path: <morelli.gab@libero.it>
+Received: from smtp4.libero.it (smtp4.libero.it [193.70.192.54])
+	by ozlabs.org (Postfix) with ESMTP id A648667A3E
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Jul 2006 22:32:13 +1000 (EST)
-Message-ID: <44B39284.60505@ru.mvista.com>
-Date: Tue, 11 Jul 2006 15:59:00 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Wed, 12 Jul 2006 01:34:15 +1000 (EST)
+Received: from localhost (172.16.1.15) by smtp4.libero.it (7.0.027-DD01)
+	id 4499647A01B64852 for linuxppc-embedded@ozlabs.org;
+	Tue, 11 Jul 2006 17:34:12 +0200
+Received: from smtp0.libero.it ([172.16.1.204])
+	by localhost (asav11.libero.it [193.70.192.93]) (amavisd-new,
+	port 10024)
+	with ESMTP id 30065-07-9 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 11 Jul 2006 17:34:12 +0200 (CEST)
+Received: from libero.it (192.168.17.12) by smtp0.libero.it (7.0.027-DD01)
+	id 44A3653A002EBE04 for linuxppc-embedded@ozlabs.org;
+	Tue, 11 Jul 2006 17:34:12 +0200
+Date: Tue, 11 Jul 2006 17:34:11 +0200
+Message-Id: <J28WKZ$8C988C74E08A09A6007488B9247A52A2@libero.it>
+Subject: No init found
 MIME-Version: 1.0
-To: rahul <rahul.theraja@gmail.com>
-Subject: Re: regarding lspci
-References: <44B36F85.3010703@gmail.com>	<200607111147.21820.claus.gindhart@kontron-modular.com>
-	<44B381B7.1030500@gmail.com>
-In-Reply-To: <44B381B7.1030500@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+From: "morelli\.gab" <morelli.gab@libero.it>
+To: "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,30 +31,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
+help!!
 
-rahul wrote:
+i not understand, because when load the Kernel-2.6 in my board the system=
+ block on following message  
 
-> I am facing some problem in applying the patch.
+"Kernel panic - not syncing: No init found.  Try passing init=3D option t=
+o kernel"
+ 
+my filesystem contain the process init into folder sbin i build it whit a=
+ busybox-1.1.3
 
-> I have copied the pacth to a file "patch-pciutils"
+...
+mtdblock_open
+ok
+mtdblock: read on "cramfs" at 0x400, size 0x200
+mtdblock: read on "cramfs" at 0x600, size 0x200
+mtdblock_release
+ok
+mtdblock_open
+ok
+mtdblock: read on "cramfs" at 0x0, size 0x200
+mtdblock: read on "cramfs" at 0x200, size 0x200
+mtdblock: read on "cramfs" at 0x400, size 0x200
+kernel panic........
 
-> [root@localhost pciutils-2.1.11]# file patch-pciutils
-> patch-pciutils: 'diff' output text
-> [root@localhost pciutils-2.1.11]#
-> when i gave the command :
-> [root@localhost pciutils-2.1.11]# patch -p1 patch-pciutils
-> .
-> .
-> Nothing happens even after 3/4 minutes...so i am stopping it by ctrl+c.
-> None of the files are edited.
-
-    No wonder, patch(1) expects the patch to be fed thru stdin, so you should 
-have typed:
-
-patch -p1 < patch-pciutils
-
-> Thanks & Regards
-> Rahul
-
-WBR, Sergei
+thanks to all
