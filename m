@@ -1,21 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31E38679FB
-	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jul 2006 07:43:45 +1000 (EST)
-Subject: Re: ppc -> powerpc porting
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-In-Reply-To: <Pine.LNX.4.60.0607102135330.10561@poirot.grange>
-References: <DCEAAC0833DD314AB0B58112AD99B93B0189DE5E@ismail.innsys.innovsys.com>
-	<20060710214158.1d8dcf2c@vitb.ru.mvista.com>
-	<Pine.LNX.4.60.0607102135330.10561@poirot.grange>
-Content-Type: text/plain
-Date: Tue, 11 Jul 2006 07:43:37 +1000
-Message-Id: <1152567817.1576.114.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <horms@koto.vergenet.net>
+Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
+	by ozlabs.org (Postfix) with ESMTP id 493FB679F0
+	for <linuxppc-dev@ozlabs.org>; Tue, 11 Jul 2006 11:18:58 +1000 (EST)
+From: Horms <horms@verge.net.au>
+Subject: Re: [PATCH] powerpc: unify 32 and 64bit panic_on_oops messages
+In-Reply-To: <20060706101521.GE26612@verge.net.au>
+To: linuxppc-dev@ozlabs.org
+Message-Id: <20060711011854.8D21A340AA@koto.vergenet.net>
+Date: Tue, 11 Jul 2006 10:18:54 +0900 (JST)
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,28 +18,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2006-07-10 at 21:43 +0200, Guennadi Liakhovetski wrote:
-> On Mon, 10 Jul 2006, Vitaly Bordug wrote:
+First up, sorry for the silly subject in the original post, that was an
+error.
+
+Secondly, when I sent the x86_64 version of this patch Andi Kleen
+pointed out that calling ssleep() will just cause an early panic if the
+code is in interrupt context. Accordingly, I plan to post patches to
+remoove the ssleep(). So please ignore the patch that is bellow.
+
+Thanks
+
+-- 
+Horms                                           
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
+
+On Thu, 6 Jul 2006 19:15:22 +0900, Horms wrote:
+> I have been looking at unifying the way that panic_on_oops logs
+> what it is doing between the different architectures that implement it.
+> The first cab off the rank is the patch below which removes a seemingly
+> silly difference between the behaviour on 32 and 64 bit powerpc.
 > 
-> > On Mon, 10 Jul 2006 12:14:24 -0500
-> > "Rune Torgersen" <runet@innovsys.com> wrote:
-> > 
-> > > To make my life a little easier: Does anybody have a list of stuff to
-> > > watch out for/need to do when porting a board from ppc to powerpc?
-> > > The board uses a Freescale 8265 and runs under 2.6.17, using platfrom
-> > > device support for accessing fs_enet driver.
+> I have not been able to test this as I do not have a ppc64 machine
+> at my disposal. However I did test that it compiles thanks to
+> the wonders of crosstool.
 > 
-> Look at Documentation/powerpc/booting-without-of.txt - 
-
-You guys be careful, if you use OpenPIC/MPIC, that there is an error in
-that documentation for the interrupt specifier definition. I'll send an
-updated documentation soon with some more details about the OF interrupt
-tree, but in the meantime, the proper sense encoding for MPIC is:
-
- 0 = rising edge
- 1 = negative level
- 2 = positive level
- 3 = falling edge
-
-Cheers,
-Ben.
+> Signed-Off-By: Horms <horms@verge.net.au>
+> 
+> arch/powerpc/kernel/traps.c |    2 --
+> 1 file changed, 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 52f5659..908231a 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -157,10 +157,8 @@ #endif
+> 		panic("Fatal exception in interrupt");
+> 
+> 	if (panic_on_oops) {
+> -#ifdef CONFIG_PPC64
+> 		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
+> 		ssleep(5);
+> -#endif
+> 		panic("Fatal exception");
+> 	}
+> 	do_exit(err);
