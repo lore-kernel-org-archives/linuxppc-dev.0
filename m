@@ -1,16 +1,24 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s4.bay0.hotmail.com (bay0-omc2-s4.bay0.hotmail.com
-	[65.54.246.140]) by ozlabs.org (Postfix) with ESMTP id 7A361679E0
+Return-Path: <r26191@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 868F5679F0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Jul 2006 05:47:05 +1000 (EST)
-Message-ID: <BAY110-F784991A71896469EE9541B2680@phx.gbl>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: ammubhai@gmail.com
-Subject: some problems on the SystemACE driver.
-Date: Tue, 11 Jul 2006 19:47:02 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 12 Jul 2006 08:49:55 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	k6BN19Fn015557 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 11 Jul 2006 16:01:09 -0700 (MST)
+Received: from zhk08exm40.ap.freescale.net (zhk08exm40.ap.freescale.net
+	[10.196.51.1])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k6BMnoeR000788
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 11 Jul 2006 17:49:52 -0500 (CDT)
+Message-ID: <3140C9D90FB6D911ABD7000F206DC92603D6E0FC@zhk08exm40.ap.freescale.net>
+From: Ho Jeffrey-r26191 <r26191@freescale.com>
+To: "'Florian Boelstler'" <euphoria@arcor.de>, linuxppc-embedded@ozlabs.org
+Subject: RE: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
+Date: Wed, 12 Jul 2006 06:49:50 +0800
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,85 +29,140 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Ameet,
-Sorry to bother you again but I am totally confused on the systemACE 
-driver. First let me show you the problem.
+Hi Florian,
 
-1. I downloaded the linux kernel of 2.6.17.1, also the patch for SystemACE 
-driver. Applied the patch to the kernel. Replaced the xparameters_ml403.h 
-with the generated file xparameters_ml300.h from Xilinx EDK. Make 
-menuconfig, make dep and make zImage. Then the error shows like this:
+I have done the PCI config cycle under u-boot. This is very simple and able to find the PEX EP attached to the MPC8548.
+In this log, it is reading a pair of MPC8548E connected together using PEX.
+Please see the log below:
 
-drivers/block/xilinx_sysace/xsysace.c:120:6: warning: 
-"XPAR_XSYSACE_MEM_WIDTH" is not defined
-drivers/block/xilinx_sysace/xsysace.c: In function `XSysAce_LookupConfig':
-drivers/block/xilinx_sysace/xsysace.c:366: error: 
-`XPAR_XSYSACE_NUM_INSTANCES' undeclared (first use in this function)
-drivers/block/xilinx_sysace/xsysace.c:366: error: (Each undeclared 
-identifier is reported only once
-drivers/block/xilinx_sysace/xsysace.c:366: error: for each function it 
-appears in.)
-make[3]: *** [drivers/block/xilinx_sysace/xsysace.o] Error 1
-make[2]: *** [drivers/block/xilinx_sysace] Error 2
-make[1]: *** [drivers/block] Error 2
-make: *** [drivers] Error 2
+U-Boot 1.1.4 (Apr 12 2006 - 11:40:53)
 
-I think this is because of the no inclusion of the xparameters header file. 
-So I change #include "xparameters.h" into  #include " 
-/home/mingliu/linux-2.6.17.1/arch/ppc/platforms/4xx/xparameters/xparameters.h" 
-in the files of xsysace.c and xsysace_g.c, using the full address to 
-specify the header file. In fact, this is not a serious problem and it 
-often happens. But, after the modification, another problem happened: 
+CPU:   8548_E, Version: 1.1, (0x80390011)
+Core:  e500v2, Version: 1.0, (0x80210010)
+Clock Configuration:
+       CPU:1333 MHz, CCB: 533 MHz,
+       DDR: 266 MHz, LBC:  33 MHz
+L1:    D-cache 32 kB enabled
+       I-cache 32 kB enabled
 
-  GEN     .version
-  CHK     include/linux/compile.h
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-drivers/built-in.o(.text+0x2234a): In function `XSysAce_GetCfgAddr':
-: undefined reference to `XAssertStatus'
-drivers/built-in.o(.text+0x2235e): In function `XSysAce_GetCfgAddr':
-: undefined reference to `XAssertStatus'
-drivers/built-in.o(.text+0x22364): In function `XSysAce_GetCfgAddr':
-: undefined reference to `XAssert'
-drivers/built-in.o(.text+0x22372): In function `XSysAce_GetCfgAddr':
-: undefined reference to `XAssertStatus'
-drivers/built-in.o(.text+0x2237a): In function `XSysAce_GetCfgAddr':
-: undefined reference to `XAssertStatus'
-drivers/built-in.o(.text+0x22394): In function `XSysAce_GetCfgAddr':
-: undefined reference to `XAssert'
-drivers/built-in.o(.text+0x223a2): In function `XSysAce_GetCfgAddr':
-: undefined reference to `XAssertStatus'
-drivers/built-in.o(.text+0x223aa): In function `XSysAce_GetCfgAddr':
-: undefined reference to `XAssertStatus'
-drivers/built-in.o(.text+0x22cd6): In function `XSysAce_Initialize':
-: undefined reference to `XAssertStatus'
-drivers/built-in.o(.text+0x22cdc): In function `XSysAce_Initialize':
-: undefined reference to `XAssert'
-drivers/built-in.o(.text+0x22cea): In function `XSysAce_Initialize':
-: undefined reference to `XAssertStatus'
+Board: MPC85xx Processor Card Rev. A.
+       -- Boot Flash is U30
 
-......( a long information to say that undefined reference to the XAssert 
-things.)
+SRIO:  X4 2.5Gbps
+PEX :  X4 2.5Gbps
+PCI1:  32 bit, async
+PCI2:  disabled
+I2C:   ready
+DRAM:  Initializing
+DDR:   256 MB
+FLASH: 16 MB
+L2 cache 512KB: enabled
+In:    serial
+Out:   serial
+Err:   serial
+Net:   eTSEC0: PHY is Marvell 88E1111S (1410cc1)
+eTSEC1: PHY is Realtek RTL821x (1cc912)
+eTSEC2: PHY is Marvell 88E1111S (1410cc1)
+eTSEC3: PHY id ffffffff is not supported!
+eTSEC0, eTSEC1, eTSEC2 [PRIME], eTSEC3
+eTSEC0 & eTSEC1 in Reduce mode
+eTSEC2 & eTSEC3 in Reduce mode
+Hit any key to stop autoboot:  0
+MPC8548E_Rev1.1=> mm e000a000      	<-setup command register
+e000a000: 8000f800 ? 80000004		   Bus master, SERR, Memory space
+e000a004: 02001000 ? 06011000
+e000a008: 00000000 ? .
+MPC8548E_Rev1.1=> mm e000a000	<-Set secondary bus num = 1	
+e000a000: 80000004 ? 80000018		  Subordinate bus num = 3
+e000a004: 00000000 ? 00010300
+e000a008: 00000000 ? .
+MPC8548E_Rev1.1=> mm e000a000	<-Check PEX agent ID
+e000a000: 80000018 ? 80010000
+e000a004: 57191200 ? .
+MPC8548E_Rev1.1=> mm e000a000	<-Set PEX agent BAR0 (PEXCSRBAR) 
+e000a000: 80010010 ? 80010010		  PEXCSRBAR = 0x80000000
+e000a004: 00000000 ? 00000080		  This is the PCI address space
+e000a008: 00000000 ? .
+MPC8548E_Rev1.1=> mm e000a000	<-Set PEX agent command register
+e000a000: 80010014 ? 80010004		   Bus master, SERR, Memory space
+e000a004: 00001000 ? 06011000
+e000a008: 00000000 ? .
+MPC8548E_Rev1.1=> 
+mw e000ac20 00080000;		<-Set TAR = 0x80000000 (PCI address space)
+mw e000ac24 0;				<-Set 32:64bit TAR = 0x0 (PCI address space)
+mw e000ac28 000a0000;		<-Set WBA = 0xa0000000 (ECM, e500 address space) 
+mw e000ac30 8004401A			<-Set normal R/W, enable Outbound window
+MPC8548E_Rev1.1=>
+MPC8548E_Rev1.1=>
+MPC8548E_Rev1.1=> mm e000a000	<-check PEX agent BAR0 if written
+e000a000: 80010010 ?
+e000a004: 00000080 ? .
+MPC8548E_Rev1.1=> md a0000000	<-read PEX agent CCSRBAR address use 0xa0000000
+a0000000: 000ff700 00000000 00000000 00000000    ................
+a0000010: 00000000 00000000 00000000 00000000    ................
+a0000020: 00000000 00000000 00000000 00000000    ................
+a0000030: 00000000 00000000 00000000 00000000    ................
+a0000040: 00000000 00000000 00000000 00000000    ................
+a0000050: 00000000 00000000 00000000 00000000    ................
+a0000060: 00000000 00000000 00000000 00000000    ................
+a0000070: 00000000 00000000 00000000 00000000    ................
+a0000080: 00000000 00000000 00000000 00000000    ................
+a0000090: 00000000 00000000 00000000 00000000    ................
+a00000a0: 00000000 00000000 00000000 00000000    ................
+a00000b0: 00000000 00000000 00000000 00000000    ................
+a00000c0: 00000000 00000000 00000000 00000000    ................
+a00000d0: 00000000 00000000 00000000 00000000    ................
+a00000e0: 00000000 00000000 00000000 00000000    ................
+a00000f0: 00000000 00000000 00000000 00000000    ................ 
 
-Also, I tried this in the kernel 2.6.16-rc5. (In fact I prefer this version 
-because the temac driver is for this version. ) The same problem happened. 
-I checked the source code. The problem happened in the file 
-driver/block/xilinx_sysace/adapter.c, etc. Also, the XAssert things are 
-defined in the file arch/ppc/platforms/4xx/xilinx_ocp/xbasic_types.c. (In 
-2.6.16 kernel, it is also defined in driver/xilinx_edk/xbasic_types.c. 
-There are two copies of this file. ) I think the problem is, the systemACE 
-files cannot link together with the xbasic_types.c file. 
+Regards,
+Jeffrey Ho
+Freescale Semiconductor HK Ltd
+Tel: 852-26668050
+ 
 
-I heard that you have tested this driver. Have you got this problem? Why 
-there are so many strange problems for me while you have tested without 
-problem? Without the CF card, I cannot try the Temac driver and my work is 
-totally blocked. So I have to ask for your suggestion. Really anxious for 
-your useful guidance. Thanks a lot!!!!!!
-
-Regards
-Ming
-
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+> -----Original Message-----
+> From: 
+> linuxppc-embedded-bounces+r26191=freescale.com@ozlabs.org 
+> [mailto:linuxppc-embedded-bounces+r26191=freescale.com@ozlabs.
+> org] On Behalf Of Florian Boelstler
+> Sent: Monday, June 26, 2006 6:48 PM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
+> 
+> Hi,
+> 
+> I am currently working on a MPC8548-based development system.
+> Linux kernel version is 2.6.11 with patches delivered from 
+> Freescale (BSP MPC8548CDS 02/24/2006).
+> 
+> Kernel configuration contains a warning message for CONFIG_PEX:
+> "This requires hardware modification to work correctly if 
+> your CPU version < 2.0 and will break the PCI bus. [...]"
+> 
+> I was wondering whether enabling PCIe makes PCI bus 
+> functionality unusable at all (including kernel functionality 
+> for detecting devices behind a transparent PCI-to-PCI bridge).
+> 
+> Our setup connects a transparent PLX8516 PCI-to-PCI bridge to 
+> the PCIe port of the MPC8548 daughter board. Behind that 
+> bridge is another PCIe capable device.
+> MPC8548 is configured to run as PCIe host mode.
+> 
+> When trying to lookup the PCIe devices using lspci I can only 
+> see the PPC itself and the bridge.
+> However I cannot see the device(s) behind the bridge.
+> 
+> Is there another method for detecting PCI(e) devices?
+> Is "BSP MPC8548CDS 02/24/2006" the latest version 
+> corresponding to that hardware?
+> 
+> Thanks in advance,
+> 
+>    Florian
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
