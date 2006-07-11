@@ -1,24 +1,19 @@
-Return-Path: <r26191@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 868F5679F0
+Return-Path: <cchaoyu@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id AC12567B54
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Jul 2006 08:49:55 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k6BN19Fn015557 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Jul 2006 16:01:09 -0700 (MST)
-Received: from zhk08exm40.ap.freescale.net (zhk08exm40.ap.freescale.net
-	[10.196.51.1])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k6BMnoeR000788
+	Wed, 12 Jul 2006 09:26:14 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id h2so44481ugf
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 11 Jul 2006 17:49:52 -0500 (CDT)
-Message-ID: <3140C9D90FB6D911ABD7000F206DC92603D6E0FC@zhk08exm40.ap.freescale.net>
-From: Ho Jeffrey-r26191 <r26191@freescale.com>
-To: "'Florian Boelstler'" <euphoria@arcor.de>, linuxppc-embedded@ozlabs.org
-Subject: RE: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
-Date: Wed, 12 Jul 2006 06:49:50 +0800
+	Tue, 11 Jul 2006 16:26:12 -0700 (PDT)
+Message-ID: <56c993430607111618q2cd0cfach4abb4d15ea25d05@mail.gmail.com>
+Date: Wed, 12 Jul 2006 07:18:53 +0800
+From: "chao yu" <cchaoyu@gmail.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: "Bad trap at PC: 3000xxxx, SR: xxxx, vector=xxx Not tainted"
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/alternative;
+	boundary="----=_Part_2156_1703857.1152659933241"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,140 +24,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Florian,
+------=_Part_2156_1703857.1152659933241
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I have done the PCI config cycle under u-boot. This is very simple and able to find the PEX EP attached to the MPC8548.
-In this log, it is reading a pair of MPC8548E connected together using PEX.
-Please see the log below:
+I port the linux 2.4 kernel to our mpc8541 board, but when it executes the
+run_init_process("/sbin/init") in the init function, it will disaplay "Bad
+trap at PC: 3000xxxx, SR: xxxx, vector=xxx    Not tainted" continually. The
+ramdisk is from ELDK 4.0 package for 85xx which is pre-built. Who can tell
+me what was happened?
 
-U-Boot 1.1.4 (Apr 12 2006 - 11:40:53)
+------=_Part_2156_1703857.1152659933241
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-CPU:   8548_E, Version: 1.1, (0x80390011)
-Core:  e500v2, Version: 1.0, (0x80210010)
-Clock Configuration:
-       CPU:1333 MHz, CCB: 533 MHz,
-       DDR: 266 MHz, LBC:  33 MHz
-L1:    D-cache 32 kB enabled
-       I-cache 32 kB enabled
+I port the linux 2.4 kernel to our mpc8541 board, but when it executes the run_init_process(&quot;/sbin/init&quot;) in the init function, it will disaplay &quot;Bad trap at PC: 3000xxxx, SR: xxxx, vector=xxx&nbsp;&nbsp;&nbsp; Not tainted&quot; continually. The ramdisk is from ELDK 
+4.0 package for 85xx which is pre-built. Who can tell me what was happened?
 
-Board: MPC85xx Processor Card Rev. A.
-       -- Boot Flash is U30
-
-SRIO:  X4 2.5Gbps
-PEX :  X4 2.5Gbps
-PCI1:  32 bit, async
-PCI2:  disabled
-I2C:   ready
-DRAM:  Initializing
-DDR:   256 MB
-FLASH: 16 MB
-L2 cache 512KB: enabled
-In:    serial
-Out:   serial
-Err:   serial
-Net:   eTSEC0: PHY is Marvell 88E1111S (1410cc1)
-eTSEC1: PHY is Realtek RTL821x (1cc912)
-eTSEC2: PHY is Marvell 88E1111S (1410cc1)
-eTSEC3: PHY id ffffffff is not supported!
-eTSEC0, eTSEC1, eTSEC2 [PRIME], eTSEC3
-eTSEC0 & eTSEC1 in Reduce mode
-eTSEC2 & eTSEC3 in Reduce mode
-Hit any key to stop autoboot:  0
-MPC8548E_Rev1.1=> mm e000a000      	<-setup command register
-e000a000: 8000f800 ? 80000004		   Bus master, SERR, Memory space
-e000a004: 02001000 ? 06011000
-e000a008: 00000000 ? .
-MPC8548E_Rev1.1=> mm e000a000	<-Set secondary bus num = 1	
-e000a000: 80000004 ? 80000018		  Subordinate bus num = 3
-e000a004: 00000000 ? 00010300
-e000a008: 00000000 ? .
-MPC8548E_Rev1.1=> mm e000a000	<-Check PEX agent ID
-e000a000: 80000018 ? 80010000
-e000a004: 57191200 ? .
-MPC8548E_Rev1.1=> mm e000a000	<-Set PEX agent BAR0 (PEXCSRBAR) 
-e000a000: 80010010 ? 80010010		  PEXCSRBAR = 0x80000000
-e000a004: 00000000 ? 00000080		  This is the PCI address space
-e000a008: 00000000 ? .
-MPC8548E_Rev1.1=> mm e000a000	<-Set PEX agent command register
-e000a000: 80010014 ? 80010004		   Bus master, SERR, Memory space
-e000a004: 00001000 ? 06011000
-e000a008: 00000000 ? .
-MPC8548E_Rev1.1=> 
-mw e000ac20 00080000;		<-Set TAR = 0x80000000 (PCI address space)
-mw e000ac24 0;				<-Set 32:64bit TAR = 0x0 (PCI address space)
-mw e000ac28 000a0000;		<-Set WBA = 0xa0000000 (ECM, e500 address space) 
-mw e000ac30 8004401A			<-Set normal R/W, enable Outbound window
-MPC8548E_Rev1.1=>
-MPC8548E_Rev1.1=>
-MPC8548E_Rev1.1=> mm e000a000	<-check PEX agent BAR0 if written
-e000a000: 80010010 ?
-e000a004: 00000080 ? .
-MPC8548E_Rev1.1=> md a0000000	<-read PEX agent CCSRBAR address use 0xa0000000
-a0000000: 000ff700 00000000 00000000 00000000    ................
-a0000010: 00000000 00000000 00000000 00000000    ................
-a0000020: 00000000 00000000 00000000 00000000    ................
-a0000030: 00000000 00000000 00000000 00000000    ................
-a0000040: 00000000 00000000 00000000 00000000    ................
-a0000050: 00000000 00000000 00000000 00000000    ................
-a0000060: 00000000 00000000 00000000 00000000    ................
-a0000070: 00000000 00000000 00000000 00000000    ................
-a0000080: 00000000 00000000 00000000 00000000    ................
-a0000090: 00000000 00000000 00000000 00000000    ................
-a00000a0: 00000000 00000000 00000000 00000000    ................
-a00000b0: 00000000 00000000 00000000 00000000    ................
-a00000c0: 00000000 00000000 00000000 00000000    ................
-a00000d0: 00000000 00000000 00000000 00000000    ................
-a00000e0: 00000000 00000000 00000000 00000000    ................
-a00000f0: 00000000 00000000 00000000 00000000    ................ 
-
-Regards,
-Jeffrey Ho
-Freescale Semiconductor HK Ltd
-Tel: 852-26668050
- 
-
-> -----Original Message-----
-> From: 
-> linuxppc-embedded-bounces+r26191=freescale.com@ozlabs.org 
-> [mailto:linuxppc-embedded-bounces+r26191=freescale.com@ozlabs.
-> org] On Behalf Of Florian Boelstler
-> Sent: Monday, June 26, 2006 6:48 PM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: MPC8548 PCIe / PCI support with BSP MPC8548CDS 02/24/2006
-> 
-> Hi,
-> 
-> I am currently working on a MPC8548-based development system.
-> Linux kernel version is 2.6.11 with patches delivered from 
-> Freescale (BSP MPC8548CDS 02/24/2006).
-> 
-> Kernel configuration contains a warning message for CONFIG_PEX:
-> "This requires hardware modification to work correctly if 
-> your CPU version < 2.0 and will break the PCI bus. [...]"
-> 
-> I was wondering whether enabling PCIe makes PCI bus 
-> functionality unusable at all (including kernel functionality 
-> for detecting devices behind a transparent PCI-to-PCI bridge).
-> 
-> Our setup connects a transparent PLX8516 PCI-to-PCI bridge to 
-> the PCIe port of the MPC8548 daughter board. Behind that 
-> bridge is another PCIe capable device.
-> MPC8548 is configured to run as PCIe host mode.
-> 
-> When trying to lookup the PCIe devices using lspci I can only 
-> see the PPC itself and the bridge.
-> However I cannot see the device(s) behind the bridge.
-> 
-> Is there another method for detecting PCI(e) devices?
-> Is "BSP MPC8548CDS 02/24/2006" the latest version 
-> corresponding to that hardware?
-> 
-> Thanks in advance,
-> 
->    Florian
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+------=_Part_2156_1703857.1152659933241--
