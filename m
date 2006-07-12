@@ -1,9 +1,9 @@
 Return-Path: <jk@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
 From: Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH 14/16] [powerpc,sata_svw] Constify & voidify get_property()
-Message-ID: <1152678686.20160.14@pokey>
-Date: Wed, 12 Jul 2006 15:41:41 +1000 (EST)
+Subject: [PATCH 15/16] [powerpc,tsi108] Constify & voidify get_property()
+Message-ID: <1152678686.20160.15@pokey>
+Date: Wed, 12 Jul 2006 15:41:52 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,26 +17,35 @@ Now that get_property() returns a void *, there's no need to cast its
 return value. Also, treat the return value as const, so we can
 constify get_property later.
 
-sata_svw changes
+tsi108 driver changes.
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 ---
 
  resend: rebase after benh's IRQ changes
 
- sata_svw.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tsi108_pci.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/drivers/scsi/sata_svw.c
+Index: linux-2.6/arch/powerpc/sysdev/tsi108_pci.c
 ===================================================================
---- linux-2.6.orig/drivers/scsi/sata_svw.c
-+++ linux-2.6/drivers/scsi/sata_svw.c
-@@ -268,7 +268,7 @@ static int k2_sata_proc_info(struct Scsi
- 	/* Match it to a port node */
- 	index = (ap == ap->host_set->ports[0]) ? 0 : 1;
- 	for (np = np->child; np != NULL; np = np->sibling) {
--		u32 *reg = (u32 *)get_property(np, "reg", NULL);
-+		const u32 *reg = get_property(np, "reg", NULL);
- 		if (!reg)
- 			continue;
- 		if (index == *reg)
+--- linux-2.6.orig/arch/powerpc/sysdev/tsi108_pci.c
++++ linux-2.6/arch/powerpc/sysdev/tsi108_pci.c
+@@ -195,7 +195,7 @@ int __init tsi108_setup_pci(struct devic
+ 	int len;
+ 	struct pci_controller *hose;
+ 	struct resource rsrc;
+-	int *bus_range;
++	const int *bus_range;
+ 	int primary = 0, has_address = 0;
+ 
+ 	/* PCI Config mapping */
+@@ -208,7 +208,7 @@ int __init tsi108_setup_pci(struct devic
+ 	has_address = (of_address_to_resource(dev, 0, &rsrc) == 0);
+ 
+ 	/* Get bus range if any */
+-	bus_range = (int *)get_property(dev, "bus-range", &len);
++	bus_range = get_property(dev, "bus-range", &len);
+ 	if (bus_range == NULL || len < 2 * sizeof(int)) {
+ 		printk(KERN_WARNING "Can't get bus-range for %s, assume"
+ 		       " bus 0\n", dev->full_name);
