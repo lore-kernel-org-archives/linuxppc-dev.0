@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id C6EBF67B5A
+Return-Path: <leisun124@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id 4356567B56
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Jul 2006 09:38:31 +1000 (EST)
-To: "chao yu" <cchaoyu@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: "Bad trap at PC: 3000xxxx, SR: xxxx, vector=xxx Not tainted" 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 12 Jul 2006 07:18:53 +0800."
-	<56c993430607111618q2cd0cfach4abb4d15ea25d05@mail.gmail.com>
-Date: Wed, 12 Jul 2006 01:38:26 +0200
-Sender: wd@denx.de
-Message-Id: <20060711233826.BC17F352681@atlas.denx.de>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+	Wed, 12 Jul 2006 14:24:54 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id j40so150381ugd
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 11 Jul 2006 21:24:51 -0700 (PDT)
+Message-ID: <f9a7e7a80607112123t7e93221fx37d83245622d4368@mail.gmail.com>
+Date: Wed, 12 Jul 2006 00:23:10 -0400
+From: "Lei Sun" <leisun124@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: weird behavior for jffs2 on PQ2FADS-VR board
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <56c993430607111618q2cd0cfach4abb4d15ea25d05@mail.gmail.com> you wrote:
-> 
-> I port the linux 2.4 kernel to our mpc8541 board, but when it executes the
-> run_init_process("/sbin/init") in the init function, it will disaplay "Bad
-> trap at PC: 3000xxxx, SR: xxxx, vector=xxx    Not tainted" continually. The
-> ramdisk is from ELDK 4.0 package for 85xx which is pre-built. Who can tell
-> me what was happened?
+Hi all:
+    I brought up linux-2.4.30 on PQ2FADS-VR board, everything was fine
+untill i try to mount the jffs2.  My mtd partition looks like this:
 
-Well, for one thing ELDK 4.0 is based on a 2.6 kernel...
+dev:    size   erasesize  name
+mtd0: 00800000 00040000 "Flash SIMM"
+mtd1: 00080000 00040000 "u-boot"
+mtd2: 00100000 00040000 "Kernel"
+mtd3: 00580000 00040000 "Rootfs"
+mtd4: 00080000 00040000 "u-boot env"
+mtd5: 00080000 00040000 "unused"
 
-Best regards,
+Basically, I tried
+"eraseall /dev/mtd3", and then
+"mount -t jffs2 /dev/mtdblock3 /mnt", it showed as mounted, then I
+issued "echo "hello,world" > test.txt" to create a file,
+a warning was printed out
+"Node totlen on flash (0x44000000) != totlen in node ref (0x00000044)"
+, but subsequent
+"cat test.txt " still showed the correct string from that newly created file".
+However, after I umount the  file and remount it again, it give me
+lots of errors"
+Magic bitmask 0x1985 not found at 0x00240004: 0x0c00 instead"
+Then the moutn operation failed.
+    I am suspecting it is mtd driver problem (the board use
+LH28F016SCT-L95 from sharp). But don't know how to proceed , e.g. how
+to verify the content was written into flash in a mounted jffs2 file
+system?
+    Has anybody experienced similar issue? Any suggestion?
+    Forgive me if this is wrong list to post, and very appreciate if
+anybody can direct me to the right place.
 
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Nothing ever becomes real till it is experienced -- even a proverb is
-no proverb to you till your life has illustrated it.     - John Keats
+Thanks!
+lei
