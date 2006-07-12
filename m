@@ -1,10 +1,9 @@
 Return-Path: <jk@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
 From: Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH 05/16] [powerpc,cell] Constify & voidify get_property()
-Message-ID: <1152678686.20160.05@pokey>
-Date: Wed, 12 Jul 2006 15:39:54 +1000 (EST)
-Cc: cbe-oss-dev@ozlabs.org
+Subject: [PATCH 06/16] [powerpc,chrp] Constify & voidify get_property()
+Message-ID: <1152678686.20160.06@pokey>
+Date: Wed, 12 Jul 2006 15:40:05 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,262 +17,157 @@ Now that get_property() returns a void *, there's no need to cast its
 return value. Also, treat the return value as const, so we can
 constify get_property later.
 
-cell platform changes.
+chrp platform changes.
 
-Built for cell_defconfig
+Built for chrp32_defconfig
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 ---
 
  resend: rebase after benh's IRQ changes
 
- arch/powerpc/platforms/cell/cbe_regs.c   |    8 +++-----
- arch/powerpc/platforms/cell/interrupt.c  |    5 ++---
- arch/powerpc/platforms/cell/iommu.c      |   22 ++++++++++++----------
- arch/powerpc/platforms/cell/spider-pic.c |   10 +++++-----
- arch/powerpc/platforms/cell/spu_base.c   |   18 +++++++++---------
- include/asm-powerpc/spu.h                |    2 +-
- 6 files changed, 32 insertions(+), 33 deletions(-)
+ nvram.c |    5 +++--
+ pci.c   |   11 +++++------
+ setup.c |   21 +++++++++------------
+ 3 files changed, 17 insertions(+), 20 deletions(-)
 
-Index: linux-2.6/arch/powerpc/platforms/cell/cbe_regs.c
+Index: linux-2.6/arch/powerpc/platforms/chrp/nvram.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_regs.c
-+++ linux-2.6/arch/powerpc/platforms/cell/cbe_regs.c
-@@ -97,7 +97,7 @@ void __init cbe_regs_init(void)
- 		struct cbe_regs_map *map = &cbe_regs_maps[cbe_regs_map_count++];
+--- linux-2.6.orig/arch/powerpc/platforms/chrp/nvram.c
++++ linux-2.6/arch/powerpc/platforms/chrp/nvram.c
+@@ -67,13 +67,14 @@ static void chrp_nvram_write(int addr, u
+ void __init chrp_nvram_init(void)
+ {
+ 	struct device_node *nvram;
+-	unsigned int *nbytes_p, proplen;
++	const unsigned int *nbytes_p;
++	unsigned int proplen;
  
- 		/* That hack must die die die ! */
--		struct address_prop {
-+		const struct address_prop {
- 			unsigned long address;
- 			unsigned int len;
- 		} __attribute__((packed)) *prop;
-@@ -114,13 +114,11 @@ void __init cbe_regs_init(void)
- 			if (cbe_thread_map[i].cpu_node == cpu)
- 				cbe_thread_map[i].regs = map;
+ 	nvram = of_find_node_by_type(NULL, "nvram");
+ 	if (nvram == NULL)
+ 		return;
  
--		prop = (struct address_prop *)get_property(cpu, "pervasive",
--							   NULL);
-+		prop = get_property(cpu, "pervasive", NULL);
- 		if (prop != NULL)
- 			map->pmd_regs = ioremap(prop->address, prop->len);
+-	nbytes_p = (unsigned int *)get_property(nvram, "#bytes", &proplen);
++	nbytes_p = get_property(nvram, "#bytes", &proplen);
+ 	if (nbytes_p == NULL || proplen != sizeof(unsigned int))
+ 		return;
  
--		prop = (struct address_prop *)get_property(cpu, "iic",
--							   NULL);
-+		prop = get_property(cpu, "iic", NULL);
- 		if (prop != NULL)
- 			map->iic_regs = ioremap(prop->address, prop->len);
- 	}
-Index: linux-2.6/arch/powerpc/platforms/cell/interrupt.c
+Index: linux-2.6/arch/powerpc/platforms/chrp/pci.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/interrupt.c
-+++ linux-2.6/arch/powerpc/platforms/cell/interrupt.c
-@@ -250,15 +250,14 @@ static int __init setup_iic(void)
- 	struct resource r0, r1;
- 	struct irq_host *host;
- 	int found = 0;
-- 	u32 *np;
-+ 	const u32 *np;
- 
- 	for (dn = NULL;
- 	     (dn = of_find_node_by_name(dn,"interrupt-controller")) != NULL;) {
- 		if (!device_is_compatible(dn,
- 				     "IBM,CBEA-Internal-Interrupt-Controller"))
+--- linux-2.6.orig/arch/powerpc/platforms/chrp/pci.c
++++ linux-2.6/arch/powerpc/platforms/chrp/pci.c
+@@ -214,11 +214,11 @@ void __init
+ chrp_find_bridges(void)
+ {
+ 	struct device_node *dev;
+-	int *bus_range;
++	const int *bus_range;
+ 	int len, index = -1;
+ 	struct pci_controller *hose;
+-	unsigned int *dma;
+-	char *model, *machine;
++	const unsigned int *dma;
++	const char *model, *machine;
+ 	int is_longtrail = 0, is_mot = 0, is_pegasos = 0;
+ 	struct device_node *root = find_path_device("/");
+ 	struct resource r;
+@@ -246,7 +246,7 @@ chrp_find_bridges(void)
+ 			       dev->full_name);
  			continue;
-- 		np = (u32 *)get_property(dn, "ibm,interrupt-server-ranges",
--					 NULL);
-+		np = get_property(dn, "ibm,interrupt-server-ranges", NULL);
-  		if (np == NULL) {
- 			printk(KERN_WARNING "IIC: CPU association not found\n");
- 			of_node_put(dn);
-Index: linux-2.6/arch/powerpc/platforms/cell/iommu.c
+ 		}
+-		bus_range = (int *) get_property(dev, "bus-range", &len);
++		bus_range = get_property(dev, "bus-range", &len);
+ 		if (bus_range == NULL || len < 2 * sizeof(int)) {
+ 			printk(KERN_WARNING "Can't get bus-range for %s\n",
+ 				dev->full_name);
+@@ -312,8 +312,7 @@ chrp_find_bridges(void)
+ 
+ 		/* check the first bridge for a property that we can
+ 		   use to set pci_dram_offset */
+-		dma = (unsigned int *)
+-			get_property(dev, "ibm,dma-ranges", &len);
++		dma = get_property(dev, "ibm,dma-ranges", &len);
+ 		if (index == 0 && dma != NULL && len >= 6 * sizeof(*dma)) {
+ 			pci_dram_offset = dma[2] - dma[3];
+ 			printk("pci_dram_offset = %lx\n", pci_dram_offset);
+Index: linux-2.6/arch/powerpc/platforms/chrp/setup.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/iommu.c
-+++ linux-2.6/arch/powerpc/platforms/cell/iommu.c
-@@ -308,15 +308,16 @@ static void cell_do_map_iommu(struct cel
- 
- static void iommu_devnode_setup(struct device_node *d)
+--- linux-2.6.orig/arch/powerpc/platforms/chrp/setup.c
++++ linux-2.6/arch/powerpc/platforms/chrp/setup.c
+@@ -226,8 +226,7 @@ static void __init pegasos_set_l2cr(void
+ 	/* Enable L2 cache if needed */
+ 	np = find_type_devices("cpu");
+ 	if (np != NULL) {
+-		unsigned int *l2cr = (unsigned int *)
+-			get_property (np, "l2cr", NULL);
++		const unsigned int *l2cr = get_property(np, "l2cr", NULL);
+ 		if (l2cr == NULL) {
+ 			printk ("Pegasos l2cr : no cpu l2cr property found\n");
+ 			return;
+@@ -252,7 +251,7 @@ static void briq_restart(char *cmd)
+ void __init chrp_setup_arch(void)
  {
--	unsigned int *ioid;
--	unsigned long *dma_window, map_start, map_size, token;
-+	const unsigned int *ioid;
-+	unsigned long map_start, map_size, token;
-+	const unsigned long *dma_window;
- 	struct cell_iommu *iommu;
+ 	struct device_node *root = find_path_device ("/");
+-	char *machine = NULL;
++	const char *machine = NULL;
  
--	ioid = (unsigned int *)get_property(d, "ioid", NULL);
-+	ioid = get_property(d, "ioid", NULL);
- 	if (!ioid)
- 		pr_debug("No ioid entry found !\n");
+ 	/* init to some ~sane value until calibrate_delay() runs */
+ 	loops_per_jiffy = 50000000/HZ;
+@@ -353,7 +352,7 @@ static void __init chrp_find_openpic(voi
+ 	struct device_node *np, *root;
+ 	int len, i, j;
+ 	int isu_size, idu_size;
+-	unsigned int *iranges, *opprop = NULL;
++	const unsigned int *iranges, *opprop = NULL;
+ 	int oplen = 0;
+ 	unsigned long opaddr;
+ 	int na = 1;
+@@ -363,8 +362,7 @@ static void __init chrp_find_openpic(voi
+ 		return;
+ 	root = of_find_node_by_path("/");
+ 	if (root) {
+-		opprop = (unsigned int *) get_property
+-			(root, "platform-open-pic", &oplen);
++		opprop = get_property(root, "platform-open-pic", &oplen);
+ 		na = prom_n_addr_cells(root);
+ 	}
+ 	if (opprop && oplen >= na * sizeof(unsigned int)) {
+@@ -381,7 +379,7 @@ static void __init chrp_find_openpic(voi
  
--	dma_window = (unsigned long *)get_property(d, "ibm,dma-window", NULL);
-+	dma_window = get_property(d, "ibm,dma-window", NULL);
- 	if (!dma_window)
- 		pr_debug("No ibm,dma-window entry found !\n");
+ 	printk(KERN_INFO "OpenPIC at %lx\n", opaddr);
  
-@@ -371,8 +372,9 @@ static int cell_map_iommu_hardcoded(int 
+-	iranges = (unsigned int *) get_property(np, "interrupt-ranges", &len);
++	iranges = get_property(np, "interrupt-ranges", &len);
+ 	if (iranges == NULL)
+ 		len = 0;	/* non-distributed mpic */
+ 	else
+@@ -467,8 +465,8 @@ static void __init chrp_find_8259(void)
+ 	 * from anyway
+ 	 */
+ 	for (np = find_devices("pci"); np != NULL; np = np->next) {
+-		unsigned int *addrp = (unsigned int *)
+-			get_property(np, "8259-interrupt-acknowledge", NULL);
++		const unsigned int *addrp = get_property(np,
++				"8259-interrupt-acknowledge", NULL);
  
- static int cell_map_iommu(void)
+ 		if (addrp == NULL)
+ 			continue;
+@@ -527,7 +525,7 @@ void __init
+ chrp_init2(void)
  {
--	unsigned int num_nodes = 0, *node_id;
--	unsigned long *base, *mmio_base;
-+	unsigned int num_nodes = 0;
-+	const unsigned int *node_id;
-+	const unsigned long *base, *mmio_base;
- 	struct device_node *dn;
- 	struct cell_iommu *iommu = NULL;
+ 	struct device_node *device;
+-	unsigned int *p = NULL;
++	const unsigned int *p = NULL;
  
-@@ -381,7 +383,7 @@ static int cell_map_iommu(void)
- 	for(dn = of_find_node_by_type(NULL, "cpu");
- 	    dn;
- 	    dn = of_find_node_by_type(dn, "cpu")) {
--		node_id = (unsigned int *)get_property(dn, "node-id", NULL);
-+		node_id = get_property(dn, "node-id", NULL);
- 
- 		if (num_nodes < *node_id)
- 			num_nodes = *node_id;
-@@ -396,9 +398,9 @@ static int cell_map_iommu(void)
- 	    dn;
- 	    dn = of_find_node_by_type(dn, "cpu")) {
- 
--		node_id = (unsigned int *)get_property(dn, "node-id", NULL);
--		base = (unsigned long *)get_property(dn, "ioc-cache", NULL);
--		mmio_base = (unsigned long *)get_property(dn, "ioc-translation", NULL);
-+		node_id = get_property(dn, "node-id", NULL);
-+		base = get_property(dn, "ioc-cache", NULL);
-+		mmio_base = get_property(dn, "ioc-translation", NULL);
- 
- 		if (!base || !mmio_base || !node_id)
- 			return cell_map_iommu_hardcoded(num_nodes);
-Index: linux-2.6/arch/powerpc/platforms/cell/spider-pic.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spider-pic.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spider-pic.c
-@@ -230,7 +230,7 @@ static void spider_irq_cascade(unsigned 
- static unsigned int __init spider_find_cascade_and_node(struct spider_pic *pic)
- {
- 	unsigned int virq;
--	u32 *imap, *tmp;
-+	const u32 *imap, *tmp;
- 	int imaplen, intsize, unit;
- 	struct device_node *iic;
- 	struct irq_host *iic_host;
-@@ -248,25 +248,25 @@ static unsigned int __init spider_find_c
- #endif
- 
- 	/* Now do the horrible hacks */
--	tmp = (u32 *)get_property(pic->of_node, "#interrupt-cells", NULL);
-+	tmp = get_property(pic->of_node, "#interrupt-cells", NULL);
- 	if (tmp == NULL)
- 		return NO_IRQ;
- 	intsize = *tmp;
--	imap = (u32 *)get_property(pic->of_node, "interrupt-map", &imaplen);
-+	imap = get_property(pic->of_node, "interrupt-map", &imaplen);
- 	if (imap == NULL || imaplen < (intsize + 1))
- 		return NO_IRQ;
- 	iic = of_find_node_by_phandle(imap[intsize]);
- 	if (iic == NULL)
- 		return NO_IRQ;
- 	imap += intsize + 1;
--	tmp = (u32 *)get_property(iic, "#interrupt-cells", NULL);
-+	tmp = get_property(iic, "#interrupt-cells", NULL);
- 	if (tmp == NULL)
- 		return NO_IRQ;
- 	intsize = *tmp;
- 	/* Assume unit is last entry of interrupt specifier */
- 	unit = imap[intsize - 1];
- 	/* Ok, we have a unit, now let's try to get the node */
--	tmp = (u32 *)get_property(iic, "ibm,interrupt-server-ranges", NULL);
-+	tmp = get_property(iic, "ibm,interrupt-server-ranges", NULL);
- 	if (tmp == NULL) {
- 		of_node_put(iic);
- 		return NO_IRQ;
-Index: linux-2.6/arch/powerpc/platforms/cell/spu_base.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spu_base.c
-+++ linux-2.6/arch/powerpc/platforms/cell/spu_base.c
-@@ -488,10 +488,10 @@ int spu_irq_class_1_bottom(struct spu *s
- 
- static int __init find_spu_node_id(struct device_node *spe)
- {
--	unsigned int *id;
-+	const unsigned int *id;
- 	struct device_node *cpu;
- 	cpu = spe->parent->parent;
--	id = (unsigned int *)get_property(cpu, "node-id", NULL);
-+	id = get_property(cpu, "node-id", NULL);
- 	return id ? *id : 0;
- }
- 
-@@ -500,7 +500,7 @@ static int __init cell_spuprop_present(s
- {
- 	static DEFINE_MUTEX(add_spumem_mutex);
- 
--	struct address_prop {
-+	const struct address_prop {
- 		unsigned long address;
- 		unsigned int len;
- 	} __attribute__((packed)) *p;
-@@ -511,7 +511,7 @@ static int __init cell_spuprop_present(s
- 	struct zone *zone;
- 	int ret;
- 
--	p = (void*)get_property(spe, prop, &proplen);
-+	p = get_property(spe, prop, &proplen);
- 	WARN_ON(proplen != sizeof (*p));
- 
- 	start_pfn = p->address >> PAGE_SHIFT;
-@@ -531,12 +531,12 @@ static int __init cell_spuprop_present(s
- static void __iomem * __init map_spe_prop(struct spu *spu,
- 		struct device_node *n, const char *name)
- {
--	struct address_prop {
-+	const struct address_prop {
- 		unsigned long address;
- 		unsigned int len;
- 	} __attribute__((packed)) *prop;
- 
--	void *p;
-+	const void *p;
- 	int proplen;
- 	void* ret = NULL;
- 	int err = 0;
-@@ -570,14 +570,14 @@ static int __init spu_map_interrupts(str
- {
- 	struct irq_host *host;
- 	unsigned int isrc;
--	u32 *tmp;
-+	const u32 *tmp;
- 
- 	host = iic_get_irq_host(spu->node);
- 	if (host == NULL)
- 		return -ENODEV;
- 
- 	/* Get the interrupt source from the device-tree */
--	tmp = (u32 *)get_property(np, "isrc", NULL);
-+	tmp = get_property(np, "isrc", NULL);
- 	if (!tmp)
- 		return -ENODEV;
- 	spu->isrc = isrc = tmp[0];
-@@ -593,7 +593,7 @@ static int __init spu_map_interrupts(str
- 
- static int __init spu_map_device(struct spu *spu, struct device_node *node)
- {
--	char *prop;
-+	const char *prop;
- 	int ret;
- 
- 	ret = -ENODEV;
-Index: linux-2.6/include/asm-powerpc/spu.h
-===================================================================
---- linux-2.6.orig/include/asm-powerpc/spu.h
-+++ linux-2.6/include/asm-powerpc/spu.h
-@@ -106,7 +106,7 @@ struct spu_context;
- struct spu_runqueue;
- 
- struct spu {
--	char *name;
-+	const char *name;
- 	unsigned long local_store_phys;
- 	u8 *local_store;
- 	unsigned long problem_phys;
+ #ifdef CONFIG_NVRAM
+ 	chrp_nvram_init();
+@@ -545,8 +543,7 @@ chrp_init2(void)
+ 	 */
+ 	device = find_devices("rtas");
+ 	if (device)
+-		p = (unsigned int *) get_property
+-			(device, "rtas-event-scan-rate", NULL);
++		p = get_property(device, "rtas-event-scan-rate", NULL);
+ 	if (p && *p) {
+ 		/*
+ 		 * Arrange to call chrp_event_scan at least *p times
