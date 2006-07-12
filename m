@@ -1,18 +1,20 @@
-Return-Path: <brijesh.chodavadiya@einfochips.com>
-Received: from india.einfochips.com (india.einfochips.com [203.88.139.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "india.einfochips.com",
-	Issuer "india.einfochips.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 95F98679FB
+Return-Path: <jxnuxdy@163.com>
+Received: from m13-79.163.com (m13-79.163.com [220.181.13.79])
+	by ozlabs.org (Postfix) with SMTP id 4128E67BA4
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 12 Jul 2006 16:55:09 +1000 (EST)
-Message-ID: <44B49AEE.5010407@einfochips.com>
-Date: Wed, 12 Jul 2006 12:17:10 +0530
-From: "brijesh.chodavadiya@einfochips.com" <brijesh.chodavadiya@einfochips.com>
+	Wed, 12 Jul 2006 19:14:27 +1000 (EST)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: request_irq in a module casues kernel crash
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-ID: <44B4B9B4.000153.02321@bj163app79.163.com>
+Date: Wed, 12 Jul 2006 16:58:28 +0800 (CST)
+From: "Denny" <jxnuxdy@163.com>
+To: "stefan roese" <sr@denx.de>,linuxppc-embedded@ozlabs.org
+Subject: Re: Re: Failed to initialize the ethernet
+  on PPC4 40GP
+References: <44B220CB.000108.31873@bj163app12.163.com>
+	<200607101242.29359.sr@denx.de>
+In-Reply-To: <200607101242.29359.sr@denx.de>
+Content-Type: Multipart/Alternative;
+	boundary="Boundary-=_FUwXXncicyPnwADNzSjBpfHPIlGb"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,15 +25,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-please rewrite handler function with,
 
- void handler(int irq, void *dev_id, struct pt_regs * regs)
- {
-	printk("Interrupt handler invoked for irq %d \n",irq);
-	return IRQ_HANDLED;
- }
+--Boundary-=_FUwXXncicyPnwADNzSjBpfHPIlGb
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 7bit
+
+Hi,
+   A silly question, How can I add myself to the UBoot mailist, thanks!
+ 
+- Denny
+ 
+ 
+ 
+--Boundary-=_FUwXXncicyPnwADNzSjBpfHPIlGb
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
+
+<DIV>Hi,</DIV>
+<DIV>&nbsp;&nbsp; A silly question, How can I add myself to the UBoot mai=
+list, thanks!</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>- Denny</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>&nbsp;</DIV><SPAN ></SPAN><br><!-- footer --><br><br><br><br><br><di=
+v style=3D"border-bottom:1px solid #999"></div><br>
+
+=09<font color=3D"black" style=3D"font-size:14.8px">=CF=EB =D2=AA =CC=E5 =
+=D1=E9 =D2=BB =CF=C2 =B3=AC =B4=F3 =B3=AC =BF=EC =B5=C4 =C3=E2 =B7=D1 =D3=
+=CA =CF=E4 =C2=F0 =A3=BF</font>
+=09<br>
+=09 <a href=3D"http://www.126.com/" target=3D"_blank" style=3D"font-size:=
+13px;line-height:160%;color:blue">=CD=F8 =D2=D7 3G =C3=E2 =B7=D1 =D3=CA =A3=
+=AC=C7=C0 =D7=A2 =D4=D9 =B5=C3 280 =D5=D7 =B4=F3 =C8=DD =C1=BF =CD=F8 =C5=
+=CC =A3=AC=BF=EC =C0=B4 =CC=E5 =D1=E9 =D3=CA =CF=E4 =BC=AB =CB=D9 =D6=AE =
+=C2=C3
+</a>
 
 
-
-eInfochips Business Disclaimer:
-This message may contain confidential, proprietary or legally Privileged information. In case you are not the original intended Recipient of the message, you must not, directly or indirectly, use, Disclose, distribute, print, or copy any part of this message and you are requested to delete it and inform the sender. Any views expressed in this message are those of the individual sender unless otherwise stated. Nothing contained in this message shall be construed as an offer or acceptance of any offer by eInfochips Limited and/or eInfochips Inc("eInfochips") unless sent with that express intent and with due authority of eInfochips. eInfochips has taken enough precautions to prevent the spread of viruses. However the company accepts no liability for any damage caused by any virus transmitted by this email.
+--Boundary-=_FUwXXncicyPnwADNzSjBpfHPIlGb--
