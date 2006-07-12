@@ -1,15 +1,36 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Message-ID: <44B4FDF2.6010602@smiths-aerospace.com>
-Date: Wed, 12 Jul 2006 09:49:38 -0400
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-MIME-Version: 1.0
-To: Zhou Rui <vancasperz@yahoo.com.cn>
-Subject: Re: Problems of Compiling Kernel with linux-2.4.27 and linux-2.6.17
-	for	PowerPC405EP Board
-References: <20060712130102.40670.qmail@web15604.mail.cnb.yahoo.com>
-In-Reply-To: <20060712130102.40670.qmail@web15604.mail.cnb.yahoo.com>
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-dev@ozlabs.org, der.herr@hofr.at, linuxppc-embedded@ozlabs.org
+Return-Path: <mkravetz@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1FF3867B7B
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Jul 2006 04:04:54 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6CI4nBa007909
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Jul 2006 14:04:49 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6CI4kjt134490
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Jul 2006 12:04:47 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6CI4k1p032721
+	for <linuxppc-dev@ozlabs.org>; Wed, 12 Jul 2006 12:04:46 -0600
+Date: Wed, 12 Jul 2006 11:05:01 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
+Message-ID: <20060712180501.GB26984@w-mikek2.beaverton.ibm.com>
+References: <20060622225609.GA4877@w-mikek2.ibm.com>
+	<20060710203510.GA30793@w-mikek2.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060710203510.GA30793@w-mikek2.ibm.com>
+Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, Christopher Yeoh <cyeoh@samba.org>,
+	Nathan Lynch <ntl@pobox.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,39 +40,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Zhou Rui wrote:
-> Hi,
-> Yesterday I tried to compile kernel with linux-2.4.27 and linux-2.6.17 
-> for PowerPC405EP board. Both of the kernel images were created 
-> successfully, but when I tested them in ram from u-boot with NFS used. 
-> Both of the images could not booted from ram. The two kernel .config 
-> files are attached.
-> 
-> For the 2.4.27 kernel, after running bootm in u-boot and "Uncompressing 
-> Kernel Image ... OK" printed on the screen. There are
-> "vector: 200 at pc = c0197d4c, lr = c0197d40
-> msr = 1030, sp = c0181fb0 [c0181f00]
-> current = c0180020, pid = 0, comm = swapper
-> mon>".
-> It seemd the booting process had entered a monitor, but I didn't know 
-> what it was.
-> 
-> For the 2.6.17 kernel, after running bootm in u-boot, the booting 
-> process stops at "Uncompressing Kernel Image ... OK". No other output 
-> after this sentence on the screen.
-> 
-> Would you like to give some advice about this? Thanks a lot.
-> 
-> Zhou Rui
-> Distributed & Embedded System Lab
-> School of Information Science & Engineering
-> Lanzhou University, P. R. China
-> http://dslab.lzu.edu.cn/~zr/
+On Mon, Jul 10, 2006 at 01:35:10PM -0700, Mike Kravetz wrote:
+> #ifdef CONFIG_HCALL_STATS
+> #define plpar_hcall_*()		plpar_hcall_*_inst()
 
-Exception 200 is "Machine Check".  If you are getting this on linux
-start up it is usually due to a double bus fault which is usually due to
-a memory map problem.  Silent boot failures are also often caused by
-memory map problems... switching from physical memory mapping to virtual
-(turning on the MMU).
+To answer my own question, this won't work because plpar_hcall_*()
+routines are exported.  So, marcros can't be used.  Still thinking
+about the best way to juggle function names for instrumentation.
 
-gvb
+-- 
+Mike
