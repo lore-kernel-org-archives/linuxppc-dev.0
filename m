@@ -1,23 +1,25 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id 4FB8567BAC
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 04:20:37 +1000 (EST)
-Date: Thu, 13 Jul 2006 13:20:17 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: John Rose <johnrose@austin.ibm.com>
-Subject: Re: [PATCH] reorg RTAS delay code
-Message-ID: <20060713182016.GH19076@localdomain>
-References: <1149103929.2524.8.camel@sinatra.austin.ibm.com>
-	<1149139866.28307.32.camel@localhost.localdomain>
-	<1149177349.9812.16.camel@sinatra.austin.ibm.com>
-	<1149200718.15158.0.camel@sinatra.austin.ibm.com>
-	<1149280229.18052.3.camel@sinatra.austin.ibm.com>
-	<20060602213308.GP8934@localdomain>
-	<1149543108.17307.6.camel@sinatra.austin.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 37D4167B6A
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 05:43:13 +1000 (EST)
+Subject: Re: Maple platform - adding graphics to IBM PIBS firmware
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: jf simon <jfaslist@yahoo.fr>
+In-Reply-To: <44B4D2A4.7090204@yahoo.fr>
+References: <DCEAAC0833DD314AB0B58112AD99B93B0189DE5E@ismail.innsys.innovsys.com>
+	<20060710214158.1d8dcf2c@vitb.ru.mvista.com>
+	<Pine.LNX.4.60.0607102135330.10561@poirot.grange>
+	<1152567817.1576.114.camel@localhost.localdomain>
+	<44B3A772.3000101@yahoo.fr>
+	<1152658938.6346.76.camel@localhost.localdomain>
+	<44B4D2A4.7090204@yahoo.fr>
+Content-Type: text/plain
+Date: Fri, 14 Jul 2006 05:43:06 +1000
+Message-Id: <1152819786.23037.12.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1149543108.17307.6.camel@sinatra.austin.ibm.com>
-Cc: External List <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,71 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi folks-
 
-John Rose wrote:
-> This patch attempts to handle RTAS "busy" return codes in a more simple
-> and consistent manner.  Typical callers of RTAS shouldn't have to
-> manage wait times and delay calls.
-> 
-> This patch also changes the kernel to use msleep() rather than udelay()
-> when a runtime delay is necessary.  This will avoid CPU soft lockups
-> for extended delay conditions.
+> I was (naively) thinking that if I could access the legacy VGA register 
+> set, I could set the graphic card to text mode and use the graphic 
+> screen as a alphanumeric console, until linux soft boots the graphic 
+> card . Do you think this is doable? I haven't been able to locate that 
+> VGA register set yet.
 
-...
+The legacy VGA operations also require the card to be fully initialized
+by the BIOS. In addition to that, there is an issue with using VGA text
+mode on machines using the CPC925 bridge as it doesn't have a legacy
+memory window: It doesn't have a facility to generate PCI or HT memory
+cycles in the low addresses required for VGA.
 
-> +/* For an RTAS busy status code, perform the hinted delay. */
-> +unsigned int rtas_busy_delay(int status)
-> +{
-> +	unsigned int ms;
->  
-> -	/* Use microseconds for reasonable accuracy */
-> -	for (ms = 1; order > 0; order--)
-> -		ms *= 10;
-> +	might_sleep();
-> +	ms = rtas_busy_delay_time(status);
-> +	if (ms)
-> +		msleep(ms);
->  
-> -	return ms; 
-> +	return ms;
->  }
+You can still hack-around in a somewhat card-specific way using the main
+memory apperture and doing your onw interleaving of characters and
+attributes but it's dodgy.
 
-So I managed to test this with cpu hotplug recently and the
-might_sleep warning triggers in the cpu offline path (I had to
-reconstruct this from xmon due to the kernel crashing later on for a
-different reason, so it might be a little off):
+In any case, you still need the card to be initialized.
 
-BUG: sleeping function called from invalid context at arch/powerpc/kernel/rtas.c:463.
-in_atomic():1, irqs_disabled():1.
-Call Trace:
-[C0000000AAD379A0] [C000000000010ADC] .show_stack+0x68/0x1b4 (unreliable)
-[C0000000AAD37A50] [C000000000050C98] .__might_sleep+0xd0/0xec
-[C0000000AAD37AE0] [C00000000001DF5C] .rtas_busy_delay+0x20/0x54
-[C0000000AAD37B70] [C00000000001E2D0] .rtas_set_indicator+0x70/0xd4
-[C0000000AAD37C10] [C0000000000491C8] .xics_migrate_irqs_away+0x78/0x228
-[C0000000AAD37CD0] [C000000000047C14] .pSeries_cpu_disable+0x98/0xb4
-[C0000000AAD37D50] [C000000000029A5C] .__cpu_disable+0x4c/0x60
-[C0000000AAD37DC0] [C000000000080834] .take_cpu_down+0x10/0x38
-[C0000000AAD37E40] [C00000000008D1C0] .do_stop+0x198/0x248
-[C0000000AAD37EE0] [C000000000078124] .kthread+0x124/0x174
-[C0000000AAD37F90] [C000000000026568] .kernel_thread+0x4c/0x68
-
-
-As it turns out, set-indicator is not allowed to return a busy delay
-in this context, so we're actually safe here.  Maybe we need an
-rtas_set_indicator_fast which could take that into account, e.g.
-
-int rtas_set_indicator_fast(int indicator, int index, int new_value)
-{
-	int token = rtas_token("set-indicator");
-	int rc;
-
-	rc = rtas_call(token, 3, 1, NULL, indicator, index, new_value);
-
-	WARN_ON(rc == -2 || rc >= 9000 || rc <= 9005);
-
-	if (rc < 0)
-		return rtas_error_rc(rc);
-	return rc;
-}
+Ben.
