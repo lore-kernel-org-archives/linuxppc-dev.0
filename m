@@ -1,19 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EFBA067B56
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 05:55:12 +1000 (EST)
-Subject: Re: new IRQ stuff : some details?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-In-Reply-To: <20060713220628.54c2912d@vitb.ru.mvista.com>
-References: <20060713220628.54c2912d@vitb.ru.mvista.com>
-Content-Type: text/plain
-Date: Fri, 14 Jul 2006 05:55:10 +1000
-Message-Id: <1152820510.23037.21.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <RichardDavenport@spherion.com>
+Received: from smtp1i.spherion.com (smtp1i.spherion.com [148.109.4.114])
+	by ozlabs.org (Postfix) with ESMTP id 7563767B62
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 06:47:44 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: [JOB] Senior Embedded Linux Video Engineer 
+Date: Thu, 13 Jul 2006 16:33:06 -0400
+Message-ID: <44FA7A8E32709444A9078DA2E1C027FD0489B9E6@USCSCMSC8.na.entroot.biz>
+From: "Davenport, Richard" <RichardDavenport@spherion.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +19,98 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2006-07-13 at 22:06 +0400, Vitaly Bordug wrote:
-> Hi Ben,
-> 
-> As your irq rewrite touched mainstream, I am wondering about some details/directions to move fw and 
-> update the boards up to it. Currently, the irq numbers are messed (since the board has 2 Int controllers), and I am assuming some touch to devicetree is needed, but not sure what exactly.
-> 
-> 
-> Sorry if it have been brought up somewhere... 
+Senior Embedded Linux Video Engineer=20
 
-It certainly needs some documentation update... I'm travelling at the
-moment, but soon. Discussion is welcome :)
+=20
 
-Ben.
+Responsible for the technical leadership in design and development of =
+embedded OS features for Cisco's next generation Audio/Video application =
+which will change the entire video conferencing industry.
+
+=20
+
+Please check out these links for an overview of the project:
+
+=20
+
+http://www.humanproductivitylab.com/archive_blogs/2006/03/26/ciscos_chann=
+el_partners_should_1.php
+
+=20
+
+http://www.msnbc.msn.com/id/11768174/site/newsweek/
+
+=20
+
+Requirements:
+
+=B7        Strong technical skills with an emphasis on Embedded Linux, =
+Operating System interfaces, and Platform Software and Services.=20
+
+=B7        5-7 years of embedded C programming.
+
+=B7        4 years Linux experience with at least 2 years embedded =
+Linux.
+
+=B7        Linux expertise on PowerPC architecture.
+
+=B7        Experience in Linux internals such as file systems, device =
+drivers, network interfaces.
+
+=B7        Thorough understanding of Linux utilities such as system =
+logging and run time options.
+
+=B7        Experience in building BSP packaging
+
+=B7        Familiar with gcc/gdb toolchain=20
+
+=B7        Excellent written and verbal communication skills
+
+=B7        Permanent US work authorization or transferable H1b with a =
+minimum of two years remaining eligibility.
+
+=20
+
+Desired Skills/Experience:=20
+
+=B7        Experience in providing Technical and team leadership=20
+
+=B7        Experience in GPL compliance=20
+
+=B7        Build systems, tool chain, executable/library structures and =
+makefile=20
+
+=B7        Background in a startup or dynamic working environment
+
+=B7        Strong understanding of operating system Kernel internals=20
+
+=B7        Experience with writing/debugging BSP's for Linux=20
+
+=B7        Background in VoIP Audio/Video systems=20
+
+=20
+
+Typically requires MSEE/CS combined with 5-7 years of related =
+experience, or
+
+BSEE/CS combined with 7-10+ yrs related experience.
+
+=20
+
+Opportunity is in San Jose, CA. (Relocation assistance is not available)
+
+=20
+
+ If interested, please respond with a copy of your resume and the best =
+numbers and times for a follow-up phone conversation.
+
+=20
+
+Thank you,
+
+=20
+Richard Davenport
+Recruiter=20
+Cisco Recruiting Team
+(888) 329-3480  or (501) 351-7396
+richarddavenport@spherion.com <mailto:richarddavenport@spherion.com>=20
