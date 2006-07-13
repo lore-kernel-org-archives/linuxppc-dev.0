@@ -1,36 +1,9 @@
-Return-Path: <mkravetz@us.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1FF3867B7B
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Jul 2006 04:04:54 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6CI4nBa007909
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Jul 2006 14:04:49 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k6CI4kjt134490
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Jul 2006 12:04:47 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k6CI4k1p032721
-	for <linuxppc-dev@ozlabs.org>; Wed, 12 Jul 2006 12:04:46 -0600
-Date: Wed, 12 Jul 2006 11:05:01 -0700
-From: Mike Kravetz <kravetz@us.ibm.com>
+Return-Path: <jk@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
-Message-ID: <20060712180501.GB26984@w-mikek2.beaverton.ibm.com>
-References: <20060622225609.GA4877@w-mikek2.ibm.com>
-	<20060710203510.GA30793@w-mikek2.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060710203510.GA30793@w-mikek2.ibm.com>
-Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, Christopher Yeoh <cyeoh@samba.org>,
-	Nathan Lynch <ntl@pobox.com>, Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] powerpc: simplify dma_ops bug conditions
+Message-Id: <20060713063252.1D35867B58@ozlabs.org>
+Date: Thu, 13 Jul 2006 16:32:52 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,13 +13,146 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 10, 2006 at 01:35:10PM -0700, Mike Kravetz wrote:
-> #ifdef CONFIG_HCALL_STATS
-> #define plpar_hcall_*()		plpar_hcall_*_inst()
+Use BUG_ON rather than BUG to simplify the dma_ops handing,
+and remove the now-unnecessary return cases.
 
-To answer my own question, this won't work because plpar_hcall_*()
-routines are exported.  So, marcros can't be used.  Still thinking
-about the best way to juggle function names for instrumentation.
+Booted on pseries.
 
--- 
-Mike
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+
+---
+
+ dma_64.c |   65 +++++++++++++++++++++++++++------------------------------------
+ 1 file changed, 28 insertions(+), 37 deletions(-)
+
+Index: linux-2.6/arch/powerpc/kernel/dma_64.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/dma_64.c
++++ linux-2.6/arch/powerpc/kernel/dma_64.c
+@@ -35,10 +35,9 @@ int dma_supported(struct device *dev, u6
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (dma_ops)
+-		return dma_ops->dma_supported(dev, mask);
+-	BUG();
+-	return 0;
++	BUG_ON(!dma_ops);
++
++	return dma_ops->dma_supported(dev, mask);
+ }
+ EXPORT_SYMBOL(dma_supported);
+ 
+@@ -66,10 +65,9 @@ void *dma_alloc_coherent(struct device *
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (dma_ops)
+-		return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
+-	BUG();
+-	return NULL;
++	BUG_ON(!dma_ops);
++
++	return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
+ }
+ EXPORT_SYMBOL(dma_alloc_coherent);
+ 
+@@ -78,10 +76,9 @@ void dma_free_coherent(struct device *de
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (dma_ops)
+-		dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
+-	else
+-		BUG();
++	BUG_ON(!dma_ops);
++
++	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
+ }
+ EXPORT_SYMBOL(dma_free_coherent);
+ 
+@@ -90,10 +87,9 @@ dma_addr_t dma_map_single(struct device 
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (dma_ops)
+-		return dma_ops->map_single(dev, cpu_addr, size, direction);
+-	BUG();
+-	return (dma_addr_t)0;
++	BUG_ON(!dma_ops);
++
++	return dma_ops->map_single(dev, cpu_addr, size, direction);
+ }
+ EXPORT_SYMBOL(dma_map_single);
+ 
+@@ -102,10 +98,9 @@ void dma_unmap_single(struct device *dev
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (dma_ops)
+-		dma_ops->unmap_single(dev, dma_addr, size, direction);
+-	else
+-		BUG();
++	BUG_ON(!dma_ops);
++
++	dma_ops->unmap_single(dev, dma_addr, size, direction);
+ }
+ EXPORT_SYMBOL(dma_unmap_single);
+ 
+@@ -115,11 +110,10 @@ dma_addr_t dma_map_page(struct device *d
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (dma_ops)
+-		return dma_ops->map_single(dev,
+-				(page_address(page) + offset), size, direction);
+-	BUG();
+-	return (dma_addr_t)0;
++	BUG_ON(!dma_ops);
++
++	return dma_ops->map_single(dev, page_address(page) + offset, size,
++			direction);
+ }
+ EXPORT_SYMBOL(dma_map_page);
+ 
+@@ -128,10 +122,9 @@ void dma_unmap_page(struct device *dev, 
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (dma_ops)
+-		dma_ops->unmap_single(dev, dma_address, size, direction);
+-	else
+-		BUG();
++	BUG_ON(!dma_ops);
++
++	dma_ops->unmap_single(dev, dma_address, size, direction);
+ }
+ EXPORT_SYMBOL(dma_unmap_page);
+ 
+@@ -140,10 +133,9 @@ int dma_map_sg(struct device *dev, struc
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (dma_ops)
+-		return dma_ops->map_sg(dev, sg, nents, direction);
+-	BUG();
+-	return 0;
++	BUG_ON(!dma_ops);
++
++	return dma_ops->map_sg(dev, sg, nents, direction);
+ }
+ EXPORT_SYMBOL(dma_map_sg);
+ 
+@@ -152,9 +144,8 @@ void dma_unmap_sg(struct device *dev, st
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (dma_ops)
+-		dma_ops->unmap_sg(dev, sg, nhwentries, direction);
+-	else
+-		BUG();
++	BUG_ON(!dma_ops);
++
++	dma_ops->unmap_sg(dev, sg, nhwentries, direction);
+ }
+ EXPORT_SYMBOL(dma_unmap_sg);
