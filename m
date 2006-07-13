@@ -1,14 +1,15 @@
-Return-Path: <muli@il.ibm.com>
-Date: Thu, 13 Jul 2006 09:39:47 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [PATCH] powerpc: simplify dma_ops bug conditions
-Message-ID: <20060713063947.GD5096@rhun.ibm.com>
-References: <20060713063252.1D35867B58@ozlabs.org>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 60BF567B91
+	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 04:06:12 +1000 (EST)
+Date: Thu, 13 Jul 2006 22:06:28 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: new IRQ stuff : some details?
+Message-ID: <20060713220628.54c2912d@vitb.ru.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060713063252.1D35867B58@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,15 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jul 13, 2006 at 04:32:52PM +1000, Jeremy Kerr wrote:
+Hi Ben,
 
-> Use BUG_ON rather than BUG to simplify the dma_ops handing,
-> and remove the now-unnecessary return cases.
-> 
-> Booted on pseries.
+As your irq rewrite touched mainstream, I am wondering about some details/directions to move fw and 
+update the boards up to it. Currently, the irq numbers are messed (since the board has 2 Int controllers), and I am assuming some touch to devicetree is needed, but not sure what exactly.
 
-Is the BUG_ON() necessary? the next line just goes and deref's it,
-which should lead to a shiny NULL pointer deref.
 
-Cheers,
-Muli
+Sorry if it have been brought up somewhere... 
+
+-- 
+Sincerely, 
+Vitaly
