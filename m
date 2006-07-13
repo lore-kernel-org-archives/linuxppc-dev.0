@@ -1,21 +1,19 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id BEB8E67B8F
+Return-Path: <dhlii@dlasys.net>
+Received: from sccrmhc15.comcast.net (sccrmhc15.comcast.net [204.127.200.85])
+	by ozlabs.org (Postfix) with ESMTP id 2004C67A3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jul 2006 07:42:52 +1000 (EST)
-Subject: Re: Knowing kernel module load address (insmod hasn't -m)
-From: Ben Warren <bwarren@qstreams.com>
-To: Antonio Di Bacco <antonio.dibacco@aruba.it>
-In-Reply-To: <200607132327.58708.antonio.dibacco@aruba.it>
-References: <200607132238.11177.antonio.dibacco@aruba.it>
-	<1152824648.5238.12.camel@saruman.qstreams.net>
-	<200607132327.58708.antonio.dibacco@aruba.it>
-Content-Type: multipart/alternative; boundary="=-YHWWYKfQ5t6rJM0lRlKm"
-Date: Thu, 13 Jul 2006 17:42:49 -0400
-Message-Id: <1152826969.5238.16.camel@saruman.qstreams.net>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: bwarren@qstreams.com
+	Fri, 14 Jul 2006 09:55:00 +1000 (EST)
+Message-ID: <44B6DC18.9020409@dlasys.net>
+Date: Thu, 13 Jul 2006 19:49:44 -0400
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
+MIME-Version: 1.0
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: Xilinx hard TEMAC
+References: <BAY110-F40A48564C0A5B30AB0DCCB2690@phx.gbl>
+	<44B671D2.304@gmail.com>
+In-Reply-To: <44B671D2.304@gmail.com>
+Content-Type: text/plain; charset=GB2312
+Reply-To: dhlii@comcast.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,61 +25,65 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---=-YHWWYKfQ5t6rJM0lRlKm
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I am trying to get the Xilinx TEMAC working. I am getting an education
+in Xilinx, TEMAC's, PHY's, ... in the process.
 
-/proc/modules support is in 2.4, but the other stuff is 2.6 only (I
-believe somewhere around 2.6.11 or so?)  You should be able to 'insmod
--m' in 2.4.  You may need to reconfigure busybox or use a non-busybox
-'insmod', though.
+The hardware I have to support is the Hard TEMAC on the LocalLink Bus.
+It is my understanding that this is the TEMAC builtin to the FX parts,
+not one that is created in the FPGA.
 
-cheers,
-Ben
- 
-On Thu, 2006-07-13 at 23:27 +0200, Antonio Di Bacco wrote:
+Is anyone else working to support that configuration ? I think that is
+basically the same as the GRSD TEMAC.
+Is it sane to try to adapt the soft TEMAC patch from the list ?
 
-> > cat /proc/modules
-> >
-> > If you want more detailed information about a module (locations
-> > of .text, .data, .bss etc), enable CONFIG_KALLSYMS in your kernel and
-> 
-> Does this option exist in kernel 2.4 too? I didn't find it!
-> 
-> Thank you,
-> Antonio.
+I have a driver that works under uCos as a starting point. It initially
+appeared to use basically the same xilinx_edk code that the linux temac
+driver patch that has been the subject of a number of messages uses. But
+on deeper inspection that dependence appears to be very shallow - mostly
+using the edk macros to read the PHY and registers in the MAC.
 
---=-YHWWYKfQ5t6rJM0lRlKm
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Am I correct that the TEMAC patch floating arround is not for that TEMAC ?
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
-<HTML>
-<HEAD>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
-  <META NAME="GENERATOR" CONTENT="GtkHTML/3.10.2">
-</HEAD>
-<BODY>
-/proc/modules support is in 2.4, but the other stuff is 2.6 only (I believe somewhere around 2.6.11 or so?)&nbsp; You should be able to 'insmod -m' in 2.4.&nbsp; You may need to reconfigure busybox or use a non-busybox 'insmod', though.<BR>
-<BR>
-cheers,<BR>
-Ben<BR>
- <BR>
-On Thu, 2006-07-13 at 23:27 +0200, Antonio Di Bacco wrote:
-<BLOCKQUOTE TYPE=CITE>
-<PRE>
-<FONT COLOR="#000000">&gt; cat /proc/modules</FONT>
-<FONT COLOR="#000000">&gt;</FONT>
-<FONT COLOR="#000000">&gt; If you want more detailed information about a module (locations</FONT>
-<FONT COLOR="#000000">&gt; of .text, .data, .bss etc), enable CONFIG_KALLSYMS in your kernel and</FONT>
+I am also trying to digest the paternity of the TEMAC. Is the basic
+programming of the hard TEMAC and the IP TEMAC the same ? i.e. does the
+fact that the both have TEMAC in their name actually express some
+commonality ? TEMAC means Tri-Mode EMAC - does that mean there is some
+commonality with the IBM EMAC ?
 
-<FONT COLOR="#000000">Does this option exist in kernel 2.4 too? I didn't find it!</FONT>
+I have a driver in the works that is based on the working uCos code I
+mentioned, as well as I think the pcnet32 driver as a very basic template.
+I seem to got the PHY portions working, but then addapted to the
+separate PHY driver model with the MAC driver providing routines to
+access the PHY registers. I may have that working. I think I have DCR
+access to the MAC registers working. I am just starting on getting the
+TX and RX code working.
 
-<FONT COLOR="#000000">Thank you,</FONT>
-<FONT COLOR="#000000">Antonio.</FONT>
-</PRE>
-</BLOCKQUOTE>
-</BODY>
-</HTML>
+I actually started trying to get the posted TEMAC patch working but that
+quickly went off the rails - I presumed because the hard and soft
+TEMAC's are just too different, or because the xilinx_edk really does
+not support the hard TEMAC.
 
---=-YHWWYKfQ5t6rJM0lRlKm--
+The xilinx_edk based driver seems incredibly complex. I think the OS
+independent xilinx_edk incurrs a high cost in obscurity - but I am not
+looking to gore someone elses ox, just solve my problem.
+
+If the edk based driver is going to make it into the kernel, and
+somebody who understands better than I beleives that it is reasonable to
+adapt that to support the hard TEMAC too, I am willing to pursue that
+approach.
+
+Regardless. I need to get a driver working, and I am not looking to
+duplicate effort.
+
+
+
+
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
