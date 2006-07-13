@@ -1,16 +1,20 @@
-Return-Path: <zhangsb@rcs-9000.com>
-Received: from RCS-9000.COM (unknown [218.94.131.104])
-	by ozlabs.org (Postfix) with ESMTP id C22FC67BA3
-	for <linuxppc-dev@ozlabs.org>; Thu, 13 Jul 2006 18:16:25 +1000 (EST)
-From: "zhangshaobo" <zhangsb@rcs-9000.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: RE: Problems of Compiling Kernel with linux-2.4.27 and linux-2.6.17
-	for PowerPC405EP Board (Gerhard Jaeger)
-Date: Thu, 13 Jul 2006 16:14:20 +0800
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_000E_01C6A697.65BEBF70"
-Message-Id: <200607131620390.SM01172@stridenote>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id D735267B55
+	for <linuxppc-dev@ozlabs.org>; Thu, 13 Jul 2006 18:30:17 +1000 (EST)
+Date: Thu, 13 Jul 2006 18:30:00 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: Re: [PATCH 1/7] iseries: Use device tree /system-id in
+	/proc/iSeries/config
+Message-Id: <20060713183000.223d009f.sfr@canb.auug.org.au>
+In-Reply-To: <1152777121.430402.3949688126.qpush@concordia>
+References: <1152777121.430402.3949688126.qpush@concordia>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__13_Jul_2006_18_30_00_+1000_Dtjqemu4oKkYOgfU"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,118 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_000E_01C6A697.65BEBF70
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-
-gvb mention that  "machine check exception" is caused by memory map problems
-which lead to bus error , now I meet a problem under MPC5200, there is a
-peripherally pci netcard named "e100" , when application to use it,
-sometimes system will enter into machine check .
-
-would you meet the same problem, can you give me a more detail ?
-
-thanks!
-
-
-------=_NextPart_000_000E_01C6A697.65BEBF70
-Content-Type: text/html;
-	charset="us-ascii"
+--Signature=_Thu__13_Jul_2006_18_30_00_+1000_Dtjqemu4oKkYOgfU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+Hi Paulus,
 
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"chmetcnv" downloadurl=3D""/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:&#23435;&#20307;;
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
-@font-face
-	{font-family:"\@&#23435;&#20307;";
-	panose-1:2 1 6 0 3 1 1 1 1 1;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	text-align:justify;
-	text-justify:inter-ideograph;
-	font-size:10.5pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
- /* Page Definitions */
- @page Section1
-	{size:595.3pt 841.9pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;
-	layout-grid:15.6pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
+On Thu, 13 Jul 2006 17:52:01 +1000 Michael Ellerman <michael@ellerman.id.au=
+> wrote:
+> ...
 
-</head>
+I can stage all these iSeries patches through my git tree if you like
+(after Michael fixes 7/7), as I have some other iSeries patches that I
+need to send you as well (some already sent yesterday).
 
-<body lang=3DZH-CN link=3Dblue vlink=3Dpurple =
-style=3D'text-justify-trim:punctuation'>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-<div class=3DSection1 style=3D'layout-grid:15.6pt'>
+--Signature=_Thu__13_Jul_2006_18_30_00_+1000_Dtjqemu4oKkYOgfU
+Content-Type: application/pgp-signature
 
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>gvb mention that &nbsp;&#8220;machine check =
-exception&#8221; is
-caused by memory map problems which lead to bus error , now I meet a =
-problem
-under MPC5200, there is a peripherally pci netcard named =
-&#8220;e<st1:chmetcnv
-TCSC=3D"0" NumberType=3D"1" Negative=3D"False" HasSpace=3D"False" =
-SourceValue=3D"100"
-UnitName=3D"&#8221;" w:st=3D"on">100&#8221;</st1:chmetcnv> , when =
-application to use it,
-sometimes system will enter into machine check =
-.<o:p></o:p></span></font></p>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
 
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>would you meet the same problem, can you give =
-me a more
-detail ?<o:p></o:p></span></font></p>
+iD8DBQFEtgSIFdBgD/zoJvwRAqesAJ9gILOnkyM98oOw+L7ZOg7k3RZg5QCfcH+8
+3UBs5DXr0McZ6cZycJ715gA=
+=8AL0
+-----END PGP SIGNATURE-----
 
-<p class=3DMsoNormal><font size=3D1 face=3DArial><span lang=3DEN-US =
-style=3D'font-size:
-9.0pt;font-family:Arial'>thanks!<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_000E_01C6A697.65BEBF70--
+--Signature=_Thu__13_Jul_2006_18_30_00_+1000_Dtjqemu4oKkYOgfU--
