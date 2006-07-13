@@ -1,9 +1,11 @@
-Return-Path: <jk@ozlabs.org>
-From: Jeremy Kerr <jk@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: simplify dma_ops bug conditions
-Message-Id: <20060713063252.1D35867B58@ozlabs.org>
-Date: Thu, 13 Jul 2006 16:32:52 +1000 (EST)
+Return-Path: <michael@ozlabs.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 13 Jul 2006 17:52:01 +1000
+Subject: [PATCH 1/7] iseries: Use device tree /system-id in
+	/proc/iSeries/config
+Message-Id: <1152777121.430402.3949688126.qpush@concordia>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -13,146 +15,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use BUG_ON rather than BUG to simplify the dma_ops handing,
-and remove the now-unnecessary return cases.
+We export a bunch of info in /proc/iSeries/config. Currently we pull it
+directly out of some iSeries specific structs, but we could use the device
+tree instead, this saves decoding it twice and is a little neater.
 
-Booted on pseries.
-
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
 
- dma_64.c |   65 +++++++++++++++++++++++++++------------------------------------
- 1 file changed, 28 insertions(+), 37 deletions(-)
+ arch/powerpc/platforms/iseries/viopath.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
 
-Index: linux-2.6/arch/powerpc/kernel/dma_64.c
+Index: to-merge/arch/powerpc/platforms/iseries/viopath.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/dma_64.c
-+++ linux-2.6/arch/powerpc/kernel/dma_64.c
-@@ -35,10 +35,9 @@ int dma_supported(struct device *dev, u6
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+--- to-merge.orig/arch/powerpc/platforms/iseries/viopath.c
++++ to-merge/arch/powerpc/platforms/iseries/viopath.c
+@@ -41,8 +41,8 @@
  
--	if (dma_ops)
--		return dma_ops->dma_supported(dev, mask);
--	BUG();
--	return 0;
-+	BUG_ON(!dma_ops);
+ #include <asm/system.h>
+ #include <asm/uaccess.h>
++#include <asm/prom.h>
+ #include <asm/iseries/hv_types.h>
+-#include <asm/iseries/it_exp_vpd_panel.h>
+ #include <asm/iseries/hv_lp_event.h>
+ #include <asm/iseries/hv_lp_config.h>
+ #include <asm/iseries/mf.h>
+@@ -116,6 +116,7 @@ static int proc_viopath_show(struct seq_
+ 	dma_addr_t handle;
+ 	HvLpEvent_Rc hvrc;
+ 	DECLARE_MUTEX_LOCKED(Semaphore);
++	struct device_node *node;
+ 
+ 	buf = kmalloc(HW_PAGE_SIZE, GFP_KERNEL);
+ 	if (!buf)
+@@ -143,20 +144,26 @@ static int proc_viopath_show(struct seq_
+ 
+ 	buf[HW_PAGE_SIZE-1] = '\0';
+ 	seq_printf(m, "%s", buf);
+-	seq_printf(m, "AVAILABLE_VETH=%x\n", vlanMap);
+-	seq_printf(m, "SRLNBR=%c%c%c%c%c%c%c\n",
+-		   e2a(xItExtVpdPanel.mfgID[2]),
+-		   e2a(xItExtVpdPanel.mfgID[3]),
+-		   e2a(xItExtVpdPanel.systemSerial[1]),
+-		   e2a(xItExtVpdPanel.systemSerial[2]),
+-		   e2a(xItExtVpdPanel.systemSerial[3]),
+-		   e2a(xItExtVpdPanel.systemSerial[4]),
+-		   e2a(xItExtVpdPanel.systemSerial[5]));
+ 
+ 	dma_unmap_single(iSeries_vio_dev, handle, HW_PAGE_SIZE,
+ 			 DMA_FROM_DEVICE);
+ 	kfree(buf);
+ 
++	seq_printf(m, "AVAILABLE_VETH=%x\n", vlanMap);
 +
-+	return dma_ops->dma_supported(dev, mask);
- }
- EXPORT_SYMBOL(dma_supported);
- 
-@@ -66,10 +65,9 @@ void *dma_alloc_coherent(struct device *
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 
--	if (dma_ops)
--		return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
--	BUG();
--	return NULL;
-+	BUG_ON(!dma_ops);
++	node = of_find_node_by_path("/");
++	buf = NULL;
++	if (node != NULL)
++		buf = get_property(node, "system-id", NULL);
 +
-+	return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
- }
- EXPORT_SYMBOL(dma_alloc_coherent);
- 
-@@ -78,10 +76,9 @@ void dma_free_coherent(struct device *de
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 
--	if (dma_ops)
--		dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
--	else
--		BUG();
-+	BUG_ON(!dma_ops);
++	if (buf == NULL)
++		seq_printf(m, "SRLNBR=<UNKNOWN>\n");
++	else
++		/* Skip "IBM," on front of serial number, see dt.c */
++		seq_printf(m, "SRLNBR=%s\n", buf + 4);
 +
-+	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
- }
- EXPORT_SYMBOL(dma_free_coherent);
- 
-@@ -90,10 +87,9 @@ dma_addr_t dma_map_single(struct device 
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 
--	if (dma_ops)
--		return dma_ops->map_single(dev, cpu_addr, size, direction);
--	BUG();
--	return (dma_addr_t)0;
-+	BUG_ON(!dma_ops);
++	of_node_put(node);
 +
-+	return dma_ops->map_single(dev, cpu_addr, size, direction);
+ 	return 0;
  }
- EXPORT_SYMBOL(dma_map_single);
  
-@@ -102,10 +98,9 @@ void dma_unmap_single(struct device *dev
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 
--	if (dma_ops)
--		dma_ops->unmap_single(dev, dma_addr, size, direction);
--	else
--		BUG();
-+	BUG_ON(!dma_ops);
-+
-+	dma_ops->unmap_single(dev, dma_addr, size, direction);
- }
- EXPORT_SYMBOL(dma_unmap_single);
- 
-@@ -115,11 +110,10 @@ dma_addr_t dma_map_page(struct device *d
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 
--	if (dma_ops)
--		return dma_ops->map_single(dev,
--				(page_address(page) + offset), size, direction);
--	BUG();
--	return (dma_addr_t)0;
-+	BUG_ON(!dma_ops);
-+
-+	return dma_ops->map_single(dev, page_address(page) + offset, size,
-+			direction);
- }
- EXPORT_SYMBOL(dma_map_page);
- 
-@@ -128,10 +122,9 @@ void dma_unmap_page(struct device *dev, 
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 
--	if (dma_ops)
--		dma_ops->unmap_single(dev, dma_address, size, direction);
--	else
--		BUG();
-+	BUG_ON(!dma_ops);
-+
-+	dma_ops->unmap_single(dev, dma_address, size, direction);
- }
- EXPORT_SYMBOL(dma_unmap_page);
- 
-@@ -140,10 +133,9 @@ int dma_map_sg(struct device *dev, struc
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 
--	if (dma_ops)
--		return dma_ops->map_sg(dev, sg, nents, direction);
--	BUG();
--	return 0;
-+	BUG_ON(!dma_ops);
-+
-+	return dma_ops->map_sg(dev, sg, nents, direction);
- }
- EXPORT_SYMBOL(dma_map_sg);
- 
-@@ -152,9 +144,8 @@ void dma_unmap_sg(struct device *dev, st
- {
- 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
- 
--	if (dma_ops)
--		dma_ops->unmap_sg(dev, sg, nhwentries, direction);
--	else
--		BUG();
-+	BUG_ON(!dma_ops);
-+
-+	dma_ops->unmap_sg(dev, sg, nhwentries, direction);
- }
- EXPORT_SYMBOL(dma_unmap_sg);
