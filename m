@@ -1,39 +1,16 @@
-Return-Path: <jimix@watson.ibm.com>
-Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1451167B7C
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Jul 2006 04:24:25 +1000 (EST)
-Received: from e4.ny.us.ibm.com (e4.pok.ibm.com [9.56.232.144])
-	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6EG31i4022539
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 12:03:02 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6EG2vGt007260
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 12:02:57 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k6EG2vs8020050
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 12:02:57 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k6EG2vMf019453
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 12:02:57 -0400
-Received: from [9.60.89.191] (dyn9060089191.endicott.ibm.com [9.60.89.191])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6EG2uQ9019442
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 12:02:57 -0400
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Message-Id: <4CE0FC89-084F-42E8-8E3B-8D2C41AC06F2@watson.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-To: linuxppc-dev@ozlabs.org
-From: Jimi Xenidis <jimix@watson.ibm.com>
-Subject: Kexec initial registers
-Date: Fri, 14 Jul 2006 12:02:56 -0400
+Return-Path: <Geoff.Thorpe@freescale.com>
+Message-ID: <44B7E508.7020700@freescale.com>
+Date: Fri, 14 Jul 2006 14:40:08 -0400
+From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
+MIME-Version: 1.0
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [JOB] Senior Embedded Linux Video Engineer
+References: <20060714112250.CC266352B36@atlas.denx.de>	<44B7D485.3000604@am.sony.com>
+	<20060714180309.GA9121@pb15.lixom.net>
+In-Reply-To: <20060714180309.GA9121@pb15.lixom.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,14 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is what I have so far:
+Olof Johansson wrote:
 
-   r3: address of device tree blob
-   r4: address that kernel was loaded
-   r5: not OF (=0)
-   r13: local_paca address (0?)
+>Personally, I don't mind getting the ads just to know who is growing
+>out there and so on, but I don't want them sorted into the folder with
+>technical stuff, and I don't want to rely on people tagging the subject
+>right.
+>  
+>
 
-anything else?
-Did I miss the document on this?
+In this case, a list moderator was contacted prior to the post. So... 
+why not just extend the idea and have potential employers[1] provide 
+their "openings" (erm) to such a moderator who sends a not-too-frequent 
+digest to the list encapsulating any/all such offerings. That way, the 
+subject *will* be tagged correctly, the rate of "off-topic" postings is 
+inherently throttled/coalesced, and anyone who might be remotely 
+interested will be exposed to such opportunities without having to 
+actively go searching (ipso facto, those HR types will be less inclined 
+to carpet-bomb the entire internet for fear that their offerings go 
+otherwise unnoticed). Hell, if the subject header was appropriately 
+keyworded - Wolfgang could even procmail it to /dev/null ;-)
 
--JX
+[1] this could also cover other commercial/potential-list-abuse subjects 
+like speaking engagements, survey requests, [tbd]. If it got too big, it 
+could be replaced with a summary of headings and URLs. Whatever.
+
+Just my first-glance $0.02,
+Geoff
