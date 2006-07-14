@@ -1,25 +1,19 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id 2DCAD67B7C
+Return-Path: <rick.moleres@xilinx.com>
+Received: from outbound1-red-R.bigfish.com (outbound-red.frontbridge.com
+	[216.148.222.49])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6879267B92
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 15 Jul 2006 04:22:11 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id m3so904257ugc
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jul 2006 11:22:10 -0700 (PDT)
-Message-ID: <528646bc0607141122t53adeb30h8c2acb4e26ba0ddf@mail.gmail.com>
-Date: Fri, 14 Jul 2006 12:22:10 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: dhlii@comcast.net
-Subject: Re: how to get individual patches
-In-Reply-To: <44B7DEC3.1090308@dlasys.net>
+	Sat, 15 Jul 2006 04:44:26 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <86EC6E02268B3D4BA41C1B0C61FB14E60AFCD219@mdcexc01.na.ops.local>
-	<20060627212448.7d048b7a@White64> <44A23488.7030606@dlasys.net>
-	<528646bc0606280209m4ce91cb0wc3cab2f2d3aec1a7@mail.gmail.com>
-	<44B7DEC3.1090308@dlasys.net>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Xilinx hard TEMAC
+Date: Fri, 14 Jul 2006 12:43:34 -0600
+Message-ID: <689CB232690D8D4E97DA6C76DA098E6C029DC9E5@XCO-EXCHVS1.xlnx.xilinx.com>
+From: "Rick Moleres" <rick.moleres@xilinx.com>
+To: <dhlii@comcast.net>, "linuxppc-embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,52 +24,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/14/06, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
->
->      Thank You git bisect has proven to be incredibly interesting.
->
->      One question/problem - maybe an incomplete understanding of git.
->
->      What I need to do is get to some version of 2.6.16 - as they all work
-> for me.
->
->      cut in my patches.
->
->      And THEN start bisecting while retaining my patches.
->
->      Is that going to work or am I going to have to repatch each time ?
 
-AFAIK, yes you will have to repatch every time; I typically write a
-little helper script to lessen the pain:
+David,
 
-git bisect good|bad # depends on whether it works or not
-patch < [patchfile]
-compile, test, etc
-cg restore -f     # Remove the patches
-git bisect good|bad   # lather, rinse, repeate
 
->
->      Basically can I use git to insert a patch into the middle of its delta
-> history and then advance forward from there ?
+<snip>
+>=20
+>     The choice and configuration of the TEMAC was driven by FPGA
+> realestate.
+>=20
+>     My perception was that the "Hard" Temac was based on silicon
+already
+> in the FX (much like the PowerPC) while the "Soft" TEMAC is primarily
+> implimented within the FPGA (much like the MicroBlaze).
+>=20
+>     Is that distinction between "soft" and "hard" correct ?
+>=20
 
-I don't think so; no automatically; but if you don't commit your
-changes then it's easy to drop the change the patch makes.
+That is the correct distinction between "soft" and "hard".  Just know
+that in this case the "soft" TEMAC (whether LL TEMAC or PLB TEMAC) uses
+the "hard" TEMAC, and the "hard" TEMAC by itself is not that useful.
 
-git-rebase does something similar to what you're trying to do; but
-it's complex to use (especially if there are conflicts) and might
-conflict w/ the git-bisect tool
+>      If not is the only significant distinction between the PLB_TEMAC
+> supported by the EDK and the LL_TEMAC the bus interface ?
 
->
->      It is rapidly becoming obvious that competence with git could have big
-> payback.
+Yes, this is one of the distinctions between LL TEMAC and PLB TEMAC. :-)
 
-:)
+>      I should not think the difference between different bus
+interfaces
+> should be radically different in terms of FPGA cells. While
+implimenting
+> the MAC in the FPGA would likely be expensive in realestate.
+>       I can try to argue for the PLB_TEMAC - as something that will
+have
+> Xilinx/MV support and may get incorporated in the standard Kernel - If
+> the cost in cells is not substantial.
+>=20
 
-Cheers,
-g.
+I believe LL_TEMAC is smaller than PLB_TEMAC, and so this could be a
+tough sell for you if FPGA space is at a premium.  When put in a system
+with other stuff (e.g., memory controller, etc...) the size gets closer,
+but I think GSRD is still smaller.  Sorry, I don't have the numbers.
+There were improvements to PLB TEMAC in EDK 8.1.2 to address some size
+issues, and even more planned down the road to hopefully converge the
+two.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+>=20
+>=20
+> > The Linux driver posted for the TEMAC (by MontaVista) is for the
+> > PLB_TEMAC.  Updates to this driver may also be released with the EDK
+> > (e.g., EDK 8.1.2 updated the driver to include checksum offload).
+There
+> > is a Linux driver for the LL_TEMAC that comes with GSRD, but my
+group's
+> > efforts go toward the PLB_TEMAC as that is the EDK IP we want to
+promote
+> > and whose drivers we'd like to see in kernel.org.
+> >
+>     How can I get a copy of the GSRD LL_TEMAC ? Is it a 2.4 or 2.6
+driver
+> ?
+>=20
+
+You should be able to go to http://www.xilinx.com/gsrd to get the GSRD
+design, and inside of that design somewhere you'll find a Linux 2.4
+driver for the LL TEMAC.
+
+> > By the way, there is no relation to the IBM EMAC.
+> >
+>     These things are worth knowing.
+>=20
+>     The T still means Tri. is there some specific EMAC that was used
+as
+> a reference for the design or is the TEMAC entirely a Xilinx creation
+?
+>=20
+
+It's a Xilinx creation as far as I know.
+
+> > Hope that helps,
+> > -Rick
+> >
