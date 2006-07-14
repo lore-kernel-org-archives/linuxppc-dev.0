@@ -1,14 +1,14 @@
-Return-Path: <wd@denx.de>
-To: bbosch@iphase.com
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [JOB] Senior Embedded Linux Video Engineer 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 14 Jul 2006 09:35:50 CDT."
-	<17591.43974.871998.267718@waldo.lisle.iphase.com>
-Date: Fri, 14 Jul 2006 18:21:00 +0200
-Sender: wd@denx.de
-Message-Id: <20060714162100.E027F352681@atlas.denx.de>
+Return-Path: <jschopp@austin.ibm.com>
+Message-ID: <44B7B62A.1030500@austin.ibm.com>
+Date: Fri, 14 Jul 2006 10:20:10 -0500
+From: jschopp <jschopp@austin.ibm.com>
+MIME-Version: 1.0
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [JOB] Senior Embedded Linux Video Engineer
+References: <20060714184305.4d16550a.sfr@canb.auug.org.au>	<20060714112250.CC266352B36@atlas.denx.de>	<17591.43974.871998.267718@waldo.lisle.iphase.com>
+	<20060714145836.GB1738@tuxdriver.com>
+In-Reply-To: <20060714145836.GB1738@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
 	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,29 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <17591.43974.871998.267718@waldo.lisle.iphase.com> you wrote:
+>> Should I post our embedded PPC kernel related work openings here?
 > 
-> Should I post our embedded PPC kernel related work openings here?
+> For my $0.02, legitimate postings targeted at skilled individuals
+> likely to be reading this group are not inappropriate.  However,
+> I'm sure that some over-zealous recruiter can make easily make me
+> regret that statement...
 
-NO!!!
 
-This is a technical discussion group. Job offerings,  commercial  ads
-and all this stuff is off topic here. Please re-read the list info at
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded resp. -dev
-
-It  says:  "...discussions/patches   should   pertain   to   software
-development  for the kernel core ppc32 embedded processor support and
-any driver/chip/board support for ppc32 based embedded systems."
-
-"Software development". This does not allow for job  offers,  ads  or
-other crap.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The first thing we do is kill all the lawyers.
-(Shakespeare. II Henry VI, Act IV, scene ii)
+Those are my comments as well.  On the one hand it is a good thing when people who work on 
+open source are connected with people who will pay you to work on open source.  It's a lot 
+easier to code when you don't have to worry about paying the rent.  On the other hand it 
+is a slippery slope.  We don't want the list to turn into a job postings list, even if 
+they are legitimate job postings for open source developers.  And we really don't want to 
+  end up with totally unrelated job postings.
