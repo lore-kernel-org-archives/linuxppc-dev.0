@@ -1,15 +1,11 @@
-Return-Path: <RichardDavenport@spherion.com>
-Received: from smtp1i.spherion.com (smtp1i.spherion.com [148.109.4.114])
-	by ozlabs.org (Postfix) with ESMTP id 7563767B62
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 06:47:44 +1000 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: [JOB] Senior Embedded Linux Video Engineer 
-Date: Thu, 13 Jul 2006 16:33:06 -0400
-Message-ID: <44FA7A8E32709444A9078DA2E1C027FD0489B9E6@USCSCMSC8.na.entroot.biz>
-From: "Davenport, Richard" <RichardDavenport@spherion.com>
-To: <linuxppc-dev@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Fri, 14 Jul 2006 14:25:33 +1000
+Subject: [PATCH] iseries: Move iommu_table_cb into platforms/iseries
+In-Reply-To: <20060713075223.D1FC767BCD@ozlabs.org>
+Message-Id: <20060714042533.5B00967B22@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,98 +15,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Senior Embedded Linux Video Engineer=20
+Although we pass the address of an iommu_table_cb to HvCallXm_getTceTableParms,
+we don't actually need the structure definition anywhere except in the
+iseries iommu code, so move the struct in there.
 
-=20
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-Responsible for the technical leadership in design and development of =
-embedded OS features for Cisco's next generation Audio/Video application =
-which will change the entire video conferencing industry.
+ arch/powerpc/platforms/iseries/iommu.c   |   17 +++++++++++++++++
+ include/asm-powerpc/iseries/hv_call_xm.h |   17 -----------------
+ 2 files changed, 17 insertions(+), 17 deletions(-)
 
-=20
-
-Please check out these links for an overview of the project:
-
-=20
-
-http://www.humanproductivitylab.com/archive_blogs/2006/03/26/ciscos_chann=
-el_partners_should_1.php
-
-=20
-
-http://www.msnbc.msn.com/id/11768174/site/newsweek/
-
-=20
-
-Requirements:
-
-=B7        Strong technical skills with an emphasis on Embedded Linux, =
-Operating System interfaces, and Platform Software and Services.=20
-
-=B7        5-7 years of embedded C programming.
-
-=B7        4 years Linux experience with at least 2 years embedded =
-Linux.
-
-=B7        Linux expertise on PowerPC architecture.
-
-=B7        Experience in Linux internals such as file systems, device =
-drivers, network interfaces.
-
-=B7        Thorough understanding of Linux utilities such as system =
-logging and run time options.
-
-=B7        Experience in building BSP packaging
-
-=B7        Familiar with gcc/gdb toolchain=20
-
-=B7        Excellent written and verbal communication skills
-
-=B7        Permanent US work authorization or transferable H1b with a =
-minimum of two years remaining eligibility.
-
-=20
-
-Desired Skills/Experience:=20
-
-=B7        Experience in providing Technical and team leadership=20
-
-=B7        Experience in GPL compliance=20
-
-=B7        Build systems, tool chain, executable/library structures and =
-makefile=20
-
-=B7        Background in a startup or dynamic working environment
-
-=B7        Strong understanding of operating system Kernel internals=20
-
-=B7        Experience with writing/debugging BSP's for Linux=20
-
-=B7        Background in VoIP Audio/Video systems=20
-
-=20
-
-Typically requires MSEE/CS combined with 5-7 years of related =
-experience, or
-
-BSEE/CS combined with 7-10+ yrs related experience.
-
-=20
-
-Opportunity is in San Jose, CA. (Relocation assistance is not available)
-
-=20
-
- If interested, please respond with a copy of your resume and the best =
-numbers and times for a follow-up phone conversation.
-
-=20
-
-Thank you,
-
-=20
-Richard Davenport
-Recruiter=20
-Cisco Recruiting Team
-(888) 329-3480  or (501) 351-7396
-richarddavenport@spherion.com <mailto:richarddavenport@spherion.com>=20
+Index: to-merge/arch/powerpc/platforms/iseries/iommu.c
+===================================================================
+--- to-merge.orig/arch/powerpc/platforms/iseries/iommu.c
++++ to-merge/arch/powerpc/platforms/iseries/iommu.c
+@@ -88,6 +88,23 @@ static void tce_free_iSeries(struct iomm
+ }
+ 
+ /*
++ * Structure passed to HvCallXm_getTceTableParms
++ */
++struct iommu_table_cb {
++	unsigned long	itc_busno;	/* Bus number for this tce table */
++	unsigned long	itc_start;	/* Will be NULL for secondary */
++	unsigned long	itc_totalsize;	/* Size (in pages) of whole table */
++	unsigned long	itc_offset;	/* Index into real tce table of the
++					   start of our section */
++	unsigned long	itc_size;	/* Size (in pages) of our section */
++	unsigned long	itc_index;	/* Index of this tce table */
++	unsigned short	itc_maxtables;	/* Max num of tables for partition */
++	unsigned char	itc_virtbus;	/* Flag to indicate virtual bus */
++	unsigned char	itc_slotno;	/* IOA Tce Slot Index */
++	unsigned char	itc_rsvd[4];
++};
++
++/*
+  * Call Hv with the architected data structure to get TCE table info.
+  * info. Put the returned data into the Linux representation of the
+  * TCE table data.
+Index: to-merge/include/asm-powerpc/iseries/hv_call_xm.h
+===================================================================
+--- to-merge.orig/include/asm-powerpc/iseries/hv_call_xm.h
++++ to-merge/include/asm-powerpc/iseries/hv_call_xm.h
+@@ -16,23 +16,6 @@
+ #define HvCallXmSetTce			HvCallXm + 11
+ #define HvCallXmSetTces			HvCallXm + 13
+ 
+-/*
+- * Structure passed to HvCallXm_getTceTableParms
+- */
+-struct iommu_table_cb {
+-	unsigned long	itc_busno;	/* Bus number for this tce table */
+-	unsigned long	itc_start;	/* Will be NULL for secondary */
+-	unsigned long	itc_totalsize;	/* Size (in pages) of whole table */
+-	unsigned long	itc_offset;	/* Index into real tce table of the
+-					   start of our section */
+-	unsigned long	itc_size;	/* Size (in pages) of our section */
+-	unsigned long	itc_index;	/* Index of this tce table */
+-	unsigned short	itc_maxtables;	/* Max num of tables for partition */
+-	unsigned char	itc_virtbus;	/* Flag to indicate virtual bus */
+-	unsigned char	itc_slotno;	/* IOA Tce Slot Index */
+-	unsigned char	itc_rsvd[4];
+-};
+-
+ static inline void HvCallXm_getTceTableParms(u64 cb)
+ {
+ 	HvCall1(HvCallXmGetTceTableParms, cb);
