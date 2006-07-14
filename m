@@ -1,21 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3E80E67B6A
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 23:51:32 +1000 (EST)
-In-Reply-To: <44B786D6.7040707@freescale.com>
-References: <44B786D6.7040707@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6DFEB2BB-05AB-441E-854E-297987B97A0E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Fix Freescale high-speed USB host dependency
-Date: Fri, 14 Jul 2006 08:51:35 -0500
-To: Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, gregkh@suse.de,
-	linux-usb-devel@lists.sourceforge.net
+Return-Path: <brad@imnotcreative.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17591.43974.871998.267718@waldo.lisle.iphase.com>
+Date: Fri, 14 Jul 2006 09:35:50 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [JOB] Senior Embedded Linux Video Engineer 
+From: bbosch@iphase.com
+In-Reply-To: <20060714112250.CC266352B36@atlas.denx.de>
+References: <20060714184305.4d16550a.sfr@canb.auug.org.au>
+	<20060714112250.CC266352B36@atlas.denx.de>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +19,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
+I don't have a strong opinion on job postings here, but my employer
+also happens to have two embedded PPC Linux kernel developer openings.
+I posted them to one of the Chicago area Linux users group lists, but
+I didn't post them here because I assumed it might be construed as
+off-topic.
 
-On Jul 14, 2006, at 6:58 AM, Li Yang wrote:
+On the other hand, a couple weeks ago, proclus@gnu-darwin.org posted a
+very long, meandering political statement, most of which seemed to
+have very little to do with PowerPC Linux and I didn't notice anyone
+complain on these lists.  (Which is just as well since my objection
+off-list resulted only in a long pointless argument in which it became
+clear that rational debate would get me nowhere.)
 
-> The high-speed USB SOC only exists on MPC834x family not MPC83xx  
-> family.
->
-> Signed-off-by: Li Yang <leoli@freescale.com>
->
-> ---
->
->  drivers/usb/host/ehci-hcd.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci- 
-> hcd.c index 79f2d8b..3af1844 100644
-> --- a/drivers/usb/host/ehci-hcd.c
-> +++ b/drivers/usb/host/ehci-hcd.c
-> @@ -892,7 +892,7 @@ #include "ehci-pci.c"
->  #define	EHCI_BUS_GLUED
->  #endif
->
-> -#ifdef CONFIG_PPC_83xx
-> +#ifdef CONFIG_MPC834x
->  #include "ehci-fsl.c"
->  #define	EHCI_BUS_GLUED
->  #endif
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Should I post our embedded PPC kernel related work openings here?
+
+--Brad
