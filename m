@@ -1,24 +1,27 @@
-Return-Path: <rza1@so-logic.co.at>
-Received: from mail.so-logic.net (mail.so-logic.net [62.99.208.149])
-	by ozlabs.org (Postfix) with ESMTP id 7EE1867A3E
+Return-Path: <urwithsudheer@gmail.com>
+Received: from predator.gdatech.co.in (mail.gdatech.co.in [202.144.30.226])
+	by ozlabs.org (Postfix) with ESMTP id CD82E679FB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jul 2006 20:14:12 +1000 (EST)
-Received: from localhost (mail.so-logic.net [62.99.208.149])
-	by mail.so-logic.net (Postfix) with ESMTP id 657CB155D6
+	Fri, 14 Jul 2006 20:39:04 +1000 (EST)
+Received: from predator.gdatech.co.in (localhost.localdomain [127.0.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id C07A71242DB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jul 2006 11:47:05 +0200 (CEST)
-Received: from [192.168.1.196] (62-99-208-147.c-vbergg.xdsl-line.inode.at
-	[62.99.208.147])
-	by mail.so-logic.net (Postfix) with ESMTP id 86CE3155F2
+	Fri, 14 Jul 2006 16:08:23 +0530 (IST)
+Received: from predator.gdatech.co.in ([192.168.0.3])
+	by [127.0.0.1] ([127.0.0.1]) (port 7027) (Propel SE relay 1.0.0.3430
+	$Rev$) id r67e160823-00-2
+	for linuxppc-embedded@ozlabs.org; Fri, 14 Jul 2006 16:08:23 +0530
+Received: from mail.gdatech.co.in (unknown [192.168.0.1])
+	by predator.gdatech.co.in (Postfix-out) with ESMTP id D8EE01242DA
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jul 2006 11:46:45 +0200 (CEST)
-Mime-Version: 1.0 (Apple Message framework v752.2)
+	Fri, 14 Jul 2006 16:08:22 +0530 (IST)
+Message-ID: <44B77438.3070607@gmail.com>
+Date: Fri, 14 Jul 2006 16:08:48 +0530
+From: sudheer <urwithsudheer@gmail.com>
+MIME-Version: 1.0
 To: linuxppc-embedded@ozlabs.org
-Message-Id: <1397A8F2-0E9E-40B9-AB4B-132C30C09F25@so-logic.co.at>
-Content-Type: multipart/alternative; boundary=Apple-Mail-1-618626276
-From: Robert Zach so-logic <rza1@so-logic.co.at>
-Subject: native gcc for ml403(ppc405)
-Date: Fri, 14 Jul 2006 12:13:21 +0200
+Subject: [Fwd: Re: [Ilugc] help regarding powerpc and vga card]
+Content-Type: multipart/mixed; boundary="------------020804080504090407060104"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,83 +32,111 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
---Apple-Mail-1-618626276
+This is a multi-part message in MIME format.
+--------------020804080504090407060104
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	delsp=yes;
-	format=flowed
-
-Hello!
-
-I am working on a ml403 with virtex 4 (ppc405).
-I have build me a crosscompiler and  a glibc with crosstool.
-This worked very good for me...(i can compile 2.4 and 2.6 kernel...)
-
-Now i would like to build a native compiler for the ppc405...(I need  
-a native compiler for a few things that are hard to crosscompile.)
-
-Is it possible to compile the binutils and gcc with my crosscompiler  
-to get a native compiler??
-
-Yes anybody done this already? How?
-
-Thanks in Advanced!
-
-Nice greetings
-Robert Zach
-robert.zach@wvnet.at
 
 
 
---Apple-Mail-1-618626276
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/html;
-	charset=ISO-8859-1
+--------------020804080504090407060104
+Content-Type: message/rfc822;
+ name="Re: [Ilugc] help regarding powerpc and vga card"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="Re: [Ilugc] help regarding powerpc and vga card"
 
-<HTML><BODY style=3D"word-wrap: break-word; -khtml-nbsp-mode: space; =
--khtml-line-break: after-white-space; "><DIV>Hello!</DIV><DIV><BR =
-class=3D"khtml-block-placeholder"></DIV><DIV>I am working on a ml403 =
-with virtex 4 (ppc405).</DIV><DIV>I have build me a crosscompiler and=A0 =
-a glibc with crosstool.</DIV><DIV>This worked very good for me...(i can =
-compile 2.4 and 2.6 kernel...)</DIV><DIV><BR =
-class=3D"khtml-block-placeholder"></DIV><DIV>Now i would like to build a =
-native compiler for the ppc405...(I need a native compiler for a few =
-things that are hard to crosscompile.)</DIV><DIV><BR =
-class=3D"khtml-block-placeholder"></DIV><DIV>Is it possible to compile =
-the binutils and gcc with my crosscompiler to get a native =
-compiler??</DIV><DIV><BR class=3D"khtml-block-placeholder"></DIV><DIV>Yes =
-anybody done this already? How?</DIV><DIV><BR =
-class=3D"khtml-block-placeholder"></DIV><DIV>Thanks in =
-Advanced!</DIV><BR><DIV> <SPAN class=3D"Apple-style-span" =
-style=3D"border-collapse: separate; border-spacing: 0px 0px; color: =
-rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
-normal; font-variant: normal; font-weight: normal; letter-spacing: =
-normal; line-height: normal; text-align: auto; =
--khtml-text-decorations-in-effect: none; text-indent: 0px; =
--apple-text-size-adjust: auto; text-transform: none; orphans: 2; =
-white-space: normal; widows: 2; word-spacing: 0px; "><DIV =
-style=3D"margin-top: 0px; margin-right: 0px; margin-bottom: 0px; =
-margin-left: 0px; "><FONT class=3D"Apple-style-span" face=3D"Arial" =
-size=3D"4"><SPAN class=3D"Apple-style-span" style=3D"font-size: 13.3px;; =
-font-family: Arial; ">Nice greetings=A0<SPAN class=3D"Apple-style-span" =
-style=3D"font-family: Arial; font-size: 13.3px; =
-"></SPAN></SPAN></FONT></DIV><DIV style=3D"margin-top: 0px; =
-margin-right: 0px; margin-bottom: 0px; margin-left: 0px; "><FONT =
-class=3D"Apple-style-span" face=3D"Arial" size=3D"4"><SPAN =
-class=3D"Apple-style-span" style=3D"font-size: 13.3px;; font-family: =
-Arial; "><SPAN class=3D"Apple-style-span" style=3D"font-family: Arial; =
-font-size: 13.3px; ">Robert Zach</SPAN></SPAN></FONT></DIV><DIV =
-style=3D"margin-top: 0px; margin-right: 0px; margin-bottom: 0px; =
-margin-left: 0px; "><A href=3D"mailto:robert.zach@wvnet.at"><FONT =
-class=3D"Apple-style-span" face=3D"Arial" size=3D"4"><SPAN =
-class=3D"Apple-style-span" style=3D"font-size: 13.3px;; color: rgb(0, 0, =
-238); font-family: Arial; -khtml-text-decorations-in-effect: underline; =
-"><SPAN class=3D"Apple-style-span" style=3D"color: rgb(0, 0, 238); =
-font-family: Arial; font-size: 13.3px; =
--khtml-text-decorations-in-effect: underline; =
-">robert.zach@wvnet.at</SPAN></SPAN></FONT></A></DIV><BR =
-class=3D"Apple-interchange-newline"></SPAN> </DIV><BR></BODY></HTML>=
+X-Gmail-Received: 798101e1139b1d72a079c9533b1f559cbed86aa6
+Delivered-To: urwithsudheer@gmail.com
+Received: by 10.67.23.4 with SMTP id a4cs53971ugj;
+        Thu, 13 Jul 2006 07:28:57 -0700 (PDT)
+Received: by 10.78.116.19 with SMTP id o19mr550117huc;
+        Thu, 13 Jul 2006 07:28:57 -0700 (PDT)
+Received: by 10.78.15.17 with HTTP; Thu, 13 Jul 2006 07:28:57 -0700 (PDT)
+Message-ID: <a8f990120607130728l1c16e3d2k6b1a09a02c1ed0f3@mail.gmail.com>
+Date: Thu, 13 Jul 2006 10:28:57 -0400
+From: "Sivasankar Chander" <siva.ilugc@gmail.com>
+To: sudheer <urwithsudheer@gmail.com>
+Subject: Re: [Ilugc] help regarding powerpc and vga card
+Cc: ilugc@ae.iitm.ac.in
+In-Reply-To: <44B6077E.9090004@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_12165_14066581.1152800937196"
+References: <44B6077E.9090004@gmail.com>
 
---Apple-Mail-1-618626276--
+------=_Part_12165_14066581.1152800937196
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+On 7/13/06, sudheer <urwithsudheer@gmail.com> wrote:
+>
+>
+>
+> Anyone please help me if i am missing anything.
+>
+>     All PCI VGA cards for use on x86 PCs have a ROMscan BIOS
+extension on them. This initializes the card after POST - basically,
+the motherboard BIOS transfers control to the BIOS on the
+PCI VGA card, which then initializes itself. If control is not
+transfered to the VGA BIOS on the card, the VGA controller
+stays isolated and will not respond to PCI device enumeration,
+etc. This is actually part of the PC-98 spec., which allows
+multiple VGA controllers to co-exist on the PCI and/or AGP
+bus.
+
+   On a PowerPC system, the ROMscan BIOS cannot execute
+(because it has x86 instructions in it), so there will be an alternate
+way to initialize the VGA controller so that it can respond to the
+PCI enumeration, etc. However, that method will be card/controller
+specific - neither the card manufacturer nor ATI may ever have
+released the specs for how this is done. Usually, it will be through
+hidden memory-mapped IO (MMIO) registers on the VGA controller
+chip, but there are numerous proprietary ways to implement this,
+most of it being undocumented or controller-specific.
+
+(Lots of things are taken for granted in the x86 PC world, which
+are actually very complex and difficult-to-implement protocols.
+That's one of the reasons why all the alternative PC processor
+architectures have failed over the last 20 years).
+
+-Siva
+
+------=_Part_12165_14066581.1152800937196
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<br><br><div><span class="gmail_quote">On 7/13/06, <b class="gmail_sendername">sudheer</b> &lt;<a href="mailto:urwithsudheer@gmail.com">urwithsudheer@gmail.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
+<br><br>Anyone please help me if i am missing anything.<br><br></blockquote></div>&nbsp;&nbsp;&nbsp; All PCI VGA cards for use on x86 PCs have a ROMscan BIOS<br>
+extension on them. This initializes the card after POST - basically,<br>
+the motherboard BIOS transfers control to the BIOS on the<br>
+PCI VGA card, which then initializes itself. If control is not<br>
+transfered to the VGA BIOS on the card, the VGA controller<br>
+stays isolated and will not respond to PCI device enumeration,<br>
+etc. This is actually part of the PC-98 spec., which allows<br>
+multiple VGA controllers to co-exist on the PCI and/or AGP<br>
+bus.<br>
+<br>
+&nbsp;&nbsp; On a PowerPC system, the ROMscan BIOS cannot execute<br>
+(because it has x86 instructions in it), so there will be an alternate<br>
+way to initialize the VGA controller so that it can respond to the<br>
+PCI enumeration, etc. However, that method will be card/controller<br>
+specific - neither the card manufacturer nor ATI may ever have<br>
+released the specs for how this is done. Usually, it will be through<br>
+hidden memory-mapped IO (MMIO) registers on the VGA controller<br>
+chip, but there are numerous proprietary ways to implement this,<br>
+most of it being undocumented or controller-specific.<br>
+<br>
+(Lots of things are taken for granted in the x86 PC world, which<br>
+are actually very complex and difficult-to-implement protocols.<br>
+That's one of the reasons why all the alternative PC processor<br>
+architectures have failed over the last 20 years).<br>
+<br>
+-Siva<br>
+
+------=_Part_12165_14066581.1152800937196--
+
+
+--------------020804080504090407060104--
