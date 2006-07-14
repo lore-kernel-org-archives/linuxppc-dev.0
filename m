@@ -1,18 +1,24 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [204.127.192.82])
-	by ozlabs.org (Postfix) with ESMTP id F353667A3A
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 0F69C679E7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 14 Jul 2006 09:56:05 +1000 (EST)
-Message-ID: <44B6DD86.5080804@dlasys.net>
-Date: Thu, 13 Jul 2006 19:55:50 -0400
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Fri, 14 Jul 2006 15:28:40 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id j40so616796ugd
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 13 Jul 2006 22:28:38 -0700 (PDT)
+Message-ID: <528646bc0607132228x88ab355w4fa978587a76bfbe@mail.gmail.com>
+Date: Thu, 13 Jul 2006 23:28:38 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "=?GB2312?B?0e7Hv7rG?=" <yang-qh@neusoft.com>,
+	"linuxppc-embedded list" <linuxppc-embedded@ozlabs.org>
+Subject: Re: Re: Want to port a linux in V4-FX
+In-Reply-To: <200607141248212381692@neusoft.com>
 MIME-Version: 1.0
-To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
-Subject: JTAG PPC info ?
-References: <1152782030.3534.27.camel@petra.pixel>
-In-Reply-To: <1152782030.3534.27.camel@petra.pixel>
-Content-Type: text/plain; charset=ISO-8859-1
-Reply-To: dhlii@comcast.net
+Content-Type: text/plain; charset=GB2312; format=flowed
+References: <200607141103022417773@neusoft.com>
+	<528646bc0607132112n7ad2ac0fv5c44ff2c7f98bcb7@mail.gmail.com>
+	<200607141248212381692@neusoft.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,39 +29,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    Has anyone not covered by non-disclosure deciphered the JTAG codes
-for the PowerPC ?
-   
-    I have a situation using a custom JTAG interface that is looking to
-impliment host side PPC debugging. JTAG access and manipulation of most
-all other JTAG devices on the target is working.
-    Right now the problem is deciphering the JTAG commands etc to the
-PPC itself.
-
-
-
-Ria Roy wrote:
-> Hi, 
->
-> Does anyone know if Macriagor's mpDemon is capable of debugging the
-> linux kernel via the JTAG interface. 
->
-> Thanks in advance, 
-> Ria
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->   
-
-
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+T24gNy8xMy8wNiwg0e7Hv7rGIDx5YW5nLXFoQG5ldXNvZnQuY29tPiB3cm90ZToKPiBHcmFudCBM
+aWtlbHksCj4KPiBQbHMgdGVsbCBtZSB0aGUgbWFpbGJveCBvZiAgbGludXhwcGMtZW1iZWRkZWQg
+bWFpbGluZyBsaXN0LCB0aGVuIEkgY2FuIGNjIHRvIGl0LgoKbGludXhwcGMtZW1iZWRkZWRAb3ps
+YWJzLm9yZwoKUGVvcGxlIGZhciBzbWFydGVyIHRoYW4gbWUgaGFuZyBvdXQgdGhlcmUuICBJdCdz
+IGEgYmV0dGVyIHdheSB0byBnZXQgYW5zd2Vycy4KCmcuCgotLSAKR3JhbnQgTGlrZWx5LCBCLlNj
+LiBQLkVuZy4KU2VjcmV0IExhYiBUZWNobm9sb2dpZXMgTHRkLgpncmFudC5saWtlbHlAc2VjcmV0
+bGFiLmNhCig0MDMpIDM5OS0wMTk1Cg==
