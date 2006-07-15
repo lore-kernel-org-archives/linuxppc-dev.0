@@ -1,22 +1,19 @@
-Return-Path: <schwab@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 645AF67B7E
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jul 2006 03:12:15 +1000 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 06/12] aoa: pmf gpio: report if function calling fails
-References: <20060707165207.877010000@sipsolutions.net>
-	<20060707165531.206137000@sipsolutions.net>
-Date: Sat, 15 Jul 2006 19:12:05 +0200
-In-Reply-To: <20060707165531.206137000@sipsolutions.net> (Johannes Berg's
-	message of "Fri, 07 Jul 2006 18:52:13 +0200")
-Message-ID: <jebqrqbxne.fsf@sykes.suse.de>
+Return-Path: <anton@ozlabs.org>
+Date: Sun, 16 Jul 2006 08:07:58 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
+Message-ID: <20060715220757.GA31511@krispykreme>
+References: <20060714233739.GA11487@monkey.ibm.com>
+	<200607150200.03494.arnd@arndb.de>
+	<20060715153053.GK31081@krispykreme>
+	<200607151842.27568.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200607151842.27568.arnd@arndb.de>
+Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
+	Nathan Lynch <ntl@pobox.com>, Paul Mackerras <paulus@samba.org>,
+	Christopher Yeoh <cyeoh@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg <johannes@sipsolutions.net> writes:
+ 
+> Not sure I follow you. I would expect the PURR value to be restored after
+> a context switch, even if we continue on a different physical CPU.
+> 
+> The idea behind monitoring both PURR and timebase is that the difference
+> between the two tells you how long the partition was suspended during
+> the hcall.
 
-> This patch makes the pmf GPIO layer in aoa report if calling
-> a platform function failed.
+Sounds good, last time I looked at the patch I thought it was gathering
+the PURR only. That on its own would make for some confusing results.
 
-This will always fire when a switch like lineout-mute does not exist,
-apparently because layout_notify does not check for that.
-
-pmf_gpio_set_lineout failed, rc: -19
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Anton
