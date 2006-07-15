@@ -1,36 +1,19 @@
-Return-Path: <mkravetz@us.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C5CAC67B82
-	for <linuxppc-dev@ozlabs.org>; Sat, 15 Jul 2006 10:06:24 +1000 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e36.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6F06LT7009467
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 20:06:21 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k6F06LmI311646
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 18:06:21 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k6F06Lhq028797
-	for <linuxppc-dev@ozlabs.org>; Fri, 14 Jul 2006 18:06:21 -0600
-Date: Fri, 14 Jul 2006 17:06:24 -0700
-From: Mike Kravetz <kravetz@us.ibm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
-Message-ID: <20060715000624.GH6824@monkey.ibm.com>
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id 05F3A67BA5
+	for <linuxppc-dev@ozlabs.org>; Sat, 15 Jul 2006 10:16:11 +1000 (EST)
+Date: Fri, 14 Jul 2006 19:15:45 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Mike Kravetz <kravetz@us.ibm.com>
+Subject: Re: [PATCH 2/3] powerpc: Instrument Hypervisor Calls: add wrappers
+Message-ID: <20060715001545.GK19076@localdomain>
 References: <20060714233739.GA11487@monkey.ibm.com>
-	<200607150200.03494.arnd@arndb.de>
+	<20060714234034.GC11487@monkey.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200607150200.03494.arnd@arndb.de>
+In-Reply-To: <20060714234034.GC11487@monkey.ibm.com>
 Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Nathan Lynch <ntl@pobox.com>, Paul Mackerras <paulus@samba.org>,
+	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>,
 	Christopher Yeoh <cyeoh@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -41,17 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 15, 2006 at 02:00:02AM +0200, Arnd Bergmann wrote:
-> What happened to the question whether to use PURR values for also measuring
-> cycles spent executing the hcall as opposed to cycles that passed before
-> the hcall returns. Did that turn out not giving extra information after all
-> or was there a different reason to drop that idea?
+Mike Kravetz wrote:
+> +static inline void update_stats(unsigned long opcode, unsigned long t_before)
+> +{
+> +	unsigned long op_index = opcode >> 2;
+> +	struct hcall_stats *hs = &__get_cpu_var(hcall_stats[op_index]);
+> +
+> +	hs->total_time += (mftb() - t_before);
+> +	hs->num_calls++;
+> +}
+> +
+> +/*
+> + * plpar_hcall wrapper
+> + */
+> +long plpar_hcall(unsigned long opcode,
+> +                 unsigned long arg1,
+> +                 unsigned long arg2,
+> +                 unsigned long arg3,
+> +                 unsigned long arg4,
+> +                 unsigned long *out1,
+> +                 unsigned long *out2,
+> +                 unsigned long *out3)
+> +{
+> +	long rc;
+> +	unsigned long t_before;
+> +
+> +	t_before = mftb();
+> +	rc = plpar_hcall_base(opcode, arg1, arg2, arg3, arg4, out1, out2, out3);
+> +
+> +	update_stats(opcode, t_before);
+> +	return rc;
+> +}
 
-Oops, forgot that as an additional issue/question.  In this patch, I went
-back to mftb() as 'wall time' made more sense for the group wanting this
-functionality.  It is easy to switch, or collect both (I think).  Since I
-started with mftb went to PURR and then back to mftb, it certainly does
-look like an agument to try and collect both. :)
-
--- 
-Mike
+Hmm, isn't it possible that the stats could be corrupted if we process
+an interrupt/softirq which does an hcall while the stats are being
+updated?  Maybe it's not a show-stopper, but it seems to me that
+accuracy could suffer under some workloads.
