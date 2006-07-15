@@ -1,22 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 8DF7567B7B
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jul 2006 02:42:35 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
-Date: Sat, 15 Jul 2006 18:42:26 +0200
-References: <20060714233739.GA11487@monkey.ibm.com>
-	<200607150200.03494.arnd@arndb.de>
-	<20060715153053.GK31081@krispykreme>
-In-Reply-To: <20060715153053.GK31081@krispykreme>
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 645AF67B7E
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jul 2006 03:12:15 +1000 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 06/12] aoa: pmf gpio: report if function calling fails
+References: <20060707165207.877010000@sipsolutions.net>
+	<20060707165531.206137000@sipsolutions.net>
+Date: Sat, 15 Jul 2006 19:12:05 +0200
+In-Reply-To: <20060707165531.206137000@sipsolutions.net> (Johannes Berg's
+	message of "Fri, 07 Jul 2006 18:52:13 +0200")
+Message-ID: <jebqrqbxne.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200607151842.27568.arnd@arndb.de>
-Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Nathan Lynch <ntl@pobox.com>, Paul Mackerras <paulus@samba.org>,
-	Christopher Yeoh <cyeoh@samba.org>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 15 July 2006 17:30, Anton Blanchard wrote:
-> > What happened to the question whether to use PURR values for also measuring
-> > cycles spent executing the hcall as opposed to cycles that passed before
-> > the hcall returns. Did that turn out not giving extra information after all
-> > or was there a different reason to drop that idea?
-> 
-> You have to be careful with PURR since it may be context switched
-> between partitions.
-> 
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-Not sure I follow you. I would expect the PURR value to be restored after
-a context switch, even if we continue on a different physical CPU.
+> This patch makes the pmf GPIO layer in aoa report if calling
+> a platform function failed.
 
-The idea behind monitoring both PURR and timebase is that the difference
-between the two tells you how long the partition was suspended during
-the hcall.
+This will always fire when a switch like lineout-mute does not exist,
+apparently because layout_notify does not check for that.
 
-	Arnd <><
+pmf_gpio_set_lineout failed, rc: -19
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
