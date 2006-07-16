@@ -1,13 +1,13 @@
 Return-Path: <LukeBrowning@us.ibm.com>
-In-Reply-To: <20060716035353.GA5266@pb15.lixom.net>
-To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20060715220757.GA31511@krispykreme>
+To: Anton Blanchard <anton@samba.org>
 Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
 MIME-Version: 1.0
-Message-ID: <OFFBAD5953.E17A24C8-ON832571AD.007DA01D-832571AD.007DBBB5@us.ibm.com>
+Message-ID: <OF59BDE546.E01BC166-ON832571AD.007DE61B-832571AD.007E9CB7@us.ibm.com>
 From: Luke Browning <LukeBrowning@us.ibm.com>
-Date: Sun, 16 Jul 2006 20:53:21 -0200
+Date: Sun, 16 Jul 2006 21:02:57 -0200
 Content-Type: multipart/alternative;
-	boundary="=_alternative 007DBBB4832571AD_="
+	boundary="=_alternative 007E9CB6832571AD_="
 Cc: linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org,
 	Arnd Bergmann <arnd@arndb.de>,
 	Bryan S Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
@@ -23,65 +23,74 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 This is a multipart message in MIME format.
---=_alternative 007DBBB4832571AD_=
+--=_alternative 007E9CB6832571AD_=
 Content-Type: text/plain; charset="US-ASCII"
 
 linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org wrote on 
-07/16/2006 12:53:54 AM:
+07/15/2006 07:07:58 PM:
 
-> On Sat, Jul 15, 2006 at 02:00:02AM +0200, Arnd Bergmann wrote:
 > 
-> > What happened to the question whether to use PURR values for also 
-measuring
-> > cycles spent executing the hcall as opposed to cycles that passed 
-before
-> > the hcall returns. Did that turn out not giving extra information 
-after all
-> > or was there a different reason to drop that idea?
+> > Not sure I follow you. I would expect the PURR value to be restored 
+after
+> > a context switch, even if we continue on a different physical CPU.
+> > 
+> > The idea behind monitoring both PURR and timebase is that the 
+difference
+> > between the two tells you how long the partition was suspended during
+> > the hcall.
 > 
-> Just so people don't forget: this can't be done on all processors. For
-> example, PPC970 and POWER4 don't implement the PURR SPR. And it doesn't
-> make sense to use H_PURR to get the software emulated ones there. Not
-> really an issue on POWER4 since they don't do shared processor LPAR, but
-> on JS21 I think they might do?
-> 
-Isn't there someway to do a platform specific processor overlay, where you 
+> Sounds good, last time I looked at the patch I thought it was gathering
+> the PURR only. That on its own would make for some confusing results.
+>
 
-get PURR if it exists and TB otherwise.
+It would be more efficient to have a separate trace log for PHYP 
+dispatches as 
+there are many more hypervisor calls than PHYP dispatches.  I believe PHYP 
+provides
+a trace records for dispatches, which could be seperately written.  Perf 
+tools can 
+assemble the information from multiple records.  It would be nice to have 
+processor
+specific time function that reads either PURR or TB based on the platform.
 
 Luke
 
---=_alternative 007DBBB4832571AD_=
+
+--=_alternative 007E9CB6832571AD_=
 Content-Type: text/html; charset="US-ASCII"
 
 
-<br>
 <br><tt><font size=2>linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org
-wrote on 07/16/2006 12:53:54 AM:<br>
+wrote on 07/15/2006 07:07:58 PM:<br>
 <br>
-&gt; On Sat, Jul 15, 2006 at 02:00:02AM +0200, Arnd Bergmann wrote:<br>
+&gt; &nbsp;<br>
+&gt; &gt; Not sure I follow you. I would expect the PURR value to be restored
+after<br>
+&gt; &gt; a context switch, even if we continue on a different physical
+CPU.<br>
+&gt; &gt; <br>
+&gt; &gt; The idea behind monitoring both PURR and timebase is that the
+difference<br>
+&gt; &gt; between the two tells you how long the partition was suspended
+during<br>
+&gt; &gt; the hcall.<br>
 &gt; <br>
-&gt; &gt; What happened to the question whether to use PURR values for
-also measuring<br>
-&gt; &gt; cycles spent executing the hcall as opposed to cycles that passed
-before<br>
-&gt; &gt; the hcall returns. Did that turn out not giving extra information
-after all<br>
-&gt; &gt; or was there a different reason to drop that idea?<br>
-&gt; <br>
-&gt; Just so people don't forget: this can't be done on all processors.
-For<br>
-&gt; example, PPC970 and POWER4 don't implement the PURR SPR. And it doesn't<br>
-&gt; make sense to use H_PURR to get the software emulated ones there.
-Not<br>
-&gt; really an issue on POWER4 since they don't do shared processor LPAR,
-but<br>
-&gt; on JS21 I think they might do?<br>
-&gt; <br>
-Isn't there someway to do a platform specific processor overlay, where
-you </font></tt>
-<br><tt><font size=2>get PURR if it exists and TB otherwise.</font></tt>
+&gt; Sounds good, last time I looked at the patch I thought it was gathering<br>
+&gt; the PURR only. That on its own would make for some confusing results.<br>
+&gt;</font></tt>
 <br>
-<br><tt><font size=2>Luke<br>
+<br><tt><font size=2>It would be more efficient to have a separate trace
+log for PHYP dispatches as </font></tt>
+<br><tt><font size=2>there are many more hypervisor calls than PHYP dispatches.
+&nbsp;I believe PHYP provides</font></tt>
+<br><tt><font size=2>a trace records for dispatches, which could be seperately
+written. &nbsp;Perf tools can </font></tt>
+<br><tt><font size=2>assemble the information from multiple records. &nbsp;It
+would be nice to have processor</font></tt>
+<br><tt><font size=2>specific time function that reads either PURR or TB
+based on the platform.</font></tt>
+<br>
+<br><tt><font size=2>Luke</font></tt>
+<br><tt><font size=2><br>
 </font></tt>
---=_alternative 007DBBB4832571AD_=--
+--=_alternative 007E9CB6832571AD_=--
