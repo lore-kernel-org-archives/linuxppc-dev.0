@@ -1,21 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E63367B90
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Jul 2006 06:19:40 +1000 (EST)
-Message-ID: <55230.84.135.251.38.1153081157.squirrel@secure.sipsolutions.net>
-In-Reply-To: <1153065707.5905.8.camel@localhost.localdomain>
-References: <200607161441.19930.perchrh@pvv.org>
-	<1153065707.5905.8.camel@localhost.localdomain>
-Date: Sun, 16 Jul 2006 22:19:17 +0200 (CEST)
-Subject: [PATCH] aoa: fix feature-call GPIO layer
-From: "Johannes Berg" <johannes@sipsolutions.net>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Return-Path: <LukeBrowning@us.ibm.com>
+In-Reply-To: <20060716035353.GA5266@pb15.lixom.net>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-15
-Cc: Per Christian Henden <perchrh@pvv.org>, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
+Message-ID: <OFFBAD5953.E17A24C8-ON832571AD.007DA01D-832571AD.007DBBB5@us.ibm.com>
+From: Luke Browning <LukeBrowning@us.ibm.com>
+Date: Sun, 16 Jul 2006 20:53:21 -0200
+Content-Type: multipart/alternative;
+	boundary="=_alternative 007DBBB4832571AD_="
+Cc: linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>,
+	Bryan S Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
+	Nathan Lynch <ntl@pobox.com>, Christopher Yeoh <cyeoh@samba.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +22,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I hope this isn't too badly mangled... I'm without a proper mail client
-right now because my ~ is corrupted enough to be put offline once I access
-it a lot :/ I intend to repair this tomorrow, so if it is mangled I can
-resend Tuesday.
----
-This fixes the feature-call GPIO layer in snd-aoa which is used on
-machines without platform functions so that it doesn't try to look up an
-interrupt property for detect device nodes that don't exist.
+This is a multipart message in MIME format.
+--=_alternative 007DBBB4832571AD_=
+Content-Type: text/plain; charset="US-ASCII"
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org wrote on 
+07/16/2006 12:53:54 AM:
 
-Index: linux-2.6-fetch/sound/aoa/core/snd-aoa-gpio-feature.c
-===================================================================
---- linux-2.6-fetch.orig/sound/aoa/core/snd-aoa-gpio-feature.c	2006-07-16
-22:10:02.467630929 +0200
-+++ linux-2.6-fetch/sound/aoa/core/snd-aoa-gpio-feature.c	2006-07-16
-22:13:41.891630929 +0200
-@@ -112,7 +112,10 @@ static struct device_node *get_gpio(char
+> On Sat, Jul 15, 2006 at 02:00:02AM +0200, Arnd Bergmann wrote:
+> 
+> > What happened to the question whether to use PURR values for also 
+measuring
+> > cycles spent executing the hcall as opposed to cycles that passed 
+before
+> > the hcall returns. Did that turn out not giving extra information 
+after all
+> > or was there a different reason to drop that idea?
+> 
+> Just so people don't forget: this can't be done on all processors. For
+> example, PPC970 and POWER4 don't implement the PURR SPR. And it doesn't
+> make sense to use H_PURR to get the software emulated ones there. Not
+> really an issue on POWER4 since they don't do shared processor LPAR, but
+> on JS21 I think they might do?
+> 
+Isn't there someway to do a platform specific processor overlay, where you 
 
- static void get_irq(struct device_node * np, int *irqptr)
- {
--	*irqptr = irq_of_parse_and_map(np, 0);
-+	if (np)
-+		*irqptr = irq_of_parse_and_map(np, 0);
-+	else
-+		*irqptr = NO_IRQ;
- }
+get PURR if it exists and TB otherwise.
 
- /* 0x4 is outenable, 0x1 is out, thus 4 or 5 */
-@@ -322,7 +325,7 @@ static int ftr_set_notify(struct gpio_ru
- 		return -EINVAL;
- 	}
+Luke
 
--	if (irq == -1)
-+	if (irq == NO_IRQ)
- 		return -ENODEV;
+--=_alternative 007DBBB4832571AD_=
+Content-Type: text/html; charset="US-ASCII"
 
- 	mutex_lock(&notif->mutex);
+
+<br>
+<br><tt><font size=2>linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org
+wrote on 07/16/2006 12:53:54 AM:<br>
+<br>
+&gt; On Sat, Jul 15, 2006 at 02:00:02AM +0200, Arnd Bergmann wrote:<br>
+&gt; <br>
+&gt; &gt; What happened to the question whether to use PURR values for
+also measuring<br>
+&gt; &gt; cycles spent executing the hcall as opposed to cycles that passed
+before<br>
+&gt; &gt; the hcall returns. Did that turn out not giving extra information
+after all<br>
+&gt; &gt; or was there a different reason to drop that idea?<br>
+&gt; <br>
+&gt; Just so people don't forget: this can't be done on all processors.
+For<br>
+&gt; example, PPC970 and POWER4 don't implement the PURR SPR. And it doesn't<br>
+&gt; make sense to use H_PURR to get the software emulated ones there.
+Not<br>
+&gt; really an issue on POWER4 since they don't do shared processor LPAR,
+but<br>
+&gt; on JS21 I think they might do?<br>
+&gt; <br>
+Isn't there someway to do a platform specific processor overlay, where
+you </font></tt>
+<br><tt><font size=2>get PURR if it exists and TB otherwise.</font></tt>
+<br>
+<br><tt><font size=2>Luke<br>
+</font></tt>
+--=_alternative 007DBBB4832571AD_=--
