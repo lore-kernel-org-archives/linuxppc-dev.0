@@ -1,20 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 8D32C67B76
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jul 2006 13:54:31 +1000 (EST)
-Date: Sat, 15 Jul 2006 22:53:54 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
-Message-ID: <20060716035353.GA5266@pb15.lixom.net>
-References: <20060714233739.GA11487@monkey.ibm.com>
-	<200607150200.03494.arnd@arndb.de>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5E4ED67B5A
+	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jul 2006 18:43:59 +1000 (EST)
+Message-ID: <56306.84.135.218.136.1153039429.squirrel@secure.sipsolutions.net>
+In-Reply-To: <jebqrqbxne.fsf@sykes.suse.de>
+References: <20060707165207.877010000@sipsolutions.net>
+	<20060707165531.206137000@sipsolutions.net>
+	<jebqrqbxne.fsf@sykes.suse.de>
+Date: Sun, 16 Jul 2006 10:43:49 +0200 (CEST)
+Subject: Re: [PATCH 06/12] aoa: pmf gpio: report if function calling fails
+From: "Johannes Berg" <johannes@sipsolutions.net>
+To: "Andreas Schwab" <schwab@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200607150200.03494.arnd@arndb.de>
-From: Olof Johansson <olof@lixom.net>
-Cc: Bryan Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Nathan Lynch <ntl@pobox.com>, Paul Mackerras <paulus@samba.org>,
-	Christopher Yeoh <cyeoh@samba.org>
+Content-Type: text/plain;charset=iso-8859-15
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jul 15, 2006 at 02:00:02AM +0200, Arnd Bergmann wrote:
+Andreas Schwab wrote:
+> This will always fire when a switch like lineout-mute does not exist,
+> apparently because layout_notify does not check for that.
+>
+> pmf_gpio_set_lineout failed, rc: -19
 
-> What happened to the question whether to use PURR values for also measuring
-> cycles spent executing the hcall as opposed to cycles that passed before
-> the hcall returns. Did that turn out not giving extra information after all
-> or was there a different reason to drop that idea?
+Yeah, I know, I need to fix that. Unfortunately I've had corruption on my
+/ and ~ filesystems so I'm a bit impaired right now, I'll send a patch to
+make sure we don't touch knobs we don't have after I can fix up my
+filesystem issues.
 
-Just so people don't forget: this can't be done on all processors. For
-example, PPC970 and POWER4 don't implement the PURR SPR. And it doesn't
-make sense to use H_PURR to get the software emulated ones there. Not
-really an issue on POWER4 since they don't do shared processor LPAR, but
-on JS21 I think they might do?
-
-
--Olof
+johannes
