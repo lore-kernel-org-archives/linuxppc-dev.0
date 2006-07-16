@@ -1,16 +1,21 @@
-Return-Path: <wd@denx.de>
-To: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [JOB] Senior Embedded Linux Video Engineer 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 14 Jul 2006 14:40:08 EDT."
-	<44B7E508.7020700@freescale.com>
-Date: Sun, 16 Jul 2006 17:12:46 +0200
-Sender: wd@denx.de
-Message-Id: <20060716151246.94C9C352681@atlas.denx.de>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-embedded@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 66FA767B8E
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Jul 2006 01:59:39 +1000 (EST)
+Subject: Re: Kexec initial registers
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jimi Xenidis <jimix@watson.ibm.com>
+In-Reply-To: <28C15305-BE9F-4EE7-93A2-437EAEA7B886@watson.ibm.com>
+References: <4CE0FC89-084F-42E8-8E3B-8D2C41AC06F2@watson.ibm.com>
+	<1152911297.23037.109.camel@localhost.localdomain>
+	<28C15305-BE9F-4EE7-93A2-437EAEA7B886@watson.ibm.com>
+Content-Type: text/plain
+Date: Sun, 16 Jul 2006 11:59:15 -0400
+Message-Id: <1153065556.5905.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,26 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <44B7E508.7020700@freescale.com> you wrote:
+On Sat, 2006-07-15 at 22:10 -0400, Jimi Xenidis wrote:
+> On Jul 14, 2006, at 5:08 PM, Benjamin Herrenschmidt wrote:
 > 
-> otherwise unnoticed). Hell, if the subject header was appropriately 
-> keyworded - Wolfgang could even procmail it to /dev/null ;-)
+> > On Fri, 2006-07-14 at 12:02 -0400, Jimi Xenidis wrote:
+> >> This is what I have so far:
+> >>
+> >>    r3: address of device tree blob
+> >>    r4: address that kernel was loaded
+> >>    r5: not OF (=0)
+> >
+> > Correct and that's all that should be needed
+> >
+> >>    r13: local_paca address (0?)
+> >
+> > You shouldn't have to care about r13 at all, it should be set by the
+> > kernel before it's used. If not, please let us know as that means  
+> > there
+> > is a bug :)
+> 
+> Not! 99.99% :)
+> When loading a kernel under Xen using kexec we set r1-r5 and set all  
+> other GPRS to all 5's (cuz we can) with CONFIG_PPC_EARLY_DEBUG=y and  
+> all hell breaks loose in the first printk()/DBG() from early_setup()  
+> for:
+>    kernel/printk.c:506
+>    506		spin_lock_irqsave(&logbuf_lock, flags);
+> 
+> where is access local_paca.
+> 
+> I think everyone else (ot just the sane ones) just sets all GPRS to 0
 
-Please don't try to reinvent Usenet  netiquette,  poorly.  Commercial
-ads, job ofers and the like have always been banned. It's just lately
-that nobody remembers the good old days any more and everybody thinks
-he can force his ideas over everybody else.
+Then we have a bug and we need to initialize local_paca before we call
+early_setup...
 
-If there is demand for job  offer  postings,  then  these  should  be
-handled on a separate mailing list.
-
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-You young'uns. That was *long* before AltaVista,  DejaNews,  or  even
-(gasp) the *Web*! In fact, we typed that thread on steam-powered card
-punchers, and shipped it around via Pony Express.
-            -- Randal Schwartz in <8cwww1cd0d.fsf@gadget.cscaper.com>
+Ben.
