@@ -1,21 +1,16 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5E4ED67B5A
-	for <linuxppc-dev@ozlabs.org>; Sun, 16 Jul 2006 18:43:59 +1000 (EST)
-Message-ID: <56306.84.135.218.136.1153039429.squirrel@secure.sipsolutions.net>
-In-Reply-To: <jebqrqbxne.fsf@sykes.suse.de>
-References: <20060707165207.877010000@sipsolutions.net>
-	<20060707165531.206137000@sipsolutions.net>
-	<jebqrqbxne.fsf@sykes.suse.de>
-Date: Sun, 16 Jul 2006 10:43:49 +0200 (CEST)
-Subject: Re: [PATCH 06/12] aoa: pmf gpio: report if function calling fails
-From: "Johannes Berg" <johannes@sipsolutions.net>
-To: "Andreas Schwab" <schwab@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-15
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <wd@denx.de>
+To: Geoff Thorpe <Geoff.Thorpe@freescale.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [JOB] Senior Embedded Linux Video Engineer 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 14 Jul 2006 14:40:08 EDT."
+	<44B7E508.7020700@freescale.com>
+Date: Sun, 16 Jul 2006 17:12:46 +0200
+Sender: wd@denx.de
+Message-Id: <20060716151246.94C9C352681@atlas.denx.de>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,15 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Andreas Schwab wrote:
-> This will always fire when a switch like lineout-mute does not exist,
-> apparently because layout_notify does not check for that.
->
-> pmf_gpio_set_lineout failed, rc: -19
+In message <44B7E508.7020700@freescale.com> you wrote:
+> 
+> otherwise unnoticed). Hell, if the subject header was appropriately 
+> keyworded - Wolfgang could even procmail it to /dev/null ;-)
 
-Yeah, I know, I need to fix that. Unfortunately I've had corruption on my
-/ and ~ filesystems so I'm a bit impaired right now, I'll send a patch to
-make sure we don't touch knobs we don't have after I can fix up my
-filesystem issues.
+Please don't try to reinvent Usenet  netiquette,  poorly.  Commercial
+ads, job ofers and the like have always been banned. It's just lately
+that nobody remembers the good old days any more and everybody thinks
+he can force his ideas over everybody else.
 
-johannes
+If there is demand for job  offer  postings,  then  these  should  be
+handled on a separate mailing list.
+
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+You young'uns. That was *long* before AltaVista,  DejaNews,  or  even
+(gasp) the *Web*! In fact, we typed that thread on steam-powered card
+punchers, and shipped it around via Pony Express.
+            -- Randal Schwartz in <8cwww1cd0d.fsf@gadget.cscaper.com>
