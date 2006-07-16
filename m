@@ -1,18 +1,20 @@
-Return-Path: <LukeBrowning@us.ibm.com>
-In-Reply-To: <20060715220757.GA31511@krispykreme>
-To: Anton Blanchard <anton@samba.org>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 527EA67B5E
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Jul 2006 09:09:45 +1000 (EST)
+Date: Sun, 16 Jul 2006 18:09:15 -0500
+To: Luke Browning <LukeBrowning@us.ibm.com>
 Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
+Message-ID: <20060716230915.GA5497@pb15.lixom.net>
+References: <20060716035353.GA5266@pb15.lixom.net>
+	<OFFBAD5953.E17A24C8-ON832571AD.007DA01D-832571AD.007DBBB5@us.ibm.com>
 MIME-Version: 1.0
-Message-ID: <OF59BDE546.E01BC166-ON832571AD.007DE61B-832571AD.007E9CB7@us.ibm.com>
-From: Luke Browning <LukeBrowning@us.ibm.com>
-Date: Sun, 16 Jul 2006 21:02:57 -0200
-Content-Type: multipart/alternative;
-	boundary="=_alternative 007E9CB6832571AD_="
-Cc: linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>,
-	Bryan S Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Nathan Lynch <ntl@pobox.com>, Christopher Yeoh <cyeoh@samba.org>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <OFFBAD5953.E17A24C8-ON832571AD.007DA01D-832571AD.007DBBB5@us.ibm.com>
+From: Olof Johansson <olof@lixom.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, Bryan S Rosenburg <rosnbrg@us.ibm.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Christopher Yeoh <cyeoh@samba.org>, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,75 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 007E9CB6832571AD_=
-Content-Type: text/plain; charset="US-ASCII"
+On Sun, Jul 16, 2006 at 08:53:21PM -0200, Luke Browning wrote:
 
-linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org wrote on 
-07/15/2006 07:07:58 PM:
-
-> 
-> > Not sure I follow you. I would expect the PURR value to be restored 
-after
-> > a context switch, even if we continue on a different physical CPU.
+> > Just so people don't forget: this can't be done on all processors. For
+> > example, PPC970 and POWER4 don't implement the PURR SPR. And it doesn't
+> > make sense to use H_PURR to get the software emulated ones there. Not
+> > really an issue on POWER4 since they don't do shared processor LPAR, but
+> > on JS21 I think they might do?
 > > 
-> > The idea behind monitoring both PURR and timebase is that the 
-difference
-> > between the two tells you how long the partition was suspended during
-> > the hcall.
-> 
-> Sounds good, last time I looked at the patch I thought it was gathering
-> the PURR only. That on its own would make for some confusing results.
->
+> Isn't there someway to do a platform specific processor overlay, where you 
+> get PURR if it exists and TB otherwise.
 
-It would be more efficient to have a separate trace log for PHYP 
-dispatches as 
-there are many more hypervisor calls than PHYP dispatches.  I believe PHYP 
-provides
-a trace records for dispatches, which could be seperately written.  Perf 
-tools can 
-assemble the information from multiple records.  It would be nice to have 
-processor
-specific time function that reads either PURR or TB based on the platform.
-
-Luke
+Sure, it's what we have cpu feature bits for. It's not a difficult
+problem to solve, I was just reminding of the lack of SPRN_PURR on some
+processors that can run hypervisors.
 
 
---=_alternative 007E9CB6832571AD_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><tt><font size=2>linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org
-wrote on 07/15/2006 07:07:58 PM:<br>
-<br>
-&gt; &nbsp;<br>
-&gt; &gt; Not sure I follow you. I would expect the PURR value to be restored
-after<br>
-&gt; &gt; a context switch, even if we continue on a different physical
-CPU.<br>
-&gt; &gt; <br>
-&gt; &gt; The idea behind monitoring both PURR and timebase is that the
-difference<br>
-&gt; &gt; between the two tells you how long the partition was suspended
-during<br>
-&gt; &gt; the hcall.<br>
-&gt; <br>
-&gt; Sounds good, last time I looked at the patch I thought it was gathering<br>
-&gt; the PURR only. That on its own would make for some confusing results.<br>
-&gt;</font></tt>
-<br>
-<br><tt><font size=2>It would be more efficient to have a separate trace
-log for PHYP dispatches as </font></tt>
-<br><tt><font size=2>there are many more hypervisor calls than PHYP dispatches.
-&nbsp;I believe PHYP provides</font></tt>
-<br><tt><font size=2>a trace records for dispatches, which could be seperately
-written. &nbsp;Perf tools can </font></tt>
-<br><tt><font size=2>assemble the information from multiple records. &nbsp;It
-would be nice to have processor</font></tt>
-<br><tt><font size=2>specific time function that reads either PURR or TB
-based on the platform.</font></tt>
-<br>
-<br><tt><font size=2>Luke</font></tt>
-<br><tt><font size=2><br>
-</font></tt>
---=_alternative 007E9CB6832571AD_=--
+-Olof
