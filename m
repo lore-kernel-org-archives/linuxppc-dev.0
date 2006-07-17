@@ -1,18 +1,15 @@
-Return-Path: <LukeBrowning@us.ibm.com>
-In-Reply-To: <20060715153053.GK31081@krispykreme>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
+Return-Path: <Geoff.Thorpe@freescale.com>
+Message-ID: <44BB03EF.4010305@freescale.com>
+Date: Sun, 16 Jul 2006 23:28:47 -0400
+From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 MIME-Version: 1.0
-Message-ID: <OF1AE83383.D9BC15A2-ON832571AE.000B2250-832571AE.000B3E67@us.ibm.com>
-From: Luke Browning <LukeBrowning@us.ibm.com>
-Date: Mon, 17 Jul 2006 00:02:49 -0200
-Content-Type: multipart/alternative;
-	boundary="=_alternative 000B3E65832571AE_="
-Cc: linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>,
-	Bryan S Rosenburg <rosnbrg@us.ibm.com>, linuxppc-dev@ozlabs.org,
-	Nathan Lynch <ntl@pobox.com>, Christopher Yeoh <cyeoh@samba.org>,
-	Paul Mackerras <paulus@samba.org>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [JOB] Senior Embedded Linux Video Engineer
+References: <20060716151246.94C9C352681@atlas.denx.de>
+In-Reply-To: <20060716151246.94C9C352681@atlas.denx.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,55 +19,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 000B3E65832571AE_=
-Content-Type: text/plain; charset="US-ASCII"
+Wolfgang Denk wrote:
 
-linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org wrote on 
-07/15/2006 12:30:54 PM:
+>Please don't try to reinvent Usenet  netiquette,  poorly.
+>
 
-> 
-> > What happened to the question whether to use PURR values for also 
-measuring
-> > cycles spent executing the hcall as opposed to cycles that passed 
-before
-> > the hcall returns. Did that turn out not giving extra information 
-after all
-> > or was there a different reason to drop that idea?
-> 
-> You have to be careful with PURR since it may be context switched
-> between partitions.
-> 
+Begging your pardon, sire. Thanks for the adverb too btw, quite a bonus 
+- amusing, albeit poorly.
 
-That shouldn't be an issue as the PURR is supposed to be virtualized by 
-PHYP at 
-the virtual processor level.
+And speaking of which...
 
-Luke
---=_alternative 000B3E65832571AE_=
-Content-Type: text/html; charset="US-ASCII"
+>Commercial
+>ads, job ofers and the like have always been banned. It's just lately
+>that nobody remembers the good old days any more and everybody thinks
+>he can force his ideas over everybody else.
+>  
+>
 
+?! Whoah, if that's the nature of the discussion, fine - count me out.
 
-<br>
-<br><tt><font size=2>linuxppc-dev-bounces+lukebrowning=us.ibm.com@ozlabs.org
-wrote on 07/15/2006 12:30:54 PM:<br>
-<br>
-&gt; &nbsp;<br>
-&gt; &gt; What happened to the question whether to use PURR values for
-also measuring<br>
-&gt; &gt; cycles spent executing the hcall as opposed to cycles that passed
-before<br>
-&gt; &gt; the hcall returns. Did that turn out not giving extra information
-after all<br>
-&gt; &gt; or was there a different reason to drop that idea?<br>
-&gt; <br>
-&gt; You have to be careful with PURR since it may be context switched<br>
-&gt; between partitions.<br>
-&gt; </font></tt>
-<br>
-<br><tt><font size=2>That shouldn't be an issue as the PURR is supposed
-to be virtualized by PHYP at </font></tt>
-<br><tt><font size=2>the virtual processor level.</font></tt>
-<br>
-<br><tt><font size=2>Luke</font></tt>
---=_alternative 000B3E65832571AE_=--
+Oh, and FYI - the good old days also involved rock musicians in spandex, 
+and ... well ... whatever. If you were referring to me, then I retract 
+any such "force" without hesitation - because until you told me 
+otherwise, I was entirely ignorant to its existence. To be honest, I'm 
+still not sure *what* force you're talking about, but I'll take your 
+word for it.
+
+And while I'm at it, the next time you throw a dart, I sure hope it at 
+least hits the dart-board - there's nothing more uncomfortable than 
+having to apologise to an unknown, uninterested, and uninvolved 
+bystander who has a dart sticking out of his forehead just for having 
+been in the room. But for what it's worth, "oh don't be silly, no 
+apology necessary". :-)
+
+>If there is demand for job  offer  postings,  then  these  should  be
+>handled on a separate mailing list.
+>  
+>
+
+If you say so, I never really liked playing darts anyway, stupid game - 
+too many people holding sharp instruments they have too little control over.
+
+Cheers,
+Geoff
