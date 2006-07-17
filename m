@@ -1,22 +1,25 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
-	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 1D60767BA8
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 08:11:46 +1000 (EST)
-In-Reply-To: <71D808D5-8227-4B0D-AF41-FADFC4B12463@kernel.crashing.org>
-References: <44B7857A.2060101@freescale.com>
-	<B8AB8BA6-500C-43AC-B6E7-A76CA598A429@kernel.crashing.org>
-	<a0bc9bf80607140921y5d11bf37r3f18e2dbdd03b017@mail.gmail.com>
-	<A4F686A1-9558-4DD0-BF4C-BB64494BB719@kernel.crashing.org>
-	<5C69B7C2-1637-4B9A-BDCA-596DBE70A7DC@embeddedalley.com>
-	<71D808D5-8227-4B0D-AF41-FADFC4B12463@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E88826CB-074C-43CF-BD26-864E22FDB3AD@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH] Add USB to MPC8349 PB platform support
-Date: Mon, 17 Jul 2006 18:12:03 -0400
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Return-Path: <ak@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 90E7467BCC
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 08:27:19 +1000 (EST)
+From: Andi Kleen <ak@suse.de>
+To: Horms <horms@verge.net.au>
+Subject: Re: [PATCH] panic_on_oops: remove ssleep()
+Date: Tue, 18 Jul 2006 00:27:51 +0200
+References: <31687.FP.7244@verge.net.au>
+In-Reply-To: <31687.FP.7244@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200607180027.51986.ak@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, Chris Zankel <chris@zankel.net>,
+	Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+	discuss@x86-64.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Monday 17 July 2006 18:17, Horms wrote:
+> This patch is part of an effort to unify the panic_on_oops behaviour
+> across all architectures that implement it.
+>
+> It was pointed out to me by Andi Kleen that if an oops has occured
+> in interrupt context, then calling sleep() in the oops path will only cause
+> a panic, and that it would be really better for it not to be in the path at
+> all.
+>
+> This patch removes the ssleep() call and reworks the console message
+> accordinly.  I have a slght concern that the resulting console message is
+> too long, feedback welcome.
 
-On Jul 17, 2006, at 5:39 PM, Kumar Gala wrote:
+Keeping the delay might be actually useful so that you can see the panic
+before system reboots when reboot on panic is enabled. I would just use a loop
+of mdelays(1) with touch_nmi_watchdog/touch_softirq_watchdog()s
+inbetween.
 
-> Well, I think there is a coupling that exists between whatever your  
-> boot rom is and the kernel.
-
-There shouldn't be, I've always said that, but Freescale
-seems to want to insist on it :-)  The problem is people
-creating this evaluation/demo boards seem to think
-they are workstations, which they are not.  There is
-such a minimal amount of information needed to
-actually get a system from the boot rom to the kernel
-that I don't understand why we are complicating this
-process for embedded systems.
-
-Here is my product development experience.  People
-buy these evaluation boards to test a few of the features
-they need for a product.  These boards try to be everything
-to everyone, but in reality have never done what someone
-has wanted very well.  Products developed using Linux
-and many different boot roms are very focused on a particular
-set of features.  Their requirements are nothing like that of
-an evaluation board, and all of these cute workstation
-features we are pushing into these evaluation board ports
-do nothing to help get these products customized for market.
-
-> If you are trying to optimize boot time I'd say one thing you would  
-> want is to avoid multiple writing the same configuration registers.
-
-That's what I said.  Just do it in Linux when the feature is
-started, either as a built-in driver or loadable module.  No
-need to do this in a boot rom if there isn't any need for it.
-
-> I dont have an issue if a fixed function board decides to do these  
-> things in their kernel init instead of their boot rom.  I however,  
-> don't want thousand and one config options to support all the  
-> various ways one can configure the Freescale board.
-
-I don't understand how configuration options fit into this
-discussion.  In this particular discussion, if you have selected
-the USB option, then include the proper initialization code
-in the kernel for the board.  No additional options needed.
-
-Thanks.
-
-	-- Dan
+-Andi
