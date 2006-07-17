@@ -1,20 +1,21 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp114.sbc.mail.mud.yahoo.com (smtp114.sbc.mail.mud.yahoo.com
-	[68.142.198.213]) by ozlabs.org (Postfix) with SMTP id 5515867BAD
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 09:04:34 +1000 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] Add USB to MPC8349 PB platform support
-Date: Mon, 17 Jul 2006 15:57:49 -0700
-References: <44B7857A.2060101@freescale.com>
-	<A4F686A1-9558-4DD0-BF4C-BB64494BB719@kernel.crashing.org>
-	<1153166894.4459.4.camel@basalt.austin.ibm.com>
-In-Reply-To: <1153166894.4459.4.camel@basalt.austin.ibm.com>
+Return-Path: <horms@koto.vergenet.net>
+Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
+	by ozlabs.org (Postfix) with ESMTP id AB61267BAC
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 09:11:30 +1000 (EST)
+Date: Mon, 17 Jul 2006 19:10:59 -0400
+From: Horms <horms@verge.net.au>
+To: Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] panic_on_oops: remove ssleep()
+Message-ID: <20060717231056.GC12463@verge.net.au>
+References: <31687.FP.7244@verge.net.au> <200607180027.51986.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200607171557.50368.david-b@pacbell.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200607180027.51986.ak@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, Chris Zankel <chris@zankel.net>,
+	Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+	discuss@x86-64.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 17 July 2006 1:08 pm, Hollis Blanchard wrote:
->
-> Seems to me that it's far better to have init code in the kernel than
-> firmware.
-
-If there's a general Linux policy on the issue, I think that'd be it.
-
-Plus, remember that boot firmware _can't_ always be changed/bugfixed;
-sometimes it can, but not as a general rule.
-
-- Dave
-
-
-> For one example, look at the x86 video card init problem 
-> PowerPC Linux has. It's also far easier to fix/deploy Linux code than
-> firmware code, as Li observed, and on top of that it's less work for
-> non-UBoot firmwares in the future.
+On Tue, Jul 18, 2006 at 12:27:51AM +0200, Andi Kleen wrote:
+> On Monday 17 July 2006 18:17, Horms wrote:
+> > This patch is part of an effort to unify the panic_on_oops behaviour
+> > across all architectures that implement it.
+> >
+> > It was pointed out to me by Andi Kleen that if an oops has occured
+> > in interrupt context, then calling sleep() in the oops path will only cause
+> > a panic, and that it would be really better for it not to be in the path at
+> > all.
+> >
+> > This patch removes the ssleep() call and reworks the console message
+> > accordinly.  I have a slght concern that the resulting console message is
+> > too long, feedback welcome.
 > 
-> -Hollis
-> 
+> Keeping the delay might be actually useful so that you can see the panic
+> before system reboots when reboot on panic is enabled. I would just use a loop
+> of mdelays(1) with touch_nmi_watchdog/touch_softirq_watchdog()s
+> inbetween.
+
+Ok, I will look into making that happen. I agree that the pause is
+quite useful.
+
+-- 
+Horms                                           
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
