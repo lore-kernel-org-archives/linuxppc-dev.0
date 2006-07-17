@@ -1,26 +1,18 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id E640067BC6
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id DFB1C67B9F
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 17 Jul 2006 15:31:02 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id e2so1567743ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 16 Jul 2006 22:30:57 -0700 (PDT)
-Message-ID: <528646bc0607162230p6bc33ee0xc6f5e74e8def251d@mail.gmail.com>
-Date: Sun, 16 Jul 2006 23:30:57 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: dhlii@comcast.net
-Subject: Re: how to get individual patches
-In-Reply-To: <44BB080E.6060107@dlasys.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <86EC6E02268B3D4BA41C1B0C61FB14E60AFCD219@mdcexc01.na.ops.local>
-	<20060627212448.7d048b7a@White64> <44A23488.7030606@dlasys.net>
-	<528646bc0606280209m4ce91cb0wc3cab2f2d3aec1a7@mail.gmail.com>
-	<44B7DEC3.1090308@dlasys.net>
-	<528646bc0607141122t53adeb30h8c2acb4e26ba0ddf@mail.gmail.com>
-	<44BB080E.6060107@dlasys.net>
+	Mon, 17 Jul 2006 17:00:20 +1000 (EST)
+To: "Leonid" <Leonid@a-k-a.net>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: uboot environment variables size for Yosemite board. 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sun, 16 Jul 2006 22:09:04 PDT."
+	<FAB00A8DC59FAB42B13C2B3B0F6877010D14478B@ehost011-3.exch011.intermedia.net>
+Date: Mon, 17 Jul 2006 09:00:18 +0200
+Sender: wd@denx.de
+Message-Id: <20060717070018.21ED1353C61@atlas.denx.de>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -32,63 +24,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 7/16/06, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
->     The zlib library was updated within the past month.
->     The new zlib code does not work in my environment.
->     I have guesses as to why, but I am not a zlib expert and not looking
-> to be one.
->     I have solved my personal problem by reverting to the older zlib code.
->     With that I have 2.6.18-rc4 or whatever is in the linux-2.6 git tree
-> as of today working for me.
->     I was stuck at 2.6.16.21 before.
->
->     So my questions:
->
->     How/where do I report a problem ? I would be perfectly happy to help
-> whoever is responsible for zlib to work this out.
->     But I am not up to doing it myself.
+In message <FAB00A8DC59FAB42B13C2B3B0F6877010D14478B@ehost011-3.exch011.intermedia.net> you wrote:
+> 
+> I'm using uboot-1.1.4 for AMCC PPC440E Yosemite board. I've downloaded
 
-Once you've got the patch extracted (see below); post it to the lkml
-with a description of your symptoms and what you are trying to do.
-(or post it here, and if nobody knows; then move over to the lkml)
+Note that this is off topic here. You should have posted this on  the
+U-Boot-Users mailing list instead.
 
->
->     git bisect got me down to a good/bad scenario. But I could not
-> provoke git to either pull the offending patch or export the change as a
-> patch so that I could back it out myself.
->     Now that the final git bisect screen is gone all I have (besides a
-> fixed 2.6.18-xx kernel) is I guess the sha has number for the particular
-> commit.
+> this uboot from DENX site. It uses EEPROM to store environment
+> variables. Since EEPROM on Yosemite board is only 512 bytes, there can
+> not be more environment variables which is not very convenient.
 
-git-format-patch <good_sha1>..<bad_sha1>
+Thisi s wrong. The Yosemite configuration uses (like most (all?) AMCC
+eval boards - two redundand flash sectors to store  the  environment.
+And available environment size is 8 kB:
 
-for example:
-$ git-format-patch
-0ce030395b92270567423d57d9d432eb77df32f2..8d92bc2270d67a43b1d7e94a8cb6f81f1435fe9a
-0001-PCI-Error-handling-on-PCI-device-resume.txt
+	=> print
+	...
+	Environment size: 1355/8187 bytes
 
-extracts a single patch file for the
-PCI-Error-handling-on-PCI-device-resume.txt commit.  If there are more
-than one commits between <good_sha1> and <bad_sha1>, then you'll get
-more than one patch file extracted.
+> There is theoretical possibility to save these variables on flash (64M
+> from which I use only part) and yosemite.h header file even has defines,
+> allowing this option. But is it going work in reality? What is simplest
+> way for Yosemite board to increase environment variables storage space?
 
-Then, you can apply the patch reversed to backout the change.
+I have no idea where you got your board configuration from, but it is
+definitely   not   current   code,   nor   the   binary   image    at
+ftp://ftp.denx.de/pub/u-boot/images/amcc/yosemite/u-boot.bin
 
->     I suspect that would have been enough to yank just that patch but I
-> googled every permutation of git backout or similar things I could think
-> of and browsed the git tutorials etc.
->     and could not seem to decipher how to do anything usefull with the
-> sha id of a single patch.
+The current code does use (redundand) flash for environment storage.
 
-"git-log <sha1>" will give you the history starting at a particular
-commit, which is useful for finding the next commit after it for doing
-the git-format-patch command.
+Best regards,
 
-Cheers,
-g.
+Wolfgang Denk
 
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+The idea of male and female are universal constants.
+	-- Kirk, "Metamorphosis", stardate 3219.8
