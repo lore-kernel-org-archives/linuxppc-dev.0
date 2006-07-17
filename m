@@ -1,19 +1,22 @@
-Return-Path: <horms@koto.vergenet.net>
-Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
-	by ozlabs.org (Postfix) with ESMTP id 9920F67B96
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 02:17:40 +1000 (EST)
-Date: Mon, 17 Jul 2006 12:17:20 -0400
-From: Horms <horms@verge.net.au>
-To: Russell King <rmk@arm.linux.org.uk>,
-	Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, Andi Kleen <ak@suse.de>,
-	Chris Zankel <chris@zankel.net>, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] panic_on_oops: remove ssleep()
-Message-ID: <31687.FP.7244@verge.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-ia64@vger.kernel.org,
-	linux-kernel@vger.kernel.org, discuss@x86-64.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0FE6F67B89
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 05:16:38 +1000 (EST)
+In-Reply-To: <a0bc9bf80607140921y5d11bf37r3f18e2dbdd03b017@mail.gmail.com>
+References: <44B7857A.2060101@freescale.com>
+	<B8AB8BA6-500C-43AC-B6E7-A76CA598A429@kernel.crashing.org>
+	<a0bc9bf80607140921y5d11bf37r3f18e2dbdd03b017@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A4F686A1-9558-4DD0-BF4C-BB64494BB719@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add USB to MPC8349 PB platform support
+Date: Mon, 17 Jul 2006 14:16:42 -0500
+To: Li Yang <LeoLi@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,126 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch is part of an effort to unify the panic_on_oops behaviour
-across all architectures that implement it.
 
-It was pointed out to me by Andi Kleen that if an oops has occured
-in interrupt context, then calling sleep() in the oops path will only cause
-a panic, and that it would be really better for it not to be in the path at
-all. 
+On Jul 14, 2006, at 11:21 AM, Li Yang wrote:
 
-This patch removes the ssleep() call and reworks the console message
-accordinly.  I have a slght concern that the resulting console message is
-too long, feedback welcome.
+> On 7/14/06, Kumar Gala <galak@kernel.crashing.org> wrote:
+>> Nack, my expectation is this is all setup by the boot loader.
+>
+> That's a good wish. ;)  However, USB is not required by bootloader. So
+> it is not likely to be initialized there.  And if we put it in
+> bootloader, it will be hard to change the mode(MPH/DR), which requires
+> a re-burn of bootloader.  It's better that we make sure it's correctly
+> configured here.
 
-For powerpc it also unifies the 32bit and 64bit behaviour.
+I disagree.  You are coming from this from a board that does  
+everything under the sun.  I'd like to avoid having this type of  
+initialization in the kernel.  There is a whole additional kitchen  
+sink that could move into the kernel as well.
 
-Fror x86_64, this patch only updates the console message, as
-ssleep() is already not present.
-
-Signed-Off-By: Horms <horms@verge.net.au>
-
- arch/arm/kernel/traps.c     |    7 ++-----
- arch/i386/kernel/traps.c    |    8 +++-----
- arch/ia64/kernel/traps.c    |    7 ++-----
- arch/powerpc/kernel/traps.c |   10 +++-------
- arch/x86_64/kernel/traps.c  |    2 +-
- arch/xtensa/kernel/traps.c  |    8 +++-----
- 6 files changed, 14 insertions(+), 28 deletions(-)
-
---- a/arch/arm/kernel/traps.c
-+++ b/arch/arm/kernel/traps.c
-@@ -232,11 +232,8 @@ NORET_TYPE void die(const char *str, str
- 	bust_spinlocks(0);
- 	spin_unlock_irq(&die_lock);
- 
--	if (panic_on_oops) {
--		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
--		ssleep(5);
--		panic("Fatal exception");
--	}
-+	if (panic_on_oops)
-+		panic("Fatal exception: panic_on_oops");
- 
- 	do_exit(SIGSEGV);
- }
---- a/arch/i386/kernel/traps.c
-+++ b/arch/i386/kernel/traps.c
-@@ -442,11 +442,9 @@ #endif
- 	if (in_interrupt())
- 		panic("Fatal exception in interrupt");
- 
--	if (panic_on_oops) {
--		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
--		ssleep(5);
--		panic("Fatal exception");
--	}
-+	if (panic_on_oops)
-+		panic("Fatal exception: panic_on_oops");
-+
- 	oops_exit();
- 	do_exit(SIGSEGV);
- }
---- a/arch/ia64/kernel/traps.c
-+++ b/arch/ia64/kernel/traps.c
-@@ -117,11 +117,8 @@ die (const char *str, struct pt_regs *re
- 	die.lock_owner = -1;
- 	spin_unlock_irq(&die.lock);
- 
--	if (panic_on_oops) {
--		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
--		ssleep(5);
--		panic("Fatal exception");
--	}
-+	if (panic_on_oops)
-+		panic("Fatal exception: panic_on_oops");
- 
-   	do_exit(SIGSEGV);
- }
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -150,13 +150,9 @@ #endif
- 	if (in_interrupt())
- 		panic("Fatal exception in interrupt");
- 
--	if (panic_on_oops) {
--#ifdef CONFIG_PPC64
--		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
--		ssleep(5);
--#endif
--		panic("Fatal exception");
--	}
-+	if (panic_on_oops)
-+		panic("Fatal exception: panic_on_oops");
-+
- 	do_exit(err);
- 
- 	return 0;
---- a/arch/x86_64/kernel/traps.c
-+++ b/arch/x86_64/kernel/traps.c
-@@ -521,7 +521,7 @@ void __kprobes oops_end(unsigned long fl
- 		/* Nest count reaches zero, release the lock. */
- 		spin_unlock_irqrestore(&die_lock, flags);
- 	if (panic_on_oops)
--		panic("Oops");
-+		panic("Fatal exception: panic_on_oops");
- }
- 
- void __kprobes __die(const char * str, struct pt_regs * regs, long err)
---- a/arch/xtensa/kernel/traps.c
-+++ b/arch/xtensa/kernel/traps.c
-@@ -487,11 +487,9 @@ #endif
- 	if (in_interrupt())
- 		panic("Fatal exception in interrupt");
- 
--	if (panic_on_oops) {
--		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
--		ssleep(5);
--		panic("Fatal exception");
--	}
-+	if (panic_on_oops)
-+		panic("Fatal exception: panic_on_oops");
-+
- 	do_exit(err);
- }
- 
+- kumar 
+  
