@@ -1,20 +1,19 @@
-Return-Path: <robbat2@gentoo.org>
-Received: from curie.orbis-terrarum.net (unknown [24.81.201.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.orbis-terrarum.net",
-	Issuer "mail.orbis-terrarum.net" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AC53367BB6
-	for <linuxppc-dev@ozlabs.org>; Mon, 17 Jul 2006 17:25:51 +1000 (EST)
-Date: Mon, 17 Jul 2006 00:19:07 -0700
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: setup arch
-Message-ID: <20060717071907.GA16219@curie-int.orbis-terrarum.net>
-References: <20060709170909.90774.qmail@web35812.mail.mud.yahoo.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
-In-Reply-To: <20060709170909.90774.qmail@web35812.mail.mud.yahoo.com>
+Return-Path: <horms@koto.vergenet.net>
+Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
+	by ozlabs.org (Postfix) with ESMTP id 9920F67B96
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 02:17:40 +1000 (EST)
+Date: Mon, 17 Jul 2006 12:17:20 -0400
+From: Horms <horms@verge.net.au>
+To: Russell King <rmk@arm.linux.org.uk>,
+	Tony Luck <tony.luck@intel.com>, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, Andi Kleen <ak@suse.de>,
+	Chris Zankel <chris@zankel.net>, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] panic_on_oops: remove ssleep()
+Message-ID: <31687.FP.7244@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, linux-ia64@vger.kernel.org,
+	linux-kernel@vger.kernel.org, discuss@x86-64.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,67 +23,126 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch is part of an effort to unify the panic_on_oops behaviour
+across all architectures that implement it.
 
---mYCpIKhGyMATD0i+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It was pointed out to me by Andi Kleen that if an oops has occured
+in interrupt context, then calling sleep() in the oops path will only cause
+a panic, and that it would be really better for it not to be in the path at
+all. 
 
-(I tried to sent this before, but my mailserver wasn't playing nice).
+This patch removes the ssleep() call and reworks the console message
+accordinly.  I have a slght concern that the resulting console message is
+too long, feedback welcome.
 
-On Sun, Jul 09, 2006 at 10:09:09AM -0700, Paul Smith wrote:
-> I hesitate to lay this one out here because you all
-> are way over my head. The regular forums have not
-> responded to this in any meaningful way.
-> Hi,=20
->=20
->=20
-> Box:=20
-> Quad 2.5 PPC=20
-> 4.5 GB non ecc 533 Ram=20
-> RocketRaid2320=20
-> Nvida 6600 256mb=20
->=20
->=20
-> software resources:=20
-[snip the wrong iso files]
+For powerpc it also unifies the 32bit and 64bit behaviour.
 
-Look in the experimental directory of your local Gentoo mirror for
-install-ppc64-minimal-dual-core-2006.0-32ul.iso=20
+Fror x86_64, this patch only updates the console message, as
+ssleep() is already not present.
 
-I believe this was because the dual-core patches aren't available in time f=
-or
-the actual release media creation, and this was created later to make the n=
-ewer
-systems usable.
+Signed-Off-By: Horms <horms@verge.net.au>
 
-Additionally, unless you're planning on contributing the the Noveau driver =
-for
-accelerated 2D/3D support on the Nvidia cards, you won't be getting far with
-the nvidia card.
+ arch/arm/kernel/traps.c     |    7 ++-----
+ arch/i386/kernel/traps.c    |    8 +++-----
+ arch/ia64/kernel/traps.c    |    7 ++-----
+ arch/powerpc/kernel/traps.c |   10 +++-------
+ arch/x86_64/kernel/traps.c  |    2 +-
+ arch/xtensa/kernel/traps.c  |    8 +++-----
+ 6 files changed, 14 insertions(+), 28 deletions(-)
 
-Getting an ATI card will give you working 3D in most cases.  See this list =
-for
-what's supported at the bleeding edge:
-http://dri.freedesktop.org/wiki/ATIRadeon#head-298bd23baafb9c2fad1774d1d2fa=
-54bd2aa55e7d
-
---=20
-Robin Hugh Johnson
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
-
---mYCpIKhGyMATD0i+
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks
-
-iD8DBQFEuznrPpIsIjIzwiwRAlP4AJ4gcLsCJYeqteDzRsEjbvZHOCvptQCgtsE2
-6H6cI4+xJdOzQq3qKH7mf8o=
-=9fun
------END PGP SIGNATURE-----
-
---mYCpIKhGyMATD0i+--
+--- a/arch/arm/kernel/traps.c
++++ b/arch/arm/kernel/traps.c
+@@ -232,11 +232,8 @@ NORET_TYPE void die(const char *str, str
+ 	bust_spinlocks(0);
+ 	spin_unlock_irq(&die_lock);
+ 
+-	if (panic_on_oops) {
+-		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
+-		ssleep(5);
+-		panic("Fatal exception");
+-	}
++	if (panic_on_oops)
++		panic("Fatal exception: panic_on_oops");
+ 
+ 	do_exit(SIGSEGV);
+ }
+--- a/arch/i386/kernel/traps.c
++++ b/arch/i386/kernel/traps.c
+@@ -442,11 +442,9 @@ #endif
+ 	if (in_interrupt())
+ 		panic("Fatal exception in interrupt");
+ 
+-	if (panic_on_oops) {
+-		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
+-		ssleep(5);
+-		panic("Fatal exception");
+-	}
++	if (panic_on_oops)
++		panic("Fatal exception: panic_on_oops");
++
+ 	oops_exit();
+ 	do_exit(SIGSEGV);
+ }
+--- a/arch/ia64/kernel/traps.c
++++ b/arch/ia64/kernel/traps.c
+@@ -117,11 +117,8 @@ die (const char *str, struct pt_regs *re
+ 	die.lock_owner = -1;
+ 	spin_unlock_irq(&die.lock);
+ 
+-	if (panic_on_oops) {
+-		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
+-		ssleep(5);
+-		panic("Fatal exception");
+-	}
++	if (panic_on_oops)
++		panic("Fatal exception: panic_on_oops");
+ 
+   	do_exit(SIGSEGV);
+ }
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -150,13 +150,9 @@ #endif
+ 	if (in_interrupt())
+ 		panic("Fatal exception in interrupt");
+ 
+-	if (panic_on_oops) {
+-#ifdef CONFIG_PPC64
+-		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
+-		ssleep(5);
+-#endif
+-		panic("Fatal exception");
+-	}
++	if (panic_on_oops)
++		panic("Fatal exception: panic_on_oops");
++
+ 	do_exit(err);
+ 
+ 	return 0;
+--- a/arch/x86_64/kernel/traps.c
++++ b/arch/x86_64/kernel/traps.c
+@@ -521,7 +521,7 @@ void __kprobes oops_end(unsigned long fl
+ 		/* Nest count reaches zero, release the lock. */
+ 		spin_unlock_irqrestore(&die_lock, flags);
+ 	if (panic_on_oops)
+-		panic("Oops");
++		panic("Fatal exception: panic_on_oops");
+ }
+ 
+ void __kprobes __die(const char * str, struct pt_regs * regs, long err)
+--- a/arch/xtensa/kernel/traps.c
++++ b/arch/xtensa/kernel/traps.c
+@@ -487,11 +487,9 @@ #endif
+ 	if (in_interrupt())
+ 		panic("Fatal exception in interrupt");
+ 
+-	if (panic_on_oops) {
+-		printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
+-		ssleep(5);
+-		panic("Fatal exception");
+-	}
++	if (panic_on_oops)
++		panic("Fatal exception: panic_on_oops");
++
+ 	do_exit(err);
+ }
+ 
