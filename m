@@ -1,26 +1,22 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 9086267B83
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 17:40:34 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k6I8w7bI017496
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 02:58:07 -0600 (MDT)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k6I7eUfK017467
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 02:40:31 -0500 (CDT)
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 812E4679E2
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 22:48:20 +1000 (EST)
+Received: from p54b0d4e4.dip.t-dialin.net ([84.176.212.228] helo=yukito)
+	by mail.genesippc.com with esmtpa (Exim 4.62 (FreeBSD))
+	(envelope-from <matt@genesi-usa.com>) id 1G2ovH-000FM7-0J
+	for linuxppc-dev@ozlabs.org; Tue, 18 Jul 2006 12:43:36 +0000
+From: "Matt Sealey" <matt@genesi-usa.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: AltiVec in the kernel
+Date: Tue, 18 Jul 2006 07:48:07 -0500
+Message-ID: <004c01c6aa68$6f580d00$99dfdfdf@bakuhatsu.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] Add USB to MPC8349 PB platform support
-Date: Tue, 18 Jul 2006 15:40:51 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0509EB@zch01exm20.fsl.freescale.net>
-In-Reply-To: <71D808D5-8227-4B0D-AF41-FADFC4B12463@kernel.crashing.org>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>,
-	"Dan Malek" <dan@embeddedalley.com>
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+	charset="UTF-8"
+Reply-To: matt@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,59 +27,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Tuesday, July 18, 2006 5:39 AM
-> To: Dan Malek
-> Cc: Li Yang-r58472; linuxppc-dev@ozlabs.org;
-linux-usb-devel@lists.sourceforge.net
-> Subject: Re: [PATCH] Add USB to MPC8349 PB platform support
->=20
->=20
-> On Jul 17, 2006, at 3:17 PM, Dan Malek wrote:
->=20
-> >
-> > On Jul 17, 2006, at 3:16 PM, Kumar Gala wrote:
-> >
-> >> I disagree.  You are coming from this from a board that does
-> >> everything under the sun.  I'd like to avoid having this type of
-> >> initialization in the kernel.  There is a whole additional kitchen
-> >> sink that could move into the kernel as well.
-> >
-> > Well, I'm going to have to disagree with your disagreement :-)
-> > The kernel should not assume things are properly initialized
-> > and rely on the boot rom to do such things.  I have several
-> > reasons for this.  One is that we are always pressed to make
-> > embedded systems boot more quickly, and taking time to
-> > initialize things in the boot rom just makes that a totally
-> > inflexible system design.  We don't need to initialize things
-> > we don't use, or can postpone until later.  Two, it makes
-> > us dependent upon a particular boot rom, or boot rom
-> > behavior, that not all boards may choose to support.
-> > Three, board designs may have external logic that requires
-> > a certain start up sequence or control register access
-> > that complicates the boot rom in it's ability to share
-> > code or implementation.
->=20
-> Well, I think there is a coupling that exists between whatever your
-> boot rom is and the kernel.  If you are trying to optimize boot time
-> I'd say one thing you would want is to avoid multiple writing the
-> same configuration registers.
->=20
-> I dont have an issue if a fixed function board decides to do these
-> things in their kernel init instead of their boot rom.  I however,
-> don't want thousand and one config options to support all the various
-> ways one can configure the Freescale board.
+Once upon a time we were all told this wouldn't work for some reason,
+but a lot of documentation now hints that it does actually work and
+for instance there is a RAID5/6 driver (for G5) which uses AltiVec
+in a kernel context.
 
-We won't have the thousand and one config options, making use of the
-device
-tree.  So this is not a problem.
->=20
-> > There are more, but I think you see the trend.  In my
-> > years of doing this kind of development, you can't
-> > assume a boot rom is going to do much more than initialize
-> > memory and load the kernel.  I prefer the flexibility
-> > to be in the kernel, and not in the boot rom, because it
-> > is so much easier to develop and control.
->=20
-> - kumar
+But I didn't find any definitive documentation on how one goes about
+it. The largest clue I found was in Documentation/cpu_features.txt:
+
+	#ifdef CONFIG_ALTIVEC
+	BEGIN_FTR_SECTION
+		mfspr	r22,SPRN_VRSAVE		/* if G4, save vrsave register value */
+		stw	r22,THREAD_VRSAVE(r23)
+	END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+	#endif /* CONFIG_ALTIVEC */
+
+So we can use AltiVec by implementing this kind of wrapper around
+kernel functions which may use AltiVec?
+
+In the code above is there ANY significance of r22 and r23 other
+than that they are fairly high up and probably marked as "will
+be trashed" by all the relevant ABIs and so?
+
+Just curious, as I would like to investigate writing some docs at
+least on this (in article fashion) to go with PPCZone, Libfreevec
+and so on. I think there is a problem here in that simply developers
+who may be interested in doing this kind of optimized code do not
+know where to start (and we are thinking from a point of view of
+also teaching sessions too, like we did at FTF Frankfurt 2004, so
+after we teach them what AltiVec is etc. we demonstrate application
+AND kernel functionality and the quirks associated with it).
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Manager, Genesi, Developer Relations
