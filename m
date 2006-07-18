@@ -1,17 +1,20 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4625A67B8D
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 04:43:28 +1000 (EST)
-Message-Id: <20060718173016.348627000@sipsolutions.net>>
-References: <20060718172841.046446000@sipsolutions.net>>
-Date: Tue, 18 Jul 2006 19:28:43 +0200
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/5] aoa: fix toonie codec
+	by ozlabs.org (Postfix) with ESMTP id C400567B55
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 04:45:36 +1000 (EST)
+Subject: Re: [PATCH 1/5] aoa: feature gpio layer: fix IRQ access
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <20060718173012.532719000@sipsolutions.net>>
+References: <20060718172841.046446000@sipsolutions.net> >
+	<20060718173012.532719000@sipsolutions.net>>
+Content-Type: text/plain
+Date: Tue, 18 Jul 2006 14:45:28 -0400
+Message-Id: <1153248328.5905.67.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: alsa-devel@alsa-project.org
+Cc: linuxppc-dev@ozlabs.org, alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch fixes the toonie codec to be actually usable.
+On Tue, 2006-07-18 at 19:28 +0200, Johannes Berg wrote:
+> plain text document attachment (aoa-get-irq-fix.patch)
+> The IRQ rework caused some hiccups here, in some cases we call
+> get_irq without a device node. This patch makes it catch that
+> case and return NO_IRQ when it happens, along with changing the
+> place where the irq is checked to check for NO_IRQ instead of -1.
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
---- linux-2.6-fetch.orig/sound/aoa/codecs/snd-aoa-codec-toonie.c	2006-07-18 11:40:32.363476868 +0200
-+++ linux-2.6-fetch/sound/aoa/codecs/snd-aoa-codec-toonie.c	2006-07-18 11:52:29.783476868 +0200
-@@ -51,6 +51,13 @@ static struct transfer_info toonie_trans
- 	{}
- };
- 
-+static int toonie_usable(struct codec_info_item *cii,
-+			 struct transfer_info *ti,
-+			 struct transfer_info *out)
-+{
-+	return 1;
-+}
-+
- #ifdef CONFIG_PM
- static int toonie_suspend(struct codec_info_item *cii, pm_message_t state)
- {
-@@ -69,6 +76,7 @@ static struct codec_info toonie_codec_in
- 	.sysclock_factor = 256,
- 	.bus_factor = 64,
- 	.owner = THIS_MODULE,
-+	.usable = toonie_usable,
- #ifdef CONFIG_PM
- 	.suspend = toonie_suspend,
- 	.resume = toonie_resume,
-@@ -79,19 +87,20 @@ static int toonie_init_codec(struct aoa_
- {
- 	struct toonie *toonie = codec_to_toonie(codec);
- 
-+	/* nothing connected? what a joke! */
-+	if (toonie->codec.connected != 1)
-+		return -ENOTCONN;
-+
- 	if (aoa_snd_device_new(SNDRV_DEV_LOWLEVEL, toonie, &ops)) {
- 		printk(KERN_ERR PFX "failed to create toonie snd device!\n");
- 		return -ENODEV;
- 	}
- 
--	/* nothing connected? what a joke! */
--	if (toonie->codec.connected != 1)
--		return -ENOTCONN;
--
- 	if (toonie->codec.soundbus_dev->attach_codec(toonie->codec.soundbus_dev,
- 						     aoa_get_card(),
- 						     &toonie_codec_info, toonie)) {
- 		printk(KERN_ERR PFX "error creating toonie pcm\n");
-+		snd_device_free(aoa_get_card(), toonie);
- 		return -ENODEV;
- 	}
- 
-
---
+> 
+> --- linux-2.6-fetch.orig/sound/aoa/core/snd-aoa-gpio-feature.c	2006-07-16 22:10:02.467630929 +0200
+> +++ linux-2.6-fetch/sound/aoa/core/snd-aoa-gpio-feature.c	2006-07-16 22:13:41.891630929 +0200
+> @@ -112,7 +112,10 @@ static struct device_node *get_gpio(char
+>  
+>  static void get_irq(struct device_node * np, int *irqptr)
+>  {
+> -	*irqptr = irq_of_parse_and_map(np, 0);
+> +	if (np)
+> +		*irqptr = irq_of_parse_and_map(np, 0);
+> +	else
+> +		*irqptr = NO_IRQ;
+>  }
+>  
+>  /* 0x4 is outenable, 0x1 is out, thus 4 or 5 */
+> @@ -322,7 +325,7 @@ static int ftr_set_notify(struct gpio_ru
+>  		return -EINVAL;
+>  	}
+>  
+> -	if (irq == -1)
+> +	if (irq == NO_IRQ)
+>  		return -ENODEV;
+>  
+>  	mutex_lock(&notif->mutex);
+> 
+> --
