@@ -1,22 +1,26 @@
-Return-Path: <76306.1226@compuserve.com>
-Received: from liaag2aa.mx.compuserve.com (liaag2aa.mx.compuserve.com
-	[149.174.40.154]) by ozlabs.org (Postfix) with ESMTP id 1DDEF67BA8
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 11:35:30 +1000 (EST)
-Date: Mon, 17 Jul 2006 21:22:17 -0400
-From: Chuck Ebbert <76306.1226@compuserve.com>
-Subject: Re: [PATCH] panic_on_oops: remove ssleep()
-Sender: Chuck Ebbert <76306.1226@compuserve.com>
-To: Horms <horms@verge.net.au>
-Message-ID: <200607172126_MC3-1-C544-E35A@compuserve.com>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id A270A67B83
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 16:34:17 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	k6I6YDSN019805
+	for <linuxppc-dev@ozlabs.org>; Mon, 17 Jul 2006 23:34:13 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k6I6Y9wg005373
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 01:34:12 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	 charset=us-ascii
-Cc: Andrew Morton <akpm@osdl.org>, Chris Zankel <chris@zankel.net>,
-	Tony Luck <tony.luck@intel.com>,
-	linux-ia64 <linux-ia64@vger.kernel.org>, discuss@x86-64.org,
-	Andi Kleen <ak@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, Russell King <rmk@arm.linux.org.uk>
+	charset="US-ASCII"
+Subject: RE: [linux-usb-devel] [PATCH] Add USB to MPC8349 PB platform support
+Date: Tue, 18 Jul 2006 14:34:29 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0509A9@zch01exm20.fsl.freescale.net>
+In-Reply-To: <200607171557.50368.david-b@pacbell.net>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "David Brownell" <david-b@pacbell.net>,
+	<linux-usb-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,38 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In-Reply-To: <31687.FP.7244@verge.net.au>
+> -----Original Message-----
+> From: David Brownell [mailto:david-b@pacbell.net]
+> Sent: Tuesday, July 18, 2006 6:58 AM
+> To: linux-usb-devel@lists.sourceforge.net
+> Cc: Hollis Blanchard; Kumar Gala; linuxppc-dev@ozlabs.org; Li
+Yang-r58472
+> Subject: Re: [linux-usb-devel] [PATCH] Add USB to MPC8349 PB platform
+support
+>=20
+> On Monday 17 July 2006 1:08 pm, Hollis Blanchard wrote:
+> >
+> > Seems to me that it's far better to have init code in the kernel
+than
+> > firmware.
+>=20
+> If there's a general Linux policy on the issue, I think that'd be it.
 
-On Mon, 17 Jul 2006 12:17:20 -0400, Horms wrote:
-
-> This patch is part of an effort to unify the panic_on_oops behaviour
-> across all architectures that implement it.
-> 
-> It was pointed out to me by Andi Kleen that if an oops has occured
-> in interrupt context, then calling sleep() in the oops path will only cause
-> a panic, and that it would be really better for it not to be in the path at
-> all. 
-
-i386 already checks in_interrupt() and panics immediately:
-
---- a/arch/i386/kernel/traps.c
-+++ b/arch/i386/kernel/traps.c
-@@ -442,11 +442,9 @@ #endif
-===>    if (in_interrupt())
-===>            panic("Fatal exception in interrupt");
- 
--       if (panic_on_oops) {
--               printk(KERN_EMERG "Fatal exception: panic in 5 seconds\n");
--               ssleep(5);
--               panic("Fatal exception");
--       }
-+       if (panic_on_oops)
-+               panic("Fatal exception: panic_on_oops");
-+
-        oops_exit();
-        do_exit(SIGSEGV);
- }
-
--- 
-Chuck
-And did we tell you the name of the game, boy, we call it Riding the Gravy Train.
+Do we have a general policy for this now?
+>=20
+> Plus, remember that boot firmware _can't_ always be changed/bugfixed;
+> sometimes it can, but not as a general rule.
+>=20
+> - Dave
+>=20
+>=20
+> > For one example, look at the x86 video card init problem
+> > PowerPC Linux has. It's also far easier to fix/deploy Linux code
+than
+> > firmware code, as Li observed, and on top of that it's less work for
+> > non-UBoot firmwares in the future.
+> >
+> > -Hollis
+> >
