@@ -1,22 +1,22 @@
 Return-Path: <horms@betty.vergenet.net>
 Received: from betty.vergenet.net (betty.vergenet.net [64.85.198.114])
-	by ozlabs.org (Postfix) with ESMTP id BECC467A3A
+	by ozlabs.org (Postfix) with ESMTP id B5086679A6
 	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 05:57:07 +1000 (EST)
-Date: Tue, 18 Jul 2006 15:13:48 -0400
+Date: Tue, 18 Jul 2006 15:15:00 -0400
 From: Horms <horms@verge.net.au>
-To: Andrew Morton <akpm@osdl.org>
+To: Chuck Ebbert <76306.1226@compuserve.com>
 Subject: Re: [PATCH] panic_on_oops: remove ssleep()
-Message-ID: <20060718191345.GE20141@verge.net.au>
-References: <31687.FP.7244@verge.net.au> <200607180027.51986.ak@suse.de>
-	<20060717231056.GC12463@verge.net.au>
-	<20060717172341.6d49f109.akpm@osdl.org>
+Message-ID: <20060718191456.GF20141@verge.net.au>
+References: <200607172126_MC3-1-C544-E35A@compuserve.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060717172341.6d49f109.akpm@osdl.org>
-Cc: chris@zankel.net, tony.luck@intel.com, linux-ia64@vger.kernel.org,
-	discuss@x86-64.org, ak@suse.de, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org,
-	rmk@arm.linux.org.uk
+In-Reply-To: <200607172126_MC3-1-C544-E35A@compuserve.com>
+Cc: Andrew Morton <akpm@osdl.org>, Chris Zankel <chris@zankel.net>,
+	Tony Luck <tony.luck@intel.com>,
+	linux-ia64 <linux-ia64@vger.kernel.org>, discuss@x86-64.org,
+	Andi Kleen <ak@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>, Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 17, 2006 at 05:23:41PM -0700, Andrew Morton wrote:
-> On Mon, 17 Jul 2006 19:10:59 -0400
-> Horms <horms@verge.net.au> wrote:
+On Mon, Jul 17, 2006 at 09:22:17PM -0400, Chuck Ebbert wrote:
+> In-Reply-To: <31687.FP.7244@verge.net.au>
 > 
-> > On Tue, Jul 18, 2006 at 12:27:51AM +0200, Andi Kleen wrote:
-> > > On Monday 17 July 2006 18:17, Horms wrote:
-> > > ...
-> > > Keeping the delay might be actually useful so that you can see the panic
-> > > before system reboots when reboot on panic is enabled. I would just use a loop
-> > > of mdelays(1) with touch_nmi_watchdog/touch_softirq_watchdog()s
-> > > inbetween.
+> On Mon, 17 Jul 2006 12:17:20 -0400, Horms wrote:
+> 
+> > This patch is part of an effort to unify the panic_on_oops behaviour
+> > across all architectures that implement it.
 > > 
-> > Ok, I will look into making that happen. I agree that the pause is
-> > quite useful.
+> > It was pointed out to me by Andi Kleen that if an oops has occured
+> > in interrupt context, then calling sleep() in the oops path will only cause
+> > a panic, and that it would be really better for it not to be in the path at
+> > all. 
 > 
-> It's kind-of already implemented, via pause_on_oops.  Perhaps doing
-> something like 
-> 
-> 	if (panic_on_oops)
-> 		pause_on_oops = max(pause_on_oops, 5*HZ);
-> 
-> would be sufficient.
+> i386 already checks in_interrupt() and panics immediately:
 
-Thanks, that may well be sufficient. And I assume that it is nicely out
-of the arch-dependant code in die(). I will poke around a bit more.
+Very good point. I guess that needs to be moved to after
+panic_on_oops() if the change that Andi suggests works out.
 
 -- 
 Horms                                           
