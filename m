@@ -1,27 +1,18 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx008.isp.belgacom.be (outmx008.isp.belgacom.be
-	[195.238.5.235])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5946167BBA
+Return-Path: <leisun124@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
+	by ozlabs.org (Postfix) with ESMTP id 5767F67B6B
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 18 Jul 2006 08:13:52 +1000 (EST)
-Received: from outmx008.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx008.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id k6HMDfu1008099
-	for <linuxppc-embedded@ozlabs.org>; Tue, 18 Jul 2006 00:13:41 +0200
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <44BC0B9A.5010103@246tNt.com>
-Date: Tue, 18 Jul 2006 00:13:46 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
+	Tue, 18 Jul 2006 13:40:46 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id c29so33381nfb
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 17 Jul 2006 20:40:45 -0700 (PDT)
+Message-ID: <f9a7e7a80607172040lcf0a280x5df9f44d10a0b7d6@mail.gmail.com>
+Date: Mon, 17 Jul 2006 23:40:44 -0400
+From: "Lei Sun" <leisun124@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: reboot on PQ2FADS board.
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Using bestcomm in an external module (MPC5200B to be exact)
-References: <4496b9a7.1d040e45.6737.ffff8473@mx.gmail.com>	<20060620210335.q9mgydr5ppkogsoo@webmail.bluenox.com>
-	<1151710395.27137.7.camel@localhost.localdomain>
-In-Reply-To: <1151710395.27137.7.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,26 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->> But anyway, it's mainly internal cleanup and adapting drivers
->> from the public version on my git tree to this newest/cleaner
->> version is a 15 min work ;)
->>     
->
-> Any reason why you aren't regulary submitting those patches for upstream
-> inclusion ?
->   
-Yes. What's in there and not in main streams adds quite a lot to
-arch/ppc ... So
-MPC5200 should be adapted to arch/powerpc first and then those changes.
-And since
-no-one did that yet and I haven't done it yet either ... (I must admit I
-had a quick look
-and I didn't understand much on how to do the change ...)
+Hi:
+    I have linux 2.4.30 runnning on this board, the "reboot -f"
+command cause machine check and kernel ooops.  The problem seems in
+the "m8260_gorom" in head.S.  The restart() function in m8260_setup.c
+passed 2 parameters to that assembly code, r3 is the bd_info , r4 is
+the warm start address,  I changed it to 0xFF800100, that's where the
+u-boot's _start_warm lives, I have verified that address by typing "g
+ff800100" in u-boot console, which cause the board reset.
+    I assume the m8260_gorom  has been heavily tested for other
+boards. I wonder if anyone got a PQ2FADS-VR board that has the similar
+problem?  I am not familar with the assembly code for PPC.  Any
+suggestions?
 
-
-    Sylvain
-
-
-PS: Sorry for the lag (like 15 days...) you know email
-problem/appartement change/vacation/... the usual ;)
+Thanks
+lei
