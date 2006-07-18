@@ -2,15 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9013E67B8E
+	by ozlabs.org (Postfix) with ESMTP id 4625A67B8D
 	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 04:43:28 +1000 (EST)
-Message-Id: <20060718173018.070118000@sipsolutions.net>>
+Message-Id: <20060718173016.348627000@sipsolutions.net>>
 References: <20060718172841.046446000@sipsolutions.net>>
-Date: Tue, 18 Jul 2006 19:28:45 +0200
+Date: Tue, 18 Jul 2006 19:28:43 +0200
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/5] aoa: platform function gpio: ignore errors from
-	functions that dont exist
+Subject: [PATCH 2/5] aoa: fix toonie codec
 Mime-Version: 1.0
 Cc: alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,27 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sometimes we simply want to turn off or on everything, and when recently a
-warning was added when a certain platform function can't be called, this
-triggered all the time in those cases. This patch shows the warning only if
-the error was different from the function not existing.
-
-The alternative would be to not even try calling the function when it
-doesn't exist by first checking which exist and then only calling those that
-do, but that adds complexity that isn't necessary.
+This patch fixes the toonie codec to be actually usable.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
---- linux-2.6-fetch.orig/sound/aoa/core/snd-aoa-gpio-pmf.c	2006-07-18 19:24:30.273476868 +0200
-+++ linux-2.6-fetch/sound/aoa/core/snd-aoa-gpio-pmf.c	2006-07-18 19:24:55.103476868 +0200
-@@ -18,7 +18,7 @@ static void pmf_gpio_set_##name(struct g
- 							\
- 	if (unlikely(!rt)) return;				\
- 	rc = pmf_call_function(rt->node, #name "-mute", &args);	\
--	if (rc)							\
-+	if (rc && rc != -ENODEV)				\
- 		printk(KERN_WARNING "pmf_gpio_set_" #name	\
- 		" failed, rc: %d\n", rc);			\
- 	rt->implementation_private &= ~(1<<bit);		\
+--- linux-2.6-fetch.orig/sound/aoa/codecs/snd-aoa-codec-toonie.c	2006-07-18 11:40:32.363476868 +0200
++++ linux-2.6-fetch/sound/aoa/codecs/snd-aoa-codec-toonie.c	2006-07-18 11:52:29.783476868 +0200
+@@ -51,6 +51,13 @@ static struct transfer_info toonie_trans
+ 	{}
+ };
+ 
++static int toonie_usable(struct codec_info_item *cii,
++			 struct transfer_info *ti,
++			 struct transfer_info *out)
++{
++	return 1;
++}
++
+ #ifdef CONFIG_PM
+ static int toonie_suspend(struct codec_info_item *cii, pm_message_t state)
+ {
+@@ -69,6 +76,7 @@ static struct codec_info toonie_codec_in
+ 	.sysclock_factor = 256,
+ 	.bus_factor = 64,
+ 	.owner = THIS_MODULE,
++	.usable = toonie_usable,
+ #ifdef CONFIG_PM
+ 	.suspend = toonie_suspend,
+ 	.resume = toonie_resume,
+@@ -79,19 +87,20 @@ static int toonie_init_codec(struct aoa_
+ {
+ 	struct toonie *toonie = codec_to_toonie(codec);
+ 
++	/* nothing connected? what a joke! */
++	if (toonie->codec.connected != 1)
++		return -ENOTCONN;
++
+ 	if (aoa_snd_device_new(SNDRV_DEV_LOWLEVEL, toonie, &ops)) {
+ 		printk(KERN_ERR PFX "failed to create toonie snd device!\n");
+ 		return -ENODEV;
+ 	}
+ 
+-	/* nothing connected? what a joke! */
+-	if (toonie->codec.connected != 1)
+-		return -ENOTCONN;
+-
+ 	if (toonie->codec.soundbus_dev->attach_codec(toonie->codec.soundbus_dev,
+ 						     aoa_get_card(),
+ 						     &toonie_codec_info, toonie)) {
+ 		printk(KERN_ERR PFX "error creating toonie pcm\n");
++		snd_device_free(aoa_get_card(), toonie);
+ 		return -ENODEV;
+ 	}
+ 
 
 --
