@@ -1,14 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <horms@betty.vergenet.net>
+Received: from betty.vergenet.net (betty.vergenet.net [64.85.198.114])
+	by ozlabs.org (Postfix) with ESMTP id BECC467A3A
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 05:57:07 +1000 (EST)
+Date: Tue, 18 Jul 2006 15:13:48 -0400
+From: Horms <horms@verge.net.au>
+To: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] panic_on_oops: remove ssleep()
+Message-ID: <20060718191345.GE20141@verge.net.au>
+References: <31687.FP.7244@verge.net.au> <200607180027.51986.ak@suse.de>
+	<20060717231056.GC12463@verge.net.au>
+	<20060717172341.6d49f109.akpm@osdl.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17597.7594.554879.945280@cargo.ozlabs.ibm.com>
-Date: Wed, 19 Jul 2006 03:43:06 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: matt@genesi-usa.com
-Subject: Re: AltiVec in the kernel
-In-Reply-To: <004c01c6aa68$6f580d00$99dfdfdf@bakuhatsu.net>
-References: <004c01c6aa68$6f580d00$99dfdfdf@bakuhatsu.net>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20060717172341.6d49f109.akpm@osdl.org>
+Cc: chris@zankel.net, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	discuss@x86-64.org, ak@suse.de, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org,
+	rmk@arm.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,48 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Matt Sealey writes:
-
-> Once upon a time we were all told this wouldn't work for some reason,
-> but a lot of documentation now hints that it does actually work and
-> for instance there is a RAID5/6 driver (for G5) which uses AltiVec
-> in a kernel context.
-
-It's possible, with some restrictions, basically the same restrictions
-on using floating point in the kernel.
-
-Kernel use of altivec interacts with the lazy altivec context switch
-that we do on UP kernels, and the fact that the kernel context switch
-doesn't save/restore the altivec state.  That means that before using
-altivec in the kernel you may have to save away the altivec state, and
-you have to make sure you don't sleep or get preempted while using
-altivec.
-
-> But I didn't find any definitive documentation on how one goes about
-> it. The largest clue I found was in Documentation/cpu_features.txt:
+On Mon, Jul 17, 2006 at 05:23:41PM -0700, Andrew Morton wrote:
+> On Mon, 17 Jul 2006 19:10:59 -0400
+> Horms <horms@verge.net.au> wrote:
 > 
-> 	#ifdef CONFIG_ALTIVEC
-> 	BEGIN_FTR_SECTION
-> 		mfspr	r22,SPRN_VRSAVE		/* if G4, save vrsave register value */
-> 		stw	r22,THREAD_VRSAVE(r23)
-> 	END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
-> 	#endif /* CONFIG_ALTIVEC */
+> > On Tue, Jul 18, 2006 at 12:27:51AM +0200, Andi Kleen wrote:
+> > > On Monday 17 July 2006 18:17, Horms wrote:
+> > > ...
+> > > Keeping the delay might be actually useful so that you can see the panic
+> > > before system reboots when reboot on panic is enabled. I would just use a loop
+> > > of mdelays(1) with touch_nmi_watchdog/touch_softirq_watchdog()s
+> > > inbetween.
+> > 
+> > Ok, I will look into making that happen. I agree that the pause is
+> > quite useful.
 > 
-> So we can use AltiVec by implementing this kind of wrapper around
-> kernel functions which may use AltiVec?
+> It's kind-of already implemented, via pause_on_oops.  Perhaps doing
+> something like 
+> 
+> 	if (panic_on_oops)
+> 		pause_on_oops = max(pause_on_oops, 5*HZ);
+> 
+> would be sufficient.
 
-No, that's irrelevant; that just has to do with the VRSAVE register,
-not the altivec state.  In fact VRSAVE isn't actually even part of the
-altivec state.
+Thanks, that may well be sufficient. And I assume that it is nicely out
+of the arch-dependant code in die(). I will poke around a bit more.
 
-> In the code above is there ANY significance of r22 and r23 other
-> than that they are fairly high up and probably marked as "will
-> be trashed" by all the relevant ABIs and so?
-
-I hope we do a bit better than "probably" ... :)  No, there is no
-particular significance to the choice of r22 and r23.  If you read the
-code you will see that those registers are saved at the beginning of
-the context switch routine and restored (from the new process's stack)
-at the end.
-
-Paul.
+-- 
+Horms                                           
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
