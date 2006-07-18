@@ -1,22 +1,31 @@
-Return-Path: <horms@betty.vergenet.net>
-Received: from betty.vergenet.net (betty.vergenet.net [64.85.198.114])
-	by ozlabs.org (Postfix) with ESMTP id B5086679A6
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 05:57:07 +1000 (EST)
-Date: Tue, 18 Jul 2006 15:15:00 -0400
-From: Horms <horms@verge.net.au>
-To: Chuck Ebbert <76306.1226@compuserve.com>
-Subject: Re: [PATCH] panic_on_oops: remove ssleep()
-Message-ID: <20060718191456.GF20141@verge.net.au>
-References: <200607172126_MC3-1-C544-E35A@compuserve.com>
-MIME-Version: 1.0
+Return-Path: <mkravetz@us.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1077C67B32
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 06:47:08 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6IKl5iZ000573
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 16:47:05 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6IKl4ZN231046
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 16:47:05 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6IKl4VN005374
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 16:47:04 -0400
+Date: Tue, 18 Jul 2006 13:47:23 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
+Message-ID: <20060718204723.GA6104@w-mikek2.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200607172126_MC3-1-C544-E35A@compuserve.com>
-Cc: Andrew Morton <akpm@osdl.org>, Chris Zankel <chris@zankel.net>,
-	Tony Luck <tony.luck@intel.com>,
-	linux-ia64 <linux-ia64@vger.kernel.org>, discuss@x86-64.org,
-	Andi Kleen <ak@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Anton Blanchard <anton@samba.org>, Russell King <rmk@arm.linux.org.uk>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +35,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jul 17, 2006 at 09:22:17PM -0400, Chuck Ebbert wrote:
-> In-Reply-To: <31687.FP.7244@verge.net.au>
-> 
-> On Mon, 17 Jul 2006 12:17:20 -0400, Horms wrote:
-> 
-> > This patch is part of an effort to unify the panic_on_oops behaviour
-> > across all architectures that implement it.
-> > 
-> > It was pointed out to me by Andi Kleen that if an oops has occured
-> > in interrupt context, then calling sleep() in the oops path will only cause
-> > a panic, and that it would be really better for it not to be in the path at
-> > all. 
-> 
-> i386 already checks in_interrupt() and panics immediately:
-
-Very good point. I guess that needs to be moved to after
-panic_on_oops() if the change that Andi suggests works out.
+A small update from the last version.  By popular demand, both
+wall time (mftb) and cpu cycles(PURR) are collected for each call.
+It is interesting to see these two values side by side in the
+output files.
 
 -- 
-Horms                                           
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+Mike
