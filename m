@@ -1,36 +1,18 @@
-Return-Path: <mkravetz@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5AF8A67B93
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 08:10:45 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	k6JMAgRi018940
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 18:10:42 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
-	k6JMAf4u156800
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 16:10:41 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	k6JMAfxc008642
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 16:10:41 -0600
-Date: Wed, 19 Jul 2006 15:11:00 -0700
-From: Mike Kravetz <kravetz@us.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
-Message-ID: <20060719221100.GB3087@w-mikek2.ibm.com>
-References: <20060718204723.GA6104@w-mikek2.ibm.com>
-	<17597.19430.983453.919592@cargo.ozlabs.ibm.com>
-	<20060719033618.GA3944@monkey.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060719033618.GA3944@monkey.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <g.liakhovetski@gmx.de>
+Date: Thu, 20 Jul 2006 00:29:04 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [HACK] add sandpoint + flattened dt support to arch/powerpc/boot
+In-Reply-To: <20060719221019.GA32203@mag.az.mvista.com>
+Message-ID: <Pine.LNX.4.60.0607200008560.9110@poirot.grange>
+References: <20060518002142.GA23182@mag.az.mvista.com>
+	<1147930376.17679.72.camel@localhost.localdomain>
+	<20060523005846.GA15797@mag.az.mvista.com>
+	<Pine.LNX.4.60.0607192144310.6432@poirot.grange>
+	<20060719221019.GA32203@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,22 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 18, 2006 at 08:36:18PM -0700, Mike Kravetz wrote:
-> > My other comment is this: wouldn't it actually turn out simpler if we
-> > read the timebase (and PURR, if we really want to do that too) in the
-> > assembly code that implements plpar_hcall_*?
+On Wed, 19 Jul 2006, Mark A. Greer wrote:
 > 
-> I'll give that a try.  My assembly skills are a bit rusty, so it may
-> take a little longer to produce something.
+> Ben and I have talked a little bit privately and the ball is in my court
+> to produce a set of patches.  To that end, I have them ready so expect to
+> see them shortly.
 
-Getting the timebase and PURR in assembly is easy enough.  So, I thought
-about updating the per-cpu statistics while in there.  But, I couldn't
-find any other assembly code that does this.  Sure there is asm code that
-updated fields in the PACA, but none that messes with paca.data_offset
-(that I could find).
+Great! So, I can really relax and enjoy my holiday next week in beautiful 
+Eifel:-) And as your patches arrive we'll see how best to integrate 
+kurobox with them.
 
-Should the statistic updates also be done in the assembly routines?  Or,
-how about a call out to a C routine for this?
+One question so far. Looking at your sandpoint.dts pci map:
 
--- 
-Mike
+	ranges = <80000000 80000000 70000000	/* pci mem space */
+		  fc000000 fc000000 00100000	/* EUMB */
+		  fe000000 fe000000 00c00000	/* pci i/o space */
+		  fec00000 fec00000 00300000	/* pci cfg regs */
+		  fef00000 fef00000 00100000>;	/* pci iack */
+
+I can match hardware addresses against defines in 
+include/asm-ppc/mpc10x.h, but virtual one - is the map above just an 
+example and anyway-not-used, or is it a new mapping, or am I missing 
+something and it has always been like that (1-to-1)? At least this comment
+
+ * MAP B (CHRP Map)
+ *   Processor: 0xfe000000 - 0xfebfffff -> PCI I/O: 0x00000000 - 0x00bfffff
+ *   Processor: 0x80000000 - 0xbfffffff -> PCI MEM: 0x80000000 - 0xbfffffff
+ *   PCI MEM:   0x00000000 -> Processor System Memory: 0x00000000
+ *   EUMB mapped to: ioremap_base - 0x00100000 (ioremap_base - 1 MB)
+
+seems to contradict with the above map in pci io area, as well as this 
+one:
+
+	 * Want processor accesses of 0xFDxxxxxx to be mapped
+	 * to PCI memory space at 0x00000000.  Do not want
+
+Actually, I cannot even match these 2 together?
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
