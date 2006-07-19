@@ -1,17 +1,36 @@
-Return-Path: <mgreer@mvista.com>
-Date: Wed, 19 Jul 2006 15:10:19 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [HACK] add sandpoint + flattened dt support to arch/powerpc/boot
-Message-ID: <20060719221019.GA32203@mag.az.mvista.com>
-References: <20060518002142.GA23182@mag.az.mvista.com>
-	<1147930376.17679.72.camel@localhost.localdomain>
-	<20060523005846.GA15797@mag.az.mvista.com>
-	<Pine.LNX.4.60.0607192144310.6432@poirot.grange>
+Return-Path: <mkravetz@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5AF8A67B93
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 08:10:45 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6JMAgRi018940
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 18:10:42 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6JMAf4u156800
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 16:10:41 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6JMAfxc008642
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 16:10:41 -0600
+Date: Wed, 19 Jul 2006 15:11:00 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 0/3] powerpc: Instrument Hypervisor Calls
+Message-ID: <20060719221100.GB3087@w-mikek2.ibm.com>
+References: <20060718204723.GA6104@w-mikek2.ibm.com>
+	<17597.19430.983453.919592@cargo.ozlabs.ibm.com>
+	<20060719033618.GA3944@monkey.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.60.0607192144310.6432@poirot.grange>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <20060719033618.GA3944@monkey.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +40,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Guennadi,
-
-On Wed, Jul 19, 2006 at 10:02:01PM +0200, Guennadi Liakhovetski wrote:
-> Mark, Ben,
+On Tue, Jul 18, 2006 at 08:36:18PM -0700, Mike Kravetz wrote:
+> > My other comment is this: wouldn't it actually turn out simpler if we
+> > read the timebase (and PURR, if we really want to do that too) in the
+> > assembly code that implements plpar_hcall_*?
 > 
-> On Mon, 22 May 2006, Mark A. Greer wrote:
-> 
-> > Thanks for your time, Ben.  Sorry for taking so long to get back to you.
-> 
-> don't have much to comment to specific points, but quoting the entire 
-> discussion below in case you'll want to further add to it.
+> I'll give that a try.  My assembly skills are a bit rusty, so it may
+> take a little longer to produce something.
 
-Ben and I have talked a little bit privately and the ball is in my court
-to produce a set of patches.  To that end, I have them ready so expect to
-see them shortly.
+Getting the timebase and PURR in assembly is easy enough.  So, I thought
+about updating the per-cpu statistics while in there.  But, I couldn't
+find any other assembly code that does this.  Sure there is asm code that
+updated fields in the PACA, but none that messes with paca.data_offset
+(that I could find).
 
-> What's the status of this work? Mark, have you been further working on 
-> your port?
+Should the statistic updates also be done in the assembly routines?  Or,
+how about a call out to a C routine for this?
 
-Patches to come...
-
-> I'd like to integrate kurobox/linkstation support with 
-> sandpoint (also 8241). I think, it would be very interesting as it would 
-> allow us to develop / test the "universal" kernel idea, and at the same 
-> time explore the limits of board-specific support. Kurobox have a couple 
-> of very nice "specialities", like a serially attached AVR acting as a 
-> power-manager, thus requiring __special__ halt and reboot callbacks (so, 
-> please, Ben, don't remove them).
->
-> Any progress with fdt-parsing library for the wrapper / kernel and with 
-> replacing hard-coded constants and tables with dt-entries?
-
-No real progress with making a library because even though a lot of
-functionality is duplicated, most of the kernel code does it on an
-internal representation of the fdt and not on the actual fdt.  The
-bootwrapper code needs to work directly on the fdt so I didn't bother
-library-izing it.  Once the dust settles, we can library-ize the duplicate
-code but for now, its all in arch/powerpc/boot/fdt.c (in my upcoming patches).
-
-> I'd love to discuss the stuff and come to an acceptable design / APIs.
-
-Me too. :)
-
-Mark
+-- 
+Mike
