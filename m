@@ -1,25 +1,21 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id ABE4667BAB
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 16:30:21 +1000 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	k6J6UJmB020833
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 23:30:19 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k6J6UH8q024492
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 01:30:18 -0500 (CDT)
+Return-Path: <marc.leeman@gmail.com>
+Received: from scorpius.homelinux.org (unknown [213.219.165.150])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 31B3B67BA5
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 18:02:53 +1000 (EST)
+Date: Wed, 19 Jul 2006 09:21:54 +0200
+From: Marc Leeman <marc.leeman@gmail.com>
+To: none none <menwn@yahoo.co.uk>
+Subject: Re: [gmail] Linux bin Commands download
+Message-ID: <20060719072154.GS5219@scorpius.homelinux.org>
+References: <20060718123527.75952.qmail@web26204.mail.ukl.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] Add USB to MPC8349 PB platform support
-Date: Wed, 19 Jul 2006 14:30:38 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D050B55@zch01exm20.fsl.freescale.net>
-In-Reply-To: <41AD230F-91E8-442A-B9F9-9892D14BEF12@kernel.crashing.org>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="rePSHXHJe0GetUdz"
+In-Reply-To: <20060718123527.75952.qmail@web26204.mail.ukl.yahoo.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: Marc Leeman <marc.leeman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,56 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Tuesday, July 18, 2006 9:53 PM
-> To: Li Yang-r58472
-> Cc: Dan Malek; linuxppc-dev@ozlabs.org;
-linux-usb-devel@lists.sourceforge.net
-> Subject: Re: [PATCH] Add USB to MPC8349 PB platform support
->=20
-> [snip]
->=20
-> >> Well, I think there is a coupling that exists between whatever your
-> >> boot rom is and the kernel.  If you are trying to optimize boot
-time
-> >> I'd say one thing you would want is to avoid multiple writing the
-> >> same configuration registers.
-> >>
-> >> I dont have an issue if a fixed function board decides to do these
-> >> things in their kernel init instead of their boot rom.  I however,
-> >> don't want thousand and one config options to support all the
-various
-> >> ways one can configure the Freescale board.
-> >
-> > We won't have the thousand and one config options, making use of the
-> > device
-> > tree.  So this is not a problem.
->=20
-> I'm talking about opening the door to a ton of options, not that we
-> have them now.  For example, your patch doesnt handle the USB PHYs if
-> they are on the MDS instead of the SYS board.  It doesn't handle
-> setting SCCR properly for different frequency choices.  I'm concerned
-> about where to draw the line because of all the ways a user can
-> configure the MDS board.
 
-My understanding is that in embedded world only this kind of versatile
-development boards needs to have Linux port in mainstream kernel.  A
-fixed function customer board used in embedded product will never get
-into kernel source.
+--rePSHXHJe0GetUdz
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The reasons for Freescale to provide this kind of boards are: first,
-verify functions on chip; second, demonstrate chip functions to
-customer; third, validate customer application on reference board;
-forth, help customer to build their own product by cutting down the
-board and software.
+> I would like to download precompiled linux commands
+> and programs for powerPC but i cannot find any
+> binaries anyware. Are there any links?
+> thanks in advance
 
-Doing that, we do need some configure options to demonstrate main
-functions.  But there won't be too many options to confuse the user.
-Only key working modes are needed.  In your example, I think making USB
-PHYs configurable for MDS is reasonable, but for SCCR it isn't as it is
-well commented in code and is not likely to be modified.  Keep in mind
-that our only purpose is making customers easier and faster in
-developing their own products.
->=20
-> - kumar
+You probably haven't been looking very hard (or at all). See e.g.
+http://www.debian.org
+
+
+--=20
+  greetz, marc
+It's not Kansas, and you're way too homely to be Auntie Em, but... Come
+here, Toto.
+	Crichton - That Old Black Magic
+scorpius.homelinux.org 2.6.17 #2 PREEMPT Thu Jun 22 07:18:33 CEST 2006 GNU/=
+Linux
+
+--rePSHXHJe0GetUdz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQFEvd2SUQpj09NWLeERAgJHAJ9SoM0vKjgp76c/m/+BMHiZnoevkgCfYc9F
+g+gw9Kvai2RGmJcydV1KgG8=
+=pUqZ
+-----END PGP SIGNATURE-----
+
+--rePSHXHJe0GetUdz--
