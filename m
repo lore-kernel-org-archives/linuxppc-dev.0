@@ -1,9 +1,9 @@
 Return-Path: <mgreer@mvista.com>
-Date: Wed, 19 Jul 2006 16:05:44 -0700
+Date: Wed, 19 Jul 2006 16:12:44 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/6] bootwrapper: Add device tree ops for flattened device tree
-Message-ID: <20060719230544.GD3887@mag.az.mvista.com>
+Subject: [PATCH 4/6] bootwrapper: Add non-OF serial console support
+Message-ID: <20060719231244.GE3887@mag.az.mvista.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -15,558 +15,406 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the device tree operations (dt_ops) for a flattened
-device tree (fdt).
+This patch adds support for serial I/O to the bootwrapper.
+
+It is broken into 2 layers.  The first layer is generic serial
+operations that calls uart-specific routines to do the actual I/O.
+The second layer contains support for a 16550 compatible uart.
+
+The division allows support for other serial devices to be easily
+added in the future (e.g., the Marvell MPSC and the Freescale CPM).
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 --
 
- Makefile |    2 
- fdt.c    |  525 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 526 insertions(+), 1 deletion(-)
+ io.h      |   53 ++++++++++++++++++++++++++++
+ ns16550.c |  117 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ serial.c  |   89 +++++++++++++++++++++++++++++++++++++++++++++++
+ util.S    |  101 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 360 insertions(+)
 --
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index c2bb541..3e767e5 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -36,7 +36,7 @@ zliblinuxheader := zlib.h zconf.h zutil.
- $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) $(addprefix $(obj)/,$(zlibheader))
- #$(addprefix $(obj)/,main.o): $(addprefix $(obj)/,zlib.h)
- 
--src-boot := crt0.S string.S stdio.c main.c div64.S
-+src-boot := crt0.S string.S stdio.c main.c div64.S fdt.c
- ifeq ($(CONFIG_PPC_MULTIPLATFORM),y)
- src-boot += of.c
- endif
-diff --git a/arch/powerpc/boot/fdt.c b/arch/powerpc/boot/fdt.c
+diff --git a/arch/powerpc/boot/io.h b/arch/powerpc/boot/io.h
 new file mode 100644
-index 0000000..ad7e7d5
+index 0000000..05c5348
 --- /dev/null
-+++ b/arch/powerpc/boot/fdt.c
-@@ -0,0 +1,525 @@
++++ b/arch/powerpc/boot/io.h
+@@ -0,0 +1,53 @@
++#ifndef _IO_H
++#define __IO_H
 +/*
-+ * Simple dtb (binary flattened device tree) search/manipulation routines.
++ * Low-level I/O routines.
++ *
++ * Copied from <file:include/asm-powerpc/io.h>
++ */
++static inline int in_8(const volatile unsigned char *addr)
++{
++	int ret;
++
++	__asm__ __volatile__("lbz%U1%X1 %0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "m" (*addr));
++	return ret;
++}
++
++static inline void out_8(volatile unsigned char *addr, int val)
++{
++	__asm__ __volatile__("stb%U0%X0 %1,%0; sync"
++			     : "=m" (*addr) : "r" (val));
++}
++
++static inline unsigned in_le32(const volatile unsigned *addr)
++{
++	unsigned ret;
++
++	__asm__ __volatile__("lwbrx %0,0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "r" (addr), "m" (*addr));
++	return ret;
++}
++
++static inline unsigned in_be32(const volatile unsigned *addr)
++{
++	unsigned ret;
++
++	__asm__ __volatile__("lwz%U1%X1 %0,%1; twi 0,%0,0; isync"
++			     : "=r" (ret) : "m" (*addr));
++	return ret;
++}
++
++static inline void out_le32(volatile unsigned *addr, int val)
++{
++	__asm__ __volatile__("stwbrx %1,0,%2; sync" : "=m" (*addr)
++			     : "r" (val), "r" (addr));
++}
++
++static inline void out_be32(volatile unsigned *addr, int val)
++{
++	__asm__ __volatile__("stw%U0%X0 %1,%0; sync"
++			     : "=m" (*addr) : "r" (val));
++}
++
++#endif /* _IO_H */
+diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
+new file mode 100644
+index 0000000..661cfff
+--- /dev/null
++++ b/arch/powerpc/boot/ns16550.c
+@@ -0,0 +1,117 @@
++/*
++ * 16550 serial console support.
++ *
++ * Copied from <file:arch/ppc/boot/common/ns16550.c>
++ * Fdt code, etc. added by Mark A. Greer <mgreer@mvista.com>
++ */
++#include <stdarg.h>
++#include <stddef.h>
++#include "types.h"
++#include "string.h"
++#include "stdio.h"
++#include "io.h"
++#include "ops.h"
++
++#define UART_DLL	0	/* Out: Divisor Latch Low */
++#define UART_DLM	1	/* Out: Divisor Latch High */
++#define UART_FCR	2	/* Out: FIFO Control Register */
++#define UART_LCR	3	/* Out: Line Control Register */
++#define UART_MCR	4	/* Out: Modem Control Register */
++#define UART_LSR	5	/* In:  Line Status Register */
++#define UART_LSR_THRE	0x20	/* Transmit-hold-register empty */
++#define UART_LSR_DR	0x01	/* Receiver data ready */
++#define UART_MSR	6	/* In:  Modem Status Register */
++#define UART_SCR	7	/* I/O: Scratch Register */
++
++int
++ns16550_get_dt_info(struct serial_console_data *scdp)
++{
++	u64 addr;
++	u32 reg[2], reg_shift;
++	void *devp;
++	char path[MAX_PATH_LEN+1], compat[MAX_PATH_LEN+1];
++
++	scdp->base = NULL;
++	scdp->reg_shift = 0;
++
++	if ((devp = finddevice("/chosen"))
++			&& (getprop(devp, "linux,stdout-path", path,
++					sizeof(path)) > 0)
++			&& (devp = finddevice(path))
++			&& (getprop(devp, "compatible", compat, sizeof(compat))
++				> 0)
++			&& !strcmp(compat, "ns16550")
++			&& (getprop(devp, "reg", reg, sizeof(reg))
++				== sizeof(reg))) {
++
++		addr = ops->dt_ops->translate_addr(path, reg, sizeof(reg));
++		scdp->base = (unsigned char *)((u32)addr & 0xffffffffu);
++
++		if (getprop(devp, "reg_shift", &reg_shift, sizeof(reg_shift))
++				== sizeof(reg_shift))
++			scdp->reg_shift = reg_shift;
++		return 0;
++	}
++	return -1;
++}
++
++static int
++ns16550_open(void)
++{
++	struct serial_console_data *scdp = ops->console_ops->data;
++
++	if (ns16550_get_dt_info(scdp) < 0)
++		return -1;
++
++	out_8(scdp->base + (UART_FCR << scdp->reg_shift), 0x06);
++	return 0;
++}
++
++static void
++ns16550_putc(unsigned char c)
++{
++	struct serial_console_data *scdp = ops->console_ops->data;
++	while ((in_8(scdp->base + (UART_LSR << scdp->reg_shift))
++							& UART_LSR_THRE) == 0);
++	out_8(scdp->base, c);
++}
++
++static unsigned char
++ns16550_getc(void)
++{
++	struct serial_console_data *scdp = ops->console_ops->data;
++	while ((in_8(scdp->base + (UART_LSR << scdp->reg_shift))
++							& UART_LSR_DR) == 0);
++	return in_8(scdp->base);
++}
++
++static u8
++ns16550_tstc(void)
++{
++	struct serial_console_data *scdp = ops->console_ops->data;
++	return ((in_8(scdp->base + (UART_LSR << scdp->reg_shift)) & UART_LSR_DR)
++			!= 0);
++}
++
++static struct serial_console_data ns16550_scd;
++static struct console_ops ns16550_console_ops;
++
++struct console_ops *
++ns16550_init(void)
++{
++	ns16550_scd.open = ns16550_open;
++	ns16550_scd.putc = ns16550_putc;
++	ns16550_scd.getc = ns16550_getc;
++	ns16550_scd.tstc = ns16550_tstc;
++	ns16550_scd.close = NULL;
++	ns16550_scd.base = NULL;
++	ns16550_scd.reg_shift = 0;
++
++	ns16550_console_ops.open = serial_open;
++	ns16550_console_ops.write = serial_write;
++	ns16550_console_ops.edit_cmdline = serial_edit_cmdline;
++	ns16550_console_ops.close = serial_close;
++	ns16550_console_ops.data = &ns16550_scd;
++
++	return &ns16550_console_ops;
++}
+diff --git a/arch/powerpc/boot/serial.c b/arch/powerpc/boot/serial.c
+new file mode 100644
+index 0000000..6d064cb
+--- /dev/null
++++ b/arch/powerpc/boot/serial.c
+@@ -0,0 +1,89 @@
++/*
++ * Generic serial console support
 + *
 + * Author: Mark A. Greer <mgreer@mvista.com>
-+ * 	- The code for strrchr() was copied from lib/string.c and is
-+ * 	copyrighted by Linus Torvalds.
-+ * 	- The smarts for fdt_finddevice() were copied with the author's
-+ * 	permission from u-boot:common/ft_build.c which was written by
-+ * 	Pantelis Antoniou <pantelis@embeddedalley.com>.
-+ * 	- Many of the routines related to fdt_translate_addr() came
-+ * 	from arch/powerpc/kernel/prom_parse.c which has no author or
-+ * 	copyright notice.
 + *
-+ * 2006 (c) MontaVista, Software, Inc.  This file is licensed under
++ * Code in serial_edit_cmdline() copied from <file:arch/ppc/boot/simple/misc.c>
++ * and was written by Matt Porter <mporter@kernel.crashing.org>.
++ *
++ * 2001,2006 (c) MontaVista, Software, Inc.  This file is licensed under
 + * the terms of the GNU General Public License version 2.  This program
 + * is licensed "as is" without any warranty of any kind, whether express
 + * or implied.
 + */
-+
-+/* Supports dtb version 0x10 only */
-+
 +#include <stdarg.h>
 +#include <stddef.h>
 +#include "types.h"
-+#include "page.h"
 +#include "string.h"
 +#include "stdio.h"
++#include "io.h"
 +#include "ops.h"
 +
-+/* Definitions used by the flattened device tree */
-+#define OF_DT_HEADER		0xd00dfeed	/* marker */
-+#define OF_DT_BEGIN_NODE	0x1		/* Start of node, full name */
-+#define OF_DT_END_NODE		0x2		/* End node */
-+#define OF_DT_PROP		0x3		/* Property: name off, size,
-+						 * content */
-+#define OF_DT_NOP		0x4		/* nop */
-+#define OF_DT_END		0x9
++extern void udelay(long delay);
 +
-+#define OF_DT_VERSION		0x10
-+
-+struct boot_param_header
++int
++serial_open(void)
 +{
-+	u32	magic;			/* magic word OF_DT_HEADER */
-+	u32	totalsize;		/* total size of DT block */
-+	u32	off_dt_struct;		/* offset to structure */
-+	u32	off_dt_strings;		/* offset to strings */
-+	u32	off_mem_rsvmap;		/* offset to memory reserve map */
-+	u32	version;		/* format version */
-+	u32	last_comp_version;	/* last compatible version */
-+	/* version 2 fields below */
-+	u32	boot_cpuid_phys;	/* Physical CPU id we're booting on */
-+	/* version 3 fields below */
-+	u32	dt_strings_size;	/* size of the DT strings block */
-+};
-+
-+static void *dtb_start;
-+static void *dtb_end;
-+
-+#define MAX_ADDR_CELLS	4
-+#define BAD_ADDR	((u64)-1)
-+
-+struct fdt_bus {
-+	u64	(*map)(u32 *addr, u32 *range, int na, int ns, int pna);
-+	int	(*translate)(u32 *addr, u64 offset, int na);
-+};
-+
-+static inline struct boot_param_header *
-+fdt_get_bph(void *dt_blob)
-+{
-+	return (struct boot_param_header *)dt_blob;
++	struct serial_console_data *scdp = ops->console_ops->data;
++	return scdp->open();
 +}
 +
-+static char *
-+fdt_strrchr(const char *s, int c)
++void
++serial_write(char *buf, int len)
 +{
-+	const char *p = s + strlen(s);
++	struct serial_console_data *scdp = ops->console_ops->data;
 +
-+	do {
-+		if (*p == (char)c)
-+			return (char *)p;
-+	} while (--p >= s);
-+	return NULL;
++	while (*buf != '\0')
++		scdp->putc(*buf++);
 +}
 +
-+/* 'path' is modified */
-+static void
-+fdt_parentize(char *path, u8 leave_slash)
++void
++serial_edit_cmdline(char *buf, int len)
 +{
-+	char *s = &path[strlen(path) - 1];
++	int timer = 0, count;
++	char ch, *cp;
++	struct serial_console_data *scdp = ops->console_ops->data;
 +
-+	if (*s == '/')
-+		*s = '\0';
-+	s = fdt_strrchr(path, '/');
-+	if (s != NULL) {
-+		if (leave_slash)
-+			s[1] = '\0';
-+		else if (s[0] == '/')
-+			s[0] = '\0';
-+	}
-+}
++	cp = buf;
++	count = strlen(buf);
++	cp = &buf[count];
++	count++;
 +
-+static inline u32 *
-+fdt_next(u32 *dp, u32 **tagpp, char **namepp, char **datapp, u32 **sizepp)
-+{
-+	static char *str_region;
-+
-+	*namepp = NULL;
-+	*datapp = NULL;
-+	*sizepp = NULL;
-+
-+	if (dp == NULL) { /* first time */
-+		struct boot_param_header *bph = fdt_get_bph(dtb_start);
-+
-+		if (bph->magic != OF_DT_HEADER) {
-+			*tagpp = NULL;
-+			return NULL;
-+		}
-+		dp = (u32 *)((u32)dtb_start + bph->off_dt_struct);
-+		str_region = (char *)((u32)dtb_start + bph->off_dt_strings);
-+	}
-+
-+	*tagpp = dp;
-+
-+	switch (*dp++) { /* Tag */
-+	case OF_DT_PROP:
-+		*sizepp = dp++;
-+		*namepp = str_region + *dp++;
-+		*datapp = (char *)dp;
-+		dp = (u32 *)_ALIGN_UP((unsigned long)dp + **sizepp, 4);
-+		break;
-+	case OF_DT_BEGIN_NODE:
-+		*namepp = (char *)dp;
-+		dp = (u32 *)_ALIGN_UP((u32)dp + strlen((char *)dp) + 1, 4);
-+		break;
-+	case OF_DT_END_NODE:
-+	case OF_DT_NOP:
-+		break;
-+	case OF_DT_END:
-+	default:
-+		dp = NULL;
-+		break;
-+	}
-+
-+	return dp;
-+}
-+
-+static void *
-+fdt_finddevice(const char *name)
-+{
-+	u32 *dp, *tagp, *sizep;
-+	char *namep, *datap;
-+	static char path[MAX_PATH_LEN];
-+
-+	path[0] = '\0';
-+	dp = NULL;
-+
-+	while ((dp = fdt_next(dp, &tagp, &namep, &datap, &sizep)) != NULL)
-+		switch (*tagp) {
-+		case OF_DT_BEGIN_NODE:
-+			strcat(path, namep);
-+			if (!strcmp(path, name))
-+				return tagp;
-+			strcat(path, "/");
-+			break;
-+		case OF_DT_END_NODE:
-+			fdt_parentize(path, 1);
-+			break;
-+		}
-+	return NULL;
-+}
-+
-+static int
-+fdt_getprop(void *node, const char *name, void *buf, int buflen)
-+{
-+	u32 *dp, *tagp, *sizep, size;
-+	char *namep, *datap;
-+	int level;
-+
-+	level = 0;
-+	dp = node;
-+
-+	while ((dp = fdt_next(dp, &tagp, &namep, &datap, &sizep)) != NULL)
-+		switch (*tagp) {
-+		case OF_DT_PROP:
-+			if ((level == 1) && !strcmp(namep, name)) {
-+				size = min(*sizep, (u32)buflen);
-+				memcpy(buf, datap, size);
-+				return size;
++	while (timer++ < 5*1000) {
++		if (scdp->tstc()) {
++			while ((ch = scdp->getc()) != '\n' && ch != '\r') {
++				/* Test for backspace/delete */
++				if (ch == '\b' || ch == '\177') {
++					if (cp != buf) {
++						cp--;
++						count--;
++						printf("\b \b");
++					}
++				/* Test for ^x/^u (and wipe the line) */
++				} else if (ch == '\030' || ch == '\025') {
++					while (cp != buf) {
++						cp--;
++						count--;
++						printf("\b \b");
++					}
++				} else if (count < len) {
++						*cp++ = ch;
++						count++;
++						scdp->putc(ch);
++				}
 +			}
-+			break;
-+		case OF_DT_BEGIN_NODE:
-+			level++;
-+			break;
-+		case OF_DT_END_NODE:
-+			if (--level <= 0)
-+				return -1;
-+			break;
++			break;  /* Exit 'timer' loop */
 +		}
-+	return -1;
-+}
-+
-+static void
-+fdt_modify_prop(u32 *dp, char *datap, u32 *old_prop_sizep, char *buf,
-+		int buflen)
-+{
-+	u32 old_prop_data_len, new_prop_data_len;
-+
-+	old_prop_data_len = _ALIGN_UP(*old_prop_sizep, 4);
-+	new_prop_data_len = _ALIGN_UP(buflen, 4);
-+
-+	/* Check if new prop data fits in old prop data area */
-+	if (new_prop_data_len == old_prop_data_len) {
-+		memcpy(datap, buf, buflen);
-+		*old_prop_sizep = buflen;
++		udelay(1000);  /* 1 msec */
 +	}
-+	else { /* Need to alloc new area to put larger or smaller fdt */
-+		struct boot_param_header *old_bph, *new_bph;
-+		u32 *old_tailp, *new_tailp, *new_datap;
-+		u32 old_total_size, new_total_size, head_len, tail_len, diff;
-+		void *new_dtb_start, *new_dtb_end;
-+
-+		old_bph = fdt_get_bph(dtb_start),
-+		old_total_size = old_bph->totalsize;
-+		head_len = (u32)datap - (u32)dtb_start;
-+		tail_len = old_total_size - (head_len + old_prop_data_len);
-+		old_tailp = (u32 *)((u32)dtb_end - tail_len);
-+		new_total_size = head_len + new_prop_data_len + tail_len;
-+
-+		if (!(new_dtb_start = malloc(new_total_size))) {
-+			printf("Can't alloc space for new fdt\n\r");
-+			exit();
-+		}
-+
-+		new_dtb_end = (void *)((u32)new_dtb_start + new_total_size);
-+		new_datap = (u32 *)((u32)new_dtb_start + head_len);
-+		new_tailp = (u32 *)((u32)new_dtb_end - tail_len);
-+
-+		memcpy(new_dtb_start, dtb_start, head_len);
-+		memcpy(new_datap, buf, buflen);
-+		memcpy(new_tailp, old_tailp, tail_len);
-+		*(new_datap - 2) = buflen;
-+
-+		new_bph = fdt_get_bph(new_dtb_start),
-+		new_bph->totalsize = new_total_size;
-+
-+		diff = new_prop_data_len - old_prop_data_len;
-+
-+		/* Adjust offsets of other sections, if necessary */
-+		if (new_bph->off_dt_strings > new_bph->off_dt_struct)
-+			new_bph->off_dt_strings += diff;
-+
-+		if (new_bph->off_mem_rsvmap > new_bph->off_dt_struct)
-+			new_bph->off_mem_rsvmap += diff;
-+
-+		free(dtb_start, old_total_size);
-+
-+		dtb_start = new_dtb_start;
-+		dtb_end = new_dtb_end;
-+	}
++	*cp = 0;
 +}
 +
-+/* Only modifies existing properties */
-+static int
-+fdt_setprop(void *node, const char *name, void *buf, int buflen)
++void
++serial_close(void)
 +{
-+	u32 *dp, *tagp, *sizep;
-+	char *namep, *datap;
-+	int level;
++	struct serial_console_data *scdp = ops->console_ops->data;
 +
-+	level = 0;
-+	dp = node;
-+
-+	while ((dp = fdt_next(dp, &tagp, &namep, &datap, &sizep)) != NULL)
-+		switch (*tagp) {
-+		case OF_DT_PROP:
-+			if ((level == 1) && !strcmp(namep, name)) {
-+				fdt_modify_prop(tagp, datap, sizep, buf,buflen);
-+				return *sizep;
-+			}
-+			break;
-+		case OF_DT_BEGIN_NODE:
-+			level++;
-+			break;
-+		case OF_DT_END_NODE:
-+			if (--level <= 0)
-+				return -1;
-+			break;
-+		}
-+	return -1;
++	if (scdp->close)
++		scdp->close();
 +}
+diff --git a/arch/powerpc/boot/util.S b/arch/powerpc/boot/util.S
+new file mode 100644
+index 0000000..b8e1c23
+--- /dev/null
++++ b/arch/powerpc/boot/util.S
+@@ -0,0 +1,101 @@
++/*
++ * Copied from <file:arch/powerpc/kernel/misc_32.S>
++ *
++ * This file contains miscellaneous low-level functions.
++ *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
++ *
++ * Largely rewritten by Cort Dougan (cort@cs.nmt.edu)
++ * and Paul Mackerras.
++ *
++ * kexec bits:
++ * Copyright (C) 2002-2003 Eric Biederman  <ebiederm@xmission.com>
++ * GameCube/ppc32 port Copyright (C) 2004 Albert Herranz
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ */
++#include "ppc_asm.h"
 +
-+static u32
-+fdt_find_cells(char *path, char *prop)
-+{
-+	void *devp;
-+	u32 num;
-+	char p[MAX_PATH_LEN];
++#define SPRN_PVR        0x11F   /* Processor Version Register */
 +
-+	strcpy(p, path);
-+	do {
-+		if ((devp = finddevice(p))
-+				&& (getprop(devp, prop, &num, sizeof(num)) > 0))
-+			return num;
-+		fdt_parentize(p, 0);
-+	} while (strlen(p) > 0);
-+	return 1; /* default of 1 */
-+}
++	.text
++/*
++ * complement mask on the msr then "or" some values on.
++ *     _nmask_and_or_msr(nmask, value_to_or)
++ */
++	.globl _nmask_and_or_msr
++_nmask_and_or_msr:
++	mfmsr	r0		/* Get current msr */
++	andc	r0,r0,r3	/* And off the bits set in r3 (first parm) */
++	or	r0,r0,r4	/* Or on the bits in r4 (second parm) */
++	SYNC			/* Some chip revs have problems here... */
++	mtmsr	r0		/* Update machine state */
++	isync
++	blr			/* Done */
 +
-+static u64
-+fdt_read_addr(u32 *cell, int size)
-+{
-+	u64 r = 0;
-+	while (size--)
-+		r = (r << 32) | *(cell++);
-+	return r;
-+}
++/* udelay (on non-601 processors) needs to know the period of the
++ * timebase in nanoseconds.  This used to be hardcoded to be 60ns
++ * (period of 66MHz/4).  Now a variable is used that is initialized to
++ * 60 for backward compatibility, but it can be overridden as necessary
++ * with code something like this:
++ *    extern unsigned long timebase_period_ns;
++ *    timebase_period_ns = 1000000000 / bd->bi_tbfreq;
++ */
++	.data
++	.globl timebase_period_ns
++timebase_period_ns:
++	.long	60
 +
-+static u64
-+fdt_bus_default_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+{
-+	u64 cp, s, da;
++	.text
++/*
++ * Delay for a number of microseconds
++ */
++	.globl	udelay
++udelay:
++	mfspr	r4,SPRN_PVR
++	srwi	r4,r4,16
++	cmpwi	0,r4,1		/* 601 ? */
++	bne	.udelay_not_601
++00:	li	r0,86	/* Instructions / microsecond? */
++	mtctr	r0
++10:	addi	r0,r0,0 /* NOP */
++	bdnz	10b
++	subic.	r3,r3,1
++	bne	00b
++	blr
 +
-+	cp = fdt_read_addr(range, na);
-+	s  = fdt_read_addr(range + na + pna, ns);
-+	da = fdt_read_addr(addr, na);
-+
-+	if (da < cp || da >= (cp + s))
-+		return BAD_ADDR;
-+	return da - cp;
-+}
-+
-+static int
-+fdt_bus_default_translate(u32 *addr, u64 offset, int na)
-+{
-+	u64 a = fdt_read_addr(addr, na);
-+	memset(addr, 0, na * 4);
-+	a += offset;
-+	if (na > 1)
-+		addr[na - 2] = a >> 32;
-+	addr[na - 1] = a & 0xffffffffu;
-+
-+	return 0;
-+}
-+
-+static u64
-+fdt_bus_pci_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+{
-+	u64 cp, s, da;
-+
-+	/* Check address type match */
-+	if ((addr[0] ^ range[0]) & 0x03000000)
-+		return BAD_ADDR;
-+
-+	/* Read address values, skipping high cell */
-+	cp = fdt_read_addr(range + 1, na - 1);
-+	s  = fdt_read_addr(range + na + pna, ns);
-+	da = fdt_read_addr(addr + 1, na - 1);
-+
-+	if (da < cp || da >= (cp + s))
-+		return BAD_ADDR;
-+	return da - cp;
-+}
-+
-+static int
-+fdt_bus_pci_translate(u32 *addr, u64 offset, int na)
-+{
-+	return fdt_bus_default_translate(addr + 1, offset, na - 1);
-+}
-+
-+static u64
-+fdt_bus_isa_map(u32 *addr, u32 *range, int na, int ns, int pna)
-+{
-+	u64 cp, s, da;
-+
-+	/* Check address type match */
-+	if ((addr[0] ^ range[0]) & 0x00000001)
-+		return BAD_ADDR;
-+
-+	/* Read address values, skipping high cell */
-+	cp = fdt_read_addr(range + 1, na - 1);
-+	s  = fdt_read_addr(range + na + pna, ns);
-+	da = fdt_read_addr(addr + 1, na - 1);
-+
-+	if (da < cp || da >= (cp + s))
-+		return BAD_ADDR;
-+	return da - cp;
-+}
-+
-+static int
-+fdt_bus_isa_translate(u32 *addr, u64 offset, int na)
-+{
-+	return fdt_bus_default_translate(addr + 1, offset, na - 1);
-+}
-+
-+static void
-+fdt_match_bus(char *path, struct fdt_bus *bus)
-+{
-+	void *devp;
-+	char dtype[128]; /* XXXX */
-+
-+	if ((devp = finddevice(path)) && (getprop(devp, "device_type", dtype,
-+					sizeof(dtype)) > 0)) {
-+		if (!strcmp(dtype, "isa")) {
-+			bus->map = fdt_bus_isa_map;
-+			bus->translate = fdt_bus_isa_translate;
-+		} else if (!strcmp(dtype, "pci")) {
-+			bus->map = fdt_bus_pci_map;
-+			bus->translate = fdt_bus_pci_translate;
-+		} else {
-+			bus->map = fdt_bus_default_map;
-+			bus->translate = fdt_bus_default_translate;
-+		}
-+	}
-+}
-+
-+static int
-+fdt_translate_one(char *path, struct fdt_bus *bus, struct fdt_bus *pbus,
-+		u32 *addr, u32 na, u32 ns, u32 pna)
-+{
-+	void *devp;
-+	u32 ranges[10 * (na + pna + ns)]; /* XXXX */
-+	u32 *rp;
-+	unsigned int rlen;
-+	int rone;
-+	u64 offset = BAD_ADDR;
-+
-+	if (!(devp = finddevice(path))
-+			|| ((rlen = getprop(devp, "ranges", ranges,
-+						sizeof(ranges))) < 0)
-+			|| (rlen == 0)) {
-+		offset = fdt_read_addr(addr, na);
-+		memset(addr, 0, pna * 4);
-+		goto finish;
-+	}
-+
-+	rlen /= 4;
-+	rone = na + pna + ns;
-+	rp = ranges;
-+	for (; rlen >= rone; rlen -= rone, rp += rone) {
-+		offset = bus->map(addr, rp, na, ns, pna);
-+		if (offset != BAD_ADDR)
-+			break;
-+	}
-+	if (offset == BAD_ADDR)
-+		return 1;
-+	memcpy(addr, rp + na, 4 * pna);
-+
-+finish:
-+	/* Translate it into parent bus space */
-+	return pbus->translate(addr, offset, pna);
-+}
-+
-+/* 'addr' is modified */
-+static u64
-+fdt_translate_addr(char *p, u32 *in_addr, u32 addr_len)
-+{
-+	struct fdt_bus	bus, pbus;
-+	int na, ns, pna, pns;
-+	u32 addr[MAX_ADDR_CELLS];
-+	char path[MAX_PATH_LEN], ppath[MAX_PATH_LEN];
-+
-+	strcpy(ppath, p);
-+	fdt_parentize(ppath, 0);
-+	fdt_match_bus(ppath, &bus);
-+	na = fdt_find_cells(ppath, "#address-cells");
-+	ns = fdt_find_cells(ppath, "#size-cells");
-+	memcpy(addr, in_addr, na * 4);
-+
-+	for (;;) {
-+		strcpy(path, ppath);
-+		fdt_parentize(ppath, 0);
-+
-+		if (strlen(ppath) == 0)
-+			return fdt_read_addr(addr, na);
-+
-+		fdt_match_bus(ppath, &pbus);
-+		pna = fdt_find_cells(ppath, "#address-cells");
-+		pns = fdt_find_cells(ppath, "#size-cells");
-+
-+		if (fdt_translate_one(path, &bus, &pbus, addr, na, ns, pna))
-+			exit();
-+
-+		na = pna;
-+		ns = pns;
-+		memcpy(&bus, &pbus, sizeof(struct fdt_bus));
-+	}
-+}
-+
-+static void
-+fdt_call_kernel(void *entry_addr, unsigned long a1, unsigned long a2,
-+		void *promptr, void *sp)
-+{
-+	void (*kernel_entry)(void *dt_blob, void *start_addr,
-+			void *must_be_null);
-+
-+#ifdef DEBUG
-+	printf("kernel:\n\r"
-+		"        entry addr   = 0x%lx\n\r"
-+		"        flattened dt = 0x%lx\n\r",
-+		(unsigned long)entry_addr, dtb_start);
-+#endif
-+
-+	kernel_entry = entry_addr;
-+	kernel_entry(dtb_start, entry_addr, NULL);
-+}
-+
-+static struct dt_ops fdt_dt_ops;
-+
-+struct dt_ops *
-+fdt_init(void *dt_blob)
-+{
-+	struct boot_param_header *bph;
-+
-+	fdt_dt_ops.finddevice = fdt_finddevice;
-+	fdt_dt_ops.getprop = fdt_getprop;
-+	fdt_dt_ops.setprop = fdt_setprop;
-+	fdt_dt_ops.translate_addr = fdt_translate_addr;
-+	fdt_dt_ops.call_kernel = fdt_call_kernel;
-+
-+	dtb_start = dt_blob;
-+	bph = fdt_get_bph(dtb_start);
-+	dtb_end = (void *)((u32)dtb_start + bph->totalsize);
-+
-+	return &fdt_dt_ops;
-+}
++.udelay_not_601:
++	mulli	r4,r3,1000	/* nanoseconds */
++	/*  Change r4 to be the number of ticks using:
++	 *	(nanoseconds + (timebase_period_ns - 1 )) / timebase_period_ns
++	 *  timebase_period_ns defaults to 60 (16.6MHz) */
++	mflr	r5
++	bl	0f
++0:	mflr	r6
++	mtlr	r5
++	lis	r5,0b@ha
++	addi	r5,r5,0b@l
++	subf	r5,r5,r6	/* In case we're relocated */
++	addis	r5,r5,timebase_period_ns@ha
++	lwz	r5,timebase_period_ns@l(r5)
++	add	r4,r4,r5
++	addi	r4,r4,-1
++	divw	r4,r4,r5	/* BUS ticks */
++1:	mftbu	r5
++	mftb	r6
++	mftbu	r7
++	cmpw	0,r5,r7
++	bne	1b		/* Get [synced] base time */
++	addc	r9,r6,r4	/* Compute end time */
++	addze	r8,r5
++2:	mftbu	r5
++	cmpw	0,r5,r8
++	blt	2b
++	bgt	3f
++	mftb	r6
++	cmpw	0,r6,r9
++	blt	2b
++3:	blr
