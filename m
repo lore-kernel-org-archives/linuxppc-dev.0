@@ -1,19 +1,20 @@
-Return-Path: <olh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 49AE267BAA
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 18:34:10 +1000 (EST)
-Date: Wed, 19 Jul 2006 10:34:05 +0200
-From: Olaf Hering <olh@suse.de>
-To: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
-Subject: [PATCH] force 64bit mode in fwnmi handlers to workaround firmware bugs
-Message-ID: <20060719083405.GA4622@suse.de>
-References: <20060522164111.GA14462@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20060522164111.GA14462@suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CD2FE67B53
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 23:13:58 +1000 (EST)
+In-Reply-To: <4879B0C6C249214CBE7AB04453F84E4D050B55@zch01exm20.fsl.freescale.net>
+References: <4879B0C6C249214CBE7AB04453F84E4D050B55@zch01exm20.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4856A73A-BB23-4850-A697-1CE7C385DE42@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add USB to MPC8349 PB platform support
+Date: Wed, 19 Jul 2006 08:14:06 -0500
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,81 +25,78 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-The firmware of POWER4 and JS20 systems does not switch the cpu to 64bit
-mode when the registered system_reset and machine_check handlers get called.
-If a 32bit process runs on that cpu at the time of the event, the cpu 
-remains in 32bit mode. xmon and kdump can not deal with it, the result is
-an error like 'Bad kernel stack pointer fff2aad0 at 3200'.
-xmon just loses some register info, but booting the kdump kernel usually fails.
+On Jul 19, 2006, at 1:30 AM, Li Yang-r58472 wrote:
 
-Both handlers are not hot paths.  Duplicate the EXCEPTION_PROLOG_PSERIES macro
-and add two instructions to switch to 64bit:
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Tuesday, July 18, 2006 9:53 PM
+>> To: Li Yang-r58472
+>> Cc: Dan Malek; linuxppc-dev@ozlabs.org;
+> linux-usb-devel@lists.sourceforge.net
+>> Subject: Re: [PATCH] Add USB to MPC8349 PB platform support
+>>
+>> [snip]
+>>
+>>>> Well, I think there is a coupling that exists between whatever your
+>>>> boot rom is and the kernel.  If you are trying to optimize boot
+> time
+>>>> I'd say one thing you would want is to avoid multiple writing the
+>>>> same configuration registers.
+>>>>
+>>>> I dont have an issue if a fixed function board decides to do these
+>>>> things in their kernel init instead of their boot rom.  I however,
+>>>> don't want thousand and one config options to support all the
+> various
+>>>> ways one can configure the Freescale board.
+>>>
+>>> We won't have the thousand and one config options, making use of the
+>>> device
+>>> tree.  So this is not a problem.
+>>
+>> I'm talking about opening the door to a ton of options, not that we
+>> have them now.  For example, your patch doesnt handle the USB PHYs if
+>> they are on the MDS instead of the SYS board.  It doesn't handle
+>> setting SCCR properly for different frequency choices.  I'm concerned
+>> about where to draw the line because of all the ways a user can
+>> configure the MDS board.
+>
+> My understanding is that in embedded world only this kind of versatile
+> development boards needs to have Linux port in mainstream kernel.  A
+> fixed function customer board used in embedded product will never get
+> into kernel source.
 
- li     r11,5; 
- rldimi r10,r11,61,0; 
+This is an incorrect assumption.  Its more often that people dont  
+post their ports to the Linux kernel for acceptance.  We will accept  
+any port that is willing to work with the community.   for example
 
+> The reasons for Freescale to provide this kind of boards are: first,
+> verify functions on chip; second, demonstrate chip functions to
+> customer; third, validate customer application on reference board;
+> forth, help customer to build their own product by cutting down the
+> board and software.
+>
+> Doing that, we do need some configure options to demonstrate main
+> functions.  But there won't be too many options to confuse the user.
+> Only key working modes are needed.  In your example, I think making  
+> USB
+> PHYs configurable for MDS is reasonable, but for SCCR it isn't as  
+> it is
+> well commented in code and is not likely to be modified.  Keep in mind
+> that our only purpose is making customers easier and faster in
+> developing their own products.
 
-Signed-off-by: Olaf Hering <olh@suse.de>
----
- arch/powerpc/kernel/head_64.S |   35 +++++++++++++++++++++++++++++++++--
- 1 file changed, 33 insertions(+), 2 deletions(-)
+That's fine, however Freescale should figure out what the "common"  
+modes of usage are before hand and document them.  Then the community  
+can have a sense of the scope of what is needed and how to try to  
+best accomplish that, and if anything is missing.
 
-Index: linux-2.6.18-rc2/arch/powerpc/kernel/head_64.S
-===================================================================
---- linux-2.6.18-rc2.orig/arch/powerpc/kernel/head_64.S
-+++ linux-2.6.18-rc2/arch/powerpc/kernel/head_64.S
-@@ -191,6 +191,37 @@ exception_marker:
- 	ori	reg,reg,(label)@l;	/* virt addr of handler ... */
- #endif
- 
-+/*
-+ * Equal to EXCEPTION_PROLOG_PSERIES, except that it forces 64bit mode.
-+ * The firmware calls the registered system_reset_fwnmi and
-+ * machine_check_fwnmi handlers in 32bit mode if the cpu happens to run
-+ * a 32bit application at the time of the event.
-+ * This firmware bug is present on POWER4 and JS20.
-+ */
-+#define EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(area, label)		\
-+	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
-+	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
-+	std	r10,area+EX_R10(r13);					\
-+	std	r11,area+EX_R11(r13);					\
-+	std	r12,area+EX_R12(r13);					\
-+	mfspr	r9,SPRN_SPRG1;						\
-+	std	r9,area+EX_R13(r13);					\
-+	mfcr	r9;							\
-+	clrrdi	r12,r13,32;		/* get high part of &label */	\
-+	mfmsr	r10;							\
-+	/* force 64bit mode */						\
-+	li	r11,5;			/* MSR_SF_LG|MSR_ISF_LG */	\
-+	rldimi	r10,r11,61,0;		/* insert into top 3 bits */	\
-+	/* done 64bit mode */						\
-+	mfspr	r11,SPRN_SRR0;		/* save SRR0 */			\
-+	LOAD_HANDLER(r12,label)						\
-+	ori	r10,r10,MSR_IR|MSR_DR|MSR_RI;				\
-+	mtspr	SPRN_SRR0,r12;						\
-+	mfspr	r12,SPRN_SRR1;		/* and SRR1 */			\
-+	mtspr	SPRN_SRR1,r10;						\
-+	rfid;								\
-+	b	.	/* prevent speculative execution */
-+
- #define EXCEPTION_PROLOG_PSERIES(area, label)				\
- 	mfspr	r13,SPRN_SPRG3;		/* get paca address into r13 */	\
- 	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
-@@ -604,14 +635,14 @@ slb_miss_user_pseries:
- system_reset_fwnmi:
- 	HMT_MEDIUM
- 	mtspr	SPRN_SPRG1,r13		/* save r13 */
--	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, system_reset_common)
-+	EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(PACA_EXGEN, system_reset_common)
- 
- 	.globl machine_check_fwnmi
-       .align 7
- machine_check_fwnmi:
- 	HMT_MEDIUM
- 	mtspr	SPRN_SPRG1,r13		/* save r13 */
--	EXCEPTION_PROLOG_PSERIES(PACA_EXMC, machine_check_common)
-+	EXCEPTION_PROLOG_PSERIES_FORCE_64BIT(PACA_EXMC, machine_check_common)
- 
- #ifdef CONFIG_PPC_ISERIES
- /***  ISeries-LPAR interrupt handlers ***/
+I disagree about the SCCR, I think its very reasonable for a customer  
+to set the frequencies of their MDS board to match what their  
+production system is going to be, which means the SCCR would need to  
+be modified to match.
+
+At the end of the day we will get some version of your patch into the  
+kernel.  I just wanted to get some discussion on how we handle the  
+reference boards that are extremely configurable.
+
+- kumar
