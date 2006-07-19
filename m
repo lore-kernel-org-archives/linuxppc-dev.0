@@ -1,20 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D871B67B8E
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 06:08:57 +1000 (EST)
-In-Reply-To: <44B7857A.2060101@freescale.com>
-References: <44B7857A.2060101@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C3A460A5-612C-4B0D-9DDA-EB1AE3FEF6EB@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 0D0D367B96
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 06:13:32 +1000 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	k6JLV8rf016705
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 15:31:08 -0600 (MDT)
+Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k6JKDTXl015935
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 15:13:30 -0500 (CDT)
+Message-ID: <44BE9268.9040806@freescale.com>
+Date: Wed, 19 Jul 2006 15:13:28 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] Add USB to MPC8349 PB platform support
-Date: Wed, 19 Jul 2006 15:09:04 -0500
-To: Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+References: <44B7857A.2060101@freescale.com>	<B8AB8BA6-500C-43AC-B6E7-A76CA598A429@kernel.crashing.org>	<a0bc9bf80607140921y5d11bf37r3f18e2dbdd03b017@mail.gmail.com>	<A4F686A1-9558-4DD0-BF4C-BB64494BB719@kernel.crashing.org>
+	<1153166894.4459.4.camel@basalt.austin.ibm.com>
+In-Reply-To: <1153166894.4459.4.camel@basalt.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,180 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hollis Blanchard wrote:
 
-On Jul 14, 2006, at 6:52 AM, Li Yang wrote:
+> Seems to me that it's far better to have init code in the kernel than
+> firmware. For one example, look at the x86 video card init problem
+> PowerPC Linux has. It's also far easier to fix/deploy Linux code than
+> firmware code, as Li observed, and on top of that it's less work for
+> non-UBoot firmwares in the future.
 
-> This adds USB platform support to MPC8349 PB.  It works with the  
-> fsl_usb2_udc driver.
->
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
->
-> arch/powerpc/platforms/83xx/Kconfig       |   4  ++
-> arch/powerpc/platforms/83xx/mpc834x_sys.c |   72 +++++++++++++++++++ 
-> ++++++++++
-> arch/powerpc/platforms/83xx/mpc834x_sys.h |   24 ++++++++++
-> 3 files changed, 113 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/ 
-> platforms/83xx/Kconfig
-> index 7675e67..8404cdf 100644
-> --- a/arch/powerpc/platforms/83xx/Kconfig
-> +++ b/arch/powerpc/platforms/83xx/Kconfig
-> @@ -24,4 +31,14 @@ config MPC834x
-> 	select PPC_INDIRECT_PCI
-> 	default y if MPC834x_SYS
->
-> +config 834x_USB_SUPPORT
-> +	bool
-> +	default y if MPC834x_SYS && (USB || USB_GADGET)
-> +	
-> endmenu
+I also agree 100%.  The boot loader should only be required to initialize whatever hardware it uses.  The kernel should be required to initialize whatever hardware it supports.  The kernel should not assume that USB or PCI or whatever has already been initialized by the boot loader.  This doesn't happen on x86, so we should it happen on PPC?
 
-I dont think we need this, we should be able to use the USB, and 834x  
-CONFIG options in the code.
-
-> diff --git a/arch/powerpc/platforms/83xx/mpc834x_sys.c b/arch/ 
-> powerpc/platforms/83xx/mpc834x_sys.c
-> index 7e789d2..f10d4ae 100644
-> --- a/arch/powerpc/platforms/83xx/mpc834x_sys.c
-> +++ b/arch/powerpc/platforms/83xx/mpc834x_sys.c
-> @@ -36,6 +36,7 @@ #include <asm/irq.h>
-> #include <asm/prom.h>
-> #include <asm/udbg.h>
-> #include <sysdev/fsl_soc.h>
-> +#include <linux/fsl_devices.h>
-> #include "mpc83xx.h"
-> @@ -71,6 +72,72 @@ mpc83xx_map_irq(struct pci_dev *dev, uns
-> }
-> #endif				/* CONFIG_PCI */
-> +#ifdef CONFIG_834x_USB_SUPPORT
-
-Just make it dependent on CONFIG_USB_EHCI_HCD or something like that.
-
-> +void mpc834x_usb_board_cfg(void)
-> +{
-> +	unsigned char __iomem *bcsr;
-> +	volatile unsigned char *bcsr5_p;
-> +
-> +	/*
-> +	 * if SYS board is plug into PIB board,
-> +	 * force to use the PHY on SYS board
-> +	 * */
-> +	bcsr = ioremap(BCSR_PHYS_ADDR, BCSR_SIZE);
-> +	bcsr5_p = bcsr + BCSR5_OFF;
-> +	if ( (*bcsr5_p & BCSR5_INT_USB) == 0 )
-> +		*bcsr5_p = (*bcsr5_p | BCSR5_INT_USB);
-> +	iounmap(bcsr);
-> +}
-> +
-> +/* Note: This is only for PB, not for PB+PIB
-> + * On PB only port0 is connected using ULPI */
-> +static int mpc834x_usb_cfg(void)
-> +{
-> +	unsigned long sccr, sicrl;
-> +	volatile unsigned long *p;
-> +	unsigned long __iomem *immap;
-> +	struct device_node *np = NULL;
-> +	int port0_is_dr = 0;
-> +
-> +	if ((np = of_find_compatible_node(np, "usb", "fsl-usb2-dr")) !=  
-> NULL)
-> +		port0_is_dr = 1;
-> +	if ((np = of_find_compatible_node(np, "usb", "fsl-usb2-mph")) !=  
-> NULL){
-> +		if (port0_is_dr) {
-> +			printk(KERN_WARNING
-> +				"There is only one USB port on PB board! \n");
-> +			return -1;
-> +		} else if (!port0_is_dr)
-> +			/* No usb port enabled */
-> +			return -1;
-> +	}
-> +	
-> +	immap = ioremap(get_immrbase(), 0x100000);
-> +	
-> +	/* Configure clock */
-> +	p = (volatile unsigned long *)((u32)immap + MPC83XX_SCCR_OFFS);
-> +	sccr = *p;
-> +	if (port0_is_dr)
-> +		sccr |= MPC83XX_SCCR_USB_DRCM_11;  /* 1:3 */
-> +	else
-> +		sccr |= MPC83XX_SCCR_USB_MPHCM_11; /* 1:3 */
-> +	*p = sccr;
-
-This really needs to take into account the platform frequency.  I  
-guess technically, at 1:3 we will always be below the max 133Mhz.
-
-> +
-> +	/* Configure Pin */
-> +	p = (volatile unsigned long *)((u32)immap + MPC83XX_SICRL_OFFS);  
-> +	sicrl = *p;
-> +	/* set port0 only */
-> +	if (port0_is_dr) +		sicrl |= MPC83XX_SICRL_USB0;
-> +	else +		sicrl &= ~(MPC83XX_SICRL_USB0);
-> +	*p = sicrl;
-> +
-
-Why dont we just do all this in fsl_usb_of_init
-
-> +	iounmap(immap);
-> +	return 0;
-> +}
-> +
-> +#endif /* CONFIG_834x_USB_SUPPORT */
-> +
-> /*  
-> ********************************************************************** 
-> **
->  *
->  * Setup the architecture
-> @@ -102,6 +169,11 @@ #ifdef CONFIG_PCI
-> 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
-> #endif
-> +#ifdef CONFIG_834x_USB_SUPPORT
-> +	mpc834x_usb_cfg();
-> +	mpc834x_usb_board_cfg();
-> +#endif
-> +
-> #ifdef  CONFIG_ROOT_NFS
-> 	ROOT_DEV = Root_NFS;
-> #else
-> diff --git a/arch/powerpc/platforms/83xx/mpc834x_sys.h b/arch/ 
-> powerpc/platforms/83xx/mpc834x_sys.h
-> index fedecb7..30e45e8 100644
-> --- a/arch/powerpc/platforms/83xx/mpc834x_sys.h
-> +++ b/arch/powerpc/platforms/83xx/mpc834x_sys.h
-> @@ -20,4 +20,28 @@ #define PIRQB	MPC83xx_IRQ_EXT5
-> #define PIRQC	MPC83xx_IRQ_EXT6
-> #define PIRQD	MPC83xx_IRQ_EXT7
-> +#define BCSR_PHYS_ADDR		((uint)0xf8000000)
-> +#define BCSR_SIZE		((uint)(32 * 1024))
-> + +#define BCSR5_OFF		0x05
-> +#define BCSR5_INT_USB		0x02
-> +
-> +#define MPC83XX_SCCR_OFFS          0xA08
-> +#define MPC83XX_SCCR_USB_MPHCM_11  0x00c00000
-> +#define MPC83XX_SCCR_USB_MPHCM_01  0x00400000
-> +#define MPC83XX_SCCR_USB_MPHCM_10  0x00800000
-> +#define MPC83XX_SCCR_USB_DRCM_11   0x00300000
-> +#define MPC83XX_SCCR_USB_DRCM_01   0x00100000
-> +#define MPC83XX_SCCR_USB_DRCM_10   0x00200000
-> +
-> +/* system i/o configuration register low */
-> +#define MPC83XX_SICRL_OFFS         0x114
-> +#define MPC83XX_SICRL_USB0         0x40000000
-> +#define MPC83XX_SICRL_USB1         0x20000000
-> +
-> +/* system i/o configuration register high */
-> +#define MPC83XX_SICRH_OFFS         0x118
-> +#define MPC83XX_SICRH_USB_UTMI     0x00020000
-
-Are these really generic to all MPC83XX?  We should move these to  
-include something like asm-ppc/mpc83xx.h
-
-> +
-> +
-> #endif				/* __MACH_MPC83XX_SYS_H__ */
-
-- kumar
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
