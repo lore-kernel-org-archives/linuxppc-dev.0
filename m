@@ -1,24 +1,42 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 604A667BA6
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 15:31:30 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k6J5gqqD002582
-	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 22:42:52 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k6J5VQqV006302
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 00:31:27 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: Linux bin Commands download
-Date: Wed, 19 Jul 2006 13:31:47 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D050B25@zch01exm20.fsl.freescale.net>
-In-Reply-To: <20060718123527.75952.qmail@web26204.mail.ukl.yahoo.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "none none" <menwn@yahoo.co.uk>, <linuxppc-dev@ozlabs.org>
+Return-Path: <mkravetz@us.ibm.com>
+Received: from over.co.us.ibm.com (over.co.us.ibm.com [32.97.110.157])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BB98067B6F
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 16:27:24 +1000 (EST)
+Received: from e4.ny.us.ibm.com (e4.pok.ibm.com [9.56.232.144])
+	by bldfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6J3oS6T028872
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 23:50:29 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6J3oOPh014669
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 23:50:24 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6J3oNJo228358
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 23:50:24 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6J3oN7k030606
+	for <linuxppc-dev@ozlabs.org>; Tue, 18 Jul 2006 23:50:23 -0400
+Date: Tue, 18 Jul 2006 20:50:41 -0700
+From: Mike Kravetz <kravetz@us.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 2/3] powerpc: Instrument Hypervisor Calls: add wrappers
+Message-ID: <20060719035040.GB3944@monkey.ibm.com>
+References: <20060718204723.GA6104@w-mikek2.ibm.com>
+	<20060718204946.GC6104@w-mikek2.ibm.com>
+	<20060718223425.GB5238@pb15.lixom.net>
+	<20060718231815.GC3091@w-mikek2.ibm.com>
+	<20060719033300.GA9451@pb15.lixom.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20060719033300.GA9451@pb15.lixom.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +46,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org
-> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org] On =
-Behalf
-Of none
-> none
-> Sent: Tuesday, July 18, 2006 8:35 PM
-> To: linuxppc-dev@ozlabs.org
-> Subject: Linux bin Commands download
->=20
-> Hi
-> I would like to download precompiled linux commands
-> and programs for powerPC but i cannot find any
-> binaries anyware. Are there any links?
+On Tue, Jul 18, 2006 at 10:33:00PM -0500, Olof Johansson wrote:
+> If you use the FTR_SECTION stuff then it'll be taken care of
+> automatically at boot time. Doing that from C is messy, I don't think
+> anyone has had reason to do it before.
 
-You can find rpm at http://rpmfind.net.  And there are also a couple of
-powerpc distributions out there.
+Ok, sounds like a good reason for assembly.  I'll dust off the books. :)
 
-> thanks in advance
-> sotirakopoulos andreas
+-- 
+Mike
