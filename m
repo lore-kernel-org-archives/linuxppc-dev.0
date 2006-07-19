@@ -1,23 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5CE5D67B32
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 06:54:50 +1000 (EST)
-In-Reply-To: <20060719201941.GW5219@scorpius.homelinux.org>
-References: <4879B0C6C249214CBE7AB04453F84E4D050B55@zch01exm20.fsl.freescale.net>
-	<4856A73A-BB23-4850-A697-1CE7C385DE42@kernel.crashing.org>
-	<1E6652B1-3126-4B69-BE9D-8DCE8DCACE7C@embeddedalley.com>
-	<20060719201941.GW5219@scorpius.homelinux.org>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4AC92920-4642-4899-B8CA-8EE5A1CDE0B3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add USB to MPC8349 PB platform support
-Date: Wed, 19 Jul 2006 15:55:05 -0500
-To: Marc Leeman <marc.leeman@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mgreer@mvista.com>
+Date: Wed, 19 Jul 2006 15:10:19 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [HACK] add sandpoint + flattened dt support to arch/powerpc/boot
+Message-ID: <20060719221019.GA32203@mag.az.mvista.com>
+References: <20060518002142.GA23182@mag.az.mvista.com>
+	<1147930376.17679.72.camel@localhost.localdomain>
+	<20060523005846.GA15797@mag.az.mvista.com>
+	<Pine.LNX.4.60.0607192144310.6432@poirot.grange>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.60.0607192144310.6432@poirot.grange>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,35 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[snip]
+Hi Guennadi,
 
-> Having my changes for our boards that are very specific since they are
-> connected to FPGAs would IMHO serve little purpose in the Linux  
-> kernel:
-> there is very limited access to the hardware and it would only  
-> serve to
-> clutter the kernel with an exponentionally growing number of ports  
-> that
-> most ppl will never use. I think (even though using ARCH and
-> CROSS_COMPILE during compilation limits the audience); the target
-> audience between U-Boot and the Linux kernel is slightly different.
+On Wed, Jul 19, 2006 at 10:02:01PM +0200, Guennadi Liakhovetski wrote:
+> Mark, Ben,
+> 
+> On Mon, 22 May 2006, Mark A. Greer wrote:
+> 
+> > Thanks for your time, Ben.  Sorry for taking so long to get back to you.
+> 
+> don't have much to comment to specific points, but quoting the entire 
+> discussion below in case you'll want to further add to it.
+
+Ben and I have talked a little bit privately and the ball is in my court
+to produce a set of patches.  To that end, I have them ready so expect to
+see them shortly.
+
+> What's the status of this work? Mark, have you been further working on 
+> your port?
+
+Patches to come...
+
+> I'd like to integrate kurobox/linkstation support with 
+> sandpoint (also 8241). I think, it would be very interesting as it would 
+> allow us to develop / test the "universal" kernel idea, and at the same 
+> time explore the limits of board-specific support. Kurobox have a couple 
+> of very nice "specialities", like a serially attached AVR acting as a 
+> power-manager, thus requiring __special__ halt and reboot callbacks (so, 
+> please, Ben, don't remove them).
 >
-> Though I do agree that there is a gap: it would be nice to have some
-> place to submit the kernel patches; possibly not included in the main
-> tree; just to see how other ppl are tackling the same problem and
-> avoiding re-doing the same work for the nth time (e.g. writing some
-> communciation protocol where there are a number of references of ppl
-> haveing done them, but no real code).
+> Any progress with fdt-parsing library for the wrapper / kernel and with 
+> replacing hard-coded constants and tables with dt-entries?
 
-This should be the kernel.  The general rule of thumb I've used is if  
-its useful to more than one other person its worth trying to get into  
-the kernel.  However, I can see if you are doing a one off kernel for  
-your embedded product that getting your changes into the kernel  
-wouldn't be worth while.  You have to have a desire to interact with  
-the community if you want to get your code in.
+No real progress with making a library because even though a lot of
+functionality is duplicated, most of the kernel code does it on an
+internal representation of the fdt and not on the actual fdt.  The
+bootwrapper code needs to work directly on the fdt so I didn't bother
+library-izing it.  Once the dust settles, we can library-ize the duplicate
+code but for now, its all in arch/powerpc/boot/fdt.c (in my upcoming patches).
 
-Personally, I see it useful if for no other reason that someone will  
-fixup my board port if/when they change something which will make my  
-moving to a newer kernel release that much easier.
+> I'd love to discuss the stuff and come to an acceptable design / APIs.
 
-- k
+Me too. :)
+
+Mark
