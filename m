@@ -1,20 +1,20 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 02E4667A2E
+Return-Path: <mathieu.deschamps@com2gether.net>
+Received: from mail.libertysurf.net (mx-out.libertysurf.net [213.36.80.91])
+	by ozlabs.org (Postfix) with ESMTP id 9C70B67B89
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 02:15:57 +1000 (EST)
-Message-ID: <44BE5A97.50807@ovro.caltech.edu>
-Date: Wed, 19 Jul 2006 09:15:19 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Thu, 20 Jul 2006 02:39:16 +1000 (EST)
+From: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
+To: "Lei Sun" <leisun124@gmail.com>
+Subject: Re: reboot on PQ2FADS board.
+Date: Wed, 19 Jul 2006 18:41:46 +0200
+References: <4879B0C6C249214CBE7AB04453F84E4D050B0F@zch01exm20.fsl.freescale.net>
+	<20060719063317.86A66352681@atlas.denx.de>
+	<f9a7e7a80607190712v362c3e1ei7e85003041a25e35@mail.gmail.com>
+In-Reply-To: <f9a7e7a80607190712v362c3e1ei7e85003041a25e35@mail.gmail.com>
 MIME-Version: 1.0
-To: Josef Angermeier <Josef.Angermeier@informatik.uni-erlangen.de>
-Subject: Re: Linux controlling Hardware-Tasks on FPGA
-References: <44BDDFD2.9040702@cs.fau.de>
-In-Reply-To: <44BDDFD2.9040702@cs.fau.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <200607191833.32693.mathieu.deschamps@com2gether.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,49 +26,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-> anyone else out there using or wanting to use Linux to control the
-> reconfiguration of a FPGA ? - Do you use dynamic partial reconfiguration
-> too ? - If so how did you design the relevant software coarsely ?
+On Wednesday 19 July 2006 16:12, Lei Sun wrote:
+> Hi :
+>   I  tried your approach last ight, (in fact I copied part of the
+> do_reboot() code from u-boot and put it in m8260_restart() function in
+> the kernel).  The only difference is the first line,
+>      volatile immap_t *immap = (immap_t *) IMAP_ADDR;
+> in my case it is
+>      volatile immap_t * immap = cpm2_immr;
+> I am using different source tree.
+> it simply hangs, rather then reset.
+>
+[...]
 
-Hi Josef,
+Give a try to :
+	startaddr = 0xff000104;
 
-If you are talking 'partial reconfiguration' then I guess you
-are discussing Xilinx devices.
 
-I use Altera devices in my designs. However, this solution could
-work for you.
 
-Generally an FPGA is configured, and I assume reconfigured,
-by writing the configuration file to a specific set of pins
-on the device. Altera devices have passive serial programming
-and fast passive parallel programming (and other options).
-In my current design I will create either a /dev entry or
-use a /sys/firmware type interface that when opened
-initializes the programming logic, and then writes whatever
-bytes are written to the filesystem node to the programming
-interface, eg. so the following will program the FPGA
-
-dd if=firmware.bin of=/dev/fpga
-
-If I get a programming error, then the driver can just return
--EIO, and I'm pretty sure dd will report the error. I plan
-to use this approach as I can then buffer the data from user-space
-into a kernel buffer, and then setup a DMA controller to
-write to the device node. This will ensure that burst transactions
-are used (to a system controller FPGA sitting on the local bus
-of a PowerQUICC II Pro).
-
-The alternative is to implement mmap() for the region containing
-your programming interface control registers, and then just
-bit- or byte-bang the programming interface. However, if the
-serial interface is slow, then you could turn your 100MHz+ CPU
-into a 1MHz- CPU. Linux sometimes has trouble with this
-(I've seen the x86 kernel lose ticks when performing lots of
-PCI I/O, so now use DMA when its available - which for x86
-is basically never, so you have to depend on the adapter board).
-
-Hope that gives you some ideas.
-
-Regards
-Dave
+-- 
+Mathieu Deschamps
+Com2gether Design Center
+Electronic and Embedded Engineering Services
+www.com2gether.net 
