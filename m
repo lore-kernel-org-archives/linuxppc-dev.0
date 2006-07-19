@@ -1,21 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id F191D67B8A
-	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 13:37:53 +1000 (EST)
-Date: Tue, 18 Jul 2006 22:33:00 -0500
-To: Mike Kravetz <kravetz@us.ibm.com>
-Subject: Re: [PATCH 2/3] powerpc: Instrument Hypervisor Calls: add wrappers
-Message-ID: <20060719033300.GA9451@pb15.lixom.net>
-References: <20060718204723.GA6104@w-mikek2.ibm.com>
-	<20060718204946.GC6104@w-mikek2.ibm.com>
-	<20060718223425.GB5238@pb15.lixom.net>
-	<20060718231815.GC3091@w-mikek2.ibm.com>
-MIME-Version: 1.0
+Return-Path: <sonny@kevlar.burdell.org>
+Received: from kevlar.burdell.org (kevlar.burdell.org [66.92.73.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 96C2567B90
+	for <linuxppc-dev@ozlabs.org>; Wed, 19 Jul 2006 14:47:19 +1000 (EST)
+Date: Wed, 19 Jul 2006 00:47:11 -0400
+From: Sonny Rao <sonny@burdell.org>
+To: Chris Friesen <cfriesen@nortel.com>
+Subject: Re: kernel memory map/usage/holes?
+Message-ID: <20060719044711.GA21794@kevlar.burdell.org>
+References: <44BBEDE1.3040004@nortel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20060718231815.GC3091@w-mikek2.ibm.com>
-From: Olof Johansson <olof@lixom.net>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+In-Reply-To: <44BBEDE1.3040004@nortel.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jul 18, 2006 at 04:18:15PM -0700, Mike Kravetz wrote:
+On Mon, Jul 17, 2006 at 02:06:57PM -0600, Chris Friesen wrote:
+> 
+> I've got a Maple board with 4GB of memory running a modified 2.6.10 
+> kernel.  When it boots, I see the following in the logs:
+> 
+> 
+> Top of RAM: 0x180000000, Total RAM: 0x100000000
+> On node 0 totalpages: 1048576
+>    DMA zone: 1048576 pages, LIFO batch:16
+>    Normal zone: 0 pages, LIFO batch:1
+>    HighMem zone: 0 pages, LIFO batch:1
+> 
+> 
+> Then a bit later, I see:
+> 
+> 
+> Memory: 4006976k/6291456k available (3408k kernel code, 2284124k 
+> reserved, 1656k data, 448k bss, 220k init)
+> 
+> 
+> 
+> 1048576 pages works out to 4194304kB, so what happened to the 187328kB 
+> that is the difference between the "Total RAM" and "Memory:" lines? 
+> We've got an app that wants as much memory as possible, so I need to 
+> explain where this 183MB of memory is being used.
 
-> I assume checking must be done at run time via something like,
-> if (cpu_has_feature(CPU_FTR_PURR))
+I think it's part of the "reserved" category, which includes the MMU
+hashtable.  I'd guess that's where it is.
 
-If you do it in the hcall asm instead (like Paulus suggested), then it's
-better to use BEGIN_FTR_SECTION/END_FTR_SECTION() around it, that way
-the PURR reads just get nopped out instead of adding tests and branches.
-
-> Also assume that it would make sense to do this determination at
-> initialization/boot time and put the result in the statistic data
-> structure.  In this way we would know it is in the same cache line
-> we are updating with other stats.  Or, should cur_cpu_spec->cpu_features
-> be 'sufficiently hot' to make this a non-issue?
-
-If you use the FTR_SECTION stuff then it'll be taken care of
-automatically at boot time. Doing that from C is messy, I don't think
-anyone has had reason to do it before.
-
-
--Olof
+Sonny
