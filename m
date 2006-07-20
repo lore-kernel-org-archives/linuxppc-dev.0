@@ -1,18 +1,26 @@
-Return-Path: <mathieu.deschamps@com2gether.net>
-Received: from mail.libertysurf.net (mx-out.libertysurf.net [213.36.80.91])
-	by ozlabs.org (Postfix) with ESMTP id 64A1767BA1
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 05A9867B79
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 18:17:39 +1000 (EST)
-From: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
-To: Laurent Pinchart <laurent.pinchart@tbox.biz>
-Subject: Re: MPC8260 SCC UART hardware flow control
-Date: Thu, 20 Jul 2006 10:18:35 +0200
-References: <200607191718.00328.laurent.pinchart@tbox.biz>
-In-Reply-To: <200607191718.00328.laurent.pinchart@tbox.biz>
+	Thu, 20 Jul 2006 18:53:50 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k6K8rnUM014476 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 20 Jul 2006 01:53:49 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k6K8rlGp016350
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 20 Jul 2006 03:53:48 -0500 (CDT)
 MIME-Version: 1.0
-Message-Id: <200607201018.13445.mathieu.deschamps@com2gether.net>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+	charset="US-ASCII"
+Subject: RE: Linux bin Commands download
+Date: Thu, 20 Jul 2006 16:54:09 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D07062F@zch01exm20.fsl.freescale.net>
+In-Reply-To: <200607201134.02445.menwn@yahoo.co.uk>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "andreas Sotirakopoulos" <menwn@yahoo.co.uk>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,43 +32,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Laurent,
+So you are using embedded powerpc platform?  There are several embedded
+Linux distributions, e.g. from montavista, denx, and Freescale.  You can
+google them yourself.
 
-On Wednesday 19 July 2006 17:18, Laurent Pinchart wrote:
-> Hi everybody,
->
-> I was wondering if anyone had implemented hardware flow control support in
-> the cpm_uart driver. If not, I would appreciate pointers regarding how to
-> do so.
->
-> Best regards,
->
-> Laurent Pinchart
->
+If you are using Freescale powerpc, I would recommend the LTIB BSP
+packages which can be downloaded at www.freescale.com
 
-I had. PQ2 CPM is a dedicated part which handles this aspect for you via
-its microcode. This also means you can't play with it the old way and making 
-your own HHS with a CD/DSR :). Back to seriousness, rather this means you 
-needn't adding modem signal handling in cpm_uart driver. So don't define 
-modem_something that's an ancient reliq from the times, I guess, no CPM was 
-put auxillary.
-
-So how to tell CPM to cope with HHS ? Simple, you "just" have to put SCC's 
-Dedicated pins the right way which depends on your board type. Remember you 
-can't do any HHS with SMC. Refer to Dedicated Pins chapter in the litterature 
-[41.4.2]. Also take a look at SCC GSMR register [20.8] and to SCC UART mode 
-PSMR register [21-14] to maybe use protocol specificities. 
-
-When you'll have your kernel ready, you would do probably something like :
-	stty -F $port crtscts $SPEED
-
-As Wolfgang said HHS works for DTE-DCE only (roughly but visually you must 
-have plugs opposite gender on both ends), trying DTE-DTE HHS dialog is bound 
-to failure despite time spend on it.
-
-Cdy,
- 
-Mathieu Deschamps
-Com2gether Design Center
-Electronic and Embedded Engineering Services
-www.com2gether.net 
+Best Regards,
+Leo
+> -----Original Message-----
+> From: andreas Sotirakopoulos [mailto:menwn@yahoo.co.uk]
+> Sent: Thursday, July 20, 2006 4:34 PM
+> To: Li Yang-r58472
+> Subject: Re: Linux bin Commands download
+>=20
+> On Wednesday 19 July 2006 08:31, you wrote:
+> Thanks, I would like though to know... is rpm suitable for the purpose
+i want
+> them?
+> I want to store the commands (lets say the command ls)  in a directory
+> on a FreeBSD 6 box (i386) and export this directory for NFS so as to
+mount it
+> bfrom the powerpc and run the commands from that directory.
+> thanks in advance
+> andreas
+> > > -----Original Message-----
+> > > From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org
+> > > [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org] On
+Behalf
+> >
+> > Of none
+> >
+> > > none
+> > > Sent: Tuesday, July 18, 2006 8:35 PM
+> > > To: linuxppc-dev@ozlabs.org
+> > > Subject: Linux bin Commands download
+> > >
+> > > Hi
+> > > I would like to download precompiled linux commands
+> > > and programs for powerPC but i cannot find any
+> > > binaries anyware. Are there any links?
+> >
+> > You can find rpm at http://rpmfind.net.  And there are also a couple
+of
+> > powerpc distributions out there.
+> >
+> > > thanks in advance
+> > > sotirakopoulos andreas
+>=20
+>=20
+>=20
+>=20
+> ___________________________________________________________
+> All new Yahoo! Mail "The new Interface is stunning in its simplicity
+and ease of
+> use." - PC Magazine
+> http://uk.docs.yahoo.com/nowyoucan.html
