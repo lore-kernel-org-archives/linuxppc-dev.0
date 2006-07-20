@@ -1,19 +1,19 @@
-Return-Path: <hs@denx.de>
+Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
-	by ozlabs.org (Postfix) with ESMTP id 53DBF67B7D
+	by ozlabs.org (Postfix) with ESMTP id DBE2467B96
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 15:16:38 +1000 (EST)
-Subject: export-objs in spi Makefile broke in latest linuxppc_2_4_deve l [r
-	eposted]?
-From: Heiko Schocher <hs@denx.de>
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: 
-Content-Type: text/plain
-Date: Thu, 20 Jul 2006 06:55:42 +0200
-Message-Id: <1153371343.6004.16.camel@Zeus.EmbLux>
-Mime-Version: 1.0
-Cc: Chad.Rowan@thyssenkrupp.com
-Reply-To: hs@denx.de
+	Thu, 20 Jul 2006 16:46:28 +1000 (EST)
+To: "Lei Sun" <leisun124@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: reboot on PQ2FADS board. 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 19 Jul 2006 23:46:37 EDT."
+	<f9a7e7a80607192046s3f17e8a5s4cfba43f1747e9ec@mail.gmail.com>
+Date: Thu, 20 Jul 2006 08:46:26 +0200
+Sender: wd@denx.de
+Message-Id: <20060720064626.30695352681@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,50 +24,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Chad
+In message <f9a7e7a80607192046s3f17e8a5s4cfba43f1747e9ec@mail.gmail.com> you wrote:
+>
+> m8260_restart(char * cmd)
+...
+>         startaddr = 0x04400000; /* this is taken from u-boot-1.1.4 */
 
-> linuxppc_2_4_devel is alive and well.
-> 
-> http://www.denx.de/cgi-bin/gitweb.cgi?p=linuxppc_2_4_devel.git;a=shortlog
+This is a random address which  happens  to  be  not  mapped  in  the
+specific  board  (MPC8260ADS.h).  The approach taken here is strongly
+deprecated - it is juat an examp[le of a badly maintained board.  In-
+stead, I recommend to use an addrress which causes a checkstop on all
+boards,  idependently of the cspecific memory map. This is what we do
+here:
 
-You speak from the DENX linuxppc_2_4_devel Kernel? If so, I think you are right.
-I had the same problem, some days ago. I made a SPI bitbanging algorithm, but
-I dont know, if this goes in the git repository from DENX ... Wolfgang?
+> >         dummy = ((immap_t *)IMAP_ADDR)->im_clkrst.res[0];
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak at kernel.crashing.org] 
-> Sent: Wednesday, July 19, 2006 4:17 PM
-> To: Rowan, Chad
-> Cc: linuxppc-embedded at ozlabs.org
-> Subject: Re: export-objs in spi Makefile broke in latest linuxppc_2_4_devel
-> [r eposted]?
-> 
-> 
-> > On Jul 19, 2006, at 2:13 PM, Rowan, Chad wrote:
-> > 
-> > Shouldn't export-objs in drivers/spi be:
-> >
-> > export-objs	:= spi-core.o spi-algo-mpc5xxx.o spi-algo-mpc5xxx-psc.o \
-> > 		   spi-iti5200.o spi-eval.o
-> >
-> > instead of:
-> > 	
-> > export-objs	:= spi-core.o spi-algo-mpc5xxx.o spi-algo-mpc5200psc.o \
-> > 		   spi-iti5200.o spi-eval.o
-> >
-> > I believe the spi-algo-mpc5200psc.o should be spi-algo-mpc5xxx-psc.o,
-> > correct?
-> 
-> Are you really serious about linuxppc_2_4_devel?  I can't believe  
-> linuxppc_2_4_devel has changed in months (if not over a year).
+In the end, the effect is the same.
 
-Commit: 98b663155ab7ab07dd85a8d03f437ab4fc29476b
-Author: Wolfgang Denk <wd@pollux.denx.de> Thu, 13 Jul 2006 20:17:25 +0200
+And I have no idea why it would not work  on  your  board.  Attach  a
+debugger and find out where exactly the code is hanging.
 
-    MCC200: fix QuadUART I/O addressing and interrupt init on new H/W
-    Patch by Johann Glaser, 13 Jul 2006
+Ummm... and if you run under a debugger, *detach*  it  and  check  if
+reset starts to work...
 
-It progresses ;-)
+Best regards,
 
-Best regards
-Heiko 
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+It's certainly  convenient  the  way  the  crime  (or  condition)  of
+stupidity   carries   with   it  its  own  punishment,  automatically
+admisistered without remorse, pity, or prejudice. :-)
+         -- Tom Christiansen in <559seq$ag1$1@csnews.cs.colorado.edu>
