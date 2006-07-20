@@ -1,26 +1,18 @@
-Return-Path: <DaveLiu@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 403AB67B9F
+Return-Path: <mathieu.deschamps@com2gether.net>
+Received: from mail.libertysurf.net (mx-out.libertysurf.net [213.36.80.91])
+	by ozlabs.org (Postfix) with ESMTP id 64A1767BA1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 17:22:39 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	k6K7Y4uO017126 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 00:34:04 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id k6K7MZb0021529
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 02:22:36 -0500 (CDT)
+	Thu, 20 Jul 2006 18:17:39 +1000 (EST)
+From: Mathieu Deschamps <mathieu.deschamps@com2gether.net>
+To: Laurent Pinchart <laurent.pinchart@tbox.biz>
+Subject: Re: MPC8260 SCC UART hardware flow control
+Date: Thu, 20 Jul 2006 10:18:35 +0200
+References: <200607191718.00328.laurent.pinchart@tbox.biz>
+In-Reply-To: <200607191718.00328.laurent.pinchart@tbox.biz>
 MIME-Version: 1.0
+Message-Id: <200607201018.13445.mathieu.deschamps@com2gether.net>
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: reboot on PQ2FADS board. 
-Date: Thu, 20 Jul 2006 15:22:34 +0800
-Message-ID: <995B09A8299C2C44B59866F6391D2635018C78@zch01exm21.fsl.freescale.net>
-In-Reply-To: <20060719063317.86A66352681@atlas.denx.de>
-From: "Liu Dave-r63238" <DaveLiu@freescale.com>
-To: "Wolfgang Denk" <wd@denx.de>, "Li Yang-r58472" <LeoLi@freescale.com>
+  charset="iso-8859-1"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -32,46 +24,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This way maybe can not work. when the MMU turn off,=20
-the next instructions maybe can not be fetched if these instructions
-didn't exist cache.=20
-so it is possible these instruction can not executed. =20
+Hi Laurent,
 
->=20
-> Trying to jump to some boot rom address is IMHO always a bad=20
-> approach to reboot a system. You should always try to cause a=20
-> reset  condition for  the CPU, and thus for all the=20
-> associated hardware. On 8xx / 8260 systems this is usually=20
-> done by going through  a  machine  check.  We have  the =20
-> following code in our linuxppc_2_4_devel tree, which works on=20
-> ALL 8260 systems, no matter whioch boot loder they use:
->=20
-> static void
-> m8260_restart(char *cmd)
-> {  =20
->         __volatile__ unsigned char dummy;
->         ulong msr;
->    =20
->         cli();
->         volatile immap_t *immap =3D (immap_t *) IMAP_ADDR;
->    =20
->         immap->im_clkrst.car_rmr =3D 1;    /* Checkstop Reset enable =
-*/
->    =20
->         /* Interrupts and MMU off */
->         __asm__ __volatile__ ("mfmsr    %0":"=3Dr" (msr):);
->    =20
->         msr &=3D ~(MSR_ME | MSR_EE | MSR_IR | MSR_DR);
->         __asm__ __volatile__ ("mtmsr    %0"::"r" (msr));=20
->    =20
-Now the MMU trun off, is real address mode. But the PC still is
-0xC00xxxx.. It is old effective address.
+On Wednesday 19 July 2006 17:18, Laurent Pinchart wrote:
+> Hi everybody,
+>
+> I was wondering if anyone had implemented hardware flow control support in
+> the cpm_uart driver. If not, I would appreciate pointers regarding how to
+> do so.
+>
+> Best regards,
+>
+> Laurent Pinchart
+>
 
->         dummy =3D ((immap_t *)IMAP_ADDR)->im_clkrst.res[0];
-These instructions will locate on the real address space...... It is
-0xC00xxxx- KERNELBASE
->    =20
->         printk("Restart failed\n");
->         for (;;);
-> }  =20
->=20
+I had. PQ2 CPM is a dedicated part which handles this aspect for you via
+its microcode. This also means you can't play with it the old way and making 
+your own HHS with a CD/DSR :). Back to seriousness, rather this means you 
+needn't adding modem signal handling in cpm_uart driver. So don't define 
+modem_something that's an ancient reliq from the times, I guess, no CPM was 
+put auxillary.
+
+So how to tell CPM to cope with HHS ? Simple, you "just" have to put SCC's 
+Dedicated pins the right way which depends on your board type. Remember you 
+can't do any HHS with SMC. Refer to Dedicated Pins chapter in the litterature 
+[41.4.2]. Also take a look at SCC GSMR register [20.8] and to SCC UART mode 
+PSMR register [21-14] to maybe use protocol specificities. 
+
+When you'll have your kernel ready, you would do probably something like :
+	stty -F $port crtscts $SPEED
+
+As Wolfgang said HHS works for DTE-DCE only (roughly but visually you must 
+have plugs opposite gender on both ends), trying DTE-DTE HHS dialog is bound 
+to failure despite time spend on it.
+
+Cdy,
+ 
+Mathieu Deschamps
+Com2gether Design Center
+Electronic and Embedded Engineering Services
+www.com2gether.net 
