@@ -1,19 +1,23 @@
-Return-Path: <Chad.Rowan@thyssenkrupp.com>
-Received: from mail003.thyssenkrupp.com (mail003.thyssenkrupp.com
-	[149.211.153.64])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D567A67B78
+Return-Path: <leisun124@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 8A04567B57
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 08:00:44 +1000 (EST)
-Message-ID: <86EC6E02268B3D4BA41C1B0C61FB14E60B4551B8@mdcexc01.na.ops.local>
-From: "Rowan, Chad" <Chad.Rowan@thyssenkrupp.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: export-objs in spi Makefile broke in latest linuxppc_2_4_deve
-	l [r eposted]?
-Date: Wed, 19 Jul 2006 17:02:00 -0500
+	Thu, 20 Jul 2006 12:45:08 +1000 (EST)
+Received: by nf-out-0910.google.com with SMTP id p77so395277nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 19 Jul 2006 19:45:06 -0700 (PDT)
+Message-ID: <f9a7e7a80607191945n7f0b95a9l3d6fe39a052b0f43@mail.gmail.com>
+Date: Wed, 19 Jul 2006 22:45:06 -0400
+From: "Lei Sun" <leisun124@gmail.com>
+To: "Mathieu Deschamps" <mathieu.deschamps@com2gether.net>
+Subject: Re: reboot on PQ2FADS board.
+In-Reply-To: <200607191833.32693.mathieu.deschamps@com2gether.net>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <4879B0C6C249214CBE7AB04453F84E4D050B0F@zch01exm20.fsl.freescale.net>
+	<20060719063317.86A66352681@atlas.denx.de>
+	<f9a7e7a80607190712v362c3e1ei7e85003041a25e35@mail.gmail.com>
+	<200607191833.32693.mathieu.deschamps@com2gether.net>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,35 +29,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-linuxppc_2_4_devel is alive and well.
-
-http://www.denx.de/cgi-bin/gitweb.cgi?p=linuxppc_2_4_devel.git;a=shortlog
-
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org] 
-Sent: Wednesday, July 19, 2006 4:17 PM
-To: Rowan, Chad
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: export-objs in spi Makefile broke in latest linuxppc_2_4_devel
-[r eposted]?
-
-
-On Jul 19, 2006, at 2:13 PM, Rowan, Chad wrote:
-
-> Shouldn't export-objs in drivers/spi be:
+On 7/19/06, Mathieu Deschamps <mathieu.deschamps@com2gether.net> wrote:
+> Hi,
 >
-> export-objs	:= spi-core.o spi-algo-mpc5xxx.o spi-algo-mpc5xxx-psc.o \
-> 		   spi-iti5200.o spi-eval.o
+> On Wednesday 19 July 2006 16:12, Lei Sun wrote:
+> > Hi :
+> >   I  tried your approach last ight, (in fact I copied part of the
+> > do_reboot() code from u-boot and put it in m8260_restart() function in
+> > the kernel).  The only difference is the first line,
+> >      volatile immap_t *immap = (immap_t *) IMAP_ADDR;
+> > in my case it is
+> >      volatile immap_t * immap = cpm2_immr;
+> > I am using different source tree.
+> > it simply hangs, rather then reset.
+> >
+> [...]
 >
-> instead of:
-> 	
-> export-objs	:= spi-core.o spi-algo-mpc5xxx.o spi-algo-mpc5200psc.o \
-> 		   spi-iti5200.o spi-eval.o
->
-> I believe the spi-algo-mpc5200psc.o should be spi-algo-mpc5xxx-psc.o,
-> correct?
+> Give a try to :
+>         startaddr = 0xff000104;
 
-Are you really serious about linuxppc_2_4_devel?  I can't believe  
-linuxppc_2_4_devel has changed in months (if not over a year).
+That address was in the code before for warm-reset. It didn't work, I
+tried the CheckStop approach, it didn't work either.
 
-- k
+thanks
+lei
