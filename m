@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <AZeffertt@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1D09B67BB7
+	by ozlabs.org (Postfix) with ESMTP id 3849967C0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 23:13:17 +1000 (EST)
-In-Reply-To: <44BF787F.3020203@cambridgebroadband.com>
+	Thu, 20 Jul 2006 23:33:57 +1000 (EST)
+Message-ID: <44BF8634.2060009@cambridgebroadband.com>
+Date: Thu, 20 Jul 2006 14:33:40 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [Linux-ATM-General] mpc8360sar
 References: <995B09A8299C2C44B59866F6391D2635058751@zch01exm21.fsl.freescale.net>
 	<44BF787F.3020203@cambridgebroadband.com>
-Mime-Version: 1.0 (Apple Message framework v750)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <26296171-D21D-4FF3-B9C5-C6378064AF44@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [Linux-ATM-General] mpc8360sar
-Date: Thu, 20 Jul 2006 08:13:30 -0500
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
+	<26296171-D21D-4FF3-B9C5-C6378064AF44@kernel.crashing.org>
+In-Reply-To: <26296171-D21D-4FF3-B9C5-C6378064AF44@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linux-atm-general@lists.sourceforge.net, linuxppc-embedded@ozlabs.org,
 	Li Tony-r64360 <Tony.Li@freescale.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -29,97 +30,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Jul 20, 2006, at 7:35 AM, Alex Zeffertt wrote:
+> 
+> Any reason we dont try to get your work up stream into the mainline kernel?
+> 
+> - kumar
+> 
 
-> Hi,
->
-> Yes, UBR and AAL0 work.  I've also added support for the qos  
-> parameters
-> min_pcr, pcr, and max_pcr.
->
-> I used ltib-mpc832xemds-20060615 as my base.  More details are on the
-> website.
->
-> BTW, I left all your code in.  There's a simple config option now  
-> which
-> allows you to choose between the two drivers.
->
-> Alex
->
-> PS Thanks!
+I'd like to see it upstreamed - the more people who use it the more help I get!
 
-Any reason we dont try to get your work up stream into the mainline  
-kernel?
+However, mpc8360sar is built on Freescale's BSP which adds basic support for the
+board, the MPC832xE-MDS, to the stock linux kernel.  This support consists of the
+following patches:
 
-- kumar
+Patch0          : patch-2.6.11.bz2
+Patch1          : linux-2.6.11-mpc8349e-general-20060414.patch
+Patch2          : linux-2.6.11-mpc8349e-pci-3.patch
+Patch3          : linux-2.6.11-mpc8349e-pci-agent.patch
+Patch4          : linux-2.6.11-mpc8349e-watchdog.patch
+Patch5          : linux-2.6.11-mpc83xx-sec2.patch
+Patch6          : mpc832x-sec2v15-config-1.patch
+Patch7          : linux-2.6.11-mpc8349e-usb-gadget.patch
+Patch8          : linux-2.6.11-mpc8349e-usb-host.patch
+Patch9          : linux-2.6.11-mpc8360-general-1.patch
+Patch10         : linux-2.6.11-mpc8360-pci-agent.patch
+Patch11         : linux-2.6.11-mpc832x-basic-4.patch
+Patch12         : linux-2.6.11-mpc832x-pci-agent.patch
+Patch13         : linux-2.6.11-mpc832x-spi-1.patch
+Patch14         : linux-2.6.11-mpc832x-BIT.patch
+Patch15         : linux-2.6.11-mpc83xx-ct-1.patch
+Patch16         : linux-2.6.11-mpc832x-usb-gadget.patch
+Patch17         : linux-2.6.11-mpc832x-atm-1.patch
 
-> Li Tony-r64360 wrote:
->> Hi, alex
->> I am tony li.  I am glad to know that you add many features support.
->> Do you have test the UBR and AAL0 ? I am lack of enviroment test them
->> now.
->> I have not read your code detailly.:)
->> And which ltib release version is your base ? I have updated my  
->> code a
->> little which contain a workaround for a bug.
->>
->> Tony.li
->>
->> -----Original Message-----
->> From: linux-atm-general-bounces@lists.sourceforge.net
->> [mailto:linux-atm-general-bounces@lists.sourceforge.net] On Behalf Of
->> Alex Zeffertt
->> Sent: Thursday, July 20, 2006 6:40 PM
->> To: linuxppc-embedded@ozlabs.org;
->> linux-atm-general@lists.sourceforge.net
->> Subject: [Linux-ATM-General] mpc8360sar
->>
->> Hi lists,
->>
->> I'm writing to announce a new project http:// 
->> mpc8360sar.sourceforge.net
->> .
->> This is an ATM driver for the QUICC Engine (QE) of the PowerQUICC  
->> II Pro
->> range of processors.  It is based on Tony Li's fsl-atm driver and my
->> mpc8260sar driver.  I've basically used Tony's driver for the most  
->> low
->> level stuff and ported a lot of extra functionality from my PQII  
->> driver.
->>
->> You will need the Linux BSP from Freescale to build this driver.
->>
->> I have only tested this driver on mpc832xe-mds, but it should also  
->> work
->> on the mpc8360e-pb board.
->>
->> If you use mpc8360sar, please let me know how you get on.  In  
->> particular
->> let me know if you work out how to stop the QE occaisionally  
->> corrupting
->> the TCT when using external channels.
->>
->> Regards,
->>
->> Alex
->>
->> --------------------------------------------------------------------- 
->> ---
->> -
->> Take Surveys. Earn Cash. Influence the Future of IT Join
->> SourceForge.net's Techsay panel and you'll get the chance to share  
->> your
->> opinions on IT & business topics through brief surveys -- and earn  
->> cash
->> http://www.techsay.com/default.php? 
->> page=join.php&p=sourceforge&CID=DEVDE
->> V
->> _______________________________________________
->> Linux-atm-general mailing list
->> Linux-atm-general@lists.sourceforge.net
->> https://lists.sourceforge.net/lists/listinfo/linux-atm-general
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+I guess there's no point upstreaming mpc8360sar until freescale have
+upstreamed these patches (and ported them to the current kernel).
+
+Alex
+
+PS It's probable that mpc8360sar actually only requires a handful of
+the above patches to be applied.
