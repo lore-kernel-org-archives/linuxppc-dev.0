@@ -1,15 +1,26 @@
-Return-Path: <Sangameshwar.Pujari@infogain.com>
-Received: from GDCMX01.igglobal.com (unknown [203.190.141.10])
-	by ozlabs.org (Postfix) with ESMTP id 192EA67A3E
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 18:15:07 +1000 (EST)
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id A4898679E9
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 21:41:56 +1000 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	k6KBfp69015140
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 04:41:51 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id k6KBfmRa027966
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 06:41:50 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C6ABD2.F1B1D1BE"
-Subject: regarding MAL
-Date: Thu, 20 Jul 2006 13:33:11 +0530
-Message-ID: <C86899CCB10A6C4E93D5978DCB232D4B02463BC6@GDCMX01.igglobal.com>
-From: "Sangameshwar Pujari" <Sangameshwar.Pujari@infogain.com>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [linux-usb-devel] [PATCH] Fix Freescale high-speed USB
+	hostdependency
+Date: Thu, 20 Jul 2006 19:42:10 +0800
+Message-ID: <4879B0C6C249214CBE7AB04453F84E4D07064D@zch01exm20.fsl.freescale.net>
+In-Reply-To: <6DFEB2BB-05AB-441E-854E-297987B97A0E@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>, <gregkh@suse.de>
+Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,54 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Another one in header file.
 
-------_=_NextPart_001_01C6ABD2.F1B1D1BE
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+---
+diff --git a/drivers/usb/host/ehci.h b/drivers/usb/host/ehci.h
+index 679c1cd..8da2774 100644
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -642,7 +642,7 @@ #endif
 
-Hi,
+=20
+/*----------------------------------------------------------------------
+---*/
 
-i am porting a EMAC driver from NetBSD to my Xilinix ML403 embeddded =
-board . NETBSD code is Having a Media Access Layer (MAL) , which i want =
-to know bit , is it the same MAC layer .
+-#ifdef CONFIG_PPC_83xx
++#ifdef CONFIG_MPC834x
+ /* Some Freescale processors have an erratum in which the TT
+  * port number in the queue head was 0..N-1 instead of 1..N.
+  */
 
-
-regards
-sangamesh
-
-------_=_NextPart_001_01C6ABD2.F1B1D1BE
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7226.0">
-<TITLE>regarding MAL</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Hi,</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">i am porting a EMAC driver from NetBSD =
-to my Xilinix ML403 embeddded board . NETBSD code is Having a Media =
-Access Layer (MAL) , which i want to know bit , is it the same MAC layer =
-.</FONT></P>
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">regards</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">sangamesh</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C6ABD2.F1B1D1BE--
+> -----Original Message-----
+> From: linux-usb-devel-bounces@lists.sourceforge.net
+> [mailto:linux-usb-devel-bounces@lists.sourceforge.net] On Behalf Of
+Kumar Gala
+> Sent: Friday, July 14, 2006 9:52 PM
+> To: Li Yang-r58472
+> Cc: linuxppc-dev@ozlabs.org; gregkh@suse.de;
+> linux-usb-devel@lists.sourceforge.net
+> Subject: Re: [linux-usb-devel] [PATCH] Fix Freescale high-speed USB
+hostdependency
+>=20
+> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+>=20
+> On Jul 14, 2006, at 6:58 AM, Li Yang wrote:
+>=20
+> > The high-speed USB SOC only exists on MPC834x family not MPC83xx
+> > family.
+> >
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> >
+> > ---
+> >
+> >  drivers/usb/host/ehci-hcd.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-
+> > hcd.c index 79f2d8b..3af1844 100644
+> > --- a/drivers/usb/host/ehci-hcd.c
+> > +++ b/drivers/usb/host/ehci-hcd.c
+> > @@ -892,7 +892,7 @@ #include "ehci-pci.c"
+> >  #define	EHCI_BUS_GLUED
+> >  #endif
+> >
+> > -#ifdef CONFIG_PPC_83xx
+> > +#ifdef CONFIG_MPC834x
+> >  #include "ehci-fsl.c"
+> >  #define	EHCI_BUS_GLUED
+> >  #endif
