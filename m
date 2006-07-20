@@ -1,16 +1,18 @@
-Return-Path: <bwarren@qstreams.com>
-Subject: Re: I2C with bus muxes
-From: Ben Warren <bwarren@qstreams.com>
-To: "Travis B. Sawyer" <tsawyer@broadcom.com>
-In-Reply-To: <44BF9FBA.8030201@broadcom.com>
-References: <1153408592.19682.39.camel@saruman.qstreams.net>
-	<44BF9FBA.8030201@broadcom.com>
-Content-Type: multipart/alternative; boundary="=-v1K+veTqXf/Dr/kVVAZT"
-Date: Thu, 20 Jul 2006 11:36:05 -0400
-Message-Id: <1153409765.19682.51.camel@saruman.qstreams.net>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 36AB967BAD
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 21 Jul 2006 01:41:19 +1000 (EST)
+Date: Thu, 20 Jul 2006 19:41:31 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: "Harnois Anne-Sophie" <anne-sophie.harnois@thomson.net>
+Subject: Re: multicast for 8260 for 2.6.13
+Message-ID: <20060720194131.00b35a61@vitb.ru.mvista.com>
+In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D5D2488@rennsmail02.eu.thmulti.com>
+References: <1CFEB358338412458B21FAA0D78FE86D5D2488@rennsmail02.eu.thmulti.com>
 Mime-Version: 1.0
-Cc: Linuxppc-embedded@ozlabs.org
-Reply-To: bwarren@qstreams.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,75 +23,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thu, 20 Jul 2006 16:45:11 +0200
+"Harnois Anne-Sophie" <anne-sophie.harnois@thomson.net> wrote:
 
---=-v1K+veTqXf/Dr/kVVAZT
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-Thanks Travis,
-
- On Thu, 2006-07-20 at 11:22 -0400, Travis B. Sawyer wrote:
-
-
-> I have a driver for 2.4.x that works with our SFP/XFPs.  We also have a 
-> bunch of other 'stuff'
-> hanging off of muxes.  I haven't given it a go on 2.6, but I have it 
-> compiled and it doesn't complain on
-> startup.
+> Hello
 > 
-
-I'm happy to see anything.  Due to time constraints, I may end up doing
-most of my devices stuff 2.4-style anyway, at least for now, since I
-have a much firmer grasp on the concepts...  
-
-
-> Not sure if I should send it here, as it won't be in patch form...
+> In the file arch/ppc/8260_io/fcc_enet.c, set_multicast_list function is
+> commented out and I can't figure out why. 
+> I checked the code, removed the comments and tried it, and multicast
+> seemed to work properly. 
 > 
+> What am I missing?
+> Could someone explain me why this is commented out?
+The reason is because the arch/ppc/8260_io/* is deprecated by drivers/net/fs_enet, hence
+people switched to use it...
 
-Please pass your code along whenever it's convenient.  Your call whether
-to the list or just to me.
 
-Cheers,
-Ben
 
---=-v1K+veTqXf/Dr/kVVAZT
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
-<HTML>
-<HEAD>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
-  <META NAME="GENERATOR" CONTENT="GtkHTML/3.10.2">
-</HEAD>
-<BODY>
-Thanks Travis,<BR>
-<BR>
- On Thu, 2006-07-20 at 11:22 -0400, Travis B. Sawyer wrote:<BR>
-<BR>
-<BLOCKQUOTE TYPE=CITE>
-<PRE>
-<FONT COLOR="#000000">I have a driver for 2.4.x that works with our SFP/XFPs.  We also have a </FONT>
-<FONT COLOR="#000000">bunch of other 'stuff'</FONT>
-<FONT COLOR="#000000">hanging off of muxes.  I haven't given it a go on 2.6, but I have it </FONT>
-<FONT COLOR="#000000">compiled and it doesn't complain on</FONT>
-<FONT COLOR="#000000">startup.</FONT>
-
-</PRE>
-</BLOCKQUOTE>
-I'm happy to see anything.&nbsp; Due to time constraints, I may end up doing most of my devices stuff 2.4-style anyway, at least for now, since I have a much firmer grasp on the concepts...&nbsp; <BR>
-<BR>
-<BLOCKQUOTE TYPE=CITE>
-<PRE>
-<FONT COLOR="#000000">Not sure if I should send it here, as it won't be in patch form...</FONT>
-
-</PRE>
-</BLOCKQUOTE>
-Please pass your code along whenever it's convenient.&nbsp; Your call whether to the list or just to me.<BR>
-<BR>
-Cheers,<BR>
-Ben
-</BODY>
-</HTML>
-
---=-v1K+veTqXf/Dr/kVVAZT--
+-- 
+Sincerely, 
+Vitaly
