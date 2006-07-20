@@ -1,22 +1,22 @@
-Return-Path: <boro@razvoj-verbic.si>
-Received: from mta1.siol.net (mta1.siol.net [193.189.160.88])
-	by ozlabs.org (Postfix) with ESMTP id 38E2167BB9
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0787667B58
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 23:44:06 +1000 (EST)
-Received: from edge2.siol.net ([10.10.10.211]) by mta1.siol.net with ESMTP
-	id <20060720134405.IMVR4387.mta1.siol.net@edge2.siol.net>
-	for <linuxppc-embedded@ozlabs.org>; Thu, 20 Jul 2006 15:44:05 +0200
-Received: from [192.168.2.101] (really [86.61.75.118]) by edge2.siol.net
-	with ESMTP
-	id <20060720134405.FWPS4459.edge2.siol.net@[192.168.2.101]>
-	for <linuxppc-embedded@ozlabs.org>; Thu, 20 Jul 2006 15:44:05 +0200
-Message-ID: <44BF88A2.6080003@razvoj-verbic.si>
-Date: Thu, 20 Jul 2006 15:44:02 +0200
-From: Uros Borovsak <boro@razvoj-verbic.si>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Host USB on MPC8247
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+	Thu, 20 Jul 2006 23:51:50 +1000 (EST)
+In-Reply-To: <86EC6E02268B3D4BA41C1B0C61FB14E60B4553CE@mdcexc01.na.ops.local>
+References: <86EC6E02268B3D4BA41C1B0C61FB14E60B4553CE@mdcexc01.na.ops.local>
+Mime-Version: 1.0 (Apple Message framework v750)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C97DE3E9-F0BE-48CC-AE1A-D94713471098@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: export-objs in spi Makefile broke in latest linuxppc_2_4_deve l
+	[r eposted]?
+Date: Thu, 20 Jul 2006 08:52:05 -0500
+To: "Rowan, Chad" <Chad.Rowan@thyssenkrupp.com>
+Cc: hs@denx.de, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,18 +27,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-I'm looking for host USB driver for MPC8247. We are using MV kernel 
-2.6.10 and I'm wondering, if there is a driver for this specific kernel.
+On Jul 20, 2006, at 8:38 AM, Rowan, Chad wrote:
 
-I'm aware of cpm2usb project on sourceforge, but it is for kernel 
-2.6.13. How difficult would it be to patch only usb part of kernel from 
-2.6.10 to 2.6.13 so I could use that drivers. I only need suport for USB 
-storage devices, so that driver is enough for me.
+> Why should this be taken off list?  Is it because it's Denx  
+> specific?  Or
+> because it's 2.4 specific?  There is active 5200 development on the  
+> 2.4
+> kernel at Denx and it seems relevant to this list.
 
-Thanks,
+Because its Denx specific, I believe the tree you are taking about is  
+maintained only by Denx and not a community tree.
 
-Best regards,
+- k
 
-Uros
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, July 20, 2006 8:12 AM
+> To: hs@denx.de
+> Cc: linuxppc-embedded@ozlabs.org; Chad.Rowan@thyssenkrupp.com
+> Subject: Re: export-objs in spi Makefile broke in latest  
+> linuxppc_2_4_deve l
+> [r eposted]?
+>
+>
+> On Jul 19, 2006, at 11:55 PM, Heiko Schocher wrote:
+>
+>> Hello Chad
+>>
+>>> linuxppc_2_4_devel is alive and well.
+>>>
+>>> http://www.denx.de/cgi-bin/gitweb.cgi?
+>>> p=linuxppc_2_4_devel.git;a=shortlog
+>>
+>> You speak from the DENX linuxppc_2_4_devel Kernel? If so, I think
+>> you are right.
+>> I had the same problem, some days ago. I made a SPI bitbanging
+>> algorithm, but
+>> I dont know, if this goes in the git repository from DENX ...
+>> Wolfgang?
+>
+> I think this issue should be taken off list.
+>
+> - k
