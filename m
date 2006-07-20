@@ -1,34 +1,16 @@
-Return-Path: <anne-sophie.harnois@thomson.net>
-Received: from dmzraw4.extranet.thmulti.com (dmzraw4.extranet.thmulti.com
-	[141.11.234.72]) by ozlabs.org (Postfix) with ESMTP id 4F2F767BAB
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Jul 2006 01:33:45 +1000 (EST)
-Received: from boulvss1.eu.thmulti.com (unknown [141.11.234.35])
-	by dmzraw4.extranet.thmulti.com (Postfix) with ESMTP id 80F5B1CF2
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 15:00:48 +0000 (GMT)
-Received: from localhost (localhost [127.0.0.1])
-	by boulvss1.eu.thmulti.com (Postfix) with ESMTP id E057D136F
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 15:00:00 +0000 (GMT)
-Received: from boulvss1.eu.thmulti.com ([127.0.0.1])
-	by localhost (indyvss4.am.thmulti.com [127.0.0.1]) (amavisd-new,
-	port 10024)
-	with LMTP id 14784-01-96 for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 14:59:46 +0000 (GMT)
-Received: from boulsmailbh01.eu.thmulti.com (boulsmailbh01.eu.thmulti.com
-	[141.11.192.5])
-	by boulvss1.eu.thmulti.com (Postfix) with ESMTP id D19B911F0
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 14:44:24 +0000 (GMT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: multicast for 8260 for 2.6.13
-Date: Thu, 20 Jul 2006 16:45:11 +0200
-Message-ID: <1CFEB358338412458B21FAA0D78FE86D5D2488@rennsmail02.eu.thmulti.com>
-From: "Harnois Anne-Sophie" <anne-sophie.harnois@thomson.net>
-To: <linuxppc-embedded@ozlabs.org>
+Return-Path: <bwarren@qstreams.com>
+Subject: Re: I2C with bus muxes
+From: Ben Warren <bwarren@qstreams.com>
+To: "Travis B. Sawyer" <tsawyer@broadcom.com>
+In-Reply-To: <44BF9FBA.8030201@broadcom.com>
+References: <1153408592.19682.39.camel@saruman.qstreams.net>
+	<44BF9FBA.8030201@broadcom.com>
+Content-Type: multipart/alternative; boundary="=-v1K+veTqXf/Dr/kVVAZT"
+Date: Thu, 20 Jul 2006 11:36:05 -0400
+Message-Id: <1153409765.19682.51.camel@saruman.qstreams.net>
+Mime-Version: 1.0
+Cc: Linuxppc-embedded@ozlabs.org
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -39,15 +21,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello
 
-In the file arch/ppc/8260_io/fcc_enet.c, set_multicast_list function is
-commented out and I can't figure out why.=20
-I checked the code, removed the comments and tried it, and multicast
-seemed to work properly.=20
+--=-v1K+veTqXf/Dr/kVVAZT
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-What am I missing?
-Could someone explain me why this is commented out?
+Thanks Travis,
 
-Many thanks,
-Anne-Sophie
+ On Thu, 2006-07-20 at 11:22 -0400, Travis B. Sawyer wrote:
+
+
+> I have a driver for 2.4.x that works with our SFP/XFPs.  We also have a 
+> bunch of other 'stuff'
+> hanging off of muxes.  I haven't given it a go on 2.6, but I have it 
+> compiled and it doesn't complain on
+> startup.
+> 
+
+I'm happy to see anything.  Due to time constraints, I may end up doing
+most of my devices stuff 2.4-style anyway, at least for now, since I
+have a much firmer grasp on the concepts...  
+
+
+> Not sure if I should send it here, as it won't be in patch form...
+> 
+
+Please pass your code along whenever it's convenient.  Your call whether
+to the list or just to me.
+
+Cheers,
+Ben
+
+--=-v1K+veTqXf/Dr/kVVAZT
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 TRANSITIONAL//EN">
+<HTML>
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=UTF-8">
+  <META NAME="GENERATOR" CONTENT="GtkHTML/3.10.2">
+</HEAD>
+<BODY>
+Thanks Travis,<BR>
+<BR>
+ On Thu, 2006-07-20 at 11:22 -0400, Travis B. Sawyer wrote:<BR>
+<BR>
+<BLOCKQUOTE TYPE=CITE>
+<PRE>
+<FONT COLOR="#000000">I have a driver for 2.4.x that works with our SFP/XFPs.  We also have a </FONT>
+<FONT COLOR="#000000">bunch of other 'stuff'</FONT>
+<FONT COLOR="#000000">hanging off of muxes.  I haven't given it a go on 2.6, but I have it </FONT>
+<FONT COLOR="#000000">compiled and it doesn't complain on</FONT>
+<FONT COLOR="#000000">startup.</FONT>
+
+</PRE>
+</BLOCKQUOTE>
+I'm happy to see anything.&nbsp; Due to time constraints, I may end up doing most of my devices stuff 2.4-style anyway, at least for now, since I have a much firmer grasp on the concepts...&nbsp; <BR>
+<BR>
+<BLOCKQUOTE TYPE=CITE>
+<PRE>
+<FONT COLOR="#000000">Not sure if I should send it here, as it won't be in patch form...</FONT>
+
+</PRE>
+</BLOCKQUOTE>
+Please pass your code along whenever it's convenient.&nbsp; Your call whether to the list or just to me.<BR>
+<BR>
+Cheers,<BR>
+Ben
+</BODY>
+</HTML>
+
+--=-v1K+veTqXf/Dr/kVVAZT--
