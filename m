@@ -1,17 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 239A367B88
-	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 07:41:20 +1000 (EST)
-Date: Fri, 21 Jul 2006 07:25:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: mainly iSeries updates
-Message-Id: <20060721072555.21cfb61d.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__21_Jul_2006_07_25_55_+1000_xV_t9LBCSf_sSONC"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <bdc@carlstrom.com>
+Received: from electricrain.com (electricrain.com [207.7.145.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2562F67B9A
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 07:56:37 +1000 (EST)
+Date: Thu, 20 Jul 2006 14:56:33 -0700
+Message-ID: <lezmf4j5ym.wl%bdc@carlstrom.com>
+From: "Brian D. Carlstrom" <bdc@carlstrom.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: AltiVec in the kernel
+In-Reply-To: <20060720190523.GA27775@pb15.lixom.net>
+References: <20060719181047.GL5905@austin.ibm.com>
+	<001301c6abf8$73d780e0$99dfdfdf@bakuhatsu.net>
+	<20060720174255.GP5905@austin.ibm.com>
+	<le8xmoktav.wl%bdc@carlstrom.com>
+	<20060720190523.GA27775@pb15.lixom.net>
+Cc: 'Paul Mackerras' <paulus@samba.org>,
+	'linuxppc-dev list' <linuxppc-dev@ozlabs.org>
+Reply-To: "Brian D. Carlstrom" <bdc@carlstrom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,49 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__21_Jul_2006_07_25_55_+1000_xV_t9LBCSf_sSONC
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+At Thu, 20 Jul 2006 14:05:23 -0500, Olof Johansson wrote:
+> On Thu, Jul 20, 2006 at 11:47:04AM -0700, Brian D. Carlstrom wrote:
+> > A quick grep memcpy in the recent glibc sources on my linux/ppc box
+> > seems to show no where near that level of optimization, but I admit
+> > that I could have missed something.
+> 
+> http://penguinppc.org/dev/glibc/glibc-powerpc-cpu-addon.html
 
-Hi Paul,
+Very interesting. According to that page, the memcpy optimizations seem
+to be using 64-bit operations and that 128-bit AltiVec operations are
+still being solicited. 
 
-Please pull ozlabs.org:~sfr/kernels/sfr.git to get the following:
+I was encouraged to see the following: 
 
-Michael Ellerman:
-      [POWERPC] iseries: Use device tree /system-id in /proc/iSeries/config
-      [POWERPC] iseries: Move e2a()/strne2a() into their only caller
-      [POWERPC] iseries: Cleanup e2a() and strne2a()
-      [POWERPC] iseries: Make ItExtVpdPanel private to iSeries
-      [POWERPC] iseries: Make HvLpConfig_get(Primary)LpIndex functions
-      [POWERPC] iseries: Move ItLpNaca into platforms/iseries
-      [POWERPC] iseries: Fix a compiler warning in platforms/iseries/vpdinf=
-o.c
-      [POWERPC] iseries: Fix a compiler warning in platforms/iseries/vpdinf=
-o.c
-      [POWERPC] Fix a compiler warning in mm/tlb_64.c
-      [POWERPC] iseries: Move iommu_table_cb into platforms/iseries
+    If you need to build generic distributions (supporting several
+    <cpu_types>) you can leverage the dl_procinfo support built into
+    glibc. This mechanism allows for multiple versions of the core
+    libraries (libc, libm, librt, libpthread, libpthread_db) to be
+    stored in hardware/platform specific subdirectories under /lib[64].
 
-Stephen Rothwell:
-      [POWERPC] iseries: A new iSeries console
-      [POWERPC] Make the hvc_console output buffer size settable
-      [POWERPC] iseries: Small viotape cleanup allowed by devfs removal
-      [POWERPC] iseries: Remove unnecessary include of iseries/hv_lp_event.h
+However, I'm guessing this addon is not something found in common
+distributions for PowerPC like Debian, Fedora, Gentoo, Ubuntu, ...
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__21_Jul_2006_07_25_55_+1000_xV_t9LBCSf_sSONC
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQFEv/TuFdBgD/zoJvwRAopHAKCiJQHfO3ISg1HruQyI+mJftMxpWgCfbGsm
-w4GD/jGgKaUu9BZWdQs5zR8=
-=J9ON
------END PGP SIGNATURE-----
-
---Signature=_Fri__21_Jul_2006_07_25_55_+1000_xV_t9LBCSf_sSONC--
+-bri
