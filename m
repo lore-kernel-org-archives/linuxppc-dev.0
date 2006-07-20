@@ -1,25 +1,25 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 6B84D67B97
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 16:44:49 +1000 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	k6K82Rfp000917
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 02:02:27 -0600 (MDT)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id k6K6iiu3006055
-	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 01:44:46 -0500 (CDT)
+Return-Path: <marc.leeman@gmail.com>
+Received: from scorpius.homelinux.org (unknown [213.219.165.150])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E016567B9D
+	for <linuxppc-dev@ozlabs.org>; Thu, 20 Jul 2006 17:21:40 +1000 (EST)
+Date: Thu, 20 Jul 2006 09:21:34 +0200
+From: Marc Leeman <marc.leeman@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add USB to MPC8349 PB platform support
+Message-ID: <20060720072134.GX5219@scorpius.homelinux.org>
+References: <4879B0C6C249214CBE7AB04453F84E4D050B55@zch01exm20.fsl.freescale.net>
+	<4856A73A-BB23-4850-A697-1CE7C385DE42@kernel.crashing.org>
+	<1E6652B1-3126-4B69-BE9D-8DCE8DCACE7C@embeddedalley.com>
+	<20060719201941.GW5219@scorpius.homelinux.org>
+	<4AC92920-4642-4899-B8CA-8EE5A1CDE0B3@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [linux-usb-devel] [PATCH] Add USB to MPC8349 PB platform support
-Date: Thu, 20 Jul 2006 14:45:05 +0800
-Message-ID: <4879B0C6C249214CBE7AB04453F84E4D0705B8@zch01exm20.fsl.freescale.net>
-In-Reply-To: <20060719121922.ef989b1d.zaitcev@redhat.com>
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Pete Zaitcev" <zaitcev@redhat.com>
-Cc: linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="5LZCLy8Sy7WgNZQM"
+In-Reply-To: <4AC92920-4642-4899-B8CA-8EE5A1CDE0B3@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: Marc Leeman <marc.leeman@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,50 +29,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Pete Zaitcev [mailto:zaitcev@redhat.com]
-> Sent: Thursday, July 20, 2006 3:19 AM
-> To: Li Yang-r58472
-> Cc: dan@embeddedalley.com; linuxppc-dev@ozlabs.org;
-galak@kernel.crashing.org;
-> linux-usb-devel@lists.sourceforge.net; zaitcev@redhat.com
-> Subject: Re: [linux-usb-devel] [PATCH] Add USB to MPC8349 PB platform
-support
->=20
-> On Thu, 20 Jul 2006 02:59:44 +0800, "Li Yang" <LeoLi@freescale.com>
-wrote:
->=20
-> > But why?  Most embedded products facing end-user wouldn't like users
-> > to modify the system by themselves.
->=20
-> Certainly vendors won't like to give consumers extra freedoms.
-> However, consumers like those freedoms, even if they would not
-> use them in any specific instance.
->=20
-> >  Sometimes they even put effort in preventing user to do so.
->=20
-> Jerks and criminals, that's what they are. Why would Linux developers
-> care about needs of these people?
->=20
-> Free software is about protecting the rights of users against
-> vendors who "wouldn't like" users doing what they want with the
-> product they bought.
->=20
-> > The only kind of products I can think of, which
-> > want the users to modify the code is reference boards, IMHO.
->=20
-> Ever heard of WRT54? But in fact, every product out there may provide
-> its owner an additional value when customized. I'd love to fix some
-> bugs in my microwave, for instance. The silly thing will not start
-> the timer if the door is open. It probably uses the same function
-> which prevents cooking from starting (it also has a hardware interlock
-> that cuts the magnetron, but this is different).
 
-You are right.  We really need to stick up for the freedom of software
-as Richard Stallman advocated.  :) However, I was talking about code
-that goes into public kernel source tree.  It's ok to distribute the
-code with CD or web link.  But if the code is not generic enough or
-can't be reused, it won't qualify to be included in mainstream kernel
-tree, I think.
+--5LZCLy8Sy7WgNZQM
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- Leo
+> >Though I do agree that there is a gap: it would be nice to have some
+> >place to submit the kernel patches;
+>=20
+> This should be the kernel.  The general rule of thumb I've used is if =20
+> its useful to more than one other person its worth trying to get into =20
+> the kernel.  However, I can see if you are doing a one off kernel for=20
+
+That is about the same rule that I use; luckily (a credit to the Linux
+kernel and other developers); I don't have to change much stuff like
+that.
+=20
+> your embedded product that getting your changes into the kernel =20
+> wouldn't be worth while.  You have to have a desire to interact with =20
+> the community if you want to get your code in.
+
+There is a grey zone, but let's talk about a specific case:
+
+In my current queue, I have to write a Host Port Interface (HPI) protocol
+(serial) to a TI DSP. I would imagine that this is a useful
+contribution. However, using HPI is almost by nature limited to specific
+embedded designs (most of which differ slightly from one another).
+Furthermore; I will need to use a number of GPIO pins on a 834x
+processor. Using this needs to be backed by configuration settings in
+U-Boot. If someone else makes a similar design; it would most likely be
+with another processor family; and even then; they'll have other pins
+connected/used.
+
+Though the protocol would be a real nice addition; the physical
+connection/configuration make including it in the main kernel tree
+difficult.
+
+> Personally, I see it useful if for no other reason that someone will =20
+> fixup my board port if/when they change something which will make my =20
+> moving to a newer kernel release that much easier.
+
+Even though I would welcome this; our boards are included in larger
+expensive systems that would just be shipped back in case of problems;
+but we've never had functional (linux) problems (yet).
+
+Come to think of it, I have a number of minor patches for 8349SYS based
+configurations; where can I find the last devel code (next to 2.6.17)
+for patch creation (and to whom to send them back)?
+
+--=20
+  greetz, marc
+If you must address me, do so as Your Supreme Eminence. Which you
+should be doing anyway.
+	Rygel - Throne for a Loss
+scorpius.homelinux.org 2.6.17 #2 PREEMPT Thu Jun 22 07:18:33 CEST 2006 GNU/=
+Linux
+
+--5LZCLy8Sy7WgNZQM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQFEvy7+UQpj09NWLeERAl1CAJ9vRX2sxikKkr128G3MWSqGjMUw7QCeKEA+
+t5KOTznI/HCMl84vGUSVfZ8=
+=zgVD
+-----END PGP SIGNATURE-----
+
+--5LZCLy8Sy7WgNZQM--
