@@ -1,24 +1,20 @@
-Return-Path: <AZeffertt@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3849967C0F
+Return-Path: <Chad.Rowan@thyssenkrupp.com>
+Received: from mail001.triaton.com (mail001.triaton.com [149.250.222.55])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "mail001.triaton.com",
+	Issuer "TC TrustCenter for Security in Data Networks GmbH" (not
+	verified)) by ozlabs.org (Postfix) with ESMTP id 266A967B9D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 20 Jul 2006 23:33:57 +1000 (EST)
-Message-ID: <44BF8634.2060009@cambridgebroadband.com>
-Date: Thu, 20 Jul 2006 14:33:40 +0100
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
+	Thu, 20 Jul 2006 23:37:01 +1000 (EST)
+Message-ID: <86EC6E02268B3D4BA41C1B0C61FB14E60B4553CE@mdcexc01.na.ops.local>
+From: "Rowan, Chad" <Chad.Rowan@thyssenkrupp.com>
+To: Kumar Gala <galak@kernel.crashing.org>, hs@denx.de
+Subject: RE: export-objs in spi Makefile broke in latest linuxppc_2_4_deve
+	l [r eposted]?
+Date: Thu, 20 Jul 2006 08:38:14 -0500
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [Linux-ATM-General] mpc8360sar
-References: <995B09A8299C2C44B59866F6391D2635058751@zch01exm21.fsl.freescale.net>
-	<44BF787F.3020203@cambridgebroadband.com>
-	<26296171-D21D-4FF3-B9C5-C6378064AF44@kernel.crashing.org>
-In-Reply-To: <26296171-D21D-4FF3-B9C5-C6378064AF44@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-atm-general@lists.sourceforge.net, linuxppc-embedded@ozlabs.org,
-	Li Tony-r64360 <Tony.Li@freescale.com>
+Content-Type: text/plain
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,42 +25,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Why should this be taken off list?  Is it because it's Denx specific?  Or
+because it's 2.4 specific?  There is active 5200 development on the 2.4
+kernel at Denx and it seems relevant to this list.
 
-> 
-> Any reason we dont try to get your work up stream into the mainline kernel?
-> 
-> - kumar
-> 
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+Sent: Thursday, July 20, 2006 8:12 AM
+To: hs@denx.de
+Cc: linuxppc-embedded@ozlabs.org; Chad.Rowan@thyssenkrupp.com
+Subject: Re: export-objs in spi Makefile broke in latest linuxppc_2_4_deve l
+[r eposted]?
 
-I'd like to see it upstreamed - the more people who use it the more help I get!
 
-However, mpc8360sar is built on Freescale's BSP which adds basic support for the
-board, the MPC832xE-MDS, to the stock linux kernel.  This support consists of the
-following patches:
+On Jul 19, 2006, at 11:55 PM, Heiko Schocher wrote:
 
-Patch0          : patch-2.6.11.bz2
-Patch1          : linux-2.6.11-mpc8349e-general-20060414.patch
-Patch2          : linux-2.6.11-mpc8349e-pci-3.patch
-Patch3          : linux-2.6.11-mpc8349e-pci-agent.patch
-Patch4          : linux-2.6.11-mpc8349e-watchdog.patch
-Patch5          : linux-2.6.11-mpc83xx-sec2.patch
-Patch6          : mpc832x-sec2v15-config-1.patch
-Patch7          : linux-2.6.11-mpc8349e-usb-gadget.patch
-Patch8          : linux-2.6.11-mpc8349e-usb-host.patch
-Patch9          : linux-2.6.11-mpc8360-general-1.patch
-Patch10         : linux-2.6.11-mpc8360-pci-agent.patch
-Patch11         : linux-2.6.11-mpc832x-basic-4.patch
-Patch12         : linux-2.6.11-mpc832x-pci-agent.patch
-Patch13         : linux-2.6.11-mpc832x-spi-1.patch
-Patch14         : linux-2.6.11-mpc832x-BIT.patch
-Patch15         : linux-2.6.11-mpc83xx-ct-1.patch
-Patch16         : linux-2.6.11-mpc832x-usb-gadget.patch
-Patch17         : linux-2.6.11-mpc832x-atm-1.patch
+> Hello Chad
+>
+>> linuxppc_2_4_devel is alive and well.
+>>
+>> http://www.denx.de/cgi-bin/gitweb.cgi? 
+>> p=linuxppc_2_4_devel.git;a=shortlog
+>
+> You speak from the DENX linuxppc_2_4_devel Kernel? If so, I think  
+> you are right.
+> I had the same problem, some days ago. I made a SPI bitbanging  
+> algorithm, but
+> I dont know, if this goes in the git repository from DENX ...  
+> Wolfgang?
 
-I guess there's no point upstreaming mpc8360sar until freescale have
-upstreamed these patches (and ported them to the current kernel).
+I think this issue should be taken off list.
 
-Alex
-
-PS It's probable that mpc8360sar actually only requires a handful of
-the above patches to be applied.
+- k
