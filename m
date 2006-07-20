@@ -1,20 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8546B679E9
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Jul 2006 04:50:35 +1000 (EST)
-Subject: Re: page locking in PowerPC cores
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Parav Pandit <paravpandit@yahoo.com>
-In-Reply-To: <20060719044510.24117.qmail@web36604.mail.mud.yahoo.com>
-References: <20060719044510.24117.qmail@web36604.mail.mud.yahoo.com>
-Content-Type: text/plain
-Date: Thu, 20 Jul 2006 14:50:20 -0400
-Message-Id: <1153421420.16159.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <1153408592.19682.39.camel@saruman.qstreams.net>
+References: <1153408592.19682.39.camel@saruman.qstreams.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <61F75343-B9B9-4349-A463-E39C7532A378@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: I2C with bus muxes
+Date: Thu, 20 Jul 2006 13:51:53 -0500
+To: bwarren@qstreams.com
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,7 +19,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Only memory mapped into userland contexts can be paged out in the first
-place.
 
-Ben.
+On Jul 20, 2006, at 10:16 AM, Ben Warren wrote:
+
+> Hello,
+>
+> Has anyone implemented devices like the Philips PCA954x I2C bus muxes
+> under the /sysfs device model?  I have some optical transponders on my
+> board that through the wisdom of some committee all have the same  
+> fixed
+> I2C address.  To get around this, we put them behind muxes, creating
+> 'virtual' I2C busses.  I imagine this could be modeled something like
+> the USB hub model, but that's just a first stab.
+
+I'm pretty sure I submitted a set of patches for this upstream.   
+However there was some desire to hold off until some other changes.
+
+http://marc.theaimsgroup.com/?l=linux-kernel&m=114376108231285&w=2
+http://marc.theaimsgroup.com/?t=114316214100001&r=1&w=2
+
+- kumar
