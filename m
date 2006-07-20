@@ -1,18 +1,14 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id 6279867BC6
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 21 Jul 2006 01:43:52 +1000 (EST)
-In-Reply-To: <1CFEB358338412458B21FAA0D78FE86D5D2488@rennsmail02.eu.thmulti.com>
-References: <1CFEB358338412458B21FAA0D78FE86D5D2488@rennsmail02.eu.thmulti.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <21947D16-8490-416A-9093-32AB9CB5DDDB@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: multicast for 8260 for 2.6.13
-Date: Thu, 20 Jul 2006 11:44:11 -0400
-To: "Harnois Anne-Sophie" <anne-sophie.harnois@thomson.net>
-Cc: linuxppc-embedded@ozlabs.org
+Return-Path: <tsawyer@broadcom.com>
+Message-ID: <44BF9FBA.8030201@broadcom.com>
+Date: Thu, 20 Jul 2006 11:22:34 -0400
+From: "Travis B. Sawyer" <tsawyer@broadcom.com>
+MIME-Version: 1.0
+To: bwarren@qstreams.com
+Subject: Re: I2C with bus muxes
+References: <1153408592.19682.39.camel@saruman.qstreams.net>
+In-Reply-To: <1153408592.19682.39.camel@saruman.qstreams.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,33 +19,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Ben Warren wrote:
+> Hello,
+>
+> Has anyone implemented devices like the Philips PCA954x I2C bus muxes
+> under the /sysfs device model?  I have some optical transponders on my
+> board that through the wisdom of some committee all have the same fixed
+> I2C address.  To get around this, we put them behind muxes, creating
+> 'virtual' I2C busses.  I imagine this could be modeled something like
+> the USB hub model, but that's just a first stab.
+>
+>   
+Ben:
 
-On Jul 20, 2006, at 10:45 AM, Harnois Anne-Sophie wrote:
+I have a driver for 2.4.x that works with our SFP/XFPs.  We also have a 
+bunch of other 'stuff'
+hanging off of muxes.  I haven't given it a go on 2.6, but I have it 
+compiled and it doesn't complain on
+startup.
 
-> In the file arch/ppc/8260_io/fcc_enet.c, set_multicast_list  
-> function is
-> commented out and I can't figure out why.
+Not sure if I should send it here, as it won't be in patch form...
 
-Read the mailing list archives.
+Lemme know if you want a look-see,
 
-> I checked the code, removed the comments and tried it, and multicast
-> seemed to work properly.
-
-Sorry, but that code will never work on a 82xx.
-
-> What am I missing?
-> Could someone explain me why this is commented out?
-
-Because it was copied from the 8xx many years ago when
-I ported the driver, and the 82xx lacks the CRC generator
-support.  You can enable promiscuous mode, which is
-what I suspect you did, and then the Linux IP stack will
-do the multicast filtering.
-
-By the way, this driver is obsolete and you should be
-using the version in drivers/net/fs_enet.
-
-
-Thanks.
-
-	-- Dan
+Travis
