@@ -1,22 +1,37 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesippc.com (mithrandir.softwarenexus.net [66.98.186.96])
+Return-Path: <linas@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3300D67B96
-	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 00:42:48 +1000 (EST)
-From: "Matt Sealey" <matt@genesi-usa.com>
-To: "'Brian D. Carlstrom'" <bdc@carlstrom.com>,
-	"'Olof Johansson'" <olof@lixom.net>
-Subject: RE: AltiVec in the kernel
-Date: Fri, 21 Jul 2006 09:42:32 -0500
-Message-ID: <000001c6acd3$ea93f5c0$99dfdfdf@bakuhatsu.net>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3847467BC0
+	for <linuxppc-dev@ozlabs.org>; Sat, 22 Jul 2006 02:51:42 +1000 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e31.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	k6LGpV2X023263
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 12:51:31 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by westrelay02.boulder.ibm.com (8.13.6/NCO/VER7.0) with ESMTP id
+	k6LGpVtx288584
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 10:51:31 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	k6LGpUfC021468
+	for <linuxppc-dev@ozlabs.org>; Fri, 21 Jul 2006 10:51:31 -0600
+Date: Fri, 21 Jul 2006 11:51:30 -0500
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: AltiVec in the kernel
+Message-ID: <20060721165130.GS5905@austin.ibm.com>
+References: <lezmf4j5ym.wl%bdc@carlstrom.com>
+	<000001c6acd3$ea93f5c0$99dfdfdf@bakuhatsu.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <lezmf4j5ym.wl%bdc@carlstrom.com>
-Cc: 'linuxppc-dev list' <linuxppc-dev@ozlabs.org>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <000001c6acd3$ea93f5c0$99dfdfdf@bakuhatsu.net>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: 'Olof Johansson' <olof@lixom.net>,
+	'linuxppc-dev list' <linuxppc-dev@ozlabs.org>,
 	'Paul Mackerras' <paulus@samba.org>
-Reply-To: matt@genesi-usa.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,54 +41,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- 
-
-> -----Original Message-----
-> From: linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org 
-> [mailto:linuxppc-dev-bounces+matt=genesi-usa.com@ozlabs.org] 
-> On Behalf Of Brian D. Carlstrom
-> Sent: Thursday, July 20, 2006 4:57 PM
-> To: Olof Johansson
-> Cc: 'Paul Mackerras'; 'linuxppc-dev list'
-> Subject: Re: AltiVec in the kernel
-> 
-> At Thu, 20 Jul 2006 14:05:23 -0500, Olof Johansson wrote:
-> > On Thu, Jul 20, 2006 at 11:47:04AM -0700, Brian D. Carlstrom wrote:
-> > > A quick grep memcpy in the recent glibc sources on my 
-> linux/ppc box 
-> > > seems to show no where near that level of optimization, 
-> but I admit 
-> > > that I could have missed something.
+On Fri, Jul 21, 2006 at 09:42:32AM -0500, Matt Sealey wrote:
+>  
+> > > http://penguinppc.org/dev/glibc/glibc-powerpc-cpu-addon.html
 > > 
-> > http://penguinppc.org/dev/glibc/glibc-powerpc-cpu-addon.html
+> > 128-bit AltiVec operations are still being solicited. 
 > 
-> Very interesting. According to that page, the memcpy 
-> optimizations seem to be using 64-bit operations and that 
-> 128-bit AltiVec operations are still being solicited. 
+> "Still"?
+> 
+> http://www.freevec.org/ 
+> 
+> Been there for months, before the glibc thing. Most of the functions
+> are ready. Anyone can bugfix this. The beauty of GPL. The ugly part
+> is.. we've had this there for months. Nobody has contributed a single
+> update or bugfix or even a performance test as far as I know.
 
-"Still"?
+Sounds like a problem of advertising and communications.  This is
+kind of "under the radar" for most users and developers. It needs to
+work out-of-the-box, most people, even those with interest in
+performance, will not even be aware of the possibility to tne this.
 
-http://www.freevec.org/ 
+It should be folded into glibc. It is up to the altivec product vendor
+to nag the glibc folks into folding it in. This task could be as hard
+as writing the code in the first place.
 
-Been there for months, before the glibc thing. Most of the functions
-are ready. Anyone can bugfix this. The beauty of GPL. The ugly part
-is.. we've had this there for months. Nobody has contributed a single
-update or bugfix or even a performance test as far as I know.
+> Indeed it's a cute feature but we were scared away by the glibc guys
 
-> However, I'm guessing this addon is not something found in 
-> common distributions for PowerPC like Debian, Fedora, Gentoo, 
-> Ubuntu, ...
+Many maintainers of core libraries have similar behaviour patterns.
+Besides glibc, gcc and gsl come to mind. This is becase they get tired out
+by naive eager-beavers who walk in with the greatest idea in the world,
+make a big fuss about it, and the proceed to demonstrate that they have 
+absolutely no clue of what they're talking about.  For every ten of 
+those, there's maybe one legit idea. Worse, many of these "clueless 
+newbies" come in the surprising shape of PhD's working outside thier 
+specialty, and can convingingly sling jargon and authority for a while 
+before its realized they're just... clueless.
 
-Indeed it's a cute feature but we were scared away by the glibc guys
-when it came to glibc-ports (perhaps they just considered it not
-ready, but we wanted it in there for the first release, which was
-the next one). Hence freevec. Konstantinos will get back in a couple
-weeks and post some updates.
+If you've got good code, you'll just need to be persistent.
 
-The more interesting code is the MySQL stuff. All of this has been
-developed by finding good examples of apps, profiling them and then
-optimizing the top few functions that are most used.
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Manager, Genesi, Developer Relations
+--linas
